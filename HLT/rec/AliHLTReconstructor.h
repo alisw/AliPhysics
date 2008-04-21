@@ -41,7 +41,7 @@ class AliHLTEsdManager;
  * will only load <tt>libAliHLTSample.so</tt>
  * 
  * Optional arguments:<br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li loglevel=<i>level</i><br>
  *     level can be a hex number encoding the @ref AliHLTComponentLogSeverity
  * \li alilog=off <br>

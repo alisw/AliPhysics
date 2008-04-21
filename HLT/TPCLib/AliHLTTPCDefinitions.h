@@ -96,14 +96,11 @@ public:
   /** central electrode calibration data */
   static const AliHLTComponentDataType fgkCalibCEDataType;         // see above
 
-  /** active pads data type, Used for cosmics test december 2007 */
-  static const AliHLTComponentDataType fgkActivePadsDataType;      // see above
+  // Offline wrappers
+  /** offline TreeR tree containing recpoints */
+  static const AliHLTComponentDataType fgkOfflineTreeR;            // see above
 
-  /** noise mapping histograms */
-  static const AliHLTComponentDataType fgkNoiseHistoDataType; // see above
-
-  ClassDef(AliHLTTPCDefinitions, 1);
-
+  ClassDef(AliHLTTPCDefinitions, 2)
 };
 
 #endif

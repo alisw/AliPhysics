@@ -33,7 +33,7 @@ class TFile;
  * Library: \b libAliHLTUtil.
  *
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datafile     <i> filename      </i>
  * \li -datafilelist <i> file pattern  </i> <br>
  *      not yet implemented

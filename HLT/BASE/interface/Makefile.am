@@ -10,7 +10,7 @@ MODULE				= HLTinterface
 
 SUBDIRS 			= 
 
-EXTRA_DIST			=
+EXTRA_DIST			= HLTinterface-LinkDef.h
 
 AM_CPPFLAGS			= -DMODULE=$(MODULE) \
 				  -I$(top_srcdir)/BASE

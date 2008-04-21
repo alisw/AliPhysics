@@ -30,21 +30,21 @@
  * Output Data Types: none <br>
  *
  * <h2>Mandatory arguments:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -mandatory1     <i> teststring   </i> <br>
  *      an argument with one parameter
  * \li -mandatory2                           <br>
  *      an argument without parameters
  *
  * <h2>Optional arguments:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -optional1      <i> teststring   </i> <br>
  *      an argument with one parameter
  * \li -optional2                            <br>
  *      an argument without parameters
  *
  * <h2>Configuration:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -config1      <i> teststring   </i> <br>
  *      a configuration argument with one parameter
  * \li -config2                            <br>

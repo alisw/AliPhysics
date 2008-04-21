@@ -331,7 +331,7 @@ class AliHLTSystem : public AliHLTLogging {
   /**
    * Scan options.
    * Known options
-   * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+   * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
    * \li loglevel=<i>level</i> <br>
    *     logging level for this processing
    * \li frameworklog=<i>level</i> <br>

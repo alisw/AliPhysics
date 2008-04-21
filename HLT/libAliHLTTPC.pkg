@@ -24,6 +24,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCTrackArray.h \
 		AliHLTTPCTrack.h \
 		offline/AliHLTTPCDigitPublisherComponent.h \
+		offline/AliHLTTPCOfflineClustererComponent.h \
+		offline/AliHLTTPCOfflineTrackerComponent.h \
 		AliHLTTPCClusters.h \
 		AliHLTTPCConfMapFit.h \
 		AliHLTTPCConfMapTrack.h \
@@ -73,9 +75,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCKryptonClusterFinder.h \
 		AliHLTTPCKryptonClusterFinderComponent.h
 
-
-#		offline/AliHLTTPCOfflineClustererComponent.h
-#		offline/AliHLTTPCOfflineTrackerComponent.h
 
 
 # 		AliHLTTPCDDLDataFileHandler.h

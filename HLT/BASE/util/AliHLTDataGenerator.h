@@ -24,7 +24,7 @@
  * Library: \b libAliHLTUtil.
  *
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datatype     <i> datatype   dataorigin </i> <br>
  *      data type ID and origin, e.g. <tt>-datatype 'CLUSTERS' 'TPC ' </tt>
  * \li -dataspec     <i> specification </i> <br>

@@ -31,7 +31,7 @@ class AliHLTTPCFileHandler;
  * Library: \b libAliHLTTPC.
  *
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -slice     <i> no </i> <br>
  *      TPC slice no (slice = inner + outer sector)
  * \li -partition     <i> no </i> <br>

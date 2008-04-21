@@ -32,10 +32,10 @@
  *
  * See AliHLTFileWriter for arguments, further specific options
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * Optional arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -digitreader    <i> reader   </i> <br>
  *      type of the digit reader: <i>unpacked, packed, raw, decoder</i>
  *      default 'decoder' 

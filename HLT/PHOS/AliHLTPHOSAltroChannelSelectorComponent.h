@@ -41,10 +41,10 @@
  * Library: \b libAliHLTTPC
  *
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * Optional arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  */
 class AliHLTPHOSAltroChannelSelectorComponent : public AliHLTProcessor {

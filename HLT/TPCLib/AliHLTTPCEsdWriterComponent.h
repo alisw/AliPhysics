@@ -45,14 +45,14 @@ class AliHLTTPCTrackArray;
  * componentid: \b TPCEsdConverter <br>
  * componentlibrary: \b libAliHLTTPC.so <br>
  * Arguments TPCEsdWriter: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datafile     <i> filename   </i> <br>
  *      file name base
  * \li -directory    <i> directory  </i> <br>
  *      target directory
  *
  * Arguments TPCEsdConverter: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -notree
  *      write ESD directly to output (::kAliHLTDataTypeESDObject)
  * \li -tree

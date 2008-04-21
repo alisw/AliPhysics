@@ -25,7 +25,7 @@ class AliHLTCOMPHuffmanData;
  * used for calibration of the Huffman code table (which is created here). 
  *
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -origin <i> detector <\i> <br>
  *  set origin of data for code creation to specify output table (parameter transient)
  * \li -runnumber <i> decimal number <\i> <br>
@@ -36,7 +36,7 @@ class AliHLTCOMPHuffmanData;
  *  set number of trailerwords of incoming data (ranging from 1 to 3)
  *
  * Optional arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -tablepath <i> path to Huffman code table <\i> <br>
  *  set path to out put Huffman code table as root file, if no path is given, output path is set to current path (parameter transient)
  *

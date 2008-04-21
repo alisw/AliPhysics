@@ -30,8 +30,9 @@
  *           gkAliHLTDDLListSize set from 29 to 30 according to new PubSub
  *           specs
  *   5       Data types for Run and Event summary, and for monitoring added
+ *   6       Common data types for TreeD and TreeR defined
  */
-#define ALIHLT_DATA_TYPES_VERSION 5
+#define ALIHLT_DATA_TYPES_VERSION 6
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -45,39 +46,59 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-/** field size of datat type origin */
+/** field size of datat type origin 
+ * @ingroup alihlt_component_datatypes
+ */
 const int kAliHLTComponentDataTypefOriginSize=4;
 
 
-/** invalid data origin */
+/** invalid data origin 
+ * @ingroup alihlt_component_datatypes
+ */
 # define kAliHLTDataOriginVoid "\0\0\0"
 /** old invalid data origin, kept for backward compatibility */
 # define kAliHLTVoidDataOrigin "\0\0\0"
 
-/** wildcard data type origin */
+/** wildcard data type origin 
+ * @ingroup alihlt_component_datatypes
+ */
 # define kAliHLTDataOriginAny "***"
 /** old wildcard data type origin, kept for backward compatibility */
 # define kAliHLTAnyDataOrigin "***"
 
-/** HLT out */
+/** Data origin HLT out 
+ * @ingroup alihlt_component_datatypes
+ */
 extern const char kAliHLTDataOriginOut[kAliHLTComponentDataTypefOriginSize];
 
-/** HLT/PubSub private internal */
+/** Data origin HLT/PubSub private internal 
+ * @ingroup alihlt_component_datatypes
+ */
 extern const char kAliHLTDataOriginPrivate[kAliHLTComponentDataTypefOriginSize];
 
-/** TPC */
+/** Data origin TPC 
+ * @ingroup alihlt_component_datatypes
+ */
 extern const char kAliHLTDataOriginTPC[kAliHLTComponentDataTypefOriginSize];
 
-/** PHOS */
+/** Data origin PHOS 
+ * @ingroup alihlt_component_datatypes
+ */
 extern const char kAliHLTDataOriginPHOS[kAliHLTComponentDataTypefOriginSize];
 
-/** MUON */
+/** Data origin MUON 
+ * @ingroup alihlt_component_datatypes
+ */
 extern const char kAliHLTDataOriginMUON[kAliHLTComponentDataTypefOriginSize];
 
-/** TRD */
+/** Data origin TRD 
+ * @ingroup alihlt_component_datatypes
+ */
 extern const char kAliHLTDataOriginTRD[kAliHLTComponentDataTypefOriginSize];
 
-/** ITS */
+/** Data origin ITS 
+ * @ingroup alihlt_component_datatypes
+ */
 extern const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize];
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,108 +107,146 @@ extern const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize];
 //
 //////////////////////////////////////////////////////////////////////////
 
-/** field size of data type id */
+/** field size of data type id 
+ * @ingroup alihlt_component_datatypes
+ */
 const int kAliHLTComponentDataTypefIDsize=8;
 
 
-/** invalid data type id */
+/** invalid data type id 
+ * @ingroup alihlt_component_datatypes
+ */
 # define kAliHLTVoidDataTypeID "\0\0\0\0\0\0\0"
 
-/** special id for any data type id */
+/** special id for any data type id 
+ * @ingroup alihlt_component_datatypes
+ */
 # define kAliHLTAnyDataTypeID "*******"
 
-/** DDL RAW data */
+/** DDL RAW data 
+ * @ingroup alihlt_component_datatypes
+ */
 # define kAliHLTDDLRawDataTypeID   {'D','D','L','_','R','A','W',' '}
 
-/** calibration data for file exchange subscriber */
+/** calibration data for file exchange subscriber 
+ * @ingroup alihlt_component_datatypes
+ */
 # define kAliHLTFXSCalibDataTypeID {'F','X','S','_','C','A','L',' '}
 
 /** start of run (SOR) event 
  * @ref AliHLTRunDesc
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTSORDataTypeID      {'S','T','A','R','T','O','F','R'}
 
 /** end of run (EOR) event 
  * @ref AliHLTRunDesc
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTEORDataTypeID      {'E','N','D','O','F','R','U','N'}
 
 /** DDL list event 
  * @ref AliHLTEventDDL
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTDDLDataTypeID      {'D','D','L','L','I','S','T',' '}
 
 /** EventType event 
  * - empty payload, specification gives eventType
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTEventDataTypeID    {'E','V','E','N','T','T','Y','P'}
 
 /** ComponentConfiguration event
  * - payload contains the CDB path as string
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTComConfDataTypeID  {'C','O','M','_','C','O','N','F'}
 
 /** DCS value update event
  * - payload contains string of relevant detectors
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTUpdtDCSDataTypeID  {'U','P','D','T','_','D','C','S'}
 
 /** ESD data block
  * an AliESD object of varying origin
  * The 'V0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTESDObjectDataTypeID    {'A','L','I','E','S','D','V','0'}
 
 /** ESD tree data block
  * TTree with an AliESD object of varying origin
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTESDTreeDataTypeID      {'E','S','D','_','T','R','E','E'}
+
+/** AliRoot TreeD
+ * - the digits tree of an AliRoot module
+ * @ingroup alihlt_component_datatypes
+ */
+#define kAliHLTTreeDDataTypeID         {'A','L','I','T','R','E','E','D'}
+
+/** AliRoot TreeR
+ * - the rec points tree of an AliRoot module
+ * @ingroup alihlt_component_datatypes
+ */
+#define kAliHLTTreeRDataTypeID         {'A','L','I','T','R','E','E','D'}
 
 /** HW Address selection data block
  * - a selection list for 16 bit HW addresses
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTHwAddr16DataTypeID     {'H','W','A','D','D','R','1','6'}
 
 /** Event Statistics
  * - event statistics for given detectors
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTEventStatisticsDataTypeID     {'E','V','_','S','T','A','T','I'}
 
 /** Event Summary
  * - event summary
  * - origin : kAliHLTDataOriginOut ( HLT )
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTEventSummaryDataTypeID        {'E','V','_','S','U','M','M','A'}
 
 /** Run Statistics
  * - run statistics for given detectors
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTRunStatisticsDataTypeID       {'R','U','N','S','T','A','T','I'}
 
 /** Run Summary
  * - run summary
  * - origin : kAliHLTDataOriginOut ( HLT )
+ * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTRunSummaryDataTypeID          {'R','U','N','S','U','M','M','A'}
 
 /** general ROOT TObject
  * - a general TObject exported from the HLT analysis
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTObjectDataTypeID              {'R','O','O','T','T','O','B','J'}
 
 /** ROOT TObjArray
  * - a TObjArray exported from the HLT analysis
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTObjArrayDataTypeID            {'R','O','O','T','O','B','A','R'}
 
 /** ROOT TTree
  * - a TTree object exported from the HLT analysis
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTTreeDataTypeID                {'R','O','O','T','T','R','E','E'}
 
@@ -195,12 +254,14 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * - a histogram object exported from the HLT analysis
  * - class derives from TH1 (directly or indirectly) and inherits all common functionality
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTHistogramDataTypeID            {'R','O','O','T','H','I','S','T'}
 
 /** ROOT TNtuple
  * - a TNtupl object exported from the HLT analysis
  * - varying origin
+ * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTNtupleDataTypeID              {'R','O','O','T','T','U','P','L'}
 
@@ -301,9 +362,23 @@ extern "C" {
   };
 
   /**
+   * @defgroup alihlt_component_datatypes Common Component Data Types
+   * The analysis framework defines a number of common data types for
+   * usage in the detector modules, like e.g. ::kAliHLTAnyDataType
+   * and ::kAliHLTDataTypeDDLRaw. Those data types always have
+   * origin ::kAliHLTDataOriginAny. The correct detector origin can be
+   * set by using operator '|'
+   * <pre>
+   * AliHLTComponentDataType dt=kAliHLTDDLRawDataTypeID|kAliHLTDataOriginTPC
+   * </pre>
+   * @ingroup alihlt_component
+   */
+
+  /**
    * @struct AliHLTComponentDataType
    * Data type descriptor for data blocks transferred through the processing
    * chain.
+   * @ingroup alihlt_component_datatypes
    */
   struct AliHLTComponentDataType
   {
@@ -455,10 +530,14 @@ extern "C" {
   //
   //////////////////////////////////////////////////////////////////////////
 
-  /** invalid event id */
+  /** invalid event id 
+   * @ingroup alihlt_component_datatypes
+   */
   const AliHLTEventID_t kAliHLTVoidEventID=~(AliHLTEventID_t)0;
 
-  /** invalid data specification */
+  /** invalid data specification 
+   * @ingroup alihlt_component_datatypes
+   */
   const AliHLTUInt32_t kAliHLTVoidDataSpec = ~(AliHLTUInt32_t)0;
 
   /** invalid shared memory type */
@@ -467,7 +546,9 @@ extern "C" {
   /** invalid shared memory id */
   const AliHLTUInt64_t gkAliHLTComponentInvalidShmID = ~(AliHLTUInt64_t)0;
 
-  /** invalid data type */
+  /** invalid data type 
+   * @ingroup alihlt_component_datatypes
+   */
   const AliHLTComponentDataType kAliHLTVoidDataType = {
     sizeof(AliHLTComponentDataType),
     kAliHLTVoidDataTypeID,
@@ -478,59 +559,104 @@ extern "C" {
   // (commented below) are used. rootcint does not find the id if they
   // are char arrays defined with {} and individual chars. If strings
   // are used it works fine
-  /** any data type */
+  /** any data type 
+   * @ingroup alihlt_component_datatypes
+   */
   const AliHLTComponentDataType kAliHLTAnyDataType = {
     sizeof(AliHLTComponentDataType),
     kAliHLTAnyDataTypeID,
     kAliHLTDataOriginAny
   };
 
-  /** multiple output data types */
+  /** multiple output data types 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTMultipleDataType;
 
-  /** data to file exchange subscriber */
+  /** data to file exchange subscriber 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeFXSCalib;
 
-  /** DDL list data type */
+  /** DDL list data type 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDL;
 
-  /** SOR data type */
+  /** SOR data type 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeSOR;
 
-  /** EOR data type */
+  /** EOR data type 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeEOR;
 
-  /** Event type specification */
+  /** Event type specification 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeEvent;
 
-  /** Configuration event data type */
+  /** Configuration event data type 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeComConf;
 
-  /** DCS value update event */
+  /** DCS value update event 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS;
 
-  /** RAW DDL data specification, origin is 'any', data publisher origin correctly */
+  /** RAW DDL data specification, origin is 'any', data publisher origin correctly 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;
 
-  /** ESD object data specification, origin is 'any' */
+  /** ESD object data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDObject;
 
-  /** ESD Tree data specification, origin is 'any' */
+  /** ESD Tree data specification, origin is 'any' 
+   
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDTree;
 
-  /** 16 bit Hardware address selection data specification, origin is 'any' */
+  /** AliRoot TreeD data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeAliTreeD;
+
+  /** AliRoot TreeR data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeAliTreeR;
+
+  /** 16 bit Hardware address selection data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeHwAddr16;
 
-  /** Event statistics */
+  /** Event statistics 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeEventStatistics;
 
-  /** Event summary */
+  /** Event summary 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeEventSummary;
 
-  /** Event statistics */
+  /** Event statistics 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeRunStatistics;
 
-  /** Event summary */
+  /** Event summary 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeRunSummary;
 
   //////////////////////////////////////////////////////////////////////////
@@ -539,19 +665,29 @@ extern "C" {
   //
   //////////////////////////////////////////////////////////////////////////
 
-  /** general ROOT TObject */
+  /** general ROOT TObject 
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeTObject;            // {ROOTTOBJ,"***"}
 									  		
-  /** ROOT TObjArray */							  		
+  /** ROOT TObjArray 
+   * @ingroup alihlt_component_datatypes
+   */							  		
   extern const AliHLTComponentDataType kAliHLTDataTypeTObjArray;	  // {ROOTOBAR,"***"}
 									  		
-  /** ROOT TTree */							  		
+  /** ROOT TTree 
+   * @ingroup alihlt_component_datatypes
+   */							  		
   extern const AliHLTComponentDataType kAliHLTDataTypeTTree;		  // {ROOTTREE,"***"}
 									  		
-  /** ROOT TH1 (can be used for all histograms, they derive from TH1) */  		
+  /** ROOT TH1 (can be used for all histograms, they derive from TH1) 
+   * @ingroup alihlt_component_datatypes
+   */  		
   extern const AliHLTComponentDataType kAliHLTDataTypeHistogram;	  // {ROOTHIST,"***"}
 									  		
-  /** ROOT TNtuple */							  		
+  /** ROOT TNtuple 
+   * @ingroup alihlt_component_datatypes
+   */							  		
   extern const AliHLTComponentDataType kAliHLTDataTypeTNtuple;		  // {ROOTTUPL,"***"}
 
   //////////////////////////////////////////////////////////////////////////
@@ -614,6 +750,11 @@ extern "C" {
 //
 //////////////////////////////////////////////////////////////////////////
 
+/** Comparison operator for HLT component data types.
+ * The operator takes wildcards into account, i.e. the ::kAliHLTAnyDataType,
+ * ::kAliHLTAnyDataTypeID and ::kAliHLTDataOriginAny definitions.
+ * @ingroup alihlt_component_datatypes
+ */
 inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
 {
   bool any1=true, any2=true, void1=true, void2=true, match=true;
@@ -640,11 +781,18 @@ inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponen
   return true;
 }
 
+/** Comparison operator for HLT component data types
+ * invers of @ref operator==( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
+ * @ingroup alihlt_component_datatypes
+ */
 inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
 {
   return !(dt1==dt2);
 }
 
+/** exact comparison of HLT component data types
+ * @ingroup alihlt_component_datatypes
+ */
 inline bool MatchExactly( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
 {
   for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
@@ -656,6 +804,9 @@ inline bool MatchExactly( const AliHLTComponentDataType& dt1, const AliHLTCompon
   return true;
 }
 
+/** merge operator for HLT component data types and origins
+ * @ingroup alihlt_component_datatypes
+ */
 inline AliHLTComponentDataType operator|(const AliHLTComponentDataType srcdt, const char origin[kAliHLTComponentDataTypefOriginSize])
 {
   AliHLTComponentDataType dt=srcdt;

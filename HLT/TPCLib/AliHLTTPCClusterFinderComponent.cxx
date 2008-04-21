@@ -130,7 +130,6 @@ int AliHLTTPCClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataTypeL
   // see header file for class documentation
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
-  tgtList.push_back(AliHLTTPCDefinitions::fgkActivePadsDataType);
   return tgtList.size();
 }
 

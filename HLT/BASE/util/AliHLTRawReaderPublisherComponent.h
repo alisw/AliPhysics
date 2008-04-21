@@ -38,7 +38,7 @@
  * Library: \b libAliHLTUtil.
  *
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -detector     <i> detector name      </i>
  *      e.g. <tt> -detector TPC </tt>
  * \li -equipmentid  <i> id      </i>

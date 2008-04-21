@@ -31,7 +31,7 @@ class AliLoader;
  * Library: \b libAliHLTUtil.
  *
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -loader       <i> loader name      </i>
  *      e.g. <tt> -loader TPCLoader </tt>
  * \li -tree         <i> tree name </i> : digits (default), clusters     

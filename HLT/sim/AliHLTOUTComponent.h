@@ -38,15 +38,15 @@ typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
  * Output Data Types: none (offline data sink) <br>
  *
  * <h2>Mandatory arguments:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * <h2>Optional arguments:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -links      <i> n   </i> <br>
  *      number of output ddl links
  *
  * <h2>Configuration:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * none
  *
  * <h2>Default CDB entries:</h2>

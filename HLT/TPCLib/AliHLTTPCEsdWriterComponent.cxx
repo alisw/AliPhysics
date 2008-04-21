@@ -297,7 +297,7 @@ int AliHLTTPCEsdWriterComponent::Reconfigure(const char* cdbEntry, const char* c
 {
   // see header file for class documentation
   int iResult=0;
-  const char* path="HLT/ConfigHLT/SolenoidBz";
+  const char* path=kAliHLTCDBSolenoidBz;
   const char* defaultNotify="";
   if (cdbEntry) {
     path=cdbEntry;

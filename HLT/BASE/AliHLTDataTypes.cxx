@@ -97,10 +97,25 @@ const AliHLTComponentDataType kAliHLTDataTypeESDObject =  (AliHLTComponentDataTy
   kAliHLTESDObjectDataTypeID,
   kAliHLTDataOriginAny
 };
+
 /** ESD tree data specification */
 const AliHLTComponentDataType kAliHLTDataTypeESDTree =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTESDTreeDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** AliRoot TreeD data specification */
+const AliHLTComponentDataType kAliHLTDataTypeAliTreeD =  (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTTreeDDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** AliRoot TreeR data specification */
+const AliHLTComponentDataType kAliHLTDataTypeAliTreeR =  (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTTreeRDataTypeID,
   kAliHLTDataOriginAny
 };
 

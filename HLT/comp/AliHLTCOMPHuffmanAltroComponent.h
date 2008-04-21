@@ -28,7 +28,7 @@ class AliHLTCOMPHuffmanData;
  * Library: \b libAliHLTComp
  * 
  * Mandatory arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -origin <i> detector <\i> <br>
  *  set origin of data to specify Huffman code table to be read in (parameter transient)
  * \li -runnumber <i> decimal number <\i> <br>
@@ -39,7 +39,7 @@ class AliHLTCOMPHuffmanData;
  *  set number of trailerwords of incoming data (ranging from 1 to 3)
  *
  * Optional arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -tablepath <i> path to Huffman code table <\i> <br>
  *  set path to read Huffman code table from root file, if no path is given, path is set to current path (parameter transient)
  *

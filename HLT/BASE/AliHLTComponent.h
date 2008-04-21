@@ -29,7 +29,7 @@
 #include <string>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
-//#include "AliHLTDefinitions.h"
+#include "AliHLTCommonCDBEntries.h"
 
 /* Matthias Dec 2006
  * The names have been changed for Aliroot's coding conventions sake

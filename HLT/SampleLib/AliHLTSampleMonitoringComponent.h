@@ -47,10 +47,10 @@ class TH1F;
  *     to the output stream
  *
  * <h2>Mandatory arguments:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * <h2>Optional arguments:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -push-histograms                              <br>
  *      push histograms idividually
  * \li -push-ttree (default)                         <br>
@@ -59,7 +59,7 @@ class TH1F;
  *      push histograms embedded in TObjArray
  *
  * <h2>Configuration:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * <h2>Default CDB entries:</h2>
  * The component has no default CDB entry.
