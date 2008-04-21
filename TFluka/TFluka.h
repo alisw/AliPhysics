@@ -191,7 +191,11 @@ class TFluka : public TVirtualMC {
   virtual Int_t    PDGFromId(Int_t pdg) const;
   virtual void     DefineParticles()
   {Warning("DefineParticles", "Not yet implemented !\n");}     
+  virtual Bool_t   SetDecayMode(Int_t /*pdg*/,
+                                Float_t /*bratio*/[6], Int_t /*mode*/[6][3])
+      {return kFALSE;}
   
+
   //
   // methods for step management
   // ------------------------------------------------
