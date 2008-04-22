@@ -34,7 +34,7 @@ ClassImp(AliGenMC)
 
 AliGenMC::AliGenMC()
     :AliGenerator(),
-     fParticles(0),
+     fParticles(),
      fParentSelect(8),
      fChildSelect(8),
      fCutOnChild(0),
@@ -69,7 +69,7 @@ AliGenMC::AliGenMC()
 
 AliGenMC::AliGenMC(Int_t npart)
     :AliGenerator(npart),
-     fParticles(0),
+     fParticles("TParticle", 1000),
      fParentSelect(8),
      fChildSelect(8),
      fCutOnChild(0),
@@ -367,10 +367,10 @@ void AliGenMC::Boost()
     //    printf("\n Boosting particles to lab frame %f %f %f", fDyBoost, beta, gamma);
     
     Int_t i;
-    Int_t np = fParticles->GetEntriesFast();
+    Int_t np = fParticles.GetEntriesFast();
     for (i = 0; i < np; i++) 
     {
-	TParticle* iparticle = (TParticle*) fParticles->At(i);
+	TParticle* iparticle = (TParticle*) fParticles.At(i);
 
 	Double_t e   = iparticle->Energy();
 	Double_t px  = iparticle->Px();

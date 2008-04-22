@@ -12,14 +12,13 @@
 // decay products and particle selection.
 // andreas.morsch@cern.ch
 
-class TClonesArray;
-class TParticle;
+#include<TClonesArray.h>
 #include <TArrayI.h>   
 #include <TString.h>
+class TParticle;
 
 class AliGeometry;
 class AliGenEventHeader;
-
 #include "AliDecayer.h"
 #include "AliGenerator.h"
 
@@ -71,35 +70,35 @@ class AliGenMC : public AliGenerator
     Int_t  CheckPDGCode(Int_t pdgcode) const;
 
  protected:
-    TClonesArray* fParticles;   //!Particle  List
-    TArrayI     fParentSelect;  //!Parent particles to be selected 
-    TArrayI     fChildSelect;   //!Decay products to be selected
-    Int_t       fCutOnChild;    // Cuts on decay products (children)  are enabled/disabled
-    Float_t     fChildPtMin;    // Children minimum pT
-    Float_t     fChildPtMax;    // Children maximum pT
-    Float_t     fChildPMin;     // Children minimum p
-    Float_t     fChildPMax;     // Children maximum p
-    Float_t     fChildPhiMin;   // Children minimum phi
-    Float_t     fChildPhiMax;   // Children maximum phi
-    Float_t     fChildThetaMin; // Children minimum theta
-    Float_t     fChildThetaMax; // Children maximum theta
-    Float_t     fChildYMin;     // Children minimum y
-    Float_t     fChildYMax;     // Children maximum y
-    Float_t     fXingAngleX;    // Crossing angle X
-    Float_t     fXingAngleY;    // Crossing angle Y    
-    Decay_t     fForceDecay;    // Decay channel forced
-    Float_t     fMaxLifeTime;   // Maximum lifetime for unstable particles
-    Int_t       fAProjectile;   // Projectile A
-    Int_t       fZProjectile;   // Projectile Z
-    Int_t       fATarget;       // Target A
-    Int_t       fZTarget;       // Target Z
-    TString     fProjectile;    // Projectile
-    TString     fTarget;        // Target
-    Double_t    fDyBoost;       // dy for boost into lab frame
-    AliGeometry * fGeometryAcceptance; // Geometry to which particles must be simulated
-    Int_t       fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
-    Int_t       fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
-    Int_t       fNprimaries;                 // Number of produced and stored particles
+    TClonesArray fParticles;     //!Particle  List
+    TArrayI      fParentSelect;  //!Parent particles to be selected 
+    TArrayI      fChildSelect;   //!Decay products to be selected
+    Int_t        fCutOnChild;    // Cuts on decay products (children)  are enabled/disabled
+    Float_t      fChildPtMin;    // Children minimum pT
+    Float_t      fChildPtMax;    // Children maximum pT
+    Float_t      fChildPMin;     // Children minimum p
+    Float_t      fChildPMax;     // Children maximum p
+    Float_t      fChildPhiMin;   // Children minimum phi
+    Float_t      fChildPhiMax;   // Children maximum phi
+    Float_t      fChildThetaMin; // Children minimum theta
+    Float_t      fChildThetaMax; // Children maximum theta
+    Float_t      fChildYMin;     // Children minimum y
+    Float_t      fChildYMax;     // Children maximum y
+    Float_t      fXingAngleX;    // Crossing angle X
+    Float_t      fXingAngleY;    // Crossing angle Y    
+    Decay_t      fForceDecay;    // Decay channel forced
+    Float_t      fMaxLifeTime;   // Maximum lifetime for unstable particles
+    Int_t        fAProjectile;   // Projectile A
+    Int_t        fZProjectile;   // Projectile Z
+    Int_t        fATarget;       // Target A
+    Int_t        fZTarget;       // Target Z
+    TString      fProjectile;    // Projectile
+    TString      fTarget;        // Target
+    Double_t     fDyBoost;       // dy for boost into lab frame
+    AliGeometry* fGeometryAcceptance; // Geometry to which particles must be simulated
+    Int_t        fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
+    Int_t        fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
+    Int_t        fNprimaries;                 // Number of produced and stored particles
     
  private:
     AliGenMC(const AliGenMC &MC);
