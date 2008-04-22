@@ -92,7 +92,7 @@ public:
    TList*         GetHitLists() const {return fHitLists ;}
    Int_t          GetNtrack() const;
    virtual  Int_t GetPrimary(Int_t track) const;
-   TObjArray     *Particles() const;
+   const TObjArray* Particles() const;
    TParticle     *Particle(Int_t i) const;
    virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg, 
 			   Float_t *pmom, Float_t *vpos, Float_t *polar, 
