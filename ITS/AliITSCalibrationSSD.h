@@ -57,6 +57,20 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     Float_t GetGainN(Int_t n) {return fGain->GetGainN(n); }
     void SetGain( AliITSGainSSD* gain) {fGain=gain;}
 
+    void   SetBad() {
+      fIsBad = kTRUE;
+      for(Int_t i=0;i<fgkChipsPerModule;i++) fIsChipBad[i]=kTRUE;
+    }
+    virtual Bool_t IsBad() const { return fIsBad; }
+    void   SetChipBad(Int_t nChip) {
+      fIsChipBad[nChip] = kTRUE;
+    }
+    virtual Bool_t IsChipBad(Int_t nChip) const {
+      return fIsChipBad[nChip];
+    }
+    Int_t ChipsPerModule() const{return fgkChipsPerModule;} // Number of chips/module
+    Int_t ChannelsPerChip() const{ return fgkChannelsPerChip;}//Number of channels/chip
+
     TArrayI GetBadPChannelsList() { return fBadChannels->GetBadPChannelsList(); } const
     TArrayI GetBadNChannelsList() { return fBadChannels->GetBadNChannelsList(); } const
     void SetBadChannels( AliITSBadChannelsSSD* badchannels) {fBadChannels=badchannels;}
@@ -127,6 +141,10 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     { ((AliITSresponseSSD*)fResponse)->SetZSThreshold(zsth);}
 
 protected:
+
+    static const Int_t fgkChipsPerModule  = 12;    // Number of chips/module
+    static const Int_t fgkChannelsPerChip = 128;   // Number of channels/chip
+
     static const Double_t fgkNoiseNDefault; // default for fNoiseN
     static const Double_t fgkNoisePDefault; // default for fNoiseP
     static const Int_t fgkNParDefault; // default for fNPar
@@ -145,6 +163,9 @@ protected:
     AliITSPedestalSSD *fPedestal;
     AliITSGainSSD *fGain;
     AliITSBadChannelsSSD *fBadChannels;
+
+    Bool_t   fIsBad;                         // module is dead or alive ?
+    Bool_t   fIsChipBad[fgkChipsPerModule];  // chip is dead or alive ?
 
     TArrayF fGainP;           // Gain for P side channels
     TArrayF fGainN;           // Gain for N side channels
@@ -167,6 +188,6 @@ protected:
     AliITSCalibrationSSD(const AliITSCalibrationSSD &source); // copy constructor
     AliITSCalibrationSSD& operator=(const AliITSCalibrationSSD &source); // ass. op.
 
-    ClassDef(AliITSCalibrationSSD,2) //Response class for SSD
+    ClassDef(AliITSCalibrationSSD,3) //Response class for SSD
 };
 #endif

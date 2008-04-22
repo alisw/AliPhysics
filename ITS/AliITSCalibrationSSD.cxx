@@ -43,6 +43,7 @@ fNoise(0),
 fPedestal(),
 fGain(0),
 fBadChannels(0),
+fIsBad(kFALSE),
 fGainP(0),
 fGainN(0),
 fNoisP(0),
@@ -58,6 +59,9 @@ fDeadPChannelsList(0){
     // Default Constructor
 
     SetNoiseParam(fgkNoisePDefault,fgkNoiseNDefault);
+    for(Int_t i=0;i<fgkChipsPerModule;i++){
+      fIsChipBad[i]=kFALSE;
+    }
 }
 //______________________________________________________________________
 AliITSCalibrationSSD::AliITSCalibrationSSD(const char *dataType):
@@ -71,6 +75,7 @@ fNoise(0),
 fPedestal(0),
 fGain(0),
 fBadChannels(0),
+fIsBad(kFALSE),
 fGainP(0),
 fGainN(0),
 fNoisP(0),
@@ -98,6 +103,9 @@ fDeadPChannelsList(0){
 	fDetPar[4]=0.02;
 	fDetPar[5]=0.03;
     } // end if
+    for(Int_t i=0;i<fgkChipsPerModule;i++){
+      fIsChipBad[i]=kFALSE;
+    }
 }
 //______________________________________________________________________
 AliITSCalibrationSSD::~AliITSCalibrationSSD(){
