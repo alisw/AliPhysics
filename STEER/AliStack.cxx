@@ -41,7 +41,7 @@ ClassImp(AliStack)
 
 //_______________________________________________________________________
 AliStack::AliStack():
-  fParticles(),
+  fParticles("TParticle", 1000),
   fParticleMap(),
   fParticleFileMap(0),
   fParticleBuffer(0),
