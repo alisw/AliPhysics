@@ -1013,7 +1013,7 @@ TParticle* AliMC::Particle(Int_t i) const
 }
 
 //_______________________________________________________________________
-TObjArray* AliMC::Particles() const {
+const TObjArray* AliMC::Particles() const {
   //
   // Returns pointer to Particles array
   //
