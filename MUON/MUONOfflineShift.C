@@ -50,8 +50,6 @@
 #include "AliMpConstants.h"
 #include "AliMpDEIterator.h"
 #include "AliRawReader.h"
-#include "AliRawReaderDate.h"
-#include "AliRawReaderRoot.h"
 #include <Riostream.h>
 #include <TFile.h>
 #include <TGrid.h>
@@ -68,7 +66,8 @@ Int_t DataMakerReading(const char* input,
                        const char* calibMode="",
                        Bool_t histogram=kFALSE,
                        Double_t xmin = 0.0,
-                       Double_t xmax = 4096.0)
+                       Double_t xmax = 4096.0,
+                       Bool_t fastDecoder=kFALSE)
 {
   /// Run over the data and calibrate it if so required (if cdbPath != "")
   /// calibMode can be :
@@ -78,17 +77,7 @@ Int_t DataMakerReading(const char* input,
   
   TString fileName(gSystem->ExpandPathName(input));
   
-  AliRawReader* rawReader(0x0);
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith(".root")) 
-  {
-    rawReader = new AliRawReaderRoot(fileName);
-  }
-  else if (!fileName.IsNull()) 
-  {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   if (!rawReader) return 0;
   
@@ -100,7 +89,7 @@ Int_t DataMakerReading(const char* input,
   }
   else  
   {
-    dm = new AliMUONTrackerRawDataMaker(rawReader,kTRUE);
+    dm = new AliMUONTrackerRawDataMaker(rawReader,histogram,fastDecoder);
   }
   
   AliMUONPainterRegistry::Instance()->Register(dm);
@@ -231,19 +220,23 @@ void MUONOfflineShift(const char* input="alien:///alice/data/2008/LHC08a/0000219
   AliCDBManager::Instance()->SetRun(0);
   AliMpCDB::LoadDDLStore();
   
+  TStopwatch timer0;
   TStopwatch timer1;
   TStopwatch timer2;
   TStopwatch timer3;
   TStopwatch timer4;
   
-  Int_t n1 = DataMakerReading(input,timer1);
-  
+  Int_t n0 = DataMakerReading(input,timer0,"","",kTRUE,0,0,kFALSE); // using old decoder
+
+  Int_t n1 = DataMakerReading(input,timer1,"","",kTRUE,0,0,kTRUE); // using new decoder
+
   Int_t n2 = DataMakerReading(input,timer2,ocdbPath,"NOGAIN",kTRUE);
 
   Int_t n3 = DataMakerReading(input,timer3,ocdbPath,"GAINCONSTANTCAPA",kTRUE);
 
   Int_t n4 = DataMakerReading(input,timer4,ocdbPath,"GAIN",kTRUE);
 
+  Print("DataMakerReading(HRAW)",timer0,n0);  
   Print("DataMakerReading(HRAW)",timer1,n1);  
   Print("DataMakerReading(HCALZ)",timer2,n2);
   Print("DataMakerReading(HCALG)",timer3,n3);
@@ -264,4 +257,6 @@ void MUONOfflineShift(const char* input="alien:///alice/data/2008/LHC08a/0000219
   
   f.Close();
   
+  AliCodeTimer::Instance()->Print();
+
 }

@@ -37,6 +37,8 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+#include "AliCodeTimer.h"
+
 // MUON includes
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrackerHP.h"
@@ -46,9 +48,7 @@
 #include "AliMUONDDLTracker.h"
 
 // RAW includes
-#include "AliRawReaderDate.h"
-#include "AliRawReaderFile.h"
-#include "AliRawReaderRoot.h"
+#include "AliRawReader.h"
 #include "AliRawReaderMemory.h"
 #include "AliRawDataHeader.h"
 
@@ -82,21 +82,7 @@ UInt_t LoadFiles(AliBufferInfo*& list, TString fileName = "./", Int_t maxEvent =
 {
 	/// Reads in the DDL files into memory buffers as a linked list.
 
-	AliRawReader* rawReader = NULL;
-  
-	// check extention to choose the rawdata file format
-	if (fileName.EndsWith("/"))
-	{
-		rawReader = new AliRawReaderFile(fileName); // DDL files
-	}
-	else if (fileName.EndsWith(".root"))
-	{
-		rawReader = new AliRawReaderRoot(fileName);
-	}
-	else if (!fileName.IsNull())
-	{
-		rawReader = new AliRawReaderDate(fileName); // DATE file
-	}
+	AliRawReader* rawReader = AliRawReader::Create(fileName.Data()); 
 
 	if (rawReader == NULL)
 	{
@@ -318,6 +304,62 @@ Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliDigitInfo* buff
 	return timer.RealTime();
 }
 
+void Loop(const char* filename, Bool_t newDecoder)
+{
+  AliCodeTimerAutoGeneral(Form("Loop %s",(newDecoder ? "NEW":"OLD")));
+  
+  AliRawReader* reader = AliRawReader::Create(filename);
+  
+  AliMUONVRawStreamTracker* stream;
+  
+  if ( newDecoder ) 
+  {
+    stream = new AliMUONRawStreamTrackerHP(reader);
+  }
+  else
+  {
+    stream = new AliMUONRawStreamTracker(reader);
+  }
+
+  Int_t busPatch;
+  UShort_t manuId, adc;
+  UChar_t manuChannel;
+  
+  while ( reader->NextEvent() ) 
+  {
+    stream->First();
+    
+    while ( stream->Next(busPatch,manuId,manuChannel,adc) ) 
+    {
+      adc *= 2;
+    }
+  }
+  
+  delete stream;
+  delete reader;
+}
+
+void MUONTimeRawStreamTrackerDumb(TString fileName)
+{
+  AliCodeTimer::Instance()->Reset();
+  
+  // first check we can open the stream
+  AliRawReader* reader = AliRawReader::Create(fileName.Data());
+  if (!reader)
+  {
+    cerr << "Cannot create reader from " << fileName.Data() << endl;
+    return;
+  }
+  delete reader;
+  
+  // now start the timing per se
+  
+  Loop(fileName,kFALSE);
+  
+  Loop(fileName,kTRUE);
+  
+  AliCodeTimer::Instance()->Print();
+}
 
 void MUONTimeRawStreamTracker(TString fileName = "./", Int_t maxEvent = 1000)
 {

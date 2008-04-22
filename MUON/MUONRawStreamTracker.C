@@ -44,9 +44,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 // RAW includes
-#include "AliRawReaderDate.h"
-#include "AliRawReaderFile.h"
-#include "AliRawReaderRoot.h"
+#include "AliRawReader.h"
 
 // MUON includes
 #include "AliMUONRawStreamTracker.h"
@@ -69,16 +67,7 @@ void MUONRawStreamTrackerExpert(TString fileName = "./", Int_t maxEvent = 1000,
   TStopwatch timer;
   timer.Start(kTRUE);
   
-  AliRawReader* rawReader = 0x0;
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName); // DDL files
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
   AliMUONRawStreamTracker* rawStream  = new AliMUONRawStreamTracker(rawReader);    
@@ -174,16 +163,7 @@ void MUONRawStreamTrackerHPExpert(TString fileName = "./", Int_t maxEvent = 1000
   TStopwatch timer;
   timer.Start(kTRUE);
   
-  AliRawReader* rawReader = 0x0;
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName); // DDL files
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
@@ -265,16 +245,7 @@ void MUONRawStreamTrackerHPExpert2(TString fileName = "./", Int_t maxEvent = 100
   TStopwatch timer;
   timer.Start(kTRUE);
   
-  AliRawReader* rawReader = 0x0;
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName); // DDL files
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
@@ -356,16 +327,7 @@ void MUONRawStreamTrackerHPExpert3(TString fileName = "./", Int_t maxEvent = 100
   TStopwatch timer;
   timer.Start(kTRUE);
   
-  AliRawReader* rawReader = 0x0;
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName); // DDL files
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
@@ -450,16 +412,7 @@ void MUONRawStreamTrackerSimple(TString fileName = "./", Int_t maxEvent = 1000)
   TStopwatch timer;
   timer.Start(kTRUE);
   
-  AliRawReader* rawReader = 0x0;
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName); // DDL files
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
   AliMUONRawStreamTracker* rawStream  = new AliMUONRawStreamTracker(rawReader);    
@@ -500,16 +453,7 @@ void MUONRawStreamTrackerHPSimple(TString fileName = "./", Int_t maxEvent = 1000
   TStopwatch timer;
   timer.Start(kTRUE);
   
-  AliRawReader* rawReader = 0x0;
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName); // DDL files
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
@@ -550,16 +494,7 @@ void MUONRawStreamTrackerHPSimple2(TString fileName = "./", Int_t maxEvent = 100
   TStopwatch timer;
   timer.Start(kTRUE);
   
-  AliRawReader* rawReader = 0x0;
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName); // DDL files
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
   
   // raw stream
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    

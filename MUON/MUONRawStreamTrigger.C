@@ -36,9 +36,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 // RAW includes
-#include "AliRawReaderDate.h"
-#include "AliRawReaderFile.h"
-#include "AliRawReaderRoot.h"
+#include "AliRawReader.h"
 
 // MUON includes
 #include "AliMUONRawStreamTrigger.h"
@@ -61,15 +59,8 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
    TStopwatch timer;
    timer.Start(kTRUE);
 
-   AliRawReader* rawReader = 0x0;
+   AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
 
-   if (fileName.EndsWith("/")) {
-     rawReader = new AliRawReaderFile(fileName);// DDL files
-   } else if (fileName.EndsWith(".root")) {
-     rawReader = new AliRawReaderRoot(fileName);
-   } 
-    
-   
    // Load mapping
      if ( ! AliMpCDB::LoadDDLStore() ) {
        printf("Could not access mapping from OCDB !\n");
