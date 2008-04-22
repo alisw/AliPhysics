@@ -91,7 +91,7 @@ TString AliStructFuncType::PDFsetName(StrucFunc_t pdf)
 	"cteq61.LHpdf",
 	"cteq6m.LHpdf",
 	"cteq6l.LHpdf", 
-	"cetq6ll.LHpdf"
+	"cteq6ll.LHpdf"
     };
     return pdfsetName[pdf];
 }
