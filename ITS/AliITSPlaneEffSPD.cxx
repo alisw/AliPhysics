@@ -510,7 +510,7 @@ UInt_t AliITSPlaneEffSPD::GetColFromLocZ(Float_t zloc) const {
   Int_t ix,iz;
   if(spd.LocalToDet(0,zloc,ix,iz)) col+=iz;
   else {
-    AliError("GetColFromLocZ: cannot compute column number from local z");
+    AliDebug(1,Form("cannot compute column number from local z=%f",zloc));
     col=99999;}
   return col;
 /*

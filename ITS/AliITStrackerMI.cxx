@@ -217,8 +217,8 @@ fPlaneEff(0) {
         break; // only one layer type to skip at once
       }
     }
-    if(!fPlaneEff->ReadFromCDB()) 
-      {AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
+    if(AliITSReconstructor::GetRecoParam()->GetReadPlaneEffFromOCDB())
+       if(!fPlaneEff->ReadFromCDB()) {AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
     if(AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) {
       fPlaneEff->SetCreateHistos(kTRUE); 
       //fPlaneEff->ReadHistosFromFile();

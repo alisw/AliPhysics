@@ -129,6 +129,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
       { fComputePlaneEff=eff; fHistoPlaneEff=his; return; }
   Bool_t GetComputePlaneEff() const { return fComputePlaneEff; }
   Bool_t GetHistoPlaneEff() const { return fHistoPlaneEff; }
+  void   SetReadPlaneEffFrom0CDB(Bool_t read=kTRUE) { fReadPlaneEffFromOCDB=read; }
+  Bool_t GetReadPlaneEffFromOCDB() const { return fReadPlaneEffFromOCDB; }
   //
   void   SetExtendedEtaAcceptance(Bool_t ext=kTRUE) { fExtendedEtaAcceptance=ext; return; }
   Bool_t GetExtendedEtaAcceptance() const { return fExtendedEtaAcceptance; }
@@ -285,6 +287,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
   Bool_t fComputePlaneEff;  // flag to enable computation of PlaneEfficiency
   Bool_t fHistoPlaneEff;  // flag to enable auxiliary PlaneEff histograms (e.g. residual distributions)
+  Bool_t fReadPlaneEffFromOCDB; // enable initial reading of Plane Eff statistics from OCDB
+                               // The analized events would be used to increase the statistics
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
   Bool_t fUseDeadZonesFromOCDB; // enable using OCDB info on dead modules.. (MI)
   Bool_t fAllowProlongationWithEmptyRoad; // allow to prolong even if road is empty (MI)
