@@ -217,6 +217,18 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
     fTrackReco->EventReconstructTrigger(*fTriggerCircuit,*fTriggerStore,*(TriggerTrackStore()));
   }
   
+  if ( AliMUONReconstructor::GetRecoParam()->BypassSt45() && TriggerTrackStore()->GetSize() > 5 ) 
+  {
+    // Hard cut to reject shower events
+    
+    AliCodeTimerAuto("MUON Shower events");
+
+    AliWarning(Form("Probably got a shower event (%d trigger tracks). Will not reconstruct tracks.",
+                    TriggerTrackStore()->GetSize()));
+    
+    return 0;
+  }
+       
   // Make tracker tracks
   AliMUONVTrackStore* trackStore = new AliMUONTrackStoreV1;
   fTrackReco->EventReconstruct(*(ClusterStore()),*trackStore);
