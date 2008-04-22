@@ -1,5 +1,5 @@
 #! /bin/sh
 
-touch libPWG2femtoscopyUser.pkg
+touch libPWG2femtoscopy.pkg
 
-make libPWG2femtoscopyUser.so
+make libPWG2femtoscopy.so
