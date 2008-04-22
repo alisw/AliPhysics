@@ -71,7 +71,6 @@ AliModule::AliModule():
   fHistograms(0),
   fNodes(0),
   fEnable(1),
-  fTrackReferences(0),
   fMaxIterTrackRef(0),
   fCurrentIterTrackRef(0),
   fRunLoader(0)
@@ -94,7 +93,6 @@ AliModule::AliModule(const char* name,const char *title):
   fHistograms(new TList()),
   fNodes(new TList()),
   fEnable(1),
-  fTrackReferences(new TClonesArray("AliTrackReference", 100)),
   fMaxIterTrackRef(0),
   fCurrentIterTrackRef(0),
   fRunLoader(0)
@@ -147,12 +145,6 @@ AliModule::~AliModule()
     fHistograms->Clear();
     delete fHistograms;
     fHistograms = 0;
-  }
-  // Delete track references
-  if (fTrackReferences) {
-    fTrackReferences->Delete();
-    delete fTrackReferences;
-    fTrackReferences     = 0;
   }
   // Delete TArray objects
   delete fIdtmed;
@@ -680,50 +672,6 @@ AliTrackReference*  AliModule::AddTrackReference(Int_t label, Int_t id){
   // add a trackrefernce to the list
     return (gAlice->GetMCApp()->AddTrackReference(label, id));
 }
-
- //_______________________________________________________________________
-AliTrackReference* AliModule::FirstTrackReference(Int_t track)
-{
-    //
-    // Initialise the hit iterator
-    // Return the address of the first hit for track
-    // If track>=0 the track is read from disk
-    // while if track0 the first hit of the current
-    // track is returned
-    //
-    if(track>=0)
-    {
-	if (fRunLoader == 0x0)
-	    AliFatal("AliRunLoader not initialized. Can not proceed");
-	fRunLoader->GetAliRun()->GetMCApp()->ResetTrackReferences();
-	fRunLoader->TreeTR()->GetEvent(track);
-    }
-    //
-    fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
-    fCurrentIterTrackRef = 0;
-    if(fMaxIterTrackRef) return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(0));
-    else            return 0;
-}
-
- //_______________________________________________________________________
-AliTrackReference* AliModule::NextTrackReference()
-{
-    //
-    // Return the next hit for the current track
-    //
-    if(fMaxIterTrackRef) {
-	if(++fCurrentIterTrackRef < fMaxIterTrackRef)
-	    return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(fCurrentIterTrackRef));
-	else
-	    return 0;
-    } else {
-	AliWarning("Iterator called without calling FistTrackReference before");
-	return 0;
-    }
-}
-
-
-
 
 //_____________________________________________________________________________
 TTree* AliModule::TreeTR()

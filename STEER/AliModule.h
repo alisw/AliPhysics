@@ -14,11 +14,11 @@
 
 #include <Riostream.h>
 #include <TNamed.h>
+#include <TClonesArray.h>
 
 #include "AliLog.h"
 #include "AliTriggerDetector.h"
 
-class TClonesArray;
 class TBrowser;
 class TArrayI;
 class TFile;
@@ -43,8 +43,8 @@ public:
   virtual ~AliModule();
 
   // Inline functions
-  virtual  int           GetNdigits() const {return 0;}
-  virtual  int           GetNhits()  const {return 0;}
+  virtual  Int_t         GetNdigits() const {return 0;}
+  virtual  Int_t         GetNhits()  const {return 0;}
   virtual  TArrayI      *GetIdtmed()   const {return fIdtmed;}
   virtual  TList        *Histograms() const {return fHistograms;}
   virtual  TList        *Nodes()  const {return fNodes;}
@@ -141,12 +141,8 @@ public:
   virtual void        ReadEuclid(const char *filnam, char *topvol);
   virtual void        ReadEuclidMedia(const char *filnam);
 // Track reference related
-  TClonesArray *TrackReferences()   const {return fTrackReferences;}
   virtual  AliTrackReference * AddTrackReference(Int_t label, Int_t id = -999);
-  virtual  AliTrackReference * FirstTrackReference(Int_t track);
-  virtual  AliTrackReference * NextTrackReference();
   TTree* TreeTR();  //shorcut method for accessing treeTR from folder
-
   void                SetRunLoader(AliRunLoader* runLoader) 
     {fRunLoader = runLoader;}
   
@@ -172,7 +168,6 @@ protected:
   TList        *fHistograms;  //List of histograms
   TList        *fNodes;       //List of geometry nodes
   Bool_t        fEnable;      //StepManager enabling flag
-  TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
   Int_t         fMaxIterTrackRef;     //!for track refernce iterator routines
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
 

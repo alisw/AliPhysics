@@ -2239,14 +2239,6 @@ void AliTPC::SetTreeAddress2()
 //     else
 //       AliDebug(1,"fHitType&2 Failed (can not find branch)");
 //   }
-  //set address to TREETR
-  
-  TTree *treeTR = TreeTR();
-  if (treeTR && fTrackReferences) {
-    branch = treeTR->GetBranch(GetName());
-    if (branch) branch->SetAddress(&fTrackReferences);
-  }
-
 }
 
 void AliTPC::FinishPrimary()
