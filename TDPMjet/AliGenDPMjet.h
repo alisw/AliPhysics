@@ -77,7 +77,6 @@ class AliGenDPMjet : public AliGenMC
     Int_t 	  fSpecn;	   // Num. of spectator neutrons
     Int_t 	  fSpecp;	   // Num. of spectator protons
     TDPMjet      *fDPMjet;         // DPMjet
-    TClonesArray *fParticles;      // Particle List
     Int_t         fNoGammas;       // Don't write gammas if flag "on"
     Int_t         fLHC;            // Assume LHC as lab frame
     Int_t         fPi0Decay;       // Flag for pi0 decays
