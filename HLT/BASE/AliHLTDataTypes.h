@@ -782,7 +782,7 @@ inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponen
 }
 
 /** Comparison operator for HLT component data types
- * invers of @ref operator==( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
+ * Invers of operator==
  * @ingroup alihlt_component_datatypes
  */
 inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )

@@ -3,20 +3,15 @@
 
 #ifndef ALIHLTTPCGLOBALMERGERCOMPONENT_H
 #define ALIHLTTPCGLOBALMERGERCOMPONENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCGlobalMergerComponent.h
     @author Timm Steinbeck, Matthias Richter
     @date   
     @brief  HLT TPC global merger component.
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
 

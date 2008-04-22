@@ -2,22 +2,15 @@
 
 #ifndef AliHLTTPC_KRYPTONCLUSTERFINDER
 #define AliHLTTPC_KRYPTONCLUSTERFINDER
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCKryptonClusterFinder.h
     @author Kenneth Aamodt kenneth.aamodt@student.uib.no
     @date   
     @brief  Krypton Cluster Finder for the TPC
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 
 //#include "AliHLTLogging.h"
 //#include "AliHLTTPCPad.h"
@@ -29,6 +22,11 @@
 class AliHLTTPCSpacePointData;
 class AliHLTTPCDigitReader;
 
+/**
+ * @class AliHLTTPCKryptonClusterFinder
+ *
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCKryptonClusterFinder : public AliHLTTPCClusterFinder {
 
  public:

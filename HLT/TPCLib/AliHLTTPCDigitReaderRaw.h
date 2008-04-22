@@ -4,8 +4,9 @@
 #ifndef ALIHLTTPCDIGITREADERRAW_H
 #define ALIHLTTPCDIGITREADERRAW_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCDigitReaderRaw.h
     @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
@@ -31,6 +32,9 @@
  *  - 3: As 1, but RCU trailer is 3 32 bit words.
  *  - 4: As 0, but RCU trailer is 2 32 bit words.
  *  - 5: As 1, but RCU trailer is 2 32 bit words.
+ *
+ * @note This class is deprecated!
+ *
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCDigitReaderRaw : public AliHLTTPCDigitReader  {

@@ -2,8 +2,9 @@
 // Original: AliHLTMerger.h,v 1.8 2004/06/11 16:06:33 loizides 
 #ifndef ALIHLTTPCMERGER_H
 #define ALIHLTTPCMERGER_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCMerger.h
     @author Uli Frankenfeld, maintained by Matthias Richter
@@ -23,7 +24,9 @@ class AliHLTTPCTrackArray;
 /** 
  * @class AliHLTTPCMerger
  * The HLTTPC merger base class
-*/
+ *
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCMerger {
  public:
   AliHLTTPCMerger();

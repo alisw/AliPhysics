@@ -3,8 +3,9 @@
 #ifndef ALIHLTTPCTRACKMERGER_H
 #define ALIHLTTPCTRACKMERGER_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCTrackMerger.h
     @author Uli Frankenfeld, maintained by Matthias Richter
@@ -26,6 +27,8 @@ class AliHLTTPCMerger;
  *
  *   This class is responsible for the merging of the HLT tracks
  *   between TPC sectors and readout patches
+ *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCTrackMerger : public AliHLTTPCMerger {
 

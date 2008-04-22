@@ -1,6 +1,10 @@
 // @(#) $Id$
 // Original: AliHLTTransform.h,v 1.37 2005/06/14 10:55:21 cvetan 
 
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
 #ifndef ALIHLTTPCTRANSFORM_H
 #define ALIHLTTPCTRANSFORM_H
 

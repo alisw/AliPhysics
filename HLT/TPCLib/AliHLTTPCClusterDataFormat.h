@@ -1,12 +1,19 @@
+// $Id$
 #ifndef _ALIHLTTPCCLUSTERFORMAT_H_
 #define _ALIHLTTPCCLUSTERFORMAT_H_
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
 
 #include "AliHLTTPCSpacePointData.h"
 
-/* AliHLTTPCClusterData
+/**
+ * @struct AliHLTTPCClusterData
+ * Primitive data exchange structure for TPC clusters.
+ * The data format contains one 32bit count member and the array
+ * of spacepoint data structures.
+ *
+ * @ingroup alihlt_tpc_datastructs
  */
 struct AliHLTTPCClusterData
     {

@@ -3,21 +3,15 @@
 #ifndef ALIHLTTPCKRYPTONCLUSTERFINDERCOMPONENT_H
 #define ALIHLTTPCKRYPTONCLUSTERFINDERCOMPONENT_H
 
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCKryptonClusterFinderComponent.h
     @author Kenneth Aamodt, Kalliopi Kanaki
     @date   
     @brief  The TPC krypton cluster finder component.
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
 

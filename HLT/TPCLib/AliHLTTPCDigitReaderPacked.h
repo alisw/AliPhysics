@@ -27,6 +27,7 @@ class AliTPCRawStream;
  * Includes reordering of the pads by default, sorting (and time and
  * memory consuming intermediate storing of the data) can be disabled
  * by @ref SetUnsorted() with argument <b>kTRUE</b>.
+ *
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCDigitReaderPacked : public AliHLTTPCDigitReader{

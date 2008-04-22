@@ -14,8 +14,8 @@
 */
 
 #include <vector>
+#include "AliHLTTPCConfMapPoint.h"
 
-class AliHLTTPCConfMapPoint;
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCVertex;
 class AliHLTTPCTrackArray;
@@ -25,6 +25,8 @@ class AliHLTTPCSpacePointData;
 /** 
  * @class AliHLTTPCConfMapper
  * Conformal mapping base class.
+ *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCConfMapper {
 

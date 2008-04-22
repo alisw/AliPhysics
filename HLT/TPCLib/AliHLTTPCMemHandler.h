@@ -2,9 +2,9 @@
 // Original: AliHLTMemHandler.h,v 1.30 2004/10/06 08:51:20 cvetan 
 #ifndef ALIHLTTPC_MEMHANDLER_H
 #define ALIHLTTPC_MEMHANDLER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCMemHandler.h
     @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
@@ -12,24 +12,7 @@
     @date   
     @brief  input interface base class for the TPC tracking code before
             migration to the HLT component framework
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
-//_____________________________________________________________
-// AliHLTTPCMemHandler
-//
-// The HLT Binary File handler 
-//
-//  This class does all the memory I/O handling of HLT binary files.
-//  
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, 
-//         Anders Vestbo <mailto:vestbo$fi.uib.no>, 
-//         Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
-// *-- Copyright &copy ALICE HLT Group 
+*/
 
 class AliHLTTPCDigitData;
 class AliHLTTPCSpacePointData;
@@ -43,6 +26,66 @@ class AliRunLoader;
 class AliRawEvent;
 #include "AliTPCRawStream.h"
 
+/**
+ * @class AliHLTTPCMemHandler
+ * The HLT Binary File handler 
+ *
+ * This class is the old memory I/O handler of HLT binary files.
+ * Some functionality is still used in the current code, mainly
+ * conversion of TPC digits into the format understandable by the
+ * components.
+ * <pre>
+ *  Examples:
+ *  ---------
+ *
+ *  1) Reading a binary file:
+ *  
+ *  AliHLTTPCMemHandler file;
+ *  file.SetBinaryInput(filename);
+ *  file.Init(slice,patch);
+ *
+ *  UInt_t nrowss;
+ *  AliHLTTPCDigitRowData *data = file.CompBinary2Memory(nrows);
+ *  
+ *  for(int i=0; i<nrows; i++) 
+ *    {
+ *    
+ *    AliHLTTPCDigitData *dataPt = (AliHLTTPCDigitData*)data->fDigitData;
+ *    for(int j=0; j<data->fNDigit; j++) 
+ *      {
+ *        pad = dataPt[j].fPad;
+ *        time = dataPt[j].fTime;
+ *        charge = dataPt[j].fCharge;
+ *      }
+ *     
+ *    file.UpdateRowPointer(data);
+ *  
+ *    }
+ *  file.CloseBinaryInput();
+ *  ________________________
+ *  
+ *  2) Writing a binary file:
+ *  
+ *  //First of all you need to store the data in memory,
+ *  //and have a pointer to it of type AliHLTTPCDigitRowData.
+ *  //E.g. if you just want to write the data you read in example 1)
+ *  //into a new file, you can do the following:
+ *  
+ *  AliHLTTPCMemHandler newfile;
+ *  newfile.Init(slice,patch);
+ *  newfile.SetBinaryOutput(newfilename);
+ *  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliHLTTPCDigitRowData*)data);
+ *  newfile.CloseBinaryOutput();
+ *
+ *
+ * Compressed file format:
+ * -----------------------
+ *
+ * The data is RLE encoded and currently using _10_ bit range for the ADC-values.
+ * </pre>
+ *  
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCMemHandler { 
 
  public:

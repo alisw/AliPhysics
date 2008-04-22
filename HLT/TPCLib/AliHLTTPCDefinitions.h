@@ -13,6 +13,8 @@
 /**
  * @class AliHLTTPCDefinitions
  * Data type definitions for the libAliHLTTPC library.
+ * 
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCDefinitions
 {

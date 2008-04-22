@@ -1,11 +1,18 @@
 // @(#) $Id$
 // Original: AliHLTDataCompressorHelper.h,v 1.4 2004/06/15 10:26:57 hristov Exp $
 
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
 #ifndef AliHLTTPC_DataCompressorHelper
 #define AliHLTTPC_DataCompressorHelper
 
-#include "AliHLTTPCRootTypes.h"
-
+/**
+ * @class AliHLTTPCDataCompressorHelper
+ *
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCDataCompressorHelper {
   
  public:

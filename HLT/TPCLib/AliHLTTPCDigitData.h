@@ -16,7 +16,7 @@
  *
  * The exact meaning of the 3 track ID fields is currently not known to me.
  * (Matthias 18.09.2007) 
- * @ingroup alihlt-tpc-datastructs
+ * @ingroup alihlt_tpc_datastructs
  */
 struct AliHLTTPCDigitData
 {
@@ -31,7 +31,7 @@ typedef struct AliHLTTPCDigitData AliHLTTPCDigitData;
  * @struct AliHLTTPCDigitRowData
  * A container for TPC raw data organized in rows.
  * This is the 3rd coordinate which is missing in @ref AliHLTTPCDigitData.
- * @ingroup alihlt-tpc-datastructs
+ * @ingroup alihlt_tpc_datastructs
  */
 struct AliHLTTPCDigitRowData
 {
@@ -53,7 +53,7 @@ typedef struct AliHLTTPCDigitRowData AliHLTTPCDigitRowData;
  *
  * The structure is not used for data exchange between components,
  * it's here for legacy reasons.
- * @ingroup alihlt-tpc-datastructs
+ * @ingroup alihlt_tpc_datastructs
  */
 struct AliHLTTPCRandomDigitData{
   UChar_t fRow;
@@ -67,7 +67,7 @@ typedef struct AliHLTTPCRandomDigitData AliHLTTPCRandomDigitData;
  * @struct AliHLTTPCPackedRawData
  * Container structure for TPC data.
  * It contains an array of TPC data objects, organized by pad rows.
- * @ingroup alihlt-tpc-datastructs
+ * @ingroup alihlt_tpc_datastructs
  */
 struct AliHLTTPCUnpackedRawData
 {

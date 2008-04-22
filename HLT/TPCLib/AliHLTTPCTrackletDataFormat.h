@@ -1,15 +1,19 @@
 #ifndef _ALIHLTTPCTRACKLETFORMAT_HPP_
 #define _ALIHLTTPCTRACKLETFORMAT_HPP_
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* AliHLTTPCTrackletData
- */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 #include "AliHLTDataTypes.h"
 #include "AliHLTTPCTrackSegmentData.h"
 
+/**
+ * @struct AliHLTTPCTrackletData
+ * Primitive data exchange structure for TPC tracks.
+ *
+ * @ingroup alihlt_tpc_datastructs
+ */
 struct AliHLTTPCTrackletData
     {
 	AliHLTUInt32_t fTrackletCnt;

@@ -4,8 +4,9 @@
 #ifndef ALIHLTTPCCONFMAPTRACK_H
 #define ALIHLTTPCCONFMAPTRACK_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCConfMapTrack.h
     @author Anders Vestbo, maintained by Matthias Richter
@@ -13,11 +14,7 @@
     @brief  Track class for conformal mapper
 */
 
-#include <string.h>
-
 #include "AliHLTTPCTrack.h"
-
-#include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCConfMapPoint.h"
 
 class AliHLTTPCVertex;
@@ -26,6 +23,7 @@ class AliHLTTPCVertex;
  * @class AliHLTTPCConfMapTrack
  * Track class for conformal mapper
  *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCConfMapTrack :public AliHLTTPCTrack {
 

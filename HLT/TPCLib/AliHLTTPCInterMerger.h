@@ -4,8 +4,9 @@
 #ifndef ALIHLTTPCINTERMERGER_H
 #define ALIHLTTPCINTERMERGER_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCInterMerger.h
     @author Uli Frankenfeld, maintained by Matthias Richter
@@ -22,6 +23,8 @@
 /** 
  * @class AliHLTTPCInterMerger
  * The HLTTPC track segment merger
+ *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCInterMerger : public AliHLTTPCMerger {
 

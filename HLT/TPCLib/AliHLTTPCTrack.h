@@ -5,8 +5,9 @@
 #ifndef ALIHLTTPCTRACK_H
 #define ALIHLTTPCTRACK_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCTrack.h
     @author Anders Vestbo, Uli Frankenfeld, maintained by Matthias Richter
@@ -26,6 +27,8 @@ class AliHLTTPCSpacePointData;
  * It was originally separated from the offline TPC track class, but in
  * order to adjust the output format to the offline ESD, AliHLTTPCTrack
  * now inherits from AliHLTtrack.
+ *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCTrack : public AliTPCtrack {
 

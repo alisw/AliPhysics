@@ -2,21 +2,16 @@
 
 #ifndef ALIHLTTPCESDWRITERCOMPONENT_H
 #define ALIHLTTPCESDWRITERCOMPONENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCEsdWriterComponent.h
     @author Matthias Richter
     @date   
     @brief  Writer component to store tracks of the HLT TPC conformal
             mapping tracker in the AliESD format
-
-                                                                          */
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+*/
 
 #include "AliHLTRootFileWriterComponent.h"
 #include "AliHLTProcessor.h"

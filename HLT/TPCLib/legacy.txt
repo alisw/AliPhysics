@@ -11,3 +11,5 @@ removed from the repository:
 - AliHLTTPCDDLDataFileHandler.cxx/.h removed 17.10.2007
   the conversion class to old HLT binary formats, deprecated because of completely
   new framework
+- AliHLTTPCBenchmark.h/.cxx removed 22.04.2008
+  old benchmark class

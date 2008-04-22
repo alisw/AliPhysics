@@ -1,12 +1,21 @@
 // @(#) $Id$
 // Original: AliHLTModelTrack.h,v 1.13 2004/06/15 10:26:57 hristov 
 
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
 #ifndef AliHLTTPCModel_Track
 #define AliHLTTPCModel_Track
 
 #include "AliHLTTPCTrack.h"
 #include "AliHLTTPCModels.h"
 
+/**
+ * @class AliHLTTPCModelTrack
+ *
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCModelTrack : public AliHLTTPCTrack {
 
  public:

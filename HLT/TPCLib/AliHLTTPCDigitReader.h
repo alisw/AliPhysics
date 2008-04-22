@@ -4,21 +4,15 @@
 #ifndef ALIHLTTPCDIGITREADER_H
 #define ALIHLTTPCDIGITREADER_H
 
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCDigitReader.h
     @author Timm Steinbeck, Jochen Thaeder, Matthias Richter, Kenneth Aamodt
     @date   
     @brief  An abstract reader class for TPC data.
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTLogging.h"
 #include "TObject.h"

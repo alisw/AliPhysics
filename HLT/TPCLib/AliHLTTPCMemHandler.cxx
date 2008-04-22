@@ -1,22 +1,22 @@
 // @(#) $Id$
 // Original: AliHLTMemHandler.cxx,v 1.52 2005/06/14 10:55:21 cvetan 
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: U. Frankenfeld, A. Vestbo, C. Loizides                *
- *                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: U. Frankenfeld, A. Vestbo, C. Loizides                *
+//*                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCMemHandler.cxx
     @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
@@ -24,71 +24,8 @@
     @date   
     @brief  input interface base class for the TPC tracking code before
             migration to the HLT component framework
+*/
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
-/** \class AliHLTTPCMemHandler 
-<pre>
-//_____________________________________________________________
-// AliHLTTPCMemHandler
-//
-// The HLT Binary File handler 
-//
-//  This class does all the memory I/O handling of HLT binary files.
-//  
-//  Examples:
-//  ---------
-//
-//  1) Reading a binary file:
-//  
-//  AliHLTTPCMemHandler file;
-//  file.SetBinaryInput(filename);
-//  file.Init(slice,patch);
-//
-//  UInt_t nrowss;
-//  AliHLTTPCDigitRowData *data = file.CompBinary2Memory(nrows);
-//  
-//  for(int i=0; i<nrows; i++) 
-//    {
-//    
-//    AliHLTTPCDigitData *dataPt = (AliHLTTPCDigitData*)data->fDigitData;
-//    for(int j=0; j<data->fNDigit; j++) 
-//      {
-//        pad = dataPt[j].fPad;
-//        time = dataPt[j].fTime;
-//        charge = dataPt[j].fCharge;
-//      }
-//     
-//    file.UpdateRowPointer(data);
-//  
-//    }
-//  file.CloseBinaryInput();
-//  ________________________
-//  
-//  2) Writing a binary file:
-//  
-//  //First of all you need to store the data in memory,
-//  //and have a pointer to it of type AliHLTTPCDigitRowData.
-//  //E.g. if you just want to write the data you read in example 1)
-//  //into a new file, you can do the following:
-//  
-//  AliHLTTPCMemHandler newfile;
-//  newfile.Init(slice,patch);
-//  newfile.SetBinaryOutput(newfilename);
-//  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliHLTTPCDigitRowData*)data);
-//  newfile.CloseBinaryOutput();
-//
-//
-// Compressed file format:
-// -----------------------
-//
-// The data is RLE encoded and currently using _10_ bit range for the ADC-values.
-</pre>
-*/  
 
 #include <cassert>
 #include "AliHLTTPCRootTypes.h"

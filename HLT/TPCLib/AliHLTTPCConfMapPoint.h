@@ -4,8 +4,9 @@
 #ifndef ALIHLTTPCCONFMAPPOINT_H
 #define ALIHLTTPCCONFMAPPOINT_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCConfMapPoint.h
     @author Anders Vestbo, maintained by Matthias Richter
@@ -23,6 +24,7 @@ class AliHLTTPCVertex;
  * @class AliHLTTPCConfMapPoint
  * Hit class for conformal mapper
  *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCConfMapPoint {
 

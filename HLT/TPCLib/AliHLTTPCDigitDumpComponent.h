@@ -3,21 +3,15 @@
 
 #ifndef ALIHLTTPCDIGITDUMPCOMPONENT_H
 #define ALIHLTTPCDIGITDUMPCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCDigitDumpComponent.h
     @author Matthias Richter
     @date   
     @brief  Special file writer converting TPC digit input to ASCII.
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #include "AliHLTFileWriter.h"
 

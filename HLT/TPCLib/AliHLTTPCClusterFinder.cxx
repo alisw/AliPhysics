@@ -1,21 +1,23 @@
 // @(#) $Id$
 // Original: AliHLTClustFinderNew.cxx,v 1.29 2005/06/14 10:55:21 cvetan Exp 
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Kenneth Aamodt, Kalliopi Kanaki                       *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Anders Vestbo, Constantin Loizides                    *
+//* Developers:      Kenneth Aamodt <kenneth.aamodt@student.uib.no>        *
+//*                  Kalliopi Kanaki                                       *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCClusterFinder.cxx
     @author Kenneth Aamodt, Kalliopi Kanaki
@@ -37,81 +39,6 @@
 #if __GNUC__ >= 3
 using namespace std;
 #endif
-
-/** \class AliHLTTPCClusterFinder
-//
-// The current cluster finder for HLT
-// (Based on STAR L3)
-//
-//Basically we have two versions for the cluster finder now.
-//The default version, reads the data pad by pad, and find the
-//clusters as it reads the data. The other version has now been
-//developed to cope with unsorted data. New methods for the unsorted
-//version can  be found at the end of the default one i the source file.
-//Currently the new version is only build to manage zero-suppressed data.
-//More functionality will be added later.
-//
-// The cluster finder is initialized with the Init function, 
-// providing the slice and patch information to work on. 
-//
-// The input is a provided by the AliHLTTPCDigitReader class,
-// using the init() funktion, and the next() funktion in order 
-// to get the next bin. Either packed or unpacked data can be
-// processed, dependent if one uses AliHLTTPCDigitReaderPacked 
-// class or AliHLTTPCDigitReaderUnpacked class in the 
-// Clusterfinder Component.
-// The resulting space points will be in the
-// array given by the SetOutputArray function.
-// 
-// There are several setters which control the behaviour:
-//
-// - SetXYError(Float_t):   set fixed error in XY direction
-// - SetZError(Float_t):    set fixed error in Z  direction
-//                            (used if errors are not calculated) 
-// - SetDeconv(Bool_t):     switch on/off deconvolution
-// - SetThreshold(UInt_t):  set charge threshold for cluster
-// - SetMatchWidth(UInt_t): set the match distance in 
-//                            time for sequences to be merged 
-// - SetSTDOutput(Bool_t):  switch on/off output about found clusters   
-// - SetCalcErr(Bool_t):    switch on/off calculation of 
-//                          space point errors (or widths in raw system)
-// - SetRawSP(Bool_t):      switch on/off convertion to raw system
-//
-//
-// Example Usage:
-//
-// AliHLTTPCFileHandler *file = new AliHLTTPCFileHandler();
-// file->SetAliInput(digitfile); //give some input file
-// for(int slice=0; slice<=35; slice++){
-//   for(int patch=0; pat<6; pat++){
-//     file->Init(slice,patch);
-//     UInt_t ndigits=0;
-//     UInt_t maxclusters=100000;
-//     UInt_t pointsize = maxclusters*sizeof(AliHLTTPCSpacePointData);
-//     AliHLTTPCSpacePointData *points = (AliHLTTPCSpacePointData*)memory->Allocate(pointsize);
-//     AliHLTTPCDigitRowData *digits = (AliHLTTPCDigitRowData*)file->AliAltroDigits2Memory(ndigits,event);
-//     AliHLTTPCClusterFinder *cf = new AliHLTTPCClusterFinder();
-//     cf->SetMatchWidth(2);
-//     cf->InitSlice( slice, patch, row[0], row[1], maxPoints );
-//     cf->SetSTDOutput(kTRUE);    //Some output to standard IO
-//     cf->SetRawSP(kFALSE);       //Convert space points to local system
-//     cf->SetThreshold(5);        //Threshold of cluster charge
-//     cf->SetDeconv(kTRUE);       //Deconv in pad and time direction
-//     cf->SetCalcErr(kTRUE);      //Calculate the errors of the spacepoints
-//     cf->SetOutputArray(points); //Move the spacepoints to the array
-//     cf->Read(iter->fPtr, iter->fSize ); //give the data to the cf
-//     cf->ProcessDigits();        //process the rows given by init
-//     Int_t npoints = cf->GetNumberOfClusters();
-//     AliHLTTPCMemHandler *out= new AliHLTTPCMemHandler();
-//     out->SetBinaryOutput(fname);
-//     out->Memory2Binary(npoints,points); //store the spacepoints
-//     out->CloseBinaryOutput();
-//     delete out;
-//     file->free();
-//     delete cf;
-//   }
-// }
-*/
 
 ClassImp(AliHLTTPCClusterFinder)
 

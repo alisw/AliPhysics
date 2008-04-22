@@ -7,7 +7,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCDataCompressorHelper.h \
 		AliHLTTPCFitter.h \
 		AliHLTTPCFileHandler.h \
-		AliHLTTPCBenchmark.h \
 		AliHLTTPCClusterFinder.h \
 		AliHLTTPCMapping.h \
 		AliHLTTPCDigitReader.h \

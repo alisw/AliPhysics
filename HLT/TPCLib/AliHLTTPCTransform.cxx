@@ -72,6 +72,7 @@ using namespace std;
 //             fVersion==kVdeprecated: dont use old (before July 2003) style of transformer
 //
 </pre>
+* @ingroup alihlt_tpc
 */
 
 ClassImp(AliHLTTPCTransform)

@@ -3,9 +3,9 @@
 
 #ifndef ALIHLTTPCFILEHANDLER_H
 #define ALIHLTTPCFILEHANDLER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCFileHandler.h
     @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
@@ -13,13 +13,8 @@
     @date   
     @brief  file input for the TPC tracking code before migration to the
             HLT component framework
+*/
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
 #include "AliHLTTPCMemHandler.h"
 
 class TClonesArray;
@@ -38,10 +33,11 @@ class AliHLTTPCTrackSegmentData;
 class AliHLTTPCTrackArray;
 
 /**
- * class AliHLTTPCFileHandler
+ * @class AliHLTTPCFileHandler
  * This is the input interface class for the TPC tracking code before conversion to
  * the HLT component framework.
  * 
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
 

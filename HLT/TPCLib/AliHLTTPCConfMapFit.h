@@ -4,20 +4,15 @@
 #ifndef ALIHLTTPCCONFMAPFIT_H
 #define ALIHLTTPCCONFMAPFIT_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCConfMapFit.h
     @author Anders Vestbo, maintained by Matthias Richter
     @date   
     @brief  Fit class for conformal mapping tracking.
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCVertex;
@@ -27,6 +22,7 @@ class AliHLTTPCVertex;
  *
  * Fit class for conformal mapping tracking
  *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCConfMapFit {
 

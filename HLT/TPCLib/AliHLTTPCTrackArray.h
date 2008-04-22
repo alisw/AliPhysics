@@ -4,8 +4,9 @@
 #ifndef ALIHLTTPCTRACKARRAY_H
 #define ALIHLTTPCTRACKARRAY_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCTrackArray.h
     @author Uli Frankenfeld, maintained by Matthias Richter
@@ -23,6 +24,8 @@ class AliHLTTPCTrackSegmentData;
  * @class AliHLTTPCTrackArray
  * Array of AliHLTTrack objects.
  * The class implements a dynamic array and handler methods.
+ *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCTrackArray {
  public:

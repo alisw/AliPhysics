@@ -14,12 +14,6 @@
     @brief  DigitReader for the fast ALTRO Decoder
 */
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 #include "AliHLTTPCDigitReader.h"
 #include "AliAltroData.h"
 class AliHLTTPCMapping;
@@ -30,6 +24,7 @@ class AliAltroBunch;
  * @class AliHLTTPCDigitReaderDecoder
  * Digit reader implementation for real ALTRO/RCU data using the fast
  * AliAltroDecoder class.
+ *
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCDigitReaderDecoder : public AliHLTTPCDigitReader {

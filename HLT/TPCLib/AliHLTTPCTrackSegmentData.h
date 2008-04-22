@@ -1,10 +1,21 @@
 // @(#) $Id$
 // Original: AliHLTTrackSegmentData.h,v 1.7 2005/03/31 04:48:59 cvetan 
+
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
 #ifndef _ALIHLTTPCTRACKSEGMENTDATA_H_
 #define _ALIHLTTPCTRACKSEGMENTDATA_H_
 
 #include "AliHLTTPCRootTypes.h"
 
+/**
+ * @struct AliHLTTPCTrackSegmentData
+ * Primitive data exchange structure for TPC tracks.
+ *
+ * @ingroup alihlt_tpc_datastructs
+ */
 struct AliHLTTPCTrackSegmentData
     {
 	Float_t fX;

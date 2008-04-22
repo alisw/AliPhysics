@@ -4,21 +4,15 @@
 #ifndef ALIHLTTPCZEROSUPPRESSIONCOMPONENT_H
 #define ALIHLTTPCZEROSUPPRESSIONCOMPONENT_H
 
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCZeroSuppressionComponent.h
     @author Kenneth Aamodt
     @date   
     @brief  Component for ZeroSuppression
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCPad.h"
@@ -46,7 +40,7 @@ class AliHLTTPCDigitReader;
  *
  * - sort-pads Flag to switch on pad sorting(needed by the SORTED clusterfinder)
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCZeroSuppressionComponent : public AliHLTProcessor
     {

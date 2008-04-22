@@ -4,8 +4,9 @@
 #ifndef ALIHLTTPC_GLOBALMERGER_H
 #define ALIHLTTPC_GLOBALMERGER_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCGlobalMerger.h
     @author Uli Frankenfeld, maintained by Matthias Richter
@@ -22,6 +23,8 @@
 /** 
  * @class AliHLTTPCGlobalMerger
  * The HLTTPC Slice merger
+ *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCGlobalMerger : public AliHLTTPCMerger{
 

@@ -13,12 +13,6 @@
     @brief  Encoder class for 10/40bit Altro Data format
 */
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
-
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 #include <vector>
@@ -31,9 +25,31 @@
  * The class allows to encodes data sets of channel, timebin and signal
  * value into the 10bit/40bit Altro format. It works on a provided buffer.
  *
- * Signal values can be added by using the ::AddSignal function. This
- * functions works on a 'current channel'. If data is supposed to go into
- * a new channel, the ::SetChannel function has to be used.
+ * Signal values can be added by using the AddSignal(AliHLTUInt16_t, AliHLTUInt16_t)
+ * function. It functions works on a 'current channel'. If data is supposed to go into
+ * a new channel, SetChannel(AliHLTUInt16_t) has to be used.
+ *
+ * <pre>
+ *  AliHLTAltroEncoder encoder;
+ *  encoder.SetBuffer(pBuffer, size);
+ * 
+ *  for (channel ...) {
+ *    int channelAddress=...;
+ *    ...
+ *    for (int bunch=0; bunch<nofBunches; bunch++) {
+ *      int bunchLength=...;
+ *      int startTime=...;
+ *      int time=startTime;
+ *      for (; time<startTime+bunchLength; time++) {
+ * 	iResult=encoder.AddSignal(signal, time);
+ *      }
+ *    }
+ * 
+ *    encoder.SetChannel(channelAddress);
+ *  }
+ * </pre>
+ * 
+ * @ingroup alihlt_rcu
  */
 class AliHLTAltroEncoder : AliHLTLogging {
  public:

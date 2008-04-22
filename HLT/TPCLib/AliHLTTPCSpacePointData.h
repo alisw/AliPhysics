@@ -5,6 +5,15 @@
 #define SPACEPOINTDATA_H
 
 #include "AliHLTTPCRootTypes.h"
+
+/**
+ * @struct AliHLTTPCSpacePointData
+ * Primitive data exchange structure for TPC clusters.
+ * Together with the AliHLTTPCClusterDataFormat this defines
+ * the output of the TPC online Cluster Finder.
+ *
+ * @ingroup alihlt_tpc_datastructs
+ */
 struct AliHLTTPCSpacePointData{
 #ifdef do_mc
   Int_t fTrackID[3];

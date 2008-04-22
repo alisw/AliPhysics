@@ -1,14 +1,12 @@
 // @(#) $Id$
 // Original: AliHLTLog.h,v 1.2 2004/06/11 16:06:33 loizides Exp $
 
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
 #ifndef ALIHLTTPCLOG_H
 #define ALIHLTTPCLOG_H
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include <sstream>
 #include <iostream>
@@ -30,6 +28,8 @@ using namespace std;
  * \em Note: the old LOG and ENDLOG macros should be used any longer,
  * use the HLT logging macros or AliRoot logging macros instead. 
  * @see AliHLTLogging
+ *
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCLog  {
   public:
