@@ -40,10 +40,38 @@ ClassImp(AliMUONTrackExtrap) // Class implementation in ROOT context
 /// \endcond
 
 const AliMagF* AliMUONTrackExtrap::fgkField = 0x0;
+const Double_t AliMUONTrackExtrap::fgkSimpleBPosition = 0.5 * (AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
+const Double_t AliMUONTrackExtrap::fgkSimpleBLength = 0.5 * (AliMUONConstants::CoilL() + AliMUONConstants::YokeL());
+      Double_t AliMUONTrackExtrap::fgSimpleBValue = 0.;
+      Bool_t   AliMUONTrackExtrap::fgFieldON = kFALSE;
 const Bool_t   AliMUONTrackExtrap::fgkUseHelix = kFALSE;
 const Int_t    AliMUONTrackExtrap::fgkMaxStepNumber = 5000;
 const Double_t AliMUONTrackExtrap::fgkHelixStepLength = 6.;
 const Double_t AliMUONTrackExtrap::fgkRungeKuttaMaxResidue = 0.002;
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::SetField(const AliMagF* magField)
+{
+  /// set magnetic field
+  
+  // set field map
+  fgkField = magField;
+  if (!fgkField) {
+    cout<<"E-AliMUONTrackExtrap::SetField: fgkField = 0x0"<<endl;
+    return;
+  }
+  
+  // set field on/off flag
+  fgFieldON = (fgkField->Factor() == 0.) ? kFALSE : kTRUE;
+  
+  // set field at the centre of the dipole
+  if (fgFieldON) {
+    Float_t b[3] = {0.,0.,0.}, x[3] = {50.,50.,(Float_t) fgkSimpleBPosition};
+    fgkField->Field(x,b);
+    fgSimpleBValue = (Double_t) b[0];
+  } else fgSimpleBValue = 0.;
+  
+}
 
 //__________________________________________________________________________
 Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingMomentum)
@@ -55,18 +83,14 @@ Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingM
   
   if (bendingMomentum == 0.) return 1.e10;
   
-  const Double_t kCorrectionFactor = 0.9; // impact parameter is 10% overestimated
-  Double_t simpleBPosition = 0.5 * (AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
-  Double_t simpleBLength = 0.5 * (AliMUONConstants::CoilL() + AliMUONConstants::YokeL());
-  Float_t b[3], x[3] = {50.,50.,(Float_t) simpleBPosition};
-  if (fgkField) fgkField->Field(x,b);
-  else {
+  if (!fgkField) {
     cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
     exit(-1);
   }
-  Double_t simpleBValue = (Double_t) b[0];
   
-  return kCorrectionFactor * (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / bendingMomentum);
+  const Double_t kCorrectionFactor = 0.9; // impact parameter is 10% overestimated
+  
+  return kCorrectionFactor * (-0.0003 * fgSimpleBValue * fgkSimpleBLength * fgkSimpleBPosition / bendingMomentum);
 }
 
 //__________________________________________________________________________
@@ -79,23 +103,19 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
   
   if (impactParam == 0.) return 1.e10;
   
-  const Double_t kCorrectionFactor = 1.1; // bending momentum is 10% underestimated
-  Double_t simpleBPosition = 0.5 * (AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
-  Double_t simpleBLength = 0.5 * (AliMUONConstants::CoilL() + AliMUONConstants::YokeL());
-  Float_t b[3], x[3] = {50.,50.,(Float_t) simpleBPosition};
-  if (fgkField) fgkField->Field(x,b);
-  else {
+  if (!fgkField) {
     cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
     exit(-1);
   }
-  Double_t simpleBValue = (Double_t) b[0];
   
-  if (TMath::Abs(simpleBValue) > 0.01) return kCorrectionFactor * (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / impactParam);
+  const Double_t kCorrectionFactor = 1.1; // bending momentum is 10% underestimated
+  
+  if (fgFieldON) return kCorrectionFactor * (-0.0003 * fgSimpleBValue * fgkSimpleBLength * fgkSimpleBPosition / impactParam);
   else return AliMUONReconstructor::GetRecoParam()->GetMostProbBendingMomentum();
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
+void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator)
 {
   /// Track parameters (and their covariances if any) linearly extrapolated to the plane at "zEnd".
   /// On return, results from the extrapolation are updated in trackParam.
@@ -118,6 +138,16 @@ void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t
     paramCov(2,3) += dZ * paramCov(3,3);
     paramCov(3,2) = paramCov(2,3);
     trackParam->SetCovariances(paramCov);
+    
+    // Update the propagator if required
+    if (updatePropagator) {
+      TMatrixD jacob(5,5);
+      jacob.UnitMatrix();
+      jacob(0,1) = dZ;
+      jacob(2,3) = dZ;
+      trackParam->UpdatePropagator(jacob);
+    }
+    
   }
   
 }
@@ -127,7 +157,8 @@ void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Interface to track parameter extrapolation to the plane at "Z" using Helix or Rungekutta algorithm.
   /// On return, the track parameters resulting from the extrapolation are updated in trackParam.
-  if (fgkUseHelix) AliMUONTrackExtrap::ExtrapToZHelix(trackParam,zEnd);
+  if (!fgFieldON) AliMUONTrackExtrap::LinearExtrapToZ(trackParam,zEnd);
+  else if (fgkUseHelix) AliMUONTrackExtrap::ExtrapToZHelix(trackParam,zEnd);
   else AliMUONTrackExtrap::ExtrapToZRungekutta(trackParam,zEnd);
 }
 
@@ -267,6 +298,11 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   /// On return, results from the extrapolation are updated in trackParam.
   
   if (trackParam->GetZ() == zEnd) return; // nothing to be done if same z
+  
+  if (!fgFieldON) { // linear extrapolation if no magnetic field
+    AliMUONTrackExtrap::LinearExtrapToZ(trackParam,zEnd,updatePropagator);
+    return;
+  }
   
   // No need to propagate the covariance matrix if it does not exist
   if (!trackParam->CovariancesExist()) {

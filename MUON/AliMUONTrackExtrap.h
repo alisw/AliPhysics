@@ -28,14 +28,16 @@ class AliMUONTrackExtrap : public TObject
 	/// Destructor
   virtual ~AliMUONTrackExtrap(){};
   
-	/// set field map
-  static void SetField(const AliMagF* magField) {fgkField = magField;}
+  static void SetField(const AliMagF* magField);
+  
+  /// return kTRUE if the field is switched ON
+  static Bool_t IsFieldON() {return fgFieldON;}
   
   static Double_t GetImpactParamFromBendingMomentum(Double_t bendingMomentum);
   static Double_t GetBendingMomentumFromImpactParam(Double_t impactParam);
   
   // Linearly extrapolate track parameters and covariances
-  static void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd);
+  static void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
   
   // Extrapolate track parameters in magnetic field
   static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t zEnd);
@@ -73,6 +75,10 @@ class AliMUONTrackExtrap : public TObject
   
  private:
   static const AliMagF* fgkField;		//!< field map
+  static const Double_t fgkSimpleBPosition;     //!< position of the dipole
+  static const Double_t fgkSimpleBLength;       //!< length of the dipole
+  static       Double_t fgSimpleBValue;         //!< magnetic field value at the centre
+  static       Bool_t   fgFieldON;              //!< kTRUE if the field is switched ON
   static const Bool_t   fgkUseHelix;		//!< Tell whether to use Helix or not (default is Runge-Kutta)
   static const Int_t    fgkMaxStepNumber;	//!< Maximum number of steps for track extrapolation
   static const Double_t fgkHelixStepLength;	//!< Step lenght for track extrapolation (used in Helix)

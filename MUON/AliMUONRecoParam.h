@@ -68,6 +68,10 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void     SetMaxNonBendingSlope(Double_t val) {fMaxNonBendingSlope = val;}
   /// return the maximum value of the non bending slope
   Double_t GetMaxNonBendingSlope() const {return fMaxNonBendingSlope;}
+  /// set the maximum value of the bending slope
+  void     SetMaxBendingSlope(Double_t val) {fMaxBendingSlope = val;}
+  /// return the maximum value of the bending slope
+  Double_t GetMaxBendingSlope() const {return fMaxBendingSlope;}
   
   /// set the vertex dispersion (cm) in non bending plane (used for original tracking only)
   void     SetNonBendingVertexDispersion(Double_t val) {fNonBendingVertexDispersion = val;} 
@@ -173,6 +177,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Double32_t fMinBendingMomentum; ///< minimum value (GeV/c) of momentum in bending plane
   Double32_t fMaxBendingMomentum; ///< maximum value (GeV/c) of momentum in bending plane
   Double32_t fMaxNonBendingSlope; ///< maximum value of the non bending slope
+  Double32_t fMaxBendingSlope;    ///< maximum value of the bending slope (used only if B = 0)
   
   Double32_t fNonBendingVertexDispersion; ///< vertex dispersion (cm) in non bending plane (used for original tracking only)
   Double32_t fBendingVertexDispersion;    ///< vertex dispersion (cm) in bending plane (used for original tracking only)
@@ -223,7 +228,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void SetCosmicParam();
   
   
-  ClassDef(AliMUONRecoParam,4) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,5) // MUON reco parameters
 };
 
 #endif

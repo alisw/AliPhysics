@@ -200,33 +200,42 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
       // non bending slope
       nonBendingSlope = (cluster1->GetX() - cluster2->GetX()) / (cluster1->GetZ() - cluster2->GetZ());
       
+      // check if non bending slope is within tolerances
+      if (TMath::Abs(nonBendingSlope) > AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingSlope()) continue;
+      
       // bending slope
       bendingSlope = (cluster1->GetY() - cluster2->GetY()) / (cluster1->GetZ() - cluster2->GetZ());
       
-      // impact parameter
-      impactParam = cluster1->GetY() - cluster1->GetZ() * bendingSlope;
-     
-      // absolute value of bending momentum
-      bendingMomentum = TMath::Abs(AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(impactParam));
-      
-      // check for non bending slope and bending momentum within tolerances
-      if (TMath::Abs(nonBendingSlope) < AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingSlope() &&
-	  bendingMomentum < AliMUONReconstructor::GetRecoParam()->GetMaxBendingMomentum() &&
-	  bendingMomentum > AliMUONReconstructor::GetRecoParam()->GetMinBendingMomentum()) {
-        
-	// make new segment
-        segment = new ((*segments)[segments->GetLast()+1]) AliMUONObjectPair(cluster1, cluster2, kFALSE, kFALSE);
-        
-	// Printout for debug
-	if (AliLog::GetGlobalDebugLevel() > 1) {
-          cout << "segmentIndex(0...): " << segments->GetLast() << endl;
-          segment->Dump();
-          cout << "Cluster in first chamber" << endl;
-          cluster1->Print();
-          cout << "Cluster in second chamber" << endl;
-          cluster2->Print();
-        }
+      // check the bending momentum of the bending slope depending if the field is ON or OFF
+      if (AliMUONTrackExtrap::IsFieldON()) {
 	
+	// impact parameter
+	impactParam = cluster1->GetY() - cluster1->GetZ() * bendingSlope;
+	
+	// absolute value of bending momentum
+	bendingMomentum = TMath::Abs(AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(impactParam));
+	
+	// check if bending momentum is within tolerances
+	if (bendingMomentum < AliMUONReconstructor::GetRecoParam()->GetMinBendingMomentum() ||
+	    bendingMomentum > AliMUONReconstructor::GetRecoParam()->GetMaxBendingMomentum()) continue;
+	
+      } else {
+	
+	// check if non bending slope is within tolerances
+	if (TMath::Abs(bendingSlope) > AliMUONReconstructor::GetRecoParam()->GetMaxBendingSlope()) continue;
+      
+      }
+      // make new segment
+      segment = new ((*segments)[segments->GetLast()+1]) AliMUONObjectPair(cluster1, cluster2, kFALSE, kFALSE);
+      
+      // Printout for debug
+      if (AliLog::GetGlobalDebugLevel() > 1) {
+	cout << "segmentIndex(0...): " << segments->GetLast() << endl;
+	segment->Dump();
+	cout << "Cluster in first chamber" << endl;
+	cluster1->Print();
+	cout << "Cluster in second chamber" << endl;
+	cluster2->Print();
       }
       
     }

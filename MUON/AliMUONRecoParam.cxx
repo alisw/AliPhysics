@@ -42,6 +42,7 @@ AliMUONRecoParam::AliMUONRecoParam()
   fMinBendingMomentum(0.),
   fMaxBendingMomentum(0.),
   fMaxNonBendingSlope(0.),
+  fMaxBendingSlope(0.),
   fNonBendingVertexDispersion(0.),
   fBendingVertexDispersion(0.),
   fMaxNonBendingDistanceToTrack(0.),
@@ -131,6 +132,7 @@ void AliMUONRecoParam::SetLowFluxParam()
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
+  fMaxBendingSlope = 0.4;
   fNonBendingVertexDispersion = 10.;
   fBendingVertexDispersion = 10.;
   fMaxNonBendingDistanceToTrack = 1.;
@@ -162,6 +164,7 @@ void AliMUONRecoParam::SetHighFluxParam()
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
+  fMaxBendingSlope = 0.4;
   fNonBendingVertexDispersion = 10.;
   fBendingVertexDispersion = 10.;
   fMaxNonBendingDistanceToTrack = 1.;
@@ -193,6 +196,7 @@ void AliMUONRecoParam::SetCosmicParam()
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 10000000.;
   fMaxNonBendingSlope = 0.3;
+  fMaxBendingSlope = 0.4;
   fNonBendingVertexDispersion = 10.;
   fBendingVertexDispersion = 10.;
   fMaxNonBendingDistanceToTrack = 10.;
@@ -242,6 +246,8 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout<<Form("Bending momentum range = [%5.2f,%5.2f]",fMinBendingMomentum,fMaxBendingMomentum)<<endl;
   
   cout<<Form("Maximum non bending slope = %5.2f",fMaxNonBendingSlope)<<endl;
+  
+  cout<<Form("Maximum bending slope (used only if B=0) = %5.2f",fMaxBendingSlope)<<endl;
   
   if (strstr(fTrackingMode,"ORIGINAL"))
     cout<<Form("Vertex dispertion = (%5.2f,%5.2f)",fNonBendingVertexDispersion,fBendingVertexDispersion)<<endl;
