@@ -86,7 +86,7 @@ Int_t
 AliMUONTriggerTrackStoreV1::GetSize() const
 {
   /// Return the number of trigger tracks we hold
-  return fTracks->GetSize();
+  return fTracks->GetLast()+1;
 }
 
 //_____________________________________________________________________________
