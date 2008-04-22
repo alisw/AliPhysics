@@ -55,7 +55,6 @@ AliGenDPMjet::AliGenDPMjet()
      fSpecn(0),
      fSpecp(0),
      fDPMjet(0),
-     fParticles(0),
      fNoGammas(0),
      fLHC(0),
      fPi0Decay(0),
@@ -82,7 +81,6 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fSpecn(0),
      fSpecp(0),
      fDPMjet(0),
-     fParticles(new TClonesArray("TParticle",10000)),
      fNoGammas(0),
      fLHC(0),
      fPi0Decay(0),
@@ -113,7 +111,6 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fSpecn(0),
      fSpecp(0),
      fDPMjet(0),
-     fParticles(0),
      fNoGammas(0),
      fLHC(0),
      fPi0Decay(0),
@@ -127,7 +124,6 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
 AliGenDPMjet::~AliGenDPMjet()
 {
 // Destructor
-    delete fParticles;
 }
 //______________________________________________________________________________
 void AliGenDPMjet::Init()
@@ -188,13 +184,13 @@ void AliGenDPMjet::Generate()
       fDPMjet->GenerateEvent();
       fTrials++;
 
-      fDPMjet->ImportParticles(fParticles,"All");      
+      fDPMjet->ImportParticles(&fParticles,"All");      
       if (fLHC) Boost();
 
       // Temporaneo
       fGenImpPar = fDPMjet->GetBImpac();
       
-      Int_t np = fParticles->GetEntriesFast();
+      Int_t np = fParticles.GetEntriesFast();
       printf("\n **************************************************%d\n",np);
       Int_t nc=0;
       if (np==0) continue;
@@ -216,7 +212,7 @@ void AliGenDPMjet::Generate()
 //      First select parent particles
 
       for (i = 0; i<np; i++) {
-	  TParticle *iparticle = (TParticle *) fParticles->At(i);
+	  TParticle *iparticle = (TParticle *) fParticles.At(i);
 
 // Is this a parent particle ?
 
@@ -248,7 +244,7 @@ void AliGenDPMjet::Generate()
 
 
       for (i=0; i<np; i++) {
-	  TParticle *iparticle = (TParticle *) fParticles->At(i);
+	  TParticle *iparticle = (TParticle *) fParticles.At(i);
 
 // Is this a final state particle ?
 
@@ -282,7 +278,7 @@ void AliGenDPMjet::Generate()
 // Write particles to stack
 
       for (i = 0; i<np; i++) {
-	  TParticle *  iparticle = (TParticle *) fParticles->At(i);
+	  TParticle *  iparticle = (TParticle *) fParticles.At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()>=0);
 	  if (pSelected[i]) {
 	      
@@ -302,7 +298,7 @@ void AliGenDPMjet::Generate()
 	      TParticle* mother = 0;
 	      if (hasMother) {
 		  imo = iparticle->GetFirstMother();
-		  mother = (TParticle *) fParticles->At(imo);
+		  mother = (TParticle *) fParticles.At(imo);
 		  imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
 	      } // if has mother   
 
@@ -342,7 +338,7 @@ Bool_t AliGenDPMjet::DaughtersSelection(TParticle* iparticle)
 	imin = iparticle->GetFirstDaughter();
 	imax = iparticle->GetLastDaughter();       
 	for (i = imin; i <= imax; i++){
-	    TParticle *  jparticle = (TParticle *) fParticles->At(i);	
+	    TParticle *  jparticle = (TParticle *) fParticles.At(i);	
 	    Int_t ip = jparticle->GetPdgCode();
 	    if (KinematicSelection(jparticle,0)&&SelectFlavor(ip)) {
 		selected=kTRUE; break;

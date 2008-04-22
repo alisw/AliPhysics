@@ -44,7 +44,6 @@ AliGenTherminator::AliGenTherminator():
   fBWDelay(0.0)
 {
   // Default constructor
-  fParticles = new TClonesArray("TParticle",20000);    
 }
 AliGenTherminator::AliGenTherminator(Int_t npart):
   AliGenMC(npart),
@@ -65,7 +64,6 @@ AliGenTherminator::AliGenTherminator(Int_t npart):
   fBWDelay(0.0)
 {
   // Constructor specifying the size of the particle table
-  fParticles = new TClonesArray("TParticle",20000);    
   fNprimaries = 0;
 }
 
@@ -97,16 +95,16 @@ void AliGenTherminator::Generate()
 
   ((TTherminator *) fMCEvGen)->GenerateEvent();
   AliWarning("Generated");
-  ((TTherminator *) fMCEvGen)->ImportParticles(fParticles);
+  ((TTherminator *) fMCEvGen)->ImportParticles(&fParticles);
 
-  Int_t np = fParticles->GetEntriesFast();
+  Int_t np = fParticles.GetEntriesFast();
   AliWarning(Form("Imported %d particles", np));
 
   TParticle *iparticle;
   Double_t evrot = gRandom->Rndm()*TMath::Pi();
   
   for (int i = 0; i < np; i++) {
-    iparticle = (TParticle *) fParticles->At(i);
+    iparticle = (TParticle *) fParticles.At(i);
     Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
     Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
     
@@ -132,7 +130,7 @@ void AliGenTherminator::Generate()
     TParticle* mother = 0;
     if (hasMother) {
       imo = iparticle->GetFirstMother();
-      mother = (TParticle *) fParticles->At(imo);
+      mother = (TParticle *) fParticles.At(imo);
     } // if has mother   
     Bool_t tFlag = (!hasDaughter);
 

@@ -76,7 +76,6 @@ AliGenHijing::AliGenHijing()
      fNoHeavyQuarks(kFALSE)
 {
 // Constructor
-    fParticles = 0;
     AliHijingRndm::SetHijingRandom(GetRandom());
 }
 
@@ -124,7 +123,6 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fName = "Hijing";
     fTitle= "Particle Generator using HIJING";
 //
-    fParticles = new TClonesArray("TParticle",10000);    
 //
 // Set random number generator   
     AliHijingRndm::SetHijingRandom(GetRandom());
@@ -135,7 +133,6 @@ AliGenHijing::~AliGenHijing()
 // Destructor
     if ( fDsigmaDb) delete  fDsigmaDb;  
     if ( fDnDb)     delete  fDnDb;  
-    delete fParticles;
 }
 
 void AliGenHijing::Init()
@@ -252,14 +249,14 @@ void AliGenHijing::Generate()
       fHijing->GenerateEvent();
       fTrials++;
       fNprimaries = 0;
-      fHijing->ImportParticles(fParticles,"All");
+      fHijing->ImportParticles(&fParticles,"All");
       if (fTrigger != kNoTrigger) {
 	  if (!CheckTrigger()) continue;
       }
       if (fLHC) Boost();
       
       
-      Int_t np = fParticles->GetEntriesFast();
+      Int_t np = fParticles.GetEntriesFast();
       printf("\n **************************************************%d\n",np);
       Int_t nc = 0;
       if (np == 0 ) continue;
@@ -274,7 +271,7 @@ void AliGenHijing::Generate()
       
 //      Get event vertex
 //
-      TParticle *  iparticle = (TParticle *) fParticles->At(0);
+      TParticle *  iparticle = (TParticle *) fParticles.At(0);
       fVertex[0] = origin0[0];
       fVertex[1] = origin0[1];	
       fVertex[2] = origin0[2];
@@ -284,7 +281,7 @@ void AliGenHijing::Generate()
 //
 
       for (i = 0; i < np; i++) {
-	  iparticle = (TParticle *) fParticles->At(i);
+	  iparticle = (TParticle *) fParticles.At(i);
 
 // Is this a parent particle ?
 	  if (Stable(iparticle)) continue;
@@ -314,7 +311,7 @@ void AliGenHijing::Generate()
 //
 
       for (i = 0; i<np; i++) {
-	  TParticle *  iparticle = (TParticle *) fParticles->At(i);
+	  TParticle *  iparticle = (TParticle *) fParticles.At(i);
 // Is this a final state particle ?
 	  if (!Stable(iparticle)) continue;
       
@@ -358,7 +355,7 @@ void AliGenHijing::Generate()
 // Write particles to stack
 
       for (i = 0; i<np; i++) {
-	  TParticle *  iparticle = (TParticle *) fParticles->At(i);
+	  TParticle *  iparticle = (TParticle *) fParticles.At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
 	  Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
 	  if (pSelected[i]) {
@@ -377,7 +374,7 @@ void AliGenHijing::Generate()
 	      TParticle* mother = 0;
 	      if (hasMother) {
 		  imo = iparticle->GetFirstMother();
-		  mother = (TParticle *) fParticles->At(imo);
+		  mother = (TParticle *) fParticles.At(imo);
 		  imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
@@ -490,7 +487,7 @@ Bool_t AliGenHijing::DaughtersSelection(TParticle* iparticle)
 	imin = iparticle->GetFirstDaughter();
 	imax = iparticle->GetLastDaughter();       
 	for (i = imin; i <= imax; i++){
-	    TParticle *  jparticle = (TParticle *) fParticles->At(i);	
+	    TParticle *  jparticle = (TParticle *) fParticles.At(i);	
 	    Int_t ip = jparticle->GetPdgCode();
 	    if (KinematicSelection(jparticle,0)&&SelectFlavor(ip)) {
 		selected=kTRUE; break;
@@ -629,9 +626,9 @@ Bool_t AliGenHijing::CheckTrigger()
     } else if (fTrigger == 2) {
 //  Gamma Jet
 //
-	Int_t np = fParticles->GetEntriesFast();
+	Int_t np = fParticles.GetEntriesFast();
 	for (Int_t i = 0; i < np; i++) {
-	    TParticle* part = (TParticle*) fParticles->At(i);
+	    TParticle* part = (TParticle*) fParticles.At(i);
 	    Int_t kf = part->GetPdgCode();
 	    Int_t ksp = part->GetUniqueID();
 	    if (kf == 22 && ksp == 40) {
