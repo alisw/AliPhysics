@@ -313,9 +313,9 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 	/// \param start  This is the pointer to the start of the buffer.
 	/// \param end  This is the pointer to the first byte just past the
 	///             end of the buffer.
-	/// \return If the blocks in the buffer were decoded without errors
-	///      or we could recover from the errors, then true is returned.
-	///      False is returned otherwise.
+	/// fHadError is set to true if there were any errors decoding the buffer
+	/// and the OnError method of the callback event handler is called for
+	/// each error.
 	
 	const UChar_t* current = start;
 	const UInt_t* bufferStart = reinterpret_cast<const UInt_t*>(start);
