@@ -238,7 +238,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
            TTree *treeS = ingime->TreeS();
            fITS->SetTreeAddress();
            
-           if( !(treeS && fITS->GetSDigits()) ) continue; 
+           if( !treeS  ) continue; 
            TBranch *brchSDigits = treeS->GetBranch( name );
            if( brchSDigits ) 
             {

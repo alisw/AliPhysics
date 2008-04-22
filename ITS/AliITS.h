@@ -105,7 +105,7 @@ class AliITS : public AliDetector {
     virtual AliTriggerDetector* CreateTriggerDetector() const
        { return new AliITSTrigger(); }
    
-    TClonesArray* GetSDigits() const { return fDetTypeSim->GetSDigits();}
+    //   TClonesArray* GetSDigits() const { return fDetTypeSim->GetSDigits();}
 
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     virtual void UpdateInternalGeometry();

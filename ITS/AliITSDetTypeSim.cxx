@@ -77,7 +77,7 @@ fCalibration(),     // [NMod]
 fPreProcess(),   // [] e.g. Fill fHitModule with hits
 fPostProcess(),  // [] e.g. Wright Raw data
 fNSDigits(0),    //! number of SDigits
-fSDigits(),      //! [NMod][NSDigits]
+fSDigits("AliITSpListItem",1000),   
 fNDigits(0),     //! number of Digits
 fRunNumber(0),   //! Run number (to access DB)
 fDigits(),       //! [NMod][NDigits]
@@ -98,7 +98,6 @@ fFirstcall(kTRUE){ // flag
   fSimulation = new TObjArray(fgkNdettypes);
   fSegmentation = new TObjArray(fgkNdettypes);
   fSegmentation->SetOwner(kTRUE);
-  fSDigits = new TClonesArray("AliITSpListItem",1000);
   fDigits = new TObjArray(fgkNdettypes);
   fNDigits = new Int_t[fgkNdettypes];
   fDDLMapSDD=new AliITSDDLModuleMapSDD();
@@ -156,11 +155,7 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     fNDigits = 0;
     if (fLoader)fLoader->GetModulesFolder()->Remove(this);
     fLoader = 0; // Not deleting it.
-    if (fSDigits) {
-	fSDigits->Delete();
-	delete fSDigits;
-    }
-    fSDigits=0;
+    fSDigits.Delete();
     if (fDigits) {
       fDigits->Delete();
       delete fDigits;
@@ -175,7 +170,7 @@ fCalibration(source.fCalibration),     // [NMod]
 fPreProcess(source.fPreProcess),   // [] e.g. Fill fHitModule with hits
 fPostProcess(source.fPostProcess),  // [] e.g. Wright Raw data
 fNSDigits(source.fNSDigits),    //! number of SDigits
-fSDigits(source.fSDigits),      //! [NMod][NSDigits]
+fSDigits(*((TClonesArray*)source.fSDigits.Clone())),
 fNDigits(source.fNDigits),     //! number of Digits
 fRunNumber(source.fRunNumber),   //! Run number (to access DB)
 fDigits(source.fDigits),       //! [NMod][NDigits]
@@ -684,13 +679,11 @@ void AliITSDetTypeSim::SetTreeAddressS(TTree* treeS, Char_t* name){
   if(!treeS){
     return;
   }
-  if (fSDigits ==  0x0){
-    fSDigits = new TClonesArray("AliITSpListItem",1000);
-  }
   TBranch *branch;
   sprintf(branchname,"%s",name);
   branch = treeS->GetBranch(branchname);
-  if (branch) branch->SetAddress(&fSDigits);
+  TClonesArray *sdigi = &fSDigits;
+  if (branch) branch->SetAddress(&sdigi);
 
 }
 //___________________________________________________________________
@@ -796,9 +789,9 @@ void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
     }
     sim->InitSimulationModule(module,gAlice->GetEvNumber());
     
-    fSDigits->Clear();
+    fSDigits.Clear();
     brchSDigits->GetEvent(module);
-    sim->AddSDigitsToModule(fSDigits,0);
+    sim->AddSDigitsToModule(&fSDigits,0);
     sim->FinishSDigitiseModule();
     fLoader->TreeD()->Fill();
     ResetDigits();
@@ -811,8 +804,7 @@ void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
 void AliITSDetTypeSim::AddSumDigit(AliITSpListItem &sdig){  
   //Adds the module full of summable digits to the summable digits tree.
 
-  TClonesArray &lsdig = *fSDigits;
-  new(lsdig[fNSDigits++]) AliITSpListItem(sdig);
+  new(fSDigits[fNSDigits++]) AliITSpListItem(sdig);
 }
 //__________________________________________________________
 void AliITSDetTypeSim::AddRealDigit(Int_t branch, Int_t *digits){

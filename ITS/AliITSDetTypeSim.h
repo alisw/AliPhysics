@@ -70,14 +70,13 @@ class AliITSDetTypeSim : public TObject {
     virtual void SetTreeAddressS(TTree* treeS, Char_t* name);
     virtual void SetTreeAddressD(TTree* treeD, Char_t* name);
 
-    virtual void SetSDigits(TClonesArray* sdigits) {fSDigits=sdigits;}
     virtual void SetDigits(TObjArray* digits) {fDigits=digits;}
-    TClonesArray* GetSDigits() const {return fSDigits;}
+    const TClonesArray* GetSDigits() const { return &fSDigits;}
     TObjArray*    GetDigits() const {return fDigits;}
     Int_t* GetNDigitArray() const {return fNDigits;}
     TClonesArray *DigitsAddress(Int_t id) const {
 	return ((TClonesArray*)(*fDigits)[id]);}
-    virtual void ResetSDigits(){fNSDigits=0;if(fSDigits!=0) fSDigits->Clear();}
+    virtual void ResetSDigits(){fNSDigits=0; fSDigits.Clear();}
     virtual void ResetDigits();
     virtual void ResetDigits(Int_t branch);
     virtual void SDigitsToDigits(Option_t *opt,Char_t* name);
@@ -110,7 +109,7 @@ class AliITSDetTypeSim : public TObject {
     TObjArray    *fPreProcess;   //! [] e.g. Fill fHitModule with hits
     TObjArray    *fPostProcess;  //! [] e.g. Wright Raw data
     Int_t         fNSDigits;     //! number of SDigits
-    TClonesArray *fSDigits;      //! [NMod][NSDigits]
+    TClonesArray  fSDigits;      //! Summable digits
     Int_t*        fNDigits;      //! [NDet] number of Digits for det.
     Int_t         fRunNumber;    //! run number (to access DB)
     TObjArray     *fDigits;      //! [NMod][NDigits]

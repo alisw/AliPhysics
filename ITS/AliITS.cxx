@@ -345,7 +345,6 @@ void AliITS::MakeBranchS(const char* fl){
   sprintf(branchname,"%s",GetName());
 
   if(fLoader->TreeS()){
-    if(fDetTypeSim->GetSDigits()==0x0) fDetTypeSim->SetSDigits(new TClonesArray("AliITSpListItem",1000));
     TClonesArray* sdig = (TClonesArray*)fDetTypeSim->GetSDigits();
     MakeBranchInTree(fLoader->TreeS(),branchname,&sdig,buffersize,fl);
   } 
