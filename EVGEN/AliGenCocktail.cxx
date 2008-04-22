@@ -167,7 +167,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     
     fHeader = new AliGenCocktailEventHeader("Cocktail Header");
 
-    TObjArray *partArray = gAlice->GetMCApp()->Particles();
+    const TObjArray *partArray = gAlice->GetMCApp()->Particles();
 
 //
 //  Generate the vertex position used by all generators

@@ -177,7 +177,7 @@ void AliGenBeamGasNew::Generate()
   if (fHeader) delete fHeader;
   fHeader = new AliGenCocktailEventHeader("Beamgas Header");
   
-  TObjArray *partArray = gAlice->GetMCApp()->Particles();
+  const TObjArray *partArray = gAlice->GetMCApp()->Particles();
   AliStack *stack = gAlice->GetRunLoader()->Stack();
   
   for (Int_t l = 0; l < numbg; l++) {

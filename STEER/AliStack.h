@@ -15,6 +15,7 @@ class TObjArray;
 class TParticle;
 class TString;
 class TTree;
+#include <TClonesArray.h>
 #include <TArrayI.h>
 #include <TVirtualMCStack.h>
 
@@ -73,7 +74,6 @@ class AliStack : public TVirtualMCStack
     Int_t       GetNprimary() const;
     virtual Int_t GetCurrentTrackNumber() const;
     virtual Int_t GetCurrentParentTrackNumber() const;
-    TObjArray*  Particles() const;
     TParticle*  Particle(Int_t id);
     Int_t       GetPrimary(Int_t id);
     TTree*      TreeK();
@@ -82,7 +82,8 @@ class AliStack : public TVirtualMCStack
     Bool_t      IsPhysicalPrimary(Int_t i);
     Int_t       TrackLabel(Int_t label) {return fTrackLabelMap[label];}
     Int_t*      TrackLabelMap() {return fTrackLabelMap.GetArray();}
-	    
+    const TObjArray*  Particles() const;
+    
   protected:
     // methods
     void  CleanParents();
@@ -94,8 +95,8 @@ class AliStack : public TVirtualMCStack
     void Copy(TObject &st) const;
 
     // data members
-    TClonesArray  *fParticles;         //! Pointer to list of particles
-    TObjArray     *fParticleMap;       //! Map of particles in the supporting TClonesArray
+    TClonesArray   fParticles;         //! Pointer to list of particles
+    TObjArray      fParticleMap;       //! Map of particles in the supporting TClonesArray
     TArrayI        fParticleFileMap;   //  Map for particle ids 
     TParticle     *fParticleBuffer;    //! Pointer to current particle for writing
     TParticle     *fCurrentTrack;      //! Pointer to particle currently transported
@@ -127,7 +128,7 @@ inline Int_t AliStack::GetNprimary() const
 inline Int_t AliStack::GetCurrentTrackNumber() const 
 { return fCurrent; }
 
-inline TObjArray* AliStack::Particles() const
-{ return fParticleMap; }
+inline const TObjArray* AliStack::Particles() const
+{ return &fParticleMap; }
 
 #endif //ALI_STACK_H

@@ -275,7 +275,7 @@ void AliGenMUONCocktailpp::Generate()
     AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
 
-    TObjArray *partArray = gAlice->GetMCApp()->Particles();
+    const TObjArray *partArray = gAlice->GetMCApp()->Particles();
     
 // Generate the vertex position used by all generators    
     if(fVertexSmear == kPerEvent) Vertex();

@@ -190,7 +190,7 @@ void AliGenCocktailAfterBurner::Generate()
       AliGenCocktailEntry *entry;
       AliGenCocktailEntry *e1;
       AliGenCocktailEntry *e2;
-      TObjArray *partArray;
+      const TObjArray *partArray;
   //
   // Loop over generators and generate events
       Int_t igen=0;
