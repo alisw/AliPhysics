@@ -59,7 +59,7 @@ fSDDhRaws(0),
 fSDDhRecs(0),
 fRawsOffset(0),
 fRecsOffset(0),
-fSDDDDLModuleMap(0)
+fDDLModuleMap(0)
 {
   //ctor used to discriminate OnLine-Offline analysis
   if(fLDC < 0 || fLDC > 4) {
@@ -77,7 +77,7 @@ fSDDhRaws(qadm.fSDDhRaws),
 fSDDhRecs(qadm.fSDDhRecs),
 fRawsOffset(qadm.fRawsOffset),
 fRecsOffset(qadm.fRecsOffset),
-fSDDDDLModuleMap(0)
+fDDLModuleMap(0)
 {
   //copy ctor 
   fAliITSQADataMakerRec->SetName((const char*)qadm.fAliITSQADataMakerRec->GetName()) ; 
@@ -87,7 +87,7 @@ fSDDDDLModuleMap(0)
 //____________________________________________________________________________ 
 AliITSQASDDDataMakerRec::~AliITSQASDDDataMakerRec(){
   // destructor
-	if(fSDDDDLModuleMap) delete fSDDDDLModuleMap;
+	if(fDDLModuleMap) delete fDDLModuleMap;
 }
 //__________________________________________________________________
 AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDDataMakerRec& qac )
@@ -120,11 +120,12 @@ void AliITSQASDDDataMakerRec::InitRaws()
 
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
   if( !ddlMapSDD){
-    AliFatal("Calibration object retrieval failed! ");
+    AliError("Calibration object retrieval failed! SDD will not be processed");
+    fDDLModuleMap = NULL;
+    return;
   }  
-  AliITSDDLModuleMapSDD *ddlsdd=(AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
+  fDDLModuleMap = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
   ddlMapSDD->SetOwner(kTRUE);
-  fSDDDDLModuleMap = ddlsdd;
  
   Int_t lay, lad, det;
   Int_t LAY = -1;  //, LAD = -1;
@@ -242,6 +243,10 @@ void AliITSQASDDDataMakerRec::InitRaws()
 void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW - SDD -
+  if(!fDDLModuleMap){
+    AliError("SDD DDL module map not available - skipping SDD QA");
+    return;
+  }
   if(rawReader->GetType() != 7) return;  // skips non physical triggers
   AliDebug(1,"entering MakeRaws\n");                 
   rawReader->SelectEquipment(17,fgkeqOffset,fgkeqOffset + fgkDDLidRange); 
@@ -264,7 +269,7 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   rawReader->Reset();                         
   AliITSRawStreamSDD s(rawReader); 
-  s.SetDDLModuleMap(fSDDDDLModuleMap);
+  s.SetDDLModuleMap(fDDLModuleMap);
   Int_t lay, lad, det; 
 
   Int_t index=0;
