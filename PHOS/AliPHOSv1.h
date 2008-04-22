@@ -19,8 +19,8 @@
 //_________________________________________________________________________
 // Implementation version v1 of PHOS Manager class 
 // Layout EMC + CPV  has name IHEP
-//*--                  
-//*-- Author: Yves Schutz (SUBATECH)
+//--                  
+//-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 class TClonesArray ;
@@ -57,8 +57,9 @@ public:
  private:
   AliPHOSv1(AliPHOSv1 & phos);
   AliPHOSv1 & operator = (const AliPHOSv1 & /*rvalue*/);
+  TClonesArray *fCPVDigits; //! Array of CPV digits per current CPV hit
 
-  ClassDef(AliPHOSv1,3)  // Implementation of PHOS manager class for layout EMC+PPSD
+  ClassDef(AliPHOSv1,4)  // Implementation of PHOS manager class for layout EMC+PPSD
 
 };
 
