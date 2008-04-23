@@ -946,12 +946,12 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   delete [] allSigBins;
   delete [] allNSigBins;
   
-  if (rawReader->GetEventId() && fOutput ){
-    Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
-  }else{
-    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
+//   if (rawReader->GetEventId() && fOutput ){
+//     Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
+//   }else{
+//     Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
     
-  }
+//   }
   
 }
 
