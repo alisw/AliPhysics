@@ -238,7 +238,7 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
   if(fClusters.size()<2){
     return;
   }
-
+  fMaxQOfCluster=0;
   for(UInt_t i=0; i<fClusters.size();i++){
     AliHLTTPCClusters * tmpCluster=&fClusters[i];
     if(tmpCluster->fFlags==99){//quickfix to check if a cluster is used already
@@ -315,6 +315,14 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
     }
   }//end add "normal" clusters belonging to the krypton cluster
   fNumberOfKryptonClustersBin++;
+
+  //resets the candidates for every pad and the fClusters(row clusters)
+  for(UInt_t row=5;row<fNumberOfRows-5;row++){
+    for(UInt_t pad=5;pad<fNumberOfPadsInRow[row]-1-5;pad++){
+      fRowPadVector[row][pad]->fClusterCandidates.clear();
+    }
+  }
+  fClusters.clear();
 }
 
 void AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow(AliHLTTPCClusters *tmpCluster){
@@ -403,6 +411,7 @@ void AliHLTTPCKryptonClusterFinder::SetSelection(Int_t minRow, Int_t maxRow){
 
 void AliHLTTPCKryptonClusterFinder::GetHistogramObjectArray(TObjArray & histos){
   //  TObjArray histos;
+  histos.Clear();
   histos.Add(fHKryptonSpectrumFullPatch);
   histos.Add(fHKryptonSpectrumSelection);
   histos.Add(fHNumberOfKryptonClusters);

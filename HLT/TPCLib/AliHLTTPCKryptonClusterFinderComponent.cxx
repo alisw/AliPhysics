@@ -206,8 +206,6 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent(const AliHLTComponentEventDa
 
     fKryptonClusterFinder->FindKryptonClusters();
 
-    //fKryptonClusterFinder->WriteHistograms();
-
   }
   MakeHistosPublic();
   return 0;
@@ -291,5 +289,13 @@ void AliHLTTPCKryptonClusterFinderComponent::MakeHistosPublic() {
   
   TObjArray histos;
   fKryptonClusterFinder->GetHistogramObjectArray(histos);
-  PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram, fSpecification);   
+  TIter iterator(&histos);
+
+  while(TObject* pObj=iterator.Next()){
+      
+       PushBack(pObj,kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification);
+
+       //fKryptonClusterFinder->GetHistogramObjectArray(histos);
+       //PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification); 
+  }
 }
