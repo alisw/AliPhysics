@@ -21,37 +21,44 @@
 //  
 //____________________________________________________________________
 
+class AliStack;
 #include "AliITSMultReconstructor.h"
 #include "AliITSPlaneEffSPD.h"
-
-class AliStack;
 
 class AliITSTrackleterSPDEff : public AliITSMultReconstructor 
 {
 public:
   AliITSTrackleterSPDEff();
   virtual ~AliITSTrackleterSPDEff();
-
+  // Main method to perform the trackleter and the SPD efficiency evaluation
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes, AliStack* pStack=0x0);
 
-  void SetPhiWindowL1(Float_t w=0.08) {fPhiWindowL1=w;}
-  void SetZetaWindowL1(Float_t w=1.) {fZetaWindowL1=w;}
-  void SetOnlyOneTrackletPerC1(Bool_t b = kTRUE) {fOnlyOneTrackletPerC1 = b;}
+  void SetPhiWindowL1(Float_t w=0.08) {fPhiWindowL1=w;}  // method to set the cuts in the interpolation
+  void SetZetaWindowL1(Float_t w=1.) {fZetaWindowL1=w;}  // phase; use method of the base class for extrap.
+  void SetOnlyOneTrackletPerC1(Bool_t b = kTRUE) {fOnlyOneTrackletPerC1 = b;} // as in the base class but 
+									      // for the inner layer
   
-  AliITSPlaneEffSPD* GetPlaneEff() const {return fPlaneEffSPD;}
+  AliITSPlaneEffSPD* GetPlaneEff() const {return fPlaneEffSPD;}  // return a pointer to the AliITSPlaneEffSPD
   
-  void SetMC(Bool_t mc=kTRUE) {fMC=mc; InitPredictionMC(); return;}
-  Bool_t GetMC() const {return fMC;}
-  void SetUseOnlyPrimaryForPred(Bool_t flag=kTRUE) {CallWarningMC(); fUseOnlyPrimaryForPred = flag; }
+  void SetMC(Bool_t mc=kTRUE) {fMC=mc; InitPredictionMC(); return;}  // switch on access to MC true 
+  Bool_t GetMC() const {return fMC;}  // check the access to MC true
+  // Only for MC: use only "primary" particles (according to PrimaryTrackChecker) for the tracklet prediction
+  void SetUseOnlyPrimaryForPred(Bool_t flag=kTRUE) {CallWarningMC(); fUseOnlyPrimaryForPred = flag; } 
+  // Only for MC: use only "secondary" particles (according to PrimaryTrackChecker) for the tracklet prediction
   void SetUseOnlySecondaryForPred(Bool_t flag=kTRUE) {CallWarningMC(); fUseOnlySecondaryForPred = flag;}
+  // Only for MC: associate a cluster to the tracklet prediction if  from the same particle
   void SetUseOnlySameParticle(Bool_t flag=kTRUE) {CallWarningMC(); fUseOnlySameParticle = flag;}
+  // Only for MC: associate a cluster to the tracklet prediction if  from different particles
   void SetUseOnlyDifferentParticle(Bool_t flag=kTRUE) {CallWarningMC(); fUseOnlyDifferentParticle = flag;}
+  //  Only for MC: re-define "primary" a particle if it is also "stable" (according to definition in method DecayingTrackChecker)
   void SetUseOnlyStableParticle(Bool_t flag=kTRUE) {CallWarningMC(); fUseOnlyStableParticle = flag;}
+  // only for MC: Getters relative to the above setters
   Bool_t GetUseOnlyPrimaryForPred() const {CallWarningMC(); return fUseOnlyPrimaryForPred; }
   Bool_t GetUseOnlySecondaryForPred() const {CallWarningMC(); return fUseOnlySecondaryForPred;}
   Bool_t GetUseOnlySameParticle() const {CallWarningMC(); return fUseOnlySameParticle;}
   Bool_t GetUseOnlyDifferentParticle() const {CallWarningMC(); return fUseOnlyDifferentParticle;}
   Bool_t GetUseOnlyStableParticle() const {CallWarningMC(); return fUseOnlyStableParticle;}
+  // Getters for the data members related to MC true statisitcs (see below)
   Int_t GetPredictionPrimary(const UInt_t key) const;
   Int_t GetPredictionSecondary(const UInt_t key) const;
   Int_t GetClusterPrimary(const UInt_t key) const;
@@ -64,6 +71,7 @@ public:
         {return GetClusterPrimary(fPlaneEffSPD->GetKey(mod,chip));};
   Int_t GetClusterSecondary(const UInt_t mod, const UInt_t chip) const
         {return GetClusterSecondary(fPlaneEffSPD->GetKey(mod,chip));};
+  // methods to write/reas cuts and MC statistics into/from file
   void SavePredictionMC(TString filename="TrackletsMCpred.txt") const;
   void ReadPredictionMC(TString filename="TrackletsMCpred.txt");
   // Print some class info in ascii form to stream (cut values and MC statistics)
@@ -71,12 +79,14 @@ public:
   // Read some class info in ascii form from stream (cut values and MC statistics)
   virtual void ReadAscii(istream *is);
   Bool_t GetHistOn() const {return fHistOn;}; // return status of histograms
+  // write histograms into a root file on disk
   Bool_t WriteHistosToFile(TString filename="TrackleterSPDHistos.root",Option_t* option = "RECREATE");
+  // switch on/off the extra histograms
   void SetHistOn(Bool_t his=kTRUE) {AliITSMultReconstructor::SetHistOn(his); 
          if(GetHistOn()) {DeleteHistos(); BookHistos();} else DeleteHistos(); return;}
 
 protected:
-  AliITSTrackleterSPDEff(const AliITSTrackleterSPDEff& mr);
+  AliITSTrackleterSPDEff(const AliITSTrackleterSPDEff& mr); // protected method: no copy allowed from outside
   AliITSTrackleterSPDEff& operator=(const AliITSTrackleterSPDEff& mr);
 
   Bool_t*       fAssociationFlag1;    // flag for the associations (Layer 1)

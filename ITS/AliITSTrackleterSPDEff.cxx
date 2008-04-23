@@ -12,23 +12,22 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //____________________________________________________________________
-// 
+//
 // AliITSTrackleterSPDEff - find SPD chips efficiencies by using tracklets.
-// 
-// This class has been developed from AliITSMultReconstructor (see 
-// it for more details). It is the class for the Trackleter used to estimate 
-// SPD plane efficiency. 
+//
+// This class has been developed from AliITSMultReconstructor (see
+// it for more details). It is the class for the Trackleter used to estimate
+// SPD plane efficiency.
 // The trackleter prediction is built using the vertex and 1 cluster.
 //
-// 
+//
 //  Author :  Giuseppe Eugenio Bruno, based on the skeleton of Reconstruct method  provided by Tiziano Virgili
 //  email:    giuseppe.bruno@ba.infn.it
-//  
+//
 //____________________________________________________________________
+
+/* $Id$ */
 
 #include <TFile.h>
 #include <TParticle.h>
@@ -80,9 +79,7 @@ fhDPhiVsDZetaInterpAcc(0),
 fhetaClustersLay2(0),
 fhphiClustersLay2(0)
 {
-
-  // Method to check the SPD chips efficiencies by using tracklets 
-
+   // default constructor
 
   SetPhiWindowL1();
   SetZetaWindowL1();
@@ -866,24 +863,59 @@ return;
 }
 //______________________________________________________________________
 Int_t AliITSTrackleterSPDEff::GetPredictionPrimary(const UInt_t key) const {
+//
+// This method return the Data menmber fPredictionPrimary [1200].
+// You can call it only for MC events.
+// fPredictionPrimary[key] contains the number of tracklet predictions on the
+// given chip key built using  a cluster on the other layer produced (at least)
+// from a primary particle.
+// Key refers to the chip crossed by the prediction 
+//
+//
 if (!fMC) {CallWarningMC(); return 0;}
 if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
 return fPredictionPrimary[(Int_t)key];
 }
 //______________________________________________________________________
 Int_t AliITSTrackleterSPDEff::GetPredictionSecondary(const UInt_t key) const {
+//
+// This method return the Data menmber fPredictionSecondary [1200].
+// You can call it only for MC events.
+// fPredictionSecondary[key] contains the number of tracklet predictions on the
+// given chip key built using  a cluster on the other layer produced (only)
+// from a secondary particle
+// Key refers to the chip crossed by the prediction 
+//
+//
 if (!fMC) {CallWarningMC(); return 0;}
 if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
 return fPredictionSecondary[(Int_t)key];
 }
 //______________________________________________________________________
 Int_t AliITSTrackleterSPDEff::GetClusterPrimary(const UInt_t key) const {
+//
+// This method return the Data menmber fClusterPrimary [1200].
+// You can call it only for MC events.
+// fClusterPrimary[key] contains the number of tracklet predictions 
+// built using  a cluster on that layer produced (only)
+// from a primary particle
+// Key refers to the chip used to build the prediction
+//
+//
 if (!fMC) {CallWarningMC(); return 0;}
 if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
 return fClusterPrimary[(Int_t)key];
 }
 //______________________________________________________________________
 Int_t AliITSTrackleterSPDEff::GetClusterSecondary(const UInt_t key) const {
+//
+// This method return the Data menmber fClusterSecondary [1200].
+// You can call it only for MC events.
+// fClusterSecondary[key] contains the number of tracklet predictions
+// built using  a cluster on that layer produced (only)
+// from a secondary particle
+// Key refers to the chip used to build the prediction
+//
 if (!fMC) {CallWarningMC(); return 0;}
 if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
 return fClusterSecondary[(Int_t)key];
@@ -962,6 +994,15 @@ istream &operator>>(istream &is,AliITSTrackleterSPDEff &s){
 }
 //______________________________________________________________________
 void AliITSTrackleterSPDEff::SavePredictionMC(TString filename) const {
+//
+// This Method write into an asci file (do not know why binary does not work)
+// the used cuts and the statistics  of the MC related quantities
+// The method SetMC() has to be called before 
+// Input TString filename: name of file for output (it deletes already existing 
+// file)
+// Output: none
+//
+//
  if(!fMC) {CallWarningMC(); return;}
  ofstream out(filename.Data(),ios::out | ios::binary);
  out << *this;
@@ -970,6 +1011,14 @@ return;
 }
 //____________________________________________________________________
 void AliITSTrackleterSPDEff::ReadPredictionMC(TString filename) {
+//
+// This Method read from an asci file (do not know why binary does not work)
+// the cuts to be used and the statistics  of the MC related quantities
+// Input TString filename: name of input file for output 
+// The method SetMC() has to be called before
+// Output: none
+//
+//
  if(!fMC) {CallWarningMC(); return;}
  if( gSystem->AccessPathName( filename.Data() ) ) {
       AliError( Form( "file (%s) not found", filename.Data() ) );
@@ -983,8 +1032,10 @@ void AliITSTrackleterSPDEff::ReadPredictionMC(TString filename) {
 }
 //____________________________________________________________________
 Bool_t AliITSTrackleterSPDEff::SaveHists() {
-  // This method save the histograms on the output file
+  // This (private) method save the histograms on the output file
   // (only if fHistOn is TRUE).
+  // Also the histograms from the base class are saved through the 
+  // AliITSMultReconstructor::SaveHists() call
 
   if (!GetHistOn()) return kFALSE;
 
@@ -1010,6 +1061,7 @@ Bool_t AliITSTrackleterSPDEff::SaveHists() {
 Bool_t AliITSTrackleterSPDEff::WriteHistosToFile(TString filename, Option_t* option) {
   //
   // Saves the histograms into a tree and saves the trees into a file
+  // Also the histograms from the base class are saved 
   //
   if (!GetHistOn()) return kFALSE;
   if (filename.Data()=="") {
@@ -1025,6 +1077,12 @@ Bool_t AliITSTrackleterSPDEff::WriteHistosToFile(TString filename, Option_t* opt
 }
 //____________________________________________________________
 void AliITSTrackleterSPDEff::BookHistos() {
+//
+// This method books addtitional histograms 
+// w.r.t. those of the base class.
+// In particular, the differences of cluster coordinate between the two SPD
+// layers are computed in the interpolation phase
+//
   if (! GetHistOn()) { AliInfo("Call SetHistOn(kTRUE) first"); return;}
   fhClustersDPhiInterpAcc   = new TH1F("dphiaccInterp",  "dphi Interpolation phase",  100,0.,0.1);
   fhClustersDPhiInterpAcc->SetDirectory(0);
@@ -1058,6 +1116,10 @@ void AliITSTrackleterSPDEff::BookHistos() {
 }
 //____________________________________________________________
 void AliITSTrackleterSPDEff::DeleteHistos() {
+//
+// Private method to delete Histograms from memory 
+// it is called. e.g., by the destructor.
+//
     if(fhClustersDPhiInterpAcc) {delete fhClustersDPhiInterpAcc; fhClustersDPhiInterpAcc=0;}
     if(fhClustersDThetaInterpAcc) {delete fhClustersDThetaInterpAcc; fhClustersDThetaInterpAcc=0;}
     if(fhClustersDZetaInterpAcc) {delete fhClustersDZetaInterpAcc; fhClustersDZetaInterpAcc=0;}
