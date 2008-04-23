@@ -125,8 +125,8 @@ class AliTPCseed : public AliTPCtrack {
      Float_t GetErrorZ2() const {return fErrorZ2;}
   Float_t GetCMeanSigmaY2p30() const {return fCMeanSigmaY2p30;}
   Float_t GetCMeanSigmaZ2p30() const {return fCMeanSigmaZ2p30;}
-  Float_t GetCMeanSigmaY2p2() const {return fCMeanSigmaY2p2;}
-  Float_t GetCMeanSigmaZ2p2() const {return fCMeanSigmaZ2p2;}
+  Float_t GetCMeanSigmaY2p30R() const {return fCMeanSigmaY2p30R;}
+  Float_t GetCMeanSigmaZ2p30R() const {return fCMeanSigmaZ2p30R;}
      //
      //
      void SetClusterMapBit(int ibit, Bool_t state);
@@ -152,8 +152,8 @@ class AliTPCseed : public AliTPCtrack {
      Float_t fCurrentSigmaZ2;    //!expected current cluster sigma Z
      Float_t fCMeanSigmaY2p30;   //! current mean sigma Y2 - mean30%
      Float_t fCMeanSigmaZ2p30;   //! current mean sigma Z2 - mean30%
-     Float_t fCMeanSigmaY2p2;   //! current mean sigma Y2 - mean2%
-     Float_t fCMeanSigmaZ2p2;   //! current mean sigma Z2 - mean2%
+     Float_t fCMeanSigmaY2p30R;   //! current relative mean sigma Y2 - mean30%
+     Float_t fCMeanSigmaZ2p30R;   //! current relative mean sigma Z2 - mean30%
      Float_t fErrorY2;           //!sigma of current cluster 
      Float_t fErrorZ2;           //!sigma of current cluster    
      AliTPCclusterMI * fCurrentCluster; //!pointer to the current cluster for prolongation
