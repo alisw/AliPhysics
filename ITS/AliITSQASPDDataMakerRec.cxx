@@ -37,11 +37,14 @@
 #include "AliLog.h"
 #include "AliQA.h"
 #include "AliRawReader.h"
+#include "AliITSRawStreamSPD.h"
+#include "AliITSRawStreamSPDErrorLog.h"
 #include "AliITSRecPoint.h"
+
 ClassImp(AliITSQASPDDataMakerRec)
 
 //____________________________________________________________________________
-AliITSQASPDDataMakerRec::AliITSQASPDDataMakerRec(AliITSQADataMakerRec *aliITSQADataMakerRec, Bool_t kMode, Short_t ldc) :
+AliITSQASPDDataMakerRec::AliITSQASPDDataMakerRec(AliITSQADataMakerRec *aliITSQADataMakerRec, Bool_t kMode, Short_t ldc, AliITSRawStreamSPDErrorLog *aliITSRawStreamSPDErrorLog) :
 TObject(),
 fAliITSQADataMakerRec(aliITSQADataMakerRec),
 fkOnline(kMode),
@@ -49,7 +52,8 @@ fLDC(ldc),
 fSPDhRaws(0),
 fSPDhRecs(0),
 fRawsOffset(0),
-fRecsOffset(0)
+fRecsOffset(0),
+fAdvLogger(aliITSRawStreamSPDErrorLog) 
 {
   //ctor used to discriminate OnLine-Offline analysis  
 }
@@ -63,7 +67,8 @@ fLDC(qadm.fLDC),
 fSPDhRaws(qadm.fSPDhRaws),
 fSPDhRecs(qadm.fSPDhRecs),
 fRawsOffset(qadm.fRawsOffset),
-fRecsOffset(qadm.fRecsOffset)
+fRecsOffset(qadm.fRecsOffset),
+fAdvLogger(qadm.fAdvLogger)
 {
   //copy ctor 
   fAliITSQADataMakerRec->SetName((const char*)qadm.fAliITSQADataMakerRec->GetName()) ; 
@@ -73,7 +78,7 @@ fRecsOffset(qadm.fRecsOffset)
 //__________________________________________________________________
 AliITSQASPDDataMakerRec::~AliITSQASPDDataMakerRec(){
   // destructor
-
+//  delete fAdvLogger;
 }
 //__________________________________________________________________
 
@@ -107,19 +112,121 @@ void AliITSQASPDDataMakerRec::InitRaws()
   // Initialization for RAW data - SPD -
   fRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
 
-  // custom code here
+  Char_t name[50];
+  Char_t title[50];
 
-  //fSPDhRaws must be incremented by one unit every time a histogram is ADDED to the QA List
+  TH1F *hlayer = new TH1F("LayPattern_SPD","Layer map - SPD",6,0.,6.);
+  hlayer->GetXaxis()->SetTitle("Layer number");
+  hlayer->GetYaxis()->SetTitle("Entries");
+  fAliITSQADataMakerRec->Add2RawsList(hlayer,fSPDhRaws+fRawsOffset);
+  fSPDhRaws++;
 
+  TH1F **hmod = new TH1F*[2];
+  TH2F **hhitMap = new TH2F*[20];
+  TH1F **herrors = new TH1F*[20];
+  for (Int_t iLay=0; iLay<2; iLay++) {
+    sprintf(name,"ModPattern_SPD%d",iLay+1);
+    sprintf(title,"Module map - SPD Layer %d",iLay+1);
+    hmod[iLay]=new TH1F(name,title,fgknSPDmodules,0,fgknSPDmodules);
+    hmod[iLay]->GetXaxis()->SetTitle("Module number");
+    hmod[iLay]->GetYaxis()->SetTitle("Entries");
+    fAliITSQADataMakerRec->Add2RawsList(hmod[iLay], fSPDhRaws +fRawsOffset);
+    fSPDhRaws++;
+  }
+  fAdvLogger = new AliITSRawStreamSPDErrorLog();  
+  for (Int_t iDDL=0; iDDL<20; iDDL++) {
+    sprintf(name,"HitMap_SPD_DDL%d",iDDL+1);
+    sprintf(title,"Hit map - SPD DDL %d",iDDL+1);
+    hhitMap[iDDL]=new TH2F(name,title,320,0,10*32,1536,0,6*256);
+    hhitMap[iDDL]->GetXaxis()->SetTitle("Column");
+    hhitMap[iDDL]->GetYaxis()->SetTitle("Row");
+    fAliITSQADataMakerRec->Add2RawsList(hhitMap[iDDL], fSPDhRaws +fRawsOffset);
+    fSPDhRaws++;
+    sprintf(name,"Errors_SPD_DDL%d",iDDL+1);
+    sprintf(title,"Error codes - SPD DDL %d",iDDL+1);
+    herrors[iDDL] = new TH1F (name,title,15,0,15);
+    herrors[iDDL]->SetXTitle("Error Code");
+    herrors[iDDL]->SetYTitle("Nr of errors");
+    fAliITSQADataMakerRec->Add2RawsList(herrors[iDDL], fSPDhRaws +fRawsOffset);
+    fSPDhRaws++;
+  }
+
+  TH1F** hMultSPDhits = new TH1F*[2];
+  for (Int_t iLay=0; iLay<2; iLay++) {
+    sprintf(name,"HitsMultiplicity_SPD%d",iLay+1);
+    sprintf(title,"Hit multiplicity - SPD Layer %d",iLay+1);
+    hMultSPDhits[iLay]=new TH1F(name,title,200,0.,200.);
+    hMultSPDhits[iLay]->GetXaxis()->SetTitle("Hit multiplicity");
+    hMultSPDhits[iLay]->GetYaxis()->SetTitle("Entries");
+    fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits[iLay], fSPDhRaws+fRawsOffset);
+    fSPDhRaws++;
+  }
+
+  TH2F *hMultSPDhits2MultSPDhits1 = new TH2F("HitMultCorrelation_SPD","Hit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
+  hMultSPDhits2MultSPDhits1->GetXaxis()->SetTitle("Hit multiplicity (Layer 1)");
+  hMultSPDhits2MultSPDhits1->GetYaxis()->SetTitle("Hit multiplicity (Layer 2)");
+  fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, fSPDhRaws+fRawsOffset);
+  fSPDhRaws++;
+ 
   AliDebug(1,Form("%d SPD Raws histograms booked\n",fSPDhRaws));
 
 }
 
 
 //____________________________________________________________________________
-void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* /*rawReader*/)
+void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW - SPD -
+  rawReader->Reset();
+  AliITSRawStreamSPD *rawStreamSPD = new AliITSRawStreamSPD(rawReader);
+  rawStreamSPD->ActivateAdvancedErrorLog(kTRUE,fAdvLogger);
+
+  Int_t nDigitsL1 = 0;
+  Int_t nDigitsL2 = 0;
+  Int_t iEq;
+  Int_t iLayer;
+  Int_t iHalfStave, iChip;
+  Int_t col, row; 
+  UInt_t module, colM, rowM;
+  while(rawStreamSPD->Next()) {
+
+    iEq = rawReader->GetDDLID();
+    if (iEq>=0 && iEq<20) {
+      iHalfStave = rawStreamSPD->GetHalfStaveNr();
+      iChip = rawStreamSPD->GetChipAddr();
+      col  = rawStreamSPD->GetChipCol();
+      row  = rawStreamSPD->GetChipRow();
+
+      rawStreamSPD->OnlineToOffline(iEq, iHalfStave, iChip, col, row, module, colM, rowM);
+
+      if (iHalfStave>=0 && iHalfStave<2) iLayer=0;
+      else iLayer=1;
+      
+      fAliITSQADataMakerRec->GetRawsData(0+fRawsOffset)->Fill(iLayer);
+      if (iLayer==0) {
+        fAliITSQADataMakerRec->GetRawsData(1+fRawsOffset)->Fill(module);
+        nDigitsL1++;
+      } else {
+        fAliITSQADataMakerRec->GetRawsData(2+fRawsOffset)->Fill(module);
+        nDigitsL2++;
+      }
+      
+      fAliITSQADataMakerRec->GetRawsData((2*iEq)+3+fRawsOffset)->Fill(colM+(module%2)*160,rowM+iHalfStave*256);
+    }
+
+  }
+  for (Int_t ieq=0; ieq<20; ieq++)
+    for (Int_t ierr=0; ierr<fAdvLogger->GetNrErrorCodes(); ierr++)
+      fAliITSQADataMakerRec->GetRawsData((2*ieq)+4+fRawsOffset)->Fill(ierr,fAdvLogger->GetNrErrors(ierr,ieq));
+
+  fAdvLogger->Reset();
+ 
+  fAliITSQADataMakerRec->GetRawsData(43+fRawsOffset)->Fill(nDigitsL1);
+  fAliITSQADataMakerRec->GetRawsData(44+fRawsOffset)->Fill(nDigitsL2);
+  fAliITSQADataMakerRec->GetRawsData(45+fRawsOffset)->Fill(nDigitsL1,nDigitsL2);
+  
+  delete rawStreamSPD;  
+  AliDebug(1,Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
 }
 
 //____________________________________________________________________________ 

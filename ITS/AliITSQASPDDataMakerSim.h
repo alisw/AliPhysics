@@ -11,6 +11,8 @@
 //
 //
 //  W. Ferrarese + P. Cerello Feb 2008
+//
+
 
 /* $Id$ */
 
@@ -56,5 +58,4 @@ private:
 };
 
 #endif
-
 

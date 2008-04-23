@@ -17,13 +17,15 @@
 
 class TObjArray;
 class AliRawReader;
+class AliITSRawStreamSPDErrorLog;
 class AliITSQADataMakerRec;
 class AliQA;
 
 class AliITSQASPDDataMakerRec : public TObject {
 
 public:
-  AliITSQASPDDataMakerRec(AliITSQADataMakerRec *aliITSQADataMakerRec, Bool_t kMode = kFALSE, Short_t ldc = 0); //ctor
+  AliITSQASPDDataMakerRec(AliITSQADataMakerRec *aliITSQADataMakerRec, Bool_t kMode = kFALSE, Short_t ldc = 0,
+                          AliITSRawStreamSPDErrorLog *aliITSRawStreamSPDErrorLog = NULL); //ctor
   AliITSQASPDDataMakerRec(const AliITSQASPDDataMakerRec& qadm);
   AliITSQASPDDataMakerRec& operator = (const AliITSQASPDDataMakerRec& qac);
   virtual void InitRaws();
@@ -42,7 +44,6 @@ private:
   static const Int_t fgkLADDonLay1 = 80;     //number of modules on layer 1
   static const Int_t fgkLADDonLay2 = 160;    //number of modules on layer 2
 
-
   AliITSQADataMakerRec *fAliITSQADataMakerRec;//pointer to the main ctor
   Bool_t  fkOnline;                           //online (1) or offline (0) use
   Int_t   fLDC;                               //LDC number (0 for offline, 1 to 4 for online) 
@@ -51,10 +52,10 @@ private:
   Int_t   fRawsOffset;                        // number of histo booked when SPD start 
   Int_t   fRecsOffset;                        // number of histo booked when SPD start
   
+  AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 
   ClassDef(AliITSQASPDDataMakerRec,2)      // description 
 
 };
 
 #endif
-
