@@ -13,7 +13,7 @@
 
 // to decrease the compilable code size comment this define. This will exclude the routines 
 // used for the calculation and saving of the coefficients. 
-#define _INC_CREATION_ALICHEB3D_
+//#define _INC_CREATION_ALICHEB3D_
 
 // when _BRING_TO_BOUNDARY_ is defined, the point outside of the fitted folume is assumed
 // to be on the surface 
@@ -34,6 +34,7 @@ class AliCheb3DCalc: public TNamed
   void       LoadData(FILE* stream);
   Float_t    Eval(Float_t  *par)                                       const;
   Float_t    EvalDeriv(int dim, Float_t  *par)                         const;
+  Float_t    EvalDeriv2(int dim1,int dim2, Float_t  *par)                         const;
   //
 #ifdef _INC_CREATION_ALICHEB3D_
   void       SaveData(const char* outfile,Bool_t append=kFALSE)        const;
@@ -48,8 +49,9 @@ class AliCheb3DCalc: public TNamed
   Int_t*     GetCoefBound2D0()                                          const {return fCoefBound2D0;}
   Int_t*     GetCoefBound2D1()                                          const {return fCoefBound2D1;}
   void       Clear(Option_t* option = "");
-  static Float_t    ChebEval1D(Float_t  x, const Float_t * array, int ncf);//     const;  
-  static Float_t    ChebEval1Deriv(Float_t  x, const Float_t * array, int ncf);// const;  
+  static Float_t    ChebEval1D(Float_t  x, const Float_t * array, int ncf);
+  static Float_t    ChebEval1Deriv(Float_t  x, const Float_t * array, int ncf);
+  static Float_t    ChebEval1Deriv2(Float_t  x, const Float_t * array, int ncf);
   void       InitCoefs(int nc);
   Float_t *  GetCoefs()                                                 const {return fCoefs;}
   //

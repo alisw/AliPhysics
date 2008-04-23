@@ -378,7 +378,7 @@ void AliMagFCheb::Print(Option_t *) const
   
 
 }
-
+#ifdef  _INC_CREATION_ALICHEB3D_
 //_______________________________________________
 void AliMagFCheb::LoadData(const char* inpfile)
 {
@@ -477,6 +477,7 @@ void AliMagFCheb::LoadData(const char* inpfile)
   printf("Loaded magnetic field \"%s\" from %s\n",GetName(),strf.Data());
   //
 }
+#endif
 
 //_________________________________________________________________________
 Int_t AliMagFCheb::FindDipSegment(float *xyz) const

@@ -72,8 +72,6 @@ class AliMagFCheb: public TNamed
   AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPCInt->UncheckedAt(ipar);}
   AliCheb3D* GetParamDip(Int_t ipar)                      const {return (AliCheb3D*)fParamsDip->UncheckedAt(ipar);}
   //
-  void         LoadData(const char* inpfile);
-  //
   virtual void Print(Option_t * = "")                     const;
   //
   virtual void Field(Float_t *xyz, Float_t *b)            const;
@@ -90,6 +88,8 @@ class AliMagFCheb: public TNamed
   static void CylToCart(float *rphiz,float *xyz);
   //
 #ifdef  _INC_CREATION_ALICHEB3D_                          // see AliCheb3D.h for explanation
+  void         LoadData(const char* inpfile);
+  //
   AliMagFCheb(const char* inputFile);
   void       SaveData(const char* outfile)              const;
   Int_t      SegmentDipDimension(float** seg,const TObjArray* par,int npar, int dim, 

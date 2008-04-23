@@ -98,8 +98,11 @@ class AliCheb3D: public TNamed
   Float_t      Eval(Float_t  *par,int idim);
   //
   void         EvalDeriv(int dimd, Float_t  *par,Float_t  *res);
+  void         EvalDeriv2(int dimd1, int dimd2,Float_t  *par,Float_t  *res);
   Float_t      EvalDeriv(int dimd,Float_t  *par, int idim);
+  Float_t      EvalDeriv2(int dimd1,int dimd2, Float_t  *par, int idim);
   void         EvalDeriv3D(Float_t *par, Float_t dbdr[3][3]); 
+  void         EvalDeriv3D2(Float_t *par, Float_t dbdrdr[3][3][3]); 
   void         Print(Option_t* opt="")                                   const;
   Bool_t       IsInside(Float_t  *par)                                   const;
   Bool_t       IsInside(Double_t  *par)                                  const;
@@ -211,6 +214,15 @@ inline void AliCheb3D::EvalDeriv3D(Float_t *par, Float_t dbdr[3][3])
 }
 
 //__________________________________________________________________________________________
+inline void AliCheb3D::EvalDeriv3D2(Float_t *par, Float_t dbdrdr[3][3][3])
+{
+  // return gradient matrix
+  for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
+  for (int ib=3;ib--;) for (int id=3;id--;)for (int id1=3;id1--;) 
+    dbdrdr[ib][id][id1] = GetChebCalc(ib)->EvalDeriv2(id,id1,fArgsTmp)*fBScale[id]*fBScale[id1];
+}
+
+//__________________________________________________________________________________________
 inline void AliCheb3D::EvalDeriv(int dimd,Float_t  *par, Float_t  *res)
 {
   // evaluate Chebyshev parameterization derivative for 3d->DimOut function
@@ -220,11 +232,29 @@ inline void AliCheb3D::EvalDeriv(int dimd,Float_t  *par, Float_t  *res)
 }
 
 //__________________________________________________________________________________________
+inline void AliCheb3D::EvalDeriv2(int dimd1,int dimd2,Float_t  *par, Float_t  *res)
+{
+  // evaluate Chebyshev parameterization 2nd derivative over dimd1 and dimd2 dimensions for 3d->DimOut function
+  for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
+  for (int i=fDimOut;i--;) res[i] = GetChebCalc(i)->EvalDeriv2(dimd1,dimd2,fArgsTmp)*fBScale[dimd1]*fBScale[dimd2];
+  //
+}
+
+//__________________________________________________________________________________________
 inline Float_t AliCheb3D::EvalDeriv(int dimd,Float_t  *par, int idim)
 {
   // evaluate Chebyshev parameterization derivative over dimd dimention for idim-th output dimension of 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
   return GetChebCalc(idim)->EvalDeriv(dimd,fArgsTmp)*fBScale[dimd];
+  //
+}
+
+//__________________________________________________________________________________________
+inline Float_t AliCheb3D::EvalDeriv2(int dimd1,int dimd2,Float_t  *par, int idim)
+{
+  // evaluate Chebyshev parameterization 2ns derivative over dimd1 and dimd2 dimensions for idim-th output dimension of 3d->DimOut function
+  for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
+  return GetChebCalc(idim)->EvalDeriv2(dimd1,dimd2,fArgsTmp)*fBScale[dimd1]*fBScale[dimd2];
   //
 }
 

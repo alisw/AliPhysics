@@ -186,16 +186,49 @@ Float_t  AliCheb3DCalc::EvalDeriv(int dim, Float_t  *par) const
   int ncfRC;
   for (int id0=fNRows;id0--;) {
     int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
+    if (!nCLoc) {fTmpCf0[id0]=0; continue;}
+    // 
     int Col0  = fColAtRowBg[id0];                   // beginning of local column in the 2D boundary matrix
     for (int id1=nCLoc;id1--;) {
       int id = id1+Col0;
-      if (dim==2) fTmpCf1[id1] = (ncfRC=fCoefBound2D0[id]) ? ChebEval1Deriv(z,fCoefs + fCoefBound2D1[id], ncfRC) : 0.0;
-      else        fTmpCf1[id1] = (ncfRC=fCoefBound2D0[id]) ? ChebEval1D(z,fCoefs + fCoefBound2D1[id], ncfRC) : 0.0;
+      if (!(ncfRC=fCoefBound2D0[id])) { fTmpCf1[id1]=0; continue;}
+      if (dim==2) fTmpCf1[id1] = ChebEval1Deriv(z,fCoefs + fCoefBound2D1[id], ncfRC);
+      else        fTmpCf1[id1] = ChebEval1D(z,fCoefs + fCoefBound2D1[id], ncfRC);
     }
-    if (dim==1)   fTmpCf0[id0] = nCLoc>0 ? ChebEval1Deriv(y,fTmpCf1,nCLoc):0.0;
-    else          fTmpCf0[id0] = nCLoc>0 ? ChebEval1D(y,fTmpCf1,nCLoc):0.0;
+    if (dim==1)   fTmpCf0[id0] = ChebEval1Deriv(y,fTmpCf1,nCLoc);
+    else          fTmpCf0[id0] = ChebEval1D(y,fTmpCf1,nCLoc);
   }
   return (dim==0) ? ChebEval1Deriv(x,fTmpCf0,fNRows) : ChebEval1D(x,fTmpCf0,fNRows);
+  //
+}
+
+//__________________________________________________________________________________________
+Float_t  AliCheb3DCalc::EvalDeriv2(int dim1,int dim2, Float_t  *par) const
+{
+  // evaluate Chebyshev parameterization 2n derivative in given dimensions  for 3D function.
+  // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
+  Float_t  &z = par[2];
+  Float_t  &y = par[1];
+  Float_t  &x = par[0];
+  //
+  Bool_t same = dim1==dim2;
+  int ncfRC;
+  for (int id0=fNRows;id0--;) {
+    int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
+    if (!nCLoc) {fTmpCf0[id0]=0; continue;}
+    //
+    int Col0  = fColAtRowBg[id0];                   // beginning of local column in the 2D boundary matrix
+    for (int id1=nCLoc;id1--;) {
+      int id = id1+Col0;
+      if (!(ncfRC=fCoefBound2D0[id])) { fTmpCf1[id1]=0; continue;}
+      if (dim1==2||dim2==2) fTmpCf1[id1] = same ? ChebEval1Deriv2(z,fCoefs + fCoefBound2D1[id], ncfRC) 
+			      :                   ChebEval1Deriv(z,fCoefs + fCoefBound2D1[id], ncfRC);
+      else        fTmpCf1[id1] = ChebEval1D(z,fCoefs + fCoefBound2D1[id], ncfRC);
+    }
+    if (dim1==1||dim2==1) fTmpCf0[id0] = same ? ChebEval1Deriv2(y,fTmpCf1,nCLoc):ChebEval1Deriv(y,fTmpCf1,nCLoc);
+    else                  fTmpCf0[id0] = ChebEval1D(y,fTmpCf1,nCLoc);
+  }
+  return (dim1==0||dim2==0) ? (same ? ChebEval1Deriv2(x,fTmpCf0,fNRows):ChebEval1Deriv(x,fTmpCf0,fNRows)) : ChebEval1D(x,fTmpCf0,fNRows);
   //
 }
 
@@ -350,13 +383,13 @@ void AliCheb3DCalc::InitCoefs(int nc)
 Float_t AliCheb3DCalc::ChebEval1Deriv(Float_t  x, const Float_t * array, int ncf )
 {
   // evaluate 1D Chebyshev parameterization's derivative. x is the argument mapped to [-1:1] interval
-  if (--ncf<2) return 0;
+  if (--ncf<1) return 0;
   Float_t b0, b1, b2;
   Float_t x2 = x+x;
   b1 = b2 = 0;
   float dcf0=0,dcf1,dcf2=0;
   b0 = dcf1 = 2*ncf*array[ncf];
-  if (!(--ncf)) dcf0 = dcf1;
+  if (!(--ncf)) return b0/2;
   //
   for (int i=ncf;i--;) {
     b2 = b1;      
@@ -369,3 +402,41 @@ Float_t AliCheb3DCalc::ChebEval1Deriv(Float_t  x, const Float_t * array, int ncf
   //
   return b0 - x*b1 - dcf0/2;
 }
+
+//__________________________________________________________________________________________
+Float_t AliCheb3DCalc::ChebEval1Deriv2(Float_t  x, const Float_t * array, int ncf )
+{
+  // evaluate 1D Chebyshev parameterization's 2nd derivative. x is the argument mapped to [-1:1] interval
+  if (--ncf<2) return 0;
+  Float_t b0, b1, b2;
+  Float_t x2 = x+x;
+  b1 = b2 = 0;
+  float dcf0=0,dcf1=0,dcf2=0;
+  float ddcf0=0,ddcf1,ddcf2=0;
+  //
+  dcf2 = 2*ncf*array[ncf]; 
+  --ncf; 
+
+  dcf1 = 2*ncf*array[ncf]; 
+  b0 = ddcf1 = 2*ncf*dcf2; 
+  //
+  if (!(--ncf)) return b0/2;
+  //
+  for (int i=ncf;i--;) {
+    b2 = b1;                        
+    b1 = b0;
+    dcf0  = dcf2 + 2*(i+1)*array[i+1];
+    ddcf0 = ddcf2 + 2*(i+1)*dcf1; 
+    b0 = ddcf0 + x2*b1 -b2;
+    //
+    ddcf2 = ddcf1;  
+    ddcf1 = ddcf0;
+    //
+    dcf2 = dcf1;
+    dcf1 = dcf0;
+    //
+  }
+  //
+  return b0 - x*b1 - ddcf0/2;
+}
+
