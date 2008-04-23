@@ -30,7 +30,6 @@
 #include <TRandom.h>
 #include <TTree.h>
 #include <TTreeStream.h>
-#include <TVirtualFFT.h>
 
 #include "AliDigits.h"
 #include "AliLoader.h"
@@ -84,11 +83,9 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fRowDig(0),
   fParam(0),
   fNcluster(0),
-  fAmplitudeHisto(0),
   fDebugStreamer(0),
   fRecoParam(0),
-  fBDumpSignal(kFALSE),
-  fFFTr2c(0)
+  fBDumpSignal(kFALSE)
 {
   //
   // COSNTRUCTOR
@@ -107,9 +104,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
     if (!fRecoParam)  fRecoParam = AliTPCRecoParam::GetLowFluxParam();
   }
   fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
-  fAmplitudeHisto = 0;
   Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
-  fFFTr2c = TVirtualFFT::FFT(1, &nPoints, "R2C  K");
 }
 //______________________________________________________________
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
@@ -139,11 +134,9 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fRowDig(0),
   fParam(0),
   fNcluster(0),
-  fAmplitudeHisto(0),
   fDebugStreamer(0),
   fRecoParam(0),
-  fBDumpSignal(kFALSE),
-  fFFTr2c(0)
+  fBDumpSignal(kFALSE)
 {
   //
   // dummy
@@ -161,8 +154,6 @@ AliTPCclustererMI & AliTPCclustererMI::operator =(const AliTPCclustererMI & para
 }
 //______________________________________________________________
 AliTPCclustererMI::~AliTPCclustererMI(){
-  DumpHistos();
-  if (fAmplitudeHisto) delete fAmplitudeHisto;
   if (fDebugStreamer) delete fDebugStreamer;
 }
 
@@ -1097,35 +1088,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   // fill pedestal histogram
   //
   AliTPCROC * roc = AliTPCROC::Instance();
-  if (!fAmplitudeHisto){
-    fAmplitudeHisto = new TObjArray(72);
-  }  
-  //
-  if (uid[0]<roc->GetNSectors() 
-      && uid[1]< roc->GetNRows(uid[0])  && 
-      uid[2] <roc->GetNPads(uid[0], uid[1])){
-    TObjArray  * sectorArray = (TObjArray*)fAmplitudeHisto->UncheckedAt(uid[0]);
-    if (!sectorArray){
-      Int_t npads =roc->GetNChannels(uid[0]);
-      sectorArray = new TObjArray(npads);
-      fAmplitudeHisto->AddAt(sectorArray, uid[0]);
-    }
-    Int_t position =  uid[2]+roc->GetRowIndexes(uid[0])[uid[1]];
-    // TH1F * histo = (TH1F*)sectorArray->UncheckedAt(position);
-//     if (!histo){
-//       char hname[100];
-//       sprintf(hname,"Amp_%d_%d_%d",uid[0],uid[1],uid[2]);
-//       TFile * backup = gFile;
-//       fDebugStreamer->GetFile()->cd();
-//       histo = new TH1F(hname, hname, 100, 5,100);
-//       //histo->SetDirectory(0);     // histogram not connected to directory -(File)
-//       sectorArray->AddAt(histo, position);
-//       if (backup) backup->cd();
-//     }
-//     for (Int_t i=0; i<nchannels; i++){
-//       histo->Fill(signal[i]);
-//     }
-  }
+
   //
   //
   //
@@ -1136,265 +1099,31 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     dtime[i] = i;
     dsignal[i] = signal[i];
   }
-  //
-  // Digital noise
-  //
- //  if (max-median>30.*TMath::Max(1.,Double_t(rms06)) &&  (((*fDebugStreamer)<<"SignalDN").GetSize()<kMaxDebugSize)){    
-//     //
-//     //
-//     TGraph * graph =new TGraph(nchannels, dtime, dsignal);
-//     //
-//     //
-//     // jumps left - right
-//     Int_t    njumps0=0;
-//     Double_t deltaT0[2000];
-//     Double_t deltaA0[2000];
-//     Int_t    lastJump0 = fRecoParam->GetFirstBin();
-//     Int_t    njumps1=0;
-//     Double_t deltaT1[2000];
-//     Double_t deltaA1[2000];
-//     Int_t    lastJump1 = fRecoParam->GetFirstBin();
-//     Int_t    njumps2=0;
-//     Double_t deltaT2[2000];
-//     Double_t deltaA2[2000];
-//     Int_t    lastJump2 = fRecoParam->GetFirstBin();
 
-//     for (Int_t itime=fRecoParam->GetFirstBin()+1; itime<fRecoParam->GetLastBin()-1; itime++){
-//       if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06))  && 
-// 	  TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06))  &&
-// 	  (dsignal[itime-1]-median<5.*rms06) &&
-// 	  (dsignal[itime+1]-median<5.*rms06) 	  
-// 	  ){
-// 	deltaA0[njumps0] = dsignal[itime]-dsignal[itime-1];
-// 	deltaT0[njumps0] = itime-lastJump0;
-// 	lastJump0 = itime;
-// 	njumps0++;
-//       }
-//       if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06)) &&
-// 	  (dsignal[itime-1]-median<5.*rms06) 
-// 	  ) {
-// 	deltaA1[njumps1] = dsignal[itime]-dsignal[itime-1];
-// 	deltaT1[njumps1] = itime-lastJump1;
-// 	lastJump1 = itime;
-// 	njumps1++;
-//       }
-//       if (TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06)) &&
-// 	  (dsignal[itime+1]-median<5.*rms06) 
-// 	  ) {
-// 	deltaA2[njumps2] = dsignal[itime]-dsignal[itime+1];
-// 	deltaT2[njumps2] = itime-lastJump2;
-// 	lastJump2 = itime;
-// 	njumps2++;
-//       }
-//     }
-//     //
-//     if (njumps0>0 || njumps1>0 || njumps2>0){
-//       TGraph *graphDN0 = new TGraph(njumps0, deltaT0, deltaA0);
-//       TGraph *graphDN1 = new TGraph(njumps1, deltaT1, deltaA1);
-//       TGraph *graphDN2 = new TGraph(njumps2, deltaT2, deltaA2);
-//       (*fDebugStreamer)<<"SignalDN"<<    //digital - noise pads - or random sample of pads
-// 	"TimeStamp="<<fTimeStamp<<
-// 	"EventType="<<fEventType<<
-// 	"Sector="<<uid[0]<<
-// 	"Row="<<uid[1]<<
-// 	"Pad="<<uid[2]<<
-// 	"Graph="<<graph<<
-// 	"Max="<<max<<
-// 	"MaxPos="<<maxPos<<
-// 	"Graph.="<<graph<<  
-// 	"P0GraphDN0.="<<graphDN0<<
-// 	"P1GraphDN1.="<<graphDN1<<
-// 	"P2GraphDN2.="<<graphDN2<<
-// 	//
-// 	"Median="<<median<<
-// 	"Mean="<<mean<<
-// 	"RMS="<<rms<<      
-// 	"Mean06="<<mean06<<
-// 	"RMS06="<<rms06<<
-// 	"Mean09="<<mean09<<
-// 	"RMS09="<<rms09<<
-// 	"\n";
-//       delete graphDN0;
-//       delete graphDN1;
-//       delete graphDN2;
-//     }
-//     delete graph;
-//   }
-
-  //
-  // NOISE STUDY  Fourier transform
-  //
   TGraph * graph;
-  Bool_t random = (gRandom->Rndm()<0.0003);
-  if (((*fDebugStreamer)<<"SignalN").GetSize()<kMaxDebugSize)
-    if (max-median>kMin || rms06>1.*fParam->GetZeroSup() || random){
-    graph =new TGraph(nchannels, dtime, dsignal);
-    if (rms06>1.*fParam->GetZeroSup() || random){
-      //Double_t *input, Double_t threshold, Bool_t locMax, Double_t *freq, Double_t *re, Double_t *im, Double_t *mag, Double_t *phi);
-      Float_t * input = &(dsignal[fRecoParam->GetFirstBin()]);
-      Float_t freq[2000], re[2000], im[2000], mag[2000], phi[2000];
-      Int_t npoints = TransformFFT(input, -1,kFALSE, freq, re, im, mag, phi);
-      TGraph *graphMag0 = new TGraph(npoints, freq, mag);
-      TGraph *graphPhi0 = new TGraph(npoints, freq, phi);
-      npoints = TransformFFT(input, 0.5,kTRUE, freq, re, im, mag, phi);
-      TGraph *graphMag1 = new TGraph(npoints, freq, mag);
-      TGraph *graphPhi1 = new TGraph(npoints, freq, phi);
-      
-      (*fDebugStreamer)<<"SignalN"<<    //noise pads - or random sample of pads
-	"TimeStamp="<<fTimeStamp<<
-	"EventType="<<fEventType<<
-	"Sector="<<uid[0]<<
-	"Row="<<uid[1]<<
-	"Pad="<<uid[2]<<
-	"Graph.="<<graph<<
-	"Max="<<max<<
-	"MaxPos="<<maxPos<<
-	//
-	"Median="<<median<<
-	"Mean="<<mean<<
-	"RMS="<<rms<<      
-	"Mean06="<<mean06<<
-	"RMS06="<<rms06<<
-	"Mean09="<<mean09<<
-	"RMS09="<<rms09<<
-	// FFT part
-	"Mag0.="<<graphMag0<<
-	"Mag1.="<<graphMag1<<
-	"Phi0.="<<graphPhi0<<
-	"Phi1.="<<graphPhi1<<
-	"\n";
-      delete graphMag0;
-      delete graphMag1;
-      delete graphPhi0;
-      delete graphPhi1;
-    }
-    //
-    // Big signals dumping
-    //
-    
-    if (max-median>kMin &&maxPos>AliTPCReconstructor::GetRecoParam()->GetFirstBin()) 
-      (*fDebugStreamer)<<"SignalB"<<     // pads with signal
-	"TimeStamp="<<fTimeStamp<<
-	"EventType="<<fEventType<<
-	"Sector="<<uid[0]<<
-	"Row="<<uid[1]<<
-	"Pad="<<uid[2]<<
-	"Graph="<<graph<<
-	"Max="<<max<<
-	"MaxPos="<<maxPos<<	
-	//
-	"Median="<<median<<
-	"Mean="<<mean<<
-	"RMS="<<rms<<      
-	"Mean06="<<mean06<<
-	"RMS06="<<rms06<<
-	"Mean09="<<mean09<<
-	"RMS09="<<rms09<<
-	"\n";
-    delete graph;
-  }
-  
   //
-  //
-  //  Central Electrode signal analysis  
-  //
-  Float_t ceQmax  =0, ceQsum=0, ceTime=0;
-  Float_t cemean  = mean06, cerms=rms06 ;
-  Int_t    cemaxpos= 0;
-  Float_t ceThreshold=5.*cerms;
-  Float_t ceSumThreshold=8.*cerms;
-  const Int_t    kCemin=5;  // range for the analysis of the ce signal +- channels from the peak
-  const Int_t    kCemax=5;
-  for (Int_t i=nchannels-2; i>nchannels/2; i--){
-    if ( (dsignal[i]-mean06)>ceThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] ){
-      cemaxpos=i;
-      break;
-    }
-  }
-  if (cemaxpos!=0){
-    ceQmax = 0;
-    Int_t cemaxpos2=0;
-    for (Int_t i=cemaxpos-20; i<cemaxpos+5; i++){
-      if (i<0 || i>nchannels-1) continue;
-      Double_t val=dsignal[i]- cemean;
-      if (val>ceQmax){
-	cemaxpos2=i;
-	ceQmax = val;
-      }
-    }
-    cemaxpos = cemaxpos2;
- 
-    for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; i++){
-      if (i>0 && i<nchannels&&dsignal[i]- cemean>0){
-	Double_t val=dsignal[i]- cemean;
-	ceTime+=val*dtime[i];
-	ceQsum+=val;
-	if (val>ceQmax) ceQmax=val;
-      }
-    }
-    if (ceQmax&&ceQsum>ceSumThreshold) {
-      ceTime/=ceQsum;
-      (*fDebugStreamer)<<"Signalce"<<
-	"TimeStamp="<<fTimeStamp<<
-	"EventType="<<fEventType<<
-	"Sector="<<uid[0]<<
-	"Row="<<uid[1]<<
-	"Pad="<<uid[2]<<
-	"Max="<<ceQmax<<
-	"Qsum="<<ceQsum<<
-	"Time="<<ceTime<<
-	"RMS06="<<rms06<<
-	//
-	"\n";
-    }
-  }
-  // end of ce signal analysis
-  //
-
-  //
-  //  Gating grid signal analysis  
-  //
-  Double_t ggQmax  =0, ggQsum=0, ggTime=0;
-  Double_t ggmean  = mean06, ggrms=rms06 ;
-  Int_t    ggmaxpos= 0;
-  Double_t ggThreshold=5.*ggrms;
-  Double_t ggSumThreshold=8.*ggrms;
-
-  for (Int_t i=1; i<nchannels/4; i++){
-    if ( (dsignal[i]-mean06)>ggThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] &&
-	 (dsignal[i]+dsignal[i+1]+dsignal[i-1]-3*mean06)>ggSumThreshold){
-      ggmaxpos=i;
-      if (dsignal[i-1]>dsignal[i+1]) ggmaxpos=i-1;
-      break;
-    }
-  }
-  if (ggmaxpos!=0){
-      for (Int_t i=ggmaxpos-1; i<ggmaxpos+3; i++){       
-	  if (i>0 && i<nchannels && dsignal[i]-ggmean>0){
-	      Double_t val=dsignal[i]- ggmean;
-	      ggTime+=val*dtime[i];
-	      ggQsum+=val;
-	      if (val>ggQmax) ggQmax=val;
-	  }
-      }
-      if (ggQmax&&ggQsum>ggSumThreshold) {
-	  ggTime/=ggQsum;
-	  (*fDebugStreamer)<<"Signalgg"<<
-	    "TimeStamp="<<fTimeStamp<<
-	    "EventType="<<fEventType<<
-	      "Sector="<<uid[0]<<
-	      "Row="<<uid[1]<<
-	      "Pad="<<uid[2]<<
-	      "Max="<<ggQmax<<
-	      "Qsum="<<ggQsum<<
-	      "Time="<<ggTime<<
-	      "RMS06="<<rms06<<
-	      //
-	      "\n";
-      }
-  }
-  // end of gg signal analysis
-      
+  // Big signals dumping
+  //    
+  if (max-median>kMin &&maxPos>AliTPCReconstructor::GetRecoParam()->GetFirstBin()) 
+    (*fDebugStreamer)<<"SignalB"<<     // pads with signal
+      "TimeStamp="<<fTimeStamp<<
+      "EventType="<<fEventType<<
+      "Sector="<<uid[0]<<
+      "Row="<<uid[1]<<
+      "Pad="<<uid[2]<<
+      "Graph="<<graph<<
+      "Max="<<max<<
+      "MaxPos="<<maxPos<<	
+      //
+      "Median="<<median<<
+      "Mean="<<mean<<
+      "RMS="<<rms<<      
+      "Mean06="<<mean06<<
+      "RMS06="<<rms06<<
+      "Mean09="<<mean09<<
+      "RMS09="<<rms09<<
+      "\n";
+  delete graph;  
 
   delete [] dsignal;
   delete [] dtime;
@@ -1407,103 +1136,5 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 
 
 
-void AliTPCclustererMI::DumpHistos(){
-  //
-  // Dump histogram information
-  //
-  if (!fAmplitudeHisto) return;
-  AliTPCROC * roc = AliTPCROC::Instance();
-  for (UInt_t isector=0; isector<AliTPCROC::Instance()->GetNSectors(); isector++){
-    TObjArray * array = (TObjArray*)fAmplitudeHisto->UncheckedAt(isector);
-    if (!array) continue;
-    for (UInt_t ipad = 0; ipad <(UInt_t)array->GetEntriesFast(); ipad++){
-      TH1F * histo = (TH1F*) array->UncheckedAt(ipad);
-      if (!histo) continue;
-      if (histo->GetEntries()<100) continue;
-      histo->Fit("gaus","q");
-      Float_t mean =  histo->GetMean();
-      Float_t rms  =  histo->GetRMS();
-      Float_t gmean = histo->GetFunction("gaus")->GetParameter(1);
-      Float_t gsigma = histo->GetFunction("gaus")->GetParameter(2);
-      Float_t gmeanErr = histo->GetFunction("gaus")->GetParError(1);
-      Float_t gsigmaErr = histo->GetFunction("gaus")->GetParError(2);
-      Float_t max = histo->GetFunction("gaus")->GetParameter(0);
 
-      // get pad number
-      UInt_t row=0, pad =0;
-      const UInt_t *indexes =roc->GetRowIndexes(isector);
-      for (UInt_t irow=0; irow<roc->GetNRows(isector); irow++){
-	if (indexes[irow]<=ipad){
-	  row = irow;
-	  pad = ipad-indexes[irow];
-	}
-      }      
-      Int_t rpad = pad - (AliTPCROC::Instance()->GetNPads(isector,row))/2;
-      //
-      (*fDebugStreamer)<<"Fit"<<
-	"TimeStamp="<<fTimeStamp<<
-	"EventType="<<fEventType<<
-	"Sector="<<isector<<
-	"Row="<<row<<
-	"Pad="<<pad<<
-	"RPad="<<rpad<<
-	"Max="<<max<<
-	"Mean="<<mean<<
-	"RMS="<<rms<<      
-	"GMean="<<gmean<<
-	"GSigma="<<gsigma<<
-	"GMeanErr="<<gmeanErr<<
-	"GSigmaErr="<<gsigmaErr<<
-	"\n";
-      if (array->UncheckedAt(ipad)) fDebugStreamer->StoreObject(array->UncheckedAt(ipad));
-    }
-  }
-}
-
-
-
-Int_t  AliTPCclustererMI::TransformFFT(Float_t *input, Float_t threshold, Bool_t locMax, Float_t *freq, Float_t *re, Float_t *im, Float_t *mag, Float_t *phi)
-{
-  //
-  // calculate fourrie transform 
-  // return only frequncies with mag over threshold
-  // if locMax is spectified only freque with local maxima over theshold is returned 
-
-  if (! fFFTr2c) return kFALSE;
-  if (!freq) return kFALSE;
-
-  Int_t current=0;
-  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
-  Double_t *in = new Double_t[nPoints];
-  Double_t *rfft = new Double_t[nPoints];
-  Double_t *ifft = new Double_t[nPoints];
-  for (Int_t i=0; i<nPoints; i++){in[i]=input[i];}
-  fFFTr2c->SetPoints(in);
-  fFFTr2c->Transform();
-  fFFTr2c->GetPointsComplex(rfft, ifft);
-  for (Int_t i=3; i<nPoints/2-3; i++){
-    Float_t lmag =  TMath::Sqrt(rfft[i]*rfft[i]+ifft[i]*ifft[i])/nPoints;
-    if (lmag<threshold) continue;
-    if (locMax){
-      if ( TMath::Sqrt(rfft[i-1]*rfft[i-1]+ifft[i-1]*ifft[i-1])/nPoints>lmag) continue;
-      if ( TMath::Sqrt(rfft[i+1]*rfft[i+1]+ifft[i+1]*ifft[i+1])/nPoints>lmag) continue;
-      if ( TMath::Sqrt(rfft[i-2]*rfft[i-2]+ifft[i-2]*ifft[i-2])/nPoints>lmag) continue;
-      if ( TMath::Sqrt(rfft[i+2]*rfft[i+2]+ifft[i+2]*ifft[i+2])/nPoints>lmag) continue;
-      if ( TMath::Sqrt(rfft[i-3]*rfft[i-3]+ifft[i-3]*ifft[i-3])/nPoints>lmag) continue;
-      if ( TMath::Sqrt(rfft[i+3]*rfft[i+3]+ifft[i+3]*ifft[i+3])/nPoints>lmag) continue;
-    }
-    
-    freq[current] = Float_t(i)/Float_t(nPoints);
-    //
-    re[current] = rfft[i];
-    im[current] = ifft[i];
-    mag[current]=lmag;
-    phi[current]=TMath::ATan2(ifft[i],rfft[i]);
-    current++;
-  }
-  delete [] in;
-  delete [] rfft;
-  delete [] ifft;
-  return current;
-}
 

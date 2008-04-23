@@ -28,7 +28,6 @@ class TTree;
 class TTreeSRedirector;
 class  AliRawEventHeaderBase;
 class AliTPCCalROC;
-class TVirtualFFT;
 
 class AliTPCclustererMI : public TObject{
 public:
@@ -56,8 +55,6 @@ private:
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
   void FindClusters(AliTPCCalROC * noiseROC);
   Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms, Double_t &pedestalCalib);
-  void DumpHistos(); 
-  Int_t  TransformFFT(Float_t *input, Float_t threshold, Bool_t locMax, Float_t *freq, Float_t *re, Float_t *im, Float_t *mag, Float_t *phi);
 
   Float_t * fBins;       //!digits array
   Int_t   * fSigBins; //!digits array containg only timebins above threshold
@@ -84,11 +81,9 @@ private:
   AliSimDigits * fRowDig;      //! current digits row
   const AliTPCParam * fParam;        //! tpc parameters
   Int_t fNcluster;             // number of clusters - for given row
-  TObjArray * fAmplitudeHisto;          //! array of histograms of amplitudes
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
   Bool_t  fBDumpSignal; // dump signal flag
-  TVirtualFFT *fFFTr2c;                 //! Fast Furier transform object   
   ClassDef(AliTPCclustererMI,1)  // Time Projection Chamber digits
 };
 
