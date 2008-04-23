@@ -372,7 +372,34 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
       fclose(pTmpFile);
       pTmpFile=NULL;
 
-      chain.Merge(tgtName);
+      // there have been problems with the memory consumption when using
+      // TChain::Merge
+      //chain.Merge(tgtName);
+      TFile tgtFile(tgtName, "RECREATE");
+      TTree* pTgtTree=new TTree("esdTree", "Tree with HLT ESD objects");
+      AliESDEvent* pTgtESD=new AliESDEvent;
+      if (pTgtTree && pTgtESD) {
+	pTgtESD->ReadFromTree(&chain);
+	pTgtESD->WriteToTree(pTgtTree);
+
+	int nofEvents=chain.GetEntries();
+	for (int event=0; event<nofEvents; event++) {
+	  chain.GetEntry(event);
+	  pTgtTree->Fill();
+	}
+
+	pTgtTree->GetUserInfo()->Add(pTgtESD);
+	tgtFile.cd();
+	pTgtTree->Write();
+	pTgtTree->GetUserInfo()->Clear();
+      } else {
+	iResult=-ENOMEM;
+      }
+
+      if (pTgtTree) delete pTgtTree;
+      if (pTgtESD) delete pTgtESD;
+      tgtFile.Close();
+
       // rename the merged file to the original file
       TString shellcmd="mv ";
       shellcmd+=tgtName + " " + fName;
@@ -388,7 +415,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
   }
 
   // delete temporary files
-  // the list objects are cleaned up be the TList destructor as the
+  // the list objects are cleaned up by the TList destructor as the
   // list is owner
   TIter entry(&cleanup);
   while (TObject* pObj=entry.Next()) {
