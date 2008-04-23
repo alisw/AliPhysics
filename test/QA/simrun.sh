@@ -1,7 +1,7 @@
-#!/bin/bash
-if ($#argv != 2) then
- echo usage simrun.sh RunNumber
- exit
+#!/bin/csh
+if ($#argv < 1) then
+ echo "usage simrun.sh RunNumber"
+ exit()
 endif
 cd $WORK/QATest
 rm -f *.root *.C *.log
