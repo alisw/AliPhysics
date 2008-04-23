@@ -754,8 +754,7 @@ void AliTOF::RecreateSDigitsArray() {
 // delete TClonesArray fSDigits and create it again
 //  needed for backward compatability with PPR test production
 //
-  delete fSDigits;
-  fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
+  fSDigits->Clear();
 }
 //____________________________________________________________________________
 void AliTOF::CreateSDigitsArray() {
