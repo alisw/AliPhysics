@@ -18,3 +18,4 @@
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
 #pragma link C++ class AliFemtoCutMonitorParticleMomRes;
+#pragma link C++ class AliFemtoModelAllHiddenInfo;
