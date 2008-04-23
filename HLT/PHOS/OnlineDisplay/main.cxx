@@ -25,6 +25,8 @@
 #include <TString.h>
 #endif
 
+#include <TEveManager.h>
+
 #include <iostream>
 
 using namespace std;
@@ -35,6 +37,7 @@ main(int argc, char** argv)
   try 
     {
       TApplication app("app", 0, 0);
+      TEveManager::Create();
       AliHLTPHOSOnlineDisplay::Instance(argc, argv);
       app.Run();
     }

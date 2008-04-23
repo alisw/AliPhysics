@@ -2,8 +2,20 @@ ObjSuf		= o
 SrcSuf		= cxx
 HeadSuf		= h
 
-ROOTLIBS	= `root-config --libs --glibs`
-ALIROOTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib  -lHLTbase  -lAliHLTHOMER  -lAliHLTPHOS  -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  
+
+ROOTLIBS	= `root-config --libs --glibs` -lGed -lFTGL -lRGL -lEve
+
+
+
+# ROOTLIBS	= -L/home/perthi/root-current/lib -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint \
+# 		 -lPostscript -lMatrix -lPhysics -lMathCore -pthread -lm -ldl -rdynamic -lCore -lCint -lRIO -lNet -lHist \
+# 		  -lGui -pthread -lm -ldl 
+
+
+
+##ALIROOTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib  -lHLTbase  -lAliHLTHOMER  -lAliHLTPHOS  -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  
+ALIROOTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib  -lHLTbase  -lAliHLTHOMER  -lAliHLTPHOS   
+
 ALIHLTPHOSINCLUDE	=-I$(ALIHLT_TOPDIR)/PHOS
 ALIHLTINCLUDE	= -I$(ALIHLT_TOPDIR)/BASE/HOMER  -I$(ALIHLT_TOPDIR)/BASE
 INCLUDES        = -I$(ROOTSYS)/include $(ALIHLTPHOSINCLUDE) $(ALIHLTINCLUDE)
