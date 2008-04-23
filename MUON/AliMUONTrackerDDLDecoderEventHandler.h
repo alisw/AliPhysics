@@ -177,7 +177,7 @@ public:
 	void OnEndOfBlock(const AliMUONBlockHeaderStruct* /*header*/, const void* /*data*/) {}
 	
 	/// OnNewDSP is called whenever a new DSP header is found in the payload.
-	/// Every DSP header recevied by a call to OnNewDSP is associated to the
+	/// Every DSP header received by a call to OnNewDSP is associated to the
 	/// block header received in the most recent call to OnNewBlock.
 	/// The default behaviour of this method is to do nothing.
 	/// - param const AliMUONDSPHeaderStruct*  This is a pointer to the DSP header
@@ -227,7 +227,7 @@ public:
 	void OnEndOfBusPatch(const AliMUONBusPatchHeaderStruct* /*header*/, const void* /*data*/) {}
 	
 	/// OnData is called for every raw data word found within a bus patch.
-	/// Every data ward recevied by a call to OnData is associated to the bus patch
+	/// Every data ward received by a call to OnData is associated to the bus patch
 	/// header received in the most recent call to OnNewBusPatch.
 	/// The default behaviour of this method is to do nothing.
 	/// - param UInt_t  This is the raw data word as found within the bus patch payload.
@@ -238,7 +238,7 @@ public:
 	
 	/// Whenever a parsing error of the DDL payload is encountered because of
 	/// corruption of the raw data (eg. bit flips) the OnError method is called
-	/// imediately at the point this error is discovered.
+	/// immediately at the point this error is discovered.
 	/// The default behaviour of this method is to do nothing.
 	/// - param ErrorCode  This is an error code indicating the kind of problem
 	///               encountered with the DDL payload.
@@ -246,7 +246,7 @@ public:
 	///         indicating the exact location where the parsing error happened
 	///         or i.e. the location of the corruption.
 	/// Note that a relative offset in bytes from the start of the memory buffer
-	/// can be calculated by: storing the buffer pointer recevied in OnNewBuffer
+	/// can be calculated by: storing the buffer pointer received in OnNewBuffer
 	/// earlier in fBufferStart for example, and then the offset is given by:
 	///   offset = (unsigned long)location - (unsigned long)fBufferStart;
 	void OnError(ErrorCode /*error*/, const void* /*location*/) {}
@@ -269,7 +269,7 @@ public:
 	}
 	
 	/// This is a utility method which converts an error code to a string
-	/// respresentation for printing purposes.
+	/// representation for printing purposes.
 	/// \param code  The error code as received in OnError for example.
 	/// \return  An ANSI string containing the name of the error code symbol.
 	static const char* ErrorCodeToString(ErrorCode code);

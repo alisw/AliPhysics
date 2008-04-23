@@ -25,7 +25,7 @@
 /// \brief  Implementation of a high performance DDL decoder for the muon tracking stations.
 ///
 /// This file implementes the AliMUONTrackerDDLDecoder class, which contains
-/// the core logic for decoding the payload in DDL streams comming from the muon
+/// the core logic for decoding the payload in DDL streams coming from the muon
 /// spectrometer's tracking chambers in a very efficient manner.
 ///
 /// This implementation is derived from work done by Christian Finck for the
@@ -45,30 +45,32 @@
 ///
 /// This class implements a high performance decoder for decoding DDL payload
 /// data coming from the muon spectrometers tracking chambers.
-/// It has been implemented using the event driven paradigm, which allows us
-/// to minimise the number of method calls made in the inner loops of the algorithm
-/// and minimise the memory footprint.
+/// It has been implemented using the event driven paradigm with templates,
+/// which allows us to minimise the number of method calls made in the inner
+/// loops of the algorithm and minimise the memory footprint. At least for
+/// optimised production compilations.
 /// The decoder class only contains the basic decoding and error checking logic.
 /// It calls methods such as OnNewBlock, OnNewBusPatch, OnData etc in
 /// the event handler during the decoding to return the decoded data.
 /// The event handler class is nothing more than a callback interface to deliver
 /// the next chunks of decoded data.
-/// To actually do something with the data one needs to implement a custom
+/// To actually do something with the data, one needs to implement a custom
 /// event handler (callback) class by inheriting from AliMUONTrackerDDLDecoderEventHandler
 /// and overriding the callback methods like so:
 /// \code
 ///  class MyCustomHandler : public AliMUONTrackerDDLDecoderEventHandler
 ///  {
 ///  public:
-///     void OnData(UInt_t data)
+///     void OnData(UInt_t data, bool parityError)
 ///     {
-///       // I can do something with 'data' here.
+///       // I can do something with 'data' here and check if there was
+///       // a parity error with 'parityError'.
 ///     }
 ///  };
 /// \endcode
 ///
-/// Once the custom handler is written then the decoder is in instantiated as
-/// shown below, to use your new custom handler. And to start decoding one needs
+/// Once the custom handler is written then the decoder is instantiated as
+/// shown below, to use your new custom handler. Also to start decoding one needs
 /// to call the Decode() method of the decoder.
 /// \code
 ///  AliMUONTrackerDDLDecoder<MyCustomHandler> myDecoder;
@@ -76,9 +78,9 @@
 /// \endcode
 ///
 /// Note that this class was written as a template on purpose. To maximise the
-/// compilers chance to make optimisations and inlining code must use a template.
-/// Depending on exactly what you do inside your handler the decoder will be
-/// significantly slower if run time polymorphism was used i.e. making the class
+/// compilers chance to make optimisations and inline the code we must use a template.
+/// Depending on exactly what you do inside your handler, the decoder could be
+/// significantly slower if run time polymorphism was used, i.e. making the class
 /// AliMUONTrackerDDLDecoderEventHandler abstract and using virtual methods.
 ///
 /// There has been a change to the data format that the real detector generates.
@@ -324,7 +326,7 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 	
 	// The DDL payload normally has a 2 word trailer which contains the end of
 	// DDL markers 0xD000000D. But this is not the case for older simulated
-	// data so if we are autodetecting the trailer then we need to carefully
+	// data so if we are auto-detecting the trailer then we need to carefully
 	// check if these words are there or not.
 	const UChar_t* endOfBlocks = end;
 	const UInt_t* trailerWords = reinterpret_cast<const UInt_t*>(end) - 2;
@@ -364,7 +366,7 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 			if (fExitOnError) return;
 			
 			// Mark that there was a problem with the trailer so that
-			// for subsequest errors we try to deal with this better.
+			// for subsequent errors we try to deal with this better.
 			problemWithTrailer = true;
 			
 			// We can also try figure out how many trailer words there
@@ -412,7 +414,7 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 				if (fAutoDetectTrailer)
 				{
 					// If we got here then there is at least one correct trailer
-					// word, but since we did not detect a currect trailer then
+					// word, but since we did not detect a correct trailer then
 					// there must be only one. Announce the error and exit.
 					fHandler.OnError(EventHandler::kTooFewDDLTrailerWords, trailerWords);
 					fHadError = true;
