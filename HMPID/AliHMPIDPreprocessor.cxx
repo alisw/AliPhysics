@@ -178,11 +178,12 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
     if(fileName.Length()==0) {Log(Form("ERROR retrieving pedestal file: HmpidPedDdl%02i.txt!",iddl));continue;}
   
     //reading pedestal file
-    ifstream infile(Form("HmpidPedDdl%02i.txt",iddl));
+    ifstream infile(fileName.Data()); 
+    
     if(!infile.is_open()) {Log("No pedestal file found for HMPID,bye!");continue;}
     TMatrix *pM=(TMatrixF*)aDaqSig.At(iddl/2);
   
-    infile>>tName>>runNumber;Printf("Xcheck: reading DDL %i",runNumber);
+    infile>>tName>>runNumber;Printf("Xcheck: reading run %i",runNumber);
     infile>>tName>>ldcId;
     infile>>tName>>timeStamp;
     infile>>tName>>nEv; 
