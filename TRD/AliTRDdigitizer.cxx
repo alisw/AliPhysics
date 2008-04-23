@@ -779,6 +779,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
     } // if: detector status
 
+    delete [] hits[det];
+
   } // for: detector
 
   delete [] hits;
