@@ -1,3 +1,15 @@
+/*
+Contact: Jean-Luc Charvet <jean-luc.charvet@cea.fr>
+Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_Mchda
+Run Type: PEDESTAL, CALIBRATION
+DA Type: LDC
+Number of events needed: 400 events for pedestal and each calibration run
+Input Files: Rawdata file (DATE format)
+Output Files: local dir (not persistent) -> MUONTRKda_ped_<run#>.ped , MUONTRKda_gain_<run#>.par
+               FXS -> run<#>_MCH_<ldc>_PEDESTALS, run<#>_MCH_<ldc>_GAINS
+Trigger types used:
+*/
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -17,7 +29,7 @@
 
 /*
 -------------------------------------------------------------------------
-   2008-02-22 New version: MUONTRKda.cxx,v 1.11
+   2008-04-16 New version: MUONTRKda.cxx,v 1.12
 -------------------------------------------------------------------------
 
 Version for MUONTRKda MUON tracking
@@ -85,6 +97,7 @@ Int_t  gNEvents     = 0;
 Int_t  gNDateEvents = 0;
 Int_t  gPrintLevel  = 1;  // global printout variable (others: 2 and 3)
 Int_t  gPlotLevel  = 0;  // global plot variable
+Int_t  gFES  = 1;  // by default FES is used
 
 TH1F*  gPedMeanHisto  = 0x0;
 TH1F*  gPedSigmaHisto = 0x0;
@@ -923,17 +936,13 @@ int main(Int_t argc, Char_t **argv)
     Int_t maxEvents  = 1000000;
     Int_t MaxDateEvents  = 1000000;
     Int_t injCharge = 0;
-    Double_t nSigma = 3;
-    Int_t threshold = -1;
-    Char_t inputFile[256];
+    Char_t inputFile[256]="";
 
     Int_t gGlitchErrors= 0;
     Int_t gParityErrors= 0;
     Int_t gPaddingErrors= 0;
 
     TString fesOutputFile;
-    TString crocusOutputFile;
-    TString crocusConfigFile;
 
 // option handler
 
@@ -958,21 +967,17 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
 	  sprintf(gOutFolder,argv[i]);
 	  break;
-	case 'o' : 
-	  i++;
-	  crocusOutputFile = argv[i];
-	  break;
 	case 'c' : 
 	  i++;
-	  crocusConfigFile = argv[i];
-	  break;
-	case 'e' : 
-	  i++;
-	  gCommand = argv[i];
+	  gFES=atoi(argv[i]);
 	  break;
 	case 'd' :
 	  i++; 
 	  gPrintLevel=atoi(argv[i]);
+	  break;
+	case 'e' : 
+	  i++;
+	  gCommand = argv[i];
 	  break;
 	case 'g' :
 	  i++; 
@@ -998,17 +1003,9 @@ int main(Int_t argc, Char_t **argv)
 	  i++; 
 	  sscanf(argv[i],"%d",&maxEvents);
 	  break;
-	case 'p' :
-	  i++; 
-	  sscanf(argv[i],"%lf",&nSigma);
-	  break;
 	case 'r' : 
 	  i++;
 	  sprintf(gHistoFileName_gain,argv[i]);
-	  break;
-	case 't' :
-	  i++; 
-	  sscanf(argv[i],"%d",&threshold);
 	  break;
 	case 'h' :
 	  i++;
@@ -1018,14 +1015,13 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n");
 	  printf("\n Input");
 	  printf("\n-f <raw data file>        (default = %s)",inputFile); 
-	  printf("\n-c <Crocus config. file>  (default = %s)",crocusConfigFile.Data()); 
 	  printf("\n");
 	  printf("\n Output");
 	  printf("\n-a <Flat ASCII file>      (default = %s)",flatOutputFile.Data()); 
-	  printf("\n-o <CROCUS cmd file>      (default = %s)",crocusOutputFile.Data()); 
 	  printf("\n");
 	  printf("\n Options");
 	  printf("\n-b <output directory>     (default = %s)",gOutFolder);
+	  printf("\n-c <FES switch>           (default = %d)",gFES);
 	  printf("\n-d <print level>          (default = %d)",gPrintLevel);
 	  printf("\n-g <plot level>           (default = %d)",gPlotLevel);
 	  printf("\n-i <nb linear points>     (default = %d)",nbpf1);
@@ -1034,9 +1030,7 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-m <max date events>      (default = %d)",MaxDateEvents);
 	  printf("\n-s <skip events>          (default = %d)",skipEvents);
 	  printf("\n-n <max events>           (default = %d)",maxEvents);
-	  printf("\n-p <n sigmas>             (default = %f)",nSigma);
 	  printf("\n-r root file data for gain(default = %s)",gHistoFileName_gain); 
-	  printf("\n-t <threshold (-1 = no)>  (default = %d)",threshold);
 	  printf("\n-e <execute ped/gain>     (default = %s)",gCommand.Data());
 	  printf("\n-e <gain create>           make gain & create a new root file");
 	  printf("\n-e <gain>                  make gain & update root file");
@@ -1065,20 +1059,6 @@ int main(Int_t argc, Char_t **argv)
   TStopwatch timers;
 
   timers.Start(kTRUE); 
-
-  // once we have a configuration file in db
-  // copy locally a file from daq detector config db 
-  // The current detector is identified by detector code in variable
-  // DATE_DETECTOR_CODE. It must be defined.
-  // If environment variable DAQDA_TEST_DIR is defined, files are copied from DAQDA_TEST_DIR
-  // instead of the database. The usual environment variables are not needed.
-  if (!crocusConfigFile.IsNull()) {
-    status = daqDA_DB_getFile("myconfig", crocusConfigFile.Data());
-    if (status) {
-      printf("Failed to get config file : %d\n",status);
-      return -1;
-    }
-  }
 
   Int_t busPatchId;
   UShort_t manuId;  
@@ -1252,10 +1232,6 @@ int main(Int_t argc, Char_t **argv)
 
       if (gCommand.CompareTo("ped") == 0)
 	{
-	  if (!(crocusConfigFile.IsNull()))
-	    cout << "MUONTRKda : CROCUS command file generated    : " << crocusOutputFile.Data() << endl;
-	  else
-	    cout << "MUONTRKda : WARNING no CROCUS command file generated" << endl;
 
 	  cout << "MUONTRKda : Pedestal Histo file              : " << gHistoFileName  << endl;
 	  cout << "MUONTRKda : Flat pedestal file  (to SHUTTLE) : " << flatOutputFile << endl;   
@@ -1283,25 +1259,26 @@ int main(Int_t argc, Char_t **argv)
     }
 
   
-  // Store IN FES
-
-  printf("\n *****  STORE FILE in FES ****** \n");
-
-  // be sure that env variable DAQDALIB_PATH is set in script file
-  //       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-
-  if (!flatOutputFile.IsNull()) 
+  if(gFES) // Store IN FES
     {
-      if (gCommand.CompareTo("ped") == 0)
-	status = daqDA_FES_storeFile(flatOutputFile.Data(),"PEDESTALS");
-      else
-	status = daqDA_FES_storeFile(flatOutputFile.Data(),"GAINS");
-	  
-      if (status) 
+      printf("\n *****  STORE FILE in FES ****** \n");
+
+      // be sure that env variable DAQDALIB_PATH is set in script file
+      //       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
+
+      if (!flatOutputFile.IsNull()) 
 	{
-	  printf(" Failed to export file : %d\n",status);
+	  if (gCommand.CompareTo("ped") == 0)
+	    status = daqDA_FES_storeFile(flatOutputFile.Data(),"PEDESTALS");
+	  else
+	    status = daqDA_FES_storeFile(flatOutputFile.Data(),"GAINS");
+	  
+	  if (status) 
+	    {
+	      printf(" Failed to export file : %d\n",status);
+	    }
+	  else if(gPrintLevel) printf(" %s successfully exported to FES  \n",flatOutputFile.Data());
 	}
-      else if(gPrintLevel) printf(" %s successfully exported to FES  \n",flatOutputFile.Data());
     }
 
   filcout.close();

@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_mchda Tracking DA
+\page README_mchda Muon Tracking DA
  
 The detector algorithm is implemented for the Muon Tracking in the AliRoot framework.
 The main code is located in MUONTRKda.cxx and it runs in each Muon Tracking LDC.
@@ -68,6 +68,7 @@ You have a line command help. To have it just type :
 
  Options
 -b <output directory>     (default = .)
+-c <FES switch>           (default = 1)
 -d <print level>          (default = 1)
 -g <plot level>           (default = 0)
 -i <nb linear points>     (default = 6)
