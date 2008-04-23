@@ -225,6 +225,8 @@ void        TTherminator::GenerateEvent()
 Int_t       TTherminator::ImportParticles(TClonesArray *particles, Option_t */*option*/)
 {
   // Import particles from a generated event into an external array
+  const double kFmToGev = 0.197327;
+
   if (particles == 0) return 0;
   TClonesArray &particlesR = *particles;
   particlesR.Clear();
@@ -248,8 +250,7 @@ Int_t       TTherminator::ImportParticles(TClonesArray *particles, Option_t */*o
     new (particlesR[iPart]) TParticle(tPart->GetParticleType()->GetPDGCode(), tPart->HadDecayed(),
 				      tFather, -1, -1, -1,
 				      tPart->px, tPart->py, tPart->pz, tPart->GetEnergy() ,
-				      tPart->rx*1.e-13, tPart->ry*1.e-13, tPart->rz*1.e-13, tPart->rt*1.e-13/300000000 
-				      );
+				      tPart->rx*1.e-13*kFmToGev, tPart->ry*1.e-13*kFmToGev, tPart->rz*1.e-13*kFmToGev, tPart->rt*1.e-13*kFmToGev/3e10);
     particlesR[iPart]->SetUniqueID(iPart);
   }
   
@@ -259,6 +260,8 @@ Int_t       TTherminator::ImportParticles(TClonesArray *particles, Option_t */*o
 TObjArray*  TTherminator::ImportParticles(Option_t */*option*/)
 {
   // Import generated particles into an internal array
+  const double kFmToGev = 0.197327;
+
   Int_t nump = 0;
   fParticles->Clear();
   if (!fEvent) return 0;
@@ -279,8 +282,7 @@ TObjArray*  TTherminator::ImportParticles(Option_t */*option*/)
     TParticle* p = new TParticle(tPart->GetParticleType()->GetPDGCode(), tPart->HadDecayed(),
 				 tFather, -1, -1, -1,
 				 tPart->px, tPart->py, tPart->pz, tPart->GetEnergy() ,
-				 tPart->rx*1.e-13, tPart->ry*1.e-13, tPart->rz*1.e-13, tPart->rt*1.e-13/300000000 
-				 );
+				 tPart->rx*1.e-13*kFmToGev, tPart->ry*1.e-13*kFmToGev, tPart->rz*1.e-13*kFmToGev, tPart->rt*1.e-13*kFmToGev/3e10);
     p->SetUniqueID(iPart);
     fParticles->Add(p);
   }
