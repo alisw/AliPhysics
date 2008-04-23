@@ -18,6 +18,22 @@
 //-------------------------------------------------------
 //          Implementation of the TPC clusterer
 //
+//  1. The Input data for reconstruction - Options
+//      1.a Simulated data  - TTree - invoked Digits2Clusters()
+//      1.b Raw data        - Digits2Clusters(AliRawReader* rawReader); 
+//
+//  2. The Output data
+//      2.a TTree with clusters - if  SetOutput(TTree * tree) invoked
+//      2.b TObjArray           - Faster option for HLT
+//
+//  3. Reconstruction setup
+//     see AliTPCRecoParam for list of parameters 
+//     The reconstruction parameterization taken from the 
+//     AliTPCReconstructor::GetRecoParam()
+//     Possible to setup it in reconstruction macro  AliTPCReconstructor::SetRecoParam(...)
+//     
+//
+//
 //   Origin: Marian Ivanov 
 //-------------------------------------------------------
 
@@ -79,6 +95,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fEventType(0),
   fInput(0),
   fOutput(0),
+  fOutputArray(0),
   fRowCl(0),
   fRowDig(0),
   fParam(0),
@@ -94,7 +111,6 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   //
   fIsOldRCUFormat = kFALSE;
   fInput =0;
-  fOutput=0;
   fParam = par;
   if (recoParam) {
     fRecoParam = recoParam;
@@ -130,6 +146,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fEventType(0),
   fInput(0),
   fOutput(0),
+  fOutputArray(0),
   fRowCl(0),
   fRowDig(0),
   fParam(0),
@@ -154,7 +171,14 @@ AliTPCclustererMI & AliTPCclustererMI::operator =(const AliTPCclustererMI & para
 }
 //______________________________________________________________
 AliTPCclustererMI::~AliTPCclustererMI(){
+  //
+  //
+  //
   if (fDebugStreamer) delete fDebugStreamer;
+  if (fOutputArray){
+    fOutputArray->Delete();
+    delete fOutputArray;
+  }
 }
 
 void AliTPCclustererMI::SetInput(TTree * tree)
@@ -173,8 +197,11 @@ void AliTPCclustererMI::SetInput(TTree * tree)
 void AliTPCclustererMI::SetOutput(TTree * tree) 
 {
   //
+  // Set the output tree
+  // If not set the ObjArray used - Option for HLT 
   //
-  fOutput= tree;  
+  if (!tree) return;
+  fOutput= tree;
   AliTPCClustersRow clrow;
   AliTPCClustersRow *pclrow=&clrow;  
   clrow.SetClass("AliTPCclusterMI");
@@ -182,6 +209,21 @@ void AliTPCclustererMI::SetOutput(TTree * tree)
   fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000,200);    
 }
 
+
+void AliTPCclustererMI::FillRow(){
+  //
+  // fill the output container - 
+  // 2 Options possible
+  //          Tree       
+  //          TObjArray
+  //
+  if (fOutput) fOutput->Fill();
+  if (!fOutput){
+    //
+    if (!fOutputArray) fOutputArray = new TObjArray;
+    if (fRowCl) fOutputArray->AddAt(fRowCl->Clone(), fRowCl->GetID());
+  }
+}
 
 Float_t  AliTPCclustererMI::GetSigmaY2(Int_t iz){
   // sigma y2 = in digits  - we don't know the angle
@@ -591,11 +633,6 @@ void AliTPCclustererMI::Digits2Clusters()
     return;
   }
  
-  if (!fOutput) {
-    Error("Digits2Clusters", "output tree not initialised");
-    return;
-  }
-
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   AliSimDigits digarr, *dummy=&digarr;
@@ -617,13 +654,12 @@ void AliTPCclustererMI::Digits2Clusters()
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
     AliTPCCalROC * noiseROC   = noiseTPC->GetCalROC(fSector); // noise per given sector
     //
-    AliTPCClustersRow *clrow= new AliTPCClustersRow();
-    fRowCl = clrow;
-    clrow->SetClass("AliTPCclusterMI");
-    clrow->SetArray(1);
+    fRowCl= new AliTPCClustersRow();
+    fRowCl->SetClass("AliTPCclusterMI");
+    fRowCl->SetArray(1);
 
-    clrow->SetID(digarr.GetID());
-    fOutput->GetBranch("Segment")->SetAddress(&clrow);
+    fRowCl->SetID(digarr.GetID());
+    if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
     fRx=fParam->GetPadRowRadii(fSector,row);
     
     
@@ -661,9 +697,8 @@ void AliTPCclustererMI::Digits2Clusters()
     digarr.ExpandTrackBuffer();
 
     FindClusters(noiseROC);
-
-    fOutput->Fill();
-    delete clrow;    
+    FillRow();
+    delete fRowCl;    
     nclusters+=fNcluster;    
     delete[] fBins;
     delete[] fSigBins;
@@ -681,10 +716,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 // using an option of the TPC reconstructor
 //-----------------------------------------------------------------
 
-  if (!fOutput) {
-    Error("Digits2Clusters", "output tree not initialised");
-    return;
-  }
 
   fRowDig = NULL;
   AliTPCROC * roc = AliTPCROC::Instance();
@@ -885,7 +916,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       fRowCl->SetClass("AliTPCclusterMI");
       fRowCl->SetArray(1);
       fRowCl->SetID(fParam->GetIndex(fSector, fRow));
-      fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
+      if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
 
       fRx = fParam->GetPadRowRadii(fSector, fRow);
       fPadLength = fParam->GetPadPitchLength(fSector, fRow);
@@ -901,8 +932,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       fNSigBins = allNSigBins[fRow];
 
       FindClusters(noiseROC);
-
-      fOutput->Fill();
+      FillRow();
       delete fRowCl;    
       nclusters += fNcluster;    
     } // End of loop to find clusters
@@ -918,8 +948,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   
   if (rawReader->GetEventId() && fOutput ){
     Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
+  }else{
+    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
+    
   }
-
+  
 }
 
 void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
@@ -929,8 +962,12 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   // add virtual charge at the edge   
   //
   Double_t kMaxDumpSize = 500000;
-  if (fRecoParam->GetCalcPedestal() && fOutput->GetZipBytes()< kMaxDumpSize) fBDumpSignal =kTRUE;   //dump signal flag
-  //
+  if (!fOutput) {
+    fBDumpSignal =kFALSE;
+  }else{
+    if (fRecoParam->GetCalcPedestal() && fOutput->GetZipBytes()< kMaxDumpSize) fBDumpSignal =kTRUE;   //dump signal flag
+  }
+   
   fNcluster=0;
   fLoop=1;
   Int_t crtime = Int_t((fParam->GetZLength(fSector)-fRecoParam->GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);

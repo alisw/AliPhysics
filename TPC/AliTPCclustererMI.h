@@ -40,7 +40,9 @@ public:
   virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
     { fIsOldRCUFormat = rcuFormat; };
   virtual void SetInput(TTree * tree);  // set input tree with digits    
-  virtual void SetOutput(TTree * tree); //set output tree with 
+  virtual void SetOutput(TTree * tree); // set output tree with 
+  virtual void FillRow();               // fill the output container - Tree or TObjArray
+  TObjArray * GetOutputArray(){return fOutputArray;}
 private:
   Bool_t IsMaximum(Float_t k, Int_t max, const Float_t *bins) const; 
   void MakeCluster2(Int_t k,Int_t max,Float_t *bins,UInt_t m,
@@ -77,6 +79,7 @@ private:
   UInt_t  fEventType;   // Event Type
   TTree * fInput;   //!input  tree with digits - object not owner
   TTree * fOutput;   //!output tree with digits - object not owner
+  TObjArray *fOutputArray;     //! output TObjArray with pointers arrays of cluster
   AliTPCClustersRow * fRowCl;  //! current cluster row
   AliSimDigits * fRowDig;      //! current digits row
   const AliTPCParam * fParam;        //! tpc parameters
