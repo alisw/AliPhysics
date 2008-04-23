@@ -34,7 +34,7 @@ ClassImp(AliGenMC)
 
 AliGenMC::AliGenMC()
     :AliGenerator(),
-     fParticles(),
+     fParticles("TParticle", 1000),
      fParentSelect(8),
      fChildSelect(8),
      fCutOnChild(0),
