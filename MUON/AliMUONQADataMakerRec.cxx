@@ -83,7 +83,6 @@ AliMUONQADataMakerRec::AliMUONQADataMakerRec() :
     /// ctor
   fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
   fDigitMaker = new AliMUONDigitMaker(kTRUE,kFALSE);
-
 }
 
 //____________________________________________________________________________ 
@@ -448,6 +447,13 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
       if(histoStrips->GetEntries()==0) return; // No scalers found
     }
     
+    // Load mapping
+    if ( ! AliMpSegmentation::Instance(kFALSE) ) {
+      /// Load mapping
+      if ( ! AliMpCDB::LoadDDLStore() ) {
+        AliFatal("Could not access mapping from OCDB !");
+      }
+    }  
 
     for (Int_t iChamber = 0; iChamber < 4; ++iChamber)
     {
@@ -612,6 +618,14 @@ void AliMUONQADataMakerRec::InitDisplayHistos(AliQA::TASKINDEX_t task)
   TString histoName, histoTitle;
 
   const Float_t kShift = 0.;
+
+  // Load mapping
+  if ( ! AliMpSegmentation::Instance(kFALSE) ) {
+    /// Load mapping
+    if ( ! AliMpCDB::LoadDDLStore() ) {
+      AliFatal("Could not access mapping from OCDB !");
+    }
+  }  
 
   for(Int_t iCath=0; iCath<2; iCath++){
     for (Int_t iChamber = 0; iChamber < 4; ++iChamber) {
