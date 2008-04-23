@@ -108,41 +108,108 @@ void AliGenTherminator::Generate()
     Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
     Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
     
-    kf   = iparticle->GetPdgCode();
-    ks   = iparticle->GetStatusCode();
-    Double_t aphi = TMath::ATan2(iparticle->Py(), iparticle->Px());
-    Double_t arho = TMath::Hypot(iparticle->Px(), iparticle->Py());
-    p[0] = arho*TMath::Cos(aphi + evrot);
-    p[1] = arho*TMath::Sin(aphi + evrot);
-//     p[0] = iparticle->Px();
-//     p[1] = iparticle->Py();
-    p[2] = iparticle->Pz();
-    mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
-    energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-    
-    Double_t vphi = TMath::ATan2(iparticle->Vy(), iparticle->Vx());
-    Double_t vrho = TMath::Hypot(iparticle->Vx(), iparticle->Vy());
-    origin[0] = origin0[0]+vrho*TMath::Cos(vphi + evrot);
-    origin[1] = origin0[1]+vrho*TMath::Sin(vphi + evrot);
-    origin[2] = origin0[2]+iparticle->Vz();
-	      
-    imo = -1;
-    TParticle* mother = 0;
-    if (hasMother) {
-      imo = iparticle->GetFirstMother();
-      mother = (TParticle *) fParticles.At(imo);
-    } // if has mother   
-    Bool_t tFlag = (!hasDaughter);
+    if (hasDaughter) {
+      // This particle has decayed
+      // It will not be tracked
+      // Add it only once with coorduinates not
+      // smeared with primary vertex position
 
-    printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
-    PushTrack(tFlag,imo,kf,
-	      p[0],p[1],p[2],energy,
-	      origin[0],origin[1],origin[2],iparticle->T()*0.197327*1e-13/300000000,
-	      polar[0],polar[1],polar[2],
-	      hasMother ? kPDecay:kPNoProcess,nt);
-    
-    fNprimaries++;
-    KeepTrack(nt);
+      kf   = iparticle->GetPdgCode();
+      ks   = iparticle->GetStatusCode();
+      Double_t aphi = TMath::ATan2(iparticle->Py(), iparticle->Px());
+      Double_t arho = TMath::Hypot(iparticle->Px(), iparticle->Py());
+      p[0] = arho*TMath::Cos(aphi + evrot);
+      p[1] = arho*TMath::Sin(aphi + evrot);
+      //     p[0] = iparticle->Px();
+      //     p[1] = iparticle->Py();
+      p[2] = iparticle->Pz();
+      mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
+      energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+      
+      Double_t vphi = TMath::ATan2(iparticle->Vy(), iparticle->Vx());
+      Double_t vrho = TMath::Hypot(iparticle->Vx(), iparticle->Vy());
+      origin[0] = origin0[0]+vrho*TMath::Cos(vphi + evrot);
+      origin[1] = origin0[1]+vrho*TMath::Sin(vphi + evrot);
+      origin[2] = origin0[2]+iparticle->Vz();
+      
+      imo = -1;
+      TParticle* mother = 0;
+      if (hasMother) {
+	imo = iparticle->GetFirstMother();
+	mother = (TParticle *) fParticles->At(imo);
+      } // if has mother   
+      Bool_t tFlag = (!hasDaughter);
+      
+      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
+      PushTrack(tFlag,imo,kf,
+		p[0],p[1],p[2],energy,
+		origin[0],origin[1],origin[2],iparticle->T()*0.197327*1e-13/300000000,
+		polar[0],polar[1],polar[2],
+		hasMother ? kPDecay:kPNoProcess,nt);
+      fNprimaries++;
+      KeepTrack(nt);
+    }
+    else {
+      // This is a final state particle
+      // It will be tracked
+      // Add it TWICE to the stack !!!
+      // First time with event-wide coordicates (for femtoscopy) - 
+      //   this one will not be tracked
+      // Second time with event-wide ccordiantes and vertex smearing
+      //   this one will be tracked
+      
+      kf   = iparticle->GetPdgCode();
+      ks   = iparticle->GetStatusCode();
+      Double_t aphi = TMath::ATan2(iparticle->Py(), iparticle->Px());
+      Double_t arho = TMath::Hypot(iparticle->Px(), iparticle->Py());
+      p[0] = arho*TMath::Cos(aphi + evrot);
+      p[1] = arho*TMath::Sin(aphi + evrot);
+      //     p[0] = iparticle->Px();
+      //     p[1] = iparticle->Py();
+      p[2] = iparticle->Pz();
+      mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
+      energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+      
+      Double_t vphi = TMath::ATan2(iparticle->Vy(), iparticle->Vx());
+      Double_t vrho = TMath::Hypot(iparticle->Vx(), iparticle->Vy());
+      origin[0] = vrho*TMath::Cos(vphi + evrot);
+      origin[1] = vrho*TMath::Sin(vphi + evrot);
+      origin[2] = iparticle->Vz();
+      
+      imo = -1;
+      TParticle* mother = 0;
+      if (hasMother) {
+	imo = iparticle->GetFirstMother();
+	mother = (TParticle *) fParticles->At(imo);
+      } // if has mother   
+      Bool_t tFlag = (hasDaughter);
+      
+      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
+      PushTrack(tFlag,imo,kf,
+		p[0],p[1],p[2],energy,
+		origin[0],origin[1],origin[2],iparticle->T()*0.197327*1e-13/300000000,
+		polar[0],polar[1],polar[2],
+		hasMother ? kPDecay:kPNoProcess,nt);
+      fNprimaries++;
+      KeepTrack(nt);
+
+      origin[0] = origin0[0]+vrho*TMath::Cos(vphi + evrot);
+      origin[1] = origin0[1]+vrho*TMath::Sin(vphi + evrot);
+      origin[2] = origin0[2]+iparticle->Vz();
+
+      imo = nt;
+      mother = (TParticle *) fParticles->At(nt);
+      tFlag = (!hasDaughter);
+      
+      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
+      PushTrack(tFlag,imo,kf,
+		p[0],p[1],p[2],energy,
+		origin[0],origin[1],origin[2],iparticle->T()*0.197327*1e-13/300000000,
+		polar[0],polar[1],polar[2],
+		hasMother ? kPDecay:kPNoProcess,nt);
+      fNprimaries++;
+      KeepTrack(nt);
+    }
   }
 
   SetHighWaterMark(fNprimaries);
@@ -203,7 +270,7 @@ void AliGenTherminator::Generate()
   AddHeader(header);
   fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 
-  gAlice->SetGenEventHeader(header); 
+  //  gAlice->SetGenEventHeader(header); 
 }
 
 void AliGenTherminator::Init()
