@@ -285,8 +285,8 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
     Float_t rmsz2 = seed->GetCurrentSigmaZ2();
     Float_t rmsy2p30 = seed->GetCMeanSigmaY2p30();
     Float_t rmsz2p30 = seed->GetCMeanSigmaZ2p30();
-    Float_t rmsy2p2  = seed->GetCMeanSigmaY2p2();
-    Float_t rmsz2p2  = seed->GetCMeanSigmaZ2p2();
+    Float_t rmsy2p30R  = seed->GetCMeanSigmaY2p30R();
+    Float_t rmsz2p30R  = seed->GetCMeanSigmaZ2p30R();
 
     AliExternalTrackParam param(*seed); 
     (*fDebugStreamer)<<"ErrParam"<<
@@ -298,8 +298,8 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
       "rmsz2="<<rmsz2<<	
       "rmsy2p30="<<rmsy2p30<<
       "rmsz2p30="<<rmsz2p30<<	
-      "rmsy2p2="<<rmsy2p2<<
-      "rmsz2p2="<<rmsz2p2<<	
+      "rmsy2p30R="<<rmsy2p30R<<
+      "rmsz2p30R="<<rmsz2p30R<<	
       "\n";
   }
   
@@ -1519,8 +1519,8 @@ Int_t AliTPCtrackerMI::FollowToNextFast(AliTPCseed& t, Int_t nr) {
     t.GetProlongation(x,y,z);
   }
   //
-  // update current shape info every 3 pad-row
-  if ( (nr%6==0) || t.GetNumberOfClusters()<2 || (t.GetCurrentSigmaY2()<0.0001) ){
+  // update current shape info every 2 pad-row
+  if ( (nr%2==0) || t.GetNumberOfClusters()<2 || (t.GetCurrentSigmaY2()<0.0001) ){
     //    t.fCurrentSigmaY = GetSigmaY(&t);
     //t.fCurrentSigmaZ = GetSigmaZ(&t);
     GetShape(&t,nr);
@@ -1688,7 +1688,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
     }
 
   // update current
-  if ( (nr%6==0) || t.GetNumberOfClusters()<2){
+  if ( (nr%2==0) || t.GetNumberOfClusters()<2){
     //    t.fCurrentSigmaY = GetSigmaY(&t);
     //t.fCurrentSigmaZ = GetSigmaZ(&t);
     GetShape(&t,nr);
