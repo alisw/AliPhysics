@@ -58,7 +58,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   UShort_t nBunchX,
 			   UInt_t nOrbit,
 			   UInt_t nPeriod,
-			   Char_t *title) :
+			   const Char_t *title) :
   AliVHeader(),
   fMagneticField(-999.),
   fMuonMagFieldScale(-999.),
@@ -106,7 +106,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
  			   ULong64_t trigMask,
 			   UChar_t trigClus,
 			   UInt_t evttype,
-			   Char_t *title) :
+			   const Char_t *title) :
   AliVHeader(),
   fMagneticField(magField),
   fMuonMagFieldScale(muonMagFieldScale),

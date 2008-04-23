@@ -18,7 +18,7 @@ class AliAODHeader : public AliVHeader {
  public :
   AliAODHeader();
  
-  AliAODHeader(Int_t nRun, UShort_t nBunchX, UInt_t nOrbit, UInt_t nPeriod, Char_t *title="");
+  AliAODHeader(Int_t nRun, UShort_t nBunchX, UInt_t nOrbit, UInt_t nPeriod, const Char_t *title="");
   AliAODHeader(Int_t nRun, 
 	       UShort_t nBunchX,
 	       UInt_t nOrbit,
@@ -37,7 +37,7 @@ class AliAODHeader : public AliVHeader {
 	       ULong64_t fTriggerMask,
 	       UChar_t   fTriggerCluster,
 	       UInt_t    fEventType,
-	       Char_t *title="");
+	       const Char_t *title="");
   
   virtual ~AliAODHeader();
   AliAODHeader(const AliAODHeader& evt); 
