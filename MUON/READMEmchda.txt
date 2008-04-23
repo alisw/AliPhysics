@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_mchda Muon Tracking DA
+\page README_mchda Tracking DA
  
 The detector algorithm is implemented for the Muon Tracking in the AliRoot framework.
 The main code is located in MUONTRKda.cxx and it runs in each Muon Tracking LDC.
