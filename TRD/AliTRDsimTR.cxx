@@ -220,6 +220,11 @@ AliTRDsimTR::~AliTRDsimTR()
     fNFoilsUp = 0;
   }
 
+  if (fSpectrum) {
+    delete fSpectrum;
+    fSpectrum = 0;
+  }
+
 }
 
 //_____________________________________________________________________________
