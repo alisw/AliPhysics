@@ -26,14 +26,6 @@
   #include <map>
 #endif
 
-#ifdef WITH_ROOT
-  typedef  TExMap  SpecialMap;
-#endif
-
-#ifdef WITH_STL
-  typedef map<Int_t , AliMUONSt1SpecialMotif> SpecialMap;
-#endif
-
 // typedef Float_t GReal_t; // for AliGeant3
 typedef Double_t GReal_t;  // for VirtualMC
 
@@ -118,6 +110,7 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     static const char* fgkQuadrantMLayerName;///< prefix for automatic volume naming
     static const char* fgkQuadrantNLayerName;///< prefix for automatic volume naming
     static const char* fgkQuadrantFLayerName;///< prefix for automatic volume naming
+    static const char* fgkQuadrantMFLayerName;    ///< prefix for automatic volume naming
     static const char* fgkDaughterName;      ///< prefix for automatic volume naming
     static const Int_t fgkFoamBoxNameOffset; ///< coefficient for automatic volume naming
     static const Int_t fgkFR4BoxNameOffset;  ///< coefficient for automatic volume naming
@@ -135,17 +128,20 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     void CreateFoamBox(Int_t segNumber, const TVector2& dimensions);
     void CreatePlaneSegment(Int_t segNumber, const TVector2& dimensions,
                      Int_t nofHoles);
+    void CreateQuadrantLayersAsVolumes(Int_t chamber);
+    void CreateQuadrantLayersAsAssemblies(Int_t chamber);
     void CreateFrame(Int_t chamber);
 
     void PlaceInnerLayers(Int_t chamber);
     void PlaceSpacer0(Int_t chamber);
-    void PlaceSector(const AliMpSector* sector, SpecialMap specialMap,
+    void PlaceSector(const AliMpSector* sector, TExMap specialMap,
                      const TVector3& where, Bool_t reflectZ, Int_t chamber);
 		     
     TString QuadrantEnvelopeName(Int_t chamber, Int_t quadrant) const;
     TString QuadrantMLayerName(Int_t chamber) const;
     TString QuadrantNLayerName(Int_t chamber) const;
     TString QuadrantFLayerName(Int_t chamber) const;
+    TString QuadrantMFLayerName(Int_t chamber) const;
     TString PlaneSegmentName(Int_t segNumber) const;
     TString FoamBoxName(Int_t segNumber) const;
     TString FR4BoxName(Int_t segNumber) const;
@@ -183,6 +179,10 @@ inline GReal_t AliMUONSt1GeometryBuilderV2::TotalHz() const
 /// Return middle quadrant layer name for chamber \a chamber
 inline TString AliMUONSt1GeometryBuilderV2::QuadrantMLayerName(Int_t chamber) const
 { return Form("%s%d",fgkQuadrantMLayerName,chamber); }
+
+/// Return middle quadrant frame layer name for chamber \a chamber
+inline TString AliMUONSt1GeometryBuilderV2::QuadrantMFLayerName(Int_t chamber) const
+{ return Form("%s%d",fgkQuadrantMFLayerName,chamber); }
 
 /// Return nearer quadrant layer name for chamber \a chamber
 inline TString AliMUONSt1GeometryBuilderV2::QuadrantNLayerName(Int_t chamber) const

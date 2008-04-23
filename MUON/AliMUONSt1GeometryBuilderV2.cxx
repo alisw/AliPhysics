@@ -110,7 +110,7 @@ const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxDaughter=2.3/2.;
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyDaughter=6.3/2.;
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkOffsetX=1.46;
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkOffsetY=0.71;
-const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamX=1.46;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamX=1.00;
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamY=0.051;
 
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaQuadLHC=2.6;  // LHC Origin wrt Quadrant Origin
@@ -127,6 +127,7 @@ const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantEnvelopeName="SE";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMLayerName="SQM";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantNLayerName="SQN";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
+const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMFLayerName="SQMF";
 const Int_t AliMUONSt1GeometryBuilderV2::fgkFoamBoxNameOffset=200; 
 const Int_t AliMUONSt1GeometryBuilderV2::fgkFR4BoxNameOffset=400; 
 const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
@@ -537,10 +538,10 @@ void AliMUONSt1GeometryBuilderV2::CreateSpacer()
   GReal_t par[3];
   par[0] = 0.510;
   par[1] = 0.170;
-  par[2] = 1.275;
+  par[2] = 1.1515;
   gMC->Gsvolu("Spacer5A","BOX",idFrameEpoxy,par,3);
 
-  par[0] = 0.575;
+  par[0] = 0.516;
   par[1] = 1.500;
   par[2] = 0.100;
   gMC->Gsvolu("Spacer6","BOX",idFrameEpoxy,par,3);
@@ -562,21 +563,15 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 /// Create the quadrant (bending and non-bending planes)
 /// for the given chamber
 
-  CreateFrame(chamber);
+  // CreateQuadrantLayersAsVolumes(chamber);
+  CreateQuadrantLayersAsAssemblies(chamber);
 
-#ifdef WITH_STL
-  SpecialMap specialMap;
-  specialMap[76] = AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.);
-  specialMap[75] = AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36));
-  specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.01, 0.36));
-#endif
+  CreateFrame(chamber);
   
-#ifdef WITH_ROOT
-  SpecialMap specialMap;
-  specialMap.Add(76, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.));
+  TExMap specialMap;
+  specialMap.Add(76, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.1, 0.72), 90.));
   specialMap.Add(75, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36)));
   specialMap.Add(47, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
-#endif
 
   // Load mapping from OCDB
   if ( ! AliMpSegmentation::Instance() ) {
@@ -590,12 +585,9 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   if ( ! kSegmentation1 ) {
     AliFatal("Could not access sector segmentation !");
   }
-    
+
   const AliMpSector* kSector1 = kSegmentation1->GetSector();
-/*
-  AliMpSectorReader reader1(AliMp::kStation1, AliMp::kBendingPlane);
-  AliMpSector* kSector1 = reader1.BuildSector();
-*/
+
   //Bool_t reflectZ = true;
   Bool_t reflectZ = false;
   //TVector3 where = TVector3(2.5+0.1+0.56+0.001, 2.5+0.1+0.001, 0.);
@@ -603,20 +595,6 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
                             fgkDeltaQuadLHC + fgkPadYOffsetBP, 0.);
   PlaceSector(kSector1, specialMap, where, reflectZ, chamber);
   
-#ifdef WITH_STL
-  specialMap.clear();
-  specialMap[76] = AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.);
-  specialMap[75] = AliMUONSt1SpecialMotif(TVector2(1.96, 0.17));
-  specialMap[47] = AliMUONSt1SpecialMotif(TVector2(2.18,-0.98));
-  specialMap[20] = AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08));
-  specialMap[46] = AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25));
-  specialMap[74] = AliMUONSt1SpecialMotif(TVector2(0.28, 0.21));
-      // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
-      // in the true position)   
-      // Was: specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.61,-1.18));
-#endif
-
-#ifdef WITH_ROOT
   Int_t nb = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
   TExMapIter it(&specialMap);
   Long_t key;
@@ -625,20 +603,16 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
     delete reinterpret_cast<AliMUONSt1SpecialMotif*>(value);
   }
   specialMap.Delete();
-  specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
-  specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
-  specialMap.Add(47 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.18,-0.98)));
+  specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.51),90.));
+  specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96,-0.04)));
+  specialMap.Add(47 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.18,-1.11)));
   specialMap.Add(20 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
-  specialMap.Add(46 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25)));
-  specialMap.Add(74 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));  
+  specialMap.Add(46 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.6 , 0.17)));
+  specialMap.Add(74 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, -0.10)));  
       // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
       // in the true position)   
       // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
-#endif
-/*
-  AliMpSectorReader reader2(AliMp::kStation1, AliMp::kNonBendingPlane);
-  AliMpSector* sector2 = reader2.BuildSector();
-*/  
+
   const AliMpSectorSegmentation* kSegmentation2 
     = dynamic_cast<const AliMpSectorSegmentation*>(
         AliMpSegmentation::Instance()
@@ -658,13 +632,11 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
       // Fix (4) - was TVector3(where.X()+0.63/2, ... - now it is -0.63/2
   PlaceSector(kSector2, specialMap, where, reflectZ, chamber);
 
-#ifdef WITH_ROOT
   it.Reset();
   while ( it.Next(key,value) == kTRUE ) {
     delete reinterpret_cast<AliMUONSt1SpecialMotif*>(value);
   }
   specialMap.Delete();
-#endif
 }
 
 //______________________________________________________________________________
@@ -739,22 +711,28 @@ void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(Int_t segNumber,
        FoamBoxName(segNumber) == "S309" ||
        FoamBoxName(segNumber) == "S351"    )  
   {
-    GReal_t posX = 12.6;
-    GReal_t posY = 0.75;
-    GReal_t posZ = 0.0;
+    GReal_t posX =  12.6;
+    GReal_t posY =  0.75;
+    GReal_t posZ = -0.1;
+    if ( FoamBoxName(segNumber) == "S267" || 
+         FoamBoxName(segNumber) == "S351" ) posY += fgkPadYOffsetBP;    
     gMC->Gspos("Spacer5A", 1, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
 
     posY = -0.75;
+    if ( FoamBoxName(segNumber) == "S267" || 
+         FoamBoxName(segNumber) == "S351" ) posY += fgkPadYOffsetBP;    
     gMC->Gspos("Spacer5A", 2, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
 
     posY = 0.0;
     posZ = 1.1515;
     if ( FoamBoxName(segNumber) == "S267" || 
-         FoamBoxName(segNumber) == "S351" ) posZ *= -1.0;    
+         FoamBoxName(segNumber) == "S351" ) posY += fgkPadYOffsetBP;    
     gMC->Gspos("Spacer6",  1, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
 
     posY = 0.0;
     posZ = 0.0;
+    if ( FoamBoxName(segNumber) == "S267" || 
+         FoamBoxName(segNumber) == "S351" ) posY += fgkPadYOffsetBP;    
     gMC->Gspos("Spacer7A", 1, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
   }  
 
@@ -762,11 +740,128 @@ void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(Int_t segNumber,
     GReal_t posX = ((2.*holeNum+1.)/nofHoles-1.)*dimensions.X();
     GReal_t posY = 0.;
     GReal_t posZ = 0.;
-  
+ 
     gMC->Gspos(fgkHoleName,holeNum+1,
                FoamBoxName(segNumber).Data(),posX,posY,posZ,0,"ONLY");
   }
 }
+
+//______________________________________________________________________________
+void AliMUONSt1GeometryBuilderV2::CreateQuadrantLayersAsVolumes(Int_t chamber)
+{
+/// Create the three main layers as real volumes.
+/// Not used anymore.
+
+  // tracking medias
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
+  Int_t idAir  = idtmed[1100];       // medium 1
+
+  Float_t par[11];
+  Float_t posX,posY,posZ;
+
+// Quadrant volume TUBS1, positioned at the end
+  par[0] = fgkMotherIR1;
+  par[1] = fgkMotherOR1; 
+  par[2] = fgkMotherThick1;  
+  par[3] = fgkMotherPhiL1; 
+  par[4] = fgkMotherPhiU1;
+  gMC->Gsvolu(QuadrantMLayerName(chamber),"TUBS",idAir,par,5);
+  // gMC->Gsvolu(QuadrantMFLayerName(chamber),"TUBS",idAir,par,5);
+
+// Replace the volume shape with a composite shape
+// with substracted overlap with beam shield (YMOT)
+
+  if ( gMC->IsRootGeometrySupported() ) { 
+
+    // Get shape
+    TGeoVolume* mlayer 
+      = gGeoManager->FindVolumeFast(QuadrantMLayerName(chamber));
+    if ( !mlayer ) {
+      AliErrorStream() 
+         << "Quadrant volume " << QuadrantMLayerName(chamber) << " not found" 
+	 << endl;
+    }
+    else {
+      TGeoShape* quadrant = mlayer->GetShape();
+      quadrant->SetName("quadrant");	 
+
+      // Beam shield recess
+      par[0] = 0;
+      par[1] = 15.4; 
+      par[2] = fgkMotherThick1;  
+      new TGeoTube("shield_tube", par[0], par[1], par[2]);
+  
+      // Displacement
+      posX = 2.6;
+      posY = 2.6;
+      posZ = 0;
+      TGeoTranslation* displacement 
+        = new TGeoTranslation("TR", posX, posY, posZ);
+      displacement->RegisterYourself();
+
+      // Composite shape
+      TGeoShape* composite
+      = new TGeoCompositeShape("composite", "quadrant-shield_tube:TR"); 
+      
+      // Reset shape to volume      
+      mlayer->SetShape(composite);
+    }
+
+    TGeoVolume* malayer 
+      = gGeoManager->FindVolumeFast(QuadrantMFLayerName(chamber));
+    if ( !malayer ) {
+      AliErrorStream() 
+         << "Quadrant volume " << QuadrantMFLayerName(chamber) << " not found" 
+	 << endl;
+    }
+    else {
+      TGeoShape* quadrant = malayer->GetShape();
+      quadrant->SetName("quadrant");	 
+
+      // Beam shield recess
+      par[0] = 0;
+      par[1] = 15.4; 
+      par[2] = fgkMotherThick1;  
+      new TGeoTube("shield_tube", par[0], par[1], par[2]);
+  
+      // Displacement
+      posX = 2.6;
+      posY = 2.6;
+      posZ = 0;
+      TGeoTranslation* displacement 
+        = new TGeoTranslation("TR", posX, posY, posZ);
+      displacement->RegisterYourself();
+
+      // Composite shape
+      TGeoShape* composite
+      = new TGeoCompositeShape("composite", "quadrant-shield_tube:TR"); 
+      
+      // Reset shape to volume      
+      malayer->SetShape(composite);
+    }
+  }  
+
+// Quadrant volume TUBS2, positioned at the end
+  par[0] = fgkMotherIR2;
+  par[1] = fgkMotherOR2; 
+  par[2] = fgkMotherThick2;  
+  par[3] = fgkMotherPhiL2; 
+  par[4] = fgkMotherPhiU2;
+
+  gMC->Gsvolu(QuadrantNLayerName(chamber),"TUBS",idAir,par,5); 
+  gMC->Gsvolu(QuadrantFLayerName(chamber),"TUBS",idAir,par,5); 
+}  
+
+//______________________________________________________________________________
+void AliMUONSt1GeometryBuilderV2::CreateQuadrantLayersAsAssemblies(Int_t chamber)
+{
+/// Create the three main layers as assemblies
+
+  gGeoManager->MakeVolumeAssembly(QuadrantMLayerName(chamber).Data()); 
+  gGeoManager->MakeVolumeAssembly(QuadrantMFLayerName(chamber).Data()); 
+  gGeoManager->MakeVolumeAssembly(QuadrantNLayerName(chamber).Data()); 
+  gGeoManager->MakeVolumeAssembly(QuadrantFLayerName(chamber).Data()); 
+}  
 
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
@@ -798,12 +893,18 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
 /// SQNx is the Quadrant Near side layer for chamber \a chamber ( posZ in [-6.25,3-.25) ), and
 /// SQFx is the Quadrant Far side layer for chamber \a chamber ( posZ in (3.25,6.25] ).
 
+  // TString quadrantMLayerName = QuadrantMLayerName(chamber);
+
+  TString quadrantMLayerName = QuadrantMFLayerName(chamber);
+  TString quadrantNLayerName = QuadrantNLayerName(chamber);
+  TString quadrantFLayerName = QuadrantFLayerName(chamber);
+
   const Float_t kNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 
   // tracking medias
   Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
   
-  Int_t idAir  = idtmed[1100];       // medium 1
+  //Int_t idAir  = idtmed[1100];       // medium 1
   //Int_t idFrameEpoxy = idtmed[1115]; // medium 16 = Frame Epoxy ME730
   //Int_t idInox = idtmed[1116];       // medium 17 Stainless Steel (18%Cr,9%Ni,Fe)
   //Int_t idFR4 = idtmed[1110];        // medium 11 FR4
@@ -1256,64 +1357,6 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
  Float_t par[11];
  Float_t posX,posY,posZ;
 
-// Quadrant volume TUBS1, positioned at the end
-  par[0] = fgkMotherIR1;
-  par[1] = fgkMotherOR1; 
-  par[2] = fgkMotherThick1;  
-  par[3] = fgkMotherPhiL1; 
-  par[4] = fgkMotherPhiU1;
-  gMC->Gsvolu(QuadrantMLayerName(chamber),"TUBS",idAir,par,5);
-
-// Replace the volume shape with a composite shape
-// with substracted overlap with beam shield (YMOT)
-
-  if ( gMC->IsRootGeometrySupported() ) { 
-
-    // Get shape
-    TGeoVolume* mlayer 
-      = gGeoManager->FindVolumeFast(QuadrantMLayerName(chamber));
-    if ( !mlayer ) {
-      AliErrorStream() 
-         << "Quadrant volume " << QuadrantMLayerName(chamber) << " not found" 
-	 << endl;
-    }
-    else {
-      TGeoShape* quadrant = mlayer->GetShape();
-      quadrant->SetName("quadrant");	 
-
-      // Beam shield recess
-      par[0] = 0;
-      par[1] = 15.4; 
-      par[2] = fgkMotherThick1;  
-      new TGeoTube("shield_tube", par[0], par[1], par[2]);
-  
-      // Displacement
-      posX = 2.6;
-      posY = 2.6;
-      posZ = 0;
-      TGeoTranslation* displacement 
-        = new TGeoTranslation("TR", posX, posY, posZ);
-      displacement->RegisterYourself();
-
-      // Composite shape
-      TGeoShape* composite
-      = new TGeoCompositeShape("composite", "quadrant-shield_tube:TR"); 
-      
-      // Reset shape to volume      
-      mlayer->SetShape(composite);
-    }
-  }    
-
-// Quadrant volume TUBS2, positioned at the end
-  par[0] = fgkMotherIR2;
-  par[1] = fgkMotherOR2; 
-  par[2] = fgkMotherThick2;  
-  par[3] = fgkMotherPhiL2; 
-  par[4] = fgkMotherPhiU2;
-
-  gMC->Gsvolu(QuadrantNLayerName(chamber),"TUBS",idAir,par,5); 
-  gMC->Gsvolu(QuadrantFLayerName(chamber),"TUBS",idAir,par,5); 
-
    if (chamber==1) {   
     // InVFrame  
     par[0] = kHxInVFrame;
@@ -1745,7 +1788,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = kHxInVFrame;
     posY = 2.0*kHyInHFrame+2.*kHyH1mm+kIAF+kHyInVFrame;        
     posZ = 0.;
-    gMC->Gspos("SQ00",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ00",1,quadrantMLayerName,posX, posY, posZ, 0, "ONLY"); 
 
 // keep memory of the mid position. Used for placing screws
     const GReal_t kMidVposX = posX;
@@ -1756,85 +1799,85 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = 2.0*kHxInVFrame+kHxV1mm;
     posY = 2.0*kHyInHFrame+2.*kHyH1mm+kIAF+kHyV1mm;
     posZ = 0.;
-    gMC->Gspos("SQ01",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
+    gMC->Gspos("SQ01",1,quadrantMLayerName,posX, posY, posZ,0, "ONLY"); 
     
     // TopFrameAnode place 2 layers of TopFrameAnode cuboids  
     posX = kHxTFA;
     posY = 2.*kHyInHFrame+2.*kHyH1mm+kIAF+2.*kHyInVFrame+kHyTFA;   
     posZ = kHzOuterFrameInox;
-    gMC->Gspos("SQ02",1,QuadrantMLayerName(chamber),posX, posY, posZ,0,"ONLY"); 
+    gMC->Gspos("SQ02",1,quadrantMLayerName,posX, posY, posZ,0,"ONLY"); 
     posZ = posZ+kHzOuterFrameInox;
-    gMC->Gspos("SQ03",1,QuadrantMLayerName(chamber),posX, posY, posZ,0,"ONLY");
+    gMC->Gspos("SQ03",1,quadrantMLayerName,posX, posY, posZ,0,"ONLY");
     
     // place 2 layers of TopFrameAnodeA trapezoids 
     posX = 35.8932+fgkDeltaQuadLHC;
     posY = 92.6745+fgkDeltaQuadLHC;
     posZ = kHzOuterFrameInox; 
-    gMC->Gspos("SQ04",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
+    gMC->Gspos("SQ04",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
     posZ = posZ+kHzOuterFrameInox;
-    gMC->Gspos("SQ05",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
+    gMC->Gspos("SQ05",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
     
     // place 2 layers of TopFrameAnodeB trapezoids 
     posX = 44.593+fgkDeltaQuadLHC;
     posY = 90.737+fgkDeltaQuadLHC;
     posZ = kHzOuterFrameInox; 
-    gMC->Gspos("SQ06",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
+    gMC->Gspos("SQ06",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
     posZ = posZ+kHzOuterFrameInox;
-    gMC->Gspos("SQ07",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");    
+    gMC->Gspos("SQ07",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");    
 
     // TopAnode1 place 2 layers  
     posX = 6.8+fgkDeltaQuadLHC;
     posY = 99.85+fgkDeltaQuadLHC;
     posZ = -1.*kHzAnodeFR4;
-    gMC->Gspos("SQ08",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");  
+    gMC->Gspos("SQ08",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");  
     posZ = posZ+kHzTopAnodeSteel1;
-    gMC->Gspos("SQ09",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");    
+    gMC->Gspos("SQ09",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");    
          
     // TopAnode2 place 2 layers
     posX = 18.534+fgkDeltaQuadLHC;
     posY = 99.482+fgkDeltaQuadLHC; 
     posZ = -1.*kHzAnodeFR4;    
-    gMC->Gspos("SQ10",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
+    gMC->Gspos("SQ10",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
     posZ = posZ+kHzTopAnodeSteel2;    
-    gMC->Gspos("SQ11",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");       
+    gMC->Gspos("SQ11",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");       
     
     // TopAnode3 place 1 layer
     posX = 25.80+fgkDeltaQuadLHC;
     posY = 98.61+fgkDeltaQuadLHC;
     posZ = 0.;    
-    gMC->Gspos("SQ12",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");  
+    gMC->Gspos("SQ12",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");  
           
     // TopEarthFace - 2 copies
     posX = 23.122+fgkDeltaQuadLHC;
     posY = 96.90+fgkDeltaQuadLHC;
     posZ = kHzOuterFrameEpoxy+kHzOuterFrameInox+kHzTopEarthFaceCu;
-    gMC->Gspos("SQ13",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
+    gMC->Gspos("SQ13",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
     posZ = -1.*posZ;
-    gMC->Gspos("SQ13",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
+    gMC->Gspos("SQ13",2,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
 
     // TopEarthProfile 
     posX = 14.475+fgkDeltaQuadLHC;
     posY = 97.900+fgkDeltaQuadLHC; 
     posZ = kHzTopEarthProfileCu;
-    gMC->Gspos("SQ14",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
+    gMC->Gspos("SQ14",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
     posZ = -1.0*posZ;
-    gMC->Gspos("SQ14",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
+    gMC->Gspos("SQ14",2,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
 
     // TopGasSupport - 2 copies                            
     posX = 4.9500+fgkDeltaQuadLHC;
     posY = 96.200+fgkDeltaQuadLHC;
     posZ = kHzOuterFrameEpoxy+kHzOuterFrameInox+kHzTopGasSupportAl;
-    gMC->Gspos("SQ15",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
+    gMC->Gspos("SQ15",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
     posZ = -1.*posZ;
-    gMC->Gspos("SQ15",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
+    gMC->Gspos("SQ15",2,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
     
     // TopPositioner parameters - single Stainless Steel trapezoid - 2 copies
     posX = 7.60+fgkDeltaQuadLHC;
     posY = 98.98+fgkDeltaQuadLHC;   
     posZ = kHzOuterFrameEpoxy+kHzOuterFrameInox+2.*kHzTopGasSupportAl+kHzTopPositionerSteel;
-    gMC->Gspos("SQ16",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
+    gMC->Gspos("SQ16",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
     posZ = -1.*posZ;
-    gMC->Gspos("SQ16",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY"); 
+    gMC->Gspos("SQ16",2,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY"); 
 
     // OutEdgeFrame 
     Float_t xCenter[8]; 
@@ -1865,31 +1908,31 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     yCenter[7] = 87.418 + fgkDeltaQuadLHC; 
       
     posZ = -1.0*kHzOuterFrameInox;     
-    gMC->Gspos("SQ17",1,QuadrantMLayerName(chamber), xCenter[0], yCenter[0], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ17",2,QuadrantMLayerName(chamber), xCenter[4], yCenter[4], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ17",1,quadrantMLayerName, xCenter[0], yCenter[0], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ17",2,quadrantMLayerName, xCenter[4], yCenter[4], posZ, rot3,"ONLY");
 
-    gMC->Gspos("SQ19",1,QuadrantMLayerName(chamber), xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
-    gMC->Gspos("SQ19",2,QuadrantMLayerName(chamber), xCenter[5], yCenter[5], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ19",1,quadrantMLayerName, xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
+    gMC->Gspos("SQ19",2,quadrantMLayerName, xCenter[5], yCenter[5], posZ, rot3,"ONLY");
 
-    gMC->Gspos("SQ21",1,QuadrantMLayerName(chamber), xCenter[2], yCenter[2], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ21",2,QuadrantMLayerName(chamber), xCenter[6], yCenter[6], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ21",1,quadrantMLayerName, xCenter[2], yCenter[2], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ21",2,quadrantMLayerName, xCenter[6], yCenter[6], posZ, rot3,"ONLY");
     
-    gMC->Gspos("SQ23",1,QuadrantMLayerName(chamber), xCenter[3], yCenter[3], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ23",2,QuadrantMLayerName(chamber), xCenter[7], yCenter[7], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ23",1,quadrantMLayerName, xCenter[3], yCenter[3], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ23",2,quadrantMLayerName, xCenter[7], yCenter[7], posZ, rot3,"ONLY");
      
-    posZ = posZ+kHzOuterFrameEpoxy;
+    posZ = posZ+kHzOuterFrameEpoxy + kHzOuterFrameInox;
    
-    gMC->Gspos("SQ18",1,QuadrantMLayerName(chamber), xCenter[0], yCenter[0], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ18",2,QuadrantMLayerName(chamber), xCenter[4], yCenter[4], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ18",1,quadrantMLayerName, xCenter[0], yCenter[0], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ18",2,quadrantMLayerName, xCenter[4], yCenter[4], posZ, rot3,"ONLY");
     
-    gMC->Gspos("SQ20",1,QuadrantMLayerName(chamber), xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
-    gMC->Gspos("SQ20",2,QuadrantMLayerName(chamber), xCenter[5], yCenter[5], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ20",1,quadrantMLayerName, xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
+    gMC->Gspos("SQ20",2,quadrantMLayerName, xCenter[5], yCenter[5], posZ, rot3,"ONLY");
 
-    gMC->Gspos("SQ22",1,QuadrantMLayerName(chamber), xCenter[2], yCenter[2], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ22",2,QuadrantMLayerName(chamber), xCenter[6], yCenter[6], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ22",1,quadrantMLayerName, xCenter[2], yCenter[2], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ22",2,quadrantMLayerName, xCenter[6], yCenter[6], posZ, rot3,"ONLY");
        
-    gMC->Gspos("SQ24",1,QuadrantMLayerName(chamber), xCenter[3], yCenter[3], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ24",2,QuadrantMLayerName(chamber), xCenter[7], yCenter[7], posZ, rot3,"ONLY");  
+    gMC->Gspos("SQ24",1,quadrantMLayerName, xCenter[3], yCenter[3], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ24",2,quadrantMLayerName, xCenter[7], yCenter[7], posZ, rot3,"ONLY");  
 
 //---    
         
@@ -1897,7 +1940,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = 2.*kHxInVFrame+kIAF+2.*kHxInHFrame-kHxOutVFrame+2.*kHxV1mm;
     posY = 2.*kHyInHFrame+kHyOutVFrame;    
     posZ = 0.;              
-    gMC->Gspos("SQ25",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ25",1,quadrantMLayerName,posX, posY, posZ, 0, "ONLY"); 
 
  // keep memory of the mid position. Used for placing screws
     const GReal_t kMidOVposX = posX;
@@ -1911,112 +1954,112 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = kOUTX;
     posY = kTOPY+((kBl1OCTF+kTl1OCTF)/2.);
     posZ = 0.;     
-    gMC->Gspos("SQ26",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY"); 
+    gMC->Gspos("SQ26",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY"); 
 
 // VertEarthFaceCu - 2 copies
     posX = 89.4000+fgkDeltaQuadLHC;
     posY = 25.79+fgkDeltaQuadLHC;    
     posZ = kHzFrameThickness+2.0*kHzFoam+kHzVertEarthFaceCu;              
-    gMC->Gspos("SQ27",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
+    gMC->Gspos("SQ27",1,quadrantMLayerName,posX, posY, posZ, rot1, "ONLY"); 
     posZ = -1.0*posZ; 
-    gMC->Gspos("SQ27",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
+    gMC->Gspos("SQ27",2,quadrantMLayerName,posX, posY, posZ, rot1, "ONLY"); 
     
 // VertEarthSteel - 2 copies
     posX = 91.00+fgkDeltaQuadLHC;
     posY = 30.616+fgkDeltaQuadLHC;    
     posZ = kHzFrameThickness+2.0*kHzFoam+kHzVertBarSteel;              
-    gMC->Gspos("SQ28",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
+    gMC->Gspos("SQ28",1,quadrantMLayerName,posX, posY, posZ, rot1, "ONLY"); 
     posZ = -1.0*posZ;              
-    gMC->Gspos("SQ28",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY");
+    gMC->Gspos("SQ28",2,quadrantMLayerName,posX, posY, posZ, rot1, "ONLY");
  
 // VertEarthProfCu - 2 copies
     posX = 92.000+fgkDeltaQuadLHC;
     posY = 29.64+fgkDeltaQuadLHC;    
     posZ = kHzFrameThickness;              
-    gMC->Gspos("SQ29",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
+    gMC->Gspos("SQ29",1,quadrantMLayerName,posX, posY, posZ, rot1, "ONLY"); 
     posZ = -1.0*posZ;    
-    gMC->Gspos("SQ29",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
+    gMC->Gspos("SQ29",2,quadrantMLayerName,posX, posY, posZ, rot1, "ONLY"); 
 
 // SuppLateralPositionner - 2 copies 
     posX = 90.2-kNearFarLHC;
     posY = 5.00-kNearFarLHC;    
     posZ = kHzLateralPosnAl-fgkMotherThick2;             
-    gMC->Gspos("SQ30",1,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ30",1,quadrantFLayerName,posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;            
-    gMC->Gspos("SQ30",2,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ30",2,quadrantNLayerName,posX, posY, posZ, 0, "ONLY"); 
 
 // LateralPositionner - 2 copies - Face view
     posX = 92.175-kNearFarLHC-2.*kHxLPP;
     posY = 5.00-kNearFarLHC;   
     posZ =2.0*kHzLateralPosnAl+kHzLateralPosnInoxFace-fgkMotherThick2;              
-    gMC->Gspos("SQ31",1,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ31",1,quadrantFLayerName,posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;             
-    gMC->Gspos("SQ31",2,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ31",2,quadrantNLayerName,posX, posY, posZ, 0, "ONLY"); 
 
 // LateralPositionner -  Profile view   
     posX = 92.175+fgkDeltaQuadLHC+kHxLPF-kHxLPP;
     posY = 5.00+fgkDeltaQuadLHC;    
     posZ = 0.;              
-    gMC->Gspos("SQ32",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // middle layer
+    gMC->Gspos("SQ32",1,quadrantMLayerName,posX, posY, posZ, 0, "ONLY"); // middle layer
 
     posX = 92.175-kNearFarLHC+kHxLPF-kHxLPP; 
     posY = 5.0000-kNearFarLHC;    
     posZ = fgkMotherThick2-kHzLPNF;              
-    gMC->Gspos("SQ33",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // near layer
+    gMC->Gspos("SQ33",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY"); // near layer
     posZ = -1.*posZ;
-    gMC->Gspos("SQ33",2,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // far layer
+    gMC->Gspos("SQ33",2,quadrantFLayerName,posX, posY, posZ, 0, "ONLY"); // far layer
       
 // VertCradleA  1st Trapezoid - 3 copies
     posX = 95.73+fgkDeltaQuadLHC;
     posY = 33.26+fgkDeltaQuadLHC; 
     posZ = 0.;              
-    gMC->Gspos("SQ34",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");  
+    gMC->Gspos("SQ34",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");  
 
     posX = 95.73-kNearFarLHC;
     posY = 33.26-kNearFarLHC;
     posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;               
-    gMC->Gspos("SQ34",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");
+    gMC->Gspos("SQ34",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY");
     posZ = -1.0*posZ;              
-    gMC->Gspos("SQ34",3,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY");
+    gMC->Gspos("SQ34",3,quadrantFLayerName,posX, posY, posZ, 0, "ONLY");
 
 // VertCradleB  2nd Trapezoid - 3 copies
     posX = 97.29+fgkDeltaQuadLHC;
     posY = 23.02+fgkDeltaQuadLHC;    
     posZ = 0.;              
-    gMC->Gspos("SQ35",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
+    gMC->Gspos("SQ35",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
 
     posX = 97.29-kNearFarLHC;
     posY = 23.02-kNearFarLHC;   
     posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;          
-    gMC->Gspos("SQ35",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");    
+    gMC->Gspos("SQ35",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY");    
     posZ = -1.0*posZ;          
-    gMC->Gspos("SQ35",3,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY");
+    gMC->Gspos("SQ35",3,quadrantFLayerName,posX, posY, posZ, 0, "ONLY");
 
 // OutVertCradleC  3rd Trapeze - 3 copies
     posX = 98.31+fgkDeltaQuadLHC;
     posY = 12.77+fgkDeltaQuadLHC;  
     posZ = 0.;              
-    gMC->Gspos("SQ36",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
+    gMC->Gspos("SQ36",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
 
     posX = 98.05-kNearFarLHC;
     posY = 12.77-kNearFarLHC;        
     posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;         
            // Fix (2) of extrusion SQ36 from SQN1, SQN2, SQF1, SQF2 
 	   // (was posX = 98.31 ...)
-    gMC->Gspos("SQ36",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");       
+    gMC->Gspos("SQ36",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY");       
     posZ = -1.0*posZ;
-    gMC->Gspos("SQ36",3,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY");  
+    gMC->Gspos("SQ36",3,quadrantFLayerName,posX, posY, posZ, 0, "ONLY");  
 
 // OutVertCradleD  4th Trapeze - 3 copies
     posX = 98.81+fgkDeltaQuadLHC;
     posY = 2.52+fgkDeltaQuadLHC;    
     posZ = 0.;              
-    gMC->Gspos("SQ37",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
+    gMC->Gspos("SQ37",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
    
     posZ = fgkMotherThick1-kHzVerticalCradleAl;                
-    gMC->Gspos("SQ37",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
+    gMC->Gspos("SQ37",1,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
     posZ = -1.0*posZ;          
-    gMC->Gspos("SQ37",3,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");          
+    gMC->Gspos("SQ37",3,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");          
              
 // LateralSightSupport - 2 copies
     posX = 98.33-kNearFarLHC;
@@ -2024,15 +2067,15 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posZ = kHzLateralSightAl-fgkMotherThick2;
            // Fix (3) of extrusion SQ38 from SQN1, SQN2, SQF1, SQF2 
            // (was posX = 98.53 ...)
-    gMC->Gspos("SQ38",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ38",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;             
-    gMC->Gspos("SQ38",2,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ38",2,quadrantFLayerName,posX, posY, posZ, 0, "ONLY"); 
     
 // Mire placement
     posX = 92.84+fgkDeltaQuadLHC;  
     posY = 8.13+fgkDeltaQuadLHC;
     posZ = 0.;
-    gMC->Gspos("SQ39",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");    
+    gMC->Gspos("SQ39",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");    
 
 //---
 
@@ -2040,7 +2083,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = 2.0*kHxInVFrame+2.*kHxV1mm+kIAF+kHxInHFrame;
     posY = kHyInHFrame;
     posZ = 0.;       
-    gMC->Gspos("SQ40",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ40",1,quadrantMLayerName,posX, posY, posZ, 0, "ONLY"); 
  
  // keep memory of the mid position. Used for placing screws
     const GReal_t kMidHposX = posX;
@@ -2051,13 +2094,13 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = 2.0*kHxInVFrame+2.*kHxV1mm+kIAF+kHxH1mm;
     posY = 2.0*kHyInHFrame+kHyH1mm;
     posZ = 0.;
-    gMC->Gspos("SQ41",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
+    gMC->Gspos("SQ41",1,quadrantMLayerName,posX, posY, posZ,0, "ONLY"); 
         
 // InArcFrame 
     posX = 2.0*kHxInVFrame+2.*kHxV1mm;
     posY = 2.0*kHyInHFrame+2.*kHyH1mm;
     posZ = 0.;    
-    gMC->Gspos("SQ42",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
+    gMC->Gspos("SQ42",1,quadrantMLayerName,posX, posY, posZ,0, "ONLY"); 
 
 // keep memory of the mid position. Used for placing screws
     const GReal_t kMidArcposX = posX;
@@ -2087,10 +2130,10 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
      posX = fgkDeltaQuadLHC + scruX[i];
      posY = fgkDeltaQuadLHC + scruY[i];
      posZ = 0.;   
-     gMC->Gspos("SQ43",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");      
+     gMC->Gspos("SQ43",i+1,quadrantMLayerName,posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");      
      if (chamber==1)
        gMC->Gspos("SQ44",i+1,"SQ40",posX+0.1-kMidHposX, posY+0.1-kMidHposY, posZ-kMidHposZ, 0, "ONLY");
-     gMC->Gspos("SQ45",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY"); 
+     gMC->Gspos("SQ45",i+1,quadrantMLayerName,posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY"); 
      }
      // special screw coordinates
      scruX[63] = 16.3;  
@@ -2098,10 +2141,10 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
      posX = fgkDeltaQuadLHC + scruX[63];
      posY = fgkDeltaQuadLHC + scruY[63];
      posZ = 0.;            
-     gMC->Gspos("SQ43",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");
+     gMC->Gspos("SQ43",64,quadrantMLayerName,posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");
      if (chamber==1)
        gMC->Gspos("SQ44",64,"SQ40",posX+0.1-kMidHposX, posY+0.1-kMidHposY, posZ-kMidHposZ, 0, "ONLY"); 
-     gMC->Gspos("SQ45",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");  
+     gMC->Gspos("SQ45",64,quadrantMLayerName,posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");  
      
 // Screws on the IVEpoxyFrame
   
@@ -2126,10 +2169,10 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = fgkDeltaQuadLHC + scruX[i+lastScrew-1];
     posY = fgkDeltaQuadLHC + scruY[i+lastScrew-1];
     posZ = 0.;       
-    gMC->Gspos("SQ43",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");     
+    gMC->Gspos("SQ43",i+lastScrew,quadrantMLayerName,posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");     
     if (chamber==1)
       gMC->Gspos("SQ44",i+lastScrew,"SQ00",posX+0.1-kMidVposX, posY+0.1-kMidVposY, posZ-kMidVposZ, 0, "ONLY"); 
-    gMC->Gspos("SQ45",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");
+    gMC->Gspos("SQ45",i+lastScrew,quadrantMLayerName,posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");
     }    
     
 // Screws on the OVEpoxyFrame
@@ -2153,11 +2196,11 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = fgkDeltaQuadLHC + scruX[i+firstScrew-1];
     posY = fgkDeltaQuadLHC + scruY[i+firstScrew-1];
     posZ = 0.;   
-    gMC->Gspos("SQ43",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");     
+    gMC->Gspos("SQ43",i+firstScrew,quadrantMLayerName,posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");     
     // ??
     if (chamber==1)
       gMC->Gspos("SQ44",i+firstScrew,"SQ25",posX+0.1-kMidOVposX, posY+0.1-kMidOVposY, posZ-kMidOVposZ, 0, "ONLY"); 
-    gMC->Gspos("SQ45",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY"); 
+    gMC->Gspos("SQ45",i+firstScrew,quadrantMLayerName,posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY"); 
     }
     // special case for 1st screw, inside the horizontal frame (volume 40)
     posX = fgkDeltaQuadLHC + scruX[firstScrew-1];
@@ -2177,10 +2220,10 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = fgkDeltaQuadLHC + scruX[i+58];
     posY = fgkDeltaQuadLHC + scruY[i+58];
     posZ = 0.;   
-    gMC->Gspos("SQ43",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");    
+    gMC->Gspos("SQ43",i+58+1,quadrantMLayerName,posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");    
     if (chamber==1)
       gMC->Gspos("SQ44",i+58+1,"SQ42",posX+0.1-kMidArcposX, posY+0.1-kMidArcposY, posZ-kMidArcposZ, 0, "ONLY");
-    gMC->Gspos("SQ45",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");
+    gMC->Gspos("SQ45",i+58+1,quadrantMLayerName,posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");
     }
 }
 
@@ -2302,39 +2345,40 @@ void AliMUONSt1GeometryBuilderV2::PlaceSpacer0(Int_t chamber)
   x = 40.82  - mx;
   y = 43.04  - my;
   z = 522.41 - mz;
-  cout << "spacer05 pos1: " << x << ", " << y << ", " << z << endl;
+  AliDebugStream(2) << "spacer05 pos1: " << x << ", " << y << ", " << z << endl;
   gMC->Gspos("Spacer05", 1, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
 
   y = 44.54  - my;
-  cout << "spacer05 pos2: " << x << ", " << y << ", " << z << endl;
+  AliDebugStream(2) << "spacer05 pos2: " << x << ", " << y << ", " << z << endl;
   gMC->Gspos("Spacer05", 2, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
 
   x = 40.82  - mx;
   y = 43.79  - my;
   z = 519.76 - mz;
-  cout << "spacer06 pos1: " << x << ", " << y << ", " << z << endl;
+  AliDebugStream(2) << "spacer06 pos1: " << x << ", " << y << ", " << z << endl;
   gMC->Gspos("Spacer06", 1, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
 
   z = 525.06 - mz;
-  cout << "spacer06 pos2: " << x << ", " << y << ", " << z << endl;
+  AliDebugStream(2) << "spacer06 pos2: " << x << ", " << y << ", " << z << endl;
   gMC->Gspos("Spacer06", 2, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
 
   x = 40.82  - mx;
   y = 43.79  - my;
   z = 522.41 - mz;
-  cout << "spacer07 pos1: " << x << ", " << y << ", " << z << endl;
+  AliDebugStream(2) << "spacer07 pos1: " << x << ", " << y << ", " << z << endl;
   gMC->Gspos("Spacer07", 1, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
 }
 
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
-                            SpecialMap specialMap, 
+                            TExMap specialMap, 
                             const TVector3& where, Bool_t reflectZ, Int_t chamber)
 {
 /// Place all the segments in the mother volume, at the position defined
-/// by the sector's data.
-
-/// \cond SKIP
+/// by the sector's data.                                                      \n
+/// The lines with comments COMMENT OUT BEGIN/END indicates blocks
+/// which can be commented out in order to reduce the number of volumes
+/// in a sector to the plane segments corresponding to regular motifs only.
 
   static Int_t segNum=1;
   Int_t sgn;
@@ -2369,18 +2413,9 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
     for (Int_t iseg=0;iseg<row->GetNofRowSegments();iseg++){ // for each row segment
       AliMpVRowSegment* seg = row->GetRowSegment(iseg);
       
-#ifdef WITH_STL 
-      SpecialMap::iterator iter 
-        = specialMap.find(seg->GetMotifPositionId(0));
-
-      if ( iter == specialMap.end()){ //if this is a normal segment (ie. not part of <specialMap>)
-#endif  
-      
-#ifdef WITH_ROOT  
       Long_t value = specialMap.GetValue(seg->GetMotifPositionId(0));
 
       if ( value == 0 ){ //if this is a normal segment (ie. not part of <specialMap>)
-#endif  
       
         // create the cathode part
         CreatePlaneSegment(segNum, seg->Dimensions(), seg->GetNofMotifs());
@@ -2392,6 +2427,8 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 	           QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
 
         // and place all the daughter boards of this segment
+
+// COMMENT OUT BEGIN
         for (Int_t motifNum=0;motifNum<seg->GetNofMotifs();motifNum++) {
 
 	  // Copy number
@@ -2405,13 +2442,15 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
           posX = where.X() + motifPos->Position().X() + fgkOffsetX;
           posY = where.Y() + motifPos->Position().Y() + fgkOffsetY;
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
-
           gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
         }  
+// COMMENT OUT END
+
         segNum++;
 	
       } else { 
 
+// COMMENT OUT BEGIN
         // if this is a special segment	
         for (Int_t motifNum=0;motifNum<seg->GetNofMotifs();motifNum++) {// for each motif
 
@@ -2434,8 +2473,7 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 
           AliMUONSt1SpecialMotif spMot = *((AliMUONSt1SpecialMotif*)specialMap.GetValue(motifPosId));
 #endif
-          // check
-	  // cout << chamber << " processing special motif: " << motifPosId << endl;  
+	  AliDebugStream(2) << chamber << " processing special motif: " << motifPosId << endl;  
 
           AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(motifPosId);
 
@@ -2465,9 +2503,10 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 	     alreadyDone.Set(2*nofAlreadyDone); 
           alreadyDone.AddAt(motifPosId, nofAlreadyDone++);       	  
 #endif
-          // check
-	  // cout << chamber << " processed motifPosId: " << motifPosId << endl;
+	  AliDebugStream(2) << chamber << " processed motifPosId: " << motifPosId << endl;
 	}		
+// COMMENT OUT END
+ 
       }// end of special motif case
     }
   }
@@ -2734,6 +2773,9 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
       GetEnvelopes(ich-1)
         ->AddEnvelopeConstituent(QuadrantMLayerName(ich), QuadrantEnvelopeName(ich,i),
 	             i+1, TGeoTranslation(posx, posy, posz));
+      GetEnvelopes(ich-1)
+        ->AddEnvelopeConstituent(QuadrantMFLayerName(ich), QuadrantEnvelopeName(ich,i),
+	             i+5, TGeoTranslation(posx, posy, posz));
 
       // Near/far layers
       GReal_t  posx2 = posx + shiftXY;;
@@ -2749,7 +2791,7 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
       GetEnvelopes(ich-1)
         ->AddEnvelopeConstituent(QuadrantFLayerName(ich), QuadrantEnvelopeName(ich,i), 
 	             i+1, TGeoTranslation(posx2, posy2, posz2)); 
-    
+
       // Place spacer in global coordinates in the first non rotated quadrant
       // if ( detElemId[i] == 0 ) PlaceSpacer0(ich);
                // !! This placement should be used only to find out the right mother volume
