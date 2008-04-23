@@ -143,8 +143,8 @@ void AliGenTherminator::Generate()
       } // if has mother   
       Bool_t tFlag = (!hasDaughter);
       
-      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
-      PushTrack(tFlag,imo,kf,
+      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
+      PushTrack(tFlag,imo>=0?idsOnStack[imo]:imo,kf,
 		p[0],p[1],p[2],energy,
 		origin[0],origin[1],origin[2],iparticle->T(),
 		polar[0],polar[1],polar[2],
@@ -188,9 +188,9 @@ void AliGenTherminator::Generate()
       } // if has mother   
       Bool_t tFlag = (hasDaughter);
       
-      printf("Found mother %i with true id %i\n", imo, idsOnStack[imo]);
-      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, idsOnStack[imo]);
-      PushTrack(tFlag,imo,kf,
+      printf("Found mother %i with true id %i\n", imo, imo>=0?idsOnStack[imo]:imo);
+      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
+      PushTrack(tFlag,imo>=0?idsOnStack[imo]:imo,kf,
 		p[0],p[1],p[2],energy,
 		origin[0],origin[1],origin[2],iparticle->T(),
 		polar[0],polar[1],polar[2],
