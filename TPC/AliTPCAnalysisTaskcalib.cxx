@@ -34,7 +34,8 @@ ClassImp(AliTPCAnalysisTaskcalib)
 AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name) 
   :AliAnalysisTask(name,""),
    fCalibJobs(0),
-   fESD(0)
+   fESD(0),
+   fESDfriend(0)
 {
   //
   // Constructor
@@ -65,10 +66,10 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   Int_t n=fESD->GetNumberOfTracks();
   for (Int_t i=0;i<n;++i) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
-    TObject *calibObject;
+    TObject *calibObject=0;
     AliTPCseed *seed=0;
-    for (Int_t j=0;calibObject=friendTrack->GetCalibObject(j);++j)
-      if (seed=dynamic_cast<AliTPCseed*>(calibObject))
+    for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
+      if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
     if (seed)
       Process(seed);
@@ -101,21 +102,21 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
   //
 }
-void AliTPCAnalysisTaskcalib::Terminate(Option_t *option) {
+void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
 }
 
 // we could have been living inside a master class...
 void AliTPCAnalysisTaskcalib::Process(AliESDEvent *event) {
   TIterator *i=fCalibJobs.MakeIterator();
   AliTPCcalibBase *job;
-  while (job=dynamic_cast<AliTPCcalibBase*>(i->Next()))
+  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
     job->Process(event);
 }
 
 void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
   TIterator *i=fCalibJobs.MakeIterator();
   AliTPCcalibBase *job;
-  while (job=dynamic_cast<AliTPCcalibBase*>(i->Next()))
+  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
     job->Process(track);
 }
 
@@ -123,7 +124,7 @@ Long64_t AliTPCAnalysisTaskcalib::Merge(TCollection *li) {
   TIterator *i=fCalibJobs.MakeIterator();
   AliTPCcalibBase *job;
   Long64_t n=0;
-  while (job=dynamic_cast<AliTPCcalibBase*>(i->Next()))
+  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
     n+=job->Merge(li);
   return n;
 }
@@ -131,6 +132,6 @@ Long64_t AliTPCAnalysisTaskcalib::Merge(TCollection *li) {
 void AliTPCAnalysisTaskcalib::Analyze() {
   TIterator *i=fCalibJobs.MakeIterator();
   AliTPCcalibBase *job;
-  while (job=dynamic_cast<AliTPCcalibBase*>(i->Next()))
+  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
     job->Analyze();
 }
