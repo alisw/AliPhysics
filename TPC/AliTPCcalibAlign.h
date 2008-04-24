@@ -11,18 +11,23 @@
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TLinearFitter.h"
+#include "AliTPCcalibBase.h"
+#include "TH1.h"
 
 class AliExternalTrackParam;
+class AliTPCseed;
 
-class AliTPCcalibAlign:public TObject {
+class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
   AliTPCcalibAlign();
 
   virtual ~AliTPCcalibAlign();
 
-  void Process(const AliExternalTrackParam &t1,
-	       const AliExternalTrackParam &t2,
-	       Int_t s1,Int_t s2);
+  virtual void Process(AliTPCseed *track);
+
+  void ProcessTracklets(const AliExternalTrackParam &t1,
+			const AliExternalTrackParam &t2,
+			Int_t s1,Int_t s2);
   void Eval();
   TLinearFitter* GetFitter12(Int_t s1,Int_t s2) {
     return static_cast<TLinearFitter*>(fFitterArray12[s1*72+s2]);
@@ -36,6 +41,12 @@ public:
   Bool_t GetTransformation12(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a);
+
+  TObjArray fDphiHistArray;
+  TObjArray fDthetaHistArray;
+  TObjArray fDyHistArray;
+  TObjArray fDzHistArray;
+
 private:
   void Process12(Double_t *t1,
 		 Double_t *t2,

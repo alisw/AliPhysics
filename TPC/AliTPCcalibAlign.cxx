@@ -31,14 +31,23 @@
 #include "TLinearFitter.h"
 #include "AliTPCcalibAlign.h"
 #include "AliExternalTrackParam.h"
+#include "AliTPCTracklet.h"
+#include "TH1D.h"
 
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 ClassImp(AliTPCcalibAlign)
 
 AliTPCcalibAlign::AliTPCcalibAlign()
-  :fFitterArray12(72*72),fFitterArray9(72*72),fFitterArray6(72*72)
+  :  fDphiHistArray(72*72),
+     fDthetaHistArray(72*72),
+     fDyHistArray(72*72),
+     fDzHistArray(72*72),
+     fFitterArray12(72*72),
+     fFitterArray9(72*72),
+     fFitterArray6(72*72)
 {
   //
   // Constructor
@@ -54,9 +63,91 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
   //
 }
 
-void AliTPCcalibAlign::Process(const AliExternalTrackParam &tp1,
-			       const AliExternalTrackParam &tp2,
-			       Int_t s1,Int_t s2) {
+void AliTPCcalibAlign::Process(AliTPCseed *seed) {
+  TObjArray tracklets=
+    AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kKalman,
+				    kFALSE,20,2);
+  TObjArray trackletsL=
+    AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kLinear,
+				    kFALSE,20,2);
+  TObjArray trackletsQ=
+    AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kQuadratic,
+				    kFALSE,20,2);
+  TObjArray trackletsR=
+    AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kRiemann,
+				    kFALSE,20,2);
+  tracklets.SetOwner();
+  if (tracklets.GetEntries()==2) {
+    AliTPCTracklet *t1=static_cast<AliTPCTracklet*>(tracklets[0]);
+    AliTPCTracklet *t2=static_cast<AliTPCTracklet*>(tracklets[1]);
+    if (t1->GetSector()>t2->GetSector()) {
+      AliTPCTracklet* tmp=t1;
+      t1=t2;
+      t2=tmp;
+    }
+    AliExternalTrackParam *common1=0,*common2=0;
+    if (AliTPCTracklet::PropagateToMeanX(*t1,*t2,common1,common2))
+      ProcessTracklets(*common1,*common2,t1->GetSector(),t2->GetSector());
+    delete common1;
+    delete common2;
+  }
+
+}
+
+void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
+					const AliExternalTrackParam &tp2,
+					Int_t s1,Int_t s2) {
+
+  if (s2-s1==36) {//only inner-outer
+    if (!fDphiHistArray[s1*72+s2]) {
+      stringstream name;
+      stringstream title;
+      name<<"hist_phi_"<<s1<<"_"<<s2;
+      title<<"Phi Missalignment for sectors "<<s1<<" and "<<s2;
+      fDphiHistArray[s1*72+s2]=new TH1D(name.str().c_str(),title.str().c_str(),1024,-0.01,0.01); // +/- 10 mrad
+      ((TH1D*)fDphiHistArray[s1*72+s2])->SetDirectory(0);
+    }
+    if (!fDthetaHistArray[s1*72+s2]) {
+      stringstream name;
+      stringstream title;
+      name<<"hist_theta_"<<s1<<"_"<<s2;
+      title<<"Theta Missalignment for sectors "<<s1<<" and "<<s2;
+      fDthetaHistArray[s1*72+s2]=new TH1D(name.str().c_str(),title.str().c_str(),1024,-0.01,0.01); // +/- 10 mrad
+      ((TH1D*)fDthetaHistArray[s1*72+s2])->SetDirectory(0);
+    }
+    if (!fDyHistArray[s1*72+s2]) {
+      stringstream name;
+      stringstream title;
+      name<<"hist_y_"<<s1<<"_"<<s2;
+      title<<"Y Missalignment for sectors "<<s1<<" and "<<s2;
+      fDyHistArray[s1*72+s2]=new TH1D(name.str().c_str(),title.str().c_str(),1024,-0.3,0.3); // +/- 3 mm
+      ((TH1D*)fDyHistArray[s1*72+s2])->SetDirectory(0);
+    }
+    if (!fDzHistArray[s1*72+s2]) {
+      stringstream name;
+      stringstream title;
+      name<<"hist_z_"<<s1<<"_"<<s2;
+      title<<"Z Missalignment for sectors "<<s1<<" and "<<s2;
+      fDzHistArray[s1*72+s2]=new TH1D(name.str().c_str(),title.str().c_str(),1024,-0.3,0.3); // +/- 3 mm
+      ((TH1D*)fDzHistArray[s1*72+s2])->SetDirectory(0);
+    }
+    static_cast<TH1D*>(fDphiHistArray[s1*72+s2])
+      ->Fill(TMath::ASin(tp1.GetSnp())
+	     -TMath::ASin(tp2.GetSnp()));
+    static_cast<TH1D*>(fDthetaHistArray[s1*72+s2])
+      ->Fill(TMath::ATan(tp1.GetTgl())
+	     -TMath::ATan(tp2.GetTgl()));
+    static_cast<TH1D*>(fDyHistArray[s1*72+s2])
+      ->Fill(tp1.GetY()
+	     -tp2.GetY());
+    static_cast<TH1D*>(fDzHistArray[s1*72+s2])
+      ->Fill(tp1.GetZ()
+	     -tp2.GetZ());
+  }
+  return;
+
+
+
   //
   // Process function to fill fitters
   //
