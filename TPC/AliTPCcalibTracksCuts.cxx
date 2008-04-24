@@ -25,6 +25,8 @@
 #include <TString.h>
 #include <TChain.h>
 #include <TList.h>
+#include "AliTPCseed.h"
+#include "AliESDtrack.h"
 #include "AliTPCcalibTracksCuts.h"
 
 ClassImp(AliTPCcalibTracksCuts)
@@ -36,8 +38,7 @@ AliTPCcalibTracksCuts::AliTPCcalibTracksCuts():
   fMinRatio(0),               // kMinRratio = 0.4
   fMax1pt(0),                 // kMax1pt = 0.5
   fEdgeYXCutNoise(0),         // kEdgeYXCutNoise = 0.13
-  fEdgeThetaCutNoise(0),      // kEdgeThetaCutNoise = 0.018
-  fOutputFileName()          // filename of outputfile ('Output.root')
+  fEdgeThetaCutNoise(0)      // kEdgeThetaCutNoise = 0.018
 {
    // 
    // default constructor
@@ -46,21 +47,19 @@ AliTPCcalibTracksCuts::AliTPCcalibTracksCuts():
 
 
 AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(Int_t minClusters, Float_t minRatio, Float_t max1pt,
-					     Float_t edgeXZCutNoise, Float_t edgeThetaCutNoise, char* outputFileName):
+					     Float_t edgeXZCutNoise, Float_t edgeThetaCutNoise):
       TNamed("calibTracksCuts", "calibTracksCuts"),
       fMinClusters(minClusters),            // number of clusters
       fMinRatio(minRatio),                  // kMinRratio = 0.4
       fMax1pt(max1pt),                      // kMax1pt = 0.5
       fEdgeYXCutNoise(edgeXZCutNoise),      // kEdgeYXCutNoise = 0.13
-      fEdgeThetaCutNoise(edgeThetaCutNoise),   // kEdgeThetaCutNoise = 0.018
-      fOutputFileName()                    // filename of outputfile ('Output.root')
+      fEdgeThetaCutNoise(edgeThetaCutNoise)   // kEdgeThetaCutNoise = 0.018
 {
    //
    // Constructor for AliTPCcalibTracksCuts
    // specify the cuts to be set on the processed tracks
    // default cuts are for comics
    //
-   fOutputFileName = outputFileName;
 }
 
 AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(AliTPCcalibTracksCuts *cuts):
@@ -69,13 +68,11 @@ AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(AliTPCcalibTracksCuts *cuts):
   fMinRatio(cuts->GetMinRatio()),                   // kMinRratio = 0.4
   fMax1pt( cuts->GetMax1pt()),                      // kMax1pt = 0.5
   fEdgeYXCutNoise(cuts->GetEdgeYXCutNoise()),       // kEdgeYXCutNoise = 0.13
-  fEdgeThetaCutNoise( cuts->GetEdgeThetaCutNoise()),   // kEdgeThetaCutNoise = 0.018
-  fOutputFileName(0)                                // filename of outputfile ('Output.root')
+  fEdgeThetaCutNoise( cuts->GetEdgeThetaCutNoise())   // kEdgeThetaCutNoise = 0.018
 {
   // 
   // copy constructor
   // 
-  fOutputFileName = cuts->GetOutputFileName();
 }
 
 
@@ -90,16 +87,10 @@ AliTPCcalibTracksCuts::~AliTPCcalibTracksCuts(){
 
 
 
-void AliTPCcalibTracksCuts::AddCuts(TChain * chain, char* ctype, char* outputFileName){
+ AliTPCcalibTracksCuts  * AliTPCcalibTracksCuts::CreateCuts(char* ctype){
    // 
-   // add predefined cuts to the chain for processing
+   // Create predefined cuts 
    // (creates AliTPCcalibTracksCuts object)
-   // the cuts are set in the following order:
-   // fMinClusters (number of clusters)
-   // fMinRatio 
-   // fMax1pt   1  over p_t
-   // fEdgeYXCutNoise
-   // fEdgeThetaCutNoise
    // 
    // The following predefined sets of cuts can be selected:
    // laser:      20, 0.4, 0.5, 0.13, 0.018
@@ -112,50 +103,76 @@ void AliTPCcalibTracksCuts::AddCuts(TChain * chain, char* ctype, char* outputFil
    cutType.ToUpper();
    AliTPCcalibTracksCuts *cuts = 0;
    if (cutType == "LASER")
-//       cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018);
-      cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.13, 0.018, outputFileName);
+     cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.13, 0.018);
    else if (cutType == "COSMIC")
-      cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018, outputFileName);
+      cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018);
    else if (cutType == "LOWFLUX")
-      cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001, outputFileName);
+     cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001);
    else if (cutType == "HIGHFLUX")
-      cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001, outputFileName);
+     cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001);
    else {
-      cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001, outputFileName);
-      cerr << "WARNING! unknown type '" << ctype << "', cuts set to default values for cosmics." << endl;
-      cutType = "COSMIC";
+     cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001);
+     cerr << "WARNING! unknown type '" << ctype << "', cuts set to default values for cosmics." << endl;
+     cutType = "COSMIC";
    }
-   chain->GetUserInfo()->AddLast(cuts);
    cout << "Cuts were set to predefined set: " << cutType << endl;
+   return cuts;
 }
 
-void AliTPCcalibTracksCuts::AddCuts(TChain * chain, Int_t minClusters, Float_t minRatio, Float_t max1pt,
-      Float_t edgeXZCutNoise, Float_t edgeThetaCutNoise, char* outputFileName){
-   // 
-   // add user defined cuts to the chain for processing
-   // (creates AliTPCcalibTracksCuts object)
-   // the cuts are set in the following order:
-   // fMinClusters (number of clusters)
-   // fMinRatio 
-   // fMax1pt   1  over p_t
-   // fEdgeYXCutNoise
-   // fEdgeThetaCutNoise
-   // 
-   chain->GetUserInfo()->AddLast(new AliTPCcalibTracksCuts(minClusters, minRatio, max1pt, edgeXZCutNoise, edgeThetaCutNoise, outputFileName));
-   printf("Cuts were set to the individal values: minClusters: %i, minRatio: %f, max1pt: %f, edgeXZCutNoise: %f, edgeThetaCutNoise: %f \n", 
-      minClusters, minRatio, max1pt, edgeXZCutNoise, edgeThetaCutNoise);
+
+
+Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliTPCseed * track) const {
+  //
+  // Function, that decides wheather a given track is accepted for 
+  // the analysis or not. 
+  // Returns 0 if a track is accepted or an integer different from 0 
+  // to indicate the failed cut
+  //
+  
+  //
+  // edge induced noise tracks - NEXT RELEASE will be removed during tracking
+  if ( TMath::Abs(track->GetY() / track->GetX()) > fEdgeYXCutNoise )
+    if ( TMath::Abs(track->GetTgl()) < fEdgeThetaCutNoise ) return 1;
+  if (track->GetNumberOfClusters() < fMinClusters) return 2;
+  Float_t ratio = track->GetNumberOfClusters() / (track->GetNFoundable() + 1.);
+  if (ratio < fMinRatio) return 3;
+  //   Float_t mpt = track->Get1Pt();       // Get1Pt() doesn't exist any more
+  Float_t mpt = track->GetSigned1Pt();
+  if (TMath::Abs(mpt) > fMax1pt) return 4;
+  
+  return 0;
 }
 
-void AliTPCcalibTracksCuts::Print(Option_t* option) const  {
+Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliESDtrack * track) const {
+  //
+  // Function, that decides wheather a given track is accepted for 
+  // the analysis or not. 
+  // Returns 0 if a track is accepted or an integer different from 0 
+  // to indicate the failed cut
+  //
+  
+  //
+  // edge induced noise tracks - NEXT RELEASE will be removed during tracking
+  if ( TMath::Abs(track->GetY() / track->GetX()) > fEdgeYXCutNoise )
+    if ( TMath::Abs(track->GetTgl()) < fEdgeThetaCutNoise ) return 1;
+  if (track->GetTPCNcls() < fMinClusters) return 2;
+  Float_t ratio = track->GetTPCNcls() / (track->GetTPCNclsF() + 1.);
+  if (ratio < fMinRatio) return 3;
+  //   Float_t mpt = track->Get1Pt();       // Get1Pt() doesn't exist any more
+  Float_t mpt = track->GetSigned1Pt();
+  if (TMath::Abs(mpt) > fMax1pt) return 4;
+  
+  return 0;
+}
+
+void AliTPCcalibTracksCuts::Print(Option_t*) const {
   //
   // Print the cut contents
   //
-   option = option;  // to avoid compiler warnings
-   cout << "<AliTPCcalibTracksCuts>: The following cuts are specified: " << endl;
-   cout << "fMinClusters: " << fMinClusters << endl;
-   cout << "fMinRatio: " << fMinRatio << endl;
-   cout << "fMax1pt: " << fMax1pt << endl;
-   cout << "fEdgeYXCutNoise: " << fEdgeYXCutNoise << endl;
-   cout << "fEdgeThetaCutNoise: " << fEdgeThetaCutNoise << endl;
-   cout << "fOutputFileName: " << fOutputFileName.GetName() << endl;
+  cout << "<AliTPCcalibTracksCuts>: The following cuts are specified: " << endl;
+  cout << "fMinClusters: " << fMinClusters << endl;
+  cout << "fMinRatio: " << fMinRatio << endl;
+  cout << "fMax1pt: " << fMax1pt << endl;
+  cout << "fEdgeYXCutNoise: " << fEdgeYXCutNoise << endl;
+  cout << "fEdgeThetaCutNoise: " << fEdgeThetaCutNoise << endl;
 }  // Prints out the specified cuts
