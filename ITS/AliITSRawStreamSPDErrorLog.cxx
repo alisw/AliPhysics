@@ -192,7 +192,7 @@ void AliITSRawStreamSPDErrorLog::ProcessError(UInt_t errorCode, UInt_t eq, Int_t
     fNErrors[errorCode][eq]++;
     if (errorCode!=kTotal) fNErrors[kTotal][eq]++;
 
-    if (fPayloadSizeSet) {
+    if (fPayloadSizeSet[eq]) {
       fConsErrPos[errorCode][eq]->Fill(100.*bytesRead/fPayloadSize[eq]);
       if (errorCode!=kTotal) fConsErrPos[kTotal][eq]->Fill(100.*bytesRead/fPayloadSize[eq]);
     }
