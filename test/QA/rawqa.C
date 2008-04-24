@@ -18,12 +18,14 @@
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
 #include "AliTRDrawStreamBase.h"
+#include "AliGeomManager.h"
 
 TString ClassName() { return "rawqa" ; } 
 
 //________________________________qa______________________________________
 void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08") 
 {	
+	AliGeomManager::LoadGeometry("geometry.root");
 	char kDefaultOCDBStorage[120] ; 
 	sprintf(kDefaultOCDBStorage, "alien://folder=/alice/data/20%s/LHC%sa/OCDB/", year, year) ; 
 	AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
