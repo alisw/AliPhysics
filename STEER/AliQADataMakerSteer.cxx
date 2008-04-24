@@ -626,11 +626,7 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 	fDetectorsW      = detectors ; 	
 	
 	AliCDBManager* man = AliCDBManager::Instance() ; 
-	if ( ! man->GetLock() ) { 
-		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
-		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
-	}
-	
+
 	if ( man->GetRun() == -1 ) {// check if run number not set previously and set it from raw data
 		rawReader->NextEvent() ; 
 		man->SetRun(fRawReader->GetRunNumber()) ;
