@@ -630,7 +630,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
 }
 
 //____________________________________________
-void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
+void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signalc, Int_t signale) {
   // Adds a Digit.
   Int_t size = AliITSdigit::GetNTracks();
 
@@ -642,7 +642,7 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
 
   digits[0] = i;
   digits[1] = j;
-  digits[2] = signal;
+  digits[2] = signalc;
 
   AliITSpListItem *pItem = fpList->GetpListItem( i, j );
   if( pItem == 0 ) {
@@ -668,7 +668,7 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     }// end for if
   }
 
-  fITS->AddSimDigit( 1, phys, digits, tracks, hits, charges ); 
+  fITS->AddSimDigit( 1, phys, digits, tracks, hits, charges, signale ); 
   delete [] tracks;
   delete [] hits;
   delete [] charges;
@@ -844,10 +844,30 @@ Int_t AliITSsimulationSDD::Convert10to8(Int_t signal) const {
     return 0;
 }
 //______________________________________________________________________
+Int_t AliITSsimulationSDD::Convert8to10(Int_t signal) const {
+  // Decompression from 8 to 10 bit
+
+  if (signal < 0 || signal > 255) {
+    AliWarning(Form("Signal value %d out of range",signal));
+    return 0;
+  } // end if signal <0 || signal >255
+
+  if (signal < 128) return signal;
+  if (signal < 192) {
+    if (TMath::Odd(signal)) return (128+((signal-128)<<1));
+    else  return (128+((signal-128)<<1)+1);
+  } // end if signal < 192
+  if (signal < 224) {
+    if (TMath::Odd(signal)) return (256+((signal-192)<<3)+3);
+    else  return (256+((signal-192)<<3)+4);
+  } // end if signal < 224
+  if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
+  return (512+((signal-224)<<4)+8);
+}
+//______________________________________________________________________
 void AliITSsimulationSDD::Compress2D(){
   // 2D zero-suppression algorithm as described in ALICE-INT-1999-28 V10
   AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(fModule);  
-  Bool_t   do10to8=res->Do10to8();
   for (Int_t iWing=0; iWing<2; iWing++) {
     Int_t tL=res->GetZSLowThreshold(iWing);
     Int_t tH=res->GetZSHighThreshold(iWing);
@@ -881,9 +901,11 @@ void AliITSsimulationSDD::Compress2D(){
 	if(sS>tH) nHigh++;
  	
 	if(nLow>=3 && nHigh>=1){
-	  Int_t signal=(Int_t)(cC-tL);
-	  if(do10to8) signal = Convert10to8(signal);
-	  AddDigit(ian,itb,signal);  // store C (subtracting low threshold)
+	  Int_t signal=(Int_t)cC;
+	  Int_t signalc = Convert10to8(signal);
+	  Int_t signale = Convert8to10(signalc);
+	  signalc-=tL; // subtract low threshold after 10 to 8 bit compression
+	  AddDigit(ian,itb,signalc,signale);  // store C 
 	}
       }
     }
@@ -896,13 +918,13 @@ void AliITSsimulationSDD::StoreAllDigits(){
   // if non-zero-suppressed data
   AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(fModule);
 
-  Bool_t do10to8 = res->Do10to8();
   Int_t i, j, digits[3];
 
   for (i=0; i<fNofMaps; i++) {
     for (j=0; j<fMaxNofSamples; j++) {
       Int_t signal=(Int_t)(fHitMap2->GetSignal(i,j));
-      if(do10to8) signal = Convert10to8(signal);
+      signal = Convert10to8(signal);
+      signal = Convert8to10(signal);
       digits[0] = i;
       digits[1] = j;
       digits[2] = signal;

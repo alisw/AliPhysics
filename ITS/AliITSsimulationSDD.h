@@ -59,12 +59,13 @@ class AliITSsimulationSDD : public AliITSsimulation {
     Bool_t CrosstalkFlag() const {return fCrosstalkFlag;}
     void FastFourierTransform(Double_t *real, Double_t *imag, Int_t direction);
     virtual Int_t Convert10to8(Int_t signal) const;//10 to 8 bit SDD compresion
+    virtual Int_t Convert8to10(Int_t signal) const;//8 to 10 bit decompresion
     virtual void Compress2D(); // Applies 2D compresion algorithm
     virtual void StoreAllDigits(); // if No compresion run this.
     // returns baseline and noise for a given anode i.
     //virtual void GetAnodeBaseline(Int_t i,Double_t &baseline,Double_t &noise) const;
     // local implementation of ITS->AddDigit. Specific for SDD
-    virtual void AddDigit(Int_t i, Int_t j, Int_t signal);
+    virtual void AddDigit(Int_t i, Int_t j, Int_t signalc, Int_t signale);
 
     // add baseline, noise, gain, electronics and ADC saturation effects
     void ChargeToSignal(Int_t mod,Bool_t bAddNoise=kFALSE, Bool_t bAddGain=kTRUE);

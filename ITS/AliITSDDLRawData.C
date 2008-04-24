@@ -6,12 +6,6 @@
 #include "AliITS.h"
 #endif
 
-/*
-Before running this macro it is necessary to comment the following line of the method
-AddDigit in the class AliITSsimulationSDD
-//if( fResponse->Do10to8() ) signal = Convert8to10( signal ); 
-In this way the amplitude value for signal coming from SDD takes only 8 bits and not 10.
-*/
 //DigitsFile is the input file that contains digits
 
 void AliITSDDLRawData(Int_t eventNumber=0){

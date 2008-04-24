@@ -73,8 +73,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
     AliError(Form("Calibration object not present for SDD module %d\n",fModule));
     return;
   }
-  AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
-  const char *option=res->ZeroSuppOption();
+
   AliITSdigitSDD *d=0;
   Int_t i, ndigits=digits->GetEntriesFast();
   for (i=0; i<ndigits; i++) {
@@ -84,8 +83,8 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
      Int_t iSide=0;
      if (ian >= nAnodes) iSide=1;    
      Float_t gain=cal->GetChannelGain(ian);
-     Float_t charge=d->GetSignal();
-     if(strstr(option,"ZS")) charge+=(Float_t)cal->GetZSLowThreshold(iSide);
+     Float_t charge=d->GetSignal(); // returns expanded signal 
+                                    // (10 bit, low threshold already added)
      Float_t baseline = cal->GetBaseline(ian);
      if(charge>baseline) charge-=baseline;
      else charge=0;
@@ -277,6 +276,24 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
   AliITSRawStreamSDD inputSDD(rawReader);
   AliITSDDLModuleMapSDD *ddlmap=(AliITSDDLModuleMapSDD*)fDetTypeRec->GetDDLModuleMapSDD();
   inputSDD.SetDDLModuleMap(ddlmap);
+  for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
+    for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
+      Int_t iMod=ddlmap->GetModuleNumber(iddl,icar);
+      if(iMod==-1) continue;
+      AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(iMod);
+      if(cal==0){
+	AliError(Form("Calibration object not present for SDD module %d\n",iMod));
+	continue;
+      }
+      AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
+      const char *option=res->ZeroSuppOption();
+      if(strstr(option,"ZS")){ 
+	for(Int_t iSid=0; iSid<2; iSid++) inputSDD.SetZeroSuppLowThreshold(iMod-240,iSid,cal->GetZSLowThreshold(iSid));
+      }else{
+	for(Int_t iSid=0; iSid<2; iSid++) inputSDD.SetZeroSuppLowThreshold(iMod-240,iSid,0);
+      }
+    }
+  }
   FindClustersSDD(&inputSDD,clusters);
 
 }
@@ -335,12 +352,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 	AliError(Form("Calibration object not present for SDD module %d\n",iModule));
 	continue;
       }
-      AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
-      const char *option=res->ZeroSuppOption();
       Float_t charge=input->GetSignal();
       Int_t chan=input->GetCoord1()+nAnodes*iSide;
       Float_t gain=cal->GetChannelGain(chan);
-      if(strstr(option,"ZS")) charge+=(Float_t)cal->GetZSLowThreshold(iSide);
       Float_t baseline = cal->GetBaseline(chan);
       if(charge>baseline) charge-=baseline;
       else charge=0;
@@ -370,8 +384,8 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 void AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid,Int_t nzBins, AliBin* bins, AliITSCalibrationSDD* cal) const {
   // applies zero suppression using the measured noise of each anode
   // threshold values from ALICE-INT-1999-28 V10
-  Float_t factL=2.2; 
-  Float_t factH=4.0;
+  Float_t xfactL=2.2; 
+  Float_t xfactH=4.0;
   //
 
   Int_t iAn=(k%nzBins)-1;
@@ -383,12 +397,12 @@ void AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid,Int_t nzBins, Al
   if(iAn>1) noisem1=cal->GetNoiseAfterElectronics(iAn-1);
   Float_t noisep1=noise;
   if(iAn<511) noisep1=cal->GetNoiseAfterElectronics(iAn+1);
-  Float_t tL=noise*factL;
-  Float_t tH=noise*factH;
-  Float_t tLp1=noisep1*factL;
-  Float_t tHp1=noisep1*factH;
-  Float_t tLm1=noisem1*factL;
-  Float_t tHm1=noisem1*factH;
+  Float_t tL=noise*xfactL;
+  Float_t tH=noise*xfactH;
+  Float_t tLp1=noisep1*xfactL;
+  Float_t tHp1=noisep1*xfactH;
+  Float_t tLm1=noisem1*xfactL;
+  Float_t tHm1=noisem1*xfactH;
   Float_t cC=bins[k].GetQ();
   if(cC<=tL){
     bins[k].SetQ(0);

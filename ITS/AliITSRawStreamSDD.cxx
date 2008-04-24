@@ -47,6 +47,10 @@ fResetSkip(0)
   fDDLModuleMap=new AliITSDDLModuleMapSDD();
   fDDLModuleMap->SetDefaultMap();
   Reset();
+  for(Int_t im=0;im<kSDDModules;im++){
+    fLowThresholdArray[im][0]=0;
+    fLowThresholdArray[im][1]=0;
+  }
   for(Int_t i=0;i<kFifoWords;i++) fNfifo[i]=0;
   for(Int_t i=0;i<kDDLsNumber;i++) fSkip[i]=0;
   fRawReader->Reset();
@@ -128,7 +132,7 @@ Bool_t AliITSRawStreamSDD::Next()
 
   while (kTRUE) {
     if(fResetSkip==0){
-      Bool_t kSkip = ResetSkip(ddln);
+      Bool_t kSkip = SkipHeaderWord();
       fResetSkip=1;
       if(!kSkip) return kSkip;
     }
@@ -144,7 +148,6 @@ Bool_t AliITSRawStreamSDD::Next()
 
       fChannel = -1;
       if((fData >> 16) == 0x7F00){ // jitter word
-	for(Int_t i=0;i<kDDLsNumber;i++){fSkip[i]=0;}
 	fResetSkip=0;
 	fEndWords=0;
 	continue;
@@ -217,7 +220,7 @@ Bool_t AliITSRawStreamSDD::Next()
 	  fTimeBin[fCarlosId][fChannel] = 0;
 	  fAnode[fCarlosId][fChannel]++;
 	} else {                                   // ADC signal data
-	  fSignal = DecompAmbra(data + (1 << fChannelCode[fCarlosId][fChannel]) + fLowThreshold[fChannel]);
+	  fSignal = DecompAmbra(data + (1 << fChannelCode[fCarlosId][fChannel]) + fLowThresholdArray[fModuleID-kSPDModules][fChannel]);
 	  fCoord1 = fAnode[fCarlosId][fChannel];
 	  fCoord2 = fTimeBin[fCarlosId][fChannel];
 	  fTimeBin[fCarlosId][fChannel]++;
@@ -250,18 +253,12 @@ void AliITSRawStreamSDD::Reset(){
 }
 
 //______________________________________________________________________
-Bool_t AliITSRawStreamSDD::ResetSkip(Int_t ddln){
+Bool_t AliITSRawStreamSDD::SkipHeaderWord(){
   // skip the 1 DDL header word = 0xffffffff
-  Bool_t startCount=kFALSE;
-  while (fSkip[ddln] < 1) {
-    if (!fRawReader->ReadNextInt(fData)) { 
-      return kFALSE;
-    }
-    if(fData==0xFFFFFFFF) startCount=kTRUE;
-    //printf("%x\n",fData);
+  while (kTRUE) {
+    if (!fRawReader->ReadNextInt(fData)) return kFALSE;    
     if ((fData >> 30) == 0x01) continue;  // JTAG word
-    if(startCount) fSkip[ddln]++;
+    if(fData==0xFFFFFFFF) return kTRUE;
   }
-  return kTRUE;
 }
 

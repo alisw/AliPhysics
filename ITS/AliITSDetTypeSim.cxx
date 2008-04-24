@@ -832,20 +832,18 @@ void AliITSDetTypeSim::AddSimDigit(Int_t branch, AliITSdigit* d){
 }
 //______________________________________________________________________
 void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
-				   Int_t *tracks,Int_t *hits,Float_t *charges){
+				   Int_t *tracks,Int_t *hits,Float_t *charges, 
+				   Int_t sigexpanded){
   //   Add a simulated digit to the list.
 
   TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
-  AliITSCalibrationSDD *resp = 0;
   switch(branch){
   case 0:
     new(ldigits[fNDigits[branch]++]) AliITSdigitSPD(digits,tracks,hits);
     break;
   case 1:
-    resp = (AliITSCalibrationSDD*)GetCalibrationModel(
-	GetITSgeom()->GetStartSDD());
     new(ldigits[fNDigits[branch]++]) AliITSdigitSDD(phys,digits,tracks,
-						   hits,charges,resp);
+						   hits,charges,sigexpanded);
     break;
   case 2:
     new(ldigits[fNDigits[branch]++]) AliITSdigitSSD(digits,tracks,hits);

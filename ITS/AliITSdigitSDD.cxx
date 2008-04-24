@@ -15,7 +15,6 @@
 
 #include <AliITSdigitSDD.h>
 #include <AliITSCalibrationSDD.h>
-#include <AliITSresponseSDD.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
 
@@ -93,19 +92,6 @@ fSignalExpanded(0){
 }
 
 //_____________________________________________________________________________
-AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
-    const Int_t *tracks,const Int_t *hits,const Float_t *charges,
-    AliITSCalibrationSDD* resp): AliITSdigit(digits),
-fPhysics(0),
-fSignalExpanded(0){
-
-  //constructor setting fSignalExpanded through AliITSCalibrationSDD
-  InitObject(phys,tracks,hits,charges);
-  AliITSresponseSDD* pd = (AliITSresponseSDD*)resp->GetResponse();
-  SetSignalExpanded(pd->Convert8to10(digits[2]));
-}
-
-//______________________________________________________________________
 Int_t AliITSdigitSDD::GetListOfTracks(TArrayI &t,TArrayF &c){
 
     // Fills the TArrayI t with the tracks found in fTracks removing

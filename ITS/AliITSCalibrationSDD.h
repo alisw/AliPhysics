@@ -161,7 +161,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     }
     virtual void SetParamOptions(const char *opt1,const char *opt2) {((AliITSresponseSDD*)fResponse)->SetParamOptions(opt1,opt2);}
     virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSDD*)fResponse)->ParamOptions(opt1,opt2);}
-    virtual Bool_t Do10to8() const {return ((AliITSresponseSDD*)fResponse)->Do10to8();}
+
     virtual void SetZeroSupp (const char *opt) {((AliITSresponseSDD*)fResponse)->SetZeroSupp(opt);} 
     virtual const char *GetZeroSuppOption() const {return ((AliITSresponseSDD*)fResponse)->ZeroSuppOption();}
     virtual void SetNSigmaIntegration(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetNSigmaIntegration(p1);}
@@ -169,7 +169,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetNLookUp(Int_t p1) {((AliITSresponseSDD*)fResponse)->SetNLookUp(p1);}
     virtual Int_t GetGausNLookUp() const {return ((AliITSresponseSDD*)fResponse)->GausNLookUp();}
     virtual Float_t GetGausLookUp(Int_t i) const {return ((AliITSresponseSDD*)fResponse)->GausLookUp(i);}
-    virtual Int_t Convert8to10(Int_t signal) const {return ((AliITSresponseSDD*)fResponse)->Convert8to10(signal);}
+
     virtual void  SetJitterError(Double_t jitter=20) {((AliITSresponseSDD*)fResponse)->SetJitterError(jitter);}
     virtual Float_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
     virtual Float_t GetDriftPath(Float_t time, Float_t xAnode) const {return time*GetDriftSpeedAtAnode(xAnode);}
@@ -177,7 +177,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Float_t GetThresholdAnode(Int_t anode,Int_t nsigma=3) const {
       return nsigma*fNoiseAfterEl[anode];}
 
-    virtual void  SetDo10to8(Bool_t bitcomp=kTRUE) {((AliITSresponseSDD*)fResponse)->SetDo10to8(bitcomp);}
+
  protected:
 
 

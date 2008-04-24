@@ -1052,7 +1052,7 @@ void AliITS::AddSimDigit(Int_t branch, AliITSdigit *d){
 }
 //______________________________________________________________________
 void AliITS::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,Int_t *tracks,
-                         Int_t *hits,Float_t *charges){
+                         Int_t *hits,Float_t *charges, Int_t sigexpanded){
   //   Add a simulated digit to the list.
   // Inputs:
   //      Int_t id        Detector type number.
@@ -1076,7 +1076,7 @@ void AliITS::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,Int_t *tracks,
       Error("AddSimDigit","fDetTypeSim is 0!");
       return;
     }
-    fDetTypeSim->AddSimDigit(branch,phys,digits,tracks,hits,charges);
+    fDetTypeSim->AddSimDigit(branch,phys,digits,tracks,hits,charges,sigexpanded);
 
 }
 //______________________________________________________________________

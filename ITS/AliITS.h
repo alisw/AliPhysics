@@ -104,8 +104,6 @@ class AliITS : public AliDetector {
    // Trigger
     virtual AliTriggerDetector* CreateTriggerDetector() const
        { return new AliITSTrigger(); }
-   
-    //   TClonesArray* GetSDigits() const { return fDetTypeSim->GetSDigits();}
 
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     virtual void UpdateInternalGeometry();
@@ -130,7 +128,8 @@ class AliITS : public AliDetector {
     virtual void AddRealDigit(Int_t branch, Int_t *digits);
     virtual void AddSimDigit(Int_t branch, AliITSdigit *d);
     virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
-		     Int_t* tracks,Int_t *hits,Float_t* trkcharges);
+		     Int_t* tracks,Int_t *hits,Float_t* trkcharges,
+		     Int_t sigexpanded=-1000);
     TObjArray* GetDigits()  const {return fDetTypeSim->GetDigits();}
     Int_t* GetNDigitArray() const {return fDetTypeSim->GetNDigitArray();}
     TClonesArray *DigitsAddress(Int_t id) {

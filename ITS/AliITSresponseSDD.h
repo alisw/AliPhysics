@@ -56,8 +56,6 @@ class AliITSresponseSDD : public AliITSresponse {
     virtual void   ParamOptions(char *opt1,char *opt2) const {// options
 	strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());}
  
-    virtual Bool_t Do10to8() const {// get 10 to 8 compression option
-	return fBitComp;}
     void    SetZeroSupp (const char *opt) {
 	// Zero-suppression option - could be 1D, 2D or non-ZS 
 	fOption=opt;}
@@ -78,16 +76,11 @@ class AliITSresponseSDD : public AliITSresponse {
       if(i<0 || i>=fNcomps) return 0.;return fGaus->At(i);
     }
    
-    Int_t Convert8to10(Int_t signal) const; //undo 10 to 8 bit SDD compresion
-
     void  SetJitterError(Float_t jitter=20) {
 	// set Jitter error (20 um for ALICE from beam test measurements 2001)
 	fJitterError=jitter;}
     Float_t  JitterError() const {// set Jitter error
 	return fJitterError;}
-    void  SetDo10to8(Bool_t bitcomp=kTRUE) {
-	// set the option for 10 to 8 bit compression
-	fBitComp = bitcomp;}
 
  protected:
 
@@ -117,7 +110,6 @@ class AliITSresponseSDD : public AliITSresponse {
                           // is performed
     TArrayF   *fGaus;          // Gaussian lookup table for signal generation
     Int_t      fNcomps;        // Number of samplings along the gaussian
-    Bool_t     fBitComp;       // 10 to 8 bit compression option
     TString    fOption;        // Zero-suppresion option (1D, 2D or none)
     TString    fParam1;        // Read baselines from file option
     TString    fParam2;        // Read compression algo thresholds from file
