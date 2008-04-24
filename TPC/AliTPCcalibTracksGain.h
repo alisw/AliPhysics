@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
+ 
 #include <TChain.h>
 #include <TNamed.h>
 
@@ -15,6 +15,8 @@
 
 #include <iostream>
 #include <TH1F.h>
+
+#include <AliTPCcalibBase.h>
 
 using namespace std;
 
@@ -38,7 +40,7 @@ class AliTPCFitPad;
 class TGraph;
 class AliTPCCClusterParam;
 
-class AliTPCcalibTracksGain : public TNamed {
+class AliTPCcalibTracksGain : public AliTPCcalibBase {
 public:
    enum {
       kShortPads = 0,
@@ -56,14 +58,14 @@ public:
   AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* debugStreamPrefix = 0, AliTPCcalibTracksGain* prevIter = 0);
   virtual ~AliTPCcalibTracksGain();
   AliTPCcalibTracksGain& operator=(const AliTPCcalibTracksGain& rhs);
-  static void     AddInfo(TChain* chain, char* debugStreamPrefix = 0, char* prevIterFileName = 0);
-  void            Terminate();
+  virtual Long64_t        Merge(TCollection *list);
+  virtual void            Process(AliTPCseed* seed);
+  virtual void            Terminate();
+  virtual void            Analyze();
   //
   // Tracks manipulation
   //
-  void            Process(AliTPCseed* seed);
   void            AddTrack(AliTPCseed* seed);
-  Bool_t          AcceptTrack(AliTPCseed* track);
   void            DumpTrack(AliTPCseed* track);
   Bool_t          GetDedx(AliTPCseed* track, Int_t padType,  Int_t*rows,
 			  Int_t &sector, Int_t& npoints, 
@@ -73,11 +75,6 @@ public:
   void            AddTracklet(UInt_t sector, UInt_t padType,TVectorD &dedxQ, TVectorD &dedxM,TVectorD& parY, TVectorD& parZ, TVectorD& meanPos);
 
   void            AddCluster(AliTPCclusterMI* cluster);
-
-  //
-  // Merging of the component
-  //
-  Long64_t        Merge(TCollection *list);
   void            Add(AliTPCcalibTracksGain* cal);
   //
   // Histogram part
@@ -108,6 +105,8 @@ public:
 
 
   TLinearFitter*  GetFitter(UInt_t segment, UInt_t padType, UInt_t fitType);
+  
+  
 public:
   //
   // Helper function

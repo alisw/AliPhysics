@@ -165,7 +165,7 @@ const char*    AliTPCcalibTracksGain::fgkDebugStreamFileName = "TPCCalibTracksGa
 AliTPCParamSR* AliTPCcalibTracksGain::fgTPCparam = new AliTPCParamSR();
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
-  TNamed(),
+  AliTPCcalibBase(),
   fDebugStream(0),          //! debug stream for debugging
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
   //
@@ -206,7 +206,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
 }
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
-  TNamed(obj),
+  AliTPCcalibBase(obj),
   fDebugStream(0),          //! debug stream for debugging
   fCuts(obj.fCuts),            // cuts that are used for sieving the tracks used for calibration
   fArrayQM(0),                // Qmax normalized
@@ -266,7 +266,7 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
 }
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* /*debugStreamPrefix*/, AliTPCcalibTracksGain* prevIter) :
-  TNamed(name, title),
+  AliTPCcalibBase(),
   fDebugStream(0),          //! debug stream for debugging
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
   fArrayQM(0),                // Qmax normalized
@@ -305,6 +305,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
    // Constructor.
    //   
    G__SetCatchException(0);
+   this->SetNameTitle(name, title);
    fCuts = cuts;
    fPrevIter = prevIter;
    //
@@ -401,55 +402,7 @@ void AliTPCcalibTracksGain::Terminate(){
    }
 }
 
-void AliTPCcalibTracksGain::AddInfo(TChain* chain, char* debugStreamPrefix, char* prevIterFileName) {
-   // 
-   // Add some parameters to the chain.
-   // debugStreamPrefix: If specified, contains the location (either normal or xrootd directory)
-   //                    where the debug stream is moved (normal directory) or copied to (xrootd).
-   // prevIterFileName: If specified, contains an AliTPCcalibTracksGain object from a previous run
-   //                   for doing an iterative calibration procedure (right now unused).
-   // Note: The parameters are *not* added to this class, you need to do it later by retrieving
-   // the parameters from the chain and passing them to the constructor!
-   //
 
-   if (debugStreamPrefix) {
-      TNamed* objDebugStreamPrefix = new TNamed("debugStreamPrefix", debugStreamPrefix);
-      chain->GetUserInfo()->AddLast((TObject*)objDebugStreamPrefix);
-   }
-   
-   if (prevIterFileName) {
-      TFile paramFile(prevIterFileName);
-      if (paramFile.IsZombie()) {
-         printf("File %s not found. Continuing without previous iteration.\n", prevIterFileName);
-         return;
-      }
-      
-      AliTPCcalibTracksGain *prevIter = (AliTPCcalibTracksGain*)paramFile.Get("calibTracksGain");
-      if (prevIter) {
-         chain->GetUserInfo()->AddLast((TObject*)prevIter);
-      } else
-         printf("No calibTracksGain object found. Continuing without previous iteration.\n");
-   }
-}
-
-Bool_t AliTPCcalibTracksGain::AcceptTrack(AliTPCseed* track) {
-   //
-   // Decides whether to accept a track or not depending on track parameters and cuts
-   // contained as AliTPCcalibTracksCuts object fCuts.
-   // Tracks are discarded if the number of clusters is too low or the transverse
-   // momentum is too low.
-   // The corresponding cut values are specified in the fCuts member.
-   //
-   
-   if (track->GetNumberOfClusters() < fCuts->GetMinClusters()) return kFALSE;
-   //if ((TMath::Abs(track->GetY() / track->GetX()) > fCuts->GetEdgeYXCutNoise())
-   //   && (TMath::Abs(track->GetTgl()) < fCuts->GetEdgeThetaCutNoise())) return kFALSE;
-   //if (track->GetNumberOfClusters() / (track->GetNFoundable()+1.) < fCuts->GetMinRatio()) return kFALSE;
-   if (TMath::Abs(track->GetSigned1Pt()) > fCuts->GetMax1pt()) return kFALSE;
-   
-   //if (track->GetPt() < 50.) return kFALSE;
-   return kTRUE;
-}
 
 void AliTPCcalibTracksGain::Process(AliTPCseed* seed) {
    //
@@ -459,7 +412,7 @@ void AliTPCcalibTracksGain::Process(AliTPCseed* seed) {
    //
    
    fTotalTracks++;
-   if (!AcceptTrack(seed)) return;
+   if (!fCuts->AcceptTrack(seed)) return;
    fAcceptedTracks++;
    AddTrack(seed);
 }
@@ -1368,3 +1321,12 @@ void   AliTPCcalibTracksGain::UpdateClusterParam(AliTPCClusterParam* clparam){
   //
 
 }
+
+
+void   AliTPCcalibTracksGain::Analyze(){
+
+ Evaluate();
+
+}
+
+
