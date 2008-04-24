@@ -71,6 +71,8 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
 
     TH1F* fDeltaPhi[8]; //! delta phi of primaries, secondaries, other (= unclear cases)
 
+    TH2F* fEventStats;  //! some stats on number of events
+
     AlidNdEtaCorrection* fdNdEtaCorrectionProcessType[3]; //! correction for specific process type (ND, SD, DD)
                                                           // enable with option: process-types
 
