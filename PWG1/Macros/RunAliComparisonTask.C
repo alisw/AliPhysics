@@ -1,6 +1,13 @@
 void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDebug = kFALSE)
 {
   //
+  // Set mag field map and geometry (needed by AliComparisonTask temp. solution)
+  //
+  Int_t magField = 2;  // 0 - 0.2 T, 1 = 0.4 T, 2  - 0.5 T
+  //TString geom = "/lustre_alpha/alice/jacek/sim/v4-11-Rev-03/pp/0/geometry.root";
+  //TString geom = "/lustre_alpha/alice/jacek/sim/v4-11-Rev-03/pp/1/geometry.root";
+
+  //
   // Create global cuts objects 
   //
 
@@ -11,6 +18,8 @@ void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDeb
     pRecInfoCuts->SetMaxAbsTanTheta(1.0);
     pRecInfoCuts->SetMinNClustersTPC(10);
     pRecInfoCuts->SetMinTPCsignalN(50);
+
+	pRecInfoCuts->SetHistogramsOn(kFALSE); 
   } else {
     AliDebug(AliLog::kError, "ERROR: Cannot create AliRecInfoCuts object");
   }
@@ -70,10 +79,15 @@ void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDeb
 
   // Create, add task
   task = new AliComparisonTask;
-  task->SetAliComparisonRes( pCompRes );
-  task->SetAliComparisonEff( pCompEff );
-  task->SetAliComparisonDEdx( pCompDEdx );
-  task->SetAliComparisonDCA( pCompDCA );
+
+  task->SetMagField(magField);
+  //task->SetGeometry(geom.Data());
+
+  task->AddComparisonObject( pCompRes );
+  task->AddComparisonObject( pCompEff );
+  task->AddComparisonObject( pCompDEdx );
+  task->AddComparisonObject( pCompDCA );
+  
   mgr->AddTask(task);
 
   // Attach input

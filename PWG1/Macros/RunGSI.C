@@ -11,51 +11,57 @@
 // filled under conditions set in RunAliComparisonTask.C
 //
 //----------------------------------------------------------------------
-//
-// 1. Example (run locally):
-//
-// -- Load toolkit
-// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
-// AliXRDPROOFtoolkit tool;
-//
-// -- Make chain 
-// TChain * chain = tool.MakeChain("cmpESDTracks.txt","ESDcmpTracks","",1000,0); 
-// 
-// -- Run AliComparisonTask task
-// gROOT->LoadMacro("RunAliComparisonTask.C");
-// RunAliComparisonTask(chain, kFALSE);
-// 
+
+/*
+ 
+1. Example (run locally):
+
+//-- Load toolkit
+gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
+AliXRDPROOFtoolkit tool;
+
+//-- Make chain 
+TChain * chain = tool.MakeChain("cmpESDTracks.txt","ESDcmpTracks","",1000,0); 
+ 
+//-- Run AliComparisonTask task
+gROOT->LoadMacro("RunAliComparisonTask.C");
+RunAliComparisonTask(chain, kFALSE);
+
+
 // ----------------------------------------------------------------------
-//
-// 2. Example (run on Proof/GSI):
-//
+
+2. Example (run on Proof/GSI):
+
 // -- Load libXrdClient.so e.g.
-// gSystem->Load("/usr/local/grid/XRootd/GSI/lib64/libXrdClient.so");
-// 
+gSystem->Load("/usr/local/grid/XRootd/GSI/lib64/libXrdClient.so");
+
 // -- Connect to Proof as USER_NAME
-// TProof::Open("USER_NAME@gsiaf.gsi.de");
-// 
+TProof::Open("USER_NAME@gsiaf.gsi.de");
+
 // -- Set Proof ROOT version (e.g. 5.18/00a)
-// gProof->GetManager()->SetROOTVersion("5.18/00a");
-//
+gProof->GetManager()->SetROOTVersion("5.18/00a");
+
 // -- Load AliRoot Libraries
-// gProof->Exec(Form("TString str(gSystem->ExpandPathName(\"%s\")); gSystem->Setenv(\"ALICE_ROOT\", str);", gSystem->ExpandPathName("$ALICE_ROOT")), kTRUE);
-// gProof->AddDynamicPath(Form("%s/lib/tgt_linuxx8664gcc", gSystem->ExpandPathName("$ALICE_ROOT")));
-// gProof->Exec(Form("gROOT->Macro(\"%s/PWG1/Macros/LoadMyLibs.C\")",gSystem->ExpandPathName("$ALICE_ROOT")),kTRUE);
-//
+gProof->Exec(Form("TString str(gSystem->ExpandPathName(\"%s\")); gSystem->Setenv(\"ALICE_ROOT\", str);", gSystem->ExpandPathName("$ALICE_ROOT")), kTRUE);
+gProof->AddDynamicPath(Form("%s/lib/tgt_linuxx8664gcc", gSystem->ExpandPathName("$ALICE_ROOT")));
+gProof->Exec(Form("gROOT->Macro(\"%s/PWG1/Macros/LoadMyLibs.C\")",gSystem->ExpandPathName("$ALICE_ROOT")),kTRUE);
+
 // -- Load toolkit
-// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
-// AliXRDPROOFtoolkit tool;
-//
+gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
+AliXRDPROOFtoolkit tool;
+
+
 // -- Make chain
-// TChain * chain = tool.MakeChain("cmpESDTracks.txt","ESDcmpTracks","",1000,0); 
-//
+TChain * chain = tool.MakeChain("cmpESDTracks.txt","ESDcmpTracks","",1000,0); 
+
 // -- Run AliComparisonTask task
-// gROOT->LoadMacro("RunAliComparisonTask.C");
-// RunAliComparisonTask(chain, kTRUE);
-//
+gROOT->LoadMacro("RunAliComparisonTask.C");
+RunAliComparisonTask(chain, kTRUE);
+
+*/
+
 //-----------------------------------------------------------------------------
 
 void RunGSI(Bool_t aProof=kTRUE) {
@@ -64,6 +70,7 @@ void RunGSI(Bool_t aProof=kTRUE) {
   if(aProof == kFALSE) 
   {
     // -- Load toolkit
+    gSystem->Load("/usr/local/grid/XRootd/GSI/lib64/libXrdClient.so");
     gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
     gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
     AliXRDPROOFtoolkit tool;
