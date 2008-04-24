@@ -24,33 +24,49 @@ class TProfile2D;
 class TGraph2D;
 class TGraph; 
 class TGeoManager; 
+class TString;
 class TStatToolkit; 
 class AliMagFMaps;
 class AliESDVertex;
 
 #include "TNamed.h"
+#include "AliComparisonObject.h"
 
-class AliComparisonEff : public TNamed {
+class AliComparisonEff : public AliComparisonObject {
 public :
   AliComparisonEff(); 
   ~AliComparisonEff();
-  void InitHisto();
-  void InitCuts();
-  void Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
-  void Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
-  
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* cuts=0) {fCutsRC = cuts;}
-  void SetAliMCInfoCuts(AliMCInfoCuts* cuts=0) {fCutsMC = cuts;} 
-  
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;} 
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
+
+  // Init data members
+  virtual void Init();
+
+  // Execute analysis 
+  virtual void Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* list);
 
   // Analyse output histograms 
-  void Analyse();
+  virtual void Analyse();
+
+  // Get analysis folder
+  virtual TFolder* GetAnalysisFolder() {return fAnalysisFolder;}
+
+  // Create folder for analysed histograms
+  TFolder *CreateFolder(TString folder = "folderEff",TString title = "Analysed Efficiency histograms");
+
+  // Process events
+  void Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+
+  // Selection cuts
+  void SetAliRecInfoCuts(AliRecInfoCuts* cuts=0) {fCutsRC = cuts;}
+  void SetAliMCInfoCuts(AliMCInfoCuts* cuts=0) {fCutsMC = cuts;} 
+  
+  // Getters
+  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;} 
+  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
+
+   
 
 private:
 
@@ -100,9 +116,8 @@ private:
   TH3F* fTPCPtDCASigmaIdealPid[4]; //->TPC efficiency vs Pt vs DCA/Sigma (tan+-1)
   TH3F* fTPCPtDCASigmaFullPid[4];  //->TPC efficiency vs Pt vs DCA/Sigma (tan+-1, full systematics)
   TH3F* fTPCPtDCASigmaDay0Pid[4];  //->TPC efficiency vs Pt vs DCA/Sigma (tan+-1, goofie systematics)
-
-  TH3F* fTPCPtDCAXYPid[4];     //->TPC efficiency as Pt vs DCA_XY (tan+-1)
-  TH3F* fTPCPtDCAZPid[4];      //->TPC efficiency as Pt vs DCA_Z (tan+-1)
+  TH3F* fTPCPtDCAXYPid[4];     //->TPC efficiency vs Pt vs DCA_XY (tan+-1)
+  TH3F* fTPCPtDCAZPid[4];      //->TPC efficiency vs Pt vs DCA_Z (tan+-1)
 
   // Global cuts objects
   AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
@@ -111,6 +126,9 @@ private:
   // Magnet (needed for DCA calculations) 
   AliESDVertex* fVertex;  //! 
   
+  // analysis folder 
+  TFolder *fAnalysisFolder; // folder for analysed histograms
+
   AliComparisonEff(const AliComparisonEff&); // not implemented
   AliComparisonEff& operator=(const AliComparisonEff&); // not implemented
 

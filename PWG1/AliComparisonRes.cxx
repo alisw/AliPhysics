@@ -4,25 +4,31 @@
 // it keeps selection cuts used during comparison. The comparison 
 // information is stored in the ROOT histograms. Analysis of these 
 // histograms can be done by using Analyse() class function. The result of 
-// the analysis (histograms) are stored in the output picture_res.root file.
-//  
+// the analysis (histograms/graphs) are stored in the folder which is
+// a data member of AliComparisonRes.
+//
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
 /*
-  //after running analysis, read the file, and get component
+ 
+  // after running comparison task, read the file, and get component
   gSystem->Load("libPWG1.so");
   TFile f("Output.root");
-  AliComparisonRes * comp = (AliComparisonRes*)f.Get("AliComparisonRes");
+  AliComparisonRes * compObj = (AliComparisonRes*)f.Get("AliComparisonRes");
 
-  // analyse comparison data (output stored in pictures_res.root)
-  comp->Analyse();
-  
-  // paramtetrisation of the TPC track length (for information only) 
-  TF1 fl("fl","((min(250./(abs(x+0.000001)),250)-90))",0,2);  // TPC track length function
-  TF1 fl2("fl2","[0]/((min(250./(abs(x+0.000001)),250)-90))^[1]",0,2);
-  fl2.SetParameter(1,1);
-  fl2.SetParameter(0,1);
+  // analyse comparison data
+  compObj->Analyse();
+
+  // the output histograms/graphs will be stored in the folder "folderRes" 
+  compObj->GetAnalysisFolder()->ls("*");
+
+  // user can save whole comparison object (or only folder with anlysed histograms) 
+  // in the seperate output file (e.g.)
+  TFile fout("Analysed_Res.root","recreate");
+  compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+  fout.Close();
+
 */
 
 #include <iostream>
@@ -61,7 +67,7 @@ ClassImp(AliComparisonRes)
 
 //_____________________________________________________________________________
 AliComparisonRes::AliComparisonRes():
-  TNamed("AliComparisonRes","AliComparisonRes"),
+  AliComparisonObject("AliComparisonRes"),
 
   // Resolution 
   fPtResolLPT(0),        // pt resolution - low pt
@@ -82,38 +88,40 @@ AliComparisonRes::AliComparisonRes():
   // Parametrisation histograms
   //
 
-  f1Pt2Resol1PtTPC(0),
-  f1Pt2Resol1PtTPCITS(0),
-  fYResol1PtTPC(0),
-  fYResol1PtTPCITS(0),
-  fZResol1PtTPC(0),
-  fZResol1PtTPCITS(0),
-  fPhiResol1PtTPC(0),
-  fPhiResol1PtTPCITS(0),
-  fThetaResol1PtTPC(0),
-  fThetaResol1PtTPCITS(0),
+  f1Pt2ResolS1PtTPC(0),
+  f1Pt2ResolS1PtTPCITS(0),
+  fYResolS1PtTPC(0),
+  fYResolS1PtTPCITS(0),
+  fZResolS1PtTPC(0),
+  fZResolS1PtTPCITS(0),
+  fPhiResolS1PtTPC(0),
+  fPhiResolS1PtTPCITS(0),
+  fThetaResolS1PtTPC(0),
+  fThetaResolS1PtTPCITS(0),
 
   // constrained
-  fC1Pt2Resol1PtTPC(0),
-  fC1Pt2Resol1PtTPCITS(0),
-  fCYResol1PtTPC(0),
-  fCYResol1PtTPCITS(0),
-  fCZResol1PtTPC(0),
-  fCZResol1PtTPCITS(0),
-  fCPhiResol1PtTPC(0),
-  fCPhiResol1PtTPCITS(0),
-  fCThetaResol1PtTPC(0),
-  fCThetaResol1PtTPCITS(0),
+  fC1Pt2ResolS1PtTPC(0),
+  fC1Pt2ResolS1PtTPCITS(0),
+  fCYResolS1PtTPC(0),
+  fCYResolS1PtTPCITS(0),
+  fCZResolS1PtTPC(0),
+  fCZResolS1PtTPCITS(0),
+  fCPhiResolS1PtTPC(0),
+  fCPhiResolS1PtTPCITS(0),
+  fCThetaResolS1PtTPC(0),
+  fCThetaResolS1PtTPCITS(0),
 
   // vertex
   fVertex(0),
  
   // Cuts 
   fCutsRC(0),  
-  fCutsMC(0)  
+  fCutsMC(0),  
+
+  // histogram folder 
+  fAnalysisFolder(0)
 {
-  InitHisto();
-  InitCuts();
+  Init();
   
   // vertex (0,0,0)
   fVertex = new AliESDVertex();
@@ -141,35 +149,36 @@ AliComparisonRes::~AliComparisonRes(){
 
   // Parametrisation histograms
   // 
-  if(f1Pt2Resol1PtTPC) delete f1Pt2Resol1PtTPC; f1Pt2Resol1PtTPC=0;
-  if(f1Pt2Resol1PtTPCITS) delete f1Pt2Resol1PtTPCITS; f1Pt2Resol1PtTPCITS=0;
-  if(fYResol1PtTPC) delete fYResol1PtTPC; fYResol1PtTPC=0;
-  if(fYResol1PtTPCITS) delete fYResol1PtTPCITS; fYResol1PtTPCITS=0;
-  if(fZResol1PtTPC) delete fZResol1PtTPC; fZResol1PtTPC=0;
-  if(fZResol1PtTPCITS) delete fZResol1PtTPCITS; fZResol1PtTPCITS=0;
-  if(fPhiResol1PtTPC) delete fPhiResol1PtTPC; fPhiResol1PtTPC=0;
-  if(fPhiResol1PtTPCITS) delete fPhiResol1PtTPCITS; fPhiResol1PtTPCITS=0;
-  if(fThetaResol1PtTPC) delete fThetaResol1PtTPC; fThetaResol1PtTPC=0;
-  if(fThetaResol1PtTPCITS) delete fThetaResol1PtTPCITS; fThetaResol1PtTPCITS=0;
+  if(f1Pt2ResolS1PtTPC) delete f1Pt2ResolS1PtTPC; f1Pt2ResolS1PtTPC=0;
+  if(f1Pt2ResolS1PtTPCITS) delete f1Pt2ResolS1PtTPCITS; f1Pt2ResolS1PtTPCITS=0;
+  if(fYResolS1PtTPC) delete fYResolS1PtTPC; fYResolS1PtTPC=0;
+  if(fYResolS1PtTPCITS) delete fYResolS1PtTPCITS; fYResolS1PtTPCITS=0;
+  if(fZResolS1PtTPC) delete fZResolS1PtTPC; fZResolS1PtTPC=0;
+  if(fZResolS1PtTPCITS) delete fZResolS1PtTPCITS; fZResolS1PtTPCITS=0;
+  if(fPhiResolS1PtTPC) delete fPhiResolS1PtTPC; fPhiResolS1PtTPC=0;
+  if(fPhiResolS1PtTPCITS) delete fPhiResolS1PtTPCITS; fPhiResolS1PtTPCITS=0;
+  if(fThetaResolS1PtTPC) delete fThetaResolS1PtTPC; fThetaResolS1PtTPC=0;
+  if(fThetaResolS1PtTPCITS) delete fThetaResolS1PtTPCITS; fThetaResolS1PtTPCITS=0;
 
   // constrained
-  if(fC1Pt2Resol1PtTPC) delete fC1Pt2Resol1PtTPC; fC1Pt2Resol1PtTPC=0;
-  if(fC1Pt2Resol1PtTPCITS) delete fC1Pt2Resol1PtTPCITS; fC1Pt2Resol1PtTPCITS=0;
-  if(fCYResol1PtTPC) delete fCYResol1PtTPC; fCYResol1PtTPC=0;
-  if(fCYResol1PtTPCITS) delete fCYResol1PtTPCITS; fCYResol1PtTPCITS=0;
-  if(fCZResol1PtTPC) delete fCZResol1PtTPC; fCZResol1PtTPC=0;
-  if(fCZResol1PtTPCITS) delete fCZResol1PtTPCITS; fCZResol1PtTPCITS=0;
-  if(fCPhiResol1PtTPC) delete fCPhiResol1PtTPC; fCPhiResol1PtTPC=0;
-  if(fCPhiResol1PtTPCITS) delete fCPhiResol1PtTPCITS; fCPhiResol1PtTPCITS=0;
-  if(fCThetaResol1PtTPC) delete fCThetaResol1PtTPC; fCThetaResol1PtTPC=0;
-  if(fCThetaResol1PtTPCITS) delete fCThetaResol1PtTPCITS; fCThetaResol1PtTPCITS=0;
+  if(fC1Pt2ResolS1PtTPC) delete fC1Pt2ResolS1PtTPC; fC1Pt2ResolS1PtTPC=0;
+  if(fC1Pt2ResolS1PtTPCITS) delete fC1Pt2ResolS1PtTPCITS; fC1Pt2ResolS1PtTPCITS=0;
+  if(fCYResolS1PtTPC) delete fCYResolS1PtTPC; fCYResolS1PtTPC=0;
+  if(fCYResolS1PtTPCITS) delete fCYResolS1PtTPCITS; fCYResolS1PtTPCITS=0;
+  if(fCZResolS1PtTPC) delete fCZResolS1PtTPC; fCZResolS1PtTPC=0;
+  if(fCZResolS1PtTPCITS) delete fCZResolS1PtTPCITS; fCZResolS1PtTPCITS=0;
+  if(fCPhiResolS1PtTPC) delete fCPhiResolS1PtTPC; fCPhiResolS1PtTPC=0;
+  if(fCPhiResolS1PtTPCITS) delete fCPhiResolS1PtTPCITS; fCPhiResolS1PtTPCITS=0;
+  if(fCThetaResolS1PtTPC) delete fCThetaResolS1PtTPC; fCThetaResolS1PtTPC=0;
+  if(fCThetaResolS1PtTPCITS) delete fCThetaResolS1PtTPCITS; fCThetaResolS1PtTPCITS=0;
 
   if(fVertex) delete fVertex; fVertex=0;
 
+  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
 
 //_____________________________________________________________________________
-void AliComparisonRes::InitHisto(){
+void AliComparisonRes::Init(){
 
   // Init histograms
   fCPhiResolTan = new TH2F("CPhiResolTan","CPhiResolTan",50, -2,2,200,-0.025,0.025);   
@@ -216,96 +225,95 @@ void AliComparisonRes::InitHisto(){
   // Parametrisation histograms
   // 
 
-  f1Pt2Resol1PtTPC = new TH2F("f1Pt2Resol1PtTPC","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,10,200,-0.010,0.010);  
-  f1Pt2Resol1PtTPC->SetXTitle("1/mcp_{t}");
-  f1Pt2Resol1PtTPC->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
+  f1Pt2ResolS1PtTPC = new TH2F("f1Pt2ResolS1PtTPC","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs sqrt(1/pt))",100,0,3,200,-0.010,0.010);  
+  f1Pt2ResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  f1Pt2ResolS1PtTPC->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
 
-  f1Pt2Resol1PtTPCITS = new TH2F("f1Pt2Resol1PtTPCITS","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,10,200,-0.010,0.010);  
-  f1Pt2Resol1PtTPCITS->SetXTitle("1/mcp_{t}");
-  f1Pt2Resol1PtTPCITS->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
+  f1Pt2ResolS1PtTPCITS = new TH2F("f1Pt2ResolS1PtTPCITS","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs sqrt(1/pt))",100,0,3,200,-0.010,0.010);  
+  f1Pt2ResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  f1Pt2ResolS1PtTPCITS->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
 
-  fYResol1PtTPC = new TH2F("fYResol1PtTPC","fYResol1PtTPC",100, 0,10,200,-1.0,1.0);   
-  fYResol1PtTPC->SetXTitle("1/mcpt");
-  fYResol1PtTPC->SetYTitle("#DeltaY");
+  fYResolS1PtTPC = new TH2F("fYResolS1PtTPC","fYResolS1PtTPC",100, 0,3,200,-1.0,1.0);   
+  fYResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fYResolS1PtTPC->SetYTitle("#DeltaY");
 
-  fYResol1PtTPCITS = new TH2F("fYResol1PtTPCITS","fYResol1PtTPCITS",100, 0,10,200,-0.05,0.05);   
-  fYResol1PtTPCITS->SetXTitle("1/mcpt");
-  fYResol1PtTPCITS->SetYTitle("#DeltaY");
+  fYResolS1PtTPCITS = new TH2F("fYResolS1PtTPCITS","fYResolS1PtTPCITS",100, 0,3,200,-0.05,0.05);   
+  fYResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fYResolS1PtTPCITS->SetYTitle("#DeltaY");
 
-  fZResol1PtTPC = new TH2F("fZResol1PtTPC","fZResol1PtTPC",100, 0,10,200,-1.0,1.0);   
-  fZResol1PtTPC->SetXTitle("1/mcpt");
-  fZResol1PtTPC->SetYTitle("#DeltaZ");
+  fZResolS1PtTPC = new TH2F("fZResolS1PtTPC","fZResolS1PtTPC",100, 0,3,200,-1.0,1.0);   
+  fZResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fZResolS1PtTPC->SetYTitle("#DeltaZ");
 
-  fZResol1PtTPCITS = new TH2F("fZResol1PtTPCITS","fZResol1PtTPCITS",100, 0,10,200,-0.05,0.05);   
-  fZResol1PtTPCITS->SetXTitle("1/mcpt");
-  fZResol1PtTPCITS->SetYTitle("#DeltaZ");
+  fZResolS1PtTPCITS = new TH2F("fZResolS1PtTPCITS","fZResolS1PtTPCITS",100, 0,3,200,-0.05,0.05);   
+  fZResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fZResolS1PtTPCITS->SetYTitle("#DeltaZ");
 
-  fPhiResol1PtTPC = new TH2F("fPhiResol1PtTPC","fPhiResol1PtTPC",100, 0,10,200,-0.025,0.025);   
-  fPhiResol1PtTPC->SetXTitle("1/mcpt");
-  fPhiResol1PtTPC->SetYTitle("#Delta#phi");
+  fPhiResolS1PtTPC = new TH2F("fPhiResolS1PtTPC","fPhiResolS1PtTPC",100, 0,3,200,-0.025,0.025);   
+  fPhiResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fPhiResolS1PtTPC->SetYTitle("#Delta#phi");
 
-  fPhiResol1PtTPCITS = new TH2F("fPhiResol1PtTPCITS","fPhiResol1PtTPCITS",100, 0,10,200,-0.01,0.01);   
-  fPhiResol1PtTPCITS->SetXTitle("1/mcpt");
-  fPhiResol1PtTPCITS->SetYTitle("#Delta#phi");
+  fPhiResolS1PtTPCITS = new TH2F("fPhiResolS1PtTPCITS","fPhiResolS1PtTPCITS",100, 0,3,200,-0.01,0.01);   
+  fPhiResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fPhiResolS1PtTPCITS->SetYTitle("#Delta#phi");
 
-  fThetaResol1PtTPC = new TH2F("fThetaResol1PtTPC","fThetaResol1PtTPC",100, 0,10,200,-0.025,0.025);   
-  fThetaResol1PtTPC->SetXTitle("1/mcpt");
-  fThetaResol1PtTPC->SetYTitle("#Delta#theta");
+  fThetaResolS1PtTPC = new TH2F("fThetaResolS1PtTPC","fThetaResolS1PtTPC",100, 0,3,200,-0.025,0.025);   
+  fThetaResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fThetaResolS1PtTPC->SetYTitle("#Delta#theta");
 
-  fThetaResol1PtTPCITS = new TH2F("fThetaResol1PtTPCITS","fThetaResol1PtTPCITS",100, 0,10,200,-0.01,0.01);   
-  fThetaResol1PtTPCITS->SetXTitle("1/mcpt");
-  fThetaResol1PtTPCITS->SetYTitle("#Delta#theta");
+  fThetaResolS1PtTPCITS = new TH2F("fThetaResolS1PtTPCITS","fThetaResolS1PtTPCITS",100, 0,3,200,-0.01,0.01);   
+  fThetaResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fThetaResolS1PtTPCITS->SetYTitle("#Delta#theta");
   
   // constrained
-  fC1Pt2Resol1PtTPC = new TH2F("fC1Pt2Resol1PtTPC","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,10,200,-0.010,0.010);  
-  fC1Pt2Resol1PtTPC->SetXTitle("1/mcp_{t}");
-  fC1Pt2Resol1PtTPC->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
+  fC1Pt2ResolS1PtTPC = new TH2F("fC1Pt2ResolS1PtTPC","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,3,200,-0.010,0.010);  
+  fC1Pt2ResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fC1Pt2ResolS1PtTPC->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
 
-  fC1Pt2Resol1PtTPCITS = new TH2F("fC1Pt2Resol1PtTPCITS","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,10,200,-0.010,0.010);  
-  fC1Pt2Resol1PtTPCITS->SetXTitle("1/mcp_{t}");
-  fC1Pt2Resol1PtTPCITS->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
+  fC1Pt2ResolS1PtTPCITS = new TH2F("fC1Pt2ResolS1PtTPCITS","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,3,200,-0.010,0.010);  
+  fC1Pt2ResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fC1Pt2ResolS1PtTPCITS->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
 
-  fCYResol1PtTPC = new TH2F("fCYResol1PtTPC","fCYResol1PtTPC",100, 0,10,200,-1.0,1.0);   
-  fCYResol1PtTPC->SetXTitle("1/mcpt");
-  fCYResol1PtTPC->SetYTitle("#DeltaY");
+  fCYResolS1PtTPC = new TH2F("fCYResolS1PtTPC","fCYResolS1PtTPC",100, 0,3,200,-1.0,1.0);   
+  fCYResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCYResolS1PtTPC->SetYTitle("#DeltaY");
 
-  fCYResol1PtTPCITS = new TH2F("fCYResol1PtTPCITS","fCYResol1PtTPCITS",100, 0,10,200,-0.05,0.05);   
-  fCYResol1PtTPCITS->SetXTitle("1/mcpt");
-  fCYResol1PtTPCITS->SetYTitle("#DeltaY");
+  fCYResolS1PtTPCITS = new TH2F("fCYResolS1PtTPCITS","fCYResolS1PtTPCITS",100, 0,3,200,-0.01,0.01);   
+  fCYResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCYResolS1PtTPCITS->SetYTitle("#DeltaY");
 
-  fCZResol1PtTPC = new TH2F("fCZResol1PtTPC","fCZResol1PtTPC",100, 0,10,200,-1.0,1.0);   
-  fCZResol1PtTPC->SetXTitle("1/mcpt");
-  fCZResol1PtTPC->SetYTitle("#DeltaZ");
+  fCZResolS1PtTPC = new TH2F("fCZResolS1PtTPC","fCZResolS1PtTPC",100, 0,3,200,-1.0,1.0);   
+  fCZResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCZResolS1PtTPC->SetYTitle("#DeltaZ");
 
-  fCZResol1PtTPCITS = new TH2F("fCZResol1PtTPCITS","fCZResol1PtTPCITS",100, 0,10,200,-0.05,0.05);   
-  fCZResol1PtTPCITS->SetXTitle("1/mcpt");
-  fCZResol1PtTPCITS->SetYTitle("#DeltaZ");
+  fCZResolS1PtTPCITS = new TH2F("fCZResolS1PtTPCITS","fCZResolS1PtTPCITS",100, 0,3,200,-0.025,0.025);   
+  fCZResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCZResolS1PtTPCITS->SetYTitle("#DeltaZ");
 
-  fCPhiResol1PtTPC = new TH2F("fCPhiResol1PtTPC","fCPhiResol1PtTPC",100, 0,10,200,-0.025,0.025);   
-  fCPhiResol1PtTPC->SetXTitle("1/mcpt");
-  fCPhiResol1PtTPC->SetYTitle("#Delta#phi");
+  fCPhiResolS1PtTPC = new TH2F("fCPhiResolS1PtTPC","fCPhiResolS1PtTPC",100, 0,3,200,-0.025,0.025);   
+  fCPhiResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCPhiResolS1PtTPC->SetYTitle("#Delta#phi");
 
-  fCPhiResol1PtTPCITS = new TH2F("fCPhiResol1PtTPCITS","fCPhiResol1PtTPCITS",100, 0,10,200,-0.01,0.01);   
-  fCPhiResol1PtTPCITS->SetXTitle("1/mcpt");
-  fCPhiResol1PtTPCITS->SetYTitle("#Delta#phi");
+  fCPhiResolS1PtTPCITS = new TH2F("fCPhiResolS1PtTPCITS","fCPhiResolS1PtTPCITS",100, 0,3,200,-0.003,0.003);   
+  fCPhiResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCPhiResolS1PtTPCITS->SetYTitle("#Delta#phi");
 
-  fCThetaResol1PtTPC = new TH2F("fCThetaResol1PtTPC","fCThetaResol1PtTPC",100, 0,10,200,-0.025,0.025);   
-  fCThetaResol1PtTPC->SetXTitle("1/mcpt");
-  fCThetaResol1PtTPC->SetYTitle("#Delta#theta");
+  fCThetaResolS1PtTPC = new TH2F("fCThetaResolS1PtTPC","fCThetaResolS1PtTPC",100, 0,3,200,-0.025,0.025);   
+  fCThetaResolS1PtTPC->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCThetaResolS1PtTPC->SetYTitle("#Delta#theta");
 
-  fCThetaResol1PtTPCITS = new TH2F("fCThetaResol1PtTPCITS","fCThetaResol1PtTPCITS",100, 0,10,200,-0.01,0.01);   
-  fCThetaResol1PtTPCITS->SetXTitle("1/mcpt");
-  fCThetaResol1PtTPCITS->SetYTitle("#Delta#theta");
-}
+  fCThetaResolS1PtTPCITS = new TH2F("fCThetaResolS1PtTPCITS","fCThetaResolS1PtTPCITS",100, 0,3,200,-0.005,0.005);   
+  fCThetaResolS1PtTPCITS->SetXTitle("#sqrt{1/mcp_{t}}");
+  fCThetaResolS1PtTPCITS->SetYTitle("#Delta#theta");
 
-//_____________________________________________________________________________
-void AliComparisonRes::InitCuts()
-{
   // Init cuts 
   if(!fCutsMC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
   if(!fCutsRC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+
+  // init folder
+  fAnalysisFolder = CreateFolder("folderRes","Analysis Resolution Folder");
 }
 
 //_____________________________________________________________________________
@@ -313,8 +321,6 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 {
   // Fill resolution comparison information 
   AliExternalTrackParam *track = 0;
-  Double_t kRadius    = 3.0;      // beam pipe radius
-  Double_t kMaxStep   = 5.0;      // max step
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
@@ -325,6 +331,7 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   Float_t deltaPtTPC, pullPtTPC, deltaPhiTPC, deltaTanTPC, delta1Pt2TPC, deltaY1PtTPC, deltaZ1PtTPC, deltaPhi1PtTPC, deltaTheta1PtTPC; 
 
   Float_t mcpt = infoMC->GetParticle().Pt();
+  Float_t s1mcpt = TMath::Sqrt(1./infoMC->GetParticle().Pt());
 
   // distance to Prim. vertex 
   const Double_t* dv = infoMC->GetVDist(); 
@@ -333,7 +340,6 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   // Check selection cuts
   if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
   if (!isPrim) return;
-  //if (infoRC->GetStatus(1)==0) return;
   if (infoRC->GetStatus(1)!=3) return; // TPC refit
   if (!infoRC->GetESDtrack()) return;  
   if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
@@ -357,24 +363,16 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   deltaPhi1Pt = deltaPhi   / (0.1+1/mcpt);
   deltaTheta1Pt = deltaTan / (0.1+1/mcpt);
 
-  //track parameters at the first measured point (TPC) 
-  //Double_t param[5],x,alpha; // [0]-Y [cm],[1]-Z [cm],[2]-sin(phi),[3]-tan(theta),[4]-1/pt [1/GeV]   
-  //infoRC->GetESDtrack()->GetInnerExternalParameters(alpha,x,param);
-  //const AliExternalTrackParam *innerTPC =  infoRC->GetESDtrack()->GetInnerParam(); 
-  //const AliExternalTrackParam *innerTPC =  infoRC->GetESDtrack()->GetTPCInnerParam(); 
-
-
   // calculate track parameters at vertex
   const AliExternalTrackParam *innerTPC =  0;
   if ((innerTPC = infoRC->GetESDtrack()->GetTPCInnerParam()) != 0)
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      Bool_t bStatus = AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
       Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
 
       // Fill parametrisation histograms (only TPC track)
-      if(bStatus && bDCAStatus) 
+      if(bDCAStatus) 
 	  {
 			deltaPtTPC= (mcpt-innerTPC->Pt())/mcpt;  
 			pullPtTPC= (1/mcpt-innerTPC->OneOverPt())/TMath::Sqrt(innerTPC->GetSigma1Pt2());  
@@ -390,11 +388,11 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 			deltaPhi1PtTPC = deltaPhiTPC   / (0.1+1/mcpt);
 			deltaTheta1PtTPC = deltaTanTPC / (0.1+1/mcpt);
 
-			f1Pt2Resol1PtTPC->Fill(1/mcpt,delta1Pt2TPC);
-			fYResol1PtTPC->Fill(1/mcpt,deltaY1PtTPC);
-			fZResol1PtTPC->Fill(1/mcpt,deltaZ1PtTPC);
-			fPhiResol1PtTPC->Fill(1/mcpt,deltaPhi1PtTPC);
-			fThetaResol1PtTPC->Fill(1/mcpt,deltaTheta1PtTPC);
+			f1Pt2ResolS1PtTPC->Fill(s1mcpt,delta1Pt2TPC);
+			fYResolS1PtTPC->Fill(s1mcpt,deltaY1PtTPC);
+			fZResolS1PtTPC->Fill(s1mcpt,deltaZ1PtTPC);
+			fPhiResolS1PtTPC->Fill(s1mcpt,deltaPhi1PtTPC);
+			fThetaResolS1PtTPC->Fill(s1mcpt,deltaTheta1PtTPC);
 	  }
 	  delete track;
     }
@@ -403,11 +401,11 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   // TPC and ITS (nb. of clusters >2) in the system
   if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>2) 
   {
-      f1Pt2Resol1PtTPCITS->Fill(1/mcpt,delta1Pt2);
-      fYResol1PtTPCITS->Fill(1/mcpt,deltaY1Pt);
-      fZResol1PtTPCITS->Fill(1/mcpt,deltaZ1Pt);
-      fPhiResol1PtTPCITS->Fill(1/mcpt,deltaPhi1Pt);
-      fThetaResol1PtTPCITS->Fill(1/mcpt,deltaTheta1Pt);
+      f1Pt2ResolS1PtTPCITS->Fill(s1mcpt,delta1Pt2);
+      fYResolS1PtTPCITS->Fill(s1mcpt,deltaY1Pt);
+      fZResolS1PtTPCITS->Fill(s1mcpt,deltaZ1Pt);
+      fPhiResolS1PtTPCITS->Fill(s1mcpt,deltaPhi1Pt);
+      fThetaResolS1PtTPCITS->Fill(s1mcpt,deltaTheta1Pt);
   }
 
   // Fill histograms
@@ -423,8 +421,6 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   // Fill resolution comparison information (constarained parameters) 
   //
   AliExternalTrackParam *track = 0;
-  Double_t kRadius    = 3.0;      // beam pipe radius
-  Double_t kMaxStep   = 5.0;      // max step
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
@@ -435,6 +431,7 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   Float_t deltaPtTPC, pullPtTPC, deltaPhiTPC, deltaTanTPC, delta1Pt2TPC, deltaY1PtTPC, deltaZ1PtTPC, deltaPhi1PtTPC, deltaTheta1PtTPC; 
 
   Float_t mcpt = infoMC->GetParticle().Pt();
+  Float_t s1mcpt = TMath::Sqrt(1./infoMC->GetParticle().Pt());
   Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
 
   // distance to Prim. vertex 
@@ -478,11 +475,10 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      Bool_t bStatus = AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
       Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
 
       // Fill parametrisation histograms (only TPC track)
-      if(bStatus && bDCAStatus) 
+      if(bDCAStatus) 
 	  {
 		  deltaPtTPC= (mcpt-innerTPC->Pt())/mcpt;  
 		  pullPtTPC= (1/mcpt-innerTPC->OneOverPt())/TMath::Sqrt(innerTPC->GetSigma1Pt2());  
@@ -498,11 +494,11 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
 		  deltaPhi1PtTPC = deltaPhiTPC   / (0.1+1/mcpt);
 		  deltaTheta1PtTPC = deltaTanTPC / (0.1+1/mcpt);
 
-          fC1Pt2Resol1PtTPC->Fill(1/mcpt,delta1Pt2TPC);
-          fCYResol1PtTPC->Fill(1/mcpt,deltaY1PtTPC);
-          fCZResol1PtTPC->Fill(1/mcpt,deltaZ1PtTPC);
-          fCPhiResol1PtTPC->Fill(1/mcpt,deltaPhi1PtTPC);
-          fCThetaResol1PtTPC->Fill(1/mcpt,deltaTheta1PtTPC);
+          fC1Pt2ResolS1PtTPC->Fill(s1mcpt,delta1Pt2TPC);
+          fCYResolS1PtTPC->Fill(s1mcpt,deltaY1PtTPC);
+          fCZResolS1PtTPC->Fill(s1mcpt,deltaZ1PtTPC);
+          fCPhiResolS1PtTPC->Fill(s1mcpt,deltaPhi1PtTPC);
+          fCThetaResolS1PtTPC->Fill(s1mcpt,deltaTheta1PtTPC);
 	  }
 	  delete track;
     }
@@ -511,11 +507,11 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
  // TPC and ITS (nb. of clusters >2) in the system
   if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>2) 
   {
-      fC1Pt2Resol1PtTPCITS->Fill(1/mcpt,delta1Pt2);
-      fCYResol1PtTPCITS->Fill(1/mcpt,deltaY1Pt);
-      fCZResol1PtTPCITS->Fill(1/mcpt,deltaZ1Pt);
-      fCPhiResol1PtTPCITS->Fill(1/mcpt,deltaPhi1Pt);
-      fCThetaResol1PtTPCITS->Fill(1/mcpt,deltaTheta1Pt);
+      fC1Pt2ResolS1PtTPCITS->Fill(s1mcpt,delta1Pt2);
+      fCYResolS1PtTPCITS->Fill(s1mcpt,deltaY1Pt);
+      fCZResolS1PtTPCITS->Fill(s1mcpt,deltaZ1Pt);
+      fCPhiResolS1PtTPCITS->Fill(s1mcpt,deltaPhi1Pt);
+      fCThetaResolS1PtTPCITS->Fill(s1mcpt,deltaTheta1Pt);
   }
 
   // Fill histograms
@@ -549,14 +545,22 @@ TH1F* AliComparisonRes::MakeResol(TH2F * his, Int_t integ, Bool_t type){
 
 //_____________________________________________________________________________
 void AliComparisonRes::Analyse(){
-  // Analyse comparison information and store output histograms 
-  // in the "pictures_res.root" file 
-  
+  // Analyse comparison information and store output histograms
+  // in the folder "folderRes"
+  //
+ 
+  TH1::AddDirectory(kFALSE);
+
   AliComparisonRes * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
   TH1F *hiss=0;
 
-  TFile *fp = new TFile("pictures_res.root","recreate");
-  fp->cd();
+  // recreate folder every time
+  if(folder) delete folder;
+  folder = CreateFolder("folderRes","Analysis Res Folder");
+  folder->SetOwner();
+
+  // write results in the folder 
 
   TCanvas * c = new TCanvas("Phi resol Tan","Phi resol Tan");
   c->cd();
@@ -565,168 +569,198 @@ void AliComparisonRes::Analyse(){
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("#sigmap_{t}/p_{t}");
   hiss->Draw(); 
-  hiss->Write("CptResolTan");
+  hiss->SetName("CptResolTan");
+  
+  if(folder) folder->Add(hiss);
+
   //
   hiss = comp->MakeResol(comp->fCPhiResolTan,1,0);
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("#sigma#phi (rad)");
   hiss->Draw();
-  hiss->Write("PhiResolTan");
+  hiss->SetName("PhiResolTan");
+  
+  if(folder) folder->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCTanResolTan,1,0);
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("#sigma#theta (rad)");
   hiss->Draw();
-  hiss->Write("ThetaResolTan");
+  hiss->SetName("ThetaResolTan");
+  
+  if(folder) folder->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCPtPullTan,1,0);
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/#Sigma(1/p_{t})");
   hiss->Draw();
-  hiss->Write("CptPullTan");
+  hiss->SetName("CptPullTan");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fC1Pt2Resol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fC1Pt2ResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
-  hiss->Write("C1Pt2Resol1PtTPC");
-  fC1Pt2Resol1PtTPC->Write();
+  hiss->SetName("C1Pt2ResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fC1Pt2Resol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fC1Pt2ResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
-  hiss->Write("C1Pt2Resol1PtTPCITS");
-  fC1Pt2Resol1PtTPCITS->Write();
+  hiss->SetName("C1Pt2ResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fCYResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fCYResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CYResol1PtTPC");
-  fCYResol1PtTPC->Write();
+  hiss->SetName("CYResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fCYResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fCYResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CYResol1PtTPCITS");
-  fCYResol1PtTPCITS->Write();
+  hiss->SetName("CYResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fCZResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fCZResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CZResol1PtTPC");
-  fCZResol1PtTPC->Write();
+  hiss->SetName("CZResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fCZResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fCZResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CZResol1PtTPCITS");
-  fCZResol1PtTPCITS->Write();
+  hiss->SetName("CZResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fCPhiResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fCPhiResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CPhiResol1PtTPC");
-  fCPhiResol1PtTPC->Write();
+  hiss->SetName("CPhiResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fCPhiResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fCPhiResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CPhiResol1PtTPCITS");
-  fCPhiResol1PtTPCITS->Write();
+  hiss->SetName("CPhiResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fCThetaResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fCThetaResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CThetaResol1PtTPC");
-  fCThetaResol1PtTPC->Write();
+  hiss->SetName("CThetaResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fCThetaResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fCThetaResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("CThetaResol1PtTPCITS");
-  fCThetaResol1PtTPCITS->Write();
+  hiss->SetName("CThetaResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
 
   //
-  hiss = comp->MakeResol(comp->f1Pt2Resol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->f1Pt2ResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
-  hiss->Write("OnePt2Resol1PtTPC");
-  f1Pt2Resol1PtTPC->Write();
+  hiss->SetName("OnePt2ResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->f1Pt2Resol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->f1Pt2ResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
-  hiss->Write("OnePt2Resol1PtTPCITS");
-  f1Pt2Resol1PtTPCITS->Write();
+  hiss->SetName("OnePt2ResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fYResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fYResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("YResol1PtTPC");
-  fYResol1PtTPC->Write();
+  hiss->SetName("YResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fYResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fYResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("YResol1PtTPCITS");
-  fYResol1PtTPCITS->Write();
+  hiss->SetName("YResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fZResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fZResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("ZResol1PtTPC");
-  fZResol1PtTPC->Write();
+  hiss->SetName("ZResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fZResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fZResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("ZResol1PtTPCITS");
-  fZResol1PtTPCITS->Write();
+  hiss->SetName("ZResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fPhiResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fPhiResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("PhiResol1PtTPC");
-  fPhiResol1PtTPC->Write();
+  hiss->SetName("PhiResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fPhiResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fPhiResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("PhiResol1PtTPCITS");
-  fPhiResol1PtTPCITS->Write();
+  hiss->SetName("PhiResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
   //
-  hiss = comp->MakeResol(comp->fThetaResol1PtTPC,1,0);
+  hiss = comp->MakeResol(comp->fThetaResolS1PtTPC,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("ThetaResol1PtTPC");
-  fThetaResol1PtTPC->Write();
+  hiss->SetName("ThetaResolS1PtTPC");
+  
+  if(folder) folder->Add(hiss);
 
-  hiss = comp->MakeResol(comp->fThetaResol1PtTPCITS,1,0);
+  hiss = comp->MakeResol(comp->fThetaResolS1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
-  hiss->Write("ThetaResol1PtTPCITS");
-  fThetaResol1PtTPCITS->Write();
+  hiss->SetName("ThetaResolS1PtTPCITS");
+  
+  if(folder) folder->Add(hiss);
 
-  fp->Close();
+  // set pointer to fAnalysisFolder
+  fAnalysisFolder = folder;
 }
 
 //_____________________________________________________________________________
@@ -756,17 +790,17 @@ Long64_t AliComparisonRes::Merge(TCollection* list)
   fPtPullHPT->Add(entry->fPtPullHPT);
 
   // Histograms for 1/pt parameterisation
-  f1Pt2Resol1PtTPC->Add(entry->f1Pt2Resol1PtTPC);
-  fYResol1PtTPC->Add(entry->fYResol1PtTPC);
-  fZResol1PtTPC->Add(entry->fZResol1PtTPC);
-  fPhiResol1PtTPC->Add(entry->fPhiResol1PtTPC);
-  fThetaResol1PtTPC->Add(entry->fThetaResol1PtTPC);
+  f1Pt2ResolS1PtTPC->Add(entry->f1Pt2ResolS1PtTPC);
+  fYResolS1PtTPC->Add(entry->fYResolS1PtTPC);
+  fZResolS1PtTPC->Add(entry->fZResolS1PtTPC);
+  fPhiResolS1PtTPC->Add(entry->fPhiResolS1PtTPC);
+  fThetaResolS1PtTPC->Add(entry->fThetaResolS1PtTPC);
 
-  f1Pt2Resol1PtTPCITS->Add(entry->f1Pt2Resol1PtTPCITS);
-  fYResol1PtTPCITS->Add(entry->fYResol1PtTPCITS);
-  fZResol1PtTPCITS->Add(entry->fZResol1PtTPCITS);
-  fPhiResol1PtTPCITS->Add(entry->fPhiResol1PtTPCITS);
-  fThetaResol1PtTPCITS->Add(entry->fThetaResol1PtTPCITS);
+  f1Pt2ResolS1PtTPCITS->Add(entry->f1Pt2ResolS1PtTPCITS);
+  fYResolS1PtTPCITS->Add(entry->fYResolS1PtTPCITS);
+  fZResolS1PtTPCITS->Add(entry->fZResolS1PtTPCITS);
+  fPhiResolS1PtTPCITS->Add(entry->fPhiResolS1PtTPCITS);
+  fThetaResolS1PtTPCITS->Add(entry->fThetaResolS1PtTPCITS);
 
   // Resolution histograms (constrained param)
   fCPhiResolTan->Add(entry->fCPhiResolTan);
@@ -777,20 +811,30 @@ Long64_t AliComparisonRes::Merge(TCollection* list)
   fCPtPullTan->Add(entry->fCPtPullTan);
 
   //  Histograms for 1/pt parameterisation (constrained)
-  fC1Pt2Resol1PtTPC->Add(entry->fC1Pt2Resol1PtTPC);
-  fCYResol1PtTPC->Add(entry->fCYResol1PtTPC);
-  fCZResol1PtTPC->Add(entry->fCZResol1PtTPC);
-  fCPhiResol1PtTPC->Add(entry->fCPhiResol1PtTPC);
-  fCThetaResol1PtTPC->Add(entry->fCThetaResol1PtTPC);
+  fC1Pt2ResolS1PtTPC->Add(entry->fC1Pt2ResolS1PtTPC);
+  fCYResolS1PtTPC->Add(entry->fCYResolS1PtTPC);
+  fCZResolS1PtTPC->Add(entry->fCZResolS1PtTPC);
+  fCPhiResolS1PtTPC->Add(entry->fCPhiResolS1PtTPC);
+  fCThetaResolS1PtTPC->Add(entry->fCThetaResolS1PtTPC);
 
-  fC1Pt2Resol1PtTPCITS->Add(entry->fC1Pt2Resol1PtTPCITS);
-  fCYResol1PtTPCITS->Add(entry->fCYResol1PtTPCITS);
-  fCZResol1PtTPCITS->Add(entry->fCZResol1PtTPCITS);
-  fCPhiResol1PtTPCITS->Add(entry->fCPhiResol1PtTPCITS);
-  fCThetaResol1PtTPCITS->Add(entry->fCThetaResol1PtTPCITS);
+  fC1Pt2ResolS1PtTPCITS->Add(entry->fC1Pt2ResolS1PtTPCITS);
+  fCYResolS1PtTPCITS->Add(entry->fCYResolS1PtTPCITS);
+  fCZResolS1PtTPCITS->Add(entry->fCZResolS1PtTPCITS);
+  fCPhiResolS1PtTPCITS->Add(entry->fCPhiResolS1PtTPCITS);
+  fCThetaResolS1PtTPCITS->Add(entry->fCThetaResolS1PtTPCITS);
 
   count++;
   }
 
 return count;
+}
+
+//_____________________________________________________________________________
+TFolder* AliComparisonRes::CreateFolder(TString name,TString title) { 
+// create folder for analysed histograms
+//
+TFolder *folder = 0;
+  folder = new TFolder(name.Data(),title.Data());
+
+  return folder;
 }

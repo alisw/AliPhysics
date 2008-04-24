@@ -2,10 +2,10 @@
 // Implementation of the AliComparisonTask class. It compares properties of the 
 // reconstructed and MC particle tracks under several conditions. 
 // As the input it requires the TTree with AliRecInfo and AliMCInfo branches. 
-// The comparison output histograms are stored 
-// in the comparison objects: AliComparisonRes, AliComparisonEff, 
-// AliComparisonDEdx and AliComparisonDCA. Each of these objects also contains 
-// selection cuts which were used during filling the histograms.
+// 
+// The comparison output objects deriving from AliComparisonObject 
+// (e.g. AliComparisonRes, AliComparisonEff, AliComparisonDEdxA, AliComparisonDCA ...) 
+// are stored in the Output.root file.
 // 
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
@@ -36,6 +36,7 @@
 #include "AliComparisonEff.h"
 #include "AliComparisonDEdx.h"
 #include "AliComparisonDCA.h"
+#include "AliComparisonObject.h"
 #include "AliComparisonTask.h"
 
 using namespace std;
@@ -50,14 +51,11 @@ AliComparisonTask::AliComparisonTask(const char *name)
   , fTree(0)
   , fInfoMC(0)
   , fInfoRC(0)
-  , fCompRes(0)
-  , fCompEff(0)
-  , fCompDEdx(0)
-  , fCompDCA(0)
   , fOutput(0)
   , fMagField(0)
   , fMagFMap(0)
-  , fGeom(0)
+  , pitList(0)
+  , fCompList(0)
 {
   // Constructor
 
@@ -68,8 +66,8 @@ AliComparisonTask::AliComparisonTask(const char *name)
   // set default mag. field
   SetMagField();
   
-  // set default geometry
-  SetGeometry();
+  // create the list for comparison objects
+  fCompList = new TList;
 }
 
 //_____________________________________________________________________________
@@ -77,6 +75,7 @@ AliComparisonTask::~AliComparisonTask()
 {
   if(fOutput)   delete fOutput;  fOutput =0; 
   if(fMagFMap)  delete fMagFMap;  fMagFMap =0; 
+  if(fCompList)   delete fCompList;  fCompList =0; 
 }
 
 //_____________________________________________________________________________
@@ -102,9 +101,21 @@ void AliComparisonTask::ConnectInputData(Option_t *)
   // set mag. field map 
   fMagFMap = new AliMagFMaps("Maps","Maps", 2, 1., 10., fMagField);
   AliTracker::SetFieldMap(fMagFMap,kFALSE);
+}
 
-  // set geommetry
-  AliGeomManager::LoadGeometry(fGeom);
+//_____________________________________________________________________________
+Bool_t AliComparisonTask::AddComparisonObject(AliComparisonObject *pObj) 
+{
+  // add comparison object to the list
+  if(pObj == 0) {
+      Printf("ERROR: Could not add comparison object");
+	  return kFALSE;
+  }
+
+  // add object to the list
+  fCompList->AddLast(pObj);
+       
+return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -113,29 +124,28 @@ void AliComparisonTask::CreateOutputObjects()
   // Create histograms
   // Called once
 
+  // create output list
   fOutput = new TList;
   fOutput->SetOwner();
+  pitList = fOutput->MakeIterator();
 
-  if(fCompRes) fOutput->Add(fCompRes);
-  else 
-     Printf("WARNING: AliComparisonRes is not added to the output");
+  AliComparisonObject *pObj=0;
+  Int_t count=0;
 
-  if(fCompEff) fOutput->Add(fCompEff);
-  else 
-    Printf("WARNING: AliComparisonEff is not added to the output");
-
-  if(fCompDEdx) fOutput->Add(fCompDEdx);
-  else 
-    Printf("WARNING: AliComparisonDEdx is not added to the output");
-
-  if(fCompDCA) fOutput->Add(fCompDCA);
-  else 
-     Printf("WARNING: AliComparisonDCA is not added to the output");
+  // add comparison objects to the output
+  TIterator *pitCompList = fCompList->MakeIterator();
+  pitCompList->Reset();
+  while(( pObj = (AliComparisonObject *)pitCompList->Next()) != NULL) {
+    fOutput->Add(pObj);
+	count++;
+  }
+  Printf("CreateOutputObjects(): Number of output comparison objects: %d \n", count);
 }
 
 //_____________________________________________________________________________
 Bool_t AliComparisonTask::ReadEntry(Int_t evt) 
 {
+// Read entry from the tree
   Long64_t centry = fTree->LoadTree(evt);
   if(centry < 0) return kFALSE;
 
@@ -156,6 +166,8 @@ void AliComparisonTask::Exec(Option_t *)
   // Main loop
   // Called for each event
 
+  AliComparisonObject *pObj=0;
+
   if (!fInfoMC && !fInfoRC) {
     Printf("ERROR: fInfoMC && fInfoRC not available");
     return;
@@ -165,10 +177,10 @@ void AliComparisonTask::Exec(Option_t *)
   Bool_t status = ReadEntry(evtNumber);
   if(status == kTRUE) 
   {
-     if(fCompRes)  fCompRes->Exec(fInfoMC,fInfoRC);
-     if(fCompEff)  fCompEff->Exec(fInfoMC,fInfoRC);
-     if(fCompDEdx) fCompDEdx->Exec(fInfoMC,fInfoRC);
-     if(fCompDCA)  fCompDCA->Exec(fInfoMC,fInfoRC);
+    pitList->Reset();
+    while(( pObj = (AliComparisonObject *)pitList->Next()) != NULL) {
+       pObj->Exec(fInfoMC,fInfoRC);
+    }
   }
 
   if( !( evtNumber % 10000) ) { 
@@ -184,38 +196,12 @@ void AliComparisonTask::Exec(Option_t *)
 void AliComparisonTask::Terminate(Option_t *) 
 {
   // Called once at the end of the event loop
-  cout << "Terminate " << endl;
-
   TFile *out = new TFile("Output.root","RECREATE");
   out->cd();
 
   fOutput = dynamic_cast<TList*> (GetOutputData(0));
   if (!fOutput) {
     Printf("ERROR: fOutput not available");
-    return;
-  }
-
-  fCompRes = dynamic_cast<AliComparisonRes*> (fOutput->FindObject("AliComparisonRes"));
-  if (!fCompRes) {
-    Printf("WARNING: AliComparisonRes not available");
-    return;
-  }
-
-  fCompEff = dynamic_cast<AliComparisonEff*> (fOutput->FindObject("AliComparisonEff"));
-  if (!fCompEff) {
-    Printf("WARNING: AliComparisonEff not available");
-    return;
-  }
-   
-  fCompDEdx = dynamic_cast<AliComparisonDEdx*> (fOutput->FindObject("AliComparisonDEdx"));
-  if (!fCompDEdx) {
-    Printf("WARNING: AliComparisonDEdx not available");
-    return;
-  }
-
-  fCompDCA = dynamic_cast<AliComparisonDCA*> (fOutput->FindObject("AliComparisonDCA"));
-  if (!fCompDCA) {
-    Printf("WARNING: AliComparisonDCA not available");
     return;
   }
 

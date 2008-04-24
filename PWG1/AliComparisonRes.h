@@ -21,19 +21,38 @@ class TH3F;
 class TH3;
 class TProfile;
 class TProfile2D;
+class TString;
 class AliESDVertex;
 
 #include "TNamed.h"
+#include "AliComparisonObject.h"
 
-class AliComparisonRes : public TNamed {
+class AliComparisonRes : public AliComparisonObject {
 public :
   AliComparisonRes(); 
   virtual ~AliComparisonRes();
-  void      InitHisto();
-  void      InitCuts();
-  void      Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+
+  // Init data members
+  virtual void     Init();
+
+  // Execute analysis
+  virtual void      Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+
+  // Merge output objects (needed by PROOF) 
+  virtual Long64_t Merge(TCollection* list);
+
+  // Analyse output histograms
+  virtual void Analyse();
+
+  // Get analysis folder
+  virtual TFolder* GetAnalysisFolder() {return fAnalysisFolder;}
+
+  // Process events
   void      ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
   void      Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+
+  // Create folder for analysed histograms
+  TFolder *CreateFolder(TString folder = "folderRes",TString title = "Analysed Resolution histograms");
 
   // Selection cuts
   void SetAliRecInfoCuts(AliRecInfoCuts* cuts=0) {fCutsRC = cuts;}   
@@ -42,11 +61,6 @@ public :
   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}  
 
-  // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list);
-
-  // Analyse output histograms
-  void Analyse();
   static TH1F*       MakeResol(TH2F * his, Int_t integ, Bool_t type); 
 
 
@@ -73,34 +87,37 @@ private:
   // Histograms for track resolution parameterisation
   //
 
-  TH2F* f1Pt2Resol1PtTPC;      //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC)
-  TH2F* f1Pt2Resol1PtTPCITS;   //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC+ITS)
-  TH2F* fYResol1PtTPC;         //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC) 
-  TH2F* fYResol1PtTPCITS;      //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC + ITS) 
-  TH2F* fZResol1PtTPC;         //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC)
-  TH2F* fZResol1PtTPCITS;      //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC+ITS)
-  TH2F* fPhiResol1PtTPC;       //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC)
-  TH2F* fPhiResol1PtTPCITS;    //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC+ITS)
-  TH2F* fThetaResol1PtTPC;     //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC)
-  TH2F* fThetaResol1PtTPCITS;  //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC+ITS)
+  TH2F* f1Pt2ResolS1PtTPC;      //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs sqrt(1/pt) (TPC)
+  TH2F* f1Pt2ResolS1PtTPCITS;   //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs sqrt(1/pt) (TPC+ITS)
+  TH2F* fYResolS1PtTPC;         //-> (mcy-y)/(0.2+1/pt) vs sqrt(1/pt) (TPC) 
+  TH2F* fYResolS1PtTPCITS;      //-> (mcy-y)/(0.2+1/pt) vs sqrt(1/pt) (TPC + ITS) 
+  TH2F* fZResolS1PtTPC;         //-> (mcz-z)/(0.2+1/pt) vs sqrt(1/pt) (TPC)
+  TH2F* fZResolS1PtTPCITS;      //-> (mcz-z)/(0.2+1/pt) vs sqrt(1/pt) (TPC+ITS)
+  TH2F* fPhiResolS1PtTPC;       //-> (mcphi-phi)/(0.1+1/pt) vs sqrt(1/pt) (TPC)
+  TH2F* fPhiResolS1PtTPCITS;    //-> (mcphi-phi)/(0.1+1/pt) vs sqrt(1/pt) (TPC+ITS)
+  TH2F* fThetaResolS1PtTPC;     //-> (mctheta-theta)/(0.1+1/pt) vs sqrt(1/pt) (TPC)
+  TH2F* fThetaResolS1PtTPCITS;  //-> (mctheta-theta)/(0.1+1/pt) vs sqrt(1/pt) (TPC+ITS)
   
   // constrained
-  TH2F* fC1Pt2Resol1PtTPC;      //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC)
-  TH2F* fC1Pt2Resol1PtTPCITS;   //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC+ITS)
-  TH2F* fCYResol1PtTPC;         //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC) 
-  TH2F* fCYResol1PtTPCITS;      //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC + ITS) 
-  TH2F* fCZResol1PtTPC;         //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC)
-  TH2F* fCZResol1PtTPCITS;      //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC+ITS)
-  TH2F* fCPhiResol1PtTPC;       //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC)
-  TH2F* fCPhiResol1PtTPCITS;    //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC+ITS)
-  TH2F* fCThetaResol1PtTPC;     //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC)
-  TH2F* fCThetaResol1PtTPCITS;  //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC+ITS)
+  TH2F* fC1Pt2ResolS1PtTPC;      //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs sqrt(1/pt) (TPC)
+  TH2F* fC1Pt2ResolS1PtTPCITS;   //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs sqrt(1/pt) (TPC+ITS)
+  TH2F* fCYResolS1PtTPC;         //-> (mcy-y)/(0.2+1/pt) vs sqrt(1/pt) (TPC) 
+  TH2F* fCYResolS1PtTPCITS;      //-> (mcy-y)/(0.2+1/pt) vs sqrt(1/pt) (TPC + ITS) 
+  TH2F* fCZResolS1PtTPC;         //-> (mcz-z)/(0.2+1/pt) vs sqrt(1/pt) (TPC)
+  TH2F* fCZResolS1PtTPCITS;      //-> (mcz-z)/(0.2+1/pt) vs sqrt(1/pt) (TPC+ITS)
+  TH2F* fCPhiResolS1PtTPC;       //-> (mcphi-phi)/(0.1+1/pt) vs sqrt(1/pt) (TPC)
+  TH2F* fCPhiResolS1PtTPCITS;    //-> (mcphi-phi)/(0.1+1/pt) vs sqrt(1/pt) (TPC+ITS)
+  TH2F* fCThetaResolS1PtTPC;     //-> (mctheta-theta)/(0.1+1/pt) vs sqrt(1/pt) (TPC)
+  TH2F* fCThetaResolS1PtTPCITS;  //-> (mctheta-theta)/(0.1+1/pt) vs sqrt(1/pt) (TPC+ITS)
 
   AliESDVertex *fVertex;  //! 
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
   AliMCInfoCuts*  fCutsMC;       // selection cuts for MC tracks
+
+  // analysis folder 
+  TFolder *fAnalysisFolder; // folder for analysed histograms
 
   AliComparisonRes(const AliComparisonRes&); // not implemented
   AliComparisonRes& operator=(const AliComparisonRes&); // not implemented
