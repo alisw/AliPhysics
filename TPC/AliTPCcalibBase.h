@@ -10,14 +10,14 @@
 
 #include "TNamed.h"
 class AliTPCseed;
-class AliESDevent;
+class AliESDEvent;
 class TCollection;
 
 class AliTPCcalibBase:public TNamed {
 public:
   AliTPCcalibBase(); 
   virtual ~AliTPCcalibBase();
-  virtual void     Process(AliESDevent */*event*/){return;}
+  virtual void     Process(AliESDEvent */*event*/){return;}
   virtual void     Process(AliTPCseed */*track*/){return;}
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}

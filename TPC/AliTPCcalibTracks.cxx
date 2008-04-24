@@ -102,7 +102,7 @@ ClassImp(AliTPCcalibTracks)
 
 
 AliTPCcalibTracks::AliTPCcalibTracks():
-  TNamed(),
+  AliTPCcalibBase(),
   fClusterParam(0),
   fDebugStream(0),
   fROC(0),
@@ -145,7 +145,7 @@ AliTPCcalibTracks::AliTPCcalibTracks():
 
 
 AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
-TNamed(),
+  AliTPCcalibBase(),
   fClusterParam(0),
   fDebugStream(0),
   fROC(0),
@@ -260,7 +260,7 @@ AliTPCcalibTracks & AliTPCcalibTracks::operator=(const AliTPCcalibTracks& calibT
 
 
 AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, AliTPCClusterParam *clusterParam,  AliTPCcalibTracksCuts* cuts, Int_t logLevel) : 
-  TNamed(name, title),
+  AliTPCcalibBase(),
   fClusterParam(0),
   fDebugStream(0),
   fROC(0),
@@ -304,6 +304,9 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    // 
    // All histograms are instatiated in this constructor.
    // 
+   this->SetName(name);
+   this->SetTitle(title);
+
    if (fDebugLevel > 0) cout << " ***** this is AliTPCcalibTracks' main constructor ***** " << endl;
    G__SetCatchException(0);     
    
@@ -543,8 +546,7 @@ void AliTPCcalibTracks::AddInfo(TChain * chain, char* fileName){
    cout << "Clusterparametrization added to the chain." << endl;
 }
 
-   
-void AliTPCcalibTracks::Process(AliTPCseed *track, AliESDtrack */*esd*/){
+void AliTPCcalibTracks::Process(AliTPCseed *track){
    // 
    // To be called in the selector
    // first AcceptTrack is evaluated, then calls all the following analyse functions: 

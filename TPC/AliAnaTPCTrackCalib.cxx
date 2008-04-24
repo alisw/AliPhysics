@@ -103,7 +103,7 @@ Int_t AliAnaTPCTrackCalib::FillTrackHistograms(Int_t nTracks, AliESDtrack* track
   
    if (seed) {
       fNClusters->Fill(seed->GetNumberOfClusters());
-      fCalibTracks->Process(seed, track);   // analysis is done in fCalibTracks
+      fCalibTracks->Process(seed);   // analysis is done in fCalibTracks
    }
  
   return 1;

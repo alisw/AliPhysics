@@ -19,7 +19,7 @@
 
 
 
-#include <TNamed.h>
+#include <AliTPCcalibBase.h>
 class TF2;
 class TH3F;
 class TH1F;
@@ -43,7 +43,7 @@ class TMutex;
 
 using namespace std;
 
-class AliTPCcalibTracks : public TNamed {
+class AliTPCcalibTracks : public AliTPCcalibBase {
 public :
    AliTPCcalibTracks();                         // default constructor
   AliTPCcalibTracks(const AliTPCcalibTracks&calibTracks); // copy constructor
@@ -53,7 +53,7 @@ public :
    virtual ~AliTPCcalibTracks();                // destructor
    
    static void     AddInfo(TChain *chain, char *fileName);        // add clusterParametrization as user info to the chain
-   void            Process(AliTPCseed *track, AliESDtrack *esd);  // to be called by the Selector
+   void            Process(AliTPCseed *track);  // to be called by the Selector
    
    Int_t           AcceptTrack(AliTPCseed * track);
    void            FillResolutionHistoLocal(AliTPCseed * track);  // the MAIN-FUNCTION, called for each track to fill the histograms, called by Process(...)

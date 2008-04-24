@@ -182,7 +182,7 @@ Int_t AliTPCSelectorTracks::ProcessIn(Long64_t entry)
       if (seed) {
          fNClusters->Fill(seed->GetNumberOfClusters());
          //
-         fCalibTracks->Process(seed, esdTrack);   // analysis is done in fCalibTracks
+         fCalibTracks->Process(seed);   // analysis is done in fCalibTracks
          fCalibTracksGain->Process(seed);
       }
    }
