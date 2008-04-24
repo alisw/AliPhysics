@@ -4,26 +4,31 @@
 // it keeps selection cuts used during comparison. The comparison 
 // information is stored in the ROOT histograms. Analysis of these 
 // histograms can be done by using Analyse() class function. The result of 
-// the analysis (histograms) are stored in the output picture_dedx.root file.
+// the analysis (histograms/graphs) are stored in the folder which is 
+// a data of AliComparisonDEdx.
 //  
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
-
 /*
-  //after running analysis, read the file, and get component
+ 
+  // after running comparison task, read the file, and get component
   gSystem->Load("libPWG1.so");
   TFile f("Output.root");
-  AliComparisonDEdx * comp = (AliComparisonDEdx*)f.Get("AliComparisonDEdx");
+  AliComparisonDEdx * compObj = (AliComparisonDEdx*)f.Get("AliComparisonDEdx");
 
-  // analyse comparison data (output stored in pictures_dedx.root)
-  comp->Analyse();
+  // analyse comparison data
+  compObj->Analyse();
 
-  // TPC track length parameterisation
-  TF1 fl("fl","((min(250./(abs(x+0.000001)),250)-90))",0,2);  // length function
-  TF1 fl2("fl2","[0]/((min(250./(abs(x+0.000001)),250)-90))^[1]",0,2);
-  fl2.SetParameter(1,1);
-  fl2.SetParameter(0,1);
+  // the output histograms/graphs will be stored in the folder "folderDEdx" 
+  compObj->GetAnalysisFolder()->ls("*");
+
+  // user can save whole comparison object (or only folder with anlysed histograms) 
+  // in the seperate output file (e.g.)
+  TFile fout("Analysed_DEdx.root"."recreate");
+  compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+  fout.Close();
+
 */
 
 #include <iostream>
@@ -61,7 +66,8 @@ ClassImp(AliComparisonDEdx)
 
 //_____________________________________________________________________________
 AliComparisonDEdx::AliComparisonDEdx():
-  TNamed("AliComparisonDEdx","AliComparisonDEdx"),
+//  TNamed("AliComparisonDEdx","AliComparisonDEdx"),
+  AliComparisonObject("AliComparisonDEdx"),
 
   // dEdx 
   fTPCSignalNormTan(0), 
@@ -77,10 +83,12 @@ AliComparisonDEdx::AliComparisonDEdx():
   fCutsMC(0),
   fMCPtMin(0),
   fMCAbsTanThetaMax(0),
-  fMCPdgCode(0)
+  fMCPdgCode(0),
+
+  // histogram folder 
+  fAnalysisFolder(0)
 {
-  InitHisto();
-  InitCuts();
+  Init();
 }
 
 //_____________________________________________________________________________
@@ -93,10 +101,12 @@ AliComparisonDEdx::~AliComparisonDEdx(){
   if(fTPCSignalNormTanSPhi) delete fTPCSignalNormTanSPhi; fTPCSignalNormTanSPhi=0;
   if(fTPCSignalNormTanTPhi) delete fTPCSignalNormTanTPhi; fTPCSignalNormTanTPhi=0;
   if(fTPCSignalNormTanSPt)  delete fTPCSignalNormTanSPt; fTPCSignalNormTanSPt=0;
+
+  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
 
 //_____________________________________________________________________________
-void AliComparisonDEdx::InitHisto()
+void AliComparisonDEdx::Init()
 {
   // Init histograms
   
@@ -127,15 +137,15 @@ void AliComparisonDEdx::InitHisto()
   fTPCSignalNormTanSPt->SetXTitle("tan(#theta)");
   fTPCSignalNormTanSPt->SetYTitle("#sqrt{p_{t}}");
   fTPCSignalNormTanSPt->SetZTitle("rec. dE/dx / calc. dE/dx");
-}
 
-void AliComparisonDEdx::InitCuts()
-{
   // Init cuts
   if(!fCutsMC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
   if(!fCutsRC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+
+    // init folder
+    fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
 }
 
 //_____________________________________________________________________________
@@ -204,21 +214,17 @@ Long64_t AliComparisonDEdx::Merge(TCollection* list)
   while((obj = iter->Next()) != 0) 
   {
     AliComparisonDEdx* entry = dynamic_cast<AliComparisonDEdx*>(obj);
-    if (entry == 0) { 
-      Error("Add","Attempt to add object of class: %s to a %s",
-	  obj->ClassName(),this->ClassName());
-      return -1;
-  }
+    if (entry == 0) continue;
 
-  fTPCSignalNormTan->Add(entry->fTPCSignalNormTan);
-  fTPCSignalNormSPhi->Add(entry->fTPCSignalNormSPhi);
-  fTPCSignalNormTPhi->Add(entry->fTPCSignalNormTPhi);
-  //
-  fTPCSignalNormTanSPhi->Add(entry->fTPCSignalNormTanSPhi);
-  fTPCSignalNormTanTPhi->Add(entry->fTPCSignalNormTanTPhi);
-  fTPCSignalNormTanSPt->Add(entry->fTPCSignalNormTanSPt);
+    fTPCSignalNormTan->Add(entry->fTPCSignalNormTan);
+    fTPCSignalNormSPhi->Add(entry->fTPCSignalNormSPhi);
+    fTPCSignalNormTPhi->Add(entry->fTPCSignalNormTPhi);
+    //
+    fTPCSignalNormTanSPhi->Add(entry->fTPCSignalNormTanSPhi);
+    fTPCSignalNormTanTPhi->Add(entry->fTPCSignalNormTanTPhi);
+    fTPCSignalNormTanSPt->Add(entry->fTPCSignalNormTanSPt);
 
-  count++;
+    count++;
   }
 
 return count;
@@ -246,43 +252,71 @@ TH1F* AliComparisonDEdx::MakeResol(TH2F * his, Int_t integ, Bool_t type)
 //_____________________________________________________________________________
 void AliComparisonDEdx::Analyse()
 {
-  // Analyse output histograms
+  // Analyse comparison information and store output histograms
+  // in the folder "folderDEdx"
+  //
+
+  TH1::AddDirectory(kFALSE);
   
   AliComparisonDEdx * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
+
   TH1F *hiss=0;
   TGraph2D * gr=0;
 
-  TFile *fp = new TFile("pictures_dedx.root","recreate");
-  fp->cd();
+  // recreate folder every time
+  if(folder) delete folder;
+  folder = CreateFolder("folderDEdx","Analysis DEdx Folder");
+  folder->SetOwner();
 
-  TCanvas * c = new TCanvas("TPCdedx","TPC dedx");
+  // write results in the folder 
+  TCanvas * c = new TCanvas("can","TPC dedx");
   c->cd();
 
   hiss = comp->MakeResol(comp->fTPCSignalNormTan,4,0);
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("#sigma_{dEdx}");
   hiss->Draw();
-  hiss->Write("TPCdEdxResolTan");
+  hiss->SetName("TPCdEdxResolTan");
+
+  if(folder) folder->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fTPCSignalNormTan,4,1); 
   hiss->SetXTitle("Tan(#theta)");
   hiss->SetYTitle("<dEdx>");
   hiss->Draw(); 
-  hiss->Write("TPCdEdxMeanTan");
+  hiss->SetName("TPCdEdxMeanTan");
+
+  if(folder) folder->Add(hiss);
   //
   gr = AliMathBase::MakeStat2D(comp->fTPCSignalNormTanSPt,3,1,4);
   gr->GetXaxis()->SetTitle("Tan(#theta)");
   gr->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
   gr->GetZaxis()->SetTitle("<dEdx>");
-  gr->Draw("colz"); 
-  gr->GetHistogram()->Write("TPCdEdxMeanTanPt_1");
+  gr->SetName("TPCdEdxMeanTanPt_1");
+  gr->GetHistogram()->Draw("colz"); 
+
+  if(folder) folder->Add(gr->GetHistogram());
   //
   gr = AliMathBase::MakeStat2D(comp->fTPCSignalNormTanSPt,3,1,5);
   gr->GetXaxis()->SetTitle("Tan(#theta)");
   gr->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV)}");
   gr->GetZaxis()->SetTitle("#sigma_{dEdx}");
-  gr->Draw("colz"); 
-  gr->GetHistogram()->Write("TPCdEdxMeanTanPt_2");
+  gr->SetName("TPCdEdxMeanTanPt_2");
+  gr->GetHistogram()->Draw("colz"); 
 
-  fp->Close();
+  if(folder) folder->Add(gr->GetHistogram());
+
+  // set pointer to fAnalysisFolder
+  fAnalysisFolder = folder;
 }
+
+//_____________________________________________________________________________
+TFolder* AliComparisonDEdx::CreateFolder(TString name,TString title) { 
+// create folder for analysed histograms
+TFolder *folder = 0;
+  folder = new TFolder(name.Data(),title.Data());
+
+  return folder;
+}
+

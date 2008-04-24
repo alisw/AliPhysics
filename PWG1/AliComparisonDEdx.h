@@ -23,16 +23,36 @@ class TProfile;
 class TProfile2D;
 class TGraph2D;
 class TGraph; 
+class TString;
 
 #include "TNamed.h"
+#include "AliComparisonObject.h"
 
-class AliComparisonDEdx : public TNamed {
+//class AliComparisonDEdx : public TNamed {
+class AliComparisonDEdx : public AliComparisonObject {
 public :
   AliComparisonDEdx(); 
   ~AliComparisonDEdx();
-  void      InitHisto();
-  void      InitCuts();
-  void      Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+
+  // Init data members
+  virtual void Init();
+
+  // Execute analysis
+  virtual void Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+
+  // Merge output objects (needed by PROOF) 
+  virtual Long64_t Merge(TCollection* list);
+
+  // Analyse output histograms
+  virtual void Analyse();
+
+  // Get analysis folder
+  virtual TFolder* GetAnalysisFolder() {return fAnalysisFolder;}
+
+  // Create folder for analysed histograms
+  TFolder *CreateFolder(TString folder = "folderDEdx",TString title = "Analysed DEdx histograms");
+
+  // Process events
   void      Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
 
   // Selection cuts
@@ -50,12 +70,6 @@ public :
   Int_t GetMCPdgCode() const {return fMCPdgCode;} 
 
   static TH1F*     MakeResol(TH2F * his, Int_t integ, Bool_t type); 
-
-  // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* list);
-
-  // Analyse output histograms
-  void Analyse();
 
 private:
 
@@ -75,6 +89,9 @@ private:
   Float_t fMCPtMin;               // min. MC pt cut
   Float_t fMCAbsTanThetaMax;      // max. MC abs[tan(theta)] cut
   Int_t fMCPdgCode;               // selected particle with Pdg code
+
+  // analysis folder 
+  TFolder *fAnalysisFolder; // folder for analysed histograms
 
   AliComparisonDEdx(const AliComparisonDEdx&); // not implemented
   AliComparisonDEdx& operator=(const AliComparisonDEdx&); // not implemented

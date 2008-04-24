@@ -26,6 +26,7 @@
 #pragma link C++ class AliComparisonEff+;
 #pragma link C++ class AliComparisonDEdx+;
 #pragma link C++ class AliComparisonDCA+;
+#pragma link C++ class AliComparisonObject+;
 
 
 #endif

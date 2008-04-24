@@ -4,25 +4,31 @@
 // it keeps selection cuts used during comparison. The comparison 
 // information is stored in the ROOT histograms. Analysis of these 
 // histograms can be done by using Analyse() class function. The result of 
-// the analysis (histograms) are stored in the output picture_dca.root file.
+// the analysis (histograms/graphs) are stored in the folder
+// which is a data member of AliComparisonDCA.
 //  
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
 /*
-  // after running analysis, read the file, and get component
+ 
+  // after running comparison task, read the file, and get component
   gSystem->Load("libPWG1.so");
   TFile f("Output.root");
-  AliComparisonDCA * comp = (AliComparisonDCA*)f.Get("AliComparisonDCA");
+  AliComparisonDCA * compObj = (AliComparisonDCA*)f.Get("AliComparisonDCA");
 
-  // analyse comparison data (output stored in pictures_dca.root)
-  comp->Analyse();
+  // analyse comparison data
+  compObj->Analyse();
 
-  // TPC track length parameterisation
-  TF1 fl("fl","((min(250./(abs(x+0.000001)),250)-90))",0,2);  // length function
-  TF1 fl2("fl2","[0]/((min(250./(abs(x+0.000001)),250)-90))^[1]",0,2);
-  fl2.SetParameter(1,1);
-  fl2.SetParameter(0,1);
+  // the output histograms/graphs will be stored in the folder "folderDCA" 
+  compObj->GetAnalysisFolder()->ls("*");
+ 
+  // user can save whole comparison object (or only folder with anlysed histograms) 
+  // in the seperate output file (e.g.)
+  TFile fout("Analysed_DCA.root","recreate");
+  compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+  fout.Close();
+
 */
 
 #include <iostream>
@@ -61,7 +67,8 @@ ClassImp(AliComparisonDCA)
 
 //_____________________________________________________________________________
 AliComparisonDCA::AliComparisonDCA():
-  TNamed("AliComparisonDCA","AliComparisonDCA"),
+//  TNamed("AliComparisonDCA","AliComparisonDCA"),
+  AliComparisonObject("AliComparisonDCA"),
 
   // DCA histograms
   fD0TanSPtB1(0),
@@ -74,10 +81,12 @@ AliComparisonDCA::AliComparisonDCA():
 
   // Cuts 
   fCutsRC(0), 
-  fCutsMC(0)  
+  fCutsMC(0),  
+
+  // histogram folder 
+  fAnalysisFolder(0)
 {
-  InitHisto();
-  InitCuts();
+  Init();
 
   // vertex (0,0,0)
   fVertex = new AliESDVertex();
@@ -97,10 +106,12 @@ AliComparisonDCA::~AliComparisonDCA()
   if(fD0TanSPtInTPC) delete fD0TanSPtInTPC; fD0TanSPtInTPC=0;
   if(fD1TanSPtInTPC) delete fD1TanSPtInTPC; fD1TanSPtInTPC=0;
   if(fVertex) delete fVertex; fVertex=0;
+  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+
 }
 
 //_____________________________________________________________________________
-void AliComparisonDCA::InitHisto()
+void AliComparisonDCA::Init()
 {
   // DCA histograms
   fD0TanSPtB1 = new TH3F("DCAyTanSPtB1","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
@@ -132,15 +143,15 @@ void AliComparisonDCA::InitHisto()
   fD1TanSPtInTPC->SetXTitle("tan(#theta)");
   fD1TanSPtInTPC->SetYTitle("#sqrt{p_{t}(GeV/c)}");
   fD1TanSPtInTPC->SetZTitle("DCA_{z}");
-}
 
-//_____________________________________________________________________________
-void AliComparisonDCA::InitCuts()
-{
+  // init cuts
   if(!fCutsMC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
   if(!fCutsRC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+ 
+  // init folder
+  fAnalysisFolder = CreateFolder("folderDCA","Analysis DCA Folder");
 }
 
 //_____________________________________________________________________________
@@ -148,8 +159,6 @@ void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 {
   // Fill DCA comparison information
   AliExternalTrackParam *track = 0;
-  Double_t kRadius    = 3.0;      // beam pipe radius
-  Double_t kMaxStep   = 5.0;      // max step
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
@@ -183,10 +192,9 @@ void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      Bool_t bStatus = AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
       Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
 
-      if(bStatus && bDCAStatus) {
+      if(bDCAStatus) {
         fD0TanSPtInTPC->Fill(tantheta,spt,dca[0]);
         fD1TanSPtInTPC->Fill(tantheta,spt,dca[1]);
 	  }
@@ -222,11 +230,8 @@ Long64_t AliComparisonDCA::Merge(TCollection* list)
   while((obj = iter->Next()) != 0) 
   {
     AliComparisonDCA* entry = dynamic_cast<AliComparisonDCA*>(obj);
-    if (entry == 0) { 
-      Error("Add","Attempt to add object of class: %s to a %s",
-	  obj->ClassName(),this->ClassName());
-      return -1;
-    }
+    if (entry == 0) continue; 
+    
 
     fD0TanSPtB1->Add(entry->fD0TanSPtB1);
     fD1TanSPtB1->Add(entry->fD1TanSPtB1);
@@ -250,32 +255,59 @@ void AliComparisonDCA::Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC){
 //_____________________________________________________________________________
 void AliComparisonDCA::Analyse()
 {
-  // Analyse output histograms
+  //
+  // Analyse comparison information and store output histograms
+  // in the analysis folder "folderDCA" 
+  //
   
-  AliComparisonDCA * comp=this;
-  TGraph2D * gr=0;
+  TH1::AddDirectory(kFALSE);
+
+  TGraph2D *gr=0;
   TGraph * gr0=0;
+  AliComparisonDCA * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
 
-  TFile *fp = new TFile("pictures_dca.root","recreate");
-  fp->cd();
+  // recreate folder every time
+  if(folder) delete folder;
+  folder = CreateFolder("folderDCA","Analysis DCA Folder");
+  folder->SetOwner();
 
-  TCanvas * c = new TCanvas("DCA","DCA resloution");
-  c->cd();
-
+  // write results in the folder 
+  // Canvas to draw analysed histograms
+  TCanvas * c = new TCanvas("canDCA","DCA resolution");
+  c->Divide(1,2);
+  c->cd(1);
+  //
   // DCA resolution
+  //
   gr0 = AliMathBase::MakeStat1D(comp->fD0TanSPtB1,2,5);
   gr0->GetXaxis()->SetTitle("Tan(#theta)");
   gr0->GetYaxis()->SetTitle("#sigmaDCA (cm)");
-  gr0->Write("DCAResolTan");
+  gr0->SetName("DCAResolTan");
+  gr0->Draw("Al*");
+
+  //if(folder) folder->Add(gr0->GetHistogram());
+  if(folder) folder->Add(gr0);
   //
+  c->cd(2);
   gr = AliMathBase::MakeStat2D(comp->fD0TanSPtB1,4,2,5); 
   gr->GetXaxis()->SetTitle("Tan(#theta)");
   gr->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV/c)}");
   gr->GetYaxis()->SetTitle("#sigmaDCA (cm)");
-  gr->GetHistogram()->Write("DCAResolSPTTan");
+  gr->SetName("DCAResolSPTTan");
+  gr->GetHistogram()->Draw("colz");
 
-  gPad->Clear();
-  gr0->Draw("al*");
+  if(folder) folder->Add(gr->GetHistogram());
 
-  fp->Close();
+  // set pointer to fAnalysisFolder
+  fAnalysisFolder = folder;
+}
+
+//_____________________________________________________________________________
+TFolder* AliComparisonDCA::CreateFolder(TString name,TString title) { 
+// create folder for analysed histograms
+TFolder *folder = 0;
+  folder = new TFolder(name.Data(),title.Data());
+
+  return folder;
 }

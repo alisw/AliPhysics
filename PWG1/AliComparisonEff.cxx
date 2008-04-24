@@ -4,26 +4,31 @@
 // it keeps selection cuts used during comparison. The comparison 
 // information is stored in the ROOT histograms. Analysis of these 
 // histograms can be done by using Analyse() class function. The result of 
-// the analysis (histograms) are stored in the output picture_eff.root file.
-//  
+// the analysis (histograms/graphs) are stored in the folder which is 
+// a data member of AliComparisonEff.
+// 
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
 /*
-  // after running analysis, read the file, and get component
+ 
+  // after running comparison task, read the file, and get component
   gSystem->Load("libPWG1.so");
   TFile f("Output.root");
-  AliComparisonEff * comp = (AliComparisonEff*)f.Get("AliComparisonEff");
+  AliComparisonEff * compObj = (AliComparisonEff*)f.Get("AliComparisonEff");
 
+  // analyse comparison data
+  compObj->Analyse();
 
-  // analyse comparison data (output stored in pictures_eff.root)
-  comp->Analyse();
- 
-  // paramtetrisation of the TPC track length (for information only)
-  TF1 fl("fl","((min(250./(abs(x+0.000001)),250)-90))",0,2);  // length function
-  TF1 fl2("fl2","[0]/((min(250./(abs(x+0.000001)),250)-90))^[1]",0,2);
-  fl2.SetParameter(1,1);
-  fl2.SetParameter(0,1);
+  // the output histograms/graphs will be stored in the folder "folderEff" 
+  compObj->GetAnalysisFolder()->ls("*");
+
+  // user can save whole comparison object (or only folder with anlysed histograms) 
+  // in the seperate output file (e.g.)
+  TFile fout("Analysed_Eff.root","recreate");
+  compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+  fout.Close();
+
 */
 
 
@@ -66,7 +71,7 @@ ClassImp(AliComparisonEff)
 
 //_____________________________________________________________________________
 AliComparisonEff::AliComparisonEff():
-  TNamed("AliComparisonEff","AliComparisonEff"),
+  AliComparisonObject("AliComparisonEff"),
 
   // histograms
  
@@ -103,7 +108,10 @@ AliComparisonEff::AliComparisonEff():
   fCutsRC(0), 
   fCutsMC(0),
 
-  fVertex(0)
+  fVertex(0),
+
+  // histogram folder 
+  fAnalysisFolder(0)
 {
   // init vertex
   fVertex = new AliESDVertex();
@@ -125,15 +133,14 @@ AliComparisonEff::AliComparisonEff():
 	fTPCPtDCAXYPid[i]=0;   
 	fTPCPtDCAZPid[i]=0; 
   }
-  InitHisto();
-  InitCuts();
+  Init();
 }
 
 //_____________________________________________________________________________
 AliComparisonEff::~AliComparisonEff(){
 
   // 
-  if(fMCPt)  delete  fEffTPCPt; fEffTPCPt=0;
+  if(fMCPt)  delete  fMCPt; fMCPt=0;
   if(fMCRecPt)  delete  fMCRecPt; fMCRecPt=0;
   if(fMCRecPrimPt)  delete  fMCRecPrimPt; fMCRecPrimPt=0;
   if(fMCRecSecPt)  delete  fMCRecSecPt; fMCRecSecPt=0;
@@ -184,10 +191,12 @@ AliComparisonEff::~AliComparisonEff(){
 	if(fTPCPtDCAXYPid[i]) delete  fTPCPtDCAXYPid[i]; fTPCPtDCAXYPid[i]=0;
 	if(fTPCPtDCAZPid[i]) delete   fTPCPtDCAZPid[i];  fTPCPtDCAZPid[i]=0;
   }
+
+  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
 
 //_____________________________________________________________________________
-void AliComparisonEff::InitHisto(){
+void AliComparisonEff::Init(){
 
   // Init histograms
   //
@@ -317,16 +326,15 @@ void AliComparisonEff::InitHisto(){
     sprintf(name, "fTPCPtDCAZPid_%d",i);
 	fTPCPtDCAZPid[i]= new TH3F(name,name,50,0.1,3,100,0,100,5,0,5);
   }
-}
 
-//_____________________________________________________________________________
-void AliComparisonEff::InitCuts()
-{
-
+  // init cuts
   if(!fCutsMC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
   if(!fCutsRC) 
     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+
+  // init folder
+  fAnalysisFolder = CreateFolder("folderEff","Analysis Efficiency Folder");
 }
 
 //_____________________________________________________________________________
@@ -335,8 +343,6 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   // Fill efficiency comparison information
   
   AliExternalTrackParam *track = 0;
-  Double_t kRadius    = 3.0;      // beam pipe radius
-  Double_t kMaxStep   = 5.0;      // max step
   Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
@@ -387,11 +393,8 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
     {
       if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
       {
-
-        Bool_t bStatus = AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
         Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
-
-		if(bStatus && bDCAStatus) {
+		if(bDCAStatus) {
 		//
 		cov[2] = track->GetCovariance()[2];
 
@@ -607,8 +610,7 @@ Long64_t AliComparisonEff::Merge(TCollection* list)
   while((obj = iter->Next()) != 0) 
   {
     AliComparisonEff* entry = dynamic_cast<AliComparisonEff*>(obj);
-    if (entry == 0) 
-      continue; 
+    if (entry == 0) continue; 
   
     fMCPt->Add(entry->fMCPt);
     fMCRecPt->Add(entry->fMCRecPt);
@@ -665,23 +667,28 @@ return count;
 //_____________________________________________________________________________
 void AliComparisonEff::Analyse() 
 {
-  // Analyse output histograms
+  // Analyse comparison information and store output histograms
+  // in the folder "folderEff" 
+  //
   
+  TH1::AddDirectory(kFALSE);
+
   AliComparisonEff * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
+
+  // recreate folder every time
+  if(folder) delete folder;
+  folder = CreateFolder("folderEff","Analysis Eff Folder");
+  folder->SetOwner();
 
   // calculate efficiency and contamination (4 sigma) 
-
   TH1 *h_sigmaidealpid[20];
   TH1 *h_sigmafullpid[20];
   TH1 *h_sigmaday0pid[20];
 
-  //TH1 *h_sigmaday0pidclone[20];
-
   TH1 *h_sigmaidealpidtot[4];
   TH1 *h_sigmafullpidtot[4];
   TH1 *h_sigmaday0pidtot[4];
-
-  //TH1 *h_sigmaday0pidtotclone[4];
 
   char name[256];
   char name1[256];
@@ -731,7 +738,6 @@ void AliComparisonEff::Analyse()
        sprintf(name,"h_sigmaday0pid_%d",idx);
        h_sigmaday0pid[idx] = comp->fTPCPtDCASigmaDay0Pid[i]->Project3D();
        h_sigmaday0pid[idx]->SetName(name);
-
 	} 
   }
 
@@ -772,70 +778,80 @@ void AliComparisonEff::Analyse()
     h_sigmaday0pid[idx+15]->Divide(h_sigmaday0pidtot[2]);
   }
 
-  // write results
-  TFile *fp = new TFile("pictures_eff.root","recreate");
-  fp->cd();
-
   TCanvas * c = new TCanvas("Efficiency","Track efficiency");
   c->cd();
 
-  fMCPt->Write();
-  fMCRecPt->Write();
-  fMCRecPrimPt->Write();
-  fMCRecSecPt->Write();
-
-  for(int i = 0; i<4;i++)  
-  {
-   comp->fTPCPtDCASigmaIdealPid[i]->GetYaxis()->SetRange();
-   comp->fTPCPtDCASigmaIdealPid[i]->GetZaxis()->SetRange();
-   comp->fTPCPtDCASigmaFullPid[i]->GetYaxis()->SetRange();
-   comp->fTPCPtDCASigmaFullPid[i]->GetZaxis()->SetRange();
-   comp->fTPCPtDCASigmaDay0Pid[i]->GetYaxis()->SetRange();
-   comp->fTPCPtDCASigmaDay0Pid[i]->GetZaxis()->SetRange();
-
-    comp->fTPCPtDCASigmaIdealPid[i]->Write();
-    comp->fTPCPtDCASigmaFullPid[i]->Write();
-    comp->fTPCPtDCASigmaDay0Pid[i]->Write();
-  }
   //
   comp->fEffTPCTanF->SetXTitle("Tan(#theta)");
   comp->fEffTPCTanF->SetYTitle("eff_{findable}");
-  comp->fEffTPCTanF->Write("EffTanFindable");
+  comp->fEffTPCTanF->SetName("EffTanFindable");
   //
   comp->fEffTPCTan->SetXTitle("Tan(#theta)");
   comp->fEffTPCTan->SetYTitle("eff_{all}");
-  comp->fEffTPCTan->Write("EffTanAll");
+  comp->fEffTPCTan->SetName("EffTanAll");
 
-  h_sigmaidealpidtot[1]->Write("Eff_SigmaIdeal");
-  h_sigmaidealpidtot[3]->Write("Cont_SigmaIdeal");
+  if(folder) folder->Add(comp->fEffTPCTanF);
+  if(folder) folder->Add(comp->fEffTPCTan);
 
-  h_sigmafullpidtot[1]->Write("Eff_SigmaFull");
-  h_sigmafullpidtot[3]->Write("Cont_SigmaFull");
+  h_sigmaidealpidtot[1]->SetName("Eff_SigmaIdeal");
+  h_sigmaidealpidtot[3]->SetName("Cont_SigmaIdeal");
 
-  h_sigmaday0pidtot[1]->Write("Eff_SigmaDay0");
-  h_sigmaday0pidtot[3]->Write("Cont_SigmaDay0");
+  if(folder) folder->Add(h_sigmaidealpidtot[1]);
+  if(folder) folder->Add(h_sigmaidealpidtot[3]);
+
+  h_sigmafullpidtot[1]->SetName("Eff_SigmaFull");
+  h_sigmafullpidtot[3]->SetName("Cont_SigmaFull");
+
+  if(folder) folder->Add(h_sigmafullpidtot[1]);
+  if(folder) folder->Add(h_sigmafullpidtot[3]);
+
+  h_sigmaday0pidtot[1]->SetName("Eff_SigmaDay0");
+  h_sigmaday0pidtot[3]->SetName("Cont_SigmaDay0");
+
+  if(folder) folder->Add(h_sigmaday0pidtot[1]);
+  if(folder) folder->Add(h_sigmaday0pidtot[3]);
 
   for(Int_t idx = 0; idx<5; idx++)
   {
     sprintf(name,"Eff_SigmaIdeal_%d",idx);
     sprintf(name1,"Cont_SigmaIdeal_%d",idx);
 
-    h_sigmaidealpid[idx+5]->Write(name);
-    h_sigmaidealpid[idx+15]->Write(name1);
+    h_sigmaidealpid[idx+5]->SetName(name);
+    h_sigmaidealpid[idx+15]->SetName(name1);
+
+	if(folder) folder->Add(h_sigmaidealpid[idx+5]);
+	if(folder) folder->Add(h_sigmaidealpid[idx+15]);
 
     sprintf(name,"Eff_SigmaFull_%d",idx);
     sprintf(name1,"Cont_SigmaFull_%d",idx);
 
-    h_sigmafullpid[idx+5]->Write(name);
-    h_sigmafullpid[idx+15]->Write(name1);
+    h_sigmafullpid[idx+5]->SetName(name);
+    h_sigmafullpid[idx+15]->SetName(name1);
+
+	if(folder) folder->Add(h_sigmafullpid[idx+5]);
+	if(folder) folder->Add(h_sigmafullpid[idx+15]);
 
     sprintf(name,"Eff_SigmaDay0_%d",idx);
     sprintf(name1,"Cont_SigmaDay0_%d",idx);
 
-    h_sigmaday0pid[idx+5]->Write(name);
-    h_sigmaday0pid[idx+15]->Write(name1);
+    h_sigmaday0pid[idx+5]->SetName(name);
+    h_sigmaday0pid[idx+15]->SetName(name1);
+
+	if(folder) folder->Add(h_sigmaday0pid[idx+5]);
+	if(folder) folder->Add(h_sigmaday0pid[idx+15]);
   }
 
-  //
-  fp->Close();
+  // set pointer to fAnalysisFolder
+  fAnalysisFolder = folder;
+
+}
+
+//_____________________________________________________________________________
+TFolder* AliComparisonEff::CreateFolder(TString name,TString title) { 
+// create folder for analysed histograms
+//
+TFolder *folder = 0;
+  folder = new TFolder(name.Data(),title.Data());
+
+  return folder;
 }

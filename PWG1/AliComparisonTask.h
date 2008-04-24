@@ -7,10 +7,7 @@
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
-class AliComparisonRes;
-class AliComparisonEff;
-class AliComparisonDEdx;
-class AliComparisonDCA;
+class AliComparisonObject;
 class AliMagFMaps;
 class TList;
 
@@ -30,28 +27,20 @@ class AliComparisonTask : public AliAnalysisTask {
   Bool_t  ReadEntry(Int_t evt);
 
   // Set comparison objects
-  void SetAliComparisonRes(AliComparisonRes* comp) {fCompRes = comp;}
-  void SetAliComparisonEff(AliComparisonEff* comp) {fCompEff = comp;}
-  void SetAliComparisonDEdx(AliComparisonDEdx* comp) {fCompDEdx = comp;}
-  void SetAliComparisonDCA(AliComparisonDCA* comp) {fCompDCA = comp;}
-
+  Bool_t AddComparisonObject(AliComparisonObject* comp);
   void SetMagField(Int_t mag = 2) {fMagField = mag;}
-  void SetGeometry(char* geom = "/d/alice12/jacek/sim/v4-10-Release/pp/0/geometry.root")  {fGeom = geom;}
 
  private:
   TTree* fTree;                   //! input tree
   AliMCInfo *fInfoMC;             //! AliMCInfo object
   AliESDRecInfo *fInfoRC;         //! AliESDRecInfo object
-  AliComparisonRes* fCompRes;     // TPC resolution comparison object
-  AliComparisonEff* fCompEff;     // TPC efficiency comparison object
-  AliComparisonDEdx* fCompDEdx;   // TPC DEdx comparison object
-  AliComparisonDCA* fCompDCA;     // TPC DCA comparison object
 
   TList* fOutput;                 //! list send on output slot 0
   static Int_t evtNumber;         //! event number
   Int_t  fMagField;               //! mag. field (0 - 0.2 T, 1 - 0.4 T, 2 - 0.5 T) 
   AliMagFMaps *fMagFMap;          //! mag. field map 
-  const char *fGeom;              //! ROOT file with detector geometry
+  TIterator *pitList;             //! iterator over the output objetcs  
+  TList *fCompList;               // list of comparison objects
 
   AliComparisonTask(const AliComparisonTask&); // not implemented
   AliComparisonTask& operator=(const AliComparisonTask&); // not implemented
