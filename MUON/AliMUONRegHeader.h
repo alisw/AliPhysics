@@ -12,8 +12,8 @@
 //  Author Christian Finck
 
 #include <TObject.h>
+#include <TClonesArray.h>
 
-class TClonesArray;
 class AliMUONLocalStruct;
 
 class AliMUONRegHeader : public TObject{
