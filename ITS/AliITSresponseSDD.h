@@ -119,7 +119,7 @@ class AliITSresponseSDD : public AliITSresponse {
    AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
    AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-    ClassDef(AliITSresponseSDD,10) // Base response class 
+    ClassDef(AliITSresponseSDD,11) // Base response class 
     
     };
 #endif
