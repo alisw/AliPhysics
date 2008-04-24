@@ -34,9 +34,15 @@ public:
   
   void    SetLock(TString jobID);
   void    SetDone(TString jobID);
-  Bool_t  IsLocked(TString jobID);
+  void    SetFail(TString jobID){
 
-  TString  fJobFile;    
+  Int_t   Stage(TString inputData,TString jobID);
+
+  Bool_t  IsLocked(TString jobID);
+  Bool_t  IsFail(TString jobID);
+  Bool_t  IsStaged(TString inputData);
+
+  TString  fJobFile;
   TString  fWorkDir;
   ClassDef(AliTPCJobs,0)
 };
@@ -81,6 +87,11 @@ Bool_t AliTPCJobs::GetNextJob(){
     ins>>inputData;
     ins>>outputDir;
     ins>>action;
+    if (!IsStaged(inputData)){
+	Stage(inputData,id);
+	continue;
+    }
+    if (IsFail(id)) continue;
     if (!IsLocked(id)){
       hasJob=kTRUE;
       break;
@@ -102,6 +113,26 @@ void    AliTPCJobs::SetDone(TString jobID){
   gSystem->Exec(Form("touch out/%s.done", jobID.Data()));
 }
 
+void    AliTPCJobs::SetFail(TString jobID){
+  printf("touch out/%s.fail\n",jobID.Data());
+  gSystem->Exec(Form("touch out/%s.fail", jobID.Data()));
+}
+
+void  AliTPCJobs::Stage(TString inputData, TString jobID){
+  //
+  // stage file
+  //
+  inputData.ReplaceAll("root://voalice04.cern.ch:1094/","");
+  char command[1000];
+  sprintf(command,"stager_get -M %s \| grep SUBREQUEST_FAILED ",inputData.Data());
+  FILE *pipe = gSystem->OpenPipe(command,"r");
+  TString result;
+  result.Gets(pipe);
+  gSystem->ClosePipe(pipe);
+  if ( result.Contains("SUBREQUEST_FAILED") ){
+      SetFail(jobID);
+  }
+}
 
 Bool_t    AliTPCJobs::IsLocked(TString jobID){
   TString path = "out/";
@@ -111,6 +142,32 @@ Bool_t    AliTPCJobs::IsLocked(TString jobID){
   Int_t status = gSystem->GetPathInfo(path,&pid,&psize,&pflags,&pmodtime);
   return (status==0);
 }
+
+Bool_t    AliTPCJobs::IsLocked(TString jobID){
+  TString path = "out/";
+  path+=jobID;
+  path+=".fail";
+  Long_t pid; Long_t psize; Long_t pflags; Long_t pmodtime;
+  Int_t status = gSystem->GetPathInfo(path,&pid,&psize,&pflags,&pmodtime);
+  return (status==0);
+}
+
+Bool_t  AliTPCJobs::IsStaged(TString inputData){
+  //
+  // check if file bname is staged
+  //
+  inputData.ReplaceAll("root://voalice04.cern.ch:1094/","");
+  char command[1000];
+  sprintf(command,"stager_qry -M %s \| grep /castor \| gawk  \'{ print $3;}\'",inputData.Data());
+  FILE *pipe = gSystem->OpenPipe(command,"r");
+  TString result;
+  result.Gets(pipe);
+  gSystem->ClosePipe(pipe);
+  if ( result.Contains("STAGED") ) return kTRUE;
+
+  return kFALSE;
+}
+
 
 
 void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir, TString   action){
@@ -134,8 +191,14 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
     gSystem->Exec(command);
     printf("\n\n");
 
-  }
-  
+    // create temp work dir
+//    TString processDir=fWorkDir+jobID+action;
+//    Int_t res = gSystem->mkdir(processDir,kTRUE);
+//    if ( res==-1 ){
+//	AliWarning(Form("Cannot create dir/already exists: '%s'",processDir.Data()));
+//	return;
+//    }
+//  }
   SetDone(jobID);
 }
 
