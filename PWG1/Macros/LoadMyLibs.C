@@ -6,6 +6,7 @@ void LoadMyLibs() {
   CheckLoadLibrary("libVMC");
   CheckLoadLibrary("libTree");
   CheckLoadLibrary("libGui");
+  CheckLoadLibrary("libMinuit");
   
   // Load AliRoot libraries
   
@@ -16,6 +17,9 @@ void LoadMyLibs() {
   CheckLoadLibrary("libESD");
   CheckLoadLibrary("libSTEER");
   CheckLoadLibrary("libANALYSIS");
+  CheckLoadLibrary("libTPCbase");
+  CheckLoadLibrary("libTPCsim");
+  CheckLoadLibrary("libTPCrec");
   CheckLoadLibrary("libPWG0base");
   CheckLoadLibrary("libPWG0dep");
   CheckLoadLibrary("libPWG1");
