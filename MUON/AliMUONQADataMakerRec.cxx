@@ -13,31 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// --- MUON header files ---
+#include "AliMUONQADataMakerRec.h"
 
-// --- ROOT system ---
-#include <TClonesArray.h>
-#include <TFile.h> 
-#include <TH1F.h> 
-#include <TH1I.h> 
-#include <TH2F.h>
-#include <TH3F.h> 
-#include <TLorentzVector.h>
-
-// --- AliRoot header files ---
-#include "AliESDEvent.h"
-#include "AliMUONConstants.h"  
-#include "AliLog.h"
-#include "AliRawReader.h"
-#include "AliQAChecker.h"
-#include "AliMpBusPatch.h"
 #include "AliMUONCluster.h"  
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrigger.h"
-
+#include "AliMUONConstants.h"  
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVCluster.h"
-#include "AliESDMuonTrack.h"
-#include "AliESDMuonCluster.h"
 
 #include "AliMUONDigitMaker.h"
 #include "AliMUONVDigitStore.h"
@@ -48,19 +32,37 @@
 #include "AliMUONDDLTrigger.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONDarcHeader.h"
-#include "AliMpTriggerCrate.h"
-#include "AliMpDDLStore.h"
 #include "AliMUONLocalStruct.h"
-#include "AliMpLocalBoard.h"
-#include "AliMpCDB.h"
 
-#include "AliMpPad.h"
 #include "AliMUONGeometryTransformer.h"
+
+#include "AliMpDDLStore.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpConstants.h"
+#include "AliMpPad.h"
+#include "AliMpBusPatch.h"
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
+#include "AliMpCDB.h"
 
-#include "AliMUONQADataMakerRec.h"
+// --- AliRoot header files ---
+#include "AliESDEvent.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDMuonCluster.h"
+#include "AliLog.h"
+#include "AliRawReader.h"
+#include "AliQAChecker.h"
+
+// --- ROOT system ---
+#include <TClonesArray.h>
+#include <TFile.h> 
+#include <TH1F.h> 
+#include <TH1I.h> 
+#include <TH2F.h>
+#include <TH3F.h> 
+#include <TLorentzVector.h>
+#include <Riostream.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONQADataMakerRec
@@ -76,6 +78,9 @@ ClassImp(AliMUONQADataMakerRec)
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
     AliQADataMakerRec(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
+    fIsInitRaws(kFALSE),
+    fIsInitRecPoints(kFALSE),
+    fIsInitESDs(kFALSE),
     fDigitStore(0x0),
     fTriggerStore(0x0),
     fDigitMaker(0x0)
@@ -88,6 +93,9 @@ AliMUONQADataMakerRec::AliMUONQADataMakerRec() :
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm) :
     AliQADataMakerRec(qadm),
+    fIsInitRaws(kFALSE),
+    fIsInitRecPoints(kFALSE),
+    fIsInitESDs(kFALSE),
     fDigitStore(0x0),
     fTriggerStore(0x0),
     fDigitMaker(0x0)
@@ -169,7 +177,7 @@ void AliMUONQADataMakerRec::InitRaws()
     h4->GetZaxis()->SetTitle("Strip");
     Add2RawsList(h4, kTriggerScalersNBP);
 
-    InitDisplayHistos(AliQA::kRAWS);
+    fIsInitRaws = InitDisplayHistos(AliQA::kRAWS);
 }
 
 //____________________________________________________________________________ 
@@ -197,7 +205,7 @@ void AliMUONQADataMakerRec::InitRecPoints()
     TH1F* h2 = new TH1F("hTriggeredBoards", "Triggered boards", 234, 0.5, 234.5);
     Add2RecPointsList(h2, kTriggeredBoards);
 
-    InitDisplayHistos(AliQA::kRECPOINTS);
+    fIsInitRecPoints = InitDisplayHistos(AliQA::kRECPOINTS);
 }
 
 
@@ -225,12 +233,21 @@ void AliMUONQADataMakerRec::InitESDs()
 		     100, -1*AliMUONConstants::Rmax(i/2), AliMUONConstants::Rmax(i/2)); 
     Add2ESDsList(h4, kESDClusterHitMap+i);
   }
+  
+  fIsInitESDs =  kTRUE;
 }
 
 //____________________________________________________________________________
 void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     /// make QA for rawdata
+
+    if ( ! fIsInitRaws ) {
+      AliWarningStream() 
+        << "Skipping function due to a failure in Init" << endl;
+      return;
+    }    
+
     Int_t busPatchId;
     UShort_t manuId;  
     UChar_t channelId;
@@ -321,6 +338,12 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
   
     /// makes data from trigger response
       
+    if ( ! fIsInitRecPoints ) {
+      AliWarningStream() 
+        << "Skipping function due to a failure in Init" << endl;
+      return;
+    }    
+
     // Fired pads info
     fDigitStore->Clear();
 
@@ -371,6 +394,12 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
     /// make QA data from ESDs
+
+    if ( ! fIsInitESDs ) {
+      AliWarningStream() 
+        << "Skipping function due to a failure in Init" << endl;
+      return;
+    }    
 
     TLorentzVector v1;
 
@@ -451,7 +480,8 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
     if ( ! AliMpSegmentation::Instance(kFALSE) ) {
       /// Load mapping
       if ( ! AliMpCDB::LoadDDLStore() ) {
-        AliFatal("Could not access mapping from OCDB !");
+        AliError("Could not access mapping from OCDB !");
+        return;
       }
     }  
 
@@ -562,7 +592,7 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
 
 
 //____________________________________________________________________________ 
-void AliMUONQADataMakerRec::InitDisplayHistos(AliQA::TASKINDEX_t task)
+Bool_t AliMUONQADataMakerRec::InitDisplayHistos(AliQA::TASKINDEX_t task)
 {
   //
   /// Initialize trigger information display histograms,
@@ -623,7 +653,8 @@ void AliMUONQADataMakerRec::InitDisplayHistos(AliQA::TASKINDEX_t task)
   if ( ! AliMpSegmentation::Instance(kFALSE) ) {
     /// Load mapping
     if ( ! AliMpCDB::LoadDDLStore() ) {
-      AliFatal("Could not access mapping from OCDB !");
+      AliError("Could not access mapping from OCDB !");
+      return kFALSE;
     }
   }  
 
@@ -752,6 +783,8 @@ void AliMUONQADataMakerRec::InitDisplayHistos(AliQA::TASKINDEX_t task)
       Add2RecPointsList(histoBoards, kTriggerBoardsDisplay + 4*iCath + iChamber);
     } // loop on chamber
   } // loop on cathode
+  
+  return kTRUE;
 }
 
 

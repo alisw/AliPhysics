@@ -9,18 +9,15 @@
 ///
 //  Author Christian Finck
 
-// dummy function for simulation part
-// to avoid circular dependencie
-
-// --- ROOT system ---
-class TObjArray;
-class TArrayF;
-
 // --- AliRoot header files ---
 class AliMUONVTrackStore;
 class AliMUONDigitMaker;
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
+
+// --- ROOT system ---
+class TObjArray;
+class TArrayF;
 
 #include "AliQADataMakerRec.h"
 
@@ -73,12 +70,16 @@ private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
 
   void DisplayTriggerInfo(AliQA::TASKINDEX_t task);
-  void InitDisplayHistos(AliQA::TASKINDEX_t task);
+  Bool_t InitDisplayHistos(AliQA::TASKINDEX_t task);
   Bool_t AddSortedPoint(Float_t currVal, TArrayF& position, const Float_t kResetValue);
   
-  AliMUONVDigitStore* fDigitStore; //!< pointer to digits store
+  Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
+  Bool_t  fIsInitRecPoints;  //!<  info if InitRecPoints() went ok
+  Bool_t  fIsInitESDs;       //!<  info if InitESDs() went ok
+  
+  AliMUONVDigitStore*   fDigitStore; //!< pointer to digits store
   AliMUONVTriggerStore* fTriggerStore; //!< pointer to trigger store
-  AliMUONDigitMaker* fDigitMaker;  //!< pointer to digit maker
+  AliMUONDigitMaker*    fDigitMaker;  //!< pointer to digit maker
 
   ClassDef(AliMUONQADataMakerRec,2)  // MUON Quality assurance data maker
 
