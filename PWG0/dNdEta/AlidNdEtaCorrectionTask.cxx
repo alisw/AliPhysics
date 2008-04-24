@@ -56,7 +56,8 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fSigmaVertexPrim(0),
   fMultAll(0),
   fMultTr(0),
-  fMultVtx(0)
+  fMultVtx(0),
+  fEventStats(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -192,6 +193,15 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
 
   for (Int_t i=0; i<8; i++)
     fDeltaPhi[i] = new TH1F(Form("fDeltaPhi_%d", i), ";#Delta phi;Entries", 2000, -0.1, 0.1);
+
+  fEventStats = new TH2F("fEventStats", "fEventStats;event type;status;count", 2, -0.5, 1.5, 4, -0.5, 3.5);
+  fEventStats->GetXaxis()->SetBinLabel(1, "INEL");
+  fEventStats->GetXaxis()->SetBinLabel(2, "NSD");
+
+  fEventStats->GetYaxis()->SetBinLabel(1, "nothing");
+  fEventStats->GetYaxis()->SetBinLabel(2, "trg");
+  fEventStats->GetYaxis()->SetBinLabel(3, "vtx");
+  fEventStats->GetYaxis()->SetBinLabel(4, "trgvtx");
 }
 
 void AlidNdEtaCorrectionTask::Exec(Option_t*)
@@ -273,6 +283,14 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   else
     Printf("No vertex found");
 
+  // fill process type
+  Int_t biny = (Int_t) eventTriggered + 2 * (Int_t) eventVertex;
+  // INEL
+  fEventStats->Fill(0.0, biny);
+  // NDS
+  if (processType != 92 && processType != 93)
+    fEventStats->Fill(1.0, biny);
+  
   // create list of (label, eta, pt) tuples
   Int_t inputCount = 0;
   Int_t* labelArr = 0;
@@ -721,6 +739,9 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   for (Int_t i=0; i<8; ++i)
     if (fDeltaPhi[i])
       fDeltaPhi[i]->Write();
+
+  if (fEventStats)
+    fEventStats->Write();
 
   fout->Write();
   fout->Close();
