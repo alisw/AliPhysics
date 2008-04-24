@@ -38,7 +38,7 @@ fPolDeg(0){
   for(Int_t i=1; i<fgkMaxPolDeg+1; i++) fDriftSpeedParam[i]=0;
 }
 //______________________________________________________________________
-AliITSDriftSpeedSDD::AliITSDriftSpeedSDD(Int_t ev, UInt_t timest, Int_t deg, Float_t *coeff):
+AliITSDriftSpeedSDD::AliITSDriftSpeedSDD(Int_t ev, UInt_t timest, Int_t deg, Double_t *coeff):
 TObject(),
 fEvNum(ev),
 fTimestamp(timest),

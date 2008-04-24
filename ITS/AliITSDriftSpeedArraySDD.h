@@ -7,14 +7,14 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-// Class for a TClonesArray of the AliITSDriftSpeedSDD objects   //
+// Class for a TOnjArray of the AliITSDriftSpeedSDD objects      //
 // from 1 run (1 AliITSDriftSpeedSDD for  each injector trigger  //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
 #include<TObject.h>
-#include<TClonesArray.h>
+#include<TObjArray.h>
 
 class AliITSDriftSpeedSDD;
 
@@ -23,18 +23,16 @@ class AliITSDriftSpeedArraySDD : public TObject{
  public:
   AliITSDriftSpeedArraySDD();
   AliITSDriftSpeedArraySDD(Int_t numEv);
-  AliITSDriftSpeedArraySDD(const AliITSDriftSpeedArraySDD& array);
-  AliITSDriftSpeedArraySDD& operator=(const AliITSDriftSpeedArraySDD& array);
-  virtual ~AliITSDriftSpeedArraySDD();
+  virtual ~AliITSDriftSpeedArraySDD() {};
 
   void AddDriftSpeed(AliITSDriftSpeedSDD* drSpeed);
 
   void PrintAll() const;
-  Float_t GetDriftSpeed(Int_t iEvent, Float_t iAnode) const;
+  Double_t GetDriftSpeed(Int_t iEvent, Double_t iAnode);
 
  protected:  
   Int_t fNEvents;               // number of drift speed determination
-  TClonesArray *fDriftSpeedSDD; // array of AliITSDriftSpeedSDD objects
-  ClassDef(AliITSDriftSpeedArraySDD,1);
+  TObjArray fDriftSpeedSDD; // array of AliITSDriftSpeedSDD objects
+  ClassDef(AliITSDriftSpeedArraySDD,2);
 };
 #endif

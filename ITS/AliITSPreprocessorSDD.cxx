@@ -181,7 +181,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   Char_t inpFileName[100];
   Int_t evNumb,polDeg; 
   UInt_t timeStamp;
-  Float_t param[4];
+  Double_t param[4];
 
   TList* sourceList = GetFileSources(kDAQ, "SDD_Injec");
   if (!sourceList){ 

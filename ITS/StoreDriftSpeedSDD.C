@@ -38,9 +38,9 @@ void StoreDriftSpeedSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
 
 
 
-  Float_t drVelParam[4]={7.75,0.002344,-0.000009,0};
-  Float_t edrVelParam[4]={0.1,0,0,0};
-  Float_t drVel[4];
+  Double_t drVelParam[4]={7.75,0.002344,-0.000009,0};
+  Double_t edrVelParam[4]={0.1,0,0,0};
+  Double_t drVel[4];
   TRandom3 *gran = new TRandom3();
   
   for(Int_t mod=0;mod<260;mod++){
