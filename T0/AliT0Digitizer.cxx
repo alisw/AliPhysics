@@ -217,7 +217,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 
        //read Hits 
     pInStartLoader->LoadHits("READ");//probably it is necessary to load them before
-    TClonesArray *fHits = fT0->Hits ();
+    fHits = fT0->Hits ();
     TTree *th = pInStartLoader->TreeH();
     brHits = th->GetBranch("T0");
     if (brHits) {
