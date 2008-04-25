@@ -12,11 +12,14 @@
   Trigger types used:      GAIN
 */
 #include <TSystem.h>
+#include <TString.h>
 #include <AliFMDParameters.h>
 #include <AliRawReader.h>
 #include <TStopwatch.h>
 #include <AliFMDGainDA.h>
 #include <AliRawReaderDate.h>
+#include <AliRawReaderRoot.h>
+#include "daqDA.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
 
@@ -25,40 +28,66 @@
 int main(int argc, char **argv) 
 {
 
-#if 0
-  /* magic line from Rene - for future reference! */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
 					"*",
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()");
-#endif
   
   
+  Bool_t diagnostics = kFALSE;
   Char_t* fileName = argv[1];
+  TString secondArgument(argv[2]);
   
-  Bool_t old = kTRUE;
+  if(secondArgument.Contains("--diagnostics=true"))
+    diagnostics = kTRUE;
+  if(secondArgument.Contains("--help")) {
+    std::cout<<"Usage: filename --diagnostics=true/false . --help this help"<<std::endl;
+    return 0;
+  }
+  if(!secondArgument.IsWhitespace()) {
+    std::cout<<"Second argument wrong. Use --help"<<std::endl;
+    return -1;
+  }
+    
+    Bool_t old = kTRUE;
     
   AliFMDParameters::Instance()->Init(kFALSE,0);
-  AliFMDParameters::Instance()->SetSampleRate(4);
   AliFMDParameters::Instance()->UseRcuTrailer(!old);
 
   //This will only work for FDR 1 data. When newer data becomes available the ! must be removed!
   AliFMDParameters::Instance()->UseCompleteHeader(!old);
   
   
+  AliRawReader *reader = 0;
+  TString fileNam(fileName);
+  if (fileNam.EndsWith(".root")) reader = new AliRawReaderRoot(fileName);
+  else if (fileNam.EndsWith(".raw")) reader = new AliRawReaderDate(fileName);
+  if (!reader) { 
+    std::cerr << "Don't know how to make reader for " << fileNam 
+	      << std::endl;
+    return -2;
+  }
   
   
-  AliRawReader *reader = new AliRawReaderDate(fileName);
   TStopwatch timer;
   timer.Start();
   AliFMDGainDA gainDA;
-  
+  gainDA.SetSaveDiagnostics(diagnostics);
   gainDA.Run(reader);
   
   timer.Stop();
   timer.Print();
+  
+  Int_t  retvalConditions = daqDA_FES_storeFile("conditions.csv", AliFMDParameters::Instance()->GetConditionsShuttleID());
+  Int_t  retvalGain = daqDA_FES_storeFile("gains.csv", AliFMDParameters::Instance()->GetGainShuttleID());
 
+  if(retvalConditions!=0 || retvalGain!=0)
+    std::cerr << "Pedestal DA failed" << std::endl;
+  
+  if(retvalGain != 0) return retvalGain;
+  else return retvalConditions;
+  
   
   
   
