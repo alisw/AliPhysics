@@ -939,12 +939,13 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 	    fRunLoader->GetHeader()->GetEventNrInRun());
     if (!gSystem->AccessPathName(aFileName)) return kTRUE;
 
-    // local signle event reconstruction
+    // local single event reconstruction
     if (!fRunLocalReconstruction.IsNull()) {
-      TString detectors="HLT";
+      TString detectors=fRunLocalReconstruction;
       // run HLT event reconstruction first
-      if (IsSelected(detectors, fRunLocalReconstruction) &&
-	  !RunLocalEventReconstruction(detectors)) {
+      // ;-( IsSelected changes the string
+      if (IsSelected("HLT", detectors) &&
+	  !RunLocalEventReconstruction("HLT")) {
 	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
       }
       detectors=fRunLocalReconstruction;
@@ -999,10 +1000,11 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
     // fill ESD
     if (!fFillESD.IsNull()) {
-      TString detectors="HLT";
+      TString detectors=fFillESD;
       // run HLT first and on hltesd
-      if (IsSelected(detectors, fFillESD) &&
-	  !FillESD(fhltesd, detectors)) {
+      // ;-( IsSelected changes the string
+      if (IsSelected("HLT", detectors) &&
+	  !FillESD(fhltesd, "HLT")) {
 	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
       }
       detectors=fFillESD;
