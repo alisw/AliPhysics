@@ -29,6 +29,7 @@
 #include "iostream"
 
 #include "AliFMDRawReader.h"
+#include "AliFMDCalibSampleRate.h"
 #include "AliLog.h"
 //_____________________________________________________________________
 ClassImp(AliFMDBaseDA)
@@ -117,7 +118,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
   
   reader->NextEvent();
   reader->NextEvent();
-  
+  int lastProgress = 0;
   
   for(Int_t n =1;n <= GetRequiredEvents(); n++)
     {
@@ -139,6 +140,12 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
       }
       
       FinishEvent();
+      int progress = int((n *100)/ GetRequiredEvents()) ;
+      if (progress <= lastProgress) continue;
+      lastProgress = progress;
+      std::cout << "Progress: " << lastProgress << " / 100 " << std::endl;
+      
+
       
     }
   AliInfo(Form("Looped over %d events",GetCurrentEvent()));
@@ -210,16 +217,35 @@ void AliFMDBaseDA::WriteConditionsData() {
   fConditionsFile.write(Form("# %s \n",pars->GetConditionsShuttleID()),14);
   fConditionsFile.write("# Sample Rate, timebins \n",25);
   
-  UInt_t sampleRate = 4;
+  UInt_t defSampleRate = 4;
   UInt_t timebins   = 544;
-  fConditionsFile     << sampleRate   << ',' 
+  AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
+  for(UShort_t det=1;det<=3;det++) {
+    UShort_t FirstRing = (det == 1 ? 1 : 0);
+    for (UShort_t ir = FirstRing; ir < 2; ir++) {
+      Char_t   ring = (ir == 0 ? 'O' : 'I');
+      UShort_t nsec = (ir == 0 ? 40  : 20);
+      UShort_t nstr = (ir == 0 ? 256 : 512);
+      for(UShort_t sec =0; sec < nsec;  sec++)  {
+	for(UShort_t strip = 0; strip < nstr; strip++) {
+	  sampleRate->Set(det,ring,sec,strip,defSampleRate);
+	}
+      }
+    }
+  }
+  
+  pars->SetSampleRate(sampleRate);
+  
+  
+  fConditionsFile     << defSampleRate   << ',' 
 		      << timebins     <<"\n";
-  //if(fConditionsFile.is_open()) {
-  //  
-  //  fConditionsFile.write("# EOF\n",6);
-  //  fConditionsFile.close();
+  
+  if(fConditionsFile.is_open()) {
     
-  //}
+    //  fConditionsFile.write("# EOF\n",6);
+    fConditionsFile.close();
+    
+  }
   
 }
 
