@@ -16,7 +16,7 @@ class AliTPCPreprocessor : public AliPreprocessor
 {
   public:
     AliTPCPreprocessor(AliShuttleInterface* shuttle);
-    AliTPCPreprocessor(const AliTPCPreprocessor &);
+    AliTPCPreprocessor(const AliTPCPreprocessor &org);
     virtual ~AliTPCPreprocessor();
 
   protected:
@@ -33,6 +33,7 @@ class AliTPCPreprocessor : public AliPreprocessor
     TEnv                   *fConfEnv;  // Preprocessor configuration map
     AliTPCSensorTempArray  *fTemp;     // CDB class for temperature sensors
     AliDCSSensorArray      *fHighVoltage; // DCS high voltage measurements
+    AliDCSSensorArray      *fHighVoltageStat; // DCS high voltage status
     Bool_t                 fConfigOK;  // Identify succesful reading of OCDB Config
     AliTPCROC              *fROC;      // TPC Read-Out configuration
 

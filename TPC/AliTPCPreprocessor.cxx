@@ -57,7 +57,7 @@ ClassImp(AliTPCPreprocessor)
 //______________________________________________________________________________________________
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
-  fConfEnv(0), fTemp(0), fHighVoltage(0), fConfigOK(kTRUE), fROC(0)
+  fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fConfigOK(kTRUE), fROC(0)
 {
   // constructor
   fROC = AliTPCROC::Instance();
@@ -76,7 +76,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 //______________________________________________________________________________________________
  AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor&  ) :
    AliPreprocessor("TPC",0),
-   fConfEnv(0), fTemp(0), fHighVoltage(0), fConfigOK(kTRUE), fROC(0)
+   fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fConfigOK(kTRUE), fROC(0)
  {
 
    Fatal("AliTPCPreprocessor", "copy constructor not implemented");
@@ -158,6 +158,19 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            return;
         }
         fHighVoltage = new AliDCSSensorArray(startTimeLocal, fEndTime, confTree);
+
+   // High voltage status values
+     
+        confTree=0;
+        entry=0;
+        entry = GetFromOCDB("Config", "HighVoltageStat");
+        if (entry) confTree = (TTree*) entry->GetObject();
+        if ( confTree==0 ) {
+           Log("AliTPCPreprocsessor: High Voltage Status Config OCDB entry missing.\n");
+           fConfigOK = kFALSE;
+           return;
+        }
+        fHighVoltageStat = new AliDCSSensorArray(startTimeLocal, fEndTime, confTree);
       }
 }
 
@@ -281,10 +294,10 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
   // Central Electrode processing
 
-//  if( runType == kPhysicsRunType || runType == kStandAloneRunType || 
-//      runType == kDaqRunType ) {    
+  if( runType == kPhysicsRunType || runType == kStandAloneRunType || 
+      runType == kDaqRunType ) {    
 
-   if (true) {                 // do CE processing for all run types
+//   if (true) {                 // do CE processing for all run types
     Int_t numSources = 1;
     Int_t ceSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("CE","DAQ");
@@ -382,6 +395,20 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
     result=9;
   }
   delete map;
+
+  TMap *map2 = fHighVoltageStat->ExtractDCS(dcsAliasMap);
+  if (map2) {
+    fHighVoltageStat->StoreGraph(map2);
+  } else {
+    Log("No high voltage status recordings extracted. \n");
+    result=9;
+  }
+  delete map2;
+
+  // add status maps to high voltage sensor array
+
+  fHighVoltage->AddSensors(fHighVoltageStat);
+
   // Now store the final CDB file
 
   if ( result == 0 ) {
