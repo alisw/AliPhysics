@@ -12,20 +12,23 @@
  * Together with the AliHLTTPCClusterDataFormat this defines
  * the output of the TPC online Cluster Finder.
  *
+ * To translate between local coordinates, global coordinates, and row-pad-time coordinates 
+ * one cann use AliHLTTPCTransform. 
+ *
+ * See AliHLTTPCClusterFinder::WriteClusters() for example. 
+ *
  * @ingroup alihlt_tpc_datastructs
  */
 struct AliHLTTPCSpacePointData{
-#ifdef do_mc
-  Int_t fTrackID[3];
-#endif
-  Float_t fX;  //==fPadRow in local system
-  Float_t fY;  
-  Float_t fZ;
-  UInt_t fID;  //contains slice patch and number
-  UChar_t fPadRow;
-  Float_t fSigmaY2; //error (former width) of the clusters
-  Float_t fSigmaZ2; //error (former width) of the clusters
-  UInt_t fCharge;
+  Float_t fX;       // X coordinate in local coordinates
+  Float_t fY;       // Y coordinate in local coordinates
+  Float_t fZ;       // Z coordinate in local coordinates
+  UInt_t fID;       // contains slice patch and number
+  UChar_t fPadRow;  // Pad row number
+  Float_t fSigmaY2; // error (former width) of the clusters
+  Float_t fSigmaZ2; // error (former width) of the clusters
+  UInt_t fCharge;   // total charge of cluster
+  UInt_t fMaxQ;     // QMax of cluster
   Bool_t fUsed;     // only used in AliHLTTPCDisplay 
   Int_t fTrackN;    // only used in AliHLTTPCDisplay 
 };
