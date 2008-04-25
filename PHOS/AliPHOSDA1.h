@@ -5,6 +5,7 @@
 #include "TH1.h"
 #include "TH2F.h"
 #include "TFile.h"
+#include "TObjArray.h"
 
 class AliPHOSDA1 : public TNamed {
   
@@ -25,6 +26,8 @@ class AliPHOSDA1 : public TNamed {
   { return fTimeEnergy[X][Z][gain]; }
   const TH1F* GetHgLgRatioHistogram(Int_t X, Int_t Z) const
   { return fHgLgRatio[X][Z]; }
+
+  const TObjArray* GetHistoContainer() const { return &fHistoArray; }
    
  private:
 
@@ -33,6 +36,7 @@ class AliPHOSDA1 : public TNamed {
   TH2F* fTimeEnergy[64][56][2]; // time and energy
   Int_t fMod;                   // PHOS module number (0..4)
   Bool_t fWriteToFile;          // kTRUE to save histograms to ROOT file (default) 
+  TObjArray fHistoArray;        // container for histograms
   
   ClassDef(AliPHOSDA1,1)
 

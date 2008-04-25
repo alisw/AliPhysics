@@ -5,7 +5,7 @@ ClassImp(AliPHOSDA1)
 
 //----------------------------------------------------------------
 AliPHOSDA1::AliPHOSDA1(int module) : TNamed(),
-  fHistoFile(0),fMod(module),fWriteToFile(kTRUE)
+	   fHistoFile(0),fMod(module),fWriteToFile(kTRUE),fHistoArray()
 
 {
   // Create DA1 ("Calibration DA") object.
@@ -25,6 +25,7 @@ AliPHOSDA1::AliPHOSDA1(int module) : TNamed(),
   sprintf(rootname,"%s.root",GetName());
 
   fHistoFile =  new TFile(rootname,"update");
+  fHistoArray.SetName("histo_container");
 
   char hname[128];
   TH1F* hist1=0;
@@ -35,14 +36,20 @@ AliPHOSDA1::AliPHOSDA1(int module) : TNamed(),
 
       sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
       hist1 = (TH1F*)fHistoFile->Get(hname);
-      if(hist1) fHgLgRatio[iX][iZ] = hist1;
+      if(hist1) { 
+	fHgLgRatio[iX][iZ] = hist1;
+	fHistoArray.Add(hist1);
+      }
       else
 	fHgLgRatio[iX][iZ] = 0;
 
       for(Int_t iGain=0; iGain<2; iGain++) {
 	sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
 	hist2 = (TH2F*)fHistoFile->Get(hname);
-	if(hist2) fTimeEnergy[iX][iZ][iGain] = hist2;
+	if(hist2) {
+	  fTimeEnergy[iX][iZ][iGain] = hist2;
+	  fHistoArray.Add(hist2);
+	}
 	else
 	  fTimeEnergy[iX][iZ][iGain] = 0;
       }
@@ -54,7 +61,7 @@ AliPHOSDA1::AliPHOSDA1(int module) : TNamed(),
 
 //-------------------------------------------------------------------
 AliPHOSDA1::AliPHOSDA1(Int_t module, TH2F oldTimeEnergy[64][56][2]) :
-  TNamed(),fHistoFile(0),fMod(module),fWriteToFile(kFALSE)
+  TNamed(),fHistoFile(0),fMod(module),fWriteToFile(kFALSE),fHistoArray()
 {
   // Constructor. 
   // oldTimeEnergy is an array of histograms kept from the previous run.
@@ -65,15 +72,20 @@ AliPHOSDA1::AliPHOSDA1(Int_t module, TH2F oldTimeEnergy[64][56][2]) :
   SetName(name);
   
   SetTitle("Calibration Detector Algorithm");
-  
+  fHistoArray.SetName("histo_container");
+
   if(oldTimeEnergy) {
 
     for(Int_t iX=0; iX<64; iX++) {
       for(Int_t iZ=0; iZ<56; iZ++) {
+
+	fHgLgRatio[iX][iZ] = 0;
 	for(Int_t iGain=0; iGain<2; iGain++) {
 
-	  if((&(oldTimeEnergy[iX][iZ][iGain]))->GetEntries()) 
+	  if((&(oldTimeEnergy[iX][iZ][iGain]))->GetEntries()) { 
 	    fTimeEnergy[iX][iZ][iGain] = &(oldTimeEnergy[iX][iZ][iGain]);
+	    fHistoArray.Add(&(oldTimeEnergy[iX][iZ][iGain]));
+	  }
 	  else
 	    fTimeEnergy[iX][iZ][iGain] = 0;
 	}
@@ -82,11 +94,23 @@ AliPHOSDA1::AliPHOSDA1(Int_t module, TH2F oldTimeEnergy[64][56][2]) :
   
   }
 
+  else {
+    for(Int_t iX=0; iX<64; iX++) {
+      for(Int_t iZ=0; iZ<56; iZ++) {
+	fHgLgRatio[iX][iZ] = 0;
+	for(Int_t iGain=0; iGain<2; iGain++) {
+	  fTimeEnergy[iX][iZ][iGain] = 0;
+	}
+      }
+    }
+  }
+
+
 }
 
 //-------------------------------------------------------------------
 AliPHOSDA1::AliPHOSDA1(const AliPHOSDA1& da) : TNamed(da),
-  fHistoFile(0),fMod(da.fMod),fWriteToFile(da.fWriteToFile)
+ fHistoFile(0),fMod(da.fMod),fWriteToFile(da.fWriteToFile),fHistoArray(da.fHistoArray)
 {
   // Copy constructor.
 
@@ -151,6 +175,8 @@ AliPHOSDA1& AliPHOSDA1::operator= (const AliPHOSDA1& da)
 
       }
     }
+
+    fHistoArray = da.fHistoArray;
     
   }
 
@@ -201,12 +227,13 @@ void AliPHOSDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
 // 	    printf("iX=%d iZ=%d,e[iX][iZ][1]=%.3f,e[iX][iZ][0]=%.3f\n",
 // 		   iX,iZ,e[iX][iZ][1],e[iX][iZ][0]);
 	    fHgLgRatio[iX][iZ]->Fill(e[iX][iZ][1]/e[iX][iZ][0]);
+	    fHistoArray.Add(fHgLgRatio[iX][iZ]);
 	  }
       }
 	  
       // Energy vs TOF
       for(Int_t iGain=0; iGain<2; iGain++) {
-	if(!e[iX][iZ][iGain]) continue;
+	if(e[iX][iZ][iGain]<10) continue;
 
 	if(fTimeEnergy[iX][iZ][iGain]) 
 	  fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
@@ -215,6 +242,7 @@ void AliPHOSDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
 	  sprintf(htitl,"Energy vs TOF for crystal %d_%d_%d and gain %d",fMod,iX,iZ,iGain);
 	  fTimeEnergy[iX][iZ][iGain] = new TH2F(hname,htitl,1024,0.,1024.,100,0.,100);
 	  fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
+	  fHistoArray.Add(fTimeEnergy[iX][iZ][iGain]);
 	}
       }
 
