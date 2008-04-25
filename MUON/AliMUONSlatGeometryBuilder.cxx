@@ -515,6 +515,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	trCTube->RegisterYourself();
 	TGeoTranslation* trDTube = new TGeoTranslation("trDTube", -(kPcbLength+kVframeLength)/2., -kYpos3[1], 0.);
 	trDTube->RegisterYourself();
+	TGeoTranslation* trCBTube = new TGeoTranslation("trCBTube", 0., ( kPcbHeight - kBframeHeight ) / 2., 0.);
+	trCBTube->Add(trCTube);
+	trCBTube->RegisterYourself();
+	TGeoTranslation* trDBTube = new TGeoTranslation("trDBTube", 0., ( kPcbHeight - kBframeHeight ) / 2., 0.);
+	trDBTube->Add(trDTube);
+	trDBTube->RegisterYourself();
 
 	Float_t cPhi2 = (TMath::Pi()/2.-TMath::ACos((kSensHeight/2.)/(AliMUONConstants::Rmin(2)-kRframeLength)));
 	TGeoBBox *boxCCut = new TGeoBBox("boxCCut",(cFramepar3[1]-cFramepar3[0]*TMath::Cos(cPhi2))/2., hFramepar3[1], cFramepar3[2]+0.001);
@@ -549,13 +555,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		TString compOperation(csName);
 		compOperation+="-tubeCut:tr";
 		compOperation+=slatType[iSlatType];
-		compOperation+="Tube";
 		if (strstr(volName,"B")){
-		  // Displacement
-		  TGeoTranslation* trB = new TGeoTranslation("trB", 0., -( kPcbHeight - kBframeHeight ) / 2., 0.);
-		  trB->RegisterYourself();
-		  compOperation.ReplaceAll("-tubeCut",":trB-tubeCut");
+		  compOperation+="B";
 		}
+		compOperation+="Tube";
 		compName=Form("composite%d%c",iCh,volLetter[iVol]);
 		composite[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 		
@@ -752,17 +755,17 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       gMC->Gspos("S05B",2,"S05P",0.,-yborder,0.,0,"ONLY"); 
       gMC->Gspos("SB5B",1,"SB5P",0., yborder,0.,0,"ONLY"); 
       gMC->Gspos("SB5B",2,"SB5P",0.,-yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SC5B",1,"SC5P",0., 0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC5B",2,"SC5P",0., 0.,0.,rotB,"ONLY"); 
-      gMC->Gspos("SD5B",1,"SD5P",0., 0.,0.,0,"ONLY"); 
+      gMC->Gspos("SC5B",1,"SC5P",0., yborder,0.,rotB,"ONLY"); 
+      gMC->Gspos("SC5B",2,"SC5P",0.,-yborder,0.,0,"ONLY"); 
       gMC->Gspos("S05B",1,"SD5P",0., yborder,0.,0,"ONLY"); 
+      gMC->Gspos("SD5B",1,"SD5P",0.,-yborder,0.,0,"ONLY"); 
 
       gMC->Gspos("S06B",1,"S06P",0., yborder,0.,0,"ONLY"); 
       gMC->Gspos("S06B",2,"S06P",0.,-yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SC6B",1,"SC6P",0., 0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC6B",2,"SC6P",0., 0.,0.,rotB,"ONLY"); 
-      gMC->Gspos("SD6B",1,"SD6P",0., 0.,0.,0,"ONLY"); 
+      gMC->Gspos("SC6B",1,"SC6P",0., yborder,0.,rotB,"ONLY"); 
+      gMC->Gspos("SC6B",2,"SC6P",0.,-yborder,0.,0,"ONLY"); 
       gMC->Gspos("S06B",1,"SD6P",0., yborder,0.,0,"ONLY"); 
+      gMC->Gspos("SD6B",1,"SD6P",0.,-yborder,0.,0,"ONLY"); 
   
       // create the NULOC volume and position it in the horizontal frame
       gMC->Gsvolu("S05E","BOX",kNulocMaterial,nulocpar,3);
@@ -783,16 +786,16 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  gMC->Gspos("S05E",2*index  ,"SB5B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
 	}
 	if (xx > -xxmax3 && xx< xxmax3) {
-	  gMC->Gspos("S05E",2*index-1,"SC5B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2., 0, "ONLY");
- 	  gMC->Gspos("S05E",2*index  ,"SC5B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2., 0, "ONLY");
- 	  gMC->Gspos("S06E",2*index-1,"SC6B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
- 	  gMC->Gspos("S06E",2*index  ,"SC6B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+	  gMC->Gspos("S05E",2*index-1,"SC5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2., 0, "ONLY");
+ 	  gMC->Gspos("S05E",2*index  ,"SC5B", xx, 0., kBframeWidth/2.- kNulocWidth/2., 0, "ONLY");
+ 	  gMC->Gspos("S06E",2*index-1,"SC6B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+ 	  gMC->Gspos("S06E",2*index  ,"SC6B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
 	}
 	if (xx > xxmax4 && xx< xxmax) {
-	  gMC->Gspos("S05E",2*index-1,"SD5B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-	  gMC->Gspos("S05E",2*index  ,"SD5B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
-	  gMC->Gspos("S06E",2*index-1,"SD6B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-	  gMC->Gspos("S06E",2*index  ,"SD6B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+	  gMC->Gspos("S05E",2*index-1,"SD5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+	  gMC->Gspos("S05E",2*index  ,"SD5B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+	  gMC->Gspos("S06E",2*index-1,"SD6B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+	  gMC->Gspos("S06E",2*index  ,"SD6B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
 	}
       }
       
@@ -1181,6 +1184,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // Displacement
       TGeoTranslation* trDTube4 = new TGeoTranslation("trDTube4", -(kPcbLength+kVframeLength)/2., -kYpos41[1], 0.);
       trDTube4->RegisterYourself();
+      TGeoTranslation* trDBTube4 = new TGeoTranslation("trDBTube4", 0., ( kPcbHeight - kBframeHeight ) / 2., 0.);
+      trDBTube4->Add(trDTube4);
+      trDBTube4->RegisterYourself();
+
       TObjArray composite4(nSlatType*((nVol+1)*2));
       new TGeoBBox("box4DCut",(kPcbLength+kVframeLength)/2., hFramepar[1], vFramepar[2]+0.001);
       // Displacement
@@ -1210,16 +1217,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      TString compOperation(csName);
 	      compOperation+="-tube4Cut:tr";
 	      compOperation+=slatType[iSlatType];
-	      compOperation+="Tube4";
 	      if (strstr(volName,"B")){
-		// Displacement
-		Float_t posXb = 0.;
-		Float_t posYb = -( kPcbHeight - kBframeHeight ) / 2.;
-		Float_t posZb = 0.;
-		TGeoTranslation* trB = new TGeoTranslation("trB", posXb, posYb, posZb);
-		trB->RegisterYourself();
-		compOperation.ReplaceAll("-tube4Cut",":trB-tube4Cut");
-	      }
+		compOperation+="B";
+	      }	      
+	      compOperation+="Tube4";
 	      compName=Form("composite4%d%c",iCh,volLetter[iVol]);
 	      composite4[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
@@ -1341,12 +1342,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Float_t yborder = ( kPcbHeight - kBframeHeight ) / 2.; 
     gMC->Gspos("S07B",1,"S07P",0., yborder,0.,0,"ONLY"); 
     gMC->Gspos("S07B",2,"S07P",0.,-yborder,0.,0,"ONLY");
-    gMC->Gspos("SD7B",1,"SD7P",0., 0.,0.,0,"ONLY"); 
-    gMC->Gspos("S07B",1,"SD7P",0., yborder,0.,0,"ONLY"); 
+    gMC->Gspos("S07B",1,"SD7P",0., yborder,0.,0,"ONLY");
+    gMC->Gspos("SD7B",1,"SD7P",0.,-yborder,0.,0,"ONLY");  
     gMC->Gspos("S08B",1,"S08P",0., yborder,0.,0,"ONLY"); 
     gMC->Gspos("S08B",2,"S08P",0.,-yborder,0.,0,"ONLY"); 
-    gMC->Gspos("SD8B",1,"SD8P",0., 0.,0.,0,"ONLY"); 
     gMC->Gspos("S08B",1,"SD8P",0., yborder,0.,0,"ONLY"); 
+    gMC->Gspos("SD8B",1,"SD8P",0.,-yborder,0.,0,"ONLY"); 
 
     // create the NULOC volume and position it in the horizontal frame
 
@@ -1363,10 +1364,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       gMC->Gspos("S08E",2*index  ,"S08B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
     }
     if (xx > xxmax4 && xx< xxmax) {
-      gMC->Gspos("S07E",2*index-1,"SD7B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S07E",2*index  ,"SD7B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S08E",2*index-1,"SD8B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S08E",2*index  ,"SD8B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S07E",2*index-1,"SD7B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S07E",2*index  ,"SD7B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S08E",2*index-1,"SD8B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S08E",2*index  ,"SD8B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
     }
 
     //
@@ -1733,6 +1734,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // Displacement
       TGeoTranslation* trDTube5 = new TGeoTranslation("trDTube5", -(kPcbLength+kVframeLength)/2., -kYpos5[1], 0.);
       trDTube5->RegisterYourself();
+      TGeoTranslation* trDBTube5 = new TGeoTranslation("trDBTube5", 0., ( kPcbHeight - kBframeHeight ) / 2., 0.);
+      trDBTube5->Add(trDTube5);
+      trDBTube5->RegisterYourself();
+
       TObjArray composite5(nSlatType*((nVol+1)*2));
       new TGeoBBox("box5DCut",(kPcbLength+kVframeLength)/2., hFramepar[1], vFramepar[2]+0.001);
       // Displacement
@@ -1762,13 +1767,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      TString compOperation(csName);
 	      compOperation+="-tube5Cut:tr";
 	      compOperation+=slatType[iSlatType];
-	      compOperation+="Tube5";
 	      if (strstr(volName,"B")){
-		// Displacement
-		TGeoTranslation* trB = new TGeoTranslation("trB", 0., -(kPcbHeight - kBframeHeight)/2., 0.);
-		trB->RegisterYourself();
-		compOperation.ReplaceAll("-tube5Cut",":trB-tube5Cut");
+		compOperation+="B";
 	      }
+	      compOperation+="Tube5";
 	      compName=Form("composite5%d%c",iCh,volLetter[iVol]);
 	      composite5[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
@@ -1891,12 +1893,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Float_t yborder = ( kPcbHeight - kBframeHeight ) / 2.; 
     gMC->Gspos("S09B",1,"S09P",0., yborder,0.,0,"ONLY"); 
     gMC->Gspos("S09B",2,"S09P",0.,-yborder,0.,0,"ONLY"); 
-    gMC->Gspos("SD9B",1,"SD9P",0., 0.,0.,0,"ONLY"); 
     gMC->Gspos("S09B",1,"SD9P",0., yborder,0.,0,"ONLY"); 
+    gMC->Gspos("SD9B",1,"SD9P",0.,-yborder,0.,0,"ONLY"); 
     gMC->Gspos("S10B",1,"S10P",0., yborder,0.,0,"ONLY"); 
     gMC->Gspos("S10B",2,"S10P",0.,-yborder,0.,0,"ONLY"); 
-    gMC->Gspos("SD0B",1,"SD0P",0., 0.,0.,0,"ONLY"); 
     gMC->Gspos("S10B",1,"SD0P",0., yborder,0.,0,"ONLY"); 
+    gMC->Gspos("SD0B",1,"SD0P",0.,-yborder,0.,0,"ONLY"); 
 
     //      // create the NULOC volume and position it in the horizontal frame
 
@@ -1913,10 +1915,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       gMC->Gspos("S10E",2*index  ,"S10B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
     }
     if (xx > xxmax4 && xx< xxmax) {
-      gMC->Gspos("S09E",2*index-1,"SD9B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S09E",2*index  ,"SD9B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S10E",2*index-1,"SD0B", xx, -yborder,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S10E",2*index  ,"SD0B", xx, -yborder, kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S09E",2*index-1,"SD9B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S09E",2*index  ,"SD9B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S10E",2*index-1,"SD0B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      gMC->Gspos("S10E",2*index  ,"SD0B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
     }
 
     //    
