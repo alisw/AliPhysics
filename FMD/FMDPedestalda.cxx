@@ -12,11 +12,14 @@
   Trigger types used:      PEDESTAL
 */
 #include <TSystem.h>
+#include <TString.h>
 #include <AliFMDParameters.h>
 #include <AliRawReader.h>
 #include <TStopwatch.h>
 #include <AliFMDPedestalDA.h>
 #include <AliRawReaderDate.h>
+#include <AliRawReaderRoot.h>
+#include "daqDA.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
 
@@ -34,28 +37,53 @@ int main(int argc, char **argv)
 					"TStreamerInfo()");
   //#endif
   
-  
+  Bool_t diagnostics = kFALSE;
   Char_t* fileName = argv[1];
+  TString secondArgument(argv[2]);
   
+  if(secondArgument.Contains("--diagnostics=true"))
+    diagnostics = kTRUE;
+  if(secondArgument.Contains("--help")) {
+    std::cout<<"Usage: filename --diagnostics=true/false . --help this help"<<std::endl;
+    return 0;
+  }
+  
+  if(!secondArgument.IsWhitespace()) {
+    std::cout<<"Second argument wrong. Use --help"<<std::endl;
+    return -1;
+  }
   Bool_t old = kTRUE;
 
 
   AliFMDParameters::Instance()->Init(kFALSE,0);
-  AliFMDParameters::Instance()->SetSampleRate(4);
   AliFMDParameters::Instance()->UseRcuTrailer(!old);
   AliFMDParameters::Instance()->UseCompleteHeader(old);
 
-  AliRawReader *reader = new AliRawReaderDate(fileName);
+  AliRawReader *reader = 0;
+  TString fileNam(fileName);
+  if (fileNam.EndsWith(".root")) reader = new AliRawReaderRoot(fileName);
+  else if (fileNam.EndsWith(".raw")) reader = new AliRawReaderDate(fileName);
+  if (!reader) { 
+    std::cerr << "Don't know how to make reader for " << fileNam 
+	      << std::endl;
+    return -2;
+  }
   TStopwatch timer;
   timer.Start();
   AliFMDPedestalDA pedDA;
-  //pedDA.SetSaveDiagnostics(kTRUE);
+  pedDA.SetSaveDiagnostics(diagnostics);
   pedDA.Run(reader);
   
   timer.Stop();
   timer.Print();
+ 
+  Int_t  retvalConditions = daqDA_FES_storeFile("conditions.csv", AliFMDParameters::Instance()->GetConditionsShuttleID());
+  Int_t  retvalPeds = daqDA_FES_storeFile("peds.csv", AliFMDParameters::Instance()->GetPedestalShuttleID());
 
+  if(retvalConditions!=0 || retvalPeds!=0)
+    std::cerr << "Pedestal DA failed" << std::endl;
   
-  
+  if(retvalPeds != 0) return retvalPeds;
+  else return retvalConditions;
   
 }
