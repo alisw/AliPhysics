@@ -138,16 +138,17 @@ public:
 
   /** Declare alignable volumes */
   virtual void SetAlignableVolumes() const;
+   /** Get transformation matrix for a sector in a ring 
+      @param ring   Ring id
+      @param sector Sector numberr 
+      @return Matrix on success, 0 otherwise */
+  TGeoMatrix*   FindTransform(Char_t ring, UShort_t sector) const;
 protected:
   /** Check if we have all transformations for a ring 
       @param ring Ring to check for 
       @return @c true if we got all transforms  */
   Bool_t        HasAllTransforms(Char_t ring) const;
-  /** Get transformation matrix for a sector in a ring 
-      @param ring   Ring id
-      @param sector Sector numberr 
-      @return Matrix on success, 0 otherwise */
-  TGeoMatrix*   FindTransform(Char_t ring, UShort_t sector) const;
+ 
   Int_t		fId;			// Detector number
   Double_t	fInnerZ;		// Position of outer ring along z
   Double_t	fOuterZ;		// Position of outer ring along z
