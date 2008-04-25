@@ -69,6 +69,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALDigit.h"
+#include "AliEMCAL.h"
 
 ClassImp(AliEMCALRawUtils)
 
