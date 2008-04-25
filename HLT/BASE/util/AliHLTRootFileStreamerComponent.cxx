@@ -1,20 +1,20 @@
 // @(#) $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTRootFileStreamerComponent.cxx
     @author Matthias Richter
@@ -67,7 +67,7 @@ void AliHLTRootFileStreamerComponent::GetInputDataTypes( vector<AliHLTComponentD
 {
   // see header file for class documentation
   list.clear();
-  list.push_back(kAliHLTAnyDataType);
+  list.push_back(kAliHLTAllDataTypes);
 }
 
 AliHLTComponentDataType AliHLTRootFileStreamerComponent::GetOutputDataType()
@@ -134,15 +134,15 @@ int AliHLTRootFileStreamerComponent::DoEvent( const AliHLTComponentEventData& /*
   int iResult=0;
   AliHLTMemoryFile* pFile=CreateMemoryFile(fDataType,fSpecification);
   if (pFile) {
-    const TObject* pObj=GetFirstInputObject(kAliHLTAnyDataType);
     int count=0;
-    while (pObj && iResult>=0) {
+    for (const TObject* pObj=GetFirstInputObject();
+	 pObj && iResult>=0;
+	 pObj=GetNextInputObject()) {
       iResult=Write(pFile, pObj);
       if (iResult) {
 	count++;
 	HLTDebug("wrote object of class %s, data type %s", pObj->ClassName(), (DataType2Text(GetDataType(pObj)).c_str())); 
       }
-      pObj=GetNextInputObject();
     }
     HLTInfo("wrote %d object(s) from %d input blocks to file", count, GetNumberOfInputBlocks());
     iResult=CloseMemoryFile(pFile);

@@ -1,20 +1,20 @@
 // @(#) $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTRootFileWriterComponent.cxx
     @author Matthias Richter
@@ -27,9 +27,6 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TObjectTable.h" // for root object validity
-
-/** the global object for component registration */
-AliHLTRootFileWriterComponent gAliHLTRootFileWriterComponent;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootFileWriterComponent)
@@ -76,36 +73,29 @@ int AliHLTRootFileWriterComponent::CloseWriter()
 }
 
 int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
-					    const AliHLTComponentBlockData* blocks, 
-					    AliHLTComponentTriggerData& trigData )
+					      const AliHLTComponentBlockData* /*blocks*/, 
+					      AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation
   int iResult=0;
-  if (evtData.fStructSize==0 && blocks==NULL && trigData.fStructSize==0) {
-    // this is just to get rid of the warning "unused parameter"
-  }
-  const TObject* pObj=GetFirstInputObject(kAliHLTAnyDataType);
-  HLTDebug("got first object %p", pObj);
   int count=0;
-  while (pObj && iResult>=0) {
+  for (const TObject* pObj=GetFirstInputObject();
+       pObj && iResult>=0;
+       pObj=GetNextInputObject()) {
     iResult=WriteObject(evtData.fEventID, pObj);
     if (iResult == 0) {
       count++;
       HLTDebug("wrote object of class %s, data type %s", pObj->ClassName(), (DataType2Text(GetDataType(pObj)).c_str())); 
     }
-    pObj=GetNextInputObject();
   }
   HLTDebug("wrote %d object(s) from %d input blocks to file", count, GetNumberOfInputBlocks());
   return iResult;
 }
 
-int AliHLTRootFileWriterComponent::ScanArgument(int argc, const char** argv)
+int AliHLTRootFileWriterComponent::ScanArgument(int /*argc*/, const char** /*argv*/)
 {
   // see header file for class documentation
   // no other arguments known
-  if (argc==0 && argv==NULL) {
-    // this is just to get rid of the warning "unused parameter"
-  }
   int iResult=-EINVAL;
   return iResult;
 }

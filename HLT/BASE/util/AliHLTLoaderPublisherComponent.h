@@ -3,21 +3,15 @@
 
 #ifndef ALIHLTLOADERPUBLISHERCOMPONENT_H
 #define ALIHLTLOADERPUBLISHERCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTLoaderPublisherComponent.h
     @author Matthias Richter
     @date   
     @brief  A general tree publisher component for the AliLoader.
 */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTOfflineDataSource.h"
 
@@ -27,25 +21,44 @@ class AliLoader;
  * @class AliHLTLoaderPublisherComponent
  * A general tree publisher component for the AliLoader.
  * 
+ * <h2>General properties:</h2>
+ *
  * Component ID: \b AliLoaderPublisher <br>
  * Library: \b libAliHLTUtil.
+ * Input Data Types: none <br>
+ * Output Data Types: according to parameter <br>
  *
- * Mandatory arguments: <br>
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -loader       <i> loader name      </i>
  *      e.g. <tt> -loader TPCLoader </tt>
+ *
+ * <h2>Optional arguments:</h2>
  * \li -tree         <i> tree name </i> : digits (default), clusters     
  *      e.g. <tt> -tree digits </tt>
  * \li -verbose<br>
  *      print out some more info messages, mainly for the sake of tutorials
  * \li -datatype     <i> datatype   dataorigin </i> <br>
- *      data type ID and origin, e.g. <tt>-datatype DIGITS TPC </tt>
+ *      data type ID and origin, e.g. <tt>-datatype 'ALITREED' 'TPC ' </tt>
  * \li -dataspec     <i> specification </i> <br>
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
  *
- * Optional arguments:<br>
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * no configuration
  *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
+ *
+ * <h2>Performance:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Output size:</h2>
+ * 
  *
  * @ingroup alihlt_system
  */

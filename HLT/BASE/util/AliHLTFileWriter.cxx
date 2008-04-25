@@ -42,7 +42,7 @@ AliHLTFileWriter::AliHLTFileWriter()
   fExtension(""),
   fDirectory(""),
   fSubDirFormat(""),
-  fIdFormat(""),
+  fIdFormat("_0x%08x"),
   fSpecFormat(""),
   fBlcknoFormat("_0x%02x"),
   fCurrentFileName(""),
@@ -73,7 +73,7 @@ void AliHLTFileWriter::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   // see header file for class documentation
   list.clear();
-  list.push_back(kAliHLTAnyDataType);
+  list.push_back(kAliHLTAllDataTypes);
 }
 
 AliHLTComponent* AliHLTFileWriter::Spawn()
@@ -123,6 +123,9 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       } else {
 	fSubDirFormat="event%03d";
       }
+      // no additional eventno in the filename unless set again
+      // the sub dir contains the id
+      fIdFormat="";
 
       // -idfmt
     } else if (argument.BeginsWith("-idfmt")) {
@@ -140,9 +143,13 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
 	fSpecFormat="_0x%08x";
       }
 
-      // -blcknofmt
-    } else if (argument.BeginsWith("-blcknofmt")) {
+      // -blocknofmt
+    } else if (argument.BeginsWith("-blcknofmt") || 
+	       argument.BeginsWith("-blocknofmt")) {
+      // for the sake of backward compatibility we consider also the
+      // old argument with typo for a while
       argument.ReplaceAll("-blcknofmt", "");
+      argument.ReplaceAll("-blocknofmt", "");
       if (argument.BeginsWith("=")) {
 	fBlcknoFormat=argument.Replace(0,1,"");
       } else {
@@ -179,11 +186,6 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
     iResult=-EINVAL;
   }
   if (iResult>=0) {
-    if (fIdFormat.IsNull() && fSubDirFormat.IsNull()) {
-      // set the default format string for the id if it is not set and
-      // no sub dirs set (the sub dir than contains the id)
-      fIdFormat="_0x%08x";
-    }
     iResult=InitWriter();
   }
 
@@ -202,14 +204,11 @@ int AliHLTFileWriter::InitWriter()
   return 0; // note: this doesn't mean 'error'
 }
 
-int AliHLTFileWriter::ScanArgument(int argc, const char** argv)
+int AliHLTFileWriter::ScanArgument(int /*argc*/, const char** /*argv*/)
 {
   // see header file for class documentation
 
   // there are no other arguments than the standard ones
-  if (argc==0 && argv==NULL) {
-    // this is just to get rid of the warning "unused parameter"
-  }
   // fCurrentFileName is used in dump event, just touched her to avoid
   // coding convention violation RC11. The function can not be declared
   // const since it is just the default implementation, overloaded
@@ -235,7 +234,7 @@ int AliHLTFileWriter::CloseWriter()
   // const since it is just the default implementation, overloaded
   // virtual function might not be const
   fCurrentFileName="";
-  return 0; // note: this doesn't mean 'error'
+  return 0;
 }
 
 int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
@@ -252,7 +251,7 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
   const AliHLTComponentBlockData* pDesc=NULL;
 
   int blockno=0;
-  for (pDesc=GetFirstInputBlock(kAliHLTAnyDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
+  for (pDesc=GetFirstInputBlock(); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     HLTDebug("block %d out of %d", blockno, evtData.fBlockCnt);
     TString filename;
     HLTDebug("dataspec 0x%x", pDesc->fSpecification);

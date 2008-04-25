@@ -226,8 +226,10 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
     list<int> processedIds;
     while (pRawReader->ReadHeader() && (iResult>=0 || iResult==-ENOSPC)) {
       const AliRawDataHeader* pHeader=pRawReader->GetDataHeader();
-      assert(pHeader!=NULL);
-      if (pHeader==NULL) continue;
+      if (pHeader==NULL) {
+	HLTError("can not get data header from RawReader, skipping data block ...");
+	continue;
+      }
       unsigned int readSize=pRawReader->GetDataSize()+sizeof(AliRawDataHeader);
       int id=pRawReader->GetEquipmentId();
       AliInfo(Form("got header for id %d, size %d", id, readSize));

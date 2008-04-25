@@ -2,9 +2,9 @@
 
 #ifndef ALIHLTFILEWRITER_H
 #define ALIHLTFILEWRITER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTFileWriter.h
     @author Matthias Richter
@@ -14,28 +14,34 @@
 
 #include "AliHLTDataSink.h"
 #include <TString.h>
-//#include <TList.h>
 
 /**
  * @class AliHLTFileWriter
  * An HLT data sink component which writes data to file(s).
  *
- * Component ID: \b FileWriter <br>
- * Library: \b libAliHLTUtil.so
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b FileWriter      <br>
+ * Library: \b libAliHLTUtil.so     <br>
+ * Input Data Types: @ref kAliHLTAllDataTypes <br>
+ * Output Data Types: none <br>
+ *
+ * kAliHLTAllDataTypes contains both kAliHLTAnyDataType and kAliHLTVoidDataType
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
- * Optional arguments: <br>
+ * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datafile     <i> filename   </i> <br>
  *      file name base
  * \li -directory    <i> directory  </i> <br>
  *      target directory
  * \li -subdir[=pattern] <br>
- *      create sub dir for each event, the format patern can contain printf
- *      specifiers to print the evntn no into the dir name, default is
+ *      create sub dir for each event, the format pattern can contain printf
+ *      specifiers to print the event no into the dir name, default is
  *      'event%03d' (-subdir w/o additional pattern)
+ *      \b note: the idfmt string is reset since the subdir contains the id
  * \li -idfmt[=pattern] <br>
  *      format specifier for the event id in the file name,                <br>
  *      default: on, default pattern: '_0x%08x'
@@ -55,6 +61,23 @@
  *      the block no, and the block data type in the file name. Currently,
  *      this implies the -concatenate-blocks option.
  *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * no configuration
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
+ *
+ * <h2>Performance:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Output size:</h2>
+ * The component has no output data.
+ *
+ *
  * By default, file name is built from the basename, the event number, the
  * block number and the data type in the format:
  * <pre>
@@ -69,8 +92,9 @@
  * <pre>
  * -specfmt             append specification
  * -subdir=test_%d      store in sub folders
- * -blcknofmt=_0x%x     format block no in hex
+ * -blocknofmt=_0x%x    format block no in hex
  * -idfmt=_%04d         print id in 4-digits decimal number
+ * -idfmt=              print no id
  * </pre>
  *
  * The class can be used as a base class for file writers. Additional
