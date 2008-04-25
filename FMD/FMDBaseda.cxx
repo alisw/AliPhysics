@@ -12,12 +12,14 @@
   Trigger types used:      PHYSICS_EVENT
 */
 #include <TSystem.h>
-#include <AliCDBManager.h>
+#include <TString.h>
 #include <AliFMDParameters.h>
 #include <AliRawReader.h>
 #include <TStopwatch.h>
 #include <AliFMDBaseDA.h>
 #include <AliRawReaderDate.h>
+#include <AliRawReaderRoot.h>
+#include "daqDA.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
 
@@ -40,15 +42,20 @@ int main(int argc, char **argv)
   
   Bool_t old = kTRUE;
   
-  AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetRun(0);
-  cdb->SetDefaultStorage("");
-  
   AliFMDParameters::Instance()->Init(kFALSE,0);
   AliFMDParameters::Instance()->UseRcuTrailer(!old);
   AliFMDParameters::Instance()->UseCompleteHeader(!old);
   
-  AliRawReader *reader = new AliRawReaderDate(fileName);
+  AliRawReader *reader = 0;
+  TString fileNam(fileName);
+  if (fileNam.EndsWith(".root")) reader = new AliRawReaderRoot(fileName);
+  else if (fileNam.EndsWith(".raw")) reader = new AliRawReaderDate(fileName);
+  if (!reader) { 
+    std::cerr << "Don't know how to make reader for " << fileNam 
+	      << std::endl;
+    return -2;
+  }
+  
   TStopwatch timer;
   timer.Start();
   AliFMDBaseDA baseDA;
@@ -58,7 +65,8 @@ int main(int argc, char **argv)
   timer.Stop();
   timer.Print();
 
+  Int_t  retval = daqDA_FES_storeFile("conditions.csv", AliFMDParameters::Instance()->GetConditionsShuttleID());
+  if (retval != 0) std::cerr << "Base DA failed" << std::endl;
   
-  
-  
+  return retval;
 }
