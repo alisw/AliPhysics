@@ -613,7 +613,7 @@ private:
 	Int_t fDDL;         //!< The current DDL number being handled.
 	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.
 	UChar_t* fBuffer;   //!< This is the buffer in which we store the DDL payload read from AliRawReader.
-	const AliBusPatch* fCurrentBusPatch;  //!< The current data word to return by Next().
+	const AliBusPatch* fCurrentBusPatch;  //!< The current bus patch being handled by Next().
 	const UInt_t* fCurrentData;  //!< The current data word to return by Next().
 	const UInt_t* fEndOfData;  //!< The last data word in the current bus patch.
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
@@ -627,6 +627,7 @@ private:
 inline const AliMUONRawStreamTrackerHP::AliBusPatch* AliMUONRawStreamTrackerHP::Next()
 {
 	/// Returns the next batch of decoded channel data.
+	if (fCurrentBusPatch == NULL) return NULL;
 	do {
 		if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
 			return fCurrentBusPatch++;

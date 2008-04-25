@@ -53,7 +53,7 @@ const Int_t AliMUONRawStreamTrigger::fgkMaxDDL = 2;
 
 //___________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
-:   AliMUONRawStream(),
+:   AliMUONVRawStreamTrigger(),
     fPayload(new AliMUONPayloadTrigger()),
     fCurrentDDL(0x0),
     fCurrentDDLIndex(fgkMaxDDL),
@@ -77,7 +77,7 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
 
 //_________________________________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
-  : AliMUONRawStream(rawReader),
+  : AliMUONVRawStreamTrigger(rawReader),
     fPayload(new AliMUONPayloadTrigger()),
     fCurrentDDL(0x0),
     fCurrentDDLIndex(fgkMaxDDL),

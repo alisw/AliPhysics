@@ -28,7 +28,12 @@
 #pragma link C++ class AliMUONRawStreamTrackerHP::AliBlockHeader+;
 #pragma link C++ class AliMUONRawStreamTrackerHP::AliDspHeader+;
 #pragma link C++ class AliMUONRawStreamTrackerHP::AliBusPatch+;
+#pragma link C++ class AliMUONVRawStreamTrigger+;
 #pragma link C++ class AliMUONRawStreamTrigger+;
+#pragma link C++ class AliMUONRawStreamTriggerHP+;
+#pragma link C++ class AliMUONRawStreamTriggerHP::AliHeader+;
+#pragma link C++ class AliMUONRawStreamTriggerHP::AliRegionalHeader+;
+#pragma link C++ class AliMUONRawStreamTriggerHP::AliLocalStruct+;
 #pragma link C++ class AliMUONRawStream+;
 
 #endif

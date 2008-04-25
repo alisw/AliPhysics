@@ -155,6 +155,11 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 
 	assert( GetReader() != NULL );
 	
+	// Better to reset these pointers.
+	fCurrentBusPatch = NULL;
+	fCurrentData = NULL;
+	fEndOfData = NULL;
+	
 	while (fDDL < GetMaxDDL())
 	{
 		GetReader()->Reset();
@@ -165,7 +170,7 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 	}
 
 	// If we reach the end of the DDL list for this event then reset the
-	// DDL counter, mark the iteration as done and 
+	// DDL counter, mark the iteration as done and exit.
 	if (fDDL >= GetMaxDDL())
 	{
 		fDDL = 0;
@@ -266,6 +271,8 @@ Bool_t AliMUONRawStreamTrackerHP::Next(
 	/// [out] \param adc         This is filled with the ADC signal value of the digit.
 	/// \return kTRUE if we read another digit and kFALSE if we have read all the
 	///    digits already, i.e. at the end of the iteration.
+	
+	if (fCurrentData == NULL) return kFALSE;
 	
 retry:
 	// Check if we still have data to be returned for the current bus patch.
@@ -474,7 +481,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::SetMaxStructs(
 	fBlocks = new AliBlockHeader[maxBlocks];
 	fDSPs = new AliDspHeader[maxBlocks*maxDsps];
 	fBusPatches = new AliBusPatch[maxBlocks*maxDsps*maxBusPatches];
-	fEndOfBusPatches = fEndOfBusPatches;
+	fEndOfBusPatches = fBusPatches;
 }
 
 
@@ -533,7 +540,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 	/// This is called by the high performance decoder when a error occurs
 	/// when trying to decode the DDL payload. This indicates corruption in
 	/// the data. This method converts the error code to a descriptive message
-	/// and log this with the raw reader.
+	/// and logs this with the raw reader.
 	/// \param error  The error code indicating the problem.
 	/// \param location  A pointer to the location within the DDL payload buffer
 	///              being decoded where the problem with the data was found.
@@ -547,6 +554,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 	switch (error)
 	{
 	case kGlitchFound:
+		fGlitchErrors++;
 		message = Form(
 			"Glitch error detected in DSP %d, skipping event ",
 			fCurrentBlock->GetDspId()
@@ -555,6 +563,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 		break;
 
 	case kBadPaddingWord:
+		fPaddingErrors++;
 		// We subtract 1 from the current numbers of blocks, DSPs
 		// and bus patches to get the indices.
 		message = Form(
@@ -567,6 +576,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 		break;
 
 	case kParityError:
+		fParityErrors++;
 		// location points to the incorrect data word and
 		// fCurrentBusPatch->GetData() returns a pointer to the start of
 		// bus patches data, so the difference divided by 4 gives the 32

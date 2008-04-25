@@ -181,6 +181,21 @@ public:
 	/// This method decodes the DDL payload contained in the buffer.
 	bool Decode(const void* buffer, UInt_t bufferSize);
 	
+	/// Returns the block marker key.
+	static UInt_t BlockDataKeyWord() { return fgkBlockDataKey; }
+	
+	/// Returns the DSP marker key.
+	static UInt_t DspDataKeyWord() { return fgkDSPDataKey; }
+	
+	/// Returns the bus patch marker key.
+	static UInt_t BusPatchDataKeyWord() { return fgkBusPatchDataKey; }
+	
+	/// Returns the expected padding word value.
+	static UInt_t PaddingWord() { return fgkPaddingWord; }
+	
+	/// Returns the expected end of DDL marker.
+	static UInt_t EndOfDDLWord() { return fgkEndOfDDL; }
+	
 private:
 
 	bool fExitOnError; ///< Indicates if we should exit on the very first error.

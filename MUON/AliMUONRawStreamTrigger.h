@@ -13,7 +13,7 @@
 
 #include <TObject.h>
 #include "AliMUONPayloadTrigger.h"
-#include "AliMUONRawStream.h"
+#include "AliMUONVRawStreamTrigger.h"
 class TArrayS;
 
 class AliRawReader;
@@ -22,7 +22,7 @@ class AliMUONDarcHeader;
 class AliMUONRegkHeader;
 class AliMUONLocalStruct;
 
-class AliMUONRawStreamTrigger: public AliMUONRawStream {
+class AliMUONRawStreamTrigger: public AliMUONVRawStreamTrigger {
   public :
     AliMUONRawStreamTrigger();
     AliMUONRawStreamTrigger(AliRawReader* rawReader);

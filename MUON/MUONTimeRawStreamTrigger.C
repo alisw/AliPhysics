@@ -15,18 +15,18 @@
  **************************************************************************/
 
 /// \ingroup macros
-/// \file MUONTimeRawStreamTracker.C
-/// \brief Macro for checking the timing (speed) performace of the two different tracker decoders.
+/// \file MUONTimeRawStreamTrigger.C
+/// \brief Macro for checking the timing (speed) performace of the two different trigger decoders.
 ///
 /// \author Artur Szostak <artursz@iafrica.com>
 ///
 /// This macro is used to check the timing (speed) performance of the existing
-/// offline decoder for the tracker DDLs and also for the new high performance
+/// offline decoder for the trigger DDLs and also for the new high performance
 /// decoder. It can be invoked as follows:
 /// 
 ///  $ aliroot
-/// .L $ALICE_ROOT/MUON/MUONTimeRawStreamTracker.C+
-///  MUONTimeRawStreamTracker(filename, maxEvent);
+/// .L $ALICE_ROOT/MUON/MUONTimeRawStreamTrigger.C+
+///  MUONTimeRawStreamTrigger(filename, maxEvent);
 ///
 /// where \em filename is the name of a file containing the raw data, or alternatively
 /// the directory containing rawX (X being an integer) paths with the raw DDL
@@ -40,12 +40,12 @@
 #include "AliCodeTimer.h"
 
 // MUON includes
-#include "AliMUONRawStreamTracker.h"
-#include "AliMUONRawStreamTrackerHP.h"
-#include "AliMUONDspHeader.h"
-#include "AliMUONBlockHeader.h"
-#include "AliMUONBusStruct.h"
-#include "AliMUONDDLTracker.h"
+#include "AliMUONRawStreamTrigger.h"
+#include "AliMUONRawStreamTriggerHP.h"
+#include "AliMUONDarcHeader.h"
+#include "AliMUONRegHeader.h"
+#include "AliMUONLocalStruct.h"
+#include "AliMUONDDLTrigger.h"
 
 // RAW includes
 #include "AliRawReader.h"
@@ -69,12 +69,18 @@ struct AliBufferInfo
 };
 
 
-// Digit information to store
-struct AliDigitInfo
+// local structure information to store
+struct AliLocalStructInfo
 {
-	UShort_t fManuId;
-	UShort_t fAdc;
-	UChar_t fChannelId;
+	UChar_t fId;
+	UChar_t fDec;
+	Bool_t fTrigY;
+	UChar_t fYPos;
+	UChar_t fSXDev;
+	UChar_t fXDev;
+	UChar_t fXPos;
+	Bool_t fTriggerY;
+	Bool_t fTriggerX;
 };
 
 
@@ -98,7 +104,7 @@ UInt_t LoadFiles(AliBufferInfo*& list, TString fileName = "./", Int_t maxEvent =
 	{
 		if (iEvent++ >= maxEvent) break;
 
-		rawReader->Select("MUONTRK", 0, 19);
+		rawReader->Select("MUONTRG", 0, 1);
 		while (rawReader->ReadHeader())
 		{
 			AliBufferInfo* info = new AliBufferInfo;
@@ -141,15 +147,15 @@ UInt_t LoadFiles(AliBufferInfo*& list, TString fileName = "./", Int_t maxEvent =
 }
 
 
-UInt_t CountMaxDigits(AliBufferInfo* list)
+UInt_t CountMaxStructs(AliBufferInfo* list)
 {
-	/// Counts the maximum number of digits possible in all the buffers.
+	/// Counts the maximum number of local structures possible
 
 	UInt_t total = 0;
 	AliBufferInfo* current = list;
 	while (current != NULL)
 	{
-		total += current->fBufferSize;
+		total += current->fBufferSize / 5;
 		current = current->fNext;
 	}
 	return total;
@@ -171,12 +177,12 @@ void ReleaseBuffers(AliBufferInfo* list)
 }
 
 
-Double_t TimeUsingOldDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize)
+Double_t TimeUsingOldDecoder(AliBufferInfo* list, AliLocalStructInfo* buffer, UInt_t maxBufferSize)
 {
 	/// Perform a timing using the old decoder.
 
 	AliRawReaderMemory rawReader;
-	AliMUONRawStreamTracker rawStream(&rawReader);
+	AliMUONRawStreamTrigger rawStream(&rawReader);
 	rawReader.NextEvent();
 
 	TStopwatch timer;
@@ -190,19 +196,62 @@ Double_t TimeUsingOldDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t m
 		rawReader.SetEquipmentID(current->fEquipId);
 		rawReader.Reset();
 
-		Int_t busPatch;
-		UShort_t manuId, adc;
-		UChar_t manuChannel;
+		rawStream.First();
+		
+		TArrayS fXPattern;
+		TArrayS fYPattern;
+
+		while ( rawStream.Next(buffer[i].fId, buffer[i].fDec, buffer[i].fTrigY,
+		                       buffer[i].fYPos, buffer[i].fSXDev, buffer[i].fXDev,
+		                       buffer[i].fXPos, buffer[i].fTriggerY, buffer[i].fTriggerX,
+		                       fXPattern, fYPattern)
+		      )
+		{
+			if (i < maxBufferSize-1) i++;
+		}
+
+		current = current->fNext;
+	}
+
+	return timer.RealTime();
+}
+
+
+Double_t TimeUsingNewDecoder(AliBufferInfo* list, AliLocalStructInfo* buffer, UInt_t maxBufferSize)
+{
+	/// Perform a timing using the new decoder.
+
+	AliRawReaderMemory rawReader;
+	AliMUONRawStreamTriggerHP rawStream(&rawReader);
+	rawReader.NextEvent();
+
+	TStopwatch timer;
+	timer.Start(kTRUE);
+
+	UInt_t i = 0;
+	AliBufferInfo* current = list;
+	while (current != NULL)
+	{
+		rawReader.SetMemory(current->fBuffer, current->fBufferSize);
+		rawReader.SetEquipmentID(current->fEquipId);
+		rawReader.Reset();
 
 		rawStream.First();
 
-		while ( rawStream.Next(busPatch,manuId,manuChannel,adc) )
+		const AliMUONRawStreamTriggerHP::AliLocalStruct* local = NULL;
+		while ( (local = rawStream.Next()) != NULL )
 		{
 			if (i < maxBufferSize)
 			{
-				buffer[i].fManuId = manuId;
-				buffer[i].fAdc = adc;
-				buffer[i].fChannelId = manuChannel;
+				buffer[i].fId = local->GetId();
+				buffer[i].fDec = local->GetDec();
+				buffer[i].fTrigY = local->GetTrigY();
+				buffer[i].fYPos = local->GetYPos();
+				buffer[i].fSXDev = local->GetSXDev();
+				buffer[i].fXDev = local->GetXDev();
+				buffer[i].fXPos = local->GetXPos();
+				buffer[i].fTriggerY = local->GetTriggerY();
+				buffer[i].fTriggerX = local->GetTriggerX();
 				i++;
 			}
 		}
@@ -214,60 +263,13 @@ Double_t TimeUsingOldDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t m
 }
 
 
-Double_t TimeUsingNewDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize)
-{
-	/// Perform a timing using the new decoder.
-
-	AliRawReaderMemory rawReader;
-	AliMUONRawStreamTrackerHP rawStream(&rawReader);
-	rawReader.NextEvent();
-
-	TStopwatch timer;
-	timer.Start(kTRUE);
-
-	UInt_t i = 0;
-	AliBufferInfo* current = list;
-	while (current != NULL)
-	{
-		rawReader.SetMemory(current->fBuffer, current->fBufferSize);
-		rawReader.SetEquipmentID(current->fEquipId);
-		rawReader.Reset();
-
-		UShort_t manuId, adc;
-		UChar_t manuChannel;
-
-		rawStream.First();
-
-		const AliMUONRawStreamTrackerHP::AliBusPatch* buspatch = NULL;
-		while ((buspatch = rawStream.Next()) != NULL)
-		{
-			for (UInt_t j = 0; j < buspatch->GetDataCount(); j++)
-			{
-				buspatch->GetData(j, manuId, manuChannel, adc);
-				if (i < maxBufferSize)
-				{
-					buffer[i].fManuId = manuId;
-					buffer[i].fAdc = adc;
-					buffer[i].fChannelId = manuChannel;
-					i++;
-				}
-			}
-		}
-
-		current = current->fNext;
-	}
-
-	return timer.RealTime();
-}
-
-
-Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t maxBufferSize)
+Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliLocalStructInfo* buffer, UInt_t maxBufferSize)
 {
 	/// Perform a timing using the new decoder but the old Next() method
 	/// as the interface.
 
 	AliRawReaderMemory rawReader;
-	AliMUONRawStreamTrackerHP rawStream(&rawReader);
+	AliMUONRawStreamTriggerHP rawStream(&rawReader);
 	rawReader.NextEvent();
 
 	TStopwatch timer;
@@ -281,21 +283,18 @@ Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliDigitInfo* buff
 		rawReader.SetEquipmentID(current->fEquipId);
 		rawReader.Reset();
 
-		Int_t busPatch;
-		UShort_t manuId, adc;
-		UChar_t manuChannel;
-
 		rawStream.First();
+		
+		TArrayS fXPattern;
+		TArrayS fYPattern;
 
-		while ( rawStream.Next(busPatch,manuId,manuChannel,adc) )
+		while ( rawStream.Next(buffer[i].fId, buffer[i].fDec, buffer[i].fTrigY,
+		                       buffer[i].fYPos, buffer[i].fSXDev, buffer[i].fXDev,
+		                       buffer[i].fXPos, buffer[i].fTriggerY, buffer[i].fTriggerX,
+		                       fXPattern, fYPattern)
+		      )
 		{
-			if (i < maxBufferSize)
-			{
-				buffer[i].fManuId = manuId;
-				buffer[i].fAdc = adc;
-				buffer[i].fChannelId = manuChannel;
-				i++;
-			}
+			if (i < maxBufferSize-1) i++;
 		}
 
 		current = current->fNext;
@@ -311,28 +310,37 @@ void Loop(const char* filename, Bool_t newDecoder)
   
   AliRawReader* reader = AliRawReader::Create(filename);
   
-  AliMUONVRawStreamTracker* stream;
+  AliMUONVRawStreamTrigger* stream;
   
   if ( newDecoder ) 
   {
-    stream = new AliMUONRawStreamTrackerHP(reader);
+    stream = new AliMUONRawStreamTriggerHP(reader);
   }
   else
   {
-    stream = new AliMUONRawStreamTracker(reader);
+    stream = new AliMUONRawStreamTrigger(reader);
   }
 
-  Int_t busPatch;
-  UShort_t manuId, adc;
-  UChar_t manuChannel;
+  UChar_t id;
+  UChar_t dec;
+  Bool_t trigY;
+  UChar_t yPos;
+  UChar_t sXDev;
+  UChar_t xDev;
+  UChar_t xPos;
+  Bool_t triggerY;
+  Bool_t triggerX;
+  TArrayS xPattern;
+  TArrayS yPattern;
   
-  while ( reader->NextEvent() ) 
+  while ( reader->NextEvent() )
   {
     stream->First();
     
-    while ( stream->Next(busPatch,manuId,manuChannel,adc) ) 
+    while ( stream->Next(id, dec, trigY, yPos, sXDev, xDev, xPos,
+		         triggerY, triggerX, xPattern, yPattern) )
     {
-      adc *= 2;
+      id *= 2;
     }
   }
   
@@ -341,7 +349,7 @@ void Loop(const char* filename, Bool_t newDecoder)
 }
 
 
-void MUONTimeRawStreamTrackerDumb(TString fileName)
+void MUONTimeRawStreamTriggerDumb(TString fileName)
 {
   AliCodeTimer::Instance()->Reset();
   
@@ -364,7 +372,7 @@ void MUONTimeRawStreamTrackerDumb(TString fileName)
 }
 
 
-void MUONTimeRawStreamTracker(TString fileName = "./", Int_t maxEvent = 1000)
+void MUONTimeRawStreamTrigger(TString fileName = "./", Int_t maxEvent = 1000)
 {
 	/// Performs a timing of old and new decoders and reports this.
 
@@ -376,8 +384,8 @@ void MUONTimeRawStreamTracker(TString fileName = "./", Int_t maxEvent = 1000)
 		return;
 	}
 
-	UInt_t maxBufferSize = CountMaxDigits(list);
-	AliDigitInfo* buffer = new AliDigitInfo[maxBufferSize];
+	UInt_t maxBufferSize = CountMaxStructs(list);
+	AliLocalStructInfo* buffer = new AliLocalStructInfo[maxBufferSize];
 	if (buffer == NULL)
 	{
 		ReleaseBuffers(list);
