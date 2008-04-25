@@ -33,7 +33,7 @@
   //log.SwitchAliLog(0);
 
   AliHLTSystem gHLT;
-  //gHLT.SetGlobalLoggingLevel(0x7c);
+  gHLT.SetGlobalLoggingLevel(0x7c);
 
   // load the component library
   gHLT.LoadComponentLibraries("libAliHLTUtil.so");

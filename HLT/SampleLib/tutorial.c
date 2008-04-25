@@ -60,9 +60,23 @@ You can run the following macro from the AliRoot promt.
 {
   AliHLTSystem gHLT;
   gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTSample.so");
+  // The AliHLTFilePublisher (component Id \em 'FilePublisher' provides
+  // the given file (see AliHLTFilePublisher for more options) to the
+  // subsequent components in the chain.
   AliHLTConfiguration publisher("fp1", "FilePublisher", NULL, "-datafile some-data.dat");
+
+  // The AliHLTDummyComponent (Id \em 'Dummy') just forwards a certain
+  // fraction of the input to the output or just repeats the input data
+  // if percentage > 100
   AliHLTConfiguration copy("cp", "Dummy", "fp1", "output_percentage 80");
+
+  // The AliHLTFileWriter (Id 'FileWriter') is a data sink. It writes
+  // all incoming data blocks to files. Several options available.
   AliHLTConfiguration sink1("sink1", "FileWriter", "cp", NULL);
+
+  // here you specify the top most configuration of the chain. The
+  // configuration depends on all the parents. The task lisy is build
+  // according to that.
   gHLT.BuildTaskList("sink1");
   gHLT.Run();
 }
@@ -78,20 +92,20 @@ directory.
 {
   AliHLTSystem gHLT;
   // load the component library
-  gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTTPC.so");
+  gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so");
 
   // data source components
-  AliHLTConfiguration fp0("fp0", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000000"
+  AliHLTConfiguration fp0("fp0", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000000"
 			                                "-datafile TPC_768.ddl");
-  AliHLTConfiguration fp1("fp1", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000101"
+  AliHLTConfiguration fp1("fp1", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000101"
                                                         "-datafile TPC_769.ddl");
-  AliHLTConfiguration fp2("fp2", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000202"
+  AliHLTConfiguration fp2("fp2", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000202"
                                                         "-datafile TPC_840.ddl");
-  AliHLTConfiguration fp3("fp3", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000303"
+  AliHLTConfiguration fp3("fp3", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000303"
 			                                "-datafile TPC_841.ddl");
-  AliHLTConfiguration fp4("fp4", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000404"
+  AliHLTConfiguration fp4("fp4", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000404"
 			                                "-datafile TPC_842.ddl");
-  AliHLTConfiguration fp5("fp5", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000505"
+  AliHLTConfiguration fp5("fp5", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000505"
 			                                "-datafile TPC_843.ddl");
 
   // cluster finders

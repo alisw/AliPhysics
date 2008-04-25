@@ -124,11 +124,11 @@ int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData&
     int patch=AliHLTTPCDefinitions::GetMinPatchNr(pBlock->fSpecification);
     if (slice!=AliHLTTPCDefinitions::GetMaxSliceNr(pBlock->fSpecification) ||
 	patch!=AliHLTTPCDefinitions::GetMaxPatchNr(pBlock->fSpecification)) {
-      HLTError("ambiguous readout partition (specification 0x%80x), skipping input block", pBlock->fSpecification);
+      HLTError("ambiguous readout partition (specification 0x%08x), skipping input block", pBlock->fSpecification);
       break;
     }
-    if (slice<0 || slice>35 || patch<0 || slice>5) {
-      HLTError("invalid readout partition %d/%d (specification 0x%80x, skipping input block", slice, patch,  pBlock->fSpecification);
+    if (slice<0 || slice>35 || patch<0 || patch>5) {
+      HLTError("invalid readout partition %d/%d (specification 0x%08x, skipping input block", slice, patch,  pBlock->fSpecification);
       break;
     }
 
