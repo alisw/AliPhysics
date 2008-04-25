@@ -457,6 +457,7 @@ TString AliHLTEsdManager::AliHLTEsdListEntry::WriteTempFile(AliESDEvent* pESD) c
       file.Close();
     } else {
       HLTError("can not open file %s", tmpfilename.Data());
+      iResult=-EBADF;
     }
   } else {
     HLTError("can not get temporary file name from system");

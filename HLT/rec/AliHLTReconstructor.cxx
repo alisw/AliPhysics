@@ -64,7 +64,7 @@ AliHLTReconstructor::~AliHLTReconstructor()
   AliHLTSystem* pSystem=GetInstance();
   if (pSystem) {
     AliDebug(0, Form("delete HLT system: status %#x", pSystem->GetStatusFlags()));
-    if (pSystem->CheckStatus(AliHLTSystem::kReady)) {
+    if (pSystem->CheckStatus(AliHLTSystem::kStarted)) {
       // send specific 'event' to execute the stop sequence
       pSystem->Reconstruct(0, NULL, NULL);
     }

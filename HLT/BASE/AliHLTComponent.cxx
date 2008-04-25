@@ -1,32 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTComponent.cxx
     @author Matthias Richter, Timm Steinbeck
     @date   
     @brief  Base class implementation for HLT components. */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #if __GNUC__>= 3
 using namespace std;
@@ -620,14 +614,14 @@ int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int start
   if (fpInputBlocks!=NULL) {
     int idx=startIdx<0?0:startIdx;
     for ( ; (UInt_t)idx<fCurrentEventData.fBlockCnt && iResult==-ENOENT; idx++) {
+      if (dt!=fpInputBlocks[idx].fDataType) continue;
+
       if (bObject!=0) {
 	if (fpInputBlocks[idx].fPtr==NULL) continue;
 	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
 	if (firstWord!=fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) continue;
       }
-      if (dt==fpInputBlocks[idx].fDataType) {
-	iResult=idx;
-      }
+      iResult=idx;
     }
   }
   return iResult;

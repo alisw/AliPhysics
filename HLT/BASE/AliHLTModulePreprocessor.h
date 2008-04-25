@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id: AliHLTModulePreprocessor.h 23318 2008-01-14 12:43:28Z hristov $
+// @(#) $Id$
 
 #ifndef ALIHLTMODULEPREPROCESSOR_H
 #define ALIHLTMODULEPREPROCESSOR_H

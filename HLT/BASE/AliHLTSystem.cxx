@@ -554,6 +554,7 @@ int AliHLTSystem::StartTasks()
   if (iResult<0) {
     HLTError("can not start task list, error %d", iResult);
   } else {
+    SetStatusFlags(kStarted);
     fEventCount=0;
     fGoodEvents=0;
     if ((iResult=SendControlEvent(kAliHLTDataTypeSOR))<0) {
@@ -614,6 +615,7 @@ int AliHLTSystem::StopTasks()
     lnk = lnk->Next();
   }
   PrintBenchmarking(fStopwatches, 1 /*clean*/);
+  ClearStatusFlags(kStarted);
   return iResult;
 }
 

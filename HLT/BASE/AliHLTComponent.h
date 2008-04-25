@@ -695,12 +695,18 @@ class AliHLTComponent : public AliHLTLogging {
    * Get the first object of a specific data type from the input data.
    * The hight-level methods provide functionality to transfer ROOT data
    * structures which inherit from TObject.
+   *
    * The method looks for the first ROOT object of type dt in the input stream.
    * If also the class name is provided, the object is checked for the right
    * class type. The input data block needs a certain structure, namely the 
    * buffer size as first word. If the cross check fails, the retrieval is
    * silently abondoned, unless the \em bForce parameter is set.<br>
-   * \em Note: THE OBJECT MUST NOT BE DELETED by the caller.
+   * \b Note: THE OBJECT MUST NOT BE DELETED by the caller.
+   *
+   * If called without parameters, the function tries to create objects from
+   * all available input blocks, also the ones of data type kAliHLTVoidDataType
+   * which are not matched by kAliHLTAnyDataType.
+   *
    * @param dt          data type of the object
    * @param classname   class name of the object
    * @param bForce      force the retrieval of an object, error messages
@@ -708,7 +714,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @return pointer to @ref TObject, NULL if no objects of specified type
    *         available
    */
-  const TObject* GetFirstInputObject(const AliHLTComponentDataType& dt=kAliHLTAnyDataType,
+  const TObject* GetFirstInputObject(const AliHLTComponentDataType& dt=kAliHLTAllDataTypes,
 				     const char* classname=NULL,
 				     int bForce=0);
 
@@ -771,13 +777,18 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Get the first block of a specific data type from the input data.
-   * The method looks for the first block of type dt in the input stream. It is intended
-   * to be used within the high-level interface.<br>
+   * The method looks for the first block of type dt in the input stream.
+   * It is intended to be used within the high-level interface.<br>
    * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
+   *
+   * If called without parameters, the function works on all input blocks,
+   * also the ones of data type kAliHLTVoidDataType which are not matched by
+   * kAliHLTAnyDataType.
+   *
    * @param dt          data type of the block
    * @return pointer to @ref AliHLTComponentBlockData
    */
-  const AliHLTComponentBlockData* GetFirstInputBlock(const AliHLTComponentDataType& dt=kAliHLTAnyDataType);
+  const AliHLTComponentBlockData* GetFirstInputBlock(const AliHLTComponentDataType& dt=kAliHLTAllDataTypes);
 
   /**
    * Get the first block of a specific data type from the input data.
@@ -1092,6 +1103,10 @@ class AliHLTComponent : public AliHLTLogging {
    * Input blocks containing a TObject have the size of the object as an
    * unsigned 32 bit number in the first 4 bytes. This has to match the block
    * size minus 4.
+   *
+   * kAliHLTAllDataTypes is a special data type which includes both 
+   * kAliHLTVoidDataType and kAliHLTAnyDataType.
+   *
    * @param dt          data type
    * @param startIdx    index to start the search
    * @param bObject     check if this is an object
@@ -1227,6 +1242,6 @@ class AliHLTComponent : public AliHLTLogging {
   /** id of the component in the analysis chain */
   string fChainId;                                                 //! transient
 
-  ClassDef(AliHLTComponent, 5)
+  ClassDef(AliHLTComponent, 6)
 };
 #endif

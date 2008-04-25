@@ -31,6 +31,7 @@
  *           specs
  *   5       Data types for Run and Event summary, and for monitoring added
  *   6       Common data types for TreeD and TreeR defined
+ *           kAliHLTAllDataTypes added
  */
 #define ALIHLT_DATA_TYPES_VERSION 6
 
@@ -118,7 +119,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTVoidDataTypeID "\0\0\0\0\0\0\0"
 
-/** special id for any data type id 
+/** special id for all data types: any + void
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTAllDataTypesID "ALLDATA"
+
+/** special id for any valid data type id
  * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTAnyDataTypeID "*******"
@@ -555,6 +561,15 @@ extern "C" {
     kAliHLTDataOriginVoid
   };
 
+  /** all data types, means any + void data type
+   * @ingroup alihlt_component_datatypes
+   */
+  const AliHLTComponentDataType kAliHLTAllDataTypes = {
+    sizeof(AliHLTComponentDataType),
+    kAliHLTAllDataTypesID,
+    kAliHLTDataOriginAny
+  };
+
   // there is currently a problem with rootcint if the predefined ids
   // (commented below) are used. rootcint does not find the id if they
   // are char arrays defined with {} and individual chars. If strings
@@ -750,6 +765,20 @@ extern "C" {
 //
 //////////////////////////////////////////////////////////////////////////
 
+/** exact comparison of HLT component data types
+ * @ingroup alihlt_component_datatypes
+ */
+inline bool MatchExactly( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
+{
+  for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
+    if ( dt1.fID[i] != dt2.fID[i] )
+      return false;
+  for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
+    if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
+      return false;
+  return true;
+}
+
 /** Comparison operator for HLT component data types.
  * The operator takes wildcards into account, i.e. the ::kAliHLTAnyDataType,
  * ::kAliHLTAnyDataTypeID and ::kAliHLTDataOriginAny definitions.
@@ -757,6 +786,9 @@ extern "C" {
  */
 inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
 {
+  if (MatchExactly(dt1, kAliHLTAllDataTypes)) return true;
+  if (MatchExactly(dt2, kAliHLTAllDataTypes)) return true;
+
   bool any1=true, any2=true, void1=true, void2=true, match=true;
   for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ ) {
     any1&=(dt1.fOrigin[i]==kAliHLTDataOriginAny[i]);
@@ -788,20 +820,6 @@ inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponen
 inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
 {
   return !(dt1==dt2);
-}
-
-/** exact comparison of HLT component data types
- * @ingroup alihlt_component_datatypes
- */
-inline bool MatchExactly( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
-{
-  for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
-    if ( dt1.fID[i] != dt2.fID[i] )
-      return false;
-  for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
-    if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
-      return false;
-  return true;
 }
 
 /** merge operator for HLT component data types and origins

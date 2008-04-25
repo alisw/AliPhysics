@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id: AliHLTShuttleInterface.h 23318 2008-01-14 12:43:28Z hristov $
+// @(#) $Id$
 
 #ifndef ALIHLTSHUTTLEINTERFACE_H
 #define ALIHLTSHUTTLEINTERFACE_H

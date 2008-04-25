@@ -1,4 +1,4 @@
-// $Id: AliHLTShuttleInterface.cxx 23039 2007-12-13 20:53:02Z richterm $
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 

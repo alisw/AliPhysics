@@ -35,7 +35,7 @@ typedef struct test_t {
   bool result;
 } test_t;
 
-int main(int argc, const char** argv)
+int main(int /*argc*/, const char** /*argv*/)
 {
   AliHLTComponentDataType testdt1={
     sizeof(AliHLTComponentDataType),
@@ -112,7 +112,7 @@ int main(int argc, const char** argv)
 
   int result=0;
   cout << "checking data type operators" << endl;
-  for (int i=0; i<(sizeof(tests)/sizeof(test_t)); i++) {
+  for (unsigned int i=0; i<(sizeof(tests)/sizeof(test_t)); i++) {
     //if (!tests[i].type) continue;
     const char* op=(tests[i].type)?" == ":" != ";
     cout << "checking: " << AliHLTComponent::DataType2Text(tests[i].dt1).c_str() << op << AliHLTComponent::DataType2Text(tests[i].dt2).c_str() << " -> ";
