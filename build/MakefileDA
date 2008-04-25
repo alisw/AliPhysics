@@ -133,7 +133,7 @@ $(DALIB): $(ALIROOTALIBS)
 	$(MUTE)mkdir junk && cd junk && $(addprefix $(AR) x ../,$(addsuffix &&,$^)) $(AR) r $@ *.o && cd .. && rm -rf junk
 
 $(EXTRAROOTLIB): $(LIBPATH) 
-	$(MUTE)$(AR) r $@ `ls ${ROOTSYS}/vmc/src/*.o ${ROOTSYS}/treeplayer/src/*.o`
+	$(MUTE)$(AR) r $@ `ls ${ROOTSYS}/montecarlo/vmc/src/*.o ${ROOTSYS}/tree/treeplayer/src/*.o`
 
 $(DATARGETNAME)-clean:
 	@echo "***** Cleaning $(DAMODULE)$(SUBDAMODULE)$(DANAME) detector-algorithm *****"
