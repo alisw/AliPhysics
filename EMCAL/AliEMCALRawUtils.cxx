@@ -69,8 +69,6 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALDigit.h"
-#include "AliEMCAL.h"
-
 
 ClassImp(AliEMCALRawUtils)
 
@@ -283,7 +281,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   else
     in.SetOldRCUFormat(kFALSE);
 
-
   //Updated fitting routine from 2007 beam test takes into account
   //possibility of two peaks in data and selects first one for fitting
   //Also sets some of the starting parameters based on the shape of the
@@ -339,6 +336,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       row = in.GetRow();
       
       gSig->SetPoint(in.GetTime(), in.GetTime(), in.GetSignal()) ;
+
       if (in.GetTime() > maxTime)
         maxTime = in.GetTime();
       iTime++;
@@ -350,6 +348,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 				   //result, 10000 is somewhat arbitrary
       AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
       //cout << "col " << col-40 << " row " << row-8 << " lowGain " << lowGain << " amp " << amp << endl;
+
       AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
     }
 	
@@ -438,6 +437,8 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
   Float_t min_after_sig = 9999;
   Int_t tmin_after_sig = gSig->GetN();
   Int_t n_ped_after_sig = 0;
+  Int_t plateau_width = 0;
+  Int_t plateau_start = 9999;
 
   for (Int_t i=fNPedSamples; i < gSig->GetN(); i++) {
     Double_t ttime, signal;
@@ -466,6 +467,20 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
         max_fit = i;
         break;
       }
+    }
+    //Add check on plateau
+    if (signal >= fgkRawSignalOverflow - fNoiseThreshold) {
+      if(plateau_width == 0) plateau_start = i;
+      plateau_width++;
+    }
+  }
+
+  if(plateau_width > 0) {
+    for(int j = 0; j < plateau_width-2; j++) {
+      //Note, have to remove the same point N times because after each
+      //remove, the positions of all subsequent points have shifted down
+      //We leave the first and last as anchor points
+      gSig->RemovePoint(plateau_start+1);
     }
   }
 
