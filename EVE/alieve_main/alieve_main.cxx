@@ -49,6 +49,7 @@ int main(int argc, char **argv)
   }
   gROOT->SetMacroPath(macPath);
 
+  // How to hadle AliLog properly?
   AliLog* log = new AliLog;
 
   TRint app("App", &argc, argv);
@@ -56,6 +57,8 @@ int main(int argc, char **argv)
   TEveManager::Create();
 
   app.Run(); // Never returns.
+
+  delete log;
 
   return 0;
 }
