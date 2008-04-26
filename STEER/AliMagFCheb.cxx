@@ -313,10 +313,10 @@ void AliMagFCheb::FieldCylSol(Float_t *rphiz, Float_t *b) const
   float &r = rphiz[0];
   float &z = rphiz[2];
   int SolZId = 0;
-  while (z>fSegZSol[SolZId] && SolZId<fNSegZSol) ++SolZId;    // find Z segment
+  while (z>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
   int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
   int SolRMax = SolRId + fNSegRSol[SolZId];
-  while (r>fSegRSol[SolRId] && SolRId<SolRMax) ++SolRId;    // find R segment
+  while (r>fSegRSol[SolRId] && SolRId<SolRMax-1) ++SolRId;    // find R segment
   GetParamSol( SolRId )->Eval(rphiz,b);
   //
 }
