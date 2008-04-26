@@ -140,7 +140,11 @@ AliEveV0List::AliEveV0List() :
   fNegColor(0),
   fPosColor(0),
   fMinRCut(0),
-  fMaxRCut(250)
+  fMaxRCut(250),
+  fMinDaughterDCA(0),
+  fMaxDaughterDCA(1),
+  fMinPt(0),
+  fMaxPt(20)
 {
   // Default constructor.
 
@@ -158,7 +162,11 @@ AliEveV0List::AliEveV0List(TEveTrackPropagator* rs) :
   fNegColor(0),
   fPosColor(0),
   fMinRCut(0),
-  fMaxRCut(250)
+  fMaxRCut(250),
+  fMinDaughterDCA(0),
+  fMaxDaughterDCA(1),
+  fMinPt(0),
+  fMaxPt(20)
 {
   // Constructor with given track-propagator..
 
@@ -178,7 +186,11 @@ AliEveV0List::AliEveV0List(const Text_t* name, TEveTrackPropagator* rs) :
   fNegColor(0),
   fPosColor(0),
   fMinRCut(0),
-  fMaxRCut(100)
+  fMaxRCut(100),
+  fMinDaughterDCA(0),
+  fMaxDaughterDCA(1),
+  fMinPt(0),
+  fMaxPt(20)
 {
   // Standard constructor.
 
@@ -224,6 +236,48 @@ void AliEveV0List::FilterByRadius(Float_t minR, Float_t maxR)
     AliEveV0* v0 = (AliEveV0*) *i;
     Float_t  rad = v0->GetRadius();
     Bool_t  show = rad >= fMinRCut && rad <= fMaxRCut;
+    v0->SetRnrState(show);
+  }
+  ElementChanged();
+  gEve->Redraw3D();
+}
+
+/******************************************************************************/
+
+//______________________________________________________________________________
+void AliEveV0List::FilterByDaughterDCA(Float_t minDaughterDCA, Float_t maxDaughterDCA)
+{
+  // Select visibility of elements based on the DCA between daughters.
+
+  fMinDaughterDCA = minDaughterDCA;
+  fMaxDaughterDCA = maxDaughterDCA;
+
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
+  {
+    AliEveV0* v0 = (AliEveV0*) *i;
+    Float_t  dca = v0->GetDaughterDCA();
+    Bool_t  show = dca >= fMinDaughterDCA && dca <= fMaxDaughterDCA;
+    v0->SetRnrState(show);
+  }
+  ElementChanged();
+  gEve->Redraw3D();
+}
+
+/******************************************************************************/
+
+//______________________________________________________________________________
+void AliEveV0List::FilterByPt(Float_t minPt, Float_t maxPt)
+{
+  // Select visibility of elements based on the V0 pt.
+
+  fMinPt = minPt;
+  fMaxPt = maxPt;
+
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
+  {
+    AliEveV0* v0 = (AliEveV0*) *i;
+    Float_t  pt = v0->GetPt();
+    Bool_t  show = pt >= fMinPt && pt <= fMaxPt;
     v0->SetRnrState(show);
   }
   ElementChanged();

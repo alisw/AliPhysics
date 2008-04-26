@@ -35,6 +35,8 @@ public:
 
   // Declare callback/slot methods
   void DoMinMaxRCut();
+  void DoMinMaxDaughterDCA();
+  void DoMinMaxPt();
 
 protected:
   AliEveV0List            *fM; // Model object.
@@ -42,6 +44,8 @@ protected:
   // Declare widgets
   // TGSomeWidget*   fXYZZ;
   TEveGDoubleValuator* fMinMaxRCut;
+  TEveGDoubleValuator* fMinMaxDaughterDCA;
+  TEveGDoubleValuator* fMinMaxPt;
 
 private:
   AliEveV0ListEditor(const AliEveV0ListEditor&);            // Not implemented

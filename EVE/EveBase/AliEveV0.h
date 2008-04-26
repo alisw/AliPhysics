@@ -56,6 +56,7 @@ public:
   void SetDaughterDCA(Float_t dca) { fDaughterDCA = dca; }
 
   Float_t GetRadius() const { return fRecDecayV.Perp(); }
+  Float_t GetPt()     const { return fRecDecayP.Perp(); }
 
   Bool_t GetOnFlyStatus()    const { return fOnFlyStatus; }
   void   SetOnFlyStatus(Bool_t fs) { fOnFlyStatus = fs; }
@@ -129,6 +130,8 @@ public:
   void   MakeV0s();
 
   void   FilterByRadius(Float_t minR, Float_t maxR);
+  void   FilterByDaughterDCA(Float_t minDaughterDCA, Float_t maxDaughterDCA);
+  void   FilterByPt(Float_t minPt, Float_t maxPt);
 
 protected:
   TString              fTitle;
@@ -144,6 +147,12 @@ protected:
 
   Float_t              fMinRCut;
   Float_t              fMaxRCut;
+
+  Float_t              fMinDaughterDCA;
+  Float_t              fMaxDaughterDCA;
+
+  Float_t              fMinPt;
+  Float_t              fMaxPt;
 
 private:
   void Init();
