@@ -111,7 +111,8 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       qthre=((TF1*)pQthre->At(cham))->Eval(pEsd->GetTimeStamp());                                //
     else {                                                                                       // in the past just 1 qthre
       Int_t hvsec = AliHMPIDParam::InHVSector(yPc);                                              //  per chamber
-      qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                        //
+      if (hvsec>=0)
+	qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                        //
     }                                                                                            //
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
     recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),nmean,qthre);                           //search for Cerenkov angle of this track
