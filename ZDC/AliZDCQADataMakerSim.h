@@ -15,8 +15,8 @@
 class AliZDCQADataMakerSim: public AliQADataMakerSim {
 
 public:
-  AliZDCQADataMakerSim() ;          // ctor
-  AliZDCQADataMakerSim(const AliZDCQADataMakerSim& qadm) ;   
+  AliZDCQADataMakerSim();          // ctor
+  AliZDCQADataMakerSim(const AliZDCQADataMakerSim& qadm);   
   AliZDCQADataMakerSim& operator = (const AliZDCQADataMakerSim& qadm) ;
   virtual ~AliZDCQADataMakerSim() {;} // dtor
   
@@ -24,17 +24,17 @@ private:
   virtual void   InitHits(); 
   virtual void   InitDigits(); 
   virtual void   InitSDigits() {;} 
-  virtual void   MakeHits(TClonesArray * hits);
+  virtual void   MakeHits(TClonesArray * hits = 0);
   virtual void   MakeHits(TTree * hitTree);
-  virtual void   MakeDigits(TClonesArray * digits); 
+  virtual void   MakeDigits(TClonesArray * digits = 0); 
   virtual void   MakeDigits(TTree * digTree);
-  virtual void   MakeSDigits(TClonesArray * sdigits) {;} 
-  virtual void   MakeSDigits(TTree * sdigTree) {;}
+  virtual void   MakeSDigits(TClonesArray * /*sdigits*/) {;} 
+  virtual void   MakeSDigits(TTree * /*sdigTree*/) {;}
   virtual void   StartOfDetectorCycle(); 
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   //
-  TClonesArray * fHits; 	//! Array containing ZDC hits
-  TClonesArray * fDigits; 	//! Array containing ZDC digits
+  TClonesArray   fHits; 	//! Array containing ZDC hits
+  TClonesArray   fDigits; 	//! Array containing ZDC digits
   
   
   ClassDef(AliZDCQADataMakerSim,2)  // description 
