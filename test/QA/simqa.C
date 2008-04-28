@@ -3,7 +3,6 @@ void simqa()
   const char * kYear = "08" ; 
   gEnv->SetValue("Root.Stacktrace","no");
   gEnv->SetValue("Root.Stacktrace","no");
-  AliGeomManager::LoadGeometry("geometry.root");	
   AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefDataDirName("Sim") ; //Data, Pedestals, BlackEvent, .....
   

@@ -82,9 +82,10 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	UShort_t filesProcessed = 0 ; 
 	UShort_t eventsProcessed = 0 ; 
 	AliCDBManager* man = AliCDBManager::Instance();
-	AliGeomManager::LoadGeometry("geometry.root");
+	man->SetDefaultStorage(kDefaultOCDBStorage) ;  
+	man->SetRun(runNumber) ; 
+	AliGeomManager::LoadGeometry();
 	for ( file = 0 ; file < maxFiles ; file++) {
-		man->SetDefaultStorage(kDefaultOCDBStorage) ;  
 		if ( qas.GetCurrentEvent() >= maxEvents) 
 			break ;
 
