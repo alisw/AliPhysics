@@ -2,6 +2,14 @@
 How to run the MUON display
 ---------------------------
 
+New (28 Apr 2008): there are two version of the MUON_display macro
+
+MUON_displaySimu   - to be used with simulations (shows also reference tracks,
+                     Monte-Carlo tracks and hits)
+MUON_displayData   - to be used with reconstructed raw data (with the option
+                     SAVEDIGITS in the reconstruction, "normal" digits are
+                     also produced and can be visualized)
+
 1. Launch 'alieve' executable
 
    alieve
@@ -9,19 +17,10 @@ How to run the MUON display
 2. Load the following macros (.L ...)
 
    alieve_init.C
-   event_next.C
-   event_prev.C
    event_goto.C
    MUON_display.C
    MUON_geom.C
    MUON_geomAll.C
-
-   also interesting for the vertex
-
-   its_hits.C
-   its_digits.C
-   geom_its.C
-   esd_tracks.C
 
 3. Initialize
 
@@ -45,14 +44,12 @@ How to run the MUON display
 
    MUON_geom()
 
-Obs: to delete geometry elements from the display, click the right mouse button
-in the "Reve" window, "Object Browser" tab, on the name of the node and select 
-"Destroy" from the menu.
+Obs: use the macro MUON_makeGeom.C to create a geometry file starting from a
+Config.C.  The geometry created by the full chain of simulations has a wrong 
+color palette, this is a problem still to be fixed...
 
 8. Navigate in the event list
 
-   event_next()
-   event_prev()
    event_goto(n)
 
 9. Shift + right mouse button one a muon track opens the context menu:
@@ -72,16 +69,16 @@ in the "Reve" window, "Object Browser" tab, on the name of the node and select
 
 Files:
 
-MUON*.cxx , MUON*.h   in $ALICE_ROOT/EVE/Alieve
-MUON*.C               in $ALICE_ROOT/EVE/alice-macros
+AliEveMUON*.cxx , AliEveMUON*.h   in $ALICE_ROOT/EVE/EveDet
+MUON*.C                           in $ALICE_ROOT/EVE/alice-macros
 
-See also the $ALICE_ROOT/EVE/README file.
-
-
+Note: ... this is $ALICE_ROOT/EVE/README_MUON file.
 
 
 
-Bogdan Vulpescu, 06 Mar 2007
+
+
+Bogdan Vulpescu, 28 Apr 2008
 LPC Clermont-Ferrand
 vulpescu@clermont.in2p3.fr
 

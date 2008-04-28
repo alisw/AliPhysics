@@ -471,13 +471,13 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   // builds the track with dipole field
   //
 
-  if (!fIsRefTrack) {
-    fIsMUONTrack = kTRUE;
-    fTrack    = mtrack;
-  }
-
-  if (fIsRefTrack) {
-    fTrack = new AliMUONTrack(*mtrack);
+  if (!fIsESDTrack) {
+    if (!fIsRefTrack) {
+      fIsMUONTrack = kTRUE;
+      fTrack    = mtrack;
+    } else {
+      fTrack = new AliMUONTrack(*mtrack);
+    }
   }
 
   Double_t xv, yv;
@@ -502,9 +502,9 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
 
   if (fIsMUONTrack) {
     if (mtrack->GetMatchTrigger()) {
-      sprintf(form,"AliEveMUONTrack %2d (MT)", fLabel);
+      sprintf(form,"MUONTrack %2d (MT)", fLabel);
     } else {
-      sprintf(form,"AliEveMUONTrack %2d     ", fLabel);
+      sprintf(form,"MUONTrack %2d     ", fLabel);
     }
     SetName(form);
     SetLineStyle(1);
@@ -515,7 +515,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   yRec0  = trackParam->GetBendingCoor();
   zRec0  = trackParam->GetZ();
 
-  if (fIsMUONTrack) {
+  if (fIsMUONTrack || fIsESDTrack) {
     SetPoint(fCount,xRec0,yRec0,zRec0);
     fCount++;
   }
@@ -533,8 +533,9 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     trackParam = (AliMUONTrackParam*) trackParamAtCluster->At(iHit);
 
     if (iHit == 0) {
-      if (IsMUONTrack()) {
+      if (IsMUONTrack() || IsESDTrack()) {
 	pt = TMath::Sqrt(trackParam->Px()*trackParam->Px()+trackParam->Py()*trackParam->Py());
+	printf("Set line color = %d \n",ColorIndex(pt));
 	SetLineColor(ColorIndex(pt));
       }
       pv[0] = trackParam->Px();
@@ -559,7 +560,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
 
   Int_t crntCha, lastHitSt12, firstHitSt3, lastHitSt3, firstHitSt45;
 
-  if (fIsMUONTrack) nTrackHits = 10;
+  if (fIsMUONTrack || fIsESDTrack) nTrackHits = 10;
 
   lastHitSt12  = -1;
   firstHitSt3  = -1;
@@ -674,7 +675,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     }
   }
 
-  if (!fIsMUONTrack) return;
+  if (!fIsMUONTrack && !fIsESDTrack) return;
 
   Int_t nrc = 0;
   if (mtrack->GetMatchTrigger() && 1) {
@@ -784,17 +785,28 @@ void AliEveMUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
 
   fIsESDTrack = kTRUE;
 
+  char form[1000];
+  if (mtrack->GetMatchTrigger()) {
+    sprintf(form,"ESDTrack %2d (MT)", fLabel);
+  } else {
+    sprintf(form,"ESDTrack %2d     ", fLabel);
+  }
+  SetName(form);
+  SetLineStyle(3);
+  SetLineColor(0);
+
   fTrack = new AliMUONTrack();
+
+  // create a simple track from the ESD track
+  AliMUONESDInterface::ESDToMUON(*mtrack,*fTrack);
+
+  MakeMUONTrack(fTrack);
+  return;
+
   AliMUONTrackParam trackParam;
   AliMUONESDInterface::GetParamAtVertex(*mtrack, trackParam);
   fTrack->SetTrackParamAtVertex(&trackParam);
   fTrack->SetMatchTrigger(mtrack->GetMatchTrigger());
-
-  char form[1000];
-  sprintf(form,"ESDTrack %2d ", fLabel);
-  SetName(form);
-  SetLineStyle(3);
-  SetLineColor(0);
 
   Double_t vect[7], vout[7];
   Double_t step = 1.0;
@@ -930,7 +942,7 @@ void AliEveMUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1,
 
   trackParamAtCluster = fTrack->GetTrackParamAtCluster();
 
-  if (IsMUONTrack()) {
+  if (IsMUONTrack() || IsESDTrack()) {
     trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1);
     charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
   }
@@ -1245,7 +1257,7 @@ Int_t AliEveMUONTrack::ColorIndex(Float_t val)
   //
 
   Float_t threshold =  0.0;
-  Float_t maxVal    =  2.0;
+  Float_t maxVal    = 10.0;
 
   Float_t div  = TMath::Max(1, (Int_t)(maxVal - threshold));
   Int_t   nCol = gStyle->GetNumberOfColors();
