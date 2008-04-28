@@ -27,7 +27,8 @@ ClassImp(AliMagWrapCheb)
 //_______________________________________________________________________
 AliMagWrapCheb::AliMagWrapCheb():
   AliMagF(),
-  fMeasuredMap(0)
+  fMeasuredMap(0),
+  fSolenoid(5.)
 {
   // Default constructor
   //
@@ -38,7 +39,8 @@ AliMagWrapCheb::AliMagWrapCheb(const char *name, const char *title, Int_t integ,
 			       Float_t factor, Float_t fmax, Int_t map, 
 			       Bool_t dipoleON,const char* path):
   AliMagF(name, title, integ, factor, fmax),
-  fMeasuredMap(0)
+  fMeasuredMap(0),
+  fSolenoid(5.)
 {
   //
   fMap = map;
@@ -49,9 +51,13 @@ AliMagWrapCheb::AliMagWrapCheb(const char *name, const char *title, Int_t integ,
     return;
   }
   const char* parname = 0;
-  if      (fMap == k2kG) parname = dipoleON ? "Sol12_Dip6_Hole":"Sol12_Dip0_Hole";
-  else if (fMap == k5kG) parname = dipoleON ? "Sol30_Dip6_Hole":"Sol30_Dip0_Hole";
-  else {
+  if        (fMap == k2kG) {
+    fSolenoid = 2.;
+    parname = dipoleON ? "Sol12_Dip6_Hole":"Sol12_Dip0_Hole";
+  } else if (fMap == k5kG) {
+    fSolenoid = 5.;
+    parname = dipoleON ? "Sol30_Dip6_Hole":"Sol30_Dip0_Hole";
+  } else {
     AliError(Form("Unknown field identifier %d is requested\n",fMap)); 
     return;
   }
@@ -69,7 +75,8 @@ AliMagWrapCheb::AliMagWrapCheb(const char *name, const char *title, Int_t integ,
 //_______________________________________________________________________
 AliMagWrapCheb::AliMagWrapCheb(const AliMagWrapCheb &src):
   AliMagF(src),
-  fMeasuredMap(0)
+  fMeasuredMap(0),
+  fSolenoid(src.fSolenoid)
 {
   if (src.fMeasuredMap) fMeasuredMap = new AliMagFCheb(*src.fMeasuredMap);
 }
@@ -110,6 +117,7 @@ void AliMagWrapCheb::Field(Float_t *xyz, Float_t *b) const
 //_______________________________________________________________________
 AliMagWrapCheb& AliMagWrapCheb::operator=(const AliMagWrapCheb& maps)
 {
+  fSolenoid=maps.fSolenoid;
   if (this != &maps && maps.fMeasuredMap) { 
     if (fMeasuredMap) delete fMeasuredMap;
     fMeasuredMap = new AliMagFCheb(*maps.fMeasuredMap);
