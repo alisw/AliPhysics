@@ -90,7 +90,7 @@ AliFMDRawReader::Exec(Option_t*)
   ReadAdcs(array);
   Int_t nWrite = fTree->Fill();
   AliFMDDebug(1, ("Got a grand total of %d digits, wrote %d bytes to tree", 
-		   array->GetEntries(), nWrite));
+		   array->GetEntriesFast(), nWrite));
 }
 
 
