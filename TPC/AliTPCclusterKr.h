@@ -11,42 +11,46 @@
 //   Origin: Adam Matyja, INP PAN, adam.matyja@ifj.edu.pl
 //-------------------------------------------------------
 
-#include <vector>
-#include <list>
-#include "TObject.h"
+#include "AliCluster.h"
+#include "TObjArray.h"
 #include "AliTPCvtpr.h"
 
+
 //_____________________________________________________________________________
-class AliTPCclusterKr: public TObject{
+class AliTPCclusterKr: public AliCluster{
 public:
   AliTPCclusterKr();
   AliTPCclusterKr(const AliTPCclusterKr & param);//copy constructor
   AliTPCclusterKr &operator = (const AliTPCclusterKr & param); 
-  ~AliTPCclusterKr();
+  virtual ~AliTPCclusterKr();
 
-  void SetCenter();//set center of the cluster weighted by charge
+  virtual void SetCenter();//set center of the cluster weighted by charge
 
-  void SetMax(AliTPCvtpr q){fMax=q;}//set values of max. in cluster
-  void SetADCcluster(Int_t q){fADCcluster=q;}
-  void SetSec(Short_t q){fSec=q;}
-  void SetNPads(Short_t q){fNPads=q;}
-  void SetNRows(Short_t q){fNRows=q;}
-  void SetSize(){fSize=fCluster.size();}
-  void SetCenterX(Double_t q){fCenterX=q;}
-  void SetCenterY(Double_t q){fCenterY=q;}
-  void SetCenterT(Double_t q){fCenterT=q;}
+  virtual void SetMax(AliTPCvtpr q){fMax=q;}//set values of max. in cluster
+  virtual void SetADCcluster(Int_t q){fADCcluster=q;}
+  virtual void SetSec(Short_t q){fSec=q;}
+  virtual void SetNPads(Short_t q){fNPads=q;}
+  virtual void SetNRows(Short_t q){fNRows=q;}
+  virtual void SetSize(){fSize=fCluster->GetEntriesFast();}
+  virtual void SetCenterX(Double_t q){fCenterX=q;}
+  virtual void SetCenterY(Double_t q){fCenterY=q;}
+  virtual void SetCenterT(Double_t q){fCenterT=q;}
+  //void AddDigitToCluster(AliTPCvtpr *q){fCluster.push_back(q);}
+  virtual void AddDigitToCluster(AliTPCvtpr *q){
+    fCluster->AddLast(q);
+    fCluster->Compress();
+  }
 
-  AliTPCvtpr GetMax(){return fMax;}
-  Int_t GetADCcluster(){return  fADCcluster;}
-  Short_t GetSec(){return fSec;}
-  Short_t GetNPads(){return fNPads;}
-  Short_t GetNRows(){return fNRows;}
-  Short_t GetSize(){return fSize;}
-  Double_t GetCenterX(){return fCenterX;}
-  Double_t GetCenterY(){return fCenterY;}
-  Double_t GetCenterT(){return fCenterT;}
-
-  std::vector< AliTPCvtpr*> fCluster;//cluster contents(adc,nt,np,nr)
+  AliTPCvtpr GetMax() const {return fMax;}
+  Int_t GetADCcluster() const {return  fADCcluster;}
+  Short_t GetSec() const {return fSec;}
+  Short_t GetNPads() const {return fNPads;}
+  Short_t GetNRows() const {return fNRows;}
+  Short_t GetSize() const {return fSize;}
+  Double_t GetCenterX() const {return fCenterX;}
+  Double_t GetCenterY() const {return fCenterY;}
+  Double_t GetCenterT() const {return fCenterT;}
+  AliTPCvtpr *GetDigitFromCluster(Int_t i) const {return (AliTPCvtpr*)fCluster->At(i);}
 
 private:
   AliTPCvtpr fMax;//max (ADC,timebin,pad,row) in cluster
@@ -58,8 +62,11 @@ private:
   Double_t fCenterX;// X coordinate of the cluster center in cm
   Double_t fCenterY;// Y coordinate of the cluster center in cm
   Double_t fCenterT;// time coordinate of the cluster center in timebins
+  //std::vector< AliTPCvtpr*> fCluster;//cluster contents(adc,nt,np,nr)
+  TObjArray *fCluster;//cluster contents(adc,nt,np,nr)
 
-  ClassDef(AliTPCclusterKr,2)  // Time Projection Chamber Kr clusters
+
+  ClassDef(AliTPCclusterKr,4)  // Time Projection Chamber Kr clusters
 };
 
 

@@ -34,6 +34,14 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   TTree *mytree = new TTree("Kr","Krypton cluster tree");
 
 
+  Int_t debugLevel=1;
+  if(debugLevel>0){
+    TH1F *histoRow   =new TH1F("histoRow","rows",100,0.,100.);
+    TH1F *histoPad   =new TH1F("histoPad","pads",150,0.,150.);
+    TH1F *histoTime  =new TH1F("histoTime","timebins",100,0.,1000.);
+    TH2F *histoRowPad=new TH2F("histoRowPad","pads-vs-rows" ,150,0.,150.,100,0.,100.);
+  }
+
   AliRawReader *reader = new AliRawReaderRoot(fileName);
   //AliRawReader *reader = new AliRawReaderDate(fileName);
   reader->Reset();
@@ -49,6 +57,14 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   clusters->SetOutput(mytree);
   clusters->SetRecoParam(0);
 
+  if(debugLevel>0){
+    clusters->SetDebugLevel(debugLevel);
+    clusters->SetHistoRow(histoRow   );
+    clusters->SetHistoPad(histoPad   );
+    clusters->SetHistoTime(histoTime  );
+    clusters->SetHistoRowPad(histoRowPad);
+  }
+
 
   AliTPCParamSR *param=new AliTPCParamSR();
   //only for geometry parameters loading - temporarly
@@ -57,6 +73,7 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   //if (!param) {cerr<<"TPC parameters have not been found !\n"; return 4;}
 
   clusters->SetParam(param);
+  clusters->SetOldRCUFormat(kTRUE);
 
   //set cluster finder parameters (from data)
   clusters->SetZeroSup(param->GetZeroSup());//zero suppression parameter
@@ -102,6 +119,25 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   timer.Print();
 
   delete stream;
+
+
+  TCanvas *c2=new TCanvas("c2","title",800,800);
+  c2->SetHighLightColor(2);
+  c2->Range(-458.9552,-2948.238,3296.642,26856.6);
+  c2->SetBorderSize(2);
+  c2->SetLeftMargin(0.15);
+  c2->SetRightMargin(0.06);
+  c2->SetFrameFillColor(0);
+
+  gStyle->SetOptStat(111111);
+  histoRow->Draw();
+  c2->Print("rows.ps");
+  histoPad->Draw();
+  c2->Print("pads.ps");
+  histoTime->Draw();
+  c2->Print("timebins.ps");
+  histoRowPad->Draw();
+  c2->Print("row-pad.ps");
 
   return 0;
 }
