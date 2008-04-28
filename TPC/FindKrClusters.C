@@ -111,7 +111,7 @@ Int_t FindKrClusters(){
     clusters->SetInput(input_tree);
     clusters->SetOutput(output_tree);
     clusters->SetDigArr(digarr);
-    clusters->finderIO();
+    clusters->FinderIO();
 
     tpcl->WriteRecPoints("OVERWRITE");
   }
