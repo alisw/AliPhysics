@@ -113,6 +113,16 @@ Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
 	  altroBunch->SetEndTimeBin( *fBunchData );
 	  //	  altroBunch->SetStartTimeBin(*fBunchData - fBunchSize);
 	  fBunchData -= (altroBunch->GetBunchSize() +1);
+
+	  // PATCH from Per Thomas Hille 250408 mke sure tha
+	  // Data is consistent by cheking the start timebin, should never be negative
+	  if( (int)altroBunch->GetStartTimeBin( ) < 0)
+	    {
+	      //	      printf("ERROR altroBunch->GetStartTimeBin( ) is  %d", (int)altroBunch->GetStartTimeBin( ) );
+	      return kFALSE;
+	    }
+
+
 	  fBunchCounter ++;
 	  return kTRUE;
 	}
@@ -125,8 +135,8 @@ Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
     }
   else
     {
-      //      printf("\nAliAltroData::NextBunch: WARNING, dataset is not complet. 2AAA endmarker is missing ");
-      //      printf("\nfor branch %d, card %d, chip %d, channel %d\n",  GetBranch(), GetCard(), GetChip(), GetChannel());
+      //     printf("\nAliAltroData::NextBunch: WARNING, dataset is not complet. 2AAA endmarker is missing ");
+      //    printf("\nfor branch %d, card %d, chip %d, channel %d\n",  GetBranch(), GetCard(), GetChip(), GetChannel());
       return kFALSE;
     }
 

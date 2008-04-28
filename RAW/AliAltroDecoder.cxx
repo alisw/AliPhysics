@@ -212,12 +212,23 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 	      fOutBufferIndex = fOutBufferIndex - fNAltro10bitWords -(4 - fNAltro10bitWords%4);
 	    }
 
-      
-	  altroDataPtr->SetData( &fOutBuffer[fOutBufferIndex] );
-	  fOutBufferIndex --;
-	  altroDataPtr->SetDataSize( fNAltro10bitWords );
+	  
+	  if(fOutBufferIndex > 0)
+	    {
+	  
+	      //cout << " AliAltroDecoder::NextChannel fOutBufferIndex =" << fOutBufferIndex   << endl;
+	      //	      printf( "AliAltroDecoder::NextChannel fOutBufferIndex = %d", fOutBufferIndex);
+	      altroDataPtr->SetData( &fOutBuffer[fOutBufferIndex] );
+	      fOutBufferIndex --;
+	      altroDataPtr->SetDataSize( fNAltro10bitWords );
+	      return kTRUE;
+	    }
+	  else
+	    {
+	      //TODO write a fatal log message when this happends
+	      return kFALSE;
+	    }
 
-	  return kTRUE;
 
 	}
       else
@@ -296,6 +307,14 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
 {
   // Sets the pointer to the memory block that should be decoded
   // Returns a negative value if an inconsistency in the data is detected
+
+  if(dtaPtr == 0)
+    {
+      printf("\nAliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size) FATAL ERROR, dtaPtr = ZERO !!!!!!!!!!!!\n");
+      printf("\nThis is an user error, please check in your code that you don give a zero pointer to the decoder \n");
+      return -99;
+    }
+
 
   int iRet = 0;
   Int_t tmpTrailerSize;

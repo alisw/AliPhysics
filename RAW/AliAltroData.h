@@ -46,6 +46,7 @@ private:
   Int_t   fBunchCounter;
   Bool_t  fIsComplete;
 
+
   ClassDef(AliAltroData, 0)  // container class for Altro payload
 
 };
