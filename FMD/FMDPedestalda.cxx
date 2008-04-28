@@ -48,7 +48,8 @@ int main(int argc, char **argv)
     return 0;
   }
   
-  if(!secondArgument.IsWhitespace()) {
+  if(!secondArgument.IsWhitespace() && !secondArgument.Contains("--help") 
+     && !secondArgument.Contains("--diagnostics=true")) {
     std::cout<<"Second argument wrong. Use --help"<<std::endl;
     return -1;
   }
