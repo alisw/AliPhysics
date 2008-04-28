@@ -10,8 +10,6 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h \
-		OnlineAnalysis/AliHLTMUONTriggerCalibratorComponent.h \
-		OnlineAnalysis/AliHLTMUONTrackerCalibratorComponent.h \
 		utils/AliHLTMUONEmptyEventFilterComponent.h \
 		AliHLTMUONRecHit.h \
 		AliHLTMUONTriggerRecord.h \

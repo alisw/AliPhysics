@@ -29,8 +29,6 @@
 #include "AliHLTMUONHitReconstructorComponent.h"
 #include "AliHLTMUONTriggerReconstructorComponent.h"
 #include "AliHLTMUONMansoTrackerFSMComponent.h"
-#include "AliHLTMUONTriggerCalibratorComponent.h"
-#include "AliHLTMUONTrackerCalibratorComponent.h"
 #include "AliHLTMUONEmptyEventFilterComponent.h"
 #include "AliRunLoader.h"
 
@@ -120,8 +118,6 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 	pHandler->AddComponent(new AliHLTMUONHitReconstructorComponent);
 	pHandler->AddComponent(new AliHLTMUONTriggerReconstructorComponent);
 	pHandler->AddComponent(new AliHLTMUONMansoTrackerFSMComponent);
-	pHandler->AddComponent(new AliHLTMUONTriggerCalibratorComponent);
-	pHandler->AddComponent(new AliHLTMUONTrackerCalibratorComponent);
 	pHandler->AddComponent(new AliHLTMUONEmptyEventFilterComponent);
 	return 0;
 }
