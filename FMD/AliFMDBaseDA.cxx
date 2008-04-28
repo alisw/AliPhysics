@@ -134,7 +134,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
       //std::cout<<"In event # "<< *(reader->GetEventId()) << " with " <<digitArray->GetEntries()<<" digits     \r"<<std::flush;
       
       
-      for(Int_t i = 0; i<digitArray->GetEntries();i++) {
+      for(Int_t i = 0; i<digitArray->GetEntriesFast();i++) {
 	AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitArray->At(i));
 	FillChannels(digit);
       }
