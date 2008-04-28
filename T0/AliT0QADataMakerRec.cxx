@@ -173,14 +173,14 @@ void AliT0QADataMakerRec::InitRecPoints()
       qtcname += i;
       fhRecCFD[i] = new TH1F(timename.Data(), timename.Data(),100,2100,2800);
      Add2RecPointsList ( fhRecCFD[i],i);
-      fhRecLEDAmp[i] = new TH1F(ampname.Data(), ampname.Data(),100,3000,4000);
+      fhRecLEDAmp[i] = new TH1F(ampname.Data(), ampname.Data(),100,0, 100);
     Add2RecPointsList ( fhRecLEDAmp[i],i+24);
-      fhRecQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,0,10000);
+      fhRecQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,0,100);
     Add2RecPointsList ( fhRecQTC[i],i+48);
      }
    
-  TH1F *fhRecEff = new TH1F("hRecEff","Efficiency rec.points",25,-0.5,24.5);
-  Add2RecPointsList ( fhRecEff,72);
+  TH1F *fhOnlineMean = new TH1F("hOnlineMean","online mean",100,2400,2500);
+  Add2RecPointsList ( fhOnlineMean,72);
   TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,2400,2500);
   Add2RecPointsList( fhRecMean,73);
   //  printf(" !!!!!!  AliT0QADataMakerRec::InitRecPoints() ended\n");
@@ -191,13 +191,13 @@ void AliT0QADataMakerRec::InitRecPoints()
 void AliT0QADataMakerRec::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
-  ///  printf(" !!!!!  AliT0QADataMakerESD::InitRecPoints() started\n");
+  printf(" !!!!!  AliT0QADataMakerESD::InitESD() started\n");
   TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,2400,2500);
   Add2ESDsList(fhESDMean, 0) ;
- TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
+  TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
   Add2ESDsList(fhESDVertex, 1) ;
-
-  //  printf(" !!!!!!  AliT0QADataMakerRec::InitESD() ended\n");
+  
+  printf(" !!!!!!  AliT0QADataMakerRec::InitESD() ended\n");
 
 }
 
@@ -288,7 +288,8 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
     
     //  if(frecpoints -> GetTime(i) > 0) fhRecEff->Fill(i);
   }
-     GetRecPointsData(72) ->Fill(frecpoints->GetMeanTime());
+     GetRecPointsData(72) ->Fill(frecpoints->GetOnlineMean());
+     GetRecPointsData(73) ->Fill(frecpoints->GetMeanTime());
      //  printf(" !!!!!  AliT0QADataMakerRec::MakeRecPoints() end\n");
   
 }
@@ -297,7 +298,7 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
 void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
-  //  printf(" !!!!!  AliT0QADataMakerRec::MakeESD() started\n");
+  printf(" !!!!!  AliT0QADataMakerRec::MakeESD() started\n");
 
   GetESDsData(0) -> Fill(esd->GetT0());
   GetESDsData(1)-> Fill(esd->GetT0zVertex());

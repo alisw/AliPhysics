@@ -171,12 +171,13 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       //LED
       Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
       Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
+      Float_t ampLED = qt/Float_t(mv2MIP);
       AliDebug(1,Form(" ipmt %i QTC %f ch QTC in MIP %f, time in chann %f (led-cfd) %f in MIPs %f",
-		      ipmt, adc[ipmt], adc[ipmt]/Float_t(mv2MIP), time[ipmt],sl, qt/Float_t(mv2MIP)));
+		      ipmt, adc[ipmt], adc[ipmt]/Float_t(mv2MIP), time[ipmt],sl,ampLED ));
 
       frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]/Float_t(mv2MIP));
-      frecpoints->SetAmpLED(ipmt,qt/Float_t(mv2MIP));
+      frecpoints->SetAmpLED(ipmt,ampLED);
     }
     else {
       time[ipmt] = 0;
