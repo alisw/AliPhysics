@@ -22,15 +22,16 @@
 //-----------------------------------------------------------------
 
 #include "AliTPCclusterKr.h"
-#include "TObject.h"
-#include <vector>
+#include "AliCluster.h"
 #include "AliTPCvtpr.h"
+#include "TObjArray.h"
 
 ClassImp(AliTPCclusterKr)
 
 
 AliTPCclusterKr::AliTPCclusterKr()
-:fMax(),
+:AliCluster(),
+ fMax(),
  fADCcluster(0),
  fSec(0),
  fNPads(0),
@@ -38,15 +39,18 @@ AliTPCclusterKr::AliTPCclusterKr()
  fSize(0),
  fCenterX(0),
  fCenterY(0),
- fCenterT(0)
+ fCenterT(0),
+ fCluster(0)
 {
 //
 // default constructor
 //
+  fCluster=new TObjArray();
 }
 
 AliTPCclusterKr::AliTPCclusterKr(const AliTPCclusterKr &param)
-:fMax(),
+:AliCluster(param),
+ fMax(),
  fADCcluster(0),
  fSec(0),
  fNPads(0),
@@ -54,7 +58,8 @@ AliTPCclusterKr::AliTPCclusterKr(const AliTPCclusterKr &param)
  fSize(0),
  fCenterX(0),
  fCenterY(0),
- fCenterT(0)
+ fCenterT(0),
+ fCluster(0)
 {
 //
 // copy constructor
@@ -64,25 +69,32 @@ AliTPCclusterKr::AliTPCclusterKr(const AliTPCclusterKr &param)
   fNPads = param.fNPads;
   fNRows = param.fNRows;
   fMax = param.fMax;
-  fCluster = param.fCluster;
-  fSize = param.fSize;
+  //  fCluster = param.fCluster;
   fCenterX = param.fCenterX;
   fCenterY = param.fCenterY;
   fCenterT = param.fCenterT;
+  fCluster=new TObjArray(*(param.fCluster));
+  fSize = param.fSize;
 } 
 
 AliTPCclusterKr &AliTPCclusterKr::operator = (const AliTPCclusterKr & param)
 {
+  //
+  // assignment operator
+  // 
+  (AliCluster&)(*this) = (AliCluster&)param;
   fADCcluster = param.fADCcluster;
   fSec  = param.fSec ;
   fNPads = param.fNPads;
   fNRows = param.fNRows;
   fMax = param.fMax;
-  fCluster=param.fCluster;
-  fSize=param.fSize;
+  //  fCluster=param.fCluster;
   fCenterX = param.fCenterX;
   fCenterY = param.fCenterY;
   fCenterT = param.fCenterT;
+  delete fCluster;
+  fCluster=new TObjArray(*(param.fCluster));
+  fSize=param.fSize;
   return (*this);
 }
 
@@ -91,23 +103,31 @@ AliTPCclusterKr::~AliTPCclusterKr()
   //
   // destructor
   //
+  if(fCluster)delete fCluster;
+  fCluster=0;
 }
 
 ////____________________________________________________________________________
 void AliTPCclusterKr::SetCenter(){
+  //
+  // calculate geometrical center of the cluster
+  //
   Double_t rX=0;
   Double_t rY=0;
   Double_t rT=0;
 
   Short_t adc;
   fADCcluster=0;
-  for( std::vector<AliTPCvtpr*>::iterator iclus  = fCluster.begin();
-       iclus != fCluster.end(); ++iclus ) {
-    adc = (*iclus)->GetAdc();
+  for(Int_t iter = 0; iter < fCluster->GetEntriesFast(); ++iter) {
+    AliTPCvtpr *iclus=(AliTPCvtpr *)fCluster->At(iter);
+
+    //for( std::vector<AliTPCvtpr*>::iterator iclus  = fCluster.begin();
+    //iclus != fCluster.end(); ++iclus ) {
+    adc = (iclus)->GetAdc();
     fADCcluster+=adc;
-    rX += ((*iclus)->GetX() * adc);
-    rY += ((*iclus)->GetY() * adc);
-    rT += ((*iclus)->GetTime() * adc);
+    rX += ((iclus)->GetX() * adc);
+    rY += ((iclus)->GetY() * adc);
+    rT += ((iclus)->GetTime() * adc);
   }
   fCenterX=rX/fADCcluster;
   fCenterY=rY/fADCcluster;
