@@ -29,16 +29,17 @@ private:
   virtual void  InitRecPoints();  
   virtual void  InitRaws();	  
   virtual void  InitESDs();	 
-  virtual void  MakeHits(TClonesArray * hits);       
+  virtual void  MakeHits(TClonesArray * hits = 0);       
   virtual void  MakeHits(TTree * hits);       
-  virtual void  MakeDigits(TClonesArray * digits);   
+  virtual void  MakeDigits(TClonesArray * digits  = 0);   
   virtual void  MakeDigits(TTree * digits);   
-  virtual void  MakeSDigits(TClonesArray * sdigits) {;} 
+  virtual void  MakeSDigits(TClonesArray * /*sdigits*/) {;} 
+  virtual void  MakeSDigits(TTree * /*sdigTree*/) {;}
   virtual void  MakeRecPoints(TTree * clusters) {;}  
   virtual void  MakeRaws(AliRawReader* rawReader);
   virtual void  MakeESDs(AliESDEvent * esd);	     
   virtual void  StartOfDetectorCycle();
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+  virtual void  EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   //
   TClonesArray * fHits; 	//! Array containing ZDC hits
   TClonesArray * fDigits; 	//! Array containing ZDC digits

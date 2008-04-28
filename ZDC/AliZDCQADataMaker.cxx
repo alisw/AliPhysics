@@ -35,14 +35,20 @@ ClassImp(AliZDCQADataMaker)
            
 //____________________________________________________________________________ 
   AliZDCQADataMaker::AliZDCQADataMaker() : 
-  AliQADataMaker(AliQA::GetDetName(AliQA::kZDC), "ZDC Quality Assurance Data Maker")
+      AliQADataMaker(AliQA::GetDetName(AliQA::kZDC), "ZDC Quality Assurance Data Maker"),
+      fHits("AliZDCHit", 1000),
+      fDigits("AliZDCDigit", 1000)
+
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
 AliZDCQADataMaker::AliZDCQADataMaker(const AliZDCQADataMaker& qadm) :
-  AliQADataMaker() 
+  AliQADataMaker(), 
+    fHits("AliZDCHit", 1000),
+    fDigits("AliZDCDigit", 1000) 
+ 
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()); 
@@ -265,24 +271,18 @@ void AliZDCQADataMakerRec::InitESDs()
   
 
 //____________________________________________________________________________
-void AliZDCQADataMakerSim::MakeHits(TClonesArray * data)
+void AliZDCQADataMakerSim::MakeHits(TClonesArray */*data*/)
 {
   //filling QA histos for Hits
   //
-  fHits = dynamic_cast<TClonesArray *>(data); 
-  if(!fHits){
-    AliError("Wrong type of hits container"); 
-  } 
-  else {
-    TIter next(fHits); 
-    AliZDCHit * hit; 
-    while((hit = dynamic_cast<AliZDCHit *>(next()))){
-      if(hit->GetVolume(0)==1) GetHitsData(0)->Fill(hit->GetXImpact(),hit->GetYImpact());
-      else if(hit->GetVolume(0)==2) GetHitsData(1)->Fill(hit->GetXImpact(), hit->GetYImpact());
-      else if(hit->GetVolume(0)==4) GetHitsData(2)->Fill(hit->GetXImpact(), hit->GetYImpact());
-      else if(hit->GetVolume(0)==5) GetHitsData(3)->Fill(hit->GetXImpact(), hit->GetYImpact());
-    }
-  } 
+  TIter next(&fHits); 
+  AliZDCHit * hit; 
+  while((hit = dynamic_cast<AliZDCHit *>(next()))){
+    if(hit->GetVolume(0)==1) GetHitsData(0)->Fill(hit->GetXImpact(),hit->GetYImpact());
+    else if(hit->GetVolume(0)==2) GetHitsData(1)->Fill(hit->GetXImpact(), hit->GetYImpact());
+    else if(hit->GetVolume(0)==4) GetHitsData(2)->Fill(hit->GetXImpact(), hit->GetYImpact());
+    else if(hit->GetVolume(0)==5) GetHitsData(3)->Fill(hit->GetXImpact(), hit->GetYImpact());
+  }
 
 }
 
@@ -323,7 +323,7 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
 }
 
 //____________________________________________________________________________
-void AliZDCQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliZDCQADataMakerSim::MakeDigits(TClonesArray * /*digits*/)
 {
   // makes data from Digits
   //
@@ -415,8 +415,6 @@ void AliZDCQADataMakerSim::MakeDigits(TClonesArray * digits)
 void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
 {
    // makes data from Digit Tree
-   fDigits = new TClonesArray("AliZDCDigit", 1000); 
-   //
    TBranch * branch = digitTree->GetBranch("ZDC");
    if(!branch){
       AliError("ZDC branch in Digit Tree not found"); 
