@@ -14,7 +14,7 @@ ln -si $ALICE_ROOT/test/QA/DB.tgz DB.tgz
 root -b -q $ALICE_ROOT/test/QA/simrun.C --run $1
 cd $WORK/QATest/data
 rm -f *.root
-ln -si $ALICE_ROOT/test/QA/geometry.root geometry.root
+rm -f DB.tgz
 cp  $ALICE_ROOT/test/QA/rawqa.C .
 alienaliroot -b > rawqa.log 2>&1 << EOF
 .x  $ALICE_ROOT/test/QA/rootlogon.C
