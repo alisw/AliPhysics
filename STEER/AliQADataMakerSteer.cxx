@@ -440,7 +440,8 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const char 
 	} 
 	// Initialize all QA data makers for all detectors
 	fRunNumber = AliCDBManager::Instance()->GetRun() ; 
-	AliGeomManager::LoadGeometry() ; 
+	if ( !  AliGeomManager::GetGeometry() ) 
+		AliGeomManager::LoadGeometry() ; 
 	for (Int_t i = 0; i < fQADataMakers.GetEntriesFast() ; i++) {
 		AliQADataMaker * qadm = static_cast<AliQADataMaker *>(fQADataMakers.At(i));
 		qadm->Init(taskIndex, fRunNumber, GetQACycles(qadm->GetUniqueID())) ;
