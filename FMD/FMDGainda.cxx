@@ -45,7 +45,8 @@ int main(int argc, char **argv)
     std::cout<<"Usage: filename --diagnostics=true/false . --help this help"<<std::endl;
     return 0;
   }
-  if(!secondArgument.IsWhitespace()) {
+  if(!secondArgument.IsWhitespace()&& !secondArgument.Contains("--help") 
+     && !secondArgument.Contains("--diagnostics=true")) {
     std::cout<<"Second argument wrong. Use --help"<<std::endl;
     return -1;
   }
