@@ -1,0 +1,68 @@
+Productions for the first physics studies (25/04/2008):
+Each run contains 300000 events, 200000 for calculation of the correction maps, 100000 used as "real" data
+
+Configurations:
+-------------
+10 TeV:
+- field 0T
+  - Pythia: min. bias ATLAS tuning.
+  - Phojet: default parameters fo min. bias simulation.
+- field 0.5T
+  - Pythia
+  - Phojet
+
+
+
+900 GeV:
+- field 0T
+  - Pythia: ATLAS or default tuning (to be investigated)
+- field 0.5T
+
+Beam parameters:
+- energy: 900 GeV, 10 TeV
+- beta* 10m
+
+Field:
+- new measured field
+
+Detectors:
+- ITS: v11Hybrid
+- TPC
+- TRD: modules 0,8,9,17 (around 3h and 9h). Enumerated from X in positive direction
+  - Pythia
+- TOF: full
+- HMPID
+- PHOS: one module/all modules -> no possibility for one module, to be implemented.
+- EMCAL: no EMCAL
+- MUON
+- T0
+- VZERO
+- FMD
+- PMD: 6 out of 26 modules -> switch off in the first run
+- ZDC
+- ACORDE
+
+Simulation/reconstruction
+-------------------------
+
+Mis-alignment:
+- full misalignment in the simulation, ideal in  the reconstruction
+
+Mis-calibration:
+- full or residual: they are very similar, however do as above.
+
+What do we produce in the reconstruction?
+- ESD
+- ESD friends
+- AODs from the analysis train
+
+Which files do we keep?
+- galice.root
+- geometry.root
+- Kinematics.root
+- TrackReferences.root
+- Rec. points for visualization
+- AliESDs.root
+- AliESDfriends.root
+- tags
+- RAW data
