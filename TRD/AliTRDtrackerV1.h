@@ -122,6 +122,7 @@ protected:
 	AliTRDtrackV1* MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
   Int_t          PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
 	Int_t          SetTracklet(AliTRDseedV1 *tracklet);
+	Bool_t         UpdateTracklet(AliTRDseedV1 *tracklet, Int_t index);
 
 private:
 	AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
