@@ -53,6 +53,9 @@ public:
   // check particle in array 
   Bool_t IsPdgParticle(Int_t pdgcode=0) const;
 
+  // check particle in array 
+  Bool_t IsPosPdgParticle(Int_t pdgcode=0) const;
+
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* list);
 

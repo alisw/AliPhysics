@@ -36,7 +36,6 @@ public :
 
   // Get output folder for analysed histograms
   virtual TFolder* GetAnalysisFolder() = 0;
-  //virtual TFolder* CreateFolder(TString name="",TString title="") = 0;
 
   ClassDef(AliComparisonObject,1);
 };

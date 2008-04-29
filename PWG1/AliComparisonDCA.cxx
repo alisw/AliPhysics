@@ -13,11 +13,12 @@
 /*
  
   // after running comparison task, read the file, and get component
-  gSystem->Load("libPWG1.so");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
+  LoadMyLibs();
   TFile f("Output.root");
   AliComparisonDCA * compObj = (AliComparisonDCA*)f.Get("AliComparisonDCA");
 
-  // analyse comparison data
+  // Analyse comparison data
   compObj->Analyse();
 
   // the output histograms/graphs will be stored in the folder "folderDCA" 
@@ -87,12 +88,6 @@ AliComparisonDCA::AliComparisonDCA():
   fAnalysisFolder(0)
 {
   Init();
-
-  // vertex (0,0,0)
-  fVertex = new AliESDVertex();
-  fVertex->SetXv(0.0);
-  fVertex->SetYv(0.0);
-  fVertex->SetZv(0.0);
 }
 
 //_____________________________________________________________________________
@@ -152,6 +147,12 @@ void AliComparisonDCA::Init()
  
   // init folder
   fAnalysisFolder = CreateFolder("folderDCA","Analysis DCA Folder");
+
+  // vertex (0,0,0)
+  fVertex = new AliESDVertex();
+  fVertex->SetXv(0.0);
+  fVertex->SetYv(0.0);
+  fVertex->SetZv(0.0);
 }
 
 //_____________________________________________________________________________
@@ -265,12 +266,7 @@ void AliComparisonDCA::Analyse()
   TGraph2D *gr=0;
   TGraph * gr0=0;
   AliComparisonDCA * comp=this;
-  TFolder *folder = comp->GetAnalysisFolder();
-
-  // recreate folder every time
-  if(folder) delete folder;
-  folder = CreateFolder("folderDCA","Analysis DCA Folder");
-  folder->SetOwner();
+  TObjArray *aFolderObj = new TObjArray;
 
   // write results in the folder 
   // Canvas to draw analysed histograms
@@ -287,7 +283,7 @@ void AliComparisonDCA::Analyse()
   gr0->Draw("Al*");
 
   //if(folder) folder->Add(gr0->GetHistogram());
-  if(folder) folder->Add(gr0);
+  aFolderObj->Add(gr0);
   //
   c->cd(2);
   gr = AliMathBase::MakeStat2D(comp->fD0TanSPtB1,4,2,5); 
@@ -297,11 +293,50 @@ void AliComparisonDCA::Analyse()
   gr->SetName("DCAResolSPTTan");
   gr->GetHistogram()->Draw("colz");
 
-  if(folder) folder->Add(gr->GetHistogram());
+  aFolderObj->Add(gr->GetHistogram());
 
-  // set pointer to fAnalysisFolder
-  fAnalysisFolder = folder;
+  // export objects to analysis folder
+  fAnalysisFolder = ExportToFolder(aFolderObj);
+
+  // delete only TObjArray
+  if(aFolderObj) delete aFolderObj;
 }
+
+//_____________________________________________________________________________
+TFolder* AliComparisonDCA::ExportToFolder(TObjArray * array) 
+{
+  // recreate folder avery time and export objects to new one
+  //
+  AliComparisonDCA * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
+
+  TString name, title;
+  TFolder *newFolder = 0;
+  Int_t i = 0;
+  Int_t size = array->GetSize();
+
+  if(folder) { 
+     // get name and title from old folder
+     name = folder->GetName();  
+     title = folder->GetTitle();  
+
+	 // delete old one
+     delete folder;
+
+	 // create new one
+     newFolder = CreateFolder(name.Data(),title.Data());
+     newFolder->SetOwner();
+
+	 // add objects to folder
+     while(i < size) {
+	   newFolder->Add(array->At(i));
+	   i++;
+	 }
+  }
+
+return newFolder;
+}
+
 
 //_____________________________________________________________________________
 TFolder* AliComparisonDCA::CreateFolder(TString name,TString title) { 

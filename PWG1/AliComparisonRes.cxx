@@ -552,13 +552,9 @@ void AliComparisonRes::Analyse(){
   TH1::AddDirectory(kFALSE);
 
   AliComparisonRes * comp=this;
-  TFolder *folder = comp->GetAnalysisFolder();
+  //TFolder *folder = comp->GetAnalysisFolder();
   TH1F *hiss=0;
-
-  // recreate folder every time
-  if(folder) delete folder;
-  folder = CreateFolder("folderRes","Analysis Res Folder");
-  folder->SetOwner();
+  TObjArray *aFolderObj = new TObjArray;
 
   // write results in the folder 
 
@@ -571,7 +567,7 @@ void AliComparisonRes::Analyse(){
   hiss->Draw(); 
   hiss->SetName("CptResolTan");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   //
   hiss = comp->MakeResol(comp->fCPhiResolTan,1,0);
@@ -580,7 +576,7 @@ void AliComparisonRes::Analyse(){
   hiss->Draw();
   hiss->SetName("PhiResolTan");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCTanResolTan,1,0);
   hiss->SetXTitle("Tan(#theta)");
@@ -588,7 +584,7 @@ void AliComparisonRes::Analyse(){
   hiss->Draw();
   hiss->SetName("ThetaResolTan");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCPtPullTan,1,0);
   hiss->SetXTitle("Tan(#theta)");
@@ -596,171 +592,209 @@ void AliComparisonRes::Analyse(){
   hiss->Draw();
   hiss->SetName("CptPullTan");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fC1Pt2ResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
   hiss->SetName("C1Pt2ResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fC1Pt2ResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
   hiss->SetName("C1Pt2ResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCYResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CYResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fCYResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CYResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCZResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CZResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fCZResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CZResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCPhiResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CPhiResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fCPhiResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CPhiResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fCThetaResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CThetaResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fCThetaResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("CThetaResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   //
   hiss = comp->MakeResol(comp->f1Pt2ResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
   hiss->SetName("OnePt2ResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->f1Pt2ResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
   hiss->SetName("OnePt2ResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fYResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("YResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fYResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("YResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fZResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("ZResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fZResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("ZResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fPhiResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("PhiResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fPhiResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("PhiResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fThetaResolS1PtTPC,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("ThetaResolS1PtTPC");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
   hiss = comp->MakeResol(comp->fThetaResolS1PtTPCITS,1,0);
-  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetXTitle("#sqrt(1/mcp_{t})");
   hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
   hiss->Draw();
   hiss->SetName("ThetaResolS1PtTPCITS");
   
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
 
-  // set pointer to fAnalysisFolder
-  fAnalysisFolder = folder;
+  // export objects to analysis folder
+  fAnalysisFolder = ExportToFolder(aFolderObj);
+
+  // delete only TObjArray
+  if(aFolderObj) delete aFolderObj;
+}
+
+//_____________________________________________________________________________
+TFolder* AliComparisonRes::ExportToFolder(TObjArray * array) 
+{
+  // recreate folder avery time and export objects to new one
+  //
+  AliComparisonRes * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
+
+  TString name, title;
+  TFolder *newFolder = 0;
+  Int_t i = 0;
+  Int_t size = array->GetSize();
+
+  if(folder) { 
+     // get name and title from old folder
+     name = folder->GetName();  
+     title = folder->GetTitle();  
+
+	 // delete old one
+     delete folder;
+
+	 // create new one
+     newFolder = CreateFolder(name.Data(),title.Data());
+     newFolder->SetOwner();
+
+	 // add objects to folder
+     while(i < size) {
+	   newFolder->Add(array->At(i));
+	   i++;
+	 }
+  }
+
+return newFolder;
 }
 
 //_____________________________________________________________________________
