@@ -62,6 +62,18 @@ AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
 	fDetectorDirName = GetName() ; 
 }
 
+//____________________________________________________________________________ 
+AliQADataMakerRec::~AliQADataMakerRec()
+{
+	//dtor: delete the TObjArray and thei content
+	fESDsQAList->Delete() ;     
+	fRawsQAList->Delete() ;
+	fRecPointsQAList->Delete() ; 
+	delete fESDsQAList ;     
+	delete fRawsQAList ;
+	delete fRecPointsQAList ; 
+}
+
 //__________________________________________________________________
 AliQADataMakerRec& AliQADataMakerRec::operator = (const AliQADataMakerRec& qadm )
 {
@@ -140,16 +152,22 @@ TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t c
 		SetCycle(cycles) ;  
 	
 	if ( task == AliQA::kRAWS ) {
-		fRawsQAList = new TObjArray(100) ;	 
-		InitRaws() ;
+		if (! fRawsQAList ) { 
+			fRawsQAList = new TObjArray(100) ;	 
+			InitRaws() ;
+		}
 		rv = fRawsQAList ;
 	} else if ( task == AliQA::kRECPOINTS ) {
-		fRecPointsQAList = new TObjArray(100) ; 
-		InitRecPoints() ;
+		if ( ! fRecPointsQAList ) {
+			fRecPointsQAList = new TObjArray(100) ; 
+			InitRecPoints() ;
+		}
 		rv = fRecPointsQAList ;
 	} else if ( task == AliQA::kESDS ) {
-		fESDsQAList = new TObjArray(100) ; 
-		InitESDs() ;
+		if ( ! fESDsQAList ) {
+			fESDsQAList = new TObjArray(100) ; 
+			InitESDs() ;
+		}
 		rv = fESDsQAList ;
 	}
 	

@@ -26,7 +26,7 @@ public:
 	AliQADataMakerSim(const char * name="", const char * title="") ;          // ctor
 	AliQADataMakerSim(const AliQADataMakerSim& qadm) ;   
 	AliQADataMakerSim& operator = (const AliQADataMakerSim& qadm) ;
-	virtual ~AliQADataMakerSim() {;} // dtor
+	virtual ~AliQADataMakerSim() ; // dtor
   
 	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index)    { return Add2List(hist, index, fDigitsQAList) ; }
 	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/)      { return -1 ; } 

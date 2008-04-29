@@ -58,6 +58,18 @@ AliQADataMakerSim::AliQADataMakerSim(const AliQADataMakerSim& qadm) :
   fDetectorDirName = GetName() ; 
 }
 
+//____________________________________________________________________________ 
+AliQADataMakerSim::~AliQADataMakerSim()
+{
+	//dtor: delete the TObjArray and thei content
+	fDigitsQAList->Delete() ;     
+	fHitsQAList->Delete() ;
+	fSDigitsQAList->Delete() ; 
+	delete fDigitsQAList ;     
+	delete fHitsQAList ;
+	delete fSDigitsQAList ; 
+}
+
 //__________________________________________________________________
 AliQADataMakerSim& AliQADataMakerSim::operator = (const AliQADataMakerSim& qadm )
 {
@@ -145,16 +157,22 @@ TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t c
 		SetCycle(cycles) ;  
 	TObjArray * rv = NULL ; 
 	if ( task == AliQA::kHITS ) {
-		fHitsQAList = new TObjArray(100) ;	 
-		InitHits() ;
+		if ( ! fHitsQAList ) {
+			fHitsQAList = new TObjArray(100) ;	 
+			InitHits() ;
+		}
 		rv = fHitsQAList ;
 	} else if ( task == AliQA::kSDIGITS ) {
-		fSDigitsQAList = new TObjArray(100) ; 
-		InitSDigits() ;
+		if ( ! fSDigitsQAList ) {
+			fSDigitsQAList = new TObjArray(100) ; 
+			InitSDigits() ;
+		}
 		rv = fSDigitsQAList ;
    } else if ( task == AliQA::kDIGITS ) {
-	   fDigitsQAList = new TObjArray(100); 
-	   InitDigits() ;
+	   if ( ! fDigitsQAList ) {
+		   fDigitsQAList = new TObjArray(100) ;
+		   InitDigits() ;
+	   }
 	   rv =  fDigitsQAList ;
    }
   

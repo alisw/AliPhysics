@@ -28,7 +28,7 @@ public:
 	AliQADataMakerRec(const char * name="", const char * title="") ;          // ctor
 	AliQADataMakerRec(const AliQADataMakerRec& qadm) ;   
 	AliQADataMakerRec& operator = (const AliQADataMakerRec& qadm) ;
-	virtual ~AliQADataMakerRec() {;} // dtor
+	virtual ~AliQADataMakerRec() ; // dtor
   
  	virtual Int_t Add2DigitsList(TH1 * /*hist*/, const Int_t /*index*/)    { return -1 ; } 
 	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fESDsQAList) ; }
