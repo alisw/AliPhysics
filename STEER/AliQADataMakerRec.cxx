@@ -67,15 +67,18 @@ AliQADataMakerRec::~AliQADataMakerRec()
 {
 	//dtor: delete the TObjArray and thei content
 	if ( fESDsQAList ) {
-		fESDsQAList->Delete() ;     
+		if ( fESDsQAList->IsOwner() ) 
+			fESDsQAList->Delete() ;     
 		delete fESDsQAList ;     
 	}
 	if ( fRawsQAList ) {
-		fRawsQAList->Delete() ;
+		if ( fRawsQAList->IsOwner() ) 
+			fRawsQAList->Delete() ;
 		delete fRawsQAList ;
 	}
 	if ( fRecPointsQAList ) {
-		fRecPointsQAList->Delete() ; 
+		if ( fRecPointsQAList->IsOwner() ) 
+			fRecPointsQAList->Delete() ; 
 		delete fRecPointsQAList ; 
 	}
 }

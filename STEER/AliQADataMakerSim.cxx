@@ -63,15 +63,18 @@ AliQADataMakerSim::~AliQADataMakerSim()
 {
 	//dtor: delete the TObjArray and thei content
 	if ( fDigitsQAList ) { 
-		fDigitsQAList->Delete() ;     
+		if ( fDigitsQAList->IsOwner() )
+			fDigitsQAList->Delete() ;     
 		delete fDigitsQAList ;     
 	}
 	if ( fHitsQAList ) {
-		fHitsQAList->Delete() ;
+		if ( fHitsQAList->IsOwner() ) 
+			fHitsQAList->Delete() ;
 		delete fHitsQAList ;
 	}
 	if ( fSDigitsQAList ) { 
-		fSDigitsQAList->Delete() ; 
+		if ( fSDigitsQAList->IsOwner() ) 
+			fSDigitsQAList->Delete() ; 
 		delete fSDigitsQAList ; 
 	}
 }
