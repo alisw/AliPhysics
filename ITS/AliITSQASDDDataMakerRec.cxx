@@ -87,7 +87,7 @@ fDDLModuleMap(0)
 //____________________________________________________________________________ 
 AliITSQASDDDataMakerRec::~AliITSQASDDDataMakerRec(){
   // destructor
-	if(fDDLModuleMap) delete fDDLModuleMap;
+  // 	if(fDDLModuleMap) delete fDDLModuleMap;
 }
 //__________________________________________________________________
 AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDDataMakerRec& qac )
@@ -119,13 +119,17 @@ void AliITSQASDDDataMakerRec::InitRaws()
   fRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
 
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
+  Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
+
   if( !ddlMapSDD){
     AliError("Calibration object retrieval failed! SDD will not be processed");
     fDDLModuleMap = NULL;
     return;
   }  
   fDDLModuleMap = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
+  if(!cacheStatus)ddlMapSDD->SetObject(NULL);
   ddlMapSDD->SetOwner(kTRUE);
+  if(!cacheStatus)delete ddlMapSDD;
  
   Int_t lay, lad, det;
   Int_t LAY = -1;  //, LAD = -1;
