@@ -11,7 +11,7 @@
 class TH1F ; 
 class TH1I ; 
 class TList ; 
-
+class TClonesArray;
 //_____________________________________________________________________
 // This class implements the AliQADataMakerSim for the FMD. Some
 // functions are not implemented yet.
@@ -25,7 +25,7 @@ class AliFMDQADataMakerSim: public AliQADataMakerSim {
  public:
   AliFMDQADataMakerSim() ;          // ctor
   AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) ;   
-  virtual ~AliFMDQADataMakerSim() {} // dtor
+  virtual ~AliFMDQADataMakerSim();  // dtor
   
  private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list);
@@ -41,6 +41,9 @@ class AliFMDQADataMakerSim: public AliQADataMakerSim {
   // virtual void   MakeSDigits(TClonesArray * sigits) ; 
   // virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
+  
+  TClonesArray* fDigitsArray;
+  TClonesArray* fHitsArray;
   
   ClassDef(AliFMDQADataMakerSim,0)  // description 
     };

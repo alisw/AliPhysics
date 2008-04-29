@@ -53,6 +53,8 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec() :
 		    "FMD Quality Assurance Data Maker")
 {
   // ctor
+  fDigitsArray = new TClonesArray("AliFMDDigit", 1000) ; 
+  fRecPointsArray = new TClonesArray("AliFMDRecPoints", 1000) ; 
 }
 
 //_____________________________________________________________________
@@ -63,6 +65,12 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& /*qadm*/)
   // Parameters: 
   //    qadm    Object to copy from
   
+}
+//_____________________________________________________________________
+AliFMDQADataMakerRec::~AliFMDQADataMakerRec()
+{
+  delete fDigitsArray;
+  delete fRecPointsArray;
 }
 
 
@@ -155,9 +163,9 @@ void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
     AliError("FMD Digit object not found!!") ;
     return;
   }
-  for(Int_t i=0;i<digits->GetEntries();i++) {
+  for(Int_t i=0;i<fDigitsArray->GetEntriesFast();i++) {
     //Raw ADC counts
-    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray->At(i));
     GetDigitsData(0)->Fill(digit->Counts());
   }
 }
@@ -166,16 +174,16 @@ void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   
-  TClonesArray* digits = new TClonesArray("AliFMDDigit", 1000); 
+  fDigitsArray->Clear();
   TBranch*      branch = digitTree->GetBranch("FMD");
   if (!branch) {
     AliWarning("FMD branch in Digit Tree not found") ; 
     return;
   } 
   
-  branch->SetAddress(&digits);
+  branch->SetAddress(&fDigitsArray);
   branch->GetEntry(0); 
-  MakeDigits(digits); 
+  MakeDigits(fDigitsArray); 
 }
 
 //_____________________________________________________________________
@@ -188,23 +196,22 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* /*rawReader*/)
 void AliFMDQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
   // makes data from RecPoints
+  fRecPointsArray->Clear();
   TBranch *fmdbranch = clustersTree->GetBranch("FMD");
   if (!fmdbranch) { 
     AliError("can't get the branch with the FMD recpoints !");
     return;
   }
   
-  TClonesArray * fmdrecpoints = new TClonesArray("AliFMDRecPoint", 1000);
-  fmdbranch->SetAddress(&fmdrecpoints);
+  
+  fmdbranch->SetAddress(&fRecPointsArray);
   fmdbranch->GetEntry(0);
     
-  TIter next(fmdrecpoints) ; 
+  TIter next(fRecPointsArray) ; 
   AliFMDRecPoint * rp ; 
   while ((rp = static_cast<AliFMDRecPoint*>(next()))) {
     GetRecPointsData(0)->Fill(rp->Particles()) ;
   }
-  fmdrecpoints->Delete();
-  delete fmdrecpoints;
 
 }
 

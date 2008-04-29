@@ -23,7 +23,7 @@ class AliFMDQADataMakerRec: public AliQADataMakerRec
 public:
   AliFMDQADataMakerRec();
   AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm);   
-  virtual ~AliFMDQADataMakerRec() {}
+  virtual ~AliFMDQADataMakerRec();
 private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list);
   virtual void   InitESDs(); 
@@ -38,6 +38,8 @@ private:
   virtual void   StartOfDetectorCycle(); 
 
   ClassDef(AliFMDQADataMakerRec,0)  // description 
+  TClonesArray* fDigitsArray;
+  TClonesArray* fRecPointsArray;
 
 };
 
