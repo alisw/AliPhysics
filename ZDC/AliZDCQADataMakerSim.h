@@ -10,6 +10,7 @@
 //  						    //
 //////////////////////////////////////////////////////
 
+class AliZDCDigit;
 
 #include "AliQADataMakerSim.h"
 class AliZDCQADataMakerSim: public AliQADataMakerSim {
@@ -33,9 +34,8 @@ private:
   virtual void   StartOfDetectorCycle(); 
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   //
-  TClonesArray   fHits; 	//! Array containing ZDC hits
-  TClonesArray   fDigits; 	//! Array containing ZDC digits
-  
+  TClonesArray   *fHits; 	//! Array containing ZDC hits
+  AliZDCDigit    *fDigit; 	//! Pointer to digit in tree  
   
   ClassDef(AliZDCQADataMakerSim,2)  // description 
 
