@@ -89,10 +89,17 @@ Bool_t AliCTPRawStream::Next()
 
   UChar_t *data = NULL;
 
-  if (!fRawReader->ReadNextData(data)) return kFALSE;
+  // CTP raw data does not contain CDH
+  fRawReader->RequireHeader(kFALSE);
+
+  if (!fRawReader->ReadNextData(data)) {
+    fRawReader->RequireHeader(kTRUE);
+    return kFALSE;
+  }
 
   if (fRawReader->GetDataSize() != 32) {
     AliError(Form("Wrong CTP raw data size: %d",fRawReader->GetDataSize()));
+    fRawReader->RequireHeader(kTRUE);
     return kFALSE;
   }
 
@@ -111,6 +118,9 @@ Bool_t AliCTPRawStream::Next()
 
   fClassMask |= (ULong64_t)data[28];
   fClassMask |= ((ULong64_t)data[29] & 0xF) << 8;
+
+  // Restore the raw-reader state!!
+  fRawReader->RequireHeader(kTRUE);
 
   return kTRUE;
 }

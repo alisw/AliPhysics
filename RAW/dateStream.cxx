@@ -493,7 +493,8 @@ void loadPayload( const char *fileName ) {
 	      fileName,
 	      payload );
       if ( bufferData ) {
-	if ( handleCDH ) {
+	if ( handleCDH &&
+	     strncmp(fileName,"TRG_",4) != 0 ) {
 	  struct commonDataHeaderStruct *cdh =
 	    (struct commonDataHeaderStruct *)payload->data;
 
@@ -1160,8 +1161,12 @@ void createEor() {
 } /* End of createEor */
 
 void loadCdh( struct commonDataHeaderStruct * const cdh,
-	             eventIdType            * const eventId ) {
+	             eventIdType            * const eventId,
+	             equipmentIdType id ) {
   if ( !handleCDH ) return;
+
+  // CTP raw-data does not contain CDH
+  if ( id == 4352) return;
 
   if ( gotAliceTrigger ) {
     cdh->cdhEventId1 = EVENT_ID_GET_BUNCH_CROSSING( *eventId );
@@ -1173,7 +1178,8 @@ void loadCdh( struct commonDataHeaderStruct * const cdh,
   cdh->cdhMiniEventId = cdh->cdhEventId1;
 }
 void decodeCDH( struct ldcEventDescriptorStruct       * const ldc,
-		const struct payloadDescriptorStruct  * const payloadDesc );
+		const struct payloadDescriptorStruct  * const payloadDesc,
+	        equipmentIdType id );
 
 void createEvent( void ) {
   assert( workingAs == ldc || workingAs == gdc );
@@ -1196,10 +1202,11 @@ void createEvent( void ) {
       for ( eq = ldc->head; eq != NULL; eq = eq->next ) {
 	if ( !bufferData ) {
 	  loadBuffer( eq->payload );
-	  decodeCDH( ldc, eq->payload );
+	  decodeCDH( ldc, eq->payload, eq->id );
 	}
 	loadCdh( (struct commonDataHeaderStruct*)eq->payload->data,
-		 &currEventId );
+		 &currEventId,
+		 eq->id);
       }
 
       if ( !currGdc->loaded ) {
@@ -1222,10 +1229,11 @@ void createEvent( void ) {
     for ( eq = currLdc->head; eq != NULL; eq = eq->next ) {
       if ( !bufferData ) {
 	loadBuffer( eq->payload );
-	decodeCDH( currLdc, eq->payload );
+	decodeCDH( currLdc, eq->payload, eq->id );
       }
       loadCdh( (struct commonDataHeaderStruct*)eq->payload->data,
-	       &currEventId );
+	       &currEventId,
+	       eq->id);
       currLdc->loaded = TRUE;
     }
     cdhRef = NULL;
@@ -1409,8 +1417,10 @@ void initEquipment( struct equipmentHeaderStruct * const eq ) {
 } /* End of initEquipment */
 
 void decodeCDH(       struct ldcEventDescriptorStruct * const ldc,
-		const struct payloadDescriptorStruct  * const payloadDesc ) {
-  if ( handleCDH ) {
+		const struct payloadDescriptorStruct  * const payloadDesc,
+		      equipmentIdType id ) {
+  if ( handleCDH && 
+       id != 4352 ) {
     struct commonDataHeaderStruct *cdh;
     static int softwareTriggerIndicator = FALSE;
     int attr;
@@ -1610,7 +1620,7 @@ void initEvents() {
 				  ATTR_ORBIT_BC );
 	  eq->header.equipmentSize = eq->payload->size + sizeof( eq->header );
 	  ldc->header.eventSize += eq->header.equipmentSize;
-	  decodeCDH( ldc, eq->payload );
+	  decodeCDH( ldc, eq->payload, eq->id );
 	  OR_ALL_ATTRIBUTES( eq->header.equipmentTypeAttribute,
 			     ldc->header.eventTypeAttribute );
 	  OR_ALL_ATTRIBUTES( eq->header.equipmentTypeAttribute,
@@ -1670,7 +1680,7 @@ void initEvents() {
 				ATTR_ORBIT_BC );
 	eq->header.equipmentSize = eq->payload->size + sizeof( eq->header );
 	ldc->header.eventSize += eq->header.equipmentSize;
-	decodeCDH( ldc, eq->payload );
+	decodeCDH( ldc, eq->payload, eq->id );
 	OR_ALL_ATTRIBUTES( eq->header.equipmentTypeAttribute,
 			   ldc->header.eventTypeAttribute );
       }

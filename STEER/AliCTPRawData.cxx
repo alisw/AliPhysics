@@ -90,11 +90,6 @@ void AliCTPRawData::RawData()
   AliFstream* outfile;         // logical name of the output file 
   outfile = new AliFstream(fileName);
 
-  AliRawDataHeaderSim header;
-  // Write a dummy header
-  UInt_t dataHeaderPosition=outfile->Tellp();
-  outfile->WriteBuffer((char*)(&header),sizeof(header));
-
   // Writing CTP raw data here
   // The format is taken as in
   // pages 134 and 135 of the
@@ -155,13 +150,6 @@ void AliCTPRawData::RawData()
   AliDebug(1,Form("CTP word8 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
-  // Write the real data header
-  UInt_t currentFilePosition=outfile->Tellp();
-  outfile->Seekp(dataHeaderPosition);
-  header.fSize=currentFilePosition-dataHeaderPosition;
-  header.SetAttribute(0);  // valid data
-  header.SetTriggerClass(l2class);
-  outfile->WriteBuffer((char*)(&header),sizeof(header));
   delete outfile;
 
   return;
