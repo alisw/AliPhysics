@@ -95,6 +95,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 		if (list) 
 			list->Write() ;
 	}
+	Finish() ; 
 }
  
 //____________________________________________________________________________
