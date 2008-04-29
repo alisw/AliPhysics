@@ -28,7 +28,6 @@ class AliComparisonTask : public AliAnalysisTask {
 
   // Set comparison objects
   Bool_t AddComparisonObject(AliComparisonObject* comp);
-  void SetMagField(Int_t mag = 2) {fMagField = mag;}
 
  private:
   TTree* fTree;                   //! input tree
@@ -37,8 +36,6 @@ class AliComparisonTask : public AliAnalysisTask {
 
   TList* fOutput;                 //! list send on output slot 0
   static Int_t evtNumber;         //! event number
-  Int_t  fMagField;               //! mag. field (0 - 0.2 T, 1 - 0.4 T, 2 - 0.5 T) 
-  AliMagFMaps *fMagFMap;          //! mag. field map 
   TIterator *pitList;             //! iterator over the output objetcs  
   TList *fCompList;               // list of comparison objects
 

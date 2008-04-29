@@ -13,11 +13,12 @@
 /*
  
   // after running comparison task, read the file, and get component
-  gSystem->Load("libPWG1.so");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
+  LoadMyLibs();
   TFile f("Output.root");
   AliComparisonEff * compObj = (AliComparisonEff*)f.Get("AliComparisonEff");
 
-  // analyse comparison data
+  // Analyse comparison data
   compObj->Analyse();
 
   // the output histograms/graphs will be stored in the folder "folderEff" 
@@ -133,6 +134,7 @@ AliComparisonEff::AliComparisonEff():
 	fTPCPtDCAXYPid[i]=0;   
 	fTPCPtDCAZPid[i]=0; 
   }
+
   Init();
 }
 
@@ -348,10 +350,10 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 
   // systematics
   const Double_t kSigma2Full_xy  = 0.25; // ExB full systematics  [cm]
-  const Double_t kSigma2Full_z  =  5.0;  // [cm] 
+  const Double_t kSigma2Full_z  =  5.0;  // drift velocity (goofie) [cm] 
 
   const Double_t kSigma2Day0_xy  = 0.02; //  ExB  [cm]
-  const Double_t kSigma2Day0_z  =  0.1; //  [cm] goofie  
+  const Double_t kSigma2Day0_z  =  0.1;  //   drift velocity (goofie) [cm]  
 
   //  
   Double_t	DCASigmaIdeal=0;
@@ -674,12 +676,7 @@ void AliComparisonEff::Analyse()
   TH1::AddDirectory(kFALSE);
 
   AliComparisonEff * comp=this;
-  TFolder *folder = comp->GetAnalysisFolder();
-
-  // recreate folder every time
-  if(folder) delete folder;
-  folder = CreateFolder("folderEff","Analysis Eff Folder");
-  folder->SetOwner();
+  TObjArray *aFolderObj = new TObjArray;
 
   // calculate efficiency and contamination (4 sigma) 
   TH1 *h_sigmaidealpid[20];
@@ -780,71 +777,157 @@ void AliComparisonEff::Analyse()
 
   TCanvas * c = new TCanvas("Efficiency","Track efficiency");
   c->cd();
+  c->Divide(1,2);
 
   //
+  c->cd(1);
   comp->fEffTPCTanF->SetXTitle("Tan(#theta)");
   comp->fEffTPCTanF->SetYTitle("eff_{findable}");
   comp->fEffTPCTanF->SetName("EffTanFindable");
+  comp->fEffTPCTanF->Draw();
   //
+  c->cd(2);
   comp->fEffTPCTan->SetXTitle("Tan(#theta)");
   comp->fEffTPCTan->SetYTitle("eff_{all}");
   comp->fEffTPCTan->SetName("EffTanAll");
+  comp->fEffTPCTan->Draw();
 
-  if(folder) folder->Add(comp->fEffTPCTanF);
-  if(folder) folder->Add(comp->fEffTPCTan);
+  aFolderObj->Add(comp->fEffTPCTanF);
+  aFolderObj->Add(comp->fEffTPCTan);
 
+  h_sigmaidealpidtot[1]->SetXTitle("p_{t}");
+  h_sigmaidealpidtot[1]->SetYTitle("efficiency");
+  h_sigmaidealpidtot[1]->SetTitle("Eff_SigmaIdeal");
   h_sigmaidealpidtot[1]->SetName("Eff_SigmaIdeal");
+
+  h_sigmaidealpidtot[3]->SetXTitle("p_{t}");
+  h_sigmaidealpidtot[3]->SetYTitle("contamination");
+  h_sigmaidealpidtot[3]->SetTitle("Cont_SigmaIdeal");
   h_sigmaidealpidtot[3]->SetName("Cont_SigmaIdeal");
 
-  if(folder) folder->Add(h_sigmaidealpidtot[1]);
-  if(folder) folder->Add(h_sigmaidealpidtot[3]);
+  aFolderObj->Add(h_sigmaidealpidtot[1]);
+  aFolderObj->Add(h_sigmaidealpidtot[3]);
 
+  h_sigmafullpidtot[1]->SetXTitle("p_{t}");
+  h_sigmafullpidtot[1]->SetYTitle("efficiency");
+  h_sigmafullpidtot[1]->SetTitle("Eff_SigmaFull");
   h_sigmafullpidtot[1]->SetName("Eff_SigmaFull");
+
+  h_sigmafullpidtot[3]->SetXTitle("p_{t}");
+  h_sigmafullpidtot[3]->SetYTitle("contamination");
+  h_sigmafullpidtot[3]->SetTitle("Cont_SigmaFull");
   h_sigmafullpidtot[3]->SetName("Cont_SigmaFull");
 
-  if(folder) folder->Add(h_sigmafullpidtot[1]);
-  if(folder) folder->Add(h_sigmafullpidtot[3]);
+  aFolderObj->Add(h_sigmafullpidtot[1]);
+  aFolderObj->Add(h_sigmafullpidtot[3]);
 
+  h_sigmaday0pidtot[1]->SetXTitle("p_{t}");
+  h_sigmaday0pidtot[1]->SetYTitle("efficiency");
+  h_sigmaday0pidtot[1]->SetTitle("Eff_SigmaDay0");
   h_sigmaday0pidtot[1]->SetName("Eff_SigmaDay0");
+
+  h_sigmaday0pidtot[3]->SetXTitle("p_{t}");
+  h_sigmaday0pidtot[3]->SetYTitle("contamination");
+  h_sigmaday0pidtot[3]->SetTitle("Cont_SigmaDay0");
   h_sigmaday0pidtot[3]->SetName("Cont_SigmaDay0");
 
-  if(folder) folder->Add(h_sigmaday0pidtot[1]);
-  if(folder) folder->Add(h_sigmaday0pidtot[3]);
+  aFolderObj->Add(h_sigmaday0pidtot[1]);
+  aFolderObj->Add(h_sigmaday0pidtot[3]);
 
   for(Int_t idx = 0; idx<5; idx++)
   {
     sprintf(name,"Eff_SigmaIdeal_%d",idx);
     sprintf(name1,"Cont_SigmaIdeal_%d",idx);
 
+
+    h_sigmaidealpid[idx+5]->SetXTitle("p_{t}");
+    h_sigmaidealpid[idx+5]->SetYTitle("efficiency");
+    h_sigmaidealpid[idx+5]->SetTitle(name);
     h_sigmaidealpid[idx+5]->SetName(name);
+
+    h_sigmaidealpid[idx+15]->SetXTitle("p_{t}");
+    h_sigmaidealpid[idx+15]->SetYTitle("contamination");
+    h_sigmaidealpid[idx+15]->SetTitle(name1);
     h_sigmaidealpid[idx+15]->SetName(name1);
 
-	if(folder) folder->Add(h_sigmaidealpid[idx+5]);
-	if(folder) folder->Add(h_sigmaidealpid[idx+15]);
+	aFolderObj->Add(h_sigmaidealpid[idx+5]);
+	aFolderObj->Add(h_sigmaidealpid[idx+15]);
 
     sprintf(name,"Eff_SigmaFull_%d",idx);
     sprintf(name1,"Cont_SigmaFull_%d",idx);
 
+    h_sigmafullpid[idx+5]->SetXTitle("p_{t}");
+    h_sigmafullpid[idx+5]->SetYTitle("efficiency");
+    h_sigmafullpid[idx+5]->SetTitle(name);
     h_sigmafullpid[idx+5]->SetName(name);
+
+    h_sigmafullpid[idx+15]->SetXTitle("p_{t}");
+    h_sigmafullpid[idx+15]->SetYTitle("contamination");
+    h_sigmafullpid[idx+15]->SetTitle(name1);
     h_sigmafullpid[idx+15]->SetName(name1);
 
-	if(folder) folder->Add(h_sigmafullpid[idx+5]);
-	if(folder) folder->Add(h_sigmafullpid[idx+15]);
+	aFolderObj->Add(h_sigmafullpid[idx+5]);
+	aFolderObj->Add(h_sigmafullpid[idx+15]);
 
     sprintf(name,"Eff_SigmaDay0_%d",idx);
     sprintf(name1,"Cont_SigmaDay0_%d",idx);
 
+    h_sigmaday0pid[idx+5]->SetXTitle("p_{t}");
+    h_sigmaday0pid[idx+5]->SetYTitle("efficiency");
+    h_sigmaday0pid[idx+5]->SetTitle(name);
     h_sigmaday0pid[idx+5]->SetName(name);
+
+    h_sigmaday0pid[idx+15]->SetXTitle("p_{t}");
+    h_sigmaday0pid[idx+15]->SetYTitle("contamination");
+    h_sigmaday0pid[idx+15]->SetTitle(name1);
     h_sigmaday0pid[idx+15]->SetName(name1);
 
-	if(folder) folder->Add(h_sigmaday0pid[idx+5]);
-	if(folder) folder->Add(h_sigmaday0pid[idx+15]);
+	aFolderObj->Add(h_sigmaday0pid[idx+5]);
+	aFolderObj->Add(h_sigmaday0pid[idx+15]);
   }
 
-  // set pointer to fAnalysisFolder
-  fAnalysisFolder = folder;
+  // export objects to analysis folder
+  fAnalysisFolder = ExportToFolder(aFolderObj);
 
+  // delete only TObjArray
+  if(aFolderObj) delete aFolderObj;
 }
+
+//_____________________________________________________________________________
+TFolder* AliComparisonEff::ExportToFolder(TObjArray * array) 
+{
+  // recreate folder avery time and export objects to new one
+  //
+  AliComparisonEff * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
+
+  TString name, title;
+  TFolder *newFolder = 0;
+  Int_t i = 0;
+  Int_t size = array->GetSize();
+
+  if(folder) { 
+     // get name and title from old folder
+     name = folder->GetName();  
+     title = folder->GetTitle();  
+
+	 // delete old one
+     delete folder;
+
+	 // create new one
+     newFolder = CreateFolder(name.Data(),title.Data());
+     newFolder->SetOwner();
+
+	 // add objects to folder
+     while(i < size) {
+	   newFolder->Add(array->At(i));
+	   i++;
+	 }
+  }
+
+return newFolder;
+}
+
 
 //_____________________________________________________________________________
 TFolder* AliComparisonEff::CreateFolder(TString name,TString title) { 

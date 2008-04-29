@@ -52,6 +52,9 @@ public :
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderDCA",TString title = "Analysed DCA histograms");
 
+  // Export objects to folder
+  TFolder *ExportToFolder(TObjArray * array=0);
+
   // Process events
   void  Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
 

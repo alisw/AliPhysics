@@ -13,11 +13,12 @@
 /*
  
   // after running comparison task, read the file, and get component
-  gSystem->Load("libPWG1.so");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
+  LoadMyLibs();
   TFile f("Output.root");
   AliComparisonDEdx * compObj = (AliComparisonDEdx*)f.Get("AliComparisonDEdx");
 
-  // analyse comparison data
+  // Analyse comparison data
   compObj->Analyse();
 
   // the output histograms/graphs will be stored in the folder "folderDEdx" 
@@ -252,22 +253,17 @@ TH1F* AliComparisonDEdx::MakeResol(TH2F * his, Int_t integ, Bool_t type)
 //_____________________________________________________________________________
 void AliComparisonDEdx::Analyse()
 {
-  // Analyse comparison information and store output histograms
+  // Analyze comparison information and store output histograms
   // in the folder "folderDEdx"
   //
 
   TH1::AddDirectory(kFALSE);
   
   AliComparisonDEdx * comp=this;
-  TFolder *folder = comp->GetAnalysisFolder();
+  TObjArray *aFolderObj = new TObjArray;
 
   TH1F *hiss=0;
   TGraph2D * gr=0;
-
-  // recreate folder every time
-  if(folder) delete folder;
-  folder = CreateFolder("folderDEdx","Analysis DEdx Folder");
-  folder->SetOwner();
 
   // write results in the folder 
   TCanvas * c = new TCanvas("can","TPC dedx");
@@ -279,7 +275,7 @@ void AliComparisonDEdx::Analyse()
   hiss->Draw();
   hiss->SetName("TPCdEdxResolTan");
 
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   hiss = comp->MakeResol(comp->fTPCSignalNormTan,4,1); 
   hiss->SetXTitle("Tan(#theta)");
@@ -287,7 +283,7 @@ void AliComparisonDEdx::Analyse()
   hiss->Draw(); 
   hiss->SetName("TPCdEdxMeanTan");
 
-  if(folder) folder->Add(hiss);
+  aFolderObj->Add(hiss);
   //
   gr = AliMathBase::MakeStat2D(comp->fTPCSignalNormTanSPt,3,1,4);
   gr->GetXaxis()->SetTitle("Tan(#theta)");
@@ -296,7 +292,7 @@ void AliComparisonDEdx::Analyse()
   gr->SetName("TPCdEdxMeanTanPt_1");
   gr->GetHistogram()->Draw("colz"); 
 
-  if(folder) folder->Add(gr->GetHistogram());
+  aFolderObj->Add(gr->GetHistogram());
   //
   gr = AliMathBase::MakeStat2D(comp->fTPCSignalNormTanSPt,3,1,5);
   gr->GetXaxis()->SetTitle("Tan(#theta)");
@@ -305,11 +301,50 @@ void AliComparisonDEdx::Analyse()
   gr->SetName("TPCdEdxMeanTanPt_2");
   gr->GetHistogram()->Draw("colz"); 
 
-  if(folder) folder->Add(gr->GetHistogram());
+  aFolderObj->Add(gr->GetHistogram());
 
-  // set pointer to fAnalysisFolder
-  fAnalysisFolder = folder;
+  // export objects to analysis folder
+  fAnalysisFolder = ExportToFolder(aFolderObj);
+
+  // delete only TObjrArray
+  if(aFolderObj) delete aFolderObj;
 }
+
+//_____________________________________________________________________________
+TFolder* AliComparisonDEdx::ExportToFolder(TObjArray * array) 
+{
+  // recreate folder avery time and export objects to new one
+  //
+  AliComparisonDEdx * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
+
+  TString name, title;
+  TFolder *newFolder = 0;
+  Int_t i = 0;
+  Int_t size = array->GetSize();
+
+  if(folder) { 
+     // get name and title from old folder
+     name = folder->GetName();  
+     title = folder->GetTitle();  
+
+	 // delete old one
+     delete folder;
+
+	 // create new one
+     newFolder = CreateFolder(name.Data(),title.Data());
+     newFolder->SetOwner();
+
+	 // add objects to folder
+     while(i < size) {
+	   newFolder->Add(array->At(i));
+	   i++;
+	 }
+  }
+
+return newFolder;
+}
+
 
 //_____________________________________________________________________________
 TFolder* AliComparisonDEdx::CreateFolder(TString name,TString title) { 

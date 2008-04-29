@@ -1,11 +1,28 @@
+/**************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
+
 //------------------------------------------------------------------------------
 // Implementation of the AliComparisonTask class. It compares properties of the 
 // reconstructed and MC particle tracks under several conditions. 
-// As the input it requires the TTree with AliRecInfo and AliMCInfo branches. 
-// 
+// As the input it requires the tree with AliRecInfo and AliMCInfo branches. Such
+// tree can be prepared in advance by runing AliGenInfoMaker and then AliRecInfoMaker
+// (details in description of these classes).
+//
 // The comparison output objects deriving from AliComparisonObject 
 // (e.g. AliComparisonRes, AliComparisonEff, AliComparisonDEdxA, AliComparisonDCA ...) 
-// are stored in the Output.root file.
+// are stored in the output file (details in description of these classes).
 // 
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
@@ -52,8 +69,6 @@ AliComparisonTask::AliComparisonTask(const char *name)
   , fInfoMC(0)
   , fInfoRC(0)
   , fOutput(0)
-  , fMagField(0)
-  , fMagFMap(0)
   , pitList(0)
   , fCompList(0)
 {
@@ -63,9 +78,6 @@ AliComparisonTask::AliComparisonTask(const char *name)
   DefineInput(0, TChain::Class());
   DefineOutput(0, TList::Class());
 
-  // set default mag. field
-  SetMagField();
-  
   // create the list for comparison objects
   fCompList = new TList;
 }
@@ -74,7 +86,6 @@ AliComparisonTask::AliComparisonTask(const char *name)
 AliComparisonTask::~AliComparisonTask()
 {
   if(fOutput)   delete fOutput;  fOutput =0; 
-  if(fMagFMap)  delete fMagFMap;  fMagFMap =0; 
   if(fCompList)   delete fCompList;  fCompList =0; 
 }
 
@@ -97,10 +108,6 @@ void AliComparisonTask::ConnectInputData(Option_t *)
   } else {
       Printf("ERROR: Could not get MC and RC branches");
   }
-  
-  // set mag. field map 
-  fMagFMap = new AliMagFMaps("Maps","Maps", 2, 1., 10., fMagField);
-  AliTracker::SetFieldMap(fMagFMap,kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -195,16 +202,12 @@ void AliComparisonTask::Exec(Option_t *)
 //_____________________________________________________________________________
 void AliComparisonTask::Terminate(Option_t *) 
 {
-  // Called once at the end of the event loop
-  TFile *out = new TFile("Output.root","RECREATE");
-  out->cd();
-
+  // Called one at the end 
+  
+  // check output data
   fOutput = dynamic_cast<TList*> (GetOutputData(0));
   if (!fOutput) {
-    Printf("ERROR: fOutput not available");
+    Printf("ERROR: AliComparisonTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
     return;
   }
-
-  fOutput->Write();
-  out->Close();
 }

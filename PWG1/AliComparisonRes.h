@@ -54,6 +54,9 @@ public :
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderRes",TString title = "Analysed Resolution histograms");
 
+  // Export objects to folder
+  TFolder *ExportToFolder(TObjArray * array=0);
+
   // Selection cuts
   void SetAliRecInfoCuts(AliRecInfoCuts* cuts=0) {fCutsRC = cuts;}   
   void SetAliMCInfoCuts(AliMCInfoCuts* cuts=0) {fCutsMC = cuts;}  

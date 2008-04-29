@@ -52,6 +52,9 @@ public :
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderDEdx",TString title = "Analysed DEdx histograms");
 
+  // Export objects to folder
+  TFolder *ExportToFolder(TObjArray * array=0);
+
   // Process events
   void      Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
 

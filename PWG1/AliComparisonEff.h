@@ -55,6 +55,9 @@ public :
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderEff",TString title = "Analysed Efficiency histograms");
 
+  // Export objects to folder
+  TFolder *ExportToFolder(TObjArray * array=0);
+
   // Process events
   void Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
 
