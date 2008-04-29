@@ -1,0 +1,69 @@
+\documentclass{elsart}
+\usepackage{epsfig,amsmath}
+
+\begin{document}
+
+\subsection{Reconstruction Performance}
+
+A comparison of Monte-Carlo (MC) and reconstruction information is necessary to 
+check the performance of the reconstruction algorithms. The PWG1 library has been started to make 
+MC vs reconstruction comparison, to tune selection criteria (cuts) and to find the best representation 
+of the data (observables, correlations between observables, parametrisations, etc.). The main goal is to 
+get the best track reconstruction performance in the central barrel.   
+
+\subsection{PWG1 library}
+
+Current implementation of PWG1 allows us to run comparison for TPC and TPC-tracks.
+The comparison of MC and reconstructed tracks is done in 4 steps: 
+
+\begin{itemize}
+\item[1.] Collection of MC information
+\item[2.] Correlation of MC and reconstruction information
+\item[3.] Filling of comparison objects
+\item[4.] Analysis of comparison objects
+\end{itemize}
+ 
+In order to perform these steps the following 
+components (classes) have been implemented in PWG1 library:
+
+\begin{itemize}
+\item The $AliGenInfoMaker$ collects MC information stored in 
+ several simulation trees. It creates $AliMCInfo$, $AliMCKinkInfo$ and $AliMCV0Info$ objects for each MC track.  
+\item The $AliRecInfoMaker$ correlates MC and reconstruction information (ESDs) and creates for each MC object (e.g. $AliMCInfo$) corresponding reconstruction object ($AliESDRecInfo$). 
+\item In the third step, the comparison objects ($AliComparisonObject$)  are filled in $AliComparisonTask$ task. In this step the cuts ($AliMCInfoCuts$, $AliRecInfoCuts$) are applied. The comparison objects keep control histograms and cuts. 
+\item Finally, the analysis of the comparison objects is done by using their own $Analyse()$ 
+      functions. The result analyzed histograms can be saved for further studies.
+\end{itemize}
+ 
+The advantage of such analysis scheme is that the most time consuming
+tasks (steps 1 and 2) can be run only once. It can be done during
+ESD production. Then the comparison task can be run many times (e.g. on Proof) 
+to tune selection criteria and to find the best representation of data. 
+
+The basic components of the PWG1 library are: makers ($AliGenInfoMaker$, $AliRecInfoMaker$), 
+tasks ($AliAnalysisTask$), cuts ($AliAnalysisCuts$) and comparison objects ($AliComparisonObject$). 
+
+The makers derive from TObject ROOT class and have functionality to collect and correlate MC and reconstruction 
+information for ITS, TPC, TRD and TOF detectors. They can be run locally/batch. The comparison tasks derive from $AliAnalysisTask$ and must implement its virtual methods. They can be run locally/batch, on Proof and on Grid. The cut objects derive from $AliAnalysisCut$ and must implement its virtual methods. The comparison objects derive from $AliComparisonObject$ base class and must implement its virtual methods.
+
+\subsection{User implementation}
+
+One has to implement the following classes to run its own analysis using PWG1 library:
+
+\begin{itemize}
+\item[1.] Implement comparison object which contains control histograms and its own cut object (if needed). 
+\item[2.] Implement (if needed) cut object which contains all cuts which will be applied while filling comparison object. It is recommended to use $IsSelected(TObject*)$ method of the cut object while applying the cuts.
+\end{itemize}
+ 
+\subsection{Quick Start}
+ 
+\begin{itemize}
+\item[1.] Prepare input by running $AliGenInfoMaker$ and then $AliRecInfoMaker$ makers ($PWG1/Macros/RunMakers.C$)
+\item[2.] Create comparison objects 
+\item[3.] Create cut objects and pass them to corresponding comparison objects
+\item[4.] Add comparison objects to comparison task \newline ($PWG1/Macros/RunAliComparisonTask.C$)
+\item[5.] Run comparison analysis ($PWG1/Macros/RunGSI.C$)
+
+\end{itemize}
+ 
+\end{document}
