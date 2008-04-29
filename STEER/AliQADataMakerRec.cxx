@@ -66,12 +66,18 @@ AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
 AliQADataMakerRec::~AliQADataMakerRec()
 {
 	//dtor: delete the TObjArray and thei content
-	fESDsQAList->Delete() ;     
-	fRawsQAList->Delete() ;
-	fRecPointsQAList->Delete() ; 
-	delete fESDsQAList ;     
-	delete fRawsQAList ;
-	delete fRecPointsQAList ; 
+	if ( fESDsQAList ) {
+		fESDsQAList->Delete() ;     
+		delete fESDsQAList ;     
+	}
+	if ( fRawsQAList ) {
+		fRawsQAList->Delete() ;
+		delete fRawsQAList ;
+	}
+	if ( fRecPointsQAList ) {
+		fRecPointsQAList->Delete() ; 
+		delete fRecPointsQAList ; 
+	}
 }
 
 //__________________________________________________________________

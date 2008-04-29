@@ -62,12 +62,18 @@ AliQADataMakerSim::AliQADataMakerSim(const AliQADataMakerSim& qadm) :
 AliQADataMakerSim::~AliQADataMakerSim()
 {
 	//dtor: delete the TObjArray and thei content
-	fDigitsQAList->Delete() ;     
-	fHitsQAList->Delete() ;
-	fSDigitsQAList->Delete() ; 
-	delete fDigitsQAList ;     
-	delete fHitsQAList ;
-	delete fSDigitsQAList ; 
+	if ( fDigitsQAList ) { 
+		fDigitsQAList->Delete() ;     
+		delete fDigitsQAList ;     
+	}
+	if ( fHitsQAList ) {
+		fHitsQAList->Delete() ;
+		delete fHitsQAList ;
+	}
+	if ( fSDigitsQAList ) { 
+		fSDigitsQAList->Delete() ; 
+		delete fSDigitsQAList ; 
+	}
 }
 
 //__________________________________________________________________
