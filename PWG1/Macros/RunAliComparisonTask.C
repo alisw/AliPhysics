@@ -1,11 +1,11 @@
 void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDebug = kFALSE)
 {
   //
-  // Set mag field map and geometry (needed by AliComparisonTask temp. solution)
+  // Set mag field map (needed to propagate track to the DCA)
   //
   Int_t magField = 2;  // 0 - 0.2 T, 1 = 0.4 T, 2  - 0.5 T
-  //TString geom = "/lustre_alpha/alice/jacek/sim/v4-11-Rev-03/pp/0/geometry.root";
-  //TString geom = "/lustre_alpha/alice/jacek/sim/v4-11-Rev-03/pp/1/geometry.root";
+  magFMap = new AliMagFMaps("Maps","Maps", 2, 1., 10., magField);
+  AliTracker::SetFieldMap(magFMap,kFALSE);
 
   //
   // Create global cuts objects 
@@ -80,8 +80,7 @@ void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDeb
   // Create, add task
   task = new AliComparisonTask;
 
-  task->SetMagField(magField);
-  //task->SetGeometry(geom.Data());
+  //task->SetMagField(magField);
 
   task->AddComparisonObject( pCompRes );
   task->AddComparisonObject( pCompEff );
@@ -95,7 +94,7 @@ void RunAliComparisonTask(TChain  *chain = 0, Bool_t aProof = kTRUE, Bool_t aDeb
   mgr->ConnectInput(task, 0, cInput);
 
   // Attach output
-  cOutput = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer);
+  cOutput = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer,"Output.root");
   mgr->ConnectOutput(task, 0, cOutput);
 
   // Enable debug printouts

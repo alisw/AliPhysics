@@ -19,7 +19,9 @@ void LoadMyLibs() {
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libTPCbase");
   CheckLoadLibrary("libTPCsim");
+  CheckLoadLibrary("libTRDbase");
   CheckLoadLibrary("libTPCrec");
+  CheckLoadLibrary("libTRDrec");
   CheckLoadLibrary("libPWG0base");
   CheckLoadLibrary("libPWG0dep");
   CheckLoadLibrary("libPWG1");
