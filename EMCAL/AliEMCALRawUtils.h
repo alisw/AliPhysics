@@ -68,6 +68,8 @@ class AliEMCALRawUtils : public TObject {
   static Int_t GetRawFormatTimeBins() { return fgkTimeBins ; }    
   static Double_t GetRawFormatTimeMax() { return fgkTimeBins*fgTimeBinWidth; }   
   static Double_t GetRawFormatTimeBinWidth() { return fgTimeBinWidth; }   
+  static Double_t GetRawFormatTimeBin() 
+  { return GetRawFormatTimeMax() / GetRawFormatTimeBins(); }   
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; } 

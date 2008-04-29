@@ -119,18 +119,23 @@ public:
   Float_t GetLongModuleSize() const {return fLongModuleSize;}
   Float_t GetTrd1Angle() const {return fTrd1Angle;}
   Float_t Get2Trd1Dx2()  const {return f2Trd1Dx2;}
-  Int_t   GetNTRUEta() const {return fNTRUEta ; }  
-  Int_t   GetNTRUPhi() const {return fNTRUPhi ; }  
-  Int_t   GetNCellsInTRUEta() const {return fNCellsInTRUEta ; }  
-  Int_t   GetNCellsInTRUPhi() const {return fNCellsInTRUPhi ; }  
+  // --
   Int_t   GetNCellsInSupMod() const {return fNCellsInSupMod;}
   Int_t   GetNCellsInModule()  const {return fNCellsInModule; }
   Int_t   GetKey110DEG()      const {return fKey110DEG;}
   Int_t   GetILOSS() const {return fILOSS;}
   Int_t   GetIHADR() const {return fIHADR;}
-  //
+  // For gamma(Jet) trigger simulations
   Int_t   GetNTRU() const    {return fNTRUEta*fNTRUPhi ; }  
-  Int_t   GetNCellsInTRU() const    {return fNCellsInTRUEta*fNCellsInTRUPhi; }  
+  Int_t   GetNTRUEta() const {return fNTRUEta ; }  
+  Int_t   GetNTRUPhi() const {return fNTRUPhi ; }
+  Int_t   GetNEtaSubOfTRU() const {return fNEtaSubOfTRU;}
+  Int_t   GetNModulesInTRU() const {return fNModulesInTRUEta*fNModulesInTRUPhi; }
+  Int_t   GetNModulesInTRUEta() const {return fNModulesInTRUEta ; }  
+  Int_t   GetNModulesInTRUPhi() const {return fNModulesInTRUPhi ; }  
+  Int_t   GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int_t col, const Int_t sm);
+  
+  // --
   Float_t GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/ ((Float_t)fNZ);}
   Float_t GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/ ((Float_t)fNPhi);}
   Int_t   GetNTowers() const {return fNPhi * fNZ ;}
@@ -169,9 +174,10 @@ public:
   void EtaPhiFromIndex(Int_t absId, Double_t &eta, Double_t &phi) const;
   void EtaPhiFromIndex(Int_t absId, Float_t &eta, Float_t &phi) const;
   // 
-  // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module
-  void GetCellPhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, 
-					       Int_t &ietaSM, Int_t &iphiSM) const ; 
+  // Tranforms Eta-Phi Module index in TRU into Eta-Phi index in Super Module
+  void GetModulePhiEtaIndexInSModuleFromTRUIndex(
+  Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; 
+
   Bool_t GetAbsCellIdFromEtaPhi(Double_t eta,Double_t phi, Int_t &absId) const;
   Bool_t SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi, Int_t &nSupMod) const;
   Int_t   GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta) const;
@@ -302,8 +308,9 @@ private:
   //TRU parameters
   Int_t   fNTRUEta ;                     // Number of TRUs per module in eta
   Int_t   fNTRUPhi ;                     // Number of TRUs per module in phi
-  Int_t   fNCellsInTRUEta;               // Number of cells per TRU in eta 
-  Int_t   fNCellsInTRUPhi;               // Number of cells per TRU in phi 
+  Int_t   fNModulesInTRUEta;             // Number of modules per TRU in eta 
+  Int_t   fNModulesInTRUPhi;             // Number of modules per TRU in phi 
+  Int_t   fNEtaSubOfTRU;                 // Number of eta (z) subregiohi
 
   // TRD1 options - 30-sep-04
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 

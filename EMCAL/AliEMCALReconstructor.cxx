@@ -21,7 +21,12 @@
 // Reconstruction class. Redesigned from the old AliReconstructionner class and 
 // derived from STEER/AliReconstructor. 
 // 
+//-- Aleksei Pavlinov : added staf for EMCAL jet trigger 9Apr 25, 2008)
+//                    : fgDigitsArr should read just once at event
+
 // --- ROOT system ---
+#include <TList.h>
+#include <TClonesArray.h>
 
 // --- Standard library ---
 
@@ -46,17 +51,21 @@
 #include "AliEMCALRecParam.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCAL.h"
+#include "AliEMCALHistoUtilities.h"
+#include "AliESDVZERO.h"
 
 #include "AliRunLoader.h"
 #include "AliRun.h"
 
-ClassImp(AliEMCALReconstructor)
+ClassImp(AliEMCALReconstructor) 
 
 AliEMCALRecParam* AliEMCALReconstructor::fgkRecParam = 0;  // EMCAL rec. parameters
 AliEMCALRawUtils* AliEMCALReconstructor::fgRawUtils = 0;   // EMCAL raw utilities class
+TClonesArray*     AliEMCALReconstructor::fgDigitsArr = 0;  // shoud read just once at event
+
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fDebug(kFALSE),fGeom(0) 
+  : fDebug(kFALSE), fList(0), fGeom(0) 
 {
   // ctor
   InitRecParam();
@@ -81,6 +90,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec)
   : AliReconstructor(rec),
     fDebug(rec.fDebug),
+    fList(rec.fList),
     fGeom(rec.fGeom)
 {
   //copy ctor
@@ -93,6 +103,13 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   delete fGeom;
   AliCodeTimer::Instance()->Print();
 } 
+
+//____________________________________________________________________________
+void AliEMCALReconstructor::Init()
+{
+  // Trigger hists - Oct 24, 2007
+  fList = AliEMCALHistoUtilities::GetTriggersListOfHists(kTRUE);
+}
 
 //____________________________________________________________________________
 void AliEMCALReconstructor::InitRecParam() const
@@ -123,14 +140,19 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   AliCodeTimerAuto("")
 
-  AliEMCALClusterizerv1 clu;
-  clu.SetInput(digitsTree);
-  clu.SetOutput(clustersTree);
-  if(Debug())
-    clu.Digits2Clusters("deb all") ;
-  else
-    clu.Digits2Clusters("") ;
-  
+  ReadDigitsArrayFromTree(digitsTree);
+
+  if(fgDigitsArr && fgDigitsArr->GetEntries()) {
+
+    AliEMCALClusterizerv1 clu;
+    clu.SetInput(digitsTree);
+    clu.SetOutput(clustersTree);
+    if(Debug())
+      clu.Digits2Clusters("deb all") ;
+    else
+      clu.Digits2Clusters("") ;
+
+  }
 }
 
 //____________________________________________________________________________
@@ -164,24 +186,36 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
 }
 
+
 //____________________________________________________________________________
 void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree, 
 				    AliESDEvent* esd) const
 {
   // Called by AliReconstruct after Reconstruct() and global tracking and vertexing 
+  // and V0 
   // Works on the current event
-  // Creates AliESDCaloCluster from AliEMCALRecPoints 
-  // and AliESDCaloCells from AliEMCALDigits
-  // Also, fills ESD with calorimeter trigger information
+  //  printf(" ## AliEMCALReconstructor::FillESD() is started ### \n ");
+  //return;
+  const double timeScale = 1.e+11; // transition constant from sec to 0.01 ns 
 
   //######################################################
   //#########Calculate trigger and set trigger info###########
   //######################################################
-
-  AliEMCALTrigger tr ;
-  //   tr.SetPatchSize(1);//create 4x4 patches
+ 
+  AliEMCALTrigger tr;
+  //   tr.SetPatchSize(1);  // create 4x4 patches
+  tr.SetSimulation(kFALSE); // Reconstruction mode
+  tr.SetDigitsList(fgDigitsArr);
+  // Get VZERO total multiplicity for jet trigger simulation 
+  // The simulation of jey trigger will be incorrect if no VZERO data 
+  // at ESD
+  AliESDVZERO* vZero = esd->GetVZEROData();
+  if(vZero) {
+    tr.SetVZER0Multiplicity(vZero->GetMTotV0A() + vZero->GetMTotV0C());
+  }
+  //
   tr.Trigger();
-  
+
   Float_t maxAmp2x2  = tr.Get2x2MaxAmplitude();
   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
   Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
@@ -189,21 +223,22 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   Int_t iSM2x2      = tr.Get2x2SuperModule();
   Int_t iSMnxn      = tr.GetnxnSuperModule();
-  Int_t iCellPhi2x2 = tr.Get2x2CellPhi();
-  Int_t iCellPhinxn = tr.GetnxnCellPhi();
-  Int_t iCellEta2x2 = tr.Get2x2CellEta();
-  Int_t iCellEtanxn = tr.GetnxnCellEta();
+  Int_t iModulePhi2x2 = tr.Get2x2ModulePhi();
+  Int_t iModulePhinxn = tr.GetnxnModulePhi();
+  Int_t iModuleEta2x2 = tr.Get2x2ModuleEta();
+  Int_t iModuleEtanxn = tr.GetnxnModuleEta();
 
-  AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iCellPhi2x2, iCellEta2x2));
-  AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",  maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCellPhinxn, iCellEtanxn));
+  AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iModulePhi2x2, iModuleEta2x2));
+  AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",  maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iModulePhinxn, iModuleEtanxn));
 
   TVector3    pos2x2(-1,-1,-1);
   TVector3    posnxn(-1,-1,-1);
 
-  Int_t iAbsId2x2 = fGeom->GetAbsCellIdFromCellIndexes( iSM2x2, iCellPhi2x2, iCellEta2x2) ;
-  Int_t iAbsIdnxn = fGeom->GetAbsCellIdFromCellIndexes( iSMnxn, iCellPhinxn, iCellEtanxn) ;
+  Int_t iAbsId2x2 = fGeom->GetAbsCellIdFromCellIndexes( iSM2x2, iModulePhi2x2, iModuleEta2x2) ; // should be changed to Module
+  Int_t iAbsIdnxn = fGeom->GetAbsCellIdFromCellIndexes( iSMnxn, iModulePhinxn, iModuleEtanxn) ;
   fGeom->GetGlobal(iAbsId2x2, pos2x2);
   fGeom->GetGlobal(iAbsIdnxn, posnxn);
+  //printf(" iAbsId2x2 %i iAbsIdnxn %i \n", iAbsId2x2, iAbsIdnxn);
   
   TArrayF triggerPosition(6);
   triggerPosition[0] = pos2x2(0) ;   
@@ -211,16 +246,24 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   triggerPosition[2] = pos2x2(2) ;  
   triggerPosition[3] = posnxn(0) ;   
   triggerPosition[4] = posnxn(1) ;   
-  triggerPosition[5] = posnxn(2) ;  
+  triggerPosition[5] = posnxn(2) ;
+  //printf(" triggerPosition ");
+  //for(int i=0; i<6; i++) printf(" %i %f : ", i, triggerPosition[i]);
 
   TArrayF triggerAmplitudes(4);
   triggerAmplitudes[0] = maxAmp2x2 ;   
   triggerAmplitudes[1] = ampOutOfPatch2x2 ;    
   triggerAmplitudes[2] = maxAmpnxn ;   
   triggerAmplitudes[3] = ampOutOfPatchnxn ;   
+  //printf("\n triggerAmplitudes ");
+  //for(int i=0; i<4; i++) printf(" %i %f : ", i, triggerAmplitudes[i]);
+  //printf("\n");
+  tr.Print("");
 
   esd->AddEMCALTriggerPosition(triggerPosition);
   esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
+  // Fill trigger hists
+  AliEMCALHistoUtilities::FillTriggersListOfHists(fList,&triggerPosition,&triggerAmplitudes);
 
   //########################################
   //##############Fill CaloCells###############
@@ -262,6 +305,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   AliDebug(1,Form("%d clusters",nClusters));
   esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
 
+
   //######################################################
   //#######################TRACK MATCHING###############
   //######################################################
@@ -280,12 +324,11 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     iemcalMatch = track->GetEMCALcluster();
     if(iemcalMatch >= 0) matchedTrack[iemcalMatch] = itrack;
   } 
-
+  
   //########################################
-  //##############Fill CaloClusters############
+  //##############Fill CaloClusters#############
   //########################################
 
-  esd->SetNumberOfEMCALClusters(nClusters);
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = (const AliEMCALRecPoint*)clusters->At(iClust);
     //if(clust->GetClusterType()== AliESDCaloCluster::kEMCALClusterv1) nRP++; else nPC++;
@@ -296,94 +339,113 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     clust->GetGlobalPosition(gpos);
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
       xyz[ixyz] = gpos[ixyz];
+    
+    Int_t digitMult = clust->GetMultiplicity();
+    TArrayS amplList(digitMult);
+    TArrayS timeList(digitMult);
+    TArrayS digiList(digitMult);
+    Float_t *amplFloat = clust->GetEnergiesList();
+    Float_t *timeFloat = clust->GetTimeList();
+    Int_t   *digitInts = clust->GetAbsId();
     Float_t elipAxis[2];
     clust->GetElipsAxis(elipAxis);
     
-     //Create digits lists
-    Int_t cellMult = clust->GetMultiplicity();
-    //TArrayS digiList(digitMult);
-    Float_t *amplFloat = clust->GetEnergiesList();
-    Int_t   *digitInts = clust->GetAbsId();
-    TArrayS absIdList(cellMult);
-    //Uncomment when unfolding is done
-    //TArrayD fracList(cellMult);
-
-    Int_t newCellMult = 0; 
-    for (Int_t iCell=0; iCell<cellMult; iCell++) {
-      if (amplFloat[iCell] > 0) {
-	absIdList[newCellMult] = (UShort_t)(digitInts[iCell]);
-	//Uncomment when unfolding is done
-	//fracList[newCellMult] = amplFloat[iCell]/emcCells.GetCellAmplitude(digitInts[iCell]);
-	newCellMult++;
+    // Convert Float_t* and Int_t* to Short_t* to save memory
+    // Problem : we should recalculate a cluster characteristics when discard digit(s)
+    Int_t newdigitMult = 0; 
+    for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
+      if (amplFloat[iDigit] > 0) {
+	amplList[newdigitMult] = (UShort_t)(amplFloat[iDigit]*500);
+        // Time in units of 0.01 ns = 10 ps
+        if(timeFloat[iDigit] < 65536./timeScale) 
+	  timeList[newdigitMult] = (UShort_t)(timeFloat[iDigit]*timeScale);
+        else
+          timeList[newdigitMult] = 65535;
+	digiList[newdigitMult] = (UShort_t)(digitInts[iDigit]);
+        newdigitMult++;
       }
+      else if (clust->GetClusterType() != AliESDCaloCluster::kEMCALPseudoCluster)
+        Warning("FillESD()","Negative or 0 digit amplitude in cluster");
     }
-    absIdList.Set(newCellMult);
-    //Uncomment when unfolding is done
-    //fracList.Set(newCellMult);
- 
-    if(newCellMult > 0) { // accept cluster if it has some digit
+    
+    if(newdigitMult > 0) { // accept cluster if it has some digit
       nClustersNew++;
+      
+      amplList.Set(newdigitMult);
+      timeList.Set(newdigitMult);
+      digiList.Set(newdigitMult);
+
       //Primaries
       Int_t  parentMult  = 0;
       Int_t *parentList =  clust->GetParents(parentMult);
-      
+    
       // fills the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
-      ec->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
+      ec->SetClusterType(clust->GetClusterType());
       ec->SetPosition(xyz);
       ec->SetE(clust->GetEnergy());
-      ec->SetNCells(newCellMult);
-      //Change type of list from short to ushort
-      UShort_t *newAbsIdList  = new UShort_t[newCellMult];
-      //Uncomment when unfolding is done
-      //Double_t *newFracList  = new Double_t[newCellMult];
-      for(Int_t i = 0; i < newCellMult ; i++) {
-	newAbsIdList[i]=absIdList[i];
-	//Uncomment when unfolding is done
-      //newFracList[i]=fracList[i];
-      }
-      ec->SetCellsAbsId(newAbsIdList);
-      //Uncomment when unfolding is done
-      //ec->SetCellsAmplitudeFraction(newFracList);
-      
-      ec->SetClusterDisp(clust->GetDispersion());
-      ec->SetClusterChi2(-1); //not yet implemented
-      ec->SetM02(elipAxis[0]*elipAxis[0]) ;
-      ec->SetM20(elipAxis[1]*elipAxis[1]) ;
-      ec->SetM11(-1) ;        //not yet implemented
-      
-      TArrayI arrayTrackMatched(1);// Only one track, temporal solution. 
-      arrayTrackMatched[0]= matchedTrack[iClust]; 
-      ec->AddTracksMatched(arrayTrackMatched); 
-      
-      TArrayI arrayParents(parentMult,parentList); 
-      ec->AddLabels(arrayParents);
-      
+      ec->AddDigitAmplitude(amplList);
+      ec->AddDigitTime(timeList);
+      ec->AddDigitIndex(digiList);
+    
+      if(clust->GetClusterType()== AliESDCaloCluster::kEMCALClusterv1){
+
+        ec->SetClusterDisp(clust->GetDispersion());
+        ec->SetClusterChi2(-1); //not yet implemented
+        ec->SetM02(elipAxis[0]*elipAxis[0]) ;
+        ec->SetM20(elipAxis[1]*elipAxis[1]) ;
+        ec->SetM11(-1) ;        //not yet implemented
+
+       TArrayI arrayTrackMatched(1);// Only one track, temporal solution. 
+       arrayTrackMatched[0]= matchedTrack[iClust]; 
+       ec->AddTracksMatched(arrayTrackMatched); 
+         
+       TArrayI arrayParents(parentMult,parentList); 
+       ec->AddLabels(arrayParents);
+      } 
       
       // add the cluster to the esd object
       esd->AddCaloCluster(ec);
       delete ec;
-      //delete [] newAbsIdList ;
-      //delete [] newFracList ;
     }
+
   } // cycle on clusters
-  
+
   delete [] matchedTrack;
-  
+
   esd->SetNumberOfEMCALClusters(nClustersNew);
   //if(nClustersNew != nClusters) 
   //printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );
   
   //Fill ESDCaloCluster with PID weights
-   AliEMCALPID *pid = new AliEMCALPID;
-   //pid->SetPrintInfo(kTRUE);
-   pid->SetReconstructor(kTRUE);
-   pid->RunPID(esd);
-   delete pid;
+  AliEMCALPID *pid = new AliEMCALPID;
+  //pid->SetPrintInfo(kTRUE);
+  pid->SetReconstructor(kTRUE);
+  pid->RunPID(esd);
 
-   delete digits;
-   delete clusters;
+  delete pid;
+  delete clusters;
 
+  printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
+  //  assert(0);
 }
 
+void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
+{
+  // See AliEMCALClusterizer::SetInput(TTree *digitsTree);
+  if(fgDigitsArr) {
+    // Clear previous digits 
+    fgDigitsArr->Delete();
+    delete fgDigitsArr;
+  }
+  // Read the digits from the input tree
+  TBranch *branch = digitsTree->GetBranch("EMCAL");
+  if (!branch) { 
+    AliError("can't get the branch with the EMCAL digits !");
+    return;
+  }
+  fgDigitsArr = new TClonesArray("AliEMCALDigit",100);
+  branch->SetAddress(&fgDigitsArr);
+  branch->GetEntry(0);
+}
 

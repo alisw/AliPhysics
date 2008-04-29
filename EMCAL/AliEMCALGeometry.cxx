@@ -103,8 +103,15 @@ AliEMCALGeometry::AliEMCALGeometry()
     fShellThickness(0.),fZLength(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),
-    fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),
-    fNTRUPhi(0), fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
+    // Trigger staff
+    fNTRUEta(0),
+    fNTRUPhi(0), 
+    fNModulesInTRUEta(0), 
+    fNModulesInTRUPhi(0), 
+    fNEtaSubOfTRU(0),
+    // 
+    fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0),fEtaMaxOfTRD1(0),
     fCentersOfCellsEtaDir(0), fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
@@ -127,8 +134,15 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title)
     fShellThickness(0.),fZLength(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),
-    fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),
-    fNTRUPhi(0), fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
+    // Trigger staff
+    fNTRUEta(0),
+    fNTRUPhi(0), 
+    fNModulesInTRUEta(0), 
+    fNModulesInTRUPhi(0), 
+    fNEtaSubOfTRU(0),
+    // 
+    fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0), fEtaMaxOfTRD1(0),
     fCentersOfCellsEtaDir(0),fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
@@ -183,10 +197,13 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
     fNCells(geom.fNCells),
     fNCellsInSupMod(geom.fNCellsInSupMod),
     fNCellsInModule(geom.fNCellsInModule),
+    // Trigger staff
     fNTRUEta(geom.fNTRUEta),
     fNTRUPhi(geom.fNTRUPhi),
-    fNCellsInTRUEta(geom.fNCellsInTRUEta),
-    fNCellsInTRUPhi(geom.fNCellsInTRUPhi),
+    fNModulesInTRUEta(geom.fNModulesInTRUEta),
+    fNModulesInTRUPhi(geom.fNModulesInTRUPhi),
+    fNEtaSubOfTRU(geom.fNEtaSubOfTRU),
+    //
     fTrd1Angle(geom.fTrd1Angle),
     f2Trd1Dx2(geom.f2Trd1Dx2),
     fPhiGapForSM(geom.fPhiGapForSM),
@@ -360,11 +377,17 @@ void AliEMCALGeometry::Init(void){
   //called after setting of scintillator and lead layer parameters
   DefineSamplingFraction();
 
-  //TRU parameters. These parameters values are not the final ones.
-  fNTRUEta = 3 ;
-  fNTRUPhi = 1 ;
-  fNCellsInTRUEta = 16 ;
-  fNCellsInTRUPhi = 24 ;
+  // TRU parameters - Apr 29,08 by PAI. 
+  // These parameters values was updated at Nov 05, 2007
+  // As is on Olivier  BOURRION (LPSC) ppt preasentation 
+  // at ALICE trigger meeting at 13th-14th March
+  fNTRUEta = 1;           // was 3
+  fNTRUPhi = 3;           // was 1
+  fNModulesInTRUEta = 24; // was 8
+  fNModulesInTRUPhi = 4;  // was 12
+  // Jet trigger 
+  // 3*6*10 + 2*6*2 = 204 -> matrix (nphi(17), neta(12))
+  fNEtaSubOfTRU     = 6;  
 
   fgInit = kTRUE; 
 }
@@ -535,20 +558,22 @@ void AliEMCALGeometry::DefineSamplingFraction()
 }
 
 //______________________________________________________________________
-void AliEMCALGeometry::GetCellPhiEtaIndexInSModuleFromTRUIndex(const Int_t itru, const Int_t iphitru, const Int_t ietatru, Int_t &iphiSM, Int_t &ietaSM) const 
+void AliEMCALGeometry::GetModulePhiEtaIndexInSModuleFromTRUIndex(const Int_t itru, const Int_t iphitru, const Int_t ietatru, Int_t &iphiSM, Int_t &ietaSM) const 
 {
   
-  // This method transforms the (eta,phi) index of cells in a 
+  // This method transforms the (eta,phi) index of module in a 
   // TRU matrix into Super Module (eta,phi) index.
   
   // Calculate in which row and column where the TRU are 
   // ordered in the SM
 
-  Int_t col = itru/ fNTRUPhi ;
+  Int_t col = itru/ fNTRUPhi ; // indexes of TRU in SM
   Int_t row = itru - col*fNTRUPhi ;
    
-  iphiSM = fNCellsInTRUPhi*row + iphitru  ;
-  ietaSM = fNCellsInTRUEta*col + ietatru  ; 
+  iphiSM = fNModulesInTRUPhi*row + iphitru  ;
+  ietaSM = fNModulesInTRUEta*col + ietatru  ; 
+  //printf(" GetModulePhiEtaIndexInSModuleFromTRUIndex : itru %2i iphitru %2i ietatru %2i iphiSM %2i ietaSM %2i \n", 
+  // itru, iphitru, ietatru, iphiSM, ietaSM);
 }
 
 //______________________________________________________________________
@@ -1312,6 +1337,14 @@ AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) 
     trd1 = (AliEMCALShishKebabTrd1Module*)fShishKebabTrd1Modules->At(neta);
   } else trd1 = 0;
   return trd1;
+}
+
+//________________________________________________________________________________________________
+Int_t AliEMCALGeometry::GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int_t col, const Int_t sm)
+{ // Nov 6, 2007
+  Int_t itru = row + col*GetNModulesInTRUPhi() + sm*GetNTRU();
+  // printf("  GetAbsTRUNumberFromNumberInSm : row %2i col %2i sm %2i -> itru %2i\n", row, col, sm, itru); 
+  return itru;
 }
 
 //________________________________________________________________________________________________

@@ -11,11 +11,15 @@
 //*-- Author: Yves Schutz (SUBATECH) 
 //*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 
-
 // --- ROOT system ---
 
 #include "AliReconstructor.h" 
 #include "AliEMCALTracker.h" 
+
+class TList;
+class TClonesArray;
+class TTree;
+
 class AliEMCALDigitizer ;
 class AliEMCALClusterizer ;
 class AliEMCALSDigitizer ;
@@ -38,6 +42,7 @@ public:
    
   virtual ~AliEMCALReconstructor() ; //dtor
 
+  virtual  void Init();
   Bool_t       Debug() const { return fDebug ; }
 
   using AliReconstructor::FillESD;
@@ -58,18 +63,27 @@ public:
     return *this ; 
   }
   
-  void SetRecParam(AliEMCALRecParam * recParam){ fgkRecParam = recParam;}
+  void   SetRecParam(AliEMCALRecParam * recParam){ fgkRecParam = recParam;}
+
+  void   ReadDigitsArrayFromTree(TTree *digitsTree) const;
 
   void InitRecParam() const;
+
+  TList *GetList() {return fList;}
+
   static const AliEMCALRecParam* GetRecParam(){ return fgkRecParam;}
+  static TClonesArray* GetDigitsArr() {return fgDigitsArr;}
 
 private:
   
   Bool_t fDebug; //! verbosity controller
+  TList *fList;  //! List of hists (only for trigger now)
+  AliEMCALGeometry         *fGeom;           // pointer to the EMCAL geometry
+
   static AliEMCALRecParam*   fgkRecParam; // reconstruction parameters for EMCAL
   static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
 					  // only need one per reco
-  AliEMCALGeometry         *fGeom;           // pointer to the EMCAL geometry
+  static TClonesArray*       fgDigitsArr; // Array with EMCAL digits
 
   ClassDef(AliEMCALReconstructor,3)  // Reconstruction algorithm class (Base Class)
 
