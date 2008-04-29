@@ -1,34 +1,45 @@
 
 The "small" framework to make fast action(e.g reconstruction) pass using batch systems
 
+Example usage:
+  $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx
+    if you run locally you should cd to your temp dir first, with 'cd /tmp/$USER'
+
+  Or submit as many agents you want on batch machines:
+  bsub -q 1nd $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx
 
 
+AGENT to run some action:
+3 components to be present
 
-# Example usage:
-# $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx
+0. CREATE ACTION LIST 
 
-#
-#  AGENT to run some action:
-#  3 components to be present
-#
-
-#  0. CREATE ACTION LIST ( see $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx)
-#
-
-#  1. WORKING DIRECTORY SETUP (in prev. example /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx)
-#    1.a. action.list
-#    1.b  empty out directory
-#    1.c  macros directory -with  <action>.C  - e.g rec.C  FindKrClustersRaw.C
+   0.a  Setup root, aliroot, alien (e.g. by doing 'source ~wiechula/public/.bagentsetup')
+   0.a  Get a valid token: with 'alien-token-init' 
+   0.b  source the alien env: with 'source /tmp/gclient_env_$UID'
+   0.c  create the action list 'job.list' by following the 
+        example in '$ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx'
+   0.d  if the first lines of this file contains entries like 
+        '/alice/data/2008/LHC08a_TPC/000028164/collection'
+        they need to be deleted
+        
 
 
-# 2. ENVIRONMENT SETUP:
-#
-# 2.a  Copy the script  to setup aliroot root to the  ~/.bagentsetup
-       (see /afs/cern.ch/user/m/miranov/public/.bagentsetup as an example)
-# 2.b  Copy certificates to default place -  ~/.agentauth/
-#     cp /tmp/*$UID* ~/.agentauth/
-# 2.c  Set envirnment variables needed OCDB_PATH and INPUTTYPE
+1. WORKING DIRECTORY SETUP (in prev. example /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx), 
+   what needs to be present:
+
+   1.a  the action list (called job.list - hardwired)
+   1.b  create an empty directory called 'out'
+   1.c  create a directory called 'macros', containing the '<action>.C' scripts,  
+        e.g 'rec.C'  'FindKrClustersRaw.C' etc.
 
 
-# How to create job.list (see 1.a)
-# Follow Example in the $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx
+2. ENVIRONMENT SETUP:
+
+   2.a  Copy the script  to setup aliroot, root and the user specific env to the  ~/.bagentsetup
+       (see /afs/cern.ch/user/w/wiechula/public/.bagentsetup for an example)
+   2.b  Export envirnment variables needed OCDB_PATH, AGENTINPUTTYPE, AGENTSE in the .bagentsetup script
+   2.c  Get a valid token: with 'alien-token-init' if not done above
+   2.d  Copy certificates to default place -  ~/.agentauth/
+        cp /tmp/*$UID* ~/.agentauth/
+   2.e  Run agent as described in the beginning examples

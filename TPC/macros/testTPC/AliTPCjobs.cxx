@@ -34,13 +34,14 @@ public:
   
   void    SetLock(TString jobID);
   void    SetDone(TString jobID);
-  void    SetFail(TString jobID){
+  void    SetFail(TString jobID);
 
   Int_t   Stage(TString inputData,TString jobID);
 
   Bool_t  IsLocked(TString jobID);
   Bool_t  IsFail(TString jobID);
   Bool_t  IsStaged(TString inputData);
+  Bool_t  IsCastorFile(TString filename);
 
   TString  fJobFile;
   TString  fWorkDir;
@@ -87,6 +88,7 @@ Bool_t AliTPCJobs::GetNextJob(){
     ins>>inputData;
     ins>>outputDir;
     ins>>action;
+    if (!inputData.Contains(".root")) SetFail(id);
     if (!IsStaged(inputData)){
 	Stage(inputData,id);
 	continue;
@@ -123,6 +125,7 @@ void  AliTPCJobs::Stage(TString inputData, TString jobID){
   // stage file
   //
   inputData.ReplaceAll("root://voalice04.cern.ch:1094/","");
+  if ( !IsCastorFile(inputData) ) return;
   char command[1000];
   sprintf(command,"stager_get -M %s \| grep SUBREQUEST_FAILED ",inputData.Data());
   FILE *pipe = gSystem->OpenPipe(command,"r");
@@ -143,7 +146,7 @@ Bool_t    AliTPCJobs::IsLocked(TString jobID){
   return (status==0);
 }
 
-Bool_t    AliTPCJobs::IsLocked(TString jobID){
+Bool_t    AliTPCJobs::IsFail(TString jobID){
   TString path = "out/";
   path+=jobID;
   path+=".fail";
@@ -157,6 +160,7 @@ Bool_t  AliTPCJobs::IsStaged(TString inputData){
   // check if file bname is staged
   //
   inputData.ReplaceAll("root://voalice04.cern.ch:1094/","");
+  if ( !IsCastorFile(inputData) ) return kTRUE;
   char command[1000];
   sprintf(command,"stager_qry -M %s \| grep /castor \| gawk  \'{ print $3;}\'",inputData.Data());
   FILE *pipe = gSystem->OpenPipe(command,"r");
@@ -168,6 +172,12 @@ Bool_t  AliTPCJobs::IsStaged(TString inputData){
   return kFALSE;
 }
 
+Bool_t  AliTPCJobs::IsCastorFile(TString filename){
+  //
+  // check if filename begins with 'castor'
+  //
+  return filename.BeginsWith("/castor/");
+}
 
 
 void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir, TString   action){
@@ -186,7 +196,8 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
     //TFile::Cp(inputData.Data(), outputDir.Data());
   }else{
     char command[10000];
-    sprintf(command,"$ALICE_ROOT/TPC/macros/testTPC/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());
+    //sprintf(command,"$ALICE_ROOT/TPC/macros/testTPC/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());    
+    sprintf(command,"/afs/cern.ch/user/w/wiechula/SOURCE/aliroot/job_agend/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());
     printf("%s\n\n",command);
     gSystem->Exec(command);
     printf("\n\n");
@@ -198,7 +209,7 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
 //	AliWarning(Form("Cannot create dir/already exists: '%s'",processDir.Data()));
 //	return;
 //    }
-//  }
+  }
   SetDone(jobID);
 }
 

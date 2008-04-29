@@ -13,6 +13,10 @@ echo $4
 #
 # 
 #
+
+#chek if input file is a root file
+echo $2 | grep .root || exit
+
 olddir=`pwd`
 mkdir -p $jobhome/$1
 mkdir -p $jobhome/$1/$4
@@ -30,7 +34,7 @@ if [  $AGENTINPUTTYPE -eq 2 ]; then
     CINAME=`echo $2| sed s_root://voalice04.cern.ch:1094/__`
     echo CASTOR COPY $CINAME ; 
     CISIZE=`nsls -l $CINAME | gawk '{print $5}'`
-    if [  $CISIZE -gt 1000000 ]; then 
+    if [ $CISIZE -gt 1000000 ]; then 
         rfcp  $CINAME data.root 
     else
        echo FILE TOO SMALL
@@ -47,7 +51,7 @@ echo LS DATA
 ls -al
  
 CISIZE=`ls -l data.root | gawk '{print $5}'`
-if [  $CISIZE -lt 100000 ]; then 
+if [ $CISIZE -lt 100000 ]; then 
     exit
 fi;
 #
@@ -82,15 +86,12 @@ if [  ${#alien_HOME} -gt 1 ]; then
     echo alien_mkdir $dirname
     alien_mkdir -p $dirname
     echo ALIEN COPY DATA START 
-    echo  alien_cp -n $4.zip alien:${dirname}/$4_se.zip@ALICE::GSI::SE
-    #echo  alien_cp -n  $4.zip alien:${dirname}$4.zip@ALICE::ALICE::CASTOR2 
-     for name in `ls *.root`; do
-	echo alien_cp -n $name alien:${dirname}/$name@ALICE::GSI::SE 
-	alien_cp -n $name alien:${dirname}/$name@ALICE::GSI::SE
-	
+    echo  alien_cp -n $4.zip alien:${dirname}/$4_se.zip@$AGENTSE
+    for name in `ls *.root`; do
+      echo alien_cp -n $name alien:${dirname}/$name@$AGENTSE 
+      alien_cp -n $name alien:${dirname}/$name@$AGENTSE
     done
-    alien_cp  -n  $4.zip  alien:${dirname}/$4_se.zip@ALICE::GSI::SE  
-    #alien_cp  $4.zip -n alien:${dirname}$4.zip@ALICE::ALICE::CASTOR2  
+    alien_cp  -n  $4.zip  alien:${dirname}/$4_se.zip@$AGENTSE
     echo END OF ALIEN COPY
 fi;
 
