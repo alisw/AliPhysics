@@ -58,7 +58,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t InvMassDsKKpi() const {UInt_t pdg[3]={321,321,211};return InvMass(3,pdg);}
   Double_t InvMassDspiKK() const {UInt_t pdg[3]={211,321,321};return InvMass(3,pdg);}
   Bool_t   SelectDs(const Double_t* cuts,Int_t &okDsKKpi,Int_t &okDspiKK) 
-    const; // only mass cut
+    const; // same variables as D+, for now
 
   // Lambdac+->pKpi
   Double_t ELc() const {return E(4122);} 
@@ -69,7 +69,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t InvMassLcpKpi() const {UInt_t pdg[3]={2212,321,211};return InvMass(3,pdg);}
   Double_t InvMassLcpiKp() const {UInt_t pdg[3]={211,321,2212};return InvMass(3,pdg);}
   Bool_t   SelectLc(const Double_t* cuts,Int_t &okLcpKpi,Int_t &okLcpiKp) 
-    const;// only mass cut
+    const; // same variables as D+, for now
 
  private:
 

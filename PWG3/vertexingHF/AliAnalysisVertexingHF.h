@@ -97,10 +97,21 @@ class AliAnalysisVertexingHF : public TNamed {
 		    Double_t cut9=-1.1,Double_t cut10=0.,
 		    Double_t cut11=0.); 
   void SetDplusCuts(const Double_t cuts[12]); 
-  void SetDsCuts(Double_t cut0=0.); 
-  void SetDsCuts(const Double_t cuts[1]); 
-  void SetLcCuts(Double_t cut0=0.); 
-  void SetLcCuts(const Double_t cuts[1]); 
+  void SetDsCuts(Double_t cut0=1000.,Double_t cut1=0.,
+		Double_t cut2=0.,Double_t cut3=0.,Double_t cut4=0.,
+		Double_t cut5=0.,Double_t cut6=10000000000.,
+		Double_t cut7=0.,Double_t cut8=0.,
+		Double_t cut9=-1.1,Double_t cut10=0.,
+		Double_t cut11=0.); 
+  void SetDsCuts(const Double_t cuts[12]); 
+  void SetLcCuts(Double_t cut0=1000.,Double_t cut1=0.,
+		 Double_t cut2=0.,Double_t cut3=0.,Double_t cut4=0.,
+		 Double_t cut5=0.,Double_t cut6=10000000000.,
+		 Double_t cut7=0.,Double_t cut8=0.,
+		 Double_t cut9=-1.1,Double_t cut10=0.,
+		 Double_t cut11=0.); 
+  void SetLcCuts(const Double_t cuts[12]); 
+
   //
  private:
   //
@@ -155,7 +166,7 @@ class AliAnalysisVertexingHF : public TNamed {
                           // 7 = d0d0 [cm^2]
                           // 8 = cosThetaPoint
   Double_t fDplusCuts[12]; // cuts on Dplus candidates
-                  // (to be passed to AliAODRecoDecayHF2Prong::SelectDplus())
+                  // (to be passed to AliAODRecoDecayHF3Prong::SelectDplus())
                           // 0 = inv. mass half width [GeV]   
                           // 1 = pTK [GeV/c]
                           // 2 = pTPi [GeV/c]
@@ -168,13 +179,34 @@ class AliAnalysisVertexingHF : public TNamed {
                           // 9 = cosThetaPoint
                           // 10 = Sum d0^2 (cm^2)
                           // 11 = dca cut (cm)
-  Double_t fDsCuts[1]; // cuts on Ds candidates
-                       // (to be passed to AliAODRecoDecayHF2Prong::SelectDs())
-                       // 0 = inv. mass half width [GeV]   
-  Double_t fLcCuts[1]; // cuts on Lambdac candidates
-                       // (to be passed to AliAODRecoDecayHF2Prong::SelectLc())
-                       // 0 = inv. mass half width [GeV]   
-
+  Double_t fDsCuts[12]; // cuts on Ds candidates
+                        // (to be passed to AliAODRecoDecayHF3Prong::SelectDs())
+                        // 0 = inv. mass half width [GeV]   
+                        // 1 = pTK [GeV/c]
+                        // 2 = pTPi [GeV/c]
+                        // 3 = d0K [cm]   lower limit!
+                        // 4 = d0Pi [cm]  lower limit!
+                        // 5 = dist12 (cm)
+                        // 6 = sigmavert (cm)
+                        // 7 = dist prim-sec (cm)
+                        // 8 = pM=Max{pT1,pT2,pT3} (GeV/c)
+                        // 9 = cosThetaPoint
+                        // 10 = Sum d0^2 (cm^2)
+                        // 11 = dca cut (cm)
+  Double_t fLcCuts[12]; // cuts on Lambdac candidates
+                        // (to be passed to AliAODRecoDecayHF3Prong::SelectLc())
+                        // 0 = inv. mass half width [GeV]   
+                        // 1 = pTP [GeV/c]
+                        // 2 = pTPi abd pTK [GeV/c]
+                        // 3 = d0P [cm]   lower limit!
+                        // 4 = d0Pi and d0K [cm]  lower limit!
+                        // 5 = dist12 (cm)
+                        // 6 = sigmavert (cm)
+                        // 7 = dist prim-sec (cm)
+                        // 8 = pM=Max{pT1,pT2,pT3} (GeV/c)
+                        // 9 = cosThetaPoint
+                        // 10 = Sum d0^2 (cm^2)
+                        // 11 = dca cut (cm)
   //
   AliESDVertex* OwnPrimaryVertex(Int_t ntrks,TObjArray *trkArray,AliESDEvent *esd) const;
   Bool_t SelectInvMass(Int_t decay,Int_t nprongs,
