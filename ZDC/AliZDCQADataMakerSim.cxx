@@ -170,23 +170,27 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     return;
   } else {
       char** add = (char**) (branch->GetAddress());
-      fHits = (TClonesArray*)(*add);
-
-    Int_t ntracks = (Int_t) hitTree->GetEntries();
-    //printf("\n\t *** no.track %d\n",ntracks);
-    if (ntracks<=0) return;
-    //
-    for(Int_t itrack=0; itrack<ntracks; itrack++){
-
-      branch->GetEntry(itrack);
+      if (add) {
+	  fHits = (TClonesArray*)(*add);
+      } else {
+	  if (!fHits) fHits = new TClonesArray("AliZDCHit", 1000);
+	  branch->SetAddress(&fHits);
+      }
+      Int_t ntracks = (Int_t) hitTree->GetEntries();
+      //printf("\n\t *** no.track %d\n",ntracks);
+      if (ntracks<=0) return;
       //
-      //printf("\t *** track %d",itrack);
-      //hits->Print("");
-      //printf("\n");
-      //
-      MakeHits(); 
-      fHits->Clear();
-    }	  
+      for(Int_t itrack=0; itrack<ntracks; itrack++){
+	  
+	  branch->GetEntry(itrack);
+	  //
+	  //printf("\t *** track %d",itrack);
+	  //hits->Print("");
+	  //printf("\n");
+	  //
+	  MakeHits(); 
+	  fHits->Clear();
+      }	  
   }
 }
 
@@ -207,8 +211,12 @@ void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
       return;
    } 
    char** add = (char**) (branch->GetAddress());
-   fDigit = (AliZDCDigit*)(*add);
-
+   if (add) {
+       fDigit = (AliZDCDigit*)(*add);
+   } else {
+       if (!fDigit) fDigit = new AliZDCDigit();
+       branch->SetAddress(&fDigit);
+   }
    
    Int_t ndig = digitTree->GetEntries();
    
