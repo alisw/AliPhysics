@@ -49,11 +49,7 @@ struct AliHLTMUONClustersBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header
 
 	// Array of clusters.
-#ifndef __SUNPRO_CC
-	AliHLTMUONClusterStruct fCluster[/*fHeader.fNrecords*/];
-#else
-	AliHLTMUONClusterStruct fCluster[1];
-#endif
+	//AliHLTMUONClusterStruct fCluster[/*fHeader.fNrecords*/];
 };
 
 } // extern "C"

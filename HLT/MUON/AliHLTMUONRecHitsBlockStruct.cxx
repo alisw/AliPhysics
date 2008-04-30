@@ -33,10 +33,12 @@ std::ostream& operator << (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(block) );
 
+	const AliHLTMUONRecHitStruct* hit =
+		reinterpret_cast<const AliHLTMUONRecHitStruct*>(&block + 1);
 	stream 	<< "{fHeader = " << block.fHeader << ", fHit[] = [";
-	if (block.fHeader.fNrecords > 0) stream << block.fHit[0];
+	if (block.fHeader.fNrecords > 0) stream << hit[0];
 	for (AliHLTUInt32_t i = 1; i < block.fHeader.fNrecords; i++)
-		stream << ", " << block.fHit[i];
+		stream << ", " << hit[i];
 	stream << "]}";
 	return stream;
 }
@@ -49,11 +51,16 @@ bool operator == (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(a) );
 	assert( AliHLTMUONUtils::IntegrityOk(b) );
+	
+	const AliHLTMUONRecHitStruct* hitA =
+		reinterpret_cast<const AliHLTMUONRecHitStruct*>(&a + 1);
+	const AliHLTMUONRecHitStruct* hitB =
+		reinterpret_cast<const AliHLTMUONRecHitStruct*>(&b + 1);
 
 	// First check if the blocks have the same header. If they do then check if
 	// every hit is the same. In either case if we find a difference return false.
 	if (a.fHeader != b.fHeader) return false;
 	for (AliHLTUInt32_t i = 0; i < a.fHeader.fNrecords; i++)
-		if (a.fHit[i] != b.fHit[i]) return false;
+		if (hitA[i] != hitB[i]) return false;
 	return true;
 }

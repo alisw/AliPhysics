@@ -45,10 +45,12 @@ std::ostream& operator << (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(block) );
 
+	const AliHLTMUONClusterStruct* cluster =
+		reinterpret_cast<const AliHLTMUONClusterStruct*>(&block + 1);
 	stream 	<< "{fHeader = " << block.fHeader << ", fCluster[] = [";
-	if (block.fHeader.fNrecords > 0) stream << block.fCluster[0];
+	if (block.fHeader.fNrecords > 0) stream << cluster[0];
 	for (AliHLTUInt32_t i = 1; i < block.fHeader.fNrecords; i++)
-		stream << ", " << block.fCluster[i];
+		stream << ", " << cluster[i];
 	stream << "]}";
 	return stream;
 }
@@ -61,12 +63,17 @@ bool operator == (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(a) );
 	assert( AliHLTMUONUtils::IntegrityOk(b) );
+	
+	const AliHLTMUONClusterStruct* clusterA =
+		reinterpret_cast<const AliHLTMUONClusterStruct*>(&a + 1);
+	const AliHLTMUONClusterStruct* clusterB =
+		reinterpret_cast<const AliHLTMUONClusterStruct*>(&b + 1);
 
 	// First check if the blocks have the same header. If they do then check
 	// if every cluster is the same. In either case if we find a difference
 	// return false.
 	if (a.fHeader != b.fHeader) return false;
 	for (AliHLTUInt32_t i = 0; i < a.fHeader.fNrecords; i++)
-		if (a.fCluster[i] != b.fCluster[i]) return false;
+		if (clusterA[i] != clusterB[i]) return false;
 	return true;
 }

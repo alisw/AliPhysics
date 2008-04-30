@@ -33,6 +33,9 @@ std::ostream& operator << (
 	)
 {
 	assert( AliHLTMUONUtils::IntegrityOk(block) );
+	
+	const AliHLTMUONPairDecisionStruct* decision =
+		reinterpret_cast<const AliHLTMUONPairDecisionStruct*>(&block + 1);
 
 	stream 	<< "{fHeader = " << block.fHeader
 		<< ", fNunlikeAnyPt = " << block.fNunlikeAnyPt
@@ -45,9 +48,9 @@ std::ostream& operator << (
 		<< ", fNmassLow = " << block.fNmassLow
 		<< ", fNmassHigh = " << block.fNmassHigh
 		<< ", fDecision[] = [";
-	if (block.fHeader.fNrecords > 0) stream << block.fDecision[0];
+	if (block.fHeader.fNrecords > 0) stream << decision[0];
 	for (AliHLTUInt32_t i = 1; i < block.fHeader.fNrecords; i++)
-		stream << ", " << block.fDecision[i];
+		stream << ", " << decision[i];
 	stream << "]}";
 	return stream;
 }
@@ -60,6 +63,11 @@ bool operator == (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(a) );
 	assert( AliHLTMUONUtils::IntegrityOk(b) );
+	
+	const AliHLTMUONPairDecisionStruct* decisionA =
+		reinterpret_cast<const AliHLTMUONPairDecisionStruct*>(&a + 1);
+	const AliHLTMUONPairDecisionStruct* decisionB =
+		reinterpret_cast<const AliHLTMUONPairDecisionStruct*>(&b + 1);
 
 	// First check if the blocks have the same header. If they do then
 	// check if every track pair's decision is the same. In either case if
@@ -75,6 +83,6 @@ bool operator == (
 	if (a.fNmassLow != b.fNmassLow) return false;
 	if (a.fNmassHigh != b.fNmassHigh) return false;
 	for (AliHLTUInt32_t i = 0; i < a.fHeader.fNrecords; i++)
-		if (a.fDecision[i] != b.fDecision[i]) return false;
+		if (decisionA[i] != decisionB[i]) return false;
 	return true;
 }

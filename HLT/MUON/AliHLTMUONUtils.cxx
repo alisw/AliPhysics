@@ -584,14 +584,17 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& blo
 	///
 	
 	if (not HeaderOk(block)) return false;
+	
+	const AliHLTMUONTriggerRecordStruct* triggerRecord =
+		reinterpret_cast<const AliHLTMUONTriggerRecordStruct*>(&block + 1);
 
 	// Check if any ID is duplicated.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		AliHLTInt32_t id = block.fTriggerRecord[i].fId;
+		AliHLTInt32_t id = triggerRecord[i].fId;
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
-			if (id == block.fTriggerRecord[j].fId)
+			if (id == triggerRecord[j].fId)
 				return false;
 		}
 	}
@@ -599,7 +602,7 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& blo
 	// Check integrity of individual trigger records.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(block.fTriggerRecord[i])) return false;
+		if (not IntegrityOk(triggerRecord[i])) return false;
 	}
 
 	return true;
@@ -655,13 +658,16 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONClustersBlockStruct& block)
 	
 	if (not HeaderOk(block)) return false;
 
+	const AliHLTMUONClusterStruct* cluster =
+		reinterpret_cast<const AliHLTMUONClusterStruct*>(&block + 1);
+	
 	// Check if any ID is duplicated.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		AliHLTInt32_t id = block.fCluster[i].fId;
+		AliHLTInt32_t id = cluster[i].fId;
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
-			if (id == block.fCluster[j].fId)
+			if (id == cluster[j].fId)
 				return false;
 		}
 	}
@@ -721,13 +727,16 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONMansoTracksBlockStruct& block)
 	
 	if (not HeaderOk(block)) return false;
 
+	const AliHLTMUONMansoTrackStruct* track =
+		reinterpret_cast<const AliHLTMUONMansoTrackStruct*>(&block + 1);
+	
 	// Check if any ID is duplicated.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		AliHLTInt32_t id = block.fTrack[i].fId;
+		AliHLTInt32_t id = track[i].fId;
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
-			if (id == block.fTrack[j].fId)
+			if (id == track[j].fId)
 				return false;
 		}
 	}
@@ -735,7 +744,7 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONMansoTracksBlockStruct& block)
 	// Check that the tracks have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(block.fTrack[i])) return false;
+		if (not IntegrityOk(track[i])) return false;
 	}
 
 	return true;
@@ -752,10 +761,13 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONMansoCandidatesBlockStruct& bl
 	
 	if (not HeaderOk(block)) return false;
 
+	const AliHLTMUONMansoCandidateStruct* candidate =
+		reinterpret_cast<const AliHLTMUONMansoCandidateStruct*>(&block + 1);
+	
 	// Check that the tracks have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(block.fCandidate[i].fTrack)) return false;
+		if (not IntegrityOk(candidate[i].fTrack)) return false;
 	}
 	
 	return true;
@@ -786,11 +798,14 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONSinglesDecisionBlockStruct& bl
 	///
 	
 	if (not HeaderOk(block)) return false;
+	
+	const AliHLTMUONTrackDecisionStruct* decision =
+		reinterpret_cast<const AliHLTMUONTrackDecisionStruct*>(&block + 1);
 
 	// Check that the trigger bits for each track have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(block.fDecision[i])) return false;
+		if (not IntegrityOk(decision[i])) return false;
 	}
 	
 	return true;
@@ -835,10 +850,13 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONPairsDecisionBlockStruct& bloc
 	
 	if (not HeaderOk(block)) return false;
 
+	const AliHLTMUONPairDecisionStruct* decision =
+		reinterpret_cast<const AliHLTMUONPairDecisionStruct*>(&block + 1);
+	
 	// Check that the trigger bits for each track pair have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(block.fDecision[i])) return false;
+		if (not IntegrityOk(decision[i])) return false;
 	}
 	
 	return true;

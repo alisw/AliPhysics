@@ -50,10 +50,12 @@ std::ostream& operator << (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(block) );
 
+	const AliHLTMUONTrigRecInfoStruct* trigRecInfo =
+		reinterpret_cast<const AliHLTMUONTrigRecInfoStruct*>(&block + 1);
 	stream 	<< "{fHeader = " << block.fHeader << ", fTrigRecInfo[] = [";
-	if (block.fHeader.fNrecords > 0) stream << block.fTrigRecInfo[0];
+	if (block.fHeader.fNrecords > 0) stream << trigRecInfo[0];
 	for (AliHLTUInt32_t i = 1; i < block.fHeader.fNrecords; i++)
-		stream << ", " << block.fTrigRecInfo[i];
+		stream << ", " << trigRecInfo[i];
 	stream << "]}";
 	return stream;
 }
@@ -67,11 +69,16 @@ bool operator == (
 	assert( AliHLTMUONUtils::IntegrityOk(a) );
 	assert( AliHLTMUONUtils::IntegrityOk(b) );
 
+	const AliHLTMUONTrigRecInfoStruct* trigRecInfoA =
+		reinterpret_cast<const AliHLTMUONTrigRecInfoStruct*>(&a + 1);
+	const AliHLTMUONTrigRecInfoStruct* trigRecInfoB =
+		reinterpret_cast<const AliHLTMUONTrigRecInfoStruct*>(&b + 1);
+	
 	// First check if the blocks have the same header. If they do then check
 	// if all debug information is the same. In either case if we find a
 	// difference return false.
 	if (a.fHeader != b.fHeader) return false;
 	for (AliHLTUInt32_t i = 0; i < a.fHeader.fNrecords; i++)
-		if (a.fTrigRecInfo[i] != b.fTrigRecInfo[i]) return false;
+		if (trigRecInfoA[i] != trigRecInfoB[i]) return false;
 	return true;
 }

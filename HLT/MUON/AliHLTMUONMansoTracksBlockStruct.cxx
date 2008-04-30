@@ -55,10 +55,12 @@ std::ostream& operator << (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(block) );
 
+	const AliHLTMUONMansoTrackStruct* track =
+		reinterpret_cast<const AliHLTMUONMansoTrackStruct*>(&block + 1);
 	stream 	<< "{fHeader = " << block.fHeader << ", fTrack[] = [";
-	if (block.fHeader.fNrecords > 0) stream << block.fTrack[0];
+	if (block.fHeader.fNrecords > 0) stream << track[0];
 	for (AliHLTUInt32_t i = 1; i < block.fHeader.fNrecords; i++)
-		stream << ", " << block.fTrack[i];
+		stream << ", " << track[i];
 	stream << "]}";
 	return stream;
 }
@@ -72,11 +74,16 @@ bool operator == (
 	assert( AliHLTMUONUtils::IntegrityOk(a) );
 	assert( AliHLTMUONUtils::IntegrityOk(b) );
 
+	const AliHLTMUONMansoTrackStruct* trackA =
+		reinterpret_cast<const AliHLTMUONMansoTrackStruct*>(&a + 1);
+	const AliHLTMUONMansoTrackStruct* trackB =
+		reinterpret_cast<const AliHLTMUONMansoTrackStruct*>(&b + 1);
+	
 	// First check if the blocks have the same header. If they do then check
 	// if every track is the same. In either case if we find a difference
 	// return false.
 	if (a.fHeader != b.fHeader) return false;
 	for (AliHLTUInt32_t i = 0; i < a.fHeader.fNrecords; i++)
-		if (a.fTrack[i] != b.fTrack[i]) return false;
+		if (trackA[i] != trackB[i]) return false;
 	return true;
 }

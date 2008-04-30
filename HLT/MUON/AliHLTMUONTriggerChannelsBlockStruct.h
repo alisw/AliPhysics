@@ -30,10 +30,10 @@ struct AliHLTMUONTriggerChannelStruct
 {
 	AliHLTInt32_t fTrigRecId; // ID corresponding to the trigger records this
 	                          // channel is part of. -1 == invalid.
-	                          
+	
 	AliHLTUInt16_t fChamber; // The chamber this hit corresponds to.
 	                         // In the range [11..14].
-	                         
+	
 	AliHLTUInt16_t fSignal;      // ADC value of signal.
 	AliHLTUInt32_t fRawDataWord; // The raw data word as found in the DDL stream.
 };
@@ -47,11 +47,7 @@ struct AliHLTMUONTriggerChannelsBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header
 
 	// Array of trigger channels/strips.
-#ifndef __SUNPRO_CC
-	AliHLTMUONTriggerChannelStruct fChannel[/*fHeader.fNrecords*/];
-#else
-	AliHLTMUONTriggerChannelStruct fChannel[1];
-#endif
+	//AliHLTMUONTriggerChannelStruct fChannel[/*fHeader.fNrecords*/];
 };
 
 } // extern "C"

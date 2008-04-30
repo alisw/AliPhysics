@@ -48,11 +48,7 @@ struct AliHLTMUONSinglesDecisionBlockStruct
 	AliHLTUInt32_t fNhighPt; // Number of high pt triggers.
 
 	// Array of decisions for individual tracks.
-#ifndef __SUNPRO_CC
-	AliHLTMUONTrackDecisionStruct fDecision[/*fHeader.fNrecords*/];
-#else
-	AliHLTMUONTrackDecisionStruct fDecision[1];
-#endif
+	//AliHLTMUONTrackDecisionStruct fDecision[/*fHeader.fNrecords*/];
 };
 
 } // extern "C"

@@ -194,7 +194,7 @@ public:
 	 */
 	AliHLTUInt32_t BytesUsed() const
 	{
-		assert( sizeof(DataElementType)	== fBlock->fHeader.fRecordWidth);
+		assert( sizeof(DataElementType) == fBlock->fHeader.fRecordWidth);
 		return sizeof(DataBlockType) + Nentries() * sizeof(DataElementType);
 	}
 

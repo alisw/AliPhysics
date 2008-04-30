@@ -53,10 +53,12 @@ std::ostream& operator << (
 {
 	assert( AliHLTMUONUtils::IntegrityOk(block) );
 
+	const AliHLTMUONTriggerRecordStruct* triggerRecord =
+		reinterpret_cast<const AliHLTMUONTriggerRecordStruct*>(&block + 1);
 	stream 	<< "{fHeader = " << block.fHeader << ", fTriggerRecord[] = [";
-	if (block.fHeader.fNrecords > 0) stream << block.fTriggerRecord[0];
+	if (block.fHeader.fNrecords > 0) stream << triggerRecord[0];
 	for (AliHLTUInt32_t i = 1; i < block.fHeader.fNrecords; i++)
-		stream << ", " << block.fTriggerRecord[i];
+		stream << ", " << triggerRecord[i];
 	stream << "]}";
 	return stream;
 }
@@ -70,11 +72,15 @@ bool operator == (
 	assert( AliHLTMUONUtils::IntegrityOk(a) );
 	assert( AliHLTMUONUtils::IntegrityOk(b) );
 
+	const AliHLTMUONTriggerRecordStruct* triggerRecordA =
+		reinterpret_cast<const AliHLTMUONTriggerRecordStruct*>(&a + 1);
+	const AliHLTMUONTriggerRecordStruct* triggerRecordB =
+		reinterpret_cast<const AliHLTMUONTriggerRecordStruct*>(&b + 1);
 	// First check if the blocks have the same header. If they do then check
 	// if every trigger record is the same. In either case if we find a
 	// difference return false.
 	if (a.fHeader != b.fHeader) return false;
 	for (AliHLTUInt32_t i = 0; i < a.fHeader.fNrecords; i++)
-		if (a.fTriggerRecord[i] != b.fTriggerRecord[i]) return false;
+		if (triggerRecordA[i] != triggerRecordB[i]) return false;
 	return true;
 }

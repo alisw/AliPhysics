@@ -91,11 +91,7 @@ struct AliHLTMUONPairsDecisionBlockStruct
 	AliHLTUInt32_t fNmassHigh;
 
 	// Array of decisions for track pairs.
-#ifndef __SUNPRO_CC
-	AliHLTMUONPairDecisionStruct fDecision[/*fHeader.fNrecords*/];
-#else
-	AliHLTMUONPairDecisionStruct fDecision[1];
-#endif
+	//AliHLTMUONPairDecisionStruct fDecision[/*fHeader.fNrecords*/];
 };
 
 } // extern "C"

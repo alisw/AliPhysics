@@ -47,11 +47,7 @@ struct AliHLTMUONChannelsBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header
 
 	// Array of cluster channels/pads.
-#ifndef __SUNPRO_CC
-	AliHLTMUONChannelStruct fChannel[/*fHeader.fNrecords*/];
-#else
-	AliHLTMUONChannelStruct fChannel[1];
-#endif
+	//AliHLTMUONChannelStruct fChannel[/*fHeader.fNrecords*/];
 };
 
 } // extern "C"
