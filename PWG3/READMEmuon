@@ -61,6 +61,7 @@ Test analysis:
   - AOD.par
   - ANALYSIS.par
   - ANALYSISalice.par
+  - PWG3muon.par
 If the packages are not present, create them: 
 cd $ALICE_ROOT
 make STEERBase.par

@@ -7,6 +7,7 @@
 //  - AOD.par
 //  - ANALYSIS.par
 //  - ANALYSISalice.par
+//  - PWG3muon.par
 // 
 // The macro reads ESDs and outputs file:
 // - MUON.TriggerEfficiencyMap.root
@@ -33,12 +34,20 @@ void AnalysisTrigChEff(Int_t mode=kMlocal)
   gSystem->Load("libVMC.so");
   gSystem->Load("libPhysics.so");
 
-  // Common packages
-  SetupPar("STEERBase");
-  SetupPar("ESD");
-  SetupPar("AOD");
-  SetupPar("ANALYSIS");
-  SetupPar("ANALYSISalice");
+  // if root setup Par
+  TString checkString=gSystem->Getenv("ALICE_ROOT");
+  checkString.Append("/lib/tgt_linux/libMUONbase.so");
+  TString foundLib=gSystem->GetLibraries(checkString.Data());
+
+  if(foundLib.Length()==0){
+    // Common packages
+    SetupPar("STEERBase");
+    SetupPar("ESD");
+    SetupPar("AOD");
+    SetupPar("ANALYSIS");
+    SetupPar("ANALYSISalice");
+  }
+  SetupPar("PWG3muon");
 
   // Analysis using standard AliRoot libraries
   gSystem->Load("libSTEERBase.so");
@@ -46,10 +55,8 @@ void AnalysisTrigChEff(Int_t mode=kMlocal)
   gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-
-  
-  // A task can be compiled dynamically with AClic
-  gROOT->ProcessLine(".L AliAnalysisTaskTrigChEff.cxx+");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libPWG3muon.so");
 
   //
   // Connect to alien
