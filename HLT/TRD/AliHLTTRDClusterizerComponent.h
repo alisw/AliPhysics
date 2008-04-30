@@ -17,6 +17,7 @@ class AliTRDclusterizerHLT;
 class AliRawReaderMemory;
 class TFile;
 class TGeoManager;
+class AliTRDrecoParam;
 
 /**
  * @class AliHLTTRDClusterizerComponent
@@ -69,6 +70,7 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 	string fStrorageDBpath; // Default path for OCDB
 
 	AliTRDclusterizerHLT *fClusterizer; //! Offline derived HLT clusterizer
+	AliTRDrecoParam *fRecoParam; //! Offline reco params
 	AliCDBManager *fCDB; //! Pointer to OCDB
 	AliRawReaderMemory *fMemReader; //! Input raw data reader
 

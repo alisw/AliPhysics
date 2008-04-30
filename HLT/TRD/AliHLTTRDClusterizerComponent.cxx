@@ -40,6 +40,10 @@ using namespace std;
 
 #include "AliCDBManager.h"
 #include "AliTRDclusterizerHLT.h"
+#include "AliTRDReconstructor.h"
+#include "AliTRDrecoParam.h"
+#include "AliTRDrawStreamBase.h"
+
 #include "AliRawReaderMemory.h"
 
 #include <cstdlib>
@@ -56,6 +60,7 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
   , fStrorageDBpath("local://$ALICE_ROOT")
   , fClusterizer(NULL)
+  , fRecoParam(NULL)
   , fCDB(NULL)
   , fMemReader(NULL)
   , fGeometryFileName("")
@@ -113,6 +118,12 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   Int_t fRawDataVersion = 2;
   int i = 0;
   char* cpErr;
+
+  Int_t iRecoParamType = -1; // default will be the low flux
+
+  // the data type will become obsolete as soon as the formats are established
+  Int_t iRecoDataType = -1; // default will be simulation
+  
   while ( i < argc )
     {
       Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoInit", "Arguments", "argv[%d] == %s", i, argv[i] );
@@ -148,6 +159,38 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  continue;
 	}      
 
+      // the flux parametrizations
+      if ( strcmp( argv[i], "-lowflux" ) == 0)
+	{
+	  iRecoParamType = 0;	  
+	  HLTDebug("Low flux reco selected.");
+	  i++;
+	  continue;
+	}      
+
+      if ( strcmp( argv[i], "-highflux" ) == 0)
+	{
+	  iRecoParamType = 1;	  
+	  HLTDebug("Low flux reco selected.");
+	  i++;
+	  continue;
+	}      
+
+      // raw data type - sim or experiment
+      if ( strcmp( argv[i], "-simulation" ) == 0)
+	{
+	  iRecoDataType = 0;
+	  i++;
+	  continue;
+	}
+
+      if ( strcmp( argv[i], "-experiment" ) == 0)
+	{
+	  iRecoDataType = 1;
+	  i++;
+	  continue;
+	}
+
       if ( strcmp( argv[i], "-rawver" ) == 0)
 	{
 	  if ( i+1 >= argc )
@@ -179,6 +222,56 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
       return EINVAL;
     }
 
+  // THE "REAL" INIT COMES HERE
+
+  if (iRecoParamType < 0 || iRecoParamType > 1)
+    {
+      HLTWarning("No reco param selected. Use -lowflux or -highflux flag. Defaulting to low flux.");
+      iRecoParamType = 0;
+    }
+
+  if (iRecoParamType == 0)
+    {
+      fRecoParam = AliTRDrecoParam::GetLowFluxParam();
+      HLTDebug("Low flux params init.");
+    }
+
+  if (iRecoParamType == 1)
+    {
+      fRecoParam = AliTRDrecoParam::GetHighFluxParam();
+      HLTDebug("High flux params init.");
+    }
+
+  if (fRecoParam == 0)
+    {
+      HLTError("No reco params initialized. Sniffing big trouble!");
+      return -1;
+    }
+
+  AliTRDReconstructor::SetRecoParam(fRecoParam);
+
+  // init the raw data type to be used...
+  // the switch here will become obsolete as soon as the data structures is fixed 
+  // both: in sim and reality
+  if (iRecoDataType < 0 || iRecoDataType > 1)
+    {
+      HLTWarning("No data type selected. Use -simulation or -experiment flag. Defaulting to simulation.");
+      iRecoDataType = 0;
+    }
+
+  if (iRecoDataType == 0)
+    {
+      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDsimStream);
+      HLTDebug("Data type expected is SIMULATION!");
+    }
+
+  if (iRecoDataType == 1)
+    {
+      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDrealStream);
+      HLTDebug("Data type expected is EXPERIMENT!");
+    }
+
+  // the DATA BASE STUFF
   fCDB = AliCDBManager::Instance();
   if (!fCDB)
     {
@@ -232,46 +325,48 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
       fCDB->Destroy();
       fCDB = 0;
     }
+
+  if (fRecoParam)
+    {
+      HLTDebug("Deleting fRecoParam");
+      delete fRecoParam;
+      fRecoParam = 0;
+    }
 }
 
-int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-					    AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					    AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evtData, 
+					    const AliHLTComponent_BlockData* blocks, 
+					    AliHLTComponent_TriggerData& /*trigData*/, 
+					    AliHLTUInt8_t* /*outputPtr*/, 
+					    AliHLTUInt32_t& /*size*/, 
+					    vector<AliHLTComponent_BlockData>& /*outputBlocks*/ )
 {
   // Process an event
-//   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
-  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
+  HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
   unsigned long totalSize = 0;
   AliHLTUInt32_t dBlockSpecification = 0;
 
   //implement a usage of the following
-//   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
-//   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
-//   void *triggerData = trigData.fData;
-  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Trigger data received", 
-	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
-  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Output status", 
-	   "Output pointer at 0x%x Output vector blocks at 0x%x", outputPtr, &outputBlocks);
+  //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
+  //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
+  //   void *triggerData = trigData.fData;
+  HLTDebug("Trigger data received. Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  HLTDebug("Output status. Output pointer at 0x%x Output vector blocks at 0x%x", outputPtr, &outputBlocks);
 
   // Loop over all input blocks in the event
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
     {
-      char tmp1[14], tmp2[14];
-      DataType2Text( blocks[i].fDataType, tmp1 );
-      DataType2Text( AliHLTTRDDefinitions::fgkDDLRawDataType, tmp2 );      
-      Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Event received", 
-	       "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
-
-      if ( blocks[i].fDataType != AliHLTTRDDefinitions::fgkDDLRawDataType ) 
+      // lets not use the internal TRD data types here : AliHLTTRDDefinitions::fgkDDLRawDataType
+      // which is depreciated - we use HLT global defs instead
+      if ( blocks[i].fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
 	{
- 	  Logging (kHLTLogError, "HLT::TRDClusterizer::DoEvent", "COMPARE FAILED", "type=%d is type=%d",
- 		   blocks[i].fDataType, AliHLTTRDDefinitions::fgkDDLRawDataType);
+ 	  HLTWarning("COMPARE FAILED type=%d is type=%d",
+		     blocks[i].fDataType, AliHLTTRDDefinitions::fgkDDLRawDataType);
 	  continue;
 	}
+
       dBlockSpecification = blocks[i].fSpecification;
-//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CHECKSPEC", "fDblock_Spec %d %d", i, dBlockSpecification);
       unsigned long blockSize = blocks[i].fSize;
       totalSize += blockSize;
     }
@@ -280,7 +375,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   AliHLTUInt8_t *pBuf = (AliHLTUInt8_t *)memBufIn;
   if (memBufIn == NULL)
     {
-      Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "MEMORY", "Unable to allocate %lu bytes", totalSize);
+      HLTError("Unable to allocate %lu bytes", totalSize);
       return -1;
     }
 
@@ -288,84 +383,55 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   unsigned long copied = 0;
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
     {
-      if ( blocks[i].fDataType != AliHLTTRDDefinitions::fgkDDLRawDataType ) 
+      // we process only the raw data from TRD
+      if ( blocks[i].fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
 	continue;
 
       void *pos = (void*)(pBuf + copied);
       void *copyret = memcpy(pos, blocks[i].fPtr, blocks[i].fSize);
       if (copyret < 0)
 	{
-	  Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "MEMORY", "Unable to copy %lu bytes", blocks[i].fSize);
+	  //Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "MEMORY", "Unable to copy %lu bytes", blocks[i].fSize);
+	  // so here i am not sure which log scheme finaly to use...
+	  HLTError("MEMORY Unable to copy %lu bytes", blocks[i].fSize);
+	  // maybe put a reasonable return value here...
 	  return -1;
 	}
       copied += blocks[i].fSize;
     }
-
-//   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COPY STATS", "total=%lu copied=%lu", totalSize, copied);
+  
+  // lets see what we copied...
+  HLTDebug("COPY STATS total=%lu copied=%lu", totalSize, copied);
 
   fMemReader->Reset();
   fMemReader->SetMemory((UChar_t*)memBufIn, totalSize);
+
   //fMemReader->SelectEquipment(0, 1024, 1041);
+
+  // 1024 is good for SM 0 - it should be good for any other too
+  // but in principle the EquipmentID should come with the data
   fMemReader->SetEquipmentID(1024);
-  //fMemReader->Reset();
-//   Bool_t ihead = fMemReader->ReadHeader();
-//   if (ihead == kTRUE)
-//     {
-//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
-//     }
-//   else
-//     {
-//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
-//       //return -1; -- not FATAL
-//     }
 
   fClusterizer->ResetTree();  
   Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
   if (iclustered == kTRUE)
     {
-      Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustered successfully");
+      HLTDebug("Clustered successfully");
     }
   else
     {
-      Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustering ERROR");
+      HLTError("Clustering ERROR");
       return -1;
     }
 
-//   AliRawReaderMemory reader;
-//   reader.Reset();
-//   reader.SetMemory((UChar_t*)memBufIn, totalSize);
-//   //reader->Reset();
-//   Bool_t ihead = reader.ReadHeader();
-// //   if (ihead == kTRUE)
-// //     {
-// //       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
-// //     }
-// //   else
-// //     {
-// //       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
-// //       //return -1; -- not FATAL
-// //     }
-
-//   fClusterizer->ResetTree();
-  
-//   Bool_t iclustered = fClusterizer->Raw2ClustersChamber(&reader);
-//   if (iclustered == kTRUE)
-//     {
-//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustered successfully");
-//     }
-//   else
-//     {
-//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustering ERROR");
-//       return -1;
-//     }
-  
+  // free the memory
   free(memBufIn);
   
-  // put the tree into output blocks of TObjArrays
+  // put the tree into output blocks
   TTree *fcTree = fClusterizer->GetClusterTree();
   
   PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, dBlockSpecification);
-  
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "DONE", "Output size %d", size);
+ 
+  HLTDebug("Output size %d", size);
   return 0;
 }
