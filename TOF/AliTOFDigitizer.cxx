@@ -61,8 +61,8 @@ ClassImp(AliTOFDigitizer)
 //___________________________________________
   AliTOFDigitizer::AliTOFDigitizer()  :
     AliDigitizer(),
-    fDigits(0x0),
-    fSDigitsArray(0x0),
+    fDigits(new TClonesArray("AliTOFdigit",4000)),
+    fSDigitsArray(new TClonesArray("AliTOFSDigit",1000)),
   fhitMap(0x0),
   fCalib(new AliTOFcalib())
 {
@@ -73,8 +73,8 @@ ClassImp(AliTOFDigitizer)
 //___________________________________________
 AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager): 
   AliDigitizer(manager), 
-  fDigits(0x0),
-  fSDigitsArray(0x0),
+  fDigits(new TClonesArray("AliTOFdigit",4000)),
+  fSDigitsArray(new TClonesArray("AliTOFSDigit",1000)),
   fhitMap(0x0),
   fCalib(new AliTOFcalib())
 {
@@ -110,6 +110,16 @@ AliTOFDigitizer::~AliTOFDigitizer()
 {
   // Destructor
   delete fCalib;
+  if (fDigits){
+    fDigits->Delete();
+    delete fDigits;
+    fDigits=0x0;
+  }
+  if (fSDigitsArray){
+    fSDigitsArray->Delete();
+    delete fSDigitsArray;
+    fSDigitsArray=0x0;
+  }
 }
 
 //---------------------------------------------------------------------
@@ -135,8 +145,6 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   //Make branches
   char branchname[20];
   sprintf (branchname, "%s", tof->GetName ());
-
-  fDigits=new TClonesArray("AliTOFdigit",4000);
  
   AliRunLoader* outrl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   if (outrl == 0x0)
@@ -205,8 +213,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
  
   outgime->WriteDigits("OVERWRITE");
   outgime->UnloadDigits();
-  fDigits->Delete();
-  delete fDigits;
+  fDigits->Clear();
 
 }
 
@@ -301,6 +308,10 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
   // SDigits from different files are assumed to
   // be created with the same simulation parameters.
   
+  // creating the TClonesArray to store the digits
+  static TClonesArray sdigitsClonesArray("AliTOFSDigit",  1000); 
+  sdigitsClonesArray.Clear();
+
   // get the treeS from manager
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
   if (rl == 0x0)
@@ -333,8 +344,7 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
       }
    } 
   // get the branch TOF inside the treeS
-  TClonesArray * sdigitsDummyContainer= new TClonesArray("AliTOFSDigit",  1000); 
-
+  TClonesArray * sdigitsDummyContainer=&sdigitsClonesArray;
   // check if the branch exist
   TBranch* tofBranch=currentTreeS->GetBranch("TOF");
 
@@ -382,11 +392,8 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
       } // if (hitMap->TestHit(vol) != kEmpty)
       
     } // for (Int_t k=0; k<ndig; k++)
-    sdigitsDummyContainer->Delete();
 
   } // end loop on entries
-
-  delete sdigitsDummyContainer;
 
 }
 

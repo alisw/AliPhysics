@@ -190,8 +190,12 @@ void AliTOFQADataMakerSim::MakeHits(TTree * hitTree)
     return;
   }
 
-  TClonesArray * hits = new TClonesArray("AliTOFhitT0", 1000);
-  TClonesArray * dummy = new TClonesArray("AliTOFhitT0", 1000);
+  static TClonesArray statichits("AliTOFhitT0", 1000);
+  statichits.Clear();
+  TClonesArray *hits = &statichits;
+  static TClonesArray staticdummy("AliTOFhitT0", 1000);
+  staticdummy.Clear();
+  TClonesArray *dummy = &staticdummy;
   branch->SetAddress(&dummy);
   Int_t index = 0 ;  
   for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
@@ -203,8 +207,6 @@ void AliTOFQADataMakerSim::MakeHits(TTree * hitTree)
     } 
   } 	
 
-  dummy->Delete();
-  delete dummy;
   MakeHits(hits) ; 
 
 }

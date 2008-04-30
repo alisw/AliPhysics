@@ -97,7 +97,7 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
 {
 // reconstruct clusters from Raw Data
 
-  AliTOFClusterFinder tofClus(fTOFcalib);
+  static AliTOFClusterFinder tofClus(fTOFcalib);
   tofClus.Digits2RecPoints(rawReader, clustersTree);
 
 }
@@ -109,7 +109,7 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
 // reconstruct clusters from Raw Data
 
   AliDebug(2,Form("Global Event loop mode: Creating Recpoints from Digits Tree")); 
-  AliTOFClusterFinder tofClus(fTOFcalib);
+  static AliTOFClusterFinder tofClus(fTOFcalib);
   tofClus.Digits2RecPoints(digitsTree, clustersTree);
 
 }

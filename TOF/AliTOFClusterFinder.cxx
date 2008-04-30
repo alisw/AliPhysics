@@ -250,7 +250,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     return;
   }
 
-  TClonesArray *digits = new TClonesArray("AliTOFdigit",10000);
+  TClonesArray staticdigits("AliTOFdigit",10000);
+  staticdigits.Clear();
+  TClonesArray *digits =&staticdigits;
   branch->SetAddress(&digits);
 
   ResetRecpoint();
@@ -311,8 +313,6 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
-  digits->Delete();
-  delete digits;
 }
 
 //______________________________________________________________________________
@@ -339,7 +339,9 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
     return;
   }
 
-  TClonesArray *digits = new TClonesArray("AliTOFdigit",10000);
+  TClonesArray staticdigits("AliTOFdigit",10000);
+  staticdigits.Clear();
+  TClonesArray *digits = & staticdigits;
   branch->SetAddress(&digits);
 
   ResetRecpoint();
@@ -392,8 +394,6 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
   AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
-  digits->Delete();
-  delete digits;
 }
 //______________________________________________________________________________
 
