@@ -1,0 +1,13 @@
+SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
+                 muon/AliAnalysisTaskMuonAODfromGeneral.cxx \
+                 muon/AliAnalysisTaskSingleMu.cxx \
+                 muon/AliAnalysisTaskLUT.cxx  \
+                 muon/AliAODDimuon.cxx \
+                 muon/AliAODEventInfo.cxx 
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= PWG3muonLinkDef.h
+
+EINCLUDE:= PWG3/base
+

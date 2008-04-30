@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libPWG3base.so 
+default-target: libPWG3base.so libPWG3muon libPWG3vertexingHF.so libPWG3vertexingOld.so 
 
 ALICEINC      = -I.
 
@@ -30,17 +30,17 @@ endif
 
 CXXFLAGS     += $(ALICEINC) -g
 
-PACKAGE = PWG3base
+PACKAGE = PWG3
 include lib$(PACKAGE).pkg
 
-DHDR_PWG3base := $(DHDR)
-HDRS_PWG3base := $(HDRS)
-SRCS_PWG3base := $(SRCS) G__$(PACKAGE).cxx
-OBJS_PWG3base := $(SRCS_PWG3base:.cxx=.o)
+DHDR_PWG3 := $(DHDR)
+HDRS_PWG3 := $(HDRS)
+SRCS_PWG3 := $(SRCS) G__$(PACKAGE).cxx
+OBJS_PWG3 := $(SRCS_PWG3:.cxx=.o)
 
 PARFILE       = $(PACKAGE).par
 
-lib$(PACKAGE).so: $(OBJS_PWG3base)
+lib$(PACKAGE).so: $(OBJS_PWG3)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(ARCH),macosx)
@@ -54,16 +54,16 @@ endif
 %.o:    %.cxx %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-G__PWG3base.cxx G__PWG3base.h: $(HDRS_PWG3base) $(DHDR_PWG3base)
+G__PWG3.cxx G__PWG3.h: $(HDRS_PWG3) $(DHDR_PWG3)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 
 clean:
-	@rm -f $(OBJS_PWG3base)  *.so G__PWG3base.*  $(PARFILE)
+	@rm -f $(OBJS_PWG3)  *.so G__PWG3.*  $(PARFILE)
 
 ### CREATE PAR FILE
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_PWG3base) $(SRCS_PWG3base) $(DHDR_PWG3base) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_PWG3) $(SRCS_PWG3) $(DHDR_PWG3) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)
@@ -96,3 +96,95 @@ test-%.par: %.par
 	@rm -rf par-tmp
 	@echo "INFO: Testing succeeded (already cleaned up)"
 
+## libPWG3base part
+##include libPWG3base.pkg
+
+DHDR_PWG3base := $(DHDR)
+HDRS_PWG3base := $(HDRS)
+SRCS_PWG3base := $(SRCS) G__PWG3base.cxx
+OBJS_PWG3base := $(SRCS_PWG3base:.cxx=.o)
+
+libPWG3base.so: $(OBJS_PWG3base)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(ARCH),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG3base.cxx G__PWG3base.h: $(HDRS_PWG3base) $(DHDR_PWG3base)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
+
+
+## libPWG3muon part
+##include libPWG3muon.pkg
+
+DHDR_PWG3muon := $(DHDR)
+HDRS_PWG3muon := $(HDRS)
+SRCS_PWG3muon := $(SRCS) G__PWG3muon.cxx
+OBJS_PWG3muon := $(SRCS_PWG3muon:.cxx=.o)
+
+libPWG3muon.so: $(OBJS_PWG3muon)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(ARCH),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG3muon.cxx G__PWG3muon.h: $(HDRS_PWG3muon) $(DHDR_PWG3muon)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
+
+## libPWG3vertexingHF part
+##include libPWG3vertexingHF.pkg
+
+DHDR_PWG3vertexingHF := $(DHDR)
+HDRS_PWG3vertexingHF := $(HDRS)
+SRCS_PWG3vertexingHF := $(SRCS) G__PWG3vertexingHF.cxx
+OBJS_PWG3vertexingHF := $(SRCS_PWG3vertexingHF:.cxx=.o)
+
+libPWG3vertexingHF.so: $(OBJS_PWG3vertexingHF)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(ARCH),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG3vertexingHF.cxx G__PWG3vertexingHF.h: $(HDRS_PWG3vertexingHF) $(DHDR_PWG3vertexingHF)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
+
+## libPWG3vertexingOld part
+##include libPWG3vertexingOld.pkg
+
+DHDR_PWG3vertexingOld := $(DHDR)
+HDRS_PWG3vertexingOld := $(HDRS)
+SRCS_PWG3vertexingOld := $(SRCS) G__PWG3vertexingOld.cxx
+OBJS_PWG3vertexingOld := $(SRCS_PWG3vertexingOld:.cxx=.o)
+
+libPWG3vertexingOld.so: $(OBJS_PWG3vertexingOld)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(ARCH),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG3vertexingOld.cxx G__PWG3vertexingOld.h: $(HDRS_PWG3vertexingOld) $(DHDR_PWG3vertexingOld)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
