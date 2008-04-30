@@ -625,7 +625,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   TMatrixD sumWi(TMatrixD::kInverted,vV);
   TMatrixD sumWiri(sumWi,TMatrixD::kMult,rv);
 
-  Int_t nUsedTrks = inVtx->GetNContributors();
+  Int_t nUsedTrks = inVtx->GetNIndices();
   Double_t chi2 = inVtx->GetChi2();
 
   AliExternalTrackParam *track = 0;
@@ -692,7 +692,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   AliESDVertex *outVtx = new AliESDVertex(position,cov,chi2,nUsedTrks);
   outVtx->SetTitle(inVtx->GetTitle());
   UShort_t *inindices = inVtx->GetIndices();
-  Int_t nIndices = outVtx->GetNContributors()-1;
+  Int_t nIndices = nUsedTrks;
   UShort_t *outindices = new UShort_t[nIndices];
   Int_t j=0;
   for(Int_t k=0; k<inVtx->GetNIndices(); k++) {
