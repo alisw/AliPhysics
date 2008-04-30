@@ -1,6 +1,5 @@
 #!/bin/bash
 #
-# need pubsub_size_tag program visible
 
 usage="<simplefile input directory> <number of events> [<output directory> (optional, default is current)]"
 
@@ -44,5 +43,4 @@ fi
 for (( i = 0 ; i < $2 ; i++ ));  do
   suffix=`EventStorageExtractor -storagetype simplefile -storagename $1 -eventnr $i -metadatadump | grep fDataType | grep fDataBlocks | awk '{print $4}' | sed s/\(// | tr A-Z a-z`
   EventStorageExtractor -storagetype simplefile -storagename $1 -eventnr $i -datadump > $dir/event_$i.$suffix
-  ../bin/pubsub_size_tag -c $dir/event_$i.$suffix
 done
