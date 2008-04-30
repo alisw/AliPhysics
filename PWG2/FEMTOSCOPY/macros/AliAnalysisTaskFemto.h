@@ -12,20 +12,23 @@
 
 #include "AliESDInputHandler.h"
 #include "AliAODInputHandler.h"
+#include "AliMCEventHandler.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 
 #include "AliFemtoEventReaderESDChain.h"
+#include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
 #include "AliFemtoManager.h"
 
 class AliAnalysisTaskFemto : public AliAnalysisTask {
  public:
-  AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fAOD(0), fOutputList(0), fReaderESD(0x0), fReaderAOD(0x0), fManager(0x0), fAnalysisType(0) {}
+  AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fAOD(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0) {}
   AliAnalysisTaskFemto(const char *name);
   virtual ~AliAnalysisTaskFemto() {}
   
@@ -35,15 +38,16 @@ class AliAnalysisTaskFemto : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
 
   void SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader);
+  void SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader);
   void SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader);
   void SetFemtoManager(AliFemtoManager *aManager);
 
  private:
   AliESDEvent                 *fESD;          //! ESD object
   AliAODEvent                 *fAOD;          //! AOD object
+  AliStack                    *fStack;        //! Stack from Kinematics
   TList                       *fOutputList;   //  AliFemto results list
-  AliFemtoEventReaderESDChain *fReaderESD;    //! AliFemto reader for ESD given by the chain
-  AliFemtoEventReaderAODChain *fReaderAOD;    //! AliFemto reader for AOD given by the chain
+  AliFemtoEventReader         *fReader;       //! Reference to the reader
   AliFemtoManager             *fManager;      //! AliFemto top-level manager 
   int                          fAnalysisType; //  Mark ESD of AOD analysis
  
@@ -51,3 +55,4 @@ class AliAnalysisTaskFemto : public AliAnalysisTask {
 };
 
 #endif
+
