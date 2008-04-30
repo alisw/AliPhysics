@@ -1,6 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSresponseSDD.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBStorage.h"
@@ -26,20 +27,16 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999
   
 
   AliCDBMetaData *md1= new AliCDBMetaData(); // metaData describing the object
-  md1->SetObjectClassName("AliITSCalibration");
-  md1->SetResponsible("Elisabetta Crescio, Francesco Prino");
+  md1->SetObjectClassName("TObjArray");
+  md1->SetResponsible("Francesco Prino");
   md1->SetBeamPeriod(0);
-  md1->SetAliRootVersion("Head 20 nov. 2007"); //root version
-  md1->SetComment("This is a test");
-  //  TObject* str;
-  // md1->SetProperty("key1",str);
+  md1->SetComment("Simulated data");
 
   AliCDBMetaData *md2 = new AliCDBMetaData();
   md2->SetObjectClassName("AliITSresponse");
-  md2->SetResponsible("Elisabetta Crescio, Francesco Prino");
+  md2->SetResponsible("Francesco Prino");
   md2->SetBeamPeriod(0);
-  md2->SetAliRootVersion("Head 20 nov. 2007"); //root version
-  md2->SetComment("This is a test");
+  md2->SetComment("Simulated data");
 
 
   AliCDBId idCalSDD("ITS/Calib/CalibSDD",firstRun, lastRun);
@@ -50,6 +47,29 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999
 
   AliCDBId idRespSDD("ITS/Calib/RespSDD",firstRun, lastRunResp);
   AliITSresponseSDD* rd = new AliITSresponseSDD();
+
+
+  // BAD modules data 
+  const Int_t nbadmod=6;
+  Int_t idBadMod[nbadmod];
+  idBadMod[0]=AliITSgeomTGeo::GetModuleIndex(3,4,1);
+  idBadMod[1]=AliITSgeomTGeo::GetModuleIndex(3,4,2);
+  idBadMod[2]=AliITSgeomTGeo::GetModuleIndex(3,4,3);
+  idBadMod[3]=AliITSgeomTGeo::GetModuleIndex(4,1,1);
+  idBadMod[4]=AliITSgeomTGeo::GetModuleIndex(4,12,1);
+  idBadMod[5]=AliITSgeomTGeo::GetModuleIndex(4,21,3);
+  
+  // Modules with bad left side 
+  const Int_t nbadleft=5;
+  Int_t idBadLeft[nbadleft];
+  idBadLeft[0]=AliITSgeomTGeo::GetModuleIndex(3,13,6);
+  idBadLeft[1]=AliITSgeomTGeo::GetModuleIndex(4,4,8);
+  idBadLeft[2]=AliITSgeomTGeo::GetModuleIndex(4,5,3);
+  idBadLeft[3]=AliITSgeomTGeo::GetModuleIndex(4,18,4);
+  idBadLeft[4]=AliITSgeomTGeo::GetModuleIndex(4,21,5);
+
+
+ // BAD anodes data
   const Int_t nData = 209;
   Int_t anodeUp[209] = {0,36,0,12,20,32,0,0,12,76,28,8,16,0,0,0,8,0,0,0,20,4,0,0,0,0,0,0
 			,0,0,8,0,0,0,0,0,0,0,0,0,0,0,12,0,8,0,4,4,0,160,0,0,0,252,16,0,8,8
@@ -213,12 +233,25 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999
       }
     */
 
+    Int_t modId=mod+240;
+    // Bad modules
+    for(Int_t ibadm=0; ibadm<nbadmod; ibadm++){
+      if(modId==idBadMod[ibadm]) resd->SetBad();
+    }
+    // Modules with bad left side
+    for(Int_t ibadl=0; ibadl<nbadleft; ibadl++){
+      if(modId==idBadLeft[ibadl]) for(Int_t ichip=0;ichip<4;ichip++) resd->SetChipBad(ichip);
+    }
 
-    if(mod==88) resd->SetBad();
-    if(mod==202) for(Int_t ichip=0;ichip<4;ichip++) resd->SetChipBad(ichip);
+    // Modules with bad pascal chips
+    if( modId==AliITSgeomTGeo::GetModuleIndex(4,4,2) ){
+      resd->SetChipBad(0);
+      resd->SetChipBad(3);
+    }
+
     respSDD.Add(resd);
     printf("Added module %d\n",mod);
-  }
+	}
     
   FILE* out = fopen("deadchannels.dat","w");
   for(Int_t i=0;i<260;i++){

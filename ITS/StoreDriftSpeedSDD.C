@@ -26,11 +26,10 @@ void StoreDriftSpeedSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
   
 
   AliCDBMetaData *md1= new AliCDBMetaData(); // metaData describing the object
-  md1->SetObjectClassName("AliITSDriftSpeedArraySDD");
-  md1->SetResponsible("Elisabetta Crescio, Francesco Prino");
+  md1->SetObjectClassName("TObjArray");
+  md1->SetResponsible("Francesco Prino");
   md1->SetBeamPeriod(0);
-  md1->SetAliRootVersion("Head 20 nov. 2007"); //root version
-  md1->SetComment("This is a test");
+  md1->SetComment("Simulated data");
 
   AliCDBId drSpeed("ITS/Calib/DriftSpeedSDD",firstRun, lastRun);
   TObjArray vdrift(520);
@@ -38,7 +37,7 @@ void StoreDriftSpeedSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
 
 
 
-  Double_t drVelParam[4]={7.75,0.002344,-0.000009,0};
+  Double_t drVelParam[4]={6.533,0.001285,-0.000005,0};
   Double_t edrVelParam[4]={0.1,0,0,0};
   Double_t drVel[4];
   TRandom3 *gran = new TRandom3();
