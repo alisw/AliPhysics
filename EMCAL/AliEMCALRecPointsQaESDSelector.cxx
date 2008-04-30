@@ -56,7 +56,6 @@
 #include "AliEMCALRecPoint.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
-#include "jetfinder/AliEMCALJetMicroDst.h" // Sgpdge
 #include "AliEMCALDigit.h"
 
 #include <iostream>
@@ -706,7 +705,6 @@ void AliEMCALRecPointsQaESDSelector::FillHistsOfKineVsRP(TList *l, AliRunLoader*
 
   pdg = p->GetPdgCode();
   //gid = gMC->IdFromPDG(pdg); // gMc should be defined
-  AliEMCALJetMicroDst::Sgpdge(pdg,gid); // temporary
 
   u::FillH1(l, ic++, Double_t(gid));
   u::FillH1(l, ic++, p->P());
