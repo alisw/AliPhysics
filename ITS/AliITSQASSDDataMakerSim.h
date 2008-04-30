@@ -12,6 +12,7 @@
 //
 //
 //  W. Ferrarese + P. Cerello Feb 2008
+//  SSD QA part: P. Christakoglou
 
 #include "AliQA.h"
 class AliITSQADataMakerSim;
@@ -43,15 +44,17 @@ public:
 
 private:
 
-  AliITSQADataMakerSim *fAliITSQADataMakerSim;//pointer to the main ctor
-  Int_t   fSSDhDigits;                        //number of booked SSD Digits histograms;
-  Int_t   fSSDhSDigits;                       //number of booked SSD SDigits histograms;
-  Int_t   fSSDhHits;                          //number of booked SSD Hits histograms;
-  Int_t   fDigitsOffset;                      // number of histo booked when SSD start
-  Int_t   fSDigitsOffset;                     // number of histo booked when SSD start
-  Int_t   fHitsOffset;                        // number of histo booked when SSD start
-  ClassDef(AliITSQASSDDataMakerSim,1)      // description 
+  AliITSQADataMakerSim *fAliITSQADataMakerSim; //pointer to the main ctor
+  Int_t   fSSDhDigits;    //number of booked SSD Digits histograms;
+  Int_t   fSSDhSDigits;   //number of booked SSD SDigits histograms;
+  Int_t   fSSDhHits;      //number of booked SSD Hits histograms;
+  Int_t   fDigitsOffset;  //number of histo booked when SSD start
+  Int_t   fSDigitsOffset; //number of histo booked when SSD start
+  Int_t   fHitsOffset;    //number of histo booked when SSD start  
 
+  static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips
+
+  ClassDef(AliITSQASSDDataMakerSim,1)      // description 
 };
 
 #endif
