@@ -361,8 +361,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
       // which is depreciated - we use HLT global defs instead
       if ( blocks[i].fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
 	{
- 	  HLTWarning("COMPARE FAILED type=%d is type=%d",
-		     blocks[i].fDataType, AliHLTTRDDefinitions::fgkDDLRawDataType);
+ 	  HLTWarning("COMPARE FAILED received type=%d expected-or-type=%d",
+		     blocks[i].fDataType, kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
 	  continue;
 	}
 
