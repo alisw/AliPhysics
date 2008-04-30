@@ -94,8 +94,8 @@ fMind0rphiCut(source.fMind0rphiCut)
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<1; i++)  fDsCuts[i]=source.fDsCuts[i];
-  for(Int_t i=0; i<1; i++)  fLcCuts[i]=source.fLcCuts[i];
+  for(Int_t i=0; i<12; i++)  fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<12; i++)  fLcCuts[i]=source.fLcCuts[i];
 }
 //--------------------------------------------------------------------------
 AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVertexingHF &source)
@@ -124,8 +124,8 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<1; i++)  fDsCuts[i]=source.fDsCuts[i];
-  for(Int_t i=0; i<1; i++)  fLcCuts[i]=source.fLcCuts[i];
+  for(Int_t i=0; i<12; i++)  fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<12; i++)  fLcCuts[i]=source.fLcCuts[i];
 
   return *this;
 }
@@ -745,7 +745,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree *treeout[])
   }
   if(f3Prong) {
     printf(" Charm->3Prong: event %d = %d; total = %d;\n",
-	   (Int_t)esd->GetEventNumberInFile(),
+   (Int_t)esd->GetEventNumberInFile(),
 	   (Int_t)treeout[itree3Prong]->GetEntries()-initEntries3Prong,
 	   (Int_t)treeout[itree3Prong]->GetEntries());
   }
@@ -1165,7 +1165,6 @@ AliESDVertex* AliAnalysisVertexingHF::OwnPrimaryVertex(Int_t ntrks,
       esdTrack = new AliESDtrack(*t);
       rmArray.AddLast(esdTrack);
       rmId[i]=(UShort_t)esdTrack->GetID();
-      delete esdTrack;
     }
     Float_t diamondxy[2]={esd->GetDiamondX(),esd->GetDiamondY()};
     ownPrimVertex = vertexer1->RemoveTracksFromVertex(fV1,&rmArray,rmId,diamondxy);
@@ -1226,6 +1225,32 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    pTPi    [GeV/c]    > %f\n",fDplusCuts[2]);
     printf("    |d0K|  [cm]  > %f\n",fDplusCuts[3]);
     printf("    |d0Pi| [cm]  > %f\n",fDplusCuts[4]);
+    printf("    dist12    [cm]  < %f\n",fDplusCuts[5]);
+    printf("    sigmavert [cm]   < %f\n",fDplusCuts[6]);
+    printf("    dist prim-sec [cm] > %f\n",fDplusCuts[7]);
+    printf("    pM=Max{pT1,pT2,pT3} [GeV/c] > %f\n",fDplusCuts[8]);
+    printf("    cosThetaPoint    > %f\n",fDplusCuts[9]);
+    printf("    Sum d0^2 [cm^2]  > %f\n",fDplusCuts[10]);
+    printf("    dca cut [cm]  < %f\n",fDplusCuts[11]);
+    printf("  Ds->KKpi cuts:\n");
+    printf("    |M-MDs| [GeV]    < %f\n",fDsCuts[0]);
+    printf("    pTK     [GeV/c]    > %f\n",fDplusCuts[1]);
+    printf("    pTPi    [GeV/c]    > %f\n",fDplusCuts[2]);
+    printf("    |d0K|  [cm]  > %f\n",fDplusCuts[3]);
+    printf("    |d0Pi| [cm]  > %f\n",fDplusCuts[4]);
+    printf("    dist12    [cm]  < %f\n",fDplusCuts[5]);
+    printf("    sigmavert [cm]   < %f\n",fDplusCuts[6]);
+    printf("    dist prim-sec [cm] > %f\n",fDplusCuts[7]);
+    printf("    pM=Max{pT1,pT2,pT3} [GeV/c] > %f\n",fDplusCuts[8]);
+    printf("    cosThetaPoint    > %f\n",fDplusCuts[9]);
+    printf("    Sum d0^2 [cm^2]  > %f\n",fDplusCuts[10]);
+    printf("    dca cut [cm]  < %f\n",fDplusCuts[11]);
+    printf("  Lc->pKpi cuts:\n");
+    printf("    |M-MLc| [GeV]    < %f\n",fLcCuts[0]);
+    printf("    pTP     [GeV/c]    > %f\n",fDplusCuts[1]);
+    printf("    pTPi and pTK [GeV/c]    > %f\n",fDplusCuts[2]);
+    printf("    |d0P|  [cm]  > %f\n",fDplusCuts[3]);
+    printf("    |d0Pi| and |d0K| [cm]  > %f\n",fDplusCuts[4]);
     printf("    dist12    [cm]  < %f\n",fDplusCuts[5]);
     printf("    sigmavert [cm]   < %f\n",fDplusCuts[6]);
     printf("    dist prim-sec [cm] > %f\n",fDplusCuts[7]);
@@ -1444,36 +1469,66 @@ void AliAnalysisVertexingHF::SetDplusCuts(const Double_t cuts[12])
   return;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0)
+void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0,Double_t cut1,
+				   Double_t cut2,Double_t cut3,Double_t cut4,
+				   Double_t cut5,Double_t cut6,
+				   Double_t cut7,Double_t cut8,
+				   Double_t cut9,Double_t cut10,Double_t cut11)
 {
   // Set the cuts for Ds->KKpi selection
   fDsCuts[0] = cut0;
+  fDsCuts[1] = cut1;
+  fDsCuts[2] = cut2;
+  fDsCuts[3] = cut3;
+  fDsCuts[4] = cut4;
+  fDsCuts[5] = cut5;
+  fDsCuts[6] = cut6;
+  fDsCuts[7] = cut7;
+  fDsCuts[8] = cut8;
+  fDsCuts[9] = cut9;
+  fDsCuts[10] = cut10;
+  fDsCuts[11] = cut11;
 
   return;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDsCuts(const Double_t cuts[1]) 
+void AliAnalysisVertexingHF::SetDsCuts(const Double_t cuts[12]) 
 {
   // Set the cuts for Ds->KKpi selection
 
-  for(Int_t i=0; i<1; i++) fDsCuts[i] = cuts[i];
+  for(Int_t i=0; i<12; i++) fDsCuts[i] = cuts[i];
 
   return;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetLcCuts(Double_t cut0)
+void AliAnalysisVertexingHF::SetLcCuts(Double_t cut0,Double_t cut1,
+				   Double_t cut2,Double_t cut3,Double_t cut4,
+				   Double_t cut5,Double_t cut6,
+				   Double_t cut7,Double_t cut8,
+				   Double_t cut9,Double_t cut10,Double_t cut11)
 {
   // Set the cuts for Lc->pKpi selection
   fLcCuts[0] = cut0;
+  fLcCuts[1] = cut1;
+  fLcCuts[2] = cut2;
+  fLcCuts[3] = cut3;
+  fLcCuts[4] = cut4;
+  fLcCuts[5] = cut5;
+  fLcCuts[6] = cut6;
+  fLcCuts[7] = cut7;
+  fLcCuts[8] = cut8;
+  fLcCuts[9] = cut9;
+  fLcCuts[10] = cut10;
+  fLcCuts[11] = cut11;
 
   return;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetLcCuts(const Double_t cuts[1]) 
+void AliAnalysisVertexingHF::SetLcCuts(const Double_t cuts[12]) 
 {
   // Set the cuts for Lc->pKpi selection
 
-  for(Int_t i=0; i<1; i++) fLcCuts[i] = cuts[i];
+  for(Int_t i=0; i<12; i++) fLcCuts[i] = cuts[i];
 
   return;
 }

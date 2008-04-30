@@ -177,9 +177,21 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDplus(const Double_t *cuts)
 Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,Int_t &okDspiKK)
   const {
 //
-// This function compares the Ds with a set of cuts (only mass at the moment)
+// This function compares the Ds with a set of cuts 
+// (same variables as D+, for now)
 //
 // cuts[0] = inv. mass half width [GeV]   
+// cuts[1] = pTK [GeV/c]
+// cuts[2] = pTPi [GeV/c]
+// cuts[3] = d0K [cm]   lower limit!
+// cuts[4] = d0Pi [cm]  lower limit!
+// cuts[5] = dist12 (cm)
+// cuts[6] = sigmavert (cm)
+// cuts[7] = dist prim-sec (cm)
+// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
+// cuts[9] = cosThetaPoint
+// cuts[10] = Sum d0^2 (cm^2)
+// cuts[11] = dca cut (cm)
 //
 // If candidate Ds does not pass the cuts return kFALSE
 //
@@ -195,15 +207,49 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,In
   if(TMath::Abs(mDspiKK-mDsPDG)>cuts[0]) okDspiKK = 0;
   if(!okDsKKpi && !okDspiKK) return kFALSE;
 
+  //single track
+  if(TMath::Abs(PtProng(0)) < cuts[1] || TMath::Abs(Getd0Prong(0))<cuts[3])return kFALSE;//Kaon1
+  if(TMath::Abs(PtProng(1)) < cuts[1] || TMath::Abs(Getd0Prong(1))<cuts[3])return kFALSE;//Kaon2
+  if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion2
+
+  //DCA
+  for(Int_t i=0;i<3;i++) if(cuts[11]>0 && GetDCA(i)>cuts[11])return kFALSE;
+
+  //2track cuts
+  if(fDist12toPrim<cuts[5] || fDist23toPrim<cuts[5])return kFALSE;
+  if(Getd0Prong(0)*Getd0Prong(1)<0. && Getd0Prong(2)*Getd0Prong(1)<0.)return kFALSE;
+
+  //sec vert
+  if(fSigmaVert>cuts[6])return kFALSE;
+
+  if(DecayLength()<cuts[7])return kFALSE;
+
+  if(TMath::Abs(PtProng(0))<cuts[8] && TMath::Abs(PtProng(1))<cuts[8] && TMath::Abs(PtProng(2))<cuts[8])return kFALSE;
+  if(CosPointingAngle()   < cuts[9])return kFALSE;
+  Double_t sum2=Getd0Prong(0)*Getd0Prong(0)+Getd0Prong(1)*Getd0Prong(1)+Getd0Prong(2)*Getd0Prong(2);
+  if(sum2<cuts[10])return kFALSE;
+
   return kTRUE;
 }
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecayHF3Prong::SelectLc(const Double_t *cuts,Int_t &okLcpKpi,Int_t &okLcpiKp)
   const {
 //
-// This function compares the Lc with a set of cuts (only mass at the moment)
+// This function compares the Lc with a set of cuts 
+// (same variables as D+, for now)
 //
 // cuts[0] = inv. mass half width [GeV]   
+// cuts[1] = pTP [GeV/c]
+// cuts[2] = pTPi and pTK [GeV/c]
+// cuts[3] = d0P [cm]   lower limit!
+// cuts[4] = d0Pi and d0K [cm]  lower limit!
+// cuts[5] = dist12 (cm)
+// cuts[6] = sigmavert (cm)
+// cuts[7] = dist prim-sec (cm)
+// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
+// cuts[9] = cosThetaPoint
+// cuts[10] = Sum d0^2 (cm^2)
+// cuts[11] = dca cut (cm)
 //
 // If candidate Lc does not pass the cuts return kFALSE
 //
@@ -218,6 +264,28 @@ Bool_t AliAODRecoDecayHF3Prong::SelectLc(const Double_t *cuts,Int_t &okLcpKpi,In
   if(TMath::Abs(mLcpKpi-mLcPDG)>cuts[0]) okLcpKpi = 0;
   if(TMath::Abs(mLcpiKp-mLcPDG)>cuts[0]) okLcpiKp = 0;
   if(!okLcpKpi && !okLcpiKp) return kFALSE;
+
+  //single track
+  if(TMath::Abs(PtProng(0)) < cuts[1] || TMath::Abs(Getd0Prong(0))<cuts[3])return kFALSE;//Proton
+  if(TMath::Abs(PtProng(1)) < cuts[2] || TMath::Abs(Getd0Prong(1))<cuts[4])return kFALSE;//Kaon
+  if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion
+
+  //DCA
+  for(Int_t i=0;i<3;i++) if(cuts[11]>0 && GetDCA(i)>cuts[11])return kFALSE;
+
+  //2track cuts
+  if(fDist12toPrim<cuts[5] || fDist23toPrim<cuts[5])return kFALSE;
+  if(Getd0Prong(0)*Getd0Prong(1)<0. && Getd0Prong(2)*Getd0Prong(1)<0.)return kFALSE;
+
+  //sec vert
+  if(fSigmaVert>cuts[6])return kFALSE;
+
+  if(DecayLength()<cuts[7])return kFALSE;
+
+  if(TMath::Abs(PtProng(0))<cuts[8] && TMath::Abs(PtProng(1))<cuts[8] && TMath::Abs(PtProng(2))<cuts[8])return kFALSE;
+  if(CosPointingAngle()   < cuts[9])return kFALSE;
+  Double_t sum2=Getd0Prong(0)*Getd0Prong(0)+Getd0Prong(1)*Getd0Prong(1)+Getd0Prong(2)*Getd0Prong(2);
+  if(sum2<cuts[10])return kFALSE;
 
   return kTRUE;
 }
