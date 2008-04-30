@@ -9,6 +9,7 @@ void AliD0toKpiPlots(const Char_t *inName="AliD0toKpi.root",
   gSystem->Load("libANALYSIS");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
+  gSystem->Load("libPWG3vertexingOld.so");
 
   // set of cuts
   Double_t D0Cuts[9] = {0.1,         // mass [GeV]

@@ -11,6 +11,7 @@ void AliD0toKpiReco() {
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3.so");
+  gSystem->Load("libPWG3vertexingOld.so");
 
   //==============  R E C O N S T R U C T I O N ==============================
 
@@ -76,6 +77,7 @@ void AliD0toKpiSele() {
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3.so");
+  gSystem->Load("libPWG3vertexingOld.so");
 
   //========================  S E L E C T I O N ============================
 
