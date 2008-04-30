@@ -221,11 +221,14 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 		nclusters[slice]++;
 	} // End of loop over clusters
 
-	// calculate mean charge per slice
-	for(int is=0; is<nslices; is++){ 
-    if(nclusters[is]) fdEdx[is] /= nclusters[is];
-  }
+	if(AliTRDReconstructor::RecoParam()->GetPIDMethod() == 0){
+	// calculate mean charge per slice (only LQ PID)
+		for(int is=0; is<nslices; is++){ 
+	    if(nclusters[is]) fdEdx[is] /= nclusters[is];
+	  }
+	}
 }
+
 
 //____________________________________________________________________
 Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
