@@ -2,6 +2,7 @@ SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliAnalysisTaskMuonAODfromGeneral.cxx \
                  muon/AliAnalysisTaskSingleMu.cxx \
                  muon/AliAnalysisTaskLUT.cxx  \
+                 muon/AliAnalysisTaskTrigChEff.cxx \
                  muon/AliAODDimuon.cxx \
                  muon/AliAODEventInfo.cxx 
 
