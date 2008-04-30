@@ -142,6 +142,21 @@ TGraphErrors* AliITSOnlineSDDInjectors::GetDriftSpeedGraph() const{
   return g;
 }
 //______________________________________________________________________
+TGraphErrors* AliITSOnlineSDDInjectors::GetSelectedDriftSpeedGraph(Int_t minAcceptStatus) const{
+  // TGraphErrors with only pads with status of injector >= minAcceptStatus
+  Int_t ipt=0;
+  TGraphErrors *g=new TGraphErrors(0);
+  for(Int_t i=0;i<kInjPads;i++){
+    Int_t padStatus = GetInjPadStatus(i);
+    if(fDriftSpeed[i]>0 && padStatus >= minAcceptStatus ){
+      g->SetPoint(ipt,GetAnodeNumber(i),fDriftSpeed[i]);
+      g->SetPointError(ipt,0,fDriftSpeedErr[i]);
+      ipt++;
+    }
+  }
+  return g;
+}
+//______________________________________________________________________
 void AliITSOnlineSDDInjectors::CalcTimeBinZero(){
   //
   Float_t tzero=0.,intCont=0.;

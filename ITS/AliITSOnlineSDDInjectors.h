@@ -2,7 +2,7 @@
 #define ALIITSONLINESDDINJECTORS_H
 
 
-/* $Id: */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -49,6 +49,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
 
   TGraphErrors* GetTimeVsDistGraph(Int_t jpad) const;
   TGraphErrors* GetDriftSpeedGraph() const;
+  TGraphErrors* GetSelectedDriftSpeedGraph(Int_t minAcceptStatus) const;
   Float_t* GetDriftSpeedFitParam()const{ return fParam;}
   Float_t GetDriftSpeeed(Int_t jpad) const{return fDriftSpeed[jpad];}
   Float_t GetDriftSpeedErr(Int_t jpad) const{return fDriftSpeedErr[jpad];}
