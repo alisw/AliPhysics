@@ -328,7 +328,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   //##############Fill CaloClusters#############
   //########################################
-
+  esd->SetNumberOfEMCALClusters(nClusters);
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = (const AliEMCALRecPoint*)clusters->At(iClust);
     //if(clust->GetClusterType()== AliESDCaloCluster::kEMCALClusterv1) nRP++; else nPC++;
@@ -337,97 +337,93 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Float_t xyz[3];
     TVector3 gpos;
     clust->GetGlobalPosition(gpos);
-    for (Int_t ixyz=0; ixyz<3; ixyz++) 
+    for (Int_t ixyz=0; ixyz<3; ixyz++)
       xyz[ixyz] = gpos[ixyz];
-    
-    Int_t digitMult = clust->GetMultiplicity();
-    TArrayS amplList(digitMult);
-    TArrayS timeList(digitMult);
-    TArrayS digiList(digitMult);
-    Float_t *amplFloat = clust->GetEnergiesList();
-    Float_t *timeFloat = clust->GetTimeList();
-    Int_t   *digitInts = clust->GetAbsId();
     Float_t elipAxis[2];
     clust->GetElipsAxis(elipAxis);
-    
-    // Convert Float_t* and Int_t* to Short_t* to save memory
-    // Problem : we should recalculate a cluster characteristics when discard digit(s)
-    Int_t newdigitMult = 0; 
-    for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-      if (amplFloat[iDigit] > 0) {
-	amplList[newdigitMult] = (UShort_t)(amplFloat[iDigit]*500);
-        // Time in units of 0.01 ns = 10 ps
-        if(timeFloat[iDigit] < 65536./timeScale) 
-	  timeList[newdigitMult] = (UShort_t)(timeFloat[iDigit]*timeScale);
-        else
-          timeList[newdigitMult] = 65535;
-	digiList[newdigitMult] = (UShort_t)(digitInts[iDigit]);
-        newdigitMult++;
-      }
-      else if (clust->GetClusterType() != AliESDCaloCluster::kEMCALPseudoCluster)
-        Warning("FillESD()","Negative or 0 digit amplitude in cluster");
-    }
-    
-    if(newdigitMult > 0) { // accept cluster if it has some digit
-      nClustersNew++;
-      
-      amplList.Set(newdigitMult);
-      timeList.Set(newdigitMult);
-      digiList.Set(newdigitMult);
+       //Create digits lists
+    Int_t cellMult = clust->GetMultiplicity();
+    //TArrayS digiList(digitMult);
+    Float_t *amplFloat = clust->GetEnergiesList();
+    Int_t   *digitInts = clust->GetAbsId();
+    TArrayS absIdList(cellMult);
+    //Uncomment when unfolding is done
+    //TArrayD fracList(cellMult);
 
+    Int_t newCellMult = 0;
+    for (Int_t iCell=0; iCell<cellMult; iCell++) {
+      if (amplFloat[iCell] > 0) {
+      absIdList[newCellMult] = (UShort_t)(digitInts[iCell]);
+    //Uncomment when unfolding is done
+    //fracList[newCellMult] = amplFloat[iCell]/emcCells.GetCellAmplitude(digitInts[iCell]);
+      newCellMult++;
+      }
+    }
+    absIdList.Set(newCellMult);
+    //Uncomment when unfolding is done
+    //fracList.Set(newCellMult);
+
+    if(newCellMult > 0) { // accept cluster if it has some digit
+      nClustersNew++;
       //Primaries
       Int_t  parentMult  = 0;
       Int_t *parentList =  clust->GetParents(parentMult);
-    
       // fills the ESDCaloCluster
-      AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
-      ec->SetClusterType(clust->GetClusterType());
+      AliESDCaloCluster * ec = new AliESDCaloCluster() ;
+      ec->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
       ec->SetPosition(xyz);
       ec->SetE(clust->GetEnergy());
-      ec->AddDigitAmplitude(amplList);
-      ec->AddDigitTime(timeList);
-      ec->AddDigitIndex(digiList);
-    
-      if(clust->GetClusterType()== AliESDCaloCluster::kEMCALClusterv1){
+      ec->SetNCells(newCellMult);
+      //Change type of list from short to ushort
+      UShort_t *newAbsIdList  = new UShort_t[newCellMult];
+      //Uncomment when unfolding is done
+      //Double_t *newFracList  = new Double_t[newCellMult];
+      for(Int_t i = 0; i < newCellMult ; i++) {
+        newAbsIdList[i]=absIdList[i];
+      //Uncomment when unfolding is done
+      //newFracList[i]=fracList[i];
+      }
+      ec->SetCellsAbsId(newAbsIdList);
+      //Uncomment when unfolding is done
+      //ec->SetCellsAmplitudeFraction(newFracList);
+      ec->SetClusterDisp(clust->GetDispersion());
+      ec->SetClusterChi2(-1); //not yet implemented
+      ec->SetM02(elipAxis[0]*elipAxis[0]) ;
+      ec->SetM20(elipAxis[1]*elipAxis[1]) ;
+      ec->SetM11(-1) ;        //not yet implemented
 
-        ec->SetClusterDisp(clust->GetDispersion());
-        ec->SetClusterChi2(-1); //not yet implemented
-        ec->SetM02(elipAxis[0]*elipAxis[0]) ;
-        ec->SetM20(elipAxis[1]*elipAxis[1]) ;
-        ec->SetM11(-1) ;        //not yet implemented
+      TArrayI arrayTrackMatched(1);// Only one track, temporal solution.
+      arrayTrackMatched[0]= matchedTrack[iClust];
+      ec->AddTracksMatched(arrayTrackMatched);
 
-       TArrayI arrayTrackMatched(1);// Only one track, temporal solution. 
-       arrayTrackMatched[0]= matchedTrack[iClust]; 
-       ec->AddTracksMatched(arrayTrackMatched); 
-         
-       TArrayI arrayParents(parentMult,parentList); 
-       ec->AddLabels(arrayParents);
-      } 
-      
+      TArrayI arrayParents(parentMult,parentList);
+      ec->AddLabels(arrayParents);
+
       // add the cluster to the esd object
-      esd->AddCaloCluster(ec);
+     esd->AddCaloCluster(ec);
       delete ec;
-    }
+     //delete [] newAbsIdList ;
+     //delete [] newFracList ;
+   }
+ } // cycle on clusters
 
-  } // cycle on clusters
+ delete [] matchedTrack;
 
-  delete [] matchedTrack;
+ esd->SetNumberOfEMCALClusters(nClustersNew);
+ //if(nClustersNew != nClusters)
+ //printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );
 
-  esd->SetNumberOfEMCALClusters(nClustersNew);
-  //if(nClustersNew != nClusters) 
-  //printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );
-  
-  //Fill ESDCaloCluster with PID weights
+ //Fill ESDCaloCluster with PID weights
   AliEMCALPID *pid = new AliEMCALPID;
   //pid->SetPrintInfo(kTRUE);
   pid->SetReconstructor(kTRUE);
   pid->RunPID(esd);
-
   delete pid;
+
+  delete digits;
   delete clusters;
 
-  printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
-  //  assert(0);
+  // printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
 }
 
 void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
