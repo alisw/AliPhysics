@@ -1,0 +1,35 @@
+==============================================
+ PWG3 module for Heavy Flavour Physics Analysis
+ Andrea DAINESE, Padova
+ Gines MARTINEZ, Nantes
+----------------------------------------------------------
+
+Our code has been split in 4 libraries: 
+PWG3base, PWG3vertexingHF, PWG3muon and PWG3vertexingOld.
+
+It is planned that PWG3vertexingOld will be removed in near future. 
+There is a dependence on AliRun class.
+
+For the moment there is not any dependence between the libraries, 
+but it is allowed a dependence muon and vertexingHF from the base library.
+
+You can compile the libraries via the command make all-PWG3
+ in the ALICE_ROOT directory
+
+The par files related to each library can be created via the command 
+make PWG3library.par
+You can check the par file compilation in a root session in the following way:
+root [0] .L $ALICE_ROOT/PWG3/muon/RunAnalysis.C
+root [1] setupPar("PWG3library")                 
+
+In order to load muon and vertexingHF  libraries in a root session  
+you will need, first, to load the following Root and AliRoot libraries :
+gSystem->Load("libTree")
+gSystem->Load("libGeom")
+gSystem->Load("libVMC")
+gSystem->Load("libANALYSIS")
+gSystem->Load("libSTEERbase")
+gSystem->Load("libESD")     
+gSystem->Load("libAOD")
+gSystem->Load("libANALYSISalice")
+----------------------------------------------------------
