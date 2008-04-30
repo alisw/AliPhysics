@@ -5,6 +5,8 @@ void AliAnalysisTaskVertexingHFTest() {
   gSystem->Load("libANALYSISRL");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
+  gSystem->Load("libPWG3vertexingHF.so");
+
   //This file can cause problems :
   if (!gSystem->AccessPathName("$ALICE_ROOT/ANALYSIS/AliAnalysisSelector_cxx.so",kFileExists)) {
     printf("File $ALICE_ROOT/ANALYSIS/AliAnalysisSelector_cxx.so exists and can cause problems, delete it if you can...");
