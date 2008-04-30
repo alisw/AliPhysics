@@ -53,7 +53,10 @@ void MakeVZEROFullMisAlignment(){
   dtheta = rnd->Gaus(0.,sigmarot);
   dphi = rnd->Gaus(0.,sigmarot);
   new(alobj[0]) AliAlignObjParams(V0right, volid, dx, dy, dz, dpsi, dtheta,
-                                  dphi, kFALSE);
+                                  dphi, kFALSE);				  
+  AliAlignObjParams* itsalobj = (AliAlignObjParams*) alobj.UncheckedAt(0);
+  itsalobj->ApplyToGeometry();	
+  			  
   dx = rnd->Gaus(0.,sigmatr);
   dy = rnd->Gaus(0.,sigmatr);
   dz = rnd->Gaus(0.,sigmatr);
@@ -62,29 +65,32 @@ void MakeVZEROFullMisAlignment(){
   dphi = rnd->Gaus(0.,sigmarot);
   new(alobj[1]) AliAlignObjParams(V0left, volid, dx, dy, dz, dpsi, dtheta,
                                   dphi,kFALSE);
+  AliAlignObjParams* itsalobj = (AliAlignObjParams*) alobj.UncheckedAt(1);
+  itsalobj->ApplyToGeometry();
 
-  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
-    // save on file
-    const char* filename = "VZEROfullMisalignment.root";
-    TFile f(filename,"RECREATE");
-    if(!f){
-      Error(macroname,"cannot open file for output\n");
-      return;
-    }
-    Info(macroname,"Saving alignment objects to the file %s", filename);
-    f.cd();
-    f.WriteObject(array,"VZEROAlignObjs","kSingleKey");
-    f.Close();
+  if(TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
+     // save on file
+     const char* filename = "VZEROfullMisalignment.root";
+     TFile f(filename,"RECREATE");
+     if(!f){
+       Error(macroname,"cannot open file for output\n");
+       return;
+     }
+     Info(macroname,"Saving alignment objects to the file %s", filename);
+     f.cd();
+     f.WriteObject(array,"VZEROAlignObjs","kSingleKey");
+     f.Close();
   }else{
-    // save in CDB storage
-    AliCDBMetaData* md = new AliCDBMetaData();
-    md->SetResponsible("Brigitte Cheynis");
-    md->SetComment("Alignment objects for V0 full misalignment");
-    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-    AliCDBId id("VZERO/Align/Data",0,AliCDBRunRange::Infinity());
-    storage->Put(array,id,md);
+     // save in CDB storage
+     AliCDBMetaData* md = new AliCDBMetaData();
+     md->SetResponsible("Brigitte Cheynis");
+     md->SetComment("Alignment objects for V0 full misalignment");
+     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
+     AliCDBId id("VZERO/Align/Data",0,AliCDBRunRange::Infinity());
+     storage->Put(array,id,md);
   }
 
+  array->Print();
   array->Delete();
 
 }
