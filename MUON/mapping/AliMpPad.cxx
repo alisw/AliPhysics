@@ -46,7 +46,7 @@ const Int_t  AliMpPad::fgkMaxNofLocations = 6;
 //_____________________________________________________________________________
 Bool_t operator==(const TVector2& v1,const TVector2& v2)
 {
-return v1.X()==v2.X() && v1.Y()==v2.Y();
+  return v1.X()==v2.X() && v1.Y()==v2.Y();
 }
 
 
@@ -64,6 +64,9 @@ AliMpPad::AliMpPad(const AliMpIntPair& location,const AliMpIntPair& indices,
                    Bool_t validity)
  : TObject(),
    fLocations(0),
+#ifdef WITH_ROOT
+   fNofLocations(0),
+#endif
    fLocation(location),
    fIndices(indices),
    fPosition(position),
@@ -82,6 +85,9 @@ AliMpPad::AliMpPad(const AliMpIntPair& location,const AliMpIntPair& indices,
 AliMpPad::AliMpPad()
   : TObject(),
     fLocations(0),
+#ifdef WITH_ROOT
+    fNofLocations(0),
+#endif
     fLocation(AliMpIntPair::Invalid()),
     fIndices(AliMpIntPair::Invalid()),
     fPosition(-1.,-1.),
@@ -96,6 +102,9 @@ AliMpPad::AliMpPad()
 AliMpPad::AliMpPad(const AliMpPad& rhs)
   : TObject(rhs),
     fLocations(0),
+#ifdef WITH_ROOT
+    fNofLocations(0),
+#endif
     fLocation(AliMpIntPair::Invalid()),
     fIndices(AliMpIntPair::Invalid()),
     fPosition(-1.,-1.),
@@ -112,11 +121,13 @@ AliMpPad::~AliMpPad()
 {
 /// Destructor
 
-#ifdef WITH_ROOT
-  if (fLocations) fLocations->Delete();
+#ifdef WITH_STL
+  delete fLocations;
 #endif
 
-  delete fLocations;
+#ifdef WITH_ROOT
+  delete [] fLocations;
+#endif
 }
 
 //_____________________________________________________________________________
@@ -149,11 +160,11 @@ AliMpPad& AliMpPad::operator = (const AliMpPad& rhs)
 #endif
 
 #ifdef WITH_ROOT
+  fNofLocations = rhs.fNofLocations;
   if ( rhs.GetNofLocations() ) {
-    fLocations = new TClonesArray("AliMpIntPair", rhs.GetNofLocations());
-    
-    for (Int_t i=0; i<rhs.GetNofLocations(); i++)
-      new((*fLocations)[i]) AliMpIntPair(rhs.GetLocation(i));
+    fLocations = new AliMpIntPair[fgkMaxNofLocations];
+    for ( UInt_t i=0; i<rhs.fNofLocations; i++ )
+      fLocations[i] = rhs.fLocations[i];
   }  			
 #endif
 
@@ -243,10 +254,10 @@ Bool_t AliMpPad::AddLocation(const AliMpIntPair& location, Bool_t warn)
 #endif
 
 #ifdef WITH_ROOT
-  if (! fLocations)
-    fLocations = new TClonesArray("AliMpIntPair", fgkMaxNofLocations);
-    
-  new ((*fLocations)[GetNofLocations()]) AliMpIntPair(location);
+  if ( ! fLocations)
+    fLocations = new AliMpIntPair[fgkMaxNofLocations];
+  
+  fLocations[fNofLocations++] = location;
   return true;
 #endif
 }
@@ -296,7 +307,7 @@ Int_t  AliMpPad::GetNofLocations() const
 #endif
 
 #ifdef WITH_ROOT
-  return fLocations->GetEntriesFast();
+  return fNofLocations;
 #endif
 }  
   
@@ -314,7 +325,7 @@ AliMpIntPair AliMpPad::GetLocation(Int_t i) const
 #endif
   
 #ifdef WITH_ROOT
-  return *(AliMpIntPair*)fLocations->At(i);
+  return fLocations[i];
 #endif
 }  
 
@@ -326,7 +337,7 @@ Bool_t AliMpPad::HasLocation(const AliMpIntPair& location) const
 
   if (fLocation == location) return true;
 
-  for (Int_t i=0; i<GetNofLocations(); i++) {
+  for ( Int_t i=0; i<GetNofLocations(); i++ ) {
     if ( GetLocation(i) == location ) return true;
   }
     

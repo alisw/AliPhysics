@@ -36,7 +36,7 @@ class AliMpPad : public TObject
 #endif
 #ifdef WITH_ROOT
   /// Int pair vector type
-  typedef TClonesArray  IntPairVector;
+  typedef AliMpIntPair  IntPairVector;
 #endif
 
  public:
@@ -95,13 +95,16 @@ class AliMpPad : public TObject
                                           /// in the collection
   // data members
   IntPairVector*  fLocations;      ///<  collection of pad locations 
+#ifdef WITH_ROOT
+  UInt_t          fNofLocations;   ///<  number of locations in fLocations
+#endif
   AliMpIntPair    fLocation;       ///<  pad location
   AliMpIntPair    fIndices;        ///<  pad indices
   TVector2        fPosition;       ///<  the pad position (in cm)
   TVector2        fDimensions;     ///<  the pad dimensions (in cm)
   Bool_t          fValidity;       ///<  validity
 
-  ClassDef(AliMpPad,1) //utility class for the motif type
+  ClassDef(AliMpPad,2) //utility class for the motif type
 };
 
 ostream& operator << (ostream &out, const AliMpPad& op);
