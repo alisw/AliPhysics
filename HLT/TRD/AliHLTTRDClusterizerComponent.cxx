@@ -115,7 +115,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 {
   // perform initialization. We check whether our relative output size is specified in the arguments.
   fOutputPercentage = 100;
-  Int_t fRawDataVersion = 2;
+  Int_t iRawDataVersion = 2;
   int i = 0;
   char* cpErr;
 
@@ -198,8 +198,8 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	      Logging(kHLTLogError, "HLT::TRDClusterizer::DoInit", "Missing Argument", "Missing -rawver argument");
 	      return ENOTSUP;	      
 	    }
-	  fRawDataVersion = atoi( argv[i+1] );
-	  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoInit", "Raw Data", "Version is %d", fRawDataVersion );	  
+	  iRawDataVersion = atoi( argv[i+1] );
+	  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoInit", "Raw Data", "Version is %d", iRawDataVersion );	  
 	  i += 2;
 	  continue;
 	}      
@@ -298,7 +298,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fMemReader = new AliRawReaderMemory;
 
   fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer");
-  fClusterizer->SetRawVersion(fRawDataVersion);
+  fClusterizer->SetRawVersion(iRawDataVersion);
   fClusterizer->InitClusterTree();
   return 0;
 }

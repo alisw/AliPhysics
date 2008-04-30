@@ -34,6 +34,7 @@
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDfeeParam.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
@@ -47,10 +48,11 @@ ClassImp(AliTRDclusterizerHLT)
 
 //_____________________________________________________________________________
 AliTRDclusterizerHLT::AliTRDclusterizerHLT() 
-  : AliTRDclusterizer(),
-    fTreeCreatedHere(kFALSE),
-    fNclusters(-1),
-    fRawDataSource(0)
+  : AliTRDclusterizer()
+  , fTreeCreatedHere(kFALSE)
+  , fNclusters(-1)
+  , fRawDataSource(0)
+  , fFeeParams(0)
 {
   //
   // AliTRDclusterizerHLT default constructor
@@ -59,10 +61,11 @@ AliTRDclusterizerHLT::AliTRDclusterizerHLT()
 
 //_____________________________________________________________________________
 AliTRDclusterizerHLT::AliTRDclusterizerHLT(const Text_t *name, const Text_t *title) 
-  : AliTRDclusterizer(name,title),
-    fTreeCreatedHere(kFALSE),
-    fNclusters(-1),
-    fRawDataSource(0)
+  : AliTRDclusterizer(name,title)
+  , fTreeCreatedHere(kFALSE)
+  , fNclusters(-1)
+  , fRawDataSource(0)
+  , fFeeParams(0)
 {
   //
   // AliTRDclusterizerHLT constructor
@@ -71,10 +74,11 @@ AliTRDclusterizerHLT::AliTRDclusterizerHLT(const Text_t *name, const Text_t *tit
 
 //_____________________________________________________________________________
 AliTRDclusterizerHLT::AliTRDclusterizerHLT(const AliTRDclusterizerHLT &c)
-  : AliTRDclusterizer(c),
-    fTreeCreatedHere(kFALSE),
-    fNclusters(-1),
-    fRawDataSource(0)
+  : AliTRDclusterizer(c)
+  , fTreeCreatedHere(kFALSE)
+  , fNclusters(-1)
+  , fRawDataSource(0)
+  , fFeeParams(0)
 {
   //
   // AliTRDclusterizerHLT copy constructor
@@ -124,6 +128,21 @@ void AliTRDclusterizerHLT::Copy(TObject &c) const
 
 }
 
+void AliTRDclusterizerHLT::SetRawVersion(Int_t iver)
+{ 
+  //
+  // set the expected raw data version
+  //
+
+  AliTRDclusterizer::SetRawVersion(iver);  
+
+  if (fFeeParams == 0)
+    {
+      fFeeParams = AliTRDfeeParam::Instance();
+    }
+  
+  fFeeParams->SetRAWversion(iver);
+} 
 //_____________________________________________________________________________
 Bool_t AliTRDclusterizerHLT::ReadDigits(AliRawReaderMemory *rawReader)
 {
@@ -135,6 +154,7 @@ Bool_t AliTRDclusterizerHLT::ReadDigits(AliRawReaderMemory *rawReader)
     fRawDataSource = new AliTRDrawData;
 
   //PH  fRawDataSource->SetRawVersion(fRawVersion);
+
   fDigitsManager = fRawDataSource->Raw2Digits((AliRawReader*)rawReader);
   //AliInfo(Form("Digits manager at 0x%x", fDigitsManager));
   AliDebug(1, Form("Digits manager at 0x%x", fDigitsManager));

@@ -18,6 +18,7 @@
 class AliRawReader;
 class AliRawReaderMemory;
 class AliTRDrawData;
+class AliTRDfeeParam;
 
 class AliTRDclusterizerHLT : public AliTRDclusterizer 
 {
@@ -44,6 +45,8 @@ class AliTRDclusterizerHLT : public AliTRDclusterizer
   TTree *          GetClusterTree() {return fClusterTree;}
   virtual Bool_t   IsTreeOwner() const {return fTreeCreatedHere;}
 
+  virtual void     SetRawVersion(Int_t iver);
+
  protected:
   virtual Bool_t   ReadDigits() const {return kFALSE;} //this method not to be used on HLT
   virtual Bool_t   ReadDigits(AliRawReader* rawReader) const {if (!rawReader); return kFALSE;} //this method not to be used on HLT
@@ -53,7 +56,8 @@ class AliTRDclusterizerHLT : public AliTRDclusterizer
  private:
 
   Int_t fNclusters; //number of clusters found - updated by ::GetNclusters()
-  AliTRDrawData *fRawDataSource; //! pointer to the TRD raw data stream
+  AliTRDrawData  *fRawDataSource; //! pointer to the TRD raw data stream
+  AliTRDfeeParam *fFeeParams; //! fee parameters - this is singleton so watch out! with delete
 
   ClassDef(AliTRDclusterizerHLT,1)           //  TRD-Cluster finder, slow simulator
 
