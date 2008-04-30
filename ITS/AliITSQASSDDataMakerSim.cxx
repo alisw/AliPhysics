@@ -33,7 +33,7 @@
 
 // --- AliRoot header files ---
 #include "AliITS.h"
-#include "AliITSModule.h"
+#include "AliITSmodule.h"
 #include "AliITShit.h"
 #include "AliITSdigit.h"
 #include "AliITSpListItem.h"
