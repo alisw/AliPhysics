@@ -16,6 +16,7 @@ void AliAnalysisTaskSESelectHFTest()
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libPWG3base.so");
+  gSystem->Load("libPWG3vertexingHF.so");
 
 
   // Local files 

@@ -11,6 +11,7 @@ void AliAnalysisVertexingHFTest()
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
+  gSystem->Load("libPWG3vertexingHF.so");
 
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   //vHF->SetUseTRef();

@@ -10,6 +10,7 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
+  gSystem->Load("libPWG3vertexingHF.so");
 
   // create a test histogram
   TH2F *hCPtaVSd0d0 = new TH2F("hCPtaVSd0d0","D^{0} correlation plot",1000,-50000,50000,1000,-1,1);
