@@ -354,20 +354,13 @@ void AliITSDetTypeRec::SetDefaults(){
 
     }
     if(dettype==1){
-      AliITSCalibrationSDD* res=(AliITSCalibrationSDD*) GetCalibrationModel(GetITSgeom()->GetStartSDD()); 
       seg = new AliITSsegmentationSDD();
       SetSegmentationModel(dettype,seg);
-      const char *kopt = ((AliITSresponseSDD*)res->GetResponse())->ZeroSuppOption();
-      if(!strstr(kopt,"ZS")) SetDigitClassName(dettype,"AliITSdigit");
-      else SetDigitClassName(dettype,"AliITSdigitSDD");
+      SetDigitClassName(dettype,"AliITSdigitSDD");
       SetClusterClassName(dettype,"AliITSRawClusterSDD");
-
     }
     if(dettype==2){
       AliITSsegmentationSSD* seg2 = new AliITSsegmentationSSD();
-      seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
-      seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
-      seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
       SetSegmentationModel(dettype,seg2);
       SetDigitClassName(dettype,"AliITSdigitSSD");
       SetClusterClassName(dettype,"AliITSRawClusterSSD");

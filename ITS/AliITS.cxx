@@ -1013,25 +1013,6 @@ void AliITS::AddSumDigit(AliITSpListItem &sdig){
     
 }
 //______________________________________________________________________
-void AliITS::AddRealDigit(Int_t branch, Int_t *digits){
-    //   Add a real digit - as coming from data.
-    // Inputs:
-    //      Int_t id        Detector type number.
-    //      Int_t *digits   Integer array containing the digits info. See 
-    //                      AliITSdigit.h
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
-
-    if(!fDetTypeSim) {
-      Error("AddRealDigit","fDetTypeSim is 0!");
-      return;
-    }
-    fDetTypeSim->AddRealDigit(branch,digits);
-
-}
-//______________________________________________________________________
 void AliITS::AddSimDigit(Int_t branch, AliITSdigit *d){
     //    Add a simulated digit.
     // Inputs:

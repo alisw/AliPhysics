@@ -4,7 +4,6 @@
 #include "AliITSsegmentation.h"
 
 
-class AliITSgeom;
 
 // segmentation and response for SPD 
 
@@ -13,7 +12,6 @@ public AliITSsegmentation {
  public:
 
     AliITSsegmentationSPD(Option_t *opt="" );
-    AliITSsegmentationSPD(AliITSgeom *gm);
     AliITSsegmentationSPD(const AliITSsegmentationSPD &source);
     virtual ~AliITSsegmentationSPD(){}
     AliITSsegmentationSPD& operator=(const AliITSsegmentationSPD &source);

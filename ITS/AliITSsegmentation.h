@@ -17,7 +17,6 @@ class AliITSsegmentation :
 public TObject {
  public:
   AliITSsegmentation();
-  AliITSsegmentation(AliITSgeom *geom);
   AliITSsegmentation(const AliITSsegmentation& source);
   virtual ~AliITSsegmentation();
   AliITSsegmentation& operator=(const AliITSsegmentation &source);

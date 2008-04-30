@@ -82,7 +82,6 @@ class AliITSDetTypeSim : public TObject {
     virtual void SDigitsToDigits(Option_t *opt,Char_t* name);
 
     virtual void AddSumDigit(AliITSpListItem &sdig);
-    virtual void AddRealDigit(Int_t branch, Int_t *digits);
     virtual void AddSimDigit(Int_t branch, AliITSdigit *d);
     virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
 			     Int_t* tracks,Int_t *hits,Float_t* trkcharges,

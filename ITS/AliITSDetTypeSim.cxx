@@ -384,43 +384,13 @@ void AliITSDetTypeSim::SetDefaults(){
     ResetSegmentation();
     if(!GetCalibration()){AliFatal("Exit"); exit(0);}
 
+    SetDigitClassName(0,"AliITSdigitSPD");
+    SetDigitClassName(1,"AliITSdigitSDD");
+    SetDigitClassName(2,"AliITSdigitSSD");
+
     for(Int_t idet=0;idet<fgkNdettypes;idet++){
-	//SPD
-	if(idet==0){
-	    if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
-	    const char *kData0=(GetCalibrationModel(GetITSgeom()->GetStartSPD()))->DataType();
-	    if (strstr(kData0,"real")) {
-		SetDigitClassName(idet,"AliITSdigit");
-	    }else {
-		SetDigitClassName(idet,"AliITSdigitSPD");
-	    } // end if
-	} // end if idet==0
-	//SDD
-	if(idet==1){
-	    if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
-	    AliITSCalibrationSDD* rsp = 
-		(AliITSCalibrationSDD*)GetCalibrationModel(
-		    GetITSgeom()->GetStartSDD());
-	    const char *kopt = ((AliITSresponseSDD*)rsp->GetResponse())->
-		ZeroSuppOption();
-	    if(!strstr(kopt,"ZS")) {
-	      SetDigitClassName(idet,"AliITSdigit");
-	    }else {
-	      SetDigitClassName(idet,"AliITSdigitSDD");
-	    } // end if
-	} // end if idet==1
-	//SSD
-	if(idet==2){
-	    if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
-	    const char *kData2 = (GetCalibrationModel(
-                                  GetITSgeom()->GetStartSSD())->DataType());
-	    if (strstr(kData2,"real")) {
-		SetDigitClassName(idet,"AliITSdigit");
-	    }else {
-		SetDigitClassName(idet,"AliITSdigitSSD");
-	    } // end if
-	} // end if idet==2
-    }// end for idet
+      if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
+    }
 }
 //______________________________________________________________________
 Bool_t AliITSDetTypeSim::GetCalibration() {
@@ -805,13 +775,6 @@ void AliITSDetTypeSim::AddSumDigit(AliITSpListItem &sdig){
   //Adds the module full of summable digits to the summable digits tree.
 
   new(fSDigits[fNSDigits++]) AliITSpListItem(sdig);
-}
-//__________________________________________________________
-void AliITSDetTypeSim::AddRealDigit(Int_t branch, Int_t *digits){
-  //   Add a real digit - as coming from data.
-
-  TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
-  new(ldigits[fNDigits[branch]++]) AliITSdigit(digits); 
 }
 //__________________________________________________________
 void AliITSDetTypeSim::AddSimDigit(Int_t branch, AliITSdigit* d){  

@@ -23,17 +23,6 @@ fCorr(0){
  
 }
 //_____________________________________________________________
-AliITSsegmentation::AliITSsegmentation(AliITSgeom* geom):
-fDx(0),
-fDz(0),
-fDy(0),
-fCorr(0){
-  // Default constructor
-  AliWarning(Form("AliITSgeom (%X) no longer needed in ITS segmentation. Use default constructor\n",geom))
-}
-
-
-//_____________________________________________________________
 AliITSsegmentation::~AliITSsegmentation(){
   // destructor
   if(fCorr)delete fCorr;

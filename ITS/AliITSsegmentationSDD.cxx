@@ -18,7 +18,6 @@
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
 #include "AliITSsegmentationSDD.h"
-#include "AliITSgeomSDD.h"
 #include "AliITSresponseSDD.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -60,18 +59,7 @@ const Int_t AliITSsegmentationSDD::fgkNanodesPerChip = 64;
 const Float_t AliITSsegmentationSDD::fgkCm2Micron = 10000.;
 const Float_t AliITSsegmentationSDD::fgkMicron2Cm = 1.0E-04;
 ClassImp(AliITSsegmentationSDD)
-//----------------------------------------------------------------------
-AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom):
-AliITSsegmentation(),
-fNsamples(0),
-fNanodes(0),
-fPitch(0),
-fTimeStep(0),
-fDriftSpeed(0),
-fSetDriftSpeed(0){
-  // constructor
-  InitFromGeom(geom);
-}
+
 //______________________________________________________________________
 AliITSsegmentationSDD::AliITSsegmentationSDD(Option_t *opt) : AliITSsegmentation(),
 fNsamples(0),
@@ -140,21 +128,6 @@ void AliITSsegmentationSDD::Init(){
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
    SetPadSize(fgkPitchDefault,fgkClockDefault);
    SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
-}
-//----------------------------------------------------------------------
-void AliITSsegmentationSDD::InitFromGeom(AliITSgeom *geom){
-// Inizialization from geometry
-  Init();
-  if(!geom) {
-    AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-    return;
-  }
-  AliITSgeomSDD *gsdd = (AliITSgeomSDD *) (geom->GetShape(3,1,1));
-  
-  fDz = 2.*fgkCm2Micron*gsdd->GetDz();
-  fDx = fgkCm2Micron*gsdd->GetDx();
-  fDy = 2.*fgkCm2Micron*gsdd->GetDy();
- 
 }
 
 //----------------------------------------------------------------------

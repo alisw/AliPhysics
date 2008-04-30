@@ -36,6 +36,7 @@ const Int_t AliITSsegmentationSSD::fgkNchipsPerSide = 6;
 const Int_t AliITSsegmentationSSD::fgkNstripsPerChip = 128;
 
 ClassImp(AliITSsegmentationSSD)
+
 AliITSsegmentationSSD::AliITSsegmentationSSD(Option_t *opt): AliITSsegmentation(),
 fNstrips(0),
 fStereoP(0),
@@ -47,10 +48,10 @@ fStereoPl6(0),
 fStereoNl6(0),
 fLayer(0){
     // default constructor
-    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
-    SetPadSize(fgkPitchDefault,0.);
-    SetNPads(fgkNstripsDefault,0);
-    SetAngles();
+  SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
+  SetPadSize(fgkPitchDefault,0.);
+  SetNPads(fgkNstripsDefault,0);
+  SetAngles();
   if(strstr(opt,"TGeo")){
     if(!gGeoManager){
       AliError("Geometry is not initialized\n");
@@ -67,24 +68,7 @@ fLayer(0){
     }
   }
 }
-//----------------------------------------------------------------------
-AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSgeom *geom):
-AliITSsegmentation(geom),
-fNstrips(0),
-fStereoP(0),
-fStereoN(0),
-fPitch(0),
-fStereoPl5(0),
-fStereoNl5(0),
-fStereoPl6(0),
-fStereoNl6(0),
-fLayer(0){
-    // constuctor
-    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
-    SetPadSize(fgkPitchDefault,0.);
-    SetNPads(fgkNstripsDefault,0);
-    SetAngles();
-}
+
 //______________________________________________________________________
 void AliITSsegmentationSSD::Copy(TObject &obj) const {
   // protected method. copy this to obj

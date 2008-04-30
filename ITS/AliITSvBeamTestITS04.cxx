@@ -400,11 +400,6 @@ void AliITSvBeamTestITS04::SetDefaults()
 	bz[160] = 425.0;                       // Set so that there is no zero pixel size for fNz.
 	seg0->SetBinSize(bx,bz);               // Based on AliITSgeomSPD for now.
 	SetSegmentationModel(kSPD,seg0);
-	// set digit and raw cluster classes to be used
-	const char *kData0=(fDetTypeSim->GetCalibrationModel(kSPD))->DataType();
-	if (strstr(kData0,"real")) 
-	  fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigit");
-	else fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
     }
   
     // SDD
@@ -420,11 +415,6 @@ void AliITSvBeamTestITS04::SetDefaults()
       seg1->SetDriftSpeed(AliITSresponseSDD::DefaultDriftSpeed());
       seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
       SetSegmentationModel(kSDD,seg1);
-      const char *kData1=(fDetTypeSim->GetCalibrationModel(kSDD))->DataType();
-      const char *kopt=resp1->GetZeroSuppOption();
-      if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
-	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
-	} else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
     }
     
     // SSD
@@ -444,9 +434,6 @@ void AliITSvBeamTestITS04::SetDefaults()
       seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
       seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
       SetSegmentationModel(kSSD,seg2); 
-      const char *kData2=(fDetTypeSim->GetCalibrationModel(kSSD))->DataType();
-      if(strstr(kData2,"real") ) fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigit");
-      else fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigitSSD");
     }
     
   if(fgkNTYPES>3){Warning("SetDefaults","Only the four basic detector types are initialised!");}

@@ -915,22 +915,15 @@ void AliITSsimulationSDD::Compress2D(){
 
 //______________________________________________________________________
 void AliITSsimulationSDD::StoreAllDigits(){
-  // if non-zero-suppressed data
-  AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(fModule);
-
-  Int_t i, j, digits[3];
-
-  for (i=0; i<fNofMaps; i++) {
-    for (j=0; j<fMaxNofSamples; j++) {
-      Int_t signal=(Int_t)(fHitMap2->GetSignal(i,j));
-      signal = Convert10to8(signal);
-      signal = Convert8to10(signal);
-      digits[0] = i;
-      digits[1] = j;
-      digits[2] = signal;
-      fITS->AddRealDigit(1,digits);
-    } // end for j
-  } // end for i
+  // store digits for non-zero-suppressed data
+  for (Int_t ian=0; ian<fNofMaps; ian++) {
+    for (Int_t itb=0; itb<fMaxNofSamples; itb++){
+      Int_t signal=(Int_t)(fHitMap2->GetSignal(ian,itb));
+      Int_t signalc = Convert10to8(signal);
+      Int_t signale = Convert8to10(signalc);
+      AddDigit(ian,itb,signalc,signale);  
+    } 
+  }
 } 
 //______________________________________________________________________
 void AliITSsimulationSDD::CreateHistograms(Int_t scale){

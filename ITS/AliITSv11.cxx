@@ -32,9 +32,6 @@
 #include <TVirtualMC.h>
 
 #include "AliITSgeom.h"
-#include "AliITSgeomSDD.h"
-#include "AliITSgeomSPD.h"
-#include "AliITSgeomSSD.h"
 #include "AliITShit.h"
 
 #include "AliITSCalibrationSDD.h"
@@ -391,99 +388,12 @@ void AliITSv11::Init(){
 */    //
 }
 
-// //______________________________________________________________________
-// void AliITSv11::SetDefaults(){
-//   //
-//   // Set response ans segmentation models for SPD, SDD and SSD
-//   //
-//      const Float_t kconv = 1.0e+04; // convert cm to microns
-//     AliInfo("Called");    
-
-//     if(!fDetTypeSim) fDetTypeSim = new AliITSDetTypeSim();
-//     fDetTypeSim->SetITSgeom(GetITSgeom());
-  
-//     AliITSgeomSPD  *s0;
-//     AliITSgeomSDD  *s1;
-//     AliITSgeomSSD  *s2;
-//     Int_t i;
-//     Float_t bx[256],bz[280];
-   
-//     fDetTypeSim->ResetCalibrationArray();
-//     fDetTypeSim->ResetSegmentation();
-//     fDetTypeSim->SetDefaults();
-    
-//     //SPD
-//     s0 = (AliITSgeomSPD*) GetITSgeom()->GetShape(kSPD);// Get shape info. Do it this way for now.
-//     AliITSsegmentationSPD* seg0 = (AliITSsegmentationSPD*)fDetTypeSim->GetSegmentationModel(0);
-//     seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
-// 		     s0->GetDz()*2.*kconv, // for now.
-// 		     s0->GetDy()*2.*kconv); // x,z,y full width in microns.
-//     seg0->SetNPads(256,160);// Number of Bins in x and z
-//     for(i=000;i<256;i++) bx[i] =  50.0; // in x all are 50 microns.
-//     for(i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
-//     for(i=160;i<280;i++) bz[i] =   0.0; // Outside of detector.
-//     bz[ 31] = bz[ 32] = 625.0; // first chip boundry
-//     bz[ 63] = bz[ 64] = 625.0; // first chip boundry
-//     bz[ 95] = bz[ 96] = 625.0; // first chip boundry
-//     bz[127] = bz[128] = 625.0; // first chip boundry
-//     bz[160] = 425.0; // Set so that there is no zero pixel size for fNz.
-//     seg0->SetBinSize(bx,bz); // Based on AliITSgeomSPD for now.
-//     SetSegmentationModel(kSPD,seg0);
-//     // set digit and raw cluster classes to be used
-//     const char *kData0=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSPD()))->DataType();
-//     if (strstr(kData0,"real")) fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigit");
-//     else fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
-
-
-
-//     // SDD
-//     s1 = (AliITSgeomSDD*) GetITSgeom()->GetShape(kSDD);// Get shape info. Do it this way for now.
-//     AliITSsegmentationSDD* seg1 = (AliITSsegmentationSDD*)fDetTypeSim->GetSegmentationModel(1);
-//     seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
-// 		     s1->GetDz()*2.*kconv, // for now.
-// 		     s1->GetDy()*2.*kconv); // x,z,y full width in microns.
-//     seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
-//     SetSegmentationModel(kSDD,seg1);
-//     const char *kData1=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD()))->DataType();
-//     AliITSCalibrationSDD* rsp = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD());
-//     const char *kopt=rsp->GetZeroSuppOption();
-//     if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
-// 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
-//     } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
-
-
-//     // SSD
-//     s2 = (AliITSgeomSSD*) GetITSgeom()->GetShape(kSSD);// Get shape info. Do it this way for now.
-//     AliITSsegmentationSSD* seg2 = (AliITSsegmentationSSD*)fDetTypeSim->GetSegmentationModel(2);
-//     seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
-// 		     s2->GetDz()*2.*kconv, // for now.
-// 		     s2->GetDy()*2.*kconv); // x,z,y full width in microns.
-//     seg2->SetPadSize(95.,0.); // strip x pitch in microns
-//     seg2->SetNPads(768,0); // number of strips on each side.
-//     seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
-//     seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
-//     seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
-//     SetSegmentationModel(kSSD,seg2); 
-//         const char *kData2=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSSD()))->DataType();
-//     if(strstr(kData2,"real") ) fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigit");
-//     else fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigitSSD");
-//     if(fgkNTYPES>3){
-// 	Warning("SetDefaults",
-// 		"Only the four basic detector types are initialised!");
-//     }// end if
-
-    
-//     return;
-// }
-
 
 //______________________________________________________________________
 void AliITSv11::SetDefaults(){
   //
   // Set response and segmentation models for SPD, SDD and SSD
   //
-     const Float_t kconv = 1.0e+04; // convert cm to microns
-    AliInfo("Called");    
 
 //     if(!fDetTypeSim) fDetTypeSim = new AliITSDetTypeSim();
 //     fDetTypeSim->SetITSgeom(GetITSgeom());
@@ -492,71 +402,10 @@ void AliITSv11::SetDefaults(){
       return;
     }
   
-    AliITSgeomSPD  *s0;
-    AliITSgeomSDD  *s1;
-    AliITSgeomSSD  *s2;
-    Int_t i;
-    Float_t bx[256],bz[280];
-   
     fDetTypeSim->ResetCalibrationArray();
     fDetTypeSim->ResetSegmentation();
     fDetTypeSim->SetDefaults();
     
-    //SPD
-    s0 = (AliITSgeomSPD*) GetITSgeom()->GetShape(kSPD);// Get shape info. Do it this way for now.
-    AliITSsegmentationSPD* seg0 = (AliITSsegmentationSPD*)fDetTypeSim->GetSegmentationModel(0);
-    seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
-		     s0->GetDz()*2.*kconv, // for now.
-		     s0->GetDy()*2.*kconv); // x,z,y full width in microns.
-    seg0->SetNPads(256,160);// Number of Bins in x and z
-    for(i=000;i<256;i++) bx[i] =  50.0; // in x all are 50 microns.
-    for(i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
-    for(i=160;i<280;i++) bz[i] =   0.0; // Outside of detector.
-    bz[ 31] = bz[ 32] = 625.0; // first chip boundry
-    bz[ 63] = bz[ 64] = 625.0; // first chip boundry
-    bz[ 95] = bz[ 96] = 625.0; // first chip boundry
-    bz[127] = bz[128] = 625.0; // first chip boundry
-    bz[160] = 425.0; // Set so that there is no zero pixel size for fNz.
-    seg0->SetBinSize(bx,bz); // Based on AliITSgeomSPD for now.
-    SetSegmentationModel(kSPD,seg0);
-    // set digit and raw cluster classes to be used
-    const char *kData0=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSPD()))->DataType();
-    if (strstr(kData0,"real")) fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigit");
-    else fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
-
-
-
-    // SDD
-    s1 = (AliITSgeomSDD*) GetITSgeom()->GetShape(kSDD);// Get shape info. Do it this way for now.
-    AliITSsegmentationSDD* seg1 = (AliITSsegmentationSDD*)fDetTypeSim->GetSegmentationModel(1);
-    seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
-		     s1->GetDz()*2.*kconv, // for now.
-		     s1->GetDy()*2.*kconv); // x,z,y full width in microns.
-    seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
-    SetSegmentationModel(kSDD,seg1);
-    const char *kData1=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD()))->DataType();
-    AliITSCalibrationSDD* rsp = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD());
-    const char *kopt=rsp->GetZeroSuppOption();
-    if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
-	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
-    } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
-
-
-    // SSD
-    s2 = (AliITSgeomSSD*) GetITSgeom()->GetShape(kSSD);// Get shape info. Do it this way for now.
-    AliITSsegmentationSSD* seg2 = (AliITSsegmentationSSD*)fDetTypeSim->GetSegmentationModel(2);
-    seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
-		     s2->GetDz()*2.*kconv, // for now.
-		     s2->GetDy()*2.*kconv); // x,z,y full width in microns.
-    seg2->SetPadSize(95.,0.); // strip x pitch in microns
-    seg2->SetNPads(768,0); // number of strips on each side.
-    seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
-    seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
-    seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
-    SetSegmentationModel(kSSD,seg2); 
-        const char *kData2=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSSD()))->DataType();
-    if(strstr(kData2,"real") ) fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigit");
-    else fDetTypeSim->SetDigitClassName(kSSD,"AliITSdigitSSD");
     if(fgkNTYPES>3){
 	Warning("SetDefaults",
 		"Only the four basic detector types are initialised!");

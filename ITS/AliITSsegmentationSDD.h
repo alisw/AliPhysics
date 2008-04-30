@@ -16,7 +16,6 @@ public AliITSsegmentation {
     AliITSsegmentationSDD(Option_t *opt="");
     AliITSsegmentationSDD(const AliITSsegmentationSDD &source);
     AliITSsegmentationSDD& operator=(const AliITSsegmentationSDD &source);
-    AliITSsegmentationSDD(AliITSgeom *gm);
     virtual ~AliITSsegmentationSDD(){}
 
     // Set Detector Segmentation Parameters
@@ -74,7 +73,7 @@ public AliITSsegmentation {
 
     // Initialisation
     virtual void Init();
-    void InitFromGeom(AliITSgeom *geom);
+
     //
     // Get member data
     //

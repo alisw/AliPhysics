@@ -57,7 +57,7 @@ class AliITSresponseSDD : public AliITSresponse {
 	strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());}
  
     void    SetZeroSupp (const char *opt) {
-	// Zero-suppression option - could be 1D, 2D or non-ZS 
+	// Zero-suppression option - could be ZS or NOTSUPP
 	fOption=opt;}
     const char *ZeroSuppOption() const {// Get zero-suppression option
 	return fOption.Data();}
@@ -110,7 +110,7 @@ class AliITSresponseSDD : public AliITSresponse {
                           // is performed
     TArrayF   *fGaus;          // Gaussian lookup table for signal generation
     Int_t      fNcomps;        // Number of samplings along the gaussian
-    TString    fOption;        // Zero-suppresion option (1D, 2D or none)
+    TString    fOption;        // Zero-suppresion option (ZS or non-ZS)
     TString    fParam1;        // Read baselines from file option
     TString    fParam2;        // Read compression algo thresholds from file
 

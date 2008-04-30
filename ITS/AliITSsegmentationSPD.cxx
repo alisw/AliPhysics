@@ -18,7 +18,7 @@
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
 #include "AliITSsegmentationSPD.h"
-//#include "AliITSgeom.h"
+
 //////////////////////////////////////////////////////
 // Segmentation class for                           //
 // pixels                                           //
@@ -53,16 +53,6 @@ fNpz(0){
       SetDetSize(s->GetDX()*20000.,s->GetDZ()*20000.,s->GetDY()*20000.);
     }
   }
-}
-
-//______________________________________________________________________
-AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm):
-AliITSsegmentation(gm),
-fNpx(0),
-fNpz(0){
-  // Constructor
-   fCorr=0;
-   Init(); 
 }
 
 //_____________________________________________________________________________

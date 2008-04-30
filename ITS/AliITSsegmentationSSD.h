@@ -12,7 +12,6 @@ public AliITSsegmentation {
  public:
 
     AliITSsegmentationSSD(Option_t *opt="");
-    AliITSsegmentationSSD(AliITSgeom *gm);
     AliITSsegmentationSSD(const AliITSsegmentationSSD &source);
     virtual ~AliITSsegmentationSSD(){}
     AliITSsegmentationSSD& operator=(const AliITSsegmentationSSD &source);
@@ -29,7 +28,7 @@ public AliITSsegmentation {
 
 
     // Set stereo angles Pside-Nside 
-    virtual void    SetAngles(Float_t pa=0.0175, Float_t na=0.0175) 
+    virtual void    SetAngles(Float_t pa=0.0075, Float_t na=0.0275) 
                          {fStereoPl5=pa; fStereoNl5=na;
 			 fStereoPl6=na; fStereoNl6=pa;}
 
