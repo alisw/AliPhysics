@@ -61,8 +61,8 @@ ClassImp(AliEMCALReconstructor)
 
 AliEMCALRecParam* AliEMCALReconstructor::fgkRecParam = 0;  // EMCAL rec. parameters
 AliEMCALRawUtils* AliEMCALReconstructor::fgRawUtils = 0;   // EMCAL raw utilities class
+AliEMCALClusterizer* AliEMCALReconstructor::fgClusterizer = 0;   // EMCAL clusterizer class
 TClonesArray*     AliEMCALReconstructor::fgDigitsArr = 0;  // shoud read just once at event
-
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
   : fDebug(kFALSE), fList(0), fGeom(0) 
@@ -71,6 +71,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   InitRecParam();
 
   fgRawUtils = new AliEMCALRawUtils;
+  fgClusterizer = new AliEMCALClusterizerv1;
 
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
@@ -144,15 +145,18 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   if(fgDigitsArr && fgDigitsArr->GetEntries()) {
 
-    AliEMCALClusterizerv1 clu;
-    clu.SetInput(digitsTree);
-    clu.SetOutput(clustersTree);
+    fgClusterizer->SetInput(digitsTree);
+    fgClusterizer->SetOutput(clustersTree);
+    
     if(Debug())
-      clu.Digits2Clusters("deb all") ;
+      fgClusterizer->Digits2Clusters("deb all") ;
     else
-      clu.Digits2Clusters("") ;
+      fgClusterizer->Digits2Clusters("");
+    
+    fgClusterizer->Clear();
 
   }
+
 }
 
 //____________________________________________________________________________
@@ -196,7 +200,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Works on the current event
   //  printf(" ## AliEMCALReconstructor::FillESD() is started ### \n ");
   //return;
-  const double timeScale = 1.e+11; // transition constant from sec to 0.01 ns 
 
   //######################################################
   //#########Calculate trigger and set trigger info###########
@@ -426,6 +429,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
 }
 
+//__________________________________________________________________________
 void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
 {
   // See AliEMCALClusterizer::SetInput(TTree *digitsTree);

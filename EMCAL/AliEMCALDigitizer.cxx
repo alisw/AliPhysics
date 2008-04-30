@@ -254,7 +254,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   rl->GetEvent(readEvent);
 
   TClonesArray * digits = emcalLoader->Digits() ; 
-  digits->Delete() ;  
+  digits->Delete() ;  //JLK why is this created then deleted?
 
   // Load Geometry
   AliEMCALGeometry *geom = 0;
@@ -324,7 +324,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   AliEMCALDigit * digit ;
   AliEMCALDigit * curSDigit ;
 
-  TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
+  //  TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
 
   //Put Noise contribution
   for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
@@ -336,14 +336,22 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     
     if(absID==nextSig){
       //Add SDigits from all inputs    
-      ticks->Clear() ;
-      Int_t contrib = 0 ;
-      Float_t a = digit->GetAmp() ;
-      Float_t b = TMath::Abs( a /fTimeSignalLength) ;
+      //      ticks->Clear() ;
+      //Int_t contrib = 0 ;
+
+      //Follow PHOS and comment out this timing model til a better one
+      //can be developed - JLK 28-Apr-2008
+
+      //Float_t a = digit->GetAmp() ;
+      //Float_t b = TMath::Abs( a /fTimeSignalLength) ;
       //Mark the beginning of the signal
-      new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime(),0, b);  
+      //new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime(),0, b);  
       //Mark the end of the signal     
-      new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime()+fTimeSignalLength, -a, -b);
+      //new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime()+fTimeSignalLength, -a, -b);
+
+      // Calculate time as time of the largest digit
+      Float_t time = digit->GetTime() ;
+      Float_t eTime= digit->GetAmp() ;
       
       // loop over input
       for(i = 0; i< fInput ; i++){  //loop over (possible) merge sources
@@ -360,11 +368,16 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 	  else
 	    primaryoffset = i ;
 	  curSDigit->ShiftPrimary(primaryoffset) ;
-	  
-	  a = curSDigit->GetAmp() ;
-	  b = a /fTimeSignalLength ;
-	  new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime(),0, b);  
-	  new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
+
+	  //Remove old timing model - JLK 28-April-2008
+	  //a = curSDigit->GetAmp() ;
+	  //b = a /fTimeSignalLength ;
+	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime(),0, b);  
+	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
+	  if(curSDigit->GetAmp()>eTime) {
+	    eTime = curSDigit->GetAmp();
+	    time = curSDigit->GetTime();
+	  }
 
 	  *digit = *digit + *curSDigit ;  //add energies
 
@@ -380,7 +393,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       amp *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
   
       //calculate and set time
-      Float_t time = FrontEdgeTime(ticks) ;
+      //New timing model needed - JLK 28-April-2008
+      //Float_t time = FrontEdgeTime(ticks) ;
       digit->SetTime(time) ;
 
       //Find next signal module
@@ -401,8 +415,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 		     absID, amp, nextSig));
   } // for(absID = 1; absID <= nEMC; absID++)
   
-  ticks->Delete() ;
-  delete ticks ;
+  //ticks->Delete() ;
+  //delete ticks ;
 
   delete sdigArray ; //We should not delete its contents
 

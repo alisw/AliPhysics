@@ -77,15 +77,17 @@ public:
 private:
   
   Bool_t fDebug; //! verbosity controller
+
   TList *fList;  //! List of hists (only for trigger now)
   AliEMCALGeometry         *fGeom;           // pointer to the EMCAL geometry
 
+  static AliEMCALClusterizer* fgClusterizer; // clusterizer
   static AliEMCALRecParam*   fgkRecParam; // reconstruction parameters for EMCAL
   static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
 					  // only need one per reco
   static TClonesArray*       fgDigitsArr; // Array with EMCAL digits
 
-  ClassDef(AliEMCALReconstructor,3)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,5)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

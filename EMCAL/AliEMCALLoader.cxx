@@ -256,9 +256,7 @@ Int_t AliEMCALLoader::GetEvent()
      TBranch * branchS = treeS->GetBranch(fDetectorName);
      branchS->ResetAddress();
      if (fSDigits) {
-       fSDigits->Delete();
-       delete fSDigits;
-       fSDigits = 0x0;
+       fSDigits->Clear();
      }
      branchS->SetAddress(&fSDigits);
      treeS->GetEvent(0);
@@ -270,9 +268,7 @@ Int_t AliEMCALLoader::GetEvent()
      TBranch * branchD = treeD->GetBranch(fDetectorName);
      branchD->ResetAddress();
      if (fDigits) {
-       fDigits->Delete();
-       delete fDigits;
-       fDigits = 0x0;
+       fDigits->Clear();
      }
      branchD->SetAddress(&fDigits);
      treeD->GetEvent(0);
@@ -284,9 +280,7 @@ Int_t AliEMCALLoader::GetEvent()
      TBranch * branchR = treeR->GetBranch(fgkECARecPointsBranchName);
      branchR->ResetAddress();
      if (fRecPoints) {
-       fRecPoints->Delete();
-       delete fRecPoints;
-       fRecPoints = 0x0;
+       fRecPoints->Clear();
      }
      branchR->SetAddress(&fRecPoints);
      treeR->GetEvent(0);
