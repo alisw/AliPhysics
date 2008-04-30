@@ -286,6 +286,7 @@ AliTPCCalibPedestal::~AliTPCCalibPedestal()
 
   fCalRocArrayPedestal.Delete();
   fCalRocArrayRMS.Delete();
+  fCalRocArraySigma.Delete();
   fHistoPedestalArray.Delete();
 
   if ( fTimeSignal ) {
