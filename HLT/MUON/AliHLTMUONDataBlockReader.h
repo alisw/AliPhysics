@@ -45,7 +45,7 @@
  * stored in memory and the size of the data block is given by the variable 'size'.
  * The data block is of type 'block_type' and the data block entries are of type
  * 'entries_type'. The data block can be accessed in the following way:
- *
+ * \code
  *   void* buffer = somebuffer;
  *   AliHLTUInt32_t size = somebuffer_size;
  *   
@@ -67,6 +67,7 @@
  *      const entries_type& entry = block[i];
  *      // Do something with the entry...
  *   }
+ * \endcode
  */
 template <class DataBlockType, class DataElementType>
 class AliHLTMUONDataBlockReader

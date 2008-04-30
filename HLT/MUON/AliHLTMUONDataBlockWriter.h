@@ -45,7 +45,7 @@
  * variable 'size'. The data block is of type 'block_type', the data block entries
  * are of type 'entries_type' and the data block type code is 'type_code'.
  * The data block can be written in the following way:
- *
+ * \code
  *   void* buffer = somebuffer;
  *   AliHLTUInt32_t size = somebuffer_size;
  *   
@@ -72,9 +72,9 @@
  *      // fill the new entry...
  *      entry.somefield = somevalue;
  *   }
- *
+ * \endcode
  * The slightly slower but safer method is to do the following:
- *
+ * \code
  *   AliHLTMUONDataBlockWriter<block_type, entries_type, type_code>
  *   block(buffer, size);
  *   if (not block.InitCommonHeader())
@@ -93,6 +93,7 @@
  *      // fill the new entry...
  *      entry->somefield = somevalue;
  *   }
+ * \endcode
  */
 template <
 	class DataBlockType,
