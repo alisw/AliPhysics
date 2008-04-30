@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskSingleMu+;
 #pragma link C++ class AliAnalysisTaskLUT+;
 #pragma link C++ class AliAnalysisTaskESDMuonFilter+;
+#pragma link C++ class AliAnalysisTaskTrigChEff+;
 #endif
 
 
