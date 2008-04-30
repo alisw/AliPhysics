@@ -62,7 +62,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include <map>
 #include <string>
 

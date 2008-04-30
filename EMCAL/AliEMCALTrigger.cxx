@@ -41,6 +41,7 @@
 //*-- Author: Gustavo Conesa & Yves Schutz (IFIC, CERN) 
 //////////////////////////////////////////////////////////////////////////////
 
+#include <cassert>
 
 // --- ROOT system ---
 #include <TTree.h>

@@ -48,7 +48,7 @@
 //     and  : Aleksei Pavlinov (WSU) 
 //
 
-#include <assert.h>
+#include <cassert>
 
 // --- Root header files ---
 #include <Riostream.h>

@@ -28,7 +28,7 @@
 #include "AliEMCALShishKebabTrd1Module.h"
 #include "AliEMCALGeometry.h"
 
-#include <assert.h>
+#include <cassert>
 
 #include <Riostream.h>
 
