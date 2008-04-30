@@ -8,31 +8,32 @@ void VZEROSurveyToAlignment(){
 
   if(!gGeoManager) TGeoManager::Import("geometry.root");
 
-  TClonesArray *array = new TClonesArray("AliAlignObjMatrix",10);
+//  TClonesArray *array = new TClonesArray("AliAlignObjMatrix",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &mobj = *array;
  
-  Double_t l_vect[3]={0.,0.,0.}; // a local vector (the origin)
+  Double_t l_vect[3]={0.,0.,0.}; // local vector (the origin)
   Double_t g_vect[3];            // vector corresp. to it in global RS
   Double_t m_vect[3];            // vector corresp. to it in mother RS
  
-  // ************* get global matrix *******************
-  TGeoHMatrix *g3 = AliGeomManager::GetMatrix("VZERO/V0C");
-  
-  // this is used below as the ideal global matrix
+  // ************* get global matrix g3 *******************
+  //  TGeoHMatrix *g3 = AliGeomManager::GetMatrix("VZERO/V0C");
+  TGeoHMatrix *g3 = gGeoManager->GetCurrentMatrix();
+  // this is used below as the IDEAL global matrix
 
-  // ************* get local matrix *******************
+  // ************* get local matrix l3 *******************
   TGeoNode* n3 = gGeoManager->GetCurrentNode();
-  TGeoHMatrix* l3 = n3->GetMatrix(); 
-
+  TGeoHMatrix *l3 = n3->GetMatrix(); 
+  
  // point coordinates in the global RS
   g3->LocalToMaster(l_vect,g_vect);
-  cout<<endl<<"Point coordinates in the global RS: "<<
-    g_vect[0]<<" "<<g_vect[1]<<" "<<g_vect[2];
+  cout<<endl<<"Point coordinates in the global RS: "
+      <<g_vect[0]<<" "<<g_vect[1]<<" "<<g_vect[2];
 
  // point coordinates in the mother volume RS
   l3->LocalToMaster(l_vect,m_vect);
-  cout<<endl<<"Point coordinates in the mother's volume RS: "<<
-    m_vect[0]<<" "<<m_vect[1]<<" "<<m_vect[2]<<" "<<endl;
+  cout<<endl<<"Point coordinates in the mother's volume RS: \n"
+      <<m_vect[0]<<" "<<m_vect[1]<<" "<<m_vect[2]<<" "<<endl;
 
  // Hereafter are the four ideal fiducial marks on the V0C box, 
  // expressed in local coordinates and in cms - hard coded. 
@@ -78,19 +79,19 @@ void VZEROSurveyToAlignment(){
   g3->LocalToMaster(B,gB);
   g3->LocalToMaster(C,gC);
   g3->LocalToMaster(D,gD);
-  cout<<endl<<"Ideal fiducial marks coordinates in the global RS:\n"<<
-    "A "<<gA[0]<<" "<<gA[1]<<" "<<gA[2]<<" "<<endl<<
-    "B "<<gB[0]<<" "<<gB[1]<<" "<<gB[2]<<" "<<endl<<
-    "C "<<gC[0]<<" "<<gC[1]<<" "<<gC[2]<<" "<<endl<<
-    "D "<<gD[0]<<" "<<gD[1]<<" "<<gD[2]<<" "<<endl;
-  cout<<endl<<endl;  
+  cout<<endl<<"Ideal fiducial marks coordinates in the global RS: \n"
+      <<"A "<<gA[0]<<" "<<gA[1]<<" "<<gA[2]<<" "<<endl
+      <<"B "<<gB[0]<<" "<<gB[1]<<" "<<gB[2]<<" "<<endl
+      <<"C "<<gC[0]<<" "<<gC[1]<<" "<<gC[2]<<" "<<endl
+      <<"D "<<gD[0]<<" "<<gD[1]<<" "<<gD[2]<<" "<<endl;
+  cout<<endl;  
     
-// Retrieval of real survey data from ALICE Survey Data Depot : 
+// Retrieval of REAL survey data from ALICE Survey Data Depot : 
 
   AliSurveyObj *so = new AliSurveyObj();
  
   so->FillFromLocalFile("Survey_835615_V0.txt");
-  size = so->GetEntries();
+  Int_t size = so->GetEntries();
 
   Printf("Title: \"%s\"", so->GetReportTitle().Data());
   Printf("Date: \"%s\"", so->GetReportDate().Data());
@@ -126,17 +127,17 @@ void VZEROSurveyToAlignment(){
     
    Double_t ngA[3], ngB[3], ngC[3], ngD[3];
 
-     for(Int_t i=0; i<3; i++) 
+   for(Int_t i=0; i<3; i++) 
      { ngA[i]  = coordinates[0][i] / 10.0 ; 
        ngD[i]  = coordinates[1][i] / 10.0 ;
        ngB[i]  = coordinates[2][i] / 10.0 ; 
        ngC[i]  = coordinates[3][i] / 10.0 ; }
           
-   cout<<endl<<"Fiducial marks coordinates in the global RS given by surveyers:\n"<<
-    "A "<<ngA[0]<<" "<<ngA[1]<<" "<<ngA[2]<<" "<<endl<<
-    "B "<<ngB[0]<<" "<<ngB[1]<<" "<<ngB[2]<<" "<<endl<<
-    "C "<<ngC[0]<<" "<<ngC[1]<<" "<<ngC[2]<<" "<<endl<<
-    "D "<<ngD[0]<<" "<<ngD[1]<<" "<<ngD[2]<<" "<<endl;
+   cout<<endl<<"Fiducial marks coordinates in the global RS given by surveyers: \n"
+       <<"A "<<ngA[0]<<" "<<ngA[1]<<" "<<ngA[2]<<" "<<endl
+       <<"B "<<ngB[0]<<" "<<ngB[1]<<" "<<ngB[2]<<" "<<endl
+       <<"C "<<ngC[0]<<" "<<ngC[1]<<" "<<ngC[2]<<" "<<endl
+       <<"D "<<ngD[0]<<" "<<ngD[1]<<" "<<ngD[2]<<" "<<endl;
     
   // From the new fiducial marks coordinates derive back the new global position
   // of the surveyed volume
@@ -226,8 +227,8 @@ void VZEROSurveyToAlignment(){
   ng.SetTranslation(orig);
   ng.SetRotation(rot);
 
-  cout<<"\n********* global matrix inferred from surveyed fiducial marks ***********\n";
-  ng.Print();
+//  cout<<"\n********* global matrix inferred from surveyed fiducial marks ***********\n";
+//  ng.Print();
 
  // To produce the alignment object for the given volume you would
  // then do something like this:
@@ -241,8 +242,9 @@ void VZEROSurveyToAlignment(){
  // AliGeomManager::LayerToVolUID(AliGeomManager::kTOF,i); 
  
  //AliAlignObjMatrix* mobj[0] = new AliAlignObjMatrix("VZERO/V0C",index,gdelta,kTRUE);
- 
-  new(mobj[0]) AliAlignObjMatrix("VZERO/V0C",index,gdelta,kTRUE);
+ //  new(mobj[0]) AliAlignObjMatrix("VZERO/V0C",index,gdelta,kTRUE);
+
+  new(mobj[0]) AliAlignObjParams("VZERO/V0C",index,gdelta,kTRUE);
   
   if(!gSystem->Getenv("$TOCDB")){
     // save on file
@@ -262,7 +264,14 @@ void VZEROSurveyToAlignment(){
      AliCDBId id("VZERO/Align/Data",0,9999999);
      storage->Put(array,id,mda);
   }
-
+  
+  cout<<"\n********* Alignment constants contained in alignment object ***********\n";
+  cout<<"*************** deduced from surveyed fiducial marks : ****************\n";
+  array->Print();
+  
+  AliAlignObjParams* itsalobj = (AliAlignObjParams*) mobj.UncheckedAt(0);
+  itsalobj->ApplyToGeometry();	
+  
   array->Delete();
 
 }
