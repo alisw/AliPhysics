@@ -28,6 +28,11 @@ protected:
   Int_t IsChInefficient(UShort_t pattern, Int_t cathode);
 
 private:
+  /// Not implemented
+  AliAnalysisTaskTrigChEff(const AliAnalysisTaskTrigChEff& rhs);
+  /// Not implemented
+  AliAnalysisTaskTrigChEff& operator = (const AliAnalysisTaskTrigChEff& rhs);
+    
   AliESDEvent* fESD; //!< ESDevent object
   AliAODEvent* fAOD; //!< AODevent object
   TString fAnalysisType; //"ESD" or "AOD"
