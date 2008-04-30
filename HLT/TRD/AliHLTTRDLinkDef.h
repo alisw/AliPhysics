@@ -7,6 +7,7 @@
 #pragma link C++ class AliTRDclusterizerHLT;
 #pragma link C++ class AliHLTTRDClusterizerComponent;
 #pragma link C++ class AliHLTTRDTrackerComponent;
+#pragma link C++ class AliHLTTRDTrackerV1Component;
 #pragma link C++ class AliHLTTRDDefinitions;
 #pragma link C++ class AliHLTTRDEsdWriterComponent;
 #pragma link C++ class AliHLTTRDCalibrationComponent;

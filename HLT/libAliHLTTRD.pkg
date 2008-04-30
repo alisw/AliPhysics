@@ -8,6 +8,7 @@ CLASS_HDRS:= \
         AliHLTTRDClusterizerComponent.h \
         AliHLTTRDDefinitions.h \
         AliHLTTRDTrackerComponent.h \
+        AliHLTTRDTrackerV1Component.h \
         AliTRDclusterizerHLT.h \
 	AliHLTTRDEsdWriterComponent.h \
 	AliHLTTRDCalibrationComponent.h
