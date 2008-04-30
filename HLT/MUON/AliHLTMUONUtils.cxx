@@ -117,8 +117,8 @@ void AliHLTMUONUtils::UnpackTrackDecisionBits(
 	/// @param lowPt  Sets this to the value of the low pt cut bit.
 	///
 	
-	lowPt  = (bits & 0x1) == 1;
-	highPt = (bits & 0x2) == 1;
+	lowPt  = (bits & 0x1) == 0x1;
+	highPt = (bits & 0x2) == 0x2;
 }
 
 
@@ -170,9 +170,9 @@ void AliHLTMUONUtils::UnpackPairDecisionBits(
 	/// @param lowPtCount  Sets this to the low pt count bits.
 	///
 	
-	highMass = (bits & 0x40) == 1;
-	lowMass  = (bits & 0x20) == 1;
-	unlike   = (bits & 0x10) == 1;
+	highMass = (bits & 0x40) == 0x40;
+	lowMass  = (bits & 0x20) == 0x20;
+	unlike   = (bits & 0x10) == 0x10;
 	highPtCount = (bits & 0xC) >> 2;
 	lowPtCount = bits & 0x3;
 }
