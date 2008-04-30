@@ -42,7 +42,7 @@ void AliHMPIDDigitizer::Exec(Option_t*)
 //First we read all sdigits from all inputs  
   AliRunLoader *pInRunLoader=0;//in and out Run loaders
   AliLoader    *pInRichLoader=0;//in and out HMPID loaders  
-  TClonesArray sdigs("AliHMPIDDigit");//tmp storage for sdigits sum up from all input files
+  static TClonesArray sdigs("AliHMPIDDigit");//tmp storage for sdigits sum up from all input files
   Int_t total=0;
   for(Int_t inFileN=0;inFileN<fManager->GetNinputs();inFileN++){//files loop
     pInRunLoader  = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN));          //get run loader from current input 
