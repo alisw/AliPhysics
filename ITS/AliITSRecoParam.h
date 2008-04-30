@@ -63,6 +63,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   static Double_t GetSPDdetzlength() { return fgkSPDdetzlength; }
   static Double_t GetSPDdetxlength() { return fgkSPDdetxlength; }
 
+  void PrintParameters() const; 
+
   Double_t GetSigmaY2(Int_t i) const { return fSigmaY2[i]; }
   Double_t GetSigmaZ2(Int_t i) const { return fSigmaZ2[i]; }
 

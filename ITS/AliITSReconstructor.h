@@ -41,17 +41,14 @@ public:
 
   static void SetRecoParam(AliITSRecoParam * param){ fgRecoParam = param;}
   static const AliITSRecoParam* GetRecoParam(){ return fgRecoParam;}
-  static const AliITSRecoParam* GetRecoParamDefault()
-                                { return fgRecoParamDefault;}
 
 private:
   //data
-  static AliITSRecoParam *fgRecoParamDefault; // def. reco. parameters
   static AliITSRecoParam *fgRecoParam; // reconstruction parameters
   AliITSpidESD           *fItsPID;      // Pid for ITS
   AliITSDetTypeRec       *fDetTypeRec;  // reconstructor
 
-  ClassDef(AliITSReconstructor, 4)   // class for the ITS reconstruction
+  ClassDef(AliITSReconstructor, 5)   // class for the ITS reconstruction
 };
 
 #endif

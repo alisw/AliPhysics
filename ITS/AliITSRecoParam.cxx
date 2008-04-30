@@ -451,3 +451,34 @@ void AliITSRecoParam::SetLayersParameters()
 
   return;
 }
+//_____________________________________________________________________________
+void AliITSRecoParam::PrintParameters() const 
+{
+  //
+  // print parameters
+  //
+
+  printf("=============================  AliITSRecoParam::PrintParameters ");
+  printf("============================= \n \n ");
+  for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {
+    if(!fLayersToSkip[i]) {
+      printf("ITS Traking: using layer %d\n",i);
+    } else {
+      printf("ITS Traking: skipping layer %d\n",i);
+    }
+  }
+  for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {
+    if(fUseAmplitudeInfo[i]) {
+      printf("ITS Traking: use amplitude info for layer %d\n",i);
+    } else {
+      printf("ITS Traking: don't use amplitude info for layer %d\n",i);
+    }
+  }
+  for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++)
+    printf("Layer %d:\n  sigmaY2 %f, sigma Z2 %f\n  max norm chi2 for non constrained tracks %f\n  max norm chi2 for constrained tracks %f\n  max predicted chi2 (cluster & track prol.) %f\n",i,fSigmaY2[i],fSigmaZ2[i],fMaxNormChi2NonC[i],fMaxNormChi2C[i],fMaxChi2s[i]);
+
+
+  Dump();
+
+  return;
+}

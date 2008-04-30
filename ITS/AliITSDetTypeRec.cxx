@@ -43,6 +43,8 @@
 #include "AliITSRawClusterSDD.h"
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSReconstructor.h"
+#include "AliITSRecoParam.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSMapSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
@@ -404,7 +406,8 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     AliCDBEntry *entryPedestalSSD = AliCDBManager::Instance()->Get("ITS/Calib/PedestalSSD");
     AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
     AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
-
+    // Entry for the AliITSRecoParam object
+    AliCDBEntry *entryRP = AliCDBManager::Instance()->Get("ITS/Calib/RecoParam/");
   AliCDBEntry *entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD");
   AliCDBEntry *entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD");
   AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD");
@@ -415,7 +418,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
 
   if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || 
      !entryPedestalSSD || !entryBadChannelsSSD || 
-     !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapASDD || !mapTSDD){
+     !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapASDD || !mapTSDD || !entryRP){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -471,6 +474,16 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   AliITSresponseSSD *pSSD = (AliITSresponseSSD*)entry2SSD->GetObject();
   if(!cacheStatus)entry2SSD->SetObject(NULL);
   entry2SSD->SetOwner(kTRUE);
+
+  AliITSRecoParam *rp = (AliITSRecoParam*)entryRP->GetObject();
+  if(!cacheStatus)entryRP->SetObject(NULL);
+  entryRP->SetOwner(kTRUE);
+  if(!AliITSReconstructor::GetRecoParam()){
+    AliITSReconstructor::SetRecoParam(rp);
+  }
+  else {
+    AliWarning("AliITSRecoPAram object has been already set in AliITSReconstructor. The OCDB instance will not be used\n");
+  }
 
   // DB entries are deleted. In this way metadeta objects are deleted as well
   if(!cacheStatus){

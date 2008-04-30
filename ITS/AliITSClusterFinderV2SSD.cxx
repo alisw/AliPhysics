@@ -94,7 +94,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   if(!repa){
     repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
     if(!repa){
-      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      repa = AliITSRecoParam::GetHighFluxParam();
       AliWarning("Using default AliITSRecoParam class");
     }
   }
@@ -262,7 +262,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
   if(!repa){
     repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
     if(!repa){
-      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      repa = AliITSRecoParam::GetHighFluxParam();
       AliWarning("Using default AliITSRecoParam class");
     }
   }
@@ -687,7 +687,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   if(!repa){
     repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
     if(!repa){
-      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      repa = AliITSRecoParam::GetHighFluxParam();
       AliWarning("Using default AliITSRecoParam class");
     }
   }

@@ -44,7 +44,6 @@
 
 
 ClassImp(AliITSReconstructor)
-AliITSRecoParam *AliITSReconstructor::fgRecoParamDefault = AliITSRecoParam::GetHighFluxParam();
 AliITSRecoParam *AliITSReconstructor::fgRecoParam =0;  // reconstruction parameters
 
 //___________________________________________________________________________
@@ -53,16 +52,12 @@ fItsPID(0),
 fDetTypeRec(0)
 {
   // Default constructor
-  if (!fgRecoParam) {
-    AliWarning("Using default reconstruction parameters");
-    fgRecoParam = fgRecoParamDefault;
-  }
 }
  //___________________________________________________________________________
 AliITSReconstructor::~AliITSReconstructor(){
 // destructor
   delete fItsPID;
-  if(!fgRecoParam && (fgRecoParam != fgRecoParamDefault)) delete fgRecoParam;
+  //  if(!fgRecoParam) delete fgRecoParam;
   if(fDetTypeRec) delete fDetTypeRec;
 } 
 //______________________________________________________________________
@@ -100,6 +95,12 @@ void AliITSReconstructor::Init() {
     fDetTypeRec = new AliITSDetTypeRec();
     fDetTypeRec->SetITSgeom(geom);
     fDetTypeRec->SetDefaults();
+
+    if(fgRecoParam) {
+      fgRecoParam->PrintParameters();
+    } else {
+      AliWarning("AliITSRecoParam has not been set");
+    } 
     
     return;
 }

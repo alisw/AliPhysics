@@ -91,7 +91,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   if(!repa){
     repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
     if(!repa){
-      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      repa = AliITSRecoParam::GetHighFluxParam();
       AliWarning("Using default AliITSRecoParam class");
     }
   }

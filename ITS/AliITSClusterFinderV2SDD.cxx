@@ -126,7 +126,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
   if(!repa){
     repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
     if(!repa){
-      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      repa = AliITSRecoParam::GetHighFluxParam();
       AliWarning("Using default AliITSRecoParam class");
     }
   }
