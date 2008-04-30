@@ -1,0 +1,9 @@
+SRCS:=   vertexingOld/AliD0toKpi.cxx  vertexingOld/AliD0toKpiAnalysis.cxx \
+       vertexingOld/AliBtoJPSItoEle.cxx  vertexingOld/AliBtoJPSItoEleAnalysis.cxx
+     
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= PWG3vertexingOldLinkDef.h
+
+EINCLUDE:= 
+

@@ -11,14 +11,13 @@ void SETUP()
     CheckLoadLibrary("libESD");
     CheckLoadLibrary("libAOD");
     CheckLoadLibrary("libANALYSISalice");
-    CheckLoadLibrary("libPWG3base");
-
+    CheckLoadLibrary("libPWG3vertexingHF");
 
    // Set the include paths
-   gROOT->ProcessLine(".include PWG3base");
+   gROOT->ProcessLine(".include PWG3vertexingHF");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG3base_INCLUDE", "PWG3base");
+   gSystem->Setenv("PWG3base_INCLUDE", "PWG3vertexingHF");
 }
 
 Int_t CheckLoadLibrary(const char* library)

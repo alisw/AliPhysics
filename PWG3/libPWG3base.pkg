@@ -1,18 +1,9 @@
-SRCS:= AliQuarkoniaAcceptance.cxx \
-       AliQuarkoniaEfficiency.cxx \
-       AliAODRecoDecayHF.cxx \
-       AliAODRecoDecayHF2Prong.cxx  AliAODRecoDecayHF3Prong.cxx \
-       AliAODRecoDecayHF4Prong.cxx \
-       AliAnalysisVertexingHF.cxx AliAnalysisTaskVertexingHF.cxx \
-       AliAnalysisTaskSEVertexingHF.cxx \
-       AliAnalysisTaskSESelectHF.cxx \
-       AliAODDimuon.cxx AliAODEventInfo.cxx \
-       AliAnalysisTaskMuonAODfromGeneral.cxx AliAnalysisTaskSingleMu.cxx \
-       AliAnalysisTaskLUT.cxx AliAnalysisTaskESDMuonFilter.cxx
+SRCS:=  base/AliQuarkoniaAcceptance.cxx \
+             base/AliQuarkoniaEfficiency.cxx 
      
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG3baseLinkDef.h
 
-EINCLUDE:= MUON
+EINCLUDE:= 
 
