@@ -18,8 +18,16 @@
 
 #include "AliFemtoAnalysis.h"
 #include "AliAnalysisTaskFemto.h"
+#include "AliVHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
 ClassImp(AliAnalysisTaskFemto)
+
+// Default name for the setup macro of femto analysis  
+// This function MUST be defined in the separate file !!!
+extern AliFemtoManager *ConfigFemtoAnalysis();
 
 //________________________________________________________________________
   AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name): 
@@ -27,8 +35,7 @@ ClassImp(AliAnalysisTaskFemto)
     fESD(0), 
     fAOD(0),
     fOutputList(0), 
-    fReaderESD(0x0),
-    fReaderAOD(0x0),
+    fReader(0x0),
     fManager(0x0),
     fAnalysisType(0)
 {
@@ -88,29 +95,72 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
 
 //________________________________________________________________________
 void AliAnalysisTaskFemto::CreateOutputObjects() {
+  printf("Creating Femto Analysis objects\n");
+
+  SetFemtoManager(ConfigFemtoAnalysis());
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskFemto::Exec(Option_t *) {
   // Task making a femtoscopic analysis.
+
   if (fAnalysisType==1) {
     if (!fESD) {
       Printf("ERROR: fESD not available");
       return;
     }
 
+    //Get MC data
+    AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+    
+    AliGenHijingEventHeader *hdh;
+    if(mctruth) {
+      fStack = mctruth->MCEvent()->Stack();
+
+      AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader *> (mctruth->MCEvent()->GenEventHeader());
+      
+      if (hd) {
+	
+	printf ("Got MC cocktail event header %p\n", (void *) hd);
+	TList *lhd = hd->GetHeaders();
+	printf ("Got list of headers %d\n", lhd->GetEntries());
+	
+	for (int iterh=0; iterh<lhd->GetEntries(); iterh++) 
+	  {
+	    hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(iterh));
+	    printf ("HIJING header at %i is %p\n", iterh, (void *) hdh);
+	  }
+      }    
+    }
+
     printf("Tracks in ESD: %d \n",fESD->GetNumberOfTracks());
-  
+
     if (fESD->GetNumberOfTracks() >= 0) {
     
-      if (!fReaderESD) {
-	printf("ERROR: No ESD reader for ESD analysis !\n");
+      if (!fReader) {
+ 	printf("ERROR: No ESD reader for ESD analysis !\n");
       }
-      else {
-	fReaderESD->SetESDSource(fESD);
-	fManager->ProcessEvent();
-      }
+      
+      AliFemtoEventReaderESDChain* fesdc = dynamic_cast<AliFemtoEventReaderESDChain *> (fReader);
+      if (fesdc)
+	{
+	  // Process the event with no Kine information
+	  fesdc->SetESDSource(fESD);
+	  fManager->ProcessEvent();
+	}
+      AliFemtoEventReaderESDChainKine* fesdck = dynamic_cast<AliFemtoEventReaderESDChainKine *> (fReader);
+      if (fesdck) 
+	{
+	  // Process the event with Kine information
+	  fesdck->SetESDSource(fESD);
+	  fesdck->SetStackSource(fStack);
+	  
+	  fesdck->SetGenEventHeader(hdh);
+	  fManager->ProcessEvent();
+	}
     } 
+    // Post the output histogram list
     fOutputList = fManager->Analysis(0)->GetOutputList();
     PostData(0, fOutputList);
   }
@@ -123,14 +173,17 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
     printf("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks());
     
     if (fAOD->GetNumberOfTracks() > 0) {
-      Double_t pxyz[3];
-      
-      if (!fReaderAOD) {
+      if (!fReader) {
 	printf("ERROR: No AOD reader for AOD analysis! \n");
       }
       else {
-	fReaderAOD->SetAODSource(fAOD);
-	fManager->ProcessEvent();
+	AliFemtoEventReaderAODChain* faodc = dynamic_cast<AliFemtoEventReaderAODChain *> (fReader);
+
+	if (faodc) {
+	  // Process the event
+	  faodc->SetAODSource(fAOD);
+	  fManager->ProcessEvent();
+	}
       }
     } 
     fOutputList = fManager->Analysis(0)->GetOutputList();
@@ -145,16 +198,36 @@ void AliAnalysisTaskFemto::Terminate(Option_t *) {
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader)
 {
-  fReaderESD = aReader;
+  printf("Selectring Femto reader for ESD\n");
+  fReader = aReader;
+}
+//________________________________________________________________________
+void AliAnalysisTaskFemto::SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader)
+{
+  printf("Selectring Femto reader for ESD with Kinematics information\n");
+  fReader = aReader;
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader)
 {
-  fReaderAOD = aReader;
+  printf("Selectring Femto reader for AOD\n");
+  fReader = aReader;
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
 {
   fManager = aManager;
+  printf("Got reader %p\n", (void *) aManager->EventReader());
+  AliFemtoEventReaderESDChain     *tReaderESDChain     = dynamic_cast<AliFemtoEventReaderESDChain *> (aManager->EventReader());
+  AliFemtoEventReaderESDChainKine *tReaderESDChainKine = dynamic_cast<AliFemtoEventReaderESDChainKine *> (aManager->EventReader());
+  AliFemtoEventReaderAODChain     *tReaderAODChain     = dynamic_cast<AliFemtoEventReaderAODChain *> (aManager->EventReader());
+
+  if ((!tReaderESDChain) && (!tReaderESDChainKine) && (!tReaderAODChain)) {
+    printf("No AliFemto event reader created. Will not run femto analysis.\n");
+    return;
+  }
+  if (tReaderESDChain) SetFemtoReaderESD(tReaderESDChain);
+  if (tReaderESDChainKine) SetFemtoReaderESDKine(tReaderESDChainKine);
+  if (tReaderAODChain) SetFemtoReaderAOD(tReaderAODChain);
 }
 
