@@ -5,7 +5,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 /*                                                                        */
-/* $Id:$ */
+/* $Id$ */
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// This class provides storage container ITS SSD module calibration data
@@ -15,6 +15,7 @@
 
 #include "TObject.h"
 #include "TArrayF.h"
+#include "TArrayS.h"
 #include "AliITSChannelDaSSD.h"
 
 class AliITSNoiseSSD;
@@ -41,7 +42,10 @@ class AliITSModuleDaSSD : public TObject {
     Long_t       GetEventsNumber()   const { return fEventsNumber; }
     Float_t*     GetCM(const Int_t chipn)   const { return chipn < fNumberOfChips ? fCm[chipn].GetArray() : NULL; }
     Float_t      GetCM(const Int_t chipn, const Long_t evn)   const;
-    TArrayF*     GetCm() const { return fCm; }
+    TArrayF*     GetCM() const { return fCm; }
+    Short_t*     GetCMFerom(const Int_t chipn)   const { return chipn < fgkChipsPerModule ? fCmFerom[chipn].GetArray() : NULL; }
+    Short_t      GetCMFerom(const Int_t chipn, const Long_t evn)   const;
+    TArrayS*     GetCMFerom() const { return fCmFerom; }
     Int_t        GetNumberOfChips() const  { return fNumberOfChips; }
     AliITSChannelDaSSD*  GetStrip(const Int_t stripnumber)  const 
                                 { return (fStrips) ? fStrips[stripnumber] : NULL; }
@@ -61,6 +65,11 @@ class AliITSModuleDaSSD : public TObject {
     void    DeleteCM () {if (fCm) { delete [] fCm; fNumberOfChips = 0; fCm = NULL; } }
     void    DeleteSignal() {if (fStrips) for (Int_t i = 0; i < fNumberOfStrips; i++) 
                                             if (fStrips[i]) fStrips[i]->DeleteSignal(); fEventsNumber = 0; }
+    void    SetCMFerom (Short_t* cm, const Int_t chipn)  { if (chipn < fgkChipsPerModule) fCmFerom[chipn].Set(fCmFerom[chipn].GetSize(), cm); }
+    Bool_t  SetCMFerom (const Short_t cm, const Int_t chipn, const Int_t evn);
+    Bool_t  SetCMFeromEventsNumber(const Long_t eventsnumber); 
+    void    DeleteCMFerom () {if (fCmFerom) { delete [] fCmFerom; fCmFerom = NULL; } }
+
     static Int_t GetStripsPerModuleConst() { return  fgkStripsPerModule;  }
     static Int_t GetPNStripsPerModule()    { return  fgkPNStripsPerModule;}
     static Int_t GetStripsPerChip()        { return  fgkStripsPerChip;    }
@@ -86,13 +95,14 @@ class AliITSModuleDaSSD : public TObject {
     
     Int_t                 fNumberOfChips;      // Number of TArrayF objects allocated for CM   
     TArrayF              *fCm;                 //[fNumberOfChips]    CM
+    TArrayS              *fCmFerom;            //                       CM calculated in FEROM
 
     Long_t            fEventsNumber;           // number of events for fsignal memory allocation
 
   private:
     Bool_t ForbiddenAdcNumber (const UChar_t adcn) const { return ((adcn == 6) || (adcn == 7)); }
  
-    ClassDef(AliITSModuleDaSSD, 2) 
+    ClassDef(AliITSModuleDaSSD, 3) 
  
 };
 

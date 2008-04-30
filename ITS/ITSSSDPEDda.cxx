@@ -5,7 +5,7 @@
 - DA Type: LDC
 - Number of events needed: >=500
 - Input Files: ssdpeddaconfig, raw_data_file_on_LDC
-- Output Files: ./ssddaldc_<LDCID>_<RunID>.root, FXS_name=ITSSSDda_<LDCID>_<RunID>.root 
+- Output Files: ./ssddaldc_<LDCID>.root, FXS_name=ITSSSDda_<LDCID>.root 
                 local files are persistent over runs: data source
 - Trigger types used:
  **************************************************************************/
@@ -53,13 +53,9 @@ int main( int argc, char** argv )
      cerr << "Error !ssddaldc->ProcessRawData()" << endl;
      delete ssddaldc;
      return -1;
-  }  
+  }
   daqDA_progressReport(90);
 
-  if (!system(NULL)) {
-    cerr << "Error: the call system(NULL) in main() returned NULL!" << endl;
-    return -1;
-  }
   dafname = ".";
   if (ssddaldc->SaveCalibrationSSDLDC(dafname)) {
     cout << "SSDDA data are saved in " << dafname << endl;
@@ -67,7 +63,7 @@ int main( int argc, char** argv )
     if (status) fprintf(stderr, "Failed to export file : %d\n", status);
   } else cerr << "Error saving DA data to the file! Probably $DA_TEST_DIR defined incorrectly!" << endl;
 
-  feefname.Form("%s/ssddaldc_%i_%i.root", ".", ssddaldc->GetLdcId(), ssddaldc->GetRunId());
+  feefname.Form("%s/ssddaldc_%i.root", ".", ssddaldc->GetLdcId());
   cout << "Saving feessdda data in " << feefname << endl;
   TFile *fileRun = new TFile (feefname.Data(),"RECREATE");
   if (fileRun->IsZombie()) {

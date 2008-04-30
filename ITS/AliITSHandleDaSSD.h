@@ -4,7 +4,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 /*                                                                        */
-/* $Id:$ */
+/* $Id$ */
 
 #include "TObject.h"
 #include "AliITSModuleDaSSD.h"
@@ -14,7 +14,7 @@
 /// This class provides ITS SSD data handling
 /// used by DA. 
 //  Author: Oleksandr Borysov
-//  Date: 14/02/2008
+//  Date: 20/04/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 class TObjArray;
@@ -46,13 +46,14 @@ class AliITSHandleDaSSD : public TObject {
     void    SetModIndRead (Int_t mr)  {fModIndRead = mr;}
     Bool_t  SetNumberOfModules (const Int_t numberofmodules);
     Bool_t  SetModule(AliITSModuleDaSSD *const module, const Int_t index); 
-    Bool_t  ReadCalibrationDataFile (char* fileName, const Long_t eventsnumber);
+    Int_t   ReadCalibrationDataFile (char* fileName, const Long_t eventsnumber);
     Int_t   ReadModuleRawData (const Int_t modulesnumber);  
 
     virtual Bool_t  CalculatePedestal(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateNoise(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateNoiseCM(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateCM(AliITSModuleDaSSD *const module);
+    virtual Bool_t  AddFeromCm(AliITSModuleDaSSD *const module);
     virtual Bool_t  ProcessRawData(const Int_t nmread = fgkNumberOfSSDModulesPerDdl);
     virtual Bool_t  RelocateModules();
     virtual Bool_t  AllocateSimulatedModules(const Int_t copymodind = 0);
@@ -66,6 +67,7 @@ class AliITSHandleDaSSD : public TObject {
     void    DeleteSignal() { if (fModules) for (Int_t i = fModIndProcessed; i < fModIndRead; i++) if (fModules[i]) fModules[i]->DeleteSignal();}
     void    DeleteCMAll() { if (fModules) for (Int_t i = 0; i < fNumberOfModules; i++) if (fModules[i]) fModules[i]->DeleteCM();}
     void    DeleteCM() { if (fModules) for (Int_t i = fModIndProcessed; i < fModIndRead; i++) if (fModules[i]) fModules[i]->DeleteCM();}
+    void    DeleteCMFerom() { if (fModules) for (Int_t i = fModIndProcessed; i < fModIndRead; i++) if (fModules[i]) fModules[i]->DeleteCMFerom ();}
 
     static Int_t GetNumberOfSSDModulesConst() { return fgkNumberOfSSDModules; }
 
@@ -93,8 +95,9 @@ class AliITSHandleDaSSD : public TObject {
   private :
     Bool_t   SignalOutOfRange (const Short_t signal) const { return (signal >= AliITSChannelDaSSD::GetOverflowConst()); }
 
-    ClassDef(AliITSHandleDaSSD, 3)
+    ClassDef(AliITSHandleDaSSD, 4)
 
 };
 
 #endif
+
