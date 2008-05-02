@@ -14,12 +14,16 @@ class AliACORDEv1 : public AliACORDE {
 public:
   AliACORDEv1();
   AliACORDEv1(const char *name, const char *title);
+  virtual void AddAlignableVolumes() const;
+
   virtual ~AliACORDEv1();
 
   virtual TString Version() { return TString("v1"); }
   virtual Int_t IsVersion() const { return 1; }
   virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);
-
+//  virtual void AddDigits(Int_t track, Int_t *vol, Float_t *digits);
+  virtual void AddDigits(Int_t* track, Int_t module, Float_t time);
+  virtual void   MakeBranch(Option_t *option);
   virtual void BuildGeometry();
   virtual void CreateGeometry();
 
