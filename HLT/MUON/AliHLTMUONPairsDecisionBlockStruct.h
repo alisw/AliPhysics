@@ -86,7 +86,7 @@ struct AliHLTMUONPairsDecisionBlockStruct
 	// pt > low pt cut and unlike sign.
 	AliHLTUInt32_t fNmassLow;
 	
-	// Number of pairs that have invariant mass > low mass cut,
+	// Number of pairs that have invariant mass > high mass cut,
 	// pt > high pt cut and unlike sign.
 	AliHLTUInt32_t fNmassHigh;
 

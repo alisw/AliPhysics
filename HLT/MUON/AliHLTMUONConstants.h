@@ -216,6 +216,11 @@ public:
 	{
 		return fgkEmptyEventFilterComponentId;
 	}
+	
+	static const char* DecisionComponentCDBPath()
+	{
+		return fgkDecisionComponentCDBPath;
+	}
 
 private:
 
@@ -262,6 +267,9 @@ private:
 	static const char* fgkTriggerCalibratorId; // Trigger calibration component name.
 	static const char* fgkTrackerCalibratorId; // Tracking stations calibration component name.
 	static const char* fgkEmptyEventFilterComponentId; // The name of the event filter debugging component.
+	
+	// CDB path entries to configuration information.
+	static const char* fgkDecisionComponentCDBPath; // Path to CDB entry for trigger decision component.
 };
 
 #endif // ALIHLTMUONCONSTANTS_H

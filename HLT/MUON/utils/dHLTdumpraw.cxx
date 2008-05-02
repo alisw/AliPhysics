@@ -789,7 +789,10 @@ int DumpTrackDecisionStruct(
 	AliHLTMUONUtils::UnpackTrackDecisionBits(decision->fTriggerBits, highPt, lowPt);
 	cout << setw(7) << left << (highPt ? "yes" : "no");
 	cout << setw(8) << left << (lowPt ? "yes" : "no");
-	cout << setw(0) << endl;
+	
+	result = CheckField(decision->fPt, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(0) << decision->fPt << endl;
 
 	return result;
 }
@@ -814,9 +817,9 @@ int DumpSinglesDecisionBlock(
 	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
 	
 	// Print the data block record entries.
-	cout << "           |        Trigger Bits" << endl;
-	cout << "Track ID   | Raw         HighPt LowPt" << endl;
-	cout << "--------------------------------------" << endl;
+	cout << "           |        Trigger Bits      |" << endl;
+	cout << "Track ID   | Raw         HighPt LowPt | pT" << endl;
+	cout << "----------------------------------------------------" << endl;
 	const AliHLTMUONTrackDecisionStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
 	{
@@ -1161,29 +1164,33 @@ int ReadFile(const char* filename, char*& buffer, unsigned long& bufferSize)
 /**
  * Prints the command line usage of this program to standard error.
  */
-void PrintUsage()
+void PrintUsage(bool asError = true)
 {
-	cerr << "Usage: dHLTdumpraw [-help|-h] [-continue] [-type <typename>] <filename>" << endl;
-	cerr << "Where <filename> is the name of a file containing a raw data block." << endl;
-	cerr << "Options:" << endl;
-	cerr << " -help | -h" << endl;
-	cerr << "       Displays this message." << endl;
-	cerr << " -continue" << endl;
-	cerr << "       If specified, the program will try to continue parsing the data block" << endl;
-	cerr << "       as much as possible rather than stopping at the first error." << endl;
-	cerr << " -type <typename>" << endl;
-	cerr << "       Forces the contents of the file to be interpreted as a specific" << endl;
-	cerr << "       type of data block. Where <typename> can be one of:" << endl;
-	cerr << "         trigrecs - trigger records data." << endl;
-	cerr << "         trigrecsdebug - debugging information about trigger records." << endl;
-	cerr << "         trigchannels - channel debugging in." << endl;
-	cerr << "         rechits - reconstructed hits data." << endl;
-	cerr << "         channels - channel debugging information from hit reconstruction." << endl;
-	cerr << "         clusters - cluster debugging information from hit reconstruction." << endl;
-	cerr << "         mansotracks - partial tracks from Manso algorithm." << endl;
-	cerr << "         mansocandidates - track candidates considered in the Manso algorithm." << endl;
-	cerr << "         singlesdecision - trigger decisions for single tracks." << endl;
-	cerr << "         pairsdecision - trigger decisions for track pairs." << endl;
+	std::ostream& os = asError ? cerr : cout;
+	os << "Usage: dHLTdumpraw [-help|-h] [-continue] [-type <typename>] <filename>" << endl;
+	os << "Where <filename> is the name of a file containing a raw data block." << endl;
+	os << "Options:" << endl;
+	os << " -help | -h" << endl;
+	os << "       Displays this message." << endl;
+	os << " -continue" << endl;
+	os << "       If specified, the program will try to continue parsing the data block" << endl;
+	os << "       as much as possible rather than stopping at the first error." << endl;
+	os << " -type <typename>" << endl;
+	os << "       Forces the contents of the subsequent files specified on the command" << endl;
+	os << "       line to be interpreted as a specific type of data block." << endl;
+	os << "       Where <typename> can be one of:" << endl;
+	os << "         trigrecs - trigger records data." << endl;
+	os << "         trigrecsdebug - debugging information about trigger records." << endl;
+	os << "         trigchannels - channel debugging in." << endl;
+	os << "         rechits - reconstructed hits data." << endl;
+	os << "         channels - channel debugging information from hit reconstruction." << endl;
+	os << "         clusters - cluster debugging information from hit reconstruction." << endl;
+	os << "         mansotracks - partial tracks from Manso algorithm." << endl;
+	os << "         mansocandidates - track candidates considered in the Manso algorithm." << endl;
+	os << "         singlesdecision - trigger decisions for single tracks." << endl;
+	os << "         pairsdecision - trigger decisions for track pairs." << endl;
+	os << "         autodetect - the type of the data block will be automatically" << endl;
+	os << "                      detected." << endl;
 }
 
 /**
@@ -1243,27 +1250,33 @@ AliHLTMUONDataBlockType ParseCommandLineType(const char* type)
  * Parses the command line.
  * @param argc  Number of arguments as given in main().
  * @param argv  Array of arguments as given in main().
- * @param filename  Receives the pointer to the file name string.
- * @param type      Receives the type of the data block expected, i.e. the
- *                  value of the -type flag.
+ * @param filenames  Pointer to buffer storing file name strings.
+ * @param numOfFiles  Receives the number of file name strings that were found
+ *                    and added to 'filenames'.
+ * @param filetypes  Array that receives the type of the data block expected, i.e.
+ *                   the value of the -type flag for the corresponding file.
  * @return  A status flag suitable for returning from main(), containing either
  *          EXIT_SUCCESS or CMDLINE_ERROR.
  */
 int ParseCommandLine(
-		int argc, const char** argv,
-		const char*& filename, bool& continueParse,
-		AliHLTMUONDataBlockType& type
+		int argc,
+		const char** argv,
+		const char** filenames,
+		int& numOfFiles,
+		bool& continueParse,
+		AliHLTMUONDataBlockType* filetypes
 	)
 {
-	filename = NULL;
+	numOfFiles = 0;
 	continueParse = false;
+	AliHLTMUONDataBlockType currentType = kUnknownDataBlock;
 
 	// Parse the command line.
 	for (int i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-h") == 0)
 		{
-			PrintUsage();
+			PrintUsage(false);
 			return EXIT_SUCCESS;
 		}
 		else if (strcmp(argv[i], "-continue") == 0)
@@ -1272,29 +1285,36 @@ int ParseCommandLine(
 		}
 		else if (strcmp(argv[i], "-type") == 0)
 		{
-			// Now we need to parse the typename in the command line.
-			type = ParseCommandLineType(argv[++i]);
-			if (type == kUnknownDataBlock) return CMDLINE_ERROR;
-		}
-		else
-		{
-			if (filename != NULL)
+			if (++i >= argc)
 			{
-				cerr << "ERROR: Only one file can be specified, but got '"
-					<< argv[i] << "', with '" << filename
-					<< "' specified earlier." << endl << endl;
+				cerr << "ERROR: Missing a type specifier" << endl;
 				PrintUsage();
 				return CMDLINE_ERROR;
 			}
+			// Now we need to parse the typename in the command line.
+			if (strcmp(argv[i], "autodetect") == 0)
+			{
+				currentType = kUnknownDataBlock;
+			}
 			else
-				filename = argv[i];
+			{
+				currentType = ParseCommandLineType(argv[i]);
+				if (currentType == kUnknownDataBlock) return CMDLINE_ERROR;
+			}
+		}
+		else
+		{
+			assert( numOfFiles < argc );
+			filenames[numOfFiles] = argv[i];
+			filetypes[numOfFiles] = currentType;
+			numOfFiles++;
 		}
 	}
 	
-	// Now check that we have the filename and all the flags we need.
-	if (filename == NULL)
+	// Now check that we have at least one filename and all the flags we need.
+	if (numOfFiles == 0)
 	{
-		cerr << "ERROR: Missing a file name. You must specify a file to process."
+		cerr << "ERROR: Missing a file name. You must specify at least one file to process."
 			<< endl << endl;
 		PrintUsage();
 		return CMDLINE_ERROR;
@@ -1306,25 +1326,39 @@ int ParseCommandLine(
 
 int main(int argc, const char** argv)
 {
-	const char* filename = NULL;
+	int numOfFiles = 0;
 	bool continueParse = false;
 	int returnCode = EXIT_SUCCESS;
-	AliHLTMUONDataBlockType type = kUnknownDataBlock;
 	char* buffer = NULL;
 
 	try
 	{
-		returnCode = ParseCommandLine(argc, argv, filename, continueParse, type);
+		// There will be at least 'argc' number of filenames.
+		typedef const char* AnsiString;
+		const char** filename = new AnsiString[argc];
+		AliHLTMUONDataBlockType* filetype = new AliHLTMUONDataBlockType[argc];
+		
+		returnCode = ParseCommandLine(argc, argv, filename, numOfFiles, continueParse, filetype);
 
-		if (returnCode == EXIT_SUCCESS and filename != NULL)
+		if (returnCode == EXIT_SUCCESS)
 		{
-			unsigned long bufferSize = 0;
-			returnCode = ReadFile(filename, buffer, bufferSize);
-			if (returnCode == EXIT_SUCCESS)
-				returnCode = ParseBuffer(buffer, bufferSize, continueParse, type);
-			if (buffer != NULL) delete [] buffer;
+			for (int i = 0; i < numOfFiles; i++)
+			{
+				unsigned long bufferSize = 0;
+				returnCode = ReadFile(filename[i], buffer, bufferSize);
+				if (returnCode != EXIT_SUCCESS) break;
+				int result = ParseBuffer(buffer, bufferSize, continueParse, filetype[i]);
+				if (buffer != NULL) delete [] buffer;
+				if (result != EXIT_SUCCESS)
+				{
+					returnCode = result;
+					if (not continueParse) break;
+				}
+			}
 		}
 		
+		delete [] filename;
+		delete [] filetype;
 	}
 	catch (...)
 	{
@@ -1332,6 +1366,6 @@ int main(int argc, const char** argv)
 		returnCode = FATAL_ERROR;
 		if (buffer != NULL) delete [] buffer;
 	}
-
+	
 	return returnCode;
 }

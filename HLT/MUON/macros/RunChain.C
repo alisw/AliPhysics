@@ -134,6 +134,7 @@ void RunChain(
 	bool minLogging = false;
 	bool useRootWriter = false;
 	bool makeTracksOnly = false;
+	bool buildDecisionComp = true;
 	
 	// Parse the chainType, output, dataSource and logLevel option strings:
 	TString outOpt = output;
@@ -172,6 +173,7 @@ void RunChain(
 	{
 		buildDDLFilePubs = true;
 		buildDDLRecoComps = true;
+		buildDecisionComp = false;
 	}
 	else if (chainOpt.CompareTo("tracker", TString::kIgnoreCase) == 0)
 	{
@@ -379,6 +381,12 @@ void RunChain(
 	{
 		AliHLTConfiguration tracker("tracker", "MUONMansoTrackerFSM", "recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22", "");
 	}
+	
+	// Build the dHLT trigger decision component if enabled.
+	if (buildDecisionComp)
+	{
+		AliHLTConfiguration decision("decision", "MUONDecisionComponent", "tracker", "");
+	}
 
 	// Build the data sink to subscribe only to what has been created and
 	// to the data source we actaully want.
@@ -392,6 +400,11 @@ void RunChain(
 		if (buildTrackerComp)
 			sources += "tracker ";
 		sources += "recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22";
+	}
+	if (buildDecisionComp)
+	{
+		// Add the trigger decision component if it was enabled.
+		sources += " decision";
 	}
 	if (useRootWriter)
 	{

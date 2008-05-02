@@ -35,6 +35,8 @@ struct AliHLTMUONTrackDecisionStruct
 	// Reserved bits should be set to zero.
 	// hipt == passed high pt cut. lopt == passed low pt cut.
 	AliHLTUInt32_t fTriggerBits;
+	
+	AliHLTFloat32_t fPt; // The calculated transverse momentum of the track in (GeV/c).
 };
 
 /**
@@ -65,6 +67,7 @@ inline std::ostream& operator << (
 {
 	stream	<< "{fTrackId = " << trig.fTrackId << ", fTriggerBits = "
 		<< std::showbase << std::hex << trig.fTriggerBits << std::dec
+		<< ", fPt = " << trig.fPt
 		<< "}";
 	return stream;
 }
@@ -85,7 +88,8 @@ inline bool operator == (
 		const AliHLTMUONTrackDecisionStruct& b
 	)
 {
-	return a.fTrackId == b.fTrackId and a.fTriggerBits == b.fTriggerBits;
+	return a.fTrackId == b.fTrackId and a.fTriggerBits == b.fTriggerBits
+		and a.fPt == b.fPt;
 }
 
 inline bool operator != (

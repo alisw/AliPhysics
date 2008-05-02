@@ -15,8 +15,8 @@
 #include "AliHLTMUONDataTypes.h"
 
 /*
- * Note: this class is not reentrant so thread protection must be explicit in
- * any multi-threaded usage.
+ * Note: this class uses static global variables so thread protection must be
+ * explicit in any multi-threaded usage.
  */
 class AliHLTMUONCalculations
 {
@@ -50,7 +50,19 @@ public:
 	static AliHLTFloat32_t Px() { return fgPx; }
 	static AliHLTFloat32_t Py() { return fgPy; }
 	static AliHLTFloat32_t Pz() { return fgPz; }
-		
+	
+	/// Calculates the invariant mass for a pair of particles.
+	static AliHLTFloat32_t ComputeMass(
+			AliHLTFloat32_t massA,
+			AliHLTFloat32_t pxA,
+			AliHLTFloat32_t pyA,
+			AliHLTFloat32_t pzA,
+			AliHLTFloat32_t massB,
+			AliHLTFloat32_t pxB,
+			AliHLTFloat32_t pyB,
+			AliHLTFloat32_t pzB
+		);
+	
 private:
 
 	// Prevent destroying or creating of this object.

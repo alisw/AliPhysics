@@ -182,3 +182,5 @@ const char* AliHLTMUONConstants::fgkTriggerCalibratorId = "MUONTriggerCalibrator
 const char* AliHLTMUONConstants::fgkTrackerCalibratorId = "MUONTrackerCalibrator";
 const char* AliHLTMUONConstants::fgkEmptyEventFilterComponentId = "MUONEmptyEventFilterComponent";
 
+const char* AliHLTMUONConstants::fgkDecisionComponentCDBPath = "HLT/ConfigMUON/DecisionComponent";
+
