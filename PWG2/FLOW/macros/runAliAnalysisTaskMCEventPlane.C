@@ -1,138 +1,76 @@
-/////////////////////////////////////////////////////////////
-//
-// $Id$
-//
-// Author: N. van der Kolk
-//
-/////////////////////////////////////////////////////////////
-//
-// Description: ROOT macro to perform Flow analysis on AliFlowEvents with the Lee Yang Zeros method
-//
-/////////////////////////////////////////////////////////////
-
 // from CreateESDChain.C - instead of  #include "CreateESDChain.C"
 TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
 
 
-#include <vector>
-#include <iostream>
-#include <fstream>
-//#include "TVector.h"
-//#include "TVector2.h"
-//#include "TVector3.h"
-//#include "TMath.h"
-//#include "TObject.h"
-#include "TObjArray.h"
-//#include "TStopwatch.h"
-//#include "TList.h"
 
-//class AliFlowTrack;
-//class AliFlowEvent;
-//class AliFlowSelection;
-//class AliFlowConstants;
+void runAliAnalysisTaskMCEventPlane(Int_t nRuns = 2, TString type = "MC", const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
 
-using namespace std; //required for resolving the 'cout' symbol
-
-
-void makeTaskLYZ(Bool_t firstrun = kTRUE, Bool_t usesum = kTRUE, const Char_t* dataDir="/data/alice1/simili/lcgHijing/4", Int_t nRuns = -1, Int_t offset = 0)
 {
-  cout<<"---Lee Yang Zeros Flow Analysis with Task Framework---"<<endl;
-
+  TStopwatch timer;
+  timer.Start();
 
   // include path (to find the .h files when compiling)
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
-  gSystem->AddIncludePath("-I$ROOTSYS/include") ;
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG2/FLOW") ;
+  //gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+  //gSystem->AddIncludePath("-I$ROOTSYS/include") ;
 
   // load needed libraries
-  gSystem->Load("libESD");
+  gSystem->Load("libTree.so");
+  gSystem->Load("libESD.so");
   cerr<<"libESD loaded..."<<endl;
   gSystem->Load("libANALYSIS.so");
   cerr<<"libANALYSIS.so loaded..."<<endl;
-  gSystem->Load("libANALYSISRL.so");
-  cerr<<"libANALYSISRL.so loaded..."<<endl;
-
-  // Flow libraries 
   gSystem->Load("libPWG2flow.so");
-  cerr<<"libPWG2flow.so loaded..."<<endl;
-  gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
-  cerr<<"."<<endl;
-  gROOT->LoadMacro("AliFlowLYZHist1.cxx+");
-  cerr<<".."<<endl;
-  gROOT->LoadMacro("AliFlowLYZHist2.cxx+");
-  cerr<<"..."<<endl;
-  gROOT->LoadMacro("AliFlowLeeYangZerosMaker.cxx+");
-  cerr<<"...."<<endl;
-  gROOT->LoadMacro("AliAnalysisTaskRLLYZ.cxx+");
-  cerr<<"....."<<endl;
-
-  cout<<"---loaded libraries!---"<<endl;
+  
+  //gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
+  //gROOT->LoadMacro("AliFlowVector.cxx+");
+  //gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
+  //gROOT->LoadMacro("AliFlowEventSimple.cxx+");
+  //gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
+  //gROOT->LoadMacro("AliFlowCommonHist.cxx+");
+  //gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
+  //gROOT->LoadMacro("AliFlowAnalysisWithMCEventPlane.cxx+"); 
+  //gROOT->LoadMacro("AliAnalysisTaskMCEventPlane.cxx+");
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
   TChain* chain = CreateESDChain(dataDir, nRuns, offset);
   cout<<"chain ("<<chain<<")"<<endl;
-  //cout << " * " << chain->GetEntriesFast() << "*" << endl;
-  //cout << " * " << chain->GetEntries() << " * " << endl ;
-
-  // first run file (read) (from selector!)
-  if (!firstrun){
-    TString firstRunFileName = "testTaskLYZ_firstrun.root" ;
-    TFile* fFirstRunFile = new TFile(firstRunFileName.Data(),"READ");
-    if(!fFirstRunFile || fFirstRunFile->IsZombie()) { cerr << " ERROR: NO first Run file... " << endl ; }
-  } 
-
-
+ 
   //____________________________________________//
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestLYZManager");
-  cout<<"---defined the manager---"<<endl;
+  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  if (type == "ESD" || type == "MC" ) {
+    AliVEventHandler* esdH = new AliESDInputHandler;
+    mgr->SetInputEventHandler(esdH);
+  }  
+  if (type == "AOD") { 
+    AliVEventHandler* aodH = new AliAODInputHandler;
+    mgr->SetInputEventHandler(aodH); 
+  }
+  AliMCEventHandler *mc = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mc);
   //____________________________________________//
-  // 1st LYZ task
-  AliAnalysisTaskRLLYZ *task1 = new AliAnalysisTaskRLLYZ("LYZtest", firstrun);
-  task1->SetFirstRunLYZ(firstrun);            //set to first or second run
-  task1->SetUseSumLYZ(usesum);                //set to sum gen.function or product gen.function
-  //if (!firstrun) task1->SetFirstRunFile(fFirstRunFile);
-
-  //add tasks to manager
+  // 1st MC EP task
+  AliAnalysisTaskMCEventPlane *task1 = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane");
+  task1->SetAnalysisType(type);
   mgr->AddTask(task1);
-  cout<<"---task1 added---"<<endl;
-  
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  cout<<"---created input container---"<<endl;
-
-  if (!firstrun) { 
-    AliAnalysisDataContainer *cinput2 = 
-      mgr->CreateContainer("cobj2",TList::Class(),AliAnalysisManager::kInputContainer);
-    cout<<"---created input container2---"<<endl; 
-  }
-
-
-  //AliAnalysisDataContainer *coutput1 = 
-  //mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer,"TestTaskLYZ.root");
   AliAnalysisDataContainer *coutput1 = 
-    mgr->CreateContainer("cobj1", TList::Class());
+    mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer);
 
-  
   //____________________________________________//
   mgr->ConnectInput(task1,0,cinput1);
-  cout<<"---ConnectInput(task1,0,cinput1)---"<<endl;
-  if (!firstrun) { mgr->ConnectInput(task1,1,cinput2);
-  cout<<"---ConnectInput(task1,1,cinput2)---"<<endl; }
   mgr->ConnectOutput(task1,0,coutput1);
-  cout<<"---ConnectOutput(task1,0,coutput1)---"<<endl;
-  
-  cerr<<"chain ("<<chain<<")"<<endl;
-  cinput1->SetData(chain);
-  if (!firstrun) cinput2->SetData(fFirstRunFile);
 
-  if(mgr->InitAnalysis()) {
-    mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain);
-  } 
+  if (!mgr->InitAnalysis()) return;
+  mgr->PrintStatus();
+  mgr->StartAnalysis("local",chain);
+
+  timer.Stop();
+  timer.Print();
 }
 
 

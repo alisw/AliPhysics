@@ -25,7 +25,6 @@ $Log$
 #include "AliFlowLYZHist1.h"
 #include "AliFlowLYZHist2.h"
 #include "AliFlowLYZConstants.h"  //??
-//#include "AliFlowLYZSummary.h"
 
 #include "TMath.h"
 #include "TComplex.h" 

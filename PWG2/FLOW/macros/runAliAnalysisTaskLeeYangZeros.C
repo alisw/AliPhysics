@@ -1,125 +1,88 @@
-/////////////////////////////////////////////////////////////
-//
-// $Id$
-//
-// Author: N. van der Kolk
-//
-/////////////////////////////////////////////////////////////
-//
-// Description: ROOT macro to perform Flow analysis on AliFlowEvents with the Lee Yang Zeros method
-//
-/////////////////////////////////////////////////////////////
-
 // from CreateESDChain.C - instead of  #include "CreateESDChain.C"
 TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
 
 
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include "TObjArray.h"
 
-//class AliFlowTrack;
-//class AliFlowEvent;
-//class AliFlowSelection;
-//class AliFlowConstants;
-
-using namespace std; //required for resolving the 'cout' symbol
-
-
-void makeTaskNMLYZ(const Char_t* dataDir="/data/alice1/simili/lcgHijing/4", Int_t nRuns =-1, Int_t offset = 0)
+void runAliAnalysisTaskLeeYangZeros(Int_t nRuns = 2, TString type = "ESD", Bool_t firstrun = kTRUE, Bool_t usesum = kTRUE, const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
 {
-  cout<<"---New Method for Lee Yang Zeros Flow Analysis with Task Framework---"<<endl;
-
+  TStopwatch timer;
+  timer.Start();
 
   // include path (to find the .h files when compiling)
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
-  gSystem->AddIncludePath("-I$ROOTSYS/include") ;
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG2/FLOW") ;
+  //gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+  //gSystem->AddIncludePath("-I$ROOTSYS/include") ;
 
   // load needed libraries
-  gSystem->Load("libESD");
+  gSystem->Load("libTree.so");
+  gSystem->Load("libESD.so");
   cerr<<"libESD loaded..."<<endl;
   gSystem->Load("libANALYSIS.so");
   cerr<<"libANALYSIS.so loaded..."<<endl;
-  gSystem->Load("libANALYSISRL.so");
-  cerr<<"libANALYSISRL.so loaded..."<<endl;
-
-  // Flow libraries 
   gSystem->Load("libPWG2flow.so");
-  cerr<<"libPWG2flow.so loaded..."<<endl;
-  gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
-  cerr<<"."<<endl;
-  gROOT->LoadMacro("AliAnalysisTaskRLLYZNewMethod.cxx+");
-  cerr<<"....."<<endl;
-
-  cout<<"---loaded libraries!---"<<endl;
+  
+  //gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
+  //gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
+  //gROOT->LoadMacro("AliFlowVector.cxx+");
+  //gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
+  //gROOT->LoadMacro("AliFlowEventSimple.cxx+");
+  //gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
+  //gROOT->LoadMacro("AliFlowCommonHist.cxx+");
+  //gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
+  //gROOT->LoadMacro("AliFlowLYZHist1.cxx+");
+  //gROOT->LoadMacro("AliFlowLYZHist2.cxx+");
+  //gROOT->LoadMacro("AliFlowAnalysisWithLeeYangZeros.cxx+"); 
+  //gROOT->LoadMacro("AliAnalysisTaskLeeYangZeros.cxx+");
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
   TChain* chain = CreateESDChain(dataDir, nRuns, offset);
   cout<<"chain ("<<chain<<")"<<endl;
-  //cout << " * " << chain->GetEntriesFast() << "*" << endl;
-  //cout << " * " << chain->GetEntries() << " * " << endl ;
 
-  // input files (read) 
-  
-  TString firstRunFileName = "testTaskLYZ_firstrun.root" ;
-  TString secondRunFileName = "testTaskLYZ_secondrun.root" ;
-  TFile* fFirstRunFile = new TFile(firstRunFileName.Data(),"READ");
-  if(!fFirstRunFile || fFirstRunFile->IsZombie()) { cerr << " ERROR: NO first Run file... " << endl ; }
-  TFile* fSecondRunFile = new TFile(secondRunFileName.Data(),"READ");
-  if(!fSecondRunFile || fSecondRunFile->IsZombie()) { cerr << " ERROR: NO first Run file... " << endl ; }
-
-
+  if (!firstrun){
+    // read the input files
+    TString firstRunFileName = "outputFromLeeYangZerosAnalysis" ;
+    firstRunFileName += type;
+    firstRunFileName += "_firstrun.root";
+    TFile* fFirstRunFile = new TFile(firstRunFileName.Data(),"READ");
+    if(!fFirstRunFile || fFirstRunFile->IsZombie()) { cerr << " ERROR: NO First Run file... " << endl ; }
+    cout<<"input files read..."<<endl;
+  }
   //____________________________________________//
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestLYZNMManager");
-  cout<<"---defined the manager---"<<endl;
+  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  AliVEventHandler* esdH = new AliESDInputHandler;
+  mgr->SetInputEventHandler(esdH);  
+  AliMCEventHandler *mc = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mc);
   //____________________________________________//
   // 1st LYZ task
-  AliAnalysisTaskRLLYZNewMethod *task1 = new AliAnalysisTaskRLLYZNewMethod("LYZtest");
-  
-  //add tasks to manager
+  AliAnalysisTaskLeeYangZeros *task1 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros", firstrun);
+  task1->SetAnalysisType(type);
+  task1->SetFirstRunLYZ(firstrun);            //set to first or second run
+  task1->SetUseSumLYZ(usesum);                //set to sum gen.function or product gen.function
   mgr->AddTask(task1);
-  cout<<"---task1 added---"<<endl;
-  
+
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  cout<<"---created input container---"<<endl;
-  
-  AliAnalysisDataContainer *cinput2 = 
-    mgr->CreateContainer("cobj2",TList::Class(),AliAnalysisManager::kInputContainer);
-  cout<<"---created input container2---"<<endl; 
-  
-  AliAnalysisDataContainer *cinput3 = 
-    mgr->CreateContainer("cobj3",TList::Class(),AliAnalysisManager::kInputContainer);
-  cout<<"---created input container3---"<<endl; 
-  
+  if (!firstrun){ AliAnalysisDataContainer *cinput2 = 
+		    mgr->CreateContainer("cobj2",TList::Class(),AliAnalysisManager::kInputContainer); } 
   AliAnalysisDataContainer *coutput1 = 
-    mgr->CreateContainer("cobj1", TList::Class());
+    mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer);
 
-  
   //____________________________________________//
   mgr->ConnectInput(task1,0,cinput1);
-  cout<<"---ConnectInput(task1,0,cinput1)---"<<endl;
-  mgr->ConnectInput(task1,1,cinput2);
-  cout<<"---ConnectInput(task1,1,cinput2)---"<<endl; 
-  mgr->ConnectInput(task1,2,cinput3);
-  cout<<"---ConnectInput(task1,1,cinput3)---"<<endl; 
+  if (!firstrun) { mgr->ConnectInput(task1,1,cinput2); }
   mgr->ConnectOutput(task1,0,coutput1);
-  cout<<"---ConnectOutput(task1,0,coutput1)---"<<endl;
-  
-  cerr<<"chain ("<<chain<<")"<<endl;
-  cinput1->SetData(chain);
-  cinput2->SetData(fFirstRunFile);
-  cinput3->SetData(fSecondRunFile);
 
-  if(mgr->InitAnalysis()) {
-    mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain);
-  } 
+  if (!firstrun){ cinput2->SetData(fFirstRunFile);}
+  
+  if (!mgr->InitAnalysis()) return;
+  mgr->PrintStatus();
+  mgr->StartAnalysis("local",chain);
+
+  timer.Stop();
+  timer.Print();
 }
 
 

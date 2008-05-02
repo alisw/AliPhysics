@@ -9,7 +9,6 @@
 
 #include "TComplex.h"  //explicitly called in void Fill(Float_t f, TComplex C);
 
-class TProfile;
 class TH1D;
 
 // Description: Class to organise histograms for Flow 
@@ -22,21 +21,15 @@ class AliFlowLYZHist1 {
 
  public:
 
-  AliFlowLYZHist1(Int_t i1, Int_t i2);        //constructor
-  AliFlowLYZHist1(const AliFlowLYZHist1&);    //copy constructor (dummy)
+  AliFlowLYZHist1(Int_t theta);               //constructor
   virtual  ~AliFlowLYZHist1();                //destructor
-
-  AliFlowLYZHist1& operator=(const AliFlowLYZHist1&); //assignment operator (dummy)
-
-  void Fill(Float_t f, TComplex C);           //fill the histograms
+  
+  void Fill(Double_t f, TComplex C);          //fill the histograms
   TH1D* FillGtheta();                         //fills fHistGtheta
-  Float_t GetR0();                            //get R0
-  Float_t GetBinCenter(Int_t i);              //Get a bincentre of fHistGtheta
+  Double_t GetR0();                           //get R0
+  Double_t GetBinCenter(Int_t i);             //Get a bincentre of fHistGtheta
   Int_t GetNBins();                           //Gets fNbins
-
-  //void Save();                              //save the histograms 
-
- 
+   
 private:
 
   TH1D* fHistGtheta;                          //!
