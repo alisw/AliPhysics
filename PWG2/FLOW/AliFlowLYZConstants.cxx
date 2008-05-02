@@ -17,19 +17,17 @@
 $Log$
 */ 
 
-#include "AliFlowLYZConstants.h"  
+#include "AliFlowLYZConstants.h" 
 
 
+// AliFlowLYZConstant:
 // Description: constants for the LYZ flow analysis
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
 
   
-Float_t AliFlowLYZConstants::fgMin       =  0. ;
-Float_t AliFlowLYZConstants::fgMax       =  1.6;
-Float_t AliFlowLYZConstants::fgEtaMin    = -2. ;
-Float_t AliFlowLYZConstants::fgEtaMax    =  2. ;
-Float_t AliFlowLYZConstants::fgPtMin     =  0. ;
-Float_t AliFlowLYZConstants::fgPtMax     = 10. ;
+Double_t AliFlowLYZConstants::fgMin       =  0. ;
+Double_t AliFlowLYZConstants::fgMax       =  120.;
+
   
 
 

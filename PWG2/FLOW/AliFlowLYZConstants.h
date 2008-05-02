@@ -17,21 +17,15 @@ namespace AliFlowLYZConstants {
 
  // Enumerators
   enum {
-    kTheta       = 5,                // number of reference angles theta
-    kNbins       = 500,              // number of bins in fHistGtheta (AliFlowLYZHist1)
-    kEtaBins     = 100,		     // number of eta bins in histograms (AliFlowLYZHist2)
-    kPtBins      = 100		     // number of pT bins in histograms (AliFlowLYZHist2)
+    kTheta       = 5,     // number of reference angles theta
+    kNbins       = 8000   // number of bins in fHistGtheta (AliFlowLYZHist1)
   };
  
 
  // Histograms limits
-  extern Float_t  fgMin ;            // lower limit for fHistGtheta (AliFlowLYZHist1)
-  extern Float_t  fgMax ;            // upper limit for fHistGtheta (AliFlowLYZHist1)
-  extern Float_t  fgEtaMin ;	     // eta lower limit for histograms
-  extern Float_t  fgEtaMax ;	     // eta upper limit for histograms
-  extern Float_t  fgPtMin ;	     // pT lower limit for  histograms
-  extern Float_t  fgPtMax ;	     // pT upper limit for  histograms
-  
+  extern Double_t  fgMin ;   // lower limit for fHistGtheta (AliFlowLYZHist1)
+  extern Double_t  fgMax ;   // upper limit for fHistGtheta (AliFlowLYZHist1)
+   
  
 }
 

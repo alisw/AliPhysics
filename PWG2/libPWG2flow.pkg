@@ -1,12 +1,23 @@
-SRCS= FLOW/AliFlowEvent.cxx \
-      FLOW/AliFlowTrack.cxx \
-      FLOW/AliFlowConstants.cxx \
-      FLOW/AliFlowV0.cxx \
-      FLOW/AliFlowSelection.cxx \
-      FLOW/AliFlowAnalyser.cxx \
-      FLOW/AliFlowMaker.cxx \
-      FLOW/AliFlowKineMaker.cxx \
-      FLOW/AliFlowWeighter.cxx 
+SRCS= FLOW/AliFlowEventSimple.cxx \
+      FLOW/AliFlowTrackSimple.cxx \
+      FLOW/AliFlowCommonConstants.cxx \
+      FLOW/AliFlowLYZConstants.cxx \
+      FLOW/AliFlowCumuConstants.cxx \
+      FLOW/AliFlowCommonHist.cxx \
+      FLOW/AliFlowCommonHistResults.cxx \
+      FLOW/AliFlowLYZHist1.cxx \
+      FLOW/AliFlowLYZHist2.cxx \
+      FLOW/AliFlowVector.cxx \
+      FLOW/AliFlowLYZEventPlane.cxx \
+      FLOW/AliFlowEventSimpleMaker.cxx \
+      FLOW/AliFlowAnalysisWithMCEventPlane.cxx \
+      FLOW/AliFlowAnalysisWithLYZEventPlane.cxx \
+      FLOW/AliFlowAnalysisWithLeeYangZeros.cxx \
+      FLOW/AliFlowAnalysisWithCumulants.cxx \
+      FLOW/AliAnalysisTaskMCEventPlane.cxx \
+      FLOW/AliAnalysisTaskLYZEventPlane.cxx \
+      FLOW/AliAnalysisTaskLeeYangZeros.cxx             
+       
 
 HDRS= $(SRCS:.cxx=.h) 
 
