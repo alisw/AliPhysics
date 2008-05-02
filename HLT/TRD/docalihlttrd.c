@@ -13,18 +13,18 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   docalihlttpc.c
-    @brief  Library documentation for the libAliHLTTPC library.
+/** @file   docalihlttrd.c
+    @brief  Library documentation for the libAliHLTTRD library.
 */
 
 /** 
-@defgroup alihlt_tpc The libAliHLTTPC library
+@defgroup alihlt_trd The libAliHLTTRD library
 @ingroup alihlt_modules
 */
 
 /**
-@defgroup alihlt_tpc_components TPC HLT components
-@ingroup alihlt_tpc
+@defgroup alihlt_trd_components TRD HLT components
+@ingroup alihlt_trd
 */
 
 
