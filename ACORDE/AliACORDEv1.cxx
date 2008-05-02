@@ -585,7 +585,7 @@ void AliACORDEv1::CreateAcorde()
 	TGeoVolume *inFacem = new TGeoVolumeAssembly("ACORDE_4");
 	TGeoVolume *upFacem = new TGeoVolumeAssembly("ACORDE_5");
 	TGeoVolume *outFacem = new TGeoVolumeAssembly("ACORDE_6");
-
+	TGeoVolume *modules = new TGeoVolumeAssembly("ACORDE_MODULES");
 
 	// Define global variables
 
@@ -663,7 +663,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		inFacem->AddNode(module,i-1,
+		modules->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm232));
 		count++;
 
@@ -675,7 +675,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		inFacem->AddNode(module,i-1,
+		modules->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm232));
 	}
 
@@ -687,7 +687,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		upFacem->AddNode(module,i-1,new TGeoTranslation("aco01",posx,posy,posz));
+		modules->AddNode(module,i-1,new TGeoTranslation("aco01",posx,posy,posz));
 		count++;
 	}
 
@@ -699,7 +699,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		outFacem->AddNode(module,i-1,
+		modules->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm231));
 		count++;
 	}
@@ -712,10 +712,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 	if ((i==57) || (i==56))
-		 outFacem->AddNode(module,i-1,
+		 modules->AddNode(module,i-1,
 					new TGeoCombiTrans("aco01",posx,posy-w1,posz-w1,idrotm231));
 	else
-		outFacem->AddNode(module,i-1,
+		modules->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm231));
 		count++;
 	}
@@ -725,22 +725,22 @@ void AliACORDEv1::CreateAcorde()
 
 	if (GetITSGeometry()) {
 
-		upFacem->AddNode(module,71,new TGeoTranslation("its1",
+		modules->AddNode(module,9,new TGeoTranslation("its1",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(0)));
 
-		upFacem->AddNode(module,72,new TGeoTranslation("its2",
+		modules->AddNode(module,50,new TGeoTranslation("its2",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(1)));
 
-		upFacem->AddNode(module,73,new TGeoTranslation("its3",
+		modules->AddNode(module,59,new TGeoTranslation("its3",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(2)));
 
-		upFacem->AddNode(module,74,new TGeoTranslation("its4",
+		modules->AddNode(module,60,new TGeoTranslation("its4",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(3)));
@@ -750,22 +750,22 @@ void AliACORDEv1::CreateAcorde()
 	else {
 
 
-		upFacem->AddNode(module,61,new TGeoTranslation("its1",
+		modules->AddNode(module,61,new TGeoTranslation("its1",
 				constants->ModulePositionX(0),
 				constants->ModulePositionY(0),
 				constants->ModulePositionZ(0)));
 
-		upFacem->AddNode(module,62,new TGeoTranslation("its2",
+		modules->AddNode(module,62,new TGeoTranslation("its2",
 				constants->ModulePositionX(9),
 				constants->ModulePositionY(9),
 				constants->ModulePositionZ(9)));
 
-		upFacem->AddNode(module,63,new TGeoTranslation("its3",
+		modules->AddNode(module,63,new TGeoTranslation("its3",
 				constants->ModulePositionX(50),
 				constants->ModulePositionY(50),
 				constants->ModulePositionZ(50)));
 
-		upFacem->AddNode(module,64,new TGeoTranslation("its4",
+		modules->AddNode(module,64,new TGeoTranslation("its4",
 				constants->ModulePositionX(59),
 				constants->ModulePositionY(59),
 				constants->ModulePositionZ(59)));
@@ -1512,9 +1512,10 @@ void AliACORDEv1::CreateAcorde()
 	aCORDE->AddNode(inFace,1);//---> volume of supports & bars in-face
 	aCORDE->AddNode(upFace,2);//---> volume of supports & bars up-face
 	aCORDE->AddNode(outFace,3);//---> volume of supports & bars out-face
-	aCORDE->AddNode(inFacem,4);//---> volume of modules in-face
-	aCORDE->AddNode(upFacem,5);//---> volume of modules up-face
-	aCORDE->AddNode(outFacem,6);//---> volume of modules out-face
+//	aCORDE->AddNode(inFacem,4);//---> volume of modules in-face
+//	aCORDE->AddNode(upFacem,5);//---> volume of modules up-face
+//	aCORDE->AddNode(outFacem,6);//---> volume of modules out-face
+        aCORDE->AddNode(modules,4);//---> volume of ALL ACORDE's Modules
 	alice->AddNode(aCORDE,1);//---> put volume of ACORDE over ALICE's volume
 
 
@@ -1576,8 +1577,7 @@ void AliACORDEv1::StepManager()
   static Float_t eloss;
   static Float_t step;
   // scintillator volume
-  static Int_t idScint = gMC->VolId("ACORDE2");
-
+ static Int_t idScint = gMC->VolId("ACORDE2");
   // local variables
   Int_t copy;
   TLorentzVector pos;
@@ -1639,22 +1639,90 @@ void AliACORDEv1::StepManager()
       eloss = 0.0;
       step = 0.0;
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
-    }
+     }
   } 
 
 
 
 }
 
-
-
 //_____________________________________________________________________________
 void AliACORDEv1::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
   //
-  // Add a ACORDE hit
+  // Add an ACORDE hit
   //
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliACORDEhit(fIshunt,track,vol,hits);
 }
 
+//_____________________________________________________________________________
+void AliACORDEv1::AddDigits(Int_t* track, Int_t module, Float_t time)
+//void AliACORDEv1::AddDigits(Int_t track, Int_t *vol, Float_t *digits)
+{
+  
+  // Adds Digit
+  
+  TClonesArray &ldigits = *fDigits;
+  new(ldigits[fNdigits++]) AliACORDEdigit(track,module,time);
+}
+//_____________________________________________________________________________
+
+
+
+//_____________________________________________________________________________
+void AliACORDEv1::MakeBranch(Option_t *option)
+{
+// Creates new branches in the current Root Tree
+    
+  char branchname[10];
+  sprintf(branchname,"%s",GetName());
+  AliDebug(2,Form("fBufferSize = %d",fBufferSize));
+  const char *cH = strstr(option,"H");
+  if (fHits   && TreeH() && cH) {
+    TreeH()->Branch(branchname,&fHits, fBufferSize);
+    AliDebug(2,Form("Making Branch %s for hits",branchname));
+  }     
+  const char *cD = strstr(option,"D");
+  if (fDigits   && fLoader->TreeD() && cD) {
+    fLoader->TreeD()->Branch(branchname,&fDigits, fBufferSize);
+    AliDebug(2,Form("Making Branch %s for digits",branchname));
+  }  
+}
+
+//_____________________________________________________________________________
+void AliACORDEv1::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  // 
+
+	// The alignable volumes are only the "ACORDE_MODULE_%d"
+	//
+	//	Structure of ACORDE's Geometry
+	//
+	//	ALIC_1
+	//	    |---> ACORDE_1	
+	//			|----> ACORDE_1_1 (in_face) ---
+	//			|----> ACORDE_2_2 (up_face)    |--> BARS&SUPPORTS
+	//			|----> ACORDE_3_3 (out_face)---
+	//			|----> ACORDE_MODULES_4        |--> ACORDE'S MODULES
+	//		
+	//
+	//     Send comments to: Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch>
+
+	TString vpstr1 = "ALIC_1/ACORDE_1/ACORDE_MODULES_4/ACORDE_MODULE_";
+	TString snstr1 = "ACORDE/Array";
+	TString volpath, symname;
+	for(Int_t dy=1; dy<61 ; dy++)
+	{
+		volpath = vpstr1;
+		volpath += dy;
+		symname = snstr1;
+		symname += dy;
+		if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+	        AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
+	}
+}
