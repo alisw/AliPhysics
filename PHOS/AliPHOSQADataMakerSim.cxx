@@ -43,19 +43,23 @@
 ClassImp(AliPHOSQADataMakerSim)
            
 //____________________________________________________________________________ 
-  AliPHOSQADataMakerSim::AliPHOSQADataMakerSim() : 
-  AliQADataMakerSim(AliQA::GetDetName(AliQA::kPHOS), "PHOS Quality Assurance Data Maker")
+AliPHOSQADataMakerSim::AliPHOSQADataMakerSim() : 
+  AliQADataMakerSim(AliQA::GetDetName(AliQA::kPHOS), "PHOS Quality Assurance Data Maker"),
+  fHits(0x0)
 {
   // ctor
+  fHits = new TClonesArray("AliPHOSHit", 1000);
 }
 
 //____________________________________________________________________________ 
 AliPHOSQADataMakerSim::AliPHOSQADataMakerSim(const AliPHOSQADataMakerSim& qadm) :
-  AliQADataMakerSim()
+  AliQADataMakerSim(),
+  fHits(0x0)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
+  fHits = new TClonesArray("AliPHOSHit", 1000);
 }
 
 //__________________________________________________________________
@@ -82,7 +86,7 @@ void AliPHOSQADataMakerSim::InitHits()
   TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
   h0->Sumw2() ;
   Add2HitsList(h0, 0) ;
-  TH1I * h1  = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
+  TH1I * h1 = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
   h1->Sumw2() ;
   Add2HitsList(h1, 1) ;
 }
@@ -112,44 +116,36 @@ void AliPHOSQADataMakerSim::InitSDigits()
 }
 
 //____________________________________________________________________________
-void AliPHOSQADataMakerSim::MakeHits(TClonesArray * hits)
+void AliPHOSQADataMakerSim::MakeHits()
 {
-	//make QA data from Hits
-
-    GetHitsData(1)->Fill(hits->GetEntriesFast()) ; 
-    TIter next(hits) ; 
-    AliPHOSHit * hit ; 
-    while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
-      GetHitsData(0)->Fill( hit->GetEnergy()) ;
-    }
+  //make QA data from Hits
+  
+  TIter next(fHits) ; 
+  AliPHOSHit * hit ; 
+  while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
+    GetHitsData(0)->Fill( hit->GetEnergy()) ;
+  }
 }
 
 //____________________________________________________________________________
 void AliPHOSQADataMakerSim::MakeHits(TTree * hitTree)
 {
-	// make QA data from Hit Tree
-	
-	TClonesArray * hits = new TClonesArray("AliPHOSHit", 1000);
-
-	TBranch * branch = hitTree->GetBranch("PHOS") ;
-	if ( ! branch ) {
-		AliWarning("PHOS branch in Hit Tree not found") ; 
-	} else {
-		TClonesArray * tmp =  new TClonesArray("AliPHOSHit", 1000) ;
-		branch->SetAddress(&tmp) ;
-		Int_t index = 0 ;  
-		for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
-			branch->GetEntry(ientry) ; 
-			for (Int_t ihit = 0 ; ihit < tmp->GetEntries() ; ihit++) {
-				AliPHOSHit * hit = dynamic_cast<AliPHOSHit *> (tmp->At(ihit)) ; 
-				new((*hits)[index]) AliPHOSHit(*hit) ; 
-				index++ ;
-			} 
-		} 	
-		tmp->Delete() ; 
-		delete tmp ; 
-		MakeHits(hits) ; 
-	}
+  // make QA data from Hit Tree
+  
+  TBranch * branch = hitTree->GetBranch("PHOS") ;
+  if ( ! branch ) {
+    AliWarning("PHOS branch in Hit Tree not found") ; 
+  } else {
+    Int_t nHits = 0;
+    branch->SetAddress(&fHits) ;
+    for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
+      branch->GetEntry(ientry) ;
+      nHits += fHits->GetEntriesFast();
+      MakeHits() ; 
+      fHits->Clear();
+    } 	
+    GetHitsData(1)->Fill(nHits) ;
+  }
 }
 
 //____________________________________________________________________________

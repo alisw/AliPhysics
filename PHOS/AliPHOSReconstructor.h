@@ -51,6 +51,7 @@
 #include "AliPHOSRecoParamCpv.h"
 class AliPHOSDigitizer ;
 class AliPHOSClusterizer ;
+class AliPHOSClusterizerv1 ;
 class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
 class AliPHOSSDigitizer ;
@@ -121,8 +122,9 @@ private:
   static AliPHOSRecoParam *fgkRecoParamEmc; // reconstruction parameters for EMC
   static AliPHOSRecoParam *fgkRecoParamCpv; // reconstruction parameters for EMC
   AliPHOSGeometry         *fGeom;           // pointer to the PHOS geometry
+  AliPHOSClusterizerv1    *fClusterizer;    //! PHOS clusterizer
 
-  ClassDef(AliPHOSReconstructor,4)  // PHOS Reconstruction class
+  ClassDef(AliPHOSReconstructor,5)  // PHOS Reconstruction class
 
 }; 
 

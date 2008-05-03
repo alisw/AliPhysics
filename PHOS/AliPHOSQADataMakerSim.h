@@ -36,7 +36,7 @@ private:
   virtual void   InitHits() ; 
   virtual void   InitDigits() ; 
   virtual void   InitSDigits() ; 
-  virtual void   MakeHits(TClonesArray * hits) ;
+  void           MakeHits() ;
   virtual void   MakeHits(TTree * hitTree) ;
   virtual void   MakeDigits(TClonesArray * digits) ; 
   virtual void   MakeDigits(TTree * digitTree) ; 
@@ -44,7 +44,10 @@ private:
   virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
 
-  ClassDef(AliPHOSQADataMakerSim,1)  // description 
+private:
+  TClonesArray * fHits;  //!Array of PHOS hits
+
+  ClassDef(AliPHOSQADataMakerSim,2)  // description 
 
 };
 

@@ -22,7 +22,7 @@
 // derived from STEER/AliReconstructor. 
 // 
 // --- ROOT system ---
-
+#include "TObjectTable.h"
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -60,7 +60,7 @@ AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamCpv =0;  // CPV rec. paramet
 
 //____________________________________________________________________________
 AliPHOSReconstructor::AliPHOSReconstructor() :
-  fGeom(NULL)
+  fGeom(NULL),fClusterizer(NULL)
 {
   // ctor
 
@@ -74,7 +74,8 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
     fgkRecoParamCpv = AliPHOSRecoParamCpv::GetCpvDefaultParameters();
   }
 
-  fGeom = AliPHOSGeometry::GetInstance("IHEP","");
+  fGeom        = AliPHOSGeometry::GetInstance("IHEP","");
+  fClusterizer = new AliPHOSClusterizerv1(fGeom);
 }
 
 //____________________________________________________________________________
@@ -82,6 +83,7 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
 {
   // dtor
   delete fGeom;
+  delete fClusterizer;
 } 
 
 //____________________________________________________________________________
@@ -92,13 +94,13 @@ void AliPHOSReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) c
   // segment maker needs access to the AliESDEvent object to retrieve the tracks reconstructed by 
   // the global tracking.
 
-  AliPHOSClusterizerv1 clu(fGeom);
-  clu.SetInput(digitsTree);
-  clu.SetOutput(clustersTree);
+  fClusterizer->SetInput(digitsTree);
+  fClusterizer->SetOutput(clustersTree);
   if ( Debug() ) 
-    clu.Digits2Clusters("deb all") ; 
+    fClusterizer->Digits2Clusters("deb all") ; 
   else 
-    clu.Digits2Clusters("") ;
+    fClusterizer->Digits2Clusters("") ;
+  gObjectTable->Print();
 }
 
 //____________________________________________________________________________

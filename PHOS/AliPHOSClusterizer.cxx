@@ -39,6 +39,11 @@ AliPHOSClusterizer::AliPHOSClusterizer():
   fCPVRecPoints(0)
 {
   // ctor
+  fDigitsArr    = new TClonesArray("AliPHOSDigit",100);
+  fEMCRecPoints = new TObjArray(100) ;
+  fEMCRecPoints ->SetName("EMCRECPOINTS") ;
+  fCPVRecPoints = new TObjArray(100) ;
+  fCPVRecPoints ->SetName("CPVRECPOINTS") ;
 }
 
 //____________________________________________________________________________
@@ -50,7 +55,11 @@ AliPHOSClusterizer::AliPHOSClusterizer(AliPHOSGeometry *geom):
   fCPVRecPoints(0)
 {
   // ctor
- 
+  fDigitsArr    = new TClonesArray("AliPHOSDigit",100);
+  fEMCRecPoints = new TObjArray(100) ;
+  fEMCRecPoints ->SetName("EMCRECPOINTS") ;
+  fCPVRecPoints = new TObjArray(100) ;
+  fCPVRecPoints ->SetName("CPVRECPOINTS") ;
 }
 
 //____________________________________________________________________________
@@ -81,7 +90,7 @@ void AliPHOSClusterizer::SetInput(TTree * digitsTree)
     AliError("can't get the branch with the PHOS digits !");
     return;
   }
-  fDigitsArr = new TClonesArray("AliPHOSDigit",100);
+  fDigitsArr->Clear();
   branch->SetAddress(&fDigitsArr);
   branch->GetEntry(0);
 }
@@ -94,15 +103,16 @@ void AliPHOSClusterizer::SetOutput(TTree * clustersTree)
   // and set the corresponding branch addresses
   fTreeR = clustersTree;
 
+//   fEMCRecPoints->Clear();
+//   fCPVRecPoints->Clear();
+  fEMCRecPoints->Delete();
+  fCPVRecPoints->Delete();
+
   AliDebug(9, "Making array for EMC clusters");
-  fEMCRecPoints = new TObjArray(100) ;
-  fEMCRecPoints->SetName("EMCRECPOINTS") ;
   Int_t split = 0;
   Int_t bufsize = 32000;
   fTreeR->Branch("PHOSEmcRP", "TObjArray", &fEMCRecPoints, bufsize, split);
 
   AliDebug(9, "Making array for CPV clusters");
-  fCPVRecPoints = new TObjArray(100) ;
-  fCPVRecPoints->SetName("CPVRECPOINTS") ;
   fTreeR->Branch("PHOSCpvRP", "TObjArray", &fCPVRecPoints, bufsize, split);
 }

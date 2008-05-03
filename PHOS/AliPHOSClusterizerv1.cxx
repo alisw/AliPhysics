@@ -261,7 +261,7 @@ void AliPHOSClusterizerv1::Digits2Clusters(Option_t *option)
     gBenchmark->Stop("PHOSClusterizer");
     AliInfo(Form("took %f seconds for Clusterizing\n",
 		 gBenchmark->GetCpuTime("PHOSClusterizer"))); 
-  } 
+  }
 }
 
 //____________________________________________________________________________
@@ -531,6 +531,9 @@ void AliPHOSClusterizerv1::MakeClusters()
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
+
+  fNumberOfCpvClusters     = 0 ;
+  fNumberOfEmcClusters     = 0 ;
 
   TClonesArray * digitsC =  static_cast<TClonesArray*>( fDigitsArr->Clone() ) ;
  

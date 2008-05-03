@@ -26,7 +26,7 @@
 //  another set of RecPoints.
 // 
 //  The objects are retrived from folders.  
-//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
+//-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 //    
 
 
@@ -39,7 +39,6 @@ class TTask ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
 #include "AliRun.h"
 #include "AliLoader.h"
 #include "AliRunLoader.h"
@@ -57,10 +56,6 @@ class AliPHOSCalibrationDB ;
 class AliPHOSSDigitizer ; 
 class AliPHOSDigitizer ;
   
-
-
-//
-
 class AliPHOSLoader : public AliLoader {
   
 public:
@@ -202,6 +197,7 @@ private:
   Int_t ReadRecParticles();
   
   Int_t  fDebug ;             // Debug level
+  TClonesArray *fTmpHits;     //! Temporary array of hits per track
 
   static const TString fgkHitsName;//Name for TClonesArray with hits from one event
   static const TString fgkSDigitsName;//Name for TClonesArray 
@@ -217,7 +213,7 @@ private:
   static const TString fgkRecParticlesBranchName;//Name for branch
   
  
-  ClassDef(AliPHOSLoader,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliPHOSLoader,4)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };
 

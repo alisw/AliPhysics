@@ -90,29 +90,31 @@ const TString AliPHOSLoader::fgkCpvRecPointsBranchName("PHOSCpvRP");//Name for b
 const TString AliPHOSLoader::fgkTrackSegmentsBranchName("PHOSTS");//Name for branch with TrackSegments
 const TString AliPHOSLoader::fgkRecParticlesBranchName("PHOSRP");//Name for branch with Reconstructed Particles
 //____________________________________________________________________________ 
-AliPHOSLoader::AliPHOSLoader() : fBranchTitle(), fcdb(0), fDebug(0)
+AliPHOSLoader::AliPHOSLoader() : fBranchTitle(), fcdb(0), fDebug(0), fTmpHits(0x0)
 {
   //def ctor
+  fTmpHits =  new TClonesArray("AliPHOSHit",1000);
 }
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername) :
       AliLoader(detname, eventfoldername),
-      fBranchTitle(), fcdb(0), fDebug(0)
+      fBranchTitle(), fcdb(0), fDebug(0), fTmpHits(0x0)
 {
   //ctor
 }
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const Char_t *detname,TFolder *topfolder):
-      AliLoader(detname,topfolder),
-      fBranchTitle(), fcdb(0), fDebug(0)
+  AliLoader(detname,topfolder),
+  fBranchTitle(), fcdb(0), fDebug(0), fTmpHits(0x0)
 
 {
   //ctor
+  fTmpHits =  new TClonesArray("AliPHOSHit",1000);
 }
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const AliPHOSLoader & obj):
   AliLoader(obj),fBranchTitle(obj.GetBranchTitle()),fcdb(obj.CalibrationDB()),
-  fDebug(obj.GetDebug())
+  fDebug(obj.GetDebug()),fTmpHits(obj.fTmpHits)
 {
   // Copy constructor
 }
@@ -402,58 +404,47 @@ Int_t AliPHOSLoader::ReadHits()
 // Reads data from TreeH and stores it in TClonesArray that sits in DetectorDataFolder
 //
   TObject** hitref = HitsRef();
-  if(hitref == 0x0)
-   {
-     MakeHitsArray();
-     hitref = HitsRef();
-   }
+  if(hitref == 0x0) {
+    MakeHitsArray();
+    hitref = HitsRef();
+  }
 
   TClonesArray* hits = dynamic_cast<TClonesArray*>(*hitref);
 
   TTree* treeh = TreeH();
   
-  if(treeh == 0)
-   {
+  if(treeh == 0) {
     AliError("Cannot read TreeH from folder");
     return 1;
   }
   
   TBranch * hitsbranch = treeh->GetBranch(fDetectorName);
-  if (hitsbranch == 0) 
-   {
+  if (hitsbranch == 0) {
     AliError("Cannot find branch PHOS"); 
     return 1;
   }
 
   AliDebug(1, "Reading Hits");
   
-  if (hitsbranch->GetEntries() > 1)
-   {
-    TClonesArray * tempo =  new TClonesArray("AliPHOSHit",1000);
+  if (hitsbranch->GetEntries() > 1) {
 
-    hitsbranch->SetAddress(&tempo);
+    hitsbranch->SetAddress(&fTmpHits);
     Int_t index = 0 ; 
-    Int_t i = 0 ;
-    for (i = 0 ; i < hitsbranch->GetEntries(); i++) 
-     {
+    for (Int_t i = 0 ; i < hitsbranch->GetEntries(); i++) {
       hitsbranch->GetEntry(i) ;
-      Int_t j = 0 ;
-      for ( j = 0 ; j < tempo->GetEntries() ; j++) 
-       {
-         AliPHOSHit* hit = (AliPHOSHit*)tempo->At(j); 
-         new((*hits)[index]) AliPHOSHit( *hit ) ;
-         index++ ; 
-       }
-     }
-    tempo->Delete();
-    delete tempo;
-   }
-  else 
-   {
+      for (Int_t j = 0 ; j < fTmpHits->GetEntriesFast() ; j++) {
+	AliPHOSHit* hit = (AliPHOSHit*)fTmpHits->At(j); 
+	new((*hits)[index]) AliPHOSHit( *hit ) ;
+	index++ ; 
+      }
+    }
+    fTmpHits->Clear();
+  }
+  else {
     hitsbranch->SetAddress(hitref);
     hitsbranch->GetEntry(0) ;
-   }
-
+  }
+  
   return 0;
 }
 //____________________________________________________________________________ 
