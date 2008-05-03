@@ -129,7 +129,7 @@ Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
 
     }
   }  
-
+  arr->Delete();
   Info("LoadClusters","Number of loaded clusters: %d",nclusters);
 
   return 0;
