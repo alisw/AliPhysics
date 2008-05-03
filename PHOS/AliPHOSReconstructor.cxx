@@ -22,7 +22,7 @@
 // derived from STEER/AliReconstructor. 
 // 
 // --- ROOT system ---
-#include "TObjectTable.h"
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -100,7 +100,6 @@ void AliPHOSReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) c
     fClusterizer->Digits2Clusters("deb all") ; 
   else 
     fClusterizer->Digits2Clusters("") ;
-  gObjectTable->Print();
 }
 
 //____________________________________________________________________________
