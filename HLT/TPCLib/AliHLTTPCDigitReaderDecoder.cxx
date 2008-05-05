@@ -34,6 +34,7 @@ using namespace std;
 #include "AliAltroDecoder.h"
 #include "AliAltroData.h"
 #include "AliAltroBunch.h"
+#include "AliHLTTPCTransform.h"
 
 ClassImp(AliHLTTPCDigitReaderDecoder)
 
@@ -161,13 +162,19 @@ int AliHLTTPCDigitReaderDecoder::GetSignal()
 int AliHLTTPCDigitReaderDecoder::GetTime()
 {
   // see header file for class documentation
+  int iResult=0;
   if(!fNextSignalMethodUsed){// this is true if the bunch approach is used
-    return fAltroBunch->GetStartTimeBin();
+    
+    iResult= fAltroBunch->GetStartTimeBin();
   }
   else{
     assert(fNextCounter>=0);
-    return fAltroBunch->GetStartTimeBin()+fNextCounter;
+    iResult = fAltroBunch->GetStartTimeBin()+fNextCounter;
   }
+  if(iResult<0 || iResult>AliHLTTPCTransform::GetNTimeBins()){
+    iResult=0;
+  }
+  return iResult;
 }
 
 int AliHLTTPCDigitReaderDecoder::GetBunchSize()
@@ -184,4 +191,14 @@ AliHLTUInt32_t AliHLTTPCDigitReaderDecoder::GetAltroBlockHWaddr() const
 {
   // see header file for class documentation
   return (AliHLTUInt32_t)fAltroData.GetHadd();
+}
+AliHLTUInt32_t AliHLTTPCDigitReaderDecoder::GetAltroBlockHWaddr(Int_t row, Int_t pad) const
+{
+  // see header file for class documentation
+  if(fMapping){
+    return fMapping->GetHwAddress(row,pad);
+  }
+  else{
+    return 0;
+  }
 }

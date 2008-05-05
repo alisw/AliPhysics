@@ -76,10 +76,9 @@ class AliHLTTPCZeroSuppressionComponent : public AliHLTProcessor
 
 	int DoInit( int argc, const char** argv );
 	int DoDeinit();
-	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+        int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
-	
 	using AliHLTProcessor::DoEvent;
 
     private:
@@ -154,7 +153,7 @@ class AliHLTTPCZeroSuppressionComponent : public AliHLTProcessor
       Bool_t fGetActivePads;                                           //! transient
 
       /** Vector of active pad hardware addresses */
-      vector<Int_t> fHwAddressList;                                    //! transient
+      vector<AliHLTUInt16_t> fHwAddressList;                  //! transient
 
       ClassDef(AliHLTTPCZeroSuppressionComponent, 0)  
     };

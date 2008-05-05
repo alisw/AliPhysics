@@ -119,6 +119,11 @@ public:
   virtual AliHLTUInt32_t GetAltroBlockHWaddr() const;
 
   /**
+   * Get current hardware address from row and pad number.
+   */
+  virtual AliHLTUInt32_t GetAltroBlockHWaddr(Int_t row, Int_t pad) const;
+
+  /**
    * Get the row number of the current value.
    */
   virtual int GetRow()=0;

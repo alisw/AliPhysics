@@ -188,6 +188,13 @@ int AliHLTTPCDigitReader::GetRowOffset() const
 
 AliHLTUInt32_t AliHLTTPCDigitReader::GetAltroBlockHWaddr() const
 {
+  // see header file for class documentation
+  return 0;
+}
+
+AliHLTUInt32_t AliHLTTPCDigitReader::GetAltroBlockHWaddr(Int_t /*row*/, Int_t /*pad*/) const
+{
+  // see header file for class documentation
   return 0;
 }
 

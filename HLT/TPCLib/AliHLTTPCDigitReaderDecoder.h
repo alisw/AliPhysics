@@ -47,7 +47,8 @@ public:
   int GetBunchSize();
   int GetRowOffset() const;
   AliHLTUInt32_t GetAltroBlockHWaddr() const;
-
+  AliHLTUInt32_t GetAltroBlockHWaddr(Int_t row, Int_t pad) const;
+  
 protected:
   bool NextSignal();
 
