@@ -292,6 +292,19 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 			track.CookPID();
 			// update calibration references using this track
 			if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(&track);
+			// save calibration object
+			if ((track.GetNumberOfClusters() > 15) && (track.GetNumberOfClusters() > 0.5*expectedClr)) {
+				seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
+	
+				track.UpdateESDtrack(seed);
+				
+				// Add TRD track to ESDfriendTrack
+				if (AliTRDReconstructor::StreamLevel() > 0 /*&& quality TODO*/){ 
+					AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
+					calibTrack->SetOwner();
+					seed->AddCalibObject(calibTrack);
+				}
+			}
 		}
 
 		if ((TMath::Abs(track.GetC() - p4) / TMath::Abs(p4) < 0.2) ||(track.Pt() > 0.8)) {
@@ -340,7 +353,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 				//}
 			}
 		}
-
+		
 		// Propagation to the TOF (I.Belikov)
 		if (track.GetStop() == kFALSE) {
 			Double_t xtof  = 371.0;
@@ -365,7 +378,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 			Double_t y;
 			track.GetYAt(xtof,GetBz(),y);
 			if (y >  ymax) {
-				if (!track.Rotate( AliTRDgeometry::GetAlpha())) continue;
+				if (!track.Rotate( AliTRDgeometry::GetAlpha())) continue;	
 			}else if (y < -ymax) {
 				if (!track.Rotate(-AliTRDgeometry::GetAlpha())) continue;
 			}
@@ -375,11 +388,11 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 				track.UpdateESDtrack(seed);
 				
 				// Add TRD track to ESDfriendTrack
-				if (AliTRDReconstructor::StreamLevel() > 0 /*&& quality TODO*/){ 
-					AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
-					calibTrack->SetOwner();
-					seed->AddCalibObject(calibTrack);
-				}
+//				if (AliTRDReconstructor::StreamLevel() > 0 /*&& quality TODO*/){ 
+//					AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
+//					calibTrack->SetOwner();
+//					seed->AddCalibObject(calibTrack);
+//				}
 				found++;
 			}
 		} else {			
@@ -389,11 +402,11 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 				track.UpdateESDtrack(seed);
 				
 				// Add TRD track to ESDfriendTrack
-				if (AliTRDReconstructor::StreamLevel() > 0 /*&& quality TODO*/){ 
-					AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
-					calibTrack->SetOwner();
-					seed->AddCalibObject(calibTrack);
-				}
+//				if (AliTRDReconstructor::StreamLevel() > 0 /*&& quality TODO*/){ 
+//					AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
+//					calibTrack->SetOwner();
+//					seed->AddCalibObject(calibTrack);
+//				}
 				found++;
 			}
 		}
@@ -627,7 +640,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 				tracklet.SetPadLength(pp->GetLengthIPad());
 				tracklet.SetPlane(iplane);
 				tracklet.SetX0(x);
-				tracklet.Init(&t);
+				if(!tracklet.Init(&t)){
+					t.SetStop(kTRUE);
+					return nClustersExpected;
+				}
 				if(!tracklet.AttachClustersIter(chamber, 1000.)) continue;
 				tracklet.Init(&t);
 				
@@ -1416,9 +1432,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 	// 8. Build ESD track and register it to the output list
 	//
 
-	AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
-	if (!calibra) AliInfo("Could not get Calibra instance\n");
-
 	AliTRDtrackingChamber *chamber = 0x0;
 	AliTRDseedV1 sseed[kMaxTracksStack*6]; // to be initialized
 	Int_t pars[4]; // MakeSeeds parameters
@@ -1665,10 +1678,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 		continue;
 	}
 	//AliInfo("End of MakeTrack()");
-	// computes PID for track
-	track->CookPID();
-	// update calibration references using this track
-	if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(track);
 	AliESDtrack esdTrack;
 	esdTrack.UpdateTrackParams(track, AliESDtrack::kTRDout);
 	esdTrack.SetLabel(track->GetLabel());
@@ -2153,6 +2162,9 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
 	// To be discussed with Marian !!
 	//
 
+	AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
+	if (!calibra) AliInfo("Could not get Calibra instance\n");
+
 	Double_t alpha = AliTRDgeometry::GetAlpha();
 	Double_t shift = AliTRDgeometry::GetAlpha()/2.0;
 	Double_t c[15];
@@ -2175,6 +2187,10 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
 		track->CookdEdx();
 		track->CookdEdxTimBin(-1);
 		track->CookLabel(.9);
+		// computes PID for track
+		track->CookPID();
+		// update calibration references using this track
+		if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(track);
 	}
 
 	return track;
