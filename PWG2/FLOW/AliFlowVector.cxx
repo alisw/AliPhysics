@@ -28,5 +28,12 @@ ClassImp(AliFlowVector)
 //________________________________________________________________________
 
 AliFlowVector::AliFlowVector():fMult(0){}
+
+AliFlowVector::AliFlowVector(const AliFlowVector& aVector):TVector2(aVector),
+fMult(aVector.fMult){}
 AliFlowVector::AliFlowVector(const TVector2 &v, Double_t m):TVector2(v),fMult(m){}
 AliFlowVector::~AliFlowVector(){}
+AliFlowVector& AliFlowVector::operator=(const AliFlowVector&)
+{
+  return *this;
+}
