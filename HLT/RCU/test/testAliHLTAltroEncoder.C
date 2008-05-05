@@ -287,9 +287,15 @@ int testAliHLTAltroEncoder()
 #endif
 
   AliHLTAltroEncoder encoder;
-  Char_t* pTgt=encData.GetArray();
-  pTgt+=sizeofAliRawDataHeader;
-  encoder.SetBuffer((AliHLTUInt8_t*)pTgt, maxAltroDataSize);
+  encoder.SetBuffer((AliHLTUInt8_t*)encData.GetArray(), encData.GetSize());
+
+  // set the common data header
+  TArrayC dummyCdh(sizeofAliRawDataHeader);
+  encoder.SetCDH((AliHLTUInt8_t*)dummyCdh.GetArray(), dummyCdh.GetSize());
+
+  // set a trailer like in the real data format of the v1 RCU format (1 trailer word)
+  Int_t trailer=0;
+  encoder.SetRCUTrailer((AliHLTUInt8_t*)&trailer, 4);
 
   if (bVerbose) cout << "number of channels: " << nofChannels << endl;
   int channelAddress=-1;
@@ -352,13 +358,14 @@ int testAliHLTAltroEncoder()
     if (bVerbose) cout << " channel " << channelAddress << ":  number of bunches " << totalBunches << endl;
 
   }
-  if (bUseAddChannelSignal && lastChannel>=0) encoder.SetChannel(lastChannel);
 
+  int dataSize=encoder.SetLength();
+  if (dataSize<0) {
+    cerr << "error finalizing encoded buffer" << endl;
+    return -1;
+  }
   int nof40bitWords=encoder.GetTotal40bitWords();
-  pTgt+=nof40bitWords*5/4;
-  *((Int_t*)pTgt)=nof40bitWords;
-  int encDataSize=sizeofAliRawDataHeader+nof40bitWords*5/4+sizeof(Int_t);
-  encData.Set(encDataSize);
+  encData.Set(dataSize);
 
   if (bVerbose) cout << "simulated data array:" << simData.GetSize() << " , ALTRO block length: " << nof40bitWords << " ALTRO words -> encoded data: " << encData.GetSize() << endl;
 
@@ -385,7 +392,7 @@ int testAliHLTAltroEncoder()
   return 0;
 }
 
-int main(int argc, const char** argv)
+int main(int /*argc*/, const char** /*argv*/)
 {
 //   CompareDumpFiles();
 //   return 0;

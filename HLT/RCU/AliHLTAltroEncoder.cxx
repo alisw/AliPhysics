@@ -25,6 +25,7 @@
 #include <cassert>
 #include <cerrno>
 #include "AliHLTAltroEncoder.h"
+#include "TArrayC.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAltroEncoder)
@@ -40,7 +41,9 @@ AliHLTAltroEncoder::AliHLTAltroEncoder()
   fChannels(),
   fOffset(0),
   f10bitWords(0),
-  fOrder(kUnknownOrder)
+  fOrder(kUnknownOrder),
+  fpCDH(NULL),
+  fpRCUTrailer(NULL)
 {
   // see header file for class documentation
   // or
@@ -60,7 +63,9 @@ AliHLTAltroEncoder::AliHLTAltroEncoder(AliHLTUInt8_t* pBuffer, int iSize)
   fChannels(),
   fOffset(0),
   f10bitWords(0),
-  fOrder(kUnknownOrder)
+  fOrder(kUnknownOrder),
+  fpCDH(NULL),
+  fpRCUTrailer(NULL)
 {
   // see header file for class documentation
 }
@@ -68,6 +73,11 @@ AliHLTAltroEncoder::AliHLTAltroEncoder(AliHLTUInt8_t* pBuffer, int iSize)
 AliHLTAltroEncoder::~AliHLTAltroEncoder()
 {
   // see header file for class documentation
+  if (fpCDH) delete fpCDH;
+  fpCDH=NULL;
+
+  if (fpRCUTrailer) delete fpRCUTrailer;
+  fpRCUTrailer=NULL;
 }
 
 int AliHLTAltroEncoder::SetBuffer(AliHLTUInt8_t* pBuffer, int iSize)
@@ -99,7 +109,8 @@ int AliHLTAltroEncoder::AddSignal(AliHLTUInt16_t signal, AliHLTUInt16_t timebin)
   if (iResult>=0 && (iResult=Add10BitValue(signal))>=0) {
     fBunchLength++;
   }
-  assert(fOffset*4<=f10bitWords*5);
+  //  HLTDebug("fOffset: %d  (fOffset-32)*4: %d  f10bitWords*5 %d", fOffset,(fOffset-32)*4,f10bitWords*5);
+  assert((fOffset-(fpCDH?fpCDH->GetSize():0)*4)<=f10bitWords*5);//32 is here size of CDH 8 32bit words
   fPrevTimebin=timebin;
   return iResult;
 }
@@ -110,7 +121,7 @@ int AliHLTAltroEncoder::SetChannel(AliHLTUInt16_t hwaddress)
   int iResult=0;
   int added10BitWords=0;
   if (!fpBuffer) return -ENODEV;
-  if (fOffset+5>=fBufferSize) {
+  if (fOffset+5>=fBufferSize-(fpRCUTrailer?fpRCUTrailer->GetSize():0)) {
     HLTWarning("buffer too small too finalize channel: %d of %d byte(s) already used", fOffset, fBufferSize);
     return -ENOSPC;
   }
@@ -193,7 +204,7 @@ int AliHLTAltroEncoder::Add10BitValue(AliHLTUInt16_t value)
   // see header file for class documentation
   int iResult=0;
   if (!fpBuffer) return -ENODEV;
-  if (fOffset+2>=fBufferSize) {
+  if (fOffset+2>=fBufferSize-(fpRCUTrailer?fpRCUTrailer->GetSize():0)) {
     HLTWarning("buffer too small too add 10bit word: %d of %d byte(s) already used", fOffset, fBufferSize);
     return -ENOSPC;
   }
@@ -222,4 +233,75 @@ int AliHLTAltroEncoder::Pad40Bit()
   }
   if (iResult<0) return iResult;
   return added10BitWords;
+}
+
+int AliHLTAltroEncoder::SetCDH(AliHLTUInt8_t* pCDH,int size)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (fOffset>0) {
+    HLTError("CDH can only be set prior to data");
+    iResult=-EFAULT;
+  }
+  if (size>0 && pCDH){
+    if (fpCDH == NULL){
+      fpCDH = new TArrayC(0);
+    }
+    if (fpCDH){
+      fpCDH->Set(0);
+      fpCDH->Set(size, (const char*)pCDH);
+      fOffset=size;
+    } else {
+      iResult=-ENOMEM;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTAltroEncoder::SetRCUTrailer(AliHLTUInt8_t* pRCUTrailer,int size)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (size>0 && pRCUTrailer){
+    if (fpRCUTrailer == NULL){
+      fpRCUTrailer = new TArrayC(0);
+    }
+    if (fpRCUTrailer){
+      fpRCUTrailer->Set(0);
+      fpRCUTrailer->Set(size, (const char*)pRCUTrailer);
+    } else {
+      iResult=-ENOMEM;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTAltroEncoder::SetLength()
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (fChannel!=AliHLTUInt16MAX && (iResult=SetChannel(fChannel))<0) {
+    HLTError("error finalizing channel");
+    return iResult;
+  }
+
+  if (fpRCUTrailer && fOffset+fpRCUTrailer->GetSize()<fBufferSize) {
+    // copy the trailer
+    AliHLTUInt32_t* pTgt=reinterpret_cast<AliHLTUInt32_t*>(fpBuffer+fOffset);
+    memcpy(pTgt, fpRCUTrailer->GetArray(), fpRCUTrailer->GetSize());
+    // set number of 10bit words
+    *pTgt=GetTotal40bitWords();
+    fOffset+=fpRCUTrailer->GetSize();
+  }
+  if (fpCDH && fOffset>fpCDH->GetSize()) {
+    memcpy(fpBuffer, fpCDH->GetArray(), fpCDH->GetSize());
+    AliHLTUInt32_t* pCdhSize=reinterpret_cast<AliHLTUInt32_t*>(fpBuffer);
+    *pCdhSize=fOffset;//set the first word in the header to be the fOffset(number of bytes added)  
+    HLTDebug("Size set in the header: %d",*pCdhSize);
+  }
+  return fOffset;
 }

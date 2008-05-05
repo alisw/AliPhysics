@@ -19,6 +19,8 @@
 
 #define AliHLTUInt16MAX 0xffff
 
+class TArrayC;
+
 /**
  * @class AliHLTAltroEncoder
  * Encoder of the RCU/Altro data format.
@@ -48,7 +50,21 @@
  *    encoder.SetChannel(channelAddress);
  *  }
  * </pre>
- * 
+ *
+ * By default, the encoder provides only the ALTRO data, but not the common
+ * data header (in AliRoot language AliRawDataHeader) nor the RCU trailer.
+ * The CDH is 32 bytes long, the first 4 byte contain the data length excluding
+ * the CDH itsself. The CDH can be set by SetCDH(AliHLTUInt8_t*, int).
+ *
+ * The RCU trailer has varying formats, actually the last 4 byte are supposed
+ * to contain the length of the trailer itsself. The first 4 byte contain the
+ * number of 40bit ALTRO words. Currently, the RCU firmware adds only one 4 byte
+ * word, the number of 40bit wirds. The trailer can be set using 
+ * SetRCUTrailer(AliHLTUInt8_t*, int);
+ *
+ * When using CDH and Trailer the Finalize() function must be called at the end
+ * in order to copy the trailer and update the size members correctly.
+ *
  * @ingroup alihlt_rcu
  */
 class AliHLTAltroEncoder : AliHLTLogging {
@@ -101,6 +117,26 @@ class AliHLTAltroEncoder : AliHLTLogging {
    * Get total number of 40bit Altro words
    */
   int GetTotal40bitWords();
+
+  /**
+   * Sets the common data header at the beginning of the buffer
+   */
+  int SetCDH(AliHLTUInt8_t* pCDH, int size);
+
+  /**
+   * Sets the RCU trailer at the end of the buffer
+   */
+  int SetRCUTrailer(AliHLTUInt8_t* pTrailer, int size);
+
+  /**
+   * Finalize the encoded data.
+   * Finish the last channel if open, copy RCU trailer if available and update
+   * ALTRO word count in the trailer. Update the data length in the CDH if
+   * available.
+   */
+  int SetLength();
+
+  int GetOffset(){return fOffset;}
 
   enum {
     kUnknownOrder = 0,
@@ -160,8 +196,14 @@ class AliHLTAltroEncoder : AliHLTLogging {
 
   /// time bin order
   int fOrder; //!transient
+  
+  /// common data header
+  TArrayC* fpCDH; //!transient
 
-  ClassDef(AliHLTAltroEncoder, 0);
+  /// RCU trailer
+  TArrayC* fpRCUTrailer; //!transient
+
+  ClassDef(AliHLTAltroEncoder, 1);
 };
 
 #endif
