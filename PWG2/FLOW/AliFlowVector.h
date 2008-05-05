@@ -15,9 +15,12 @@
 class AliFlowVector: public TVector2 {
  public:
   AliFlowVector();
+  AliFlowVector(const AliFlowVector& aVector);
   AliFlowVector(const TVector2 &p, Double_t m);
   virtual ~AliFlowVector();
-  
+
+  AliFlowVector& operator=(const AliFlowVector&);
+
   void SetMult(Double_t mult)       {this->fMult = mult;} ;
   Double_t GetMult() const          {return this -> fMult;} ;
   
