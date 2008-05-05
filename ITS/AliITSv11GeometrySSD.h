@@ -30,6 +30,7 @@ public:
   /////////////////////////////////////////////////////////////////////////
   // Public methods
   /////////////////////////////////////////////////////////////////////////
+  void CreateMaterials();	  // Method setting the materials 
   TGeoMedium* GetMedium(const char* mediumName);   // It returns the Medium
   const char*   GetSenstiveVolumeName5() const {return fgSSDsensitiveVolName5;};
   // it returns the Sensitive Volume of Layer 5
@@ -44,13 +45,15 @@ public:
   void SetEndLadderSegment();			// Set End Ladder Segment
   void SetLadder();						// Set Ladder
   void SetLayer();						// Set Layer
+  void SetSSDCone();                    // Set SSD Cone
   void Layer5(TGeoVolume* moth);        // Setting Layer 5 into mother volume
   void Layer6(TGeoVolume* moth);        // Setting Layer 6 into mother volume
   void LadderSupportLayer5(TGeoVolume* moth); // Setting Ladder Support of Layer 5
   void LadderSupportLayer6(TGeoVolume* moth); // Setting Ladder Support of Layer 6
   void EndCapSupportSystemLayer5(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 5
   void EndCapSupportSystemLayer6(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 6
-  void CreateMaterials();				// Method setting the materials 
+  void SSDCone(TGeoVolume* moth); // Setting SSD Cone;
+  TGeoVolume* SetSSDCables();
 private:
   /////////////////////////////////////////////////////////////////////////////////
   // Names of the Sensitive Volumes of Layer 5 and Layer 6
@@ -353,8 +356,51 @@ private:
   static const Double_t fgkEndCapKaptonFoilLength;    // End Cap Kapton Foil Length
   static const Double_t fgkEndCapKaptonFoilWidth ;    // End Cap Kapton Foil Width
   /////////////////////////////////////////////////////////////////////////
+  // SSD Cone
+  /////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkSSDLowerPConeRadius; // SSD Cone Lower Radius
+  static const Double_t fgkSSDPConeAngle;        // SSD Cone Angle
+  static const Double_t fgkSSDPConeZLength[2];   // SSD Cone ZLength
+  static const Double_t fgkSSDPConeLittleHoleRadius; // SSD Cone Little Hole Radius
+  static const Double_t fgkSSDPConeLittleHoleLength; // SSD Cone Little Hole Length
+  static const Double_t fgkSSDConeMiddleRadius; // SSD Cone Middle Radius 
+  static const Double_t fgkSSDPConeMiddleLength; // SSD Cone Middle Length
+  static const Double_t fgkSSDPConeMiddleWidth; // SSD Cone Middle Width
+  static const Double_t fgkSSDPConeUpRadius;  // SSD Cone Up Radius
+  static const Double_t fgkSSDPConeUpMaxRadius; // SSD Cone Up Max Radius
+  static const Double_t fgkSSDPConeUpMiddleRadius; // SSD Cone Up Middle Radius
+  static const Double_t fgkSSDPConeDownRadius; // SSD Cone Down Radius
+  static const Double_t fgkSSDPConeTrapezoidAngle; // SSD Cone Trapezoid Angle
+  static const Double_t fgkSSDPConeTrapezoidBasis; // SSD Cone Trapezoid Basis
+  static const Double_t fgkSSDPConeExternalRadius; // SSD Cone External Radius 
+  static const Double_t fgkSSDPConeRadiusWidth; // SSD Cone Radius Width
+  static const Double_t fgkSSDPConeLength; // SSD Cone Length
+  static const Double_t fgkSSDCentralSupportLength; //SSD Central Support Length
+  static const Double_t fgkSSDCentralSupportRadius; // SSD Central Support Radius 
+  static const Double_t fgkSSDCentralSupportWidth; // SSD Central Support Width
+  static const Double_t fgkSSDCentralAL3SupportLength; // SSD Central Support Length
+  static const Double_t fgkSSDCentralAL3SupportWidth; // SSD Central Support Width
+  /////////////////////////////////////////////////////////////////////////
+  // SSD Cables e Patch Panel
+  /////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkSSDCablesLay5TubeRadiusMin; // Radius Min Cable Tube Layer 5
+  static const Double_t fgkSSDCablesLay6TubeRadiusMin; // Radius Min Cable Tube Layer 6
+  static const Double_t fgkSSDCablesLay5RightSideHeight;  // Width Lay 5 Cables to be fixed in order to reproduce material budget
+  static const Double_t fgkSSDCablesLay6RightSideHeight;  // // Width Lay 5 Cables to be fixed in order to reproduce material budget
+  static const Double_t fgkSSDCableAngle; // Angle Cable   
+  static const Double_t fgkSSDCablesLay5RightSideWaterHeight;  // Width Lay 5 Water Cables to be fixed in order to reproduce material budget
+  static const Double_t fgkSSDCablesPatchPanel2RB26Angle[2]; // Angle Position Patch Panel RB26
+  static const Double_t fgkSSDCablesPatchPanel2RB24Angle[2]; // Angle Position Patch Panel RB24
+  static const Double_t fgkSSDPatchPanel2RB26ITSDistance;    // Patch Panel RB26 Position
+  static const Double_t fgkSSDPatchPanel2RB24ITSDistance;   // Patch Panel RB24 Position 
+  static const Double_t fgkSSDPatchPanel2RB26Radius; // Patch Panel Radius 
+  static const Double_t fgkSSDPatchPanel2RB24Radius; // Patch Panel Radius
+  static const Double_t fgkSSDPatchPanelHeigth; // Patch Panel Height
+  static const Double_t fgkSSDCableMaterialBudgetHeight; // SSD Cable Material Budget
+  /////////////////////////////////////////////////////////////////////////
   // Private methods for private members generation
   /////////////////////////////////////////////////////////////////////////
+
   void CreateTransformationMatrices();  // Method setting the transformation matrices
   void CreateBasicObjects();			// Method creating the basic objects of ssd geometry
   void SetSSDSensor();					// Method setting the SSD Layer 5 and 6 sensors
@@ -439,7 +485,9 @@ private:
   TGeoMedium* fSSDCoolingTubePhynox;             // Medium for Cooling Tube 
   TGeoMedium* fSSDSupportRingAl;                 // Medium for Support Ring
   TGeoMedium* fSSDMountingBlockMedium;           // Medium for SSD Mounting Block  
+  TGeoMedium* fSSDRohaCellCone;                  // Medium for SSD Ring Cone Support
   TGeoMedium* fSSDAir;							 // SSD Air
+  TGeoMedium* fSSDCopper;                        // Copper for SSD Cables
   /////////////////////////////////////////////////////////////////////////
   Bool_t fCreateMaterials;		  // Bool variable which verifies if materials have been created
   Bool_t fTransformationMatrices; // Bool variable which verifies if matrices have been allocated
@@ -589,6 +637,10 @@ private:
   // End Cap Support + End Cap Assembly
   /////////////////////////////////////////////////////////////////////////
   TGeoVolume** fgkEndCapSupportSystem; // End Cap Support + End Cap Assembly
+  /////////////////////////////////////////////////////////////////////////
+  // SSD Cone
+  /////////////////////////////////////////////////////////////////////////
+  TGeoVolumeAssembly* fSSDCone;  // SSD Cone  
   /////////////////////////////////////////////////////////////////////////
   // Color Display 
   /////////////////////////////////////////////////////////////////////////

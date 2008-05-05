@@ -34,6 +34,7 @@
 #include "TGeoXtru.h"
 #include "TGeoTorus.h"
 #include "TGeoPgon.h"
+#include "TGeoPcon.h"
 #include "TRotation.h"
 #include "AliITSv11GeometrySSD.h"
 /////////////////////////////////////////////////////////////////////////////////
@@ -481,13 +482,57 @@ const Double_t AliITSv11GeometrySSD::fgkEndCapEffectiveCableRadiusMax = 1.575*fg
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLength[2] = {70.424*fgkmm,72.919*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportMiddleRadius[2] = {377.0*fgkmm,437.0*fgkmm};
-const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLowRadius[2] = {365.0*fgkmm,430.0*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLowRadius[2] = {375.0*fgkmm,435.0*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportHighWidth = 20.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLowWidth[2] = {3.0*fgkmm,3.0*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay5ITSPosition = 625.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay5Position = 2.5*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay6ITSPosition = 635.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay6Position = 2.5*fgkmm;
+/////////////////////////////////////////////////////////////////////////////////
+// SSD Cone Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkSSDLowerPConeRadius = 296.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeAngle = 39.0; 
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeZLength[2] = {176.5*fgkmm,161.5*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeLittleHoleRadius = 317.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeLittleHoleLength = 20.*fgkmm;	
+const Double_t AliITSv11GeometrySSD::fgkSSDConeMiddleRadius = 350.*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeMiddleLength = 30.*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeMiddleWidth = 40.*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeUpRadius = 400.*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeUpMaxRadius = 460.*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeUpMiddleRadius = 472.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeDownRadius = 282.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeTrapezoidAngle = 42.0;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeTrapezoidBasis = 200.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeExternalRadius = 492.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeRadiusWidth = 16.75*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeLength = 176.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCentralSupportLength = 1020.*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCentralSupportRadius = 297.5*fgkmm;  
+const Double_t AliITSv11GeometrySSD::fgkSSDCentralSupportWidth = 6.28*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCentralAL3SupportLength = 60.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCentralAL3SupportWidth = 2.5*fgkSSDCentralSupportWidth;
+/////////////////////////////////////////////////////////////////////////////////
+// SSD Cables Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkSSDCablesLay5TubeRadiusMin = 11.9*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCablesLay6TubeRadiusMin = 11.9*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCablesLay5RightSideHeight = 7.*fgkmm;  // to be fixed in order to reproduce material budget
+const Double_t AliITSv11GeometrySSD::fgkSSDCablesLay6RightSideHeight = 7.*fgkmm;  // to be fixed in order to reproduce material budget
+const Double_t AliITSv11GeometrySSD::fgkSSDCableAngle = 22.5;
+const Double_t AliITSv11GeometrySSD::fgkSSDCablesLay5RightSideWaterHeight = 2.5*fgkmm;  // to be fixed in order to reproduce material budget
+const Double_t AliITSv11GeometrySSD::fgkSSDCablesPatchPanel2RB26Angle[2] = {25.0,53.2};
+const Double_t AliITSv11GeometrySSD::fgkSSDCablesPatchPanel2RB24Angle[2] = {23.0,53.6};
+const Double_t AliITSv11GeometrySSD::fgkSSDPatchPanel2RB26ITSDistance = 975.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPatchPanel2RB24ITSDistance = 1020.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPatchPanel2RB26Radius = 451.3*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPatchPanel2RB24Radius = 451.3*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPatchPanelHeigth = 87.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCableMaterialBudgetHeight = 20.0*fgkmm;
+//const Double_t AliITSv11GeometrySSD::fgkSSDPatchPanel2RB26Radius = fgkSSDPConeExternalRadius;
+//const Double_t AliITSv11GeometrySSD::fgkSSDPatchPanel2RB24Radius = fgkSSDPConeExternalRadius;
 /////////////////////////////////////////////////////////////////////////////////
 ClassImp(AliITSv11GeometrySSD)
 /////////////////////////////////////////////////////////////////////////////////
@@ -515,7 +560,9 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   fSSDCoolingTubePhynox(),
   fSSDSupportRingAl(),
   fSSDMountingBlockMedium(),
+  fSSDRohaCellCone(),
   fSSDAir(),
+  fSSDCopper(),
   fCreateMaterials(kFALSE),
   fTransformationMatrices(kFALSE),
   fBasicObjects(kFALSE),
@@ -537,6 +584,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   fLay5LadderSupportRing(),
   fLay6LadderSupportRing(),
   fgkEndCapSupportSystem(),
+  fSSDCone(),
   fColorCarbonFiber(4),
   fColorRyton(5),
   fColorPhynox(14),
@@ -578,7 +626,9 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
   fSSDCoolingTubePhynox(s.fSSDCoolingTubePhynox),
   fSSDSupportRingAl(s.fSSDSupportRingAl),
   fSSDMountingBlockMedium(s.fSSDMountingBlockMedium),
+  fSSDRohaCellCone(s.fSSDRohaCellCone),
   fSSDAir(s.fSSDAir),
+  fSSDCopper(s.fSSDCopper),
   fCreateMaterials(s.fCreateMaterials),
   fTransformationMatrices(s.fTransformationMatrices),
   fBasicObjects(s.fBasicObjects),
@@ -600,6 +650,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
   fLay5LadderSupportRing(s.fLay5LadderSupportRing),
   fLay6LadderSupportRing(s.fLay6LadderSupportRing),
   fgkEndCapSupportSystem(s.fgkEndCapSupportSystem),
+  fSSDCone(s.fSSDCone),
   fColorCarbonFiber(s.fColorCarbonFiber),
   fColorRyton(s.fColorRyton),
   fColorPhynox(s.fColorPhynox),
@@ -6761,8 +6812,8 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 														   *endcapeffectivecablesrot);
   endcapeffectivecablescombitrans[1]  = new TGeoCombiTrans(*endcapeffectivecablestrans[1],
 														   *endcapeffectivecablesrot);
-  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapeffectivecables[0],1,
-													  endcapeffectivecablescombitrans[0]);
+//  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapeffectivecables[0],1,
+//													  endcapeffectivecablescombitrans[0]);
   for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapeffectivecables[1],1,
 													  endcapeffectivecablescombitrans[1]);
   /////////////////////////////////////////////////////////////
@@ -7177,6 +7228,852 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   }
  }
  ////////////////////////////////////////////////////////////////////////////////
+ void AliITSv11GeometrySSD::SSDCone(TGeoVolume* moth){
+  /////////////////////////////////////////////////////////////
+  // Setting Ladder Support of Layer 6. 
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert SSD Cone, mother is null!\n");
+    return;
+  };
+  if(!fSSDCone) SetSSDCone();
+  TGeoTranslation* ssdconetrans = new TGeoTranslation(0.,0.,0.5*fgkSSDCentralSupportLength
+								+					  fgkSSDCentralAL3SupportLength);
+    moth->AddNode(fSSDCone,1,ssdconetrans);
+}
+ ////////////////////////////////////////////////////////////////////////////////
+ void AliITSv11GeometrySSD::SetSSDCone(){
+  /////////////////////////////////////////////////////////////
+  // Method generating SSDCone 
+  /////////////////////////////////////////////////////////////
+  if(!fCreateMaterials) CreateMaterials();
+  fSSDCone = new TGeoVolumeAssembly("ITSssdCone");
+  Double_t ssdpconesectionradiusmax[16];
+  Double_t ssdpconesectionradiusmin[16];
+  Double_t ssdpconezsection[16];
+  TGeoPcon* ssdpconelittleholeshape[8];
+  TGeoVolume* ssdpconelittlehole[8];
+  ssdpconezsection[0] = (fgkSSDPConeZLength[0]-fgkSSDPConeZLength[1]);
+  ssdpconesectionradiusmin[0] = fgkSSDLowerPConeRadius;
+  ssdpconesectionradiusmax[0] = ssdpconezsection[0]*CosD(fgkSSDPConeAngle)
+						      / SinD(fgkSSDPConeAngle)
+							  + ssdpconesectionradiusmin[0];
+  ssdpconesectionradiusmin[1] = fgkSSDPConeLittleHoleRadius
+							  - ssdpconezsection[0]*CosD(fgkSSDPConeAngle)
+							  / SinD(fgkSSDPConeAngle);
+  ssdpconesectionradiusmax[1] = fgkSSDPConeLittleHoleRadius; 
+  ssdpconezsection[1] = (ssdpconesectionradiusmin[1]-ssdpconesectionradiusmin[0])
+					  * TanD(fgkSSDPConeAngle)+ssdpconezsection[0];
+  ssdpconelittleholeshape[0] = new TGeoPcon(0.,360.,2);    
+  for(Int_t i=0; i<2;i++) ssdpconelittleholeshape[0]->DefineSection(i,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[0] = new TGeoVolume("SSDConeLittleHole1",ssdpconelittleholeshape[0],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[0]->SetLineColor(4);
+  /////////////////////////////////////////////////////////////
+  ssdpconezsection[2] = ssdpconezsection[1];  
+  ssdpconesectionradiusmin[2] = ssdpconesectionradiusmin[1];
+  ssdpconesectionradiusmax[2] = ssdpconesectionradiusmax[1];
+  ssdpconesectionradiusmin[3] = fgkSSDPConeLittleHoleRadius+fgkSSDPConeLittleHoleLength
+							  - ssdpconezsection[0]*CosD(fgkSSDPConeAngle)
+							  / SinD(fgkSSDPConeAngle);
+  ssdpconesectionradiusmax[3] = ssdpconezsection[0]*CosD(fgkSSDPConeAngle)
+							  / SinD(fgkSSDPConeAngle)+ssdpconesectionradiusmin[3];
+  ssdpconezsection[3] = (ssdpconesectionradiusmin[3]-ssdpconesectionradiusmin[2])
+					  * TanD(fgkSSDPConeAngle)+ssdpconezsection[2];
+  Double_t ssdpconelittleholeangle = fgkSSDPConeLittleHoleLength/fgkSSDPConeLittleHoleRadius
+								   * TMath::RadToDeg();
+  ssdpconelittleholeshape[1] = new TGeoPcon(30.+0.5*ssdpconelittleholeangle,
+													  60.-ssdpconelittleholeangle,2);    
+  for(Int_t i=2;i<4;i++) ssdpconelittleholeshape[1]->DefineSection(i-2,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[1] = new TGeoVolume("SSDConeLittleHole2",ssdpconelittleholeshape[1],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[1]->SetLineColor(4);
+  TGeoRotation* ssdconelittleholerot[6];
+  for(Int_t i=0; i<6; i++){
+	ssdconelittleholerot[i] = new TGeoRotation();
+    ssdconelittleholerot[i]->SetAngles(i*60,0.,0.);
+  }
+  /////////////////////////////////////////////////////////////
+  ssdpconezsection[4] = ssdpconezsection[3];  
+  ssdpconesectionradiusmin[4] = ssdpconesectionradiusmin[3];
+  ssdpconesectionradiusmax[4] = ssdpconesectionradiusmax[3];
+  ssdpconesectionradiusmin[5] = fgkSSDConeMiddleRadius-ssdpconezsection[0]
+							  * CosD(fgkSSDPConeAngle)
+							  / SinD(fgkSSDPConeAngle);
+  ssdpconesectionradiusmax[5] = fgkSSDConeMiddleRadius;
+  ssdpconezsection[5] = (ssdpconesectionradiusmin[5]-ssdpconesectionradiusmin[4])
+					  * TanD(fgkSSDPConeAngle)+ssdpconezsection[4];
+  ssdpconelittleholeshape[2] = new TGeoPcon(0.,360.,2);
+  for(Int_t i=4; i<6;i++) ssdpconelittleholeshape[2]->DefineSection(i-4,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[2] = new TGeoVolume("SSDConeLittleHole3",ssdpconelittleholeshape[2],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[2]->SetLineColor(4);
+  ///////////////////////////////////////////////////
+  ssdpconezsection[6] = ssdpconezsection[5];  
+  ssdpconesectionradiusmin[6] = ssdpconesectionradiusmin[5];
+  ssdpconesectionradiusmax[6] = ssdpconesectionradiusmax[5];
+  ssdpconesectionradiusmin[7] = fgkSSDConeMiddleRadius+fgkSSDPConeMiddleLength
+							  -ssdpconezsection[0]
+							  * CosD(fgkSSDPConeAngle)
+							  / SinD(fgkSSDPConeAngle);
+  ssdpconesectionradiusmax[7] = fgkSSDConeMiddleRadius+fgkSSDPConeMiddleLength;
+  ssdpconezsection[7] = (ssdpconesectionradiusmin[7]-ssdpconesectionradiusmin[6])
+					  * TanD(fgkSSDPConeAngle)+ssdpconezsection[6];
+  Double_t ssdpconemiddleholeangle = fgkSSDPConeMiddleWidth/fgkSSDConeMiddleRadius
+								   * TMath::RadToDeg();
+  ssdpconelittleholeshape[3] = new TGeoPcon(22.5+0.5*ssdpconemiddleholeangle,
+													  45.-ssdpconemiddleholeangle,2);    
+  for(Int_t i=6;i<8;i++) ssdpconelittleholeshape[3]->DefineSection(i-6,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[3] = new TGeoVolume("SSDConeLittleHole4",ssdpconelittleholeshape[3],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[3]->SetLineColor(4);
+  TGeoRotation* ssdconemiddleholerot[8];
+  for(Int_t i=0; i<8; i++){
+	ssdconemiddleholerot[i] = new TGeoRotation();
+    ssdconemiddleholerot[i]->SetAngles(i*45,0.,0.);
+  }
+  /////////////////////////////////////////////////////////////
+  ssdpconezsection[8] = ssdpconezsection[7];  
+  ssdpconesectionradiusmin[8] = ssdpconesectionradiusmin[7];
+  ssdpconesectionradiusmax[8] = ssdpconesectionradiusmax[7];
+  ssdpconesectionradiusmin[9] = fgkSSDPConeUpRadius-ssdpconezsection[0]
+							  * CosD(fgkSSDPConeAngle)
+							  / SinD(fgkSSDPConeAngle);
+  ssdpconesectionradiusmax[9] = fgkSSDPConeUpRadius;
+  ssdpconezsection[9] = (ssdpconesectionradiusmin[9]-ssdpconesectionradiusmin[8])
+					  * TanD(fgkSSDPConeAngle)+ssdpconezsection[8];
+  ssdpconelittleholeshape[4] = new TGeoPcon(0.,360.,2);
+  for(Int_t i=8; i<10;i++) ssdpconelittleholeshape[4]->DefineSection(i-8,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[4] = new TGeoVolume("SSDConeLittleHole5",ssdpconelittleholeshape[4],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[4]->SetLineColor(4);
+  /////////////////////////////////////////////////////////////
+  Double_t ssdconetrapezoidheight = fgkSSDPConeUpMaxRadius-fgkSSDPConeUpRadius;
+  Double_t ssdconetrapezoidbasis = fgkSSDPConeTrapezoidBasis-2.0
+								 * (0.5*ssdconetrapezoidheight/TanD(fgkSSDPConeTrapezoidAngle)
+								 -  0.5*ssdconetrapezoidheight/(fgkSSDPConeUpMaxRadius
+								 -  0.5*ssdconetrapezoidheight)*(0.5*fgkSSDPConeTrapezoidBasis
+								 -  0.5*ssdconetrapezoidheight/TanD(fgkSSDPConeTrapezoidAngle)));
+  Double_t ssdconetrapezoidsection = (2.0*TMath::Pi()*fgkSSDPConeUpMaxRadius-8.0*ssdconetrapezoidbasis)/8.;
+  Double_t ssdpconetrapezoidsectionangle = ssdconetrapezoidsection/fgkSSDPConeUpMaxRadius
+										 * TMath::RadToDeg();
+  ssdpconezsection[10] = ssdpconezsection[9];
+  ssdpconesectionradiusmin[10] = ssdpconesectionradiusmin[9];
+  ssdpconesectionradiusmax[10] = ssdpconesectionradiusmax[9];
+  ssdpconesectionradiusmin[11] = fgkSSDPConeUpMaxRadius-ssdpconezsection[0]
+							  * CosD(fgkSSDPConeAngle)
+							  / SinD(fgkSSDPConeAngle);
+  ssdpconesectionradiusmax[11] = fgkSSDPConeUpMaxRadius;
+  ssdpconezsection[11] = (ssdpconesectionradiusmin[11]-ssdpconesectionradiusmin[10])
+					   * TanD(fgkSSDPConeAngle)+ssdpconezsection[10];
+  ssdpconelittleholeshape[5] = new TGeoPcon(90.-0.5*ssdpconetrapezoidsectionangle,
+											ssdpconetrapezoidsectionangle,2);    
+  for(Int_t i=10;i<12;i++) ssdpconelittleholeshape[5]->DefineSection(i-10,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[5] = new TGeoVolume("SSDConeLittleHole6",ssdpconelittleholeshape[5],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[5]->SetLineColor(4);
+  TGeoRotation* ssdconeupradiusrot[8];
+  for(Int_t i=0; i<8; i++){
+	ssdconeupradiusrot[i] = new TGeoRotation();
+    ssdconeupradiusrot[i]->SetAngles(i*45,0.,0.);
+  }
+  /////////////////////////////////////////////////////////////
+  ssdpconezsection[12] = ssdpconezsection[11];
+  ssdpconezsection[13] = ssdpconezsection[12]+fgkSSDPConeRadiusWidth;	
+  ssdpconesectionradiusmin[12] = ssdpconesectionradiusmin[11]; 
+  ssdpconesectionradiusmax[12] = fgkSSDPConeExternalRadius;
+  ssdpconesectionradiusmin[13] = ssdpconesectionradiusmin[12];
+  ssdpconesectionradiusmax[13] = fgkSSDPConeExternalRadius;
+  ssdpconelittleholeshape[6] = new TGeoPcon(0.,360.,2);
+  for(Int_t i=12; i<14;i++) ssdpconelittleholeshape[6]->DefineSection(i-12,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[6] = new TGeoVolume("SSDConeLittleHole7",ssdpconelittleholeshape[6],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[6]->SetLineColor(4);
+  /////////////////////////////////////////////////////////////
+  ssdpconezsection[14] = 0.0;
+  ssdpconezsection[15] = ssdpconezsection[0];
+  ssdpconesectionradiusmin[14] = ssdpconesectionradiusmin[0];
+  ssdpconesectionradiusmax[14] = ssdpconesectionradiusmin[14];
+  ssdpconesectionradiusmin[15] = ssdpconesectionradiusmin[0];
+  ssdpconesectionradiusmax[15] = ssdpconesectionradiusmax[0];
+  ssdpconelittleholeshape[7] = new TGeoPcon(0.,360.,2);
+  for(Int_t i=14; i<16;i++) ssdpconelittleholeshape[7]->DefineSection(i-14,ssdpconezsection[i],
+						  ssdpconesectionradiusmin[i],ssdpconesectionradiusmax[i]); 
+  ssdpconelittlehole[7] = new TGeoVolume("SSDConeLittleHole8",ssdpconelittleholeshape[7],fSSDCarbonFiberMedium);
+  ssdpconelittlehole[7]->SetLineColor(4);
+  /////////////////////////////////////////////////////////////
+  TGeoTube* ssdtubeconeshape[2];
+  TGeoVolume* ssdtubecone[2];
+  TGeoTranslation* ssdtubeconetrans[2];
+  ssdtubeconeshape[0] = new TGeoTube(fgkSSDPConeUpMiddleRadius,
+									   fgkSSDPConeExternalRadius,
+									   0.5*(fgkSSDPConeLength-ssdpconezsection[13]));
+  ssdtubeconeshape[1] = new TGeoTube(fgkSSDPConeDownRadius,ssdpconesectionradiusmin[0],
+									   0.5*ssdpconezsection[0]); 
+  ssdtubecone[0] = new TGeoVolume("SSDConeTube1",ssdtubeconeshape[0],fSSDSupportRingAl);
+  ssdtubecone[1] = new TGeoVolume("SSDConeTube2",ssdtubeconeshape[1],fSSDSupportRingAl);
+  ssdtubeconetrans[0] = new TGeoTranslation(0.,0.,
+						0.5*(fgkSSDPConeLength-ssdpconezsection[13])
+					  + ssdpconezsection[13]);
+  ssdtubeconetrans[1] = new TGeoTranslation(0.,0.,0.5*ssdpconezsection[0]);
+  ssdtubecone[0]->SetLineColor(4);
+  ssdtubecone[1]->SetLineColor(4);
+  /////////////////////////////////////////////////////////////
+  // Mother Volume Container
+  /////////////////////////////////////////////////////////////
+  Double_t ssdconemotherradiusmin[8];
+  Double_t ssdconemotherradiusmax[8];
+  Double_t ssdconemothersection[8]; 
+  ssdconemotherradiusmin[0] = fgkSSDPConeDownRadius;
+  ssdconemotherradiusmax[0] = ssdpconesectionradiusmin[0];
+  ssdconemotherradiusmin[1] = fgkSSDPConeDownRadius;
+  ssdconemotherradiusmax[1] = ssdpconesectionradiusmax[0];
+  ssdconemotherradiusmin[2] = ssdpconesectionradiusmin[0];
+  ssdconemotherradiusmax[2] = ssdpconesectionradiusmax[0];
+  ssdconemotherradiusmin[3] = ssdpconesectionradiusmin[11];
+  ssdconemotherradiusmax[3] = ssdpconesectionradiusmax[11];
+  ssdconemotherradiusmin[4] = ssdpconesectionradiusmin[12];
+  ssdconemotherradiusmax[4] = ssdpconesectionradiusmax[12];
+  ssdconemotherradiusmin[5] = ssdpconesectionradiusmin[13];
+  ssdconemotherradiusmax[5] = ssdpconesectionradiusmax[13];
+  ssdconemotherradiusmin[6] = fgkSSDPConeUpMiddleRadius;
+  ssdconemotherradiusmax[6] = fgkSSDPConeExternalRadius;
+  ssdconemotherradiusmin[7] = fgkSSDPConeUpMiddleRadius;
+  ssdconemotherradiusmax[7] = fgkSSDPConeExternalRadius;
+  ssdconemothersection[0] = 0.0;
+  ssdconemothersection[1] = ssdpconezsection[0];
+  ssdconemothersection[2] = ssdpconezsection[0];
+  ssdconemothersection[3] = ssdpconezsection[11];
+  ssdconemothersection[4] = ssdpconezsection[11];
+  ssdconemothersection[5] = ssdpconezsection[13];
+  ssdconemothersection[6] = ssdpconezsection[13];
+  ssdconemothersection[7] = fgkSSDPConeLength;
+  TGeoPcon* ssdconemothershape = new TGeoPcon(0.,360,8);
+  for(Int_t i=0; i<8; i++) ssdconemothershape->DefineSection(i,ssdconemothersection[i],
+									ssdconemotherradiusmin[i],ssdconemotherradiusmax[i]);
+  TGeoVolume* ssdconemother = new TGeoVolume("SSDMotherCone",ssdconemothershape,fSSDAir);
+  /////////////////////////////////////////////////////////////
+  //Placing the Volumes into Mother 
+  /////////////////////////////////////////////////////////////
+  ssdconemother->AddNode(ssdpconelittlehole[0],1);
+  for(Int_t i=0; i<6; i++){
+	ssdconemother->AddNode(ssdpconelittlehole[1],i+1,ssdconelittleholerot[i]);
+  }
+  ssdconemother->AddNode(ssdpconelittlehole[2],1);
+  for(Int_t i=0; i<8; i++){
+    ssdconemother->AddNode(ssdpconelittlehole[3],i+1,ssdconemiddleholerot[i]);
+  }
+  ssdconemother->AddNode(ssdpconelittlehole[4],1);
+  for(Int_t i=0; i<8; i++){
+    ssdconemother->AddNode(ssdpconelittlehole[5],i+1,ssdconeupradiusrot[i]);
+  }
+  ssdconemother->AddNode(ssdpconelittlehole[6],1);
+  ssdconemother->AddNode(ssdpconelittlehole[7],1);
+  ssdconemother->AddNode(ssdtubecone[0],1,ssdtubeconetrans[0]);
+  ssdconemother->AddNode(ssdtubecone[1],1,ssdtubeconetrans[1]);
+  /////////////////////////////////////////////////////////////
+  // ITS General Support
+  /////////////////////////////////////////////////////////////
+  TGeoTube* ssdcentralsupportshape = new TGeoTube(fgkSSDCentralSupportRadius-fgkSSDCentralSupportWidth,
+								fgkSSDCentralSupportRadius,0.5*fgkSSDCentralSupportLength); 
+  TGeoVolume* ssdcentralsupport = new TGeoVolume("SSDCentralSupport",ssdcentralsupportshape,fSSDRohaCellCone);
+  TGeoTranslation* ssdcentralsupportrans = new TGeoTranslation(0.,0.,-0.5*fgkSSDCentralSupportLength
+									     - fgkSSDCentralAL3SupportLength);
+  ssdcentralsupport->SetLineColor(4);
+  fSSDCone->AddNode(ssdcentralsupport,1,ssdcentralsupportrans);
+  TGeoTube* ssdcentralal3supportshape = new TGeoTube(fgkSSDCentralSupportRadius-fgkSSDCentralSupportWidth,
+								fgkSSDCentralSupportRadius,0.25*fgkSSDCentralAL3SupportLength);
+  TGeoVolume* ssdcentralal3support = new TGeoVolume("SSDCentralAl3Support",ssdcentralal3supportshape,fSSDSupportRingAl);
+  TGeoTranslation* ssdcentralal3supportrans[3]; 
+  ssdcentralal3supportrans[0] = new TGeoTranslation(0.,0.,-0.75*fgkSSDCentralAL3SupportLength);
+  ssdcentralal3supportrans[1] = new TGeoTranslation(0.,0.,-fgkSSDCentralSupportLength
+							  - 1.25*fgkSSDCentralAL3SupportLength);
+  ssdcentralal3support->SetLineColor(4);
+  fSSDCone->AddNode(ssdcentralal3support,1,ssdcentralal3supportrans[0]);
+  fSSDCone->AddNode(ssdcentralal3support,2,ssdcentralal3supportrans[1]);
+  TGeoPcon* ssdpconcentralal3shape = new TGeoPcon(0.,360.,2);
+  Double_t ssdpconcentralradiusmin[2];
+  Double_t ssdpconcentralradiusmax[2];
+  Double_t ssdpconcentralsection[2];
+  ssdpconcentralradiusmin[0] = fgkSSDCentralSupportRadius-fgkSSDCentralSupportWidth;  
+  ssdpconcentralradiusmin[1] = fgkSSDCentralSupportRadius-fgkSSDCentralAL3SupportWidth;  
+  ssdpconcentralradiusmax[0] = fgkSSDCentralSupportRadius;
+  ssdpconcentralradiusmax[1] = fgkSSDCentralSupportRadius;
+  ssdpconcentralsection[0] = -0.5*fgkSSDCentralAL3SupportLength; 
+  ssdpconcentralsection[1] = 0.;
+  for(Int_t i=0; i<2;i++) ssdpconcentralal3shape->DefineSection(i,ssdpconcentralsection[i],
+						  ssdpconcentralradiusmin[i],ssdpconcentralradiusmax[i]); 
+  TGeoVolume* ssdpconcentralal3 = new TGeoVolume("SSDPConeCentralAl3",ssdpconcentralal3shape,fSSDSupportRingAl);
+  ssdpconcentralal3->SetLineColor(4);
+  fSSDCone->AddNode(ssdpconcentralal3,1);
+  TGeoRotation* ssdcentralal3supportrot = new TGeoRotation();
+  ssdcentralal3supportrot->SetAngles(90.,180,-90.);
+  ssdcentralal3supportrans[2] = new TGeoTranslation(0.,0.,-fgkSSDCentralSupportLength
+								-2.*fgkSSDCentralAL3SupportLength);
+  TGeoCombiTrans* ssdcentralal3supporcombitrans = new TGeoCombiTrans(*ssdcentralal3supportrans[2],
+												                     *ssdcentralal3supportrot);
+  fSSDCone->AddNode(ssdpconcentralal3,2,ssdcentralal3supporcombitrans);
+  TGeoRotation* ssdconemotherot = new TGeoRotation();
+  ssdconemotherot->SetAngles(90.,180.,-90.);
+  TGeoTranslation* ssdconemothertrans = new TGeoTranslation(0.,0.,-fgkSSDCentralSupportLength
+															-2.*fgkSSDCentralAL3SupportLength);
+  TGeoCombiTrans* ssdconemothercombitrans = new TGeoCombiTrans(*ssdconemothertrans,*ssdconemotherot);
+  fSSDCone->AddNode(ssdconemother,1);
+  fSSDCone->AddNode(ssdconemother,2,ssdconemothercombitrans);
+  /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  delete ssdcentralal3supportrot;
+  delete ssdcentralal3supportrans[2];
+  delete ssdconemotherot;
+  delete ssdconemothertrans;
+  /////////////////////////////////////////////////////////////
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume* AliITSv11GeometrySSD::SetSSDCables(){
+  /////////////////////////////////////////////////////////////
+  // Method generating SSDCables
+  /////////////////////////////////////////////////////////////
+  // SSD Layer 5 Cables
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  TGeoVolumeAssembly* ssdcablesmother = new TGeoVolumeAssembly("SSDCables");
+  Double_t ssdcablelayvertical = 0.05; // Internal variables to control overlapping with SDD cables
+  Double_t ssdcablelaylateral = 0.1;   // Internal variables to control overlapping with SDD cables
+  Double_t ssdcablesfactor = 0.5;     // Internal variables to control overlapping with SDD cables
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  Double_t ssdcableslay5rigthsideradiusmin = fgkEndCapSupportMiddleRadius[0]+fgkSSDCablesLay5TubeRadiusMin;  
+  Double_t ssdcableslay5endconedistance = (ssdcableslay5rigthsideradiusmin
+									    -  fgkSSDLowerPConeRadius)
+									    * TanD(fgkSSDPConeAngle);
+  Double_t ssdcableslay5startconedistance = fgkEndCapSupportCenterLay5ITSPosition
+									      + fgkEndCapSupportCenterLay5Position
+									      - 0.5*fgkSSDCentralSupportLength-fgkSSDCentralAL3SupportLength;
+  Double_t ssdcablelay5rightsidelength = ssdcableslay5endconedistance
+									   - ssdcableslay5startconedistance; 
+  ssdcablelay5rightsidelength *= ssdcablesfactor;
+  Double_t ssdcableslay5rightsideradiusmax = ssdcableslay5rigthsideradiusmin+fgkSSDCablesLay5RightSideHeight; 
+  TGeoTube* ssdcablelay5rightubeshape = new TGeoTube(ssdcableslay5rigthsideradiusmin,
+												ssdcableslay5rightsideradiusmax,
+												0.5*ssdcablelay5rightsidelength); 
+  TGeoVolume* ssdcablelay5righttube = new TGeoVolume("SSDCableLay5RightSideTube",
+													 ssdcablelay5rightubeshape,
+													 fSSDCopper);
+  ssdcablelay5righttube->SetLineColor(9);
+  TGeoTranslation* ssdcablelay5rightrans = 
+					  new TGeoTranslation(0.,0.,fgkEndCapSupportCenterLay5ITSPosition
+										 +		fgkEndCapSupportCenterLay5Position
+										 +      0.5*ssdcablelay5rightsidelength);
+  ////////////////////////////////////
+  //  Double_t cablescapacity[20];
+  //  cablescapacity[0] = ssdcablelay5rightubeshape->Capacity();
+  ////////////////////////////////////
+  ssdcablesmother->AddNode(ssdcablelay5righttube,1,ssdcablelay5rightrans);
+  ////////////////////////////////////
+  // TGeoPCone Volumes
+  ///////////////////////////////////
+  TGeoPcon* ssdcableslay5pconshape[3];
+  TGeoVolume* ssdcableslay5pcon[3]; 
+  ssdcableslay5pconshape[0] = new TGeoPcon(0.,360.,2);   
+  Double_t ssdcableslay5pconzsection[6];
+  Double_t ssdcableslay5pconrmin[6];
+  Double_t ssdcableslay5pconrmax[6];
+  ssdcableslay5pconrmin[0] = ssdcablelay5rightubeshape->GetRmin();
+  ssdcableslay5pconrmax[0] = ssdcablelay5rightubeshape->GetRmax();
+  ssdcableslay5pconrmin[1] = fgkSSDPConeUpRadius*(1.0+ssdcablelayvertical);
+  ssdcableslay5pconrmax[1] = ssdcableslay5pconrmin[1]+fgkSSDCablesLay5RightSideHeight;
+  ssdcableslay5pconzsection[0] = fgkEndCapSupportCenterLay5ITSPosition
+							   + fgkEndCapSupportCenterLay5Position
+							   + 2.*ssdcablelay5rightubeshape->GetDz();
+  ssdcableslay5pconzsection[1] = 0.5*fgkSSDCentralSupportLength
+							   + fgkSSDCentralAL3SupportLength
+							   + (fgkSSDPConeUpRadius-fgkSSDLowerPConeRadius)
+							   * TanD(fgkSSDPConeAngle);      
+  for(Int_t i=0; i<2;i++) ssdcableslay5pconshape[0]->DefineSection(i,ssdcableslay5pconzsection[i],
+						  ssdcableslay5pconrmin[i],ssdcableslay5pconrmax[i]); 
+  ssdcableslay5pcon[0] = new TGeoVolume("SSDCableLay5RightSidePCon1",
+							   ssdcableslay5pconshape[0],fSSDCopper);
+  ssdcableslay5pcon[0]->SetLineColor(9);
+  ssdcablesmother->AddNode(ssdcableslay5pcon[0],1);
+////////////////////////////////////
+//  cablescapacity[1] = ssdcableslay5pconshape[0]->Capacity();
+////////////////////////////////////
+  ssdcableslay5pconzsection[2] = ssdcableslay5pconzsection[1];
+  ssdcableslay5pconzsection[3] = 0.5*fgkSSDCentralSupportLength
+							   + fgkSSDCentralAL3SupportLength
+							   + 0.25*TanD(fgkSSDPConeAngle)*(fgkSSDPConeUpMaxRadius
+							   + 3.*fgkSSDPConeUpRadius-4.*fgkSSDLowerPConeRadius);
+  Double_t ssdcableangle = (fgkSSDPConeTrapezoidBasis-2.*(fgkSSDPConeUpMaxRadius
+					     -  fgkSSDPConeUpRadius)/TanD(fgkSSDPConeTrapezoidAngle))
+						 /  fgkSSDPConeUpRadius*TMath::RadToDeg()*2;
+  ssdcableslay5pconshape[1] = new TGeoPcon(90.0-fgkSSDCableAngle-0.5*ssdcableangle,
+										   ssdcableangle,2);   
+  ssdcableslay5pconrmin[2] = ssdcableslay5pconrmin[1];
+  ssdcableslay5pconrmax[2] = ssdcableslay5pconrmax[1];
+  ssdcableslay5pconrmin[3] = 0.25*(fgkSSDPConeUpMaxRadius+3.*fgkSSDPConeUpRadius
+						   - 4.*fgkSSDLowerPConeRadius)+fgkSSDLowerPConeRadius;
+  ssdcableslay5pconrmin[3]*=(1.0+ssdcablelayvertical);
+  ssdcableslay5pconrmax[3] = ssdcableslay5pconrmin[3]+fgkSSDCablesLay5RightSideHeight;
+  for(Int_t i=0; i<2;i++) ssdcableslay5pconshape[1]->DefineSection(i,ssdcableslay5pconzsection[i+2],
+						  ssdcableslay5pconrmin[i+2],ssdcableslay5pconrmax[i+2]); 
+  ssdcableslay5pcon[1] = new TGeoVolume("SSDCableLay5RightSidePCon2",ssdcableslay5pconshape[1],fSSDCopper);
+  ssdcableslay5pcon[1]->SetLineColor(9);
+  ////////////////////////////////////
+  ssdcableslay5pconshape[2] = new TGeoPcon(90.0-fgkSSDCableAngle-0.5*ssdcableangle,
+										   ssdcableangle,2);   
+  ssdcableslay5pconrmin[4] = ssdcableslay5pconrmin[3];
+  ssdcableslay5pconrmax[4] = ssdcableslay5pconrmax[3];
+  ssdcableslay5pconrmin[5] = ssdcableslay5pconrmin[4];
+  ssdcableslay5pconrmax[5] = ssdcableslay5pconrmax[4];
+  ssdcableslay5pconzsection[4] = ssdcableslay5pconzsection[3];
+  ssdcableslay5pconzsection[5] = (ssdcableslay5pconrmin[5]-fgkSSDLowerPConeRadius)
+							   * TanD(fgkSSDPConeAngle)
+							   + 0.5*fgkSSDCentralSupportLength
+							   + fgkSSDCentralAL3SupportLength;
+  ssdcableslay5pconzsection[5]-= ssdcablelaylateral;
+  for(Int_t i=0; i<2;i++) ssdcableslay5pconshape[2]->DefineSection(i,ssdcableslay5pconzsection[i+4],
+						  ssdcableslay5pconrmin[i+4],ssdcableslay5pconrmax[i+4]); 
+  ssdcableslay5pcon[2] = new TGeoVolume("SSDCableLay5RightSidePCon3",ssdcableslay5pconshape[2],fSSDCopper);
+  ssdcableslay5pcon[2]->SetLineColor(9);
+////////////////////////////////////
+  TGeoRotation* ssdcableslay5pconrot[4];	
+  for(Int_t i=0; i<4; i++){
+   ssdcableslay5pconrot[i] = new TGeoRotation();
+   ssdcableslay5pconrot[i]->SetAngles(90.0*i,0.,0.);
+   ssdcablesmother->AddNode(ssdcableslay5pcon[1],i+1,ssdcableslay5pconrot[i]);
+   ssdcablesmother->AddNode(ssdcableslay5pcon[2],i+1,ssdcableslay5pconrot[i]);  	
+  }
+  ////////////////////////////////////
+  //cablescapacity[2] = 4.0*ssdcableslay5pconshape[1]->Capacity();
+  //cablescapacity[3] = 4.0*ssdcableslay5pconshape[2]->Capacity();
+  ////////////////////////////////////
+  // Positioning Left SSD Cables Part
+  ////////////////////////////////////
+  TGeoTranslation* ssdcablesLay5RightTubeToLeftrans = new TGeoTranslation(0.,0.,
+													- 0.5*ssdcablelay5rightsidelength
+													- fgkEndCapSupportCenterLay5Position
+												    - fgkEndCapSupportCenterLay5ITSPosition);
+  ssdcablesmother->AddNode(ssdcablelay5righttube,2,ssdcablesLay5RightTubeToLeftrans);  
+  TGeoRotation* ssdcablesLay5RightPConToLeftRot = new TGeoRotation();
+  ssdcablesLay5RightPConToLeftRot->SetAngles(90.,180.,-90);
+  ssdcablesmother->AddNode(ssdcableslay5pcon[0],2,ssdcablesLay5RightPConToLeftRot);  
+  TGeoHMatrix* ssdcablesLay5RightPConToLeftMatrix[4];  
+  for(Int_t i=0; i<4; i++){ ssdcablesLay5RightPConToLeftMatrix[i] = 
+	new TGeoHMatrix((*ssdcablesLay5RightPConToLeftRot)*(*ssdcableslay5pconrot[i]));
+	ssdcablesmother->AddNode(ssdcableslay5pcon[1],i+5,ssdcablesLay5RightPConToLeftMatrix[i]);
+    ssdcablesmother->AddNode(ssdcableslay5pcon[2],i+5,ssdcablesLay5RightPConToLeftMatrix[i]);  	
+  }
+  ////////////////////////////////////
+  //cablescapacity[4] = ssdcablelay5rightubeshape->Capacity();
+  //cablescapacity[5] = ssdcableslay5pconshape[0]->Capacity();
+  //cablescapacity[6] = 4.*ssdcableslay5pconshape[1]->Capacity();
+  //cablescapacity[7] = 4.*ssdcableslay5pconshape[2]->Capacity();
+  /////////////////////////////////////////////////////////////
+  // Water Tubes Layer 5
+  /////////////////////////
+  TGeoTube* ssdcablelay5rightubewatershape = new TGeoTube(ssdcableslay5rightsideradiusmax,
+										     ssdcableslay5rightsideradiusmax
+									       + fgkSSDCablesLay5RightSideWaterHeight,
+										     0.5*ssdcablelay5rightsidelength); 
+  TGeoVolume* ssdcablelay5rightwatertube = new TGeoVolume("SSDCableLay5RightSideWaterTube",
+													 ssdcablelay5rightubewatershape,
+													 fSSDCoolingTubeWater);
+  ssdcablelay5rightwatertube->SetLineColor(7);
+  ssdcablesmother->AddNode(ssdcablelay5rightwatertube,1,ssdcablelay5rightrans);
+  ssdcablesmother->AddNode(ssdcablelay5rightwatertube,2,ssdcablesLay5RightTubeToLeftrans);
+  ////////////////////////////////////
+  // TGeoPCone Water Volumes Layer 
+  ///////////////////////////////////
+  TGeoPcon* ssdcableslay5pconwatershape[3];
+  TGeoVolume* ssdcableslay5pconwater[3]; 
+  ssdcableslay5pconwatershape[0] = new TGeoPcon(0.,360.,2);   
+  Double_t ssdcableslay5pconwaterzsection[6];
+  Double_t ssdcableslay5pcwateronrmin[6];
+  Double_t ssdcableslay5pconwaterrmax[6];
+  ssdcableslay5pcwateronrmin[0] = ssdcableslay5pconrmax[0];
+  ssdcableslay5pconwaterrmax[0] = ssdcableslay5pcwateronrmin[0]
+								+ fgkSSDCablesLay5RightSideWaterHeight;
+  ssdcableslay5pcwateronrmin[1] = ssdcableslay5pconrmax[1];
+  ssdcableslay5pconwaterrmax[1] = ssdcableslay5pcwateronrmin[1]
+								+ fgkSSDCablesLay5RightSideWaterHeight;
+  ssdcableslay5pconwaterzsection[0] = ssdcableslay5pconzsection[0];
+  ssdcableslay5pconwaterzsection[1] = ssdcableslay5pconzsection[1];
+  for(Int_t i=0; i<2;i++) ssdcableslay5pconwatershape[0]->DefineSection(i,ssdcableslay5pconwaterzsection[i],
+						  ssdcableslay5pcwateronrmin[i],ssdcableslay5pconwaterrmax[i]); 
+  ssdcableslay5pconwater[0] = new TGeoVolume("SSDCableLay5RightSidePConWater1",
+							   ssdcableslay5pconwatershape[0],fSSDCoolingTubeWater);
+  ssdcableslay5pconwater[0]->SetLineColor(7);
+  ssdcablesmother->AddNode(ssdcableslay5pconwater[0],1);
+  ssdcablesmother->AddNode(ssdcableslay5pconwater[0],2,ssdcablesLay5RightPConToLeftRot);
+////////////////////////////////////
+  ssdcableslay5pconwaterzsection[2] = ssdcableslay5pconzsection[2];
+  ssdcableslay5pconwaterzsection[3] = ssdcableslay5pconzsection[3];
+  ssdcableslay5pconwatershape[1] = new TGeoPcon(90.0-fgkSSDCableAngle-0.5*ssdcableangle,
+												ssdcableangle,2);   
+  ssdcableslay5pcwateronrmin[2] = ssdcableslay5pconrmax[1];
+  ssdcableslay5pconwaterrmax[2] = ssdcableslay5pcwateronrmin[2]
+								+ fgkSSDCablesLay5RightSideWaterHeight;
+  ssdcableslay5pcwateronrmin[3] = ssdcableslay5pconrmax[3];
+  ssdcableslay5pconwaterrmax[3] = ssdcableslay5pcwateronrmin[3]
+								+ fgkSSDCablesLay5RightSideWaterHeight;
+  for(Int_t i=0; i<2;i++) ssdcableslay5pconwatershape[1]->DefineSection(i,ssdcableslay5pconwaterzsection[i+2],
+						  ssdcableslay5pcwateronrmin[i+2],ssdcableslay5pconwaterrmax[i+2]); 
+  ssdcableslay5pconwater[1] = new TGeoVolume("SSDCableLay5RightSidePConWater2",
+							   ssdcableslay5pconwatershape[1],fSSDCoolingTubeWater);
+  ssdcableslay5pconwater[1]->SetLineColor(7);
+////////////////////////////////////
+  ssdcableslay5pconwatershape[2] = new TGeoPcon(90.0-fgkSSDCableAngle-0.5*ssdcableangle,
+												ssdcableangle,2);   
+  ssdcableslay5pcwateronrmin[4] = ssdcableslay5pconrmax[3];
+  ssdcableslay5pconwaterrmax[4] = ssdcableslay5pcwateronrmin[4]
+								+ fgkSSDCablesLay5RightSideWaterHeight;
+  ssdcableslay5pcwateronrmin[5] = ssdcableslay5pconrmax[4];
+  ssdcableslay5pconwaterrmax[5] = ssdcableslay5pcwateronrmin[4]
+								+ fgkSSDCablesLay5RightSideWaterHeight;
+  ssdcableslay5pconwaterzsection[4] = ssdcableslay5pconzsection[4];
+  ssdcableslay5pconwaterzsection[5] = ssdcableslay5pconzsection[5];
+  for(Int_t i=0; i<2;i++) ssdcableslay5pconwatershape[2]->DefineSection(i,ssdcableslay5pconwaterzsection[i+4],
+						  ssdcableslay5pcwateronrmin[i+4],ssdcableslay5pconwaterrmax[i+4]); 
+  ssdcableslay5pconwater[2] = new TGeoVolume("SSDCableLay5RightSidePConWater3",
+							   ssdcableslay5pconwatershape[2],fSSDCoolingTubeWater);
+  ssdcableslay5pconwater[2]->SetLineColor(7);
+////////////////////////////////////
+  TGeoRotation* ssdcableslay5pconwaterot[4];	
+  TGeoHMatrix* ssdcablesLay5RightPConWaterToLeftMatrix[4];  
+  for(Int_t i=0; i<4; i++){
+   ssdcableslay5pconwaterot[i] = new TGeoRotation();
+   ssdcableslay5pconwaterot[i]->SetAngles(90.0*i+45.0,0.,0.);
+   ssdcablesLay5RightPConWaterToLeftMatrix[i] = 
+	new TGeoHMatrix((*ssdcablesLay5RightPConToLeftRot)*(*ssdcableslay5pconwaterot[i]));
+	ssdcablesmother->AddNode(ssdcableslay5pconwater[1],i+1,ssdcableslay5pconwaterot[i]);
+   	ssdcablesmother->AddNode(ssdcableslay5pconwater[1],i+5,ssdcablesLay5RightPConWaterToLeftMatrix[i]);
+	ssdcablesmother->AddNode(ssdcableslay5pconwater[2],i+1,ssdcableslay5pconwaterot[i]);
+   	ssdcablesmother->AddNode(ssdcableslay5pconwater[2],i+5,ssdcablesLay5RightPConWaterToLeftMatrix[i]);
+  }
+  /////////////////////////
+  // SSD Layer 6 Cables
+  /////////////////////////
+  Double_t ssdcableslay6rigthsideradiusmin = fgkEndCapSupportMiddleRadius[1]+fgkSSDCablesLay6TubeRadiusMin;  
+  Double_t ssdcablelay6rightsidelength = 2.*ssdcablelay5rightsidelength;
+  Double_t ssdcableslay6rightsideradiusmax = ssdcableslay6rigthsideradiusmin+fgkSSDCablesLay6RightSideHeight; 
+  TGeoTube* ssdcablelay6rightubeshape = new TGeoTube(ssdcableslay6rigthsideradiusmin,
+												ssdcableslay6rightsideradiusmax,
+												0.5*ssdcablelay6rightsidelength); 
+  TGeoVolume* ssdcablelay6righttube = new TGeoVolume("SSDCableLay6RightSideTube",
+													 ssdcablelay6rightubeshape,
+													 fSSDCopper);
+  ssdcablelay6righttube->SetLineColor(9);
+  TGeoTranslation* ssdcablelay6rightrans = 
+					  new TGeoTranslation(0.,0.,fgkEndCapSupportCenterLay6ITSPosition
+										 +		fgkEndCapSupportCenterLay6Position
+										 +      0.5*ssdcablelay6rightsidelength);
+  TGeoTranslation* ssdcablesLay6RightTubeToLeftrans = new TGeoTranslation(0.,0.,
+													- 0.5*ssdcablelay6rightsidelength
+													- fgkEndCapSupportCenterLay6Position
+												    - fgkEndCapSupportCenterLay6ITSPosition);
+  ssdcablesmother->AddNode(ssdcablelay6righttube,1,ssdcablelay6rightrans);
+  ssdcablesmother->AddNode(ssdcablelay6righttube,2,ssdcablesLay6RightTubeToLeftrans);
+  ////////////////////////////////////
+  //cablescapacity[8] = 2.*ssdcablelay6rightubeshape->Capacity();
+  ////////////////////////////////////
+  TGeoPcon* ssdcableslay6pconshape = new TGeoPcon(90.0-fgkSSDCableAngle-0.5*ssdcableangle,
+										   ssdcableangle,2);   
+  TGeoVolume* ssdcableslay6pcon;
+  Double_t ssdcableslay6pconrmin[2];
+  Double_t ssdcableslay6pconrmax[2];
+  Double_t ssdcableslay6pconzsection[2];
+  ssdcableslay6pconrmin[0] = ssdcableslay6rigthsideradiusmin;
+  ssdcableslay6pconrmax[0] = ssdcableslay6rightsideradiusmax;
+  ssdcableslay6pconrmin[1] = ssdcableslay6pconrmin[0];
+  ssdcableslay6pconrmax[1] = ssdcableslay6pconrmax[0];
+  ssdcableslay6pconzsection[0] = fgkEndCapSupportCenterLay6ITSPosition
+							   + fgkEndCapSupportCenterLay6Position
+							   + ssdcablelay6rightsidelength;
+  ssdcableslay6pconzsection[1] = ssdcableslay5pconwaterzsection[5];
+  for(Int_t i=0; i<2;i++) ssdcableslay6pconshape->DefineSection(i,ssdcableslay6pconzsection[i],
+						  ssdcableslay6pconrmin[i],ssdcableslay6pconrmax[i]); 
+  ssdcableslay6pcon = new TGeoVolume("SSDCableLay6RightSidePCon",
+							   ssdcableslay6pconshape,fSSDCopper);
+  ssdcableslay6pcon->SetLineColor(9);
+  for(Int_t i=0; i<4; i++){
+   ssdcablesmother->AddNode(ssdcableslay6pcon,i+1,ssdcableslay5pconrot[i]);
+   ssdcablesmother->AddNode(ssdcableslay6pcon,i+5,ssdcablesLay5RightPConToLeftMatrix[i]);
+  }
+  ////////////////////////////////////
+  //cablescapacity[9] = 8.*ssdcableslay6pconshape->Capacity();
+  /////////////////////////
+  // Water Tubes Layer 6
+  /////////////////////////
+  TGeoTube* ssdcablelay6righwatertubeshape = new TGeoTube(ssdcableslay6rightsideradiusmax,
+														  ssdcableslay6rightsideradiusmax
+										   +			  fgkSSDCablesLay5RightSideWaterHeight,
+														  0.5*ssdcablelay6rightsidelength); 
+  TGeoVolume* ssdcablelay6rightwatertube = new TGeoVolume("SSDCableLay6RightSideWaterTube",
+													 ssdcablelay6righwatertubeshape,
+													 fSSDCoolingTubeWater);
+  ssdcablelay6rightwatertube->SetLineColor(7);
+  ssdcablesmother->AddNode(ssdcablelay6rightwatertube,1,ssdcablelay6rightrans);
+  ssdcablesmother->AddNode(ssdcablelay6rightwatertube,2,ssdcablesLay6RightTubeToLeftrans);
+  TGeoPcon* ssdcableslay6waterpconshape = new TGeoPcon(90.0-fgkSSDCableAngle-0.5*ssdcableangle,
+										   ssdcableangle,2);   
+  TGeoVolume* ssdcableslay6waterpcon;
+  Double_t ssdcableslay6waterpconrmin[2];
+  Double_t ssdcableslay6waterpconrmax[2];
+  Double_t ssdcableslay6waterpconzsection[2];
+  ssdcableslay6waterpconrmin[0] = ssdcableslay6rightsideradiusmax;
+  ssdcableslay6waterpconrmax[0] = ssdcableslay6rightsideradiusmax
+							    + fgkSSDCablesLay5RightSideWaterHeight;
+  ssdcableslay6waterpconrmin[1] = ssdcableslay6waterpconrmin[0];
+  ssdcableslay6waterpconrmax[1] = ssdcableslay6waterpconrmax[0];
+  ssdcableslay6waterpconzsection[0] = fgkEndCapSupportCenterLay6ITSPosition
+							   + fgkEndCapSupportCenterLay6Position
+							   + ssdcablelay6rightsidelength;
+  ssdcableslay6waterpconzsection[1] = ssdcableslay5pconwaterzsection[5];
+  for(Int_t i=0; i<2;i++) ssdcableslay6waterpconshape->DefineSection(i,ssdcableslay6waterpconzsection[i],
+						  ssdcableslay6waterpconrmin[i],ssdcableslay6waterpconrmax[i]); 
+  ssdcableslay6waterpcon = new TGeoVolume("SSDCableLay6RightSideWaterPCon",
+							   ssdcableslay6waterpconshape,fSSDCoolingTubeWater);
+  ssdcableslay6waterpcon->SetLineColor(7);
+  TGeoRotation* ssdcableslay6pconwaterot[4];	
+  TGeoRotation* ssdcablesLay6RightPConToLeftRot = new TGeoRotation();
+  ssdcablesLay6RightPConToLeftRot->SetAngles(90.,180.,-90);
+  TGeoHMatrix* ssdcablesLay6RightPConToLeftMatrix[4];  
+  for(Int_t i=0; i<4; i++){
+   ssdcableslay6pconwaterot[i] = new TGeoRotation();
+   ssdcableslay6pconwaterot[i]->SetAngles(90.0*i+45.0,0.,0.);
+   ssdcablesLay6RightPConToLeftMatrix[i] = new TGeoHMatrix((*ssdcablesLay6RightPConToLeftRot)
+										 * (*ssdcableslay6pconwaterot[i]));   
+   ssdcablesmother->AddNode(ssdcableslay6waterpcon,i+1,ssdcableslay6pconwaterot[i]);
+   ssdcablesmother->AddNode(ssdcableslay6waterpcon,i+5,ssdcablesLay6RightPConToLeftMatrix[i]);
+  }
+  ////////////////////////////////////////
+  // From ITS Ring to Patch Panel3-RB26
+  ////////////////////////////////////////
+  Double_t ssdcablepatchpanel3BB26radiusmin[2];
+  Double_t ssdcablepatchpanel3BB26radiusmax[2];
+  Double_t ssdcablepatchpanel3RB26zsection[2];
+  ssdcablepatchpanel3BB26radiusmin[0] = ssdcableslay5pconrmin[3]-0.5*fgkSSDPatchPanelHeigth;
+  ssdcablepatchpanel3BB26radiusmax[0] = ssdcablepatchpanel3BB26radiusmin[0]
+									  + fgkSSDCablesLay5RightSideHeight
+									  + fgkSSDCablesLay6RightSideHeight+0.5*fgkSSDPatchPanelHeigth;
+  ssdcablepatchpanel3BB26radiusmin[1] = fgkSSDPatchPanel2RB26Radius;
+  ssdcablepatchpanel3BB26radiusmax[1] = ssdcablepatchpanel3BB26radiusmin[1]
+									  + 0.*fgkSSDCablesLay5RightSideHeight
+									  + 0.*fgkSSDCablesLay6RightSideHeight+0.5*fgkSSDPatchPanelHeigth;
+  ssdcablepatchpanel3RB26zsection[0] = 0.5*fgkSSDCentralSupportLength
+										 + fgkSSDCentralAL3SupportLength
+										 + fgkSSDPConeZLength[0];
+  ssdcablepatchpanel3RB26zsection[1] = fgkSSDPatchPanel2RB26ITSDistance;  
+  TGeoPcon* ssdcablepatchpanel3RB26pconshape = 
+								new TGeoPcon(90.0-fgkSSDCablesPatchPanel2RB26Angle[0]
+												- 0.5*ssdcableangle,ssdcableangle,2);   
+  for(Int_t i=0; i<2;i++) ssdcablepatchpanel3RB26pconshape->DefineSection(i,ssdcablepatchpanel3RB26zsection[i],
+						  ssdcablepatchpanel3BB26radiusmin[i],ssdcablepatchpanel3BB26radiusmax[i]); 
+  TGeoVolume* ssdcablepatchpanel3RB26pcon = new TGeoVolume("SSDCablePatchPanel3RB26",
+												ssdcablepatchpanel3RB26pconshape,fSSDCopper);
+  ssdcablepatchpanel3RB26pcon->SetLineColor(9);
+  TGeoRotation* ssdcablepatchpanel3B26rot[3];
+  for(Int_t i=0; i<4; i++) ssdcablepatchpanel3B26rot[i] = new TGeoRotation();
+  ssdcablepatchpanel3B26rot[0]->SetAngles(0.0,0.0,0.0);
+  ssdcablepatchpanel3B26rot[1]->SetAngles(fgkSSDCablesPatchPanel2RB26Angle[0]
+								  +			  fgkSSDCablesPatchPanel2RB26Angle[1],0.0,0.0);
+  ssdcablepatchpanel3B26rot[2]->SetAngles(180.0,0.0,0.0);
+  ssdcablepatchpanel3B26rot[3]->SetAngles(180.0+fgkSSDCablesPatchPanel2RB26Angle[0]
+								  +			  fgkSSDCablesPatchPanel2RB26Angle[1],0.0,0.0);
+  for(Int_t i=0; i<4; i++) ssdcablesmother->AddNode(ssdcablepatchpanel3RB26pcon,i+1,ssdcablepatchpanel3B26rot[i]);
+  ////////////////////////////////////
+  //cablescapacity[10] = 4.*ssdcablepatchpanel3RB26pconshape->Capacity();
+  ////////////////////////////////////////
+  //  ITS Ring Cables RB26 Part
+  ////////////////////////////////////////
+  Double_t ssdcableitsring3BB26pconzsection[2];
+  Double_t ssdcableitsring3BB26pconrmin[2];
+  Double_t ssdcableitsring3BB26pconrmax[2];
+  ssdcableitsring3BB26pconzsection[0] = 0.5*fgkSSDCentralSupportLength
+									  + fgkSSDCentralAL3SupportLength
+									  + (4.0/5.0)*fgkSSDPConeZLength[0];
+  ssdcableitsring3BB26pconzsection[1] = ssdcablepatchpanel3RB26zsection[0];
+  ssdcableitsring3BB26pconrmin[0] = fgkSSDPConeUpRadius-0.5*fgkSSDPatchPanelHeigth;
+  ssdcableitsring3BB26pconrmax[0] = ssdcableitsring3BB26pconrmin[0]
+								  + fgkSSDCablesLay5RightSideHeight
+								  + fgkSSDCablesLay6RightSideHeight+0.5*fgkSSDPatchPanelHeigth;
+  ssdcableitsring3BB26pconrmin[1] = ssdcablepatchpanel3BB26radiusmin[0];
+  ssdcableitsring3BB26pconrmax[1] = ssdcablepatchpanel3BB26radiusmax[0];
+  TGeoPcon* ssdcableitsring3BB26pconshape[4];
+  ssdcableitsring3BB26pconshape[0] = new TGeoPcon(90.0-fgkSSDCablesPatchPanel2RB26Angle[0]
+								   -              0.5*ssdcableangle,ssdcableangle
+								   +				(fgkSSDCablesPatchPanel2RB26Angle[0]
+								   -				 fgkSSDCableAngle),2);
+  ssdcableitsring3BB26pconshape[1] = new TGeoPcon(90.0+fgkSSDCablesPatchPanel2RB26Angle[1]
+								   -              0.5*ssdcableangle,ssdcableangle
+								   +			  3.0*fgkSSDCableAngle
+								   -			  fgkSSDCablesPatchPanel2RB26Angle[1],2);
+  ssdcableitsring3BB26pconshape[2] = new TGeoPcon(270-fgkSSDCablesPatchPanel2RB26Angle[0]
+								   -              0.5*ssdcableangle,ssdcableangle
+								   -			  fgkSSDCableAngle
+								   +			  fgkSSDCablesPatchPanel2RB26Angle[0],2);
+  ssdcableitsring3BB26pconshape[3] = new TGeoPcon(270.0+fgkSSDCablesPatchPanel2RB26Angle[1]
+								   -              0.5*ssdcableangle,ssdcableangle
+								   +			  3.0*fgkSSDCableAngle
+								   -			  fgkSSDCablesPatchPanel2RB26Angle[1],2);
+  for(Int_t i=0;i<4;i++)
+	for(Int_t j=0; j<2; j++) ssdcableitsring3BB26pconshape[i]->DefineSection(j,ssdcableitsring3BB26pconzsection[j],
+							 ssdcableitsring3BB26pconrmin[j],
+							 ssdcableitsring3BB26pconrmax[j]); 
+  TGeoVolume* ssdcableitsring3BB26pcon[4];
+  ssdcableitsring3BB26pcon[0] = new TGeoVolume("SSDCableITSRing3RB26Part1",
+												ssdcableitsring3BB26pconshape[0],fSSDCopper);
+  ssdcableitsring3BB26pcon[1] = new TGeoVolume("SSDCableITSRing3RB26Part2",
+												ssdcableitsring3BB26pconshape[1],fSSDCopper);
+  ssdcableitsring3BB26pcon[2] = new TGeoVolume("SSDCableITSRing3RB26Part3",
+												ssdcableitsring3BB26pconshape[2],fSSDCopper);
+  ssdcableitsring3BB26pcon[3] = new TGeoVolume("SSDCableITSRing3RB26Part4",
+												ssdcableitsring3BB26pconshape[3],fSSDCopper);
+  for(Int_t i=0;i<4;i++){
+	ssdcableitsring3BB26pcon[i]->SetLineColor(9);
+	ssdcablesmother->AddNode(ssdcableitsring3BB26pcon[i],i+1);
+}
+  ////////////////////////////////////
+  //cablescapacity[11] = ssdcableitsring3BB26pconshape[0]->Capacity()
+  //				 + ssdcableitsring3BB26pconshape[1]->Capacity() 
+  //				 + ssdcableitsring3BB26pconshape[2]->Capacity() 
+  //				 + ssdcableitsring3BB26pconshape[3]->Capacity(); 
+  ////////////////////////////////////////
+  // From ITS Ring to Patch Panel2-RB24
+  ////////////////////////////////////////
+  Double_t ssdcablepatchpanel3BB24radiusmin[2];
+  Double_t ssdcablepatchpanel3BB24radiusmax[2];
+  Double_t ssdcablepatchpanel3RB24zsection[2];
+  ssdcablepatchpanel3BB24radiusmin[0] = ssdcablepatchpanel3BB26radiusmin[0];
+  ssdcablepatchpanel3BB24radiusmax[0] = ssdcablepatchpanel3BB26radiusmax[0];
+  ssdcablepatchpanel3BB24radiusmin[1] = fgkSSDPatchPanel2RB24Radius;
+  ssdcablepatchpanel3BB24radiusmax[1] = ssdcablepatchpanel3BB24radiusmin[1]
+									  + 0.*fgkSSDCablesLay5RightSideHeight
+									  + 0.*fgkSSDCablesLay6RightSideHeight
+									  + 0.5*fgkSSDPatchPanelHeigth;
+  ssdcablepatchpanel3RB24zsection[0] = -0.5*fgkSSDCentralSupportLength
+									 -  fgkSSDCentralAL3SupportLength
+									 -  fgkSSDPConeZLength[0];
+  ssdcablepatchpanel3RB24zsection[1] = -fgkSSDPatchPanel2RB24ITSDistance;  
+  TGeoPcon* ssdcablepatchpanel3RB24pconshape = 
+								new TGeoPcon(90.0-fgkSSDCablesPatchPanel2RB24Angle[1]
+												- 0.5*ssdcableangle,ssdcableangle,2);   
+  for(Int_t i=0; i<2;i++) ssdcablepatchpanel3RB24pconshape->DefineSection(i,ssdcablepatchpanel3RB24zsection[i],
+						  ssdcablepatchpanel3BB24radiusmin[i],ssdcablepatchpanel3BB24radiusmax[i]); 
+  TGeoVolume* ssdcablepatchpanel3RB24pcon = new TGeoVolume("SSDCablePatchPanel3RB24",
+												ssdcablepatchpanel3RB24pconshape,
+												fSSDCopper);
+  ssdcablepatchpanel3RB24pcon->SetLineColor(9);
+  TGeoRotation* ssdcablepatchpanel3B24rot[3];
+  for(Int_t i=0; i<4; i++) ssdcablepatchpanel3B24rot[i] = new TGeoRotation();
+  ssdcablepatchpanel3B24rot[0]->SetAngles(0.0,0.0,0.0);
+  ssdcablepatchpanel3B24rot[1]->SetAngles(fgkSSDCablesPatchPanel2RB24Angle[0]
+								  +			  fgkSSDCablesPatchPanel2RB24Angle[1],0.0,0.0);
+  ssdcablepatchpanel3B24rot[2]->SetAngles(180.0,0.0,0.0);
+  ssdcablepatchpanel3B24rot[3]->SetAngles(180.0+fgkSSDCablesPatchPanel2RB24Angle[0]
+								  +			  fgkSSDCablesPatchPanel2RB24Angle[1],0.0,0.0);
+  for(Int_t i=0; i<4; i++) ssdcablesmother->AddNode(ssdcablepatchpanel3RB24pcon,i+1,ssdcablepatchpanel3B24rot[i]);
+  ////////////////////////////////////
+  //cablescapacity[12] = 4.*ssdcablepatchpanel3RB24pconshape->Capacity();
+  ////////////////////////////////////////
+  //  ITS Ring Cables RB24 Part
+  ////////////////////////////////////////
+  Double_t ssdcableitsring3BB24pconzsection[2];
+  Double_t ssdcableitsring3BB24pconrmin[2];
+  Double_t ssdcableitsring3BB24pconrmax[2];
+  ssdcableitsring3BB24pconzsection[0] = -ssdcableitsring3BB26pconzsection[0];
+  ssdcableitsring3BB24pconzsection[1] = ssdcablepatchpanel3RB24zsection[0];
+  ssdcableitsring3BB24pconrmin[0] = fgkSSDPConeUpRadius-0.5*fgkSSDPatchPanelHeigth;
+  ssdcableitsring3BB24pconrmax[0] = ssdcableitsring3BB24pconrmin[0]
+								  + fgkSSDCablesLay5RightSideHeight
+								  + fgkSSDCablesLay6RightSideHeight+0.5*fgkSSDPatchPanelHeigth;
+  ssdcableitsring3BB24pconrmin[1] = ssdcablepatchpanel3BB24radiusmin[0];
+  ssdcableitsring3BB24pconrmax[1] = ssdcablepatchpanel3BB24radiusmax[0];
+  TGeoPcon* ssdcableitsring3BB24pconshape[4];
+  ssdcableitsring3BB24pconshape[0] = new TGeoPcon(fgkSSDCableAngle-0.5*ssdcableangle,ssdcableangle
+								   +				(90.0-fgkSSDCablesPatchPanel2RB24Angle[1]
+								   -				 fgkSSDCableAngle),2);
+  ssdcableitsring3BB24pconshape[1] = new TGeoPcon(90.0+fgkSSDCableAngle-0.5*ssdcableangle,
+								     ssdcableangle-fgkSSDCableAngle
+								   +			  fgkSSDCablesPatchPanel2RB24Angle[0],2);
+  ssdcableitsring3BB24pconshape[2] = new TGeoPcon(180.0+fgkSSDCableAngle-0.5*ssdcableangle,ssdcableangle
+								   -			  fgkSSDCableAngle
+								   +			  90.0-fgkSSDCablesPatchPanel2RB24Angle[1],2);
+  ssdcableitsring3BB24pconshape[3] = new TGeoPcon(fgkSSDCableAngle-0.5*ssdcableangle,
+												  ssdcableangle-fgkSSDCableAngle
+								   +			  fgkSSDCablesPatchPanel2RB24Angle[0],2);
+  for(Int_t i=0;i<4;i++)
+	for(Int_t j=0; j<2; j++) ssdcableitsring3BB24pconshape[i]->DefineSection(j,ssdcableitsring3BB24pconzsection[j],
+							 ssdcableitsring3BB24pconrmin[j],
+							 ssdcableitsring3BB24pconrmax[j]); 
+  TGeoVolume* ssdcableitsring3BB24pcon[4];
+  ssdcableitsring3BB24pcon[0] = new TGeoVolume("SSDCableITSRing3RB24Part1",
+												ssdcableitsring3BB24pconshape[0],fSSDCopper);
+  ssdcableitsring3BB24pcon[1] = new TGeoVolume("SSDCableITSRing3RB24Part2",
+												ssdcableitsring3BB24pconshape[1],fSSDCopper);
+  ssdcableitsring3BB24pcon[2] = new TGeoVolume("SSDCableITSRing3RB24Part3",
+												ssdcableitsring3BB24pconshape[2],fSSDCopper);
+  ssdcableitsring3BB24pcon[3] = new TGeoVolume("SSDCableITSRing3RB24Part4",
+												ssdcableitsring3BB24pconshape[3],fSSDCopper);
+  for(Int_t i=0;i<4;i++){
+	ssdcableitsring3BB24pcon[i]->SetLineColor(9);
+	ssdcablesmother->AddNode(ssdcableitsring3BB24pcon[i],i+1);
+}
+  ////////////////////////////////////
+  //cablescapacity[13] = ssdcableitsring3BB24pconshape[0]->Capacity()
+  //					 + ssdcableitsring3BB24pconshape[1]->Capacity()
+  //					 + ssdcableitsring3BB24pconshape[2]->Capacity()
+  //					 + ssdcableitsring3BB24pconshape[3]->Capacity();
+  ////////////////////////////////////
+  // Volumes for Material Budget 
+  ////////////////////////////////////
+  TGeoTube* ssdcablelay6materialbudgetubeshape = new TGeoTube(ssdcableslay6rightsideradiusmax
+											   +     fgkSSDCablesLay5RightSideWaterHeight,
+													 ssdcableslay6rightsideradiusmax
+											   +     fgkSSDCablesLay5RightSideWaterHeight
+											   +	 fgkSSDCableMaterialBudgetHeight,0.5*ssdcablelay6rightsidelength); 
+  TGeoVolume* ssdcablelay6materialbudgetube = new TGeoVolume("SSDCableLay6MaterialBudgetTube",
+													 ssdcablelay6materialbudgetubeshape,
+													 fSSDCopper);
+  ssdcablelay6materialbudgetube->SetLineColor(9);
+  ssdcablesmother->AddNode(ssdcablelay6materialbudgetube,1,ssdcablelay6rightrans);
+  ssdcablesmother->AddNode(ssdcablelay6materialbudgetube,2,ssdcablesLay6RightTubeToLeftrans);
+
+  TGeoPcon* ssdcablelay6materialbudgetpconshape = 
+					new TGeoPcon(90.0-fgkSSDCableAngle-0.5*ssdcableangle,ssdcableangle,2); 
+  TGeoVolume* ssdcablelay6materialbudgetpcon;
+  Double_t ssdcablelay6materialbudgetpconrmin[2];
+  Double_t ssdcablelay6materialbudgetpconrmax[2];
+  Double_t ssdcablelay6materialbudgetpconzsection[2];
+  ssdcablelay6materialbudgetpconrmin[0] = ssdcableslay6rightsideradiusmax
+										+ fgkSSDCablesLay5RightSideWaterHeight;
+  ssdcablelay6materialbudgetpconrmax[0] = ssdcablelay6materialbudgetpconrmin[0]
+										+ fgkSSDCableMaterialBudgetHeight;
+  ssdcablelay6materialbudgetpconrmin[1] = ssdcablelay6materialbudgetpconrmin[0];
+  ssdcablelay6materialbudgetpconrmax[1] = ssdcablelay6materialbudgetpconrmax[0];
+  ssdcablelay6materialbudgetpconzsection[0] = fgkEndCapSupportCenterLay6ITSPosition
+											+ fgkEndCapSupportCenterLay6Position
+											+ ssdcablelay6rightsidelength;
+  ssdcablelay6materialbudgetpconzsection[1] = ssdcableslay5pconwaterzsection[5];
+  for(Int_t i=0; i<2;i++) ssdcablelay6materialbudgetpconshape->DefineSection(i,
+						  ssdcablelay6materialbudgetpconzsection[i],
+						  ssdcablelay6materialbudgetpconrmin[i],
+						  ssdcablelay6materialbudgetpconrmax[i]); 
+  ssdcablelay6materialbudgetpcon = new TGeoVolume("SSDCableLay6MaterialBudgetPCon",
+							   ssdcablelay6materialbudgetpconshape,fSSDCopper);
+  ssdcablelay6materialbudgetpcon->SetLineColor(9);
+  for(Int_t i=0; i<4; i++){
+   ssdcablesmother->AddNode(ssdcablelay6materialbudgetpcon,i+1,ssdcableslay5pconrot[i]);
+   ssdcablesmother->AddNode(ssdcablelay6materialbudgetpcon,i+5,ssdcablesLay5RightPConToLeftMatrix[i]);
+  }
+////////////////////////////////////
+ /* cablescapacity[14] = 2.*ssdcablelay6materialbudgetubeshape->Capacity();
+  cablescapacity[15] = 2.*ssdcablelay6materialbudgetpconshape->Capacity();
+  Double_t ssdcablesvolume = 0.0;
+  for(Int_t i=0;i<16;i++) ssdcablesvolume+=cablescapacity[i];
+  std::cout << ssdcablesvolume << std::endl;*/
+  return ssdcablesmother;
+ }
+ ////////////////////////////////////////////////////////////////////////////////
 TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], Double_t* width, 
 									Double_t height, char* shapename, Int_t isign) const{
   /////////////////////////////////////////////////////////////
@@ -7432,8 +8329,10 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   // Material for Support Rings
   /////////////////////////////////////////////////////////////////////
   fSSDSupportRingAl = GetMedium("AL$");
+  fSSDRohaCellCone = GetMedium("ROHACELL$");
   /////////////////////////////////////////////////////////////////////
   fSSDAir = GetMedium("SDD AIR$");
+  fSSDCopper = GetMedium("COPPER$");
   fCreateMaterials = kTRUE;
 }
 /////////////////////////////////////////////////////////////////////
