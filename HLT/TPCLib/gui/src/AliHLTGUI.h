@@ -20,12 +20,6 @@
 
 
 
-class AliHLTTPCDigitReaderRaw;
-// DEL
-//#if __GNUC__ >= 3
-//using namespace std;
-//#endif
-
 /**
  * @class AliHLTGUI
  * The class handels the graphical user interface for the ALICE HLT online 
@@ -34,7 +28,6 @@ class AliHLTTPCDigitReaderRaw;
  * implemented in the class @ref AliHLTTPCDisplayMain. This class fuctions just as
  * front-end for the GUI.<br>
  * Several options can alredeay defined using the commandline:
- *   -rawreadermode <mode>              Sets the mode for @ref AliHLTDigitReaderRaw, can bei either digit or string.
  *   -n-time-bins <mode>                Sets number of TimeBins for the TPC, can bei either a digit, 'sim' or 'tpc'.
  *   -adc-threshold <mode>              Sets the ADC Threshold for the Zero-Suppression of raw data, should be ADC counts.
  *   -occupancy-limit <mode>            Sets the Occupancy limits for pads, wherby <mode> is [0,1].

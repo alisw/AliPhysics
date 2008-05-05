@@ -69,7 +69,6 @@
 
 
 #include "AliHLTTPCDigitReader.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLT_C_Component_WrapperInterface.h"
 
 #include "AliHLTTPCDisplayMain.h"

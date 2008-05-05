@@ -28,7 +28,6 @@ using namespace std;
 #include "AliHLTGUI.h"
 #include "AliHLTTPCDisplayMain.h"
 #include "AliHLTLogging.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 
 #include <TQtWidget.h>
 
@@ -204,8 +203,6 @@ AliHLTGUI::AliHLTGUI( Int_t argc, Char_t **argv )
 	break;
       }
 	
-      //      Int_t readerMode = AliHLTTPCDigitReaderRaw::DecodeMode( argv[ii+1] );
-      //      Int_t readerMode = AliHLTTPCDigitReaderRaw::DecodeMode( 1 );
       Int_t readerMode = 0;
       if (readerMode < 0){
 	HLTError ("Cannot convert rawreadermode specifier '%s'", argv[ii+1]);
@@ -375,7 +372,6 @@ AliHLTGUI::AliHLTGUI( Int_t argc, Char_t **argv )
     if ( !strcmp( argv[ii], "--help" ) ) {
       cout << "Usage: AliHLTGUI [OPTON VALUE] ..." << endl;
       cout << " OPTIONs:\n --------" << endl;
-      cout << " -rawreadermode <mode>              Sets the mode for AliHLTDigitReaderRaw, can bei either digit or string." << endl;
       cout << " -n-time-bins <mode>                Sets number of TimeBins for the TPC, can bei either a digit, 'sim' or 'tpc'." << endl;
       cout << " -adc-threshold <mode>              Sets the ADC Threshold for the Zero-Suppression of raw data, should be ADC counts." << endl;
       cout << " -occupancy-limit <mode>            Sets the Occupancy limits for pads, wherby <mode> is [0,1]." << endl;
@@ -407,7 +403,6 @@ AliHLTGUI::AliHLTGUI( Int_t argc, Char_t **argv )
   if ( errocc != 0 ) {
     cout << "Usage: AliHLTGUI [OPTON VALUE] ..." << endl;
     cout << " OPTIONs:\n --------" << endl;
-    cout << " -rawreadermode <mode>              Sets the mode for AliHLTDigitReaderRaw, can bei either digit or string." << endl;
     cout << " -n-time-bins <mode>                Sets number of TimeBins for the TPC, can bei either a digit, 'sim' or 'tpc'." << endl;
     cout << " -adc-threshold <mode>              Sets the ADC Threshold for the Zero-Suppression of raw data, should be ADC counts." << endl;
     cout << " -occupancy-limit <mode>            Sets the Occupancy limits for pads, wherby <mode> is [0,1]." << endl;

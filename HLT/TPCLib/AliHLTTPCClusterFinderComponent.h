@@ -29,7 +29,6 @@ class AliHLTTPCDigitReader;
  * instantiate different digit readers depending on the arguments.
  * 
  * The component has the following component arguments:
- * - rawreadermode   the mode for the @ref AliHLTTPCDigitReaderRaw, use -2 if using unsorted
  * - adc-threshold   ADC count threshold for zero suppression, if <0 the base line
  *                   calculation and subtraction is switched off
  * - pp-run          set parameters specific to a pp run; currently this switches

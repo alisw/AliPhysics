@@ -36,8 +36,6 @@
  * \li -rcutrailersize    <i> size   </i> <br>
  *      size of the RCU trailer in 32bit words (default 2), if digitreader
  *      'decoder' is used, the trailer size is determined automatically
- * \li -rawreadermode  <i> mode   </i> <br>
- *      data mode of the <b>AliHLTTPCDigitReaderRaw</b> 
  * \li -unsorted <br>
  *      unsorted mode of digit readers (default sorted)
  * \li -sorted <br>
@@ -78,12 +76,9 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
     kDigitReaderInvalid,
     kDigitReaderUnpacked,
     kDigitReaderPacked,
-    kDigitReaderRaw,
+    kDigitReaderRaw, // deprecated but kept for backward compatiobility of macros
     kDigitReaderDecoder
   };
-
-  /** the mode for the DigitReaderRaw */
-  unsigned fRawreaderMode; //!transient
 
   /** the digit reader to use */
   short fDigitReaderType; //!transient
@@ -94,7 +89,7 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   /** unsorted/sorted mode of digit readers */
   bool fUnsorted; //!transient
 
-  ClassDef(AliHLTTPCDigitDumpComponent, 0);
+  ClassDef(AliHLTTPCDigitDumpComponent, 1);
 };
 
 #endif

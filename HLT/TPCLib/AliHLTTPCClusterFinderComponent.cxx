@@ -29,7 +29,6 @@ using namespace std;
 #include "AliHLTTPCClusterFinderComponent.h"
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
@@ -158,7 +157,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   fClusterFinder = new AliHLTTPCClusterFinder();
 
-  Int_t rawreadermode =  -1;
   Int_t sigthresh = -1;
   Double_t sigmathresh= -1;
   Float_t occulimit = 1.0;
@@ -182,14 +180,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	return ENOTSUP;
       }
 
-      // Decodes the rawreader mode: either number or string and returns the rawreadermode
-      // -1 on failure, -2 for offline
-      rawreadermode = AliHLTTPCDigitReaderRaw::DecodeMode( argv[i+1] );
-
-      if (rawreadermode == -1 ) {
-	Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Cannot convert rawreadermode specifier '%s'.", argv[i+1] );
-	return EINVAL;
-      }
+      Logging( kHLTLogWarning, "HLT::TPCClusterFinder::DoInit", "parameter rawreadermode is deprecated", "argument scan" );      
 
       i += 2;
       continue;
@@ -289,8 +280,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   }
 
   // Choose reader
-  if (fModeSwitch==kClusterFinderPacked) { 
-    if (rawreadermode == -2) {
+  if (fModeSwitch==kClusterFinderPacked) {
       HLTDebug("using AliHLTTPCDigitReaderPacked");
       fReader = new AliHLTTPCDigitReaderPacked();
       if(oldRCUFormat==1){
@@ -303,17 +293,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	fReader->SetUnsorted(kTRUE);
       }
       fClusterFinder->SetReader(fReader);
-    } 
-    else {
-#if defined(HAVE_TPC_MAPPING)
-      HLTDebug("using AliHLTTPCDigitReaderRaw mode %d", rawreadermode);
-      fReader = new AliHLTTPCDigitReaderRaw(rawreadermode);
-      fClusterFinder->SetReader(fReader);
-#else //! defined(HAVE_TPC_MAPPING)
-      HLTFatal("DigitReaderRaw not available - check your build");
-      return -ENODEV;
-#endif //defined(HAVE_TPC_MAPPING)
-    }
   }
   else if(fModeSwitch==kClusterFinderUnpacked){
     HLTDebug("using AliHLTTPCDigitReaderUnpacked");
@@ -321,6 +300,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     fClusterFinder->SetReader(fReader);
   }
   else if(fModeSwitch==kClusterFinderDecoder){
+    HLTDebug("using AliHLTTPCDigitReaderDecoder");
     fReader = new AliHLTTPCDigitReaderDecoder();
     fClusterFinder->SetReader(fReader);
   }

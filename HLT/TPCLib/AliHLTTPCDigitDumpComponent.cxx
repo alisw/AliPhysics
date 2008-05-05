@@ -33,11 +33,8 @@
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitReaderPacked.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCDefinitions.h"
-
-#define DefaultRawreaderMode 0
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDigitDumpComponent)
@@ -45,7 +42,6 @@ ClassImp(AliHLTTPCDigitDumpComponent)
 AliHLTTPCDigitDumpComponent::AliHLTTPCDigitDumpComponent()
   :
   AliHLTFileWriter(),
-  fRawreaderMode(DefaultRawreaderMode),
   fDigitReaderType(kDigitReaderDecoder),
   fRcuTrailerSize(2),
   fUnsorted(false)
@@ -100,13 +96,7 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
     // -rawreadermode
     if (argument.CompareTo("-rawreadermode")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      int mode=AliHLTTPCDigitReaderRaw::DecodeMode(argv[i]);
-      if (mode<0) {
-	HLTError("invalid rawreadermode specifier '%s'", argv[i]);
-	iResult=-EINVAL;
-      } else {
-	fRawreaderMode=static_cast<unsigned>(mode);
-      }
+      HLTWarning("argument '-rawreadermode' deprecated");
       break;
     }
 
@@ -125,10 +115,6 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
       } else {
 	HLTError("unknown digit reader type %s", param.Data());
 	iResult=-EINVAL;
-      }
-
-      if (fDigitReaderType!=kDigitReaderRaw && fRawreaderMode!=DefaultRawreaderMode && iResult>=0) {
-	HLTWarning("the selected digit reader does not support the option \'-rawreadermode\'");
       }
 
       break;
@@ -221,9 +207,7 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  }
 	  break;
 	case kDigitReaderRaw:
-	  HLTInfo("create DigitReaderRaw");
-	  pReader=new AliHLTTPCDigitReaderRaw(fRawreaderMode);
-	  break;
+	  HLTWarning("DigitReaderRaw deprecated, falling back to DigitReaderDecoder");
 	case kDigitReaderDecoder:
 	  HLTInfo("create DigitReaderDecoder");
 	  pReader=new AliHLTTPCDigitReaderDecoder();

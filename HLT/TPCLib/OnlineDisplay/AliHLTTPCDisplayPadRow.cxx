@@ -34,7 +34,7 @@
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCDigitReaderPacked.h"
-#include "AliHLTTPCDigitReaderRaw.h"
+#include "AliHLTTPCDigitReaderDecoder.h"
 
 
 #include "AliHLTTPCDisplayMain.h"
@@ -122,8 +122,7 @@ void AliHLTTPCDisplayPadRow::Save(){
 void AliHLTTPCDisplayPadRow::Fill(){
     // Fill PadRow Histogram
     
-#if defined(HAVE_TPC_MAPPING)
-    AliHLTTPCDigitReaderRaw digitReader(0);
+    AliHLTTPCDigitReaderDecoder digitReader();
 
     //    bool readValue = true;
     //Int_t rowOffset = 0;
@@ -142,7 +141,7 @@ void AliHLTTPCDisplayPadRow::Fill(){
 
     // Initialize block for reading packed data
     void* tmpdataBlock = (void*) dataBlock;
-    digitReader.InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,slice);
+    digitReader.InitBlock(tmpdataBlock,dataLen,patch,slice);
 
     readValue = digitReader.Next();
 
@@ -207,7 +206,7 @@ void AliHLTTPCDisplayPadRow::Fill(){
 	}
 
 	// Rewind the raw reader and fill the polymarker3D
-	digitReader.InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,slice);
+	digitReader.InitBlock(tmpdataBlock,lastRow,patch,slice);
 	
 	readValue = digitReader.Next();
     } // END if (fDisplay->Get3DSwitchPadRow())
@@ -275,9 +274,6 @@ void AliHLTTPCDisplayPadRow::Fill(){
 	}
      } // END if (fDisplay->ExistsClusterData()){
 #endif
-#else //! defined(HAVE_TPC_MAPPING)
-      HLTFatal("DigitReaderRaw not available - check your build");
-#endif //defined(HAVE_TPC_MAPPING)
  
 }
 

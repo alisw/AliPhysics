@@ -41,7 +41,7 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDigitReader.h"
-#include "AliHLTTPCDigitReaderRaw.h"
+#include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCPad.h"
 #include "AliHLT_C_Component_WrapperInterface.h"
 #include "AliHLTTPCLogging.h"
@@ -591,10 +591,8 @@ void AliHLTTPCDisplayMain::ReadRawData(){
       continue;
     } 
     
-#if defined(HAVE_TPC_MAPPING)
-
     // -- Read data out of block
-    AliHLTTPCDigitReaderRaw digitReader( GetRawReaderMode() );
+    AliHLTTPCDigitReaderDecoder digitReader;
     
     // Initialize RAW DATA
     Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
@@ -605,7 +603,7 @@ void AliHLTTPCDisplayMain::ReadRawData(){
     if ( patch >= 2 ) rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
     
     // Initialize block for reading packed data
-    digitReader.InitBlock(rawDataBlock,rawDataLen,firstRow,lastRow,patch,slice);
+    digitReader.InitBlock(rawDataBlock,rawDataLen,patch,slice);
     
     Bool_t readValue = digitReader.Next();
 
@@ -745,7 +743,7 @@ void AliHLTTPCDisplayMain::ReadRawData(){
     // -- END ZERO SUPPRESSION
 
     // Rewind block for reading packed data
-    digitReader.InitBlock(rawDataBlock,rawDataLen,firstRow,lastRow,patch,slice);
+    digitReader.InitBlock(rawDataBlock,rawDataLen,patch,slice);
 
     // -- Fill Raw Array
     // ---------------------
@@ -769,10 +767,6 @@ void AliHLTTPCDisplayMain::ReadRawData(){
 
     } // end  while ( readValue ){ 
 
-#else //! defined(HAVE_TPC_MAPPING)
-    HLTFatal("DigitReaderRaw not available - check your build");
-#endif //defined(HAVE_TPC_MAPPING)
-	  
     blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
     
   } // end while ( blk != ~(ULong_t)0 ) {
