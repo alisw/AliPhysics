@@ -189,7 +189,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   tof->MakeBranchInTree(treeD,branchname,&fDigits,4000);
 
   // container for all summed sdigits (to be created in Init())
-  fSDigitsArray=new TClonesArray("AliTOFSDigit",1000);
+  //fSDigitsArray=new TClonesArray("AliTOFSDigit",1000);
   
   // create hit map (to be created in Init())
   fhitMap = new AliTOFHitMap(fSDigitsArray);
@@ -206,8 +206,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
 
   // free used memory for Hit Map in current event
   delete fhitMap;
-  fSDigitsArray->Delete();
-  delete fSDigitsArray;
+  fSDigitsArray->Clear();
 
   treeD->Fill();
  
