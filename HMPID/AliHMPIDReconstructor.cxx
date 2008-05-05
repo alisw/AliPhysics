@@ -67,12 +67,20 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
   if(!pQthreEnt) AliFatal("No Qthre available");
   TObjArray *pQthre = (TObjArray*)pQthreEnt->GetObject();
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-    for(Int_t isec=0;isec<=5;isec++) {
-     TF1 *pfQthre = (TF1*)pQthre->At(6*iCh+isec); 
-     Double_t tMin,tMax;
-     pfQthre->GetRange(tMin,tMax);
-     Double_t qthre=pfQthre->Eval(tMin);
-     AliDebug(1,Form("Qthre successfully loaded for chamber %i  sector %i -> %f ",iCh,isec,qthre));
+    if(pQthre->GetEntriesFast()==AliHMPIDParam::kMaxCh+1) {        // for backward compatibility...
+      TF1 *pfQthre = (TF1*)pQthre->At(iCh); 
+      Double_t tMin,tMax;
+      pfQthre->GetRange(tMin,tMax);
+      Double_t qthre=pfQthre->Eval(tMin);
+      AliDebug(1,Form("Qthre successfully loaded for chamber %i -> %f ",iCh,qthre));
+    } else {
+      for(Int_t isec=0;isec<=5;isec++) {
+       TF1 *pfQthre = (TF1*)pQthre->At(6*iCh+isec); 
+       Double_t tMin,tMax;
+       pfQthre->GetRange(tMin,tMax);
+       Double_t qthre=pfQthre->Eval(tMin);
+       AliDebug(1,Form("Qthre successfully loaded for chamber %i  sector %i -> %f ",iCh,isec,qthre));
+      }
     }
   }
 
