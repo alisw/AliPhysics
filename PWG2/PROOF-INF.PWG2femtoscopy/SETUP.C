@@ -2,7 +2,7 @@ void SETUP() {
   CheckLoadLibrary("libPWG2femtoscopy");
 
   // Set the include paths
-  gROOT->ProcessLine(".include PWG2femtoscopy");
+  gROOT->ProcessLine(".include PWG2femtoscopy/FEMTOSCOPY/AliFemto");
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWG2femtoscopy_INCLUDE", "PWG2femtoscopy/FEMTOSCOPY/AliFemto");

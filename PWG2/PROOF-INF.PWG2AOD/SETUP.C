@@ -16,7 +16,7 @@ void SETUP() {
   CheckLoadLibrary("libPWG2AOD");
 
   // Set the include paths
-  gROOT->ProcessLine(".include PWG2AOD");
+  gROOT->ProcessLine(".include PWG2AOD/AOD");
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWG2AOD_INCLUDE", "PWG2AOD/AOD");
