@@ -21,20 +21,90 @@
 //  Event loop outside of the component
 //
 //
+// Base functionality to be implemeneted by component 
+/* 
+   //In some cases only one of this function to be implemented
+   virtual void     Process(AliESDEvent *event)
+   virtual void     Process(AliTPCseed *track)
+   //
+   virtual Long64_t Merge(TCollection *li);
+   virtual void     Analyze()
+   void             Terminate();
+*/
+// Functionality provided by base class for Algorith debuging:
+//  TTreeSRedirector * cstream =  GetDebugStreamer() - get debug streamer which can be use for numerical debugging
+//                      
+
+
+
+//  marian.ivanov@cern.ch
 // 
 #include "AliTPCcalibBase.h"
+#include "TTreeStream.h"
 
 ClassImp(AliTPCcalibBase)
 
-AliTPCcalibBase::AliTPCcalibBase()
+AliTPCcalibBase::AliTPCcalibBase():
+    TNamed(),
+    fDebugStreamer(0),
+    fStreamLevel(0),
+    fDebugLevel(0)
 {
   //
   // Constructor
   //
 }
 
+AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
+  TNamed(calib),
+  fDebugStreamer(0),
+  fStreamLevel(calib.fStreamLevel),
+  fDebugLevel(calib.fDebugLevel)
+{
+  //
+  // copy constructor
+  //
+}
+
+AliTPCcalibBase &AliTPCcalibBase::operator=(const AliTPCcalibBase&calib){
+  //
+  //
+  //
+  ((TNamed *)this)->operator=(calib);
+  fDebugStreamer=0;
+  fStreamLevel=calib.fStreamLevel;
+  fDebugLevel=calib.fDebugLevel;
+}
+
+
 AliTPCcalibBase::~AliTPCcalibBase() {
   //
   // destructor
   //
+  if (fDebugStreamer) delete fDebugStreamer;
+  fDebugStreamer=0;
+}
+
+void  AliTPCcalibBase::Terminate(){
+  //
+  //
+  //
+  if (fDebugStreamer) delete fDebugStreamer;
+  fDebugStreamer = 0;
+  return;
+}
+
+TTreeSRedirector *AliTPCcalibBase::GetDebugStreamer(){
+  //
+  // Get Debug streamer
+  // In case debug streamer not yet initialized and StreamLevel>0 create new one
+  //
+  if (fStreamLevel==0) return 0;
+  if (fDebugStreamer) return fDebugStreamer;
+  TString dsName;
+  dsName=GetName();
+  dsName+="Debug.root";
+  dsName.ReplaceAll(" ",""); 
+  fDebugStreamer = new TTreeSRedirector(dsName.Data());
+  return fDebugStreamer;
 }

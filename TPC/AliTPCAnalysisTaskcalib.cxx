@@ -103,6 +103,10 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
 }
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
+  TIterator *i=fCalibJobs.MakeIterator();
+  AliTPCcalibBase *job;
+  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
+    job->Terminate();
 }
 
 // we could have been living inside a master class...

@@ -166,7 +166,6 @@ AliTPCParamSR* AliTPCcalibTracksGain::fgTPCparam = new AliTPCParamSR();
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
   AliTPCcalibBase(),
-  fDebugStream(0),          //! debug stream for debugging
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
   //
   // Simple Array of histograms
@@ -207,7 +206,6 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
   AliTPCcalibBase(obj),
-  fDebugStream(0),          //! debug stream for debugging
   fCuts(obj.fCuts),            // cuts that are used for sieving the tracks used for calibration
   fArrayQM(0),                // Qmax normalized
   fArrayQT(0),                // Qtot normalized 
@@ -267,7 +265,6 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* /*debugStreamPrefix*/, AliTPCcalibTracksGain* prevIter) :
   AliTPCcalibBase(),
-  fDebugStream(0),          //! debug stream for debugging
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
   fArrayQM(0),                // Qmax normalized
   fArrayQT(0),                // Qtot normalized 
@@ -377,14 +374,6 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
    if (fLogFitter) delete fLogFitter;
    if (fSingleSectorFitter) delete fSingleSectorFitter;
 
-
-   if (fDebugStream) {
-      //fDebugStream->GetFile()->Close();
-      printf("Deleting debug stream object\n");
-      delete fDebugStream;
-   }
-
-
    if (fDebugCalPadRaw) delete fDebugCalPadRaw;
    if (fDebugCalPadCorr) delete fDebugCalPadCorr;
 }
@@ -396,10 +385,7 @@ void AliTPCcalibTracksGain::Terminate(){
    //
 
    Evaluate();
-   if (fDebugStream) {
-     delete fDebugStream;
-     fDebugStream = 0;
-   }
+   AliTPCcalibBase::Terminate();
 }
 
 
@@ -528,7 +514,6 @@ void AliTPCcalibTracksGain::AddTrack(AliTPCseed* seed) {
    // See AddCluster(...) for more detail.
    //
    
-   if (!fDebugStream) fDebugStream = new TTreeSRedirector(fgkDebugStreamFileName);
    DumpTrack(seed);   
    //
    // simple histograming part
@@ -988,47 +973,49 @@ void AliTPCcalibTracksGain::DumpTrack(AliTPCseed* track) {
        AddTracklet(sector[ipad],ipad, dedxQ[ipad], dedxM[ipad], parY[ipad], parZ[ipad], meanPos[ipad] );
      if (isOK) count++;
    }
-   
-   (*fDebugStream) << "Track" <<
-     "Track.=" << track <<        // track information
-     "\n";
-   //
-   //
-   //
-   if (count>1){
-     (*fDebugStream) << "TrackG" <<
-       "Track.=" << track <<        // track information
-       "ncount="<<count<<
-       // info for pad type 0
-       "sector0="<<sector[0]<<     
-       "npoints0="<<npoints[0]<<
-       "dedxM0.="<<&dedxM[0]<<
-       "dedxQ0.="<<&dedxQ[0]<<
-       "parY0.="<<&parY[0]<<
-       "parZ0.="<<&parZ[0]<<
-       "meanPos0.="<<&meanPos[0]<<
-       //
-       // info for pad type 1
-       "sector1="<<sector[1]<<     
-       "npoints1="<<npoints[1]<<
-       "dedxM1.="<<&dedxM[1]<<
-       "dedxQ1.="<<&dedxQ[1]<<
-       "parY1.="<<&parY[1]<<
-       "parZ1.="<<&parZ[1]<<
-       "meanPos1.="<<&meanPos[1]<<
-       //
-       // info for pad type 2
-       "sector2="<<sector[2]<<     
-       "npoints2="<<npoints[2]<<
-       "dedxM2.="<<&dedxM[2]<<
-       "dedxQ2.="<<&dedxQ[2]<<
-       "parY2.="<<&parY[2]<<
-       "parZ2.="<<&parZ[2]<<
-       "meanPos2.="<<&meanPos[2]<<
-       //       
-       "\n";
-   }
 
+   TTreeSRedirector * cstream =  GetDebugStreamer();
+   if (cstream){
+     (*cstream) << "Track" <<
+       "Track.=" << track <<        // track information
+       "\n";
+     //
+     //
+     //
+     if ( GetStreamLevel()>1 && count>1){
+       (*cstream) << "TrackG" <<
+	 "Track.=" << track <<        // track information
+	 "ncount="<<count<<
+	 // info for pad type 0
+	 "sector0="<<sector[0]<<     
+	 "npoints0="<<npoints[0]<<
+	 "dedxM0.="<<&dedxM[0]<<
+	 "dedxQ0.="<<&dedxQ[0]<<
+	 "parY0.="<<&parY[0]<<
+	 "parZ0.="<<&parZ[0]<<
+	 "meanPos0.="<<&meanPos[0]<<
+	 //
+	 // info for pad type 1
+	 "sector1="<<sector[1]<<     
+	 "npoints1="<<npoints[1]<<
+	 "dedxM1.="<<&dedxM[1]<<
+	 "dedxQ1.="<<&dedxQ[1]<<
+	 "parY1.="<<&parY[1]<<
+	 "parZ1.="<<&parZ[1]<<
+	 "meanPos1.="<<&meanPos[1]<<
+	 //
+	 // info for pad type 2
+	 "sector2="<<sector[2]<<     
+	 "npoints2="<<npoints[2]<<
+	 "dedxM2.="<<&dedxM[2]<<
+	 "dedxQ2.="<<&dedxQ[2]<<
+	 "parY2.="<<&parY[2]<<
+	 "parZ2.="<<&parZ[2]<<
+	 "meanPos2.="<<&meanPos[2]<<
+	 //       
+	 "\n";
+     }
+   }
 }
 
 Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /*rows*/,
@@ -1165,7 +1152,7 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
       dedxQ[i] /= ndedx[i];
       dedxM[i] /= ndedx[i];
    }
-   
+   TTreeSRedirector * cstream =  GetDebugStreamer();   
    inonEdge = 0;
    Float_t momenta = track->GetP();
    Float_t mdedx = track->GetdEdx();
@@ -1183,7 +1170,7 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
 
       AddCluster(cluster, momenta, mdedx, padType, xcenter, dedxQ, dedxM, fraction, fraction2, dedge, parY, parZ, meanPos);
 
-      (*fDebugStream) << "dEdx" <<
+      if (cstream) (*cstream) << "dEdx" <<
          "Cl.=" << cluster <<           // cluster of interest
          "P=" << momenta <<             // track momenta
          "dedx=" << mdedx <<            // mean dedx - corrected for angle
@@ -1200,7 +1187,7 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
          "\n";
    }
    
-   (*fDebugStream) << "dEdxT" <<
+   if (cstream) (*cstream) << "dEdxT" <<
      "P=" << momenta <<             // track momenta
      "npoints="<<inonEdge<<         // number of points
      "sector="<<lastSector<<        // sector number

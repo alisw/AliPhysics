@@ -116,7 +116,6 @@ public:
   static Bool_t   GetRowPad(Double_t lx, Double_t ly, Int_t& row, Int_t& pad); // just for debugging
   //
   //
-  TTreeSRedirector* fDebugStream;          //! debug stream for debugging
   AliTPCcalibTracksCuts* fCuts;            // cuts that are used for sieving the tracks used for calibration
   //
   // Simple Profiles and histograms - per chambers + 1 total

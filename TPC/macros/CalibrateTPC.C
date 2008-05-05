@@ -15,8 +15,11 @@
   // Process data - chain
   //
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
-  TChain * chain = tool.MakeChain("cahin.txt","esdTree",0,10)
+  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,10000000);
+  chain->Lookup();
+  mgr->SetNSysInfo(20);
   mgr->StartAnalysis("local",chain);
   
 
@@ -35,16 +38,24 @@ AliAnalysisManager * SetupCalibTask() {
   AliESDInputHandler* esdH=new AliESDInputHandler;
   esdH->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdH);  
+  //
+  //
+  AliCDBManager::Instance()->SetRun(1) ;
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
 
   AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("foo bar");
   
   AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018);
 
-  // ---*---*-----*-*-----*----------*---
+  AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts); 
+  calibTracks->SetDebugLevel(5);
+  calibTracks->SetStreamLevel(5);
+ // ---*---*-----*-*-----*----------*---
   // ADD CALIB JOBS HERE!!!!!!!!!!!!!!!!
   task1->AddJob(new AliTPCcalibAlign);//"align","The kewl alignment job"));
-  //  task1->AddJob(new AliTPCcalibTracks("resolution","I would have been called AliTPCcalibResolution in a bit more perfect world.",0,cuts));
-  task1->AddJob(new AliTPCcalibTracksGain("resolution","I would have been called AliTPCcalibGain in a bit more perfect world.",cuts));
+  task1->AddJob(new AliTPCcalibTracksGain("TPCGainTracks","TPCGainTracks",cuts));
+  task1->AddJob(calibTracks);
   //  task1->AddJob(new AliTPCcalibBase);
   // task1->AddJob(new AliTPCcalibV0);
   // -*----*----*---*-*------*-------**--

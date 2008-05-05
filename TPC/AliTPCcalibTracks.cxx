@@ -104,7 +104,6 @@ ClassImp(AliTPCcalibTracks)
 AliTPCcalibTracks::AliTPCcalibTracks():
   AliTPCcalibBase(),
   fClusterParam(0),
-  fDebugStream(0),
   fROC(0),
   fArrayAmpRow(0),
   fArrayAmp(0), 
@@ -128,7 +127,6 @@ AliTPCcalibTracks::AliTPCcalibTracks():
   fClusterCutHisto(0),
   fCalPadClusterPerPad(0),
   fCalPadClusterPerPadRaw(0),
-  fDebugLevel(0),       
   fFitterLinY1(0),   //!
   fFitterLinZ1(0),   //! 
   fFitterLinY2(0),   //! 
@@ -139,15 +137,15 @@ AliTPCcalibTracks::AliTPCcalibTracks():
    // 
    // AliTPCcalibTracks default constructor
    //    
-   if (fDebugLevel > 0) cout << "AliTPCcalibTracks' default constructor called" << endl;  
+  SetDebugLevel(1);
+  if (GetDebugLevel() > 0) cout << "AliTPCcalibTracks' default constructor called" << endl;  
 }   
 
 
 
 AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
-  AliTPCcalibBase(),
+  AliTPCcalibBase(calibTracks),
   fClusterParam(0),
-  fDebugStream(0),
   fROC(0),
   fArrayAmpRow(0),
   fArrayAmp(0), 
@@ -171,7 +169,6 @@ AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
   fClusterCutHisto(0),
   fCalPadClusterPerPad(0),
   fCalPadClusterPerPadRaw(0),
-  fDebugLevel(0),       
   fFitterLinY1(0),   //!
   fFitterLinZ1(0),   //! 
   fFitterLinY2(0),   //! 
@@ -182,7 +179,7 @@ AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
    // 
    // AliTPCcalibTracks copy constructor
    // 
-   if (fDebugLevel > 0) cout << " ***** this is AliTPCcalibTracks' copy constructor ***** " << endl;
+  if (GetDebugLevel() > 0) cout << " ***** this is AliTPCcalibTracks' copy constructor ***** " << endl;
    
    Bool_t dirStatus = TH1::AddDirectoryStatus();
    TH1::AddDirectory(kFALSE);
@@ -240,7 +237,6 @@ AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
 
    fCuts = new AliTPCcalibTracksCuts(calibTracks.fCuts->GetMinClusters(), calibTracks.fCuts->GetMinRatio(), 
       calibTracks.fCuts->GetMax1pt(), calibTracks.fCuts->GetEdgeYXCutNoise(), calibTracks.fCuts->GetEdgeThetaCutNoise());
-   fDebugLevel = calibTracks.GetLogLevel();
    SetNameTitle(calibTracks.GetName(), calibTracks.GetTitle());
    TH1::AddDirectory(dirStatus); // set status back to original status
 //    cout << "+++++ end of copy constructor +++++" << endl;   // TO BE REMOVED
@@ -262,7 +258,6 @@ AliTPCcalibTracks & AliTPCcalibTracks::operator=(const AliTPCcalibTracks& calibT
 AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, AliTPCClusterParam *clusterParam,  AliTPCcalibTracksCuts* cuts, Int_t logLevel) : 
   AliTPCcalibBase(),
   fClusterParam(0),
-  fDebugStream(0),
   fROC(0),
   fArrayAmpRow(0),
   fArrayAmp(0), 
@@ -286,7 +281,6 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
   fClusterCutHisto(0),
   fCalPadClusterPerPad(0),
   fCalPadClusterPerPadRaw(0),
-  fDebugLevel(0),       
   fFitterLinY1(0),   //!
   fFitterLinZ1(0),   //! 
   fFitterLinY2(0),   //! 
@@ -300,14 +294,15 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    // specify 'clusterParam', (needed for TPC cluster error and shape parameterization)
    // In the parameter 'cuts' the cuts are specified, that decide           
    // weather a track will be accepted for calibration or not.              
-   // log level - debug output: -1: silence, 0: default, 1: things like constructor called, 5: write fDebugStream, 6: waste your screen
+   //
+   // fDebugLevel - debug output: -1: silence, 0: default, 1: things like constructor called, 5: write fDebugStreamer, 6: waste your screen
    // 
    // All histograms are instatiated in this constructor.
    // 
    this->SetName(name);
    this->SetTitle(title);
 
-   if (fDebugLevel > 0) cout << " ***** this is AliTPCcalibTracks' main constructor ***** " << endl;
+   if (GetDebugLevel() > 0) cout << " ***** this is AliTPCcalibTracks' main constructor ***** " << endl;
    G__SetCatchException(0);     
    
    fClusterParam = clusterParam;
@@ -318,8 +313,7 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
      Error("AliTPCcalibTracks","No cluster parametrization found! A valid clusterParam object is needed in the constructor. (To be found in 'TPCClusterParam.root'.)");
    } 
    fCuts = cuts;
-   fDebugLevel = logLevel;
-   if (fDebugLevel > 4) fDebugStream = new TTreeSRedirector("TPCSelectorDebug.root");     // needs investigation !!!!!
+   SetDebugLevel(logLevel);
    
    TH1::AddDirectory(kFALSE);
    
@@ -461,7 +455,7 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    fFitterParY  = new TLinearFitter (3,"pol2");
    fFitterParZ  = new TLinearFitter (3,"pol2");
 
-   if (fDebugLevel > 1) cout << "AliTPCcalibTracks object sucessfully constructed: " << GetName() << endl; 
+   if (GetDebugLevel() > 1) cout << "AliTPCcalibTracks object sucessfully constructed: " << GetName() << endl; 
    cout << "end of main constructor" << endl; // TO BE REMOVED
 }    
 
@@ -471,7 +465,7 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
    // AliTPCcalibTracks destructor
    // 
    
-   if (fDebugLevel > 0) cout << "AliTPCcalibTracks' destuctor called." << endl;
+  if (GetDebugLevel() > 0) cout << "AliTPCcalibTracks' destuctor called." << endl;
    Int_t length = 0;
    if (fArrayAmpRow) length = fArrayAmpRow->GetEntriesFast();
    for (Int_t i = 0; i < length; i++){
@@ -531,7 +525,6 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
   if (fCalPadClusterPerPadRaw) delete fCalPadClusterPerPadRaw;
   fcalPadRegionChargeVsDriftlength->Delete();
   delete fcalPadRegionChargeVsDriftlength;
-  if (fDebugLevel > 4) delete fDebugStream;
 }
    
   
@@ -553,7 +546,7 @@ void AliTPCcalibTracks::Process(AliTPCseed *track){
    // FillResolutionHistoLocal(track)
    // AlignUpDown(track, esd)
    // 
-   if (fDebugLevel > 5) Info("Process","Starting to process the track...");
+  if (GetDebugLevel() > 5) Info("Process","Starting to process the track...");
    Int_t accpetStatus = AcceptTrack(track);
    if (accpetStatus == 0) {
       FillResolutionHistoLocal(track);
@@ -634,7 +627,7 @@ Int_t AliTPCcalibTracks::AcceptTrack(AliTPCseed * track){
   //if (TMath::Abs(track->GetZ())<10.) return kFALSE;
   //if (TMath::Abs(track->GetTgl())>0.03) return kFALSE;
   
-  if (fDebugLevel > 5) Info("AcceptTrack","Track has been accepted.");  
+  if (GetDebugLevel() > 5) Info("AcceptTrack","Track has been accepted.");  
   return 0;
 }
 
@@ -666,7 +659,7 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
    // and to avoid redundant data
    // 
 
-   if (fDebugLevel > 5) Info("FillResolutionHistoLocal"," ***** Start of FillResolutionHistoLocal *****");
+  if (GetDebugLevel() > 5) Info("FillResolutionHistoLocal"," ***** Start of FillResolutionHistoLocal *****");
    const Int_t   kDelta    = 10;          // delta rows to fit
    const Float_t kMinRatio = 0.75;        // minimal ratio
    const Float_t kCutChi2  = 6.;          // cut chi2 - left right  - kink removal
@@ -674,12 +667,6 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
    const Int_t   kFirstLargePad = 127;    // medium pads -> long pads
    const Float_t kLargePadSize  = 1.5;    // factor between medium and long pads' area
    const Int_t   kDeltaWriteDebugStream  = 5;  // only for every kDeltaWriteDebugStream'th padrow debug information is calulated and written to debugstream
-//    TLinearFitter fFitterLinY1 = fFitterLinY1;
-//    TLinearFitter fFitterLinZ1 = ffFitterLinZ1;
-//    TLinearFitter fFitterLinY2 = ffFitterLinY2;
-//    TLinearFitter fFitterLinZ2 = ffFitterLinZ2;
-//    TLinearFitter fFitterParY  = ffFitterParY;
-//    TLinearFitter fFitterParZ  = ffFitterParZ;
    TVectorD paramY0(2);
    TVectorD paramZ0(2);
    TVectorD paramY1(2);
@@ -940,8 +927,8 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       //=============================================================================================
       
       if (useForResol && nclFound > 2 * kMinRatio * kDelta 
-            && irow % kDeltaWriteDebugStream == 0 && fDebugLevel > 4){
-         if (fDebugLevel > 5) Info("FillResolutionHistoLocal","Filling 'TPCSelectorDebug.root', irow = %i", irow);
+	  && irow % kDeltaWriteDebugStream == 0 && GetDebugLevel() > 4){
+	if (GetDebugLevel() > 5) Info("FillResolutionHistoLocal","Filling 'TPCSelectorDebug.root', irow = %i", irow);
          FillResolutionHistoLocalDebugPart(track, cluster0, irow, angley, anglez, nclFound, kDelta);
       }  // if (useForResol && nclFound > 2 * kMinRatio * kDelta)
    
@@ -954,7 +941,7 @@ void AliTPCcalibTracks::FillResolutionHistoLocalDebugPart(AliTPCseed *track, Ali
    // 
    //  - debug part of FillResolutionHistoLocal - 
    // called only for every kDeltaWriteDebugStream'th padrow, to avoid to much redundant data
-   // called only for fDebugLevel > 4
+   // called only for GetStreamLevel() > 4
    // fill resolution trees
    //
       
@@ -1110,20 +1097,7 @@ void AliTPCcalibTracks::FillResolutionHistoLocalDebugPart(AliTPCseed *track, Ali
 						     TMath::Abs(angley), TMath::Abs(cluster0->GetMax()));
       Float_t csigmaZS = fClusterParam->GetErrorQParScaled(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
 						       TMath::Abs(anglez),TMath::Abs(cluster0->GetMax()));
-      ///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//     Class to analyse tracks for calibration                               //
-//     to be used as a component in AliTPCSelectorTracks                     //
-//     In the constructor you have to specify name and title                 //
-//     to get the Object out of a file.                                      //
-//     The parameter 'clusterParam', a AliTPCClusterParam object             //
-//      (needed for TPC cluster error and shape parameterization)            //
-//     Normally you get this object out of the file 'TPCClusterParam.root'   //
-//     In the parameter 'cuts' the cuts are specified, that decide           //
-//     weather a track will be accepted for calibration or not.              //
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+
 
       // RMS parameters
       Float_t meanRMSY = 0;
@@ -1162,81 +1136,83 @@ void AliTPCcalibTracks::FillResolutionHistoLocalDebugPart(AliTPCseed *track, Ali
       Float_t rmsZFactor = fClusterParam->GetShapeFactor(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
 							 TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()),
 							 rmsZ,meanRMSZ);
-      
+      //
       // cluster debug
-      (*fDebugStream)<<"ResolCl"<<	// valgrind 3   40,000 bytes in 1 blocks are possibly 
-      "Sector="<<sector<<
-      "Cl.="<<cluster0<<
-      "CSigmaY0="<<csigmaY0<<   // cluster errorY
-      "CSigmaYQ="<<csigmaYQ<<   // cluster errorY - q scaled
-      "CSigmaYS="<<csigmaYS<<   // cluster errorY - q scaled
-      "CSigmaZ0="<<csigmaZ0<<   // 
-      "CSigmaZQ="<<csigmaZQ<<
-      "CSigmaZS="<<csigmaZS<<
-      "shapeYF="<<rmsYFactor<<
-      "shapeZF="<<rmsZFactor<<
-      "rmsY="<<rmsY<<
-      "rmsZ="<<rmsZ<<
-      "rmsYM="<<meanRMSY<<
-      "rmsZM="<<meanRMSZ<<
-      "rmsYT="<<rmsYT<<
-      "rmsZT="<<rmsZT<<
-      "rmsYT0="<<rmsYT0<<
-      "rmsZT0="<<rmsZT0<<
-      "rmsYS="<<rmsYSigma<<  
-      "rmsZS="<<rmsZSigma<<
-      "padSize="<<padSize<<
-      "Ncl="<<nclFound<<	
-      "PY0.="<<&parY0<<
-      "PZ0.="<<&parZ0<<
-      "SigmaY0="<<sigmaY0<< 
-      "SigmaZ0="<<sigmaZ0<< 
-      "angley="<<angley<<
-      "anglez="<<anglez<<
-      "\n";
-
-//       tracklet dubug
-      (*fDebugStream)<<"ResolTr"<<	
-      "padSize="<<padSize<<
-      "IPad="<<padSize<<
-      "Sector="<<sector<<
-      "Ncl="<<nclFound<<	
-      "chi2Y0="<<chi2Y0<<
-      "chi2Z0="<<chi2Z0<<
-      "chi2Y2="<<chi2Y2<<
-      "chi2Z2="<<chi2Z2<<
-      "chi2Y2Q="<<chi2Y2Q<<
-      "chi2Z2Q="<<chi2Z2Q<<
-      "chi2Y2S="<<chi2Y2S<<
-      "chi2Z2S="<<chi2Z2S<<
-      "PY0.="<<&parY0<<
-      "PZ0.="<<&parZ0<<
-      "PY2.="<<&parY2<<
-      "PZ2.="<<&parZ2<<
-      "PY2Q.="<<&parY2Q<<
-      "PZ2Q.="<<&parZ2Q<<
-      "PY2S.="<<&parY2S<<
-      "PZ2S.="<<&parZ2S<<
-      "SigmaY0="<<sigmaY0<< 
-      "SigmaZ0="<<sigmaZ0<< 
-      "SigmaDY0="<<sigmaDY0<< 
-      "SigmaDZ0="<<sigmaDZ0<< 
-      "SigmaY2="<<sigmaY2<< 
-      "SigmaZ2="<<sigmaZ2<< 
-      "SigmaDY2="<<sigmaDY2<< 
-      "SigmaDZ2="<<sigmaDZ2<< 
-      "SigmaY2Q="<<sigmaY2Q<< 
-      "SigmaZ2Q="<<sigmaZ2Q<< 
-      "SigmaDY2Q="<<sigmaDY2Q<< 
-      "SigmaDZ2Q="<<sigmaDZ2Q<< 
-      "SigmaY2S="<<sigmaY2S<< 
-      "SigmaZ2S="<<sigmaZ2S<< 
-      "SigmaDY2S="<<sigmaDY2S<< 
-      "SigmaDZ2S="<<sigmaDZ2S<< 
-      "angley="<<angley<<
-      "anglez="<<anglez<<
-      "\n";
-
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      if (cstream){
+	(*cstream)<<"ResolCl"<<	// valgrind 3   40,000 bytes in 1 blocks are possibly 
+	  "Sector="<<sector<<
+	  "Cl.="<<cluster0<<
+	  "CSigmaY0="<<csigmaY0<<   // cluster errorY
+	  "CSigmaYQ="<<csigmaYQ<<   // cluster errorY - q scaled
+	  "CSigmaYS="<<csigmaYS<<   // cluster errorY - q scaled
+	  "CSigmaZ0="<<csigmaZ0<<   // 
+	  "CSigmaZQ="<<csigmaZQ<<
+	  "CSigmaZS="<<csigmaZS<<
+	  "shapeYF="<<rmsYFactor<<
+	  "shapeZF="<<rmsZFactor<<
+	  "rmsY="<<rmsY<<
+	  "rmsZ="<<rmsZ<<
+	  "rmsYM="<<meanRMSY<<
+	  "rmsZM="<<meanRMSZ<<
+	  "rmsYT="<<rmsYT<<
+	  "rmsZT="<<rmsZT<<
+	  "rmsYT0="<<rmsYT0<<
+	  "rmsZT0="<<rmsZT0<<
+	  "rmsYS="<<rmsYSigma<<  
+	  "rmsZS="<<rmsZSigma<<
+	  "padSize="<<padSize<<
+	  "Ncl="<<nclFound<<	
+	  "PY0.="<<&parY0<<
+	  "PZ0.="<<&parZ0<<
+	  "SigmaY0="<<sigmaY0<< 
+	  "SigmaZ0="<<sigmaZ0<< 
+	  "angley="<<angley<<
+	  "anglez="<<anglez<<
+	  "\n";
+	
+	//       tracklet dubug
+	(*cstream)<<"ResolTr"<<	
+	  "padSize="<<padSize<<
+	  "IPad="<<padSize<<
+	  "Sector="<<sector<<
+	  "Ncl="<<nclFound<<	
+	  "chi2Y0="<<chi2Y0<<
+	  "chi2Z0="<<chi2Z0<<
+	  "chi2Y2="<<chi2Y2<<
+	  "chi2Z2="<<chi2Z2<<
+	  "chi2Y2Q="<<chi2Y2Q<<
+	  "chi2Z2Q="<<chi2Z2Q<<
+	  "chi2Y2S="<<chi2Y2S<<
+	  "chi2Z2S="<<chi2Z2S<<
+	  "PY0.="<<&parY0<<
+	  "PZ0.="<<&parZ0<<
+	  "PY2.="<<&parY2<<
+	  "PZ2.="<<&parZ2<<
+	  "PY2Q.="<<&parY2Q<<
+	  "PZ2Q.="<<&parZ2Q<<
+	  "PY2S.="<<&parY2S<<
+	  "PZ2S.="<<&parZ2S<<
+	  "SigmaY0="<<sigmaY0<< 
+	  "SigmaZ0="<<sigmaZ0<< 
+	  "SigmaDY0="<<sigmaDY0<< 
+	  "SigmaDZ0="<<sigmaDZ0<< 
+	  "SigmaY2="<<sigmaY2<< 
+	  "SigmaZ2="<<sigmaZ2<< 
+	  "SigmaDY2="<<sigmaDY2<< 
+	  "SigmaDZ2="<<sigmaDZ2<< 
+	  "SigmaY2Q="<<sigmaY2Q<< 
+	  "SigmaZ2Q="<<sigmaZ2Q<< 
+	  "SigmaDY2Q="<<sigmaDY2Q<< 
+	  "SigmaDZ2Q="<<sigmaDZ2Q<< 
+	  "SigmaY2S="<<sigmaY2S<< 
+	  "SigmaZ2S="<<sigmaZ2S<< 
+	  "SigmaDY2S="<<sigmaDY2S<< 
+	  "SigmaDZ2S="<<sigmaDZ2S<< 
+	  "angley="<<angley<<
+	  "anglez="<<anglez<<
+	  "\n";
+      }
 
 }
 
@@ -1289,7 +1265,7 @@ void AliTPCcalibTracks::Draw(Option_t* opt){
    // will draws some exemplaric pictures
    // 
 
-   if (fDebugLevel > 6) Info("Draw", "Drawing an exemplaric picture.");
+  if (GetDebugLevel() > 6) Info("Draw", "Drawing an exemplaric picture.");
    SetStyle();
    Double_t min = 0;
    Double_t max = 0;
@@ -1353,7 +1329,7 @@ void AliTPCcalibTracks::MakeReport(Int_t stat, char* pathName){
    // 'stat' is also the number of minEntries for MakeResPlotsQTree
    // 
 
-   if (fDebugLevel > 0) Info("MakeReport","Writing plots and trees to '%s'.", pathName);
+  if (GetDebugLevel() > 0) Info("MakeReport","Writing plots and trees to '%s'.", pathName);
    MakeAmpPlots(stat, pathName);
    MakeDeltaPlots(pathName);
    FitResolutionNew(pathName);
@@ -1391,7 +1367,7 @@ void AliTPCcalibTracks::MakeAmpPlots(Int_t stat, char* pathName){
    allAmpHisOROC->SetTitle("Amp all OROCs");
    
    ps = new TPostScript("fArrayAmp.ps", 112);
-   if (fDebugLevel > -1) cout << "creating fArrayAmp.ps..." << endl;
+   if (GetDebugLevel() > -1) cout << "creating fArrayAmp.ps..." << endl;
    for (Int_t i = 0; i < fArrayAmp->GetEntriesFast(); i++){
       if ( ((TH1F*)fArrayAmp->At(i))->GetEntries() < stat  ) continue;
       ps->NewPage();
@@ -1415,7 +1391,7 @@ void AliTPCcalibTracks::MakeAmpPlots(Int_t stat, char* pathName){
    Double_t min = 0;
    Double_t max = 0;
    ps = new TPostScript("fArrayAmpRow.ps", 112);
-   if (fDebugLevel > -1) cout << "creating fArrayAmpRow.ps..." << endl;
+   if (GetDebugLevel() > -1) cout << "creating fArrayAmpRow.ps..." << endl;
    for (Int_t i = 0; i < fArrayAmpRow->GetEntriesFast(); i++){
       his = (TH1F*)fArrayAmpRow->At(i);
       if (his->GetEntries() < stat) continue;
@@ -1451,7 +1427,7 @@ void AliTPCcalibTracks::MakeDeltaPlots(char* pathName){
    Double_t max = 0;
    
    ps = new TPostScript("DeltaYZ.ps", 112);
-   if (fDebugLevel > -1) cout << "creating DeltaYZ.ps..." << endl;
+   if (GetDebugLevel() > -1) cout << "creating DeltaYZ.ps..." << endl;
    min = fDeltaY->GetBinCenter(fDeltaY->GetMaximumBin())-20;
    max = fDeltaY->GetBinCenter(fDeltaY->GetMaximumBin())+20;
    fDeltaY->SetAxisRange(min, max);
@@ -1484,7 +1460,7 @@ void AliTPCcalibTracks::MakeChargeVsDriftLengthPlotsOld(char* pathName){
    TCanvas* c1 = new TCanvas();     // valgrind 3 ???  634 bytes in 28 blocks are still reachable
    TPostScript *ps; 
    ps = new TPostScript("chargeVsDriftlengthOld.ps", 112);
-   if (fDebugLevel > -1) cout << "creating chargeVsDriftlength.ps..." << endl;
+   if (GetDebugLevel() > -1) cout << "creating chargeVsDriftlength.ps..." << endl;
    TProfile *chargeVsDriftlengthAllIROCs = ((TProfile*)fArrayChargeVsDriftlength->At(0)->Clone());
    TProfile *chargeVsDriftlengthAllOROCs = ((TProfile*)fArrayChargeVsDriftlength->At(36)->Clone());
    chargeVsDriftlengthAllIROCs->SetName("allAmpHisIROC");
@@ -1528,7 +1504,7 @@ void AliTPCcalibTracks::MakeChargeVsDriftLengthPlots(char* pathName){
    c1->Divide(0,3);
    TPostScript *ps; 
    ps = new TPostScript("chargeVsDriftlength.ps", 111);
-   if (fDebugLevel > -1) cout << "creating chargeVsDriftlengthNew.ps..." << endl;
+   if (GetDebugLevel() > -1) cout << "creating chargeVsDriftlengthNew.ps..." << endl;
    
    TProfile *chargeVsDriftlengthAllShortPads  = ((TProfile*)fcalPadRegionChargeVsDriftlength->GetObject(0,0)->Clone());
    TProfile *chargeVsDriftlengthAllMediumPads = ((TProfile*)fcalPadRegionChargeVsDriftlength->GetObject(0,1)->Clone());
@@ -1589,7 +1565,7 @@ void AliTPCcalibTracks::FitResolutionNew(char* pathName){
    
    TCanvas c;
    c.Divide(2,1); 
-   if (fDebugLevel > -1) cout << "creating ResolutionYZ.ps..." << endl;
+   if (GetDebugLevel() > -1) cout << "creating ResolutionYZ.ps..." << endl;
    TPostScript *ps = new TPostScript("ResolutionYZ.ps", 112); 
    TF2 *fres = new TF2("fres","TMath::Sqrt([0]*[0]+[1]*[1]*x+[2]*[2]*y*y)",0,250,0,1);
    fres->SetParameter(0,0.02);
@@ -1712,7 +1688,7 @@ void AliTPCcalibTracks::FitRMSNew(char* pathName){
    
    TCanvas c;        // valgrind 3   42,120 bytes in 405 blocks are still reachable   23,816 bytes in 229 blocks are still reachable
    c.Divide(2,1); 
-   if (fDebugLevel > -1) cout << "creating RMS_YZ.ps..." << endl;
+   if (GetDebugLevel() > -1) cout << "creating RMS_YZ.ps..." << endl;
    TPostScript *ps = new TPostScript("RMS_YZ.ps", 112); 
    TF2 *frms = new TF2("fres","TMath::Sqrt([0]*[0]+[1]*[1]*x+[2]*[2]*y*y)",0,250,0,1);
    frms->SetParameter(0,0.02);
@@ -1849,8 +1825,8 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
    //  RMSe1:   error of sigma of gaus fit in RMS-Histogram
    //  
       
-   if (fDebugLevel > -1) cout << " ***** this is MakeResPlotsQTree *****" << endl;
-   if (fDebugLevel > -1) cout << "    relax, the calculation will take a while..." << endl;
+  if (GetDebugLevel() > -1) cout << " ***** this is MakeResPlotsQTree *****" << endl;
+  if (GetDebugLevel() > -1) cout << "    relax, the calculation will take a while..." << endl;
   
    gSystem->MakeDirectory(pathName);
    gSystem->ChangeDirectory(pathName);
@@ -1884,7 +1860,7 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
          }
       }
    }
-   if (fDebugLevel > -1) cout << "Histograms loaded, starting to proces..." << endl;
+   if (GetDebugLevel() > -1) cout << "Histograms loaded, starting to proces..." << endl;
    
    //--------------------------------------------------------------------------------------------
    
@@ -1904,7 +1880,7 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
          // loop pad type
          for (Int_t iq = -1; iq < 10; iq++){
             // LOOP Q
-            if (fDebugLevel > -1) 
+	   if (GetDebugLevel() > -1) 
                cout << "Loop-counter, this is loop " << loopCounter << " of 66, (" 
                   << (Int_t)((loopCounter)/66.*100) << "% done), " 
                   << "idim = " << idim << ", ipad = " << ipad << ", iq = " << iq << "  \r" << std::flush;
@@ -2098,7 +2074,7 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
                         "RMSe0="<<errorRMS<<       // error of mean of gaus fit in RMS-Histogram
                         "RMSe1="<<errorSigma<<     // error of sigma of gaus fit in RMS-Histogram
                         "\n";
-                     if (fDebugLevel > 5) {
+                     if (GetDebugLevel() > 5) {
                         projectionRes->SetDirectory(fTreeResol.GetFile());
                         projectionRes->Write(projectionRes->GetName());
                         projectionRes->SetDirectory(0);
@@ -2121,391 +2097,13 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
    fileInfo.Write("fileInfo");
 //    resolFile.Close();
 //    fTreeResol.GetFile()->Close();
-   if (fDebugLevel > -1) cout << endl;
-   if (fDebugLevel > -1) cout << "MakeResPlotsQTree done, results are in '"<< kFileName.Data() <<"'." << endl;
+   if (GetDebugLevel() > -1) cout << endl;
+   if (GetDebugLevel() > -1) cout << "MakeResPlotsQTree done, results are in '"<< kFileName.Data() <<"'." << endl;
    gSystem->ChangeDirectory("..");
 }
 
 
 
-
-
-/*
-Int_t AliTPCcalibTracks::fgLoopCounter = 0;
-void  AliTPCcalibTracks::MakeResPlotsQTreeThread(Int_t minEntries, char* pathName){
-   // 
-   // 
-   // 
-   if (fDebugLevel > -1) cout << " ***** this is MakeResPlotsQTreeThread *****" << endl;
-   if (fDebugLevel > -1) cout << "    relax, the calculation will take a while..." << endl;
-   if (fDebugLevel > -1) cout << "    it will be done using 6 TThreads." << endl;
-  
-   gSystem->MakeDirectory(pathName);
-   gSystem->ChangeDirectory(pathName);
-   TString kFileName = "resol.root";
-//   TTreeSRedirector *fTreeResol = new TTreeSRedirector(kFileName.Data());
-   TTreeSRedirector fTreeResol(kFileName.Data());
-   
-   TH3F *resArray[2][3][11];
-   TH3F *rmsArray[2][3][11];
-  
-   // load histograms from fArrayQDY and fArrayQDZ 
-   // into resArray and rmsArray
-   // that is all we need here
-   for (Int_t idim = 0; idim < 2; idim++){
-      for (Int_t ipad = 0; ipad < 3; ipad++){
-         for (Int_t iq = 0; iq <= 10; iq++){
-            rmsArray[idim][ipad][iq]=0;
-            resArray[idim][ipad][iq]=0;
-            Int_t bin = GetBin(iq,ipad); 
-            TH3F *hresl = 0;
-            if (idim == 0) hresl = (TH3F*)fArrayQDY->At(bin);
-            if (idim == 1) hresl = (TH3F*)fArrayQDZ->At(bin);
-            if (!hresl) continue;
-            resArray[idim][ipad][iq] = (TH3F*) hresl->Clone();
-            resArray[idim][ipad][iq]->SetDirectory(0);
-            TH3F * hreslRMS = 0;
-            if (idim == 0) hreslRMS = (TH3F*)fArrayQRMSY->At(bin);
-            if (idim == 1) hreslRMS = (TH3F*)fArrayQRMSZ->At(bin);
-            if (!hreslRMS) continue;
-            rmsArray[idim][ipad][iq] = (TH3F*) hreslRMS->Clone();
-            rmsArray[idim][ipad][iq]->SetDirectory(0);
-         }
-      }
-   }
-   if (fDebugLevel > 4) cout << "Histograms loaded, starting to proces..." << endl;
-   
-   //--------------------------------------------------------------------------------------------
-   
-   Int_t threadCounter = 0;
-   TObjArray *listOfThreads = new TObjArray();
-  
-   fgLoopCounter = 0;
-   for (Int_t idim = 0; idim < 2; idim++){
-      // Loop y-z corrdinate
-      for (Int_t ipad = 0; ipad < 3; ipad++){
-         // loop pad type
-         
-         // make list of variables for threads
-         // make threads
-         // list them
-         // execute them
-
-         TthreadParameterStruct *structOfParameters = new TthreadParameterStruct();
-         structOfParameters->logLevel = fDebugLevel;
-         structOfParameters->minEntries = minEntries;
-         structOfParameters->dim = idim;
-         structOfParameters->pad = ipad;
-         structOfParameters->resArray = &resArray;
-         structOfParameters->rmsArray = &rmsArray;
-         structOfParameters->fileName = &kFileName;
-         structOfParameters->fTreeResol = &fTreeResol;
-         TThread *thread = new TThread(Form("thread%i", threadCounter), (void(*) (void *))&MakeResPlotsQTreeThreadFunction, (void*)structOfParameters);
-         listOfThreads->AddAt(thread, threadCounter);
-         thread->Run();
-//          gSystem->Sleep(500);  // so that the threads do not run synchron
-         
-//          typedef TH3F test;
-//          test *testArray;
-//          TH3F* (*testArray)[2][3][11];
-//          testArray = &resArray;
-         int i[2][3][4];
-         int (*ptr)[2][3][4];
-         ptr = &i;
-         int (*ptr2)[2][3][4] = ptr;
-         int j = (*ptr2)[1][1][1];
-         j = j;
-         
-      threadCounter++;
-      }  // ipad-loop
-   }  // idim-loop
-   
-   // wait untill all threads are finished
-   Bool_t allFinished = kFALSE;
-   Int_t numberOfRunningThreads = 0;
-   char c[4] = {'-', '\\', '|', '/'};
-   Int_t iTime = 0;
-   while (!allFinished) {
-      allFinished = kTRUE;
-      numberOfRunningThreads = 0;
-      for (Int_t i = 0; i < listOfThreads->GetEntriesFast(); i++) {
-         if (listOfThreads->At(i) != 0x0 && ((TThread*)listOfThreads->At(i))->GetState() == TThread::kRunningState) {
-            allFinished = kFALSE;
-            numberOfRunningThreads++;
-         }
-      }
-      cout << "Loop-counter, loop " << fgLoopCounter << " of 66 has just started, (" 
-         << (Int_t)((fgLoopCounter)/66.*100) << "% done), " << "number of running TThreads: " 
-         << numberOfRunningThreads << "    \t" << c[iTime%4] << "   \r" << std::flush;
-       iTime++;
-       gSystem->Sleep(500);
-   } 
-   cout << endl;
-  
-  // old version:
-  // Real time 0:01:31, CP time 44.690
-  
-  // version without sleep:
-  // Real time 0:02:18, CP time 106.280
-  
-  // version with sleep, listOfThreads-Bug corrected:
-  // Real time 0:01:35, CP time 0.800
-   
-   TObjString fileInfo(Form("Resolution tree, minEntries = %i", minEntries));
-   fileInfo.Write("fileInfo");
-   if (fDebugLevel > -1) cout << endl;
-   if (fDebugLevel > -1) cout << "MakeResPlotsQTree done, results are in '"<< kFileName.Data() <<"'." << endl;
-   gSystem->ChangeDirectory("..");
-}
-
-
-TMutex* AliTPCcalibTracks::fgWriteMutex  = new TMutex();
-TMutex* AliTPCcalibTracks::fgFitResMutex = new TMutex();
-TMutex* AliTPCcalibTracks::fgFitRmsMutex = new TMutex();
-void*  AliTPCcalibTracks::MakeResPlotsQTreeThreadFunction(void* arg){
-   // 
-   // 
-   // 
-   
-   TthreadParameterStruct *structOfParameters = (TthreadParameterStruct*)arg;
-   Int_t fDebugLevel = structOfParameters->logLevel;
-   Int_t minEntries = structOfParameters->minEntries;
-   Int_t idim = structOfParameters->dim;
-   Int_t ipad = structOfParameters->pad;
-   TThread::Lock();
-   TH3F* (*resArray)[2][3][11] = structOfParameters->resArray;
-   TH3F* (*rmsArray)[2][3][11] = structOfParameters->rmsArray;
-   TThread::UnLock();
-   TString *kFileName = structOfParameters->fileName;
-   TTreeSRedirector *fTreeResol = structOfParameters->fTreeResol;
-   
-   if (fDebugLevel > 4) TThread::Printf("Thread started, dim = %i, pad = %i...", idim, ipad);
-   
-   TThread::Lock();         
-   char name[200];
-   sprintf(name, "dim%ipad%i", idim, ipad);
-   TH1D *projectionRes = new TH1D(Form("projectionRes%s", name), "projectionRes", 50, -1, 1);
-   TH1D *projectionRms = new TH1D(Form("projectionRms%s", name), "projectionRms", 50, -1, 1);
-   char fitFuncName[200];
-   sprintf(name, "fitFunctionDim%iPad%i", idim, ipad);
-   TF1 *fitFunction = new TF1(fitFuncName, "gaus");
-   TThread::UnLock();         
-   
-   Double_t zMean, angleMean, zCenter, angleCenter;
-   Double_t zSigma, angleSigma;
-   
-   for (Int_t iq = -1; iq < 10; iq++){
-      // LOOP Q
-      fgLoopCounter++;
-      TH3F *hres = 0;
-      TH3F *hrms = 0;
-      Double_t qMean   = 0;
-      Float_t entriesQ = 0;
-      
-      if (fDebugLevel > 4) TThread::Printf("  start of iq-loop, dim = %i, pad = %i, iq = %i...", idim, ipad, iq);
-      // calculate qMean
-      if (iq == -1){
-         // integrated spectra
-         for (Int_t iql = 0; iql < 10; iql++){    
-            Int_t bin = GetBin(iql,ipad); 
-            TH3F *hresl = (*resArray)[idim][ipad][iql];
-            TH3F *hrmsl = (*rmsArray)[idim][ipad][iql];
-            if (!hresl) continue;
-            if (!hrmsl) continue;	    
-            entriesQ += hresl->GetEntries();
-            qMean += hresl->GetEntries() * GetQ(bin);      
-            if (!hres) {
-               TThread::Lock();
-                  hres = (TH3F*)hresl->Clone();
-                  hrms = (TH3F*)hrmsl->Clone();
-               TThread::UnLock();
-            }
-            else{
-               hres->Add(hresl);
-               hrms->Add(hrmsl);
-            }
-         }
-         qMean /= entriesQ;
-         qMean *= -1.;  // integral mean charge
-      }
-      else {
-         // loop over neighboured Q-bins 
-         // accumulate entries from neighboured Q-bins
-         for (Int_t iql = iq - 1; iql <= iq + 1; iql++){		    
-            if (iql < 0) continue;
-            Int_t bin = GetBin(iql,ipad);
-            TH3F * hresl = (*resArray)[idim][ipad][iql];
-            TH3F * hrmsl = (*rmsArray)[idim][ipad][iql];
-            if (!hresl) continue;
-            if (!hrmsl) continue;
-            entriesQ += hresl->GetEntries(); 
-            qMean += hresl->GetEntries() * GetQ(bin);    
-            if (!hres) {
-               TThread::Lock();
-                  hres = (TH3F*) hresl->Clone();
-                  hrms = (TH3F*) hrmsl->Clone();
-               TThread::UnLock();
-            }
-            else{
-               hres->Add(hresl);
-               hrms->Add(hrmsl);
-            }
-         }
-         qMean/=entriesQ;
-      }
-      TAxis *xAxisDriftLength = hres->GetXaxis();   // driftlength / z - axis
-      TAxis *yAxisAngle       = hres->GetYaxis();   // angle axis
-      TAxis *zAxisDelta       = hres->GetZaxis();   // delta axis
-      TAxis *zAxisRms         = hrms->GetZaxis();   // rms axis
-      
-      // loop over all angle bins
-      for (Int_t ibinyAngle = 1; ibinyAngle <= yAxisAngle->GetNbins(); ibinyAngle++) {
-         angleCenter = yAxisAngle->GetBinCenter(ibinyAngle);
-         // loop over all driftlength bins
-         for (Int_t ibinxDL = 1; ibinxDL <= xAxisDriftLength->GetNbins(); ibinxDL++) {
-            zCenter    = xAxisDriftLength->GetBinCenter(ibinxDL);
-            zSigma     = xAxisDriftLength->GetBinWidth(ibinxDL);
-            angleSigma = yAxisAngle->GetBinWidth(ibinyAngle); 
-            zMean      = zCenter;      // changens, when more statistic is accumulated
-            angleMean  = angleCenter;  // changens, when more statistic is accumulated
-            
-            // create 2 1D-Histograms, projectionRes and projectionRms
-            // these histograms are delta histograms for given direction, padSize, chargeBin,
-            // angleBin and driftLengthBin
-            // later on they will be fitted with a gausian, its sigma is the resoltuion...
-            sprintf(name,"%s, zCenter: %f, angleCenter: %f", hres->GetName(), zCenter, angleCenter);
-            projectionRes->SetNameTitle(name, name);
-            sprintf(name,"%s, zCenter: %f, angleCenter: %f", hrms->GetName(),zCenter,angleCenter);
-            projectionRms->SetNameTitle(name, name);
-            
-            projectionRes->Reset();
-            projectionRes->SetBins(zAxisDelta->GetNbins(), zAxisDelta->GetXmin(), zAxisDelta->GetXmax());
-            projectionRms->Reset();
-            projectionRms->SetBins(zAxisRms->GetNbins(), zAxisRms->GetXmin(), zAxisRms->GetXmax());
-            projectionRes->SetDirectory(0);
-            projectionRms->SetDirectory(0);
-            
-            Double_t entries = 0;
-            Int_t    nbins   = 0;   // counts, how many bins were accumulated
-            zMean     = 0;
-            angleMean = 0;
-            entries   = 0;
-            
-            // fill projectionRes and projectionRms for given dim, ipad and iq, 
-            // as well as for given angleBin and driftlengthBin
-            // if this gives not enough statistic, include neighbourhood 
-            // (angle and driftlength) successifely
-            for (Int_t dbin = 0; dbin <= 8; dbin++){              // delta-bins around centered angleBin and driftlengthBin
-               for (Int_t dbiny2 = -1; dbiny2 <= 1; dbiny2++) {   // delta-bins in angle direction
-                  for (Int_t dbinx2 = -3; dbinx2 <= 3; dbinx2++){ // delta-bins in driftlength direction
-                     if (TMath::Abs(dbinx2) + TMath::Abs(dbiny2) != dbin) continue;   // add each bin only one time !
-                     Int_t binx2 = ibinxDL + dbinx2;                       // position variable in x (driftlength) direction
-                     Int_t biny2 = ibinyAngle + dbiny2;                    // position variable in y (angle)  direction
-                     if (binx2 < 1 || biny2 < 1) continue;                 // don't go out of the histogram!
-                     if (binx2 >= xAxisDriftLength->GetNbins()) continue;  // don't go out of the histogram!
-                     if (biny2 >= yAxisAngle->GetNbins()) continue;        // don't go out of the histogram!
-                     nbins++;                                              // count the number of accumulated bins
-                     // Fill resolution histo
-                     for (Int_t ibin3 = 1; ibin3 < zAxisDelta->GetNbins(); ibin3++) {
-                        // Int_t content = (Int_t)hres->GetBinContent(binx2, biny2, ibin3);     // unused variable
-                        projectionRes->Fill(zAxisDelta->GetBinCenter(ibin3), hres->GetBinContent(binx2, biny2, ibin3));
-                        entries   += hres->GetBinContent(binx2, biny2, ibin3);
-                        zMean     += hres->GetBinContent(binx2, biny2, ibin3) * xAxisDriftLength->GetBinCenter(binx2);
-                        angleMean += hres->GetBinContent(binx2, biny2, ibin3) * yAxisAngle->GetBinCenter(biny2);
-                     }  // ibin3 loop
-                     // fill RMS histo
-                     for (Int_t ibin3 = 1; ibin3 < zAxisRms->GetNbins(); ibin3++) {
-                        projectionRms->Fill(zAxisRms->GetBinCenter(ibin3), hrms->GetBinContent(binx2, biny2, ibin3));
-                     }
-                  }  //dbinx2 loop
-                  if (entries > minEntries) break; // enough statistic accumulated
-               }  // dbiny2 loop
-               if (entries > minEntries) break;    // enough statistic accumulated
-            }  // dbin loop
-            if ( entries< minEntries) continue;  // when it was absolutly impossible to get enough statistic, don't write this point into the resolution tree  
-            zMean /= entries;
-            angleMean /= entries;
-            
-            if (entries > minEntries) {
-               //  when enough statistic is accumulated
-               //  fit Delta histograms with a gausian
-               //  of the gausian is the resolution (resol), its fit error is sigma
-               //  store also mean and RMS of the histogram
-               Float_t xmin     = projectionRes->GetMean() - 2. * projectionRes->GetRMS() - 0.2;
-               Float_t xmax     = projectionRes->GetMean() + 2. * projectionRes->GetRMS() + 0.2;
-               fitFunction->SetMaximum(xmax);
-               fitFunction->SetMinimum(xmin);
-               TThread::Lock();
-               // fgFitResMutex->Lock();
-                  projectionRes->Fit(fitFuncName, "qN0", "", xmin, xmax);
-               // fgFitResMutex->UnLock();
-               TThread::UnLock();
-               Float_t resol    = fitFunction->GetParameter(2);
-               Float_t sigma    = fitFunction->GetParError(2);
-               Float_t meanR    = projectionRes->GetMean();
-               Float_t sigmaR   = projectionRes->GetRMS();
-               // fit also RMS histograms with a gausian
-               // store mean and sigma of the gausian in rmsMean and rmsSigma
-               // store also the fit errors in errorRMS and errorSigma
-               xmin = projectionRms->GetMean() - 2. * projectionRes->GetRMS() - 0.2;
-               xmax = projectionRms->GetMean() + 2. * projectionRes->GetRMS() + 0.2;
-               fitFunction->SetMaximum(xmax);
-               fitFunction->SetMinimum(xmin);
-               TThread::Lock();
-                  projectionRms->Fit(fitFuncName, "qN0", "", xmin, xmax);
-               TThread::UnLock();
-               Float_t rmsMean    = fitFunction->GetParameter(1);
-               Float_t rmsSigma   = fitFunction->GetParameter(2);
-               Float_t errorRMS   = fitFunction->GetParError(1);
-               Float_t errorSigma = fitFunction->GetParError(2);
-               Float_t length = 0.75;
-               if (ipad == 1) length = 1;
-               if (ipad == 2) length = 1.5;
-               
-               fgWriteMutex->Lock();
-               (*fTreeResol)<<"Resol"<<
-                  "Entries="<<entries<<      // number of entries for this resolution point
-                  "nbins="<<nbins<<          // number of bins that were accumulated
-                  "Dim="<<idim<<             // direction, Dim==0: y-direction, Dim==1: z-direction
-                  "Pad="<<ipad<<             // padSize; short, medium and long
-                  "Length="<<length<<        // pad length, 0.75, 1, 1.5
-                  "QMean="<<qMean<<          // mean charge of current charge bin and its neighbours, Qmean<0: integrated spectra
-                  "Zc="<<zCenter<<           // center of middle bin in drift direction
-                  "Zm="<<zMean<<             // mean dirftlength for accumulated Delta-Histograms
-                  "Zs="<<zSigma<<            // width of driftlength bin
-                  "AngleC="<<angleCenter<<   // center of middle bin in Angle-Direction
-                  "AngleM="<<angleMean<<     // mean angle for accumulated Delta-Histograms
-                  "AngleS="<<angleSigma<<    // width of Angle-bin
-                  "Resol="<<resol<<          // sigma for gaus fit through Delta-Histograms
-                  "Sigma="<<sigma<<          // error of sigma for gaus fit through Delta Histograms
-                  "MeanR="<<meanR<<          // mean of the Delta-Histogram
-                  "SigmaR="<<sigmaR<<        // rms of the Delta-Histogram
-                  "RMSm="<<rmsMean<<         // mean of the gaus fit through RMS-Histogram
-                  "RMSs="<<rmsSigma<<        // sigma of the gaus fit through RMS-Histogram
-                  "RMSe0="<<errorRMS<<       // error of mean of gaus fit in RMS-Histogram
-                  "RMSe1="<<errorSigma<<     // error of sigma of gaus fit in RMS-Histogram
-                  "\n";
-               if (fDebugLevel > 5) {
-                  projectionRes->SetDirectory(fTreeResol->GetFile());
-                  projectionRes->Write(projectionRes->GetName());
-                  projectionRes->SetDirectory(0);
-                  projectionRms->SetDirectory(fTreeResol->GetFile());
-                  projectionRms->Write(projectionRms->GetName());
-                  projectionRes->SetDirectory(0);
-               }
-               fgWriteMutex->UnLock();
-            }  // if (projectionRes->GetSum() > minEntries)
-         }  // for (Int_t ibinxDL = 1; ibinxDL <= xAxisDriftLength->GetNbins(); ibinxDL++)
-      }  // for (Int_t ibinyAngle = 1; ibinyAngle <= yAxisAngle->GetNbins(); ibinyAngle++)
-      
-   }  // iq-loop   
-   delete projectionRes;
-   delete projectionRms;
-   if (fDebugLevel > 4) TThread::Printf("Ende, dim = %i, pad = %i", idim, ipad);
-   return 0;
-}
-
-*/
 
 
 Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
@@ -2515,12 +2113,12 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    // Be carefull: histograms are linked to a file, switch this off by TH1::AddDirectory(kFALSE) !!!
    // 
    
-   if (fDebugLevel > 0) cout << " *****  this is AliTPCcalibTracks::Merge(TCollection *collectionList)  *****"<< endl;  
+  if (GetDebugLevel() > 0) cout << " *****  this is AliTPCcalibTracks::Merge(TCollection *collectionList)  *****"<< endl;  
    if (!collectionList) return 0;
    if (collectionList->IsEmpty()) return -1;
    
-   if (fDebugLevel > 1) cout << "the collectionList contains " << collectionList->GetEntries() << " entries." << endl;     //    REMOVE THIS LINE!!!!!!!!!!!!!!!!!1
-   if (fDebugLevel > 5) cout << " the list in the merge-function looks as follows: " << endl;
+   if (GetDebugLevel() > 1) cout << "the collectionList contains " << collectionList->GetEntries() << " entries." << endl;     //    REMOVE THIS LINE!!!!!!!!!!!!!!!!!1
+   if (GetDebugLevel() > 5) cout << " the list in the merge-function looks as follows: " << endl;
    collectionList->Print();
    
    // create a list for each data member
@@ -2550,7 +2148,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    
    TIterator *listIterator = collectionList->MakeIterator();
    AliTPCcalibTracks *calibTracks = 0;
-   if (fDebugLevel > 1) cout << "start to iterate, filling lists" << endl;    
+   if (GetDebugLevel() > 1) cout << "start to iterate, filling lists" << endl;    
    Int_t counter = 0;
    while ( (calibTracks = (AliTPCcalibTracks*)listIterator->Next()) ){
       // loop over all entries in the collectionList and get dataMembers into lists
@@ -2578,12 +2176,12 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       fCalPadClusterPerPad->Add(calibTracks->GetfCalPadClusterPerPad());
       fCalPadClusterPerPadRaw->Add(calibTracks->GetfCalPadClusterPerPadRaw());
       counter++;
-      if (fDebugLevel > 5) cout << "filling lists, object " << counter << " added." << endl;
+      if (GetDebugLevel() > 5) cout << "filling lists, object " << counter << " added." << endl;
    }
    
    
    // merge data members
-   if (fDebugLevel > 0) cout << "histogram's merge-functins are called... " << endl; 
+   if (GetDebugLevel() > 0) cout << "histogram's merge-functins are called... " << endl; 
    fDeltaY->Merge(deltaYList);
    fDeltaZ->Merge(deltaZList);
    fHclus->Merge(hclusList);
@@ -2597,7 +2195,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    TList* histList = 0;
    TIterator *objListIterator = 0;
    
-   if (fDebugLevel > 0) cout << "merging fArrayAmpRows..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fArrayAmpRows..." << endl;
    // merge fArrayAmpRows
    for (Int_t i = 0; i < fArrayAmpRow->GetEntriesFast(); i++ ) {  // loop over data member, i<72
       objListIterator = arrayAmpRowList->MakeIterator();
@@ -2613,7 +2211,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       delete objListIterator;
    }
    
-   if (fDebugLevel > 0) cout << "merging fArrayAmps..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fArrayAmps..." << endl;
    // merge fArrayAmps
    for (Int_t i = 0; i < fArrayAmp->GetEntriesFast(); i++ ) {  // loop over data member, i<72
       TIterator *objListIterator = arrayAmpList->MakeIterator();
@@ -2629,7 +2227,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       delete objListIterator;
    }
    
-   if (fDebugLevel > 0) cout << "merging fArrayQDY..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fArrayQDY..." << endl;
    // merge fArrayQDY
    for (Int_t i = 0; i < fArrayQDY->GetEntriesFast(); i++) { // loop over data member, i < 300
       objListIterator = arrayQDYList->MakeIterator();
@@ -2645,7 +2243,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       delete objListIterator;
    }
 
-   if (fDebugLevel > 0) cout << "merging fArrayQDZ..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fArrayQDZ..." << endl;
    // merge fArrayQDZ
    for (Int_t i = 0; i < fArrayQDZ->GetEntriesFast(); i++) { // loop over data member, i < 300
       objListIterator = arrayQDZList->MakeIterator();
@@ -2661,7 +2259,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       delete objListIterator;
    }
 
-   if (fDebugLevel > 0) cout << "merging fArrayQRMSY..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fArrayQRMSY..." << endl;
    // merge fArrayQRMSY
    for (Int_t i = 0; i < fArrayQRMSY->GetEntriesFast(); i++) { // loop over data member, i < 300
       objListIterator = arrayQRMSYList->MakeIterator();
@@ -2677,7 +2275,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       delete objListIterator;
    }   
 
-   if (fDebugLevel > 0) cout << "merging fArrayQRMSZ..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fArrayQRMSZ..." << endl;
    // merge fArrayQRMSZ
    for (Int_t i = 0; i < fArrayQRMSZ->GetEntriesFast(); i++) { // loop over data member, i < 300
       objListIterator = arrayQRMSZList->MakeIterator();
@@ -2693,7 +2291,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       delete objListIterator;
    } 
    
-   if (fDebugLevel > 0) cout << "merging fArrayChargeVsDriftlength..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fArrayChargeVsDriftlength..." << endl;
    // merge fArrayChargeVsDriftlength
    for (Int_t i = 0; i < fArrayChargeVsDriftlength->GetEntriesFast(); i++) { // loop over data member, i < 300
       objListIterator = arrayChargeVsDriftlengthList->MakeIterator();
@@ -2709,7 +2307,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       delete objListIterator;
    }    
    
-   if (fDebugLevel > 0) cout << "merging fcalPadRegionChargeVsDriftlength..." << endl;
+   if (GetDebugLevel() > 0) cout << "merging fcalPadRegionChargeVsDriftlength..." << endl;
    // merge fcalPadRegionChargeVsDriftlength
    AliTPCCalPadRegion *cpr = 0x0;
    
@@ -2744,7 +2342,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    
         
    
-   if (fDebugLevel > 0) cout << "starting to merge the rest: fResolY, fResolZ , fRMSY, fRMSZ..." << endl;
+   if (GetDebugLevel() > 0) cout << "starting to merge the rest: fResolY, fResolZ , fRMSY, fRMSZ..." << endl;
    // merge fResolY
    for (Int_t i = 0; i < fResolY->GetEntriesFast(); i++) { // loop over data member, i < 3
       objListIterator = resolYList->MakeIterator();
@@ -2817,12 +2415,9 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    delete resolZList;
    delete rMSYList;
    delete rMSZList;
-//    delete nRowsList;
-//    delete nSectList;
-//    delete fileNoList;
    delete listIterator;
    
-   if (fDebugLevel > 0) cout << "merging done!" << endl;
+   if (GetDebugLevel() > 0) cout << "merging done!" << endl;
    
    return 1;
 }

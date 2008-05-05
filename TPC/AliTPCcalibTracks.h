@@ -99,8 +99,6 @@ public :
    AliTPCCalPad*          GetfCalPadClusterPerPadRaw() {return fCalPadClusterPerPadRaw;}
    AliTPCCalPadRegion*    GetCalPadRegionchargeVsDriftlength() {return fcalPadRegionChargeVsDriftlength;}
    AliTPCcalibTracksCuts* GetCuts() {return fCuts;}
-   void       SetLogLevel(Int_t level) {fDebugLevel = level;}
-   Int_t      GetLogLevel() const {return fDebugLevel;}
 
 protected:         
    ClassDef(AliTPCcalibTracks,1)
@@ -113,7 +111,6 @@ private:
    static Float_t GetPad(Int_t bin);
    void FillResolutionHistoLocalDebugPart(AliTPCseed *track, AliTPCclusterMI *cluster0, Int_t irow, Float_t  angley, Float_t  anglez, Int_t nclFound, Int_t kDelta);
    AliTPCClusterParam *fClusterParam; //! pointer to cluster parameterization
-   TTreeSRedirector   *fDebugStream;  //! debug stream for
    AliTPCROC *fROC;          //!
    TObjArray *fArrayAmpRow; // array with amplitudes versus row for given sector 
    TObjArray *fArrayAmp;    // array with amplitude for sectors
@@ -137,7 +134,6 @@ private:
    TH2I      *fClusterCutHisto;     // histogram showing in which padRow the clusters were cutted by which criterium
    AliTPCCalPad *fCalPadClusterPerPad;    // AliTPCCalPad showing the number of clusters per Pad
    AliTPCCalPad *fCalPadClusterPerPadRaw; // AliTPCCalPad showing the number of clusters per Pad before cuts on clusters are applied
-   Int_t      fDebugLevel;  // log level - debug output: -1: silence, 0: default, 1: things like constructor called, 5: write fDebugStream, 6: waste your screen
    TLinearFitter *fFitterLinY1;   //!
    TLinearFitter *fFitterLinZ1;   //! 
    TLinearFitter *fFitterLinY2;   //! 
