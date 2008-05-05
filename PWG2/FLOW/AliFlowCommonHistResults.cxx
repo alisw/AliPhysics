@@ -13,10 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/ 
-
 #include "Riostream.h"                 //needed as include
 #include "AliFlowCommonConstants.h"    //needed as include
 #include "AliFlowCommonHistResults.h"
@@ -116,3 +112,5 @@ Bool_t AliFlowCommonHistResults::FillChi(Double_t fChi)
 }
 
 //----------------------------------------------------------------------- 
+
+

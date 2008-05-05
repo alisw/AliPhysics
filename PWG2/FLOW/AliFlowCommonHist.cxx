@@ -13,10 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/ 
-
 #include "Riostream.h"              //needed as include
 #include "AliFlowCommonConstants.h" //needed as include
 #include "AliFlowCommonHist.h"
@@ -257,3 +253,5 @@ Double_t AliFlowCommonHist::GetMeanPt(Int_t fBin)
   return fMeanPt;
   
 }
+
+

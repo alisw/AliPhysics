@@ -66,3 +66,4 @@ class AliFlowCommonHist {
   ClassDef(AliFlowCommonHist,0);                 // macro for rootcint
 };
 #endif
+
