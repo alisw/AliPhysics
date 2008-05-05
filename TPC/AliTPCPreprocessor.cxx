@@ -491,9 +491,8 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
            AliTPCCalROC *rocRMS=calPed->GetCalRocRMS(sector, kFALSE);
            if ( rocRMS )  calPadRMS->SetCalROC(rocRMS,sector);
         }
-
-        f->Close();
         delete calPed; 
+        f->Close();
       }
      ++index;
     }  // while(list)
@@ -597,8 +596,8 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
            AliTPCCalROC *rocQmean=calPulser->GetCalRocQ(sector);
            if ( rocQmean )  pulserQmean->SetCalROC(rocQmean,sector);
         }
-       f->Close();
        delete calPulser;
+       f->Close();
       }
      ++index;
     }  // while(list)
@@ -712,8 +711,8 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 	   TGraph *grQ=calCE->MakeGraphTimeCE(sector,0,3); // Q time graph
            if ( grQ ) rocTtime->AddAt(grQ,sector);         
         }
-       f->Close();
        delete calCE;
+       f->Close();
       }
      ++index;
     }  // while(list)
