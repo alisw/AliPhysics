@@ -1033,7 +1033,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     ffile->cd();
 
     //
-    // Propagate track to the beam pipe  (if not laready done by ITS)
+    // Propagate track to the beam pipe  (if not already done by ITS)
     //
     const Int_t ntracks = fesd->GetNumberOfTracks();
     const Double_t kBz = fesd->GetMagneticField();
@@ -2052,7 +2052,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   TPluginManager* pluginManager = gROOT->GetPluginManager();
   TString detName = fgkDetectorName[iDet];
   TString recName = "Ali" + detName + "Reconstructor";
-  if (gAlice && !gAlice->GetDetector(detName) && (detName != "HLT")) return NULL;
+  if (fRunLoader && !fRunLoader->GetLoader(detName+"Loader") && (detName != "HLT")) return NULL;
 
   AliReconstructor* reconstructor = NULL;
   // first check if a plugin is defined for the reconstructor
@@ -2427,7 +2427,7 @@ AliQADataMakerRec * AliReconstruction::GetQADataMaker(Int_t iDet)
   TPluginManager* pluginManager = gROOT->GetPluginManager();
   TString detName = fgkDetectorName[iDet];
   TString qadmName = "Ali" + detName + "QADataMakerRec";
-  if (gAlice && !gAlice->GetDetector(detName) && (detName != "HLT")) 
+  if (fRunLoader && !fRunLoader->GetLoader(detName+"Loader") && (detName != "HLT")) 
     return NULL;
 
   // first check if a plugin is defined for the quality assurance data maker
