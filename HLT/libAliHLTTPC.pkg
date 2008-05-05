@@ -12,7 +12,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCDigitReader.h \
 		AliHLTTPCDigitReaderPacked.h \
 		AliHLTTPCDigitReaderUnpacked.h \
-		AliHLTTPCDigitReaderRaw.h \
 		AliHLTTPCDigitReaderDecoder.h \
 		AliHLTTPCDigitDumpComponent.h \
 		AliHLTTPCZeroSuppressionComponent.h \
