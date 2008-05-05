@@ -46,6 +46,7 @@ using namespace std;
 #include "AliHLTTPCInterMerger.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTCommonCDBEntries.h"
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -810,7 +811,7 @@ int AliHLTTPCSliceTrackerComponent::Reconfigure(const char* cdbEntry, const char
     }
   }
 
-  const char* pathBField="TPC/Config/BField";
+  const char* pathBField=kAliHLTCDBSolenoidBz;
 
   if (pathBField) {
     HLTInfo("reconfigure B-Field from entry %s, chain id %s", path,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
