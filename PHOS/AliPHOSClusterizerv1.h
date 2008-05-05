@@ -142,6 +142,7 @@ private:
 
   Bool_t  fToUnfold ;                // To perform unfolding 
   Bool_t  fWrite ;                   // Write RecPoints to TreeR  
+  Bool_t  fDigitsUsed[53760];        //Mark digits as already used in cluster (EMC:5*56*64 ; CPV: 5*56*128)
  
   Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found

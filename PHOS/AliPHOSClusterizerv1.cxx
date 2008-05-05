@@ -194,7 +194,8 @@ ClassImp(AliPHOSClusterizerv1)
 AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
   AliPHOSClusterizer(),
   fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
-  fWrite(0),                  fNumberOfEmcClusters(0),  fNumberOfCpvClusters(0),
+  fWrite(0),                  
+  fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
   fW0CPV(0),                  fEmcTimeGate(0)
@@ -209,7 +210,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
 AliPHOSClusterizerv1::AliPHOSClusterizerv1(AliPHOSGeometry *geom) :
   AliPHOSClusterizer(geom),
   fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
-  fWrite(0),                  fNumberOfEmcClusters(0),  fNumberOfCpvClusters(0),
+  fWrite(0),                
+  fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
   fW0CPV(0),                  fEmcTimeGate(0)
@@ -407,11 +409,10 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
   // Gives the neighbourness of two digits = 0 are not neighbour but continue searching 
   //                                       = 1 are neighbour
   //                                       = 2 are not neighbour but do not continue searching
+  //                                       =-1 are not neighbour, continue searching, but do not look before d2 next time
   // neighbours are defined as digits having at least a common vertex 
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   //                                      which is compared to a digit (d2)  not yet in a cluster  
-
-  Int_t rv = 0 ; 
 
   Int_t relid1[4] ; 
   fGeom->AbsToRelNumbering(d1->GetId(), relid1) ; 
@@ -426,22 +427,26 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
     if (( coldiff <= 1 )  && ( rowdiff <= 1 )){   //At least common vertex
       //    if (( relid1[2]==relid2[2] && coldiff <= 1 )  || ( relid1[3]==relid2[3] &&  rowdiff <= 1 )){ //common side
       if((relid1[1] != 0) || (TMath::Abs(d1->GetTime() - d2->GetTime() ) < fEmcTimeGate))
-      rv = 1 ; 
+      return 1 ; 
     }
     else {
       if((relid2[2] > relid1[2]) && (relid2[3] > relid1[3]+1)) 
-        rv = 2; //  Difference in row numbers is too large to look further 
+        return 2; //  Difference in row numbers is too large to look further 
     }
+    return 0 ;
 
   } 
   else {
+    if(relid1[0] > relid2[0] && relid1[1]==relid2[1] ) //we switched to the next module
+      return -1 ;
+    if(relid1[1] < relid2[1]) //we switched from EMC(0) to CPV(-1)
+      return -1 ;
     
-    if( (relid1[0] < relid2[0]) || (relid1[1] != relid2[1]) )  
-      rv=2 ;
+    return 2 ;
 
   }
 
-  return rv ; 
+  return 0 ; 
 }
 //____________________________________________________________________________
 Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit) const
@@ -535,22 +540,27 @@ void AliPHOSClusterizerv1::MakeClusters()
   fNumberOfCpvClusters     = 0 ;
   fNumberOfEmcClusters     = 0 ;
 
-  TClonesArray * digitsC =  static_cast<TClonesArray*>( fDigitsArr->Clone() ) ;
- 
-  // Clusterization starts  
-
-  TIter nextdigit(digitsC) ; 
+  //Mark all digits as unused yet
+  Int_t nDigits=fDigitsArr->GetEntriesFast() ;
+  for(Int_t i=0; i<nDigits; i++){
+    fDigitsUsed[i]=0 ;
+  }
+  Int_t iFirst = 0 ; //first index of digit which potentially can be a part of cluster
+                     //e.g. first digit in this module, first CPV digit etc.
   AliPHOSDigit * digit ; 
-  Bool_t notremoved = kTRUE ;
+  TArrayI clusterdigitslist(1500) ;   
+  AliPHOSRecPoint * clu = 0 ; 
+  for(Int_t i=0; i<nDigits; i++){
+    if(fDigitsUsed[i])
+      continue ;
 
-  while ( (digit = dynamic_cast<AliPHOSDigit *>( nextdigit()) ) ) { // scan over the list of digitsC
-    
+    digit=static_cast<AliPHOSDigit*>(fDigitsArr->At(i)) ;
 
-    AliPHOSRecPoint * clu = 0 ; 
+    clu=0 ;
 
-    TArrayI clusterdigitslist(1500) ;   
     Int_t index ;
 
+    //is this digit so energetic that start cluster?
     if (( IsInEmc(digit) &&  digit->GetEnergy() > fEmcClusteringThreshold ) || 
         ( IsInCpv(digit) &&  digit->GetEnergy() > fCpvClusteringThreshold ) ) {
       Int_t iDigitInCluster = 0 ; 
@@ -561,78 +571,61 @@ void AliPHOSClusterizerv1::MakeClusters()
           fEMCRecPoints->Expand(2*fNumberOfEmcClusters+1) ;
           
         fEMCRecPoints->AddAt(new  AliPHOSEmcRecPoint(""), fNumberOfEmcClusters) ;
-        clu = dynamic_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(fNumberOfEmcClusters) ) ; 
+        clu = static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(fNumberOfEmcClusters) ) ; 
 	fNumberOfEmcClusters++ ; 
 	clu->AddDigit(*digit, digit->GetEnergy()) ;
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;
         iDigitInCluster++ ;
-        digitsC->Remove(digit) ; 
-
+        fDigitsUsed[i]=kTRUE ; 
       } else { 
-        
         // start a new CPV cluster
         if(fNumberOfCpvClusters >= fCPVRecPoints->GetSize()) 
           fCPVRecPoints->Expand(2*fNumberOfCpvClusters+1);
 
         fCPVRecPoints->AddAt(new AliPHOSCpvRecPoint(""), fNumberOfCpvClusters) ;
-
-        clu =  dynamic_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(fNumberOfCpvClusters) ) ;  
+        clu =  static_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(fNumberOfCpvClusters) ) ;  
         fNumberOfCpvClusters++ ; 
         clu->AddDigit(*digit, digit->GetEnergy())  ;        
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList()  ;        
         iDigitInCluster++ ; 
-        digitsC->Remove(digit) ; 
-        nextdigit.Reset() ;
-        
-        // Here we remove remaining EMC digits, which cannot make a cluster
-        
-        if( notremoved ) { 
-          while( ( digit = dynamic_cast<AliPHOSDigit *>( nextdigit() ) ) ) {
-            if( IsInEmc(digit) ) 
-              digitsC->Remove(digit) ;
-            else 
-              break ;
-          }
-          notremoved = kFALSE ;
-        }
-        
+        fDigitsUsed[i]=kTRUE ;
       } // else        
       
-      nextdigit.Reset() ;
-      
+      //Now scan remaining digits in list to find neigbours of our seed
+ 
       AliPHOSDigit * digitN ; 
       index = 0 ;
       while (index < iDigitInCluster){ // scan over digits already in cluster 
-        digit =  dynamic_cast<AliPHOSDigit*>( fDigitsArr->At(clusterdigitslist[index]) )  ;      
+        digit =  static_cast<AliPHOSDigit*>( fDigitsArr->At(clusterdigitslist[index]) )  ;      
         index++ ; 
-        while ( (digitN = dynamic_cast<AliPHOSDigit *>( nextdigit() ) ) ) { // scan over the reduced list of digits 
+        for(Int_t j=iFirst; j<nDigits; j++){
+          if(fDigitsUsed[j]) 
+            continue ;        //look through remaining digits
+          digitN = static_cast<AliPHOSDigit*>( fDigitsArr->At(j) ) ;
           Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!!
           switch (ineb ) {
+          case -1:   //too early (e.g. previous module), do not look before j at subsequent passes
+            iFirst=j ;
+            break ;
           case 0 :   // not a neighbour
             break ;
           case 1 :   // are neighbours 
 	    clu->AddDigit(*digitN, digitN->GetEnergy());
-            clusterdigitslist[iDigitInCluster] = digitN->GetIndexInList() ; 
+            clusterdigitslist[iDigitInCluster] = j ; 
             iDigitInCluster++ ; 
-            digitsC->Remove(digitN) ;
+            fDigitsUsed[j]=kTRUE ;
             break ;
           case 2 :   // too far from each other
             goto endofloop;   
           } // switch
           
-        } // while digitN
+        }
         
-      endofloop: ;
-        nextdigit.Reset() ; 
+        endofloop: ; //scanned all possible neighbours for this digit
         
       } // loop over cluster     
-
     } // energy theshold  
-
-    
-  } // while digit
-
-  delete digitsC ;
+  } 
 
 }
 
