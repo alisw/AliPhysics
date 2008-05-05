@@ -20,6 +20,7 @@
 #include "SystemOfUnits.h"
 
 #include "AliFemtoEvent.h"
+#include "AliFemtoModelHiddenInfo.h"
 
 ClassImp(AliFemtoEventReaderESDChain)
 
@@ -32,6 +33,7 @@ using namespace std;
 AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fFileName(" "),
   fConstrained(true),
+  fReadInner(false),
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
@@ -53,6 +55,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   AliFemtoEventReader(aReader),
   fFileName(" "),
   fConstrained(true),
+  fReadInner(false),
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
@@ -60,6 +63,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
+  fReadInner = aReader.fReadInner;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
@@ -109,6 +113,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
     return *this;
 
   fConstrained = aReader.fConstrained;
+  fReadInner = aReader.fReadInner;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
@@ -173,6 +178,16 @@ bool AliFemtoEventReaderESDChain::GetConstrained() const
   return fConstrained;
 }
 //__________________
+void AliFemtoEventReaderESDChain::SetReadTPCInner(const bool readinner)
+{
+  fReadInner=readinner;
+}
+
+bool AliFemtoEventReaderESDChain::GetReadTPCInner() const
+{
+  return fReadInner;
+}
+
 AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 {
   // Get the event, read all the relevant information
@@ -264,6 +279,21 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetPidProbProton(esdpid[4]);
 						
       double pxyz[3];
+      if (fReadInner == true) {
+	
+	if (esdtrack->GetTPCInnerParam()) {
+	  AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	  param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
+	  param->GetPxPyPz(pxyz);//reading noconstarined momentum
+	  delete param;
+
+	  AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+	  tInfo->SetPDGPid(211);
+	  tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+	  tInfo->SetMass(0.13957);
+	  trackCopy->SetHiddenInfo(tInfo);
+	}
+      }
       if (fConstrained==true)		    
 	tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
       else

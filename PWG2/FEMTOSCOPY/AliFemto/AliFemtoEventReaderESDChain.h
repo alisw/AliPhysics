@@ -34,6 +34,8 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   AliFemtoString Report();
   void SetConstrained(const bool constrained);
   bool GetConstrained() const;
+  void SetReadTPCInner(const bool readinner);
+  bool GetReadTPCInner() const;
 
   void SetESDSource(AliESDEvent *aESD);
   //  void SetESDfriendSource(AliESDfriend *aFriend);
@@ -43,6 +45,8 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
  private:
   string         fFileName;      //name of current ESD file
   bool           fConstrained;   //flag to set which momentum from ESD file will be use
+  bool           fReadInner;        // flag to set if one wants to read TPC-only momentum
+                                    // instead of the global one
   int            fNumberofEvent; //number of Events in ESD file
   int            fCurEvent;      //number of current event
   unsigned int   fCurFile;       //number of current file
