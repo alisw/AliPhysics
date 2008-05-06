@@ -24,10 +24,15 @@ class AliFlowVector;
 class AliFlowAnalysisWithCumulants {
  public:
   AliFlowAnalysisWithCumulants();
+  AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants&);
   virtual ~AliFlowAnalysisWithCumulants();
+  
+  AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants&);
+  
   virtual void CreateOutputObjects();
   virtual void Exec(AliFlowEventSimple* fEvent);
   virtual void Terminate(Int_t fCount);
+
  private:
   AliFlowEventSimple* fEvent;//event     
   AliFlowTrackSimple* fTrack;//track

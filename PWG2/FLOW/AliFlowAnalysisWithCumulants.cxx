@@ -80,9 +80,58 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
    }
   }
 
+//________________________________________________________________________
+
+AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants&):  
+  fEvent(0),
+  fTrack(0),
+  fnEvts(0),
+  fnPrim(0),
+  fAvM(0),
+  fR0(0),
+  fPtMax(0),
+  fPtMin(0),
+  fBinWidth(0),
+  fAvQx(0),
+  fAvQy(0),
+  fAvQ2x(0),
+  fAvQ2y(0),
+  fHistFileName(0),
+  fHistFile(0),
+  fCommonHists(0),
+  fCommonHistsRes2(0),
+  fCommonHistsRes4(0),
+  fCommonHistsRes6(0),
+  fCommonHistsRes8(0)
+  {
+  //copy constructor 
+   fR0=AliFlowCumuConstants::fgR0;
+   fPtMax=AliFlowCommonConstants::GetPtMax(); 
+   fPtMin=AliFlowCommonConstants::GetPtMin();
+   fBinWidth=(fPtMax-fPtMin)/fgknBins;
+  
+   for(Int_t n=0;n<fgknBins;n++){
+    fBinEventEntries[n]=0;
+    fBinNoOfParticles[n]=0;
+    fBinMeanPt[n]=0;
+    for(Int_t p=0;p<fgkPmax;p++){
+     for(Int_t q=0;q<fgkQmax;q++){
+      fAvG[p][q]=0;
+      fBinEventDRe[n][p][q]=0; 
+      fBinEventDIm[n][p][q]=0;
+     }
+    }
+   }
+  }
+
 AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants(){
 //desctructor
 }  
+
+AliFlowAnalysisWithCumulants& AliFlowAnalysisWithCumulants::operator=(const AliFlowAnalysisWithCumulants&)
+{
+ return *this;
+}
 
 //___________________________________________________________________________
 void AliFlowAnalysisWithCumulants::CreateOutputObjects(){
