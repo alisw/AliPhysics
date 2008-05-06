@@ -328,13 +328,10 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       if (track->GetLabel() < 0) nFake++;
 
       // resolutions
-      Double_t p[3];
-      track->GetConstrainedPxPyPz(p);
-      TVector3 pTrack(p);
-      hResPtInv->Fill(100. * (1./pTrack.Pt() - 1./particle->Pt()) * 
+      hResPtInv->Fill(100. * (TMath::Abs(track->GetSigned1Pt()) - 1./particle->Pt()) * 
 		      particle->Pt());
-      hResPhi->Fill(1000. * (pTrack.Phi() - particle->Phi()));
-      hResTheta->Fill(1000. * (pTrack.Theta() - particle->Theta()));
+      hResPhi->Fill(1000. * (track->Phi() - particle->Phi()));
+      hResTheta->Fill(1000. * (track->Theta() - particle->Theta()));
 
       // PID
       if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) continue;
@@ -360,12 +357,12 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       Double_t time[AliPID::kSPECIES];
       track->GetIntegratedTimes(time);
       if (iGen == iRec) {
-	hDEdxRight->Fill(pTrack.Mag(), track->GetTPCsignal());
+	hDEdxRight->Fill(particle->P(), track->GetTPCsignal());
         if ((track->GetStatus() & AliESDtrack::kTOFpid) != 0) {
 	  hResTOFRight->Fill(track->GetTOFsignal() - time[iRec]);
 	}
       } else {
-	hDEdxWrong->Fill(pTrack.Mag(), track->GetTPCsignal());
+	hDEdxWrong->Fill(particle->P(), track->GetTPCsignal());
         if ((track->GetStatus() & AliESDtrack::kTOFpid) != 0) {
 	  hResTOFWrong->Fill(track->GetTOFsignal() - time[iRec]);
 	}
