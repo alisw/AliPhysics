@@ -1,8 +1,12 @@
 #-*- Mode: Makefile -*-
 # $Id$
 # package definition for the libAliHLTPHOS library
-CLASS_HDRS:=	\
-		  AliHLTPHOSBase.h \
+
+
+include $(MODDIR)/hlt.conf
+
+
+CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSDataCorruptor.h \
@@ -44,7 +48,13 @@ CLASS_HDRS:=	\
 		  AliHLTPHOSESDMaker.h \
 		  AliHLTPHOSESDMakerComponent.h \
 		  AliHLTPHOSRcuCalibrationProcessorComponent.h \
-		  AliHLTPHOSRcuCalibrationProcessor.h
+		  AliHLTPHOSRcuCalibrationProcessor.h \
+		  AliHLTPHOSPattern.h \
+		  AliHLTPHOSRcuAltroPatternTest.h \
+		  AliHLTPHOSRcuAltroPatternTestComponent.h \
+		  AliHLTPHOSModuleCalibrationProcessorComponent.h \
+		  AliHLTPHOSRcuDAComponent.h \
+                  AliHLTPHOSRcuProperties.h
 #		  AliHLTPHOSTreeMaker.h \
 #  		  AliHLTPHOSTreeMakerComponent.h \
 #		  AliHLTPHOSEmcCalibrationHistogramProducer.h 
@@ -78,24 +88,19 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 
 MODULE_DHDR:=	  HLTPHOSLinkDef.h
 
-EINCLUDE     := HLT/BASE HLT/BASE/util STEER RAW PHOS
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}		
 
-LIBRARY_DEP  := -lHLTbase -lPHOSbase -lPHOSshuttle -lSTEER -lRAWDatarec -lESD
+EINCLUDE     := HLT/BASE HLT/BASE/util STEER RAW PHOS
 
 ###############################################################################
 #
 # do not change anything below this line
 #
-include $(MODDIR)/hlt.conf
-
 SRCS:=$(patsubst %,PHOS/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,PHOS/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,PHOS/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,PHOS/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
-
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}		
-PACKSOFLAGS  := $(HLTSOFLAGS)
