@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliAnalysisTaskESDMuonFilter.h 24429 2008-03-12 10:27:50Z jgrosseo $ */
-
 #include <TList.h> 
 #include "AliAnalysisTaskSE.h"
 
@@ -34,6 +32,7 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
     AliAnalysisTaskESDMuonFilter& operator=(const AliAnalysisTaskESDMuonFilter&);
     AliAnalysisFilter* fTrackFilter; //  Track Filter
     ClassDef(AliAnalysisTaskESDMuonFilter, 1); // Analysis task for standard ESD filtering
+
 };
  
 #endif
