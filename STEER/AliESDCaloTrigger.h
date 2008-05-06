@@ -43,7 +43,7 @@ public:
   void Reset(); 
 
   TArrayF* GetTriggerPosition()    {return fTriggerPosition;}
-  TArrayF* GetTriggerAmplitudes()  {return fTriggerPosition;}
+  TArrayF* GetTriggerAmplitudes()  {return fTriggerAmplitudes;}
   
 
 private:
