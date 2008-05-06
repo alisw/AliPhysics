@@ -28,7 +28,8 @@ namespace PhosHLTConst
   const int LOW_GAIN     =   0;
 
   const int ALTRO_MAX_SAMPLES = 1008;                           /**<The maximum number of samples of the ALTRO*/
-  //  const int ALTRO_MAX_TRALER_SIZE = 7;  
+  const int ALTRO_MAX_PRESAMPLES = 15;        
+ //  const int ALTRO_MAX_TRALER_SIZE = 7;  
   //  const int  DDL_BLOCK_SIZE = 5;
 
   const int N_ZROWS_RCU     =   28;                    /**<Number of rows per module*/       
@@ -69,6 +70,8 @@ namespace PhosHLTConst
 
   const int N_MODULES    =      5;                             /**<Number of modules of the PHOS detector*/
   const int N_RCUS       =      4;                             /**<Number of RCUs per Module*/
+ 
+  //              N_RCUS_PER_MODULE
   const int N_RCUS_PER_MODULE =  4 ;                            /**<Number of RCUs per Module*/
   const int N_RCUS_PER_TOTAL =  N_MODULES*N_RCUS_PER_MODULE;   /**<Total number of RCUs for PHOS*/
   const int N_FEECS         =  14;                             /**<Number of Frontend cards per branch*/

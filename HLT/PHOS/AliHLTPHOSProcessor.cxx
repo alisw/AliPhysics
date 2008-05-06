@@ -24,9 +24,9 @@ const AliHLTComponentDataType AliHLTPHOSProcessor::fgkInputDataTypes[]={kAliHLTV
 AliHLTPHOSProcessor::AliHLTPHOSProcessor():AliHLTProcessor(), 
 					   AliHLTPHOSBase(), 
 					   fPhosEventCount(0), 
-					   fModuleID(0), 
-					   fPrintInfo(0), 
-					   fPrintInfoFrequncy(1000), 
+					   fModuleID(2), 
+					   fPrintInfoModule(0), 
+					   fPrintInfoFrequncyModule(1000), 
 					   fRunNumber(0)
 {
   ScanRunNumberFromFile();
@@ -114,9 +114,9 @@ AliHLTPHOSProcessor::IntToChar(int number)
 
 
 int
-AliHLTPHOSProcessor::ScanArguments(int argc, const char** argv)
+AliHLTPHOSProcessor::ScanArgumentsModule(int argc, const char** argv)
 {
-  fPrintInfo = kFALSE;
+  fPrintInfoModule = kFALSE;
   int iResult=0;
   TString argument="";
 
@@ -134,8 +134,8 @@ AliHLTPHOSProcessor::ScanArguments(int argc, const char** argv)
 	if(i+1 <= argc)
 	  {
 	    argument=argv[i+1];
-	    fPrintInfoFrequncy = atoi(argv[i+1]);
-	    fPrintInfo = kTRUE;
+	    fPrintInfoFrequncyModule = atoi(argv[i+1]);
+	    fPrintInfoModule = kTRUE;
 	  }
 	else
 	  {
@@ -146,3 +146,4 @@ AliHLTPHOSProcessor::ScanArguments(int argc, const char** argv)
     }
   return 0;
 }
+

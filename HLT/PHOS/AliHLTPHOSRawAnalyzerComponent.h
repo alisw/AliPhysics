@@ -5,6 +5,7 @@
  * See cxx source for full Copyright notice                          */
 #include "AliHLTPHOSRcuProcessor.h"
 
+
 class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSMapper;
@@ -82,6 +83,10 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 
   /** Should we check data size? */
   Bool_t fDoCheckDataSize;      //Added by OD
+
+  unsigned long fNCorruptedBlocks;
+  unsigned long fNOKBlocks;
+
 };
 #endif
 

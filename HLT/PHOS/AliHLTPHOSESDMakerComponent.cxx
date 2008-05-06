@@ -166,9 +166,9 @@ AliHLTPHOSESDMakerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*
     }
 
   fPhosEventCount++; 
-  if(fPrintInfo == kTRUE)
+  if(fPrintInfoModule == kTRUE)
     {
-      if(fPhosEventCount%fPrintInfoFrequncy == 0)
+      if(fPhosEventCount%fPrintInfoFrequncyModule == 0)
       	{
 	  Logging(kHLTLogInfo, __FILE__ , "writing data" , "Made ESD from event %lu",  fPhosEventCount);
 	}  
@@ -185,7 +185,7 @@ AliHLTPHOSESDMakerComponent::DoInit(int argc, const char** argv )
   fESDMakerPtr = new AliHLTPHOSESDMaker();
   //fESDMakerPtr->SetESDEvent(fESDEventPtr);
   //
-  ScanArguments(argc, argv);
+  ScanArgumentsModule(argc, argv);
   for (int i = 0; i < argc; i++)
     {
       

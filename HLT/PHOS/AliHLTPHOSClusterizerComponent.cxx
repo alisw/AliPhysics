@@ -243,7 +243,7 @@ AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
   fNoCrazyness = false;
   //
 
-  ScanArguments(argc, argv);
+  ScanArgumentsModule(argc, argv);
   for (int i = 0; i < argc; i++)
     {
       if(!strcmp("-digitthreshold", argv[i]))

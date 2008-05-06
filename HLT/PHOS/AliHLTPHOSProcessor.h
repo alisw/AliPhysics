@@ -23,6 +23,8 @@ class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
   virtual AliHLTComponentDataType GetOutputDataType() =0;
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) =0;
   virtual AliHLTComponent* Spawn() = 0; 
+
+
   char lineNumber[256];
   const char *IntToChar(int number);
   /*
@@ -35,11 +37,13 @@ class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
 
  protected:
   void ScanRunNumberFromFile();
-  virtual int ScanArguments(int argc, const char** argv);
+  virtual int ScanArgumentsModule(int argc, const char** argv);
   int fPhosEventCount;                  /**<Global event counter for this component*/
   AliHLTUInt8_t  fModuleID;             /**<ID of the module this component read data from (0-4)*/
-  Bool_t fPrintInfo;                    /**<wether or not to print debugg info to std out*/
-  int fPrintInfoFrequncy;               /**<Defines the update frequency for information printet to std out*/
+
+  Bool_t fPrintInfoModule;                    /**<wether or not to print debugg info to std out*/
+  int fPrintInfoFrequncyModule;               /**<Defines the update frequency for information printet to std out*/
+
   static const AliHLTComponentDataType fgkInputDataTypes[]; /**<List of  datatypes that can be given to this component*/
   int fRunNumber;
   char fFilepath[1024];

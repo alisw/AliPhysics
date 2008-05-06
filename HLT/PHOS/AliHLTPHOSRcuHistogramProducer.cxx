@@ -49,11 +49,12 @@ AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSBa
 
 
 AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ): AliHLTPHOSBase(), 
-																fCellAccEnergy(), 
+																fCellAccEnergy(),
 																fModuleID(moduleID), 
 																fRcuX(rcuX), 
 																fRcuZ(rcuZ)
 {
+
   //Se header file for documentation
   char *tmp = getenv("HOME");
   if(tmp == 0)
@@ -69,7 +70,7 @@ AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t mod
 }
 
 
-AliHLTPHOSRcuHistogramProducer::~ AliHLTPHOSRcuHistogramProducer()
+AliHLTPHOSRcuHistogramProducer::~AliHLTPHOSRcuHistogramProducer()
 {
   //Destructor
 }

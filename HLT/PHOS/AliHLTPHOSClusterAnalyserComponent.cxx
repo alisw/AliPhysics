@@ -185,9 +185,9 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
     }
 
   fPhosEventCount++; 
-  if(fPrintInfo == kTRUE)
+  if(fPrintInfoModule == kTRUE)
     {
-      if(fPhosEventCount%fPrintInfoFrequncy == 0)
+      if(fPhosEventCount%fPrintInfoFrequncyModule == 0)
       	{
 	  Logging( kHLTLogInfo, __FILE__ , "Clusters analyzed",  "Has analyzed  %lu  for this event",  nClusters);
 	}  
@@ -204,7 +204,7 @@ AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
   //See headerfile for documentation
   
   fClusterAnalyserPtr = new AliHLTPHOSClusterAnalyser();
-  ScanArguments(argc, argv);
+  ScanArgumentsModule(argc, argv);
   for (int i = 0; i < argc; i++)
     {
       if(!strcmp("-dodeconvolution", argv[i]))

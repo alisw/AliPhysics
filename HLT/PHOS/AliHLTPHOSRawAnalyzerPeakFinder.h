@@ -8,6 +8,7 @@
 #include "AliHLTPHOSRawAnalyzer.h"
 //#include "AliHLTPHOSBase.h"
 
+
 class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
 {
  public:

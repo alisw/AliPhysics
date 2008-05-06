@@ -13,11 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 #include "AliHLTPHOSRawAnalyzer.h"
 
 
-AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(), 
-						 fFloatDataPtr(0), 
+AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),  
+						 fDoCorrectBaselineUsingFirstFiveSamples(false),
+						 fDoubleDataPtr(0), 
 						 fIntDataPtr(0), 
 						 fSampleFrequency(10),
 						 fDTofGuess(-1),
@@ -27,13 +29,18 @@ AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),
 						 fDAmpl(99999),
 						 fStartIndex(0) 
 {
- fIntDataPtr = new UInt_t[1008];
+  //  fIntDataPtr = new UInt_t[1008];
+
+  //  fDoubleDataPtr;   
+
 }
 
 AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 {
-  delete[] fIntDataPtr;
+  //  delete[] fIntDataPtr;
 }
+
+
 
 
 
@@ -43,7 +50,8 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
 AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): AliHLTPHOSBase(), 
-									      fFloatDataPtr(0), 
+									      fDoCorrectBaselineUsingFirstFiveSamples(false),
+									      fDoubleDataPtr(0), 
 									      fIntDataPtr(0), 
 									      fSampleFrequency(10),
 									      fDTofGuess(-1),
@@ -57,19 +65,51 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): Al
 } //end  
 
 
-/**
-* Attemps to level the basline to zero.
-* The baseline will be calculated from the pretrigger samples and subtracted from the 
-* data array. 
-* If pretrigger samples are not present then the basline correction will be incorrect. 
-* @param dataPtr array for wich to correct the basline 
-* @param N the number of pretrigger samples used to calculate the baseline.
-**/
-void 
-AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, int /*N*/)
-{
 
-} //end BaselineCorrection
+void 
+AliHLTPHOSRawAnalyzer::SetCorrectBaselineUsingFirstFiveSamples()
+{
+  fDoCorrectBaselineUsingFirstFiveSamples = true;
+}
+ 
+
+void 
+//AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(double *data, int length)
+//AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(int *data, int length)
+AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t *data, const int length)
+{
+  //  cout << "AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples" << endl;
+
+  int sumOfFirstFiveSamples = 0;
+
+  for(int i=0; i< 5; i++)
+    {
+      sumOfFirstFiveSamples += data[i];
+    }
+
+  int valueToSubtract = sumOfFirstFiveSamples/5;
+
+  for(int j = 0; j < length; j++)
+    {
+      data[j] = data[j] - valueToSubtract;
+    }
+}
+
+
+
+// /**
+// * Attemps to level the basline to zero.
+// * The baseline will be calculated from the pretrigger samples and subtracted from the 
+// * data array. 
+// * If pretrigger samples are not present then the basline correction will be incorrect. 
+// * @param dataPtr array for wich to correct the basline 
+// * @param N the number of pretrigger samples used to calculate the baseline.
+// **/
+// void 
+// AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, int /*N*/)
+// {
+
+// } //end BaselineCorrection
 
 
 /**
@@ -107,23 +147,45 @@ AliHLTPHOSRawAnalyzer::GetEnergy() const
 } //end GetEnergy
 
 
-/**
- * Set data array. Overrides data data array set in the constructor.
- **/
-void 
-AliHLTPHOSRawAnalyzer::SetData(const UInt_t *data) 
-{
-  fIntDataPtr = data;
-}
 
 /**
  * Set data array. Overrides data data array set in the constructor.
  **/
-void 
-AliHLTPHOSRawAnalyzer::SetData(const double *data) 
-{
-  fFloatDataPtr = data;
-}
+ void 
+
+ AliHLTPHOSRawAnalyzer::SetData(const UInt_t *data, const int length) 
+ // AliHLTPHOSRawAnalyzer::SetData(UInt_t *data, const int length) 
+// AliHLTPHOSRawAnalyzer::SetData(int *data, const int length) 
+ {
+   fIntDataPtr = const_cast<UInt_t *>(data);
+
+   if(fDoCorrectBaselineUsingFirstFiveSamples == true)
+     {
+       CorrectBaselineUsingFirstFiveSamples(fIntDataPtr, length);
+     }
+
+   //   fIntDataPtr = data;
+
+ }
+
+
+
+
+/**
+ * Set data array. Overrides data data array set in the constructor.
+ **/
+// void 
+// //AliHLTPHOSRawAnalyzer::SetData(const double *data) 
+// AliHLTPHOSRawAnalyzer::SetData(double *data, const int length) 
+// {
+//   if(fDoCorrectBaselineUsingFirstFiveSamples == true)
+//     {
+//       CorrectBaselineUsingFirstFiveSamples(data, length);
+//     }
+
+
+//   fDoubleDataPtr = data;
+// }
 
 
 

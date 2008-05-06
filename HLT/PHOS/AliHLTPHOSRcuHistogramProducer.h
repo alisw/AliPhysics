@@ -59,6 +59,8 @@ class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSBase
   TH2D *fDeadChannelMapHistogramPtrs[N_GAINS];
   Float_t fEnergyAverageValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];  /**<Accumulated energy divided by  hits*/
   Double_t fAccumulatedValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];   /**<Array to store accumulated energy per channel for one rcu during run*/
+ 
+
   Float_t fTimingAverageValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];  /**<Avereage TOF*/
   AliHLTUInt32_t fHits[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
   AliHLTUInt32_t fDeadChannelMap[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment

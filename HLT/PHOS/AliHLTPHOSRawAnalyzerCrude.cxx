@@ -18,11 +18,6 @@
 //ClassImp(AliHLTPHOSRawAnalyzerCrude) 
 
 
-//AliHLTPHOSRawAnalyzerCrude::AliHLTPHOSRawAnalyzerCrude(const AliHLTPHOSRawAnalyzerCrude&):AliHLTPHOSRawAnalyzer()
-//{
-//
-//}
-
 /**
  * The AliHLTPHOSPeakfinder class is the class for extracting the basic signal parameters
  * "timing" and "energy" from the PHOS raw data. Physical data will for a given readout channel be
@@ -43,39 +38,65 @@ AliHLTPHOSRawAnalyzerCrude::~AliHLTPHOSRawAnalyzerCrude()
 } //end AliHLTPHOSRawAnalyzerCrude
 
 
-
-
 /**
 * Extraction of timing and energy using Crude estimate.
 * The. The parameters "start" and "length" defines a sub array  of the data array
 * that will be used for the the fit. If start+length must not exeed the total length
 * of the Data array. "start" must be chosen as close as possible to t0.
-* The baseline must also be subtracted.
-* The length of "tVector" and "aVector" mus be equal to length.
+* The baseline must also be subtracted.                                                              .
 * "index + length" must not exeed the length of the data array set in the constructor.
 * @param start the start index of the subarray of the data array. 
 * @param length the number of samples to use starting from index 
 **/
-//____________________________________________________________________________
+// //____________________________________________________________________________
+// void 
+// AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
+// {
+//   double tmpAmplitudeMax =0; 
+//   double tmpTime = 0;
+
+//   for(int i=start; i<length; i++)
+//     {
+//       if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
+// 	{
+// 	  tmpAmplitudeMax = fIntDataPtr[i];
+// 	  tmpTime = i;		     
+// 	}
+//     }
+	
+//   fDAmpl = tmpAmplitudeMax;
+//   fDTof =  tmpTime;
+ 
+//   //thats all 
+// } //end Crude
+
+
 void 
 AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
 {
+  //  cout << "AliHLTPHOSRawAnalyzerCrude::Evaluate TP0"  << endl;
+
+  //DumpData(T
+
+  //  DumpData(fDoubleDataPtr,50, 25);
+
   double tmpAmplitudeMax =0; 
   double tmpTime = 0;
 
   for(int i=start; i<length; i++)
     {
+        //   if(fDoubleDataPtr[i] >  tmpAmplitudeMax && i > 5)
       if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
 	{
+	  //	  tmpAmplitudeMax = fDoubleDataPtr[i];
 	  tmpAmplitudeMax = fIntDataPtr[i];
 	  tmpTime = i;		     
 	}
     }
-	
+
+ 
   fDAmpl = tmpAmplitudeMax;
   fDTof =  tmpTime;
  
   //thats all 
 } //end Crude
-
-

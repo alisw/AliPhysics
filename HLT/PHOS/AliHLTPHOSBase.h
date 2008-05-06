@@ -50,7 +50,7 @@ class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
   template<typename T> 
   void  DumpData(T *array, int N, int nPerLine)
   {
-    cout <<   "DumpData N=  " << N <<endl;
+    //   cout <<   "DumpData N=  " << N <<endl;
     for(int i= 0; i< N; i++)
       {
 	if((i%nPerLine == 0)  &&  (i != 0))
@@ -60,6 +60,7 @@ class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
 
 	cout << array[i]<< "\t";
       }
+    printf("\n");
   }
 
   template<typename T> 
