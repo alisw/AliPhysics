@@ -5,6 +5,12 @@
   //1. Load needed libraries
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
+  //increased memstat
+  gSystem->Load("$ROOTSYS/lib/libGui.so");
+  gSystem->Load("$ROOTSYS/lib/libTree.so");
+  gSystem->Load("$MEMSTAT/libMemStat.so");
+  TMemStat memstat(100000000,10000000,kTRUE);
+  memstat->AddStamp("aaaa");
   //
   // Setup analysis manager
   //
@@ -17,9 +23,12 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
-  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,10000000);
+  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,30);
   chain->Lookup();
-  mgr->SetNSysInfo(20);
+  // memory
+  mgr->SetNSysInfo(100); 
+  AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);
+  //
   mgr->StartAnalysis("local",chain);
   
 
@@ -49,12 +58,15 @@ AliAnalysisManager * SetupCalibTask() {
   AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018);
 
   AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts); 
+  AliTPCcalibTracksGain *calibTracksGain =  new AliTPCcalibTracksGain("TPCGainTracks","TPCGainTracks",cuts); 
   calibTracks->SetDebugLevel(5);
   calibTracks->SetStreamLevel(5);
+  calibTracksGain->SetDebugLevel(1);
+  calibTracksGain->SetStreamLevel(1);
  // ---*---*-----*-*-----*----------*---
   // ADD CALIB JOBS HERE!!!!!!!!!!!!!!!!
   task1->AddJob(new AliTPCcalibAlign);//"align","The kewl alignment job"));
-  task1->AddJob(new AliTPCcalibTracksGain("TPCGainTracks","TPCGainTracks",cuts));
+  task1->AddJob(calibTracksGain);
   task1->AddJob(calibTracks);
   //  task1->AddJob(new AliTPCcalibBase);
   // task1->AddJob(new AliTPCcalibV0);

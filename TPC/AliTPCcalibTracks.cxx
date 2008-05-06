@@ -454,6 +454,14 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    fFitterLinZ2 = new TLinearFitter (2,"pol1");  
    fFitterParY  = new TLinearFitter (3,"pol2");
    fFitterParZ  = new TLinearFitter (3,"pol2");
+   //
+   fFitterLinY1->StoreData(kFALSE);
+   fFitterLinZ1->StoreData(kFALSE);
+   fFitterLinY2->StoreData(kFALSE);
+   fFitterLinZ2->StoreData(kFALSE);
+   fFitterParY->StoreData(kFALSE);
+   fFitterParZ->StoreData(kFALSE);
+
 
    if (GetDebugLevel() > 1) cout << "AliTPCcalibTracks object sucessfully constructed: " << GetName() << endl; 
    cout << "end of main constructor" << endl; // TO BE REMOVED

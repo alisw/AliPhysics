@@ -320,6 +320,14 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
    fFitter1T      = new TLinearFitter(45,"hyp44");
    fFitter2T      = new TLinearFitter(45,"hyp44");
    //
+   // 
+   fFitter0M->StoreData(kFALSE);
+   fFitter1M->StoreData(kFALSE);
+   fFitter2M->StoreData(kFALSE);
+   fFitter0T->StoreData(kFALSE);
+   fFitter1T->StoreData(kFALSE);
+   fFitter2T->StoreData(kFALSE);   
+   //
    //
    // Add profile histograms -JUST for visualization - Not used for real calibration
    // 

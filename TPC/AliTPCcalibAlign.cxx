@@ -67,16 +67,19 @@ void AliTPCcalibAlign::Process(AliTPCseed *seed) {
   TObjArray tracklets=
     AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kKalman,
 				    kFALSE,20,2);
-  TObjArray trackletsL=
-    AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kLinear,
-				    kFALSE,20,2);
-  TObjArray trackletsQ=
-    AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kQuadratic,
-				    kFALSE,20,2);
-  TObjArray trackletsR=
-    AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kRiemann,
-				    kFALSE,20,2);
+ //  TObjArray trackletsL=
+//     AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kLinear,
+// 				    kFALSE,20,2);
+//   TObjArray trackletsQ=
+//     AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kQuadratic,
+// 				    kFALSE,20,2);
+//   TObjArray trackletsR=
+//     AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kRiemann,
+// 				    kFALSE,20,2);
   tracklets.SetOwner();
+ //  trackletsL.SetOwner();
+//   trackletsQ.SetOwner();
+//   trackletsR.SetOwner();
   if (tracklets.GetEntries()==2) {
     AliTPCTracklet *t1=static_cast<AliTPCTracklet*>(tracklets[0]);
     AliTPCTracklet *t2=static_cast<AliTPCTracklet*>(tracklets[1]);
@@ -91,7 +94,7 @@ void AliTPCcalibAlign::Process(AliTPCseed *seed) {
     delete common1;
     delete common2;
   }
-
+  
 }
 
 void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
