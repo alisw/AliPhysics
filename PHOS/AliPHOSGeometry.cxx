@@ -118,11 +118,13 @@ void AliPHOSGeometry::Init(void)
   // Initializes the PHOS parameters :
   //  IHEP is the Protvino CPV (cathode pad chambers)
   
+/*
   TString test(GetName()) ; 
   if (test != "IHEP" && test != "noCPV") {
     AliFatal(Form("%s is not a known geometry (choose among IHEP)", 
 		  test.Data() )) ; 
   }
+*/
 
   fgInit     = kTRUE ; 
 

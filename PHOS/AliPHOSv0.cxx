@@ -379,11 +379,15 @@ void AliPHOSv0::CreateGeometry()
   this->CreateGeometryforSupport() ; 
   
   // --- Position  PHOS mdules in ALICE setup ---
-  
   Int_t idrotm[99] ;
   Int_t iXYZ,iAngle;
-  for (Int_t iModule = 0; iModule < geom->GetNModules(); iModule++ ) {
-    
+  char im[5] ;
+  Bool_t anyModuleCreated=0 ;
+  for (Int_t iModule = 0; iModule < 5 ; iModule++ ) {
+    sprintf(im,"%d",iModule+1) ;
+    if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
+      continue ;
+    anyModuleCreated=1 ;
     Float_t angle[3][2];
     for (iXYZ=0; iXYZ<3; iXYZ++)
       for (iAngle=0; iAngle<2; iAngle++)
@@ -399,7 +403,8 @@ void AliPHOSv0::CreateGeometry()
     gMC->Gspos("PHOS", iModule+1, "ALIC", pos[0], pos[1], pos[2],
 	       idrotm[iModule], "ONLY") ;
   }
-
+  if(!anyModuleCreated)
+    AliError("No one PHOS module was created") ;
 }
 
 //____________________________________________________________________________
@@ -937,16 +942,27 @@ void AliPHOSv0::AddAlignableVolumes() const
   TString symbModuleName="PHOS/Module";
   Int_t nModules = GetGeometry()->GetNModules();
   
+  char im[5] ;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
+    sprintf(im,"%d",iModule) ;
+    if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
+      continue ;
     modUID = AliGeomManager::LayerToVolUID(idPHOS1,modnum++);
     volpath = physModulePath;
     volpath += iModule;
     //    volpath += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
-
+ 
+   // Check the volume path if not all 5 modules exist
+    if (!gGeoManager->CheckPath(volpath.Data())) {                                                                                         
+      AliError(Form("Volume path %s not valid!",volpath.Data()));                                                                          
+      continue;                                                                                                                            
+    }                                                                                                                                      
+ 
     symname = symbModuleName;
     symname += iModule;
     if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
-      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
+      continue ;
+//      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
 
     // Creates the Tracking to Local transformation matrix for PHOS modules
     TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID) ;
@@ -964,6 +980,11 @@ void AliPHOSv0::AddAlignableVolumes() const
   symbModuleName="PHOS/Module";
   modnum=0;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
+    if(strcmp(GetTitle(),"noCPV"))
+      continue ;
+    sprintf(im,"%d",iModule) ;
+    if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0)
+      continue ;
     modUID = AliGeomManager::LayerToVolUID(idPHOS2,modnum++);
     volpath = physModulePath;
     volpath += iModule;
@@ -1034,6 +1055,19 @@ void AliPHOSv0::AddAlignableVolumes() const
   TString fullSymbStripName(100);
 
   for(Int_t module = 1; module <= nModules; ++module){
+
+    sprintf(im,"%d",module) ;
+    if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
+      continue ;
+
+    volpath = physModulePath;
+    volpath += module;
+    // Check the volume path if not all 5 modules exist
+    if (!gGeoManager->CheckPath(volpath.Data())) {
+      AliError(Form("Volume path %s does not exist",volpath.Data())) ;
+      continue;
+    }
+
     partialPhysStripName  = physModulePath;
     partialPhysStripName += module;
     partialPhysStripName += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_";
