@@ -553,8 +553,9 @@ Int_t GoodTracksTPC(const Char_t *dir) {
         if (p->Pt()<0.100) continue;
         if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
 
-        Double_t vx=p->Vx(),vy=p->Vy();
+        Double_t vx=p->Vx(),vy=p->Vy(),vz=p->Vz();
         if (TMath::Sqrt(vx*vx+vy*vy)>3.5) continue;
+        if (TMath::Abs(vz) > 50.) continue;
 
         AliTrackReference *ref=new((*refs)[nt]) AliTrackReference();
 
