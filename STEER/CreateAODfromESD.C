@@ -40,7 +40,20 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
     mgr->AddTask(filter);
 
-    
+    AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
+    esdTrackCutsL->SetMinNClustersTPC(50);
+    esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
+    esdTrackCutsL->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+    esdTrackCutsL->SetRequireTPCRefit(kTRUE);
+    esdTrackCutsL->SetMinNsigmaToVertex(3);
+    esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
+    esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
+
+    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
+    trackFilter->AddCuts(esdTrackCutsL);
+
+    filter->SetTrackFilter(trackFilter);
+
     // Pipelining
     AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain", TChain::Class(),
                                                              AliAnalysisManager::kInputContainer);
