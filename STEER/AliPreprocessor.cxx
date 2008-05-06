@@ -263,7 +263,7 @@ Bool_t AliPreprocessor::StoreRunMetadataFile(const char* localFile, const char* 
   	TString detName(GetName());
 	if (detName != "GRP") 
 	{
-		Log("StoreRunMetadataFile - Sorry, only Panos has this privilege.");
+		Log("StoreRunMetadataFile - Only GRP can call this function.");
 		return kFALSE;
 	}
 	return fShuttle->StoreRunMetadataFile(localFile, gridFileName);
@@ -357,6 +357,23 @@ Bool_t AliPreprocessor::GetHLTStatus()
 
 }
     
+//______________________________________________________________________________________________
+const char* AliPreprocessor::GetTriggerConfiguration()
+{
+	// Returns the trigger configuration which is read from a table in the DAQ logbook
+	// The call is delegated to AliShuttleInterface
+	// Only GRP can call this function.
+	
+	TString detName(GetName());
+	if (detName != "GRP") 
+	{
+		Log("GetTriggerConfiguration - Only GRP can call this function.");
+		return 0;
+	}
+	
+	return fShuttle->GetTriggerConfiguration();
+}
+
 //______________________________________________________________________________________________
 void AliPreprocessor::AddRunType(const char* runType)
 {

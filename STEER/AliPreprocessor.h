@@ -52,6 +52,7 @@ class AliPreprocessor : public TNamed
     AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3);
     const char* GetRunType();
     Bool_t GetHLTStatus();
+    const char* GetTriggerConfiguration();
     void Log(const char* message);
     
     void AddRunType(const char* runType);

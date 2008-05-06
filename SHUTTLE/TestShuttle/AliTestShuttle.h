@@ -30,6 +30,7 @@ class AliTestShuttle : public AliShuttleInterface
     void AddInputRunParameter(const char* key, const char* value);
     void SetInputRunType(const char* runType) { fRunType = runType; }
     void SetInputHLTStatus(Bool_t status) { fHLTStatus = status; }
+    void SetInputTriggerConfiguration(const char* configuration) { fTriggerConfiguration = configuration; }
     Bool_t AddInputCDBEntry(AliCDBEntry* entry);
 
     void Process();
@@ -47,6 +48,7 @@ class AliTestShuttle : public AliShuttleInterface
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
     virtual const char* GetRunType();
     virtual Bool_t GetHLTStatus() {return fHLTStatus;}
+    virtual const char* GetTriggerConfiguration() { return fTriggerConfiguration; } 
     virtual void Log(const char* detector, const char* message);
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
@@ -72,6 +74,7 @@ class AliTestShuttle : public AliShuttleInterface
     Bool_t fHLTStatus; 	    // HLT status for current run (on=1/off=0)
     TObjArray* fPreprocessors; // list of preprocessors that are to be tested
     TMap* fDcsAliasMap; // DCS data for testing
+    TString fTriggerConfiguration;  // trigger configuration for testing
 
   private:
     Bool_t CopyFileLocally(TString& targetDir, const char* localFile, const char* gridFileName);

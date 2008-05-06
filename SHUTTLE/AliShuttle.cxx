@@ -3207,6 +3207,54 @@ Bool_t AliShuttle::GetHLTStatus()
 		return kFALSE;
 	}
 }
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetTriggerConfiguration()
+{
+	// Receives the trigger configuration from the DAQ logbook for the current run
+	
+	// check connection, if needed reconnect
+	if (!Connect(3)) 
+		return 0;
+
+	TString sqlQuery;
+	sqlQuery.Form("SELECT configFile FROM logbook_trigger_config WHERE run = %d", GetCurrentRun());
+	TSQLResult* result = fServer[3]->Query(sqlQuery);
+	if (!result)
+	{
+		Log("SHUTTLE", Form("ERROR: Can't execute query <%s>!", sqlQuery.Data()));
+		return 0;
+	}
+	
+	if (result->GetRowCount() == 0)
+	{
+		Log("SHUTTLE", "ERROR: Trigger configuration not found in logbook_trigger_config");
+		delete result;
+		return 0;
+	}
+	
+	TSQLRow* row = result->Next();
+	if (!row)
+	{
+		Log("SHUTTLE", "ERROR: Could not receive logbook_trigger_config data");
+		delete result;
+		return 0;
+	}
+
+	// static, so that pointer remains valid when it is returned to the calling class	
+	static TString triggerConfig(row->GetField(0));
+	
+	delete row;
+	row = 0;
+	
+	delete result;
+	result = 0;
+	
+	Log("SHUTTLE", Form("Found trigger configuration: %s", triggerConfig.Data()));
+	
+	return triggerConfig;
+}
+
 //______________________________________________________________________________________________
 void AliShuttle::SetShuttleTempDir(const char* tmpDir)
 {
