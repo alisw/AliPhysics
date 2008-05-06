@@ -2,6 +2,7 @@
 
 SRCS          =  AliPHOSCalibHistoProducer.cxx \
                  AliPHOSPreprocessor.cxx \
+		 AliPHOSRcuDA1.cxx \
 		 AliPHOSDA1.cxx \
 		 AliPHOSDA2.cxx \
 		 AliPHOSCpvDA1.cxx \
