@@ -107,16 +107,14 @@ class AliITSpList: public AliITSMap {
     // tests hit status.
     virtual FlagType TestHit(Int_t i,Int_t j){if(GetpListItem(i,j)==0) return kEmpty;
     else if(GetSignal(i,j)<=0) return kUnused; else return kUsed;}
-    // Returns the pointer to the TClonesArray of pList Items
-    TClonesArray * GetpListItems(){return fa;}
     // returns the pList Item stored in the TClonesArray
-    AliITSpListItem* GetpListItem(Int_t index){
-	if(fa!=0)return (AliITSpListItem*) (fa->At(index));
-	else return 0;}
+    AliITSpListItem* GetpListItem(Int_t index) { if((fa[index]).IsUsed())
+      return &(fa[index]);
+      else return NULL;}
     // returns the pList Item stored in the TObject array
     AliITSpListItem* GetpListItem(Int_t i,Int_t j) const {
-	if(fa!=0)return (AliITSpListItem*) (fa->At(GetIndex(i,j)));
-	else return 0;}
+      if((fa[GetIndex(i,j)]).IsUsed())return &(fa[GetIndex(i,j)]);
+      else return NULL; }
 
     // Fill pList from digits. Not functional yet
     virtual void FillMap(){NotImplemented("FillMap");}
@@ -138,9 +136,9 @@ class AliITSpList: public AliITSMap {
          Warning(method,"This method is not implemented for this class");}
 // data members
     Int_t     fNi,fNj;   // The max index in i,j.
-    TClonesArray *fa;       // array of pList items
+    AliITSpListItem *fa;       // array of pList items
     Int_t     fEntries; // keepts track of the number of non-zero entries.
 
-    ClassDef(AliITSpList,4) // list of signals and track numbers
+    ClassDef(AliITSpList,5) // list of signals and track numbers
 };	
 #endif

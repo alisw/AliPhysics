@@ -31,7 +31,8 @@ fmodule(-1),
 findex(-1),
 fTsignal(0.0),
 fNoise(0.0),
-fSignalAfterElect(0.0){
+fSignalAfterElect(0.0),
+fUsed(kFALSE){
     // Default constructor
     // Inputs:
     //    none.
@@ -52,7 +53,8 @@ fmodule(module),
 findex(index),
 fTsignal(0.0),
 fNoise(noise),
-fSignalAfterElect(0.0){
+fSignalAfterElect(0.0),
+fUsed(kTRUE){
     // Standard noise constructor
     // Inputs:
     //    Int_t module   The module where this noise occurred
@@ -76,7 +78,8 @@ fmodule(module),
 findex(index),
 fTsignal(signal),
 fNoise(0.0),
-fSignalAfterElect(0.0){
+fSignalAfterElect(0.0),
+fUsed(kTRUE){
     // Standard signal constructor
     // Inputs:
     //    Int_t track     The track number which produced this signal
@@ -98,6 +101,61 @@ fSignalAfterElect(0.0){
         this->fHits[i]   = -1;
     } // end if i
 }
+
+//______________________________________________________________________
+void AliITSpListItem::Build(Int_t module,Int_t index,Double_t noise){
+  // this method resets all the data members and initializes the
+  // object as in the constructor which has the same arguments
+  fmodule = module;
+  findex = index;
+  fTsignal = 0.;
+  fNoise = noise;
+  fSignalAfterElect = 0.;
+  fUsed = kTRUE;
+  for(Int_t i=0;i<this->fgksize;i++){
+    this->fTrack[i]  = -2;
+    this->fSignal[i] = 0.0;
+    this->fHits[i]   = -1;
+  } 
+}
+
+//______________________________________________________________________
+void AliITSpListItem::Build(Int_t track,Int_t hit,Int_t module,Int_t index,Double_t signal){
+  // this method resets all the data members and initializes the
+  // object as in the constructor which has the same arguments
+  fmodule = module;
+  findex = index;
+  fTsignal = signal;
+  fNoise = 0.;
+  fSignalAfterElect = 0.;
+  fUsed = kTRUE;
+  this->fTrack[0]  = track;
+  this->fHits[0]   = hit;
+  this->fSignal[0] = signal;
+  for(Int_t i=1;i<this->fgksize;i++){
+    this->fTrack[i]  = -2;
+    this->fSignal[i] = 0.0;
+    this->fHits[i]   = -1;
+  } 
+}
+
+//______________________________________________________________________
+void AliITSpListItem::Build(const AliITSpListItem &source){
+  // this method resets all the data members and initializes the
+  // object as in the constructor which has the same arguments
+  fmodule = source.fmodule;
+  findex = source.findex;
+  fTsignal = source.fTsignal;
+  fNoise = source.fNoise;
+  fSignalAfterElect = source.fSignalAfterElect;
+  fUsed = source.fUsed;
+  for(Int_t i=0;i<this->fgksize;i++){
+    this->fTrack[i]  = source.fTrack[i];
+    this->fSignal[i] = source.fSignal[i];
+    this->fHits[i]   = source.fHits[i];
+  }
+}
+
 //______________________________________________________________________
 AliITSpListItem::~AliITSpListItem(){
     // Destructor
@@ -130,7 +188,8 @@ fmodule(source.fmodule),
 findex(source.findex),
 fTsignal(source.fTsignal),
 fNoise(source.fNoise),
-fSignalAfterElect(source.fSignalAfterElect){
+fSignalAfterElect(source.fSignalAfterElect),
+fUsed(source.fUsed){
     // Copy operator
     // Inputs:
     //    AliITSpListItem &source   A AliITSpListItem Object

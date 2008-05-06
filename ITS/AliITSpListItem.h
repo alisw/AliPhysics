@@ -1,6 +1,6 @@
 #ifndef ALIITSPLISTITEM_H
 #define ALIITSPLISTITEM_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
 /* $Id$ */
@@ -21,8 +21,12 @@ class AliITSpListItem: public TObject {
     virtual ~AliITSpListItem();
     // Copy Oporator
     AliITSpListItem(const AliITSpListItem &source);
-    // = Opoerator
+    // = Operator
     virtual AliITSpListItem& operator=(const AliITSpListItem &source);
+    // Building methods: they set completely the status of the object
+    void Build(Int_t module,Int_t index,Double_t noise);
+    void Build(Int_t track,Int_t hit,Int_t module,Int_t index,Double_t signal);
+    void Build(const AliITSpListItem &source);
     // Returns the signal value in the list of signals
     virtual Double_t GetSignal(Int_t i) const {
 	                    return ( (i>=0&&i<fgksize) ? fSignal[i] : 0.0);}
@@ -68,7 +72,10 @@ class AliITSpListItem: public TObject {
     void Read(istream *is);
     virtual void Print(Option_t *option="") const {TObject::Print(option);}
     virtual Int_t Read(const char *name) {return TObject::Read(name);}
-
+    // Check if the item is used or marked as unused
+    Bool_t IsUsed() const {return fUsed;}
+    // Mark the object as unused
+    void MarkUnused()  {fUsed = kFALSE;}
     // Returns max size of array for for Tracks, Hits, and signals.
     static Int_t GetMaxKept() {return fgksize;};
 
@@ -82,8 +89,9 @@ class AliITSpListItem: public TObject {
     Double_t fTsignal;        // Total signal (no noise)
     Double_t fNoise;          // Total noise, coupling, ...
     Double_t fSignalAfterElect; // Signal after electronics
+    Bool_t fUsed;              //! kTRUE if the item is built and in use
 
-    ClassDef(AliITSpListItem,3) // Item list of signals and track numbers
+    ClassDef(AliITSpListItem,4) // Item list of signals and track numbers
 };	
 // Input and output functions for standard C++ input/output.
 ostream & operator<<(ostream &os,AliITSpListItem &source);

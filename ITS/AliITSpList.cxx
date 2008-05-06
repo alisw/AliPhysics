@@ -50,7 +50,7 @@ fEntries(0){
 AliITSpList::AliITSpList(Int_t imax,Int_t jmax):
 fNi(imax),
 fNj(jmax),
-fa(0),
+fa(new AliITSpListItem[imax*jmax]),
 fEntries(0){
     // Standard constructor
     // Inputs:
@@ -60,27 +60,15 @@ fEntries(0){
     // Return:
     //    A setup AliITSpList class.
 
-    fa = new TClonesArray("AliITSpListItem",fNi*fNj);
 }
 //______________________________________________________________________
 AliITSpList::~AliITSpList(){
     // Default destructor
-    // Inputs:
-    //    none.
-    // Outputs:
-    //    none.
-    // Return:
-    //    a properly destroyed class
 
-  if(fa){
-    fa->Delete();
-    delete fa;
-    fa = 0;
-  }
-    fNi = 0;
-    fNj = 0;
-
-    fEntries = 0;
+  delete [] fa;
+  fNi = 0;
+  fNj = 0;
+  fEntries = 0;
 }
 
 //______________________________________________________________________
@@ -92,9 +80,8 @@ void AliITSpList::ClearMap(){
     //    none.
     // Return:
     //    A zeroed AliITSpList class.
-
-    fa->Delete();
-    fEntries = 0;
+  for(Int_t i=0; i<fEntries; i++)(fa[i]).MarkUnused();
+  fEntries = 0;
 }
 //______________________________________________________________________
 void AliITSpList::DeleteHit(Int_t i,Int_t j){
@@ -107,10 +94,7 @@ void AliITSpList::DeleteHit(Int_t i,Int_t j){
     // Return:
     //    none.
     Int_t k = GetIndex(i,j);
-
-    if(fa->At(k)!=0){
-      fa->RemoveAt(k);
-    } // end for i && if
+    if((fa[k]).IsUsed())(fa[k]).MarkUnused();
     if(k==fEntries-1) fEntries--;
 }
 //______________________________________________________________________
@@ -129,10 +113,12 @@ AliITSpList& AliITSpList::operator=(const AliITSpList &source){
 }
 //______________________________________________________________________
 AliITSpList::AliITSpList(const AliITSpList &source) : AliITSMap(source),
-fNi(source.fNi),fNj(source.fNj),fa(0),fEntries(source.fEntries){
+fNi(source.fNi),
+fNj(source.fNj),
+fa(new AliITSpListItem[fNi*fNj]),
+fEntries(source.fEntries){
     // Copy constructor
-
-  fa = new TClonesArray(*(source.fa));
+  for(Int_t i=0; i<fEntries; i++)(fa[i]).Build(source.fa[i]);
 }
 //______________________________________________________________________
 void AliITSpList::AddItemTo(Int_t fileIndex, AliITSpListItem *pl) {
@@ -147,12 +133,9 @@ void AliITSpList::AddItemTo(Int_t fileIndex, AliITSpListItem *pl) {
     // Return:
     //    none.
     Int_t index = pl->GetIndex();
-    TClonesArray &rfa = *fa;
-    if( fa->At( index ) == 0 ) { // most create AliITSpListItem
-      new(rfa[index])AliITSpListItem(-2,-1,pl->GetModule(),index,0.0);
-    } // end if
- 
-    ((AliITSpListItem*)(fa->At(index)))->AddTo( fileIndex,pl);
+    AliITSpListItem &lit = fa[index];
+    if(!lit.IsUsed())lit.Build(-2,-1,pl->GetModule(),index,0.);
+    lit.AddTo(fileIndex,pl);
     if(index>=fEntries) fEntries = index +1;
 }
 //______________________________________________________________________
@@ -174,12 +157,13 @@ void AliITSpList::AddSignal(Int_t i,Int_t j,Int_t trk,Int_t ht,Int_t mod,
     //    none.
     Int_t index = GetIndex(i,j);
     if (index<0) return;
-    TClonesArray &rfa = *fa;
-    if(GetpListItem(index)==0){ // must create AliITSpListItem
-      new(rfa[index])AliITSpListItem(trk,ht,mod,index,signal);
-    }else{ // AliITSpListItem exists, just add signal to it.
-        GetpListItem(index)->AddSignal(trk,ht,mod,index,signal);
-    } // end if
+    AliITSpListItem &lit = fa[index];
+    if(!lit.IsUsed()){
+      lit.Build(trk,ht,mod,index,signal);
+    }
+    else {
+      lit.AddSignal(trk,ht,mod,index,signal);
+    }
     if(index>=fEntries) fEntries = index +1;
 }
 //______________________________________________________________________
@@ -196,12 +180,14 @@ void AliITSpList::AddNoise(Int_t i,Int_t j,Int_t mod,Double_t noise){
     // Return:
     //    none.
     Int_t index = GetIndex(i,j);
-    TClonesArray &rfa = *fa;
-    if(GetpListItem(index)==0){ // most create AliITSpListItem
-      new(rfa[index]) AliITSpListItem(mod,index,noise);
-    }else{ // AliITSpListItem exists, just add signal to it.
-        GetpListItem(index)->AddNoise(mod,index,noise);
-    } // end if
+    if (index<0) return;
+    AliITSpListItem &lit = fa[index];
+    if(!lit.IsUsed()){
+      lit.Build(mod,index,noise);
+    }
+    else {
+      lit.AddNoise(mod,index,noise);
+    } 
     if(index>=fEntries) fEntries = index +1;
 }
 //______________________________________________________________________
