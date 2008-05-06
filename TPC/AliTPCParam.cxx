@@ -196,7 +196,8 @@ Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
       if (xyz[2]<0) 	sector+=(fNOuterSector>>1);            
     }
     else   
-      if (xyz[2]<0) sector+=(fNInnerSector>>1);    
+      if (xyz[2]<0) sector+=(fNInnerSector>>1);  
+  if (sector<0 || sector>=fNSector) AliError(Form("Wrong sector %d",sector));
   index[1]=sector; // calculated sector number
   index[0]=1; // indicates system after transformation
   return sector;

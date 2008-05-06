@@ -521,7 +521,8 @@ inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const
   //rotate to given sector
   Double_t xyzmaster[3] = {xyz[0],xyz[1],xyz[2]};
   Double_t xyzlocal[3];  
-  fGlobalMatrix[index[1]]->MasterToLocal(xyzmaster,xyzlocal);
+  if (index[1]>=0 && index[1]<fNSector) 
+    fGlobalMatrix[index[1]]->MasterToLocal(xyzmaster,xyzlocal);
   xyz[0] = xyzlocal[0];
   xyz[1] = xyzlocal[1];
   xyz[2] = xyzlocal[2];
