@@ -842,10 +842,10 @@ Double_t b, Double_t &xthis, Double_t &xp) const {
      if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
      if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
         if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2) 
-	  AliWarning(" stopped at not a stationary point !");
+	  AliDebug(1," stopped at not a stationary point !");
         Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
         if (lmb < 0.) 
-	  AliWarning(" stopped at not a minimum !");
+	  AliDebug(1," stopped at not a minimum !");
         break;
      }
 
@@ -858,7 +858,7 @@ Double_t b, Double_t &xthis, Double_t &xp) const {
 	if (dd<dm) break;
         dt1*=0.5; dt2*=0.5;
         if (div>512) {
-           AliWarning(" overshoot !"); break;
+	  AliDebug(1," overshoot !"); break;
         }   
      }
      dm=dd;
@@ -868,7 +868,7 @@ Double_t b, Double_t &xthis, Double_t &xp) const {
 
   }
 
-  if (max<=0) AliWarning(" too many iterations !");
+  if (max<=0) AliDebug(1," too many iterations !");
 
   Double_t cs=TMath::Cos(GetAlpha());
   Double_t sn=TMath::Sin(GetAlpha());
