@@ -7,10 +7,11 @@
 
 #include "TVector2.h"
 
-
-// AliFlowVector:
-// Class to hold the flowvector and corresponding multiplicity for flow analysis.
-// Author: A. Bilandzic (anteb@nikhef.nl)
+//********************************************************************
+// AliFlowVector:                                                    *
+// Class to hold the flow vector and multiplicity for flow analysis. *
+// Author: A. Bilandzic (anteb@nikhef.nl)                            *
+//********************************************************************
 
 class AliFlowVector: public TVector2 {
  public:
@@ -19,7 +20,7 @@ class AliFlowVector: public TVector2 {
   AliFlowVector(const TVector2 &p, Double_t m);
   virtual ~AliFlowVector();
 
-  AliFlowVector& operator=(const AliFlowVector&);
+  AliFlowVector& operator=(const AliFlowVector& aVector);
 
   void SetMult(Double_t mult)       {this->fMult = mult;} ;
   Double_t GetMult() const          {return this -> fMult;} ;
@@ -30,4 +31,5 @@ class AliFlowVector: public TVector2 {
   ClassDef(AliFlowVector, 0) 
 };
 #endif
+
 

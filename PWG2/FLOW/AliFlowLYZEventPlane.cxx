@@ -41,7 +41,6 @@ AliFlowLYZEventPlane::AliFlowLYZEventPlane():
   fSecondRunFile(0),
   fFirstRunFileName("noname.ESD"),
   fSecondRunFileName("noname.ESD"),
-  fQ(0),  
   fWR(0),            
   fPsi(0),
   fSecondReDtheta(0),
