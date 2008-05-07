@@ -197,8 +197,12 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* fEvent, AliFlowL
     //get the Q vector from the FlowEvent
     fQ = fEvent->GetQ(); 
     //Weight with the multiplicity
-    Double_t fQX = fQ.X()/fQ.GetMult();
-    Double_t fQY = fQ.Y()/fQ.GetMult();
+    Double_t fQX = 0.;
+    Double_t fQY = 0.;
+    if (fQ.GetMult()!=0.) {
+      fQX = fQ.X()/fQ.GetMult();
+      fQY = fQ.Y()/fQ.GetMult();
+    } else {cerr<<"fQ.GetMult() is zero!"<<endl; }
     fQ.Set(fQX,fQY);
     //cout<<"fQ.Mod() = " << fQ.Mod() << endl;
     //for chi calculation:
