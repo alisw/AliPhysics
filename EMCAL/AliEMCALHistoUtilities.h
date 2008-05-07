@@ -85,8 +85,8 @@ class AliEMCALHistoUtilities: public TNamed {
   // Analysis
   //
   // Trigger 
-  static TList* GetTriggersListOfHists(const Int_t scale=0, const Bool_t toBrowser=kFALSE);
-  static void   FillTriggersListOfHists(TList *l, TArrayF *triggerPosition, TArrayF *triggerAmplitudes);
+  static TList* GetTriggersListOfHists(const Int_t scale=0, const Int_t nTrig=5, const Bool_t toBrowser=kFALSE);
+  static void   FillTriggersListOfHists(TList *l=0, TArrayF *triggerPosition=0, TArrayF *triggerAmplitudes=0);
   // Jet(s) kinematics
   static TList* GetJetsListOfHists(Int_t njet=2, Bool_t toBrowser=kFALSE);
   static void   FillJetKineListOfHists(TList *l, AliRunLoader* rl, TLorentzVector &goodJet);

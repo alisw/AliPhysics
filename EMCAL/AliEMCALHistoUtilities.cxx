@@ -627,7 +627,7 @@ Double_t AliEMCALHistoUtilities::GetCorrectedEnergyForGamma1(const Double_t eRec
 }
 
 // Trigger 
-TList* AliEMCALHistoUtilities::GetTriggersListOfHists(const Int_t scale, const Bool_t toBrowser)
+TList* AliEMCALHistoUtilities::GetTriggersListOfHists(const Int_t scale, const Int_t nTrig, const Bool_t toBrowser)
 {
   // Oct 22, 2007 - trigger technical assurance
   gROOT->cd();
@@ -639,21 +639,30 @@ TList* AliEMCALHistoUtilities::GetTriggersListOfHists(const Int_t scale, const B
   new TH1F("03_hXposnxn", "X coord. of max Amp NXN",100, -500., +500.);
   new TH1F("04_hYposnxn", "Y coord. of max Amp NXN",100, -500., +500.);
   new TH1F("05_hZposnxn", "Z coord. of max Amp NXN",100, -500., +500.);
+  // May 7, 2008 - jet trigger
+  new TH1F("06_hJetTriggerPhi", "%phi of COG of jet trigger patch", 110, 80., 190.);
+  new TH1F("07_hJetTriggerEta", "%eta of COG of jet trigger patch", 70, -0.7, +0.7);
   // 
-  new TH1F("06_hMaxAmp2x2", "max Amp 2x2", 1000, 0.0, pow(2.,14.));
-  new TH1F("07_hAmpOutOf2x2", "Amp out of patch 2x2", 1000, 0.0, pow(2.,14.));
-  new TH1F("08_hMaxAmpnxn", "max Amp NXN", 1000, 0.0, pow(2.,14.));
-  new TH1F("09_hAmpOutOfnxn", "Amp out of patch nxn", 1000, 0.0, pow(2.,14.));
+  new TH1F("08_hMaxAmp2x2", "max Amp 2x2", 1000, 0.0, pow(2.,14.));
+  new TH1F("09_hAmpOutOf2x2", "Amp out of patch 2x2", 1000, 0.0, pow(2.,14.));
+  new TH1F("10_hMaxAmpnxn", "max Amp NXN", 1000, 0.0, pow(2.,14.));
+  new TH1F("11_hAmpOutOfnxn", "Amp out of patch nxn", 1000, 0.0, pow(2.,14.));
+  // May 7, 2008 - jet trigger
+  for(Int_t i=0; i<nTrig; i++) {
+    new TH1F(Form("%2.2i_hJetPatchAmp%2.2i",i+12,i), Form("jet patch amplitude : jet trig %i",i), 
+    1000, 0.0, pow(2.,14.));
+  }
   // For checking
   Double_t maxEdigit=100., maxN=1000., maxPC = 200.;
   if(scale==1) {
     maxN  *= 10.;
     maxPC *= 10.;
   }
-  new TH1F("10_hDigitsAmp", "amplitude of digits (PC)  ", 1001, -0.5, 1000.5);
-  new TH1F("11_hDigitsE", " energy of digits (PC)", 1000, 0.0, maxEdigit);
-  new TH1F("12_hNDigitsInPCs", " number of digits in PC's", 1000, 0.0, maxN);
-  new TH1F("13_hEinInPCs", " energy in PC's", 200, 0.0, maxPC);
+  Int_t ind = 12+nTrig; 
+  new TH1F(Form("%2.2i_hDigitsAmp",ind++), "amplitude of digits (PC)  ", 1001, -0.5, 1000.5);
+  new TH1F(Form("%2.2i_hDigitsE",ind++), " energy of digits (PC)", 1000, 0.0, maxEdigit);
+  new TH1F(Form("%2.2i_hNDigitsInPCs",ind++), " number of digits in PC's", 1000, 0.0, maxN);
+  new TH1F(Form("%2.2i_hEinInPCs",ind++), " energy in PC's", 200, 0.0, maxPC);
 
   return MoveHistsToList("TriggerLiOfHists", toBrowser);
 }
@@ -665,15 +674,12 @@ void AliEMCALHistoUtilities::FillTriggersListOfHists(TList *l, TArrayF *triggerP
     printf("<E> FillTriggersListOfHists() : list of hists undefined. \n");
     return;
   }
-  if(triggerPosition && triggerPosition->GetSize() == 6) {
-    for(int i=0; i<6; i++) {
-      FillH1(l, i, double(triggerPosition->At(i)));
-    }
+  for(int i=0; i<triggerPosition->GetSize(); i++) {
+    FillH1(l, i, double(triggerPosition->At(i)));
   }
-  if(triggerAmplitudes && triggerAmplitudes->GetSize() == 4) {
-    for(int i=0; i<4; i++) {
-      FillH1(l, 6+i, double(triggerAmplitudes->At(i)) );
-    }
+
+  for(int i=0; i<triggerAmplitudes->GetSize(); i++) {
+    FillH1(l, triggerPosition->GetSize() + i, double(triggerAmplitudes->At(i)) );
   }
 }
 
