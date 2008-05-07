@@ -39,6 +39,31 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   
 }
 
+//-----------------------------------------------------------------------
+
+AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
+  TObject(),
+  fEta(aTrack.fEta),
+  fPt(aTrack.fPt),
+  fPhi(aTrack.fPhi),
+  fFlowBits(aTrack.fFlowBits)
+{
+  //copy constructor 
+}
+//-----------------------------------------------------------------------
+
+AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTrack)
+{
+  fEta = aTrack.fEta;
+  fPt = aTrack.fPt;
+  fPhi = aTrack.fPhi;
+  fFlowBits = aTrack.fFlowBits;
+
+  return *this;
+
+}
+
+
 //----------------------------------------------------------------------- 
 
 AliFlowTrackSimple::~AliFlowTrackSimple()

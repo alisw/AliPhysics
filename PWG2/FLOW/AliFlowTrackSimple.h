@@ -15,6 +15,8 @@ class AliFlowTrackSimple: public TObject {
 
  public:
   AliFlowTrackSimple();
+  AliFlowTrackSimple(const AliFlowTrackSimple& aTrack);
+  AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   virtual  ~AliFlowTrackSimple();
   
   Double_t Eta() const; 
