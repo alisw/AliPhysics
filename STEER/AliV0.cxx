@@ -166,9 +166,13 @@ void  AliV0::Update(Float_t vertex[3])
   Double_t pnorm2 = p[0]*p[0]+p[1]*p[1];
   Double_t pnorm3 = TMath::Sqrt(p[2]*p[2]+pnorm2);
   pnorm2 = TMath::Sqrt(pnorm2);  
-  fPointAngleFi = (v[0]*p[0]+v[1]*p[1])/(vnorm2*pnorm2);
-  fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  
-  fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
+  if (vnorm2*pnorm2>0) {
+    fPointAngleFi = (v[0]*p[0]+v[1]*p[1])/(vnorm2*pnorm2);
+  }
+  if (vnorm3*pnorm3>0) {
+    fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  
+    fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
+  }
   //
 }
 
