@@ -25,6 +25,7 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
+#include <TSystem.h>
 #include "AliTOFFEEReader.h"
 #include "AliTOFFEEConfig.h"
 #include "AliTOFRawStream.h"
@@ -119,8 +120,9 @@ AliTOFFEEReader::LoadFEEConfig(const Char_t *FileName) const
    *
    */
 
+  Char_t *expandedFileName = gSystem->ExpandPathName(FileName);
   std::ifstream is;
-  is.open(FileName, std::ios::binary);
+  is.open(expandedFileName, std::ios::binary);
   is.read((Char_t *)fFEEConfig, sizeof(AliTOFFEEConfig));
   is.close();
 }
