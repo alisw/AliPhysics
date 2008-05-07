@@ -17,11 +17,11 @@
 
 #include "AliFlowVector.h"
 
-//
-// AliFlowVector:
-// Class to hold the flowvector and corresponding multiplicity for flow analysis.
-// Author: A. Bilandzic (anteb@nikhef.nl)
-//
+//********************************************************************
+// AliFlowVector:                                                    *
+// Class to hold the flow vector and multiplicity for flow analysis. *
+// Author: A. Bilandzic (anteb@nikhef.nl)                            *
+//********************************************************************
 
 ClassImp(AliFlowVector)
 
@@ -33,7 +33,13 @@ AliFlowVector::AliFlowVector(const AliFlowVector& aVector):TVector2(aVector),
 fMult(aVector.fMult){}
 AliFlowVector::AliFlowVector(const TVector2 &v, Double_t m):TVector2(v),fMult(m){}
 AliFlowVector::~AliFlowVector(){}
-AliFlowVector& AliFlowVector::operator=(const AliFlowVector&)
+AliFlowVector& AliFlowVector::operator=(const AliFlowVector& aVector)
 {
-  return *this;
+   //assignement operator
+   fX=aVector.X();
+   fY=aVector.Y();
+   fMult=aVector.GetMult();
+   return *this;
 }
+
+
