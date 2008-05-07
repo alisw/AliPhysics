@@ -156,7 +156,7 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDplus(const Double_t *cuts)
   if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion2
 
   //DCA
-  for(Int_t i=0;i<3;i++) if(cuts[11]>0 && GetDCA(i)>cuts[11])return kFALSE;
+  for(Int_t i=0;i<3;i++) if(GetDCA(i)>cuts[11])return kFALSE;
 
   //2track cuts
   if(fDist12toPrim<cuts[5] || fDist23toPrim<cuts[5])return kFALSE;
@@ -192,6 +192,7 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,In
 // cuts[9] = cosThetaPoint
 // cuts[10] = Sum d0^2 (cm^2)
 // cuts[11] = dca cut (cm)
+// cuts[12] = max. inv. mass difference(Mphi-MKK and MK0*-MKpi) [GeV] 
 //
 // If candidate Ds does not pass the cuts return kFALSE
 //
@@ -210,14 +211,26 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,In
   //single track
   if(TMath::Abs(PtProng(0)) < cuts[1] || TMath::Abs(Getd0Prong(0))<cuts[3])return kFALSE;//Kaon1
   if(TMath::Abs(PtProng(1)) < cuts[1] || TMath::Abs(Getd0Prong(1))<cuts[3])return kFALSE;//Kaon2
-  if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion2
+  if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion
 
+  // cuts on resonant decays (via Phi or K0*)
+  Bool_t okMassPhi=1;
+  Double_t mass01phi=InvMass2Prongs(0,1,321,321);
+  Double_t mass12phi=InvMass2Prongs(1,2,321,321);
+  Double_t mPhiPDG = TDatabasePDG::Instance()->GetParticle(333)->Mass();
+  if(TMath::Abs(mass01phi-mPhiPDG)>cuts[12] && TMath::Abs(mass12phi-mPhiPDG)>cuts[12]) okMassPhi = 0;
+  Bool_t okMassK0star=1;
+  Double_t mass01K0s=InvMass2Prongs(0,1,211,321);
+  Double_t mass12K0s=InvMass2Prongs(1,2,321,211);
+  Double_t mK0sPDG = TDatabasePDG::Instance()->GetParticle(313)->Mass();
+  if(TMath::Abs(mass01K0s-mK0sPDG)>cuts[12] && TMath::Abs(mass12K0s-mK0sPDG)>cuts[12]) okMassK0star = 0;
+  if(!okMassPhi && !okMassK0star) return kFALSE;
+  
   //DCA
-  for(Int_t i=0;i<3;i++) if(cuts[11]>0 && GetDCA(i)>cuts[11])return kFALSE;
+  for(Int_t i=0;i<3;i++) if(GetDCA(i)>cuts[11])return kFALSE;
 
   //2track cuts
   if(fDist12toPrim<cuts[5] || fDist23toPrim<cuts[5])return kFALSE;
-  if(Getd0Prong(0)*Getd0Prong(1)<0. && Getd0Prong(2)*Getd0Prong(1)<0.)return kFALSE;
 
   //sec vert
   if(fSigmaVert>cuts[6])return kFALSE;
@@ -271,7 +284,7 @@ Bool_t AliAODRecoDecayHF3Prong::SelectLc(const Double_t *cuts,Int_t &okLcpKpi,In
   if(TMath::Abs(PtProng(2)) < cuts[2] || TMath::Abs(Getd0Prong(2))<cuts[4])return kFALSE;//Pion
 
   //DCA
-  for(Int_t i=0;i<3;i++) if(cuts[11]>0 && GetDCA(i)>cuts[11])return kFALSE;
+  for(Int_t i=0;i<3;i++) if(GetDCA(i)>cuts[11])return kFALSE;
 
   //2track cuts
   if(fDist12toPrim<cuts[5] || fDist23toPrim<cuts[5])return kFALSE;

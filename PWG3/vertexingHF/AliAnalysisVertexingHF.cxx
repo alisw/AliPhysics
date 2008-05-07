@@ -94,7 +94,7 @@ fMind0rphiCut(source.fMind0rphiCut)
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<12; i++)  fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<13; i++)  fDsCuts[i]=source.fDsCuts[i];
   for(Int_t i=0; i<12; i++)  fLcCuts[i]=source.fLcCuts[i];
 }
 //--------------------------------------------------------------------------
@@ -124,7 +124,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<12; i++)  fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<13; i++)  fDsCuts[i]=source.fDsCuts[i];
   for(Int_t i=0; i<12; i++)  fLcCuts[i]=source.fLcCuts[i];
 
   return *this;
@@ -1234,34 +1234,32 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    dca cut [cm]  < %f\n",fDplusCuts[11]);
     printf("  Ds->KKpi cuts:\n");
     printf("    |M-MDs| [GeV]    < %f\n",fDsCuts[0]);
-    printf("    pTK     [GeV/c]    > %f\n",fDplusCuts[1]);
-    printf("    pTPi    [GeV/c]    > %f\n",fDplusCuts[2]);
-    printf("    |d0K|  [cm]  > %f\n",fDplusCuts[3]);
-    printf("    |d0Pi| [cm]  > %f\n",fDplusCuts[4]);
-    printf("    dist12    [cm]  < %f\n",fDplusCuts[5]);
-    printf("    sigmavert [cm]   < %f\n",fDplusCuts[6]);
-    printf("    dist prim-sec [cm] > %f\n",fDplusCuts[7]);
-    printf("    pM=Max{pT1,pT2,pT3} [GeV/c] > %f\n",fDplusCuts[8]);
-    printf("    cosThetaPoint    > %f\n",fDplusCuts[9]);
-    printf("    Sum d0^2 [cm^2]  > %f\n",fDplusCuts[10]);
-    printf("    dca cut [cm]  < %f\n",fDplusCuts[11]);
+    printf("    pTK     [GeV/c]    > %f\n",fDsCuts[1]);
+    printf("    pTPi    [GeV/c]    > %f\n",fDsCuts[2]);
+    printf("    |d0K|  [cm]  > %f\n",fDsCuts[3]);
+    printf("    |d0Pi| [cm]  > %f\n",fDsCuts[4]);
+    printf("    dist12    [cm]  < %f\n",fDsCuts[5]);
+    printf("    sigmavert [cm]   < %f\n",fDsCuts[6]);
+    printf("    dist prim-sec [cm] > %f\n",fDsCuts[7]);
+    printf("    pM=Max{pT1,pT2,pT3} [GeV/c] > %f\n",fDsCuts[8]);
+    printf("    cosThetaPoint    > %f\n",fDsCuts[9]);
+    printf("    Sum d0^2 [cm^2]  > %f\n",fDsCuts[10]);
+    printf("    dca cut [cm]  < %f\n",fDsCuts[11]);
+    printf("    Inv. Mass  phi/K0* [GeV]  < %f\n",fDsCuts[12]);
     printf("  Lc->pKpi cuts:\n");
     printf("    |M-MLc| [GeV]    < %f\n",fLcCuts[0]);
-    printf("    pTP     [GeV/c]    > %f\n",fDplusCuts[1]);
-    printf("    pTPi and pTK [GeV/c]    > %f\n",fDplusCuts[2]);
-    printf("    |d0P|  [cm]  > %f\n",fDplusCuts[3]);
-    printf("    |d0Pi| and |d0K| [cm]  > %f\n",fDplusCuts[4]);
-    printf("    dist12    [cm]  < %f\n",fDplusCuts[5]);
-    printf("    sigmavert [cm]   < %f\n",fDplusCuts[6]);
-    printf("    dist prim-sec [cm] > %f\n",fDplusCuts[7]);
-    printf("    pM=Max{pT1,pT2,pT3} [GeV/c] > %f\n",fDplusCuts[8]);
-    printf("    cosThetaPoint    > %f\n",fDplusCuts[9]);
-    printf("    Sum d0^2 [cm^2]  > %f\n",fDplusCuts[10]);
-    printf("    dca cut [cm]  < %f\n",fDplusCuts[11]);
+    printf("    pTP     [GeV/c]    > %f\n",fLcCuts[1]);
+    printf("    pTPi and pTK [GeV/c]    > %f\n",fLcCuts[2]);
+    printf("    |d0P|  [cm]  > %f\n",fLcCuts[3]);
+    printf("    |d0Pi| and |d0K| [cm]  > %f\n",fLcCuts[4]);
+    printf("    dist12    [cm]  < %f\n",fLcCuts[5]);
+    printf("    sigmavert [cm]   < %f\n",fLcCuts[6]);
+    printf("    dist prim-sec [cm] > %f\n",fLcCuts[7]);
+    printf("    pM=Max{pT1,pT2,pT3} [GeV/c] > %f\n",fLcCuts[8]);
+    printf("    cosThetaPoint    > %f\n",fLcCuts[9]);
+    printf("    Sum d0^2 [cm^2]  > %f\n",fLcCuts[10]);
+    printf("    dca cut [cm]  < %f\n",fLcCuts[11]);
     printf("  Ds->KKpi cuts:\n");
-    printf("    |M-MDs| [GeV]    < %f\n",fDsCuts[0]);
-    printf("  Lc->pKpi cuts:\n");
-    printf("    |M-MD+| [GeV]    < %f\n",fLcCuts[0]);
   }
 
   return;
@@ -1473,7 +1471,8 @@ void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0,Double_t cut1,
 				   Double_t cut2,Double_t cut3,Double_t cut4,
 				   Double_t cut5,Double_t cut6,
 				   Double_t cut7,Double_t cut8,
-				   Double_t cut9,Double_t cut10,Double_t cut11)
+				   Double_t cut9,Double_t cut10,
+				   Double_t cut11,Double_t cut12)
 {
   // Set the cuts for Ds->KKpi selection
   fDsCuts[0] = cut0;
@@ -1488,15 +1487,16 @@ void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0,Double_t cut1,
   fDsCuts[9] = cut9;
   fDsCuts[10] = cut10;
   fDsCuts[11] = cut11;
+  fDsCuts[12] = cut12;
 
   return;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDsCuts(const Double_t cuts[12]) 
+void AliAnalysisVertexingHF::SetDsCuts(const Double_t cuts[13]) 
 {
   // Set the cuts for Ds->KKpi selection
 
-  for(Int_t i=0; i<12; i++) fDsCuts[i] = cuts[i];
+  for(Int_t i=0; i<13; i++) fDsCuts[i] = cuts[i];
 
   return;
 }
