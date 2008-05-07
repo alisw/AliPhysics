@@ -6,5 +6,6 @@
 
 #pragma link C++ class  AliPWG2AODTrack+;
 #pragma link C++ class  AliAnalysisTaskPWG2ESDfilter+;
+#pragma link C++ class  AliAnalysisTaskPWG2AODUpdate+;
 
 #endif
