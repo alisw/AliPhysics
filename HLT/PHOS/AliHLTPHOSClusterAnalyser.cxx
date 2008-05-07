@@ -190,7 +190,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters()
 	  caloClusterPtr->fFitQuality = 0;
 	  caloClusterPtr->fM20 = 0;
 	  caloClusterPtr->fM02 = 0;
-	  caloClusterPtr->fM11 = 0;
+	  //	  caloClusterPtr->fM11 = 0;
 	}
       if(fHaveCPVInfo)
 	{
