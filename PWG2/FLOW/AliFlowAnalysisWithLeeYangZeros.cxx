@@ -13,9 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/ 
 
 #include "Riostream.h"                 //needed as include
 #include "AliFlowCommonConstants.h"    //needed as include
@@ -97,10 +94,10 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
     }
 
   fQ.Set(0.,0.);
+  fQ.SetMult(0);
   fQsum.Set(0.,0.);
 
 }
-
 
 //-----------------------------------------------------------------------
 
@@ -525,8 +522,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
   //get the Q vector 
   fQ = fEvent->GetQ();
   //weight by the multiplicity
-  Double_t fQX = fQ.X()/fQ.GetMult(); 
-  Double_t fQY = fQ.Y()/fQ.GetMult();
+  Double_t fQX = 0;
+  Double_t fQY = 0;
+  if (fQ.GetMult() != 0) {
+    fQX = fQ.X()/fQ.GetMult(); 
+    fQY = fQ.Y()/fQ.GetMult();
+  }
   fQ.Set(fQX,fQY);
   //for chi calculation:
   fQsum += fQ;
@@ -595,8 +596,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
   //get the Q vector 
   fQ = fEvent->GetQ();
   //weight by the multiplicity
-  Double_t fQX = fQ.X()/fQ.GetMult(); 
-  Double_t fQY = fQ.Y()/fQ.GetMult();
+  Double_t fQX = 0;
+  Double_t fQY = 0;
+  if (fQ.GetMult() != 0) {
+    fQX = fQ.X()/fQ.GetMult(); 
+    fQY = fQ.Y()/fQ.GetMult();
+  }
   fQ.Set(fQX,fQY);               
   //for chi calculation:
   fQsum += fQ;
