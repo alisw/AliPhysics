@@ -67,9 +67,8 @@ class AliFlowAnalysisWithLeeYangZeros {
 
  private:
 
-   //AliFlowAnalysisWithLeeYangZeros(const AliFlowAnalysisWithLeeYangZeros& lyz) {}    //AliFlowAnalysisWithLeeYangZeros cannot be copied
-   //void operator=(const AliFlowAnalysisWithLeeYangZeros &lyz) {}   
-
+  AliFlowAnalysisWithLeeYangZeros(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);
+   AliFlowAnalysisWithLeeYangZeros& operator=(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);
 
    Bool_t   MakeControlHistograms(AliFlowEventSimple* fEvent); 
    Bool_t   FillFromFlowEvent(AliFlowEventSimple* fEvent);
