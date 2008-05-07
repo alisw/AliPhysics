@@ -1049,12 +1049,15 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
   TVector3 dR;
 
   Float_t dist,minDist;
+  Int_t relid[4] ;
 
   for(Int_t iRP=0; iRP<fEMCRecPoints->GetEntries(); iRP++){
     rp = (AliPHOSEmcRecPoint*)fEMCRecPoints->At(iRP);
     minDist = 1.e+07;
-
     for(Int_t iBad=0; iBad<fgCalibData->GetNumOfEmcBadChannels(); iBad++) {
+      fGeom->AbsToRelNumbering(badIds[iBad],relid)  ;
+      if(relid[0]!=rp->GetPHOSMod())
+        continue ;
       rp->GetGlobalPosition(gposRecPoint,gmat);
       fGeom->RelPosInAlice(badIds[iBad],gposBadChannel);
       AliDebug(2,Form("BC position:[%.3f,%.3f,%.3f], RP position:[%.3f,%.3f,%.3f]. E=%.3f\n",

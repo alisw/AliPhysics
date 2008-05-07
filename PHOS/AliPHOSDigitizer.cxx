@@ -129,6 +129,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include <TGeoManager.h>                                                                                                                   
 #include "AliLog.h"
 #include "AliRunDigitizer.h"
 #include "AliPHOSDigit.h"
@@ -292,13 +293,44 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //
   const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
   //Making digits with noise, first EMC
-  Int_t nEMC = geom->GetNModules()*geom->GetNPhi()*geom->GetNZ();
+  //Check which PHOS modules are present
+  Bool_t isPresent[5] ;
+  TString volpath ;
+  Int_t nmod=0 ;
+  for(Int_t i=0; i<5; i++){
+    volpath = "/ALIC_1/PHOS_";
+    volpath += i+1;
+    if (gGeoManager->CheckPath(volpath.Data())) {
+      isPresent[i]=1 ;
+      nmod++ ;
+    }
+    else{
+      isPresent[i]=0 ;
+    }
+  }
+
+  Int_t nEMC = nmod*geom->GetNPhi()*geom->GetNZ();
   
   Int_t nCPV ;
   Int_t absID ;
   
-  nCPV = nEMC + geom->GetNumberOfCPVPadsZ() * geom->GetNumberOfCPVPadsPhi() * geom->GetNModules() ;
+  //check if CPV exists
+  Bool_t isCPVpresent=0 ;
+  for(Int_t i=1; i<=5 && !isCPVpresent; i++){
+    volpath = "/ALIC_1/PHOS_";
+    volpath += i;
+    volpath += "/PCPV_1";
+    if (gGeoManager->CheckPath(volpath.Data())) 
+      isCPVpresent=1 ;
+  } 
   
+  if(isCPVpresent){
+    nCPV = nEMC + geom->GetNumberOfCPVPadsZ() * geom->GetNumberOfCPVPadsPhi() * nmod ;
+  }
+  else{
+     nCPV = nEMC ;
+  }  
+
   digits->Expand(nCPV) ;
 
   //take all the inputs to add together and load the SDigits
@@ -368,13 +400,21 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   if(toMakeNoise)
      apdNoise = AliPHOSSimParam::GetInstance()->GetAPDNoise() ; 
 
-  for(absID = 1 ; absID <= nEMC ; absID++){
-    Float_t noise = gRandom->Gaus(0.,apdNoise) ; 
-    new((*digits)[absID-1]) AliPHOSDigit( -1, absID, noise, TimeOfNoise() ) ;
-    //look if we have to add signal?
-    digit = dynamic_cast<AliPHOSDigit *>(digits->At(absID-1)) ;
+  Int_t emcpermod=geom->GetNPhi()*geom->GetNZ();
+  Int_t idigit= 0;
+  for(Int_t imod=0; imod<5; imod++){
+    if(!isPresent[imod])
+      continue ;
+    Int_t firstAbsId=imod*emcpermod+1 ;
+    Int_t lastAbsId =(imod+1)*emcpermod ; 
+    for(absID = firstAbsId ; absID <= lastAbsId ; absID++){
+      Float_t noise = gRandom->Gaus(0.,apdNoise) ; 
+      new((*digits)[idigit]) AliPHOSDigit( -1, absID, noise, TimeOfNoise() ) ;
+      //look if we have to add signal?
+      digit = dynamic_cast<AliPHOSDigit *>(digits->At(idigit)) ;
+      idigit++ ;
     
-    if(absID==nextSig){
+      if(absID==nextSig){
       //Add SDigits from all inputs 
 //      ticks->Clear() ;
 //      Int_t contrib = 0 ;
@@ -388,24 +428,24 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 //      new((*ticks)[contrib++]) AliPHOSTick(digit->GetTime()+fTimeSignalLength, -a, -b); 
 
 // Calculate time as time of the largest digit
-      Float_t time = digit->GetTime() ;
-      Float_t eTime= digit->GetEnergy() ;
+        Float_t time = digit->GetTime() ;
+        Float_t eTime= digit->GetEnergy() ;
       
-      //loop over inputs
-      for(Int_t i = 0 ; i < fInput ; i++){
-	if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	  curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
-	else
-	  curSDigit = 0 ;
-	//May be several digits will contribute from the same input
-	while(curSDigit && curSDigit->GetId() == absID){	   
-	  //Shift primary to separate primaries belonging different inputs
-	  Int_t primaryoffset ;
-	  if(fManager)
-	    primaryoffset = fManager->GetMask(i) ; 
+        //loop over inputs
+        for(Int_t i = 0 ; i < fInput ; i++){
+  	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+  	    curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
 	  else
-	    primaryoffset = 10000000*i ;
-	  curSDigit->ShiftPrimary(primaryoffset) ;
+	    curSDigit = 0 ;
+	  //May be several digits will contribute from the same input
+	  while(curSDigit && curSDigit->GetId() == absID){	   
+	    //Shift primary to separate primaries belonging different inputs
+	    Int_t primaryoffset ;
+	    if(fManager)
+	      primaryoffset = fManager->GetMask(i) ; 
+	    else
+	      primaryoffset = 10000000*i ;
+	    curSDigit->ShiftPrimary(primaryoffset) ;
 	  
 //New Timing model is necessary
 //	  a = curSDigit->GetEnergy() ;
@@ -417,30 +457,31 @@ void AliPHOSDigitizer::Digitize(Int_t event)
             time=curSDigit->GetTime() ;
           }
 	  
-	  *digit += *curSDigit ;  //add energies
+	    *digit += *curSDigit ;  //add energies
 
-	  index[i]++ ;
-	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	    curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
-	  else
-	    curSDigit = 0 ;
-	}
-      }
+	    index[i]++ ;
+	    if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+	      curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+	    else
+	      curSDigit = 0 ;
+	  }
+        }
       
-      //calculate and set time
+        //calculate and set time
 //New Timing model is necessary
 //      Float_t time = FrontEdgeTime(ticks) ;
-      digit->SetTime(time) ;
+        digit->SetTime(time) ;
       
-      //Find next signal module
-      nextSig = 200000 ;
-      for(Int_t i = 0 ; i < fInput ; i++){
-	sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
-	Int_t curNext = nextSig ;
-	if(sdigits->GetEntriesFast() > index[i] ){
-	  curNext = dynamic_cast<AliPHOSDigit *>(sdigits->At(index[i]))->GetId() ;
-	}
-	if(curNext < nextSig) nextSig = curNext ;
+        //Find next signal module
+        nextSig = 200000 ;
+        for(Int_t i = 0 ; i < fInput ; i++){
+	  sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+	  Int_t curNext = nextSig ;
+	  if(sdigits->GetEntriesFast() > index[i] ){
+	    curNext = dynamic_cast<AliPHOSDigit *>(sdigits->At(index[i]))->GetId() ;
+	  }
+	  if(curNext < nextSig) nextSig = curNext ;
+        }
       }
     }
   }
@@ -459,50 +500,61 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 //  delete ticks ;
   
   //Now CPV digits (different noise and no timing)
+  Int_t cpvpermod = geom->GetNumberOfCPVPadsZ() * geom->GetNumberOfCPVPadsPhi() ;
+  Int_t nEMCtotal=emcpermod*5 ;
   Float_t cpvNoise = AliPHOSSimParam::GetInstance()->GetCPVNoise() ;
-  for(absID = nEMC+1; absID <= nCPV; absID++){
-    Float_t noise = gRandom->Gaus(0., cpvNoise) ; 
-    new((*digits)[absID-1]) AliPHOSDigit( -1,absID,noise, TimeOfNoise() ) ;
-    //look if we have to add signal?
-    if(absID==nextSig){
-      digit = dynamic_cast<AliPHOSDigit *>(digits->At(absID-1)) ;
-      //Add SDigits from all inputs
-      for(Int_t i = 0 ; i < fInput ; i++){
-	if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	  curSDigit = dynamic_cast<AliPHOSDigit*>( dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
-	else
-	  curSDigit = 0 ;
+  if(isCPVpresent){  //CPV is present in current geometry
+    for(Int_t imod=0; imod<5; imod++){ //module is present in current geometry
+      if(!isPresent[imod])
+        continue ;
+      Int_t firstAbsId=nEMCtotal+imod*cpvpermod+1 ;
+      Int_t lastAbsId =nEMCtotal+(imod+1)*cpvpermod ;
+      for(absID = firstAbsId; absID <= lastAbsId; absID++){
+        Float_t noise = gRandom->Gaus(0., cpvNoise) ; 
+        new((*digits)[idigit]) AliPHOSDigit( -1,absID,noise, TimeOfNoise() ) ;
+        idigit++ ;
+        //look if we have to add signal?
+        if(absID==nextSig){
+          digit = dynamic_cast<AliPHOSDigit *>(digits->At(idigit-1)) ;
+          //Add SDigits from all inputs
+          for(Int_t i = 0 ; i < fInput ; i++){
+	     if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+	       curSDigit = dynamic_cast<AliPHOSDigit*>( dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+	     else
+	       curSDigit = 0 ;
 
-	//May be several digits will contribute from the same input
-	while(curSDigit && curSDigit->GetId() == absID){	   
-	  //Shift primary to separate primaries belonging different inputs
-	  Int_t primaryoffset ;
-	  if(fManager)
-	    primaryoffset = fManager->GetMask(i) ; 
-	  else
-	    primaryoffset = 10000000*i ;
-	  curSDigit->ShiftPrimary(primaryoffset) ;
+	     //May be several digits will contribute from the same input
+	     while(curSDigit && curSDigit->GetId() == absID){	   
+	       //Shift primary to separate primaries belonging different inputs
+	       Int_t primaryoffset ;
+	       if(fManager)
+	         primaryoffset = fManager->GetMask(i) ; 
+	       else
+	         primaryoffset = 10000000*i ;
+	       curSDigit->ShiftPrimary(primaryoffset) ;
 
-	  //add energies
-	  *digit += *curSDigit ;  
-	  index[i]++ ;
-	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	    curSDigit = dynamic_cast<AliPHOSDigit*>( dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i]) ) ; 	
-	  else
-	    curSDigit = 0 ;
-	}
-      }
+	       //add energies
+	       *digit += *curSDigit ;  
+	       index[i]++ ;
+	       if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+	         curSDigit = dynamic_cast<AliPHOSDigit*>( dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i]) ) ; 	
+	       else
+	         curSDigit = 0 ;
+	     }
+          }
 
-      //Find next signal module
-      nextSig = 200000 ;
-      for(Int_t i = 0 ; i < fInput ; i++){
-	sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
-	Int_t curNext = nextSig ;
-	if(sdigits->GetEntriesFast() > index[i] )
-	  curNext = dynamic_cast<AliPHOSDigit *>( sdigits->At(index[i]) )->GetId() ;
-	if(curNext < nextSig) nextSig = curNext ;
-      }
+          //Find next signal module
+          nextSig = 200000 ;
+          for(Int_t i = 0 ; i < fInput ; i++){
+	    sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+	    Int_t curNext = nextSig ;
+	    if(sdigits->GetEntriesFast() > index[i] )
+	      curNext = dynamic_cast<AliPHOSDigit *>( sdigits->At(index[i]) )->GetId() ;
+	    if(curNext < nextSig) nextSig = curNext ;
+          }
       
+        }
+      }
     }
   }
 
