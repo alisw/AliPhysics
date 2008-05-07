@@ -13,10 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/ 
-
 #include "Riostream.h"
 #include "TObjArray.h"
 #include "TMath.h"
@@ -50,12 +46,15 @@ ClassImp(AliFlowEventSimple)
 //-----------------------------------------------------------------------
 
 AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& event):
+  TObject(),
+  fTrackCollection(event.fTrackCollection),
+  fTrack(event.fTrack),
   fNumberOfTracks(event.fNumberOfTracks),
   fEventNSelTracksIntFlow(event.fEventNSelTracksIntFlow)
 {
   //copy constructor 
-  *fTrack = *event.fTrack;
-  *fTrackCollection =  *event.fTrackCollection ;
+  //  *fTrack = *event.fTrack;
+  //  *fTrackCollection =  *event.fTrackCollection ;
 
 }
 
@@ -63,7 +62,6 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& event):
 
 AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& event)
 {
-  //copy constructor 
   *fTrack = *event.fTrack;
   *fTrackCollection =  *event.fTrackCollection ;
   fNumberOfTracks = event.fNumberOfTracks;
