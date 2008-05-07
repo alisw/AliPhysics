@@ -495,6 +495,15 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     } 
   }
 
+  //Apply Fast decalibration if necessary
+  if(AliPHOSSimParam::GetInstance()->GetFastDecalibration()>0.){
+    Float_t res=AliPHOSSimParam::GetInstance()->GetFastDecalibration() ;
+    for(Int_t i = 0 ; i < nEMC ; i++){
+      digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+      digit->SetEnergy(gRandom->Gaus(1.,res)*digit->GetEnergy()) ;
+    }
+  }
+ 
   
 //  ticks->Delete() ;
 //  delete ticks ;

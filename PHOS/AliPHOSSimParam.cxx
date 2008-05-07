@@ -31,6 +31,7 @@ AliPHOSSimParam::AliPHOSSimParam() :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fFastDecalibration(0.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
   fDigitizeE(0)
@@ -46,6 +47,7 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fFastDecalibration(0.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
   fDigitizeE(0)
@@ -82,6 +84,8 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fTOFa               = 0.5e-9 ; // [sec] constant term
   fTOFb               = 1.e-9 ;  // [sec/sqrt(GeV)]] stohastic term
 
+  fFastDecalibration = 0. ; //Relative decalibration. By default there is no decalibration
+
   fADCpedestalCpv     = 0.012 ;  // [aux units]
   fADCchanelCpv       = 0.0012;  // [aux units]    
   fCPVNoise           = 0.01;    // [aux units]
@@ -102,6 +106,7 @@ AliPHOSSimParam::AliPHOSSimParam(const AliPHOSSimParam& ):
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fFastDecalibration(0.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
   fDigitizeE(0)
