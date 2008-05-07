@@ -1,5 +1,6 @@
 SRCS = AOD/AliPWG2AODTrack.cxx \
-       AOD/AliAnalysisTaskPWG2ESDfilter.cxx
+       AOD/AliAnalysisTaskPWG2ESDfilter.cxx \
+       AOD/AliAnalysisTaskPWG2AODUpdate.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
