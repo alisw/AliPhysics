@@ -39,6 +39,7 @@ class AliTRDtrackV1 : public AliTRDtrack
 	
 	Bool_t         IsOwner() const;
 	
+  void           MakeBackupTrack();
 	void           SetNumberOfClusters();
 	void           SetOwner(Bool_t own = kTRUE);
 	void           SetTracklet(AliTRDseedV1 *trklt, Int_t plane, Int_t index);

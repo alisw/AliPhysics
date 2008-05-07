@@ -295,6 +295,21 @@ Bool_t AliTRDtrackV1::IsOwner() const
 	return kTRUE;
 }
 	
+//_____________________________________________________________________________
+void AliTRDtrackV1::MakeBackupTrack()
+{
+  //
+  // Creates a backup track
+  //
+
+  if (fBackupTrack) {
+    fBackupTrack->~AliTRDtrack();
+    new(fBackupTrack) AliTRDtrack((AliTRDtrack&)(*this));
+  }
+  fBackupTrack = new AliTRDtrack((AliTRDtrack&)(*this));
+}
+
+
 //___________________________________________________________
 void AliTRDtrackV1::SetNumberOfClusters() 
 {

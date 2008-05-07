@@ -1192,7 +1192,7 @@ Int_t AliTRDtrackerV1::ReadClusters(TClonesArray* &array, TTree *clusterTree) co
 			if(!(c = (AliTRDcluster *) clusterArray->UncheckedAt(iCluster))) continue;
 			c->SetInChamber();
 			new((*fClusters)[ncl++]) AliTRDcluster(*c);
-			clusterArray->RemoveAt(iCluster); 
+			delete (clusterArray->RemoveAt(iCluster)); 
 		}
 
 	}
