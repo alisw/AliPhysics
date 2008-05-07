@@ -27,6 +27,7 @@
 // --- ROOT system ---
 #include <TList.h>
 #include <TClonesArray.h>
+#include <TH2.h>
 
 // --- Standard library ---
 
@@ -262,7 +263,23 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //for(int i=0; i<4; i++) printf(" %i %f : ", i, triggerAmplitudes[i]);
   //printf("\n");
   tr.Print("");
-
+  //
+  // Trigger jet staff
+  //
+  if(tr.GetNJetThreshold()>0) {
+    // Jet phi/eta
+    Int_t n0 = triggerPosition.GetSize();
+    const TH2F *hpatch = tr.GetJetMatrixE();
+    triggerPosition.Set(n0 + 2);
+    for(Int_t i=0; i<2; i++) triggerPosition[n0+i] = hpatch->GetMean(i+1);   
+    // Add jet ampitudes
+    n0 = triggerAmplitudes.GetSize();
+    triggerAmplitudes.Set(n0 + tr.GetNJetThreshold());
+    Double_t *ampJet = tr.GetL1JetThresholds();
+    for(Int_t i=0; i<tr.GetNJetThreshold(); i++){
+      triggerAmplitudes[n0 + i] = Float_t(ampJet[i]);
+    }
+  }
   esd->AddEMCALTriggerPosition(triggerPosition);
   esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
   // Fill trigger hists
