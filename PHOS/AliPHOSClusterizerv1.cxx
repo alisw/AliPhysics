@@ -1049,15 +1049,22 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
   TVector3 dR;
 
   Float_t dist,minDist;
-  Int_t relid[4] ;
-
+  Int_t relid[4]={0,0,0,0} ;
+  TVector3 lpos ;
   for(Int_t iRP=0; iRP<fEMCRecPoints->GetEntries(); iRP++){
     rp = (AliPHOSEmcRecPoint*)fEMCRecPoints->At(iRP);
-    minDist = 1.e+07;
+    //evaluate distance to border
+    relid[0]=rp->GetPHOSMod() ;
+    relid[2]=1 ;
+    relid[3]=1 ;
+    Float_t xcorner,zcorner;
+    fGeom->RelPosInModule(relid,xcorner,zcorner) ; //coordinate of the corner cell
+    rp->GetLocalPosition(lpos) ;
+    minDist = 2.2+TMath::Min(-xcorner-TMath::Abs(lpos.X()),-zcorner-TMath::Abs(lpos.Z())); //2.2 - crystal size
     for(Int_t iBad=0; iBad<fgCalibData->GetNumOfEmcBadChannels(); iBad++) {
       fGeom->AbsToRelNumbering(badIds[iBad],relid)  ;
-      if(relid[0]!=rp->GetPHOSMod())
-        continue ;
+      if(relid[0]!=rp->GetPHOSMod()) //We can not evaluate global position directly since 
+        continue ;                   //bad channels can be in the module which does not exist in simulations.
       rp->GetGlobalPosition(gposRecPoint,gmat);
       fGeom->RelPosInAlice(badIds[iBad],gposBadChannel);
       AliDebug(2,Form("BC position:[%.3f,%.3f,%.3f], RP position:[%.3f,%.3f,%.3f]. E=%.3f\n",
