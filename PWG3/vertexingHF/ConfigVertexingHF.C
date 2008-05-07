@@ -21,7 +21,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetD0toKpiCuts(0.2,999999.,1.1,0.,0.,999999.,999999.,999999.,0.3);
   vHF->SetBtoJPSICuts(0.350);
   vHF->SetDplusCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
-  vHF->SetDsCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
+  vHF->SetDsCuts(0.2,0.,0.,0.,0.,0.005,0.06,0.,0.,0.8,0.,0.1,0.1);
   vHF->SetLcCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
   //--- set this if you want to reconstruct primary vertex candidate by
   //    candidate using other tracks in the event (for pp, broad 
