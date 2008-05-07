@@ -20,6 +20,7 @@ class AliTPCseed;
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
   AliTPCcalibAlign();
+  AliTPCcalibAlign(const Text_t *name, const Text_t *title);
 
   virtual ~AliTPCcalibAlign();
 

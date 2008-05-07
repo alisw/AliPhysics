@@ -33,6 +33,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
+#include "TTreeStream.h"
 
 #include <iostream>
 #include <sstream>
@@ -52,6 +53,26 @@ AliTPCcalibAlign::AliTPCcalibAlign()
   //
   // Constructor
   //
+  for (Int_t i=0;i<72*72;++i) {
+    fPoints[i]=0;
+  }
+}
+
+AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
+  :AliTPCcalibBase(),  
+   fDphiHistArray(72*72),
+   fDthetaHistArray(72*72),
+   fDyHistArray(72*72),
+   fDzHistArray(72*72),
+   fFitterArray12(72*72),
+   fFitterArray9(72*72),
+   fFitterArray6(72*72)
+{
+  //
+  // Constructor
+  //
+  SetName(name);
+  SetTitle(title);
   for (Int_t i=0;i<72*72;++i) {
     fPoints[i]=0;
   }
@@ -100,6 +121,20 @@ void AliTPCcalibAlign::Process(AliTPCseed *seed) {
 void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
 					const AliExternalTrackParam &tp2,
 					Int_t s1,Int_t s2) {
+
+  if (fStreamLevel>1){
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      AliExternalTrackParam *p1 = &((AliExternalTrackParam&)tp1);
+      AliExternalTrackParam *p2 = &((AliExternalTrackParam&)tp2);
+      (*cstream)<<"Tracklet"<<
+	"tp1.="<<p1<<
+	"tp2.="<<p2<<
+	"s1="<<s1<<
+	"s2="<<s2<<
+	"\n";
+    }
+  }
 
   if (s2-s1==36) {//only inner-outer
     if (!fDphiHistArray[s1*72+s2]) {
