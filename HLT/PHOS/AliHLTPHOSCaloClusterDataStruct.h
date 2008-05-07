@@ -71,7 +71,7 @@ struct AliHLTPHOSCaloClusterDataStruct
   Double32_t fM02;                               //COMMENT
 
   /** Second mixed  moment Mxy */
-  Double32_t fM11;                               //COMMENT
+  //  Double32_t fM11;                               //COMMENT
   
   /** Distance to closest CPV rec point */
   Double32_t fEmcCpvDistance;                    //COMMENT

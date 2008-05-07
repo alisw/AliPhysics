@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 /** 
  * @file   AliHLTPHOSESDMaker.cxx
  * @author Oystein Djuvsland
@@ -78,7 +79,7 @@ AliHLTPHOSESDMaker::FillESDCaloClusters()
       caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
       caloCluster->SetM20(caloClusterStruct->fM20);
       caloCluster->SetM02(caloClusterStruct->fM02);
-      caloCluster->SetM11(caloClusterStruct->fM11);
+      // PT   caloCluster->SetM11(caloClusterStruct->fM11);
       caloCluster->SetNExMax(caloClusterStruct->fNExMax);
       caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
       caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
@@ -112,8 +113,8 @@ AliHLTPHOSESDMaker::FillESDEvent()
       caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
       caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
       caloCluster->SetM20(caloClusterStruct->fM20);
-      caloCluster->SetM02(caloClusterStruct->fM02);
-      caloCluster->SetM11(caloClusterStruct->fM11);
+      caolCluster->SetM02(caloClusterStruct->fM02);
+      //     caloCluster->SetM11(caloClusterStruct->fM11);
       caloCluster->SetNExMax(caloClusterStruct->fNExMax);
       caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
       caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
