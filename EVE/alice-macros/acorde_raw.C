@@ -12,6 +12,9 @@ TString acorde_module_path(Int_t module);
 
 void acorde_raw()
 {
+  // AliEveEventManager::AssertGeometry();
+  gEve->GetGeometry("geometry.root");
+
   AliRawReader       * reader = AliEveEventManager::AssertRawReader();
   AliACORDERawStream * stream = new AliACORDERawStream(reader);
 
@@ -25,8 +28,6 @@ void acorde_raw()
   dy[3] = stream->GetWord(3);
 
   printf ("ACORDE event 0x%08x 0x%08x 0x%08x 0x%08x\n", dy[0], dy[1], dy[2], dy[3]);
-
-  gGeoManager = gEve->GetGeometry("geometry.root");
 
   TEveElementList* acorde = new TEveElementList("ACORDE Raw");
 
@@ -49,6 +50,7 @@ void acorde_raw()
 
     eg_shape->RefMainTrans().SetFrom(* gGeoManager->GetCurrentMatrix());
 
+    // @@NEWROOT@@ Temporary hack.
     // Hack to set shape pointer, no interface available in TEveGeoShape.
     * (TGeoShape**) (((char*)eg_shape) + shape_offset) = gGeoManager->GetCurrentVolume()->GetShape();
 

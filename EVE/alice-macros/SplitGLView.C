@@ -653,13 +653,13 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
    // create the main menu bar
    fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
    fMenuBar->AddPopup("&File", fMenuFile, new TGLayoutHints(kLHintsTop | 
-                      kLHintsLeft, 0, 4, 0, 0));
+                                                            kLHintsLeft, 0, 4, 0, 0));
    fMenuBar->AddPopup("&Camera", fMenuCamera, new TGLayoutHints(kLHintsTop | 
-                      kLHintsLeft, 0, 4, 0, 0));
+                                                                kLHintsLeft, 0, 4, 0, 0));
    fMenuBar->AddPopup("&Scene", fMenuScene, new TGLayoutHints(kLHintsTop | 
-                      kLHintsLeft, 0, 4, 0, 0));
+                                                              kLHintsLeft, 0, 4, 0, 0));
    fMenuBar->AddPopup("&Help", fMenuHelp, new TGLayoutHints(kLHintsTop | 
-                      kLHintsRight));
+                                                            kLHintsRight));
 
    AddFrame(fMenuBar, new TGLayoutHints(kLHintsTop | kLHintsExpandX));
 
@@ -683,7 +683,7 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
       fStatusBar = new TGStatusBar(this, 50, 10);
       fStatusBar->SetParts(parts, 4);
       AddFrame(fStatusBar, new TGLayoutHints(kLHintsBottom | kLHintsExpandX, 
-               0, 0, 10, 0));
+                                             0, 0, 10, 0));
    }
 
    // create eve pad (our geometry container)
@@ -692,30 +692,29 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
    // create the split frames
    fSplitFrame = new TGSplitFrame(this, 800, 600);
    AddFrame(fSplitFrame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-   // split it once
-   fSplitFrame->VSplit(796);
-   // then split each part again (this will make four parts)
-   fSplitFrame->GetFirst()->HSplit(300);
-   fSplitFrame->GetFirst()->GetSecond()->VSplit(400);
+   // split horizontaly
+   fSplitFrame->HSplit(350);
+   // split bottom part vartically
+   fSplitFrame->GetSecond()->VSplit(400);
 
    // get top (main) split frame
-   frm = fSplitFrame->GetFirst()->GetFirst();
+   frm = fSplitFrame->GetFirst();
    // create (embed) a GL viewer inside
    fViewer0 = new TGLEmbeddedViewer(frm, fPad);
    frm->AddFrame(fViewer0->GetFrame(), new TGLayoutHints(kLHintsExpandX | 
-                 kLHintsExpandY));
+                                                         kLHintsExpandY));
    // set the camera to perspective (XOZ) for this viewer
    fViewer0->SetCurrentCamera(TGLViewer::kCameraPerspXOZ);
    // connect signal we are interested to
    fViewer0->Connect("MouseOver(TGLPhysicalShape*)", "SplitGLView", this, 
-                      "OnMouseOver(TGLPhysicalShape*)");
+                     "OnMouseOver(TGLPhysicalShape*)");
    fViewer0->Connect("Activated()", "SplitGLView", this, 
-                      "OnViewerActivated()");
+                     "OnViewerActivated()");
    fViewer0->Connect("MouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)", 
-                      "SplitGLView", this, 
-                      "OnMouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)");
+                     "SplitGLView", this, 
+                     "OnMouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)");
    fViewer0->Connect("Clicked(TObject*)", "SplitGLView", this, 
-                      "OnClicked(TObject*)");
+                     "OnClicked(TObject*)");
    fViewer[0] = new TEveViewer("SplitGLViewer[0]");
    fViewer[0]->SetGLViewer(fViewer0);
    fViewer[0]->IncDenyDestroy();
@@ -731,7 +730,7 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
    }
 
    // get bottom left split frame
-   frm = fSplitFrame->GetFirst()->GetSecond()->GetFirst();
+   frm = fSplitFrame->GetSecond()->GetFirst();
 
    hfrm = new TGHorizontalFrame(frm);
    button= new TGPictureButton(hfrm, gClient->GetPicture("$ALICE_ROOT/EVE/alice-data/swap.png"));
@@ -742,21 +741,21 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
    // create (embed) a GL viewer inside
    fViewer1 = new TGLEmbeddedViewer(hfrm, fPad);
    hfrm->AddFrame(fViewer1->GetFrame(), new TGLayoutHints(kLHintsExpandX | 
-                  kLHintsExpandY));
+                                                          kLHintsExpandY));
    frm->AddFrame(hfrm, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // set the camera to orthographic (XOY) for this viewer
    fViewer1->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    // connect signal we are interested to
    fViewer1->Connect("MouseOver(TGLPhysicalShape*)", "SplitGLView", this, 
-                      "OnMouseOver(TGLPhysicalShape*)");
+                     "OnMouseOver(TGLPhysicalShape*)");
    fViewer1->Connect("Activated()", "SplitGLView", this, 
-                      "OnViewerActivated()");
+                     "OnViewerActivated()");
    fViewer1->Connect("MouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)", 
-                      "SplitGLView", this, 
-                      "OnMouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)");
+                     "SplitGLView", this, 
+                     "OnMouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)");
    fViewer1->Connect("Clicked(TObject*)", "SplitGLView", this, 
-                      "OnClicked(TObject*)");
+                     "OnClicked(TObject*)");
    fViewer[1] = new TEveViewer("SplitGLViewer[1]");
    fViewer[1]->SetGLViewer(fViewer1);
    fViewer[1]->IncDenyDestroy();
@@ -775,8 +774,8 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
       gEve->AddToListTree(fRPhiMgr, kTRUE);
    }
 
-   // get bottom center split frame
-   frm = fSplitFrame->GetFirst()->GetSecond()->GetSecond();
+   // get bottom right frame
+   frm = fSplitFrame->GetSecond()->GetSecond();
    // create (embed) a GL viewer inside
    hfrm = new TGHorizontalFrame(frm);
    button= new TGPictureButton(hfrm, gClient->GetPicture("$ALICE_ROOT/EVE/alice-data/swap.png"));
@@ -787,21 +786,21 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
    // create (embed) a GL viewer inside
    fViewer2 = new TGLEmbeddedViewer(hfrm, fPad);
    hfrm->AddFrame(fViewer2->GetFrame(), new TGLayoutHints(kLHintsExpandX | 
-                  kLHintsExpandY));
+                                                          kLHintsExpandY));
    frm->AddFrame(hfrm, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // set the camera to orthographic (XOY) for this viewer
    fViewer2->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    // connect signal we are interested to
    fViewer2->Connect("MouseOver(TGLPhysicalShape*)", "SplitGLView", this, 
-                      "OnMouseOver(TGLPhysicalShape*)");
+                     "OnMouseOver(TGLPhysicalShape*)");
    fViewer2->Connect("Activated()", "SplitGLView", this, 
-                      "OnViewerActivated()");
+                     "OnViewerActivated()");
    fViewer2->Connect("MouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)", 
-                      "SplitGLView", this, 
-                      "OnMouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)");
+                     "SplitGLView", this, 
+                     "OnMouseIdle(TGLPhysicalShape*,UInt_t,UInt_t)");
    fViewer2->Connect("Clicked(TObject*)", "SplitGLView", this, 
-                      "OnClicked(TObject*)");
+                     "OnClicked(TObject*)");
    fViewer[2] = new TEveViewer("SplitGLViewer[2]");
    fViewer[2]->SetGLViewer(fViewer2);
    fViewer[2]->IncDenyDestroy();
@@ -814,7 +813,8 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
       gRPhiMgr = fRPhiMgr;
    }
 
-   // get bottom right split frame
+   /*
+   // Summary view ... incomplete
    frm = fSplitFrame->GetSecond();
 
    hfrm  = new TGHorizontalFrame(frm);
@@ -826,10 +826,11 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
    fgHtml = new TGHtml(hfrm, 100, 100, -1);
    hfrm->AddFrame(fgHtml, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
    frm->AddFrame(hfrm, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+   */
 
    if (fIsEmbedded && gEve) {
       gEve->GetListTree()->Connect("Clicked(TGListTreeItem*, Int_t, Int_t, Int_t)",
-         "SplitGLView", this, "ItemClicked(TGListTreeItem*, Int_t, Int_t, Int_t)");
+                                   "SplitGLView", this, "ItemClicked(TGListTreeItem*, Int_t, Int_t, Int_t)");
    }
 
    fShapedToolTip = new TGShapedToolTip("$ALICE_ROOT/EVE/alice-data/Default.png", 120, 22, 160, 110, 
@@ -1325,7 +1326,7 @@ void SplitGLView::SwapToMainView()
    TGFrame *source = dynamic_cast<TGFrameElement*>(parent->GetList()->Last())->fFrame;
    if (!source) return;
 
-   TGSplitFrame *dest = fSplitFrame->GetFirst()->GetFirst();
+   TGSplitFrame *dest = fSplitFrame->GetFirst();
    
    TGFrame *prev = (TGFrame *)(dest->GetFrame());
    
@@ -1337,6 +1338,8 @@ void SplitGLView::SwapToMainView()
 void SplitGLView::UpdateSummary()
 {
    // Update summary of current event.
+   // Currently unused.
+   return;
 
    TEveElement::List_i i;
    TEveElement::List_i j;

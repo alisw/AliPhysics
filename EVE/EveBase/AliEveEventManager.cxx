@@ -464,16 +464,18 @@ TGeoManager* AliEveEventManager::AssertGeometry()
 {
   // Make sure AliGeomManager is initialized and returns the
   // corresponding TGeoManger.
-  // gGeoManager is not set, maybe it should be.
-  // Throws exception in case run-loader is not available.
+  // gGeoManager is set to the return value.
+  // Throws exception if geometry can not be loaded or if it is not
+  // available and the TGeoManager is locked.
   // Static utility for macros.
-
-  // !!!! Should we set gGeoManager here?
 
   static const TEveException kEH("AliEveEventManager::AssertGeometry ");
 
   if (AliGeomManager::GetGeometry() == 0)
   {
+    if (TGeoManager::IsLocked())
+      throw (kEH + "geometry is not loaded but TGeoManager is locked.");
+
     gGeoManager = 0;
     AliGeomManager::LoadGeometry();
     if ( ! AliGeomManager::GetGeometry())
@@ -486,12 +488,14 @@ TGeoManager* AliEveEventManager::AssertGeometry()
       // throw (kEH + "could not apply align objs.");
     }
 
-    // Temporary fix.
+    // @@NEWROOT@@ Temporary fix.
     // In AliEve several simplified geometries can be loaded at a later stage.
-    // Should handle this inTEveManager::GetGeometry() by properly
-    // unlocking and re-locking the geo-manager.
+    // Locking/unlocking is now handled properly in
+    // TEveManager::GetGeometry() but we're waiting for next root
+    // version due on 14.5.2008.
     TGeoManager::UnlockGeometry();
   }
 
-  return AliGeomManager::GetGeometry();
+  gGeoManager = AliGeomManager::GetGeometry();
+  return gGeoManager;
 }

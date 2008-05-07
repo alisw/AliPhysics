@@ -9,11 +9,13 @@
 
 void geom_acorde()
 {
-  gGeoManager = gEve->GetGeometry("geometry.root");
+  // AliEveEventManager::AssertGeometry();
+  gEve->GetGeometry("geometry.root");
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ACORDE_1");
   if (!node) {
-    Warning("geom_acorde()", "Node ACORDE_1 not found,");
+    Warning("geom_acorde()", "Node ACORDE_1 not found.");
+    return;
   }
 
   TEveElementList* list = new TEveElementList("ACORDE");
