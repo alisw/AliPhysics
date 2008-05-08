@@ -25,7 +25,7 @@
 //______________________________________________________________________________
 // AliEveKineTools
 //
-// Tools for import of kinematics. Preliminary version.
+// Tools for import of kinematics.
 //
 
 ClassImp(AliEveKineTools)
@@ -68,6 +68,8 @@ void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, B
                                         TEveVector(dp->Vx(), dp->Vy(), dp->Vz()),
                                         TEveVector(dp->Px(), dp->Py(), dp->Pz()),
                                         dp->T()));
+        // printf("Daughter path-mark for %d, %d, t=%e, r=%f,%f,%f\n",
+        //        track->GetLabel(), d, dp->T(), dp->Vx(), dp->Vy(), dp->Vz());
       }
       if (recurse)
 	SetDaughterPathMarks(track, stack, recurse);
@@ -87,70 +89,68 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
   TrackMap_t map;
   MapTracks(map, cont, recurse);
 
-  Int_t nPrimaries = (Int_t) treeTR->GetEntries();
-  TIter next(treeTR->GetListOfBranches());
-  TBranchElement* el;
-  Bool_t isRef = kTRUE;
+  TClonesArray* arr = 0;
+  treeTR->SetBranchAddress("TrackReferences", &arr);
 
-  while ((el = (TBranchElement*) next()))
+  Int_t nTreeEntries = (Int_t) treeTR->GetEntries();
+
+  for (Int_t te = 0; te < nTreeEntries; ++te)
   {
-    if (strcmp("AliRun",el->GetName()) == 0)
-      isRef = kFALSE;
+    treeTR->GetEntry(te);
 
-    TClonesArray* arr = 0;
-    el->SetAddress(&arr);
-    for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++)
+    Int_t last_label = -1;
+    TrackMap_t::iterator iter = map.end();
+    Int_t nArrEntries = arr->GetEntriesFast();
+
+    // printf("tree-entry %d, n-arr-entries %d\n", te, nArrEntries);
+
+    for (Int_t ae = 0; ae < nArrEntries; ++ae)
     {
-      el->GetEntry(iPrimPart);
+      AliTrackReference* atr = (AliTrackReference*)arr->UncheckedAt(ae);
+      Bool_t isRef = (atr->DetectorId() != -1);
+      Int_t  label = atr->GetTrack();
 
-      Int_t last_label = -1;
-      TrackMap_t::iterator iter = map.end();
-      Int_t Nent =  arr->GetEntriesFast();
-      for (Int_t iTrackRef = 0; iTrackRef < Nent; iTrackRef++)
+      // printf("    arr-entry %d, label %d, detid %d, len=%f, t=%e r=%f,%f,%f\n",
+      //        ae, label, atr->DetectorId(), 
+      //        atr->GetLength(), atr->GetTime(), atr->X(), atr->Y(), atr->Z());
+
+      if (label < 0)
+        throw(kEH + Form("negative label for array-entry %d in tree-entry %d.",
+                         ae, te));
+
+      if (label != last_label)
       {
-	AliTrackReference* atr = (AliTrackReference*)arr->UncheckedAt(iTrackRef);
+        iter       = map.find(label);
+        last_label = label;
+      }
 
-	Int_t label = atr->GetTrack();
-	if (label < 0)
-	  throw(kEH + Form("negative label for entry %d in branch %s.",
-			  iTrackRef, el->GetName()));
-
-        if (label != last_label)
-        {
-	  iter       = map.find(label);
-	  last_label = label;
-	}
-
-	if (iter != map.end())
-        {
-          iter->second->AddPathMark
-            (TEvePathMark(isRef ? TEvePathMark::kReference : TEvePathMark::kDecay,
-                          TEveVector(atr->X(),  atr->Y(),  atr->Z()),
-                          TEveVector(atr->Px(), atr->Py(), atr->Pz()),
-                          atr->GetTime()));
-	}
-      } // loop track refs
-    } // loop primaries in clones arrays
-    delete arr;
-  } // end loop through top branches
+      if (iter != map.end())
+      {
+        iter->second->AddPathMark
+          (TEvePathMark(isRef ? TEvePathMark::kReference : TEvePathMark::kDecay,
+                        TEveVector(atr->X(),  atr->Y(),  atr->Z()),
+                        TEveVector(atr->Px(), atr->Py(), atr->Pz()),
+                        atr->GetTime()));
+      }
+    }
+  }
+  delete arr;
 }
 
 /**************************************************************************/
 
 void AliEveKineTools::SortPathMarks(TEveElement* el, Bool_t recurse)
 {
-  // Sort path-marks for all tracks by time.
-
-  // !!!!! MT ... this is one level deep only!
+  // Sort path-marks for track by time.
+  // If recurse is true, descends down all track children.
 
   TEveTrack* track = dynamic_cast<TEveTrack*>(el);
-  if (track) track->SortPathMarksByTime();
+  if (track)
+    track->SortPathMarksByTime();
 
-  TEveElement::List_i i = el->BeginChildren();
-  while (i != el->EndChildren() && recurse)
+  if (recurse)
   {
-    track = dynamic_cast<TEveTrack*>(el);
-    if (track) track->SortPathMarksByTime();
-    ++i;
+    for (TEveElement::List_i i = el->BeginChildren(); i != el->EndChildren(); ++i)
+      SortPathMarks(*i, kTRUE);
   }
 }
