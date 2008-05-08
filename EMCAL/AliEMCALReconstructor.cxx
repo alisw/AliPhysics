@@ -144,10 +144,11 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   ReadDigitsArrayFromTree(digitsTree);
 
+  fgClusterizer->SetOutput(clustersTree);
+
   if(fgDigitsArr && fgDigitsArr->GetEntries()) {
 
     fgClusterizer->SetInput(digitsTree);
-    fgClusterizer->SetOutput(clustersTree);
     
     if(Debug())
       fgClusterizer->Digits2Clusters("deb all") ;
