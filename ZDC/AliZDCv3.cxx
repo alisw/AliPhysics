@@ -68,11 +68,14 @@ AliZDCv3::AliZDCv3() :
   fpLostD1C(0), 
   fpDetectedC(0),
   fnDetectedC(0),
+  fnLumiC(0),
   fpLostITA(0), 
   fpLostD1A(0), 
   fpLostTDI(0), 
   fpDetectedA(0),
-  fnDetectedA(0)
+  fnDetectedA(0),
+  fnLumiA(0),
+  fnTrou(0)
 {
   //
   // Default constructor for Zero Degree Calorimeter
@@ -100,11 +103,14 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fpLostD1C(0), 
   fpDetectedC(0),
   fnDetectedC(0),
+  fnLumiC(0),
   fpLostITA(0), 
   fpLostD1A(0), 
   fpLostTDI(0), 
   fpDetectedA(0),
-  fnDetectedA(0)  
+  fnDetectedA(0),  
+  fnLumiA(0),
+  fnTrou(0)
 {
   //
   // Standard constructor for Zero Degree Calorimeter 
@@ -2230,8 +2236,8 @@ void AliZDCv3::StepManager()
 {
   //
   // Routine called at every step in the Zero Degree Calorimeters
-  //
-    
+  // 
+  
   Int_t j, vol[2], ibeta=0, ialfa, ibe, nphe;
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, out;
   //Float_t radius;
@@ -2258,10 +2264,11 @@ void AliZDCv3::StepManager()
 	  if(s[2]<0) fpLostITC += 1;
 	  else fpLostITA += 1;
         }
-	if(!strncmp(knamed,"YD1",3)){
+	else if(!strncmp(knamed,"YD1",3)){
 	  if(s[2]<0) fpLostD1C += 1;
 	  else fpLostD1A += 1;
 	}
+	else if(!strncmp(knamed,"QAL",3)) fnTrou++;
       }
       else if(gMC->CurrentMedium() == fMedSensTDI){ 
         knamed = gMC->CurrentVolName();
@@ -2269,22 +2276,29 @@ void AliZDCv3::StepManager()
 	  if(s[2]<0) fpLostD1C += 1;
 	  else  fpLostD1A += 1;
         }
-	if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
+	else if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
+	else if(!strncmp(knamed,"QLU",3)){
+	  if(s[2]<0) fnLumiC ++;
+	  else fnLumiA++;
+	}
       }
       //
-      gMC->TrackMomentum(p[0], p[1], p[2], p[3]);
+      //gMC->TrackMomentum(p[0], p[1], p[2], p[3]);
       //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
       //     gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
       //
-      printf("\t ----------------------------\n");
-      printf("\t ---------- Side C ----------\n");
-      printf("      # of spectators lost in IT = %d\n",fpLostITC);
-      printf("      # of spectators lost in D1  = %d\n",fpLostD1C);
-      printf("\t ---------- Side A ----------\n");
-      printf("      # of spectators lost in IT = %d\n",fpLostITA);
-      printf("      # of spectators lost in D1  = %d\n",fpLostD1A);
-      printf("      # of spectators lost in TDI = %d\n\n",fpLostTDI);
-      printf("\t ----------------------------\n");
+      printf("\n\t **********************************\n");
+      printf("\t ********** Side C **********\n");
+      printf("\t # of spectators in IT = %d\n",fpLostITC);
+      printf("\t # of spectators in D1 = %d\n",fpLostD1C);
+      printf("\t # of spectators in luminometer = %d\n",fnLumiC);
+      printf("\t ********** Side A **********\n");
+      printf("\t # of spectators in IT = %d\n",fpLostITA);
+      printf("\t # of spectators in D1 = %d\n",fpLostD1A);
+      printf("\t # of spectators in TDI = %d\n",fpLostTDI);
+      printf("\t # of spectators in luminometer = %d\n",fnLumiA);
+      printf("\t # of spectators in trousers = %d\n",fnTrou);
+      printf("\t **********************************\n");
       gMC->StopTrack();
     }
     return;
@@ -2295,7 +2309,7 @@ void AliZDCv3::StepManager()
      (gMC->CurrentMedium() == fMedSensGR) || (gMC->CurrentMedium() == fMedSensF1) ||
      (gMC->CurrentMedium() == fMedSensF2) || (gMC->CurrentMedium() == fMedSensZEM)){
 
-  
+    
   //Particle coordinates 
     gMC->TrackPosition(s[0],s[1],s[2]);
     for(j=0; j<=2; j++) x[j] = s[j];
@@ -2428,19 +2442,19 @@ void AliZDCv3::StepManager()
 	    //knamed, vol[0], vol[1], x[0], x[1], x[2]);
 	  if(vol[0]==1){
 	    fnDetectedC += 1;
-	    printf("\n	  # of detected neutrons in ZNC = %d\n\n",fnDetectedC);
+	    printf("\n	  # of particles in ZNC = %d\n\n",fnDetectedC);
 	  }
 	  else if(vol[0]==2){
 	    fpDetectedC += 1;
-	    printf("\n	  # of detected protons in ZPC = %d\n\n",fpDetectedC);
+	    printf("\n	  # of particles in ZPC = %d\n\n",fpDetectedC);
 	  }
 	  else if(vol[0]==4){
 	    fnDetectedA += 1;
-	    printf("\n	  # of detected neutrons in ZNA = %d\n\n",fnDetectedA);     
+	    printf("\n	  # of particles in ZNA = %d\n\n",fnDetectedA);     
 	  }
 	  else if(vol[0]==5){
 	    fpDetectedA += 1;
-	    printf("\n	  # of detected protons in ZPA = %d\n\n",fpDetectedA);      
+	    printf("\n	  # of particles in ZPA = %d\n\n",fpDetectedA);      
 	  }
           //
 	  //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
