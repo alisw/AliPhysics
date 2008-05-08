@@ -59,6 +59,8 @@
 
 #pragma link C++ class  AliESDVZERO+;
 #pragma link C++ class  AliESDTZERO+;
+#pragma link C++ class  AliESDACORDE+;
+
 
 #pragma link C++ class  AliESDMultITS+;
 #pragma link C++ class  AliMultiplicity+;

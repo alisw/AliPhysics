@@ -71,6 +71,7 @@ AliESD::AliESD():
   fPHOSTriggerAmplitudes(0x0),
   fESDFMD(0x0),
   fESDVZERO(0x0),
+  fESDACORDE(0x0),
   fErrorLogs("AliRawDataErrorLog",5)
 {
   // 
@@ -130,6 +131,7 @@ AliESD::AliESD(const AliESD& esd):
   fPHOSTriggerAmplitudes(esd.fPHOSTriggerAmplitudes),
   fESDFMD(esd.fESDFMD),
   fESDVZERO(esd.fESDVZERO),
+  fESDACORDE(esd.fESDACORDE),
   fErrorLogs(*((TClonesArray*)esd.fErrorLogs.Clone()))
 {
   // 
@@ -165,6 +167,7 @@ AliESD::~AliESD()
   delete fEMCALTriggerAmplitudes;
   delete fPHOSTriggerPosition;
   delete fPHOSTriggerAmplitudes;
+  delete fESDACORDE;
 
   fErrorLogs.Delete();
 
@@ -239,6 +242,11 @@ void AliESD::Reset()
       fESDVZERO->~AliESDVZERO();
       new (fESDVZERO) AliESDVZERO();
   } 
+//
+  if (fESDACORDE){
+      fESDACORDE->~AliESDACORDE();
+      new (fESDACORDE) AliESDACORDE();	
+  }
 //
   fErrorLogs.Delete();
 }

@@ -32,6 +32,7 @@
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliRawDataErrorLog.h"
+#include "AliESDACORDE.h"
 
 class AliESDfriend;
 
@@ -229,7 +230,8 @@ public:
    
   void SetVZEROData(AliESDVZERO * obj) { fESDVZERO = new AliESDVZERO(*obj); }
   AliESDVZERO *GetVZEROData(){ return fESDVZERO; }
-
+  void SetACORDEData(AliESDACORDE * obj){ fESDACORDE = new AliESDACORDE(*obj); } 
+  AliESDACORDE *GetACORDEDAta(){ return fESDACORDE; }
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
     return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);
   }
@@ -295,10 +297,11 @@ protected:
 
   AliESDFMD   *fESDFMD;   // FMD object containing rough multiplicity
   AliESDVZERO *fESDVZERO; // VZERO object containing rough multiplicity
+  AliESDACORDE *fESDACORDE; // ACORDE ESD object containing bit pattern
 
   TClonesArray fErrorLogs;        // Raw-data reading error messages
 
-  ClassDef(AliESD,21)  //ESD class 
+  ClassDef(AliESD,22)  //ESD class 
 };
 #endif 
 

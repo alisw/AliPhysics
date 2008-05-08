@@ -61,7 +61,7 @@
 #include "AliMultiplicity.h"
 #include "AliRawDataErrorLog.h"
 #include "AliLog.h"
-
+#include "AliESDACORDE.h"
 ClassImp(AliESDEvent)
 
 
@@ -90,7 +90,9 @@ ClassImp(AliESDEvent)
 						       "CaloClusters",
 						      "EMCALCells",
 						      "PHOSCells",
-						       "AliRawDataErrorLogs"};
+						       "AliRawDataErrorLogs",
+						       "AliESDACORDE"};
+
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
   AliVEvent(),
@@ -107,6 +109,7 @@ AliESDEvent::AliESDEvent():
   fSPDMult(0),
   fPHOSTrigger(0),
   fEMCALTrigger(0),
+  fESDACORDE(0),
   fTracks(0),
   fMuonTracks(0),
   fPmdTracks(0),
@@ -142,6 +145,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fSPDMult(new AliMultiplicity(*esd.fSPDMult)),
   fPHOSTrigger(new AliESDCaloTrigger(*esd.fPHOSTrigger)),
   fEMCALTrigger(new AliESDCaloTrigger(*esd.fEMCALTrigger)),
+  fESDACORDE(new AliESDACORDE(*esd.fESDACORDE)),
   fTracks(new TClonesArray(*esd.fTracks)),
   fMuonTracks(new TClonesArray(*esd.fMuonTracks)),
   fPmdTracks(new TClonesArray(*esd.fPmdTracks)),
@@ -186,6 +190,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fEMCALCells);
   AddObject(fPHOSCells);
   AddObject(fErrorLogs);
+  AddObject(fESDACORDE);
 
   GetStdContent();
 
@@ -222,6 +227,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fEMCALCells = new AliESDCaloCells(*source.fEMCALCells);
   fPHOSCells = new AliESDCaloCells(*source.fPHOSCells);
   fErrorLogs = new TClonesArray(*source.fErrorLogs);
+  fESDACORDE = new AliESDACORDE(*source.fESDACORDE);
   fESDOld       = new AliESD(*source.fESDOld);
   fESDFriendOld = new AliESDfriend(*source.fESDFriendOld);
   // CKB this way?? or 
@@ -251,6 +257,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   AddObject(fEMCALCells);
   AddObject(fPHOSCells);
   AddObject(fErrorLogs);
+  AddObject(fESDACORDE);
 
   fConnected = source.fConnected;
   fEMCALClusters = source.fEMCALClusters;
@@ -324,6 +331,10 @@ void AliESDEvent::ResetStdContent()
     fESDVZERO->~AliESDVZERO();
     new (fESDVZERO) AliESDVZERO();
   }  
+  if(fESDACORDE){
+    fESDACORDE->~AliESDACORDE();
+    new (fESDACORDE) AliESDACORDE();	
+  } 
   if(fESDTZERO) fESDTZERO->Reset(); 
   // CKB no clear/reset implemented
   if(fTPCVertex){
@@ -845,6 +856,13 @@ void AliESDEvent::SetVZEROData(AliESDVZERO * obj)
     *fESDVZERO = *obj;
 }
 
+void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
+{
+  if(fESDACORDE)
+    *fESDACORDE = *obj;
+}
+
+
 void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
 {
   //
@@ -903,6 +921,7 @@ void AliESDEvent::GetStdContent()
   fEMCALCells = (AliESDCaloCells*)fESDObjects->FindObject(fgkESDListName[kEMCALCells]);
   fPHOSCells = (AliESDCaloCells*)fESDObjects->FindObject(fgkESDListName[kPHOSCells]);
   fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
+  fESDACORDE = (AliESDACORDE*)fESDObjects->FindObject(fgkESDListName[kESDACORDE]);
 
 }
 
@@ -953,6 +972,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new AliESDCaloCells());
   AddObject(new AliESDCaloCells());
   AddObject(new TClonesArray("AliRawDataErrorLog",0));
+  AddObject(new AliESDACORDE()); 
 
   // check the order of the indices against enum...
 

@@ -29,6 +29,7 @@ class TList;
 #include "AliESDHeader.h"
 #include "AliESDTZERO.h"
 #include "AliESDZDC.h"
+#include "AliESDACORDE.h"
 
 // AliESDtrack has to be included so that the compiler 
 // knows its inheritance tree (= that it is a AliVParticle).
@@ -52,6 +53,7 @@ class AliESDMuonTrack;
 class AliESD;
 class AliESDcascade;
 class TRefArray;
+class AliESDACORDE;
 
 class AliESDEvent : public AliVEvent {
 public:
@@ -80,6 +82,7 @@ public:
 		       kEMCALCells,
 		       kPHOSCells,
 		       kErrorLogs,
+                       kESDACORDE,
 		       kESDListN
   };
 
@@ -167,6 +170,9 @@ public:
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
   void SetVZEROData(AliESDVZERO * obj);
 
+ // ACORDE
+  AliESDACORDE *GetACORDEData() const { return fESDACORDE;}
+  void SetACORDEData(AliESDACORDE * obj);
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
@@ -354,6 +360,7 @@ protected:
   AliMultiplicity *fSPDMult;          //! SPD tracklet multiplicity
   AliESDCaloTrigger* fPHOSTrigger;     //! PHOS Trigger information
   AliESDCaloTrigger* fEMCALTrigger;    //! PHOS Trigger information
+  AliESDACORDE    *fESDACORDE;        //! ACORDE ESD object caontaining bit pattern
 
   TClonesArray *fTracks;           //! ESD tracks 
   TClonesArray *fMuonTracks;       //! MUON ESD tracks
@@ -382,7 +389,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,7)  //ESDEvent class 
+  ClassDef(AliESDEvent,8)  //ESDEvent class 
 };
 #endif 
 
