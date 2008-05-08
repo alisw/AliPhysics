@@ -1627,7 +1627,7 @@ void AliACORDEv1::StepManager()
       // module
       vol[0] = copyModule;
       // plastic: 0 = down, 1 = up
-      vol[1] = copyPlastic;
+      vol[1] = copyPlastic - 4 ; // !!!!!!!
     } // end if gMC->IsTrackEntering()
 
     // set hit[9] = total energy loss and book hit
