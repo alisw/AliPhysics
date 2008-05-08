@@ -40,6 +40,8 @@ AliACORDERawStream::AliACORDERawStream(AliRawReader* rawReader) :
   // Created:      04 Feb 2008  Mario Sitta
   //
 
+  fWord[0] = fWord[1] = fWord[2] = fWord[3] = 0;
+
   // Select the raw data corresponding to the ACORDE detector id
 //  fRawReader->Reset();
   AliDebug(1,Form("Selecting raw data for detector %d",AliDAQ::DetectorID("ACORDE")));
@@ -113,8 +115,8 @@ Bool_t AliACORDERawStream::Next()
 
   fDataSize = fRawReader->GetDataSize();
   if (fDataSize != 16) {
-    fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 5488",fDataSize));
-    AliWarning(Form("Wrong ACORDE raw data size: %d, expected 5488 bytes!",fDataSize));
+    fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 16",fDataSize));
+    AliWarning(Form("Wrong ACORDE raw data size: %d, expected 16 bytes!",fDataSize));
     return kFALSE;
   }
 
@@ -177,30 +179,6 @@ UInt_t AliACORDERawStream::GetNextWord()
 }
 
 //_____________________________________________________________________________
-UShort_t AliACORDERawStream::GetNextShort()
-{
-  //
-  // Returns the next 16 bit word inside the raw data payload.
-  // The method is supposed to be endian (platform) independent.
-  //
-  // Input:
-  //
-  // Output:
-  //         word : a 16 bit word containing the data
-  //
-  // Created:      04 Feb 2008  Mario Sitta
-  //
-
-  if (!fData || fPosition < 0) AliFatal("Raw data payload buffer is not yet initialized !");
-
-  UShort_t word = 0;
-  word |= fData[fPosition++];
-  word |= fData[fPosition++] << 8;
-
-  return word;
-}
-
-//_____________________________________________________________________________
 
 Int_t AliACORDERawStream::GetNEvents(char* fileName) 
 {
@@ -219,6 +197,7 @@ Int_t AliACORDERawStream::GetNEvents(char* fileName)
   	if (!rCount->NextEvent()) DyM=1;
 	else fNEvents++;
   	}
+	delete rCount;
 	return fNEvents;
 }
 

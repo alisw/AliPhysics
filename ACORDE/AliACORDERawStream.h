@@ -23,8 +23,9 @@ class AliACORDERawStream : public TObject {
   AliACORDERawStream(const AliACORDERawStream &r); 
   virtual ~AliACORDERawStream();
   AliACORDERawStream &operator=(const AliACORDERawStream &r);
-
+  //MRC's part 
   Int_t GetNEvents(char* fileName);
+  //
   virtual void    Reset();
   virtual Bool_t  Next();
 
@@ -38,8 +39,6 @@ class AliACORDERawStream : public TObject {
  private:
 
   UInt_t          GetNextWord();
-  UShort_t        GetNextShort();
-
 
   AliRawReader*   fRawReader;    // object for reading the raw data
   Int_t           fPosition;     // current position in the raw-data payload
