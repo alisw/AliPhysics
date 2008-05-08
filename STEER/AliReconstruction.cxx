@@ -2052,7 +2052,8 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   TPluginManager* pluginManager = gROOT->GetPluginManager();
   TString detName = fgkDetectorName[iDet];
   TString recName = "Ali" + detName + "Reconstructor";
-  if (fRunLoader && !fRunLoader->GetLoader(detName+"Loader") && (detName != "HLT")) return NULL;
+
+  if (!fIsNewRunLoader && !fRunLoader->GetLoader(detName+"Loader") && (detName != "HLT")) return NULL;
 
   AliReconstructor* reconstructor = NULL;
   // first check if a plugin is defined for the reconstructor
@@ -2427,7 +2428,7 @@ AliQADataMakerRec * AliReconstruction::GetQADataMaker(Int_t iDet)
   TPluginManager* pluginManager = gROOT->GetPluginManager();
   TString detName = fgkDetectorName[iDet];
   TString qadmName = "Ali" + detName + "QADataMakerRec";
-  if (fRunLoader && !fRunLoader->GetLoader(detName+"Loader") && (detName != "HLT")) 
+  if (!fIsNewRunLoader && !fRunLoader->GetLoader(detName+"Loader") && (detName != "HLT")) 
     return NULL;
 
   // first check if a plugin is defined for the quality assurance data maker
