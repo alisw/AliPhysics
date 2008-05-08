@@ -54,6 +54,13 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
       sprintf(form,"%s [%d]", p->GetName(), i);
       track->SetName(form);
       track->SetStdTitle();
+      Int_t ml = p->GetMother(0);
+      if (ml != -1)
+      {
+        track->SetTitle(Form("%s\nMother label=%d\nMother Pdg=%d",
+                             track->GetElementTitle(),
+                             ml, stack->Particle(ml)->GetPdgCode()));
+      }
       set_track_color(track, pdg_col);
 
       gEve->AddElement(track, cont);
