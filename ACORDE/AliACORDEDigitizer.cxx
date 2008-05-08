@@ -114,6 +114,9 @@ void AliACORDEDigitizer::Exec(Option_t* /*option*/)
   // 1.- temporal variables
   Float_t emin = AliACORDEConstants::Instance()->HitEnergyThreshold();
   Float_t td = AliACORDEConstants::Instance()->MaxHitTimeDifference();
+  Int_t modules[60]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Int_t moduls[60]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
+  Int_t mods;
   Float_t PlasticTimes[2][60]; 
   Int_t PlasticTracks[2][60];
   for (Int_t i=0;i<60;i++) {
@@ -122,8 +125,7 @@ void AliACORDEDigitizer::Exec(Option_t* /*option*/)
     PlasticTracks[0][i]=-1;
     PlasticTracks[1][i]=-1;
   }
-  
-  
+
   // 2.- get loaders
   AliRunLoader* outRunLoader =
     AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
@@ -180,10 +182,10 @@ void AliACORDEDigitizer::Exec(Option_t* /*option*/)
 	// get hit info
 	Float_t eloss_mev = hit->Eloss()*1000.0;
 	Int_t module = hit->GetModule();
+        modules[module]=1;
 	Int_t plastic = hit->GetPlastic();
 	Float_t time_ns = hit->GetTime()*1e9;
 	Float_t eff = TMath::Sqrt(fCalibData->GetEfficiency(module));
-
 	// if enough energy and efficiency
 	if( eloss_mev > emin && gRandom->Uniform() < eff ) {
 	  // if first hit or earlier track
@@ -195,31 +197,30 @@ void AliACORDEDigitizer::Exec(Option_t* /*option*/)
 	}
       } // end of hit   loop
     } // end of track loop
+    for(Int_t i=0;i<60;i++){moduls[i]=modules[i];}
     
     loader->UnloadHits();
     
   }  // end of input loop
 
   // 4.- loop over temporal arrays to add hits
-
   Int_t tracks[3]={-1,-1,-1};
   for (Int_t i=0; i<60; i++) {
     // if both modules have a hit
-    if (PlasticTimes[0][i] == -1) continue;
-    if (PlasticTimes[1][i] == -1) continue;
     // if time diff small enough
     Float_t diff = TMath::Abs(PlasticTimes[0][i]-PlasticTimes[1][i]);
     if (diff < td) {
       tracks[0] = PlasticTracks[0][i];
       if (PlasticTracks[0][i] != PlasticTracks[1][i]) 
 	tracks[1] = PlasticTracks[1][i];
-      Int_t module = i+1;
-      Float_t module_time = (PlasticTimes[0][i] > PlasticTimes[1][i] ? 
-			   PlasticTimes[0][i] : PlasticTimes[1][i]);
-      AddDigit(tracks, module, module_time);
+      if(moduls[i]==1) {
+	mods = i;
+	Float_t module_time = (PlasticTimes[0][i] > PlasticTimes[1][i] ? 
+			       PlasticTimes[0][i] : PlasticTimes[1][i]);
+	AddDigit(tracks, mods, module_time);
+      }
     }
   }
-  
   treeD->Fill();
   outLoader->WriteDigits("OVERWRITE");
   outLoader->UnloadDigits();
@@ -237,7 +238,14 @@ void AliACORDEDigitizer::AddDigit(Int_t* track, Int_t module, Float_t time)
   new(ldigits[fNdigits++]) AliACORDEdigit(track,module,time);
 }
 
+void AliACORDEDigitizer::AddDigit(Int_t* modul,Float_t time)
+{
+	// MRC Adds Digit
+  TClonesArray &ldigits = *fDigits;
+  new(ldigits[fNdigits++]) AliACORDEdigit(modul,time);
+  
 
+}
 void AliACORDEDigitizer::ResetDigit()
 {
 //

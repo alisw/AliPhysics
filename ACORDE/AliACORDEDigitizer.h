@@ -33,6 +33,7 @@ class AliACORDEDigitizer: public AliDigitizer {
    virtual void   Exec(Option_t* option=0);
 
    void AddDigit(Int_t* track, Int_t module, Float_t time);
+   void AddDigit(Int_t* modul, Float_t time);	
    void ResetDigit();
   
    AliACORDECalibData *GetCalibData() const;
