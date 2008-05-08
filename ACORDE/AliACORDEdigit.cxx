@@ -30,21 +30,41 @@ AliACORDEdigit::AliACORDEdigit()
   // Default constructor
   //
 }
-
+//_____________________________________________________________________________
+AliACORDEdigit::AliACORDEdigit(Int_t module, Float_t pulse_time)
+  : AliDigit(),
+    fModule(module),
+    fTime(pulse_time)
+{
+	//
+}
 //_____________________________________________________________________________
 AliACORDEdigit::AliACORDEdigit(Int_t* tracks, Int_t module, Float_t pulse_time)
   : AliDigit(tracks),
     fModule(module),
     fTime(pulse_time)
 {
-
+	//
 }
 
+//_____________________________________________________________________________
+AliACORDEdigit::AliACORDEdigit(Int_t* modules, Float_t pulse_time)
+  : AliDigit(modules),
+    fTime(pulse_time)
+{
+	//MRC's part
+}
 //_____________________________________________________________________________
 AliACORDEdigit::~AliACORDEdigit()
 {
   //
   //
   //
+}
+
+//_____________________________________________________________________________
+void AliACORDEdigit::Print(const Option_t*) const
+{
+	Dump();
 }
 
