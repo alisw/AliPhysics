@@ -881,6 +881,9 @@ void AliEMCALTrigger::Trigger()
   if (runLoader && runLoader->GetAliRun() && runLoader->GetAliRun()->GetDetector("EMCAL"))
     fGeom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 
+  if (fGeom == 0) 	 
+    fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName()); 	 
+
   if (fGeom==0)
     AliFatal("Did not get geometry from EMCALLoader");
   
