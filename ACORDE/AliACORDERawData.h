@@ -7,7 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Converts T0 digits into a raw data stream                               //
+//  Converts ACORDE digits into a raw data stream                               //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +33,7 @@ class AliACORDERawData : public TObject {
   UInt_t fWord11;
   UInt_t fWord12;
 
-  ClassDef(AliACORDERawData,1)             //  T0 raw data class
+  ClassDef(AliACORDERawData,1)             //  ACORDE raw data class
 
 };
 
