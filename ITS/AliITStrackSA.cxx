@@ -20,7 +20,7 @@
 //  Origin:  Elisabetta Crescio                   //
 //  e-mail:  crescio@to.infn.it                   //
 //  it is a V2 track with a possible number       //
-//  of cluster equal to fgkMaxNumberOfClusters    //
+//  of cluster equal to kMaxNumberOfClusters    //
 ////////////////////////////////////////////////////
 
 #include "AliITSgeomTGeo.h"
@@ -153,9 +153,9 @@ fNSA(0)
 
 //____________________________________________________________
 void AliITStrackSA::AddClusterSA(Int_t layer, Int_t clnumb) {
-  // add one clusters to the list (maximum number=fgkMaxNumberOfClusters)
+  // add one clusters to the list (maximum number=kMaxNumberOfClusters)
   Int_t presnum = GetNumberOfClustersSA();
-  if(presnum>=fgkMaxNumberOfClusters){
+  if(presnum>=kMaxNumberOfClusters){
     Warning("AddClusterSA","Maximum number of clusters already reached. Nothing is done\n");
     return;
   }
@@ -167,10 +167,10 @@ void AliITStrackSA::AddClusterSA(Int_t layer, Int_t clnumb) {
 
 //____________________________________________________________
 void AliITStrackSA::AddClusterMark(Int_t layer, Int_t clnumb) {
-  // add one clusters to the list (maximum number=fgkMaxNumberOfClusters)
+  // add one clusters to the list (maximum number=kMaxNumberOfClusters)
   Int_t presnum = GetNumberOfMarked(layer);
   //  printf("presnum=%d\n",presnum);
-  if(presnum>=fgkMaxNumberOfClustersL){
+  if(presnum>=kMaxNumberOfClustersL){
     Warning("AddClusterMark","Maximum number of clusters already reached. Nothing is done\n");
     return;
   }
@@ -199,7 +199,7 @@ void AliITStrackSA::ResetMarked(){
 
   //Reset array of marked clusters
   for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
-    for(Int_t k=0; k<fgkMaxNumberOfClustersL; k++) fCluMark[nlay][k]=0;
+    for(Int_t k=0; k<kMaxNumberOfClustersL; k++) fCluMark[nlay][k]=0;
   }
 }
 

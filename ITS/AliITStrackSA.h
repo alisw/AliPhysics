@@ -9,6 +9,8 @@
 //                                                //
 ////////////////////////////////////////////////////
 
+/* $Id$ */
+
 #include "AliITStrackMI.h"
 
 class AliITStrackSA : public AliITStrackMI {
@@ -26,29 +28,30 @@ class AliITStrackSA : public AliITStrackMI {
   Int_t GetClusterMark(Int_t layer,Int_t i) const {return fCluMark[layer][i];}
   Int_t GetNumberOfClustersSA() const {return fNSA;}
   Int_t GetNumberOfMarked(Int_t lay) const {return fNM[lay];}
-  static const Int_t GetMaxNumberOfClusters() {return fgkMaxNumberOfClusters;}
-  Int_t GetMaxNMarkedPerLayer() const {return fgkMaxNumberOfClustersL;}
+  static const Int_t GetMaxNumberOfClusters() {return kMaxNumberOfClusters;}
+  Int_t GetMaxNMarkedPerLayer() const {return kMaxNumberOfClustersL;}
   void  AddClusterSA(Int_t layer, Int_t clnumb);
   void  AddClusterV2(Int_t layer,Int_t clnumb);
   void  AddClusterMark(Int_t layer, Int_t clnumb);
+
+  enum {kMaxNumberOfClustersL = 4};// Max. n. of clusters/layer 
+  enum {kMaxNumberOfClusters = 15};// Max. number of clusters
 
  protected: 
 
   void SetNumberOfClustersSA(Int_t n){fNSA = n;}
   void SetNumberOfMarked(Int_t lay,Int_t n) {fNM[lay] = n;}
-  void ResetIndexSA(){for(Int_t k=0; k<fgkMaxNumberOfClusters; k++) fSain[k]=0;}
+  void ResetIndexSA(){for(Int_t k=0; k<kMaxNumberOfClusters; k++) fSain[k]=0;}
   void ResetMarked(); 
 
-  static const Int_t fgkMaxNumberOfClustersL = 4;// Max. n. of clusters/layer 
-  static const Int_t fgkMaxNumberOfClusters = 15;// Max. number of clusters 
 
-  UInt_t  fSain[fgkMaxNumberOfClusters];   // cluster index (SA)
+  UInt_t  fSain[kMaxNumberOfClusters];   // cluster index (SA)
   Int_t fNSA;          // number of clusters SA 
 
-  Int_t fCluMark[AliITSgeomTGeo::kNLayers][fgkMaxNumberOfClustersL]; //indices for cluster used
+  Int_t fCluMark[AliITSgeomTGeo::kNLayers][kMaxNumberOfClustersL]; //indices for cluster used
   Int_t fNM[AliITSgeomTGeo::kNLayers]; //number of marked clusters
 
-  ClassDef(AliITStrackSA,3)
+  ClassDef(AliITStrackSA,4)
 };
 
 #endif

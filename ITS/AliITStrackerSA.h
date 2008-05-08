@@ -9,6 +9,9 @@
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+
 ////////////////////////////////////////////////////
 //  Stand alone tracker class                     //
 //  Origin:  Elisabetta Crescio                   //
@@ -40,7 +43,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t FindTracks(AliESDEvent* event);
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,Bool_t onePoint=kFALSE);
-  Int_t FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
+  Int_t FindTrackLowChiSquare() const;
   Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); SetSixPoints(kTRUE); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
@@ -106,6 +109,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliESDVertex *fVert;        //! primary vertex
   AliITSVertexer *fVertexer;  //! vertexer 
   TObjArray *fListOfTracks;   //! container for found tracks 
+  TObjArray *fListOfSATracks; //! container for found SA tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
   Int_t fOuterStartLayer;     // Search for tracks with <6 points: outer layer to start from
@@ -113,7 +117,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,6)
+  ClassDef(AliITStrackerSA,7)
 };
 
 #endif
