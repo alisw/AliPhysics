@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-
+// $Id$
 #ifndef ALIHLTCOMPHUFFMANDATA_H
 #define ALIHLTCOMPHUFFMANDATA_H
 
