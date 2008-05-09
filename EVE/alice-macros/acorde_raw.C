@@ -78,19 +78,14 @@ void acorde_raw()
 
 TString acorde_module_path(Int_t module)
 {
-  Int_t i, j;
-
   if (module < 0 || module > 59)
   {
     Error("acorde_module_path", "module %d out of range.", module);
     return "";
   }
 
-  if      (module == 0)  i = 5, j = 71;
-  else if (module == 9)  i = 5, j = 72;
-  else if (module == 50) i = 5, j = 73;
-  else if (module == 59) i = 5, j = 74;
-  else                   i = module / 20 + 4, j = module;
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("ACORDE/Array%d", module + 1));
+  if(!pne) return "missing_pne";
 
-  return Form("/ACORDE_1/ACORDE_%d_%d/ACORDE_MODULE_%d/ACORDE2_5", i, i, j);
+  return Form("%s/ACORDE2_5", pne->GetTitle());
 }
