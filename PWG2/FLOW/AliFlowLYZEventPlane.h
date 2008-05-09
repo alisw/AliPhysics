@@ -5,17 +5,16 @@
 #ifndef AliFlowLYZEventPlane_H
 #define AliFlowLYZEventPlane_H
 
+// AliFlowLYZEventPlane:
+// Class to calculate the event plane and event weight from the LYZ method
+// author: N. van der Kolk (kolk@nikhef.nl)
 
 #include "TString.h"
-#include "TVector2.h"
+#include "AliFlowVector.h"
 
 class AliFlowEventSimple;
 class TProfile;
 class TFile;
-
-// AliFlowLYZEventPlane:
-// Class to calculate the event plane and event weight from the LYZ method
-// author: N. van der Kolk (kolk@nikhef.nl)
 
 class AliFlowLYZEventPlane {
  public:
@@ -23,7 +22,7 @@ class AliFlowLYZEventPlane {
   virtual ~AliFlowLYZEventPlane();
 
   void Init();
-  void CalculateRPandW(TVector2 fQ);
+  void CalculateRPandW(AliFlowVector fQ);
 
   Double_t GetWR() const  {return this->fWR; }
   Double_t GetPsi() const {return this->fPsi; }
@@ -47,15 +46,11 @@ class AliFlowLYZEventPlane {
 
  private:
   
-  TVector2 GetQ(AliFlowEventSimple* fEvent);
-
   TFile*   fFirstRunFile ;          //! pointer to file from first run
   TFile*   fSecondRunFile ;         //! pointer to file from second run
   TString  fFirstRunFileName;       //!
   TString  fSecondRunFileName;      //!
 
-
-  TVector2 fQ;             // flow vector
   Double_t fWR;            // event weight
   Double_t fPsi;           // reaction plane
 
@@ -67,3 +62,5 @@ class AliFlowLYZEventPlane {
 };
 
 #endif
+
+

@@ -14,23 +14,24 @@
 **************************************************************************/
 
 #define AliFlowAnalysisWithLYZEventPlane_cxx
+
+// AliFlowLYZEventPlane:
+//
+// Class to calculate the event plane and event weight from the LYZ method
+// It needs input from the standard LYZ first and second run
+// author: N. van der Kolk (kolk@nikhef.nl)
  
 #include "Riostream.h"
 #include "TProfile.h"
 #include "TFile.h"
 #include "TComplex.h"
 
+#include "AliFlowVector.h"
 #include "AliFlowLYZConstants.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowLYZEventPlane.h"
 
 class AliFlowTrackSimple;
-
-// AliFlowLYZEventPlane:
-//
-// Class to calculate the event plane and event weight from the LYZ method
-//
-// author: N. van der Kolk (kolk@nikhef.nl)
 
 ClassImp(AliFlowLYZEventPlane)
 
@@ -48,7 +49,7 @@ AliFlowLYZEventPlane::AliFlowLYZEventPlane():
   fFirstr0theta(0)
 {
   // Constructor.
-  fQ.Set(0.,0.);           // flow vector
+  
 }
 //-----------------------------------------------------------------------
 
@@ -83,13 +84,10 @@ void AliFlowLYZEventPlane::Init()
     fFirstr0theta = (TProfile*)fFirstRunFile->Get("First_FlowPro_r0theta_LYZ");
   }
 
-
-
 }
 
-
 //-----------------------------------------------------------------------
-void AliFlowLYZEventPlane::CalculateRPandW(TVector2 fQ)
+void AliFlowLYZEventPlane::CalculateRPandW(AliFlowVector fQ)
 {
   //declare variables
   Int_t fNtheta = AliFlowLYZConstants::kTheta;
@@ -136,17 +134,8 @@ void AliFlowLYZEventPlane::CalculateRPandW(TVector2 fQ)
   fPsi = 0.5*TMath::ATan2(sinTerm,cosTerm);   //takes care of the signs correctly!
   if (fPsi < 0.) { fPsi += TMath::Pi(); }     //to shift distribution from (-pi/2 to pi/2) to (0 to pi)
   
-
-
-
 }
 
-//-----------------------------------------------------------------------   
-TVector2 AliFlowLYZEventPlane::GetQ(AliFlowEventSimple* fEvent) 
-{
-  //get the Q vector
-  TVector2 fQ = fEvent->GetQ();
-  
-  return fQ;
-  
-}
+
+
+
