@@ -47,7 +47,7 @@ AliHLTTPCOfflineCluster::AliHLTTPCOfflineCluster(const AliTPCclusterMI& offClust
 }
 
 AliHLTTPCOfflineCluster& AliHLTTPCOfflineCluster::operator=(const AliTPCclusterMI& offCluster){
-    
+  return *this;
 }
 
 AliHLTTPCOfflineCluster::~AliHLTTPCOfflineCluster(){
