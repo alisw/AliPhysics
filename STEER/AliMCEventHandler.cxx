@@ -233,6 +233,9 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     if(fileName.Contains("AliESDs.root")){
 	fileName.ReplaceAll("AliESDs.root", "");
     }
+    else if(fileName.Contains("AliAOD.root")){
+	fileName.ReplaceAll("AliAOD.root", "");
+    }
     else if(fileName.Contains("galice.root")){
 	// for running with galice and kinematics alone...
 	fileName.ReplaceAll("galice.root", "");
