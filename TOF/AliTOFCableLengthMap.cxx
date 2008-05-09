@@ -30,6 +30,8 @@ $Log$
 
 ClassImp(AliTOFCableLengthMap)
 
+const Float_t AliTOFCableLengthMap::fgkPropagationDelay = 0.0513;
+
 const Float_t AliTOFCableLengthMap::fgkCableLength[72][10][2][5] =
 {
   {//crate 0
@@ -929,18 +931,17 @@ Float_t  AliTOFCableLengthMap::GetCableLength(Int_t icrate, Int_t islot, Int_t i
 Float_t  AliTOFCableLengthMap::GetCableTimeShift (Int_t icrate, Int_t islot, Int_t ichain, Int_t itdc) {
   //
   //   return the time shift (in ns) due to cable 
-  //   according its length:    
-  //   it's 4.35 ns per meter
-  //   that is 0.0435 per cm
+  //   according its length:
+  //   it's 5.13 -measured- (4.35 nominal) ns per meter
+  //   that is 0.0513 (0.0435) ns per cm
+  //
  
   Int_t dummyTdc= itdc / 3;
   Int_t dummySlot= islot - 3;
   
-  //Float_t CableLength = fgkCableLength[icrate][dummySlot][ichain][dummyTdc];
-  //Float_t CableTimeShift = CableLength*4.35;
+  //Float_t cableTimeShift = fgkCableLength[icrate][dummySlot][ichain][dummyTdc] * 0.0435; // nominal
+  //Float_t cableTimeShift = fgkCableLength[icrate][dummySlot][ichain][dummyTdc] * 0.0513; // measured
+  Float_t cableTimeShift = fgkCableLength[icrate][dummySlot][ichain][dummyTdc] * fgkPropagationDelay;
 
-  // Float_t cableTimeShift = fgkCableLength[icrate][dummySlot][ichain][dummyTdc] *0.047;
-  Float_t cableTimeShift = fgkCableLength[icrate][dummySlot][ichain][dummyTdc] *0.0435;
-  
   return  cableTimeShift;
 }
