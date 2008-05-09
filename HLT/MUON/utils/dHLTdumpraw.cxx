@@ -1347,12 +1347,20 @@ int main(int argc, const char** argv)
 				unsigned long bufferSize = 0;
 				returnCode = ReadFile(filename[i], buffer, bufferSize);
 				if (returnCode != EXIT_SUCCESS) break;
+				if (numOfFiles > 1)
+				{
+					cout << "########## Start of dump for file: " << filename[i] << " ##########" << endl;
+				}
 				int result = ParseBuffer(buffer, bufferSize, continueParse, filetype[i]);
 				if (buffer != NULL) delete [] buffer;
 				if (result != EXIT_SUCCESS)
 				{
 					returnCode = result;
 					if (not continueParse) break;
+				}
+				if (numOfFiles > 1)
+				{
+					cout << "##########   End of dump for file: " << filename[i] << " ##########" << endl;
 				}
 			}
 		}
