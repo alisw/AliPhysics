@@ -51,8 +51,8 @@ information for ITS, TPC, TRD and TOF detectors. They can be run locally/batch. 
 One has to implement the following classes to run its own analysis using PWG1 library:
 
 \begin{itemize}
-\item[1.] Implement comparison object which contains control histograms and its own cut object (if needed). 
-\item[2.] Implement (if needed) cut object which contains all cuts which will be applied while filling comparison object. It is recommended to use $IsSelected(TObject*)$ method of the cut object while applying the cuts.
+\item[1.] Implement comparison object which contains control histograms and its own cut object (ex: $PWG1/AliComparisonDCA.h$) 
+\item[2.] Implement (if needed) cut object which contains all cuts which will be applied while filling comparison object. It is recommended to use $IsSelected(TObject*)$ method of the cut object while applying the cuts (ex: $PWG1/AliMCInfoCuts.h$).
 \end{itemize}
  
 \subsection{Quick Start}

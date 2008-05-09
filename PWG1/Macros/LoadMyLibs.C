@@ -17,13 +17,12 @@ void LoadMyLibs() {
   CheckLoadLibrary("libESD");
   CheckLoadLibrary("libSTEER");
   CheckLoadLibrary("libANALYSIS");
+  CheckLoadLibrary("libANALYSISalice");
   CheckLoadLibrary("libTPCbase");
   CheckLoadLibrary("libTPCsim");
   CheckLoadLibrary("libTRDbase");
   CheckLoadLibrary("libTPCrec");
   CheckLoadLibrary("libTRDrec");
-  CheckLoadLibrary("libPWG0base");
-  CheckLoadLibrary("libPWG0dep");
   CheckLoadLibrary("libPWG1");
 }
 
