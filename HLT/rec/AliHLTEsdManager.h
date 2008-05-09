@@ -24,6 +24,17 @@ class TFile;
 
 /**
  * @class AliHLTEsdManager
+ * Tool to write and merge HLT ESD objects.
+ *
+ * HLT components can produce ESD output. The ESD objects are sent via
+ * a TMessage like mechanism as part of the HLTOUT data. This class retrieves
+ * streamed AliESDEvent objects from an HLT output block. An ESD object can be
+ * copied to a global ESD provided by the caller or to files. The name of the
+ * ROOT files follows the scheme AliHLTDETESDs.root where DET denotes a detector.
+ * E.g. the ESD from a data block of type {ESD_TREE,TPC} will be added to the
+ * file AliHLTTPCESDs.root.
+ *
+ * @ingroup alihlt_out
  */
 class AliHLTEsdManager : public AliHLTLogging {
  public:
@@ -138,6 +149,12 @@ class AliHLTEsdManager : public AliHLTLogging {
     TString fDirectory; //!transient
     /** data type of the corresponding block */
     AliHLTComponentDataType fDt; //!transient
+    /** the root file for this esd */
+    TFile* fpFile; //!transient
+    /** the tree for this esd */
+    TTree* fpTree; //!transient
+    /** the esd to fill into the tree */
+    AliESDEvent* fpEsd; //!transient
   };
 
   typedef vector<AliHLTEsdListEntry*> AliHLTEsdPList;
@@ -153,7 +170,7 @@ class AliHLTEsdManager : public AliHLTLogging {
   /** target directory */
   TString fDirectory; //!transient
 
-  ClassDef(AliHLTEsdManager, 0)
+  ClassDef(AliHLTEsdManager, 1)
 };
 
 #endif

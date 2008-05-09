@@ -117,6 +117,9 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
 	  fESDs.push_back(newEntry);
 	}
 	if (tgtesd) {
+#ifdef HAVE_ESD_COPY
+	  *tgtesd=*pESD;
+#else
 	  TTree* pTmpTree=AliHLTEsdManager::EmbedIntoTree(pESD);
 	  if (pTmpTree) {
 	    tgtesd->ReadFromTree(pTmpTree);
@@ -127,6 +130,7 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
 	  } else {
 	    iResult=-ENOMEM;
 	  }
+#endif
 	} else {
 	entry=Find(dt);
 	if (entry) {
@@ -214,7 +218,10 @@ AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType
   :
   fName(),
   fDirectory(),
-  fDt(dt)
+  fDt(dt),
+  fpFile(NULL),
+  fpTree(NULL),
+  fpEsd(NULL)
 {
   // see header file for class documentation
 }
@@ -232,6 +239,73 @@ bool AliHLTEsdManager::AliHLTEsdListEntry::operator==(AliHLTComponentDataType dt
 
 int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eventno)
 {
+  // see header file for class documentation
+  int iResult=0;
+#ifdef HAVE_ESD_COPY
+  if (fName.IsNull()) {
+    // this is the first event, create the file name
+    TString origin;
+    origin.Insert(0, fDt.fOrigin, kAliHLTComponentDataTypefOriginSize);
+    origin.Remove(TString::kTrailing, ' ');
+    origin.ToUpper();
+    fName="";
+    if (!fDirectory.IsNull()) {
+      fName+=fDirectory; fName+="/";
+    }
+    fName+="AliHLT"; fName+=origin;
+    if (fDt!=kAliHLTDataTypeESDObject &&
+	fDt!=kAliHLTDataTypeESDTree) {
+
+      HLTWarning("non-standard ESD type %s", AliHLTComponent::DataType2Text(fDt).c_str());
+      TString id;
+      id.Insert(0, fDt.fID, kAliHLTComponentDataTypefIDsize);
+      id.Remove(TString::kTrailing, ' ');
+      id.ToUpper();
+      fName+="_"; fName+=id; fName+=".root";
+    } else {
+      fName+="ESDs.root";
+    }
+
+    fpFile=new TFile(fName, "RECREATE");
+    fpTree=new TTree("esdTree", "Tree with HLT ESD objects");
+    fpEsd=new AliESDEvent;
+    if (fpEsd) {
+      fpEsd->CreateStdContent();
+      if (fpTree) {
+	fpEsd->WriteToTree(fpTree);
+      }
+    }
+  }
+
+  if (fpFile && fpTree && fpEsd) {
+    // synchronize and add empty events
+    fpEsd->Reset();
+    int nofCurrentEvents=fpTree->GetEntries();
+    if (nofCurrentEvents<eventno) {
+      iResult=1; // indicate tree to be written
+      HLTDebug("adding %d empty events to file %s", eventno-nofCurrentEvents, fName.Data());
+      for (int i=nofCurrentEvents; i<eventno; i++) {
+	fpTree->Fill();
+      }
+    }
+
+    if (iResult>=0 && pSrcESD) {
+      *fpEsd=*pSrcESD;
+      fpTree->Fill();
+      iResult=1; // indicate tree to be written
+    }
+
+    if (iResult>0) {
+      fpFile->cd();
+      fpTree->GetUserInfo()->Add(fpEsd);
+      fpTree->Write(fpTree->GetName(),TObject::kOverwrite);
+      fpTree->GetUserInfo()->Clear();
+    }
+  }
+#else //HAVE_ESD_COPY
+  // this is the old workaround, necessary for older AliRoot versions
+  // version<=v4-12-Release
+
   // we need to copy the ESD, I did not find an approptiate
   // method, the workaround is to save the ESD in a temporary
   // tree, read the content back into the ESD structure
@@ -256,7 +330,6 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
   // We use temporary files for the new event to be copied into the
   // existing tree.
   //
-  int iResult=0;
   if (fName.IsNull()) {
     // this is the first event, create the file on disk and write ESD
     TString origin;
@@ -374,31 +447,33 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
 
       // there have been problems with the memory consumption when using
       // TChain::Merge
-      //chain.Merge(tgtName);
-      TFile tgtFile(tgtName, "RECREATE");
-      TTree* pTgtTree=new TTree("esdTree", "Tree with HLT ESD objects");
-      AliESDEvent* pTgtESD=new AliESDEvent;
-      if (pTgtTree && pTgtESD) {
-	pTgtESD->ReadFromTree(&chain);
-	pTgtESD->WriteToTree(pTgtTree);
+      // but using a separate loop soemtimes crashes in AliESDEvent::ReadFromTree
+      // since this is for backward compatiblity only, we take the TChain::Merge
+      chain.Merge(tgtName);
+//       TFile tgtFile(tgtName, "RECREATE");
+//       TTree* pTgtTree=new TTree("esdTree", "Tree with HLT ESD objects");
+//       AliESDEvent* pTgtESD=new AliESDEvent;
+//       if (pTgtTree && pTgtESD) {
+// 	pTgtESD->ReadFromTree(&chain);
+// 	pTgtESD->WriteToTree(pTgtTree);
 
-	int nofEvents=chain.GetEntries();
-	for (int event=0; event<nofEvents; event++) {
-	  chain.GetEntry(event);
-	  pTgtTree->Fill();
-	}
+// 	int nofEvents=chain.GetEntries();
+// 	for (int event=0; event<nofEvents; event++) {
+// 	  chain.GetEntry(event);
+// 	  pTgtTree->Fill();
+// 	}
 
-	pTgtTree->GetUserInfo()->Add(pTgtESD);
-	tgtFile.cd();
-	pTgtTree->Write();
-	pTgtTree->GetUserInfo()->Clear();
-      } else {
-	iResult=-ENOMEM;
-      }
+// 	pTgtTree->GetUserInfo()->Add(pTgtESD);
+// 	tgtFile.cd();
+// 	pTgtTree->Write();
+// 	pTgtTree->GetUserInfo()->Clear();
+//       } else {
+// 	iResult=-ENOMEM;
+//       }
 
-      if (pTgtTree) delete pTgtTree;
-      if (pTgtESD) delete pTgtESD;
-      tgtFile.Close();
+//       if (pTgtTree) delete pTgtTree;
+//       if (pTgtESD) delete pTgtESD;
+//       tgtFile.Close();
 
       // rename the merged file to the original file
       TString shellcmd="mv ";
@@ -425,6 +500,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
       gSystem->Exec(shellcmd);
     }
   }
+#endif //HAVE_ESD_COPY
 
   return iResult;
 }

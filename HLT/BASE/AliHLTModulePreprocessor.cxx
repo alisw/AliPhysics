@@ -32,6 +32,23 @@
 
 ClassImp(AliHLTModulePreprocessor)
 
+AliHLTModulePreprocessor::AliHLTModulePreprocessor() 
+  :
+  fpInterface(NULL),
+  fActiveDetectors(0)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
+
+AliHLTModulePreprocessor::~AliHLTModulePreprocessor() 
+{
+  // see header file for function documentation
+}
+
 const Int_t AliHLTModulePreprocessor::kNDetectors = 21;
 
 const char* AliHLTModulePreprocessor::fgkDetectorName[kNDetectors] = 
@@ -58,23 +75,6 @@ const char* AliHLTModulePreprocessor::fgkDetectorName[kNDetectors] =
   "DAQ_TEST",
   "HLT"
 };
-
-AliHLTModulePreprocessor::AliHLTModulePreprocessor() 
-  :
-  fpInterface(NULL),
-  fActiveDetectors(0)
-{
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-}
-
-AliHLTModulePreprocessor::~AliHLTModulePreprocessor() 
-{
-  // see header file for function documentation
-}
 
 void AliHLTModulePreprocessor::SetShuttleInterface(AliHLTShuttleInterface* pInterface)
 {

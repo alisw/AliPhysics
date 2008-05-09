@@ -47,7 +47,7 @@ class TStopwatch;
 class AliHLTSystem : public AliHLTLogging {
  public:
   /** default constructor */
-  AliHLTSystem();
+  AliHLTSystem(AliHLTComponentLogSeverity loglevel=kHLTLogDefault);
   /** destructor */
   virtual ~AliHLTSystem();
 
@@ -451,16 +451,10 @@ class AliHLTSystem : public AliHLTLogging {
   /** number of events processed successfully */
   int fGoodEvents;                                                 //!transient
 
-  /** switch whether to write to the global hltesd or not
-   *  since this causes a crash outside the HLT code this
-   *  can be enabled by the 'globalesd' argument
-   */
-  bool bWriteGlobalEsd;                                            //!transient
-
   /** array of default libraries */
   static const char* fgkHLTDefaultLibs[];                          //!transient
 
-  ClassDef(AliHLTSystem, 6);
+  ClassDef(AliHLTSystem, 7);
 };
 
 #endif

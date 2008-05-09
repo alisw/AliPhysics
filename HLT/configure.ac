@@ -253,6 +253,20 @@ if test ! "x$have_aliroot" = "xno" ; then
   fi
 
   dnl
+  dnl ESD copy function added May 9 2008 rev 25667
+  dnl
+  have_esd_copy=no
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliESDEvent.h>],
+				  [AliESDEvent esd1;
+				   AliESDEvent esd2;
+				   esd2=esd1;])],
+                 [AC_DEFINE(HAVE_ESD_COPY)
+		  have_esd_copy=yes], 
+  		 [])
+  AC_MSG_CHECKING(for ESD assignment operator)
+  AC_MSG_RESULT([$have_esd_copy])
+
+  dnl
   dnl required header files and libraries for modules
   dnl
   if test ! "x$have_aliroot" = "xno" ; then
@@ -284,7 +298,7 @@ if test ! "x$have_aliroot" = "xno" ; then
   				      [have_alitpc=no
 				       ALITPC_LIBS= ])
     fi
-    AC_MSG_RESULT($have_alitpc)
+    AC_MSG_RESULT([$have_alitpc])
   fi
   AC_CHECK_HEADERS([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
   AC_CHECK_HEADERS([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])

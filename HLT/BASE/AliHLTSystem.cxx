@@ -62,7 +62,7 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
 
-AliHLTSystem::AliHLTSystem()
+AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel)
   :
   fpComponentHandler(new AliHLTComponentHandler()),
   fpConfigurationHandler(new AliHLTConfigurationHandler()),
@@ -71,8 +71,7 @@ AliHLTSystem::AliHLTSystem()
   fChains(),
   fStopwatches(new TObjArray),
   fEventCount(-1),
-  fGoodEvents(-1),
-  bWriteGlobalEsd(false)
+  fGoodEvents(-1)
 {
   // see header file for class documentation
   // or
@@ -83,8 +82,8 @@ AliHLTSystem::AliHLTSystem()
   if (fgNofInstances++>0)
     HLTWarning("multiple instances of AliHLTSystem, you should not use more than one at a time");
 
-  SetGlobalLoggingLevel(kHLTLogDefault);
-  SetFrameworkLog(kHLTLogDefault);
+  SetGlobalLoggingLevel(loglevel);
+  SetFrameworkLog(loglevel);
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
@@ -743,7 +742,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   // TTree::Fill in AliReconstruction, furthermore, the wrong ESD is passed
   // by the framework
   AliESDEvent* pMasterESD=NULL;
-  if (bWriteGlobalEsd) pMasterESD=esd;
+  pMasterESD=esd;
   for (iResult=pHLTOUT->SelectFirstDataBlock();
        iResult>=0;
        iResult=pHLTOUT->SelectNextDataBlock()) {
@@ -975,8 +974,6 @@ int AliHLTSystem::ScanOptions(const char* options)
 	      HLTWarning("wrong argument for option \'libmode=\', use \'static\' or \'dynamic\'");
 	    }
 	  }
-	} else if (token.Contains("globalesd")) {
-	  bWriteGlobalEsd=true;
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	  libs+=token;
 	  libs+=" ";
