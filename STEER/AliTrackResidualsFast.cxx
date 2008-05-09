@@ -78,8 +78,9 @@ Bool_t AliTrackResidualsFast::Minimize()
 {
   // Implementation of fast linear Chi2
   // based minimization of track residuals sum
-  if(fBFixed[0]||fBFixed[1]||fBFixed[2]||fBFixed[3]||fBFixed[4]||fBFixed[5])
-    AliError("Cannot yet fix parameters in this minimizer");
+
+  //  if(fBFixed[0]||fBFixed[1]||fBFixed[2]||fBFixed[3]||fBFixed[4]||fBFixed[5])
+  //    AliError("Cannot yet fix parameters in this minimizer");
 
 
   for (Int_t i = 0; i < 27; i++) fSum[i] = 0;
@@ -150,6 +151,13 @@ void AliTrackResidualsFast::AddPoints(AliTrackPoint &p, AliTrackPoint &pprime)
   mf(0,3) = 0;      mf(1,3) = -xyz[2]; mf(2,3) = xyz[1];
   mf(0,4) = xyz[2]; mf(1,4) = 0;       mf(2,4) =-xyz[0];
   mf(0,5) =-xyz[1]; mf(1,5) = xyz[0];  mf(2,5) = 0;
+
+  for(Int_t j=0;j<6;j++){
+    if(fBFixed[j]==kTRUE){
+      mf(0,j)=0.;mf(1,j)=0.;mf(2,j)=0.;
+    }
+  }
+
   TMatrixD        mft = mf.T(); mf.T();
   TMatrixD sums2 = mft * msum * sums;
 
@@ -223,24 +231,65 @@ Bool_t AliTrackResidualsFast::Update()
   sums(0,0)    = fSum[21]; sums(0,1) = fSum[22]; sums(0,2) = fSum[23];
   sums(0,3)    = fSum[24]; sums(0,4) = fSum[25]; sums(0,5) = fSum[26];
 
- 
-  smatrix.Invert();
+  
+  Int_t fixedparamat[6]={0,0,0,0,0,0}; 
+  const Int_t unfixedparam=GetNFreeParam();
+  Int_t position[6],last=0;//position is of size 6 but only unfiexedparam indeces will be used
+  
+  if(fBFixed[0]==kTRUE){
+    fixedparamat[0]=1;
+  }
+  else {
+    position[0]=0;
+    last++;
+  }
+  
+  for(Int_t j=1;j<6;j++){
+    if(fBFixed[j]==kTRUE){
+      fixedparamat[j]=fixedparamat[j-1]+1;
+    }
+    else {
+      fixedparamat[j]=fixedparamat[j-1];
+      position[last]=j;
+      last++;
+    }
+  }
 
-  if (!smatrix.IsValid()) {
+  TMatrixDSym smatrixRedu(unfixedparam);
+  for(Int_t i=0;i<unfixedparam;i++){
+    for(Int_t j=0;j<unfixedparam;j++){
+      smatrixRedu(i,j)=smatrix(position[i],position[j]);
+    }
+  }
+  
+  smatrixRedu.Print();
+  smatrixRedu.Invert();
+  
+  if (!smatrixRedu.IsValid()) {
     printf("Minimization Failed! \n");
     return kFALSE;
   }
 
+  TMatrixDSym smatrixUp(6);
+  for(Int_t i=0;i<6;i++){
+    for(Int_t j=0;j<6;j++){
+      if(fBFixed[i]==kTRUE||fBFixed[j]==kTRUE)smatrixUp(i,j)=0.;
+      else smatrixUp(i,j)=smatrixRedu(i-fixedparamat[i],j-fixedparamat[j]);
+    }
+  }
+  
   Double_t covmatrarray[21];
   
-    for(Int_t i=0;i<6;i++){
+  for(Int_t i=0;i<6;i++){
       for(Int_t j=0;j<=i;j++){
-	if(TMath::Abs(smatrix(i,j)/TMath::Sqrt(TMath::Abs(smatrix(i,i)*smatrix(j,j))))>1.01)printf("Too large Correlation number!\n");
-	covmatrarray[i*(i+1)/2+j]=smatrix(i,j);
+	if(fBFixed[i]==kFALSE&&fBFixed[j]==kFALSE){
+	  if(TMath::Abs(smatrixUp(i,j)/TMath::Sqrt(TMath::Abs(smatrixUp(i,i)*smatrixUp(j,j))))>1.01)printf("Too large Correlation number!\n");
+	}
+	covmatrarray[i*(i+1)/2+j]=smatrixUp(i,j);
       }
-    }
+  }
     
-  TMatrixD res = sums*smatrix;
+  TMatrixD res = sums*smatrixUp;
   fAlignObj->SetPars(res(0,0),res(0,1),res(0,2),
 		     TMath::RadToDeg()*res(0,3),
 		     TMath::RadToDeg()*res(0,4),
@@ -249,7 +298,7 @@ Bool_t AliTrackResidualsFast::Update()
   fAlignObj->SetCorrMatrix(covmatrarray);
   TMatrixD  tmp = res*sums.T();
   fChi2 = fSumR - tmp(0,0);
-  fNdf -= 6;
+  fNdf -= unfixedparam;
   
   return kTRUE;
 }
