@@ -493,7 +493,7 @@ void AliTPCcalibAlign::EvalFitters() {
     for (Int_t s2=0;s2<72;++s2){
       if ((f=GetFitter12(s1,s2))&&fPoints[72*s1+s2]>kMinPoints) {
 	//	cerr<<s1<<","<<s2<<": "<<fPoints[72*s1+s2]<<endl;
-	if (!f->Eval()) {
+	if (f->Eval()!=0) {
 	  cerr<<"Evaluation failed for "<<s1<<","<<s2<<endl;
 	  f->Write(Form("f12_%d_%d",s1,s2));
 	}else{
@@ -502,7 +502,7 @@ void AliTPCcalibAlign::EvalFitters() {
       }
       if ((f=GetFitter9(s1,s2))&&fPoints[72*s1+s2]>kMinPoints) {
 	//	cerr<<s1<<","<<s2<<": "<<fPoints[72*s1+s2]<<endl;
-	if (!f->Eval()) {
+	if (f->Eval()!=0) {
 	  cerr<<"Evaluation failed for "<<s1<<","<<s2<<endl;
 	}else{
 	  f->Write(Form("f9_%d_%d",s1,s2));
@@ -510,13 +510,14 @@ void AliTPCcalibAlign::EvalFitters() {
       }
       if ((f=GetFitter6(s1,s2))&&fPoints[72*s1+s2]>kMinPoints) {
 	//	cerr<<s1<<","<<s2<<": "<<fPoints[72*s1+s2]<<endl;
-	if (!f->Eval()) {
+	if (!f->Eval()!=0) {
 	  cerr<<"Evaluation failed for "<<s1<<","<<s2<<endl;
 	}else{
 	  f->Write(Form("f6_%d_%d",s1,s2));
 	}
       }
     }
+  this->Write("align");
   /*
 		    
   fitter->Eval();

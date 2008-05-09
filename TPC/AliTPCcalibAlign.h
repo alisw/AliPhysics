@@ -64,8 +64,7 @@ private:
   TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2) {
     //get or make fitter
     if (!fFitterArray12[s1*72+s2])
- //      fFitterArray12[s1*72+s2]=new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
-      fFitterArray12[s1*72+s2]=new TLinearFitter(13,"hyp12");
+      fFitterArray12[s1*72+s2]=new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
     return GetFitter12(s1,s2);
   }
   TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2) {
