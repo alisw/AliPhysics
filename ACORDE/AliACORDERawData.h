@@ -22,8 +22,8 @@ class AliACORDERawData : public TObject {
   virtual ~AliACORDERawData();
   AliACORDERawData &operator=(const AliACORDERawData &r);      // ass. op.
 
-  void WriteACORDERawData(Bool_t *b);
-  void SetACORDERawWords(Bool_t *b);
+  void WriteACORDERawData(Bool_t *b,Bool_t multi);
+  void SetACORDERawWords(Bool_t *b,Bool_t multi);
   
 
  private:

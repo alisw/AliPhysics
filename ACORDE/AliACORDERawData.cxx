@@ -72,11 +72,11 @@ AliACORDERawData &AliACORDERawData::operator=(const AliACORDERawData &r)
   return *this;
 }
 
-void AliACORDERawData::WriteACORDERawData(Bool_t *b)
+void AliACORDERawData::WriteACORDERawData(Bool_t *b,Bool_t multi)
 
 {
   // set words
-  SetACORDERawWords(b);
+  SetACORDERawWords(b,multi);
 
   // open output file
   const char *fileName = AliDAQ::DdlFileName("ACORDE",0);
@@ -102,18 +102,18 @@ void AliACORDERawData::WriteACORDERawData(Bool_t *b)
   fFile->Seekp(current_position);
 }
 
-void AliACORDERawData::SetACORDERawWords(Bool_t *b)
+void AliACORDERawData::SetACORDERawWords(Bool_t *b,Bool_t multi)
 
 {
   // set modules
   for (Int_t i=0;i<30;i++) {
     if (b[i]) {
       fWord9|=(1<<i);
-      fWord11|=(1<<i);
+      if (multi) fWord11|=(1<<i);
     }
     if (b[i+30]) {
       fWord10|=(1<<i);
-      fWord12|=(1<<i);
+      if (multi) fWord12|=(1<<i);
     }
   } // end for
   // set labels

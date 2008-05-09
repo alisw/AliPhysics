@@ -90,10 +90,6 @@ void AliACORDEReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digit
       Int_t  bit   = iChannel % 30;
       if (rawStream.GetWord(index) & (1 << bit))
         new ((*digitsArray)[digitsArray->GetEntriesFast()]) AliACORDEdigit(iChannel+1,0);
-      // separate digits for single and multi muon signals !!!
-      // TO BE DONE!!
-      // if (GetWord(index+1) & (1 << bit))
-      // new ((*digitsArray)[digitsArray->GetEntriesFast()]) AliACORDEdigit(iChannel+1,0); // multi-muon digit
     }
   }
 

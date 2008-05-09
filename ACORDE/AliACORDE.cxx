@@ -281,7 +281,7 @@ void AliACORDE::Digits2Raw()
 
   // 4. Write raw data
   AliACORDERawData rawdata;
-  rawdata.WriteACORDERawData(Modules);
+  rawdata.WriteACORDERawData(Modules,(ndig > 1));
 }
 
 //_____________________________________________________________________________
