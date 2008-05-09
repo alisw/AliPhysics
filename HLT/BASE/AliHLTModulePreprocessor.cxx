@@ -26,12 +26,43 @@
 #include <cassert>
 #include "AliHLTModulePreprocessor.h"
 #include "AliHLTShuttleInterface.h"
+#include "TObjString.h"
+#include "TString.h"
+
 
 ClassImp(AliHLTModulePreprocessor)
 
+const Int_t AliHLTModulePreprocessor::kNDetectors = 21;
+
+const char* AliHLTModulePreprocessor::fgkDetectorName[kNDetectors] = 
+{
+  "ITSSPD",
+  "ITSSDD",
+  "ITSSSD",
+  "TPC",
+  "TRD",
+  "TOF",
+  "HMPID",
+  "PHOS",
+  "CPV",
+  "PMD",
+  "MUONTRK",
+  "MUONTRG",
+  "FMD",
+  "T0",
+  "VZERO", // Name to be changed to V0 ?
+  "ZDC",
+  "ACORDE",
+  "TRG",
+  "EMCAL",
+  "DAQ_TEST",
+  "HLT"
+};
+
 AliHLTModulePreprocessor::AliHLTModulePreprocessor() 
   :
-  fpInterface(NULL)
+  fpInterface(NULL),
+  fActiveDetectors(0)
 {
   // see header file for class documentation
   // or
@@ -177,4 +208,68 @@ void AliHLTModulePreprocessor::Log(const char* message)
   assert(fpInterface);
   if (!fpInterface) return;
   fpInterface->PreprocessorLog(message);
+}
+
+Int_t AliHLTModulePreprocessor::DetectorBitMask(const char *detectorName)
+{
+  // Return the detector index
+  // corresponding to a given
+  // detector name
+  TString detStr = detectorName;
+
+  Int_t iDet;
+  for(iDet = 0; iDet < kNDetectors; iDet++) {
+    if (detStr.CompareTo(fgkDetectorName[iDet],TString::kIgnoreCase) == 0)
+      break;
+  }
+  if (iDet == kNDetectors) 
+    {
+      TString errormessage;
+      errormessage.Form("Invalid detector name: %s !",detectorName);
+      Log(errormessage.Data());
+      return -1;
+    }
+
+  Int_t detectorbitmask = 0;
+  if(iDet > 32)
+    {
+      TString errormessage2;
+      errormessage2.Form("Invalid detector bit position in detectorMask: %d !", iDet);
+      Log(errormessage2.Data());
+      return -1;
+    }
+  
+  detectorbitmask = (1 << iDet);
+  return detectorbitmask;
+}
+
+Bool_t AliHLTModulePreprocessor::GetDetectorStatus(Int_t detectorbitmask)
+{
+  // see header file for function documentation
+  // retrieve list of active detectors from previous run.
+  fActiveDetectors = atoi(AliHLTModulePreprocessor::GetRunParameter("detectorMask"));
+ 
+  if((fActiveDetectors & detectorbitmask) != 0)
+    {
+      return 1;
+    }
+  else
+    {
+      return 0;
+    }
+}
+
+// function copied from AliDAQ.cxx
+const char *AliHLTModulePreprocessor::DetectorName(Int_t detectorID)
+{
+  // Returns the name of particular
+  // detector identified by its index
+  if (detectorID < 0 || detectorID >= kNDetectors) 
+    {
+      TString errormessage;
+      errormessage.Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1);
+      Log(errormessage.Data());
+      return "";
+    }
+  return fgkDetectorName[detectorID];
 }

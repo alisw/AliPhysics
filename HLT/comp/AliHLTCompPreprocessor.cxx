@@ -36,7 +36,9 @@
 
 ClassImp(AliHLTCompPreprocessor)
 
-AliHLTCompPreprocessor::AliHLTCompPreprocessor() 
+  AliHLTCompPreprocessor::AliHLTCompPreprocessor() :
+    fTPCactive(0),
+    fPHOSactive(0)
 {
   // see header file for class documentation
   // or
@@ -56,6 +58,9 @@ void AliHLTCompPreprocessor::Initialize(Int_t /*run*/, UInt_t /*startTime*/,
 					UInt_t /*endTime*/)
 {
   // see header file for function documentation
+  fTPCactive = AliHLTModulePreprocessor::GetDetectorStatus(AliHLTModulePreprocessor::DetectorBitMask("TPC"));
+  fPHOSactive = AliHLTModulePreprocessor::GetDetectorStatus(AliHLTModulePreprocessor::DetectorBitMask("PHOS"));
+  
 }
 
 
@@ -64,10 +69,17 @@ UInt_t AliHLTCompPreprocessor::Process(TMap* /*dcsAliasMap*/)
   // see header file for function documentation
   UInt_t retVal = 0;
 
+  // error if preprocessor states that TPC or PHOS were active but both are inactive here!
+   if( !(fTPCactive || fPHOSactive) )
+    {
+      Log("Neither TPC nor PHOS active in current run!");
+      return 0;
+    }
+
+  // else there must be Huffman tables:
   if (GetHuffmanTables() != 0) {
     // unable to fetch Huffman tables
     retVal = 1; 
-    // but if set to 1, then also file from GetTempHisto won't be saved !!!
   }
 	
   return retVal;
@@ -83,19 +95,28 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
   TList* HuffmanList = GetFileSources(AliPreprocessor::kHLT, fgkHuffmanFileId);
   // -> list of all DDL numbers that own a huffman table
 
-  // if no huffman tables are produced, return 0 (successful end --> test if TPC, PHOS are used in current run!)
-  // --> still open to be implemented!
-  // if there is an error getting the sources return 1
+  // if there is no Huffman code table for a calib run, return error!
   // else produce containers for each detector to be stored in the OCDB
   if (!HuffmanList) 
     {
       Log("No Huffman code tables for HLT");
       return 1;
     }
-	  
-  TList* TPCHuffmanList = new TList();
-  TList* PHOSHuffmanList = new TList();
+
+  TList* TPCHuffmanList;
+  TList* PHOSHuffmanList;
+
+  if(fTPCactive)
+    {
+      TPCHuffmanList = new TList();
+    };
+
+  if(fPHOSactive)
+    {
+      PHOSHuffmanList = new TList();
+    };
 	
+
   // loop over all DDL numbers and put huffman tables into special containers
   // (one for each detector)
   for(Int_t ii=0; ii < HuffmanList->GetEntries(); ii++)
@@ -143,6 +164,12 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
       // plug them into a container:
       if(detectororigin == "PHOS") // belongs to PHOS table (one one!)
 	{
+	  if(!PHOSHuffmanList)
+	    {
+	      Log("PHOS Huffman code table retrieved although PHOS detector was not active!");
+	      return 1;
+	    };
+
 	  PHOSHuffmanList->AddFirst(huffmandata);
 
 	  if(PHOSHuffmanList->GetEntries() > 1)
@@ -155,6 +182,13 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
 	{
 	  if(detectororigin == "TPC ") // belongs to TPC tables (six)
 	    {
+
+	      if(!TPCHuffmanList)
+		{
+		  Log("TPC Huffman code table retrieved although TPC detector was not active!");
+		  return 1;
+		};
+
 	      if(tablespec < 6)
 		{
 		  TPCHuffmanList->Add(huffmandata);
@@ -179,8 +213,8 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
 	      char logging[1000];
 	      sprintf(logging, "Specified detector pattern %s does not define a valid detector.", detectororigin.Data());
 	      Log(logging);
-	      // retVal = 1; // retVal must be zero to give other functions a chance to read their data
-	      retVal = 0;
+	      retVal = 1; // retVal must be zero to give other functions a chance to read their data
+	      //retVal = 0;
 	    }
 	}
 
@@ -191,29 +225,35 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
   // after loop all containers are filled and can be stored in OCDB
   AliCDBMetaData meta("Jenny Wagner");
 
-  if (!(Store("CalibTPC", "HuffmanCodeTables", (TObject*) TPCHuffmanList, &meta, 0, kTRUE))) 
+  if(fTPCactive)
     {
-
-      Log("Storing of TPCHuffmanList (Huffman code tables for TPC) to OCDB failed.");
-
-      if (!(StoreReferenceData("CalibTPC", "HuffmanCodeTables", (TObject*) TPCHuffmanList, &meta)))
+      if (!(Store("CalibTPC", "HuffmanCodeTables", (TObject*) TPCHuffmanList, &meta, 0, kTRUE))) 
 	{
-	  Log("Storing of TPCHuffmanList (Huffman code tables for TPC) to reference storage failed.");
 
-	  retVal = 1;
+	  Log("Storing of TPCHuffmanList (Huffman code tables for TPC) to OCDB failed.");
+
+	  if (!(StoreReferenceData("CalibTPC", "HuffmanCodeTables", (TObject*) TPCHuffmanList, &meta)))
+	    {
+	      Log("Storing of TPCHuffmanList (Huffman code tables for TPC) to reference storage failed.");
+
+	      retVal = 1;
+	    }
 	}
     }
-       
-  if (!(Store("CalibPHOS", "HuffmanCodeTables", (TObject*) PHOSHuffmanList, &meta, 0, kTRUE))) 
+
+  if(fPHOSactive)
     {
-
-      Log("Storing of PHOSHuffmanList (Huffman code table for PHOS) to OCDB failed.");
-
-      if (!(StoreReferenceData("CalibPHOS", "HuffmanCodeTables", (TObject*) PHOSHuffmanList, &meta)))
+      if (!(Store("CalibPHOS", "HuffmanCodeTables", (TObject*) PHOSHuffmanList, &meta, 0, kTRUE))) 
 	{
-	  Log("Storing of PHOSHuffmanList (Huffman code table for PHOS) to reference storage failed.");
+      
+	  Log("Storing of PHOSHuffmanList (Huffman code table for PHOS) to OCDB failed.");
 
-	  retVal = 1;
+	  if (!(StoreReferenceData("CalibPHOS", "HuffmanCodeTables", (TObject*) PHOSHuffmanList, &meta)))
+	    {
+	      Log("Storing of PHOSHuffmanList (Huffman code table for PHOS) to reference storage failed.");
+
+	      retVal = 1;
+	    }
 	}
     }
 

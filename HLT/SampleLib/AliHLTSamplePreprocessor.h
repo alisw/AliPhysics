@@ -61,6 +61,11 @@ class AliHLTSamplePreprocessor : public AliHLTModulePreprocessor
   /** Define for Temperature Histogram filename */
   static const char* fgkTempHistoFileName; 		// see above
 
+  /** Define module id */
+  const char* GetModuleID() {return "AliHLTSamplePreprocessor";};
+
+  const Int_t GetModuleNumber() {return AliHLTModulePreprocessor::DetectorBitMask("TPC");};
+
  protected:
 
  private:

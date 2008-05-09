@@ -85,7 +85,6 @@ class AliHLTPreprocessor : public AliPreprocessor , public AliHLTShuttleInterfac
   /** Get the end time no which has been previously initialized */
   UInt_t PreprocessorGetEndTime() {return fEndTime;}
 
-
   // AliPreprocessor methods made publicly available
   //
   Bool_t PreprocessorStore(const char* pathLevel2, const char* pathLevel3, TObject* object,
@@ -145,10 +144,13 @@ class AliHLTPreprocessor : public AliPreprocessor , public AliHLTShuttleInterfac
   /** list of HLT module processors */
   TList fProcessors;                                               //!transient
 
+  /** determine which which detectors were active */
+  Int_t fActiveDetectors; // bit array of active detectors
+  
   /** array of default libraries */
   static const char* fgkHLTDefaultShuttleLibs[];                   //!transient
 
-  ClassDef(AliHLTPreprocessor, 0);
+  ClassDef(AliHLTPreprocessor, 1);
 };
 #endif
 

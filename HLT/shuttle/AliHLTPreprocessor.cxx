@@ -19,7 +19,6 @@
 /**
  * @file   AliHLTPreprocessor.cxx
  * @author Matthias Richter
- * @date   2008-01-22
  * @brief  Container for HLT module preprocessors, acts to the outside as
  *         HLT preprocessor used by the Offline Shuttle 
  */
@@ -35,7 +34,8 @@ ClassImp(AliHLTPreprocessor)
 AliHLTPreprocessor::AliHLTPreprocessor(AliShuttleInterface* shuttle) 
   :
   AliPreprocessor(fgkHLTPreproc, shuttle),
-  fProcessors()
+  fProcessors(),
+  fActiveDetectors(0)
 {
   // see header file for class documentation
   // or
@@ -43,7 +43,25 @@ AliHLTPreprocessor::AliHLTPreprocessor(AliShuttleInterface* shuttle)
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+  // run types according to 
+  // http://alice-ecs.web.cern.ch/alice-ecs/runtypes_3.16.html
+
+  // PHOS (retrieve Huffman tables)
+  AddRunType("STANDALONE");
+
+  // TPC (retrieve Huffman tables and temperature data)
+  AddRunType("PHYSICS");
+  AddRunType("COSMIC");
+  AddRunType("LASER");
+  AddRunType("PEDESTAL");
+  AddRunType("PULSER");
+
+  // TRD
+  AddRunType("PEDESTAL");
+  AddRunType("STANDALONE");
+ 
   fProcessors.SetOwner();
+
 }
 
 const char* AliHLTPreprocessor::fgkHLTPreproc = "HLT";
@@ -51,6 +69,7 @@ const char* AliHLTPreprocessor::fgkHLTPreproc = "HLT";
 /** HLT default component libraries */
 const char* AliHLTPreprocessor::fgkHLTDefaultShuttleLibs[]= {
   "libAliHLTUtil.so", 
+  "libAliHLTRCU.so", 
   "libAliHLTTPC.so", 
   "libAliHLTComp.so", 
   "libAliHLTSample.so",
@@ -73,10 +92,13 @@ void AliHLTPreprocessor::Initialize(Int_t run, UInt_t startTime,
   fStartTime = startTime;
   fEndTime = endTime;
 
-//   TString msg("Preprocessor for HLT initialized for run: ");
-//   msg += run;
-//   Log(msg.Data());
+  // retrieve list of active detectors from previous run.
+  fActiveDetectors = atoi(AliPreprocessor::GetRunParameter("detectorMask"));
 
+  //   TString msg("Preprocessor for HLT initialized for run: ");
+  //   msg += run;
+  //   Log(msg.Data());
+  
   // load component libraries
   TString libs;
   const char** deflib=fgkHLTDefaultShuttleLibs;
@@ -84,19 +106,33 @@ void AliHLTPreprocessor::Initialize(Int_t run, UInt_t startTime,
     if (gSystem->Load(*deflib)==0) {
       Log(Form("HLT component library %s loaded", *deflib));
     }
+    
+    deflib++;
   }
 
-  AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
-  while (pAgent) {
+  for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+       pAgent!=NULL;
+       pAgent=AliHLTModuleAgent::GetNextAgent()) {
     AliHLTModulePreprocessor* pProc=pAgent->GetPreprocessor();
-    if (pProc) {
-      pProc->SetShuttleInterface(this);
-      pProc->Initialize(run, startTime, endTime);
-      fProcessors.Add(pProc);
-      TString msg;
-      msg.Form("added preprocessor %p for module %p", pProc, pAgent);
-      Log(msg.Data());
-    }
+    if (pProc) 
+      {
+
+	// test if pProc is necessary, if not, take next one
+	if((pProc->GetModuleNumber() & fActiveDetectors) == 0)
+	  {
+	    TString msg;
+	    msg.Form("%s not needed", pProc->GetModuleID());
+	    Log(msg.Data());
+	    continue;
+	  }
+	
+	pProc->SetShuttleInterface(this);
+	pProc->Initialize(run, startTime, endTime);
+	fProcessors.Add(pProc);
+	TString msg;
+	msg.Form("added preprocessor %p with ID %s for module %p", pProc, pProc->GetModuleID(), pAgent);
+	Log(msg.Data());
+      }
   }
 }
 

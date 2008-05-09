@@ -33,7 +33,7 @@ class AliHLTCompPreprocessor : public AliHLTModulePreprocessor
 {
  public:
 	
-  /** Constructor */
+  /** Standard Constructor */
   AliHLTCompPreprocessor();
 
   /** Destructor */
@@ -62,6 +62,16 @@ class AliHLTCompPreprocessor : public AliHLTModulePreprocessor
   /** Define name of huffman tables stored at FXS */
   static const char* fgkHuffmanFileId;			// see above
 
+  /** Define module id */
+  const char* GetModuleID() {return "AliHLTCompPreprocessor";};
+
+  /** Define bit mask of the active detectors needed by this preprocessor module */
+  const Int_t GetModuleNumber() {
+    Int_t modulenumber = 0;
+    modulenumber = AliHLTModulePreprocessor::DetectorBitMask("TPC") | AliHLTModulePreprocessor::DetectorBitMask("PHOS");
+    return modulenumber;
+  };
+
  protected:
 
  private:
@@ -76,7 +86,12 @@ class AliHLTCompPreprocessor : public AliHLTModulePreprocessor
    * @return 0 in case of success, else an error code
    */
   UInt_t GetHuffmanTables();
+
+  /** mark if TPC was active (1 = active) */
+  Bool_t fTPCactive;  // mark if TPC was active
+  /** mark if PHOS was active (1 = active) */
+  Bool_t fPHOSactive; // makr if PHOS was active
 		
-  ClassDef(AliHLTCompPreprocessor, 0);
+  ClassDef(AliHLTCompPreprocessor, 1);
 };
 #endif

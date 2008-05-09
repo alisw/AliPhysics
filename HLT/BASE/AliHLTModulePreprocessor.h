@@ -81,6 +81,45 @@ public:
   /** Get the end time */
   UInt_t GetEndTime();
 
+ /**
+   * Get the id of the module
+   * Each module preprocessor is identified by a unique id.
+   * The function is pure virtual and must be implemented by the child class.
+   * @return module id (string)
+   */
+  virtual const char* GetModuleID() = 0;
+
+ /**
+   * Get all detectors the module process
+   * Detectors are determined in the bit mask as provided by "detectorMask"
+   * implement: GetModuleNumber() {return AliHLTModulePreprocessor::DetetorID("detectorname");}
+   * The function is pure virtual and must be implemented by the child class.
+   * @return bit mask for active detectors (Int_t)
+   */
+  virtual const Int_t GetModuleNumber() = 0;
+
+  /** Get detector bit mask (bit mask comparable to the detectorMask but for the respective detector only)
+   *  out of detector name
+   *@param detectorName const char* of the detector
+   *@return Int_t for the detector bit mask
+   */
+  Int_t DetectorBitMask(const char *detectorName);
+
+ /** Get the information whether detector was active (return value: 1 = active, 0 = inactive) 
+      @param detectorbitmask bitmask of the detector to be checked (s. DetectorBitMask)
+      @return 1 if active 0 if inactive
+ */
+  Bool_t GetDetectorStatus(Int_t detectorbitmask);
+
+  /** Get detector name out of detector id (bit position in detectorMask of the resp. detector)
+   *@param detectorID integer ID of the detector
+   *@return const char* name of the detector corresponding to the ID
+   */
+  const char *DetectorName(Int_t detectorID);
+
+  /** number of detectors */
+  static const Int_t kNDetectors;    // Number of detectors
+
 protected:
   // the AliPreprocessor interface, all functions redirected via the
   // AliHLTShuttleInterface to the AliHLTPreprocessor
@@ -115,6 +154,12 @@ private:
   /** the interface class which is the gateway to the shuttle */
   AliHLTShuttleInterface* fpInterface;                             //! transient
 
-  ClassDef(AliHLTModulePreprocessor, 0);
+ /** determine which which detectors were active */
+  Int_t fActiveDetectors; // bit array of active detectors
+
+  /** array of detector names */
+  static const char *fgkDetectorName[]; // Detector names
+
+  ClassDef(AliHLTModulePreprocessor, 1);
 };
 #endif
