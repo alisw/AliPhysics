@@ -9,7 +9,7 @@
 ///
 /// This is a base class for reading raw data digits in Altro format
 /// The class is able to read both old and new RCU trailer formats
-/// One can switch between formats using fIsOldRCUFormat flag.
+/// Switch between formats is done automatically using the last payload word.
 /// In case the Common Data Header is 7 32-bit words long, one
 /// can use the fIsShortDataHeader flag.
 ///
@@ -54,7 +54,6 @@ class AliAltroRawStream: public TObject {
     void SelectRawData(const char *detName);                   // Select raw data for specific detector name
 
     void  SetNoAltroMapping(Bool_t flag) { fNoAltroMapping = flag; }  // Specify whenever to use or not the altro mapping
-    void  SetOldRCUFormat(Bool_t flag)   { fIsOldRCUFormat = flag; }  // Specify whenever to use or not the old RCU trailer format
     void  SetShortDataHeader(Bool_t flag) { fIsShortDataHeader = flag; } // Specify whenever to assume or not a short CDH format
 
     void PrintDebug() const; // Print debug information in case of decoding errors
@@ -79,7 +78,6 @@ class AliAltroRawStream: public TObject {
     Bool_t           fNoAltroMapping;  // temporary flag in case of no altro mapping is provided
     Short_t          fSegmentation[3]; // temporary container for the dummy trailer, to be removed
 
-    Bool_t           fIsOldRCUFormat;  // flag used to select between old and new RCU trailer format
     Bool_t           fIsShortDataHeader; // flag used to select between normal and short CDH format
 
   private :

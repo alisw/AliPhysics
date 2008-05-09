@@ -65,12 +65,10 @@ public:
   Int_t  GetAdcMin()       const { return fAdcMin;       }
   Int_t  GetAdcMax()       const { return fAdcMax;       }
   Int_t  GetEventCounter() const { return fEventCounter; }
-  Bool_t GetOldRCUformat() const { return fOldRCUformat;   }
   Bool_t GetIsAnalysed()   const { return fIsAnalysed;   }
   void  SetRangeTime(Int_t tMin, Int_t tMax){ fFirstTimeBin=tMin; fLastTimeBin=tMax;}  // Set time bin range that is used for the pedestal calibration
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
 
-  void  SetOldRCUformat(Bool_t format=kTRUE) { fOldRCUformat = format; }
 
 
 private:
@@ -91,7 +89,6 @@ private:
   Int_t fLastTimeBin;               //  Last Time bin needed for analysis
   Int_t fAdcMin;                    //  min adc channel of pedestal value
   Int_t fAdcMax;                    //  max adc channel of pedestal value
-  Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
 
   AliTPCAltroMapping **fMapping;    //! Altro Mapping object
   //
@@ -123,7 +120,7 @@ private:
 
 
 public:
-  ClassDef(AliTPCdataQA, 2)  // Implementation of the TPC pedestal and noise calibration
+  ClassDef(AliTPCdataQA, 3)  // Implementation of the TPC pedestal and noise calibration
 };
 
 

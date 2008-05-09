@@ -99,8 +99,6 @@ public:
 
     void  SetEventInfo(Double_t runNumber, Double_t timestamp, Double_t eventId){ fRunNumber=runNumber; fTimeStamp=timestamp; fEventId=eventId;}
 
-    void  SetOldRCUformat(Bool_t format=kTRUE){ fOldRCUformat = format; }
-
     void  SetDebugLevel(Short_t debug=1){ fDebugLevel = debug;}
 
     void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
@@ -133,7 +131,6 @@ private:
 
     Int_t     fLastSector;            //! Last sector processed
 
-    Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
 
     AliTPCROC   *fROC;                //! ROC information
     AliTPCAltroMapping **fMapping;    //! Altro Mapping object
@@ -228,7 +225,7 @@ private:
     TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
-    ClassDef(AliTPCCalibCE,5)  //Implementation of the TPC Central Electrode calibration
+    ClassDef(AliTPCCalibCE,6)  //Implementation of the TPC Central Electrode calibration
 
 };
 

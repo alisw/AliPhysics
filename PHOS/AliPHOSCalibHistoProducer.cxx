@@ -37,7 +37,7 @@ ClassImp(AliPHOSCalibHistoProducer)
 
 //-----------------------------------------------------------------------------
 AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer() : 
-  fRawDecoder(0),fHistoFile(0),fUpdatingRate(100),fIsOldRCUFormat(kFALSE),
+  fRawDecoder(0),fHistoFile(0),fUpdatingRate(100),
   fEvents(0),fNbins(100),fXlow(0.),fXup(1000.)
 {
   // Constructor: initializes data members
@@ -63,7 +63,7 @@ AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer() :
 
 //-----------------------------------------------------------------------------            
 AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(Int_t nbinsx, Double_t xlow, Double_t xup) :
-  fRawDecoder(0),fHistoFile(0),fUpdatingRate(100),fIsOldRCUFormat(kFALSE),
+  fRawDecoder(0),fHistoFile(0),fUpdatingRate(100),
   fEvents(0),fNbins(nbinsx),fXlow(xlow),fXup(xup)
 {
   // Constructor: initializes data members.
@@ -101,7 +101,7 @@ AliPHOSCalibHistoProducer::~AliPHOSCalibHistoProducer()
 //-----------------------------------------------------------------------------
 AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(const AliPHOSCalibHistoProducer &histoproducer) :
   TObject(histoproducer),fRawDecoder(histoproducer.fRawDecoder),fHistoFile(histoproducer.fHistoFile),
-  fUpdatingRate(histoproducer.fUpdatingRate),fIsOldRCUFormat(histoproducer.fIsOldRCUFormat),
+  fUpdatingRate(histoproducer.fUpdatingRate),
   fEvents(histoproducer.fEvents),fNbins(histoproducer.fNbins),fXlow(histoproducer.fXlow),fXup(histoproducer.fXup)
 {
   //Copy constructor.
@@ -132,7 +132,6 @@ AliPHOSCalibHistoProducer& AliPHOSCalibHistoProducer::operator=
     fRawDecoder = histoproducer.fRawDecoder;
     fHistoFile = histoproducer.fHistoFile;
     fUpdatingRate = histoproducer.fUpdatingRate;
-    fIsOldRCUFormat = histoproducer.fIsOldRCUFormat;
     fEvents = histoproducer.fEvents;
     fEvents = histoproducer.fEvents;
     fNbins = histoproducer.fNbins;
@@ -168,9 +167,6 @@ void AliPHOSCalibHistoProducer::Run()
   Double_t energy;
   Int_t mod,col,row;
   
-  if(fIsOldRCUFormat)
-    fRawDecoder->SetOldRCUFormat(kTRUE);
-
   while(fRawDecoder->NextDigit()) {
     
     if(fRawDecoder->IsLowGain()) continue; 

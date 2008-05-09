@@ -138,7 +138,6 @@ void AliEveTPCLoader::LoadEvent()
   printf("Now loading event %d\n", fEvent);
   fReader->Reset();
   AliTPCRawStream input(fReader);
-  input.SetOldRCUFormat(kTRUE);
   fReader->Select("TPC");
 
   fData->DropAllSectors();

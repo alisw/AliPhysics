@@ -53,7 +53,6 @@ AliHLTTPCCalibPedestalComponent::AliHLTTPCCalibPedestalComponent()
   fRawReader(NULL),
   fRawStream(NULL),
   fCalibPedestal(NULL),
-  fRCUFormat(kFALSE),
   fMinPatch(5),
   fMaxPatch(0),
   fSpecification(0) ,
@@ -130,11 +129,9 @@ Int_t AliHLTTPCCalibPedestalComponent::ScanArgument( Int_t argc, const char** ar
     else {
       parameter = argv[1];
       if ( parameter.CompareTo("old") == 0 ) {
-	fRCUFormat = kTRUE;
         HLTInfo( "RCU Format is set to old." );
       }
       else if ( parameter.CompareTo("new") == 0 ) {
-	fRCUFormat = kFALSE;
         HLTInfo( "RCU Format is set to new." );
       }
       else {
@@ -186,9 +183,6 @@ Int_t AliHLTTPCCalibPedestalComponent::DeinitCalibration() {
   return 0;
 }
 
-/*
- * --- setter for rcuformat need in AliTPCCalibPedestal class
- */
 Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, 
 							   AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
@@ -228,7 +222,6 @@ Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponent
     fRawReader->SetEquipmentID(ddlId);
 
     fRawStream = new AliTPCRawStream( fRawReader );
-    fRawStream->SetOldRCUFormat( fRCUFormat );
 
     // ** Process actual Pedestal Calibration - Fill histograms
     fCalibPedestal->ProcessEvent( fRawStream );

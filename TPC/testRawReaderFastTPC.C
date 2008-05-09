@@ -46,7 +46,6 @@ AliTPCCalPad *testRawReaderFastTPC(const Char_t *file="/data.local/data/06000002
     AliTPCRawStreamFast *sf = new AliTPCRawStreamFast(rawReader);
     AliTPCRawStream      *s = new AliTPCRawStream(rawReader);
 
-    s->SetOldRCUFormat(kTRUE);
     s->SetNoAltroMapping(kFALSE);
 
     Int_t ievent = 0;

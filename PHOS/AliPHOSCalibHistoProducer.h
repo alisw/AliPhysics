@@ -28,7 +28,6 @@ public:
   void Run();
   void UpdateHistoFile();
   void SetUpdatingRate(Int_t rate) {fUpdatingRate = rate;}
-  void SetOldRCUFormat(Bool_t isOldRCUFormat) { fIsOldRCUFormat = isOldRCUFormat; }
   void SetRawDecoder(AliPHOSRawDecoder* decoder) { fRawDecoder = decoder; }
 
 protected:
@@ -37,13 +36,12 @@ protected:
   AliPHOSRawDecoder* fRawDecoder;   // raw data decoder.
   TFile* fHistoFile;          // root file to store histograms in
   Int_t fUpdatingRate;        // update rate
-  Bool_t fIsOldRCUFormat;     // Old RCU format flag.
   Int_t fEvents;
   Int_t fNbins;               // Number of bins in histograms.
   Double_t fXlow;             // Low X in histograms.
   Double_t fXup;              // High X in histograms.
 
-  ClassDef(AliPHOSCalibHistoProducer,1)
+  ClassDef(AliPHOSCalibHistoProducer,2)
 
 };
 

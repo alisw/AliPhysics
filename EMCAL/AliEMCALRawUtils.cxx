@@ -276,12 +276,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   // Select EMCAL DDL's;
   reader->Select("EMCAL");
 
-  TString option = GetOption();
-  if (option.Contains("OldRCUFormat"))
-    in.SetOldRCUFormat(kTRUE); // Needed for testbeam data
-  else
-    in.SetOldRCUFormat(kFALSE);
-
   //Updated fitting routine from 2007 beam test takes into account
   //possibility of two peaks in data and selects first one for fitting
   //Also sets some of the starting parameters based on the shape of the

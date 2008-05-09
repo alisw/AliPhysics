@@ -101,7 +101,6 @@ int main(int argc, char **argv) {
   AliRawReader *rawReader = NULL;
 
   AliPHOSCalibHistoProducer hp(200,0.,200.);
-  hp.SetOldRCUFormat(kTRUE);
   hp.SetUpdatingRate(200000);
   
   /* main loop (infinite) */

@@ -43,7 +43,6 @@ int main(int argc, char **argv)
   Bool_t old = kTRUE;
   
   AliFMDParameters::Instance()->Init(kFALSE,0);
-  AliFMDParameters::Instance()->UseRcuTrailer(!old);
   AliFMDParameters::Instance()->UseCompleteHeader(!old);
   
   AliRawReader *reader = 0;

@@ -95,9 +95,6 @@ class AliHLTTPCCalibPedestalComponent : public AliHLTCalibrationProcessor
 
       /** Pedestal Calibration class */
       AliTPCCalibPedestal * fCalibPedestal;                                        //!transient
-      
-      /** Wether to use old RCU format */
-      Bool_t fRCUFormat;                                                           // see above
 
       /** Minimum patch specifcation for this component */
       AliHLTUInt8_t fMinPatch;                                                     // see above
@@ -111,7 +108,7 @@ class AliHLTTPCCalibPedestalComponent : public AliHLTCalibrationProcessor
       /** Analysze calibration data before shipping to FXS */
       Bool_t fEnableAnalysis;                                                      // see above
 
-      ClassDef(AliHLTTPCCalibPedestalComponent, 1)
+      ClassDef(AliHLTTPCCalibPedestalComponent, 2)
 
     };
 #endif

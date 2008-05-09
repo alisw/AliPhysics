@@ -83,7 +83,6 @@ void next_event()
   printf("Now loading event %d\n", event);
   reader->Reset();
   AliTPCRawStream input(reader);
-  input.SetOldRCUFormat(kTRUE);
   reader->Select("TPC"); // ("TPC", firstRCU, lastRCU);
 
   x->DropAllSectors();
@@ -104,7 +103,6 @@ void tpc_raw_pad_dump(Int_t s, Int_t r, Int_t p)
 
   reader->Reset();
   AliTPCRawStream input(reader);
-  input.SetOldRCUFormat(kTRUE);
   // reader->Select(0, firstRCU, lastRCU);
 
   Int_t sector = input.GetSector();

@@ -214,7 +214,6 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     fXminRMS(0.1),
     fXmaxRMS(5.1),
     fLastSector(-1),
-    fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
     fParam(new AliTPCParam),
@@ -268,7 +267,6 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
     fXminRMS(sig.fXminRMS),
     fXmaxRMS(sig.fXmaxRMS),
     fLastSector(-1),
-    fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
     fParam(new AliTPCParam),
@@ -731,8 +729,6 @@ Bool_t AliTPCCalibPulser::ProcessEvent(AliTPCRawStream *rawStream)
   //
   // Event Processing loop - AliTPCRawStream
   //
-
-  rawStream->SetOldRCUFormat(fOldRCUformat);
 
   ResetEvent();
 

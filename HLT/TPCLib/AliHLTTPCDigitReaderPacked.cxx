@@ -56,7 +56,6 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   fNTimeBins(0),
   fData(NULL),
   //#endif // ENABLE_PAD_SORTING  
-  fOldRCUFormat(kFALSE),
   fUnsorted(kFALSE)
 {
   fRawMemoryReader = new AliRawReaderMemory;
@@ -113,10 +112,6 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,ULong_t size, Int_t patch,
 
   fRawMemoryReader->SetEquipmentID(DDLid);
   //fRawMemoryReader->SetEquipmentID(1);
-  if(fOldRCUFormat) {
-    fTPCRawStream->SetOldRCUFormat(kTRUE);
-    HLTInfo("set old RCU format (1 trailer word: 40bit payload)");
-  }
   fRawMemoryReader->RewindEvents();
   fRawMemoryReader->NextEvent();
 

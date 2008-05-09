@@ -71,8 +71,6 @@ public:
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
   void  SetAnalysisTruncationRange(Float_t down, Float_t up) {fAnaMeanDown=down; fAnaMeanUp=up;}    //Set range for truncated mean analysis of the channel information
 
-  void  SetOldRCUformat(Bool_t format=kTRUE) { fOldRCUformat = format; }
-
   void  Merge(AliTPCCalibPedestal *ped);
 
   Bool_t TestEvent();  // Test the fast approach to fill histogram - used for test purposes
@@ -88,7 +86,6 @@ private:
   Float_t fAnaMeanDown;             // Truncated mean channel analysis - lower cut
   Float_t fAnaMeanUp;               // Truncated mean channel analysis - upper cut
   
-  Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
   Bool_t  fTimeAnalysis;            //! Should we use the time dependent analysis? ONLY ON LDC!
 
   AliTPCROC *fROC;                  //! ROC information
@@ -111,7 +108,7 @@ private:
   AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
 
 public:
-  ClassDef(AliTPCCalibPedestal, 5)  // Implementation of the TPC pedestal and noise calibration
+  ClassDef(AliTPCCalibPedestal, 6)  // Implementation of the TPC pedestal and noise calibration
 };
 
 

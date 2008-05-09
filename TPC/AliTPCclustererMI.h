@@ -37,8 +37,6 @@ public:
   virtual ~AliTPCclustererMI();
   virtual void Digits2Clusters();
   virtual void Digits2Clusters(AliRawReader* rawReader);
-  virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
-    { fIsOldRCUFormat = rcuFormat; };
   virtual void SetInput(TTree * tree);  // set input tree with digits    
   virtual void SetOutput(TTree * tree); // set output tree with 
   virtual void FillRow();               // fill the output container - Tree or TObjArray
@@ -73,7 +71,6 @@ private:
   Float_t fPadLength;  // the width of the pad
   Float_t fZWidth;     //the z bin width
   Bool_t  fPedSubtraction; // perform pedestal subtraction or not
-  Bool_t  fIsOldRCUFormat; // assume old RCU raw data format
   AliRawEventHeaderBase *fEventHeader; //! event header information
   UInt_t  fTimeStamp;   // Time Stamp
   UInt_t  fEventType;   // Event Type
@@ -87,7 +84,7 @@ private:
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
   Bool_t  fBDumpSignal; // dump signal flag
-  ClassDef(AliTPCclustererMI,1)  // Time Projection Chamber digits
+  ClassDef(AliTPCclustererMI,2)  // Time Projection Chamber digits
 };
 
 inline Bool_t AliTPCclustererMI::IsMaximum(Float_t q,Int_t max,const Float_t *bins) const {

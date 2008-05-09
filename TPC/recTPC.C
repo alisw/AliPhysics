@@ -38,7 +38,7 @@ void recTPC(Int_t type, const char *filename="data.root")
   rec.SetInput(filename);
   rec.SetEquipmentIdMap("EquipmentIdMap.data");
   rec.SetRunReconstruction("TPC");
-  rec.SetOption("TPC","PedestalSubtraction OldRCUFormat");
+  rec.SetOption("TPC","PedestalSubtraction");
   //  rec.SetRunLocalReconstruction("");
   //  rec.SetRunTracking("TPC");
   rec.SetFillESD("TPC");
@@ -81,7 +81,7 @@ void recTracking(Int_t type, const char *filename="data.root")
   rec.SetInput(filename);
   rec.SetEquipmentIdMap("EquipmentIdMap.data");
   //rec.SetRunReconstruction("TPC");
-  rec.SetOption("TPC","PedestalSubtraction OldRCUFormat");
+  rec.SetOption("TPC","PedestalSubtraction");
   rec.SetRunLocalReconstruction("");
   rec.SetRunTracking("TPC");
   rec.SetFillESD("TPC");

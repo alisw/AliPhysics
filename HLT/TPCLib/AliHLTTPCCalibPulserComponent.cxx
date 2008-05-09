@@ -55,7 +55,6 @@ AliHLTTPCCalibPulserComponent::AliHLTTPCCalibPulserComponent()
   fRawReader(NULL),
   fRawStream(NULL),
   fCalibPulser(NULL),
-  fRCUFormat(kFALSE),
   fMinPatch(5),
   fMaxPatch(0),
   fSpecification(0) ,
@@ -132,11 +131,9 @@ Int_t AliHLTTPCCalibPulserComponent::ScanArgument( Int_t argc, const char** argv
     else {
       parameter = argv[1];
       if ( parameter.CompareTo("old") == 0 ) {
-	fRCUFormat = kTRUE;
         HLTInfo( "RCU Format is set to old." );
       }
       else if ( parameter.CompareTo("new") == 0 ) {
-	fRCUFormat = kFALSE;
         HLTInfo( "RCU Format is set to new." );
       }
       else {
@@ -197,9 +194,6 @@ Int_t AliHLTTPCCalibPulserComponent::DeinitCalibration() {
   return 0;
 }
 
-/*
- * --- setter for rcuformat need in AliTPCCalibPulser class
- */
 Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, 
 							 AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
@@ -239,7 +233,6 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
     fRawReader->SetEquipmentID(ddlId);
 
     fRawStream = new AliTPCRawStream( fRawReader );
-    fRawStream->SetOldRCUFormat( fRCUFormat );
 
 #ifndef HAVE_NOT_ALITPCCALIBPULSER
     // ** Process actual Pulser Calibration - Fill histograms

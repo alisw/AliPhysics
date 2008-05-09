@@ -466,7 +466,6 @@ Int_t processTPCRawData(AliHLTHOMERBlockDesc* block) {
   gMemReader->Reset();
 
   AliTPCRawStream tpcStream( gMemReader );
-  tpcStream.SetOldRCUFormat(kTRUE);      
   gMemReader->Select("TPC"); 
   
   gTPCData->LoadRaw( tpcStream, kTRUE, kTRUE );

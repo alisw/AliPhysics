@@ -159,7 +159,6 @@ int main(int argc, char **argv) {
       rawReader = new AliRawReaderDate((void*)event);
       AliPHOSRawDecoderv1 dc(rawReader,mapping);
       dc.SubtractPedestals(kTRUE);
-      dc.SetOldRCUFormat(kTRUE);
       
       while(dc.NextDigit()) {
 

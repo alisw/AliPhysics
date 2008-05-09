@@ -47,7 +47,6 @@ public:
    * @param slice   sector no (0 to 35)
    */
   Int_t InitBlock(void* ptr,ULong_t size, Int_t patch, Int_t slice);
-  void SetOldRCUFormat(bool oldrcuformat){fOldRCUFormat=oldrcuformat;}
   void SetUnsorted(bool unsorted){fUnsorted=unsorted;}
   Bool_t NextSignal();
   Int_t GetRow();
@@ -84,10 +83,9 @@ private:
   Int_t *fData; //!transient
   //#endif // ENABLE_PAD_SORTING
 
-  Bool_t fOldRCUFormat; //!transient
   Bool_t fUnsorted; //!transient
 
-  ClassDef(AliHLTTPCDigitReaderPacked, 1)
+  ClassDef(AliHLTTPCDigitReaderPacked, 2)
 	
 };
 

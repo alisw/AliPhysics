@@ -57,8 +57,6 @@ public:
   virtual void SetParam(AliTPCParam *param){fParam=param;}//set TPC parameters
   virtual void SetDigArr(AliTPCDigitsArray *digarr){fDigarr=digarr;}//set current array of digits
   virtual void SetRecoParam(AliTPCRecoParam *recoParam=0);//set reconstruction parameters
-  virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
-    { fIsOldRCUFormat = rcuFormat; };
 
 
 
@@ -113,8 +111,6 @@ public:
   TH1F * GetHistoTime(){return fHistoTime;}
   TH2F * GetHistoRowPad(){return fHistoRowPad;}
 
-  Bool_t GetOldRCUFormat(){return fIsOldRCUFormat;}
-
 private:
   Bool_t fRawData; //flag =0 for MC =1 for real data
   AliTPCClustersRow * fRowCl;  //! current cluster row (used in rootuple fill)
@@ -126,7 +122,6 @@ private:
 
   //only for raw data :)
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
-  Bool_t fIsOldRCUFormat; // assume old RCU raw data format
 
   //cluster finder parameters
   Int_t fZeroSup;//zero suppresion parameter = 2 def.
@@ -151,7 +146,7 @@ private:
   TH1F *fHistoTime;//!debug histo for timebins
   TH2F *fHistoRowPad;//!debug histo for rows and pads
 
-  ClassDef(AliTPCclustererKr,4)  // Time Projection Chamber Kr clusters
+  ClassDef(AliTPCclustererKr,5)  // Time Projection Chamber Kr clusters
 };
 
 

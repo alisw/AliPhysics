@@ -226,7 +226,6 @@ AliTPCclustererKr::AliTPCclustererKr()
   fParam(0),
   fDigarr(0),
   fRecoParam(0),
-  fIsOldRCUFormat(kFALSE),
   fZeroSup(2),
   fFirstBin(60),
   fLastBin(950),
@@ -260,7 +259,6 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fParam(0),
   fDigarr(0),
   fRecoParam(0),
-  fIsOldRCUFormat(kFALSE),
   fZeroSup(2),
   fFirstBin(60),
   fLastBin(950),
@@ -285,7 +283,6 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
 //
   fParam = param.fParam;
   fRecoParam = param.fRecoParam;
-  fIsOldRCUFormat = param.fIsOldRCUFormat;
   fRawData = param.fRawData;
   fRowCl  = param.fRowCl ;
   fInput  = param.fInput ;
@@ -319,7 +316,6 @@ AliTPCclustererKr & AliTPCclustererKr::operator = (const AliTPCclustererKr & par
   //
   fParam = param.fParam;
   fRecoParam = param.fRecoParam;
-  fIsOldRCUFormat = param.fIsOldRCUFormat;
   fRawData = param.fRawData;
   fRowCl  = param.fRowCl ;
   fInput  = param.fInput ;
@@ -483,9 +479,7 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
     //
     // Load the raw data for corresponding DDLs
     //
-    //fIsOldRCUFormat=kTRUE;
     rawReader->Reset();
-    input.SetOldRCUFormat(fIsOldRCUFormat);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
 
     if(input.Next()) {
@@ -496,7 +490,6 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
       }//end loop over rows
     }
     rawReader->Reset();
-    input.SetOldRCUFormat(fIsOldRCUFormat);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
 
     //

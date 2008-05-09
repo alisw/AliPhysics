@@ -27,7 +27,6 @@ public:
   Float_t GetSampleQualityCut()    const { return fSampleQualityCut;                   }
   Bool_t  SubtractPedestals()      const { return fSubtractPedestals;    }
   Bool_t  ToUnfold()               const { return fUnfold;               }
-  Bool_t  IsOldRCUFormat()         const { return fOldRCUFormat;         }
   const char* DecoderVersion()     const { return fDecoderVersion.Data();}
 
   void SetClusteringThreshold(Float_t cluth)      { fClusteringThreshold=cluth;   }
@@ -38,7 +37,6 @@ public:
   void SetSubtractPedestals(Bool_t subtract)      { fSubtractPedestals  =subtract;} 
   void SetDecoderVersion(const char* version="v1"){fDecoderVersion      =version ;}
   void SetUnfolding(Bool_t toUnfold=kFALSE)       {fUnfold              =toUnfold;}
-  void SetOldRCUFormat(Bool_t oldRCU = kTRUE)     {fOldRCUFormat        =oldRCU;  }
 
 protected:
 
@@ -49,10 +47,9 @@ protected:
   Float_t fSampleQualityCut;
   Bool_t  fSubtractPedestals;
   Bool_t  fUnfold;
-  Bool_t  fOldRCUFormat; // kTRUE if RCU has old firmware (2006-2007)
   TString fDecoderVersion ;
 
-  ClassDef(AliPHOSRecoParam,2)
+  ClassDef(AliPHOSRecoParam,3)
 };
 
 #endif

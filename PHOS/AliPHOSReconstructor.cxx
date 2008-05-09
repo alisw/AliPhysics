@@ -364,8 +364,6 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     else
       dc=new AliPHOSRawDecoder(rawReader,mapping);
 
-  dc->SetOldRCUFormat(fgkRecoParamEmc->IsOldRCUFormat());
-  
   dc->SubtractPedestals(fgkRecoParamEmc->SubtractPedestals());
   
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);

@@ -40,7 +40,6 @@ public:
   void Run();
   void UpdateHistoFile();
   void SetUpdatingRate(Int_t rate) {fUpdatingRate = rate;}
-  void SetOldRCUFormat(Bool_t isOldRCUFormat) { fIsOldRCUFormat = isOldRCUFormat; }
   void SetCalibHistoFileName(Int_t name) {fHistoFileName = name;}
   void SetSMInstalled(Int_t nsm, Bool_t bsm) {fSMInstalled[nsm] = bsm;}
 
@@ -52,13 +51,12 @@ protected:
   TFile* fHistoFile;          // root file to store histograms in
   TString fHistoFileName;          // name of root file to store histograms in
   Int_t fUpdatingRate;        // update rate
-  Bool_t fIsOldRCUFormat;     // Old RCU format flag.
   Int_t fNSuperModules;          //Number of SuperModules;
   Int_t fNCellsEta;                  //Number of Cells in Eta in a SuperModule;
   Int_t fNCellsPhi;                   //Number of Cells in Phi in a SuperModule;
   Int_t fNCellsPhiHalfSM;      //Number of Cells in Phi in a Half SuperModule;
   Bool_t fSMInstalled[12];  //Check which detectors are on.
-  ClassDef(AliEMCALCalibHistoProducer,1)
+  ClassDef(AliEMCALCalibHistoProducer,2)
 
 };
 

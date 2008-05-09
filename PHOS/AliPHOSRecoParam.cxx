@@ -34,7 +34,6 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fSampleQualityCut(1.),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
-  fOldRCUFormat(kFALSE),
   fDecoderVersion("")
 {
   //Default constructor.
@@ -50,7 +49,6 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fSampleQualityCut(1.),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
-  fOldRCUFormat(kFALSE),
   fDecoderVersion("")
 {
   //Copy constructor.
@@ -69,7 +67,6 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fSampleQualityCut    = recoParam.fSampleQualityCut ;
     fSubtractPedestals   = recoParam.fSubtractPedestals;
     fUnfold              = recoParam.fUnfold;
-    fOldRCUFormat        = recoParam.fOldRCUFormat;
     fDecoderVersion      = recoParam.fDecoderVersion ;
   }
 

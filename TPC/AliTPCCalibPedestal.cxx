@@ -207,7 +207,6 @@ AliTPCCalibPedestal::AliTPCCalibPedestal() :
   fAdcMax(100),
   fAnaMeanDown(0.),
   fAnaMeanUp(1.),
-  fOldRCUformat(kTRUE),
   fTimeAnalysis(kFALSE),
   fROC(AliTPCROC::Instance()),
   fMapping(NULL),
@@ -233,7 +232,6 @@ AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) :
   fAdcMax(ped.GetAdcMax()),
   fAnaMeanDown(ped.fAnaMeanDown),
   fAnaMeanUp(ped.fAnaMeanUp),
-  fOldRCUformat(ped.fOldRCUformat),
   fTimeAnalysis(ped.fTimeAnalysis),
   fROC(AliTPCROC::Instance()),
   fMapping(NULL),
@@ -419,8 +417,6 @@ Bool_t AliTPCCalibPedestal::ProcessEvent(AliTPCRawStream *rawStream)
   //
   // Event Processing loop - AliTPCRawStream
   //
-
-  rawStream->SetOldRCUFormat(fOldRCUformat);
 
   Bool_t withInput = kFALSE;
 

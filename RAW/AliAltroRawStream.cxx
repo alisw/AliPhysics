@@ -36,7 +36,6 @@ ClassImp(AliAltroRawStream)
 //_____________________________________________________________________________
 AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fNoAltroMapping(kTRUE),
-  fIsOldRCUFormat(kFALSE),
   fIsShortDataHeader(kFALSE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
@@ -64,7 +63,6 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
 AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   TObject(stream),
   fNoAltroMapping(stream.fNoAltroMapping),
-  fIsOldRCUFormat(stream.fIsOldRCUFormat),
   fIsShortDataHeader(stream.fIsShortDataHeader),
   fDDLNumber(stream.fDDLNumber),
   fPrevDDLNumber(stream.fPrevDDLNumber),
@@ -95,7 +93,6 @@ AliAltroRawStream& AliAltroRawStream::operator = (const AliAltroRawStream& strea
   if(&stream == this) return *this;
 
   fNoAltroMapping    = stream.fNoAltroMapping;
-  fIsOldRCUFormat    = stream.fIsOldRCUFormat;
   fIsShortDataHeader = stream.fIsShortDataHeader;
   fDDLNumber         = stream.fDDLNumber;
   fPrevDDLNumber     = stream.fPrevDDLNumber;
@@ -372,13 +369,36 @@ Int_t AliAltroRawStream::GetPosition()
   // The RCU trailer format is described
   // in details in the RCU manual.
 
-  if (!fIsOldRCUFormat) {
-    // First read 32-bit word with the
-    // trailer size (22 bits) and RCU ID (the rest)
-    Int_t index = fRawReader->GetDataSize();
-    UInt_t word = Get32bitWord(index);
-    fRCUId = (Int_t)(word >> 22);
-    Int_t trailerSize = (word & 0x3FFFFF);
+  // We use the last word of the payload
+  // in order to decide which RCU firmware
+  // was used during the data taking.
+  // The firmware v2 adds 0xAAAA as 16
+  // most significant bits and since the
+  // payload size (firmware v1) can not be
+  // that big, we use this as a unique
+  // label of the firmware version.
+
+  Int_t index = fRawReader->GetDataSize();
+  UInt_t word = Get32bitWord(index);
+  if (((word >> 16) == 0xaaaa) || (word == 2)) {
+    // This is RCU formware v2
+    // The statement word==2 is needed only temporary
+    // in order to be able to read previously generated
+    // aliroot raw data
+
+    Int_t trailerSize = 0;
+    if (word == 2) {
+      AliInfo("Old simulated raw data is assumed!");
+      trailerSize = 2;
+      fRCUId = 0;
+    }
+    else {
+      // First read 32-bit word with the
+      // trailer size (7 bits), RCU ID (9 bits) and
+      // 0xAAA (the rest - 16 bits)
+      fRCUId = (Int_t)((word >> 7) & 0x1ff);
+      trailerSize = (word & 0x7F);
+    }
 
     // Now read the beginning of the trailer
     // where the payload size is written
@@ -424,8 +444,7 @@ Int_t AliAltroRawStream::GetPosition()
     // In case of the Old RCU trailer format
     // we have to read just the size of altro payload
     // in units of 40-bit words
-    Int_t index = fRawReader->GetDataSize();
-    Int_t position = Get32bitWord(index);
+    Int_t position = (Int_t)word;
 
     fRCUId = -1;
     fRCUTrailerSize = 0;

@@ -48,7 +48,7 @@ ClassImp(AliEMCALCalibHistoProducer)
 //-----------------------------------------------------------------------------
 AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer(AliRawReader* rawReader) : 
   TObject(),fRawReader(rawReader),fHistoFile(0),fHistoFileName("calibEmcHisto.root"),
-  fUpdatingRate(100),fIsOldRCUFormat(kFALSE), fNSuperModules(12),  fNCellsEta (48),   
+  fUpdatingRate(100), fNSuperModules(12),  fNCellsEta (48),   
   fNCellsPhi(24),  fNCellsPhiHalfSM(12)
 {
   // Constructor
@@ -65,7 +65,7 @@ AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer(AliRawReader* rawReader) 
 //-----------------------------------------------------------------------------
 AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer() : 
   fRawReader(0x0),fHistoFile(0),fHistoFileName(""),
-  fUpdatingRate(0),fIsOldRCUFormat(kFALSE), fNSuperModules(12),  fNCellsEta (48),   
+  fUpdatingRate(0), fNSuperModules(12),  fNCellsEta (48),   
   fNCellsPhi(24),  fNCellsPhiHalfSM(12)
 {
   // default Constructor
@@ -84,7 +84,7 @@ AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer() :
 AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer(const AliEMCALCalibHistoProducer & copy) :
   TObject(copy),fRawReader((AliRawReader*)copy. fRawReader->Clone()),
   fHistoFile((TFile*)copy.fHistoFile->Clone()),fHistoFileName(copy.fHistoFileName),
-  fUpdatingRate(copy.fUpdatingRate),fIsOldRCUFormat(copy.fIsOldRCUFormat),
+  fUpdatingRate(copy.fUpdatingRate),
   fNSuperModules(copy.fNSuperModules), fNCellsEta (copy.fNCellsEta), 
   fNCellsPhi(copy.fNCellsPhi), fNCellsPhiHalfSM(copy.fNCellsPhiHalfSM)
 {
@@ -122,7 +122,6 @@ AliEMCALCalibHistoProducer& AliEMCALCalibHistoProducer::operator=(const AliEMCAL
 	TObject::operator=(copy);
 	fHistoFileName = copy.fHistoFileName;
 	fUpdatingRate = copy.fUpdatingRate;
-	fIsOldRCUFormat = copy.fIsOldRCUFormat;
 	fNSuperModules = copy.fNSuperModules;
 	fNCellsEta = copy.fNCellsEta;
 	fNCellsPhi = copy.fNCellsPhi;
@@ -191,8 +190,6 @@ void AliEMCALCalibHistoProducer::Run()
   Int_t nEvtBins = 1000; //Total number of the profile survey bins.
 
   AliCaloRawStream in(fRawReader,"EMCAL");
-  if(fIsOldRCUFormat)
-    in.SetOldRCUFormat(kTRUE);
 
   // Read raw data event by event
 

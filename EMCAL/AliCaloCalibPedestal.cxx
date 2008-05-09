@@ -256,8 +256,6 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
   // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
   
-  in->SetOldRCUFormat(kTRUE);
-  
   int sample, i = 0; //The sample temp, and the sample number in current event.
   int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the pedestal
   int gain = 0;

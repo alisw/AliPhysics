@@ -157,8 +157,6 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
   TH1I *tempHis = new TH1I("tempHis","tempHis",fSample+fGateWidth,fGateWidth,fSample+fGateWidth);
   TH1I *tempRMSHis = new TH1I("tempRMSHis","tempRMSHis",2000,0,2000);
 
-  rawStream->SetOldRCUFormat(1);
-
   while (rawStream->Next()) {
     
     // in case of a new row, get sector and row number
@@ -563,8 +561,6 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
     
     TH1I *tempHis = new TH1I("tempHis","tempHis",fSample+fGateWidth,fGateWidth,fSample+fGateWidth);
     TH1I *tempRMSHis = new TH1I("tempRMSHis","tempRMSHis",2000,0,2000);
-    
-    rawStream.SetOldRCUFormat(1);
     
     TFile fileOut(nameFileOut,"UPDATE"); // Quality Parameters storage
     TNtuple *qualityTuple = (TNtuple*)fileOut.Get("TCFquality");

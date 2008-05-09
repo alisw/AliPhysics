@@ -78,9 +78,6 @@ void AliTPCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
 void AliTPCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const {
   // single event local reconstruction
   // of TPC data starting from raw data
-  TString option = GetOption();
-  if (option.Contains("OldRCUFormat"))
-    fClusterer->SetOldRCUFormat(kTRUE);
 
   fClusterer->SetOutput(clustersTree);
   fClusterer->Digits2Clusters(rawReader);

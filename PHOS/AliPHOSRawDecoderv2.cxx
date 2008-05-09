@@ -23,7 +23,6 @@
 //     AliRawReader* rf = new AliRawReaderDate("2006run2211.raw");
 //     AliPHOSRawDecoder dc(rf);
 //     while (rf->NextEvent()) {
-//       dc.SetOldRCUFormat(kTRUE);
 //       dc.SubtractPedestals(kTRUE);
 //       while ( dc.NextDigit() ) {
 //         Int_t module = dc.GetModule();

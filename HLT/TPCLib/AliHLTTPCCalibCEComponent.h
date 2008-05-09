@@ -35,7 +35,6 @@ class AliTPCCalibCE;
  * interface. The output is the class AliTPCCalibCE as a TObject.
  *
  * The component has the following component arguments:
- *   -rcuformat <old/new>  : Whether to use old or new rcuformat ( default is new )
  *   -enableanalysis       : Whether to enable analyis before shipping data to FXS
  *
  * @ingroup alihlt_tpc_components
@@ -96,9 +95,6 @@ class AliHLTTPCCalibCEComponent : public AliHLTCalibrationProcessor
       /** Pedestal Calibration class */
       AliTPCCalibCE * fCalibCE;                                                    //!transient
       
-      /** Wether to use old RCU format */
-      Bool_t fRCUFormat;                                                           // see above
-
       /** Minimum patch specifcation for this component */
       AliHLTUInt8_t fMinPatch;                                                     // see above
 
@@ -111,7 +107,7 @@ class AliHLTTPCCalibCEComponent : public AliHLTCalibrationProcessor
       /** Analysze calibration data before shipping to FXS */
       Bool_t fEnableAnalysis;                                                      // see above
 
-      ClassDef(AliHLTTPCCalibCEComponent, 1)
+      ClassDef(AliHLTTPCCalibCEComponent, 2)
 
     };
 #endif

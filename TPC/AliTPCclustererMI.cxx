@@ -89,7 +89,6 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fPadLength(0),
   fZWidth(0),
   fPedSubtraction(kFALSE),
-  fIsOldRCUFormat(kFALSE),
   fEventHeader(0),
   fTimeStamp(0),
   fEventType(0),
@@ -109,7 +108,6 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   // param     - tpc parameters for given file
   // recoparam - reconstruction parameters 
   //
-  fIsOldRCUFormat = kFALSE;
   fInput =0;
   fParam = par;
   if (recoParam) {
@@ -140,7 +138,6 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fPadLength(0),
   fZWidth(0),
   fPedSubtraction(kFALSE),
-  fIsOldRCUFormat(kFALSE),
   fEventHeader(0),
   fTimeStamp(0),
   fEventType(0),
@@ -801,7 +798,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     
     // Loas the raw data for corresponding DDLs
     rawReader->Reset();
-    input.SetOldRCUFormat(fIsOldRCUFormat);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
     Int_t digCounter=0;
     // Begin loop over altro data

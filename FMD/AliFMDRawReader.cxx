@@ -111,8 +111,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   // Get sample rate 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   AliFMDRawStream input(fReader);
-  AliFMDDebug(5, ("Setting old RCU format and 7 word headers"));
-  input.SetOldRCUFormat(!pars->HasRcuTrailer());
+  AliFMDDebug(5, ("Setting 7 word headers"));
   input.SetShortDataHeader(!pars->HasCompleteHeader());
 
   UShort_t stripMin = 0;

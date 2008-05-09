@@ -98,7 +98,6 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   fLastTimeBin(1000),
   fAdcMin(1),
   fAdcMax(100),
-  fOldRCUformat(kTRUE),
   fMapping(NULL),
   fPedestal(0),
   fNoise(0),
@@ -134,7 +133,6 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   fLastTimeBin(ped.GetLastTimeBin()),
   fAdcMin(ped.GetAdcMin()),
   fAdcMax(ped.GetAdcMax()),
-  fOldRCUformat(ped.GetOldRCUformat()),
   fMapping(NULL),
   fPedestal(0),
   fNoise(0),
@@ -291,8 +289,6 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *rawStream)
   //
   // Event Processing loop - AliTPCRawStream
   //
-
-  rawStream->SetOldRCUFormat(fOldRCUformat);
 
   Bool_t withInput = kFALSE;
   Int_t nSignals = 0;

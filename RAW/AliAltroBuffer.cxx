@@ -305,8 +305,9 @@ void AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
   
   //  Now the RCU identifier and size of the trailer
   //  FOr the moment the triler size is 2 32-bit words
-  UInt_t buffer = 2;
-  buffer |= ((rcuId & 0x3FF) << 22);
+  UInt_t buffer = (2 & 0x7F);
+  buffer |= ((rcuId & 0x1FF) << 7);
+  buffer |= 0xAAAA << 16;
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
 }

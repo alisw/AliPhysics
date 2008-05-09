@@ -72,8 +72,6 @@ public:
     void  SetRangeRefT0 (Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsT0  = nBins; fXminT0  = xMin; fXmaxT0  = xMax; }   //Set range for T0 reference histograms
     void  SetRangeRefRMS(Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsRMS = nBins; fXminRMS = xMin; fXmaxRMS = xMax; }   //Set range for T0 reference histograms
 
-    void  SetOldRCUformat(Bool_t format=kTRUE){ fOldRCUformat = format; }
-
     void  SetDebugLevel(Short_t debug=1){ fDebugLevel = debug;}
 
     void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
@@ -106,7 +104,6 @@ private:
 
     Int_t     fLastSector;            //! Last sector processed
 
-    Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
 
     AliTPCROC   *fROC;                //! ROC information  
     AliTPCAltroMapping **fMapping;    //! Altro Mapping object
@@ -178,7 +175,7 @@ private:
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
 
-  ClassDef(AliTPCCalibPulser,1)           //Implementation of the TPC pulser calibration
+  ClassDef(AliTPCCalibPulser,2)           //Implementation of the TPC pulser calibration
 };
 
 

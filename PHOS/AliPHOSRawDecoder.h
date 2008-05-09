@@ -26,7 +26,6 @@ public:
 
   virtual Bool_t NextDigit();
 
-  void SetOldRCUFormat(Bool_t isOldRCU) {fCaloStream->SetOldRCUFormat(isOldRCU);}
   void SubtractPedestals(Bool_t subtract) {fPedSubtract=subtract;}
 
   const Double_t GetEnergy() const { return fEnergy; }

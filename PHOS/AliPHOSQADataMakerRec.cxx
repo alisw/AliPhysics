@@ -233,7 +233,6 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       decoder=new AliPHOSRawDecoderv2(rawReader);
     else
       decoder=new AliPHOSRawDecoder(rawReader);
-  decoder->SetOldRCUFormat  (AliPHOSReconstructor::GetRecoParamEmc()->IsOldRCUFormat());
   decoder->SubtractPedestals(AliPHOSReconstructor::GetRecoParamEmc()->SubtractPedestals());
   Double_t lgEtot=0. ;
   Double_t hgEtot=0. ;

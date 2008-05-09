@@ -162,10 +162,6 @@ public:
       @param min Minimum strip number (0-127). 
       @param max Maximum strip number (0-127). */
   void SetStripRange(UShort_t min=0, UShort_t max=127);
-  /** Whether raw data is in the old ALTRO format (i.e., no RCU
-      trailer), or in the new format (with a trailer). 
-      @param yes if true the raw data has RCU trailer */ 
-  void UseRcuTrailer(Bool_t yes=kTRUE) { fHasRcuTrailer = yes; } 
   /** Whether raw data has full common data header (8 32bit words) or
       the older invalid format (7 32bit words with bogus entries)
       @param yes if true the raw data has complete data header */ 
@@ -333,10 +329,6 @@ public:
       @return Get the map that translates hardware to detector
       coordinates */ 
   AliFMDAltroMapping* GetAltroMap() const;
-  /** Whether raw data is in the old ALTRO format (i.e., no RCU
-      trailer), or in the new format (with a trailer). 
-      @return false if the raw data has no RCU trailer */ 
-  Bool_t HasRcuTrailer() const { return fHasRcuTrailer; } 
   /** Whether raw data has full common data header (8 32bit words) or
       the older invalid format (7 32bit words with bogus entries)
       @return false if the raw data has incomplete data header */ 
@@ -375,7 +367,6 @@ protected:
       fFixedMaxStrip(o.fFixedMaxStrip),
       fFixedPulseGain(o.fFixedPulseGain),
       fEdepMip(o.fEdepMip),
-      fHasRcuTrailer(o.fHasRcuTrailer),
       fHasCompleteHeader(o.fHasCompleteHeader),
       fZeroSuppression(o.fZeroSuppression),
       fSampleRate(o.fSampleRate),
@@ -439,7 +430,6 @@ protected:
   UShort_t        fFixedMaxStrip;            // Maximum strip read-out 
   mutable Float_t fFixedPulseGain;           //! Gain (cached)
   mutable Float_t fEdepMip;                  //! Cache of energy loss for a MIP
-  Bool_t          fHasRcuTrailer;            // if the raw data has RCU trailer
   Bool_t          fHasCompleteHeader;        // raw data has incomplete data header
   
   static const char* fkPedestalShuttleID;    // Shuttle/preprocessor ID for pedestals
@@ -454,7 +444,7 @@ protected:
   AliFMDAltroMapping*         fAltroMap;        // Map of hardware
   AliFMDCalibStripRange*      fStripRange;      // Strip range
   
-  ClassDef(AliFMDParameters,5) // Manager of parameters
+  ClassDef(AliFMDParameters,6) // Manager of parameters
 };
 
 #endif

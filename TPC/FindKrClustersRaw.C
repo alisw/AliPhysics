@@ -73,7 +73,6 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   //if (!param) {cerr<<"TPC parameters have not been found !\n"; return 4;}
 
   clusters->SetParam(param);
-  clusters->SetOldRCUFormat(kTRUE);
 
   //set cluster finder parameters (from data)
   clusters->SetZeroSup(param->GetZeroSup());//zero suppression parameter

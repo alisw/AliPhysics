@@ -309,7 +309,6 @@ AliTPCCalibCE::AliTPCCalibCE() :
     fXminRMS(0.1),
     fXmaxRMS(5.1),
     fLastSector(-1),
-    fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
     fParam(new AliTPCParam),
@@ -380,7 +379,6 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fXminRMS(sig.fXminRMS),
     fXmaxRMS(sig.fXmaxRMS),
     fLastSector(-1),
-    fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
     fParam(new AliTPCParam),
@@ -1113,8 +1111,6 @@ Bool_t AliTPCCalibCE::ProcessEvent(AliTPCRawStream *rawStream)
   // Event Processing loop - AliTPCRawStream
   // The Function 'SetTimeStamp' should be called for each event to set the event time stamp!!!
   //
-
-  rawStream->SetOldRCUFormat(fOldRCUformat);
 
   ResetEvent();
 

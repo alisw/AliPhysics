@@ -83,7 +83,6 @@ int main(int argc, char **argv) {
 
     AliRawReader *rawReader = new AliRawReaderDate(argv[i]);
     AliCaloRawStream *in = new AliCaloRawStream(rawReader,"EMCAL");
-    in->SetOldRCUFormat(kTRUE);
     AliRawEventHeaderBase *aliHeader=NULL;
 
     /* read until EOF */

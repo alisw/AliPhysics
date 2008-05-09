@@ -36,7 +36,6 @@ void testRawReaderFastDDL(const Char_t *file="/data.local/data/06000002142000.1A
     AliAltroRawStreamFast *sf = new AliAltroRawStreamFast(rawReader);
     AliAltroRawStream      *s = new AliAltroRawStream(rawReader);
 
-    s->SetOldRCUFormat(kTRUE);
     s->SetNoAltroMapping(kFALSE);
     s->SelectRawData("TPC");
 

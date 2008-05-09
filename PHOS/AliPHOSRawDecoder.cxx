@@ -22,7 +22,6 @@
 //     AliRawReader* rf = new AliRawReaderDate("2006run2211.raw");
 //     AliPHOSRawDecoder dc(rf);
 //     while (rf->NextEvent()) {
-//       dc.SetOldRCUFormat(kTRUE);
 //       dc.SubtractPedestals(kTRUE);
 //       while ( dc.NextDigit() ) {
 //         Int_t module = dc.GetModule();
@@ -67,7 +66,6 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping *
 
   fRawReader =  rawReader;
   fCaloStream = new AliCaloRawStream(rawReader,"PHOS",mapping);
-  fCaloStream->SetOldRCUFormat(kFALSE);
   fSamples = new TArrayI(100);
   fTimes = new TArrayI(100);
 }

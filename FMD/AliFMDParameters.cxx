@@ -95,7 +95,6 @@ AliFMDParameters::AliFMDParameters()
     fFixedMaxStrip(0),
     fFixedPulseGain(0), 
     fEdepMip(0),
-    fHasRcuTrailer(kTRUE),
     fHasCompleteHeader(kTRUE),
     fZeroSuppression(0), 
     fSampleRate(0), 

@@ -54,7 +54,6 @@ int main(int argc, char **argv)
     Bool_t old = kTRUE;
     
   AliFMDParameters::Instance()->Init(kFALSE,0);
-  AliFMDParameters::Instance()->UseRcuTrailer(!old);
 
   //This will only work for FDR 1 data. When newer data becomes available the ! must be removed!
   AliFMDParameters::Instance()->UseCompleteHeader(!old);

@@ -445,8 +445,6 @@ Bool_t AliTPCCalibSignal::ProcessEvent(AliTPCRawStream *rawStream) /*FOLD00*/
   // Event Processing loop - AliTPCRawStream
   //
 
-  rawStream->SetOldRCUFormat(1);
-
   ResetEvent();
 
   Bool_t withInput = kFALSE;
