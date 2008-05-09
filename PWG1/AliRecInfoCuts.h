@@ -7,7 +7,7 @@
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
-#include "esdTrackCuts/AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 
 class AliRecInfoCuts : public AliESDtrackCuts
 {

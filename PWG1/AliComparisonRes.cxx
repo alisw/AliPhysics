@@ -13,7 +13,9 @@
 /*
  
   // after running comparison task, read the file, and get component
-  gSystem->Load("libPWG1.so");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
+  LoadMyLibs();
+
   TFile f("Output.root");
   AliComparisonRes * compObj = (AliComparisonRes*)f.Get("AliComparisonRes");
 

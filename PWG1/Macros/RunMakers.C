@@ -1,12 +1,11 @@
 // Run this macro to correlate MC and reconstruction information (PWG1 library).
 // Macro must be run in directory containing MC and ESD trees
 //
-
 RunMakers()
 {
 // load AliRoot libraries
 gSystem->Load("libANALYSIS.so");
-gSystem->Load("libPWG0base.so");
+gSystem->Load("libANALYSISalice.so");
 gSystem->Load("libPWG1.so");
 
 // collect MC information
