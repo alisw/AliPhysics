@@ -144,7 +144,6 @@ Bool_t AliROCRawAnalysisSelector::Process(Long64_t entry)
     
     // Loas the raw data for corresponding DDLs
     rawReader->Reset();
-    tpcRawStream->SetOldRCUFormat(kTRUE);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
     
     AliDebug(AliLog::kDebug, Form("Selected DDLs %d ... %d", indexDDL, indexDDL+nDDLs-1));
