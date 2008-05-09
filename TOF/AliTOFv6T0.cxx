@@ -101,6 +101,7 @@ Revision 0.1 2007 March G. Cara Romeo and A. De Caro
 #include <TGeoVolume.h>
 
 #include "AliConst.h"
+#include "AliGeomManager.h"
 #include "AliLog.h"
 #include "AliMagF.h"
 #include "AliMC.h"
@@ -230,6 +231,9 @@ void AliTOFv6T0::AddAlignableVolumes() const
   // eventual changes in the geometry.
   //
 
+  AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
+  Int_t modUID, modnum=0;
+
   TString volPath;
   TString symName;
 
@@ -258,7 +262,8 @@ void AliTOFv6T0::AddAlignableVolumes() const
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
 
-      //if (fTOFSectors[isect]==-1) continue;
+      modUID = AliGeomManager::LayerToVolUID(idTOF,modnum++);
+      if (fTOFSectors[isect]==-1) continue;
 
       if (fTOFHoles && (isect==13 || isect==14 || isect==15)) {
 	if (istr<39) {
@@ -297,16 +302,13 @@ void AliTOFv6T0::AddAlignableVolumes() const
       AliDebug(2,Form("symName=%s\n",symName.Data()));
       AliDebug(2,"--------------------------------------------"); 
 	      
-      gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+      if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data(),modUID))
+	AliError(Form("Alignable entry %s not set",symName.Data()));
 
       //T2L matrices for alignment
-      TGeoPNEntry *e = gGeoManager->GetAlignableEntry(symName.Data());
+      TGeoPNEntry *e = gGeoManager->GetAlignableEntryByUID(modUID);
       if (e) {
-	const char *path = e->GetTitle();
-	if (!gGeoManager->cd(path)) {
-	  AliFatal(Form("Volume path %s not valid!",path));
-	}
-	TGeoHMatrix *globMatrix = gGeoManager->GetCurrentMatrix();
+	TGeoHMatrix *globMatrix = e->GetGlobalOrig();
 	Double_t phi = 20.0 * (isect % 18) + 10.0;
 	TGeoHMatrix *t2l  = new TGeoHMatrix();
 	t2l->RotateZ(phi);
@@ -316,7 +318,6 @@ void AliTOFv6T0::AddAlignableVolumes() const
       else {
 	AliError(Form("Alignable entry %s is not valid!",symName.Data()));
       }
-
       imod++;
     }
   }
@@ -339,12 +340,12 @@ void AliTOFv6T0::AddAlignableVolumes() const
     symName  = snSM;
     symName += Form("%02d",isect);
 
-      AliDebug(2,"--------------------------------------------"); 
-      AliDebug(2,Form("Alignable object %d", isect+imod)); 
-      AliDebug(2,Form("volPath=%s\n",volPath.Data()));
-      AliDebug(2,Form("symName=%s\n",symName.Data()));
-      AliDebug(2,"--------------------------------------------"); 
-	      
+    AliDebug(2,"--------------------------------------------"); 
+    AliDebug(2,Form("Alignable object %d", isect+imod)); 
+    AliDebug(2,Form("volPath=%s\n",volPath.Data()));
+    AliDebug(2,Form("symName=%s\n",symName.Data()));
+    AliDebug(2,"--------------------------------------------"); 
+
     gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
 
   }
