@@ -26,7 +26,7 @@ void tof_digits()
   di->LoadDigits();
   di->Dump();
 
-  AliTOFGeometry* g = di->fGeom;
+  AliTOFGeometry* g = di->GetTOFgeometry();
  
   gStyle->SetPalette(1, 0);
   gEve->DisableRedraw();

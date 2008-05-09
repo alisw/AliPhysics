@@ -23,7 +23,7 @@ void tof_digits_sector(Int_t sector=0)
 
   di->SetTree(dt);
 
-  AliTOFGeometry* g = di->fGeom;
+  AliTOFGeometry* g = di->GetTOFgeometry();
 
   gStyle->SetPalette(1, 0);
   gEve->DisableRedraw();
