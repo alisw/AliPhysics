@@ -86,6 +86,19 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
   return *this;
 }
 
+void AliESDHeader::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDHeader *robj = dynamic_cast<AliESDHeader*>(&obj);
+  if(!robj)return; // not an AliESDHeader
+  *robj = *this;
+
+}
+
 
 
 //______________________________________________________________________________

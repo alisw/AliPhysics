@@ -152,6 +152,44 @@ AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
   }
 }
 
+AliESDcascade& AliESDcascade::operator=(const AliESDcascade& cas){
+
+  // -------
+  // Assigmnet oeprator
+  // -----
+
+  if(this==&cas) return *this;
+  AliESDv0::operator=(cas);
+
+  fEffMassXi = cas.fEffMassXi;
+  fChi2Xi    = cas.fChi2Xi;
+  fDcaXiDaughters = cas.fDcaXiDaughters;
+  fPdgCodeXi      = cas.fPdgCodeXi;
+  fBachIdx        = cas.fBachIdx;
+  for (int i=0; i<3; i++) {
+    fPosXi[i]     = cas.fPosXi[i];
+    fBachMom[i]   = cas.fBachMom[i];
+  }
+  for (int i=0; i<6; i++) {
+    fPosCovXi[i]   = cas.fPosCovXi[i];
+    fBachMomCov[i] = cas.fBachMomCov[i];
+  }
+  return *this;
+}
+
+void AliESDcascade::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDcascade *robj = dynamic_cast<AliESDcascade*>(&obj);
+  if(!robj)return; // not an AliESDcascade
+  *robj = *this;
+
+}
+
 Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
   //--------------------------------------------------------------------
   // This function changes the mass hypothesis for this cascade

@@ -41,6 +41,8 @@ public:
   AliESDFMD& operator=(const AliESDFMD& other);
   /** Destructor - does nothing */
   virtual ~AliESDFMD() {}
+  virtual void Copy(TObject &obj) const;
+
 
   void Clear(Option_t *option="");
   /** Get the pseudo-multiplicity of 

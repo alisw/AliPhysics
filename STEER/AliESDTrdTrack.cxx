@@ -100,3 +100,14 @@ AliESDTrdTrack& AliESDTrdTrack::operator=(const AliESDTrdTrack& track)
 
 }
 
+void AliESDTrdTrack::Copy(TObject& obj) const {
+
+   // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDTrdTrack *robj = dynamic_cast<AliESDTrdTrack*>(&obj);
+  if(!robj)return; // not an aliesesdtrdtrack
+  *robj = *this;
+}

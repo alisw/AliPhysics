@@ -28,16 +28,16 @@ public:
   AliESDCaloTrigger(const  AliESDCaloTrigger& ctrig);
   AliESDCaloTrigger& operator=(const  AliESDCaloTrigger& ctrig);
   virtual ~AliESDCaloTrigger();
+  virtual void Copy(TObject &obj) const;
 
-  // does this create mem leak? CKB use new with placement?
   void AddTriggerPosition(const TArrayF & array)  { 
-    if(fTriggerPosition) delete fTriggerPosition;
-    fTriggerPosition =  new TArrayF(array);
+    if(fTriggerPosition) *fTriggerPosition = array;
+    else fTriggerPosition =  new TArrayF(array);
   }
 
   void AddTriggerAmplitudes(const TArrayF & array) { 
-    if(fTriggerAmplitudes)delete fTriggerAmplitudes;
-    fTriggerAmplitudes  = new TArrayF(array); 
+    if(fTriggerAmplitudes) *fTriggerAmplitudes = array;
+    else fTriggerAmplitudes  = new TArrayF(array); 
   }
   
   void Reset(); 

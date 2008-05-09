@@ -74,6 +74,17 @@ AliESDFMD::operator=(const AliESDFMD& other)
   return *this;
 }
 
+void AliESDFMD::Copy(TObject &obj) const{
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDFMD *robj = dynamic_cast<AliESDFMD*>(&obj);
+  if(!robj)return; // not an AliESDFMD
+  *robj = *this;
+}
+
 //____________________________________________________________________
 void
 AliESDFMD::CheckNeedUShort(TFile* file) 

@@ -20,6 +20,7 @@ public:
   AliESDZDC();
   AliESDZDC(const AliESDZDC& zdc);
   AliESDZDC& operator=(const AliESDZDC& zdc);
+  virtual void Copy(TObject &obj) const;
 
   Double_t GetZDCN1Energy() const {return fZDCN1Energy;}
   Double_t GetZDCP1Energy() const {return fZDCP1Energy;}

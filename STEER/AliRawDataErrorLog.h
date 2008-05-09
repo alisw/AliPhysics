@@ -38,7 +38,8 @@ class AliRawDataErrorLog: public TNamed {
   AliRawDataErrorLog(const AliRawDataErrorLog & source);
   AliRawDataErrorLog & operator=(const AliRawDataErrorLog & source);
   virtual ~AliRawDataErrorLog() {};
-
+  virtual void Copy(TObject &obj) const;
+  
   Int_t              GetEventNumber() const { return fEventNumber; }
   Int_t              GetDdlID()       const { return fDdlID; }
   ERawDataErrorLevel GetErrorLevel()  const { return fErrorLevel; }

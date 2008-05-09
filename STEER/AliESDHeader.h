@@ -20,6 +20,7 @@ public:
   virtual ~AliESDHeader();
   AliESDHeader(const AliESDHeader& header);
   AliESDHeader& operator=(const AliESDHeader& header);
+  virtual void Copy(TObject &obj) const;
 
   void      SetTriggerMask(ULong64_t n) {fTriggerMask=n;}
   void      SetOrbitNumber(UInt_t n) {fOrbitNumber=n;}

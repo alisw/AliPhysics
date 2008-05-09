@@ -87,8 +87,9 @@ public:
   };
 
   AliESDEvent();
-  virtual ~AliESDEvent(); 
-
+  virtual ~AliESDEvent();
+  AliESDEvent &operator=(const AliESDEvent& source); // or make private and use only copy? 
+  virtual void Copy(TObject& obj) const;
 
   // RUN
   // move this to the UserData!!!
@@ -119,7 +120,7 @@ public:
   void      SetTimeStamp(UInt_t timeStamp){fHeader->SetTimeStamp(timeStamp);}
   void      SetEventType(UInt_t eventType){fHeader->SetEventType(eventType);}
   void      SetEventNumberInFile(Int_t n) {fHeader->SetEventNumberInFile(n);}
-  //  void      SetRunNumber(Int_t n) {fHeader->SetRunNumber(n);}
+  //  void     SetRunNumber(Int_t n) {fHeader->SetRunNumber(n);}
   void      SetBunchCrossNumber(UShort_t n) {fHeader->SetBunchCrossNumber(n);}
   void      SetTriggerCluster(UChar_t n) {fHeader->SetTriggerCluster(n);}
   
@@ -343,7 +344,6 @@ public:
 
 protected:
   AliESDEvent(const AliESDEvent&);
-  AliESDEvent &operator=(const AliESDEvent& source);
 
 
   TList *fESDObjects;             // List of esd Objects

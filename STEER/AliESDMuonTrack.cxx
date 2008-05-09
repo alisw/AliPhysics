@@ -195,6 +195,20 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
   return *this;
 }
 
+void AliESDMuonTrack::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDMuonTrack *robj = dynamic_cast<AliESDMuonTrack*>(&obj);
+  if(!robj)return; // not an AliESDMuonTrack
+  *robj = *this;
+
+}
+
+
 //__________________________________________________________________________
 AliESDMuonTrack::~AliESDMuonTrack()
 {

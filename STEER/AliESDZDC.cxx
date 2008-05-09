@@ -97,6 +97,19 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
   return *this;
 }
 
+void AliESDZDC::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDZDC *robj = dynamic_cast<AliESDZDC*>(&obj);
+  if(!robj)return; // not an AliESDZDC
+  *robj = *this;
+
+}
+
 
 //______________________________________________________________________________
 void AliESDZDC::Reset()

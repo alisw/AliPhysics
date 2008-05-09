@@ -61,6 +61,20 @@ AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
   return *this;
 }
 
+void AliESDTZERO::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDTZERO *robj = dynamic_cast<AliESDTZERO*>(&obj);
+  if(!robj)return; // not an AliESDTZERO
+  *robj = *this;
+
+}
+
+
 //______________________________________________________________________________
 void AliESDTZERO::Reset()
 {

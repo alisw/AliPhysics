@@ -27,6 +27,7 @@ public:
   virtual ~AliESDMuonTrack(); // Destructor
   AliESDMuonTrack(const AliESDMuonTrack& esdm);
   AliESDMuonTrack& operator=(const AliESDMuonTrack& esdm);
+  virtual void Copy(TObject &obj) const;
 
   virtual void Clear(Option_t* opt = "");
   

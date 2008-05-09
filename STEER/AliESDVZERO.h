@@ -11,6 +11,9 @@ public:
   AliESDVZERO(Int_t NbPMV0A, Int_t NbPMV0C, Int_t MTotV0A, Int_t MTotV0C, 
               Int_t *MRingV0A, Int_t *MRingV0C);
   virtual ~AliESDVZERO() {};
+  AliESDVZERO &operator=(const AliESDVZERO& source);
+  virtual void Copy(TObject &obj) const;
+
   
 // Setters
   virtual void  SetNbPMV0A(Int_t NbPMV0A)  {fNbPMV0A = NbPMV0A;}
@@ -30,7 +33,7 @@ public:
   Int_t* GetMRingV0A() const {return (int*) fMRingV0A;}
   Int_t* GetMRingV0C() const {return (int*) fMRingV0C;}
 
-  AliESDVZERO &operator=(const AliESDVZERO& source);
+  
     
 protected:
   Int_t fMTotV0A;     // Total multiplicity in V0A

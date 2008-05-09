@@ -50,15 +50,42 @@ AliESDCaloTrigger& AliESDCaloTrigger::operator=(const AliESDCaloTrigger& ctrig)
   // assigment operator
   if(this!=&ctrig) {
     TNamed::operator=(ctrig);
-    // CKB dont't want to create leak if fTriggerAmp points to 
-    // something already 
-    delete fTriggerAmplitudes;
-    fTriggerAmplitudes = new TArrayF(*ctrig.fTriggerAmplitudes);
-    delete fTriggerPosition;    
-    fTriggerPosition = new TArrayF(*ctrig.fTriggerPosition);
+    if(ctrig.fTriggerAmplitudes){
+      // asign or copy construct
+      if(fTriggerAmplitudes)*fTriggerAmplitudes = *ctrig.fTriggerAmplitudes;
+      else fTriggerAmplitudes = new TArrayF(*ctrig.fTriggerAmplitudes);
+    }
+    else{
+      delete fTriggerAmplitudes;
+      fTriggerAmplitudes = 0;
+    }
+
+    if(ctrig.fTriggerPosition){
+      // asign or copy construct
+      if(fTriggerPosition)*fTriggerPosition = *ctrig.fTriggerPosition;
+      else fTriggerPosition = new TArrayF(*ctrig.fTriggerPosition);
+    }
+    else{
+      delete fTriggerPosition;
+      fTriggerPosition = 0;
+    }
   } 
   return *this;
 }
+
+void AliESDCaloTrigger::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDCaloTrigger *robj = dynamic_cast<AliESDCaloTrigger*>(&obj);
+  if(!robj)return; // not an AliESDCaloTrigger
+  *robj = *this;
+
+}
+
 
 void AliESDCaloTrigger::Reset()
 {

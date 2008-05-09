@@ -420,6 +420,185 @@ AliESDtrack::~AliESDtrack(){
   delete fFriendTrack;
 }
 
+AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
+  
+
+  if(&source == this) return *this;
+  AliExternalTrackParam::operator=(source);
+
+  
+  if(source.fCp){
+    // we have the trackparam: assign or copy construct
+    if(fCp)*fCp = *source.fCp;
+    else fCp = new AliExternalTrackParam(*source.fCp);
+  }
+  else{
+    // no track param delete the old one
+    if(fCp)delete fCp;
+    fCp = 0;
+  }
+
+  if(source.fIp){
+    // we have the trackparam: assign or copy construct
+    if(fIp)*fIp = *source.fIp;
+    else fIp = new AliExternalTrackParam(*source.fIp);
+  }
+  else{
+    // no track param delete the old one
+    if(fIp)delete fIp;
+    fIp = 0;
+  }
+
+
+  if(source.fTPCInner){
+    // we have the trackparam: assign or copy construct
+    if(fTPCInner) *fTPCInner = *source.fTPCInner;
+    else fTPCInner = new AliExternalTrackParam(*source.fTPCInner);
+  }
+  else{
+    // no track param delete the old one
+    if(fTPCInner)delete fTPCInner;
+    fTPCInner = 0;
+  }
+
+
+  if(source.fOp){
+    // we have the trackparam: assign or copy construct
+    if(fOp) *fOp = *source.fOp;
+    else fOp = new AliExternalTrackParam(*source.fOp);
+  }
+  else{
+    // no track param delete the old one
+    if(fOp)delete fOp;
+    fOp = 0;
+  }
+
+  // copy also the friend track 
+  // use copy constructor
+  if(source.fFriendTrack){
+    // we have the trackparam: assign or copy construct
+    delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*source.fFriendTrack);
+  }
+  else{
+    // no track param delete the old one
+    delete fFriendTrack; fFriendTrack= 0;
+  }
+
+  fTPCClusterMap = source.fTPCClusterMap; 
+  fTPCSharedMap  = source.fTPCSharedMap;  
+  // the simple stuff
+  fFlags    = source.fFlags; 
+  fID       = source.fID;             
+  fLabel    = source.fLabel;
+  fITSLabel = source.fITSLabel;
+  for(int i = 0; i< 12;++i){
+    fITSModule[i] = source.fITSModule[i];
+  }
+  fTPCLabel = source.fTPCLabel; 
+  fTRDLabel = source.fTRDLabel;
+  for(int i = 0; i< 3;++i){
+    fTOFLabel[i] = source.fTOFLabel[i];    
+  }
+  fTOFCalChannel = source.fTOFCalChannel;
+  fTOFindex      = source.fTOFindex;
+  fHMPIDqn       = source.fHMPIDqn;
+  fHMPIDcluIdx   = source.fHMPIDcluIdx; 
+  fEMCALindex    = source.fEMCALindex;
+
+  for(int i = 0; i< 3;++i){
+    fKinkIndexes[i] = source.fKinkIndexes[i]; 
+    fV0Indexes[i]   = source.fV0Indexes[i]; 
+  }
+
+  for(int i = 0; i< AliPID::kSPECIES;++i){
+    fR[i]     = source.fR[i];
+    fITSr[i]  = source.fITSr[i];
+    fTPCr[i]  = source.fTPCr[i];
+    fTRDr[i]  = source.fTRDr[i];
+    fTOFr[i]  = source.fTOFr[i];
+    fHMPIDr[i] = source.fHMPIDr[i];
+    fTrackTime[i] = source.fTrackTime[i];  
+  }
+
+  fHMPIDtrkTheta = source.fHMPIDtrkTheta;
+  fHMPIDtrkPhi   = source.fHMPIDtrkPhi;
+  fHMPIDsignal   = source.fHMPIDsignal; 
+
+  
+  fTrackLength   = source. fTrackLength;
+  fD  = source.fD; 
+  fZ  = source.fZ; 
+  fCdd = source.fCdd;
+  fCdz = source.fCdz;
+  fCzz = source.fCzz;
+
+  fCchi2     = source.fCchi2;
+  fITSchi2   = source.fITSchi2;             
+  fTPCchi2   = source.fTPCchi2;            
+  fTRDchi2   = source.fTRDchi2;      
+  fTOFchi2   = source.fTOFchi2;      
+  fHMPIDchi2 = source.fHMPIDchi2;      
+
+
+  fITSsignal  = source.fITSsignal;     
+  fTPCsignal  = source.fTPCsignal;     
+  fTPCsignalS = source.fTPCsignalS;    
+  for(int i = 0; i< 4;++i){
+    fTPCPoints[i] = source.fTPCPoints[i];  
+  }
+  fTRDsignal = source.fTRDsignal;
+
+  for(int i = 0;i < kNPlane;++i){
+    fTRDTimBin[i] = source.fTRDTimBin[i];   
+    for(int j = 0;j < kNSlice;++j){
+      fTRDsignals[i][j] = source.fTRDsignals[i][j];
+    }
+  }
+  fTRDQuality =   source.fTRDQuality;     
+  fTRDBudget  =   source.fTRDBudget;      
+  fTOFsignal  =   source.fTOFsignal;     
+  fTOFsignalToT = source.fTOFsignalToT;   
+  fTOFsignalRaw = source.fTOFsignalRaw;  
+  fTOFsignalDz  = source.fTOFsignalDz;      
+  
+  for(int i = 0;i<10;++i){
+    fTOFInfo[i] = source.fTOFInfo[i];    
+  }
+
+  fHMPIDtrkX = source.fHMPIDtrkX; 
+  fHMPIDtrkY = source.fHMPIDtrkY; 
+  fHMPIDmipX = source.fHMPIDmipX;
+  fHMPIDmipY = source.fHMPIDmipY; 
+
+  fTPCncls    = source.fTPCncls;      
+  fTPCnclsF   = source.fTPCnclsF;     
+  fTPCsignalN = source.fTPCsignalN;   
+
+  fITSncls = source.fITSncls;       
+  fITSClusterMap = source.fITSClusterMap; 
+  fTRDncls   = source.fTRDncls;       
+  fTRDncls0  = source.fTRDncls0;      
+  fTRDpidQuality  = source.fTRDpidQuality; 
+  return *this;
+}
+
+
+
+void AliESDtrack::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDtrack *robj = dynamic_cast<AliESDtrack*>(&obj);
+  if(!robj)return; // not an AliESDtrack
+  *robj = *this;
+
+}
+
+
+
 void AliESDtrack::AddCalibObject(TObject * object){
   //
   // add calib object to the list

@@ -67,18 +67,32 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
   if(this!=&esd) {
     TObject::operator=(esd);
     fRunNumber=esd.fRunNumber;
-    fPeriodNumber=esd.fPeriodNumber;
-    fRecoVersion=esd.fRecoVersion;
-    fMagneticField=esd.fMagneticField;
-    for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
-    for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
-    fTriggerClasses.Clear();
-    for(Int_t i = 0; i < kNTriggerClasses; i++) {
-      TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
-      if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
-    }
+  fPeriodNumber=esd.fPeriodNumber;
+  fRecoVersion=esd.fRecoVersion;
+  fMagneticField=esd.fMagneticField;
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
+  fTriggerClasses.Clear();
+  for(Int_t i = 0; i < kNTriggerClasses; i++) {
+    TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
+    if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
+  }
+    
   } 
   return *this;
+}
+
+void AliESDRun::Copy(TObject &obj) const{
+
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDRun *robj = dynamic_cast<AliESDRun*>(&obj);
+  if(!robj)return; // not an aliesdrun
+  *robj = *this;
+
 }
 
 void AliESDRun::SetDiamond(const AliESDVertex *vertex) {

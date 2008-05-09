@@ -15,6 +15,7 @@ class AliESDTrdTrack : public TObject {
   virtual ~AliESDTrdTrack(){};
   AliESDTrdTrack(const AliESDTrdTrack& track);
   AliESDTrdTrack& operator=(const AliESDTrdTrack& track);
+  virtual void Copy(TObject &obj) const;
 
   Double_t GetYproj()     const { return fYproj; };
   Double_t GetZproj()     const { return fZproj; };

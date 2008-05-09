@@ -18,6 +18,7 @@ class AliESDPmdTrack : public TObject {
   virtual ~AliESDPmdTrack(){;}
   AliESDPmdTrack (const AliESDPmdTrack &PMDTrack);  // copy constructor
   AliESDPmdTrack &operator=(const AliESDPmdTrack &PMDTrack); // assignment op
+  virtual void Copy(TObject &obj) const;
 
   void SetDetector(Int_t idet) {fDet = idet;}
   

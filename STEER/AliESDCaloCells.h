@@ -29,6 +29,7 @@ class AliESDCaloCells : public TNamed
   AliESDCaloCells(const AliESDCaloCells & cells);
   AliESDCaloCells & operator=(const AliESDCaloCells& source);
   virtual ~AliESDCaloCells();
+  virtual void Copy(TObject &obj) const;
   
   Bool_t IsEMCAL() const {return (fType == kEMCALCell);}
   Bool_t IsPHOS() const {return (fType == kPHOSCell);}

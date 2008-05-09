@@ -129,6 +129,7 @@ AliESDv0::AliESDv0(const AliESDv0& v0) :
   for (Int_t i=0;i<4;i++){fCausality[i]=v0.fCausality[i];}
 }
 
+
 AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
                    const AliExternalTrackParam &t2, Int_t i2) :
   TObject(),
@@ -193,6 +194,71 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   for (Int_t i=0;i<3;i++){fAngle[i]=0;}
   for (Int_t i=0;i<4;i++){fCausality[i]=0;}
 }
+
+AliESDv0& AliESDv0::operator=(const AliESDv0 &v0){
+
+
+  //--------------------------------------------------------------------
+  // The assingment operator
+  //--------------------------------------------------------------------
+
+  if(this==&v0)return *this;
+  TObject::operator=(v0);
+  fParamN  = v0.fParamN;
+  fParamP  = v0.fParamP;
+  fEffMass = v0.fEffMass;
+  fDcaV0Daughters = v0.fDcaV0Daughters;
+  fChi2V0 = v0.fChi2V0;
+  fRr = v0.fRr;
+  fDistSigma    = v0.fDistSigma;
+  fChi2Before   = v0.fChi2Before;
+  fChi2After    = v0.fChi2After;
+  fPointAngleFi = v0.fPointAngleFi;
+  fPointAngleTh = v0.fPointAngleTh;
+  fPointAngle   = v0.fPointAngle;
+  fPdgCode      = v0.fPdgCode;
+  fNidx         = v0.fNidx;
+  fPidx         = v0.fPidx;
+  fStatus       = v0.fStatus;
+  fNBefore      = v0.fNBefore;
+  fNAfter       = v0.fNAfter;
+  fOnFlyStatus  = v0.fOnFlyStatus;
+
+  for (int i=0; i<3; i++) {
+    fPos[i]  = v0.fPos[i];
+    fNmom[i] = v0.fNmom[i];
+    fPmom[i] = v0.fPmom[i];
+  }
+  for (int i=0; i<6; i++) {
+    fPosCov[i]  = v0.fPosCov[i];
+  }
+  for (Int_t i=0; i<2; i++) {
+    fNormDCAPrim[i]=v0.fNormDCAPrim[i];
+  }
+  for (Int_t i=0;i<6;i++){
+      fClusters[0][i]=v0.fClusters[0][i]; 
+      fClusters[1][i]=v0.fClusters[1][i];
+  }
+  for (Int_t i=0;i<3;i++){
+      fAngle[i]=v0.fAngle[i];
+  }
+  for (Int_t i=0;i<4;i++){fCausality[i]=v0.fCausality[i];}
+
+  return *this;
+}
+
+void AliESDv0::Copy(TObject& obj) const {
+
+   // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDv0 *robj = dynamic_cast<AliESDv0*>(&obj);
+  if(!robj)return; // not an aliesesv0
+  *robj = *this;
+}
+
 
 AliESDv0::~AliESDv0(){
   //--------------------------------------------------------------------

@@ -46,6 +46,7 @@ class AliESDVertex : public AliVertex {
 	       const Char_t *vtxName="Vertex");
   AliESDVertex(const AliESDVertex &source);
   AliESDVertex &operator=(const AliESDVertex &source);
+  virtual void Copy(TObject &obj) const;
 
   virtual ~AliESDVertex() {}
 

@@ -27,6 +27,8 @@ public:
 
   AliESDv0(const AliESDv0&);
   virtual ~AliESDv0();
+  AliESDv0& operator=(const AliESDv0&);
+  virtual void Copy(TObject &obj) const;
 
   Double_t ChangeMassHypothesis(Int_t code=kK0Short); 
 
@@ -141,7 +143,6 @@ protected:
   static const AliESDV0Params fgkParams;  //! resolution and likelihood parameterization  
 
 private:
-  AliESDv0& operator=(const AliESDv0&);
 
   ClassDef(AliESDv0,4)      // ESD V0 vertex
 };

@@ -40,10 +40,10 @@ public:
   AliESDtrack(const AliESDtrack& track);
   AliESDtrack(TParticle * part);
   virtual ~AliESDtrack();
+  virtual void Copy(TObject &obj) const;
   const AliESDfriendTrack *GetFriendTrack() const {return fFriendTrack;}
   void SetFriendTrack(const AliESDfriendTrack *t) {
     delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*t);
-    // CKB
   }
   void ReleaseESDfriendTrack() { delete fFriendTrack;  fFriendTrack=0; }
   void AddCalibObject(TObject * object);     // add calib object to the list
@@ -383,7 +383,7 @@ protected:
 
  private:
 
-  AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
+  AliESDtrack & operator=(const AliESDtrack & );
 
   ClassDef(AliESDtrack,42)  //ESDtrack 
 };

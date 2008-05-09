@@ -204,67 +204,66 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   if(&source == this) return *this;
   AliVEvent::operator=(source);
 
-  fESDRun = new AliESDRun(*source.fESDRun);
-  fHeader = new AliESDHeader(*source.fHeader);
-  fESDZDC = new AliESDZDC(*source.fESDZDC);
-  fESDFMD = new AliESDFMD(*source.fESDFMD);
-  fESDVZERO = new AliESDVZERO(*source.fESDVZERO);
-  fESDTZERO = new AliESDTZERO(*source.fESDTZERO);
-  fTPCVertex = new AliESDVertex(*source.fTPCVertex);
-  fSPDVertex = new AliESDVertex(*source.fSPDVertex);
-  fPrimaryVertex = new AliESDVertex(*source.fPrimaryVertex);
-  fSPDMult = new AliMultiplicity(*source.fSPDMult);
-  fPHOSTrigger = new AliESDCaloTrigger(*source.fPHOSTrigger);
-  fEMCALTrigger = new AliESDCaloTrigger(*source.fEMCALTrigger);
-  fTracks = new TClonesArray(*source.fTracks);
-  fMuonTracks = new TClonesArray(*source.fMuonTracks);
-  fPmdTracks = new TClonesArray(*source.fPmdTracks);
-  fTrdTracks = new TClonesArray(*source.fTrdTracks);
-  fV0s = new TClonesArray(*source.fV0s);
-  fCascades = new TClonesArray(*source.fCascades);
-  fKinks = new TClonesArray(*source.fKinks);
-  fCaloClusters = new TClonesArray(*source.fCaloClusters);
-  fEMCALCells = new AliESDCaloCells(*source.fEMCALCells);
-  fPHOSCells = new AliESDCaloCells(*source.fPHOSCells);
-  fErrorLogs = new TClonesArray(*source.fErrorLogs);
-  fESDACORDE = new AliESDACORDE(*source.fESDACORDE);
-  fESDOld       = new AliESD(*source.fESDOld);
-  fESDFriendOld = new AliESDfriend(*source.fESDFriendOld);
-  // CKB this way?? or 
-  // or AddObject(  fESDZDC = new AliESDZDC(*source.fESDZDC));
+  // This assumes that the list is already created
+  // and that the virtual void Copy(Tobject&) function
+  // is correctly implemented in the derived class
+  // otherwise only TObject::Copy() will be used
 
-  fESDObjects = new TList();
-  AddObject(fESDRun);
-  AddObject(fHeader);
-  AddObject(fESDZDC);
-  AddObject(fESDFMD);
-  AddObject(fESDVZERO);
-  AddObject(fESDTZERO);
-  AddObject(fTPCVertex);
-  AddObject(fSPDVertex);
-  AddObject(fPrimaryVertex);
-  AddObject(fSPDMult);
-  AddObject(fPHOSTrigger);
-  AddObject(fEMCALTrigger);
-  AddObject(fTracks);
-  AddObject(fMuonTracks);
-  AddObject(fPmdTracks);
-  AddObject(fTrdTracks);
-  AddObject(fV0s);
-  AddObject(fCascades);
-  AddObject(fKinks);
-  AddObject(fCaloClusters);
-  AddObject(fEMCALCells);
-  AddObject(fPHOSCells);
-  AddObject(fErrorLogs);
-  AddObject(fESDACORDE);
+
+  if((fESDObjects->GetSize()==0)&&(source.fESDObjects->GetSize()>=kESDListN)){
+    // We cover the case that we do not yet have the 
+    // standard content but the source has it
+    CreateStdContent();
+  }
+
+  TIter next(source.GetList());
+  TObject *its = 0;
+  TString name;
+  while ((its = next())) {
+    name.Form("%s", its->GetName());
+    TObject *mine = fESDObjects->FindObject(name.Data());
+    if(!mine){
+      // not in this: can be added to list (to be implemented)
+      AliWarning(Form("%s:%d Could not find %s for copying \n",
+		      (char*)__FILE__,__LINE__,name.Data()));
+      continue;
+    }
+
+    if(!its->InheritsFrom("TCollection")){
+      // simple objects
+      its->Copy(*mine);
+    }
+    else if(its->InheritsFrom("TClonesArray")){
+      // Create or expand the tclonesarray pointers
+      // so we can directly copy to the object
+      TClonesArray *its_tca = (TClonesArray*)its;
+      TClonesArray *mine_tca = (TClonesArray*)mine;
+
+      // this leaves the capacity of the TClonesArray the same
+      // except for a factor of 2 increase when size > capacity
+      // does not release any memory occupied by the tca
+      mine_tca->ExpandCreate(its_tca->GetEntriesFast());
+      for(int i = 0;i < its_tca->GetEntriesFast();++i){
+	// copy 
+	TObject *mine_tca_obj = mine_tca->At(i);
+	TObject *its_tca_obj = its_tca->At(i);
+	// no need to delete first
+	// pointers within the class should be handled by Copy()...
+	// Can there be Empty slots?
+	its_tca_obj->Copy(*mine_tca_obj);
+      }
+    }
+    else{
+      AliWarning(Form("%s:%d cannot copy TCollection \n",
+		      (char*)__FILE__,__LINE__));
+    }
+  }
 
   fConnected = source.fConnected;
   fEMCALClusters = source.fEMCALClusters;
   fFirstEMCALCluster = source.fFirstEMCALCluster;
   fPHOSClusters = source.fPHOSClusters;
   fFirstPHOSCluster = source.fFirstPHOSCluster;
-
 
 
   return *this;
@@ -289,6 +288,19 @@ AliESDEvent::~AliESDEvent()
     }
 
   
+}
+
+void AliESDEvent::Copy(TObject &obj) const {
+
+  // interface to TOBject::Copy
+  // Copies the content of this into obj!
+  // bascially obj = *this
+
+  if(this==&obj)return;
+  AliESDEvent *robj = dynamic_cast<AliESDEvent*>(&obj);
+  if(!robj)return; // not an AliESEvent
+  *robj = *this;
+  return;
 }
 
 //______________________________________________________________________________
@@ -1045,7 +1057,7 @@ const void AliESDEvent::WriteToTree(TTree* tree) const {
   while ((obj = next())) {
     branchname.Form("%s", obj->GetName());
     if ((kSplitlevel > 1) &&  !obj->InheritsFrom(TClonesArray::Class())) {
-      branchname += ".";
+      if(!branchname.EndsWith("."))branchname += ".";
     }
     tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),
 		 kBufsize, kSplitlevel - 1);
@@ -1133,8 +1145,9 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     return;
   }
   
-  delete fESDOld;
-  fESDOld = 0;
+
+    delete fESDOld;
+    fESDOld = 0;
   // Try to find AliESDEvent
   AliESDEvent *esdEvent = 0;
   esdEvent = (AliESDEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
@@ -1149,14 +1162,24 @@ void AliESDEvent::ReadFromTree(TTree *tree){
       fConnected = true;
       return;
     }
+
     // Connect to tree
     // prevent a memory leak when reading back the TList
     delete fESDObjects;
     fESDObjects = 0;
+
+
+
     // create a new TList from the UserInfo TList... 
     // copy constructor does not work...
+
     fESDObjects = (TList*)(esdEvent->GetList()->Clone());
     fESDObjects->SetOwner(kFALSE);
+
+    // in principle
+    // we only need new things in the list if we do no already have it..
+    // TODO just add new entries
+
     if(fESDObjects->GetEntries()<kESDListN){
       printf("%s %d AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
 	     (char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
@@ -1208,7 +1231,16 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     TNamed *el;
     while((el=(TNamed*)next())){
       TString bname(el->GetName());    
-      tree->SetBranchAddress(bname.Data(),fESDObjects->GetObjectRef(el));
+      TBranch *br = tree->GetBranch(bname.Data());
+      if(br){
+	tree->SetBranchAddress(bname.Data(),fESDObjects->GetObjectRef(el));
+      }
+      else{
+	br = tree->GetBranch(Form("%s.",bname.Data()));
+	if(br){
+	  tree->SetBranchAddress(Form("%s.",bname.Data()),fESDObjects->GetObjectRef(el));
+	}
+      }
     }
     GetStdContent();
     // when reading back we are not owner of the list 

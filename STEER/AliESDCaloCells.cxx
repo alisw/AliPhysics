@@ -59,10 +59,17 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
   if(&source == this) return *this;
   TNamed::operator=(source);
 
+  if(fNCells != source.fNCells){
+    DeleteContainer();
+    CreateContainer(source.fNCells);
+  }
+
   fNCells = source.fNCells; 
   fIsSorted = source.fIsSorted;
   fType = source.fType;
-  
+
+
+
   for(Int_t i = 0; i < fNCells; i++){
     fCellNumber[i] = source.fCellNumber[i];
     fAmplitude[i] = source.fAmplitude[i];
@@ -70,6 +77,20 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
   }
 
   return *this;
+
+}
+
+
+void AliESDCaloCells::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDCaloCells *robj = dynamic_cast<AliESDCaloCells*>(&obj);
+  if(!robj)return; // not an AliESDCaloCells
+  *robj = *this;
 
 }
 

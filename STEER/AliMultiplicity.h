@@ -19,6 +19,7 @@ class AliMultiplicity : public TObject {
                   Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
+  virtual void Copy(TObject &obj) const;
   virtual ~AliMultiplicity();
 // methods to access tracklet information
   Int_t GetNumberOfTracklets() const {return fNtracks;}

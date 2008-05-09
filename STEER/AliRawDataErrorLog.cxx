@@ -91,6 +91,19 @@ AliRawDataErrorLog & AliRawDataErrorLog::operator=(const AliRawDataErrorLog &sou
   return *this;
 }
 
+void AliRawDataErrorLog::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliRawDataErrorLog *robj = dynamic_cast<AliRawDataErrorLog*>(&obj);
+  if(!robj)return; // not an AliRawDataErrorLog
+  *robj = *this;
+
+}
+
 //_____________________________________________________________________________
 Int_t AliRawDataErrorLog::Compare(const TObject *obj) const
 {

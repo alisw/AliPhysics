@@ -68,3 +68,15 @@ AliESDPmdTrack &AliESDPmdTrack::operator=(const AliESDPmdTrack& PMDTrack)
   fNcell  = PMDTrack.fNcell;
   return *this;
 }
+
+void AliESDPmdTrack::Copy(TObject& obj) const {
+
+   // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDPmdTrack *robj = dynamic_cast<AliESDPmdTrack*>(&obj);
+  if(!robj)return; // not an aliesesdpmdtrack
+  *robj = *this;
+}

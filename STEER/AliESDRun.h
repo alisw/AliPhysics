@@ -23,7 +23,7 @@ public:
   AliESDRun();
   AliESDRun(const AliESDRun& esd);
   AliESDRun& operator=(const AliESDRun& esd);
-
+  virtual void Copy(TObject &obj) const; // Interface for using TOBject::Copy()
 
   Int_t   GetRunNumber() const {return fRunNumber;}
   void    SetRunNumber(Int_t n) {fRunNumber=n;}

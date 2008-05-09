@@ -23,6 +23,7 @@ public:
   AliESDkink();             //constructor
   AliESDkink(const AliESDkink &source);             //constructor
   AliESDkink& operator=(const AliESDkink &source);
+  virtual void Copy(TObject &obj) const;
   //
   void SetID(Short_t id){fID=id;}
   Short_t GetID(){return fID;}

@@ -130,6 +130,20 @@ AliESDkink& AliESDkink::operator=(const AliESDkink &source)
   return *this;
 }
 
+void AliESDkink::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDkink *robj = dynamic_cast<AliESDkink*>(&obj);
+  if(!robj)return; // not an AliESDkink
+  *robj = *this;
+
+}
+
+
 void AliESDkink::SetMother(const AliExternalTrackParam & pmother)  {
   //
   // set mother

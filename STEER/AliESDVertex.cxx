@@ -174,6 +174,21 @@ AliESDVertex &AliESDVertex::operator=(const AliESDVertex &source){
   }
   return *this;
 }
+
+void AliESDVertex::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDVertex *robj = dynamic_cast<AliESDVertex*>(&obj);
+  if(!robj)return; // not an AliESDVertex
+  *robj = *this;
+
+}
+
+
 //--------------------------------------------------------------------------
 void AliESDVertex::SetToZero() {
   //

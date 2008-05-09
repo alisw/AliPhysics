@@ -21,6 +21,7 @@ public:
   AliESDTZERO();
   AliESDTZERO(const AliESDTZERO& tzero);
   AliESDTZERO& operator=(const AliESDTZERO& tzero);
+  virtual void Copy(TObject &obj) const;
 
   Double_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Double_t z) {fT0zVertex=z;}

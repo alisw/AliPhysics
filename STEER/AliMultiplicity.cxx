@@ -96,6 +96,20 @@ AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
   return *this;
 }
 
+void AliMultiplicity::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliMultiplicity *robj = dynamic_cast<AliMultiplicity*>(&obj);
+  if(!robj)return; // not an AliMultiplicity
+  *robj = *this;
+
+}
+
+
 //______________________________________________________________________
 void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   // used by copy constructor and assignment operator

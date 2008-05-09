@@ -32,6 +32,8 @@ public:
   AliESDcascade(const AliESDv0 &v0,
                 const AliExternalTrackParam &t, Int_t i);
   ~AliESDcascade();
+  AliESDcascade& operator=(const AliESDcascade&);
+  virtual void Copy(TObject &obj) const;
 
   Double_t ChangeMassHypothesis(Double_t &v0q, Int_t code=kXiMinus); 
 
@@ -69,7 +71,7 @@ protected:
 
 
 private:
-  AliESDcascade& operator=(const AliESDcascade&);
+
 
   ClassDef(AliESDcascade,5) // reconstructed cascade vertex
 };

@@ -133,45 +133,103 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
   fID = source.fID;
 
-  fNCells= source. fNCells;
+  fNCells= source.fNCells;
+
   if (source.fNCells > 0) {
-    
     if(source.fCellsAbsId){
-      fCellsAbsId = new UShort_t[source.fNCells];
+      if(fNCells != source.fNCells){
+	delete [] fCellsAbsId;
+	fCellsAbsId = new UShort_t[source.fNCells];
+      }
       for (Int_t i=0; i<source.fNCells; i++)
 	fCellsAbsId[i]=source.fCellsAbsId[i];
     }
     
     if(source.fCellsAmpFraction){
-      fCellsAmpFraction = new Double32_t[source.fNCells];
+      if(fNCells != source.fNCells){
+	delete [] fCellsAmpFraction;
+	fCellsAmpFraction = new Double32_t[source.fNCells];
+      }
       for (Int_t i=0; i<source.fNCells; i++)
 	fCellsAmpFraction[i]=source.fCellsAmpFraction[i];
-    }
-    
+    }  
   }
 
   fNExMax = source.fNExMax;
   fClusterType = source.fClusterType;
 
   //not in use
-  delete fTracksMatched;
-  fTracksMatched = source.fTracksMatched?new TArrayI(*source.fTracksMatched):0x0;
-  delete fLabels;
-  fLabels = source.fLabels?new TArrayI(*source.fLabels):0x0;
-  
-  delete fDigitAmplitude;
-  fDigitAmplitude = source.fDigitAmplitude?new TArrayS(*source.fDigitAmplitude):0x0;
-  
-  delete fDigitTime;
-  fDigitTime = source.fDigitTime?new TArrayS(*source.fDigitTime):0x0;
-  
-  delete fDigitIndex;
-  fDigitIndex = source.fDigitIndex?new TArrayS(*source.fDigitIndex):0x0;
+  if(source.fTracksMatched){
+    // assign or copy construct
+    if(fTracksMatched) *fTracksMatched = *source.fTracksMatched;
+    else fTracksMatched = new TArrayI(*source.fTracksMatched);
+  }
+  else{
+    delete fTracksMatched;
+    fTracksMatched = 0;
+  }
+
+  if(source.fLabels){
+    // assign or copy construct
+    if(fLabels) *fLabels = *source.fLabels;
+    else fLabels = new TArrayI(*source.fLabels);
+  }
+  else{
+    delete fLabels;
+    fLabels = 0;
+  }
+
+
+  if(source.fDigitAmplitude){
+    // assign or copy construct
+    if(fDigitAmplitude) *fDigitAmplitude = *source.fDigitAmplitude;
+    else fDigitAmplitude = new TArrayS(*source.fDigitAmplitude);
+  }
+  else{
+    delete fDigitAmplitude;
+    fDigitAmplitude = 0;
+  }
+
+
+
+  if(source.fDigitTime){
+    // assign or copy construct
+    if(fDigitTime) *fDigitTime = *source.fDigitTime;
+    else fDigitTime = new TArrayS(*source.fDigitTime);
+  }
+  else{
+    delete fDigitTime;
+    fDigitTime = 0;
+  }
+
+
+
+  if(source.fDigitIndex){
+    // assign or copy construct
+    if(fDigitIndex) *fDigitIndex = *source.fDigitIndex;
+    else fDigitIndex = new TArrayS(*source.fDigitIndex);
+  }
+  else{
+    delete fDigitIndex;
+    fDigitIndex = 0;
+  }
   
   return *this;
 
 }
 
+void AliESDCaloCluster::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDCaloCluster *robj = dynamic_cast<AliESDCaloCluster*>(&obj);
+  if(!robj)return; // not an AliESDCluster
+  *robj = *this;
+
+}
 
 //_______________________________________________________________________
 AliESDCaloCluster::~AliESDCaloCluster(){ 

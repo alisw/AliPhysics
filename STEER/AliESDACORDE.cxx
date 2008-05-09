@@ -52,4 +52,17 @@ AliESDACORDE& AliESDACORDE::operator=(const AliESDACORDE& o)
 	return *this;
 }
 
+void AliESDACORDE::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDACORDE *robj = dynamic_cast<AliESDACORDE*>(&obj);
+  if(!robj)return; // not an AliESDACRDE
+  *robj = *this;
+
+}
+
 
