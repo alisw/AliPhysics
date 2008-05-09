@@ -200,6 +200,9 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
     /** assignment operator prohibited */
     AliConverter& operator=(const AliConverter&);
 
+    /** the ESD */
+    AliESDEvent* fESD; //! transient value
+
     /** pointer to the basic ESD conversion methods */
     AliHLTTPCEsdWriterComponent* fBase; //! transient value
 

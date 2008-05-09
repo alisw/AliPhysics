@@ -173,6 +173,8 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
   // see header file for class documentation
   int iResult=0;
   if (pESD && blocks) {
+      pESD->Reset();
+    
       pESD->SetMagneticField(fSolenoidBz);
       const AliHLTComponentBlockData* iter = NULL;
       AliHLTTPCTrackletData* inPtr=NULL;
@@ -216,8 +218,6 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	pTree->Fill();
       }
 
-      pESD->Reset();
-    
   } else {
     iResult=-EINVAL;
   }
@@ -324,6 +324,7 @@ int AliHLTTPCEsdWriterComponent::Reconfigure(const char* cdbEntry, const char* c
 
 AliHLTTPCEsdWriterComponent::AliConverter::AliConverter()
   :
+  fESD(NULL),
   fBase(new AliHLTTPCEsdWriterComponent),
   fWriteTree(1)
 {
@@ -339,6 +340,9 @@ AliHLTTPCEsdWriterComponent::AliConverter::~AliConverter()
   // see header file for class documentation
   if (fBase) delete fBase;
   fBase=NULL;
+
+  if (fESD) delete fESD;
+  fESD=NULL;
 }
 
 void AliHLTTPCEsdWriterComponent::AliConverter::GetInputDataTypes(AliHLTComponentDataTypeList& list)
@@ -412,9 +416,17 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
   // see header file for class documentation
   int iResult=0;
   assert(fBase);
-  AliESDEvent* pESD = new AliESDEvent;
+  if (!fESD) {
+    fESD = new AliESDEvent;
+    if (fESD) {
+      fESD->CreateStdContent();
+    } else {
+      iResult=-ENOMEM;
+    }
+  }
+
+  AliESDEvent* pESD = fESD;
   if (pESD && fBase) {
-    pESD->CreateStdContent();
     TTree* pTree = NULL;
     // TODO: Matthias 06.12.2007
     // Tried to write the ESD directly instead to a tree, but this did not work
@@ -442,8 +454,6 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
       pTree->GetUserInfo()->Clear();
       delete pTree;
     }
-
-    delete pESD;
   }
   return iResult;
 }
