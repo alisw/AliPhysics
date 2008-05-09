@@ -235,7 +235,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
     kRawStream,
 
     /** agent provides a chain
-     * The data bock is fed into an analysis chain, the treatment
+     * The data block is fed into an analysis chain, the treatment
      * depends on the components in the chain.
      */
     kChain,
