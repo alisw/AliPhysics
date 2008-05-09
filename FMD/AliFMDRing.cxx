@@ -63,6 +63,8 @@ AliFMDRing::AliFMDRing(Char_t id)
     fCopperThickness(0),
     fChipThickness(0),
     fSpacing(0),
+    fHoneycombThickness(0.),
+    fAlThickness(0.),
     fVerticies(0)
 {
   // CTOR
@@ -77,6 +79,8 @@ AliFMDRing::AliFMDRing(Char_t id)
   SetCopperThickness();
   SetChipThickness();
   SetSpacing();
+  SetHoneycombThickness();
+  SetAlThickness();
   
   if (fId == 'I' || fId == 'i') {
     SetLowR(4.3);
@@ -150,6 +154,24 @@ AliFMDRing::GetStripRadius(UShort_t strip) const
   return (strip + .5) * dstrip + stripoff; // fLowR
 }
  
+//____________________________________________________________________
+Double_t
+AliFMDRing::GetFullDepth() const
+{
+  return (GetSiThickness() + 
+	  GetSpacing() + 
+	  GetPrintboardThickness() + 
+	  GetCopperThickness() + 
+	  GetChipThickness() + 
+	  GetModuleSpacing() +
+	  GetLegLength() + 
+	  GetHoneycombThickness() + 
+	  GetFMDDPrintboardThickness() + 
+	  GetFMDDCopperThickness() + 
+	  GetFMDDChipThickness() 
+	  + 0.5);
+}
+
 //____________________________________________________________________
 void
 AliFMDRing::Detector2XYZ(UShort_t sector,

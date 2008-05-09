@@ -385,7 +385,7 @@ AliFMDFancy::ProcessHit(AliFMDHit* hit, TParticle*)
 {
   // Process a hit. 
   AddMarker(hit->Detector(), hit->Ring(), hit->Sector(), hit->Strip(), 
-	    hit, hit->Edep(), 0);
+	    hit, hit->Edep(), 0, 20);
   return kTRUE;
 }
 //____________________________________________________________________
@@ -424,7 +424,7 @@ AliFMDFancy::AliFancyDetector::AddMarker(Char_t rng, UShort_t sec,
 //____________________________________________________________________
 void
 AliFMDFancy::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
-		       TObject*, Float_t, Float_t)
+		       TObject*, Float_t, Float_t, Float_t)
 {
   // Add a marker to the display
   //

@@ -53,7 +53,7 @@ public:
   /** @param t Thickness of support beams */
   void SetBeamThickness(Double_t t=.5) { fBeamThickness = t; }
   /** @param w Width of support beams */
-  void SetBeamWidth(Double_t w=6) { fBeamWidth = w; }
+  void SetBeamWidth(Double_t w=5) { fBeamWidth = w; }
   /** @param l Length of the cone in Z */
   void SetConeLength(Double_t l=30.9) { fConeLength = l; }
   /** @param r Outer radius of flanges */

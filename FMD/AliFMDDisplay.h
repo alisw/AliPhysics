@@ -52,8 +52,15 @@ public:
   void  Pick() { fZoomMode = kFALSE; }
   /** Redisplay the event */ 
   virtual void Redisplay(); // *MENU*
+  /** Break */
+  virtual void Break();
+  /** Render in 3D */
+  virtual void Render();
+  
   /** Change cut */
   virtual void ChangeCut();
+  /** Change cut */
+  virtual void ChangeFactor();
   /** Called when a mouse or similar event happens in the display. 
       @param event Event type
       @param px    where the event happened in pixels along X
@@ -111,13 +118,7 @@ public:
       @param x   Value 
       @param max Maximum (for example 1023 for digits)
       @return @c false on error  */
-  virtual Int_t  LookupColor(Float_t x, Float_t max)  const;
-  /** Set multiplicity cut 
-      @param cut Cut-off in multiplicity */
-  virtual void SetMultiplicityCut(Float_t c=.01) { fMultCut = c; }//*MENU*
-  /** Set pedestal width factor 
-      @param fac Factor */
-  virtual void SetPedestalFactor(Float_t f=3) { fPedestalFactor = f; }//*MENU*
+  virtual Int_t  LookupColor(Float_t x, Float_t min, Float_t max)  const;
 protected:
   /** Copy constructor 
       @param o Object to copy from  */
@@ -130,13 +131,12 @@ protected:
       fPad(0),
       fButtons(0),
       fSlider(0),
+      fFactor(0),
       fZoomMode(0),
       fX0(0),
       fY0(0),
       fX1(0),
       fY1(0),
-      fMultCut(0),
-      fPedestalFactor(0),
       fXPixel(0),
       fYPixel(0),
       fOldXPixel(0),
@@ -145,11 +145,21 @@ protected:
       fOnlyFMD(kTRUE),
       fSpec(0), 
       fSpecCut(0),
-      fAux(0)
+      fAux(0),
+      fReturn(kFALSE)
   { } 
   /** Assignment operator 
       @return Reference to this object */
   AliFMDDisplay& operator=(const AliFMDDisplay&) { return *this; } 
+  /** Add a marker to the display
+      @param x   X position
+      @param y   Y position
+      @param z   Z position
+      @param o   Object to refer to
+      @param s   Signal 
+      @param max Maximum of signal */
+  virtual void AddMarker(Float_t x, Float_t y, Float_t z, 
+			 TObject* o, Float_t s, Float_t min, Float_t max);
   /** Add a marker to the display
       @param det Detector
       @param rng Ring
@@ -159,7 +169,7 @@ protected:
       @param s   Signal 
       @param max Maximum of signal */
   virtual void AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str, 
-			 TObject* o, Float_t s, Float_t max);
+			 TObject* o, Float_t s, Float_t min, Float_t max);
   
   /** Show only the FMD detectors. */
   void ShowOnlyFMD();
@@ -169,6 +179,8 @@ protected:
   virtual void DrawAux();
   virtual void Idle();
   virtual void AtEnd();
+  virtual Bool_t InsideCut(Float_t v, const Float_t& min, 
+			 const Float_t& max) const;
   
   static AliFMDDisplay* fgInstance; // Static instance 
   Bool_t                fWait;      // Wait until user presses `Continue'
@@ -178,13 +190,12 @@ protected:
   TPad*                 fPad;       // View pad. 
   TObjArray             fButtons;   // Continue button
   TSlider*              fSlider;    // Cut slider
+  TSlider*              fFactor;    // Factor slider
   Bool_t                fZoomMode;  // Whether we're in Zoom mode
   Float_t               fX0;        // X at lower left corner or range 
   Float_t               fY0;        // Y at lower left corner or range 
   Float_t               fX1;        // X at upper right corner or range 
   Float_t               fY1;        // Y at upper right corner or range 
-  Float_t               fMultCut;   // Multiplicity cut  
-  Float_t               fPedestalFactor; // ADC acceptance factor 
   Int_t                 fXPixel;    // X pixel of mark
   Int_t                 fYPixel;    // Y pixel of mark
   Int_t                 fOldXPixel; // Old x pixel of mark
@@ -194,6 +205,7 @@ protected:
   TH1*                  fSpec;      // Spectra
   TH1*                  fSpecCut;   // Cut spectra
   TCanvas*              fAux;       // Aux canvas.
+  Bool_t                fReturn;    // Stop 
   ClassDef(AliFMDDisplay,0)  // FMD specialised event display
 };
 

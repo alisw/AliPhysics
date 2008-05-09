@@ -86,14 +86,15 @@ AliFMD3::Init()
   // Initialize 
   AliFMDDetector::Init();
   SetInnerHoneyHighR(GetOuterHoneyHighR());
-  Double_t zdist   = fConeLength - fBackLength - fNoseLength;
+  Double_t zdist   = fConeLength;
   Double_t tdist   = fBackHighR - fNoseHighR;
-  Double_t innerZh = fInnerZ - fInner->GetRingDepth() - fHoneycombThickness;
-  Double_t outerZh = fOuterZ - fOuter->GetRingDepth() - fHoneycombThickness;
+  Double_t innerZh = (fInnerZ - fInner->GetRingDepth());
+  Double_t outerZh = (fOuterZ - fOuter->GetRingDepth() - 
+		      fOuter->GetHoneycombThickness());
   Double_t minZ    = TMath::Min(fNoseZ - fConeLength, outerZh);
   fAlpha           = tdist / zdist;
   fZ               = fNoseZ + (minZ - fNoseZ) / 2;
-  fInnerHoneyHighR = ConeR(innerZh + fHoneycombThickness,"O") - 1;
+  fInnerHoneyHighR = ConeR(innerZh,"I");
   fOuterHoneyHighR = GetBackLowR();
 }
 
@@ -110,17 +111,18 @@ AliFMD3::ConeR(Double_t z, Option_t* opt) const
     AliWarning(Form("z=%lf is before start of cone %lf", z, fNoseZ));
     return -1;
   }
-  if (z < fOuterZ - fOuter->GetRingDepth() - fHoneycombThickness) {
+  if (z < fOuterZ - fOuter->GetFullDepth()) {
     AliWarning(Form("z=%lf is after end of cone %lf", z, 
-		    fOuterZ - fOuter->GetRingDepth() - fHoneycombThickness));
+		    fOuterZ - fOuter->GetFullDepth()));
     return -1;
   }
-  Double_t e = fBeamThickness / TMath::Cos(TMath::ATan(fAlpha));
-  if (opt[0] == 'I' || opt[1] == 'i') e *= -1;
-  if (z > fNoseZ - fNoseLength) return fNoseHighR + e;
-  if (z < fNoseZ - fConeLength + fBackLength) return fBackHighR + e;
-  Double_t r = fNoseHighR + fAlpha * TMath::Abs(z - fNoseZ + fNoseLength) + e;
-  return r;
+  Bool_t   inner = opt[0] == 'I' || opt[1] == 'i';
+  Double_t off1  = (inner ? fNoseLowR : fNoseHighR);
+  Double_t off2  = (inner ? fBackLowR : fBackHighR);
+  Double_t off3  = (inner ? 0         : fBeamThickness/fAlpha);
+  if (z > fNoseZ - fNoseLength)               return off1;
+  if (z < fNoseZ - fConeLength + fBackLength) return off2;
+  return (off1 + off3 + fAlpha * TMath::Abs(z - fNoseZ + fNoseLength));
 }
 
 

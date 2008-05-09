@@ -56,8 +56,6 @@ AliFMDDetector::AliFMDDetector(Int_t id, AliFMDRing* inner, AliFMDRing* outer)
     fId(id), 
     fInnerZ(0.),
     fOuterZ(0.),
-    fHoneycombThickness(0.),
-    fAlThickness(0.),
     fInnerHoneyLowR(0.),
     fInnerHoneyHighR(0.),
     fOuterHoneyLowR(0.),
@@ -73,8 +71,6 @@ AliFMDDetector::AliFMDDetector(Int_t id, AliFMDRing* inner, AliFMDRing* outer)
   //   INNER      Inner ring geometry 
   //   OUTER      Outer ring geometry (if any)
   // 
-  SetHoneycombThickness();
-  SetAlThickness();
   SetInnerHoneyLowR(0);
   SetInnerHoneyHighR(0);
   SetInnerZ(0);
@@ -89,8 +85,6 @@ AliFMDDetector::AliFMDDetector(const AliFMDDetector& other)
     fId(other.fId),
     fInnerZ(0.),
     fOuterZ(0.),
-    fHoneycombThickness(0.),
-    fAlThickness(0.),
     fInnerHoneyLowR(0.),
     fInnerHoneyHighR(0.),
     fOuterHoneyLowR(0.),
@@ -101,8 +95,6 @@ AliFMDDetector::AliFMDDetector(const AliFMDDetector& other)
     fOuterTransforms(other.fOuterTransforms)
 {
   // Copy constructor 
-  SetHoneycombThickness(other.GetHoneycombThickness());
-  SetAlThickness(other.GetAlThickness());
   SetInnerHoneyLowR(other.GetInnerHoneyLowR());
   SetInnerHoneyHighR(other.GetInnerHoneyHighR());
   SetInnerZ(other.GetInnerZ());
@@ -123,8 +115,6 @@ AliFMDDetector::operator=(const AliFMDDetector& other)
   fOuter           = other.fOuter;
   fInnerTransforms = other.fInnerTransforms;
   fOuterTransforms = other.fOuterTransforms;
-  SetHoneycombThickness(other.GetHoneycombThickness());
-  SetAlThickness(other.GetAlThickness());
   SetInnerHoneyLowR(other.GetInnerHoneyLowR());
   SetInnerHoneyHighR(other.GetInnerHoneyHighR());
   SetInnerZ(other.GetInnerZ());
@@ -166,8 +156,10 @@ AliFMDDetector::HasAllTransforms(Char_t ring) const
 #define IS_NODE_THIS(name) \
   (name[0] == 'F' && name[2] == 'M' && name[1] == Char_t(48+fId) && \
    (name[3] == 'T' || name[3] == 'B'))
-#define IS_NODE_SENSOR(name) \
-  (name[0] == 'F' && name[2] == 'S' && name[3] == 'E')
+#define IS_NODE_SENSOR(name)				\
+  (name[0] == 'F' && (name[2] == 'B' || name[2] == 'F') && name[3] == 'H')
+//#define IS_NODE_SENSOR(name)				\
+//  (name[0] == 'F' && name[2] == 'S' && name[3] == 'E')
 #define IS_NODE_HALF(name) \
   (name[0] == 'F' && name[2] == 'M' && (name[3] == 'B' || name[3] == 'T'))
 #define HALF_FORMAT   "FMD/FMD%d_%c"
@@ -544,7 +536,7 @@ AliFMDDetector::Detector2XYZ(Char_t   ring,
 # define DEGRAD TMath::Pi() / 180. 
   Double_t local[]  = { rho * TMath::Cos(phi * DEGRAD), 
 		        rho * TMath::Sin(phi * DEGRAD), 
-		        -modThick + siThick / 2 };
+		        /* -modThick + */ siThick / 2 };
   Double_t master[3];
   AliFMDDebug(30, ("Local (%7.3f,%7.3f,%7.3f)",local[0], local[1], local[2]));
   m->LocalToMaster(local, master);

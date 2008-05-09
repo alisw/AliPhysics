@@ -125,6 +125,9 @@ public:
   /** Make the alignment objects. 
       @param option Not used. */
   void Exec(Option_t* option="");
+  /** Get the geometry */
+  static Bool_t GetGeometry(Bool_t toCdb=kFALSE, 
+			    const TString& storage=TString());
 protected:
   AliFMDAlignFaker(const AliFMDAlignFaker& o) 
     : TTask(o), 

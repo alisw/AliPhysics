@@ -61,10 +61,6 @@ public:
   void SetInnerZ(Double_t x) { fInnerZ = x; }
   /** @param x Position of outer ring along z */
   void SetOuterZ(Double_t x) { fOuterZ = x; }
-  /** @param x Thickness of honeycomb plate */
-  void SetHoneycombThickness(Double_t x=1) { fHoneycombThickness = x; }
-  /** @param x Thickness of aluminium of honeycomb */
-  void SetAlThickness(Double_t x=.1) { fAlThickness = x; }
   /** @param x Inner radius of inner honeycomb */
   void SetInnerHoneyLowR(Double_t x) { fInnerHoneyLowR = x; }
   /** @param x Outer radius of inner honeycomb */
@@ -80,10 +76,6 @@ public:
   Double_t GetInnerZ() const { return fInnerZ; }
   /** @return Position of outer ring along z */
   Double_t GetOuterZ() const { return fOuterZ; }
-  /** @return Thickness of honeycomb plate */
-  Double_t GetHoneycombThickness() const { return fHoneycombThickness; }
-  /** @return Thickness of aluminium of honeycomb */
-  Double_t GetAlThickness() const { return fAlThickness; }
   /** @return Inner radius of inner honeycomb */
   Double_t GetInnerHoneyLowR() const { return fInnerHoneyLowR; }
   /** @return Outer radius of inner honeycomb */
@@ -152,8 +144,6 @@ protected:
   Int_t		fId;			// Detector number
   Double_t	fInnerZ;		// Position of outer ring along z
   Double_t	fOuterZ;		// Position of outer ring along z
-  Double_t	fHoneycombThickness;	// Thickness of honeycomb plate
-  Double_t	fAlThickness;		// Thickness of aluminium of honeycomb
   Double_t	fInnerHoneyLowR;	// Inner radius of inner honeycomb
   Double_t	fInnerHoneyHighR;	// Outer radius of inner honeycomb
   Double_t	fOuterHoneyLowR;	// Inner radius of outer honeycomb
@@ -163,7 +153,7 @@ protected:
   TObjArray*    fInnerTransforms;       // List of inner module global
   TObjArray*    fOuterTransforms;       // List of outer module global
 
-  ClassDef(AliFMDDetector, 1); // 
+  ClassDef(AliFMDDetector, 2); // 
 };
 
 #endif

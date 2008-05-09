@@ -230,7 +230,7 @@ Config()
   // This part for configuration    
   // EG_t  eg   = test50;
   // EG_t  eg   = kParam_fmd;
-  EG_t  eg   = kParam_2000; // kPythia;
+  EG_t  eg   = kFMDFlat; // kParam_2000; // kPythia;
   // EG_t  eg   = kFMDFlat;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;

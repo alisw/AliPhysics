@@ -417,7 +417,7 @@ AliFMDPattern::ProcessHit(AliFMDHit* hit, TParticle*)
 void
 AliFMDPattern::AddMarker(UShort_t det, Char_t rng, 
 			 UShort_t sec, UShort_t str,
-			 TObject*, Float_t s, Float_t max)
+			 TObject*, Float_t s, Float_t min, Float_t max)
 {
   // Add a marker to the display
   //

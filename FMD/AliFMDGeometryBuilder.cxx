@@ -36,9 +36,11 @@
 #include <TGeoManager.h>	// ROOT_TGeoManager
 #include <TGeoMatrix.h>	        // ROOT_TGeoMatrix
 #include <TGeoTube.h>		// ROOT_TGeoTube
-#include <TGeoTube.h>		// ROOT_TGeoTube
+#include <TGeoTrd1.h>		// ROOT_TGeoTrd1
+#include <TGeoCone.h>		// ROOT_TGeoTrd1
 #include <TGeoVolume.h>		// ROOT_TGeoVolume
 #include <TGeoXtru.h>		// ROOT_TGeoXtru
+#include <TGeoCompositeShape.h>
 #include <TMath.h>
 #include <TVector2.h>		// ROOT_TVector2
 //#include <TGeoMaterial.h>	// ROOT_TGeoMaterial
@@ -79,9 +81,14 @@ const Char_t* AliFMDGeometryBuilder::fgkRingBotName	= "F%cBV";
 const Char_t* AliFMDGeometryBuilder::fgkHCName		= "F%dH%c";
 const Char_t* AliFMDGeometryBuilder::fgkIHCName		= "F%dI%c";
 const Char_t* AliFMDGeometryBuilder::fgkNoseName        = "F3SN";
-const Char_t* AliFMDGeometryBuilder::fgkBackName        = "F3SB";
-const Char_t* AliFMDGeometryBuilder::fgkBeamName        = "F3SL";
-const Char_t* AliFMDGeometryBuilder::fgkFlangeName      = "F3SF";
+const Char_t* AliFMDGeometryBuilder::fgkBackName        = "F%dSB";
+const Char_t* AliFMDGeometryBuilder::fgkTopName         = "F%dSU";
+const Char_t* AliFMDGeometryBuilder::fgkBeamName        = "F%dSL";
+const Char_t* AliFMDGeometryBuilder::fgkFlangeName      = "F%dSF";
+const Char_t* AliFMDGeometryBuilder::fgkFMDDCuName      = "F%cDC";
+const Char_t* AliFMDGeometryBuilder::fgkFMDDPCBName     = "F%cDP";
+const Char_t* AliFMDGeometryBuilder::fgkFMDDChipName    = "F%cDI";
+const Char_t* AliFMDGeometryBuilder::fgkFMDDName        = "F%cDD";
 const Char_t* AliFMDGeometryBuilder::fgkFMDName         = "F%dM%c";
 
 //____________________________________________________________________
@@ -101,7 +108,8 @@ AliFMDGeometryBuilder::AliFMDGeometryBuilder()
     fChip(0),
     fAir(0),
     fPlastic(0),
-    fCopper(0)
+    fCopper(0),
+    fSteel(0)
 {
   // Default constructor
   fActiveId.Set(2);
@@ -124,7 +132,8 @@ AliFMDGeometryBuilder::AliFMDGeometryBuilder(Bool_t detailed)
     fChip(0),
     fAir(0),
     fPlastic(0),
-    fCopper(0)
+    fCopper(0),
+    fSteel(0)
 {
   // Normal constructor
   // 
@@ -207,9 +216,9 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   fDetectorOff = 3;
   if (fDetailed) {
     fSectorOff   = 1;
-    fModuleOff   = 3;
-    fRingOff     = 4;
-    fDetectorOff = 5;
+    fModuleOff   = 4;
+    fRingOff     = 5;
+    fDetectorOff = 6;
     // Virtual volume shape to divide - This volume is only defined if
     // the geometry is set to be detailed. 
     TGeoTubeSeg* activeShape = new TGeoTubeSeg(rmin, rmax, siThick/2, 
@@ -258,19 +267,19 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   // Short leg shape 
   TGeoTube*   shortLegShape  = new TGeoTube(0, legr, legl / 2);
   TGeoVolume* shortLegVolume = new TGeoVolume(Form(fgkShortLegName, id), 
-					      shortLegShape, fPlastic);
+					      shortLegShape, fCopper);
 
   // Long leg shape
   TGeoTube*   longLegShape   = new TGeoTube(0, legr, (legl + modSpace) / 2);
   TGeoVolume* longLegVolume  = new TGeoVolume(Form(fgkLongLegName, id), 
-					      longLegShape, fPlastic);
+					      longLegShape, fCopper);
   
   
   // Back container volume 
   TGeoVolume* backVolume     = new TGeoVolumeAssembly(Form(fgkBackVName, id));
   Double_t x = 0;
   Double_t y = 0;
-  Double_t z = pcbThick / 2;
+  Double_t z = siThick + space + pcbThick / 2;
   backVolume->AddNode(pcbVolume, 0, new TGeoTranslation(x,y,z));
   z          += (pcbThick + cuThick) / 2;
   backVolume->AddNode(cuVolume, 0, new TGeoTranslation(0, 0, z));
@@ -290,7 +299,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   TGeoVolume* frontVolume    = new TGeoVolumeAssembly(Form(fgkFrontVName, id));
   x         =  0;
   y         =  0;
-  z         =  pcbThick / 2;
+  z         =  siThick + space + pcbThick / 2;
   frontVolume->AddNode(pcbVolume, 1, new TGeoTranslation(x,y,z));
   z          += (pcbThick + cuThick) / 2;
   frontVolume->AddNode(cuVolume, 0, new TGeoTranslation(0, 0, z));
@@ -305,7 +314,60 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   frontVolume->AddNode(longLegVolume, 1, new TGeoTranslation(x,y,z));
   y         =  -y;
   frontVolume->AddNode(longLegVolume, 2, new TGeoTranslation(x,y,z));
+
+
+  // FMDD 
+  Double_t ddlr = r->GetFMDDLowR();
+  Double_t ddhr = r->GetFMDDHighR();
+  Double_t ddpt = r->GetFMDDPrintboardThickness();
+  Double_t ddct = r->GetFMDDCopperThickness();
+  Double_t ddit = r->GetFMDDChipThickness();
+  Double_t ddt  = ddpt + ddct + ddit;
   
+  TGeoShape* fmddPcbShape  = new TGeoTubeSeg(ddlr, ddhr, ddpt/2,0,180);
+  TGeoShape* fmddCuShape   = new TGeoTubeSeg(ddlr, ddhr, ddct/2,0,180);
+  TGeoShape* fmddChipShape = new TGeoTubeSeg(ddlr, ddhr, ddit/2,0,180);
+  fmddPcbShape->SetName(Form(fgkFMDDPCBName, id));
+  fmddCuShape->SetName(Form(fgkFMDDCuName, id));
+  fmddChipShape->SetName(Form(fgkFMDDChipName, id));
+  if (id == 'O' || id == 'o') { 
+    TString pcbName(fmddPcbShape->GetName());
+    TString cuName(fmddCuShape->GetName());
+    TString chipName(fmddChipShape->GetName());
+    
+    fmddPcbShape->SetName(Form("%s_inner",  pcbName.Data()));
+    fmddCuShape->SetName(Form("%s_inner",   cuName.Data()));
+    fmddChipShape->SetName(Form("%s_inner", chipName.Data()));
+    new TGeoBBox(Form("%s_clip",  pcbName.Data()), ddlr+3, ddhr/2, ddpt);
+    new TGeoBBox(Form("%s_clip",  cuName.Data()),  ddlr+3, ddhr/2, ddpt);
+    new TGeoBBox(Form("%s_clip",  chipName.Data()),ddlr+3, ddhr/2, ddpt);
+    TGeoTranslation* trans = new TGeoTranslation(Form("%s_trans",
+						      pcbName.Data()), 
+						 0, ddhr/2, 0);
+    trans->RegisterYourself();
+    fmddPcbShape = new TGeoCompositeShape(pcbName.Data(), 
+					  Form("%s_inner*%s_clip:%s_trans",
+					       pcbName.Data(), 
+					       pcbName.Data(), 
+					       pcbName.Data())); 
+    fmddCuShape = new TGeoCompositeShape(cuName.Data(), 
+					 Form("%s_inner*%s_clip:%s_trans",
+					      cuName.Data(), 
+					      cuName.Data(), 
+					      pcbName.Data()));
+    fmddChipShape = new TGeoCompositeShape(chipName.Data(), 
+					   Form("%s_inner*%s_clip:%s_trans",
+						chipName.Data(), 
+						chipName.Data(), 
+						pcbName.Data()));
+  }
+
+  TGeoVolume*  fmddPcbVolume = new TGeoVolume(Form(fgkFMDDPCBName, id),
+					      fmddPcbShape, fPCB);
+  TGeoVolume*  fmddCuVolume  = new TGeoVolume(Form(fgkFMDDCuName, id),
+					      fmddCuShape, fCopper);
+  TGeoVolume*  fmddChipVolume= new TGeoVolume(Form(fgkFMDDChipName, id),
+					      fmddChipShape, fChip);
   // Half ring mother volumes. 
   TGeoVolume* ringTopVolume = new TGeoVolumeAssembly(Form(fgkRingTopName,id));
   TGeoVolume* ringBotVolume = new TGeoVolumeAssembly(Form(fgkRingBotName,id));
@@ -317,10 +379,16 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   for (Int_t i = 0; i < nmod; i++) {
     if (i == nmod / 2) halfRing = ringBotVolume;
     Bool_t      front =  (i % 2 == 0);
-    Double_t    z1    =  siThick / 2 + (i % 2) * modSpace;
+    TGeoVolume* vol   =  (front ? frontVolume : backVolume);
+    vol->AddNode(sensorVolume, i, new TGeoTranslation(0,0,siThick/2));
+    Double_t    z1    =  (i % 2) * modSpace;
+    Double_t    th    =  (2 * i + 1) * theta;
+    TGeoMatrix* mat1  =  new TGeoCombiTrans(0,0,z1,0); 
+    mat1->RotateZ(th);
+    halfRing->AddNode(vol, i, mat1);
+#if 0
     Double_t    z2    =  z1 + siThick / 2 + space;
     Double_t    th    =  (2 * i + 1) * theta;
-    TGeoVolume* vol   =  (front ? frontVolume : backVolume);
     AliFMDDebug(20, ("Placing copy %d of %s and %s in %s at z=%f and %f, "
 		      "and theta=%f", i, sensorVolume->GetName(), 
 		      vol->GetName(), halfRing->GetName(), z1, z2, th));
@@ -330,7 +398,25 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
     TGeoMatrix* mat2  =  new TGeoCombiTrans(0,0,z2,0); 
     mat2->RotateZ(th);
     halfRing->AddNode(vol, i, mat2);
+#endif
   }
+
+  // Add the FMDD 
+  Double_t zi = r->GetFullDepth() - ddt;
+  Int_t    n  = 2;
+  for (Int_t i = 0; i  < n; i++) {
+    TGeoVolume*   halfRing = (i == 0 ? ringTopVolume : ringBotVolume);
+    Double_t      phi    = 360. / n * i;
+    TGeoRotation* rot    = new TGeoRotation(Form("FMDD%c rotation %d", id, i));
+    rot->RotateZ(phi);
+    z         =  zi + ddpt / 2;
+    halfRing->AddNode(fmddPcbVolume, i, new TGeoCombiTrans(0,0,z,rot));
+    z          += (ddpt + ddct) / 2;
+    halfRing->AddNode(fmddCuVolume, i, new TGeoCombiTrans(0,0,z,rot));
+    z          += (ddct + ddit) / 2;
+    halfRing->AddNode(fmddChipVolume, i, new TGeoCombiTrans(0,0,z,rot));
+  }
+  
 
   return 0;
 }
@@ -390,13 +476,13 @@ AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d,
     if (!r) continue;
     Char_t   c       = r->GetId();
     Int_t    id      = d->GetId();
-    Double_t hcThick = d->GetHoneycombThickness();
-    Double_t alThick = d->GetAlThickness();
+    Double_t hcThick = r->GetHoneycombThickness();
+    Double_t alThick = r->GetAlThickness();
     Double_t z       = TMath::Abs(rz - zMother);
 
     // Place ring in mother volume
     // TGeoMatrix*matrix=new TGeoTranslation(Form("FMD%d%c trans",id,c),0,0,0);
-    AliFMDDebug(5, ("Placing volumes %s and %s in %s and %s at z=%f", 
+    AliFMDDebug(1, ("Placing volumes %s and %s in %s and %s at z=%f", 
 		     tvol->GetName(), bvol->GetName(), 
 		     topMother->GetName(), botMother->GetName(), z));
     topMother->AddNode(tvol, Int_t(c), new TGeoTranslation(0,0,z));
@@ -412,7 +498,7 @@ AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d,
     hcVol->AddNode(ihcVol, 0);
     hcVol->VisibleDaughters(kFALSE);    
     hcVol->SetVisibility(kTRUE);
-
+    
     z += (r->GetSiThickness() + 
 	  r->GetSpacing() + 
 	  r->GetPrintboardThickness() + 
@@ -420,6 +506,8 @@ AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d,
 	  r->GetChipThickness() + 
 	  r->GetModuleSpacing() +
 	  r->GetLegLength() + 
+	  r->GetHoneycombThickness() + 
+	  r->GetFMDDPrintboardThickness() - 
 	  hcThick / 2); 
 
     AliFMDDebug(15, ("Placing a copy of %s in %s and %s at z=%f", 
@@ -448,7 +536,17 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   // See also AliFMDGeometryBuilder::DetectorGeometry 
   // 
   if (!fmd1 || !innerTop || !innerBot) return 0;
+  AliFMDRing* r             = fmd1->GetInner();
   Double_t    z             = fmd1->GetInnerZ();  
+  Double_t    disce         = 2;
+  Double_t    backlr        = fmd1->GetInnerHoneyHighR();
+  Double_t    backhr        = fmd1->GetInnerHoneyHighR()+5;
+  Double_t    backth        = 0.2;
+  Double_t    toplr         = r->GetLowR();
+  Double_t    tophr         = fmd1->GetInnerHoneyHighR()+disce;
+  Double_t    wallbh        = (r->GetFullDepth() + disce);
+  Double_t    wallth        = wallbh+0.1;
+  
   TGeoVolume* fmd1TopVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
 							  fmd1->GetId(), 'T'));
   TGeoVolume* fmd1BotVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
@@ -457,6 +555,85 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   // Basic detector geometry 
   DetectorGeometry(fmd1, fmd1TopVolume, fmd1BotVolume, z, 
 		   innerTop, innerBot, 0, 0);
+
+
+  // Back
+  TGeoTubeSeg* backShape  = new TGeoTubeSeg(backlr, backhr, backth / 2, 0, 180);
+  TGeoTubeSeg* wallbShape = new TGeoTubeSeg(backlr, backlr + backth, 
+					    wallbh/2, 0, 180);
+  TGeoTubeSeg* topShape   = new TGeoTubeSeg(toplr, tophr, backth / 2, 0, 180);
+  TGeoTubeSeg* walltShape = new TGeoTubeSeg(tophr, tophr + backth, 
+					    wallth/2, 0, 180);
+  TGeoVolume*  backVolume = new TGeoVolume(Form(fgkBackName, fmd1->GetId()), 
+					   backShape, fC);
+  TGeoVolume*  wallbVolume= new TGeoVolume(Form(fgkFlangeName, fmd1->GetId()), 
+					   wallbShape, fC);
+  TGeoVolume*  topVolume  = new TGeoVolume(Form(fgkTopName, fmd1->GetId()), 
+					   topShape, fC);
+  TGeoVolume*  walltVolume= new TGeoVolume(Form(fgkBeamName, fmd1->GetId()), 
+					   walltShape, fC);
+  backVolume->SetFillColor(kGray);
+  topVolume->SetFillColor(kGray);
+  wallbVolume->SetFillColor(kGray);
+  walltVolume->SetFillColor(kGray);
+  
+  // Place volumes
+  Double_t zb = TMath::Abs(fmd1->GetInnerZ() - z);
+  Double_t zi = zb;
+  Int_t    n  = 2;
+  
+  // Place top cover
+  zi -= disce / 2 + backth / 2;
+  zb =  zi;
+  for (Int_t i = 0; i  < 2; i++) {
+    TGeoVolume*   mother = (i == 0 ? fmd1TopVolume : fmd1BotVolume);
+    Double_t      phi    = 360. / n * i;
+    TGeoRotation* rot    = new TGeoRotation(Form("FMD1 top rotation %d",
+						 i));
+    rot->RotateZ(phi);
+    TGeoMatrix* matrix   = new TGeoCombiTrans(Form("FMD1 top wall trans %d", 
+						   i),
+					    0, 0, zi, rot);
+    mother->AddNode(topVolume, i, matrix);    
+  }
+  // Place outer wall
+  zi += wallth / 2 + backth / 2;
+  for (Int_t i = 0; i  < 2; i++) {
+    TGeoVolume*   mother = (i == 0 ? fmd1TopVolume : fmd1BotVolume);
+    Double_t      phi    = 360. / n * i;
+    TGeoRotation* rot    = new TGeoRotation(Form("FMD1 outer wall rotation %d",
+						 i));
+    rot->RotateZ(phi);
+    TGeoMatrix* matrix   = new TGeoCombiTrans(Form("FMD1 outer wall trans %d", 
+						   i),
+					    0, 0, zi, rot);
+    mother->AddNode(walltVolume, i, matrix);    
+  }
+  // Place back
+  zi += wallth / 2 + backth / 2; // + disce / 2;
+  for (Int_t i = 0; i  < 2; i++) {
+    TGeoVolume*   mother = (i == 0 ? fmd1TopVolume : fmd1BotVolume);
+    Double_t      phi    = 360. / n * i;
+    TGeoRotation* rot    = new TGeoRotation(Form("FMD1 back rotation %d", i));
+    rot->RotateZ(phi);
+    TGeoMatrix* matrix   = new TGeoCombiTrans(Form("FMD1 back trans %d", i),
+					     0, 0, zi, rot);
+    mother->AddNode(backVolume, i, matrix);    
+  }
+  // Place inner wall
+  zi -= wallbh / 2 + backth / 2; // + disce / 2;
+  for (Int_t i = 0; i  < 2; i++) {
+    TGeoVolume*   mother = (i == 0 ? fmd1TopVolume : fmd1BotVolume);
+    Double_t      phi    = 360. / n * i;
+    TGeoRotation* rot    = new TGeoRotation(Form("FMD1 inner wall rotation %d",
+						 i)); 
+    rot->RotateZ(phi);
+    TGeoMatrix*   matrix = new TGeoCombiTrans(Form("FMD1 inner wall trans %d", 
+						   i),
+					      0, 0, zi, rot);
+    mother->AddNode(wallbVolume, i, matrix);    
+  }
+
 
   // Must add this after filling the assembly.
   TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
@@ -486,7 +663,16 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   // See also AliFMDGeometryBuilder::DetectorGeometry 
   // 
   if (!fmd2 || !innerTop || !innerBot || !outerTop || !outerBot) return 0;
-  Double_t z                = fmd2->GetOuterZ();
+  AliFMDRing* r             = fmd2->GetOuter();
+  Double_t    z             = fmd2->GetOuterZ();  
+  Double_t    framelr       = fmd2->GetOuterHoneyHighR()+0.5;
+  Double_t    framehr       = fmd2->GetOuterHoneyHighR()+1.8;
+  Double_t    framelz       = -1;
+  Double_t    framehz       = (fmd2->GetInnerZ()-z) + r->GetFullDepth() + 1;
+  Double_t    framel        = framehz - framelz;
+  Double_t    coverlr       = fmd2->GetInner()->GetLowR()+1;
+  Double_t    backth        = 0.05;
+
   TGeoVolume* fmd2TopVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
 							  fmd2->GetId(), 'T'));
   TGeoVolume* fmd2BotVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
@@ -495,6 +681,75 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   DetectorGeometry(fmd2, fmd2TopVolume, fmd2BotVolume, z, 
 		   innerTop, innerBot, outerTop, outerBot);
 
+  TGeoShape*  cylinderShape   = new TGeoTubeSeg(framelr,framehr,framel/2,0,180);
+  TGeoVolume* cylinderVolume  = new TGeoVolume(Form(fgkBackName, fmd2->GetId()),
+					       cylinderShape, fC);
+  TGeoShape*  coverShape      = new TGeoTubeSeg(coverlr,framehr,backth/2,0,180);
+  TGeoVolume* coverVolume     = new TGeoVolume(Form(fgkTopName, fmd2->GetId()), 
+					       coverShape, fC);
+  cylinderVolume->SetTransparency(63);
+  coverVolume->SetTransparency(63);
+  
+  for (Int_t i = 0; i  < 2; i++) {
+    TGeoVolume*   mother = (i == 0 ? fmd2TopVolume : fmd2BotVolume);
+    
+    Double_t      phi    = 360. / 2 * i;
+    TGeoRotation* rot    = new TGeoRotation(Form("FMD2 support rot %d",i)); 
+    rot->RotateZ(phi);
+    TGeoMatrix*   matrix = new TGeoCombiTrans(Form("FMD2 cyl trans %d", i),
+					      0, 0, framelz+framel/2, rot);
+    mother->AddNode(cylinderVolume, i, matrix);    
+    matrix               = new TGeoCombiTrans(Form("FMD2 fcov trans %d", i),
+					      0, 0, framelz-backth/2, rot);
+    mother->AddNode(coverVolume, 2*i+0, matrix);    
+    matrix               = new TGeoCombiTrans(Form("FMD2 bcov trans %d", i),
+					      0, 0, framelz+framel+backth/2, 
+					      rot);
+    mother->AddNode(coverVolume, 2*i+1, matrix);    
+  }
+
+
+  Double_t    f1l           = 10;
+  Double_t    f1w           = 6;
+  Double_t    f1d           = 1.2;
+  
+  TGeoBBox*   flange1Shape  = new TGeoBBox(f1l/2, f1w/2, f1d/2);
+  TGeoVolume* flange1Volume = new TGeoVolume(Form(fgkFlangeName, fmd2->GetId()),
+					     flange1Shape, fAl);
+  TGeoBBox*   flange2Shape  = new TGeoBBox(f1w/2, f1d/2, (framel+backth)/2);
+  TGeoVolume* flange2Volume = new TGeoVolume(Form("F%dSG", fmd2->GetId()),
+					     flange2Shape, fAl);
+  flange1Volume->SetTransparency(42);
+  for (Int_t i = 0; i  < 4; i++) {
+    TGeoVolume*   mother = (i < 2 ? fmd2TopVolume : fmd2BotVolume);
+    
+    Double_t      phi    = 360. / 4 * i - 45;
+    Double_t      rphi   = TMath::Pi()*phi/180;
+    Double_t      x      = (framelr + f1l/2) * TMath::Sin(rphi);
+    Double_t      y      = (framelr + f1l/2) * TMath::Cos(rphi);
+    TGeoRotation* rot    = new TGeoRotation(Form("FMD2 support rot %d",i)); 
+    rot->RotateZ(phi);
+    TGeoMatrix*   matrix = new TGeoCombiTrans(Form("FMD2 flange 1 trans %d", i),
+					      x,y, framelz-backth-f1d/2, rot);
+    mother->AddNode(flange1Volume, 2*i+0, matrix);    
+    matrix               = new TGeoCombiTrans(Form("FMD2 flange 2 trans %d", i),
+					      x,y,framelz+framel+backth+f1d/2, 
+					      rot);
+    mother->AddNode(flange1Volume, 2*i+1, matrix);    
+    Double_t x1 = x - (f1w-f1d) / 2 * TMath::Cos(rphi); 
+    Double_t y1 = y + (f1w-f1d) / 2 * TMath::Sin(rphi);
+    matrix               = new TGeoCombiTrans(Form("FMD2 flange 3 trans %d", i),
+					      x1,y1,framelz+framel/2, rot);
+    mother->AddNode(flange2Volume, 2*i+0, matrix);    
+    Double_t x2 = x + (f1w-f1d) / 2 * TMath::Cos(rphi); 
+    Double_t y2 = y - (f1w-f1d) / 2 * TMath::Sin(rphi);
+    matrix               = new TGeoCombiTrans(Form("FMD2 flange 4 trans %d", i),
+					      x2,y2,framelz+framel/2, rot);
+    mother->AddNode(flange2Volume, 2*i+1, matrix);    
+  }
+  
+  
+
   // Must be done after filling the assemblies 
   TGeoVolume* top = gGeoManager->GetVolume("ALIC");
   TGeoMatrix* matrix = new TGeoTranslation("FMD2 trans", 0, 0, z);
@@ -502,6 +757,7 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
 		   fmd2TopVolume->GetName(), fmd2BotVolume->GetName(), z));
   top->AddNode(fmd2TopVolume, fmd2->GetId(), matrix);
   top->AddNode(fmd2BotVolume, fmd2->GetId(), matrix);
+
 
   return 0;
 }
@@ -525,6 +781,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   Double_t nz      = fmd3->GetNoseZ();
   Double_t noser1  = fmd3->GetNoseLowR();
   Double_t noser2  = fmd3->GetNoseHighR();
+  Double_t conet   = fmd3->GetBeamThickness();
   Double_t conel   = fmd3->GetConeLength();
   Double_t backl   = fmd3->GetBackLength();
   Double_t backr1  = fmd3->GetBackLowR();
@@ -546,78 +803,102 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   DetectorGeometry(fmd3, fmd3TopVolume, fmd3BotVolume, z, 
 		   innerTop, innerBot, outerTop, outerBot);
 
-
+  
+  TGeoVolumeAssembly* support = new TGeoVolumeAssembly("F3SU");
+  
   // Nose volume 
-  TGeoTubeSeg* noseShape = new TGeoTubeSeg(noser1, noser2, nlen / 2, 0, 180);
-  TGeoVolume* noseVolume = new TGeoVolume(fgkNoseName, noseShape, fC);
-  zi                     = -nz + nlen / 2 + z;
+  TGeoTubeSeg* noseShape  = new TGeoTubeSeg(noser1, noser2, nlen / 2, 0, 180);
+  TGeoVolume*  noseVolume = new TGeoVolume(fgkNoseName, noseShape, fC);
+  support->AddNode(noseVolume, 0, new TGeoTranslation(0, 0, nlen/2));
+  
+  // Steel bolts 
+  TGeoTube*       boltShape  = new TGeoTube("F3SB", 0, 0.3, conet / 2);
+  TGeoVolume*     boltVolume = new TGeoVolume("F3SB", boltShape, fSteel);
+  Double_t        z1         = -10;
+  Double_t        x1         = (fmd3->ConeR(nz+z1));
+  TGeoRotation*   r1         = new TGeoRotation();
+  r1->RotateY(theta);
+  TGeoCombiTrans* t          = new TGeoCombiTrans("F3SB1",x1,0,-z1,r1);
+  support->AddNode(boltVolume, 1, t);
+  z1                         = -20;
+  x1                         = (fmd3->ConeR(nz+z1));
+  t                          = new TGeoCombiTrans("F3SB2",x1,0,-z1,r1);
+  support->AddNode(boltVolume, 2, t);
 
-  fmd3TopVolume->AddNode(noseVolume, 0, new TGeoTranslation(0, 0, zi));
-  TGeoMatrix* nmatrix    = new TGeoCombiTrans(0, 0, zi, 0); 
-  nmatrix->RotateZ(180);
-  fmd3BotVolume->AddNode(noseVolume, 1, nmatrix);
+  // Cooling plates
+  TGeoTrd1*   plateShape  = new TGeoTrd1(2, 8, 0.1, (conel-2-2)/2-.1);
+  TGeoVolume* plateVolume = new TGeoVolume("F3CO", plateShape, fAl);
+
+  // Shape for carbon half-cone
+  new TGeoConeSeg("F3SC_inner", conel/2,noser2-conet, noser2, 
+		  backr2-conet, backr2, 0., 180.);
+  new TGeoTrd1("F3SC_hole",2,8,conet*3,(conel-2-2)/2);
+  Double_t        holeAng   = TMath::ATan2(backr2 - noser2, conel);
+  Double_t        holeX     = ((conel-2) / 2 * TMath::Sin(holeAng) +
+			       conet     * TMath::Cos(holeAng) +
+			       noser2);
+  TGeoRotation*   holeRot   = new TGeoRotation();
+  holeRot->RotateZ(90);
+  holeRot->RotateY(holeAng*180./TMath::Pi());
+  TGeoCombiTrans* holeTrans = new TGeoCombiTrans(holeX, 0, -2, holeRot);
+
+  // Build-up the composite shape for the cone, and add cooling plates
+  // at the same time. 
+  TString coneExp("F3SC_inner-(");
+  for (int i = 0; i < 4; i++) { 
+    Double_t        thisAng   = 360. / 8 * (i + .5);
+    TGeoCombiTrans* thisTrans = new TGeoCombiTrans(*holeTrans);
+    thisTrans->RotateZ(thisAng);
+    thisTrans->SetName(Form("F3SC_rot%d", i));
+    thisTrans->RegisterYourself();
+    coneExp.Append(Form("F3SC_hole:F3SC_rot%d+", i));
+
+    const Double_t* tt         = thisTrans->GetTranslation();
+    Double_t        x          = tt[0]+1*TMath::Cos(thisAng*TMath::Pi()/180);
+    Double_t        y          = tt[1]+1*TMath::Sin(thisAng*TMath::Pi()/180);
+    TGeoCombiTrans* plateTrans = new TGeoCombiTrans(x,y,tt[2]-1+nlen+conel/2,
+						    thisTrans->GetRotation());
+    support->AddNode(plateVolume, i, plateTrans);
+  }
+  // Remove bolt holes 
+  coneExp.Append("F3SB:F3SB1+F3SB:F3SB2)");
+
+  // Finalize the half-cone shape and add volume
+  TGeoCompositeShape* coneShape  = new TGeoCompositeShape(coneExp.Data());
+  TGeoVolume*         coneVolume = new TGeoVolume("F3SC", coneShape, fC);
+  support->AddNode(coneVolume,1,new TGeoTranslation(0,0,nlen+conel/2));
   
-  // Back
-  TGeoTubeSeg* backShape = new TGeoTubeSeg(backr1, backr2, backl / 2, 0, 180);
-  TGeoVolume* backVolume = new TGeoVolume(fgkBackName, backShape, fC);
-  zi                     = -nz + conel - backl / 2 + z;
-  fmd3TopVolume->AddNode(backVolume, 0, new TGeoTranslation(0, 0, zi));
-  TGeoMatrix* bmatrix    = new TGeoCombiTrans(0, 0, zi, 0);
-  bmatrix->RotateZ(180);
-  fmd3BotVolume->AddNode(backVolume, 1, bmatrix);
-  
-  
-  Int_t n;
-  Double_t r;
   // The flanges 
-  TGeoBBox* flangeShape = new TGeoBBox((flanger - backr2) / 2, 
-				       fmd3->GetBeamWidth() / 2,
-				       backl / 2);
-  TGeoVolume* flangeVolume = new TGeoVolume(fgkFlangeName, flangeShape, fC);
-  n                        = fmd3->GetNFlange();
-  r                        = backr2 + (flanger - backr2) / 2;
-  TGeoVolume* mother       = fmd3TopVolume;
-  for (Int_t i = 0; i  < n; i++) {
-    if (i >= n / 2) mother = fmd3BotVolume;
+  TGeoBBox* flangeShape    = new TGeoBBox((flanger - backr2) / 2, 
+					  fmd3->GetBeamWidth() / 2,
+					  backl / 2);
+  TGeoVolume* flangeVolume = new TGeoVolume(Form(fgkFlangeName, fmd3->GetId()),
+					    flangeShape, fC);
+  Int_t    n               = fmd3->GetNFlange();
+  Double_t r               = backr2 + (flanger - backr2) / 2;
+  for (Int_t i = 0; i  < n/2; i++) {
     Double_t phi       = 360. / n * i + 180. / n;
     Double_t x         = r * TMath::Cos(TMath::Pi() / 180 * phi);
     Double_t y         = r * TMath::Sin(TMath::Pi() / 180 * phi);
-    AliFMDDebug(15, ("Placing flange %d in %s at (%f,%f,%f) r=%f, phi=%f", 
-		      i, mother->GetName(), x, y, zi, r, phi));
-    TGeoRotation* rot    = new TGeoRotation;
+    TGeoRotation* rot  = new TGeoRotation;
     rot->RotateZ(phi);
-    TGeoMatrix* matrix = new TGeoCombiTrans(x, y, zi, rot);
-    mother->AddNode(flangeVolume, i, matrix);
+    TGeoMatrix* matrix = new TGeoCombiTrans(x, y, nlen+conel-backl/2, rot);
+    support->AddNode(flangeVolume, i, matrix);
   }
 
-  // The Beams 
-  TGeoBBox* beamShape = new TGeoBBox(fmd3->GetBeamThickness() / 2, 
-				     fmd3->GetBeamWidth() / 2 - .1,
-				     beaml / 2);
-  TGeoVolume* beamVolume = new TGeoVolume(fgkBeamName, beamShape, fC);
-  n                      = fmd3->GetNBeam();
-  r                      = noser2 + tdist / 2;
-  zi                     = - nz + nlen + zdist / 2 + z;
-  mother                 = fmd3TopVolume;
-  for (Int_t i = 0; i  < n; i++) {
-    if (i >= n / 2) mother = fmd3BotVolume;
-    Double_t phi      = 360. / n * i;
-    Double_t x        = r * TMath::Cos(TMath::Pi() / 180 * phi);
-    Double_t y        = r * TMath::Sin(TMath::Pi() / 180 * phi);
-    TGeoRotation* rot = new TGeoRotation(Form("FMD3 beam rotation %d", i));
-    // Order is important
-    rot->RotateY(-theta);
-    rot->RotateZ(phi);
-    TGeoMatrix* matrix = new TGeoCombiTrans(Form("FMD3 beam trans %d", i),
-					    x, y, zi, rot);
-    mother->AddNode(beamVolume, i, matrix);    
-  }
-  
-  z = fmd3->GetInnerZ();
-  TGeoRotation* rot = new TGeoRotation("FMD3 rotatation");
+  // Place support volumes in half-detector volumes 
+  z                          = fmd3->GetInnerZ();
+  z1                         = z-nz;
+  fmd3TopVolume->AddNode(support, 1, new TGeoTranslation(0,0,z1));
+  r1                         = new TGeoRotation();
+  r1->RotateZ(180);
+  t                          = new TGeoCombiTrans(0,0,z1,r1);
+  fmd3BotVolume->AddNode(support, 2, t);
+
+  TGeoRotation*   rot        = new TGeoRotation("FMD3 rotatation");
   rot->RotateY(180);
-  TGeoVolume* top = gGeoManager->GetVolume("ALIC");
-  TGeoMatrix* mmatrix = new TGeoCombiTrans("FMD3 trans", 0, 0, z, rot);
+  TGeoVolume*     top        = gGeoManager->GetVolume("ALIC");
+  TGeoMatrix* mmatrix        = new TGeoCombiTrans("FMD3 trans", 0, 0, z, rot);
   AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
 		   fmd3TopVolume->GetName(), fmd3BotVolume->GetName(), z));
   top->AddNode(fmd3TopVolume, fmd3->GetId(), mmatrix);
@@ -646,8 +927,9 @@ AliFMDGeometryBuilder::Exec(Option_t*)
   fPCB     = gGeoManager->GetMedium("FMD_PCB$");
   fPlastic = gGeoManager->GetMedium("FMD_Plastic$");
   fCopper  = gGeoManager->GetMedium("FMD_Copper$");
+  fSteel   = gGeoManager->GetMedium("FMD_Steel$");
 
-  if (!fSi||!fC||!fAl||!fChip||!fAir||!fPCB||!fPlastic||!fCopper) {
+  if (!fSi||!fC||!fAl||!fChip||!fAir||!fPCB||!fPlastic||!fCopper||!fSteel) {
     AliError("Failed to get some or all tracking mediums");
     return;
   }    

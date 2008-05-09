@@ -113,6 +113,11 @@ protected:
   AliFMDFancy(const AliFMDFancy& );
   /** Assignement operator */
   AliFMDFancy& operator=(const AliFMDFancy& ) { return *this; }
+  virtual void AddMarker(Float_t x, Float_t y, Float_t z, 
+			 TObject* o, Float_t s, Float_t min, Float_t max)
+  {
+    AliFMDDisplay::AddMarker(x, y, z, o, s, min, max);
+  }
   /** Add a marker to the display
       @param det Detector
       @param rng Ring
@@ -122,7 +127,8 @@ protected:
       @param s   Signal 
       @param max Maximum of signal */
   virtual void AddMarker(UShort_t det, Char_t rng, UShort_t sec,
-			 UShort_t str, TObject* o, Float_t s, Float_t max);
+			 UShort_t str, TObject* o, Float_t s, 
+			 Float_t min, Float_t max);
   /** Process a hit 
       @param hit hit to process */
   virtual Bool_t ProcessHit(AliFMDHit* hit, TParticle*);

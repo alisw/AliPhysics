@@ -55,7 +55,7 @@ public:
   /** @param x Value of Size of wafer the sensor was made from */
   void SetWaferRadius(Double_t x=13.4/2) { fWaferRadius = x; }
   /** @param x Value of Thickness of sensor */
-  void SetSiThickness(Double_t x=.03) { fSiThickness = x; }
+  void SetSiThickness(Double_t x=.032) { fSiThickness = x; }
   /** @param x Value of Lower radius of ring */
   void SetLowR(Double_t x) { fLowR = x; }
   /** @param x Value of Upper radius of ring */
@@ -82,6 +82,10 @@ public:
   void SetChipThickness(Double_t x=.01) { fChipThickness = x; }
   /** @param x Value of spacing between si and PCB */
   void SetSpacing(Double_t x=.05) { fSpacing = x; }
+  /** @param x Thickness of honeycomb plate */
+  void SetHoneycombThickness(Double_t x=1) { fHoneycombThickness = x; }
+  /** @param x Thickness of aluminium of honeycomb */
+  void SetAlThickness(Double_t x=.1) { fAlThickness = x; }
 
   /** @return The Id of this ring type */
   Char_t GetId() const { return fId; }
@@ -125,11 +129,27 @@ public:
   Double_t GetChipThickness() const { return fChipThickness; }
   /** @return Value of spacing between si and PCB */
   Double_t GetSpacing() const { return fSpacing; }
+  /** @return Thickness of honeycomb plate */
+  Double_t GetHoneycombThickness() const { return fHoneycombThickness; }
+  /** @return Thickness of aluminium of honeycomb */
+  Double_t GetAlThickness() const { return fAlThickness; }
   /** @return The strip pitch */ 
   Double_t GetPitch() const { return (fMaxR - fMinR) / fNStrips; }
   /** @return Radius (in cm) correspondig to strip @a strip */
   Double_t GetStripRadius(UShort_t strip) const;
-  
+  /** @return Full depth of this (half) ring */
+  Double_t GetFullDepth() const;
+  /** Get the inner radius of the digitizer cards */
+  Double_t GetFMDDLowR() const { return 1.2*GetLowR(); }
+  /** Get the outer radius of the digitizer cards */
+  Double_t GetFMDDHighR() const { return .95*GetHighR(); }
+  /** @return Thickness of print board */
+  Double_t GetFMDDPrintboardThickness() const { return 2*fPrintboardThickness; }
+  /** @return Thickness copper of print board */
+  Double_t GetFMDDCopperThickness() const { return 2*fCopperThickness; }
+  /** @return Thickness chip of print board */
+  Double_t GetFMDDChipThickness() const { return 2*fChipThickness; }
+
   /** @return List of verticies */
   const TObjArray& GetVerticies() const { return fVerticies; }
   /** @return Number of verticies */
@@ -164,6 +184,8 @@ private:
   Double_t	fCopperThickness;	// Thickness of Cu on print board
   Double_t	fChipThickness;		// Thickness of chip on print board
   Double_t      fSpacing;               // Spacing between si and PCB
+  Double_t	fHoneycombThickness;	// Thickness of honeycomb plate
+  Double_t	fAlThickness;		// Thickness of aluminium of honeycomb
   
   TObjArray	fVerticies;		// List of verticies
 

@@ -56,6 +56,7 @@
 #include <TGeoNode.h>
 // #include <TGeoVolume.h>
 #include <TROOT.h>
+#include <TClass.h>
 
 //====================================================================
 ClassImp(AliFMDAlignFaker)
@@ -141,6 +142,42 @@ AliFMDAlignFaker::SetHalfRotation(Double_t x1, Double_t y1, Double_t z1,
 #define IS_NODE_SENSOR(name) \
   (name[0] == 'F' && name[2] == 'S' && name[3] == 'E')
 
+//__________________________________________________________________
+Bool_t
+AliFMDAlignFaker::GetGeometry(Bool_t toCdb, const TString& storage)
+{
+  if (!toCdb) { 
+     //load geom from default CDB storage
+    AliGeomManager::LoadGeometry(); 
+    return kTRUE;
+  }
+  if(!storage.BeginsWith("local://") && 
+     !storage.BeginsWith("alien://")) {
+    AliErrorClass(Form("STORAGE=\"%s\" invalid. Exiting\n", storage.Data()));
+    return kFALSE;
+  }
+
+  AliCDBManager* cdb   = AliCDBManager::Instance();
+  AliCDBStorage* store = cdb->GetStorage(storage.Data());
+  if(!store){
+    AliErrorClass(Form("Unable to open storage %s\n", storage.Data()));
+    return kFALSE;
+  }
+
+  AliCDBPath   path("GRP","Geometry","Data");
+  AliCDBEntry* entry = store->Get(path.GetPath(),cdb->GetRun());
+  if(!entry) {
+    AliErrorClass("Could not get the specified CDB entry!");
+    return kFALSE;
+  }
+  
+
+  entry->SetOwner(0);
+  TGeoManager* geom = static_cast<TGeoManager*>(entry->GetObject());
+  AliGeomManager::SetGeometry(geom);
+  return kTRUE;
+}
+  
 //__________________________________________________________________
 void
 AliFMDAlignFaker::Exec(Option_t*)
@@ -327,7 +364,7 @@ AliFMDAlignFaker::WriteToFile()
     return;
   }
   file->cd();
-  fArray->Write("FMDAlignment");
+  fArray->Write("FMDAlignment",TObject::kSingleKey);
   file->Write();
   file->Close();
 }

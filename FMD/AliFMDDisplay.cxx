@@ -38,9 +38,12 @@
 #include <TMarker3DBox.h>
 #include <TMath.h>
 #include <TSlider.h>
+#include <TSliderBox.h>
 #include <TStyle.h>
 #include <TView.h>
 #include <TVirtualX.h>
+#include <TVirtualViewer3D.h>
+#include <TList.h>
 // #include <TArrayF.h>
 // #include <TParticle.h>
 
@@ -103,13 +106,12 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
     fPad(0), 
     fButtons(0),
     fSlider(0),
+    fFactor(0),
     fZoomMode(kFALSE),
     fX0(0),
     fY0(0),
     fX1(0),
     fY1(0),
-    fMultCut(0),
-    fPedestalFactor(0),
     fXPixel(0),
     fYPixel(0),
     fOldXPixel(0),
@@ -118,7 +120,8 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
     fOnlyFMD(onlyFMD),
     fSpec(0), 
     fSpecCut(0),
-    fAux(0)
+    fAux(0), 
+    fReturn(kFALSE)
 {
   // Constructor of an FMD display object. 
   // Must be called 
@@ -126,8 +129,6 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
   AddLoad(kGeometry);
   if (fgInstance) delete fgInstance;
   fgInstance = this;
-  SetMultiplicityCut();
-  SetPedestalFactor();
 }
 
 //____________________________________________________________________
@@ -138,33 +139,58 @@ AliFMDDisplay::MakeCanvas(const char** which)
   // Parameters: 
   //   which   Which button to put up. 
   gStyle->SetPalette(1);
+  // gStyle->SetCanvasPreferGL(kTRUE);
   Double_t y1 = .10;
   Int_t    w  = 700;
-  fCanvas = new TCanvas("display", "Display", w, Int_t(w / (1-y1)));
+  fCanvas = new TCanvas("gldisplay", "Display", w, Int_t(w / (1-y1)));
   fCanvas->SetFillColor(1);
   fCanvas->ToggleEventStatus();
   fCanvas->cd();
-  fPad = new TPad("view", "3DView", 0.0, y1, 1.0, 1.0, 1, 0, 0);
+  fPad = new TPad("glview", "3DView", 0.0, y1, 1.0, 1.0, 1, 0, 0);
   fPad->Draw();
-
-  Double_t yb = 0;
-  fCanvas->cd();
-  if (TESTBIT(fTreeMask, kESD) || 
-      TESTBIT(fTreeMask, kDigits) || 
-      TESTBIT(fTreeMask, kRaw)) {
-    yb = .05;
-    fSlider = new TSlider("multCut", "Multiplicity cut", 0, 0, 1, yb);
-    fSlider->SetMethod("AliFMDDisplay::Instance()->ChangeCut()");
-    fSlider->Draw();
-    fSlider->SetMinimum(TESTBIT(fTreeMask, kESD) ? fMultCut * 10 :
-			fPedestalFactor * 10);
-  }
+  
   const char** p = which;
   const char*  m;
   Int_t        n  = 0;
   Int_t        j  = 0;
   while (*(p++)) n++;
   AliInfo(Form("Got %d buttons", n));
+  if (n <= 0) return;
+
+  Double_t yb = 0;
+  Double_t xb = 1;
+  fCanvas->cd();
+  if (TESTBIT(fTreeMask, kDigits)) { 
+    yb = .05;
+    xb = .66;
+    fFactor = new TSlider("pedFactor", "Pedestal Factor", xb+.01, 0, 1, yb);
+    fFactor->SetMethod("AliFMDDisplay::Instance()->ChangeFactor()");
+    fFactor->SetRange(3./10, 1);
+    fFactor->Draw();
+    TSliderBox *sbox = 
+      static_cast<TSliderBox*>(fFactor->GetListOfPrimitives()->
+			       FindObject("TSliderBox"));
+    if (sbox) { 
+      sbox->SetToolTipText("Adjust the noise suppression factor by moving "
+			   "lower limit");
+    }
+  }
+  if (TESTBIT(fTreeMask, kHits)   || 
+      TESTBIT(fTreeMask, kESD)    || 
+      TESTBIT(fTreeMask, kDigits) || 
+      TESTBIT(fTreeMask, kRaw)) {
+    yb = .05;
+    fSlider = new TSlider("genCut", "Multiplicity cut", 0, 0, xb, yb);
+    fSlider->SetMethod("AliFMDDisplay::Instance()->ChangeCut()");
+    fSlider->SetRange(0,1);
+    fSlider->Draw();
+    TSliderBox *sbox = 
+      static_cast<TSliderBox*>(fSlider->GetListOfPrimitives()->
+			       FindObject("TSliderBox"));
+    if (sbox) { 
+      sbox->SetToolTipText("Adjust lower and upper limit on data signal");
+    }
+  }
   Float_t      x0 = 0;
   Float_t      dx = 1. / n;
   p               = which;
@@ -172,7 +198,7 @@ AliFMDDisplay::MakeCanvas(const char** which)
     fCanvas->cd();
     AliInfo(Form("Adding button %s", m));
     TButton* b = new TButton(m, Form("AliFMDDisplay::Instance()->%s()", m),
-			     x0, yb, x0 + dx, y1);
+			     x0, yb, TMath::Min(x0 + dx,.999F), y1);
     b->Draw();
     fButtons.Add(b);
     x0 += dx;
@@ -200,13 +226,37 @@ AliFMDDisplay::ShowOnlyFMD()
   Bool_t hasFMD1 = kFALSE;
   Bool_t hasFMD2 = kFALSE;
   Bool_t hasFMD3 = kFALSE;
-  TObjArray toshow;
+  AliInfo("Getting material FMD_Si$");
+  TGeoMaterial* si   = gGeoManager->GetMaterial("FMD_Si$");      // kRed 
+  AliInfo("Getting material FMD_Carbon$");
+  TGeoMaterial* c    = gGeoManager->GetMaterial("FMD_Carbon$");  // kGray
+  AliInfo("Getting material FMD_Aluminum$");
+  TGeoMaterial* al   = gGeoManager->GetMaterial("FMD_Aluminum$");// kGray-2
+  AliInfo("Getting material FMD_Copper$");
+  TGeoMaterial* cu   = gGeoManager->GetMaterial("FMD_Copper$");	// kGreen-2
+  AliInfo("Getting material FMD_PCB$");
+  TGeoMaterial* pcb  = gGeoManager->GetMaterial("FMD_PCB$");	// kGreen+2
+  AliInfo("Getting material FMD_PCB$");
+  TGeoMaterial* chip = gGeoManager->GetMaterial("FMD_Si Chip$");// kGreen+2
+  TObjArray     toshow;
   while ((node = static_cast<TGeoNode*>(next()))) {
     const char* name = node->GetName();
     if (!name) continue;
     if (!(v = node->GetVolume())) continue;
 
     if (name[0] == 'F') {
+      TGeoMaterial* m   = (v->IsAssembly() ? 0 : v->GetMaterial());
+      Int_t         col = -1;
+      if      (m == si)   col = kRed;
+      else if (m == c)	  col = kGray;
+      else if (m == al)   col = kYellow+4;  
+      else if (m == cu)   col = kRed+6;   
+      else if (m == pcb)  col = kGreen+2; 
+      else if (m == chip) col = kGreen+4; 
+      if (col >= 0) { 
+	v->SetLineColor(col);
+	v->SetFillColor(col);
+      }
       if (name[2] == 'M' && (name[3] == 'T' || name[3] == 'B')) {
 	// Virtual Master half-ring volume - top-level
 	Int_t det = node->GetNumber();
@@ -220,6 +270,10 @@ AliFMDDisplay::ShowOnlyFMD()
       }
       else if (name[3] == 'V' && (name[2] == 'T' || name[2] == 'B')) 
 	toshow.Add(v); // Virtual Half-ring, bare detectors
+      else if (name[3] == 'H' && (name[2] == 'F' || name[2] == 'B')) 
+	toshow.Add(v); // Virtual Hybrid container 
+      else if (name[2] == 'S' && name[3] == 'U') 
+	toshow.Add(v); // Virtual support structre 
       // else if (name[3] == 'H' && (name[2] == 'F' || name[2] == 'B')) 
       //  toshow.Add(v); // Virtual Hybrid container 
     }
@@ -229,9 +283,11 @@ AliFMDDisplay::ShowOnlyFMD()
   }
   TIter i(&toshow);
   while ((v = static_cast<TGeoVolume*>(i()))) {
-    v->SetVisibility(kTRUE);
-    v->SetVisDaughters(kTRUE);
+    if (!v->IsAssembly())
+      v->SetVisibility(kTRUE);
     v->InvisibleAll(kFALSE);
+    v->SetVisDaughters(kTRUE);
+    
   }  
 }
 
@@ -373,11 +429,18 @@ AliFMDDisplay::Begin(Int_t event)
   // Parameters: 
   //   event   The event number 
   if (!fCanvas) {
-    const char* m[] = { "Continue", "Zoom", "Pick", "Redisplay", 0 }; 
+    const char* m[] = { "Continue", 
+			"Break", 
+			"Zoom", 
+			"Pick", 
+			"Redisplay", 
+			"Render", 
+			0 }; 
     MakeCanvas(m);
   }
   MakeAux();
-
+  fReturn = kFALSE;
+  
   // AliInfo("Clearing canvas");
   // fCanvas->Clear();
   if (!fGeoManager) {
@@ -440,19 +503,27 @@ AliFMDDisplay::End()
   // End of event.  Draw everything 
   AtEnd();
   Idle();
+  if (fReturn) return kFALSE;
   return AliFMDInput::End();
 }
 
 //____________________________________________________________________
 Int_t
-AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
+AliFMDDisplay::LookupColor(Float_t x, Float_t min, Float_t max) const
 {
   // Look-up color.  
   // Get a colour from the  current palette depending 
   // on the ratio x/max 
-  Int_t idx = Int_t(x / max * gStyle->GetNumberOfColors());
+  Float_t range  = (max-min);
+  Float_t l      = fSlider->GetMinimum();
+  Float_t h      = fSlider->GetMaximum();
+  if (l == h) { l = 0; h = 1; }
+  Float_t cmin   = range * l;
+  Float_t cmax   = range * h;
+  Float_t crange = (cmax-cmin);
+  Int_t   idx    = Int_t((x-cmin) / crange * gStyle->GetNumberOfColors());
   return gStyle->GetColorPalette(idx);
-}
+} 
 
 //____________________________________________________________________
 void
@@ -461,10 +532,19 @@ AliFMDDisplay::ChangeCut()
   // Change the cut on the slider. 
   // The factor depends on what is 
   // drawn in the AUX canvas
-  fMultCut        = fSlider->GetMinimum() * 10;
-  fPedestalFactor = fSlider->GetMinimum() * 10;
-  AliInfo(Form("Multiplicity cut: %7.5f, Pedestal factor: %7.4f (%6.5f)", 
-	       fMultCut, fPedestalFactor, fSlider->GetMinimum()));
+  AliInfo(Form("Range is now %3.1f - %3.1f", fSlider->GetMinimum(), 
+	       fSlider->GetMaximum()));
+  Redisplay();
+}
+//____________________________________________________________________
+void
+AliFMDDisplay::ChangeFactor() 
+{
+  // Change the cut on the slider. 
+  // The factor depends on what is 
+  // drawn in the AUX canvas
+  AliInfo(Form("Noise factor is now %4.1f, pedestal factor %3.1f", 
+	       fFactor->GetMinimum()*10,fFactor->GetMaximum()));
   Redisplay();
 }
 
@@ -482,11 +562,59 @@ AliFMDDisplay::Redisplay()
   Event();
   AtEnd();
 }
+//____________________________________________________________________
+void
+AliFMDDisplay::Break()
+{
+  // Redisplay stuff. 
+  // Redraw markers, hits, 
+  // spectra 
+  if (fMarkers) fMarkers->Delete();
+  if (fHits)    fHits->Clear();
+  if (fSpec)    fSpec->Reset();
+  if (fSpecCut) fSpecCut->Reset();
+  fReturn = kTRUE;
+  fWait   = kFALSE;
+}
+//____________________________________________________________________
+void
+AliFMDDisplay::Render()
+{
+  fPad->cd();
+  TVirtualViewer3D* viewer = fPad->GetViewer3D("ogl");
+  if (!viewer) return;
+}
 
 //____________________________________________________________________
 void
+AliFMDDisplay::AddMarker(Float_t x, Float_t y, Float_t z,
+			 TObject* o, Float_t s, Float_t min, Float_t max)
+{
+  // Add a marker to the display
+  //
+  //    det 	Detector
+  //    rng 	Ring
+  //    sec 	Sector 
+  //    str 	Strip
+  //    o   	Object to refer to
+  //    s   	Signal 
+  //    max 	Maximum of signal 
+  //
+  Float_t  size  = .1;
+  Float_t  zsize = (s - min) / (max-min) * 10;
+  Float_t  r     = TMath::Sqrt(x * x + y * y);
+  Float_t  theta = TMath::ATan2(r, z);
+  Float_t  phi   = TMath::ATan2(y, x);
+  Float_t  rz    = z + (z < 0 ? 1 : -1) * zsize;
+  TMarker3DBox* marker = new  TMarker3DBox(x,y,rz,size,size,zsize,theta,phi);
+  if (o) marker->SetRefObject(o);
+  marker->SetLineColor(LookupColor(s, min, max));
+  fMarkers->Add(marker);
+}
+//____________________________________________________________________
+void
 AliFMDDisplay::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
-			 TObject* o, Float_t s, Float_t max)
+			 TObject* o, Float_t s, Float_t min, Float_t max)
 {
   // Add a marker to the display
   //
@@ -501,18 +629,22 @@ AliFMDDisplay::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
   AliFMDGeometry*   geom = AliFMDGeometry::Instance();
   Double_t x, y, z;
   geom->Detector2XYZ(det, rng, sec, str, x, y, z);
-  Float_t  size  = .1;
-  Float_t  zsize = s / max * 10;
-  Float_t  r     = TMath::Sqrt(x * x + y * y);
-  Float_t  theta = TMath::ATan2(r, z);
-  Float_t  phi   = TMath::ATan2(y, x);
-  Float_t  rz    = z + (z < 0 ? 1 : -1) * zsize;
-  TMarker3DBox* marker = new  TMarker3DBox(x,y,rz,size,size,zsize,theta,phi);
-  if (o) marker->SetRefObject(o);
-  marker->SetLineColor(LookupColor(s, max));
-  fMarkers->Add(marker);
+  AddMarker(x,y,z,o,s,min,max);
 }
   
+//____________________________________________________________________
+Bool_t 
+AliFMDDisplay::InsideCut(Float_t val, const Float_t& min, 
+			 const Float_t& max) const
+{
+  Float_t r = max - min;
+  Float_t l = fSlider->GetMinimum();
+  Float_t h = fSlider->GetMaximum();
+  if (l == h) { l = 0; h = 1; }
+  if (val < r * l + min || val > r * h + min) return kFALSE;
+  return kTRUE;
+}
+
 
 //____________________________________________________________________
 Bool_t 
@@ -521,21 +653,19 @@ AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* /* p */)
   // Process a hit. 
   // Parameters: 
   //   hit   Hit data
+
+  static const Float_t rMin  = 0;
+  static const Float_t rMax  = .1;
+
   if (!hit) { AliError("No hit");   return kFALSE; }
   // if (!p)   { AliError("No track"); return kFALSE; }
 
   if (fHits) fHits->Add(hit);
-  Float_t  size  = .1;
-  Float_t  zsize = TMath::Sqrt(hit->Edep() * 20);
-  Float_t  z     = hit->Z() + (hit->Z() < 0 ? 1 : -1) * zsize; 
-  Float_t  pt    = TMath::Sqrt(hit->Py()*hit->Py()+hit->Px()*hit->Px());
-  Float_t  theta = TMath::ATan2(pt, hit->Pz());
-  Float_t  phi   = TMath::ATan2(hit->Py(), hit->Px());
-  TMarker3DBox* marker = new  TMarker3DBox(hit->X(), hit->Y(), z,
-					   size, size, zsize, theta, phi);
-  marker->SetLineColor(LookupColor(hit->Edep(), 1));
-  marker->SetRefObject(hit);
-  fMarkers->Add(marker);
+  Float_t  edep  = hit->Edep();
+
+  if (!InsideCut(edep, rMin, rMax)) return kTRUE;
+  
+  AddMarker(hit->X(), hit->Y(), hit->Z(), hit, edep, rMin, rMax);
   return kTRUE;
 }
 
@@ -546,6 +676,9 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   // Process a digit 
   // Parameters: 
   //   digit Digit information 
+
+  static const Float_t rMin  = 0;
+  static const Float_t rMax  = 1023;
   if (!digit) { AliError("No digit");   return kFALSE; }
 
   AliFMDParameters* parm = AliFMDParameters::Instance();
@@ -555,18 +688,17 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   UShort_t str           =  digit->Strip();
   Double_t ped           =  parm->GetPedestal(det,ring, sec, str);
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
-  Double_t threshold     =  ped + fPedestalFactor * pedW;
+  Double_t threshold     =  (ped * fFactor->GetMaximum()
+			     + pedW * fFactor->GetMinimum());
   Float_t  counts        =  digit->Counts();
-  AliFMDDebug(10, ("FMD%d%c[%2d,%3d] ADC: %d > %d (=%4.2f+%4.2f*%4.2f)", 
-		    digit->Detector(), digit->Ring(), digit->Sector(), 
-		    digit->Strip(), Int_t(counts), Int_t(threshold), 
-		    ped, fPedestalFactor, pedW));
-  if (fSpec) fSpec->Fill(counts);
-  if (counts < threshold) return kTRUE;
-  if (fHits) fHits->Add(digit);
-  if (fSpecCut) fSpecCut->Fill(counts);
 
-  AddMarker(det, ring, sec, str, digit, counts, 1024);
+  if (fHits)                                    fHits->Add(digit);
+  if (fSpec)                                    fSpec->Fill(counts);
+  if (!InsideCut(counts-threshold, rMin, rMax)) return kTRUE;
+  if (fSpecCut)                                 fSpecCut->Fill(counts);
+  
+
+  AddMarker(det, ring, sec, str, digit, counts, rMin, rMax);
   return kTRUE;
 }
 
@@ -587,11 +719,16 @@ AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
   // Process reconstructed point 
   // Parameters: 
   //  recpoint  Reconstructed multiplicity/energy
+  static const Float_t rMin  = 0;
+  static const Float_t rMax  = 20;
+
   if (!recpoint) { AliError("No recpoint");   return kFALSE; }
-  if (recpoint->Particles() < fMultCut) return kTRUE;
+
+  if (!InsideCut(recpoint->Particles(), rMin, rMax)) return kTRUE;
+
   if (fHits) fHits->Add(recpoint);
   AddMarker(recpoint->Detector(), recpoint->Ring(), recpoint->Sector(),  
-	    recpoint->Strip(), recpoint, recpoint->Particles(), 20);
+	    recpoint->Strip(), recpoint, recpoint->Particles(), rMin, rMax);
   return kTRUE;
 }
 
@@ -604,11 +741,18 @@ AliFMDDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
   // Parameters 
   //   det,rng,sec,str   Detector coordinates. 
   //   mult              Multiplicity. 
+  static const Float_t rMin = 0;
+  static const Float_t rMax = 20;
+  
   Double_t cmult = mult;
   if (fSpec) fSpec->Fill(cmult);
-  if (cmult < fMultCut || cmult == AliESDFMD::kInvalidMult) return kTRUE;
-  AddMarker(det,rng,sec,str, 0, cmult, 20);
+  if (!InsideCut(cmult, rMin, rMax) || cmult == AliESDFMD::kInvalidMult) 
+    return kTRUE;
+
+  AddMarker(det,rng,sec,str, 0, cmult, rMin, rMax);
+
   if (fSpecCut) fSpecCut->Fill(cmult);
+
   return kTRUE;
 }
 

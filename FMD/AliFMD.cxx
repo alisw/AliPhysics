@@ -396,6 +396,17 @@ void AliFMD::CreateMaterials()
 	      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
   
+  // Stainless steel
+  {
+    Float_t as[] = { 55.847, 51.9961, 58.6934, 28.0855 };
+    Float_t zs[] = { 26.,    24.,     28.,     14.     };
+    Float_t ws[] = { .715,   .18,     .1,      .005    };
+    density      = 7.88;
+    id           = kSteelId;
+    AliMixture(id, "Steel$", as, zs, density, 4, ws);
+    AliMedium(kSteelId, "Steel$", id, 0, fieldType, maxField, maxBending, 
+	      maxStepSize, maxEnergyLoss, precision, minStepSize);
+  }
   // Plastic 
   {
     Float_t as[] = { 1.01, 12.01 };
@@ -411,6 +422,7 @@ void AliFMD::CreateMaterials()
     AliMedium(kPlasticId, "Plastic$", id,0,fieldType,maxField,maxBending,
 	      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
+
 }
 
 //____________________________________________________________________

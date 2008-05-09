@@ -532,7 +532,8 @@ protected:
     kAlId,                 // ID index of Al medium
     kCarbonId,             // ID index of Carbon medium
     kCopperId,             // ID index of Copper Medium
-    kKaptonId              // ID index of Kapton Medium
+    kKaptonId,             // ID index of Kapton Medium
+    kSteelId               // ID index of Steel medium
   };  
 
   TObjArray*         fBad;                  //! debugging - bad hits 

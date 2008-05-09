@@ -81,7 +81,8 @@ protected:
       fChip(o.fChip),
       fAir(o.fAir),
       fPlastic(o.fPlastic),
-      fCopper(o.fCopper)
+      fCopper(o.fCopper), 
+      fSteel(o.fSteel)
   {}
   /** Assignment operator */
   AliFMDGeometryBuilder& operator=(const AliFMDGeometryBuilder&){return *this;}
@@ -157,6 +158,7 @@ protected:
   TGeoMedium* fAir;	 //! Air Medium
   TGeoMedium* fPlastic;	 //! Plastic Medium
   TGeoMedium* fCopper;	 //! Copper Medium
+  TGeoMedium* fSteel;	 //! Steel Medium
 
   static const Char_t* fgkActiveName;	// Name of Active volumes
   static const Char_t* fgkSectorName;	// Name of Sector volumes
@@ -175,8 +177,13 @@ protected:
   static const Char_t* fgkIHCName;	// Name of Inner honeycomb volumes
   static const Char_t* fgkNoseName;	// Name of Nose volumes
   static const Char_t* fgkBackName;	// Name of Back volumes
+  static const Char_t* fgkTopName;	// Name of Back volumes
   static const Char_t* fgkBeamName;	// Name of Beam volumes
   static const Char_t* fgkFlangeName;	// Name of Flange volumes
+  static const Char_t* fgkFMDDCuName;   // Name of FMDD copper volumes
+  static const Char_t* fgkFMDDPCBName;  // Name of FMDD PCB volumes 
+  static const Char_t* fgkFMDDChipName; // Name of FMDD chip volumes
+  static const Char_t* fgkFMDDName; 	// Name of FMDD volumes
   static const Char_t* fgkFMDName;	// Name of Half FMD volumes
 
   ClassDef(AliFMDGeometryBuilder,1)
