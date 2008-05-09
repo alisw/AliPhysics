@@ -215,9 +215,10 @@ void AliACORDEDigitizer::Exec(Option_t* /*option*/)
 	tracks[1] = PlasticTracks[1][i];
       if(moduls[i]==1) {
 	mods = i;
-	Float_t module_time = (PlasticTimes[0][i] > PlasticTimes[1][i] ? 
-			       PlasticTimes[0][i] : PlasticTimes[1][i]);
-	AddDigit(tracks, mods, module_time);
+	//	Float_t module_time = (PlasticTimes[0][i] > PlasticTimes[1][i] ? 
+	//			       PlasticTimes[0][i] : PlasticTimes[1][i]);
+	//	AddDigit(tracks, mods, module_time);
+	AddDigit(tracks, mods, 0);
       }
     }
   }
