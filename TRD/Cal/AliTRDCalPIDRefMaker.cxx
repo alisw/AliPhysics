@@ -296,8 +296,8 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 					for (Int_t iPlane=0; iPlane<AliTRDgeometry::kNplan; iPlane++){
 						// read data for track segment
 						for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
-							dedx[iSlice] = esdTrack->GetTRDsignals(iPlane, iSlice);
-						dEdx    = esdTrack->GetTRDsignals(iPlane, -1);
+							dedx[iSlice] = esdTrack->GetTRDslice(iPlane, iSlice);
+						dEdx    = esdTrack->GetTRDslice(iPlane, -1);
 						timebin = esdTrack->GetTRDTimBin(iPlane);
 			
 						// check data

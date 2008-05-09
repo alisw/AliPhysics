@@ -18,7 +18,6 @@
 #include <TVector2.h>
 
 #include "AliTracker.h"
-#include "AliESDtrack.h"
 
 #include "AliTRDgeometry.h" 
 #include "AliTRDcluster.h" 
@@ -335,7 +334,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
 
   for (Int_t i = 0; i < kNplane; i++) {
     for (Int_t j = 0; j < kNslice; j++) {
-      fdEdxPlane[i][j] = t.GetTRDsignals(i,j);
+      fdEdxPlane[i][j] = t.GetTRDslice(i,j);
     }
     fTimBinPlane[i] = t.GetTRDTimBin(i);
     fMom[i]         = -1.;
@@ -491,9 +490,9 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
   //
 
   // Max charge in chamber
-  Double_t  maxcharge[AliESDtrack::kNPlane]; 
+  Double_t  maxcharge[kNplane]; 
   // Number of clusters attached to track per chamber and slice
-  Int_t     nCluster[AliESDtrack::kNPlane][AliESDtrack::kNSlice];
+  Int_t     nCluster[kNplane][kNslice];
   // Number of time bins in chamber
   Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   Int_t plane;                  // Plane of current cluster
@@ -502,10 +501,10 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
   AliTRDcluster *cluster = 0x0; // Pointer to current cluster
 
   // Reset class and local counters/variables
-  for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
+  for (Int_t iPlane = 0; iPlane < kNplane; iPlane++) {
     fTimBinPlane[iPlane] = -1;
     maxcharge[iPlane]    =  0.0;
-    for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
+    for (Int_t iSlice = 0; iSlice < kNslice; iSlice++) {
       fdEdxPlane[iPlane][iSlice] = 0.0;
       nCluster[iPlane][iSlice]   = 0;
     }
@@ -519,7 +518,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
 
     // Read info from current cluster
     plane  = AliTRDgeometry::GetPlane(cluster->GetDetector());
-    if (plane < 0 || plane >= AliESDtrack::kNPlane) {
+    if (plane < 0 || plane >= kNplane) {
       AliError(Form("Wrong plane %d", plane));
       continue;
     }
@@ -531,7 +530,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
       continue;
     }
 	
-    slice = tb * AliESDtrack::kNSlice / ntb;
+    slice = tb * kNslice / ntb;
 
     fdEdxPlane[plane][slice] += fdQdl[iClus];
     if (fdQdl[iClus] > maxcharge[plane]) {
@@ -544,8 +543,8 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
   } // End of loop over cluster
 	
   // Normalize fdEdxPlane to number of clusters and set track segments
-  for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
-    for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
+  for (Int_t iPlane = 0; iPlane < kNplane; iPlane++) {
+    for (Int_t iSlice = 0; iSlice < kNslice; iSlice++) {
       if (nCluster[iPlane][iSlice]) {
         fdEdxPlane[iPlane][iSlice] /= nCluster[iPlane][iSlice];
       }
@@ -572,7 +571,7 @@ void AliTRDtrack::CookdEdxNN(Float_t *dedx)
   const Int_t kMLPscale  = 16000; // scaling of the MLP input to be smaller than 1
 
   // Reset class and local contors/variables
-  for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++){
+  for (Int_t iPlane = 0; iPlane < kNplane; iPlane++){
     for (Int_t iSlice = 0; iSlice < kNMLPslice; iSlice++) {
       *(dedx + (kNMLPslice * iPlane) + iSlice) = 0.0;
     }
@@ -588,7 +587,7 @@ void AliTRDtrack::CookdEdxNN(Float_t *dedx)
 	  
     // Read info from current cluster
     plane   = AliTRDgeometry::GetPlane(cluster->GetDetector());
-    if (plane < 0 || plane >= AliESDtrack::kNPlane) {
+    if (plane < 0 || plane >= kNplane) {
       AliError(Form("Wrong plane %d",plane));
       continue;
     }

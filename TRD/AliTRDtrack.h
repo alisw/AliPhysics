@@ -12,6 +12,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
 
 #include "AliTRDtracklet.h"
@@ -20,7 +21,6 @@
 #include "AliTRDseedV1.h"
 #endif
 
-class AliESDtrack;
 class AliTrackReference;
 class AliTRDcluster;
 class AliTRDtrack : public AliKalmanTrack {
@@ -31,7 +31,7 @@ class AliTRDtrack : public AliKalmanTrack {
    
   enum { kNdet      = 540
        , kNstacks   =  90
-       , kNplane    =   6
+       , kNplane    =   AliESDtrack::kTRDnPlanes
        , kNcham     =   5
        , kNsect     =  18
        , kNslice    =   3

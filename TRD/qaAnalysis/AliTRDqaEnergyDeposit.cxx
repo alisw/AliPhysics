@@ -186,7 +186,7 @@ void AliTRDqaEnergyDeposit::Exec(Option_t *)
 
     Double_t signal = 0;
     for(Int_t i=0; i<6; i++)
-      signal += track->GetTRDsignals(i, -1);
+      signal += track->GetTRDslice(i, -1);
     signal /= 6;
 
     fSignalPtSum[idx]->Fill(pt, signal);

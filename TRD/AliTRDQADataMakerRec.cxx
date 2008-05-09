@@ -524,7 +524,7 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     for(Int_t i=0; i<4; i++) {
       Double_t dedx = 0;
       for(Int_t j=0; j<6; j++) {
-	dedx += track->GetTRDsignals(j, i-1);
+	dedx += track->GetTRDslice(j, i-1);
       }
       GetESDsData(41+i)->Fill(paramOut->GetP(), dedx/6.);
     }

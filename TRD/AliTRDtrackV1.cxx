@@ -158,7 +158,7 @@ Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
   Bool_t labelAdded;
 	Int_t label;
 	AliTRDcluster *c    = 0x0;
-  for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
+  for (Int_t ip = 0; ip < AliESDtrack::kTRDnPlanes; ip++) {
 		if(fTrackletIndex[ip] < 0) continue;
 		for (Int_t ic = 0; ic < AliTRDseed::knTimebins; ic++) {
 			if(!(c = fTracklet[ip].GetClusters(ic))) continue;
@@ -215,7 +215,7 @@ Bool_t AliTRDtrackV1::CookPID()
 	// steer PID calculation @ tracklet level
 	Double_t *prob = 0x0;
 	fPIDquality = 0;
-	for(int itrklt=0; itrklt<AliESDtrack::kNPlane; itrklt++){
+	for(int itrklt=0; itrklt<AliESDtrack::kTRDnPlanes; itrklt++){
     //for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) fdEdxPlane[itrklt][iSlice] = -1.;
 
 		if(fTrackletIndex[itrklt]<0) continue;
@@ -288,7 +288,7 @@ Bool_t AliTRDtrackV1::IsOwner() const
   // Check whether track owns the tracklets
   //
 
-	for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
+	for (Int_t ip = 0; ip < AliESDtrack::kTRDnPlanes; ip++) {
 		if(fTrackletIndex[ip] < 0) continue;
 		if(!fTracklet[ip].IsOwner()) return kFALSE;
 	}
@@ -330,7 +330,7 @@ void AliTRDtrackV1::SetOwner(Bool_t own)
   // Toggle ownership of tracklets
   //
 
-	for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
+	for (Int_t ip = 0; ip < AliESDtrack::kTRDnPlanes; ip++) {
 		if(fTrackletIndex[ip] < 0) continue;
 		//AliInfo(Form("p[%d] index[%d]", ip, fTrackletIndex[ip]));
 		fTracklet[ip].SetOwner(own);
@@ -344,7 +344,7 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t plane, Int_t index)
   // Set the tracklets
   //
 
-	if(plane < 0 || plane >= AliESDtrack::kNPlane) return;
+	if(plane < 0 || plane >= AliESDtrack::kTRDnPlanes) return;
 	fTracklet[plane]      = (*trklt);
 	fTrackletIndex[plane] = index;
 }
@@ -391,20 +391,21 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
 void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
 {
   //
-  // Update the ESD track
+  // Update the TRD PID information in the ESD track
   //
-	
-	// copy dEdx to ESD
-	Float_t *dedx = 0x0;
-	for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
-		if(fTrackletIndex[ip] < 0) continue;
-		fTracklet[ip].CookdEdx(AliESDtrack::kNSlice);
-		dedx = fTracklet[ip].GetdEdx();
-		for (Int_t js = 0; js < AliESDtrack::kNSlice; js++) track->SetTRDsignals(dedx[js], ip, js);
-		//track->SetTRDTimBin(fTimBinPlane[i], i);
-	}
 
-	// copy PID to ESD
-	track->SetTRDpid(fPID);
-	track->SetTRDpidQuality(fPIDquality);
+  track->SetNumberOfTRDslices(kNslice);
+	
+  for (Int_t ip = 0; ip < kNplane; ip++) {
+      if(fTrackletIndex[ip] < 0) continue;
+      fTracklet[ip].CookdEdx(kNslice);
+      Float_t *dedx = fTracklet[ip].GetdEdx();
+      for (Int_t js = 0; js < kNslice; js++) { 
+          track->SetTRDslice(dedx[js], ip, js);
+      }
+  }
+
+  // copy PID to ESD
+  track->SetTRDpid(fPID);
+  track->SetTRDpidQuality(fPIDquality);
 }

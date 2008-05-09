@@ -22,7 +22,6 @@
 //                                                                           //
 //  Authors:                                                                 //
 //     M. Ivanov  (Marian.Ivanov@cern.ch)                                    //
-//     Y. Belikov (Jouri.Belikov@cern.ch)                                    //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -598,9 +597,9 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 				seed->UpdateTrackParams(track,AliESDtrack::kTRDout);
 				fHBackfit->Fill(10);
 	
-				for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
-					for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
-						seed->SetTRDsignals(track->GetPIDsignals(i,j),i,j);
+				for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
+					for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
+						seed->SetTRDslice(track->GetPIDsignals(i,j),i,j);
 					}
 					seed->SetTRDTimBin(track->GetPIDTimBin(i),i);
 				}
@@ -620,9 +619,9 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 				fHBackfit->Fill(13);
 	
 				//seed->SetStatus(AliESDtrack::kTRDStop);
-				for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
-					for (Int_t j = 0; j <AliESDtrack::kNSlice; j++) {
-						seed->SetTRDsignals(track->GetPIDsignals(i,j),i,j);
+				for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
+					for (Int_t j = 0; j <AliTRDtrack::kNslice; j++) {
+						seed->SetTRDslice(track->GetPIDsignals(i,j),i,j);
 					}
 					seed->SetTRDTimBin(track->GetPIDTimBin(i),i);
 				}
@@ -707,8 +706,8 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
 
     AliTRDtrack *pt = new AliTRDtrack(seed2,seed2.GetAlpha());
     Int_t *indexes2 = seed2.GetIndexes();
-    for (Int_t i = 0; i < AliESDtrack::kNPlane;i++) {
-      for (Int_t j = 0; j < AliESDtrack::kNSlice;j++) {
+    for (Int_t i = 0; i < AliTRDtrack::kNplane;i++) {
+      for (Int_t j = 0; j < AliTRDtrack::kNslice;j++) {
         pt->SetPIDsignals(seed2.GetPIDsignals(i,j),i,j);
       }
       pt->SetPIDTimBin(seed2.GetPIDTimBin(i),i);
@@ -736,9 +735,9 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
       seed->UpdateTrackParams(pt,AliESDtrack::kTRDrefit);
       fHRefit->Fill(5);
 
-      for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
-        for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
-          seed->SetTRDsignals(pt->GetPIDsignals(i,j),i,j);
+      for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
+        for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
+          seed->SetTRDslice(pt->GetPIDsignals(i,j),i,j);
 	}
         seed->SetTRDTimBin(pt->GetPIDTimBin(i),i);
       }
@@ -760,9 +759,9 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
 	seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
 	fHRefit->Fill(6);
 
-        for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
-          for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
-            seed->SetTRDsignals(pt2->GetPIDsignals(i,j),i,j);
+        for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
+          for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
+            seed->SetTRDslice(pt2->GetPIDsignals(i,j),i,j);
 	  }
           seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
         }
@@ -986,7 +985,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 //   }
 
   // Loop through the TRD planes
-  for (Int_t iplane = 0; iplane < AliESDtrack::kNPlane; iplane++) {
+  for (Int_t iplane = 0; iplane < AliTRDtrack::kNplane; iplane++) {
 
     Int_t hb = iplane * 10;
     fHClSearch->Fill(hb);

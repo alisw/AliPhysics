@@ -36,6 +36,22 @@ class TPolyMarker3D;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
+  enum {
+    kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
+    kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
+    kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
+    kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
+    kHMPIDpid=0x20000,
+    kEMCALmatch=0x40000,
+    kTRDbackup=0x80000,
+    kTRDStop=0x20000000,
+    kESDpid=0x40000000,
+    kTIME=0x80000000
+  }; 
+  enum {
+    kTRDnPlanes = 6,
+    kEMCALNoMatch = -4096
+  };
   AliESDtrack();
   AliESDtrack(const AliESDtrack& track);
   AliESDtrack(TParticle * part);
@@ -171,25 +187,28 @@ public:
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
+
   void    SetTRDpid(const Double_t *p);
   
 // A.Bercuci
   void    SetTRDpidQuality(UChar_t q){fTRDpidQuality = q;}
   UChar_t GetTRDpidQuality() const {return fTRDpidQuality;}
 // end A.Bercuci
+
+  void     SetNumberOfTRDslices(Int_t n);
+  Int_t    GetNumberOfTRDslices() const {return fTRDnSlices/kTRDnPlanes;}
+  void     SetTRDslice(Double_t q, Int_t plane, Int_t slice);
+  Double_t GetTRDslice(Int_t plane, Int_t slice=-1) const;
 	
-	void    SetTRDQuality(Float_t quality){fTRDQuality=quality;}
+  void    SetTRDQuality(Float_t quality){fTRDQuality=quality;}
   Double_t GetTRDQuality()const {return fTRDQuality;}
   void    SetTRDBudget(Float_t budget){fTRDBudget=budget;}
   Double_t GetTRDBudget()const {return fTRDBudget;}
-  void    SetTRDsignals(Float_t dedx, Int_t i, Int_t j) {fTRDsignals[i][j]=dedx;}
+
   void    SetTRDTimBin(Int_t timbin, Int_t i) {fTRDTimBin[i]=timbin;}
   void    GetTRDpid(Double_t *p) const;
   Double_t GetTRDsignal() const {return fTRDsignal;}
-  Double_t GetTRDsignals(Int_t iPlane, Int_t iSlice=-1) const { if (iSlice == -1) 
-    return (fTRDsignals[iPlane][0] + fTRDsignals[iPlane][1] + fTRDsignals[iPlane][2])/3.0;
-    return fTRDsignals[iPlane][iSlice];
-  }
+
   Char_t   GetTRDTimBin(Int_t i) const {return fTRDTimBin[i];}
   Double_t GetTRDchi2() const {return fTRDchi2;}
   UChar_t   GetTRDclusters(Int_t *idx) const;
@@ -272,23 +291,6 @@ public:
   //
   void FillPolymarker(TPolyMarker3D *pol, Float_t magf, Float_t minR, Float_t maxR, Float_t stepR);
 
-  enum {
-    kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
-    kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
-    kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
-    kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kHMPIDpid=0x20000,
-    kEMCALmatch=0x40000,
-    kTRDbackup=0x80000,
-    kTRDStop=0x20000000,
-    kESDpid=0x40000000,
-    kTIME=0x80000000
-  }; 
-  enum {
-    kNPlane = 6,
-    kNSlice = 3,
-    kEMCALNoMatch = -4096
-  };
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
@@ -352,7 +354,6 @@ protected:
   Double32_t  fTPCPoints[4];  // [0.,0.,10] TPC points -first, max. dens, last and max density
 
   Double32_t fTRDsignal;      // detector's PID signal
-  Double32_t fTRDsignals[kNPlane][kNSlice];  //  TRD signals from all six planes in 3 slices each
   Double32_t fTRDQuality;     // trd quality factor for TOF
   Double32_t fTRDBudget;      // trd material budget
 
@@ -368,8 +369,6 @@ protected:
   Double32_t fHMPIDmipY;       // y of the MIP in LORS
 
 
-
-
   UShort_t fTPCncls;       // number of clusters assigned in the TPC
   UShort_t fTPCnclsF;      // number of findable clusters in the TPC
   UShort_t fTPCsignalN;    // number of points used for dEdx
@@ -379,13 +378,17 @@ protected:
   UChar_t fTRDncls;        // number of clusters assigned in the TRD
   UChar_t fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   UChar_t fTRDpidQuality;   // TRD PID quality according to number of planes. 6 is the best
-  Char_t  fTRDTimBin[kNPlane];   // Time bin of Max cluster from all six planes
+
+  UChar_t fTRDnSlices;     // number of slices used for PID in the TRD
+  Double32_t *fTRDslices;  //[fTRDnSlices] 
+
+  Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
 
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
 
-  ClassDef(AliESDtrack,42)  //ESDtrack 
+  ClassDef(AliESDtrack,43)  //ESDtrack 
 };
 
 #endif 

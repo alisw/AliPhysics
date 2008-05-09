@@ -168,8 +168,8 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 		for (Int_t iPlan = 0; iPlan < AliTRDgeometry::kNplan; iPlan++) {
 			// read data for track segment
 			for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
-				dedx[iSlice] = t->GetTRDsignals(iPlan, iSlice);
-			dEdx    = t->GetTRDsignals(iPlan, -1);
+				dedx[iSlice] = t->GetTRDslice(iPlan, iSlice);
+			dEdx    = t->GetTRDslice(iPlan, -1);
 			timebin = t->GetTRDTimBin(iPlan);
 
 			// check data

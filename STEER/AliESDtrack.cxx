@@ -113,12 +113,15 @@ AliESDtrack::AliESDtrack() :
   fITSClusterMap(0),
   fTRDncls(0),
   fTRDncls0(0),
-  fTRDpidQuality(0)
+  fTRDpidQuality(0),
+  fTRDnSlices(0),
+  fTRDslices(0x0)
+  
 {
   //
   // The default ESD constructor 
   //
-  Int_t i, j;
+  Int_t i;
   for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=0.;
@@ -131,10 +134,7 @@ AliESDtrack::AliESDtrack() :
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=0;}
-  for (i=0;i<kNPlane;i++) {
-    for (j=0;j<kNSlice;j++) {
-      fTRDsignals[i][j]=0.; 
-    }
+  for (i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]=0;
   }
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
@@ -197,7 +197,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fITSClusterMap(track.fITSClusterMap),
   fTRDncls(track.fTRDncls),
   fTRDncls0(track.fTRDncls0),
-  fTRDpidQuality(track.fTRDpidQuality)
+  fTRDpidQuality(track.fTRDpidQuality),
+  fTRDnSlices(track.fTRDnSlices),
+  fTRDslices(0x0)
 {
   //
   //copy constructor
@@ -212,12 +214,15 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
   for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
   //
-  for (Int_t i=0;i<kNPlane;i++) {
-    for (Int_t j=0;j<kNSlice;j++) {
-      fTRDsignals[i][j]=track.fTRDsignals[i][j]; 
-    }
+  for (Int_t i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]=track.fTRDTimBin[i];
   }
+
+  if (fTRDnSlices) {
+    fTRDslices=new Double32_t[fTRDnSlices];
+    for (Int_t i=0; i<fTRDnSlices; i++) fTRDslices[i]=track.fTRDslices[i];
+  }
+
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
@@ -287,14 +292,16 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fITSClusterMap(0),
   fTRDncls(0),
   fTRDncls0(0),
-  fTRDpidQuality(0)
+  fTRDpidQuality(0),
+  fTRDnSlices(0),
+  fTRDslices(0x0)
 {
   //
   // ESD track from TParticle
   //
 
   // Reset all the arrays
-  Int_t i, j;
+  Int_t i;
   for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=0.;
@@ -307,10 +314,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
-  for (i=0;i<kNPlane;i++) {
-    for (j=0;j<kNSlice;j++) {
-      fTRDsignals[i][j]=0.; 
-    }
+  for (i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]=0;
   }
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
@@ -418,6 +422,8 @@ AliESDtrack::~AliESDtrack(){
   delete fOp;
   delete fCp; 
   delete fFriendTrack;
+  if(fTRDnSlices)
+    delete[] fTRDslices;
 }
 
 AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
@@ -548,12 +554,19 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   }
   fTRDsignal = source.fTRDsignal;
 
-  for(int i = 0;i < kNPlane;++i){
+  for(int i = 0;i < kTRDnPlanes;++i){
     fTRDTimBin[i] = source.fTRDTimBin[i];   
-    for(int j = 0;j < kNSlice;++j){
-      fTRDsignals[i][j] = source.fTRDsignals[i][j];
-    }
   }
+
+  if(fTRDnSlices)
+    delete[] fTRDslices;
+  fTRDslices=0;
+  fTRDnSlices=source.fTRDnSlices;
+  if (fTRDnSlices) {
+    fTRDslices=new Double32_t[fTRDnSlices];
+    for(int j = 0;j < fTRDnSlices;++j) fTRDslices[j] = source.fTRDslices[j];
+  }
+
   fTRDQuality =   source.fTRDQuality;     
   fTRDBudget  =   source.fTRDBudget;      
   fTOFsignal  =   source.fTOFsignal;     
@@ -670,16 +683,17 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTRDncls = 0;       
   fTRDncls0 = 0;       
   fTRDsignal = 0;      
-  for (Int_t i=0;i<kNPlane;i++) {
-    for (Int_t j=0;j<kNSlice;j++) {
-      fTRDsignals[i][j] = 0; 
-    }
+  for (Int_t i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]  = 0;
   }
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
   fTRDLabel = 0;       
   fTRDQuality  = 0;
   fTRDpidQuality = 0;
+  if(fTRDnSlices)
+    delete[] fTRDslices;
+  fTRDslices=0x0;
+  fTRDnSlices=0;
   fTRDBudget  = 0;
 
   // Reset TOF related track information
@@ -1228,6 +1242,61 @@ Double_t AliESDtrack::GetTRDpid(Int_t iSpecies) const
   return fTRDr[iSpecies];
 }
 
+void  AliESDtrack::SetNumberOfTRDslices(Int_t n) {
+  //Sets the number of slices used for PID 
+  if (fTRDnSlices != 0) return;
+  fTRDnSlices=kTRDnPlanes*n;
+  fTRDslices=new Double32_t[fTRDnSlices];
+  for (Int_t i=0; i<fTRDnSlices; i++) fTRDslices[i]=-1.;
+}
+
+void  AliESDtrack::SetTRDslice(Double_t q, Int_t plane, Int_t slice) {
+  //Sets the charge q in the slice of the plane
+  Int_t ns=GetNumberOfTRDslices();
+  if (ns==0) {
+    AliError("No TRD slices allocated for this track !");
+    return;
+  }
+
+  if ((plane<0) || (plane>=kTRDnPlanes)) {
+    AliError("Wrong TRD plane !");
+    return;
+  }
+  if ((slice<0) || (slice>=ns)) {
+    AliError("Wrong TRD slice !");
+    return;
+  }
+  Int_t n=plane*ns + slice;
+  fTRDslices[n]=q;
+}
+
+Double_t  AliESDtrack::GetTRDslice(Int_t plane, Int_t slice) const {
+  //Gets the charge from the slice of the plane
+  Int_t ns=GetNumberOfTRDslices();
+  if (ns==0) {
+    //AliError("No TRD slices allocated for this track !");
+    return -1.;
+  }
+
+  if ((plane<0) || (plane>=kTRDnPlanes)) {
+    AliError("Wrong TRD plane !");
+    return -1.;
+  }
+  if ((slice<-1) || (slice>=ns)) {
+    //AliError("Wrong TRD slice !");  
+    return -1.;
+  }
+
+  if (slice==-1) {
+    Double_t q=0.;
+    for (Int_t i=0; i<ns; i++) q+=fTRDslices[plane*ns + i];
+    return q/ns;
+  }
+
+  return fTRDslices[plane*ns + slice];
+}
+
+
 //_______________________________________________________________________
 void AliESDtrack::SetTOFpid(const Double_t *p) {  
   // Sets the probability of each particle type (in TOF)
@@ -1364,7 +1433,7 @@ void AliESDtrack::Print(Option_t *) const {
     GetTRDpid(p) ; 
     for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
-    printf("\n           signal = %f\n", GetTRDsignal()) ;
+      printf("\n           signal = %f\n", GetTRDsignal()) ;
   }
   if( IsOn(kTOFpid) ){
     printf("From TOF: ") ; 
