@@ -145,6 +145,7 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
       }
       if (pTree) {
 	// ESD has been created and must be cleaned up
+	pESD->Reset();
 	delete pESD;
 	pESD=NULL;
       }
@@ -229,6 +230,14 @@ AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType
 AliHLTEsdManager::AliHLTEsdListEntry::~AliHLTEsdListEntry()
 {
   // see header file for class documentation
+  if (fpEsd) delete fpEsd;
+  fpEsd=NULL;
+
+  if (fpTree) delete fpTree;
+  fpTree=NULL;
+
+  if (fpFile) delete fpFile;
+  fpFile=NULL;
 }
 
 bool AliHLTEsdManager::AliHLTEsdListEntry::operator==(AliHLTComponentDataType dt) const

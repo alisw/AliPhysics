@@ -357,6 +357,9 @@ AliHLTHOMERReader::~AliHLTHOMERReader()
 // see header file for class documentation
     ReleaseCurrentEvent();
     FreeDataSources();
+
+    if (fDataSources)
+      delete [] fDataSources;
     }
 
 int  AliHLTHOMERReader::ReadNextEvent()
@@ -750,7 +753,10 @@ void AliHLTHOMERReader::FreeDataSources()
 	    FreeTCPDataSource( fDataSources[n] );
 	else if ( fDataSources[n].fType == kShm )
 	    FreeShmDataSource( fDataSources[n] );
+	if ( fDataSources[n].fHostname )
+	  delete [] fDataSources[n].fHostname;
 	}
+    fDataSourceCnt=0;
     }
 
 int AliHLTHOMERReader::FreeShmDataSource( DataSource& source )
@@ -760,8 +766,6 @@ int AliHLTHOMERReader::FreeShmDataSource( DataSource& source )
 	shmdt( source.fShmPtr );
 //     if ( source.fShmID != -1 )
 // 	shmctl( source.fShmID, IPC_RMID, NULL );
-    if ( source.fHostname )
-	delete [] source.fHostname;
     return 0;
     }
 
@@ -770,8 +774,6 @@ int AliHLTHOMERReader::FreeTCPDataSource( DataSource& source )
 // see header file for class documentation
     if ( source.fTCPConnection )
 	close( source.fTCPConnection );
-    if ( source.fHostname )
-	delete [] source.fHostname;
     return 0;
     }
 
