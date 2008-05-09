@@ -239,7 +239,7 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
       fPrimary=new AliExternalTrackParam(*primarySeed);
     delete primarySeed;
     // for better comparison one does not want to have alpha changed...
-    if (!fPrimary->Rotate(fInner->GetAlpha())) {
+    if (fPrimary) if (!fPrimary->Rotate(fInner->GetAlpha())) {
       delete fPrimary;
       fPrimary=0;
     }

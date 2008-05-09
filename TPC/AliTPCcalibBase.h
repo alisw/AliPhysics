@@ -24,7 +24,7 @@ public:
   virtual void     Process(AliTPCseed */*track*/){return;}
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
-  void             Terminate();
+  virtual void     Terminate();
   //
   // debug streamer support
   TTreeSRedirector *GetDebugStreamer();
