@@ -42,6 +42,7 @@ class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
 
     Int_t IsStripFilled(Int_t iSector, Int_t iPlate, Int_t iStrip);
     Int_t GetTOFInfos() const;
+    AliTOFGeometry * GetTOFgeometry() const {return fGeom;};
     //void GetDigits();
 
     TTree* GetTree() {return fTree;};
