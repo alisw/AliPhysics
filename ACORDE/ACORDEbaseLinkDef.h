@@ -15,5 +15,6 @@
 #pragma link C++ class  AliACORDEPreprocessor+;
 #pragma link C++ class  AliACORDEDataDCS+;
 #pragma link C++ class  AliACORDEdigit+;
+#pragma link C++ class  AliACORDERawStream+;
 
 #endif

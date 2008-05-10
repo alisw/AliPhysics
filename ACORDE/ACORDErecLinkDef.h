@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  AliACORDERawStream+;
 #pragma link C++ class  AliACORDEReconstructor+;
 
  
