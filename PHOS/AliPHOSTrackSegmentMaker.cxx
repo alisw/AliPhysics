@@ -63,6 +63,8 @@ AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() :
   fCPVRecPoints(0)
 {
  // ctor
+  fEMCRecPoints = new TObjArray(100) ;
+  fCPVRecPoints = new TObjArray(100) ;
 }
 
 //____________________________________________________________________________
@@ -74,6 +76,8 @@ AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(AliPHOSGeometry *geom):
   fCPVRecPoints(0)
 {
   // ctor
+  fEMCRecPoints = new TObjArray(100) ;
+  fCPVRecPoints = new TObjArray(100) ;
 }
 
 //____________________________________________________________________________
@@ -104,18 +108,16 @@ AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
 //____________________________________________________________________________
 void AliPHOSTrackSegmentMaker::SetInput(TTree *clustersTree)
 {
-  // Read the clusters tree and creates the
-  // arrays with the EMC and CPV
-  // clusters.
-  // and set the corresponding branch addresses
+  // Read the clusters tree and set addresses to the
+  // arrays with the EMC and CPV clusters
 
   TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
   if (!emcbranch) { 
     AliError("can't get the branch with the PHOS EMC clusters !");
     return;
   }
-  fEMCRecPoints = new TObjArray(100) ;
   emcbranch->SetAddress(&fEMCRecPoints);
+  fEMCRecPoints->Delete();
   emcbranch->GetEntry(0);
 
   TBranch *cpvbranch = clustersTree->GetBranch("PHOSCpvRP");
@@ -123,7 +125,7 @@ void AliPHOSTrackSegmentMaker::SetInput(TTree *clustersTree)
     AliError("can't get the branch with the PHOS CPV clusters !");
     return;
   }
-  fCPVRecPoints = new TObjArray(100) ;
   cpvbranch->SetAddress(&fCPVRecPoints);
+  fCPVRecPoints->Delete();
   cpvbranch->GetEntry(0);
 }

@@ -60,7 +60,7 @@ AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamCpv =0;  // CPV rec. paramet
 
 //____________________________________________________________________________
 AliPHOSReconstructor::AliPHOSReconstructor() :
-  fGeom(NULL),fClusterizer(NULL)
+  fGeom(NULL),fClusterizer(NULL),fTSM(NULL),fPID(NULL)
 {
   // ctor
 
@@ -75,7 +75,9 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   }
 
   fGeom        = AliPHOSGeometry::GetInstance("IHEP","");
-  fClusterizer = new AliPHOSClusterizerv1(fGeom);
+  fClusterizer = new AliPHOSClusterizerv1      (fGeom);
+  fTSM         = new AliPHOSTrackSegmentMakerv1(fGeom);
+  fPID         = new AliPHOSPIDv1              (fGeom);
 }
 
 //____________________________________________________________________________
@@ -84,6 +86,8 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   // dtor
   delete fGeom;
   delete fClusterizer;
+  delete fTSM;
+  delete fPID;
 } 
 
 //____________________________________________________________________________
@@ -110,31 +114,29 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // then it creates AliESDtracks out of them and
   // write tracks to the ESD
 
-  AliPHOSTrackSegmentMaker *tsm = new AliPHOSTrackSegmentMakerv1(fGeom);
-  AliPHOSPID               *pid = new AliPHOSPIDv1              (fGeom);
 
   // do current event; the loop over events is done by AliReconstruction::Run()
-  tsm->SetESD(esd) ; 
-  tsm->SetInput(clustersTree);
+  fTSM->SetESD(esd) ; 
+  fTSM->SetInput(clustersTree);
   if ( Debug() ) 
-    tsm->Clusters2TrackSegments("deb all") ;
+    fTSM->Clusters2TrackSegments("deb all") ;
   else 
-    tsm->Clusters2TrackSegments("") ;
+    fTSM->Clusters2TrackSegments("") ;
   
-  pid->SetInput(clustersTree, tsm->GetTrackSegments()) ; 
-  pid->SetESD(esd) ; 
+  fPID->SetInput(clustersTree, fTSM->GetTrackSegments()) ; 
+  fPID->SetESD(esd) ; 
   if ( Debug() ) 
-    pid->TrackSegments2RecParticles("deb all") ;
+    fPID->TrackSegments2RecParticles("deb all") ;
   else 
-    pid->TrackSegments2RecParticles("") ;
+    fPID->TrackSegments2RecParticles("") ;
 
 
   // This function creates AliESDtracks from AliPHOSRecParticles
   //         and
   // writes them to the ESD
 
-  TClonesArray *recParticles  = pid->GetRecParticles();
-  Int_t nOfRecParticles = recParticles->GetEntries();
+  TClonesArray *recParticles  = fPID->GetRecParticles();
+  Int_t nOfRecParticles = recParticles->GetEntriesFast();
   
   esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
   esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
@@ -254,7 +256,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     if (Debug()) 
       rp->Print();
     // Get track segment and EMC rec.point associated with this rec.particle
-    AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(tsm->GetTrackSegments()
+    AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(fTSM->GetTrackSegments()
 								    ->At(rp->GetPHOSTSIndex()));
 
     AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(ts->GetEmcIndex()));
@@ -326,8 +328,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   delete digitsArray;
   emcRecPoints->Delete();
   delete emcRecPoints;
-  delete tsm;
-  delete pid;
+  recParticles->Delete();
 }
 
 //____________________________________________________________________________

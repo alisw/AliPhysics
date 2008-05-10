@@ -65,6 +65,8 @@ AliPHOSPID::AliPHOSPID(AliPHOSGeometry *geom):
   fRecParticles(NULL)
 {
   // ctor
+  fEMCRecPoints = new TObjArray(100) ;
+  fCPVRecPoints = new TObjArray(100) ;
   fRecParticles = new TClonesArray("AliPHOSRecParticle",100) ;
   fRecParticles->SetName("RECPARTICLES");
 
@@ -112,8 +114,8 @@ void AliPHOSPID::SetInput(TTree *clustersTree, TClonesArray *trackSegments)
     AliError("can't get the branch with the PHOS EMC clusters !");
     return;
   }
-  fEMCRecPoints = new TObjArray(100) ;
   emcbranch->SetAddress(&fEMCRecPoints);
+  fEMCRecPoints->Delete();
   emcbranch->GetEntry(0);
 
   TBranch *cpvbranch = clustersTree->GetBranch("PHOSCpvRP");
@@ -121,7 +123,7 @@ void AliPHOSPID::SetInput(TTree *clustersTree, TClonesArray *trackSegments)
     AliError("can't get the branch with the PHOS CPV clusters !");
     return;
   }
-  fCPVRecPoints = new TObjArray(100) ;
   cpvbranch->SetAddress(&fCPVRecPoints);
+  fCPVRecPoints->Delete();
   cpvbranch->GetEntry(0);
 }

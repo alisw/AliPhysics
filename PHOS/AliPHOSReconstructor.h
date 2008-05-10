@@ -119,12 +119,14 @@ public:
 private:
   
   static Bool_t fgDebug ; //! verbosity controller
-  static AliPHOSRecoParam *fgkRecoParamEmc; // reconstruction parameters for EMC
-  static AliPHOSRecoParam *fgkRecoParamCpv; // reconstruction parameters for EMC
-  AliPHOSGeometry         *fGeom;           // pointer to the PHOS geometry
-  AliPHOSClusterizerv1    *fClusterizer;    //! PHOS clusterizer
+  static AliPHOSRecoParam  *fgkRecoParamEmc; // reconstruction parameters for EMC
+  static AliPHOSRecoParam  *fgkRecoParamCpv; // reconstruction parameters for EMC
+  AliPHOSGeometry          *fGeom;           // pointer to the PHOS geometry
+  AliPHOSClusterizerv1     *fClusterizer;    //! PHOS clusterizer
+  AliPHOSTrackSegmentMaker *fTSM;            //! PHOS TrackSegmentMaker
+  AliPHOSPID               *fPID;            //! PHOS PID maker
 
-  ClassDef(AliPHOSReconstructor,5)  // PHOS Reconstruction class
+  ClassDef(AliPHOSReconstructor,6)  // PHOS Reconstruction class
 
 }; 
 
