@@ -379,7 +379,7 @@ protected:
   UChar_t fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   UChar_t fTRDpidQuality;   // TRD PID quality according to number of planes. 6 is the best
 
-  UChar_t fTRDnSlices;     // number of slices used for PID in the TRD
+  Int_t fTRDnSlices;     // number of slices used for PID in the TRD
   Double32_t *fTRDslices;  //[fTRDnSlices] 
 
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
@@ -388,7 +388,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & );
 
-  ClassDef(AliESDtrack,43)  //ESDtrack 
+  ClassDef(AliESDtrack,44)  //ESDtrack 
 };
 
 #endif 
