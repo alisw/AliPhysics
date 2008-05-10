@@ -980,7 +980,7 @@ void AliPHOSv0::AddAlignableVolumes() const
   symbModuleName="PHOS/Module";
   modnum=0;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
-    if(strcmp(GetTitle(),"noCPV"))
+    if(strstr(GetTitle(),"noCPV"))
       continue ;
     sprintf(im,"%d",iModule) ;
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0)
