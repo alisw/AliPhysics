@@ -19,11 +19,10 @@ class AliTPCseed;
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
+  enum HistoType {kY=0, kZ =1, kPhi=2, kTheta=3};
   AliTPCcalibAlign();
   AliTPCcalibAlign(const Text_t *name, const Text_t *title);
-
   virtual ~AliTPCcalibAlign();
-
   virtual void Process(AliTPCseed *track);
   virtual void Analyze();
   virtual void Terminate();  
@@ -32,59 +31,56 @@ public:
   void ProcessTracklets(const AliExternalTrackParam &t1,
 			const AliExternalTrackParam &t2,
 			Int_t s1,Int_t s2);
-  inline Int_t GetIndex(Int_t s1,Int_t s2){return s1*72+s2;}
-  TLinearFitter* GetFitter12(Int_t s1,Int_t s2) {
-    return static_cast<TLinearFitter*>(fFitterArray12[GetIndex(s1,s2)]);
-  }
-  TLinearFitter* GetFitter9(Int_t s1,Int_t s2) {
-    return static_cast<TLinearFitter*>(fFitterArray9[GetIndex(s1,s2)]);
-  }
-  TLinearFitter* GetFitter6(Int_t s1,Int_t s2) {
-    return static_cast<TLinearFitter*>(fFitterArray6[GetIndex(s1,s2)]);
-  }
+  inline Int_t GetIndex(Int_t s1,Int_t s2){return 72*s1+s2;}
+  //
+  inline TLinearFitter* GetFitter12(Int_t s1,Int_t s2);
+  inline TLinearFitter* GetFitter9(Int_t s1,Int_t s2);
+  inline TLinearFitter* GetFitter6(Int_t s1,Int_t s2);
+  //
   Bool_t GetTransformation12(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a);
-
-  TObjArray fDphiHistArray;
-  TObjArray fDthetaHistArray;
-  TObjArray fDyHistArray;
-  TObjArray fDzHistArray;
+  TH1 * GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t force=kFALSE);
+//   Bool_t GetTransformationCovar12(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
+//   Bool_t GetTransformationCovar9(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
+//   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 
 private:
-  void Process12(const Double_t *t1,
-		 const Double_t *t2,
-		 TLinearFitter *fitter);
-  void Process9(Double_t *t1,
-		Double_t *t2,
-		TLinearFitter *fitter);
-  void Process6(Double_t *t1,
-		Double_t *t2,
-		TLinearFitter *fitter);
-  TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2) {
-    //get or make fitter
-    if (!fFitterArray12[s1*72+s2])
-      fFitterArray12[s1*72+s2]=new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
-    return GetFitter12(s1,s2);
-  }
-  TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2) {
-    //get or make fitter
-    if (!fFitterArray9[s1*72+s2])
-      fFitterArray9[s1*72+s2]=new TLinearFitter(9,"x0++x1++x2++x3++x4++x5++x6++x7++x8");
-    return GetFitter9(s1,s2);
-  }
-  TLinearFitter* GetOrMakeFitter6(Int_t s1,Int_t s2) {
-    //get or make fitter
-    if (!fFitterArray6[s1*72+s2])
-      fFitterArray6[s1*72+s2]=new TLinearFitter(6,"x0++x1++x2++x3++x4++x5");
-    return GetFitter6(s1,s2);
-  }
-  TObjArray fFitterArray12;  // array of fitters
-  TObjArray fFitterArray9;   // array of fitters
-  TObjArray fFitterArray6;   // array of fitters
-  Int_t fPoints[72*72];
+  void FillHisto(const AliExternalTrackParam &t1,
+			const AliExternalTrackParam &t2,
+			Int_t s1,Int_t s2);
 
+  void Process12(const Double_t *t1, const Double_t *t2,
+		 TLinearFitter *fitter);
+  void Process9(Double_t *t1, Double_t *t2, TLinearFitter *fitter);
+  void Process6(Double_t *t1, Double_t *t2, TLinearFitter *fitter);
+  TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2);
+  TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2);
+  TLinearFitter* GetOrMakeFitter6(Int_t s1,Int_t s2);
+  TObjArray fDphiHistArray;    // array of residual histograms  phi
+  TObjArray fDthetaHistArray;  // array of residual histograms  theta
+  TObjArray fDyHistArray;      // array of residual histograms  y
+  TObjArray fDzHistArray;      // array of residual histograms  z
+  TObjArray fFitterArray12;    // array of fitters
+  TObjArray fFitterArray9;     // array of fitters
+  TObjArray fFitterArray6;     // array of fitters
+  Int_t fPoints[72*72];        // number of points in the fitter
   ClassDef(AliTPCcalibAlign,1)
 };
+
+
+TLinearFitter* AliTPCcalibAlign::GetFitter12(Int_t s1,Int_t s2) {
+  return static_cast<TLinearFitter*>(fFitterArray12[GetIndex(s1,s2)]);
+}
+TLinearFitter* AliTPCcalibAlign::GetFitter9(Int_t s1,Int_t s2) {
+  return static_cast<TLinearFitter*>(fFitterArray9[GetIndex(s1,s2)]);
+}
+TLinearFitter* AliTPCcalibAlign::GetFitter6(Int_t s1,Int_t s2) {
+  return static_cast<TLinearFitter*>(fFitterArray6[GetIndex(s1,s2)]);
+}
+
+
+
+
 
 #endif

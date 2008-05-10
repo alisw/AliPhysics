@@ -19,9 +19,9 @@
 //     Class to make a internal alignemnt of TPC chambers                    //
 //
 //     Different linear tranformation investigated
-//     12 parameters - arbitrary transformation 
+//     12 parameters - arbitrary linear transformation 
 //      9 parameters - scaling fixed to 1
-//      6 parameters - 
+//      6 parameters - x-y rotation x-z, y-z tiliting
 ////
 //// Only the 12 parameter version works so far...
 ////
@@ -145,57 +145,10 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
 					const AliExternalTrackParam &tp2,
 					Int_t s1,Int_t s2) {
 
-
-  if (s2-s1==36) {//only inner-outer
-    if (!fDphiHistArray[GetIndex(s1,s2)]) {
-      stringstream name;
-      stringstream title;
-      name<<"hist_phi_"<<s1<<"_"<<s2;
-      title<<"Phi Missalignment for sectors "<<s1<<" and "<<s2;
-      fDphiHistArray[GetIndex(s1,s2)]=new TH1D(name.str().c_str(),title.str().c_str(),512,-0.01,0.01); // +/- 10 mrad
-      ((TH1D*)fDphiHistArray[GetIndex(s1,s2)])->SetDirectory(0);
-    }
-    if (!fDthetaHistArray[GetIndex(s1,s2)]) {
-      stringstream name;
-      stringstream title;
-      name<<"hist_theta_"<<s1<<"_"<<s2;
-      title<<"Theta Missalignment for sectors "<<s1<<" and "<<s2;
-      fDthetaHistArray[GetIndex(s1,s2)]=new TH1D(name.str().c_str(),title.str().c_str(),512,-0.01,0.01); // +/- 10 mrad
-      ((TH1D*)fDthetaHistArray[GetIndex(s1,s2)])->SetDirectory(0);
-    }
-    if (!fDyHistArray[GetIndex(s1,s2)]) {
-      stringstream name;
-      stringstream title;
-      name<<"hist_y_"<<s1<<"_"<<s2;
-      title<<"Y Missalignment for sectors "<<s1<<" and "<<s2;
-      fDyHistArray[GetIndex(s1,s2)]=new TH1D(name.str().c_str(),title.str().c_str(),512,-0.3,0.3); // +/- 3 mm
-      ((TH1D*)fDyHistArray[GetIndex(s1,s2)])->SetDirectory(0);
-    }
-    if (!fDzHistArray[GetIndex(s1,s2)]) {
-      stringstream name;
-      stringstream title;
-      name<<"hist_z_"<<s1<<"_"<<s2;
-      title<<"Z Missalignment for sectors "<<s1<<" and "<<s2;
-      fDzHistArray[GetIndex(s1,s2)]=new TH1D(name.str().c_str(),title.str().c_str(),512,-0.3,0.3); // +/- 3 mm
-      ((TH1D*)fDzHistArray[GetIndex(s1,s2)])->SetDirectory(0);
-    }
-    static_cast<TH1D*>(fDphiHistArray[GetIndex(s1,s2)])
-      ->Fill(TMath::ASin(tp1.GetSnp())
-	     -TMath::ASin(tp2.GetSnp()));
-    static_cast<TH1D*>(fDthetaHistArray[GetIndex(s1,s2)])
-      ->Fill(TMath::ATan(tp1.GetTgl())
-	     -TMath::ATan(tp2.GetTgl()));
-    static_cast<TH1D*>(fDyHistArray[GetIndex(s1,s2)])
-      ->Fill(tp1.GetY()
-	     -tp2.GetY());
-    static_cast<TH1D*>(fDzHistArray[GetIndex(s1,s2)])
-      ->Fill(tp1.GetZ()
-	     -tp2.GetZ());
-  }
-  
-
-
-
+  //
+  //
+  //
+  FillHisto(tp1,tp2,s1,s2);
   //
   // Process function to fill fitters
   //
@@ -217,7 +170,6 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   dydx2=snp2/TMath::Sqrt(1.-snp2*snp2);
   Double_t tgl2=tp2.GetTgl();
   dzdx2=tgl2/TMath::Sqrt(1.-snp2*snp2);
-
   //
   //
   //
@@ -510,7 +462,7 @@ void AliTPCcalibAlign::EvalFitters() {
       }
       if ((f=GetFitter6(s1,s2))&&fPoints[72*s1+s2]>kMinPoints) {
 	//	cerr<<s1<<","<<s2<<": "<<fPoints[72*s1+s2]<<endl;
-	if (!f->Eval()!=0) {
+	if (f->Eval()!=0) {
 	  cerr<<"Evaluation failed for "<<s1<<","<<s2<<endl;
 	}else{
 	  f->Write(Form("f6_%d_%d",s1,s2));
@@ -549,87 +501,169 @@ void AliTPCcalibAlign::EvalFitters() {
   */
 }
 
+TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter12(Int_t s1,Int_t s2) {
+  //
+  // get or make fitter - general linear transformation
+  //
+  TLinearFitter * fitter = GetFitter12(s1,s2);
+  if (fitter) return fitter;
+  fitter =new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
+  fitter->StoreData(kFALSE);
+  fFitterArray12.AddAt(fitter,GetIndex(s1,s2));
+  return fitter;
+}
+
+TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter9(Int_t s1,Int_t s2) {
+  //
+  //get or make fitter - general linear transformation - no scaling
+  // 
+  TLinearFitter * fitter = GetFitter9(s1,s2);
+  if (fitter) return fitter;
+  fitter =new TLinearFitter(9,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]");
+  fitter->StoreData(kFALSE);
+  fFitterArray9.AddAt(fitter,GetIndex(s1,s2));
+  return fitter;
+}
+
+TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter6(Int_t s1,Int_t s2) {
+  //
+  // get or make fitter  - 6 paramater linear tranformation
+  //                     - no scaling
+  //                     - rotation x-y
+  //                     - tilting x-z, y-z
+  TLinearFitter * fitter = GetFitter6(s1,s2);
+  if (fitter) return fitter;
+  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  fitter->StoreData(kFALSE);
+  fFitterArray6.AddAt(fitter,GetIndex(s1,s2));
+  return fitter;
+}
+
+
+
+
+
 Bool_t AliTPCcalibAlign::GetTransformation12(Int_t s1,Int_t s2,TMatrixD &a) {
+  //
+  // GetTransformation matrix - 12 paramaters - generael linear transformation
+  //
   if (!GetFitter12(s1,s2))
     return false;
   else {
     TVectorD p(12);
-    cerr<<"foo"<<endl;
     GetFitter12(s1,s2)->GetParameters(p);
-    cerr<<"bar"<<endl;
     a.ResizeTo(4,4);
-    a[0][0]=p[0];
-    a[0][1]=p[1];
-    a[0][2]=p[2];
-    a[0][3]=p[9];
-    a[1][0]=p[3];
-    a[1][1]=p[4];
-    a[1][2]=p[5];
-    a[1][3]=p[10];
-    a[2][0]=p[6];
-    a[2][1]=p[7];
-    a[2][2]=p[8];
-    a[2][3]=p[11];
-    a[3][0]=0.;
-    a[3][1]=0.;
-    a[3][2]=0.;
-    a[3][3]=1.;
+    a[0][0]=p[0]; a[0][1]=p[1]; a[0][2]=p[2]; a[0][3]=p[9];
+    a[1][0]=p[3]; a[1][1]=p[4]; a[1][2]=p[5]; a[1][3]=p[10];
+    a[2][0]=p[6]; a[2][1]=p[7]; a[2][2]=p[8]; a[2][3]=p[11];
+    a[3][0]=0.;   a[3][1]=0.;   a[3][2]=0.;   a[3][3]=1.;
     return true;
   } 
 }
 
 Bool_t AliTPCcalibAlign::GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a) {
+  //
+  // GetTransformation matrix - 9 paramaters - general linear transformation
+  //                            No scaling
+  //
   if (!GetFitter9(s1,s2))
     return false;
   else {
     TVectorD p(9);
     GetFitter9(s1,s2)->GetParameters(p);
     a.ResizeTo(4,4);
-    a[0][0]=p[0];
-    a[0][1]=p[1];
-    a[0][2]=p[2];
-    a[0][3]=p[9];
-    a[1][0]=p[3];
-    a[1][1]=p[4];
-    a[1][2]=p[5];
-    a[1][3]=p[10];
-    a[2][0]=p[6];
-    a[2][1]=p[7];
-    a[2][2]=p[8];
-    a[2][3]=p[11];
-    a[3][0]=0.;
-    a[3][1]=0.;
-    a[3][2]=0.;
-    a[3][3]=1.;
+    a[0][0]=p[0]; a[0][1]=p[1]; a[0][2]=p[2]; a[0][3]=p[9];
+    a[1][0]=p[3]; a[1][1]=p[4]; a[1][2]=p[5]; a[1][3]=p[10];
+    a[2][0]=p[6]; a[2][1]=p[7]; a[2][2]=p[8]; a[2][3]=p[11];
+    a[3][0]=0.;   a[3][1]=0.;   a[3][2]=0.;   a[3][3]=1.;
     return true;
   } 
 }
 
 Bool_t AliTPCcalibAlign::GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a) {
+  //
+  // GetTransformation matrix - 6  paramaters
+  //                            3  translation
+  //                            1  rotation -x-y  
+  //                            2  tilting x-z y-z
   if (!GetFitter6(s1,s2))
     return false;
   else {
     TVectorD p(6);
-    cerr<<"foo"<<endl;
     GetFitter6(s1,s2)->GetParameters(p);
-    cerr<<"bar"<<endl;
     a.ResizeTo(4,4);
-    a[0][0]=p[0];
-    a[0][1]=p[1];
-    a[0][2]=p[2];
-    a[0][3]=p[9];
-    a[1][0]=p[3];
-    a[1][1]=p[4];
-    a[1][2]=p[5];
-    a[1][3]=p[10];
-    a[2][0]=p[6];
-    a[2][1]=p[7];
-    a[2][2]=p[8];
-    a[2][3]=p[11];
-    a[3][0]=0.;
-    a[3][1]=0.;
-    a[3][2]=0.;
-    a[3][3]=1.;
+    a[0][0]=p[0];    a[0][1]=p[1]; a[0][2]=p[2]; a[0][3]=p[9];
+    a[1][0]=p[3];    a[1][1]=p[4]; a[1][2]=p[5]; a[1][3]=p[10];
+    a[2][0]=p[6];    a[2][1]=p[7]; a[2][2]=p[8]; a[2][3]=p[11];
+    a[3][0]=0.;      a[3][1]=0.;   a[3][2]=0.;   a[3][3]=1.;
     return true;
   } 
+}
+
+void AliTPCcalibAlign::FillHisto(const AliExternalTrackParam &tp1,
+					const AliExternalTrackParam &tp2,
+					Int_t s1,Int_t s2) {
+  //
+  // Fill residual histograms
+  //
+  if (s2-s1==36) {//only inner-outer
+    GetHisto(kPhi,s1,s2,kTRUE)->Fill(TMath::ASin(tp1.GetSnp())-TMath::ASin(tp2.GetSnp()));    
+    GetHisto(kTheta,s1,s2,kTRUE)->Fill(TMath::ATan(tp1.GetTgl())-TMath::ATan(tp2.GetTgl()));
+    GetHisto(kY,s1,s2,kTRUE)->Fill(tp1.GetY()-tp2.GetY());
+    GetHisto(kZ,s1,s2,kTRUE)->Fill(tp1.GetZ()-tp2.GetZ());
+  }  
+}
+
+
+
+TH1 * AliTPCcalibAlign::GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t force)
+{
+  //
+  // return specified residual histogram - it is only QA
+  // if force specified the histogram and given histogram is not existing 
+  //  new histogram is created
+  //
+  if (GetIndex(s1,s2)>=72*72) return 0;
+  TObjArray *histoArray=0;
+  switch (type) {
+  case kY:
+    histoArray = &fDyHistArray; break;
+  case kZ:
+    histoArray = &fDzHistArray; break;
+  case kPhi:
+    histoArray = &fDphiHistArray; break;
+  case kTheta:
+    histoArray = &fDthetaHistArray; break;
+  }
+  TH1 * histo= (TH1*)histoArray->At(GetIndex(s1,s2));
+  if (histo) return histo;
+  if (force==kFALSE) return 0; 
+  //
+  stringstream name;
+  stringstream title;
+  switch (type) {    
+  case kY:
+    name<<"hist_y_"<<s1<<"_"<<s2;
+    title<<"Y Missalignment for sectors "<<s1<<" and "<<s2;
+    histo =new TH1D(name.str().c_str(),title.str().c_str(),512,-0.3,0.3); // +/- 3 mm
+    break;
+  case kZ:
+    name<<"hist_z_"<<s1<<"_"<<s2;
+    title<<"Z Missalignment for sectors "<<s1<<" and "<<s2;
+    histo = new TH1D(name.str().c_str(),title.str().c_str(),512,-0.3,0.3); // +/- 3 mm
+    break;
+  case kPhi:
+    name<<"hist_phi_"<<s1<<"_"<<s2;
+    title<<"Phi Missalignment for sectors "<<s1<<" and "<<s2;
+    histo =new TH1D(name.str().c_str(),title.str().c_str(),512,-0.01,0.01); // +/- 10 mrad
+    break;
+  case kTheta:
+    name<<"hist_theta_"<<s1<<"_"<<s2;
+    title<<"Theta Missalignment for sectors "<<s1<<" and "<<s2;
+    histo =new TH1D(name.str().c_str(),title.str().c_str(),512,-0.01,0.01); // +/- 10 mrad
+    break;
+  }
+  histo->SetDirectory(0);
+  histoArray->AddAt(histo,GetIndex(s1,s2));
+  return histo;
 }
