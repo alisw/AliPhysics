@@ -2,7 +2,6 @@
 
 SRCS = \
        AliACORDEReconstructor.cxx
-                                                                               
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:=ACORDErecLinkDef.h
