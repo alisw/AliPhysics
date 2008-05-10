@@ -260,9 +260,8 @@ if test ! "x$have_aliroot" = "xno" ; then
 				  [AliESDEvent esd1;
 				   AliESDEvent esd2;
 				   esd2=esd1;])],
-                 [AC_DEFINE(HAVE_ESD_COPY)
-		  have_esd_copy=yes], 
-  		 [])
+                 [have_esd_copy=yes], 
+  		 [AC_DEFINE(HAVE_NOT_ESD_COPY)])
   AC_MSG_CHECKING(for ESD assignment operator)
   AC_MSG_RESULT([$have_esd_copy])
 

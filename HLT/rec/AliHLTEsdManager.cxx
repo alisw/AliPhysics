@@ -117,20 +117,15 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
 	  fESDs.push_back(newEntry);
 	}
 	if (tgtesd) {
-#ifdef HAVE_ESD_COPY
+#ifndef HAVE_NOT_ESD_COPY
 	  *tgtesd=*pESD;
-#else
-	  TTree* pTmpTree=AliHLTEsdManager::EmbedIntoTree(pESD);
-	  if (pTmpTree) {
-	    tgtesd->ReadFromTree(pTmpTree);
-	    pTmpTree->GetEvent(0);
-	    pTmpTree->GetUserInfo()->Clear();
-	    delete pTmpTree;
-	    HLTDebug("data block %s written to target ESD", AliHLTComponent::DataType2Text(dt).c_str());
-	  } else {
-	    iResult=-ENOMEM;
+#else //HAVE_NOT_ESD_COPY
+	  static bool warningPrinted=false;
+	  if (!warningPrinted) {
+	    HLTWarning("old version of AliESDEvent does not provide assignment operator, skip merging to global hltEsd");
 	  }
-#endif
+	  warningPrinted=true;
+#endif //HAVE_NOT_ESD_COPY
 	} else {
 	entry=Find(dt);
 	if (entry) {
@@ -250,7 +245,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
 {
   // see header file for class documentation
   int iResult=0;
-#ifdef HAVE_ESD_COPY
+#ifndef HAVE_NOT_ESD_COPY
   if (fName.IsNull()) {
     // this is the first event, create the file name
     TString origin;
@@ -311,7 +306,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
       fpTree->GetUserInfo()->Clear();
     }
   }
-#else //HAVE_ESD_COPY
+#else //HAVE_NOT_ESD_COPY
   // this is the old workaround, necessary for older AliRoot versions
   // version<=v4-12-Release
 
@@ -509,7 +504,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
       gSystem->Exec(shellcmd);
     }
   }
-#endif //HAVE_ESD_COPY
+#endif //HAVE_NOT_ESD_COPY
 
   return iResult;
 }
