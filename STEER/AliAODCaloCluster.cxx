@@ -20,6 +20,7 @@
 //     Author: Markus Oldenburg, CERN
 //-------------------------------------------------------------------------
 
+#include <TLorentzVector.h>
 #include "AliAODCaloCluster.h"
 
 ClassImp(AliAODCaloCluster)
@@ -31,9 +32,9 @@ AliAODCaloCluster::AliAODCaloCluster() :
   fDispersion(-1),
   fM20(0.),
   fM02(0.),
-  fM11(0.),
   fEmcCpvDistance(-999.),
-  fNExMax(0),
+  fNExMax(0), 
+  fTOF(0.),
   fTracksMatched(),
   fNCells(0),
   fCellsAbsId(),
@@ -57,9 +58,9 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fDispersion(-1),
   fM20(0.),
   fM02(0.),
-  fM11(0.),
   fEmcCpvDistance(-999.),
   fNExMax(0),
+  fTOF(0.),
   fTracksMatched(),
   fNCells(0),
   fCellsAbsId(),
@@ -83,9 +84,9 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fDispersion(-1),
   fM20(0.),
   fM02(0.),
-  fM11(0.),
   fEmcCpvDistance(-999.),
   fNExMax(0),
+  fTOF(0.),
   fTracksMatched(),
   fNCells(0),
   fCellsAbsId(),
@@ -111,9 +112,9 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   fDispersion(clus.fDispersion),
   fM20(clus.fM20),
   fM02(clus.fM02),
-  fM11(clus.fM11),
   fEmcCpvDistance(clus.fEmcCpvDistance),
   fNExMax(clus.fNExMax),
+  fTOF(clus.fTOF),
   fTracksMatched(clus.fTracksMatched),
   fNCells(clus.fNCells),
   fCellsAbsId(),
@@ -151,9 +152,9 @@ AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
     fDispersion = clus.fDispersion;
     fM20 = clus.fM20;
     fM02 = clus.fM02;
-    fM11 = clus.fM11;
     fEmcCpvDistance = clus.fEmcCpvDistance;
     fNExMax = clus.fNExMax;
+    fTOF = clus.fTOF;
     fTracksMatched = clus.fTracksMatched;
 
     fNCells= clus. fNCells;
@@ -188,4 +189,29 @@ Bool_t AliAODCaloCluster::HasTrackMatched(TObject *trk) const
     if (trk == track) return kTRUE;
   }
   return kFALSE;
+}
+
+//_______________________________________________________________________
+void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
+  // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
+  // identified as photons or pi0 (overlapped gamma) produced on the vertex
+  //Vertex can be recovered with esd pointer doing:  
+  //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
+
+  Double32_t energy = E();
+  Double32_t pos[3];
+  GetPosition(pos);
+  
+  if(vertex){//calculate direction from vertex
+    pos[0]-=vertex[0];
+    pos[1]-=vertex[1];
+    pos[2]-=vertex[2];
+  }
+  
+  Double_t r = TMath::Sqrt(pos[0]*pos[0]+
+			   pos[1]*pos[1]+
+			   pos[2]*pos[2]   ) ; 
+  
+  p.SetPxPyPzE( energy*pos[0]/r,  energy*pos[1]/r,  energy*pos[2]/r,  energy) ; 
+  
 }

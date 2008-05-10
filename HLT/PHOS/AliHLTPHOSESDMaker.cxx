@@ -152,7 +152,6 @@ AliHLTPHOSESDMaker::FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClust
       caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
       caloCluster->SetM20(caloClusterStruct->fM20);
       caloCluster->SetM02(caloClusterStruct->fM02);
-      caloCluster->SetM11(caloClusterStruct->fM11);
       caloCluster->SetNExMax(caloClusterStruct->fNExMax);
       caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
       caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);

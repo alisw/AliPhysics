@@ -411,7 +411,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->SetClusterChi2(-1); //not yet implemented
       ec->SetM02(elipAxis[0]*elipAxis[0]) ;
       ec->SetM20(elipAxis[1]*elipAxis[1]) ;
-      ec->SetM11(-1) ;        //not yet implemented
+      ec->SetTOF(clust->GetTime()) ; //time-of-fligh
 
       TArrayI arrayTrackMatched(1);// Only one track, temporal solution.
       arrayTrackMatched[0]= matchedTrack[iClust];

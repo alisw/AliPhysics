@@ -75,9 +75,6 @@ public:
   void SetM02(Float_t m02)                { fM02 = m02; }
   Double_t GetM02() const                  { return fM02; }
 
-  void SetM11(Float_t m11)                { fM11 = m11; }
-  Double_t GetM11() const                  { return fM11; }
-
   void SetNExMax(UChar_t nExMax)         { fNExMax = nExMax; }
   UChar_t GetNExMax() const              { return fNExMax; }
 
@@ -87,19 +84,22 @@ public:
   void SetDistanceToBadChannel(Float_t dist) {fDistToBadChannel=dist;}
   Double_t GetDistanceToBadChannel() const {return fDistToBadChannel;}
 
+  void SetTOF(Double_t tof) { fTOF = tof; }
+  Double_t GetTOF() const { return fTOF; }
+  
   void AddTracksMatched(TArrayI & array)  { fTracksMatched   = new TArrayI(array) ; }
   void AddLabels(TArrayI & array)         { fLabels = new TArrayI(array) ; }
-
+  
   TArrayI * GetTracksMatched() const  {return  fTracksMatched;}
   TArrayI * GetLabels() const         {return  fLabels;}
- 
+  
   Int_t GetTrackMatched() const   
   {if( fTracksMatched &&  fTracksMatched->GetSize() >0)  return  fTracksMatched->At(0); 
     else return -1;} //Most likely the track associated to the cluster
   Int_t GetLabel() const   
   {if( fLabels &&  fLabels->GetSize() >0)  return  fLabels->At(0); 
     else return -1;} //Most likely the track associated to the cluster
-
+  
   Int_t GetNTracksMatched() const {if (fTracksMatched) return  fTracksMatched->GetSize(); 
     else return -1;}
   Int_t GetNLabels() const        { if (fLabels) return  fLabels->GetSize(); 
@@ -159,15 +159,16 @@ protected:
   Double32_t   fChi2;             // chi2 of cluster fi
   Double32_t   fM20;              // 2-nd moment along the main eigen axis
   Double32_t   fM02;              // 2-nd moment along the second eigen axis
-  Double32_t   fM11;              // 2-nd mixed moment Mxy
+
   Double32_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
   Double32_t   fDistToBadChannel; // Distance to nearest bad channel
   Double32_t   fPID[AliPID::kSPECIESN]; //[0,1,8]"detector response  probabilities" (for the PID)
   Int_t       fID;               // Unique Id of the cluster
   UChar_t  fNExMax ;          // number of (Ex-)maxima before unfolding  
   Char_t  fClusterType;      // Flag for different cluster type/versions
+  Double32_t fTOF; //[0,0,12] time-of-flight
 
-  ClassDef(AliESDCaloCluster,7)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,8)  //ESDCaloCluster 
 };
 
 #endif 

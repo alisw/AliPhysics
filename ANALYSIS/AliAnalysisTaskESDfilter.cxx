@@ -841,12 +841,21 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       
       caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
 				  cluster->GetClusterDisp(),
-				  cluster->GetM20(), cluster->GetM02(), cluster->GetM11(),
-				  cluster->GetEmcCpvDistance(),  cluster->GetNExMax()) ;
+				  cluster->GetM20(), cluster->GetM02(),
+				  cluster->GetEmcCpvDistance(),  
+				  cluster->GetNExMax(),cluster->GetTOF()) ;
 
       caloCluster->SetNCells(cluster->GetNCells());
       caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
       caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
+
+      TArrayI* matchedT = 	cluster->GetTracksMatched();
+      if (matchedT) {	
+	for (Int_t im = 0; im < matchedT->GetSize(); im++) {
+	  caloCluster->AddTrackMatched((esd->GetTrack(im)));
+	}
+      }
+
     } 
     caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
     // end of loop on calo clusters

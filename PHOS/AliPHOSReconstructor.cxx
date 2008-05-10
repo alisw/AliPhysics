@@ -298,8 +298,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
     ec->SetEmcCpvDistance(ts->GetCpvDistance("r")); //Only radius, what about separate x,z????
     ec->SetClusterChi2(-1);                     //not yet implemented
-    ec->SetM11(-1) ;                            //not yet implemented
- 
+    ec->SetTOF(emcRP->GetTime()); //Time of flight
+
     //Cells contributing to clusters
     ec->SetNCells(cellMult);
     ec->SetCellsAbsId(absIdList);

@@ -74,6 +74,7 @@ class AliAODCluster : public TObject {
 
   Int_t  GetID() const { return fID; }
   Int_t  GetLabel(UInt_t i) const;
+  Int_t  * GetLabels() const {return fLabel ; }
   UInt_t GetNLabel() const { return (UInt_t)fNLabel; }
   Bool_t TestFilterBit(UInt_t filterBit) const { return (Bool_t) ((filterBit & fFilterMap) != 0); }
   Char_t GetType() const { return fType; }

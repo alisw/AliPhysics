@@ -332,6 +332,47 @@ void AliAODEvent::ClearStd()
   fPmdClusters   ->Clear();
 }
 
+//_________________________________________________________________
+Int_t AliAODEvent::GetPHOSClusters(TRefArray *clusters) const
+{
+  // fills the provided TRefArray with all found phos clusters
+  
+  clusters->Clear();
+  
+  AliAODCaloCluster *cl = 0;
+  for (Int_t i = 0; i < GetNCaloClusters() ; i++) {
+    
+    if ( (cl = GetCaloCluster(i)) ) {
+      if (cl->IsPHOSCluster()){
+	clusters->Add(cl);
+	//AliDebug(1,Form("IsPHOS cluster %d Size: %d \n",i,clusters->GetEntriesFast()));
+      }
+    }
+  }
+  return clusters->GetEntriesFast();
+}
+
+//_________________________________________________________________
+Int_t AliAODEvent::GetEMCALClusters(TRefArray *clusters) const
+{
+  // fills the provided TRefArray with all found emcal clusters
+
+  clusters->Clear();
+
+  AliAODCaloCluster *cl = 0;
+  for (Int_t i = 0; i < GetNCaloClusters(); i++) {
+
+    if ( (cl = GetCaloCluster(i)) ) {
+      if (cl->IsEMCALCluster()){
+	clusters->Add(cl);
+	//AliDebug(1,Form("IsEMCAL cluster %d Size: %d \n",i,clusters->GetEntriesFast()));
+      }
+    }
+  }
+  return clusters->GetEntriesFast();
+}
+
+
 //______________________________________________________________________________
 Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 {

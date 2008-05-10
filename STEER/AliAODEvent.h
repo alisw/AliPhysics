@@ -128,6 +128,10 @@ class AliAODEvent : public AliVEvent {
   Int_t         AddCaloCluster(const AliAODCaloCluster* clus)
   {new((*fCaloClusters)[fCaloClusters->GetEntriesFast()]) AliAODCaloCluster(*clus); return fCaloClusters->GetEntriesFast()-1;}
 
+  Int_t GetEMCALClusters(TRefArray *clusters) const;
+  Int_t GetPHOSClusters(TRefArray *clusters) const;
+
+
   // -- FMD Cluster
   TClonesArray *GetFmdClusters()        const { return fFmdClusters; }
   Int_t         GetNFmdClusters()       const { return fFmdClusters->GetEntriesFast(); }

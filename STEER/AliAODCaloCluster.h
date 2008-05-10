@@ -16,6 +16,8 @@
 #include <TRefArray.h>
 #include <TArrayS.h>
 
+class TLorentzVector;
+
 class AliAODCaloCluster : public AliAODCluster {
 
  public:
@@ -49,9 +51,9 @@ class AliAODCaloCluster : public AliAODCluster {
   Double_t GetDispersion() const { return fDispersion; }
   Double_t GetM20() const { return fM20; }
   Double_t GetM02() const { return fM02; }
-  Double_t GetM11() const { return fM11; }
   Double_t GetEmcCpvDistance() const { return fEmcCpvDistance; }
   UShort_t GetNExMax() const { return fNExMax; }
+  Double_t GetTOF() const { return fTOF; }
 
   Int_t    GetNTracksMatched() const { return fTracksMatched.GetEntriesFast(); }
   TObject *GetTrackMatched(Int_t i) const { return fTracksMatched.At(i); }
@@ -78,26 +80,28 @@ class AliAODCaloCluster : public AliAODCluster {
   void SetDispersion(Double_t disp) { fDispersion = disp; }
   void SetM20(Double_t m20) { fM20 = m20; }
   void SetM02(Double_t m02) { fM02 = m02; }
-  void SetM11(Double_t m11) { fM11 = m11; }
   void SetEmcCpvDistance(Double_t emcCpvDist) { fEmcCpvDistance = emcCpvDist; }
   void SetNExMax(UShort_t nExMax) { fNExMax = nExMax; }
+  void SetTOF(Double_t tof) { fTOF = tof; }
 
   void SetCaloCluster(Double_t dist = -999., 
 		      Double_t disp = -1., 
 		      Double_t m20 = 0., 
 		      Double_t m02 = 0., 
-		      Double_t m11 = 0., 
 		      Double_t emcCpvDist = -999., 
-		      UShort_t nExMax = 0) 
+		      UShort_t nExMax = 0, 
+		      Double_t tof = 0.) 
   {
     fDistToBadChannel = dist;
     fDispersion = disp;
     fM20 = m20;
     fM02 = m02;
-    fM11 = m11;
     fEmcCpvDistance = emcCpvDist;
     fNExMax = nExMax;
+    fTOF = tof ;
   }
+  
+  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition );
 
   void AddTrackMatched(TObject *trk) { fTracksMatched.Add(trk); }
   void RemoveTrackMatched(TObject *trk) { fTracksMatched.Remove(trk); }
@@ -109,9 +113,9 @@ class AliAODCaloCluster : public AliAODCluster {
   Double32_t   fDispersion;       // cluster dispersion, for shape analysis
   Double32_t   fM20;              // 2-nd moment along the main eigen axis
   Double32_t   fM02;              // 2-nd moment along the second eigen axis
-  Double32_t   fM11;              // 2-nd mixed moment Mxy
   Double32_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
   UShort_t     fNExMax;           // number of (Ex-)maxima before unfolding
+  Double32_t fTOF;        ////[0,0,12] time-of-flight
 
   TRefArray    fTracksMatched;    // references to tracks close to cluster. First entry is the most likely match.
 
@@ -119,7 +123,7 @@ class AliAODCaloCluster : public AliAODCluster {
   UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
   Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
-  ClassDef(AliAODCaloCluster,3);
+  ClassDef(AliAODCaloCluster,5);
 };
 
 #endif

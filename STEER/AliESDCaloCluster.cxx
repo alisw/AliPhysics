@@ -45,12 +45,11 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fChi2(0),
   fM20(0),
   fM02(0),
-  fM11(0),
   fEmcCpvDistance(1024),
   fDistToBadChannel(1024),
   fID(0),
   fNExMax(0),
-  fClusterType(kUndef)
+  fClusterType(kUndef), fTOF(0.)
 {
   //
   // The default ESD constructor 
@@ -75,12 +74,12 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fChi2(clus.fChi2),
   fM20(clus.fM20),
   fM02(clus.fM02),
-  fM11(clus.fM11),
   fEmcCpvDistance(clus.fEmcCpvDistance),
   fDistToBadChannel(clus.fDistToBadChannel),
   fID(clus.fID),
   fNExMax(clus.fNExMax),
-  fClusterType(clus.fClusterType)
+  fClusterType(clus.fClusterType),
+  fTOF(clus.fTOF)
 {
   //
   // The copy constructor 
@@ -127,7 +126,6 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fChi2 = source.fChi2;
   fM20 = source.fM20;
   fM02 = source.fM02;
-  fM11 = source.fM11;
   fEmcCpvDistance = source.fEmcCpvDistance;
   fDistToBadChannel = source.fDistToBadChannel ;
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
@@ -157,6 +155,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 
   fNExMax = source.fNExMax;
   fClusterType = source.fClusterType;
+  fTOF = source.fTOF;
 
   //not in use
   if(source.fTracksMatched){
