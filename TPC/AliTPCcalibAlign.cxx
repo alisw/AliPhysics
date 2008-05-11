@@ -19,12 +19,22 @@
 //     Class to make a internal alignemnt of TPC chambers                    //
 //
 //     Different linear tranformation investigated
+
 //     12 parameters - arbitrary linear transformation 
+//                     a00  a01 a02  a03     p[0]   p[1]  p[2]  p[9]
+//                     a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
+//                     a20  a21 a22  a23     p[6]   p[7]  p[8]  p[11] 
+//
 //      9 parameters - scaling fixed to 1
+//                     a00  a01  a02 a03     1      p[0]  p[1]   p[6]
+//                     a10  a11  a12 a13 ==> p[2]   1     p[3]   p[7]
+//                     a20  a21  a22 a23     p[4]   p[5]  1      p[8] 
+//
 //      6 parameters - x-y rotation x-z, y-z tiliting
-////
-//// Only the 12 parameter version works so far...
-////
+//                     a00  a01  a02 a03     1     -p[0]  0     p[3]
+//                     a10  a11  a12 a13 ==> p[0]   1     0     p[4]
+//                     a20  a21  a22 a23     p[1]   p[2]  1     p[5] 
+//
 ////
 //// 
 
@@ -208,9 +218,12 @@ void AliTPCcalibAlign::Process12(const Double_t *t1,
   // dydx2 = (a10    + a11*dydx1 + a12*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
   // dzdx2 = (a20    + a21*dydx1 + a22*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
   //
-  //       a00  a01 a02  a03     p[0]   p[1]  p[2]  p[9]
-  //       a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
-  //       a20  a21 a22  a23     p[6]   p[7]  p[8]  p[11] 
+  //                     a00  a01 a02  a03     p[0]   p[1]  p[2]  p[9]
+  //                     a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
+  //                     a20  a21 a22  a23     p[6]   p[7]  p[8]  p[11] 
+
+
+
   const Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
   const Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
@@ -285,71 +298,73 @@ void AliTPCcalibAlign::Process9(Double_t *t1,
   // dydx2 = (a10    + a11*dydx1 + a12*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
   // dzdx2 = (a20    + a21*dydx1 + a22*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
   //
-  //       a00  a01 a02  a03     p[0]   p[1]  p[2]  p[9]
-  //       a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
-  //       a20  a21 a22  a23     p[6]   p[7]  p[8]  p[11] 
+  //                     a00  a01  a02 a03     1      p[0]  p[1]   p[6]
+  //                     a10  a11  a12 a13 ==> p[2]   1     p[3]   p[7]
+  //                     a20  a21  a21 a23     p[4]   p[5]  1      p[8] 
+
+
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
   Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
   // TODO:
-  Double_t sy    = 1.;
-  Double_t sz    = 1.;
-  Double_t sdydx = 1.;
-  Double_t sdzdx = 1.;
-
+  Double_t sy    = 0.1;
+  Double_t sz    = 0.1;
+  Double_t sdydx = 0.001;
+  Double_t sdzdx = 0.001;
+  //
   Double_t p[12];
   Double_t value;
 
   // x2  =  a00*x1 + a01*y1 + a02*z1 + a03
   // y2  =  a10*x1 + a11*y1 + a12*z1 + a13
-  // y2' =  a10*x1 + a11*y1 + a12*z1 + a13 + (a01*y1 + a03)*dydx2
+  // y2' =  a10*x1 + a11*y1 + a12*z1 + a13 + (a01*y1 + a02*z1 + a03)*dydx2
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[3+0] = x1;
-  p[3+1] = y1;
-  p[3+2] = z1;
-  p[9+1] = 1.;
-  p[0+1] = y1*dydx2;
-  p[0+2] = z1*dydx2;
-  p[9+0] = dydx2;
-  value  = y2;
+  p[2]   += x1;           // a10
+  //p[]  +=1;             // a11
+  p[3]   += z1;           // a12    
+  p[7]   += 1;            // a13
+  p[0]   += y1*dydx2;     // a01
+  p[1]   += z1*dydx2;     // a02
+  p[6]   += dydx2;        // a03
+  value   = y2-y1;        //-a11
   fitter->AddPoint(p,value,sy);
-
+  //
   // x2  =  a00*x1 + a01*y1 + a02*z1 + a03
   // z2  =  a20*x1 + a21*y1 + a22*z1 + a23
-  // z2' =  a20*x1 + a21*y1 + a22*z1 + a23 + (a01*y1 + a03)*dzdx2;
+  // z2' =  a20*x1 + a21*y1 + a22*z1 + a23 + (a01*y1 + a02*z1 + a03)*dzdx2;
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[6+0] = x1;
-  p[6+1] = y1;
-  p[6+2] = z1;
-  p[9+2] = 1.;
-  p[0+1] = y1*dzdx2;
-  p[0+2] = z1*dzdx2;
-  p[9+0] = dzdx2;
-  value  = z2;
+  p[4]   += x1;           // a20 
+  p[5]   += y1;           // a21
+  //p[]  += z1;           // a22
+  p[8]   += 1.;           // a23
+  p[0]   += y1*dzdx2;     // a01
+  p[1]   += z1*dzdx2;     // a02
+  p[6]   += dzdx2;        // a03
+  value  = z2-z1;         //-a22
   fitter->AddPoint(p,value,sz);
 
   // dydx2 = (a10 + a11*dydx1 + a12*dzdx1)/( a00 + a01*dydx1 + a02*dzdx1)
   // (a10 + a11*dydx1 + a12*dzdx1) - (a00 + a01*dydx1 + a02*dzdx1)*dydx2 = 0
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[3+0] = 1.;
-  p[3+1] = dydx1;
-  p[3+2] = dzdx1;
-  p[0+0] = -dydx2;
-  p[0+1] = -dydx1*dydx2;
-  p[0+2] = -dzdx1*dydx2;
-  value  = 0.;
+  p[2]   += 1.;           // a10
+  //p[]  += dydx1;      // a11
+  p[3]   += dzdx1;        // a12
+  //p[]  += -dydx2;       // a00
+  p[0]   += -dydx1*dydx2; // a01
+  p[1]   += -dzdx1*dydx2; // a02
+  value  = -dydx1+dydx2;  // -a11 + a00
   fitter->AddPoint(p,value,sdydx);
 
   // dzdx2 = (a20 + a21*dydx1 + a22*dzdx1)/( a00 + a01*dydx1 + a02*dzdx1)
   // (a20 + a21*dydx1 + a22*dzdx1) - (a00 + a01*dydx1 + a02*dzdx1)*dzdx2 = 0
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[6+0] = 1;
-  p[6+1] = dydx1;
-  p[6+2] = dzdx1;
-  p[0+0] = -dzdx2;
-  p[0+1] = -dydx1*dzdx2;
-  p[0+2] = -dzdx1*dzdx2;
-  value  = 0.;
+  p[4]   += 1;            // a20
+  p[5]   += dydx1;        // a21
+  //p[]  += dzdx1;        // a22
+  //p[]  += -dzdx2;       // a00
+  p[0]   += -dydx1*dzdx2; // a01
+  p[1]   += -dzdx1*dzdx2; // a02
+  value  = -dzdx1+dzdx2;  // -a22 + a00
   fitter->AddPoint(p,value,sdzdx);
 }
 
@@ -362,9 +377,10 @@ void AliTPCcalibAlign::Process6(Double_t *t1,
   // dydx2 = (a10    + a11*dydx1 + a12*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
   // dzdx2 = (a20    + a21*dydx1 + a22*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
   //
-  //       1   -a01 0    a03     x     -p[0]  x     p[3]
-  //       a10  1   0    a13 ==> p[0]   x     x     p[4]
-  //       a20  a21 1    a23     p[1]   p[2]  x     p[5] 
+  //                     a00  a01  a02 a03     1     -p[0]  0     p[3]
+  //                     a10  a11  a12 a13 ==> p[0]   1     0     p[4]
+  //                     a20  a21  a21 a23     p[1]   p[2]  1     p[5] 
+
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
   Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
@@ -376,57 +392,56 @@ void AliTPCcalibAlign::Process6(Double_t *t1,
 
   Double_t p[12];
   Double_t value;
-
-  // x2  =  1  *x1 +-a01*y1 + 0      +a03
-  // y2  =  a01*x1 + 1  *y1 + 0      +a13
+  // x2  =  a00*x1 + a01*y1 + a02*z1 + a03
+  // y2  =  a10*x1 + a11*y1 + a12*z1 + a13
   // y2' =  a10*x1 + a11*y1 + a12*z1 + a13 + (a01*y1 + a02*z1 + a03)*dydx2
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[3+0] = x1;
-  p[3+1] = y1;
-  p[3+2] = z1;
-  p[9+1] = 1.;
-  p[0+1] = y1*dydx2;
-  p[0+2] = z1*dydx2;
-  p[9+0] = dydx2;
-  value  = y2;
+  p[0]   += x1;           // a10
+  //p[]  +=1;             // a11
+  //p[]  += z1;           // a12    
+  p[4]   += 1;            // a13
+  p[0]   += -y1*dydx2;    // a01
+  //p[]  += z1*dydx2;     // a02
+  p[3]   += dydx2;        // a03
+  value   = y2-y1;        //-a11
   fitter->AddPoint(p,value,sy);
-
-  // x2  =  1  *x1 +-a01*y1 + 0      + a03
-  // z2  =  a20*x1 + a21*y1 + 1  *z1 + a23
-  // z2' =  a20*x1 + a21*y1 + a22*z1 + a23 + (a01*y1 + a02*z1 +a03)*dzdx2;
+  //
+  // x2  =  a00*x1 + a01*y1 + a02*z1 + a03
+  // z2  =  a20*x1 + a21*y1 + a22*z1 + a23
+  // z2' =  a20*x1 + a21*y1 + a22*z1 + a23 + (a01*y1 + a02*z1 + a03)*dzdx2;
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[6+0] = x1;
-  p[6+1] = y1;
-  p[6+2] = z1;
-  p[9+2] = 1.;
-  p[0+1] = y1*dzdx2;
-  p[0+2] = z1*dzdx2;
-  p[9+0] = dzdx2;
-  value  = z2;
+  p[1]   += x1;           // a20 
+  p[2]   += y1;           // a21
+  //p[]  += z1;           // a22
+  p[5]   += 1.;           // a23
+  p[0]   += -y1*dzdx2;    // a01
+  //p[]   += z1*dzdx2;     // a02
+  p[3]   += dzdx2;        // a03
+  value  = z2-z1;         //-a22
   fitter->AddPoint(p,value,sz);
 
   // dydx2 = (a10 + a11*dydx1 + a12*dzdx1)/( a00 + a01*dydx1 + a02*dzdx1)
   // (a10 + a11*dydx1 + a12*dzdx1) - (a00 + a01*dydx1 + a02*dzdx1)*dydx2 = 0
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[3+0] = 1.;
-  p[3+1] = dydx1;
-  p[3+2] = dzdx1;
-  p[0+0] = -dydx2;
-  p[0+1] = -dydx1*dydx2;
-  p[0+2] = -dzdx1*dydx2;
-  value  = 0.;
+  p[0]   += 1.;           // a10
+  //p[]  += dydx1;      // a11
+  //p[]   += dzdx1;        // a12
+  //p[]  += -dydx2;       // a00
+  p[0]   +=  dydx1*dydx2; // a01
+  //p[]   += -dzdx1*dydx2; // a02
+  value  = -dydx1+dydx2;  // -a11 + a00
   fitter->AddPoint(p,value,sdydx);
 
   // dzdx2 = (a20 + a21*dydx1 + a22*dzdx1)/( a00 + a01*dydx1 + a02*dzdx1)
   // (a20 + a21*dydx1 + a22*dzdx1) - (a00 + a01*dydx1 + a02*dzdx1)*dzdx2 = 0
   for (Int_t i=0; i<12;i++) p[i]=0.;
-  p[6+0] = 1;
-  p[6+1] = dydx1;
-  p[6+2] = dzdx1;
-  p[0+0] = -dzdx2;
-  p[0+1] = -dydx1*dzdx2;
-  p[0+2] = -dzdx1*dzdx2;
-  value  = 0.;
+  p[1]   += 1;            // a20
+  p[2]   += dydx1;        // a21
+  //p[]  += dzdx1;        // a22
+  //p[]  += -dzdx2;       // a00
+  p[0]   +=  dydx1*dzdx2; // a01
+  //p[]  += -dzdx1*dzdx2; // a02
+  value  = -dzdx1+dzdx2;  // -a22 + a00
   fitter->AddPoint(p,value,sdzdx);
 }
 
@@ -588,9 +603,9 @@ Bool_t AliTPCcalibAlign::GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a) {
     TVectorD p(9);
     GetFitter9(s1,s2)->GetParameters(p);
     a.ResizeTo(4,4);
-    a[0][0]=p[0]; a[0][1]=p[1]; a[0][2]=p[2]; a[0][3]=p[9];
-    a[1][0]=p[3]; a[1][1]=p[4]; a[1][2]=p[5]; a[1][3]=p[10];
-    a[2][0]=p[6]; a[2][1]=p[7]; a[2][2]=p[8]; a[2][3]=p[11];
+    a[0][0]=1;    a[0][1]=p[0]; a[0][2]=p[1]; a[0][3]=p[6];
+    a[1][0]=p[2]; a[1][1]=1;    a[1][2]=p[3]; a[1][3]=p[7];
+    a[2][0]=p[4]; a[2][1]=p[5]; a[2][2]=1;    a[2][3]=p[8];
     a[3][0]=0.;   a[3][1]=0.;   a[3][2]=0.;   a[3][3]=1.;
     return true;
   } 
@@ -608,9 +623,9 @@ Bool_t AliTPCcalibAlign::GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a) {
     TVectorD p(6);
     GetFitter6(s1,s2)->GetParameters(p);
     a.ResizeTo(4,4);
-    a[0][0]=p[0];    a[0][1]=p[1]; a[0][2]=p[2]; a[0][3]=p[9];
-    a[1][0]=p[3];    a[1][1]=p[4]; a[1][2]=p[5]; a[1][3]=p[10];
-    a[2][0]=p[6];    a[2][1]=p[7]; a[2][2]=p[8]; a[2][3]=p[11];
+    a[0][0]=1;       a[0][1]=-p[0];a[0][2]=0;    a[0][3]=p[3];
+    a[1][0]=p[0];    a[1][1]=1;    a[1][2]=0;    a[1][3]=p[4];
+    a[2][0]=p[1];    a[2][1]=p[2]; a[2][2]=1;    a[2][3]=p[5];
     a[3][0]=0.;      a[3][1]=0.;   a[3][2]=0.;   a[3][3]=1.;
     return true;
   } 
