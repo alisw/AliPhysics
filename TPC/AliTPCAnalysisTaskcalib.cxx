@@ -42,12 +42,14 @@ AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name)
   //
   DefineInput(0, TChain::Class());
   DefineOutput(0, TObjArray::Class());
+  fCalibJobs.SetOwner(kTRUE);
 }
 
 AliTPCAnalysisTaskcalib::~AliTPCAnalysisTaskcalib() {
   //
   // destructor
   //
+  fCalibJobs.Delete();
 }
 
 void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
@@ -104,28 +106,38 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
 }
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
   //
+  // Terminate
   //
-  //
-  TIterator *i=fCalibJobs.MakeIterator();
-  AliTPCcalibBase *job;
-  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next()))){
-    job->Terminate();
+  AliTPCcalibBase *job=0;
+  Int_t njobs = fCalibJobs.GetEntriesFast();
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    if (job) job->Terminate();
   }
 }
 
-// we could have been living inside a master class...
 void AliTPCAnalysisTaskcalib::Process(AliESDEvent *event) {
-  TIterator *i=fCalibJobs.MakeIterator();
-  AliTPCcalibBase *job;
-  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
-    job->Process(event);
+  //
+  // Process ESD event
+  //
+  AliTPCcalibBase *job=0;
+  Int_t njobs = fCalibJobs.GetEntriesFast();
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    if (job) job->Process(event);
+  }
 }
 
 void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
-  TIterator *i=fCalibJobs.MakeIterator();
-  AliTPCcalibBase *job;
-  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
-    job->Process(track);
+  //
+  // Process TPC track
+  //
+  AliTPCcalibBase *job=0;
+  Int_t njobs = fCalibJobs.GetEntriesFast();
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    if (job) job->Process(track);
+  }
 }
 
 Long64_t AliTPCAnalysisTaskcalib::Merge(TCollection *li) {
@@ -138,8 +150,13 @@ Long64_t AliTPCAnalysisTaskcalib::Merge(TCollection *li) {
 }
 
 void AliTPCAnalysisTaskcalib::Analyze() {
-  TIterator *i=fCalibJobs.MakeIterator();
-  AliTPCcalibBase *job;
-  while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
-    job->Analyze();
+  //
+  // Analyze the content of the task
+  //
+  AliTPCcalibBase *job=0;
+  Int_t njobs = fCalibJobs.GetEntriesFast();
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    if (job) job->Analyze();
+  }
 }
