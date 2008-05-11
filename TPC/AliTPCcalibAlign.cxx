@@ -36,6 +36,7 @@
 #include "TVectorD.h"
 #include "TTreeStream.h"
 #include "TFile.h"
+#include "TF1.h"
 
 #include <iostream>
 #include <sstream>
@@ -195,7 +196,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   Process12(t1,t2,GetOrMakeFitter12(s1,s2));
   Process9(t1,t2,GetOrMakeFitter9(s1,s2));
   Process6(t1,t2,GetOrMakeFitter6(s1,s2));
-  ++fPoints[72*s1+s2];
+  ++fPoints[GetIndex(s1,s2)];
 }
 
 void AliTPCcalibAlign::Process12(const Double_t *t1,
@@ -443,8 +444,8 @@ void AliTPCcalibAlign::EvalFitters() {
   TFile fff("alignDebug.root","recreate");
   for (Int_t s1=0;s1<72;++s1)
     for (Int_t s2=0;s2<72;++s2){
-      if ((f=GetFitter12(s1,s2))&&fPoints[72*s1+s2]>kMinPoints) {
-	//	cerr<<s1<<","<<s2<<": "<<fPoints[72*s1+s2]<<endl;
+      if ((f=GetFitter12(s1,s2))&&fPoints[GetIndex(s1,s2)]>kMinPoints) {
+	//	cerr<<s1<<","<<s2<<": "<<fPoints[GetIndex(s1,s2)]<<endl;
 	if (f->Eval()!=0) {
 	  cerr<<"Evaluation failed for "<<s1<<","<<s2<<endl;
 	  f->Write(Form("f12_%d_%d",s1,s2));
@@ -452,16 +453,16 @@ void AliTPCcalibAlign::EvalFitters() {
 	  f->Write(Form("f12_%d_%d",s1,s2));
 	}
       }
-      if ((f=GetFitter9(s1,s2))&&fPoints[72*s1+s2]>kMinPoints) {
-	//	cerr<<s1<<","<<s2<<": "<<fPoints[72*s1+s2]<<endl;
+      if ((f=GetFitter9(s1,s2))&&fPoints[GetIndex(s1,s2)]>kMinPoints) {
+	//	cerr<<s1<<","<<s2<<": "<<fPoints[GetIndex(s1,s2)]<<endl;
 	if (f->Eval()!=0) {
 	  cerr<<"Evaluation failed for "<<s1<<","<<s2<<endl;
 	}else{
 	  f->Write(Form("f9_%d_%d",s1,s2));
 	}
       }
-      if ((f=GetFitter6(s1,s2))&&fPoints[72*s1+s2]>kMinPoints) {
-	//	cerr<<s1<<","<<s2<<": "<<fPoints[72*s1+s2]<<endl;
+      if ((f=GetFitter6(s1,s2))&&fPoints[GetIndex(s1,s2)]>kMinPoints) {
+	//	cerr<<s1<<","<<s2<<": "<<fPoints[GetIndex(s1,s2)]<<endl;
 	if (f->Eval()!=0) {
 	  cerr<<"Evaluation failed for "<<s1<<","<<s2<<endl;
 	}else{
@@ -505,11 +506,16 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter12(Int_t s1,Int_t s2) {
   //
   // get or make fitter - general linear transformation
   //
+  static Int_t counter12=0;
+  static TF1 f12("f12","x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
   TLinearFitter * fitter = GetFitter12(s1,s2);
   if (fitter) return fitter;
-  fitter =new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
+  //  fitter =new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
+  fitter =new TLinearFitter(&f12,"");
   fitter->StoreData(kFALSE);
-  fFitterArray12.AddAt(fitter,GetIndex(s1,s2));
+  fFitterArray12.AddAt(fitter,GetIndex(s1,s2));	
+  counter12++;
+  if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter12<<endl;
   return fitter;
 }
 
@@ -517,11 +523,16 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter9(Int_t s1,Int_t s2) {
   //
   //get or make fitter - general linear transformation - no scaling
   // 
+  static Int_t counter9=0;
+  static TF1 f9("f9","x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]");
   TLinearFitter * fitter = GetFitter9(s1,s2);
   if (fitter) return fitter;
-  fitter =new TLinearFitter(9,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]");
+  //  fitter =new TLinearFitter(9,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]");
+  fitter =new TLinearFitter(&f9,"");
   fitter->StoreData(kFALSE);
   fFitterArray9.AddAt(fitter,GetIndex(s1,s2));
+  counter9++;
+  if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter9<<endl;
   return fitter;
 }
 
@@ -531,11 +542,16 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter6(Int_t s1,Int_t s2) {
   //                     - no scaling
   //                     - rotation x-y
   //                     - tilting x-z, y-z
+  static Int_t counter6=0;
+  static TF1 f6("f6","x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
   TLinearFitter * fitter = GetFitter6(s1,s2);
   if (fitter) return fitter;
-  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  //  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  fitter=new TLinearFitter(&f6,"");
   fitter->StoreData(kFALSE);
   fFitterArray6.AddAt(fitter,GetIndex(s1,s2));
+  counter6++;
+  if (GetDebugLevel()>0) cerr<<"Creating fitter6 "<<s1<<","<<s2<<"  :  "<<counter6<<endl;
   return fitter;
 }
 
