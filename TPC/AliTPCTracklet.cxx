@@ -68,7 +68,7 @@ AliTPCTracklet::AliTPCTracklet(const AliTPCseed *track,Int_t sector,
     for (Int_t i=0;i<160;++i) {
       AliTPCclusterMI *c=track->GetClusterPointer(i);
       if (c&&c->GetDetector()==sector)
-	fClusters[fNStoredClusters]=c;
+	fClusters[fNStoredClusters]=*c;
       ++fNStoredClusters;
     }
   }
