@@ -34,7 +34,7 @@
 ClassImp(AliTPCclusterMI)
 
 
-AliTPCclusterMI::AliTPCclusterMI(Bool_t withInfo):
+AliTPCclusterMI::AliTPCclusterMI():
   AliCluster(),
   fInfo(0),
   fTimeBin(0),  //time bin coordinate
@@ -49,7 +49,6 @@ AliTPCclusterMI::AliTPCclusterMI(Bool_t withInfo):
   //
   // default constructor
   //
-  if (withInfo) fInfo = new AliTPCclusterInfo;
 }
 
 AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):

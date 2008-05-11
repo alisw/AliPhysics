@@ -119,6 +119,10 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   }
   fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
   Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
+  fRowCl= new AliTPCClustersRow();
+  fRowCl->SetClass("AliTPCclusterMI");
+  fRowCl->SetArray(1);
+
 }
 //______________________________________________________________
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
@@ -600,16 +604,16 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
 
   TClonesArray * arr = fRowCl->GetArray();
   AliTPCclusterMI * cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
-  if (fRecoParam->DumpSignal() &&matrix ) {
-    Int_t nbins=0;
-    Float_t *graph =0;
-    if (fRecoParam->GetCalcPedestal() && cl->GetMax()>fRecoParam->GetDumpAmplitudeMin() &&fBDumpSignal){
-      nbins = fMaxTime;
-      graph = &(fBins[fMaxTime*(pos/fMaxTime)]);
-    }
-    AliTPCclusterInfo * info = new AliTPCclusterInfo(matrix,nbins,graph);
-    cl->SetInfo(info);
-  }
+  // if (fRecoParam->DumpSignal() &&matrix ) {
+//     Int_t nbins=0;
+//     Float_t *graph =0;
+//     if (fRecoParam->GetCalcPedestal() && cl->GetMax()>fRecoParam->GetDumpAmplitudeMin() &&fBDumpSignal){
+//       nbins = fMaxTime;
+//       graph = &(fBins[fMaxTime*(pos/fMaxTime)]);
+//     }
+//     AliTPCclusterInfo * info = new AliTPCclusterInfo(matrix,nbins,graph);
+//     cl->SetInfo(info);
+//   }
   if (!fRecoParam->DumpSignal()) {
     cl->SetInfo(0);
   }
@@ -651,9 +655,6 @@ void AliTPCclustererMI::Digits2Clusters()
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
     AliTPCCalROC * noiseROC   = noiseTPC->GetCalROC(fSector); // noise per given sector
     //
-    fRowCl= new AliTPCClustersRow();
-    fRowCl->SetClass("AliTPCclusterMI");
-    fRowCl->SetArray(1);
 
     fRowCl->SetID(digarr.GetID());
     if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
@@ -695,7 +696,7 @@ void AliTPCclustererMI::Digits2Clusters()
 
     FindClusters(noiseROC);
     FillRow();
-    delete fRowCl;    
+    fRowCl->GetArray()->Clear();    
     nclusters+=fNcluster;    
     delete[] fBins;
     delete[] fSigBins;
@@ -908,9 +909,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     }
     // Now loop over rows and find clusters
     for (fRow = 0; fRow < nRows; fRow++) {
-      fRowCl = new AliTPCClustersRow;
-      fRowCl->SetClass("AliTPCclusterMI");
-      fRowCl->SetArray(1);
       fRowCl->SetID(fParam->GetIndex(fSector, fRow));
       if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
 
@@ -929,7 +927,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 
       FindClusters(noiseROC);
       FillRow();
-      delete fRowCl;    
+      fRowCl->GetArray()->Clear();    
       nclusters += fNcluster;    
     } // End of loop to find clusters
   } // End of loop over sectors
@@ -995,7 +993,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
     if ((b[0]+b[-1]+b[1])<minUpDownCutSigma*noise) continue;   //threshold for up town TRF 
     if ((b[0]+b[-fMaxTime]+b[fMaxTime])<minLeftRightCutSigma*noise) continue;   //threshold for left right (PRF)    
   
-    AliTPCclusterMI c(kFALSE);   // default cosntruction  without info
+    AliTPCclusterMI c;   // default cosntruction  without info
     Int_t dummy=0;
     MakeCluster(i, fMaxTime, fBins, dummy,c);
     

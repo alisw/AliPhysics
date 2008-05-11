@@ -16,7 +16,7 @@ class AliTPCclusterInfo;
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
 public:
-  AliTPCclusterMI(Bool_t withInfo=kTRUE);
+  AliTPCclusterMI();
   AliTPCclusterMI(const AliTPCclusterMI & cluster);
   AliTPCclusterMI &operator = (const AliTPCclusterMI & cluster); //assignment operator
   AliTPCclusterMI(Int_t *lab, Float_t *hit);
