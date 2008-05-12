@@ -39,7 +39,7 @@
 #include <TVirtualMC.h>
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
-#include "TGeoPgon.h"
+#include "TGeoPcon.h"
 #include "TGeoTube.h"
 #include "TGeoCompositeShape.h"
 #include <TGraph.h>
@@ -119,7 +119,7 @@ void AliT0v1::CreateGeometry()
 
   Int_t is;
   Int_t idrotm[999];
-  Float_t x,y,z;
+  Double_t x,y,z;
   //C T0 mother volume
   Float_t pstartR[18]={0., 360., 5., 
 		       -6.8, 4.25, 10., //-76.5+0.00+69.7
@@ -246,7 +246,8 @@ void AliT0v1::CreateGeometry()
 
    //non-absorber side support  and T0A !!!!!!!!
     
-    TGeoPgon * supPgon = new TGeoPgon("supPgon",0.,360.,360,4);
+    //   TGeoPcon * supPgon = new TGeoPcon("supPgon",0.,360.,360,4);
+    TGeoPcon * supPgon = new TGeoPcon("supPgon",0.,360.,4);
     supPgon->DefineSection(0, 0, 4.1, 5.5);
     supPgon->DefineSection(1, 10.5 , 4.1, 5.5);
     supPgon->DefineSection(2, 10.5 , 4.1, 4.9);
@@ -259,9 +260,10 @@ void AliT0v1::CreateGeometry()
 
     //   Double_t phimin = TMath::ACos((16-4.8)/16.) * (180 / TMath::Pi()) ;
     //  TGeoTubeSeg *hole = new TGeoTubeSeg("hole", 0, 1.6, 0, -phimin+90, phimin+90);
-    new TGeoTube("hole", 0, 1.61, 6.5);
+    //    new TGeoTube("hole", 0, 1.61, 6.5);
+    new TGeoTube("hole", 0, 1.51, 6.5);
     TGeoTranslation *tr [12];
-    Float_t angle  = 2 * TMath::Pi() / 12;
+    Double_t angle  = 2 * TMath::Pi() / 12;
     Char_t nameTr[40];
     for (Int_t itr=0; itr<12; itr++) {
       sprintf (nameTr,"tr%i",itr+1);
@@ -269,7 +271,7 @@ void AliT0v1::CreateGeometry()
       y = 6.5 * TMath::Cos(itr * angle);
       tr[itr] = new TGeoTranslation(nameTr,x,y,6.5);
       tr[itr]->RegisterYourself();
-       stlin->AddNode(ins,itr+13,tr[itr]);
+      stlin->AddNode(ins,itr+13,tr[itr]);
     }
     TGeoCompositeShape *supsh = new TGeoCompositeShape("supsh","supPgon:trPgon-(hole:tr1+hole:tr2+hole:tr3+hole:tr4+hole:tr5+hole:tr6+hole:tr7+hole:tr8+hole:tr9+hole:tr10+hole:tr11+hole:tr12)");
   
@@ -418,34 +420,71 @@ void AliT0v1::AddAlignableVolumes() const
   // eventual changes in the geometry.
   //
 
+  // TString volPath;
+  // TString symName, sn;
+  
+
+
+
   TString volPath;
   TString symName, sn;
 
   TString vpA  = "/ALIC_1/0STL_1/0INS_";
   TString vpC  = "/ALIC_1/0STR_1/0INS_";
   TString vpInside  = "/0PMT_1/0TOP_1";
-
-  for (Int_t imod=0; imod<24; imod++)
+  TString vpAalign = "/ALIC_1/0STL_1";
+  TString vpCalign = "/ALIC_1/0STR_1";
+  
+  for (Int_t imod=0; imod<26; imod++)
     {
-      if (imod < 12) 
-	{volPath  = vpC; sn="T0/C/PMT";} 
-     else  
-       {volPath  = vpA; sn="T0/A/PMT";}
+      if (imod < 24)
+      {
+       if (imod < 12)
+         { volPath  = vpC; sn="T0/C/PMT";}
+        else
+          { volPath  = vpA; sn="T0/A/PMT";}
       volPath += imod+1;
       volPath += vpInside;
-      
       symName = sn;
-      symName += imod+1;
-      
+     symName += imod+1;
+     }
+     else if (imod == 24)
+       {volPath  = vpCalign; symName="/ALIC_1/0STR_1";}
+     else
+       {volPath  = vpAalign; symName="/ALIC_1/0STL_1";}
+
       AliDebug(2,"--------------------------------------------");
       AliDebug(2,Form("Alignable object %d", imod));
       AliDebug(2,Form("volPath=%s\n",volPath.Data()));
       AliDebug(2,Form("symName=%s\n",symName.Data()));
       AliDebug(2,"--------------------------------------------");
       if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data()))
-     	AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symName.Data(),volPath.Data()));
-      
-    }
+       AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",
+symName.Data(),volPath.Data()));
+   }
+  /*
+  for (Int_t imod=0; imod<24; imod++)
+    {
+       if (imod < 12)
+         { volPath  = vpC; sn="T0/C/PMT";}
+        else
+          { volPath  = vpA; sn="T0/A/PMT";}
+      volPath += imod+1;
+      volPath += vpInside;
+      symName = sn;
+      symName += imod+1;
+    
+
+      AliDebug(2,"--------------------------------------------");
+      AliDebug(2,Form("Alignable object %d", imod));
+      AliDebug(2,Form("volPath=%s\n",volPath.Data()));
+      AliDebug(2,Form("symName=%s\n",symName.Data()));
+      AliDebug(2,"--------------------------------------------");
+      if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data()))
+       AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",
+symName.Data(),volPath.Data()));
+   }
+  */
 }   
 //------------------------------------------------------------------------
 void AliT0v1::CreateMaterials()
