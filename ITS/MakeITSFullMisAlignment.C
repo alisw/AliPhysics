@@ -32,8 +32,7 @@ void MakeITSFullMisAlignment() {
   
   AliCDBStorage* storage = NULL;
 
-  TString compare("kTRUE");
-  if(gSystem->Getenv("TOCDB") == compare.Data()){
+  if(TString(gSystem->Getenv("TOCDB")) == TString("kTRUE")){
     TString Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
@@ -69,12 +68,13 @@ void MakeITSFullMisAlignment() {
   //=****************************************
   // overall ITS misalignment :              source - 
   //=****************************************
-  Float_t its_dx     = 0.0000;   // ?
-  Float_t its_dy     = 0.0000;    // ?
-  Float_t its_dz     = 0.0000;    // ?
-  Float_t its_dpsi   = 0.0000;   // ?
-  Float_t its_dtheta = 0.0000;  // ?
-  Float_t its_dphi   = 0.0000;   // ?
+  Float_t its_dx     = 0.3000;   // 3 mm
+  Float_t its_dy     = 0.3000;   // 3 mm
+  Float_t its_dz     = 0.3000;   // 3 mm
+  Float_t its_dpsi   = 0.3000/100.*kRadToDeg;   // so as to have 3 mm difference at the two extremes
+  Float_t its_dtheta = 0.3000/100.*kRadToDeg;   // so as to have 3 mm difference at the two extremes
+  Float_t its_dphi   = 0.3000/100.*kRadToDeg;   // so as to have 3 mm difference at the two extremes
+  Bool_t unifits=kTRUE;
 
   //=****************************************
   // misalignment at the level of SPD sectors : source - A.Pepato
@@ -201,7 +201,7 @@ void MakeITSFullMisAlignment() {
   // overall ITS misalignment :
   //=****************************************
 
-  alignMaker.AddAlignObj("ITS",its_dx,its_dy,its_dz,its_dpsi,its_dtheta,its_dphi,kFALSE);
+  alignMaker.AddAlignObj("ITS",its_dx,its_dy,its_dz,its_dpsi,its_dtheta,its_dphi,unifits);
 
 
   //=****************************************
@@ -369,7 +369,7 @@ void MakeITSFullMisAlignment() {
 
 
 
-  if( gSystem->Getenv("TOCDB") != compare.Data() ){
+  if(TString(gSystem->Getenv("TOCDB")) != TString("kTRUE")){
     // save on file
     const char* filename = "ITSfullMisalignment.root";
     TFile f(filename,"RECREATE");
