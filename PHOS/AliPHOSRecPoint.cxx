@@ -46,7 +46,7 @@ AliPHOSRecPoint::AliPHOSRecPoint()
     fMulTrack(0),fMaxDigit(100),fMulDigit(0),fMaxTrack(200),
     fDigitsList(0),fTracksList(0),fAmp(0),
     fIndexInList(-1), // to be set when the point is already stored
-    fLocPos(0,0,0),fLocPosM(0)
+    fLocPos(0,0,0)
 {
   // ctor
 
@@ -58,7 +58,7 @@ AliPHOSRecPoint::AliPHOSRecPoint(const char * )
     fMulTrack(0),fMaxDigit(100),fMulDigit(0),fMaxTrack(200),
     fDigitsList(new Int_t[fMaxDigit]),fTracksList(new Int_t[fMaxTrack]),fAmp(0),
     fIndexInList(-1), // to be set when the point is already stored
-    fLocPos(0,0,0),fLocPosM(new TMatrixF(3,3))
+    fLocPos(0,0,0)
 
 {
   // ctor
@@ -69,7 +69,6 @@ AliPHOSRecPoint::~AliPHOSRecPoint()
 {
   // dtor
   
-  delete fLocPosM ; 
   delete [] fDigitsList ; 
   delete [] fTracksList ;  
   
@@ -80,7 +79,7 @@ AliPHOSRecPoint::AliPHOSRecPoint(const AliPHOSRecPoint &rp) :
   fPHOSMod(rp.fPHOSMod),fMulTrack(rp.fMulTrack),fMaxDigit(rp.fMaxDigit),
   fMulDigit(rp.fMulDigit),fMaxTrack(rp.fMaxTrack),fDigitsList(0x0),
   fTracksList(0x0),fAmp(rp.fAmp),fIndexInList(rp.fIndexInList), 
-  fLocPos(rp.fLocPos),fLocPosM(rp.fLocPosM)
+  fLocPos(rp.fLocPos)
 {
   //copy ctor
 
@@ -106,7 +105,6 @@ AliPHOSRecPoint& AliPHOSRecPoint::operator= (const AliPHOSRecPoint &rp)
   fAmp = rp.fAmp;
   fIndexInList = rp.fIndexInList; 
   fLocPos = rp.fLocPos;
-  fLocPosM = rp.fLocPosM;
 
   for(Int_t i=0; i<fMaxDigit; i++)
     fDigitsList[i] = rp.fDigitsList[i];
@@ -330,7 +328,7 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
   lxyz[1] = lxyz[1] - dy;
 
   const TGeoHMatrix* tr2loc = GetTracking2LocalMatrix();
-  if(!tr2loc) AliFatal(Form("No Tracking2LocalMatrix found."));
+  if(!tr2loc) AliFatal(Form("No Tracking2LocalMatrix found for VolumeID=%d",GetVolumeId()));
 
   tr2loc->MasterToLocal(lxyz,txyz);
   SetX(txyz[0]); SetY(txyz[1]); SetZ(txyz[2]);

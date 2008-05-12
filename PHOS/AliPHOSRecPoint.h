@@ -76,10 +76,9 @@ protected:
   Float_t   fAmp ;        // summed amplitude of digits 
   Int_t     fIndexInList ;// the index of this RecPoint in the list stored in TreeR (to be set by analysis)  
   TVector3  fLocPos ;     // local position in the sub-detector coordinate
-  TMatrixF* fLocPosM ;    // covariance matrix ;
 
 
-  ClassDef(AliPHOSRecPoint,2) // RecPoint for PHOS (Base Class)
+  ClassDef(AliPHOSRecPoint,3) // RecPoint for PHOS (Base Class)
  
 };
 

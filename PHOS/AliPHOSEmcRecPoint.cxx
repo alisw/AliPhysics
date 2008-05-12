@@ -845,7 +845,6 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TCl
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(z - depthz)  ;
 
-  fLocPosM = 0 ;
 }
 
 //____________________________________________________________________________
