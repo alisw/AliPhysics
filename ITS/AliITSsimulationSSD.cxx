@@ -425,16 +425,13 @@ void AliITSsimulationSSD::ApplyDeadChannels(Int_t module) {
 
   AliITSCalibrationSSD* res = (AliITSCalibrationSSD*)GetCalibrationModel(module);
 
-  deadentries = res->GetDeadPChannelsList().GetSize();
-  //cout<<module<<" "<<deadentries<<endl;
-  for(Int_t i=0; i<deadentries; i++) {
-    res->AddGainP(res->GetDeadPChannelsList().At(i),0.0);
-  }
+  for(Int_t i=0;i<GetNStrips();i++){
 
-  deadentries = res->GetDeadNChannelsList().GetSize();
-  for(Int_t i=0; i<deadentries; i++) {
-    res->AddGainN(res->GetDeadNChannelsList().At(i),0.0);
-  }
+    //if((res->IsPChannelBad(i))||(res->IsNChannelBad(i))) cout<<module<<" "<<i<<" "<<res->IsPChannelBad(i)<<" "<<res->IsNChannelBad(i)<<endl;
+    if(res->IsPChannelBad(i)) res->AddGainP(i,0.0);
+    if(res->IsNChannelBad(i)) res->AddGainN(i,0.0);
+
+  } // loop over strips 
 
 }
 

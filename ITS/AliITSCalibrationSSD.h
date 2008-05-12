@@ -74,6 +74,10 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     TArrayI GetBadPChannelsList() { return fBadChannels->GetBadPChannelsList(); } const
     TArrayI GetBadNChannelsList() { return fBadChannels->GetBadNChannelsList(); } const
     void SetBadChannels( AliITSBadChannelsSSD* badchannels) {fBadChannels=badchannels;}
+    Int_t GetBadPChannel(Int_t n) {return fBadChannels->GetBadPChannel(n); }
+    Int_t GetBadNChannel(Int_t n) {return fBadChannels->GetBadNChannel(n); }
+    Bool_t IsPChannelBad(Int_t n) {return fBadChannels->GetBadPChannel(n)&1; }
+    Bool_t IsNChannelBad(Int_t n) {return fBadChannels->GetBadNChannel(n)&1; }
 
     void SetNoisePThreshold(Int_t threshold) { fNoisePThreshold = threshold;}
     void AddNoisyPChannel(Int_t c, Int_t n) { fNoisyPChannelsList.AddAt(n,c);}

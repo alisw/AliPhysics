@@ -17,9 +17,11 @@ class AliITSBadChannelsSSD : public TObject {
     void SetNBadPChannelsList(Int_t n) { fBadPChannelsList.Set(n); }
     void AddBadPChannel(Int_t c, Int_t n) { fBadPChannelsList.AddAt(n,c);}
     TArrayI GetBadPChannelsList() const {return fBadPChannelsList; }
+    Int_t GetBadPChannel(Int_t n) {return fBadPChannelsList.At(n); }
     void SetNBadNChannelsList(Int_t n) { fBadNChannelsList.Set(n); }
     void AddBadNChannel(Int_t c, Int_t n) { fBadNChannelsList.AddAt(n,c);}
     TArrayI GetBadNChannelsList() const {return fBadNChannelsList; }
+    Int_t GetBadNChannel(Int_t n) {return fBadNChannelsList.At(n); }
     //
 
     void SetMod(UShort_t mod) {fMod = mod;}

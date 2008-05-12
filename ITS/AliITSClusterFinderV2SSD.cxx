@@ -359,14 +359,17 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       }
       */
 
-      for(Int_t istrip=0; istrip<768; istrip++) { // P-side
+      Int_t istrip=0;
+      for(istrip=0; istrip<768; istrip++) { // P-side
 	
 	Int_t signal = TMath::Abs(matrix[iadc][istrip]);
 	
 	oldnoise = noise;
 	noise = cal->GetNoiseP(istrip); if(noise<1.) signal = 65535;
-	if(signal<5*noise) signal = 65535; // in case ZS was not done in hw do it now
-	if( (signal<30.) || (istrip<10) || (istrip>758) ) signal=65535;
+	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
+
+	//if(cal->IsPChannelBad(istrip)) cout<<iModule<<" "<<istrip<<endl;
+        if(cal->IsPChannelBad(istrip)) signal=0;
 
 	if (signal!=65535) {
 	  gain = cal->GetGainP(istrip);
@@ -381,10 +384,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	
 	else if(first) {
 	  
-	  if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
+	  if ( ( (nDigits==1) && ( (q==0) || (q>5*oldnoise)) ) || (nDigits>1) ) {
 	    
 	    Ali1Dcluster& cluster = clusters1D[0][nClusters[0]++];
-	    cluster.SetY(y/q);
+
+	    if(q!=0) cluster.SetY(y/q);
+	    else cluster.SetY(istrip-1);
+
 	    cluster.SetQ(q);
 	    cluster.SetNd(nDigits);
 	    cluster.SetLabels(lab);
@@ -418,10 +424,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       // if last strip does have signal
       if(first) {
 	
-	if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
+	  if ( ( (nDigits==1) && ( (q==0) || (q>5*oldnoise)) ) || (nDigits>1) ) {
 	  
 	  Ali1Dcluster& cluster = clusters1D[0][nClusters[0]++];
-	  cluster.SetY(y/q);
+
+	  if(q!=0) cluster.SetY(y/q);
+	  else cluster.SetY(istrip-1);
+
 	  cluster.SetQ(q);
 	  cluster.SetNd(nDigits);
 	  cluster.SetLabels(lab);
@@ -469,17 +478,19 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 
       oldnoise = 0.;
       noise = 0.;
+      Int_t strip=0;
       for(Int_t istrip=768; istrip<1536; istrip++) { // N-side
 	
 	Int_t signal = TMath::Abs(matrix[iadc][istrip]);
 	//cout<<"####"<<" "<<oddl<<" "<<oad<<" "<<iadc<<" "<<istrip<<" "<<signal<<endl;      
-
-	Int_t strip = 1535-istrip;
+	strip = 1535-istrip;
 
 	oldnoise = noise;
 	noise = cal->GetNoiseN(strip); if(noise<1.) signal=65535;
-	if(signal<5*noise) signal = 65535; // in case ZS was not done in hw do it now
-	if( (signal<30.) || (istrip<778) || (istrip>1526) ) signal=65535;
+
+        if(cal->IsNChannelBad(strip)) signal=0;
+
+	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
 
 	if (signal!=65535) {
 	  //	  cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<" strip= "<<istrip<<
@@ -497,10 +508,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 
 	else if(first) {
 	  
-	  if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
+	  if ( ( (nDigits==1) && ( (q==0) || (q>5*oldnoise)) ) || (nDigits>1) ) {
 	    
 	    Ali1Dcluster& cluster = clusters1D[1][nClusters[1]++];
-	    cluster.SetY(y/q);
+
+	    if(q!=0) cluster.SetY(y/q);
+	    else cluster.SetY(strip+1);
+
 	    cluster.SetQ(q);
 	    cluster.SetNd(nDigits);
 	    cluster.SetLabels(lab);
@@ -533,10 +547,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 
       if(first) {
 	
-	if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
+	  if ( ( (nDigits==1) && ( (q==0) || (q>5*oldnoise)) ) || (nDigits>1) ) {
 	  
 	  Ali1Dcluster& cluster = clusters1D[1][nClusters[1]++];
-	  cluster.SetY(y/q);
+	  
+	  if(q!=0) cluster.SetY(y/q);
+	  else cluster.SetY(strip+1);
+
 	  cluster.SetQ(q);
 	  cluster.SetNd(nDigits);
 	  cluster.SetLabels(lab);
@@ -568,10 +585,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       // create recpoints
       if((nClusters[0])&&(nClusters[1])) {
 	
-	//cout<<"creating recpoint for module="<<iModule<<" "<<nClusters[0]<<" "<<nClusters[1]<<endl;
 	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	fModule = iModule;
-	//	fModule = 500;
 	FindClustersSSD(&clusters1D[0][0], nClusters[0], 
 			&clusters1D[1][0], nClusters[1], clusters[iModule]);
 	Int_t nClusters = clusters[iModule]->GetEntriesFast();
@@ -631,9 +646,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   //
   for (Int_t i=0; i<np; i++) {
     Float_t yp=pos[i].GetY()*fYpitchSSD; 
-    if (pos[i].GetQ()<3) continue;
+    if ( (pos[i].GetQ()>0) && (pos[i].GetQ()<3) ) continue;
     for (Int_t j=0; j<nn; j++) {
-      if (neg[j].GetQ()<3) continue;
+      if ( (neg[j].GetQ()>0) && (neg[j].GetQ()<3) ) continue;
       Float_t yn=neg[j].GetY()*fYpitchSSD;
       Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
       Float_t yt=yn + tann*zt;
@@ -654,9 +669,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   //
   for (Int_t i=0; i<np; i++) {
     Float_t yp=pos[i].GetY()*fYpitchSSD; 
-    if (pos[i].GetQ()<3) continue;
+    if ( (pos[i].GetQ()>0) && (pos[i].GetQ()<3) ) continue;
     for (Int_t j=0; j<nn; j++) {
-      if (neg[j].GetQ()<3) continue;
+      if ( (neg[j].GetQ()>0) && (neg[j].GetQ()<3) ) continue;
       // if both 1Dclusters have an other cross continue
       if (cpositive[j]&&cnegative[i]) continue;
       Float_t yn=neg[j].GetY()*fYpitchSSD;
@@ -695,8 +710,6 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   if(repa->GetUseChargeMatchingInClusterFinderSSD()==kTRUE) {
 
 
-
-
     //
     // sign gold tracks
     //
@@ -707,7 +720,20 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       if ( (cnegative[ip]==1) && cpositive[negativepair[10*ip]]==1){ 
 	Float_t yp=pos[ip].GetY()*fYpitchSSD; 
 	Int_t j = negativepair[10*ip];      
+
+	if( (pos[ip].GetQ()==0) && (neg[j].GetQ() ==0) ) { 
+	  // both bad, hence continue;	  
+	  // mark both as used (to avoid recover at the end)
+	  cused1[ip]++; 
+	  cused2[j]++;
+	  continue;
+	}
+
 	ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
+
+	// charge matching (note that if posQ or negQ is 0 -> ratio=1 and the following condition is met
+	if (TMath::Abs(ratio)>0.33) continue; // note: 0.33=3xsigma_ratio calculated in cosmics tests
+
 	//
 	Float_t yn=neg[j].GetY()*fYpitchSSD;
 	Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
@@ -715,6 +741,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	zt-=fHlSSD; yt-=fHwSSD;
 	ybest=yt; zbest=zt; 
 	qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
+	if( (pos[ip].GetQ()==0)||(neg[ip].GetQ()==0)) qbest*=2; // in case of bad strips on one side keep all charge from the other one
 	
 	//cout<<yt<<" "<<zt<<" "<<qbest<<endl;
 	
@@ -744,15 +771,18 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  
 	  cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	  
-	  //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-	  
 	  cl2->SetChargeRatio(ratio);    	
 	  cl2->SetType(1);
 	  fgPairs[ip*nn+j]=1;
+
 	  if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
 	    cl2->SetType(2);
 	    fgPairs[ip*nn+j]=2;
 	  }
+
+	  if(pos[ip].GetQ()==0) cl2->SetType(3);
+	  if(neg[ip].GetQ()==0) cl2->SetType(4);
+
 	  cused1[ip]++;
 	  cused2[j]++;
 	  
@@ -761,18 +791,21 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  
 	  cl2 = new AliITSRecPoint(milab,lp,info);	
 	  
-	  //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-	  
 	  cl2->SetChargeRatio(ratio);    	
 	  cl2->SetType(1);
 	  fgPairs[ip*nn+j]=1;
+
 	  if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
 	    cl2->SetType(2);
 	    fgPairs[ip*nn+j]=2;
 	  }
+
+	  if(pos[ip].GetQ()==0) cl2->SetType(3);
+	  if(neg[ip].GetQ()==0) cl2->SetType(4);
+
 	  cused1[ip]++;
 	  cused2[j]++;
-	  //cout<<"AliITSClusterFinderV2SSD "<<fModule<<" gold"<<endl;
+
 	  fDetTypeRec->AddRecPoint(*cl2);
 	}
 	ncl++;
@@ -789,10 +822,13 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	Int_t ip2 = positivepair[10*in];
 	if (ip2==ip) ip2 =  positivepair[10*in+1];
 	Float_t pcharge = pos[ip].GetQ()+pos[ip2].GetQ();
-	if (TMath::Abs(pcharge-neg[in].GetQ())<10){
+	
+	if ( (TMath::Abs(pcharge-neg[in].GetQ())<10) && (pcharge!=0) ) { // 
+	  
 	  //
 	  // add first pair
-	  if (fgPairs[ip*nn+in]==100){  //
+	  if ( (fgPairs[ip*nn+in]==100)&&(pos[ip].GetQ() ) ) {  //
+	    
 	    Float_t yp=pos[ip].GetY()*fYpitchSSD; 
 	    Float_t yn=neg[in].GetY()*fYpitchSSD;
 	    Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
@@ -800,12 +836,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    zt-=fHlSSD; yt-=fHwSSD;
 	    ybest =yt;  zbest=zt; 
 	    qbest =pos[ip].GetQ();
-	    {
-	      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
-	      mT2L->MasterToLocal(loc,trk);
-	      lp[0]=trk[1];
-	      lp[1]=trk[2];
-	    }
+	    
+	    Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	    mT2L->MasterToLocal(loc,trk);
+	    lp[0]=trk[1];
+	    lp[1]=trk[2];
+	    
 	    lp[2]=0.0025*0.0025;  //SigmaY2
 	    lp[3]=0.110*0.110;  //SigmaZ2
 	    
@@ -852,11 +888,13 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    ncl++;
 	  }
 	  
+	  
 	  //
 	  // add second pair
 	  
 	  //	if (!(cused1[ip2] || cused2[in])){  //
-	  if (fgPairs[ip2*nn+in]==100){
+	  if ( (fgPairs[ip2*nn+in]==100) && (pos[ip2].GetQ()) ) {
+	    
 	    Float_t yp=pos[ip2].GetY()*fYpitchSSD;
 	    Float_t yn=neg[in].GetY()*fYpitchSSD;
 	    Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
@@ -864,12 +902,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    zt-=fHlSSD; yt-=fHwSSD;
 	    ybest =yt;  zbest=zt; 
 	    qbest =pos[ip2].GetQ();
-	    {
-	      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
-	      mT2L->MasterToLocal(loc,trk);
-	      lp[0]=trk[1];
-	      lp[1]=trk[2];
-	    }
+	    
+	    Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	    mT2L->MasterToLocal(loc,trk);
+	    lp[0]=trk[1];
+	    lp[1]=trk[2];
+	    
 	    lp[2]=0.0025*0.0025;  //SigmaY2
 	    lp[3]=0.110*0.110;  //SigmaZ2
 	    
@@ -913,45 +951,51 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	      fDetTypeRec->AddRecPoint(*cl2);
 	    }
 	    ncl++;
-	  }	
+	  }
+	  
 	  cused1[ip]++;
 	  cused1[ip2]++;
 	  cused2[in]++;
-	}
-      }    
-    }
+
+	} // charge matching condition
+
+      } // 2 Pside cross 1 Nside
+    } // loop over Pside clusters
     
-  } // use charge matching
-  
-  
-  //  
-  for (Int_t jn=0;jn<nn;jn++){
-    if (cused2[jn]) continue;
-    Float_t ybest=1000,zbest=1000,qbest=0;
-    // select "silber" cluster
-    if ( cpositive[jn]==1 && cnegative[positivepair[10*jn]]==2){
-      Int_t ip  = positivepair[10*jn];
-      Int_t jn2 = negativepair[10*ip];
-      if (jn2==jn) jn2 =  negativepair[10*ip+1];
-      Float_t pcharge = neg[jn].GetQ()+neg[jn2].GetQ();
-      //
-      if (TMath::Abs(pcharge-pos[ip].GetQ())<10){
+    
+      
+      //  
+    for (Int_t jn=0;jn<nn;jn++){
+      if (cused2[jn]) continue;
+      Float_t ybest=1000,zbest=1000,qbest=0;
+      // select "silber" cluster
+      if ( cpositive[jn]==1 && cnegative[positivepair[10*jn]]==2){
+	Int_t ip  = positivepair[10*jn];
+	Int_t jn2 = negativepair[10*ip];
+	if (jn2==jn) jn2 =  negativepair[10*ip+1];
+	Float_t pcharge = neg[jn].GetQ()+neg[jn2].GetQ();
 	//
-	// add first pair
-	//	if (!(cused1[ip]||cused2[jn])){
-	if (fgPairs[ip*nn+jn]==100){
-	  Float_t yn=neg[jn].GetY()*fYpitchSSD; 
-	  Float_t yp=pos[ip].GetY()*fYpitchSSD;
-	  Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
-	  Float_t yt=yn + tann*zt;
-	  zt-=fHlSSD; yt-=fHwSSD;
-	  ybest =yt;  zbest=zt; 
-	  qbest =neg[jn].GetQ();
-          {
-          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
-          mT2L->MasterToLocal(loc,trk);
-          lp[0]=trk[1];
-          lp[1]=trk[2];
+	
+	if ( (TMath::Abs(pcharge-pos[ip].GetQ())<10) &&  // charge matching 
+	     (pcharge!=0) ) { // reject combinations of bad strips
+	  
+	  //
+	  // add first pair
+	  //	if (!(cused1[ip]||cused2[jn])){
+	  if ( (fgPairs[ip*nn+jn]==100) && (neg[jn].GetQ()) ) {  //
+	    
+	    Float_t yn=neg[jn].GetY()*fYpitchSSD; 
+	    Float_t yp=pos[ip].GetY()*fYpitchSSD;
+	    Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	    Float_t yt=yn + tann*zt;
+	    zt-=fHlSSD; yt-=fHwSSD;
+	    ybest =yt;  zbest=zt; 
+	    qbest =neg[jn].GetQ();
+	    {
+	      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	      mT2L->MasterToLocal(loc,trk);
+	      lp[0]=trk[1];
+	      lp[1]=trk[2];
           }
 	  lp[2]=0.0025*0.0025;  //SigmaY2
 	  lp[3]=0.110*0.110;  //SigmaZ2
@@ -1001,7 +1045,8 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	//
 	// add second pair
 	//	if (!(cused1[ip]||cused2[jn2])){
-	if (fgPairs[ip*nn+jn2]==100){
+	if ( (fgPairs[ip*nn+jn2]==100)&&(neg[jn2].GetQ() ) ) {  //
+
 	  Float_t yn=neg[jn2].GetY()*fYpitchSSD; 
 	  Double_t yp=pos[ip].GetY()*fYpitchSSD; 
 	  Double_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
@@ -1063,128 +1108,142 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	cused1[ip]++;
 	cused2[jn]++;
 	cused2[jn2]++;
-      }
-    }    
-  }
+
+	} // charge matching condition
+
+      } // 2 Nside cross 1 Pside
+    } // loop over Pside clusters
+
   
-  for (Int_t ip=0;ip<np;ip++){
-    Float_t ybest=1000,zbest=1000,qbest=0;
-    //
-    // 2x2 clusters
-    //
-    if ( (cnegative[ip]<5) && cpositive[negativepair[10*ip]]<5){ 
-      Float_t minchargediff =4.;
-      Int_t j=-1;
-      for (Int_t di=0;di<cnegative[ip];di++){
-	Int_t   jc = negativepair[ip*10+di];
-	Float_t chargedif = pos[ip].GetQ()-neg[jc].GetQ();
-	if (TMath::Abs(chargedif)<minchargediff){
-	  j =jc;
-	  minchargediff = TMath::Abs(chargedif);
-	}
-      }
-      if (j<0) continue;  // not proper cluster      
-
-      Int_t count =0;
-      for (Int_t di=0;di<cnegative[ip];di++){
-	Int_t   jc = negativepair[ip*10+di];
-	Float_t chargedif = pos[ip].GetQ()-neg[jc].GetQ();
-	if (TMath::Abs(chargedif)<minchargediff+3.) count++;
-      }
-      if (count>1) continue;  // more than one "proper" cluster for positive
+    
+    for (Int_t ip=0;ip<np;ip++){
+      Float_t ybest=1000,zbest=1000,qbest=0;
       //
-      count =0;
-      for (Int_t dj=0;dj<cpositive[j];dj++){
-	Int_t   ic  = positivepair[j*10+dj];
-	Float_t chargedif = pos[ic].GetQ()-neg[j].GetQ();
-	if (TMath::Abs(chargedif)<minchargediff+3.) count++;
-      }
-      if (count>1) continue;  // more than one "proper" cluster for negative
-      
-      Int_t jp = 0;
-      
-      count =0;
-      for (Int_t dj=0;dj<cnegative[jp];dj++){
-	Int_t   ic = positivepair[jp*10+dj];
-	Float_t chargedif = pos[ic].GetQ()-neg[jp].GetQ();
-	if (TMath::Abs(chargedif)<minchargediff+4.) count++;
-      }
-      if (count>1) continue;   
-      if (fgPairs[ip*nn+j]<100) continue;
+      // 2x2 clusters
       //
-      //almost gold clusters
-      Float_t yp=pos[ip].GetY()*fYpitchSSD; 
-      Float_t yn=neg[j].GetY()*fYpitchSSD;
-      Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
-      Float_t yt=yn + tann*zt;
-      zt-=fHlSSD; yt-=fHwSSD;
-      ybest=yt; zbest=zt; 
-      qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
-      {
-      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
-      mT2L->MasterToLocal(loc,trk);
-      lp[0]=trk[1];
-      lp[1]=trk[2];
-      }
-      lp[2]=0.0025*0.0025;  //SigmaY2
-      lp[3]=0.110*0.110;  //SigmaZ2	
-      lp[4]=qbest;        //Q
-      for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-      for (Int_t ilab=0;ilab<3;ilab++){
-	milab[ilab] = pos[ip].GetLabel(ilab);
-	milab[ilab+3] = neg[j].GetLabel(ilab);
-      }
-      //
-      CheckLabels2(milab);
-      ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
-      milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
-      Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
-      AliITSRecPoint * cl2;
-      if(clusters){
-	cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
-
-	//	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-
-	cl2->SetChargeRatio(ratio);    	
-	cl2->SetType(10);
-	fgPairs[ip*nn+j]=10;
-	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
-	  cl2->SetType(11);
-	  fgPairs[ip*nn+j]=11;
+      if ( (cnegative[ip]<5) && cpositive[negativepair[10*ip]]<5){ 
+	Float_t minchargediff =4.;
+	Int_t j=-1;
+	for (Int_t di=0;di<cnegative[ip];di++){
+	  Int_t   jc = negativepair[ip*10+di];
+	  Float_t chargedif = pos[ip].GetQ()-neg[jc].GetQ();
+	  if (TMath::Abs(chargedif)<minchargediff){
+	    j =jc;
+	    minchargediff = TMath::Abs(chargedif);
+	  }
 	}
-	cused1[ip]++;
-	cused2[j]++;      
-      }
-      else{
-	cl2 = new AliITSRecPoint(milab,lp,info);
-	cl2->SetChargeRatio(ratio);    	
-	cl2->SetType(10);
-	fgPairs[ip*nn+j]=10;
-	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
-	  cl2->SetType(11);
-	  fgPairs[ip*nn+j]=11;
-	}
-	cused1[ip]++;
-	cused2[j]++;      
+	if (j<0) continue;  // not proper cluster      
 	
-	//cout<<"AliITSClusterFinderV2SSD "<<fModule<<" 2x2"<<endl;
-
-	fDetTypeRec->AddRecPoint(*cl2);
-      }      
-      ncl++;
-    }
-
-  }
+	Int_t count =0;
+	for (Int_t di=0;di<cnegative[ip];di++){
+	  Int_t   jc = negativepair[ip*10+di];
+	  Float_t chargedif = pos[ip].GetQ()-neg[jc].GetQ();
+	  if (TMath::Abs(chargedif)<minchargediff+3.) count++;
+	}
+	if (count>1) continue;  // more than one "proper" cluster for positive
+	//
+	
+	count =0;
+	for (Int_t dj=0;dj<cpositive[j];dj++){
+	  Int_t   ic  = positivepair[j*10+dj];
+	  Float_t chargedif = pos[ic].GetQ()-neg[j].GetQ();
+	  if (TMath::Abs(chargedif)<minchargediff+3.) count++;
+	}
+	if (count>1) continue;  // more than one "proper" cluster for negative
+	
+	Int_t jp = 0;
+	
+	count =0;
+	for (Int_t dj=0;dj<cnegative[jp];dj++){
+	  Int_t   ic = positivepair[jp*10+dj];
+	  Float_t chargedif = pos[ic].GetQ()-neg[jp].GetQ();
+	  if (TMath::Abs(chargedif)<minchargediff+4.) count++;
+	}
+	if (count>1) continue;   
+	if (fgPairs[ip*nn+j]<100) continue;
+	//
+	
+	//almost gold clusters
+	Float_t yp=pos[ip].GetY()*fYpitchSSD; 
+	Float_t yn=neg[j].GetY()*fYpitchSSD;
+	Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	Float_t yt=yn + tann*zt;
+	zt-=fHlSSD; yt-=fHwSSD;
+	ybest=yt; zbest=zt; 
+	qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
+	{
+	  Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	  mT2L->MasterToLocal(loc,trk);
+	  lp[0]=trk[1];
+	  lp[1]=trk[2];
+	}
+	lp[2]=0.0025*0.0025;  //SigmaY2
+	lp[3]=0.110*0.110;  //SigmaZ2	
+	lp[4]=qbest;        //Q
+	for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	for (Int_t ilab=0;ilab<3;ilab++){
+	  milab[ilab] = pos[ip].GetLabel(ilab);
+	  milab[ilab+3] = neg[j].GetLabel(ilab);
+	}
+	//
+	CheckLabels2(milab);
+	ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
+	milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
+	Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
+	AliITSRecPoint * cl2;
+	if(clusters){
+	  cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
+	  
+	  //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
+	  
+	  cl2->SetChargeRatio(ratio);    	
+	  cl2->SetType(10);
+	  fgPairs[ip*nn+j]=10;
+	  if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	    cl2->SetType(11);
+	    fgPairs[ip*nn+j]=11;
+	  }
+	  cused1[ip]++;
+	  cused2[j]++;      
+	}
+	else{
+	  cl2 = new AliITSRecPoint(milab,lp,info);
+	  cl2->SetChargeRatio(ratio);    	
+	  cl2->SetType(10);
+	  fgPairs[ip*nn+j]=10;
+	  if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	    cl2->SetType(11);
+	    fgPairs[ip*nn+j]=11;
+	  }
+	  cused1[ip]++;
+	  cused2[j]++;      
+	  
+	  //cout<<"AliITSClusterFinderV2SSD "<<fModule<<" 2x2"<<endl;
+	  
+	  fDetTypeRec->AddRecPoint(*cl2);
+	}      
+	ncl++;
+	
+      } // manyXmany
+    } // loop over Pside 1Dclusters
+    
+    
+  } // use charge matching
   
+  
+  // recover all the other crosses
   //  
   for (Int_t i=0; i<np; i++) {
     Float_t ybest=1000,zbest=1000,qbest=0;
     Float_t yp=pos[i].GetY()*fYpitchSSD; 
-    if (pos[i].GetQ()<3) continue;
+    if ((pos[i].GetQ()>0)&&(pos[i].GetQ()<3)) continue;
     for (Int_t j=0; j<nn; j++) {
     //    for (Int_t di = 0;di<cpositive[i];di++){
     //  Int_t j = negativepair[10*i+di];
-      if (neg[j].GetQ()<3) continue;
+      if ((neg[j].GetQ()>0)&&(neg[j].GetQ()<3)) continue;
+
+      if ((neg[j].GetQ()==0)&&(pos[i].GetQ()==0)) continue; // reject crosses of bad strips!!
+
       if (cused2[j]||cused1[i]) continue;      
       if (fgPairs[i*nn+j]>0 &&fgPairs[i*nn+j]<100) continue;
       ratio = (pos[i].GetQ()-neg[j].GetQ())/(pos[i].GetQ()+neg[j].GetQ());      
@@ -1219,33 +1278,28 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	if(clusters){
 	  cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 
-	  //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-
 	  cl2->SetChargeRatio(ratio);
 	  cl2->SetType(100+cpositive[j]+cnegative[i]);	  
+
+	  if(pos[i].GetQ()==0) cl2->SetType(200+cpositive[j]+cnegative[i]);
+	  if(neg[j].GetQ()==0) cl2->SetType(300+cpositive[j]+cnegative[i]);
+
 	}
 	else{
 	  cl2 = new AliITSRecPoint(milab,lp,info);
 	  cl2->SetChargeRatio(ratio);
 	  cl2->SetType(100+cpositive[j]+cnegative[i]);
 	  
-	  //cout<<"AliITSClusterFinderV2SSD "<<fModule<<" other"<<endl;
+	  if(pos[i].GetQ()==0) cl2->SetType(200+cpositive[j]+cnegative[i]);
+	  if(neg[j].GetQ()==0) cl2->SetType(300+cpositive[j]+cnegative[i]);
 
 	  fDetTypeRec->AddRecPoint(*cl2);
 	}
       	ncl++;
-	//cl2->SetType(0);
-	/*
-	  if (fgPairs[i*nn+j]<100){
-	  printf("problem:- %d\n", fgPairs[i*nn+j]);
-	  }
-	  if (cnegative[i]<2&&cpositive[j]<2){
-	  printf("problem:- %d\n", fgPairs[i*nn+j]);
-	  }
-	*/
       }
     }
   }
 
 }
+
 
