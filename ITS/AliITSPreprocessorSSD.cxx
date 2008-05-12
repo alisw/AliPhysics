@@ -99,6 +99,8 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	for(Int_t i=0; i<fgkNumberOfSSD; i++) {
 	  AliITSBadChannelsSSD *badch = new AliITSBadChannelsSSD();
 	  badch->SetMod((UShort_t) i+500);
+	  badch->SetNBadPChannelsList(768);
+	  badch->SetNBadNChannelsList(768);
 	  badch_array.AddAt(badch,i);
 	}
 	//-----------------------------------------
