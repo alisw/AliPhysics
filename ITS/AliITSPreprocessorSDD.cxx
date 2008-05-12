@@ -123,6 +123,7 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
       if(modID==-1) continue;
       modID-=240; // to have SDD modules numbering from 0 to 260
       AliITSCalibrationSDD *cal = new AliITSCalibrationSDD("simulated");
+      cal->SetUseCorrectionMaps(0,0); // temporary disabling of maps
       numOfBadChannels[modID]=0;
       Int_t badch[kNumberOfChannels];
       for(Int_t isid=0;isid<=1;isid++){
@@ -181,7 +182,16 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   Char_t inpFileName[100];
   Int_t evNumb,polDeg; 
   UInt_t timeStamp;
-  Double_t param[4];
+  Bool_t modSet[2*kNumberOfSDD]; // flag modules with good inj.
+  Double_t nPt = 0;
+
+  Double_t param[4];    // parameters of poly fit
+  Double_t minValP0=4.; // min value for param[0]
+  Double_t maxValP0=9.; // max value for param[0]
+  Double_t minValP1=0.; // min value for param[1]
+  Double_t aveCoef[4]={0.,0.,0.,0.};  // average param for good mod.
+  Double_t defCoef[4]={6.53227,0.00128941,-5.14493e-06,0};  // default values for param
+  Float_t auxP;
 
   TList* sourceList = GetFileSources(kDAQ, "SDD_Injec");
   if (!sourceList){ 
@@ -201,13 +211,15 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
     ind++;
   }
   delete sourceList;
-  
+
+
   for(Int_t iddl=0;iddl<kNumberOfDDL;iddl++){
     for(Int_t imod=0;imod<kModulesPerDDL;imod++){
       Int_t modID=ddlmap->GetModuleNumber(iddl,imod);
       if(modID==-1) continue;
       modID-=240; // to have SDD modules numbering from 0 to 260
       for(Int_t isid=0;isid<=1;isid++){
+	modSet[2*modID+isid]=0;
 	AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
 	sprintf(inpFileName,"./SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	FILE* injFil = fopen(inpFileName,"read");
@@ -220,16 +232,43 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	}
 	fscanf(injFil,"%d",&polDeg);
 	while (!feof(injFil)){
-	  fscanf(injFil,"%d %d",&evNumb,&timeStamp);
+	  fscanf(injFil,"%d %d ",&evNumb,&timeStamp);
 	  if(feof(injFil)) break;
-	  for(Int_t ic=0;ic<4;ic++) fscanf(injFil,"%f",&param[ic]);
-	  AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,param);
-	  arr->AddDriftSpeed(dsp);
+	  for(Int_t ic=0;ic<4;ic++){ 
+	    fscanf(injFil,"%f ",&auxP);
+	    param[ic]=auxP;
+	  }
+
+	  if(param[0]>minValP0 && param[0]<maxValP0 && param[1]>minValP1){
+	    for(Int_t ic=0;ic<4;ic++) aveCoef[ic]+=param[ic];
+	    nPt++;
+	    AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,param);
+	    arr->AddDriftSpeed(dsp);
+	    modSet[2*modID+isid]=1;
+	  }
 	}
-	vdrift.AddAt(arr,2*modID+isid);
+	if(modSet[2*modID+isid]) vdrift.AddAt(arr,2*modID+isid);
       }
     }
   }
+
+  // set drift speed for modules with bad injectors
+  for(Int_t ic=0;ic<4;ic++){ 
+    if(nPt>0) aveCoef[ic]/=nPt; // mean parameters
+    else aveCoef[ic]=defCoef[ic]; // default parameters
+  }
+  AliITSDriftSpeedSDD *avdsp=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,aveCoef);
+
+  for(Int_t ihyb=0; ihyb<2*kNumberOfSDD; ihyb++){
+    if(modSet[ihyb]==0){ 
+      AliWarning(Form("No good injector events for mod. %d --> use average values",ihyb/2));
+      AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
+      arr->AddDriftSpeed(avdsp);
+      vdrift.AddAt(arr,ihyb);
+    }
+  }
+
+
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Francesco Prino");
   md->SetBeamPeriod(0);
