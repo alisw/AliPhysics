@@ -797,7 +797,8 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t 
   }
 
   for(Int_t i=0; i<knacc; i++){
-    AliStrLine* line1 = (AliStrLine*)lines->At(i); 
+    AliStrLine* line1 = (AliStrLine*)lines->At(i);
+    if (!line1) continue;
     Double_t p0[3],cd[3],sigmasq[3];
     Double_t wmat[9];
     line1->GetP0(p0);
