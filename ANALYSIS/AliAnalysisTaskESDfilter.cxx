@@ -80,7 +80,7 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
 //
 					    
   Long64_t ientry = Entry();
-  printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
+  if (fDebug > 0) printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
 
   ConvertESDtoAOD();
 }
@@ -154,7 +154,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     Int_t nFmdClus  = 0;
     Int_t nPmdClus  = esd->GetNumberOfPmdTracks();
     
-    printf("   NV0=%d  NCASCADES=%d  NKINKS=%d\n", nV0s, nCascades, nKinks);
+    if (fDebug > 0) 
+	printf("   NV0=%d  NCASCADES=%d  NKINKS=%d\n", nV0s, nCascades, nKinks);
 
     AODEvent()->ResetStd(nTracks, nVertices, nV0s+nCascades, nJets, nCaloClus, nFmdClus, nPmdClus);
 
@@ -200,7 +201,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     
     AliAODVertex * primary = new(vertices[jVertices++])
 	AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, AliAODVertex::kPrimary);
-    primary->Print();
+    if (fDebug > 0) primary->Print();
 
     // Create vertices starting from the most complex objects
     Double_t chi2 = 0.;
@@ -670,7 +671,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
   
     // Tracks (primary and orphan)
 
-    printf("NUMBER OF TRACKS %5d\n", nTracks);
+    if (fDebug > 0) printf("NUMBER OF TRACKS %5d\n", nTracks);
     
     for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
 	
