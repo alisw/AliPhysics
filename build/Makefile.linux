@@ -88,6 +88,7 @@ else
 ifneq (,$(findstring gfortran,$(ROOTBUILD)))
 SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
 SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
+SYSLIBS += $(SHLIB)
 else
 SHLIB         = -lg2c
 SYSLIBS +=  -lg2c
