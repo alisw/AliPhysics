@@ -116,6 +116,8 @@
 #include <TFile.h>
 #include <TCollection.h>
 #include <TIterator.h>
+#include <TProfile.h>
+#include <TProfile2D.h>
 
 //
 // AliRoot includes

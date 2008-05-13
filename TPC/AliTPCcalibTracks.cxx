@@ -48,6 +48,8 @@ using namespace std;
 #include <TChain.h>
 #include <TFile.h>
 #include <TH3F.h>
+#include <TProfile.h>
+
 //
 //#include <TPDGCode.h>
 #include <TStyle.h>
