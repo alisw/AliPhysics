@@ -45,6 +45,8 @@
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 
 ClassImp(AliITSQASSDDataMakerRec)
 
@@ -57,8 +59,8 @@ fLDC(ldc),
 fSSDRawsOffset(0),
 fSSDhRaws(0),
 fSSDhRecs(0),
-fRawsOffset(0),
-fRecsOffset(0) {
+fSSDhESDs(0),
+fGenOffset(0) {
   // Default constructor   
   //initilize the raw signal vs strip number histograms
   Int_t fLayer = 0,fLadder = 0, fModule = 0;
@@ -100,8 +102,8 @@ fLDC(qadm.fLDC),
 fSSDRawsOffset(qadm.fSSDRawsOffset),
 fSSDhRaws(qadm.fSSDhRaws),
 fSSDhRecs(qadm.fSSDhRecs),
-fRawsOffset(qadm.fRawsOffset),
-fRecsOffset(qadm.fRecsOffset) {
+fSSDhESDs(qadm.fSSDhESDs),
+fGenOffset(qadm.fGenOffset) {
   //copy ctor 
   fAliITSQADataMakerRec->SetName((const char*)qadm.fAliITSQADataMakerRec->GetName()) ; 
   fAliITSQADataMakerRec->SetTitle((const char*)qadm.fAliITSQADataMakerRec->GetTitle());
@@ -139,8 +141,8 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
   //scaling SSD occupancy plots
   if(fkOnline) {
     if(fSSDEvent != 0) {
-      ((TH2F *)fAliITSQADataMakerRec->GetRawsData(fRawsOffset+28))->Scale(1./fSSDEvent);
-      ((TH2F *)fAliITSQADataMakerRec->GetRawsData(fRawsOffset+29))->Scale(1./fSSDEvent);
+      ((TH2F *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+28))->Scale(1./fSSDEvent);
+      ((TH2F *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+29))->Scale(1./fSSDEvent);
     }
     Int_t fLayer = 0, fLadder = 0;
     Int_t fOccPosition = 0; 
@@ -149,9 +151,9 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 	fOccPosition  = (fLayer == 5) ? fLadder : fLadder + fgkSSDLADDERSLAYER5;
 	if(fSSDEvent != 0) {
 	  //P-SIDE OCCUPANCY - scaling
-	  fAliITSQADataMakerRec->GetRawsData(fRawsOffset + fSSDRawsOffset - 1 + 2*fOccPosition - 1)->Scale(1./fSSDEvent);
+	  fAliITSQADataMakerRec->GetRawsData(fGenOffset + fSSDRawsOffset - 1 + 2*fOccPosition - 1)->Scale(1./fSSDEvent);
 	  //N-SIDE OCCUPANCY - scaling
-	  fAliITSQADataMakerRec->GetRawsData(fRawsOffset + fSSDRawsOffset - 1 + 2*fOccPosition)->Scale(1./fSSDEvent);
+	  fAliITSQADataMakerRec->GetRawsData(fGenOffset + fSSDRawsOffset - 1 + 2*fOccPosition)->Scale(1./fSSDEvent);
 	}//ssd events != 0
       }//ladder loop
     }//layer loop
@@ -163,7 +165,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 void AliITSQASSDDataMakerRec::InitRaws() {  
 
   // Initialization for RAW data - SSD -
-  fRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
+  fGenOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
 
   if(fkOnline) {
     AliInfo("Book Online Histograms for SSD\n");
@@ -171,38 +173,37 @@ void AliITSQASSDDataMakerRec::InitRaws() {
   else {
     AliInfo("Book Offline Histograms for SSD\n ");
   }
-  AliInfo(Form("Number of histograms (SPD+SDD): %d\n",fRawsOffset));
+  AliInfo(Form("Number of histograms (SPD+SDD): %d\n",fGenOffset));
   TString fTitle = 0;
   //book online QA histos
-  if(fkOnline) {
     TH1F *fHistSSDEventType = new TH1F("fHistSSDEventType",
 				       ";Event type;Events",
 				       31,-1,30);
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDEventType, 
-					fRawsOffset+fSSDRawsOffset);
+					fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH1F *fHistSSDDataSize = new TH1F("fHistSSDDataSize",
 				      ";log(SSD data size) [Bytes];Events",
 				      100,3,8);
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSize, 
-					fRawsOffset+fSSDRawsOffset);
+					fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH1F *fHistSSDDataSizePercentage = new TH1F("fHistSSDDataSizePercentage",
 						";SSD data size [%];Events",
 						100,0,100);
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePercentage, 
-					fRawsOffset+fSSDRawsOffset);
+					fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH1F *fHistSSDDDLId = new TH1F("fHistSSDDDLId",
 				   ";DDL id;Events",20,510.5,530.5);
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDDDLId, 
-					fRawsOffset+fSSDRawsOffset);
+					fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH1F *fHistSSDDataSizePerDDL = new TH1F("fHistSSDDataSizePerDDL",
 					    ";DDL id;<SSD data size> [MB]",
 					    20,510.5,530.5);
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerDDL, 
-					fRawsOffset+fSSDRawsOffset);
+					fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH1F *fHistSSDDataSizeDDL[fgkNumOfDDLs];
     for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) {
@@ -211,19 +212,19 @@ void AliITSQASSDDataMakerRec::InitRaws() {
 					  ";log(SSD data size) [Bytes];Events",
 					  100,1,8);
       fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizeDDL[i-1], 
-					  fRawsOffset+fSSDRawsOffset);
+					  fGenOffset+fSSDRawsOffset);
       fSSDRawsOffset += 1;
     }
     
     TH1F *fHistSSDLDCId = new TH1F("fHistSSDLDCId",";LDC id;Events",10,0.5,10.5);
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDLDCId, 
-					fRawsOffset+fSSDRawsOffset);
+					fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH1F *fHistSSDDataSizePerLDC = new TH1F("fHistSSDDataSizePerLDC",
 					    ";LDC id;<SSD data size> [MB]",
 					    100,0,20);
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerLDC, 
-					fRawsOffset+fSSDRawsOffset);
+					fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH1F *fHistSSDDataSizeLDC[fgkNumOfLDCs];
     for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
@@ -232,10 +233,10 @@ void AliITSQASSDDataMakerRec::InitRaws() {
 					  ";log(SSD data size) [Bytes];Events",
 					  100,1,8);
       fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizeLDC[i-1], 
-					  fRawsOffset+fSSDRawsOffset);
+					  fGenOffset+fSSDRawsOffset);
       fSSDRawsOffset += 1;
     }
-
+  if(fkOnline) {
     //top level occupancy plots
     TH2D *fHistSSDOccupancyLayer5 = new TH2D("fHistSSDOccupancyLayer5",
 					     ";N_{modules};N_{Ladders}",
@@ -248,7 +249,7 @@ void AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDOccupancyLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
-    fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyLayer5, fRawsOffset+fSSDRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyLayer5, fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
     TH2D *fHistSSDOccupancyLayer6 = new TH2D("fHistSSDOccupancyLayer6",
 					     ";N_{modules};N_{Ladders}",
@@ -260,7 +261,7 @@ void AliITSQASSDDataMakerRec::InitRaws() {
       sprintf(fLabel,"%d",iBin);
       fHistSSDOccupancyLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
-    fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyLayer6, fRawsOffset+fSSDRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyLayer6, fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
 
     //Occupancy per ladder
@@ -280,7 +281,7 @@ void AliITSQASSDDataMakerRec::InitRaws() {
 	fHistOccupancyLadder[fSSDhRaws]->GetXaxis()->SetTitle("Module number");
 	fHistOccupancyLadder[fSSDhRaws]->GetYaxis()->SetTitle("Occupancy [%]");
 	fAliITSQADataMakerRec->Add2RawsList(fHistOccupancyLadder[fSSDhRaws], 
-					    fRawsOffset+fSSDhRaws);	
+					    fGenOffset+fSSDhRaws);	
 	fSSDhRaws++;
 	//N-side occupancy plots
 	fTitle = "fHistSSD_Occupancy_Layer"; fTitle += iLayer;
@@ -294,14 +295,15 @@ void AliITSQASSDDataMakerRec::InitRaws() {
 	fHistOccupancyLadder[fSSDhRaws]->GetXaxis()->SetTitle("Module number");
 	fHistOccupancyLadder[fSSDhRaws]->GetYaxis()->SetTitle("Occupancy [%]");
 	fAliITSQADataMakerRec->Add2RawsList(fHistOccupancyLadder[fSSDhRaws], 
-					    fRawsOffset+fSSDhRaws);	
+					    fGenOffset+fSSDhRaws);	
 	fSSDhRaws++;
       }//ladder loop
     }//layer loop
   }//online flag
   AliDebug(1,Form("%d SSD Raws histograms booked\n",fSSDhRaws));
-  AliInfo(Form("Number of histograms (SPD+SDD+SSD): %d\n",fRawsOffset+fSSDhRaws));  
+  AliInfo(Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenOffset+fSSDhRaws));  
 }
+
 
 //____________________________________________________________________________
 void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) { 
@@ -319,52 +321,53 @@ void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
     //reset the signal vs strip number histograms
     for(Int_t i = 0; i < fgkSSDMODULES; i++) 
       fHistSSDRawSignalModule[i]->Reset();
+  }
+  rawReader->Select("ITSSSD",-1,-1);  
+  rawReader->Reset(); //rawReader->NextEvent();   
+  (fAliITSQADataMakerRec->GetRawsData(fGenOffset))->Fill(rawReader->GetType());
+  if(rawReader->GetType() == 7)
+    fSSDEvent += 1;
   
-    rawReader->Select("ITSSSD",-1,-1);  
-    rawReader->Reset(); //rawReader->NextEvent();   
-    (fAliITSQADataMakerRec->GetRawsData(fRawsOffset))->Fill(rawReader->GetType());
-    if(rawReader->GetType() == 7)
-      fSSDEvent += 1;
-
-    AliITSRawStreamSSD fSSDStream(rawReader);    
-    AliRawReaderRoot *rootReader = (AliRawReaderRoot *)rawReader;
-    if(rootReader) {
-      const AliRawEventHeaderBase *header = rootReader->GetEventHeader();
-      if(header)
-	eventSize = header->GetEventSize();
-    }
-    while (fSSDStream.Next()) {
-      if(fSSDStream.GetModuleID() < 0) continue;
-      fSizePerDDL[rawReader->GetDDLID()] = rawReader->GetDataSize();
-      fSizePerLDC[rawReader->GetLDCId()-6] = rawReader->GetDataSize();
-      AliITSgeomTGeo::GetModuleId(fSSDStream.GetModuleID(),fLayer,fLadder,fModule);
-      fStripNumber = (fSSDStream.GetSideFlag() == 0) ? fSSDStream.GetStrip() : fSSDStream.GetStrip() + fgkNumberOfPSideStrips;
-      fHistPosition = (fLayer == 5) ? ((fLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + fModule - 1) : ((fLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + fModule + fgkSSDMODULESLAYER5 - 1);
-      //AliInfo(Form("ModulePosition: %d - Layer: %d - Ladder: %d - Module: %d\n",fHistPosition,fLayer,fLadder,fModule));
+  AliITSRawStreamSSD fSSDStream(rawReader);    
+  AliRawReaderRoot *rootReader = (AliRawReaderRoot *)rawReader;
+  if(rootReader) {
+    const AliRawEventHeaderBase *header = rootReader->GetEventHeader();
+    if(header)
+      eventSize = header->GetEventSize();
+  }
+  while (fSSDStream.Next()) {
+    if(fSSDStream.GetModuleID() < 0) continue;
+    fSizePerDDL[rawReader->GetDDLID()] = rawReader->GetDataSize();
+    fSizePerLDC[rawReader->GetLDCId()-6] = rawReader->GetDataSize();
+    AliITSgeomTGeo::GetModuleId(fSSDStream.GetModuleID(),fLayer,fLadder,fModule);
+    fStripNumber = (fSSDStream.GetSideFlag() == 0) ? fSSDStream.GetStrip() : fSSDStream.GetStrip() + fgkNumberOfPSideStrips;
+    fHistPosition = (fLayer == 5) ? ((fLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + fModule - 1) : ((fLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + fModule + fgkSSDMODULESLAYER5 - 1);
+    //AliInfo(Form("ModulePosition: %d - Layer: %d - Ladder: %d - Module: %d\n",fHistPosition,fLayer,fLadder,fModule));
+    if(fkOnline)
       fHistSSDRawSignalModule[fHistPosition]->Fill(fStripNumber,fSSDStream.GetSignal());
-    }//streamer loop   
-
-    
-    for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
-      sumSSDDataSize += fSizePerDDL[i];
-      if(fSizePerDDL[i] > 0) {
-	(fAliITSQADataMakerRec->GetRawsData(fRawsOffset+3))->Fill(i+512);
-	(fAliITSQADataMakerRec->GetRawsData(fRawsOffset+5+i))->Fill(TMath::Log10(fSizePerDDL[i]));
-      }
-      (fAliITSQADataMakerRec->GetRawsData(fRawsOffset+4))->Fill(i+512,fSizePerDDL[i]/1e+06);
+  }//streamer loop   
+  
+  
+  for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
+    sumSSDDataSize += fSizePerDDL[i];
+    if(fSizePerDDL[i] > 0) {
+      (fAliITSQADataMakerRec->GetRawsData(fGenOffset+3))->Fill(i+512);
+      (fAliITSQADataMakerRec->GetRawsData(fGenOffset+5+i))->Fill(TMath::Log10(fSizePerDDL[i]));
     }
-    for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
-      if(fSizePerLDC[i] > 0) {
-	(fAliITSQADataMakerRec->GetRawsData(fRawsOffset+21))->Fill(i+6);
-	(fAliITSQADataMakerRec->GetRawsData(fRawsOffset+23+i))->Fill(TMath::Log10(fSizePerLDC[0]));
-      }
-      (fAliITSQADataMakerRec->GetRawsData(fRawsOffset+22))->Fill(i+6,fSizePerLDC[i]/1e+06);
+    (fAliITSQADataMakerRec->GetRawsData(fGenOffset+4))->Fill(i+512,fSizePerDDL[i]/1e+06);
+  }
+  for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
+    if(fSizePerLDC[i] > 0) {
+      (fAliITSQADataMakerRec->GetRawsData(fGenOffset+21))->Fill(i+6);
+      (fAliITSQADataMakerRec->GetRawsData(fGenOffset+23+i))->Fill(TMath::Log10(fSizePerLDC[0]));
     }
-    if(sumSSDDataSize) 
-      (fAliITSQADataMakerRec->GetRawsData(fRawsOffset+1))->Fill(TMath::Log10(sumSSDDataSize));
-    if(eventSize)
-      (fAliITSQADataMakerRec->GetRawsData(fRawsOffset+2))->Fill(100.*sumSSDDataSize/eventSize);
- 
+    (fAliITSQADataMakerRec->GetRawsData(fGenOffset+22))->Fill(i+6,fSizePerLDC[i]/1e+06);
+  }
+  if(sumSSDDataSize) 
+    (fAliITSQADataMakerRec->GetRawsData(fGenOffset+1))->Fill(TMath::Log10(sumSSDDataSize));
+  if(eventSize)
+    (fAliITSQADataMakerRec->GetRawsData(fGenOffset+2))->Fill(100.*sumSSDDataSize/eventSize);
+  if(fkOnline) {
     //AliInfo(Form("EVENT: %d\n",fSSDEvent));
     Double_t occupancy = 0.0;
     Int_t lLadderLocationY = 0;    
@@ -374,22 +377,25 @@ void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
       fOccPosition  = (fLayer == 5) ? fLadder : fLadder + fgkSSDLADDERSLAYER5;
       //P-SIDE OCCUPANCY
       occupancy = GetSSDOccupancyRaws(fHistSSDRawSignalModule[i],0);
-      fAliITSQADataMakerRec->GetRawsData(fRawsOffset + fSSDRawsOffset - 1 + 2*fOccPosition - 1)->Fill(fModule,occupancy);
+      fAliITSQADataMakerRec->GetRawsData(fGenOffset + fSSDRawsOffset - 1 + 2*fOccPosition - 1)->Fill(fModule,occupancy);
       lLadderLocationY = 3*fLadder; // sideP=1 sideN=0
       if(fLayer == 5)
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fRawsOffset+28))->SetBinContent(fModule,lLadderLocationY,occupancy);
+	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+28))->SetBinContent(fModule,lLadderLocationY,occupancy);
       else if(fLayer == 6)
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fRawsOffset+29))->SetBinContent(fModule,lLadderLocationY,occupancy);
+	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+29))->SetBinContent(fModule,lLadderLocationY,occupancy);
       //N-SIDE OCCUPANCY
       occupancy = GetSSDOccupancyRaws(fHistSSDRawSignalModule[i],1);
-      fAliITSQADataMakerRec->GetRawsData(fRawsOffset + fSSDRawsOffset - 1 + 2*fOccPosition)->Fill(fModule,occupancy);
+      fAliITSQADataMakerRec->GetRawsData(fGenOffset + fSSDRawsOffset - 1 + 2*fOccPosition)->Fill(fModule,occupancy);
       if(fLayer == 5)
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fRawsOffset+28))->SetBinContent(fModule,lLadderLocationY-1,occupancy);
+	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+28))->SetBinContent(fModule,lLadderLocationY-1,occupancy);
       else if(fLayer == 6)
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fRawsOffset+29))->SetBinContent(fModule,lLadderLocationY-1,occupancy);
+	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+29))->SetBinContent(fModule,lLadderLocationY-1,occupancy);
     }
   }//online flag for SSD
 }
+
+
+
 
 //____________________________________________________________________________ 
 Double_t AliITSQASSDDataMakerRec::GetSSDOccupancyRaws(TH1 *lHisto, Int_t stripside) { 
@@ -413,7 +419,7 @@ Double_t AliITSQASSDDataMakerRec::GetSSDOccupancyRaws(TH1 *lHisto, Int_t stripsi
 void AliITSQASSDDataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS - SSD -
-  fRecsOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
+  fGenOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
   Int_t nModuleOffset = 500;
   Int_t nITSTotalModules = AliITSgeomTGeo::GetNModules();
 
@@ -423,7 +429,7 @@ void AliITSQASSDDataMakerRec::InitRecPoints()
 				       nModuleOffset - 0.5,
 				       nITSTotalModules-fgkSSDMODULESLAYER6+0.5);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistModuleIdLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistModuleIdLayer6 = new TH1F("fHistModuleIdLayer6",
 				       "Module Id - Layer 6;Module Id;Entries",
@@ -431,151 +437,151 @@ void AliITSQASSDDataMakerRec::InitRecPoints()
 				       nModuleOffset+fgkSSDMODULESLAYER5 - 0.5,
 				       nITSTotalModules + 0.5);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistModuleIdLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistLocalXLayer5 = new TH1F("fHistLocalXLayer5",
 				     "Local x coord.- Layer 5;x [cm];Entries;",
 				     100,-4.,4.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistLocalXLayer5,
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistLocalXLayer6 = new TH1F("fHistLocalXLayer6",
 				     "Local x coord.- Layer 6;x [cm];Entries;",
 				     100,-4.,4.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistLocalXLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistLocalZLayer5 = new TH1F("fHistLocalZLayer5",
 				     "Local z coord.- Layer 5;z [cm];Entries;",
 				     100,-4.,4.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistLocalZLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistLocalZLayer6 = new TH1F("fHistLocalZLayer6",
 				     "Local z coord.- Layer 6;z [cm];Entries;",
 				     100,-4.,4.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistLocalZLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistGlobalXLayer5 = new TH1F("fHistGlobalXLayer5",
 				      "Global x - Layer 5;x [cm];Entries;",
 				      100,-40.,40.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistGlobalXLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistGlobalXLayer6 = new TH1F("fHistGlobalXLayer6",
 				      "Global x - Layer 6;x [cm];Entries;",
 				      100,-45.,45.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistGlobalXLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistGlobalYLayer5 = new TH1F("fHistGlobalYLayer5",
 				      "Global y - Layer 5;y [cm];Entries;",
 				      100,-40.,40);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistGlobalYLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistGlobalYLayer6 = new TH1F("fHistGlobalYLayer6",
 				      "Global y - Layer 6;y [cm];Entries;",
 				      100,-45.,45.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistGlobalYLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistGlobalZLayer5 = new TH1F("fHistGlobalZLayer5",
 				      "Global z - Layer 5;z [cm];Entries;",
 				      100,-45.,45);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistGlobalZLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistGlobalZLayer6 = new TH1F("fHistGlobalZLayer6",
 				      "Global z - Layer 6;z [cm];Entries;",
 				      100,-55.,55.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistGlobalZLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistPhiLayer5 = new TH1F("fHistPhiLayer5",
 				  "#phi - Layer 5;#phi [rad];Entries;",
 				  100,-TMath::Pi(),TMath::Pi());
   fAliITSQADataMakerRec->Add2RecPointsList(fHistPhiLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistPhiLayer6 = new TH1F("fHistPhiLayer6",
 				  "#phi - Layer 6;#phi [rad];Entries;",
 				  100,-TMath::Pi(),TMath::Pi());
   fAliITSQADataMakerRec->Add2RecPointsList(fHistPhiLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistThetaLayer5 = new TH1F("fHistThetaLayer5",
 				    "#theta - Layer 5;#theta [rad];Entries;",
 				    100,-TMath::Pi(),TMath::Pi());
   fAliITSQADataMakerRec->Add2RecPointsList(fHistThetaLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistThetaLayer6 = new TH1F("fHistThetaLayer6",
 				    "#theta - Layer 6;#theta [rad];Entries;",
 				    100,-TMath::Pi(),TMath::Pi());
   fAliITSQADataMakerRec->Add2RecPointsList(fHistThetaLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistRadiusLayer5 = new TH1F("fHistRadiusLayer5",
 				     "r - Layer 5;r [cm];Entries;",
 				     100,35.,50.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistRadiusLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistRadiusLayer6 = new TH1F("fHistRadiusLayer6",
 				     "r - Layer 6;r [cm];Entries;",
 				     100,35.,50.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistRadiusLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistClusterTypeLayer5 = new TH1F("fHistClusterTypeLayer5",
 					  "CL type - Layer 5;Cluster type;Entries;",
 					  150,0,150);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistClusterTypeLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistClusterTypeLayer6 = new TH1F("fHistClusterTypeLayer6",
 					  "CL type - Layer 6;Cluster type;Entries;",
 					  150,0,150);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistClusterTypeLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistChargeRatioLayer5 = new TH1F("fHistChargeRatioLayer5",
 					  "Charge ratio - Layer 5;q_{ratio};Entries;",
 					  100,-2.0,2.0);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargeRatioLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistChargeRatioLayer6 = new TH1F("fHistChargeRatioLayer6",
 					  "Charge ratio - Layer 6;q_{ratio};Entries;",
 					  100,-2.0,2.0);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargeRatioLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistChargekeVLayer5 = new TH1F("fHistChargekeVLayer5",
 					"Charge - Layer 5;q [keV];Entries;",
 					100,0.,300.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargekeVLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistChargekeVLayer6 = new TH1F("fHistChargekeVLayer6",
 					"Charge - Layer 6;q [keV];Entries;",
 					100,0.,300.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargekeVLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistChargeADCLayer5 = new TH1F("fHistChargeADCLayer5",
 					"Charge - Layer 5;q [ADC];Entries;",
 					100,0.,300.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargeADCLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH1F *fHistChargeADCLayer6 = new TH1F("fHistChargeADCLayer6",
 					"Charge - Layer 6;q [ADC];Entries;",
 					100,0.,300.);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargeADCLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH2F *fHistChargeMapLayer5 = new TH2F("fHistChargeMapLayer5",
 					"Charge map;N_{modules};N_{Ladders}",
@@ -584,7 +590,7 @@ void AliITSQASSDDataMakerRec::InitRecPoints()
 					3*fgkSSDLADDERSLAYER5,
 					-0.5,fgkSSDLADDERSLAYER5+0.5);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargeMapLayer5, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
   TH2F *fHistChargeMapLayer6 = new TH2F("fHistChargeMapLayer6",
 					"Charge map;N_{modules};N_{Ladders}",
@@ -593,7 +599,7 @@ void AliITSQASSDDataMakerRec::InitRecPoints()
 					3*fgkSSDLADDERSLAYER6,
 					-0.5,fgkSSDLADDERSLAYER6+0.5);
   fAliITSQADataMakerRec->Add2RecPointsList(fHistChargeMapLayer6, 
-					   fRecsOffset + fSSDhRecs);
+					   fGenOffset + fSSDhRecs);
   fSSDhRecs += 1;
 
 // custom code here
@@ -631,34 +637,34 @@ void AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
       Float_t phi = TMath::ATan2(cluglo[1],cluglo[0]);
       Float_t theta = TMath::ATan2(radius,cluglo[2]);
       if(layer == 4) {
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 0)->Fill(module);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 2)->Fill(recp->GetDetLocalX());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 4)->Fill(recp->GetDetLocalZ());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 6)->Fill(cluglo[0]);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 8)->Fill(cluglo[1]);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 10)->Fill(cluglo[2]);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 12)->Fill(phi);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 14)->Fill(theta);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 16)->Fill(radius);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 18)->Fill(recp->GetType());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 20)->Fill(recp->GetChargeRatio());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 22)->Fill(recp->GetQ());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 26)->SetBinContent(fModule,lLadderLocationY,recp->GetQ());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 0)->Fill(module);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 2)->Fill(recp->GetDetLocalX());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 4)->Fill(recp->GetDetLocalZ());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 6)->Fill(cluglo[0]);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 8)->Fill(cluglo[1]);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 10)->Fill(cluglo[2]);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 12)->Fill(phi);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 14)->Fill(theta);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 16)->Fill(radius);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 18)->Fill(recp->GetType());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 20)->Fill(recp->GetChargeRatio());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 22)->Fill(recp->GetQ());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 26)->SetBinContent(fModule,lLadderLocationY,recp->GetQ());
       }//layer 5 histograms
       if(layer == 5) {
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 1)->Fill(module);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 3)->Fill(recp->GetDetLocalX());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 5)->Fill(recp->GetDetLocalZ());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 7)->Fill(cluglo[0]);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 9)->Fill(cluglo[1]);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 11)->Fill(cluglo[2]);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 13)->Fill(phi);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 15)->Fill(theta);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 17)->Fill(radius);
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 19)->Fill(recp->GetType());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 21)->Fill(recp->GetChargeRatio());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 23)->Fill(recp->GetQ());
-	fAliITSQADataMakerRec->GetRecPointsData(fRecsOffset + 27)->SetBinContent(fModule,lLadderLocationY,recp->GetQ());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 1)->Fill(module);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 3)->Fill(recp->GetDetLocalX());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 5)->Fill(recp->GetDetLocalZ());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 7)->Fill(cluglo[0]);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 9)->Fill(cluglo[1]);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 11)->Fill(cluglo[2]);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 13)->Fill(phi);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 15)->Fill(theta);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 17)->Fill(radius);
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 19)->Fill(recp->GetType());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 21)->Fill(recp->GetChargeRatio());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 23)->Fill(recp->GetQ());
+	fAliITSQADataMakerRec->GetRecPointsData(fGenOffset + 27)->SetBinContent(fModule,lLadderLocationY,recp->GetQ());
       }//layer 6 histograms
     }//rec. points loop
   }//module loop
@@ -666,3 +672,49 @@ void AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
   recpoints->Delete();
   delete recpoints;
 }
+
+//____________________________________________________________________________ 
+/*void AliITSQASSDDataMakerRec::InitESDs() {  
+  // Initialization for ESD - SSD -
+  fESDsOffset = (fAliITSQADataMakerRec->fESDsQAList)->GetEntries();
+  AliDebug(1,Form("Number of ESD histograms (SPD+SDD): %d\n",fRawsOffset));
+  
+  TH1F *fHistSSDTrackPt = new TH1F("fHistSSDTrackPt",
+				   ";P_{T} [GeV/c];dN/dP_{T}",
+				   100,0.1,10.1);
+  fAliITSQADataMakerRec->Add2ESDPointsList(fHistSSDTrackPt, 
+					   fESDsOffset + fSSDhESDs);
+  fSSDhESDs += 1;
+  TH1F *fHistSSDTrackEta = new TH1F("fHistSSDTrackEta",
+				   ";#eta;dN/d#eta",
+				   40,-2.,2.);
+  fAliITSQADataMakerRec->Add2ESDPointsList(fHistSSDTrackEta,
+					   fESDsOffset + fSSDhESDs);
+  fSSDhESDs += 1;
+  TH1F *fHistSSDTrackPhi = new TH1F("fHistSSDTrackPhi",
+				   ";#phi;dN/d#phi",
+				   100,0,2.*TMath::Pi());
+  fAliITSQADataMakerRec->Add2ESDPointsList(fHistSSDTrackPhi,
+					   fESDsOffset + fSSDhESDs);
+  fSSDhESDs += 1;
+  
+  AliDebug(1,Form("%d SSD ESDs histograms booked\n",fSSDhESDs));
+  AliInfo(Form("Number of histograms (ITS): %d\n",fESDsOffset+fSSDhESDs));  
+}
+
+//____________________________________________________________________________
+void AliITSQASSDDataMakerRec::MakeESDs(AliESDEvent * esd) {
+  // make QA data from ESDs
+  Int_t clusters[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  for(Int_t j = 0; j < esd->GetNumberOfTracks(); j++) {
+    AliESDtrack *track = esd->GetTrack(j);
+    if ((track->GetStatus() & AliESDtrack::kITSrefit)==0) continue;
+    Int_t nClustersITS = track->GetITSclusters(clusters);
+
+   (fAliITSQADataMakerRec->GetESDsData(fESDsOffset+0))->Fill(track->Pt());
+   (fAliITSQADataMakerRec->GetESDsData(fESDsOffset+1))->Fill(track->Eta());
+   (fAliITSQADataMakerRec->GetESDsData(fESDsOffset+2))->Fill(track->Phi());
+  }//track loop
+}
+*/
+

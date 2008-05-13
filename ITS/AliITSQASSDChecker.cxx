@@ -22,9 +22,13 @@
 //  INFN Torino
 
 // --- ROOT system ---
+#include "TH1.h"
+#include "TString.h"
+#include "Riostream.h"
 
 // --- AliRoot header files ---
 #include "AliITSQASSDChecker.h"
+#include "AliLog.h"
 
 ClassImp(AliITSQASSDChecker)
 
@@ -38,13 +42,12 @@ AliITSQASSDChecker& AliITSQASSDChecker::operator = (const AliITSQASSDChecker& qa
 }
 
 //__________________________________________________________________
-const Double_t AliITSQASSDChecker::Check(AliQA::ALITASK_t /*index*/) 
-{
-/*
-  TObjArray * list
+const Double_t AliITSQASSDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list, Int_t SubDetOffset) 
+{  
+  AliDebug(1,Form("AliITSQASSDChecker called with offset: %d\n", SubDetOffset));
+  /*
   Double_t test = 0.0  ;
   Int_t count = 0 ;
-
   if (list->GetEntries() == 0){
     test = 1. ; // nothing to check
   }
@@ -54,16 +57,18 @@ const Double_t AliITSQASSDChecker::Check(AliQA::ALITASK_t /*index*/)
     count = 0 ;
     while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
       if (hdata) {
+	TString histname = hdata->GetName();
+	if(!histname.Contains("fHistSSD")) continue;
         Double_t rv = 0.;
-        if(hdata->GetEntries()>0)rv=1;
-        AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ;
+        if(hdata->GetEntries()>0) rv = 1;
+        //AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ;
+	//cout<<hdata->GetName()<<" - "<<rv<<endl;
         count++ ;
         test += rv ;
       }
       else{
         AliError("Data type cannot be processed") ;
       }
-
     }
     if (count != 0) {
       if (test==0) {
@@ -75,11 +80,14 @@ const Double_t AliITSQASSDChecker::Check(AliQA::ALITASK_t /*index*/)
       }
     }
   }
+  
+  //AliInfo(Form("Test Result = %f", test)) ;
+  //cout<<"Test result: "<<test<<endl;
 
-  AliInfo(Form("Test Result = %f", test)) ;
   return test ;
-*/
-  return 0.;	
+
+  //return 0.;
+  */
 }
 
  

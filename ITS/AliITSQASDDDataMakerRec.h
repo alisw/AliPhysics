@@ -35,10 +35,11 @@ public:
   virtual void MakeRaws(AliRawReader *rawReader);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
-	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASDDDataMakerRec(); // dtor
-  inline Int_t Raws() { return fSDDhRaws; }
-  inline Int_t Recs() { return fSDDhRecs; }
+  Int_t Raws() { return fSDDhRaws; }
+  Int_t Recs() { return fSDDhRecs; }
+  Int_t GetOffset() { return fGenOffset; }
 
 private:
 
@@ -57,8 +58,7 @@ private:
   Int_t   fLDC;                            //LDC number (0 for offline, 1 to 4 for online) 
   Int_t   fSDDhRaws;                       // number of histo booked for Raws SDD
   Int_t   fSDDhRecs;                       // number of histo booked for Recs SDD
-  Int_t   fRawsOffset;                     // number of histo booked when SDD start
-  Int_t   fRecsOffset;                     // number of histo booked when SDD start
+  Int_t   fGenOffset;                         // qachecking offset       
   AliITSDDLModuleMapSDD  *fDDLModuleMap;// SDD Detector configuration for the decoding
 /*
   TProfile2D *fModuleChargeMap[2*fgknSDDmodules];//module map

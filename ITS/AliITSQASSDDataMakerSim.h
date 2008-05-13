@@ -41,6 +41,7 @@ public:
   const Int_t Digits() { return fSSDhDigits; }
   const Int_t SDigits() { return fSSDhSDigits; }
   const Int_t Hits() { return fSSDhHits; }
+  Int_t GetOffset() { return fGenOffset; }
 
 private:
 
@@ -48,9 +49,7 @@ private:
   Int_t   fSSDhDigits;    //number of booked SSD Digits histograms;
   Int_t   fSSDhSDigits;   //number of booked SSD SDigits histograms;
   Int_t   fSSDhHits;      //number of booked SSD Hits histograms;
-  Int_t   fDigitsOffset;  //number of histo booked when SSD start
-  Int_t   fSDigitsOffset; //number of histo booked when SSD start
-  Int_t   fHitsOffset;    //number of histo booked when SSD start  
+  Int_t   fGenOffset;                         // qachecking offset
 
   static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips
 

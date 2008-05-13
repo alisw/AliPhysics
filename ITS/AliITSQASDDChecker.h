@@ -30,10 +30,10 @@ public:
   AliITSQASDDChecker() {;}          // ctor
   AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; //operator =
   virtual ~AliITSQASDDChecker() {;} // dtor
-  const Double_t Check(AliQA::ALITASK_t index);
+  const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/, Int_t SubDetOffset);
 
 private:
-  AliITSQASDDChecker(const AliITSQASDDChecker& qac) {;} // cpy ctor   
+  AliITSQASDDChecker(const AliITSQASDDChecker& /*qac*/):TObject() {;} // cpy ctor   
   
   ClassDef(AliITSQASDDChecker,1)  // description 
 

@@ -25,6 +25,7 @@
 
 // --- AliRoot header files ---
 #include "AliITSQASPDChecker.h"
+#include "AliLog.h"
 
 ClassImp(AliITSQASPDChecker)
 
@@ -38,8 +39,10 @@ AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qa
 }
 
 //__________________________________________________________________
-const Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/) 
+const Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/, Int_t SubDetOffset) 
 {
+  AliDebug(1,Form("AliITSQASPDChecker called with offset: %d\n", SubDetOffset));
+
 /*
   TObjArray * list
   Double_t test = 0.0  ;

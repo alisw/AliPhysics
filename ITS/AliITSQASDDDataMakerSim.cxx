@@ -54,9 +54,7 @@ fAliITSQADataMakerSim(aliITSQADataMakerSim),
 fSDDhDigits(0),
 fSDDhSDigits(0),
 fSDDhHits(0),
-fDigitsOffset(0),
-fSDigitsOffset(0),
-fHitsOffset(0)
+fGenOffset(0)
 {
   //ctor used to discriminate OnLine-Offline analysis   
 }
@@ -68,9 +66,7 @@ fAliITSQADataMakerSim(qadm.fAliITSQADataMakerSim),
 fSDDhDigits(qadm.fSDDhDigits),
 fSDDhSDigits(qadm.fSDDhSDigits),
 fSDDhHits(qadm.fSDDhHits),
-fDigitsOffset(qadm.fDigitsOffset),
-fSDigitsOffset(qadm.fSDigitsOffset),
-fHitsOffset(qadm.fHitsOffset)
+fGenOffset(qadm.fGenOffset)
 {
   //copy ctor 
   fAliITSQADataMakerSim->SetName((const char*)qadm.fAliITSQADataMakerSim->GetName()) ; 
@@ -104,29 +100,28 @@ void AliITSQASDDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerSim::InitDigits()
 { 
-  // Initialization for DIGIT data - SDD -
-  fDigitsOffset = (fAliITSQADataMakerSim->fDigitsQAList)->GetEntries();
+  // Initialization for DIGIT data - SDD -  
+  fGenOffset = (fAliITSQADataMakerSim->fDigitsQAList)->GetEntries();
   //fSDDhDigits must be incremented by one unit every time a histogram is ADDED to the QA List
-  //printf("AliITSQASDDDataMakerSim::InitDigits called \n");
   TH1F* h0=new TH1F("SDD DIGITS Module Pattern","SDD DIGITS Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h0,1+fDigitsOffset);
+  fAliITSQADataMakerSim->Add2DigitsList(h0,fGenOffset);
   fSDDhDigits ++;
   TH1F* h1=new TH1F("SDD Anode Distribution","DIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h1,2+fDigitsOffset);
+  fAliITSQADataMakerSim->Add2DigitsList(h1,1+fGenOffset);
   fSDDhDigits ++;
   TH1F* h2=new TH1F("SDD Tbin Distribution","DIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h2,3+fDigitsOffset);
+  fAliITSQADataMakerSim->Add2DigitsList(h2,2+fGenOffset);
   fSDDhDigits ++;
   TH1F* h3=new TH1F("SDD ADC Counts Distribution","DIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h3,4+fDigitsOffset);
+  fAliITSQADataMakerSim->Add2DigitsList(h3,3+fGenOffset);
   fSDDhDigits ++;
   AliDebug(1,Form("%d SDD Digits histograms booked\n",fSDDhDigits));
 }
@@ -143,15 +138,15 @@ void AliITSQASDDDataMakerSim::MakeDigits(TTree * digits)
     Int_t nmod=i+240;
     digits->GetEvent(nmod);
     Int_t ndigits = iITSdigits->GetEntries();
-    fAliITSQADataMakerSim->GetDigitsData(1+fDigitsOffset)->Fill(nmod,ndigits);
+    fAliITSQADataMakerSim->GetDigitsData(fGenOffset)->Fill(nmod,ndigits);
     for (Int_t idig=0; idig<ndigits; idig++) {
       AliITSdigit *dig=(AliITSdigit*)iITSdigits->UncheckedAt(idig);
       Int_t iz=dig->GetCoord1();  // cell number z
       Int_t ix=dig->GetCoord2();  // cell number x
       Int_t sig=dig->GetSignal();
-      fAliITSQADataMakerSim->GetDigitsData(2+fDigitsOffset)->Fill(iz);
-      fAliITSQADataMakerSim->GetDigitsData(3+fDigitsOffset)->Fill(ix);
-      fAliITSQADataMakerSim->GetDigitsData(4+fDigitsOffset)->Fill(sig);
+      fAliITSQADataMakerSim->GetDigitsData(1+fGenOffset)->Fill(iz);
+      fAliITSQADataMakerSim->GetDigitsData(2+fGenOffset)->Fill(ix);
+      fAliITSQADataMakerSim->GetDigitsData(3+fGenOffset)->Fill(sig);
     }
   }
 }
@@ -160,28 +155,27 @@ void AliITSQASDDDataMakerSim::MakeDigits(TTree * digits)
 void AliITSQASDDDataMakerSim::InitSDigits()
 { 
   // Initialization for SDIGIT data - SDD -
-  fSDigitsOffset = (fAliITSQADataMakerSim->fSDigitsQAList)->GetEntries();
-  //printf("AliITSQASDDDataMakerSim::InitSDigits called \n");
+  fGenOffset = (fAliITSQADataMakerSim->fSDigitsQAList)->GetEntries();
   //fSDDhSDigits must be incremented by one unit every time a histogram is ADDED to the QA List
   TH1F* h0=new TH1F("SDD SDIGITS Module Pattern","SDIGITS SDD Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# SDIGITS");
-  fAliITSQADataMakerSim->Add2SDigitsList(h0,1+fSDigitsOffset);
+  fAliITSQADataMakerSim->Add2SDigitsList(h0,fGenOffset);
   fSDDhSDigits ++;
   TH1F* h1=new TH1F("SDD Anode Distribution","SDIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# SDIGITS");
-  fAliITSQADataMakerSim->Add2SDigitsList(h1,2+fSDigitsOffset);
+  fAliITSQADataMakerSim->Add2SDigitsList(h1,1+fGenOffset);
   fSDDhSDigits ++;
   TH1F* h2=new TH1F("SDD Tbin Distribution","SDIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# SDIGITS");
-  fAliITSQADataMakerSim->Add2SDigitsList(h2,3+fSDigitsOffset);
+  fAliITSQADataMakerSim->Add2SDigitsList(h2,2+fGenOffset);
   fSDDhSDigits ++;
   TH1F* h3=new TH1F("SDD ADC Counts Distribution","SDIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# SDIGITS");
-  fAliITSQADataMakerSim->Add2SDigitsList(h3,4+fSDigitsOffset);
+  fAliITSQADataMakerSim->Add2SDigitsList(h3,3+fGenOffset);
   fSDDhSDigits ++;
 
   AliDebug(1,Form("%d SDD SDigits histograms booked\n",fSDDhSDigits));
@@ -213,16 +207,16 @@ void AliITSQASDDDataMakerSim::MakeSDigits(TTree * sdigits)
     brchSDigits->SetAddress( &sdig );
     brchSDigits->GetEvent(nmod);
     Int_t nsdig=sdig->GetEntries();
-    fAliITSQADataMakerSim->GetSDigitsData(1+fSDigitsOffset)->Fill(nmod,nsdig);
+    fAliITSQADataMakerSim->GetSDigitsData(fGenOffset)->Fill(nmod,nsdig);
     for(Int_t i=0;i<nsdig;i++){
       AliITSpListItem *cell=(AliITSpListItem*)sdig->At(i);
       Float_t sig=cell->GetSignal();
       Int_t idx=cell->GetIndex();
       Int_t ia,it;
       list->GetCell(idx,ia,it);
-      fAliITSQADataMakerSim->GetSDigitsData(2+fSDigitsOffset)->Fill(ia);
-      fAliITSQADataMakerSim->GetSDigitsData(3+fSDigitsOffset)->Fill(it);
-      fAliITSQADataMakerSim->GetSDigitsData(4+fSDigitsOffset)->Fill(sig);
+      fAliITSQADataMakerSim->GetSDigitsData(1+fGenOffset)->Fill(ia);
+      fAliITSQADataMakerSim->GetSDigitsData(2+fGenOffset)->Fill(it);
+      fAliITSQADataMakerSim->GetSDigitsData(3+fGenOffset)->Fill(sig);
     }
     delete sdig;
   }
@@ -232,28 +226,28 @@ void AliITSQASDDDataMakerSim::MakeSDigits(TTree * sdigits)
 void AliITSQASDDDataMakerSim::InitHits()
 { 
   // Initialization for HITS data - SDD -
-  fHitsOffset = (fAliITSQADataMakerSim->fHitsQAList)->GetEntries();
+  fGenOffset = (fAliITSQADataMakerSim->fHitsQAList)->GetEntries();
   //fSDDhHits must be incremented by one unit every time a histogram is ADDED to the QA List
   //printf("AliITSQASDDDataMakerSim::InitHits called \n");
   TH1F *h0=new TH1F("SDD HITS Module Pattern","SDD HITS Module Pattern",260,239.5,499.5);  
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h0,1+fHitsOffset);
+  fAliITSQADataMakerSim->Add2HitsList(h0,fGenOffset);
   fSDDhHits ++;
   TH1F *h1=new TH1F("SDD HIT lenght along local Y Coord","HIT lenght along local Y Coord",200,0.,350.);
   h1->GetXaxis()->SetTitle("HIT lenght (um)");
   h1->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h1,2+fHitsOffset);
+  fAliITSQADataMakerSim->Add2HitsList(h1,1+fGenOffset);
   fSDDhHits ++;
   TH1F *h2=new TH1F("SDD HIT lenght along local Y Coord - Zoom","SDD HIT lenght along local Y Coord - Zoom",200,250.,350.);
   h2->GetXaxis()->SetTitle("HIT lenght (um)");
   h2->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h2,3+fHitsOffset);
+  fAliITSQADataMakerSim->Add2HitsList(h2,2+fGenOffset);
   fSDDhHits ++;
   TH1F *h3=new TH1F("SDD Deposited Energy Distribution (loc Y > 200um)","SDD HITS Deposited Energy Distribution (loc Y > 200um)",200,0.,350.);
   h3->GetXaxis()->SetTitle("ADC counts???");
   h3->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h3,4+fHitsOffset);
+  fAliITSQADataMakerSim->Add2HitsList(h3,3+fGenOffset);
   fSDDhHits ++;
   //printf("%d SDD Hits histograms booked\n",fSDDhHits);
   AliDebug(1,Form("%d SDD Hits histograms booked\n",fSDDhHits));
@@ -282,17 +276,17 @@ void AliITSQASDDDataMakerSim::MakeHits(TTree * hits)
     //printf("--w--AliITSQASDDDataMakerSim::MakeHits  nhits = %d\n",nhits);
     for (Int_t iHit=0;iHit<nhits;iHit++) {
       AliITShit *hit = (AliITShit*) arrHits->At(iHit);
-      fAliITSQADataMakerSim->GetHitsData(1 + fHitsOffset)->Fill(nmod);
+      fAliITSQADataMakerSim->GetHitsData(fGenOffset)->Fill(nmod);
       Double_t xl,yl,zl,xl0,yl0,zl0;
       Double_t tof,tof0;
       hit->GetPositionL(xl,yl,zl,tof);
       hit->GetPositionL0(xl0,yl0,zl0,tof0);
       Float_t dyloc=TMath::Abs(yl-yl0)*10000.;
-      fAliITSQADataMakerSim->GetHitsData(2 + fHitsOffset)->Fill(dyloc);
+      fAliITSQADataMakerSim->GetHitsData(1+fGenOffset)->Fill(dyloc);
       Float_t edep=hit->GetIonization()*1000000;
       if(dyloc>200.){ 
-	fAliITSQADataMakerSim->GetHitsData(4 + fHitsOffset)->Fill(edep);
-	fAliITSQADataMakerSim->GetHitsData(3 + fHitsOffset)->Fill(dyloc);
+	fAliITSQADataMakerSim->GetHitsData(2+fGenOffset)->Fill(edep);
+	fAliITSQADataMakerSim->GetHitsData(3+fGenOffset)->Fill(dyloc);
       }
     }
   }

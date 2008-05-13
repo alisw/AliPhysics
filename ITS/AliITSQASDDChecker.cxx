@@ -25,6 +25,7 @@
 
 // --- AliRoot header files ---
 #include "AliITSQASDDChecker.h"
+#include "AliLog.h"
 
 ClassImp(AliITSQASDDChecker)
 
@@ -38,9 +39,10 @@ AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qa
 }
 
 //__________________________________________________________________
-const Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t /*index*/) 
-{
-/*
+const Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/, Int_t SubDetOffset) 
+{  
+  AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", SubDetOffset));
+  /*
   TObjArray * list
   Double_t test = 0.0  ;
   Int_t count = 0 ;
@@ -78,7 +80,7 @@ const Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t /*index*/)
 
   AliInfo(Form("Test Result = %f", test)) ;
   return test ;
-*/
+  */
   return 0.;	
 }
  

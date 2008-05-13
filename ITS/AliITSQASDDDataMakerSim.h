@@ -43,6 +43,7 @@ public:
   const Int_t Digits() { return fSDDhDigits; }
   const Int_t SDigits() { return fSDDhSDigits; }
   const Int_t Hits() { return fSDDhHits; }
+  Int_t GetOffset() { return fGenOffset; }
 
 private:
 
@@ -50,9 +51,7 @@ private:
   Int_t   fSDDhDigits;                        //number of booked SDD Digits histograms;
   Int_t   fSDDhSDigits;                       //number of booked SDD SDigits histograms;
   Int_t   fSDDhHits;                          //number of booked SDD Hits histograms;
-  Int_t   fDigitsOffset;                      // number of histo booked when SDD start
-  Int_t   fSDigitsOffset;                     // number of histo booked when SDD start
-  Int_t   fHitsOffset;                        // number of histo booked when SDD start
+  Int_t   fGenOffset;                         // qachecking offset
   ClassDef(AliITSQASDDDataMakerSim,1)      // description 
 
 };

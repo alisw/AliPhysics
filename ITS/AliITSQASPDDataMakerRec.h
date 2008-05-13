@@ -37,6 +37,7 @@ public:
   virtual ~AliITSQASPDDataMakerRec();   // dtor
   Int_t Raws() const { return fSPDhRaws; }
   Int_t Recs() const { return fSPDhRecs; }
+  Int_t GetOffset() { return fGenOffset; }
 
 private: 
 
@@ -49,9 +50,8 @@ private:
   Int_t   fLDC;                               //LDC number (0 for offline, 1 to 4 for online) 
   Int_t   fSPDhRaws;                          //number of booked SPD Raws histograms;
   Int_t   fSPDhRecs;                          //number of booked SPD Recs histograms;
-  Int_t   fRawsOffset;                        // number of histo booked when SPD start 
-  Int_t   fRecsOffset;                        // number of histo booked when SPD start
-  
+  Int_t   fGenOffset;                         // qachecking offset       
+
   AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 
   ClassDef(AliITSQASPDDataMakerRec,2)      // description 

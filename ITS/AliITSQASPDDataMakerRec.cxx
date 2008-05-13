@@ -51,8 +51,7 @@ fkOnline(kMode),
 fLDC(ldc),
 fSPDhRaws(0),
 fSPDhRecs(0),
-fRawsOffset(0),
-fRecsOffset(0),
+fGenOffset(0),
 fAdvLogger(aliITSRawStreamSPDErrorLog) 
 {
   //ctor used to discriminate OnLine-Offline analysis  
@@ -66,8 +65,7 @@ fkOnline(qadm.fkOnline),
 fLDC(qadm.fLDC),
 fSPDhRaws(qadm.fSPDhRaws),
 fSPDhRecs(qadm.fSPDhRecs),
-fRawsOffset(qadm.fRawsOffset),
-fRecsOffset(qadm.fRecsOffset),
+fGenOffset(qadm.fGenOffset),
 fAdvLogger(qadm.fAdvLogger)
 {
   //copy ctor 
@@ -110,7 +108,7 @@ void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 void AliITSQASPDDataMakerRec::InitRaws()
 { 
   // Initialization for RAW data - SPD -
-  fRawsOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
+  fGenOffset = (fAliITSQADataMakerRec->fRawsQAList)->GetEntries();
 
   Char_t name[50];
   Char_t title[50];
@@ -118,7 +116,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
   TH1F *hlayer = new TH1F("LayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RawsList(hlayer,fSPDhRaws+fRawsOffset);
+  fAliITSQADataMakerRec->Add2RawsList(hlayer,fSPDhRaws+fGenOffset);
   fSPDhRaws++;
 
   TH1F **hmod = new TH1F*[2];
@@ -130,7 +128,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
     hmod[iLay]=new TH1F(name,title,fgknSPDmodules,0,fgknSPDmodules);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RawsList(hmod[iLay], fSPDhRaws +fRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList(hmod[iLay], fSPDhRaws +fGenOffset);
     fSPDhRaws++;
   }
   fAdvLogger = new AliITSRawStreamSPDErrorLog();  
@@ -140,14 +138,14 @@ void AliITSQASPDDataMakerRec::InitRaws()
     hhitMap[iDDL]=new TH2F(name,title,320,0,10*32,1536,0,6*256);
     hhitMap[iDDL]->GetXaxis()->SetTitle("Column");
     hhitMap[iDDL]->GetYaxis()->SetTitle("Row");
-    fAliITSQADataMakerRec->Add2RawsList(hhitMap[iDDL], fSPDhRaws +fRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList(hhitMap[iDDL], fSPDhRaws +fGenOffset);
     fSPDhRaws++;
     sprintf(name,"Errors_SPD_DDL%d",iDDL+1);
     sprintf(title,"Error codes - SPD DDL %d",iDDL+1);
     herrors[iDDL] = new TH1F (name,title,15,0,15);
     herrors[iDDL]->SetXTitle("Error Code");
     herrors[iDDL]->SetYTitle("Nr of errors");
-    fAliITSQADataMakerRec->Add2RawsList(herrors[iDDL], fSPDhRaws +fRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList(herrors[iDDL], fSPDhRaws +fGenOffset);
     fSPDhRaws++;
   }
 
@@ -158,14 +156,14 @@ void AliITSQASPDDataMakerRec::InitRaws()
     hMultSPDhits[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDhits[iLay]->GetXaxis()->SetTitle("Hit multiplicity");
     hMultSPDhits[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits[iLay], fSPDhRaws+fRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits[iLay], fSPDhRaws+fGenOffset);
     fSPDhRaws++;
   }
 
   TH2F *hMultSPDhits2MultSPDhits1 = new TH2F("HitMultCorrelation_SPD","Hit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDhits2MultSPDhits1->GetXaxis()->SetTitle("Hit multiplicity (Layer 1)");
   hMultSPDhits2MultSPDhits1->GetYaxis()->SetTitle("Hit multiplicity (Layer 2)");
-  fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, fSPDhRaws+fRawsOffset);
+  fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, fSPDhRaws+fGenOffset);
   fSPDhRaws++;
  
   AliDebug(1,Form("%d SPD Raws histograms booked\n",fSPDhRaws));
@@ -202,28 +200,28 @@ void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       if (iHalfStave>=0 && iHalfStave<2) iLayer=0;
       else iLayer=1;
       
-      fAliITSQADataMakerRec->GetRawsData(0+fRawsOffset)->Fill(iLayer);
+      fAliITSQADataMakerRec->GetRawsData(0+fGenOffset)->Fill(iLayer);
       if (iLayer==0) {
-        fAliITSQADataMakerRec->GetRawsData(1+fRawsOffset)->Fill(module);
+        fAliITSQADataMakerRec->GetRawsData(1+fGenOffset)->Fill(module);
         nDigitsL1++;
       } else {
-        fAliITSQADataMakerRec->GetRawsData(2+fRawsOffset)->Fill(module);
+        fAliITSQADataMakerRec->GetRawsData(2+fGenOffset)->Fill(module);
         nDigitsL2++;
       }
       
-      fAliITSQADataMakerRec->GetRawsData((2*iEq)+3+fRawsOffset)->Fill(colM+(module%2)*160,rowM+iHalfStave*256);
+      fAliITSQADataMakerRec->GetRawsData((2*iEq)+3+fGenOffset)->Fill(colM+(module%2)*160,rowM+iHalfStave*256);
     }
 
   }
   for (Int_t ieq=0; ieq<20; ieq++)
-    for (Int_t ierr=0; ierr<fAdvLogger->GetNrErrorCodes(); ierr++)
-      fAliITSQADataMakerRec->GetRawsData((2*ieq)+4+fRawsOffset)->Fill(ierr,fAdvLogger->GetNrErrors(ierr,ieq));
+    for (UInt_t ierr=0; ierr<fAdvLogger->GetNrErrorCodes(); ierr++)
+      fAliITSQADataMakerRec->GetRawsData((2*ieq)+4+fGenOffset)->Fill(ierr,fAdvLogger->GetNrErrors(ierr,ieq));
 
   fAdvLogger->Reset();
  
-  fAliITSQADataMakerRec->GetRawsData(43+fRawsOffset)->Fill(nDigitsL1);
-  fAliITSQADataMakerRec->GetRawsData(44+fRawsOffset)->Fill(nDigitsL2);
-  fAliITSQADataMakerRec->GetRawsData(45+fRawsOffset)->Fill(nDigitsL1,nDigitsL2);
+  fAliITSQADataMakerRec->GetRawsData(43+fGenOffset)->Fill(nDigitsL1);
+  fAliITSQADataMakerRec->GetRawsData(44+fGenOffset)->Fill(nDigitsL2);
+  fAliITSQADataMakerRec->GetRawsData(45+fGenOffset)->Fill(nDigitsL1,nDigitsL2);
   
   delete rawStreamSPD;  
   AliDebug(1,Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
@@ -233,13 +231,12 @@ void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 void AliITSQASPDDataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS - SPD -
-  fRecsOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
-
+  fGenOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
 
   TH1F* hlayer= new TH1F("LayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RecPointsList(hlayer, fSPDhRecs+fRecsOffset); 
+  fAliITSQADataMakerRec->Add2RecPointsList(hlayer, fSPDhRecs+fGenOffset); 
   fSPDhRecs++;
 
   TH1F** hmod = new TH1F*[2];
@@ -265,7 +262,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hmod[iLay]=new TH1F(name,title,fgknSPDmodules,0,fgknSPDmodules);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hmod[iLay], fSPDhRecs +fRecsOffset); 
+    fAliITSQADataMakerRec->Add2RecPointsList(hmod[iLay], fSPDhRecs +fGenOffset); 
     fSPDhRecs++;
 
     sprintf(name,"xLoc_SPD%d",iLay+1);
@@ -273,7 +270,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hxl[iLay]=new TH1F(name,title,100,-4.,4.);
     hxl[iLay]->GetXaxis()->SetTitle("Local x [cm]");
     hxl[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hxl[iLay], fSPDhRecs +fRecsOffset);
+    fAliITSQADataMakerRec->Add2RecPointsList(hxl[iLay], fSPDhRecs +fGenOffset);
     fSPDhRecs++;
 
     sprintf(name,"zLoc_SPD%d",iLay+1);
@@ -281,7 +278,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hzl[iLay]=new TH1F(name,title,100,-4.,4.);
     hzl[iLay]->GetXaxis()->SetTitle("Local z [cm]");
     hzl[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hzl[iLay], fSPDhRecs+fRecsOffset); 
+    fAliITSQADataMakerRec->Add2RecPointsList(hzl[iLay], fSPDhRecs+fGenOffset); 
     fSPDhRecs++;
 
     sprintf(name,"xGlob_SPD%d",iLay+1);
@@ -289,7 +286,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hxg[iLay]=new TH1F(name,title,100,-xlim[iLay],xlim[iLay]);
     hxg[iLay]->GetXaxis()->SetTitle("Global x [cm]");
     hxg[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hxg[iLay],fSPDhRecs+fRecsOffset);  
+    fAliITSQADataMakerRec->Add2RecPointsList(hxg[iLay],fSPDhRecs+fGenOffset);  
     fSPDhRecs++;
 
     sprintf(name,"yGlob_SPD%d",iLay+1);
@@ -297,7 +294,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hyg[iLay]=new TH1F(name,title,100,-xlim[iLay],xlim[iLay]);
     hyg[iLay]->GetXaxis()->SetTitle("Global y [cm]");
     hyg[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hyg[iLay], fSPDhRecs+fRecsOffset); 
+    fAliITSQADataMakerRec->Add2RecPointsList(hyg[iLay], fSPDhRecs+fGenOffset); 
     fSPDhRecs++;
 
     sprintf(name,"zGlob_SPD%d",iLay+1);
@@ -305,7 +302,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hzg[iLay]=new TH1F(name,title,150,-zlim[iLay],zlim[iLay]);
     hzg[iLay]->GetXaxis()->SetTitle("Global z [cm]");
     hzg[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hzg[iLay], fSPDhRecs+fRecsOffset); 
+    fAliITSQADataMakerRec->Add2RecPointsList(hzg[iLay], fSPDhRecs+fGenOffset); 
     fSPDhRecs++;
 
     sprintf(name,"r_SPD%d",iLay+1);
@@ -313,7 +310,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hr[iLay]=new TH1F(name,title,100,0.,10.);
     hr[iLay]->GetXaxis()->SetTitle("r [cm]");
     hr[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hr[iLay], fSPDhRecs+fRecsOffset);  
+    fAliITSQADataMakerRec->Add2RecPointsList(hr[iLay], fSPDhRecs+fGenOffset);  
     fSPDhRecs++;
 
     sprintf(name,"phi_SPD%d",iLay+1);
@@ -321,7 +318,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hphi[iLay]=new TH1F(name,title,600,0.,2*TMath::Pi());
     hphi[iLay]->GetXaxis()->SetTitle("#varphi [rad]");
     hphi[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hphi[iLay], fSPDhRecs+fRecsOffset);
+    fAliITSQADataMakerRec->Add2RecPointsList(hphi[iLay], fSPDhRecs+fGenOffset);
     fSPDhRecs++;
     
     sprintf(name,"SizeYvsZ_SPD%d",iLay+1);
@@ -329,7 +326,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hNyNz[iLay]=new TH2F(name,title,100,0.,100.,100,0.,100.);
     hNyNz[iLay]->GetXaxis()->SetTitle("z length");
     hNyNz[iLay]->GetYaxis()->SetTitle("y length");
-    fAliITSQADataMakerRec->Add2RecPointsList(hNyNz[iLay], fSPDhRecs+fRecsOffset); 
+    fAliITSQADataMakerRec->Add2RecPointsList(hNyNz[iLay], fSPDhRecs+fGenOffset); 
     fSPDhRecs++;
 
     sprintf(name,"phi_z_SPD%d",iLay+1);
@@ -337,7 +334,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hPhiZ[iLay]=new TH2F(name,title,150,-zlim[iLay],zlim[iLay],100,0.,2*TMath::Pi());
     hPhiZ[iLay]->GetXaxis()->SetTitle("Global z [cm]");
     hPhiZ[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
-    fAliITSQADataMakerRec->Add2RecPointsList(hPhiZ[iLay], fSPDhRecs+fRecsOffset);
+    fAliITSQADataMakerRec->Add2RecPointsList(hPhiZ[iLay], fSPDhRecs+fGenOffset);
     fSPDhRecs++;
 
   }
@@ -345,13 +342,13 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
   TH2F *hrPhi=new TH2F("r_phi_SPD","#varphi vs r - SPD",100,0.,10.,100,0.,2*TMath::Pi());
   hrPhi->GetXaxis()->SetTitle("r [cm]");
   hrPhi->GetYaxis()->SetTitle("#varphi [rad]");
-  fAliITSQADataMakerRec->Add2RecPointsList(hrPhi, fSPDhRecs+fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList(hrPhi, fSPDhRecs+fGenOffset);
   fSPDhRecs++;
 
   TH2F *hxy=new TH2F("x_y_SPD","Global y vs x - SPD",200,-10.,10.,200,-10.,10.);
   hxy->GetXaxis()->SetTitle("Global x [cm]");
   hxy->GetYaxis()->SetTitle("Global y [cm]");
-  fAliITSQADataMakerRec->Add2RecPointsList(hxy, fSPDhRecs+fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList(hxy, fSPDhRecs+fGenOffset);
   fSPDhRecs++;
 
   for (Int_t iLay=0;iLay<2;iLay++) {
@@ -360,7 +357,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hMultSPDcl[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDcl[iLay]->GetXaxis()->SetTitle("Cluster multiplicity");
     hMultSPDcl[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl[iLay], fSPDhRecs+fRecsOffset);
+    fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl[iLay], fSPDhRecs+fGenOffset);
     fSPDhRecs++;
   } 
 
@@ -368,7 +365,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
             new TH2F("MultCorrelation_SPD","Cluster multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDcl2MultSPDcl1->GetXaxis()->SetTitle("Clusters multiplicity (Layer 1)");
   hMultSPDcl2MultSPDcl1->GetYaxis()->SetTitle("Clusters multiplicity (Layer 2)"); 
-  fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl2MultSPDcl1, fSPDhRecs+fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl2MultSPDcl1, fSPDhRecs+fGenOffset);
   fSPDhRecs++;
 
   AliDebug(1,Form("%d SPD Recs histograms booked\n",fSPDhRecs));
@@ -401,44 +398,44 @@ void AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
 
         if (cluster->GetLayer()>1)        continue;
         Int_t lay=cluster->GetLayer();
-        fAliITSQADataMakerRec->GetRecPointsData(0 +fRecsOffset)->Fill(lay);
+        fAliITSQADataMakerRec->GetRecPointsData(0 +fGenOffset)->Fill(lay);
         cluster->GetGlobalXYZ(cluGlo);
         Float_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]);
         Float_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
         if (lay==0) {
-	  fAliITSQADataMakerRec->GetRecPointsData(1 +fRecsOffset)->Fill(iIts);
-	  fAliITSQADataMakerRec->GetRecPointsData(2 +fRecsOffset)->Fill(cluster->GetDetLocalX());
-	  fAliITSQADataMakerRec->GetRecPointsData(3 +fRecsOffset)->Fill(cluster->GetDetLocalZ());
-	  fAliITSQADataMakerRec->GetRecPointsData(4 +fRecsOffset)->Fill(cluGlo[0]);
-	  fAliITSQADataMakerRec->GetRecPointsData(5 +fRecsOffset)->Fill(cluGlo[1]);
-	  fAliITSQADataMakerRec->GetRecPointsData(6 +fRecsOffset)->Fill(cluGlo[2]);
-	  fAliITSQADataMakerRec->GetRecPointsData(7 +fRecsOffset)->Fill(rad);
-	  fAliITSQADataMakerRec->GetRecPointsData(8 +fRecsOffset)->Fill(phi);
-	  fAliITSQADataMakerRec->GetRecPointsData(9 +fRecsOffset)->Fill(cluster->GetNz(),cluster->GetNy());
-	  fAliITSQADataMakerRec->GetRecPointsData(10 +fRecsOffset)->Fill(cluGlo[2],phi);
+	  fAliITSQADataMakerRec->GetRecPointsData(1 +fGenOffset)->Fill(iIts);
+	  fAliITSQADataMakerRec->GetRecPointsData(2 +fGenOffset)->Fill(cluster->GetDetLocalX());
+	  fAliITSQADataMakerRec->GetRecPointsData(3 +fGenOffset)->Fill(cluster->GetDetLocalZ());
+	  fAliITSQADataMakerRec->GetRecPointsData(4 +fGenOffset)->Fill(cluGlo[0]);
+	  fAliITSQADataMakerRec->GetRecPointsData(5 +fGenOffset)->Fill(cluGlo[1]);
+	  fAliITSQADataMakerRec->GetRecPointsData(6 +fGenOffset)->Fill(cluGlo[2]);
+	  fAliITSQADataMakerRec->GetRecPointsData(7 +fGenOffset)->Fill(rad);
+	  fAliITSQADataMakerRec->GetRecPointsData(8 +fGenOffset)->Fill(phi);
+	  fAliITSQADataMakerRec->GetRecPointsData(9 +fGenOffset)->Fill(cluster->GetNz(),cluster->GetNy());
+	  fAliITSQADataMakerRec->GetRecPointsData(10 +fGenOffset)->Fill(cluGlo[2],phi);
  	} else  {
-          fAliITSQADataMakerRec->GetRecPointsData(11 +fRecsOffset)->Fill(iIts);
-          fAliITSQADataMakerRec->GetRecPointsData(12 +fRecsOffset)->Fill(cluster->GetDetLocalX());
-          fAliITSQADataMakerRec->GetRecPointsData(13 +fRecsOffset)->Fill(cluster->GetDetLocalZ());
-          fAliITSQADataMakerRec->GetRecPointsData(14 +fRecsOffset)->Fill(cluGlo[0]);
-          fAliITSQADataMakerRec->GetRecPointsData(15 +fRecsOffset)->Fill(cluGlo[1]);
-          fAliITSQADataMakerRec->GetRecPointsData(16 +fRecsOffset)->Fill(cluGlo[2]);
-          fAliITSQADataMakerRec->GetRecPointsData(17 +fRecsOffset)->Fill(rad);
-          fAliITSQADataMakerRec->GetRecPointsData(18 +fRecsOffset)->Fill(phi);
-          fAliITSQADataMakerRec->GetRecPointsData(19 +fRecsOffset)->Fill(cluster->GetNz(),cluster->GetNy());
-          fAliITSQADataMakerRec->GetRecPointsData(20 +fRecsOffset)->Fill(cluGlo[2],phi);
+          fAliITSQADataMakerRec->GetRecPointsData(11 +fGenOffset)->Fill(iIts);
+          fAliITSQADataMakerRec->GetRecPointsData(12 +fGenOffset)->Fill(cluster->GetDetLocalX());
+          fAliITSQADataMakerRec->GetRecPointsData(13 +fGenOffset)->Fill(cluster->GetDetLocalZ());
+          fAliITSQADataMakerRec->GetRecPointsData(14 +fGenOffset)->Fill(cluGlo[0]);
+          fAliITSQADataMakerRec->GetRecPointsData(15 +fGenOffset)->Fill(cluGlo[1]);
+          fAliITSQADataMakerRec->GetRecPointsData(16 +fGenOffset)->Fill(cluGlo[2]);
+          fAliITSQADataMakerRec->GetRecPointsData(17 +fGenOffset)->Fill(rad);
+          fAliITSQADataMakerRec->GetRecPointsData(18 +fGenOffset)->Fill(phi);
+          fAliITSQADataMakerRec->GetRecPointsData(19 +fGenOffset)->Fill(cluster->GetNz(),cluster->GetNy());
+          fAliITSQADataMakerRec->GetRecPointsData(20 +fGenOffset)->Fill(cluGlo[2],phi);
         }
-        fAliITSQADataMakerRec->GetRecPointsData(21 +fRecsOffset)->Fill(rad,phi);
-        fAliITSQADataMakerRec->GetRecPointsData(22 +fRecsOffset)->Fill(cluGlo[0],cluGlo[1]);
+        fAliITSQADataMakerRec->GetRecPointsData(21 +fGenOffset)->Fill(rad,phi);
+        fAliITSQADataMakerRec->GetRecPointsData(22 +fGenOffset)->Fill(cluGlo[0],cluGlo[1]);
 
 	nClusters[lay]++; 
       } // end of cluster loop
     } // end of its "subdetector" loop
 
     for (Int_t iLay=0; iLay<2; iLay++)
-      fAliITSQADataMakerRec->GetRecPointsData(23+iLay +fRecsOffset)->Fill(nClusters[iLay]);
+      fAliITSQADataMakerRec->GetRecPointsData(23+iLay +fGenOffset)->Fill(nClusters[iLay]);
 
-    fAliITSQADataMakerRec->GetRecPointsData(25 +fRecsOffset)->Fill(nClusters[0],nClusters[1]);
+    fAliITSQADataMakerRec->GetRecPointsData(25 +fGenOffset)->Fill(nClusters[0],nClusters[1]);
 
     if (itsClusters) {
       itsClusters->Delete();

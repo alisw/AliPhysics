@@ -86,7 +86,6 @@ fSDDDataMaker(NULL),
 fSSDDataMaker(NULL)
 {
   //copy ctor 
-  //printf("AliITSQADataMakerSim::AliITSQADataMakerSim   using copy ctor \n");
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle());
 }
@@ -107,7 +106,6 @@ void AliITSQADataMakerSim::StartOfDetectorCycle()
   AliDebug(1,"AliITSQADM::Start of ITS Cycle\n");
 
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->StartOfDetectorCycle();
-  //printf("AliITSQADataMakerSim::StartOfDetectorCycle() now launching fSDDDataMaker->StartOfDetectorCycle... \n");
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->StartOfDetectorCycle();
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->StartOfDetectorCycle();
 }
@@ -117,13 +115,13 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
 {
   // launch the QA checking
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
-  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list);  
-  //printf("AliITSQADataMakerSim::StartOfDetectorCycle() now launching fSDDDataMaker->EndOfDetectorCycle... \n");
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list);
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list);
   
   AliQAChecker *qac = AliQAChecker::Instance();
   AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
+  qacb->SetTaskOffset(fSPDDataMaker->GetOffset(), fSDDDataMaker->GetOffset(), fSSDDataMaker->GetOffset()); //Setting the offset for the QAChecker list
   qac->Run( AliQA::kITS , task, list);  //temporary skipping the checking
 }
 
@@ -137,7 +135,6 @@ void AliITSQADataMakerSim::InitDigits()
 	}
 	if(fSubDetector == 0 || fSubDetector == 2) {
  	  AliDebug(1,"AliITSQADM:: SDD InitDigits\n");
-//	  printf("AliITSQADataMakerSim::InitDigits()   launching AliITSQADM:: SDD InitDigits\n");
 	  fSDDDataMaker->InitDigits();
 	}
 	if(fSubDetector == 0 || fSubDetector == 3) {
@@ -151,7 +148,6 @@ void AliITSQADataMakerSim::MakeDigits(TClonesArray * digits)
 { 
   // Fill QA for RAW   
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeDigits(digits);
-  //printf("AliITSQADataMakerSim::MakeDigits()   launching fSDDDataMaker->MakeDigits with TClonesArray\n");
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeDigits(digits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits(digits);
 }
@@ -161,7 +157,6 @@ void AliITSQADataMakerSim::MakeDigits(TTree * digits)
 { 
   // Fill QA for RAW   
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeDigits(digits);
-  //printf("AliITSQADataMakerSim::MakeDigits()   launching fSDDDataMaker->MakeDigits with TTree\n");
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeDigits(digits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits(digits);
 }
@@ -176,7 +171,6 @@ void AliITSQADataMakerSim::InitSDigits()
   }
   if(fSubDetector == 0 || fSubDetector == 2) {
 	AliDebug(1,"AliITSQADM:: SDD InitSDigits\n");
-//	printf("AliITSQADataMakerSim::InitSDigits()   launching AliITSQADM:: SDD InitSDigits\n");
 	fSDDDataMaker->InitSDigits();
   }
   if(fSubDetector == 0 || fSubDetector == 3) {
@@ -189,8 +183,7 @@ void AliITSQADataMakerSim::InitSDigits()
 void AliITSQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 {
   // Fill QA for recpoints
-  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeSDigits(sdigits); 
-  //printf("AliITSQADataMakerSim::MakeSDigits()   launching fSDDDataMaker->MakeSDigits with TClonesArray\n");
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeSDigits(sdigits);
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeSDigits(sdigits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeSDigits(sdigits);
 }
@@ -199,8 +192,7 @@ void AliITSQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 void AliITSQADataMakerSim::MakeSDigits(TTree * sdigits)
 {
   // Fill QA for recpoints
-  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeSDigits(sdigits); 
-  //printf("AliITSQADataMakerSim::MakeSDigits()   launching fSDDDataMaker->MakeSDigits with TTree\n");
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeSDigits(sdigits);
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeSDigits(sdigits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeSDigits(sdigits);
 }
@@ -215,7 +207,6 @@ void AliITSQADataMakerSim::InitHits()
   }
   if(fSubDetector == 0 || fSubDetector == 2) {
 	AliDebug(1,"AliITSQADM:: SDD InitHits\n");
-//	printf("AliITSQADataMakerSim::InitHits()   launching AliITSQADM:: SDD InitHits\n");
 	fSDDDataMaker->InitHits();
   }
   if(fSubDetector == 0 || fSubDetector == 3) {
@@ -229,7 +220,6 @@ void AliITSQADataMakerSim::MakeHits(TClonesArray * hits)
 {
   // Fill QA for recpoints
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeHits(hits);
-  //printf("AliITSQADataMakerSim::MakeHits()   launching fSDDDataMaker->MakeHits with TClonesArray\n");
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeHits(hits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeHits(hits);
 }
@@ -239,7 +229,6 @@ void AliITSQADataMakerSim::MakeHits(TTree * hits)
 {
   // Fill QA for recpoints
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeHits(hits);
-  //printf("AliITSQADataMakerSim::MakeHits()   launching fSDDDataMaker->MakeHits with TTree\n");
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeHits(hits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeHits(hits);
 }

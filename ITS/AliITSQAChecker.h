@@ -35,7 +35,8 @@ friend class AliITSQASSDChecker;
 
 public:
   AliITSQAChecker(Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0) ;         // ctor
-  AliITSQAChecker(const AliITSQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fkOnline(kFALSE), fDet(0), fLDC(0), fSPDChecker(0), fSDDChecker(0), fSSDChecker(0) {;} // cpy ctor   
+  //AliITSQAChecker(Int_t SPDoffset, Int_t SDDoffset, Int_t SSDoffset, Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0) ;
+  AliITSQAChecker(const AliITSQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fkOnline(kFALSE), fDet(0), fLDC(0), fSPDOffset(0), fSDDOffset(0), fSSDOffset(0), fSPDChecker(0), fSDDChecker(0), fSSDChecker(0) {;} // cpy ctor   
   AliITSQAChecker& operator = (const AliITSQAChecker& qac) ; //operator =
   virtual ~AliITSQAChecker() {;} // dtor
   void SetMode(Bool_t kMode) { fkOnline = kMode; }
@@ -44,17 +45,21 @@ public:
   Bool_t GetMode() { return fkOnline; }
   Short_t GetSubDet() { return fDet; }
   Short_t GetLDC() { return fLDC; }
+  virtual void SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset);
 
  protected:
 
-  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
-  virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.;} ;
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list ) ;
+  virtual const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/, Int_t /*SubDetOffset*/) {return 0.;};
 
 private:
 
   Bool_t  fkOnline;
   Short_t fDet;  
   Short_t fLDC;
+  Int_t fSPDOffset; //starting point for the QACheck list
+  Int_t fSDDOffset;
+  Int_t fSSDOffset;
 
   AliITSQASPDChecker *fSPDChecker;  // SPD Checker
   AliITSQASDDChecker *fSDDChecker;  // SDD Checker

@@ -43,6 +43,7 @@ public:
   const Int_t Digits() { return fSPDhDigits; }
   const Int_t SDigits() { return fSPDhSDigits; }
   const Int_t Hits() { return fSPDhHits; }
+  Int_t GetOffset() { return fGenOffset; }
 
 private:
 
@@ -50,9 +51,7 @@ private:
   Int_t   fSPDhDigits;                        //number of booked SPD Digits histograms;
   Int_t   fSPDhSDigits;                       //number of booked SPD SDigits histograms;
   Int_t   fSPDhHits;                          //number of booked SPD Hits histograms;
-  Int_t   fDigitsOffset;                      // number of histo booked when SPD start
-  Int_t   fSDigitsOffset;                     // number of histo booked when SPD start
-  Int_t   fHitsOffset;                        // number of histo booked when SPD start
+  Int_t   fGenOffset;                         // qachecking offset       
   ClassDef(AliITSQASPDDataMakerSim,1)      // description 
 
 };
