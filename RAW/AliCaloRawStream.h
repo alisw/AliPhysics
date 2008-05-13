@@ -38,8 +38,19 @@ public :
   Bool_t           IsNewModule()   const {return GetModule() != GetPrevModule();}
   Bool_t           IsNewRow()      const {return (GetRow() != GetPrevRow()) || IsNewModule();}
   Bool_t           IsNewColumn()   const {return (GetColumn() != GetPrevColumn()) || IsNewRow();}
-  Bool_t           IsLowGain()     const {return (!fGain);} 
   Int_t            GetNRCU() const {return fNRCU;}
+
+  enum EAliCaloFlag { kLowGain=0, kHighGain=1, kTRUData=2, kLEDMonData=3 };
+  Bool_t           IsLowGain()     const {return (fCaloFlag == kLowGain);}
+  Bool_t           IsHighGain()    const {return (fCaloFlag == kHighGain);}
+  Bool_t           IsTRUData()     const {return (fCaloFlag == kTRUData);}
+  Bool_t           IsLEDMonData()  const {return (fCaloFlag == kLEDMonData);} 
+
+  Int_t GetCaloFlag() const { return fCaloFlag; } 
+  Int_t GetFilter() const { return fFilter; } 
+
+  void SkipData(EAliCaloFlag caloFlag=kLEDMonData) 
+    { fFilter |= (1<<caloFlag); }
 
 protected:
 
@@ -54,7 +65,8 @@ protected:
   Int_t            fPrevRow;      // index of previous row
   Int_t            fColumn;       // index of current column
   Int_t            fPrevColumn;   // index of previous column
-  Bool_t          fGain;         // low (0) or (1) high gain
+  Int_t            fCaloFlag;     // low (0) or (1) high gain; see enum EAliCaloFlag above
+  Int_t            fFilter; // default 0 = let everything through
   Int_t            fNRCU;   // number of RCU per (super)module
   Bool_t           fExternalMapping;   // use external mapping or create a default one
   AliAltroMapping *fMapping[4];   // pointers to ALTRO mapping

@@ -51,7 +51,8 @@ AliCaloRawStream::AliCaloRawStream(AliRawReader* rawReader, TString calo, AliAlt
   fPrevRow(-1),
   fColumn(-1),
   fPrevColumn(-1),
-  fGain(0),
+  fCaloFlag(0),
+  fFilter(0),
   fNRCU(0),
   fExternalMapping(kFALSE)
 {
@@ -92,7 +93,8 @@ AliCaloRawStream::AliCaloRawStream(const AliCaloRawStream& stream) :
   fPrevRow(-1),
   fColumn(-1),
   fPrevColumn(-1),
-  fGain(0),
+  fCaloFlag(0),
+  fFilter(0),
   fNRCU(0),
   fExternalMapping(kFALSE)
 {  
@@ -123,7 +125,7 @@ void AliCaloRawStream::Reset()
   // reset phos/emcal raw stream params
   AliAltroRawStream::Reset();
   fModule = fPrevModule = fRow = fPrevRow = fColumn = fPrevColumn = -1;
-  fGain = 0;
+  fFilter = fCaloFlag = 0;
 }
 
 //_____________________________________________________________________________
@@ -136,8 +138,15 @@ Bool_t AliCaloRawStream::Next()
   fPrevRow = fRow;
   fPrevColumn = fColumn;
   if (AliAltroRawStream::Next()) {
-    if (IsNewHWAddress())
+    if (IsNewHWAddress()) {
       ApplyAltroMapping();
+      if ( fFilter > 0 ) { // some data should be filtered out
+	if ( (fFilter & (1<<fCaloFlag)) != 0) {  
+	  // this particular data should be filtered out
+	  Next(); // go to the next address instead
+	}
+      }
+    }
     return kTRUE;
   }
   else
@@ -158,6 +167,6 @@ void AliCaloRawStream::ApplyAltroMapping()
   Short_t hwAddress = GetHWAddress();
   fRow = fMapping[rcuIndex]->GetPadRow(hwAddress);
   fColumn = fMapping[rcuIndex]->GetPad(hwAddress);
-  fGain = fMapping[rcuIndex]->GetSector(hwAddress);
+  fCaloFlag = fMapping[rcuIndex]->GetSector(hwAddress);
 
 }
