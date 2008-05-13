@@ -47,7 +47,10 @@
 #include "TTreeStream.h"
 #include "TFile.h"
 #include "TF1.h"
+#include "TGraphErrors.h"
 
+
+#include "TTreeStream.h"
 #include <iostream>
 #include <sstream>
 using namespace std;
@@ -159,7 +162,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //
   //
   //
-  FillHisto(tp1,tp2,s1,s2);
+  //
   //
   // Process function to fill fitters
   //
@@ -203,6 +206,43 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
 	"\n";
     }
   }
+  //
+  // Aplly cut selection 
+  /*
+    // Cuts to be justified with the debug streamer
+    //
+    TCut c1pt("abs((tp1.fP[4]+tp2.fP[4])*0.5)<5"); // pt cut
+    TCut cd1pt("abs(tp1.fP[4]-tp2.fP[4])<0.5");
+    TCut c1ptpull("abs((tp1.fP[4]-tp2.fP[4])/sqrt(tp1.fC[14]+tp2.fC[14]))<5");
+    TCut csy("sqrt(tp1.fC[0]+tp2.fC[0])<0.5");
+    TCut csz("sqrt(tp1.fC[2]+tp2.fC[2])<0.3");
+    TCut cphi("abs(v1.fElements[3])<1")
+    TCut ctheta("abs(v1.fElements[4])<1")
+    //
+    //
+    TCut acut =  c1ptpull+c1pt+cd1pt+csy+csz+cphi+ctheta;
+  */
+  //   1. pt cut
+  //   2. delta in curvature
+  //   3. pull in 1pt
+  //   4. sigma y
+  //   5. sigma z
+  //   6. angle phi
+  //   7. angle theta
+  Double_t sigma1pt  = TMath::Sqrt(tp1.GetSigma1Pt2()+tp1.GetSigma1Pt2());
+  Double_t delta1pt = (tp1.GetParameter()[4]-tp2.GetParameter()[4]);
+  Double_t pull1pt  = delta1pt/sigma1pt;
+  if (0.5*TMath::Abs(tp1.GetParameter()[4]+tp2.GetParameter()[4])>5) return;
+  if (TMath::Abs(delta1pt)>0.5) return;
+  if (TMath::Abs(pull1pt)>5)    return;
+  if (TMath::Sqrt(tp1.GetSigmaY2()+tp2.GetSigmaY2())>0.5)    return;
+  if (TMath::Sqrt(tp1.GetSigmaZ2()+tp2.GetSigmaZ2())>0.3)    return;
+  if (TMath::Abs(dydx1)>1.)    return;
+  if (TMath::Abs(dzdx1)>1.)    return;  
+  //
+  // fill resolution histograms - previous cut included
+  FillHisto(tp1,tp2,s1,s2);  
+  //
   Process12(t1,t2,GetOrMakeFitter12(s1,s2));
   Process9(t1,t2,GetOrMakeFitter9(s1,s2));
   Process6(t1,t2,GetOrMakeFitter6(s1,s2));
@@ -636,8 +676,10 @@ void AliTPCcalibAlign::FillHisto(const AliExternalTrackParam &tp1,
 					Int_t s1,Int_t s2) {
   //
   // Fill residual histograms
-  //
-  if (s2-s1==36) {//only inner-outer
+  // Innner-Outer
+  // Left right - x-y
+  // A-C side
+  if (TMath::Abs(s2%36-s1%36)<2 || TMath::Abs(s2%18-s1%18)==0)  {  
     GetHisto(kPhi,s1,s2,kTRUE)->Fill(TMath::ASin(tp1.GetSnp())-TMath::ASin(tp2.GetSnp()));    
     GetHisto(kTheta,s1,s2,kTRUE)->Fill(TMath::ATan(tp1.GetTgl())-TMath::ATan(tp2.GetTgl()));
     GetHisto(kY,s1,s2,kTRUE)->Fill(tp1.GetY()-tp2.GetY());
@@ -697,4 +739,89 @@ TH1 * AliTPCcalibAlign::GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t forc
   histo->SetDirectory(0);
   histoArray->AddAt(histo,GetIndex(s1,s2));
   return histo;
+}
+
+TGraphErrors * AliTPCcalibAlign::MakeGraph(Int_t sec0, Int_t sec1, Int_t dsec, 
+					   Int_t i0, Int_t i1, FitType type) 
+{
+  //
+  //
+  //
+  TMatrixD mat;
+  TObjArray *fitArray=0;
+  Double_t xsec[1000];
+  Double_t ysec[1000];
+  Int_t npoints=0;
+  for (Int_t isec = sec0; isec<=sec1; isec++){
+    Int_t isec2 = (isec+dsec)%72;    
+    switch (type) {
+    case k6:
+      GetTransformation6(isec,isec2,mat);break;
+    case k9:
+      GetTransformation9(isec,isec2,mat);break;
+    case k12:
+      GetTransformation12(isec,isec2,mat);break;
+    }
+    xsec[npoints]=isec;
+    ysec[npoints]=mat(i0,i1);
+    ++npoints;
+  }
+  TGraphErrors *gr = new TGraphErrors(npoints,xsec,ysec,0,0);
+  Char_t name[1000];
+  sprintf(name,"Mat[%d,%d]  Type=%d",i0,i1,type);
+  gr->SetName(name);
+  return gr;
+}
+
+void  AliTPCcalibAlign::MakeTree(const char *fname){
+  //
+  // make tree with alignment cosntant  -
+  // For  QA visualization
+  //
+  const Int_t kMinPoints=50;
+  TTreeSRedirector cstream(fname);
+  for (Int_t s1=0;s1<72;++s1)
+    for (Int_t s2=0;s2<72;++s2){
+      if (fPoints[GetIndex(s1,s2)]<kMinPoints) continue;
+      TMatrixD m6;
+      TMatrixD m9;
+      TMatrixD m12;
+      GetTransformation6(s1,s2,m6);
+      GetTransformation9(s1,s2,m9);
+      GetTransformation12(s1,s2,m12);
+      Double_t dy=0, dz=0, dphi=0,dtheta=0;
+      Double_t sy=0, sz=0, sphi=0,stheta=0;
+      Double_t ny=0, nz=0, nphi=0,ntheta=0;
+      TH1 * his=0;
+      his = GetHisto(kY,s1,s2);
+      if (his) { dy = his->GetMean(); sy = his->GetRMS(); ny = his->GetEntries();}
+      his = GetHisto(kZ,s1,s2);
+      if (his) { dz = his->GetMean(); sz = his->GetRMS(); nz = his->GetEntries();}
+      his = GetHisto(kPhi,s1,s2);
+      if (his) { dphi = his->GetMean(); sphi = his->GetRMS(); nphi = his->GetEntries();}
+      his = GetHisto(kTheta,s1,s2);
+      if (his) { dtheta = his->GetMean(); stheta = his->GetRMS(); ntheta = his->GetEntries();}
+      //
+      cstream<<"Align"<<
+	"s1="<<s1<<     // reference sector
+	"s2="<<s2<<     // sector to align
+	"m6.="<<&m6<<   // tranformation matrix
+	"m9.="<<&m9<<   // 
+	"m12.="<<&m12<<
+	//               hsitograms mean RMS and entries
+	"dy="<<dy<<
+	"sy="<<sy<<
+	"ny="<<ny<<
+	"dz="<<dz<<
+	"sz="<<sz<<
+	"nz="<<nz<<
+	"dphi="<<dphi<<
+	"sphi="<<sphi<<
+	"nphi="<<nphi<<
+	"dtheta="<<dtheta<<
+	"stheta="<<stheta<<
+	"ntheta="<<ntheta<<
+	"\n";
+    }
+
 }

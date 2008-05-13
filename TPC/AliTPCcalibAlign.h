@@ -16,10 +16,12 @@
 
 class AliExternalTrackParam;
 class AliTPCseed;
+class TGraphErrors;
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
   enum HistoType {kY=0, kZ =1, kPhi=2, kTheta=3};
+  enum FitType{ k6=0, k9=1, k12};
   AliTPCcalibAlign();
   AliTPCcalibAlign(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibAlign();
@@ -28,6 +30,10 @@ public:
   virtual void Terminate();  
   //
   virtual void EvalFitters();
+  TH1 * GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t force=kFALSE);
+  void  MakeTree(const char *fname="alignTree.root");
+  TGraphErrors * MakeGraph(Int_t sec0, Int_t sec1, Int_t dsec, 
+			   Int_t i0, Int_t i1, FitType type); 
   void ProcessTracklets(const AliExternalTrackParam &t1,
 			const AliExternalTrackParam &t2,
 			Int_t s1,Int_t s2);
@@ -40,7 +46,6 @@ public:
   Bool_t GetTransformation12(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a);
-  TH1 * GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t force=kFALSE);
 //   Bool_t GetTransformationCovar12(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar9(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);

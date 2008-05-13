@@ -59,6 +59,7 @@ AliTPCTracklet::AliTPCTracklet(const AliTPCseed *track,Int_t sector,
   
   for (Int_t i=0;i<160;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (c && c->GetType()<0) continue;
     if (c&&c->GetDetector()==sector)
       ++fNClusters;
   }
@@ -67,6 +68,7 @@ AliTPCTracklet::AliTPCTracklet(const AliTPCseed *track,Int_t sector,
     fClusters=new AliTPCclusterMI[fNClusters];
     for (Int_t i=0;i<160;++i) {
       AliTPCclusterMI *c=track->GetClusterPointer(i);
+      if (c && c->GetType()<0) continue;
       if (c&&c->GetDetector()==sector)
 	fClusters[fNStoredClusters]=*c;
       ++fNStoredClusters;
@@ -179,6 +181,9 @@ AliTPCTracklet::~AliTPCTracklet() {
 }
 
 void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
+  //
+  // Fit using Kalman filter
+  //
   AliTPCseed *t=new AliTPCseed(*track);
   if (!t->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-t->GetAlpha())) {
     delete t;
@@ -189,6 +194,7 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
   Int_t n=0;
   for (Int_t i=0;i<160;++i) {
     AliTPCclusterMI *c=t->GetClusterPointer(i);
+    if (c && c->GetType()<0) continue;
     if (c&&c->GetDetector()==sector) {
       if (n==1)	{
 	outerSeed->ResetCovariance(100.);
@@ -212,6 +218,7 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
   n=0;
   for (Int_t i=159;i>=0;--i) {
     AliTPCclusterMI *c=t->GetClusterPointer(i);
+    if (c && c->GetType()<0) continue;
     if (c&&c->GetDetector()==sector) {
       if (n==1)	{
 	innerSeed->ResetCovariance(100.);
@@ -272,6 +279,7 @@ void AliTPCTracklet::FitLinear(const AliTPCseed *track,Int_t sector,
   Double_t xmin=1000.;
   for (Int_t i=0;i<160;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (c && c->GetType()<0) continue;
     if (c&&c->GetDetector()==sector) {
       Double_t x=c->GetX();
       fy.AddPoint(&x,c->GetY());
@@ -381,6 +389,7 @@ void AliTPCTracklet::FitRiemann(const AliTPCseed *track,Int_t sector) {
   Double_t xmin=1000.;
   for (Int_t i=0;i<160;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (c && c->GetType()<0) continue;
     if (c&&c->GetDetector()==sector) {
       Double_t x=c->GetX();
       Double_t y=c->GetY();
@@ -414,6 +423,7 @@ void AliTPCTracklet::FitRiemann(const AliTPCseed *track,Int_t sector) {
   Double_t phi=0.;
   for (Int_t i=0;i<160;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (c && c->GetType()<0) continue;
     if (c&&c->GetDetector()==sector) {
       Double_t x=c->GetX();
       Double_t y=c->GetY();
@@ -504,6 +514,7 @@ TObjArray AliTPCTracklet::CreateTracklets(const AliTPCseed *track,
   Int_t sectors[72]={0};
   for (Int_t i=0;i<160;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (c && c->GetType()<0) continue;
     if (c)
       ++sectors[c->GetDetector()];
   }
