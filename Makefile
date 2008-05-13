@@ -74,6 +74,27 @@ CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
 endif
 
+
+#-------------------------------------------------------------------------------
+# ROOT Stuff
+ROOTCONFIG    := root-config
+ROOTLIBDIR    := $(shell $(ROOTCONFIG) --libdir)
+ROOTPLUGDIR   := $(ROOTLIBDIR)/$(dir $(shell $(ROOTCONFIG) --version))
+ROOTINCDIR    := $(shell $(ROOTCONFIG) --incdir)
+ROOTCLIBS     := $(shell $(ROOTCONFIG) --glibs) \
+			-lThread 		\
+			-lMinuit 		\
+			-lVMC 			\
+			-lEG 			\
+			-lGeom 			\
+			-lTreePlayer 		\
+			-lXMLIO 		\
+			-lProof 		\
+			-lProofPlayer 		\
+			-lMLP 			\
+			-lSpectrum 		\
+			-L$(ROOTPLUGDIR)
+
 #-------------------------------------------------------------------------------
 # Location where to install libraries and binaries and common header files
 
@@ -95,11 +116,11 @@ ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS \
       JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet
 
-ifneq ($(wildcard $(ROOTSYS)/include/TPythia8.h),)
+ifneq ($(shell $(ROOTCONFIG) --has-pythia8), no)
 ALIROOTMODULES += PYTHIA8
 endif 
 
-ifneq ($(wildcard $(ROOTSYS)/include/TGLIncludes.h),)
+ifneq ($(shell $(ROOTCONFIG) --has-opengl), no)
 ALIROOTMODULES += EVE
 endif 
 
@@ -140,8 +161,7 @@ ALIROOTMODULES += Flugg
 endif
 
 CERNMODULES := LHAPDF HIJING MICROCERN HERWIG
-
-ifneq ($(wildcard $(ROOTSYS)/include/TPythia6.h),)
+ifneq ($(wildcard $(ROOTINCDIR)/TPythia6.h),)
 CERNMODULES += PYTHIA6
 endif 
 
@@ -164,9 +184,6 @@ DEPINC     += $(GENINC)
 # Libraries will be linked against SHLIB
 # ROOT libraries 
 
-ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof -lProofPlayer -lMLP \
-               -lSpectrum
-
 ALILIBS	      := -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
                 -lITS -lPHOS -lACORDE -lHMPID -lVZERO -lZDC -lSTRUCT \
                 -lT0 -lEVGEN -lSTEER 
@@ -174,8 +191,10 @@ ALILIBS	      := -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
 LIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
 
 ARVERSIONFILE := $(EXPORTDIR)/ARVersion.h
-SVNREV := $(strip $(shell svn info | grep "Last Changed Rev:" | cut -d: -f2 ))
-SVNBRANCH := $(subst //alisoft.cern.ch/AliRoot/,,$(shell svn info | grep "URL:" | cut -d: -f3 ))
+SVNREV        := $(strip $(shell svn info | grep "Last Changed Rev:" | \
+			         cut -d: -f2 ))
+SVNBRANCH     := w$(subst //alisoft.cern.ch/AliRoot/,,\
+		    $(shell svn info | grep "URL:" | cut -d: -f3 ))
 
 #-------------------------------------------------------------------------------
 # default target
