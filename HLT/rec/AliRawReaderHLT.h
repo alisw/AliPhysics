@@ -30,7 +30,55 @@ class AliHLTOUTHandler;
 
 /**
  * @class AliRawReaderHLT
- * Handler of HLTOUT data for AliRawReader input.
+ * A specific AliRawReader for detector input replacement by HLTOUT data blocks.
+ *
+ * HLT components can produce output data in the detector ddl raw format.
+ * Data blocks of this format can be fed into the normal detector reconstruction
+ * without changes in the actual reconstruction code by means of the
+ * AliRawReaderHLT implementation of the AliRawReader.
+ *
+ * @section sec_alirawreaderhlt_concept Conceptual design
+ * The AliRawReader provides an abstract interface to the ddl raw data. All
+ * reconstruction code uses this interface to access the data.
+ * HLT components can send their data in the original ddl raw format. The only
+ * difference of such data blocks is the location since they are shipped as
+ * part of the HLTOUT data stream. The AliRawReaderHLT provides redirection of
+ * those data blocks.
+ *
+ * @section sec_alirawreaderhlt_usage   Selection of the HLTOUT data stream
+ * The input data of a detector can be replaced by the corresponding HLT
+ * data by calling the <tt>AliReconstruction::SetUseHLTData("...")</tt>, e.g.
+ * <pre>
+ *    AliReconstruction rec;
+ *    rec.SetUseHLTData("TPC TRD");
+ * </pre>
+ * will replace the input of TPC and TRD.
+ *
+ * @section sec_alirawreaderhlt_module  Module implementation
+ * In order to determine the equipment id for the data block, the HLT module
+ * must implement an HLTOUT handler of class AliHLTOUTHandlerEquId which is of 
+ * type @ref AliHLTModuleAgent::AliHLTOUTHandlerType ::kRawReader.
+ * The handler must implement the method
+ * <pre>
+ *  // AliHLTOUTHandlerEquId::ProcessData(AliHLTOUT*)
+ *  virtual int ProcessData(AliHLTOUT* pData);
+ * </pre>
+ * which returns the equipment id and eventually decodes data to be retrieved
+ * by calling AliHLTOUTHandler::GetProcessedData().
+ *
+ * Secondly, the AliHLTModuleAgent implementation of the module has to create
+ * the handler for the data blocks. Depending on the data type and specification,
+ * the the following interface methods return handler description and handler. 
+ * <pre>
+ *   int AliHLTModuleAgent::GetHandlerDescription(AliHLTComponentDataType dt,
+ *                                                AliHLTUInt32_t spec,
+ *                                                AliHLTOUTHandlerDesc& desc) const;
+ *
+ *   AliHLTOUTHandler* AliHLTModuleAgent::GetOutputHandler(AliHLTComponentDataType dt, 
+ *                                                         AliHLTUInt32_t spec);
+ * </pre>
+ *
+ * @ingroup alihlt_aliroot_reconstruction
  */
 class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
  public:

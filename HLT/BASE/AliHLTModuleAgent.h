@@ -288,6 +288,12 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 
   /**
    * Get handler description for a data block.
+   * Depending on the data type and data specification the handler must
+   * provide information
+   * - if it can handle the data block, and
+   * - details how it will handle it, mainly the type of the handler
+   *   @ref AliHLTOUTHandlerType
+   * 
    * @param dt        [in] data type of the block
    * @param spec      [in] specification of the block
    * @param desc      [out] handler description

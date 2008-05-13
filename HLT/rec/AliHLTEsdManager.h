@@ -34,7 +34,7 @@ class TFile;
  * E.g. the ESD from a data block of type {ESD_TREE,TPC} will be added to the
  * file AliHLTTPCESDs.root.
  *
- * @ingroup alihlt_out
+ * @ingroup alihlt_aliroot_reconstruction
  */
 class AliHLTEsdManager : public AliHLTLogging {
  public:

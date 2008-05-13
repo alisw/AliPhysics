@@ -20,10 +20,32 @@ class AliRawReader;
 class AliESDEvent;
 class AliHLTOUT;
 class AliHLTEsdManager;
+/**
+ * @defgroup alihlt_aliroot_reconstruction AliRoot reconstruction.
+ *
+ * Like all other ALICE detectors, HLT utilizes the AliReconstruction interface
+ * to implement a plugin for the AliRoot reconstruction. The reconstructor can be
+ * used to
+ * - run HLT analysis chains in the AliRoot reconstruction <br>
+ *   This option is mainly intended for the development and debugging cycle. HLT
+ *   chains can be defined by means of AliHLTConfiguration and can be run either
+ *   stand-alone or embedded into the AliReconstruction cycle.
+ * - run the default analysis chains <br>
+ *   HLT modules can define default analysis chains to be run during AliRoot
+ *   reconstruction.
+ * - handle the HLTOUT data<br>
+ *   The HLT output stream contains multiple data blocks produced by the various
+ *   components of the HLT chain. Each block might need different and even
+ *   detector specific processing, like e.g. the processing of ESD objects or the
+ *   handling of compressed data.
+ *
+ * The AliHLTReconstructor provides the main interface for this group.
+ * @ingroup alihlt_system
+ */
 
 /**
  * @class AliHLTReconstructor
- * AliHLTReconstructor AliRoot event reconstruction plug-in for the HLT.
+ * AliRoot event reconstruction plug-in for the HLT.
  * The AliHLTReconstructor holds an instance of the @ref AliHLTSystem
  * steering class. The actual reconstruction depends on the loaded component
  * libraries. Each library must implement a module agent (@ref AliHLTModuleAgent)
@@ -89,11 +111,11 @@ class AliHLTEsdManager;
  *      @ref sec_alihltreconstructor_hltout_proprietary
  *
  * @subsection sec_alihltreconstructor_hltout_esd ESD HLTOUT data
- * The frame work implements a standard handling of
- * ESD data blocks of type ::kAliHLTDataTypeESDTree {ESD_TREE:ANY}. ANY can be
+ * The framework implements a standard handling of ESD data
+ * blocks of type ::kAliHLTDataTypeESDTree {ESD_TREE:ANY}. \em ANY can be
  * any detector origin. Each ESD block contains the data of only one event,
  * the ESDs are merged by the AliHLTEsdManager and written to files of the
- * naming scheme AliHLT<DET>ESDs.root. The first ESD block is also copied
+ * naming scheme AliHLT\lt\em DET \gt ESDs.root. The first ESD block is also copied
  * to the hltEsd provided by the AliReconstruction. This is a temporary
  * solution as the handling and merging of HLT ESDs is under discussion.
  * At the time of writing (May 08) only the TPC HLT components produce ESD
@@ -101,19 +123,21 @@ class AliHLTEsdManager;
  * The module agent can provide a handler for multiple ESD data blocks, e.g.
  * for merging within one event prior to the writing. Instead of the individual
  * ESDs the one provided by the handler is passed to the AliHLTEsdManager. The
- * handler is of type AliHLTModuleAgent::AliHLTOUTHandlerType::kEsd
+ * handler is of type \link AliHLTModuleAgent::AliHLTOUTHandlerType kEsd \endlink.
  *
  * @subsection sec_alihltreconstructor_hltout_rawreader DDL raw HLTOUT data
  * The HLT can perform selective readout and produces a reduced amount of data
  * in the original raw ddl format. In order to feed this data from the HLTOUT
  * DDL links into the normal reconstruction, a handler of type 
- * @ref AliHLTModuleAgent::AliHLTOUTHandlerType::kRawReader must be implemented and provided by the
+ * \link AliHLTModuleAgent::AliHLTOUTHandlerType kRawReader \endlink must be
+ * implemented and provided by the
  * module agent. The handler has to derive the original equipment id from the
  * data type and specification of the block. The offline reconstruction does
- * not need to be changed or adapted at all.
+ * not need to be changed or adapted at all. See AliRawReaderHLT for details.
  *
  * @subsection sec_alihltreconstructor_hltout_rawstream Preprocessed Raw HLTOUT data
- * Handlers type @ref AliHLTModuleAgent::AliHLTOUTHandlerType::kRawStream are foreseen though at the time of writing (May 08) the
+ * Handlers of type \link AliHLTModuleAgent::AliHLTOUTHandlerType kRawStream \endlink
+ * are foreseen though at the time of writing (May 08) the
  * concept is not fixed. Advanced data compression algorithms can produce a
  * raw data format which is not convertible into the raw DDL data, e.g. lossy
  * compression techniques storing clusters parametrized regarding to tracks. A
@@ -121,15 +145,29 @@ class AliHLTEsdManager;
  * first stage of the offline reconstruction might need some adaptions.
  *
  * @subsection sec_alihltreconstructor_hltout_chain HLTOUT data fed into a chain
- * At the time of writing (May 08), handler type @ref AliHLTModuleAgent::AliHLTOUTHandlerType::kChain
+ * At the time of writing (May 08), handler type 
+ * \link AliHLTModuleAgent::AliHLTOUTHandlerType kChain \endlink
  * is foreseen but not yet implemented. Has to be discussed.
  *
  * @subsection sec_alihltreconstructor_hltout_proprietary Proprietary HLTOUT data
- * This is a handler of proprietary detector data, @ref AliHLTModuleAgent::AliHLTOUTHandlerType::kProprietary.
- * Handlers of this type do not have any standard output to the framework. Data
- * can be processed and stored to files.
+ * This is a handler of proprietary detector data. Handlers of type 
+ * \link AliHLTModuleAgent::AliHLTOUTHandlerType kProprietary \endlink
+ * do not have any standard output to the framework. Data can be processed and
+ * stored to files.
+ *
+ * @section sec_alihltreconstructor_helper Tools and helper functions
+ * @subsection sec_alihltreconstructor_hltout_standalone Stand-alone HLTOUT processing
+ * - HLTOUT processing from a digit file:
+ * <pre>
+ *  void ProcessHLTOUT(const char*, AliESDEvent*) const;
+ * </pre>
+ * - HLTOUT processing from an AliRawReader
+ * <pre>
+ *  void ProcessHLTOUT(AliRawReader*, AliESDEvent*) const;
+ * </pre>
  *
  * @ingroup alihlt_aliroot_reconstruction
+ * @section sec_alihltreconstructor_members Class members
  */
 class AliHLTReconstructor: public AliReconstructor, public AliHLTReconstructorBase {
 public:
