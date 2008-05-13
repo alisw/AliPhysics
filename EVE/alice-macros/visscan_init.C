@@ -94,15 +94,21 @@ void on_new_event()
 {
   try {
     TEvePointSet* itsc = its_clusters();
-    itsc->SetMarkerColor(5);
+    if (itsc) {
+      itsc->SetMarkerColor(5);
+    }
 
     TEvePointSet* tpcc = tpc_clusters();
-    tpcc->SetMarkerColor(4);
+    if (tpcc) {
+      tpcc->SetMarkerColor(4);
+    }
 
     TEvePointSet* trdc = trd_clusters();
-    trdc->SetMarkerColor(7);
-    trdc->SetMarkerStyle(4);
-    trdc->SetMarkerSize(0.5);
+    if (trdc) {
+      trdc->SetMarkerColor(7);
+      trdc->SetMarkerStyle(4);
+      trdc->SetMarkerSize(0.5);
+    }
   }
   catch(TEveException& exc) {
     printf("Exception loading ITS/TPC clusters: %s\n", exc.Data());

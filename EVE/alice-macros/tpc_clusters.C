@@ -30,18 +30,21 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 
   AliEveEventManager::AssertGeometry();
 
-  TEvePointSet* clusters = new TEvePointSet(kMaxCl);
-  clusters->SetOwnIds(kTRUE);
-
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("TPC");
 
-  AliTPCClustersRow *clrow=new AliTPCClustersRow();
+  TTree *cTree = rl->GetTreeR("TPC", false);
+  if (cTree == 0)
+    return 0;
+
+  AliTPCClustersRow *clrow = new AliTPCClustersRow();
   clrow->SetClass("AliTPCclusterMI");
   clrow->SetArray(kMaxCl);
-
-  TTree *cTree = rl->GetTreeR("TPC", false);
   cTree->SetBranchAddress("Segment", &clrow);
+
+  TEvePointSet* clusters = new TEvePointSet(kMaxCl);
+  clusters->SetOwnIds(kTRUE);
+
 
   Float_t maxRsqr = maxR*maxR;
   Int_t nentr=(Int_t)cTree->GetEntries();
