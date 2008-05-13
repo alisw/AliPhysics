@@ -36,6 +36,7 @@
 #include <TOrdCollection.h>
 #include "AliRun.h"
 #include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliStack.h"
 #include "AliHeader.h"
 #include "AliESDtrack.h"
@@ -49,20 +50,12 @@ ClassImp(AliRsnSelectorRL)
 //--------------------------------------------------------------------------------------------------------
 AliRsnSelectorRL::AliRsnSelectorRL(TTree*) :
   AliSelectorRL(),
+  AliRsnReader(),
   fOutputPath(0),
-  fDebugFlag(0),
-  fStoreKineInfo(0),
-  fCheckITSRefit(0),
-  fRejectFakes(0),
-  fCopyMomentum(0),
   fIsRunLoaderOpen(0),
   fRsnEventTree(0),
   fRsnEvent(0),
-  fRsnEventBranch(0),
-  fPIDMethod(kESDPID),
-  fPtLimit4PID(4.0),
-  fProbThreshold(0.0),
-  fMaxRadius(3.0)
+  fRsnEventBranch(0)
 {
 //
 // Constructor.
@@ -71,36 +64,25 @@ AliRsnSelectorRL::AliRsnSelectorRL(TTree*) :
 // - rejection of non-ITS-refitted tracks
 // - maximum distance allowed from primary vertex = 3.0 cm (beam pipe)
 //
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = 1.0;
 }
 
 AliRsnSelectorRL::~AliRsnSelectorRL() {
   Clear();
 }
+
 //--------------------------------------------------------------------------------------------------------
 AliRsnSelectorRL::AliRsnSelectorRL(const AliRsnSelectorRL& obj) :
   AliSelectorRL(), // not implemented a copy constructor for AliRsnSelectorRL
+  AliRsnReader(obj),
   fOutputPath(obj.fOutputPath),
-  fDebugFlag(obj.fDebugFlag),
-  fStoreKineInfo(obj.fStoreKineInfo),
-  fCheckITSRefit(obj.fCheckITSRefit),
-  fRejectFakes(obj.fRejectFakes),
-  fCopyMomentum(obj.fCopyMomentum),
   fIsRunLoaderOpen(obj.fIsRunLoaderOpen),
   fRsnEventTree(obj.fRsnEventTree),
   fRsnEvent(obj.fRsnEvent),
-  fRsnEventBranch(obj.fRsnEventBranch),
-  fPIDMethod(obj.fPIDMethod),
-  fPtLimit4PID(obj.fPtLimit4PID),
-  fProbThreshold(obj.fProbThreshold),
-  fMaxRadius(obj.fMaxRadius)
+  fRsnEventBranch(obj.fRsnEventBranch)
 {
 //
 // Copy constructor
 //
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = obj.fPrior[i];
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnSelectorRL& AliRsnSelectorRL::operator=(const AliRsnSelectorRL& obj) 
@@ -110,21 +92,11 @@ AliRsnSelectorRL& AliRsnSelectorRL::operator=(const AliRsnSelectorRL& obj)
 // works in the same way as the copy constructor
 //
 	if (this!=&obj) {
-		fDebugFlag = obj.fDebugFlag;
 		fOutputPath = obj.fOutputPath;
-		fStoreKineInfo = obj.fStoreKineInfo;
-		fCheckITSRefit = obj.fCheckITSRefit;
-		fRejectFakes = obj.fRejectFakes;
-		fCopyMomentum = obj.fCopyMomentum;
 		fIsRunLoaderOpen = obj.fIsRunLoaderOpen;
 		fRsnEventTree = obj.fRsnEventTree;
 		fRsnEvent = obj.fRsnEvent;
 		fRsnEventBranch = obj.fRsnEventBranch;
-		fPIDMethod=obj.fPIDMethod;
-		for (Int_t i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = obj.fPrior[i];
-		fPtLimit4PID = obj.fPtLimit4PID;
-		fProbThreshold = obj.fProbThreshold;
-		fMaxRadius = obj.fMaxRadius;
 	}
 	
 	return *this;
@@ -137,113 +109,13 @@ void AliRsnSelectorRL::Clear(Option_t * /*option*/)
   //
 }
 //--------------------------------------------------------------------------------------------------------
-Double_t* AliRsnSelectorRL::GetPIDprobabilities(AliRsnDaughter track) const
-{
-//
-// Computes PID probabilites starting from priors and weights
-//
-	Int_t i;
-	Double_t *prob = new Double_t[AliPID::kSPECIES];
-	
-	// step 1 - compute the normalization factor
-	Double_t sum = 0.0;
-	for (i = 0; i < AliPID::kSPECIES; i++) {
-		prob[i] = fPrior[i] * track.GetPIDweight(i);
-		sum += prob[i];
-	}
-	if (sum <= 0.0) return 0;
-	
-	// step 2 - normalize PID weights by the relative prior probability
-	for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-		prob[i] /= sum;
-	}
-	
-	return prob;
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnSelectorRL::Identify(AliRsnDaughter &track)
-{
-//
-// Identifies a track according to method selected
-//
-	Bool_t doESDPID = (fPIDMethod == kESDPID);
-	Bool_t keepRecSign = (fPIDMethod == kPerfectPIDwithRecSign);
-	
-	if (doESDPID) {
-		// when doing ESD PID it is supposed that charge sign
-		// comes from ESD track and it is not modified
-		Double_t pt = track.GetPt();
-		if (pt <= fPtLimit4PID) {
-	      Double_t *prob = GetPIDprobabilities(track);
-    	  if (!prob) track.SetPDG(0);
-	      Int_t idx[AliPID::kSPECIES];
-	      TMath::Sort(static_cast<Int_t>(AliPID::kSPECIES), prob, idx);
-	      Int_t imax = idx[0];
-    	  Double_t maxprob = prob[imax];
-	      if (maxprob >= fProbThreshold) {
-			track.SetPDG((UShort_t)AliPID::ParticleCode(imax));
-	      }
-     	 delete [] prob;
-    	}
-	    else {
-    	  track.SetPDG(0);
-    	}
-	}
-	else {
-	    Short_t truePDG = track.GetTruePDG();
-    	track.SetPDG((UShort_t)TMath::Abs(truePDG));
-		if (!keepRecSign) {
-			if (TMath::Abs(truePDG) <= 13) {
-				if (truePDG > 0) track.SetSign(-1); else track.SetSign(1);
-			}
-			else {
-				if (truePDG > 0) track.SetSign(1); else track.SetSign(-1);
-			}
-		}
-	}
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnSelectorRL::SetPriorProbabilities(Double_t *prior)
-{
-//
-// Set prior probabilities to be used in case of ESD PID.
-//
-	if (!prior) return;
-	Int_t i = 0;
-	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = prior[i];
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnSelectorRL::SetPriorProbability(AliPID::EParticleType type, Double_t value)
-{
-//
-// Sets prior probability referred to a single particle species.
-//
-	if (type >= AliPID::kElectron && type < AliPID::kPhoton) fPrior[type] = value;
-}
-//--------------------------------------------------------------------------------------------------------
-AliPID::EParticleType AliRsnSelectorRL::FindType(Int_t pdg)
-{
-//
-// Finds the enum value corresponding to a PDG code
-//
-	pdg = TMath::Abs(pdg);
-	switch (pdg) {
-		case   11: return AliPID::kElectron; break;
-		case   13: return AliPID::kMuon; break;
-		case  211: return AliPID::kPion; break;
-		case  321: return AliPID::kKaon; break;
-		case 2212: return AliPID::kProton; break;
-		default  : return AliPID::kPhoton;
-	}
-}
-//--------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------
 //             The following is Selector stuff
 //--------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------
-void AliRsnSelectorRL::Begin(TTree *)
+void AliRsnSelectorRL::Begin(TTree *) const
 {
 //
 // Implementation of BEGIN method
@@ -281,7 +153,7 @@ void AliRsnSelectorRL::Init(TTree *tree)
 	fRsnEventTree = new TTree("selection", "AliRsnEvents");
 	TTree::SetBranchStyle(1);
 	fRsnEvent = new AliRsnEvent;
-	fRsnEventBranch = fRsnEventTree->Branch("events", "AliRsnEvent", &fRsnEvent, 32000, 1);
+	fRsnEventBranch = fRsnEventTree->Branch("RsnEvents", "AliRsnEvent", &fRsnEvent, 32000, 1);
 	fRsnEventBranch->SetAutoDelete(kFALSE);
 }
 //--------------------------------------------------------------------------------------------------------
@@ -297,84 +169,14 @@ Bool_t AliRsnSelectorRL::Process(Long64_t entry)
 	AliStack* stack = GetStack();
 	if (!stack) {
 		Warning("Process", "NULL stack: cannot get kinematics info");
-		fStoreKineInfo = kFALSE;
-	}
-		
-	Int_t ntracks, nSelTracks = 0;
-		
-	// primary vertex
-	Double_t vertex[3];
-	vertex[0] = fESD->GetVertex()->GetXv();
-	vertex[1] = fESD->GetVertex()->GetYv();
-	vertex[2] = fESD->GetVertex()->GetZv();
-	
-	// multiplicity
-	ntracks = fESD->GetNumberOfTracks();
-	if (!ntracks) {
-		Warning("Process", "Event %d has no tracks!", entry);
-		return kFALSE;
-	}
-	if (fDebugFlag) Info("Process", "Number of ESD tracks : %d", ntracks);
-	
-	// create new AliRsnEvent object
-	fRsnEvent->Clear("DELETE");
-	fRsnEvent->Init();
-	
-	// store tracks from ESD
-	Int_t index, label;
-	Double_t vtot, v[3];
-	AliRsnDaughter track;
-	for (index = 0; index < ntracks; index++) {
-		if (fDebugFlag) Info("Process","Track # %d", index);
-		AliESDtrack *esdTrack = fESD->GetTrack(index);
-		
-		// check against vertex constraint
-		esdTrack->GetXYZ(v);
-		vtot  = (v[0] - vertex[0])*(v[0] - vertex[0]);
-		vtot += (v[1] - vertex[1])*(v[1] - vertex[1]);
-		vtot += (v[2] - vertex[2])*(v[2] - vertex[2]);
-		vtot  = TMath::Sqrt(vtot);
-		if (vtot > fMaxRadius) continue;
-		
-		// check for fakes
-		label = esdTrack->GetLabel();
-		if (fRejectFakes && (label < 0)) continue;
-		
-		// copy ESDtrack data into RsnDaughter (and make Bayesian PID)
-		if (!track.Adopt(esdTrack, fCheckITSRefit)) continue;
-		track.SetIndex(index);
-		
-		// if requested, get Kine info
-		if (fStoreKineInfo) {
-			if (fDebugFlag) Info("Process", "Getting part label=%d stack=%p", label, stack);
-			TParticle *part = stack->Particle(TMath::Abs(label));
-			if (fDebugFlag) Info("Process", "part=%p", part);
-			track.SetTruePDG(part->GetPdgCode());
-			Int_t mother = part->GetFirstMother();
-			track.SetMother(mother);
-			if (mother >= 0) {
-				TParticle *mum = stack->Particle(mother);
-				track.SetMotherPDG(mum->GetPdgCode());
-			}
-			// if requested, reconstructed momentum is replaced with true momentum
-			if (fCopyMomentum) track.SetPxPyPz(part->Px(), part->Py(), part->Pz());
-		}
-		
-		// identification
-		Identify(track);
-		
-		// store in TClonesArray
-		if (fDebugFlag) track.Print("SLITVPMNW");
-		fRsnEvent->AddTrack(track);
-		nSelTracks++;
 	}
 	
-	// compute total multiplicity
-	fRsnEvent->ComputeMultiplicity();
-	
-	// link to events tree and fill
-	fRsnEventTree->Fill();
-	
+	/*
+	AliESDEvent *esdEvent = new AliESDEvent(fESD);
+	AliRsnEvent *event = ReadESDEvent(esdEvent);
+	AddMCInfo(event, stack);
+	AddEvent(fRsnTree, event);
+	*/
 	return kTRUE;
 }
 //--------------------------------------------------------------------------------------------------------

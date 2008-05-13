@@ -48,8 +48,16 @@ Bool_t AliRsnDaughterCutPt::Pass(AliRsnDaughter *track) const
 // Cut on single track momentum.
 //
 	if (!AliRsnDaughterCut::Pass(track)) return kFALSE;
-	if (track->GetPt() < fPtMin) return kFALSE;
-	if (track->GetPt() > fPtMax) return kFALSE;
+	if (track->Pt() < fPtMin) return kFALSE;
+	if (track->Pt() > fPtMax) return kFALSE;
 	
 	return kTRUE;
+}
+//--------------------------------------------------------------------------------------------------------
+Bool_t AliRsnDaughterCutVt::Pass(AliRsnDaughter *track) const
+{
+//
+// Cut on impact parameter
+//
+    return (track->Vt() <= fVtMax);
 }

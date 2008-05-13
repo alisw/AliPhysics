@@ -12,503 +12,339 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
- 
-//-------------------------------------------------------------------------
-//                     Class AliRsnReader
+
 //
-//   Reader for conversion of ESD or Kinematics output into AliRsnEvent
-//   .....
-//   .....
-//   .....
-//   .....
-//   .....
-//   .....
-//   .....
+// ==== Class AliRsnReader ========
+//
+// This object reads a 'standard' event and converts it into the internal
+// format used for resonance analysis (AliRsnEvent).
+// 'Standard' event means ESD, standard AOD and MC event.
+//
+// The input-2-AliRsnEvent conversion is done through a class which reads
+// from AliAnalysisTaskSE, which is the standard analysis object. 
+// This class creates the AliRsnEvent's before the input event is read, 
+// so this class has not to 'create' a new outpu event, but instead it has 
+// to 'fill' one which has already been created elsewhere.
+// Then, the methods provided here accept an AliRsnEvent as argument passed
+// by reference, and they 'fill' this object using the data from the inputs
+// passed to them.
 // 
-// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
-//-------------------------------------------------------------------------
+// author: A. Pulvirenti
+// email : alberto.pulvirenti@ct.infn.it
+//
 
-#include <Riostream.h>
+#include "AliLog.h"
 
-#include <TH1.h>
-#include <TH3.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TArrayF.h>
-#include <TParticle.h>
-#include <TRandom.h>
-
-#include "AliRun.h"
-#include "AliESD.h"
-#include "AliStack.h"
-#include "AliHeader.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliRunLoader.h"
+#include "AliESDVertex.h"
 
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
+#include "AliAODVertex.h"
+
+#include "AliStack.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+
+#include "AliRsnParticle.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 #include "AliRsnReader.h"
 
 ClassImp(AliRsnReader)
-
-//--------------------------------------------------------------------------------------------------------
-AliRsnReader::AliRsnReader() :
+		
+//_____________________________________________________________________________
+AliRsnReader::AliRsnReader(Bool_t checkSplit, Bool_t rejectFakes) :
   TObject(),
-  fPIDMethod(kESDPID),
-  fPtLimit4PID(4.0),
-  fProbThreshold(0.0),
-  fMaxRadius(3.0),
-  fUseKineInfo(kFALSE),
-  fEvents(0x0)
+  fCheckSplit(checkSplit),
+  fRejectFakes(rejectFakes)
 {
-//
+//=========================================================
 // Constructor.
-// Initializes all working parameters to default values:
-// - ESD particle identification
-// - rejection of non-ITS-refitted tracks
-// - maximum distance allowed from primary vertex = 3.0 cm (beam pipe)
-//
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = 1.0;
+// Initializes the base-type data members:
+//   - management of fake tracks
+//=========================================================
 }
-//--------------------------------------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 AliRsnReader::AliRsnReader(const AliRsnReader &copy) : 
   TObject(copy),
-  fPIDMethod(copy.fPIDMethod),
-  fPtLimit4PID(copy.fPtLimit4PID),
-  fProbThreshold(copy.fProbThreshold),
-  fMaxRadius(copy.fMaxRadius),
-  fUseKineInfo(copy.fUseKineInfo),
-  fEvents(0x0)
+  fCheckSplit(copy.fCheckSplit),
+  fRejectFakes(copy.fRejectFakes)
 {
-//
+//=========================================================
 // Copy constructor.
-// Initializes all working parameters to same values of another simlar object.
-// TTree data member is not created.
-//
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = copy.fPrior[i];
+//=========================================================
 }
-//--------------------------------------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 AliRsnReader& AliRsnReader::operator=(const AliRsnReader &copy)
 {
-//
+//=========================================================
 // Assignment operator.
-// Initializes all working parameters to same values of another simlar object.
-// TTree data member is not created.
-//
-	fPIDMethod = copy.fPIDMethod;
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = copy.fPrior[i];
-	fPtLimit4PID = copy.fPtLimit4PID;
-	fProbThreshold = copy.fProbThreshold;
-	fMaxRadius = copy.fMaxRadius;
+//=========================================================
 	
-	fUseKineInfo = copy.fUseKineInfo;
-
-	fEvents = 0;
-	
+	fCheckSplit = copy.fCheckSplit;
+	fRejectFakes = copy.fRejectFakes;
 	return (*this);
 }
-//--------------------------------------------------------------------------------------------------------
-void AliRsnReader::Clear(Option_t *option)
-{
-//
-// Clear collection of filenames.
-// If requested with the option "DELETELIST", 
-// the collection object is also deleted.
-//
-	TString opt(option);
-	
-	if (!opt.CompareTo("TREE", TString::kIgnoreCase)) {
-		fEvents->Reset();
-		if (!opt.CompareTo("DELTREE", TString::kIgnoreCase)) {
-			delete fEvents;
-			fEvents = 0;
-		}
-	}
-}
-//--------------------------------------------------------------------------------------------------------
-Double_t* AliRsnReader::GetPIDprobabilities(AliRsnDaughter track) const
-{
-//
-// Computes PID probabilites starting from priors and weights
-//
-	Double_t *prob = new Double_t[AliPID::kSPECIES];
-	
-	Int_t i;
-	
-	// step 1 - compute the normalization factor
-	Double_t sum = 0.0;
-	for (i = 0; i < AliPID::kSPECIES; i++) {
-		prob[i] = fPrior[i] * track.GetPIDweight(i);
-		sum += prob[i];
-	}
-	if (sum <= 0.0) return 0;
-	
-	// step 2 - normalize PID weights by the relative prior probability
-	for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-		prob[i] /= sum;
-	}
-	
-	return prob;
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnReader::Identify(AliRsnDaughter &track)
-{
-//
-// Identifies a track according to method selected
-//
-	Bool_t doESDPID = (fPIDMethod == kESDPID);
-	Bool_t keepRecSign = (fPIDMethod == kPerfectPIDwithRecSign);
-	
-	if (doESDPID) {
-		// when doing ESD PID it is supposed that charge sign
-		// comes from ESD track and it is not modified
-		Double_t pt = track.GetPt();
-		if (pt <= fPtLimit4PID) {
-			Double_t *prob = GetPIDprobabilities(track);
-			if (!prob) track.SetPDG(0);
-			Int_t idx[AliPID::kSPECIES];
-			TMath::Sort(static_cast<Int_t>(AliPID::kSPECIES), prob, idx);
-			Int_t imax = idx[0];
-			Double_t maxprob = prob[imax];
-			if (maxprob >= fProbThreshold) {
-				track.SetPDG((UShort_t)AliPID::ParticleCode(imax));
-			}
-			delete [] prob;
-		}
-		else {
-			track.SetPDG(0);
-		}
-	}
-	else {
-		Short_t truePDG = track.GetTruePDG();
-		track.SetPDG((UShort_t)TMath::Abs(truePDG));
-		if (!keepRecSign) {
-			if (TMath::Abs(truePDG) <= 13) {
-				if (truePDG > 0) track.SetSign(-1); else track.SetSign(1);
-			}
-			else {
-				if (truePDG > 0) track.SetSign(1); else track.SetSign(-1);
-			}
-		}
-	}
-}
-//--------------------------------------------------------------------------------------------------------
-TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
-{
-//
-// Reads AliESD in a given path, with and "experimental" method.
-// When using this method, no Kinematics information is assumed
-// and particle identification is always done with the bayesian method.
-// No Kinematics informations are stored.
-// Allowed options (actually):
-// - "R" : reject tracks which do not have the flag "kITSRefit" set to TRUE
-// - "F" : reject 'fake' tracks (negative label)
-//
-	fPIDMethod = kESDPID;
 
-	TTree *events = new TTree("selection", "AliRsnEvents");
-	TTree::SetBranchStyle(1);
-	AliRsnEvent *event = new AliRsnEvent;
-	TBranch *branch = events->Branch("events", "AliRsnEvent", &event, 32000, 1);
-	branch->SetAutoDelete(kFALSE);
+//_____________________________________________________________________________
+Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent *mc)
+{
+//=========================================================
+// Filler from an ESD event.
+// Stores all tracks (if a filter is defined, it will store
+// only the ones which survive the cuts).
+// If a reference MC event is provided, it is used to store
+// the MC informations for each track (true PDG code, 
+// GEANT label of mother, PDG code of mother, if any).
+// When this is used, the 'source' flag of the output
+// AliRsnEvent object will be set to 'kESD'.
+//=========================================================
 	
-	// get path
-	TString strPath(path);
-	if (strPath.Length() < 1) return 0;
-	strPath += '/';
+	// set source flag
+	rsn->SetSource(AliRsnEvent::kESD);
 	
-	// evaluate options
-	TString opt(option);
-	opt.ToUpper();
-	Bool_t checkITSrefit = (opt.Contains("R"));
-	Bool_t rejectFakes = (opt.Contains("F"));
+	// retrieve stack (if possible)
+	AliStack *stack = 0x0;
+	if (mc) stack = mc->Stack();
 	
-	// opens ESD file
-	TFile *fileESD = TFile::Open(Form("%s/AliESDs.root", strPath.Data()));
-	if (!fileESD) return 0;
-	if (fileESD->IsOpen() == kFALSE) return 0;
-	TTree* treeESD = (TTree*)fileESD->Get("esdTree");
-	AliESD *esd = 0;
-	treeESD->SetBranchAddress("ESD", &esd);
-	Int_t nev = (Int_t)treeESD->GetEntries();
+	// get number of tracks
+	Int_t ntracks = esd->GetNumberOfTracks();
+	if (!ntracks) {
+	   AliWarning("No tracks in this event");
+	   return kFALSE;
+    }
+    
+    // if required with the flag, scans the event
+    // and searches all split tracks (= 2 tracks with the same label);
+    // for each pair of split tracks, only the better (best chi2) is kept
+    // and the other is rejected: this info is stored into a Boolean array
+    Int_t i1, i2, lab1, lab2;
+    Bool_t *accept = new Bool_t[ntracks];
+    for (i1 = 0; i1 < ntracks; i1++) accept[i1] = kTRUE;
+    if (fCheckSplit) {
+        for (i1 = 0; i1 < ntracks; i1++) {
+            AliESDtrack *trk1 = esd->GetTrack(i1);
+            lab1 = TMath::Abs(trk1->GetLabel());
+            for (i2 = i1+1; i2 < ntracks; i2++) {
+                AliESDtrack *trk2 = esd->GetTrack(i2);
+                lab2 = TMath::Abs(trk2->GetLabel());
+                // check if labels are equal
+                if (lab1 == lab2) {
+                    if (trk1->GetConstrainedChi2() > trk2->GetConstrainedChi2()) {
+                        accept[i1] = kTRUE;
+                        accept[i2] = kFALSE;
+                    }
+                    else {
+                        accept[i1] = kFALSE;
+                        accept[i2] = kTRUE;
+                    }
+                }
+            }
+        }
+    }
 	
-	// loop on events
-	Int_t i, nSelTracks = 0; 
+	// get primary vertex
 	Double_t vertex[3];
-	for (i = 0; i < nev; i++) {
+	vertex[0] = esd->GetVertex()->GetXv();
+	vertex[1] = esd->GetVertex()->GetYv();
+	vertex[2] = esd->GetVertex()->GetZv();
+	rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
 	
-		// message
-//		cout << "\rEvent " << i << flush;
-		treeESD->GetEntry(i);
-		
-		// primary vertex
-		vertex[0] = esd->GetVertex()->GetXv();
-		vertex[1] = esd->GetVertex()->GetYv();
-		vertex[2] = esd->GetVertex()->GetZv();
-		
-		// create new AliRsnEvent object
-		event->Clear("DELETE");
-		event->Init();
-				
-		// get number of tracks
-		Int_t ntracks = esd->GetNumberOfTracks();
-		if (!ntracks) continue;
-		
-		// store tracks from ESD
-		Int_t index, label;
-		Double_t vtot, v[3];
-		for (index = 0; index < ntracks; index++) {
-			
-			// get track
-			AliESDtrack *esdTrack = esd->GetTrack(index);
-			
-			// check against vertex constraint
-			esdTrack->GetXYZ(v);
-			vtot  = (v[0] - vertex[0])*(v[0] - vertex[0]);
-			vtot += (v[1] - vertex[1])*(v[1] - vertex[1]);
-			vtot += (v[2] - vertex[2])*(v[2] - vertex[2]);
-			vtot  = TMath::Sqrt(vtot);
-			if (vtot > fMaxRadius) continue;
-			
-			// check for ITS refit
-			if (checkITSrefit) {
-				if (!(esdTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
-			}
-			
-			// check for fakes
-			label = esdTrack->GetLabel();
-			if (rejectFakes && (label < 0)) continue;
-			
-			// create AliRsnDaughter (and make Bayesian PID)
-			AliRsnDaughter track;
-			if (!track.Adopt(esdTrack, checkITSrefit)) continue;
-			track.SetIndex(index);
-			track.SetLabel(label);
-			Identify(track);
-			
-			// store in TClonesArray
-			event->AddTrack(track);
-			nSelTracks++;
-		}
-		
-		// compute total multiplicity
-		event->ComputeMultiplicity();
-	
-		// link to events tree and fill
-		events->Fill();
-	}
-	
-	fileESD->Close();
-	return events;
+	// store tracks from ESD
+    Int_t  index, label, labmum;
+    Bool_t check;
+    AliRsnDaughter temp;
+    for (index = 0; index < ntracks; index++) {
+        // skip track recognized as the worse one in a splitted pair
+        if (!accept[index]) {
+            AliInfo(Form("Rejecting split track #%d in this event", index));
+            continue;
+        }
+        // get and check ESD track
+        AliESDtrack *esdTrack = esd->GetTrack(index);
+        label = esdTrack->GetLabel();
+        if (fRejectFakes && (label < 0)) continue;
+        // copy ESD track data into RsnDaughter
+        // if unsuccessful, this track is skipped
+        check = temp.Adopt(esdTrack);
+        if (!check) continue;
+        // if stack is present, copy MC info
+        if (stack) {
+            TParticle *part = stack->Particle(TMath::Abs(label));
+            if (part) {
+                temp.InitParticle(part);
+                labmum = part->GetFirstMother();
+                if (labmum >= 0) {
+                    TParticle *mum = stack->Particle(labmum);
+                    temp.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+                }
+            }
+        }
+        // set index and label and add this object to the output container
+        temp.SetIndex(index);
+        temp.SetLabel(label);
+        AliRsnDaughter *ptr = rsn->AddTrack(temp);
+        // if problems occurred while storing, that pointer is NULL
+        if (!ptr) AliWarning(Form("Failed storing track#%d", index));
+    }
+    
+    // compute total multiplicity
+    if (rsn->GetMultiplicity() <= 0) {
+        AliWarning("Zero Multiplicity in this event");
+        return kFALSE;
+    }
+    
+    return kTRUE;
 }
-//--------------------------------------------------------------------------------------------------------
-TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
+
+//_____________________________________________________________________________
+Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent *mc)
 {
-//
-// Reads AliESD in a given path, getting also informations from Kinematics.
-// In this case, the PID method used is the one selected with apposite setter.
-// Allowed options (actually):
-// - "R" : reject tracks which do not have the flag "kITSRefit" set to TRUE
-// - "F" : reject 'fake' tracks (negative label)
-// - "M" : use 'true' momentum instead of reconstructed one
-//
-	TTree *events = new TTree("selection", "AliRsnEvents");
-	TTree::SetBranchStyle(1);
-	AliRsnEvent *event = new AliRsnEvent;
-	TBranch *branch = events->Branch("events", "AliRsnEvent", &event, 32000, 1);
-	branch->SetAutoDelete(kFALSE);
+//=========================================================
+// Filler from an AOD event.
+// Stores all tracks (if a filter is defined, it will store
+// only the ones which survive the cuts).
+// If a reference MC event is provided, it is used to store
+// the MC informations for each track (true PDG code, 
+// GEANT label of mother, PDG code of mother, if any).
+// When this is used, the 'source' flag of the output
+// AliRsnEvent object will be set to 'kAOD'.
+//=========================================================
 	
-	// get path
-	TString strPath(path);
-	if (strPath.Length() < 1) return 0;
+    // set source flag
+	rsn->SetSource(AliRsnEvent::kAOD);
+    
+    // retrieve stack (if possible)
+	AliStack *stack = 0x0;
+	if (mc) stack = mc->Stack();
+    
+    // get number of tracks
+	Int_t ntracks = aod->GetNTracks();
+	if (!ntracks) {
+	   AliWarning("No tracks in this event");
+	   return kFALSE;
+    }
 	
-	// evaluate options
-	TString opt(option);
-	opt.ToUpper();
-	Bool_t checkITSrefit = (opt.Contains("R"));
-	Bool_t rejectFakes = (opt.Contains("F"));
-	Bool_t copyMomentum = (opt.Contains("M"));
-	
-	// opens ESD file
-	TFile *fileESD = TFile::Open(Form("%s/AliESDs.root", strPath.Data()));
-	if (!fileESD) return 0;
-	if (fileESD->IsOpen() == kFALSE) return 0;
-	TTree* treeESD = (TTree*)fileESD->Get("esdTree");
-	AliESD *esd = 0;
-	treeESD->SetBranchAddress("ESD", &esd);
-	Int_t nevRec = (Int_t)treeESD->GetEntries();
-	
-	// initialize run loader
-	AliRunLoader *runLoader = OpenRunLoader(path);
-	if (!runLoader) return 0;
-	Int_t nevSim = runLoader->GetNumberOfEvents();
-	
-	// check number of reconstructed and simulated events
-	if ( (nevSim != 0 && nevRec != 0) && (nevSim != nevRec) ) {
-		cerr << "Count mismatch: sim = " << nevSim << " -- rec = " << nevRec << endl;
-		return 0;
-	}
-	else if (nevSim == 0 && nevRec == 0) {
-		cerr << "Count error: sim = rec = 0" << endl;
-		return 0;
-	}
-	
-	// loop on events
-	Int_t i /*, procType*/, ntracks, nSelTracks = 0; 
+	// get primary vertex
 	Double_t vertex[3];
-	for (i = 0; i < nevRec; i++) {
+	vertex[0] = aod->GetPrimaryVertex()->GetX();
+	vertex[1] = aod->GetPrimaryVertex()->GetY();
+	vertex[2] = aod->GetPrimaryVertex()->GetZ();
+	rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
 	
-		// get event
-//		cout << "\rEvent " << i << " " << flush;
-		treeESD->GetEntry(i);
-		runLoader->GetEvent(i);
-				
-		// reject event if it is diffractive
-		//procType = ((AliGenPythiaEventHeader*)runLoader->GetHeader()->GenEventHeader())->ProcessType();
-		//if (procType == 92 || procType == 93 || procType == 94) {
-		//	cout << "Skipping diffractive event" << endl;
-		//	continue;
-		//}
-		
-		// get particle stack
-		AliStack *stack = runLoader->Stack();
-				
-		// primary vertex
-		vertex[0] = esd->GetVertex()->GetXv();
-		vertex[1] = esd->GetVertex()->GetYv();
-		vertex[2] = esd->GetVertex()->GetZv();
-		
-		// multiplicity
-		ntracks = esd->GetNumberOfTracks();
-		if (!ntracks) {
-			Warning("ReadTracksAndParticles", "Event %d has no tracks!", i);
-			continue;
-		}
-		
-		// create new AliRsnEvent object
-		event->Clear("DELETE");
-		event->Init();
-				
-		// store tracks from ESD
-		Int_t index, label;
-		Double_t vtot, v[3];
-		for (index = 0; index < ntracks; index++) {
-			
-			// get track
-			AliESDtrack *esdTrack = esd->GetTrack(index);
-			
-			// check against vertex constraint
-			esdTrack->GetXYZ(v);
-			vtot  = (v[0] - vertex[0])*(v[0] - vertex[0]);
-			vtot += (v[1] - vertex[1])*(v[1] - vertex[1]);
-			vtot += (v[2] - vertex[2])*(v[2] - vertex[2]);
-			vtot  = TMath::Sqrt(vtot);
-			if (vtot > fMaxRadius) continue;
-			
-			// check for fakes
-			label = esdTrack->GetLabel();
-			if (rejectFakes) {
-				if (label < 0) continue;
-			}
-			
-			// create AliRsnDaughter (and make Bayesian PID)
-			AliRsnDaughter track;
-			if (!track.Adopt(esdTrack, checkITSrefit)) continue;
-			track.SetIndex(index);
-			
-			// retrieve particle and get Kine info
-			TParticle *part = stack->Particle(TMath::Abs(label));
-			track.SetTruePDG(part->GetPdgCode());
-			Int_t mother = part->GetFirstMother();
-			track.SetMother(mother);
-			if (mother >= 0) {
-				TParticle *mum = stack->Particle(mother);
-				track.SetMotherPDG(mum->GetPdgCode());
-			}
-			if (copyMomentum) track.SetPxPyPz(part->Px(), part->Py(), part->Pz());
-			
-			// identification
-			Identify(track);
-			
-			// store in TClonesArray
-//			track.Print();
-			event->AddTrack(track);
-			nSelTracks++;
-		}
-		
-		// compute total multiplicity
-		event->ComputeMultiplicity();
-	
-		// link to events tree and fill
-		events->Fill();
-	}
-	
-	runLoader->UnloadKinematics();
-	delete runLoader;
-	fileESD->Close();
-	
-	return events;
+	// store tracks from ESD
+    Int_t  index, label, labmum;
+    Bool_t check;
+    AliAODTrack *aodTrack = 0;
+    AliRsnDaughter temp;
+    TObjArrayIter iter(aod->GetTracks());
+    while ( (aodTrack = (AliAODTrack*)iter.Next()) ) {
+        // retrieve index
+        index = aod->GetTracks()->IndexOf(aodTrack);
+        label = aodTrack->GetLabel();
+        if (fRejectFakes && (label < 0)) continue;
+        // copy ESD track data into RsnDaughter
+        // if unsuccessful, this track is skipped
+        check = temp.Adopt(aodTrack);
+        if (!check) continue;
+        // if stack is present, copy MC info
+        if (stack) {
+            TParticle *part = stack->Particle(TMath::Abs(label));
+            if (part) {
+                temp.InitParticle(part);
+                labmum = part->GetFirstMother();
+                if (labmum >= 0) {
+                    TParticle *mum = stack->Particle(labmum);
+                    temp.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+                }
+            }
+        }
+        // set index and label and add this object to the output container
+        temp.SetIndex(index);
+        temp.SetLabel(label);
+        AliRsnDaughter *ptr = rsn->AddTrack(temp);
+        // if problems occurred while storin, that pointer is NULL
+        if (!ptr) AliWarning(Form("Failed storing track#%d"));
+    }
+    
+    // compute total multiplicity
+    if (rsn->GetMultiplicity() <= 0) {
+        AliWarning("Zero multiplicity in this event");
+        return kFALSE;
+    }
+    
+    return kTRUE;
 }
-//--------------------------------------------------------------------------------------------------------
-void AliRsnReader::SetPriorProbabilities(Double_t *prior)
+
+//_____________________________________________________________________________
+Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
 {
-//
-// Set prior probabilities to be used in case of ESD PID.
-//
-	if (!prior) return;
+//=========================================================
+// Filler from an ESD event.
+// Stores all tracks which generate at least one 
+// TrackReference (a point in a sensitive volume).
+// In this case, the MC info is stored by default and 
+// perfect particle identification is the unique available.
+// When this is used, the 'source' flag of the output
+// AliRsnEvent object will be set to 'kMC'.
+//=========================================================
 	
-	Int_t i = 0;
-	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = prior[i];
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnReader::SetPriorProbability(AliPID::EParticleType type, Double_t value)
-{
-//
-// Sets prior probability referred to a single particle species.
-//
-	if (type >= AliPID::kElectron && type < AliPID::kPhoton) fPrior[type] = value;
-}
-//--------------------------------------------------------------------------------------------------------
-AliPID::EParticleType AliRsnReader::FindType(Int_t pdg)
-{
-//
-// Finds the enum value corresponding to a PDG code
-//
-	pdg = TMath::Abs(pdg);
-	switch (pdg) {
-		case   11: return AliPID::kElectron; break;
-		case   13: return AliPID::kMuon; break;
-		case  211: return AliPID::kPion; break;
-		case  321: return AliPID::kKaon; break;
-		case 2212: return AliPID::kProton; break;
-		default  : return AliPID::kPhoton;
-	}
-}
-//--------------------------------------------------------------------------------------------------------
-AliRunLoader* AliRsnReader::OpenRunLoader(const char *path)
-{
-//
-// Open the Run loader with events in a given path
-//
-	// clear gALICE
-	if (gAlice) {
-		delete gAlice;
-		gAlice = 0;
-	}
+	// set source flag
+	rsn->SetSource(AliRsnEvent::kMC);
 	
-	// initialize run loader
-	TString name(path);
-	name += "/galice.root";
-	AliRunLoader *runLoader = AliRunLoader::Open(name.Data());
-	if (runLoader) {
-		runLoader->LoadgAlice();
-		gAlice = runLoader->GetAliRun();
-		runLoader->LoadKinematics();
-		runLoader->LoadHeader();
-	}
+	// get number of tracks
+	Int_t ntracks = mc->GetNumberOfTracks();
+	if (!ntracks) {
+	   AliWarning("No tracks in this event");
+	   return kFALSE;
+    }
+    
+    AliStack *stack = mc->Stack();
 	
-	return runLoader;
+	// get primary vertex
+	TArrayF fvertex(3);
+	Double_t vertex[3];
+	mc->GenEventHeader()->PrimaryVertex(fvertex);
+	vertex[0] = (Double_t)fvertex[0];
+	vertex[1] = (Double_t)fvertex[1];
+	vertex[2] = (Double_t)fvertex[2];
+	rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
+	
+	// store tracks from MC
+    Int_t  index, labmum;
+    Bool_t check;
+    AliRsnDaughter temp;
+    for (index = 0; index < ntracks; index++) {
+        // get and check MC track
+        AliMCParticle *mcTrack = mc->GetTrack(index);
+        // if particle has no track references, it is rejected
+        if (mcTrack->GetNumberOfTrackReferences() <= 0) continue;
+        // try to insert in the RsnDaughter its data
+        check = temp.Adopt(mcTrack);
+        if (!check) continue;
+        labmum = temp.GetParticle()->Mother();
+        if (labmum >= 0) {
+            TParticle *mum = stack->Particle(labmum);
+            temp.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+        }
+        // if successful, set other data and stores it
+        temp.SetIndex(index);
+        temp.SetLabel(mcTrack->Label());
+        AliRsnDaughter *ptr = rsn->AddTrack(temp);
+        // if problems occurred while storin, that pointer is NULL
+        if (!ptr) AliWarning(Form("Failed storing track#%d", index));
+    }
+    
+    // compute total multiplicity
+    if (rsn->GetMultiplicity() <= 0) {
+        AliWarning("Zero multiplicity in this event");
+        return kFALSE;
+    }
+    
+    return kTRUE;
 }
