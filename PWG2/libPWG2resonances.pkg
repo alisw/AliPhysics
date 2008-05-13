@@ -1,8 +1,13 @@
-SRCS= RESONANCES/AliRsnDaughter.cxx \
+SRCS= RESONANCES/AliRsnParticle.cxx \
+      RESONANCES/AliRsnDaughter.cxx \
+      RESONANCES/AliRsnPID.cxx \
       RESONANCES/AliRsnDaughterCut.cxx RESONANCES/AliRsnDaughterCutPair.cxx \
       RESONANCES/AliRsnEvent.cxx \
-      RESONANCES/AliRsnReader.cxx RESONANCES/AliRsnSelectorRL.cxx \
-      RESONANCES/AliRsnAnalysis.cxx
+      RESONANCES/AliRsnReader.cxx \
+      RESONANCES/AliRsnReaderTask.cxx \
+      RESONANCES/AliRsnPair.cxx \
+      RESONANCES/AliRsnManager.cxx \
+      RESONANCES/AliRsnAnalysis.cxx \
 
 HDRS= $(SRCS:.cxx=.h) 
 
@@ -10,5 +15,5 @@ DHDR:=PWG2resonancesLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PYTHIA6
+EINCLUDE:= PYTHIA6 
 
