@@ -24,7 +24,7 @@ ELIBS    := EveBase EveDet EveHLT \
   RAWDatabase RAWDatarec RAWDatasim \
   HLTbase XMLParser
 
-PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lFTGL -lRGL -lEve $(SYSLIBS)
+PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL -lEve $(SYSLIBS)
 
 
 ifeq (macosx,$(ALICE_TARGET))
