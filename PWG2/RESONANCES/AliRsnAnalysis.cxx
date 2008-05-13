@@ -15,139 +15,151 @@
  
 //-------------------------------------------------------------------------
 //                     Class AliRsnAnalysis
-//            Reconstruction and analysis of a binary resonance
-// ........................................
-// ........................................
-// ........................................
-// ........................................
-// ........................................
-// 
-// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
-
-#include <Riostream.h>
+// This class is a manager to process one or more pair analysis with a 
+// given event sample, specified as a TTree passed to this object.
+// Each single pair analysis must be defined with its specifications, like
+// histogram binning, cuts and everything else.
+// This class utiliy consists in defining a unique event sample which is 
+// used for all pairs analysis, and all kinds of event mixing (if required).
+// All histograms computed in a single execution, are then saved into a file.
+// This object contains a two TObjArray's:
+//  - one to contain single event pair analysis objects (signal, like-sign)
+//  - one to contain all event-mixing pair analysis objects
+// When a new pair is added, it must be then specified in what container it 
+// must be placed, in order to avoid meaningless results.
+//       
+// author: A. Pulvirenti
+// email : alberto.pulvirenti@ct.infn.it
+//-------------------------------------------------------------------------
 
 #include <TH1.h>
 #include <TTree.h>
-#include <TDatabasePDG.h>
+#include <TFile.h>
+#include <TArray.h>
+#include <TClonesArray.h>
 
+#include "AliLog.h"
+#include "AliRsnPID.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnDaughterCut.h"
 #include "AliRsnDaughterCutPair.h"
 #include "AliRsnEvent.h"
+#include "AliRsnPair.h"
 #include "AliRsnAnalysis.h"
 
 ClassImp(AliRsnAnalysis)
 
-//--------------------------------------------------------------------------------------------------------
-AliRsnAnalysis::AliRsnAnalysis() :
+//_____________________________________________________________________________
+AliRsnAnalysis::AliRsnAnalysis(const char *branchName) :
   TObject(),
-  fRejectFakes(kFALSE),
-  fNBins(0),
-  fHistoMin(0.0),
-  fHistoMax(0.0),
-  fTrueMotherPDG(0),
-  fMixPairDefs(0x0),
-  fMixHistograms(0x0),
-  fPairDefs(0x0),
-  fHistograms(0x0),
-  fPairCuts(0x0),
-  fEventsTree(0x0)
+  fSkipUnbalanced(kFALSE),
+  fStep(1000),
+  fBranchName(branchName),
+  fMixMultCut(10),
+  fMixVzCut(0.5),
+  fNEvents(0),
+  fPID(0x0),
+  fPairs(0x0),
+  fMixPairs(0x0),
+  fTree(0x0),
+  fMatches(0x0),
+  fEvents(0x0)
 {
 //
 // Constructor
 // Initializes all pointers and collections to NULL.
 //
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fCuts[i] = 0;
 }
-//--------------------------------------------------------------------------------------------------------
-AliRsnAnalysis::AliRsnAnalysis(const AliRsnAnalysis &copy) : 
-  TObject(copy),
-  fRejectFakes(copy.fRejectFakes),
-  fNBins(copy.fNBins),
-  fHistoMin(copy.fHistoMin),
-  fHistoMax(copy.fHistoMax),
-  fTrueMotherPDG(copy.fTrueMotherPDG),
-  fMixPairDefs(0x0),
-  fMixHistograms(0x0),
-  fPairDefs(0x0),
-  fHistograms(0x0),
-  fPairCuts(0x0),
-  fEventsTree(0x0)
-{
-//
-// Copy constructor
-// Initializes all pointers and collections to NULL anyway,
-// but copies some settings from the argument.
-//
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fCuts[i] = 0;
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::AddCutPair(AliRsnDaughterCutPair *cut)
-{
-//
-// Add a cut on pairs.
-// This cut is global for all pairs.
-//
-	if (!fPairCuts) fPairCuts = new TObjArray(0);
-	fPairCuts->AddLast(cut);
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::AddCutSingle(AliPID::EParticleType type, AliRsnDaughterCut *cut)
-{
-//
-// Add a cut on single particles.
-// This cut must be specified for each particle type.
-//
-	if (type >= AliPID::kElectron && type <= AliPID::kProton) {
-		if (!fCuts[type]) fCuts[type] = new TObjArray(0);
-		fCuts[type]->AddLast(cut);
-	}
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::AddMixPairDef
-(AliPID::EParticleType p1, Char_t sign1, AliPID::EParticleType p2, Char_t sign2)
-{
-//
-// Adds a new pair definition to create a new histogram,
-// for the event mixing step.
-// If the pair defs array is NULL, it is initialized here.
-//
-	if (!fMixPairDefs) fMixPairDefs = new TObjArray(0);
-	fMixPairDefs->AddLast( new AliPairDef(p1, sign1, p2, sign2, 0, kFALSE) );
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::AddPairDef
-(AliPID::EParticleType p1, Char_t sign1, AliPID::EParticleType p2, Char_t sign2, Bool_t onlyTrue)
-{
-//
-// Adds a new pair definition to create a new histogram,
-// for the signal evaluation (same event) step.
-// If the pair defs array is NULL, it is initialized here.
-//
-	if (!fPairDefs) fPairDefs = new TObjArray(0);
-	fPairDefs->AddLast( new AliPairDef(p1, sign1, p2, sign2, fTrueMotherPDG, onlyTrue) );
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::Clear(Option_t* /* option */)
+
+
+//_____________________________________________________________________________
+void AliRsnAnalysis::Clear(Option_t *option)
 {
 //
 // Clear heap
 //
-	fHistograms->Clear("C");
-	fPairDefs->Clear("C");
-		
-	fMixHistograms->Clear("C");
-	fMixPairDefs->Clear("C");
-	
-	Int_t i;
-	for (i = 0; i < AliPID::kSPECIES; i++) fCuts[i]->Clear("C");
-	fPairCuts->Clear("C");
+	fPairs->Clear(option);
+    delete [] fMatches;
+    fMatches = 0;
+    delete fPID;
+    fPID = 0;
 }
-//--------------------------------------------------------------------------------------------------------
-Stat_t AliRsnAnalysis::EventMix(Int_t nmix, Int_t multDiffMax, Double_t vzDiffMax, Bool_t compareTotMult)
+
+//_____________________________________________________________________________
+void AliRsnAnalysis::SetEventsTree(TTree *tree)
+{
+//
+// Set the tree containing the events to be processed.
+// Counts also the number of events and stores it in a private datamember.
+// This can avoid the time-wasting entries count in a long TChain.
+//
+	fTree = tree;
+    fNEvents = tree->GetEntries();
+    AliInfo(Form("Total number of events to be processed: %d", fNEvents));
+    
+    // link branch
+    if (fEvents) delete fEvents;
+    fEvents = new TClonesArray("AliRsnEvent", 0);
+    fTree->SetBranchAddress(fBranchName.Data(), &fEvents);
+}
+
+
+//_____________________________________________________________________________
+void AliRsnAnalysis::AddPair(AliRsnPair *pair)
+{
+//
+// Add a pair of particle types to be analyzed.
+// Second argument tells if the added object is for event mixing.
+//
+    Bool_t mixing = pair->IsForMixing();
+	TObjArray* &target = mixing ? fMixPairs : fPairs;
+	if (!target) target = new TObjArray(0);
+	target->AddLast(pair);
+}
+
+
+//_____________________________________________________________________________
+Stat_t AliRsnAnalysis::Process()
+{
+//
+// Computes all invariant mass distributions defined in the AliRsnPair objects collected.
+// Depending on the kind of background evaluation method, computes also this one.
+//
+    AliInfo("Processing");
+
+	// create an iterator which run over all pairs
+	TObjArrayIter pairIterator(fPairs);
+	AliRsnPair *pair = 0;
+		
+    Bool_t usePID;
+	Stat_t nPairs = 0;
+    Int_t  i;
+	
+	// loop on events
+    for (i = 0; i < fNEvents; i++) {
+        // get entry
+        AliRsnEvent *event = Evt(i);
+        if (!event) continue;
+        // if requested, skip unbalanced events
+        if (fSkipUnbalanced && (event->GetNPos() == 0 || event->GetNNeg() == 0)) continue;
+        // adjust PID
+        usePID = AdjustPID(event);
+        // loop over the collection of pair defs
+        pairIterator.Reset();
+        while ( (pair = (AliRsnPair*)pairIterator.Next()) ) {
+            nPairs += pair->Process(event, event, usePID);
+        }
+        // message
+        if ((i+1) % fStep == 0) AliInfo(Form("%d events processed: %d pairs collected", i+1, (Int_t)nPairs));
+    }
+	
+	return nPairs;
+}
+
+
+//_____________________________________________________________________________
+Stat_t AliRsnAnalysis::EventMixing(Int_t nEventsToMix)
 {
 //
 // Performs event mixing.
@@ -166,349 +178,162 @@ Stat_t AliRsnAnalysis::EventMix(Int_t nmix, Int_t multDiffMax, Double_t vzDiffMa
 // If one wants to exchange the particle types, one has to add both combinations of particles
 // as different pair defs.
 //
-// EXAMPLE:
-// analysis->AddMixPairDef(AliRsnEvent::kPion, '+', AliRsnEvent::kKaon, '-');
-// analysis->AddMixPairDef(AliRsnEvent::kKaon, '-', AliRsnEvent::kPion, '+');
-//
-	// allocate the histograms array
-	Int_t i, npairdefs = (Int_t)fMixPairDefs->GetEntries();
-	fMixHistograms = new TObjArray(npairdefs);
-	TObjArray &histos = *fMixHistograms;
-	AliPairDef *pd = 0;
-	for (i = 0; i < npairdefs; i++) {
-		pd = (AliPairDef*)fMixPairDefs->At(i);
-		histos[i] = new TH1D(Form("hmix_%s", pd->GetName()), pd->GetTitle(), fNBins, fHistoMin, fHistoMax);
-	}
-	
-	// Link events branch
-	AliRsnEvent *event2 = new AliRsnEvent;
-	fEventsTree->SetBranchAddress("events", &event2);
-	
+
+    AliInfo("Processing");
+	// create an iterator which run over all pairs
+    if (!fMixPairs) {
+    	AliError("Uninitialized MIX array");
+        return 0.0;
+    }
+    if (fMixPairs->IsEmpty()) {
+    	AliError("No mixing pairs defined");
+        return 0.0;
+    }
+	TObjArrayIter pairIterator(fMixPairs);
+	AliRsnPair *pair = 0;
+    
+    // find matches for all events
+    if (fMatches) delete [] fMatches;
+    FindMatches(nEventsToMix);
+    		
 	// define variables to store data about particles
+	Bool_t usePID;
 	Stat_t nPairs = 0;
-	Int_t iev, ievmix, nEvents = (Int_t)fEventsTree->GetEntries();
-	
-	// loop on events
-	Int_t nmixed, mult1, mult2, diffMult;
-	Double_t vz1, vz2, diffVz;
+	Int_t iev, imatch, imatched, nEvents = fNEvents;
 	for (iev = 0; iev < nEvents; iev++) {
-	
 		// get event
-		event2->Clear("DELETE");
-		fEventsTree->GetEntry(iev);
-		
-		// copy this event into 'event 1'
-		AliRsnEvent *event1 = new AliRsnEvent(*event2);
-		
-		// get Z position of primary vertex
-		vz1 = event1->GetPrimaryVertexZ();
-		
-		// if total multiplicities must be used
-		// it is computed here
-		if (compareTotMult) {
-			mult1 = event1->GetMultiplicity();
-		}
-		else {
-			mult1 = 0;
-		}
-		
-		// message
-		if (iev % 10 == 0) cout << "\rMixing event " << iev << flush;
-		
-		// loop on pair definitions
-		for (i = 0; i < npairdefs; i++) {
-			
-			// get pair definition
-			pd = (AliPairDef*)fMixPairDefs->At(i);
-			
-			// get histogram reference
-			TH1D *histogram = (TH1D*)histos[i];
-			
-			// get multiplicity of particle type '2' in event '1'
-			if (!mult1) {
-				mult1 = (Int_t)event1->GetTracks(pd->GetSign2(), pd->GetParticle2())->GetEntries();
-			}
-			
-			// loop on events for mixing
-			nmixed = 0;
-			ievmix = iev;
-			while (nmixed < nmix) {
-				
-				// get other event (it starts from iev + 1, and 
-				// loops again to 0 if reachs end of tree)
-				ievmix++;
-				if (ievmix >= nEvents) ievmix -= nEvents;
-				
-				// if event-2-mix is equal to 'iev', then
-				// a complete loop has been done, and no more
-				// mixing can be done, even if they are too few
-				// then the loop breaks anyway
-				if (ievmix == iev) break;
-				
-				// get other event
-				event2->Clear("DELETE");
-				fEventsTree->GetEntry(ievmix);
-				
-				// get event stats related to event 2
-				vz2 = event2->GetPrimaryVertexZ();
-				if (compareTotMult) {
-					mult2 = event2->GetMultiplicity();
-				}
-				else {
-					mult2 = event2->GetTracks(pd->GetSign2(), pd->GetParticle2())->GetEntries();
-				}
-				
-				// fill histogram if checks are passed
-				diffMult = TMath::Abs(mult1 - mult2);
-				diffVz = TMath::Abs(vz1 - vz2);
-				if (diffVz <= vzDiffMax && diffMult <= multDiffMax) {
-					//cout << ievmix << " " << flush;
-					nPairs += Compute(pd, histogram, event1, event2);
-					nmixed++;
-				}
+		AliRsnEvent *evtry = Evt(iev);
+		if (!evtry) continue;
+		AdjustPID(evtry);
+		AliRsnEvent *event1 = new AliRsnEvent(*evtry);
+        // loop on matches
+        for (imatch = 0; imatch < nEventsToMix; imatch++) {
+        	imatched = (fMatches[iev])[imatch];
+            if (imatched < 0 || imatched > nEvents) continue;
+            // get other event
+            AliRsnEvent *event2 = Evt(imatched);
+            if (!event2) continue;
+            usePID = AdjustPID(event2);
+            if (fPID) event2->FillPIDArrays();
+            // loop on pair definitions
+            pairIterator.Reset();
+            while ( (pair = (AliRsnPair*)pairIterator.Next()) ) {
+            	// processing is done twice, exchanging the event arguments
+                // mix particles of type #1 from event #1 with particles of type #2 in event #2
+                nPairs += pair->Process(event1, event2, usePID);
+                // mix particles of type #1 from event #2 with particles of type #2 in event #1
+                nPairs += pair->Process(event2, event1, usePID);
 			}
 		}
-		
-		event1->Clear("DELETE");
 		delete event1;
 		event1 = 0;
-		
+		// message
+        if ((iev+1) % fStep == 0) AliInfo(Form("%d events processed: %d pairs collected", iev+1, (Int_t)nPairs));
 	} // end loop on events
-	cout << endl;
 	
 	return nPairs;
 }
-//--------------------------------------------------------------------------------------------------------
-Stat_t AliRsnAnalysis::Process()
-{
-//
-// Reads the list 'fPairDefs', and builds an inv-mass histogram for each definition.
-// For each event, particle of 'type 1' are combined with particles of 'type 2' as 
-// defined in each pair definition specified in the list, taking the list of both types
-// from the same event.
-// This method is supposed to evaluate the 'signal' of the resonance, containing the peak.
-// It can also be used when one wants to evaluate the 'background' with the 'wrong sign'
-// particle pairs.
-//
-	// allocate the histograms array in order to contain 
-	// as many objects as the number of pair definitionss
-	Int_t i, npairdefs = (Int_t)fPairDefs->GetEntries();
-	fHistograms = new TObjArray(npairdefs);
-	TObjArray &histos = *fHistograms;
-	
-	// loop over pair defs in order to retrieve the particle species chosen
-	// which are used to set an unique name for the output histogram
-	// There will be a direct correspondence between the inder of pairdef in its array
-	// and the corresponding histogram in the 'fHistograms' list.
-	AliPairDef *pd = 0;
-	for (i = 0; i < npairdefs; i++) {
-		pd = (AliPairDef*)fPairDefs->At(i);
-		histos[i] = new TH1D(Form("h_%s", pd->GetName()), pd->GetTitle(), fNBins, fHistoMin, fHistoMax);
-	}
-	
-	// Link events branch
-	AliRsnEvent *event = new AliRsnEvent;
-	fEventsTree->SetBranchAddress("events", &event);
-	
-	// define variables to store data about particles
-	Stat_t nPairs = 0;
-	Int_t iev, nEvents = (Int_t)fEventsTree->GetEntries();
-	
-	// loop on events
-	for (iev = 0; iev < nEvents; iev++) {
-	
-		// get event
-		event->Clear("DELETE");
-		fEventsTree->GetEntry(iev);
-		if (iev % 1000 == 0) cout << "\rProcessing event " << iev << flush;
-			
-		// loop over the collection of pair defs
-		for (i = 0; i < npairdefs; i++) {
-			pd = (AliPairDef*)fPairDefs->At(i);
-			TH1D *histogram = (TH1D*)histos[i];
-			// invoke AliPairDef method to fill histogram
-			nPairs += Compute(pd, histogram, event, event);
-		}
-		
-	} // end loop on events
-	cout << endl;
-	
-	return nPairs;
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::WriteHistograms() const
+
+
+//_____________________________________________________________________________
+void AliRsnAnalysis::SaveOutput(const char *fileName, const char *fileOpt) const
 {
 //
 // Writes histograms in current directory
 //
-	TH1D *histogram;
-	TObjArrayIter iter(fHistograms);
-	while ( (histogram = (TH1D*)iter.Next()) ) {
-		histogram->Write();
-	}
-	
-	if (fMixHistograms) {
-		TObjArrayIter iterMix(fMixHistograms);
-		while ( (histogram = (TH1D*)iterMix.Next()) ) {
-			histogram->Write();
-		}
-	}
+	TFile *file = TFile::Open(fileName, fileOpt);
+	AliRsnPair *pair = 0;
+    TObjArrayIter pairIterator(fPairs);
+    while ( (pair = (AliRsnPair*)pairIterator.Next()) ) pair->GetHistogram()->Write();
+    if (fMixPairs && !fMixPairs->IsEmpty()) {
+    	TObjArrayIter mixIterator(fMixPairs);
+        while ( (pair = (AliRsnPair*)mixIterator.Next()) ) pair->GetHistogram()->Write();
+	}       
+	file->Close();
 }
-//--------------------------------------------------------------------------------------------------------
-Stat_t AliRsnAnalysis::Compute
-(AliPairDef *pd, TH1D* &histogram, AliRsnEvent *event1, AliRsnEvent *event2)
-{
-//
-// Adds to the specified histogram the invariant mass spectrum calculated taking
-// particles of type 1 from event 1, and particles of type 2 from event 2.
-// Events can be equal (signal) or different (background with event mixing).
-//
-	// define two 'cursor' objects
-	AliRsnDaughter *track1 = 0, *track2 = 0;
-	
-	// define iterators for the two collections
-	if (!event1 || !event1->GetTracks(pd->GetSign1(), pd->GetParticle1())) {
-		Error("Compute", "Null pointer for particle 1 collection");
-		return 0.0;
-	}
-	if (!event2 || !event2->GetTracks(pd->GetSign2(), pd->GetParticle2())) {
-		Error("Compute", "Null pointer for particle 2 collection");
-		return 0.0;
-	}
-	TObjArrayIter iter1(event1->GetTracks(pd->GetSign1(), pd->GetParticle1()));
-	TObjArrayIter iter2(event2->GetTracks(pd->GetSign2(), pd->GetParticle2()));
-	
-	// define temporary variables for better code readability
-	Stat_t nPairs = 0;
-	
-	// loop on particle of type 1 (in event 1)
-	while ( (track1 = (AliRsnDaughter*)iter1.Next()) ) {
 
-		if (fRejectFakes && (track1->GetLabel() < 0)) continue;
-		if (!SingleCutCheck(pd->GetParticle1(), track1)) continue;
-		
-		iter2.Reset();
-		
-		// loop on particles of type 2 (in event 2)
-		while ( (track2 = (AliRsnDaughter*)iter2.Next()) ) {
-			
-			if (fRejectFakes && (track2->GetLabel() < 0)) continue;
-			if (event1 == event2 && track1->GetIndex() == track2->GetIndex()) continue;
-			if (!SingleCutCheck(pd->GetParticle2(), track2)) continue;
-			if (!PairCutCheck(track1, track2)) continue;
-					
-			/*
-			// check
-			Char_t sign1 = (track1->GetSign() > 0) ? '+' : '-';
-			Char_t sign2 = (track2->GetSign() > 0) ? '+' : '-';
-			Info("Compute", "Particle 1: PDG = %d, sign = %c --- Particle 2: PDG = %d, sign = %c", track1->GetTruePDG(), sign1, track2->GetTruePDG(), sign2);
-			*/
-				
-			// total 4-momentum
-			track1->SetMass(pd->GetMass1());
-			track2->SetMass(pd->GetMass2());
-			AliRsnDaughter sum = AliRsnDaughter::Sum(*track1, *track2);
-				
-			// if the choice to get ONLY true pairs is selected, a check is made on the mothers
-			if (pd->GetOnlyTrue()) {
-				// the 'sum' AliRsnDaughter object is initialized with
-				// the PDG code of the common mother (if it is the case)
-				if (TMath::Abs(sum.GetMotherPDG()) == TMath::Abs(fTrueMotherPDG)) {
-					histogram->Fill(sum.GetMass());
-					nPairs++;
-				}
-			}
-			else {
-				histogram->Fill(sum.GetMass());
-				nPairs++;
-			}	
-				
-		} // end loop 2
-				
-	} // end loop 1
-	
-	return nPairs;
-}
-//--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnAnalysis::SingleCutCheck(Int_t itype, AliRsnDaughter *track) const
+//_____________________________________________________________________________
+AliRsnEvent* AliRsnAnalysis::Evt(Int_t i)
 {
 //
-// Checks a track against single particle cuts (if defined)
+// Return the event stored in the TClonesArray corresponding
+// to the entry number passed as argument
 //
-	if (!fCuts[itype]) return kTRUE;
-	
-	TObjArrayIter iter(fCuts[itype]);
-	AliRsnDaughterCut *cut = 0;
-	while ( (cut = (AliRsnDaughterCut*)iter.Next()) ) {
-		if (!cut->Pass(track)) return kFALSE;
-	}
-	
-	return kTRUE;
+
+    if (!fEvents) return 0x0;
+    if (i < 0 || i >= fNEvents) return 0x0;
+    
+    fTree->GetEntry(i);
+    TObjArrayIter iter(fEvents);
+    AliRsnEvent *evt = (AliRsnEvent*)iter.Next();
+    return evt;
 }
-//--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnAnalysis::PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *track2) const
+
+//_____________________________________________________________________________
+void AliRsnAnalysis::FindMatches(Int_t nEventsToMatch)
 {
 //
-// Checks a pair against pair cuts (if defined)
+// Initializes the "fMatch" array and computes, for each event, the good matches 
+// for event mixing computations (if requested).
 //
-	if (!fPairCuts) return kTRUE;
-	
-	TObjArrayIter iter(fPairCuts);
-	AliRsnDaughterCutPair *cut = 0;
-	while ( (cut = (AliRsnDaughterCutPair*)iter.Next()) ) {
-		if (!cut->Pass(track1, track2)) return kFALSE;
+	Int_t    *mult    = new Int_t[fNEvents];
+    Double_t *vz      = new Double_t[fNEvents];
+    
+    // loop on events
+    Int_t iev;
+	for (iev = 0; iev < fNEvents; iev++) {
+		AliRsnEvent *event = Evt(iev);
+		if (!event) continue;
+        if (fSkipUnbalanced && (event->GetNPos() == 0 || event->GetNNeg() == 0)) continue;
+        vz[iev] = event->GetPrimaryVertexZ();
+        mult[iev] = event->GetMultiplicity();
 	}
-	
-	return kTRUE;
+    
+    // initialize arrays of matches and compute
+    Int_t imatch, nmatch, diffMult;
+    Double_t diffVz;
+    fMatches = new TArrayI[fNEvents];
+    for (iev = 0; iev < fNEvents; iev++) {
+    	fMatches[iev].Set(nEventsToMatch);
+        imatch = iev;
+        nmatch = 0;
+        while (nmatch < nEventsToMatch) {
+        	imatch++;
+            if (imatch >= fNEvents) imatch -= fNEvents;
+            if (imatch == iev) break;
+            diffMult = TMath::Abs(mult[iev] - mult[imatch]);
+            diffVz = TMath::Abs(vz[iev] - vz[imatch]);
+            if (diffMult <= fMixMultCut && diffVz <= fMixVzCut) {
+                (fMatches[iev])[nmatch] = imatch;
+                nmatch++;
+            }
+        }
+    }
+    
+    delete [] mult;
+    delete [] vz;
 }
-//--------------------------------------------------------------------------------------------------------
-AliRsnAnalysis::AliPairDef::AliPairDef
-(AliPID::EParticleType p1, Char_t sign1, AliPID::EParticleType p2, Char_t sign2, Int_t pdgMother, Bool_t onlyTrue) :
-  TNamed(),
-  fOnlyTrue(onlyTrue),
-  fTrueMotherPDG(pdgMother),
-  fMass1(0.0),
-  fSign1(sign1),
-  fParticle1(p1),
-  fMass2(0.0),
-  fSign2(sign2),
-  fParticle2(p2)
+
+
+//_____________________________________________________________________________
+Bool_t AliRsnAnalysis::AdjustPID(AliRsnEvent* &event)
 {
 //
-// Constructor for nested class
+// if a PID different from "native" has been chosen, particles are identified again
+// the AliRsnPair::Process method wants an argument (3rd) which is TRUE when PID must
+// be taken into account, and FALSE otherwise.
+// Returns de corresponding value of this flag for that method, according to the choice done.
 //
-	if (!fOnlyTrue) fTrueMotherPDG = 0;
-		
-	// instance a PDG database to recovery true masses of particles
-	TDatabasePDG *db = TDatabasePDG::Instance();
-	Int_t pdg1 = AliPID::ParticleCode((Int_t)p1);
-	Int_t pdg2 = AliPID::ParticleCode((Int_t)p2);
-	fMass1 = db->GetParticle(pdg1)->Mass();
-	fMass2 = db->GetParticle(pdg2)->Mass();
-	
-	// set name according to the chosen particles
-	fName.Append(Form("%s(%c)_%s(%c)", ParticleName(p1), sign1, ParticleName(p2), sign2));
-	fTitle.Append(Form("Inv. mass for %s(%c) and %s(%c)", ParticleName(p1), sign1, ParticleName(p2), sign2));
-	if (onlyTrue) {
-		fName.Append("_true");
-		fTitle.Append(" (true pairs)");
-	}
+//
+    
+    // if the fPID object is NULL, the native PID is used
+    if (!fPID) {
+        return kTRUE;
+    }
+    else {
+        fPID->Identify(event);
+        AliRsnPID::EMethod method = fPID->GetMethod();
+        if (method == AliRsnPID::kNone) return kFALSE;
+        else return kTRUE;
+    }
 }
-//--------------------------------------------------------------------------------------------------------
-Text_t* AliRsnAnalysis::AliPairDef::ParticleName(AliPID::EParticleType part) const
-{
-//
-// [PRIVATE]
-// Returns the name of the particle in text format
-//
-	if (part == AliPID::kElectron) return ("E");
-	else if (part == AliPID::kMuon) return ("Mu");
-	else if (part == AliPID::kPion) return ("Pi");
-	else if (part == AliPID::kKaon) return ("K");
-	else if (part == AliPID::kProton) return ("P");
-	else {
-		Warning("ParticleName", "Unrecognized value of EParticle argument");
-		return ("???");
-	}
-}
-//--------------------------------------------------------------------------------------------------------

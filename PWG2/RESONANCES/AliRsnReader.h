@@ -3,78 +3,57 @@
  * See cxx source for full Copyright notice                               *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//                      Class AliRsnEventReader
-//             
-//   Reader for conversion of ESD or Kinematics output into AliRsnEvent
-//   .....
-//   .....
-//   .....
-//   .....
+//
+// ==== Class AliRsnReader ========
+//
+// This object reads a 'standard' event and converts it into the internal
+// format used for resonance analysis (AliRsnEvent).
+// 'Standard' event means ESD, standard AOD and MC event.
+//
+// The input-2-AliRsnEvent conversion is done through a class which reads
+// from AliAnalysisTaskSE, which is the standard analysis object. 
+// This class creates the AliRsnEvent's before the input event is read, 
+// so this class has not to 'create' a new outpu event, but instead it has 
+// to 'fill' one which has already been created elsewhere.
+// Then, the methods provided here accept an AliRsnEvent as argument passed
+// by reference, and they 'fill' this object using the data from the inputs
+// passed to them.
 // 
-// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
-//-------------------------------------------------------------------------
+// author: A. Pulvirenti
+// email : alberto.pulvirenti@ct.infn.it
+//
 
-#ifndef AliRSNREADER_H
-#define AliRSNREADER_H
+#ifndef ALIRSNREADER_H
+#define ALIRSNREADER_H
 
-#include "AliPID.h"
-
-class TH3D;
-class TH1D;
-class TOrdCollection;
-class TTree;
-class AliRunLoader;
+class AliESDEvent;
+class AliAODEvent;
+class AliMCEvent;
+class AliRsnEvent;
 
 class AliRsnReader : public TObject
 {
 public:
-
-	enum EPIDMethod { 
-		kNoPID = 0,                  // no PID performed
-		kPerfectPID = 1,             // use Kinematics to simulate a 100% PID efficiency
-		kESDPID = 2,                 // use experimental ESD weights
-		kPerfectPIDwithRecSign = 3   // get particle type from Kine and charge sign from reconstruction
-	};
-
-	           AliRsnReader();
-		  	   AliRsnReader(const AliRsnReader& copy);
-			   AliRsnReader& operator=(const AliRsnReader& copy);
-	virtual   ~AliRsnReader() {Clear("DELTREE");}
+    
+	AliRsnReader(Bool_t checkSplit = kTRUE, Bool_t rejectFakes = kFALSE);
+	AliRsnReader(const AliRsnReader& copy);
+	AliRsnReader& operator=(const AliRsnReader& copy);
+	virtual ~AliRsnReader() {}
 	
-	void       Clear(Option_t *option = "");
-	TTree*     GetEvents() const {return fEvents;}
-	Double_t*  GetPIDprobabilities(AliRsnDaughter track) const;
-	void       Identify(AliRsnDaughter &track);
-	TTree*     ReadTracks(const char *path, Option_t *option="R");
-	TTree*     ReadTracksAndParticles(const char *path, Option_t *option="R");
-	void       SetMaxRadius(Double_t value) {fMaxRadius=value;}
-	void       SetPIDMethod(AliRsnReader::EPIDMethod pm) {fPIDMethod=pm;}
-	void       SetPriorProbabilities(Double_t *prior);
-	void       SetPriorProbability(AliPID::EParticleType type, Double_t p);
-	void       SetProbabilityThreshold(Double_t p) {fProbThreshold=p;}
-	void       SetPtLimit4PID(Double_t value) {fPtLimit4PID=value;}
-	void       SetUseKineInfo(Bool_t yesno = kTRUE) {fUseKineInfo=yesno;}
-	
+	void    SetCheckSplit(Bool_t doit = kTRUE) {fCheckSplit = doit;}
+	void    SetRejectFakes(Bool_t doit = kTRUE) {fRejectFakes = doit;}
+	Bool_t  FillFromESD(AliRsnEvent *rsn, AliESDEvent *event, AliMCEvent *refMC = 0);
+    Bool_t  FillFromAOD(AliRsnEvent *rsn, AliAODEvent *event, AliMCEvent *refMC = 0);
+    Bool_t  FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc);
+    
 protected:
 
-	AliPID::EParticleType FindType(Int_t pdg);
-	AliRunLoader*         OpenRunLoader(const char *path);
+    Bool_t  fCheckSplit;  // flag to check and remove split tracks
+    Bool_t  fRejectFakes; // flag to reject fake tracks (negative label)
 
-	EPIDMethod fPIDMethod;                //  PID method
-	Double_t   fPrior[AliPID::kSPECIES];  //  prior probabilities (in case of REAL pid)
-	Double_t   fPtLimit4PID; 			  //  maximum transverse momentum to accept realistic PID
-	Double_t   fProbThreshold;			  //  minimum required probability to accept realistic PID
-	Double_t   fMaxRadius;                //  maximum allowed distance from primary vertex
-	
-	Bool_t     fUseKineInfo;              //  set to TRUE to fill the fields 'fTruePDG', 'fMother' and 'fMotherPDG'
-	                                      //  of the AliRsnDaughter objects returned in the output
-	
-	TTree     *fEvents;                   //! tree of read events
-	
-	// Rsn event reader implementation
-	ClassDef(AliRsnReader,1)
+private:
+    
+	ClassDef(AliRsnReader, 1);
 };
 
 #endif
-

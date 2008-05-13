@@ -42,5 +42,19 @@ private:
 	
 	ClassDef(AliRsnDaughterCutPt,1)
 };
+//
+//-------------------------------------------------------------------------
+//
+class AliRsnDaughterCutVt : public AliRsnDaughterCut
+{
+public:
+			       AliRsnDaughterCutVt(Double_t max) : fVtMax(max) {}
+	virtual       ~AliRsnDaughterCutVt() {}
+	virtual Bool_t Pass(AliRsnDaughter *track) const;
+private:
+	Double_t fVtMax; // largest allowed transverse impact parameter
+	
+	ClassDef(AliRsnDaughterCutVt,1)
+};
 
 #endif
