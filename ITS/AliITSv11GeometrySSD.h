@@ -46,6 +46,7 @@ public:
   void SetLadder();						// Set Ladder
   void SetLayer();						// Set Layer
   void SetSSDCone();                    // Set SSD Cone
+  TGeoVolume* SetSSDCables();           // Set SSD Cables
   void Layer5(TGeoVolume* moth);        // Setting Layer 5 into mother volume
   void Layer6(TGeoVolume* moth);        // Setting Layer 6 into mother volume
   void LadderSupportLayer5(TGeoVolume* moth); // Setting Ladder Support of Layer 5
@@ -53,7 +54,7 @@ public:
   void EndCapSupportSystemLayer5(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 5
   void EndCapSupportSystemLayer6(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 6
   void SSDCone(TGeoVolume* moth); // Setting SSD Cone;
-  TGeoVolume* SetSSDCables();
+  void SSDCables(TGeoVolume* moth); // Setting SSD Cables;
 private:
   /////////////////////////////////////////////////////////////////////////////////
   // Names of the Sensitive Volumes of Layer 5 and Layer 6

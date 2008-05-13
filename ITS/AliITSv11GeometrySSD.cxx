@@ -494,21 +494,21 @@ const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay6Position = 2.5*fg
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkSSDLowerPConeRadius = 296.5*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeAngle = 39.0; 
-const Double_t AliITSv11GeometrySSD::fgkSSDPConeZLength[2] = {176.5*fgkmm,161.5*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeZLength[2] = {168.0*fgkmm,153.0*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeLittleHoleRadius = 317.5*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeLittleHoleLength = 20.*fgkmm;	
 const Double_t AliITSv11GeometrySSD::fgkSSDConeMiddleRadius = 350.*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeMiddleLength = 30.*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeMiddleWidth = 40.*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeUpRadius = 400.*fgkmm;
-const Double_t AliITSv11GeometrySSD::fgkSSDPConeUpMaxRadius = 460.*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeUpMaxRadius = 459.*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeUpMiddleRadius = 472.5*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeDownRadius = 282.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeTrapezoidAngle = 42.0;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeTrapezoidBasis = 200.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeExternalRadius = 492.5*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDPConeRadiusWidth = 16.75*fgkmm;
-const Double_t AliITSv11GeometrySSD::fgkSSDPConeLength = 176.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDPConeLength = 168.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDCentralSupportLength = 1020.*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDCentralSupportRadius = 297.5*fgkmm;  
 const Double_t AliITSv11GeometrySSD::fgkSSDCentralSupportWidth = 6.28*fgkmm;
@@ -7530,6 +7530,18 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   /////////////////////////////////////////////////////////////
  }
  ////////////////////////////////////////////////////////////////////////////////
+ void AliITSv11GeometrySSD::SSDCables(TGeoVolume* moth){
+  /////////////////////////////////////////////////////////////
+  // Setting SSD Cables
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert SSD Cables, mother is null!\n");
+    return;
+  };
+  TGeoVolume* ssdcables = SetSSDCables();
+  moth->AddNode(ssdcables,1);
+}
+ ////////////////////////////////////////////////////////////////////////////////
  TGeoVolume* AliITSv11GeometrySSD::SetSSDCables(){
   /////////////////////////////////////////////////////////////
   // Method generating SSDCables
@@ -7538,7 +7550,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   //////////////////////////////////////////////////////////////////////////////////////////////////
   TGeoVolumeAssembly* ssdcablesmother = new TGeoVolumeAssembly("SSDCables");
   Double_t ssdcablelayvertical = 0.05; // Internal variables to control overlapping with SDD cables
-  Double_t ssdcablelaylateral = 0.1;   // Internal variables to control overlapping with SDD cables
+  Double_t ssdcablelaylateral = 0.55;   // Internal variables to control overlapping with SDD cables
   Double_t ssdcablesfactor = 0.5;     // Internal variables to control overlapping with SDD cables
   //////////////////////////////////////////////////////////////////////////////////////////////////
   Double_t ssdcableslay5rigthsideradiusmin = fgkEndCapSupportMiddleRadius[0]+fgkSSDCablesLay5TubeRadiusMin;  
@@ -7851,7 +7863,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   Double_t ssdcablepatchpanel3BB26radiusmin[2];
   Double_t ssdcablepatchpanel3BB26radiusmax[2];
   Double_t ssdcablepatchpanel3RB26zsection[2];
-  ssdcablepatchpanel3BB26radiusmin[0] = ssdcableslay5pconrmin[3]-0.5*fgkSSDPatchPanelHeigth;
+  ssdcablepatchpanel3BB26radiusmin[0] = ssdcableslay5pconrmin[3]-0.5*fgkSSDPatchPanelHeigth+2.8;
   ssdcablepatchpanel3BB26radiusmax[0] = ssdcablepatchpanel3BB26radiusmin[0]
 									  + fgkSSDCablesLay5RightSideHeight
 									  + fgkSSDCablesLay6RightSideHeight+0.5*fgkSSDPatchPanelHeigth;
