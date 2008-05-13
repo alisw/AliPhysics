@@ -46,6 +46,11 @@ AliTRDarrayS::~AliTRDarrayS()
   // Default destructor
   //
 
+  if (fArray) {
+    delete [] fArray;
+    fArray = 0;
+  }
+
 }
 
 //_____________________________________________________________________________

@@ -229,15 +229,16 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
 UChar_t AliTRDdigitsManager::GetPadStatus(Int_t row, Int_t col, Int_t time
                                              , Int_t det) const
 {
-	//
-	// Returns the pad status for the requested pad
-	//
+  //
+  // Returns the pad status for the requested pad
+  //
 	
-	if(!GetDigits(det)){
-		return 0;
-	}
+  if (!GetDigits(det)) {
+    return 0;
+  }
 
-	return ((UChar_t)((AliTRDdataArrayDigits *) GetDigits(det))->GetPadStatus(row, col, time));
+  return ((UChar_t) ((AliTRDdataArrayDigits *) GetDigits(det))->GetPadStatus(row,col,time));
+
 }
 
 //_____________________________________________________________________________
@@ -508,7 +509,7 @@ void AliTRDdigitsManager::ClearIndexes(Int_t det)
   // Clear memory
   //
 
-  ((AliTRDSignalIndex*)fSignalIndexes->At(det))->ClearAll();  
+  ((AliTRDSignalIndex *) fSignalIndexes->At(det))->ClearAll();  
 
 }
 

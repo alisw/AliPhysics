@@ -125,8 +125,10 @@ AliTRDSignalIndex::~AliTRDSignalIndex()
   // Destructor
   //
 
-  delete fIndex;
-  fIndex = NULL;
+  if (fIndex) {
+    delete fIndex;
+    fIndex = NULL;
+  }
 
 }
 

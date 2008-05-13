@@ -138,6 +138,8 @@ AliTRDclusterizer::~AliTRDclusterizer()
   // AliTRDclusterizer destructor
   //
 
+  printf("----> AliTRDclusterizer::dtor\n");
+
   if (fRecPoints) 
     {
       fRecPoints->Delete();

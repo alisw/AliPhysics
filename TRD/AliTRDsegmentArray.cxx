@@ -49,7 +49,7 @@ AliTRDsegmentArray::AliTRDsegmentArray()
   ,fClass(0)
 {
   //
-   // Default constructor
+  // Default constructor
   //
 
 }
@@ -110,7 +110,8 @@ AliTRDsegmentArray::~AliTRDsegmentArray()
   // AliTRDsegmentArray destructor
   //
 
-  Delete();
+  // Needed ????
+  //Delete();
 
   if (fNSegment) {
     fSegment->Delete();
@@ -304,7 +305,7 @@ void AliTRDsegmentArray::ClearSegment(Int_t index)
   //
 
   if (fSegment->At(index)) {
-    delete fSegment->RemoveAt(index);
+    fClass->Destructor(fSegment->RemoveAt(index)); 
   }
 
 }
