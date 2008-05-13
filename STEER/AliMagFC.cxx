@@ -126,4 +126,48 @@ void AliMagFC::ZDCField(Float_t *x, Float_t *b) const
 	}
     }
     
+// *************************** LEFT LINE ***********************************************
+    
+    if(x[2] > kCORBEG2l && x[2] < kCOREND2l){
+	if(rad2<kCOR2RA2l){
+	    b[0] = kFCORN2l;
+	}
+    }          
+    else if(x[2] > kZ1BEGl && x[2] < kZ1ENDl){  
+	if(rad2<kZ1RA2l){
+	// First quadrupole of inner triplet de-focussing in x-direction
+	    b[0] = -kG1l*x[1];
+	    b[1] = -kG1l*x[0];
+	}
+    }
+    else if(x[2] > kZ2BEGl && x[2] < kZ2ENDl){  
+	if(rad2<kZ2RA2l){
+	    b[0] = kG1l*x[1];
+	    b[1] = kG1l*x[0];
+	}
+    }
+    else if(x[2] > kZ3BEGl && x[2] < kZ3ENDl){  
+	if(rad2<kZ3RA2l){
+	    b[0] = kG1l*x[1];
+	    b[1] = kG1l*x[0];
+	}
+    }
+    else if(x[2] > kZ4BEGl && x[2] < kZ4ENDl){  
+	if(rad2<kZ4RA2l){
+	    b[0] = -kG1l*x[1];
+	    b[1] = -kG1l*x[0];
+	}
+    }
+    else if(x[2] > kD1BEGl && x[2] < kD1ENDl){ 
+	if(rad2<kD1RA2l){
+	    b[1] = kFDIPl;
+	}
+    }
+    else if(x[2] > kD2BEGl && x[2] < kD2ENDl){
+	if(((x[0]-kXCEN1D2l)*(x[0]-kXCEN1D2l)+(x[1]-kYCEN1D2l)*(x[1]-kYCEN1D2l))<kD2RA2l
+	   || ((x[0]-kXCEN2D2l)*(x[0]-kXCEN2D2l)+(x[1]-kYCEN2D2l)*(x[1]-kYCEN2D2l))<kD2RA2l){
+	    b[1] = -kFDIPl;
+	}
+    }
+    
 }
