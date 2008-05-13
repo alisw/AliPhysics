@@ -13,8 +13,10 @@ MakeResidualAlignment()
   if (!TGeoManager::Import("geometry.root")) 
     gAlice->Init("$ALICE_ROOT/FMD/Config.C");
   AliCDBManager* cdb   = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
-  
+  if(!cdb->IsDefaultStorageSet()) 
+    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+  AliLog::SetModuleDebugLevel("FMD", 1);
   gSystem->Load("libFMDutil.so");
   AliFMDAlignFaker f(AliFMDAlignFaker::kAll, "geometry.root", "residual.root");
   f.SetComment("Residual alignment for PDC06");

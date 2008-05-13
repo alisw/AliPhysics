@@ -453,7 +453,7 @@ Config()
   // Used detectors 
   // 
   Bool_t useABSO  = kFALSE; 
-  Bool_t useACORDE   = kFALSE; 
+  Bool_t useACORDE= kFALSE; 
   Bool_t useDIPO  = kFALSE; 
   Bool_t useFMD   = kTRUE; 
   Bool_t useFRAME = kFALSE; 
@@ -462,11 +462,11 @@ Config()
   Bool_t useMAG   = kFALSE; 
   Bool_t useMUON  = kFALSE; 
   Bool_t usePHOS  = kFALSE; 
-  Bool_t usePIPE  = kFALSE; 
+  Bool_t usePIPE  = kTRUE; 
   Bool_t usePMD   = kFALSE; 
-  Bool_t useHMPID  = kFALSE; 
+  Bool_t useHMPID = kFALSE; 
   Bool_t useSHIL  = kFALSE; 
-  Bool_t useT0 = kFALSE; 
+  Bool_t useT0    = kFALSE; 
   Bool_t useTOF   = kFALSE; 
   Bool_t useTPC   = kFALSE;
   Bool_t useTRD   = kFALSE; 

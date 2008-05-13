@@ -279,7 +279,9 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   TGeoVolume* backVolume     = new TGeoVolumeAssembly(Form(fgkBackVName, id));
   Double_t x = 0;
   Double_t y = 0;
-  Double_t z = siThick + space + pcbThick / 2;
+  Double_t z = siThick / 2;
+  backVolume->AddNode(sensorVolume, 0, new TGeoTranslation(x, y, z));
+  z          += siThick / 2 + space + pcbThick / 2;
   backVolume->AddNode(pcbVolume, 0, new TGeoTranslation(x,y,z));
   z          += (pcbThick + cuThick) / 2;
   backVolume->AddNode(cuVolume, 0, new TGeoTranslation(0, 0, z));
@@ -299,8 +301,10 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   TGeoVolume* frontVolume    = new TGeoVolumeAssembly(Form(fgkFrontVName, id));
   x         =  0;
   y         =  0;
-  z         =  siThick + space + pcbThick / 2;
-  frontVolume->AddNode(pcbVolume, 1, new TGeoTranslation(x,y,z));
+  z         = siThick / 2;
+  frontVolume->AddNode(sensorVolume, 0, new TGeoTranslation(x, y, z));
+  z          += siThick / 2 + space + pcbThick / 2;
+  frontVolume->AddNode(pcbVolume, 0, new TGeoTranslation(x,y,z));
   z          += (pcbThick + cuThick) / 2;
   frontVolume->AddNode(cuVolume, 0, new TGeoTranslation(0, 0, z));
   z          += (cuThick + chipThick) / 2;
@@ -380,7 +384,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
     if (i == nmod / 2) halfRing = ringBotVolume;
     Bool_t      front =  (i % 2 == 0);
     TGeoVolume* vol   =  (front ? frontVolume : backVolume);
-    vol->AddNode(sensorVolume, i, new TGeoTranslation(0,0,siThick/2));
+    // vol->AddNode(sensorVolume, i, new TGeoTranslation(0,0,siThick/2));
     Double_t    z1    =  (i % 2) * modSpace;
     Double_t    th    =  (2 * i + 1) * theta;
     TGeoMatrix* mat1  =  new TGeoCombiTrans(0,0,z1,0); 

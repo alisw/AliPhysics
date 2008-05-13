@@ -59,7 +59,7 @@ AliFMDv1::VMC2FMD(TLorentzVector& v, UShort_t& detector,
 		  Char_t& ring, UShort_t& sector, UShort_t& strip) const
 {
   // Convert VMC coordinates to detector coordinates 
-  TVirtualMC* mc = TVirtualMC::GetMC();
+  TVirtualMC*      mc  = TVirtualMC::GetMC();
   AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
 
   // Get track position
@@ -104,7 +104,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
 		  UShort_t& sector, UShort_t& strip) const
 {
   // Convert VMC coordinates to detector coordinates 
-  TVirtualMC* mc = TVirtualMC::GetMC();
+  TVirtualMC*     mc  = TVirtualMC::GetMC();
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
 
   strip = copy - 1;
@@ -148,7 +148,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   sector--;
   // Get track position
   mc->TrackPosition(v);
-  AliFMDDebug(15, ("<2> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
+  AliFMDDebug(40, ("<2> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
 		    detector, ring, sector, strip, mc->CurrentVolPath()));
 
   return kTRUE;
