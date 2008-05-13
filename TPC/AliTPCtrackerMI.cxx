@@ -1051,6 +1051,60 @@ Int_t  AliTPCtrackerMI::LoadClusters (TTree *tree)
   return LoadClusters();
 }
 
+
+Int_t  AliTPCtrackerMI::LoadClusters(TObjArray *arr)
+{
+  //
+  // load clusters to the memory
+  AliTPCClustersRow *clrow = 0x0; 
+  Int_t lower   = arr->LowerBound();
+  Int_t entries = arr->GetEntriesFast();
+
+  for (Int_t i=lower; i<entries; i++) {
+    clrow = (AliTPCClustersRow*) arr->At(i);
+	if(!clrow) continue;
+	if(!clrow->GetArray()) continue;
+
+    //  
+    Int_t sec,row;
+    fParam->AdjustSectorRow(clrow->GetID(),sec,row);
+
+    for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
+      Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
+    }
+    //
+    if (clrow->GetArray()->GetEntriesFast()<=0) continue;
+    AliTPCRow * tpcrow=0;
+    Int_t left=0;
+    if (sec<fkNIS*2){
+      tpcrow = &(fInnerSec[sec%fkNIS][row]);    
+      left = sec/fkNIS;
+    }
+    else{
+      tpcrow = &(fOuterSec[(sec-fkNIS*2)%fkNOS][row]);
+      left = (sec-fkNIS*2)/fkNOS;
+    }
+    if (left ==0){
+      tpcrow->SetN1(clrow->GetArray()->GetEntriesFast());
+      tpcrow->SetClusters1(new AliTPCclusterMI[tpcrow->GetN1()]);
+      for (Int_t i=0;i<tpcrow->GetN1();i++) 
+	tpcrow->SetCluster1(i, *(AliTPCclusterMI*)(clrow->GetArray()->At(i)));
+    }
+    if (left ==1){
+      tpcrow->SetN2(clrow->GetArray()->GetEntriesFast());
+      tpcrow->SetClusters2(new AliTPCclusterMI[tpcrow->GetN2()]);
+      for (Int_t i=0;i<tpcrow->GetN2();i++) 
+	tpcrow->SetCluster2(i,*(AliTPCclusterMI*)(clrow->GetArray()->At(i)));
+    }
+  }
+  //
+  delete clrow;
+  LoadOuterSectors();
+  LoadInnerSectors();
+  return 0;
+}
+
+
 Int_t  AliTPCtrackerMI::LoadClusters()
 {
   //
@@ -1158,11 +1212,16 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   // in debug mode  check the transformation
   //
   if (AliTPCReconstructor::StreamLevel()>1) {
+    Float_t gx[3];
+    cluster->GetGlobalXYZ(gx);
     TTreeSRedirector &cstream = *fDebugStreamer;
     cstream<<"Transform"<<
       "x0="<<x[0]<<
       "x1="<<x[1]<<
       "x2="<<x[2]<<
+      "gx0="<<gx[0]<<
+      "gx1="<<gx[1]<<
+      "gx2="<<gx[2]<<
       "Cl.="<<cluster<<
       "\n"; 
   }

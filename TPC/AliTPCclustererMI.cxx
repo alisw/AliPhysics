@@ -177,7 +177,7 @@ AliTPCclustererMI::~AliTPCclustererMI(){
   //
   if (fDebugStreamer) delete fDebugStreamer;
   if (fOutputArray){
-    fOutputArray->Delete();
+    //fOutputArray->Delete();
     delete fOutputArray;
   }
 }
@@ -221,7 +221,7 @@ void AliTPCclustererMI::FillRow(){
   if (fOutput) fOutput->Fill();
   if (!fOutput){
     //
-    if (!fOutputArray) fOutputArray = new TObjArray;
+    if (!fOutputArray) fOutputArray = new TObjArray(fParam->GetNRowsTotal());
     if (fRowCl) fOutputArray->AddAt(fRowCl->Clone(), fRowCl->GetID());
   }
 }

@@ -40,6 +40,7 @@ public:
   virtual Int_t Clusters2Tracks (AliESDEvent *esd);
   virtual Int_t RefitInward (AliESDEvent *esd);
   virtual Int_t LoadClusters (TTree * tree);
+  virtual Int_t LoadClusters (TObjArray * arr); // another input
   Int_t  LoadClusters();
   void   UnloadClusters();
   void   Transform(AliTPCclusterMI * cluster);
