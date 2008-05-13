@@ -9,7 +9,7 @@
 #ifndef AliEveMUONChamberGL_H
 #define AliEveMUONChamberGL_H
 
-#include <TGLObject.h>
+// #include <TGLObject.h>
 #include <TEveQuadSetGL.h>
 
 class TEveQuadSetGL;
