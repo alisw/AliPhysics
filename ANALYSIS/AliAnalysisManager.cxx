@@ -565,7 +565,7 @@ void AliAnalysisManager::Terminate()
          tree->SetMarkerSize(0.5);
          if (!gROOT->IsBatch()) {
             tree->SetAlias("event", "id0");
-            tree->SetAlias("memUSED", "mi.fMemUsed");
+            tree->SetAlias("memUSED", "pI.fMemVirtual");
             tree->SetAlias("userCPU", "pI.fCpuUser");
             TCanvas *c = new TCanvas("SysInfo","SysInfo",10,10,800,600);
             c->Divide(2,1,0.01,0.01);
