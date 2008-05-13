@@ -16,20 +16,24 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONMansoTrack.cxx
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Implementation of the AliHLTMUONMansoTrack class.
- */
+///
+/// @file   AliHLTMUONMansoTrack.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   29 Sep 2007
+/// @brief  Implementation of the AliHLTMUONMansoTrack class.
+///
+/// The Manso track class is used to store converted track data from dHLT raw
+/// internal data blocks.
+///
 
 #include "AliHLTMUONMansoTrack.h"
+#include "AliHLTMUONRecHit.h"
+#include "AliHLTMUONTriggerRecord.h"
 #include "AliLog.h"
 #include "mapping/AliMpDEManager.h"
 #include <cstring>
 #include <iostream>
 #include <iomanip>
-using namespace std;
 
 ClassImp(AliHLTMUONMansoTrack);
 
@@ -39,7 +43,10 @@ std::ostream& operator << (
 		const AliHLTMUONMansoTrack& track
 	)
 {
-// Stream operator.
+/// Stream operator for std::ostream classes.
+/// \param stream  The output stream object being written to.
+/// \param track  The track object to print to the stream.
+/// \returns  Returns 'stream'.
 
 	stream	<< "ID: " << track.fId
 		<< "; sign: " << track.fSign
@@ -65,6 +72,24 @@ AliHLTMUONMansoTrack::AliHLTMUONMansoTrack(
 	fId(id), fSign(sign), fMomentum(px, py, pz),
 	fChi2(chi2), fTrigRec(trigrec), fZmiddle(zf), fQBL(qbl)
 {
+/// Default constructor.
+/// @param id       The track ID number which must be unique for any event.
+/// @param sign     The particle's sign: -1, 1 or 0 if unknown.
+/// @param px       X component of the particle's momentum (GeV/c).
+/// @param py       Y component of the particle's momentum (GeV/c).
+/// @param pz       Z component of the particle's momentum (GeV/c).
+/// @param chi2     The chi squared of the track fit.
+/// @param trigrec  Corresponding trigger record used as a seed to find
+///                 this track.
+/// @param hit7     Hit on chamber 7, tracking station 4.
+/// @param hit8     Hit on chamber 8, tracking station 4.
+/// @param hit9     Hit on chamber 9, tracking station 5.
+/// @param hit10    Hit on chamber 10, tracking station 5.
+/// @param zf    The Z coordinate of the middle of the magnetic field assumed
+///              during momentum calculation.
+/// @param qbl   The integrated magnetic field strength assumed during momentum
+///              calculation.
+
 	if (sign < -1 or 1 < sign)
 	{
 		AliError(Form("Trying to set the sign to %d. This is outside the"
@@ -82,7 +107,9 @@ AliHLTMUONMansoTrack::AliHLTMUONMansoTrack(
 
 const AliHLTMUONRecHit* AliHLTMUONMansoTrack::Hit(Int_t chamber) const
 {
-// Returns the hit on the specified chamber.
+/// Returns the hit on the specified chamber.
+/// \param chamber  The chamber to return the hit for. Must be a value in the range [7..10].
+/// \returns  A pointer to the hit object else NULL if it does not exist.
 
 	if (7 <= chamber and chamber <= 10) return fHit[chamber - 7];
 	
@@ -96,8 +123,14 @@ const AliHLTMUONRecHit* AliHLTMUONMansoTrack::Hit(Int_t chamber) const
 
 void AliHLTMUONMansoTrack::Print(Option_t* option) const
 {
-// Prints the track information to standard output (screen).
+/// Prints the track information to standard output (screen).
+/// \param option  Can be one of the following:
+///           - "compact" - prints in a compact format.
+///           - "detail" - prints track information in a more detailed format.
+///           - "all" - prints a full dump of the track object.
 
+	using namespace std;
+	
 	if (	option == NULL or strcmp(option, "") == 0 or
 		strcmp(option, "compact") == 0
 	   )
@@ -184,8 +217,11 @@ void AliHLTMUONMansoTrack::Print(Option_t* option) const
 
 Int_t AliHLTMUONMansoTrack::Compare(const TObject* obj) const
 {
-// We compare this object with 'obj' first by track ID, then by sign, then
-// by momentum and finally by chi2.
+/// We compare this object with 'obj' first by track ID, then by sign, then
+/// by momentum and finally by chi2.
+/// \param obj  This is the object to compare to. It must be of type AliHLTMUONMansoTrack.
+/// \returns  -1 if 'this' is smaller than 'obj', 1 if greater and zero if both
+///      objects are the same.
 
 	if (obj->IsA() == AliHLTMUONMansoTrack::Class())
 	{
@@ -218,6 +254,10 @@ Int_t AliHLTMUONMansoTrack::Compare(const TObject* obj) const
 
 bool AliHLTMUONMansoTrack::operator == (const AliHLTMUONMansoTrack& track) const
 {
+/// Comparison operator.
+/// \param track  The track object to compare to.
+/// \returns  true if 'this' object is identical to 'track' else false.
+
 	return	fId == track.fId and fSign == track.fSign
 		and fMomentum == track.fMomentum
 		and fChi2 == track.fChi2 and fTrigRec == track.fTrigRec

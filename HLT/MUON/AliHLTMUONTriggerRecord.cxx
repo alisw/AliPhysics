@@ -16,12 +16,15 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONTriggerRecord.cxx
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Implementation of the AliHLTMUONTriggerRecord class.
- */
+///
+/// @file   AliHLTMUONTriggerRecord.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   29 Sep 2007
+/// @brief  Implementation of the AliHLTMUONTriggerRecord class.
+///
+/// Code for the trigger record structure containing data corresponding to the
+/// L0 trigger local board output.
+///
 
 #include "AliHLTMUONTriggerRecord.h"
 #include "AliLog.h"
@@ -39,7 +42,10 @@ std::ostream& operator << (
 		const AliHLTMUONTriggerRecord& trigrec
 	)
 {
-// Stream operator.
+/// Stream operator for std::ostream classes.
+/// \param stream  The output stream object being written to.
+/// \param trigrec  The trigger record object to print to the stream.
+/// \returns  Returns 'stream'.
 
 	stream	<< "ID: " << trigrec.fId
 		<< "; sign: " << trigrec.fSign
@@ -59,6 +65,18 @@ AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord(
 	fId(id), fSign(sign), fMomentum(px, py, pz), fSourceDDL(sourceDDL),
 	fZmiddle(zf), fQBL(qbl)
 {
+/// Constructor for creating a new trigger record.
+/// @param id    The trigger record ID number unique for an event.
+/// @param sign  The particle's sign. Must be -1, 1 or 0 if the sign is unknown.
+/// @param px    X component of the particle's momentum.
+/// @param py    Y component of the particle's momentum.
+/// @param pz    Z component of the particle's momentum.
+/// @param sourceDDL  The DDL from which this trigger record originates.
+/// @param zf    The Z coordinate of the middle of the magnetic field assumed
+///              during momentum calculation.
+/// @param qbl   The integrated magnetic field strength assumed during momentum
+///              calculation.
+	
 	if (sign < -1 or 1 < sign)
 	{
 		AliError(Form("Trying to set the sign to %d. This is outside the"
@@ -79,7 +97,10 @@ AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord(
 
 const TVector3& AliHLTMUONTriggerRecord::Hit(Int_t chamber) const
 {
-// Returns the hit on the specified chamber.
+/// Returns the hit on the specified chamber.
+/// \param chamber  The chamber for which to fetch the hit. Valid values
+///                 are in the range [11..14].
+/// \returns  The 3D corrdinate of the hit.
 
 	if (11 <= chamber and chamber <= 14) return fHit[chamber - 11];
 	
@@ -93,8 +114,11 @@ const TVector3& AliHLTMUONTriggerRecord::Hit(Int_t chamber) const
 
 Int_t AliHLTMUONTriggerRecord::DetElemId(Int_t chamber) const
 {
-// Returns the detector element ID for the specified chamber associated
-// to the hit on that chamber.
+/// Returns the detector element ID for the specified chamber associated
+/// to the hit on that chamber.
+/// @param chamber  The chamber for which to fetch the detector element ID.
+///                Valid values are in the range [11..14].
+/// \returns  The detector element ID or -1 if not known.
 
 	if (11 <= chamber and chamber <= 14) return fDetElemId[chamber - 11];
 	
@@ -108,7 +132,10 @@ Int_t AliHLTMUONTriggerRecord::DetElemId(Int_t chamber) const
 
 Int_t AliHLTMUONTriggerRecord::PatternX(Int_t chamber) const
 {
-// Returns the raw data X pattern of the hit on the specified chamber.
+/// Returns the raw data X pattern of the hit on the specified chamber.
+/// \param chamber  The chamber for which to fetch the bit pattern.
+///                 Valid values are in the range [11..14].
+/// \returns X bit pattern of the hit.
 
 	if (11 <= chamber and chamber <= 14) return fPatternX[chamber - 11];
 	
@@ -122,7 +149,10 @@ Int_t AliHLTMUONTriggerRecord::PatternX(Int_t chamber) const
 
 Int_t AliHLTMUONTriggerRecord::PatternY(Int_t chamber) const
 {
-// Returns the raw data Y pattern of the hit on the specified chamber.
+/// Returns the raw data Y pattern of the hit on the specified chamber.
+/// \param chamber  The chamber for which to fetch the bit pattern.
+///                 Valid values are in the range [11..14].
+/// \returns Y bit pattern of the hit.
 
 	if (11 <= chamber and chamber <= 14) return fPatternY[chamber - 11];
 	
@@ -136,7 +166,12 @@ Int_t AliHLTMUONTriggerRecord::PatternY(Int_t chamber) const
 
 void AliHLTMUONTriggerRecord::SetHit(Int_t chamber, Float_t x, Float_t y, Float_t z)
 {
-// Fills the hit coordinate on the specified chamber.
+/// Fills the hit coordinate on the specified chamber.
+/// @param chamber  The chamber for which to set the hit. Valid values
+///                 are in the range [11..14].
+/// @param x  The X coordinate of the hit in centimetres.
+/// @param y  The Y coordinate of the hit in centimetres.
+/// @param z  The Z coordinate of the hit in centimetres.
 
 	if (11 <= chamber and chamber <= 14)
 	{
@@ -157,7 +192,13 @@ void AliHLTMUONTriggerRecord::SetHitDebugInfo(
 		Int_t detElemId, UShort_t patternX, UShort_t patternY
 	)
 {
-// Fills the debugging information corresponding to the hit on the specified chamber.
+/// Fills the debugging information corresponding to the hit on the specified chamber.
+/// Sets the debugging information for the hit on the specified chamber.
+/// @param chamber  The chamber for which to set the debugging information.
+///                Valid values are in the range [11..14].
+/// @param detElemId  The detector element ID.
+/// @param patterX    The X bit pattern from the local board.
+/// @param patterY    The Y bit pattern from the local board.
 
 	if (11 <= chamber and chamber <= 14)
 	{
@@ -177,8 +218,14 @@ void AliHLTMUONTriggerRecord::SetHitDebugInfo(
 
 void AliHLTMUONTriggerRecord::Print(Option_t* option) const
 {
-// Prints the trigger record to standard output (screen).
+/// Prints the trigger record to standard output (screen).
+/// \param option  Can be one of the following:
+///           - "compact" - prints in a compact format.
+///           - "detail" - prints track information in a more detailed format.
+///           - "all" - prints a full dump of the track object.
 
+	using namespace std;
+	
 	if (	option == NULL or strcmp(option, "") == 0 or
 		strcmp(option, "compact") == 0
 	   )
@@ -267,8 +314,11 @@ void AliHLTMUONTriggerRecord::Print(Option_t* option) const
 
 Int_t AliHLTMUONTriggerRecord::Compare(const TObject* obj) const
 {
-// We compare this object with 'obj' first by trigger record ID, then
-// by sign and finally by momentum.
+/// We compare this object with 'obj' first by trigger record ID, then
+/// by sign and finally by momentum.
+/// \param obj  This is the object to compare to. It must be of type AliHLTMUONTriggerRecord.
+/// \returns  -1 if 'this' is smaller than 'obj', 1 if greater and zero if both
+///      objects are the same.
 
 	if (obj->IsA() == AliHLTMUONTriggerRecord::Class())
 	{
@@ -299,7 +349,9 @@ Int_t AliHLTMUONTriggerRecord::Compare(const TObject* obj) const
 
 bool AliHLTMUONTriggerRecord::operator == (const AliHLTMUONTriggerRecord& trigrec) const
 {
-// Compares the trigger record 'trigrec' to this one.
+/// Compares the trigger record 'trigrec' to this one.
+/// \param trigrec  The trigger record object to compare to.
+/// \returns  true if 'this' object is identical to 'trigrec' else false.
 
 	return	fId == trigrec.fId and fSign == trigrec.fSign
 		and fMomentum == trigrec.fMomentum

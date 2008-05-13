@@ -14,7 +14,9 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		utils/AliHLTMUONEmptyEventFilterComponent.h \
 		AliHLTMUONRecHit.h \
 		AliHLTMUONTriggerRecord.h \
-		AliHLTMUONMansoTrack.h
+		AliHLTMUONMansoTrack.h \
+		AliHLTMUONDecision.h \
+		AliHLTMUONEvent.h
 
 # Sources that are not ROOT classes:
 MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \

@@ -202,14 +202,9 @@ public:
 		return fgkDecisionComponentId;
 	}
 	
-	static const char* TriggerCalibratorId()
+	static const char* RootifierComponentId()
 	{
-		return fgkTriggerCalibratorId;
-	}
-	
-	static const char* TrackerCalibratorId()
-	{
-		return fgkTrackerCalibratorId;
+		return fgkRootifierComponentId;
 	}
 	
 	static const char* EmptyEventFilterComponentId()
@@ -264,8 +259,7 @@ private:
 	static const char* fgkHitReconstructorId; // Centre of gravity cluster finder component name.
 	static const char* fgkMansoTrackerFSMId; // Manso tracker FSM implementation component name.
 	static const char* fgkDecisionComponentId; // dHLT decision component name.
-	static const char* fgkTriggerCalibratorId; // Trigger calibration component name.
-	static const char* fgkTrackerCalibratorId; // Tracking stations calibration component name.
+	static const char* fgkRootifierComponentId; // The name of the event filter debugging component.
 	static const char* fgkEmptyEventFilterComponentId; // The name of the event filter debugging component.
 	
 	// CDB path entries to configuration information.

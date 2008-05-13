@@ -16,12 +16,15 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONRecHit.cxx
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Implementation of the AliHLTMUONRecHit class.
- */
+///
+/// @file   AliHLTMUONRecHit.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   29 Sep 2007
+/// @brief  Implementation of the AliHLTMUONRecHit class.
+///
+/// The AliHLTMUONRecHit object is used to store 3D hit coordinates translated
+/// from dHLT raw data.
+///
 
 #include "AliHLTMUONRecHit.h"
 #include "AliLog.h"
@@ -29,15 +32,17 @@
 #include <cstring>
 #include <iostream>
 #include <iomanip>
-using namespace std;
 
 ClassImp(AliHLTMUONRecHit);
-ClassImp(AliHLTMUONRecHit::Channel);
+ClassImp(AliHLTMUONRecHit::AliChannel);
 
 
 std::ostream& operator << (std::ostream& stream, const AliHLTMUONRecHit& hit)
 {
-// Stream operator for std::ostream classes.
+/// Stream operator for std::ostream classes.
+/// \param stream  The output stream object being written to.
+/// \param track  The hit object to print to the stream.
+/// \returns  Returns 'stream'.
 
 	stream << "(" << hit.X() << ", " << hit.Y() << ", " << hit.Z() << ")";
 	return stream;
@@ -48,7 +53,11 @@ void AliHLTMUONRecHit::SetDebugInfo(
 		Int_t detElemId, Int_t clusterId, UInt_t nChExp, Int_t sourceDDL
 	)
 {
-// Sets the debugging information.
+/// Sets the debugging information.
+/// @param detElemId  The detector element ID.
+/// @param clusterId  Cluster ID of the hit's cluster.
+/// @param nChExp     Number of expected channels forming the cluster.
+/// @param sourceDDL  The source DDL of this hit.
 
 	fSourceDDL = sourceDDL;
 	fDetElemId = detElemId;
@@ -59,7 +68,9 @@ void AliHLTMUONRecHit::SetDebugInfo(
 
 Int_t AliHLTMUONRecHit::Chamber(bool warn) const
 {
-// Returns the chamber ID for this hit.
+/// Returns the chamber ID for this hit.
+/// \param warn  Indicates if any warning should be printed in case of problems.
+/// \returns The chamber number of this hit in the range [1..14] or -1 if not known.
 
 	if (fSourceDDL != -1)
 	{
@@ -91,16 +102,26 @@ void AliHLTMUONRecHit::AddChannel(
 		UInt_t rawDataWord
 	)
 {
-// Adds a new channel to the channels list forming this hit's cluster.
+/// Adds a new channel to the channels list forming this hit's cluster.
+/// @param manu    The MANU number
+/// @param channel The MANU channel address.
+/// @param signal  The ADC signal value measured on the channel.
+/// @param rawDataWord This is the raw data word as read from the DDL.
 
 	Int_t index = fChannels.GetEntriesFast();
-	new (fChannels[index]) Channel(manu, channel, signal, rawDataWord);
+	new (fChannels[index]) AliChannel(manu, channel, signal, rawDataWord);
 }
 
 
 void AliHLTMUONRecHit::Print(Option_t* option) const
 {
-// Prints the coordinates of this hit to standard output (screen).
+/// Prints the coordinates of this hit to standard output (screen).
+/// \param option  Can be one of the following:
+///           - "compact" - prints in a compact format.
+///           - "detail" - prints hit information in a more detailed format.
+///           - "all" - prints a full dump of the hit object.
+
+	using namespace std;
 
 	if (	option == NULL or strcmp(option, "") == 0 or
 		strcmp(option, "compact") == 0
@@ -140,8 +161,8 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 			cout << showbase;
 			for (Int_t i = 0; i < fChannels.GetEntriesFast(); i++)
 			{
-				const AliHLTMUONRecHit::Channel* c =
-					static_cast<const AliHLTMUONRecHit::Channel*>(fChannels[i]);
+				const AliHLTMUONRecHit::AliChannel* c =
+					static_cast<const AliHLTMUONRecHit::AliChannel*>(fChannels[i]);
 				cout << dec << setw(12) << c->Manu()
 					<< setw(12) << c->Address()
 					<< setw(12) << c->Signal()
@@ -165,7 +186,10 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 
 Int_t AliHLTMUONRecHit::Compare(const TObject* obj) const
 {
-// We compare this object with 'obj' first by X, then Y, then Z.
+/// We compare this object with 'obj' first by X, then Y, then Z.
+/// \param obj  This is the object to compare to. It must be of type AliHLTMUONRecHit.
+/// \returns  -1 if 'this' is smaller than 'obj', 1 if greater and zero if both
+///      objects are the same.
 
 	if (obj->IsA() == AliHLTMUONRecHit::Class())
 	{
@@ -189,9 +213,12 @@ Int_t AliHLTMUONRecHit::Compare(const TObject* obj) const
 }
 
 
-std::ostream& operator << (std::ostream& stream, const AliHLTMUONRecHit::Channel& c)
+std::ostream& operator << (std::ostream& stream, const AliHLTMUONRecHit::AliChannel& c)
 {
-// Stream operator for std::ostream classes.
+/// Stream operator for std::ostream classes.
+/// \param stream  The output stream object being written to.
+/// \param c  The channel object to print to the stream.
+/// \returns  Returns 'stream'.
 
 	stream << "Channel: " << c.fManu << " , " << c.fAddress
 		<< "; ADC: " << c.fSignal;
@@ -199,10 +226,15 @@ std::ostream& operator << (std::ostream& stream, const AliHLTMUONRecHit::Channel
 }
 
 
-void AliHLTMUONRecHit::Channel::Print(Option_t* option) const
+void AliHLTMUONRecHit::AliChannel::Print(Option_t* option) const
 {
-// Prints the details of this channel to standard output (screen).
+/// Prints the details of this channel to standard output (screen).
+/// \param option  Can be one of the following:
+///           - "compact" - prints in a compact format.
+///           - "detail" - prints channel information in a more detailed format.
 
+	using namespace std;
+	
 	if (	option == NULL or strcmp(option, "") == 0 or
 		strcmp(option, "compact") == 0
 	   )
@@ -231,14 +263,17 @@ void AliHLTMUONRecHit::Channel::Print(Option_t* option) const
 }
 
 
-Int_t AliHLTMUONRecHit::Channel::Compare(const TObject* obj) const
+Int_t AliHLTMUONRecHit::AliChannel::Compare(const TObject* obj) const
 {
-// We compare this object with 'obj' first by MANU number, then by MANU channel
-// address, then ADC signal.
+/// We compare this object with 'obj' first by MANU number, then by MANU channel
+/// address, then ADC signal.
+/// \param obj  This is the object to compare to. It must be of type AliHLTMUONRecHit::Channel.
+/// \returns  -1 if 'this' is smaller than 'obj', 1 if greater and zero if both
+///      objects are the same.
 
-	if (obj->IsA() == Channel::Class())
+	if (obj->IsA() == AliChannel::Class())
 	{
-		const Channel* c = static_cast<const Channel*>(obj);
+		const AliChannel* c = static_cast<const AliChannel*>(obj);
 		if (fManu < c->Manu()) return -1;
 		if (fManu > c->Manu()) return 1;
 		if (fAddress < c->Address()) return -1;

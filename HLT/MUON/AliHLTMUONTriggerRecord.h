@@ -6,13 +6,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONTriggerRecord.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Declaration of the trigger record structure containing data
- *         corresponding to the L0 trigger local board output.
- */
+///
+/// @file   AliHLTMUONTriggerRecord.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   29 Sep 2007
+/// @brief  Declaration of the trigger record structure in ROOT object format for dHLT.
+///
 
 #include "TObject.h"
 #include "TVector3.h"
@@ -20,7 +19,9 @@
 
 /**
  * Trigger record class containing information about a dimuon L0 trigger
- * local board decision.
+ * local board decision in a ROOT object.
+ * This class is mainly for testing or as a helper object for dHLT specific analysis,
+ * since it is sometimes easier to store and handle ROOT objects.
  */
 class AliHLTMUONTriggerRecord : public TObject
 {
@@ -59,7 +60,10 @@ public:
 			Float_t zf = 0,
 			Float_t qbl = 0
 		);
-		
+	
+	/**
+	 * Default destructor.
+	 */
 	virtual ~AliHLTMUONTriggerRecord() {}
 
 	/**
@@ -122,22 +126,22 @@ public:
 
 	/**
 	 * Returns the X coordinate of the reconstructed hit in centimetres.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
-	 *                 are in the range [11..14].
+	 * @param chamber  The chamber for which to fetch the X coordinate.
+	 *                 Valid values are in the range [11..14].
 	 */
 	Double_t X(Int_t chamber) const { return Hit(chamber).X(); }
 
 	/**
 	 * Returns the Y coordinate of the reconstructed hit in centimetres.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
-	 *                 are in the range [11..14].
+	 * @param chamber  The chamber for which to fetch the Y coordinate.
+	 *                 Valid values are in the range [11..14].
 	 */
 	Double_t Y(Int_t chamber) const { return Hit(chamber).Y(); }
 
 	/**
 	 * Returns the Z coordinate of the reconstructed hit in centimetres.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
-	 *                 are in the range [11..14].
+	 * @param chamber  The chamber for which to fetch the Z coordinate.
+	 *                 Valid values are in the range [11..14].
 	 */
 	Double_t Z(Int_t chamber) const { return Hit(chamber).Z(); }
 	
@@ -150,24 +154,24 @@ public:
 	/**
 	 * Returns the detector element ID number for the hit on the specified
 	 * chamber. -1 is returned if this information was not set.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
-	 *                 are in the range [11..14].
+	 * @param chamber  The chamber for which to fetch the detector element ID.
+	 *                 Valid values are in the range [11..14].
 	 */
 	Int_t DetElemId(Int_t chamber) const;
 	
 	/**
 	 * Returns the 16 bit X pattern from the local board.
 	 * -1 is returned if this information was not set.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
-	 *                 are in the range [11..14].
+	 * @param chamber  The chamber for which to fetch the bit pattern.
+	 *                 Valid values are in the range [11..14].
 	 */
 	Int_t PatternX(Int_t chamber) const;
 	
 	/**
 	 * Returns the 16 bit Y pattern from the local board.
 	 * -1 is returned if this information was not set.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
-	 *                 are in the range [11..14].
+	 * @param chamber  The chamber for which to fetch the bit pattern.
+	 *                Valid values are in the range [11..14].
 	 */
 	Int_t PatternY(Int_t chamber) const;
 	
@@ -186,7 +190,7 @@ public:
 	/**
 	 * Sets the hit coordinate (in AliRoot global coordinates) on the
 	 * given chamber.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
+	 * @param chamber  The chamber for which to set the hit. Valid values
 	 *                 are in the range [11..14].
 	 * @param x  The X coordinate of the hit in centimetres.
 	 * @param y  The Y coordinate of the hit in centimetres.
@@ -196,8 +200,8 @@ public:
 	
 	/**
 	 * Sets the debugging information for the hit on the specified chamber.
-	 * @param chamber  The chamber for which to fetch the hit. Valid values
-	 *                 are in the range [11..14].
+	 * @param chamber  The chamber for which to set the debugging information.
+	 *                Valid values are in the range [11..14].
 	 * @param detElemId  The detector element ID.
 	 * @param patterX    The X bit pattern from the local board.
 	 * @param patterY    The Y bit pattern from the local board.
@@ -234,23 +238,23 @@ public:
 
 private:
 
-	Int_t fId; // Each trigger record should have an ID number unique for a given event.
-	Int_t fSign;  // The sign of the particle: -1 or 1. 0 indicates unknown value.
-	TVector3 fMomentum; // Momentum vector of the particle in GeV/c.
-	TVector3 fHit[4];   // hit coordinates on trigger chambers 11 to 14.
+	Int_t fId; ///< Each trigger record should have an ID number unique for a given event.
+	Int_t fSign;  ///< The sign of the particle: -1 or 1. 0 indicates unknown value.
+	TVector3 fMomentum; ///< Momentum vector of the particle in GeV/c.
+	TVector3 fHit[4];   ///< hit coordinates on trigger chambers 11 to 14.
 	
 	// The following is debugging information and may not be filled if the
 	// dHLT components were not set to produce this information.
-	Int_t fSourceDDL;  // The DDL from which this trigger record originates.
-	Int_t fDetElemId[4]; // The detector element ID for the hit on each chamber 11 to 14.
-	Int_t fPatternX[4];  // The X pattern from the local board structure for chambers 11 to 14. -1 if invalid.
-	Int_t fPatternY[4];  // The Y pattern from the local board structure for chambers 11 to 14. -1 if invalid.
+	Int_t fSourceDDL;  ///< The DDL from which this trigger record originates.
+	Int_t fDetElemId[4]; ///< The detector element ID for the hit on each chamber 11 to 14.
+	Int_t fPatternX[4];  ///< The X pattern from the local board structure for chambers 11 to 14. -1 if invalid.
+	Int_t fPatternY[4];  ///< The Y pattern from the local board structure for chambers 11 to 14. -1 if invalid.
 	
 	// Parameters used in momentum estimation:
-	Float_t fZmiddle; // Particle momentum X component in GeV/c.
-	Float_t fQBL;     // The integrated magnetic field times charge in (T.m) tesla metres.
+	Float_t fZmiddle; ///< Particle momentum X component in GeV/c.
+	Float_t fQBL;     ///< The integrated magnetic field times charge in (T.m) tesla metres.
 		
-	ClassDef(AliHLTMUONTriggerRecord, 1);  // Trigger record object translated from dHLT internal raw data.
+	ClassDef(AliHLTMUONTriggerRecord, 2);  // Trigger record object translated from dHLT internal raw data.
 };
 
 #endif // ALIHLTMUONTRIGGERRECORD_H

@@ -366,20 +366,8 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 	// reconstruction algorithm on the raw data.
 	for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
 	{
-#ifdef __DEBUG
-		char id[kAliHLTComponentDataTypefIDsize+1];
-		for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
-			id[i] = blocks[n].fDataType.fID[i];
-		id[kAliHLTComponentDataTypefIDsize] = '\0';
-		char origin[kAliHLTComponentDataTypefOriginSize+1];
-		for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
-			origin[i] = blocks[n].fDataType.fOrigin[i];
-		origin[kAliHLTComponentDataTypefOriginSize] = '\0';
-#endif // __DEBUG
-		HLTDebug("Handling block: %u, with fDataType.fID = '%s',"
-			  " fDataType.fID = '%s', fPtr = %p and fSize = %u bytes.",
-			n, static_cast<char*>(id), static_cast<char*>(origin),
-			blocks[n].fPtr, blocks[n].fSize
+		HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
+			n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
 		);
 
 		if (blocks[n].fDataType != AliHLTMUONConstants::DDLRawDataType()
@@ -388,22 +376,13 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		{
 			// Log a message indicating that we got a data block that we
 			// do not know how to handle.
-			char id[kAliHLTComponentDataTypefIDsize+1];
-			for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
-				id[i] = blocks[n].fDataType.fID[i];
-			id[kAliHLTComponentDataTypefIDsize] = '\0';
-			char origin[kAliHLTComponentDataTypefOriginSize+1];
-			for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
-				origin[i] = blocks[n].fDataType.fOrigin[i];
-			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
-			
 			if (fWarnForUnexpecedBlock)
-				HLTWarning("Received a data block of a type we cannot handle: '%s' origin: '%s' spec: 0x%X",
-					static_cast<char*>(id), static_cast<char*>(origin), blocks[n].fSpecification
+				HLTWarning("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
+					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
 			else
-				HLTDebug("Received a data block of a type we cannot handle: '%s' origin: '%s' spec: 0x%X",
-					static_cast<char*>(id), static_cast<char*>(origin), blocks[n].fSpecification
+				HLTDebug("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
+					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
 			
 			continue;

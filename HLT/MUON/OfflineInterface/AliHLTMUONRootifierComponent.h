@@ -9,43 +9,11 @@
 ///
 /// @file   AliHLTMUONRootifierComponent.h
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   
+/// @date   29 Sep 2007
 /// @brief  Component for converting dHLT raw data into ROOT objects.
 ///
 
 #include "AliHLTProcessor.h"
-
-// Temporary solution for grouping together objects for the same event.
-#include "TObjArray.h"
-
-class AliHLTMUONEvent : public TObject
-{
-public:
-
-	AliHLTMUONEvent(AliHLTEventID_t eventId = AliHLTEventID_t(-1))
-	  : fEventId(eventId), fArray()
-	{
-		fArray.SetOwner(kTRUE);
-	}
-	
-	virtual ~AliHLTMUONEvent() {}
-	
-	AliHLTEventID_t EventID() const { return fEventId; }
-	const TObjArray& Array() const { return fArray; }
-	
-	// Takes ownership of the object.
-	void Add(TObject* obj) { fArray.Add(obj); }
-	
-	virtual void Print(Option_t* option = NULL) const;
-
-private:
-
-	AliHLTEventID_t fEventId;  // The event ID.
-	TObjArray fArray;          // Array of event objects.
-	
-	ClassDef(AliHLTMUONEvent, 1); // Container class for dHLT event results.
-};
-
 
 /**
  * Converts dHLT raw data blocks into ROOT objects.
@@ -78,6 +46,8 @@ private:
 	// Prevent copying of these objects.
 	AliHLTMUONRootifierComponent(const AliHLTMUONRootifierComponent& /*object*/);
 	AliHLTMUONRootifierComponent& operator = (const AliHLTMUONRootifierComponent& /*object*/);
+	
+	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
 
 	ClassDef(AliHLTMUONRootifierComponent, 0); // Converter component of dHLT raw data.
 };

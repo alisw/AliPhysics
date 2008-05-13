@@ -6,19 +6,23 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONMansoTrack.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Declaration of the Manso track class used to store converted track
- *         data from dHLT raw internal data blocks.
- */
+///
+/// @file   AliHLTMUONMansoTrack.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   29 Sep 2007
+/// @brief  Declaration of the Manso track class used to store converted track data.
+///
 
-#include "AliHLTMUONRecHit.h"
-#include "AliHLTMUONTriggerRecord.h"
+#include "TObject.h"
+#include "TVector3.h"
+
+class AliHLTMUONTriggerRecord;
+class AliHLTMUONRecHit;
 
 /**
  * AliHLTMUONMansoTrack stores converted dHLT raw track data as a ROOT object.
+ * This class is mainly for testing or as a helper object for dHLT specific analysis,
+ * since it is sometimes easier to store and handle ROOT objects.
  */
 class AliHLTMUONMansoTrack : public TObject
 {
@@ -67,6 +71,9 @@ public:
 			Float_t zf = 0, Float_t qbl = 0
 		);
 	
+	/**
+	 * Default destructor.
+	 */
 	virtual ~AliHLTMUONMansoTrack() {}
 
 	/**
@@ -170,21 +177,21 @@ private:
 	AliHLTMUONMansoTrack(const AliHLTMUONMansoTrack& track);
 	AliHLTMUONMansoTrack& operator = (const AliHLTMUONMansoTrack& track);
 	
-	Int_t fId; // Track ID number which is unique for a particular event.
-	Int_t fSign;  // The sign of the particle.
-	TVector3 fMomentum; // Momentum vector of the particle in GeV/c.
-	Float_t fChi2; // Chi squared of fit.
-	const AliHLTMUONTriggerRecord* fTrigRec;  // Corresponding trigger record.
-	const AliHLTMUONRecHit* fHit[4];   // Particle hits on tracking chambers 7 to 10.
+	Int_t fId; ///< Track ID number which is unique for a particular event.
+	Int_t fSign;  ///< The sign of the particle.
+	TVector3 fMomentum; ///< Momentum vector of the particle in GeV/c.
+	Float_t fChi2; ///< Chi squared of fit.
+	const AliHLTMUONTriggerRecord* fTrigRec;  ///< Corresponding trigger record.
+	const AliHLTMUONRecHit* fHit[4];   ///< Particle hits on tracking chambers 7 to 10.
 	
 	// The following is debugging information and may not be filled if the
 	// dHLT components were not set to produce this information.
 	
 	// Parameters used in momentum estimation:
-	Float_t fZmiddle; // Particle momentum X component in GeV/c.
-	Float_t fQBL;     // The integrated magnetic field times charge in (T.m) tesla metres.
+	Float_t fZmiddle; ///< Particle momentum X component in GeV/c.
+	Float_t fQBL;     ///< The integrated magnetic field times charge in (T.m) tesla metres.
 
-	ClassDef(AliHLTMUONMansoTrack, 1); // Manso track object containing data converted from a dHLT internal track structure.
+	ClassDef(AliHLTMUONMansoTrack, 2); // Manso track object containing data converted from a dHLT internal track structure.
 };
 
 #endif // ALIHLTMUONMANSOTRACK_H

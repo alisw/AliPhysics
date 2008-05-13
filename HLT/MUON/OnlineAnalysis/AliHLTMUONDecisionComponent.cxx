@@ -331,6 +331,10 @@ int AliHLTMUONDecisionComponent::DoEvent(
 	fTrackCount = 0; // reset number of tracks in array.
 	for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
 	{
+		HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
+			n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
+		);
+		
 		if (blocks[n].fDataType == AliHLTMUONConstants::MansoTracksBlockDataType())
 		{
 			// Build up the specification which indicates what DDLs
@@ -380,26 +384,17 @@ int AliHLTMUONDecisionComponent::DoEvent(
 				}
 			}
 		}
-		else if (blocks[n].fDataType != AliHLTMUONConstants::MansoTracksBlockDataType())
+		else
 		{
 			// Log a message indicating that we got a data block that we
 			// do not know how to handle.
-			char id[kAliHLTComponentDataTypefIDsize+1];
-			for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
-				id[i] = blocks[n].fDataType.fID[i];
-			id[kAliHLTComponentDataTypefIDsize] = '\0';
-			char origin[kAliHLTComponentDataTypefOriginSize+1];
-			for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
-				origin[i] = blocks[n].fDataType.fOrigin[i];
-			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
-			
 			if (fWarnForUnexpecedBlock)
-				HLTWarning("Received a data block of a type we cannot handle: %s origin: %s",
-					static_cast<char*>(id), static_cast<char*>(origin)
+				HLTWarning("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
+					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
 			else
-				HLTDebug("Received a data block of a type we cannot handle: %s origin: %s",
-					static_cast<char*>(id), static_cast<char*>(origin)
+				HLTDebug("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
+					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
 		}
 	}

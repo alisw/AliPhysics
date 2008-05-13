@@ -19,7 +19,7 @@
 ///
 /// @file   HLTMUONLinkDef.h
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   
+/// @date   29 May 2007
 /// @brief  The linkdef file for rootcint to build a ROOT dictionary of
 ///         the dimuon HLT classes exposed to AliRoot.
 ///
@@ -43,13 +43,14 @@
 #pragma link C++ class AliHLTMUONMansoTrackerFSMComponent+;
 #pragma link C++ class AliHLTMUONDecisionComponent+;
 #pragma link C++ class AliHLTMUONRecHit+;
-#pragma link C++ class AliHLTMUONRecHit::Channel+;
+#pragma link C++ class AliHLTMUONRecHit::AliChannel+;
 #pragma link C++ class AliHLTMUONTriggerRecord+;
 #pragma link C++ class AliHLTMUONMansoTrack+;
+#pragma link C++ class AliHLTMUONDecision+;
+#pragma link C++ class AliHLTMUONDecision::AliTrackDecision+;
+#pragma link C++ class AliHLTMUONDecision::AliPairDecision+;
+#pragma link C++ class AliHLTMUONEvent+;
 #pragma link C++ class AliHLTMUONRootifierComponent+;
 #pragma link C++ class AliHLTMUONEmptyEventFilterComponent+;
-
-//TODO: The following is temporary.
-#pragma link C++ class AliHLTMUONEvent+;
 
 #endif // __CINT__

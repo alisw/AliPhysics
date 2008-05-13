@@ -92,7 +92,7 @@ AliHLTMUONConstants::fgkNilMansoCandidateStruct = {
 };
 
 const AliHLTMUONTrackDecisionStruct
-AliHLTMUONConstants::fgkNilTrackDecisionStruct = {0, 0};
+AliHLTMUONConstants::fgkNilTrackDecisionStruct = {0, 0, 0};
 
 const AliHLTMUONPairDecisionStruct
 AliHLTMUONConstants::fgkNilPairDecisionStruct = {0, 0, 0, 0};
@@ -178,8 +178,7 @@ const char* AliHLTMUONConstants::fgkTriggerReconstructorId = "MUONTriggerReconst
 const char* AliHLTMUONConstants::fgkHitReconstructorId = "MUONHitReconstructor";
 const char* AliHLTMUONConstants::fgkMansoTrackerFSMId = "MUONMansoTrackerFSM";
 const char* AliHLTMUONConstants::fgkDecisionComponentId = "MUONDecisionComponent";
-const char* AliHLTMUONConstants::fgkTriggerCalibratorId = "MUONTriggerCalibrator";
-const char* AliHLTMUONConstants::fgkTrackerCalibratorId = "MUONTrackerCalibrator";
+const char* AliHLTMUONConstants::fgkRootifierComponentId = "MUONRootifier";
 const char* AliHLTMUONConstants::fgkEmptyEventFilterComponentId = "MUONEmptyEventFilterComponent";
 
 const char* AliHLTMUONConstants::fgkDecisionComponentCDBPath = "HLT/ConfigMUON/DecisionComponent";

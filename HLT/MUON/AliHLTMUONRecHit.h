@@ -6,13 +6,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONRecHit.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Declaration of a reconstructed hit ROOT object to store 3D hit
- *         coordinates translated from dHLT raw data.
- */
+///
+/// @file   AliHLTMUONRecHit.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   29 Sep 2007
+/// @brief  Declaration of a reconstructed hit ROOT object to store 3D hit coordinates.
+///
 
 #include "TObject.h"
 #include "TClonesArray.h"
@@ -24,6 +23,8 @@
  * the dHLT. These objects store information translated into ROOT format from
  * dHLT raw data. Reconstructed hit values of (0, 0, 0) indicate an invalid or
  * nil hit.
+ * This class is mainly for testing or as a helper object for dHLT specific analysis,
+ * since it is sometimes easier to store and handle ROOT objects.
  */
 class AliHLTMUONRecHit : public TObject
 {
@@ -37,20 +38,27 @@ class AliHLTMUONRecHit : public TObject
 public:
 
 	/**
-	 * The Channel class stores extra debugging information about the channels
+	 * The AliChannel class stores extra debugging information about the channels
 	 * and raw data words that were considered during reconstruction of a hit
 	 * by the dHLT hit reconstructor component.
 	 */
-	class Channel : public TObject
+	class AliChannel : public TObject
 	{
 		/**
 		 * Stream operator for usage with std::ostream classes.
 		 */
-		friend std::ostream& operator << (std::ostream& stream, const Channel& c);
+		friend std::ostream& operator << (std::ostream& stream, const AliChannel& c);
 	
 	public:
 		
-		Channel(
+		/**
+		 * Constructor.
+		 * \param manu  The MANU ID of the channel as found in the raw data word.
+		 * \param channel  The MANU channel ID as found in the raw data word.
+		 * \param signal  The ADC signal value as found in the raw data word.
+		 * \param rawDataWord  The actual raw data word.
+		 */
+		AliChannel(
 				Short_t manu = -1,
 				Short_t channel = -1,
 				Short_t signal = -1,
@@ -61,7 +69,10 @@ public:
 			fRawDataWord(rawDataWord)
 		{}
 		
-		virtual ~Channel() {}
+		/**
+		 * Default destructor.
+		 */
+		virtual ~AliChannel() {}
 		
 		/**
 		 * Returns the MANU address.
@@ -90,26 +101,26 @@ public:
 		Int_t Compare(const TObject* obj) const;
 
 		// Implement comparison operators.
-		bool operator == (const Channel& c) const
+		bool operator == (const AliChannel& c) const
 		{
 			return fManu == c.fManu and fAddress == c.fAddress 
 				and fSignal == c.fSignal
 				and fRawDataWord == c.fRawDataWord;
 		}
 
-		bool operator != (const Channel& hit) const
+		bool operator != (const AliChannel& c) const
 		{
-			return not this->operator == (hit);
+			return not this->operator == (c);
 		}
 	
 	private:
 	
-		Short_t fManu;       // The MANU address on the electronics.
-		Short_t fAddress;    // The channel address on the electronics.
-		Short_t fSignal;     // ADC value of signal.
-		UInt_t fRawDataWord; // The raw data word as found in the DDL stream.
+		Short_t fManu;       ///< The MANU address on the electronics.
+		Short_t fAddress;    ///< The channel address on the electronics.
+		Short_t fSignal;     ///< ADC value of signal.
+		UInt_t fRawDataWord; ///< The raw data word as found in the DDL stream.
 		
-		ClassDef(AliHLTMUONRecHit::Channel, 1); // A MANU channel forming part of a cluster that was considered during hit reconstruction in dHLT.
+		ClassDef(AliHLTMUONRecHit::AliChannel, 2); // A MANU channel forming part of a cluster that was considered during hit reconstruction in dHLT.
 	};
 
 	/**
@@ -134,9 +145,12 @@ public:
 		) :
 		fCoordinate(x, y, z), fSourceDDL(sourceDDL),
 		fDetElemId(detElemId), fClusterId(clusterId), fNchExp(nChExp),
-		fChannels("AliHLTMUONRecHit::Channel", 6)
+		fChannels("AliHLTMUONRecHit::AliChannel", 6)
 	{}
 	
+	/**
+	 * Default destructor.
+	 */
 	virtual ~AliHLTMUONRecHit() {}
 
 	/**
@@ -220,9 +234,9 @@ public:
 	 * Returns the i'th channel associated with this hit.
 	 * @param i  Should be a number in the range [0..n), where n = Nchannels().
 	 */
-	const Channel* GetChannel(Int_t i) const
+	const AliChannel* GetChannel(Int_t i) const
 	{
-		return static_cast<const Channel*>(fChannels[i]);
+		return static_cast<const AliChannel*>(fChannels[i]);
 	}
 	
 	/**
@@ -267,17 +281,17 @@ public:
 
 private:
 
-	TVector3 fCoordinate; // The 3D coordinate of the hit in AliRoot global coordinates (cm).
+	TVector3 fCoordinate; ///< The 3D coordinate of the hit in AliRoot global coordinates (cm).
 	
 	// The following is debugging information and may not be filled if the
 	// dHLT components were not set to produce this information.
-	Int_t fSourceDDL;  // The DDL from which this hit originates.
-	Int_t fDetElemId;  // Detector element ID number.
-	Int_t fClusterId;  // The cluster ID number used to relate all the channels to each other.
-	UInt_t fNchExp;    // The number of channels that were supposed to be found.
-	TClonesArray fChannels; // The channels forming part of the cluster from which this hit was reconstructed.
+	Int_t fSourceDDL;  ///< The DDL from which this hit originates.
+	Int_t fDetElemId;  ///< Detector element ID number.
+	Int_t fClusterId;  ///< The cluster ID number used to relate all the channels to each other.
+	UInt_t fNchExp;    ///< The number of channels that were supposed to be found.
+	TClonesArray fChannels; ///< The channels forming part of the cluster from which this hit was reconstructed.
 
-	ClassDef(AliHLTMUONRecHit, 1); // A reconstructed hit translated from dHLT raw data into ROOT format.
+	ClassDef(AliHLTMUONRecHit, 2); // A reconstructed hit translated from dHLT raw data into ROOT format.
 };
 
 #endif // ALIHLTMUONRECHIT_H
