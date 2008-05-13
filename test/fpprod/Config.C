@@ -40,6 +40,7 @@
 #include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
 #include "PHOS/AliPHOSv1.h"
+#include "PHOS/AliPHOSSimParam.h"
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
@@ -199,7 +200,9 @@ void Config()
   //
   // Size of the interaction diamond
   // Longitudinal
-  Float_t sigmaz  = 7.55 / TMath::Sqrt(2.); // [cm]
+  Float_t sigmaz  = 5.4 / TMath::Sqrt(2.); // [cm]
+  if (energy == 900)
+    sigmaz  = 10.5 / TMath::Sqrt(2.); // [cm]
   //
   // Transverse
   Float_t betast  = 10;                 // beta* [m]
@@ -393,6 +396,23 @@ void Config()
         //=================== PHOS parameters ===========================
 
         AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        //Set simulation parameters different from the default ones.
+        AliPHOSSimParam* simEmc = AliPHOSSimParam::GetInstance() ;
+  
+        // APD noise of warm (+20C) PHOS:
+        // a2 = a1*(Y1/Y2)*(M1/M2), where a1 = 0.012 is APD noise at -25C,
+        // Y1 = 4.3 photo-electrons/MeV, Y2 = 1.7 p.e/MeV - light yields at -25C and +20C,
+        // M1 = 50, M2 = 50 - APD gain factors chosen for t1 = -25C and t2 = +20C,
+        // Y = MeanLightYield*APDEfficiency.
+
+        Float_t apdNoise = 0.012*2.5; 
+        simEmc->SetAPDNoise(apdNoise);
+
+        //Raw Light Yield at +20C
+        simEmc->SetMeanLightYield(18800);
+
+        //ADC channel width at +18C.
+        simEmc->SetADCchannelW(0.0125);
     }
 
 
@@ -495,6 +515,7 @@ void ProcessEnvironmentVars()
     // Energy
     if (gSystem->Getenv("CONFIG_ENERGY")) {
       energy = atoi(gSystem->Getenv("CONFIG_ENERGY"));
+      cout<<"Energy set to "<<energy<<" GeV"<<endl;
     }
 
     // Random Number seed
