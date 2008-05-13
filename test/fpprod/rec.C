@@ -10,6 +10,7 @@ void rec() {
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON VZERO T0 FMD PMD ZDC");
   reco.SetRunQA(kFALSE);
   reco.SetRunGlobalQA(kFALSE);
+  reco.SetMeanVertexConstraint(kFALSE);
 
   TStopwatch timer;
   timer.Start();
