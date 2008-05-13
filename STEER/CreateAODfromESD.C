@@ -21,8 +21,9 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-    TChain *chain = new TChain("esdTree");
+    gSystem->Load("libPWG3muon");
 
+    TChain *chain = new TChain("esdTree");
     // Steering input chain
     chain->Add(inFileName);
     AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to AOD", "Analysis Manager");
@@ -37,8 +38,12 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     mgr->SetOutputEventHandler(aodHandler);
 
     // Task
+    // Barrel Tracks
     AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
     mgr->AddTask(filter);
+    // Muons
+    AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
+    mgr->AddTask(esdmuonfilter);
 
     AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
     esdTrackCutsL->SetMinNClustersTPC(50);
@@ -65,6 +70,9 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
     mgr->ConnectInput (filter, 0, cinput1 );
     mgr->ConnectOutput(filter, 0, coutput1);
+
+    mgr->ConnectInput (esdmuonfilter, 0, cinput1 );
+    mgr->ConnectOutput(esdmuonfilter, 0, coutput1);
 
     //
     // Run the analysis

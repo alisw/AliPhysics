@@ -746,47 +746,6 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	}	
     } // end of loop on tracks
     
-    // muon tracks
-    Int_t nMuTracks = esd->GetNumberOfMuonTracks();
-    for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
-	
-	AliESDMuonTrack *esdMuTrack = esd->GetMuonTrack(nMuTrack);     
-	p[0] = esdMuTrack->Px(); 
-	p[1] = esdMuTrack->Py(); 
-	p[2] = esdMuTrack->Pz();
-	pos[0] = primary->GetX(); 
-	pos[1] = primary->GetY(); 
-	pos[2] = primary->GetZ();
-	
-	// has to be changed once the muon pid is provided by the ESD
-	for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
-	
-	primary->AddDaughter(aodTrack =
-	    new(tracks[jTracks++]) AliAODTrack(0, // no ID provided
-					       0, // no label provided
-					       p,
-					       kTRUE,
-					       pos,
-					       kFALSE,
-					       NULL, // no covariance matrix provided
-					       (Short_t)-99, // no charge provided
-					       0, // no ITSClusterMap
-					       pid,
-					       primary,
-					       kTRUE,  // check if this is right
-					       kTRUE,  // not used for vertex fit
-					       AliAODTrack::kPrimary)
-	    );
-  
-	aodTrack->ConvertAliPIDtoAODPID();
-	aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
-	Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
-	aodTrack->SetMatchTrigger(track2Trigger);
-	if (track2Trigger) 
-	  aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
-	else 
-	  aodTrack->SetChi2MatchTrigger(0.);
-    }
     tracks.Expand(jTracks); // remove 'empty slots' due to unwritten tracks
   
     // Access to the AOD container of PMD clusters
