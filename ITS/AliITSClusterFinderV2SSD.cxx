@@ -399,14 +399,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	      
 	      //Split suspiciously big cluster
 	      if (nDigits > 4&&nDigits < 25) {
-		cluster.SetY(y/q - 0.25*nDigits);
+		if(q!=0) cluster.SetY(y/q - 0.25*nDigits);
+		else cluster.SetY(istrip-1 - 0.25*nDigits);
 		cluster.SetQ(0.5*q);
 		if (nClusters[0] == kMax) {
 		  Error("FindClustersSSD", "Too many 1D clusters !");
 		  return;
 		}
 		Ali1Dcluster& cluster2 = clusters1D[0][nClusters[0]++];
-		cluster2.SetY(y/q + 0.25*nDigits);
+		if(q!=0) cluster2.SetY(y/q + 0.25*nDigits);
+		else cluster2.SetY(istrip-1 + 0.25*nDigits);
 		cluster2.SetQ(0.5*q);
 		cluster2.SetNd(nDigits);
 		cluster2.SetLabels(lab);
@@ -439,14 +441,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    
 	    //Split suspiciously big cluster
 	    if (nDigits > 4&&nDigits < 25) {
-	      cluster.SetY(y/q - 0.25*nDigits);
+	      if(q!=0) cluster.SetY(y/q - 0.25*nDigits);
+	      else cluster.SetY(istrip-1 - 0.25*nDigits);
 	      cluster.SetQ(0.5*q);
 	      if (nClusters[0] == kMax) {
 		Error("FindClustersSSD", "Too many 1D clusters !");
 		return;
 	      }
 	      Ali1Dcluster& cluster2 = clusters1D[0][nClusters[0]++];
-	      cluster2.SetY(y/q + 0.25*nDigits);
+	      if(q!=0) cluster2.SetY(y/q + 0.25*nDigits);
+	      else cluster2.SetY(istrip-1 + 0.25*nDigits);
 	      cluster2.SetQ(0.5*q);
 	      cluster2.SetNd(nDigits);
 	      cluster2.SetLabels(lab);
@@ -562,14 +566,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    
 	    //Split suspiciously big cluster
 	    if (nDigits > 4&&nDigits < 25) {
-	      cluster.SetY(y/q - 0.25*nDigits);
+	      if(q!=0) cluster.SetY(y/q - 0.25*nDigits);
+	      else cluster.SetY(strip+1 - 0.25*nDigits);
 	      cluster.SetQ(0.5*q);
 	      if (nClusters[1] == kMax) {
 		Error("FindClustersSSD", "Too many 1D clusters !");
 		return;
 	      }
 	      Ali1Dcluster& cluster2 = clusters1D[1][nClusters[1]++];
-	      cluster2.SetY(y/q + 0.25*nDigits);
+	      if(q!=0) cluster2.SetY(y/q + 0.25*nDigits);
+	      else cluster2.SetY(strip+1 + 0.25*nDigits);
 	      cluster2.SetQ(0.5*q);
 	      cluster2.SetNd(nDigits);
 	      cluster2.SetLabels(lab);
