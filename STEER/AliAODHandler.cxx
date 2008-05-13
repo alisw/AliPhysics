@@ -112,7 +112,6 @@ Bool_t AliAODHandler::TerminateIO()
 {
     // Terminate IO
     if (fFileA) {
-	fFileA->ls();
 	fFileA->Close();
 	delete fFileA;
     }
