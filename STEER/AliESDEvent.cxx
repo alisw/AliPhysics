@@ -123,6 +123,7 @@ AliESDEvent::AliESDEvent():
   fESDOld(0),
   fESDFriendOld(0),
   fConnected(kFALSE),
+  fUseOwnList(kFALSE),
   fEMCALClusters(0), 
   fFirstEMCALCluster(-1),
   fPHOSClusters(0), 
@@ -160,6 +161,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fESDOld(new AliESD(*esd.fESDOld)),
   fESDFriendOld(new AliESDfriend(*esd.fESDFriendOld)),
   fConnected(esd.fConnected),
+  fUseOwnList(esd.fUseOwnList),
   fEMCALClusters(esd.fEMCALClusters), 
   fFirstEMCALCluster(esd.fFirstEMCALCluster),
   fPHOSClusters(esd.fPHOSClusters), 
@@ -260,6 +262,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   }
 
   fConnected = source.fConnected;
+  fUseOwnList = source.fUseOwnList;
   fEMCALClusters = source.fEMCALClusters;
   fFirstEMCALCluster = source.fFirstEMCALCluster;
   fPHOSClusters = source.fPHOSClusters;
@@ -335,8 +338,7 @@ void AliESDEvent::ResetStdContent()
   if(fHeader) fHeader->Reset();
   if(fESDZDC) fESDZDC->Reset();
   if(fESDFMD) {
-      fESDFMD->~AliESDFMD(); 
-      new (fESDFMD) AliESDFMD();
+    fESDFMD->Clear();
   }
   if(fESDVZERO){
     // reset by callin d'to /c'tor keep the pointer
@@ -956,6 +958,12 @@ void AliESDEvent::SetStdNames(){
   }
 } 
 
+
+void AliESDEvent::CreateStdContent(Bool_t bUseThisList){
+  fUseOwnList = bUseThisList;
+  CreateStdContent();
+}
+
 void AliESDEvent::CreateStdContent() 
 {
   // create the standard AOD content and set pointers
@@ -1165,16 +1173,19 @@ void AliESDEvent::ReadFromTree(TTree *tree){
 
     // Connect to tree
     // prevent a memory leak when reading back the TList
-    delete fESDObjects;
-    fESDObjects = 0;
 
-
-
-    // create a new TList from the UserInfo TList... 
-    // copy constructor does not work...
-
-    fESDObjects = (TList*)(esdEvent->GetList()->Clone());
-    fESDObjects->SetOwner(kFALSE);
+    if(!fUseOwnList){
+      delete fESDObjects;
+      fESDObjects = 0;
+      // create a new TList from the UserInfo TList... 
+      // copy constructor does not work...
+      fESDObjects = (TList*)(esdEvent->GetList()->Clone());
+      fESDObjects->SetOwner(kFALSE);
+    }
+    else if ( fESDObjects->GetEntries()==0){
+      // at least create the std content if we want to read to our list
+      CreateStdContent(); 
+    }
 
     // in principle
     // we only need new things in the list if we do no already have it..

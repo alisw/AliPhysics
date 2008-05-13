@@ -71,13 +71,19 @@ AliFMDFloatMap::operator=(const AliFMDFloatMap& other)
 {
   // Assignment operator 
   if(&other != this){
-    fMaxDetectors = other.fMaxDetectors;
-    fMaxRings     = other.fMaxRings;
-    fMaxSectors   = other.fMaxSectors;
-    fMaxStrips    = other.fMaxStrips;
-    fTotal        = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-    if (fData) delete [] fData;
-    fData = new Float_t[fTotal];
+    if(fMaxDetectors!= other.fMaxDetectors||
+       fMaxRings    != other.fMaxRings||
+       fMaxSectors  != other.fMaxSectors||
+       fMaxStrips   != other.fMaxStrips){
+      // allocate new memory only if the array size is different....
+      fMaxDetectors = other.fMaxDetectors;
+      fMaxRings     = other.fMaxRings;
+      fMaxSectors   = other.fMaxSectors;
+      fMaxStrips    = other.fMaxStrips;
+      fTotal        = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+      if (fData) delete [] fData;
+      fData = new Float_t[fTotal];
+    }
     for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   }
   return *this;

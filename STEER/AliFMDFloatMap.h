@@ -25,7 +25,7 @@ public:
 		 Int_t  maxSec = kMaxSectors, 
 		 Int_t  maxStr = kMaxStrips);
   AliFMDFloatMap(const AliFMDFloatMap& o);
-  virtual ~AliFMDFloatMap() { delete [] fData; }
+  virtual ~AliFMDFloatMap() { delete [] fData;fData = 0; }
   AliFMDFloatMap& operator=(const AliFMDFloatMap& o);
   virtual void Reset(const Float_t& v=Float_t());
   virtual Float_t& operator()(UShort_t det,

@@ -305,6 +305,8 @@ public:
   Int_t GetPHOSClusters(TRefArray *clusters) const;
   Int_t GetNumberOfCaloClusters() const {return fCaloClusters->GetEntriesFast();}
 
+  void SetUseOwnList(Bool_t b){fUseOwnList = b;}
+  Bool_t GetUseOwnList(){return fUseOwnList;}
   
   // Remove this stuff CKB?
   //---------------------------------------------------
@@ -338,6 +340,7 @@ public:
   void GetStdContent();
   void ResetStdContent();
   void CreateStdContent();
+  void CreateStdContent(Bool_t bUseThisList);
   void SetStdNames();
   void CopyFromOldESD();
   TList* GetList() const {return fESDObjects;}
@@ -379,6 +382,7 @@ protected:
   AliESD       *fESDOld;           //! Old esd Structure
   AliESDfriend *fESDFriendOld;     //! Old friend esd Structure
   Bool_t    fConnected;            //! flag if leaves are alreday connected
+  Bool_t    fUseOwnList;           //! Do not use the list from the esdTree but use the one created by this class 
 
   static const char* fgkESDListName[kESDListN]; //!
 
@@ -389,7 +393,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,8)  //ESDEvent class 
+  ClassDef(AliESDEvent,9)  //ESDEvent class 
 };
 #endif 
 
