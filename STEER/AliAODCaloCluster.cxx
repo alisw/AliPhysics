@@ -215,3 +215,22 @@ void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
   p.SetPxPyPzE( energy*pos[0]/r,  energy*pos[1]/r,  energy*pos[2]/r,  energy) ; 
   
 }
+
+
+void  AliAODCaloCluster::SetCellsAbsId(UShort_t *array)
+{
+    //  Set the array of cell absId numbers 
+    if (fNCells) {
+	fCellsAbsId = new  UShort_t[fNCells];
+	for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
+    }
+}
+
+void  AliAODCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
+{
+    //  Set the array of cell amplitude fraction
+    if (fNCells) {
+	fCellsAmpFraction = new  Double32_t[fNCells];
+	for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
+    }
+}
