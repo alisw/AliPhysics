@@ -111,10 +111,10 @@ public:
   void SetNCells(Int_t n) { fNCells = n;}
   Int_t GetNCells() const   { return fNCells;}
   
-  void SetCellsAbsId(UShort_t *array) { fCellsAbsId = array; }
+  void SetCellsAbsId(UShort_t *array) ;
   UShort_t *GetCellsAbsId() {return  fCellsAbsId;}
   
-  void SetCellsAmplitudeFraction(Double32_t *array) { fCellsAmpFraction = array; }
+  void SetCellsAmplitudeFraction(Double32_t *array) ;
   Double32_t *GetCellsAmplitudeFraction() {return  fCellsAmpFraction;}
   
   Int_t GetCellAbsId(Int_t i) const {  

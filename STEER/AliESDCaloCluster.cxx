@@ -296,3 +296,23 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
   p.SetPxPyPzE( fEnergy*fGlobalPos[0]/r,  fEnergy*fGlobalPos[1]/r,  fEnergy*fGlobalPos[2]/r,  fEnergy) ; 
   
 }
+
+//_______________________________________________________________________
+void  AliESDCaloCluster::SetCellsAbsId(UShort_t *array)
+{
+    //  Set the array of cell absId numbers 
+    if (fNCells) {
+	fCellsAbsId = new  UShort_t[fNCells];
+	for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
+    }
+}
+
+//_______________________________________________________________________
+void  AliESDCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
+{
+    //  Set the array of cell amplitude fraction
+    if (fNCells) {
+	fCellsAmpFraction = new  Double32_t[fNCells];
+	for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
+    }
+}
