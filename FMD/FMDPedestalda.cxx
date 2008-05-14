@@ -5,7 +5,7 @@
   Contact:                 canute@nbi.dk
   Link:                    fmd.nbi.dk/fmd/offline
   Run Type:                PEDESTAL
-  DA Type:                 Pedestal
+  DA Type:                 LDC
   Number of events needed: 1000
   Input Files:             raw data 
   Output Files:            peds.csv

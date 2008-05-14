@@ -5,7 +5,7 @@
   Contact:                 canute@nbi.dk
   Link:                    fmd.nbi.dk/fmd/offline
   Run Type:                PHYSICS
-  DA Type:                 MON
+  DA Type:                 LDC
   Number of events needed: depending on the run, being run-level
   Input Files:             raw data 
   Output Files:            conditions.csv

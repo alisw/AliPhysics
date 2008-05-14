@@ -5,7 +5,7 @@
   Contact:                 canute@nbi.dk
   Link:                    fmd.nbi.dk/fmd/offline
   Run Type:                GAIN
-  DA Type:                 GAIN
+  DA Type:                 LDC
   Number of events needed: usually 102400
   Input Files:             raw data 
   Output Files:            gains.csv
