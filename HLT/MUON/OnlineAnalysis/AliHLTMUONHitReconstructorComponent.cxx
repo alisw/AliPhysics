@@ -385,7 +385,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		AliHLTMUONRecHitsBlockWriter block(outputPtr+totalSize, size-totalSize);
 		if (not block.InitCommonHeader())
 		{
-			HLTError("There is not enough space in the output buffer for the new data block.",
+			HLTError("There is not enough space in the output buffer for the new data block."
 				 " We require at least %u bytes, but have %u bytes left.",
 				sizeof(AliHLTMUONRecHitsBlockWriter::HeaderType),
 				block.BufferSize()
