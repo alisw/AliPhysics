@@ -345,11 +345,18 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 	
 	// Detect how many regional blocks we expect. If we have no idea then
 	// just use what the maximum setting is.
-	switch (EventHandler::GetDarcType(*darcHeader))
+	UInt_t darkType = EventHandler::GetDarcType(*darcHeader);
+	if (darkType == fgkDarcVadorhType)
 	{
-	case fgkDarcVadorhType:  fNoRegionals = 1; break;
-	case fgkDarcDefaultType: fNoRegionals = 8; break;
-	default: fNoRegionals = fMaxRegionals; break;
+		fNoRegionals = 1;
+	}
+	else if (darkType == fgkDarcDefaultType)
+	{
+		fNoRegionals = 8;
+	}
+	else
+	{
+		fNoRegionals = fMaxRegionals;
 	}
 	
 	// Check if the DARC header indicates we expect more regionals than we
