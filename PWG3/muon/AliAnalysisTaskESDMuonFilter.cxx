@@ -96,7 +96,11 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
   printf("Number of Muon Tracks=%d\n",nMuTracks);
- 
+   
+   // Update number of positive and negative tracks from AOD event (M.G.)
+  Int_t nPosTracks = header->GetRefMultiplicityPos();
+  Int_t nNegTracks = header->GetRefMultiplicityNeg();
+   
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
 
        AliESDMuonTrack *esdMuTrack = esd->GetMuonTrack(nMuTrack); 
@@ -126,6 +130,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
      					     kTRUE,  // not used for vertex fit
      					     AliAODTrack::kPrimary)
      	 );
+     if (esdMuTrack->Charge() > 0) nPosTracks++;
+     else nNegTracks++;
 
      aodTrack->ConvertAliPIDtoAODPID();  
      aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
@@ -137,7 +143,11 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
        aodTrack->SetChi2MatchTrigger(0.);
  }
 
-    return;
+  header->SetRefMultiplicity(jTracks); 
+  header->SetRefMultiplicityPos(nPosTracks);
+  header->SetRefMultiplicityNeg(nNegTracks);
+  
+  return;
 }
 
 void AliAnalysisTaskESDMuonFilter::Terminate(Option_t */*option*/)
