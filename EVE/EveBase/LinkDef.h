@@ -12,7 +12,9 @@
 #pragma link off all classes;
 
 // AliEveEventManager
-#pragma link C++ class  AliEveEventManager+;
+#pragma link C++ class AliEveEventManager+;
+#pragma link C++ class AliEveEventManagerEditor+;
+
 #pragma link C++ global gAliEveEvent;
 
 #pragma link C++ class AliEveKineTools+;
