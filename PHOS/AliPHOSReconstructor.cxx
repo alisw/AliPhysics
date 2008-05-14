@@ -323,6 +323,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
     esd->AddCaloCluster(ec);
     delete ec;   
+    delete [] fracList;
+    delete [] absIdList;
   }
   digitsArray ->Delete();
   delete digitsArray;
