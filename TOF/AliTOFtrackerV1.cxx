@@ -67,8 +67,8 @@ AliTOFtrackerV1::AliTOFtrackerV1():
   fnbadmatch(0),
   fnunmatch(0),
   fnmatch(0),
-  fTracks(0x0),
-  fSeeds(0x0),
+  fTracks(new TClonesArray("AliTOFtrack")),
+  fSeeds(new TClonesArray("AliESDtrack")),
   fHDigClusMap(0x0),
   fHDigNClus(0x0),
   fHDigClusTime(0x0),
@@ -107,8 +107,8 @@ AliTOFtrackerV1::AliTOFtrackerV1(const AliTOFtrackerV1 &t):
   fnbadmatch(0),
   fnunmatch(0),
   fnmatch(0),
-  fTracks(0x0),
-  fSeeds(0x0),
+  fTracks(new TClonesArray("AliTOFtrack")),
+  fSeeds(new TClonesArray("AliESDtrack")),
   fHDigClusMap(0x0),
   fHDigNClus(0x0),
   fHDigClusTime(0x0),
@@ -179,6 +179,16 @@ AliTOFtrackerV1::~AliTOFtrackerV1() {
   delete fHRecSigZVsP;
   delete fHRecSigYVsPWin;
   delete fHRecSigZVsPWin;
+  if (fTracks){
+    fTracks->Delete();
+    delete fTracks;
+    fTracks=0x0;
+  }
+  if (fSeeds){
+    fSeeds->Delete();
+    delete fSeeds;
+    fSeeds=0x0;
+  }
 }
 //_____________________________________________________________________________
 Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
@@ -198,7 +208,6 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
 
   Int_t ntrk=event->GetNumberOfTracks();
   fNseeds = ntrk;
-  fSeeds= new TClonesArray("AliESDtrack",ntrk);
   TClonesArray &aESDTrack = *fSeeds;
 
 
@@ -263,16 +272,8 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
   //Make TOF PID
   fPid->MakePID(event,timeZero);
 
-  if (fSeeds) {
-    fSeeds->Delete();
-    delete fSeeds;
-    fSeeds = 0x0;
-  }
-  if (fTracks) {
-    fTracks->Delete();
-    delete fTracks;
-    fTracks = 0x0;
-  }
+  fSeeds->Clear();
+  fTracks->Clear();
   return 0;
   
 }
@@ -283,7 +284,6 @@ void AliTOFtrackerV1::CollectESD() {
   Int_t seedsTOF1=0;
   Int_t seedsTOF2=0;
  
-  fTracks= new TClonesArray("AliTOFtrack");
   TClonesArray &aTOFTrack = *fTracks;
   for (Int_t i=0; i<fNseeds; i++) {
 
@@ -536,12 +536,16 @@ Int_t AliTOFtrackerV1::LoadClusters(TTree *cTree) {
     return 1;
   }
 
-  TClonesArray dummy("AliTOFcluster",10000), *clusters=&dummy;
+  static TClonesArray dummy("AliTOFcluster",10000);
+  dummy.Clear();
+  TClonesArray *clusters=&dummy;
   branch->SetAddress(&clusters);
 
   cTree->GetEvent(0);
   Int_t nc=clusters->GetEntriesFast();
   fHDigNClus->Fill(nc);
+
+  AliInfo(Form("Number of clusters: %d",nc));
 
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);

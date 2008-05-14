@@ -64,8 +64,8 @@ AliTOFtrackerMI::AliTOFtrackerMI():
   fDx(1.5), 
   fDy(0), 
   fDz(0), 
-  fTracks(0x0),
-  fSeeds(0x0),
+  fTracks(new TClonesArray("AliTOFtrack")),
+  fSeeds(new TClonesArray("AliESDtrack")),
   fDebugStreamer(0x0)
  { 
   //AliTOFtrackerMI main Ctor
@@ -99,8 +99,8 @@ AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):
   fDx(1.5), 
   fDy(0), 
   fDz(0), 
-  fTracks(0x0),
-  fSeeds(0x0),
+  fTracks(new TClonesArray("AliTOFtrack")),
+  fSeeds(new TClonesArray("AliESDtrack")),
   fDebugStreamer(0x0)
  { 
   //AliTOFtrackerMI copy Ctor
@@ -164,6 +164,16 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
   delete fRecoParam;
   delete fGeom;
   delete fPid;
+  if (fTracks){
+    fTracks->Delete();
+    delete fTracks;
+    fTracks=0x0;
+  }
+  if (fSeeds){
+    fSeeds->Delete();
+    delete fSeeds;
+    fSeeds=0x0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -184,7 +194,6 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
 
   Int_t ntrk=event->GetNumberOfTracks();
   fNseeds = ntrk;
-  fSeeds= new TClonesArray("AliESDtrack");
   TClonesArray &aESDTrack = *fSeeds;
 
 
@@ -241,16 +250,8 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   //Make TOF PID
   fPid->MakePID(event);
 
-  if (fSeeds) {
-    fSeeds->Delete();
-    delete fSeeds;
-    fSeeds = 0x0;
-  }
-  if (fTracks) {
-    fTracks->Delete();
-    delete fTracks;
-    fTracks = 0x0;
-  }
+  fSeeds->Clear();
+  fTracks->Clear();
   return 0;
   
 }
@@ -258,7 +259,6 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
 void AliTOFtrackerMI::CollectESD() {
    //prepare the set of ESD tracks to be matched to clusters in TOF
  
-  fTracks= new TClonesArray("AliTOFtrack");
   TClonesArray &aTOFTrack = *fTracks;
   Int_t c0=0;
   Int_t c1=0;
@@ -669,7 +669,9 @@ Int_t AliTOFtrackerMI::LoadClusters(TTree *cTree) {
     return 1;
   }
 
-  TClonesArray dummy("AliTOFcluster",10000), *clusters=&dummy;
+  static TClonesArray dummy("AliTOFcluster",10000);
+  dummy.Clear();
+  TClonesArray *clusters=&dummy;
   branch->SetAddress(&clusters);
 
   cTree->GetEvent(0);
