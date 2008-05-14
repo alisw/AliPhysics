@@ -16,6 +16,7 @@
 // $Id$
 // $MpId: AliMpTriggerReader.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
+#include <cstdlib>
 #include "AliMpTriggerReader.h"
 #include "AliMpMotifReader.h"
 #include "AliMpFiles.h"

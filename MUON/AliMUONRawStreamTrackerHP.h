@@ -13,6 +13,7 @@
 /// \brief  Declaration of the high performance decoder for muon trigger chamber raw streams.
 ///
 
+#include <cstring>
 #include "AliMUONVRawStreamTracker.h"
 #include "AliMUONTrackerDDLDecoder.h"
 

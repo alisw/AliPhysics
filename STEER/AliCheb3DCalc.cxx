@@ -16,6 +16,7 @@
 
 // Author: ruben.shahoyan@cern.ch   09/09/2006
 //
+#include <cstdlib>
 #include "AliCheb3DCalc.h"
 
 ClassImp(AliCheb3DCalc)

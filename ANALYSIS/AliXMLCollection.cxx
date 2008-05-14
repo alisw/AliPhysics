@@ -21,6 +21,7 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
+#include <cstdlib>
 //ROOT
 #include <Riostream.h>
 #include <TEntryList.h>

@@ -23,6 +23,7 @@
  * @brief  Base class for HLT module preprocessors
  */
 
+#include <cstdlib>
 #include <cassert>
 #include "AliHLTModulePreprocessor.h"
 #include "AliHLTShuttleInterface.h"

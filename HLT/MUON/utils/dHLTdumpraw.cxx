@@ -36,6 +36,7 @@
 
 #include "AliHLTMUONUtils.h"
 
+#include <cstring>
 #include <cstdlib>
 #include <cassert>
 #include <new>

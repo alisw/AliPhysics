@@ -43,6 +43,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 
+#include <cstdlib>
 #include "AliTPCMonitorMappingHandler.h"
 #include "TH1.h"
 #include "TLegend.h"

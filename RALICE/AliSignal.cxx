@@ -109,6 +109,7 @@
 //- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliSignal.h"
 #include "AliTrack.h"
 #include "Riostream.h"

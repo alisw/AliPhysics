@@ -27,6 +27,7 @@
 //          Christian Finck, SUBATECH Nantes
 //-----------------------------------------------------------------------------
 
+#include <cstdlib>
 #include "AliMpDDLStore.h"
 #include "AliMpConstants.h"
 #include "AliMpDEStore.h"

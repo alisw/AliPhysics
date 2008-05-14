@@ -15,6 +15,7 @@
 
 // $Id$
 
+#include <cstdlib>
 #include "AliMUONTrackerIO.h"
 
 /// \class AliMUONTrackerIO

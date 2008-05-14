@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <cstring>
 #include "Hypersurface.h"
 
 Hypersurface::Hypersurface(const char *dirname) {

@@ -25,6 +25,7 @@
 #include "flow/AliFMDFlowAxis.h"
 #include <TRandom.h>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 
 //____________________________________________________________________

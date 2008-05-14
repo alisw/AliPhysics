@@ -33,6 +33,7 @@
 using namespace std;
 #endif
 
+#include <climits>
 #include "AliHLTTPCSliceTrackerComponent.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCConfMapper.h"

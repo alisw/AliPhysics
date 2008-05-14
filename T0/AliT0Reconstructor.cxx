@@ -34,7 +34,7 @@
 #include <TArrayI.h>
 #include <TGraph.h>
 #include <TMath.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 ClassImp(AliT0Reconstructor)
 

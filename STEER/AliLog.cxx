@@ -31,6 +31,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include <strings.h>
 #include <Riostream.h>
 #include <TError.h>

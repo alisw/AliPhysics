@@ -23,6 +23,7 @@
 //...
 
 // --- ROOT system ---
+#include <Riostream.h>
 #include <TClass.h>
 #include <TH1F.h> 
 #include <TH1I.h> 
@@ -38,7 +39,6 @@
 #include "AliQA.h"
 #include "AliQAChecker.h"
 #include "AliT0QAChecker.h"
-#include "iostream.h"
 
 ClassImp(AliT0QAChecker)
 

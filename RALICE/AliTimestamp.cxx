@@ -167,6 +167,7 @@
 //- Modified: NvE $Date$ Utrecht University.
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliTimestamp.h"
 #include "Riostream.h"
 

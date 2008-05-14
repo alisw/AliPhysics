@@ -16,6 +16,7 @@
 //   delete evlist;
 //   ---------------------------------------------------------------------------------
 
+#include <cstdlib>
 #include <TCollection.h>
 #include <TMap.h>
 #include <TObjString.h>

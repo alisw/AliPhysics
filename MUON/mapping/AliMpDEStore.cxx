@@ -25,6 +25,7 @@
 //          Laurent Aphecetche, Christian Finck, SUBATECH Nantes
 //-----------------------------------------------------------------------------
 
+#include <cstdlib>
 #include "AliMpDEStore.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"

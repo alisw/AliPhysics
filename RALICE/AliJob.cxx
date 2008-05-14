@@ -112,6 +112,7 @@
 //- Modified: NvE $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
  
+#include <cstdlib>
 #include "AliJob.h"
 #include "Riostream.h"
 

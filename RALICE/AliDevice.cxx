@@ -79,6 +79,7 @@
 //- Modified: NvE $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliDevice.h"
 #include "Riostream.h"
  

@@ -111,6 +111,7 @@
 //- Modified: NvE $Date: 2004/05/04 15:33:04 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliCollider.h"
 #include "Riostream.h"
  

@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#include <cstdlib>
 #include "AliMonitorControl.h"
 #include "AliMonitorHisto.h"
 #include "AliLog.h"

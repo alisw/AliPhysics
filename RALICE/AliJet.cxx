@@ -94,6 +94,7 @@
 //- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliJet.h"
 #include "Riostream.h"
  

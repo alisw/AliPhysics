@@ -148,6 +148,7 @@
 //- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliVertex.h"
 #include "Riostream.h"
  

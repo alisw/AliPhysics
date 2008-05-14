@@ -15,6 +15,7 @@
 
 // $Id$
 
+#include <cstdlib>
 #include "AliMUONRefitter.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONClusterFinderCOG.h"

@@ -42,6 +42,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+#include <cstring>
 #include "AliHLTHOMERWriter.h"
 #include <sys/time.h>
 #include <time.h>

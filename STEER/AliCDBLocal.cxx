@@ -20,6 +20,7 @@
 //                                                                                             //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include <TSystem.h>
 #include <TObjString.h>
 #include <TRegexp.h>

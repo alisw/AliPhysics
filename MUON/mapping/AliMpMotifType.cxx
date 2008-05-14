@@ -25,6 +25,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 //-----------------------------------------------------------------------------
 
+#include <cstdlib>
 #include "AliMpMotifType.h"
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpConnection.h"

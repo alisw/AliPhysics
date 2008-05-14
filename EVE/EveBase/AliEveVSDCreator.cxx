@@ -7,6 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include <memory>
 #include "AliEveVSDCreator.h"
 
 #include <AliStack.h>

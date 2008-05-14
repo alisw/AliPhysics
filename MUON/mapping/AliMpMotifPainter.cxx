@@ -25,6 +25,7 @@
 // Authors: David Guez, IPN Orsay
 //-----------------------------------------------------------------------------
 
+#include <cstdlib>
 #include "AliMpMotifPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpMotifPosition.h"

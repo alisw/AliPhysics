@@ -151,6 +151,7 @@
 //- Modified: NvE $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliHelix.h"
 #include "Riostream.h"
  

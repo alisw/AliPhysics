@@ -15,6 +15,7 @@
 
 // $Id$
 
+#include <cstdlib>
 #include "AliMUONPainterDataSourceFrame.h"
 
 

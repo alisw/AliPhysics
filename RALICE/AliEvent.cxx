@@ -252,6 +252,7 @@
 //- Modified: NvE $Date: 2004/10/20 10:49:44 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliEvent.h"
 #include "Riostream.h"
  

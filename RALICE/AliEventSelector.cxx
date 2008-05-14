@@ -127,6 +127,7 @@
 //- Modified: NvE $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
  
+#include <cstdlib>
 #include "AliEventSelector.h"
 #include "Riostream.h"
 

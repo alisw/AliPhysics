@@ -24,6 +24,7 @@
 /// \author Rachid Guernane (LPCCFd)
 //-----------------------------------------------------------------------------
 
+#include <cstdlib>
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerLut.h"
 

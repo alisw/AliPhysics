@@ -33,6 +33,7 @@
 using namespace std;
 #endif
 
+#include <climits>
 #include "AliHLTTPCGlobalMergerComponent.h"
 //#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCGlobalMerger.h"

@@ -126,6 +126,7 @@
 //- Modified: NvE $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include "AliAstrolab.h"
 #include "Riostream.h"
  

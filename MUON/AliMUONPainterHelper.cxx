@@ -15,6 +15,7 @@
 
 // $Id$
 
+#include <cstdlib>
 #include "AliMUONPainterHelper.h"
 
 #include "AliMUONGeometryDetElement.h"
