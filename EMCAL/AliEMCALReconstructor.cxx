@@ -263,7 +263,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //printf("\n triggerAmplitudes ");
   //for(int i=0; i<4; i++) printf(" %i %f : ", i, triggerAmplitudes[i]);
   //printf("\n");
-  tr.Print("");
+  //tr.Print("");
   //
   // Trigger jet staff
   //
@@ -423,8 +423,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       // add the cluster to the esd object
      esd->AddCaloCluster(ec);
       delete ec;
-     //delete [] newAbsIdList ;
-     //delete [] newFracList ;
+      delete [] newAbsIdList ;
+      //delete [] newFracList ;
    }
  } // cycle on clusters
 
