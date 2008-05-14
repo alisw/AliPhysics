@@ -28,31 +28,81 @@
   Completely reimplemented the lookup table to a simplified format.
 **********************************************************************/
 
-///*
-//
-//  The trigger reconstructor class is designed to deal the rawdata inputfiles
-//  to findout the the reconstructed hits at the trigger DDL. The output is send
-//  to the output block for further processing.
-//
-//  Author : Indranil Das ( indra.das@saha.ac.in || indra.ehep@gmail.com )
-// 
-//*/
+///
+///  @file   AliHLTMUONTriggerReconstructor.cxx
+///  @author Indranil Das <indra.das@saha.ac.in>,
+///          Artur Szostak <artursz@iafrica.com>
+///  @date   16 May 2007
+///  @brief  Implementation of the AliHLTMUONTriggerReconstructor class.
+///
+///  The trigger reconstructor class is designed to deal the rawdata inputfiles
+///  to findout the the reconstructed hits at the trigger DDL. The output is send
+///  to the output block for further processing.
+///
 
 #include "AliHLTMUONTriggerReconstructor.h"
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONCalculations.h"
+#include "AliRawDataHeader.h"
 #include <vector>
 #include <cassert>
 
 
 AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor() :
-	fMaxRecPointsCount(0),
-	fTrigRecId(0),
-	fLookupTable()
+	AliHLTLogging(),
+	fDecoder()
 {
-	// ctor
+	/// Default constructor.
+}
+
+
+AliHLTMUONTriggerReconstructor::~AliHLTMUONTriggerReconstructor()
+{
+	/// Default destructor.
+}
+
+
+bool AliHLTMUONTriggerReconstructor::Run(
+		const AliHLTUInt8_t* rawData,
+		AliHLTUInt32_t rawDataSize,
+		AliHLTMUONTriggerRecordStruct* trigRecord,
+		AliHLTUInt32_t& nofTrigRec,
+		bool suppressPartialTrigs
+	)
+{
+	/// Runs the trigger reconstruction algorithm on the raw data.
+	
+	// Reset and initialise some variables in the decoder.
+	fDecoder.GetHandler().MaxOutputTrigRecs(nofTrigRec);
+	fDecoder.GetHandler().OutputTrigRecs(trigRecord);
+	fDecoder.GetHandler().SuppressPartialTriggers(suppressPartialTrigs);
+	
+	fDecoder.Decode(rawData, rawDataSize);
+	
+	// nofTrigRec now becomes the output of how many trigger records were found.
+	nofTrigRec = fDecoder.GetHandler().OutputTrigRecsCount();
+	
+	return not fDecoder.GetHandler().OverflowedOutputBuffer();
+}
+
+
+AliHLTMUONTriggerReconstructor::AliDecoderHandler::AliDecoderHandler() :
+	AliMUONTriggerDDLDecoderEventHandler(),
+	AliHLTLogging(),
+	fLookupTable(),
+	fBufferStart(NULL),
+	fMaxOutputTrigRecs(0),
+	fOutputTrigRecsCount(0),
+	fOutputTrigRecs(NULL),
+	fTrigRecId(0),
+	fCurrentRegional(0),
+	fCurrentLocal(0),
+	fSuppressPartialTriggers(false),
+	fOverflowed(false)
+{
+	/// Default constructor just resets the lookup table to zero.
 	
 	for (Int_t i = 0; i < 8; i++)
 	for (Int_t j = 0; j < 16; j++)
@@ -67,217 +117,179 @@ AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor() :
 }
 
 
-AliHLTMUONTriggerReconstructor::~AliHLTMUONTriggerReconstructor()
-{
-	// dtor
-}
-
-
-bool AliHLTMUONTriggerReconstructor::Run(
-		const AliHLTUInt32_t* rawData,
-		// TODO: if we are not checking rawDataSize then it means we are
-		// not parsing the raw data safely or checking for corruption carefully.
-		// This must be fixed at some point.
-		AliHLTUInt32_t /*rawDataSize*/,
-		AliHLTMUONTriggerRecordStruct* trigRecord,
-		AliHLTUInt32_t& nofTrigRec,
-		bool suppressPartialTrigs
+void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnNewBuffer(
+		const void* buffer, UInt_t /*bufferSize*/
 	)
 {
-	fMaxRecPointsCount = nofTrigRec;
+	/// Called for each new buffer. Sets the buffer and resets the structure
+	/// counters.
 	
-	// nofTrigRec now becomes the output of how many trigger records were found.
-	nofTrigRec = 0;
+	assert( buffer != NULL );
+	fBufferStart = buffer;
 	
-	int index = 0;
-	int reg_output, reg_phys_trig_occur;
-	int iLocIndex,loc,locDec,triggY,sign,loDev,triggX;
-	short pattern[2][4]; // 2 stands for two cathode planes and 4 stands for 4 chambers
-	
-	int phys_trig_occur = (rawData[index]>>30)&0x1; // 1 for physics trigger, 0 for software trigger
-	
-	if (not phys_trig_occur) // for software trigger
-		index += 8 ;// corresponding to scalar words
-	
-	index += 1 ; // To skip the separator 0xDEADFACE
-	
-	index += 4 ; // corresponding to global input
-	
-	index += 1 ; // reaches to global output
-	
-	if (not phys_trig_occur) index += 10; // corresponds to scalar words
-	
-	index += 1; // separator 0xDEADBEEF 
-	
-	for (int iReg = 0; iReg < 8; iReg++)
-	{
-		index += 1; // DARC Status Word
-		index += 1; // Regeional Word
-		reg_output = rawData[index] & 0xFF;
-		reg_phys_trig_occur = ( rawData[index] >> 31) & 0x1;
-		
-		index += 2; // 2 words for regional input
-		
-		index += 1; // L0 counter
-		
-		if (not reg_phys_trig_occur) index += 10;
-		
-		index += 1; // end of Regeonal header 0xBEEFFACE
-		
-		for(int iLoc = 0; iLoc < 16 ; iLoc++)
-		{
-			iLocIndex = index;
-			
-			loc = (rawData[index+5] >> 19) &  0xF ;
-			
-			locDec = (rawData[index+5] >> 15) & 0xF;
-			triggY = (rawData[index+5] >> 14) & 0x1;
-			sign = (rawData[index+5] >> 9) & 0x1;
-			loDev = (rawData[index+5] >> 5) & 0xF ;
-			triggX = (loDev >> 4 & 0x1 ) && !(loDev & 0xF);
-			
-			if( locDec != 0x9 )
-			{ // check for Dec
-			
-				index += 1;
-				pattern[0][0] = rawData[index] & 0xFFFF; // x-strip pattern for chamber 0 
-				pattern[0][1] = (rawData[index] >> 16) & 0xFFFF; // x-strip pattern for chamber 1
-				index += 1; 
-				pattern[0][2] = rawData[index] & 0xFFFF; 
-				pattern[0][3] = (rawData[index] >> 16) & 0xFFFF; 
-				
-				index += 1;
-				pattern[1][0] = rawData[index] & 0xFFFF; // y-strip pattern for chamber 0
-				pattern[1][1] = (rawData[index] >> 16) & 0xFFFF; // y-strip pattern for chamber 0 
-				index += 1; 
-				pattern[1][2] = rawData[index] & 0xFFFF; 
-				pattern[1][3] = (rawData[index] >> 16) & 0xFFFF; 
-			
-				if (pattern[0][0] || pattern[0][1] || pattern[0][2] || pattern[0][3]
-				   || pattern[1][0] || pattern[1][1] || pattern[1][2] || pattern[1][3]
-				)
-				{
-					if (nofTrigRec == fMaxRecPointsCount)
-					{
-						HLTError("Output buffer is overflowed maximum assiged arraysize : %d, present array index : %d",
-							fMaxRecPointsCount, nofTrigRec
-						);
-						return false;
-					}
-				
-					bool Xset[4] = {false, false, false, false};
-					bool Yset[4] = {false, false, false, false};
-				
-					for (int iChamber = 0; iChamber < 4 ; iChamber++) //4 chambers per DDL 
-					for (int iPlane = 0; iPlane < 2 ; iPlane++) // 2 cathode plane
-					{
-						for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy)
-						{
-							if (((pattern[iPlane][iChamber] >> ibitxy) & 0x1) != 0x1)
-								continue;
-							
-							if (iPlane == 1)
-							{
-								trigRecord[nofTrigRec].fHit[iChamber].fX =
-									fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fX;
-								Xset[iChamber] = true;
-							}
-							else
-							{
-								trigRecord[nofTrigRec].fHit[iChamber].fY =
-									fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fY;
-								trigRecord[nofTrigRec].fHit[iChamber].fZ =
-									fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fZ;
-								Yset[iChamber] = true;
-							}
-							
-						}// loop of ibitxy
-					}// ichamber, iplane
-				
-					// hitset indicates which hits on chambers 7 to 10 have been found and filled.
-					bool hitset[4] = {false, false, false, false};
-					
-					// Fill the hitset flags and make sure the hit structures that were not
-					// filled (set) get set to a nil value.
-					for (int i = 0; i < 4; i++)
-					{
-						hitset[i] = Xset[i] and Yset[i];
-						
-						if (not hitset[i])
-						{
-							trigRecord[nofTrigRec].fHit[i]
-								= AliHLTMUONConstants::NilRecHitStruct();
-						}
-					}
-			
-					trigRecord[nofTrigRec].fId = fTrigRecId;
-				
-					// Increment trigger record Id and keep it positive.
-					//TODO: handle the wrapparound better.
-					if (fTrigRecId < 0x7FFFFFFF)
-						fTrigRecId++;
-					else
-						fTrigRecId = 0;
-					
-					AliHLTMUONRecHitStruct* hit1 = NULL;
-					if (hitset[0])
-						hit1 = &trigRecord[nofTrigRec].fHit[0];
-					else if (hitset[1])
-						hit1 = &trigRecord[nofTrigRec].fHit[1];
-					AliHLTMUONRecHitStruct* hit2 = NULL;
-					if (hitset[2])
-						hit2 = &trigRecord[nofTrigRec].fHit[2];
-					else if (hitset[3])
-						hit2 = &trigRecord[nofTrigRec].fHit[3];
-					
-					if (hit1 != NULL and hit2 != NULL)
-					{
-						// Calculate the momentum and fill in the flags and momentum fields.
-						AliHLTMUONCalculations::ComputeMomentum(
-								hit1->fX,
-								hit1->fY, hit2->fY,
-								hit1->fZ, hit2->fZ
-							);
-						trigRecord[nofTrigRec].fPx = AliHLTMUONCalculations::Px();
-						trigRecord[nofTrigRec].fPy = AliHLTMUONCalculations::Py();
-						trigRecord[nofTrigRec].fPz = AliHLTMUONCalculations::Pz();
-			
-						trigRecord[nofTrigRec].fFlags =
-							AliHLTMUONUtils::PackTriggerRecordFlags(
-								AliHLTMUONCalculations::Sign(),
-								hitset
-							);
-						
-						nofTrigRec++;
-					}
-					else if ((hit1 != NULL or hit2 != NULL) and not suppressPartialTrigs)
-					{
-						trigRecord[nofTrigRec].fPx = 0;
-						trigRecord[nofTrigRec].fPy = 0;
-						trigRecord[nofTrigRec].fPz = 0;
-			
-						trigRecord[nofTrigRec].fFlags =
-							AliHLTMUONUtils::PackTriggerRecordFlags(
-								kSignUnknown,
-								hitset
-							);
-						
-						nofTrigRec++;
-					}
-				
-				}// if any non zero pattern found
-			
-				index += 1 ; // the last word, important one
-			}// Dec Condn
-			
-			if (not reg_phys_trig_occur)
-				index += 45;
-				
-			index += 1; // end of local Data 0xCAFEFADE
-			
-			index = iLocIndex + 6; //important to reset the index counter for fake locids like 235 
-		}// iLoc loop
-	}// iReg Loop
-	
-	return true;
+	// Start from -1 since we increment immediately in OnNewRegionalStruct.
+	fCurrentRegional = fCurrentLocal = -1;
 }
+
+
+void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnLocalStruct(
+		const AliMUONLocalInfoStruct* localStruct,
+		const AliMUONLocalScalarsStruct* /*scalars*/
+	)
+{
+	/// Converts a local trigger structure from the L0 into a trigger record.
+	/// The dHLT trigger records is then used as a seed for tracking algorithms.
+	/// \note fOutputTrigRecs must be set before calling the decoder to decode
+	///    a new raw data buffer.
+	/// \param localStruct  This is a pointer to the local L0 trigger structure data.
+
+	assert(localStruct != NULL);
+	assert(fOutputTrigRecs != NULL);
+
+	fCurrentLocal++;
+	AliHLTInt32_t iReg = fCurrentRegional;
+	AliHLTInt32_t iLoc = fCurrentLocal;
+	assert(iReg >= 0);
+	assert(iLoc >= 0);
+
+	// Check if there is anything in the trigger patterns at all.
+	// If nothing then ignore this local L0 trigger.
+	if (localStruct->fX2X1 == 0 and localStruct->fX4X3 == 0 and
+	    localStruct->fY2Y1 == 0 and localStruct->fY4Y3 == 0
+	   )
+	{
+		return;
+	}
+	
+	// Check that we will not overflow the output buffer.
+	if (fOutputTrigRecsCount >= fMaxOutputTrigRecs)
+	{
+		HLTError("Output buffer has overflowed maximum element count of %d.",
+			fMaxOutputTrigRecs
+		);
+		fOverflowed = true;
+		return;
+	}
+	
+	UShort_t pattern[2][4]; // 2 stands for two cathode planes and the 4 stands for 4 chambers.
+	pattern[0][0] = GetLocalX1(localStruct); // x-strip pattern for chamber 0
+	pattern[0][1] = GetLocalX2(localStruct); // x-strip pattern for chamber 1
+	pattern[0][2] = GetLocalX3(localStruct); // x-strip pattern for chamber 2
+	pattern[0][3] = GetLocalX4(localStruct); // x-strip pattern for chamber 3
+	pattern[1][0] = GetLocalY1(localStruct); // y-strip pattern for chamber 0
+	pattern[1][1] = GetLocalY2(localStruct); // y-strip pattern for chamber 1
+	pattern[1][2] = GetLocalY3(localStruct); // y-strip pattern for chamber 2
+	pattern[1][3] = GetLocalY4(localStruct); // y-strip pattern for chamber 3
+
+	bool setX[4] = {false, false, false, false};
+	bool setY[4] = {false, false, false, false};
+
+	for (int iChamber = 0; iChamber < 4; iChamber++) //4 chambers
+	for (int iPlane = 0; iPlane < 2; iPlane++) // 2 cathode planes
+	{
+		for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy)
+		{
+			if (((pattern[iPlane][iChamber] >> ibitxy) & 0x1) != 0x1)
+				continue;
+			
+			if (iPlane == 1)
+			{
+				fOutputTrigRecs[fOutputTrigRecsCount].fHit[iChamber].fX =
+					fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fX;
+				setX[iChamber] = true;
+			}
+			else
+			{
+				fOutputTrigRecs[fOutputTrigRecsCount].fHit[iChamber].fY =
+					fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fY;
+				fOutputTrigRecs[fOutputTrigRecsCount].fHit[iChamber].fZ =
+					fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fZ;
+				setY[iChamber] = true;
+			}
+		}
+	}
+
+	// hitset indicates which hits on chambers 7 to 10 have been found and filled.
+	bool hitset[4] = {false, false, false, false};
+	
+	// Fill the hitset flags and make sure the hit structures that were not
+	// filled (set) get set to a nil value.
+	for (int i = 0; i < 4; i++)
+	{
+		hitset[i] = setX[i] and setY[i];
+		
+		if (not hitset[i])
+		{
+			fOutputTrigRecs[fOutputTrigRecsCount].fHit[i]
+				= AliHLTMUONConstants::NilRecHitStruct();
+		}
+	}
+
+	fOutputTrigRecs[fOutputTrigRecsCount].fId = fTrigRecId;
+
+	// Increment trigger record Id and keep it positive.
+	if (fTrigRecId < 0x7FFFFFFF)
+		fTrigRecId++;
+	else
+		fTrigRecId = 0;
+	
+	AliHLTMUONRecHitStruct* hit1 = NULL;
+	if (hitset[0])
+		hit1 = &fOutputTrigRecs[fOutputTrigRecsCount].fHit[0];
+	else if (hitset[1])
+		hit1 = &fOutputTrigRecs[fOutputTrigRecsCount].fHit[1];
+	AliHLTMUONRecHitStruct* hit2 = NULL;
+	if (hitset[2])
+		hit2 = &fOutputTrigRecs[fOutputTrigRecsCount].fHit[2];
+	else if (hitset[3])
+		hit2 = &fOutputTrigRecs[fOutputTrigRecsCount].fHit[3];
+	
+	if (hit1 != NULL and hit2 != NULL)
+	{
+		// Calculate the momentum and fill in the flags and momentum fields.
+		AliHLTMUONCalculations::ComputeMomentum(
+				hit1->fX,
+				hit1->fY, hit2->fY,
+				hit1->fZ, hit2->fZ
+			);
+		fOutputTrigRecs[fOutputTrigRecsCount].fPx = AliHLTMUONCalculations::Px();
+		fOutputTrigRecs[fOutputTrigRecsCount].fPy = AliHLTMUONCalculations::Py();
+		fOutputTrigRecs[fOutputTrigRecsCount].fPz = AliHLTMUONCalculations::Pz();
+
+		fOutputTrigRecs[fOutputTrigRecsCount].fFlags =
+			AliHLTMUONUtils::PackTriggerRecordFlags(
+				AliHLTMUONCalculations::Sign(),
+				hitset
+			);
+		
+		fOutputTrigRecsCount++;
+	}
+	else if ((hit1 != NULL or hit2 != NULL) and not fSuppressPartialTriggers)
+	{
+		fOutputTrigRecs[fOutputTrigRecsCount].fPx = 0;
+		fOutputTrigRecs[fOutputTrigRecsCount].fPy = 0;
+		fOutputTrigRecs[fOutputTrigRecsCount].fPz = 0;
+
+		fOutputTrigRecs[fOutputTrigRecsCount].fFlags =
+			AliHLTMUONUtils::PackTriggerRecordFlags(
+				kSignUnknown,
+				hitset
+			);
+		
+		fOutputTrigRecsCount++;
+	}
+}
+
+
+void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnError(
+		ErrorCode code, const void* location
+	)
+{
+	/// Logs an error message if there was a decoding problem with the DDL payload.
+	
+	long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
+	HLTError("There is a problem with decoding the raw data. %s (Error code: %d, at byte %d)",
+		ErrorCodeToMessage(code), code, bytepos
+	);
+}
+

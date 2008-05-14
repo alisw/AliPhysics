@@ -30,6 +30,7 @@
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONDataBlockWriter.h"
+#include "AliRawDataHeader.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliGeomManager.h"
@@ -402,7 +403,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		AliHLTMUONTriggerRecordsBlockWriter block(outputPtr+totalSize, size-totalSize);
 		if (not block.InitCommonHeader())
 		{
-			HLTError("There is not enough space in the output buffer for the new data block.",
+			HLTError("There is not enough space in the output buffer for the new data block."
 				 " We require at least %ufTrigRec->GetkDDLHeaderSize() bytes, but have %u bytes left.",
 				sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType),
 				block.BufferSize()
@@ -410,13 +411,23 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			break;
 		}
 
-		AliHLTUInt32_t totalDDLSize = blocks[n].fSize / sizeof(AliHLTUInt32_t);
-		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - 8;
-		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(blocks[n].fPtr) + 8;
+		AliHLTUInt32_t totalDDLSize = blocks[n].fSize;
+		if (totalDDLSize < sizeof(AliRawDataHeader))
+		{
+			HLTError("Raw data block %d is %d bytes in size and is too short to"
+				 " possibly contain valid DDL raw data. We expect it to have"
+				 " at least %d bytes for the commond data header.",
+				n, totalDDLSize, sizeof(AliRawDataHeader)
+			);
+			continue;
+		}
+		AliHLTUInt32_t payloadSize = totalDDLSize - sizeof(AliRawDataHeader);
+		AliHLTUInt8_t* buffer =
+			reinterpret_cast<AliHLTUInt8_t*>(blocks[n].fPtr) + sizeof(AliRawDataHeader);
 		AliHLTUInt32_t nofTrigRec = block.MaxNumberOfEntries();
 
 		bool runOk = fTrigRec->Run(
-				buffer, ddlRawDataSize,
+				buffer, payloadSize,
 				block.GetArray(), nofTrigRec,
 				fSuppressPartialTrigs
 			);
