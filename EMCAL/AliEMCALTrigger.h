@@ -150,6 +150,7 @@ class AliEMCALTrigger : public AliTriggerDetector {
   virtual Bool_t  IsFolder() const {return kTRUE;}
 
   // Name of Jet trigger(s)
+  Char_t* GetNameOfJetTrigger(const Int_t i) {return Form("%s_Th_%2.2i",fgNameOfJetTriggers.Data(),i);}
   static TString GetNameOfJetTriggers() {return fgNameOfJetTriggers;}
   static TString fgNameOfJetTriggers;
   // Estimation on EMCal energy from VZERO multiplicity

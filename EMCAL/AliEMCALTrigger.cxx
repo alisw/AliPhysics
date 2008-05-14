@@ -208,7 +208,7 @@ void AliEMCALTrigger::CreateInputs()
    // Jet Trigger(s)
    UInt_t level = 0x032;
    for(Int_t i=0; i<fNJetThreshold; i++ ) {
-     TString name(Form("%s_Th_%2.2i",fgNameOfJetTriggers.Data(),i));
+     TString name(GetNameOfJetTrigger(i));
      TString title("EMCAL Jet triger L1 :"); // unused now
      // 0.0153 - hard coded now
      title += Form("Th %i(%5.1f GeV) :", (Int_t)fL1JetThreshold[i], fL1JetThreshold[i] * 0.0153); 
@@ -1086,7 +1086,7 @@ void AliEMCALTrigger::MakeSlidingPatch(const TMatrixD &jm, const Int_t nPatchSiz
   // Set the jet trigger(s), multiple threshold now, Nov 19,2007
   for(Int_t i=0; i<fNJetThreshold; i++ ) {
     if(ampJetMax(0,0) >= fL1JetThreshold[i]) {
-      SetInput((Form("%s_Th%2i", fgNameOfJetTriggers.Data(),i))); 
+      SetInput(GetNameOfJetTrigger(i)); 
     }
   }
 }
