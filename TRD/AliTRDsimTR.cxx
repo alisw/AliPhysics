@@ -480,9 +480,9 @@ Int_t AliTRDsimTR::TrPhotons(Float_t p, Float_t mass
   Int_t   nPhCand = gRandom->Poisson(nTr);
   
   // Link the MC stack and get info about parent electron
-  TVirtualMCStack *stack       = gMC->GetStack();
+  TVirtualMCStack *stack = gMC->GetStack();
   Int_t    track = stack->GetCurrentTrackNumber();
-  Double_t px,py,pz,ptot;
+  Double_t px, py, pz, ptot;
   gMC->TrackMomentum(px,py,pz,ptot);
   ptot = TMath::Sqrt(px*px+py*py+pz*pz);
   px /= ptot;
@@ -494,7 +494,8 @@ Int_t AliTRDsimTR::TrPhotons(Float_t p, Float_t mass
   Double_t y;
   Double_t z; 
   gMC->TrackPosition(x,y,z);
-  
+  Double_t t = gMC->TrackTime();  
+
   // Counter for TR analysed in custom code (e < 15keV)
   nPhoton = 0;  
 
@@ -504,25 +505,25 @@ Int_t AliTRDsimTR::TrPhotons(Float_t p, Float_t mass
     Double_t e = fSpectrum->GetRandom();
 
     // Put TR photon on particle stack
-    if (e > 15.0 ) { 
+    if (e > 15.0) { 
 
       e *= 1.0e-6; // Convert it to GeV
 
       Int_t phtrack;
-      stack-> PushTrack(1                 // Must be 1
-		       ,track             // Identifier of the parent track, -1 for a primary
-		       ,22                // Particle code.
-		       ,px*e              // 4 momentum (The photon is generated on the same  
-                       ,py*e              // direction as the parent. For irregular radiator one
-                       ,pz*e              // can calculate also the angle but this is a secondary
-                       ,e                 // order effect)
-    	               ,x,y,z,0.0         // 4 vertex	
-		       ,0.0,0.0,0.0       // Polarisation
-		       ,kPFeedBackPhoton  // Production mechanism (there is no TR in G3 so one
-                                          // has to make some convention)
-		       ,phtrack           // On output the number of the track stored
-		       ,1.0
-                       ,1);
+      stack->PushTrack(1                 // Must be 1
+		      ,track             // Identifier of the parent track, -1 for a primary
+		      ,22                // Particle code.
+		      ,px*e              // 4 momentum (The photon is generated on the same  
+                      ,py*e              // direction as the parent. For irregular radiator one
+                      ,pz*e              // can calculate also the angle but this is a secondary
+                      ,e                 // order effect)
+    	              ,x,y,z,t           // 4 vertex	
+		      ,0.0,0.0,0.0       // Polarisation
+		      ,kPFeedBackPhoton  // Production mechanism (there is no TR in G3 so one
+                                         // has to make some convention)
+	              ,phtrack           // On output the number of the track stored
+		      ,1.0
+                      ,1);
 
     }
     // Custom treatment of TR photons
