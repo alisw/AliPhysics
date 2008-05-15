@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS= TDPMjet.cxx AliGenDPMjet.cxx AliGenDPMjetEventHeader.cxx AliIonPDGCodes.cxx
+SRCS= TDPMjet.cxx AliGenDPMjet.cxx AliIonPDGCodes.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
