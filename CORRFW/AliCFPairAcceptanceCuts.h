@@ -39,7 +39,8 @@ class AliCFPairAcceptanceCuts : public AliCFCutBase
   AliCFPairAcceptanceCuts(const AliCFPairAcceptanceCuts& c) ;
   AliCFPairAcceptanceCuts& operator=(const AliCFPairAcceptanceCuts& c) ;
   virtual ~AliCFPairAcceptanceCuts() {delete fCutNeg; delete fCutPos; }
-  virtual Bool_t IsSelected(TObject* obj) ;   
+  virtual Bool_t IsSelected(TObject* obj) ;
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void SetEvtInfo(TObject *mcInfo) ;
   virtual void SetMinNHitITS  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitITS (nHitNeg); fCutPos->SetMinNHitITS (nHitPos);}
   virtual void SetMinNHitTPC  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitTPC (nHitNeg); fCutPos->SetMinNHitTPC (nHitPos);}

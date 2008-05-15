@@ -40,6 +40,7 @@ class AliCFEventGenCuts: public AliCFCutBase
   ~AliCFEventGenCuts();
   void GetBitMap(TObject *obj, TBits *bitmap);
   Bool_t IsSelected(TObject* obj);
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   void Init(){;};
 
   //number of embedded cuts

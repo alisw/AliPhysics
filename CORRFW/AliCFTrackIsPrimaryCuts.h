@@ -58,6 +58,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 
   void GetBitMap(TObject* obj, TBits *bitmap);
   Bool_t IsSelected(TObject* obj);
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   void Init();
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const;
 

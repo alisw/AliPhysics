@@ -73,7 +73,7 @@ class AliCFTrackCutPid : public AliCFCutBase
   
   //main 
   virtual Bool_t IsSelected(TObject *track); 
-  
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}  
   //histo booking                                                    
   void Init();
   

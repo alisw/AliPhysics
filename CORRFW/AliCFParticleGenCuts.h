@@ -41,6 +41,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   AliCFParticleGenCuts& operator=(const AliCFParticleGenCuts& c) ;
   virtual ~AliCFParticleGenCuts() { };
   virtual Bool_t IsSelected(TObject* obj) ;
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void   SetEvtInfo(TObject* mcInfo) ;
   //static checkers
   static Bool_t IsPrimaryCharged(AliMCParticle *mcPart,AliStack*stack);

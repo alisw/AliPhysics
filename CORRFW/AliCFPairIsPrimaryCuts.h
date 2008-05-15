@@ -36,7 +36,8 @@ class AliCFPairIsPrimaryCuts : public AliCFCutBase
   AliCFPairIsPrimaryCuts& operator=(const AliCFPairIsPrimaryCuts& c) ;
   virtual ~AliCFPairIsPrimaryCuts() {delete fCutNeg; delete fCutPos; }
 
-  virtual Bool_t IsSelected(TObject* obj) ; 
+  virtual Bool_t IsSelected(TObject* obj) ;
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void SetMaxNSigmaToVertex(Double32_t neg, Double32_t pos) 
   {fCutNeg->SetMaxNSigmaToVertex(neg); fCutPos->SetMaxNSigmaToVertex(pos);}
   void SetRequireSigmaToVertex(Bool_t b1, Bool_t b2)

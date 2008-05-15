@@ -38,6 +38,7 @@ class AliCFEventRecCuts: public AliCFCutBase
   ~AliCFEventRecCuts();
   void GetBitMap(TObject *obj, TBits*bitmap);
   Bool_t IsSelected(TObject* obj);
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   void Init();
   void AddQAHistograms(TList *list) const;
 
