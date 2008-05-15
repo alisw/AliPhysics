@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliEMCALFolder.cxx 24500 2008-03-13 23:39:38Z jklay $ */
 
 //_________________________________________________________________________
 // Top EMCAL folder which will keep all 

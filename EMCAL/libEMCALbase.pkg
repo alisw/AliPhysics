@@ -1,6 +1,6 @@
 #-*-Mode: Makefile-*-
 
-SRCS = \
+SRCS =\
 AliEMCALGeometry.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
@@ -15,9 +15,6 @@ AliEMCALDigit.cxx \
 AliEMCALCalibData.cxx \
 AliEMCALCalibHistoProducer.cxx \
 AliEMCALPreprocessor.cxx \
-AliEMCALPi0SelectionParam.cxx \
-AliEMCALCalibCoefs.cxx \
-AliEMCALCellInfo.cxx \
 AliCaloCalibPedestal.cxx \
 AliEMCALSurvey.cxx \
 AliEMCALRecParam.cxx

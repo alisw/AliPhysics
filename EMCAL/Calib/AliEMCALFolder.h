@@ -95,7 +95,7 @@ class AliEMCALFolder : public TFolder {
   TList* BookHists();
   Int_t fCounter; // Counter of iteration 
  //
-  AliEMCALGeometry *fGeometry; // pointer to EMCAL geometry
+  AliEMCALGeometry *fGeometry; //! pointer to EMCAL geometry
   //
   Int_t     fNumOfCell;     // number of cells as in geometry
 

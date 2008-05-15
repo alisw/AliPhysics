@@ -37,8 +37,8 @@ added pi0 calibration, linearity, shower profile
 #include "AliEMCALFolder.h"
 #include "AliEMCALSuperModule.h"
 #include "AliEMCALCalibData.h"
-#include "AliEMCALRecPointsQaESDSelector.h"
 #include "AliEMCALCalibCoefs.h"
+#include "AliEMCALPi0Calibration.h"
 
 #include <cassert>
 
@@ -210,7 +210,7 @@ void AliEMCALCell::FitEffMassHist(const char* opt)
   static Double_t mPI0  = 0.13498; // mass of pi0
   static Double_t mPI02 = mPI0*mPI0; // mass**2
 
-  AliEMCALFolder* emcal = AliEMCALRecPointsQaESDSelector::GetEmcalFolder();
+  AliEMCALFolder* emcal = AliEMCALPi0Calibration::GetEmcalFolder();
   Int_t it = emcal->GetIterationNumber();
 
   TH1* h = (TH1*)GetHists()->At(0);
@@ -251,7 +251,7 @@ TList* AliEMCALCell::BookHists()
   gROOT->cd();
   TH1::AddDirectory(1);
 
-  AliEMCALFolder* emcal = AliEMCALRecPointsQaESDSelector::GetEmcalFolder();
+  AliEMCALFolder* emcal = AliEMCALPi0Calibration::GetEmcalFolder();
   Int_t it = emcal->GetIterationNumber();
 
   new TH1F("01_EffMass", "effective mass of #gamma,#gamma(m_{#pi^{0}}=134.98 MeV) ", 60,0.0,0.3);

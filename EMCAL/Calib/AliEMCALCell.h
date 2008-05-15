@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $Id$ */
+/* $Id: AliEMCALCell.h 24500 2008-03-13 23:39:38Z jklay $ */
 
 //_________________________________________________________________________
 //  EMCAL cell - keep everyrhing for calibration task     

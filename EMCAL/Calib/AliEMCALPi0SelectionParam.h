@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $Id$ */
+/* $Id: AliEMCALPi0SelectionParam.h 24500 2008-03-13 23:39:38Z jklay $ */
 
 //_________________________________________________________________________
 //  Set of parameters for pi0 selection 
@@ -20,7 +20,7 @@
 
 class  AliEMCALPi0SelectionParRec :  public TObject{
   friend class AliEMCALPi0SelectionParam;
-  friend class AliEMCALRecPointsQaESDSelector;
+  friend class AliEMCALPi0Calibration;
  public:
   AliEMCALPi0SelectionParRec();
   virtual ~AliEMCALPi0SelectionParRec() {};

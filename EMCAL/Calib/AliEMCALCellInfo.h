@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $Id$ */
+/* $Id: AliEMCALCellInfo.h 24500 2008-03-13 23:39:38Z jklay $ */
 
 //_________________________________________________________________________
 // This is a table of emcal indexes.
@@ -20,7 +20,7 @@ class AliEMCALCellIndexes : public TObject {
   // See AliEMCALGeometry
   // Indexes information
   friend class AliEMCALCellInfo;
-  friend class AliEMCALRecPointsQaESDSelector;
+  friend class AliEMCALPi0Calibration;
  public:
   virtual const char* GetName() const {return Form("Ind%5.5i",fAbsId);}
   AliEMCALCellIndexes();
