@@ -153,7 +153,7 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fDimZP[2] = 75.;    
   fPosZNC[0] = 0.;
   fPosZNC[1] = 1.2;
-  fPosZNC[2] = -11650.; 
+  fPosZNC[2] = -11600.; 
   fPosZPC[0] = 23.9;
   fPosZPC[1] = 0.;
   fPosZPC[2] = -11600.; 
@@ -1299,18 +1299,21 @@ void AliZDCv3::CreateBeamLine()
   //		SIDE C - RB26  (dimuon side) 
   // ***************************************************************   
   // --  COMPENSATOR DIPOLE (MBXW)
-  zc = 1921.6;   
+  //zc = 1921.6;   
+  zc = 1972.5;   
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD)
   tubpar[0] = 0.;
   tubpar[1] = 4.5;
-  tubpar[2] = 170./2.;
+  //tubpar[2] = 170./2.;
+  tubpar[2] = 153./2.;
   gMC->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
 
   // --  YOKE 
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
-  tubpar[2] = 170./2.;
+  //tubpar[2] = 170./2.;
+  tubpar[2] = 153./2.;
   gMC->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
 
   gMC->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zc, 0, "ONLY");
@@ -1337,8 +1340,8 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("MQXL", 1, "ZDCC", 0., 0., -tubpar[2]-zq, 0, "ONLY");
   gMC->Gspos("YMQL", 1, "ZDCC", 0., 0., -tubpar[2]-zq, 0, "ONLY");
   
-  gMC->Gspos("MQXL", 2, "ZDCC", 0., 0., -tubpar[2]-zq-2430., 0, "ONLY");
-  gMC->Gspos("YMQL", 2, "ZDCC", 0., 0., -tubpar[2]-zq-2430., 0, "ONLY");
+  gMC->Gspos("MQXL", 2, "ZDCC", 0., 0., -tubpar[2]-zq-2400., 0, "ONLY");
+  gMC->Gspos("YMQL", 2, "ZDCC", 0., 0., -tubpar[2]-zq-2400., 0, "ONLY");
   
   // --  MQX 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
@@ -1385,10 +1388,12 @@ void AliZDCv3::CreateBeamLine()
   
   gMC->Gspos("YD1 ", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   gMC->Gspos("MD1 ", 1, "YD1 ", 0., 0., 0., 0, "ONLY");
+  // Ch debug
+  //printf("\t **** D1 positioned! It goes from z = %1.2f to z = %1.2f cm\n",-zd1, -zd1-2*tubpar[2]); 
   
   // -- DIPOLE D2 
   // --- LHC optics v6.4
-  zd2 = 12147.6;
+  zd2 = 12167.8;
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
@@ -2236,8 +2241,7 @@ void AliZDCv3::StepManager()
 {
   //
   // Routine called at every step in the Zero Degree Calorimeters
-  // 
-  
+  //
   Int_t j, vol[2], ibeta=0, ialfa, ibe, nphe;
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, out;
   //Float_t radius;
