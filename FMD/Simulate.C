@@ -21,10 +21,10 @@
 /** Script to do test the FMD digitization class.  
  */
 void
-Simulate(Int_t n=1)
+Simulate(Int_t n=3)
 {
   AliSimulation sim;
-  AliLog::SetModuleDebugLevel("FMD", 1);
+  // AliLog::SetModuleDebugLevel("FMD", 1);
   sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
   // sim.SetMakeSDigits("FMD");
   sim.SetMakeDigits("FMD"); 

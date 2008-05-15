@@ -1,6 +1,8 @@
 void
 CheckOverlaps(Bool_t align=kTRUE, Bool_t sample=kTRUE)
 {
+  TObjArray* checked = new TObjArray();
+  
   AliGeomManager::LoadGeometry("geometry.root");
   if (align)
     AliGeomManager::ApplyAlignObjsToGeom("FMDfullMisalignment.root", 
@@ -11,15 +13,21 @@ CheckOverlaps(Bool_t align=kTRUE, Bool_t sample=kTRUE)
   TGeoVolume*       v  = 0;
   while ((pn = static_cast<TGeoPhysicalNode*>(next()))) { 
     pn->cd();
+    gGeoManager->CdUp();
     v = gGeoManager->GetCurrentVolume();
+    if (checked->FindObject(v)) continue;
+    
     std::cout << "Checking " << v->GetName() << std::endl;
     v->CheckOverlaps(0.01);
-    if (gGeoManager->GetListOfOverlaps()->GetEntriesFast()) 
+    Int_t n = gGeoManager->GetListOfOverlaps()->GetEntriesFast();
+    if (n) { 
       gGeoManager->GetListOfOverlaps()->ls();
+    }
+    checked->Add(v);
     
     if (!sample) continue;
 
-    gGeoManager->ClearOverlaps();
+    // gGeoManager->ClearOverlaps();
     gGeoManager->SetCheckingOverlaps();
     TGeoNode*    start = gGeoManager->GetCurrentNode();
     TGeoVolume*  vol   = start->GetVolume();
@@ -32,7 +40,8 @@ CheckOverlaps(Bool_t align=kTRUE, Bool_t sample=kTRUE)
       node->GetVolume()->CheckOverlaps(0.01,"s");
     }
     gGeoManager->SetCheckingOverlaps(kFALSE);
-    if (gGeoManager->GetListOfOverlaps()->GetEntriesFast()) {
+    n = gGeoManager->GetListOfOverlaps()->GetEntriesFast();
+    if (n) {
       gGeoManager->GetListOfOverlaps()->ls();
       pn->Print();
     }

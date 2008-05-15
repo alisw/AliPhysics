@@ -37,7 +37,7 @@ Reconstruct()
   rec.SetRunVertexFinder(kFALSE);
   rec.SetRunTracking(""); 
   rec.SetFillESD("FMD"); 
-  rec.SetInput("./");
+  /// rec.SetInput("./");
   rec.Run(); 
 }
 
