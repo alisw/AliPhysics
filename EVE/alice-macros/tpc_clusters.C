@@ -74,7 +74,7 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 
   if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE)
   {
-    Warning("tpc_clusters", "No TPC clusters");
+    Warning("tpc_clusters.C", "No TPC clusters");
     delete clusters;
     return 0;
   }

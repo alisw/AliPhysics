@@ -32,13 +32,15 @@ TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
   rl->LoadRecPoints("ITS");
 
   TTree *cTree = rl->GetTreeR("ITS", false);
-
-  TEvePointSet* clusters = new TEvePointSet(10000);
-  clusters->SetOwnIds(kTRUE);
+  if (cTree == 0)
+    return 0;
 
   TClonesArray *cl = NULL;
   TBranch *branch  = cTree->GetBranch("ITSRecPoints");
   branch->SetAddress(&cl);
+
+  TEvePointSet* clusters = new TEvePointSet(10000);
+  clusters->SetOwnIds(kTRUE);
 
   Int_t nentr=(Int_t)cTree->GetEntries();
   for (Int_t i=0; i<nentr; i++) {
@@ -61,7 +63,7 @@ TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
   }
 
   if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
-    Warning("its_clusters", "No ITS clusters");
+    Warning("its_clusters.C", "No ITS clusters");
     delete clusters;
     return 0;
   }

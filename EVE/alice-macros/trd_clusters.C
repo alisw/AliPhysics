@@ -23,17 +23,22 @@ class TEveElement;
 TEvePointSet* trd_clusters(TEveElement *cont = 0)
 {
   const Int_t kMaxClusters = 18 * 6 * 24 *10;
-  AliEveEventManager::AssertGeometry();
 
-  TEvePointSet *clusters = new TEvePointSet(kMaxClusters);
-  clusters->SetOwnIds(kTRUE);
+  AliEveEventManager::AssertGeometry();
 
   AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("TRD");
 
-  TObjArray *TRDcluster = 0x0;
   TTree *recPoints = rl->GetTreeR("TRD", kFALSE);
+  if (recPoints == 0)
+    return 0;
+
+  TObjArray *TRDcluster = 0x0;
   recPoints->SetBranchAddress("TRDcluster", &TRDcluster);
+
+  TEvePointSet *clusters = new TEvePointSet(kMaxClusters);
+  clusters->SetOwnIds(kTRUE);
+
 
   Int_t nentr=(Int_t)recPoints->GetEntries();
   for (Int_t i=0; i<nentr; i++) {
@@ -53,7 +58,7 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0)
   }
 
   if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
-    Warning("trd_clusters", "No TRD clusters");
+    Warning("trd_clusters.C", "No TRD clusters");
     delete clusters;
     return 0;
   }
