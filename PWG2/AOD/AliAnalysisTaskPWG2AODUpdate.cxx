@@ -124,7 +124,7 @@ void AliAnalysisTaskPWG2AODUpdate::UserExec(Option_t */*option*/)
 
     esdTrack->GetPxPyPz(p);
 
-    if (fabs(p[0] - aodTrack->Px())>0.000000001) {
+    if (TMath::Abs(p[0] - aodTrack->Px())>0.000000001) {
       printf("Got different momenta !!! %f %f\n", p[0], aodTrack->Px());
     }
 
