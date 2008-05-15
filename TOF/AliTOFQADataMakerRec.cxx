@@ -220,7 +220,9 @@ void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     return;
   }
 
-  TClonesArray dummy("AliTOFcluster",10000), *clusters=&dummy;
+  static TClonesArray dummy("AliTOFcluster",10000);
+  dummy.Clear();
+  TClonesArray *clusters=&dummy;
   branch->SetAddress(&clusters);
 
   // Import the tree
