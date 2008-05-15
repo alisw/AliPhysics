@@ -11,6 +11,7 @@
 // andreas.morsch@cern.ch
 
 #include <TNamed.h>
+class TList;
 
 class AliAnalysisCuts : public TNamed
 {
@@ -19,10 +20,11 @@ class AliAnalysisCuts : public TNamed
     AliAnalysisCuts(const char* name, const char* title);
     AliAnalysisCuts(const AliAnalysisCuts& obj);  
     virtual ~AliAnalysisCuts() {;}
-    virtual Bool_t IsSelected(TObject* obj) = 0;
+    virtual Bool_t IsSelected(TObject* obj)  = 0;
+    virtual Bool_t IsSelected(TList*  list)  = 0;
     virtual void   Init() {;}
  private:
-    ClassDef(AliAnalysisCuts, 2); // Base class for filter decisions on ESD objects
+    ClassDef(AliAnalysisCuts, 3); // Base class for filter decisions on ESD objects
 };
  
 #endif

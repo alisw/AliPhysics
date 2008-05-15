@@ -40,6 +40,7 @@ public:
   virtual ~AliESDtrackCuts();
   Bool_t IsSelected(TObject* obj)
        {return AcceptTrack((AliESDtrack*)obj);}
+  Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESD* esd);
   Int_t CountAcceptedTracks(AliESD* esd);

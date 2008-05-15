@@ -14,6 +14,7 @@
 #include <TNamed.h>
 
 class AliAnalysisCuts;
+class TList;
 
 class AliAnalysisFilter : public TNamed
 {
@@ -24,6 +25,7 @@ class AliAnalysisFilter : public TNamed
     AliAnalysisFilter& operator=(const AliAnalysisFilter& other);
     virtual ~AliAnalysisFilter() {;}
     virtual UInt_t IsSelected(TObject* obj);
+    virtual UInt_t IsSelected(TList* obj);
     virtual void AddCuts(AliAnalysisCuts* cuts);
     virtual void Init();
  private:
