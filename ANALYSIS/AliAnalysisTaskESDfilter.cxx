@@ -818,6 +818,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 				  cluster->GetEmcCpvDistance(),  
 				  cluster->GetNExMax(),cluster->GetTOF()) ;
 
+      caloCluster->SetPIDFromESD(cluster->GetPid());
       caloCluster->SetNCells(cluster->GetNCells());
       caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
       caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
