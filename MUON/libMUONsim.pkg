@@ -36,7 +36,11 @@ DHDR:= MUONsimLinkDef.h
 
 EINCLUDE:= RAW MUON/mapping
 
-#PACKCXXFLAGS:= $(CXXFLAGS) -Wall
+ifeq ($(CCMAJORV),4)
+ifeq ($(CCMINORV),3)
+PACKCXXFLAGS:= $(filter-out -O, $(CXXFLAGS)) -O0
+endif
+endif
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
