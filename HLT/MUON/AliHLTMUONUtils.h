@@ -267,6 +267,15 @@ public:
 		AliHLTInt32_t ddl = SpecToDDLNumber(spec);
 		return (0 <= ddl and ddl <= 19);
 	}
+	
+	/**
+	* Parses the string containing the type name of a dHLT data block and
+	* returns the corresponding AliHLTMUONDataBlockType value.
+	* \param  type  The string containing the type name.
+	* \returns  The data block type or kUnknownDataBlock if the type name
+	*      is invalid.
+	*/
+	static AliHLTMUONDataBlockType ParseCommandLineTypeString(const char* type);
 
 	/**
 	 * These codes indicate the reason why a data block failed its

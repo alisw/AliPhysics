@@ -34,6 +34,7 @@
 #include "AliHLTMUONMansoCandidatesBlockStruct.h"
 #include "AliHLTMUONSinglesDecisionBlockStruct.h"
 #include "AliHLTMUONPairsDecisionBlockStruct.h"
+#include <cstring>
 #include <cassert>
 
 
@@ -369,6 +370,59 @@ AliHLTUInt32_t AliHLTMUONUtils::DDLNumberToSpec(AliHLTInt32_t ddlNo)
 	{
 		return 0x0;
 	}
+}
+
+
+AliHLTMUONDataBlockType AliHLTMUONUtils::ParseCommandLineTypeString(const char* type)
+{
+	/// Parses the string containing the type name of a dHLT data block and
+	/// returns the corresponding AliHLTMUONDataBlockType value.
+	/// \param  type  The string containing the type name.
+	/// \returns  The data block type or kUnknownDataBlock if the type name
+	///      is invalid.
+
+	if (strcmp(type, "trigrecs") == 0)
+	{
+		return kTriggerRecordsDataBlock;
+	}
+	else if (strcmp(type, "trigrecsdebug") == 0)
+	{
+		return kTrigRecsDebugDataBlock;
+	}
+	else if (strcmp(type, "trigchannels") == 0)
+	{
+		return kTriggerChannelsDataBlock;
+	}
+	else if (strcmp(type, "rechits") == 0)
+	{
+		return kRecHitsDataBlock;
+	}
+	else if (strcmp(type,"channels") == 0)
+	{
+		return kChannelsDataBlock;
+	}
+	else if (strcmp(type,"clusters") == 0)
+	{
+		return kClustersDataBlock;
+	}
+	else if (strcmp(type, "mansotracks") == 0)
+	{
+		return kMansoTracksDataBlock;
+	}
+	else if (strcmp(type, "mansocandidates") == 0)
+	{
+		return kMansoCandidatesDataBlock;
+	}
+	else if (strcmp(type, "singlesdecision") == 0)
+	{
+		return kSinglesDecisionDataBlock;
+	}
+	else if (strcmp(type, "pairsdecision") == 0)
+	{
+		return kPairsDecisionDataBlock;
+	}
+	
+	return kUnknownDataBlock;
 }
 
 

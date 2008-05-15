@@ -1159,15 +1159,15 @@ int ReadFile(const char* filename, char*& buffer, unsigned long& bufferSize)
 void PrintUsage(bool asError = true)
 {
 	std::ostream& os = asError ? cerr : cout;
-	os << "Usage: dHLTdumpraw [-help|-h] [-continue] [-type <typename>] <filename>" << endl;
+	os << "Usage: dHLTdumpraw [-help|-h] [-continue|-c] [-type|-t <typename>] <filename> [<filename> ...]" << endl;
 	os << "Where <filename> is the name of a file containing a raw data block." << endl;
 	os << "Options:" << endl;
 	os << " -help | -h" << endl;
 	os << "       Displays this message." << endl;
-	os << " -continue" << endl;
+	os << " -continue | -c" << endl;
 	os << "       If specified, the program will try to continue parsing the data block" << endl;
 	os << "       as much as possible rather than stopping at the first error." << endl;
-	os << " -type <typename>" << endl;
+	os << " -type | -t <typename>" << endl;
 	os << "       Forces the contents of the subsequent files specified on the command" << endl;
 	os << "       line to be interpreted as a specific type of data block." << endl;
 	os << "       Where <typename> can be one of:" << endl;
@@ -1183,59 +1183,6 @@ void PrintUsage(bool asError = true)
 	os << "         pairsdecision - trigger decisions for track pairs." << endl;
 	os << "         autodetect - the type of the data block will be automatically" << endl;
 	os << "                      detected." << endl;
-}
-
-/**
- * Parse the string passed as the type of the block and return the corresponding
- * AliHLTMUONDataBlockType value.
- */
-AliHLTMUONDataBlockType ParseCommandLineType(const char* type)
-{
-	if (strcmp(type, "trigrecs") == 0)
-	{
-		return kTriggerRecordsDataBlock;
-	}
-	else if (strcmp(type, "trigrecsdebug") == 0)
-	{
-		return kTrigRecsDebugDataBlock;
-	}
-	else if (strcmp(type, "trigchannels") == 0)
-	{
-		return kTriggerChannelsDataBlock;
-	}
-	else if (strcmp(type, "rechits") == 0)
-	{      
-		return kRecHitsDataBlock;
-	}
-	else if (strcmp(type,"channels") == 0)
-	{
-		return kChannelsDataBlock;
-	}
-	else if (strcmp(type,"clusters") == 0)
-	{
-		return kClustersDataBlock;
-	}
-	else if (strcmp(type, "mansotracks") == 0)
-	{
-		return kMansoTracksDataBlock;
-	}
-	else if (strcmp(type, "mansocandidates") == 0)
-	{
-		return kMansoCandidatesDataBlock;
-	}
-	else if (strcmp(type, "singlesdecision") == 0)
-	{
-		return kSinglesDecisionDataBlock;
-	}
-	else if (strcmp(type, "pairsdecision") == 0)
-	{
-		return kPairsDecisionDataBlock;
-	}
-	
-	cerr << "ERROR: Invalid type name '" << type << "' specified for argument -type."
-		<< endl << endl;
-	PrintUsage();
-	return kUnknownDataBlock;
 }
 
 /**
@@ -1266,20 +1213,20 @@ int ParseCommandLine(
 	// Parse the command line.
 	for (int i = 1; i < argc; i++)
 	{
-		if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-h") == 0)
+		if (strcmp(argv[i], "-help") == 0 or strcmp(argv[i], "-h") == 0)
 		{
 			PrintUsage(false);
 			return EXIT_SUCCESS;
 		}
-		else if (strcmp(argv[i], "-continue") == 0)
+		else if (strcmp(argv[i], "-continue") == 0 or strcmp(argv[i], "-c") == 0)
 		{
 			continueParse = true;
 		}
-		else if (strcmp(argv[i], "-type") == 0)
+		else if (strcmp(argv[i], "-type") == 0 or strcmp(argv[i], "-t") == 0)
 		{
 			if (++i >= argc)
 			{
-				cerr << "ERROR: Missing a type specifier" << endl;
+				cerr << "ERROR: Missing a type specifier." << endl;
 				PrintUsage();
 				return CMDLINE_ERROR;
 			}
@@ -1290,8 +1237,15 @@ int ParseCommandLine(
 			}
 			else
 			{
-				currentType = ParseCommandLineType(argv[i]);
-				if (currentType == kUnknownDataBlock) return CMDLINE_ERROR;
+				currentType = AliHLTMUONUtils::ParseCommandLineTypeString(argv[i]);
+				if (currentType == kUnknownDataBlock)
+				{
+					cerr << "ERROR: Invalid type name '" << argv[i]
+						<< "' specified for argument " << argv[i-1]
+						<< "." << endl << endl;
+					PrintUsage();
+					return CMDLINE_ERROR;
+				}
 			}
 		}
 		else
