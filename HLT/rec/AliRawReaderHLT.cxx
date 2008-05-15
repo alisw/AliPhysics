@@ -235,6 +235,8 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
       // all internal data variables set
       result=kTRUE;
       data=const_cast<AliHLTUInt8_t*>(fpData+sizeof(AliRawDataHeader));
+      // fpData includes the CDH, set offset behind CDH
+      fOffset=sizeof(AliRawDataHeader);
     } else {
       // no data in the HLT stream, read real data
       //AliInfo(Form("read from parent reader: min=%d max=%d", fSelectMinEquipmentId, fSelectMaxEquipmentId));
@@ -244,6 +246,8 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
       if (result) {
 	fpData=data;
 	fDataSize=fpParentReader->GetDataSize();
+	// fpData is without CDH
+	fOffset=0;
       } else {
 	fpData=NULL;
 	fDataSize=0;
@@ -251,7 +255,6 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
 
       fEquipmentId=-1;
     }
-    fOffset=sizeof(AliRawDataHeader);
     fPosition=fDataSize;
   }
   return result;
@@ -408,6 +411,7 @@ int AliRawReaderHLT::ScanOptions(const char* options)
   TString optString(options);
   TString argument;
   TString parameter;
+  TString detectors;
   TObjArray* pTokens=optString.Tokenize(" ");
   if (pTokens) {
     int iEntries=pTokens->GetEntries();
@@ -420,6 +424,8 @@ int AliRawReaderHLT::ScanOptions(const char* options)
       int detId=AliDAQ::DetectorID(argument.Data());
       if (detId>=0) {
 	fDetectors.push_back(detId);
+	if (!detectors.IsNull()) detectors+=" ";
+	detectors+=argument;
       } else {
 	if (!fSystemOptions.IsNull()) fSystemOptions+=" ";
 	fSystemOptions+=argument;
@@ -428,6 +434,9 @@ int AliRawReaderHLT::ScanOptions(const char* options)
     delete pTokens;
   }
 
+  if (iResult>=0 && !detectors.IsNull()) {
+    AliInfo(Form("running reconstruction from HLT data: %s", detectors.Data()));
+  }
   return iResult;
 }
 
