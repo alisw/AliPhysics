@@ -377,5 +377,3 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   	  
   cout<<".....finished"<<endl;
  }
-
- 
