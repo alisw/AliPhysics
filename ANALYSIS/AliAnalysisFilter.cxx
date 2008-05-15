@@ -83,6 +83,25 @@ UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
     return result;
 }
 
+UInt_t AliAnalysisFilter::IsSelected(TList* list)
+{
+    //
+    // Loop over all set of cuts
+    // and store the decision
+    UInt_t result = 0;
+    TIter next(fCuts);
+    AliAnalysisCuts *cuts;
+    Int_t iCutB = 1;
+	
+    while((cuts = (AliAnalysisCuts*)next())) {
+	Bool_t acc = cuts->IsSelected(list);
+	if (acc) {result |= iCutB & 0x00ffffff;}
+	iCutB *= 2;
+    }  
+
+    return result;
+}
+
 void AliAnalysisFilter::Init()
 {
     //
