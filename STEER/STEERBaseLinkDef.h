@@ -37,7 +37,7 @@
 #pragma link C++ class AliGenPythiaEventHeader+;
 #pragma link C++ class AliGenHijingEventHeader+;
 #pragma link C++ class AliCollisionGeometry+;
-
+#pragma link C++ class AliGenDPMjetEventHeader+;
 #pragma link C++ class AliStack+;
 #pragma link C++ class AliMCEventHandler+;
 #pragma link C++ class AliInputEventHandler+;
