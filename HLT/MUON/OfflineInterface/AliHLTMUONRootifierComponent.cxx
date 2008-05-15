@@ -176,7 +176,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		assert( block != NULL );
 		
 		HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
-			n, DataType2Text(block->fDataType).c_str(), block->fPtr, block->fSize
+			i, DataType2Text(block->fDataType).c_str(), block->fPtr, block->fSize
 		);
 		
 		if (block->fDataType == AliHLTMUONConstants::RecHitsBlockDataType())
