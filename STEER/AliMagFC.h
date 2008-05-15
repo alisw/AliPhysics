@@ -50,7 +50,7 @@ static const Float_t kZBEG  = -2296.5;
 static const Float_t kZ1BEG = kZBEG +   0.,   kZ1END = kZ1BEG - 637.,kZ1RA2 = 3.5 * 3.5;
 static const Float_t kZ2BEG = kZBEG - 908.5,  kZ2END = kZ2BEG - 550.,kZ2RA2 = 3.5 * 3.5;
 static const Float_t kZ3BEG = kZBEG - 1558.5, kZ3END = kZ3BEG - 550.,kZ3RA2 = 3.5 * 3.5;
-static const Float_t kZ4BEG = kZBEG - 2430.,  kZ4END = kZ4BEG - 637.,kZ4RA2 = 3.5 * 3.5;
+static const Float_t kZ4BEG = kZBEG - 2400.,  kZ4END = kZ4BEG - 637.,kZ4RA2 = 3.5 * 3.5;
 static const Float_t kD1BEG = - 5838.3    ,kD1END = kD1BEG - 945., kD1RA2 = 4.5 * 4.5;
 static const Float_t kD2BEG = - 12167.8   ,kD2END = kD2BEG - 945., kD2RA2 = 4.5 * 4.5;
 //
