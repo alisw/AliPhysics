@@ -13,9 +13,9 @@ class AliFmPhysicalHelix : public AliFmHelix {
  public:
   // Requires: momentum, origin, signed Magnetic Field
   //           and Charge of particle (+/- 1)
-  AliFmPhysicalHelix(const AliFmThreeVector<double>& v,
-		     const AliFmThreeVector<double>& v,
-		     double x, double x);
+  AliFmPhysicalHelix(const AliFmThreeVector<double>& v1,
+		     const AliFmThreeVector<double>& v2,
+		     double x, double y);
     
   // curvature, dip angle, phase, origin, h
   AliFmPhysicalHelix(double curvature, double dipAngle, double phase,
@@ -26,7 +26,7 @@ class AliFmPhysicalHelix : public AliFmHelix {
   
   // Requires:  signed Magnetic Field
   AliFmThreeVector<double> Momentum(double x) const;     // returns the momentum at origin
-  AliFmThreeVector<double> MomentumAt(double x, double x) const; // returns momemtum at S
+  AliFmThreeVector<double> MomentumAt(double x, double y) const; // returns momemtum at S
   int                   Charge(double x)   const;     // returns charge of particle
   // 2d DCA to x,y point signed relative to curvature
   double CurvatureSignedDistance(double x, double y) ;
