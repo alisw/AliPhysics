@@ -114,7 +114,8 @@ ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       ACORDE HMPID T0 BCM STRUCT EVGEN RALICE VZERO \
       THijing THbtp EMCAL HBTAN \
       THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS \
-      JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet
+      JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet \
+      PWG0 PWG1 PWG2 PWG3 PWG4
 
 ifneq ($(shell $(ROOTCONFIG) --has-pythia8), no)
 ALIROOTMODULES += PYTHIA8
@@ -130,22 +131,6 @@ endif
 
 ifeq ($(findstring THydjet,$(MAKECMDGOALS)),THydjet)
 ALIROOTMODULES += THydjet
-endif
-
-ifeq ($(findstring PWG0,$(MAKECMDGOALS)),PWG0)
-ALIROOTMODULES += PWG0
-endif
-
-ifeq ($(findstring PWG1,$(MAKECMDGOALS)),PWG1)
-ALIROOTMODULES += PWG1
-endif
-
-ifeq ($(findstring PWG2,$(MAKECMDGOALS)),PWG2)
-ALIROOTMODULES += PWG2
-endif
-
-ifeq ($(findstring PWG3,$(MAKECMDGOALS)),PWG3)
-ALIROOTMODULES += PWG3
 endif
 
 ifeq ($(findstring PWG4,$(MAKECMDGOALS)),PWG4)
