@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 # $Id$
 
 # this library contains the selectors, which are loaded on the fly when one uses a given selector
@@ -18,3 +20,10 @@ SRCS = $(HDRS:.h=.cxx)
 DHDR= PWG0selectorsLinkDef.h
 
 EINCLUDE=TPC RAW ITS
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lSTEER -lANALYSIS -lPWG0base -lPWG0dep \
+                         -lRAWDatabase -lRAWDatarec -lTPCbase -lTPCrec \
+                         -L$(shell root-config --libdir) -lEG
+endif

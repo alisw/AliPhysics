@@ -92,7 +92,9 @@ public:
   private:
 
   Double_t CalculateJetRatioLimit(const Double_t ptg, const Double_t *param, 
-				  const Double_t *x);
+				  const Double_t *x){
+    return 0; // dummy implementation
+  }
   void FillJetHistos(TClonesArray * pl, Double_t ptg, Double_t ptl,TString type, TString lastname);
 
   Bool_t IsJetSelected(const Double_t ptg, const Double_t ptjet);

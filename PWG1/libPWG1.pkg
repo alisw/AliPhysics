@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 
 SRCS:= 	AliTreeDraw.cxx \
 	AliMCInfo.cxx	\
@@ -24,3 +25,10 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR:= PWG1LinkDef.h
 
 EINCLUDE:= STEER TPC ITS TRD
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lSTEER -lTPCbase \
+                         -lANALYSISalice -lANALYSIS \
+                         -L$(shell root-config --libdir) -lMinuit -lEG -lGeom
+endif

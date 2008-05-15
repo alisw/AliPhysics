@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 # $Id$
 
 # this library contains classed that depend on STEER
@@ -10,3 +12,7 @@ SRCS = $(HDRS:.h=.cxx)
 DHDR= PWG0depLinkDef.h
 
 EINCLUDE= TPC
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase
+endif
