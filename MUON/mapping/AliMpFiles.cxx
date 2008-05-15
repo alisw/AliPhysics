@@ -68,6 +68,8 @@ const TString AliMpFiles::fgkTriggerGlobalBoards = "GlobalCrate";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
 const TString AliMpFiles::fgkBusPatchLengthFileName = "BusPatchLength";
 const TString AliMpFiles::fgkBusPatchSpecialFileName = "BusPatchSpecial";
+const TString AliMpFiles::fgkSerialToBinFileName = "ManuSerialToBin";
+
 //______________________________________________________________________________
 AliMpFiles::~AliMpFiles() 
 {
@@ -184,6 +186,15 @@ TString AliMpFiles::BusPatchSpecialFilePath()
 
   return GetTop() + fgkDataDir + "/" + fgkBusPatchSpecialFileName + fgkDataExt;
 }  
+
+//______________________________________________________________________________
+TString AliMpFiles::SerialToBinFilePath()
+{
+/// Return path to data file containing manu serial numbers with their bin.
+
+  return GetTop() + fgkDataDir + "/" + fgkSerialToBinFileName + fgkDataExt;
+}  
+
 
 //______________________________________________________________________________
 TString AliMpFiles::DENamesFilePath(AliMp::StationType station)

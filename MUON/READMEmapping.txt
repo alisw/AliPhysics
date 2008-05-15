@@ -295,6 +295,28 @@ crate name it belongs to, slot number, and internal switches
 (used in the algorithm).
 
 
+\subsection mapping_s3_sub11  ManuSerialToBin.dat
+
+Lines starting with # are comments.
+
+Contains the manu serial number with their associated bin number, injection and calibration gain.
+
+To compare the bin number with the serial in the CDB database you can run the macro:
+
+<pre> 
+AliMpCDB::LoadDDLStore2();
+.L $ALICE_ROOT/MUON/mapping/macros/MUONCheckManu.C+
+MUONCheckManu(10, kFALSE);
+</pre>
+
+The function has two parameters, the first is the number of the chamber (zero mean all chambers).
+The macro can create a set of histogramms with the different gain distributions stored into a root file 
+(second parameter).
+
+Two files a generated: one with the list of manu per detection element with their associated bin and gain 
+value, the other with the bad, strange or unidentified serial number.
+
+
 \section mapping_s4  Units used
  
 Lengths are in centimeters.
