@@ -36,6 +36,7 @@ public:
 			   Int_t i0, Int_t i1, FitType type); 
   void ProcessTracklets(const AliExternalTrackParam &t1,
 			const AliExternalTrackParam &t2,
+			const AliTPCseed * seed,
 			Int_t s1,Int_t s2);
   inline Int_t GetIndex(Int_t s1,Int_t s2){return 72*s1+s2;}
   //
@@ -46,6 +47,12 @@ public:
   Bool_t GetTransformation12(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a);
+  
+  void ProcessDiff(const AliExternalTrackParam &t1,
+		   const AliExternalTrackParam &t2,
+		   const AliTPCseed *seed,
+		   Int_t s1,Int_t s2);
+
 //   Bool_t GetTransformationCovar12(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar9(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);

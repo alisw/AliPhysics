@@ -18,6 +18,10 @@
 //                                                                           //
 //     Class to make a internal alignemnt of TPC chambers                    //
 //
+//     Requierements - Warnings:
+//     1. Before using this componenent the magnetic filed has to be set properly //
+//     2. Teh systematic effects  - unlinearities has to be understood
+//
 //     Different linear tranformation investigated
 
 //     12 parameters - arbitrary linear transformation 
@@ -48,6 +52,10 @@
 #include "TFile.h"
 #include "TF1.h"
 #include "TGraphErrors.h"
+#include "AliTPCclusterMI.h"
+#include "AliTPCseed.h"
+#include "AliTracker.h"
+#include "TClonesArray.h"
 
 
 #include "TTreeStream.h"
@@ -127,7 +135,7 @@ void AliTPCcalibAlign::Process(AliTPCseed *seed) {
     }
     AliExternalTrackParam *common1=0,*common2=0;
     if (AliTPCTracklet::PropagateToMeanX(*t1,*t2,common1,common2))
-      ProcessTracklets(*common1,*common2,t1->GetSector(),t2->GetSector());
+      ProcessTracklets(*common1,*common2,seed, t1->GetSector(),t2->GetSector());
     delete common1;
     delete common2;
   }
@@ -147,7 +155,7 @@ void AliTPCcalibAlign::Terminate(){
   // Terminate function
   // call base terminate + Eval of fitters
   //
-  if (GetDebugLevel()>0) Info("AliTPCcalibAlign","Teminate");
+  if (GetDebugLevel()>0) Info("AliTPCcalibAlign","Terminate");
   EvalFitters();
   AliTPCcalibBase::Terminate();
 }
@@ -157,6 +165,7 @@ void AliTPCcalibAlign::Terminate(){
 
 void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
 					const AliExternalTrackParam &tp2,
+					const AliTPCseed * seed,
 					Int_t s1,Int_t s2) {
 
   //
@@ -246,8 +255,83 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   Process12(t1,t2,GetOrMakeFitter12(s1,s2));
   Process9(t1,t2,GetOrMakeFitter9(s1,s2));
   Process6(t1,t2,GetOrMakeFitter6(s1,s2));
+  ProcessDiff(tp1,tp2, seed,s1,s2);
   ++fPoints[GetIndex(s1,s2)];
 }
+
+void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
+				    const AliExternalTrackParam &t2,
+				    const AliTPCseed *seed,
+				    Int_t s1,Int_t s2)
+{
+  //
+  // Process local residuals function
+  // 
+  TVectorD vecX(160);
+  TVectorD vecY(160);
+  TVectorD vecZ(160);
+  TVectorD vecClY(160);
+  TVectorD vecClZ(160);
+  TClonesArray arrCl("AliTPCclusterMI",160);
+  arrCl.ExpandCreateFast(160);
+  Int_t count1=0, count2=0;
+  for (Int_t i=0;i<160;++i) {
+    AliTPCclusterMI *c=seed->GetClusterPointer(i);
+    vecX[i]=0;
+    vecY[i]=0;
+    vecZ[i]=0;
+    if (!c) continue;
+    AliTPCclusterMI & cl = (AliTPCclusterMI&) (*arrCl[i]);
+    if (c->GetDetector()!=s1 && c->GetDetector()!=s2) continue;
+    vecClY[i] = c->GetY();
+    vecClZ[i] = c->GetZ();
+    cl=*c;
+    const AliExternalTrackParam *par = (c->GetDetector()==s1)? &t1:&t2;
+    if (c->GetDetector()==s1) ++count1;
+    if (c->GetDetector()==s2) ++count2;
+    Double_t gxyz[3],xyz[3];
+    t1.GetXYZ(gxyz);
+    Float_t bz = AliTracker::GetBz(gxyz);
+    par->GetYAt(c->GetX(), bz, xyz[1]);
+    par->GetZAt(c->GetX(), bz, xyz[2]);
+    vecX[i] = c->GetX();
+    vecY[i]= xyz[1];
+    vecZ[i]= xyz[2];
+  }
+  //
+  //
+  if (fStreamLevel>5){
+    //
+    // huge output - cluster residuals to be investigated
+    //
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    AliTPCseed * t = (AliTPCseed*) seed;
+    //AliExternalTrackParam *p0 = &((AliExternalTrackParam&)seed);
+    AliExternalTrackParam *p1 = &((AliExternalTrackParam&)t1);
+    AliExternalTrackParam *p2 = &((AliExternalTrackParam&)t2);
+ 
+    if (cstream){
+      (*cstream)<<"Track"<<
+	"Cl.="<<&arrCl<<
+	//"tp0.="<<p0<<
+	"tp1.="<<p1<<
+	"tp2.="<<p2<<
+	"vtX.="<<&vecX<<
+	"vtY.="<<&vecY<<
+	"vtZ.="<<&vecZ<<
+	"vcY.="<<&vecClY<<
+	"vcZ.="<<&vecClZ<<
+	"s1="<<s1<<
+	"s2="<<s2<<
+	"c1="<<count1<<
+	"c2="<<count2<<
+	"\n";
+    }
+  }
+}
+
+
+
 
 void AliTPCcalibAlign::Process12(const Double_t *t1,
 				 const Double_t *t2,
@@ -808,8 +892,8 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
 	"m6.="<<&m6<<   // tranformation matrix
 	"m9.="<<&m9<<   // 
 	"m12.="<<&m12<<
-	//               hsitograms mean RMS and entries
-	"dy="<<dy<<
+	//               histograms mean RMS and entries
+	"dy="<<dy<<  
 	"sy="<<sy<<
 	"ny="<<ny<<
 	"dz="<<dz<<

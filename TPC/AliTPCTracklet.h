@@ -69,9 +69,13 @@ public:
 		       Double_t *x);
   static TEllipse ErrorEllipse(Double_t x,Double_t y,
 			       Double_t sx,Double_t sy,Double_t sxy);
+  static inline void SetEdgeCut(Float_t edgeX, Float_t edgeY);
 private:
+  static Bool_t RejectCluster(AliTPCclusterMI* cl,AliExternalTrackParam * param=0);
   static const Double_t kB2C; //! ugly to have the track parametrised in a way, that constand is allways needed
   static double GetBz(Double_t *xyz);
+  static Float_t        fgEdgeCutY; //cut on the edge effect in local Y 
+  static Float_t        fgEdgeCutX; //cut on the edge effect in local X 
   void FitLinear(const AliTPCseed *track,Int_t sector,TrackType type);
   void FitKalman(const AliTPCseed *track,Int_t sector);
   void FitRiemann(const AliTPCseed *track,Int_t sector);
@@ -93,5 +97,13 @@ private:
 
   ClassDef(AliTPCTracklet,1)
 };
+
+
+void AliTPCTracklet::SetEdgeCut(Float_t edgeX, Float_t edgeY){
+  //
+  //
+  fgEdgeCutY=edgeY;
+  fgEdgeCutX=edgeX;
+}
 
 #endif

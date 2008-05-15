@@ -1,20 +1,21 @@
 /*
   Simple calibration analysis
-
-  
-  //1. Load needed libraries
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libTPCcalib");
-  //increased memstat
+  //
+  //0. Setup memory chcecker if you want 
+  //
   gSystem->Load("$ROOTSYS/lib/libGui.so");
   gSystem->Load("$ROOTSYS/lib/libTree.so");
   gSystem->Load("$MEMSTAT/libMemStat.so");
-  TMemStat memstat(100000000,10000000,kTRUE);
-  memstat->AddStamp("aaaa");
+  TMemStat *memstat = new TMemStat(100000000,10000000,kTRUE);
+  AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);
+
+  AliSysInfo::AddStamp("Start");  
+  //1. Load needed libraries
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
   //
   // Setup analysis manager
   //
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   .L $ALICE_ROOT/TPC/macros/CalibrateTPC.C
   AliAnalysisManager * mgr = SetupCalibTask();
   //
@@ -23,15 +24,23 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
-  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,30);
+  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,1000);
   chain->Lookup();
   // memory
   mgr->SetNSysInfo(100); 
-  AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);
   //
+  mgr->SetDebugLevel(1);
   mgr->StartAnalysis("local",chain);
-  
-
+  // delete manager
+  //
+  delete mgr;
+  AliSysInfo::AddStamp("End");
+  //
+  // analyze memstat report
+  //
+  delete memstat;
+  TMemStat draw("memstat.root");
+  draw.MakeReport(0,0,"order 0 sortstat 3 sortstamp 0 sortdeep 10 stackdeep 15 maxlength 50")   
 */
 
 
@@ -41,7 +50,11 @@ AliAnalysisManager * SetupCalibTask() {
   //
   TStopwatch stopwatch;
   stopwatch.Start();
-
+  //
+  // set magnetic field form the cosmos - it should be provided by framework
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 2);
+  AliTracker::SetFieldMap(field,0);
+  //
   AliAnalysisManager *mgr=new AliAnalysisManager("TestManager");
 
   AliESDInputHandler* esdH=new AliESDInputHandler;
@@ -53,21 +66,26 @@ AliAnalysisManager * SetupCalibTask() {
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
 
-  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("foo bar");
+  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("TPC calibration task");
   
   AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018);
 
+  //
   AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts); 
-  AliTPCcalibTracksGain *calibTracksGain =  new AliTPCcalibTracksGain("TPCGainTracks","TPCGainTracks",cuts); 
-  calibTracks->SetDebugLevel(5);
-  calibTracks->SetStreamLevel(5);
-  calibTracksGain->SetDebugLevel(1);
-  calibTracksGain->SetStreamLevel(1);
+  AliTPCcalibTracksGain *calibTracksGain =  new AliTPCcalibTracksGain("calibTracksGain","Gain calibration using tracks",cuts); 
+  AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors");
+  calibTracks->SetDebugLevel(0);
+  calibTracks->SetStreamLevel(0);
+  calibTracksGain->SetDebugLevel(0);
+  calibTracksGain->SetStreamLevel(0);
+  calibAlign->SetDebugLevel(20);
+  calibAlign->SetStreamLevel(2);
+  //
  // ---*---*-----*-*-----*----------*---
   // ADD CALIB JOBS HERE!!!!!!!!!!!!!!!!
-  task1->AddJob(new AliTPCcalibAlign);//"align","The kewl alignment job"));
-  task1->AddJob(calibTracksGain);
-  task1->AddJob(calibTracks);
+  task1->AddJob(calibAlign);
+  //task1->AddJob(calibTracksGain);
+  //task1->AddJob(calibTracks);
   //  task1->AddJob(new AliTPCcalibBase);
   // task1->AddJob(new AliTPCcalibV0);
   // -*----*----*---*-*------*-------**--
