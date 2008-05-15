@@ -24,15 +24,20 @@ class AliAODCluster : public TObject {
 		 kPMDCharged};
 
   enum AODCluPID_t {
-    kUnknown = 0, 
-    kPhoton  = 1, 
-    kPi0     = 2, 
-    kNeutron = 3, 
-    kKaon0   = 4,
-    kEleCon  = 5, 
-    kCharged = 6, 
-    kNeutral = 7 , 
-    kOther   = 8};
+    kElectron = 0,
+    kMuon = 1,
+    kPion = 2,
+    kKaon = 3,
+    kProton = 4,
+    kPhoton = 5,
+    kPi0 = 6,
+    kNeutron = 7,
+    kKaon0 = 8,
+    kEleCon = 9,
+    kUnknown = 10,
+    kCharged   = 11, //For PMD?
+    kNeutral   =12 //For PMD? 
+  };
 
   AliAODCluster();
   AliAODCluster(Int_t id,
@@ -40,7 +45,7 @@ class AliAODCluster : public TObject {
 		Int_t *label,
 		Double_t energy,
 		Double_t x[3],
-		Double_t pid[9],
+		Double_t pid[13],
 		Char_t ttype=kUndef,
 		UInt_t selectInfo=0);
 
@@ -49,7 +54,7 @@ class AliAODCluster : public TObject {
 		 Int_t *label,
 		 Float_t energy,
 		 Float_t x[3],
-		 Float_t pid[9],
+		 Float_t pid[13],
 		 Char_t ttype=kUndef,
 		 UInt_t selectInfo=0);
 
@@ -66,11 +71,15 @@ class AliAODCluster : public TObject {
   AODCluPID_t GetMostProbablePID() const;
  
   template <class T> void GetPID(T *pid) const {
-    for(Int_t i=0; i<9; ++i) pid[i]=fPID[i];}
+    for(Int_t i=0; i<13; ++i) pid[i]=fPID[i];}
  
   template <class T> void SetPID(const T *pid) {
-    if(pid) for(Int_t i=0; i<9; ++i) fPID[i]=pid[i];
-    else {for(Int_t i=0; i<9; fPID[i++]=0);} fPID[AliAODCluster::kUnknown]=1.;}
+    if(pid) for(Int_t i=0; i<13; ++i) fPID[i]=pid[i];
+    else {for(Int_t i=0; i<13; fPID[i++]=0);} fPID[AliAODCluster::kUnknown]=1.;}
+
+  template <class T> void SetPIDFromESD(const T *pid) {
+    if(pid) {for(Int_t i=0; i<11; ++i) fPID[i]=pid[i];  fPID[11]=0;   fPID[12]=0;}
+    else {for(Int_t i=0; i<13; fPID[i++]=0);} fPID[AliAODCluster::kUnknown]=1.;}
 
   Int_t  GetID() const { return fID; }
   Int_t  GetLabel(UInt_t i) const;
@@ -108,7 +117,7 @@ class AliAODCluster : public TObject {
   Double32_t    fPosition[3];    // position of the cluster
 
   Double32_t    fChi2;           // chi2 (probably not necessary for PMD)
-  Double32_t    fPID[9];         // [0.,1.,8] pointer to PID object
+  Double32_t    fPID[13];         // [0.,1.,8] pointer to PID object
 
   Int_t         fID;             // unique cluster ID, points back to the ESD cluster
   Int_t         fNLabel;         // number of original track for this cluster      
@@ -117,7 +126,7 @@ class AliAODCluster : public TObject {
   
   Char_t        fType;           // cluster type
 
-  ClassDef(AliAODCluster,4);
+  ClassDef(AliAODCluster,5);
 };
 
 #endif

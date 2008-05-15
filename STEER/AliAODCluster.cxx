@@ -46,7 +46,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     Int_t *label, 
 			     Double_t energy,
 			     Double_t x[3],
-			     Double_t pid[9],
+			     Double_t pid[13],
 			     Char_t ttype,
 			     UInt_t selectInfo) :
   fEnergy(energy),
@@ -70,7 +70,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     Int_t *label, 
 			     Float_t energy,
 			     Float_t x[3],
-			     Float_t pid[9],
+			     Float_t pid[13],
 			     Char_t ttype,
 			     UInt_t selectInfo) :
   fEnergy(energy),
@@ -160,7 +160,7 @@ AliAODCluster::AODCluPID_t AliAODCluster::GetMostProbablePID() const
 {
   // Returns the most probable PID array element.
   
-  Int_t nPID = 9;
+  Int_t nPID = 13;
   if (fPID) {
     AODCluPID_t loc = kUnknown;
     Double_t max = 0.;
