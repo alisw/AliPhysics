@@ -30,14 +30,19 @@ HLT/MUON/OnlineAnalysis
 	this directory.
 
 HLT/MUON/utils/
-	Contains ROOT and AliRoot macros, and various utility and debugging
-	programs specifically for the dHLT.
+	Contains various utility and debugging programs and components
+	specifically for the dHLT.
 
 HLT/MUON/doc/
 	Contains specification and design documentation.
-	
-HLT/MUON/examples/ 
-	Contains tutorials and various examples of how to use the dHLT.
+
+HLT/MUON/macros/
+	Contains useful ROOT and AliRoot macros for performing various tasks for
+	the dHLT.
+
+HLT/MUON/scripts/
+	Contains various useful shell scripts to performing common tasks for the
+	dHLT. Also contains test scripts for the dHLT.
 
 
 Files:
