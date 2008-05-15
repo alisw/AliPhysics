@@ -43,13 +43,6 @@
 #include "ACORDE/AliACORDEv1.h"
 #endif
 
-enum PprGeo_t
-  {
-    kHoles, kNoHoles
-  };
-
-static PprGeo_t geo = kHoles;
-
 void Config()
 {
     // Set Random Number seed
@@ -300,12 +293,7 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAME *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-        if (geo == kHoles) {
-	  FRAME->SetHoles(1);
-	} else {
-	  FRAME->SetHoles(0);
-	}
-
+	FRAME->SetHoles(1);
     }
 
     if (iSHIL)

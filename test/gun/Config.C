@@ -54,15 +54,9 @@ const char * pprTrigConfName[] = {
     "p-p","Pb-Pb"
 };
 
-enum PprGeo_t
-  {
-    kHoles, kNoHoles
-  };
-
 Float_t EtaToTheta(Float_t arg);
 
 static PprTrigConf_t strig = kDefaultPPTrig;// default PP trigger configuration
-static PprGeo_t geo = kHoles;
 
 void Config()
 {
@@ -385,11 +379,7 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-        if (geo == kHoles) {
-	  FRAME->SetHoles(1);
-	} else {
-	  FRAME->SetHoles(0);
-	}
+	FRAME->SetHoles(1);
     }
 
     if (iSHIL)
@@ -424,10 +414,6 @@ void Config()
     if (iTOF) {
         //=================== TOF parameters ============================
 	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
-	// Partial geometry: modules at 2,3,4,6,7,11,12,14,15,16
-	// starting at 6h in positive direction
-	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0};
-	TOF->SetTOFSectors(TOFSectors);
      }
 
 

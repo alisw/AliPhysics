@@ -42,12 +42,6 @@
 #include "VZERO/AliVZEROv7.h"
 #endif
 
-enum PprGeo_t
-  {
-    kHoles, kNoHoles
-  };
-static PprGeo_t geo = kHoles;
-
 Float_t EtaToTheta(Float_t arg);
 void    LoadPythia();
 
@@ -260,11 +254,7 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-        if (geo == kHoles) {
-	  FRAME->SetHoles(1);
-	} else {
-	  FRAME->SetHoles(0);
-	}
+	FRAME->SetHoles(1);
     }
 
     if (iSHIL)

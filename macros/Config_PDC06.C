@@ -96,11 +96,6 @@ const char * TrigConfName[] = {
     "p-p","Pb-Pb"
 };
 
-enum PprGeo_t
-  {
-    kHoles, kNoHoles
-  };
-
 //--- Functions ---
 class AliGenPythia;
 AliGenPythia *PythiaHVQ(PDC06Proc_t proc);
@@ -115,7 +110,6 @@ static DecayHvFl_t   decHvFl  = kNature;
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
 static TrigConf_t    trig     = kDefaultPPTrig; // default pp trigger configuration
-static PprGeo_t geo = kHoles;
 //========================//
 // Set Random Number seed //
 //========================//
@@ -425,11 +419,7 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-        if (geo == kHoles) {
-	  FRAME->SetHoles(1);
-	} else {
-	  FRAME->SetHoles(0);
-	}
+	FRAME->SetHoles(1);
     }
 
     if (iSHIL)
@@ -464,12 +454,6 @@ void Config()
     if (iTOF) {
         //=================== TOF parameters ============================
 	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
-	// Partial geometry:
-	// starting at 3h in anticlock-wise direction
-	// looking from A side (ALICE numbering convention),
-	// modules at 1,2,6,7,9,10,11,12,15,16,17
-       	//Int_t TOFSectors[18]={0,0,0,-1,-1,-1,0,0,0,0,0,0,-1,-1,-1,0,0,0};
-	//TOF->SetTOFSectors(TOFSectors);
     }
 
 
