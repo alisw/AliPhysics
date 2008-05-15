@@ -15,6 +15,8 @@
 
 #include "AliMUONRawStream.h"
 
+class AliMUONDDLTracker;
+
 class AliMUONVRawStreamTracker : public AliMUONRawStream
 {
 public:
@@ -32,6 +34,9 @@ public:
 	virtual Bool_t Next(Int_t& busPatchId,
 				UShort_t& manuId, UChar_t& manuChannel,
 				UShort_t& adc) = 0;
+	
+	/// Return pointer to DDL payload object.
+	virtual AliMUONDDLTracker* GetDDLTracker() const = 0;
 	
 	/// Return maximum number of DDLs
 	static Int_t GetMaxDDL() { return fgkMaxDDL; };

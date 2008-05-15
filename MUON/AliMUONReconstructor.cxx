@@ -69,8 +69,14 @@
 ///
 /// TRIGGERDISABLE : disable the treatment of MUON trigger
 ///
-/// USEFASTDECODER : makes the digit maker class use the high performance decoder
+/// USEFASTTRKDECODER : makes the digit maker class use the high performance decoder
 ///                  AliMUONTrackerDDLDecoder instead of AliMUONPayloadTracker.
+///
+/// USEFASTTRGDECODER : makes the digit maker class use the high performance decoder
+///                  AliMUONTriggerDDLDecoder instead of AliMUONPayloadTrigger.
+///
+/// USEFASTDECODERS : makes the digit maker class use the high performance decoders
+///                  AliMUONTrackerDDLDecoder and AliMUONTriggerDDLDecoder.
 ///
 /// \author Laurent Aphecetche, Subatech
 //-----------------------------------------------------------------------------
@@ -277,12 +283,24 @@ AliMUONReconstructor::CreateDigitMaker() const
 
   TString option = GetOption();
   Bool_t enableErrorLogging = kTRUE;
-  Bool_t useFastDecoder = kFALSE;
-  if (option.Contains("USEFASTDECODER"))
+  Bool_t useFastTrackerDecoder = kFALSE;
+  Bool_t useFastTriggerDecoder = kFALSE;
+  if (option.Contains("USEFASTTRKDECODER"))
   {
-    useFastDecoder = kTRUE;
+    useFastTrackerDecoder = kTRUE;
   }
-  fDigitMaker = new AliMUONDigitMaker(enableErrorLogging, useFastDecoder);
+  if (option.Contains("USEFASTTRGDECODER"))
+  {
+    useFastTriggerDecoder = kTRUE;
+  }
+  if (option.Contains("USEFASTDECODERS"))
+  {
+    useFastTrackerDecoder = kTRUE;
+    useFastTriggerDecoder = kTRUE;
+  }
+  fDigitMaker = new AliMUONDigitMaker(
+      enableErrorLogging, useFastTrackerDecoder, useFastTriggerDecoder
+    );
   option.ToUpper();
   if ( option.Contains("SAVEDIGITS" ))
     {

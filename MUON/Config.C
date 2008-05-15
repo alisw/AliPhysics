@@ -211,7 +211,8 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   //MUON->SetDigitizerWithNoise(kFALSE);
 
   // Use fast raw data decoder
-  // MUON->SetFastDecoder(kTRUE);  
+  //MUON->SetFastTrackerDecoder(kTRUE);  
+  //MUON->SetFastTriggerDecoder(kTRUE);  
   
   //
   // If SetAlign, the detection elements transformations

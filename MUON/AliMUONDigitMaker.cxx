@@ -55,6 +55,7 @@
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONRawStreamTrigger.h"
+#include "AliMUONRawStreamTriggerHP.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONVTriggerStore.h"
@@ -77,12 +78,15 @@ ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 /// \endcond
 
 //__________________________________________________________________________
-AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t useFastDecoder)
-  : TObject(),
+AliMUONDigitMaker::AliMUONDigitMaker(
+      Bool_t enableErrorLogger,
+      Bool_t useFastTrackerDecoder, Bool_t useFastTriggerDecoder
+  ) :
+    TObject(),
     fScalerEvent(kFALSE),
     fMakeTriggerDigits(kFALSE),
     fRawStreamTracker(NULL),
-    fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
+    fRawStreamTrigger(NULL),
     fDigitStore(0x0),
     fTriggerStore(0x0),
   fLogger(new AliMUONLogger(10000))
@@ -91,7 +95,8 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t useFastDec
 
   AliDebug(1,"");
   
-  CreateRawStreamTracker(useFastDecoder);
+  CreateRawStreamTracker(useFastTrackerDecoder);
+  CreateRawStreamTrigger(useFastTriggerDecoder);
 
   // Standard Constructor
   if (enableErrorLogger) {
@@ -121,12 +126,26 @@ void AliMUONDigitMaker::CreateRawStreamTracker(Bool_t useFastDecoder)
 
   if (useFastDecoder)
   {
-    AliInfo("Using fast decoder.");
+    AliInfo("Using fast tracker decoder.");
     fRawStreamTracker = new AliMUONRawStreamTrackerHP();
   }
   else
     fRawStreamTracker = new AliMUONRawStreamTracker();
-}    
+}
+
+//__________________________________________________________________________
+void AliMUONDigitMaker::CreateRawStreamTrigger(Bool_t useFastDecoder)
+{
+/// Create raw stream trigger according to the passed option
+
+  if (useFastDecoder)
+  {
+    AliInfo("Using fast trigger decoder.");
+    fRawStreamTrigger = new AliMUONRawStreamTriggerHP();
+  }
+  else
+    fRawStreamTrigger = new AliMUONRawStreamTrigger();
+}
 
 //____________________________________________________________________
 void
@@ -292,6 +311,8 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
   Int_t loCircuit;
 
   AliCodeTimerAuto("");
+  
+  if (UsingFastTriggerDecoder()) return ReadTriggerDDLFast(rawReader);
 
   fRawStreamTrigger->SetReader(rawReader);
 
@@ -364,6 +385,114 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
             
             TriggerDigits(loCircuit, xyPattern, *fDigitStore);
           }          
+        } // if triggerY
+      } // iLocal
+    } // iReg
+  } // NextDDL
+  
+  return kOK;
+}
+
+//____________________________________________________________________
+Int_t
+AliMUONDigitMaker::ReadTriggerDDLFast(AliRawReader* rawReader)
+{
+  /// reading tracker DDL like ReadTriggerDDL but with fast decoder interface.
+  /// filling the fTriggerStore container, which must not be null
+
+  const AliMUONRawStreamTriggerHP::AliHeader*          darcHeader  = 0x0;
+  const AliMUONRawStreamTriggerHP::AliRegionalHeader*  regHeader   = 0x0;
+  const AliMUONRawStreamTriggerHP::AliLocalStruct*     localStruct = 0x0;
+
+  Int_t loCircuit;
+
+  fRawStreamTrigger->SetReader(rawReader);
+  AliMUONRawStreamTriggerHP* rawStreamTrigger =
+    dynamic_cast<AliMUONRawStreamTriggerHP*>(fRawStreamTrigger);
+
+  while (fRawStreamTrigger->NextDDL())
+  {
+    darcHeader = rawStreamTrigger->GetHeaders();
+    
+    // fill global trigger information
+    if (fTriggerStore) 
+    {
+      if (darcHeader->GetGlobalFlag()) 
+      {
+          AliMUONGlobalTrigger globalTrigger;
+          globalTrigger.SetFromGlobalResponse(darcHeader->GetGlobalOutput());
+          fTriggerStore->SetGlobal(globalTrigger);
+      }
+    }
+    
+    Int_t nReg = rawStreamTrigger->GetRegionalHeaderCount();
+    
+    for(Int_t iReg = 0; iReg < nReg ;iReg++)
+    {   //reg loop
+      
+
+      // crate info  
+      AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->
+                                GetTriggerCrate(fRawStreamTrigger->GetDDL(), iReg);
+      
+      if (!crate) 
+        fLogger->Log(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));
+     
+      
+      regHeader =  rawStreamTrigger->GetRegionalHeader(iReg);
+      
+      Int_t nLocal = regHeader->GetLocalStructCount();
+      for(Int_t iLocal = 0; iLocal < nLocal; iLocal++) 
+      {
+        
+        localStruct = regHeader->GetLocalStruct(iLocal);
+        
+        // if card exist
+        if (localStruct) {
+          
+   	  loCircuit = crate->GetLocalBoardId(localStruct->GetId());
+
+	  if ( !loCircuit ) continue; // empty slot
+
+	  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(loCircuit, false);
+
+	  // skip copy cards
+	  if( !localBoard->IsNotified()) 
+	     continue;
+          
+          if (fTriggerStore)
+          {
+            // fill local trigger
+            AliMUONLocalTrigger localTrigger;
+            localTrigger.SetLoCircuit(loCircuit);
+            localTrigger.SetLoStripX((Int_t)localStruct->GetXPos());
+            localTrigger.SetLoStripY((Int_t)localStruct->GetYPos());
+            localTrigger.SetLoDev((Int_t)localStruct->GetXDev());
+            localTrigger.SetLoSdev((Int_t)localStruct->GetSXDev());
+            localTrigger.SetLoTrigY((Int_t)localStruct->GetTrigY());
+            localTrigger.SetLoLpt(localStruct->GetLpt());
+            localTrigger.SetLoHpt(localStruct->GetHpt());
+            localTrigger.SetX1Pattern(localStruct->GetX1());
+            localTrigger.SetX2Pattern(localStruct->GetX2());
+            localTrigger.SetX3Pattern(localStruct->GetX3());
+            localTrigger.SetX4Pattern(localStruct->GetX4());
+            localTrigger.SetY1Pattern(localStruct->GetY1());
+            localTrigger.SetY2Pattern(localStruct->GetY2());
+            localTrigger.SetY3Pattern(localStruct->GetY3());
+            localTrigger.SetY4Pattern(localStruct->GetY4());
+            fTriggerStore->Add(localTrigger);
+          }
+          
+          if ( fMakeTriggerDigits )
+          {
+            //FIXEME should find something better than a TArray
+            TArrayS xyPattern[2];
+            
+	    localStruct->GetXPattern(xyPattern[0]);
+	    localStruct->GetYPattern(xyPattern[1]);
+            
+            TriggerDigits(loCircuit, xyPattern, *fDigitStore);
+          }
         } // if triggerY
       } // iLocal
     } // iReg
@@ -447,16 +576,41 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
   } // ichamber
   
   return kTRUE;
-} 
+}
 
 //____________________________________________________________________
-void  AliMUONDigitMaker::SetFastDecoder(Bool_t useFastDecoder)
+Bool_t AliMUONDigitMaker::UsingFastTrackerDecoder() const
+{
+/// Returns kTRUE if the digit maker is using the high performance decoder for
+/// tracker DDL stream decoding.
+
+  return (fRawStreamTracker->IsA() == AliMUONRawStreamTrackerHP::Class());
+}
+
+//____________________________________________________________________
+Bool_t AliMUONDigitMaker::UsingFastTriggerDecoder() const
+{
+/// Returns kTRUE if the digit maker is using the high performance decoder for
+/// trigger DDL stream decoding.
+
+  return (fRawStreamTrigger->IsA() == AliMUONRawStreamTriggerHP::Class());
+}
+
+//____________________________________________________________________
+void  AliMUONDigitMaker::SetFastTrackerDecoder(Bool_t useFastDecoder)
 {
 /// Set fast raw data decoder
 
   delete fRawStreamTracker;
   CreateRawStreamTracker(useFastDecoder);
-}  
-  
-    
+}
+
+//____________________________________________________________________
+void  AliMUONDigitMaker::SetFastTriggerDecoder(Bool_t useFastDecoder)
+{
+/// Set fast raw data decoder
+
+  delete fRawStreamTrigger;
+  CreateRawStreamTrigger(useFastDecoder);
+}
 

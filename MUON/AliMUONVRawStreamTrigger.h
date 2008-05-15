@@ -19,6 +19,7 @@
 
 class TArrayS;
 class AliRawReader;
+class AliMUONDDLTrigger;
 
 class AliMUONVRawStreamTrigger : public AliMUONRawStream
 {
@@ -33,6 +34,9 @@ public:
 	                    UChar_t& xPos, Bool_t& triggerY, Bool_t& triggerX,
 	                    TArrayS& xPattern, TArrayS& yPattern) = 0;
 	
+	/// Return pointer to DDL payload object.
+	virtual AliMUONDDLTrigger* GetDDLTrigger() const = 0;
+	
 	/// Return maximum number of DDLs
 	virtual Int_t GetMaxDDL() const = 0;
 	/// Return maximum number of regional cards in DATE file
@@ -40,6 +44,7 @@ public:
 	/// Return maximum number of local cards in DATE file
 	virtual Int_t GetMaxLoc() const = 0;
 	
+	/// Should set the maximum number of local cards expected in the DDL stream.
 	virtual void SetMaxLoc(Int_t loc) = 0;
 	
 	/// Return number of DDL

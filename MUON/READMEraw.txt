@@ -74,11 +74,41 @@ For trigger raw data, local response output
 .includepath $ALICE_ROOT/MUON
 .includepath $ALICE_ROOT/RAW
 .L $ALICE_ROOT/MUON/MUONRawStreamTrigger.C+ 
-MUONRawStreamTriggerSimple(maxEvent, firstDDL, lastDDL, rawFileName)
+MUONRawStreamTriggerSimple(maxEvent, rawFileName)
+</pre>
+
+Similarly there is a high performance decoder available for the trigger DDLs,
+which can be run as follows for full output:
+<pre>
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.includepath $ALICE_ROOT/RAW
+.L $ALICE_ROOT/MUON/MUONRawStreamTrigger.C+
+MUONRawStreamTriggerHPExpert(maxEvent, firstDDL, lastDDL, rawFileName)
+</pre>
+
+And just for local response output like so:
+<pre>
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.includepath $ALICE_ROOT/RAW
+.L $ALICE_ROOT/MUON/MUONRawStreamTrigger.C+
+MUONRawStreamTriggerHPSimple(maxEvent, rawFileName)
+</pre>
+
+The MUONRawStreamTrigger.C macro also provides other alternative implementations
+for fetching the decoded data from the trigger high performance decoder's interface.
+These generate the same output, but show how to write code to fetch the data in
+various ways from the interface. Developers should consult the macro as an example
+of how to use the interface. The alternate methods are called:
+<pre>
+MUONRawStreamTriggerHPExpert2()
+MUONRawStreamTriggerHPExpert3()
+MUONRawStreamTriggerHPSimple2()
 </pre>
 
 
-Default wise the macro read all DDL files from the current directory for 1000 events.
+Default wise the macros read all DDL files from the current directory for 1000 events.
 For root file rawFileName must end with .root. For DDL files you have to specified the directory 
 where the raw0...n subdirectories are located:
 <pre>
@@ -87,15 +117,23 @@ MUONRawStreamTracker(..)(maxEvent, firstDDL, lastDDL, "$YOUR_WORKING_DIRECTORY/"
 
 \section raw_s2 Timing of the raw data decoders
 
-The macro MUONTimeRawStreamTracker.C can used to check the timing (speed) performance 
-of the existing offline decoder for the tracker DDLs (AliMUONRawStreamTracker) and also 
-for the new high performance decoder (AliMUONRawStreamTrackerHP). It can be invoked 
-as follows:
+The macro MUONTimeRawStreamTracker.C and MUONTimeRawStreamTrigger.C can used to
+check the timing (speed) performance of the existing offline decoders compared to
+the new high performance decoders.
+For the tracker DDLs the MUONTimeRawStreamTracker.C macro compares the timing of
+AliMUONRawStreamTracker against the high performance AliMUONRawStreamTrackerHP
+decoder.
+Similarly the MUONTimeRawStreamTrigger.C macro compares the timing of the
+existing AliMUONRawStreamTrigger decoder against the high performance
+AliMUONRawStreamTrackerHP decoder.
+The macros can be invoked as follows:
 
 <pre>
  $ aliroot
 .L $ALICE_ROOT/MUON/MUONTimeRawStreamTracker.C+
  MUONTimeRawStreamTracker(filename, maxEvent);
+.L $ALICE_ROOT/MUON/MUONTimeRawStreamTrigger.C+
+ MUONTimeRawStreamTrigger(filename, maxEvent);
 </pre>
 
 where \em filename is the name of a file containing the raw data, or alternatively
@@ -105,13 +143,13 @@ data. The \em maxEvent value is the maximum event to process (default set to
 [0 .. maxEvent-1].
 
 
-\section raw_s3 Special flags for high performance tracker DDL decoder.
+\section raw_s3 Special flags for high performance tracker and trigger DDL decoders.
 
 There are three flags that are available through the AliMUONRawStreamTrackerHP
 interface, which effect the decoding of raw data in special ways.
-\li TryRecover
-\li AutoDetectTrailer
-\li CheckForTrailer
+\li TryRecover (default = false)
+\li AutoDetectTrailer (default = true)
+\li CheckForTrailer  (default = true)
 
 The TryRecover flag is used to enable special logic in the decoder that tries
 to recover from a partially corrupt raw data structure header, or a corrupt/missing
@@ -154,6 +192,22 @@ Bool_t value = decoder.TryRecover();
 \endcode
 Similarly, the other flags are manipulated with corresponding methods having
 the same name as the flag.
+
+The trigger DDL decoder AliMUONRawStreamTriggerHP has the following flag available:
+\li TryRecover (default = false)
+
+For the AliMUONRawStreamTriggerHP decoder the TryRecover flag can be set in the
+same way as for AliMUONRawStreamTrackerHP, with a call to the TryRecover() method.
+For trigger DDLs this option will enable logic, which attempts to find the next
+correct header / structure marker key in the DDL stream, whenever such a marker
+has been found corrupt or missing. Decoding then continues from the new location
+found or stops if no good key was found. The default setting is to disable this
+logic, since it is only useful to try recover corrupted data.
+
+\note Raw data containing software scalars (Start-of-Data events for example)
+from the trigger detector taken during the Feb-March 2008 cosmics run is corrupt,
+but can be successfully decoded by enabling this TryRecover flag for the
+trigger DDL decoder.
 
 
 This chapter is defined in the READMEraw.txt file.

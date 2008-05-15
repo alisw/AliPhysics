@@ -44,6 +44,10 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUONRawStreamTrackerHP.h"
+#include "AliMUONDspHeader.h"
+#include "AliMUONBlockHeader.h"
+#include "AliMUONBusStruct.h"
+#include "AliMUONDDLTracker.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include <cassert>
@@ -69,7 +73,8 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP() :
 	fCurrentData(NULL),
 	fEndOfData(NULL),
 	fHadError(kFALSE),
-	fDone(kFALSE)
+	fDone(kFALSE),
+	fDDLObject(NULL)
 {
 	///
 	/// Default constructor.
@@ -100,7 +105,8 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP(AliRawReader* rawReader) :
 	fCurrentData(NULL),
 	fEndOfData(NULL),
 	fHadError(kFALSE),
-	fDone(kFALSE)
+	fDone(kFALSE),
+	fDDLObject(NULL)
 {
 	///
 	/// Constructor with AliRawReader as argument.
@@ -131,6 +137,10 @@ AliMUONRawStreamTrackerHP::~AliMUONRawStreamTrackerHP()
 	{
 		delete [] fBuffer;
 	}
+	if (fDDLObject != NULL)
+	{
+		delete fDDLObject;
+	}
 }
 
 
@@ -154,6 +164,14 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 	/// \return kTRUE if the next DDL was successfully read and kFALSE otherwise.
 
 	assert( GetReader() != NULL );
+	
+	// The temporary object if generated in GetDDLTracker, is now stale,
+	// so delete it.
+	if (fDDLObject != NULL)
+	{
+		delete fDDLObject;
+		fDDLObject = NULL;
+	}
 	
 	// Better to reset these pointers.
 	fCurrentBusPatch = NULL;
@@ -306,6 +324,62 @@ retry:
 		if (NextDDL()) goto retry;
 	}
 	return kFALSE;
+}
+
+
+AliMUONDDLTracker* AliMUONRawStreamTrackerHP::GetDDLTracker() const
+{
+	/// Construct and return a pointer to the DDL payload object.
+	/// \return Pointer to internally constructed AliMUONDDLTracker object.
+	///         The object is owned by this class and should not be deleted
+	///         by the caller.
+	///
+	/// \note This method should not be used just to gain access to the DDL
+	/// payload, unless there is a good reason to have the AliMUONDDLTracker
+	/// object. For example, if you want to modify the data and then save it
+	/// to another DDL stream. Otherwise it can be an order of magnitude
+	/// faster to access the DDL headers and data with the GetBlockHeader,
+	/// GetDspHeader and GetBusPatch methods for example.
+	/// Refer to the MUONRawStreamTracker.C macro to see how to use the fast
+	/// decoder interface optimally.
+	
+	if (fDDLObject != NULL) return fDDLObject;
+	
+	fDDLObject = new AliMUONDDLTracker;
+	for (Int_t iBlock = 0; iBlock < (Int_t)GetBlockCount(); iBlock++)
+	{
+		AliMUONBlockHeader blockHeader;
+		AliMUONDspHeader dspHeader;
+		AliMUONBusStruct busPatch;
+		
+		const AliBlockHeader* bh = GetBlockHeader(iBlock);
+		// Copy block header and add it to the DDL object.
+		memcpy(blockHeader.GetHeader(), bh->GetHeader(), sizeof(AliMUONBlockHeaderStruct));
+		fDDLObject->AddBlkHeader(blockHeader);
+		
+		for (Int_t iDsp = 0; iDsp < (Int_t)bh->GetDspCount(); iDsp++)
+		{
+			const AliDspHeader* dh = bh->GetDspHeader(iDsp);
+			// Copy DSP header and add it to the DDL object.
+			memcpy(dspHeader.GetHeader(), dh->GetHeader(), sizeof(AliMUONDSPHeaderStruct));
+			fDDLObject->AddDspHeader(dspHeader, iBlock);
+			
+			const AliBusPatch* bp = dh->GetFirstBusPatch();
+			while (bp != NULL)
+			{
+				// Copy bus patch header, data and add everything into DDL object.
+				memcpy(busPatch.GetHeader(), bp->GetHeader(), sizeof(AliMUONBusPatchHeaderStruct));
+				busPatch.SetAlloc(bp->GetLength());
+				memcpy(busPatch.GetData(), bp->GetData(), bp->GetDataCount()*sizeof(UInt_t));
+				busPatch.SetBlockId(iBlock);
+				busPatch.SetDspId(iDsp);
+				fDDLObject->AddBusPatch(busPatch, iBlock, iDsp);
+				bp = bp->Next();
+			}
+		}
+	}
+	
+	return fDDLObject;
 }
 
 

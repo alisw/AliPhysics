@@ -19,6 +19,8 @@
 #include "AliMUONTriggerDDLDecoder.h"
 #include "TArrayS.h"
 
+class AliMUONDDLTrigger;
+
 
 class AliMUONRawStreamTriggerHP : public AliMUONVRawStreamTrigger
 {
@@ -47,6 +49,9 @@ public:
 	                    UChar_t& yPos, UChar_t& sXDev,   UChar_t& xDev,
 	                    UChar_t& xPos, Bool_t& triggerY, Bool_t& triggerX,
 	                    TArrayS& xPattern, TArrayS& yPattern);
+	
+	/// Construct and return a pointer to the DDL payload object.
+	virtual AliMUONDDLTrigger* GetDDLTrigger() const;
 	
 	/// Returns the next local trigger structure.
 	const AliLocalStruct* Next();
@@ -711,6 +716,7 @@ private:
 	const AliLocalStruct* fCurrentLocalStruct;  //!< The current local trigger structure being handled by Next().
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
 	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
+	mutable AliMUONDDLTrigger* fDDLObject; //!< Temporary DDL object used by GetDDLTrigger() for caching.
 	
 	static const Int_t  fgkMaxDDL;     //!< Maximum number of DDLs
 	

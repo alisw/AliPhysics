@@ -39,6 +39,10 @@
 /// \author Artur Szostak <artursz@iafrica.com>
 
 #include "AliMUONRawStreamTriggerHP.h"
+#include "AliMUONDarcHeader.h"
+#include "AliMUONRegHeader.h"
+#include "AliMUONLocalStruct.h"
+#include "AliMUONDDLTrigger.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include <cassert>
@@ -64,7 +68,8 @@ AliMUONRawStreamTriggerHP::AliMUONRawStreamTriggerHP() :
 	fBuffer(new UChar_t[8192]),
 	fCurrentLocalStruct(NULL),
 	fHadError(kFALSE),
-	fDone(kFALSE)
+	fDone(kFALSE),
+	fDDLObject(NULL)
 {
 	///
 	/// Default constructor.
@@ -89,7 +94,8 @@ AliMUONRawStreamTriggerHP::AliMUONRawStreamTriggerHP(AliRawReader* rawReader) :
 	fBuffer(new UChar_t[8192]),
 	fCurrentLocalStruct(NULL),
 	fHadError(kFALSE),
-	fDone(kFALSE)
+	fDone(kFALSE),
+	fDDLObject(NULL)
 {
 	///
 	/// Constructor with AliRawReader as argument.
@@ -116,6 +122,10 @@ AliMUONRawStreamTriggerHP::~AliMUONRawStreamTriggerHP()
 	{
 		delete [] fBuffer;
 	}
+	if (fDDLObject != NULL)
+	{
+		delete fDDLObject;
+	}
 }
 
 
@@ -140,6 +150,14 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 	///    otherwise.
 
 	assert( GetReader() != NULL );
+	
+	// The temporary object if generated in GetDDLTracker, is now stale,
+	// so delete it.
+	if (fDDLObject != NULL)
+	{
+		delete fDDLObject;
+		fDDLObject = NULL;
+	}
 	
 	fCurrentLocalStruct = NULL;
 	
@@ -255,6 +273,73 @@ Bool_t AliMUONRawStreamTriggerHP::Next(
 	localStruct->GetYPattern(yPattern);
 
 	return kTRUE;
+}
+
+
+AliMUONDDLTrigger* AliMUONRawStreamTriggerHP::GetDDLTrigger() const
+{
+	/// Construct and return a pointer to the DDL payload object.
+	/// \return Pointer to internally constructed AliMUONDDLTrigger object.
+	///         The object is owned by this class and should not be deleted
+	///         by the caller.
+	///
+	/// \note This method should not be used just to gain access to the DDL
+	/// payload, unless there is a good reason to have the AliMUONDDLTrigger
+	/// object. For example, if you want to modify the data and then save it
+	/// to another DDL stream. Otherwise it can be an order of magnitude
+	/// faster to access the DDL headers and data with the GetHeaders,
+	/// GetRegionalHeader and GetLocalStruct methods for example.
+	/// Refer to the MUONRawStreamTrigger.C macro to see how to use the fast
+	/// decoder interface optimally.
+	
+	if (fDDLObject != NULL) return fDDLObject;
+	
+	fDDLObject = new AliMUONDDLTrigger;
+	
+	// Copy over all DARC, global headers and scalars.
+	AliMUONDarcHeader* darcHeader = fDDLObject->GetDarcHeader();
+	const AliHeader* hdr = GetHeaders();
+	UInt_t word = hdr->GetDarcHeader();
+	memcpy(darcHeader->GetHeader(), &word, sizeof(word));
+	if (hdr->GetDarcScalars() != NULL)
+	{
+		memcpy(darcHeader->GetDarcScalers(), hdr->GetDarcScalars(), sizeof(AliMUONDarcScalarsStruct));
+	}
+	memcpy(darcHeader->GetGlobalInput(), hdr->GetGlobalHeader(), sizeof(AliMUONGlobalHeaderStruct));
+	if (hdr->GetGlobalScalars() != NULL)
+	{
+		memcpy(darcHeader->GetGlobalScalers(), hdr->GetGlobalScalars(), sizeof(AliMUONGlobalScalarsStruct));
+	}
+	
+	for (Int_t iReg = 0; iReg < (Int_t)GetRegionalHeaderCount(); iReg++)
+	{
+		AliMUONRegHeader regHeader;
+		AliMUONLocalStruct localStruct;
+		
+		const AliRegionalHeader* rh = GetRegionalHeader(iReg);
+		// Copy local structure and scalars and add everything into DDL object.
+		memcpy(regHeader.GetHeader(), rh->GetHeader(), sizeof(AliMUONRegionalHeaderStruct));
+		if (rh->GetScalars() != NULL)
+		{
+			memcpy(regHeader.GetScalers(), rh->GetScalars(), sizeof(AliMUONRegionalScalarsStruct));
+		}
+		fDDLObject->AddRegHeader(regHeader);
+		
+		const AliLocalStruct* ls = rh->GetFirstLocalStruct();
+		while (ls != NULL)
+		{
+			// Copy local structure and scalars and add everything into DDL object.
+			memcpy(localStruct.GetData(), ls->GetData(), sizeof(AliMUONLocalInfoStruct));
+			if (ls->GetScalars() != NULL)
+			{
+				memcpy(localStruct.GetScalers(), ls->GetScalars(), sizeof(AliMUONLocalScalarsStruct));
+			}
+			fDDLObject->AddLocStruct(localStruct, iReg);
+			ls = ls->Next();
+		}
+	}
+	
+	return fDDLObject;
 }
 
 

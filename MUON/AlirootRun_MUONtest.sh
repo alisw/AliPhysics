@@ -8,6 +8,7 @@ RECONSTRUCTION=1 # will perform reconstruction
 CHECKS=1 # will perform checks
 NEVENTS=100 # will simulate 100 events
 
+#RECOPTIONS="SAVEDIGITS USEFASTDECODERS" # reconstruction options with fast decoders
 RECOPTIONS="SAVEDIGITS" # default reconstruction options
 SIMCONFIG="$ALICE_ROOT/MUON/Config.C" # default simulation configuration file
 OUTDIR=""

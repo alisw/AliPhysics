@@ -17,6 +17,9 @@
 #include "AliMUONVRawStreamTracker.h"
 #include "AliMUONTrackerDDLDecoder.h"
 
+class AliMUONDDLTracker;
+
+
 class AliMUONRawStreamTrackerHP : public AliMUONVRawStreamTracker
 {
 public:
@@ -51,6 +54,9 @@ public:
 	virtual Bool_t Next(Int_t& busPatchId,
 				UShort_t& manuId, UChar_t& manuChannel,
 				UShort_t& adc);
+	
+	/// Construct and return a pointer to the DDL payload object.
+	virtual AliMUONDDLTracker* GetDDLTracker() const;
 	
 	/// Returns the next batch of decoded channel data.
 	const AliBusPatch* Next();
@@ -619,6 +625,7 @@ private:
 	const UInt_t* fEndOfData;  //!< The last data word in the current bus patch.
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
 	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
+	mutable AliMUONDDLTracker* fDDLObject; //!< Temporary DDL object used by GetDDLTracker() for caching.
 
 	ClassDef(AliMUONRawStreamTrackerHP, 0) // High performance decoder for reading MUON raw digits from tracking chamber DDL data.
 };

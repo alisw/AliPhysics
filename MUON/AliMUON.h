@@ -125,8 +125,13 @@ class AliMUON : public  AliDetector
                  /// Parametrised tail effect in resolution histogram
     virtual void SetTailEffect(Bool_t isTailEffect) { fIsTailEffect=isTailEffect; }
     
-    // Set fast raw data decoder
-    virtual void SetFastDecoder(Bool_t useFastDecoder); 
+    // Check if using fast decoders.
+    virtual Bool_t UsingFastTrackerDecoder() const;
+    virtual Bool_t UsingFastTriggerDecoder() const;
+    
+    // Set fast raw data decoders
+    virtual void SetFastTrackerDecoder(Bool_t useFastDecoder);
+    virtual void SetFastTriggerDecoder(Bool_t useFastDecoder);
                 
     
     // Getters
