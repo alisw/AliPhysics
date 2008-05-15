@@ -20,6 +20,7 @@
 #include <AliLog.h>
 #include <TCanvas.h>
 #include <TH3F.h>
+#include <TH2F.h>
 #include <TH1D.h>
 #include <TDirectory.h>
 #include <AliCorrection.h>
