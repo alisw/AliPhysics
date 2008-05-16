@@ -361,8 +361,14 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       fTracklets[fNTracklets][0] = fClustersLay1[iC1][0];
       // use the phi from the clusters in the first layer
       fTracklets[fNTracklets][1] = fClustersLay1[iC1][1];
-      // Store the difference between phi1 and phi2
+      // store the difference between phi1 and phi2
       fTracklets[fNTracklets][2] = fClustersLay1[iC1][1] - fClustersLay2[iC2WithBestDist][1];
+
+      // define dphi in the range [0,pi] with proper sign (track charge correlated)
+      if (fTracklets[fNTracklets][2] > TMath::Pi()) 
+          fTracklets[fNTracklets][2] = fTracklets[fNTracklets][2]-2.*TMath::Pi();
+      if (fTracklets[fNTracklets][2] < -TMath::Pi()) 
+          fTracklets[fNTracklets][2] = fTracklets[fNTracklets][2]+2.*TMath::Pi();
 
       // find label
       // if equal label in both clusters found this label is assigned
