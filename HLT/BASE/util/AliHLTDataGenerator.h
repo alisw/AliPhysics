@@ -36,8 +36,8 @@
  *      the maximum size of the data to be produced, default = minsize
  *
  * Optional arguments:<br>
- * \li -disisor <i> m </i> <br>
- *      a disisor to shrink the size after \em modulo events
+ * \li -divisor <i> m </i> <br>
+ *      a divisor to shrink the size after \em modulo events
  * \li -offset <i> m </i> <br>
  *      an offset to subtract from the size after \em modulo events
  * \li -modulo <i> n </i> <br>
