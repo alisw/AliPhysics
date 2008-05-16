@@ -65,7 +65,11 @@ AliEveEventManager::AliEveEventManager() :
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE),
-  fRawReader (0)
+  fRawReader (0),
+  fAutoLoad(kFALSE),
+  fAutoLoadTime(5.),
+  fAutoLoadTimer(0),
+  fIsOnline(kFALSE)
 {
   // Default constructor.
 }
@@ -77,7 +81,11 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE),
-  fRawReader (0)
+  fRawReader (0),
+  fAutoLoad(kFALSE),
+  fAutoLoadTime(5.),
+  fAutoLoadTimer(0),
+  fIsOnline(kFALSE)
 {
   // Constructor with event-directory URL and event-id.
 
@@ -89,6 +97,7 @@ AliEveEventManager::~AliEveEventManager()
 {
   // Destructor.
 
+  if (fAutoLoadTimer) delete fAutoLoadTimer;
   // Somewhat unclear what to do here.
   // In principle should close all data sources and deregister from
   // TEveManager.
@@ -283,6 +292,21 @@ void AliEveEventManager::Open()
   SetTitle(fPath);
 }
 
+void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd)
+{
+  // Set an event from an external source
+  // The method is used in the online visualisation
+  fRunLoader = runLoader;
+  fRawReader = rawReader;
+  fESD = esd;
+  fIsOnline = kTRUE;
+  SetTitle("Online event in memory");
+  SetName("Online Event");
+
+  ElementChanged();
+  AfterNewEventLoaded();
+}
+
 void AliEveEventManager::GotoEvent(Int_t event)
 {
   // Load data for specified event.
@@ -360,7 +384,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
   fEventId = event;
   SetName(Form("Event %d", fEventId));
-  UpdateItems();
+  ElementChanged();
 
   AfterNewEventLoaded();
 }
@@ -499,3 +523,84 @@ TGeoManager* AliEveEventManager::AssertGeometry()
   gGeoManager = AliGeomManager::GetGeometry();
   return gGeoManager;
 }
+
+void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
+{
+  // Set the automatic event loading mode
+  fAutoLoad = autoLoad;
+  StartStopAutoLoadTimer();
+}
+
+void AliEveEventManager::SetAutoLoadTime(Double_t time)
+{
+  // Set the auto-load time in seconds
+  fAutoLoadTime = time;
+  StartStopAutoLoadTimer();
+}
+
+void AliEveEventManager::StartStopAutoLoadTimer()
+{
+  // Create if needed and start
+  // the automatic event loading timer
+  if (fAutoLoad) {
+    if (!fAutoLoadTimer) {
+      fAutoLoadTimer = new TTimer;
+      fAutoLoadTimer->Connect("Timeout()","AliEveEventManager",this,"NextEvent()");
+    }
+    fAutoLoadTimer->Start((Long_t)fAutoLoadTime*1000,kTRUE);
+  }
+  else {
+    if (fAutoLoadTimer) fAutoLoadTimer->Stop();
+  }
+}
+
+void AliEveEventManager::PrevEvent()
+{
+  // Loads previous event
+  // only in case of manual mode
+  if (!fIsOnline) {
+    GotoEvent(fEventId - 1);
+    StartStopAutoLoadTimer();
+  }
+}
+
+void AliEveEventManager::NextEvent()
+{
+  // Loads next event
+  // either in automatic (online) or
+  // manual mode
+  
+  if (fIsOnline) {
+    if (fAutoLoadTimer) fAutoLoadTimer->Stop();
+
+    DestroyElements();
+
+    gSystem->ExitLoop();
+  }
+  else {
+    GotoEvent(fEventId + 1);
+    StartStopAutoLoadTimer();
+  }
+}
+
+const char* AliEveEventManager::GetEventInfo() const
+{
+  // Dumps the event-header contents
+
+  static TString eventInfo;
+
+  if (!fRawReader) return "No event information is available";
+
+  const UInt_t* id = fRawReader->GetEventId();
+  const UInt_t* pattern = fRawReader->GetTriggerPattern();
+  const UInt_t* attr = fRawReader->GetAttributes();
+  eventInfo.Form("Run#: %d\nEvent type: %d\nPeriod: %x\nOrbit: %x\nBC: %x\nTrigger: %x-%x\nDetectors: %x\nAttributes:%x-%x-%x",
+		 fRawReader->GetRunNumber(),fRawReader->GetType(),
+		 (((id)[0]>>4)&0x0fffffff),((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)),((id)[1]&0x00000fff),
+		 pattern[0],pattern[1],
+		 *fRawReader->GetDetectorPattern(),
+		 attr[0],attr[1],attr[2]);
+
+  return eventInfo.Data();
+}
+  

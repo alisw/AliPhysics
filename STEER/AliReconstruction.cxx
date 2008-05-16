@@ -642,6 +642,19 @@ Bool_t AliReconstruction::Run(const char* input)
   AliCodeTimerAuto("");
 
   if (!InitRun(input)) return kFALSE;
+
+  Bool_t runAliEVE = kFALSE;
+  if (strcmp(gProgName,"alieve") == 0) runAliEVE = kTRUE;
+
+  if (runAliEVE) {
+    TString macroStr;
+    macroStr.Form("%s/EVE/macros/alieve_online.C",gSystem->ExpandPathName("$ALICE_ROOT"));
+    AliInfo(Form("Loading AliEVE macro: %s",macroStr.Data()));
+    if (gROOT->LoadMacro(macroStr.Data()) != 0)
+      runAliEVE = kFALSE;
+    else
+      gROOT->ProcessLine("if (!gAliEveEvent) {gAliEveEvent = new AliEveEventManager();gAliEveEvent->SetAutoLoad(kTRUE);gAliEveEvent->AddNewEventCommand(\"alieve_online()\");gEve->AddEvent(gAliEveEvent);};");
+  }
   
   //******* The loop over events
   Int_t iEvent = 0;
@@ -649,6 +662,13 @@ Bool_t AliReconstruction::Run(const char* input)
 	 (fRawReader && fRawReader->NextEvent())) {
     if (!RunEvent(iEvent)) return kFALSE;
     iEvent++;
+
+    if (runAliEVE) {
+      AliInfo("Running AliEVE...");
+      gROOT->ProcessLine(Form("gAliEveEvent->SetEvent((AliRunLoader*)%p,(AliRawReader*)%p,(AliESDEvent*)%p);",fRunLoader,fRawReader,fesd));
+      gROOT->ProcessLine("gAliEveEvent->StartStopAutoLoadTimer();");
+      gSystem->Run();
+    }
   }
 
   if (!FinishRun()) return kFALSE;

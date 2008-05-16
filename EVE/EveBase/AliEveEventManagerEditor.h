@@ -12,10 +12,9 @@
 
 #include "TGedFrame.h"
 
-class TGButton;
 class TGCheckButton;
-class TGNumberEntry;
-class TGColorSelect;
+class TEveGValuator;
+class TGTextView;
 
 class AliEveEventManager;
 
@@ -33,13 +32,22 @@ public:
    virtual void SetModel(TObject* obj);
 
    // Declare callback/slot methods
-   // void DoXYZZ();
+   void DoSetAutoLoad();
+   void DoSetAutoLoadTime();
+   void DoPrevEvent();
+   void DoNextEvent();
 
 protected:
    AliEveEventManager            *fM; // Model object.
 
    // Declare widgets
-   // TGSomeWidget*   fXYZZ;
+   TGCheckButton    *fAutoLoad;  // Check-box for automatic loading of events
+   TEveGValuator    *fAutoLoadTime; // Time for automatic loading of events
+
+   TGTextButton     *fNextEvent; // Load next event
+   TGTextButton     *fPrevEvent; // Load previous event
+
+   TGTextView       *fEventInfo; // Text box with event info
 
 private:
    AliEveEventManagerEditor(const AliEveEventManagerEditor&);            // Not implemented

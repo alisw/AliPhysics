@@ -46,9 +46,11 @@ public:
 
 
   virtual void Open();
+  void         SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd);
+	    
   virtual void GotoEvent(Int_t event);
-  virtual void NextEvent() { GotoEvent(fEventId + 1); }
-  virtual void PrevEvent() { GotoEvent(fEventId - 1); }
+  virtual void NextEvent();
+  virtual void PrevEvent();
   virtual void Close();
 
   Int_t         GetEventId()   const { return fEventId; }
@@ -58,6 +60,7 @@ public:
   AliESDfriend* GetESDfriend()       const { return fESDfriend; }
   Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }
+  const char*   GetEventInfo() const;
 
   static AliRunLoader* AssertRunLoader();
   static AliESDEvent*  AssertESD();
@@ -67,6 +70,14 @@ public:
   static AliMagF*      AssertMagField();
 
   static TGeoManager*  AssertGeometry();
+
+  Bool_t        GetAutoLoad() const {return fAutoLoad;}
+  Double_t      GetAutoLoadTime() const {return fAutoLoadTime;}
+  void          SetAutoLoad(Bool_t autoLoad);
+  void          SetAutoLoadTime(Double_t time);
+  Bool_t        GetIsOnline() const {return fIsOnline;}
+
+  void          StartStopAutoLoadTimer();
 
 protected:
   TString       fPath;			// URL to event-data.
@@ -81,6 +92,11 @@ protected:
   Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
 
   AliRawReader* fRawReader;             // Raw-adata reader.
+
+  Bool_t        fAutoLoad;              // Automatic loading of events (online)
+  Double_t      fAutoLoadTime;          // Auto-load time in seconds
+  TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
+  Bool_t        fIsOnline;              // Are we running online?
 
   static TString  fgESDFileName;        // Name by which to open ESD.
   static TString  fgRawFileName;        // Name by which to open raw-data file.
