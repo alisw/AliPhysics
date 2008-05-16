@@ -1104,6 +1104,7 @@ void AliITSv11Hybrid::CreateGeometry() {
 
   if (AliITSInitGeometry::ServicesAreTGeoNative()) {
     fSDDgeom->SDDCables(vITS);
+    fSSDgeom->SSDCables(vITS);
   }
 }
 
@@ -4564,7 +4565,6 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gspos("I2CC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
   gMC->Gspos("I2CC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
 
-  } // Move this graph down as you implement services in TGeo - M.S. 19mar08
   // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
   //     UPPER PART
   
@@ -4591,6 +4591,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gspos("IPA2", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
   gMC->Gspos("IPA2", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
 
+  } // Move this graph down as you implement services in TGeo - M.S. 16may08
 
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
@@ -4694,7 +4695,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   
   dgh[0] = 46.;      
   dgh[1] = 46.+1.0;  
-  dgh[2] = (ztpc-97.5+1.5)/2.;
+  dgh[2] = (ztpc-97.5+1.5-2.5)/2.;
   dgh[3] = 12.;
   dgh[4] = 168.;
   gMC->Gsvolu("ICU5", "TUBS", idtmed[213], dgh, 5);   
@@ -4705,7 +4706,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   
   dgh[0] = 46.;  
   dgh[1] = 46.+1.0;  
-  dgh[2] = (ztpc-97.5+1.5)/2.;
+  dgh[2] = (ztpc-97.5+1.5-2.5)/2.;
   dgh[3] = 192.;
   dgh[4] = 348.;  
   gMC->Gsvolu("ICU6", "TUBS", idtmed[213], dgh, 5);   
