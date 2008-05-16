@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=  base/AliQuarkoniaAcceptance.cxx \
              base/AliQuarkoniaEfficiency.cxx 
      
@@ -7,3 +9,6 @@ DHDR:= PWG3baseLinkDef.h
 
 EINCLUDE:= 
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase
+endif

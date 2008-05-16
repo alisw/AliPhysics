@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliAnalysisTaskMuonAODfromGeneral.cxx \
                  muon/AliAnalysisTaskSingleMu.cxx \
@@ -12,3 +14,7 @@ DHDR:= PWG3muonLinkDef.h
 
 EINCLUDE:= PWG3/base
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice
+endif

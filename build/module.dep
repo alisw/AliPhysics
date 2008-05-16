@@ -44,7 +44,7 @@ EVE/module.mk:		EVE/libEveBase.pkg EVE/libEveDet.pkg EVE/libEveHLT.pkg EVE/binal
 PWG0/module.mk:		PWG0/libPWG0base.pkg  PWG0/libPWG0selectors.pkg PWG0/libPWG0dep.pkg
 PWG1/module.mk:		PWG1/libPWG1.pkg
 PWG2/module.mk:		PWG2/libPWG2.pkg PWG2/libPWG2femtoscopyUser.pkg PWG2/libPWG2AOD.pkg PWG2/libPWG2flow.pkg PWG2/libPWG2ebye.pkg PWG2/libPWG2resonances.pkg PWG2/libPWG2femtoscopy.pkg PWG2/libPWG2spectra.pkg
-PWG3/module.mk:		PWG3/libPWG3base.pkg PWG3/libPWG3.pkg
+PWG3/module.mk:		PWG3/libPWG3base.pkg PWG3/libPWG3.pkg PWG3/libPWG3muon.pkg PWG3/libPWG3vertexingHF.pkg PWG3/libPWG3vertexingOld.pkg
 PWG4/module.mk:		PWG4/libPWG4Gamma.pkg
 ESDCheck/module.mk:	ESDCheck/libAnalysisCheck.pkg 
 STAT/module.mk:		STAT/libSTAT.pkg
@@ -173,5 +173,16 @@ $(LIBPATH)/libPWG0base.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/lib
 $(LIBPATH)/libPWG0dep.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libPWG0selectors.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libPWG0base.$(SOEXT) $(LIBPATH)/libPWG0dep.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT)
 $(LIBPATH)/libPWG1.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT)
+$(LIBPATH)/libPWG2.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT)
+$(LIBPATH)/libPWG2AOD.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libPWG2femtoscopy.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libPWG2AOD.$(SOEXT)
+$(LIBPATH)/libPWG2femtoscopyUser.$(SOEXT): $(LIBPATH)/libPWG2femtoscopy.$(SOEXT)
+$(LIBPATH)/libPWG2flow.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT)
+$(LIBPATH)/libPWG2resonances.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libPWG2spectra.$(SOEXT): $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT)
+$(LIBPATH)/libPWG3base.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
+$(LIBPATH)/libPWG3muon.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libPWG3vertexingHF.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libPWG3vertexingOld.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT)
 $(LIBPATH)/libPWG4.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
 endif

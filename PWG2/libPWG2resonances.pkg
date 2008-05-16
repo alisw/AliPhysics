@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= RESONANCES/AliRsnParticle.cxx \
       RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnPID.cxx \
@@ -17,3 +19,8 @@ EXPORT:=
 
 EINCLUDE:= PYTHIA6 
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lANALYSIS -lANALYSISalice \
+                         -L$(shell root-config --libdir) -lEG
+endif

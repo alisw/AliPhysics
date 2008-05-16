@@ -59,7 +59,7 @@ class AliFemtoModelWeightGeneratorLednicky : public  AliFemtoModelWeightGenerato
   void SetT0ApproxOn(); 
  
 // Test Lambda parameters
-  void PrintLambdas();
+  void PrintLambdas(){;}
   
   void SetNuclCharge(const double aNuclCharge); // for 3-body calculation
   void SetNuclMass(const double aNuclMass);

@@ -25,9 +25,6 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   AliAnalysisTaskSEVertexingHF(const char *name);
   virtual ~AliAnalysisTaskSEVertexingHF();
 
-  AliAnalysisTaskSEVertexingHF(const AliAnalysisTaskSEVertexingHF &source);
-  AliAnalysisTaskSEVertexingHF& operator=(const AliAnalysisTaskSEVertexingHF& source); 
-
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -36,6 +33,9 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
   
  private:
+
+  AliAnalysisTaskSEVertexingHF(const AliAnalysisTaskSEVertexingHF &source);
+  AliAnalysisTaskSEVertexingHF& operator=(const AliAnalysisTaskSEVertexingHF& source); 
 
   AliAnalysisVertexingHF *fVHF;        // Vertexer heavy flavour
   TClonesArray *fVerticesHFTClArr;     // Array of heavy-flavour vertices

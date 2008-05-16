@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityKTPairCut.cxx \
@@ -24,3 +26,9 @@ EXPORT:=
 
 EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto  PWG2/FEMTOSCOPY/AliFemtoUser 
 
+EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/AOD
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lPWG2femtoscopy
+endif
