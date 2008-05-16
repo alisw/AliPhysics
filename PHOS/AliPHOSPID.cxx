@@ -97,6 +97,10 @@ AliPHOSPID::~AliPHOSPID()
     fCPVRecPoints->Delete();
     delete fCPVRecPoints;
   }
+  if (fRecParticles) {
+    fRecParticles->Delete();
+    delete fRecParticles;
+  }
 }
 
 //____________________________________________________________________________

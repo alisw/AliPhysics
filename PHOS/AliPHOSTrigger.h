@@ -118,13 +118,13 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   AliPHOSTrigger & operator = (const AliPHOSTrigger & trig) ;//cpy assignment
 
-  void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * amptru, TClonesArray * ampmod, TClonesArray * timeRtru) const ;
+  void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom) const ;
 
-  Bool_t IsPatchIsolated(Int_t iPatchType, const TClonesArray * ampmods, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) ;
+  Bool_t IsPatchIsolated(Int_t iPatchType, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) ;
 
-  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD &ampmax2, TMatrixD &ampmaxn) ;
+  void MakeSlidingCell(Int_t mod, TMatrixD &ampmax2, TMatrixD &ampmaxn) ;
 
-  void SetTriggers(const TClonesArray * amptrus, Int_t iMod, const TMatrixD &ampmax2,const TMatrixD &ampmaxn) ;
+  void SetTriggers(Int_t iMod, const TMatrixD &ampmax2,const TMatrixD &ampmaxn) ;
 
   void DoIt() ; 
  
@@ -144,7 +144,11 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t*   fADCValuesHigh2x2 ; //! " high gain " 2x2 "
   Int_t*   fADCValuesLow2x2  ; //! " low gaing " "
 
-  TClonesArray* fDigitsList ;  //Array of digits 
+  TClonesArray* fDigitsList ;  //  Array of digits 
+  TClonesArray* fAmptrus    ;  //! Array of matrices with amplitudes per TRU
+  TClonesArray* fAmpmods    ;  //! Array of matrices with amplitudes per module
+  TClonesArray* fTimeRtrus  ;  //! Array of matrices with time
+  
  
   Float_t fL0Threshold ;             //! L0 trigger energy threshold
   Float_t fL1JetLowPtThreshold ;     //! L1 Low  pT trigger threshold
@@ -174,7 +178,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Bool_t  fSimulation ;           //! Flag to do the trigger during simulation or reconstruction
   Bool_t  fIsolateInModule;       //! Flag to isolate trigger patch in Module or in TRU acceptance
 
-  ClassDef(AliPHOSTrigger,4)
+  ClassDef(AliPHOSTrigger,5)
 } ;
 
 

@@ -57,6 +57,8 @@ ClassImp(AliPHOSReconstructor)
 Bool_t AliPHOSReconstructor::fgDebug = kFALSE ; 
 AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamEmc =0;  // EMC rec. parameters
 AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamCpv =0;  // CPV rec. parameters
+TClonesArray*     AliPHOSReconstructor::fgDigitsArray = 0;   // Array of PHOS digits
+TObjArray*        AliPHOSReconstructor::fgEMCRecPoints = 0;   // Array of EMC rec.points
 
 //____________________________________________________________________________
 AliPHOSReconstructor::AliPHOSReconstructor() :
@@ -78,6 +80,8 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   fClusterizer = new AliPHOSClusterizerv1      (fGeom);
   fTSM         = new AliPHOSTrackSegmentMakerv1(fGeom);
   fPID         = new AliPHOSPIDv1              (fGeom);
+  fgDigitsArray = new TClonesArray("AliPHOSDigit",100);
+  fgEMCRecPoints= new TObjArray(100) ;
 }
 
 //____________________________________________________________________________
@@ -88,6 +92,8 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   delete fClusterizer;
   delete fTSM;
   delete fPID;
+  delete fgDigitsArray;
+  delete fgEMCRecPoints;
 } 
 
 //____________________________________________________________________________
@@ -130,11 +136,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   else 
     fPID->TrackSegments2RecParticles("") ;
 
-
-  // This function creates AliESDtracks from AliPHOSRecParticles
-  //         and
-  // writes them to the ESD
-
   TClonesArray *recParticles  = fPID->GetRecParticles();
   Int_t nOfRecParticles = recParticles->GetEntriesFast();
   
@@ -150,8 +151,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     AliError("can't get the branch with the PHOS digits !");
     return;
   }
-  TClonesArray *digitsArray    = new TClonesArray("AliPHOSDigit",100);
-  branch->SetAddress(&digitsArray);
+  branch->SetAddress(&fgDigitsArray);
   branch->GetEntry(0);
 
   // Get the clusters array
@@ -162,8 +162,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     return;
   }
 
-  TObjArray *emcRecPoints = new TObjArray(100) ;
-  emcbranch->SetAddress(&emcRecPoints);
+  emcbranch->SetAddress(&fgEMCRecPoints);
   emcbranch->GetEntry(0);
 
   //#########Calculate trigger and set trigger info###########
@@ -171,7 +170,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   AliPHOSTrigger tr ;
   //   tr.SetPatchSize(1);//create 4x4 patches
   tr.SetSimulation(kFALSE);
-  tr.Trigger(digitsArray);
+  tr.Trigger(fgDigitsArray);
   
   Float_t maxAmp2x2  = tr.Get2x2MaxAmplitude();
   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
@@ -225,7 +224,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //############# Fill CaloCells ###########
   //########################################
 
-  Int_t nDigits = digitsArray->GetEntries();
+  Int_t nDigits = fgDigitsArray->GetEntries();
   Int_t idignew = 0 ;
   AliDebug(1,Form("%d digits",nDigits));
 
@@ -236,7 +235,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   // Add to CaloCells only EMC digits with non-zero energy 
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
-    const AliPHOSDigit * dig = (const AliPHOSDigit*)digitsArray->At(idig);
+    const AliPHOSDigit * dig = (const AliPHOSDigit*)fgDigitsArray->At(idig);
     if(dig->GetId() <= knEMC && dig->GetEnergy() > 0 ){
       //printf("i %d; id %d; amp %f; time %e\n",
       //idignew,dig->GetId(),dig->GetEnergy(), dig->GetTime());
@@ -259,7 +258,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(fTSM->GetTrackSegments()
 								    ->At(rp->GetPHOSTSIndex()));
 
-    AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(ts->GetEmcIndex()));
+    AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(fgEMCRecPoints->At(ts->GetEmcIndex()));
     AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
     
     Float_t xyz[3];
@@ -277,7 +276,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Double_t *fracList   = new Double_t[cellMult];
 
     for (Int_t iCell=0; iCell<cellMult; iCell++) {
-      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(digitsArray->At(digitsList[iCell]));
+      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(fgDigitsArray->At(digitsList[iCell]));
       absIdList[iCell] = (UShort_t)(digit->GetId());
       if (digit->GetEnergy() > 0)
  	fracList[iCell] = rpElist[iCell]/digit->GetEnergy();
@@ -326,11 +325,9 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     delete [] fracList;
     delete [] absIdList;
   }
-  digitsArray ->Delete();
-  delete digitsArray;
-  emcRecPoints->Delete();
-  delete emcRecPoints;
-  recParticles->Delete();
+  fgDigitsArray ->Delete();
+  fgEMCRecPoints->Delete();
+  recParticles  ->Delete();
 }
 
 //____________________________________________________________________________

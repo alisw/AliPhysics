@@ -103,11 +103,6 @@ void AliPHOSClusterizer::SetOutput(TTree * clustersTree)
   // and set the corresponding branch addresses
   fTreeR = clustersTree;
 
-//   fEMCRecPoints->Clear();
-//   fCPVRecPoints->Clear();
-  fEMCRecPoints->Delete();
-  fCPVRecPoints->Delete();
-
   AliDebug(9, "Making array for EMC clusters");
   Int_t split = 0;
   Int_t bufsize = 32000;

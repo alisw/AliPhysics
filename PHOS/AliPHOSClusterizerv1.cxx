@@ -264,6 +264,8 @@ void AliPHOSClusterizerv1::Digits2Clusters(Option_t *option)
     AliInfo(Form("took %f seconds for Clusterizing\n",
 		 gBenchmark->GetCpuTime("PHOSClusterizer"))); 
   }
+  fEMCRecPoints->Delete();
+  fCPVRecPoints->Delete();
 }
 
 //____________________________________________________________________________

@@ -125,8 +125,10 @@ private:
   AliPHOSClusterizerv1     *fClusterizer;    //! PHOS clusterizer
   AliPHOSTrackSegmentMaker *fTSM;            //! PHOS TrackSegmentMaker
   AliPHOSPID               *fPID;            //! PHOS PID maker
+  static TClonesArray      *fgDigitsArray;   //! Array of PHOS digits
+  static TObjArray         *fgEMCRecPoints;  //! Array of EMC rec.points
 
-  ClassDef(AliPHOSReconstructor,6)  // PHOS Reconstruction class
+  ClassDef(AliPHOSReconstructor,7)  // PHOS Reconstruction class
 
 }; 
 

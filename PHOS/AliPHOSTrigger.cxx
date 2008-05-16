@@ -62,6 +62,7 @@ AliPHOSTrigger::AliPHOSTrigger()
     fnxnMaxAmp(-1), fnxnCrystalPhi(-1),  fnxnCrystalEta(-1), fnxnSM(0),
     fADCValuesHighnxn(0), fADCValuesLownxn(0),
     fADCValuesHigh2x2(0), fADCValuesLow2x2(0), fDigitsList(0),
+    fAmptrus(0), fAmpmods(0), fTimeRtrus(0),
     fL0Threshold(50), fL1JetLowPtThreshold(200),   fL1JetMediumPtThreshold(500),  
     fL1JetHighPtThreshold(1000),
     fNTRU(8), fNTRUZ(2), fNTRUPhi(4), 
@@ -82,7 +83,9 @@ AliPHOSTrigger::AliPHOSTrigger()
   SetName("PHOS");
   CreateInputs();
   
-  //Print("") ; 
+  fAmptrus   = new TClonesArray("TMatrixD",1000);
+  fAmpmods   = new TClonesArray("TMatrixD",1000);
+  fTimeRtrus = new TClonesArray("TMatrixD",1000);
 }
 
 //____________________________________________________________________________
@@ -101,6 +104,7 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   fADCValuesHigh2x2(trig.fADCValuesHigh2x2),
   fADCValuesLow2x2(trig.fADCValuesLow2x2),
   fDigitsList(trig.fDigitsList),
+  fAmptrus(trig.fAmptrus), fAmpmods(trig.fAmpmods), fTimeRtrus(trig.fTimeRtrus),
   fL0Threshold(trig.fL0Threshold),
   fL1JetLowPtThreshold(trig.fL1JetLowPtThreshold),
   fL1JetMediumPtThreshold(trig.fL1JetMediumPtThreshold), 
@@ -134,6 +138,9 @@ AliPHOSTrigger::~AliPHOSTrigger()
   if(fADCValuesHigh2x2)delete []  fADCValuesHigh2x2;
   if(fADCValuesLow2x2)delete [] fADCValuesLow2x2;
   // fDigitsList is now ours...
+  if(fAmptrus)   { fAmptrus->Delete()  ; delete fAmptrus  ; }
+  if(fAmpmods)   { fAmpmods->Delete()  ; delete fAmpmods  ; }
+  if(fTimeRtrus) { fTimeRtrus->Delete(); delete fTimeRtrus; }
 }
 
 //_________________________________________________________________________
@@ -160,7 +167,7 @@ void AliPHOSTrigger::CreateInputs()
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * ampmatrixtru, TClonesArray * ampmatrixmod, TClonesArray * timeRmatrixtru) const {
+void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom) const {
 
   //Orders digits ampitudes list and times in fNTRU TRUs (28x16 crystals) 
   //per module. Each TRU is a TMatrixD, and they are kept in TClonesArrays. 
@@ -189,8 +196,8 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 	timeRtrus(i,j) = 0.0;
       }
     }
-    new((*ampmatrixtru)[k])   TMatrixD(amptrus) ;
-    new((*timeRmatrixtru)[k]) TMatrixD(timeRtrus) ; 
+    new((*fAmptrus)[k])   TMatrixD(amptrus) ;
+    new((*fTimeRtrus)[k]) TMatrixD(timeRtrus) ; 
   }
 
   //List of Modules matrices initialized to 0.
@@ -204,7 +211,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 	ampmods(i,j)   = 0.0;
       }
     }
-    new((*ampmatrixmod)[k])   TMatrixD(ampmods) ;
+    new((*fAmpmods)[k])   TMatrixD(ampmods) ;
   }
   
   AliPHOSDigit * dig ;
@@ -239,8 +246,8 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       Int_t itru  = (row-1) + (col-1)*fNTRUPhi + (relid[0]-1)*fNTRU ;
 
       //Fill TRU matrix with crystal values
-      TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrixtru->At(itru)) ;
-      TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrixtru->At(itru)) ;
+      TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(fAmptrus  ->At(itru)) ;
+      TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(fTimeRtrus->At(itru)) ;
 
       //Calculate row and column of the crystal inside the TRU with number itru
       Int_t irow = (relid[2]-1) - (row-1) *  fNCrystalsPhi;	
@@ -250,7 +257,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       (*timeRtrus)(irow,icol) = timeR ;
 
       //####################MODULE MATRIX ##################
-      TMatrixD * ampmods   = dynamic_cast<TMatrixD *>(ampmatrixmod->At(relid[0]-1)) ;
+      TMatrixD * ampmods   = dynamic_cast<TMatrixD *>(fAmpmods->At(relid[0]-1)) ;
       (*ampmods)(relid[2]-1,relid[3]-1)   = amp ;
     }
   }
@@ -275,7 +282,7 @@ void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * ampmatrixes, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) {
+Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) {
 
   //Calculate if the maximum patch found is isolated, find amplitude around maximum (2x2 or nxn) patch, 
   //inside isolation patch . iPatchType = 0 means calculation for 2x2 patch, 
@@ -298,13 +305,13 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * am
   Int_t rowborder = 0;
 
   if(fIsolateInModule){
-    ampmatrix = dynamic_cast<TMatrixD *>(ampmatrixes->At(imod)) ;
+    ampmatrix = dynamic_cast<TMatrixD *>(fAmpmods->At(imod)) ;
     rowborder = fNCrystalsPhi*fNTRUPhi;
     colborder = fNCrystalsZ*fNTRUZ;
     AliDebug(2,"Isolate trigger in Module");
   }
   else{
-    ampmatrix = dynamic_cast<TMatrixD *>(ampmatrixes->At(itru)) ;
+    ampmatrix = dynamic_cast<TMatrixD *>(fAmptrus->At(itru)) ;
     rowborder = fNCrystalsPhi;
     colborder = fNCrystalsZ;
     AliDebug(2,"Isolate trigger in TRU");
@@ -360,7 +367,8 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * am
 
 
 //____________________________________________________________________________
-void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t imod, TMatrixD &ampmax2, TMatrixD &ampmaxn){
+void AliPHOSTrigger::MakeSlidingCell(const Int_t imod, TMatrixD &ampmax2, TMatrixD &ampmaxn)
+{
   //Sums energy of all possible 2x2 (L0) and nxn (L1) crystals per each TRU. 
   //Fast signal in the experiment is given by 2x2 crystals, 
   //for this reason we loop inside the TRU crystals by 2. 
@@ -384,8 +392,8 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
     
   //Loop over all TRUS in a module
   for(Int_t itru = 0 + imod  * fNTRU ; itru < (imod+1)*fNTRU ; itru++){
-    TMatrixD * amptru   = dynamic_cast<TMatrixD *>(amptrus->At(itru)) ;
-    TMatrixD * timeRtru = dynamic_cast<TMatrixD *>(timeRtrus->At(itru)) ;
+    TMatrixD * amptru   = dynamic_cast<TMatrixD *>(fAmptrus  ->At(itru)) ;
+    TMatrixD * timeRtru = dynamic_cast<TMatrixD *>(fTimeRtrus->At(itru)) ;
     Int_t mtru = itru-imod*fNTRU ; //Number of TRU in Module
     
     //Sliding 2x2, add 2x2 amplitudes (NOT OVERLAP)
@@ -515,7 +523,7 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMod, const TMatrixD & ampmax2, const TMatrixD & ampmaxn)  
+void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD & ampmax2, const TMatrixD & ampmaxn)  
 {
   //Checks the 2x2 and nxn maximum amplitude per each TRU and compares 
   //with the different L0 and L1 triggers thresholds. It finds if maximum amplitudes are isolated.
@@ -565,9 +573,9 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
     
     //Isolated patch?
     if(fIsolateInModule)
-      fIs2x2Isol =  IsPatchIsolated(0, ampmatrix, iMod, mtru2,  f2x2MaxAmp, f2x2CrystalPhi,f2x2CrystalEta) ;
+      fIs2x2Isol =  IsPatchIsolated(0, iMod, mtru2,  f2x2MaxAmp, f2x2CrystalPhi,f2x2CrystalEta) ;
     else
-      fIs2x2Isol =  IsPatchIsolated(0, ampmatrix, iMod, mtru2,  f2x2MaxAmp,  static_cast<Int_t>(max2[1]), static_cast<Int_t>(max2[2])) ;
+      fIs2x2Isol =  IsPatchIsolated(0, iMod, mtru2,  f2x2MaxAmp,  static_cast<Int_t>(max2[1]), static_cast<Int_t>(max2[2])) ;
 
     //Transform digit amplitude in Raw Samples
     if (fADCValuesLow2x2 == 0) {
@@ -603,9 +611,9 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
     
     //Isolated patch?
     if(fIsolateInModule)
-      fIsnxnIsol =  IsPatchIsolated(1, ampmatrix, iMod, mtrun,  fnxnMaxAmp, fnxnCrystalPhi, fnxnCrystalEta) ;
+      fIsnxnIsol =  IsPatchIsolated(1, iMod, mtrun,  fnxnMaxAmp, fnxnCrystalPhi, fnxnCrystalEta) ;
     else
-      fIsnxnIsol =  IsPatchIsolated(1, ampmatrix, iMod, mtrun,  fnxnMaxAmp,  static_cast<Int_t>(maxn[1]), static_cast<Int_t>(maxn[2])) ;
+      fIsnxnIsol =  IsPatchIsolated(1, iMod, mtrun,  fnxnMaxAmp,  static_cast<Int_t>(maxn[1]), static_cast<Int_t>(maxn[2])) ;
 
     //Transform digit amplitude in Raw Samples
     if (fADCValuesHighnxn == 0) {
@@ -682,10 +690,10 @@ void AliPHOSTrigger::DoIt()
     AliFatal("Digits not found !") ;
   
   //Fill TRU Matrix  
-  TClonesArray * amptrus   = new TClonesArray("TMatrixD",1000);
-  TClonesArray * ampmods   = new TClonesArray("TMatrixD",1000);
-  TClonesArray * timeRtrus = new TClonesArray("TMatrixD",1000);
-  FillTRU(fDigitsList,geom,amptrus, ampmods,timeRtrus) ;
+//   TClonesArray * amptrus   = new TClonesArray("TMatrixD",1000);
+//   TClonesArray * ampmods   = new TClonesArray("TMatrixD",1000);
+//   TClonesArray * timeRtrus = new TClonesArray("TMatrixD",1000);
+  FillTRU(fDigitsList,geom) ;
 
   //Do Crystal Sliding and select Trigger
   //Initialize varible that will contain maximum amplitudes and 
@@ -696,20 +704,17 @@ void AliPHOSTrigger::DoIt()
   for(Int_t imod = 0 ; imod < nModules ; imod++) {
 
     //Do 2x2 and nxn sums, select maximums. 
-    MakeSlidingCell(amptrus, timeRtrus, imod, ampmax2, ampmaxn);
+    MakeSlidingCell(imod, ampmax2, ampmaxn);
     //Set the trigger
-    if(fIsolateInModule)
-      SetTriggers(ampmods,imod,ampmax2,ampmaxn) ;
-    else
-      SetTriggers(amptrus,imod,ampmax2,ampmaxn) ;
+    SetTriggers(imod,ampmax2,ampmaxn) ;
   }
 
-  amptrus->Delete();
-  delete amptrus; amptrus=0;
-  ampmods->Delete();
-  delete ampmods; ampmods=0;
-  timeRtrus->Delete();
-  delete timeRtrus; timeRtrus=0;
+  fAmptrus->Delete();
+//   delete amptrus; amptrus=0;
+  fAmpmods->Delete();
+//   delete ampmods; ampmods=0;
+  fTimeRtrus->Delete();
+//   delete timeRtrus; timeRtrus=0;
   //Print();
 
 }
