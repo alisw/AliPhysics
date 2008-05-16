@@ -13,6 +13,7 @@
 ///
 
 #include "AliHLTMUONDataTypes.h"
+#include <ostream>
 
 // Forward declare structures.
 extern "C" {
@@ -283,54 +284,112 @@ public:
 	 */
 	enum WhyNotValid
 	{
-		kNoReason,
-		kHeaderContainsWrongType,
-		kHeaderContainsWrongRecordWidth
+		kNoReason,   ///< There was no reason for failure.
+		kHeaderContainsWrongType,  ///< The common header contains an incorrect type ID.
+		kHeaderContainsWrongRecordWidth,  ///< The common header contains an incorrect data record width.
+		kReservedBitsNotZero,  ///< Reserved bits have not been set to zero.
+		kParticleSignBitsNotValid,  ///< The particle sign bits are not a valid value.
+		kHitNotMarkedAsNil,  ///< A hit was marked as not found, but the corresponding hit structure was not set to nil.
+		kFoundDuplicateIDs,  ///< Found duplicate identifiers, but they should all be unique.
+		kPtValueNotValid,  ///< The pT value is not positive nor -1 indicating an invalid value.
+		kFoundDuplicateTriggers,  ///< Found duplicate trigger decisions.
+		kPairTrackIdsAreIdentical,  ///< The track IDs of the track pair are identical.
+		kMassValueNotValid,  ///< The invariant mass value is not positive nor -1 indicating an invalid value.
+		kLowPtCountInvalid,  ///< The low pT trigger count is greater than 2, which is invalid.
+		kHighPtCountInvalid  ///< The high pT trigger count is greater than 2, which is invalid.
 	};
+	
+	/**
+	 * This method converts the WhyNotValid enumeration to a string representation.
+	 */
+	static const char* FailureReasonToString(WhyNotValid reason);
+	
+	/**
+	 * This method returns a string containing a user readable message explaining
+	 * the reason for failure described by the WhyNotValid enumeration.
+	 */
+	static const char* FailureReasonToMessage(WhyNotValid reason);
 
 	/**
 	 * Methods used to check if the header information corresponds to the
 	 * supposed type of the data block.
 	 * If the 'reason' parameter is not NULL then these methods will fill the
-	 * memory pointed to by reason with a code describing of why the header
-	 * is not valid, if and only if a problem is found with the data.
+	 * memory pointed to by reason with a code describing why the header is
+	 * not valid, if and only if a problem is found with the data.
+	 * These methods will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason.
 	 */
 	static bool HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONRecHitsBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONClustersBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONChannelsBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONMansoTracksBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONMansoCandidatesBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONSinglesDecisionBlockStruct& block);
-	static bool HeaderOk(const AliHLTMUONPairsDecisionBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONRecHitsBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONClustersBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONChannelsBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONMansoTracksBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONMansoCandidatesBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONSinglesDecisionBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(const AliHLTMUONPairsDecisionBlockStruct& block, WhyNotValid* reason = NULL);
 
 	/**
 	 * Methods used to check more extensively if the integrity of various
 	 * types of data blocks are Ok and returns true in that case.
 	 * These can be slow and should generally only be used for debugging.
 	 */
-	static bool IntegrityOk(const AliHLTMUONTriggerRecordStruct& tr);
-	static bool IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONTrigRecsDebugBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONClustersBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONChannelsBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONMansoTrackStruct& track);
-	static bool IntegrityOk(const AliHLTMUONMansoTracksBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONMansoCandidatesBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONTrackDecisionStruct& decision);
-	static bool IntegrityOk(const AliHLTMUONSinglesDecisionBlockStruct& block);
-	static bool IntegrityOk(const AliHLTMUONPairDecisionStruct& decision);
-	static bool IntegrityOk(const AliHLTMUONPairsDecisionBlockStruct& block);
+	static bool IntegrityOk(const AliHLTMUONTriggerRecordStruct& tr, WhyNotValid* reason = NULL);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONTriggerRecordsBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		);
+		
+	static bool IntegrityOk(const AliHLTMUONTrigRecsDebugBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(const AliHLTMUONClustersBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(const AliHLTMUONChannelsBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(const AliHLTMUONMansoTrackStruct& track, WhyNotValid* reason = NULL);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONMansoTracksBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONMansoCandidatesBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		);
+	
+	static bool IntegrityOk(const AliHLTMUONTrackDecisionStruct& decision, WhyNotValid* reason = NULL);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONSinglesDecisionBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		);
+	
+	static bool IntegrityOk(const AliHLTMUONPairDecisionStruct& decision, WhyNotValid* reason = NULL);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONPairsDecisionBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		);
 
 private:
 	// Should never have to create or destroy this object.
 	AliHLTMUONUtils();
 	~AliHLTMUONUtils();
 };
+
+//_____________________________________________________________________________
+
+inline std::ostream& operator << (std::ostream& stream, AliHLTMUONUtils::WhyNotValid reason)
+{
+	/// Stream operator for the WhyNotValid enumeration for usage with
+	/// std::ostream classes. Allows usages such as:
+	/// AliHLTMUONUtils::WhyNotValid r; std::cout << r;
+	
+	stream << AliHLTMUONUtils::FailureReasonToString(reason);
+	return stream;
+}
 
 //_____________________________________________________________________________
 
@@ -349,16 +408,6 @@ private:
 		}; \
 		code
 #endif // __BORLANDC__
-
-// If we do not already have them, then define logical operators that are easier
-// to read. 'and' = &&, 'or' = ||, 'not' = !
-#if ! defined(__GNUC__) && ! defined(__CINT__)
-// TODO: Should use iso646.h
-#	define and &&
-#	define or ||
-#	define not !
-#endif // __GNUC__ | __CINT__
-
 
 // Here we define the DebugTrace(message) macro for easy embedding of debug
 // information into the dimuon HLT code. Its usage is meant to be for generating

@@ -70,7 +70,6 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fNofBChannel(NULL),
 	fNofNBChannel(NULL),
 	fNofFiredDetElem(0),
-	//fDebugLevel(0),  //TODO: remove
 	fIdToEntry()
 {
 	/// Default constructor
@@ -85,7 +84,7 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	}
 	catch (const std::bad_alloc&)
 	{
-		HLTError("Dynamic memory allocation failed for AliHLTMUONHitReconstructor::fPadData in constructor.");
+		HLTError("Dynamic memory allocation failed for fPadData in constructor.");
 		throw;
 	}
 	
@@ -160,7 +159,6 @@ bool AliHLTMUONHitReconstructor::Run(
 
   if (not FindRecHits()) {
     HLTError("Failed to generate RecHits");
-    Clear();
     return false;
   }
 
@@ -198,87 +196,149 @@ bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTU
 
 bool AliHLTMUONHitReconstructor::FindRecHits()
 {
-  // fuction that calls hit reconstruction detector element-wise   
+  // fuction that calls hit reconstruction detector element-wise.
 
-  for(int iDet=0; iDet<fNofFiredDetElem ; iDet++){
-    
-    fCentralCountB = 0 ;
-    fCentralCountNB = 0 ;
+  assert( fCentralChargeB == NULL );
+  assert( fCentralChargeNB == NULL );
+  assert( fRecX == NULL );
+  assert( fRecY == NULL );
+  assert( fAvgChargeX == NULL );
+  assert( fAvgChargeY == NULL );
+  assert( fNofBChannel == NULL );
+  assert( fNofNBChannel == NULL );
+  
+  bool resultOk = false;
 
-    
-    try{
+  for(int iDet=0; iDet<fNofFiredDetElem ; iDet++)
+  {
+    fCentralCountB = 0;
+    fCentralCountNB = 0;
+
+    try
+    {
       fCentralChargeB = new int[fMaxFiredPerDetElem[iDet]];
+      HLTDebug("Allocated fCentralChargeB with %d elements.", fMaxFiredPerDetElem[iDet]);
       fCentralChargeNB = new int[fMaxFiredPerDetElem[iDet]];
+      HLTDebug("Allocated fCentralChargeNB with %d elements.", fMaxFiredPerDetElem[iDet]);
+      resultOk = true;
     }
-    catch(const std::bad_alloc&){
-      HLTError("Dynamic memory allocation failed for AliHLTMUONHitReconstructor::fCentralChargeNB and fCentralChargeB");
-      return false;
-    }
-
-    if(iDet>0)
-      FindCentralHits(fMaxFiredPerDetElem[iDet-1],fMaxFiredPerDetElem[iDet]);
-    else
-      FindCentralHits(1,fMaxFiredPerDetElem[iDet]); // minimum value is 1 because dataCount in ReadDDL starts from 1 instead of 0;
-
-    if(!RecXRecY()){
-      HLTError("Failed to find RecX and RecY hits\n");
-      return false;
+    catch(const std::bad_alloc&)
+    {
+      HLTError("Dynamic memory allocation failed for fCentralChargeNB and fCentralChargeB");
+      resultOk = false;
     }
 
+    // Continue processing, but check if everything is OK as we do, otherwise
+    // do not execute the next steps.
+    if (resultOk)
+    {
+      if(iDet>0)
+        FindCentralHits(fMaxFiredPerDetElem[iDet-1],fMaxFiredPerDetElem[iDet]);
+      else
+        // minimum value is 1 because dataCount in ReadDDL starts from 1 instead of 0;
+        FindCentralHits(1,fMaxFiredPerDetElem[iDet]);
 
-    if(!MergeRecHits()){
-      HLTError("Failed to merge hits\n");
-      return false;
+      try
+      {
+        fRecY = new float[fCentralCountB];
+        HLTDebug("Allocated fRecY with %d elements.", fCentralCountB);
+        fRecX = new float[fCentralCountNB];
+        HLTDebug("Allocated fRecX with %d elements.", fCentralCountNB);
+        fAvgChargeY = new float[fCentralCountB];
+        HLTDebug("Allocated fAvgChargeY with %d elements.", fCentralCountB);
+        fAvgChargeX = new float[fCentralCountNB];
+        HLTDebug("Allocated fAvgChargeX with %d elements.", fCentralCountNB);
+        fNofBChannel = new int[fCentralCountB];
+        HLTDebug("Allocated fNofBChannel with %d elements.", fCentralCountB);
+        fNofNBChannel = new int[fCentralCountNB];
+        HLTDebug("Allocated fNofNBChannel with %d elements.", fCentralCountNB);
+        resultOk = true;
+      }
+      catch(const std::bad_alloc&){
+        HLTError("Dynamic memory allocation failed for internal arrays.");
+        resultOk = false;
+      }
     }
 
+    if (resultOk) RecXRecY();
+    if (resultOk)
+    {
+      resultOk = MergeRecHits();
+    }
+    if (resultOk)
+    {
+      if(iDet==0)
+        // minimum value in loop is 1 because dataCount in ReadDDL starts from 1 instead of 0;
+        for(int i=1;i<fMaxFiredPerDetElem[iDet];i++)
+          fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
+      else
+        for(int i=fMaxFiredPerDetElem[iDet-1];i<fMaxFiredPerDetElem[iDet];i++)
+          fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
+    }
 
-    if(iDet==0)
-      for(int i=1;i<fMaxFiredPerDetElem[iDet];i++) // minimum value is 1 because dataCount in ReadDDL starts from 1 instead of 0;
-	fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
-    else
-      for(int i=fMaxFiredPerDetElem[iDet-1];i<fMaxFiredPerDetElem[iDet];i++)
-	fGetIdTotalData[fPadData[i].fIX][fPadData[i].fIY][fPadData[i].fPlane] = 0;
-
-
-
-    if(fCentralChargeB){
-      delete []fCentralChargeB;
+    // Make sure to release any memory that was allocated.
+    if (fCentralChargeB != NULL)
+    {
+      delete [] fCentralChargeB;
+      HLTDebug("Released fCentralChargeB array.");
       fCentralChargeB = NULL;
     }
-    
-    if(fCentralChargeNB){
-      delete []fCentralChargeNB;
+    if (fCentralChargeNB != NULL)
+    {
+      delete [] fCentralChargeNB;
+      HLTDebug("Released fCentralChargeNB array.");
       fCentralChargeNB = NULL;
     }
-
-
+    if (fRecX != NULL)
+    {
+      delete [] fRecX;
+      HLTDebug("Released fRecX array.");
+      fRecX = NULL;
+    }
+    if (fRecY != NULL)
+    {
+      delete [] fRecY;
+      HLTDebug("Released fRecY array.");
+      fRecY = NULL;
+    }
+    if (fAvgChargeX != NULL)
+    {
+      delete [] fAvgChargeX;
+      HLTDebug("Released fAvgChargeX array.");
+      fAvgChargeX = NULL;
+    }
+    if (fAvgChargeY != NULL)
+    {
+      delete [] fAvgChargeY;
+      HLTDebug("Released fAvgChargeY array.");
+      fAvgChargeY = NULL;
+    }
+    if (fNofBChannel != NULL)
+    {
+      delete [] fNofBChannel;
+      HLTDebug("Released fNofBChannel array.");
+      fNofBChannel = NULL;
+    }
+    if (fNofNBChannel != NULL)
+    {
+      delete [] fNofNBChannel;
+      HLTDebug("Released fNofNBChannel array.");
+      fNofNBChannel = NULL;
+    }
   }
 
-  for(int iPad=1;iPad<fDigitPerDDL;iPad++){
-    fGetIdTotalData[fPadData[iPad].fIX][fPadData[iPad].fIY][fPadData[iPad].fPlane] = 0;
-    fPadData[iPad].fDetElemId = 0;
-    fPadData[iPad].fIX = 0 ;
-    fPadData[iPad].fIY = 0 ;
-    fPadData[iPad].fRealX = 0.0 ;
-    fPadData[iPad].fRealY = 0.0 ;
-    fPadData[iPad].fRealZ = 0.0 ;
-    fPadData[iPad].fHalfPadSize = 0.0 ;
-    fPadData[iPad].fPlane = -1 ;
-    fPadData[iPad].fCharge = 0 ;
-  }  
-  
-  for(int i=0;i<13;i++)
-    fMaxFiredPerDetElem[i] = 0;
+  Clear();  // clear internal arrays.
 
-  Clear();
-
-  return true;
+  return resultOk;
 }
 
 
 void AliHLTMUONHitReconstructor::FindCentralHits(int minPadId, int maxPadId)
 {
   // to find central hit associated with each cluster
+
+  assert( fCentralChargeB != NULL );
+  assert( fCentralChargeNB != NULL );
 
   int b,nb;
   int idManuChannelCentral;
@@ -371,30 +431,23 @@ void AliHLTMUONHitReconstructor::FindCentralHits(int minPadId, int maxPadId)
 }
 
 
-bool AliHLTMUONHitReconstructor::RecXRecY()
+void AliHLTMUONHitReconstructor::RecXRecY()
 {
   // find reconstructed X and Y for each plane separately
+
+  assert( fRecX != NULL );
+  assert( fRecY != NULL );
+  assert( fAvgChargeX != NULL );
+  assert( fAvgChargeY != NULL );
+  assert( fNofBChannel != NULL );
+  assert( fNofNBChannel != NULL );
+
   int b,nb;
   int idCentral;
   int idLower = 0;
   int idUpper = 0;
   int idRight = 0;
   int idLeft = 0;
-
-  try{
-    fRecY = new float[fCentralCountB];
-    fRecX = new float[fCentralCountNB];
-    
-    fAvgChargeY = new float[fCentralCountB];
-    fAvgChargeX = new float[fCentralCountNB];
-    
-    fNofBChannel = new int[fCentralCountB];
-    fNofNBChannel = new int[fCentralCountNB];
-  }
-  catch(const std::bad_alloc&){
-    HLTError("Dynamic memory allocation failed for AliHLTMUONHitReconstructor::fRecY and others at method RecXRecY()");
-    return false;
-  }
   
   for(b=0;b<fCentralCountB;b++){
     idCentral = fCentralChargeB[b];
@@ -471,15 +524,19 @@ bool AliHLTMUONHitReconstructor::RecXRecY()
     HLTDebug("RecX[%d] : %f",nb,fRecX[nb]);
 
   }
-
-  return true;
-  
 }
 
 
 bool AliHLTMUONHitReconstructor::MergeRecHits()
 {
   // Merge reconstructed hits first over same plane then bending plane with non-bending plane
+
+  assert( fRecX != NULL );
+  assert( fRecY != NULL );
+  assert( fAvgChargeX != NULL );
+  assert( fAvgChargeY != NULL );
+  assert( fNofBChannel != NULL );
+  assert( fNofNBChannel != NULL );
 
   int idCentralB,idCentralNB ;
   float padCenterXB;
@@ -603,7 +660,7 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 	    
 	    // First check that we have not overflowed the buffer.
 	    if((*fRecPointsCount) == fMaxRecPointsCount){
-	      HLTError("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
+	      HLTError("Number of RecHit (i.e. %d) exceeds the max number of RecHit limit %d.",(*fRecPointsCount),fMaxRecPointsCount);
 	      return false;
 	    }
 	    
@@ -623,43 +680,13 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
     }// condn on fRecY[b] !=  0.0
   }// loop over B side;
 
-  if(fRecX){
-    delete []fRecX;
-    fRecX = NULL;
-  }
-
-  if(fRecY){
-    delete []fRecY;
-    fRecY = NULL;
-  }
-
-  if(fAvgChargeX){
-    delete []fAvgChargeX;
-    fAvgChargeX = NULL;
-  }
-
-  if(fAvgChargeY){
-    delete []fAvgChargeY;
-    fAvgChargeY = NULL;
-  }
-
-  if(fNofBChannel){
-    delete []fNofBChannel;
-    fNofBChannel = NULL;
-  }
-
-  if(fNofNBChannel){
-    delete []fNofNBChannel;
-    fNofNBChannel = NULL;
-  }
-
   return true;
 }
 
 
 void AliHLTMUONHitReconstructor::Clear()
 {
-  // function to clear internal arrays and release the allocated memory.
+  // function to clear internal arrays.
 
   for(int iPad=1;iPad<fDigitPerDDL;iPad++){
     fGetIdTotalData[fPadData[iPad].fIX][fPadData[iPad].fIY][fPadData[iPad].fPlane] = 0;
@@ -676,47 +703,6 @@ void AliHLTMUONHitReconstructor::Clear()
   
   for(int i=0;i<13;i++)
     fMaxFiredPerDetElem[i] = 0;
-
-  if(fCentralChargeB){
-    delete []fCentralChargeB;
-    fCentralChargeB = NULL;
-  }
-
-  if(fCentralChargeNB){
-    delete []fCentralChargeNB;
-    fCentralChargeNB = NULL;
-  }
-
-  if(fRecX){
-    delete []fRecX;
-    fRecX = NULL;
-  }
-
-  if(fRecY){
-    delete []fRecY;
-    fRecY = NULL;
-  }
-
-  if(fAvgChargeX){
-    delete []fAvgChargeX;
-    fAvgChargeX = NULL;
-  }
-
-  if(fAvgChargeY){
-    delete []fAvgChargeY;
-    fAvgChargeY = NULL;
-  }
-
-  if(fNofBChannel){
-    delete []fNofBChannel;
-    fNofBChannel = NULL;
-  }
-
-  if(fNofNBChannel){
-    delete []fNofNBChannel;
-    fNofNBChannel = NULL;
-  }
-
 }
 
 
@@ -744,6 +730,36 @@ AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::~AliHLTMUONRawDecoder()
 {
 	// dtor
 }
+
+
+void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/)
+{
+	/// Called for every new raw DDL data payload being processed.
+	/// Just clears internal counters.
+	/// \param buffer  The pointer to the raw data buffer.
+
+	assert( buffer != NULL );
+	fBufferStart = buffer;
+	// dataCount starts from 1 because the 0-th element of fPadData is used as null value.
+	fDataCount = 1;
+	*fNofFiredDetElem = 0;
+	fPrevDetElemId = 0 ;
+};
+
+
+void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnError(ErrorCode code, const void* location)
+{
+	/// Called if there was an error detected in the raw DDL data.
+	/// Logs an error message.
+	/// \param code  The error code describing the problem.
+	/// \param location  A pointer to the location in the raw data buffer
+	///      where the problem was found.
+	
+	long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
+	HLTError("There is a problem with decoding the raw data. %s (Error code: %d, at byte %d)",
+		ErrorCodeToMessage(code), code, bytepos
+	);
+};
 
 
 void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, bool /*parityError*/)

@@ -426,18 +426,82 @@ AliHLTMUONDataBlockType AliHLTMUONUtils::ParseCommandLineTypeString(const char* 
 }
 
 
+const char* AliHLTMUONUtils::FailureReasonToString(WhyNotValid reason)
+{
+	/// This method converts the WhyNotValid enumeration to a string representation.
+	
+	switch (reason)
+	{
+	case kNoReason: return "kNoReason";
+	case kHeaderContainsWrongType: return "kHeaderContainsWrongType";
+	case kHeaderContainsWrongRecordWidth: return "kHeaderContainsWrongRecordWidth";
+	case kReservedBitsNotZero: return "kReservedBitsNotZero";
+	case kParticleSignBitsNotValid: return "kParticleSignBitsNotValid";
+	case kHitNotMarkedAsNil: return "kHitNotMarkedAsNil";
+	case kFoundDuplicateIDs: return "kFoundDuplicateIDs";
+	case kPtValueNotValid: return "kPtValueNotValid";
+	case kFoundDuplicateTriggers: return "kFoundDuplicateTriggers";
+	case kPairTrackIdsAreIdentical: return "kPairTrackIdsAreIdentical";
+	case kMassValueNotValid: return "kMassValueNotValid";
+	case kLowPtCountInvalid: return "kLowPtCountInvalid";
+	case kHighPtCountInvalid: return "kHighPtCountInvalid";
+	default: return "INVALID";
+	}
+}
+
+
+const char* AliHLTMUONUtils::FailureReasonToMessage(WhyNotValid reason)
+{
+	/// This method returns a string containing a user readable message explaining
+	/// the reason for failure described by the WhyNotValid enumeration.
+	
+	switch (reason)
+	{
+	case kNoReason:
+		return "There was no problem with the data block.";
+	case kHeaderContainsWrongType:
+		return "The common data header contains an incorrect type identifier.";
+	case kHeaderContainsWrongRecordWidth:
+		return "The common data header contains an incorrect data record width.";
+	case kReservedBitsNotZero:
+		return "Reserved bits have not been set to zero.";
+	case kParticleSignBitsNotValid:
+		return "The particle sign bits are not a valid value.";
+	case kHitNotMarkedAsNil:
+		return "A hit was marked as not found, but the corresponding hit"
+			" structure was not set to nil.";
+	case kFoundDuplicateIDs:
+		return "Found duplicate data record identifiers, but they should all be unique.";
+	case kPtValueNotValid:
+		return "The pT value is not positive, nor -1 indicating an invalid value.";
+	case kFoundDuplicateTriggers:
+		return "Found duplicate trigger decisions.";
+	case kPairTrackIdsAreIdentical:
+		return "The track identifiers of the track pair are identical.";
+	case kMassValueNotValid:
+		return "The invariant mass value is not positive, nor -1 indicating an invalid value.";
+	case kLowPtCountInvalid:
+		return "The low pT trigger count is greater than 2, which is invalid.";
+	case kHighPtCountInvalid:
+		return "The high pT trigger count is greater than 2, which is invalid.";
+	default:
+		return "UNKNOWN REASON CODE";
+	}
+}
+
+
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONTriggerRecordsBlockStruct& block,
 		WhyNotValid* reason
 	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	/// If the 'reason' parameter is not NULL then these methods will fill the
-	/// memory pointed to by reason with a code describing of why the header
-	/// is not valid, if and only if a problem is found with the data.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	 
 	// The block must have the correct type.
 	if (block.fHeader.fType != kTriggerRecordsDataBlock)
@@ -457,187 +521,352 @@ bool AliHLTMUONUtils::HeaderOk(
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONTrigRecsDebugBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kTrigRecsDebugDataBlock) return false;
+	if (block.fHeader.fType != kTrigRecsDebugDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTrigRecInfoStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONTriggerChannelsBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kTriggerChannelsDataBlock) return false;
+	if (block.fHeader.fType != kTriggerChannelsDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTriggerChannelStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONRecHitsBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONRecHitsBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kRecHitsDataBlock) return false;
+	if (block.fHeader.fType != kRecHitsDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONRecHitStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONClustersBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONClustersBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kClustersDataBlock) return false;
+	if (block.fHeader.fType != kClustersDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONClusterStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONChannelsBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONChannelsBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kChannelsDataBlock) return false;
+	if (block.fHeader.fType != kChannelsDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONChannelStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONMansoTracksBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONMansoTracksBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kMansoTracksDataBlock) return false;
+	if (block.fHeader.fType != kMansoTracksDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONMansoTrackStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONMansoCandidatesBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONMansoCandidatesBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kMansoCandidatesDataBlock) return false;
+	if (block.fHeader.fType != kMansoCandidatesDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONMansoCandidateStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONSinglesDecisionBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONSinglesDecisionBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kSinglesDecisionDataBlock) return false;
+	if (block.fHeader.fType != kSinglesDecisionDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTrackDecisionStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONPairsDecisionBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONPairsDecisionBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check if the header information corresponds to the
-	/// supposed type of the data block.
-	///
+	/// Method used to check if the header information corresponds to the
+	/// supposed type of the raw dHLT data block.
+	/// [in]  \param block  The data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the header is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the header and false otherwise.
 	
 	// The block must have the correct type.
-	if (block.fHeader.fType != kPairsDecisionDataBlock) return false;
+	if (block.fHeader.fType != kPairsDecisionDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONPairDecisionStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordStruct& tr)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTriggerRecordStruct& tr,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// trigger record structure is OK and returns true in that case.
+	/// [in] \param tr  The trigger record structure to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the structure is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the structure and false otherwise.
 	
 	// Make sure that the reserved bits in the fFlags field are set
 	// to zero.
-	if ((tr.fFlags & 0x3FFFFFF0) != 0) return false;
+	if ((tr.fFlags & 0x3FFFFFF0) != 0)
+	{
+		if (reason != NULL) *reason = kReservedBitsNotZero;
+		return false;
+	}
 
 	// Make sure the sign is not invalid.
-	if ((tr.fFlags & 0xC0000000) == 3) return false;
+	if ((tr.fFlags & 0xC0000000) == 0xC0000000)
+	{
+		if (reason != NULL) *reason = kParticleSignBitsNotValid;
+		return false;
+	}
 
 	// Check that fHit[i] is nil if the corresponding bit in the
 	// flags word is zero.
 	const AliHLTMUONRecHitStruct& nilhit
 		= AliHLTMUONConstants::NilRecHitStruct();
-	if ((tr.fFlags & 0x1) == 0 and tr.fHit[0] != nilhit) return false;
-	if ((tr.fFlags & 0x2) == 0 and tr.fHit[1] != nilhit) return false;
-	if ((tr.fFlags & 0x4) == 0 and tr.fHit[2] != nilhit) return false;
-	if ((tr.fFlags & 0x8) == 0 and tr.fHit[3] != nilhit) return false;
+	if ( ((tr.fFlags & 0x1) == 0 and tr.fHit[0] != nilhit) or
+	     ((tr.fFlags & 0x2) == 0 and tr.fHit[1] != nilhit) or
+	     ((tr.fFlags & 0x4) == 0 and tr.fHit[2] != nilhit) or
+	     ((tr.fFlags & 0x8) == 0 and tr.fHit[3] != nilhit)
+	   )
+	{
+		if (reason != NULL) *reason = kHitNotMarkedAsNil;
+		return false;
+	}
 
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTriggerRecordsBlockStruct& block,
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The trigger record data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// [out] \param recordNum  If this is not NULL, then it will be filled with
+	///      the number of the trigger record that had a problem. This value will
+	///      only contain a valid value if 'reason' contains one of:
+	///        - kReservedBitsNotZero
+	///        - kParticleSignBitsNotValid
+	///        - kHitNotMarkedAsNil
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 	
 	const AliHLTMUONTriggerRecordStruct* triggerRecord =
 		reinterpret_cast<const AliHLTMUONTriggerRecordStruct*>(&block + 1);
@@ -649,68 +878,95 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& blo
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
 			if (id == triggerRecord[j].fId)
+			{
+				if (reason != NULL) *reason = kFoundDuplicateIDs;
 				return false;
+			}
 		}
 	}
 
 	// Check integrity of individual trigger records.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(triggerRecord[i])) return false;
+		if (not IntegrityOk(triggerRecord[i], reason))
+		{
+			if (recordNum != NULL) *recordNum = i;
+			return false;
+		}
 	}
 
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTrigRecsDebugBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTrigRecsDebugBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The trigger record debugging information data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTriggerChannelsBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The trigger channels data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONRecHitsBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The reconstructed hits data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONClustersBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONClustersBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The clusters data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 
 	const AliHLTMUONClusterStruct* cluster =
 		reinterpret_cast<const AliHLTMUONClusterStruct*>(&block + 1);
@@ -722,7 +978,10 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONClustersBlockStruct& block)
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
 			if (id == cluster[j].fId)
+			{
+				if (reason != NULL) *reason = kFoundDuplicateIDs;
 				return false;
+			}
 		}
 	}
 	
@@ -730,187 +989,363 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONClustersBlockStruct& block)
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONChannelsBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONChannelsBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The ADC channels data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONMansoTrackStruct& track)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONMansoTrackStruct& track,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// Manso track structure is OK and returns true in that case.
+	/// [in] \param track  The track structure to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the structure is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the structure and false otherwise.
 	
 	// Make sure that the reserved bits in the fFlags field are set
 	// to zero.
-	if ((track.fFlags & 0x3FFFFFF0) != 0) return false;
+	if ((track.fFlags & 0x3FFFFFF0) != 0)
+	{
+		if (reason != NULL) *reason = kReservedBitsNotZero;
+		return false;
+	}
 
 	// Make sure the sign is not invalid.
-	if ((track.fFlags & 0xC0000000) == 0xC0000000) return false;
+	if ((track.fFlags & 0xC0000000) == 0xC0000000)
+	{
+		if (reason != NULL) *reason = kParticleSignBitsNotValid;
+		return false;
+	}
 
 	// Check that fHit[i] is nil if the corresponding bit in the
 	// flags word is zero.
 	const AliHLTMUONRecHitStruct& nilhit
 		= AliHLTMUONConstants::NilRecHitStruct();
-	if ((track.fFlags & 0x1) == 0 and track.fHit[0] != nilhit) return false;
-	if ((track.fFlags & 0x2) == 0 and track.fHit[1] != nilhit) return false;
-	if ((track.fFlags & 0x4) == 0 and track.fHit[2] != nilhit) return false;
-	if ((track.fFlags & 0x8) == 0 and track.fHit[3] != nilhit) return false;
+	if ( ((track.fFlags & 0x1) == 0 and track.fHit[0] != nilhit) or
+	     ((track.fFlags & 0x2) == 0 and track.fHit[1] != nilhit) or
+	     ((track.fFlags & 0x4) == 0 and track.fHit[2] != nilhit) or
+	     ((track.fFlags & 0x8) == 0 and track.fHit[3] != nilhit)
+	   )
+	{
+		if (reason != NULL) *reason = kHitNotMarkedAsNil;
+		return false;
+	}
 	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONMansoTracksBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONMansoTracksBlockStruct& block,
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The Manso track data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// [out] \param recordNum  If this is not NULL, then it will be filled with
+	///      the number of the track that had a problem. This value will only
+	///      contain a valid value if 'reason' contains one of:
+	///        - kReservedBitsNotZero
+	///        - kParticleSignBitsNotValid
+	///        - kHitNotMarkedAsNil
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 
 	const AliHLTMUONMansoTrackStruct* track =
 		reinterpret_cast<const AliHLTMUONMansoTrackStruct*>(&block + 1);
 	
-	// Check if any ID is duplicated.
+	// Check if any track ID is duplicated.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
 		AliHLTInt32_t id = track[i].fId;
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
 			if (id == track[j].fId)
+			{
+				if (reason != NULL) *reason = kFoundDuplicateIDs;
 				return false;
+			}
 		}
 	}
 
 	// Check that the tracks have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(track[i])) return false;
+		if (not IntegrityOk(track[i], reason))
+		{
+			if (recordNum != NULL) *recordNum = i;
+			return false;
+		}
 	}
 
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONMansoCandidatesBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONMansoCandidatesBlockStruct& block,
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The Manso track candidate data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// [out] \param recordNum  If this is not NULL, then it will be filled with
+	///      the number of the track candidate that had a problem. This value will
+	///      only contain a valid value if 'reason' contains one of:
+	///        - kReservedBitsNotZero
+	///        - kParticleSignBitsNotValid
+	///        - kHitNotMarkedAsNil
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 
 	const AliHLTMUONMansoCandidateStruct* candidate =
 		reinterpret_cast<const AliHLTMUONMansoCandidateStruct*>(&block + 1);
 	
+	// Check if any candidate track ID is duplicated.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTInt32_t id = candidate[i].fTrack.fId;
+		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		{
+			if (id == candidate[j].fTrack.fId)
+			{
+				if (reason != NULL) *reason = kFoundDuplicateIDs;
+				return false;
+			}
+		}
+	}
+	
 	// Check that the tracks have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(candidate[i].fTrack)) return false;
+		if (not IntegrityOk(candidate[i].fTrack, reason))
+		{
+			if (recordNum != NULL) *recordNum = i;
+			return false;
+		}
 	}
 	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTrackDecisionStruct& decision)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTrackDecisionStruct& decision,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// single track trigger decision structure is OK and returns true in that case.
+	/// [in] \param decision  The trigger decision structure to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the structure is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the structure and false otherwise.
 	
 	// Make sure that the reserved bits in the fTriggerBits field are set
 	// to zero.
-	if ((decision.fTriggerBits & 0xFFFFFFFC) != 0) return false;
+	if ((decision.fTriggerBits & 0xFFFFFFFC) != 0)
+	{
+		if (reason != NULL) *reason = kReservedBitsNotZero;
+		return false;
+	}
+	
+	// The pT should be -1 or a positive number.
+	if (decision.fPt != -1. and decision.fPt < 0.)
+	{
+		if (reason != NULL) *reason = kPtValueNotValid;
+		return false;
+	}
+	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONSinglesDecisionBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONSinglesDecisionBlockStruct& block,
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The single track trigger decision data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// [out] \param recordNum  If this is not NULL, then it will be filled with
+	///      the number of the trigger decisions that had a problem. This value will
+	///      only contain a valid value if 'reason' contains one of:
+	///        - kReservedBitsNotZero
+	///        - kPtValueNotValid
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 	
 	const AliHLTMUONTrackDecisionStruct* decision =
 		reinterpret_cast<const AliHLTMUONTrackDecisionStruct*>(&block + 1);
 
+	// Check that there are no duplicate trigger entries.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTInt32_t id = decision[i].fTrackId;
+		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		{
+			if (id == decision[j].fTrackId)
+			{
+				if (reason != NULL) *reason = kFoundDuplicateTriggers;
+				return false;
+			}
+		}
+	}
+	
 	// Check that the trigger bits for each track have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(decision[i])) return false;
+		if (not IntegrityOk(decision[i], reason))
+		{
+			if (recordNum != NULL) *recordNum = i;
+			return false;
+		}
 	}
 	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONPairDecisionStruct& decision)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONPairDecisionStruct& decision,
+		WhyNotValid* reason
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// track pair trigger decision structure is OK and returns true in that case.
+	/// [in] \param decision  The trigger decision structure to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the structure is not valid, if and
+	///      only if a problem is found with the data.
+	/// \returns  true if there is no problem with the structure and false otherwise.
 	
 	// Make sure that the reserved bits in the fTriggerBits field are set
 	// to zero.
-	if ((decision.fTriggerBits & 0xFFFFFF80) != 0) return false;
-	
-	// The high mass or low mass bits can only be set if unlike bit is set.
-	if ((decision.fTriggerBits & 0x00000010) == 0
-	    and (decision.fTriggerBits & 0x00000060) != 0
-	   )
+	if ((decision.fTriggerBits & 0xFFFFFF80) != 0)
+	{
+		if (reason != NULL) *reason = kReservedBitsNotZero;
 		return false;
+	}
+	
+	// Check that the track IDs are not the same.
+	if (decision.fTrackAId == decision.fTrackBId)
+	{
+		if (reason != NULL) *reason = kPairTrackIdsAreIdentical;
+		return false;
+	}
+	
+	// The invariant mass should be -1 or a positive number.
+	if (decision.fInvMass != -1. and decision.fInvMass < 0.)
+	{
+		if (reason != NULL) *reason = kMassValueNotValid;
+		return false;
+	}
 	
 	// Neither the high pt (hipt) or low pt (lopt) count bits can be > 2.
-	// And the sum must not be > 2.
 	AliHLTUInt8_t lowPtCount = (decision.fTriggerBits & 0x00000003);
 	AliHLTUInt8_t highPtCount = (decision.fTriggerBits & 0x0000000C) >> 2;
-	if (lowPtCount + highPtCount > 2) return false;
+	if (lowPtCount > 2)
+	{
+		if (reason != NULL) *reason = kLowPtCountInvalid;
+		return false;
+	}
+	if (highPtCount > 2)
+	{
+		if (reason != NULL) *reason = kHighPtCountInvalid;
+		return false;
+	}
 	
 	return true;
 }
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONPairsDecisionBlockStruct& block)
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONPairsDecisionBlockStruct& block,
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum
+	)
 {
-	///
-	/// Methods used to check more extensively if the integrity of various
-	/// types of data blocks are Ok and returns true in that case.
-	/// These can be slow and should generally only be used for debugging.
-	///
+	/// This method is used to check more extensively if the integrity of the
+	/// dHLT raw internal data block is OK and returns true in that case.
+	/// [in] \param block  The track pair trigger decision data block to check.
+	/// [out] \param reason  If this is not NULL, then it will be filled with
+	///      the reason code describing why the data block is not valid, if and
+	///      only if a problem is found with the data.
+	/// [out] \param recordNum  If this is not NULL, then it will be filled with
+	///      the number of the trigger decisions that had a problem. This value will
+	///      only contain a valid value if 'reason' contains one of:
+	///        - kReservedBitsNotZero
+	///        - kPairTrackIdsAreIdentical
+	///        - kMassValueNotValid
+	///        - kLowPtCountInvalid
+	///        - kHighPtCountInvalid
+	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block)) return false;
+	if (not HeaderOk(block, reason)) return false;
 
 	const AliHLTMUONPairDecisionStruct* decision =
 		reinterpret_cast<const AliHLTMUONPairDecisionStruct*>(&block + 1);
 	
+	// Check that there are no duplicate trigger entries.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTInt32_t ta = decision[i].fTrackAId;
+		AliHLTInt32_t tb = decision[i].fTrackBId;
+		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		{
+			if (ta == decision[j].fTrackAId and tb == decision[j].fTrackBId)
+			{
+				if (reason != NULL) *reason = kFoundDuplicateTriggers;
+				return false;
+			}
+		}
+	}
+	
 	// Check that the trigger bits for each track pair have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(decision[i])) return false;
+		if (not IntegrityOk(decision[i], reason))
+		{
+			if (recordNum != NULL) *recordNum = i;
+			return false;
+		}
 	}
 	
 	return true;

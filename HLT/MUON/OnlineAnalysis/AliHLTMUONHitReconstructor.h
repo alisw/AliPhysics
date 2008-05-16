@@ -106,22 +106,8 @@ private:
 			fBusPatchId = int(header->fBusPatchId);
 		};
 		
-		void OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/) 
-		{
-			assert( buffer != NULL );
-			fBufferStart = buffer;
-			fDataCount = 1;  // dataCount starts from 1 because the 0-th element of fPadData is used as null value.
-			*fNofFiredDetElem = 0;
-			fPrevDetElemId = 0 ;
-		};
-		
-		void OnError(ErrorCode code, const void* location)
-		{
-			long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
-			HLTError("There is a problem with decoding the raw data. %s (Error code: %d, at byte %d)",
-				ErrorCodeToMessage(code), code, bytepos
-			);
-		};
+		void OnNewBuffer(const void* buffer, UInt_t bufferSize);
+		void OnError(ErrorCode code, const void* location);
 		
 		void SetDCCut(AliHLTInt32_t dcCut) {fDCCut = dcCut;}
 		void SetPadData(AliHLTMUONPad* padData) {fPadData = padData;}
@@ -182,11 +168,10 @@ private:
 	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[13];  // counter for detector elements that are fired
 	const IdManuChannelToEntry* fIdToEntry;   // Mapping between Linenumber to IdManuChannel (The object is not owned by this component).
 	
-	//bool ReadDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
 	bool DecodeDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
 	void FindCentralHits(AliHLTInt32_t minPadId, AliHLTInt32_t maxPadId);
 	bool FindRecHits();
-	bool RecXRecY();
+	void RecXRecY();
 	bool MergeRecHits();
 	void Clear();
 

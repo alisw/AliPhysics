@@ -90,7 +90,7 @@ AliHLTMUONHitReconstructorComponent::~AliHLTMUONHitReconstructorComponent()
 	}
 	if (fLut != NULL)
 	{
-		delete fLut;
+		delete [] fLut;
 	}
 }
 
@@ -455,7 +455,7 @@ void AliHLTMUONHitReconstructorComponent::FreeMemory()
 	}
 	if (fLut != NULL)
 	{
-		delete fLut;
+		delete [] fLut;
 		fLut = NULL;
 		fLutSize = 0;
 	}
