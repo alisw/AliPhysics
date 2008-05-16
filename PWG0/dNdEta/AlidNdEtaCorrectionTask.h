@@ -29,6 +29,9 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     void SetTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts; }
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
     void SetOnlyPrimaries(Bool_t flag = kTRUE) { fOnlyPrimaries = flag; }
+    void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
+
+    void SetOption(const char* opt) { fOption = opt; }
 
  protected:
     Bool_t SignOK(TParticlePDG* particle);
@@ -38,6 +41,7 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
 
     TString fOption;                 // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode;    // detector that is used for analysis
+    AliPWG0Helper::Trigger fTrigger; // trigger used in the analysis
     Int_t fSignMode;                 // if 0 process all particles, if +-1 process only particles with that sign
     Bool_t fOnlyPrimaries;           // only process primaries (syst. studies)
 

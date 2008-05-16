@@ -43,6 +43,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fOutput(0),
   fOption(opt),
   fAnalysisMode(AliPWG0Helper::kTPC),
+  fTrigger(AliPWG0Helper::kMB1),
   fReadMC(kFALSE),
   fUseMCVertex(kFALSE),
   fUseMCKine(kFALSE),
@@ -53,6 +54,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fEvents(0),
   fVertexResolution(0),
   fdNdEtaAnalysis(0),
+  fdNdEtaAnalysisNSD(0),
   fdNdEtaAnalysisTr(0),
   fdNdEtaAnalysisTrVtx(0),
   fdNdEtaAnalysisTracks(0),
@@ -99,19 +101,18 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
     // Disable all branches and enable only the needed ones
     //tree->SetBranchStatus("*", 0);
 
-    tree->SetBranchStatus("fTriggerMask", 1);
-    tree->SetBranchStatus("fSPDVertex*", 1);
-    // PrimaryVertex also needed
+    tree->SetBranchStatus("TriggerMask", 1);
+    tree->SetBranchStatus("SPDVertex*", 1);
+    tree->SetBranchStatus("PrimaryVertex*", 1);
+    tree->SetBranchStatus("TPCVertex*", 1);
 
     if (fAnalysisMode == AliPWG0Helper::kSPD) {
-      tree->SetBranchStatus("fSPDMult*", 1);
-      //AliPWG0Helper::SetBranchStatusRecursive(tree, "AliMultiplicity", kTRUE);
+      tree->SetBranchStatus("AliMultiplicity*", 1);
     }
-    
+
     if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
-      AliESDtrackCuts::EnableNeededBranches(tree);
-      tree->SetBranchStatus("fTracks.fLabel", 1);
-      //AliPWG0Helper::SetBranchStatusRecursive(tree, "Tracks", kTRUE);
+      //AliESDtrackCuts::EnableNeededBranches(tree);
+      tree->SetBranchStatus("Tracks*", 1);
     }
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -151,7 +152,7 @@ void AlidNdEtaTask::CreateOutputObjects()
     fOutput->Add(fPartEta[i]);
   }
 
-  fEvents = new TH1F("dndeta_check_vertex", "dndeta_check_vertex", 40, -20, 20);
+  fEvents = new TH1F("dndeta_check_vertex", "dndeta_check_vertex", 160, -40, 40);
   fOutput->Add(fEvents);
 
   fVertexResolution = new TH1F("dndeta_vertex_resolution_z", "dndeta_vertex_resolution_z", 1000, 0, 10);
@@ -161,6 +162,9 @@ void AlidNdEtaTask::CreateOutputObjects()
   {
     fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta", fAnalysisMode);
     fOutput->Add(fdNdEtaAnalysis);
+
+    fdNdEtaAnalysisNSD = new dNdEtaAnalysis("dndetaNSD", "dndetaNSD", fAnalysisMode);
+    fOutput->Add(fdNdEtaAnalysisNSD);
 
     fdNdEtaAnalysisTr = new dNdEtaAnalysis("dndetaTr", "dndetaTr", fAnalysisMode);
     fOutput->Add(fdNdEtaAnalysisTr);
@@ -195,7 +199,7 @@ void AlidNdEtaTask::Exec(Option_t*)
   }
 
   // trigger definition
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2);
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), fTrigger);
 
   // get the ESD vertex
   const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
@@ -426,6 +430,13 @@ void AlidNdEtaTask::Exec(Option_t*)
     TArrayF vtxMC(3);
     genHeader->PrimaryVertex(vtxMC);
 
+    // get process type; NB: this only works for Pythia
+    Int_t processType = AliPWG0Helper::GetPythiaEventProcessType(header);
+    AliDebug(AliLog::kDebug+1, Form("Found pythia process type %d", processType));
+
+    if (processType<0)
+      AliDebug(AliLog::kError, Form("Unknown Pythia process type %d.", processType));
+
     // loop over mc particles
     Int_t nPrim  = stack->GetNprimary();
 
@@ -453,6 +464,9 @@ void AlidNdEtaTask::Exec(Option_t*)
       fdNdEtaAnalysis->FillTrack(vtxMC[2], eta, pt);
       fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
 
+      if (processType != 92 && processType != 93)
+        fdNdEtaAnalysisNSD->FillTrack(vtxMC[2], eta, pt);
+
       if (eventTriggered)
       {
         fdNdEtaAnalysisTr->FillTrack(vtxMC[2], eta, pt);
@@ -465,6 +479,9 @@ void AlidNdEtaTask::Exec(Option_t*)
     }
 
     fdNdEtaAnalysis->FillEvent(vtxMC[2], nAcceptedParticles);
+    if (processType != 92 && processType != 93)
+      fdNdEtaAnalysisNSD->FillEvent(vtxMC[2], nAcceptedParticles);
+
     if (eventTriggered)
     {
       fdNdEtaAnalysisTr->FillEvent(vtxMC[2], nAcceptedParticles);
@@ -605,6 +622,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
   if (fReadMC)
   {
     fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+    fdNdEtaAnalysisNSD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaNSD"));
     fdNdEtaAnalysisTr = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTr"));
     fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
     fdNdEtaAnalysisTracks = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTracks"));
@@ -617,6 +635,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     }
 
     fdNdEtaAnalysis->Finish(0, -1, AlidNdEtaCorrection::kNone);
+    fdNdEtaAnalysisNSD->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisTr->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisTrVtx->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisTracks->Finish(0, -1, AlidNdEtaCorrection::kNone);
@@ -628,6 +647,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     TFile* fout = new TFile("analysis_mc.root","RECREATE");
 
     fdNdEtaAnalysis->SaveHistograms();
+    fdNdEtaAnalysisNSD->SaveHistograms();
     fdNdEtaAnalysisTr->SaveHistograms();
     fdNdEtaAnalysisTrVtx->SaveHistograms();
     fdNdEtaAnalysisTracks->SaveHistograms();

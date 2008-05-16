@@ -28,6 +28,9 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
     void SetUseMCVertex(Bool_t flag = kTRUE) { fUseMCVertex = flag; }
     void SetUseMCKine(Bool_t flag = kTRUE) { fUseMCKine = flag; }
+    void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
+
+    void SetOption(const char* opt) { fOption = opt; }
 
  protected:
     AliESDEvent *fESD;    //! ESD object
@@ -35,6 +38,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
 
     TString fOption;      // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
+    AliPWG0Helper::Trigger fTrigger;           // trigger that is used
 
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
     Bool_t  fUseMCVertex;  // the MC vtx is used instead of the ESD vertex (for syst. check)
@@ -53,6 +57,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
 
     // Gathered from MC (when fReadMC is set)
     dNdEtaAnalysis* fdNdEtaAnalysis;        //! contains the dndeta from the full sample
+    dNdEtaAnalysis* fdNdEtaAnalysisNSD;        //! contains the dndeta for the NSD sample
     dNdEtaAnalysis* fdNdEtaAnalysisTr;      //! contains the dndeta from the triggered events
     dNdEtaAnalysis* fdNdEtaAnalysisTrVtx;   //! contains the dndeta from the triggered events with vertex
     dNdEtaAnalysis* fdNdEtaAnalysisTracks;  //! contains the dndeta from the triggered events with vertex counted from the mc particles associated to the tracks (comparing this to the raw values from the esd shows the effect of the detector resolution)
