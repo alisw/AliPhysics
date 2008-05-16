@@ -38,6 +38,7 @@ public:
 //protected:
   virtual Int_t LoadClusters(TTree *)=0;
   virtual void UnloadClusters()=0;
+  virtual void FillClusterArray(TObjArray* array) const;
   virtual AliCluster *GetCluster(Int_t index) const=0;
   virtual AliPlaneEff *GetPlaneEff() {return NULL;}
   virtual Bool_t GetTrackPoint(Int_t /* index */ , AliTrackPoint& /* p */) const { return kFALSE;}

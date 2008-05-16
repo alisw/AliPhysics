@@ -96,6 +96,17 @@ void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
 }
 
 //__________________________________________________________________________
+void AliTracker::FillClusterArray(TObjArray* /*array*/) const
+{
+  // Publishes all pointers to clusters known to the tracker into the
+  // passed object array.
+  // The ownership is not transfered - the caller is not expected to delete
+  // the clusters.
+
+  AliWarning("should be overriden by a sub-class.");
+}
+
+//__________________________________________________________________________
 void AliTracker::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
   //--------------------------------------------------------------------
   //This function "cooks" a track label. If label<0, this track is fake.
