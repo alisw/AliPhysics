@@ -71,7 +71,10 @@ public:
   AliPHOSReconstructor() ; //ctor            
   AliPHOSReconstructor(const AliPHOSReconstructor & rec) :
     AliReconstructor(rec),
-    fGeom(rec.fGeom)
+    fGeom(rec.fGeom),
+    fClusterizer(rec.fClusterizer),
+    fTSM(rec.fTSM),
+    fPID(rec.fPID)
     {
     // cpy ctor: 
     // requested by the Coding Convention
