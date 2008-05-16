@@ -113,13 +113,17 @@ void AliHMPIDQADataMakerRec::InitRaws()
 //
 // Booking QA histo for Raw data
 //
+// All histograms implemented in InitRaws are used in AMORE. Any change here should be propagated to the amoreHMP-QA as well!!! (clm)
+//  
+  
   const Int_t kNerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
   TH1F *hSumErr[14];
   TH2F *hDilo[14];
-
+  TH2I *hPadMap[42]; //AMORE monitoring
+  TH1I *hPadQ[42]; //AMORE monitoring
   for(Int_t iddl =0; iddl<AliHMPIDRawStream::kNDDL; iddl++) {
     
-    hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*kNerr,0,2*kNerr);
+    hSumErr[iddl] = new TH1F(Form("hSumErrDDL%i",iddl), Form("Error summary for DDL %i",iddl), 2*kNerr,0,2*kNerr);
     for(Int_t ilabel=0; ilabel< kNerr; ilabel++) {
       hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
       hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));
@@ -127,10 +131,18 @@ void AliHMPIDQADataMakerRec::InitRaws()
       
     Add2RawsList(hSumErr[iddl],iddl);
     
-    hDilo[iddl] = new TH2F(Form("DiloDDL%i",iddl),Form("Dilogic response at DDL",iddl),24,0,24,10,0,10);
-    
-      Add2RawsList(hDilo[iddl],14+iddl);
- }
+    hDilo[iddl] = new TH2F(Form("hDiloDDL%i",iddl),Form("Dilogic response at DDL;Row # ;Dilogic #",iddl),24,1,25,10,1,11);
+    Add2RawsList(hDilo[iddl],14+iddl);
+  }//DDL loop
+ for(Int_t iCh = AliHMPIDParam::kMinCh; iCh <=AliHMPIDParam::kMaxCh ;iCh++) {
+   for(Int_t iPc = AliHMPIDParam::kMinPc; iPc <= AliHMPIDParam::kMaxPc ;iPc++) {
+      hPadMap[iPc+6*iCh] = new TH2I(Form("hPadMap_Ch_%i_Pc%i",iCh,iPc),Form("Pad Map of Ch: %i Pc: %i;Pad X;Pad Y;",iCh,iPc),80,0,80,48,0,48);
+      Add2RawsList(hPadMap[iPc+6*iCh],28+iPc+6*iCh); 
+      hPadQ[iPc+6*iCh]   = new TH1I(Form("hPadQ_Ch_%i_Pc%i",iCh,iPc),Form("Pad Charge of Ch: %i Pc: %i;Pad Q;Entries;",iCh,iPc),4100,0,4100);
+      Add2RawsList(hPadQ[iPc+6*iCh],70+iPc+6*iCh); 
+    }//PC loop
+  }//Ch loop  
+  
 }
 //____________________________________________________________________________
 void AliHMPIDQADataMakerRec::InitESDs()
@@ -146,7 +158,7 @@ void AliHMPIDQADataMakerRec::InitESDs()
    hPid[1] = new TH1F("PidMu","#mu response"                   , 101, -0.005,1.005)             ;
    hPid[2] = new TH1F("PidPi","#pi response"                   , 101, -0.005,1.005)             ;
    hPid[3] = new TH1F("PidK" ,"K response"                     , 101, -0.005,1.005)             ;
-   hPid[4] = new TH1F("PidP" ,"p response"                         ,101, -0.005,1.005)             ;
+   hPid[4] = new TH1F("PidP" ,"p response"                     , 101, -0.005,1.005)             ;
 
 Add2ESDsList(hCkovP,0);
 Add2ESDsList(hSigP ,1);
@@ -169,19 +181,18 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     while(stream.Next())
      {
        UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13
- 
+       if(ddl > 13) continue;
        for(Int_t iErr =1; iErr<(Int_t)AliHMPIDRawStream::kSumErr; iErr++){
- 
          Int_t numOfErr = stream.GetErrors(ddl,iErr);
          GetRawsData(ddl)->Fill(iErr,numOfErr);
        }
-       UInt_t word; Int_t Nddl, r, d, a;      
+       UInt_t word; Int_t Nddl, r, d, a;//pc,pcX,pcY;      
        for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
-       AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
-       dig.Raw(word,Nddl,r,d,a);
+       AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);dig.Raw(word,Nddl,r,d,a);
        GetRawsData(ddl+14)->Fill(r,d);
-       }
-       
+       GetRawsData(28+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl))->Fill(stream.PadPcX(Nddl,r,d,a),stream.PadPcY(Nddl,r,d,a));
+       GetRawsData(70+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl))->Fill(stream.GetChargeArray()[iPad]);
+       }      
      }
    stream.Delete();
    
