@@ -119,14 +119,14 @@ const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMo
   Float_t requiredZResolution = -1;
   if (analysisMode == kSPD || analysisMode == kTPCITS)
   {
-    vertex = aEsd->GetVertex();
+    vertex = aEsd->GetPrimaryVertexSPD();
     requiredZResolution = 0.1;
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning SPD vertex");
   }
   else if (analysisMode == kTPC) 
   {
-    vertex = aEsd->GetPrimaryVertex();
+    vertex = aEsd->GetPrimaryVertexTPC();
     requiredZResolution = 0.6;
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
@@ -488,3 +488,33 @@ void AliPWG0Helper::NormalizeToBinWidth(TH2* hist)
       hist->SetBinError(i, j, hist->GetBinError(i, j) / factor);
     }
 }
+
+//____________________________________________________________________
+void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
+{
+  //
+  // Prints the given configuration
+  //
+
+  TString str(">>>> Running with ");
+
+  switch (analysisMode)
+  {
+    case kSPD : str += "SPD-only"; break;
+    case kTPC : str += "TPC-only"; break;
+    case kTPCITS : str += "Global tracking"; break;
+  }
+
+  str += " and trigger ";
+
+  switch (trigger)
+  {
+    case kMB1 : str += "MB1"; break;
+    case kMB2 : str += "MB2"; break;
+  }
+
+  str += " <<<<";
+
+  Printf("%s", str.Data());
+}
+

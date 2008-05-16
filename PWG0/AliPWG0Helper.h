@@ -45,6 +45,8 @@ class AliPWG0Helper : public TObject
     static void NormalizeToBinWidth(TH1* hist);
     static void NormalizeToBinWidth(TH2* hist);
 
+    static void PrintConf(AnalysisMode analysisMode, Trigger trigger);
+
   protected:
     ClassDef(AliPWG0Helper, 0)
 
