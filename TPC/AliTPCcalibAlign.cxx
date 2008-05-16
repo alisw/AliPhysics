@@ -20,10 +20,20 @@
 //
 //     Requierements - Warnings:
 //     1. Before using this componenent the magnetic filed has to be set properly //
-//     2. Teh systematic effects  - unlinearities has to be understood
+//     2. The systematic effects  - unlinearities has to be understood
 //
-//     Different linear tranformation investigated
+//     If systematic and unlinearities are not under control
+//     the alignment is just effective alignment. Not second order corrction
+//     are calculated.
+//    
+//     The histograming of the edge effects and unlineratities integral part
+//     of the component (currently only in debug stream)
+//
+//     3 general type of linear transformation investigated (see bellow)
+//
+//     By default only 6 parameter alignment to be used - other just for QA purposes
 
+//     Different linear tranformation investigated
 //     12 parameters - arbitrary linear transformation 
 //                     a00  a01 a02  a03     p[0]   p[1]  p[2]  p[9]
 //                     a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
@@ -39,6 +49,24 @@
 //                     a10  a11  a12 a13 ==> p[0]   1     0     p[4]
 //                     a20  a21  a22 a23     p[1]   p[2]  1     p[5] 
 //
+//
+//      Debug stream supported
+//      0. Align    - The main output of the Alignment component
+//                  - Used for visualization of the misalignment between sectors
+//                  - Results of the missalignment fit and the mean and sigmas of histograms
+//                   stored there
+//      1. Tracklet - StreamLevel >1
+//                  - Dump all information about tracklet match from sector1 to sector 2
+//                  - Default histogram residulas created in parallel
+//                  - Check this streamer in case of suspicious content of these histograms
+//      2. Track    - StreamLevel>5  
+//                  - For debugging of the edge effects
+//                  - All information  - extrapolation inside of one sectors
+//                  - Created in order to distinguish between unlinearities inside of o
+//                    sector and  missalignment 
+   
+//
+
 ////
 //// 
 
@@ -309,7 +337,12 @@ void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
     //AliExternalTrackParam *p0 = &((AliExternalTrackParam&)seed);
     AliExternalTrackParam *p1 = &((AliExternalTrackParam&)t1);
     AliExternalTrackParam *p2 = &((AliExternalTrackParam&)t2);
- 
+    /*
+      
+      Track->Draw("Cl[].fY-vtY.fElements:vtY.fElements-vtX.fElements*tan(pi/18.)>>his(100,-10,0)","Cl.fY!=0&&abs(Cl.fY-vtY.fElements)<1","prof");
+
+    */
+
     if (cstream){
       (*cstream)<<"Track"<<
 	"Cl.="<<&arrCl<<
