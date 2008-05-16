@@ -26,14 +26,15 @@ extern "C" {
    * The method is used from the C wrapper interface utilized by the  on-line
    * framework. The path of the (H)CDB is set to the specified path.<br>
    * When running from AliRoot, the CDB path is set in the startup of the
-   * reconstruction.
+   * reconstruction.<br>
+   * If cdbpath is nil or empty and the CDB is not already initialized, the
+   * CDB storage is set to local://$ALICE_ROOT and the run no to 0.
    * @param cdbpath     path to the CDB
    * @return neg. error code if failed
    * @note function implemented in libHLTrec
    */
   int AliHLTMiscInitCDB(const char* cdbpath);
   typedef int (*AliHLTMiscInitCDB_t)(const char* cdbpath);
-
 
   /**
    * Init the Run no for the CDB access.

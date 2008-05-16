@@ -34,8 +34,15 @@ int AliHLTMiscInitCDB(const char* cdbpath)
   if (!pCDB) {
     log.Logging(kHLTLogError, "InitCDB", "CDB handling", "Could not get CDB instance");
   } else {
-    pCDB->SetDefaultStorage(cdbpath);
-    log.Logging(kHLTLogDebug, "InitCDB", "CDB handling", "CDB instance 0x%x", pCDB);
+    if (cdbpath && cdbpath[0]!=0) {
+      pCDB->SetDefaultStorage(cdbpath);
+      log.Logging(kHLTLogDebug, "InitCDB", "CDB handling", "CDB instance 0x%x", pCDB);
+    } else if (!pCDB->IsDefaultStorageSet()) {
+      const char* cdbUri="local://$ALICE_ROOT";
+      pCDB->SetDefaultStorage(cdbUri);
+      pCDB->SetRun(0);
+      log.Logging(kHLTLogInfo, "InitCDB", "CDB handling", "set default URI: %s", cdbUri);
+    }
   }
   return iResult;
 }

@@ -203,7 +203,7 @@ int AliHLTComponent::InitCDB(const char* cdbPath, AliHLTComponentHandler* pHandl
 {
   // see header file for function documentation
   int iResult=0;
-  if (cdbPath && pHandler) {
+  if (pHandler) {
   // I have to think about separating the library handling from the
   // component handler. Requiring the component hanlder here is not
   // the cleanest solution.
@@ -211,11 +211,14 @@ int AliHLTComponent::InitCDB(const char* cdbPath, AliHLTComponentHandler* pHandl
   // find the symbol
   AliHLTMiscInitCDB_t pFunc=(AliHLTMiscInitCDB_t)pHandler->FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_INIT_CDB);
   if (pFunc) {
-    TString path=cdbPath;
-    // very temporary fix, have to check for other formats
-    if (!path.BeginsWith("local://")) {
-      path="local://";
-      path+=cdbPath;
+    TString path;
+    if (cdbPath && cdbPath[0]!=0) {
+      path=cdbPath;
+      // very temporary fix, have to check for other formats
+      if (!path.BeginsWith("local://")) {
+	path="local://";
+	path+=cdbPath;
+      }
     }
     if ((iResult=(*pFunc)(path.Data()))>=0) {
       if (!(fCDBSetRunNoFunc=pHandler->FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_SET_CDB_RUNNO))) {

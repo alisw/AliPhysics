@@ -892,7 +892,7 @@ int AliHLTSystem::Configure(AliRawReader* rawReader, AliRunLoader* runloader)
     iResult=LoadConfigurations(rawReader, runloader);
   } else {
     if (fChains.Length()==0) {
-      HLTError("custom configuration(s) specified, but no configuration to run in local reconstruction, use \'localrec=<conf>\' option");
+      HLTError("custom configuration(s) specified, but no configuration to run in local reconstruction, use \'chains=<chain,...>\' option");
       iResult=-ENOENT;
     }
   }
@@ -962,6 +962,7 @@ int AliHLTSystem::ScanOptions(const char* options)
 	} else if (token.Contains("chains=")) {
 	  TString param=token.ReplaceAll("chains=", "");
 	  fChains=param.ReplaceAll(",", " ");
+	  if (fChains.IsNull()) fChains=" "; // disable all chains
 	} else if (token.Contains("libmode=")) {
 	  TString param=token.ReplaceAll("libmode=", "");
 	  param.ReplaceAll(",", " ");
@@ -1064,7 +1065,7 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
     while ((pAgent || fChains.Length()>0) && iResult>=0) {
       const char* agentchains=pAgent->GetReconstructionChains(rawReader, runloader);
       if (agentchains) {
-	if (!chains.IsNull()) chains+="";
+	if (!chains.IsNull()) chains+=" ";
 	chains+=agentchains;
 	HLTInfo("reconstruction chains for agent %s (%p): %s", pAgent->GetName(), pAgent, agentchains);
       }
@@ -1108,7 +1109,7 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
       // there are components in the chain which produce data which need to be
       // piped to an HLTOUT
       if (fpComponentHandler->FindComponentIndex("HLTOUT")>=0 ||
-	  LoadComponentLibraries("libHLTsim.so")>=0) {
+	  fpComponentHandler->LoadLibrary("libHLTsim.so")>=0) {
 	AliHLTConfiguration globalout("_globalout_", "HLTOUT", chains.Data(), NULL);
 	iResult=BuildTaskList("_globalout_");
       } else {

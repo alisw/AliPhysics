@@ -191,9 +191,7 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvP
       component=pSample->Spawn();
       if (component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
-	if (cdbPath) {
-	  component->InitCDB(cdbPath, this);
-	}
+	component->InitCDB(cdbPath, this);
 	if ((iResult=component->Init(&fEnvironment, pEnvParam, argc, argv))!=0) {
 	  HLTError("Initialization of component \"%s\" failed with error %d", componentID, iResult);
 	  delete component;
