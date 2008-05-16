@@ -1045,6 +1045,13 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 	} 
 	
 	
+	anAttribute = anEntry->GetAttribute("AlienPath");
+	if (!anAttribute) {
+		AliError("Can't find AlienPath attribute!");
+		return 4;
+	}
+	fAlienPath = anAttribute->GetValue();
+
 	anAttribute = anEntry->GetAttribute("daqLbHost");
 	if (!anAttribute) {
 		AliError("Can't find daqLbHost attribute!");

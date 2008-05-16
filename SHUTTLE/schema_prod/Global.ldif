@@ -23,4 +23,5 @@ amandaAdmin: svetozar.kapusta@cern.ch
 nDCSretries: 5
 ppmaxRetries: 2
 passwdFilePath: /home/shuttle/.shuttle_prod
+AliEnPath: /alice/testdata/
 

@@ -34,6 +34,8 @@ public:
 
 	const char* GetConfigHost() const {return fConfigHost.Data();}
 
+	const char* GetAlienPath() const {return fAlienPath.Data();}
+
 	const char* GetDAQlbHost() const {return fDAQlbHost.Data();}
 	UInt_t 	    GetDAQlbPort() const {return fDAQlbPort;}
 	const char* GetDAQlbUser() const {return fDAQlbUser.Data();}
@@ -186,6 +188,8 @@ private:
 	UInt_t SetHostConfig(TList* hostList);
 	
 	TString fConfigHost;  		// Host of the Shuttle configuration LDAP server
+
+	TString fAlienPath;		// Alien Path for CDB/Reference objs in the Alien catalogue
 
 	TString fDAQlbHost;		// Host of the DAQ logbook MySQL Server
 	UInt_t  fDAQlbPort;		// port of the DAQ logbook MySQL Server

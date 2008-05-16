@@ -616,8 +616,8 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 				lhcPeriod.Data()));
 	}
 		
-	TString target = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/raw/%s", 
-				localBaseFolder.Data(), GetCurrentYear(), 
+	TString target = Form("%s/GRP/RunMetadata%s%d/%s/%09d/raw/%s", 
+				localBaseFolder.Data(), fConfig->GetAlienPath(), GetCurrentYear(), 
 				lhcPeriod.Data(), GetCurrentRun(), gridFileName);
 					
 	return CopyFileLocally(localFile, target);
@@ -736,10 +736,10 @@ Bool_t AliShuttle::CopyFilesToGrid(const char* type)
 			lhcPeriod.Append(Form("_%s", partition.Data()));
 		}
 		
-		dir = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/raw", 
-				localBaseFolder.Data(), GetCurrentYear(), 
+		dir = Form("%s/GRP/RunMetadata%s%d/%s/%09d/raw", 
+				localBaseFolder.Data(), fConfig->GetAlienPath(), GetCurrentYear(), 
 				lhcPeriod.Data(), GetCurrentRun());
-		alienDir = dir(dir.Index("/alice/data/"), dir.Length());
+		alienDir = dir(dir.Index(fConfig->GetAlienPath()), dir.Length());
 		
 		begin = "";
 	}
@@ -1273,12 +1273,12 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	}	
 	
 	if (fgkMainCDB.Length() == 0)
-		fgkMainCDB = Form("alien://folder=/alice/data/%d/%s/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache", 
-					GetCurrentYear(), lhcPeriod.Data());
+		fgkMainCDB = Form("alien://folder=%s%d/%s/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache", 
+					fConfig->GetAlienPath(), GetCurrentYear(), lhcPeriod.Data());
 	
 	if (fgkMainRefStorage.Length() == 0)
-		fgkMainRefStorage = Form("alien://folder=/alice/data/%d/%s/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
-					GetCurrentYear(), lhcPeriod.Data());
+		fgkMainRefStorage = Form("alien://folder=%s%d/%s/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
+					fConfig->GetAlienPath(), GetCurrentYear(), lhcPeriod.Data());
 	
 	// Loop on detectors in the configuration
 	TIter iter(fConfig->GetDetectors());
@@ -3288,36 +3288,61 @@ Bool_t AliShuttle::TouchFile()
 		return kFALSE;
 	}
 
-	TString command;
-	command.Form("touch /alice/data/%d/%s/SHUTTLE_DONE/%i", GetCurrentYear(), GetLHCPeriod(), GetCurrentRun());
-	Log("SHUTTLE", Form("Creating entry in file catalog: %s", command.Data()));
-	TGridResult *resultTouch = dynamic_cast<TGridResult*>(gGrid->Command(command));
-	if (resultTouch){
-		TMap *mapTouch = dynamic_cast<TMap*>(resultTouch->At(0));
-		if (mapTouch){
-			TObjString *valueTouch = dynamic_cast<TObjString*>(mapTouch->GetValue("__result__"));
-			if (valueTouch){
-				if (valueTouch->GetString()=="1"){
-				return kTRUE;
-				}	
-				else {
-					Log("SHUTTLE",Form("No value for __result__ key set in the map for touching command"));
-				}
-			}
-			else {
-				Log("SHUTTLE",Form("No value set in the map for touching command"));
-			}
+	TString dir;
+	dir.Form("%s%d/%s/SHUTTLE_DONE", fConfig->GetAlienPath(), GetCurrentYear(), GetLHCPeriod());
+	// checking whether directory for touch command exists
+	TString commandLs;
+	commandLs.Form("ls %s",dir.Data());
+	TGridResult *resultLs = dynamic_cast<TGridResult*>(gGrid->Command(commandLs));
+	if (!resultLs){
+		Log("SHUTTLE",Form("No result for %s command, returning without touching",commandLs.Data()));
+		return kFALSE;
+	}
+	TMap *mapLs = dynamic_cast<TMap*>(resultLs->At(0));
+	if (!mapLs){
+		Log("SHUTTLE",Form("No map for %s command, returning without touching",commandLs.Data()));
+		return kFALSE;
+	}
+	TObjString *valueLsPath = dynamic_cast<TObjString*>(mapLs->GetValue("path"));
+	if (!valueLsPath || (TString)(valueLsPath->GetString()).CompareTo(dir)!=1){ 
+		Log("SHUTTLE",Form("No directory %s found, creating it",dir.Data()));
+
+		// creating the directory
+
+		Bool_t boolMkdir = gGrid->Mkdir(dir.Data());
+		if (!boolMkdir) {
+			Log("SHUTTLE",Form("Impossible to create dir %s in alien catalogue for run %i!",dir.Data(),GetCurrentRun()));
+			return kFALSE;
 		}
-		else {
-			Log("SHUTTLE",Form("No map for touching command"));
-		}
+		Log("SHUTTLE",Form("Directory %s successfully created in alien catalogue for run %i",dir.Data(),GetCurrentRun()));
+      	}
+	else {
+		Log("SHUTTLE",Form("Directory %s correctly found for run %i",dir.Data(),GetCurrentRun()));
 	}
 
-	else {
-		Log("SHUTTLE",Form("No result for touching command"));
+	TString command;
+	command.Form("touch %s/%i", dir.Data(), GetCurrentRun());
+	Log("SHUTTLE", Form("Creating entry in file catalog: %s", command.Data()));
+	TGridResult *resultTouch = dynamic_cast<TGridResult*>(gGrid->Command(command));
+	if (!resultTouch){
+		Log("SHUTTLE",Form("No result for touching command, returning without touching for run %i",GetCurrentRun()));
+		return kFALSE;
 	}
-	Log("SHUTTLE",Form("Could not touch file for run %i",GetCurrentRun()));
-	return kFALSE;
+	TMap *mapTouch = dynamic_cast<TMap*>(resultTouch->At(0));
+	if (!mapTouch){
+		Log("SHUTTLE",Form("No map for touching command, returning without touching for run %i",GetCurrentRun()));
+		return kFALSE;
+	}
+	TObjString *valueTouch = dynamic_cast<TObjString*>(mapTouch->GetValue("__result__"));
+	if (!valueTouch){
+		Log("SHUTTLE",Form("No value for \"__result__\" key set in the map for touching command, returning without touching for run %i",GetCurrentRun()));
+		return kFALSE;
+	}
+	if (valueTouch->GetString()!="1"){
+		Log("SHUTTLE",Form("Failing the touching command, returning without touching for run %i",GetCurrentRun()));
+		return kFALSE;
+	}
+	return kTRUE;
 }
 
 
