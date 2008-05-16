@@ -44,9 +44,11 @@
  * \li -equipmentid  <i> id      </i>
  *      the equipmentid within the detector, e.g. TPC 0 is 768
  * \li -minid  <i> id      </i>
- *      the minimum equipmentid including detector offset, e.g. 768 is TPC 0
+ *      the minimum equipmentid including detector offset, e.g. 768 is TPC 0<br>
+ *      if the -detector option is used, the id is without detector offset
  * \li -maxid  <i> id      </i>
- *      the maximum equipmentid including detector offset (default = minid)
+ *      the maximum equipmentid including detector offset (default = minid)<br>
+ *      if the -detector option is used, the id is without detector offset
  * \li -verbose<br>
  *      print out some more info messages, mainly for the sake of tutorials
  * \li -skipempty

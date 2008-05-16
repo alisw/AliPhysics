@@ -30,6 +30,7 @@
 
 #include "AliHLTRawReaderPublisherComponent.h"
 #include "AliRawReader.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include <cerrno>
 #include <cassert>
@@ -169,16 +170,25 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 
   if (iResult<0) return iResult;
 
+  if (!fDetector.IsNull()) {
+    int ddloffset=-1;
+    int ddlcount=-1;
+    if ((ddloffset=AliDAQ::DdlIDOffset(fDetector))<0 || 
+	(ddlcount=AliDAQ::NumberOfDdls(fDetector))<0) {
+      return -EINVAL;
+    }
+    if (fMinEquId<0) fMinEquId=ddloffset;
+    else fMinEquId+=ddloffset;
+
+    if (fMaxEquId<0 || fMaxEquId>ddlcount) fMaxEquId=ddloffset+ddlcount;
+    else fMaxEquId+=ddloffset;
+  }
+
   if (fMinEquId>fMaxEquId) fMaxEquId=fMinEquId;
 
   if (fMinEquId<0) {
-    AliErrorStream() << "equipment id required, use \'-equipmentid\' option" << endl;
+    AliErrorStream() << "equipment id required, use \'-equipmentid\' or \'-detector\' option" << endl;
     return -EINVAL;
-  }
-
-  if (!fDetector.IsNull()) {
-    AliErrorStream() << "option \'-detector\' not implemented" << endl;
-    return -ENOSYS;
   }
 
   AliHLTUInt32_t dummy;
