@@ -262,7 +262,7 @@ Bool_t AliTrackResidualsFast::Update()
     }
   }
   
-  smatrixRedu.Print();
+  //  smatrixRedu.Print();
   smatrixRedu.Invert();
   
   if (!smatrixRedu.IsValid()) {
