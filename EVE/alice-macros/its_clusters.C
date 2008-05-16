@@ -62,6 +62,8 @@ TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
     }
   }
 
+  rl->UnloadRecPoints("ITS");
+
   if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("its_clusters.C", "No ITS clusters");
     delete clusters;

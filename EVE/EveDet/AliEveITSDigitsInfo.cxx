@@ -151,6 +151,7 @@ void AliEveITSDigitsInfo::InitInternals()
   
   fDDLMapSDD = new AliITSDDLModuleMapSDD();
   AliCDBManager *man       = AliCDBManager::Instance();
+  Bool_t cacheStatus = man->GetCacheFlag();
   AliCDBEntry   *ddlMapSDD = man->Get("ITS/Calib/DDLMapSDD");
   ddlMapSDD->SetOwner(kTRUE);
   if (!ddlMapSDD) {
@@ -160,10 +161,13 @@ void AliEveITSDigitsInfo::InitInternals()
     if (!ddlsdd) {
       AliWarning("SDD DDL map object not found in OCDB file! - Use default DDL map");
     } else {
+      if(!cacheStatus)ddlMapSDD->SetObject(NULL);
+      ddlMapSDD->SetOwner(kTRUE);
       fDDLMapSDD->SetDDLMap(ddlsdd);
     }
   }
-  delete ddlMapSDD;
+  if(!cacheStatus)
+    delete ddlMapSDD;
 }
 
 /******************************************************************************/
