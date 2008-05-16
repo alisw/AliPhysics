@@ -86,11 +86,11 @@ void AliITSQASSDDataMakerSim::StartOfDetectorCycle() {
 }
 
 //____________________________________________________________________________ 
-void AliITSQASSDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TObjArray* /*list*/) {
+void AliITSQASSDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list) {
   // launch the QA checking
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
   
-  //AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
+  AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
 }
 
 //____________________________________________________________________________ 
@@ -157,7 +157,10 @@ void AliITSQASSDDataMakerSim::InitSDigits() {
 //____________________________________________________________________________
 void AliITSQASSDDataMakerSim::MakeSDigits(TTree *sdigits) { 
   // Fill QA for SDIGIT - SSD -
-  TClonesArray *iSSDsdigits = new TClonesArray("AliITSpListItem",10000);
+  static TClonesArray iSSDEmpty("AliITSpListItem",10000);
+  iSSDEmpty.Clear();
+  TClonesArray *iSSDsdigits = &iSSDEmpty;
+
   TBranch *brchSDigits = sdigits->GetBranch("ITS");
   brchSDigits->SetAddress(&iSSDsdigits);
   for(Int_t iModule = 500; iModule < 2198; iModule++) {
