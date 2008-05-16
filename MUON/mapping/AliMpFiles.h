@@ -122,7 +122,7 @@ class AliMpFiles : public TObject
     static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
     static const TString fgkBusPatchLengthFileName;///< BusPatch length file name
     static const TString fgkBusPatchSpecialFileName;///< BusPatch special file name
-    static const TString fgkSerialToBinFileName; //< serial to bin  number file name
+    static const TString fgkSerialToBinFileName; ///< serial to bin  number file name
     
   ClassDef(AliMpFiles, 0) //File names and paths 
 };  
