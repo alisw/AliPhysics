@@ -24,6 +24,39 @@
  *
  * An implementiation of a dummy component that just copies its input data
  * as a test, demonstration, and example of the HLT component scheme.
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b Dummy <br>
+ * Library: \b libAliHLTSample.so     <br>
+ * Input Data Types: @ref kAliHLTAnyDataType <br>
+ *
+ * Output Data Types: depending on input blocks
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -output_percentage                            <br>
+ *      The fraction (%) of the input data to be copied to the output
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component has no default CDB entry.
+ * It does not load any configuration from the global <tt>ConfigHLT</tt>
+ * folder.
+ * 
+ * <h2>Performance:</h2>
+ * The component does not have any event data processing.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not have any event data processing.
+ *
+ * <h2>Output size:</h2>
+ * Output multiplier determined by option -output_percentage
+ *
  * @ingroup alihlt_tutorial
  */
 class AliHLTDummyComponent : public AliHLTProcessor

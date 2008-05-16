@@ -118,27 +118,28 @@ int AliHLTDummyComponent::DoInit( int argc, const char** argv )
     char* cpErr;
     while ( i < argc )
 	{
-	Logging( kHLTLogDebug, "HLT::Dummy::DoInit", "Arguments", "argv[%d] == %s", i, argv[i] );
-	if ( !strcmp( argv[i], "output_percentage" ) )
+	HLTDebug("argv[%d] == %s", i, argv[i] );
+	if ( !strcmp( argv[i], "output_percentage" ) ||
+	     !strcmp( argv[i], "-output_percentage" ))
 	    {
 	    if ( i+1>=argc )
 		{
-		Logging(kHLTLogError, "HLT::Dummy::DoInit", "Missing Argument", "Missing output_percentage parameter");
-		return ENOTSUP;
+		HLTError("Missing output_percentage parameter");
+		return -EINVAL;
 		}
-	    Logging( kHLTLogDebug, "HLT::Dummy::DoInit", "Arguments", "argv[%d+1] == %s", i, argv[i+1] );
+	    HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
 	    fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
 	    if ( *cpErr )
 		{
-		Logging(kHLTLogError, "HLT::Dummy::DoInit", "Wrong Argument", "Cannot convert output_percentage parameter '%s'", argv[i+1] );
-		return EINVAL;
+		HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
+		return -EINVAL;
 		}
-	    Logging( kHLTLogInfo, "HLT::Dummy::DoInit", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+	    HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
 	    i += 2;
 	    continue;
 	    }
-	Logging(kHLTLogError, "HLT::Dummy::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-	return EINVAL;
+	HLTError("Unknown option '%s'", argv[i] );
+	return -EINVAL;
 	}
     return 0;
     }
@@ -154,7 +155,7 @@ int AliHLTDummyComponent::DoEvent( const AliHLTComponentEventData& evtData, cons
 				      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
     // see header file for class documentation
-    Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+    HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
     // Process an event
     unsigned long totalSize = 0;
     // Loop over all input blocks in the event
@@ -167,12 +168,12 @@ int AliHLTDummyComponent::DoEvent( const AliHLTComponentEventData& evtData, cons
 	    break;
 	// Determine the size we should use for the output for this block (the input block's size times the relative output size)
 	unsigned long mySize = (blocks[n].fSize * fOutputPercentage) / 100;
-	Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "mySize set (1)", "mySize == %lu B - blocks[%lu].fSize == %lu - fOutputPercentage == %lu", 
+	HLTInfo("HLT::Dummy::DoEvent", "mySize set (1)", "mySize == %lu B - blocks[%lu].fSize == %lu - fOutputPercentage == %lu", 
 		 mySize, n, blocks[n].fSize, fOutputPercentage );
 	// Check how much space we have left and adapt this output block's size accordingly.
 	if ( totalSize + mySize > size )
 	    mySize = size-totalSize;
-	Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "mySize set (2)", "mySize == %lu B - totalSize == %lu - size == %lu", 
+	HLTInfo("HLT::Dummy::DoEvent", "mySize set (2)", "mySize == %lu B - totalSize == %lu - size == %lu", 
 		 mySize, totalSize, size );
 	if ( mySize<=0 )
 	    continue; // No room left to write a further block.
@@ -181,16 +182,16 @@ int AliHLTDummyComponent::DoEvent( const AliHLTComponentEventData& evtData, cons
 	// First copy all full multiples of the input block
 	while ( copied+blocks[n].fSize <= mySize )
 	    {
-	    Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Copying", "Copying %lu B - Copied: %lu B - totalSize: %lu B", 
+	    HLTInfo("Copying %lu B - Copied: %lu B - totalSize: %lu B", 
 		     blocks[n].fSize, copied, totalSize );
 	    memcpy( outputPtr+totalSize+copied, blocks[n].fPtr, blocks[n].fSize );
 	    copied += blocks[n].fSize;
 	    }
 	// And the copy the remaining fragment of the block
-	Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Copying", "Copying %lu B - Copied: %lu B - totalSize: %lu B", 
+	HLTInfo("Copying %lu B - Copied: %lu B - totalSize: %lu B", 
 		 mySize-copied, copied, totalSize );
 	memcpy( outputPtr+totalSize+copied, blocks[n].fPtr, mySize-copied );
-	Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Copied", "Copied: %lu B - totalSize: %lu B", 
+	HLTInfo("Copied: %lu B - totalSize: %lu B", 
 		 copied, totalSize );
 	// Fill a block data structure for our output block.
 	AliHLTComponentBlockData ob;

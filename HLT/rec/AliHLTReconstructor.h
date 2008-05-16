@@ -115,7 +115,7 @@ class AliHLTEsdManager;
  * blocks of type ::kAliHLTDataTypeESDTree {ESD_TREE:ANY}. \em ANY can be
  * any detector origin. Each ESD block contains the data of only one event,
  * the ESDs are merged by the AliHLTEsdManager and written to files of the
- * naming scheme AliHLT\lt\em DET \gt ESDs.root. The first ESD block is also copied
+ * naming scheme AliHLT\em DET ESDs.root. The first ESD block is also copied
  * to the hltEsd provided by the AliReconstruction. This is a temporary
  * solution as the handling and merging of HLT ESDs is under discussion.
  * At the time of writing (May 08) only the TPC HLT components produce ESD

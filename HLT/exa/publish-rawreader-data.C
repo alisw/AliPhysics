@@ -66,7 +66,7 @@ void publish_rawreader_data(const char* input, int iMinDDLno, int iMaxDDLno)
   writerInput+="publisher";
 
   // the writer configuration
-  arg.Form("-specfmt=_%%d -subdir=raw%%d -blocknofmt= -idfmt= -datafile %s", baseName);
+  arg.Form("-specfmt=_%%d -subdir=out%%d -blocknofmt= -idfmt= -datafile %s", baseName);
   AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), arg.Data());
 
 
@@ -82,6 +82,7 @@ void publish_rawreader_data(const char* input, int iMinDDLno, int iMaxDDLno)
   rec.SetRunQA(kFALSE);
   rec.SetRunVertexFinder(kFALSE);
   rec.SetLoadAlignFromCDB(0);
+  rec.SetFillTriggerESD(kFALSE);
   rec.Run();
 }
 

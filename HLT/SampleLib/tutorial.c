@@ -27,13 +27,31 @@
 /** 
 @defgroup alihlt_tutorial HLT examples and tutorial
 
+The HLT analysis components can be run either in the AliRoot
+framework (simulation and/or reconstruction) or the HLT online
+framework.
+
+We think of the HLT as a 'black box' with data input and output. In
+addition there is access to calibration data from OCDB (or the local
+HLT copy HCDB). All components can only work on the data they get as
+input. As the different detector algorithms/components will run in 
+separate processes and even on different machines, no data exchange
+is possible via global data structures and variables.
+
+HLT chains in the AliRoot framework are described by means of
+AliHLTConfiguration.
+
 -# @ref tut_hltsystem
    -# @ref tut_load_libraries
    -# @ref tut_dummy_chain
    -# @ref tut_tpc_sector
+-# @ref tut_simulation
 -# @ref tut_reconstruction
    -# @ref tut_module_agent
    -# @ref tut_reconstruction_sample
+   -# @ref tut_reconstruction_custom
+-# @ref tut_alirawreaderhlt
+-# @ref tut_macros 
 
 <br>
 <br>
@@ -63,7 +81,7 @@ You can run the following macro from the AliRoot promt.
   // The AliHLTFilePublisher (component Id \em 'FilePublisher' provides
   // the given file (see AliHLTFilePublisher for more options) to the
   // subsequent components in the chain.
-  AliHLTConfiguration publisher("fp1", "FilePublisher", NULL, "-datafile some-data.dat");
+  AliHLTConfiguration publisher("fp1", "FilePublisher", NULL, "-datatype 'DUMMYDAT' 'SMPL' -datafile some-data.dat");
 
   // The AliHLTDummyComponent (Id \em 'Dummy') just forwards a certain
   // fraction of the input to the output or just repeats the input data
@@ -95,18 +113,18 @@ directory.
   gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so");
 
   // data source components
-  AliHLTConfiguration fp0("fp0", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000000"
-			                                "-datafile TPC_768.ddl");
-  AliHLTConfiguration fp1("fp1", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000101"
+  AliHLTConfiguration fp0("fp0", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000000 "
+                                                        "-datafile TPC_768.ddl");
+  AliHLTConfiguration fp1("fp1", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000101 "
                                                         "-datafile TPC_769.ddl");
-  AliHLTConfiguration fp2("fp2", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000202"
+  AliHLTConfiguration fp2("fp2", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000202 "
                                                         "-datafile TPC_840.ddl");
-  AliHLTConfiguration fp3("fp3", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000303"
-			                                "-datafile TPC_841.ddl");
-  AliHLTConfiguration fp4("fp4", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000404"
-			                                "-datafile TPC_842.ddl");
-  AliHLTConfiguration fp5("fp5", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000505"
-			                                "-datafile TPC_843.ddl");
+  AliHLTConfiguration fp3("fp3", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000303 "
+                                                        "-datafile TPC_841.ddl");
+  AliHLTConfiguration fp4("fp4", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000404 "
+                                                        "-datafile TPC_842.ddl");
+  AliHLTConfiguration fp5("fp5", "FilePublisher", NULL, "-datatype 'DDL_RAW ' 'TPC ' -dataspec 0x00000505 "
+                                                        "-datafile TPC_843.ddl");
 
   // cluster finders
   AliHLTConfiguration cf0("cf0", "TPCClusterFinderPacked", "fp0", "pp-run rawreadermode 4 timebins 446");
@@ -117,32 +135,23 @@ directory.
   AliHLTConfiguration cf5("cf5", "TPCClusterFinderPacked", "fp5", "pp-run rawreadermode 4 timebins 446");
 
   // tracker
-  AliHLTConfiguration tracker("tracker", "TPCSliceTracker", "cf0 cf1 cf2 cf3 cf4 cf5", "pp-run bfield 0.5");
+  AliHLTConfiguration tracker("tracker", "TPCSliceTracker", "cf0 cf1 cf2 cf3 cf4 cf5", "-pp-run -bfield 0.5");
 
   // the data sink component
-  AliHLTConfiguration writer("writer", "TPCEsdWriter", "tracker", "-datafile AliESDs.root");
+  AliHLTConfiguration writer("writer", "TPCEsdWriter", "tracker", "-datafile AliHLTTPCESDs.root");
 
   gHLT.BuildTaskList("writer");
   gHLT.Run();
 }
 </pre>
-    
+
 @section tut_reconstruction AliRoot reconstruction
-The HLT analysis components can be run either in the AliRoot
-reconstruction or the HLT online framework.
 The integration into the AliRoot reconstruction works via the
 @ref AliHLTReconstructor plugin. The intention is to run HLT analysis
 chains in AliRoot in the same way as in the online framework, i.e.
 the full components are run also from the offline framework rather
 than just the algorithm hooked on by a special interface class.
 By this one achieves the highest possible compatibility.
-
-We think of the HLT as a 'black box' with data input and output. In
-addition there is access to calibration data from OCDB (or the local
-HLT copy HCDB). All components can only work on the data they get as
-input. As the different detector algorithms/components will run in 
-separated processes and even on different machines, no data exchange
-is possible via global data structures and variables possible.
 
 The AliRoot reconstruction consists mainly of three steps:
 -# local event reconstruction: this is usually the place for digit/raw
@@ -156,10 +165,36 @@ basis. Immediately after the reconstruction, the FillESD method is
 called.
 -# ESD fill: the reconstructed event is written to the ESD.
 
+Regarding the HLT, all analysis is supposed to run on-line on the HLT farm.
+Thus, only the processing of the HLTOUT data is necessary during the
+default reconstruction. However, it is possible to run HLT chains embedded
+into AliReconstruction mainly for the purpose of debugging and the
+development cycle.
+
+The actual chains to be run and the HLTOUT handlers to be applied depend
+on the HLT library modules which are loaded to the system. There is a
+default collection of libraries defined in AliHLTSystem::fgkHLTDefaultLibs.
+The default libraries are loaded if nothing else is specified. The libraries
+implement \em agents (AliHLTModuleAgent childs) describing the properties
+of a module.
+
+A specific library can be chosen like (provided you have a simulated
+event in the current directory):
+<pre>
+{
+  AliReconstruction rec;                 // the reconstruction instance
+  rec.SetRunLocalReconstruction("HLT");  // run local rec only for HLT 
+  rec.SetRunTracking("");                // switch off tracking
+  rec.SetFillESD("HLT");                 // 
+  rec.SetOption("HLT", "libAliHLTSample.so loglevel=0x7c");
+  rec.Run();
+}
+</pre>
+
 @subsection tut_module_agent The Module Agent
 Each component library has to implement a module agent in order to be
-hooked up to the AliRoot reconstruction system. The agent defines the
-features of the libraries and the configurations to be run during the
+hooked up to the AliRoot reconstruction or simulation. The agent defines
+the features of the libraries and the configurations to be run during the
 different steps of the reconstruction. The agent 
 - can register all components of the library. This is an 
   alternative to the component registration via global objects (see 
@@ -168,6 +203,9 @@ different steps of the reconstruction. The agent
 - specifies the configurations to be run
 - specifies additional component libraries required to run the
   configurations.
+- provides a preprocessor (see AliHLTModulePreprocessor /
+			   AliHLTPreprocessor)
+- provides handlers and handler descriptions for HLTOUT data blocks.
 
 Finally, one global object of the module agent has to be specified in
 the source code. All registration and integration into the HLT system
@@ -184,17 +222,7 @@ define HLT chains for reconstruction.
 
 The sample library is not part of the default libraries loaded by the
 HLT steering during reconstruction. The example can be run by the
-following macro in AliRoot (provided you have a simulated event in the
-current directory):
-<pre>
-{
-  AliReconstruction rec;                 // the reconstruction instance
-  rec.SetRunLocalReconstruction("HLT");  // run local rec only for HLT 
-  rec.SetRunTracking("");                // switch off tracking
-  rec.SetOption("HLT", "libAliHLTSample.so");
-  rec.Run();
-}
-</pre>
+following macro macro above.
 
 The agent defines the following chains:
 -# a simple data copying consisting of a
@@ -212,7 +240,134 @@ The agent defines the following chains:
 In the same way any other component library can be integrated into the
 AliRoot reconstruction.
 
+@subsection tut_reconstruction_custom Running a custom HLT chain
+The default configurations from the library modules can be overridden by
+custom configurations by means of options specified to AliReconstruction.
+- <tt>config=\em macro</tt><br> a configuration macro. The macro is a normal
+  ROOT macro defining HLT component configurations by means of
+  AliHLTConfiguration
+- <tt>chains=\em chains</tt><br> a comma separated list of chains to be run.
+  A chain is defined by the topmost configuration.
+
+\b Note: The file publisher needs a file to read, either you replace
+\em some-data.dat with the path of an existing file or just create a
+dummy file in the current working directory. Futhermore, there has to be at
+least one simulated event since AliReconstruction relies on a couple of files
+in the folder.
+<pre>
+{
+  AliReconstruction rec;                 // the reconstruction instance
+  rec.SetInput("./");                    // to be independent of galice.root
+  rec.SetLoadAlignFromCDB(kFALSE);
+  rec.SetFillTriggerESD(kFALSE);
+  rec.SetRunQA(kFALSE);
+  rec.SetRunVertexFinder(kFALSE);
+  rec.SetRunLocalReconstruction("HLT");  // run local rec only for HLT 
+  rec.SetRunTracking("");                // switch off tracking
+  rec.SetFillESD("HLT");                 // 
+  rec.SetOption("HLT", "libAliHLTSample.so libAliHLTUtil.so "
+                       "config=$ALICE_ROOT/HLT/exa/conf-sample.C "
+                       "chains=sink");
+  //rec.SetEventRange(0,0);
+  rec.Run();
+}
+</pre>
+
+@see
+- conf-sample.C
+
+@section tut_simulation AliRoot simulation
+In order to simulate the behavior of HLT analysis chains and to
+include this functionality, HLT reconstruction can be embedded
+into AliRoot simulation. As a matter of fact, HLT always reconstructs
+data, <em><b>HLT simulation</b></em> means <em><b>HLT reconstruction
+embedded into AliRoot</b></em>.
+
+The HLT simulation is run at the last step of the AliSimulation, the
+setup to be run depends on the available plugins as described in section
+@ref tut_reconstruction. The options for the HLT simulation can be set
+with the <tt>AliSimulation::SetRunHLT</tt> function.
+<pre>
+  AliSimulation sim;
+  ...
+  sim.SetRunHLT("libAliHLTSample.so loglevel=0x7c");
+</pre>
+
+Options:
+- <tt>config=\em macro</tt><br> a configuration macro. The macro is a normal
+  ROOT macro defining HLT component configurations by means of
+  AliHLTConfiguration
+- <tt>chains=\em chains</tt><br> a comma separated list of chains to be run.
+  A chain is defined by the topmost configuration.
+- <tt>rawfile=\em chains</tt><br> provide a raw reader to the HLT simulation.
+  Some chains work solely on raw data. The data needs to be simulated before
+  and a RawReader is created internally to provide the data to the source
+  components.
+- <tt>loglevel=\em 0x7c</tt><br> default loglevel is 0x79, only Warnings and
+  higher are printed. 0x7c also makes the Info messages visible.
+
+@see
+  - sim-hlt-rawddl.C for example
+
+@section tut_alirawreaderhlt Replacing reconstruction input by data from the HLT
+The HLTOUT data can contain data blocks which obey exactly the raw DDL 
+format of a detector. E.g. selective readout components or loss-less
+compression algorithms allow to provide a sub sample of the original data.
+All data from the HLT is transferred via the 10 HLT DDL links, a redirection
+mechanism is necessary to replace the original detector input by the data
+from HLTOUT. The replacements works by means of the AliRawReaderHLT and
+needs the following modules:
+-# Implementation of an AliHLTOUTHandlerEquId child class<br>
+   A handler of this type is necessary to determine the equipment Id of a
+   data block from the data type and specification.
+<pre>
+  class AliHLTSampleRawDataHandler : public AliHLTOUTHandlerEquId {
+  public:
+    // ... constructors and destructor
+    &nbsp;
+    // overloaded AliHLTOUTHandlerEquId::ProcessData(AliHLTOUT*)
+    int ProcessData(AliHLTOUT* pData);
+  };
+</pre>
+  Alternatively the AliHLTOUTHandlerEquId can be used directly. It implements
+  a default processing.
+-# Adjust module agent
+   The module agent needs to provide the handler and the description of the
+   handler and has to implement the following functions: 
+<pre>
+   // see AliHLTAgentSample::GetHandlerDescription()
+   int GetHandlerDescription(AliHLTComponentDataType,
+                             AliHLTUInt32_t,
+                             AliHLTOUTHandlerDesc&) const;
+&nbsp;   
+   // see AliHLTAgentSample::GetOutputHandler()
+   AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType,
+                                      AliHLTUInt32_t);
+   &nbsp;   
+   // see AliHLTAgentSample::DeleteOutputHandler()
+   int DeleteOutputHandler(AliHLTOUTHandler*);
+</pre>
+-# Set the HLT input
+   The AliReconstruction class handles the redirection transparently by
+   use of the AliRawReaderHLT.
+<pre>
+   AliReconstruction rec;
+   // ....
+   rec.SetUseHLTData("ITSSDD");
+</pre>
+-# Run
+   Run the reconstruction as normal
+
+@see
+   - AliHLTReconstructor
+   - AliRawReaderHLT
+   - rec-from-hltout.C
+
+
+<br><br><br>
+@section tut_macros Example macros
  */
+
 
 /* note pad
 

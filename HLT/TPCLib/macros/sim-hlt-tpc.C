@@ -3,7 +3,7 @@
  * Example macro to run the HLT Conformal mapping tracker embedded into
  * AliRoot simulation. The reconstruction is done from the TPC digits.
  *
- * aliroot -b -q sim-hlt-tpc.C | tee sim-hlt-tpc.log
+ * Usage: aliroot -b -q sim-hlt-tpc.C | tee sim-hlt-tpc.log
  *
  * The chain to be run is defined by the macro given to the parameter
  * 'config='
@@ -30,7 +30,9 @@
   sim.SetMakeTrigger("");
 
   // set the options for the HLT simulation
-  //sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c config=conf-tpc-writer.C chains=sink1");
-  sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c config=conf-tpc-esd.C chains=sink1");
+  //sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c "
+  //              "config=$ALICE_ROOT/HLT/TPCLib/macros/conf-tpc-writer.C chains=sink1");
+  sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c "
+		"config=$ALICE_ROOT/HLT/TPCLib/macros/conf-tpc-esd.C chains=sink1");
   sim.Run();
 }

@@ -22,7 +22,7 @@
  *
  * The sample agent implements all interface function provided by @ref
  * AliHLTModuleAgent :
- * - @ref CreateConfigurations <br>
+ * - CreateConfigurations() <br>
  *   The method gets an instance of the AliHLTConfigurationHanler to add
  *   configurations, e.g. 
  *   <pre>
@@ -30,21 +30,41 @@
  *   ...
  *   handler->CreateConfiguration("my-analysis-chain"  , "FileWriter", "my-processor" , "my arguments");
  *   </pre>
- * - @ref GetReconstructionChains <br>
+ * - GetReconstructionChains() <br>
  *   returns a string of blank separated configurations to be run during
  *   local event reconstruction.
  *   <pre>
  *   return "my-data-sink my-analysis-chain";
  *   </pre>
- * - @ref GetRequiredComponentLibraries <br>
+ * - GetRequiredComponentLibraries() <br>
  *   returns a string of blank separated libraries which have to be loaded
  *   in addition in order to load all required components. <br>
  *   @note Not the right place for library dependencies.
  *   <pre>
  *   return "libAliHLTUtil.so";
  *   </pre>
- * - not implemented are the in iterface methods
- *   - @ref AliHLTModuleAgent::RegisterComponents
+ * - RegisterComponents() <br>
+ *   registers the components: AliHLTDummyComponent, AliHLTSampleComponent1,
+ *   AliHLTSampleComponent2, and AliHLTSampleMonitoringComponent<br>
+ * - GetHandlerDescription() <br>
+ *   Handles HLTOUT data blocks of type {DDL_RAW,SMPL}
+ *   <pre>
+ *   if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginSample)) {
+ *     desc=AliHLTOUTHandlerDesc(kRawReader, dt, GetModuleId());
+ *     return 1;
+ *   }
+ *   </pre>
+ * - GetOutputHandler() <br>
+ *   Returns handler AliHLTOUTHandlerEquId for HLTOUT data blocks of
+ *   type {DDL_RAW,SMPL}
+ *   <pre>
+ *   if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginSample)) {
+ *     return new AliHLTOUTHandlerEquId;
+ *   }
+ *   </pre>
+ * - DeleteOutputHandler() <br>
+ *   Deletes the output handler. In this case there is no special handling
+ *   needed.
  *
  * In order to hook the sample library up to the HLT system on global object
  * @ref gAliHLTAgentSample of the agent is defined in the source code.
@@ -99,6 +119,13 @@ class AliHLTAgentSample : public AliHLTModuleAgent {
    * @param pHandler  [in] instance of the component handler          
    */
   int RegisterComponents(AliHLTComponentHandler* pHandler) const;
+
+  int GetHandlerDescription(AliHLTComponentDataType dt,
+			    AliHLTUInt32_t spec,
+			    AliHLTOUTHandlerDesc& desc) const;
+  AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType dt,
+				     AliHLTUInt32_t spec);
+  int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
 
   AliHLTModulePreprocessor* GetPreprocessor();
  protected:
