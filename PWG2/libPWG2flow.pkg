@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliFlowTrackSimple.cxx \
       FLOW/AliFlowCommonConstants.cxx \
@@ -16,8 +18,7 @@ SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliFlowAnalysisWithCumulants.cxx \
       FLOW/AliAnalysisTaskMCEventPlane.cxx \
       FLOW/AliAnalysisTaskLYZEventPlane.cxx \
-      FLOW/AliAnalysisTaskLeeYangZeros.cxx             
-       
+      FLOW/AliAnalysisTaskLeeYangZeros.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
@@ -27,3 +28,8 @@ EXPORT:=
 
 EINCLUDE:= 
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lANALYSIS \
+                         -L$(shell root-config --libdir) -lEG
+endif

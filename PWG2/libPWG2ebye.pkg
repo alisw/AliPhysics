@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS=  EBYE/AliBalance.cxx
 
 HDRS= $(SRCS:.cxx=.h) 

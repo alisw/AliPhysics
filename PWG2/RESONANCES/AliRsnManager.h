@@ -32,7 +32,7 @@ public:
 	virtual void Clear(Option_t *option = "");
 	
 	/* setters */
-	void    SetEventsTree(TTree *tree);
+	void    SetEventsTree(TTree *tree){;}
 	void    SetStep(Int_t step) {fStep = step;}
     void    SetMixEvents(Int_t num) {fMixEvents = num;}
     void    SetMixMultiplicityCut(Int_t cut) {fMixMultCut = cut;}

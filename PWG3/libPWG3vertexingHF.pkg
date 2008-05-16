@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAODRecoDecayHF2Prong.cxx  vertexingHF/AliAODRecoDecayHF3Prong.cxx \
        vertexingHF/AliAODRecoDecayHF4Prong.cxx \
@@ -11,3 +13,8 @@ DHDR:= PWG3vertexingHFLinkDef.h
 
 EINCLUDE:=  PWG3/base
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice \
+                         -L$(shell root-config --libdir) -lEG
+endif

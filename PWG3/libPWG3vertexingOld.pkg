@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=   vertexingOld/AliD0toKpi.cxx  vertexingOld/AliD0toKpiAnalysis.cxx \
        vertexingOld/AliBtoJPSItoEle.cxx  vertexingOld/AliBtoJPSItoEleAnalysis.cxx
      
@@ -7,3 +9,8 @@ DHDR:= PWG3vertexingOldLinkDef.h
 
 EINCLUDE:= 
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lESD -lSTEER \
+#                         -L$(shell root-config --libdir) -lEG
+endif

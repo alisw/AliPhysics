@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS = AOD/AliPWG2AODTrack.cxx \
        AOD/AliAnalysisTaskPWG2ESDfilter.cxx \
        AOD/AliAnalysisTaskPWG2AODUpdate.cxx
@@ -10,3 +12,7 @@ EXPORT:=
 
 EINCLUDE:= PYTHIA6
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice
+endif

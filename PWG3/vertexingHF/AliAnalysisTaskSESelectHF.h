@@ -26,8 +26,6 @@ class AliAnalysisTaskSESelectHF : public AliAnalysisTaskSE
   AliAnalysisTaskSESelectHF(const char *name);
   virtual ~AliAnalysisTaskSESelectHF();
 
-  AliAnalysisTaskSESelectHF(const AliAnalysisTaskSESelectHF &source);
-  AliAnalysisTaskSESelectHF& operator=(const AliAnalysisTaskSESelectHF& source); 
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -53,6 +51,8 @@ class AliAnalysisTaskSESelectHF : public AliAnalysisTaskSE
   
  private:
 
+  AliAnalysisTaskSESelectHF(const AliAnalysisTaskSESelectHF &source);
+  AliAnalysisTaskSESelectHF& operator=(const AliAnalysisTaskSESelectHF& source); 
   TClonesArray *fVerticesHFTClArr;     // Array of heavy-flavour vertices
   TClonesArray *fD0toKpiTClArr;        // Array of D0->Kpi
   Double_t fD0toKpiCuts[9];            // cuts for D0->Kpi selection

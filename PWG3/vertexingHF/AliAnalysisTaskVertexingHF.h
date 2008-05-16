@@ -28,9 +28,6 @@ class AliAnalysisTaskVertexingHF : public AliAnalysisTask
   AliAnalysisTaskVertexingHF(const char *name);
   virtual ~AliAnalysisTaskVertexingHF();
 
-  AliAnalysisTaskVertexingHF(const AliAnalysisTaskVertexingHF &source);
-  AliAnalysisTaskVertexingHF& operator=(const AliAnalysisTaskVertexingHF& source); 
-
   virtual void   ConnectInputData(Option_t *); 
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
@@ -38,6 +35,9 @@ class AliAnalysisTaskVertexingHF : public AliAnalysisTask
   virtual void   LocalInit();
   
  private:
+
+  AliAnalysisTaskVertexingHF(const AliAnalysisTaskVertexingHF &source);
+  AliAnalysisTaskVertexingHF& operator=(const AliAnalysisTaskVertexingHF& source); 
 
   AliESDEvent            *fESD;   //!ESD
   TChain                 *fChain; //!Chain

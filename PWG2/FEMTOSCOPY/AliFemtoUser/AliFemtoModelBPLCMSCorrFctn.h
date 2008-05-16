@@ -16,7 +16,13 @@
 
 class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
  public:
-  AliFemtoModelBPLCMSCorrFctn();
+  AliFemtoModelBPLCMSCorrFctn()  :
+    AliFemtoModelCorrFctn(),
+    fNumerator3DTrue(0),
+    fNumerator3DFake(0),
+    fDenominator3D(0),
+    fQinvHisto(0),
+    fPairCut(0){}
   AliFemtoModelBPLCMSCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi);
   AliFemtoModelBPLCMSCorrFctn(const AliFemtoModelBPLCMSCorrFctn& aCorrFctn);
   virtual ~AliFemtoModelBPLCMSCorrFctn();
