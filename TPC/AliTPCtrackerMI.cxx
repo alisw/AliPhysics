@@ -121,6 +121,7 @@
 //
 
 ClassImp(AliTPCtrackerMI)
+ClassImp(AliTPCtrackerRow)
 
 
 class AliTPCFastMath {
@@ -1074,7 +1075,7 @@ Int_t  AliTPCtrackerMI::LoadClusters(TObjArray *arr)
     }
     //
     if (clrow->GetArray()->GetEntriesFast()<=0) continue;
-    AliTPCRow * tpcrow=0;
+    AliTPCtrackerRow * tpcrow=0;
     Int_t left=0;
     if (sec<fkNIS*2){
       tpcrow = &(fInnerSec[sec%fkNIS][row]);    
@@ -1130,7 +1131,7 @@ Int_t  AliTPCtrackerMI::LoadClusters()
       Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
     }
     //
-    AliTPCRow * tpcrow=0;
+    AliTPCtrackerRow * tpcrow=0;
     Int_t left=0;
     if (sec<fkNIS*2){
       tpcrow = &(fInnerSec[sec%fkNIS][row]);    
@@ -1169,7 +1170,7 @@ void AliTPCtrackerMI::UnloadClusters()
   Int_t nrows = fOuterSec->GetNRows();
   for (Int_t sec = 0;sec<fkNOS;sec++)
     for (Int_t row = 0;row<nrows;row++){
-      AliTPCRow*  tpcrow = &(fOuterSec[sec%fkNOS][row]);
+      AliTPCtrackerRow*  tpcrow = &(fOuterSec[sec%fkNOS][row]);
       //      if (tpcrow){
       //	if (tpcrow->fClusters1) delete []tpcrow->fClusters1; 
       //	if (tpcrow->fClusters2) delete []tpcrow->fClusters2; 
@@ -1180,7 +1181,7 @@ void AliTPCtrackerMI::UnloadClusters()
   nrows = fInnerSec->GetNRows();
   for (Int_t sec = 0;sec<fkNIS;sec++)
     for (Int_t row = 0;row<nrows;row++){
-      AliTPCRow*  tpcrow = &(fInnerSec[sec%fkNIS][row]);
+      AliTPCtrackerRow*  tpcrow = &(fInnerSec[sec%fkNIS][row]);
       //if (tpcrow){
       //	if (tpcrow->fClusters1) delete []tpcrow->fClusters1; 
       //if (tpcrow->fClusters2) delete []tpcrow->fClusters2; 
@@ -1256,7 +1257,7 @@ Int_t AliTPCtrackerMI::LoadOuterSectors() {
   UInt_t index=0;
   for (Int_t sec = 0;sec<fkNOS;sec++)
     for (Int_t row = 0;row<nrows;row++){
-      AliTPCRow*  tpcrow = &(fOuterSec[sec%fkNOS][row]);  
+      AliTPCtrackerRow*  tpcrow = &(fOuterSec[sec%fkNOS][row]);  
       Int_t sec2 = sec+2*fkNIS;
       //left
       Int_t ncl = tpcrow->GetN1();
@@ -1304,7 +1305,7 @@ Int_t  AliTPCtrackerMI::LoadInnerSectors() {
   UInt_t index=0;
   for (Int_t sec = 0;sec<fkNIS;sec++)
     for (Int_t row = 0;row<nrows;row++){
-      AliTPCRow*  tpcrow = &(fInnerSec[sec%fkNIS][row]);
+      AliTPCtrackerRow*  tpcrow = &(fInnerSec[sec%fkNIS][row]);
       //
       //left
       Int_t ncl = tpcrow->GetN1();
@@ -1356,7 +1357,7 @@ AliTPCclusterMI *AliTPCtrackerMI::GetClusterMI(Int_t index) const {
   Int_t row=(index&0x00ff0000)>>16; 
   Int_t ncl=(index&0x00007fff)>>00;
 
-  const AliTPCRow * tpcrow=0;
+  const AliTPCtrackerRow * tpcrow=0;
   AliTPCclusterMI * clrow =0;
 
   if (sec<0 || sec>=fkNIS*4) {
@@ -1493,7 +1494,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   
   if (!isActive || !isActive2) return 0;
 
-  const AliTPCRow &krow=GetRow(t.GetRelativeSector(),nr);
+  const AliTPCtrackerRow &krow=GetRow(t.GetRelativeSector(),nr);
   if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
   Double_t  roady  =1.;
   Double_t  roadz = 1.;
@@ -1590,7 +1591,7 @@ Int_t AliTPCtrackerMI::FollowToNextFast(AliTPCseed& t, Int_t nr) {
   
   
   //Int_t nr2 = nr;
-  const AliTPCRow &krow=GetRow(t.GetRelativeSector(),nr);
+  const AliTPCtrackerRow &krow=GetRow(t.GetRelativeSector(),nr);
   if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
   Double_t  roady  =1.;
   Double_t  roadz = 1.;
@@ -1732,7 +1733,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   }
   //AliInfo(Form("A - Sector%d phi %f - alpha %f", t.fRelativeSector,y/x, t.GetAlpha()));
 
-  AliTPCRow &krow=GetRow(t.GetRelativeSector(),nr);
+  AliTPCtrackerRow &krow=GetRow(t.GetRelativeSector(),nr);
 
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.GetDeadZone()){
     t.SetInDead(kTRUE);
@@ -2769,11 +2770,11 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 
   Int_t imiddle = (i2+i1)/2;    //middle pad row index
   Double_t xm = GetXrow(imiddle); // radius of middle pad-row
-  const AliTPCRow& krm=GetRow(sec,imiddle); //middle pad -row
+  const AliTPCtrackerRow& krm=GetRow(sec,imiddle); //middle pad -row
   //
   Int_t ns =sec;   
 
-  const AliTPCRow& kr1=GetRow(ns,i1);
+  const AliTPCtrackerRow& kr1=GetRow(ns,i1);
   Double_t ymax  = GetMaxY(i1)-kr1.GetDeadZone()-1.5;  
   Double_t ymaxm = GetMaxY(imiddle)-kr1.GetDeadZone()-1.5;  
 
@@ -2825,10 +2826,10 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
     for (Int_t dsec = dsec1; dsec<=dsec2;dsec++){
       Int_t sec2 = sec + dsec;
       // 
-      //      AliTPCRow&  kr2  = fOuterSec[(sec2+fkNOS)%fkNOS][i2];
-      //AliTPCRow&  kr2m = fOuterSec[(sec2+fkNOS)%fkNOS][imiddle];
-      AliTPCRow&  kr2  = GetRow((sec2+fkNOS)%fkNOS,i2);
-      AliTPCRow&  kr2m = GetRow((sec2+fkNOS)%fkNOS,imiddle);
+      //      AliTPCtrackerRow&  kr2  = fOuterSec[(sec2+fkNOS)%fkNOS][i2];
+      //AliTPCtrackerRow&  kr2m = fOuterSec[(sec2+fkNOS)%fkNOS][imiddle];
+      AliTPCtrackerRow&  kr2  = GetRow((sec2+fkNOS)%fkNOS,i2);
+      AliTPCtrackerRow&  kr2m = GetRow((sec2+fkNOS)%fkNOS,imiddle);
       Int_t  index1 = TMath::Max(kr2.Find(extraz-0.6-dddz1*TMath::Abs(z1)*0.05)-1,0);
       Int_t  index2 = TMath::Min(kr2.Find(extraz+0.6+dddz2*TMath::Abs(z1)*0.05)+1,kr2);
 
@@ -3081,25 +3082,25 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 
   // first 3 padrows
   Double_t x1 = GetXrow(i1-1);
-  const    AliTPCRow& kr1=GetRow(sec,i1-1);
+  const    AliTPCtrackerRow& kr1=GetRow(sec,i1-1);
   Double_t y1max  = GetMaxY(i1-1)-kr1.GetDeadZone()-1.5;  
   //
   Double_t x1p = GetXrow(i1);
-  const    AliTPCRow& kr1p=GetRow(sec,i1);
+  const    AliTPCtrackerRow& kr1p=GetRow(sec,i1);
   //
   Double_t x1m = GetXrow(i1-2);
-  const    AliTPCRow& kr1m=GetRow(sec,i1-2);
+  const    AliTPCtrackerRow& kr1m=GetRow(sec,i1-2);
 
   //
   //last 3 padrow for seeding
-  AliTPCRow&  kr3  = GetRow((sec+fkNOS)%fkNOS,i1-7);
+  AliTPCtrackerRow&  kr3  = GetRow((sec+fkNOS)%fkNOS,i1-7);
   Double_t    x3   =  GetXrow(i1-7);
   //  Double_t    y3max= GetMaxY(i1-7)-kr3.fDeadZone-1.5;  
   //
-  AliTPCRow&  kr3p  = GetRow((sec+fkNOS)%fkNOS,i1-6);
+  AliTPCtrackerRow&  kr3p  = GetRow((sec+fkNOS)%fkNOS,i1-6);
   Double_t    x3p   = GetXrow(i1-6);
   //
-  AliTPCRow&  kr3m  = GetRow((sec+fkNOS)%fkNOS,i1-8);
+  AliTPCtrackerRow&  kr3m  = GetRow((sec+fkNOS)%fkNOS,i1-8);
   Double_t    x3m   = GetXrow(i1-8);
 
   //
@@ -3107,7 +3108,7 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
   // middle padrow
   Int_t im = i1-4;                           //middle pad row index
   Double_t xm         = GetXrow(im);         // radius of middle pad-row
-  const AliTPCRow& krm=GetRow(sec,im);   //middle pad -row
+  const AliTPCtrackerRow& krm=GetRow(sec,im);   //middle pad -row
   //  Double_t ymmax = GetMaxY(im)-kr1.fDeadZone-1.5;  
   //
   //
@@ -3331,8 +3332,8 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
   //  Double_t cs=cos(alpha), sn=sin(alpha);
   Int_t row0 = (i1+i2)/2;
   Int_t drow = (i1-i2)/2;
-  const AliTPCRow& kr0=fSectors[sec][row0];
-  AliTPCRow * kr=0;
+  const AliTPCtrackerRow& kr0=fSectors[sec][row0];
+  AliTPCtrackerRow * kr=0;
 
   AliTPCpolyTrack polytrack;
   Int_t nclusters=fSectors[sec][row0];
@@ -3345,8 +3346,8 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
     Int_t nfound =0;
     Int_t nfoundable =0;
     for (Int_t iter =1; iter<2; iter++){   //iterations
-      const AliTPCRow& krm=fSectors[sec][row0-iter];
-      const AliTPCRow& krp=fSectors[sec][row0+iter];      
+      const AliTPCtrackerRow& krm=fSectors[sec][row0-iter];
+      const AliTPCtrackerRow& krp=fSectors[sec][row0+iter];      
       const AliTPCclusterMI * cl= kr0[is];
       
       if (cl->IsUsed(10)) {
@@ -6881,7 +6882,7 @@ void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
      fPadPitchLength=par->GetInnerPadPitchLength();
      fN=par->GetNRowLow();
      if(fRow)delete [] fRow;fRow = 0;
-     fRow=new AliTPCRow[fN];
+     fRow=new AliTPCtrackerRow[fN];
      for (Int_t i=0; i<fN; i++) {
        fRow[i].SetX(par->GetPadRowRadiiLow(i));
        fRow[i].SetDeadZone(1.5);  //1.5 cm of dead zone
@@ -6895,7 +6896,7 @@ void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
      f2PadPitchLength = par->GetOuter2PadPitchLength();
      fN=par->GetNRowUp();
      if(fRow)delete [] fRow;fRow = 0;
-     fRow=new AliTPCRow[fN];
+     fRow=new AliTPCtrackerRow[fN];
      for (Int_t i=0; i<fN; i++) {
        fRow[i].SetX(par->GetPadRowRadiiUp(i)); 
        fRow[i].SetDeadZone(1.5);  // 1.5 cm of dead zone
@@ -6903,7 +6904,7 @@ void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
   } 
 }
 
-AliTPCtrackerMI::AliTPCRow::AliTPCRow():
+AliTPCtrackerRow::AliTPCtrackerRow():
   fDeadZone(0.),
   fClusters1(0),
   fN1(0),
@@ -6917,7 +6918,7 @@ AliTPCtrackerMI::AliTPCRow::AliTPCRow():
   //
 }
 
-AliTPCtrackerMI::AliTPCRow::~AliTPCRow(){
+AliTPCtrackerRow::~AliTPCtrackerRow(){
   //
   for (Int_t i = 0; i < fN1; i++)
     fClusters1[i].~AliTPCclusterMI();
@@ -6931,16 +6932,16 @@ AliTPCtrackerMI::AliTPCRow::~AliTPCRow(){
 
 //_________________________________________________________________________
 void 
-AliTPCtrackerMI::AliTPCRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index) {
+AliTPCtrackerRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index) {
   //-----------------------------------------------------------------------
   // Insert a cluster into this pad row in accordence with its y-coordinate
   //-----------------------------------------------------------------------
   if (fN==kMaxClusterPerRow) {
-    //AliInfo("AliTPCRow::InsertCluster(): Too many clusters"); 
+    //AliInfo("AliTPCtrackerRow::InsertCluster(): Too many clusters"); 
     return;
   }
   if (fN>=fN1+fN2) {
-    //AliInfo("AliTPCRow::InsertCluster(): Too many clusters !");
+    //AliInfo("AliTPCtrackerRow::InsertCluster(): Too many clusters !");
   }
 
   if (fN==0) {fIndex[0]=index; fClusters[fN++]=c; return;}
@@ -6950,7 +6951,7 @@ AliTPCtrackerMI::AliTPCRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index
   fIndex[i]=index; fClusters[i]=c; fN++;
 }
 
-void AliTPCtrackerMI::AliTPCRow::ResetClusters() {
+void AliTPCtrackerRow::ResetClusters() {
    //
    // reset clusters
    // MvL: Need to call destructors for AliTPCclusterMI, to delete fInfo
@@ -6971,7 +6972,7 @@ void AliTPCtrackerMI::AliTPCRow::ResetClusters() {
 
 
 //___________________________________________________________________
-Int_t AliTPCtrackerMI::AliTPCRow::Find(Double_t z) const {
+Int_t AliTPCtrackerRow::Find(Double_t z) const {
   //-----------------------------------------------------------------------
   // Return the index of the nearest cluster 
   //-----------------------------------------------------------------------
@@ -6989,7 +6990,7 @@ Int_t AliTPCtrackerMI::AliTPCRow::Find(Double_t z) const {
 
 
 //___________________________________________________________________
-AliTPCclusterMI * AliTPCtrackerMI::AliTPCRow::FindNearest(Double_t y, Double_t z, Double_t roady, Double_t roadz) const {
+AliTPCclusterMI * AliTPCtrackerRow::FindNearest(Double_t y, Double_t z, Double_t roady, Double_t roadz) const {
   //-----------------------------------------------------------------------
   // Return the index of the nearest cluster in z y 
   //-----------------------------------------------------------------------
@@ -7009,7 +7010,7 @@ AliTPCclusterMI * AliTPCtrackerMI::AliTPCRow::FindNearest(Double_t y, Double_t z
   return cl;      
 }
 
-AliTPCclusterMI * AliTPCtrackerMI::AliTPCRow::FindNearest2(Double_t y, Double_t z, Double_t roady, Double_t roadz,UInt_t & index) const 
+AliTPCclusterMI * AliTPCtrackerRow::FindNearest2(Double_t y, Double_t z, Double_t roady, Double_t roadz,UInt_t & index) const 
 {
   //-----------------------------------------------------------------------
   // Return the index of the nearest cluster in z y 
@@ -7045,7 +7046,7 @@ AliTPCclusterMI * AliTPCtrackerMI::AliTPCRow::FindNearest2(Double_t y, Double_t 
 }
 
 
-void AliTPCtrackerMI::AliTPCRow::SetFastCluster(Int_t i, Short_t cl){
+void AliTPCtrackerRow::SetFastCluster(Int_t i, Short_t cl){
   //
   // Set cluster info for fast navigation
   //

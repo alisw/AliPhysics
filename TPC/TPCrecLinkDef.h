@@ -34,7 +34,8 @@
 
 //#pragma link C++ class AliHelix+;
 #pragma link C++ class AliTPCpolyTrack+;
-#pragma link C++ class AliTPCseed+;           // defined in AliTPCtrackerMI.h
+#pragma link C++ class AliTPCseed+;         
+#pragma link C++ class AliTPCtrackerRow+;
 #pragma link C++ class AliTPCtrackerMI+;
 
 #pragma link C++ class AliTPCPid+;
