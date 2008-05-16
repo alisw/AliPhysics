@@ -65,7 +65,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
 
 
   // Dimensions of the Central shield
-  const Double_t kHalfLengthCentral  = 400.*fgkmm;
+  const Double_t kHalfLengthCentral  = 405.*fgkmm;
   const Double_t kThicknessCentral   = 0.4*fgkmm;
   const Double_t kInnerRadiusCentral = 8.1475*fgkcm;
   const Double_t kOuterRadiusCentral = 9.9255*fgkcm;
@@ -1320,8 +1320,8 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
                                       (kCylinderHalfLength-kFoamHalfLength)/2.;
   const Double_t kFlangeInnerRadius    = ( 563.0/2) *fgkmm;
   // Dimensions of the Cone
-  const Double_t kConeROuterMin        = ( 945.0/2) *fgkmm;
-  const Double_t kConeROuterMax        = ( 985.0/2) *fgkmm;
+  const Double_t kConeROuterMin        = ( 957.0/2) *fgkmm;
+  const Double_t kConeROuterMax        = ( 997.0/2) *fgkmm;
   const Double_t kConeRInnerMin        = ( 564.0/2) *fgkmm;
   const Double_t kConeRCurv1           =       10.0 *fgkmm;
   const Double_t kConeRCurv2           =       25.0 *fgkmm;

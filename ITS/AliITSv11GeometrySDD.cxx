@@ -5534,6 +5534,7 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
 // Created:         ???       Ludovic Gaudichet
 // Updated:      15 Mar 2008  Mario Sitta
 // Updated:      14 Apr 2008  Mario Sitta            Overlap fixes
+// Updated:      09 May 2008  Mario Sitta            SSD overlap fixes
 //
 
   TGeoMedium *copper       = GetMedium("COPPER$");
@@ -5815,15 +5816,16 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
   //==================================
 
   Double_t fgkSDDCableR6 = fgkSDDCableR5+9;
-  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+9;
+  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+8.8;
 
   TGeoVolumeAssembly *endConeSDDCable = new TGeoVolumeAssembly("endConeSDDCable");
 
+  // Add some hardcoded shifts to avoid overlaps with SSD pathc panels
   CreateAndInsetConeCablePart(endConeSDDCable, 40, 1*3,2*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+			      fgkSDDCableZ5,fgkSDDCableR6+0.7,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 60, 1*3,1*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+			      fgkSDDCableZ5,fgkSDDCableR6+0.6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 85, 2*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
@@ -5832,10 +5834,10 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 110, 2*3,3*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+			      fgkSDDCableZ5,fgkSDDCableR6+0.9,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 146, 0*3,3*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+			      fgkSDDCableZ5,fgkSDDCableR6+0.7,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 176.1, 0*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
@@ -5853,9 +5855,9 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 315, 1*3,1*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+			      fgkSDDCableZ5,fgkSDDCableR6+0.6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 350.1, 1*3,3*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 353, 1*3,3*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
   moth->AddNode(endConeSDDCable, 1, 0);
