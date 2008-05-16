@@ -169,6 +169,9 @@ private:
   Bool_t  FinishPlaneEff(); //ultimate tasks related to Plane Eff. evaluation 
   Bool_t  InitPlaneEff();   // initialize what is needed for Plane Eff. evaluation
 
+  Bool_t               InitAliEVE();
+  void                 RunAliEVE();
+
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
   Bool_t         fRunVertexFinder;    // run the vertex finder
@@ -253,6 +256,7 @@ private:
   TTree*               fhlttreeOld; //! Pointer to the previous HLT ESD tree
   AliVertexerTracks*   ftVertexer;  //! Pointer to the vertexer based on ESD tracks
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
+  Bool_t               fRunAliEVE;  // Run AliEVE or not
 
   ClassDef(AliReconstruction, 23)      // class for running the reconstruction
 };

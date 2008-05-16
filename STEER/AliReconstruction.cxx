@@ -268,7 +268,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   ftreeOld(NULL),
   fhlttreeOld(NULL),
   ftVertexer(NULL),
-  fIsNewRunLoader(kFALSE)
+  fIsNewRunLoader(kFALSE),
+  fRunAliEVE(kFALSE)
 {
 // create reconstruction object with default parameters
   
@@ -355,7 +356,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   ftreeOld(NULL),
   fhlttreeOld(NULL),
   ftVertexer(NULL),
-  fIsNewRunLoader(rec.fIsNewRunLoader)
+  fIsNewRunLoader(rec.fIsNewRunLoader),
+  fRunAliEVE(kFALSE)
 {
 // copy constructor
 
@@ -643,32 +645,12 @@ Bool_t AliReconstruction::Run(const char* input)
 
   if (!InitRun(input)) return kFALSE;
 
-  Bool_t runAliEVE = kFALSE;
-  if (strcmp(gProgName,"alieve") == 0) runAliEVE = kTRUE;
-
-  if (runAliEVE) {
-    TString macroStr;
-    macroStr.Form("%s/EVE/macros/alieve_online.C",gSystem->ExpandPathName("$ALICE_ROOT"));
-    AliInfo(Form("Loading AliEVE macro: %s",macroStr.Data()));
-    if (gROOT->LoadMacro(macroStr.Data()) != 0)
-      runAliEVE = kFALSE;
-    else
-      gROOT->ProcessLine("if (!gAliEveEvent) {gAliEveEvent = new AliEveEventManager();gAliEveEvent->SetAutoLoad(kTRUE);gAliEveEvent->AddNewEventCommand(\"alieve_online()\");gEve->AddEvent(gAliEveEvent);};");
-  }
-  
   //******* The loop over events
   Int_t iEvent = 0;
   while ((iEvent < fRunLoader->GetNumberOfEvents()) ||
 	 (fRawReader && fRawReader->NextEvent())) {
     if (!RunEvent(iEvent)) return kFALSE;
     iEvent++;
-
-    if (runAliEVE) {
-      AliInfo("Running AliEVE...");
-      gROOT->ProcessLine(Form("gAliEveEvent->SetEvent((AliRunLoader*)%p,(AliRawReader*)%p,(AliESDEvent*)%p);",fRunLoader,fRawReader,fesd));
-      gROOT->ProcessLine("gAliEveEvent->StartStopAutoLoadTimer();");
-      gSystem->Run();
-    }
   }
 
   if (!FinishRun()) return kFALSE;
@@ -893,6 +875,9 @@ Bool_t AliReconstruction::InitRun(const char* input)
   if (fRunPlaneEff && !InitPlaneEff()) {
     if(fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
   }
+
+  if (strcmp(gProgName,"alieve") == 0)
+    fRunAliEVE = InitAliEVE();
 
   return kTRUE;
 }
@@ -1178,6 +1163,9 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
     // write HLT ESD
     fhlttree->Fill();
+
+    // call AliEVE
+    if (fRunAliEVE) RunAliEVE();
 
     if (fCheckPointLevel > 0)  WriteESD(fesd, "final"); 
     fesd->Reset();
@@ -2603,4 +2591,40 @@ Bool_t AliReconstruction::InitPlaneEff() {
  //
  AliWarning(Form("Implementation of this method not yet done !! Method return kTRUE"));
  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::InitAliEVE()
+{
+  // This method should be called only in case 
+  // AliReconstruction is run
+  // within the alieve environment.
+  // It will initialize AliEVE in a way
+  // so that it can visualize event processed
+  // by AliReconstruction.
+  // The return flag shows whenever the
+  // AliEVE initialization was successful or not.
+
+  TString macroStr;
+  macroStr.Form("%s/EVE/macros/alieve_online.C",gSystem->ExpandPathName("$ALICE_ROOT"));
+  AliInfo(Form("Loading AliEVE macro: %s",macroStr.Data()));
+  if (gROOT->LoadMacro(macroStr.Data()) != 0) return kFALSE;
+
+  gROOT->ProcessLine("if (!gAliEveEvent) {gAliEveEvent = new AliEveEventManager();gAliEveEvent->SetAutoLoad(kTRUE);gAliEveEvent->AddNewEventCommand(\"alieve_online()\");gEve->AddEvent(gAliEveEvent);};");
+
+  return kTRUE;
+}
+  
+//_____________________________________________________________________________
+void AliReconstruction::RunAliEVE()
+{
+  // Runs AliEVE visualisation of
+  // the current event.
+  // Should be executed only after
+  // successful initialization of AliEVE.
+
+  AliInfo("Running AliEVE...");
+  gROOT->ProcessLine(Form("gAliEveEvent->SetEvent((AliRunLoader*)%p,(AliRawReader*)%p,(AliESDEvent*)%p);",fRunLoader,fRawReader,fesd));
+  gROOT->ProcessLine("gAliEveEvent->StartStopAutoLoadTimer();");
+  gSystem->Run();
 }
