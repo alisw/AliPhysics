@@ -23,6 +23,11 @@ class TGeoPNEntry;
 
 class AliCluster : public TObject {
  public:
+  enum {
+    kUsed   =  BIT(14),
+    kShared =  BIT(15)
+  };
+
   AliCluster();
   AliCluster(UShort_t volId, const Float_t *hit, Float_t x = 0, Float_t sigyz = 0, const Int_t *lab = NULL);
   AliCluster(UShort_t volId,
@@ -41,6 +46,10 @@ class AliCluster : public TObject {
   Float_t  GetSigmaZ2()      const {return fSigmaZ2;}
   Float_t  GetSigmaYZ()      const {return fSigmaYZ;}
   UShort_t GetVolumeId()     const {return fVolumeId;}
+
+  void   IncreaseClusterUsage()  { if (TestBit(kUsed)) SetBit(kShared); else SetBit(kUsed); }
+  Bool_t IsClusterUsed()   const { return TestBit(kUsed);   }
+  Bool_t IsClusterShared() const { return TestBit(kShared); }
 
   virtual void Use(Int_t = 0) {;}
 
