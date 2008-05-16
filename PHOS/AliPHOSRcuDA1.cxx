@@ -192,7 +192,7 @@ void AliPHOSRcuDA1::UpdateHistoFile()
   if(!fHistoFile) return;
   if(!fHistoFile->IsOpen()) return;
 
-  fHistoArray.Write(fHistoArray.GetName(),TObject::kSingleKey);
+  fHistoArray.Write();
   fHistoFile->Purge();
 
 }
