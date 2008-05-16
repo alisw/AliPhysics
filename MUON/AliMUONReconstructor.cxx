@@ -69,14 +69,14 @@
 ///
 /// TRIGGERDISABLE : disable the treatment of MUON trigger
 ///
-/// USEFASTTRKDECODER : makes the digit maker class use the high performance decoder
-///                  AliMUONTrackerDDLDecoder instead of AliMUONPayloadTracker.
+/// NOFASTTRKDECODER : makes the digit maker class use the non-high performance decoder
+///                  AliMUONPayloadTracker instead of  AliMUONTrackerDDLDecoder.
 ///
-/// USEFASTTRGDECODER : makes the digit maker class use the high performance decoder
-///                  AliMUONTriggerDDLDecoder instead of AliMUONPayloadTrigger.
+/// NOFASTTRGDECODER : makes the digit maker class use the non-high performance decoder
+///                  AliMUONPayloadTrigger instead of AliMUONTriggerDDLDecoder.
 ///
-/// USEFASTDECODERS : makes the digit maker class use the high performance decoders
-///                  AliMUONTrackerDDLDecoder and AliMUONTriggerDDLDecoder.
+/// NOFASTDECODERS : makes the digit maker class use the non-high performance decoders
+///                  AliMUONPayloadTracker and AliMUONPayloadTrigger.
 ///
 /// \author Laurent Aphecetche, Subatech
 //-----------------------------------------------------------------------------
@@ -283,20 +283,20 @@ AliMUONReconstructor::CreateDigitMaker() const
 
   TString option = GetOption();
   Bool_t enableErrorLogging = kTRUE;
-  Bool_t useFastTrackerDecoder = kFALSE;
-  Bool_t useFastTriggerDecoder = kFALSE;
-  if (option.Contains("USEFASTTRKDECODER"))
+  Bool_t useFastTrackerDecoder = kTRUE;
+  Bool_t useFastTriggerDecoder = kTRUE;
+  if (option.Contains("NOFASTTRKDECODER"))
   {
-    useFastTrackerDecoder = kTRUE;
+    useFastTrackerDecoder = kFALSE;
   }
-  if (option.Contains("USEFASTTRGDECODER"))
+  if (option.Contains("NOFASTTRGDECODER"))
   {
-    useFastTriggerDecoder = kTRUE;
+    useFastTriggerDecoder = kFALSE;
   }
-  if (option.Contains("USEFASTDECODERS"))
+  if (option.Contains("NOFASTDECODERS"))
   {
-    useFastTrackerDecoder = kTRUE;
-    useFastTriggerDecoder = kTRUE;
+    useFastTrackerDecoder = kFALSE;
+    useFastTriggerDecoder = kFALSE;
   }
   fDigitMaker = new AliMUONDigitMaker(
       enableErrorLogging, useFastTrackerDecoder, useFastTriggerDecoder

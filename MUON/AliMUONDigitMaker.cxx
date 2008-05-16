@@ -126,11 +126,12 @@ void AliMUONDigitMaker::CreateRawStreamTracker(Bool_t useFastDecoder)
 
   if (useFastDecoder)
   {
-    AliInfo("Using fast tracker decoder.");
     fRawStreamTracker = new AliMUONRawStreamTrackerHP();
   }
-  else
+  else {
+    AliInfo("Using non-high performance tracker decoder.");
     fRawStreamTracker = new AliMUONRawStreamTracker();
+  }  
 }
 
 //__________________________________________________________________________
@@ -140,11 +141,12 @@ void AliMUONDigitMaker::CreateRawStreamTrigger(Bool_t useFastDecoder)
 
   if (useFastDecoder)
   {
-    AliInfo("Using fast trigger decoder.");
     fRawStreamTrigger = new AliMUONRawStreamTriggerHP();
   }
-  else
+  else {
+    AliInfo("Using non-high performance tracker decoder.");
     fRawStreamTrigger = new AliMUONRawStreamTrigger();
+  }  
 }
 
 //____________________________________________________________________

@@ -210,9 +210,9 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   // Noise-only digits in tracker/trigger (0=no noise, 1=default (noise in tracker), 2=noise in tracker and trigger):
   //MUON->SetDigitizerWithNoise(kFALSE);
 
-  // Use fast raw data decoder
-  //MUON->SetFastTrackerDecoder(kTRUE);  
-  //MUON->SetFastTriggerDecoder(kTRUE);  
+  // Use non-high performance raw data decoder 
+  //MUON->SetFastTrackerDecoder(kFALSE);  
+  //MUON->SetFastTriggerDecoder(kFALSE);  
   
   //
   // If SetAlign, the detection elements transformations

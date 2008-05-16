@@ -87,7 +87,7 @@ AliMUONQADataMakerRec::AliMUONQADataMakerRec() :
 {
     /// ctor
   fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
-  fDigitMaker = new AliMUONDigitMaker(kTRUE,kFALSE);
+  fDigitMaker = new AliMUONDigitMaker(kTRUE);
 }
 
 //____________________________________________________________________________ 
@@ -106,7 +106,7 @@ AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm) 
 
     // Do not copy the digit store and digit maker, but create its own ones
     fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
-    fDigitMaker = new AliMUONDigitMaker(kTRUE,kFALSE);
+    fDigitMaker = new AliMUONDigitMaker(kTRUE);
 }
 
 //__________________________________________________________________

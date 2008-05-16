@@ -31,7 +31,7 @@ class AliMUONDigitMaker : public TObject
  public:
   AliMUONDigitMaker(
          Bool_t enableErrorLogger = kTRUE,
-         Bool_t useFastTrackerDecoder = kFALSE, Bool_t useFastTriggerDecoder = kFALSE
+         Bool_t useFastTrackerDecoder = kTRUE, Bool_t useFastTriggerDecoder = kTRUE
      ); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
