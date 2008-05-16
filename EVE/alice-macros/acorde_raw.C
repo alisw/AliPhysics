@@ -12,8 +12,7 @@ TString acorde_module_path(Int_t module);
 
 void acorde_raw()
 {
-  // AliEveEventManager::AssertGeometry();
-  gEve->GetGeometry("geometry.root");
+  AliEveEventManager::AssertGeometry();
 
   AliRawReader       * reader = AliEveEventManager::AssertRawReader();
   AliACORDERawStream * stream = new AliACORDERawStream(reader);

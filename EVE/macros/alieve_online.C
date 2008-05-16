@@ -9,4 +9,7 @@ void alieve_online()
   // List of macros to be executed
   gROOT->Macro("its_raw.C");
   gROOT->Macro("its_clusters.C");
+  gROOT->Macro("tpc_raw.C");
+  gROOT->Macro("tpc_clusters.C");
+  gROOT->Macro("acorde_raw.C");
 }
