@@ -19,8 +19,16 @@
 #pragma link C++ class AliEMCALCalibHistoProducer+;
 #pragma link C++ class AliEMCALPreprocessor+;
 // Tables without TTable
+#pragma link C++ class AliEMCALPi0SelectionParam+;
+#pragma link C++ class AliEMCALPi0SelectionParRec+;
+#pragma link C++ class AliEMCALCalibCoefs+;
+#pragma link C++ class AliEMCALCalibCoef+;
+#pragma link C++ class AliEMCALCellInfo+;
+#pragma link C++ class AliEMCALCellIndexes+;
 //
 #pragma link C++ class AliCaloCalibPedestal+;
 #pragma link C++ class AliEMCALSurvey+;
 #pragma link C++ class AliEMCALRecParam+;
+#pragma link C++ class AliEMCALQAChecker+;
+
 #endif

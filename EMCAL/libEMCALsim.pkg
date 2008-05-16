@@ -10,7 +10,8 @@ AliEMCALv2.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALTick.cxx \
 AliEMCALRawUtils.cxx \
-AliEMCALTrigger.cxx
+AliEMCALTrigger.cxx \
+AliEMCALQADataMakerSim.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
