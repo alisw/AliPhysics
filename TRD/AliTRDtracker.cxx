@@ -597,6 +597,7 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 				seed->UpdateTrackParams(track,AliESDtrack::kTRDout);
 				fHBackfit->Fill(10);
 	
+        seed->SetNumberOfTRDslices(AliTRDtrack::kNslice);
 				for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
 					for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
 						seed->SetTRDslice(track->GetPIDsignals(i,j),i,j);
@@ -619,6 +620,8 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 				fHBackfit->Fill(13);
 	
 				//seed->SetStatus(AliESDtrack::kTRDStop);
+
+        seed->SetNumberOfTRDslices(AliTRDtrack::kNslice);
 				for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
 					for (Int_t j = 0; j <AliTRDtrack::kNslice; j++) {
 						seed->SetTRDslice(track->GetPIDsignals(i,j),i,j);
