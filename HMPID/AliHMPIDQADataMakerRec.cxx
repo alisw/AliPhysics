@@ -204,7 +204,10 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   //filling QA histos for clusters
   //
   AliHMPIDParam *pPar =AliHMPIDParam::Instance();
-  TClonesArray *clusters = new TClonesArray("AliHMPIDCluster");
+  
+  static TClonesArray *clusters;
+  if(!clusters) clusters = new TClonesArray("AliHMPIDCluster");
+  
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
     TBranch *branch = clustersTree->GetBranch(Form("HMPID%d",iCh));
     branch->SetAddress(&clusters);
@@ -224,8 +227,8 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     }
   }
 
-  clusters->Delete();
-  delete clusters;
+  clusters->Clear();
+  
 }
 
 //____________________________________________________________________________
