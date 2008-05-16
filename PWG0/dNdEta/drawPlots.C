@@ -251,6 +251,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
 {
   TFile* file = TFile::Open("analysis_esd.root");
   TH1* histESD = (TH1*) file->Get("dndeta/dNdEta_corrected");
+  TH1* histESDnsd = (TH1*) file->Get("dndetaNSD/dNdEta_corrected");
   TH1* histESDNoPt = (TH1*) file->Get("dndeta/dNdEta");
   TH1* histESDMB = (TH1*) file->Get("dndetaTr/dNdEta_corrected");
   TH1* histESDMBNoPt = (TH1*) file->Get("dndetaTr/dNdEta");
@@ -259,6 +260,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   TH1* histESDMBTracksNoPt = (TH1*) file->Get("dndetaTracks/dNdEta");
 
   Prepare1DPlot(histESD);
+  Prepare1DPlot(histESDnsd);
   Prepare1DPlot(histESDMB);
   Prepare1DPlot(histESDMBVtx);
 
@@ -268,6 +270,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   Prepare1DPlot(histESDMBTracksNoPt);
 
   histESD->SetLineWidth(0);
+  histESDnsd->SetLineWidth(0);
   histESDMB->SetLineWidth(0);
   histESDMBVtx->SetLineWidth(0);
 
@@ -276,10 +279,12 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBVtxNoPt->SetLineWidth(0);
 
   histESD->SetMarkerColor(1);
+  histESDnsd->SetMarkerColor(6);
   histESDMB->SetMarkerColor(2);
   histESDMBVtx->SetMarkerColor(3);
 
   histESD->SetLineColor(1);
+  histESDnsd->SetLineColor(6);
   histESDMB->SetLineColor(2);
   histESDMBVtx->SetLineColor(3);
 
@@ -289,6 +294,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBTracksNoPt->SetMarkerColor(4);
 
   histESD->SetMarkerStyle(20);
+  histESDnsd->SetMarkerStyle(29);
   histESDMB->SetMarkerStyle(21);
   histESDMBVtx->SetMarkerStyle(22);
 
@@ -297,23 +303,27 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBVtxNoPt->SetMarkerStyle(22);
   histESDMBTracksNoPt->SetMarkerStyle(23);
   
-  TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0, histESDMBVtx->GetMaximum() * 1.1);
-  Prepare1DPlot(dummy);
-  dummy->SetStats(kFALSE);
-  dummy->SetXTitle("#eta");
-  dummy->SetYTitle("dN_{ch}/d#eta");
-  dummy->GetYaxis()->SetTitleOffset(1);
-
   Float_t etaLimit = 1.2999;
 
   histESDMBVtx->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMB->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESD->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histESDnsd->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
 
   histESDNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMBNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMBVtxNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMBTracksNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+
+  Float_t max = TMath::Max(histESDMBVtx->GetMaximum(), histESDMB->GetMaximum());
+  max = TMath::Max(max, histESD->GetMaximum());
+
+  TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0, max * 1.1);
+  Prepare1DPlot(dummy);
+  dummy->SetStats(kFALSE);
+  dummy->SetXTitle("#eta");
+  dummy->SetYTitle("dN_{ch}/d#eta");
+  dummy->GetYaxis()->SetTitleOffset(1);
 
   TCanvas* canvas = new TCanvas("dNdEta1", "dNdEta1", 500, 500);
 
@@ -335,6 +345,10 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
 
   TFile* file2 = TFile::Open("analysis_mc.root");
   TH1* histMC = (TH1*) file2->Get("dndeta/dNdEta_corrected")->Clone("cloned");
+  TH1* histMCnsd = (TH1*) file2->Get("dndetaNSD/dNdEta_corrected");
+  // FAKE
+  if (!histMCnsd)
+  	histMCnsd = histMC;
   TH1* histMCTr = (TH1*) file2->Get("dndetaTr/dNdEta_corrected")->Clone("cloned2");
   TH1* histMCTrVtx = (TH1*) file2->Get("dndetaTrVtx/dNdEta_corrected")->Clone("cloned3");
 
@@ -342,27 +356,28 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   fdNdEtaAnalysis->LoadHistograms();
   dNdEtaAnalysis* fdNdEtaAnalysis2 = (dNdEtaAnalysis*) fdNdEtaAnalysis->Clone();
 
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: full inelastic");
   TH1* histMCPtCut = (TH1*) fdNdEtaAnalysis->GetdNdEtaHistogram(0)->Clone("histMCPtCut");
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: minimum bias");
   TH1* histMCTrPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: MB with trigger");
   TH1* histMCTrVtxPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: Tracks w/o resolution effect");
   TH1* histMCTracksPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   TCanvas* canvas2 = new TCanvas("dNdEta2", "dNdEta2", 500, 500);
 
   Prepare1DPlot(histMC);
+  Prepare1DPlot(histMCnsd);
   Prepare1DPlot(histMCTr);
   Prepare1DPlot(histMCTrVtx);
 
@@ -373,6 +388,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
     Prepare1DPlot(histMCTracksPtCut);
 
   histMC->SetLineColor(1);
+  histMCnsd->SetLineColor(6);
   histMCTr->SetLineColor(2);
   histMCTrVtx->SetLineColor(3);
 
@@ -384,13 +400,15 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
 
   TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
   Prepare1DPlot(dummy2);
-  dummy2->GetYaxis()->SetRangeUser(0, histESDMBVtx->GetMaximum() * 1.1);
+  dummy2->GetYaxis()->SetRangeUser(0, max * 1.1);
 
   dummy2->DrawCopy();
   histMC->Draw("SAME");
+  histMCnsd->Draw("SAME");
   histMCTr->Draw("SAME");
   histMCTrVtx->Draw("SAME");
   histESD->Draw("SAME");
+  histESDnsd->Draw("SAME");
   histESDMB->Draw("SAME");
   histESDMBVtx->Draw("SAME");
   histESDNoPt->Draw("SAME");
@@ -408,6 +426,11 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
     canvas2->SaveAs("dNdEta2.gif");
     canvas2->SaveAs("dNdEta2.eps");
   }
+
+  new TCanvas;
+  dummy2->DrawCopy();
+  histMCnsd->Draw("SAME");
+  histESDnsd->Draw("SAME");
 
   TH1* ratio = (TH1*) histMC->Clone("ratio");
   TH1* ratioNoPt = (TH1*) histMCPtCut->Clone("ratioNoPt");
@@ -477,13 +500,13 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   pad2->cd();
   pad2->SetBottomMargin(0.15);
 
-  Float_t min = TMath::Min(0.961, ratio->GetMinimum() * 0.95);
-  Float_t max = TMath::Max(1.049, ratio->GetMaximum() * 1.05);
+  Float_t minR = TMath::Min(0.961, ratio->GetMinimum() * 0.95);
+  Float_t maxR = TMath::Max(1.049, ratio->GetMaximum() * 1.05);
 
   TH1F dummy3("dummy3", ";#eta;Ratio: MC / ESD", 1, -1.5, 1.5);
   dummy3.SetStats(kFALSE);
   dummy3.SetBinContent(1, 1);
-  dummy3.GetYaxis()->SetRangeUser(min, max);
+  dummy3.GetYaxis()->SetRangeUser(minR, maxR);
   dummy3.SetLineWidth(2);
   dummy3.GetXaxis()->SetLabelSize(0.06);
   dummy3.GetYaxis()->SetLabelSize(0.06);
@@ -1468,10 +1491,17 @@ void CompareCorrection2Measured(const char* dataInput = "analysis_esd_raw.root",
   Printf("esd contains %f entries in |vtx-z| < 10, pt > 0.3", hist2->Integral(hist2->GetXaxis()->FindBin(-9.9), hist2->GetXaxis()->FindBin(9.9), 1, hist2->GetNbinsY(), hist2->GetZaxis()->FindBin(0.301), hist2->GetNbinsZ()));
 
   AliPWG0Helper::CreateDividedProjections(hist1, hist2);
+  AliPWG0Helper::CreateDividedProjections(hist1, hist2, "x");
+
+  hist1->GetXaxis()->SetRange(hist1->GetXaxis()->FindBin(-10), hist2->GetXaxis()->FindBin(10));
+  hist2->GetXaxis()->SetRange(hist1->GetXaxis()->FindBin(-10), hist2->GetXaxis()->FindBin(10));
+  AliPWG0Helper::CreateDividedProjections(hist1, hist2, "y");
 
   new TCanvas; gROOT->FindObject("mc_yx_div_esd_yx")->Draw("COLZ");
   new TCanvas; gROOT->FindObject("mc_zx_div_esd_zx")->Draw("COLZ");
   new TCanvas; gROOT->FindObject("mc_zy_div_esd_zy")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("mc_x_div_esd_x")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("mc_y_div_esd_y")->Draw("COLZ");
 }
 
 void CompareMeasured2Measured(const char* dataInput = "analysis_esd_raw.root", const char* dataInput2 = "analysis_esd_raw.root")
@@ -1541,3 +1571,60 @@ void CompareMeasured2Measured(const char* dataInput = "analysis_esd_raw.root", c
 
 }
 
+void DrawTrackletOrigin()
+{
+  TFile::Open("correction_map.root");
+
+  Int_t colors[]  = {1,2,3,4,6,7,8,102};
+
+  Int_t maxHists = 8;
+  TH1* hist[8];
+
+  const char* titles[] = { "PP", "SS", "PP'", "PS", "PS*", "SP", "SS'", "" };
+
+  TLegend* legend = new TLegend(0.75, 0.6, 0.95, 0.95);
+
+  Int_t total = 0;
+  for (Int_t i=0; i<maxHists; i++)
+  {
+    hist[i] = (TH1*) gFile->Get(Form("fDeltaPhi_%d", i));
+    //hist[i]->Rebin(20);
+    hist[i]->SetStats(kFALSE);
+    hist[i]->SetLineColor(colors[i]);
+    hist[i]->GetXaxis()->SetRangeUser(-0.2, 0.2);
+    hist[i]->Draw(((i == 0) ? "" : "SAME"));
+
+    total += hist[i]->GetEntries();
+
+    if (i != 7)
+      legend->AddEntry(hist[i], titles[i]);
+  }
+
+  legend->Draw();
+  gPad->SetLogy();
+
+  Printf("Total: %d", total);
+  for (Int_t i=0; i<maxHists; i++)
+    Printf("Histogram %d (%s) containts %.2f %% of the entries", i, titles[i], 100.0 * hist[i]->GetEntries() / total);
+
+  printf("|  Delta phi  |  Acc. %%  |  ");
+  for (Int_t i=0; i<maxHists; i++)
+    printf("%3s %%   |  ", titles[i]);
+  Printf("");
+
+  for (Float_t f = 0.01; f < 0.09; f += 0.01)
+  {
+    Int_t integralBegin = hist[0]->GetXaxis()->FindBin(-f);
+    Int_t integralEnd = hist[0]->GetXaxis()->FindBin(f);
+
+    Int_t total2 = 0;
+    for (Int_t i=0; i<maxHists; i++)
+      total2 += (Int_t) hist[i]->Integral(integralBegin, integralEnd);
+
+    printf("|    %.2f     |  %6.2f  |  ", f, 100.0 * total2 / total);
+
+    for (Int_t i=0; i<maxHists; i++)
+      printf("%6.2f  |  ", (hist[i]->GetEntries() > 0) ? (100.0 * hist[i]->Integral(integralBegin, integralEnd) / hist[i]->GetEntries()) : -1.0);
+    Printf("");
+  }
+}

@@ -1,20 +1,57 @@
-void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, Bool_t mc = kTRUE, const char* option = "")
+void run(Int_t runWhat, Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Bool_t mc = kTRUE, const char* option = "")
 {
+  // runWhat options: 0 = AlidNdEtaTask
+  //                  1 = AlidNdEtaCorrectionTask
+  //
+  // aProof option: 0 no proof
+  //                1 proof with chain
+  //                2 proof with dataset
+
+  TString taskName;
+  if (runWhat == 0)
+  {
+    taskName = "AlidNdEtaTask";
+  }
+  else if (runWhat == 1)
+  {
+    taskName = "AlidNdEtaCorrectionTask";
+    if (!mc)
+    {
+      Printf("%s needs MC. Exiting...", taskName.Data());
+      return;
+    }
+  }
+  else
+  {
+    Printf("Do not know what to run. Exiting...");
+    return;
+  }
+
+  Printf("Processing task: %s", taskName.Data());
+
+  if (nRuns < 0)
+    nRuns = 1234567890;
+
   if (aProof)
   {
     TProof::Open("lxb6046");
+    //gProof->SetParallel(1);
 
     // Enable the needed package
-    gProof->UploadPackage("STEERBase");
+    /*gProof->UploadPackage("STEERBase");
     gProof->EnablePackage("STEERBase");
     gProof->UploadPackage("ESD");
     gProof->EnablePackage("ESD");
     gProof->UploadPackage("AOD");
     gProof->EnablePackage("AOD");
     gProof->UploadPackage("ANALYSIS");
-    gProof->EnablePackage("ANALYSIS");
-    gProof->UploadPackage("PWG0base");
-    gProof->EnablePackage("PWG0base");
+    gProof->EnablePackage("ANALYSIS");*/
+
+    gProof->UploadPackage("$ALICE_ROOT/AF-v4-12");
+    gProof->EnablePackage("$ALICE_ROOT/AF-v4-12");
+
+    gProof->UploadPackage("$ALICE_ROOT/PWG0base");
+    gProof->EnablePackage("$ALICE_ROOT/PWG0base");
   }
   else
   {
@@ -26,47 +63,58 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     gSystem->Load("libPWG0base");
   }
 
-  // Create chain of input files
-  gROOT->LoadMacro("../CreateESDChain.C");
-  chain = CreateESDChain(data, nRuns, offset);
-
   // Create the analysis manager
   mgr = new AliAnalysisManager;
 
-  TString taskName("AlidNdEtaTask.cxx+");
+  TString compileTaskName;
+  compileTaskName.Form("%s.cxx+", taskName.Data());
   if (aDebug)
-    taskName += "+g";
+    compileTaskName += "+g";
 
   // Create, add task
   if (aProof) {
-    gProof->Load(taskName);
+    gProof->Load(compileTaskName);
   } else
-    gROOT->Macro(taskName);
-
-  task = new AlidNdEtaTask(option);
+    gROOT->Macro(compileTaskName);
 
   AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
-  task->SetAnalysisMode(analysisMode);
+  AliPWG0Helper::Trigger      trigger = AliPWG0Helper::kMB1;
 
+  AliPWG0Helper::PrintConf(analysisMode, trigger);
+
+  AliESDtrackCuts* esdTrackCuts = 0;
   if (analysisMode != AliPWG0Helper::kSPD)
   {
     // selection of esd tracks
     gROOT->ProcessLine(".L ../CreateStandardCuts.C");
-    AliESDtrackCuts* esdTrackCuts = CreateTrackCuts(analysisMode);
+    esdTrackCuts = CreateTrackCuts(analysisMode);
     if (!esdTrackCuts)
     {
       printf("ERROR: esdTrackCuts could not be created\n");
       return;
     }
-
-    task->SetTrackCuts(esdTrackCuts);
   }
 
-  if (mc)
-    task->SetReadMC();
+  if (runWhat == 0)
+  {
+    task = new AlidNdEtaTask(option);
 
-  //task->SetUseMCVertex();
-  //task->SetUseMCKine();
+    if (mc)
+      task->SetReadMC();
+
+    //task->SetUseMCVertex();
+    //task->SetUseMCKine();
+  }
+  else if (runWhat == 1)
+  {
+    task = new AlidNdEtaCorrectionTask(option);
+
+    //task->SetOnlyPrimaries();
+  }
+
+  task->SetTrigger(trigger);
+  task->SetAnalysisMode(analysisMode);
+  task->SetTrackCuts(esdTrackCuts);
 
   mgr->AddTask(task);
 
@@ -91,13 +139,31 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
 
   // Enable debug printouts
   if (aDebug)
+  {
     mgr->SetDebugLevel(2);
+    AliLog::SetClassDebugLevel(taskName, AliLog::kDebug+2);
+  }
+  else
+    AliLog::SetClassDebugLevel(taskName, AliLog::kWarning);
 
   // Run analysis
   mgr->InitAnalysis();
   mgr->PrintStatus();
 
-  mgr->StartAnalysis((aProof) ? "proof" : "local", chain);
+  if (aProof == 2)
+  {
+    // process dataset
+
+    mgr->StartAnalysis("proof", data, nRuns, offset);
+  }
+  else
+  {
+    // Create chain of input files
+    gROOT->LoadMacro("../CreateESDChain.C");
+    chain = CreateESDChain(data, nRuns, offset);
+
+    mgr->StartAnalysis((aProof > 0) ? "proof" : "local", chain);
+  }
 }
 
 void loadlibs()
@@ -126,17 +192,25 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
     return;
   }
 
-  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaNSD", "dndetaNSD");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL, 1);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kNSD, "ESD -> NSD");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   TFile* file2 = TFile::Open(dataOutput, "RECREATE");
   fdNdEtaAnalysis->SaveHistograms();
 
   file->cd();
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL, "ESD -> full inelastic");
+  //fdNdEtaAnalysis->DrawHistograms(kTRUE);
+  file2->cd();
+  fdNdEtaAnalysis->SaveHistograms();
+
+  file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kVertexReco, 1);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kVertexReco, "ESD -> minimum bias");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -144,7 +218,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle, 1);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle, "ESD -> MB with trigger");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -152,7 +226,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "ESD raw");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();

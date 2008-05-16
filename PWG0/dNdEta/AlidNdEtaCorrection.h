@@ -68,7 +68,7 @@ public:
   Float_t GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta = -100, Bool_t debug = kFALSE);
   TH1*    GetMeasuredEventFraction(CorrectionType correctionType, Int_t multCut);
 
-  void ReduceInformation();
+  void    ReduceInformation();
 
 protected:
   AliCorrection* fTrack2ParticleCorrection;       //-> handles the track-to-particle correction (only track level (vtx_z, eta, pt))

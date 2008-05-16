@@ -185,7 +185,7 @@ void dNdEtaAnalysis::FillTriggeredEvent(Float_t n)
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, Int_t multCut)
+void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, const char* tag)
 {
   //
   // correct with the given correction values and calculate dNdEta and pT distribution
@@ -195,17 +195,19 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   // TODO put tag somewhere which corrections have been applied
 
-  if (multCut > 1)
-  {
-    Printf("ERROR: A bigger multiplicity cut than 1 is not possible in the current implementation");
-    return;
-  }
+  Printf("\n\nCorrecting dN/deta spectrum >>> %s <<<. Correction type: %d, pt cut: %.2f.", tag, (Int_t) correctionType, ptCut);
 
   // set corrections to 1
   fData->SetCorrectionToUnity();
 
   if (correction && correctionType != AlidNdEtaCorrection::kNone)
   {
+   /* Printf("FAKE: Rebinning. For test only");
+    correction->GetVertexRecoCorrection()->GetEventCorrection()->Rebin(2, 1);
+    correction->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->Rebin(2, 1);
+    correction->GetTriggerBiasCorrectionNSD()->GetEventCorrection()->Rebin(2, 1);
+    fData->GetEventCorrection()->Rebin(2, 1);*/
+
     TH3F* trackCorr = fData->GetTrackCorrection()->GetCorrectionHistogram();
     TH2F* eventCorr = fData->GetEventCorrection()->GetCorrectionHistogram();
 
@@ -217,7 +219,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       trackCorr->Multiply(correction->GetVertexRecoCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
       eventCorr->Multiply(correction->GetVertexRecoCorrection()->GetEventCorrection()->GetCorrectionHistogram());
 
-      // set bin with multiplicity 0 to 1 (correction has no meaning in this bin)
+      // set bin with multiplicity 0 to unity (correction has no meaning in this bin)
       for (Int_t i=0; i<=eventCorr->GetNbinsX()+1; i++)
         eventCorr->SetBinContent(i, 1, 1);
     }
@@ -264,7 +266,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     //new TCanvas; correctedEvents->DrawCopy("TEXT");
 
     // start above 0 mult. bin with integration
-    TH1* vertexDist = measuredEvents->ProjectionX("vertexdist_measured", 2);
+    TH1* vertexDist = correctedEvents->ProjectionX("vertexdist_measured", 2);
     //new TCanvas; vertexDist->DrawCopy();
 
     Int_t allEventsWithVertex = (Int_t) vertexDist->Integral(0, vertexDist->GetNbinsX()+1); // include under/overflow!
@@ -280,7 +282,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       // multiply with trigger correction if set above
       events *= fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
 
-      Printf("Bin %d, alpha is %.2f, number of events with 0 mult. are %.2f", i, alpha, events);
+      Printf("Bin %d, alpha is %.2f, number of events with 0 mult.: %.2f", i, alpha, events);
 
       correctedEvents->SetBinContent(i, 1, events);
     }
@@ -632,8 +634,8 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
       continue;
 
     collections[0]->Add(entry->fData);
-    collections[2]->Add(entry->fMult);
-    collections[3]->Add(entry->fPtDist);
+    collections[1]->Add(entry->fMult);
+    collections[2]->Add(entry->fPtDist);
 
     for (Int_t i=0; i<kVertexBinning; ++i)
     {

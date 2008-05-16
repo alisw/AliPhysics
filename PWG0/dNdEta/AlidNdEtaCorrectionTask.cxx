@@ -39,6 +39,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fOutput(0),
   fOption(opt),
   fAnalysisMode(AliPWG0Helper::kTPC),
+  fTrigger(AliPWG0Helper::kMB1),
   fSignMode(0),
   fOnlyPrimaries(kFALSE),
   fEsdTrackCuts(0),
@@ -180,21 +181,33 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
     Printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms");
   }
 
-  fVertexCorrelation = new TH2F("fVertexCorrelation", "fVertexCorrelation;MC z-vtx;ESD z-vtx", 80, -20, 20, 80, -20, 20);
+  fVertexCorrelation = new TH2F("fVertexCorrelation", "fVertexCorrelation;MC z-vtx;ESD z-vtx", 120, -30, 30, 120, -30, 30);
+  fOutput->Add(fVertexCorrelation);
   fVertexProfile = new TProfile("fVertexProfile", "fVertexProfile;MC z-vtx;MC z-vtx - ESD z-vtx", 40, -20, 20);
+  fOutput->Add(fVertexProfile);
   fVertexShiftNorm = new TH1F("fVertexShiftNorm", "fVertexShiftNorm;(MC z-vtx - ESD z-vtx) / #sigma_{ESD z-vtx};Entries", 200, -100, 100);
-  
+  fOutput->Add(fVertexShiftNorm);
+
   fEtaCorrelation = new TH2F("fEtaCorrelation", "fEtaCorrelation;MC #eta;ESD #eta", 120, -3, 3, 120, -3, 3);
+  fOutput->Add(fEtaCorrelation);
   fEtaProfile = new TProfile("fEtaProfile", "fEtaProfile;MC #eta;MC #eta - ESD #eta", 120, -3, 3);
+  fOutput->Add(fEtaProfile);
 
   fMultAll = new TH1F("fMultAll", "fMultAll", 500, -0.5, 499.5);
+  fOutput->Add(fMultAll);
   fMultVtx = new TH1F("fMultVtx", "fMultVtx", 500, -0.5, 499.5);
+  fOutput->Add(fMultVtx);
   fMultTr = new TH1F("fMultTr", "fMultTr", 500, -0.5, 499.5);
+  fOutput->Add(fMultTr);
 
   for (Int_t i=0; i<8; i++)
+  {
     fDeltaPhi[i] = new TH1F(Form("fDeltaPhi_%d", i), ";#Delta phi;Entries", 2000, -0.1, 0.1);
+    fOutput->Add(fDeltaPhi[i]);
+  }
 
   fEventStats = new TH2F("fEventStats", "fEventStats;event type;status;count", 2, -0.5, 1.5, 4, -0.5, 3.5);
+  fOutput->Add(fEventStats);
   fEventStats->GetXaxis()->SetBinLabel(1, "INEL");
   fEventStats->GetXaxis()->SetBinLabel(2, "NSD");
 
@@ -219,7 +232,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     Printf("WARNING: Processing only primaries. For systematical studies only!");
 
   // trigger definition
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2);
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), fTrigger);
 
   if (!eventTriggered)
     Printf("No trigger");
@@ -433,6 +446,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       if (eventVertex)
         fdNdEtaAnalysisMC->FillTrack(vtxMC[2], eta, pt);
 
+    // TODO this value might be needed lower for the SPD study (only used for control histograms anyway)
     if (TMath::Abs(eta) < 1 && pt > 0.2)
       nAccepted++;
   }
@@ -453,7 +467,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
 
     if (label < 0)
     {
-      Printf("WARNING: cannot find corresponding mc part for track(let) %d with label %d.", i, label);
+      Printf("WARNING: cannot find corresponding mc particle for track(let) %d with label %d.", i, label);
       continue;
     }
 
@@ -715,31 +729,43 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   if (fSigmaVertexPrim)
     fSigmaVertexPrim->Write();
 
+  fVertexCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fVertexCorrelation"));
   if (fVertexCorrelation)
     fVertexCorrelation->Write();
+  fVertexProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fVertexProfile"));
   if (fVertexProfile)
     fVertexProfile->Write();
+  fVertexShiftNorm = dynamic_cast<TH1F*> (fOutput->FindObject("fVertexShiftNorm"));
   if (fVertexShiftNorm)
     fVertexShiftNorm->Write();
 
+  fEtaCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaCorrelation"));
   if (fEtaCorrelation)
     fEtaCorrelation->Write();
+  fEtaProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fEtaProfile"));
   if (fEtaProfile)
     fEtaProfile->Write();
 
+  fMultAll = dynamic_cast<TH1F*> (fOutput->FindObject("fMultAll"));
   if (fMultAll)
     fMultAll->Write();
 
+  fMultTr = dynamic_cast<TH1F*> (fOutput->FindObject("fMultTr"));
   if (fMultTr)
     fMultTr->Write();
-  
+
+  fMultVtx = dynamic_cast<TH1F*> (fOutput->FindObject("fMultVtx"));
   if (fMultVtx)
     fMultVtx->Write();
 
   for (Int_t i=0; i<8; ++i)
+  {
+    fDeltaPhi[i] = dynamic_cast<TH1F*> (fOutput->FindObject(Form("fDeltaPhi_%d", i)));
     if (fDeltaPhi[i])
       fDeltaPhi[i]->Write();
+  }
 
+  fEventStats = dynamic_cast<TH2F*> (fOutput->FindObject("fEventStats"));
   if (fEventStats)
     fEventStats->Write();
 
