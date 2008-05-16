@@ -7,15 +7,11 @@ AliEMCALClusterizerv1.cxx \
 AliEMCALTrack.cxx \
 AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
-AliEMCALRecPointsQaESDSelector.cxx \
-AliEMCALFolder.cxx \
-AliEMCALSuperModule.cxx \
-AliEMCALCell.cxx \
 AliEMCALQADataMakerRec.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
-CINTHDRS:= $(HDRS) AliEMCALGeometry.h AliEMCALPi0SelectionParam.h
+CINTHDRS:= $(HDRS) AliEMCALGeometry.h 
 
 DHDR:=EMCALLinkDefrec.h
 # have to tune
