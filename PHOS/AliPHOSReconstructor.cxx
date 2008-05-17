@@ -288,10 +288,16 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Int_t  primMult  = 0;
     Int_t *primList =  emcRP->GetPrimaries(primMult);
 
+    Float_t energy;
+    if (fgkRecoParamEmc->Ecore2ESD())
+      energy = emcRP->GetCoreEnergy();
+    else
+      energy = rp->Energy();
+
     // fills the ESDCaloCluster
     ec->SetClusterType(AliESDCaloCluster::kPHOSCluster);
     ec->SetPosition(xyz);                       //rec.point position in MARS
-    ec->SetE(rp->Energy());                     //total particle energy
+    ec->SetE(energy);                           //total or core particle energy
     ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
     ec->SetPid(rp->GetPID()) ;                  //array of particle identification
     ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x

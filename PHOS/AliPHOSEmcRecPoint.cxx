@@ -56,6 +56,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSReconstructor.h"
  
 ClassImp(AliPHOSEmcRecPoint)
 
@@ -428,7 +429,7 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits
   // should be less than 2%
 //DP: non-perpendicular incidence??????????????
 
-  Float_t coreRadius = 3 ;
+  Float_t coreRadius = AliPHOSReconstructor::GetRecoParamEmc()->GetEcoreRadius() ;
 
   Float_t x = 0 ;
   Float_t z = 0 ;

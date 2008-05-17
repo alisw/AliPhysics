@@ -32,6 +32,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fMinE(9999),
   fW0(9999),
   fSampleQualityCut(1.),
+  fEcoreRadius(3.),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
   fDecoderVersion("")
@@ -47,6 +48,7 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fMinE(9999),
   fW0(9999),
   fSampleQualityCut(1.),
+  fEcoreRadius(3.),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
   fDecoderVersion("")
@@ -65,6 +67,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fMinE                = recoParam.fMinE;
     fW0                  = recoParam.fW0;
     fSampleQualityCut    = recoParam.fSampleQualityCut ;
+    fEcoreRadius         = recoParam.fEcoreRadius ;
     fSubtractPedestals   = recoParam.fSubtractPedestals;
     fUnfold              = recoParam.fUnfold;
     fDecoderVersion      = recoParam.fDecoderVersion ;
@@ -72,4 +75,3 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
 
   return *this;
 }
-
