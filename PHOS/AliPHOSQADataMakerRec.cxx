@@ -87,18 +87,19 @@ void AliPHOSQADataMakerRec::InitESDs()
 {
   //Create histograms to controll ESD
  
-  TH1F * h1 = new TH1F("hESDPhosSpectrum",  "ESDs spectrum in PHOS",    200, 0., 20.) ; 
+  TH1F * h1 = new TH1F("hESDPhosSpectrum",  "ESDs spectrum in PHOS"                ,  200, 0.,   20.) ;
   h1->Sumw2() ;
-  Add2ESDsList(h1, kESDSpec)  ;                                                                                                        
-  TH1I * h2 = new TH1I("hESDPhosMul", "ESDs multiplicity distribution in PHOS", 100, 0,  100) ; 
+  Add2ESDsList(h1, kESDSpec)  ;
+
+  TH1I * h2 = new TH1I("hESDPhosMul",       "ESDs multiplicity distribution in PHOS", 100, 0,   100 ) ; 
   h2->Sumw2() ;
   Add2ESDsList(h2, kESDNtot) ;
  
-  TH1I * h3 = new TH1I("hESDPhosEtot", "ESDs Etot", 100, 0,  1000.) ; 
+  TH1F * h3 = new TH1F("hESDPhosEtot",      "ESDs total energy"                     , 100, 0,  1000.) ; 
   h3->Sumw2() ;
   Add2ESDsList(h3, kESDEtot) ;
  
-  TH1F * h4 = new TH1F("hESDpid",    "ESDs PID distribution in PHOS",       100, 0., 1.) ;
+  TH1F * h4 = new TH1F("hESDpid",           "ESDs PID distribution in PHOS"         , 100, 0.,    1.) ;
   h4->Sumw2() ;
   Add2ESDsList(h4, kESDpid) ;
 	
