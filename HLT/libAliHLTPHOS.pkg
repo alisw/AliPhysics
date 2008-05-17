@@ -95,12 +95,23 @@ PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 EINCLUDE     := HLT/BASE HLT/BASE/util STEER RAW PHOS
 
+LIBRARY_DEP := -lHLTbase -lPHOSbase -lPHOSshuttle -lESD \
+               -lSTEER -lRAWDatarec
+
 ###############################################################################
 #
 # do not change anything below this line
 #
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,PHOS/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,PHOS/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,PHOS/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,PHOS/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

@@ -3,14 +3,14 @@
 ALIROOT/module.mk:	ALIROOT/binaliroot.pkg 
 ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libANALYSISalice.pkg ANALYSIS/libAnalysisOld.pkg ANALYSIS/libANALYSISRL.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
 ACORDE/module.mk:	ACORDE/libACORDEbase.pkg ACORDE/libACORDErec.pkg ACORDE/libACORDEsim.pkg
-EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg EMCAL/libEMCALjet.pkg
+EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg EMCAL/libEMCALjet.pkg EMCAL/libEMCALcalib.pkg
 EVGEN/module.mk:	EVGEN/libEVGEN.pkg
 FMD/module.mk:		FMD/libFMDbase.pkg FMD/libFMDsim.pkg FMD/libFMDrec.pkg FMD/libFMDutil.pkg FMD/libFMDflow.pkg
 FASTSIM/module.mk:	FASTSIM/libFASTSIM.pkg
 HBTAN/module.mk:	HBTAN/libHBTAN.pkg
 HERWIG/module.mk:	HERWIG/libherwig.pkg
 HIJING/module.mk:	HIJING/libhijing.pkg
-HLT/module.mk:		HLT/bindHLTdumpraw.pkg  HLT/libAliHLTRCU.pkg HLT/libHLTbase.pkg HLT/libAliHLTComp.pkg HLT/libAliHLTSample.pkg HLT/libHLTinterface.pkg HLT/libAliHLTHOMER.pkg HLT/libAliHLTTPC.pkg HLT/libHLTrec.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTTRD.pkg HLT/libHLTshuttle.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTTrigger.pkg HLT/libHLTsim.pkg HLT/libAliHLTPHOS.pkg HLT/libAliHLTUtil.pkg
+HLT/module.mk:		HLT/bindHLTdumpraw.pkg  HLT/libAliHLTRCU.pkg HLT/libHLTbase.pkg HLT/libAliHLTComp.pkg HLT/libAliHLTSample.pkg HLT/libHLTinterface.pkg HLT/libAliHLTHOMER.pkg HLT/libAliHLTTPC.pkg HLT/libHLTrec.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTTRD.pkg HLT/libHLTshuttle.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTTrigger.pkg HLT/libHLTsim.pkg HLT/libAliHLTPHOS.pkg HLT/libAliHLTEMCAL.pkg HLT/libAliHLTUtil.pkg
 ITS/module.mk:		ITS/libITSbase.pkg ITS/libITSsim.pkg ITS/libITSrec.pkg
 JETAN/module.mk:	JETAN/libJETAN.pkg JETAN/libJETANMC.pkg
 MICROCERN/module.mk:	MICROCERN/libmicrocern.pkg
@@ -98,7 +98,7 @@ $(LIBPATH)/libTPCsim.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCD
 $(LIBPATH)/libTPCrec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT)
 $(LIBPATH)/libTPCfast.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT) $(LIBPATH)/libTPCsim.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT)
 $(LIBPATH)/libTPCmon.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
-$(LIBPATH)/libTPCcalib.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT)
+$(LIBPATH)/libTPCcalib.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT)
 $(LIBPATH)/libITSbase.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libRAWDatasim.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libITSsim.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libITSbase.$(SOEXT)
 $(LIBPATH)/libITSrec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libITSbase.$(SOEXT)
@@ -134,6 +134,7 @@ $(LIBPATH)/libEMCALbase.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/li
 $(LIBPATH)/libEMCALsim.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT) $(LIBPATH)/libRAWDatasim.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libEMCALrec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALsim.$(SOEXT) $(LIBPATH)/libEMCALjet.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT)
 $(LIBPATH)/libEMCALjet.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALsim.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
+$(LIBPATH)/libEMCALcalib.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALsim.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
 $(LIBPATH)/libBCM.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT)
 $(LIBPATH)/libTEPEMGEN.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
 $(LIBPATH)/libTPHIC.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libAliPythia6.$(SOEXT) $(LIBPATH)/libpythia6.$(SOEXT)
@@ -158,15 +159,16 @@ $(LIBPATH)/libHLTshuttle.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/lib
 $(LIBPATH)/libHLTsim.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libHLTrec.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libAliHLTTrigger.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT)
-$(LIBPATH)/libAliHLTUtil.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT)
+$(LIBPATH)/libAliHLTUtil.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libAliHLTSample.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libAliHLTRCU.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libAliHLTComp.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT)
 $(LIBPATH)/libAliHLTITS.$(SOEXT): $(LIBPATH)/libITSrec.$(SOEXT) $(LIBPATH)/libITSbase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT)
-$(LIBPATH)/libAliHLTPHOS.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libPHOSbase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
+$(LIBPATH)/libAliHLTPHOS.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libPHOSbase.$(SOEXT) $(LIBPATH)/libPHOSshuttle.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libAliHLTTRD.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libAliHLTUtil.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libTRDrec.$(SOEXT) $(LIBPATH)/libTRDbase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libAliHLTTPC.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libAliHLTRCU.$(SOEXT) $(LIBPATH)/libAliHLTUtil.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libAliHLTMUON.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libMUONmapping.$(SOEXT) $(LIBPATH)/libMUONbase.$(SOEXT) $(LIBPATH)/libMUONevaluation.$(SOEXT) $(LIBPATH)/libMUONsim.$(SOEXT) $(LIBPATH)/libMUONcore.$(SOEXT) $(LIBPATH)/libMUONcalib.$(SOEXT) $(LIBPATH)/libMUONgeometry.$(SOEXT) $(LIBPATH)/libMUONraw.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
+$(LIBPATH)/libAliHLTEMCAL.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libAliHLTUtil.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libEMCALrec.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT) $(LIBPATH)/libTRDrec.$(SOEXT) $(LIBPATH)/libTRDbase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libHBTAN.$(SOEXT): $(LIBPATH)/libAnalysisOld.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libTHbtp.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
 $(LIBPATH)/libPWG0base.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT)
