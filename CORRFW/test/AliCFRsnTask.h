@@ -20,19 +20,13 @@
 #ifndef ALICFRSNTASK_H
 #define ALICFRSNTASK_H
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
 class TH1I;
 class TParticle ;
-class TFile ;
-class AliMCEventHandler;
-class AliESDEvent;
-class AliStack ;
 class AliCFManager;
-class TChain;
-class AliRsnDaughter;
 
-class AliCFRsnTask : public AliAnalysisTask {
+class AliCFRsnTask : public AliAnalysisTaskSE {
   public:
 
   enum {
@@ -49,11 +43,8 @@ class AliCFRsnTask : public AliAnalysisTask {
   virtual ~AliCFRsnTask();
 
   // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
-  void     ConnectInputData(Option_t *option="");
-  void     CreateOutputObjects();
-  void     Exec(Option_t *option);
-  void     Init(); //loads the CF manager
-  void     LocalInit() {Init();} //needed for the slaves 
+  void     UserCreateOutputObjects();
+  void     UserExec(Option_t *option);
   void     Terminate(Option_t *);
   
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
@@ -67,8 +58,6 @@ class AliCFRsnTask : public AliAnalysisTask {
  protected:
 
   Int_t           fRsnPDG;       //  PDG code of searched resonance
-  TChain         *fChain      ;  // chained files
-  AliESDEvent    *fESD        ;  // pointer to the ESD event read
   AliCFManager   *fCFManager  ;  // pointer to the CF manager
 
   // Histograms

@@ -26,47 +26,41 @@
 
 #ifndef ALICFV0TASK_CXX
 #define ALICFV0TASK_CXX
-#include <TROOT.h>
-#include <TInterpreter.h>
 
 #include "AliCFV0Task.h"
 #include "TCanvas.h"
 #include "AliStack.h"
 #include "TParticle.h"
 #include "TH1I.h"
-#include "TChain.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-#include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
 #include "AliCFManager.h"
-#include "AliCFCutBase.h"
 #include "AliCFContainer.h"
-#include "TChain.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliESDv0.h"
 #include "AliV0vertexer.h"
 #include "AliCFPair.h"
+#include "AliESDEvent.h"
+#include "TChain.h"
+#include "AliCFParticleGenCuts.h"
 
 //__________________________________________________________________________
 AliCFV0Task::AliCFV0Task() :
+  AliAnalysisTaskSE(),
   fRebuildV0s(0),
   fV0PDG(310),
-  fChain(0x0),
-  fESD(0x0),
   fCFManager(0x0),
   fHistEventsProcessed(0x0)
 {
-//Defual ctor
+  //
+  //Default ctor
+  //
 }
 //___________________________________________________________________________
 AliCFV0Task::AliCFV0Task(const Char_t* name) :
-  AliAnalysisTask(name,"AliCFV0Task"),
+  AliAnalysisTaskSE(name),
   fRebuildV0s(0),
   fV0PDG(310),
-  fChain(0x0),
-  fESD(0x0),
   fCFManager(0x0),
   fHistEventsProcessed(0x0)
 {
@@ -74,10 +68,13 @@ AliCFV0Task::AliCFV0Task(const Char_t* name) :
   // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliCFV0Task","Calling Constructor");
-  DefineInput (0,TChain::Class());
-  DefineOutput(0,TH1I::Class());
-  DefineOutput(1,AliCFContainer::Class());
-//   DefineOutput(2,TList::Class());
+  /*
+    DefineInput(0) and DefineOutput(0)
+    are taken care of by AliAnalysisTaskSE constructor
+  */
+  DefineOutput(1,TH1I::Class());
+  DefineOutput(2,AliCFContainer::Class());
+//   DefineOutput(3,TList::Class());
 }
 
 //___________________________________________________________________________
@@ -87,11 +84,9 @@ AliCFV0Task& AliCFV0Task::operator=(const AliCFV0Task& c)
   // Assignment operator
   //
   if (this!=&c) {
-    AliAnalysisTask::operator=(c) ;
+    AliAnalysisTaskSE::operator=(c) ;
     fRebuildV0s = c.fRebuildV0s;
     fV0PDG      = c.fV0PDG;
-    fChain      = c.fChain;
-    fESD        = c.fESD;
     fCFManager  = c.fCFManager;
     fHistEventsProcessed = c.fHistEventsProcessed;
   }
@@ -100,11 +95,9 @@ AliCFV0Task& AliCFV0Task::operator=(const AliCFV0Task& c)
 
 //___________________________________________________________________________
 AliCFV0Task::AliCFV0Task(const AliCFV0Task& c) :
-  AliAnalysisTask(c),
+  AliAnalysisTaskSE(c),
   fRebuildV0s(c.fRebuildV0s),
   fV0PDG(c.fV0PDG),
-  fChain(c.fChain),
-  fESD(c.fESD),
   fCFManager(c.fCFManager),
   fHistEventsProcessed(c.fHistEventsProcessed)
 {
@@ -119,48 +112,34 @@ AliCFV0Task::~AliCFV0Task() {
   //destructor
   //
   Info("~AliCFV0Task","Calling Destructor");
-  if (fChain)               delete fChain ;
-  if (fESD)                 delete fESD ;
   if (fCFManager)           delete fCFManager ;
   if (fHistEventsProcessed) delete fHistEventsProcessed ;
 }
 
-//___________________________________________________________________________
-
-void AliCFV0Task::Init()
-{
-
-}
 //_________________________________________________
-void AliCFV0Task::Exec(Option_t *)
+void AliCFV0Task::UserExec(Option_t *)
 {
   //
   // Main loop function
   //
-  Info("Exec","") ;
-  // Get the mc truth
-  AliMCEventHandler* mcTruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+  Info("UserExec","") ;
 
-  if (!mcTruth) Error("Exec","NO MC INFO FOUND... EXITING");
+  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if (!fESD) {
+    Error("UserExec","NO ESD FOUND!");
+    return;
+  }
 
-  // transform possible old AliESD into AliESDEvent
-
-  if (fESD->GetAliESDOld()) fESD->CopyFromOldESD(); //transition to new ESD format
-
-  //pass the MC evt handler to the cuts that need it 
-
-  fCFManager->SetEventInfo(mcTruth);
-
-  // Get the MC event 
-  AliMCEvent* mcEvent = mcTruth->MCEvent();
+  if (!fMCEvent) Error("UserExec","NO MC INFO FOUND!");
+  fCFManager->SetEventInfo(fMCEvent);
 
   // MC-event selection
   Double_t containerInput[2] ;
         
   //loop on the MC event
-  Info("Exec","Looping on MC event");
-  for (Int_t ipart=0; ipart<mcEvent->GetNumberOfTracks(); ipart++) { 
-    AliMCParticle *mcPart  = mcEvent->GetTrack(ipart);
+  Info("UserExec","Looping on MC event");
+  for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
+    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
 
     //check the MC-level cuts
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
@@ -177,16 +156,16 @@ void AliCFV0Task::Exec(Option_t *)
 
 
   //Now go to rec level
-  Info("Exec","Looping on ESD event");
+  Info("UserExec","Looping on ESD event");
 
-  if (fRebuildV0s) RebuildV0s() ;
-  printf("There are %d V0s in event\n",fESD->GetNumberOfV0s());
+  if (fRebuildV0s) RebuildV0s(fESD) ;
+  Info("UserExec","There are %d V0s in event",fESD->GetNumberOfV0s());
   for (Int_t iV0 = 0; iV0<fESD->GetNumberOfV0s(); iV0++) {
 
     AliESDv0* esdV0 = fESD->GetV0(iV0);
 
     //check if mother reconstructed V0 can be associated to a MC V0
-    Int_t labMCV0 = IsMcV0(esdV0,fESD,mcEvent->Stack()) ;
+    Int_t labMCV0 = IsMcV0(esdV0) ;
     if (labMCV0 <0) continue;
 
     esdV0->ChangeMassHypothesis(fV0PDG); //important to do that before entering the cut check
@@ -195,8 +174,10 @@ void AliCFV0Task::Exec(Option_t *)
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,&pair)) continue;
 
     //check if associated MC v0 passes the cuts
-    AliMCParticle* mcV0 = mcEvent->GetTrack(labMCV0);
+    AliMCParticle* mcV0 = fMCEvent->GetTrack(labMCV0);
     if (!mcV0) continue;
+
+    Info("UserExec","is v0 primary : %d",AliCFParticleGenCuts::IsPrimary(mcV0,fMCEvent->Stack()));
 
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcV0)) continue; 
     
@@ -215,12 +196,9 @@ void AliCFV0Task::Exec(Option_t *)
   }
   
   fHistEventsProcessed->Fill(0);
-  PostData(0,fHistEventsProcessed) ;
-  PostData(1,fCFManager->GetParticleContainer()) ;
-  
-//   TList * list = new TList();
-//   fCFManager->AddQAHistosToList(list);
-//   PostData(2,list) ;
+  /* PostData(0) is taken care of by AliAnalysisTaskSE */
+  PostData(1,fHistEventsProcessed) ;
+  PostData(2,fCFManager->GetParticleContainer()) ;
 }
 
 
@@ -232,97 +210,98 @@ void AliCFV0Task::Terminate(Option_t*)
   // the results graphically or save the results to file.
 
   Info("Terminate","");
-  AliAnalysisTask::Terminate();
+  AliAnalysisTaskSE::Terminate();
 
 
-  Double_t max1 = fCFManager->GetParticleContainer()->ShowProjection(0,0)->GetMaximum();
-  Double_t max2 = fCFManager->GetParticleContainer()->ShowProjection(1,0)->GetMaximum();
+  //draw some example plots....
 
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->GetYaxis()->SetRangeUser(0,max1*1.2);
+  AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(2));
 
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->GetYaxis()->SetRangeUser(0,max2*1.2);
+  TH1D* h00 =   cont->ShowProjection(0,0) ;
+  TH1D* h01 =   cont->ShowProjection(0,1) ;
+  TH1D* h02 =   cont->ShowProjection(0,2) ;
+  TH1D* h03 =   cont->ShowProjection(0,3) ;
 
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->SetMarkerStyle(23) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->SetMarkerStyle(24) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->SetMarkerStyle(25) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->SetMarkerStyle(26) ;
+  TH1D* h10 =   cont->ShowProjection(1,0) ;
+  TH1D* h11 =   cont->ShowProjection(1,1) ;
+  TH1D* h12 =   cont->ShowProjection(1,2) ;
+  TH1D* h13 =   cont->ShowProjection(1,3) ;
 
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->SetMarkerStyle(23) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->SetMarkerStyle(24) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->SetMarkerStyle(25) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->SetMarkerStyle(26) ;
+  Double_t max1 = h00->GetMaximum();
+  Double_t max2 = h10->GetMaximum();
+
+  h00->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h01->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h02->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h03->GetYaxis()->SetRangeUser(0,max1*1.2);
+
+  h10->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h11->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h12->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h13->GetYaxis()->SetRangeUser(0,max2*1.2);
+
+  h00->SetMarkerStyle(23) ;
+  h01->SetMarkerStyle(24) ;
+  h02->SetMarkerStyle(25) ;
+  h03->SetMarkerStyle(26) ;
+
+  h10->SetMarkerStyle(23) ;
+  h11->SetMarkerStyle(24) ;
+  h12->SetMarkerStyle(25) ;
+  h13->SetMarkerStyle(26) ;
 
   TCanvas * c =new TCanvas("c","",1400,800);
   c->Divide(4,2);
 
   c->cd(1);
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->Draw("p");
+  h00->Draw("p");
   c->cd(2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->Draw("p");
+  h01->Draw("p");
   c->cd(3);
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->Draw("p");
+  h02->Draw("p");
   c->cd(4);
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->Draw("p");
+  h03->Draw("p");
   c->cd(5);
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->Draw("p");
+  h10->Draw("p");
   c->cd(6);
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->Draw("p");
+  h11->Draw("p");
   c->cd(7);
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->Draw("p");
+  h12->Draw("p");
   c->cd(8);
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->Draw("p");
+  h13->Draw("p");
 
   c->SaveAs("plots.eps");
-
-  delete fHistEventsProcessed ;
 }
 
 //___________________________________________________________________________
-void AliCFV0Task::ConnectInputData(Option_t *) {
-  //
-  // Initialize branches.
-  //
-  Info("ConnectInputData","ConnectInputData of task %s\n",GetName());
-
-  fChain = (TChain*)GetInputData(0);
-  fChain->SetBranchStatus("*FMD*",0);
-  fChain->SetBranchStatus("*CaloClusters*",0);
-  fESD = new AliESDEvent();
-  fESD->ReadFromTree(fChain);
-}
-
-//___________________________________________________________________________
-void AliCFV0Task::CreateOutputObjects() {
+void AliCFV0Task::UserCreateOutputObjects() {
   //HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
-  Info("CreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
+  Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
 
-  //slot #0
+  //slot #1
+  OpenFile(1);
   fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
 }
 
 //___________________________________________________________________________
-Int_t AliCFV0Task::GetV0Label(UInt_t lab1, UInt_t lab2, AliStack* stack) const {
+Int_t AliCFV0Task::GetV0Label(UInt_t lab1, UInt_t lab2) const {
   //
   // returns the label of the V0, given the labels of the 2 daughter tracks
   // returns -1 if the V0 is fake
   //
   
+  AliStack* stack = fMCEvent->Stack();
   TParticle* part1 = stack->Particle(lab1) ;
   TParticle* part2 = stack->Particle(lab2) ;
   
   Int_t part1MotherLab=part1->GetFirstMother();
   Int_t part2MotherLab=part2->GetFirstMother();
-  
+
   if (part1MotherLab==-1 || part2MotherLab==-1) return -1 ;
   if (part1MotherLab != part2MotherLab )        return -1 ;
+  
   if (stack->Particle(part1MotherLab)->GetPdgCode() != fV0PDG ) return -1 ;
 
   switch (fV0PDG) {
@@ -361,11 +340,14 @@ Double_t AliCFV0Task::GetRapidity(Double_t energy, Double_t pz) {
 } 
 
 //___________________________________________________________________________
-Int_t AliCFV0Task::IsMcV0(AliESDv0* v0, AliESDEvent* esd, AliStack* stack) const {
+Int_t AliCFV0Task::IsMcV0(AliESDv0* v0) const {
+
+  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+
   Int_t nindex = v0->GetNindex();
   Int_t pindex = v0->GetPindex();
-  AliESDtrack *nTrack = esd->GetTrack(nindex) ;
-  AliESDtrack *pTrack = esd->GetTrack(pindex) ;
+  AliESDtrack *nTrack = fESD->GetTrack(nindex) ;
+  AliESDtrack *pTrack = fESD->GetTrack(pindex) ;
   
   if (!nTrack || !pTrack) return -1 ;
 
@@ -374,23 +356,22 @@ Int_t AliCFV0Task::IsMcV0(AliESDv0* v0, AliESDEvent* esd, AliStack* stack) const
   
   if (nlab <0 || plab <0) return -1 ;
 
-  Int_t v0Label = GetV0Label((UInt_t)nlab,(UInt_t)plab,stack) ;
-  return v0Label ;
+  return GetV0Label((UInt_t)nlab,(UInt_t)plab) ;
 }
 
 
 //___________________________________________________________________________
-void AliCFV0Task::RebuildV0s() {
+void AliCFV0Task::RebuildV0s(AliESDEvent* fESD) {
   
   fESD->ResetV0s();
 
   //These are pp cuts : to change if Pb+Pb !
   Double_t cuts[]={33,  // max. allowed chi2
-		   0.1,// min. allowed negative daughter's impact parameter 
-		   0.1,// min. allowed positive daughter's impact parameter 
-		   0.1,// max. allowed DCA between the daughter tracks
-		   0.999,// max. allowed cosine of V0's pointing angle
-		   0.9,  // min. radius of the fiducial volume
+		   0.01,// min. allowed negative daughter's impact parameter 
+		   0.01,// min. allowed positive daughter's impact parameter 
+		   0.5,// max. allowed DCA between the daughter tracks
+		   0.98,// max. allowed cosine of V0's pointing angle
+		   0.2,  // min. radius of the fiducial volume
 		   100.   // max. radius of the fiducial volume
   };
   //   AliV0vertexer* v0Vertexer = new AliV0vertexer(cuts);

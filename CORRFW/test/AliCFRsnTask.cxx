@@ -18,45 +18,38 @@
 //-----------------------------------------------------------------------
 
 
-#include <TROOT.h>
-#include <TInterpreter.h>
-
 #include "AliCFRsnTask.h"
 #include "TCanvas.h"
 #include "AliStack.h"
 #include "TParticle.h"
 #include "TH1I.h"
 #include "TChain.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-#include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
 #include "AliCFManager.h"
 #include "AliCFCutBase.h"
 #include "AliCFContainer.h"
-#include "TChain.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliRsnDaughter.h"
 #include "AliCFPair.h"
-#include <memory>
+#include "AliRsnParticle.h"
 
 //__________________________________________________________________________
 AliCFRsnTask::AliCFRsnTask() :
+  AliAnalysisTaskSE(),
   fRsnPDG(313),
-  fChain(0x0),
-  fESD(0x0),
   fCFManager(0x0),
   fHistEventsProcessed(0x0)
 {
-  //Defual ctor
+  //
+  //Default ctor
+  //
 }
 //___________________________________________________________________________
 AliCFRsnTask::AliCFRsnTask(const Char_t* name) :
-  AliAnalysisTask(name,"AliCFRsnTask"),
+  AliAnalysisTaskSE(name),
   fRsnPDG(313),
-  fChain(0x0),
-  fESD(0x0),
   fCFManager(0x0),
   fHistEventsProcessed(0x0)
 {
@@ -64,10 +57,13 @@ AliCFRsnTask::AliCFRsnTask(const Char_t* name) :
   // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliCFRsnTask","Calling Constructor");
-  DefineInput (0,TChain::Class());
-  DefineOutput(0,TH1I::Class());
-  DefineOutput(1,AliCFContainer::Class());
-  //   DefineOutput(2,TList::Class());
+  /*
+    DefineInput(0) and DefineOutput(0)
+    are taken care of by AliAnalysisTaskSE constructor
+  */
+  DefineOutput(1,TH1I::Class());
+  DefineOutput(2,AliCFContainer::Class());
+  //   DefineOutput(3,TList::Class());
 }
 
 //___________________________________________________________________________
@@ -77,10 +73,8 @@ AliCFRsnTask& AliCFRsnTask::operator=(const AliCFRsnTask& c)
   // Assignment operator
   //
   if (this!=&c) {
-    AliAnalysisTask::operator=(c) ;
+    AliAnalysisTaskSE::operator=(c) ;
     fRsnPDG     = c.fRsnPDG;
-    fChain      = c.fChain;
-    fESD        = c.fESD;
     fCFManager  = c.fCFManager;
     fHistEventsProcessed = c.fHistEventsProcessed;
   }
@@ -89,10 +83,8 @@ AliCFRsnTask& AliCFRsnTask::operator=(const AliCFRsnTask& c)
 
 //___________________________________________________________________________
 AliCFRsnTask::AliCFRsnTask(const AliCFRsnTask& c) :
-  AliAnalysisTask(c),
+  AliAnalysisTaskSE(c),
   fRsnPDG(c.fRsnPDG),
-  fChain(c.fChain),
-  fESD(c.fESD),
   fCFManager(c.fCFManager),
   fHistEventsProcessed(c.fHistEventsProcessed)
 {
@@ -107,49 +99,36 @@ AliCFRsnTask::~AliCFRsnTask() {
   //destructor
   //
   Info("~AliCFRsnTask","Calling Destructor");
-  if (fChain)               delete fChain ;
-  if (fESD)                 delete fESD ;
   if (fCFManager)           delete fCFManager ;
   if (fHistEventsProcessed) delete fHistEventsProcessed ;
 }
 
-//___________________________________________________________________________
-
-void AliCFRsnTask::Init()
-{
-
-}
 //_________________________________________________
-void AliCFRsnTask::Exec(Option_t *)
+void AliCFRsnTask::UserExec(Option_t *)
 {
   //
   // Main loop function
   //
-  Info("Exec","") ;
-  // Get the mc truth
-  AliMCEventHandler* mcTruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+  Info("UserExec","") ;
 
-  if (!mcTruth) Error("Exec","NO MC INFO FOUND... EXITING");
+  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if (!fESD) {
+    Error("UserExec","NO ESD FOUND!");
+    return;
+  }
 
-  // transform possible old AliESD into AliESDEvent
+  if (!fMCEvent) Error("UserExec","NO MC INFO FOUND!");
+  fCFManager->SetEventInfo(fMCEvent);
 
-  if (fESD->GetAliESDOld()) fESD->CopyFromOldESD(); //transition to new ESD format
-
-  //pass the MC evt handler to the cuts that need it 
-
-  fCFManager->SetEventInfo(mcTruth);
-
-  // Get the MC event 
-  AliMCEvent* mcEvent = mcTruth->MCEvent();
-  AliStack*   stack   = mcEvent->Stack();
+  AliStack*   stack   = fMCEvent->Stack();
 
   // MC-event selection
   Double_t containerInput[2] ;
         
   //loop on the MC event
-  Info("Exec","Looping on MC event");
+  Info("UserExec","Looping on MC event");
   for (Int_t ipart=0; ipart<stack->GetNprimary(); ipart++) { 
-    AliMCParticle *mcPart  = mcEvent->GetTrack(ipart);
+    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
 
     //check the MC-level cuts
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
@@ -166,7 +145,7 @@ void AliCFRsnTask::Exec(Option_t *)
 
 
   //Now go to rec level
-  Info("Exec","Looping on ESD event");
+  Info("UserExec","Looping on ESD event");
 
   //SET THE ESD AS EVENT INFO IN RECONSTRUCTION CUTS
   TObjArray* fCutsReco = fCFManager->GetParticleCutsList(AliCFManager::kPartRecCuts);
@@ -180,7 +159,7 @@ void AliCFRsnTask::Exec(Option_t *)
   while ( (cut = (AliCFCutBase*)iter2.Next()) ) {
     cut->SetEvtInfo(fESD);
   }
-  
+
   for (Int_t iTrack1 = 0; iTrack1<fESD->GetNumberOfTracks(); iTrack1++) {
     AliESDtrack* esdTrack1 = fESD->GetTrack(iTrack1);
     //track1 is negative
@@ -195,33 +174,33 @@ void AliCFRsnTask::Exec(Option_t *)
       Int_t esdLabel2 = esdTrack2->GetLabel();
       if (esdLabel2<0) continue;
 	
-      // copy ESDtrack data into RsnDaughter (and make Bayesian PID)
-      //if problem with copy constructor, use the following special command to destroy the pointer when exiting scope
-      //std::auto_ptr<AliRsnDaughter> track1(AliRsnDaughter::Adopt(esdTrack1,iTrack1));
-
-      AliRsnDaughter* tmp1=AliRsnDaughter::Adopt(esdTrack1,iTrack1);
-      AliRsnDaughter* tmp2=AliRsnDaughter::Adopt(esdTrack2,iTrack2);
+      AliRsnDaughter* tmp1 = new AliRsnDaughter(esdTrack1);
+      AliRsnDaughter* tmp2 = new AliRsnDaughter(esdTrack2);
       AliRsnDaughter track1(*tmp1);
       AliRsnDaughter track2(*tmp2);
       delete tmp1;
       delete tmp2;
 
       TParticle *part1 = stack->Particle(esdLabel1);
-      track1.SetTruePDG(part1->GetPdgCode());
+      track1.InitParticle(part1);
+      track1.GetParticle()->SetPDG(part1->GetPdgCode());
+
       Int_t mother1 = part1->GetFirstMother();
-      track1.SetMother(mother1);
+      track1.GetParticle()->SetMother(mother1);
       if (mother1 >= 0) {
 	TParticle *mum = stack->Particle(mother1);
-	track1.SetMotherPDG(mum->GetPdgCode());
+	track1.GetParticle()->SetMotherPDG(mum->GetPdgCode());
       }
       
       TParticle *part2 = stack->Particle(esdLabel2);
-      track2.SetTruePDG(part2->GetPdgCode());
+      track2.InitParticle(part2);
+      track2.GetParticle()->SetPDG(part2->GetPdgCode());
+
       Int_t mother2 = part2->GetFirstMother();
-      track2.SetMother(mother2);
+      track2.GetParticle()->SetMother(mother2);
       if (mother2 >= 0) {
 	TParticle *mum = stack->Particle(mother2);
-	track2.SetMotherPDG(mum->GetPdgCode());
+	track2.GetParticle()->SetMotherPDG(mum->GetPdgCode());
       }
 	
       //make a mother resonance from the 2 candidate daughters
@@ -229,19 +208,19 @@ void AliCFRsnTask::Exec(Option_t *)
       AliCFPair pair(esdTrack1,esdTrack2);
 
       //check if true resonance
-      if (rsn.GetMotherPDG() != fRsnPDG) continue;
+      if (rsn.GetParticle()->MotherPDG() != fRsnPDG) continue;
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,&pair)) continue;
 
       //check if associated MC resonance passes the cuts
-      Int_t motherLabel=rsn.GetLabel();
+      Int_t motherLabel=rsn.Label();
       if (motherLabel<0) continue ;
-      AliMCParticle* mcRsn = mcEvent->GetTrack(motherLabel);
+      AliMCParticle* mcRsn = fMCEvent->GetTrack(motherLabel);
       if (!mcRsn) continue;
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcRsn)) continue; 
     
       //fill the container
-      containerInput[0] = rsn.GetPt() ;
-      containerInput[1] = GetRapidity(rsn.GetEnergy(),rsn.GetPz());
+      containerInput[0] = rsn.Pt() ;
+      containerInput[1] = GetRapidity(rsn.E(),rsn.Pz());
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
 
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,&pair)) continue ;
@@ -250,8 +229,9 @@ void AliCFRsnTask::Exec(Option_t *)
   }
     
   fHistEventsProcessed->Fill(0);
-  PostData(0,fHistEventsProcessed) ;
-  PostData(1,fCFManager->GetParticleContainer()) ;
+  /* PostData(0) is taken care of by AliAnalysisTaskSE */
+  PostData(1,fHistEventsProcessed) ;
+  PostData(2,fCFManager->GetParticleContainer()) ;
   
   //   TList * list = new TList();
   //   fCFManager->AddQAHistosToList(list);
@@ -267,8 +247,6 @@ void AliCFRsnTask::Terminate(Option_t*)
   // the results graphically or save the results to file.
 
   Info("Terminate","");
-  AliAnalysisTask::Terminate();
-
 
   Double_t max1 = fCFManager->GetParticleContainer()->ShowProjection(0,0)->GetMaximum();
   Double_t max2 = fCFManager->GetParticleContainer()->ShowProjection(1,0)->GetMaximum();
@@ -319,27 +297,14 @@ void AliCFRsnTask::Terminate(Option_t*)
 }
 
 //___________________________________________________________________________
-void AliCFRsnTask::ConnectInputData(Option_t *) {
-  //
-  // Initialize branches.
-  //
-  Info("ConnectInputData","ConnectInputData of task %s\n",GetName());
-
-  fChain = (TChain*)GetInputData(0);
-  fChain->SetBranchStatus("*FMD*",0);
-  fChain->SetBranchStatus("*CaloClusters*",0);
-  fESD = new AliESDEvent();
-  fESD->ReadFromTree(fChain);
-}
-
-//___________________________________________________________________________
-void AliCFRsnTask::CreateOutputObjects() {
+void AliCFRsnTask::UserCreateOutputObjects() {
   //HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
-  Info("CreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
+  Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
 
-  //slot #0
+  //slot #1
+  OpenFile(1);
   fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
 }
 

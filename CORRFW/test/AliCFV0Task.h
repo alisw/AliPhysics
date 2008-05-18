@@ -20,19 +20,17 @@
 #ifndef ALICFV0TASK_H
 #define ALICFV0TASK_H
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
 class TH1I;
 class TParticle ;
 class TFile ;
 class AliMCEventHandler;
-class AliESDEvent;
-class AliStack ;
 class AliCFManager;
-class TChain;
 class AliESDv0;
+class AliESDEvent;
 
-class AliCFV0Task : public AliAnalysisTask {
+class AliCFV0Task : public AliAnalysisTaskSE {
   public:
 
   enum {
@@ -49,11 +47,8 @@ class AliCFV0Task : public AliAnalysisTask {
   virtual ~AliCFV0Task();
 
   // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
-  void     ConnectInputData(Option_t *option="");
-  void     CreateOutputObjects();
-  void     Exec(Option_t *option);
-  void     Init(); //loads the CF manager
-  void     LocalInit() {Init();} //needed for the slaves 
+  void     UserCreateOutputObjects();
+  void     UserExec(Option_t *option);
   void     Terminate(Option_t *);
   
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
@@ -62,18 +57,16 @@ class AliCFV0Task : public AliAnalysisTask {
 
   void     SetRebuildV0s(Bool_t flag)       {fRebuildV0s = flag;}       // setter for V0 on-the-fly reconstruction
   void     SetV0PDG(Int_t code)             {fV0PDG = code; }           // defines the PDG code of searched V0's
-  Int_t    IsMcV0(AliESDv0*, AliESDEvent*, AliStack*) const ;           // checks if the AliESDv0 can be associated, returns mother label
-  Int_t    GetV0Label(UInt_t, UInt_t, AliStack*) const ;                // returns label of V0 given 2 daughter labels
+  Int_t    IsMcV0(AliESDv0*) const ;           // checks if the AliESDv0 can be associated, returns mother label
+  Int_t    GetV0Label(UInt_t, UInt_t) const ;                // returns label of V0 given 2 daughter labels
   static   Double_t GetRapidity(Double_t, Double_t) ;  // returns the rapidity of the V0 (assuming PDG code)
 
 
  protected:
-  void          RebuildV0s() ;   // reconstructs V0's on-fly
+  void          RebuildV0s(AliESDEvent*) ;   // reconstructs V0's on-fly
 
   Bool_t          fRebuildV0s;   //  flag for on-the-fly V0 reconstruction
   Int_t           fV0PDG;        //  PDG code of searched V0's
-  TChain         *fChain      ;  // chained files
-  AliESDEvent    *fESD        ;  // pointer to the ESD event read
   AliCFManager   *fCFManager  ;  // pointer to the CF manager
 
   // Histograms

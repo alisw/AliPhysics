@@ -20,19 +20,16 @@
 #ifndef ALICFSINGLETRACKTASK_H
 #define ALICFSINGLETRACKTASK_H
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
 class TH1I;
 class TParticle ;
 class TFile ;
-class AliMCEventHandler;
-class AliESDEvent;
 class AliStack ;
 class AliCFManager;
-class TChain;
 class AliESDtrack;
 
-class AliCFSingleTrackTask : public AliAnalysisTask {
+class AliCFSingleTrackTask : public AliAnalysisTaskSE {
   public:
 
   enum {
@@ -49,26 +46,22 @@ class AliCFSingleTrackTask : public AliAnalysisTask {
   virtual ~AliCFSingleTrackTask();
 
   // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
-  void     ConnectInputData(Option_t *option="");
-  void     CreateOutputObjects();
-  void     Exec(Option_t *option);
-  void     Init(); //loads the CF manager
-  void     LocalInit() {Init();} //needed for the slaves 
+  void     UserCreateOutputObjects();
+  void     UserExec(Option_t *option);
   void     Terminate(Option_t *);
   
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
   AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
- protected:
+  void           SetQAList(TList* list) {fQAHistList = list;}
 
-  TChain         *fChain      ;  //! chained files
-  AliESDEvent    *fESD        ;  //! pointer to the ESD event read
+ protected:
   AliCFManager   *fCFManager  ;  // pointer to the CF manager
   TList          *fQAHistList ;  // list of QA histograms
 
   // Histograms
   //Number of events
-  TH1I *fHistEventsProcessed; //! simple histo for monitoring the number of events processed
+  TH1I  *fHistEventsProcessed; // simple histo for monitoring the number of events processed
   
   ClassDef(AliCFSingleTrackTask,1);
 };

@@ -26,16 +26,12 @@
 
 #ifndef ALICFSINGLETRACKTASK_CXX
 #define ALICFSINGLETRACKTASK_CXX
-#include <TROOT.h>
-#include <TInterpreter.h>
 
 #include "AliCFSingleTrackTask.h"
 #include "TCanvas.h"
 #include "AliStack.h"
 #include "TParticle.h"
 #include "TH1I.h"
-#include "TChain.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -45,22 +41,22 @@
 #include "TChain.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
+
 ClassImp(AliCFSingleTrackTask)
+
 //__________________________________________________________________________
 AliCFSingleTrackTask::AliCFSingleTrackTask() :
-  fChain(0x0),
-  fESD(0x0),
   fCFManager(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0)
 {
-//Default ctor
+  //
+  //Default ctor
+  //
 }
 //___________________________________________________________________________
 AliCFSingleTrackTask::AliCFSingleTrackTask(const Char_t* name) :
-  AliAnalysisTask(name,"AliCFSingleTrackTask"),
-  fChain(0x0),
-  fESD(0x0),
+  AliAnalysisTaskSE(name),
   fCFManager(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0)
@@ -69,10 +65,14 @@ AliCFSingleTrackTask::AliCFSingleTrackTask(const Char_t* name) :
   // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliCFSingleTrackTask","Calling Constructor");
-  DefineInput (0,TChain::Class());
-  DefineOutput(0,TH1I::Class());
-  DefineOutput(1,AliCFContainer::Class());
-  DefineOutput(2,TList::Class());
+
+  /*
+    DefineInput(0) and DefineOutput(0)
+    are taken care of by AliAnalysisTaskSE constructor
+  */
+  DefineOutput(1,TH1I::Class());
+  DefineOutput(2,AliCFContainer::Class());
+  DefineOutput(3,TList::Class());
 }
 
 //___________________________________________________________________________
@@ -82,9 +82,7 @@ AliCFSingleTrackTask& AliCFSingleTrackTask::operator=(const AliCFSingleTrackTask
   // Assignment operator
   //
   if (this!=&c) {
-    AliAnalysisTask::operator=(c) ;
-    fChain      = c.fChain;
-    fESD        = c.fESD;
+    AliAnalysisTaskSE::operator=(c) ;
     fCFManager  = c.fCFManager;
     fQAHistList = c.fQAHistList ;
     fHistEventsProcessed = c.fHistEventsProcessed;
@@ -94,9 +92,7 @@ AliCFSingleTrackTask& AliCFSingleTrackTask::operator=(const AliCFSingleTrackTask
 
 //___________________________________________________________________________
 AliCFSingleTrackTask::AliCFSingleTrackTask(const AliCFSingleTrackTask& c) :
-  AliAnalysisTask(c),
-  fChain(c.fChain),
-  fESD(c.fESD),
+  AliAnalysisTaskSE(c),
   fCFManager(c.fCFManager),
   fQAHistList(c.fQAHistList),
   fHistEventsProcessed(c.fHistEventsProcessed)
@@ -112,63 +108,47 @@ AliCFSingleTrackTask::~AliCFSingleTrackTask() {
   //destructor
   //
   Info("~AliCFSingleTrackTask","Calling Destructor");
-  if (fChain)               delete fChain ;
-  if (fESD)                 delete fESD ;
   if (fCFManager)           delete fCFManager ;
   if (fHistEventsProcessed) delete fHistEventsProcessed ;
   if (fQAHistList) {fQAHistList->Clear(); delete fQAHistList;}
 }
 
-//___________________________________________________________________________
-
-void AliCFSingleTrackTask::Init()
-{
-
-}
 //_________________________________________________
-void AliCFSingleTrackTask::Exec(Option_t *)
+void AliCFSingleTrackTask::UserExec(Option_t *)
 {
   //
   // Main loop function
   //
-  Info("Exec","") ;
-  // Get the mc truth
-  AliMCEventHandler* mcTruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+  Info("UserExec","") ;
 
-  if (!mcTruth) Error("Exec","NO MC INFO FOUND... EXITING\n");
+  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if (!fESD) {
+    Error("UserExec","NO ESD FOUND!");
+    return;
+  }
 
-  // transform possible old AliESD into AliESDEvent
-
-  if (fESD->GetAliESDOld()) fESD->CopyFromOldESD(); //transition to new ESD format
+  if (!fMCEvent) Error("UserExec","NO MC INFO FOUND");
 
   //pass the MC evt handler to the cuts that need it 
-
-  fCFManager->SetEventInfo(mcTruth);
-
-  // Get the MC event 
-  AliMCEvent* mcEvent = mcTruth->MCEvent();
+  fCFManager->SetEventInfo(fMCEvent);
 
   // MC-event selection
   Double_t containerInput[2] ;
         
   //loop on the MC event
-  for (Int_t ipart=0; ipart<mcEvent->GetNumberOfTracks(); ipart++) { 
-    AliMCParticle *mcPart  = mcEvent->GetTrack(ipart);
+  for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
+    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
 
     //check the MC-level cuts
-    fCFManager->FillQABeforeParticleCuts(AliCFManager::kPartGenCuts,mcPart);  
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
-    fCFManager->FillQAAfterParticleCuts(AliCFManager::kPartGenCuts,mcPart);  
 
     containerInput[0] = (Float_t)mcPart->Pt();
     containerInput[1] = mcPart->Eta() ;
     //fill the container for Gen-level selection
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);
-    
+
     //check the Acceptance-level cuts
-    fCFManager->FillQABeforeParticleCuts(AliCFManager::kPartAccCuts,mcPart);  
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
-    fCFManager->FillQAAfterParticleCuts(AliCFManager::kPartAccCuts,mcPart);  
     //fill the container for Acceptance-level selection
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructible);
   }    
@@ -178,13 +158,11 @@ void AliCFSingleTrackTask::Exec(Option_t *)
 
     AliESDtrack* track = fESD->GetTrack(iTrack);
     
-    fCFManager->FillQABeforeParticleCuts(AliCFManager::kPartRecCuts,track);  
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,track)) continue;
-    fCFManager->FillQAAfterParticleCuts(AliCFManager::kPartRecCuts,track);
 
     // is track associated to particle ?
     if (track->GetLabel()<0) continue;
-    AliMCParticle *mcPart  = mcEvent->GetTrack(track->GetLabel());
+    AliMCParticle *mcPart  = fMCEvent->GetTrack(track->GetLabel());
     
     // check if this track was part of the signal
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue; 
@@ -197,18 +175,16 @@ void AliCFSingleTrackTask::Exec(Option_t *)
     containerInput[1] = track->Eta();
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
 
-
-    fCFManager->FillQABeforeParticleCuts(AliCFManager::kPartSelCuts,track);  
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,track)) continue ;
-    fCFManager->FillQAAfterParticleCuts(AliCFManager::kPartSelCuts,track);  
-
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepSelected);
   }
   
   fHistEventsProcessed->Fill(0);
-  PostData(0,fHistEventsProcessed) ;
-  PostData(1,fCFManager->GetParticleContainer()) ;
-  PostData(2,fQAHistList) ;
+
+  /* PostData(0) is taken care of by AliAnalysisTaskSE */
+  PostData(1,fHistEventsProcessed) ;
+  PostData(2,fCFManager->GetParticleContainer()) ;
+  PostData(3,fQAHistList) ;
 }
 
 
@@ -220,88 +196,82 @@ void AliCFSingleTrackTask::Terminate(Option_t*)
   // the results graphically or save the results to file.
 
   Info("Terminate","");
-  AliAnalysisTask::Terminate();
+  AliAnalysisTaskSE::Terminate();
 
   //draw some example plots....
 
-  AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(1));
+  AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(2));
 
-  Double_t max1 = cont->ShowProjection(0,0)->GetMaximum();
-  Double_t max2 = cont->ShowProjection(1,0)->GetMaximum();
+  TH1D* h00 =   cont->ShowProjection(0,0) ;
+  TH1D* h01 =   cont->ShowProjection(0,1) ;
+  TH1D* h02 =   cont->ShowProjection(0,2) ;
+  TH1D* h03 =   cont->ShowProjection(0,3) ;
 
-  cont->ShowProjection(0,0)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  cont->ShowProjection(0,1)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  cont->ShowProjection(0,2)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  cont->ShowProjection(0,3)->GetYaxis()->SetRangeUser(0,max1*1.2);
+  TH1D* h10 =   cont->ShowProjection(1,0) ;
+  TH1D* h11 =   cont->ShowProjection(1,1) ;
+  TH1D* h12 =   cont->ShowProjection(1,2) ;
+  TH1D* h13 =   cont->ShowProjection(1,3) ;
 
-  cont->ShowProjection(1,0)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  cont->ShowProjection(1,1)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  cont->ShowProjection(1,2)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  cont->ShowProjection(1,3)->GetYaxis()->SetRangeUser(0,max2*1.2);
+  Double_t max1 = h00->GetMaximum();
+  Double_t max2 = h10->GetMaximum();
 
-  cont->ShowProjection(0,0)->SetMarkerStyle(23) ;
-  cont->ShowProjection(0,1)->SetMarkerStyle(24) ;
-  cont->ShowProjection(0,2)->SetMarkerStyle(25) ;
-  cont->ShowProjection(0,3)->SetMarkerStyle(26) ;
+  h00->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h01->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h02->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h03->GetYaxis()->SetRangeUser(0,max1*1.2);
 
-  cont->ShowProjection(1,0)->SetMarkerStyle(23) ;
-  cont->ShowProjection(1,1)->SetMarkerStyle(24) ;
-  cont->ShowProjection(1,2)->SetMarkerStyle(25) ;
-  cont->ShowProjection(1,3)->SetMarkerStyle(26) ;
+  h10->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h11->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h12->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h13->GetYaxis()->SetRangeUser(0,max2*1.2);
+
+  h00->SetMarkerStyle(23) ;
+  h01->SetMarkerStyle(24) ;
+  h02->SetMarkerStyle(25) ;
+  h03->SetMarkerStyle(26) ;
+
+  h10->SetMarkerStyle(23) ;
+  h11->SetMarkerStyle(24) ;
+  h12->SetMarkerStyle(25) ;
+  h13->SetMarkerStyle(26) ;
 
   TCanvas * c =new TCanvas("c","",1400,800);
   c->Divide(4,2);
 
   c->cd(1);
-  cont->ShowProjection(0,0)->Draw("p");
+  h00->Draw("p");
   c->cd(2);
-  cont->ShowProjection(0,1)->Draw("p");
+  h01->Draw("p");
   c->cd(3);
-  cont->ShowProjection(0,2)->Draw("p");
+  h02->Draw("p");
   c->cd(4);
-  cont->ShowProjection(0,3)->Draw("p");
+  h03->Draw("p");
   c->cd(5);
-  cont->ShowProjection(1,0)->Draw("p");
+  h10->Draw("p");
   c->cd(6);
-  cont->ShowProjection(1,1)->Draw("p");
+  h11->Draw("p");
   c->cd(7);
-  cont->ShowProjection(1,2)->Draw("p");
+  h12->Draw("p");
   c->cd(8);
-  cont->ShowProjection(1,3)->Draw("p");
+  h13->Draw("p");
 
   c->SaveAs("plots.eps");
-
-  delete fHistEventsProcessed ;
 }
 
-//___________________________________________________________________________
-void AliCFSingleTrackTask::ConnectInputData(Option_t *) {
-  //
-  // Initialize branches.
-  //
-  Info("ConnectInputData","ConnectInputData of task %s\n",GetName());
-
-  fChain = (TChain*)GetInputData(0);
-  fChain->SetBranchStatus("*FMD*",0);
-  fChain->SetBranchStatus("*CaloClusters*",0);
-  fESD = new AliESDEvent();
-  fESD->ReadFromTree(fChain);
-}
 
 //___________________________________________________________________________
-void AliCFSingleTrackTask::CreateOutputObjects() {
+void AliCFSingleTrackTask::UserCreateOutputObjects() {
   //HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
-  Info("CreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
+  Info("CreateOutputObjects","CreateOutputObjects of task %s", GetName());
 
-  //slot #0
+  //slot #1
+  OpenFile(1);
   fHistEventsProcessed = new TH1I("fHistEventsProcessed","",1,0,1) ;
 
-  //slot #2
-  fQAHistList = new TList();
-  fCFManager->InitQAHistos();
-  fCFManager->AddQAHistosToList(fQAHistList);
+//   OpenFile(2);
+//   OpenFile(3);
 }
 
 #endif

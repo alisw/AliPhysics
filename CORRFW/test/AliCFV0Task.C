@@ -7,7 +7,7 @@ const Double_t phimin =   0 ;
 const Double_t phimax = 360 ;
 const Int_t    mintrackrefsTPC = 2 ;
 const Int_t    mintrackrefsITS = 3 ;
-const Int_t    PDG = 3122; 
+const Int_t    PDG = 310; 
 const Int_t    minclustersTPC = 10 ;
 const Int_t    chargeV0 = 0 ;
 //----------------------------------------------------
@@ -90,7 +90,7 @@ Bool_t AliCFV0Task(
   mcKineCuts->SetChargeMC(0);
 
   AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
-  mcGenCuts->SetRequireIsPrimary();
+  //mcGenCuts->SetRequireIsPrimary(); //problem with some particles...
   mcGenCuts->SetRequirePdgCode(PDG);
 
   //Acceptance Cuts
@@ -102,6 +102,7 @@ Bool_t AliCFV0Task(
   AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","V0 rec-level kine cuts");
   recKineCuts->SetPtRange(ptmin,ptmax);
   recKineCuts->SetRapidityRange(ymin,ymax);
+  recKineCuts->SetChargeRec(0);
 
   AliCFPairQualityCuts *recQualityCuts = new AliCFPairQualityCuts("recQualityCuts","V0 rec-level quality cuts");
   recQualityCuts->SetMinNClusterTPC(minclustersTPC,minclustersTPC);
@@ -169,7 +170,7 @@ Bool_t AliCFV0Task(
   // create the task
   AliCFV0Task *task = new AliCFV0Task("AliCFV0Task");
   task->SetCFManager(man); //here is set the CF manager
-  task->SetRebuildV0s(0);
+  task->SetRebuildV0s(kTRUE);
   task->SetV0PDG(PDG);
 
   //SETUP THE ANALYSIS MANAGER TO READ INPUT CHAIN AND WRITE DESIRED OUTPUTS
@@ -177,28 +178,38 @@ Bool_t AliCFV0Task(
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
 
+  if (useGrid) mgr->SetAnalysisType(AliAnalysisManager::kGridAnalysis);
+  else mgr->SetAnalysisType(AliAnalysisManager::kLocalAnalysis);
+
+  AliMCEventHandler* mcHandler = new AliMCEventHandler();
+  AliESDInputHandler* esdHandler = new AliESDInputHandler();
+  mgr->SetMCtruthEventHandler(mcHandler);
+  mgr->SetInputEventHandler(esdHandler);
+
+
   // Create and connect containers for input/output
 
   //input data
-  AliAnalysisDataContainer *cinput0  = mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *cinput0  = 
+    mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+  //slot 0 : default output tree (by default handled by AliAnalysisTaskSE)
+  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"outputV0.root");
   // output histo (number of events processed)
-  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"outputV0.root");
+  AliAnalysisDataContainer *coutput1 = 
+    mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"outputV0.root");
   // output Correction Framework Container (for acceptance & efficiency calculations)
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"outputV0.root");
-  // output QA histograms 
-//   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("clist0", TList::Class(),AliAnalysisManager::kOutputContainer,"outputV0.root");
-
-  mgr->AddTask(task);
-  mgr->ConnectInput(task,0,cinput0);
-  mgr->ConnectOutput(task,0,coutput0);
-  mgr->ConnectOutput(task,1,coutput1);
+  AliAnalysisDataContainer *coutput2 = 
+    mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"outputV0.root");
 
   cinput0->SetData(analysisChain);
- 
-  //NEW INTERFACE TO MC INFORMATION
-  AliMCEventHandler* mcHandler = new AliMCEventHandler();
-  mgr->SetMCtruthEventHandler(mcHandler);
 
+  mgr->AddTask(task);
+  mgr->ConnectInput (task,0,cinput0 );
+  mgr->ConnectOutput(task,0,coutput0);
+  mgr->ConnectOutput(task,1,coutput1);
+  mgr->ConnectOutput(task,2,coutput2);
+
+ 
   Info("AliCFV0Task","READY TO RUN");
   //RUN !!!
   if (mgr->InitAnalysis()) {
@@ -219,6 +230,7 @@ void Load(Bool_t useGrid) {
   
   //load the required aliroot libraries
   gSystem->Load("libANALYSIS") ;
+  gSystem->Load("libANALYSISalice") ;
   
   gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include -I$ALICE_ROOT/PWG2/RESONANCES -I$ALICE_ROOT/CORRFW");
 

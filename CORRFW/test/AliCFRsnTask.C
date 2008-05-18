@@ -97,7 +97,6 @@ Bool_t AliCFRsnTask(
 
   // Rec-Level kinematic cuts
   AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","rec-level kine cuts");
-//   AliCFPairKineCuts *recKineCuts = new AliCFPairKineCuts("recKineCuts","rec-level kine cuts");
   recKineCuts->SetPtRange(ptmin,ptmax);
   recKineCuts->SetRapidityRange(ymin,ymax);
   recKineCuts->SetChargeRec(charge);
@@ -127,14 +126,14 @@ Bool_t AliCFRsnTask(
   cutPID->SetProbabilityCut(0.,0.);
   cutPID->SetDetectors("TPC ITS TOF TRD","TPC ITS TOF TRD");
   switch(PDG) {
-  case  -313  : cutPID->SetParticleType(AliPID::kKaon,kTRUE,AliPID::kPion,kTRUE); break;
-  case   313  : cutPID->SetParticleType(AliPID::kPion,kTRUE,AliPID::kKaon,kTRUE); break;
-  case   333  : cutPID->SetParticleType(AliPID::kKaon,kTRUE,AliPID::kKaon,kTRUE); break;
-  case  3124  : cutPID->SetParticleType(AliPID::kPion,kTRUE,AliPID::kKaon,kTRUE); break;
-  case -3124  : cutPID->SetParticleType(AliPID::kPion,kTRUE,AliPID::kKaon,kTRUE); break;
+  case  -313  : cutPID->SetParticleType(AliPID::kKaon  ,kTRUE,AliPID::kPion  ,kTRUE); break;
+  case   313  : cutPID->SetParticleType(AliPID::kPion  ,kTRUE,AliPID::kKaon  ,kTRUE); break;
+  case   333  : cutPID->SetParticleType(AliPID::kKaon  ,kTRUE,AliPID::kKaon  ,kTRUE); break;
+  case  3124  : cutPID->SetParticleType(AliPID::kKaon  ,kTRUE,AliPID::kProton,kTRUE); break;
+  case -3124  : cutPID->SetParticleType(AliPID::kProton,kTRUE,AliPID::kKaon  ,kTRUE); break;
   default     : printf("UNDEFINED PID\n"); break;
   }
-//   cutPID->SetQAOn(kTRUE);
+  //cutPID->SetQAOn(kTRUE);
 
   Info("AliCFRsnTask","CREATE MC KINE CUTS");
   TObjArray* mcList = new TObjArray(0) ;
@@ -178,25 +177,36 @@ Bool_t AliCFRsnTask(
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
 
+  if (useGrid) mgr->SetAnalysisType(AliAnalysisManager::kGridAnalysis);
+  else mgr->SetAnalysisType(AliAnalysisManager::kLocalAnalysis);
+
+  AliMCEventHandler* mcHandler = new AliMCEventHandler();
+  AliESDInputHandler* esdHandler = new AliESDInputHandler();
+  mgr->SetMCtruthEventHandler(mcHandler);
+  mgr->SetInputEventHandler(esdHandler);
+
+
   // Create and connect containers for input/output
 
   //input data
   AliAnalysisDataContainer *cinput0  = mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+
+  //slot 0 : default output tree (by default handled by AliAnalysisTaskSE)
+  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"output_rsn.root");
+
   // output histo (number of events processed)
-  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"output_rsn.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"output_rsn.root");
   // output Correction Framework Container (for acceptance & efficiency calculations)
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output_rsn.root");
-  // output QA histograms 
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output_rsn.root");
+
+  cinput0->SetData(analysisChain);
 
   mgr->AddTask(task);
-  mgr->ConnectInput(task,0,cinput0);
+  mgr->ConnectInput (task,0,cinput0);
   mgr->ConnectOutput(task,0,coutput0);
   mgr->ConnectOutput(task,1,coutput1);
-  cinput0->SetData(analysisChain);
+  mgr->ConnectOutput(task,2,coutput2);
  
-  //NEW INTERFACE TO MC INFORMATION
-  AliMCEventHandler* mcHandler = new AliMCEventHandler();
-  mgr->SetMCtruthEventHandler(mcHandler);
 
   Info("AliCFRsnTask","READY TO RUN");
   //RUN !!!
@@ -218,6 +228,7 @@ void Load(Bool_t useGrid) {
   
   //load the required aliroot libraries
   gSystem->Load("libANALYSIS") ;
+  gSystem->Load("libANALYSISalice") ;
   
   gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include -I$ALICE_ROOT/PWG2/RESONANCES -I$ALICE_ROOT/CORRFW");
 
