@@ -89,7 +89,7 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     TIter next(fDetectors);
     TNamed* det;
     TFile* file = 0;
-    while (det = ((TNamed*) next()))
+    while ((det = (TNamed*) next()))
     {
 	if (!fIsArchive) {
 	    file = TFile::Open(Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName()));
@@ -154,7 +154,7 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     // Tree R
     TIter next(fRFiles);
     TFile* file;
-    while (file = ((TFile*) next()))
+    while ((file = (TFile*) next()))
     {
 	file->GetObject(folder, fDirR);
 	if (!fDirR) {
@@ -183,7 +183,7 @@ Bool_t AliESDInputHandlerRP::OpenFile(Int_t i)
     TIter next(fDetectors);
     TNamed* det;
     TFile* file;
-    while (det = ((TNamed*) next()))
+    while ((det = (TNamed*) next()))
     {
 	if (!fIsArchive) {
 	    file = TFile::Open(Form("%s%s.RecPoints%s.root", fPathName->Data(), det->GetName(), fExtension));
@@ -245,9 +245,9 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	if (!(strcmp(str.Data(), "RecPoints"))){
 	    TString det = ((TObjString*) tokens->At(0))->GetString();
 	    printf("Name  %s \n", det.Data());
-	    TNamed* entry = new TNamed(det.Data(), det.Data());
-	    entry->SetUniqueID(ien++);
-	    fDetectors->Add(entry);
+	    TNamed* ent = new TNamed(det.Data(), det.Data());
+	    ent->SetUniqueID(ien++);
+	    fDetectors->Add(ent);
 	}
     } // loop over files
     

@@ -205,7 +205,7 @@ void  AliAODEvent::MakeEntriesReferencable()
     //
     TIter next(fAODObjects);
     TObject* obj;
-    while (obj = next())
+    while ((obj = next()))
     {
 	if(obj->InheritsFrom("TCollection"))
 	    {
@@ -444,7 +444,7 @@ void AliAODEvent::ReadFromTree(TTree *tree)
 		printf("Get list of object from tree %d !!\n", objL->GetEntries());
 		TIter nextobject(objL);
 		TObject* obj =  0;
-		while(obj = nextobject())
+		while((obj = nextobject()))
 		{
 		    printf("Adding object from friend %s !\n", obj->GetName());
 		    fAODObjects->Add(obj);
@@ -517,6 +517,6 @@ void AliAODEvent::AssignIDtoCollection(TCollection* col)
     // written by a subsequent process.
     TIter next(col);
     TObject* obj;
-    while (obj = next())
+    while ((obj = next()))
 	TProcessID::AssignID(obj);
 }

@@ -104,10 +104,10 @@ class AliKFParticleBase :public TObject {
   //* Accessors with calculations( &value, &estimated sigma )
   //* error flag returned (0 means no error during calculations) 
 
-  Int_t GetMomentum    ( Double_t &P, Double_t &SigmaP ) const ;
-  Int_t GetMass        ( Double_t &M, Double_t &SigmaM ) const ;
-  Int_t GetDecayLength ( Double_t &L, Double_t &SigmaL ) const ;
-  Int_t GetLifeTime    ( Double_t &T, Double_t &SigmaT ) const ;
+  Int_t GetMomentum    ( Double_t &pmom, Double_t &sigmap ) const ;
+  Int_t GetMass        ( Double_t &mass, Double_t &sigmam ) const ;
+  Int_t GetDecayLength ( Double_t &dlen, Double_t &sigmal ) const ;
+  Int_t GetLifeTime    ( Double_t &tauc, Double_t &sigmat ) const ;
 
   //*
   //*  MODIFIERS

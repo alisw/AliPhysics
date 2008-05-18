@@ -41,7 +41,7 @@ CLIBCXXOPTS   =
 CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
-CXXSTF        = -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
+CXXSTF        = -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
 
 # Compiler flags
 CXXFLAGS      = $(CXXOPT) $(CXXSTF)

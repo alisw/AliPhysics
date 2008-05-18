@@ -21,10 +21,8 @@
 //     Markus.Oldenburg@cern.ch
 //-------------------------------------------------------------------------
 
+#include "AliLog.h"
 #include "AliAODTrack.h"
-
-//#include <TPDGCode.h>
-//#include <TDatabasePDG.h>
 
 ClassImp(AliAODTrack)
 
@@ -437,10 +435,10 @@ void AliAODTrack::Print(Option_t* /* option */) const
   printf("    charge = %d\n", Charge());
 }
 
-void AliAODTrack::SetMatchTrigger(Int_t MatchTrigger){
+void AliAODTrack::SetMatchTrigger(Int_t matchTrig){
 //
 // Set the MUON trigger information
-  switch(MatchTrigger){
+  switch(matchTrig){
     case 0: // 0 track does not match trigger
       fITSMuonClusterMap=fITSMuonClusterMap&0x3fffffff;
       break;
@@ -455,7 +453,7 @@ void AliAODTrack::SetMatchTrigger(Int_t MatchTrigger){
       break;
     default:
       fITSMuonClusterMap=fITSMuonClusterMap&0x3fffffff;
-      printf("AliAODTrack::SetMatchTrigger unknown case for MatchTrigger: %d\n",MatchTrigger);
+      AliWarning(Form("unknown case for matchTrig: %d\n",matchTrig));
   }
 }
 
