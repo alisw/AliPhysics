@@ -59,10 +59,8 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   ~AliCFTrackQualityCuts();
   void Copy(TObject &c) const;
 
-  void GetBitMap(TObject* obj, TBits *bitmap) ;
   Bool_t IsSelected(TObject* obj);
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  void Init();
 
   // cut value setter
   void SetMinNClusterTPC(Int_t cluster=-1)		{fMinNClusterTPC = cluster;}
@@ -75,11 +73,9 @@ class AliCFTrackQualityCuts : public AliCFCutBase
 {fCovariance11Max=c1;fCovariance22Max=c2;fCovariance33Max=c3;fCovariance44Max=c4;fCovariance55Max=c5;}
 
   // QA histograms
-  void FillHistogramsBeforeCuts(TObject* obj) {return FillHistograms(obj,kFALSE);}
-  void FillHistogramsAfterCuts(TObject* obj)  {return FillHistograms(obj,kTRUE);}
   void DrawHistograms(Bool_t drawLogScale=kTRUE);
   void SaveHistograms(const Char_t* dir = 0);
-  void AddQAHistograms(TList *qaList) const;
+  void AddQAHistograms(TList *qaList);
   // QA histogram setter
   // please use indices from the enumeration below
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
@@ -104,7 +100,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   };
 
  private:
-  TBits* SelectionBitMap(TObject* obj);
+  void SelectionBitMap(TObject* obj);
   void DefineHistograms(); 		// books histograms and TList
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);

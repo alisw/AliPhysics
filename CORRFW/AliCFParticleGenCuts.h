@@ -27,10 +27,14 @@
 
 #include "AliCFCutBase.h"
 
-class AliMCEventHandler;
+class AliMCEvent;
 class TObject;
 class AliMCParticle;
 class AliStack;
+class TList;
+class TH1F;
+class TH2F;
+class TBits;
 
 class AliCFParticleGenCuts : public AliCFCutBase
 {
@@ -42,16 +46,17 @@ class AliCFParticleGenCuts : public AliCFCutBase
   virtual ~AliCFParticleGenCuts() { };
   virtual Bool_t IsSelected(TObject* obj) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  virtual void   SetEvtInfo(TObject* mcInfo) ;
+  virtual void   SetEvtInfo(TObject* mcEvent) ;
   //static checkers
   static Bool_t IsPrimaryCharged(AliMCParticle *mcPart,AliStack*stack);
   static Bool_t IsPrimary(AliMCParticle *mcPart,AliStack*stack);
   static Bool_t IsCharged(AliMCParticle *mcPart);
   static Bool_t IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs=kFALSE);
 
-  void SetRequireIsCharged   (Bool_t b=kTRUE)       {fRequireIsCharged=b;}
-  void SetRequireIsPrimary   (Bool_t b=kTRUE)       {fRequireIsPrimary=b;}
-  void SetRequireIsSecondary (Bool_t b=kTRUE)       {fRequireIsSecondary=b;}
+  void SetRequireIsCharged   () {fRequireIsCharged  =kTRUE; fRequireIsNeutral  =kFALSE;}
+  void SetRequireIsNeutral   () {fRequireIsNeutral  =kTRUE; fRequireIsCharged  =kFALSE;}
+  void SetRequireIsPrimary   () {fRequireIsPrimary  =kTRUE; fRequireIsSecondary=kFALSE;}
+  void SetRequireIsSecondary () {fRequireIsSecondary=kTRUE; fRequireIsPrimary  =kFALSE;}
   void SetRequirePdgCode     (Int_t pdg)            {fRequirePdgCode=kTRUE; fPdgCode=pdg;}
   void SetProdVtxRangeX    (Double32_t xmin, Double32_t xmax) {fProdVtxXMin   =xmin; fProdVtxXMax   =xmax;}
   void SetProdVtxRangeY    (Double32_t ymin, Double32_t ymax) {fProdVtxYMin   =ymin; fProdVtxYMax   =ymax;}
@@ -62,9 +67,34 @@ class AliCFParticleGenCuts : public AliCFCutBase
   void SetDecayLengthRange (Double32_t rmin, Double32_t rmax) {fDecayLengthMin=rmin; fDecayLengthMax=rmax;}
   void SetDecayRxyRange    (Double32_t rmin, Double32_t rmax) {fDecayRxyMin   =rmin; fDecayRxyMax   =rmax;}
 
- protected:
-  AliMCEventHandler* fMCInfo ;    // pointer to the MC event information
+  enum { 
+    kCutCharge,       // ischarged cut
+    kCutPrimSec,      // isprimary cut
+    kCutPDGCode,      // PDG code  cut
+    kCutProdVtxXMin,  // production vertex cut
+    kCutProdVtxXMax,  // production vertex cut
+    kCutProdVtxYMin,  // production vertex cut
+    kCutProdVtxYMax,  // production vertex cut
+    kCutProdVtxZMin,  // production vertex cut
+    kCutProdVtxZMax,  // production vertex cut
+    kCutDecVtxXMin,   // decay vertex cut
+    kCutDecVtxXMax,   // decay vertex cut
+    kCutDecVtxYMin,   // decay vertex cut
+    kCutDecVtxYMax,   // decay vertex cut
+    kCutDecVtxZMin,   // decay vertex cut
+    kCutDecVtxZMax,   // decay vertex cut
+    kCutDecLgthMin,   // decay length cut
+    kCutDecLgthMax,   // decay length cut
+    kCutDecRxyMin,    // transverse decay length cut
+    kCutDecRxyMax,    // transverse decay length cut
+    kNCuts,           // number of single selections
+    kNStepQA=2        // number of QA steps (before/after the cuts)
+  };
+
+ private:
+  AliMCEvent* fMCInfo ;    // pointer to the MC event information
   Bool_t     fRequireIsCharged;   // require charged particle
+  Bool_t     fRequireIsNeutral;   // require neutral particle
   Bool_t     fRequireIsPrimary;   // require primary particle
   Bool_t     fRequireIsSecondary; // require secondary particle
   Bool_t     fRequirePdgCode;     // require check of the PDG code
@@ -85,6 +115,17 @@ class AliCFParticleGenCuts : public AliCFCutBase
   Double32_t fDecayLengthMax;     // max decay length (absolute)
   Double32_t fDecayRxyMin;        // min decay length in transverse plane wrt (0,0,0)
   Double32_t fDecayRxyMax;        // max decay length in transverse plane wrt (0,0,0)
+
+  //QA histos
+  TH1F*  fhCutStatistics;		// Histogram: statistics of what cuts the tracks did not survive
+  TH2F*  fhCutCorrelation;		// Histogram: 2d statistics plot
+  TH1F*  fhQA[kNCuts][kNStepQA];        // QA Histograms
+  TBits* fBitmap ; 			// stores single selection decisions
+
+  void SelectionBitMap(TObject* obj);
+  void FillHistograms(TObject* obj, Bool_t afterCuts);
+  void AddQAHistograms(TList *qaList) ;
+  void DefineHistograms();
 
   ClassDef(AliCFParticleGenCuts,1);
 };

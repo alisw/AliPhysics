@@ -596,7 +596,10 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
         else fhCombResp[nn]->Fill(combpid[nn]);
       }//fIsQAOn
     }//loop on species
-    if(sumesdpid > 0) for(Int_t ih = 0; ih < AliPID::kSPECIES; ih++) fhCombProb[ih]->Fill(fPriors[ih]*combpid[ih]/sumesdpid);
+    if(sumesdpid > 0) for(Int_t ih = 0; ih < AliPID::kSPECIES; ih++) {
+     if(!fhCombResp[ih]) AliDebug(1,Form("\n no fhCombResp[%i], check if pidcut->Init() was called \n",ih));
+     else fhCombProb[ih]->Fill(fPriors[ih]*combpid[ih]/sumesdpid);
+     }
     else AliDebug(1,"priors or ESDpid are zero, please check them");
   }// end no det
   
@@ -619,7 +622,7 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
     for(Int_t n=0; n<AliPID::kSPECIES; n++) { 
       combpid[n]=fPriors[n]*prod[n]/sum;
       if(fIsQAOn) {
-	if(!fhCombProb[n]) AliDebug(1,Form("no fhCombRespi[%i] defined, check if pidcut->Init() was called",n));
+	if(!fhCombProb[n]) AliDebug(1,Form("no fhCombProb[%i] defined, check if pidcut->Init() was called",n));
 	else fhCombProb[n]->Fill(combpid[n]);
       }
     }
@@ -644,15 +647,6 @@ void AliCFTrackCutPid::InitialiseHisto()
   } 
 }
 //______________________________________________
-void AliCFTrackCutPid::Init() 
-{
-  //
-  // initialises QA histograms
-  //
-  
-  if(fIsQAOn) DefineHistograms();
-}
-//_________________________________________________
 void AliCFTrackCutPid::DefineHistograms()
 {
   //
@@ -676,18 +670,21 @@ if(fgIsComb)
     for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
       {
 	fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response    ",partic[iPart]),fNbins,fXmin,fXmax);
+        Printf(Form(  "rCombPart%i is booked!!",iPart));
 	fhCombProb[iPart] = new TH1F(Form("pCombPart%i",iPart),Form("%s combined probability ",partic[iPart]),fNbins,fXmin,fXmax);
+        Printf(Form(  "rCombProb%i is booked!!",iPart));
       }
   }
 }
 //___________________________________________________
 
-void AliCFTrackCutPid::AddQAHistograms(TList *qalist) const 
+void AliCFTrackCutPid::AddQAHistograms(TList *qalist) 
 {
   //
   // adds QA histograms in a TList
   //
   if(!fIsQAOn) return;
+  DefineHistograms();
   
   if(fgIsComb){
     for(Int_t iPart =0; iPart<AliPID::kSPECIES; iPart++){

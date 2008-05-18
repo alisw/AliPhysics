@@ -36,11 +36,8 @@ class AliCFEventRecCuts: public AliCFCutBase
   AliCFEventRecCuts(const AliCFEventRecCuts& c) ;
   AliCFEventRecCuts& operator=(const AliCFEventRecCuts& c) ;
   ~AliCFEventRecCuts();
-  void GetBitMap(TObject *obj, TBits*bitmap);
   Bool_t IsSelected(TObject* obj);
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  void Init();
-  void AddQAHistograms(TList *list) const;
 
   void SetNTracksCut(Int_t xMin=-1, Int_t xMax=1000000) {fNTracksMin=xMin; fNTracksMax=xMax;} // cut values setter
 
@@ -66,9 +63,6 @@ class AliCFEventRecCuts: public AliCFCutBase
   Double_t GetVertexYResMax() const {return fVtxYResMax;} // cut values getter
   Double_t GetVertexZResMax() const {return fVtxZResMax;} // cut values getter
 
-  // QA histograms
-  void FillHistogramsBeforeCuts(TObject* obj) {return FillHistograms(obj,kFALSE);}
-  void FillHistogramsAfterCuts(TObject* obj)  {return FillHistograms(obj,kTRUE);}
   // QA histogram setter
   // please use indices from the enumeration below
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
@@ -84,11 +78,13 @@ class AliCFEventRecCuts: public AliCFCutBase
 	 kNStepQA=2
 	 };
   
- private:
-  TBits *SelectionBitMap(TObject* obj);
+ protected:
+  void SelectionBitMap(TObject* obj);
+  void AddQAHistograms(TList *qaList) ;
   void DefineHistograms(); 		// books histograms 
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
+
   Int_t fNTracksMin; //minimum number of esd tracks
   Int_t fNTracksMax; //maximum number of esd tracks
   Bool_t fRequireVtxCuts ; //The type of trigger to be checked
@@ -102,28 +98,11 @@ class AliCFEventRecCuts: public AliCFCutBase
   Double_t fVtxYResMax ;//Maximum value of sigma_vtx in X
   Double_t fVtxZResMax ;//Maximum value of sigma_vtx in X
 
-
   TBits *fBitMap ; //cut mask
 
-
   TH1F* fhQA[kNCuts][kNStepQA];		// QA Histograms
-  //QA Histogram parameters
-  Int_t fhNBinsNTracks;//size of array of bin limits, N Tracks ESD
-  Double_t *fhBinLimNTracks;//[fhNBinsNTracks] bin limits, N Tracks ESD
-  Int_t fhNBinsVtxPosX;//size of array of bin limits, Vtx Pos X
-  Double_t *fhBinLimVtxPosX;//[fhNBinsVtxPosX] bin limits, Vtx Pos X
-  Int_t fhNBinsVtxPosY;//size of array of bin limits, Vtx Pos Y
-  Double_t *fhBinLimVtxPosY;//[fhNBinsVtxPosY] bin limits, Vtx Pos Y
-  Int_t fhNBinsVtxPosZ;//size of array of bin limits, Vtx Pos Z
-  Double_t *fhBinLimVtxPosZ;//[fhNBinsVtxPosZ] bin limits, Vtx Pos Z
-  Int_t fhNBinsVtxResX;//size of array of bin limits, Vtx Res X
-  Double_t *fhBinLimVtxResX;//[fhNBinsVtxResX] bin limits, Vtx Res X
-  Int_t fhNBinsVtxResY;//size of array of bin limits, Vtx Res Y
-  Double_t *fhBinLimVtxResY;//[fhNBinsVtxResY] bin limits, Vtx Res Y
-  Int_t fhNBinsVtxResZ;//size of array of bin limits, Vtx Res Z
-  Double_t *fhBinLimVtxResZ;//[fhNBinsVtxResZ] bin limits, Vtx Res Z
 
-  ClassDef(AliCFEventRecCuts,2);
+  ClassDef(AliCFEventRecCuts,3);
 };
 
 #endif

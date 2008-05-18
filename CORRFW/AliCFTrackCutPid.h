@@ -74,18 +74,15 @@ class AliCFTrackCutPid : public AliCFCutBase
   //main 
   virtual Bool_t IsSelected(TObject *track); 
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}  
-  //histo booking                                                    
-  void Init();
-  
   //histos are added to a list
-  void AddQAHistograms(TList *qalist) const;
+  void AddQAHistograms(TList *qalist);
   
   
  private:
   void SetPPriors(AliESDtrack *pTrk);                          
   ULong_t StatusForAND(ULong_t status[kNdets+1]) const; //
   void InitialiseHisto();
-  void DefineHistograms();    
+  void DefineHistograms();   //histo booking  
   Bool_t Check(const Double_t *p, Int_t iPsel, Double_t minDiff) const;
   void CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][AliPID::kSPECIES],Double_t *combpid) const;
   

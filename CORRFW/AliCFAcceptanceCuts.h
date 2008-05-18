@@ -29,7 +29,10 @@
 
 #include "AliCFCutBase.h"
 
-class AliMCEventHandler;
+class AliMCEvent;
+class TH1F ;
+class TH2F ;
+class TBits;
 
 class AliCFAcceptanceCuts : public AliCFCutBase
 {
@@ -48,14 +51,34 @@ class AliCFAcceptanceCuts : public AliCFCutBase
   void SetMinNHitTOF (Int_t nhits) {fMinNHitTOF=nhits;} 
   void SetMinNHitMUON(Int_t nhits) {fMinNHitMUON=nhits;}
 
+  enum { 
+    kCutHitsITS ,
+    kCutHitsTPC ,
+    kCutHitsTRD ,
+    kCutHitsTOF ,
+    kCutHitsMUON,
+    kNCuts,           // number of single selections
+    kNStepQA=2        // number of QA steps (before/after the cuts)
+  };
+
  protected:
-  AliMCEventHandler *fMCInfo;   // pointer to MC Information
-  Int_t      fMinNHitITS ;      // min number of track references in ITS 
-  Int_t      fMinNHitTPC ;      // min number of track references in TPC 
-  Int_t      fMinNHitTRD ;      // min number of track references in TRD 
-  Int_t      fMinNHitTOF ;      // min number of track references in TOF 
-  Int_t      fMinNHitMUON ;     // min number of track references in MUON
+  AliMCEvent *fMCInfo;        // pointer to MC Information
+  Int_t       fMinNHitITS ;   // min number of track references in ITS 
+  Int_t       fMinNHitTPC ;   // min number of track references in TPC 
+  Int_t       fMinNHitTRD ;   // min number of track references in TRD 
+  Int_t       fMinNHitTOF ;   // min number of track references in TOF 
+  Int_t       fMinNHitMUON ;  // min number of track references in MUON
   
+  //QA histos
+  TH1F*  fhCutStatistics;		// Histogram: statistics of what cuts the tracks did not survive
+  TH2F*  fhCutCorrelation;		// Histogram: 2d statistics plot
+  TH1F*  fhQA[kNCuts][kNStepQA];        // QA Histograms
+  TBits* fBitmap ; 			// stores single selection decisions
+  void SelectionBitMap(TObject* obj);
+  void FillHistograms(TObject* obj, Bool_t afterCuts);
+  void AddQAHistograms(TList *qaList) ;
+  void DefineHistograms();
+
   ClassDef(AliCFAcceptanceCuts,1);
 };
 

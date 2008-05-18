@@ -32,16 +32,13 @@ class AliCFCutBase : public AliAnalysisCuts
   AliCFCutBase(const AliCFCutBase& obj); //copy ctor  
   virtual ~AliCFCutBase() {;} //dtor
   virtual Bool_t IsQAOn() const {return fIsQAOn;}; //QA flag getter
-  virtual void SetQAOn(Bool_t flagQA) {fIsQAOn=flagQA;}; //QA flag setter
-  virtual void FillHistogramsBeforeCuts(TObject* ) {;}; //QA histos
-  virtual void FillHistogramsAfterCuts(TObject* ) {;}; //QA histos
-  virtual void DefineHistograms(){;}; //QA histos
-  virtual void AddQAHistograms(TList*) const {;}; //QA Histos
-  virtual void GetBitMap(TObject*, TBits*){;} //selection bitmap
+  virtual void SetQAOn(TList* list) {fIsQAOn=kTRUE; AddQAHistograms(list);} //QA flag setter
   virtual void SetEvtInfo(TObject *) {;}; //Pass pointer to event-level info
-  protected:
+  
+ protected:
   Bool_t fIsQAOn;//qa checking on/off
- private:
+  virtual void AddQAHistograms(TList*) {;}; //QA Histos
+
   ClassDef(AliCFCutBase, 1); // Base class for Correction Framework Cuts
 };
  

@@ -335,15 +335,7 @@ void AliCFTrackQualityCuts::Copy(TObject &c) const
   TNamed::Copy(c);
 }
 //__________________________________________________________________________________
-void AliCFTrackQualityCuts::GetBitMap(TObject* obj, TBits *bitmap) {
-  //
-  // retrieve the pointer to the bitmap
-  //
-  TBits *bm = SelectionBitMap(obj);
-  *bitmap = *bm;
-}
-//__________________________________________________________________________________
-TBits* AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
+void AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
 {
   //
   // test if the track passes the single cuts
@@ -353,11 +345,11 @@ TBits* AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   // bitmap stores the decision of each single cut
   for(Int_t i=0; i<kNCuts; i++)fBitmap->SetBitNumber(i,kFALSE);
 
-  // cast TObject into ESDtrack
+  // check TObject and cast into ESDtrack
+  if (!obj) return  ;
+  if (!obj->InheritsFrom("AliESDtrack")) AliError("object must derived from AliESDtrack !");
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(obj);
-  if ( !esdTrack ) return fBitmap ;
-
-  for(Int_t i=0; i<kNCuts; i++)fBitmap->SetBitNumber(i,kTRUE);
+  if ( !esdTrack ) return ;
 
   // get cut quantities
   Int_t  fIdxInt[200];
@@ -378,62 +370,60 @@ TBits* AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   // fill the bitmap
   Int_t iCutBit = 0;
 
-  if (nClustersTPC < fMinNClusterTPC)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (nClustersTPC >= fMinNClusterTPC)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (nClustersITS < fMinNClusterITS)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (nClustersITS >= fMinNClusterITS)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (chi2PerClusterTPC > fMaxChi2PerClusterTPC)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (chi2PerClusterTPC <= fMaxChi2PerClusterTPC)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (chi2PerClusterITS > fMaxChi2PerClusterITS)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (chi2PerClusterITS <= fMaxChi2PerClusterITS)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (fRequireTPCRefit && (esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (!fRequireTPCRefit || (fRequireTPCRefit && (esdTrack->GetStatus()&AliESDtrack::kTPCrefit)!=0))
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (fRequireITSRefit && (esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (!fRequireITSRefit || (fRequireITSRefit && (esdTrack->GetStatus()&AliESDtrack::kITSrefit)!=0))
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (extCov[0]  > fCovariance11Max)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (extCov[0]  <= fCovariance11Max)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (extCov[2]  > fCovariance22Max)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (extCov[2]  <= fCovariance22Max)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (extCov[5]  > fCovariance33Max)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (extCov[5]  <= fCovariance33Max)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (extCov[9]  > fCovariance44Max)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (extCov[9]  <= fCovariance44Max)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (extCov[14] > fCovariance55Max)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (extCov[14] <= fCovariance55Max)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
 
-  return fBitmap;
+  return;
 }
 //__________________________________________________________________________________
 Bool_t AliCFTrackQualityCuts::IsSelected(TObject* obj) {
   //
   // loops over decisions of single cuts and returns if the track is accepted
   //
-  TBits* bitmap = SelectionBitMap(obj);
+  SelectionBitMap(obj);
 
+  if (fIsQAOn) FillHistograms(obj,0);
   Bool_t isSelected = kTRUE;
 
-  for (UInt_t icut=0; icut<bitmap->GetNbits();icut++)
-	if(!bitmap->TestBitNumber(icut)) isSelected = kFALSE;
-
-  return isSelected;
-}
-//__________________________________________________________________________________
-void AliCFTrackQualityCuts::Init() {
-  //
-  // initialises all histograms and the TList which holds the histograms
-  //
-  if(fIsQAOn)
-    DefineHistograms();
+  for (UInt_t icut=0; icut<fBitmap->GetNbits();icut++) {
+    if(!fBitmap->TestBitNumber(icut)) {
+	isSelected = kFALSE;
+	break;
+    }
+  }
+  if (!isSelected) return kFALSE ;
+  if (fIsQAOn) FillHistograms(obj,1);
+  return kTRUE;
 }
 //__________________________________________________________________________________
 void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins)
@@ -673,65 +663,63 @@ void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
   //
   // fill the QA histograms
   //
-  if(!fIsQAOn) return;
 
   // cast TObject into ESDtrack
+  if (!obj) return;
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(obj);
   if ( !esdTrack ) return;
 
-  // index = 0: fill histograms before cuts
-  // index = 1: fill histograms after cuts
-  Int_t index = -1;
-  index = ((b) ? 1 : 0);
+  // b = 0: fill histograms before cuts
+  // b = 1: fill histograms after cuts
 
   Int_t  fIdxInt[200];
   Int_t nClustersTPC = esdTrack->GetTPCclusters(fIdxInt);
-  fhQA[kCutClusterTPC][index]->Fill((float)nClustersTPC);
+  fhQA[kCutClusterTPC][b]->Fill((float)nClustersTPC);
   Float_t chi2PerClusterTPC = -1.;
   if (nClustersTPC!=0)
     chi2PerClusterTPC = esdTrack->GetTPCchi2()/((float)nClustersTPC);
-  fhQA[kCutChi2TPC][index]->Fill(chi2PerClusterTPC);
+  fhQA[kCutChi2TPC][b]->Fill(chi2PerClusterTPC);
 
   Int_t nClustersITS = esdTrack->GetITSclusters(fIdxInt);
-  fhQA[kCutClusterITS][index]->Fill((float)nClustersITS);
+  fhQA[kCutClusterITS][b]->Fill((float)nClustersITS);
   Float_t chi2PerClusterITS = -1.;
   if (nClustersITS!=0)
     chi2PerClusterITS = esdTrack->GetITSchi2()/((float)nClustersITS);
-  fhQA[kCutChi2ITS][index]->Fill(chi2PerClusterITS);
+  fhQA[kCutChi2ITS][b]->Fill(chi2PerClusterITS);
 
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0)
-    fhQA[kCutRefitTPC][index]->Fill(0.);
+    fhQA[kCutRefitTPC][b]->Fill(0.);
   if (!((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0))
-    fhQA[kCutRefitTPC][index]->Fill(1.);
+    fhQA[kCutRefitTPC][b]->Fill(1.);
 
   if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0)
-    fhQA[kCutRefitITS][index]->Fill(0.);
+    fhQA[kCutRefitITS][b]->Fill(0.);
   if (!((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0))
-    fhQA[kCutRefitITS][index]->Fill(1.);
+    fhQA[kCutRefitITS][b]->Fill(1.);
 
   Double_t extCov[15];
   esdTrack->GetExternalCovariance(extCov);
 
-  fhQA[kCutCovElement11][index]->Fill(extCov[0]);
-  fhQA[kCutCovElement22][index]->Fill(extCov[2]);
-  fhQA[kCutCovElement33][index]->Fill(extCov[5]);
-  fhQA[kCutCovElement44][index]->Fill(extCov[9]);
-  fhQA[kCutCovElement55][index]->Fill(extCov[14]);
+  fhQA[kCutCovElement11][b]->Fill(extCov[0]);
+  fhQA[kCutCovElement22][b]->Fill(extCov[2]);
+  fhQA[kCutCovElement33][b]->Fill(extCov[5]);
+  fhQA[kCutCovElement44][b]->Fill(extCov[9]);
+  fhQA[kCutCovElement55][b]->Fill(extCov[14]);
 
   // fill cut statistics and cut correlation histograms with information from the bitmap
   if (b) return;
 
   // Get the bitmap of the single cuts
   if ( !obj ) return;
-  TBits* bitmap = SelectionBitMap(obj);
+  SelectionBitMap(obj);
 
   // Number of single cuts in this class
-  UInt_t ncuts = bitmap->GetNbits();
+  UInt_t ncuts = fBitmap->GetNbits();
   for(UInt_t bit=0; bit<ncuts;bit++) {
-    if (!bitmap->TestBitNumber(bit)) {
+    if (!fBitmap->TestBitNumber(bit)) {
 	fhCutStatistics->Fill(bit+1);
 	for (UInt_t bit2=bit; bit2<ncuts;bit2++) {
-	  if (!bitmap->TestBitNumber(bit2)) 
+	  if (!fBitmap->TestBitNumber(bit2)) 
 	    fhCutCorrelation->Fill(bit+1,bit2+1);
 	}
     }
@@ -927,11 +915,11 @@ void AliCFTrackQualityCuts::DrawHistograms(Bool_t drawLogScale)
   canvas3->SaveAs(Form("%s.ps", canvas3->GetName()));
 }
 //__________________________________________________________________________________
-void AliCFTrackQualityCuts::AddQAHistograms(TList *qaList)  const {
+void AliCFTrackQualityCuts::AddQAHistograms(TList *qaList) {
   //
   // saves the histograms in a TList
   //
-  if(!fIsQAOn) return;
+  DefineHistograms();
 
   qaList->Add(fhCutStatistics);
   qaList->Add(fhCutCorrelation);

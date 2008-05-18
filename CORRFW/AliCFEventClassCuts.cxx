@@ -26,7 +26,6 @@
 #include "TH1F.h"
 #include "TList.h"
 #include "AliLog.h"
-#include "TMath.h"
 #include "AliVEvent.h"
 #include "AliCFEventClassCuts.h"
 ClassImp(AliCFEventClassCuts) 
@@ -47,21 +46,7 @@ AliCFEventClassCuts::AliCFEventClassCuts() :
   fZDCP2EnergyMax(1.e99),  
   fZDCEM1EnergyMax(1.e99),  
   fZDCEM2EnergyMax(1.e99),
-  fBitMap(0x0),
-  fhNBinsTrigger(0),
-  fhBinLimTrigger(0),
-  fhNBinsZDCEnN1(0),
-  fhBinLimZDCEnN1(0),
-  fhNBinsZDCEnP1(0),
-  fhBinLimZDCEnP1(0),
-  fhNBinsZDCEnN2(0),
-  fhBinLimZDCEnN2(0),
-  fhNBinsZDCEnP2(0),
-  fhBinLimZDCEnP2(0),
-  fhNBinsZDCEnEM1(0),
-  fhBinLimZDCEnEM1(0),
-  fhNBinsZDCEnEM2(0),
-  fhBinLimZDCEnEM2(0)
+  fBitMap(0x0)
 {
   //
   //ctor
@@ -88,21 +73,7 @@ AliCFEventClassCuts::AliCFEventClassCuts(Char_t* name, Char_t* title) :
   fZDCP2EnergyMax(1.e99),  
   fZDCEM1EnergyMax(1.e99),  
   fZDCEM2EnergyMax(1.e99), 
-  fBitMap(0x0),
-  fhNBinsTrigger(0),
-  fhBinLimTrigger(0),
-  fhNBinsZDCEnN1(0),
-  fhBinLimZDCEnN1(0),
-  fhNBinsZDCEnP1(0),
-  fhBinLimZDCEnP1(0),
-  fhNBinsZDCEnN2(0),
-  fhBinLimZDCEnN2(0),
-  fhNBinsZDCEnP2(0),
-  fhBinLimZDCEnP2(0),
-  fhNBinsZDCEnEM1(0),
-  fhBinLimZDCEnEM1(0),
-  fhNBinsZDCEnEM2(0),
-  fhBinLimZDCEnEM2(0)
+  fBitMap(0x0)
 {
   //
   //ctor
@@ -128,21 +99,7 @@ AliCFEventClassCuts::AliCFEventClassCuts(const AliCFEventClassCuts& c) :
   fZDCP2EnergyMax(c.fZDCP2EnergyMax),  
   fZDCEM1EnergyMax(c.fZDCEM1EnergyMax), 
   fZDCEM2EnergyMax(c.fZDCEM2EnergyMax),
-  fBitMap(c.fBitMap),
-  fhNBinsTrigger(c.fhNBinsTrigger),
-  fhBinLimTrigger(c.fhBinLimTrigger ),
-  fhNBinsZDCEnN1(c.fhNBinsZDCEnN1),
-  fhBinLimZDCEnN1(c.fhBinLimZDCEnN1),
-  fhNBinsZDCEnP1(c.fhNBinsZDCEnP1),
-  fhBinLimZDCEnP1(c.fhBinLimZDCEnP1),
-  fhNBinsZDCEnN2(c.fhNBinsZDCEnN2),
-  fhBinLimZDCEnN2(c.fhBinLimZDCEnN2),
-  fhNBinsZDCEnP2(c.fhNBinsZDCEnP2),
-  fhBinLimZDCEnP2(c.fhBinLimZDCEnP2),
-  fhNBinsZDCEnEM1(c.fhNBinsZDCEnEM1),
-  fhBinLimZDCEnEM1(c.fhBinLimZDCEnEM1),
-  fhNBinsZDCEnEM2(c.fhNBinsZDCEnEM2),
-  fhBinLimZDCEnEM2(c.fhBinLimZDCEnEM2)
+  fBitMap(c.fBitMap)
 
 {
   //
@@ -172,20 +129,6 @@ AliCFEventClassCuts& AliCFEventClassCuts::operator=(const AliCFEventClassCuts& c
     fZDCEM1EnergyMax = c.fZDCEM1EnergyMax;  
     fZDCEM2EnergyMax = c.fZDCEM2EnergyMax;  
     fBitMap          = c.fBitMap;
-    fhNBinsTrigger = c.fhNBinsTrigger;
-    fhBinLimTrigger = c.fhBinLimTrigger ;
-    fhNBinsZDCEnN1 = c.fhNBinsZDCEnN1;
-    fhBinLimZDCEnN1 = c.fhBinLimZDCEnN1;
-    fhNBinsZDCEnP1 = c.fhNBinsZDCEnP1;
-    fhBinLimZDCEnP1 = c.fhBinLimZDCEnP1;
-    fhNBinsZDCEnN2 = c.fhNBinsZDCEnN2;
-    fhBinLimZDCEnN2 = c.fhBinLimZDCEnN2;
-    fhNBinsZDCEnP2 = c.fhNBinsZDCEnP2;
-    fhBinLimZDCEnP2 = c.fhBinLimZDCEnP2;
-    fhNBinsZDCEnEM1 = c.fhNBinsZDCEnEM1;
-    fhBinLimZDCEnEM1 = c.fhBinLimZDCEnEM1;
-    fhNBinsZDCEnEM2 = c.fhNBinsZDCEnEM2;
-    fhBinLimZDCEnEM2 = c.fhBinLimZDCEnEM2;
   }
 
 
@@ -211,23 +154,7 @@ AliCFEventClassCuts::~AliCFEventClassCuts()
   }
 
   if(fBitMap)delete fBitMap;
-  if(fhBinLimTrigger)delete fhBinLimTrigger;
-  if(fhBinLimZDCEnN1)delete fhBinLimZDCEnN1;
-  if(fhBinLimZDCEnP1)delete fhBinLimZDCEnP1;
-  if(fhBinLimZDCEnN2)delete fhBinLimZDCEnN2;
-  if(fhBinLimZDCEnP2)delete fhBinLimZDCEnP2;
-  if(fhBinLimZDCEnEM1)delete fhBinLimZDCEnEM1;
-  if(fhBinLimZDCEnEM2)delete fhBinLimZDCEnEM2;
 
-}
-
-//_____________________________________________________________________________
-void AliCFEventClassCuts::Init() {
-  //
-  // initialises all QA histograms 
-  //
-  if(fIsQAOn)
-    DefineHistograms();
 }
 
 //_____________________________________________________________________________
@@ -236,28 +163,12 @@ void AliCFEventClassCuts::Initialise()
   //
   //initialization
   //
-
-
-  //
   // sets pointers to histos to zero
-  //
-
   for(Int_t i=0; i<kNCuts; i++){
     for(Int_t j =0; j<kNStepQA; j++){
       fhQA[i][j]=0x0;
     }
   }
-
-  //set default bin number/ranges for QA histograms
-
-  SetHistogramBins(kTrigger,23,-0.5,22.5);
-  SetHistogramBins(kZDCEnergyN1,800,-500,7500);
-  SetHistogramBins(kZDCEnergyP1,800,-500,7500);
-  SetHistogramBins(kZDCEnergyN2,800,-500,7500);
-  SetHistogramBins(kZDCEnergyP2,800,-500,7500);
-  SetHistogramBins(kZDCEnergyEM1,800,-500,7500);
-  SetHistogramBins(kZDCEnergyEM2,800,-500,7500);
-
 }
 
 //____________________________________________________________________
@@ -266,18 +177,47 @@ Bool_t AliCFEventClassCuts::IsSelected(TObject* obj) {
   //Check if the requested cuts are passed
   //
 
-  TBits* bitmap = SelectionBitMap(obj);
+  SelectionBitMap(obj);
 
+  if (fIsQAOn) FillHistograms(obj,0);
   Bool_t isSelected = kTRUE;
 
-  for (UInt_t icut=0; icut<bitmap->GetNbits();icut++)
-	if(!bitmap->TestBitNumber(icut)) isSelected = kFALSE;
+  for (UInt_t icut=0; icut<fBitMap->GetNbits();icut++)
+	if(!fBitMap->TestBitNumber(icut)) isSelected = kFALSE;
 
-  return isSelected;
+  if (!isSelected) return kFALSE ;
+  if (fIsQAOn) FillHistograms(obj,1);
+  return kTRUE;
 }
 
 //____________________________________________________________________
-TBits *AliCFEventClassCuts::SelectionBitMap(TObject* obj) {
+void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins)
+{
+  //
+  //setting x-axis bin limits of QA histogram fhQA[index] 
+  // 
+  for(Int_t i=0;i<kNStepQA;i++){
+    if(!fhQA[index][i]){AliWarning("non-existing histogram!");
+    return;
+    }
+    fhQA[index][i]->GetXaxis()->Set(nbins,bins);
+  }
+}
+//____________________________________________________________________
+void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax)
+{
+  //
+  //setting x-axis bins and range of QA histogram fhQA[index] 
+  // 
+  for(Int_t i=0;i<kNStepQA;i++){
+    if(!fhQA[index][i]){AliWarning("non-existing histogram!");
+    return;
+    }
+    fhQA[index][i]->GetXaxis()->Set(nbins,xmin,xmax);
+  }
+}
+//____________________________________________________________________
+void AliCFEventClassCuts::SelectionBitMap(TObject* obj) {
   //
   //cut on trigger type (just pp running trigger types implemented so far)
   //and on the energy observed in the ZDC. The argument is cast into 
@@ -286,8 +226,9 @@ TBits *AliCFEventClassCuts::SelectionBitMap(TObject* obj) {
   //
 
   for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE);
+
   AliVEvent* esd = dynamic_cast<AliVEvent *>(obj);
-  if (!esd ) return fBitMap ;
+  if (!esd ) return;
 
 
   //now start checking the cuts
@@ -327,7 +268,7 @@ TBits *AliCFEventClassCuts::SelectionBitMap(TObject* obj) {
   if( esd->GetZDCP2Energy()<fZDCP2EnergyMin || esd->GetZDCP2Energy()>fZDCP2EnergyMax)fBitMap->SetBitNumber(4,kFALSE); 
   if( esd->GetZDCEMEnergy(0)<fZDCEM1EnergyMin || esd->GetZDCEMEnergy(0)>fZDCEM1EnergyMax)fBitMap->SetBitNumber(5,kFALSE); 
   if( esd->GetZDCEMEnergy(1)<fZDCEM2EnergyMin || esd->GetZDCEMEnergy(1)>fZDCEM2EnergyMax)fBitMap->SetBitNumber(6,kFALSE); 
-  return fBitMap;
+  return ;
 
 }
 
@@ -381,123 +322,6 @@ void AliCFEventClassCuts::TriggerBitMap(AliVEvent* ev, TBits *bitmapT ) {
 } 
 
 //_____________________________________________________________________________
-void AliCFEventClassCuts::GetBitMap(TObject* obj, TBits* bitmap){
-  //
-  // retrieve the pointer to the bitmap
-  //
-
-  bitmap = SelectionBitMap(obj);
-
-}
-
-//_____________________________________________________________________________
-void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins)
-{
-  //
-  // QA histogram axis parameters
-  // variable bin size:user inputs nbins and the vector of bin limits
-  //
-
-  switch(index){
-  case kTrigger:
-    fhNBinsTrigger=nbins+1;
-    fhBinLimTrigger=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimTrigger[i]=bins[i];
-    break;
-    
-  case kZDCEnergyN1:
-    fhNBinsZDCEnN1=nbins+1;
-    fhBinLimZDCEnN1=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN1[i]=bins[i];
-    break;
-
-  case kZDCEnergyP1:
-    fhNBinsZDCEnP1=nbins+1;
-    fhBinLimZDCEnP1=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP1[i]=bins[i];
-    break;
-
-  case kZDCEnergyN2:
-    fhNBinsZDCEnN2=nbins+1;
-    fhBinLimZDCEnN2=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN2[i]=bins[i];
-    break;
-
-  case kZDCEnergyP2:
-    fhNBinsZDCEnP2=nbins+1;
-    fhBinLimZDCEnP2=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP2[i]=bins[i];
-    break;
-
-  case kZDCEnergyEM1:
-    fhNBinsZDCEnEM1=nbins+1;
-    fhBinLimZDCEnEM1=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM1[i]=bins[i];
-    break;
-
-  case kZDCEnergyEM2:
-    fhNBinsZDCEnEM2=nbins+1;
-    fhBinLimZDCEnEM2=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM2[i]=bins[i];
-    break;
-
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax)
-{
-  //
-  // QA histogram axis parameters
-  // fixed bin size: user inputs nbins, xmin and xmax
-  //
-  switch(index){
-  case kTrigger:
-    fhNBinsTrigger=nbins+1;
-    fhBinLimTrigger=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimTrigger[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-    
-  case kZDCEnergyN1:
-    fhNBinsZDCEnN1=nbins+1;
-    fhBinLimZDCEnN1=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN1[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-
-  case kZDCEnergyP1:
-    fhNBinsZDCEnP1=nbins+1;
-    fhBinLimZDCEnP1=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP1[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-
-  case kZDCEnergyN2:
-    fhNBinsZDCEnN2=nbins+1;
-    fhBinLimZDCEnN2=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN2[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-
-  case kZDCEnergyP2:
-    fhNBinsZDCEnP2=nbins+1;
-    fhBinLimZDCEnP2=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP2[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-
-  case kZDCEnergyEM1:
-    fhNBinsZDCEnEM1=nbins+1;
-    fhBinLimZDCEnEM1=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM1[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-
-  case kZDCEnergyEM2:
-    fhNBinsZDCEnEM2=nbins+1;
-    fhBinLimZDCEnEM2=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM2[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-  }
-}
-
-//_____________________________________________________________________________
  void AliCFEventClassCuts::DefineHistograms() {
   //
   // histograms for cut variables
@@ -505,25 +329,23 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xm
   Int_t color = 2;
 
   if(!fIsQAOn) {
-    AliInfo(Form("Nn QA histos requested, Please first set the QA flag on!"));
+    AliInfo(Form("No QA histos requested, Please first set the QA flag on!"));
     return;
   }  
   
   // book QA histograms
-
   Char_t str[256];
   for (Int_t i=0; i<kNStepQA; i++) {
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
 
-    fhQA[kTrigger][i]	= new  TH1F(Form("%s_TriggerBits%s",GetName(),str),	                "",fhNBinsTrigger-1,fhBinLimTrigger);
-    fhQA[kZDCEnergyN1][i]	= new  TH1F(Form("%s_ZDC_Energy_N1%s",GetName(),str),		"",fhNBinsZDCEnN1-1,fhBinLimZDCEnN1);
-    fhQA[kZDCEnergyP1][i]	= new  TH1F(Form("%s_ZDC_Energy_P1%s",GetName(),str),		"",fhNBinsZDCEnP1-1,fhBinLimZDCEnP1);
-    fhQA[kZDCEnergyN2][i]	= new  TH1F(Form("%s_ZDC_Energy_N2%s",GetName(),str),		"",fhNBinsZDCEnN2-1,fhBinLimZDCEnN2);
-    fhQA[kZDCEnergyP2][i]	= new  TH1F(Form("%s_ZDC_Energy_P2%s",GetName(),str),		"",fhNBinsZDCEnP2-1,fhBinLimZDCEnP2);
-    fhQA[kZDCEnergyEM1][i]	= new  TH1F(Form("%s_ZDC_Energy_EM1%s",GetName(),str),		"",fhNBinsZDCEnEM1-1,fhBinLimZDCEnEM1);
-    fhQA[kZDCEnergyEM2][i]	= new  TH1F(Form("%s_ZDC_Energy_EM2%s",GetName(),str),		"",fhNBinsZDCEnEM2-1,fhBinLimZDCEnEM2);
-
+    fhQA[kTrigger][i]	= new  TH1F(Form("%s_TriggerBits%s",GetName(),str),	                "",23,-0.5,22.5);
+    fhQA[kZDCEnergyN1][i]	= new  TH1F(Form("%s_ZDC_Energy_N1%s",GetName(),str),		"",800,-500,7500);
+    fhQA[kZDCEnergyP1][i]	= new  TH1F(Form("%s_ZDC_Energy_P1%s",GetName(),str),		"",800,-500,7500);
+    fhQA[kZDCEnergyN2][i]	= new  TH1F(Form("%s_ZDC_Energy_N2%s",GetName(),str),		"",800,-500,7500);
+    fhQA[kZDCEnergyP2][i]	= new  TH1F(Form("%s_ZDC_Energy_P2%s",GetName(),str),		"",800,-500,7500);
+    fhQA[kZDCEnergyEM1][i]	= new  TH1F(Form("%s_ZDC_Energy_EM1%s",GetName(),str),		"",800,-500,7500);
+    fhQA[kZDCEnergyEM2][i]	= new  TH1F(Form("%s_ZDC_Energy_EM2%s",GetName(),str),		"",800,-500,7500);
 
     fhQA[kTrigger][i]	        ->SetXTitle("Trigger Bits");
     fhQA[kZDCEnergyN1][i]	->SetXTitle("ZDC Energy N1 (GeV)");
@@ -540,7 +362,7 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xm
 }
 
 //_____________________________________________________________________________
-void AliCFEventClassCuts::FillHistograms(TObject* obj, Bool_t b)
+void AliCFEventClassCuts::FillHistograms(TObject* obj, Bool_t afterCuts)
 {
   //
   // fill the QA histograms
@@ -551,12 +373,6 @@ void AliCFEventClassCuts::FillHistograms(TObject* obj, Bool_t b)
   AliVEvent* esd = dynamic_cast<AliVEvent *>(obj);
   if (!esd ) return  ;
 
-  // index = 0: fill histograms before cuts
-  // index = 1: fill histograms after cuts
-  Int_t index = -1;
-  index = ((b) ? 1 : 0);
-
-
   //look at the Trigger mask in current event
   TBits *triggerBitMap=new TBits(0);
   TriggerBitMap(esd, triggerBitMap); 
@@ -564,31 +380,32 @@ void AliCFEventClassCuts::FillHistograms(TObject* obj, Bool_t b)
   //trigger Mask
   for(Int_t itrig=0;itrig<kNTriggers+kNTriggersMB;itrig++){
     if(triggerBitMap->TestBitNumber(itrig)){
-      fhQA[kTrigger][index]->Fill(itrig);
+      fhQA[kTrigger][afterCuts]->Fill(itrig);
     }
   }   
 
   delete triggerBitMap;
 
   //ZDC Quantities
-  fhQA[kZDCEnergyN1][index]->Fill(esd->GetZDCN1Energy());
-  fhQA[kZDCEnergyP1][index]->Fill(esd->GetZDCP1Energy());
-  fhQA[kZDCEnergyN2][index]->Fill(esd->GetZDCN2Energy());
-  fhQA[kZDCEnergyP2][index]->Fill(esd->GetZDCP2Energy());
-  fhQA[kZDCEnergyEM1][index]->Fill(esd->GetZDCEMEnergy(0));
-  fhQA[kZDCEnergyEM2][index]->Fill(esd->GetZDCEMEnergy(1));
+  fhQA[kZDCEnergyN1][afterCuts] ->Fill(esd->GetZDCN1Energy());
+  fhQA[kZDCEnergyP1][afterCuts] ->Fill(esd->GetZDCP1Energy());
+  fhQA[kZDCEnergyN2][afterCuts] ->Fill(esd->GetZDCN2Energy());
+  fhQA[kZDCEnergyP2][afterCuts] ->Fill(esd->GetZDCP2Energy());
+  fhQA[kZDCEnergyEM1][afterCuts]->Fill(esd->GetZDCEMEnergy(0));
+  fhQA[kZDCEnergyEM2][afterCuts]->Fill(esd->GetZDCEMEnergy(1));
 
 }
 
 //_____________________________________________________________________________
-void AliCFEventClassCuts::AddQAHistograms(TList *list) const {
+void AliCFEventClassCuts::AddQAHistograms(TList *qaList) {
   //
   // saves the histograms in a TList
   //
-  if(!fIsQAOn) return;  
+
+  DefineHistograms();
 
   for (Int_t j=0; j<kNStepQA; j++) {
     for(Int_t i=0; i<kNCuts; i++)
-	list->Add(fhQA[i][j]);
+	qaList->Add(fhQA[i][j]);
   }
 }

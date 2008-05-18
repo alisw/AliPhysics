@@ -26,10 +26,13 @@
 #include "AliCFParticleGenCuts.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "TObject.h"
 #include "AliStack.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TBits.h"
+#include "TList.h"
 
 ClassImp(AliCFParticleGenCuts)
 
@@ -38,6 +41,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
   AliCFCutBase(),
   fMCInfo(0x0),
   fRequireIsCharged(0),
+  fRequireIsNeutral(0),
   fRequireIsPrimary(0),
   fRequireIsSecondary(0),
   fRequirePdgCode(0),
@@ -54,14 +58,20 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
   fDecayVtxXMax( 1.e+09),
   fDecayVtxYMax( 1.e+09),
   fDecayVtxZMax( 1.e+09),
-  fDecayLengthMin(0),
+  fDecayLengthMin(-1.),
   fDecayLengthMax(1.e+09),
-  fDecayRxyMin(0),
-  fDecayRxyMax(1.e+09)
+  fDecayRxyMin(-1),
+  fDecayRxyMax(1.e+09),
+  fhCutStatistics(0x0),
+  fhCutCorrelation(0x0),
+  fBitmap(new TBits(0))
 {
   //
   //ctor
   //
+  for (int i=0; i<kNCuts; i++) 
+    for (int j=0; j<kNStepQA; j++) 
+      fhQA[i][j]=0x0;
 }
 
 //______________________________
@@ -69,6 +79,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
   AliCFCutBase(name,title),
   fMCInfo(0x0),
   fRequireIsCharged(0),
+  fRequireIsNeutral(0),
   fRequireIsPrimary(0),
   fRequireIsSecondary(0),
   fRequirePdgCode(0),
@@ -85,14 +96,20 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
   fDecayVtxXMax( 1.e+09),
   fDecayVtxYMax( 1.e+09),
   fDecayVtxZMax( 1.e+09),
-  fDecayLengthMin(0),
+  fDecayLengthMin(-1.),
   fDecayLengthMax(1.e+09),
-  fDecayRxyMin(0),
-  fDecayRxyMax(1.e+09)
+  fDecayRxyMin(-1.),
+  fDecayRxyMax(1.e+09),
+  fhCutStatistics(0x0),
+  fhCutCorrelation(0x0),
+  fBitmap(new TBits(0))
 {
   //
   //ctor
   //
+  for (int i=0; i<kNCuts; i++) 
+    for (int j=0; j<kNStepQA; j++) 
+      fhQA[i][j]=0x0;
 }
 
 //______________________________
@@ -100,6 +117,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) :
   AliCFCutBase(c),
   fMCInfo(c.fMCInfo),
   fRequireIsCharged(c.fRequireIsCharged),
+  fRequireIsNeutral(c.fRequireIsNeutral),
   fRequireIsPrimary(c.fRequireIsPrimary),
   fRequireIsSecondary(c.fRequireIsSecondary),
   fRequirePdgCode(c.fRequirePdgCode),
@@ -119,11 +137,20 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) :
   fDecayLengthMin(c.fDecayLengthMin),
   fDecayLengthMax(c.fDecayLengthMin),
   fDecayRxyMin(c.fDecayLengthMin),
-  fDecayRxyMax(c.fDecayLengthMin)
+  fDecayRxyMax(c.fDecayLengthMin),
+  fhCutStatistics(new TH1F(*c.fhCutStatistics)),
+  fhCutCorrelation(new TH2F(*c.fhCutCorrelation)),
+  fBitmap(new TBits(*c.fBitmap))
 {
   //
   //copy ctor
   //
+  if (c.fhCutStatistics)  fhCutStatistics  = new TH1F(*c.fhCutStatistics)  ;
+  if (c.fhCutCorrelation) fhCutCorrelation = new TH2F(*c.fhCutCorrelation) ;
+
+  for (int i=0; i<kNCuts; i++)
+    for (int j=0; j<kNStepQA; j++)
+      fhQA[i][j]=(TH1F*)c.fhQA[i][j]->Clone();
 }
 
 //______________________________
@@ -136,6 +163,7 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
     AliCFCutBase::operator=(c) ;
     fMCInfo=c.fMCInfo;
     fRequireIsCharged=c.fRequireIsCharged;
+    fRequireIsNeutral=c.fRequireIsNeutral;
     fRequireIsPrimary=c.fRequireIsPrimary;
     fRequireIsSecondary=c.fRequireIsSecondary;
     fRequirePdgCode=c.fRequirePdgCode;
@@ -156,6 +184,14 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
     fDecayLengthMax=c.fDecayLengthMax;
     fDecayRxyMin=c.fDecayRxyMin;
     fDecayRxyMax=c.fDecayRxyMax;
+    fBitmap=new TBits(*c.fBitmap);
+    
+    if (fhCutStatistics)  fhCutStatistics =new TH1F(*c.fhCutStatistics) ;
+    if (fhCutCorrelation) fhCutCorrelation=new TH2F(*c.fhCutCorrelation);
+    
+    for (int i=0; i<kNCuts; i++)
+      for (int j=0; j<kNStepQA; j++)
+	fhQA[i][j]=(TH1F*)c.fhQA[i][j]->Clone();
   }
   return *this ;
 }
@@ -167,66 +203,237 @@ Bool_t AliCFParticleGenCuts::IsSelected(TObject* obj) {
   // 'obj' must be an AliMCParticle
   //
   
-  if (!obj) return kFALSE ;
+  SelectionBitMap(obj);
+
+  if (fIsQAOn) FillHistograms(obj,0);
+
+  for (UInt_t icut=0; icut<fBitmap->GetNbits();icut++)
+    if (!fBitmap->TestBitNumber(icut)) return kFALSE ; 
+  
+  if (fIsQAOn) FillHistograms(obj,1);
+  return kTRUE;
+}
+
+//__________________________________________________________________________________
+void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
+{
+  //
+  // test if the track passes the single cuts
+  // and store the information in a bitmap
+  //
+
+  for (UInt_t i=0; i<kNCuts; i++) fBitmap->SetBitNumber(i,kFALSE);
+
+  if (!obj) return  ;
   TString className(obj->ClassName());
   if (className.CompareTo("AliMCParticle") != 0) {
     AliError("argument must point to an AliMCParticle !");
-    return kFALSE ;
+    return ;
   }
 
   AliMCParticle* mcPart = (AliMCParticle*) obj ;
   TParticle* part = mcPart->Particle();
-  AliStack *stack=fMCInfo->MCEvent()->Stack();
+  AliStack*  stack = fMCInfo->Stack();
 
-  // is this particle charged?
-  if ( fRequireIsCharged ) {
-    if(!IsCharged(mcPart))return kFALSE;
-  } 
-  
-  // primary cuts
-  if ( fRequireIsPrimary ) {
-     if(!IsPrimary(mcPart,stack))return kFALSE;
-  } 
-
-  //secondary cut
-  if ( fRequireIsSecondary && part->IsPrimary() ) return kFALSE ;
-  
-  //PDG code cut
-  if ( fRequirePdgCode){
-    if(!IsA(mcPart,fPdgCode))  return kFALSE ;
-  }
-  // production vertex cuts
   Double32_t partVx=(Double32_t)part->Vx();
   Double32_t partVy=(Double32_t)part->Vy();
   Double32_t partVz=(Double32_t)part->Vz();
-  if ( partVx < fProdVtxXMin || partVx > fProdVtxXMax ) return kFALSE ;
-  if ( partVy < fProdVtxYMin || partVy > fProdVtxYMax ) return kFALSE ;
-  if ( partVz < fProdVtxZMin || partVz > fProdVtxZMax ) return kFALSE ;
 
-  //decay vertex cuts
+  TParticle* daughter=0x0;
+  Double32_t decayVx=0.;
+  Double32_t decayVy=0.;
+  Double32_t decayVz=0.;
+  Double32_t decayL=0.;
+  Double32_t decayRxy=0.;
+
   if ( part->GetNDaughters() > 0 ) {
-    TParticle* daughter = fMCInfo->MCEvent()->Stack()->Particle(part->GetFirstDaughter()) ;
-    Double32_t decayVx=(Double32_t)daughter->Vx();
-    Double32_t decayVy=(Double32_t)daughter->Vy();
-    Double32_t decayVz=(Double32_t)daughter->Vz();
-    if ( decayVx < fDecayVtxXMin || decayVx > fDecayVtxXMax ) return kFALSE ;
-    if ( decayVy < fDecayVtxYMin || decayVy > fDecayVtxYMax ) return kFALSE ;
-    if ( decayVz < fDecayVtxZMin || decayVz > fDecayVtxZMax ) return kFALSE ;
-
-    //decay length cut
-    Double32_t decayL = TMath::Sqrt(TMath::Power(partVx-decayVx,2) + 
-				    TMath::Power(partVy-decayVy,2) + 
-				    TMath::Power(partVz-decayVz,2) ) ;
-    if (decayL < fDecayLengthMin || decayL > fDecayLengthMax) return kFALSE ;
-
-    Double32_t decayRxy = TMath::Sqrt(TMath::Power(decayVx,2) + 
-				      TMath::Power(decayVy,2) ) ;
-    if (decayRxy < fDecayRxyMin || decayRxy > fDecayRxyMax) return kFALSE ;
+    daughter = stack->Particle(part->GetFirstDaughter()) ;
+    decayVx=(Double32_t)daughter->Vx();
+    decayVy=(Double32_t)daughter->Vy();
+    decayVz=(Double32_t)daughter->Vz();
+    decayL = TMath::Sqrt(TMath::Power(partVx-decayVx,2) + 
+			 TMath::Power(partVy-decayVy,2) + 
+			 TMath::Power(partVz-decayVz,2) ) ;
+    decayRxy = TMath::Sqrt(TMath::Power(decayVx,2) + TMath::Power(decayVy,2) ) ;
   }
 
 
-  return kTRUE ;
+  Int_t iCutBit = 0;
+
+  // cut on charge
+  if ( fRequireIsCharged || fRequireIsNeutral ) {
+    if(fRequireIsCharged &&  IsCharged(mcPart)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+    if(fRequireIsNeutral && !IsCharged(mcPart)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  } 
+  else fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  
+  // cut on primary/secondary
+  if ( fRequireIsPrimary || fRequireIsSecondary) {
+    if (fRequireIsPrimary   &&  IsPrimary(mcPart,stack)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+    if (fRequireIsSecondary && !IsPrimary(mcPart,stack)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  } 
+  else fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+
+  // cut on PDG code
+  if ( fRequirePdgCode ){
+    if (IsA(mcPart,fPdgCode,kTRUE)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  }
+  else fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+
+  // production vertex cuts
+  if ( partVx > fProdVtxXMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( partVx < fProdVtxXMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( partVy > fProdVtxYMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( partVy < fProdVtxYMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( partVz > fProdVtxZMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( partVz < fProdVtxZMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  
+  // decay vertex cuts
+  if ( decayVx > fDecayVtxXMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( decayVx < fDecayVtxXMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( decayVy > fDecayVtxYMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( decayVy < fDecayVtxYMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( decayVz > fDecayVtxZMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( decayVz < fDecayVtxZMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+
+  // decay length cuts
+  if ( decayL > fDecayLengthMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( decayL < fDecayLengthMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  
+  // transverse decay length cuts
+  if ( decayRxy > fDecayRxyMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
+  if ( decayRxy < fDecayRxyMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
+
 }
+
+//__________________________________________________________________________________
+void AliCFParticleGenCuts::FillHistograms(TObject* obj, Bool_t afterCuts)
+{
+  //
+  // fill the QA histograms
+  //
+
+  for (int iCutNumber = 0; iCutNumber < kNCuts; iCutNumber++) 
+    fhQA[iCutNumber][afterCuts]->Fill(fBitmap->TestBitNumber(iCutNumber));
+
+  // fill cut statistics and cut correlation histograms with information from the bitmap
+  if (afterCuts) return;
+
+  // Number of single cuts in this class
+  UInt_t ncuts = fBitmap->GetNbits();
+  for(UInt_t bit=0; bit<ncuts;bit++) {
+   if (!fBitmap->TestBitNumber(bit)) {
+      fhCutStatistics->Fill(bit+1);
+      for (UInt_t bit2=bit; bit2<ncuts;bit2++) {
+	if (!fBitmap->TestBitNumber(bit2)) 
+	  fhCutCorrelation->Fill(bit+1,bit2+1);
+      }
+    }
+  }
+}
+
+//__________________________________________________________________________________
+void AliCFParticleGenCuts::AddQAHistograms(TList *qaList) {
+  //
+  // saves the histograms in a TList
+  //
+
+  DefineHistograms();
+
+  qaList->Add(fhCutStatistics);
+  qaList->Add(fhCutCorrelation);
+
+  for (Int_t j=0; j<kNStepQA; j++) {
+    for(Int_t i=0; i<kNCuts; i++)
+      qaList->Add(fhQA[i][j]);
+  }
+}
+
+//__________________________________________________________________________________
+void AliCFParticleGenCuts::DefineHistograms() {
+  //
+  // histograms for cut variables, cut statistics and cut correlations
+  //
+  Int_t color = 2;
+
+  // book cut statistics and cut correlation histograms
+  fhCutStatistics = new TH1F(Form("%s_cut_statistics",GetName()),"",kNCuts,0.5,kNCuts+0.5);
+  fhCutStatistics->SetLineWidth(2);
+  int k = 1;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"charge")     ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"prim/sec")   ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"PDG")        ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"VtxXMin")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"VtxXMax")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"VtxYMin")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"VtxYMax")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"VtxZMin")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecZMax")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecXMin")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecXMax")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecYMin")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecYMax")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecZMin")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecZMax")    ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecLgthMin") ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecLgthMax") ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecRxyMin")  ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecRxyMax")  ; k++;
+
+
+  fhCutCorrelation = new TH2F(Form("%s_cut_correlation",GetName()),"",kNCuts,0.5,kNCuts+0.5,kNCuts,0.5,kNCuts+0.5);
+  fhCutCorrelation->SetLineWidth(2);
+  for (k=1; k<=kNCuts; k++) {
+    fhCutCorrelation->GetXaxis()->SetBinLabel(k,fhCutStatistics->GetXaxis()->GetBinLabel(k));
+    fhCutCorrelation->GetYaxis()->SetBinLabel(k,fhCutStatistics->GetXaxis()->GetBinLabel(k));
+  }
+
+  Char_t str[256];
+  for (int i=0; i<kNStepQA; i++) {
+    if (i==0) sprintf(str," ");
+    else sprintf(str,"_cut");
+    fhQA[kCutCharge]     [i] = new TH1F(Form("%s_charge%s"      ,GetName(),str),"",2,-0.5,1.5);
+    fhQA[kCutPrimSec]    [i] = new TH1F(Form("%s_primSec%s"     ,GetName(),str),"",2,-0.5,1.5);
+    fhQA[kCutPDGCode]    [i] = new TH1F(Form("%s_pdgCode%s"     ,GetName(),str),"",10000,-5000,5000);
+    fhQA[kCutProdVtxXMin][i] = new TH1F(Form("%s_prodVtxXMin%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxXMax][i] = new TH1F(Form("%s_prodVtxXMax%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxYMin][i] = new TH1F(Form("%s_prodVtxYMin%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxYMax][i] = new TH1F(Form("%s_prodVtxYMax%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxZMin][i] = new TH1F(Form("%s_prodVtxZMin%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxZMax][i] = new TH1F(Form("%s_prodVtxZMax%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxXMin] [i] = new TH1F(Form("%s_decVtxXMin%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxXMax] [i] = new TH1F(Form("%s_decVtxXMax%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxYMin] [i] = new TH1F(Form("%s_decVtxYMin%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxYMax] [i] = new TH1F(Form("%s_decVtxYMax%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxZMin] [i] = new TH1F(Form("%s_decVtxZMin%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxZMax] [i] = new TH1F(Form("%s_decVtxZMax%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecLgthMin] [i] = new TH1F(Form("%s_decLengthMin%s",GetName(),str),"",100,0,10);
+    fhQA[kCutDecLgthMax] [i] = new TH1F(Form("%s_decLengthMax%s",GetName(),str),"",100,0,10);
+    fhQA[kCutDecRxyMin]  [i] = new TH1F(Form("%s_decRxyMin%s"   ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecRxyMax]  [i] = new TH1F(Form("%s_decRxyMax%s"   ,GetName(),str),"",100,0,10);
+  }
+  for(Int_t i=0; i<kNCuts; i++) fhQA[i][1]->SetLineColor(color);
+}
+
+
 //______________________________
 Bool_t AliCFParticleGenCuts::IsCharged(AliMCParticle *mcPart) {
   //
@@ -262,26 +469,26 @@ Bool_t AliCFParticleGenCuts::IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs) {
   //
   TParticle* part = mcPart->Particle();
   Int_t pdgCode = part->GetPdgCode();
-  if(abs)pdgCode=TMath::Abs(pdgCode);
-  if(pdgCode != pdg )return kFALSE;
+  if (abs) pdgCode = TMath::Abs(pdgCode);
+  if (pdgCode != pdg ) return kFALSE;
   return kTRUE;
 }
 //______________________________
-void AliCFParticleGenCuts::SetEvtInfo(TObject* mcInfo) {
+void AliCFParticleGenCuts::SetEvtInfo(TObject* mcEvent) {
   //
-  // Sets pointer to MC event information (AliMCEventHandler)
+  // Sets pointer to MC event information (AliMCEvent)
   //
 
-  if (!mcInfo) {
-    AliError("Pointer to MC Event Handler is null !");
+  if (!mcEvent) {
+    AliError("Pointer to MC Event is null !");
     return;
   }
   
-  TString className(mcInfo->ClassName());
-  if (className.CompareTo("AliMCEventHandler") != 0) {
-    AliError("argument must point to an AliMCEventHandler !");
+  TString className(mcEvent->ClassName());
+  if (className.CompareTo("AliMCEvent") != 0) {
+    AliError("argument must point to an AliMCEvent !");
     return ;
   }
   
-  fMCInfo = (AliMCEventHandler*) mcInfo ;
+  fMCInfo = (AliMCEvent*) mcEvent ;
 }

@@ -23,8 +23,9 @@
 
 #include "AliMCParticle.h"
 #include "AliCFPairAcceptanceCuts.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "TBits.h"
+#include "AliLog.h"
 
 ClassImp(AliCFPairAcceptanceCuts)
 
@@ -33,7 +34,8 @@ AliCFPairAcceptanceCuts::AliCFPairAcceptanceCuts() :
   AliCFCutBase(),
   fMCInfo(0x0),
   fCutNeg(new AliCFAcceptanceCuts()),
-  fCutPos(new AliCFAcceptanceCuts())
+  fCutPos(new AliCFAcceptanceCuts()),
+  fBitmap(new TBits(0))
 {
   //
   //Default Constructor
@@ -45,7 +47,8 @@ AliCFPairAcceptanceCuts::AliCFPairAcceptanceCuts(const Char_t* name, const Char_
   AliCFCutBase(name,title),
   fMCInfo(0x0),
   fCutNeg(new AliCFAcceptanceCuts(name,title)),
-  fCutPos(new AliCFAcceptanceCuts(name,title))
+  fCutPos(new AliCFAcceptanceCuts(name,title)),
+  fBitmap(new TBits(0))
 {
   //
   //Named Constructor
@@ -57,7 +60,8 @@ AliCFPairAcceptanceCuts::AliCFPairAcceptanceCuts(const AliCFPairAcceptanceCuts& 
   AliCFCutBase(c),
   fMCInfo(c.fMCInfo),
   fCutNeg(c.fCutNeg),
-  fCutPos(c.fCutPos)
+  fCutPos(c.fCutPos),
+  fBitmap(c.fBitmap)
 {
   //
   //Copy Constructor
@@ -75,54 +79,88 @@ AliCFPairAcceptanceCuts& AliCFPairAcceptanceCuts::operator=(const AliCFPairAccep
     fMCInfo = c.fMCInfo ;
     fCutNeg = c.fCutNeg ;
     fCutPos = c.fCutPos ;
+    fBitmap = c.fBitmap ;
   }
   return *this ;
 }
 
-//______________________________
+//__________________________________________________________
 Bool_t AliCFPairAcceptanceCuts::IsSelected(TObject* obj) {
   //
   // checks the number of track references associated to 'obj'
   // 'obj' must be an AliMCParticle
   //
+  //
+  // check if selections on 'obj' are passed
+  // 'obj' must be an AliMCParticle
+  //
+  
+  SelectionBitMap(obj);
 
-  if (!obj) return kFALSE ;
+  //   if (fIsQAOn) FillHistograms(obj,kFALSE);
+  Bool_t isSelected = kTRUE;
+
+  for (UInt_t icut=0; icut<fBitmap->GetNbits(); icut++) {
+    if (!fBitmap->TestBitNumber(icut)) {
+      isSelected = kFALSE;
+      break;
+    }
+  }  
+
+  if (!isSelected) return kFALSE ;
+  //   if (fIsQAOn) FillHistograms(obj,kTRUE);
+  return kTRUE;
+}
+
+//__________________________________________________________
+void AliCFPairAcceptanceCuts::SelectionBitMap(TObject* obj) 
+{
+  //
+  // test if the track passes the single cuts
+  // and store the information in a bitmap
+  //
+
+  for (UInt_t i=0; i<kNCuts; i++) fBitmap->SetBitNumber(i,kFALSE);
+
+  if (!obj) return;
   TString className(obj->ClassName());
   if (className.CompareTo("AliMCParticle") != 0) {
-    Error("IsSelected","obj must point to a AliMCParticle !");
-    return kFALSE ;
+    AliError("obj must point to an AliMCParticle !");
+    return ;
   }
 
-  TParticle* part = ((AliMCParticle*)obj)->Particle() ;
-  if (!part || part->GetNDaughters()!=2) return kFALSE ;
+  TParticle* part = (dynamic_cast<AliMCParticle*>(obj))->Particle() ;
+  if (!part || part->GetNDaughters() !=2) return ;
+
   Int_t lab0 = part->GetDaughter(0);
   Int_t lab1 = part->GetDaughter(1);
+  AliMCParticle* negDaughter = fMCInfo->GetTrack(lab0) ;
+  AliMCParticle* posDaughter = fMCInfo->GetTrack(lab1) ;
+
+  Int_t iCutBit = 0;
+
+  if (fCutNeg->IsSelected(negDaughter)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  iCutBit++;
   
-  AliMCParticle* negDaughter = fMCInfo->MCEvent()->GetTrack(lab0) ;
-  AliMCParticle* posDaughter = fMCInfo->MCEvent()->GetTrack(lab1) ;
-
-  if (!fCutNeg->IsSelected(negDaughter)) return kFALSE;
-  if (!fCutPos->IsSelected(posDaughter)) return kFALSE; 
-
-  return kTRUE ;
+  if (fCutPos->IsSelected(posDaughter)) fBitmap->SetBitNumber(iCutBit,kTRUE);
 }
 
 //______________________________
 void AliCFPairAcceptanceCuts::SetEvtInfo(TObject* mcInfo) {
   //
-  // Sets pointer to MC event information (AliMCEventHandler)
+  // Sets pointer to MC event information (AliMCEvent)
   //
 
   if (!mcInfo) {
-    Error("SetEvtInfo","Pointer to MC Event Handler is null !");
+    Error("SetEvtInfo","Pointer to MC Event is null !");
     return;
   }
   
   TString className(mcInfo->ClassName());
-  if (className.CompareTo("AliMCEventHandler") != 0) {
-    Error("SetEvtInfo","argument must point to an AliMCEventHandler !");
+  if (className.CompareTo("AliMCEvent") != 0) {
+    Error("SetEvtInfo","argument must point to an AliMCEvent !");
     return ;
   }
   
-  fMCInfo = (AliMCEventHandler*) mcInfo ;
+  fMCInfo = (AliMCEvent*) mcInfo ;
 }

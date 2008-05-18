@@ -38,7 +38,7 @@ class AliCFPairQualityCuts : public AliCFCutBase
   AliCFPairQualityCuts& operator=(const AliCFPairQualityCuts& c) ;
   virtual ~AliCFPairQualityCuts() {delete fCutNeg; delete fCutPos; }
 
-  virtual Bool_t IsSelected(TObject* obj) ; 
+  Bool_t IsSelected(TObject* obj) ; 
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void SetMinNClusterTPC (UInt_t nClusNeg, UInt_t nClusPos) 
   {fCutNeg->SetMinNClusterTPC(nClusNeg); fCutPos->SetMinNClusterTPC(nClusPos);}

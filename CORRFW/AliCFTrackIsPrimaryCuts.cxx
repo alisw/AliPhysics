@@ -50,6 +50,7 @@ ClassImp(AliCFTrackIsPrimaryCuts)
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
   AliCFCutBase(),
+  fNSigmaToVertex(0),
   fNSigmaToVertexMax(0),
   fRequireSigmaToVertex(0),
   fAcceptKinkDaughters(0),
@@ -79,6 +80,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
   AliCFCutBase(name,title),
+  fNSigmaToVertex(0),
   fNSigmaToVertexMax(0),
   fRequireSigmaToVertex(0),
   fAcceptKinkDaughters(0),
@@ -108,6 +110,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(const AliCFTrackIsPrimaryCuts& c) :
   AliCFCutBase(c),
+  fNSigmaToVertex(c.fNSigmaToVertex),
   fNSigmaToVertexMax(c.fNSigmaToVertexMax),
   fRequireSigmaToVertex(c.fRequireSigmaToVertex),
   fAcceptKinkDaughters(c.fAcceptKinkDaughters),
@@ -142,6 +145,7 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
   //
   if (this != &c) {
     AliCFCutBase::operator=(c) ;
+    fNSigmaToVertex = c.fNSigmaToVertex ;
     fNSigmaToVertexMax = c.fNSigmaToVertexMax ;
     fRequireSigmaToVertex = c.fRequireSigmaToVertex ;
     fAcceptKinkDaughters = c.fAcceptKinkDaughters ;
@@ -204,6 +208,7 @@ void AliCFTrackIsPrimaryCuts::Initialise()
   //
   // sets everything to zero
   //
+  fNSigmaToVertex = 0;
   fNSigmaToVertexMax = 0;
   fRequireSigmaToVertex = 0;
   fAcceptKinkDaughters = 0;
@@ -252,7 +257,7 @@ void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
   TNamed::Copy(c);
 }
 //____________________________________________________________________
-Float_t AliCFTrackIsPrimaryCuts::GetSigmaToVertex(AliESDtrack* esdTrack) const
+void AliCFTrackIsPrimaryCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
 {
   //
   // Calculates the number of sigma to the vertex.
@@ -279,29 +284,26 @@ Float_t AliCFTrackIsPrimaryCuts::GetSigmaToVertex(AliESDtrack* esdTrack) const
   // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
   // Can this be expressed in a different way?
 
-  if (bRes[0] == 0 || bRes[1] ==0)
-    return -1;
+  if (bRes[0] == 0 || bRes[1] ==0) {
+    fNSigmaToVertex = -1;
+    return;
+  }
 
   Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
 
   // stupid rounding problem screws up everything:
   // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
-  if (TMath::Exp(-d * d / 2) < 1e-10)
-    return 1000;
+  if (TMath::Exp(-d * d / 2) < 1e-10) {
+    fNSigmaToVertex = 1000;
+    return;
+  }
 
   d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
-  return d;
+  fNSigmaToVertex = d;
+  return;
 }
 //__________________________________________________________________________________
-void AliCFTrackIsPrimaryCuts::GetBitMap(TObject* obj, TBits *bitmap)  {
-  //
-  // retrieve the pointer to the bitmap
-  //
-  TBits *bm = SelectionBitMap(obj);
-  *bitmap = *bm;
-}
-//__________________________________________________________________________________
-TBits* AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
+void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
 {
   //
   // test if the track passes the single cuts
@@ -311,49 +313,47 @@ TBits* AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   // bitmap stores the decision of each single cut
   for(Int_t i=0; i<kNCuts; i++)fBitmap->SetBitNumber(i,kFALSE);
 
-  // cast TObject into ESDtrack
+  // check TObject and cast into ESDtrack
+  if (!obj) return;
+  if (!obj->InheritsFrom("AliESDtrack")) AliError("object must derived from AliESDtrack !");
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(obj);
-  if ( !esdTrack ) return fBitmap ;
-
-  for(Int_t i=0; i<kNCuts; i++)fBitmap->SetBitNumber(i,kTRUE);
+  if ( !esdTrack ) return;
 
   // get the track to vertex parameter
-  Float_t nSigmaToVertex = GetSigmaToVertex(esdTrack);
+  GetSigmaToVertex(esdTrack);
 
   // fill the bitmap
   Int_t iCutBit = 0;
-  if (nSigmaToVertex > fNSigmaToVertexMax)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (fNSigmaToVertex <= fNSigmaToVertexMax)
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (nSigmaToVertex<0 && fRequireSigmaToVertex)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (!fRequireSigmaToVertex || (fNSigmaToVertex>=0 && fRequireSigmaToVertex))
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)
-	fBitmap->SetBitNumber(iCutBit,kFALSE);
+  if (fAcceptKinkDaughters || (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)<=0))
+	fBitmap->SetBitNumber(iCutBit,kTRUE);
 
-  return fBitmap;
+  return;
 }
 //__________________________________________________________________________________
 Bool_t AliCFTrackIsPrimaryCuts::IsSelected(TObject* obj) {
   //
   // loops over decisions of single cuts and returns if the track is accepted
   //
-  TBits* bitmap = SelectionBitMap(obj);
+  SelectionBitMap(obj);
 
+  if (fIsQAOn) FillHistograms(obj,0);
   Bool_t isSelected = kTRUE;
 
-  for (UInt_t icut=0; icut<bitmap->GetNbits();icut++)
-	if(!bitmap->TestBitNumber(icut)) isSelected = kFALSE;
-
-  return isSelected;
-}
-//__________________________________________________________________________________
-void AliCFTrackIsPrimaryCuts::Init() {
-  //
-  // initialises all histograms and the TList which holds the histograms
-  //
-  if(fIsQAOn)
-    DefineHistograms();
+  for (UInt_t icut=0; icut<fBitmap->GetNbits();icut++) {
+    if(!fBitmap->TestBitNumber(icut)) {
+	isSelected = kFALSE;
+	break;
+    }
+  }
+  if (!isSelected) return kFALSE ;
+  if (fIsQAOn) FillHistograms(obj,1);
+  return kTRUE;
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins)
@@ -518,16 +518,14 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
   //
   // fill the QA histograms
   //
-  if(!fIsQAOn) return;
 
   // cast TObject into ESDtrack
+  if (!obj) return;
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(obj);
   if ( !esdTrack ) return;
 
-  // index = 0: fill histograms before cuts
-  // index = 1: fill histograms after cuts
-  Int_t index = -1;
-  index = ((f) ? 1 : 0);
+  // f = 0: fill histograms before cuts
+  // f = 1: fill histograms after cuts
 
 	Float_t b[2];
 	Float_t bRes[2];
@@ -540,41 +538,38 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
 	bRes[0] = TMath::Sqrt(bCov[0]);
 	bRes[1] = TMath::Sqrt(bCov[2]);
 
-	fhQA[kDcaZ][index]->Fill(b[1]);
-	fhQA[kDcaXY][index]->Fill(b[0]);
-	fhDcaXYvsDcaZ[index]->Fill(b[1],b[0]);
+	fhQA[kDcaZ][f]->Fill(b[1]);
+	fhQA[kDcaXY][f]->Fill(b[0]);
+	fhDcaXYvsDcaZ[f]->Fill(b[1],b[0]);
 
 	if (bRes[0]!=0 && bRes[1]!=0) {
-	   fhQA[kDcaZnorm][index]->Fill(b[1]/bRes[1]);
-	   fhQA[kDcaXYnorm][index]->Fill(b[0]/bRes[0]);
-	   fhDcaXYvsDcaZnorm[index]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+	   fhQA[kDcaZnorm][f]->Fill(b[1]/bRes[1]);
+	   fhQA[kDcaXYnorm][f]->Fill(b[0]/bRes[0]);
+	   fhDcaXYvsDcaZnorm[f]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
 	}
 
-  // getting the track to vertex parameters
-  Float_t nSigmaToVertex = GetSigmaToVertex(esdTrack);
-
-  fhQA[kCutNSigmaToVertex][index]->Fill(nSigmaToVertex);
-  if (nSigmaToVertex<0 && fRequireSigmaToVertex) fhQA[kCutRequireSigmaToVertex][index]->Fill(0.);
-  if (!(nSigmaToVertex<0 && fRequireSigmaToVertex)) fhQA[kCutRequireSigmaToVertex][index]->Fill(1.);
+  fhQA[kCutNSigmaToVertex][f]->Fill(fNSigmaToVertex);
+  if (fNSigmaToVertex<0 && fRequireSigmaToVertex) fhQA[kCutRequireSigmaToVertex][f]->Fill(0.);
+  if (!(fNSigmaToVertex<0 && fRequireSigmaToVertex)) fhQA[kCutRequireSigmaToVertex][f]->Fill(1.);
 
 
-  if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) fhQA[kCutAcceptKinkDaughters][index]->Fill(0.);
-  if (!(!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)) fhQA[kCutAcceptKinkDaughters][index]->Fill(0.);
+  if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
+  if (!(!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
 
   // fill cut statistics and cut correlation histograms with information from the bitmap
   if (f) return;
 
   // Get the bitmap of the single cuts
   if ( !obj ) return;
-  TBits* bitmap = SelectionBitMap(obj);
+  SelectionBitMap(obj);
 
   // Number of single cuts in this class
-  UInt_t ncuts = bitmap->GetNbits();
+  UInt_t ncuts = fBitmap->GetNbits();
   for(UInt_t bit=0; bit<ncuts;bit++) {
-    if (!bitmap->TestBitNumber(bit)) {
+    if (!fBitmap->TestBitNumber(bit)) {
 	fhCutStatistics->Fill(bit+1);
 	for (UInt_t bit2=bit; bit2<ncuts;bit2++) {
-	  if (!bitmap->TestBitNumber(bit2)) 
+	  if (!fBitmap->TestBitNumber(bit2)) 
 	    fhCutCorrelation->Fill(bit+1,bit2+1);
 	}
     }
@@ -776,11 +771,11 @@ void AliCFTrackIsPrimaryCuts::DrawHistograms()
   canvas4->SaveAs(Form("%s.ps", canvas4->GetName()));
 }
 //__________________________________________________________________________________
-void AliCFTrackIsPrimaryCuts::AddQAHistograms(TList *qaList) const {
+void AliCFTrackIsPrimaryCuts::AddQAHistograms(TList *qaList) {
   //
   // saves the histograms in a TList
   //
-  if(!fIsQAOn) return;
+  DefineHistograms();
 
   qaList->Add(fhCutStatistics);
   qaList->Add(fhCutCorrelation);

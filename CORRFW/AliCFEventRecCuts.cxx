@@ -45,21 +45,7 @@ AliCFEventRecCuts::AliCFEventRecCuts() :
   fVtxXResMax(1.e99),
   fVtxYResMax(1.e99),
   fVtxZResMax(1.e99),
-  fBitMap(0x0),
-  fhNBinsNTracks(0),
-  fhBinLimNTracks(0),
-  fhNBinsVtxPosX(0),
-  fhBinLimVtxPosX(0),
-  fhNBinsVtxPosY(0),
-  fhBinLimVtxPosY(0),
-  fhNBinsVtxPosZ(0),
-  fhBinLimVtxPosZ(0),
-  fhNBinsVtxResX(0),
-  fhBinLimVtxResX(0),
-  fhNBinsVtxResY(0),
-  fhBinLimVtxResY(0),
-  fhNBinsVtxResZ(0),
-  fhBinLimVtxResZ(0)
+  fBitMap(0x0)
 {
   //
   //ctor
@@ -83,21 +69,7 @@ AliCFEventRecCuts::AliCFEventRecCuts(Char_t* name, Char_t* title) :
   fVtxXResMax(1.e99),
   fVtxYResMax(1.e99),
   fVtxZResMax(1.e99),
-  fBitMap(0x0),
-  fhNBinsNTracks(0),
-  fhBinLimNTracks(0),
-  fhNBinsVtxPosX(0),
-  fhBinLimVtxPosX(0),
-  fhNBinsVtxPosY(0),
-  fhBinLimVtxPosY(0),
-  fhNBinsVtxPosZ(0),
-  fhBinLimVtxPosZ(0),
-  fhNBinsVtxResX(0),
-  fhBinLimVtxResX(0),
-  fhNBinsVtxResY(0),
-  fhBinLimVtxResY(0),
-  fhNBinsVtxResZ(0),
-  fhBinLimVtxResZ(0)
+  fBitMap(0x0)
  {
   //
   //ctor
@@ -121,21 +93,7 @@ AliCFEventRecCuts::AliCFEventRecCuts(const AliCFEventRecCuts& c) :
   fVtxXResMax(c.fVtxXResMax),
   fVtxYResMax(c.fVtxYResMax),
   fVtxZResMax(c.fVtxZResMax),
-  fBitMap(c.fBitMap),
-  fhNBinsNTracks(c.fhNBinsNTracks),
-  fhBinLimNTracks(c.fhBinLimNTracks),
-  fhNBinsVtxPosX(c.fhNBinsVtxPosX),
-  fhBinLimVtxPosX(c.fhBinLimVtxPosX),
-  fhNBinsVtxPosY(c.fhNBinsVtxPosY),
-  fhBinLimVtxPosY(c.fhBinLimVtxPosY),
-  fhNBinsVtxPosZ(c.fhNBinsVtxPosZ),
-  fhBinLimVtxPosZ(c.fhBinLimVtxPosZ),
-  fhNBinsVtxResX(c.fhNBinsVtxResX),
-  fhBinLimVtxResX(c.fhBinLimVtxResX),
-  fhNBinsVtxResY(c.fhNBinsVtxResY),
-  fhBinLimVtxResY(c.fhBinLimVtxResY),
-  fhNBinsVtxResZ(c.fhNBinsVtxResZ),
-  fhBinLimVtxResZ(c.fhBinLimVtxResZ) 
+  fBitMap(c.fBitMap)
 {
   //
   //copy constructor
@@ -160,27 +118,9 @@ AliCFEventRecCuts::~AliCFEventRecCuts() {
     }
   }
 
-  if(fhBinLimNTracks)delete fhBinLimNTracks;
-  if(fhBinLimVtxPosX)delete fhBinLimVtxPosX;
-  if(fhBinLimVtxPosY)delete fhBinLimVtxPosY;
-  if(fhBinLimVtxPosZ)delete fhBinLimVtxPosZ;
-  if(fhBinLimVtxResX)delete fhBinLimVtxResX;
-  if(fhBinLimVtxResY)delete fhBinLimVtxResY;
-  if(fhBinLimVtxResZ)delete fhBinLimVtxResZ;
-
   if(fBitMap)delete fBitMap;
 
 }
-
-//_____________________________________________________________________________
-void AliCFEventRecCuts::Init() {
-  //
-  // initialises all QA histograms
-  //
-  if(fIsQAOn)
-    DefineHistograms();
-}
-
 //_____________________________________________________________________________
 void AliCFEventRecCuts::Initialise()
 {
@@ -198,17 +138,6 @@ void AliCFEventRecCuts::Initialise()
       fhQA[i][j]=0x0;
     }
   }
-
-  //set default bin number/ranges for QA histograms
-
-  SetHistogramBins(kNTracks,23,-0.5,22.5);
-  SetHistogramBins(kVtxPosX,100,-5,5);
-  SetHistogramBins(kVtxPosY,100,-5,5);
-  SetHistogramBins(kVtxPosZ,100,-50,50);
-  SetHistogramBins(kVtxResX,100,-1,1);
-  SetHistogramBins(kVtxResY,100,-1,1);
-  SetHistogramBins(kVtxResZ,100,-1,1);
-
 }
 
 //____________________________________________________________________
@@ -232,20 +161,6 @@ AliCFEventRecCuts& AliCFEventRecCuts::operator=(const AliCFEventRecCuts& c)
     fVtxYResMax=c.fVtxYResMax;
     fVtxZResMax=c.fVtxZResMax;
     fBitMap=c.fBitMap;
-    fhNBinsNTracks=c.fhNBinsNTracks;
-    fhBinLimNTracks=c.fhBinLimNTracks;
-    fhNBinsVtxPosX=c.fhNBinsVtxPosX;
-    fhBinLimVtxPosX=c.fhBinLimVtxPosX;
-    fhNBinsVtxPosY=c.fhNBinsVtxPosY;
-    fhBinLimVtxPosY=c.fhBinLimVtxPosY;
-    fhNBinsVtxPosZ=c.fhNBinsVtxPosZ;
-    fhBinLimVtxPosZ=c.fhBinLimVtxPosZ;
-    fhNBinsVtxResX=c.fhNBinsVtxResX;
-    fhBinLimVtxResX=c.fhBinLimVtxResX;
-    fhNBinsVtxResY=c.fhNBinsVtxResY;
-    fhBinLimVtxResY=c.fhBinLimVtxResY;
-    fhNBinsVtxResZ=c.fhNBinsVtxResZ;
-    fhBinLimVtxResZ=c.fhBinLimVtxResZ;
   }
 
   for (Int_t i=0; i<c.kNCuts; i++){
@@ -264,19 +179,22 @@ Bool_t AliCFEventRecCuts::IsSelected(TObject* obj) {
   //Check if the requested cuts are passed
   //
 
-  TBits *bitmap = SelectionBitMap(obj);
 
+  SelectionBitMap(obj);
+
+  if (fIsQAOn) FillHistograms(obj,0);
   Bool_t isSelected = kTRUE;
 
-  for (UInt_t icut=0; icut<bitmap->GetNbits();icut++)
-	if(!bitmap->TestBitNumber(icut)) isSelected = kFALSE;
+  for (UInt_t icut=0; icut<fBitMap->GetNbits();icut++)
+	if(!fBitMap->TestBitNumber(icut)) isSelected = kFALSE;
 
-  return isSelected;
+  if (!isSelected) return kFALSE ;
+  if (fIsQAOn) FillHistograms(obj,1);
+  return kTRUE;
 
 }
-
 //____________________________________________________________________
-TBits *AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
+void AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
   //
   //cut on the number of charged tracks and on the event vertex.
   //so far specific to AliESDEvents
@@ -285,7 +203,7 @@ TBits *AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
   //Check if the requested cuts are passed and return a bitmap
   for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE);
   AliESDEvent* esd = dynamic_cast<AliESDEvent *>(obj);
-  if ( !esd ) return fBitMap ;
+  if ( !esd ) return;
 
   //now start checking the cuts,
   //first assume the event will be accepted: 
@@ -300,13 +218,13 @@ TBits *AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
     const AliESDVertex* vtxESD = esd->GetVertex();
     if(!vtxESD){
       for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-      return fBitMap;
+      return;
     }
     // Require the vertex to have been reconstructed successfully
     if (strcmp(vtxESD->GetName(), "default")==0){
       AliWarning(Form(" No reconstructed vertex found, skip event"));    
       for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-      return fBitMap;
+      return;
     }    
     // Pick up the position and uncertainties
     
@@ -335,16 +253,7 @@ TBits *AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
     if (vtxRes[2]==0 || vtxRes[2]>fVtxZResMax)
       fBitMap->SetBitNumber(6,kFALSE); 
   }  
-  return fBitMap;
-}
-
-//_____________________________________________________________________________
-void AliCFEventRecCuts::GetBitMap(TObject* obj, TBits *bitmap) {
-  //
-  // retrieve the pointer to the bitmap
-  //
-  bitmap = SelectionBitMap(obj);
-
+  return;
 }
 
 //_____________________________________________________________________________
@@ -384,97 +293,32 @@ void AliCFEventRecCuts::FillHistograms(TObject* obj, Bool_t b)
   
 }
 
-//_____________________________________________________________________________
+//____________________________________________________________________
 void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins)
 {
   //
-  // QA histogram axis parameters
-  // variable bin size:user inputs nbins and the vector of bin limits
-  //
+  //setting x-axis bin limits of QA histogram fhQA[index] 
+  // 
 
-  switch(index){
-  case kNTracks:
-    fhNBinsNTracks=nbins+1;
-    fhBinLimNTracks=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimNTracks[i]=bins[i];
-    break;
-  case kVtxPosX:
-    fhNBinsVtxPosX=nbins+1;
-    fhBinLimVtxPosX=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosX[i]=bins[i];
-    break;
-  case kVtxPosY:
-    fhNBinsVtxPosY=nbins+1;
-    fhBinLimVtxPosY=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosY[i]=bins[i];
-    break;
-  case kVtxPosZ:
-    fhNBinsVtxPosZ=nbins+1;
-    fhBinLimVtxPosZ=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosZ[i]=bins[i];
-    break;
-  case kVtxResX:
-    fhNBinsVtxResX=nbins+1;
-    fhBinLimVtxResX=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResX[i]=bins[i];
-    break;
-  case kVtxResY:
-    fhNBinsVtxResY=nbins+1;
-    fhBinLimVtxResY=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResY[i]=bins[i];
-    break;
-  case kVtxResZ:
-    fhNBinsVtxResZ=nbins+1;
-    fhBinLimVtxResZ=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResZ[i]=bins[i];
-    break;
+  for(Int_t i=0;i<kNStepQA;i++){
+    if(!fhQA[index][i]){AliWarning("non-existing histogram!");
+    return;
+    }
+    fhQA[index][i]->GetXaxis()->Set(nbins,bins);
   }
-
 }
-
-//_____________________________________________________________________________
+//____________________________________________________________________
 void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax)
 {
   //
-  // QA histogram axis parameters
-  // fixed bin size: user inputs nbins, xmin and xmax
-  //
-  switch(index){
-  case kNTracks:
-    fhNBinsNTracks=nbins+1;
-    fhBinLimNTracks=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimNTracks[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-  case kVtxPosX:
-    fhNBinsVtxPosX=nbins+1;
-    fhBinLimVtxPosX=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosX[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-  case kVtxPosY:
-    fhNBinsVtxPosY=nbins+1;
-    fhBinLimVtxPosY=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosY[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-  case kVtxPosZ:
-    fhNBinsVtxPosZ=nbins+1;
-    fhBinLimVtxPosZ=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosZ[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-  case kVtxResX:
-    fhNBinsVtxResX=nbins+1;
-    fhBinLimVtxResX=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResX[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-  case kVtxResY:
-    fhNBinsVtxResY=nbins+1;
-    fhBinLimVtxResY=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResY[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
-  case kVtxResZ:
-    fhNBinsVtxResZ=nbins+1;
-    fhBinLimVtxResZ=new Double_t[nbins+1];
-    for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResZ[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
-    break;
+  //setting x-axis bins and range of QA histogram fhQA[index] 
+  // 
+
+  for(Int_t i=0;i<kNStepQA;i++){
+    if(!fhQA[index][i]){AliWarning("non-existing histogram!");
+    return;
+    }
+    fhQA[index][i]->GetXaxis()->Set(nbins,xmin,xmax);
   }
 }
 
@@ -497,14 +341,14 @@ void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
 
-    fhQA[kNTracks][i]	= new  TH1F(Form("%s_NTracks%s",GetName(),str),	                "",fhNBinsNTracks-1,fhBinLimNTracks);
-    fhQA[kVtxPosX][i]	= new  TH1F(Form("%s_Vtx_Pos_X%s",GetName(),str),		"",fhNBinsVtxPosX-1,fhBinLimVtxPosX);
-    fhQA[kVtxPosY][i]	= new  TH1F(Form("%s_Vtx_Pos_Y%s",GetName(),str),		"",fhNBinsVtxPosY-1,fhBinLimVtxPosY);
-    fhQA[kVtxPosZ][i]	= new  TH1F(Form("%s_Vtx_Pos_Z%s",GetName(),str),		"",fhNBinsVtxPosZ-1,fhBinLimVtxPosZ);
+    fhQA[kNTracks][i]	= new  TH1F(Form("%s_NTracks%s",GetName(),str),	                "",501,-0.5,500.5);
+    fhQA[kVtxPosX][i]	= new  TH1F(Form("%s_Vtx_Pos_X%s",GetName(),str),		"",100,-5.,5.);
+    fhQA[kVtxPosY][i]	= new  TH1F(Form("%s_Vtx_Pos_Y%s",GetName(),str),		"",100,-5.,5.);
+    fhQA[kVtxPosZ][i]	= new  TH1F(Form("%s_Vtx_Pos_Z%s",GetName(),str),		"",200,-50.,50.);
 
-    fhQA[kVtxResX][i]	= new  TH1F(Form("%s_Vtx_Res_X%s",GetName(),str),		"",fhNBinsVtxResX-1,fhBinLimVtxResX);
-    fhQA[kVtxResY][i]	= new  TH1F(Form("%s_Vtx_Res_Y%s",GetName(),str),		"",fhNBinsVtxResY-1,fhBinLimVtxResY);
-    fhQA[kVtxResZ][i]	= new  TH1F(Form("%s_Vtx_Res_Z%s",GetName(),str),		"",fhNBinsVtxResZ-1,fhBinLimVtxResZ);
+    fhQA[kVtxResX][i]	= new  TH1F(Form("%s_Vtx_Res_X%s",GetName(),str),		"",100,-1.,1.);
+    fhQA[kVtxResY][i]	= new  TH1F(Form("%s_Vtx_Res_Y%s",GetName(),str),		"",100,-1.,1.);
+    fhQA[kVtxResZ][i]	= new  TH1F(Form("%s_Vtx_Res_Z%s",GetName(),str),		"",100,-1.,1.);
  
     fhQA[kNTracks][i]	->SetXTitle("Number of ESD tracks");
     fhQA[kVtxPosX][i]	->SetXTitle("Vertex Position X (cm)");
@@ -521,14 +365,15 @@ void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin
 }
 
 //_____________________________________________________________________________
-void AliCFEventRecCuts::AddQAHistograms(TList *list) const {
+void AliCFEventRecCuts::AddQAHistograms(TList *qaList) {
   //
   // saves the histograms in a TList
   //
-  if(!fIsQAOn) return;  
+
+  DefineHistograms();
 
   for (Int_t j=0; j<kNStepQA; j++) {
     for(Int_t i=0; i<kNCuts; i++)
-	list->Add(fhQA[i][j]);
+	qaList->Add(fhQA[i][j]);
   }
 }

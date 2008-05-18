@@ -29,7 +29,8 @@
 #include "AliCFAcceptanceCuts.h"
 #include "AliCFCutBase.h"
 
-class AliMCEventHandler;
+class AliMCEvent;
+class TBits;
 
 class AliCFPairAcceptanceCuts : public AliCFCutBase
 {
@@ -39,7 +40,7 @@ class AliCFPairAcceptanceCuts : public AliCFCutBase
   AliCFPairAcceptanceCuts(const AliCFPairAcceptanceCuts& c) ;
   AliCFPairAcceptanceCuts& operator=(const AliCFPairAcceptanceCuts& c) ;
   virtual ~AliCFPairAcceptanceCuts() {delete fCutNeg; delete fCutPos; }
-  virtual Bool_t IsSelected(TObject* obj) ;
+  Bool_t IsSelected(TObject* obj) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void SetEvtInfo(TObject *mcInfo) ;
   virtual void SetMinNHitITS  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitITS (nHitNeg); fCutPos->SetMinNHitITS (nHitPos);}
@@ -48,11 +49,19 @@ class AliCFPairAcceptanceCuts : public AliCFCutBase
   virtual void SetMinNHitTOF  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitTOF (nHitNeg); fCutPos->SetMinNHitTOF (nHitPos);}
   virtual void SetMinNHitMUON (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitMUON(nHitNeg); fCutPos->SetMinNHitMUON(nHitPos);}
 
+  enum {
+    kNCuts=2
+  };
+
  protected:
-  AliMCEventHandler   *fMCInfo ; // global event information
+  AliMCEvent          *fMCInfo ; // global event information
   AliCFAcceptanceCuts *fCutNeg ; // acceptance cut on negative daughter
   AliCFAcceptanceCuts *fCutPos ; // acceptance cut on positive daughter
-  
+  TBits               *fBitmap ; // cut bitmap    
+
+ private:
+  void SelectionBitMap(TObject* obj);
+
   ClassDef(AliCFPairAcceptanceCuts,1);
 };
 

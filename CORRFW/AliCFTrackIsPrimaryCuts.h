@@ -56,11 +56,9 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   ~AliCFTrackIsPrimaryCuts();
   void Copy(TObject &c) const;
 
-  void GetBitMap(TObject* obj, TBits *bitmap);
   Bool_t IsSelected(TObject* obj);
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  void Init();
-  Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const;
+  void GetSigmaToVertex(AliESDtrack* esdTrack);
 
   // cut value setter
   void SetMaxNSigmaToVertex(Double_t sigma=3)	{fNSigmaToVertexMax = sigma;}
@@ -68,11 +66,9 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)	{fAcceptKinkDaughters=b;}
 
   // QA histograms
-  void FillHistogramsBeforeCuts(TObject* obj) {return FillHistograms(obj,kFALSE);}
-  void FillHistogramsAfterCuts(TObject* obj)  {return FillHistograms(obj,kTRUE);}
   void DrawHistograms();
   void SaveHistograms(const Char_t* dir = 0);
-  void AddQAHistograms(TList *qaList) const;
+  void AddQAHistograms(TList *qaList);
   // QA histogram setter
   // please use indices from the enumeration below
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
@@ -93,12 +89,13 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   };
 
  private:
-  TBits* SelectionBitMap(TObject* obj);
+  void SelectionBitMap(TObject* obj);
   void DefineHistograms(); 		// books histograms and TList
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
 					// Fills histograms before and after cuts
-  Double_t fNSigmaToVertexMax;		// max distance to main vertex in units of sigma
+  Double_t fNSigmaToVertex;		// track distance to main vertex in units of sigma
+  Double_t fNSigmaToVertexMax;		// cut value: max distance to main vertex in units of sigma
   Bool_t  fRequireSigmaToVertex;	// require calculable distance to main vertex
 
   TH2F* fhDcaXYvsDcaZ[2];		// Histogram: dca xy vs. z

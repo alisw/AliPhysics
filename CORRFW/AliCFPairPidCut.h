@@ -53,7 +53,7 @@ class AliCFPairPidCut : public AliCFCutBase
   void SetMinDiffProb(Bool_t check1, Double_t mindiff1, Bool_t check2, Double_t mindiff2)
   {fCutNeg->SetMinDiffProb(check1,mindiff1); fCutPos->SetMinDiffProb(check2,mindiff2);}  //set checking at probability level
 
-  virtual Bool_t IsSelected(TObject *obj); //boolena for detectors
+  Bool_t IsSelected(TObject *obj); //boolean for detectors
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
  private:
   AliCFTrackCutPid* fCutNeg; //! PID cut on negative daughter

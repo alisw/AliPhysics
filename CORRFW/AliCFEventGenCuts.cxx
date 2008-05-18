@@ -127,19 +127,19 @@ Bool_t AliCFEventGenCuts::IsSelected(TObject* obj) {
   //Check if the requested cuts are passed
   //
 
-  TBits *bitmap = SelectionBitMap(obj);
+  SelectionBitMap(obj);
 
   Bool_t isSelected = kTRUE;
 
-  for (UInt_t icut=0; icut<bitmap->GetNbits();icut++)
-	if(!bitmap->TestBitNumber(icut)) isSelected = kFALSE;
+  for (UInt_t icut=0; icut<fBitMap->GetNbits();icut++)
+	if(!fBitMap->TestBitNumber(icut)) isSelected = kFALSE;
 
   return isSelected;
 
 }
 
 //____________________________________________________________________
-TBits * AliCFEventGenCuts::SelectionBitMap(TObject* obj){
+void AliCFEventGenCuts::SelectionBitMap(TObject* obj){
   //
   //cut on the MB process type, the number of charged and neutral 
   //tracks and on the event vertex. So far specific to AliMCEvents
@@ -148,7 +148,7 @@ TBits * AliCFEventGenCuts::SelectionBitMap(TObject* obj){
   //Check if the requested cuts are passed and return a bitmap
   for(Int_t j=0;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE);
   AliMCEvent* ev = dynamic_cast<AliMCEvent *>(obj);
-  if ( !ev ) return fBitMap ;
+  if ( !ev ) return;
   AliGenEventHeader*genHeader = ev->GenEventHeader();  
 
 
@@ -204,7 +204,7 @@ TBits * AliCFEventGenCuts::SelectionBitMap(TObject* obj){
     if (vtxPos[2]>fVtxZMax || vtxPos[2]<fVtxZMin)
       fBitMap->SetBitNumber(4,kFALSE); 
   }  
-  return fBitMap;
+  return;
 }
 
  //______________________________________________________________________
@@ -276,11 +276,3 @@ Int_t AliCFEventGenCuts::ProcType(AliGenEventHeader *genHeader) {
   return process;
 }
 
-//_____________________________________________________________________________
-void  AliCFEventGenCuts::GetBitMap(TObject* obj, TBits *bitmap){
-  //
-  // retrieve the pointer to the bitmap
-  //
-  bitmap=SelectionBitMap(obj);
-
-}

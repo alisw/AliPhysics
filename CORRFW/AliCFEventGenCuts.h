@@ -1,4 +1,3 @@
-
 #ifndef ALICFEVENTGENCUTS_H
 #define ALICFEVENTGENCUTS_H
 /**************************************************************************
@@ -27,7 +26,7 @@
 
 #include "AliCFCutBase.h"
 class TBits;
-class AliEventGenHeader;
+class AliGenEventHeader;
 class AliMCEvent;
 //____________________________________________________________________________
 class AliCFEventGenCuts: public AliCFCutBase 
@@ -38,10 +37,8 @@ class AliCFEventGenCuts: public AliCFCutBase
   AliCFEventGenCuts(const AliCFEventGenCuts& c) ;
   AliCFEventGenCuts& operator=(const AliCFEventGenCuts& c) ;
   ~AliCFEventGenCuts();
-  void GetBitMap(TObject *obj, TBits *bitmap);
   Bool_t IsSelected(TObject* obj);
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  void Init(){;};
 
   //number of embedded cuts
   enum{kNCuts=5};
@@ -79,9 +76,9 @@ class AliCFEventGenCuts: public AliCFCutBase
   Double_t GetVertexZMin() const {return fVtxZMin;} // cut values getter
   
 
- private:
+ protected:
 
-  TBits * SelectionBitMap(TObject* obj);
+  void SelectionBitMap(TObject* obj);
   
   Int_t fMBProcType ; //the type of selected MB process 
   Int_t fNTracksMin; //minimum number of particles in the event
@@ -96,7 +93,7 @@ class AliCFEventGenCuts: public AliCFCutBase
 
   TBits *fBitMap ; //cut mask
 
-  ClassDef(AliCFEventGenCuts,1);
+  ClassDef(AliCFEventGenCuts,2);
 };
 
 #endif
