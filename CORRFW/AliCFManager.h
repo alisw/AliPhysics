@@ -20,12 +20,8 @@
 
 #include "TNamed.h"
 
-class TObject;
-class TList;
-class TBits;
 class AliCFContainer ;
-class AliMCEventHandler ;
-class AliGenEventHeader ;
+
 //____________________________________________________________________________
 class AliCFManager : public TNamed 
 {
@@ -103,16 +99,6 @@ class AliCFManager : public TNamed
   virtual Bool_t CheckEventCuts(Int_t isel, TObject *obj, const TString &selcuts="all") const;
   virtual Bool_t CheckParticleCuts(Int_t isel, TObject *obj, const TString &selcuts="all") const;
 
-  virtual void FillQABeforeEventCuts(Int_t isel, TObject *obj) const;
-  virtual void FillQAAfterEventCuts(Int_t isel, TObject *obj) const;
-  virtual void FillQABeforeParticleCuts(Int_t isel, TObject *obj) const;
-  virtual void FillQAAfterParticleCuts(Int_t isel, TObject *obj) const;
-
-  virtual void InitQAHistos() const;//init QA histograms
-  virtual TBits*  GetQAParticleSelBits(Int_t isel, TObject *obj);//get cut mask
-  virtual void AddQAHistosToList(TList *list) const; //put the QA histos in TList
-  
-  
  private:
 
   //the correction grid
@@ -123,7 +109,6 @@ class AliCFManager : public TNamed
   TObjArray *fEvtCutList[kNEvtSel]; //arrays of cuts: gen,trig,rec-level
   //Particle-level selections
   TObjArray *fPartCutList[kNPartSel]; //arrays of cuts: gen,acceptance,rec,sel-level
-  TBits *fhQABits; // Global list of Cuts' QA BitMaps
 
   Bool_t CompareStrings(const TString  &cutname,const TString  &selcuts) const;
 

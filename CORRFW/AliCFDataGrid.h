@@ -13,11 +13,6 @@
 #include "AliCFGrid.h"
 #include "AliCFEffGrid.h"
 #include "AliCFContainer.h"
-#include <TNamed.h>
-#include <TTree.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TH3F.h>
 
 class AliCFDataGrid : public AliCFGrid
 {

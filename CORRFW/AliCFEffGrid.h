@@ -12,7 +12,6 @@
 
 #include "AliCFGrid.h"
 #include "AliCFContainer.h"
-#include <TTree.h>
 class TH1D;
 class TH2D;
 class TH3D;

@@ -21,9 +21,6 @@
 // efficiency calculation.
 // prototype version by S.Arcelli silvia.arcelli@cern.ch
 ///////////////////////////////////////////////////////////////////////////
-#include "TBits.h"
-#include "TList.h"
-#include "TH1.h"
 #include "AliLog.h"
 #include "AliCFCutBase.h"
 #include "AliCFManager.h"
@@ -34,37 +31,31 @@ ClassImp(AliCFManager)
 AliCFManager::AliCFManager() : 
   TNamed(),
   fEvtContainer(0x0),
-  fPartContainer(0x0),
-  fhQABits(0x0)
-
+  fPartContainer(0x0)
 { 
   //
   // ctor
   //
   for(Int_t i=0;i<kNEvtSel;i++)fEvtCutList[i]=0x0;
   for(Int_t i=0;i<kNPartSel;i++)fPartCutList[i]=0x0;
-  fhQABits=new TBits(0);
 }
 //_____________________________________________________________________________
 AliCFManager::AliCFManager(Char_t* name, Char_t* title) : 
   TNamed(name,title),
   fEvtContainer(0x0),
-  fPartContainer(0x0),
-  fhQABits(0x0)
+  fPartContainer(0x0)
  { 
    //
    // ctor
    //
   for(Int_t i=0;i<kNEvtSel;i++)fEvtCutList[i]=0x0;
   for(Int_t i=0;i<kNPartSel;i++)fPartCutList[i]=0x0;
-  fhQABits=new TBits(0);
 }
 //_____________________________________________________________________________
 AliCFManager::AliCFManager(const AliCFManager& c) : 
   TNamed(c),
   fEvtContainer(c.fEvtContainer),
-  fPartContainer(c.fPartContainer),
-  fhQABits(c.fhQABits)
+  fPartContainer(c.fPartContainer)
  { 
    //
    //copy ctor
@@ -84,7 +75,6 @@ AliCFManager& AliCFManager::operator=(const AliCFManager& c)
 
   this->fEvtContainer=c.fEvtContainer;
   this->fPartContainer=c.fPartContainer;
-  this->fhQABits=c.fhQABits;
   for(Int_t i=0;i<kNEvtSel;i++)this->fEvtCutList[i]=c.fEvtCutList[i];
   for(Int_t i=0;i<kNPartSel;i++)this->fPartCutList[i]=c.fPartCutList[i];
   return *this ;
@@ -95,7 +85,6 @@ AliCFManager::~AliCFManager() {
    //
    //dtor
    //
-  if(fhQABits) delete fhQABits;
 }
 
 //_____________________________________________________________________________
@@ -141,135 +130,6 @@ Bool_t AliCFManager::CheckEventCuts(Int_t isel, TObject *obj, const TString  &se
 }
 
 //_____________________________________________________________________________
-void AliCFManager::FillQABeforeParticleCuts(Int_t isel, TObject *obj) const{
-  //
-  // Fill QA histos before cuts at particle selection level isel are applied
-  //
-
-  if(isel>=kNPartSel){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,kNPartSel));
-      return;
-  }
-  if(!fPartCutList[isel])return;
-
-  TObjArrayIter iter(fPartCutList[isel]);
-  AliCFCutBase *cut = 0;
-  while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-    if(cut->IsQAOn())cut->FillHistogramsBeforeCuts(obj);   
-  }
-}
-//_____________________________________________________________________________
-void AliCFManager::FillQAAfterParticleCuts(Int_t isel, TObject *obj) const{
-  //
-  // Fill QA histos after cuts at particle selection level isel are applied
-  //
-  if(isel>=kNPartSel){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,kNPartSel));
-      return;
-  }
-  if(!fPartCutList[isel])return;
-
-  TObjArrayIter iter(fPartCutList[isel]);
-  AliCFCutBase *cut = 0;
-  while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-    if(cut->IsQAOn())cut->FillHistogramsAfterCuts(obj);   
-  }
-}
-
-//_____________________________________________________________________________
-void AliCFManager::FillQABeforeEventCuts(Int_t isel, TObject *obj) const{
-  //
-  // Fill QA histos before cuts at event selection level isel are applied
-  //
-
-  if(isel>=kNEvtSel){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,kNEvtSel));
-      return;
-  }
-  if(!fEvtCutList[isel])return;
-
-  TObjArrayIter iter(fEvtCutList[isel]);
-  AliCFCutBase *cut = 0;
-  while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-    if(cut->IsQAOn())cut->FillHistogramsBeforeCuts(obj);   
-  }
-}
-
-//_____________________________________________________________________________
-void AliCFManager::FillQAAfterEventCuts(Int_t isel, TObject *obj) const{
-  //
-  // Fill QA histos after cuts at event selection level isel are applied
-  //
-
-  if(isel>=kNEvtSel){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,kNEvtSel));
-      return;
-  }
-  if(!fEvtCutList[isel])return;
-
-  TObjArrayIter iter(fEvtCutList[isel]);
-  AliCFCutBase *cut = 0;
-  while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-    if(cut->IsQAOn())cut->FillHistogramsAfterCuts(obj);   
-  }
-}
-
-//_____________________________________________________________________________
-void AliCFManager::AddQAHistosToList(TList *list) const {
-  //
-  // Add to list the full list of QA histograms to be written to the output
-  //
-
-  for(Int_t isel=0;isel<kNPartSel; isel++){
-    if(!fPartCutList[isel])continue;  
-    TObjArrayIter iter(fPartCutList[isel]);
-    AliCFCutBase *cut = 0;
-    while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-      if(cut->IsQAOn())cut->AddQAHistograms(list);     
-    }
-  }  
-
-  //Event-level cuts QA
-
-  for(Int_t isel=0;isel<kNEvtSel; isel++){
-    if(!fEvtCutList[isel])continue;  
-    TObjArrayIter iter(fEvtCutList[isel]);
-    AliCFCutBase *cut = 0;
-    while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-      if(cut->IsQAOn())cut->AddQAHistograms(list);
-    }
-  }    
-}
-//_____________________________________________________________________________
-TBits* AliCFManager::GetQAParticleSelBits(Int_t isel, TObject *obj) {
-  //
-  // Get the full list of QA histograms to be written to the output
-  //
-
-  fhQABits->Clear(); //reset the list
-  
-  //Particle-level cuts QA
-
-  if(fPartCutList[isel]){  
-    TObjArrayIter iter(fPartCutList[isel]);
-    AliCFCutBase *cut = 0;
-    while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-      if(cut->IsQAOn()){
-	TBits *qalist=new TBits(0);
-	cut->GetBitMap(obj,qalist);
-	for(UInt_t icut=0;icut<qalist->GetNbits();icut++){
-	  fhQABits->SetBitNumber(icut,qalist->TestBitNumber(icut));    
-	}
-	delete qalist;
-      }
-    }    
-  }
-
-  return fhQABits;
-
-}
-
-//_____________________________________________________________________________
 void  AliCFManager::SetEventInfo(TObject *obj) const {
 
   //Particle level cuts
@@ -291,31 +151,6 @@ void  AliCFManager::SetEventInfo(TObject *obj) const {
     AliCFCutBase *cut = 0;
     while ( (cut = (AliCFCutBase*)iter.Next()) ) {
       cut->SetEvtInfo(obj);
-    }    
-  }
-}
-//_____________________________________________________________________________
-void  AliCFManager::InitQAHistos() const {
-
-  //Particle level cuts
-
-  for(Int_t isel=0;isel<kNPartSel; isel++){
-    if(!fPartCutList[isel])continue;  
-    TObjArrayIter iter(fPartCutList[isel]);
-    AliCFCutBase *cut = 0;
-    while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-      if(cut->IsQAOn())cut->Init();
-    }    
-  }
-  
-  //Event level cuts 
-
-  for(Int_t isel=0;isel<kNEvtSel; isel++){
-    if(!fEvtCutList[isel])continue;  
-    TObjArrayIter iter(fEvtCutList[isel]);
-    AliCFCutBase *cut = 0;
-    while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-      if(cut->IsQAOn())cut->Init();
     }    
   }
 }

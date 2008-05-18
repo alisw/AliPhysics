@@ -10,7 +10,7 @@
 //                                                                    //
 //--------------------------------------------------------------------//
 
-#include <TNamed.h>
+#include "TNamed.h"
 
 class AliCFFrame : public TNamed
 {

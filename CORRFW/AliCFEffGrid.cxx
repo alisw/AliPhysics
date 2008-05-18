@@ -25,14 +25,12 @@
 //--------------------------------------------------------------------//
 //
 //
-#include <TROOT.h>
-#include <TMath.h>
-#include <TFile.h>
-#include <AliLog.h>
+#include "TMath.h"
+#include "AliLog.h"
 #include "AliCFEffGrid.h"
-#include <TH1D.h>
-#include <TH2D.h>
-#include <TH3D.h>
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
 
 //____________________________________________________________________
 ClassImp(AliCFEffGrid)

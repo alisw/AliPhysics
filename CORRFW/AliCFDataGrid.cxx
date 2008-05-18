@@ -25,10 +25,8 @@
 //--------------------------------------------------------------------//
 //
 //
-#include <TROOT.h>
-#include <TMath.h>
-#include <TFile.h>
-#include <AliLog.h>
+#include "TMath.h"
+#include "AliLog.h"
 #include "AliCFDataGrid.h"
 
 //____________________________________________________________________
