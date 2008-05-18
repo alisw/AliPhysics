@@ -421,15 +421,13 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
  
 }
 //______________________________________________________________________________
-void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
+void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, Float_t coreRadius, TClonesArray * digits)
 {
   // This function calculates energy in the core, 
   // i.e. within a radius rad = 3cm around the center. Beyond this radius
   // in accordance with shower profile the energy deposition 
   // should be less than 2%
 //DP: non-perpendicular incidence??????????????
-
-  Float_t coreRadius = AliPHOSReconstructor::GetRecoParamEmc()->GetEcoreRadius() ;
 
   Float_t x = 0 ;
   Float_t z = 0 ;
@@ -772,7 +770,7 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
-  EvalCoreEnergy(logWeight, digits);
+//   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;
   EvalPrimaries(digits) ;
   AliPHOSRecPoint::EvalAll(digits) ;

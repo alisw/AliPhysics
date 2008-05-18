@@ -23,7 +23,7 @@
 //  RecPoint implementation for PHOS-EMC 
 //  An EmcRecPoint is a cluster of digits   
 //           
-//*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
+//-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
 
 // --- ROOT system ---
 
@@ -53,6 +53,7 @@ public:
 
   virtual void  EvalAll(Float_t logWeight, TClonesArray * digits) ; //Those tasks which can be done without vertex
   virtual void  EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits) ;
+          void  EvalCoreEnergy(Float_t logWeight, Float_t coreRadius, TClonesArray * digits) ;             
 
   //in base class this functions is non-const
   virtual void  ExecuteEvent(Int_t event, Int_t px, Int_t py) /*const*/; 
@@ -93,7 +94,6 @@ public:
   AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & /*rvalue*/)  { return *this ; }
 
  protected:
-          void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
   virtual void  EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TClonesArray * digits, TVector3 &vInc) ;// computes the position in the PHOS module 
   virtual void  EvalDispersion(Float_t logWeight, TClonesArray * digits, TVector3 &vInc) ;   // computes the dispersion of the shower
   virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits, TVector3 &vInc );   // computes the axis of shower ellipsoide

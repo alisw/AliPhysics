@@ -198,7 +198,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
   fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
-  fW0CPV(0),                  fEmcTimeGate(0)
+  fW0CPV(0),                  fEmcTimeGate(0),          fEcoreRadius(0)
 {
   // default ctor (to be used mainly by Streamer)
   
@@ -214,7 +214,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(AliPHOSGeometry *geom) :
   fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
-  fW0CPV(0),                  fEmcTimeGate(0)
+  fW0CPV(0),                  fEmcTimeGate(0),          fEcoreRadius(0)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
@@ -399,6 +399,7 @@ void AliPHOSClusterizerv1::InitParameters()
   fW0CPV                   = parCpv->GetLogWeight();
 
   fEmcTimeGate             = 1.e-6 ; 
+  fEcoreRadius             = parEmc->GetEcoreRadius();
   
   fToUnfold                = parEmc->ToUnfold() ;
     
@@ -501,6 +502,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
 
     // No vertex is available now, calculate corrections in PID
     rp->EvalAll(fW0,fDigitsArr) ;
+    rp->EvalCoreEnergy(fW0,fEcoreRadius,fDigitsArr) ;
     TVector3 fakeVtx(0.,0.,0.) ;
     rp->EvalAll(fW0,fakeVtx,fDigitsArr) ;
     rp->EvalLocal2TrackingCSTransform();

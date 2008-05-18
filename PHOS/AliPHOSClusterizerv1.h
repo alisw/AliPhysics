@@ -89,6 +89,7 @@ public:
   virtual Float_t GetCpvClusteringThreshold()const{ return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvLocalMaxCut()const        { return fCpvLocMaxCut;} 
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
+  virtual Float_t GetEcoreRadius()const           { return fEcoreRadius;}  
   //  virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
 
   virtual void    Digits2Clusters(Option_t *option);
@@ -103,6 +104,7 @@ public:
   virtual void SetCpvLocalMaxCut(Float_t cut)            { fCpvLocMaxCut = cut ; }
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}
+  virtual void SetCoreRadius(Float_t coreRadius)         { fEcoreRadius = coreRadius ;}
   //Switch to "on flyght" mode, without writing to TreeR and file  
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   static Double_t ShowerShape(Double_t x, Double_t z) ; // Shape of EM shower used in unfolding; 
@@ -153,11 +155,10 @@ private:
   Float_t fW0 ;                      // logarithmic weight for the cluster center of gravity calculation
   Float_t fCpvLocMaxCut ;            // minimum energy difference to distinguish local maxima in a CPV cluster
   Float_t fW0CPV ;                   // logarithmic weight for the CPV cluster center of gravity calculation
-  //  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
+  Float_t fEcoreRadius ;             // Radius within which the core energy is calculated, in cm
 
-
-  ClassDef(AliPHOSClusterizerv1,6)   // Clusterizer implementation version 1
+  ClassDef(AliPHOSClusterizerv1,7)   // Clusterizer implementation version 1
 
 };
 
