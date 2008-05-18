@@ -15,7 +15,6 @@
 // **************************************************************************/
 //
 //////////////////////////////////////////////////////////////////////////////
-// Author : Z. Ahamed
 
 #include "TF1.h"
 #include "TFile.h"
@@ -24,6 +23,7 @@
 #include "TClonesArray.h"
 #include "TH1F.h"
 #include "TObjArray.h"
+#include "TMath.h"
 
 // --- Standard library ---
 
@@ -40,19 +40,23 @@
 #include "AliCDBMetaData.h"
 #include "AliDAQ.h"
 
+//#include "AliPMDCleanNoise.h"
+//#include "AliPMDCleaner.h"
+
+#include "AliPMDPedestal.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
 ClassImp(AliPMDCalibrator)
 
-//const Int_t kDet    = 2;
-//const Int_t kMaxSMN = 24;
-//const Int_t kMaxRow = 48;
-//const Int_t kMaxCol = 96;
 
 AliPMDCalibrator::AliPMDCalibrator():
-  fCalibGain(new AliPMDCalibData())
+  fCalibGain(new AliPMDCalibData()), fCalibPed(new AliPMDPedestal())
 {
   // Standard Constructor
   for(Int_t idet = 0; idet < kDet; idet++)
     {
+      fHdetIso[idet] = NULL ;
       for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	{
 	  fHsmIso[idet][ismn] = NULL ;
@@ -69,10 +73,11 @@ AliPMDCalibrator::AliPMDCalibrator():
 }
 // ------------------------------------------------------------------------ //
 AliPMDCalibrator::AliPMDCalibrator(const AliPMDCalibrator &pmdcalibrator):
-  fCalibGain(new AliPMDCalibData())
+  fCalibGain(new AliPMDCalibData()), fCalibPed(new AliPMDPedestal())
 {
   for(Int_t idet = 0; idet < 2; idet++)
     {
+      fHdetIso[idet] = pmdcalibrator.fHdetIso[idet] ;
       for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	{
 	  fHsmIso[idet][ismn] = pmdcalibrator.fHsmIso[idet][ismn] ;
@@ -86,7 +91,7 @@ AliPMDCalibrator::AliPMDCalibrator(const AliPMDCalibrator &pmdcalibrator):
 	    }
 	}
     }
-
+  
 }
 // ------------------------------------------------------------------------ //
 AliPMDCalibrator &AliPMDCalibrator::operator=(const AliPMDCalibrator &pmdcalibrator)
@@ -95,6 +100,7 @@ AliPMDCalibrator &AliPMDCalibrator::operator=(const AliPMDCalibrator &pmdcalibra
     {
       for(Int_t idet = 0; idet < kDet; idet++)
 	{
+	  fHdetIso[idet] = pmdcalibrator.fHdetIso[idet] ;
 	  for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	    {
 	      fHsmIso[idet][ismn] = pmdcalibrator.fHsmIso[idet][ismn] ;
@@ -116,10 +122,12 @@ AliPMDCalibrator &AliPMDCalibrator::operator=(const AliPMDCalibrator &pmdcalibra
 // ------------------------------------------------------------------------ //
 AliPMDCalibrator::~AliPMDCalibrator()
 {
-  // dtor
+  // destructor
+  if(fHdetIso)  delete fHdetIso ;
   if(fHsmIso)  delete fHsmIso ;
   if(fHadcIso) delete fHadcIso ;
   delete fCalibGain;
+  delete fCalibPed;
 }
 // ------------------------------------------------------------------------ //
 
@@ -127,19 +135,22 @@ void AliPMDCalibrator::Exec()
 {
   // reads parameters and does the calibration
   CalculateIsoCell() ;
-
 }
 // ------------------------------------------------------------------------ //
 
 void AliPMDCalibrator::Init()
 {
   // intializes everything
+  char hname2[kDet];
+  char htitle2[2];
   char hname[kMaxSMN];
   char hname24[kMaxSMN];
   char hnameiso[120];
   char htitle1[120];
-
+  
   for(Int_t d = 0; d < kDet; d++) {
+    sprintf(hname2,"Isolated cell adc for Det Plane %d",d);//sid
+    fHdetIso[d]= new TH1F(hname2,htitle2,100,0,1000);
     for(Int_t i1 = 0; i1 < kMaxSMN; i1++) {
       sprintf(hname,"det_%d_iso_sm_%2d",d,i1);
       sprintf(hname24,"det_%d_iso_sm_%2d",d,i1);
@@ -153,7 +164,7 @@ void AliPMDCalibrator::Init()
 	  
 	  TObject *old=gDirectory->GetList()->FindObject(hnameiso);
 	  if (old) gDirectory->GetList()->Remove(old);
-	  fHadcIso[d][i1][j1][k1] = new TH1F(hnameiso,htitle1,100,0.,4000.);
+	  fHadcIso[d][i1][j1][k1] = new TH1F(hnameiso,htitle1,100,0.,1000.);
 	}
       }
     }
@@ -169,74 +180,94 @@ void AliPMDCalibrator::CalculateIsoCell()
 
   TObjArray pmdddlcont;
   const Int_t kDDL           = AliDAQ::NumberOfDdls("PMD");
-  const Int_t kMaxHit        = 60000;
   const Int_t kCellNeighbour = 6;
 
   Int_t neibx[6] = {1,0,-1,-1,0,1};
   Int_t neiby[6] = {0,1,1,0,-1,-1};
-  
-  Int_t id1,jd1; //neighbour row/col
-  Int_t countisocell = 0 ;//number of isilated cell
-  Int_t isocount; //number of neighbours with 0 signal
-  Int_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
-  Int_t ch[kDet][kMaxSMN][kMaxRow][kMaxCol];
-  Int_t maxhit;
-  
-  
-  Int_t det[kMaxHit],smn[kMaxHit];
-  Int_t row[kMaxHit],col[kMaxHit],sig[kMaxHit],chno[kMaxHit];
 
+  Int_t id1,jd1;            //neighbour row/col
+  Int_t countisocell = 0 ;  //number of isilated cell
+  Int_t isocount;           //number of neighbours with 0 signal
+  Int_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
+  Int_t maxhit;
+  Int_t nhit[kDet][kMaxSMN];
+  Int_t nhitcell[kDet][kMaxSMN][kMaxRow][kMaxCol];
+  
   for(Int_t idet = 0; idet < kDet; idet++)
     {
       for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
         {
-          for(Int_t irow = 0; irow < kMaxRow; irow++)
-            {
-              for(Int_t icol = 0; icol < kMaxCol; icol++)
-                {
-                  d1[idet][ismn][irow][icol] = 0;
-                  ch[idet][ismn][irow][icol] = 0;
-                }
+	  nhit[idet][ismn] = 0;
+	  for(Int_t irow = 0; irow < kMaxRow; irow++)
+	    {
+	      for(Int_t icol = 0; icol < kMaxCol; icol++)
+		{
+		  d1[idet][ismn][irow][icol] = 0;
+		  nhitcell[idet][ismn][irow][icol] = 0;
+		}
 	    }
 	}
     }
+
+  Float_t tempnhit1[kDet][kMaxSMN];
+  Float_t tempnhit2[kDet][kMaxSMN];
+  Float_t meannhit[kDet][kMaxSMN];
+  Float_t meanSqnhit[kDet][kMaxSMN];
+  Float_t sigmanhit[kDet][kMaxSMN];
+  Float_t count[kDet][kMaxSMN];
+  Float_t nhitcut[kDet][kMaxSMN];
+
+  for (Int_t idet = 0; idet < kDet; idet++)
+  {
+      for (Int_t ismn = 0; ismn < kMaxSMN; ismn++)
+      {
+	  tempnhit1[idet][ismn]  = 0.;
+	  tempnhit2[idet][ismn]  = 0.;
+	  meannhit[idet][ismn]   = 0.;
+	  meanSqnhit[idet][ismn] = 0.;
+	  sigmanhit[idet][ismn]  = 0.;
+	  count[idet][ismn]      = 0.;
+	  nhitcut[idet][ismn]    = 0.;
+      }
+  }
+
+
   //accessing raw data
   AliRawReaderFile reader(".");
   AliPMDRawStream stream(&reader);
   while(reader.NextEvent())
-    {
+    { 
       // New PMD Reader is plugged in
-      
       for (Int_t iddl = 0; iddl < kDDL; iddl++)
 	{
 	  reader.Select("PMD", iddl, iddl);
 	  stream.DdlData(iddl,&pmdddlcont);
-	  
 	  Int_t ientries = pmdddlcont.GetEntries();
 	  for (Int_t ient = 0; ient < ientries; ient++)
 	    {
-	      AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
-	      
+	      AliPMDddldata *pmdddl = 
+		(AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
 	      Int_t idet = pmdddl->GetDetector();
 	      Int_t ismn = pmdddl->GetSMN();
-	      //Int_t mcm = pmdddl->GetMCM();
-	      Int_t ichno = pmdddl->GetChannel();
 	      Int_t irow = pmdddl->GetRow();
 	      Int_t icol = pmdddl->GetColumn();
-	      Int_t isig = pmdddl->GetSignal();
-	      
+	      Float_t isig1 = pmdddl->GetSignal();
+	      // Pedestal Subtraction
+	      Int_t   pedmeanrms = 
+		fCalibPed->GetPedMeanRms(idet,ismn,irow,icol);
+	      Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	      Float_t pedrms     = (Float_t)pedrms1/10.;
+	      Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
+	      Float_t isig = isig1 - (pedmean + 3.0*pedrms);
 	      if (isig>0)
 		{
-		  d1[idet][ismn][irow][icol] = isig;
-		  ch[idet][ismn][irow][icol] = ichno;
+		  d1[idet][ismn][irow][icol] = (Int_t)isig;
+		  nhitcell[idet][ismn][irow][icol] += 1; //sid
 		}
-	    }
+	    }//ient loop
 	  pmdddlcont.Clear();
-	}
-
-
+	}//iddl loop
       maxhit = 0;
-      
       for(Int_t idet=0; idet < kDet; idet++)
 	{
 	  for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
@@ -245,12 +276,6 @@ void AliPMDCalibrator::CalculateIsoCell()
 		{
 		  for(Int_t icol = 0; icol < kMaxCol; icol++)
 		    {
-		      
-		      //printf("d1[%d][%d][%d][%d]=%d\n",
-		      //det,ksmn,irow,jcol, d1[det][ksmn][irow][jcol] ); 
-		      //printf("ch[%d][%d][%d][%d]=%d\n",
-		      //det,ksmn,irow,jcol, ch[det][ksmn][irow][jcol] ); 
-		      
 		      if(d1[idet][ismn][irow][icol] > 0)
 			{
 			  isocount = 0;
@@ -264,15 +289,13 @@ void AliPMDCalibrator::CalculateIsoCell()
 				  if(isocount == kCellNeighbour)
 				    {
 				      countisocell++;
-				      det[maxhit]  = idet;
-				      smn[maxhit]  = ismn;
-				      row[maxhit]  = irow;
-				      col[maxhit]  = icol;
-				      sig[maxhit]  = d1[idet][ismn][irow][icol];
-				      chno[maxhit] = ch[idet][ismn][irow][icol];
 				      maxhit++;
-				      fHsmIso[idet][ismn]->Fill(d1[idet][ismn][irow][icol]);
-				      fHadcIso[idet][ismn][irow][icol]->Fill(d1[idet][ismn][irow][icol]);
+                                      fHdetIso[idet]->
+					Fill(d1[idet][ismn][irow][icol]);
+				      fHsmIso[idet][ismn]->
+					Fill(d1[idet][ismn][irow][icol]);
+				      fHadcIso[idet][ismn][irow][icol]->
+					Fill(d1[idet][ismn][irow][icol]);
 				    }
 				}
 			    }  // neigh cell cond.
@@ -280,44 +303,91 @@ void AliPMDCalibrator::CalculateIsoCell()
 		    }
 		}
 	    }
-	} //event loop
+	} //det
+    }//event loop
+
+  // Mean and Sigma Calculations
+  for(Int_t idet=0; idet < kDet; idet++){
+      for(Int_t ismn = 0; ismn < kMaxSMN; ismn++){
+	  for(Int_t irow = 0; irow < kMaxRow; irow++){
+	      for(Int_t icol = 0; icol < kMaxCol; icol++){
+		  if(nhitcell[idet][ismn][irow][icol]>0){
+		      count[idet][ismn] += 1;
+		      tempnhit1[idet][ismn] += nhitcell[idet][ismn][irow][icol];
+		      tempnhit2[idet][ismn] += nhitcell[idet][ismn][irow][icol]
+			  *nhitcell[idet][ismn][irow][icol];
+		  }
+	      }
+	  }
+      }
+  }//det loop
+
+  //cout<<"nhit cell = "<<idet<<"  "<<ismn<<"  "
+  //  <<irow<<"  "<<icol<<"  "<<nhitcell[idet][ismn][irow][icol]<<endl;
+  //count[idet][ismn] += 1;
+
+  for(Int_t i=0; i < kDet; i++)
+    {
+      for(Int_t j=0; j < kMaxSMN; j++)
+	{
+	  if(count[i][j] > 0.)
+	    {
+		meannhit[i][j]   = tempnhit1[i][j]/count[i][j];
+		meanSqnhit[i][j] = tempnhit2[i][j]/count[i][j]; 
+		sigmanhit[i][j]  = sqrt(meanSqnhit[i][j]-
+				      (meannhit[i][j]*meannhit[i][j]));
+		nhitcut[i][j]    = 3*sigmanhit[i][j] + meannhit[i][j];
+	    }
+	}
     }
+
+
+  Double_t histdetMean[kDet];
   Double_t histMean[kDet][kMaxSMN];
   Double_t isoMean[kDet][kMaxSMN][kMaxRow][kMaxCol];
-
+  Double_t smNormFactor[kDet][kMaxSMN];
+  
   for(Int_t d1 = 0; d1 < kDet; d1++)
     {
+      histdetMean[d1]= fHdetIso[d1]->GetMean();
       for(Int_t i1 = 0; i1 < kMaxSMN; i1++)
 	{
 	  histMean[d1][i1]= fHsmIso[d1][i1]->GetMean();
+	  if(histMean[d1][i1]>0.0 && histdetMean[d1]>0.0)
+	    {
+	      smNormFactor[d1][i1]= histdetMean[d1]/histMean[d1][i1];
+	    }
 	  for(Int_t j1 = 0; j1 < kMaxRow; j1++)
 	    {
 	      for(Int_t k1 = 0; k1 < kMaxCol; k1++)
 		{
-		  isoMean[d1][i1][j1][k1]=fHadcIso[d1][i1][j1][k1]->GetMean();
-		  if(isoMean[d1][i1][j1][k1]>0.0 && histMean[d1][i1]>0.0)
+		  if(nhitcell[d1][i1][j1][k1]< nhitcut[d1][i1])//sid
 		    {
-		      fGainFact[d1][i1][j1][k1]=isoMean[d1][i1][k1][j1]/histMean[d1][i1];
-		      Float_t gain = fGainFact[d1][i1][j1][k1];
-		      fCalibGain->SetGainFact(d1,i1,j1,k1,gain);
+		      isoMean[d1][i1][j1][k1]=fHadcIso[d1][i1][j1][k1]->
+			GetMean();
+		      if(isoMean[d1][i1][j1][k1]>0.0 && histMean[d1][i1]>0.0)
+			{
+			  fGainFact[d1][i1][j1][k1]=
+			    isoMean[d1][i1][j1][k1]/(histMean[d1][i1]*
+						     smNormFactor[d1][i1]);
+			}
 		    }                              
 		}
 	    }
 	}
     }
-  
-}
+}//CalculateIsoCell()
+
 // ------------------------------------------------------------------------ //
+
 Bool_t AliPMDCalibrator::Store()
 {
   AliCDBManager *man = AliCDBManager::Instance();
   //man->SetDefaultStorage("local://$ALICE_ROOT");
   if(!man->IsDefaultStorageSet()) return kFALSE;
-  AliCDBId id("PMD/Calib/Data",0,0);
+  AliCDBId id("PMD/Calib/Gain",0,0);
   AliCDBMetaData md;
-  md.SetResponsible("Zubayer");
   md.SetBeamPeriod(0);
-  md.SetAliRootVersion("28.02.2006");
   md.SetComment("Test");
   
   printf("\n\n\n fCalibData\n");
