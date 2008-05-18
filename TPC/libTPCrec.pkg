@@ -7,6 +7,7 @@ SRCS:=  AliTPCcluster.cxx \
 	AliTPCclusterer.cxx AliTPCclustererMI.cxx \
 	AliTPCtrack.cxx AliTPCtracker.cxx \
 	AliTPCpolyTrack.cxx  AliTPCseed.cxx AliTPCtrackerMI.cxx \
+	AliTPCtrackerSector.cxx \
 	AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx \
 	AliTPCReconstructor.cxx AliTPCRecoParam.cxx AliTPCClusterParam.cxx  \
         AliTPCTracklet.cxx AliTPCQADataMakerRec.cxx \

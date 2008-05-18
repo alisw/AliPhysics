@@ -105,7 +105,9 @@
 #include "AliTPCReconstructor.h"
 #include "AliTPCpolyTrack.h"
 #include "AliTPCreco.h"
-#include "AliTPCseed.h" 
+#include "AliTPCseed.h"
+
+#include "AliTPCtrackerSector.h" 
 #include "AliTPCtrackerMI.h"
 #include "TStopwatch.h"
 #include "AliTPCReconstructor.h"
@@ -121,7 +123,6 @@
 //
 
 ClassImp(AliTPCtrackerMI)
-ClassImp(AliTPCtrackerRow)
 
 
 class AliTPCFastMath {
@@ -350,8 +351,8 @@ AliTracker(),
   //---------------------------------------------------------------------
   // The main TPC tracker constructor
   //---------------------------------------------------------------------
-  fInnerSec=new AliTPCSector[fkNIS];         
-  fOuterSec=new AliTPCSector[fkNOS];
+  fInnerSec=new AliTPCtrackerSector[fkNIS];         
+  fOuterSec=new AliTPCtrackerSector[fkNOS];
  
   Int_t i;
   for (i=0; i<fkNIS; i++) fInnerSec[i].Setup(par,0);
@@ -6835,29 +6836,6 @@ Int_t AliTPCtrackerMI::CookLabel(AliTPCseed *t, Float_t wrong,Int_t first, Int_t
 }
 
 
-Int_t  AliTPCtrackerMI::AliTPCSector::GetRowNumber(Double_t x) const 
-{
-  //return pad row number for this x
-  Double_t r;
-  if (fN < 64){
-    r=fRow[fN-1].GetX();
-    if (x > r) return fN;
-    r=fRow[0].GetX();
-    if (x < r) return -1;
-    return Int_t((x-r)/fPadPitchLength + 0.5);}
-  else{    
-    r=fRow[fN-1].GetX();
-    if (x > r) return fN;
-    r=fRow[0].GetX();
-    if (x < r) return -1;
-    Double_t r1=fRow[64].GetX();
-    if(x<r1){       
-      return Int_t((x-r)/f1PadPitchLength + 0.5);}
-    else{
-      return (Int_t((x-r1)/f2PadPitchLength + 0.5)+64);} 
-  }
-}
-
 Int_t  AliTPCtrackerMI::GetRowNumber(Double_t x[3]) const 
 {
   //return pad row number for given x vector
@@ -6869,193 +6847,6 @@ Int_t  AliTPCtrackerMI::GetRowNumber(Double_t x[3]) const
   Double_t localx    = x[0]*TMath::Cos(phiangle)-x[1]*TMath::Sin(phiangle);
   return GetRowNumber(localx);
 }
-
-//_________________________________________________________________________
-void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
-  //-----------------------------------------------------------------------
-  // Setup inner sector
-  //-----------------------------------------------------------------------
-  if (f==0) {
-     fAlpha=par->GetInnerAngle();
-     fAlphaShift=par->GetInnerAngleShift();
-     fPadPitchWidth=par->GetInnerPadPitchWidth();
-     fPadPitchLength=par->GetInnerPadPitchLength();
-     fN=par->GetNRowLow();
-     if(fRow)delete [] fRow;fRow = 0;
-     fRow=new AliTPCtrackerRow[fN];
-     for (Int_t i=0; i<fN; i++) {
-       fRow[i].SetX(par->GetPadRowRadiiLow(i));
-       fRow[i].SetDeadZone(1.5);  //1.5 cm of dead zone
-     }
-  } else {
-     fAlpha=par->GetOuterAngle();
-     fAlphaShift=par->GetOuterAngleShift();
-     fPadPitchWidth  = par->GetOuterPadPitchWidth();
-     fPadPitchLength = par->GetOuter1PadPitchLength();
-     f1PadPitchLength = par->GetOuter1PadPitchLength();
-     f2PadPitchLength = par->GetOuter2PadPitchLength();
-     fN=par->GetNRowUp();
-     if(fRow)delete [] fRow;fRow = 0;
-     fRow=new AliTPCtrackerRow[fN];
-     for (Int_t i=0; i<fN; i++) {
-       fRow[i].SetX(par->GetPadRowRadiiUp(i)); 
-       fRow[i].SetDeadZone(1.5);  // 1.5 cm of dead zone
-     }
-  } 
-}
-
-AliTPCtrackerRow::AliTPCtrackerRow():
-  fDeadZone(0.),
-  fClusters1(0),
-  fN1(0),
-  fClusters2(0),
-  fN2(0),
-  fN(0),
-  fX(0.)
-{
-  //
-  // default constructor
-  //
-}
-
-AliTPCtrackerRow::~AliTPCtrackerRow(){
-  //
-  for (Int_t i = 0; i < fN1; i++)
-    fClusters1[i].~AliTPCclusterMI();
-  delete [] fClusters1;
-  for (Int_t i = 0; i < fN2; i++)
-    fClusters2[i].~AliTPCclusterMI();
-  delete [] fClusters2;
-}
-
-
-
-//_________________________________________________________________________
-void 
-AliTPCtrackerRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index) {
-  //-----------------------------------------------------------------------
-  // Insert a cluster into this pad row in accordence with its y-coordinate
-  //-----------------------------------------------------------------------
-  if (fN==kMaxClusterPerRow) {
-    //AliInfo("AliTPCtrackerRow::InsertCluster(): Too many clusters"); 
-    return;
-  }
-  if (fN>=fN1+fN2) {
-    //AliInfo("AliTPCtrackerRow::InsertCluster(): Too many clusters !");
-  }
-
-  if (fN==0) {fIndex[0]=index; fClusters[fN++]=c; return;}
-  Int_t i=Find(c->GetZ());
-  memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliTPCclusterMI*));
-  memmove(fIndex   +i+1 ,fIndex   +i,(fN-i)*sizeof(UInt_t));
-  fIndex[i]=index; fClusters[i]=c; fN++;
-}
-
-void AliTPCtrackerRow::ResetClusters() {
-   //
-   // reset clusters
-   // MvL: Need to call destructors for AliTPCclusterMI, to delete fInfo
-   for (Int_t i = 0; i < fN1; i++)
-     fClusters1[i].~AliTPCclusterMI();
-   delete [] fClusters1;  fClusters1=0;
-   for (Int_t i = 0; i < fN2; i++)
-     fClusters2[i].~AliTPCclusterMI();
-   delete [] fClusters2;  fClusters2=0;
-
-   fN  = 0; 
-   fN1 = 0;
-   fN2 = 0;
-   //delete[] fClusterArray; 
-
-   //fClusterArray=0;
-}
-
-
-//___________________________________________________________________
-Int_t AliTPCtrackerRow::Find(Double_t z) const {
-  //-----------------------------------------------------------------------
-  // Return the index of the nearest cluster 
-  //-----------------------------------------------------------------------
-  if (fN==0) return 0;
-  if (z <= fClusters[0]->GetZ()) return 0;
-  if (z > fClusters[fN-1]->GetZ()) return fN;
-  Int_t b=0, e=fN-1, m=(b+e)/2;
-  for (; b<e; m=(b+e)/2) {
-    if (z > fClusters[m]->GetZ()) b=m+1;
-    else e=m; 
-  }
-  return m;
-}
-
-
-
-//___________________________________________________________________
-AliTPCclusterMI * AliTPCtrackerRow::FindNearest(Double_t y, Double_t z, Double_t roady, Double_t roadz) const {
-  //-----------------------------------------------------------------------
-  // Return the index of the nearest cluster in z y 
-  //-----------------------------------------------------------------------
-  Float_t maxdistance = roady*roady + roadz*roadz;
-
-  AliTPCclusterMI *cl =0;
-  for (Int_t i=Find(z-roadz); i<fN; i++) {
-      AliTPCclusterMI *c=(AliTPCclusterMI*)(fClusters[i]);
-      if (c->GetZ() > z+roadz) break;
-      if ( (c->GetY()-y) >  roady ) continue;
-      Float_t distance = (c->GetZ()-z)*(c->GetZ()-z)+(c->GetY()-y)*(c->GetY()-y);
-      if (maxdistance>distance) {
-	maxdistance = distance;
-	cl=c;       
-      }
-  }
-  return cl;      
-}
-
-AliTPCclusterMI * AliTPCtrackerRow::FindNearest2(Double_t y, Double_t z, Double_t roady, Double_t roadz,UInt_t & index) const 
-{
-  //-----------------------------------------------------------------------
-  // Return the index of the nearest cluster in z y 
-  //-----------------------------------------------------------------------
-  Float_t maxdistance = roady*roady + roadz*roadz;
-  AliTPCclusterMI *cl =0;
-
-  //PH Check boundaries. 510 is the size of fFastCluster
-  Int_t iz1 = Int_t(z-roadz+254.5);
-  if (iz1<0 || iz1>=510) return cl;
-  iz1 = TMath::Max(GetFastCluster(iz1)-1,0);
-  Int_t iz2 = Int_t(z+roadz+255.5);
-  if (iz2<0 || iz2>=510) return cl;
-  iz2 = TMath::Min(GetFastCluster(iz2)+1,fN);
-  Bool_t skipUsed = !(AliTPCReconstructor::GetRecoParam()->GetClusterSharing());
-  //FindNearest3(y,z,roady,roadz,index);
-  //  for (Int_t i=Find(z-roadz); i<fN; i++) {
-  for (Int_t i=iz1; i<iz2; i++) {
-      AliTPCclusterMI *c=(AliTPCclusterMI*)(fClusters[i]);
-      if (c->GetZ() > z+roadz) break;
-      if ( c->GetY()-y >  roady ) continue;
-      if ( y-c->GetY() >  roady ) continue;
-      if (skipUsed && c->IsUsed(11)) continue;
-      Float_t distance = (c->GetZ()-z)*(c->GetZ()-z)+(c->GetY()-y)*(c->GetY()-y);
-      if (maxdistance>distance) {
-	maxdistance = distance;
-	cl=c;       
-	index =i;
-	//roady = TMath::Sqrt(maxdistance);
-      }
-  }
-  return cl;      
-}
-
-
-void AliTPCtrackerRow::SetFastCluster(Int_t i, Short_t cl){
-  //
-  // Set cluster info for fast navigation
-  //
-  if (i>510|| i<0){
-  }else{
-    fFastCluster[i]=cl;
-  }
-}
-
 
 
 
