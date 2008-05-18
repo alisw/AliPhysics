@@ -21,7 +21,7 @@ class AliPMDCalibrator
   void CalculateIsoCell();//calculates gains
   void Init();
   Bool_t Store();
-  AliPMDPedestal  *GetCalibPed() const;
+  AliPMDPedestal  *GetCalibPed() const {return fCalibPed;}
  private:
   
   enum
