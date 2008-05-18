@@ -54,6 +54,7 @@
 #pragma link C++ class AliTPCCalibViewerGUI+;
 
 #pragma link C++ class AliTPCCalibVdrift+;
+#pragma link C++ class AliTPCGoofieValues+;
 #pragma link C++ class AliTPCTempMap+;
 
 
