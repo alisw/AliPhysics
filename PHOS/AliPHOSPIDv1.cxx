@@ -1455,8 +1455,8 @@ void  AliPHOSPIDv1::MakeRecParticles()
     rp->SetLastDaughter(-1);
     rp->SetPolarisation(0,0,0);
     //Set the position in global coordinate system from the RecPoint
-    AliPHOSTrackSegment * ts  = static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(rp->GetPHOSTSIndex()));
-    AliPHOSEmcRecPoint  * erp = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(ts->GetEmcIndex()));
+    AliPHOSTrackSegment * ts1  = static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(rp->GetPHOSTSIndex()));
+    AliPHOSEmcRecPoint  * erp = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(ts1->GetEmcIndex()));
     TVector3 pos ; 
     fGeom->GetGlobalPHOS(erp, pos) ; 
     rp->SetPos(pos);

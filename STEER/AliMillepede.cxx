@@ -816,7 +816,7 @@ Int_t AliMillepede::LocalFit(int iFit, double localParams[], Bool_t bSingleFit)
     fVecBGlo[iIdx] -= fVecBGloCorr[iIdxIdx];
     
     for (jIdxIdx=0; jIdxIdx<=iIdxIdx; jIdxIdx++) {    
-      int jIdx = fCGLRow2Glo[jIdxIdx];
+      jIdx = fCGLRow2Glo[jIdxIdx];
       fMatCGlo[iIdx][jIdx] -= fMatCGloCorr[iIdxIdx][jIdxIdx];
       fMatCGlo[jIdx][iIdx] = fMatCGlo[iIdx][jIdx];
     }

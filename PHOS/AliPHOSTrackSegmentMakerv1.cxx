@@ -307,7 +307,6 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
       track = fESD->GetTrack(iClosestTrack);
       if (track->GetPxPyPzAt(rCPV, fESD->GetMagneticField(), pxyz)) { // track momentum ibid.
         vecP.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
-        Int_t dummyMod ;
 	fGeom->ImpactOnEmc(vtxCPV,vecP.Theta(),vecP.Phi(),dummyMod,zCPV,xCPV) ;
       }
     }

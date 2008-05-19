@@ -1002,7 +1002,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
       newRP->AddDigit(*digitMax,maxAtEnergy[iMax]);
 
       //Neighbous ( matrix 3x3 around the local maximum)
-      for(Int_t iDigit=0; iDigit<nDigits; iDigit++)
+      for(iDigit=0; iDigit<nDigits; iDigit++)
 	{     
 	  AliPHOSDigit* digit = (AliPHOSDigit*)fLoader->Digits()->At( digitsList[iDigit] );
   	  Float_t eDigit = energies[iDigit];

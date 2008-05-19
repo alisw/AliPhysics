@@ -255,8 +255,7 @@ TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::
 {
 	// Retrieve the list of QA data for a given detector and a given task 
 	TObjArray * rv = NULL ;
-	TString tmp(AliQA::GetQARefStorage()) ; 
-	if ( tmp.IsNull() ) { 
+	if ( !strlen(AliQA::GetQARefStorage()) ) { 
 		AliError("No storage defined, use AliQA::SetQARefStorage") ; 
 		return NULL ; 
 	}	
@@ -770,10 +769,10 @@ Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile
 		if ( tmp.Contains(AliQA::GetLabLocalOCDB()) ) 
 			man->SetDefaultStorage(AliQA::GetQARefStorage()) ;
 		else {
-			TString tmp(AliQA::GetQARefDefaultStorage()) ; 
-			tmp.Append(year) ; 
-			tmp.Append("?user=alidaq") ; 
-			man->SetDefaultStorage(tmp.Data()) ; 
+			TString tmp1(AliQA::GetQARefDefaultStorage()) ; 
+			tmp1.Append(year) ; 
+			tmp1.Append("?user=alidaq") ; 
+			man->SetDefaultStorage(tmp1.Data()) ; 
 		}
 	}
 	man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ; 

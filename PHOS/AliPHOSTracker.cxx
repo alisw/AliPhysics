@@ -203,8 +203,8 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
      Int_t ncl=cArray.GetEntriesFast();
      AliPHOSEmcRecPoint *bestCluster=0;            // The "best" cluster
      Double_t maxd2=400; // (cm^2)
-     for (Int_t i=0; i<ncl; i++) {
-       AliPHOSEmcRecPoint *c=(AliPHOSEmcRecPoint *)cArray.UncheckedAt(i);
+     for (Int_t j=0; j<ncl; j++) {
+       AliPHOSEmcRecPoint *c=(AliPHOSEmcRecPoint *)cArray.UncheckedAt(j);
 
        if (c->TestBit(14)) continue; // This clusters is "used"
 

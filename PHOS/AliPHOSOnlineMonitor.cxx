@@ -506,7 +506,7 @@ void  AliPHOSOnlineMonitor::ScanPedestals(TClonesArray * digits){
   }
 }
 //____________________________________________________________________________ 
-void  AliPHOSOnlineMonitor::ScanEdep(TClonesArray * digits){
+void  AliPHOSOnlineMonitor::ScanEdep(TClonesArray * /*digits*/){
   //Fill 2D distribution of ADC values in NEL and WEL events
 //   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 //   AliPHOSCalibrationDB *cdb = 0 ;

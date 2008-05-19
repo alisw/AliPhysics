@@ -179,8 +179,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
       iLG++ ;
       digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
     }
-    Int_t absId=digHG->GetId() ;                                                                                                         
-    Int_t relId[4] ;                                                                                                                     
+    absId=digHG->GetId() ;                                                                                                         
     fGeom->AbsToRelNumbering(absId,relId) ;                                                                                              
  
     if(digLG && digHG->GetId() == digLG->GetId()){ //we found pair

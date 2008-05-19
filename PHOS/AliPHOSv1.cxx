@@ -76,14 +76,14 @@
 ClassImp(AliPHOSv1)
 
 //____________________________________________________________________________
-AliPHOSv1::AliPHOSv1()
+AliPHOSv1::AliPHOSv1() : fCPVDigits(0)
 {
   //Def ctor.
 }
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
-  AliPHOSv0(name,title)
+  AliPHOSv0(name,title),   fCPVDigits(new TClonesArray("AliPHOSCPVDigit",20))
 {
   //
   // We store hits :

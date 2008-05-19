@@ -330,14 +330,14 @@ TString AliTriggerConfiguration::GetActiveDetectors() const
    Int_t nclus = fClusters.GetEntriesFast();
    if( !nclus ) return activeDet;
    
-   for( Int_t j=0; j<nclus; j++ ) {
+   for( Int_t j=0; j<nclus; ++j ) {
       TString detStr = ((AliTriggerCluster*)fClusters.At(j))->GetDetectorsInCluster();
       TObjArray* det = detStr.Tokenize(" ");
       Int_t ndet = det->GetEntriesFast();
-      for( Int_t j=0; j<ndet; j++ ) {
-         if( activeDet.Contains( ((TObjString*)det->At(j))->String() ) )continue;
+      for( Int_t k=0; k<ndet; ++k ) {
+         if( activeDet.Contains( ((TObjString*)det->At(k))->String() ) )continue;
          activeDet.Append( " " );
-         activeDet.Append( ((TObjString*)det->At(j))->String() );
+         activeDet.Append( ((TObjString*)det->At(k))->String() );
       }
    }
    return activeDet;

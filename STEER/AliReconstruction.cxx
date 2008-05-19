@@ -2371,7 +2371,7 @@ void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd)
 
 }
 
-TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString fName){
+TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString pName){
   // Dump a file content into a char in TNamed
   ifstream in;
   in.open(fPath.Data(),ios::in | ios::binary|ios::ate);
@@ -2384,9 +2384,9 @@ TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString fName){
     in.read (memblock, kBytes);
     in.close();
     TString fData(memblock,kBytes);
-    fn = new TNamed(fName,fData);
+    fn = new TNamed(pName,fData);
     printf("fData Size: %d \n",fData.Sizeof());
-    printf("fName Size: %d \n",fName.Sizeof());
+    printf("pName Size: %d \n",pName.Sizeof());
     printf("fn    Size: %d \n",fn->Sizeof());
     delete[] memblock;
   }
@@ -2397,21 +2397,21 @@ TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString fName){
   return fn;
 }
 
-void AliReconstruction::TNamedToFile(TTree* fTree, TString fName){
+void AliReconstruction::TNamedToFile(TTree* fTree, TString pName){
   // This is not really needed in AliReconstruction at the moment
   // but can serve as a template
 
   TList *fList = fTree->GetUserInfo();
-  TNamed *fn = (TNamed*)fList->FindObject(fName.Data());
+  TNamed *fn = (TNamed*)fList->FindObject(pName.Data());
   printf("fn Size: %d \n",fn->Sizeof());
 
-  TString fTmp(fn->GetName()); // to be 100% sure in principle fName also works
+  TString fTmp(fn->GetName()); // to be 100% sure in principle pName also works
   const char* cdata = fn->GetTitle();
   printf("fTmp Size %d\n",fTmp.Sizeof());
 
   int size = fn->Sizeof()-fTmp.Sizeof()-sizeof(UChar_t)-sizeof(Int_t); // see dfinition of TString::SizeOf()...
   printf("calculated size %d\n",size);
-  ofstream out(fName.Data(),ios::out | ios::binary);
+  ofstream out(pName.Data(),ios::out | ios::binary);
   out.write(cdata,size);
   out.close();
 

@@ -253,7 +253,7 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
 	CalculateEEtaPhi(digit,e,eta,phi) ;
 	jet->AddDigit(e,eta,phi,-1) ;  
 	//loop over left digits
-	for(Int_t iDigit = 0 ; iDigit < copyDigits->GetEntries() ; iDigit++){
+	for(iDigit = 0 ; iDigit < copyDigits->GetEntries() ; iDigit++){
 	  if(iDigit!= ind){ //first digit already in jet
 	    digit = static_cast<AliPHOSDigit *>(copyDigits->At(iDigit));
 	    CalculateEEtaPhi(digit,e,eta,phi) ;	    

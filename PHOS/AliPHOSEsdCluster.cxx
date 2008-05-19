@@ -162,7 +162,6 @@ void AliPHOSEsdCluster::EvalCoord(Float_t logWeight, TVector3 &vtx)
   Double_t dzz  = 0.;
   Double_t dxz  = 0.;
   for(Int_t iDigit=0; iDigit < fNCells; iDigit++) {
-    Int_t relid[4] ;
     Float_t xi ;
     Float_t zi ;
     phosgeom->AbsToRelNumbering(fCellsAbsId[iDigit], relid) ;
