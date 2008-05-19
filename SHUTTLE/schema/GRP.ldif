@@ -1,15 +1,12 @@
-# GRP config
 dn: det=GRP,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: GRP
 strictRunOrder: 0
-responsible: Panos.Christakoglou@cern.ch
+responsible: Ernesto.Lopez.Torres@cern.ch
 
 dn: dcsHost=aldcs052.cern.ch,det=GRP,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 1337
-multiSplit: 4000
 dcsAlias: LHCState
 dcsAlias: LHCPeriod
 dcsAlias: LHCLuminosity
@@ -22,3 +19,6 @@ dcsAlias: CavernTemperature
 dcsAlias: CavernAtmosPressure
 dcsAlias: gva_cr5AtmosphericPressure
 dcsAlias: gva_meyrinAtmosphericPressure
+dcsPort: 1337
+multiSplit: 4000
+
