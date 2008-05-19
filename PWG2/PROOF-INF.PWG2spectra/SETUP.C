@@ -2,7 +2,7 @@ void SETUP() {
   CheckLoadLibrary("libPWG2spectra");
 
   // Set the include paths
-  gROOT->ProcessLine(".include PWG2spectra");
+  gROOT->ProcessLine(".include PWG2spectra/SPECTRA");
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWG2spectra_INCLUDE", "PWG2spectra");
