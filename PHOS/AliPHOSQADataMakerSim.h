@@ -36,7 +36,8 @@ private:
   virtual void   InitHits() ; 
   virtual void   InitDigits() ; 
   virtual void   InitSDigits() ; 
-  void           MakeHits() ;
+  using AliQADataMakerSim::MakeHits;
+          void   MakeHits() ;
   virtual void   MakeHits(TTree * hitTree) ;
   virtual void   MakeDigits(TClonesArray * digits) ; 
   virtual void   MakeDigits(TTree * digitTree) ; 
