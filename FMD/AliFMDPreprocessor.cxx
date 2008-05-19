@@ -162,7 +162,7 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   AliFMDCalibZeroSuppression* calibZero  = 0;
   // Disabled for now. 
 #if 0
-  if (GetAndCheckFileSources(files, kDAQ,"info"))
+  if (GetAndCheckFileSources(files, kDAQ,pars->GetConditionsShuttleID()))
     GetInfoCalibration(files, calibRate, calibRange, calibZero);
   resultRate  = (!calibRate  ? kFALSE : kTRUE);
   resultRange = (!calibRange ? kFALSE : kTRUE);
@@ -176,14 +176,14 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   AliFMDCalibPedestal* calibPed  = 0;
   AliFMDCalibGain*     calibGain = 0;
   if (runType.Contains("PEDESTAL", TString::kIgnoreCase)) { 
-    if (GetAndCheckFileSources(files, kDAQ, "pedestals")) {
+    if (GetAndCheckFileSources(files, kDAQ, pars->GetPedestalShuttleID())) {
       if(files->GetSize())
 	calibPed = GetPedestalCalibration(files);
     }
     resultPed = (calibPed ? kTRUE : kFALSE);
   }
   if (runType.Contains("GAIN", TString::kIgnoreCase)) {
-    if (GetAndCheckFileSources(files, kDAQ, "gains")) {
+    if (GetAndCheckFileSources(files, kDAQ, pars->GetGainShuttleID())) {
       if(files->GetSize())
 	calibGain = GetGainCalibration(files);
     }
@@ -249,12 +249,12 @@ AliFMDPreprocessor::GetInfoCalibration(TList* files,
   r = new AliFMDCalibStripRange();
   z = new AliFMDCalibZeroSuppression();
   
-  // AliFMDParameters*    pars     = AliFMDParameters::Instance();
+  AliFMDParameters*    pars     = AliFMDParameters::Instance();
   TIter                iter(files);
   TObjString*          fileSource;
 
   while((fileSource = dynamic_cast<TObjString*>(iter.Next()))) {
-    const Char_t* filename = GetFile(kDAQ, "info", fileSource->GetName());
+    const Char_t* filename = GetFile(kDAQ, pars->GetConditionsShuttleID(), fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
       Log(Form("File %s not found!", filename));
@@ -284,7 +284,7 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
   TObjString*          fileSource;
   
   while((fileSource = dynamic_cast<TObjString*>(iter.Next()))) {
-    const Char_t* filename = GetFile(kDAQ, "pedestals", fileSource->GetName());
+    const Char_t* filename = GetFile(kDAQ, pars->GetPedestalShuttleID(), fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
       Log(Form("File %s not found!", filename));
@@ -367,7 +367,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
   TIter             iter(gainFiles);
   TObjString*       fileSource;
   while((fileSource = dynamic_cast<TObjString *>(iter.Next()))) {
-    const Char_t* filename = GetFile(kDAQ, "gains", fileSource->GetName());
+    const Char_t* filename = GetFile(kDAQ, pars->GetGainShuttleID(), fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
       Log(Form("File %s not found!", filename));
