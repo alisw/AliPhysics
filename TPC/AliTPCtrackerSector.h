@@ -31,7 +31,7 @@ public:
   Int_t GetN() const {return fN;}
   const AliTPCclusterMI* operator[](Int_t i) const {return fClusters[i];}
   UInt_t GetIndex(Int_t i) const {return fIndex[i];}
-  inline Int_t Find(Double_t z) const; 
+  Int_t Find(Double_t z) const; 
   AliTPCclusterMI *  FindNearest(Double_t y, Double_t z, Double_t roady, Double_t roadz) const;
   AliTPCclusterMI *  FindNearest2(Double_t y, Double_t z, Double_t roady, Double_t roadz, UInt_t & index) const;
   
