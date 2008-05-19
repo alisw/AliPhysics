@@ -413,10 +413,8 @@ $(@PACKAGE@SML) : $(MODDIRZ)/%.smell : $(MODDIRZ)/%_cxx.ml $(MODDIRZ)/%_h.ml
 # targets to create .par archives (jgrosseo)
 @PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) $(FSRCS) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
-	@cd @MODULE@; tar cfzh /tmp/$@ @PACKAGE@
+	@cd @MODULE@; (tar cfzh ../$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in" $(PWD)/$@) || (tar cfzh /tmp/$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in /tmp/"$@)
 	@rm -rf @MODULE@/@PACKAGE@
-	@echo "package" $@ "in /tmp/"$@
-	@echo $@ "done"
 
 @MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
 	@echo Copying $< to $@ with transformations
