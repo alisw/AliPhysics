@@ -278,7 +278,7 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
 
   // cut on PDG code
   if ( fRequirePdgCode ){
-    if (IsA(mcPart,fPdgCode,kTRUE)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+    if (IsA(mcPart,fPdgCode,kFALSE)) fBitmap->SetBitNumber(iCutBit,kTRUE);
   }
   else fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
@@ -469,7 +469,10 @@ Bool_t AliCFParticleGenCuts::IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs) {
   //
   TParticle* part = mcPart->Particle();
   Int_t pdgCode = part->GetPdgCode();
-  if (abs) pdgCode = TMath::Abs(pdgCode);
+  if (abs) {
+    pdgCode = TMath::Abs(pdgCode);
+    pdg = TMath::Abs(pdg);
+  }
   if (pdgCode != pdg ) return kFALSE;
   return kTRUE;
 }
