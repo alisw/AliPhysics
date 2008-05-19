@@ -617,7 +617,7 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, TMap* mapDCS)
 
    // NEEDS TO BE REVISED, CONFIRMED
    AliInfo(Form("==========GenevaPressureMaps==========="));
-   AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap,fPressure);
+   AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap);
    if( fPressure->NumFits()==0 ) {
      Log("Problem with the pressure sensor values!!!");
    } else {
@@ -645,7 +645,7 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, TMap* mapDCS)
 }
 
 //_______________________________________________________________
-AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSSensorArray *fPressure)
+AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap)
 {
   // extract DCS pressure maps. Perform fits to save space
   

@@ -52,7 +52,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
               UInt_t   ProcessDaqFxs();
               UInt_t   ProcessDcsFxs();
                Int_t   ProcessDcsDPs(TMap* valueSet, TMap* grpmap);
-   AliDCSSensorArray*  GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
+   AliDCSSensorArray*  GetPressureMap(TMap *dcsAliasMap);
   
  private:
  
