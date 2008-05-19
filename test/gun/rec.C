@@ -1,6 +1,6 @@
 void rec() {
   AliReconstruction reco;
-  reco.SetUniformFieldTracking(kFALSE);
+
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
   AliTPCReconstructor::SetStreamLevel(1);
@@ -10,6 +10,10 @@ void rec() {
  
   AliCDBManager::Instance()->SetCacheFlag(kFALSE);
  
+// **** The field map settings must be the same as in Config.C !
+  AliMagFMaps *field=new AliMagFMaps("Maps","Maps",2,1.,10.,AliMagFMaps::k5kG);
+  Bool_t uniform=kTRUE;
+  AliTracker::SetFieldMap(field,uniform);
 
   TStopwatch timer;
   timer.Start();

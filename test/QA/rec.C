@@ -6,9 +6,7 @@ void rec() {
   man->SetSpecificStorage("EMCAL/*","local://DB");
   
   AliReconstruction reco;
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,kTRUE);
-  reco.SetUniformFieldTracking(kFALSE);
+
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
   
@@ -24,6 +22,11 @@ void rec() {
   AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefDataDirName("Sim") ; //Data, Pedestals, BlackEvent, .....
   
+// **** The field map settings must be the same as in Config.C !
+  AliMagFMaps *field=new AliMagFMaps("Maps","Maps",2,1.,10.,AliMagFMaps::k5kG);
+  Bool_t uniform=kFALSE;
+  AliTracker::SetFieldMap(field,uniform);
+
   TStopwatch timer;
   timer.Start();
   reco.Run();
