@@ -112,7 +112,7 @@ public:
   virtual AliHeader* GetHeader() const ;
   virtual AliGenEventHeader* GetGenEventHeader() const ;
 
-  virtual void GetVertex(Double_t v[3]) {;}
+  virtual void GetVertex(Double_t * ) {;}
   virtual AliESDEvent* GetESD() const {return fESD;}
   virtual AliAODEvent* GetAOD() const {return fAOD;}
   virtual AliMCEvent* GetMC() const {return fMC;}

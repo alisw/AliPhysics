@@ -50,8 +50,8 @@ ClassImp(AliAnaBaseClass)
 //_______________________________________________
   AliAnaBaseClass::AliAnaBaseClass() : 
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
-    fCheckCaloPID(0), fRecalculateCaloPID(0), fReader(0x0), 
-    fAODBranch(0x0),  fAODCaloClusters(0x0), fAODCaloCells(0x0), 
+    fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0),
+    fReader(0x0), fAODBranch(0x0),  fAODCaloClusters(0x0), fAODCaloCells(0x0), 
     fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fNMS(0x0) 
 {
   //Default Ctor
@@ -69,7 +69,8 @@ ClassImp(AliAnaBaseClass)
 AliAnaBaseClass::AliAnaBaseClass(const AliAnaBaseClass & abc) :   
   TObject(), fDataMC(abc.fDataMC), fDebug(abc.fDebug),
   fCheckFidCut(abc.fCheckFidCut),  fCheckCaloPID(abc. fCheckCaloPID),
-  fRecalculateCaloPID(abc.fRecalculateCaloPID),fReader(abc.fReader),  
+  fRecalculateCaloPID(abc.fRecalculateCaloPID),
+  fMinPt(abc.fMinPt), fMaxPt(abc.fMaxPt), fReader(abc.fReader),  
   fAODBranch(new TClonesArray(*abc.fAODBranch)),
   fAODCaloClusters(new TClonesArray(*abc.fAODCaloClusters)),
   fAODCaloCells(new AliAODCaloCells(*abc.fAODCaloCells)),
@@ -98,6 +99,9 @@ AliAnaBaseClass & AliAnaBaseClass::operator = (const AliAnaBaseClass & abc)
   fAODBranch = new TClonesArray(*abc.fAODBranch) ;
   fAODCaloClusters = new TClonesArray(*abc.fAODCaloClusters) ;
   fAODCaloCells = new AliAODCaloCells(*abc.fAODCaloCells) ;
+
+  fMinPt = abc.fMinPt;
+  fMaxPt = abc.fMaxPt;
 
   fCaloPID = abc.fCaloPID;  
   fFidCut = abc.fFidCut;
