@@ -186,14 +186,14 @@ void AliPMDRawToSDigits::Raw2SDigits(AliRunLoader *runLoader, AliRawReader *rawR
   for ( indexsmn = 0; indexsmn < kSMN; indexsmn++)
     {
 
-      if (indexsmn < 23)
+      if (indexsmn <= 23)
 	{
 	  idet = 0;
 	  ismn = indexsmn;
 	}
       else if (indexsmn > 23)
 	{
-	  idet = 0;
+	  idet = 1;
 	  ismn = indexsmn - 24;
 	}
       for (Int_t irow = 0; irow < kRow; irow++)
@@ -328,7 +328,7 @@ void AliPMDRawToSDigits::Raw2Digits(AliRunLoader *runLoader, AliRawReader *rawRe
   // Add the digits here
   for (indexsmn = 0; indexsmn < kSMN; indexsmn++)
     {
-      if (indexsmn < 23)
+      if (indexsmn <= 23)
 	{
 	  ismn = indexsmn;
 	  idet = 0;
@@ -379,18 +379,18 @@ void AliPMDRawToSDigits::AdcToMeV(Int_t adc, Float_t &edep)
 {
   // To be implemented, this is just for the test
 
-  const Float_t kConstant   = 7.181;
-  //  const Float_t kErConstant = 0.6899;
-  const Float_t kSlope      = 35.93;
-  //  const Float_t kErSlope    = 0.306;
+  const Float_t kConstant   = 9.0809;
+  //  const Float_t kErConstant = 1.6763;
+  const Float_t kSlope      = 128.348;
+  //  const Float_t kErSlope    = 0.4703;
 
 
 
-  Float_t adc10bit = (Float_t) adc/4;
-  edep     = (1000.0/kSlope)*(adc10bit - kConstant);
+  Float_t adc12bit = (Float_t) adc;
+  edep     = (1000.0/kSlope)*(adc12bit - kConstant);
 }
 
-// ------------------------------------------------------------------------- //
+//------------------------------------------------------------------------- //
 
 void AliPMDRawToSDigits::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
 				   Int_t irow, Int_t icol, Float_t adc)
