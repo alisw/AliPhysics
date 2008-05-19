@@ -52,8 +52,9 @@ ClassImp(AliNeutralMesonSelection)
   AliNeutralMesonSelection::AliNeutralMesonSelection() : 
     TObject(), fM(0),
     fInvMassMaxCut(0.), fInvMassMinCut(0.),
-    fAngleMaxParam(), fhAnglePairNoCut(0),
-    fhAnglePairOpeningAngleCut(0), fhAnglePairAllCut(0), 
+    fAngleMaxParam(),  fKeepNeutralMesonHistos(0), 
+    fhAnglePairNoCut(0), fhAnglePairOpeningAngleCut(0), 
+    fhAnglePairAllCut(0), 
     fhInvMassPairNoCut(0), fhInvMassPairOpeningAngleCut(0), 
     fhInvMassPairAllCut(0) 
 {

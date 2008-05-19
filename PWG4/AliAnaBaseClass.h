@@ -54,7 +54,7 @@ class AliAnaBaseClass : public TObject {
 
        virtual TList * GetCreateOutputObjects(){ return (new TList) ;}
        
-       virtual void Print(const Option_t * opt) const {;}
+       virtual void Print(const Option_t * ) const {;}
        
        virtual void MakeAnalysisFillAOD()  {;}
        

@@ -65,7 +65,7 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   
   void GetVertex(Double_t v[3]);
 
-  void FillInputEvent(Bool_t bCTS, Bool_t bEMCAL, Bool_t bPHOS);
+  void FillInputEvent();
   void SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
   
   void SetCaloClusterPID(const Int_t pdgCode, AliAODCaloCluster *calo);
@@ -74,7 +74,7 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
  private:
   
   void MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2);//, Double_t &angle); 
-  void FillCalorimeters(const Int_t iParticle, TParticle* particle, TLorentzVector momentum, 
+  void FillCalorimeters(const Int_t iParticle, TParticle* particle, TLorentzVector momentum,   
 			Int_t &indexPHOS, Int_t &indexEMCAL);
   
   private:

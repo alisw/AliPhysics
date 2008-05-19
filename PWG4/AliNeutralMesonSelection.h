@@ -70,7 +70,7 @@ class AliNeutralMesonSelection : public TObject {
   Double_t   fInvMassMaxCut ;  // Invariant Mass cut maximum
   Double_t   fInvMassMinCut ;  // Invariant Masscut minimun
   TArrayD    fAngleMaxParam ; //Max opening angle selection parameters
-  Double_t   fMinPt;       // Minimum pt 
+
   Bool_t  fKeepNeutralMesonHistos ; // Keep neutral meson selection histograms
 
   //Histograms

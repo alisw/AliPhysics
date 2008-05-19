@@ -250,7 +250,9 @@ Int_t AliCaloPID::GetPdg(const TString calo, const TLorentzVector mom, const Dou
 			 const Double_t l1, const Double_t disp, const Double_t tof, 
 			 const Double_t distCPV) const {
   //Recalculated PID with all parameters
-  
+  AliDebug(2,Form("Calorimeter %s, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %3.2f, distCPV %3.2f",
+		  calo.Data(),mom.E(),l0,l1,disp,tof,distCPV));
+
   if(calo == "EMCAL") {
     if(l0 < 0.25) return kPhoton ;
     else return  kNeutralHadron ; 
