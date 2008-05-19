@@ -78,11 +78,11 @@ void AliAnalysisTaskSESelectHF::UserCreateOutputObjects()
 
   fVerticesHFTClArr = new TClonesArray("AliAODVertex", 0);
   fVerticesHFTClArr->SetName("VerticesHF");
-  AddAODBranch("TClonesArray", fVerticesHFTClArr);
+  AddAODBranch("TClonesArray", &fVerticesHFTClArr);
 
   fD0toKpiTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
   fD0toKpiTClArr->SetName("D0toKpi");
-  AddAODBranch("TClonesArray", fD0toKpiTClArr);
+  AddAODBranch("TClonesArray", &fD0toKpiTClArr);
 
   return;
 }

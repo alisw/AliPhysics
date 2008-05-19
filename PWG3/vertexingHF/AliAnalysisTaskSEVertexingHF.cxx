@@ -96,30 +96,30 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
 
   fVerticesHFTClArr = new TClonesArray("AliAODVertex", 0);
   fVerticesHFTClArr->SetName("VerticesHF");
-  AddAODBranch("TClonesArray", fVerticesHFTClArr);
+  AddAODBranch("TClonesArray", &fVerticesHFTClArr);
 
   if(fVHF->GetD0toKpi()) {
     fD0toKpiTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fD0toKpiTClArr->SetName("D0toKpi");
-    AddAODBranch("TClonesArray", fD0toKpiTClArr);
+    AddAODBranch("TClonesArray", &fD0toKpiTClArr);
   }
 
   if(fVHF->GetJPSItoEle()) {
     fJPSItoEleTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fJPSItoEleTClArr->SetName("JPSItoEle");
-    AddAODBranch("TClonesArray", fJPSItoEleTClArr);
+    AddAODBranch("TClonesArray", &fJPSItoEleTClArr);
   }
 
   if(fVHF->Get3Prong()) {
     fCharm3ProngTClArr = new TClonesArray("AliAODRecoDecayHF3Prong", 0);
     fCharm3ProngTClArr->SetName("Charm3Prong");
-    AddAODBranch("TClonesArray", fCharm3ProngTClArr);
+    AddAODBranch("TClonesArray", &fCharm3ProngTClArr);
   }
 
   if(fVHF->Get4Prong()) {
     fCharm4ProngTClArr = new TClonesArray("AliAODRecoDecayHF4Prong", 0);
     fCharm4ProngTClArr->SetName("Charm4Prong");
-    AddAODBranch("TClonesArray", fCharm4ProngTClArr);
+    AddAODBranch("TClonesArray", &fCharm4ProngTClArr);
   }
 
   return;
