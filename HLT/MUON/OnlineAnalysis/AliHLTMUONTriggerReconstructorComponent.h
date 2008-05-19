@@ -13,7 +13,7 @@
 /// @brief  A processing component for the dHLT trigger DDL reconstruction.
 ///
 
-#include "AliHLTProcessor.h"
+#include "AliHLTMUONProcessor.h"
 #include "AliHLTMUONDataTypes.h"
 
 #if __GNUC__ && __GNUC__ < 3
@@ -26,7 +26,7 @@ class AliHLTMUONTriggerReconstructor;
  * @class AliHLTMUONTriggerReconstructorComponent
  * @brief A processing component for the dHLT trigger DDL reconstruction.
  */
-class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
+class AliHLTMUONTriggerReconstructorComponent : public AliHLTMUONProcessor
 {
 public:
 	AliHLTMUONTriggerReconstructorComponent();

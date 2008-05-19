@@ -64,7 +64,7 @@ ClassImp(AliHLTMUONHitReconstructorComponent)
 
 
 AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
-	AliHLTProcessor(),
+	AliHLTMUONProcessor(),
 	fHitRec(NULL),
 	fDDL(-1),
 	fLutSize(0),
@@ -408,7 +408,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 
 		if (not fHitRec->Run(buffer, ddlRawDataSize, block.GetArray(), nofHit))
 		{
-			HLTError("Error while processing of hit reconstruction algorithm.");
+			HLTError("Error while processing the hit reconstruction algorithm.");
 			size = totalSize; // Must tell the framework how much buffer space was used.
 			return -EIO;
 		}

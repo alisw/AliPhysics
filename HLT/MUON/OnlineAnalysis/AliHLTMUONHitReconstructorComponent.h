@@ -13,7 +13,7 @@
 ///  @brief  Hit Reconstruction processing component for the dimuon HLT.
 ///
 
-#include "AliHLTProcessor.h"
+#include "AliHLTMUONProcessor.h"
 #include "AliHLTMUONHitReconstructor.h"
 
 #if __GNUC__ && __GNUC__ < 3
@@ -24,7 +24,7 @@
 extern "C" struct AliHLTMUONHitRecoLutRow;
 
 
-class AliHLTMUONHitReconstructorComponent : public AliHLTProcessor
+class AliHLTMUONHitReconstructorComponent : public AliHLTMUONProcessor
 {
 public:
 	AliHLTMUONHitReconstructorComponent();

@@ -20,8 +20,10 @@
 /// @file   HLTMUONLinkDef.h
 /// @author Artur Szostak <artursz@iafrica.com>
 /// @date   29 May 2007
-/// @brief  The linkdef file for rootcint to build a ROOT dictionary of
-///         the dimuon HLT classes exposed to AliRoot.
+/// @brief  Linkdef file for dHLT.
+///
+/// The linkdef file for rootcint to build a ROOT dictionary of the dimuon
+/// HLT classes exposed to AliRoot.
 ///
 
 #ifdef __CINT__
@@ -36,6 +38,7 @@
 #pragma link C++ nestedfunction;
 
 #pragma link C++ class AliHLTMUONAgent+;
+#pragma link C++ class AliHLTMUONProcessor+;
 #pragma link C++ class AliHLTMUONTriggerRecordsSource+;
 #pragma link C++ class AliHLTMUONRecHitsSource+;
 #pragma link C++ class AliHLTMUONTriggerReconstructorComponent+;

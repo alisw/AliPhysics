@@ -28,7 +28,7 @@
 ///          implemented as a finite state machine.
 ///
 
-#include "AliHLTProcessor.h"
+#include "AliHLTMUONProcessor.h"
 #include "AliHLTMUONDataTypes.h"
 #include "AliHLTMUONMansoTrackerFSMCallback.h"
 #include <vector>
@@ -50,7 +50,7 @@ struct AliHLTMUONRecHitStruct;
  *        implemented as a finite state machine.
  */
 class AliHLTMUONMansoTrackerFSMComponent
-	: public AliHLTProcessor, public AliHLTMUONMansoTrackerFSMCallback
+	: public AliHLTMUONProcessor, public AliHLTMUONMansoTrackerFSMCallback
 {
 public:
 	AliHLTMUONMansoTrackerFSMComponent();

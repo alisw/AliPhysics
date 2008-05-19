@@ -49,7 +49,7 @@ ClassImp(AliHLTMUONDecisionComponent);
 
 
 AliHLTMUONDecisionComponent::AliHLTMUONDecisionComponent() :
-	AliHLTProcessor(),
+	AliHLTMUONProcessor(),
 	fMaxTracks(1),
 	fTrackCount(0),
 	fTracks(new AliHLTMUONMansoTrackStructP[fMaxTracks]),
@@ -342,37 +342,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			specification |= blocks[n].fSpecification;
 			
 			AliHLTMUONMansoTracksBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not inblock.BufferSizeOk())
-			{
-				size_t headerSize = sizeof(AliHLTMUONMansoTracksBlockReader::HeaderType);
-				if (blocks[n].fSize < headerSize)
-				{
-					HLTError("Received a manso tracks data block with a size of %d bytes,"
-						" which is smaller than the minimum valid header size of %d bytes."
-						" The block must be corrupt.",
-						blocks[n].fSize, headerSize
-					);
-					continue;
-				}
-				
-				size_t expectedWidth = sizeof(AliHLTMUONMansoTracksBlockReader::ElementType);
-				if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-				{
-					HLTError("Received a manso tracks data block with a record"
-						" width of %d bytes, but the expected value is %d bytes."
-						" The block might be corrupt.",
-						inblock.CommonBlockHeader().fRecordWidth, expectedWidth
-					);
-					continue;
-				}
-				
-				HLTError("Received a manso tracks data block with a size of %d bytes,"
-					" but the block header claims the block should be %d bytes."
-					" The block might be corrupt.",
-					blocks[n].fSize, inblock.BytesUsed()
-				);
-				continue;
-			}
+			if (not BlockStructureOk(inblock)) continue;
 			
 			for (AliHLTUInt32_t i = 0; i < inblock.Nentries(); i++)
 			{

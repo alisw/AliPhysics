@@ -13,8 +13,7 @@
 /// @brief  Declaration of the empty event filter component.
 ///
 
-#include "AliHLTProcessor.h"
-#include "AliHLTMUONDataBlockReader.h"
+#include "AliHLTMUONProcessor.h"
 
 #if __GNUC__ && __GNUC__ < 3
 #define std
@@ -43,7 +42,7 @@
  *        blocks were empty. This is useful for collecting those events where dHLT
  *        is not finding anything but perhaps it should.
  */
-class AliHLTMUONEmptyEventFilterComponent : public AliHLTProcessor
+class AliHLTMUONEmptyEventFilterComponent : public AliHLTMUONProcessor
 {
 public:
 	AliHLTMUONEmptyEventFilterComponent();
@@ -59,54 +58,6 @@ public:
 	virtual AliHLTComponent* Spawn();
 	
 protected:
-
-	// Method to check the block structure and log appropriate error messages.
-	template <class BlockType>
-	bool BlockStructureOk(
-			const BlockType& inblock,
-			const char* blockName,
-			AliHLTUInt32_t blockBufferSize
-		) const;
-
-	bool BlockStructureOk(
-			const AliHLTMUONRecHitsBlockReader& inblock,
-			AliHLTUInt32_t blockBufferSize
-		) const
-	{
-		return BlockStructureOk(inblock, "reconstructed hits", blockBufferSize);
-	}
-
-	bool BlockStructureOk(
-			const AliHLTMUONTriggerRecordsBlockReader& inblock,
-			AliHLTUInt32_t blockBufferSize
-		) const
-	{
-		return BlockStructureOk(inblock, "trigger records", blockBufferSize);
-	}
-
-	bool BlockStructureOk(
-			const AliHLTMUONMansoTracksBlockReader& inblock,
-			AliHLTUInt32_t blockBufferSize
-		) const
-	{
-		return BlockStructureOk(inblock, "manso tracks", blockBufferSize);
-	}
-
-	bool BlockStructureOk(
-			const AliHLTMUONSinglesDecisionBlockReader& inblock,
-			AliHLTUInt32_t blockBufferSize
-		) const
-	{
-		return BlockStructureOk(inblock, "singles decision", blockBufferSize);
-	}
-
-	bool BlockStructureOk(
-			const AliHLTMUONPairsDecisionBlockReader& inblock,
-			AliHLTUInt32_t blockBufferSize
-		) const
-	{
-		return BlockStructureOk(inblock, "pairs decision", blockBufferSize);
-	}
 	
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing
@@ -133,7 +84,7 @@ private:
 	
 	bool fSendOnEmpty; //! Flag indicating if we should implement the inverse filter and only send everything if dHLT internal data blocks are empty.
 
-	ClassDef(AliHLTMUONEmptyEventFilterComponent, 0)
+	ClassDef(AliHLTMUONEmptyEventFilterComponent, 0)  // Filter component for empty dHLT events.
 };
 
 #endif // ALIHLTMUONEMPTYEVENTFILTERCOMPONENT_H

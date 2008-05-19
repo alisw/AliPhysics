@@ -27,7 +27,6 @@
 #include "AliHLTMUONEvent.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONUtils.h"
-#include "AliHLTMUONDataBlockReader.h"
 #include "AliHLTMUONRecHit.h"
 #include "AliHLTMUONTriggerRecord.h"
 #include "AliHLTMUONMansoTrack.h"
@@ -39,7 +38,7 @@ ClassImp(AliHLTMUONRootifierComponent);
 
 
 AliHLTMUONRootifierComponent::AliHLTMUONRootifierComponent() :
-	AliHLTProcessor(),
+	AliHLTMUONProcessor(),
 	fWarnForUnexpecedBlock(false)
 {
 	///
@@ -184,37 +183,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 			AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 			ptr += block->fOffset;
 			AliHLTMUONRecHitsBlockReader inblock(ptr, block->fSize);
-			if (not inblock.BufferSizeOk())
-			{
-				size_t headerSize = sizeof(AliHLTMUONRecHitsBlockReader::HeaderType);
-				if (block->fSize < headerSize)
-				{
-					HLTError("Received a reconstructed hits data block with a size of %d bytes,"
-						" which is smaller than the minimum valid header size of %d bytes."
-						" The block must be corrupt.",
-						block->fSize, headerSize
-					);
-					continue;
-				}
-				
-				size_t expectedWidth = sizeof(AliHLTMUONRecHitsBlockReader::ElementType);
-				if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-				{
-					HLTError("Received a reconstructed hits data block with a record"
-						" width of %d bytes, but the expected value is %d bytes."
-						" The block might be corrupt.",
-						block->fSize, headerSize
-					);
-					continue;
-				}
-				
-				HLTError("Received a reconstructed hits data block with a size of %d bytes,"
-					" but the block header claims the block should be %d bytes."
-					" The block might be corrupt.",
-					block->fSize, inblock.BytesUsed()
-				);
-				continue;
-			}
+			if (not BlockStructureOk(inblock)) continue;
 			
 			// Decode the source DDL from the specification bits.
 			Int_t sourceDDL = -1;
@@ -255,37 +224,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 			AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 			ptr += block->fOffset;
 			AliHLTMUONTriggerRecordsBlockReader inblock(ptr, block->fSize);
-			if (not inblock.BufferSizeOk())
-			{
-				size_t headerSize = sizeof(AliHLTMUONTriggerRecordsBlockReader::HeaderType);
-				if (block->fSize < headerSize)
-				{
-					HLTError("Received a trigger records data block with a size of %d bytes,"
-						" which is smaller than the minimum valid header size of %d bytes."
-						" The block must be corrupt.",
-						block->fSize, headerSize
-					);
-					continue;
-				}
-				
-				size_t expectedWidth = sizeof(AliHLTMUONTriggerRecordsBlockReader::ElementType);
-				if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-				{
-					HLTError("Received a trigger records data block with a record"
-						" width of %d bytes, but the expected value is %d bytes."
-						" The block might be corrupt.",
-						block->fSize, headerSize
-					);
-					continue;
-				}
-				
-				HLTError("Received a trigger records data block with a size of %d bytes,"
-					" but the block header claims the block should be %d bytes."
-					" The block might be corrupt.",
-					block->fSize, inblock.BytesUsed()
-				);
-				continue;
-			}
+			if (not BlockStructureOk(inblock)) continue;
 			
 			// Decode the source DDL from the specification bits.
 			Int_t sourceDDL = -1;
@@ -364,37 +303,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
 		AliHLTMUONMansoTracksBlockReader inblock(ptr, block->fSize);
-		if (not inblock.BufferSizeOk())
-		{
-			size_t headerSize = sizeof(AliHLTMUONMansoTracksBlockReader::HeaderType);
-			if (block->fSize < headerSize)
-			{
-				HLTError("Received a Manso tracks data block with a size of %d bytes,"
-					" which is smaller than the minimum valid header size of %d bytes."
-					" The block must be corrupt.",
-					block->fSize, headerSize
-				);
-				continue;
-			}
-			
-			size_t expectedWidth = sizeof(AliHLTMUONMansoTracksBlockReader::ElementType);
-			if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-			{
-				HLTError("Received a Manso tracks data block with a record"
-					" width of %d bytes, but the expected value is %d bytes."
-					" The block might be corrupt.",
-					block->fSize, headerSize
-				);
-				continue;
-			}
-			
-			HLTError("Received a Manso tracks data block with a size of %d bytes,"
-				" but the block header claims the block should be %d bytes."
-				" The block might be corrupt.",
-				block->fSize, inblock.BytesUsed()
-			);
-			continue;
-		}
+		if (not BlockStructureOk(inblock)) continue;
 		
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 		{
@@ -503,37 +412,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
 		AliHLTMUONSinglesDecisionBlockReader inblock(ptr, block->fSize);
-		if (not inblock.BufferSizeOk())
-		{
-			size_t headerSize = sizeof(AliHLTMUONSinglesDecisionBlockReader::HeaderType);
-			if (block->fSize < headerSize)
-			{
-				HLTError("Received a single tracks trigger decision data block with a size of %d bytes,"
-					" which is smaller than the minimum valid header size of %d bytes."
-					" The block must be corrupt.",
-					block->fSize, headerSize
-				);
-				continue;
-			}
-			
-			size_t expectedWidth = sizeof(AliHLTMUONSinglesDecisionBlockReader::ElementType);
-			if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-			{
-				HLTError("Received a single tracks trigger decision data block with a record"
-					" width of %d bytes, but the expected value is %d bytes."
-					" The block might be corrupt.",
-					block->fSize, headerSize
-				);
-				continue;
-			}
-			
-			HLTError("Received a single tracks trigger decision data block with a size of %d bytes,"
-				" but the block header claims the block should be %d bytes."
-				" The block might be corrupt.",
-				block->fSize, inblock.BytesUsed()
-			);
-			continue;
-		}
+		if (not BlockStructureOk(inblock)) continue;
 		
 		numLowPt += inblock.BlockHeader().fNlowPt;
 		numHighPt += inblock.BlockHeader().fNhighPt;
@@ -594,37 +473,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
 		AliHLTMUONPairsDecisionBlockReader inblock(ptr, block->fSize);
-		if (not inblock.BufferSizeOk())
-		{
-			size_t headerSize = sizeof(AliHLTMUONPairsDecisionBlockReader::HeaderType);
-			if (block->fSize < headerSize)
-			{
-				HLTError("Received a track pairs trigger decision data block with a size of %d bytes,"
-					" which is smaller than the minimum valid header size of %d bytes."
-					" The block must be corrupt.",
-					block->fSize, headerSize
-				);
-				continue;
-			}
-			
-			size_t expectedWidth = sizeof(AliHLTMUONPairsDecisionBlockReader::ElementType);
-			if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-			{
-				HLTError("Received a track pairs trigger decision data block with a record"
-					" width of %d bytes, but the expected value is %d bytes."
-					" The block might be corrupt.",
-					block->fSize, headerSize
-				);
-				continue;
-			}
-			
-			HLTError("Received a track pairs trigger decision data block with a size of %d bytes,"
-				" but the block header claims the block should be %d bytes."
-				" The block might be corrupt.",
-				block->fSize, inblock.BytesUsed()
-			);
-			continue;
-		}
+		if (not BlockStructureOk(inblock)) continue;
 		
 		numUnlikeAnyPt += inblock.BlockHeader().fNunlikeAnyPt;
 		numUnlikeLowPt += inblock.BlockHeader().fNunlikeLowPt;

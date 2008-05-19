@@ -27,9 +27,6 @@
 ///
 
 #include "AliHLTMUONEmptyEventFilterComponent.h"
-#include "AliHLTMUONRecHitsBlockStruct.h"
-#include "AliHLTMUONTriggerRecordsBlockStruct.h"
-#include "AliHLTMUONMansoTracksBlockStruct.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
@@ -42,7 +39,7 @@ ClassImp(AliHLTMUONEmptyEventFilterComponent)
 
 
 AliHLTMUONEmptyEventFilterComponent::AliHLTMUONEmptyEventFilterComponent() :
-	AliHLTProcessor(),
+	AliHLTMUONProcessor(),
 	fSendOnEmpty(false)
 {
 	///
@@ -178,50 +175,38 @@ int AliHLTMUONEmptyEventFilterComponent::DoEvent(
 
 	for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
 	{
-#ifdef __DEBUG
-		char id[kAliHLTComponentDataTypefIDsize+1];
-		for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
-			id[i] = blocks[n].fDataType.fID[i];
-		id[kAliHLTComponentDataTypefIDsize] = '\0';
-		char origin[kAliHLTComponentDataTypefOriginSize+1];
-		for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
-			origin[i] = blocks[n].fDataType.fOrigin[i];
-		origin[kAliHLTComponentDataTypefOriginSize] = '\0';
-#endif // __DEBUG
-		HLTDebug("Handling block: %u, with fDataType.fID = '%s',"
-			  " fDataType.fID = '%s', fPtr = %p and fSize = %u bytes.",
-			n, static_cast<char*>(id), static_cast<char*>(origin),
-			blocks[n].fPtr, blocks[n].fSize
+		HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
+			i, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
 		);
 
 		if (blocks[n].fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
 		{
 			AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock, blocks[n].fSize)) continue;
+			if (not BlockStructureOk(inblock)) continue;
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::RecHitsBlockDataType())
 		{
 			AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock, blocks[n].fSize)) continue;
+			if (not BlockStructureOk(inblock)) continue;
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::MansoTracksBlockDataType())
 		{
 			AliHLTMUONMansoTracksBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock, blocks[n].fSize)) continue;
+			if (not BlockStructureOk(inblock)) continue;
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::SinglesDecisionBlockDataType())
 		{
 			AliHLTMUONSinglesDecisionBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock, blocks[n].fSize)) continue;
+			if (not BlockStructureOk(inblock)) continue;
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::PairsDecisionBlockDataType())
 		{
 			AliHLTMUONPairsDecisionBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock, blocks[n].fSize)) continue;
+			if (not BlockStructureOk(inblock)) continue;
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 	}
@@ -240,53 +225,5 @@ int AliHLTMUONEmptyEventFilterComponent::DoEvent(
 	// zero since we just copied the input descriptors to output if anything.
 	size = 0;
 	return 0;
-}
-
-
-template <class BlockType>
-bool AliHLTMUONEmptyEventFilterComponent::BlockStructureOk(
-		const BlockType& inblock,
-		const char* blockName,
-		AliHLTUInt32_t blockBufferSize
-	) const
-{
-	/// Performs basic checks to see if the input data block structure is OK,
-	/// that is that it is not corrupt, too short etc...
-
-	if (not inblock.BufferSizeOk())
-	{
-		size_t headerSize = sizeof(typename BlockType::HeaderType);
-		if (blockBufferSize < headerSize)
-		{
-			HLTError("Received a %s data block with a size of %d bytes,"
-				" which is smaller than the minimum valid header size of %d bytes."
-				" The block must be corrupt.",
-				blockName, blockBufferSize, headerSize
-			);
-			return false;
-		}
-		
-		size_t expectedWidth = sizeof(typename BlockType::ElementType);
-		if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-		{
-			HLTError("Received a %s data block with a record"
-				" width of %d bytes, but the expected value is %d bytes."
-				" The block might be corrupt.",
-				blockName,
-				inblock.CommonBlockHeader().fRecordWidth,
-				expectedWidth
-			);
-			return false;
-		}
-		
-		HLTError("Received a %s data block with a size of %d bytes,"
-			" but the block header claims the block should be %d bytes."
-			" The block might be corrupt.",
-			blockName, blockBufferSize, inblock.BytesUsed()
-		);
-		return false;
-	}
-
-	return true;
 }
 

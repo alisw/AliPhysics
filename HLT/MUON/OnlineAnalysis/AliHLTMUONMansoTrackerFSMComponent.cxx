@@ -40,7 +40,7 @@ ClassImp(AliHLTMUONMansoTrackerFSMComponent);
 
 
 AliHLTMUONMansoTrackerFSMComponent::AliHLTMUONMansoTrackerFSMComponent() :
-	AliHLTProcessor(),
+	AliHLTMUONProcessor(),
 	AliHLTMUONMansoTrackerFSMCallback(),
 	fTracker(NULL),
 	fTrackCount(0),
@@ -300,37 +300,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			specification |= blocks[n].fSpecification;
 			
 			AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not inblock.BufferSizeOk())
-			{
-				size_t headerSize = sizeof(AliHLTMUONRecHitsBlockReader::HeaderType);
-				if (blocks[n].fSize < headerSize)
-				{
-					HLTError("Received a reconstructed hits data block with a size of %d bytes,"
-						" which is smaller than the minimum valid header size of %d bytes."
-						" The block must be corrupt.",
-						blocks[n].fSize, headerSize
-					);
-					continue;
-				}
-				
-				size_t expectedWidth = sizeof(AliHLTMUONRecHitsBlockReader::ElementType);
-				if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-				{
-					HLTError("Received a reconstructed hits data block with a record"
-						" width of %d bytes, but the expected value is %d bytes."
-						" The block might be corrupt.",
-						inblock.CommonBlockHeader().fRecordWidth, expectedWidth
-					);
-					continue;
-				}
-				
-				HLTError("Received a reconstructed hits data block with a size of %d bytes,"
-					" but the block header claims the block should be %d bytes."
-					" The block might be corrupt.",
-					blocks[n].fSize, inblock.BytesUsed()
-				);
-				continue;
-			}
+			if (not BlockStructureOk(inblock)) continue;
 			
 			if (inblock.Nentries() != 0)
 				AddRecHits(blocks[n].fSpecification, inblock.GetArray(), inblock.Nentries());
@@ -366,37 +336,8 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			continue;
 		
 		AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-		if (not inblock.BufferSizeOk())
-		{
-			size_t headerSize = sizeof(AliHLTMUONTriggerRecordsBlockReader::HeaderType);
-			if (blocks[n].fSize < headerSize)
-			{
-				HLTError("Received a trigger records data block with a size of %d bytes,"
-					" which is smaller than the minimum valid header size of %d bytes."
-					" The block must be corrupt.",
-					blocks[n].fSize, headerSize
-				);
-				continue;
-			}
-			
-			size_t expectedWidth = sizeof(AliHLTMUONTriggerRecordsBlockReader::ElementType);
-			if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
-			{
-				HLTError("Received a trigger records data block with a record"
-					" width of %d bytes, but the expected value is %d bytes."
-					" The block might be corrupt.",
-					inblock.CommonBlockHeader().fRecordWidth, expectedWidth
-				);
-				continue;
-			}
-			
-			HLTError("Received a trigger records data block with a size of %d bytes,"
-				" but the block header claims the block should be %d bytes."
-				" The block might be corrupt.",
-				blocks[n].fSize, inblock.BytesUsed()
-			);
-			continue;
-		}
+		if (not BlockStructureOk(inblock)) continue;
+		
 		DebugTrace("Processing a trigger block with "
 			<< inblock.Nentries() << " entries."
 		);

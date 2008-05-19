@@ -199,7 +199,7 @@ public:
 		return sizeof(DataBlockType) + Nentries() * sizeof(DataElementType);
 	}
 
-	AliHLTUInt32_t BufferSize() { return fSize; }
+	AliHLTUInt32_t BufferSize() const { return fSize; }
 	
 private:
 

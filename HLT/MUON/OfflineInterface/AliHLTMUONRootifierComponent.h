@@ -13,12 +13,12 @@
 /// @brief  Component for converting dHLT raw data into ROOT objects.
 ///
 
-#include "AliHLTProcessor.h"
+#include "AliHLTMUONProcessor.h"
 
 /**
  * Converts dHLT raw data blocks into ROOT objects.
  */
-class AliHLTMUONRootifierComponent : public AliHLTProcessor
+class AliHLTMUONRootifierComponent : public AliHLTMUONProcessor
 {
 public:
 

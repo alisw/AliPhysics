@@ -13,7 +13,7 @@
 ///  @brief  Declares the decision component for dimuon HLT triggering.
 ///
 
-#include "AliHLTProcessor.h"
+#include "AliHLTMUONProcessor.h"
 #include "AliHLTMUONDataTypes.h"
 #include <vector>
 
@@ -45,7 +45,7 @@ extern "C" struct AliHLTMUONPairsDecisionBlockStruct;
  * counted. The results are encoded into two data blocks, one for trigger decisions
  * for single tracks and another for the track pairs.
  */
-class AliHLTMUONDecisionComponent : public AliHLTProcessor
+class AliHLTMUONDecisionComponent : public AliHLTMUONProcessor
 {
 public:
 	AliHLTMUONDecisionComponent();

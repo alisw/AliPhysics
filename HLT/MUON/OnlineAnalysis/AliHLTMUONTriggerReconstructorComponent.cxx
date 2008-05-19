@@ -55,7 +55,7 @@ ClassImp(AliHLTMUONTriggerReconstructorComponent)
 
 
 AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent() :
-	AliHLTProcessor(),
+	AliHLTMUONProcessor(),
 	fTrigRec(NULL),
 	fDDL(-1),
 	fWarnForUnexpecedBlock(false),
@@ -433,7 +433,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			);
 		if (not runOk)
 		{
-			HLTError("Error while processing of trigger DDL reconstruction algorithm.");
+			HLTError("Error while processing the trigger DDL reconstruction algorithm.");
 			size = totalSize; // Must tell the framework how much buffer space was used.
 			return -EIO;
 		}
