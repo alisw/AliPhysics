@@ -3019,22 +3019,31 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 
 	// det experts in to
 	TString to="";
-	TIter *iterExperts;
+	TIter *iterExperts = 0;
 	if (target == kDCSEMail) {
 		iterExperts = new TIter(fConfig->GetAdmins(AliShuttleConfig::kAmanda));
 	}
 	else if (target == kFXSEMail) {
 		iterExperts = new TIter(fConfig->GetAdmins(system));
 	}
-	else {
-		iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
+	if (iterExperts) {
+		TObjString *anExpert=0;
+		while ((anExpert = (TObjString*) iterExperts->Next()))
+		{
+			to += Form("%s,", anExpert->GetName());
+		}
+		delete iterExperts;
 	}
+
+	// add subdetector experts	
+	iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
 	TObjString *anExpert=0;
 	while ((anExpert = (TObjString*) iterExperts->Next()))
 	{
 		to += Form("%s,", anExpert->GetName());
 	}
 	delete iterExperts;
+	
 	if (to.Length() > 0)
 	  to.Remove(to.Length()-1);
 	AliDebug(2, Form("to: %s",to.Data()));
