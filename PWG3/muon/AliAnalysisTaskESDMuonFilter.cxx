@@ -111,18 +111,19 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
        pos[0] = primary->GetX(); 
        pos[1] = primary->GetY(); 
        pos[2] = primary->GetZ();
-
+       
+ 
        // has to be changed once the muon pid is provided by the ESD
        for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
        primary->AddDaughter(aodTrack =
-     	  new(tracks[jTracks++]) AliAODTrack(0, // no ID provided
+     	  new(tracks[jTracks++]) AliAODTrack(0 , // no ID provided
      					     0, // no label provided
      					     p,
      					     kTRUE,
      					     pos,
      					     kFALSE,
      					     NULL, // no covariance matrix provided
-     					     (Short_t)-99, // no charge provided
+     					     esdMuTrack->Charge(), 
      					     0, // no ITSClusterMap
      					     pid,
      					     primary,
