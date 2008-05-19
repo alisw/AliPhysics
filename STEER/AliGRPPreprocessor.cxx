@@ -62,17 +62,17 @@ ClassImp(AliGRPPreprocessor)
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook
   const Int_t AliGRPPreprocessor::fgknDCSDP = 11;   // number of dcs dps
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
-                   "LHCState",
+                   "LHCState",              // missing in DCS
                    "L3Polarity",
                    "DipolePolarity",
-                   "LHCLuminosity",
-                   "BeamIntensity",
+                   "LHCLuminosity",         // missing in DCS
+                   "BeamIntensity",         // missing in DCS
                    "L3Current",
                    "DipoleCurrent",
                    "CavernTemperature",
                    "CavernAtmosPressure",
-                   "gva_cr5AtmosphericPressure",
-                   "gva_meyrinAtmosphericPressure"
+                   "gva_cr5AtmosphericPressure",   // missing in DCS
+                   "gva_meyrinAtmosphericPressure" // missing in DCS
                  };
                  
   const Short_t kSensors = 9; // start index position of sensor in DCS DPs
@@ -178,7 +178,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
   // DCS data points //
   //=================//
   Int_t entries = ProcessDcsDPs( valueMap, grpmap );
-  if( entries < fgknDCSDP-3 ) { // FIXME (!= ) LHState and pressure map are not working yet...???
+  if( entries < fgknDCSDP-5 ) { // FIXME (!= ) LHState and pressure map are not working yet...
     Log(Form("Problem with the DCS data points!!!"));
     error |= 8;
   } else  Log(Form("DCS data points, successful!"));
