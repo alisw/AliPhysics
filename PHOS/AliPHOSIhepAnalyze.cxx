@@ -158,7 +158,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
       branchCPVimpacts ->SetAddress(&fCpvImpacts);
       branchCPVimpacts ->GetEntry(itrack,0);
 
-      for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+      for (iModule=0; iModule < nOfModules; iModule++) {
 	impacts = (TClonesArray *)fCpvImpacts->At(iModule);
 	// Do loop over impacts in the module
 	for (Int_t iImpact=0; iImpact<impacts->GetEntries(); iImpact++) {
@@ -389,7 +389,7 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
       branchEMCimpacts ->SetAddress(&fEmcImpacts);
       branchEMCimpacts ->GetEntry(itrack,0);
 
-      for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+      for (iModule=0; iModule < nOfModules; iModule++) {
 	impacts = (TClonesArray *)fEmcImpacts->At(iModule);
 	// Do loop over impacts in the module
 	for (Int_t iImpact=0; iImpact<impacts->GetEntries(); iImpact++) {
@@ -599,7 +599,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
 	AliInfo(Form(" branchCPVimpacts ->SetAddress(&fCpvImpacts) OK."));
 	branchCPVimpacts ->GetEntry(itrack,0);
 
-	for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+	for (iModule=0; iModule < nOfModules; iModule++) {
 	  impacts = (TClonesArray *)fCpvImpacts->At(iModule);
 	  // Do loop over impacts in the module
 	  for (Int_t iImpact=0; iImpact<impacts->GetEntries(); iImpact++) {
@@ -826,7 +826,7 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
     AliInfo(Form(" branchCPVimpacts ->SetAddress(&fCpvImpacts) OK."));
     branchCPVimpacts ->GetEntry(itrack,0);
 
-    for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+    for (iModule=0; iModule < nOfModules; iModule++) {
       impacts = (TClonesArray *)fCpvImpacts->At(iModule);
       // Do loop over impacts in the module
       for (Int_t iImpact=0; iImpact<impacts->GetEntries(); iImpact++) {

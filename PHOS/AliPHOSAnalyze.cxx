@@ -258,15 +258,15 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
        sdigit = (AliPHOSDigit *) sdigits->At(iSDigit) ;
        Int_t relid[4];
        phosgeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
-       Float_t x,z ;
-       phosgeom->RelPosInModule(relid,x,z);
+       Float_t xd,zd ;
+       phosgeom->RelPosInModule(relid,xd,zd);
        Float_t e = sdigit->GetEnergy() ;
        nsdig[relid[0]-1]++ ;
        if(relid[0]==Nmod){
          if(relid[1]==0)  //EMC
-           emcSdigits->Fill(x,z,e) ;
+           emcSdigits->Fill(xd,zd,e) ;
          if( relid[1]!=0 )
-           cpvSdigits->Fill(x,z,e) ;
+           cpvSdigits->Fill(xd,zd,e) ;
        }
       }
   }
@@ -285,14 +285,14 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
        digit = (AliPHOSDigit *) digits->At(iDigit) ;
        Int_t relid[4];
        phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-       Float_t x,z ;
-       phosgeom->RelPosInModule(relid,x,z) ;
+       Float_t xd,zd ;
+       phosgeom->RelPosInModule(relid,xd,zd) ;
        Float_t e = digit->GetEnergy() ;
        if(relid[0]==Nmod){
          if(relid[1]==0)  //EMC
-           emcDigits->Fill(x,z,e) ;
+           emcDigits->Fill(xd,zd,e) ;
          if( relid[1]!=0 )
-           cpvDigits->Fill(x,z,e) ;
+           cpvDigits->Fill(xd,zd,e) ;
        }
       }
   }
@@ -345,14 +345,14 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
          Int_t numberofprimaries ;
          Int_t * listofprimaries  = ((AliPHOSRecPoint*) emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
          Int_t index ;
-         const TParticle * primary ;
+         const TParticle * primPart ;
          Double_t distance = minDistance ;
          
          for ( index = 0 ; index < numberofprimaries ; index++){
-           primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
+           primPart = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
            Int_t moduleNumber ;
            Double_t primX, primZ ;
-           phosgeom->ImpactOnEmc(vtx,primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+           phosgeom->ImpactOnEmc(vtx,primPart->Theta(), primPart->Phi(), moduleNumber, primX, primZ) ;
            if(moduleNumberRec == moduleNumber)
              distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
            if(minDistance > distance)
@@ -568,7 +568,6 @@ void AliPHOSAnalyze::Ls(){
     nRecParticles[mevent] = iRecPhot-1 ;  
     
     //check, if it is time to calculate invariant mass?
-    Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
     if((mevent == 0) && (event +1 == maxevent)){
       
       //   if((mevent == 0) && (event +1 == gime->MaxEvent())){
@@ -756,7 +755,7 @@ void AliPHOSAnalyze::Ls(){
 
       //if found primary, fill histograms
       if(closestPrimary >=0 ){
-       const TParticle * primary = fRunLoader->Stack()->Particle(closestPrimary) ;
+       primary = fRunLoader->Stack()->Particle(closestPrimary) ;
        if(primary->GetPdgCode() == 22){
          hAllEnergy->Fill(primary->Energy(), recParticle->Energy()) ;
          if(recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEMFAST){
@@ -909,7 +908,7 @@ void AliPHOSAnalyze::PositionResolution()
       
       //if found primary, fill histograms
       if(closestPrimary >=0 ){
-       const TParticle * primary = fRunLoader->Stack()->Particle(closestPrimary) ;
+       primary = fRunLoader->Stack()->Particle(closestPrimary) ;
        if(primary->GetPdgCode() == 22){
          hAllPosition->Fill(primary->Energy(), minDistance) ;
          hAllPositionX->Fill(primary->Energy(), dX) ;
@@ -1127,7 +1126,6 @@ void AliPHOSAnalyze::Contamination(){
       Int_t numberofprimaries ;
       Int_t * listofprimaries  = ((AliPHOSEmcRecPoint *) emcrp->At(emcIndex))->GetPrimaries(numberofprimaries)  ;
       Int_t index ;
-      const TParticle * primary ;
       Double_t distance = minDistance ;
       Double_t dX, dZ; 
       Double_t dXmin = 0.; 
@@ -1153,7 +1151,7 @@ void AliPHOSAnalyze::Contamination(){
       //===========define the "type" of closest primary
       if(closestPrimary >=0 ){
        Int_t primaryCode = -1;
-       const TParticle * primary = fRunLoader->Stack()->Particle(closestPrimary) ;
+       primary = fRunLoader->Stack()->Particle(closestPrimary) ;
        Int_t primaryType = primary->GetPdgCode() ;
        if(primaryType == 22) // photon ?
          primaryCode = 0 ;
