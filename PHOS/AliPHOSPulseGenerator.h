@@ -51,7 +51,7 @@ public:
   static Double_t GeV2ADC();
 
   virtual void Print(Option_t*) const;
-  virtual void Draw (Option_t*);
+  virtual void Draw (Option_t* opt = "all");
 
   AliPHOSPulseGenerator& operator = (const AliPHOSPulseGenerator &) {
     Fatal("operator =", "not implemented") ;

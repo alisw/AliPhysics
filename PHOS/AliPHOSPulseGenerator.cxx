@@ -174,8 +174,8 @@ void AliPHOSPulseGenerator::Digitize()
 {
   // Emulates ADC: rounds down to nearest integer value all amplitudes
   for (Int_t i=0; i<fkTimeBins; i++) {
-    fDataHG[i] = (Double_t) ((Int_t)(fDataHG[i] + 0.5));
-    fDataLG[i] = (Double_t) ((Int_t)(fDataLG[i] + 0.5));
+    fDataHG[i] = (Double_t) ((Int_t)fDataHG[i]);
+    fDataLG[i] = (Double_t) ((Int_t)fDataLG[i]);
   }
 }
 
@@ -275,9 +275,12 @@ void AliPHOSPulseGenerator::Print(Option_t*) const
 }
 
 //__________________________________________________________________
-void AliPHOSPulseGenerator::Draw(Option_t*)
+void AliPHOSPulseGenerator::Draw(Option_t* opt)
 {
   // Draw graphs with high and low gain samples
+  // Option_t* opt="all": draw both HG and LG in one canvas
+  //               "HG" : draw HG only
+  //               "LG" : draw LG only
 
   Double_t *time = new Double_t[fkTimeBins];
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
@@ -295,19 +298,28 @@ void AliPHOSPulseGenerator::Draw(Option_t*)
 
   TCanvas *c1 = new TCanvas("c1","Raw ALTRO samples",10,10,700,500);
   c1->SetFillColor(0);
-  c1->Divide(2,1);
-  c1->cd(1);
-  gPad->SetLeftMargin(0.15);
-  graphHG->Draw("AP");
-  graphHG->GetHistogram()->SetTitleOffset(1.6,"Y");
-  graphHG->GetHistogram()->SetXTitle("time, #musec");
-  graphHG->GetHistogram()->SetYTitle("Amplitude, ADC counts");
-  c1->cd(2);
-  gPad->SetLeftMargin(0.15);
-  graphLG->Draw("AP");
-  graphLG->GetHistogram()->SetTitleOffset(1.6,"Y");
-  graphLG->GetHistogram()->SetXTitle("time, #musec");
-  graphLG->GetHistogram()->SetYTitle("Amplitude, ADC counts");
+
+  if (strstr(opt,"all")){
+    c1->Divide(2,1);
+    c1->cd(1);
+    gPad->SetLeftMargin(0.15);
+  }
+  if (strstr(opt,"LG") == 0){
+    graphHG->Draw("AP");
+    graphHG->GetHistogram()->SetTitleOffset(1.6,"Y");
+    graphHG->GetHistogram()->SetXTitle("time, #musec");
+    graphHG->GetHistogram()->SetYTitle("Amplitude, ADC counts");
+  }
+  if (strstr(opt,"all")){
+    c1->cd(2);
+    gPad->SetLeftMargin(0.15);
+  }
+  if (strstr(opt,"HG") == 0){
+    graphLG->Draw("AP");
+    graphLG->GetHistogram()->SetTitleOffset(1.6,"Y");
+    graphLG->GetHistogram()->SetXTitle("time, #musec");
+    graphLG->GetHistogram()->SetYTitle("Amplitude, ADC counts");
+  }
   c1->Update();
 }
 
