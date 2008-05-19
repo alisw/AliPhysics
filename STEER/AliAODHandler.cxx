@@ -140,14 +140,16 @@ void AliAODHandler::AddAODtoTreeUserInfo()
     fTreeA->GetUserInfo()->Add(fAODEvent);
 }
 
-void AliAODHandler::AddBranch(const char* cname, TObject* addobj)
+void AliAODHandler::AddBranch(const char* cname, void* addobj)
 {
     // Add a new branch to the aod 
     TDirectory *owd = gDirectory;
     if (fFileA) {
 	fFileA->cd();
     }
-    fTreeA->Branch(addobj->GetName(), cname, &addobj);
-    fAODEvent->AddObject(addobj);
+    char** apointer = (char**) addobj;
+    TObject* obj = (TObject*) *apointer;
+    fTreeA->Branch(obj->GetName(), cname, addobj);
+    fAODEvent->AddObject(obj);
     owd->cd();
 }

@@ -42,7 +42,7 @@ class AliAODHandler : public AliVEventHandler {
     void                 CreateTree(Int_t flag);
     void                 FillTree();
     void                 AddAODtoTreeUserInfo();
-    void                 AddBranch(const char* cname, TObject* addobj);
+    void                 AddBranch(const char* cname, void* addobj);
     Bool_t               IsStandard() {return fIsStandard;}
     //
     void                 SetInputTree(TTree* /*tree*/) {;}
