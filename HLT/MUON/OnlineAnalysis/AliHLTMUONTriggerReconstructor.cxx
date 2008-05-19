@@ -79,7 +79,7 @@ bool AliHLTMUONTriggerReconstructor::Run(
 	fDecoder.GetHandler().OutputTrigRecs(trigRecord);
 	fDecoder.GetHandler().SuppressPartialTriggers(suppressPartialTrigs);
 	
-	fDecoder.Decode(rawData, rawDataSize);
+	if (not fDecoder.Decode(rawData, rawDataSize)) return false;
 	
 	// nofTrigRec now becomes the output of how many trigger records were found.
 	nofTrigRec = fDecoder.GetHandler().OutputTrigRecsCount();
