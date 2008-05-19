@@ -35,6 +35,7 @@
 #pragma link C++ class AliMUONTriggerCircuit+;
 #pragma link C++ class AliMUONVTriggerStore+;
 #pragma link C++ class AliMUONTriggerStoreV1+;
+#pragma link C++ class AliMUONTriggerCrateStore+;
 
 // raw data
 #pragma link C++ class AliMUONDigitMaker+;

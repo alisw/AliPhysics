@@ -9,7 +9,6 @@ SRCS:=  AliMUONLocalTrigger.cxx \
         AliMUONRegionalTriggerBoard.cxx \
         AliMUONGlobalTriggerBoard.cxx \
         AliMUONTriggerCrate.cxx \
-        AliMUONTriggerCrateStore.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
