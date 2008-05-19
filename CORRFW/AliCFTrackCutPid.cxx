@@ -670,9 +670,9 @@ if(fgIsComb)
     for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
       {
 	fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response    ",partic[iPart]),fNbins,fXmin,fXmax);
-        Printf(Form(  "rCombPart%i is booked!!",iPart));
+        AliDebug(1,Form(  "rCombPart%i is booked!!",iPart));
 	fhCombProb[iPart] = new TH1F(Form("pCombPart%i",iPart),Form("%s combined probability ",partic[iPart]),fNbins,fXmin,fXmax);
-        Printf(Form(  "rCombProb%i is booked!!",iPart));
+        AliDebug(1,Form(  "rCombProb%i is booked!!",iPart));
       }
   }
 }
