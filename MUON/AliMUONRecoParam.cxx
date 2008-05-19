@@ -50,6 +50,8 @@ AliMUONRecoParam::AliMUONRecoParam()
   fSigmaCutForTracking(0.),
   fSigmaCutForImprovement(0.),
   fSigmaCutForTrigger(0.),
+  fStripCutForTrigger(0.),
+  fMaxStripAreaForTrigger(0.),
   fMaxNormChi2MatchTrigger(0.),
   fPercentOfFullClusterInESD(10.),
   fCombinedClusterTrackReco(kFALSE),
@@ -140,6 +142,8 @@ void AliMUONRecoParam::SetLowFluxParam()
   fSigmaCutForTracking = 6.;
   fSigmaCutForImprovement = 5.;
   fSigmaCutForTrigger = 8.;
+  fStripCutForTrigger = 1.;
+  fMaxStripAreaForTrigger = 3.;
   fMaxNormChi2MatchTrigger = 16.;
   fCombinedClusterTrackReco = kFALSE;
   fTrackAllTracks = kTRUE;
@@ -172,6 +176,8 @@ void AliMUONRecoParam::SetHighFluxParam()
   fSigmaCutForTracking = 6.;
   fSigmaCutForImprovement = 5.;
   fSigmaCutForTrigger = 8.;
+  fStripCutForTrigger = 1.;
+  fMaxStripAreaForTrigger = 3.;
   fMaxNormChi2MatchTrigger = 16.;
   fCombinedClusterTrackReco = kFALSE;
   fTrackAllTracks = kTRUE;
@@ -259,7 +265,11 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout<<Form("Sigma cut for tracking = %5.2f",fSigmaCutForTracking)<<endl;
 
   cout<<Form("Sigma cut for trigger hit pattern = %5.2f",fSigmaCutForTrigger)<<endl;
-  
+
+  cout<<Form("Cut in strips for trigger chamber efficiency = %5.2f",fStripCutForTrigger)<<endl;
+
+  cout<<Form("Max search area in strips for trigger chamber efficiency = %5.2f",fMaxStripAreaForTrigger)<<endl;
+
   if (fTrackAllTracks) cout<<"Track all the possible candidates"<<endl;
   else cout<<"Track only the best candidates"<<endl;
   

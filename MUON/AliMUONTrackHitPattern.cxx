@@ -579,7 +579,7 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(AliMUONVDigitStore& digitStore
 	Float_t dpx = pad.Dimensions().X();
 	Float_t dpy = pad.Dimensions().Y();
 	fTransformer.Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
-	AliDebug(2, Form("DetElemId = %i\tCathode = %i\t(x,y) Pad = (%i,%i) = (%.2f,%.2f)\tDim = (%.2f,%.2f)\tTrack = (%.2f,%.2f)\n",currDetElemId,cathode,ix,iy,xpad,ypad,dpx,dpy,coor[0],coor[1]));
+	AliDebug(2, Form("\nDetElemId = %i  Cathode = %i  Pad = (%i,%i) = (%.2f,%.2f)  Dim = (%.2f,%.2f)  Track = (%.2f,%.2f)\n",currDetElemId,cathode,ix,iy,xpad,ypad,dpx,dpy,coor[0],coor[1]));
 	// searching track intersection with chambers (second approximation)
 	if(ch%2==1){
 	    //if(iChamber%2==1){
@@ -629,8 +629,9 @@ Float_t AliMUONTrackHitPattern::PadMatchTrack(Float_t xPad, Float_t yPad,
     /// Decides if the digit belongs to the trigger track.
     //
 
-    Float_t maxDist = 2.;//3. // cm
-    Float_t maxDistCheckArea = 6.; // cm
+  Float_t maxDist = AliMUONReconstructor::GetRecoParam()->GetStripCutForTrigger() * 2. * TMath::Min(dpx,dpy); // cm
+  if(maxDist<2.) maxDist = 2.;
+  Float_t maxDistCheckArea = AliMUONReconstructor::GetRecoParam()->GetMaxStripAreaForTrigger() * 2. *  TMath::Min(dpx,dpy); // cm
 
     Float_t matchDist = fkMaxDistance;
 
@@ -809,7 +810,7 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
 
   for(Int_t ch=0; ch<fgkNchambers; ch++) { // chamber loop
     Int_t currCh = chOrder[ch];
-    AliDebug(2, Form("zMeanChamber[%i] = %.2f\tzRealMatch[0] = %.2f\n",currCh,zMeanChamber[currCh],zRealMatch[0]));
+    AliDebug(3, Form("zMeanChamber[%i] = %.2f\tzRealMatch[0] = %.2f\n",currCh,zMeanChamber[currCh],zRealMatch[0]));
 
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
       correctFactor[cath]=1.;

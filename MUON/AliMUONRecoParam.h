@@ -109,6 +109,14 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void     SetSigmaCutForTrigger(Double_t val) {fSigmaCutForTrigger = val;} 
   /// return the cut in sigma to apply on track during trigger hit pattern search
   Double_t GetSigmaCutForTrigger() const {return fSigmaCutForTrigger;}
+  /// set the cut in strips to apply on trigger track during trigger chamber efficiency
+  void     SetStripCutForTrigger(Double_t val) {fStripCutForTrigger = val;} 
+  /// return the cut in strips to apply on trigger track during trigger chamber efficiency
+  Double_t GetStripCutForTrigger() const {return fStripCutForTrigger;}
+  /// set the maximum search area in strips to apply on trigger track during trigger chamber efficiency
+  void     SetMaxStripAreaForTrigger(Double_t val) {fMaxStripAreaForTrigger = val;} 
+  /// return the maximum search area in strips to apply on trigger track during trigger chamber efficiency
+  Double_t GetMaxStripAreaForTrigger() const {return fMaxStripAreaForTrigger;}
   
   /// set the maximum normalized chi2 of tracking/trigger track matching
   void     SetMaxNormChi2MatchTrigger(Double_t val) {fMaxNormChi2MatchTrigger = val;} 
@@ -190,6 +198,10 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Double32_t fSigmaCutForImprovement; ///< cut in sigma to apply on cluster (local chi2) during track improvement
   
   Double32_t fSigmaCutForTrigger; ///< cut in sigma to apply on track during trigger hit pattern search
+
+  Double32_t fStripCutForTrigger; ///< cut in strips to apply on trigger track during trigger chamber efficiency
+
+  Double32_t fMaxStripAreaForTrigger; ///< max. search area in strips to apply on trigger track during trigger chamber efficiency
   
   Double32_t fMaxNormChi2MatchTrigger; ///< maximum normalized chi2 of tracking/trigger track matching
   
@@ -228,7 +240,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void SetCosmicParam();
   
   
-  ClassDef(AliMUONRecoParam,5) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,6) // MUON reco parameters
 };
 
 #endif
