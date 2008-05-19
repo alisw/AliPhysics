@@ -23,6 +23,6 @@ export XML=$2
 
 #Do the analysis
 alienroot -b  <<EOF
-.L anaGammaAnalysis.C
-anaGammaAnalysis($MODE)
+.L ana.C
+ana($MODE)
 EOF

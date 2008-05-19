@@ -11,7 +11,7 @@ InputFile={"LF:/alice/cern.ch/user/s/schutz/analysis/macro/anaGammaAnalysis.C",
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/ANALYSIS.par",
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/ANALYSISalice.par",	
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/AOD.par",
-           "LF:/alice/cern.ch/user/s/schutz/analysis/par/PWG4Gamma.par",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/par/PWG4PartCorr.par",
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/ESD.par"};
 
 OutputArchive={"log_archive:stdout,stderr,*.log@ALICE::Subatech::DPM",
@@ -27,6 +27,6 @@ InputDataList = "collection.xml";
 Split = "se";
 
 SplitMaxInputFileNumber = "30";
-OutputFile="gammahistos.root";
+OutputFile="histos.root";
 MergeOutputDir = "/alice/cern.ch/user/s/schutz/analysis/output/gammajetpp14";
 Merge = {"gammahistos.root:/alice/cern.ch/user/s/schutz/analysis/jdl/mergerootfile.jdl:gammahistos-merged.root"};
