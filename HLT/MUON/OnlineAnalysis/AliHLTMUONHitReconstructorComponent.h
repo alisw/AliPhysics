@@ -9,7 +9,7 @@
 ///
 ///  @file   AliHLTMUONHitReconstructorComponent.h
 ///  @author Indranil Das <indra.das@saha.ac.in> | <indra.ehep@gmail.com>
-///  @date   
+///  @date   28 May 2007
 ///  @brief  Hit Reconstruction processing component for the dimuon HLT.
 ///
 
@@ -23,7 +23,10 @@
 
 extern "C" struct AliHLTMUONHitRecoLutRow;
 
-
+/**
+ * @class AliHLTMUONHitReconstructorComponent
+ * @brief A processing component for the dHLT tracker DDL reconstruction.
+ */
 class AliHLTMUONHitReconstructorComponent : public AliHLTMUONProcessor
 {
 public:
@@ -83,14 +86,14 @@ private:
 	int ReadLookUpTable(const char* lutpath);
 	int ReadCDB(const char* cdbpath, Int_t run);
 	
-	AliHLTMUONHitReconstructor* fHitRec;  // Internal class instance implementing the hit reconstruction algorithm.
-	AliHLTInt32_t fDDL;  // DDL number in the range [12..19]. Set to -1 for invalid/unspecified value.
-	AliHLTUInt32_t fLutSize;  // The number of rows / entries in the LUT.
-	AliHLTMUONHitRecoLutRow* fLut;  // The lookup table used by the hit reconstruction algorithm (Owned by this component however).
-	IdManuChannelToEntry fIdToEntry; // id to line mapping.
-	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
+	AliHLTMUONHitReconstructor* fHitRec;  ///< Internal class instance implementing the hit reconstruction algorithm.
+	AliHLTInt32_t fDDL;  ///< DDL number in the range [12..19]. Set to -1 for invalid/unspecified value.
+	AliHLTUInt32_t fLutSize;  ///< The number of rows / entries in the LUT.
+	AliHLTMUONHitRecoLutRow* fLut;  ///< The lookup table used by the hit reconstruction algorithm (Owned by this component however).
+	IdManuChannelToEntry fIdToEntry; ///< id to line mapping.
+	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
 	
-	ClassDef(AliHLTMUONHitReconstructorComponent, 0)
+	ClassDef(AliHLTMUONHitReconstructorComponent, 0) // Hit reconstructor component for dHLT tracker DDL raw data.
 };
 
 #endif // ALIHLTMUONHITRECONSTRUCTORCOMPONENT_H

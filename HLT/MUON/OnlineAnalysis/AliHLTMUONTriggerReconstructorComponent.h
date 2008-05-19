@@ -9,7 +9,7 @@
 ///
 /// @file   AliHLTMUONTriggerReconstructorComponent.h
 /// @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
-/// @date
+/// @date   18 Sep 2007
 /// @brief  A processing component for the dHLT trigger DDL reconstruction.
 ///
 
@@ -85,12 +85,12 @@ private:
 	int ReadLookUpTable(const char* lutpath);
 	int ReadCDB(const char* cdbPath, Int_t run);
 	
-	AliHLTMUONTriggerReconstructor* fTrigRec; // The trigger reconstructor class implementing the algorithm.
-	AliHLTInt32_t fDDL;   // The DDL number in the range 20..21 from which to expect input. Set to -1 for invalid/unspecified value.
-	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
-	bool fSuppressPartialTrigs;   // Flag indicating if we should suppress triggers that did not trigger the L0
+	AliHLTMUONTriggerReconstructor* fTrigRec; ///< The trigger reconstructor class implementing the algorithm.
+	AliHLTInt32_t fDDL;   ///< The DDL number in the range 20..21 from which to expect input. Set to -1 for invalid/unspecified value.
+	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fSuppressPartialTrigs;   ///< Flag indicating if we should suppress triggers that did not trigger the L0
 
-	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0)
+	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0) // Trigger reconstructor component for dHLT trigger DDL raw data.
 
 };
 
