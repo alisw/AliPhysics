@@ -70,7 +70,7 @@ class AliQuarkoniaEfficiency : public TNamed{
   void  SetSimulatedParameterization(Int_t simParameterization = kCDFscaledPP) { 
     fParameterization = simParameterization;
   }
-  void  SetTrigger(bool trigger = kFALSE, Int_t triggerType = kPairUnlikeApt){ 
+  void  SetTrigger(Bool_t trigger = kFALSE, Int_t triggerType = kPairUnlikeApt){ 
     fTrigger = trigger; fTriggerType = triggerType;
   }
   
