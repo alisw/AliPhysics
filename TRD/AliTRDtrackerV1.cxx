@@ -1976,16 +1976,16 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
 
 	// try attaching clusters to tracklets
 	Int_t nUsedCl = 0;
-	Int_t nlayers = 0;
+	Int_t mlayers = 0;
 	for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
 		Int_t jLayer = planes[iLayer];
 		if(!cseed[jLayer].AttachClustersIter(stack[jLayer], 5., kFALSE, c[iLayer])) continue;
 		nUsedCl += cseed[jLayer].GetNUsed();
 		if(nUsedCl > 25) break;
-		nlayers++;
+		mlayers++;
 	}
-	if(nlayers < kNSeedPlanes){ 
-		//AliInfo(Form("Failed updating all seeds %d [%d].", nlayers, kNSeedPlanes));
+	if(mlayers < kNSeedPlanes){ 
+		//AliInfo(Form("Failed updating all seeds %d [%d].", mlayers, kNSeedPlanes));
 		AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
 		continue;
 	}
@@ -2027,9 +2027,9 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
 		// fit extrapolated seed
 		if ((jLayer == 0) && !(cseed[1].IsOK())) continue;
 		if ((jLayer == 5) && !(cseed[4].IsOK())) continue;
-		AliTRDseedV1 tseed = cseed[jLayer];
-		if(!tseed.AttachClustersIter(chamber, 1000.)) continue;
-		cseed[jLayer] = tseed;
+		AliTRDseedV1 pseed = cseed[jLayer];
+		if(!pseed.AttachClustersIter(chamber, 1000.)) continue;
+		cseed[jLayer] = pseed;
 		nusedf += cseed[jLayer].GetNUsed(); // debug value
 		FitTiltedRieman(cseed,  kTRUE);
 	}
@@ -2062,14 +2062,14 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
 
 	// fit full track and cook likelihoods
 	// 				Double_t curv = FitRieman(&cseed[0], chi2);
-	// 				Double_t chi2ZF = chi2[0] / TMath::Max((nlayers - 3.), 1.);
-	// 				Double_t chi2RF = chi2[1] / TMath::Max((nlayers - 3.), 1.);
+	// 				Double_t chi2ZF = chi2[0] / TMath::Max((mlayers - 3.), 1.);
+	// 				Double_t chi2RF = chi2[1] / TMath::Max((mlayers - 3.), 1.);
 
 	// do the final track fitting (Once with vertex constraint and once without vertex constraint)
 	Double_t chi2Vals[3];
 	chi2Vals[0] = FitTiltedRieman(&cseed[0], kFALSE);
 	chi2Vals[1] = FitTiltedRiemanConstraint(&cseed[0], GetZ());
-	chi2Vals[2] = GetChi2Z(&cseed[0]) / TMath::Max((nlayers - 3.), 1.);
+	chi2Vals[2] = GetChi2Z(&cseed[0]) / TMath::Max((mlayers - 3.), 1.);
 	// Chi2 definitions in testing stage
 	//chi2Vals[2] = GetChi2ZTest(&cseed[0]);
 	fTrackQuality[ntracks] = CalculateTrackLikelihood(&cseed[0], &chi2Vals[0]);
@@ -2111,7 +2111,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
 				<< "CandidateNumber="	<< candidateNumber
 				<< "Chi2TR="			<< chi2Vals[0]
 				<< "Chi2TC="			<< chi2Vals[1]
-				<< "Nlayers="			<< nlayers
+				<< "Nlayers="			<< mlayers
 				<< "NUsedS="			<< nUsedCl
 				<< "NUsed="				<< nusedf
 				<< "Like="				<< like

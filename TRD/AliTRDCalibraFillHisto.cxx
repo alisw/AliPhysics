@@ -645,8 +645,8 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
     // loop over the clusters
     ////////////////////////////
     Int_t nbclusters = 0;
-    for(int ic=0; ic<AliTRDseed::knTimebins; ic++){
-      if(!(cl = tracklet->GetClusters(ic))) continue;
+    for(int jc=0; jc<AliTRDseed::knTimebins; jc++){
+      if(!(cl = tracklet->GetClusters(jc))) continue;
       nbclusters++;
       
       // Store the info bis of the tracklet
@@ -656,7 +656,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
       Int_t     group[2] = {0,0};
       if(fCH2dOn)  group[0]  = CalculateCalibrationGroup(0,row,col);
       if(fPH2dOn)  group[1]  = CalculateCalibrationGroup(1,row,col);
-      StoreInfoCHPHtrack(cl, tracklet->GetdQdl(ic),group,row,col);
+      StoreInfoCHPHtrack(cl, tracklet->GetdQdl(jc),group,row,col);
     }
     
     ////////////////////////////////////////
@@ -1041,13 +1041,13 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     Double_t     time  = cl->GetPadTime();
     //Calculate x if possible 
     Float_t xcenter    = 0.0;    
-    Bool_t  echec      = kTRUE;   
+    Bool_t  echec1      = kTRUE;   
     if((time<=7) || (time>=21)) continue; 
     // Center 3 balanced: position with the center of the pad
     if ((((Float_t) signals[3]) > 0.0) && 
 	(((Float_t) signals[2]) > 0.0) && 
 	(((Float_t) signals[4]) > 0.0)) {
-      echec = kFALSE;
+      echec1 = kFALSE;
       // Security if the denomiateur is 0 
       if ((((Float_t) (((Float_t) signals[3]) * ((Float_t) signals[3]))) / 
 	   ((Float_t) (((Float_t) signals[2]) * ((Float_t) signals[4])))) != 1.0) {
@@ -1056,7 +1056,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
 			/ ((Float_t) (((Float_t) signals[2]) * ((Float_t) signals[4])))));
       }
       else {
-	echec = kTRUE;
+	echec1 = kTRUE;
       }
     }
     if(TMath::Abs(xcenter) > 0.5) echec = kTRUE;
@@ -1348,7 +1348,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     if((time<=7) || (time>=21)) continue;
     Short_t  *signals  = cl->GetSignals(); 
     Float_t xcenter    = 0.0;    
-    Bool_t  echec      = kTRUE;   
+    Bool_t  echec1      = kTRUE;   
 
     /////////////////////////////////////////////////////////////
     // Center 3 balanced: position with the center of the pad
@@ -1356,7 +1356,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     if ((((Float_t) signals[3]) > 0.0) && 
 	(((Float_t) signals[2]) > 0.0) && 
 	(((Float_t) signals[4]) > 0.0)) {
-      echec = kFALSE;
+      echec1 = kFALSE;
       // Security if the denomiateur is 0 
       if ((((Float_t) (((Float_t) signals[3]) * ((Float_t) signals[3]))) / 
 	   ((Float_t) (((Float_t) signals[2]) * ((Float_t) signals[4])))) != 1.0) {
@@ -1365,14 +1365,14 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
 			/ ((Float_t) (((Float_t) signals[2]) * ((Float_t) signals[4])))));
       }
       else {
-	echec = kTRUE;
+	echec1 = kTRUE;
       }
     }
-    if(TMath::Abs(xcenter) > 0.5) echec = kTRUE;
-    if(echec) continue;
+    if(TMath::Abs(xcenter) > 0.5) echec1 = kTRUE;
+    if(echec1) continue;
 
     ////////////////////////////////////////////////////////
-    //if no echec: calculate with the position of the pad
+    //if no echec1: calculate with the position of the pad
     // Position of the cluster
     // fill the linear fitter
     ///////////////////////////////////////////////////////

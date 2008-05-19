@@ -521,18 +521,18 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     
     
     // dedx
-    for(Int_t i=0; i<4; i++) {
+    for(Int_t k=0; k<4; ++k) {
       Double_t dedx = 0;
       for(Int_t j=0; j<6; j++) {
-	dedx += track->GetTRDslice(j, i-1);
+	dedx += track->GetTRDslice(j, k-1);
       }
       GetESDsData(41+i)->Fill(paramOut->GetP(), dedx/6.);
     }
 
     // probabilities
     if (status & AliESDtrack::kTRDpid) {
-      for(Int_t i=0; i<AliPID::kSPECIES; i++) 
-	GetESDsData(36+i)->Fill(track->GetTRDpid(i));
+      for(Int_t k=0; k<AliPID::kSPECIES; ++k) 
+	GetESDsData(36+k)->Fill(track->GetTRDpid(k));
     }
 
     // probabilities uniformity

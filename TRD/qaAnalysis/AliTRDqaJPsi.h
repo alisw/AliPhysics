@@ -62,8 +62,8 @@ class AliTRDqaJPsi : public AliAnalysisTask {
   TH2D *fPtAngle[knSteps];
 
   // tracks
-  AliKFParticle *tracks[1000];
-  TLorentzVector *vec[1000];
+  AliKFParticle *fTracks[1000];
+  TLorentzVector *fVec[1000];
   Int_t fInSample[1000][knSteps];
   Int_t fSM[1000];
   Int_t fnKFtracks; //[2];

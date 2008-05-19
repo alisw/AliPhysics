@@ -207,8 +207,8 @@ void AliTRDqaJPsi::Exec(Option_t *)
     Int_t pdg = (charge == 0)? -11 : 11;
     for(Int_t k=0; k<knSteps; k++) fInSample[fnKFtracks][k] = 0;  
  
-    vec[fnKFtracks] = CreateVector(track);
-    tracks[fnKFtracks] = new AliKFParticle(*track, pdg);
+    fVec[fnKFtracks] = CreateVector(track);
+    fTracks[fnKFtracks] = new AliKFParticle(*track, pdg);
     fSM[fnKFtracks] = AliTRDqaAT::GetSector(paramOut->GetAlpha());
     fnKFtracks++;
 
@@ -251,8 +251,8 @@ void AliTRDqaJPsi::Exec(Option_t *)
       if (!fInSample[i][k]) continue;
       for(Int_t j=i+1; j<fnKFtracks; j++) {
 	if (!fInSample[j][k]) continue;
-	AliKFParticle jpsi(*(tracks[i]), *(tracks[j]));
-	TLorentzVector jpsiVec = (*(vec[i])) + (*vec[j]);
+	AliKFParticle jpsi(*(fTracks[i]), *(fTracks[j]));
+	TLorentzVector jpsiVec = (*(fVec[i])) + (*fVec[j]);
 	fInvMass[k]->Fill(jpsi.GetMass());
 	fInvMassVec[k]->Fill(jpsiVec.M());
 	fInvMassDiff[k]->Fill(jpsiVec.M() - jpsi.GetMass());

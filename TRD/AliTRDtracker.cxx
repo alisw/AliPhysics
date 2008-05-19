@@ -709,19 +709,19 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
 
     AliTRDtrack *pt = new AliTRDtrack(seed2,seed2.GetAlpha());
     Int_t *indexes2 = seed2.GetIndexes();
-    for (Int_t i = 0; i < AliTRDtrack::kNplane;i++) {
+    for (Int_t l = 0; l < AliTRDtrack::kNplane;++l) {
       for (Int_t j = 0; j < AliTRDtrack::kNslice;j++) {
-        pt->SetPIDsignals(seed2.GetPIDsignals(i,j),i,j);
+        pt->SetPIDsignals(seed2.GetPIDsignals(l,j),l,j);
       }
-      pt->SetPIDTimBin(seed2.GetPIDTimBin(i),i);
+      pt->SetPIDTimBin(seed2.GetPIDTimBin(l),l);
     }
 
     Int_t *indexes3 = pt->GetBackupIndexes();
-    for (Int_t i = 0; i < 200;i++) {
-      if (indexes2[i] == 0) {
+    for (Int_t l = 0; l < 200;++l) {
+      if (indexes2[l] == 0) {
         break;
       }
-      indexes3[i] = indexes2[i];
+      indexes3[l] = indexes2[l];
     }  
         
     FollowProlongation(*pt); 
@@ -738,11 +738,11 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
       seed->UpdateTrackParams(pt,AliESDtrack::kTRDrefit);
       fHRefit->Fill(5);
 
-      for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
+      for (Int_t l = 0; l < AliTRDtrack::kNplane; ++l) {
         for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
-          seed->SetTRDslice(pt->GetPIDsignals(i,j),i,j);
+          seed->SetTRDslice(pt->GetPIDsignals(l,j),l,j);
 	}
-        seed->SetTRDTimBin(pt->GetPIDTimBin(i),i);
+        seed->SetTRDTimBin(pt->GetPIDTimBin(l),l);
       }
 
     }
@@ -750,10 +750,10 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
 
       // If not prolongation to TPC - propagate without update
       fHRefit->Fill(5);
-      AliTRDtrack *seed2 = new AliTRDtrack(*seed);
-      seed2->ResetCovariance(5.0); 
-      AliTRDtrack *pt2   = new AliTRDtrack(*seed2,seed2->GetAlpha());
-      delete seed2;
+      AliTRDtrack *seed2t = new AliTRDtrack(*seed);
+      seed2t->ResetCovariance(5.0); 
+      AliTRDtrack *pt2   = new AliTRDtrack(*seed2t,seed2t->GetAlpha());
+      delete seed2t;
 
       if (PropagateToX(*pt2,xTPC,fgkMaxStep)) { 
 
@@ -762,11 +762,11 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
 	seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
 	fHRefit->Fill(6);
 
-        for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
+        for (Int_t l = 0; l < AliTRDtrack::kNplane; ++l) {
           for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
-            seed->SetTRDslice(pt2->GetPIDsignals(i,j),i,j);
+            seed->SetTRDslice(pt2->GetPIDsignals(l,j),l,j);
 	  }
-          seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
+          seed->SetTRDTimBin(pt2->GetPIDTimBin(l),l);
         }
 
       }
@@ -912,7 +912,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 	  t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample));
 	  Double_t h01      = GetTiltFactor(cl);
 	  Int_t    det      = cl->GetDetector();
-	  Int_t    plane    = fGeom->GetPlane(det);
+	  Int_t    pplane    = fGeom->GetPlane(det);
 
 	  if (t.GetX() > 345.0) {
 	    t.SetNLast(t.GetNLast() + 1);
@@ -927,7 +927,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 
 	  maxChi2 = t.GetPredictedChi2(cl,h01);					
 	  if (maxChi2 < 1e+10) {
-	    if (!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
+	    if (!t.UpdateMI(cl,maxChi2,index,h01,pplane)) {
 	      // ????
 	    } 
             else {
@@ -1605,7 +1605,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	      cseed[sLayer+jLayer].SetPadLength(padlength[sLayer+jLayer]);
 	      cseed[sLayer+jLayer].SetX0(xcl[sLayer+jLayer]);
 
-	      for (Int_t iter = 0; iter < 2; iter++) {
+	      for (Int_t jter = 0; jter < 2; jter++) {
 
 		//
 		// In iteration 0 we try only one pad-row
@@ -1613,7 +1613,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 		//
 		AliTRDseed tseed = cseed[sLayer+jLayer];
 		Float_t    roadz = padlength[sLayer+jLayer] * 0.5;
-		if (iter > 0) {
+		if (jter > 0) {
                   roadz = padlength[sLayer+jLayer];
 		}
 
@@ -1625,7 +1625,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 		  Double_t dxlayer = layer.GetX() - xcl[sLayer+jLayer];		 
 		  Double_t zexp    = cl[sLayer+jLayer]->GetZ();
 
-		  if (iter > 0) {
+		  if (jter > 0) {
 		    // Try 2 pad-rows in second iteration
 		    zexp = tseed.GetZref(0) + tseed.GetZref(1) * dxlayer;
 		    if (zexp > cl[sLayer+jLayer]->GetZ()) {
@@ -1641,13 +1641,13 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 		  if (index <= 0) {
                     continue; 
 		  }
-		  AliTRDcluster *cl = (AliTRDcluster *) GetCluster(index);	      
+		  AliTRDcluster *clu = (AliTRDcluster *) GetCluster(index);	      
 
 		  tseed.SetIndexes(iTime,index);
-		  tseed.SetClusters(iTime,cl);  // Register cluster
-		  tseed.SetX(iTime,dxlayer);    // Register cluster
-		  tseed.SetY(iTime,cl->GetY()); // Register cluster
-		  tseed.SetZ(iTime,cl->GetZ()); // Register cluster
+		  tseed.SetClusters(iTime,clu);  // Register cluster
+		  tseed.SetX(iTime,dxlayer);     // Register cluster
+		  tseed.SetY(iTime,clu->GetY()); // Register cluster
+		  tseed.SetZ(iTime,clu->GetZ()); // Register cluster
 
 		}
 
@@ -1658,7 +1658,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 		Float_t tquality = (18.0 - tseed.GetN2()) / 2.0 + TMath::Abs(dangle) / 0.1
                                  + TMath::Abs(tseed.GetYfit(0) - tseed.GetYref(0))   / 0.2
                                  + 2.0 * TMath::Abs(tseed.GetMeanz() - tseed.GetZref(0)) / padlength[jLayer];
-		if ((iter == 0) && tseed.IsOK()) {
+		if ((jter == 0) && tseed.IsOK()) {
 		  cseed[sLayer+jLayer] = tseed;
 		  quality              = tquality;
 		  if (tquality < 5) {
@@ -1669,7 +1669,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 		  cseed[sLayer+jLayer] = tseed;
 		}
 	
-	      } // Loop: iter
+	      } // Loop: jter
 
 	      if (!cseed[sLayer+jLayer].IsOK()) {
 		isOK = kFALSE;
@@ -1810,7 +1810,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	      Float_t  zexp   = cseed[jLayer].GetZref(0);
 	      Double_t zroad  = padlength[jLayer] * 0.5 + 1.0;
 
-	      for (Int_t iter = 0; iter < 2; iter++) {
+	      for (Int_t jter = 0; jter < 2; jter++) {
 
 		AliTRDseed tseed = cseed[jLayer];
 		Float_t quality = 10000.0;
@@ -1824,12 +1824,12 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 		  if (index <= 0) {
                     continue; 
 		  }
-		  AliTRDcluster *cl = (AliTRDcluster *) GetCluster(index);	      
+		  AliTRDcluster *clu = (AliTRDcluster *) GetCluster(index);	      
 		  tseed.SetIndexes(iTime,index);
-		  tseed.SetClusters(iTime,cl);  // Register cluster
-		  tseed.SetX(iTime,dxlayer);    // Register cluster
-		  tseed.SetY(iTime,cl->GetY()); // Register cluster
-		  tseed.SetZ(iTime,cl->GetZ()); // Register cluster
+		  tseed.SetClusters(iTime,clu);  // Register cluster
+		  tseed.SetX(iTime,dxlayer);     // Register cluster
+		  tseed.SetY(iTime,clu->GetY()); // Register cluster
+		  tseed.SetZ(iTime,clu->GetZ()); // Register cluster
 		}
 
 		tseed.Update();
@@ -1846,7 +1846,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 
 		zroad *= 2.0;
 
-	      } // Loop: iter
+	      } // Loop: jter
 
 	      if ( cseed[jLayer].IsOK()) {
 		cseed[jLayer].CookLabels();
@@ -1866,7 +1866,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	    Float_t lastchi2    = 10000.0;
 	    Float_t chi2        =  1000.0;
 
-	    for (Int_t iter = 0; iter < 4; iter++) {
+	    for (Int_t jter = 0; jter < 4; jter++) {
 
 	      // Sort tracklets according "quality", try to "improve" 4 worst 
 	      Float_t sumquality = 0.0;
@@ -1895,7 +1895,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	      }
 	      lastquality = sumquality;	 
 	      lastchi2    = chi2;
-	      if (iter > 0) {
+	      if (jter > 0) {
 		for (Int_t jLayer = 0; jLayer < 6; jLayer++) {
 		  cseed[jLayer] = bseed[jLayer];
 		}
@@ -1930,13 +1930,13 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 		  if (index <= 0) {
                     continue; 
 		  }
-		  AliTRDcluster *cl = (AliTRDcluster *) GetCluster(index);	      
+		  AliTRDcluster *clu = (AliTRDcluster *) GetCluster(index);	      
 
 		  tseed.SetIndexes(iTime,index);
-		  tseed.SetClusters(iTime,cl);  // Register cluster
-		  tseed.SetX(iTime,dxlayer);    // Register cluster
-		  tseed.SetY(iTime,cl->GetY()); // Register cluster
-		  tseed.SetZ(iTime,cl->GetZ()); // Register cluster
+		  tseed.SetClusters(iTime,clu);  // Register cluster
+		  tseed.SetX(iTime,dxlayer);     // Register cluster
+		  tseed.SetY(iTime,clu->GetY()); // Register cluster
+		  tseed.SetZ(iTime,clu->GetZ()); // Register cluster
 
 		}
 
@@ -1957,7 +1957,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 
 	      chi2 = AliTRDseed::FitRiemanTilt(bseed,kTRUE);
 
-	    } // Loop: iter
+	    } // Loop: jter
 
 	    nclusters = 0;
 	    nlayers   = 0;
@@ -2280,7 +2280,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
       signedseed[i] = kFALSE;
     }
 
-    for (Int_t iter = 0; iter < 5; iter++) {
+    for (Int_t jter = 0; jter < 5; jter++) {
 
       for (Int_t iseed = 0; iseed < registered; iseed++) {
       
@@ -2328,7 +2328,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
           continue;
 	}
 
- 	if (iter == 0) {
+ 	if (jter == 0) {
 	  if (nlayers < 6) {
             continue;
 	  }
@@ -2337,7 +2337,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	  }
 	}
 
-	if (iter == 1) {
+	if (jter == 1) {
 	  if (nlayers < findable) {
             continue;
 	  }
@@ -2346,7 +2346,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	  }
 	}
 
-	if (iter == 2) {
+	if (jter == 2) {
 	  if ((nlayers == findable) || 
               (nlayers ==        6)) {
             continue;
@@ -2356,13 +2356,13 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	  }
 	}
 
-	if (iter == 3) {
+	if (jter == 3) {
 	  if (TMath::Log(0.000000001+seedquality2[index]) < -5.0) {
             continue;
 	  }
 	}
 
-	if (iter == 4) {
+	if (jter == 4) {
 	  if (TMath::Log(0.000000001+seedquality2[index]) - nused/(nlayers-3.0) < -15.0) {
             continue;
 	  }
@@ -2418,7 +2418,6 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	  esdtrack.UpdateTrackParams(track,AliESDtrack::kTRDout);
 	  esdtrack.SetLabel(label);
 	  esd->AddTrack(&esdtrack);	
-	  TTreeSRedirector &cstream = *fDebugStreamer;
 	  if (AliTRDReconstructor::StreamLevel() > 0) {
 	    cstream << "Tracks"
 		    << "EventNrInFile="  << eventNrInFile
@@ -2431,7 +2430,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 
 	if (AliTRDReconstructor::StreamLevel() > 0) {
 	  cstream << "Seeds2"
-		  << "Iter="      << iter
+		  << "Iter="      << jter
 		  << "Track.="    << track
 		  << "Like="      << seedquality[index]
 		  << "LikeF="     << seedquality2[index]
@@ -2457,7 +2456,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 
       } // Loop: iseed
 
-    } // Loop: iter
+    } // Loop: jter
 
   } // End of loop over sectors
 
@@ -3502,7 +3501,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
     //
     // Update best hypothesy if better chi2 according tracklet position and angle
     //
-    Double_t sy2 = smean[iter]  + track->GetSigmaY2();
+             sy2 = smean[iter]  + track->GetSigmaY2();
     Double_t sa2 = sangle[iter] + track->GetSigmaSnp2(); // track->fCee;
     Double_t say = track->GetSigmaSnpY();                // track->fCey;
 

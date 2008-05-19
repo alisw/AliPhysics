@@ -185,17 +185,17 @@ void AliTRDqaEnergyDeposit::Exec(Option_t *)
     Double_t pt = paramOut->Pt();
 
     Double_t signal = 0;
-    for(Int_t i=0; i<6; i++)
-      signal += track->GetTRDslice(i, -1);
+    for(Int_t k=0; k<6; ++k)
+      signal += track->GetTRDslice(k, -1);
     signal /= 6;
 
     fSignalPtSum[idx]->Fill(pt, signal);
     
-    for(Int_t i=0; i<AliPID::kSPECIES; i++) {
+    for(Int_t k=0; k<AliPID::kSPECIES; ++k) {
       
-      Double_t lq = track->GetTRDpid(i);
-      fProb[AliPID::kSPECIES*idx+i]->Fill(lq);
-      if (lq > 0.8) fSignalPtType[AliPID::kSPECIES*idx+i]->Fill(pt, signal);
+      Double_t lq = track->GetTRDpid(k);
+      fProb[AliPID::kSPECIES*idx+k]->Fill(lq);
+      if (lq > 0.8) fSignalPtType[AliPID::kSPECIES*idx+k]->Fill(pt, signal);
     }
   }
 

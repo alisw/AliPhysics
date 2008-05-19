@@ -831,8 +831,8 @@ void AliTRDalignment::ReadSurveyReport(AliSurveyObj *so)
   // the right place in the arrays fSurveyX etc.
 
   TObjArray *points = so->GetData();
-  for (int i = 0; i<points->GetEntries(); i++) {
-    AliSurveyPoint *po = (AliSurveyPoint *) points->At(i);
+  for (int ip = 0; ip<points->GetEntries(); ++ip) {
+    AliSurveyPoint *po = (AliSurveyPoint *) points->At(ip);
     TString pna = po->GetPointName();
     Int_t i,j,k,l;
     if (DecodeSurveyPointName(pna,i,j,k,l)) {

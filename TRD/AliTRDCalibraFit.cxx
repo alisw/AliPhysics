@@ -474,9 +474,9 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
     Bool_t something = kTRUE;
     if(!calvect->GetCHEntries(fCountDet)) something = kFALSE;
     if(something){
-      TString name("CH");
-      name += idect;
-      projch  = calvect->ConvertVectorCHHisto(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0)))),(const char *) name);
+      TString tname("CH");
+      tname += idect;
+      projch  = calvect->ConvertVectorCHHisto(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0)))),(const char *) tname);
       projch->SetDirectory(0);
       for (Int_t k = 0; k < calvect->GetNumberBinCharge(); k++) {
         nentries += projch->GetBinContent(k+1);
@@ -662,9 +662,9 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
     Bool_t something = kTRUE;
     if(!calvect->GetPHEntries(fCountDet)) something = kFALSE;
     if(something){
-      TString name("PH");
-      name += idect;
-      projph  = CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPHTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) name)));
+      TString tname("PH");
+      tname += idect;
+      projph  = CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPHTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname)));
       projph->SetDirectory(0);
     }
     //printf("The number of entries for the group %d is %d\n",idect,fEntriesCurrent);
@@ -933,9 +933,9 @@ Bool_t AliTRDCalibraFit::AnalysePRF(AliTRDCalibraVector *calvect)
     Bool_t something = kTRUE;
     if(!calvect->GetPRFEntries(fCountDet)) something = kFALSE;
     if(something){
-      TString name("PRF");
-      name += idect;
-      projprf  = CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) name)));
+      TString tname("PRF");
+      tname += idect;
+      projprf  = CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname)));
       projprf->SetDirectory(0);
     }
     // This detector has not enough statistics or was off
@@ -1028,9 +1028,9 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(AliTRDCalibraVector *calvect)
     Bool_t something = kTRUE;
     if(!calvect->GetPRFEntries(fCountDet)) something = kFALSE;
     if(something){
-      TString name("PRF");
-      name += idect;
-      projprftree  = calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) name);
+      TString tname("PRF");
+      tname += idect;
+      projprftree  = calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname);
       nbins   = projprftree->GetN();
       arrayx  = (Double_t *)projprftree->GetX();
       arraye  = (Double_t *)projprftree->GetEX();
@@ -3806,7 +3806,7 @@ Bool_t AliTRDCalibraFit::FitPRFGausMI(Double_t *arraye, Double_t *arraym, Double
   }
 }
 //_____________________________________________________________________________
-Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_t *arrayme, Int_t nBins, Float_t xMin, Float_t xMax, TVectorD *param, Bool_t kError)
+Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_t *arrayme, Int_t nBins, Float_t xMin, Float_t xMax, TVectorD *param, Bool_t bError)
 {
   //
   // Fit methode for the sigma of the pad response function
@@ -3847,7 +3847,7 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
 	errorm   = 0.0;
 	errorn   = 0.0;
 	error    = 0.0;
-	if(!kError){
+	if(!bError){
 	  if((valueI + 0.01) > 0.0) errorm = TMath::Log((valueI + 0.01)/valueI);
 	  if((valueI - 0.01) > 0.0) errorn = TMath::Log((valueI - 0.01)/valueI);
 	  error = TMath::Max(TMath::Abs(errorm),TMath::Abs(errorn));
@@ -3888,7 +3888,7 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
 	"errorm="<<errorm<<
 	"errorn="<<errorn<<
 	"error="<<error<<
-	"kError="<<kError<<
+	"bError="<<bError<<
 	"\n";  
     }
 
@@ -3942,7 +3942,7 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
   }
 
   if((chi2/(*param)[2]) > 0.1){
-    if(kError){
+    if(bError){
       chi2 = FitGausMI(arraye,arraym,arrayme,nBins,xMin,xMax,param,kFALSE);
     }
     else return -4.0;
