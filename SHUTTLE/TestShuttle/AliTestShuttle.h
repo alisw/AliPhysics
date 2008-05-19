@@ -48,7 +48,7 @@ class AliTestShuttle : public AliShuttleInterface
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
     virtual const char* GetRunType();
     virtual Bool_t GetHLTStatus() {return fHLTStatus;}
-    virtual const char* GetTriggerConfiguration() { return fTriggerConfiguration; } 
+    virtual const char* GetTriggerConfiguration();
     virtual void Log(const char* detector, const char* message);
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);

@@ -648,3 +648,12 @@ void AliTestShuttle::SetShuttleLogDir(const char* logDir)
 	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }
 
+//______________________________________________________________________________________________
+const char* AliTestShuttle::GetTriggerConfiguration()
+{
+	//returns trigger configuration
+	if (fTriggerConfiguration.Length()>0){
+		return fTriggerConfiguration;
+	}
+	return NULL;
+}
