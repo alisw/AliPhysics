@@ -131,7 +131,7 @@ int AliHLTMUONEmptyEventFilterComponent::DoInit(int argc, const char** argv)
 		}
 		
 		HLTError("Unknown option '%s'.", argv[i]);
-		return EINVAL;
+		return -EINVAL;
 	}
 
 	return 0;
@@ -176,7 +176,7 @@ int AliHLTMUONEmptyEventFilterComponent::DoEvent(
 	for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
 	{
 		HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
-			i, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
+			n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
 		);
 
 		if (blocks[n].fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
