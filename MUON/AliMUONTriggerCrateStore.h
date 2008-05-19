@@ -22,6 +22,7 @@ class AliMUONLocalTriggerBoard;
 class AliMUONTriggerCrate;
 class AliMpExMap;
 class TExMapIter;
+class AliMUONCalibrationData;
 
 class AliMUONTriggerCrateStore : public TObject
 {
@@ -40,8 +41,7 @@ public:
   AliMUONLocalTriggerBoard* NextLocalBoard();
   AliMUONLocalTriggerBoard* LocalBoard(Int_t boardNumber) const;
   
-  void ReadFromFile(const char* crateFile = "");
- 
+  void ReadFromFile(AliMUONCalibrationData* calibData);
 
 protected:
   /// Not implemented

@@ -17,15 +17,14 @@
 // $MpId: AliMpTrigger.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
 //-----------------------------------------------------------------------------
-// Class AliMpRegionalTrigger
+// Class AliMUONRegionalTriggerConfig
 // --------------------
-// The class defines the properties of regional trigger crate
+// The class defines the configuration of regional trigger crate
 // Author: Ch. Finck, Subatech Nantes
 //-----------------------------------------------------------------------------
 
-#include "AliMpRegionalTrigger.h"
-#include "AliMpTriggerCrate.h"
-#include "AliMpLocalBoard.h"
+#include "AliMUONRegionalTriggerConfig.h"
+#include "AliMUONTriggerCrateConfig.h"
 #include "AliMpConstants.h"
 #include "AliMpFiles.h"
 #include "AliMpHelper.h"
@@ -39,45 +38,31 @@
 
 
 /// \cond CLASSIMP
-ClassImp(AliMpRegionalTrigger)
+ClassImp(AliMUONRegionalTriggerConfig)
 /// \endcond
 
 
 //______________________________________________________________________________
-AliMpRegionalTrigger::AliMpRegionalTrigger()
+AliMUONRegionalTriggerConfig::AliMUONRegionalTriggerConfig()
   : TObject(),
-    fTriggerCrates(true),
-    fLocalBoards(true)
+    fTriggerCrates(true)
 {
 /// Standard constructor
   
     fTriggerCrates.SetOwner(true);
     fTriggerCrates.SetSize(AliMpConstants::LocalBoardNofChannels());
-
-    fLocalBoards.SetOwner(true);
-    fLocalBoards.SetSize(AliMpConstants::TotalNofLocalBoards()); // included non-notified boards
 }
 
 //______________________________________________________________________________
-AliMpRegionalTrigger::AliMpRegionalTrigger(const AliMpRegionalTrigger& rhs)
+AliMUONRegionalTriggerConfig::AliMUONRegionalTriggerConfig(const AliMUONRegionalTriggerConfig& rhs)
   : TObject(rhs),
-    fTriggerCrates(rhs.fTriggerCrates),
-    fLocalBoards(rhs.fLocalBoards)
+    fTriggerCrates(rhs.fTriggerCrates)
 {
 /// Copy constructor
 }  
 
 //______________________________________________________________________________
-AliMpRegionalTrigger::AliMpRegionalTrigger(TRootIOCtor* /*ioCtor*/)
-  : TObject(),
-    fTriggerCrates(),
-    fLocalBoards()
-{
-/// Constructor for I0
-}
-
-//______________________________________________________________________________
-AliMpRegionalTrigger& AliMpRegionalTrigger::operator=(const AliMpRegionalTrigger& rhs)
+AliMUONRegionalTriggerConfig& AliMUONRegionalTriggerConfig::operator=(const AliMUONRegionalTriggerConfig& rhs)
 {
 /// Assignment operator
 
@@ -89,13 +74,12 @@ AliMpRegionalTrigger& AliMpRegionalTrigger::operator=(const AliMpRegionalTrigger
 
   // assignment operator
   fTriggerCrates = rhs.fTriggerCrates;
-  fLocalBoards = rhs.fLocalBoards;
   
   return *this;
 }  
 
 //______________________________________________________________________________
-AliMpRegionalTrigger::~AliMpRegionalTrigger()
+AliMUONRegionalTriggerConfig::~AliMUONRegionalTriggerConfig()
 {
 /// Destructor
 }
@@ -105,7 +89,7 @@ AliMpRegionalTrigger::~AliMpRegionalTrigger()
 //
 
 //______________________________________________________________________________
-Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
+Int_t AliMUONRegionalTriggerConfig::ReadData(const TString& fileName)
 {
 /// Load the Regional trigger from ASCII data files
 /// and return its instance
@@ -124,14 +108,12 @@ Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
       return kFALSE;
     }
 
-    AliMpLocalBoard* board = 0x0;
-    AliMpTriggerCrate* crate = 0x0;
+    AliMUONTriggerCrateConfig* crate = 0x0;
 
-
-    Int_t localBoardId = 0;
     TArrayI list;
     UShort_t crateId, mask;
-    
+    Int_t mode, coincidence;
+    Int_t localBoardId = 0;
     char line[80];
    
     while (!in.eof())
@@ -143,21 +125,20 @@ Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
       in.getline(line,80);    
       sscanf(line,"%hx",&crateId);
   
-      // skip mode
       in.getline(line,80);
+      sscanf(line,"%d",&mode);
       
-      // skip coincidence
       in.getline(line,80);
+      sscanf(line,"%d",&coincidence);
       
-      // skip mask
       in.getline(line,80);
       sscanf(line,"%hx",&mask);
       
-      crate = (AliMpTriggerCrate*)(fTriggerCrates.GetValue(crateName.Data()));
+      crate = (AliMUONTriggerCrateConfig*)(fTriggerCrates.GetValue(crateName.Data()));
       if (!crate) 
       {
         // cout << "Creating crate: " << crateName.Data() << endl;
-        crate = new AliMpTriggerCrate(crateName.Data(), crateId);
+        crate = new AliMUONTriggerCrateConfig(crateName.Data(), crateId, mask, mode, coincidence);
         fTriggerCrates.Add(crateName.Data(), crate);
       }
       
@@ -169,71 +150,30 @@ Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
       {
         if ( (mask >> i ) & 0x1 )
         {
+          // read local board
           in.getline(line,80);
           sscanf(line,"%02d %s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
-          // cout << "  Creating local board: " << localBoardId << endl;
-          board = new AliMpLocalBoard(localBoardId, localBoardName, slot); 
-          board->SetSwitch(switches);
-          board->SetCrate(crateName);
-          
-          if (localBoardId > AliMpConstants::NofLocalBoards())
-            board->SetNotified(false); // copy cards
-          
           crate->AddLocalBoard(localBoardId);
 
-          // add  list of DEs for local board
-          list.Reset();
+          // skip DEs for local board
           in.getline(line,80);
-          TString tmp(AliMpHelper::Normalize(line));
-          AliMpHelper::DecodeName(tmp,' ',list);
-          for (Int_t i = 0; i < list.GetSize(); ++i) { 
-            if ( list[i] ) board->AddDE(list[i]);
-          }  
 
-          // set copy number and transverse connector
+          // skip copy number and transverse connector
           in.getline(line,80);
-          tmp = AliMpHelper::Normalize(line);
-          AliMpHelper::DecodeName(tmp,' ',list);
-    
-          board->SetInputXfrom(list[0]);
-          board->SetInputXto(list[1]);
-          
-          board->SetInputYfrom(list[2]);
-          board->SetInputYto(list[3]);
-          
-          board->SetTC(list[4]);
-          
-          // add local board into map
-          fLocalBoards.Add(board->GetId(), board);
-        }
+         }
       }
     }
-    return kTRUE;
+    return fTriggerCrates.GetSize();
 }
 
-//______________________________________________________________________________
-AliMpLocalBoard* AliMpRegionalTrigger::FindLocalBoard(Int_t localBoardId, 
-                                                      Bool_t warn) const {
-    /// Return bus patch with given Id
-
-    AliMpLocalBoard* localBoard
-      = (AliMpLocalBoard*) fLocalBoards.GetValue(localBoardId);
-
-    if ( ! localBoard && warn ) {
-        AliErrorStream()
-        << "Local board with Id = " << localBoardId << " not defined." << endl;
-    }
-
-    return localBoard;
-}
 
 //______________________________________________________________________________
-AliMpTriggerCrate* AliMpRegionalTrigger::FindTriggerCrate(TString name, 
+AliMUONTriggerCrateConfig* AliMUONRegionalTriggerConfig::FindTriggerCrate(TString name, 
                                                           Bool_t warn) const  {
     /// Return trigger crate with given name
 
-    AliMpTriggerCrate* crate
-    = (AliMpTriggerCrate*) fTriggerCrates.GetValue(name.Data());
+    AliMUONTriggerCrateConfig* crate
+    = (AliMUONTriggerCrateConfig*) fTriggerCrates.GetValue(name.Data());
 
     if ( ! crate && warn ) {
         AliErrorStream()
@@ -244,7 +184,7 @@ AliMpTriggerCrate* AliMpRegionalTrigger::FindTriggerCrate(TString name,
 }
 
 //______________________________________________________________________________
-Int_t AliMpRegionalTrigger::GetNofTriggerCrates() const 
+Int_t AliMUONRegionalTriggerConfig::GetNofTriggerCrates() const 
 { 
     /// Return number of trigger crates
 
@@ -252,45 +192,20 @@ Int_t AliMpRegionalTrigger::GetNofTriggerCrates() const
 }
 
 //______________________________________________________________________________
-AliMpTriggerCrate* AliMpRegionalTrigger::GetTriggerCrate(Int_t index) const
+AliMUONTriggerCrateConfig* AliMUONRegionalTriggerConfig::GetTriggerCrate(Int_t index) const
 { 
     /// Return the trigger crates with given index;
 
-    return static_cast<AliMpTriggerCrate*>(fTriggerCrates.GetObject(index)); 
+    return static_cast<AliMUONTriggerCrateConfig*>(fTriggerCrates.GetObject(index)); 
 }
 
 //______________________________________________________________________________
-AliMpTriggerCrate* AliMpRegionalTrigger::GetTriggerCrateFast(Int_t index) const
+AliMUONTriggerCrateConfig* AliMUONRegionalTriggerConfig::GetTriggerCrateFast(Int_t index) const
 { 
     /// Return the trigger crates with given index;
     /// the index is not checked as we use the fast method in AliMpExMap.
 
-    return static_cast<AliMpTriggerCrate*>(fTriggerCrates.GetObjectFast(index)); 
-}
-
-//______________________________________________________________________________
-Int_t AliMpRegionalTrigger::GetNofLocalBoards() const
-{ 
-    /// Return number of local boards
-    
-    return fLocalBoards.GetSize(); 
-}
-
-//______________________________________________________________________________
-AliMpLocalBoard* AliMpRegionalTrigger::GetLocalBoard(Int_t index) const
-{ 
-    /// Return local board with given index;
-    
-    return static_cast<AliMpLocalBoard*>(fLocalBoards.GetObject(index)); 
-}
-
-//______________________________________________________________________________
-AliMpLocalBoard* AliMpRegionalTrigger::GetLocalBoardFast(Int_t index) const
-{ 
-    /// Return local board with given index;
-    /// the index is not checked as we use the fast method in AliMpExMap.
-    
-    return static_cast<AliMpLocalBoard*>(fLocalBoards.GetObjectFast(index)); 
+    return static_cast<AliMUONTriggerCrateConfig*>(fTriggerCrates.GetObjectFast(index)); 
 }
 
 

@@ -46,6 +46,10 @@ public:
                                        Bool_t addNoise=kFALSE,
                                        Bool_t noiseOnly=kFALSE);
   
+         /// Set calibration data
+  void setCalibrationData(AliMUONCalibrationData* calibrationData) 
+                          {fCalibrationData = calibrationData;}
+  
 private:
   /// Not implemented
   AliMUONDigitizerV3(const AliMUONDigitizerV3& other);
@@ -83,7 +87,7 @@ private:
   AliMUONVTriggerStore* fTriggerStore; //!< trigger objects
   AliMUONVDigitStore* fDigitStore; //!< temporary digits
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
-  
+
   ClassDef(AliMUONDigitizerV3,7) // MUON Digitizer V3-5
 };
 

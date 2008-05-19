@@ -17,85 +17,51 @@
 // $MpId: AliMpTrigger.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
 //-----------------------------------------------------------------------------
-// Class AliMpTriggerCrate
+// Class AliMUONTriggerCrateConfig
 // --------------------
-// The class defines the properties of trigger crate
+// The class defines the configuration of trigger crate
 // Author: Ch. Finck, Subatech Nantes
 //-----------------------------------------------------------------------------
 
-#include "AliMpTriggerCrate.h"
+#include "AliMUONTriggerCrateConfig.h"
 
 #include "AliLog.h"
 
 #include <Riostream.h>
 
 /// \cond CLASSIMP
-ClassImp(AliMpTriggerCrate)
+ClassImp(AliMUONTriggerCrateConfig)
 /// \endcond
 
 
-//______________________________________________________________________________
-TString AliMpTriggerCrate::GenerateName(Int_t crateId, Int_t ddlId, Int_t nofDDLs)
-{
-/// Generate name
-
-  TString name;
-
-  if (crateId < 2)
-    name = Form("%d", crateId+1);
-  
-  if (crateId == 2)
-      name = "2-3";
-  
-  if (crateId > 2)
-      name = Form("%d", crateId);
-  
-  if (crateId > 7)
-    printf("crateId index too large\n");
- 
-  if (ddlId == nofDDLs)
-      name.Append("R");
-  else 
-      name.Append("L"); 
-
-  return name;
-}  
- 
-
-//______________________________________________________________________________
-AliMpTriggerCrate::AliMpTriggerCrate(const Char_t* name, Int_t ddlId)
-  : TNamed(name, "mapping trigger crate"),
+ //______________________________________________________________________________
+AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig()
+  : TNamed("Trigger Crate","configuration trigger crate"),
     fId(0),
-    fDdlId(ddlId),
+    fMask(0),
+    fMode(0),
+    fCoinc(0),
     fLocalBoard(false)
- 
-{
-/// Standard constructor
-}
-
-//______________________________________________________________________________
-AliMpTriggerCrate::AliMpTriggerCrate(const Char_t* name, UShort_t id)
-  : TNamed(name, "mapping trigger crate"),
-    fId(id),
-    fDdlId(0),
-    fLocalBoard(false)
- 
 {
 /// Standard constructor for Shuttle + DA
 }
 
-//______________________________________________________________________________
-AliMpTriggerCrate::AliMpTriggerCrate(TRootIOCtor* /*ioCtor*/)
-  : TNamed(),
-    fId(),
-    fDdlId(),
-    fLocalBoard()
+
+ //______________________________________________________________________________
+AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig(const Char_t* name, UShort_t id, UShort_t mask, UShort_t mode, UShort_t coinc)
+  : TNamed(name, "configuration trigger crate"),
+    fId(id),
+    fMask(mask),
+    fMode(mode),
+    fCoinc(coinc),
+    fLocalBoard(false)
 {
-/// Root IO constructor
+/// Standard constructor for Shuttle + DA
 }
 
+
 //______________________________________________________________________________
-AliMpTriggerCrate::~AliMpTriggerCrate()
+AliMUONTriggerCrateConfig::~AliMUONTriggerCrateConfig()
 {
 /// Destructor
 }
@@ -105,7 +71,7 @@ AliMpTriggerCrate::~AliMpTriggerCrate()
 //
 
 //______________________________________________________________________________
-Bool_t AliMpTriggerCrate::AddLocalBoard(Int_t localBoardId)
+Bool_t AliMUONTriggerCrateConfig::AddLocalBoard(Int_t localBoardId)
 {
 /// Add detection element with given detElemId.
 /// Return true if the detection element was added
@@ -123,7 +89,7 @@ Bool_t AliMpTriggerCrate::AddLocalBoard(Int_t localBoardId)
 
 
 //______________________________________________________________________________
-Int_t AliMpTriggerCrate::GetNofLocalBoards() const
+Int_t AliMUONTriggerCrateConfig::GetNofLocalBoards() const
 {  
 /// Return the number of local board in this crate
 
@@ -131,7 +97,7 @@ Int_t AliMpTriggerCrate::GetNofLocalBoards() const
 }
 
 //______________________________________________________________________________
-Int_t  AliMpTriggerCrate::GetLocalBoardId(Int_t index) const
+Int_t  AliMUONTriggerCrateConfig::GetLocalBoardId(Int_t index) const
 {  
 /// Return the local board by index (in loop)
 
@@ -142,7 +108,7 @@ Int_t  AliMpTriggerCrate::GetLocalBoardId(Int_t index) const
 }
 
 //______________________________________________________________________________
-Bool_t  AliMpTriggerCrate::HasLocalBoard(Int_t localBoardId) const
+Bool_t  AliMUONTriggerCrateConfig::HasLocalBoard(Int_t localBoardId) const
 {  
 /// Return true if crate has local boardwith given localBoardId
 

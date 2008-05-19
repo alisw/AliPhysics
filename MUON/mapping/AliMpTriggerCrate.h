@@ -21,7 +21,7 @@ class AliMpTriggerCrate : public  TNamed {
 
   public:
     AliMpTriggerCrate(const Char_t* name, Int_t ddlId);
-    AliMpTriggerCrate(const Char_t* name, UShort_t Id, UShort_t mask, UShort_t mode, UShort_t coinc);
+    AliMpTriggerCrate(const Char_t* name, UShort_t Id);
     AliMpTriggerCrate(TRootIOCtor* /*ioCtor*/);
     virtual ~AliMpTriggerCrate();
     
@@ -33,9 +33,6 @@ class AliMpTriggerCrate : public  TNamed {
     /// get methods
     Int_t  GetDdlId() const;
     UShort_t GetId()  const;
-    UShort_t GetMask() const;
-    UShort_t GetMode() const;
-    UShort_t GetCoinc() const;
     Int_t  GetNofLocalBoards() const;
     Int_t  GetLocalBoardId(Int_t index) const;
     Bool_t HasLocalBoard(Int_t localBoardId) const;
@@ -55,11 +52,8 @@ class AliMpTriggerCrate : public  TNamed {
     UShort_t     fId;         ///< crate number
     Int_t        fDdlId;      ///< DDL to which this bus patch is connected
     AliMpArrayI  fLocalBoard; ///< local board connected to this crate
-    UShort_t     fMask;       ///< regional mask
-    UShort_t     fMode;       ///< mode operating for crate
-    UShort_t     fCoinc;      ///< coincidence mode for crate
 
-  ClassDef(AliMpTriggerCrate,2)  // The class collectiong electronics properties of DDL
+  ClassDef(AliMpTriggerCrate,3)  // The class collectiong electronics properties of DDL
 };
 
 // inline functions
@@ -73,17 +67,6 @@ inline Int_t AliMpTriggerCrate::GetDdlId() const
 inline UShort_t AliMpTriggerCrate::GetId() const
 {  return fId; }
 
-/// Return mask
-inline UShort_t AliMpTriggerCrate::GetMask() const
-{  return fMask; }
-
-/// Return Mode
-inline UShort_t AliMpTriggerCrate::GetMode() const
-{  return fMode; }
-
-/// Return coinc
-inline UShort_t AliMpTriggerCrate::GetCoinc() const
-{  return fCoinc; }
 
 #endif //ALI_MP_TRIGGER__CRATE_H
 

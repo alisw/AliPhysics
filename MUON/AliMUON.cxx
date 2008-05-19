@@ -49,6 +49,7 @@
 
 //#include "AliHeader.h"
 #include "AliLoader.h"
+#include "AliCDBManager.h"
 #include "AliRunDigitizer.h"
 #include "AliMC.h"
 #include "AliRun.h"
@@ -68,6 +69,7 @@
 #include "AliMUONSDigitizerV2.h"
 #include "AliMUONDigitizerV3.h"
 #include "AliMUONDigitMaker.h"
+#include "AliMUONCalibrationData.h"
 
 #include "AliMUONSt1GeometryBuilderV2.h"
 #include "AliMUONSt2GeometryBuilderV2.h"
@@ -122,7 +124,8 @@ AliMUON::AliMUON()
     fRawWriter(0x0),
     fDigitMaker(0x0),
     fHitStore(0x0),
-  fDigitStoreConcreteClassName()
+    fDigitStoreConcreteClassName(),
+    fCalibrationData(0x0)
 {
 /// Default Constructor
     
@@ -156,13 +159,15 @@ AliMUON::AliMUON(const char *name, const char* title)
     fRawWriter(0x0),
     fDigitMaker(new AliMUONDigitMaker),
     fHitStore(0x0),
-  fDigitStoreConcreteClassName("AliMUONDigitStoreV2S")
+    fDigitStoreConcreteClassName("AliMUONDigitStoreV2S"),
+    fCalibrationData()
+
 {
-/// Standard constructor  
+  /// Standard constructor  
   
   AliDebug(1,Form("ctor this=%p",this));
   fIshunt =  0;
-
+  
   //PH SetMarkerColor(kRed);//
     
   // Geometry builder
@@ -171,11 +176,11 @@ AliMUON::AliMUON(const char *name, const char* title)
   // Common geometry definitions
   fGeometryBuilder
     ->AddBuilder(new AliMUONCommonGeometryBuilder(this));
-
+  
   // By default, add also all the needed geometry builders.
   // If you want to change this from outside, please use ResetGeometryBuilder
   // method, followed by AddGeometryBuilder ones.
-
+  
   AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(this));
   AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(this));
   AddGeometryBuilder(new AliMUONSlatGeometryBuilder(this));
@@ -202,7 +207,10 @@ AliMUON::AliMUON(const char *name, const char* title)
 	}
       } // Chamber stCH (0, 1) in 
     }     // Station st (0...)
-
+  
+  Int_t runnumber = AliCDBManager::Instance()->GetRun();
+  
+  fCalibrationData = new AliMUONCalibrationData(runnumber);
 }
 
 //____________________________________________________________________
@@ -216,6 +224,7 @@ AliMUON::~AliMUON()
   delete fRawWriter;
   delete fDigitMaker;
   delete fHitStore;
+  delete fCalibrationData;
 }
 
 //_____________________________________________________________________________
@@ -455,7 +464,9 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 {
 /// Return digitizer
   
-  return new AliMUONDigitizerV3(manager, fDigitizerWithNoise);
+  AliMUONDigitizerV3* digitizer = new AliMUONDigitizerV3(manager, fDigitizerWithNoise);
+  digitizer->setCalibrationData(fCalibrationData);
+  return digitizer;
 }
 
 //_____________________________________________________________________
@@ -529,7 +540,6 @@ void AliMUON::Digits2Raw()
 Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
 {
 /// Convert  raw data to SDigit
-/// Only for tracking for the moment (ChF) 
 
   fLoader->LoadDigits("READ");
   if (!fLoader->TreeS()) fLoader->MakeSDigitsContainer();

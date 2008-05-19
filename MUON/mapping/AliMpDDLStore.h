@@ -19,7 +19,6 @@
 
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"
-#include "AliMpGlobalCrate.h"
 #include "AliMpRegionalTrigger.h"
 #include <TObject.h>
 #include <TObjArray.h>
@@ -54,8 +53,6 @@ class AliMpDDLStore : public  TObject {
 
     /// Return regional trigger object
     const AliMpRegionalTrigger*  GetRegionalTrigger() const { return &fRegionalTrigger; }
-    /// Return global crate object
-    const AliMpGlobalCrate*  GetGlobalCrate() const { return &fGlobalCrate; }
     
     Int_t  GetDEfromBus(Int_t busPatchId) const;
     Int_t  GetDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const;
@@ -115,10 +112,9 @@ class AliMpDDLStore : public  TObject {
     AliMpExMap    fBusPatches;     ///< The map of bus patches per their IDs
     TArrayI       fManuList12[16]; ///< Arrays of 1st manu in bus
     TArrayI       fManuBridge2[16]; ///< Arrays of manu number before the bridge in buspatch
-    AliMpGlobalCrate     fGlobalCrate;     ///< Global Crate Object 
     AliMpRegionalTrigger fRegionalTrigger; ///< Regional trigger
         
-  ClassDef(AliMpDDLStore,4)  // The manager class for definition of detection element types
+  ClassDef(AliMpDDLStore,5)  // The manager class for definition of detection element types
 };
 
 #endif //ALI_MP_DDL_STORE_H

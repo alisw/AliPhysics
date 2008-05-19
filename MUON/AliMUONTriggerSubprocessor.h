@@ -17,8 +17,10 @@
 #endif
 
 class AliMUONTriggerLut;
-class AliMUONVStore;
+class AliMUONRegionalTriggerConfig;
+class AliMUONGlobalCrateConfig;
 class AliMUONVCalibParam;
+class AliMUONVStore;
 class TString;
 
 class AliMUONTriggerSubprocessor : public AliMUONVSubprocessor
@@ -48,12 +50,12 @@ private:
                         Bool_t& lutFile) const;
   
 private:
-  AliMUONVStore* fRegionalMasks; //!< regional masks
+  AliMUONRegionalTriggerConfig* fRegionalConfig; //!< regional config
   AliMUONVStore* fLocalMasks; //!< local masks
-  AliMUONVCalibParam* fGlobalMasks; //!< global masks
+  AliMUONGlobalCrateConfig*     fGlobalConfig;   //!< global config
   AliMUONTriggerLut* fLUT; //!< look-up table(s)
   
-  ClassDef(AliMUONTriggerSubprocessor,1) // A shuttle preprocessor for MUON TRK masks
+  ClassDef(AliMUONTriggerSubprocessor,2) // A shuttle preprocessor for MUON TRK masks
 };
 
 #endif

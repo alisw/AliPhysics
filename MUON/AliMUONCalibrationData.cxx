@@ -26,6 +26,9 @@
 #include "AliMUONVStore.h"
 #include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONRegionalTriggerConfig.h"
+
 #include <Riostream.h>
 #include <TClass.h>
 #include <TMap.h>
@@ -60,8 +63,8 @@ fGains(0x0),
 fPedestals(0x0),
 fHV(0x0),
 fLocalTriggerBoardMasks(0x0),
-fRegionalTriggerBoardMasks(0x0),
-fGlobalTriggerBoardMasks(0x0),
+fRegionalTriggerConfig(0x0),
+fGlobalTriggerCrateConfig(0x0),
 fTriggerLut(0x0),
 fTriggerEfficiency(0x0),
 fCapacitances(0x0),
@@ -81,8 +84,8 @@ fNeighbours(0x0)
     Pedestals();
     HV();
     LocalTriggerBoardMasks(0);
-    RegionalTriggerBoardMasks(0);
-    GlobalTriggerBoardMasks();
+    RegionalTriggerConfig();
+    GlobalTriggerCrateConfig();
     TriggerLut();
     TriggerEfficiency();
     Capacitances();
@@ -128,13 +131,15 @@ AliMUONCalibrationData::CreateGains(Int_t runNumber)
 }
 
 //_____________________________________________________________________________
-AliMUONVCalibParam*
-AliMUONCalibrationData::CreateGlobalTriggerBoardMasks(Int_t runNumber)
+AliMUONGlobalCrateConfig*
+AliMUONCalibrationData::CreateGlobalTriggerCrateConfig(Int_t runNumber)
 {
-  /// Create the internal store for GlobalTriggerBoardMasks from OCDB
+  /// Create the internal store for GlobalTriggerCrateConfig from OCDB
   
-  return dynamic_cast<AliMUONVCalibParam*>(CreateObject(runNumber,"MUON/Calib/GlobalTriggerBoardMasks"));
+  return dynamic_cast<AliMUONGlobalCrateConfig*>(CreateObject(runNumber,"MUON/Calib/GlobalTriggerCrateConfig"));
 }
+
+
 
 //_____________________________________________________________________________
 TMap*
@@ -205,13 +210,14 @@ AliMUONCalibrationData::CreatePedestals(Int_t runNumber)
   return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Pedestals"));
 }
 
+
 //_____________________________________________________________________________
-AliMUONVStore*
-AliMUONCalibrationData::CreateRegionalTriggerBoardMasks(Int_t runNumber)
+AliMUONRegionalTriggerConfig*
+AliMUONCalibrationData::CreateRegionalTriggerConfig(Int_t runNumber)
 {
-  /// Create the internal store for RegionalTriggerBoardMasks from OCDB
+  /// Create the internal store for RegionalTriggerConfig from OCDB
   
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/RegionalTriggerBoardMasks"));
+  return dynamic_cast<AliMUONRegionalTriggerConfig*>(CreateObject(runNumber,"MUON/Calib/RegionalTriggerConfig"));
 }
 
 //_____________________________________________________________________________
@@ -262,17 +268,18 @@ AliMUONCalibrationData::Gains(Int_t detElemId, Int_t manuId) const
 }
 
 //_____________________________________________________________________________
-AliMUONVCalibParam* 
-AliMUONCalibrationData::GlobalTriggerBoardMasks() const
+AliMUONGlobalCrateConfig* 
+AliMUONCalibrationData::GlobalTriggerCrateConfig() const
 {
-  /// Return the masks for the global trigger board.
+  /// Return the config for the global trigger board.
   
-  if (!fGlobalTriggerBoardMasks)
+  if (!fGlobalTriggerCrateConfig)
   {
-    fGlobalTriggerBoardMasks = CreateGlobalTriggerBoardMasks(fRunNumber);
+    fGlobalTriggerCrateConfig = CreateGlobalTriggerCrateConfig(fRunNumber);
   }
-  return fGlobalTriggerBoardMasks;
+  return fGlobalTriggerCrateConfig;
 }
+
 
 //_____________________________________________________________________________
 TMap*
@@ -363,36 +370,26 @@ AliMUONCalibrationData::Print(Option_t*) const
   << " fPedestals=" << fPedestals
   << " fHV=" << fHV
   << " fLocalTriggerBoardMasks=" << fLocalTriggerBoardMasks
-  << " fRegionalTriggerBoardMasks=" << fRegionalTriggerBoardMasks
-  << " fGlobalTriggerBoardMasks=" << fGlobalTriggerBoardMasks
+  << " fRegionalTriggerConfig=" << fRegionalTriggerConfig
+  << " fGlobalTriggerCrateConfig=" << fGlobalTriggerCrateConfig
   << " fTriggerLut=" << fTriggerLut
   << endl;
 }
 
-//_____________________________________________________________________________
-AliMUONVCalibParam* 
-AliMUONCalibrationData::RegionalTriggerBoardMasks(Int_t regionalBoardNumber) const
-{
-/// Return the masks for a given trigger regional board.
 
-  if ( !fRegionalTriggerBoardMasks ) 
-  {
-    fRegionalTriggerBoardMasks = CreateRegionalTriggerBoardMasks(fRunNumber);
-  }
+//_____________________________________________________________________________
+AliMUONRegionalTriggerConfig* 
+AliMUONCalibrationData::RegionalTriggerConfig() const
+{
+  /// Return the config for the regional trigger board.
   
-  if ( fRegionalTriggerBoardMasks ) 
+  if (!fRegionalTriggerConfig)
   {
-    AliMUONVCalibParam* rtbm = 
-      static_cast<AliMUONVCalibParam*>(fRegionalTriggerBoardMasks->FindObject(regionalBoardNumber));
-    
-    if (!rtbm)
-    {
-      AliError(Form("Could not get mask for regionalBoard index=%d",regionalBoardNumber));
+    fRegionalTriggerConfig = CreateRegionalTriggerConfig(fRunNumber);
     }
-    return rtbm;  
-  }
-  return 0x0;
+  return fRegionalTriggerConfig;
 }
+
 
 //_____________________________________________________________________________
 AliMUONTriggerEfficiencyCells*
@@ -435,10 +432,11 @@ AliMUONCalibrationData::Reset()
   fHV = 0x0;
   delete fLocalTriggerBoardMasks;
   fLocalTriggerBoardMasks = 0x0;
-  delete fRegionalTriggerBoardMasks;
-  fRegionalTriggerBoardMasks = 0x0;
-  delete fGlobalTriggerBoardMasks;
-  fGlobalTriggerBoardMasks = 0x0;
+  delete fRegionalTriggerConfig;
+  fRegionalTriggerConfig = 0x0;
+  delete fGlobalTriggerCrateConfig;
+  fGlobalTriggerCrateConfig = 0x0;
+  
   delete fTriggerLut;
   fTriggerLut = 0x0;
   delete fTriggerEfficiency;

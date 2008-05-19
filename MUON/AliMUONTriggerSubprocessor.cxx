@@ -20,6 +20,8 @@
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 #include "AliMUON1DArray.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONPreprocessor.h"
 #include "AliMUONTriggerIO.h"
@@ -47,9 +49,9 @@ AliMUONTriggerSubprocessor::AliMUONTriggerSubprocessor(AliMUONPreprocessor* mast
 : AliMUONVSubprocessor(master,
                        "Triggers",
                        "Upload MUON Trigger masks and LUT to OCDB"),
-fRegionalMasks(0x0),
+fRegionalConfig(0x0),
 fLocalMasks(0x0),
-fGlobalMasks(0x0),
+fGlobalConfig(0x0),
 fLUT(0x0)
 {
   /// default ctor
@@ -59,9 +61,9 @@ fLUT(0x0)
 AliMUONTriggerSubprocessor::~AliMUONTriggerSubprocessor()
 {
   /// dtor
-  delete fRegionalMasks;
+  delete fRegionalConfig;
   delete fLocalMasks;
-  delete fGlobalMasks;
+  delete fGlobalConfig;
   delete fLUT;
 }
 
@@ -126,9 +128,9 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   WhichFilesToRead(GetFileName("EXPORTED").Data(),
                    globalFile,regionalFile,localFile,lutFile);
   
-  delete fRegionalMasks; fRegionalMasks = 0x0;
+  delete fRegionalConfig; fRegionalConfig = 0x0;
   delete fLocalMasks; fLocalMasks = 0x0;
-  delete fGlobalMasks; fGlobalMasks = 0x0;
+  delete fGlobalConfig; fGlobalConfig = 0x0;
   delete fLUT; fLUT = 0x0;
   
   Master()->Log(Form("Reading trigger masks for Run %d startTime %ld endTime %ld",
@@ -147,26 +149,26 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
     return;
   }
   
-  if ( regionalFile ) fRegionalMasks = new AliMUON1DArray(16);  
+  if ( regionalFile ) fRegionalConfig = new AliMUONRegionalTriggerConfig();
   if ( localFile ) fLocalMasks = new AliMUON1DArray(AliMpConstants::TotalNofLocalBoards()+1);
-  if ( globalFile ) fGlobalMasks = new AliMUONCalibParamNI(1,16,1,0,0);
+  if ( globalFile )   fGlobalConfig   = new AliMUONGlobalCrateConfig();
 
   AliMUONTriggerIO tio;
   
-  Bool_t ok = tio.ReadMasks(GetFileName("LOCAL").Data(),
+  Bool_t ok = tio.ReadConfig(GetFileName("LOCAL").Data(),
                             GetFileName("REGIONAL").Data(),
                             GetFileName("GLOBAL").Data(),
-                            fLocalMasks,fRegionalMasks,fGlobalMasks);
+                            fLocalMasks,fRegionalConfig,fGlobalConfig);
   
   if (!ok)
   {
     Master()->Log("ERROR : ReadMasks failed");
     delete fLocalMasks;
-    delete fRegionalMasks;
-    delete fGlobalMasks;
+    delete fRegionalConfig;
+    delete fGlobalConfig;
     fLocalMasks = 0x0;
-    fRegionalMasks = 0x0;
-    fGlobalMasks = 0x0;
+    fRegionalConfig = 0x0;
+    fGlobalConfig = 0x0;
   }
 
   if ( lutFile ) 
@@ -193,15 +195,15 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
 {
   /// Store the trigger masks into the CDB
   
-  if ( !fGlobalMasks && !fRegionalMasks && !fLocalMasks && !fLUT )
+  if ( !fGlobalConfig && !fRegionalConfig && !fLocalMasks && !fLUT )
   {
     // nothing to do
     return 0;
   }
   
   Master()->Log(Form("N global = %d N regional = %d N local %d N lut %d",                     
-                     (fGlobalMasks ? 1 : 0 ),
-                     (fRegionalMasks ? fRegionalMasks->GetSize() : 0 ),
+                     (fGlobalConfig ? 1 : 0 ),
+                     (fRegionalConfig ? fRegionalConfig->GetNofTriggerCrates() : 0 ),
                      (fLocalMasks ? fLocalMasks->GetSize() : 0 ),
                      (fLUT ? 1 : 0)));
   
@@ -217,15 +219,15 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
   Bool_t result3(kTRUE);
   Bool_t result4(kTRUE);
   
-  if ( fGlobalMasks ) 
+  if ( fGlobalConfig ) 
   {
-    result1 = Master()->Store("Calib", "GlobalTriggerBoardMasks", fGlobalMasks, 
+    result1 = Master()->Store("Calib", "GlobalTriggerBoardMasks", fGlobalConfig, 
                               &metaData, 0, validToInfinity);
   }
   
-  if ( fRegionalMasks && fRegionalMasks->GetSize() > 0 )
+  if ( fRegionalConfig && fRegionalConfig->GetNofTriggerCrates() > 0 )
   {
-    result2 = Master()->Store("Calib", "RegionalTriggerBoardMasks", fRegionalMasks, 
+    result2 = Master()->Store("Calib", "RegionalTriggerBoardMasks", fRegionalConfig, 
                               &metaData, 0, validToInfinity);
   }
   

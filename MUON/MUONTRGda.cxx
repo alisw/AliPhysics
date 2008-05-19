@@ -50,6 +50,9 @@ extern "C" {
 #include "AliMUONCalibParamNI.h"
 #include "AliMUON1DArray.h"
 #include "AliMUONTriggerIO.h"
+#include "AliMUONRegionalTriggerConfig.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONTriggerCrateConfig.h"
 
 //ROOT
 #include "TString.h"
@@ -65,9 +68,9 @@ extern "C" {
 #include "TArrayS.h"
 
 // global variables
-const Int_t gkNLocalBoard = AliMpConstants::NofLocalBoards();
+const Int_t gkNLocalBoard = AliMpConstants::TotalNofLocalBoards();
 
-TString gCommand("ped");
+TString gCommand("");
 
 TString gCurrentFileName("MtgCurrent.dat");
 TString gLastCurrentFileName("MtgLastCurrent.dat");
@@ -101,12 +104,13 @@ Int_t  gNEvents = 0;
 Int_t gPrintLevel = 0;
 
 AliMUONVStore* gLocalMasks    = 0x0;
-AliMUONVStore* gRegionalMasks = 0x0;
-AliMUONVCalibParam* gGlobalMasks = 0x0;
+AliMUONRegionalTriggerConfig* gRegionalMasks = 0x0;
+AliMUONGlobalCrateConfig* gGlobalMasks = 0x0;    
 
-AliMUONTriggerIO gTriggerIO;
 
-AliMUONVStore* gPatternStore =  new AliMUON1DArray(gkNLocalBoard+9);
+ AliMUONTriggerIO gTriggerIO;
+
+AliMUONVStore* gPatternStore =  new AliMUON1DArray(gkNLocalBoard);
 
 Char_t gHistoFileName[256];
 
@@ -275,16 +279,31 @@ Bool_t ExportFiles()
 {
 
     // Export files to FES
-    // Export files to DB not yet done, waiting for a version > 1.2 of daqDAlib
     // env variables have to be set (suppose by ECS ?)
     // setenv DATE_FES_PATH
     // setenv DATE_RUN_NUMBER
     // setenv DATE_ROLE_NAME
     // setenv DATE_DETECTOR_CODE
 
+     // Export files into the database
+     // setenv DATE_DETECTOR_CODE MTR
+     // setenv DAQDALIB_PATH      $ALICE/daqDAlib
+     // setenv DATE_DB_MYSQL_USER det_MTR
+     // setenv DATE_DB_MYSQL_PWD  MTR123
+     // setenv DATE_DB_MYSQL_HOST aldaqdb.cern.ch
+     // setenv DATE_DB_MYSQL_DB   $DATE_CONFIG
+     // set PATH=$PATH:${DAQDALIB_PATH}
+  
+  
     // to be sure that env variable is set
-    gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-
+    // gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
+    gSystem->Setenv("DAQDALIB_PATH", "$ALICE/daqDAlib");
+    gSystem->Setenv("DATE_DETECTOR_CODE", "MTR");
+    gSystem->Setenv("DATE_DB_MYSQL_USER", "det_MTR");
+    gSystem->Setenv("DATE_DB_MYSQL_PWD", "MTR123");
+    gSystem->Setenv("DATE_DB_MYSQL_HOST", "aldaqdb.cern.ch");
+    gSystem->Setenv("DATE_DB_MYSQL_DB", "$DATE_CONFIG");
+    
     // update files
     Int_t status = 0;
 
@@ -298,10 +317,10 @@ Bool_t ExportFiles()
     if (!out.good()) {
 	printf("Failed to create file: %s\n",file.Data());
 	return false;
-    }
+    }      file = gGlobalFileName.Data();
 
     if (gGlobalFileLastVersion != gGlobalFileVersion) {
-      file = gGlobalFileName.Data();
+
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
 	printf("Failed to export file: %s\n",gGlobalFileName.Data());
@@ -314,11 +333,19 @@ Bool_t ExportFiles()
     if (gLocalMaskFileLastVersion != gLocalMaskFileVersion) {
       modified = true;
       file = gLocalMaskFileName;
+      // export to FES
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
 	printf("Failed to export file: %s\n",gLocalMaskFileName.Data());
 	return false;
       }
+      // export to DB
+      status = daqDA_DB_storeFile(file.Data(), file.Data());
+      if (status) {
+        printf("Failed to export file to DB: %s\n",gLocalMaskFileName.Data());
+        return false;
+      }
+      
       if(gPrintLevel) printf("Export file: %s\n",gLocalMaskFileName.Data());
       out << gLocalMaskFileName.Data() << endl;
     }
@@ -370,8 +397,9 @@ Bool_t ImportFiles()
     // instead of the database. The usual environment variables are not needed.
 
     // to be sure that env variable is set
-    gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
-
+   // gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+  gSystem->Setenv("DAQDALIB_PATH", "$ALICE/daqDAlib");
+    
     Int_t status = 0;
 
     status = daqDA_DB_getFile(gCurrentFileName.Data(), gCurrentFileName.Data());
@@ -414,15 +442,15 @@ void ReadMaskFiles()
 {
     // read mask files
     gLocalMasks    = new AliMUON1DArray(gkNLocalBoard+9);
-    gRegionalMasks = new AliMUON1DArray(16);
-    gGlobalMasks   = new AliMUONCalibParamNI(1,2,1,0,0);
+    gRegionalMasks = new AliMUONRegionalTriggerConfig();
+    gGlobalMasks   = new AliMUONGlobalCrateConfig();
 
     TString localFile    = gLocalMaskFileName;
     TString regionalFile = gRegionalFileName;
     TString globalFile   = gGlobalFileName;
 
-    gTriggerIO.ReadMasks(localFile.Data(), regionalFile.Data(), globalFile.Data(),
-			 gLocalMasks, gRegionalMasks, gGlobalMasks, false);			
+    gTriggerIO.ReadConfig(localFile.Data(), regionalFile.Data(), globalFile.Data(),
+			 gLocalMasks, gRegionalMasks, gGlobalMasks);			
 }
 //__________
 void MakePattern(Int_t localBoardId, TArrayS& xPattern,  TArrayS& yPattern)
@@ -578,7 +606,7 @@ void MakePatternStore(Bool_t pedestal = true)
       // write last current file
       WriteLastCurrentFile();
 
-      gTriggerIO.WriteMasks(gLocalMaskFileName, gRegionalFileName, gGlobalFileName, gLocalMasks, gRegionalMasks, gGlobalMasks);
+      gTriggerIO.WriteConfig(gLocalMaskFileName, gRegionalFileName, gGlobalFileName, gLocalMasks, gRegionalMasks, gGlobalMasks);
     }
 }
 
@@ -595,6 +623,7 @@ int main(Int_t argc, Char_t **argv)
     Int_t skipEvents = 0;
     Int_t maxEvents  = 1000000;
     Char_t inputFile[256];
+    strcpy(inputFile, "");
     TString flatOutputFile;
 
 // option handler
@@ -805,18 +834,17 @@ int main(Int_t argc, Char_t **argv)
 	MakePatternStore();
 
     if (gCommand.Contains("cal"))
-      printf("Options %s disabled",  gCommand.Data());
-    //	MakePatternStore(false);
+    	MakePatternStore(false);
 
     if (!ExportFiles())
 	return -1;
 
     timers.Stop();
 
-    cout << "MUONTRKda : Run number                    : " << gRunNumber << endl;
-    cout << "MUONTRKda : Histo file generated          : " << gHistoFileName  << endl;
-    cout << "MUONTRKda : Nb of DATE events     = "         << nDateEvents    << endl;
-    cout << "MUONTRKda : Nb of events used     = "         << gNEvents        << endl;
+    cout << "MUONTRGda : Run number                    : " << gRunNumber << endl;
+    cout << "MUONTRGda : Histo file generated          : " << gHistoFileName  << endl;
+    cout << "MUONTRGda : Nb of DATE events     = "         << nDateEvents    << endl;
+    cout << "MUONTRGda : Nb of events used     = "         << gNEvents        << endl;
 
     printf("Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
@@ -827,3 +855,4 @@ int main(Int_t argc, Char_t **argv)
 
     return status;
 }
+

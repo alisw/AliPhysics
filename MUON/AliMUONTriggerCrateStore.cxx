@@ -20,6 +20,11 @@
 #include "AliMUONTriggerCrate.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRegionalTriggerBoard.h"
+#include "AliMUONRegionalTriggerConfig.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONTriggerCrateConfig.h"
+#include "AliMUONCalibrationData.h"
+#include "AliMUONTriggerLut.h"
 
 #include "AliMpTriggerCrate.h"
 #include "AliMpLocalBoard.h"
@@ -278,24 +283,36 @@ AliMUONTriggerCrateStore::NumberOfLocalBoards() const
 
 //_____________________________________________________________________________
 void
-AliMUONTriggerCrateStore::ReadFromFile(const char* /*file*/) // keep old name for the moment
+AliMUONTriggerCrateStore::ReadFromFile(AliMUONCalibrationData* calibData) 
 {
-    /// create crate and local board objects from mapping (Ch.F)
+  /// create crate and local board objects from mapping & calib (Ch.F)
     fCrates = new AliMpExMap(kTRUE);
     fCrates->SetOwner(kTRUE);
     fLocalBoards = new AliMpExMap(kTRUE);
     fLocalBoards->SetOwner(kFALSE);
   
+  
+   AliMUONTriggerLut* lut = calibData->TriggerLut();
+
+  if (!lut)
+   AliWarning("No valid trigger LUT in CDB");
+  
+  AliMUONRegionalTriggerConfig* regionalConfig = calibData->RegionalTriggerConfig();
+  if (!regionalConfig)
+     AliWarning("No valid regional trigger configuration in CDB");
+  
     TExMapIter itr = AliMpDDLStore::Instance()->GetTriggerCrateItr();
-
+  
     Long_t key, value;
-
+  
     while(itr.Next(key, value))
     {
       AliMpTriggerCrate* crateMapping =  reinterpret_cast<AliMpTriggerCrate*>(value);
-
+    
       TString crateName = crateMapping->GetName();
       AliMUONTriggerCrate *crate = Crate(crateName.Data());
+    
+    AliMUONTriggerCrateConfig* crateConfig =  regionalConfig->FindTriggerCrate(crateName);
 
       if (!crate) 
       {
@@ -307,23 +324,26 @@ AliMUONTriggerCrateStore::ReadFromFile(const char* /*file*/) // keep old name fo
       }   
 	
       for(Int_t iLocal = 0; iLocal < crateMapping->GetNofLocalBoards(); ++iLocal) { 
-
+      
 	Int_t localBoardId = crateMapping->GetLocalBoardId(iLocal);
 	if (!localBoardId) continue; //empty slot, should not happen
 
 	AliMpLocalBoard* localBoardMapping = AliMpDDLStore::Instance()->GetLocalBoard(localBoardId);
 	AliDebug(3, Form("local name %s id %d\n", localBoardMapping->GetName(), localBoardId));
-
+      
 	Int_t slot = localBoardMapping->GetSlot();
-	AliMUONLocalTriggerBoard *board = 
-	    new AliMUONLocalTriggerBoard(localBoardMapping);
+      AliMUONLocalTriggerBoard *board = new AliMUONLocalTriggerBoard(localBoardMapping);
+      board->SetCoinc44(crateConfig->GetCoinc());
+      board->SetLUT(lut);
 
+      
 	if (localBoardMapping->IsNotified()) {
 	  fLocalBoards->Add(localBoardId, board);
 	}
-
+      
 	crate->AddBoard(board, slot);
-
+      
       } // iLocal
     } // while
 }
+

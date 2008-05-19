@@ -119,7 +119,7 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
 
   AliDebug(1,"dtor");
 
-  delete fCalibrationData;
+ // delete fCalibrationData;
   delete fTriggerProcessor;
   delete fNoiseFunctionTrig;
   delete fTriggerStore;
@@ -697,14 +697,14 @@ AliMUONDigitizerV3::Init()
     return kFALSE;
   }
   
-  Int_t runnumber = AliCDBManager::Instance()->GetRun();
-  
   // Load mapping
   if ( ! AliMpCDB::LoadDDLStore() ) {
     AliFatal("Could not access mapping from OCDB !");
   }
   
-  fCalibrationData = new AliMUONCalibrationData(runnumber);
+  if (!fCalibrationData)
+      AliFatal("Calibration data object not defined");
+
   if ( !fCalibrationData->Pedestals() )
   {
     AliFatal("Could not access pedestals from OCDB !");
@@ -713,6 +713,10 @@ AliMUONDigitizerV3::Init()
   {
     AliFatal("Could not access gains from OCDB !");
   }
+  
+  
+   AliInfo("Using trigger configuration from CDB");
+  
   fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
   
   AliDebug(1, Form("Will %s generate noise-only digits for tracker",

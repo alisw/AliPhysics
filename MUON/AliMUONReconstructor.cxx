@@ -104,7 +104,6 @@
 #include "AliMUONSimpleClusterServer.h"
 #include "AliMUONTracker.h"
 #include "AliMUONTriggerCircuit.h"
-#include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVClusterFinder.h"
 #include "AliMUONVClusterServer.h"
@@ -135,7 +134,6 @@ AliMUONRecoParam* AliMUONReconstructor::fgRecoParam = 0x0; // reconstruction par
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor() : 
 AliReconstructor(),
-fCrateManager(0x0),
 fDigitMaker(0x0),
 fTransformer(new AliMUONGeometryTransformer()),
 fDigitStore(0x0),
@@ -165,7 +163,6 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fDigitMaker;
   delete fDigitStore;
   delete fTransformer;
-  delete fCrateManager;
   delete fTriggerCircuit;
   delete fCalibrationData;
   delete fDigitCalibrator;
@@ -259,17 +256,6 @@ AliMUONReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) 
     AliCodeTimerStop("Fill digits")
     DigitStore()->Clear();
   }
-}
-
-//_____________________________________________________________________________
-AliMUONTriggerCrateStore*
-AliMUONReconstructor::CrateManager() const
-{
-  /// Return (and create if necessary) the trigger crate store
-  if (fCrateManager) return fCrateManager;
-  fCrateManager = new AliMUONTriggerCrateStore;
-  fCrateManager->ReadFromFile();
-  return fCrateManager;
 }
 
 //_____________________________________________________________________________

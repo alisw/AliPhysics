@@ -22,7 +22,6 @@ class AliMUONVTriggerStore;
 
 class AliMUONGeometryTransformer;
 
-class AliMUONTriggerCrateStore;
 class AliMUONTriggerCircuit;
 class TClonesArray;
 class AliMUONVTriggerStore;
@@ -69,7 +68,6 @@ private:
                      AliMUONVDigitStore* digitStore,
                      AliMUONVTriggerStore* triggerStore) const;
   void Calibrate(AliMUONVDigitStore& digitStore) const;
-  AliMUONTriggerCrateStore* CrateManager() const;
   void CreateCalibrator() const;
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
@@ -81,7 +79,7 @@ private:
   AliMUONVTriggerStore* TriggerStore() const;
   
 private:
-  mutable AliMUONTriggerCrateStore* fCrateManager; //!< Trigger Crate manager
+
   mutable AliMUONDigitMaker* fDigitMaker; //!< Raw to Digits converter
   AliMUONGeometryTransformer* fTransformer; //!< Geometry transformer (local<->global)
   mutable AliMUONVDigitStore* fDigitStore; //!< Digit container

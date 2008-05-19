@@ -10,6 +10,9 @@ SRCS:=  AliMUONTriggerLut.cxx \
         AliMUON2DStoreValidator.cxx \
         AliMUONTriggerIO.cxx \
         AliMUONTrackerIO.cxx \
+        AliMUONRegionalTriggerConfig.cxx \
+        AliMUONTriggerCrateConfig.cxx \
+        AliMUONGlobalCrateConfig.cxx \
         AliMUONVTrackerData.cxx \
         AliMUONSparseHisto.cxx \
         AliMUONTrackerData.cxx

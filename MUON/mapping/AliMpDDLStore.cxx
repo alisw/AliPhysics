@@ -108,7 +108,6 @@ AliMpDDLStore::AliMpDDLStore()
         fBusPatches(true),
         fManuList12(),
         fManuBridge2(),
-        fGlobalCrate(),
         fRegionalTrigger()
 {
     /// Standard constructor
@@ -137,7 +136,6 @@ AliMpDDLStore::AliMpDDLStore(TRootIOCtor* ioCtor)
         : TObject(),
         fDDLs(),
         fBusPatches(),
-        fGlobalCrate(ioCtor),
         fRegionalTrigger(ioCtor)
 {
     /// Constructor for I0
@@ -295,8 +293,6 @@ Bool_t AliMpDDLStore::ReadDDLs()
 Bool_t  AliMpDDLStore::ReadTrigger() 
 {
     /// create trigger DDL object and Global crate object
-  
-  if ( ! fGlobalCrate.ReadData() ) return false;
   
   if ( ! fRegionalTrigger.ReadData() ) return false;
 
@@ -890,7 +886,7 @@ void AliMpDDLStore::SetRegionalTrigger(const AliMpRegionalTrigger& regionalTrigg
 
   fRegionalTrigger = regionalTrigger;
   
-  // Remove the existing trigger DDLs
+  // Remove the existing trigger DDLsf
   fDDLs.RemoveAt(fgkNofDDLs+1);
   fDDLs.RemoveAt(fgkNofDDLs);
   

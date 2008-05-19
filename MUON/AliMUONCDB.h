@@ -21,6 +21,8 @@ class TMap;
 class AliMUONVCalibParam;
 class AliMUONTriggerLut;
 class AliMUONTriggerEfficiencyCells;
+class AliMUONRegionalTriggerConfig;
+class AliMUONGlobalCrateConfig;
 
 class AliMUONCDB : public TObject
 {
@@ -40,9 +42,10 @@ public:
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file);
   Int_t MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues);
   
-  Int_t MakeLocalTriggerMaskStore(AliMUONVStore& ltm) const;
-  Int_t MakeRegionalTriggerMaskStore(AliMUONVStore& rtm) const;
-  Int_t MakeGlobalTriggerMaskStore(AliMUONVCalibParam& gtm) const;
+  Int_t MakeLocalTriggerMaskStore(AliMUONVStore& ltm) const;  
+  Int_t MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) const;
+  Int_t MakeGlobalTriggerConfigStore(AliMUONGlobalCrateConfig& gtm) const;
+  
   AliMUONTriggerLut* MakeTriggerLUT(const char* file="$(ALICE_ROOT)/MUON/data/lutAptLpt1Hpt1p7.root") const;
   AliMUONTriggerEfficiencyCells* MakeTriggerEfficiency(const char* file="$ALICE_ROOT/MUON/data/efficiencyCells.dat") const;
 
@@ -68,8 +71,9 @@ public:
   void WriteCapacitances(const char* file, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   
   void WriteLocalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
-  void WriteRegionalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
-  void WriteGlobalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteRegionalTriggerConfig(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteGlobalTriggerConfig(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  
   void WriteTriggerLut(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteTriggerEfficiency(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   

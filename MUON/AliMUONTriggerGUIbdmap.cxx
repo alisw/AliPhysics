@@ -275,7 +275,7 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
   /// print the local trigger
   
   AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();
-  crateManager->ReadFromFile();
+  crateManager->ReadFromFile(0x0);
 
   TGText txt;
   Char_t buffer[20];

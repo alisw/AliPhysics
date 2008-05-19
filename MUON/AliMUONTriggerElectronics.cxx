@@ -41,6 +41,9 @@
 #include "AliMUONTriggerCrate.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerElectronics.h"
+#include "AliMUONTriggerCrateConfig.h"
+#include "AliMUONRegionalTriggerConfig.h"
+#include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMpCathodType.h"
@@ -82,8 +85,9 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONCalibrationData* cal
   }
 
   SetCopyInput();
+  
   Factory(calibData);
-  LoadMasks(calibData);
+  LoadMasks(calibData); 
 }
 
 //___________________________________________
@@ -99,22 +103,23 @@ AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
   }
 
 }
+
 //___________________________________________
 void AliMUONTriggerElectronics::SetCopyInput()
 {  
-/// set list of copy input
-
+  /// set list of copy input
+  
     for (Int_t iDDL = 0; iDDL < 2; ++iDDL) { 
-
+    
       for(Int_t iReg = 0; iReg < 8; ++iReg){   //reg loop
-
+      
 	AliMpTriggerCrate* crateMapping = AliMpDDLStore::Instance()->GetTriggerCrate(iDDL, iReg);
-
+      
 	for(Int_t iLocal = 0; iLocal < crateMapping->GetNofLocalBoards(); ++iLocal) { 
-
+        
 	  Int_t localBoardFromId = crateMapping->GetLocalBoardId(iLocal);
 	  if (!localBoardFromId) continue; //empty slot, should not happen
-
+        
           AliMpLocalBoard* localBoardFrom = AliMpDDLStore::Instance()->GetLocalBoard(localBoardFromId);
 	  Int_t localBoardToId;
 	  if ((localBoardToId = localBoardFrom->GetInputXto())) {
@@ -123,25 +128,25 @@ void AliMUONTriggerElectronics::SetCopyInput()
 	      Int_t   slotFrom  = localBoardFrom->GetSlot();
 	      TString crateTo   = localBoardTo->GetCrate();
 	      Int_t   slotTo    = localBoardTo->GetSlot();
-
+          
 	      fCopyXInput[0]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateFrom), slotFrom));
 	      fCopyXInput[1]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateTo), slotTo));
 	      AliDebug(3, Form("copy xInputs from local  %s_%d to %s_%d\n", crateFrom.Data(), slotFrom, 
 			       crateTo.Data(), slotTo));
 	  }
-
+        
 	  if ((localBoardToId = localBoardFrom->GetInputYto())) {
 	      AliMpLocalBoard* localBoardTo = AliMpDDLStore::Instance()->GetLocalBoard(localBoardToId);
 	      TString crateFrom = localBoardFrom->GetCrate();
 	      Int_t   slotFrom  = localBoardFrom->GetSlot();
 	      TString crateTo   = localBoardTo->GetCrate();
 	      Int_t   slotTo    = localBoardTo->GetSlot();
-
+          
 	      fCopyYInput[0]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateFrom), slotFrom));
 	      fCopyYInput[1]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateTo), slotTo));
 	      AliDebug(3, Form("copy yInputs from local  %s_%d to %s_%d\n", crateFrom.Data(), slotFrom, 
 			       crateTo.Data(), slotTo));
-
+          
 	  }
  
 	}
@@ -155,31 +160,7 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
  /// BUILD ALL ELECTRONICS
  ///
 
-// get coinc44 from AliMUON (added 12/09/06)
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-  Int_t coinc44 = pMUON->GetTriggerCoinc44();
-  if (coinc44 != 0 && coinc44 != 1) {
-      AliFatal("Coinc 44 should be equal to 0 or 1");
-      return;
-  }
-
-  fCrates->ReadFromFile();
-  
-  if ( !calibData ) return;
-  
-  AliMUONTriggerLut* lut = calibData->TriggerLut();
-  
-  if (!lut) return;
-  
-  AliMUONLocalTriggerBoard* localBoard;
-  
-  fCrates->FirstLocalBoard();
-  
-  while ( (localBoard=fCrates->NextLocalBoard()) )
-  {
-    localBoard->SetLUT(lut);
-    localBoard->SetCoinc44(coinc44);
-  }
+    fCrates->ReadFromFile(calibData);
 }
 
 //___________________________________________
@@ -428,13 +409,18 @@ void AliMUONTriggerElectronics::Reset()
    }
 }
 
+
 //_______________________________________________________________________
 void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 {
-  /// LOAD MASKS FROM CDB
+  /// Load mask from config in CDB 
   
+  // Set mask
+  
+  AliMUONRegionalTriggerConfig* regionalConfig = calibData->RegionalTriggerConfig();
+  if (!regionalConfig)
+     AliWarning("No valid regional trigger configuration in CDB");
 
-  // SET MASKS
   
   AliMUONTriggerCrate* cr;
   
@@ -446,12 +432,17 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
   {            
     TObjArray *boards = cr->Boards();
     
-    AliMUONRegionalTriggerBoard *regb =
-      (AliMUONRegionalTriggerBoard*)boards->At(0);
+    AliMUONRegionalTriggerBoard *regb = (AliMUONRegionalTriggerBoard*)boards->At(0);
 
-    AliMUONVCalibParam* regionalBoardMasks = calibData->RegionalTriggerBoardMasks(irb);
+    AliMUONTriggerCrateConfig* crateConfig = regionalConfig->FindTriggerCrate(cr->GetName());
     
-    UShort_t rmask = static_cast<UShort_t>(regionalBoardMasks->ValueAsInt(0) & 0xFFFF);
+    if (!crateConfig)
+    {
+      AliError(Form("Crate %s not present in configuration !!!", cr->GetName()));
+      return;
+    }
+    
+    UShort_t rmask= crateConfig->GetMask();
 
     regb->Mask(rmask);
     
@@ -474,14 +465,17 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
     ++irb;
   }
   
-  AliMUONVCalibParam* globalBoardMasks = calibData->GlobalTriggerBoardMasks();
-  for ( Int_t i = 0; i < globalBoardMasks->Size(); ++i )
-  {
-    UShort_t gmask = static_cast<UShort_t>(globalBoardMasks->ValueAsInt(i) & 0xFF);
-    fGlobalTriggerBoard->Mask(i,gmask);
-  }
-}
+   AliMUONGlobalCrateConfig * globalConfig = calibData->GlobalTriggerCrateConfig();
+  if (!globalConfig)
+     AliWarning("No valid trigger crate configuration in CDB");
 
+    UShort_t gmask = 0;
+    gmask = globalConfig->GetFirstDarcDisable();
+    fGlobalTriggerBoard->Mask(0,gmask);
+
+    gmask = globalConfig->GetSecondDarcDisable();
+    fGlobalTriggerBoard->Mask(1,gmask);
+}
 
 //___________________________________________
 void AliMUONTriggerElectronics::LocalResponse()

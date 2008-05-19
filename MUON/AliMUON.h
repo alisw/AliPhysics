@@ -36,6 +36,7 @@ class AliMUONVGeometryBuilder;
 class AliESD;
 class AliMUONDigitMaker;
 class AliMUONVHitStore;
+class AliMUONCalibrationData;
 
 class AliMUON : public  AliDetector 
 {
@@ -183,7 +184,7 @@ class AliMUON : public  AliDetector
     Bool_t fTriggerEffCells;    ///< Flag to select TriggerEffCells
     Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
     Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
-    
+
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     
     AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
@@ -192,7 +193,9 @@ class AliMUON : public  AliDetector
     
     TString fDigitStoreConcreteClassName; ///< to be able to select what the sdigitizer uses
     
-    ClassDef(AliMUON,16)  // MUON Detector base class
+    AliMUONCalibrationData* fCalibrationData; ///< pointer of calibration data
+    
+    ClassDef(AliMUON,17)  // MUON Detector base class
 };
 #endif
 

@@ -28,6 +28,9 @@
 #include "AliMpDDLStore.h"
 #include "AliMpLocalBoard.h"
 #include "AliMpTriggerCrate.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONRegionalTriggerConfig.h"
+#include "AliMUONTriggerCrateConfig.h"
 
 #include "AliLog.h"
 
@@ -46,6 +49,9 @@
 ClassImp(AliMUONTriggerIO)
 /// \endcond
 
+
+const UInt_t AliMUONTriggerIO::fgkLocalLutSize = 1 << 14; // 16384
+
 //_____________________________________________________________________________
 AliMUONTriggerIO::AliMUONTriggerIO() 
     : TObject(), 
@@ -62,7 +68,7 @@ AliMUONTriggerIO::AliMUONTriggerIO(const char* regionalFileToRead)
      fGlobalCrate()
 {
   /// ctor
-  ReadRegional(regionalFileToRead,0);
+  ReadRegionalConfig(regionalFileToRead,0);
 }
 
 //_____________________________________________________________________________
@@ -256,7 +262,7 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
 
   UShort_t address;
   
-  UChar_t buffer[16384];   // 32768 hpt/lpt addresses divided by two
+  UChar_t buffer[fgkLocalLutSize];   // 32768 hpt/lpt addresses divided by two
   UChar_t mask1 = 0xF0;
   UChar_t mask2 = 0x0F;
   UChar_t maskHpt = 0x0C;
@@ -275,10 +281,10 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
   Bool_t trigx = kFALSE;
   
   // read two lut addresses at once, 32768/2=16384 times
-  fread(buffer,16384,1,flut);
+  fread(buffer,fgkLocalLutSize,1,flut);
 
   // create the 32767 addresses for the 4-bits lpt and hpt half-bytes
-  for (UShort_t ilut = 0; ilut < 32768; ilut += 2) 
+  for (UShort_t ilut = 0; ilut < fgkLocalLutSize*2; ilut += 2) 
   {
     
     // 1st 4-bits half-byte
@@ -375,13 +381,12 @@ AliMUONTriggerIO::ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut)
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONTriggerIO::ReadMasks(const char* localFile,
+AliMUONTriggerIO::ReadConfig(const char* localFile,
                             const char* regionalFile,
                             const char* globalFile,
                             AliMUONVStore* localMasks,
-                            AliMUONVStore* regionalMasks,
-                            AliMUONVCalibParam* globalMasks,
-                            Bool_t warn)
+                            AliMUONRegionalTriggerConfig* regionalConfig,
+                            AliMUONGlobalCrateConfig* globalConfig)
 {
   /// Fill the various masks store from files
   
@@ -391,7 +396,7 @@ AliMUONTriggerIO::ReadMasks(const char* localFile,
     return kFALSE;
   }
   
-  Int_t nCrates = ReadRegional(regionalFile,regionalMasks, warn);
+  Int_t nCrates = ReadRegionalConfig(regionalFile, regionalConfig);
   
   if (!nCrates) return kFALSE;
   
@@ -401,7 +406,7 @@ AliMUONTriggerIO::ReadMasks(const char* localFile,
     AliDebug(1,Form("Read masks for %d local boards",nLocal));
   }
   
-  Int_t nDarc = ReadGlobal(globalFile, globalMasks);
+  Int_t nDarc = ReadGlobalConfig(globalFile, globalConfig);
   AliDebug(1,Form("Read disable for %d DARC boards",nDarc));
   
   if (!nDarc) return kFALSE;
@@ -409,72 +414,36 @@ AliMUONTriggerIO::ReadMasks(const char* localFile,
   return kTRUE;
 }
 
+
+
 //_____________________________________________________________________________
  Int_t 
- AliMUONTriggerIO::ReadGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks)
+ AliMUONTriggerIO::ReadGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig)
 {
-  /// read the global crate file and file corresponding mask
+  /// read the global crate file
   /// the masks are disable bit for each crate, 8 per darc board
   /// bit value 0 means enable, 1 means disable                                                 * 
   
   Int_t nDarc = 0;
-  if ( ! fGlobalCrate.ReadData(globalFile) ) return 0;
-  
-  UChar_t mask    = fGlobalCrate.GetFirstDarcDisable();
-  ULong_t vmeAddr = fGlobalCrate.GetFirstDarcVmeAddr();   
-  if (vmeAddr) nDarc++;
-  globalMasks->SetValueAsInt(0,0,mask);
-  
-  mask    = fGlobalCrate.GetSecondDarcDisable();
-  vmeAddr = fGlobalCrate.GetSecondDarcVmeAddr();    
-  if (vmeAddr) nDarc++;
-  globalMasks->SetValueAsInt(1,0,mask);
+  if ( !(nDarc = globalConfig->ReadData(globalFile)) ) return 0;
   
   return nDarc;
 }
  
 //_____________________________________________________________________________
 Int_t
-AliMUONTriggerIO::ReadRegional(const char* regionalFile, AliMUONVStore* regionalMasks, Bool_t warn)
+AliMUONTriggerIO::ReadRegionalConfig(const char* regionalFile, AliMUONRegionalTriggerConfig* regionalConfig)
 {
-  /// Read regional file to fill the regional mask store *AND* 
-  /// determine the order in which local boards will appear in local 
-  /// and lut files.
-  
+  /// Read regional file to fill  
+  Int_t nCrates = 0;
+  if ( !(nCrates = regionalConfig->ReadData(regionalFile)) ) return 0;
+
+  // read the mapping file also
   if ( ! fRegionalTrigger.ReadData(regionalFile) ) return 0;
 
-  Int_t nCrates(0);
-  
-  for (Int_t iCrate = 0; iCrate < fRegionalTrigger.GetNofTriggerCrates(); ++iCrate) 
-  {
-
-    AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(iCrate);
-    
-    if (warn)
-    {
-      AliMpTriggerCrate* triggerCrate = AliMpDDLStore::Instance()->GetTriggerCrate(crate->GetName());
-          
-      if (!triggerCrate)
-      {
-        AliError(Form("Mapping error : could not get crate %s", crate->GetName()));
-	return 0;
-      }
-    }
-    nCrates++;
-    
-    UShort_t masks = 0;
-    if (regionalMasks != 0x0) 
-    {
-      masks = crate->GetMask();
-      
-      AliMUONVCalibParam* regionalBoard = new AliMUONCalibParamNI(1, 1, crate->GetId(), 0, 0);
-      regionalBoard->SetValueAsInt(0, 0, masks);
-      regionalMasks->Add(regionalBoard);
-    } 
-  }
-   
   return nCrates;  
 }
+
 
 //_____________________________________________________________________________
 Bool_t 
@@ -506,30 +475,34 @@ AliMUONTriggerIO::WriteLUT(const AliMUONTriggerLut& lut,
   return kTRUE;
 }
 
+
 //_____________________________________________________________________________
-Bool_t
-AliMUONTriggerIO::WriteMasks(const char* localFile,
+Bool_t 
+AliMUONTriggerIO::WriteConfig(const char* localFile,
 			     const char* regionalFile,
 			     const char* globalFile,
 			     AliMUONVStore* localMasks,
-			     AliMUONVStore* regionalMasks,
-			     AliMUONVCalibParam* globalMasks) const
+                    AliMUONRegionalTriggerConfig* regionalConfig,
+                    AliMUONGlobalCrateConfig* globalConfig) const
 {
-    /// write mask files
+/// write config files
+
     Bool_t ok;
-    ok  = WriteLocalMasks(localFile, *localMasks);
-    ok &= WriteRegional(regionalFile, regionalMasks);
-    ok &= WriteGlobal(globalFile, globalMasks);
+    ok  = WriteLocalMasks(localFile, *localMasks, regionalConfig);
+    ok &= WriteRegionalConfig(regionalFile, regionalConfig);
+    ok &= WriteGlobalConfig(globalFile, globalConfig);
     
     return ok;
+
+
 }
 
+ 
  //_____________________________________________________________________________
 Bool_t 
-AliMUONTriggerIO::WriteGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks) const
+AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig) const
 {
-    /// write global file
-    /// if no global masks defined take the one of configuration
+    /// write global config
 
   ofstream out;
   Int_t disable = 0;
@@ -537,73 +510,71 @@ AliMUONTriggerIO::WriteGlobal(const char* globalFile, AliMUONVCalibParam* global
   out.open(globalFile);
   if (!out.good())
   {
-    AliError(Form("Could not create output regional file %s", globalFile));
+    AliError(Form("Could not create output global file %s", globalFile));
     return kFALSE;
   }
    
-  out << fGlobalCrate.GetName() << endl;
-
+  out << globalConfig->GetName() << endl;
+  out << globalConfig->GetGlobalCrateEnable() << endl;
+  
   // Jtag
-  out << fGlobalCrate.GetJtagName() << endl;
-  out << Form("0x%08x", fGlobalCrate.GetJtagVmeAddr()) << endl;
-  out << Form("%d %d %d", fGlobalCrate.GetJtagClockDiv(), 
-              fGlobalCrate.GetJtagRxPhase(), fGlobalCrate.GetJtagRdDelay()) << endl;
+  out << globalConfig->GetJtagName() << endl;
+  out << Form("0x%08x", globalConfig->GetJtagVmeAddr()) << endl;
+  out << Form("%d %d %d", globalConfig->GetJtagClockDiv(), 
+              globalConfig->GetJtagRxPhase(), globalConfig->GetJtagRdDelay()) << endl;
  
-  for (Int_t i = 0; i < fGlobalCrate.GetJtagNofLines(); ++i)
-    out << Form("%d ", fGlobalCrate.GetEnableJtag(i));
+  for (Int_t i = 0; i < globalConfig->GetJtagNofLines(); ++i)
+    out << Form("%d ", globalConfig->GetEnableJtag(i));
   out << endl;
 
   
-  for (Int_t i = 0; i < fGlobalCrate.GetJtagNofLines(); ++i)
+  for (Int_t i = 0; i < globalConfig->GetJtagNofLines(); ++i)
   {
     out << i << endl;
-    for (Int_t j = 0; j < fGlobalCrate.GetJtagNofLines(); ++j)
-      out << Form(" %s", fGlobalCrate.GetJtagCrateName(i,j).Data()) << endl;
+    for (Int_t j = 0; j < globalConfig->GetJtagNofLines(); ++j)
+      out << Form(" %s", globalConfig->GetJtagCrateName(i,j).Data()) << endl;
   }
   
   // first darc board
-  out << fGlobalCrate.GetFirstDarcName() << endl;
-  out << Form("0x%08x", fGlobalCrate.GetFirstDarcVmeAddr()) << endl;
-  out << fGlobalCrate.GetFirstDarcType() << endl;
-  if (globalMasks != 0x0)
-    disable = globalMasks->ValueAsInt(0);
-  else
-    disable = fGlobalCrate.GetFirstDarcDisable();
+  out << globalConfig->GetFirstDarcName() << endl;
+  out << Form("0x%08x", globalConfig->GetFirstDarcVmeAddr()) << endl;
+  out << globalConfig->GetFirstDarcType() << endl;
+  disable = globalConfig->GetFirstDarcDisable();
   out << Form("0x%02x", disable) << endl;
-  out << Form("0x%x", fGlobalCrate.GetFirstDarcL0Delay()) << endl;
-  out << Form("0x%x", fGlobalCrate.GetFirstDarcL1TimeOut()) << endl;
+  out << Form("0x%x", globalConfig->GetFirstDarcL0Delay()) << endl;
+  out << Form("0x%x", globalConfig->GetFirstDarcL1TimeOut()) << endl;
+  out << Form("0x%x", globalConfig->GetFirstDarcGlobalL0()) << endl;
+  out << Form("0x%x", globalConfig->GetFirstDarcConfig()) << endl;
   
   // second darc board
-  out << fGlobalCrate.GetSecondDarcName() << endl;
-  out << Form("0x%08x", fGlobalCrate.GetSecondDarcVmeAddr()) << endl;
-  out << fGlobalCrate.GetSecondDarcType() << endl;
-  if (globalMasks != 0x0)
-    disable = globalMasks->ValueAsInt(1);
-  else
-    disable = fGlobalCrate.GetSecondDarcDisable();
+  out << globalConfig->GetSecondDarcName() << endl;
+  out << Form("0x%08x", globalConfig->GetSecondDarcVmeAddr()) << endl;
+  out << globalConfig->GetSecondDarcType() << endl;
+  disable = globalConfig->GetSecondDarcDisable();
   out << Form("0x%02x", disable) << endl;
-  out << Form("0x%x", fGlobalCrate.GetSecondDarcL0Delay()) << endl;
-  out << Form("0x%x", fGlobalCrate.GetSecondDarcL1TimeOut()) << endl; 
+  out << Form("0x%x", globalConfig->GetSecondDarcL0Delay()) << endl;
+  out << Form("0x%x", globalConfig->GetSecondDarcL1TimeOut()) << endl; 
+  out << Form("0x%x", globalConfig->GetSecondDarcGlobalL0()) << endl; 
+  out << Form("0x%x", globalConfig->GetSecondDarcConfig()) << endl; 
   
   // global board
-  out << fGlobalCrate.GetGlobalName() << endl;
-  out << Form("0x%08x", fGlobalCrate.GetGlobalVmeAddr()) << endl;
-  for (Int_t i = 0; i < fGlobalCrate.GetGlobalNofRegisters(); ++i)
-    out << Form("0x%x", fGlobalCrate.GetGlobalRegister(i)) << endl;
+  out << globalConfig->GetGlobalName() << endl;
+  out << Form("0x%08x", globalConfig->GetGlobalVmeAddr()) << endl;
+  for (Int_t i = 0; i < globalConfig->GetGlobalNofRegisters(); ++i)
+    out << Form("0x%x", globalConfig->GetGlobalRegister(i)) << endl;
   
   // Fet board
-  out << fGlobalCrate.GetFetName() << endl;
-  out << Form("0x%08x", fGlobalCrate.GetFetVmeAddr()) << endl;
-  for (Int_t i = 0; i < fGlobalCrate.GetFetNofRegisters(); ++i)
-    out << Form("0x%x", fGlobalCrate.GetFetRegister(i)) << endl;
+  out << globalConfig->GetFetName() << endl;
+  out << Form("0x%08x", globalConfig->GetFetVmeAddr()) << endl;
+  for (Int_t i = 0; i < globalConfig->GetFetNofRegisters(); ++i)
+    out << Form("0x%x", globalConfig->GetFetRegister(i)) << endl;
   
   return kTRUE;
 }
  
-
 //_____________________________________________________________________________
 Bool_t
-AliMUONTriggerIO::WriteRegional(const char* regionalFile, AliMUONVStore* regionalMasks) const
+AliMUONTriggerIO::WriteRegionalConfig(const char* regionalFile, AliMUONRegionalTriggerConfig* regionalConfig) const
 {
 
     /// write regional mask with the current configuration
@@ -618,35 +589,37 @@ AliMUONTriggerIO::WriteRegional(const char* regionalFile, AliMUONVStore* regiona
       return kFALSE;
     }
 
-    for (Int_t iCrate = 0; iCrate < fRegionalTrigger.GetNofTriggerCrates(); ++iCrate) 
+    Int_t nCrate = fRegionalTrigger.GetNofTriggerCrates();
+    if (!nCrate)
     {
+      AliError("Could not write regional no configuration in memory");
+      return kFALSE;
+    }
+
+      
+   for (Int_t iCrate = 0; iCrate < nCrate; ++iCrate) 
+      {
       AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(iCrate);
+      
+      AliMUONTriggerCrateConfig* crateConfig = regionalConfig->FindTriggerCrate(crate->GetName());
+      if (!crateConfig) 
+      {
+        AliError(Form("Cannot find crate %s in CDB", crate->GetName()));
+        return kFALSE;
+      }
 
       out << crate->GetName()  << endl;
       out << Form("%02x", crate->GetId())   << endl;
-      out << crate->GetMode()  << endl;
-      out << crate->GetCoinc() << endl;
-      
-      UShort_t masks = 0;
-      if (regionalMasks != 0x0) 
-      {
-        AliMUONVCalibParam* maskParam = 
-            static_cast<AliMUONVCalibParam*>(regionalMasks->FindObject(crate->GetId()));
-        masks = maskParam->ValueAsInt(0,0);
-      } 
-      else
-      {
-        masks = crate->GetMask();
-      } 
-      
-      out << Form("%04x", masks) << endl;
-      
+      out << crateConfig->GetMode()  << endl;
+      out << crateConfig->GetCoinc() << endl;
+      out << Form("%04x", crateConfig->GetMask()) << endl;
+
       for (Int_t iLocal = 0; iLocal < crate->GetNofLocalBoards(); ++iLocal) 
       {
 	Int_t localBoardId = crate->GetLocalBoardId(iLocal);
-
+        
 	AliMpLocalBoard* board = fRegionalTrigger.FindLocalBoard(localBoardId);
-
+        
 	out << Form("%02d ", board->GetSlot())  
 	    << board->GetName() 
 	    << Form(" %03d ", localBoardId) 
@@ -658,7 +631,7 @@ AliMUONTriggerIO::WriteRegional(const char* regionalFile, AliMUONVStore* regiona
           out << Form("%4d ", board->GetDEId(i));
         out << endl;
           
-          // print copy card numbers
+        // print copy card numbers & TC
         out << Form(" %4d %4d", board->GetInputXfrom(), board->GetInputXto());
         out << Form(" %4d %4d", board->GetInputYfrom(), board->GetInputYto());
         out << Form(" %4d",     board->GetTC()) << endl;
@@ -669,9 +642,10 @@ AliMUONTriggerIO::WriteRegional(const char* regionalFile, AliMUONVStore* regiona
     return kTRUE;
 }
 
+
 //_____________________________________________________________________________
 Bool_t 
-AliMUONTriggerIO::WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks) const
+AliMUONTriggerIO::WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks, AliMUONRegionalTriggerConfig* regionalConfig) const
 {
     /// write local mask
     /// removing/adding enable for a local board need a update of the configuration 
@@ -687,9 +661,9 @@ AliMUONTriggerIO::WriteLocalMasks(const char* localFile, AliMUONVStore& localMas
 
     UShort_t maskBuffer[8];
 
-    for (Int_t iCrate = 0; iCrate < fRegionalTrigger.GetNofTriggerCrates(); ++iCrate) 
+    for (Int_t iCrate = 0; iCrate < regionalConfig->GetNofTriggerCrates(); ++iCrate) 
     {
-      AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(iCrate);
+      AliMUONTriggerCrateConfig* crate = regionalConfig->GetTriggerCrateFast(iCrate);
       
       UShort_t mask = crate->GetMask(); // getting mask from current config
 
@@ -732,10 +706,10 @@ AliMUONTriggerIO::WriteLocalLUT(const AliMUONTriggerLut& lut,
   const Int_t kMaskXdev = 0x1F;
   const Int_t kMaskXpos = 0x1F;
 
-  UChar_t buffer[16384];  // 32768 hpt/lpt addresses divided by two
+  UChar_t buffer[fgkLocalLutSize];  // 32768 hpt/lpt addresses divided by two
   Int_t bc = 0;
   
-  for (Int_t i = 0; i < 32768; ++i) 
+  for (UInt_t i = 0; i < fgkLocalLutSize*2; ++i) 
   {
     Int_t lutLpt[2] = { 0 };
     Int_t lutHpt[2] = { 0 };
@@ -821,74 +795,3 @@ AliMUONTriggerIO::LocalBoardId(Int_t index) const
   return board->GetId(); 
 }
 
-//_____________________________________________________________________________
-void 
-AliMUONTriggerIO::UpdateMapping(Bool_t writeFile) const
-{
-/// check if mapping in database different from current Mtg configuration
-/// Update mapping in databse and read regional crate file in repository (ext .out
-/// to avoid overwriting). This case has a low probability to happen.
-
-    // Assuming that crates do not change
-
-    if (!AliMpDDLStore::Instance(kFALSE))
-    {
-      AliMpCDB::LoadDDLStore();
-    }
-
-    Bool_t modified = false;
-
-    TExMapIter itr = AliMpDDLStore::Instance()->GetLocalBoardItr();
-
-    Long_t key, value;
-
-    while(itr.Next(key, value))
-    {
-      AliMpLocalBoard* boardMapping =  reinterpret_cast<AliMpLocalBoard*>(value);
-
-      Int_t localBoardId = boardMapping->GetId();
-      AliMpLocalBoard* board = fRegionalTrigger.FindLocalBoard(localBoardId);
-      if ( ! board ) {
-        AliFatal("Board found in mapping but not in regional trigger");
-        return;
-      }  
-
-      if ( board->GetCrate().CompareTo(boardMapping->GetCrate()) != 0 ) 
-      {
-	AliWarning(Form("Crate Name different for board %d (%s %s)", localBoardId, boardMapping->GetCrate().Data(), 
-			board->GetCrate().Data()));
-	boardMapping->SetCrate( board->GetCrate() );
-	modified = true;
-      }
-
-      if ((board->GetSlot()) != boardMapping->GetSlot()) 
-      {
-	AliWarning(Form("Slot different for board %d (%d %d)", localBoardId, boardMapping->GetSlot(), board->GetSlot()+1));
-	boardMapping->SetSlot(board->GetSlot());
-	modified = true;
-      }
-	  
-      if (boardMapping->GetSwitch() != board->GetSwitch()) {
-	AliWarning(Form("Switch different for board %d (0x%x 0x%x)", localBoardId, 
-			boardMapping->GetSwitch(), board->GetSwitch()));
-	boardMapping->SetSwitch(board->GetSwitch());
-	modified = true;
-      }
-    }
-    
-    if (modified) 
-    {
-      AliMpDDLStore::Instance()->SetRegionalTrigger(fRegionalTrigger);
-      AliMpCDB::WriteDDLStore(false);
-      AliWarning("Wrote new version of mapping in databse");
-      if (writeFile) 
-      {
-          TString file = AliMpFiles::LocalTriggerBoardMapping();
-          file += ".out";
-          WriteRegional(file.Data(), 0x0);
-          AliWarning(Form("Wrote regional file %s", file.Data()));
-
-      }
-    }
-
-}

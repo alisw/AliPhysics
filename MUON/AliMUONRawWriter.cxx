@@ -65,6 +65,7 @@
 
 #include "AliMpDDLStore.h"
 #include "AliMpDDL.h"
+#include "AliMpRegionalTrigger.h"
 #include "AliMpTriggerCrate.h"
 #include "AliMpLocalBoard.h"
 #include "AliMpDetElement.h"
@@ -556,9 +557,11 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 
     // end of global word
     buffer[index++] = fDarcHeader->GetEndOfGlobal();
+    const AliMpRegionalTrigger* reg = AliMpDDLStore::Instance()->GetRegionalTrigger(); 
 
+    Int_t nCrate = reg->GetNofTriggerCrates()/2;
     // 8 regional cards per DDL
-    for (Int_t iReg = 0; iReg < 8; ++iReg) {
+    for (Int_t iReg = 0; iReg < nCrate; ++iReg) {
 
         // crate info
       AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->GetTriggerCrate(iDDL, iReg);
@@ -567,8 +570,10 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 	AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, iDDL));
 
       // regional info tree, make sure that no reg card missing
-      AliMUONRegionalTrigger* regTrg  = triggerStore.FindRegional(iReg+iDDL*8);
-
+      AliMUONRegionalTrigger* regTrg  = triggerStore.FindRegional(crate->GetId());
+      if (!regTrg) 
+        AliError(Form("Missing regional board %d in trigger Store\n", crate->GetId()));
+    
       // Regional card header
       word = 0;
 
@@ -605,7 +610,9 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
       // 16 local card per regional board
       //      UShort_t localMask = 0x0;
       
-      for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
+      Int_t nLocalBoard = AliMpConstants::LocalBoardNofChannels();
+
+      for (Int_t iLoc = 0; iLoc < nLocalBoard; iLoc++) {
 	  
 	// slot zero for Regional card
 	Int_t localBoardId = crate->GetLocalBoardId(iLoc);

@@ -20,17 +20,21 @@
 #include "AliMpGlobalCrate.h"
 #include "AliMpRegionalTrigger.h"
 
+
+
 #ifndef ROOT_TArrayI
 #  include <TArrayI.h>
 #endif
 
 class AliMUONTriggerLut;
-class AliMUONVCalibParam;
 class AliMUONVStore;
 class AliMpExMap;
 class AliMpDDL;
 class AliMpTriggerCrate;
 class AliMpLocalBoard;
+class AliMUONGlobalCrateConfig;
+class AliMUONRegionalTriggerConfig;
+
 
 class AliMUONTriggerIO : public TObject
 {
@@ -39,29 +43,46 @@ public:
   AliMUONTriggerIO(const char* regionalFileToRead);
   virtual ~AliMUONTriggerIO();
 
-  Bool_t ReadMasks(const char* localFile,
+
+  Bool_t ReadConfig(const char* localFile,
                    const char* regionalFile,
                    const char* globalFile,
                    AliMUONVStore* localMasks,
-                   AliMUONVStore* regionalMasks,
-                   AliMUONVCalibParam* globalMasks,
-		   Bool_t warn = true);
-  
+                    AliMUONRegionalTriggerConfig* regionalConfig,
+                    AliMUONGlobalCrateConfig* globalConfig);
+
   Bool_t ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut);
   
   Bool_t WriteLUT(const AliMUONTriggerLut& lut,
                   const char* lutFileToWrite);
   
-  Bool_t WriteMasks(const char* localFile,
+  Bool_t WriteConfig(const char* localFile,
 		    const char* regionalFile,
 		    const char* globalFile,
 		    AliMUONVStore* localMasks,
-                    AliMUONVStore* regionalMasks,
-                    AliMUONVCalibParam* globalMasks) const;
+                    AliMUONRegionalTriggerConfig* regionalConfig,
+                    AliMUONGlobalCrateConfig* globalConfig) const;
+
   
+  Int_t  ReadGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig);
+
+  Bool_t WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateConfig* globalConfig) const;
+
+  Int_t  ReadRegionalConfig(const char* regionalFile, AliMUONRegionalTriggerConfig* regionalConfig);
+
+  Bool_t WriteRegionalConfig(const char* regionalFile, AliMUONRegionalTriggerConfig* regionalConfig) const;
+
+  Int_t  ReadLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
+  
+  Bool_t WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks, AliMUONRegionalTriggerConfig* regionalConfig) const;
+
+  void   ReadLocalLUT(AliMUONTriggerLut& lut, Int_t localBoardId, FILE* flut);
+  
+  void   WriteLocalLUT(const AliMUONTriggerLut& lut, Int_t localBoardId, 
+                       FILE* flut);
+                   
   Int_t LocalBoardId(Int_t index) const;
 
-  void UpdateMapping(Bool_t writeFile = true) const;
 
 private:
   
@@ -76,29 +97,16 @@ private:
   /// Return number of local boards
   Int_t NofLocalBoards() const { return fRegionalTrigger.GetNofLocalBoards(); }
   
-  Int_t  ReadGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks);
-
-  Bool_t WriteGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks) const;
-
-  Int_t  ReadRegional(const char* regionalFile, AliMUONVStore* regionalMasks, Bool_t warn = true);
-
-  Bool_t WriteRegional(const char* regionalFile, AliMUONVStore* regionalMasks) const;
-
-  Int_t  ReadLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
   
-  Bool_t WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
-
-  void   ReadLocalLUT(AliMUONTriggerLut& lut, Int_t localBoardId, FILE* flut);
-  
-  void   WriteLocalLUT(const AliMUONTriggerLut& lut, Int_t localBoardId, 
-                       FILE* flut);
-    
   
 private:
   AliMpRegionalTrigger  fRegionalTrigger; //!< Regional trigger
   AliMpGlobalCrate      fGlobalCrate;     //!< Global crate object
  
-  ClassDef(AliMUONTriggerIO,0) // Read/Write trigger masks and LUT to/from online files
+  static const UInt_t  fgkLocalLutSize;  ///< length of the lut for one local board
+
+  
+  ClassDef(AliMUONTriggerIO,2) // Read/Write trigger masks and LUT to/from online files
 };
 
 #endif

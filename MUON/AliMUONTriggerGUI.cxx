@@ -1028,7 +1028,7 @@ void AliMUONTriggerGUI::InitBoards()
   fBoardsInit = kTRUE;
 
   AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();
-  crateManager->ReadFromFile();
+  crateManager->ReadFromFile(0x0);
 
   Int_t nPixelX = 700;
   Int_t nPixelY = 676;

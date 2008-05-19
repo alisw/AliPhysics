@@ -22,6 +22,8 @@ class AliMUONTriggerLut;
 class AliMUONVStore;
 class AliMUONVStore;
 class AliMUONVCalibParam;
+class AliMUONGlobalCrateConfig;
+class AliMUONRegionalTriggerConfig;
 class TMap;
 
 class AliMUONCalibrationData : public TObject
@@ -44,7 +46,7 @@ public:
   static AliMUONVStore* CreateGains(Int_t runNumber);
 
   /// Create a global trigger mask (which must be deleted) from OCDB for the given run
-  static AliMUONVCalibParam* CreateGlobalTriggerBoardMasks(Int_t runNumber);
+  static AliMUONGlobalCrateConfig* CreateGlobalTriggerCrateConfig(Int_t runNumber);
   
   /// Create a hv map (which must be deleted) from OCDB for the given run
   static TMap* CreateHV(Int_t runNumber);
@@ -59,7 +61,7 @@ public:
   static AliMUONVStore* CreatePedestals(Int_t runNumber);
 
   /// Create a regional trigger mask store (which must be deleted) for a given run
-  static AliMUONVStore* CreateRegionalTriggerBoardMasks(Int_t runNumber);
+  static AliMUONRegionalTriggerConfig* CreateRegionalTriggerConfig(Int_t runNumber);
 
   /// Create a trigger Look Up Table (which must be deleted) for a given run
   static AliMUONTriggerLut* CreateTriggerLut(Int_t runNumber);
@@ -70,8 +72,8 @@ public:
   /// Get all the gains
   AliMUONVStore* Gains() const;
 
-  /// Get the mask for the global trigger board.
-  AliMUONVCalibParam* GlobalTriggerBoardMasks() const;
+  /// Get the configuration for the global trigger board.
+  AliMUONGlobalCrateConfig* GlobalTriggerCrateConfig() const;
     
   /// Get the Gain calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Gains(Int_t detElemId, Int_t manuId) const;
@@ -97,8 +99,9 @@ public:
   /// Dump to screen.
   virtual void Print(Option_t* opt="") const;
 
-  /// Get the mask for a given regional trigger board.
-  AliMUONVCalibParam* RegionalTriggerBoardMasks(Int_t index) const;
+  /// Get the config for regional trigger.
+  AliMUONRegionalTriggerConfig* RegionalTriggerConfig() const;
+
 
   /// The runnumber used by this object.
   Int_t RunNumber() const { return fRunNumber; }
@@ -125,9 +128,10 @@ private:
   mutable AliMUONVStore* fGains; //!< Gains
   mutable AliMUONVStore* fPedestals; //!< Pedestals
   mutable TMap* fHV; //!< HV
-  mutable AliMUONVStore* fLocalTriggerBoardMasks; //!< Local trigger board maska
-  mutable AliMUONVStore* fRegionalTriggerBoardMasks; //!< Regional trigger board maska
-  mutable AliMUONVCalibParam* fGlobalTriggerBoardMasks; //!< Global trigger board maska
+  mutable AliMUONVStore* fLocalTriggerBoardMasks; //!< Local trigger board maska  
+  mutable AliMUONRegionalTriggerConfig* fRegionalTriggerConfig; //!< Regional trigger config
+  mutable AliMUONGlobalCrateConfig* fGlobalTriggerCrateConfig; //!< Global trigger crate config
+  
   mutable AliMUONTriggerLut* fTriggerLut; //!< TRigger LUTs
   mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< Trigger efficiency cells
   mutable AliMUONVStore* fCapacitances; //!< Manu capacitances

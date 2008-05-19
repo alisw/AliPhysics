@@ -43,6 +43,8 @@
 #include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONRegionalTriggerConfig.h"
 
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
@@ -50,6 +52,7 @@
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
+#include "AliMpFiles.h"
 #include "AliMpHVNamer.h"
 #include "AliMpManuIterator.h"
 #include "AliMpSegmentation.h"
@@ -650,43 +653,28 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
 
 //_____________________________________________________________________________
 Int_t
-AliMUONCDB::MakeRegionalTriggerMaskStore(AliMUONVStore& rtm) const
+AliMUONCDB::MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) const
 {
-  /// Make a regional trigger masks store. Mask is set to FFFF for each local board (Ch.F.)
+  /// Make a regional trigger config store. Mask is set to FFFF for each local board (Ch.F.)
   
   AliCodeTimerAuto("");
   
-  Int_t ngenerated(0);
-  for ( Int_t i = 0; i < 16; ++i )
-  {
-    AliMUONVCalibParam* regionalBoard = new AliMUONCalibParamNI(1,1,i,0,0);
-
-    regionalBoard->SetValueAsInt(0,0,0xFFFF);
-    ++ngenerated;
+    return rtm.ReadData(AliMpFiles::LocalTriggerBoardMapping());
       
-    rtm.Add(regionalBoard);
-  }
-  
-  return ngenerated;
 }
+
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONCDB::MakeGlobalTriggerMaskStore(AliMUONVCalibParam& gtm) const
+AliMUONCDB::MakeGlobalTriggerConfigStore(AliMUONGlobalCrateConfig& gtm) const
 {
-  /// Make a global trigger masks store. All masks (disable) set to 0x00 for each Darc board (Ch.F.)
+  /// Make a global trigger config store. All masks (disable) set to 0x00 for each Darc board (Ch.F.)
   
   AliCodeTimerAuto("");
-  
-  Int_t ngenerated(0);
-  
-  for ( Int_t j = 0; j < 2; ++j )
-  {
-    gtm.SetValueAsInt(j,0,0x00);
-    ++ngenerated;
-  }
-  return ngenerated;
+
+    return gtm.ReadData(AliMpFiles::GlobalTriggerBoardMapping());
 }
+
 
 //_____________________________________________________________________________
 AliMUONTriggerLut* 
@@ -856,36 +844,38 @@ AliMUONCDB::WriteLocalTriggerMasks(Int_t startRun, Int_t endRun)
 
 //_____________________________________________________________________________
 void
-AliMUONCDB::WriteRegionalTriggerMasks(Int_t startRun, Int_t endRun)
+AliMUONCDB::WriteRegionalTriggerConfig(Int_t startRun, Int_t endRun)
 {  
   /// Write regional trigger masks to OCDB
   
-  AliMUONVStore* rtm = new AliMUON1DArray(16);
-  Int_t ngenerated = MakeRegionalTriggerMaskStore(*rtm);
+  AliMUONRegionalTriggerConfig* rtm = new AliMUONRegionalTriggerConfig();
+  Int_t ngenerated = MakeRegionalTriggerConfigStore(*rtm);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
-    WriteToCDB("MUON/Calib/RegionalTriggerBoardMasks",rtm,startRun,endRun,true);
+    WriteToCDB("MUON/Calib/RegionalTriggerConfig",rtm,startRun,endRun,true);
   }
   delete rtm;
 }
 
+
 //_____________________________________________________________________________
 void
-AliMUONCDB::WriteGlobalTriggerMasks(Int_t startRun, Int_t endRun)
+AliMUONCDB::WriteGlobalTriggerConfig(Int_t startRun, Int_t endRun)
 {  
   /// Write global trigger masks to OCDB
   
-  AliMUONVCalibParam* gtm = new AliMUONCalibParamNI(1,2,1,0,0);
+  AliMUONGlobalCrateConfig* gtm = new AliMUONGlobalCrateConfig();
 
-  Int_t ngenerated = MakeGlobalTriggerMaskStore(*gtm);
+  Int_t ngenerated = MakeGlobalTriggerConfigStore(*gtm);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
-    WriteToCDB("MUON/Calib/GlobalTriggerBoardMasks",gtm,startRun,endRun,true);
+    WriteToCDB("MUON/Calib/GlobalTriggerCrateConfig",gtm,startRun,endRun,true);
   }
   delete gtm;
 }
+
 
 //_____________________________________________________________________________
 void
@@ -1028,8 +1018,8 @@ AliMUONCDB::WriteTrigger(Int_t startRun, Int_t endRun)
 {
   /// Writes all Trigger related calibration to CDB
   WriteLocalTriggerMasks(startRun,endRun);
-  WriteRegionalTriggerMasks(startRun,endRun);
-  WriteGlobalTriggerMasks(startRun,endRun);
+  WriteRegionalTriggerConfig(startRun,endRun);
+  WriteGlobalTriggerConfig(startRun,endRun);
   WriteTriggerLut(startRun,endRun);
   WriteTriggerEfficiency(startRun,endRun);
 }
