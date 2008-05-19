@@ -94,7 +94,7 @@ void AliAnaScale::Exec(Option_t *)
   while ( (h = next()) ) { 
     if(h){
       if ( strcmp(h->ClassName(),"TNtuple") ) {
-      char name[20] ; 
+      char name[128] ; 
       sprintf(name, "%sScaled", h->GetName()) ; 
       TH1 * hout = dynamic_cast<TH1*> (h->Clone(name)) ; 
       hout->Scale(fScale) ;  
@@ -103,7 +103,7 @@ void AliAnaScale::Exec(Option_t *)
       else  fOutputList->Add(h) ; 
     }
   }
-  cout<<"end"<<endl;
+  
   PostData(0, fOutputList);
 }
 

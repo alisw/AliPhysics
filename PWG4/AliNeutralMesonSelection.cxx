@@ -33,11 +33,9 @@
 // Class that contains methods to select candidate pairs to neutral meson 
 // 2 main selections, invariant mass around pi0 (also any other mass),
 // apperture angle to distinguish from combinatorial.
-// There is a 3rd cut based on the gamma correlation on phi or pt.
 //-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
-#include <TParticle.h>
 #include <TLorentzVector.h>
 #include <TH2.h>
 #include <TList.h>
@@ -52,15 +50,12 @@ ClassImp(AliNeutralMesonSelection)
   
 //____________________________________________________________________________
   AliNeutralMesonSelection::AliNeutralMesonSelection() : 
-    TObject(), fSelect(0), fM(0),
+    TObject(), fM(0),
     fInvMassMaxCut(0.), fInvMassMinCut(0.),
-    fAngleMaxParam(),  fMinPt(0),
-    fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.),
-    fRatioMaxCut(0), fRatioMinCut(0),  fKeepNeutralMesonHistos(0),
-    fhAnglePairNoCut(0),  fhAnglePairCorrelationCut(0),
+    fAngleMaxParam(), fhAnglePairNoCut(0),
     fhAnglePairOpeningAngleCut(0), fhAnglePairAllCut(0), 
-    fhInvMassPairNoCut(0),   fhInvMassPairCorrelationCut(0), 
-    fhInvMassPairOpeningAngleCut(0), fhInvMassPairAllCut(0) 
+    fhInvMassPairNoCut(0), fhInvMassPairOpeningAngleCut(0), 
+    fhInvMassPairAllCut(0) 
 {
   //Default Ctor
   
@@ -76,19 +71,14 @@ ClassImp(AliNeutralMesonSelection)
 
 //____________________________________________________________________________
 AliNeutralMesonSelection::AliNeutralMesonSelection(const AliNeutralMesonSelection & g) :   
-  TObject(),  
-  fSelect(g.fSelect), fM(g.fM),
+  TObject(), fM(g.fM),
   fInvMassMaxCut(g.fInvMassMaxCut), fInvMassMinCut(g.fInvMassMinCut),
-  fAngleMaxParam(g.fAngleMaxParam), fMinPt(g.fMinPt),
-  fDeltaPhiMaxCut(g.fDeltaPhiMaxCut), fDeltaPhiMinCut(g.fDeltaPhiMinCut), 
-  fRatioMaxCut(g.fRatioMaxCut), fRatioMinCut(g.fRatioMinCut), 
+  fAngleMaxParam(g.fAngleMaxParam),
   fKeepNeutralMesonHistos(g.fKeepNeutralMesonHistos),
   fhAnglePairNoCut(g. fhAnglePairNoCut), 
-  fhAnglePairCorrelationCut(g. fhAnglePairCorrelationCut), 
   fhAnglePairOpeningAngleCut(g. fhAnglePairOpeningAngleCut), 
   fhAnglePairAllCut(g. fhAnglePairAllCut), 
   fhInvMassPairNoCut(g.fhInvMassPairNoCut),  
-  fhInvMassPairCorrelationCut(g.fhInvMassPairCorrelationCut), 
   fhInvMassPairOpeningAngleCut(g.fhInvMassPairOpeningAngleCut), 
   fhInvMassPairAllCut(g.fhInvMassPairAllCut)
 {
@@ -103,24 +93,16 @@ AliNeutralMesonSelection & AliNeutralMesonSelection::operator = (const AliNeutra
   if(this == &source)return *this;
   ((TObject *)this)->operator=(source);
 
-  fSelect = source.fSelect ;
   fM = source.fM ;
   fInvMassMaxCut = source.fInvMassMaxCut ; 
   fInvMassMinCut = source.fInvMassMinCut ;
   fAngleMaxParam = source.fAngleMaxParam ;
-  fMinPt = source.fMinPt ;
-  fDeltaPhiMaxCut = source.fDeltaPhiMaxCut ; 
-  fDeltaPhiMinCut = source.fDeltaPhiMinCut ; 
-  fRatioMaxCut = source.fRatioMaxCut ; 
-  fRatioMinCut = source.fRatioMinCut ;
   fKeepNeutralMesonHistos = source.fKeepNeutralMesonHistos;
  
   fhAnglePairNoCut = source. fhAnglePairNoCut ; 
-  fhAnglePairCorrelationCut = source. fhAnglePairCorrelationCut ; 
   fhAnglePairOpeningAngleCut = source. fhAnglePairOpeningAngleCut ; 
   fhAnglePairAllCut = source. fhAnglePairAllCut ; 
   fhInvMassPairNoCut = source.fhInvMassPairNoCut ; 
-  fhInvMassPairCorrelationCut = source.fhInvMassPairCorrelationCut ; 
   fhInvMassPairOpeningAngleCut = source.fhInvMassPairOpeningAngleCut ; 
   fhInvMassPairAllCut = source.fhInvMassPairAllCut ; 
   
@@ -131,18 +113,29 @@ AliNeutralMesonSelection & AliNeutralMesonSelection::operator = (const AliNeutra
 //____________________________________________________________________________
 AliNeutralMesonSelection::~AliNeutralMesonSelection() 
 {
- // Remove all pointers except analysis output pointers.
+  //dtor
 
+  if(!fKeepNeutralMesonHistos){
+    //Histograms initialized and filled but not passed to output container
+    //delete here, I am not sure this is correct
+    
+    if(fhAnglePairNoCut) delete fhAnglePairNoCut;
+    if(fhAnglePairOpeningAngleCut) delete fhAnglePairOpeningAngleCut; 
+    if(fhAnglePairAllCut) delete fhAnglePairAllCut;
+    if(fhInvMassPairNoCut) delete fhInvMassPairNoCut;
+    if(fhInvMassPairOpeningAngleCut) delete fhInvMassPairOpeningAngleCut;
+    if(fhInvMassPairAllCut) delete fhInvMassPairAllCut; 
+
+  }
+  
 }
-
-
-
 //________________________________________________________________________
 TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
 {  
 
   // Create histograms to be saved in output file and 
-  // store them in outputContainer
+  // store them in outputContainer of the analysis class that calls this class.
+
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("MesonDecayHistos") ; 
   
@@ -187,18 +180,6 @@ TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
   fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
   fhInvMassPairAllCut->SetXTitle("E_{#pi^{0}}(GeV)");
 
-  fhAnglePairCorrelationCut  = new TH2F
-    ("AnglePairCorrelationCut",
-     "Angle between correlated #gamma pair vs E_{#pi^{0}}",200,0,50,200,0,0.2); 
-  fhAnglePairCorrelationCut->SetYTitle("Angle (rad)");
-  fhAnglePairCorrelationCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-
-  fhInvMassPairCorrelationCut  = new TH2F
-    ("InvMassPairCorrelationCut","Invariant Mass of correlated #gamma pair vs E_{#pi^{0}}",
-     120,0,120,360,0,0.5); 
-  fhInvMassPairCorrelationCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-  fhInvMassPairCorrelationCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-  
   outputContainer->Add(fhAnglePairNoCut) ; 
   outputContainer->Add(fhAnglePairOpeningAngleCut) ;
   outputContainer->Add(fhAnglePairAllCut) ; 
@@ -206,9 +187,6 @@ TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
   outputContainer->Add(fhInvMassPairNoCut) ; 
   outputContainer->Add(fhInvMassPairOpeningAngleCut) ; 
   outputContainer->Add(fhInvMassPairAllCut) ; 
-
-  outputContainer->Add(fhAnglePairCorrelationCut) ; 
-  outputContainer->Add(fhInvMassPairCorrelationCut) ; 
   
   return outputContainer;
 }
@@ -218,7 +196,7 @@ void AliNeutralMesonSelection::InitParameters()
 {
  
   //Initialize the parameters of the analysis.
-  fKeepNeutralMesonHistos = kTRUE ;
+  fKeepNeutralMesonHistos = kFALSE ;
 
   //-------------kHadron, kJetLeadCone-----------------
   fAngleMaxParam.Set(4) ;
@@ -231,12 +209,6 @@ void AliNeutralMesonSelection::InitParameters()
   fInvMassMinCut  = 0.11 ;
 
   fM = 0.1349766;//neutralMeson mass
-
-  fMinPt = 0.   ;
-  fDeltaPhiMaxCut      = 4.5;
-  fDeltaPhiMinCut      = 1.5 ;
-  fRatioMaxCut    = 1.0 ;
-  fRatioMinCut    = 0.1 ; 
 }
 
 //__________________________________________________________________________-
@@ -259,31 +231,10 @@ Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float
 }
 
 //____________________________________________________________________________
-Bool_t  AliNeutralMesonSelection::CutPtPhi(Double_t ptg, Double_t phig, Double_t pt, Double_t phi)  const
-{ 
-  //Select pair if delta
-  Bool_t cut = kFALSE ;
- 
-  if(fSelect == kNoSelectPhiPt) cut = kTRUE ;
-  else if((phig-phi) > fDeltaPhiMinCut && ((phig-phi) < fDeltaPhiMaxCut)){
-    //Cut on pt
-    if((fSelect == kSelectPhiPtRatio && ptg > 0. && pt/ptg  > fRatioMinCut &&  pt/ptg  < fRatioMaxCut) ||
-	(fSelect == kSelectPhiMinPt && pt > fMinPt)  )  cut = kTRUE ;
-  }
-  else cut = kFALSE ;
-  
-  return cut ;
-  
-}
-
-//____________________________________________________________________________
-Bool_t  AliNeutralMesonSelection::SelectPair(TParticle * pGamma, TLorentzVector gammai, TLorentzVector gammaj)  
+Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVector gammaj)  
 {  
   
   //Search for the neutral pion within selection cuts
-  
-  Double_t ptg = pGamma->Pt();
-  Double_t phig = pGamma->Phi() ;
   Bool_t goodpair = kFALSE ;
   
   Double_t pt  = (gammai+gammaj).Pt();
@@ -297,29 +248,21 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TParticle * pGamma, TLorentzVector 
   //Fill histograms with no cuts applied.
   fhAnglePairNoCut->Fill(e,angle);
   fhInvMassPairNoCut->Fill(e,invmass);
-  
-  //Cut on phig-phi meson
-  if(CutPtPhi(ptg, phig, pt, phi)){
     
-    fhAnglePairCorrelationCut     ->Fill(e,angle);
-    fhInvMassPairCorrelationCut->Fill(e,invmass);
+  //Cut on the aperture of the pair
+  if(IsAngleInWindow(angle,e)){
+    fhAnglePairOpeningAngleCut     ->Fill(e,angle);
+    fhInvMassPairOpeningAngleCut->Fill(e,invmass);
+    AliDebug(2,Form("Angle cut: pt %f, phi %f",pt,phi));
     
-    //Cut on the aperture of the pair
-    if(IsAngleInWindow(angle,e)){
-      fhAnglePairOpeningAngleCut     ->Fill(e,angle);
-      fhInvMassPairOpeningAngleCut->Fill(e,invmass);
-      AliDebug(2,Form("Angle cut: pt %f, phi %f",pt,phi));
-      
-      //Cut on the invariant mass of the pair
-      if((invmass>fInvMassMinCut) && (invmass<fInvMassMaxCut)){ 
-	fhInvMassPairAllCut  ->Fill(e,invmass);
-	fhAnglePairAllCut       ->Fill(e,angle);
-	goodpair = kTRUE;
-	AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
-      }//(invmass>0.125) && (invmass<0.145)
-    }//Opening angle cut
-  } // cut on pt and phi
-  
+    //Cut on the invariant mass of the pair
+    if((invmass>fInvMassMinCut) && (invmass<fInvMassMaxCut)){ 
+      fhInvMassPairAllCut  ->Fill(e,invmass);
+      fhAnglePairAllCut       ->Fill(e,angle);
+      goodpair = kTRUE;
+      AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
+    }//(invmass>0.125) && (invmass<0.145)
+  }//Opening angle cut
   
   return goodpair; 
   
@@ -343,11 +286,6 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   printf("p2 :     %f", fAngleMaxParam.At(2));
   printf("p3 :     %f", fAngleMaxParam.At(3));
 
-  printf("pT meson       >    %f\n", fMinPt) ; 
-  printf("Phi gamma-meson      <     %f\n", fDeltaPhiMaxCut) ; 
-  printf("Phi gamma-meson      >     %f\n", fDeltaPhiMinCut) ;
-  printf("pT meson / pT Gamma             <     %f\n", fRatioMaxCut) ; 
-  printf("pT meson / pT Gamma             >     %f\n", fRatioMinCut) ;
   printf("Keep Neutral Meson Histos = %d\n",fKeepNeutralMesonHistos);
 
 } 
