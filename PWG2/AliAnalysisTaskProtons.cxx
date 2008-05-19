@@ -14,7 +14,7 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 
-#include "PWG2spectra/SPECTRA/AliProtonAnalysis.h"
+#include "AliProtonAnalysis.h"
 #include "AliAnalysisTaskProtons.h"
 
 // Analysis task creating a the 2d y-p_t spectrum of p and antip
@@ -50,8 +50,9 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
     // Disable all branches and enable only the needed ones
     // The next two lines are different when data produced as AliESDEvent is read
     if(fAnalysisType == "ESD") {
-      tree->SetBranchStatus("*", kFALSE);
-      tree->SetBranchStatus("fTracks.*", kTRUE);
+// In train mode branches can be disabled at the level of ESD handler (M.G.)
+//      tree->SetBranchStatus("*", kFALSE);
+      tree->SetBranchStatus("*Tracks.*", kTRUE);
 
       AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
       

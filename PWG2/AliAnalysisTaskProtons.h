@@ -8,9 +8,9 @@ class TString;
 class TList;
 class AliESDEvent;
 class AliAODEvent;
-#include "TF1.h"
+class AliProtonAnalysis;
+class TF1;
 
-#include "PWG2spectra/SPECTRA/AliProtonAnalysis.h"
 #include "AliAnalysisTask.h"
 
 class AliAnalysisTaskProtons : public AliAnalysisTask {
