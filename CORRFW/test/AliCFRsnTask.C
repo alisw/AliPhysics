@@ -170,6 +170,7 @@ Bool_t AliCFRsnTask(
   // create the task
   AliCFRsnTask *task = new AliCFRsnTask("AliRsnTask");
   task->SetCFManager(man); //here is set the CF manager
+  task->SetRsnPDG(PDG);
 
 
   //SETUP THE ANALYSIS MANAGER TO READ INPUT CHAIN AND WRITE DESIRED OUTPUTS
@@ -222,46 +223,12 @@ Bool_t AliCFRsnTask(
 }
 
 void Load(Bool_t useGrid) {
-  //remove this file which can cause problems
-  if (!useGrid) 
-    gSystem->Exec("rm $ALICE_ROOT/ANALYSIS/AliAnalysisSelector_cxx.so");
-  
   //load the required aliroot libraries
   gSystem->Load("libANALYSIS") ;
   gSystem->Load("libANALYSISalice") ;
-  
-  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include -I$ALICE_ROOT/PWG2/RESONANCES -I$ALICE_ROOT/CORRFW");
+  gSystem->Load("libPWG2resonances");
+  gSystem->Load("libCORRFW");
 
-  if (!useGrid) {
-    //load local CF library
-    gSystem->Load("libCORRFW");
-    //load PWG2 library
-    gSystem->Load("libPWG2resonances");
-  }
-  else {
-    //compile online the task class
-    gSystem->Exec("cp $ALICE_ROOT/PWG2/RESONANCES/AliRsnDaughter.cxx .");
-    gROOT->LoadMacro("./AliRsnDaughter.cxx+");
-    gSystem->Exec("tar zxvf cf_classes.tgz");
-    gROOT->LoadMacro("./AliCFFrame.cxx+");
-    gROOT->LoadMacro("./AliCFVGrid.cxx+");
-    gROOT->LoadMacro("./AliCFGrid.cxx+");
-    gROOT->LoadMacro("./AliCFGridSparse.cxx+");
-    gROOT->LoadMacro("./AliCFContainer.cxx+");
-    gROOT->LoadMacro("./AliCFCutBase.cxx+");
-    gROOT->LoadMacro("./AliCFTrackKineCuts.cxx+");
-    gROOT->LoadMacro("./AliCFTrackIsPrimaryCuts.cxx+");
-    gROOT->LoadMacro("./AliCFTrackQualityCuts.cxx+");
-    gROOT->LoadMacro("./AliCFParticleGenCuts.cxx+");
-    gROOT->LoadMacro("./AliCFAcceptanceCuts.cxx+");
-    gROOT->LoadMacro("./AliCFTrackCutPid.cxx+");
-    gROOT->LoadMacro("./AliCFManager.cxx+");
-    gSystem->Exec("tar zxvf cf_rsn.tgz");
-    gROOT->LoadMacro("./AliCFPair.cxx+");
-    gROOT->LoadMacro("./AliCFPairAcceptanceCuts.cxx+");
-    gROOT->LoadMacro("./AliCFPairQualityCuts.cxx+");
-    gROOT->LoadMacro("./AliCFPairIsPrimaryCuts.cxx+");
-    gROOT->LoadMacro("./AliCFPairPidCut.cxx+");
-  }
+  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG2/RESONANCES");
   gROOT->LoadMacro("./AliCFRsnTask.cxx+");
 }

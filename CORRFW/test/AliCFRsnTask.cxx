@@ -38,7 +38,7 @@
 //__________________________________________________________________________
 AliCFRsnTask::AliCFRsnTask() :
   AliAnalysisTaskSE(),
-  fRsnPDG(313),
+  fRsnPDG(0),
   fCFManager(0x0),
   fHistEventsProcessed(0x0)
 {
@@ -49,7 +49,7 @@ AliCFRsnTask::AliCFRsnTask() :
 //___________________________________________________________________________
 AliCFRsnTask::AliCFRsnTask(const Char_t* name) :
   AliAnalysisTaskSE(name),
-  fRsnPDG(313),
+  fRsnPDG(0),
   fCFManager(0x0),
   fHistEventsProcessed(0x0)
 {
@@ -160,6 +160,7 @@ void AliCFRsnTask::UserExec(Option_t *)
     cut->SetEvtInfo(fESD);
   }
 
+  // Loop on negative tracks
   for (Int_t iTrack1 = 0; iTrack1<fESD->GetNumberOfTracks(); iTrack1++) {
     AliESDtrack* esdTrack1 = fESD->GetTrack(iTrack1);
     //track1 is negative
@@ -167,6 +168,7 @@ void AliCFRsnTask::UserExec(Option_t *)
     Int_t esdLabel1 = esdTrack1->GetLabel();
     if (esdLabel1<0) continue;
 
+    //Loop on positive tracks
     for (Int_t iTrack2 = 0; iTrack2<fESD->GetNumberOfTracks(); iTrack2++) {
       AliESDtrack* esdTrack2 = fESD->GetTrack(iTrack2);
       //track2 is positive
@@ -174,6 +176,7 @@ void AliCFRsnTask::UserExec(Option_t *)
       Int_t esdLabel2 = esdTrack2->GetLabel();
       if (esdLabel2<0) continue;
 	
+      //Create Resonance daughter objects
       AliRsnDaughter* tmp1 = new AliRsnDaughter(esdTrack1);
       AliRsnDaughter* tmp2 = new AliRsnDaughter(esdTrack2);
       AliRsnDaughter track1(*tmp1);
@@ -181,6 +184,7 @@ void AliCFRsnTask::UserExec(Option_t *)
       delete tmp1;
       delete tmp2;
 
+      //Set MC information to resonance daughters
       TParticle *part1 = stack->Particle(esdLabel1);
       track1.InitParticle(part1);
       track1.GetParticle()->SetPDG(part1->GetPdgCode());
@@ -205,10 +209,10 @@ void AliCFRsnTask::UserExec(Option_t *)
 	
       //make a mother resonance from the 2 candidate daughters
       AliRsnDaughter rsn = AliRsnDaughter::Sum(track1,track2) ;
-      AliCFPair pair(esdTrack1,esdTrack2);
+      AliCFPair pair(esdTrack1,esdTrack2); // This object is used for cuts (to be replaced)
 
       //check if true resonance
-      if (rsn.GetParticle()->MotherPDG() != fRsnPDG) continue;
+      if (rsn.GetParticle()->PDG() != fRsnPDG) continue;
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,&pair)) continue;
 
       //check if associated MC resonance passes the cuts
@@ -217,7 +221,7 @@ void AliCFRsnTask::UserExec(Option_t *)
       AliMCParticle* mcRsn = fMCEvent->GetTrack(motherLabel);
       if (!mcRsn) continue;
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcRsn)) continue; 
-    
+
       //fill the container
       containerInput[0] = rsn.Pt() ;
       containerInput[1] = GetRapidity(rsn.E(),rsn.Pz());
