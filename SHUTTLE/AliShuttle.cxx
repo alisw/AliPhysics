@@ -1272,12 +1272,11 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 		return 0; 
 	}	
 	
-	if (fgkMainCDB.Length() == 0)
-		fgkMainCDB = Form("alien://folder=%s%d/%s/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache", 
+	// build cdb paths (repeat each time, LHCperiod might have changed)
+	fgkMainCDB.Form("alien://folder=%s%d/%s/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache", 
 					fConfig->GetAlienPath(), GetCurrentYear(), lhcPeriod.Data());
 	
-	if (fgkMainRefStorage.Length() == 0)
-		fgkMainRefStorage = Form("alien://folder=%s%d/%s/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
+	fgkMainRefStorage.Form("alien://folder=%s%d/%s/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
 					fConfig->GetAlienPath(), GetCurrentYear(), lhcPeriod.Data());
 	
 	// Loop on detectors in the configuration
