@@ -51,7 +51,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   TGraphErrors* GetDriftSpeedGraph() const;
   TGraphErrors* GetSelectedDriftSpeedGraph(Int_t minAcceptStatus) const;
   Float_t* GetDriftSpeedFitParam()const{ return fParam;}
-  Float_t GetDriftSpeeed(Int_t jpad) const{return fDriftSpeed[jpad];}
+  Float_t GetDriftSpeed(Int_t jpad) const{return fDriftSpeed[jpad];}
   Float_t GetDriftSpeedErr(Int_t jpad) const{return fDriftSpeedErr[jpad];}
   Float_t GetTimeBinZero() const{return fTbZero;}
 

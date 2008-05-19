@@ -307,13 +307,15 @@ void AliITSOnlineSDDInjectors::CalcDriftSpeed(Int_t jpad){
 }
 //______________________________________________________________________
 Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjPad) const{
-  //
+  // Injectors location along anodes:
+  // Side left  (UP)   - channel 0: injectors on anodes 0,7,15,...,247,255 
+  // Side right (DOWN) - channel 1: injectors on anodes 0,8,16,...,248,255 
   Int_t ian=-1;
   if(iInjPad>=kInjPads) return ian;
-  if(!fSide){
+  if(fSide==1){  // right side
     ian=iInjPad*8;
     if(iInjPad==32) ian--;
-  }else{
+  }else{         // left side
     ian=iInjPad*8-1;
     if(iInjPad==0) ian=0;
   }
@@ -323,10 +325,10 @@ Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjPad) const{
 Int_t AliITSOnlineSDDInjectors::GetInjPadNumberFromAnode(Int_t nAnode) const{
   //
   Int_t iInjPad=-1;
-  if(!fSide){
+  if(fSide==1){  // right side
     if(nAnode%8==0) iInjPad=nAnode/8;
     if(nAnode==255) iInjPad=32;
-  }else{
+  }else{         // left side
     if(nAnode%8==7) iInjPad=1+nAnode/8;
     if(nAnode==0) iInjPad=0;
   }
