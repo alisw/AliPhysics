@@ -199,7 +199,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 				     const char* name, const char* title) :
   TNamed(name, title),
 
-  fUniformField(kTRUE),
+  fUniformField(kFALSE),
   fRunVertexFinder(kTRUE),
   fRunVertexFinderTracks(kTRUE),
   fRunHLTTracking(kFALSE),
