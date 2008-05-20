@@ -74,7 +74,9 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
                 AliHLTTPCRunStatistics.h \
                 AliHLTTPCRunStatisticsProducerComponent.h \
 		AliHLTTPCKryptonClusterFinder.h \
-		AliHLTTPCKryptonClusterFinderComponent.h
+		AliHLTTPCKryptonClusterFinderComponent.h \
+		AliHLTTPCClusterHistoComponent.h \
+		AliHLTTPCClusterDumpComponent.h
 
 
 
