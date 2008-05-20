@@ -217,39 +217,39 @@ protected:
 //        Implementation of member functions
 //
 template<class T>
-inline AliFmThreeVector<T>::AliFmThreeVector(T x, T y, T z)
-    : mX1(x), mX2(y), mX3(z) {/* nop */}
+inline AliFmThreeVector<T>::AliFmThreeVector(T ax, T ay, T az)
+    : mX1(ax), mX2(ay), mX3(az) {/* nop */}
 template<class T>
 inline AliFmThreeVector<T>::~AliFmThreeVector() {/* nop */}
 
 template<class T>
-inline void AliFmThreeVector<T>::setX(T x) {mX1 = x;}
+inline void AliFmThreeVector<T>::setX(T ax) {mX1 = ax;}
 
 template<class T>
-inline void AliFmThreeVector<T>::setY(T y) {mX2 = y;}
+inline void AliFmThreeVector<T>::setY(T ay) {mX2 = ay;}
 
 template<class T>
-inline void AliFmThreeVector<T>::setZ(T z) {mX3 = z;}
+inline void AliFmThreeVector<T>::setZ(T az) {mX3 = az;}
 
 template<class T>
-void AliFmThreeVector<T>::setPhi(T angle)
+void AliFmThreeVector<T>::setPhi(T aangle)
 {
     double  r = magnitude();
     double th = theta();
     
-    mX1 = r*sin(th)*cos(angle);
-    mX2 = r*sin(th)*sin(angle);
+    mX1 = r*sin(th)*cos(aangle);
+    mX2 = r*sin(th)*sin(aangle);
 }
 
 template <class T>
-void AliFmThreeVector<T>::setTheta(T angle)
+void AliFmThreeVector<T>::setTheta(T aangle)
 {
     double r  = magnitude();
     double ph = phi();
 
-    mX1 = r*sin(angle)*cos(ph);
-    mX2 = r*sin(angle)*sin(ph);
-    mX3 = r*cos(angle);
+    mX1 = r*sin(aangle)*cos(ph);
+    mX2 = r*sin(aangle)*sin(ph);
+    mX3 = r*cos(aangle);
 }
 
 template <class T>
@@ -264,9 +264,9 @@ void AliFmThreeVector<T>::setMagnitude(T r)
 }
 
 template <class T>
-void AliFmThreeVector<T>::setMag(T mag)
+void AliFmThreeVector<T>::setMag(T amag)
 {
-    setMagnitude(mag);
+    setMagnitude(amag);
 }
 
 template<class T>
@@ -325,44 +325,44 @@ AliFmThreeVector<T> AliFmThreeVector<T>::orthogonal() const
 {
     // Direct copy from CLHEP--it is probably better to
     // use your own dot/cross product code...
-    double x = (mX1 < 0.0) ? -mX1 : mX1;
-    double y = (mX2 < 0.0) ? -mX2 : mX2;
-    double z = (mX3 < 0.0) ? -mX3 : mX3;
+    double ax = (mX1 < 0.0) ? -mX1 : mX1;
+    double ay = (mX2 < 0.0) ? -mX2 : mX2;
+    double az = (mX3 < 0.0) ? -mX3 : mX3;
     
-    if(x<y)
-	return x < z ? AliFmThreeVector<T>(0,mX3,-mX2) :  AliFmThreeVector<T>(mX2,-mX1,0);
+    if(ax<ay)
+	return ax < az ? AliFmThreeVector<T>(0,mX3,-mX2) :  AliFmThreeVector<T>(mX2,-mX1,0);
     else
 	return  mX2 < mX3 ? AliFmThreeVector<T>(-mX3,0,mX1) :  AliFmThreeVector<T>(mX2,-mX1,0);
 }
 
 template <class T>
-void AliFmThreeVector<T>::rotateX(T angle)
+void AliFmThreeVector<T>::rotateX(T aangle)
 {
     // may in the future make use of the AliFmRotation class!
-    double yPrime = cos(angle)*mX2 - sin(angle)*mX3;
-    double zPrime = sin(angle)*mX2 + cos(angle)*mX3;
+    double yPrime = cos(aangle)*mX2 - sin(aangle)*mX3;
+    double zPrime = sin(aangle)*mX2 + cos(aangle)*mX3;
 
     mX2 = yPrime;
     mX3 = zPrime;
 }
 
 template <class T>
-void AliFmThreeVector<T>::rotateY(T angle)
+void AliFmThreeVector<T>::rotateY(T aangle)
 {
     // may in the future make use of the AliFmRotation class!
-    double zPrime = cos(angle)*mX3 - sin(angle)*mX1;
-    double xPrime = sin(angle)*mX3 + cos(angle)*mX1;
+    double zPrime = cos(aangle)*mX3 - sin(aangle)*mX1;
+    double xPrime = sin(aangle)*mX3 + cos(aangle)*mX1;
 
     mX1 = xPrime;
     mX3 = zPrime;
 }
 
 template <class T>
-void AliFmThreeVector<T>::rotateZ(T angle)
+void AliFmThreeVector<T>::rotateZ(T aangle)
 {
     // may in the future make use of the AliFmRotation class!
-    double xPrime = cos(angle)*mX1 - sin(angle)*mX2;
-    double yPrime = sin(angle)*mX1 + cos(angle)*mX2;
+    double xPrime = cos(aangle)*mX1 - sin(aangle)*mX2;
+    double yPrime = sin(aangle)*mX1 + cos(aangle)*mX2;
 
     mX1 = xPrime;
     mX2 = yPrime;
@@ -462,9 +462,9 @@ inline AliFmThreeVector<T>& AliFmThreeVector<T>::operator/= (double c)
 
 template<class T>
 inline AliFmThreeVector<T>
-AliFmThreeVector<T>::pseudoProduct(double x,double y,double z) const
+AliFmThreeVector<T>::pseudoProduct(double ax,double ay,double az) const
 {
-    return AliFmThreeVector<T>(mX1*x,mX2*y,mX3*z);
+    return AliFmThreeVector<T>(mX1*ax,mX2*ay,mX3*az);
 }
 
 template<class T>

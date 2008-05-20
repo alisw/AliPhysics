@@ -183,8 +183,8 @@ protected:
 //        Implementation of member functions
 //
 template<class T>
-AliFmLorentzVector<T>::AliFmLorentzVector(T x, T y, T z, T t)
-    : mThreeVector(x, y, z), mX4(t) { /* nop */ }
+AliFmLorentzVector<T>::AliFmLorentzVector(T ax, T ay, T az, T at)
+    : mThreeVector(ax, ay, az), mX4(at) { /* nop */ }
 
 template<class T>
 AliFmLorentzVector<T>::~AliFmLorentzVector() { /* nopt */ }    
@@ -237,28 +237,28 @@ T AliFmLorentzVector<T>::mt() const
 }
 
 template<class T>
-void AliFmLorentzVector<T>::setPx(T x) {mThreeVector.setX(x);}
+void AliFmLorentzVector<T>::setPx(T ax) {mThreeVector.setX(ax);}
 
 template<class T>
-void AliFmLorentzVector<T>::setPy(T y) {mThreeVector.setY(y);}
+void AliFmLorentzVector<T>::setPy(T ay) {mThreeVector.setY(ay);}
 
 template<class T>
-void AliFmLorentzVector<T>::setPz(T z) {mThreeVector.setZ(z);}
+void AliFmLorentzVector<T>::setPz(T az) {mThreeVector.setZ(az);}
 
 template<class T>
-void AliFmLorentzVector<T>::setX(T x) {mThreeVector.setX(x);}
+void AliFmLorentzVector<T>::setX(T ax) {mThreeVector.setX(ax);}
 
 template<class T>
-void AliFmLorentzVector<T>::setY(T y) {mThreeVector.setY(y);}
+void AliFmLorentzVector<T>::setY(T ay) {mThreeVector.setY(ay);}
 
 template<class T>
-void AliFmLorentzVector<T>::setZ(T z) {mThreeVector.setZ(z);}
+void AliFmLorentzVector<T>::setZ(T az) {mThreeVector.setZ(az);}
 
 template<class T>
-void AliFmLorentzVector<T>::setT(T t) {mX4 = t;}
+void AliFmLorentzVector<T>::setT(T at) {mX4 = at;}
 
 template<class T>
-void AliFmLorentzVector<T>::setE(T e) {mX4 = e;}
+void AliFmLorentzVector<T>::setE(T ae) {mX4 = ae;}
 
 template<class T>
 T AliFmLorentzVector<T>::x() const {return mThreeVector.x();}
@@ -409,13 +409,13 @@ AliFmLorentzVector<T>& AliFmLorentzVector<T>::operator/= (double c)
 
 template<class T>
 template<class X>
-AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmThreeVector<X> &vec, T t)
-	: mThreeVector(vec), mX4(t) { /* nop */ }
+AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmThreeVector<X> &vec, T at)
+	: mThreeVector(vec), mX4(at) { /* nop */ }
 
 template<class T>
 template<class X>
-AliFmLorentzVector<T>::AliFmLorentzVector(T t, const AliFmThreeVector<X> &vec)
-	: mThreeVector(vec), mX4(t) { /* nop */ }
+AliFmLorentzVector<T>::AliFmLorentzVector(T at, const AliFmThreeVector<X> &vec)
+	: mThreeVector(vec), mX4(at) { /* nop */ }
 
 template<class T>
 template<class X>

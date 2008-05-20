@@ -80,19 +80,19 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 		 AliFemtoParticleCollection* ParticlesPassingCut1,
 		 AliFemtoParticleCollection* ParticlesPssingCut2=0);
 
-  AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway;  /* Mixing Buffer used for Analyses which wrap this one */
+  AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway; //! Mixing Buffer used for Analyses which wrap this one 
 
-  AliFemtoPairCut*             fPairCut;             /* cut applied to pairs */
-  AliFemtoCorrFctnCollection*  fCorrFctnCollection;  /* correlation functions of this analysis */
-  AliFemtoEventCut*            fEventCut;            /* cut to select events */
-  AliFemtoParticleCut*         fFirstParticleCut;    /* select particles of type #1 */
-  AliFemtoParticleCut*         fSecondParticleCut;   /* select particles of type #2 */
-  AliFemtoPicoEventCollection* fMixingBuffer;        /* mixing buffer used in this simplest analysis */
-  AliFemtoPicoEvent*           fPicoEvent;           /* The current event, in the small (pico) form */
-  unsigned int fNumEventsToMix;                      /* How many "previous" events get mixed with this one, to make background */
-  unsigned int fNeventsProcessed;                    /* How many events processed so far */
+  AliFemtoPairCut*             fPairCut;             //  cut applied to pairs 
+  AliFemtoCorrFctnCollection*  fCorrFctnCollection;  //  correlation functions of this analysis 
+  AliFemtoEventCut*            fEventCut;            //  cut to select events 
+  AliFemtoParticleCut*         fFirstParticleCut;    //  select particles of type #1 
+  AliFemtoParticleCut*         fSecondParticleCut;   //  select particles of type #2 
+  AliFemtoPicoEventCollection* fMixingBuffer;        //  mixing buffer used in this simplest analysis 
+  AliFemtoPicoEvent*           fPicoEvent;           //! The current event, in the small (pico) form 
+  unsigned int fNumEventsToMix;                      //  How many "previous" events get mixed with this one, to make background 
+  unsigned int fNeventsProcessed;                    //  How many events processed so far 
 
-  unsigned int fMinSizePartCollection;               /* Don't use event if it has fewer than this many particles passing ParticleCuts default 0*/
+  unsigned int fMinSizePartCollection;               //  Don't use event if it has fewer than this many particles passing ParticleCuts default 0
 
 #ifdef __ROOT__
   ClassDef(AliFemtoSimpleAnalysis, 0)
