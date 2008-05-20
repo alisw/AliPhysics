@@ -3,12 +3,13 @@
 ACORDE DA for online calibration
 
 Contact: Pedro.Gonzalez.Zamora@cern.ch
-
+Link: missing
+Reference Run: missing
 Run Type: PHYSICS
-
+DA Type: LDC
 Number of events needed: depending on the run, being run-level
 Input Files: ACORDEDa.root
-Output Files: ACORDEHistos to be exported to the DAQ FXS
+Output Files: ACORDEHistos.root to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
 
 */
@@ -22,8 +23,6 @@ Trigger types used: PHYSICS_EVENT
 //AliRoot
 #include "AliACORDERawStream.h"
 #include "AliRawReaderDate.h"
-#include "AliRawReader.h"
-#include "AliDAQ.h"
 
 //ROOT
 #include "TROOT.h"
@@ -43,6 +42,12 @@ Trigger types used: PHYSICS_EVENT
 */
 int main(int argc, char **argv) {
 
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()");
+
  int status;
 
  // AliACORDERawStream reader;
@@ -52,7 +57,6 @@ int main(int argc, char **argv) {
   int eventHits=0;
   int multHits=0;
 
-  Int_t nEvents=0;
   UInt_t word;
   int kModules=60;
   
@@ -138,11 +142,11 @@ int main(int argc, char **argv) {
       switch (event->eventType)
       {
 
-        case: START_OF_RUN;
-              break;
-        case: END_OF_RUN:
-              break;
-        case: PHYSICS_EVENT:
+      case START_OF_RUN:
+	break;
+      case END_OF_RUN:
+	break;
+      case PHYSICS_EVENT:
               nevents_physics++;
               fprintf(fp,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
               (unsigned long)event->eventRunNb,
