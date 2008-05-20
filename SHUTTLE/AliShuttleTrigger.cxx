@@ -148,8 +148,8 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config):
 	Int_t retries = fConfig->GetDCSRetries();
 	fShuttle = new AliShuttle(config, timeout, retries);
 
-	TerminateSignalHandler* fQuitSignalHandler = new TerminateSignalHandler(this, kSigQuit);
-	TerminateSignalHandler* fInterruptSignalHandler = new TerminateSignalHandler(this, kSigInterrupt);
+	fQuitSignalHandler = new TerminateSignalHandler(this, kSigQuit);
+	fInterruptSignalHandler = new TerminateSignalHandler(this, kSigInterrupt);
 
 	gSystem->AddSignalHandler(fQuitSignalHandler);
 	gSystem->AddSignalHandler(fInterruptSignalHandler);

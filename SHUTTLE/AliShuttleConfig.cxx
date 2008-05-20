@@ -271,6 +271,7 @@ fIsValid(kFALSE)
 AliShuttleConfig::AliShuttleConfig(const AliShuttleConfig & other):
 	TObject(),
 	fConfigHost(other.fConfigHost),
+	fAlienPath(other.fAlienPath),
 	fDAQlbHost(other.fDAQlbHost),
 	fDAQlbPort(other.fDAQlbPort),
 	fDAQlbUser(other.fDAQlbUser),
@@ -653,6 +654,7 @@ ClassImp(AliShuttleConfig)
 AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
 	fConfigHost(host), 
+	fAlienPath(""), 
 	fDAQlbHost(""), 
 	fDAQlbPort(), 
 	fDAQlbUser(""), 
