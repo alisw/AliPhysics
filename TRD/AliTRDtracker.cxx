@@ -727,27 +727,29 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     FollowProlongation(*pt); 
     pt->CookdEdx();
     pt->CookdEdxTimBin(seed->GetID());
-    pt->SetPIDMethod(AliTRDtrack::kLQ);  //switch between TRD PID methods
+
+    //calculate PID methods    
+    pt->SetPIDMethod(AliTRDtrack::kLQ);
     pt->CookPID(pidQ);
+    seed->SetTRDpid(pt->GetPID());
+    seed->SetTRDpidQuality(pidQ);
+
+    // update calibration
     if(calibra->GetHisto2d()) calibra->UpdateHistograms(pt);
     found++;
 
     Double_t xTPC = 250.0;
     if (PropagateToX(*pt,xTPC,fgkMaxStep)) {
-
       seed->UpdateTrackParams(pt,AliESDtrack::kTRDrefit);
       fHRefit->Fill(5);
 
       for (Int_t l = 0; l < AliTRDtrack::kNplane; ++l) {
         for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
           seed->SetTRDslice(pt->GetPIDsignals(l,j),l,j);
-	}
+        }
         seed->SetTRDTimBin(pt->GetPIDTimBin(l),l);
       }
-
-    }
-    else {
-
+    } else {
       // If not prolongation to TPC - propagate without update
       fHRefit->Fill(5);
       AliTRDtrack *seed2t = new AliTRDtrack(*seed);
@@ -756,19 +758,17 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
       delete seed2t;
 
       if (PropagateToX(*pt2,xTPC,fgkMaxStep)) { 
-
         pt2->CookdEdx(); 
         pt2->CookdEdxTimBin(seed->GetID()); 
-	seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
-	fHRefit->Fill(6);
+        seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
+        fHRefit->Fill(6);
 
         for (Int_t l = 0; l < AliTRDtrack::kNplane; ++l) {
           for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
             seed->SetTRDslice(pt2->GetPIDsignals(l,j),l,j);
-	  }
+          }
           seed->SetTRDTimBin(pt2->GetPIDTimBin(l),l);
         }
-
       }
 
       // Add TRD track to ESDfriendTrack - maybe this tracks are
