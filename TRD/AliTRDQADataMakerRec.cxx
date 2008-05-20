@@ -367,7 +367,7 @@ void AliTRDQADataMakerRec::InitRecPoints()
   hist[11] = new TProfile("qaTRD_recPoints_prf", ";distance;center of gravity"
                          , 120, -0.6, 0.6, -1.2, 1.2, "");
 
-  hist[12] = new TH1D("qaTRD_recPoints_ampMPV", ";amplitude MPV", 200, 0, 200);
+  hist[12] = new TH1D("qaTRD_recPoints_ampMPV", ";amplitude MPV", 150, 0, 150);
   hist[13] = new TH1D("qaTRD_recPoints_ampSigma", ";amplitude Sigma", 200, 0, 200); 
   
   // chamber by chamber
@@ -454,9 +454,9 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
   GetESDsData(0)->Fill(nTracks);
 
   // track loop
-  for (Int_t i=0; i<nTracks; i++) {
+  for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) {
 
-    AliESDtrack *track = esd->GetTrack(i);
+    AliESDtrack *track = esd->GetTrack(iTrack);
     const AliExternalTrackParam *paramOut = track->GetOuterParam();
     const AliExternalTrackParam *paramIn = track->GetInnerParam();
 
@@ -526,7 +526,7 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
       for(Int_t j=0; j<6; j++) {
 	dedx += track->GetTRDslice(j, k-1);
       }
-      GetESDsData(41+i)->Fill(paramOut->GetP(), dedx/6.);
+      GetESDsData(41+k)->Fill(paramOut->GetP(), dedx/6.);
     }
 
     // probabilities
