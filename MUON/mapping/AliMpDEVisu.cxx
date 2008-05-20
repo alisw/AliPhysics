@@ -837,8 +837,8 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSector* sector)
     
     for (Int_t iRowSeg = 0; iRowSeg < sector->GetRow(iRow)->GetNofRowSegments(); ++iRowSeg){
       
-      for (Int_t iRowSeg = 0; iRowSeg < row->GetNofRowSegments(); ++iRowSeg) {
-        AliMpVRowSegment *rowSegment = row->GetRowSegment(iRowSeg);
+      for (Int_t iRowSeg2 = 0; iRowSeg2 < row->GetNofRowSegments(); ++iRowSeg2) {
+        AliMpVRowSegment *rowSegment = row->GetRowSegment(iRowSeg2);
         
         for (Int_t iMotif = 0; iMotif < rowSegment->GetNofMotifs(); ++iMotif){
           

@@ -56,9 +56,9 @@ const Double_t AliMUONClusterSplitterMLEM::fgkCouplMin = 1.e-2; // threshold on 
 
 //_____________________________________________________________________________
 AliMUONClusterSplitterMLEM::AliMUONClusterSplitterMLEM(Int_t detElemId, 
-                                                       TObjArray* fPixArray) 
+                                                       TObjArray* pixArray) 
 : TObject(),
-fPixArray(fPixArray),
+fPixArray(pixArray),
 fMathieson(0x0),
 fDetElemId(detElemId),
 fNpar(0),

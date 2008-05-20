@@ -90,7 +90,7 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
 
 //___________________________________________
 AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t detElemId, Int_t idpart, 
-		       Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
+		       Float_t x, Float_t y, Float_t z, Float_t tof, Float_t momentum, 
 		       Float_t theta, Float_t phi, Float_t length, Float_t destep)
   : AliHit(shunt, track),
     fDetElemId(detElemId),
@@ -111,16 +111,16 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t detElemId, Int_t idpart,
     fZref(0)
 {
 /// Constructor
-    fX         = X;
-    fY         = Y;
-    fZ         = Z;
+    fX         = x;
+    fY         = y;
+    fZ         = z;
 }
 
 //-----------------------------------------------------------------------------------------------
 AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t detElemId, Int_t idpart, 
-		       Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
+		       Float_t x, Float_t y, Float_t z, Float_t tof, Float_t momentum, 
 		       Float_t theta, Float_t phi, Float_t length, Float_t destep,
-		       Float_t Xref,Float_t Yref,Float_t Zref)
+		       Float_t xref,Float_t yref,Float_t zref)
   : AliHit(shunt, track),
     fDetElemId(detElemId),
     fParticle(idpart),
@@ -135,15 +135,15 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t detElemId, Int_t idpart,
     fPx(momentum * TMath::Sin(theta) * TMath::Cos(phi)),
     fPy(momentum * TMath::Sin(theta) * TMath::Sin(phi)),
     fPz(momentum * TMath::Cos(theta)),
-    fXref(Xref),
-    fYref(Yref),
-    fZref(Zref)
+    fXref(xref),
+    fYref(yref),
+    fZref(zref)
 {
 /// Constructor
 
-    fX         = X;
-    fY         = Y;
-    fZ         = Z;
+    fX         = x;
+    fY         = y;
+    fZ         = z;
 }
 
 //-----------------------------------------------------------------------------------------------

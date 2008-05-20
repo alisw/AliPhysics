@@ -168,9 +168,9 @@ AliMUONSDigitizerV2::Exec(Option_t*)
         TList digits;        
         response->DisIntegrate(*hit,digits);
         
-        TIter next(&digits);
+        TIter nextd(&digits);
         AliMUONVDigit* d;
-        while ( ( d = (AliMUONVDigit*)next() ) )
+        while ( ( d = (AliMUONVDigit*)nextd() ) )
         {
           // Update some sdigit information that could not be known
           // by the DisIntegrate method

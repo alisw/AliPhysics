@@ -365,3 +365,25 @@ void AliMpExMap::Streamer(TBuffer &R__b)
     AliMpExMap::Class()->WriteBuffer(R__b, this);
   }
 }
+
+//_____________________________________________________________________________
+void AliMpExMap::Print(Option_t* opt) const
+{
+  /// print out
+  cout << Form("fMap size/capacity %d/%d",fMap.GetSize(),fMap.Capacity()) 
+    << Form(" fObjects.GetSize/Entries %d/%d",fObjects.GetSize(),fObjects.GetEntries()) 
+  << Form(" fKeys.GetSize %d",fKeys.GetSize()) << endl;
+  
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("FULL") ) 
+  {
+    TIter next(&fObjects);
+    TObject* o;
+    while ( ( o = next() ) )
+    {
+      o->Print();
+    }
+  }
+}

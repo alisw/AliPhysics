@@ -340,10 +340,10 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
     for (Int_t iDsp = 0; iDsp < iDspMax; ++iDsp) 
     {
       // DSP header
-      Int_t length = fDspHeader->GetHeaderLength();
-      memcpy(&fBuffer[index],fDspHeader->GetHeader(),length*4);
+      Int_t dspHeaderLength = fDspHeader->GetHeaderLength();
+      memcpy(&fBuffer[index],fDspHeader->GetHeader(),dspHeaderLength*4);
       Int_t indexDsp = index;
-      index += length; 
+      index += dspHeaderLength; 
       
       // 5 buspatches max per DSP
       for (Int_t i = 0; i < iBusPerDSP[iDsp]; ++i) 
@@ -363,14 +363,14 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
         if (busStructPtr) 
         {
           // add bus patch structure header
-          Int_t length = busStructPtr->GetHeaderLength();
-          memcpy(&fBuffer[index],busStructPtr->GetHeader(),length*4);
-          index += length;
+          Int_t busHeaderLength = busStructPtr->GetHeaderLength();
+          memcpy(&fBuffer[index],busStructPtr->GetHeader(),busHeaderLength*4);
+          index += busHeaderLength;
           
           // add bus patch data
-          length = busStructPtr->GetLength();
-          memcpy(&fBuffer[index],busStructPtr->GetData(),length*4);
-          index += length;
+          Int_t busLength = busStructPtr->GetLength();
+          memcpy(&fBuffer[index],busStructPtr->GetData(),busLength*4);
+          index += busLength;
         } 
         else 
         {

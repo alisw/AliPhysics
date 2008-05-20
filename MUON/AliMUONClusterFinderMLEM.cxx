@@ -891,8 +891,8 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
 
     for (Int_t ipix = 0; ipix < nPix; ++ipix) 
     {
-      AliMUONPad* pixPtr = Pixel(ipix);
-      fHistMlem->Fill(pixPtr->Coord(0),pixPtr->Coord(1),pixPtr->Charge());
+      AliMUONPad* pixPtr2 = Pixel(ipix);
+      fHistMlem->Fill(pixPtr2->Coord(0),pixPtr2->Coord(1),pixPtr2->Charge());
     }
 
     // Check if the total charge of pixels is too low
@@ -952,10 +952,10 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
     nPix = 0;
     for (Int_t ipix = 0; ipix < nPix1; ++ipix) 
     {
-      AliMUONPad* pixPtr = Pixel(ipix);
+      AliMUONPad* pixPtr2 = Pixel(ipix);
       if ( nPix >= npadOK  // too many pixels already
            ||
-           pixPtr->Charge() < pixMin && pixPtr->Status() != fgkMustKeep // too low charge
+           pixPtr2->Charge() < pixMin && pixPtr2->Status() != fgkMustKeep // too low charge
            ) 
       { 
         RemovePixel(ipix);
@@ -965,36 +965,36 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
       {
         if (!i) 
         {
-          pixPtr->SetCharge(10);
-          pixPtr->SetSize(indx, pixPtr->Size(indx)/2);
-          width = -pixPtr->Size(indx);
-          pixPtr->Shift(indx, width);
+          pixPtr2->SetCharge(10);
+          pixPtr2->SetSize(indx, pixPtr2->Size(indx)/2);
+          width = -pixPtr2->Size(indx);
+          pixPtr2->Shift(indx, width);
           // Shift pixel position
           if (ix) 
           {
             ix = 0;
             for (Int_t j = 0; j < 2; ++j) 
             {
-              shift[j] = pixPtr->Coord(j) - xyCOG[j];
-              shift[j] -= ((Int_t)(shift[j]/pixPtr->Size(j)/2))*pixPtr->Size(j)*2;
+              shift[j] = pixPtr2->Coord(j) - xyCOG[j];
+              shift[j] -= ((Int_t)(shift[j]/pixPtr2->Size(j)/2))*pixPtr2->Size(j)*2;
             }
           } // if (ix)
-          pixPtr->Shift(0, -shift[0]);
-          pixPtr->Shift(1, -shift[1]);
+          pixPtr2->Shift(0, -shift[0]);
+          pixPtr2->Shift(1, -shift[1]);
 	  ++nPix;
         } 
         else if (nPix < npadOK)
         {
-          pixPtr = new AliMUONPad(*pixPtr);
-          pixPtr->Shift(indx, -2*width);
-	  pixPtr->SetStatus(fgkZero);
-          fPixArray->Add(pixPtr);
+          pixPtr2 = new AliMUONPad(*pixPtr2);
+          pixPtr2->Shift(indx, -2*width);
+	  pixPtr2->SetStatus(fgkZero);
+          fPixArray->Add(pixPtr2);
 	  ++nPix;
         } 
 	else continue; // skip adjustment of histo limits
         for (Int_t j = 0; j < 4; ++j) 
         {
-          xylim[j] = TMath::Min (xylim[j], (j%2 ? -1 : 1)*pixPtr->Coord(j/2));
+          xylim[j] = TMath::Min (xylim[j], (j%2 ? -1 : 1)*pixPtr2->Coord(j/2));
         }
       } // for (Int_t i=0; i<2;
     } // for (Int_t ipix=0;
@@ -1012,18 +1012,18 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
 
     if (nPix < npadOK)
     {
-      AliMUONPad* pixPtr = Pixel(0);
+      AliMUONPad* pixPtr2 = Pixel(0);
       // add pixels if the maximum is at the limit of pixel area:
       // start from Y-direction
       Int_t j = 0;
       for (Int_t i = 3; i > -1; --i) 
       {
         if (nPix < npadOK && 
-            TMath::Abs((i%2 ? -1 : 1)*xylim[i]-xyCOG[i/2]) < pixPtr->Size(i/2)) 
+            TMath::Abs((i%2 ? -1 : 1)*xylim[i]-xyCOG[i/2]) < pixPtr2->Size(i/2)) 
         {
           //AliMUONPad* p = static_cast<AliMUONPad*>(pixPtr->Clone());
-          AliMUONPad* p = new AliMUONPad(*pixPtr);
-          p->SetCoord(i/2, xyCOG[i/2]+(i%2 ? 2:-2)*pixPtr->Size(i/2));
+          AliMUONPad* p = new AliMUONPad(*pixPtr2);
+          p->SetCoord(i/2, xyCOG[i/2]+(i%2 ? 2:-2)*pixPtr2->Size(i/2));
 	  xylim[i] = p->Coord(i/2) * (i%2 ? -1 : 1); // update histo limits
           j = TMath::Even (i/2);
           p->SetCoord(j, xyCOG[j]);
@@ -1052,11 +1052,11 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
   // Mark pixels which should be removed
   for (Int_t i = 0; i < nPix; ++i) 
   {
-    AliMUONPad* pixPtr = Pixel(i);
-    charge = pixPtr->Charge();
+    AliMUONPad* pixPtr2 = Pixel(i);
+    charge = pixPtr2->Charge();
     if (charge < thresh) 
     {
-      pixPtr->SetCharge(-charge);
+      pixPtr2->SetCharge(-charge);
     }
   }
 
@@ -1064,11 +1064,11 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
   Int_t near = 0;
   for (Int_t i = 0; i < nPix; ++i) 
   {
-    AliMUONPad* pixPtr = Pixel(i);
-    charge = pixPtr->Charge();
+    AliMUONPad* pixPtr2 = Pixel(i);
+    charge = pixPtr2->Charge();
     if (charge > 0) continue;
-    near = FindNearest(pixPtr);
-    pixPtr->SetCharge(0);
+    near = FindNearest(pixPtr2);
+    pixPtr2->SetCharge(0);
     probi[i] = 0; // make it "invisible"
     AliMUONPad* pnear = Pixel(near);
     pnear->SetCharge(pnear->Charge() + (-charge));
@@ -1082,10 +1082,10 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
   // Update histogram
   for (Int_t i = 0; i < nPix; ++i) 
   {
-    AliMUONPad* pixPtr = Pixel(i);
-    Int_t ix = fHistMlem->GetXaxis()->FindBin(pixPtr->Coord(0));
-    Int_t iy = fHistMlem->GetYaxis()->FindBin(pixPtr->Coord(1));
-    fHistMlem->SetBinContent(ix, iy, pixPtr->Charge());
+    AliMUONPad* pixPtr2 = Pixel(i);
+    Int_t ix = fHistMlem->GetXaxis()->FindBin(pixPtr2->Coord(0));
+    Int_t iy = fHistMlem->GetYaxis()->FindBin(pixPtr2->Coord(1));
+    fHistMlem->SetBinContent(ix, iy, pixPtr2->Charge());
   }
 
   // Try to split into clusters

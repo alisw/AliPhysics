@@ -124,15 +124,15 @@ AliMUONPreClusterFinderV2::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   Int_t nn = fSegmentations[pad->Cathode()]->GetNeighbours(p,neighbours);
   for (Int_t in = 0; in < nn; ++in) 
   {
-    AliMpPad* p = static_cast<AliMpPad*>(neighbours.At(in));
+    AliMpPad* p1 = static_cast<AliMpPad*>(neighbours.At(in));
     
-    TIter next(&padArray);
+    TIter next2(&padArray);
     AliMUONPad* p2;
     
-    while ( ( p2 = static_cast<AliMUONPad*>(next()) ) )
+    while ( ( p2 = static_cast<AliMUONPad*>(next2()) ) )
     {
-        if ( !p2->IsUsed() && p2->Ix()==p->GetIndices().GetFirst() 
-             && p2->Iy() == p->GetIndices().GetSecond() &&
+        if ( !p2->IsUsed() && p2->Ix()==p1->GetIndices().GetFirst() 
+             && p2->Iy() == p1->GetIndices().GetSecond() &&
              p2->Cathode() == pad->Cathode() )
         {
           AddPad(cluster,p2);
@@ -186,8 +186,8 @@ AliMUONPreClusterFinderV2::NextCluster()
   if (!pad) // protection against no pad in first cathode, which might happen
   {
     // try other cathode
-    TIter next(fPads[1]);
-    while (  ( pad = static_cast<AliMUONPad*>(next())) && pad->IsUsed() );
+    TIter next2(fPads[1]);
+    while (  ( pad = static_cast<AliMUONPad*>(next2())) && pad->IsUsed() );
     if (!pad) 
     {
       // we are done.

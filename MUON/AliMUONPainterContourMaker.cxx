@@ -210,16 +210,16 @@ AliMUONPainterContourMaker::AddSegments(TObjArray& segments,
       Double_t x2 = line->GetX()[i+1];
       Double_t y2 = line->GetY()[i+1];
       
-      TLine* line = new TLine(x1,y1,x2,y2);
+      TLine* l = new TLine(x1,y1,x2,y2);
       
-      if ( !HasLine(segments,*line) )
+      if ( !HasLine(segments,*l) )
       {
-        segments.Add(line);      
-        AliDebug(1,Form("Adding line %s",LineAsString(*line).Data()));
+        segments.Add(l);      
+        AliDebug(1,Form("Adding line %s",LineAsString(*l).Data()));
       }
       else
       {
-        AliDebug(1,Form("Line %s is already there",LineAsString(*line).Data()));
+        AliDebug(1,Form("Line %s is already there",LineAsString(*l).Data()));
       }      
     }
   }
@@ -491,23 +491,23 @@ AliMUONPainterContourMaker::SplitSegments(TObjArray& segments) const
         Double_t xmin(FLT_MAX), ymin(FLT_MAX);
         Double_t xmax(-FLT_MAX), ymax(-FLT_MAX);
 
-        for ( Int_t i = 0; i < 4; ++i )
+        for ( Int_t k = 0; k < 4; ++k )
         {
-          xmin = TMath::Min(x[i],xmin);
-          ymin = TMath::Min(y[i],ymin);
-          xmax = TMath::Max(x[i],xmax);
-          ymax = TMath::Max(y[i],ymax);
+          xmin = TMath::Min(x[k],xmin);
+          ymin = TMath::Min(y[k],ymin);
+          xmax = TMath::Max(x[k],xmax);
+          ymax = TMath::Max(y[k],ymax);
         }
         
         TLine fullLine(xmin,ymin,xmax,ymax);
         
-        for ( Int_t i = 0; i < 4; ++i )
+        for ( Int_t i1 = 0; i1 < 4; ++i1 )
         {
-          for ( Int_t j = i+1; j < 4; ++j )
+          for ( Int_t j1 = i1+1; j1 < 4; ++j1 )
           {
-            if ( TMath::Abs(i-j) != 2 ) 
+            if ( TMath::Abs(i1-j1) != 2 ) 
             {
-              TLine test(x[i],y[i],x[j],y[j]);
+              TLine test(x[i1],y[i1],x[j1],y[j1]);
 
               Bool_t isFullLine = IsEqual(test,fullLine);
               

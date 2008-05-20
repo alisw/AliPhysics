@@ -66,6 +66,8 @@ class AliMpExMap : public TObject
 
     void Copy(TObject& dest) const;
     
+  virtual void Print(Option_t* opt="") const;
+
   private:  
     // methods
     void FillMap();

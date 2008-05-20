@@ -798,10 +798,10 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
             
         for ( Int_t i = 0; i < nofPadNeighbours; ++i )
         {
-          AliMpPad* pad = static_cast<AliMpPad*>(tmp.UncheckedAt(i));
+          AliMpPad* p = static_cast<AliMpPad*>(tmp.UncheckedAt(i));
           Int_t x;
 //          Bool_t ok =
-          calibParam->PackValues(pad->GetLocation().GetFirst(),pad->GetLocation().GetSecond(),x);
+          calibParam->PackValues(p->GetLocation().GetFirst(),p->GetLocation().GetSecond(),x);
 //          if (!ok)
 //          {
 //            AliError("Could not pack value. Something is seriously wrong. Please check");

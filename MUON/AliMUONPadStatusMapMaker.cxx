@@ -142,9 +142,9 @@ AliMUONPadStatusMapMaker::ComputeStatusMap(Int_t detElemId, Int_t manuId) const
       // Compute the statusmap related to the status of neighbouring
       // pads. An invalid pad means "outside of edges".
             
-      Int_t x = neighbours->ValueAsIntFast(manuChannel,i);      
+      Int_t y = neighbours->ValueAsIntFast(manuChannel,i);      
       Int_t m,c;
-      neighbours->UnpackValue(x,m,c);
+      neighbours->UnpackValue(y,m,c);
       if ( c < 0 ) continue;
       Int_t status = 0;
       if ( !m )

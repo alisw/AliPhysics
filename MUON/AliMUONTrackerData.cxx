@@ -1043,13 +1043,13 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) c
   }
   else
   {
-    Double_t n = occ;
+    Double_t nn = occ;
     
-    if ( n > 1.0 ) 
+    if ( nn > 1.0 ) 
     {
-      Double_t mean = param.ValueAsDouble(i,dim-1)/n;
+      Double_t mean = param.ValueAsDouble(i,dim-1)/nn;
     
-      return TMath::Sqrt(TMath::Abs((value-n*mean*mean)/(n-1.0)));
+      return TMath::Sqrt(TMath::Abs((value-nn*mean*mean)/(nn-1.0)));
     }
     else
     {
