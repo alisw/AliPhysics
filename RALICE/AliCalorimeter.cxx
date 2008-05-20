@@ -677,7 +677,7 @@ void AliCalorimeter::SetDead(Int_t row,Int_t col)
   {
    if (i!=row || j!=col) // No increase of edge value for the 'dead' module itself
    {
-    AliAttribObj* a=(AliAttribObj*)fAttributes->At(i-1);
+    a=(AliAttribObj*)fAttributes->At(i-1);
     if (a)
     {
      a->IncreaseEdgeValue(j);
@@ -689,7 +689,7 @@ void AliCalorimeter::SetDead(Int_t row,Int_t col)
     fAttributes->AddAt(a,i-1);
     } 
 
-    AliCalmodule* m=GetModule(i,j);
+    m=GetModule(i,j);
     if (m) m->IncreaseEdgeValue();
    }
   }
@@ -743,7 +743,7 @@ void AliCalorimeter::SetAlive(Int_t row,Int_t col)
      AliAttribObj* a=(AliAttribObj*)fAttributes->At(i-1);
      if (a) a->DecreaseEdgeValue(j);
     }
-    AliCalmodule* m=GetModule(i,j);
+    m=GetModule(i,j);
     if (m) m->DecreaseEdgeValue();
    }
   }
