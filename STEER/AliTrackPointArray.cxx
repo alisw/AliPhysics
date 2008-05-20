@@ -58,6 +58,14 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
 {
   // Constructor
   //
+  for (Int_t ip=0; ip<npoints;ip++){
+    fX[ip]=0;
+    fY[ip]=0;
+    fZ[ip]=0;
+    fVolumeID[ip]=0;
+    for (Int_t icov=0;icov<6; icov++)
+      fCov[6*ip+icov]=0;
+  }
 }
 
 //______________________________________________________________________________
