@@ -36,13 +36,13 @@ using namespace std;
 static AliHLTComponentHandler *gComponentHandler_C = NULL;
 
 
-int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* environ )
+int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
 {
   if ( gComponentHandler_C )
     {
       return EINPROGRESS;
     }
-  gComponentHandler_C = new AliHLTComponentHandler(environ);
+  gComponentHandler_C = new AliHLTComponentHandler(comenv);
   if ( !gComponentHandler_C )
     return EFAULT;
   gComponentHandler_C->InitAliLogTrap(gComponentHandler_C);
@@ -74,12 +74,12 @@ int AliHLT_C_Component_UnloadLibrary( const char* libraryPath )
   return gComponentHandler_C->UnloadLibrary( libraryPath );
 }
 
-int AliHLT_C_CreateComponent( const char* componentType, void* environ_param, int argc, const char** argv, AliHLTComponentHandle* handle )
+int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int argc, const char** argv, AliHLTComponentHandle* handle )
 {
   if ( !gComponentHandler_C )
     return ENXIO;
   AliHLTComponent* comp;
-  int ret = gComponentHandler_C->CreateComponent( componentType, environ_param, argc, argv, comp );
+  int ret = gComponentHandler_C->CreateComponent( componentType, environParam, argc, argv, comp );
   *handle = reinterpret_cast<AliHLTComponentHandle>( comp );
   return ret;
 }
@@ -94,11 +94,11 @@ void AliHLT_C_DestroyComponent( AliHLTComponentHandle handle )
   delete pComp;
 }
 
-int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
-                           AliHLTComponent_TriggerData* trigData, AliHLTUInt8_t* outputPtr,
+int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponentEventData* evtData, const AliHLTComponentBlockData* blocks, 
+                           AliHLTComponentTriggerData* trigData, AliHLTUInt8_t* outputPtr,
                            AliHLTUInt32_t* size, AliHLTUInt32_t* outputBlockCnt, 
-                           AliHLTComponent_BlockData** outputBlocks,
-                           AliHLTComponent_EventDoneData** edd )
+                           AliHLTComponentBlockData** outputBlocks,
+                           AliHLTComponentEventDoneData** edd )
 {
   if ( !handle )
     return ENXIO;
@@ -106,7 +106,7 @@ int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_E
   return comp->ProcessEvent( *evtData, blocks, *trigData, outputPtr, *size, *outputBlockCnt, *outputBlocks, *edd );
 }
 
-int AliHLT_C_GetOutputDataType( AliHLTComponentHandle handle, AliHLTComponent_DataType* dataType )
+int AliHLT_C_GetOutputDataType( AliHLTComponentHandle handle, AliHLTComponentDataType* dataType )
 {
   if ( !handle )
     return ENXIO;

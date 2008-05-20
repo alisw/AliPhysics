@@ -46,11 +46,11 @@ AliHLTProcessor::~AliHLTProcessor()
   // see header file for class documentation
 }
 
-int AliHLTProcessor::Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv )
+int AliHLTProcessor::Init( AliHLTComponentEnvironment* comenv, void* environParam, int argc, const char** argv )
 {
   // see header file for class documentation
   int iResult=0;
-  iResult=AliHLTComponent::Init(environ, environParam, argc, argv);
+  iResult=AliHLTComponent::Init(comenv, environParam, argc, argv);
   return iResult;
 }
 

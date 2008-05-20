@@ -1040,9 +1040,8 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
       }
     }
     Byte_t *tmp = (Byte_t*)tempPt;
-    Int_t size = sizeof(AliHLTTPCDigitRowData)
+    tmp += sizeof(AliHLTTPCDigitRowData)
       + ndigits[r]*sizeof(AliHLTTPCDigitData);
-    tmp += size;
     tempPt = (AliHLTTPCDigitRowData*)tmp;
   }
   delete [] ndigits;
@@ -1104,13 +1103,13 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
     return;
   }
   tpcLoader->LoadDigits();
-  TTree *t=tpcLoader->TreeD();
+  TTree *treeD=tpcLoader->TreeD();
 
   AliTPCDigitsArray *oldArray = new AliTPCDigitsArray();
   oldArray->Setup(fParam);
   oldArray->SetClass("AliSimDigits");
 
-  Bool_t ok = oldArray->ConnectTree(t);
+  Bool_t ok = oldArray->ConnectTree(treeD);
   if(!ok)
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
@@ -1168,21 +1167,21 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
 	  digcounter++;
 	  
 	  //Tricks to get and set the correct track id's. 
-	  for(Int_t t=0; t<3; t++)
+	  for(Int_t track=0; track<3; track++)
 	    {
-	      Int_t label = oldDig->GetTrackIDFast(time,pad,t);
+	      Int_t label = oldDig->GetTrackIDFast(time,pad,track);
 	      if(label > 1)
-		trackID[t] = label - 2;
+		trackID[track] = label - 2;
 	      else if(label==0)
-		trackID[t] = -2;
+		trackID[track] = -2;
 	      else
-		trackID[t] = -1;
+		trackID[track] = -1;
 	    }
 	  
 	  dig->SetDigitFast(charge,time,pad);
 	  
-	  for(Int_t t=0; t<3; t++)
-	    ((AliSimDigits*)dig)->SetTrackIDFast(trackID[t],time,pad,t);
+	  for(Int_t track=0; track<3; track++)
+	    ((AliSimDigits*)dig)->SetTrackIDFast(trackID[track],time,pad,track);
 	  
 	}
       //cout<<"Wrote "<<digcounter<<" on row "<<i<<endl;

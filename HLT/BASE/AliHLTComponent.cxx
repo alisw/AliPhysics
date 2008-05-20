@@ -126,13 +126,13 @@ int AliHLTComponent::UnsetGlobalComponentHandler()
   return SetGlobalComponentHandler(NULL,1);
 }
 
-int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv )
+int AliHLTComponent::Init( AliHLTComponentEnvironment* comenv, void* environParam, int argc, const char** argv )
 {
   // see header file for function documentation
   HLTLogKeyword(GetComponentID());
   int iResult=0;
-  if (environ) {
-    memcpy(&fEnvironment, environ, sizeof(AliHLTComponentEnvironment));
+  if (comenv) {
+    memcpy(&fEnvironment, comenv, sizeof(AliHLTComponentEnvironment));
     fEnvironment.fParam=environParam;
   }
   const char** pArguments=NULL;
@@ -1228,7 +1228,9 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   
   AliHLTComponentBlockDataList blockData;
   { // dont delete, sets the scope for the stopwatch guard
-    ALIHLTCOMPONENT_DA_STOPWATCH();
+    // do not use ALIHLTCOMPONENT_DA_STOPWATCH(); macro
+    // in order to avoid 'shadowed variable' warning
+    AliHLTStopwatchGuard swguard2(fpStopwatches!=NULL?reinterpret_cast<TStopwatch*>(fpStopwatches->At((int)kSWDA)):NULL);
     iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, blockData, edd);
   } // end of the scope of the stopwatch guard
   if (iResult>=0 && !bSkipDataProcessing) {

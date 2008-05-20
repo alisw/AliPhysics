@@ -715,12 +715,15 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
     for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit()) {
 	AliHLTTPCConfMapPoint *currentHit = (AliHLTTPCConfMapPoint*)fTrack->GetCurrentHit();
 
-	Double_t sPrime =  currentHit->GetS() - sav;
-	sPrime   += currentHit->GetZWeight();
-	ssPrime  += currentHit->GetZWeight() * sPrime;
-	sssPrime += currentHit->GetZWeight() * sPrime * sPrime;
+	// Matthias 20.05.2008
+	// here was a shadowed variable, sPrime is formerly defined
+	// renamed it to lsPrime ('local')
+	Double_t lsPrime =  currentHit->GetS() - sav;
+	lsPrime   += currentHit->GetZWeight();
+	ssPrime  += currentHit->GetZWeight() * lsPrime;
+	sssPrime += currentHit->GetZWeight() * lsPrime * lsPrime;
 	szPrime  += currentHit->GetZWeight() * currentHit->GetZ();
-	sszPrime += currentHit->GetZWeight() * sPrime * currentHit->GetZ();
+	sszPrime += currentHit->GetZWeight() * lsPrime * currentHit->GetZ();
     }
 
     Double_t det = sPrime*sssPrime + ssPrime*ssPrime;

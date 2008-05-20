@@ -512,7 +512,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
 TString AliHLTEsdManager::AliHLTEsdListEntry::WriteTempFile(AliESDEvent* pESD) const
 {
   // see header file for class documentation
-  int iResult;
+  int iResult=0;
   TString tmpfilename;
   FILE* pTmpFile=gSystem->TempFileName(tmpfilename);
   if (pTmpFile) {

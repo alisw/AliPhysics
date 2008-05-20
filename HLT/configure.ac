@@ -484,7 +484,7 @@ AC_ARG_ENABLE(strict,
       [disable coding convention checks ])],
   [],[enable_strict=yes])
 if test "x$enable_strict" = "xyes" ; then
-   CPPFLAGS="$CPPFLAGS -W -Weffc++ -Wall"
+   CPPFLAGS="$CPPFLAGS -W -Weffc++ -Wall -Wshadow"
 fi
 AC_MSG_RESULT([$enable_strict])
 

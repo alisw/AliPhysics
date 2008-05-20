@@ -346,6 +346,7 @@ int AliHLTTask::StartRun()
   AliHLTComponent* pComponent=GetComponent();
   if (pComponent) {
     // determine the number of input data blocks provided from the source tasks
+    { // set scope for lnk as a local variable
     TObjLink* lnk=fListDependencies.FirstLink();
     while (lnk && iResult>=0) {
       AliHLTTask* pSrcTask=(AliHLTTask*)lnk->GetObject();
@@ -360,6 +361,7 @@ int AliHLTTask::StartRun()
 	}
       }
       lnk=lnk->Next();
+    }
     }
     if (iResult>=0) {
       if (fBlockDataArray.size()>0) {

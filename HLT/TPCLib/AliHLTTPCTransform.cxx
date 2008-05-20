@@ -1,3 +1,4 @@
+
 // @(#) $Id$
 // Original: AliHLTTransform.cxx,v 1.53 2005/06/14 10:55:21 cvetan 
 
@@ -1241,11 +1242,11 @@ Bool_t AliHLTTPCTransform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
 	<<"Could not open file: "<<rootfilename<<ENDLOG;
       return kFALSE;
     }
-  AliRun *gAlice = (AliRun*)rootfile->Get("gAlice");
-  if(!gAlice)
+  AliRun *lgAlice = (AliRun*)rootfile->Get("gAlice");
+  if(!lgAlice)
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCTransform::MakeInitFile","File")
-	<<"No gAlice in file: "<<rootfilename<<ENDLOG;
+	<<"No lgAlice in file: "<<rootfilename<<ENDLOG;
       return kFALSE;
     }  
   AliTPCParamSR *param=(AliTPCParamSR*)rootfile->Get(GetParamName());
@@ -1317,10 +1318,10 @@ Bool_t AliHLTTPCTransform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
   }
   
   fgVersion=kValiroot;
-  SetBFieldFactor((Double_t)gAlice->Field()->Factor());
+  SetBFieldFactor((Double_t)lgAlice->Field()->Factor());
   SetSolenoidBField(-
-		    (Double_t)gAlice->Field()->SolenoidField()/
-		    (Double_t)gAlice->Field()->Factor()
+		    (Double_t)lgAlice->Field()->SolenoidField()/
+		    (Double_t)lgAlice->Field()->Factor()
 		    );
   fgPadPitchWidthLow=param->GetInnerPadPitchWidth();
   fgPadPitchWidthUp=param->GetOuterPadPitchWidth();
@@ -1364,7 +1365,7 @@ Bool_t AliHLTTPCTransform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
     else fgSectorLow[i]=0;
   }
 
-  delete gAlice;
+  delete lgAlice;
   rootfile->Close();
   delete rootfile;
 

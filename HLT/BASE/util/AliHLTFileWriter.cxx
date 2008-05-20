@@ -100,12 +100,12 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       if (pTokens) {
 	int iEntries=pTokens->GetEntries();
 	if (iEntries>1) {
-	  int i=0;
-	  fBaseName=((TObjString*)pTokens->At(i++))->GetString();
-	  while (i<iEntries-1) {
-	    fBaseName+="." + ((TObjString*)pTokens->At(i++))->GetString();
+	  int n=0;
+	  fBaseName=((TObjString*)pTokens->At(n++))->GetString();
+	  while (n<iEntries-1) {
+	    fBaseName+="." + ((TObjString*)pTokens->At(n++))->GetString();
 	  }
-	  fExtension=((TObjString*)pTokens->At(i))->GetString();
+	  fExtension=((TObjString*)pTokens->At(n))->GetString();
 	}
 	delete pTokens;
       }
