@@ -637,22 +637,22 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 			
 			usedTrack[imother] = kTRUE;
 			
-			AliESDtrack *esdTrack = fESD->GetTrack(imother);
-			esdTrack->GetPxPyPz(p);
-			esdTrack->GetXYZ(pos);
-			esdTrack->GetCovarianceXYZPxPyPz(covTr);
-			esdTrack->GetESDpid(pid);
+			AliESDtrack *esdTrackC = fESD->GetTrack(imother);
+			esdTrackC->GetPxPyPz(p);
+			esdTrackC->GetXYZ(pos);
+			esdTrackC->GetCovarianceXYZPxPyPz(covTr);
+			esdTrackC->GetESDpid(pid);
 			
 			mother = 
-			    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-							       esdTrack->GetLabel(),
+			    new(tracks[jTracks++]) AliAODTrack(esdTrackC->GetID(),
+							       esdTrackC->GetLabel(),
 							       p,
 							       kTRUE,
 							       pos,
 							       kFALSE,
 							       covTr, 
-							       (Short_t)esdTrack->GetSign(),
-							       esdTrack->GetITSClusterMap(), 
+							       (Short_t)esdTrackC->GetSign(),
+							       esdTrackC->GetITSClusterMap(), 
 							       pid,
 							       primary,
 							       kTRUE, // check if this is right
@@ -683,22 +683,22 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 			
 			usedTrack[idaughter] = kTRUE;
 			
-			AliESDtrack *esdTrack = fESD->GetTrack(idaughter);
-			esdTrack->GetPxPyPz(p);
-			esdTrack->GetXYZ(pos);
-			esdTrack->GetCovarianceXYZPxPyPz(covTr);
-			esdTrack->GetESDpid(pid);
+			AliESDtrack *esdTrackC = fESD->GetTrack(idaughter);
+			esdTrackC->GetPxPyPz(p);
+			esdTrackC->GetXYZ(pos);
+			esdTrackC->GetCovarianceXYZPxPyPz(covTr);
+			esdTrackC->GetESDpid(pid);
 			
 			daughter = 
-			    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-							       esdTrack->GetLabel(),
+			    new(tracks[jTracks++]) AliAODTrack(esdTrackC->GetID(),
+							       esdTrackC->GetLabel(),
 							       p,
 							       kTRUE,
 							       pos,
 							       kFALSE,
 							       covTr, 
-							       (Short_t)esdTrack->GetSign(),
-							       esdTrack->GetITSClusterMap(), 
+							       (Short_t)esdTrackC->GetSign(),
+							       esdTrackC->GetITSClusterMap(), 
 							       pid,
 							       vkink,
 							       kTRUE, // check if this is right
