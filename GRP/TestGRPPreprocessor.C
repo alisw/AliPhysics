@@ -7,7 +7,9 @@
 //   ReadDCSAliasMap() reads from a file
 //   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
   
-
+#include <iostream>
+#include <fstream>
+using namespace std;
 
 void TestGRPPreprocessor()
 {
@@ -58,14 +60,30 @@ void TestGRPPreprocessor()
   // Three files originating from different LDCs but with the same id are also added
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test000.tag.root", "GDC0", "runTags01.root");
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test001.tag.root", "GDC1", "runTags02.root");
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test002.tag.root", "GDC2", "runTags03.root");
-  
-  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "CTP_runconfig", "DCS FXS", gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/p-p.cfg"));
+  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test000.tag.root", "GDC0", "runTags01.root");
+  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test001.tag.root", "GDC1", "runTags02.root");
+  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test002.tag.root", "GDC2", "runTags03.root");
+
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root");
+       
+  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "CTP_runconfig", "", gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/p-p.cfg"));
   shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "CTP_xcounters", "DCS FXS", gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/xcounters.txt"));
   
+  Char_t * filename = gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/p-p.cfg");
+  ifstream is;
+  is.open(filename);
+  is.seekg(0,ios::end);
+  int length = is.tellg();
+  const char *buffer = new char[length];
+  is.seekg(0,ios::beg);
+  is.read(buffer,length);
+  is.close();
 
+  shuttle->SetInputTriggerConfiguration(buffer);
+  
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
