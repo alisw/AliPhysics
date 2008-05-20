@@ -97,7 +97,8 @@ AliTriggerConfiguration::AliTriggerConfiguration():
   fMasks(),
   fDescriptors(),
   fClusters(),
-  fClasses()
+  fClasses(),
+  fVersion(0)
 {
   // Default constructor
 }
@@ -112,7 +113,8 @@ AliTriggerConfiguration::AliTriggerConfiguration( TString & name, TString & desc
   fMasks(),
   fDescriptors(),
   fClusters(),
-  fClasses()
+  fClasses(),
+  fVersion(0)
 {
   // Constructor
 }
@@ -508,6 +510,16 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
      TString strLine(line);
 
      if (strLine.BeginsWith("#")) return kTRUE;
+     if (strLine.BeginsWith("PARTITION:")) {
+       strLine.ReplaceAll("PARTITION:","");
+       SetName(strLine.Data());
+       return kTRUE;
+     }
+     if (strLine.BeginsWith("VERSION:")) {
+       strLine.ReplaceAll("VERSION:","");
+       fVersion = strLine.Atoi();
+       return kTRUE;
+     }
      if (strLine.BeginsWith("INPUTS:")) {
        level = 1;
        return kTRUE;
@@ -916,6 +928,7 @@ void AliTriggerConfiguration::Print( const Option_t*  ) const
    cout << "Trigger Configuration:"  << endl;
    cout << "  Name:              " << GetName() << endl; 
    cout << "  Description:       " << GetTitle() << endl;
+   cout << "  Version:           " << GetVersion() << endl;
    cout << "  Active Detectors:  " << GetActiveDetectors() << endl;
    cout << "  Trigger Detectors: " << GetTriggeringDetectors() << endl;
 

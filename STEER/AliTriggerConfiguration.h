@@ -85,6 +85,8 @@ public:
        const TObjArray&   GetDescriptors() const { return fDescriptors; }
        const TObjArray&   GetClasses() const { return fClasses; }
 
+                  Int_t   GetVersion() const { return fVersion; }
+
        //     AliTriggerCluster*   GetTriggerCluster(UInt_t index)
        //       { return (index < kNMaxClusters) ? (AliTriggerCluster*)fClusters[index] : NULL; }
 
@@ -120,13 +122,15 @@ private:
       TObjArray            fClusters;                         // Array of Detector Trigger Clusters
       TObjArray            fClasses;                          // Array of Trigger Classes
 
+      Int_t                fVersion;                          // Configuration format version
+
                  Bool_t    IsSelected( TString detName, TString & detectors ) const;
    static const TString    fgkConfigurationFileName;        //! name of default configurations file
 
    AliTriggerConfiguration&   operator=(const AliTriggerConfiguration& des);
    AliTriggerConfiguration( const AliTriggerConfiguration& des );
 
-   ClassDef( AliTriggerConfiguration, 1 )  // Define a trigger configuration
+   ClassDef( AliTriggerConfiguration, 2 )  // Define a trigger configuration
 };
 
 #endif
