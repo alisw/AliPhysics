@@ -1879,7 +1879,7 @@ TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
     // shifted along this axis
     char name[200];
     TGeoTranslation *transHole[11];
-    for (Int_t i = 0; i < 11; i++) {
+    for (i = 0; i < 11; i++) {
         // set the position of the hole, depending on index
         if (i == 0) {
             holeX += holeSepX0;
@@ -3559,7 +3559,7 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr)
                 // except in the case of stave #2,
                 // clips must be added, and this is done directly on the sector
                 Int_t j;
-                TArrayD clipSize;
+                //TArrayD clipSize;
                 TGeoRotation *rotClip = new TGeoRotation(*gGeoIdentity);
                 rotClip->RotateZ(-90.0);
                 rotClip->RotateX(180.0);

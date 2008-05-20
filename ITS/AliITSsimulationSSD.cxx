@@ -421,13 +421,10 @@ void AliITSsimulationSSD::ApplyCoupling(AliITSpList *pList,Int_t module) {
 void AliITSsimulationSSD::ApplyDeadChannels(Int_t module) {
   // Kill dead channels setting gain to zero
 
-  Int_t deadentries;
-
   AliITSCalibrationSSD* res = (AliITSCalibrationSSD*)GetCalibrationModel(module);
 
   for(Int_t i=0;i<GetNStrips();i++){
 
-    //if((res->IsPChannelBad(i))||(res->IsNChannelBad(i))) cout<<module<<" "<<i<<" "<<res->IsPChannelBad(i)<<" "<<res->IsNChannelBad(i)<<endl;
     if(res->IsPChannelBad(i)) res->AddGainP(i,0.0);
     if(res->IsNChannelBad(i)) res->AddGainN(i,0.0);
 
@@ -691,7 +688,6 @@ istream &operator>>(istream &os,AliITSsimulationSSD &source){
     return os;
 }
 //______________________________________________________________________
-
 
 
 

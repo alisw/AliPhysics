@@ -1145,7 +1145,7 @@ Int_t AliITStrackerSA::FindTrackLowChiSquare() const {
   Double_t minChi2=trk->GetChi2();
   Int_t index=0;
   for(Int_t i=1;i<dim;i++){
-    AliITStrackV2* trk = (AliITStrackV2*)fListOfTracks->At(i);
+    trk = (AliITStrackV2*)fListOfTracks->At(i);
     Double_t chi2=trk->GetChi2();
     if(chi2<minChi2){
       minChi2=chi2;

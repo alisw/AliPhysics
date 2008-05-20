@@ -483,11 +483,11 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       oldnoise = 0.;
       noise = 0.;
       Int_t strip=0;
-      for(Int_t istrip=768; istrip<1536; istrip++) { // N-side
+      for(Int_t iistrip=768; iistrip<1536; iistrip++) { // N-side
 	
-	Int_t signal = TMath::Abs(matrix[iadc][istrip]);
-	//cout<<"####"<<" "<<oddl<<" "<<oad<<" "<<iadc<<" "<<istrip<<" "<<signal<<endl;      
-	strip = 1535-istrip;
+	Int_t signal = TMath::Abs(matrix[iadc][iistrip]);
+	//cout<<"####"<<" "<<oddl<<" "<<oad<<" "<<iadc<<" "<<iistrip<<" "<<signal<<endl;      
+	strip = 1535-iistrip;
 
 	oldnoise = noise;
 	noise = cal->GetNoiseN(strip); if(noise<1.) signal=65535;
@@ -497,7 +497,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
 
 	if (signal!=65535) {
-	  //	  cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<" strip= "<<istrip<<
+	  //	  cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<" strip= "<<iistrip<<
 	  //  " sig="<<signal<<" "<<cal->GetPedestalN(strip)<<endl;
 	  gain = cal->GetGainN(strip);
 	  signal = (Int_t) ( signal * gain); // signal is corrected for gain
@@ -595,8 +595,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	fModule = iModule;
 	FindClustersSSD(&clusters1D[0][0], nClusters[0], 
 			&clusters1D[1][0], nClusters[1], clusters[iModule]);
-	Int_t nClusters = clusters[iModule]->GetEntriesFast();
-	nClustersSSD += nClusters;
+	Int_t nClustersn = clusters[iModule]->GetEntriesFast();
+	nClustersSSD += nClustersn;
       }
 
       nClusters[0] = nClusters[1] = 0;
@@ -1307,5 +1307,4 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   }
 
 }
-
 

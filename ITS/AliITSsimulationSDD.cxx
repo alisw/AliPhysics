@@ -749,11 +749,7 @@ void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAdd
 void AliITSsimulationSDD::ApplyCrosstalk(Int_t mod) {
     // function add the crosstalk effect to signal
     // temporal function, should be checked...!!!
-    AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
   
-    Int_t fNofMaps = seg->Npz();
-    Int_t fMaxNofSamples = seg->Npx();
-
     // create and inizialice crosstalk map
     Float_t* ctk = new Float_t[fNofMaps*fMaxNofSamples+1];
     if( ctk == NULL ) {

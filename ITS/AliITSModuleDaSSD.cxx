@@ -421,9 +421,9 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
       }
   } 
   if (fCmFerom) {
-    for (Int_t i = 0; i < fgkChipsPerModule; i++) {
-      fCmFerom[i].Set(eventsnumber);
-      fCmFerom[i].Reset(0);
+    for (Int_t ie = 0; ie < fgkChipsPerModule; ie++) {
+      fCmFerom[ie].Set(eventsnumber);
+      fCmFerom[ie].Reset(0);
     }  
   }
   else  AliError("AliITSModuleDaSSD: No memory was allocated for fCmFerom!");

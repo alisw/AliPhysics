@@ -2236,7 +2236,6 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   //**************************************************** CC outside chips:
   // I don't think there is a second aluminium layer here ...
   for (Int_t i = 0; i<4; i++) {
-    char ch[20];
     sprintf(ch, "ccLayerA%i", i);
 
     AliITSv11GeomCableFlat ccLayer1(ch, 6.6*fgkmm, ccUpLayerTotThick);
