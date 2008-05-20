@@ -78,13 +78,13 @@ ClassImp(AliEveITSDigitsInfo)
 AliEveITSDigitsInfo::AliEveITSDigitsInfo() :
   TObject(),
   TEveRefCnt(),
-  fSPDmap(), fSDDmap(), fSSDmap(),
-  fTree (0),
+  fTree       (0),
   fSegSPD     (0), fSegSDD     (0), fSegSSD     (0),
   fDDLMapSDD  (0),
   fSPDMinVal  (0), fSSDMinVal  (0), fSDDMinVal  (0),
   fSPDMaxVal  (0), fSSDMaxVal  (0), fSDDMaxVal  (0),
-  fSPDHighLim (0), fSDDHighLim (0), fSSDHighLim (0)
+  fSPDHighLim (0), fSDDHighLim (0), fSSDHighLim (0),
+  fSPDmap     (),  fSDDmap     (),  fSSDmap     ()
 {
   // Default constructor.
 

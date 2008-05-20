@@ -48,6 +48,9 @@ ClassImp(AliEveCosmicRayFitter)
 AliEveCosmicRayFitter::AliEveCosmicRayFitter(const Text_t* name, Int_t n_points) :
     TEvePointSet    (name, n_points),
 
+    fLineFitter1    (0),
+    fLineFitter2    (0),
+
     fConnected      (kFALSE),
     fSPMap          (),
     fTrackList      (0),

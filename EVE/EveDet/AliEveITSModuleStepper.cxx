@@ -48,6 +48,7 @@ AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
   fPosition(0),
   fSubDet(-1),
 
+  fModuleFont(), fTextFont(), fSymbolFont(),
   fAxis(0),
 
   fMenuHeight(0.13),
@@ -531,18 +532,21 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
   // Render the overlay elements.
 
   AliEveITSScaledModule* sm = dynamic_cast<AliEveITSScaledModule*>(*BeginChildren());
-  Int_t scale = fScaleInfo->GetScale() - 1;
+  Int_t scaleIdx = fScaleInfo->GetScale() - 1;
   Int_t cnx = 0, cnz = 0;
   switch(sm->GetSubDetID())
   {
     case 0:
-      cnx = fDigitsInfo->fSPDScaleX[scale], cnz = fDigitsInfo->fSPDScaleZ[scale];
+      cnx = fDigitsInfo->fSPDScaleX[scaleIdx];
+      cnz = fDigitsInfo->fSPDScaleZ[scaleIdx];
       break;
     case 1:
-      cnx = fDigitsInfo->fSDDScaleX[scale], cnz = fDigitsInfo->fSDDScaleZ[scale];
+      cnx = fDigitsInfo->fSDDScaleX[scaleIdx];
+      cnz = fDigitsInfo->fSDDScaleZ[scaleIdx];
       break;
     case 2:
-      cnx = fDigitsInfo->fSSDScale[scale], cnz = 1;
+      cnx = fDigitsInfo->fSSDScale[scaleIdx];
+      cnz = 1;
       break;
   }
 
@@ -576,17 +580,17 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
     glPushMatrix();
     glLoadIdentity();
     glTranslatef(-1, -1, 0); // translate to lower left corner
-    Float_t scale = fMenuHeight/fTextSize*0.5; // scale text
-    glScalef(scale, scale, 1.);
+    Float_t txtScale = fMenuHeight/fTextSize*0.5; // scale text
+    glScalef(txtScale, txtScale, 1.);
 
     //menu
     glPushName(0);
     RenderMenu(GetCurrentPage(), GetPages(), cnx, cnz);
     glPopName();
     //palette
-    Double_t ls = 1.6*scale*fTextSize;
-    fAxis->SetLabelsSize(ls);
-    fAxis->SetLabelsOffset(ls*1.2);
+    Double_t labelSize = 1.6*txtScale*fTextSize;
+    fAxis->SetLabelsSize(labelSize);
+    fAxis->SetLabelsOffset(1.2*labelSize);
     RenderPalette(sm->GetPalette());
 
     glPopMatrix();

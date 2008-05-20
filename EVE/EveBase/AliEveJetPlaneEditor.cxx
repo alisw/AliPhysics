@@ -256,8 +256,7 @@ AliEveJetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, cons
   //    fRad2->Connect("Clicked()", "TestDialog", this, "HandleButtons()");
 
 
-  TGLayoutHints *fL5 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
-					 kLHintsExpandY, 2, 2, 5, 1);
+  fL5 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX | kLHintsExpandY, 2, 2, 5, 1);
   AddFrame(fTab, fL5);
 
   MapSubwindows();

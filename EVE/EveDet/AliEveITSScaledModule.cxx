@@ -107,12 +107,12 @@ ClassImp(AliEveITSScaledModule)
 
 AliEveITSScaledModule::AliEveITSScaledModule(Int_t gid, AliEveITSDigitsInfo* info, AliEveDigitScaleInfo* si):
   AliEveITSModule("AliEveITSScaledModule", "AliEveITSScaledModule"),
-  fDigitsMap(),
   fNx(-1),
   fNz(-1),
   fNCx(-1),
   fNCz(-1),
-  fScaleInfo(si)
+  fScaleInfo(si),
+  fDigitsMap()
 {
   SetOwnIds(kTRUE);
 
@@ -146,7 +146,6 @@ void AliEveITSScaledModule::LoadQuads()
   digits  = fInfo->GetDigits(fID, fDetID);
   ndigits = digits->GetEntriesFast();
 
-  ScaledDigit_t* sd;
   Int_t scale = fScaleInfo->GetScale() -1;
   switch(fDetID)
   {
@@ -170,10 +169,11 @@ void AliEveITSScaledModule::LoadQuads()
 
 	fInfo->GetSPDLocalZ(od->GetCoord1(),zo);
         c1 = od->GetCoord1(); c2 = od->GetCoord2();
-	i = Int_t((zo+fDz)/dpz);
-	j = Int_t((od->GetCoord2()*fNx)/fInfo->fSegSPD->Npx());
+	i  = Int_t((zo+fDz)/dpz);
+	j  = Int_t((od->GetCoord2()*fNx)/fInfo->fSegSPD->Npx());
 	id = j*fNx + i;
 
+        ScaledDigit_t* sd = 0;
         miter = dmap.find(id);
 	if(miter == dmap.end())
 	{
@@ -213,23 +213,25 @@ void AliEveITSScaledModule::LoadQuads()
       fNCx = fInfo->fSDDScaleX[scale];
       fNz  = Int_t(fInfo->fSegSDD->Npz()/fNCz);
       fNx  = Int_t(fInfo->fSegSDD->Npx()/fNCx);
-      dpz = 2*fDz/fNz;
-      dpx = 2*fDx/fNx;
+      dpz  = 2*fDz/fNz;
+      dpx  = 2*fDx/fNx;
 
-      AliITSdigitSDD *od=0;
-      for (Int_t k=0; k<ndigits; k++) {
-	od=(AliITSdigitSDD*)digits->UncheckedAt(k);
+      AliITSdigitSDD *od = 0;
+      for (Int_t k = 0; k < ndigits; ++k)
+      {
+	od = (AliITSdigitSDD*)digits->UncheckedAt(k);
 	fInfo->fSegSDD->DetToLocal(od->GetCoord2(), od->GetCoord1(),x,z);
-	z+= fDz;
-	x+= fDx;
-	i = Int_t(z/dpz);
-	j = Int_t(x/dpx);
+	z += fDz;
+	x += fDx;
+	i  = Int_t(z/dpz);
+	j  = Int_t(x/dpx);
 	//printf("Mod %d coord %d,%d out of %d,%d :: ORIG coord %d,%d out of %d,%d \n",fID,
 	//       i,j,Nz,Nx,od->GetCoord1(),od->GetCoord2(),fInfo->fSegSDD->Npz(),fInfo->fSegSDD->Npx());
 
 	id = j*fNx + i;
 	c1 = od->GetCoord1(); c2 = od->GetCoord2();
 
+	ScaledDigit_t* sd = 0;
 	miter = dmap.find(id);
 	if(miter == dmap.end())
 	{
@@ -276,7 +278,7 @@ void AliEveITSScaledModule::LoadQuads()
       dpz = 2*fDz/fNz;
       dpx = 2*fDx/fNx;
 
-      AliITSdigitSSD *od=0;
+      AliITSdigitSSD *od = 0;
       for (Int_t k=0; k<ndigits; k++) {
 	od=(AliITSdigitSSD*)digits->UncheckedAt(k);
 	if(od->GetCoord1() == 1)
@@ -287,8 +289,8 @@ void AliEveITSScaledModule::LoadQuads()
 	c1 = od->GetCoord1(); c2 = od->GetCoord2();
 	id = j*i;
 
+	ScaledDigit_t* sd = 0;
 	miter = dmap.find(id);
-	ScaledDigit_t* sd;
 	if(miter == dmap.end())
 	{
 	  // printf("orig digit %d,%d scaled %d,%d \n",od->GetCoord1(),od->GetCoord2(),i,j);

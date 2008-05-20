@@ -59,19 +59,20 @@ void AliEveTPCSectorData::InitStatics()
   fgNAllPads = 0;
   fgRowBegs  = new Int_t[fgNAllRows + 1];
 
-  Int_t row = 0;
-  for (Int_t i=0; i<fgParam->GetNRowLow(); ++i, ++row)
   {
-    fgRowBegs[row] = fgNAllPads;
-    fgNAllPads += fgParam->GetNPadsLow(i);
+    Int_t row = 0;
+    for (Int_t i=0; i<fgParam->GetNRowLow(); ++i, ++row)
+    {
+      fgRowBegs[row] = fgNAllPads;
+      fgNAllPads += fgParam->GetNPadsLow(i);
+    }
+    for (Int_t i=0; i<fgParam->GetNRowUp(); ++i, ++row)
+    {
+      fgRowBegs[row] = fgNAllPads;
+      fgNAllPads += fgParam->GetNPadsUp(i);
+    }
+    fgRowBegs[fgNAllRows] = fgNAllPads;
   }
-  for (Int_t i=0; i<fgParam->GetNRowUp(); ++i, ++row)
-  {
-    fgRowBegs[row] = fgNAllPads;
-    fgNAllPads += fgParam->GetNPadsUp(i);
-  }
-  fgRowBegs[fgNAllRows] = fgNAllPads;
-
 
   // Fill SegmentInfos, used by rendering classes.
 
@@ -103,44 +104,49 @@ void AliEveTPCSectorData::InitStatics()
   fgOut2Seg.fNMaxPads  = fgParam->GetNPadsUp(fgParam->GetNRowUp() - 1);
   fgSegInfoPtrs[2]     = &fgOut2Seg;
 
-  // Set stepsize array
-  Int_t k, npads;
-  // Inn
-  k=0, npads = fgParam->GetNPadsLow(0);
-  for (int row = 0; row < fgInnSeg.fNRows; ++row)
-  {
-    if (fgParam->GetNPadsLow(row) > npads)
+  // Set stepsize arrays
+
+  { // Inner
+    Int_t k=0, npads = fgParam->GetNPadsLow(0);
+    for (Int_t row = 0; row < fgInnSeg.fNRows; ++row)
     {
-      npads = fgParam->GetNPadsLow(row);
-      fgInnSeg.fYStep[k] = row*fgInnSeg.fPadHeight + fgInnSeg.fRLow;
-      k++;
+      if (fgParam->GetNPadsLow(row) > npads)
+      {
+        npads = fgParam->GetNPadsLow(row);
+        fgInnSeg.fYStep[k] = row*fgInnSeg.fPadHeight + fgInnSeg.fRLow;
+        k++;
+      }
     }
+    fgInnSeg.fNYSteps = k;
   }
-  fgInnSeg.fNYSteps = k;
-  // Out1 seg
-  k=0; npads = fgParam->GetNPadsUp(0);
-  for (int row = 0; row < fgOut1Seg.fNRows; ++row)
-  {
-    if (fgParam->GetNPadsUp(row) > npads)
+
+  {  // Outer 1 seg
+    Int_t k=0, npads = fgParam->GetNPadsUp(0);
+    for (Int_t row = 0; row < fgOut1Seg.fNRows; ++row)
     {
-      npads = fgParam->GetNPadsUp(row);
-      fgOut1Seg.fYStep[k] = row*fgOut1Seg.fPadHeight + fgOut1Seg.fRLow ;
-      k++;
+      if (fgParam->GetNPadsUp(row) > npads)
+      {
+        npads = fgParam->GetNPadsUp(row);
+        fgOut1Seg.fYStep[k] = row*fgOut1Seg.fPadHeight + fgOut1Seg.fRLow ;
+        k++;
+      }
     }
+    fgOut1Seg.fNYSteps = k;
   }
-  fgOut1Seg.fNYSteps = k;
-  // Out2 seg
-  k=0; npads = fgParam->GetNPadsUp(fgOut1Seg.fNRows);
-  for (int row = fgOut1Seg.fNRows; row < fgParam->GetNRowUp() ;row++ )
-  {
-    if (fgParam->GetNPadsUp(row) > npads)
+
+  {  // Outer 2 seg
+    Int_t k=0, npads = fgParam->GetNPadsUp(fgOut1Seg.fNRows);
+    for (Int_t row = fgOut1Seg.fNRows; row < fgParam->GetNRowUp(); ++row)
     {
-      npads = fgParam->GetNPadsUp(row);
-      fgOut2Seg.fYStep[k] = (row - fgOut1Seg.fNRows)*fgOut2Seg.fPadHeight + fgOut2Seg.fRLow ;
-      k++;
+      if (fgParam->GetNPadsUp(row) > npads)
+      {
+        npads = fgParam->GetNPadsUp(row);
+        fgOut2Seg.fYStep[k] = (row - fgOut1Seg.fNRows)*fgOut2Seg.fPadHeight + fgOut2Seg.fRLow ;
+        k++;
+      }
     }
+    fgOut2Seg.fNYSteps = k;
   }
-  fgOut2Seg.fNYSteps = k;
 }
 
 Int_t AliEveTPCSectorData::GetNPadsInRow(Int_t row)
