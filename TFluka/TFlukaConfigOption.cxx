@@ -694,7 +694,7 @@ void TFlukaConfigOption::ProcessCUTNEU()
   } 
   
   if (fMedium == -1) {
-        Float_t cut = fCutValue[kCUTNEU];
+        Float_t cutV = fCutValue[kCUTNEU];
         // 8.0 = Neutron
         // 9.0 = Antineutron
         fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -neutronCut,  8.0,  9.0);
@@ -703,31 +703,31 @@ void TFlukaConfigOption::ProcessCUTNEU()
         //
        //
        // 12.0 = Kaon zero long
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 12.0, 12.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 12.0, 12.0);
        // 17.0 = Lambda, 18.0 = Antilambda
        // 19.0 = Kaon zero short
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 17.0, 19.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 17.0, 19.0);
        // 22.0 = Sigma zero, Pion zero, Kaon zero
        // 25.0 = Antikaon zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 22.0, 25.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 22.0, 25.0);
        // 32.0 = Antisigma zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 32.0, 32.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 32.0, 32.0);
        // 34.0 = Xi zero
        // 35.0 = AntiXi zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 34.0, 35.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 34.0, 35.0);
        // 47.0 = D zero
        // 48.0 = AntiD zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 47.0, 48.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 47.0, 48.0);
        // 53.0 = Xi_c zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 53.0, 53.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 53.0, 53.0);
        // 55.0 = Xi'_c zero
        // 56.0 = Omega_c zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 55.0, 56.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 55.0, 56.0);
        // 59.0 = AntiXi_c zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 59.0, 59.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 59.0, 59.0);
        // 61.0 = AntiXi'_c zero
        // 62.0 = AntiOmega_c zero
-       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 61.0, 62.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cutV, 61.0, 62.0);
     } else {
 	TFluka* fluka = (TFluka*) gMC;
 	printf("Low energy neutron transport %5d\n", fluka->LowEnergyNeutronTransport());

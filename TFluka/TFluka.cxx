@@ -2752,8 +2752,8 @@ void TFluka::CalcPrimaryIonisationTime()
     GetPrimaryElectronPosition(fNPI - 1, x0, y0, z0, t);	
     if (fNPI > 1) {
 	for (Int_t i = fNPI - 2; i > -1; i--) {
-	    Double_t x, y, z, t;
-	    GetPrimaryElectronPosition(i, x, y, z, t);	
+	    Double_t x, y, z, time;
+	    GetPrimaryElectronPosition(i, x, y, z, time);	
 	    Double_t ds = TMath::Sqrt((x-x0) * (x-x0) + (y-y0) * (y-y0) + (z-z0) * (z-z0));
 	    fPItime[i]   = fPItime[i+1]   - ds / (beta * 2.99792458e10);
 	    fPIlength[i] = fPIlength[i+1] - ds;

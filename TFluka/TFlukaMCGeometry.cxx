@@ -611,8 +611,8 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    TString matname;
    TObjString *objstr;
    // Create all needed elements
-   for (Int_t i=1; i<nelements; i++) {
-      element = table->GetElement(i);
+   for (Int_t iel = 1; iel < nelements; iel++) {
+      element = table->GetElement(iel);
       // skip elements which are not defined
       if (!element->IsUsed() && !element->IsDefined()) continue;
       matname = element->GetTitle();
@@ -775,8 +775,8 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       if ((med = vol->GetMedium()) == 0) continue;
       mat = med->GetMaterial();
       idmat = mat->GetIndex();
-      for (Int_t j=0; j<nfmater; j++) {
-         mat = (TGeoMaterial*)fMatList->At(j);
+      for (Int_t jmat = 0; jmat < nfmater; jmat++) {
+         mat = (TGeoMaterial*)fMatList->At(jmat);
          if (mat->GetIndex() == idmat) mat->SetUsed(kTRUE);
       }   
 
