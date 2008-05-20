@@ -453,7 +453,7 @@ void AliJetESDReader::InitUnitArray()
 		if(nBin>=fNumUnits+nElements && nBin<fNumUnits+nElements+nGaps){
 		  if(nBin<fNumUnits+nElements+n0)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid0->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements),phi,eta);
 		      Deta = fGrid0->GetDeta(); 
 		      Dphi = fGrid0->GetDphi(); 
@@ -461,7 +461,7 @@ void AliJetESDReader::InitUnitArray()
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0 && nBin<fNumUnits+nElements+n0+n1)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid1->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0),phi,eta);
 		      Deta = fGrid1->GetDeta(); 
 		      Dphi = fGrid1->GetDphi(); 
@@ -469,7 +469,7 @@ void AliJetESDReader::InitUnitArray()
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1 && nBin<fNumUnits+nElements+n0+n1+n2)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid2->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1),phi,eta);
 		      Deta = fGrid2->GetDeta(); 
 		      Dphi = fGrid2->GetDphi(); 
@@ -477,7 +477,7 @@ void AliJetESDReader::InitUnitArray()
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1+n2 && nBin<fNumUnits+nElements+n0+n1+n2+n3)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid3->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1+n2),phi,eta);
 		      Deta = fGrid3->GetDeta(); 
 		      Dphi = fGrid3->GetDphi(); 
@@ -485,7 +485,7 @@ void AliJetESDReader::InitUnitArray()
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1+n2+n3 && nBin<fNumUnits+nElements+nGaps)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid4->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1+n2+n3),phi,eta);
 		      Deta = fGrid4->GetDeta(); 
 		      Dphi = fGrid4->GetDphi(); 
