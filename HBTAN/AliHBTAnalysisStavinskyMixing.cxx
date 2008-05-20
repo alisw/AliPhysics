@@ -552,15 +552,15 @@ Int_t AliHBTAnalysisStavinskyMixing::ProcessRecAndSimNonId(AliAOD* aodrec, AliAO
            }
           else
            {//meets criteria of the pair cut
-            UInt_t ii;
-            for(ii = 0;ii<fNParticleFunctions;ii++)
-                   fParticleFunctions[ii]->ProcessDiffEventParticles(partpair);
+            UInt_t iPF;
+            for(iPF = 0;iPF<fNParticleFunctions;iPF++)
+                   fParticleFunctions[iPF]->ProcessDiffEventParticles(partpair);
 
-            for(ii = 0;ii<fNTrackFunctions;ii++)
-                   fTrackFunctions[ii]->ProcessDiffEventParticles(trackpair);
+            for(iPF = 0;iPF<fNTrackFunctions;iPF++)
+                   fTrackFunctions[iPF]->ProcessDiffEventParticles(trackpair);
 
-            for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
-                   fParticleAndTrackFunctions[ii]->ProcessDiffEventParticles(trackpair,partpair);
+            for(iPF = 0;iPF<fNParticleAndTrackFunctions;iPF++)
+                   fParticleAndTrackFunctions[iPF]->ProcessDiffEventParticles(trackpair,partpair);
            }
          }// for particles event2
        }//while event2
@@ -754,9 +754,9 @@ Int_t AliHBTAnalysisStavinskyMixing::ProcessRecNonId(AliAOD* aodrec, AliAOD* /*a
          }
         else
          {//meets criteria of the pair cut
-           UInt_t ii;
-           for(ii = 0;ii<fNTrackFunctions;ii++)
-                  fTrackFunctions[ii]->ProcessSameEventParticles(trackpair);
+           UInt_t iTF;
+           for(iTF = 0;iTF<fNTrackFunctions;iTF++)
+                  fTrackFunctions[iTF]->ProcessSameEventParticles(trackpair);
          }
        }
 
