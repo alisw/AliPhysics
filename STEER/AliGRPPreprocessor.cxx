@@ -101,7 +101,7 @@ ClassImp(AliGRPPreprocessor)
 
 //_______________________________________________________________
 AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
-	AliPreprocessor("GRP",shuttle), fRun(-1), fPressure(0)
+	AliPreprocessor("GRP",shuttle),  fPressure(0)
 {
   // constructor - shuttle must be instantiated!
 
@@ -121,7 +121,6 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
   // Initialize preprocessor
 
-  fRun = run;
   AliPreprocessor::Initialize(run, startTime, endTime);
 
   AliInfo("Initialization of the GRP preprocessor.");
@@ -199,7 +198,6 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
     else {
       TString titleCTPcfg = Form("CTP cfg for run %i from DAQ",fRun);
       runcfg->SetTitle(titleCTPcfg);
-      Log(Form("Title = %s", runcfg->GetTitle()));     
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);
       metaData.SetResponsible("Roman Lietava");
@@ -226,6 +224,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
          error |= 16;;
        }
        else {
+	 TString titleCTPcfg = Form("CTP cfg for run %i from DCS",fRun);
+         runcfg->SetTitle(titleCTPcfg);
          AliCDBMetaData metaData;
          metaData.SetBeamPeriod(0);
          metaData.SetResponsible("Roman Lietava");
