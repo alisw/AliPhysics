@@ -480,9 +480,9 @@ Bool_t AliITSPreprocessorSPD::StoreRefFromTarForId(const Char_t *id) {
       // store each file
       UInt_t index2 = 0;
       while (fList.At(index2)!=NULL) {
-	TString fileName = ((TObjString*)fList.At(index2))->GetString();
+	TString eqFileName = ((TObjString*)fList.At(index2))->GetString();
 	// get eq id
-	TString eqStr = fileName.Data();
+	TString eqStr = eqFileName.Data();
 	UInt_t len = eqStr.Length();
 	eqStr.Replace(0,len-7,"",0);
 	eqStr.ReplaceAll("_",1,"",0);
@@ -490,13 +490,13 @@ Bool_t AliITSPreprocessorSPD::StoreRefFromTarForId(const Char_t *id) {
 	Int_t eqId = eqStr.Atoi();
 	if (eqId>=0 && eqId<20) {
 	  TString refCAT = Form("%s_eq_%d",id,eqId);
-	  if (!StoreReferenceFile(fileName.Data(),refCAT.Data())) {
-	    Log(Form("Failed to store reference file %s.",fileName.Data()));
+	  if (!StoreReferenceFile(eqFileName.Data(),refCAT.Data())) {
+	    Log(Form("Failed to store reference file %s.",eqFileName.Data()));
 	    return kFALSE;
 	  }
 	}
 	else {
-	  Log(Form("Eq ID %d out of bounds for file %s",eqId,fileName.Data()));
+	  Log(Form("Eq ID %d out of bounds for file %s",eqId,eqFileName.Data()));
 	  fList.Clear();
 	  return kFALSE;
 	}

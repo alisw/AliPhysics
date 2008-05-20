@@ -1391,9 +1391,6 @@ const Char_t* AliITSOnlineCalibrationSPDhandler::GetDeadPixelAsTextC(UInt_t eq, 
   }
   if (index<fNrDead[gloChip]) {
     Int_t key = fDeadPixelMap[gloChip]->GetKeyIndex(index);
-    UInt_t eq = GetEqIdFromKey(key);
-    UInt_t hs = GetHSFromKey(key);
-    UInt_t chip = GetChipFromKey(key);
     UInt_t col = GetColFromKey(key);
     UInt_t row = GetRowFromKey(key);    
     UInt_t module = AliITSRawStreamSPD::GetOfflineModuleFromOnline(eq,hs,chip);
@@ -1417,9 +1414,6 @@ const Char_t* AliITSOnlineCalibrationSPDhandler::GetNoisyPixelAsTextC(UInt_t eq,
   }
   if (index<fNrNoisy[gloChip]) {
     Int_t key = fNoisyPixelMap[gloChip]->GetKeyIndex(index);
-    UInt_t eq = GetEqIdFromKey(key);
-    UInt_t hs = GetHSFromKey(key);
-    UInt_t chip = GetChipFromKey(key);
     UInt_t col = GetColFromKey(key);
     UInt_t row = GetRowFromKey(key);    
     UInt_t module = AliITSRawStreamSPD::GetOfflineModuleFromOnline(eq,hs,chip);
@@ -1916,7 +1910,6 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNoisyRowAtC2(UInt_t gloChip, UInt_t
     return 0;
   }
 }
-
 
 
 

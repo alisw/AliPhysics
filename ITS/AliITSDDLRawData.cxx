@@ -498,20 +498,20 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
   AliRawDataHeaderSim header;
 
   //loop over DDLs
-  for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSPD");i++){
-    strcpy(fileName,AliDAQ::DdlFileName("ITSSPD",i)); //The name of the output file.
+  for(Int_t ddl=0;ddl<AliDAQ::NumberOfDdls("ITSSPD");ddl++){
+    strcpy(fileName,AliDAQ::DdlFileName("ITSSPD",ddl)); //The name of the output file.
     outfile = new AliFstream(fileName);
     //write Dummy DATA HEADER
     UInt_t dataHeaderPosition=outfile->Tellp();
     outfile->WriteBuffer((char*)(&header),sizeof(header));
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSPD::kModulesPerDDL; mod++){
-      Int_t moduleNumber = AliITSRawStreamSPD::GetModuleNumber(i, mod);
+      Int_t moduleNumber = AliITSRawStreamSPD::GetModuleNumber(ddl, mod);
       digits->Clear();
       branch->GetEvent(moduleNumber);
       //For each Module, buf contains the array of data words in Binary format	  
       //fIndex gives the number of 32 bits words in the buffer for each module
-      GetDigitsSPD(digits,moduleNumber,i,buf);
+      GetDigitsSPD(digits,moduleNumber,ddl,buf);
       outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
       for(Int_t i=0;i<(fIndex+1);i++){
 	buf[i]=0;
@@ -691,4 +691,3 @@ void  AliITSDDLRawData::WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t 
   }//end else
   return;
 }//end WriteHit
-
