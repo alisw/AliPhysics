@@ -41,6 +41,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
                                   const char* password,
                                   const char *cdbRoot
                                  );
+  Int_t GetRunNumber() const {return fRun;}
+  void SetRunNumber(Int_t runNumber) {fRun = runNumber;}
 
  protected:
 
@@ -60,13 +62,14 @@ class AliGRPPreprocessor: public AliPreprocessor {
   static const Int_t   fgknDCSDP;               //! number of dcs dps
   static const char*   fgkDCSDataPoints[];      //! names of dcs dps
   static const char*   fgkLHCState[];           //! names of LHC States
-  
+  Int_t fRun;                                   // run number
+
   AliDCSSensorArray*   fPressure; //pressure array
 
                        AliGRPPreprocessor(const AliGRPPreprocessor&); // Not implemented
                        AliGRPPreprocessor& operator=(const AliGRPPreprocessor&); // Not implemented
 
-  ClassDef(AliGRPPreprocessor, 1);
+  ClassDef(AliGRPPreprocessor, 2);
 };
 
 #endif
