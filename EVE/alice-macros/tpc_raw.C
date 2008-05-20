@@ -40,25 +40,31 @@ void tpc_raw(Int_t mode = 3)
   x->DropAllSectors();
   x->LoadRaw(input, kTRUE, kTRUE);
 
+  TEveElementList* sec2d = new TEveElementList("TPC 2D");
+  gEve->AddElement(sec2d);
+
+  TEveElementList* sec3d = new TEveElementList("TPC 3D");
+  gEve->AddElement(sec3d);
+
   for (Int_t i=0; i<=35; ++i) {
     if (mode & 1) {
-      s = new AliEveTPCSector2D();
+      s = new AliEveTPCSector2D(Form("2D sector %d",i));
       s->SetSectorID(i);
       s->SetAutoTrans(kTRUE); // place on proper 3D coordinates
       s->SetDataSource(x);
       s->SetFrameColor(36);
-      gEve->AddElement(s);
+      sec2d->AddElement(s);
       s->IncRTS();
     }
     if (mode & 2) {
-      t = new AliEveTPCSector3D();
+      t = new AliEveTPCSector3D(Form("3D sector %d",i));
       t->SetSectorID(i);
       t->SetAutoTrans(kTRUE);
       t->SetDataSource(x);
       t->SetMinTime(40);
       t->SetMaxTime(980);
       t->SetDriftVel(2.273);
-      gEve->AddElement(t);
+      sec3d->AddElement(t);
       t->IncRTS();
     }
   }
