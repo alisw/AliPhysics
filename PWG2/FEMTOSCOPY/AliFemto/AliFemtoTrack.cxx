@@ -195,19 +195,19 @@ void AliFemtoTrack::SetHelix(const AliFmPhysicalHelixD& h){fHelix = h;}
 void AliFemtoTrack::SetTrackId(const short & id) { fTrackId=id;}
 void AliFemtoTrack::SetFlags(const long int &flags) {fFlags=flags;}
 void AliFemtoTrack::SetLabel(const int &label) {fLabel=label;}
-void AliFemtoTrack::SetImpactD(const float& ImpactD){fImpactD=ImpactD;}
-void AliFemtoTrack::SetImpactZ(const float& ImpactZ){fImpactZ=ImpactZ;}
-void AliFemtoTrack::SetCdd(const float& Cdd){fCdd=Cdd;}
-void AliFemtoTrack::SetCdz(const float& Cdz){fCdz=Cdz;}
-void AliFemtoTrack::SetCzz(const float& Czz){fCzz=Czz;}
-void AliFemtoTrack::SetITSchi2(const float& ITSchi2){fITSchi2=ITSchi2;}    
-void AliFemtoTrack::SetITSncls(const int& ITSncls){fITSncls=ITSncls;}     
-void AliFemtoTrack::SetTPCchi2(const float& TPCchi2){fTPCchi2=TPCchi2;}       
-void AliFemtoTrack::SetTPCncls(const int& TPCncls){fTPCncls=TPCncls;}       
-void AliFemtoTrack::SetTPCnclsF(const short& TPCnclsF){fTPCnclsF=TPCnclsF;}      
-void AliFemtoTrack::SetTPCsignalN(const short& TPCsignalN){fTPCsignalN=TPCsignalN;}    
-void AliFemtoTrack::SetTPCsignalS(const float& TPCsignalS){fTPCsignalS=TPCsignalS;} 
-void AliFemtoTrack::SetSigmaToVertex(const float& Sigma){fSigmaToVertex=Sigma;} 
+void AliFemtoTrack::SetImpactD(const float& aImpactD){fImpactD=aImpactD;}
+void AliFemtoTrack::SetImpactZ(const float& aImpactZ){fImpactZ=aImpactZ;}
+void AliFemtoTrack::SetCdd(const float& aCdd){fCdd=aCdd;}
+void AliFemtoTrack::SetCdz(const float& aCdz){fCdz=aCdz;}
+void AliFemtoTrack::SetCzz(const float& aCzz){fCzz=aCzz;}
+void AliFemtoTrack::SetITSchi2(const float& aITSchi2){fITSchi2=aITSchi2;}    
+void AliFemtoTrack::SetITSncls(const int& aITSncls){fITSncls=aITSncls;}     
+void AliFemtoTrack::SetTPCchi2(const float& aTPCchi2){fTPCchi2=aTPCchi2;}       
+void AliFemtoTrack::SetTPCncls(const int& aTPCncls){fTPCncls=aTPCncls;}       
+void AliFemtoTrack::SetTPCnclsF(const short& aTPCnclsF){fTPCnclsF=aTPCnclsF;}      
+void AliFemtoTrack::SetTPCsignalN(const short& aTPCsignalN){fTPCsignalN=aTPCsignalN;}    
+void AliFemtoTrack::SetTPCsignalS(const float& aTPCsignalS){fTPCsignalS=aTPCsignalS;} 
+void AliFemtoTrack::SetSigmaToVertex(const float& aSigma){fSigmaToVertex=aSigma;} 
 
 
 short AliFemtoTrack::Charge() const {return fCharge;}  

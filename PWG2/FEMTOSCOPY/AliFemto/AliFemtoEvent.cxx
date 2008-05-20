@@ -273,12 +273,12 @@ void AliFemtoEvent::SetEventNumber(const unsigned short& event){fEventNumber = e
 void AliFemtoEvent::SetRunNumber(const int& runNum){fRunNumber = runNum;}
 
 
-void AliFemtoEvent::SetZDCN1Energy(const float& ZDCN1Energy){fZDCN1Energy=ZDCN1Energy;}
-void AliFemtoEvent::SetZDCP1Energy(const float& ZDCP1Energy){fZDCP1Energy=ZDCP1Energy;}      
-void AliFemtoEvent::SetZDCN2Energy(const float& ZDCN2Energy){fZDCN2Energy=ZDCN2Energy;}      
-void AliFemtoEvent::SetZDCP2Energy(const float& ZDCP2Energy){fZDCP2Energy=ZDCP2Energy;}      
-void AliFemtoEvent::SetZDCEMEnergy(const float& ZDCEMEnergy){fZDCEMEnergy=ZDCEMEnergy;}    
-void AliFemtoEvent::SetZDCParticipants(const unsigned int& ZDCParticipants){fZDCParticipants=ZDCParticipants;}
+void AliFemtoEvent::SetZDCN1Energy(const float& aZDCN1Energy){fZDCN1Energy=aZDCN1Energy;}
+void AliFemtoEvent::SetZDCP1Energy(const float& aZDCP1Energy){fZDCP1Energy=aZDCP1Energy;}      
+void AliFemtoEvent::SetZDCN2Energy(const float& aZDCN2Energy){fZDCN2Energy=aZDCN2Energy;}      
+void AliFemtoEvent::SetZDCP2Energy(const float& aZDCP2Energy){fZDCP2Energy=aZDCP2Energy;}      
+void AliFemtoEvent::SetZDCEMEnergy(const float& aZDCEMEnergy){fZDCEMEnergy=aZDCEMEnergy;}    
+void AliFemtoEvent::SetZDCParticipants(const unsigned int& aZDCParticipants){fZDCParticipants=aZDCParticipants;}
     
 
 void AliFemtoEvent::SetNumberOfTracks(const unsigned short& tracks){fNumberOfTracks = tracks;}
@@ -288,8 +288,8 @@ void AliFemtoEvent::SetNumberOfTracks(const unsigned short& tracks){fNumberOfTra
 void AliFemtoEvent::SetPrimVertPos(const AliFemtoThreeVector& vp){fPrimVertPos = vp;}
 void AliFemtoEvent::SetMagneticField(const double& magF){fMagneticField = magF;}
 
-void AliFemtoEvent::SetTriggerMask(const unsigned long int& TriggerMask) {fTriggerMask=TriggerMask;}
-void AliFemtoEvent::SetTriggerCluster(const unsigned char& TriggerCluster) {fTriggerCluster=TriggerCluster;}
+void AliFemtoEvent::SetTriggerMask(const unsigned long int& aTriggerMask) {fTriggerMask=aTriggerMask;}
+void AliFemtoEvent::SetTriggerCluster(const unsigned char& aTriggerCluster) {fTriggerCluster=aTriggerCluster;}
 
 
 unsigned short AliFemtoEvent::EventNumber() const {return fEventNumber;}
