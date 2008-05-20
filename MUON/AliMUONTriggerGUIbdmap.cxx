@@ -1073,7 +1073,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
     // x-strips DSET
     if (bx) {
       
-      for (Int_t ix = 0; ix < fNStripX; ix++) {
+      for (ix = 0; ix < fNStripX; ix++) {
 	//if (fBoard->GetXDig(i,ix) > 0) {
 	if (fXDigBox[i][ix]->GetFillStyle() == 1001 || 
 	    fBoard->GetXDig(i,ix) > 0) {
@@ -1122,7 +1122,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
     // y-strips DSET
     if (by) {
       
-      for (Int_t iy = 0; iy < fNStripY; iy++) {
+      for (iy = 0; iy < fNStripY; iy++) {
 	//if (fBoard->GetYDig(i,iy) > 0) {
 	if (fYDigBox[i][iy]->GetFillStyle() == 1001 || 
 	    fBoard->GetYDig(i,iy) > 0) {
