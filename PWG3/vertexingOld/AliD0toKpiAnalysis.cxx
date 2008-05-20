@@ -502,14 +502,14 @@ AliD0toKpiAnalysis::SingleTrkCuts(const AliESDtrack& trk, Double_t b) const {
   return kTRUE;
 }
 //----------------------------------------------------------------------------
-void AliD0toKpiAnalysis::MakeTracksRefFile(AliRun *gAlice,
+void AliD0toKpiAnalysis::MakeTracksRefFile(AliRun *mygAlice,
 					   Int_t evFirst,Int_t evLast) const {
   // Create a file with simulation info for the reconstructed tracks
   
   TFile *outFile = TFile::Open("D0TracksRefFile.root","recreate");
   TFile *esdFile = TFile::Open("AliESDs.root");
 
-  AliMC *mc = gAlice->GetMCApp();
+  AliMC *mc = mygAlice->GetMCApp();
   
   Int_t      label;
   TParticle *part;  
@@ -525,7 +525,7 @@ void AliD0toKpiAnalysis::MakeTracksRefFile(AliRun *gAlice,
     tree->GetEvent(iEvent);
     Int_t ev = (Int_t)event->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
 
-    gAlice->GetEvent(ev);
+    mygAlice->GetEvent(ev);
 
     Int_t nentr=(Int_t)event->GetNumberOfTracks();
 
@@ -544,7 +544,7 @@ void AliD0toKpiAnalysis::MakeTracksRefFile(AliRun *gAlice,
       reftrk.pdg = part->GetPdgCode();
       reftrk.mumlab = part->GetFirstMother();
       if(part->GetFirstMother()>=0) {
-	mumpart = (TParticle*)gAlice->GetMCApp()->Particle(part->GetFirstMother());
+	mumpart = (TParticle*)mygAlice->GetMCApp()->Particle(part->GetFirstMother());
 	reftrk.mumpdg = mumpart->GetPdgCode();
 	reftrk.mumprongs = mumpart->GetNDaughters();
       } else {
