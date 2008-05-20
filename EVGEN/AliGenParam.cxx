@@ -448,8 +448,8 @@ void AliGenParam::Generate()
 		  for (i = 1; i < np; i++) {
 		      if (pSelected[i]) {
 			  TParticle* iparticle = (TParticle *) particles->At(i);
-			  Int_t kf  = iparticle->GetPdgCode();
-			  Int_t ipa = iparticle->GetFirstMother()-1;
+			  Int_t kf   = iparticle->GetPdgCode();
+			  Int_t jpa  = iparticle->GetFirstMother()-1;
 			  
 			  och[0] = origin0[0]+iparticle->Vx()/10;
 			  och[1] = origin0[1]+iparticle->Vy()/10;
@@ -458,13 +458,13 @@ void AliGenParam::Generate()
 			  pc[1]  = iparticle->Py();
 			  pc[2]  = iparticle->Pz();
 			  
-			  if (ipa > -1) {
-			      iparent = pParent[ipa];
+			  if (jpa > -1) {
+			      iparent = pParent[jpa];
 			  } else {
 			      iparent = -1;
 			  }
 			 
-			  PushTrack(fTrackIt*trackIt[i], iparent, kf,
+			  PushTrack(fTrackIt * trackIt[i], iparent, kf,
 					   pc, och, polar,
 					   0, kPDecay, nt, wgtch);
 			  pParent[i] = nt;

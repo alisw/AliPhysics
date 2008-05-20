@@ -196,12 +196,11 @@ void AliGenHaloProtvino::Init()
     Float_t sum1 = 0.;
     Float_t sum2 = 0.;
     
-    for (Int_t i = 0; i < 300; i++) {
-	Float_t z = 20.+i*1.;
-	z*=100;
-	Float_t wgt1 = GasPressureWeight(z);
-	Float_t wgt2 = GasPressureWeight(-z);
-//	printf("weight: %f %f %f %f %f \n", z, wgt1, wgt2, fZ1[20], fZ2[20]);
+    for (Int_t iz = 0; iz < 300; iz++) {
+	Float_t zpos = 20. + iz * 1.;
+	zpos *= 100;
+	Float_t wgt1 = GasPressureWeight( zpos);
+	Float_t wgt2 = GasPressureWeight(-zpos);
 	sum1 += wgt1;
 	sum2 += wgt2;
     }

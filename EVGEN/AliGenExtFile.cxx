@@ -135,12 +135,12 @@ void AliGenExtFile::Generate()
     //
     fNprimaries = 0;
     for (i = 0; i < nTracks; i++) {
-	TParticle* iparticle = fReader->NextParticle();
-	Bool_t selected = KinematicSelection(iparticle,0); 
+	TParticle* jparticle = fReader->NextParticle();
+	Bool_t selected = KinematicSelection(jparticle,0); 
 	if (!selected) continue;
-	p[0] = iparticle->Px();
-	p[1] = iparticle->Py();
-	p[2] = iparticle->Pz();
+	p[0] = jparticle->Px();
+	p[1] = jparticle->Py();
+	p[2] = jparticle->Pz();
 	Int_t idpart = iparticle->GetPdgCode();
 	if(fVertexSmear==kPerTrack) 
 	{
@@ -151,16 +151,16 @@ void AliGenExtFile::Generate()
 		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
 	} else {
-	    origin[0] = fVertex[0] + iparticle->Vx();
-	    origin[1] = fVertex[1] + iparticle->Vy();
-	    origin[2] = fVertex[2] + iparticle->Vz();
+	    origin[0] = fVertex[0] + jparticle->Vx();
+	    origin[1] = fVertex[1] + jparticle->Vy();
+	    origin[2] = fVertex[2] + jparticle->Vz();
 	}
 	
-	Int_t decayed    = iparticle->GetFirstDaughter();
+	Int_t decayed    = jparticle->GetFirstDaughter();
 	Int_t doTracking = fTrackIt && (decayed < 0) && (TMath::Abs(idpart) > 10) && selected;
-	Int_t parent     = iparticle->GetFirstMother();
+	Int_t parent     = jparticle->GetFirstMother();
 	
-	PushTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
+	PushTrack(doTracking, parent, idpart, p, origin, polar, 0, kPPrimary, nt);
 	KeepTrack(nt);
 	fNprimaries++;
     } // track loop

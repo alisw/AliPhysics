@@ -42,7 +42,7 @@ AliGenCocktailEntry::AliGenCocktailEntry():
 }
 
 AliGenCocktailEntry:: AliGenCocktailEntry
-(AliGenerator* Generator, const char * Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry"),
+(AliGenerator* Generator, const char* Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry"),
     fGenerator(Generator),
     fNGenerated(0),
     fFirst(-1),

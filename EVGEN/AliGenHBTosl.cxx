@@ -373,7 +373,7 @@ void AliGenHBTosl::Generate()
   }
  
  fGenerator->Generate();
- Int_t j = 0, ntr = 0;
+ Int_t ntr = 0;
  if ( genstack->GetNtrack() < fNpart/2)
   {
     Warning("Generate","************************************************************");
@@ -528,9 +528,11 @@ void AliGenHBTosl::Generate()
      qlong = gRandom->Uniform(qlongc-binwdh, qlongc+binwdh);
 
      TParticle* first = 0;
-     while (j < genstack->GetNtrack())
+     Int_t jj = 0;
+     
+     while (jj < genstack->GetNtrack())
       {
-        TParticle* tmpp = genstack->Particle(j++);
+        TParticle* tmpp = genstack->Particle(jj++);
         if (tmpp->GetPdgCode() == fPID)
          {
            if (CheckParticle(tmpp,0x0,stack) == kFALSE)
@@ -1290,7 +1292,7 @@ void AliGenHBTosl::StartSignalPass1()
     
     for (Int_t k = 1; k<=fQNBins; k++)
       {
-       for (Int_t j = 1; j<=fQNBins; j++)
+       for (j = 1; j<=fQNBins; j++)
          {  
            for (Int_t i = 1; i<=fQNBins; i++)
              {

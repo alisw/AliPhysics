@@ -102,10 +102,10 @@ void AliGenDoubleScan::Generate()
 //
 	      Rndm(random,6);
 	      Float_t phi2=2.*TMath::Pi()*random[0];
-	      Float_t dx  =fDistance*TMath::Sin(phi2);
-	      Float_t dy  =fDistance*TMath::Cos(phi2);	      
-	      origin[0]=origin[0]+dx;
-	      origin[1]=origin[1]+dy;	      
+	      Float_t dx2  =fDistance*TMath::Sin(phi2);
+	      Float_t dy2  =fDistance*TMath::Cos(phi2);	      
+	      origin[0]=origin[0]+dx2;
+	      origin[1]=origin[1]+dy2;	      
 	      pmom=fPMin+random[1]*(fPMax-fPMin);
 	      theta=fThetaMin+random[2]*(fThetaMax-fThetaMin);
 	      phi=fPhiMin+random[3]*(fPhiMax-fPhiMin);
