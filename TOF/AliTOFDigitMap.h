@@ -45,9 +45,10 @@ class AliTOFDigitMap : public TObject
     // Assignment operator
     AliTOFDigitMap& operator = (const AliTOFDigitMap& rhs);
     
-    Int_t GetFilledCellNumber() const;
-
-    void ResetDigit(Int_t *vol);
+    Int_t  GetFilledCellNumber() const;
+    Bool_t StripDigitCheck(Int_t iSector, Int_t iPlate, Int_t iStrip) const;
+    void   ResetDigit(Int_t *vol, Int_t dig);
+    void   ResetDigit(Int_t *vol);
 
  private:
     // Check index

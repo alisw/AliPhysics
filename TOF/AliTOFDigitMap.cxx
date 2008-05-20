@@ -223,6 +223,7 @@ AliTOFDigitMap & AliTOFDigitMap::operator = (const AliTOFDigitMap & /*rhs*/)
 // Dummy assignment operator
     return *this;
 }
+
 ////////////////////////////////////////////////////////////////////////
 Int_t AliTOFDigitMap::GetFilledCellNumber() const
 {
@@ -255,14 +256,56 @@ Int_t AliTOFDigitMap::GetFilledCellNumber() const
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliTOFDigitMap::ResetDigit(Int_t *vol)
+Bool_t AliTOFDigitMap::StripDigitCheck(Int_t iSector, Int_t iPlate, Int_t iStrip) const
+{
+  //
+  // Returns:
+  //           kFALSE if the strip doesn't contain digits
+  //           kTRUE  if the strip contains at least one digit
+  //
+
+  Int_t volume[5] = {iSector, iPlate, iStrip, -1, -1};
+  Bool_t counter = kFALSE;
+
+  for (Int_t iPadX=0; iPadX<fNpx; iPadX++)
+    for (Int_t iPadZ=0; iPadZ<fNpz; iPadZ++)
+      {
+	volume[3] = iPadX;
+	volume[4] = iPadZ;
+	if (GetDigitIndex(volume, 0)>=0) {
+	  counter = kTRUE;
+	  break;	  
+	}
+      }
+
+  return counter;
+
+}
+
+////////////////////////////////////////////////////////////////////////
+void AliTOFDigitMap::ResetDigit(Int_t *vol, Int_t dig)
 {
   //
   // Reset digit into pad vol
   //
   // 0 means empty pad, we need to shift indeces by 1
 
+  //for (Int_t slot=0; slot<kMaxDigitsPerPad; slot++) {
+  //if (fDigitMap[CheckedIndex(vol)][slot]==dig)
+  //fDigitMap[CheckedIndex(vol)][slot] = 0;
+  //}
+  fDigitMap[CheckedIndex(vol)][dig] = 0;
+
+}
+
+void AliTOFDigitMap::ResetDigit(Int_t *vol)
+{
+  //
+  // Reset digit into pad vol
+  //
+  // 0 means empty pad, we need to shift indices by 1
+
   for (Int_t slot=0; slot<kMaxDigitsPerPad; slot++)
-    fDigitMap[CheckedIndex(vol)][slot] = 0;
+    ResetDigit(vol,slot);
 
 }
