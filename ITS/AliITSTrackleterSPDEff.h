@@ -31,12 +31,13 @@ public:
   AliITSTrackleterSPDEff();
   virtual ~AliITSTrackleterSPDEff();
   // Main method to perform the trackleter and the SPD efficiency evaluation
-  void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes, AliStack* pStack=0x0);
+  void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes, AliStack* pStack=0x0, TTree* tRef=0x0);
 
   void SetPhiWindowL1(Float_t w=0.08) {fPhiWindowL1=w;}  // method to set the cuts in the interpolation
   void SetZetaWindowL1(Float_t w=1.) {fZetaWindowL1=w;}  // phase; use method of the base class for extrap.
   void SetOnlyOneTrackletPerC1(Bool_t b = kTRUE) {fOnlyOneTrackletPerC1 = b;} // as in the base class but 
 									      // for the inner layer
+  void SetUpdateOncePerEventPlaneEff(Bool_t b = kTRUE) {fUpdateOncePerEventPlaneEff = b;}
   
   AliITSPlaneEffSPD* GetPlaneEff() const {return fPlaneEffSPD;}  // return a pointer to the AliITSPlaneEffSPD
   
@@ -63,6 +64,14 @@ public:
   Int_t GetPredictionSecondary(const UInt_t key) const;
   Int_t GetClusterPrimary(const UInt_t key) const;
   Int_t GetClusterSecondary(const UInt_t key) const;
+  Int_t GetSuccessPP(const UInt_t key) const;
+  Int_t GetSuccessTT(const UInt_t key) const;
+  Int_t GetSuccessS(const UInt_t key) const;
+  Int_t GetSuccessP(const UInt_t key) const;
+  Int_t GetFailureS(const UInt_t key) const;
+  Int_t GetFailureP(const UInt_t key) const;
+  Int_t GetRecons(const UInt_t key) const;
+  Int_t GetNonRecons(const UInt_t key) const;
   Int_t GetPredictionPrimary(const UInt_t mod, const UInt_t chip) const
         {return GetPredictionPrimary(fPlaneEffSPD->GetKey(mod,chip));};
   Int_t GetPredictionSecondary(const UInt_t mod, const UInt_t chip) const
@@ -71,6 +80,22 @@ public:
         {return GetClusterPrimary(fPlaneEffSPD->GetKey(mod,chip));};
   Int_t GetClusterSecondary(const UInt_t mod, const UInt_t chip) const
         {return GetClusterSecondary(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetSuccessPP(const UInt_t mod, const UInt_t chip) const
+        {return GetSuccessPP(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetSuccessTT(const UInt_t mod, const UInt_t chip) const
+       {return GetSuccessTT(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetSuccessS(const UInt_t mod, const UInt_t chip) const
+       {return GetSuccessS(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetSuccessP(const UInt_t mod, const UInt_t chip) const
+       {return GetSuccessP(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetFailureS(const UInt_t mod, const UInt_t chip) const
+       {return GetFailureS(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetFailureP(const UInt_t mod, const UInt_t chip) const
+       {return GetFailureP(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetRecons(const UInt_t mod, const UInt_t chip) const
+       {return GetRecons(fPlaneEffSPD->GetKey(mod,chip));};
+  Int_t GetNonRecons(const UInt_t mod, const UInt_t chip) const
+       {return GetNonRecons(fPlaneEffSPD->GetKey(mod,chip));};
   // methods to write/reas cuts and MC statistics into/from file
   void SavePredictionMC(TString filename="TrackletsMCpred.txt") const;
   void ReadPredictionMC(TString filename="TrackletsMCpred.txt");
@@ -95,9 +120,15 @@ protected:
   UInt_t*       fChipPredOnLay1;      // prediction for the chip traversed by the tracklet 
                                       // based on vtx and ClusterLay2 (to be used in interpolation)
   Int_t         fNTracklets1;   // Number of tracklets layer 1
+  // possible cuts :
   Float_t       fPhiWindowL1;     // Search window in phi (Layer 1)
   Float_t       fZetaWindowL1;    // SEarch window in zeta (Layer 1)
   Bool_t        fOnlyOneTrackletPerC1; // only one tracklet per cluster in L. 1
+  Bool_t        fUpdateOncePerEventPlaneEff;  //  If this is kTRUE, then you can update the chip efficiency only once
+                                              //  per event in that chip. This to avoid double counting from the
+                                              //  same tracklets which has two rec-points on one layer.
+  Bool_t*       fChipUpdatedInEvent;          //  boolean (chip by chip) to flag which chip has been updated its efficiency
+                                              //  in that event
   AliITSPlaneEffSPD* fPlaneEffSPD; // pointer to SPD plane efficiency class
   Bool_t   fMC; // Boolean to access Kinematics (only for MC events )
   Bool_t   fUseOnlyPrimaryForPred; // Only for MC: if this is true, build tracklet prediction using only primary particles
@@ -112,6 +143,14 @@ protected:
   Int_t *fPredictionSecondary; // chip_by_chip: number of Prediction built with primaries/secondaries
   Int_t *fClusterPrimary;  //   number of clusters on a given chip fired by (at least) a primary
   Int_t *fClusterSecondary; //  number of clusters on a given chip fired by (only) secondaries
+  Int_t *fSuccessPP;     // number of successes by using the same primary track (vs. chip of the success)
+  Int_t *fSuccessTT;     // number of successes by using the same track (either a primary or a secondary) (vs. chip of the success)
+  Int_t *fSuccessS;      // number of successes by using a secondary for the prediction (vs. chip of the success)
+  Int_t *fSuccessP;      // number of successes by using a primary for the prediction (vs. chip of the success)
+  Int_t *fFailureS;      // number of failures by using a secondary for the prediction (vs. chip of the failure)
+  Int_t *fFailureP;      // number of failures by using a primary for the prediction (vs. chip of the failure)
+  Int_t *fRecons;        // number of particle which can be reconstructed (only for MC from TrackRef)
+  Int_t *fNonRecons;     // unmber of particle which cannot be reconstructed (only for MC from TrackRef)
  // extra histograms with respect to the base class AliITSMultReconstructor
   TH1F*         fhClustersDPhiInterpAcc;   // Phi2 - Phi1 for tracklets (interpolation phase)
   TH1F*         fhClustersDThetaInterpAcc; // Theta2 - Theta1 for tracklets (interpolation phase)
@@ -129,6 +168,8 @@ protected:
   Double_t GetRLayer(Int_t layer); // return average radius of layer (0,1) from Geometry
   Bool_t PrimaryTrackChecker(Int_t ipart,AliStack* stack=0x0);  // check if a MC particle is primary (need AliStack)
   Int_t DecayingTrackChecker(Int_t ipart,AliStack* stack=0x0);  // For a primary particle, check if it is stable (see cxx)
+// check if a MC particle is reconstructable
+  Bool_t IsReconstructableAt(Int_t layer,Int_t iC,Int_t ipart,Float_t* vtx,AliStack* stack=0x0,TTree* ref=0x0);
   void InitPredictionMC();
   // method to locate a chip using current vtx and polar coordinate od tracklet w.r.t. to vtx (zVtx may not be given)
   Bool_t FindChip(UInt_t &key, Int_t layer,  Float_t* vtx, Float_t thetaVtx, Float_t phiVtx, Float_t zVtx=999.); 
@@ -148,7 +189,7 @@ protected:
   void BookHistos(); // booking of extra histograms w.r.t. base class
   void DeleteHistos(); //delete histos from memory
 
-  ClassDef(AliITSTrackleterSPDEff,1)
+  ClassDef(AliITSTrackleterSPDEff,2)
 };
 // Input and output function for standard C++ input/output (for the cut values and MC statistics).
 ostream &operator<<(ostream &os,const AliITSTrackleterSPDEff &s);

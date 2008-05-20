@@ -30,9 +30,11 @@
 /* $Id$ */
 
 #include <TFile.h>
+#include <TTree.h>
 #include <TParticle.h>
 #include <TSystem.h>
 #include <Riostream.h>
+#include <TClonesArray.h>
 
 #include "AliITSMultReconstructor.h"
 #include "AliITSTrackleterSPDEff.h"
@@ -40,6 +42,7 @@
 #include "AliLog.h"
 #include "AliITSPlaneEffSPD.h"
 #include "AliStack.h"
+#include "AliTrackReference.h"
 
 //____________________________________________________________________
 ClassImp(AliITSTrackleterSPDEff)
@@ -55,6 +58,8 @@ fNTracklets1(0),
 fPhiWindowL1(0),
 fZetaWindowL1(0),
 fOnlyOneTrackletPerC1(0),
+fUpdateOncePerEventPlaneEff(0),
+fChipUpdatedInEvent(0),
 fPlaneEffSPD(0),
 fMC(0),
 fUseOnlyPrimaryForPred(0),
@@ -66,6 +71,14 @@ fPredictionPrimary(0),
 fPredictionSecondary(0),
 fClusterPrimary(0),
 fClusterSecondary(0),
+fSuccessPP(0),
+fSuccessTT(0),
+fSuccessS(0),
+fSuccessP(0),
+fFailureS(0),
+fFailureP(0),
+fRecons(0),
+fNonRecons(0),
 fhClustersDPhiInterpAcc(0),
 fhClustersDThetaInterpAcc(0),
 fhClustersDZetaInterpAcc(0),
@@ -88,10 +101,12 @@ fhphiClustersLay2(0)
   fAssociationFlag1   = new Bool_t[300000];
   fChipPredOnLay2     = new UInt_t[300000];
   fChipPredOnLay1     = new UInt_t[300000];
+  fChipUpdatedInEvent = new Bool_t[1200];
 
   for(Int_t i=0; i<300000; i++) {
     fAssociationFlag1[i]   = kFALSE;
   }
+  for(Int_t i=0;i<1200; i++) fChipUpdatedInEvent[i] = kFALSE;
 
   if (GetHistOn()) BookHistos();
 
@@ -106,6 +121,8 @@ fNTracklets1(mr.fNTracklets1),
 fPhiWindowL1(mr.fPhiWindowL1),
 fZetaWindowL1(mr.fZetaWindowL1),
 fOnlyOneTrackletPerC1(mr.fOnlyOneTrackletPerC1),
+fUpdateOncePerEventPlaneEff(mr.fUpdateOncePerEventPlaneEff),
+fChipUpdatedInEvent(mr.fChipUpdatedInEvent),
 fPlaneEffSPD(mr.fPlaneEffSPD),
 fMC(mr.fMC),
 fUseOnlyPrimaryForPred(mr.fUseOnlyPrimaryForPred),
@@ -117,6 +134,14 @@ fPredictionPrimary(mr.fPredictionPrimary),
 fPredictionSecondary(mr.fPredictionSecondary),
 fClusterPrimary(mr.fClusterPrimary),
 fClusterSecondary(mr.fClusterSecondary),
+fSuccessPP(mr.fSuccessPP),
+fSuccessTT(mr.fSuccessTT),
+fSuccessS(mr.fSuccessS),
+fSuccessP(mr.fSuccessP),
+fFailureS(mr.fFailureS),
+fFailureP(mr.fFailureP),
+fRecons(mr.fRecons),
+fNonRecons(mr.fNonRecons),
 fhClustersDPhiInterpAcc(mr.fhClustersDPhiInterpAcc),
 fhClustersDThetaInterpAcc(mr.fhClustersDThetaInterpAcc),
 fhClustersDZetaInterpAcc(mr.fhClustersDZetaInterpAcc),
@@ -152,17 +177,27 @@ AliITSTrackleterSPDEff::~AliITSTrackleterSPDEff(){
   delete [] fChipPredOnLay2;
   delete [] fChipPredOnLay1;
 
+  delete [] fChipUpdatedInEvent;
+
   delete [] fPredictionPrimary;  
   delete [] fPredictionSecondary; 
   delete [] fClusterPrimary;  
   delete [] fClusterSecondary; 
+  delete [] fSuccessPP;
+  delete [] fSuccessTT;
+  delete [] fSuccessS;
+  delete [] fSuccessP;
+  delete [] fFailureS;
+  delete [] fFailureP;
+  delete [] fRecons;
+  delete [] fNonRecons;
 
   // delete PlaneEff
   delete fPlaneEffSPD;
 }
 //____________________________________________________________________
 void
-AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /* vtxRes*/,AliStack *pStack) {
+AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t*, AliStack *pStack, TTree *tRef) {
   //
   // - calls LoadClusterArray that finds the position of the clusters
   //   (in global coord) 
@@ -180,12 +215,16 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
   // loading the clusters 
   LoadClusterArrays(clusterTree);
   if(fMC && !pStack) {AliError("You asked for MC infos but AliStack not properly loaded"); return;}
+  if(fMC && !tRef) {AliError("You asked for MC infos but TrackRef Tree not properly loaded"); return;}
   Bool_t found;
   Int_t nfTraPred1=0;  Int_t ntTraPred1=0;
   Int_t nfTraPred2=0;  Int_t ntTraPred2=0;
   Int_t nfClu1=0;      Int_t ntClu1=0; 
   Int_t nfClu2=0;      Int_t ntClu2=0;
   
+  // Set fChipUpdatedInEvent=kFALSE for all the chips (none of the chip efficiency already updated 
+  // for this new event)
+  for(Int_t i=0;i<1200;i++) fChipUpdatedInEvent[i] = kFALSE;
 
   // find the tracklets
   AliDebug(1,"Looking for tracklets... ");  
@@ -225,7 +264,6 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
       fhphiClustersLay1->Fill(fClustersLay1[iC1][1]);
     }      
   }
-  
   // Loop on layer 2 : finding theta, phi and r   
   for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {    
     Float_t x = fClustersLay2[iC2][0] - vtx[0];
@@ -266,6 +304,10 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
   // Loop on layer 1 
   for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {    
 
+    // here the control to check whether the efficiency of the chip traversed by this tracklet
+    // prediction has already been updated in this event using another tracklet prediction
+    if(fUpdateOncePerEventPlaneEff && fChipPredOnLay2[iC1]<1200 && fChipUpdatedInEvent[fChipPredOnLay2[iC1]]) continue;
+  
     // reset of variables for multiple candidates
     Int_t  iC2WithBestDist = 0;     // reset 
     Float_t distmin        = 100.;  // just to put a huge number! 
@@ -274,6 +316,7 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
     Float_t dZetamin       = 0.;  // Used for histograms only! 
 
     // in any case, if MC has been required, store statistics of primaries and secondaries
+    Bool_t primary=kFALSE; Bool_t secondary=kFALSE; // it is better to have both since chip might not be found
     if (fMC) {
        Int_t lab1=(Int_t)fClustersLay1[iC1][3];
        Int_t lab2=(Int_t)fClustersLay1[iC1][4];
@@ -288,9 +331,11 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
             (lab3 != -2  &&  PrimaryTrackChecker(lab3,pStack))) 
          { // this cluster is from a primary particle
            fClusterPrimary[key]++;
+           primary=kTRUE;
            if(fUseOnlySecondaryForPred) continue; // skip this tracklet built with a primary track
          } else { // this cluster is from a secondary particle
             fClusterSecondary[key]++;
+            secondary=kTRUE;
             if(fUseOnlyPrimaryForPred) continue; // skip this tracklet built with a secondary track
          }
        }
@@ -301,6 +346,10 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
             (lab2 != -2  &&  PrimaryTrackChecker(lab2,pStack) ) ||
             (lab3 != -2  &&  PrimaryTrackChecker(lab3,pStack))) fPredictionPrimary[fChipPredOnLay2[iC1]]++;
          else fPredictionSecondary[fChipPredOnLay2[iC1]]++;
+         if((lab1 != -2  &&  IsReconstructableAt(1,iC1,lab1,vtx,pStack,tRef)) ||
+            (lab2 != -2  &&  IsReconstructableAt(1,iC1,lab2,vtx,pStack,tRef)) ||
+            (lab3 != -2  &&  IsReconstructableAt(1,iC1,lab3,vtx,pStack,tRef))) fRecons[fChipPredOnLay2[iC1]]++;
+         else fNonRecons[fChipPredOnLay2[iC1]]++;
        }
     }
     
@@ -414,25 +463,44 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
           // Int_t labc1=(Int_t)fClustersLay2[iC2WithBestDist][3];
           // Int_t labc2=(Int_t)fClustersLay2[iC2WithBestDist][4];
           // Int_t labc3=(Int_t)fClustersLay2[iC2WithBestDist][5];
+          if (label2 < 3) {
+            fSuccessTT[key]++;
+            if(primary) fSuccessPP[key]++;
+          }
           if (fUseOnlyDifferentParticle && label2 < 3) continue; // same label (reject it)
           if (fUseOnlySameParticle && label2 == 3) continue;      // different label (reject it)
         }
 
         if (key==fChipPredOnLay2[iC1]) { // this control seems too loose: has to be checked !
-          // OK, success
+          				 // OK, success
                 fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // success
+                fChipUpdatedInEvent[key]=kTRUE; 
+                if(fMC) {
+                  if(primary)   fSuccessP[key]++;
+                  if(secondary) fSuccessS[key]++;
+                }
         }
         else {
                 fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // this should not be a failure
-                                                         // (might be in the tracking tollerance)
+                fChipUpdatedInEvent[key]=kTRUE;          // (might be in the tracking tollerance)
+                if(fMC) {
+                  if(primary)   fSuccessP[key]++;
+                  if(secondary) fSuccessS[key]++;
+                }
         }
       }
 
       fNTracklets++;
 
     } // if any cluster found --> increment statistics by 1 failure (provided you have chip prediction)
-    else if (fChipPredOnLay2[iC1]<1200) fPlaneEffSPD->UpDatePlaneEff(kFALSE,fChipPredOnLay2[iC1]);
-
+    else if (fChipPredOnLay2[iC1]<1200) {
+      fPlaneEffSPD->UpDatePlaneEff(kFALSE,fChipPredOnLay2[iC1]);
+      fChipUpdatedInEvent[fChipPredOnLay2[iC1]]=kTRUE;
+      if(fMC) {
+        if(primary)   fFailureP[fChipPredOnLay2[iC1]]++;
+        if(secondary) fFailureS[fChipPredOnLay2[iC1]]++;
+      }
+    }
   } // end of loop over clusters in layer 1
 
     fNTracklets1=fNTracklets;
@@ -444,6 +512,10 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
   // Loop on layer 2 
   for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {    
 
+    // here the control to check whether the efficiency of the chip traversed by this tracklet
+    // prediction has already been updated in this event using another tracklet prediction
+    if(fUpdateOncePerEventPlaneEff && fChipPredOnLay1[iC2]<1200 && fChipUpdatedInEvent[fChipPredOnLay1[iC2]]) continue;
+
     // reset of variables for multiple candidates
     Int_t  iC1WithBestDist = 0;     // reset 
     Float_t distmin        = 100.;  // just to put a huge number! 
@@ -452,6 +524,7 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
     Float_t dZetamin       = 0.;  // Used for histograms only! 
 
     // in any case, if MC has been required, store statistics of primaries and secondaries
+    Bool_t primary=kFALSE; Bool_t secondary=kFALSE;
     if (fMC) {
        Int_t lab1=(Int_t)fClustersLay2[iC2][3];
        Int_t lab2=(Int_t)fClustersLay2[iC2][4];
@@ -466,9 +539,11 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
             (lab3 != -2  &&  PrimaryTrackChecker(lab3,pStack))) 
          {  // this cluster is from a primary particle
             fClusterPrimary[key]++;
+            primary=kTRUE;
             if(fUseOnlySecondaryForPred) continue; //  skip this tracklet built with a primary track
          } else { // this cluster is from a secondary particle
            fClusterSecondary[key]++;
+           secondary=kTRUE;
            if(fUseOnlyPrimaryForPred) continue; //  skip this tracklet built with a secondary track
          }
        }
@@ -479,6 +554,10 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
             (lab2 != -2  &&  PrimaryTrackChecker(lab2,pStack) ) ||
             (lab3 != -2  &&  PrimaryTrackChecker(lab3,pStack)))   fPredictionPrimary[fChipPredOnLay1[iC2]]++;
          else fPredictionSecondary[fChipPredOnLay1[iC2]]++;
+         if((lab1 != -2  &&  IsReconstructableAt(0,iC2,lab1,vtx,pStack,tRef)) ||
+            (lab2 != -2  &&  IsReconstructableAt(0,iC2,lab2,vtx,pStack,tRef)) ||
+            (lab3 != -2  &&  IsReconstructableAt(0,iC2,lab3,vtx,pStack,tRef))) fRecons[fChipPredOnLay1[iC2]]++;
+         else fNonRecons[fChipPredOnLay1[iC2]]++;
        }
     }
     
@@ -525,7 +604,7 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
       } 
     } // end of loop over clusters in layer 1 
     
-    if (distmin<100) { // This means that a cluster in layer 1 was found that mathes with iC2
+    if (distmin<100) { // This means that a cluster in layer 1 was found that matches with iC2
 
       if (fHistOn) {
 	fhClustersDPhiInterpAcc->Fill(dPhimin);
@@ -585,24 +664,43 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /
           // Int_t labc1=(Int_t)fClustersLay1[iC1WithBestDist][3];
           // Int_t labc2=(Int_t)fClustersLay1[iC1WithBestDist][4];
           // Int_t labc3=(Int_t)fClustersLay1[iC1WithBestDist][5];
+          if (label2 < 3) { // same label 
+            fSuccessTT[key]++;
+            if(primary) fSuccessPP[key]++;
+          }
           if (fUseOnlyDifferentParticle && label2 < 3) continue; // same label (reject it)
           if (fUseOnlySameParticle && label2 == 3) continue;      // different label (reject it)
         }
 
         if (key==fChipPredOnLay1[iC2]) { // this control seems too loose: has to be checked !
-          // OK, success
+          				 // OK, success
                 fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // success
+                fChipUpdatedInEvent[key]=kTRUE;
+                if(fMC) {
+                  if(primary)   fSuccessP[key]++;
+                  if(secondary) fSuccessS[key]++;
+                }
         } else {
                 fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // this should not be a failure
-                                                         // (might be in the tracking tollerance)
+                fChipUpdatedInEvent[key]=kTRUE;          // (might be in the tracking tollerance)
+                if(fMC) {
+                  if(primary)   fSuccessP[key]++;
+                  if(secondary) fSuccessS[key]++;
+                }
         }
       }
 
     fNTracklets++;
 
     } // if no cluster found --> increment statistics by 1 failure (provided you have chip prediction)
-    else if (fChipPredOnLay1[iC2]<1200) fPlaneEffSPD->UpDatePlaneEff(kFALSE,fChipPredOnLay1[iC2]);
-
+    else if (fChipPredOnLay1[iC2]<1200) {
+      fPlaneEffSPD->UpDatePlaneEff(kFALSE,fChipPredOnLay1[iC2]);
+      fChipUpdatedInEvent[fChipPredOnLay1[iC2]]=kTRUE;
+      if(fMC) {
+        if(primary)   fFailureP[fChipPredOnLay1[iC2]]++;
+        if(secondary) fFailureS[fChipPredOnLay1[iC2]]++;
+      }
+    }
   } // end of loop over clusters in layer 2
   
   AliDebug(1,Form("%d tracklets found", fNTracklets));
@@ -660,6 +758,9 @@ Bool_t AliITSTrackleterSPDEff::FindChip(UInt_t &key, Int_t layer,  Float_t* vtx,
 }
 //______________________________________________________________________________
 Double_t AliITSTrackleterSPDEff::GetRLayer(Int_t layer) {
+//
+//  Return the average radius of a layer from Geometry
+//
     if(layer<0 || layer >1) {AliWarning("Wrong layer: should be 0 or 1!"); return -999.;}
     Int_t i=layer+1; // in AliITSgeomTGeo you count from 1 to 6 !
 
@@ -707,7 +808,10 @@ return kTRUE;
 //______________________________________________________________________________
 Int_t AliITSTrackleterSPDEff::FindDetectorIndex(Int_t layer, Double_t phi, Double_t z) {
   //--------------------------------------------------------------------
-  //This function finds the detector crossed by the track
+  // This function finds the detector crossed by the track
+  // Input: layer in range [0,1]
+  //        phi   in ALICE absolute reference system
+  //         z     "  "       "         "        "
   //--------------------------------------------------------------------
     if(layer<0 || layer >1) {AliWarning("Wrong layer: should be 0 or 1!"); return -1;}
     Int_t i=layer+1; // in AliITSgeomTGeo you count from 1 to 6 !
@@ -753,7 +857,7 @@ Correct method below: you have the equation of a circle (in polar coordinate) w.
 r^2-2*r*r0*cos(phi-phi0) + r0^2 = R^2 , where (r0,phi0) is the centre of the circle
 In the same system, the equation of a semi-line is: phi=phiVtx;
 Hence you get one interception only: P=(r,phiVtx)
-Finally you want P in the ABSOLUTE ALICE system.
+Finally you want P in the ABSOLUTE ALICE reference system.
 */
 Double_t rO=TMath::Sqrt(vtx[0]*vtx[0]+vtx[1]*vtx[1]); // polar coordinates of the ALICE origin
 Double_t phiO=TMath::ATan2(-vtx[1],-vtx[0]);          // in the system with vtx[2] as origin
@@ -777,6 +881,11 @@ return kTRUE;
 }
 //___________________________________________________________
 Bool_t AliITSTrackleterSPDEff::SetAngleRange02Pi(Double_t &angle) {
+//
+//  simple method to reduce all angles (in rad)
+//  in range [0,2pi[
+//
+//
 while(angle >=2*TMath::Pi() || angle<0) {
   if(angle >= 2*TMath::Pi()) angle-=2*TMath::Pi();
   if(angle < 0) angle+=2*TMath::Pi();
@@ -785,6 +894,16 @@ return kTRUE;
 }
 //___________________________________________________________
 Bool_t AliITSTrackleterSPDEff::PrimaryTrackChecker(Int_t ipart,AliStack* stack) {
+//
+//  This method check if a particle is primary; i.e.  
+//  it comes from the main vertex and it is a "stable" particle, according to 
+//  AliStack::IsPhysicalPrimary() (note that there also Sigma0 are considered as 
+//  a stable particle: it has no effect on this analysis). 
+//  This method can be called only for MC events, where Kinematics is available.
+//  if fUseOnlyStableParticle is kTRUE (via SetseOnlyStableParticle) then it 
+//  returns kTRUE if also AliITSTrackleterSPDEff::DecayingTrackChecker() return 0.
+//  The latter (see below) try to verify if a primary particle is also "detectable".
+//
 if(!fMC) {AliError("This method works only if SetMC() has been called"); return kFALSE;}
 if(!stack) {AliError("null pointer to MC stack"); return kFALSE;}
 if(ipart >= stack->GetNtrack()) {AliError("this track label is not in MC stack"); return kFALSE;}
@@ -810,11 +929,23 @@ if(ipart >= stack->GetNtrack()) {AliError("this track label is not in MC stack")
                                  part0->Vx(),part0->Vy(),part->Vx(),part->Vy()));
                       return kFALSE; }// primary if within 500 microns from true Vertex
 
- if(fUseOnlyStableParticle && DecayingTrackChecker(ipart,stack)<2) return kFALSE; 
+ if(fUseOnlyStableParticle && DecayingTrackChecker(ipart,stack)>0) return kFALSE; 
  return kTRUE;
 }
 //_____________________________________________________________________________________________
 Int_t AliITSTrackleterSPDEff::DecayingTrackChecker(Int_t ipart,AliStack* stack) {
+//
+// This private method can be applied on MC particles (if stack is available),  
+// provided they have been identified as "primary" from PrimaryTrackChecker() (see above).
+//   
+// It define "detectable" a primary particle according to the following criteria:
+//
+// - if no decay products can be found in the stack (note that this does not 
+//     means it is stable, since a particle is stored in stack if it has at least 1 hit in a 
+//     sensitive detector)
+// - if it has at least one decay daughter produced outside or just on the outer pixel layer 
+// - if the last decay particle is an electron (or a muon) which is not produced in-between 
+//     the two pixel layers (this is likely to be a kink).
 if(!fMC) {AliError("This method works only if SetMC() has been called"); return 0;}
 if(!stack) {AliError("null pointer to MC stack"); return 0;}
 if(ipart >= stack->GetNtrack()) {AliError("this track label is not in MC stack"); return 0;}
@@ -825,39 +956,68 @@ TParticle* part = stack->Particle(ipart);
   Int_t nret=0;
   TParticle* dau = 0;
   Int_t nDau = 0;
-  Int_t firstDau = part->GetFirstDaughter();
-  if (firstDau > 0) {
+  Int_t pdgDau;
+  Int_t firstDau = part->GetFirstDaughter(); // if no daugther stored then no way to understand i
+                                             // its real fate ! But you have to take it !
+  if (firstDau > 0) { // if it has daugther(s) try to infer if it is "detectable" as a tracklet
     Int_t lastDau = part->GetLastDaughter();
     nDau = lastDau - firstDau + 1;
-    //printf("number of daugthers %d \n",nDau);
-    if (nDau > 0) {
-      //for(Int_t j=firstDau; j<=lastDau; j++) 
-      for(Int_t j=firstDau; j<=firstDau; j++) 
-                                              { // only first one 
-        dau = stack->Particle(j);
-        Double_t distx = dau->Vx()-part->Vx();
-        Double_t disty = dau->Vy()-part->Vy();
-        Double_t distz = dau->Vz()-part->Vz();
-        Double_t distR = TMath::Sqrt(distx*distx+disty*disty+distz*distz);
-        if (distR > GetRLayer(0)+0.5)  nret=1;  // decay after first pixel layer
-        if (distR > GetRLayer(1)+0.5)  nret=2;  // decay after second pixel layer
-      }
+    Double_t distMax=0.;
+    Int_t jmax=0;
+    for(Int_t j=firstDau; j<=lastDau; j++)  {
+      dau = stack->Particle(j);
+      Double_t distx = dau->Vx();
+      Double_t disty = dau->Vy();
+      //Double_t distz = dau->Vz();
+      Double_t distR = TMath::Sqrt(distx*distx+disty*disty);
+      if(distR<distMax) continue; // considere only the daughter produced at largest radius
+      distMax=distR;
+      jmax=j;
     }
-  } else nret = 3; // stable particle
-return nret; 
+    dau = stack->Particle(jmax);
+    pdgDau=dau->GetPdgCode();
+    if (pdgDau == 11 || pdgDau == 13 ) {
+       if(distMax < GetRLayer(1)-0.25 && distMax > GetRLayer(0)+0.27) nret=1; // can be a kink (reject it)
+       else nret =0; // delta-ray emission in material  (keep it)
+    }
+    else {// not ele or muon
+      if (distMax < GetRLayer(1)-0.25 )  nret= 1;}  // decay before the second pixel layer (reject it)
+    }
+return nret;
 }
 //_________________________________________________________________
 void AliITSTrackleterSPDEff::InitPredictionMC() {
+//
+// this method allocate memory for the MC related informations
+// all the counters are set to 0
+//
+//
 if(!fMC) {AliError("This method works only if SetMC() has been called"); return;}
 fPredictionPrimary   = new Int_t[1200];
 fPredictionSecondary = new Int_t[1200];
 fClusterPrimary      = new Int_t[1200];
 fClusterSecondary    = new Int_t[1200];
+fSuccessPP           = new Int_t[1200];
+fSuccessTT           = new Int_t[1200];
+fSuccessS            = new Int_t[1200];
+fSuccessP            = new Int_t[1200];
+fFailureS            = new Int_t[1200];
+fFailureP            = new Int_t[1200];
+fRecons              = new Int_t[1200];
+fNonRecons           = new Int_t[1200];
 for(Int_t i=0; i<1200; i++) {
  fPredictionPrimary[i]=0;
  fPredictionSecondary[i]=0; 
  fPredictionSecondary[i]=0;
  fClusterSecondary[i]=0;
+ fSuccessPP[i]=0;
+ fSuccessTT[i]=0;
+ fSuccessS[i]=0;
+ fSuccessP[i]=0;
+ fFailureS[i]=0;
+ fFailureP[i]=0;
+ fRecons[i]=0;
+ fNonRecons[i]=0;
 }
 return;
 }
@@ -921,6 +1081,110 @@ if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
 return fClusterSecondary[(Int_t)key];
 }
 //______________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetSuccessPP(const UInt_t key) const {
+//
+// This method return the Data menmber fSuccessPP [1200].
+// You can call it only for MC events.
+// fSuccessPP[key] contains the number of successes (i.e. a tracklet prediction matching
+// with a cluster on the other layer) built by using the same primary particle
+// the unique chip key refers to the chip which get updated its efficiency
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fSuccessPP[(Int_t)key];
+}
+//______________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetSuccessTT(const UInt_t key) const {
+//
+// This method return the Data menmber fSuccessTT [1200].
+// You can call it only for MC events.
+// fSuccessTT[key] contains the number of successes (i.e. a tracklet prediction matching
+// with a cluster on the other layer) built by using the same  particle (whatever)
+// the unique chip key refers to the chip which get updated its efficiency
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fSuccessTT[(Int_t)key];
+}
+//______________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetSuccessS(const UInt_t key) const {
+//
+// This method return the Data menmber fSuccessS [1200].
+// You can call it only for MC events.
+// fSuccessS[key] contains the number of successes (i.e. a tracklet prediction matching
+// with a cluster on the other layer) built by using a secondary particle
+// the unique chip key refers to the chip which get updated its efficiency
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fSuccessS[(Int_t)key];
+}
+//______________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetSuccessP(const UInt_t key) const {
+//
+// This method return the Data menmber fSuccessP [1200].
+// You can call it only for MC events.
+// fSuccessP[key] contains the number of successes (i.e. a tracklet prediction matching
+// with a cluster on the other layer) built by using a primary particle
+// the unique chip key refers to the chip which get updated its efficiency
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fSuccessP[(Int_t)key];
+}
+//______________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetFailureS(const UInt_t key) const {
+//
+// This method return the Data menmber fFailureS [1200].
+// You can call it only for MC events.
+// fFailureS[key] contains the number of failures (i.e. a tracklet prediction not matching
+// with a cluster on the other layer) built by using a secondary particle
+// the unique chip key refers to the chip which get updated its efficiency
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fFailureS[(Int_t)key];
+}
+//______________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetFailureP(const UInt_t key) const {
+//
+// This method return the Data menmber fFailureP [1200].
+// You can call it only for MC events.
+// fFailureP[key] contains the number of failures (i.e. a tracklet prediction not matching
+// with a cluster on the other layer) built by using a primary particle
+// the unique chip key refers to the chip which get updated its efficiency
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fFailureP[(Int_t)key];
+}
+//_____________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetRecons(const UInt_t key) const {
+//
+// This method return the Data menmber fRecons [1200].
+// You can call it only for MC events.
+// fRecons[key] contains the number of reconstractable tracklets (i.e. a tracklet prediction which
+// has an hit in the detector)
+// the unique chip key refers to the chip where fall the prediction
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fRecons[(Int_t)key];
+}
+//_____________________________________________________________________
+Int_t AliITSTrackleterSPDEff::GetNonRecons(const UInt_t key) const {
+//
+// This method return the Data menmber fNonRecons [1200].
+// You can call it only for MC events.
+// fRecons[key] contains the number of unreconstractable tracklets (i.e. a tracklet prediction which
+// has not any hit in the detector)
+// the unique chip key refers to the chip where fall the prediction
+//
+if (!fMC) {CallWarningMC(); return 0;}
+if (key>=1200) {AliWarning("You asked for a non existing chip"); return -999;}
+return fNonRecons[(Int_t)key];
+}
+//______________________________________________________________________
 void AliITSTrackleterSPDEff::PrintAscii(ostream *os)const{
     // Print out some class data values in Ascii Form to output stream
     // Inputs:
@@ -929,7 +1193,9 @@ void AliITSTrackleterSPDEff::PrintAscii(ostream *os)const{
     //   none.
     // Return:
     //   none.
-    *os << fPhiWindowL1 <<" "<< fZetaWindowL1 << " " << fPhiWindow <<" "<< fZetaWindow ;
+    *os << fPhiWindowL1 <<" "<< fZetaWindowL1 << " " << fPhiWindow <<" "<< fZetaWindow 
+        << " " << fOnlyOneTrackletPerC1 << " " << fOnlyOneTrackletPerC2 
+        << " " << fUpdateOncePerEventPlaneEff ;
     *os << " " << fMC;
     if(!fMC) {AliInfo("Writing only cuts, no MC info"); return;}
     *os << " " << fUseOnlyPrimaryForPred << " " << fUseOnlySecondaryForPred
@@ -939,6 +1205,14 @@ void AliITSTrackleterSPDEff::PrintAscii(ostream *os)const{
     for(Int_t i=0;i<1200;i++) *os <<" "<< GetPredictionSecondary(i) ;
     for(Int_t i=0;i<1200;i++) *os <<" "<< GetClusterPrimary(i) ;
     for(Int_t i=0;i<1200;i++) *os <<" "<< GetClusterSecondary(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetSuccessPP(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetSuccessTT(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetSuccessS(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetSuccessP(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetFailureS(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetFailureP(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetRecons(i) ;
+    for(Int_t i=0;i<1200;i++) *os <<" "<< GetNonRecons(i) ;
     return;
 }
 //______________________________________________________________________
@@ -951,7 +1225,9 @@ void AliITSTrackleterSPDEff::ReadAscii(istream *is){
     // Return:
     //   none.
 
-    *is >> fPhiWindowL1 >> fZetaWindowL1 >> fPhiWindow >> fZetaWindow;
+    *is >> fPhiWindowL1 >> fZetaWindowL1 >> fPhiWindow >> fZetaWindow 
+        >> fOnlyOneTrackletPerC1 >> fOnlyOneTrackletPerC2  
+        >> fUpdateOncePerEventPlaneEff ;
     *is >> fMC;
     if(!fMC) {AliInfo("Reading only cuts, no MC info available");return;}
     *is >> fUseOnlyPrimaryForPred >> fUseOnlySecondaryForPred
@@ -961,6 +1237,14 @@ void AliITSTrackleterSPDEff::ReadAscii(istream *is){
     for(Int_t i=0;i<1200;i++) *is >> fPredictionSecondary[i] ;
     for(Int_t i=0;i<1200;i++) *is >> fClusterPrimary[i] ;
     for(Int_t i=0;i<1200;i++) *is >> fClusterSecondary[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fSuccessPP[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fSuccessTT[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fSuccessS[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fSuccessP[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fFailureS[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fFailureP[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fRecons[i] ;
+    for(Int_t i=0;i<1200;i++) *is >> fNonRecons[i] ;
     return;
 }
 //______________________________________________________________________
@@ -1134,3 +1418,95 @@ void AliITSTrackleterSPDEff::DeleteHistos() {
     if(fhphiClustersLay2) {delete fhphiClustersLay2; fhphiClustersLay2=0;}
 }
 //_______________________________________________________________
+Bool_t AliITSTrackleterSPDEff::IsReconstructableAt(Int_t layer,Int_t iC,Int_t ipart,
+                                                   Float_t* vtx, AliStack *stack, TTree *ref) {
+// This (private) method can be used only for MC events, where both AliStack and the TrackReference
+// are available. 
+// It is used to asses whether a tracklet prediction is reconstructable or not at the other layer
+// Input: 
+//      - Int_t layer (either 0 or 1): layer which you want to chech if the tracklete can be 
+//                                     reconstructed at
+//      - Int_t iC : cluster index used to build the tracklet prediction 
+//                   if layer=0 ==> iC=iC2 ; elseif layer=1 ==> iC=iC1
+//      - Float_t* vtx: actual event vertex
+//      - stack: pointer to Stack
+//      - ref:   pointer to TTRee of TrackReference
+Bool_t ret=kFALSE; // returned value
+Float_t trefLayExtr[3]; // equivalent to fClustersLay1/fClustersLay2 but for the track reference
+if(!fMC) {AliError("This method works only if SetMC() has been called"); return ret;}
+if(!stack) {AliError("null pointer to MC stack"); return ret;}
+if(!ref)  {AliError("null pointer to TrackReference Tree"); return ret;}
+if(ipart >= stack->GetNtrack()) {AliError("this track label is not in MC stack"); return ret;}
+if(layer<0 || layer>1) {AliError("You can extrapolate either at lay 0 or at lay 1"); return ret;}
+
+AliTrackReference *tref=0x0;
+Int_t imatch=-100; // index of the track in TrackReference which matches with ipart
+Int_t nentries = (Int_t)ref->GetEntries();
+TClonesArray *tcaRef = new TClonesArray("AliTrackReference");
+TBranch *br = ref->GetBranch("TrackReferences");
+br->SetAddress(&tcaRef);
+for(Int_t itrack=0;itrack<nentries;itrack++) { // loop over all Tracks in TrackReference to match the ipart one
+  br->GetEntry(itrack);
+  Int_t nref=tcaRef->GetEntriesFast();
+  if(nref>0) { //it is enough to look at the first one
+    tref=(AliTrackReference*)tcaRef->At(0); // it is enough to look at the first one
+    if(tref->GetTrack()==ipart) {imatch=itrack; break;}
+  }
+}
+if(imatch<0) {AliWarning(Form("Could not find AliTrackReference for particle %d",ipart)); return kFALSE;}
+br->GetEntry(imatch); // redundant, nevertheless ...
+Int_t nref=tcaRef->GetEntriesFast();
+for(Int_t iref=0;iref<nref;iref++) { // loop over all the refs of the matching track
+  tref=(AliTrackReference*)tcaRef->At(iref);
+  if(tref->R()>10) continue; // not SPD ref
+  if(layer==0 && tref->R()>5) continue; // ref on SPD outer layer
+  if(layer==1 && tref->R()<5) continue; // ref on SPD inner layer
+
+// compute the proper quantities for this tref, as was done for fClustersLay1/2
+  Float_t x = tref->X() - vtx[0];
+  Float_t y = tref->Y() - vtx[1];
+  Float_t z = tref->Z() - vtx[2];
+
+  Float_t r    = TMath::Sqrt(x*x + y*y +z*z);
+
+  trefLayExtr[0] = TMath::ACos(z/r);                   // Store Theta
+  trefLayExtr[1] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
+  trefLayExtr[2] = z;                                    // Store z
+
+  if(layer==1) { // try to see if it is reconstructable at the outer layer
+// find the difference in angles
+    Float_t dPhi   = TMath::Abs(trefLayExtr[1] - fClustersLay1[iC][1]);
+    // take into account boundary condition
+    if (dPhi>TMath::Pi()) dPhi=2.*TMath::Pi()-dPhi;
+
+    // find the difference in z (between linear projection from layer 1
+    // and the actual point: Dzeta= z1/r1*r2 -z2)
+    Float_t r2    = trefLayExtr[2]/TMath::Cos(trefLayExtr[0]);
+    Float_t dZeta = TMath::Cos(fClustersLay1[iC][0])*r2 - trefLayExtr[2];
+
+    // make "elliptical" cut in Phi and Zeta!
+    Float_t d = TMath::Sqrt(dPhi*dPhi/fPhiWindow/fPhiWindow +
+                              dZeta*dZeta/fZetaWindow/fZetaWindow);
+    if (d<1) {ret=kTRUE; break;}
+  }
+  if(layer==0) { // try to see if it is reconstructable at the inner layer
+
+    // find the difference in angles
+    Float_t dPhi   = TMath::Abs(fClustersLay2[iC][1] - trefLayExtr[1]);
+    // take into account boundary condition
+    if (dPhi>TMath::Pi()) dPhi=2.*TMath::Pi()-dPhi;
+
+    // find the difference in z (between linear projection from layer 2
+    // and the actual point: Dzeta= z2/r2*r1 -z1)
+    Float_t r1    = trefLayExtr[2]/TMath::Cos(trefLayExtr[0]);
+    Float_t dZeta = TMath::Cos(fClustersLay2[iC][0])*r1 - trefLayExtr[2];
+
+    // make "elliptical" cut in Phi and Zeta!
+    Float_t d = TMath::Sqrt(dPhi*dPhi/fPhiWindowL1/fPhiWindowL1 +
+                            dZeta*dZeta/fZetaWindowL1/fZetaWindowL1);
+    if (d<1) {ret=kTRUE; break;};
+  }
+}
+delete tcaRef;
+return ret;
+}
