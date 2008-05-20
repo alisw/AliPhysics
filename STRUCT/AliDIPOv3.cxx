@@ -347,10 +347,10 @@ void AliDIPOv3::CreateSpectrometerDipole()
     asDCoilSupport->AddNode(voDCS04, 1, gGeoIdentity);    
     for (Int_t i = 0; i < 9; i++) 
     {
-	char name[16];
-	sprintf(name, "rotdcs%1d", i);
+	char nameR[16];
+	sprintf(nameR, "rotdcs%1d", i);
 	Float_t phi = Float_t(i) * 3.75;
-	TGeoRotation* rot   = new TGeoRotation(name, 90., phi, 90., 90. + phi,    0.,   0.);	
+	TGeoRotation* rot   = new TGeoRotation(nameR, 90., phi, 90., 90. + phi,    0.,   0.);	
 	asDCoilSupport->AddNode(voDCS021, i, new TGeoCombiTrans(0., 0., -(sW - coilH)/2., rot));    
     }
     

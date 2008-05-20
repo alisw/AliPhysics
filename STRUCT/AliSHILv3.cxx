@@ -323,10 +323,10 @@ void AliSHILv3::CreateGeometry()
 
 // Outer 2 deg line
       for (Int_t i  = 1; i < 7; i++) {
-	  Double_t z    = shFaSaa1->GetZ(i);
+	  Double_t zp   = shFaSaa1->GetZ(i);
 	  Double_t r1   = shFaSaa1->GetRmin(i);	 
-	  Double_t r2 = 39.5/2. + z * TMath::Tan(2. * kDegRad) - 0.01;
-	  shFaSaa1->DefineSection(i, z, r1, r2);
+	  Double_t r2 = 39.5/2. + zp * TMath::Tan(2. * kDegRad) - 0.01;
+	  shFaSaa1->DefineSection(i, zp, r1, r2);
       }
       TGeoVolume* voFaSaa1 = new TGeoVolume("YFASAA1", shFaSaa1, kMedNiWsh);
 //
@@ -651,10 +651,10 @@ void AliSHILv3::CreateGeometry()
 //
 //    Inner 1.69deg line
       for (Int_t i  = 2; i < 15; i++) {
-	  Double_t z    = shSaa1M->GetZ(i);
+	  Double_t zp = shSaa1M->GetZ(i);
 	  Double_t r2 = shSaa1M->GetRmax(i);	 
-	  Double_t r1 = rmin + (z - 0.9) * TMath::Tan(1.69 / 2. * kDegRad) - kSec;
-	  shSaa1M->DefineSection(i, z, r1, r2);
+	  Double_t r1 = rmin + (zp - 0.9) * TMath::Tan(1.69 / 2. * kDegRad) - kSec;
+	  shSaa1M->DefineSection(i, zp, r1, r2);
       }
 
       TGeoVolume* voSaa1M  =  new TGeoVolume("YSAA1M", shSaa1M, kMedAir);
@@ -1093,10 +1093,10 @@ void AliSHILv3::CreateGeometry()
 // Inner 1.89/2 deg line
       Double_t zref   = dzSaa2PbCompA1 + dzSaa2PbCompA2 + dzSaa2PbCompA3;
       for (Int_t i  = 4; i < 10; i++) {
-	  Double_t z    = shSaa2->GetZ(i);
+	  Double_t zp = shSaa2->GetZ(i);
 	  Double_t r2 = shSaa2->GetRmax(i);	 
-	  Double_t r1 = rmin + (z -  zref) * TMath::Tan(1.89 / 2. * kDegRad) - kSec;
-	  shSaa2->DefineSection(i, z, r1, r2);
+	  Double_t r1 = rmin + (zp -  zref) * TMath::Tan(1.89 / 2. * kDegRad) - kSec;
+	  shSaa2->DefineSection(i, zp, r1, r2);
       }
 
 //

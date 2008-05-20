@@ -491,20 +491,20 @@ void AliFRAMEv2::CreateGeometry()
 
       module[i] = name;
       // Place volume i
-      Float_t phi  = i * 20.;
-      Float_t phi2 = 270 + phi;
+      Float_t phi1  = i * 20.;
+      Float_t phi2 = 270 + phi1;
       if (phi2 >= 360.) phi2 -= 360.;
       
-      dx =  TMath::Sin(phi*kdeg2rad)*r;
-      dy = -TMath::Cos(phi*kdeg2rad)*r;
+      dx =  TMath::Sin(phi1*kdeg2rad)*r;
+      dy = -TMath::Cos(phi1*kdeg2rad)*r;
       
-      AliMatrix(idrotm[2034+i],  90.0, phi, 0., 0., 90., phi2);  
+      AliMatrix(idrotm[2034+i],  90.0, phi1, 0., 0., 90., phi2);  
       gMC->Gspos(name, 1, "B077", dx, dy, 0., idrotm[2034+i], "ONLY");
 //
 //    Position elements of outer Frame
 //
-      dx =  TMath::Sin(phi*kdeg2rad)*rout1;
-      dy = -TMath::Cos(phi*kdeg2rad)*rout1;
+      dx =  TMath::Sin(phi1*kdeg2rad)*rout1;
+      dy = -TMath::Cos(phi1*kdeg2rad)*rout1;
       for (j = 0; j < 3; j++)
       {
 	  dz = dymodU[j];
@@ -512,12 +512,12 @@ void AliFRAMEv2::CreateGeometry()
 	  gMC->Gspos("B042", 6*i+2*j+2, "B076", dx, dy, -dz, idrotm[2034+i], "ONLY");	  
       }
 
-      phi = i*20.+10;
-      phi2 = 270+phi;
-      AliMatrix(idrotm[2052+i],  90.0, phi, 90., phi2, 0., 0.);  
+      phi1 = i*20.+10;
+      phi2 = 270+phi1;
+      AliMatrix(idrotm[2052+i],  90.0, phi1, 90., phi2, 0., 0.);  
 
-      dx =  TMath::Sin(phi*kdeg2rad)*rout2;
-      dy = -TMath::Cos(phi*kdeg2rad)*rout2;
+      dx =  TMath::Sin(phi1*kdeg2rad)*rout2;
+      dy = -TMath::Cos(phi1*kdeg2rad)*rout2;
       gMC->Gspos("B033", i+1, "B076", dx, dy,  0., idrotm[2052+i], "ONLY");	  
 //
   }
@@ -1038,18 +1038,18 @@ void AliFRAMEv2::CreateGeometry()
       Float_t ro   = kBFMRou - kBFBd / 2.;
       Float_t ri   = kBFMRin + kBFBd / 2.;
 
-      Float_t phi = Float_t(i) * 20.;
+      Float_t phi0 = Float_t(i) * 20.;
       
-      Float_t x = ri * TMath::Cos(phi * kDegrad);
-      Float_t y = ri * TMath::Sin(phi * kDegrad);
-      AliMatrix(idrotm[2090+i],  90.0, phi,  90.0, phi + 270., 0., 0.);
+      Float_t xb = ri * TMath::Cos(phi0 * kDegrad);
+      Float_t yb = ri * TMath::Sin(phi0 * kDegrad);
+      AliMatrix(idrotm[2090+i],  90.0, phi0,  90.0, phi0 + 270., 0., 0.);
       
-      gMC->Gspos("BFLB", i + 1, "BFMO", x, y, 0., idrotm[2090 + i], "ONLY");      
+      gMC->Gspos("BFLB", i + 1, "BFMO", xb, yb, 0., idrotm[2090 + i], "ONLY");      
 
-      x = ro * TMath::Cos(phi * kDegrad);
-      y = ro * TMath::Sin(phi * kDegrad);
+      xb = ro * TMath::Cos(phi0 * kDegrad);
+      yb = ro * TMath::Sin(phi0 * kDegrad);
 
-      gMC->Gspos("BFLB", i + 19, "BFMO", x, y, 0., idrotm[2090 +i], "ONLY");       
+      gMC->Gspos("BFLB", i + 19, "BFMO", xb, yb, 0., idrotm[2090 +i], "ONLY");       
  }
 
   // 
@@ -1078,14 +1078,14 @@ void AliFRAMEv2::CreateGeometry()
   for (i = 0; i < 10; i++)
   {
       
-      Float_t r   = (kBFMRin + kBFMRou)/2.;
+      Float_t rb   = (kBFMRin + kBFMRou)/2.;
       Float_t phi = Float_t(iphi[i]) * 20.;
       
-      Float_t x = r * TMath::Cos(phi * kDegrad);
-      Float_t y = r * TMath::Sin(phi * kDegrad);
+      Float_t xb = rb * TMath::Cos(phi * kDegrad);
+      Float_t yb = rb * TMath::Sin(phi * kDegrad);
       
-      gMC->Gspos("BFRB", i + 1,  "BFMO", x, y,  dz, idrotm[2034 + iphi[i]], "ONLY");      
-      gMC->Gspos("BFRB", i + 11, "BFMO", x, y, -dz, idrotm[2034 + iphi[i]], "ONLY");      
+      gMC->Gspos("BFRB", i + 1,  "BFMO", xb, yb,  dz, idrotm[2034 + iphi[i]], "ONLY");      
+      gMC->Gspos("BFRB", i + 11, "BFMO", xb, yb, -dz, idrotm[2034 + iphi[i]], "ONLY");      
 
  }
 

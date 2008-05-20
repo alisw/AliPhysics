@@ -319,8 +319,8 @@ void AliABSOv3::CreateGeometry()
       for (Int_t i = 1; i < 5; i++) {
 	  Float_t rmin = shFaWPlateA->GetRmin(i+2);
 	  Float_t rmax = shFaWPlateA->GetRmax(i+2) - 3.;	
-	  Float_t z    = shFaWPlateA->GetZ(i+2);
-	  shFaWPlateAI->DefineSection(i, z, rmin, rmax);
+	  Float_t zpos = shFaWPlateA->GetZ(i+2);
+	  shFaWPlateAI->DefineSection(i, zpos, rmin, rmax);
       }
       TGeoVolume* voFaWPlateAI = new TGeoVolume("AFaWPlateAI", shFaWPlateAI, kMedNiWsh);
       voFaWPlateA->AddNode(voFaWPlateAI, 1, gGeoIdentity);
@@ -714,10 +714,10 @@ void AliABSOv3::CreateGeometry()
 //    Assemble volumes inside acceptance
       TGeoPcon* shFaAccM = new TGeoPcon(0., 360., 7);
       for (Int_t i = 0; i < 4; i++) {
-	  Float_t z     = shFaGraphiteCone->GetZ(i);
+	  Float_t zpos  = shFaGraphiteCone->GetZ(i);
 	  Float_t rmin  = shFaGraphiteCone->GetRmin(i);
 	  Float_t rmax  = shFaGraphiteCone->GetRmax(i);
-	  shFaAccM->DefineSection(i, z, rmin, rmax);
+	  shFaAccM->DefineSection(i, zpos, rmin, rmax);
       }
       z  = dzFaGraphiteCone + dzFaConcreteCone + dzFaSteelCone25;
       z0 = z + zFa + dzFaFlange;
