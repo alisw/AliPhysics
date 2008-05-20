@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.20.1  2007/05/19 decaro
+         Added the following methods:
+             GetVolumeIndices(Int_t index, Int_t *det), to get
+          the volume indices (sector, plate, strip, padz, padx,
+          stored respectively in det[0], det[1], det[2], det[3], det[4])
+          from the calibration channel index;
+             NStrip(Int_t nPlate), to get the strips number
+          per each kind of TOF module.
+
 Revision 1.20  2007/10/08 17:52:55  decaro
 hole region in front of PHOS detector: update of sectors' numbers
 
@@ -1812,6 +1821,70 @@ Int_t AliTOFGeometry::GetIndex(Int_t *detId)
 	        ipadx;
   return idet;
 }
+//_____________________________________________________________________________
 
+void AliTOFGeometry::GetVolumeIndices(Int_t index, Int_t *detId)
+{
+  //
+  // Retrieve volume indices from the calibration channel index 
+  //
 
+  detId[0] = index/NpadXStrip()/NStripXSector();
 
+  Int_t dummyStripPerModule = 
+    ( index - ( NStripXSector()*NpadXStrip()*detId[0]) ) / NpadXStrip();
+  if (dummyStripPerModule<kNStripC) {
+    detId[1] = 0;
+    detId[2] = dummyStripPerModule;
+  }
+  else if (dummyStripPerModule>=kNStripC && dummyStripPerModule<kNStripC+kNStripB) {
+    detId[1] = 1;
+    detId[2] = dummyStripPerModule-kNStripC;
+  }
+  else if (dummyStripPerModule>=kNStripC+kNStripB && dummyStripPerModule<kNStripC+kNStripB+kNStripA) {
+    detId[1] = 2;
+    detId[2] = dummyStripPerModule-kNStripC-kNStripB;
+  }
+  else if (dummyStripPerModule>=kNStripC+kNStripB+kNStripA && dummyStripPerModule<kNStripC+kNStripB+kNStripA+kNStripB) {
+    detId[1] = 3;
+    detId[2] = dummyStripPerModule-kNStripC-kNStripB-kNStripA;
+  }
+  else if (dummyStripPerModule>=kNStripC+kNStripB+kNStripA+kNStripB && dummyStripPerModule<NStripXSector()) {
+    detId[1] = 4;
+    detId[2] = dummyStripPerModule-kNStripC-kNStripB-kNStripA-kNStripB;
+  }
+
+  Int_t padPerStrip = ( index - ( NStripXSector()*NpadXStrip()*detId[0]) ) - dummyStripPerModule*NpadXStrip();
+
+  detId[3] = padPerStrip / kNpadX;
+  detId[4] = padPerStrip - detId[3]*kNpadX;
+
+}
+//_____________________________________________________________________________
+
+Int_t AliTOFGeometry::NStrip(Int_t nPlate)
+{
+  //
+  // Returns the strips number for the plate number 'nPlate'
+  //
+
+  Int_t nStrips = kNStripC;
+
+  switch(nPlate) {
+  case 2:
+    nStrips = kNStripA;
+    break;
+  case 1:
+  case 3:
+    nStrips = kNStripB;
+    break;
+  case 0:
+  case 4:
+  default:
+    nStrips = kNStripC;
+    break;
+  }
+
+  return nStrips;
+
+}

@@ -26,20 +26,21 @@ class AliTOFGeometry: public TObject{
   static  Int_t NStripA()     { return kNStripA;};
   static  Int_t NStripB()     { return kNStripB;};
   static  Int_t NStripC()     { return kNStripC;};
+  static  Int_t NStrip(Int_t nPlate);
   static  Int_t NMaxNstrip()  { return kMaxNstrip;};
   static  Int_t NpadX()       { return kNpadX;};
   static  Int_t NpadZ()       { return kNpadZ;};
   static  Int_t NpadXStrip()  { return kNpadX*kNpadZ;};
   static  Int_t NSectors()    { return kNSectors;};
   static  Int_t NPlates()     { return kNPlates;};
-  static Int_t NStripXSector() { return (kNStripA + 2*kNStripB +
+  static  Int_t NStripXSector() { return (kNStripA + 2*kNStripB +
 						2*kNStripC);};
-  static Int_t NPadXSector() { return (kNStripA + 2*kNStripB +
+  static  Int_t NPadXSector() { return (kNStripA + 2*kNStripB +
 					2*kNStripC)*kNpadX*kNpadZ;};
 
-  static Float_t RinTOF()  { return fgkxTOF;};
-  static Float_t Rmin()      { return fgkRmin;};
-  static Float_t Rmax()      { return fgkRmax;};
+  static  Float_t RinTOF()  { return fgkxTOF;};
+  static  Float_t Rmin()      { return fgkRmin;};
+  static  Float_t Rmax()      { return fgkRmax;};
 
   static  Float_t XPad()     { return fgkXPad;};
   static  Float_t ZPad()     { return fgkZPad;};
@@ -104,6 +105,7 @@ class AliTOFGeometry: public TObject{
   static Float_t GetDistances(Int_t iplate, Int_t istrip)  {return fgkDistances[iplate][istrip];};
 
   static Int_t GetIndex(Int_t *detId); // Get channel index from det Id (for calibration mainly)
+  static void GetVolumeIndices(Int_t index, Int_t *detId); // Get volume index from channel index
 
   private:
 
@@ -161,7 +163,7 @@ class AliTOFGeometry: public TObject{
   static const Float_t fgkTdcBin;   // time-of-flight bin width [ps]
   static const Float_t fgkToTBin;   // time-over-threshold bin width [ps]
 
-  ClassDef(AliTOFGeometry,5) // TOF Geometry base class
+  ClassDef(AliTOFGeometry,6) // TOF Geometry base class
 };
 
 #endif
