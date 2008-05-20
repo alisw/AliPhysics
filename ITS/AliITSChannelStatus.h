@@ -3,7 +3,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id:  $ */
+/* $Id:$ */
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
@@ -19,12 +19,14 @@
 #include <TObject.h>
 #include <TBits.h>
 #include "AliCDBManager.h"
+#include "AliITSDetTypeRec.h"
 
 class AliITSChannelStatus : public TObject {
 
  public:
   AliITSChannelStatus();
   AliITSChannelStatus(AliCDBManager *cdb);
+  AliITSChannelStatus(AliITSDetTypeRec *dtrec);
   AliITSChannelStatus(const AliITSChannelStatus& cstatus);
   AliITSChannelStatus& operator=(const AliITSChannelStatus& cstatus);
   virtual ~AliITSChannelStatus();
@@ -32,9 +34,17 @@ class AliITSChannelStatus : public TObject {
   void SetChannelStatus(Bool_t cstatus, Int_t imod, Int_t iz, Int_t ix=0);
 
   Bool_t GetChannelStatus(Int_t imod, Int_t iz, Int_t ix=0) const;
+
+  Bool_t AnyBadInRoad(Int_t /*imod*/, Float_t /*zlocmin*/, Float_t /*zlocmax*/, Float_t /*xlocmin*/, Float_t /*xlocmax*/) const{
+    return kFALSE;
+  }
+  Float_t FractionOfBadInRoad(Int_t /*imod*/, Float_t /*zlocmin*/, Float_t /*zlocmax*/, Float_t /*xlocmin*/, Float_t /*xlocmax*/) const{
+    return 0.;
+  }
+
   Int_t GetNSPDChannels()const {return fSPDChannelStatus->GetNbits();}
   Int_t GetNSDDChannels()const {return fSDDChannelStatus->GetNbits();}
-
+  
  protected:
   void InitDefaults();
   void InitFromOCDB(TObjArray* deadArrSPD, TObjArray* noisArrSPD, TObjArray* calArrSDD);

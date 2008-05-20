@@ -63,7 +63,7 @@ public AliITSsegmentation {
     }
     virtual Int_t    GetChipFromLocal(Float_t xloc, Float_t zloc) const;
     virtual Int_t    GetChipFromChannel(Int_t ix, Int_t iz) const;
-
+    virtual Int_t    GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t xmin, Float_t xmax) const;
 
     virtual void Init();
 

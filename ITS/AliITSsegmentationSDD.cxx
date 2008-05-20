@@ -212,6 +212,47 @@ Int_t AliITSsegmentationSDD::GetChipFromLocal(Float_t xloc, Float_t zloc) const 
   return iChip;
 }
 //----------------------------------------------------------------------
+Int_t AliITSsegmentationSDD::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t xmin, Float_t xmax) const {
+  Int_t nChipInW = 0;
+  Float_t zminDet=-fDz*fgkMicron2Cm/2.;
+  Float_t zmaxDet=fDz*fgkMicron2Cm/2.;
+  if(zmin<zminDet) zmin=zminDet;
+  if(zmax>zmaxDet) zmax=zmaxDet;
+  Float_t xminDet=-fDx*fgkMicron2Cm;
+  Float_t xmaxDet=fDx*fgkMicron2Cm;
+  if(xmin<xminDet) xmin=xminDet;
+  if(xmax>xmaxDet) xmax=xmaxDet;
+  Int_t n1=GetChipFromLocal(xmin,zmin);
+  array[nChipInW]=n1;
+  nChipInW++;
+  Int_t n2=GetChipFromLocal(xmin,zmax);
+  if(n2!=n1){
+    Int_t imin=TMath::Min(n1,n2);
+    Int_t imax=TMath::Max(n1,n2);
+    for(Int_t ichip=imin; ichip<=imax; ichip++){
+      if(ichip==n1) continue;
+      array[nChipInW]=ichip;
+      nChipInW++;    
+    }
+  }
+  Int_t n3=GetChipFromLocal(xmax,zmin);
+  if(n3!=n1){
+    array[nChipInW]=n3;
+    nChipInW++;
+    Int_t n4=GetChipFromLocal(xmax,zmax);
+    if(n4!=n3){
+      Int_t imin=TMath::Min(n3,n4);
+      Int_t imax=TMath::Max(n3,n4);
+      for(Int_t ichip=imin; ichip<=imax; ichip++){
+	if(ichip==n3) continue;
+	array[nChipInW]=ichip;
+	nChipInW++;    
+      }
+    }
+  }
+  return nChipInW;
+}
+//----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
 				      Int_t &timebin,Int_t &anode) const {
 // Returns cell coordinates (time sample,anode)

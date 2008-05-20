@@ -9,6 +9,8 @@
 //                          ITS tracker
 //     reads AliITSclusterMI clusters and creates AliITStrackMI tracks
 //           Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
+//           Current support and development: 
+//                     Andrea Dainese, andrea.dainese@lnl.infn.it
 //-------------------------------------------------------------------------
 
 class TTree;
@@ -19,6 +21,8 @@ class AliESDEvent;
 #include "AliITSRecPoint.h"
 #include "AliITStrackMI.h"
 #include "AliITSPlaneEff.h"
+#include "AliITSChannelStatus.h"
+#include "AliITSDetTypeRec.h"
 #include "AliPlaneEff.h"
 #include "AliTracker.h"
 
@@ -38,6 +42,7 @@ public:
                         {return fgLayers[layn].GetNumberOfClusters();}
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
+  void FillClusterArray(TObjArray* array) const;
   Int_t Clusters2Tracks(AliESDEvent *event);
   Int_t PropagateBack(AliESDEvent *event);
   Int_t RefitInward(AliESDEvent *event);
@@ -56,10 +61,13 @@ public:
   Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSRecPoint *cluster,Int_t layer);
   Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
   AliPlaneEff *GetPlaneEff() {return (AliPlaneEff*)fPlaneEff;}   // return the pointer to AliPlaneEff
+  void SetDetTypeRec(AliITSDetTypeRec *detTypeRec) {fDetTypeRec = detTypeRec; ReadBadFromDetTypeRec(); }
+
   class AliITSdetector { 
   public:
-    AliITSdetector():fR(0),fPhi(0),fSinPhi(0),fCosPhi(0),fYmin(0),fYmax(0),fZmin(0),fZmax(0){}
-    AliITSdetector(Double_t r,Double_t phi):fR(r),fPhi(phi),fSinPhi(TMath::Sin(phi)),fCosPhi(TMath::Cos(phi)),fYmin(10000),fYmax(-1000),fZmin(10000),fZmax(-1000) {}
+    AliITSdetector():fR(0),fPhi(0),fSinPhi(0),fCosPhi(0),fYmin(0),fYmax(0),fZmin(0),fZmax(0),fIsBad(kFALSE),fNChips(0),fChipIsBad(0) {}
+    AliITSdetector(Double_t r,Double_t phi):fR(r),fPhi(phi),fSinPhi(TMath::Sin(phi)),fCosPhi(TMath::Cos(phi)),fYmin(10000),fYmax(-1000),fZmin(10000),fZmax(-1000),fIsBad(kFALSE),fNChips(0),fChipIsBad(0) {}
+    ~AliITSdetector() {if(fChipIsBad) delete [] fChipIsBad;}
     inline void GetGlobalXYZ( const AliITSRecPoint *cl, Double_t xyz[3]) const;
     Double_t GetR()   const {return fR;}
     Double_t GetPhi() const {return fPhi;}
@@ -67,11 +75,20 @@ public:
     Double_t GetYmax() const {return fYmax;}
     Double_t GetZmin() const {return fZmin;}
     Double_t GetZmax() const {return fZmax;}
+    Bool_t   IsBad() const {return fIsBad;}
+    Int_t    GetNChips() const {return fNChips;}
+    Bool_t   IsChipBad(Int_t iChip) const {return (fChipIsBad ? fChipIsBad[iChip] : kFALSE);}
     void SetYmin(Double_t min) {fYmin = min;}
     void SetYmax(Double_t max) {fYmax = max;}
     void SetZmin(Double_t min) {fZmin = min;}
     void SetZmax(Double_t max) {fZmax = max;}
+    void SetBad() {fIsBad = kTRUE;}
+    void ReadBadDetectorAndChips(Int_t ilayer,Int_t idet,AliITSDetTypeRec *detTypeRec);
   private:
+    AliITSdetector(const AliITSdetector& det);
+    AliITSdetector & operator=(const AliITSdetector& det){
+      this->~AliITSdetector();new(this) AliITSdetector(det);
+      return *this;}
     Double_t fR;    // polar coordinates 
     Double_t fPhi;  // of this detector
     Double_t fSinPhi; // sin of phi;
@@ -80,13 +97,16 @@ public:
     Double_t fYmax;   //  local max y
     Double_t fZmin;   //  local z min
     Double_t fZmax;   //  local z max
+    Bool_t fIsBad;    // is detector dead or noisy?
+    Int_t fNChips;    // number of chips
+    Bool_t *fChipIsBad; //[fNChips] is chip dead or noisy? 
   };
 
   class AliITSlayer {
   public:
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
-   ~AliITSlayer();
+    ~AliITSlayer();
     Int_t InsertCluster(AliITSRecPoint *c);
     void  SortClusters();
     void ResetClusters();
@@ -223,8 +243,9 @@ protected:
   Int_t CorrectForShieldMaterial(AliITStrackMI *t, TString shield, TString direction="inward");
   Int_t CorrectForLayerMaterial(AliITStrackMI *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
+  void ReadBadFromDetTypeRec();
   Int_t CheckSkipLayer(AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
-  Int_t CheckDeadZone(/*AliITStrackMI *track,*/Int_t ilayer,Int_t idet,Double_t zmin,Double_t zmax/*,Double_t ymin,Double_t ymax*/) const;
+  Int_t CheckDeadZone(AliITStrackMI *track,Int_t ilayer,Int_t idet,Double_t zmin,Double_t zmax,Double_t ymin,Double_t ymax,Bool_t noClusters=kFALSE) const;
   Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,AliITStrackMI *track,
 			  Float_t &xloc,Float_t &zloc) const;
 // method to be used for Plane Efficiency evaluation
@@ -266,11 +287,13 @@ protected:
   Float_t *fxOverX0LayerTrks;            //! material budget
   Float_t *fxTimesRhoLayerTrks;          //! material budget
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
+  AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
+  AliITSDetTypeRec *fDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
   AliITSPlaneEff *fPlaneEff;             //! Pointer to the ITS plane efficicency
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,4)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,5)   //ITS tracker MI
 };
 
 

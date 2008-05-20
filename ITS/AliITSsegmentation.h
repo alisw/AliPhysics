@@ -35,8 +35,10 @@ public TObject {
     virtual void SetLayer(Int_t) {MayNotUse("SetLayer");}
     // Number of Chips
     virtual Int_t    GetNumberOfChips() const {MayNotUse("GetNumberOfChips"); return 0;}
+    virtual Int_t    GetMaximumChipIndex() const {MayNotUse("GetNumberOfChips"); return 0;}
     // Chip number from local coordinates
     virtual Int_t    GetChipFromLocal(Float_t, Float_t) const {MayNotUse("GetChipFromLocal"); return 0;}
+    virtual Int_t    GetChipsInLocalWindow(Int_t* /*array*/, Float_t /*zmin*/, Float_t /*zmax*/, Float_t /*xmin*/, Float_t /*xmax*/) const {MayNotUse("GetChipsInLocalWindow"); return 0;}
     // Chip number from channel number
     virtual Int_t    GetChipFromChannel(Int_t, Int_t) const {MayNotUse("GetChipFromChannel"); return 0;}
 

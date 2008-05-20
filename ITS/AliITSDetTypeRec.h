@@ -47,10 +47,12 @@ class AliITSDetTypeRec : public TObject {
 
     virtual void SetSegmentationModel(Int_t dettype, AliITSsegmentation *seg);
     virtual void SetCalibrationModel(Int_t iMod, AliITSCalibration *cal);
+    virtual void SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal);
     virtual void SetReconstructionModel(Int_t dettype, AliITSClusterFinder *rec);
     virtual Bool_t GetCalibration();
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
+    virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod);
     virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype);
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD() const { return fDDLMapSDD;}
 
@@ -108,6 +110,7 @@ class AliITSDetTypeRec : public TObject {
     TObjArray    *fReconstruction;//! [NDet]
     TObjArray    *fSegmentation;  //! [NDet]
     TObjArray    *fCalibration;   //! [NMod]
+    TObjArray    *fSPDDead;       //! [fgkDefaultNModulesSPD]
     TObjArray    *fPreProcess;    //! [] e.g. Find Calibration values
     TObjArray    *fPostProcess;   //! [] e.g. find primary vertex
     TObjArray    *fDigits;        //! [NMod][NDigits]
@@ -126,7 +129,7 @@ class AliITSDetTypeRec : public TObject {
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
     Bool_t fFirstcall;         //! flag
 
-    ClassDef(AliITSDetTypeRec,8) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,9) // ITS Reconstruction structure
 };
 
 #endif

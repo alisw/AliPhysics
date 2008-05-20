@@ -527,3 +527,39 @@ Int_t AliITSsegmentationSPD::GetChipFromLocal(Float_t, Float_t zloc) const {
   return GetChipFromChannel(ix0,iz);
 }
 //----------------------------------------------------------------------
+Int_t AliITSsegmentationSPD::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t, Float_t) const {
+  // returns the number of chips containing a road defined by given local coordinate limits
+
+  const Float_t kconv = 1.0E-04; // converts microns to cm.
+
+  if (zmin>zmax) {
+    AliWarning("Bad coordinate limits: zmin>zmax!");
+    return -1;
+  } 
+
+  Int_t nChipInW = 0;
+
+  Float_t zminDet = -0.5*kconv*Dz();
+  Float_t zmaxDet =  0.5*kconv*Dz();
+  if(zmin<zminDet) zmin=zminDet;
+  if(zmax>zmaxDet) zmax=zmaxDet;
+
+  Int_t n1 = GetChipFromLocal(0,zmin);
+  array[nChipInW] = n1;
+  nChipInW++;
+
+  Int_t n2 = GetChipFromLocal(0,zmax);
+
+  if(n2!=n1){
+    Int_t imin=TMath::Min(n1,n2);
+    Int_t imax=TMath::Max(n1,n2);
+    for(Int_t ichip=imin; ichip<=imax; ichip++){
+      if(ichip==n1) continue;
+      array[nChipInW]=ichip;
+      nChipInW++;
+    }
+  }
+
+  return nChipInW;
+}
+//----------------------------------------------------------------------

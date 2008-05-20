@@ -19,6 +19,8 @@
 //    It reads AliITSRecPoint clusters and creates AliITStrackMI tracks
 //                   and fills with them the ESD
 //          Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch 
+//          Current support and development: 
+//                     Andrea Dainese, andrea.dainese@lnl.infn.it
 //     dE/dx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //     Params moved to AliITSRecoParam by: Andrea Dainese, INFN
 //     Material budget from TGeo by: Ludovic Gaudichet & Andrea Dainese, INFN
@@ -30,6 +32,7 @@
 #include <TDatabasePDG.h>
 #include <TString.h>
 #include <TRandom.h>
+
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -44,6 +47,8 @@
 #include "AliITSClusterParam.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliITSsegmentation.h"
+#include "AliITSCalibration.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSCalibrationSSD.h"
@@ -82,6 +87,8 @@ fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
 fDebugStreamer(0),
+fITSChannelStatus(0),
+fDetTypeRec(0),
 fPlaneEff(0) {
   //Default constructor
   Int_t i;
@@ -115,6 +122,8 @@ fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
 fDebugStreamer(0),
+fITSChannelStatus(0),
+fDetTypeRec(0),
 fPlaneEff(0) {
   //--------------------------------------------------------------------
   //This is the AliITStrackerMI constructor
@@ -161,10 +170,10 @@ fPlaneEff(0) {
 
         AliITSdetector &det=fgLayers[i-1].GetDetector((j-1)*ndet + k-1); 
         new(&det) AliITSdetector(r,phi); 
-      } 
-    }  
+      } // end loop on detectors
+    } // end loop on ladders
+  } // end loop on layers
 
-  }
 
   fI=AliITSgeomTGeo::GetNLayers();
 
@@ -218,7 +227,8 @@ fPlaneEff(0) {
       }
     }
     if(AliITSReconstructor::GetRecoParam()->GetReadPlaneEffFromOCDB())
-       if(!fPlaneEff->ReadFromCDB()) {AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
+      if(!fPlaneEff->ReadFromCDB()) 
+	{AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
     if(AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) {
       fPlaneEff->SetCreateHistos(kTRUE); 
       //fPlaneEff->ReadHistosFromFile();
@@ -251,6 +261,8 @@ fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
 fDebugStreamer(tracker.fDebugStreamer),
+fITSChannelStatus(tracker.fITSChannelStatus),
+fDetTypeRec(tracker.fDetTypeRec),
 fPlaneEff(tracker.fPlaneEff) {
   //Copy constructor
   Int_t i;
@@ -285,6 +297,8 @@ AliITStrackerMI::~AliITStrackerMI()
     //fDebugStreamer->Close();
     delete fDebugStreamer;
   }
+  if(fITSChannelStatus) delete fITSChannelStatus;
+  if(fPlaneEff) delete fPlaneEff;
 }
 //------------------------------------------------------------------------
 void AliITStrackerMI::SetLayersNotToSkip(Int_t *l) {
@@ -292,6 +306,37 @@ void AliITStrackerMI::SetLayersNotToSkip(Int_t *l) {
   //This function set masks of the layers which must be not skipped
   //--------------------------------------------------------------------
   for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=l[i];
+}
+//------------------------------------------------------------------------
+void AliITStrackerMI::ReadBadFromDetTypeRec() {
+  //--------------------------------------------------------------------
+  //This function read ITS bad detectors, chips, channels from AliITSDetTypeRec
+  //i.e. from OCDB
+  //--------------------------------------------------------------------
+
+  if(!AliITSReconstructor::GetRecoParam()->GetUseBadZonesFromOCDB()) return;
+
+  Info("ReadBadFromDetTypeRec","Reading info about bad ITS detectors and channels\n");
+
+  if(!fDetTypeRec) Error("ReadBadFromDetTypeRec","AliITSDetTypeRec nof found!\n");
+
+  // ITS channels map
+  if(fITSChannelStatus) delete fITSChannelStatus;
+  fITSChannelStatus = new AliITSChannelStatus(AliCDBManager::Instance());
+
+  // ITS detectors and chips
+  Int_t i=0,j=0,k=0,ndet=0;
+  for (i=1; i<AliITSgeomTGeo::GetNLayers()+1; i++) {
+    ndet=AliITSgeomTGeo::GetNDetectors(i);    
+    for (j=1; j<AliITSgeomTGeo::GetNLadders(i)+1; j++) {
+      for (k=1; k<ndet+1; k++) {
+        AliITSdetector &det=fgLayers[i-1].GetDetector((j-1)*ndet + k-1);  
+	det.ReadBadDetectorAndChips(i-1,(j-1)*ndet + k-1,fDetTypeRec);
+      } // end loop on detectors
+    } // end loop on ladders
+  } // end loop on layers
+  
+  return;
 }
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
@@ -304,13 +349,13 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
     return 1;
   }
 
-  TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
+  static TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
   branch->SetAddress(&clusters);
 
-  Int_t j=0;
+  Int_t i=0,j=0,ndet=0;
   Int_t detector=0;
-  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
-    Int_t ndet=fgLayers[i].GetNdetectors();
+  for (i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
+    ndet=fgLayers[i].GetNdetectors();
     Int_t jmax = j + fgLayers[i].GetNladders()*ndet;
     for (; j<jmax; j++) {           
       if (!cTree->GetEvent(j)) continue;
@@ -367,6 +412,8 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
     fgLayers[i].SortClusters();
   }
 
+  dummy.Clear();
+
   return 0;
 }
 //------------------------------------------------------------------------
@@ -375,6 +422,24 @@ void AliITStrackerMI::UnloadClusters() {
   //This function unloads ITS clusters
   //--------------------------------------------------------------------
   for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fgLayers[i].ResetClusters();
+}
+//------------------------------------------------------------------------
+void AliITStrackerMI::FillClusterArray(TObjArray* array) const {
+  //--------------------------------------------------------------------
+  // Publishes all pointers to clusters known to the tracker into the
+  // passed object array.
+  // The ownership is not transfered - the caller is not expected to delete
+  // the clusters.
+  //--------------------------------------------------------------------
+
+  for(Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
+    for(Int_t icl=0; icl<fgLayers[i].GetNumberOfClusters(); icl++) {
+      AliCluster *cl = (AliCluster*)fgLayers[i].GetCluster(icl);
+      array->AddLast(cl);
+    }
+  }
+
+  return;
 }
 //------------------------------------------------------------------------
 static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t) {
@@ -924,6 +989,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       const AliITSdetector &det=layer.GetDetector(idet);
       new(&currenttrack2)  AliITStrackMI(currenttrack1);
       if (!currenttrack1.Propagate(det.GetPhi(),det.GetR())) continue;
+
       LocalModuleCoord(ilayer,idet,&currenttrack1,xloc,zloc); // local module coords
       currenttrack2.Propagate(det.GetPhi(),det.GetR());
       currenttrack1.SetDetectorIndex(idet);
@@ -997,10 +1063,12 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       currenttrack = &currenttrack1;
 
       // check if the road contains a dead zone 
-      Int_t dead = CheckDeadZone(ilayer,idet,zmin,zmax); 
+      Bool_t noClusters = kFALSE;
+      if (!layer.GetNextCluster(clidx,kTRUE)) noClusters=kTRUE;
+      Int_t dead = CheckDeadZone(&currenttrack1,ilayer,idet,zmin,zmax,ymin,ymax,noClusters); 
       // create a prolongation without clusters (check also if there are no clusters in the road)
       if (dead || 
-	  ((layer.GetNextCluster(clidx,kTRUE))==0 && 
+	  (noClusters && 
 	   AliITSReconstructor::GetRecoParam()->GetAllowProlongationWithEmptyRoad())) {
 	AliITStrackMI * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(*currenttrack);
 	updatetrack->SetClIndex(ilayer,0);
@@ -1008,7 +1076,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  modstatus = 5; // no cls in road
 	} else if (dead==1) {
 	  modstatus = 7; // holes in z in SPD
-	} else if (dead==2) {
+	} else if (dead==2 || dead==3) {
 	  modstatus = 2; // dead from OCDB
 	}
 	updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
@@ -1405,7 +1473,7 @@ AliITStrackerMI::AliITSlayer::~AliITSlayer() {
   //--------------------------------------------------------------------
   // AliITSlayer destructor
   //--------------------------------------------------------------------
-  delete[] fDetectors;
+  delete [] fDetectors;
   for (Int_t i=0; i<fN; i++) delete fClusters[i];
   for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
@@ -1717,6 +1785,17 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   if (nz>=fNdetectors) return -1;
   if (nz<0)            return -1;
 
+  // ad hoc correction for 3rd ladder of SDD inner layer,
+  // which is reversed (rotated by pi around local y)
+  // this correction is OK only from AliITSv11Hybrid onwards
+  if (GetR()>12. && GetR()<20.) { // SDD inner
+    if(np==2) { // 3rd ladder
+      nz = (fNdetectors-1) - nz;
+    } 
+  }
+  //printf("ndet %d phi %f z %f  np %d nz %d\n",fNdetectors,phi,z,np,nz);
+
+
   return np*fNdetectors + nz;
 }
 //------------------------------------------------------------------------
@@ -1848,6 +1927,73 @@ const {
   }
 
   return d;
+}
+//------------------------------------------------------------------------
+AliITStrackerMI::AliITSdetector::AliITSdetector(const AliITSdetector& det):
+fR(det.fR),
+fPhi(det.fPhi),
+fSinPhi(det.fSinPhi),
+fCosPhi(det.fCosPhi),
+fYmin(det.fYmin),
+fYmax(det.fYmax),
+fZmin(det.fZmin),
+fZmax(det.fZmax),
+fIsBad(det.fIsBad),
+fNChips(det.fNChips),
+fChipIsBad(det.fChipIsBad)
+{
+  //Copy constructor
+}
+//------------------------------------------------------------------------
+void AliITStrackerMI::AliITSdetector::ReadBadDetectorAndChips(Int_t ilayer,Int_t idet,
+						 AliITSDetTypeRec *detTypeRec)
+{
+  //--------------------------------------------------------------------
+  // Read bad detectors and chips from calibration objects in AliITSDetTypeRec
+  //--------------------------------------------------------------------
+
+  // In AliITSDetTypeRec, detector numbers go from 0 to 2197
+  // while in the tracker they start from 0 for each layer
+  for(Int_t il=0; il<ilayer; il++) 
+    idet += AliITSgeomTGeo::GetNLadders(il+1)*AliITSgeomTGeo::GetNDetectors(il+1);
+
+  Int_t detType;
+  if (ilayer==0 || ilayer==1) {        // ----------  SPD
+    detType = 0;
+  } else if (ilayer==2 || ilayer==3) { // ----------  SDD
+    detType = 1;
+  } else if (ilayer==4 || ilayer==5) { // ----------  SSD
+    detType = 2;
+  } else {
+    printf("AliITStrackerMI::AliITSdetector::InitBadFromOCDB: Wrong layer number %d\n",ilayer);
+    return;
+  }
+
+  // Get calibration from AliITSDetTypeRec
+  AliITSCalibration *calib = (AliITSCalibration*)detTypeRec->GetCalibrationModel(idet);
+  AliITSCalibration *calibSPDdead = 0;
+  if(detType==0) calibSPDdead = (AliITSCalibration*)detTypeRec->GetSPDDeadModel(idet); // TEMPORARY
+  if (calib->IsBad() ||
+      (detType==0 && calibSPDdead->IsBad())) // TEMPORARY
+    {
+      SetBad();
+      printf("lay %d bad %d\n",ilayer,idet);
+    }
+
+  // Get segmentation from AliITSDetTypeRec
+  AliITSsegmentation *segm = (AliITSsegmentation*)detTypeRec->GetSegmentationModel(detType);
+
+  // Read info about bad chips
+  fNChips = segm->GetMaximumChipIndex()+1;
+  //printf("ilayer %d  detType %d idet %d fNChips %d %d  GetNumberOfChips %d\n",ilayer,detType,idet,fNChips,segm->GetMaximumChipIndex(),segm->GetNumberOfChips());
+  if(fChipIsBad) { delete [] fChipIsBad; fChipIsBad=NULL; }
+  fChipIsBad = new Bool_t[fNChips];
+  for (Int_t iCh=0;iCh<fNChips;iCh++) {
+    fChipIsBad[iCh] = calib->IsChipBad(iCh);
+    if (detType==0 && calibSPDdead->IsChipBad(iCh)) fChipIsBad[iCh] = kTRUE; // TEMPORARY
+  }
+
+  return;
 }
 //------------------------------------------------------------------------
 Double_t AliITStrackerMI::GetEffectiveThickness()
@@ -2028,10 +2174,11 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      const AliITSdetector &det=layer.GetDetector(idet);
      phi=det.GetPhi();
      if (!track->Propagate(phi,det.GetR())) return kFALSE;
+
      track->SetDetectorIndex(idet);
      LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
 
-     Double_t dz,zmin,zmax;
+     Double_t dz,zmin,zmax,dy,ymin,ymax;
 
      const AliITSRecPoint *clAcc=0;
      Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2();
@@ -2077,9 +2224,16 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 		    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
 	 zmin=track->GetZ() - dz;
 	 zmax=track->GetZ() + dz;
-	 Int_t dead = CheckDeadZone(ilayer,idet,zmin,zmax);
+	 dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
+                    TMath::Sqrt(track->GetSigmaY2() + 
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+		    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
+	 ymin=track->GetY() - dy;
+	 ymax=track->GetY() + dy;
+	 Int_t dead = CheckDeadZone(track,ilayer,idet,zmin,zmax,ymin,ymax,kTRUE);
 	 if (dead==1) modstatus = 7; // holes in z in SPD
-	 if (dead==2) modstatus = 2; // dead from OCDB
+	 if (dead==2 || dead==3) modstatus = 2; // dead from OCDB
        }
      }
      
@@ -4836,15 +4990,18 @@ Int_t AliITStrackerMI::CheckSkipLayer(AliITStrackMI *track,
   return 0;
 }
 //------------------------------------------------------------------------
-Int_t AliITStrackerMI::CheckDeadZone(/*AliITStrackMI *track,*/
+Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 				     Int_t ilayer,Int_t idet,
-				     Double_t zmin,Double_t zmax/*,Double_t ymin,Double_t ymax*/) const {
+				     Double_t zmin,Double_t zmax,
+				     Double_t ymin,Double_t ymax,
+				     Bool_t noClusters) const {
   //-----------------------------------------------------------------
   // This method is used to decide whether to allow a prolongation 
   // without clusters, because there is a dead zone in the road.
   // In this case the return value is > 0:
   // return 1: dead zone at z=0,+-7cm in SPD
-  // return 2: dead area from the OCDB // NOT YET IMPLEMENTED
+  // return 2: all road is "bad" (dead or noisy) from the OCDB
+  // return 3: something "bad" (dead or noisy) from the OCDB
   //-----------------------------------------------------------------
 
   // check dead zones at z=0,+-7cm in the SPD
@@ -4859,48 +5016,79 @@ Int_t AliITStrackerMI::CheckDeadZone(/*AliITStrackMI *track,*/
       if (zmin<zmaxdead[i] && zmax>zmindead[i]) return 1;  
   }
 
-  // check dead zones from OCDB
-  if (!AliITSReconstructor::GetRecoParam()->GetUseDeadZonesFromOCDB()) return 0;
+  // check bad zones from OCDB
+  if (!AliITSReconstructor::GetRecoParam()->GetUseBadZonesFromOCDB()) return 0;
 
-  if(idet<0) return 0;
+  if (idet<0) return 0;
 
-  // look in OCDB (only entire dead modules for the moment)
-  if (ilayer==0 || ilayer==1) { // SPD
-    AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
-    if (!cdbEntry) {
-      Error("CheckDeadZone","Cannot get CDB entry for SPD\n");
-      return 0;
-    }
-    TObjArray* spdEntry = (TObjArray*)cdbEntry->GetObject();
-    if (!spdEntry) {
-      Error("CheckDeadZone","Cannot get CDB entry for SPD\n");
-      return 0;
-    }
-    if(ilayer==1) idet += AliITSgeomTGeo::GetNLadders(1)*AliITSgeomTGeo::GetNDetectors(1);
-    //printf("SPD det: %d\n",idet);
-    AliITSCalibrationSPD *calibSPD = (AliITSCalibrationSPD*)spdEntry->At(idet);
-    if (calibSPD->IsBad()) return 2;
-  } else if (ilayer==2 || ilayer==3) { // SDD
-    AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
-    if (!cdbEntry) {
-      Error("CheckDeadZone","Cannot get CDB entry for SDD\n");
-      return 0;
-    }
-    TObjArray* sddEntry = (TObjArray*)cdbEntry->GetObject();
-    if (!sddEntry) {
-      Error("CheckDeadZone","Cannot get CDB entry for SDD\n");
-      return 0;
-    }
-    if(ilayer==3) idet += AliITSgeomTGeo::GetNLadders(3)*AliITSgeomTGeo::GetNDetectors(3);
-    //printf("SDD det: %d\n",idet);
-    AliITSCalibrationSDD *calibSDD = (AliITSCalibrationSDD*)sddEntry->At(idet);
-    if (calibSDD->IsBad()) return 2;
-  } else if (ilayer==4 || ilayer==5) { // SSD
-  } else {
-    Error("CheckDeadZone","Wrong layer number\n");
-    if(ilayer==5) idet += AliITSgeomTGeo::GetNLadders(5)*AliITSgeomTGeo::GetNDetectors(5);
-    return 0;
+  AliITSdetector &det=fgLayers[ilayer].GetDetector(idet);  
+
+  // check if this detector is bad
+  if (det.IsBad()) {
+    //printf("lay %d  bad detector %d\n",ilayer,idet);
+    return 2;
   }
+
+  Int_t detType=-1;
+  Float_t detSizeFactorX=0.0001,detSizeFactorZ=0.0001;
+  if (ilayer==0 || ilayer==1) {        // ----------  SPD
+    detType = 0;
+  } else if (ilayer==2 || ilayer==3) { // ----------  SDD
+    detType = 1;
+    detSizeFactorX *= 2.;
+  } else if (ilayer==4 || ilayer==5) { // ----------  SSD
+    detType = 2;
+  }
+  AliITSsegmentation *segm = (AliITSsegmentation*)fDetTypeRec->GetSegmentationModel(detType);
+  if (detType==2) segm->SetLayer(ilayer+1);
+  Float_t detSizeX = detSizeFactorX*segm->Dx(); 
+  Float_t detSizeZ = detSizeFactorZ*segm->Dz(); 
+
+  // check if the road overlaps with bad chips
+  Float_t xloc,zloc;
+  LocalModuleCoord(ilayer,idet,track,xloc,zloc);
+  Float_t zlocmin = zloc-0.5*(zmax-zmin);
+  Float_t zlocmax = zloc+0.5*(zmax-zmin);
+  Float_t xlocmin = xloc-0.5*(ymax-ymin);
+  Float_t xlocmax = xloc+0.5*(ymax-ymin);
+  Int_t chipsInRoad[100];
+
+  if (TMath::Max(TMath::Abs(xlocmin),TMath::Abs(xlocmax))>0.5*detSizeX ||
+      TMath::Max(TMath::Abs(zlocmin),TMath::Abs(zlocmax))>0.5*detSizeZ) return 0;
+  //printf("lay %d det %d zmim zmax %f %f xmin xmax %f %f   %f %f\n",ilayer,idet,zlocmin,zlocmax,xlocmin,xlocmax,segm->Dx(),segm->Dz());
+  Int_t nChipsInRoad = segm->GetChipsInLocalWindow(chipsInRoad,zlocmin,zlocmax,xlocmin,xlocmax);
+  //printf("lay %d nChipsInRoad %d\n",ilayer,nChipsInRoad);
+  if (!nChipsInRoad) return 0;
+
+  Bool_t anyBad=kFALSE,anyGood=kFALSE;
+  for (Int_t iCh=0; iCh<nChipsInRoad; iCh++) {
+    if (chipsInRoad[iCh]<0 || chipsInRoad[iCh]>det.GetNChips()-1) continue;
+    //printf("  chip %d bad %d\n",chipsInRoad[iCh],(Int_t)det.IsChipBad(chipsInRoad[iCh]));
+    if (det.IsChipBad(chipsInRoad[iCh])) {
+      anyBad=kTRUE;
+    } else {
+      anyGood=kTRUE;
+    } 
+  }
+
+  if (!anyGood) return 2; // all chips in road are bad
+
+  if (anyBad) return 3; // at least a bad chip in road
+
+
+  if (!AliITSReconstructor::GetRecoParam()->GetUseSingleBadChannelsFromOCDB()
+      || ilayer==4 || ilayer==5     // SSD
+      || !noClusters) return 0;
+
+  // There are no clusters in road: check if there is at least 
+  // a bad SPD pixel or SDD anode 
+
+  if(ilayer==1 || ilayer==3 || ilayer==5) 
+    idet += AliITSgeomTGeo::GetNLadders(ilayer)*AliITSgeomTGeo::GetNDetectors(ilayer);
+
+  //if (fITSChannelStatus->AnyBadInRoad(idet,zlocmin,zlocmax,xlocmin,xlocmax)) return 3;
+
+  if (fITSChannelStatus->FractionOfBadInRoad(idet,zlocmin,zlocmax,xlocmin,xlocmax) > AliITSReconstructor::GetRecoParam()->GetMinFractionOfBadInRoad()) return 3;
 
   return 0;
 }

@@ -110,7 +110,7 @@ fDeadPChannelsList(0){
 //______________________________________________________________________
 AliITSCalibrationSSD::~AliITSCalibrationSSD(){
     // destructor
-
+ 
     delete [] fDetPar;
 }
 //______________________________________________________________________
@@ -131,4 +131,31 @@ void AliITSCalibrationSSD::GetDetParam(Double_t  *par) const {
     for (i=0; i<fNPar; i++) {
 	par[i]=fDetPar[i];
     } // end for i
+}
+
+//______________________________________________________________________
+void AliITSCalibrationSSD::FillBadChipMap() {
+
+  Int_t mc=0;
+  Int_t cc[12];
+
+  // P-side
+  for(Int_t i=0; i<6; i++){
+    cc[i]=0;
+    for(Int_t j=0; j<ChannelsPerChip(); j++) {
+      if(IsPChannelBad(i*ChannelsPerChip()+j)) cc[i]++;
+    }
+    if(cc[i]==ChannelsPerChip()) { SetChipBad(i); mc++; }
+  }
+  
+  // N-side
+  for(Int_t i=6; i<11; i++){
+    cc[i]=0;
+    for(Int_t j=0; j<ChannelsPerChip(); j++) {
+      if(IsNChannelBad(1535-i*ChannelsPerChip()-j)) cc[i]++;      
+    }
+    if(cc[i]==ChannelsPerChip()) { SetChipBad(i); mc++; }
+  }
+  
+  if(mc==ChannelsPerChip()) fIsBad=kTRUE;
 }

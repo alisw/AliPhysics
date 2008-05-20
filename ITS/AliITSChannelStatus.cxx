@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+/* $Id:$ */
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -21,7 +21,7 @@
 // Stores 1 status bit for each SPD pixel and SDD anode:                //
 //  0 = bad channel                                                     //
 //  1 = good channel                                                    //
-// Dead and noisy channels are read from AliITSCalibration objects //
+// Dead and noisy channels are read from AliITSCalibration objects      //
 // Origin: F.Prino, Torino, prino@to.infn.it                            //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
@@ -74,6 +74,55 @@ fSDDChannelStatus(0)
   UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
   fSDDChannelStatus=new TBits(nSDDchan);
   InitFromOCDB(deadArrSPD,noisArrSPD,calArrSDD);
+}
+//______________________________________________________________________
+AliITSChannelStatus::AliITSChannelStatus(AliITSDetTypeRec *dtrec):
+TObject(),
+fSPDChannelStatus(0),
+fSDDChannelStatus(0)
+{
+  UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
+  fSPDChannelStatus=new TBits(nSPDchan);
+  
+  UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
+  fSDDChannelStatus=new TBits(nSDDchan);
+  
+  // SPD modules
+  for(Int_t imod=0; imod<kSPDModules; imod++){
+    for(Int_t ix=0; ix<kSPDNpxPerModule; ix++){
+      for(Int_t iz=0; iz<kSPDNpzPerModule; iz++){
+	Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
+	fSPDChannelStatus->SetBitNumber(index,kTRUE);
+      }
+    }
+    Int_t ix,iz;
+
+    // Mask SPD dead pixels
+    AliITSCalibrationSPD* deadspd=(AliITSCalibrationSPD*)dtrec->GetSPDDeadModel(imod);
+    for(Int_t ipix=0; ipix<deadspd->GetNrBad();ipix++){
+      deadspd->GetBadPixel(ipix,ix,iz);
+      Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
+      fSPDChannelStatus->SetBitNumber(index,kFALSE);      
+    }
+    // Mask SPD noisy pixels
+    AliITSCalibrationSPD* noisspd=(AliITSCalibrationSPD*)dtrec->GetCalibrationModel(imod);
+    for(Int_t ipix=0; ipix<noisspd->GetNrBad();ipix++){
+      noisspd->GetBadPixel(ipix,ix,iz);
+      Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
+      fSPDChannelStatus->SetBitNumber(index,kFALSE);
+    }
+  }
+
+  // SDD modules
+  for(Int_t imod=0; imod<kSDDModules; imod++){
+    AliITSCalibrationSDD* calsdd=(AliITSCalibrationSDD*)dtrec->GetCalibrationModel(imod+kSPDModules);
+    for(Int_t ian=0; ian<kSDDAnodesPerModule; ian++){
+      Bool_t cstatus=kTRUE;
+      if(calsdd->IsBadChannel(ian)) cstatus=kFALSE;
+      Int_t index=imod*kSDDAnodesPerModule+ian;
+      fSDDChannelStatus->SetBitNumber(index,cstatus);
+    }
+  }
 }
 //______________________________________________________________________
 void  AliITSChannelStatus::InitDefaults(){

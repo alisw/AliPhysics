@@ -139,8 +139,14 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetAllowProlongationWithEmptyRoad(Bool_t allow=kTRUE) { fAllowProlongationWithEmptyRoad=allow; return; }  
   Bool_t GetAllowProlongationWithEmptyRoad() const { return fAllowProlongationWithEmptyRoad; }
 
-  void   SetUseDeadZonesFromOCDB(Bool_t use=kTRUE) { fUseDeadZonesFromOCDB=use; return; }
-  Bool_t GetUseDeadZonesFromOCDB() const { return fUseDeadZonesFromOCDB; }
+  void   SetUseBadZonesFromOCDB(Bool_t use=kTRUE) { fUseBadZonesFromOCDB=use; return; }
+  Bool_t GetUseBadZonesFromOCDB() const { return fUseBadZonesFromOCDB; }
+
+  void   SetUseSingleBadChannelsFromOCDB(Bool_t use=kTRUE) { fUseSingleBadChannelsFromOCDB=use; return; }
+  Bool_t GetUseSingleBadChannelsFromOCDB() const { return fUseSingleBadChannelsFromOCDB; }
+
+  void   SetMinFractionOfBadInRoad(Float_t frac=0) { fMinFractionOfBadInRoad=frac; return; }
+  Float_t GetMinFractionOfBadInRoad() const { return fMinFractionOfBadInRoad; }
 
   void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
   Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
@@ -292,7 +298,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fReadPlaneEffFromOCDB; // enable initial reading of Plane Eff statistics from OCDB
                                // The analized events would be used to increase the statistics
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
-  Bool_t fUseDeadZonesFromOCDB; // enable using OCDB info on dead modules.. (MI)
+  Bool_t fUseBadZonesFromOCDB; // enable using OCDB info on dead modules and chips (MI)
+  Bool_t fUseSingleBadChannelsFromOCDB; // enable using OCDB info on bad single SPD pixels and SDD anodes (MI)
+  Float_t fMinFractionOfBadInRoad; // to decide whether to skip the layer (MI)
   Bool_t fAllowProlongationWithEmptyRoad; // allow to prolong even if road is empty (MI)
   Double_t fFactorSAWindowSizes; // larger window sizes in SA
   Int_t fNLoopsSA;               // number of loops in tracker SA

@@ -65,6 +65,7 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     void   SetChipBad(Int_t nChip) {
       fIsChipBad[nChip] = kTRUE;
     }
+    void FillBadChipMap();
     virtual Bool_t IsChipBad(Int_t nChip) const {
       return fIsChipBad[nChip];
     }

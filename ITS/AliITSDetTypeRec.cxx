@@ -74,6 +74,7 @@ fITSgeom(0),
 fReconstruction(0),
 fSegmentation(0),
 fCalibration(0),
+fSPDDead(0),
 fPreProcess(0),
 fPostProcess(0),
 fDigits(0),
@@ -126,6 +127,7 @@ fITSgeom(rec.fITSgeom),
 fReconstruction(rec.fReconstruction),
 fSegmentation(rec.fSegmentation),
 fCalibration(rec.fCalibration),
+fSPDDead(rec.fSPDDead),
 fPreProcess(rec.fPreProcess),
 fPostProcess(rec.fPostProcess),
 fDigits(rec.fDigits),
@@ -178,6 +180,13 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
       fCalibration = 0;
     }
   }
+  if(fSPDDead){
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+      fSPDDead->Delete();
+      delete fSPDDead;
+      fSPDDead = 0;
+    }
+  }  
   if(fPreProcess) delete fPreProcess;
   if(fPostProcess) delete fPostProcess;
   if(fDDLMapSDD) delete fDDLMapSDD;
@@ -262,6 +271,20 @@ void AliITSDetTypeRec::SetCalibrationModel(Int_t iMod, AliITSCalibration *cal){
 
 }
 //_______________________________________________________________________
+void AliITSDetTypeRec::SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal){
+
+  //Set dead pixel info for the SPD module iMod
+  if (fSPDDead==0) {
+    fSPDDead = new TObjArray(fgkDefaultNModulesSPD);
+    fSPDDead->SetOwner(kTRUE);
+    fSPDDead->Clear();
+  }
+
+  if (fSPDDead->At(iMod) != 0)
+    delete (AliITSCalibration*) fSPDDead->At(iMod);
+  fSPDDead->AddAt(cal,iMod);
+}
+//_______________________________________________________________________
 AliITSCalibration* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod){
   
   //Get calibration model for module type
@@ -272,6 +295,18 @@ AliITSCalibration* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod){
   }  
 
   return (AliITSCalibration*)fCalibration->At(iMod);
+}
+//_______________________________________________________________________
+AliITSCalibration* AliITSDetTypeRec::GetSPDDeadModel(Int_t iMod){
+  
+  //Get SPD dead for module iMod
+  
+  if(fSPDDead==0) {
+    AliWarning("fSPDDead is 0!");
+    return 0; 
+  }  
+
+  return (AliITSCalibration*)fSPDDead->At(iMod);
 }
 
 //______________________________________________________________________
@@ -392,15 +427,16 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
 
   // dead pixel are not used for local reconstruction
   AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
+  AliCDBEntry *deadSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
   AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
  
  //  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD");
-    AliCDBEntry *entryNoiseSSD = AliCDBManager::Instance()->Get("ITS/Calib/NoiseSSD");
-    AliCDBEntry *entryPedestalSSD = AliCDBManager::Instance()->Get("ITS/Calib/PedestalSSD");
-    AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
-    AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
-    // Entry for the AliITSRecoParam object
-    AliCDBEntry *entryRP = AliCDBManager::Instance()->Get("ITS/Calib/RecoParam/");
+  AliCDBEntry *entryNoiseSSD = AliCDBManager::Instance()->Get("ITS/Calib/NoiseSSD");
+  AliCDBEntry *entryPedestalSSD = AliCDBManager::Instance()->Get("ITS/Calib/PedestalSSD");
+  AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
+  AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
+  // Entry for the AliITSRecoParam object
+  AliCDBEntry *entryRP = AliCDBManager::Instance()->Get("ITS/Calib/RecoParam/");
   AliCDBEntry *entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD");
   AliCDBEntry *entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD");
   AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD");
@@ -409,7 +445,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD");
   AliCDBEntry *mapTSDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsTimeSDD");
 
-  if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || 
+  if(!entrySPD || !deadSPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || 
      !entryPedestalSSD || !entryBadChannelsSSD || 
      !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapASDD || !mapTSDD || !entryRP){
     AliFatal("Calibration object retrieval failed! ");
@@ -420,6 +456,10 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   if(!cacheStatus)entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
  
+  TObjArray *caldeadSPD = (TObjArray *)deadSPD->GetObject();
+  if(!cacheStatus)deadSPD->SetObject(NULL);
+  deadSPD->SetOwner(kTRUE);
+
   AliITSresponseSPD *pSPD = (AliITSresponseSPD*)entry2SPD->GetObject();
   if(!cacheStatus)entry2SPD->SetObject(NULL);
   entry2SPD->SetOwner(kTRUE);
@@ -481,6 +521,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   // DB entries are deleted. In this way metadeta objects are deleted as well
   if(!cacheStatus){
     delete entrySPD;
+    delete deadSPD;
     delete entrySDD;
     delete entryNoiseSSD;
     delete entryPedestalSSD;
@@ -495,7 +536,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     delete ddlMapSDD;
   }
 
-  if ((!pSPD)||(!pSDD)||(!pSSD) || (!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
+  if ((!pSPD)||(!pSDD)||(!pSSD) || (!calSPD) || (!caldeadSPD) ||(!calSDD) || (!drSp) || (!ddlsdd)
       || (!mapAn) || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badchannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
@@ -511,6 +552,8 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     cal = (AliITSCalibration*) calSPD->At(i);
     cal->SetResponse((AliITSresponse*)pSPD);
     SetCalibrationModel(i, cal);
+    cal = (AliITSCalibration*) caldeadSPD->At(i);
+    SetSPDDeadModel(i, cal);
   }
 
   fDDLMapSDD->SetDDLMap(ddlsdd);
@@ -551,6 +594,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     calibSSD->SetGain(gain);
     AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (badchannelsSSD->At(i));
     calibSSD->SetBadChannels(bad);
+    calibSSD->FillBadChipMap();
 
     Int_t iMod = i + fgkDefaultNModulesSPD + fgkDefaultNModulesSDD;
     SetCalibrationModel(iMod, calibSSD);

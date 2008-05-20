@@ -139,6 +139,8 @@ AliTracker* AliITSReconstructor::CreateTracker() const
   AliTracker* tracker;    
   if (selectedTracker.Contains("MI")) {
     tracker = new AliITStrackerMI(0);
+    AliITStrackerMI *mit=(AliITStrackerMI*)tracker;
+    mit->SetDetTypeRec(fDetTypeRec);
   }  
   else if (selectedTracker.Contains("V2")) {
     tracker = new AliITStrackerV2(0);
@@ -146,6 +148,7 @@ AliTracker* AliITSReconstructor::CreateTracker() const
   else {
     tracker =  new AliITStrackerSA(0);  // inherits from AliITStrackerMI
     AliITStrackerSA *sat=(AliITStrackerSA*)tracker;
+    sat->SetDetTypeRec(fDetTypeRec);
     if(selectedTracker.Contains("onlyITS"))sat->SetSAFlag(kTRUE);
     if(sat->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
     if(selectedTracker.Contains("cosmics")||selectedTracker.Contains("COSMICS"))

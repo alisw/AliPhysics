@@ -126,10 +126,15 @@ void AliITSsegmentationSSD::Angles(Float_t &aP,Float_t &aN) const{
 	aP = fStereoPl5;
 	aN = fStereoNl5;
     } // end if
-    if (fLayer == 6){
+    else if (fLayer == 6){
 	aP = fStereoPl6;
 	aN = fStereoNl6;
     } // end if
+    else {
+      AliWarning("SSD layer not set in segmentation. Setting angles for layer 5");
+      aP = fStereoPl5;
+      aN = fStereoNl5;
+    }
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::SetLayer(Int_t l){
@@ -271,8 +276,16 @@ Bool_t AliITSsegmentationSSD::LocalToDet(Float_t x,Float_t z,
   const Double_t kconst = 1.0E-04; // convert microns to cm.
   dx = 0.5*kconst*Dx();
   dz = 0.5*kconst*Dz();
-  if( (x<-dx) || (x>dx) ) { iP=-1; return kTRUE; } // outside x range.
-  if( (z<-dz) || (z>dz) ) { iN=-1; return kTRUE; } // outside z range.
+  if( (x<-dx) || (x>dx) ) { 
+    iP=-1; 
+    AliWarning(Form("Input argument %f out of range (%f, %f)",x,dx,-dx));
+    return kFALSE; // outside of defined volume.
+  } // outside x range.
+  if( (z<-dz) || (z>dz) ) { 
+    iN=-1; 
+    AliWarning(Form("Input argument %f out of range (%f, %f)",z,dz,-dz));
+    return kFALSE; // outside of defined volume.
+  }
   
   x /= kconst;  // convert to microns
   z /= kconst;  // convert to microns
@@ -445,7 +458,7 @@ Int_t AliITSsegmentationSSD::GetChipFromLocal(Float_t xloc, Float_t zloc) const
   Int_t iN=0;
   if (!LocalToDet(xloc,zloc,iP,iN) || 
       (iP<0) || (iP>=fNstrips) || (iN<0) || (iN>=fNstrips) ) {
-    AliWarning("Bad local coordinate");
+    //AliWarning("Bad local coordinate");
     return -1;
   }
 
@@ -456,6 +469,67 @@ Int_t AliITSsegmentationSSD::GetChipFromLocal(Float_t xloc, Float_t zloc) const
 
 }
 //
+
+Int_t AliITSsegmentationSSD::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, 
+						   Float_t xmin, Float_t xmax) const {
+
+  Int_t nChipInW = 0;
+
+  Float_t zminDet=-fDz*1.0E-04/2.;
+  Float_t zmaxDet=fDz*1.0E-04/2.;
+  if(zmin<zminDet) zmin=zminDet;
+  if(zmax>zmaxDet) zmax=zmaxDet;
+
+  Float_t xminDet=-fDx*1.0E-04/2;
+  Float_t xmaxDet=fDx*1.0E-04/2;
+  if(xmin<xminDet) xmin=xminDet;
+  if(xmax>xmaxDet) xmax=xmaxDet;
+
+  Int_t n1N=-1;
+  Int_t n1P=-1;
+  Int_t n1=GetChipFromLocal(xmin,zmin); 
+  if(n1!=-1) { // Note! Recpoint can be on the sensor but in the dead area not covered by strips!
+    n1N = (Int_t) (n1/10); // N-side chip coded as 10*chip_index
+    n1P = n1 - 10 * n1N; // P-side chip coded 0-5
+    array[nChipInW]=n1P;
+    nChipInW++;
+    array[nChipInW]=n1N;
+    nChipInW++;
+  }
+  
+  Int_t n2N=-1;
+  Int_t n2P=-1;
+  Int_t n2=GetChipFromLocal(xmin,zmax);
+  if(n2!=-1) { // Note! Recpoint can be on the sensor but in the dead area not covered by strips!
+    n2N = (Int_t) (n2/10); // N-side chip coded as 10*chip_index
+    n2P = n2 - 10 * n2N; // P-side chip coded 0-5
+    if(n2P!=n1P) { array[nChipInW]=n2P; nChipInW++;}
+    if(n2N!=n1N) { array[nChipInW]=n2N; nChipInW++;}
+  }
+
+  Int_t n3N=-1;
+  Int_t n3P=-1;
+  Int_t n3=GetChipFromLocal(xmax,zmin);
+  if(n3!=-1) {
+    n3N=(Int_t) (n3/10); // N-side chip coded as 10*chip_index
+    n3P=n3 - 10 * n3N; // P-side chip coded 0-5
+    if((n3P!=n1P)&&(n3P!=n2P)) { array[nChipInW]=n3P; nChipInW++;}
+    if((n3N!=n1N)&&(n3N!=n2N)) { array[nChipInW]=n3N; nChipInW++;}
+  }
+  
+  Int_t n4N=-1;
+  Int_t n4P=-1;
+  Int_t n4=GetChipFromLocal(xmax,zmax);
+  if(n4!=-1) {
+    n4N=(Int_t) (n4/10); // N-side chip coded as 10*chip_index
+    n4P=n4 - 10 * n4N; // P-side chip coded 0-5
+    if((n4P!=n1P)&&(n4P!=n2P)&&(n4P!=n3P)) { array[nChipInW]=n4P; nChipInW++;}
+    if((n4N!=n1N)&&(n4N!=n2N)&&(n4N!=n3N)) { array[nChipInW]=n4N; nChipInW++;}
+  }
+  
+  return nChipInW;
+
+}
 
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::PrintDefaultParameters() const {

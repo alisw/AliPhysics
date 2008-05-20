@@ -44,7 +44,11 @@ public AliITSsegmentation {
 			       Double_t &zl,Double_t &zu) const;
     //
     virtual Int_t    GetNumberOfChips() const {return fgkNchipsPerModule;}
+    virtual Int_t    GetMaximumChipIndex() const {return fgkNchipsPerModule-1;}
+    
     virtual Int_t    GetChipFromLocal(Float_t, Float_t zloc) const;
+    virtual Int_t    GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t, Float_t) const;
+
     virtual Int_t    GetChipFromChannel(Int_t, Int_t iz) const;
     //
     // Initialisation
