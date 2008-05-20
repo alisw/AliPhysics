@@ -44,7 +44,7 @@ public:
     virtual TList* GetList() const                         {return 0;}
     virtual void CreateStdContent()                        {;} 
     virtual void GetStdContent()                           {;}
-    virtual void ReadFromTree(TTree * /*tree*/)            {;}
+    virtual void ReadFromTree(TTree * /*tree*/, Option_t* /*opt*/) {;}
     virtual const void WriteToTree(TTree* /*tree*/)  const {;}
 
     virtual void SetStdNames()                             {;}

@@ -35,7 +35,7 @@ public:
   virtual void CreateStdContent() = 0;
   virtual void GetStdContent() = 0;
 
-  virtual void ReadFromTree(TTree *tree) = 0;
+  virtual void ReadFromTree(TTree *tree, Option_t* opt) = 0;
   virtual const void WriteToTree(TTree* tree) const = 0;
 
   //virtual void Reset() = 0;
