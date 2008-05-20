@@ -229,7 +229,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
       if (altro) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
       nWords   = preSamples;
       prevaddr = addr;
-      for (size_t i = 0; i < nWords; i++) data[i] = digit->Count(0);
+      for (size_t j = 0; j < nWords; j++) data[j] = digit->Count(0);
     }
     if (ddl != prevddl) {
       AliFMDDebug(5, ("FMD: New DDL, was %d, now %d", prevddl, ddl));

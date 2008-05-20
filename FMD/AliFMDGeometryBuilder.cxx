@@ -443,7 +443,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   Double_t zi = r->GetFullDepth() - ddt;
   Int_t    n  = 2;
   for (Int_t i = 0; i  < n; i++) {
-    TGeoVolume*   halfRing = (i == 0 ? ringTopVolume : ringBotVolume);
+    halfRing             = (i == 0 ? ringTopVolume : ringBotVolume);
     Double_t      phi    = 360. / n * i;
     TGeoRotation* rot    = new TGeoRotation(Form("FMDD%c rotation %d", id, i));
     rot->RotateZ(phi);

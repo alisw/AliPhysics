@@ -161,39 +161,38 @@ AliFMDParameters::Draw(Option_t* option)
 {
   TString opt(option);
   enum {
-    kPulseGain,       // Path to PulseGain calib object
-    kThreshold,       // Path to PulseGain calib object
-    kPedestal,        // Path to Pedestal calib object
-    kPedestalWidth,   // Path to Pedestal calib object
-    kDead,            // Path to Dead calib object
-    kSampleRate,      // Path to SampleRate calib object
-    kAltroMap,        // Path to AltroMap calib object
-    kZeroSuppression, // Path to ZeroSuppression cal object
-    kMinStripRange,   // Path to strip range cal object
-    kMaxStripRange    // Path to strip range cal object
+    kLocalPulseGain,       // Path to PulseGain calib object
+    kLocalThreshold,       // Path to PulseGain calib object
+    kLocalPedestal,        // Path to Pedestal calib object
+    kLocalPedestalWidth,   // Path to Pedestal calib object
+    kLocalDead,            // Path to Dead calib object
+    kLocalSampleRate,      // Path to SampleRate calib object
+    kLocalAltroMap,        // Path to AltroMap calib object
+    kLocalZeroSuppression, // Path to ZeroSuppression cal object
+    kLocalMinStripRange,   // Path to strip range cal object
+    kLocalMaxStripRange    // Path to strip range cal object
   } what;
-  
     
   if      (opt.Contains("dead", TString::kIgnoreCase)) 
-    what = kDead;
+    what = kLocalDead;
   else if (opt.Contains("threshold",TString::kIgnoreCase)) 
-    what = kThreshold;
+    what = kLocalThreshold;
   else if (opt.Contains("gain",TString::kIgnoreCase)) 
-    what = kPulseGain;
+    what = kLocalPulseGain;
   else if (opt.Contains("pedestal",TString::kIgnoreCase)) 
-    what = kPedestal;
+    what = kLocalPedestal;
   else if (opt.Contains("noise",TString::kIgnoreCase)) 
-    what = kPedestalWidth;
+    what = kLocalPedestalWidth;
   else if (opt.Contains("zero",TString::kIgnoreCase)) 
-    what = kZeroSuppression;
+    what = kLocalZeroSuppression;
   else if (opt.Contains("rate",TString::kIgnoreCase)) 
-    what = kSampleRate;
+    what = kLocalSampleRate;
   else if (opt.Contains("min",TString::kIgnoreCase)) 
-    what = kMinStripRange;
+    what = kLocalMinStripRange;
   else if (opt.Contains("max",TString::kIgnoreCase)) 
-    what = kMaxStripRange;
+    what = kLocalMaxStripRange;
   else if (opt.Contains("map",TString::kIgnoreCase)) 
-    what = kAltroMap;
+    what = kLocalAltroMap;
   else {
     Warning("Draw", "unknown parameter: %s\n\tShould be one of\n\t"
 	    "dead, threshold, gain, pedestal, noise, zero, rate, "
@@ -228,7 +227,7 @@ AliFMDParameters::Draw(Option_t* option)
     }
   }
   TArrayD ybins(41);
-  for (Int_t i = 0; i < ybins.fN; i++) ybins[i] = Float_t(i - .5);
+  for (/*Int_t*/ i = 0; i < ybins.fN; i++) ybins[i] = Float_t(i - .5);
   TH2D* hist = new TH2D("calib", Form("Calibration %s", option), 
 			xbins.fN-1, xbins.fArray,  
 			ybins.fN-1, ybins.fArray);
@@ -250,26 +249,26 @@ AliFMDParameters::Draw(Option_t* option)
 	  UInt_t ddl, addr;
 	  Double_t val = 0;
 	  switch (what) {
-	  case kPulseGain:       // Path to PulseGain calib object
+	  case kLocalPulseGain:       // Path to PulseGain calib object
             val = GetPulseGain(det,ring,sec,str); break;
-	  case kThreshold:       // Path to PulseGain calib object
+	  case kLocalThreshold:       // Path to PulseGain calib object
             val = GetThreshold(); break;
-	  case kPedestal:        // Path to Pedestal calib object
+	  case kLocalPedestal:        // Path to Pedestal calib object
             val = GetPedestal(det,ring,sec,str); break;
-	  case kPedestalWidth:   // Path to Pedestal calib object
+	  case kLocalPedestalWidth:   // Path to Pedestal calib object
             val = GetPedestalWidth(det,ring,sec,str); break;
-	  case kDead:            // Path to Dead calib object
+	  case kLocalDead:            // Path to Dead calib object
             val = IsDead(det,ring,sec,str); break;
-	  case kSampleRate:      // Path to SampleRate calib object
+	  case kLocalSampleRate:      // Path to SampleRate calib object
             val = GetSampleRate(det,ring,sec,str); break;
-	  case kAltroMap:        // Path to AltroMap calib object
+	  case kLocalAltroMap:        // Path to AltroMap calib object
 	    Detector2Hardware(det,ring,sec,str, ddl, addr); 
             val = addr; break;
-	  case kZeroSuppression: // Path to ZeroSuppression cal object
+	  case kLocalZeroSuppression: // Path to ZeroSuppression cal object
             val = GetZeroSuppression(det,ring,sec,str); break;
-	  case kMinStripRange:   // Path to strip range cal object
+	  case kLocalMinStripRange:   // Path to strip range cal object
             val = GetMinStrip(det,ring,sec,str); break;
-	  case kMaxStripRange:    // Path to strip range cal object
+	  case kLocalMaxStripRange:    // Path to strip range cal object
             val = GetMaxStrip(det,ring,sec,str); break;
 	  }
 	  hist->Fill(idx,sec,val);
@@ -557,7 +556,7 @@ AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
     delete fAltroMap;
     fAltroMap = 0;
   }
-  AliCDBEntry*   hwMap    = GetEntry(fgkAltroMap, pp);       
+  AliCDBEntry*   hwMap    = GetEntry(fgkAltroMap, pp, kFALSE);       
   if (!hwMap) return;
 
   AliFMDDebug(1, ("Got ALTRO map from CDB"));

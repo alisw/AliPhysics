@@ -158,7 +158,7 @@ AliFMDDetector::HasAllTransforms(Char_t ring) const
    (name[3] == 'T' || name[3] == 'B'))
 #define IS_NODE_SENSOR(name)				\
   (name[0] == 'F' && (name[2] == 'B' || name[2] == 'F') && name[3] == 'H')
-//#define IS_NODE_SENSOR(name)				\
+//#define IS_NODE_SENSOR(name)				
 //  (name[0] == 'F' && name[2] == 'S' && name[3] == 'E')
 #define IS_NODE_HALF(name) \
   (name[0] == 'F' && name[2] == 'M' && (name[3] == 'B' || name[3] == 'T'))
@@ -527,15 +527,16 @@ AliFMDDetector::Detector2XYZ(Char_t   ring,
   Double_t rho      = r->GetStripRadius(strip);
   Double_t phi      = ((sector % 2) - .5) * r->GetTheta();
   Double_t siThick  = r->GetSiThickness();
+#if 0 
   Double_t modThick = (siThick
 		       + r->GetPrintboardThickness()
 		       + r->GetCopperThickness()
 		       + r->GetChipThickness()
 		       + r->GetSpacing());
+#endif
   AliFMDDebug(30, ("Rho %7.3f, angle %7.3f", rho, phi));
-# define DEGRAD TMath::Pi() / 180. 
-  Double_t local[]  = { rho * TMath::Cos(phi * DEGRAD), 
-		        rho * TMath::Sin(phi * DEGRAD), 
+  Double_t local[]  = { rho * TMath::Cos(phi * TMath::DegToRad()), 
+		        rho * TMath::Sin(phi * TMath::DegToRad()), 
 		        /* -modThick + */ siThick / 2 };
   Double_t master[3];
   AliFMDDebug(30, ("Local (%7.3f,%7.3f,%7.3f)",local[0], local[1], local[2]));

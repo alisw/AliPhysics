@@ -523,6 +523,8 @@ Config()
   }
   
   if (useITS) {
+     AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+#if 0
     // =================== ITS parameters ============================
     //
     // As the innermost detector in ALICE, the Inner Tracking System
@@ -598,6 +600,7 @@ Config()
     // want to use this facility.
     //
     ITS->SetEUCLID(0);
+#endif
   }
 
   if (useTPC) {
