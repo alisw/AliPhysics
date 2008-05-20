@@ -1040,13 +1040,13 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t r, Doub
   if(kbinmax==1) return e; //maximum energy loss
 
   if(fMultSoft) {
-    for(Int_t bin=2; bin<=kbinmax; bin++) {
+    for(bin=2; bin<=kbinmax; bin++) {
       xxxx = fHisto->GetBinCenter(bin);
       CalcMult(ipart,r,xxxx,continuous,discrete);
       fHisto->SetBinContent(bin,continuous);
     }
   } else {
-    for(Int_t bin=2; bin<=kbinmax; bin++) {
+    for(bin=2; bin<=kbinmax; bin++) {
       xxxx = fHisto->GetBinCenter(bin);
       CalcSingleHard(ipart,r,xxxx,continuous,discrete);
       fHisto->SetBinContent(bin,continuous);
@@ -1067,7 +1067,7 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t r, Doub
     fHisto->Fill(0.,val);
     fHisto->SetBinContent(kbinmax+1,(1-discrete)*fgkBins/fgkMaxBin-kdelta);
   }
-  for(Int_t bin=kbinmax+2; bin<=fgkBins; bin++) {
+  for(bin=kbinmax+2; bin<=fgkBins; bin++) {
     fHisto->SetBinContent(bin,0);
   }
   //cout << kbinmax << " " << discrete << " " << fHisto->Integral() << endl;
@@ -1287,13 +1287,13 @@ Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t r)
 
   if(discrete>=1.) {
     fHisto->SetBinContent(1,1.);
-    for(Int_t bin=2;bin<=fgkBins;bin++) 
+    for(bin=2;bin<=fgkBins;bin++) 
       fHisto->SetBinContent(bin,0.);
     return 0;
   }
 
   fHisto->SetBinContent(bin,continuous);
-  for(Int_t bin=2; bin<=fgkBins; bin++) {
+  for(bin=2; bin<=fgkBins; bin++) {
     xxxx = fHisto->GetBinCenter(bin);
     if(fMultSoft)
       CalcMult(ipart,r,xxxx,continuous,discrete);
@@ -1867,7 +1867,7 @@ void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t qm,Double_t e) cons
   gg->Draw("pl");
 
   TGraph *gratio=new TGraph(points);
-  for(Int_t i=0;i<points;i++){
+  for(i=0;i<points;i++){
     Double_t x,y,x2,y2;
     gg->GetPoint(i,x,y);
     gq->GetPoint(i,x2,y2);
