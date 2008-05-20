@@ -280,7 +280,7 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //
   AliESDZDC * zdcESD =  esd->GetESDZDC();
   //
-  Double32_t * Centr_ZNC, * Centr_ZNA;
+  const Float_t * Centr_ZNC, * Centr_ZNA;
   Int_t NSpecnC = (Int_t) (esd->GetZDCN1Energy()/2.7);
   if(NSpecnC!=0){
     Centr_ZNC = zdcESD->GetZNCCentroid(NSpecnC);
