@@ -28,12 +28,9 @@ public:
   void Generate();
   
   // Fermi smearing, beam divergence and crossing angle       	       
-  void FermiTwoGaussian(Float_t A, Double_t *pp, 
-        Double_t *probintp, Double_t *probintn);
-  void ExtractFermi(Int_t id, Double_t *pp, Double_t *probintp, 
-        Double_t *probintn, Double_t *pFermi);
-  void BeamDivCross(Int_t icross, Float_t divergence, Float_t crossangle, 
-        Int_t crossplane, Double_t *pLab);
+  void FermiTwoGaussian(Float_t A);
+  void ExtractFermi(Int_t id, Double_t *ddp);
+  void BeamDivCross(Int_t icross, Double_t *pLab);
   void AddAngle(Double_t theta1, Double_t phi1, Double_t theta2,
   	        Double_t phi2, Double_t *angle);
  

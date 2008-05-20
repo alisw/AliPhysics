@@ -324,21 +324,16 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
 {
 // simulate fragmentation of spectators
 
-  Int_t zz[100], nn[100];
   AliZDCFragment frag(impPar);
-  for(Int_t j=0; j<=99; j++){
-     zz[j] =0;
-     nn[j] =0;
-  }
 
   // Fragments generation
-  Int_t nAlpha;
-  frag.GenerateIMF(zz, nAlpha);
+  frag.GenerateIMF();
+  Int_t nAlpha = frag.GetNalpha();
 
   // Attach neutrons
-  Int_t ztot=0;
-  Int_t ntot=0;
-  frag.AttachNeutrons(zz, nn, ztot, ntot);
+  Int_t ztot = frag.GetZtot();
+  Int_t ntot = frag.GetNtot();
+  frag.AttachNeutrons();
   freeSpecN = specN-ntot-2*nAlpha;
   freeSpecP = specP-ztot-2*nAlpha;
   // Removing deuterons

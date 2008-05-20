@@ -75,7 +75,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
 
   // The processing of the DCS input data is forwarded to AliZDCDataDCS
   Float_t dcsValues[28]; // DCSAliases=28
-  fData->ProcessData(*dcsAliasMap, dcsValues);
+  fData->SetCalibData(dcsValues);
+  fData->ProcessData(*dcsAliasMap);
   // Store DCS data for reference
   AliCDBMetaData metadata;
   metadata.SetResponsible("Chiara Oppedisano");
@@ -153,21 +154,21 @@ if(runType == "STANDALONE_PEDESTAL"){
          }
          Log(Form("File %s connected to process pedestal data", pedFileName));
          Float_t pedVal[(3*knZDCch)][3];
-         for(Int_t i=0; i<(3*knZDCch); i++){
+         for(Int_t k=0; k<(3*knZDCch); k++){
             for(Int_t j=0; j<3; j++){
-               fscanf(file,"%f",&pedVal[i][j]);
-	       //if(j==1) printf("pedVal[%d] -> %f, %f \n",i,pedVal[i][0],pedVal[i][1]);
+               fscanf(file,"%f",&pedVal[k][j]);
+	       //if(j==1) printf("pedVal[%d] -> %f, %f \n",k,pedVal[k][0],pedVal[k][1]);
             }
-            if(i<knZDCch){
-              pedCalib->SetMeanPed(i,pedVal[i][1]);
-              pedCalib->SetMeanPedWidth(i,pedVal[i][2]);
+            if(k<knZDCch){
+              pedCalib->SetMeanPed(k,pedVal[k][1]);
+              pedCalib->SetMeanPedWidth(i,pedVal[k][2]);
             }
-            else if(i>=knZDCch && i<(2*knZDCch)){
-              pedCalib->SetOOTPed(i-knZDCch,pedVal[i][1]);
-              pedCalib->SetOOTPedWidth(i-knZDCch,pedVal[i][2]);
+            else if(k>=knZDCch && k<(2*knZDCch)){
+              pedCalib->SetOOTPed(k-knZDCch,pedVal[k][1]);
+              pedCalib->SetOOTPedWidth(k-knZDCch,pedVal[k][2]);
             }
-            else if(i>=(2*knZDCch) && i<(3*knZDCch)){
-              pedCalib->SetPedCorrCoeff(i-(2*knZDCch),pedVal[i][1],pedVal[i][2]);
+            else if(k>=(2*knZDCch) && k<(3*knZDCch)){
+              pedCalib->SetPedCorrCoeff(k-(2*knZDCch),pedVal[k][1],pedVal[k][2]);
             }
          }
        }
@@ -201,9 +202,9 @@ else if(runType == "STANDALONE_EMD"){
   //
   TIter iter2(daqSources);
   TObjString* source = 0;
-  Int_t j=0;
+  Int_t i=0;
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
-       Log(Form("\n\t Getting file #%d\n",++j));
+       Log(Form("\n\t Getting file #%d\n",++i));
        TString stringEMDFileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
        if(stringEMDFileName.Length() <= 0){
          Log(Form("No EMDCALIB file from source %s!", source->GetName()));
@@ -271,9 +272,9 @@ else if(runType == "PHYSICS"){
   //
   TIter iter2(daqSources);
   TObjString* source = 0;
-  Int_t j=0;
+  Int_t i=0;
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
-       Log(Form("\n\t Getting file #%d\n",++j));
+       Log(Form("\n\t Getting file #%d\n",++i));
        TString stringPHYSFileName = GetFile(kDAQ, "PHYSICS", source->GetName());
        if(stringPHYSFileName.Length() <= 0){
          Log(Form("No PHYSICS file from source %s!", source->GetName()));

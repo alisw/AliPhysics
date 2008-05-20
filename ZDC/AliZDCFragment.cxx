@@ -74,7 +74,7 @@ AliZDCFragment::AliZDCFragment(Float_t b):
 }
 
 //_____________________________________________________________________________
-void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
+void AliZDCFragment::GenerateIMF()
 {
 
    // Loop variables
@@ -300,7 +300,7 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
 }
 
 //_____________________________________________________________________________
-void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &fNtot)
+void AliZDCFragment::AttachNeutrons()
 {
 //
 // Prepare nuclear fragment by attaching a suitable number of neutrons

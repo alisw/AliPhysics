@@ -59,7 +59,7 @@ AliZDCDataDCS::~AliZDCDataDCS()
 }
 
 //---------------------------------------------------------------
-void AliZDCDataDCS::ProcessData(TMap& aliasMap, Float_t *fCalibData)
+void AliZDCDataDCS::ProcessData(TMap& aliasMap)
 {
    // Data processing
    

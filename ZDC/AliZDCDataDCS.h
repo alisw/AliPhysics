@@ -21,11 +21,17 @@ public:
 	void SetRun(Int_t run) {fRun = run;}
 	void SetStartTime(Int_t startTime) {fStartTime = startTime;}
 	void SetEndTime(Int_t endTime) {fEndTime = endTime;}
+	void SetCalibData(Float_t *val) 
+	     {for(Int_t i=0; i<kNGraphs; i++) fCalibData[i] = val[i];}
+	void SetCalibData(Int_t i, Float_t val) {fCalibData[i] = val;} 
+	//
 	Int_t GetRun() {return fRun;}
 	Int_t GetStartTime() {return fStartTime;}
 	Int_t GetEndTime() {return fEndTime;}
+	Float_t GetCalibData() {return *fCalibData;}
+	Float_t GetCalibData(Int_t i) {return fCalibData[i];}
 
-	void ProcessData(TMap& aliasMap, Float_t *CalibData);
+	void ProcessData(TMap& aliasMap);
 
 	const char* GetAliasName(UInt_t pos)
 			{return pos<kNAliases ? fAliasNames[pos].Data() : 0;}

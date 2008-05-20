@@ -22,21 +22,27 @@ public:
   AliZDCFragment();
   AliZDCFragment(Float_t b);
   virtual      ~AliZDCFragment() {}
-  void GenerateIMF(Int_t* fZZ, Int_t &fNalpha);
-  void AttachNeutrons(Int_t* fZZ, Int_t* fNN, Int_t &Ztot, Int_t &Ntot);
+  void GenerateIMF();
+  void AttachNeutrons();
   Float_t DeuteronNumber();
   
   // Setting parameters
   virtual void SetImpactParameter(Float_t b) {fB=b;};
   
   // Getting parameters
-  Int_t GetFragmentNum() {return fNimf;};
-  
+  Float_t GetZbAverage() {return fZbAverage;}
+  Int_t   GetFragmentNum() {return fNimf;}
+  Float_t GetZmax() {return fZmax;}
+  Int_t*  GetZZ()   {return (int*)fZZ;}
+  Int_t*  GetNN()   {return (int*)fNN;}
+  Int_t   GetNalpha() {return fNalpha;}
+  Int_t   GetZtot() {return fZtot;}
+  Int_t   GetNtot() {return fNtot;}
  
 protected:
   
    Float_t  fB; 	 // Impact parameter
-   Float_t  fZbAverage ; // Mean value of Z bound 
+   Float_t  fZbAverage;  // Mean value of Z bound 
    Int_t    fNimf;	 // Number of IMF
    Float_t  fZmax;	 // Mean value of maximum Z of fragment
    Float_t  fTau;	 // Exponent of charge distribution: dN/dZ = Z*exp(-fTau)
