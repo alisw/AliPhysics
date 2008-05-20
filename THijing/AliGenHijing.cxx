@@ -311,7 +311,7 @@ void AliGenHijing::Generate()
 //
 
       for (i = 0; i<np; i++) {
-	  TParticle *  iparticle = (TParticle *) fParticles.At(i);
+	  iparticle = (TParticle *) fParticles.At(i);
 // Is this a final state particle ?
 	  if (!Stable(iparticle)) continue;
       
@@ -355,7 +355,7 @@ void AliGenHijing::Generate()
 // Write particles to stack
 
       for (i = 0; i<np; i++) {
-	  TParticle *  iparticle = (TParticle *) fParticles.At(i);
+	  iparticle = (TParticle *) fParticles.At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
 	  Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
 	  if (pSelected[i]) {
