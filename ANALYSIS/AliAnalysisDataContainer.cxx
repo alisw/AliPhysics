@@ -46,10 +46,12 @@
 #include <TMethodCall.h>
 
 #include <TClass.h>
+#include <TFile.h>
 #include <TTree.h>
 #include <TH1.h>
 #include <TROOT.h>
 
+#include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisTask.h"
@@ -61,6 +63,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
                           fDataReady(kFALSE),
                           fOwnedData(kFALSE),
                           fFileName(),
+                          fFile(NULL),
                           fData(NULL),
                           fType(NULL),
                           fProducer(NULL),
@@ -75,6 +78,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
                           fDataReady(kFALSE),
                           fOwnedData(kTRUE),
                           fFileName(),
+                          fFile(NULL),
                           fData(NULL),
                           fType(type),
                           fProducer(NULL),
@@ -90,6 +94,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const AliAnalysisDataContaine
                           fDataReady(cont.fDataReady),
                           fOwnedData(kFALSE),
                           fFileName(cont.fFileName),
+                          fFile(NULL),
                           fData(cont.fData),
                           fType(NULL),
                           fProducer(cont.fProducer),
@@ -121,6 +126,7 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
       fDataReady = cont.fDataReady;
       fOwnedData = kFALSE;  // !!! Data owned by cont.
       fFileName = cont.fFileName;
+      fFile = NULL;
       fData = cont.fData;
       GetType();
       fProducer = cont.fProducer;
@@ -361,7 +367,12 @@ AliAnalysisDataWrapper *AliAnalysisDataContainer::ExportData() const
 {
 // Wraps data for sending it through the net.
    AliAnalysisDataWrapper *pack = 0;
-   if (!fData) return pack;
+   if (!fData) {
+      Error("ExportData", "Container %s - No data to be wrapped !", GetName());
+      return pack;
+   } 
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (mgr->GetDebugLevel() > 1) printf("   ExportData: Wrapping data %s for container %s\n", fData->GetName(),GetName());
    pack = new AliAnalysisDataWrapper(fData);
    pack->SetName(fName.Data());
    return pack;
@@ -373,6 +384,12 @@ void AliAnalysisDataContainer::ImportData(AliAnalysisDataWrapper *pack)
 // Unwraps data from a data wrapper.
    if (pack) {
       fData = pack->Data();
+      if (!fData) {
+         Error("ImportData", "No data was wrapped for container %s", GetName());
+         return;
+      }   
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      if (mgr->GetDebugLevel() > 1) printf("   ImportData: Unwrapping data %s for container %s\n", fData->GetName(),GetName());
       fDataReady = kTRUE;
       // Imported wrappers do not own data anymore (AG 13-11-07)
       pack->SetDeleteData(kFALSE);

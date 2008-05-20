@@ -58,7 +58,7 @@ void AliAnalysisSelector::Init(TTree *tree)
       Error("Init", "Analysis manager NULL !");
       return;
    }
-   if (fAnalysis->GetDebugLevel()>1) {
+   if (fAnalysis->GetDebugLevel()>0) {
       cout << "->AliAnalysisSelector->Init()" << endl;
    }   
    if (!tree) {
@@ -67,7 +67,7 @@ void AliAnalysisSelector::Init(TTree *tree)
    }
    fAnalysis->Init(tree);
    fInitialized = kTRUE;
-   if (fAnalysis->GetDebugLevel()>1) {
+   if (fAnalysis->GetDebugLevel()>0) {
       cout << "<-AliAnalysisSelector->Init()" << endl;
    }   
 }
@@ -77,7 +77,7 @@ void AliAnalysisSelector::Begin(TTree *)
 {
 // Assembly the input list.
    RestoreAnalysisManager();
-   if (fAnalysis && fAnalysis->GetDebugLevel()>1) {
+   if (fAnalysis && fAnalysis->GetDebugLevel()>0) {
       cout << "->AliAnalysisSelector->Begin: Analysis manager restored" << endl;
    }
 }
@@ -88,11 +88,11 @@ void AliAnalysisSelector::SlaveBegin(TTree *tree)
 // Called on each worker. We "unpack" analysis manager here and call InitAnalysis.
    RestoreAnalysisManager();
    if (fAnalysis) {
-      if (fAnalysis->GetDebugLevel()>1) {
+      if (fAnalysis->GetDebugLevel()>0) {
          cout << "->AliAnalysisSelector->SlaveBegin() after Restore" << endl;
       }   
       fAnalysis->SlaveBegin(tree);   
-      if (fAnalysis->GetDebugLevel()>1) {
+      if (fAnalysis->GetDebugLevel()>0) {
          cout << "<-AliAnalysisSelector->SlaveBegin()" << endl;
       }   
    }   
@@ -114,14 +114,14 @@ Bool_t AliAnalysisSelector::Notify()
 Bool_t AliAnalysisSelector::Process(Long64_t entry)
 {
 // Event loop.
-   if (fAnalysis->GetDebugLevel() >1 ) {
+   if (fAnalysis->GetDebugLevel() > 0) {
       cout << "->AliAnalysisSelector::Process()" << endl;
    }
    Int_t nobjCount = TProcessID::GetObjectCount();
    fAnalysis->GetEntry(entry);
    fAnalysis->ExecAnalysis();
    TProcessID::SetObjectCount(nobjCount);
-   if (fAnalysis->GetDebugLevel() >1 ) {
+   if (fAnalysis->GetDebugLevel() > 0) {
       cout << "<-AliAnalysisSelector::Process()" << endl;
    }   
    return kTRUE;
@@ -137,7 +137,8 @@ void AliAnalysisSelector::RestoreAnalysisManager()
       while ((obj=next())) {
          if (obj->IsA() == AliAnalysisManager::Class()) {
             fAnalysis = (AliAnalysisManager*)obj;
-            if (fAnalysis->GetDebugLevel()>1) {
+            fAnalysis->SetSelector(this);
+            if (fAnalysis->GetDebugLevel()>0) {
                cout << "->AliAnalysisSelector->RestoreAnalysisManager: Analysis manager restored" << endl;
             }   
             break;
@@ -156,11 +157,11 @@ void AliAnalysisSelector::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
-   if (fAnalysis->GetDebugLevel() >1 ) {
+   if (fAnalysis->GetDebugLevel() > 0) {
       cout << "->AliAnalysisSelector::SlaveTerminate()" << endl;
    }   
    fAnalysis->PackOutput(fOutput);
-   if (fAnalysis->GetDebugLevel() >1 ) {
+   if (fAnalysis->GetDebugLevel() > 0) {
       cout << "<-AliAnalysisSelector::SlaveTerminate()" << endl;
    }   
 }  
@@ -175,12 +176,12 @@ void AliAnalysisSelector::Terminate()
       Error("Terminate","AliAnalysisSelector::Terminate: No analysis manager!!!");
       return;
    }   
-   if (fAnalysis->GetDebugLevel() >1 ) {
+   if (fAnalysis->GetDebugLevel() > 0) {
       cout << "->AliAnalysisSelector::Terminate()" << endl;
    }   
    fAnalysis->UnpackOutput(fOutput);
    fAnalysis->Terminate();   
-   if (fAnalysis->GetDebugLevel() >1 ) {
+   if (fAnalysis->GetDebugLevel() > 0) {
       cout << "<-AliAnalysisSelector::Terminate()" << endl;
    }   
 }

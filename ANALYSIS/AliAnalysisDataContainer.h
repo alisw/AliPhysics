@@ -24,11 +24,11 @@
 #endif
 
 class TClass;
+class TFile;
 class TObjArray;
 class TCollection;
 class AliAnalysisTask;
 class AliAnalysisDataWrapper;
-class AliESD;
 
 class AliAnalysisDataContainer : public TNamed {
 
@@ -52,6 +52,7 @@ enum EAnalysisContainerFlags {
    // Getters
    TObject                  *GetData() const      {return fData;}
    const char               *GetFileName() const  {return fFileName.Data();}
+   TFile                    *GetFile() const      {return fFile;}
    TClass                   *GetType() const;
    AliAnalysisTask          *GetProducer() const  {return fProducer;}
    TObjArray                *GetConsumers() const {return fConsumers;}
@@ -63,6 +64,7 @@ enum EAnalysisContainerFlags {
    void                      SetPostEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kPostEventLoop,flag);}
    void                      SetSpecialOutput(Bool_t flag=kTRUE) {TObject::SetBit(kSpecialOutput,flag);}
    void                      SetFileName(const char *filename) {fFileName = filename;}
+   void                      SetFile(TFile *f) {fFile = f;}
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
    void                      DeleteData();
@@ -91,6 +93,7 @@ protected:
    Bool_t                    fDataReady;  // Flag that data is ready
    Bool_t                    fOwnedData;  // Flag data ownership
    TString                   fFileName;   // File storing the data
+   TFile                    *fFile;       //! Opened file
    TObject                  *fData;       // Contained data
    TClass                   *fType;       //! Type of contained data
    AliAnalysisTask          *fProducer;   // Analysis task to which the slot belongs

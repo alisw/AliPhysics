@@ -403,9 +403,13 @@ void AliAnalysisTask::EnableBranch(Int_t islot, const char *bname) const
 }
 
 //______________________________________________________________________________
-void AliAnalysisTask::Cleanup()
+void AliAnalysisTask::FinishTaskOutput()
 {
-// Cleanup method that is called only in proof mode in SlaveTerminate phase.
+// Optional method that is called in SlaveTerminate phase. 
+// Used for calling aditional methods just after the last event was processed ON
+// THE WORKING NODE. The call is made also in local case.
+// Do NOT delete output objects here since they will have to be sent for 
+// merging in PROOF mode - use class destructor for cleanup.
 }
       
 //______________________________________________________________________________
@@ -459,12 +463,22 @@ TFile *AliAnalysisTask::OpenFile(Int_t iout, Option_t *option) const
       return NULL;
    }   
    // We allow file opening also on the slaves (AG)
-//   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-//   if (!mgr || mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis) return;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliAnalysisDataContainer *cont = GetOutputSlot(iout)->GetContainer();
    TFile *f = NULL;
-   if (strlen(cont->GetFileName())) f = new TFile(cont->GetFileName(), option);
-   if (f && !f->IsZombie()) return f;
+   if (!strlen(cont->GetFileName())) {
+      Error("OpenFile", "No file name specified for container %s", cont->GetName());
+      return f;
+   }   
+   if (mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis && cont->IsSpecialOutput())
+      f = mgr->OpenProofFile(cont->GetFileName(),option);
+   else
+      f = new TFile(cont->GetFileName(), option);
+   if (f && !f->IsZombie()) {
+      cont->SetFile(f);
+      return f;
+   }
+   cont->SetFile(NULL);
    return NULL;
 }
 

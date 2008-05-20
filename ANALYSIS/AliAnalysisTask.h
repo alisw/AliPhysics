@@ -89,8 +89,10 @@ public:
   // === OVERLOAD THIS IF YOU NEED TO TREAT INPUT FILE/TREE CHANGE
   virtual Bool_t            Notify();
   //=====================================================================
-  // Optional cleanup method to be called only in PROOF in SlaveTerminate phase
-  virtual void              Cleanup();
+  // Optional method that will be called in SlaveTerminate phase for each task
+  // Warning: in PROOF mode this is called before merging so their cleanup is
+  //          not allowed - do output cleanup in class destructor.
+  virtual void              FinishTaskOutput();
   // Conect inputs/outputs to data containers (by AliAnalysisModule)
   Bool_t                    ConnectInput(Int_t islot, AliAnalysisDataContainer *cont);
   Bool_t                    ConnectOutput(Int_t islot, AliAnalysisDataContainer *cont);

@@ -19,6 +19,8 @@
 
 class TClass;
 class TTree;
+class TFile;
+class AliAnalysisSelector;
 class AliAnalysisDataContainer;
 class AliAnalysisTask;
 class AliVEventHandler;
@@ -62,6 +64,7 @@ enum EAliAnalysisFlags {
    virtual Bool_t      ProcessCut(Long64_t entry) {return Process(entry);}
    virtual Bool_t      Process(Long64_t entry);
    virtual Int_t       GetEntry(Long64_t entry, Int_t getall = 0);
+   TFile              *OpenProofFile(const char *name, const char *option);
    void                PackOutput(TList *target);
    void                UnpackOutput(TList *source);
    virtual void        Terminate();
@@ -91,6 +94,7 @@ enum EAliAnalysisFlags {
    void                SetOutputEventHandler(AliVEventHandler*  handler) {fOutputEventHandler  = handler;}
    void                SetMCtruthEventHandler(AliVEventHandler* handler) {fMCtruthEventHandler = handler;}
    void                SetNSysInfo(Long64_t nevents) {fNSysInfo = nevents;}
+   void                SetSelector(AliAnalysisSelector *sel) {fSelector = sel;}
    AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
@@ -142,6 +146,7 @@ private:
    TObjArray              *fContainers;          // List of all containers
    TObjArray              *fInputs;              // List of containers with input data
    TObjArray              *fOutputs;             // List of containers with results
+   AliAnalysisSelector    *fSelector;            //! Current selector
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
    ClassDef(AliAnalysisManager,3)  // Analysis manager class
