@@ -46,8 +46,8 @@ public:
   virtual ~AliPHOSCpvRecPoint() ;  
 
   Int_t  Compare(const TObject * obj) const;                 // method for sorting  
-  void   EvalAll(Float_t logWeight, TClonesArray * digits) ;
-  void   EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits) ;
+  virtual void EvalAll(TClonesArray * digits) ;
+  virtual void EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits) ;
   void   EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TClonesArray * digits, TVector3 &vInc) ;
   void   EvalClusterLengths(TClonesArray * digits) ;
 

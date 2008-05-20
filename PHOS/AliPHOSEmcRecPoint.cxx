@@ -768,7 +768,7 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
 }
 
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
+void AliPHOSEmcRecPoint::EvalAll(TClonesArray * digits )
 {
 //   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;

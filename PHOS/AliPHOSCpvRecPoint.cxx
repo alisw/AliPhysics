@@ -249,19 +249,19 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t, Int_t, Int_t ) /*const*/
 }
 
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits)
+void AliPHOSCpvRecPoint::EvalAll(TClonesArray * digits)
 {
   // Evaluate local coordinate assuming the vertex in (000) and no inclination
-  TVector3 vtx(0,0,0), vInc(0,1,0);
-  AliPHOSEmcRecPoint::EvalAll(logWeight,digits) ;
-  EvalLocalPosition(logWeight, vtx, digits,vInc) ;
-  EvalClusterLengths(digits) ;
+  AliPHOSEmcRecPoint::EvalAll(digits) ;
 }
 //____________________________________________________________________________
 void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits)
 {
   // wraps other methods
+  TVector3 vInc(0,1,0);
   AliPHOSEmcRecPoint::EvalAll(logWeight,vtx,digits) ;
+  EvalLocalPosition(logWeight, vtx, digits,vInc) ;
+  EvalClusterLengths(digits) ;
 }
 //____________________________________________________________________________
 void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 & /*vtx */, TClonesArray * digits, TVector3 &/* vInc */)

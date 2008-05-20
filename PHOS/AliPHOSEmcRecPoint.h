@@ -51,7 +51,7 @@ public:
   virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;          // add a digit to the digits list  
   Int_t       Compare(const TObject * obj) const;                         // method for sorting  
 
-  virtual void  EvalAll(Float_t logWeight, TClonesArray * digits) ; //Those tasks which can be done without vertex
+  virtual void  EvalAll(TClonesArray * digits) ; //Those tasks which can be done without vertex
   virtual void  EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits) ;
           void  EvalCoreEnergy(Float_t logWeight, Float_t coreRadius, TClonesArray * digits) ;             
 

@@ -490,6 +490,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   //Evaluate position, dispersion and other RecPoint properties..
   Int_t nEmc = fEMCRecPoints->GetEntriesFast();
   Float_t emcMinE= AliPHOSReconstructor::GetRecoParamEmc()->GetMinE(); //Minimal digit energy
+  TVector3 fakeVtx(0.,0.,0.) ;
   for(index = 0; index < nEmc; index++){
     AliPHOSEmcRecPoint * rp =
       dynamic_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) );
@@ -501,9 +502,8 @@ void AliPHOSClusterizerv1::WriteRecPoints()
     }
 
     // No vertex is available now, calculate corrections in PID
-    rp->EvalAll(fW0,fDigitsArr) ;
+    rp->EvalAll(fDigitsArr) ;
     rp->EvalCoreEnergy(fW0,fEcoreRadius,fDigitsArr) ;
-    TVector3 fakeVtx(0.,0.,0.) ;
     rp->EvalAll(fW0,fakeVtx,fDigitsArr) ;
     rp->EvalLocal2TrackingCSTransform();
   }
@@ -520,7 +520,8 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   //Now the same for CPV
   for(index = 0; index < fCPVRecPoints->GetEntries(); index++){
     AliPHOSCpvRecPoint * rp = dynamic_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(index) );
-    rp->EvalAll(fW0CPV,fDigitsArr) ;
+    rp->EvalAll(fDigitsArr) ;
+    rp->EvalAll(fW0CPV,fakeVtx,fDigitsArr) ;
     rp->EvalLocal2TrackingCSTransform();
   }
   fCPVRecPoints->Sort() ;
