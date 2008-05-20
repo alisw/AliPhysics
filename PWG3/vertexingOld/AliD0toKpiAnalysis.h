@@ -26,7 +26,7 @@ class AliD0toKpiAnalysis : public TNamed {
 		      const Char_t *outName="AliD0toKpi_sele.root") const;
   void FindCandidates(Int_t evFirst=0,Int_t evLast=0,
 		      const Char_t *outName="AliD0toKpi.root");
-  void MakeTracksRefFile(AliRun *gAlice,Int_t evFirst=0,Int_t evLast=0) const;
+  void MakeTracksRefFile(AliRun *mygAlice,Int_t evFirst=0,Int_t evLast=0) const;
   void PrintStatus() const;
   void SetVertexOnTheFly() { fVertexOnTheFly=kTRUE; }
   void SetSimulation() { fSim=kTRUE; }
