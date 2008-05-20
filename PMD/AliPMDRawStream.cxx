@@ -164,7 +164,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   Int_t startRowBus[kNPatchBus], endRowBus[kNPatchBus];
   Int_t startColBus[kNPatchBus], endColBus[kNPatchBus];
 
-  for (Int_t ibus = 0; ibus < kNPatchBus; ibus++)
+  for (ibus = 0; ibus < kNPatchBus; ibus++)
     {
       mcmperBus[ibus]   = -1;
       startRowBus[ibus] = -1;
@@ -242,7 +242,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 	    }
 	  dspHeader.SetHeader(dspHeaderWord);
 
-	  for (Int_t ibus = 0; ibus < 5; ibus++)
+	  for (ibus = 0; ibus < 5; ibus++)
 	    {
 	      ilowLimit = iuppLimit;
 	      iuppLimit = ilowLimit + kpbusHLen;

@@ -129,16 +129,16 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
       ndimYr = 96;
     }
 
-  for (Int_t i =0; i < 11424; i++)
+  for (i =0; i < 11424; i++)
   {
       cellenergy[i] = 0.;
   }
 
 
   Int_t kk = 0;
-  for (Int_t i = 0; i < kNDIMX; i++)
+  for (i = 0; i < kNDIMX; i++)
     {
-      for (Int_t j = 0; j < kNDIMY; j++)
+      for (j = 0; j < kNDIMY; j++)
 	{
 	  fCellTrNo[i][j] = -1;
 	  edepcell[kk] = 0.;
@@ -171,8 +171,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	}
     }
   
-  //Ajay
-  for (Int_t i = 0; i < kNMX; i++)
+  for (i = 0; i < kNMX; i++)
   {
     edepcell[i] = cellenergy[i];
   }
@@ -405,6 +404,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
   Int_t **cellXY = 0x0;
   const Int_t kdim = 4500;
 
+  Int_t    i12;
   Int_t    i, j, k, i1, i2, id, icl,  itest,ihld, ig, nsupcl,clno;
   Int_t    t[kdim];
   Int_t    ncl[kdim], iord[kdim], lev1[kdim], lev2[kdim];
@@ -468,7 +468,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	  i1 = fInfcl[1][id];
 	  i2 = fInfcl[2][id];
 	  
-	  Int_t i12 = i1 + i2*kNDIMX;
+	  i12 = i1 + i2*kNDIMX;
 	  
 	  clusdata[0] = fCoord[0][i1][i2];
 	  clusdata[1] = fCoord[1][i1][i2];
@@ -497,7 +497,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	  clno++;
 	  i1   = fInfcl[1][id];
 	  i2   = fInfcl[2][id];
-	  Int_t i12 = i1 + i2*kNDIMX;
+	  i12  = i1 + i2*kNDIMX;
 
 	  x1   = fCoord[0][i1][i2];
 	  y1   = fCoord[1][i1][i2];
@@ -536,7 +536,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	  // cluster center
 	  i1      = fInfcl[1][id];
 	  i2      = fInfcl[2][id];
-	  Int_t i12 = i1 + i2*kNDIMX;
+	  i12     = i1 + i2*kNDIMX;
 	  
 	  x[0]    = fCoord[0][i1][i2];
 	  y[0]    = fCoord[1][i1][i2];
@@ -550,7 +550,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	      id++;
 	      i1      = fInfcl[1][id];
 	      i2      = fInfcl[2][id];
-	      Int_t i12 = i1 + i2*kNDIMX;
+	      i12     = i1 + i2*kNDIMX;
 
 	      iord[j] = j;
 	      x[j]    = fCoord[0][i1][i2];
@@ -741,7 +741,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	      fPMDclucont->Add(pmdcludata);
 	    }
 	  delete [] cellCount;
-	  for(Int_t jj = 0; jj < 15; jj++)delete [] cellXY[jj];
+	  for(jj = 0; jj < 15; jj++)delete [] cellXY[jj];
 	  delete [] cellXY;
 	}
     }

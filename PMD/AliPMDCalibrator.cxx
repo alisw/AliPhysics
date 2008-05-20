@@ -347,29 +347,29 @@ void AliPMDCalibrator::CalculateIsoCell()
   Double_t isoMean[kDet][kMaxSMN][kMaxRow][kMaxCol];
   Double_t smNormFactor[kDet][kMaxSMN];
   
-  for(Int_t d1 = 0; d1 < kDet; d1++)
+  for(Int_t det1 = 0; det1 < kDet; det1++)
     {
-      histdetMean[d1]= fHdetIso[d1]->GetMean();
+      histdetMean[det1]= fHdetIso[det1]->GetMean();
       for(Int_t i1 = 0; i1 < kMaxSMN; i1++)
 	{
-	  histMean[d1][i1]= fHsmIso[d1][i1]->GetMean();
-	  if(histMean[d1][i1]>0.0 && histdetMean[d1]>0.0)
+	  histMean[det1][i1]= fHsmIso[det1][i1]->GetMean();
+	  if(histMean[det1][i1]>0.0 && histdetMean[det1]>0.0)
 	    {
-	      smNormFactor[d1][i1]= histdetMean[d1]/histMean[d1][i1];
+	      smNormFactor[det1][i1]= histdetMean[det1]/histMean[det1][i1];
 	    }
 	  for(Int_t j1 = 0; j1 < kMaxRow; j1++)
 	    {
 	      for(Int_t k1 = 0; k1 < kMaxCol; k1++)
 		{
-		  if(nhitcell[d1][i1][j1][k1]< nhitcut[d1][i1])//sid
+		  if(nhitcell[det1][i1][j1][k1]< nhitcut[det1][i1])//sid
 		    {
-		      isoMean[d1][i1][j1][k1]=fHadcIso[d1][i1][j1][k1]->
+		      isoMean[det1][i1][j1][k1]=fHadcIso[det1][i1][j1][k1]->
 			GetMean();
-		      if(isoMean[d1][i1][j1][k1]>0.0 && histMean[d1][i1]>0.0)
+		      if(isoMean[det1][i1][j1][k1]>0.0 && histMean[det1][i1]>0.0)
 			{
-			  fGainFact[d1][i1][j1][k1]=
-			    isoMean[d1][i1][j1][k1]/(histMean[d1][i1]*
-						     smNormFactor[d1][i1]);
+			  fGainFact[det1][i1][j1][k1]=
+			    isoMean[det1][i1][j1][k1]/(histMean[det1][i1]*
+						     smNormFactor[det1][i1]);
 			}
 		    }                              
 		}

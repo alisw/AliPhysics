@@ -515,7 +515,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       pmdddlcont.Clear();
 
       Int_t ismn = 0;
-      for (Int_t indexsmn = 0; indexsmn < iSMN; indexsmn++)
+      for (indexsmn = 0; indexsmn < iSMN; indexsmn++)
 	{
 	  ResetCellADC();
 	  for (Int_t irow = 0; irow < kRow; irow++)
@@ -755,7 +755,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
       pmdddlcont.Clear();
 
       Int_t ismn = 0;
-      for (Int_t indexsmn = 0; indexsmn < iSMN; indexsmn++)
+      for (indexsmn = 0; indexsmn < iSMN; indexsmn++)
 	{
 	  ResetCellADC();
 	  for (Int_t irow = 0; irow < kRow; irow++)
