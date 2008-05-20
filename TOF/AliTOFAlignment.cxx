@@ -567,30 +567,29 @@ void AliTOFAlignment::MakeDefData(const Int_t nf,TString namefiles[])
   Int_t nsm=0;
   Long64_t totdata[72]={0};
 
-  for (Int_t i=0;i<nf; i++)
+  for (Int_t ii=0;ii<nf; ii++)
     {
       AliSurveyObj *so = new AliSurveyObj();
-      const Char_t *nome=namefiles[i];
+      const Char_t *nome=namefiles[ii];
       so->FillFromLocalFile(nome);
       TObjArray *points = so->GetData();
       Int_t nSurveyPoint=points->GetEntries();
-      for(Int_t i=0;i<nSurveyPoint;i++){
-        const char* pointName= ((AliSurveyPoint *) points->At(i))->GetPointName().Data();
+      for(Int_t jj=0;jj<nSurveyPoint;jj++){
+        const char* pointName= ((AliSurveyPoint *) points->At(jj))->GetPointName().Data();
         nfm=atoi(&pointName[6]);
         nsm=atoi(&pointName[2]);
-        data[nsm*4+nfm][0][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(i))->GetX();
-        data[nsm*4+nfm][2][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(i))->GetY();
-        data[nsm*4+nfm][4][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(i))->GetZ();
-        data[nsm*4+nfm][1][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(i))->GetPrecisionX();
-        data[nsm*4+nfm][3][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(i))->GetPrecisionY();
-        data[nsm*4+nfm][5][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(i))->GetPrecisionZ();
+        data[nsm*4+nfm][0][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(jj))->GetX();
+        data[nsm*4+nfm][2][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(jj))->GetY();
+        data[nsm*4+nfm][4][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(jj))->GetZ();
+        data[nsm*4+nfm][1][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(jj))->GetPrecisionX();
+        data[nsm*4+nfm][3][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(jj))->GetPrecisionY();
+        data[nsm*4+nfm][5][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(jj))->GetPrecisionZ();
         totdata[nsm*4+nfm]=totdata[nsm*4+nfm]+1;
       } 
       delete so;
     }
 
   
-
   for(Int_t i=0; i<72 ;i++){
     Float_t numx=0, numy=0,numz=0, comodox=0, comodoy=0, comodoz=0,denx=0, deny=0, denz=0;
     if(totdata[i]!=0){    

@@ -1416,7 +1416,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
     if (fPackedAcquisition) {
 
-      for (Int_t jj=0; jj<=localIndex; jj++) {
+      for (jj=0; jj<=localIndex; jj++) {
 	fIndex++;
 	buf[fIndex] = localBuffer[jj];
 	localBuffer[jj] = 0;
@@ -1451,7 +1451,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	AliInfo(Form(" In the TOF DDL %2i, TRM %2i, TDC %2i, chain %1i, the maximum number of t.o.f. good measurements per channel is %2i",
 		     nDDL, nTRM, iChain, nTDC, iCH, maxMeasuresPerChannelInTDC));
       */
-	for (Int_t jj=0; jj<=localIndex; jj++) {
+      for (jj=0; jj<=localIndex; jj++) {
 	    fIndex++;
 	    buf[fIndex] = localBuffer[jj];
 	    localBuffer[jj] = 0;

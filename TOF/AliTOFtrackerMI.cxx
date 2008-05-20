@@ -344,13 +344,14 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   // Some init 
   
   Int_t         index[1000];
+  Float_t       quality[1000];
   Float_t       dist3D[1000][6];
   Double_t      times[1000][6];
   Float_t       mintimedist[1000];
   Float_t       likelihood[1000];
   Float_t       length[1000];
   AliTOFcluster *clusters[1000];
-  Double_t       tpcpid[5];
+  Double_t      tpcpid[5];
   dist3D[0][0]=1;
   
   for (Int_t i=0; i<fNseedsTOF; i++) {
@@ -433,13 +434,13 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();
       if (TMath::Abs(dph)>dphi) continue;
-    
+
       clind[0][nc] = c->GetDetInd(0);
       clind[1][nc] = c->GetDetInd(1);
       clind[2][nc] = c->GetDetInd(2);
       clind[3][nc] = c->GetDetInd(3);
       clind[4][nc] = c->GetDetInd(4);
-      clind[5][nc] = k;      
+      clind[5][nc] = k;
       nc++;
     }
 
@@ -502,8 +503,9 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //
     //choose the best cluster
     //
-    Float_t quality[1000];
-    Int_t   index[1000];
+    //Float_t quality[1000];
+    //Int_t   index[1000];
+    for (Int_t kk=0; kk<1000; kk++) quality[kk]=0;
     //
     AliTOFcluster * cgold=0;
     Int_t igold =-1;

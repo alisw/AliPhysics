@@ -453,8 +453,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
       Double_t yc=(c->GetPhi() - trackTOFin->GetAlpha())*c->GetR();
       Double_t p[2]={yc, c->GetZ()};
-      Double_t cov[3]= {dY*dY/12., 0., dZ*dZ/12.};
-      if (trackTOFin->AliExternalTrackParam::GetPredictedChi2(p,cov) > maxChi2)continue;
+      Double_t cov2[3]= {dY*dY/12., 0., dZ*dZ/12.};
+      if (trackTOFin->AliExternalTrackParam::GetPredictedChi2(p,cov2) > maxChi2)continue;
 
       clind[0][nc] = c->GetDetInd(0);
       clind[1][nc] = c->GetDetInd(1);

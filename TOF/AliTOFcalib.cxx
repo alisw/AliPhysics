@@ -1115,7 +1115,7 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
     }
   
     for (Int_t irun=0;irun<fNruns;irun++){
-      Int_t i = ch[ich]+irun*fNChannels;
+      i = ch[ich]+irun*fNChannels;
       //fTree->GetEntry(i);
       fChain->GetEntry(i);
       ntracksRun=nentries/3;
@@ -1138,7 +1138,7 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
 
     TProfile* hSlewingProf = new TProfile("hSlewingProf", "hSlewingProf",nusefulbins, binsProfile, "G");  // CHECK THE BUILD OPTION, PLEASE!!!!!!
     for (Int_t irun=0;irun<fNruns;irun++){
-      Int_t i = ch[ich]+irun*fNChannels;
+      i = ch[ich]+irun*fNChannels;
       //fTree->GetEntry(i);
       fChain->GetEntry(i);
       ntracksRun=nentries/3;
