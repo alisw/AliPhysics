@@ -76,14 +76,14 @@
 ClassImp(AliPHOSv1)
 
 //____________________________________________________________________________
-AliPHOSv1::AliPHOSv1() : fCPVDigits(0)
+AliPHOSv1::AliPHOSv1() : fCPVDigits("AliPHOSCPVDigit",20)
 {
   //Def ctor.
 }
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
-  AliPHOSv0(name,title),   fCPVDigits(new TClonesArray("AliPHOSCPVDigit",20))
+  AliPHOSv0(name,title), fCPVDigits("AliPHOSCPVDigit",20)
 {
   //
   // We store hits :
@@ -100,7 +100,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   // and the TreeD at the end of the event (branch is set in FinishEvent() ). 
   
   fHits= new TClonesArray("AliPHOSHit",1000) ;
-  fCPVDigits = new TClonesArray("AliPHOSCPVDigit",20);
+  TClonesArray fCPVDigits("AliPHOSCPVDigit",20);
   gAlice->GetMCApp()->AddHitList(fHits) ; 
 
   fNhits = 0 ;
@@ -226,7 +226,7 @@ void AliPHOSv1::StepManager(void)
     moduleNumber--;
     
 //     TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
-    CPVDigitize(pmom,xyd,fCPVDigits);
+    CPVDigitize(pmom,xyd,&fCPVDigits);
       
     Float_t xmean = 0;
     Float_t zmean = 0;
@@ -235,29 +235,29 @@ void AliPHOSv1::StepManager(void)
     
     // 2. go through the current digit list and sum digits in pads
     
-    ndigits = fCPVDigits->GetEntriesFast();
+    ndigits = fCPVDigits.GetEntriesFast();
     for (idigit=0; idigit<ndigits-1; idigit++) {
-      AliPHOSCPVDigit  *cpvDigit1 = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits->UncheckedAt(idigit));
+      AliPHOSCPVDigit  *cpvDigit1 = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(idigit));
       Float_t x1 = cpvDigit1->GetXpad() ;
       Float_t z1 = cpvDigit1->GetYpad() ;
       for (Int_t jdigit=idigit+1; jdigit<ndigits; jdigit++) {
-	AliPHOSCPVDigit  *cpvDigit2 = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits->UncheckedAt(jdigit));
+	AliPHOSCPVDigit  *cpvDigit2 = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(jdigit));
 	Float_t x2 = cpvDigit2->GetXpad() ;
 	Float_t z2 = cpvDigit2->GetYpad() ;
 	if (x1==x2 && z1==z2) {
 	  Float_t qsumpad = cpvDigit1->GetQpad() + cpvDigit2->GetQpad() ;
 	  cpvDigit2->SetQpad(qsumpad) ;
-	  fCPVDigits->RemoveAt(idigit) ;
+	  fCPVDigits.RemoveAt(idigit) ;
 	}
       }
     }
-    fCPVDigits->Compress() ;
+    fCPVDigits.Compress() ;
     
     // 3. add digits to temporary hit list fTmpHits
     
-    ndigits = fCPVDigits->GetEntriesFast();
+    ndigits = fCPVDigits.GetEntriesFast();
     for (idigit=0; idigit<ndigits; idigit++) {
-      AliPHOSCPVDigit  *cpvDigit = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits->UncheckedAt(idigit));
+      AliPHOSCPVDigit  *cpvDigit = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(idigit));
       relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
       relid[1] =-1 ;                                            // means CPV
       relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad
@@ -280,7 +280,7 @@ void AliPHOSv1::StepManager(void)
 	qsum  += cpvDigit->GetQpad();
       }
     }
-    fCPVDigits->Clear();
+    fCPVDigits.Clear();
   }
 
  
@@ -408,8 +408,6 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, TClonesArray *cpv
   Float_t pZ    =-p.Pz();
   Float_t pNorm = p.Py();
   Float_t eloss = kdEdx;
-
-//Info("CPVDigitize", "YVK : %f %f | %f %f %d", hitX, hitZ, pX, pZ, pNorm) ;
 
   Float_t dZY   = pZ/pNorm * GetGeometry()->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * GetGeometry()->GetCPVGasThickness();
