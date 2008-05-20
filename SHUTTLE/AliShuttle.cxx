@@ -3003,6 +3003,10 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 		return kTRUE;
 	}
 
+	Int_t runMode = (Int_t)fConfig->GetRunMode();
+	TString tmpStr;
+	if (runMode == 0) tmpStr = " Nightly Test:";
+	else tmpStr = " Data Taking:"; 
 	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
 	if (dir == NULL)
 	{
@@ -3083,8 +3087,8 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 	TString body;
 
 	if (target == kDCSEMail){
-		subject = Form("Retrieval of data points for %s FAILED in run %d !",
-				fCurrentDetector.Data(), GetCurrentRun());
+		subject = Form("%s Retrieval of data points for %s FAILED in run %d !",
+				tmpStr.Data(), fCurrentDetector.Data(), GetCurrentRun());
 		AliDebug(2, Form("subject: %s", subject.Data()));
 		
 		body = Form("Dear DCS experts, \n\n");
@@ -3092,8 +3096,8 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 			     "in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
 	}
 	else if (target == kFXSEMail){
-		subject = Form("FXS communication for %s FAILED in run %d !",
-				fCurrentDetector.Data(), GetCurrentRun());
+		subject = Form("%s FXS communication for %s FAILED in run %d !",
+				tmpStr.Data(), fCurrentDetector.Data(), GetCurrentRun());
 		AliDebug(2, Form("subject: %s", subject.Data()));
 		TString sys;
 		if (system == kDAQ) sys="DAQ";
@@ -3105,8 +3109,8 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 			     "in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
 	}
 	else {
-		subject = Form("%s Shuttle preprocessor FAILED in run %d (run type = %s)!",
-				       fCurrentDetector.Data(), GetCurrentRun(), GetRunType());
+		subject = Form("%s %s Shuttle preprocessor FAILED in run %d (run type = %s)!",
+				       tmpStr.Data(), fCurrentDetector.Data(), GetCurrentRun(), GetRunType());
 		AliDebug(2, Form("subject: %s", subject.Data()));
 	
 		body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
