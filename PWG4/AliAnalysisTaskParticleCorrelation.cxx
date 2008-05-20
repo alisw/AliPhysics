@@ -84,7 +84,7 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   //AODs
   fAODBranch = new TClonesArray("AliAODParticleCorrelation", 0);
   fAODBranch->SetName(fAna->GetAODBranchName());
-  AddAODBranch("TClonesArray", fAODBranch);
+  AddAODBranch("TClonesArray", &fAODBranch);
   fAna->SetAODBranch(fAODBranch);
 
   //Histograms container
