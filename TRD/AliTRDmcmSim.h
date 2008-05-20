@@ -31,8 +31,8 @@ class AliTRDmcmSim : public TObject {
 
   virtual void      Copy(TObject &m) const;
 
-  // void      Init( Int_t cha, Int_t rob, Int_t mcm, Bool_t newEvent );   // Initialize MCM by the position parameters
-          void      Init( Int_t cha, Int_t rob, Int_t mcm );   // Initialize MCM by the position parameters
+          //void      Init( Int_t cha, Int_t rob, Int_t mcm, Bool_t newEvent );   // Initialize MCM by the position parameters
+  	  void      Init( Int_t cha, Int_t rob, Int_t mcm );   // Initialize MCM by the position parameters
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
           void      SetData(Int_t iadc, Int_t it, Int_t adc ); // Set ADC data
           void      SetDataPedestal(Int_t iadc );              // Fill ADC data with pedestal values
@@ -57,7 +57,7 @@ class AliTRDmcmSim : public TObject {
  protected:
 
           Bool_t    fInitialized;                       // Status whether the class is initialized or not
-	  Bool_t    fNextEvent;                         // 0, if new event; 1 if not
+	  //Bool_t    fNextEvent;                         // 0, if new event; 1 if not
 	  Int_t     fMaxTracklets;                      // maximum number of tracklet-words submitted per mcm **new**
 	  Int_t     fChaId;                             // Chamber ID
 	  Int_t     fSector;                            // Sector number of the supermodule

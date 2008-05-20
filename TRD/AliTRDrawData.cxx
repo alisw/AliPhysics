@@ -210,7 +210,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 	  }
 	  if ( rv == 3 ) { 
    
-	      // hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords,newEvent);
+	      //hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords,newEvent);
 	      hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
 	    if(newEvent == kTRUE) newEvent = kFALSE;
 	  }
@@ -436,8 +436,9 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
 }
 
 //_____________________________________________________________________________
-//Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent)
+
 Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize)
+//Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent)
 {
   //
   // This function simulates: Raw Version == 3 (Zero Suppression Prototype)

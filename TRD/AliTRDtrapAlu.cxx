@@ -1,19 +1,46 @@
+/**************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
+
+/* $Id: AliTRDtrapAlu.cxx 25891 2008-05-19 14:58:18Z fca $ */
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRAP-ALU implementation                                                  //
+//                                                                           //
+//  Author:                                                                  //
+//    Clemens Haltebourg <halteb@physi.uni-heidelberg.de>                    //
+//                                                                           //
+//  Usage of the class:                                                      //
+//    Declaration of class instances: AliTRDtrapAlu a,b,c;                   //
+//    Initialization:                 a.Init(2,11); b.Init(4,4); c.Init(5,4);//
+//    Assigning values:               a.AssignDouble(5.7); b.AssignInt(3);   //
+//    (you can also do b.AssignDouble(3) with same effect);                  //
+//    Calculation:                     c = a*b;                              //
+//    Test if c has right value:       c.WriteWord();                        //
+//    Don't declare pointers; operators not overridden for pointer types;    //
+//    You have to dereference yourself;                                      //
+//    Use operators +,-,*,/ only with instances of the class; don't do       //
+//    things like c=a*2 but rather b.AssignInt(2); c=a*b;                    //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliTRDtrapAlu.h"
 
 ClassImp(AliTRDtrapAlu)
 
-//usage of the class: 
-//declaration of class instances:   AliTRDtrapAlu a,b,c;
-//initialization:                  a.Init(2,11); b.Init(4,4); c.Init(5,4);
-//assigning values:                a.AssignDouble(5.7); b.AssignInt(3);(you can also do b.AssignDouble(3) with same effect);
-//calculation:                     c = a*b;  
-//test if c has right value:       c.WriteWord();
-//don't declare pointers; operators not overridden for pointer types; you have to dereference yourself;
-//use operators +,-,*,/ only with instances of the class; don't do things like c=a*2 but rather b.AssignInt(2); c=a*b;
-
-
-
-  
+//_____________________________________________________________________________  
 AliTRDtrapAlu::AliTRDtrapAlu():TObject()
 
   ,fValue(0)
@@ -25,18 +52,16 @@ AliTRDtrapAlu::AliTRDtrapAlu():TObject()
 
 {
   
- // default constructor
- 
- 
+  // default constructor
+  
 }
 
-
+//_____________________________________________________________________________  
 AliTRDtrapAlu::~AliTRDtrapAlu(){
   //destructor
 }
 
-
-
+//_____________________________________________________________________________  
 void AliTRDtrapAlu::Init(const Int_t& precom, const Int_t& postcom, const Int_t& lRestriction, const Int_t& uRestriction){
    // initialization: characterizes the bit-word (nr of pre- and post-comma bits, boundaries)
    fPostCom = postcom;
@@ -56,7 +81,7 @@ void AliTRDtrapAlu::Init(const Int_t& precom, const Int_t& postcom, const Int_t&
    // up to now you can only choose a non-negative lower restriction (e.g. if you want your values to be >=0) ; can't deal with asymmetric borders; have to be implemented if needed
 }
 
-
+//_____________________________________________________________________________  
 Double_t AliTRDtrapAlu::GetValueWhole() const { 
    // get the actual value (respecting pre- and post-comma parts) in integer-description
    Double_t valPre = (Double_t)(fValue>>fPostCom);
@@ -70,7 +95,7 @@ Double_t AliTRDtrapAlu::GetValueWhole() const {
    return val;
  }
 
-
+//_____________________________________________________________________________  
 void AliTRDtrapAlu::WriteWord(){
   // for debugging purposes
   printf("bit-word: ");
@@ -86,10 +111,7 @@ void AliTRDtrapAlu::WriteWord(){
          
 }
 
-
-
-
-
+//_____________________________________________________________________________  
 AliTRDtrapAlu& AliTRDtrapAlu::AssignInt(const Int_t& first){  
   // assign an integer
 
@@ -129,6 +151,7 @@ AliTRDtrapAlu& AliTRDtrapAlu::AssignInt(const Int_t& first){
     
 }
 
+//_____________________________________________________________________________  
 AliTRDtrapAlu& AliTRDtrapAlu::AssignDouble(const  Double_t& first){
   // assign a double
  
@@ -182,7 +205,7 @@ AliTRDtrapAlu& AliTRDtrapAlu::AssignDouble(const  Double_t& first){
   return *this;
 }
 
-
+//_____________________________________________________________________________  
 AliTRDtrapAlu& AliTRDtrapAlu::operator=(const AliTRDtrapAlu& binary){
   // assign an object of type AliTRDtrapAlu
 
@@ -249,13 +272,13 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator=(const AliTRDtrapAlu& binary){
   return *this;
 }
 
-
-
-AliTRDtrapAlu& AliTRDtrapAlu::operator+(AliTRDtrapAlu& binary){ 
+//_____________________________________________________________________________  
+AliTRDtrapAlu AliTRDtrapAlu::operator+(const AliTRDtrapAlu& binary){ 
   // + operator
 
   //no const parameter because referenced object will be changed
      
+    AliTRDtrapAlu alu;
   
   Int_t binPre     = binary.GetPre();
   Int_t binPost    = binary.GetPost();
@@ -272,7 +295,7 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator+(AliTRDtrapAlu& binary){
   if(fSigned == kTRUE) add2 = -add2;
   Int_t add = add1 + add2;
   
-  
+  /*
   //because the parameter "binary" could be a reference to the object to which Mem() is a reference, do not change Mem() until you have extracted all information from "binary"; otherwise you change the information you would like to read
   Mem().Init(max + 1,min);      //buffer: enough space for pre-comma,post-comma according to accuracy
   Mem().AssignFormatted(Max(add,-add));
@@ -280,12 +303,21 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator+(AliTRDtrapAlu& binary){
   
 
   //Mem().FastInit(max+1,min,add);
-  return Mem();
+  return Mem();*/
+ 
+ alu.Init(max + 1,min);      //buffer: enough space for pre-comma,post-comma according to accuracy
+ alu.AssignFormatted(Max(add,-add));
+ alu.SetSign(add);
+ 
+ return alu;
+
 }
 
-
-AliTRDtrapAlu& AliTRDtrapAlu::operator-(AliTRDtrapAlu& binary){
+//_____________________________________________________________________________  
+AliTRDtrapAlu AliTRDtrapAlu::operator-(const AliTRDtrapAlu& binary){
   // - operator    
+
+    AliTRDtrapAlu alu;
 
   Int_t binPre    = binary.GetPre();
   Int_t binPost   = binary.GetPost();
@@ -303,18 +335,26 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator-(AliTRDtrapAlu& binary){
   if(fSigned  == kTRUE) sub2 = -sub2;
   Int_t sub = sub2 - sub1;     // order of subtraction is important
  
-
+/*
   Mem().Init(max + 1,min);      //buffer: enough space for pre-comma, post-comma according to accuracy
   Mem().AssignFormatted(Max(sub,-sub)); 
   Mem().SetSign(sub);
   //Mem().FastInit(max+1,min,sub);
-  return Mem();
+  return Mem();*/
+  
+  alu.Init(max + 1,min);
+  alu.AssignFormatted(Max(sub,-sub)); 
+  alu.SetSign(sub);
+
+  return alu;
+
 } 
 
-
-AliTRDtrapAlu& AliTRDtrapAlu::operator*(AliTRDtrapAlu& binary){
+//_____________________________________________________________________________  
+AliTRDtrapAlu AliTRDtrapAlu::operator*(const AliTRDtrapAlu& binary){
   // * operator
   
+    AliTRDtrapAlu alu;
 
   Int_t binPre   = binary.GetPre();
   Int_t binPost  = binary.GetPost();
@@ -341,6 +381,8 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator*(AliTRDtrapAlu& binary){
   mult = Max(mult,-mult);
   //Int_t shift = fPostCom + binPost - min;
   //mult = mult>>(shift);
+
+/*
   Mem().Init(2 * max + 1, min); // +1 to consider the borrow from the past-comma part; accuracy of past-comma part is determined by the minimum; therefore, for the result not more accuracy is guaranteed
   // be aware that this only works if 2*max+1+min <= 32!! adjusting the pre-comma place to the value would consume too much time
 
@@ -348,14 +390,22 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator*(AliTRDtrapAlu& binary){
   Mem().SetSign(sign);
   //mult = sign*mult;
   //Mem().FastInit(2*max+1,min,mult);
-  return Mem();
+  return Mem();*/
+  
+  alu.Init(2 * max + 1, min); // +1 to consider the borrow from the past-comma part; accuracy of past-comma part is determined by the minimum; therefore, for the result not more accuracy is guaranteed
+// be aware that this only works if 2*max+1+min <= 32!! adjusting the pre-comma place to the value would consume too much time
+
+  alu.AssignFormatted(mult);
+  alu.SetSign(sign);
+  
+  return alu;
 }
   
-
-
-AliTRDtrapAlu& AliTRDtrapAlu::operator/(AliTRDtrapAlu& binary){
+//_____________________________________________________________________________  
+AliTRDtrapAlu AliTRDtrapAlu::operator/(const AliTRDtrapAlu& binary){
   // / operator
  
+    AliTRDtrapAlu alu;
 
   Int_t binPre  = binary.GetPre();
   Int_t binPost = binary.GetPost();
@@ -377,10 +427,13 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator/(AliTRDtrapAlu& binary){
   
 
   if (div1 == 0){
-    Mem().Init(max + 1,min);
+      /*Mem().Init(max + 1,min);
     Mem().AssignFormatted(LUT(max+min+1)-1); // division by 0: set to max value
     //Mem().FastInit(max+1,min,div1);
-    return Mem();
+    return Mem();*/
+      alu.Init(max + 1,min);
+      alu.AssignFormatted(LUT(max+min+1)-1); // division by 0: set to max value
+      return alu;
   }
       
   fdiv = (Double_t)numerator/denominator;
@@ -409,16 +462,23 @@ AliTRDtrapAlu& AliTRDtrapAlu::operator/(AliTRDtrapAlu& binary){
   div = Max(div,-div);
   
   // chose min as past-comma part because from a division of integers you can't get only an integer
-  Mem().Init(max + 1,min); // max+1+min must <= 32!!
+  
+  /*Mem().Init(max + 1,min); // max+1+min must <= 32!!
   Mem().SetSign(sign);
   Mem().AssignFormatted(div);
   
-  return Mem();
+  return Mem();*/
+
+  alu.Init(max + 1,min); // max+1+min must <= 32!!
+  alu.SetSign(sign);
+  alu.AssignFormatted(div);
+  
+  return alu;
+
   
 }
 
-
-
+//_____________________________________________________________________________  
 Int_t AliTRDtrapAlu::MakePower(const Int_t& base,const  Int_t& exponent)const{
 // calculate "base" to the power of "exponent"
   Int_t result = 1;
@@ -429,12 +489,12 @@ Int_t AliTRDtrapAlu::MakePower(const Int_t& base,const  Int_t& exponent)const{
   return result;
 }
 
-
-
-
+//_____________________________________________________________________________  
 Int_t AliTRDtrapAlu::LUT(const Int_t& index){   
   // simple look-up table for base=2
   
+    AliTRDtrapAlu alu;
+
   static Bool_t fLUT = kFALSE;
   static Int_t gLUT[30];
   if (fLUT == kFALSE) {
@@ -449,6 +509,7 @@ Int_t AliTRDtrapAlu::LUT(const Int_t& index){
   }
   else {
     
-    return Mem().MakePower(2,index);
+      //return Mem().MakePower(2,index);
+      return alu.MakePower(2,index);
   }
 }

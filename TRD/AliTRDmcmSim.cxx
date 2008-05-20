@@ -112,8 +112,8 @@ ClassImp(AliTRDmcmSim)
 //_____________________________________________________________________________
 AliTRDmcmSim::AliTRDmcmSim() :TObject()
   ,fInitialized(kFALSE)
-  ,fNextEvent(-1)    //new
-  ,fMaxTracklets(-1) //new
+  //,fNextEvent(-1)    
+  ,fMaxTracklets(-1) 
   ,fChaId(-1)
   ,fSector(-1)
   ,fStack(-1)
@@ -122,12 +122,12 @@ AliTRDmcmSim::AliTRDmcmSim() :TObject()
   ,fMcmPos(-1)
   ,fNADC(-1)
   ,fNTimeBin(-1)
-  ,fRow(-1)
+  ,fRow (-1)
   ,fADCR(NULL)
   ,fADCF(NULL)
-  ,fADCT(NULL)      //new
-  ,fPosLUT(NULL)    //new
-  ,fMCMT(NULL)      //new
+  ,fADCT(NULL)     
+  ,fPosLUT(NULL)    
+  ,fMCMT(NULL)      
   ,fZSM(NULL)
   ,fZSM1Dim(NULL)
   ,fFeeParam(NULL)
@@ -147,8 +147,8 @@ AliTRDmcmSim::AliTRDmcmSim() :TObject()
 AliTRDmcmSim::AliTRDmcmSim(const AliTRDmcmSim &m) 
   :TObject(m)
   ,fInitialized(kFALSE) 
-  ,fNextEvent(-1)    //new
-  ,fMaxTracklets(-1) //new
+  //,fNextEvent(-1)    
+  ,fMaxTracklets(-1) 
   ,fChaId(-1)
   ,fSector(-1)
   ,fStack(-1)
@@ -160,9 +160,9 @@ AliTRDmcmSim::AliTRDmcmSim(const AliTRDmcmSim &m)
   ,fRow(-1)
   ,fADCR(NULL)
   ,fADCF(NULL)
-  ,fADCT(NULL)      //new
-  ,fPosLUT(NULL)    //new
-  ,fMCMT(NULL)      //new
+  ,fADCT(NULL)      
+  ,fPosLUT(NULL)    
+  ,fMCMT(NULL)      
   ,fZSM(NULL)
   ,fZSM1Dim(NULL)
   ,fFeeParam(NULL)
@@ -229,7 +229,7 @@ void AliTRDmcmSim::Copy(TObject &m) const
   //
   // Copy function
   //
-  ((AliTRDmcmSim &) m).fNextEvent     = 0; //new
+  //((AliTRDmcmSim &) m).fNextEvent     = 0; //new
   ((AliTRDmcmSim &) m).fMaxTracklets  = 0; //new
   ((AliTRDmcmSim &) m).fInitialized   = 0;
   ((AliTRDmcmSim &) m).fChaId         = 0;
@@ -256,15 +256,16 @@ void AliTRDmcmSim::Copy(TObject &m) const
 }
 
 //_____________________________________________________________________________
+
+void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos ) 
 //void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos, Bool_t newEvent ) // only for readout tree (new event)
-void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos ) // only for readout tree (new event)
 {
   //
   // Initialize the class with new geometry information
   // fADC array will be reused with filled by zero
   //
 
-  fNextEvent     = 0; //**!!new!!**
+  //fNextEvent     = 0; 
   fFeeParam      = AliTRDfeeParam::Instance();
   fSimParam      = AliTRDSimParam::Instance();
   fCal           = AliTRDcalibDB::Instance();
@@ -283,11 +284,11 @@ void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos ) // only for r
 
  
 
-  //if ((fChaId == 0 && fRobPos == 0 && fMcmPos == 0)) {
-  /* if (newEvent == kTRUE) {
-    fNextEvent = 1;
-    }*/
-   fNextEvent = 0;
+  
+  //if (newEvent == kTRUE) {
+      //fNextEvent = 1;
+  //}
+
 
 
   // Allocate ADC data memory if not yet done
@@ -663,6 +664,8 @@ void AliTRDmcmSim::Filter()
 //_____________________________________________________________________________
 void AliTRDmcmSim::FilterPedestal()
 {
+
+     
   //
   // Apply pedestal filter
   //
@@ -1965,6 +1968,16 @@ void AliTRDmcmSim::Tracklet(){
   // YY is needed for some error measure only; still to be done
   // be aware that all values are relative values (scale: timebin-width; pad-width) and are integer values on special scale
   
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!important note: the offset is calculated from hits in the time bin range between tFS and tFE; it corresponds to the value at the height of the time bin tFS which does NOT need to correspond to the upper side of the drift   !!
+  // !!volume (cathode wire plane). The offset cannot be rescaled as long as it is unknown which is the first time bin that contains hits from the drift region and thus to which distance from the cathode plane tFS corresponds.    !!
+  // !!This has to be taken into account by the GTU. Furthermore a Lorentz correction might have to be applied to the offset (see below).                                                                                             !!
+  // !!In this implementation it is assumed that no miscalibration containing changing drift velocities in the amplification region is used.                                                                                          !!
+  // !!The corrections to the offset (e.g. no ExB correction applied as offset is supposed to be on top of drift region; however not at anode wire, so some inclination of drifting clusters due to Lorentz angle exists) are only    !!
+  // !!valid (in approximation) if tFS is close to the beginning of the drift region.                                                                                                                                                 !!
+  // !!The slope however can be converted to a deflection length between electrode and cathode wire plane as it is clear that the drift region is sampled 20 times                                                                    !!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   // which formats should be chosen?
   AliTRDtrapAlu denomAlu;
   denomAlu.Init(20,8);       
@@ -2063,12 +2076,14 @@ void AliTRDmcmSim::Tracklet(){
 
       
   Double_t xPos       =  0.0;                               // x-position of the upper border of the drift-chamber of actual layer
-  Int_t    icol        =  0;                                 // column-number of adc-channel
+  Int_t    icol       =  0;                                 // column-number of adc-channel
   Double_t yPos[4];                                         // y-position of the pad to which ADC is connected
-  Double_t dx          = 30.0;                               // height of drift-chamber in mm; maybe retrieve from AliTRDGeometry
-  Double_t vdrift      = fCal->GetVdriftAverage(fChaId);     // averaged drift velocity for this detector
+  Double_t dx         = 30.0;                               // height of drift-chamber in mm; maybe retrieve from AliTRDGeometry
+  Double_t freqSample = fFeeParam->GetSamplingFrequency();  // retrieve the sampling frequency (10.019750 MHz)
+  Double_t vdrift     = fCal->GetVdriftAverage(fChaId);     // averaged drift velocity for this detector (1.500000 cm/us)
+  Int_t    nrOfDriftTimeBins = Int_t(dx/10.0*freqSample/vdrift); // the number of time bins in the drift region (20)
   Double_t lorTan     = fCal->GetOmegaTau(vdrift,magField); // tan of the Lorentz-angle for this detector; could be evaluated and set as a parameter for each mcm
-  //Double_t lorAngle   =  7.0;                               // Lorentz-angle in degrees
+  //Double_t lorAngle   =  7.0;                             // Lorentz-angle in degrees
   Double_t tiltAngle  = padPlane->GetTiltingAngle();        // sign-respecting tilting angle of pads in actual layer
   Double_t tiltTan    = TMath::Tan(TMath::Pi()/180.0 * tiltAngle);
   //Double_t lorTan     = TMath::Tan(TMath::Pi()/180.0 * lorAngle);
@@ -2124,6 +2139,7 @@ void AliTRDmcmSim::Tracklet(){
   // calculation of slope-correction
 
   // this is only true for tracks coming (approx.) from primary vertex
+  // everything is evaluated for a tracklet covering the whole drift chamber
   Double_t cCorrectSlope = (-lorTan*dx + zPos/xPos*dx*tiltTan)/granularitySlope;
   // Double_t cCorrectSlope =  zPos/xPos*dx*tiltTan/granularitySlope;
   // zPos can be negative! for track from primary vertex: zOut-zIn > 0 <=> zPos > 0
@@ -2140,10 +2156,11 @@ void AliTRDmcmSim::Tracklet(){
  
   // convert slope to deflection between upper and lower drift-chamber position (slope is given in pad-unit/time-bins)
   // different pad-width of outer pads of a pad-plane not taken into account
-  // tFS: upper plane of drift-volume (not amplification region); this choice is important for offset
-  // tFE: does !!not!! need to correspond to lower plane of drift-volume; TR hits can be cut;
+  // note that the fit was only done in the range tFS to tFE, however this range does not need to cover the whole drift region (neither start nor end of it)
+  // however the tracklets are supposed to be a fit in the drift region thus the linear function is stretched to fit the drift region of 30 mm
   
-  Double_t mCorrectSlope = ((Double_t)(fNTimeBin-tFS))*padWidthI/granularitySlope;  // >= 0.0
+  
+  Double_t mCorrectSlope = (Double_t)(nrOfDriftTimeBins)*padWidthI/granularitySlope;  // >= 0.0
 
   AliTRDtrapAlu correctAlu;
   correctAlu.Init(20,8);
@@ -2239,8 +2256,8 @@ void AliTRDmcmSim::Tracklet(){
   Int_t wordnr = 0;   // number of tracklet-words
   
   for(Int_t j = 0; j < fMaxTracklets; j++) {
-      //if( mADC[j] == -1) continue; 
-      if( (mADC[j] == -1) || (mSlope[j] < mslopeMin[j]) || (mSlope[j] > mslopeMax[j])) continue; // this applies a pt-cut
+      if( mADC[j] == -1) continue; 
+      //if( (mADC[j] == -1) || (mSlope[j] < mslopeMin[j]) || (mSlope[j] > mslopeMax[j])) continue; // this applies a pt-cut
       wordnr++;
       if( wordnr-1 == 0) {
 	  order[0] = j;
@@ -2266,72 +2283,13 @@ void AliTRDmcmSim::Tracklet(){
       //Bool_t rem1 = kTRUE;
     
     Int_t i = order[j];
-    bitWord[j] =   0; // invalid bit-word (bit-word is 2-complement and therefore without sign)
-    //if( mADC[i] == -1) continue; 
-    ////if( (mADC[i] == -1) || (mSlope[i] < mslopeMin[i]) || (mSlope[i] > mslopeMax[i])) continue; //don't transmit bit word 
+    //bit-word is 2-complement and therefore without sign
     bitWord[j] =   1; // this is the starting 1 of the bit-word (at 33rd position); the 1 must be ignored
     //printf("\n");
-    
-    /*
-    // pad position
-    if(mOffset[i] < 0) {
-      rem1 = kFALSE;   // don't remove the first 1
-      //printf("1");
-      for(Int_t iBit = 1; iBit < 13; iBit++) {
-	bitWord[j]  = bitWord[j]<<1;
-	bitWord[j] |= (1-((-mOffset[i])>>(12-iBit))&1);
-	//printf("%d",(1-((-mOffset[i])>>(12-iBit))&1));
-      }
-    }
-    else {
-      bitWord[j]   |= 0; 
-      //printf("0");
-      for(Int_t iBit = 1; iBit < 13; iBit++) {
-	bitWord[j]  = bitWord[j]<<1;
-	bitWord[j] |= (mOffset[i]>>(12-iBit))&1;
-	//printf("%d",(mOffset[i]>>(12-iBit))&1);
-      }
-    }
-        
-    // deflection length
-    bitWord[j] = bitWord[j]<<1;
-    if(mSlope[i] < 0) {
-      bitWord[j]   |= 1;
-      //printf("1");
-      for(Int_t iBit = 1; iBit < 7; iBit++) {
-	bitWord[j]  = bitWord[j]<<1;
-	bitWord[j] |= (1-((-mSlope[i])>>(6-iBit))&1);
-	//printf("%d",(1-((-mSlope[i])>>(6-iBit))&1));
-      }
-    }
-    else {
-      bitWord[j]   |= 0;
-      //printf("0");
-      for(Int_t iBit = 1; iBit < 7; iBit++) {
-	bitWord[j]  = bitWord[j]<<1;
-	bitWord[j] |= (mSlope[i]>>(6-iBit))&1;
-	//printf("%d",(mSlope[i]>>(6-iBit))&1);
-      }
-    }
-
-    // pad row
-    for(Int_t iBit = 0; iBit < 4; iBit++) {
-      bitWord[j]  = bitWord[j]<<1;
-      bitWord[j] |= (fRow>>(3-iBit))&1;
-      //printf("%d", (fRow>>(3-iBit))&1);
-    }
-    
-    // electron probability (currently not implemented; the mean charge is just scaled)
-    for(Int_t iBit = 0; iBit < 8; iBit++) {
-      bitWord[j]  = bitWord[j]<<1;
-      bitWord[j] |= (mMeanCharge[i]>>(7-iBit))&1;               
-      //printf("0");
-    }
-    
-
-    if (rem1 == kTRUE) {
-      bitWord[j] = bitWord[j] - (1<<31);
-      }*/
+    UInt_t shift  = 0;
+    UInt_t shift2 = 0;
+	
+	
 
 
     /*printf("mean charge: %d\n",mMeanCharge[i]);
@@ -2341,64 +2299,82 @@ void AliTRDmcmSim::Tracklet(){
     printf("channel: %d\n",mADC[i]);*/
 
     // electron probability (currently not implemented; the mean charge is just scaled)
+    shift = (UInt_t)mMeanCharge[i];
     for(Int_t iBit = 0; iBit < 8; iBit++) {
       bitWord[j]  = bitWord[j]<<1;
-      bitWord[j] |= (mMeanCharge[i]>>(7-iBit))&1;               
+      bitWord[j] |= (shift>>(7-iBit))&1;               
       //printf("0");
     }
-    
+
     // pad row
+    shift = (UInt_t)fRow;
     for(Int_t iBit = 0; iBit < 4; iBit++) {
       bitWord[j]  = bitWord[j]<<1;
-      bitWord[j] |= (fRow>>(3-iBit))&1;
+      bitWord[j] |= (shift>>(3-iBit))&1;
       //printf("%d", (fRow>>(3-iBit))&1);
     }
     
     // deflection length
-    bitWord[j] = bitWord[j]<<1;
     if(mSlope[i] < 0) {
-      bitWord[j]   |= 1;
-      //printf("1");
-      for(Int_t iBit = 1; iBit < 7; iBit++) {
-	bitWord[j]  = bitWord[j]<<1;
-	bitWord[j] |= (1-((-mSlope[i])>>(6-iBit))&1);
-	//printf("%d",(1-((-mSlope[i])>>(6-iBit))&1));
-      }
-    }
-    else {
-      bitWord[j]   |= 0;
-      //printf("0");
-      for(Int_t iBit = 1; iBit < 7; iBit++) {
-	bitWord[j]  = bitWord[j]<<1;
-	bitWord[j] |= (mSlope[i]>>(6-iBit))&1;
-	//printf("%d",(mSlope[i]>>(6-iBit))&1);
-      }
-    }
-
-    // pad position
-    bitWord[j] = bitWord[j]<<1;
-    if(mOffset[i] < 0) {
-	bitWord[j]   |= 1;
+	shift = (UInt_t)(-mSlope[i]);
+	// shift2 is 2-complement of shift
+	shift2 = 1;
+	for(Int_t iBit = 1; iBit < 7; iBit++) {
+	    shift2  = shift2<<1;
+	    shift2 |= (1-((shift)>>(6-iBit))&1);
+	    //printf("%d",(1-((-mSlope[i])>>(6-iBit))&1));
+	}
+	shift2 = shift2 + 1;
 	//printf("1");
-	for(Int_t iBit = 1; iBit < 13; iBit++) {
+	for(Int_t iBit = 0; iBit < 7; iBit++) {
 	    bitWord[j]  = bitWord[j]<<1;
-	    bitWord[j] |= (1-((-mOffset[i])>>(12-iBit))&1);
-	    //printf("%d",(1-((-mOffset[i])>>(12-iBit))&1));
+	    bitWord[j] |= (shift2>>(6-iBit))&1;
+	    //printf("%d",(1-((-mSlope[i])>>(6-iBit))&1));
 	}
     }
     else {
-      bitWord[j]   |= 0; 
-      //printf("0");
-      for(Int_t iBit = 1; iBit < 13; iBit++) {
+	shift = (UInt_t)(mSlope[i]);
 	bitWord[j]  = bitWord[j]<<1;
-	bitWord[j] |= (mOffset[i]>>(12-iBit))&1;
-	//printf("%d",(mOffset[i]>>(12-iBit))&1);
-      }
+	bitWord[j]   |= 0;
+	//printf("0");
+	for(Int_t iBit = 1; iBit < 7; iBit++) {
+	    bitWord[j]  = bitWord[j]<<1;
+	    bitWord[j] |= (shift>>(6-iBit))&1;
+	    //printf("%d",(mSlope[i]>>(6-iBit))&1);
+	}
+    }
+
+    // pad position
+    if(mOffset[i] < 0) {
+	shift = (UInt_t)(-mOffset[i]);
+	shift2 = 1;
+	for(Int_t iBit = 1; iBit < 13; iBit++) {
+	    shift2  = shift2<<1;
+	    shift2 |= (1-((shift)>>(12-iBit))&1);
+	    //printf("%d",(1-((-mOffset[i])>>(12-iBit))&1));
+	}
+	shift2 = shift2 + 1;
+	//printf("1");
+	for(Int_t iBit = 0; iBit < 13; iBit++) {
+	    bitWord[j]  = bitWord[j]<<1;
+	    bitWord[j] |= (shift2>>(12-iBit))&1;
+	    //printf("%d",(1-((-mSlope[i])>>(6-iBit))&1));
+	}
+    }
+    else {
+	shift = (UInt_t)mOffset[i];
+	bitWord[j] = bitWord[j]<<1;
+	bitWord[j]   |= 0; 
+	//printf("0");
+	for(Int_t iBit = 1; iBit < 13; iBit++) {
+	    bitWord[j]  = bitWord[j]<<1;
+	    bitWord[j] |= (shift>>(12-iBit))&1;
+	    //printf("%d",(mOffset[i]>>(12-iBit))&1);
+	}
     }
 
 
-   
-    
+        
     //printf("bitWord: %u\n",bitWord[j]);
     //printf("adc: %d\n",mADC[i]);
     fMCMT[j] = bitWord[j];
@@ -2426,18 +2402,17 @@ void AliTRDmcmSim::Tracklet(){
 
 
 
-/*
  
 
-  // output-part; creates some dump trees; output should not be organized inside the AliTRDmcmSim-class
+  // output-part; creates an independent output .root folder if uncommented;
   
-  // structure: in system directory "./TRD_Tracklet" a root-file called "TRD_readout_tree.root" is stored with subdirectories SMxx/sx;
+  // structure: in the current directory a root-file called "TRD_readout_tree.root" is stored with subdirectories SMxx/sx (supermodule, stack);
   // in each of these subdirectories 6 trees according to layers are saved, called lx; 
   // whenever a mcm of that layer had a bit-word!=0, a branch containing an array with 4 (possibly some valued 0) elements is added;
   // branch-name: mcmxxxwd; 
   // another branch contains the channel-number (mcmxxxch)
   
-  
+  /*
   AliLog::SetClassDebugLevel("AliTRDmcmSim", 10);
   AliLog::SetFileOutput("../log/tracklet.log");
   
@@ -2518,10 +2493,13 @@ void AliTRDmcmSim::Tracklet(){
   }
   delete [] curDir;
     
-  if (!gSystem->ChangeDirectory("../TRD_Tracklet")) {
-    gSystem->MakeDirectory("../TRD_Tracklet");
-    gSystem->ChangeDirectory("../TRD_Tracklet");
-  }
+  //if (!gSystem->ChangeDirectory("../TRD_Tracklet")) {
+   // gSystem->MakeDirectory("../TRD_Tracklet");
+    //gSystem->ChangeDirectory("../TRD_Tracklet");
+    //}
+
+  gSystem->ChangeDirectory("..");
+  
   
   TFile *f = new TFile("TRD_readout_tree.root","update");
   TTree *tree          = NULL;
@@ -2616,15 +2594,16 @@ void AliTRDmcmSim::Tracklet(){
     delete [] evFile;
     f->Close();
     dirName   = new Char_t[6+space];
-    sprintf(dirName,"../raw%d",iEventNr);
+    //sprintf(dirName,"../raw%d",iEventNr);
+    sprintf(dirName,"raw%d",iEventNr);
     gSystem->ChangeDirectory(dirName);
     delete [] dirName;
     return;
   }
   
   dirName   = new Char_t[6+space];
-  sprintf(dirName,"../raw%d",iEventNr);
- 
+  //sprintf(dirName,"../raw%d",iEventNr);
+  sprintf(dirName,"raw%d",iEventNr);
  
   f->cd(evFile);
  
@@ -2718,8 +2697,8 @@ void AliTRDmcmSim::Tracklet(){
   f->Close();
   gSystem->ChangeDirectory(dirName);
   delete [] dirName;
-  
-*/
+  */
+
 
   // to be done:
   // error measure for quality of fit (not necessarily needed for the trigger)
