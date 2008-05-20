@@ -1235,8 +1235,9 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   } // end of the scope of the stopwatch guard
   if (iResult>=0 && !bSkipDataProcessing) {
     if (fOutputBlocks.size()>0) {
-      //HLTDebug("got %d block(s) via high level interface", fOutputBlocks.size());
-      
+      // High Level interface
+
+      //HLTDebug("got %d block(s) via high level interface", fOutputBlocks.size());      
       // sync memory files and descriptors
       AliHLTMemoryFilePList::iterator element=fMemFiles.begin();
       int i=0;
@@ -1261,11 +1262,14 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	}
       }
     } else {
+      // Low Level interface
       iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
     }
     if (iResult<0) {
       HLTFatal("component %s (%p): can not convert output block descriptor list", GetComponentID(), this);
     }
+  } else {
+    size=0;
   }
   if (iResult<0 || bSkipDataProcessing) {
     outputBlockCnt=0;
