@@ -92,7 +92,8 @@ void AliHLTTPCKryptonClusterFinderComponent::GetInputDataTypes( vector<AliHLTCom
 AliHLTComponentDataType AliHLTTPCKryptonClusterFinderComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeHistogram;
+ return kAliHLTMultipleDataType;
+ //  return kAliHLTDataTypeHistogram;
 }
 
 int AliHLTTPCKryptonClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
@@ -100,7 +101,8 @@ int AliHLTTPCKryptonClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDa
 {
   // see header file for class documentation
   tgtList.clear();
-  tgtList.push_back(kAliHLTDataTypeHistogram);
+  tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
+  tgtList.push_back(kAliHLTDataTypeHwAddr16);
   return tgtList.size();
 }
 
@@ -121,6 +123,9 @@ AliHLTComponent* AliHLTTPCKryptonClusterFinderComponent::Spawn()
 int AliHLTTPCKryptonClusterFinderComponent::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
+
+  //  HLTFatal("Initializing the kryptonclusterfindercomponent");
+
   if ( fKryptonClusterFinder )
     return EINPROGRESS;
 
@@ -158,7 +163,12 @@ int AliHLTTPCKryptonClusterFinderComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTTPCKryptonClusterFinderComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData){
+int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, 
+					      const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
+					      AliHLTUInt32_t& size, 
+					      vector<AliHLTComponentBlockData>& outputBlocks )
+{
   // see header file for class documentation
 
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
@@ -169,6 +179,10 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent(const AliHLTComponentEventDa
   Int_t slice, patch, row[2];
 
   unsigned long maxPoints = 0;
+
+  AliHLTTPCClusterData* outPtr;
+
+  outPtr = (AliHLTTPCClusterData*)outputPtr;
 
   for (iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
 
@@ -198,16 +212,67 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent(const AliHLTComponentEventDa
 
     fKryptonClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
 
-    fKryptonClusterFinder->InitializeHistograms();
-	
+    fKryptonClusterFinder->SetOutputArray((AliHLTTPCSpacePointData*)outPtr->fSpacePoints);
+    
+    fKryptonClusterFinder->SetMaxOutputSize(size-sizeof(AliHLTUInt32_t));
+
     fKryptonClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
       
     fKryptonClusterFinder->FindRowClusters();
 
     fKryptonClusterFinder->FindKryptonClusters();
+    
+    //    if(fKryptonClusterFinder->GetNKryptonClusters()>0){
 
+    //    HLTFatal("Number of kryptonClusters: %d",(Int_t)fKryptonClusterFinder->GetNKryptonClusters());
+
+      if (sizeof(AliHLTUInt32_t)+fKryptonClusterFinder->GetNKryptonClusters()*sizeof(AliHLTTPCSpacePointData)>=size) {
+	HLTFatal("Buffer too small too add more spacepoints: %d of %d byte(s) already used",sizeof(AliHLTUInt32_t)+fKryptonClusterFinder->GetNKryptonClusters()*sizeof(AliHLTTPCSpacePointData) ,size);
+	return -ENOSPC;
+      }
+      
+      outPtr->fSpacePointCnt=fKryptonClusterFinder->GetNKryptonClusters();
+      
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      bd.fOffset = 0;
+      bd.fSize = sizeof(AliHLTUInt32_t)+fKryptonClusterFinder->GetNKryptonClusters()*sizeof(AliHLTTPCSpacePointData);
+      bd.fSpecification = iter->fSpecification;
+      bd.fDataType = AliHLTTPCDefinitions::fgkClustersDataType;
+      outputBlocks.push_back( bd );
+
+      //adding the list of hardware addresses to the outpot buffer
+
+      AliHLTUInt32_t dataOffsetBeforeHW=sizeof(AliHLTUInt32_t)+fKryptonClusterFinder->GetNKryptonClusters()*sizeof(AliHLTTPCSpacePointData);
+      AliHLTUInt32_t sizeOfHWArray=fKryptonClusterFinder->fHWAddressVector.size()*sizeof(AliHLTUInt16_t);
+      //      cout<<"size of array: "<<sizeOfHWArray<<"     number of entries"<<fKryptonClusterFinder->fHWAddressVector.size()<<endl;
+
+      if (dataOffsetBeforeHW+sizeOfHWArray>=size){
+	HLTFatal("Buffer too small too add the HW address list: %d of %d byte(s) already used",dataOffsetBeforeHW+sizeOfHWArray ,size);
+	return -ENOSPC;
+      }
+
+      AliHLTUInt16_t *outputHWPtr=(AliHLTUInt16_t*)(outputPtr+dataOffsetBeforeHW);
+      for(UInt_t hw=0;hw<fKryptonClusterFinder->fHWAddressVector.size();hw++){
+	*outputHWPtr = fKryptonClusterFinder->fHWAddressVector[hw];
+	outputHWPtr++;
+      }
+      
+      AliHLTComponentBlockData bdHW;
+      FillBlockData( bdHW );
+      bdHW.fOffset =  dataOffsetBeforeHW;
+      bdHW.fSize = sizeOfHWArray;
+      bdHW.fSpecification = iter->fSpecification;
+      bdHW.fDataType = kAliHLTDataTypeHwAddr16;
+      outputBlocks.push_back( bdHW );
+
+      size=dataOffsetBeforeHW+sizeOfHWArray;
+      
+      /*    }
+	    else{
+	    size=0;
+      }*/
   }
-  MakeHistosPublic();
   return 0;
 }
 
@@ -282,20 +347,4 @@ int AliHLTTPCKryptonClusterFinderComponent::Reconfigure(const char* cdbEntry, co
     }
   }
   return 0;
-}
-
-void AliHLTTPCKryptonClusterFinderComponent::MakeHistosPublic() {
-// see header file for class documentation
-  
-  TObjArray histos;
-  fKryptonClusterFinder->GetHistogramObjectArray(histos);
-  TIter iterator(&histos);
-
-  while(TObject* pObj=iterator.Next()){
-      
-       PushBack(pObj,kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification);
-
-       //fKryptonClusterFinder->GetHistogramObjectArray(histos);
-       //PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification); 
-  }
 }

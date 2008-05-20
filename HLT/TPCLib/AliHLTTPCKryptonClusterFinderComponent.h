@@ -50,8 +50,6 @@ class AliHLTTPCKryptonClusterFinderComponent : public AliHLTProcessor
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
-  /** Gets the TObjArray from AliHLTTPCKryptonClusterFinder and pushes it to the output */
-  void MakeHistosPublic();
     protected:
 	
 	// Protected functions to implement AliHLTComponent's interface.
@@ -60,10 +58,9 @@ class AliHLTTPCKryptonClusterFinderComponent : public AliHLTProcessor
 
 	int DoInit( int argc, const char** argv );
 	int DoDeinit();
-	//	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-	//		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-	//		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
-	int DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 
 	int Reconfigure(const char* cdbEntry, const char* chainId);
 	

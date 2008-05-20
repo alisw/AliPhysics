@@ -53,20 +53,16 @@ class AliHLTTPCKryptonClusterFinder : public AliHLTTPCClusterFinder {
   /** checks if there is a candidate on the previous row */
   void CheckForCandidateOnPreviousRow(AliHLTTPCClusters* tmpCluster);
 
-  /** initialize the histograms */
-  void InitializeHistograms();
-
-  /** resets the histograms */
-  void ResetHistograms(TString histoName);
-
-  /*set the selection from minrow to maxrow, used to look at a certain interval of rows */
+  /** set the selection from minrow to maxrow, used to look at a certain interval of rows */
   void SetSelection(Int_t minRow, Int_t maxRow);
 
-  /** puts the histograms in the objarray*/
-  void GetHistogramObjectArray(TObjArray& histos);
+  /** returns the number of krypton clusters found */
+  AliHLTUInt32_t GetNKryptonClusters(){ return fNKryptonClusters;}
 
-  /** write histograms to a file, filename must also include the path. Used only for debugging by developers */
-  void WriteHistograms(TString filename);
+  /** sets the maximum size of the output buffer */
+  void SetMaxOutputSize(AliHLTUInt32_t size){fMaxOutputSize=size;}
+  
+  vector<AliHLTUInt16_t> fHWAddressVector;                         //! transient
 
  private: 
   /** copy constructor prohibited */
@@ -77,33 +73,16 @@ class AliHLTTPCKryptonClusterFinder : public AliHLTTPCClusterFinder {
   vector<Int_t> fTimebinsInBunch;                                  //! transient
 
   vector<Int_t> fIndexOfBunchStart;                                //! transient
-
-  //histograms
-  TH1F * fHKryptonSpectrumFullPatch;                                //! transient
-  TH1F * fHKryptonSpectrumSelection;                                //! transient
-  TH1F * fHNumberOfKryptonClusters;                                 //! transient
-  TH1F * fHNumberOfKryptonClustersSelection;                        //! transient
-  TH1F * fHMaxQofKryptonClusterLast1000;                            //! transient
-  TH1F * fHMaxQofKryptonClusterSelection;                           //! transient
   
-  Int_t fStartBinKryptonSpectrum;                                  //! transient
-  Int_t fEndBinKryptonSpectrum;                                    //! transient
-  Int_t fStartBinMaxQ;                                             //! transient
-  Int_t fEndBinMaxQ;                                               //! transient
-  Int_t fStartBinNumberOfKryptonClusters;                          //! transient
-  Int_t fEndBinNumberOfKryptonClusters;                            //! transient
-
+  Int_t fMaxQOfCluster;                                            //! transient
+  
   Int_t fSelectionMinRowNumber;                                    //! transient
   Int_t fSelectionMaxRowNumber;                                    //! transient
 
-  Int_t fMaxQOfCluster;                                            //! transient
-  Int_t fMaxQOfClusterBin;                                         //! transient
-  
-  Int_t fNumberOfKryptonClusters;                                  //! transient
-  Int_t fNumberOfKryptonClustersBin;                               //! transient
+  AliHLTUInt32_t fNKryptonClusters;                                //! transient
 
-  Bool_t fHistogramsInitialized;                                   //! transient                 
+  AliHLTUInt32_t fMaxOutputSize;                                   //! transient
   
-  ClassDef(AliHLTTPCKryptonClusterFinder,1) //Fast cluster finder
+  ClassDef(AliHLTTPCKryptonClusterFinder,2) //TPC Krypton cluster finder
 };
 #endif

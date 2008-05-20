@@ -1,20 +1,20 @@
 // @(#) $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCAgent.cxx
     @author Matthias Richter
@@ -50,9 +50,11 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCDigitPublisherComponent.h"
 #include "AliHLTTPCZeroSuppressionComponent.h"
 #include "AliHLTTPCDigitDumpComponent.h"
+#include "AliHLTTPCClusterDumpComponent.h"
 #include "AliHLTTPCEsdWriterComponent.h"
 #include "AliHLTTPCOfflineClustererComponent.h"
 #include "AliHLTTPCOfflineTrackerComponent.h"
+#include "AliHLTTPCClusterHistoComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -177,10 +179,12 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDigitPublisherComponent);
   pHandler->AddComponent(new AliHLTTPCZeroSuppressionComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
+  pHandler->AddComponent(new AliHLTTPCClusterDumpComponent);
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliWriter);
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);
   pHandler->AddComponent(new AliHLTTPCOfflineClustererComponent);
   pHandler->AddComponent(new AliHLTTPCOfflineTrackerComponent);
+  pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
 
   return 0;
 }

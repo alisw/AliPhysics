@@ -37,7 +37,8 @@ AliHLTTPCClusters::AliHLTTPCClusters()
   fLastMergedPad(0),
   fRowNumber(0),
   fFirstPad(0),
-  fLastPad(0)
+  fLastPad(0),
+  fQMax(0)
 {
   // see header file for class documentation
   // or
@@ -61,7 +62,8 @@ AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src)
   fLastMergedPad(src.fLastMergedPad),
   fRowNumber(src.fRowNumber),
   fFirstPad(src.fFirstPad),
-  fLastPad(src.fLastPad)
+  fLastPad(src.fLastPad),
+  fQMax(src.fQMax)
 {
   // see header file for class documentation
   //HLTInfo("Copy constructor called");
@@ -82,5 +84,6 @@ AliHLTTPCClusters& AliHLTTPCClusters::operator=(const AliHLTTPCClusters& src)
   fRowNumber= src.fRowNumber;
   fLastMergedPad = src.fLastMergedPad;
   fFirstPad = src.fFirstPad;
+  fQMax = src.fQMax;
   return (*this);
 }

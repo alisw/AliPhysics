@@ -29,6 +29,7 @@ class AliHLTTPCClusters : public AliHLTLogging {
   UInt_t fRowNumber;     //row number
   Int_t fFirstPad;       //first pad
   UInt_t fLastPad;       //last pad (aha!!!)
+  UInt_t fQMax;          //Max signal in cluster (not the total charge)
   ClassDef(AliHLTTPCClusters,0) //Fast cluster finder
     };
 #endif //ALIHLTTPCCLUSTERS_H

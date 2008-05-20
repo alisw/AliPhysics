@@ -29,6 +29,7 @@ using namespace std;
 #include "AliHLTTPCDefinitions.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliHLTTPCTransform.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -51,10 +52,15 @@ AliHLTTPCHistogramHandlerComponent::AliHLTTPCHistogramHandlerComponent()
     :    
     fNoiseHistograms(0),
     fKryptonHistograms(0),
-    fSpecificationTPCA(0),
-    fSpecificationTPCC(0),
     fSlice(-99),
+    
     fHistTH1Tmp(NULL),
+    fTotalClusterChargeIROCAll(NULL),
+    fTotalClusterChargeOROCAll(NULL),
+    fQMaxPartitionAll(NULL),
+    fPlotQmaxROCAll(NULL),
+    fNumberOfClusters(NULL),
+    
     fHistTH2Tmp(NULL),
     fHistTPCSideA(NULL),  
     fHistTPCSideC(NULL)    
@@ -181,7 +187,13 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData& 
   HLTInfo("--- Entering DoEvent() in TPCHistogramHandler ---");
   
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
-  
+ 
+  fTotalClusterChargeIROCAll = new TH1F("fTotalClusterChargeIROCAll","Total Charge of clusters in all IROC",4000,0,4000);  
+  fTotalClusterChargeOROCAll = new TH1F("fTotalClusterChargeOROCAll","Total Charge of clusters in all OROC",4000,0,4000);
+  fQMaxPartitionAll          = new TH1F("fQMaxPartitionAll",         "QMax for All Partitions",             216,0,216);
+  fPlotQmaxROCAll            = new TH1F("fQMaxROCAll",               "QMax for All ROC",                    72,0,72);
+  fNumberOfClusters          = new TH1F("fNumberOfClusters",         "Total Number of Clusters",            100,0,100);
+    
   fHistTH2Tmp = new TH2F("fHistTH2Tmp","fHistTH2Tmp",250,-250,250,250,-250,250);    
   fHistTPCSideA = new TH2F("fHistTPCSideA","TPC side A (max signal)",250,-250,250,250,-250,250);
   fHistTPCSideA->SetXTitle("global X (cm)"); fHistTPCSideA->SetYTitle("global Y (cm)");
@@ -192,63 +204,104 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData& 
         
   for(iter = GetFirstInputObject(kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputObject()){
    
-     HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
-              evtData.fEventID, evtData.fEventID,
-              DataType2Text(GetDataType(iter)).c_str(), 
-              DataType2Text(kAliHLTDataTypeHistogram | kAliHLTDataOriginTPC).c_str());
+//      HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
+//               evtData.fEventID, evtData.fEventID,
+//               DataType2Text(GetDataType(iter)).c_str(), 
+//               DataType2Text(kAliHLTDataTypeHistogram | kAliHLTDataOriginTPC).c_str());
    
-     if (GetDataType(iter) == (kAliHLTDataTypeHistogram | kAliHLTDataOriginTPC) && GetEventCount()<2){
-         HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeHistogram)!", 
-	 DataType2Text(kAliHLTDataTypeHistogram).c_str(),
-         DataType2Text(kAliHLTDataTypeHistogram | kAliHLTDataOriginTPC).c_str());
-     }      
+//      if (GetDataType(iter) == (kAliHLTDataTypeHistogram | kAliHLTDataOriginTPC) && GetEventCount()<2){
+//          HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeHistogram)!", 
+// 	 DataType2Text(kAliHLTDataTypeHistogram).c_str(),
+//          DataType2Text(kAliHLTDataTypeHistogram | kAliHLTDataOriginTPC).c_str());
+//      }      
      
      if (GetDataType(iter) != (kAliHLTDataTypeHistogram | kAliHLTDataOriginTPC)) continue;
          
-     // Summing the output histograms of the TPCNoiseMapComponent (from partition to TPC sides)
+     // Summing the output histograms of the AliHLTTPCNoiseMapComponent (from partition to TPC sides)
      if(fNoiseHistograms){  
        
-       fHistTH2Tmp = (TH2F*)iter;
-       UInt_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter)); 
-       UInt_t maxSlice     = AliHLTTPCDefinitions::GetMaxSliceNr(GetSpecification(iter)); 
-       UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iter)); 
-       UInt_t maxPartition = AliHLTTPCDefinitions::GetMaxPatchNr(GetSpecification(iter)); 
+        fHistTH2Tmp = (TH2F*)iter;
+        UInt_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter)); 
+        UInt_t maxSlice     = AliHLTTPCDefinitions::GetMaxSliceNr(GetSpecification(iter)); 
+        UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iter)); 
+        UInt_t maxPartition = AliHLTTPCDefinitions::GetMaxPatchNr(GetSpecification(iter)); 
        
-       if((minSlice!=maxSlice) || (minPartition!=maxPartition)){
-           HLTWarning("TPCHistogramHandler::The Noise Map component is not running on partition level!");
-       }
+        if((minSlice!=maxSlice) || (minPartition!=maxPartition)){
+            HLTWarning("TPCHistogramHandler::The Noise Map component is not running on partition level!");
+        }
 
-       if(minSlice<18) fHistTPCSideA->Add(fHistTPCSideA,fHistTH2Tmp,1,1);
-       else	       fHistTPCSideC->Add(fHistTPCSideC,fHistTH2Tmp,1,1);
-       // minSlice=maxSlice, when the Noise Map component runs on partition level (as it should)
-       
-       fSpecificationTPCA = AliHLTTPCDefinitions::EncodeDataSpecification( 17,  0, 5, 0 ); 
-       fSpecificationTPCC = AliHLTTPCDefinitions::EncodeDataSpecification( 35, 18, 5, 0 ); 
-
+        // minSlice=maxSlice, when the Noise Map component runs on partition level (as it should)
+        if(minSlice<18) fHistTPCSideA->Add(fHistTPCSideA,fHistTH2Tmp,1,1);
+        else		fHistTPCSideC->Add(fHistTPCSideC,fHistTH2Tmp,1,1);
      } // endif fNoiseHistograms==kTRUE   
      
      
-//  Summing the output of TPCKryptonClusterFinderComponent
-//      if(fKryptonHistograms){
-//         
-//      } //endif fKryptonHistograms==kTRUE	   	         
+     // Summing the output of AliHLTTPCClusterHistoComponent
+     if(fKryptonHistograms){
+       Int_t thisrow=-1,thissector=-1,row=-1;
+       
+       AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter));
+       AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iter));
+       row = AliHLTTPCTransform::GetFirstRow(patch); 
+       AliHLTTPCTransform::Slice2Sector(slice,row,thissector,thisrow);
+       
+       fHistTH1Tmp = (TH1F*)iter;   	
+       //cout << fHistTH1Tmp->GetName() << "\t" << fHistTH1Tmp->GetEntries() << endl;
+       
+	TString name = fHistTH1Tmp->GetName();
+		
+	if(name=="fTotalClusterChargeIROCAll"){
+	   fTotalClusterChargeIROCAll->Add(fTotalClusterChargeIROCAll,fHistTH1Tmp,1,1);
+	} 
+	else if(name=="fTotalClusterChargeOROCAll"){
+	   fTotalClusterChargeOROCAll->Add(fTotalClusterChargeOROCAll,fHistTH1Tmp,1,1);
+	} 
+	else if(name=="fQMaxPartitionAll"){
+	  AliHLTUInt8_t partitionNr=patch+slice*6;
+	  //	  if(fHistTH1Tmp->GetBinContent(partitionNr)>fQMaxPartitionAll->GetBinContent(partitionNr)){
+	   fQMaxPartitionAll->SetBinContent(partitionNr,fHistTH1Tmp->GetBinContent(partitionNr));
+	   //	  }
+	   fQMaxPartitionAll->Add(fQMaxPartitionAll,fHistTH1Tmp,1,1);
+	} 
+	else if(name=="fPlotQmaxROCAll"){
+	  //	  if(fHistTH1Tmp->GetBinContent(thissector)>fPlotQmaxROCAll->GetBinContent(thissector)){
+	  //   fPlotQmaxROCAll->SetBinContent(thissector,fHistTH1Tmp->GetBinContent(thissector));
+	    //	  }
+	  fPlotQmaxROCAll->Add(fPlotQmaxROCAll,fHistTH1Tmp,1,1);
+	}
+	else if(name=="fNumberOfClusters"){ 
+	  //   fNumberOfClusters->Add(fNumberOfClusters,fHistTH1Tmp,1,1);
+	} else continue;     
+     } //endif fKryptonHistograms==kTRUE	   	         
   } // end for loop over histogram blocks
   
   MakeHistosPublic();
-
   return 0;
 } // end DoEvent()
 
 void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
 // see header file for class documentation
-  
  
   if(fNoiseHistograms){ 
-    PushBack( (TObject*) fHistTPCSideA, kAliHLTDataTypeHistogram, fSpecificationTPCA);
-    PushBack( (TObject*) fHistTPCSideC, kAliHLTDataTypeHistogram, fSpecificationTPCC);
+    PushBack((TObject*)fHistTPCSideA,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 0,17,0,5));
+    PushBack((TObject*)fHistTPCSideC,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(18,35,0,5));
     delete fHistTH2Tmp;
     delete fHistTPCSideA;
     delete fHistTPCSideC;
+  }  
+  
+  if(fKryptonHistograms){
+     PushBack((TObject*)fTotalClusterChargeIROCAll,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,17,0,1));
+     PushBack((TObject*)fTotalClusterChargeOROCAll,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,17,2,5));
+     PushBack((TObject*)fQMaxPartitionAll,	   kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5));
+     PushBack((TObject*)fPlotQmaxROCAll,	   kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5));
+     PushBack((TObject*)fNumberOfClusters,	   kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5));
+          
+     delete fTotalClusterChargeIROCAll;
+     delete fTotalClusterChargeOROCAll;
+     delete fQMaxPartitionAll;
+     delete fPlotQmaxROCAll;
+     delete fNumberOfClusters;
   }
  
 //  TObjArray histos;

@@ -94,19 +94,22 @@ class AliHLTTPCHistogramHandlerComponent : public AliHLTProcessor {
       
       Bool_t fNoiseHistograms;   //!transient
       Bool_t fKryptonHistograms; //!transient
- 
-      AliHLTUInt32_t fSpecificationTPCA; //!transient
-      AliHLTUInt32_t fSpecificationTPCC; //!transient
       
       Int_t fSlice;  //!transient
       
-      TH1 *fHistTH1Tmp;    //!transient           
+      TH1 *fHistTH1Tmp;                //!transient  
+      TH1 *fTotalClusterChargeIROCAll; //!transient
+      TH1 *fTotalClusterChargeOROCAll; //!transient
+      TH1 *fQMaxPartitionAll;          //!transient
+      TH1 *fPlotQmaxROCAll;            //!transient
+      TH1 *fNumberOfClusters;          //!transient
+            
       TH2 *fHistTH2Tmp;    //!transient
       TH2 *fHistTPCSideA;  //!transient	
       TH2 *fHistTPCSideC;  //!transient  
 
             
-      ClassDef(AliHLTTPCHistogramHandlerComponent, 0)
+      ClassDef(AliHLTTPCHistogramHandlerComponent, 1)
     };
 
 #endif
