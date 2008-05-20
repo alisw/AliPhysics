@@ -660,9 +660,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
       
       for (Int_t j=i; j<kNCuts; j++) {
  	if (cuts[i] && cuts[j]) {
- 	  Float_t x = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fgkCutNames[i]));
- 	  Float_t y = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fgkCutNames[j]));
- 	  fhCutCorrelation->Fill(x,y);
+ 	  Float_t tx = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fgkCutNames[i]));
+ 	  Float_t ty = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fgkCutNames[j]));
+ 	  fhCutCorrelation->Fill(tx,ty);
  	}
       }
     }
