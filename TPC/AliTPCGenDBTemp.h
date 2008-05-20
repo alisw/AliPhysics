@@ -32,14 +32,13 @@ public:
 			    const TTimeStamp& endTime, Int_t run,
 			    const TString& amandaString=0);
   void            MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, 
-                            const char *confDir, const TString& amandaString=0);
+                            const char *confDir);
 
 // functionality
 
   static TClonesArray* ReadList(const char* fname, const char *title="tempConf", 
                                  const TString& amandaString=0);
-  static TTree*   ReadListTree(const char* fname, const char *title="tempConf",
-                                 const TString& amandaString=0);
+  static TTree*   ReadListTree(const char* fname, const char *title="tempConf");
 
 // getters/setters
  

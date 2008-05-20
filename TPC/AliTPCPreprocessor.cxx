@@ -254,7 +254,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
      if (source == "DAQHLT" ) numSources=2;
      UInt_t pedestalResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
-       UInt_t pedestalResult = ExtractPedestals(pedestalSource[i]);
+       pedestalResult = ExtractPedestals(pedestalSource[i]);
        if ( pedestalResult == 0 ) break;
      }
      result += pedestalResult;

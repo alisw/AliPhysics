@@ -127,32 +127,24 @@ TClonesArray * AliTPCGenDBTemp::ReadList(const char *fname, const char *title,
 
 //______________________________________________________________________________________________
 
-TTree * AliTPCGenDBTemp::ReadListTree(const char *fname, const char *title,
-                         const TString& amandaString) {
+TTree * AliTPCGenDBTemp::ReadListTree(const char *fname, const char *title) {
   //
   // read values from ascii file
   //
   TTree* tree = new TTree(title,title);
   tree->ReadFile(fname,"");
-  TClonesArray *arr;
-  if ( amandaString.Length()== 0 ) {
-    arr = AliTPCSensorTemp::ReadTree(tree);
-  } else {
-    arr = AliTPCSensorTemp::ReadTree(tree,amandaString);
-  }
-  arr->Delete();
-  delete arr;
   return tree;
 }
+
 //______________________________________________________________________________________________
 void AliTPCGenDBTemp::MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, 
-                             const char *confDir, const TString& amandaString)
+                             const char *confDir)
 {
    //
    // Store Configuration file to OCDB
    //
 
-   TTree *tree = ReadListTree(file,"tempConf",amandaString);
+   TTree *tree = ReadListTree(file,"tempConf");
    SetConfTree(tree);
    SetFirstRun(firstRun);
    SetLastRun(lastRun);
