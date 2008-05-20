@@ -505,20 +505,20 @@ void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 {
   // enables the branches needed by AcceptTrack, for a list see comment of AcceptTrack
 
-  tree->SetBranchStatus("fTracks.fFlags", 1);
-  tree->SetBranchStatus("fTracks.fITSncls", 1);
-  tree->SetBranchStatus("fTracks.fTPCncls", 1);
-  tree->SetBranchStatus("fTracks.fITSchi2", 1);
-  tree->SetBranchStatus("fTracks.fTPCchi2", 1);
-  tree->SetBranchStatus("fTracks.fC*", 1);
-  tree->SetBranchStatus("fTracks.fD", 1);
-  tree->SetBranchStatus("fTracks.fZ", 1);
-  tree->SetBranchStatus("fTracks.fCdd", 1);
-  tree->SetBranchStatus("fTracks.fCdz", 1);
-  tree->SetBranchStatus("fTracks.fCzz", 1);
-  tree->SetBranchStatus("fTracks.fP*", 1);
-  tree->SetBranchStatus("fTracks.fR*", 1);
-  tree->SetBranchStatus("fTracks.fKinkIndexes*", 1);
+  tree->SetBranchStatus("Tracks.fFlags", 1);
+  tree->SetBranchStatus("Tracks.fITSncls", 1);
+  tree->SetBranchStatus("Tracks.fTPCncls", 1);
+  tree->SetBranchStatus("Tracks.fITSchi2", 1);
+  tree->SetBranchStatus("Tracks.fTPCchi2", 1);
+  tree->SetBranchStatus("Tracks.fC*", 1);
+  tree->SetBranchStatus("Tracks.fD", 1);
+  tree->SetBranchStatus("Tracks.fZ", 1);
+  tree->SetBranchStatus("Tracks.fCdd", 1);
+  tree->SetBranchStatus("Tracks.fCdz", 1);
+  tree->SetBranchStatus("Tracks.fCzz", 1);
+  tree->SetBranchStatus("Tracks.fP*", 1);
+  tree->SetBranchStatus("Tracks.fR*", 1);
+  tree->SetBranchStatus("Tracks.fKinkIndexes*", 1);
 }
 
 //____________________________________________________________________
@@ -532,21 +532,21 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // track did not survive and finally the cuts are imposed.
 
   // this function needs the following branches:
-  // fTracks.fFlags
-  // fTracks.fITSncls
-  // fTracks.fTPCncls
-  // fTracks.fITSchi2
-  // fTracks.fTPCchi2
-  // fTracks.fC   //GetExternalCovariance
-  // fTracks.fD   //GetImpactParameters
-  // fTracks.fZ   //GetImpactParameters
-  // fTracks.fCdd //GetImpactParameters
-  // fTracks.fCdz //GetImpactParameters
-  // fTracks.fCzz //GetImpactParameters
-  // fTracks.fP   //GetPxPyPz
-  // fTracks.fR   //GetMass
-  // fTracks.fP   //GetMass
-  // fTracks.fKinkIndexes
+  // Tracks.fFlags
+  // Tracks.fITSncls
+  // Tracks.fTPCncls
+  // Tracks.fITSchi2
+  // Tracks.fTPCchi2
+  // Tracks.fC   //GetExternalCovariance
+  // Tracks.fD   //GetImpactParameters
+  // Tracks.fZ   //GetImpactParameters
+  // Tracks.fCdd //GetImpactParameters
+  // Tracks.fCdz //GetImpactParameters
+  // Tracks.fCzz //GetImpactParameters
+  // Tracks.fP   //GetPxPyPz
+  // Tracks.fR   //GetMass
+  // Tracks.fP   //GetMass
+  // Tracks.fKinkIndexes
 
   UInt_t status = esdTrack->GetStatus();
 
