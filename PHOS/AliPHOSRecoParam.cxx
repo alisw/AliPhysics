@@ -33,6 +33,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fW0(9999),
   fSampleQualityCut(1.),
   fEcoreRadius(3.),
+  fEcore2ESD(kFALSE),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
   fDecoderVersion("")
@@ -49,6 +50,7 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fW0(9999),
   fSampleQualityCut(1.),
   fEcoreRadius(3.),
+  fEcore2ESD(kFALSE),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
   fDecoderVersion("")
