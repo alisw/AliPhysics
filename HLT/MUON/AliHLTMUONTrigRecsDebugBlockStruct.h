@@ -36,7 +36,7 @@ struct AliHLTMUONTrigRecInfoStruct
 	                           // for chamber 12 etc.
 
 	// The parameters used for momentum estimation:
-	AliHLTFloat32_t fZmiddle; // Particle momentum X component in GeV/c.
+	AliHLTFloat32_t fZmiddle; // Z position in the middle of the magnetic field in centimetres.
 	AliHLTFloat32_t fBl; // The integrated magnetic field in (T.m) tesla metres.
 };
 
