@@ -47,7 +47,7 @@
 
 ClassImp(AliHMPIDQADataMakerRec)
            
-//____________________________________________________________________________ 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
   AliQADataMakerRec(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker")
 {
@@ -55,7 +55,7 @@ ClassImp(AliHMPIDQADataMakerRec)
   // ctor
 }
 
-//____________________________________________________________________________ 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec(const AliHMPIDQADataMakerRec& qadm) :
   AliQADataMakerRec() 
 {
@@ -64,7 +64,7 @@ AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec(const AliHMPIDQADataMakerRec& qad
   SetTitle((const char*)qadm.GetTitle()); 
 }
 
-//__________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDQADataMakerRec& AliHMPIDQADataMakerRec::operator = (const AliHMPIDQADataMakerRec& qadm )
 {
   // Equal operator.
@@ -73,8 +73,7 @@ AliHMPIDQADataMakerRec& AliHMPIDQADataMakerRec::operator = (const AliHMPIDQAData
   return *this;
 }
  
-//____________________________________________________________________________ 
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
@@ -106,8 +105,7 @@ void AliHMPIDQADataMakerRec::InitRecPoints()
     }  
   }
 }
-//____________________________________________________________________________
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitRaws()
 {
 //
@@ -144,7 +142,7 @@ void AliHMPIDQADataMakerRec::InitRaws()
   }//Ch loop  
   
 }
-//____________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitESDs()
 {
   //
@@ -160,15 +158,15 @@ void AliHMPIDQADataMakerRec::InitESDs()
    hPid[3] = new TH1F("PidK" ,"K response"                     , 101, -0.005,1.005)             ;
    hPid[4] = new TH1F("PidP" ,"p response"                     , 101, -0.005,1.005)             ;
 
-Add2ESDsList(hCkovP,0);
-Add2ESDsList(hSigP ,1);
-Add2ESDsList(hDifXY,2);
-Add2ESDsList(hMvsP,3);
-for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4);
+   Add2ESDsList(hCkovP,0);
+   Add2ESDsList(hSigP ,1);
+   Add2ESDsList(hDifXY,2);
+   Add2ESDsList(hMvsP,3);
+   for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4);
 
 
 }
-//____________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 {
 //
@@ -197,7 +195,7 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
    stream.Delete();
    
 }
-//___________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
   //
@@ -230,8 +228,7 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   clusters->Clear();
   
 }
-
-//____________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //
@@ -260,12 +257,13 @@ void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     for(Int_t i = 0 ; i < 5 ; i++) GetESDsData(4+i)->Fill(pid[i]) ;
   }
 }
-//____________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
   
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray *histos)
 {

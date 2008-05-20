@@ -55,8 +55,8 @@ public:
          Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
   inline void    Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;
   inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Int_t tid=0);                                                            //manual creation 
-         void    SetQ        (Float_t q                      )     {fQ=q;if(fQ>4095)fQ=4095;}                                          //manual creation 
-
+         void    SetQ        (Float_t q                      )     {fQ=q;if(fQ>4095)fQ=4095;}                                          //setter for charge 
+         void    SetPad      (Int_t pad                      )     {fPad=pad;}                                                         //setter for pad
  
 protected:                                                                   //AliDigit has fTracks[3]
                                                                                

@@ -192,8 +192,9 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
     infile>>tName>>nBadEvPer;
     infile>>tName>>nSigCut; pM->SetUniqueID(nSigCut); //n. of pedestal distribution sigmas used to create zero suppresion table
     while(!infile.eof()){
-      infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;     
-      AliHMPIDDigit dig(rs.GetPad(iddl,r,d,a),(Int_t)mean);
+      infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;
+      dig.SetPad(rs.GetPad(iddl,r,d,a));
+      dig.SetQ((Int_t)mean);
       (*pM)(dig.PadChX(),dig.PadChY()) = sigma;
     }
     infile.close();

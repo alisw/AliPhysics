@@ -122,12 +122,12 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
 // add noise pad above threshold with no signal merged...if any
   if(!fgDoNoise) return;
   aTids[0]=aTids[1]=aTids[2]=-1;
-  for (Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)
+  for (Int_t iChCurr=AliHMPIDParam::kMinCh;iChCurr<=AliHMPIDParam::kMaxCh;iChCurr++)
     for (Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++)
       for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
         for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++) {
-          Float_t q = arrNoise[iCh][iPc][iPx][iPy];
-          if(AliHMPIDParam::IsOverTh(q)) new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(AliHMPIDParam::Abs(iCh,iPc,iPx,iPy),(Int_t)q,aTids);
+          Float_t qNoise = arrNoise[iChCurr][iPc][iPx][iPy];
+          if(AliHMPIDParam::IsOverTh(qNoise)) new((*pLst[iChCurr])[iCnt[iChCurr]++]) AliHMPIDDigit(AliHMPIDParam::Abs(iChCurr,iPc,iPx,iPy),(Int_t)qNoise,aTids);
         }
         
 }//Sdi2Dig()
