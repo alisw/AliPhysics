@@ -44,9 +44,13 @@ void AcoReco(char* fileName)
 
 for (Int_t i=1; i<=nEvents; i++) 
 {
-	if (!rawReader->NextEvent()) break;
+
+//       printf("No Event %d",i);	
+       if (!rawReader->NextEvent()) break;
 	rawStream->Reset();
-	if (!rawStream->Next()) break;
+      // printf("No Event %d",i);
+        
+	if (!rawStream->Next()) continue;
 	dy[0]=rawStream->GetWord(0);
 	dy[1]=rawStream->GetWord(1);
 	dy[2]=rawStream->GetWord(2);
