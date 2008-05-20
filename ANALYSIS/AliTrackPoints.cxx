@@ -629,7 +629,7 @@ void AliTrackPoints::Testtpc(Int_t entr)
       //BUT they are local!!!!
       t->PropagateTo(r);
 //      Double_t phi = t->Phi();
-      Double_t rl = TMath::Hypot(t->GetX(),t->GetY());//real radius 
+      Double_t rL = TMath::Hypot(t->GetX(),t->GetY());//real radius 
       
       Double_t alpha = t->GetAlpha();
       Double_t salpha = TMath::Sin(alpha);
@@ -638,7 +638,7 @@ void AliTrackPoints::Testtpc(Int_t entr)
       y = t->GetX()*salpha + t->GetY()*calpha;
       z = t->GetZ();
       
-      printf("tx %f ty %f tz %f Rt = %f R from XY %f\n",x,y,z,TMath::Hypot(x,y),rl);
+      printf("tx %f ty %f tz %f Rt = %f R from XY %f\n",x,y,z,TMath::Hypot(x,y),rL);
       
       printf("tpz - tz %f\n",z-t->GetZ());
       printf("\n");

@@ -586,29 +586,29 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			
 			usedTrack[imother] = kTRUE;
 			
-			AliESDtrack *esdTrack = esd->GetTrack(imother);
-			esdTrack->GetPxPyPz(p);
-			esdTrack->GetXYZ(pos);
-			esdTrack->GetCovarianceXYZPxPyPz(covTr);
-			esdTrack->GetESDpid(pid);
+			AliESDtrack *esdTrackM = esd->GetTrack(imother);
+			esdTrackM->GetPxPyPz(p);
+			esdTrackM->GetXYZ(pos);
+			esdTrackM->GetCovarianceXYZPxPyPz(covTr);
+			esdTrackM->GetESDpid(pid);
 			
 			mother = 
-			    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-							       esdTrack->GetLabel(),
+			    new(tracks[jTracks++]) AliAODTrack(esdTrackM->GetID(),
+							       esdTrackM->GetLabel(),
 							       p,
 							       kTRUE,
 							       pos,
 							       kFALSE,
 							       covTr, 
-							       (Short_t)esdTrack->GetSign(),
-							       esdTrack->GetITSClusterMap(), 
+							       (Short_t)esdTrackM->GetSign(),
+							       esdTrackM->GetITSClusterMap(), 
 							       pid,
 							       primary,
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
 							       AliAODTrack::kPrimary);
-         if (esdTrack->GetSign() > 0) nPosTracks++;
-			mother->SetFlags(esdTrack->GetStatus());
+			if (esdTrackM->GetSign() > 0) nPosTracks++;
+			mother->SetFlags(esdTrackM->GetStatus());
 			mother->ConvertAliPIDtoAODPID();
 			primary->AddDaughter(mother);
 			mother->ConvertAliPIDtoAODPID();
@@ -636,29 +636,29 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			
 			usedTrack[idaughter] = kTRUE;
 			
-			AliESDtrack *esdTrack = esd->GetTrack(idaughter);
-			esdTrack->GetPxPyPz(p);
-			esdTrack->GetXYZ(pos);
-			esdTrack->GetCovarianceXYZPxPyPz(covTr);
-			esdTrack->GetESDpid(pid);
+			AliESDtrack *esdTrackD = esd->GetTrack(idaughter);
+			esdTrackD->GetPxPyPz(p);
+			esdTrackD->GetXYZ(pos);
+			esdTrackD->GetCovarianceXYZPxPyPz(covTr);
+			esdTrackD->GetESDpid(pid);
 			
 			daughter = 
-			    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-							       esdTrack->GetLabel(),
+			    new(tracks[jTracks++]) AliAODTrack(esdTrackD->GetID(),
+							       esdTrackD->GetLabel(),
 							       p,
 							       kTRUE,
 							       pos,
 							       kFALSE,
 							       covTr, 
-							       (Short_t)esdTrack->GetSign(),
-							       esdTrack->GetITSClusterMap(), 
+							       (Short_t)esdTrackD->GetSign(),
+							       esdTrackD->GetITSClusterMap(), 
 							       pid,
 							       vkink,
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
 							       AliAODTrack::kPrimary);
-         if (esdTrack->GetSign() > 0) nPosTracks++;
-			daughter->SetFlags(esdTrack->GetStatus());
+			if (esdTrackD->GetSign() > 0) nPosTracks++;
+			daughter->SetFlags(esdTrackD->GetStatus());
 			daughter->ConvertAliPIDtoAODPID();
 			vkink->AddDaughter(daughter);
 			daughter->ConvertAliPIDtoAODPID();
@@ -771,11 +771,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       AliESDPmdTrack *pmdTrack = esd->GetPmdTrack(iPmd);
       Int_t nLabel = 0;
       Int_t *label = 0x0;
-      Double_t pos[3] = { pmdTrack->GetClusterX(), pmdTrack->GetClusterY(), pmdTrack->GetClusterZ() };
-      Double_t pid[9] = { 0., 0., 0., 0., 0., 0., 0., 0., 0. }; // to be revised!
+      Double_t posPmd[3] = { pmdTrack->GetClusterX(), pmdTrack->GetClusterY(), pmdTrack->GetClusterZ()};
+      Double_t pidPmd[9] = { 0., 0., 0., 0., 0., 0., 0., 0., 0. }; // to be revised!
       // type not set!
       // assoc cluster not set
-      new(pmdClusters[jPmdClusters++]) AliAODPmdCluster(iPmd, nLabel, label, pmdTrack->GetClusterADC(), pos, pid);
+      new(pmdClusters[jPmdClusters++]) AliAODPmdCluster(iPmd, nLabel, label, pmdTrack->GetClusterADC(), posPmd, pidPmd);
     }
 
     // Access to the AOD container of clusters

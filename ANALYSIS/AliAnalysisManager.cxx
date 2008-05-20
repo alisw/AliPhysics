@@ -863,10 +863,9 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    switch (fMode) {
       case kLocalAnalysis:
          if (!tree) {
-            TIter next(fTasks);
-            AliAnalysisTask *task;
+            TIter nextT(fTasks);
             // Call CreateOutputObjects for all tasks
-            while ((task=(AliAnalysisTask*)next())) {
+            while ((task=(AliAnalysisTask*)nextT())) {
                TDirectory *curdir = gDirectory;
                task->CreateOutputObjects();
                if (curdir) curdir->cd();
