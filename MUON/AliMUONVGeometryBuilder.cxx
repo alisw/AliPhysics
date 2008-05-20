@@ -149,12 +149,11 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     // Get the name of the last volume in the path
     Ssiz_t npos1 = path0.Last('/')+1; 
     Ssiz_t npos2 = path0.Last('_');
-    TString volName(path0(npos1, npos2-npos1));  
+    TString volName0(path0(npos1, npos2-npos1));  
     
     // Check if it is sensitive volume
-    Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
     AliMUONGeometryModule* geometry = GetGeometry(moduleId);
-    if (  geometry->IsSensitiveVolume(volName) &&
+    if (  geometry->IsSensitiveVolume(volName0) &&
         ! svMap->Get(path0) ) {
       //cout << ".. adding to the map  " 
       //     <<  path0 << "  "  << detElemId << endl;

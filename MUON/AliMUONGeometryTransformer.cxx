@@ -156,22 +156,22 @@ AliMUONGeometryTransformer::CreateDEAreas() const
         const AliMpVSegmentation* cathode 
         = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(icathode));
         
-        AliMpVPadIterator* it = cathode->CreateIterator();
+        AliMpVPadIterator* itp = cathode->CreateIterator();
         
-        it->First();
+        itp->First();
         
-        while ( !it->IsDone() ) 
+        while ( !itp->IsDone() ) 
         {
-          AliMpPad pad = it->CurrentItem();
+          AliMpPad pad = itp->CurrentItem();
           AliMpArea a(pad.Position(),pad.Dimensions());
           xmin = TMath::Min(xmin,a.LeftBorder());
           xmax = TMath::Max(xmax,a.RightBorder());
           ymin = TMath::Min(ymin,a.DownBorder());
           ymax = TMath::Max(ymax,a.UpBorder());
-          it->Next();
+          itp->Next();
         }
         
-        delete it;
+        delete itp;
       }
       
       xl = (xmin+xmax)/2.0;
@@ -461,10 +461,10 @@ AliMUONGeometryTransformer::LoadTransformations()
         = (AliMUONGeometryDetElement*)detElements->GetObject(j);
 
       // Det element  symbolic name
-      TString symname = GetDESymName(detElement->GetId());
+      TString symnameDE = GetDESymName(detElement->GetId());
     
       // Set global matrix from physical node
-      TGeoHMatrix* globalMatrix = AliGeomManager::GetMatrix(symname);
+      TGeoHMatrix* globalMatrix = AliGeomManager::GetMatrix(symnameDE);
       if ( ! globalMatrix ) {
         AliErrorStream() << "Detection element matrix not found." << endl;
         return false;
@@ -828,10 +828,10 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
         = (AliMUONGeometryDetElement*)detElements->GetObject(j);
 	
       // Set detection element symbolic name
-      TGeoPNEntry* pnEntry
+      TGeoPNEntry* pnEntryDE
         = gGeoManager->SetAlignableEntry(GetDESymName(detElement->GetId()), 
                                          detElement->GetVolumePath());
-      if ( ! pnEntry ) {
+      if ( ! pnEntryDE ) {
         AliErrorStream() 
           << "Volume path for detection element "
           << detElement->GetId()
@@ -839,7 +839,7 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
       }
       else {
         // Set detection element matrix
-        pnEntry->SetMatrix(new TGeoHMatrix(*detElement->GetGlobalTransformation()));                                      
+        pnEntryDE->SetMatrix(new TGeoHMatrix(*detElement->GetGlobalTransformation()));                                      
          // the matrix will be deleted via TGeoManager 
       }                                      
     }  
