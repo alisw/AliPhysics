@@ -296,7 +296,7 @@ public:
 		// Remove any excess nodes from 'this' list.
 		while (current != NULL)
 		{
-			Node* temp = current;
+			temp = current;
 			current = current->fNext;
 			DeleteNode(temp);
 		}
