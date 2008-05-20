@@ -77,7 +77,7 @@ void AliT0Trigger::Trigger()
     AliError("no digits tree");
     return;
   }
-  AliT0digit *fDigits = new AliT0digit();
+  fDigits = new AliT0digit();
 
   TBranch *brDigits = treeD->GetBranch("T0");
   if (brDigits) {

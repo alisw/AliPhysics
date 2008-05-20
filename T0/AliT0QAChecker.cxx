@@ -66,9 +66,10 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
   Double_t nent[100];
   memset(nent,0,100*sizeof(Double_t));
   Double_t w[100];
-  memset(w,1.,100*sizeof(Double_t));
+  memset(w,1,100*sizeof(Double_t));
   TH1 *fhRecLEDAmp[24];  TH1 * fhRecQTC[24];
-  TH1 *fhOnlineMean;  TH1 * fhRecMean;
+  TH1 *fhOnlineMean = 0x0;  
+  TH1 * fhRecMean = 0x0;
   TString dataType = AliQA::GetAliTaskName(index);
 
   if (list->GetEntries() == 0){
@@ -88,8 +89,8 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	if(index==2){
 	  if(count>23 && count<48)fhRecLEDAmp[count-24] = hdata;
 	  if(count>47 && count<72)fhRecQTC[count-48] = hdata;
-	  if(count == 72) fhOnlineMean = hdata; 
-	  if(count == 73) fhRecMean = hdata; 
+	  if(count == 72)  fhOnlineMean = hdata; 
+	  if(count == 73)  fhRecMean = hdata; 
 	}
 	count++ ;
         Double_t rv = 0.;

@@ -383,7 +383,7 @@ void AliT0::Raw2Digits(AliRawReader *rawReader,TTree* digitsTree)
    }
 
 
-   AliT0digit* fDigits = new AliT0digit();
+   fDigits = new AliT0digit();
    digitsTree->Branch("T0","AliT0digit",&fDigits,405,1);
    
    

@@ -35,16 +35,17 @@ ClassImp(AliT0RecPoint)
 
 //------------------------------------
   AliT0RecPoint::AliT0RecPoint() : TObject(),
-				   fTimeAverage(0),
-				   fVertexPosition(0),
+				   fTimeAverage(99999),
+				   fTimeOnlineMean(99999),
+				   fVertexPosition(999999),
 				   fTimeBestA(0),fTimeBestC(0),
 				   fMultC(0),fMultA(0)
 {
   //ctor
-  fTimeAverage=99999;
+  // fTimeAverage=99999;
   fTimeBestA=99999;
   fTimeBestC=99999;
-  fVertexPosition=99999;
+  //  fVertexPosition=99999;
   fMultA=0;
   fMultC=0;
   for (Int_t i=0; i<24; i++) { fTime[i]=0; fADC[i]=0; fADCLED[i]=0;}
@@ -52,11 +53,11 @@ ClassImp(AliT0RecPoint)
 //_____________________________________________________________________________
 
 AliT0RecPoint::AliT0RecPoint(const AliT0RecPoint &r):TObject(),
-
-				   fTimeAverage(0),
-				   fVertexPosition(0),
-				   fTimeBestA(0),fTimeBestC(0),
-				   fMultC(0),fMultA(0)
+ 						     fTimeAverage(999999),
+						     fTimeOnlineMean(999999),
+						     fVertexPosition(999999),
+						     fTimeBestA(0),fTimeBestC(0),
+						     fMultC(0),fMultA(0)
 {
   //
   // AliT0RecPoint copy constructor

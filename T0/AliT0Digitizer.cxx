@@ -213,7 +213,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     AliRunLoader * inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
     AliLoader * pInStartLoader = inRL->GetLoader("T0Loader");
     if (!inRL->GetAliRun()) inRL->LoadgAlice();
-    AliT0 *fT0  = (AliT0*)inRL ->GetAliRun()->GetDetector("T0");
+    fT0  = (AliT0*)inRL ->GetAliRun()->GetDetector("T0");
 
        //read Hits 
     pInStartLoader->LoadHits("READ");//probably it is necessary to load them before

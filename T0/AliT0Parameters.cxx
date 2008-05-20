@@ -73,6 +73,8 @@ AliT0Parameters::AliT0Parameters()
    fAmpLEDRec(0), 
    fPMTeff(),
    fWalk(0),
+   fQTC(0),
+   fAmpLED(0),
    fTimeDelayCFD(0), 
  //  fTimeV0(0), 
    fTimeDelayTVD(0),

@@ -195,9 +195,7 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
   
-      Double_t *grY ; //= new grY[2500] ;
-      Double_t *grX ;
-  TFile *gFile = TFile::Open(laserFile);
+  gFile = TFile::Open(laserFile);
   //  gFile->ls();
   Float_t x1[10], y1[10]; 
   Float_t x2[10], y2[10];
@@ -222,15 +220,11 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  x2[im] = hCFDvsLED[i][im]->GetMean(1);
 	  y2[im] = hCFDvsLED[i][im]->GetMean(2);
 	  xx[im]=im+1;
-	  //cout<<" qtc "<< x1[im]<<" "<< y1[im]<<endl;
 	}
       for (Int_t imi=0; imi<10; imi++)
 	{
 	  yy1[imi] = Float_t (10-imi);
 	  xx1[imi]=x2[10-imi-1]; 
-      
-	  //	  cout<<i<<" "<<imi<<" "<<" qtc " <<x1[imi]<<" "<<xx[imi]<<
-	  //    " led "<<x2[imi]<<" "<<y2[imi]<<" led2d "<<yy1[imi]<<" "<<xx1[imi]<<endl;
 	}
 	if(i==0){	
 	 cout<<"Making graphs..."<<endl;
@@ -244,17 +238,6 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
  
       TGraph *gr4 = new TGraph (10,xx1,yy1);
       TGraph *gr3 = new TGraph (10,x1,xx);
-      /*    
-     if(gr4) {
-	  Int_t np=gr4->GetN();
-	  if(np>0) {
-	    grY = gr4->GetY();
-	    grX = gr4->GetX();
-	    for (Int_t ig=0; ig<np; ig++)
-	      cout<<i<<" "<<ig<<" "<<grX[ig]<<" "<<grY[ig]<<" eval "<<gr4->Eval(grX[ig])<<endl;  
-	  }
-	  }
-      */
       fQTC.AddAtAndExpand(gr3,i);	 
       fAmpLED.AddAtAndExpand(gr4,i);
       //      for (Int_t im=0; im<10; im++) { x2[im]=0;  y2[im]=0;  xx1[im]=0; xx[im]=0;}
