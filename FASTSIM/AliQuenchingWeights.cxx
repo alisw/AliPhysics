@@ -1945,7 +1945,7 @@ void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
   gg->Draw("pl");
 
   TGraph *gratio=new TGraph(20);
-  for(Int_t i=0;i<20;i++){
+  for(i=0;i<20;i++){
     Double_t x,y,x2,y2;
     gg->GetPoint(i,x,y);
     gq->GetPoint(i,x2,y2);
@@ -2023,7 +2023,7 @@ void AliQuenchingWeights::PlotAvgELossVsL(Double_t e)  const
   gg->Draw("pl");
 
   TGraph *gratio=new TGraph((Int_t)fLengthMax*4);
-  for(Int_t i=0;i<=(Int_t)fLengthMax*4;i++){
+  for(i=0;i<=(Int_t)fLengthMax*4;i++){
     Double_t x,y,x2,y2;
     gg->GetPoint(i,x,y);
     gq->GetPoint(i,x2,y2);
