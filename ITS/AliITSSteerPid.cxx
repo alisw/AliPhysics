@@ -78,7 +78,7 @@ AliITSSteerPid& AliITSSteerPid::operator=(const AliITSSteerPid& ob){
 //______________________________________________________________
 void AliITSSteerPid::InitLayer(TString fileITS,TString fileFitPar){
   // it opens the files useful for the PID 
-  TFile *fClonarr2=new TFile (fileITS,"r");
+  fClonarr2=new TFile (fileITS,"r");
   fVect2=(TClonesArray*)fClonarr2->Get("vectfitits_0");//truncated mean
   fVect2lay1=(TClonesArray*)fClonarr2->Get("vectfitits_1");//lay 1
   fVect2lay2=(TClonesArray*)fClonarr2->Get("vectfitits_2");//lay 2

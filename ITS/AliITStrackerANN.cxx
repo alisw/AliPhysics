@@ -1080,10 +1080,10 @@ Int_t AliITStrackerANN::CreateNeurons
 			}
 		}
 		if (found) continue;
-		AliITSneuron *unit = new AliITSneuron(node, match, fEdge2, fEdge1);
-		fNeurons->AddLast(unit);
-		node->InnerOf()->AddLast(unit);
-		match->OuterOf()->AddLast(unit);
+		AliITSneuron *unit2 = new AliITSneuron(node, match, fEdge2, fEdge1);
+		fNeurons->AddLast(unit2);
+		node->InnerOf()->AddLast(unit2);
+		match->OuterOf()->AddLast(unit2);
 		made += CreateNeurons(match, curvStep, node->X(), node->Y(), node->Z());
 		made++;
 	}

@@ -329,46 +329,46 @@ cout<<fMxtrs<<" tracks in AliITSPid obj."<<endl;
 void AliITSPid::Tab(void)
 {
   //Make PID for tracks stored in tracks table
-if(fTrs->GetEntries()==0){cout<<"No entries in TAB"<<endl;return;}
-cout<<"------------------------------------------------------------------------"<<endl;
-cout<<"Nq"<<"   q1  "<<"   q2  "<<"   q3  "<<"   q4  "<<"   q5   "<<
-      " Qtrm    "    <<"  Wpi  "<<"  Wk   "<<"  Wp  "<<"Pmom  "<<endl;
-cout<<"------------------------------------------------------------------------"<<endl;
-for(Int_t i=0;i<fTrs->GetEntries();i++)
-{
-  TVector xx( *((TVector*)fTrs->At(i)) );     
-    if( xx.IsValid() && xx(0)>0 )
+  if(fTrs->GetEntries()==0){cout<<"No entries in TAB"<<endl;return;}
+  cout<<"------------------------------------------------------------------------"<<endl;
+  cout<<"Nq"<<"   q1  "<<"   q2  "<<"   q3  "<<"   q4  "<<"   q5   "<<
+    " Qtrm    "    <<"  Wpi  "<<"  Wk   "<<"  Wp  "<<"Pmom  "<<endl;
+  cout<<"------------------------------------------------------------------------"<<endl;
+  for(Int_t i=0;i<fTrs->GetEntries();i++)
+    {
+      TVector xxx( *((TVector*)fTrs->At(i)) );     
+      if( xxx.IsValid() && xxx(0)>0 )
 	{
-	    TVector xx( *((TVector*)fTrs->At(i)) );
-	    if(xx(0)>=2)
-		{
-//       1)Calculate Qtrm	
-		    xx(6)=(this->Qtrm(i));
+	  TVector xx( *((TVector*)fTrs->At(i)) );
+	  if(xx(0)>=2)
+	    {
+	      //       1)Calculate Qtrm	
+	      xx(6)=(this->Qtrm(i));
 
-	    	 }else{
-		     xx(6)=xx(1);
-		 }
-//	 2)Calculate Wpi,Wk,Wp
-  	    this->GetPcode(xx(6),xx(10)/1000.);
-	    xx(7)=GetWpi();
-	    xx(8)=GetWk();
-	    xx(9)=GetWp();
-//       3)Print table
-	    if(xx(0)>0){
-//		    cout<<xx(0)<<" ";
-		    for(Int_t j=1;j<11;j++){
-		      if(i<7){ cout.width(7);cout.precision(4);cout<<xx(j);}
-                      if(i>7){ cout.width(7);cout.precision(5);cout<<xx(j);}
-		    }
-		    cout<<endl;
-		}
-//	  4)Update data in TVector
-	    TClonesArray &arr=*fTrs;
-	    new(arr[i])TVector(xx);	 
+	    }else{
+	      xx(6)=xx(1);
+	    }
+	  //	 2)Calculate Wpi,Wk,Wp
+	  this->GetPcode(xx(6),xx(10)/1000.);
+	  xx(7)=GetWpi();
+	  xx(8)=GetWk();
+	  xx(9)=GetWp();
+	  //       3)Print table
+	  if(xx(0)>0){
+	    //		    cout<<xx(0)<<" ";
+	    for(Int_t j=1;j<11;j++){
+	      if(i<7){ cout.width(7);cout.precision(4);cout<<xx(j);}
+	      if(i>7){ cout.width(7);cout.precision(5);cout<<xx(j);}
+	    }
+	    cout<<endl;
+	  }
+	  //	  4)Update data in TVector
+	  TClonesArray &arr=*fTrs;
+	  new(arr[i])TVector(xx);	 
 	}
-    else 
-      {/*cout<<"No data for track "<<i<<endl;*/}
-}// End loop for tracks
+      else 
+	{/*cout<<"No data for track "<<i<<endl;*/}
+    }// End loop for tracks
 }
 void AliITSPid::Reset(void)
 {

@@ -523,7 +523,7 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
      for (Int_t iz=zmin; iz<=zmax;iz+=idz)
        for (Int_t iy=ymin; iy<=ymax;iy+=idy){
 	 //
-	 Int_t ndigits =0;
+	 Int_t nodigits =0;
 	 Float_t y=0.,z=0.,q=0.;	 
 	 for (Int_t l=0; l<ni; l++) {
 	   d=(AliITSdigitSPD*)digits->UncheckedAt(idx[l]);
@@ -531,12 +531,12 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
 	     if (TMath::Abs( d->GetCoord2()-iy)>0.75*idy) continue;
 	     if (TMath::Abs( d->GetCoord1()-iz)>0.75*idz) continue;
 	   }
-	   ndigits++;
+	   nodigits++;
 	   Float_t qq=d->GetSignal();
 	   y+=qq*fYSPD[d->GetCoord2()]; z+=qq*fZSPD[d->GetCoord1()]; q+=qq;   
 	  
 	 }     
-	 if (ndigits==0) continue;
+	 if (nodigits==0) continue;
 	 y/=q; z/=q;
 	 y-=fHwSPD; z-=fHlSPD;
 	 
@@ -1665,8 +1665,8 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
 	fI = iModule;
 	FindClustersSSD(&clusters1D[0][0], nClusters[0], 
 			&clusters1D[1][0], nClusters[1], clusters[iModule]);
-	Int_t nClusters = clusters[iModule]->GetEntriesFast();
-	nClustersSSD += nClusters;
+	Int_t noClusters = clusters[iModule]->GetEntriesFast();
+	nClustersSSD += noClusters;
       }
 
       if (!next) break;
