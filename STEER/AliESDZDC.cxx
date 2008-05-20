@@ -27,7 +27,7 @@
 
 ClassImp(AliESDZDC)
 
-float fCParCentr(const int n) {return 1.8936-0.7126/(n + 0.7179);}
+Float_t funCParCentr(const Int_t n) {return 1.8936-0.7126/(n + 0.7179);}
 
 //______________________________________________________________________________
 AliESDZDC::AliESDZDC() :
@@ -40,11 +40,14 @@ AliESDZDC::AliESDZDC() :
   fZDCEMEnergy1(0),
   fZDCParticipants(0)
 {
-  for(int i=0; i<5; i++){
+  for(Int_t i=0; i<5; i++){
     fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
     fZP1TowerEnergy[i] = fZP2TowerEnergy[i] = 0.;
     fZN1TowerEnergyLR[i] = fZN2TowerEnergyLR[i] = 0.;
     fZP1TowerEnergyLR[i] = fZP2TowerEnergyLR[i] = 0.;
+  }
+  for(Int_t i=0; i<2; i++){
+    fZNACentrCoord[i] = fZNCCentrCoord[i] = 0.;
   }
 }
 
@@ -59,7 +62,7 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   fZDCParticipants(zdc.fZDCParticipants)
 {
   // copy constructor
-  for(int i=0; i<5; i++){
+  for(Int_t i=0; i<5; i++){
      fZN1TowerEnergy[i] = zdc.fZN1TowerEnergy[i];
      fZN2TowerEnergy[i] = zdc.fZN2TowerEnergy[i];
      fZP1TowerEnergy[i] = zdc.fZP1TowerEnergy[i];
@@ -68,6 +71,10 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
      fZN2TowerEnergyLR[i] = zdc.fZN2TowerEnergyLR[i];
      fZP1TowerEnergyLR[i] = zdc.fZP1TowerEnergyLR[i];
      fZP2TowerEnergyLR[i] = zdc.fZP2TowerEnergyLR[i];
+  }
+  for(Int_t i=0; i<2; i++){
+    fZNACentrCoord[i] = zdc.fZNACentrCoord[i];
+    fZNCCentrCoord[i] = zdc.fZNCCentrCoord[i];
   }
 }
 
@@ -92,6 +99,10 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
        fZN2TowerEnergyLR[i] = zdc.fZN2TowerEnergyLR[i];
        fZP1TowerEnergyLR[i] = zdc.fZP1TowerEnergyLR[i];
        fZP2TowerEnergyLR[i] = zdc.fZP2TowerEnergyLR[i];
+    }
+    for(Int_t i=0; i<2; i++){
+         fZNACentrCoord[i] = zdc.fZNACentrCoord[i];
+         fZNCCentrCoord[i] = zdc.fZNCCentrCoord[i];
     }
   } 
   return *this;
@@ -122,11 +133,14 @@ void AliESDZDC::Reset()
   fZDCParticipants=0;  
   fZDCEMEnergy=0;
   fZDCEMEnergy1=0;
-  for(int i=0; i<5; i++){
+  for(Int_t i=0; i<5; i++){
     fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
     fZP1TowerEnergy[i] = fZP2TowerEnergy[i] = 0.;
     fZN1TowerEnergyLR[i] = fZN2TowerEnergyLR[i] = 0.;
     fZP1TowerEnergyLR[i] = fZP2TowerEnergyLR[i] = 0.;
+  }
+  for(Int_t i=0; i<2; i++){
+       fZNACentrCoord[i] = fZNCCentrCoord[i] = 0.;
   }
 }
 
@@ -140,10 +154,9 @@ void AliESDZDC::Print(const Option_t *) const
 }
 
 //______________________________________________________________________________
-const Float_t * AliESDZDC::GetZNCCentroid(int NspecnC) const
+Double32_t * AliESDZDC::GetZNCCentroid(Int_t NspecnC) 
 {
   // Provide coordinates of centroid over ZN (side C) front face
-  Float_t CentrCoord[2];
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
   Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
   Float_t NumX=0., NumY=0., Den=0.;
@@ -155,17 +168,16 @@ const Float_t * AliESDZDC::GetZNCCentroid(int NspecnC) const
     Den += w;
   }
   if(Den!=0){
-    CentrCoord[0] = fCParCentr(NspecnC)*NumX/Den;
-    CentrCoord[1] = fCParCentr(NspecnC)*NumY/Den;
+    fZNCCentrCoord[0] = funCParCentr(NspecnC)*NumX/Den;
+    fZNCCentrCoord[1] = funCParCentr(NspecnC)*NumY/Den;
   }
-  return CentrCoord;
+  return fZNCCentrCoord;
 }
 
 //______________________________________________________________________________
-const Float_t * AliESDZDC::GetZNACentroid(int NspecnA) const
+Double32_t * AliESDZDC::GetZNACentroid(Int_t NspecnA) 
 {
   // Provide coordinates of centroid over ZN (side A) front face
-  Float_t CentrCoord[2];
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
   Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
   Float_t NumX=0., NumY=0., Den=0.;
@@ -178,8 +190,8 @@ const Float_t * AliESDZDC::GetZNACentroid(int NspecnA) const
   }
   //
   if(Den!=0){
-    CentrCoord[0] = fCParCentr(NspecnA)*NumX/Den;
-    CentrCoord[1] = fCParCentr(NspecnA)*NumY/Den;
+    fZNACentrCoord[0] = funCParCentr(NspecnA)*NumX/Den;
+    fZNACentrCoord[1] = funCParCentr(NspecnA)*NumY/Den;
   }
-  return CentrCoord;
+  return fZNACentrCoord;
 }

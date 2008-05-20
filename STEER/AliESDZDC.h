@@ -27,7 +27,8 @@ public:
   Double_t GetZDCN2Energy() const {return fZDCN2Energy;}
   Double_t GetZDCP2Energy() const {return fZDCP2Energy;}
   Double_t GetZDCEMEnergy(Int_t i) const 
-  	   {if(i==0){return fZDCEMEnergy;}else if(i==1){return fZDCEMEnergy1;}return 0;}
+  	   {if(i==0){return fZDCEMEnergy;} else if(i==1){return fZDCEMEnergy1;}
+	   return 0;}
   Short_t  GetZDCParticipants() const {return fZDCParticipants;}
   const Double_t * GetZN1TowerEnergy() const {return fZN1TowerEnergy;}
   const Double_t * GetZN2TowerEnergy() const {return fZN2TowerEnergy;}
@@ -38,13 +39,16 @@ public:
   const Double_t * GetZP1TowerEnergyLR() const {return fZP1TowerEnergyLR;}
   const Double_t * GetZP2TowerEnergyLR() const {return fZP2TowerEnergyLR;}
   //
-  const Float_t * GetZNCCentroid(int NspecnC) const;
-  const Float_t * GetZNACentroid(int NspecnA) const;
+  Double32_t * GetZNCCentroid(int NspecnC);
+  Double32_t * GetZNACentroid(int NspecnA);
   //
-  void  SetZDC(Double_t n1Energy, Double_t p1Energy, Double_t emEnergy0, Double_t emEnergy1,
-	       Double_t n2Energy, Double_t p2Energy, Short_t participants) 
-   {fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; fZDCEMEnergy=emEnergy0; fZDCEMEnergy1=emEnergy1;
-    fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; fZDCParticipants=participants;}
+  void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
+  		Double_t emEnergy0, Double_t emEnergy1,
+	       	Double_t n2Energy, Double_t p2Energy, Short_t participants) 
+   	{fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; 
+    	fZDCEMEnergy=emEnergy0; fZDCEMEnergy1=emEnergy1;
+    	fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; fZDCParticipants=participants;}
+  //
   void  SetZN1TowerEnergy(Float_t tow1[5])
           {for(Int_t i=0; i<5; i++) fZN1TowerEnergy[i] = tow1[i];}
   void  SetZN2TowerEnergy(Float_t tow2[5])
@@ -61,6 +65,10 @@ public:
           {for(Int_t i=0; i<5; i++) fZP1TowerEnergyLR[i] = tow1[i];}
   void  SetZP2TowerEnergyLR(Float_t tow2[5])
           {for(Int_t i=0; i<5; i++) fZP2TowerEnergyLR[i] = tow2[i];}
+  void  SetZNACentroid(Float_t centrCoord[2])
+  	   {for(Int_t i=0; i<2; i++) fZNACentrCoord[i] = centrCoord[i];}
+  void  SetZNCCentroid(Float_t centrCoord[2])
+  	   {for(Int_t i=0; i<2; i++) fZNCCentrCoord[i] = centrCoord[i];}
 
   void    Reset();
   void    Print(const Option_t *opt=0) const;
@@ -81,8 +89,11 @@ private:
   Double32_t   fZN2TowerEnergyLR[5];// reco E in 5 ZN2 sectors - low gain chain
   Double32_t   fZP1TowerEnergyLR[5];// reco E in 5 ZP1 sectors - low gain chain
   Double32_t   fZP2TowerEnergyLR[5];// reco E in 5 ZP2 sectors - low gain chain
-  Short_t      fZDCParticipants;  // number of participants estimated by the ZDC
-  ClassDef(AliESDZDC,7)
+  Short_t      fZDCParticipants;// number of participants estimated by the ZDC
+  Double32_t   fZNACentrCoord[2];// Coordinates of the centroid over ZNC
+  Double32_t   fZNCCentrCoord[2];// Coordinates of the centroid over ZNA
+  //
+  ClassDef(AliESDZDC,8)
 };
 
 #endif
