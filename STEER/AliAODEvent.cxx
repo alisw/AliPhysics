@@ -391,9 +391,9 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 }
 
 
-void AliAODEvent::ReadFromTree(TTree *tree)
+void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 {
-  // connects aod event to tree
+  // Connects aod event to tree
   
   if(!tree){
     Printf("%s %d AliAODEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
@@ -408,12 +408,12 @@ void AliAODEvent::ReadFromTree(TTree *tree)
   if(aodEvent){
     // Check if already connected to tree
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
-    if (connectedList) {
-      // If connected use the connected list if objects
-      fAODObjects->Delete();
-      fAODObjects = connectedList;
-      GetStdContent(); 
-      return;
+    if (connectedList && (strcmp(opt, "reconnect"))) {
+	// If connected use the connected list if objects
+	fAODObjects->Delete();
+	fAODObjects = connectedList;
+	GetStdContent(); 
+	return;
     }
     // Connect to tree
     // prevent a memory leak when reading back the TList
@@ -460,7 +460,6 @@ void AliAODEvent::ReadFromTree(TTree *tree)
     while((el=(TNamed*)next())){
       TString bname(el->GetName());
       // check if branch exists under this Name
-      printf("Trying to connect branch %s\n", bname.Data());
       TBranch *br = tree->GetTree()->GetBranch(bname.Data());
       if(br){
 	tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
