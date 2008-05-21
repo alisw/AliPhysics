@@ -210,7 +210,7 @@ void AliAnalysisTaskFemto::SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader)
 {
-  printf("Selectring Femto reader for AOD\n");
+  printf("Selecting Femto reader for AOD\n");
   fReader = aReader;
 }
 //________________________________________________________________________
