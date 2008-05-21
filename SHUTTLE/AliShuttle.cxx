@@ -2833,9 +2833,9 @@ Bool_t AliShuttle::Collect(Int_t run)
 	{
 		// query Shuttle logbook for earlier runs, check if some detectors are unprocessed,
 		// flag them into fFirstUnprocessed array
-		TString whereClause(Form("where shuttle_done=0 and run < %d", run));
+		TString whereClauseBis(Form("where shuttle_done=0 and run < %d", run));
 		TObjArray tmpLogbookEntries;
-		if (!QueryShuttleLogbook(whereClause, tmpLogbookEntries))
+		if (!QueryShuttleLogbook(whereClauseBis, tmpLogbookEntries))
 		{
 			Log("SHUTTLE", "Collect - Can't retrieve entries from Shuttle logbook");
 			return kFALSE;
