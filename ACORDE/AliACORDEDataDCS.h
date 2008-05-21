@@ -14,6 +14,9 @@ public:
 
 	AliACORDEDataDCS();
 	AliACORDEDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);
+        AliACORDEDataDCS(const AliACORDEDataDCS & data);
+        AliACORDEDataDCS& operator=(const AliACORDEDataDCS & data);
+
 	~AliACORDEDataDCS();
 
 	void SetRun(Int_t run) {fRun = run;}
