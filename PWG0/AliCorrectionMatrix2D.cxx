@@ -245,3 +245,13 @@ void AliCorrectionMatrix2D::RemoveEdges(Float_t cut, Int_t nBinsXedge, Int_t nBi
 
 }
 
+//____________________________________________________________________
+void AliCorrectionMatrix2D::Rebin(Int_t x, Int_t y)
+{
+	// rebins the histograms, recalculates the correction
+
+        GetGeneratedHistogram()->Rebin2D(x, y);
+        GetMeasuredHistogram()->Rebin2D(x, y);
+        GetCorrectionHistogram()->Rebin2D(x, y);
+        Divide();
+}

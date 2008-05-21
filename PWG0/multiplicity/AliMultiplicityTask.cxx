@@ -28,7 +28,7 @@
 #include <AliMCEvent.h>
 #include <AliESDInputHandler.h>
 
-#include "esdTrackCuts/AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 #include "dNdEta/AliMultiplicityCorrection.h"
 #include "AliCorrection.h"
@@ -40,7 +40,7 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   AliAnalysisTask("AliMultiplicityTask", ""),
   fESD(0),
   fOption(opt),
-  fAnalysisMode(kSPD),
+  fAnalysisMode(AliPWG0Helper::kSPD),
   fReadMC(kFALSE),
   fMultiplicity(0),
   fEsdTrackCuts(0),
@@ -95,10 +95,10 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
     tree->SetBranchStatus("fTriggerMask", 1);
     tree->SetBranchStatus("fSPDVertex*", 1);
 
-    if (fAnalysisMode == kSPD)
+    if (fAnalysisMode == AliPWG0Helper::kSPD)
       tree->SetBranchStatus("fSPDMult*", 1);
 
-    if (fAnalysisMode == kTPC) {
+    if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
       AliESDtrackCuts::EnableNeededBranches(tree);
       tree->SetBranchStatus("fTracks.fLabel", 1);
     }
@@ -197,14 +197,14 @@ void AliMultiplicityTask::Exec(Option_t*)
   // Check prerequisites
   if (!fESD)
   {
-    AliDebug(AliLog::kError, "ESD branch not available");
+    AliDebug(AliLog::kError, "ESD not available");
     return;
   }
 
-  // MB1 definition
-  //Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1);
+  //MB1 definition
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1);
   // only FASTOR
-  Bool_t eventTriggered = fESD->GetTriggerMask() & 32;
+  //Bool_t eventTriggered = fESD->GetTriggerMask() & 32;
 
   Bool_t eventVertex = AliPWG0Helper::IsVertexReconstructed(fESD->GetVertex());
 
@@ -222,7 +222,7 @@ void AliMultiplicityTask::Exec(Option_t*)
   Int_t inputCount = 0;
   Int_t* labelArr = 0;
   Float_t* etaArr = 0;
-  if (fAnalysisMode == kSPD)
+  if (fAnalysisMode == AliPWG0Helper::kSPD)
   {
     // get tracklets
     const AliMultiplicity* mult = fESD->GetMultiplicity();
@@ -250,7 +250,7 @@ void AliMultiplicityTask::Exec(Option_t*)
       ++inputCount;
     }
   }
-  else if (fAnalysisMode == kTPC)
+  else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
   {
     if (!fEsdTrackCuts)
     {
@@ -286,8 +286,10 @@ void AliMultiplicityTask::Exec(Option_t*)
   // eta range for nMCTracksSpecies, nESDTracksSpecies
   Float_t etaRange = -1;
   switch (fAnalysisMode) {
-    case kTPC: etaRange = 0.9; break;
-    case kSPD: etaRange = 2.0; break;
+    case AliPWG0Helper::kTPC:
+    case AliPWG0Helper::kTPCITS:
+    	etaRange = 0.9; break;
+    case AliPWG0Helper::kSPD: etaRange = 2.0; break;
   }
 
   if (!fReadMC) // Processing of ESD information

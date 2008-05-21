@@ -1003,11 +1003,34 @@ void AliHighMultiplicitySelector::Ntrigger(Bool_t relative)
       } else
         proj2->DrawCopy(" P");
 
-      legend2->AddEntry(proj2, Form("%lld evts, FO > %d chips", nTrigger, cut));
+      TString eventStr;
+      if (nTrigger > 1e6)
+      {
+        eventStr.Form("%lld M", nTrigger / 1000 / 1000);
+      }
+      else if (nTrigger > 1e3)
+      {
+        eventStr.Form("%lld K", nTrigger / 1000);
+      }
+      else
+      	eventStr.Form("%lld", nTrigger);
 
-      TLine* line = new TLine(triggerLimit, proj2->GetMinimum(), triggerLimit, proj2->GetMaximum());
-      line->SetLineColor(colors[currentCut]);
-      line->Draw();
+      TString triggerStr;
+      if (cut == 0)
+      {
+      	triggerStr = "minimum bias";
+      }
+      else
+      	triggerStr.Form("FO > %d chips", cut);
+
+      legend2->AddEntry(proj2, Form("%s evts, %s", eventStr.Data(), triggerStr.Data()));
+
+      if (triggerLimit > 1)
+      {
+        TLine* line = new TLine(triggerLimit, proj2->GetMinimum(), triggerLimit, proj2->GetMaximum());
+        line->SetLineColor(colors[currentCut]);
+        line->Draw();
+      }
     }
 
     legend2->Draw();
@@ -1305,6 +1328,7 @@ void AliHighMultiplicitySelector::DrawHistograms()
   x->ReadHistograms("highmult_central.root");
   x->DrawHistograms();
 
+  gSystem->Load("libANALYSIS");
   gSystem->Load("libPWG0base");
   .L AliHighMultiplicitySelector.cxx+
   x = new AliHighMultiplicitySelector();
@@ -1338,6 +1362,16 @@ void AliHighMultiplicitySelector::DrawHistograms()
 
   canvas->SaveAs("L1NoCurve.gif");
   canvas->SaveAs("L1NoCurve.eps");
+
+  TLine* line = new TLine(fMvsL1->GetXaxis()->GetXmin(), 150, fMvsL1->GetXaxis()->GetXmax(), 150);
+  line->SetLineWidth(2);
+  line->SetLineColor(kRed);
+  line->Draw();
+
+  canvas->SaveAs("L1NoCurveCut.gif");
+  canvas->SaveAs("L1NoCurveCut.eps");
+
+  return;
 
   // draw corresponding theoretical curve
   TF1* func = new TF1("func", "[0]*(1-(1-1/[0])**x)", 1, 1000);

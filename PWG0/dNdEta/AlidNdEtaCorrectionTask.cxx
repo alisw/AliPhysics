@@ -23,7 +23,7 @@
 #include <AliMCEvent.h>
 #include <AliESDInputHandler.h>
 
-#include "esdTrackCuts/AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 //#include "AliCorrection.h"
 //#include "AliCorrectionMatrix3D.h"
@@ -517,9 +517,9 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       else
       {
         fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], etaArr[i], ptArr[i]);
-        fEtaProfile->Fill(particle->Eta(), particle->Eta() - etaArr[i]);
       }
-	      
+
+      fEtaProfile->Fill(particle->Eta(), particle->Eta() - etaArr[i]);
       fdNdEtaAnalysisESD->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
 
       fEtaCorrelation->Fill(etaArr[i], particle->Eta());
@@ -544,6 +544,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
           fdNdEtaCorrectionProcessType[2]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
       }
 
+      // control histograms
       Int_t hist = -1;
       if (label == label2)
       {

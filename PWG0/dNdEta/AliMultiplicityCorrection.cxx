@@ -2622,7 +2622,7 @@ void AliMultiplicityCorrection::ApplyLaszloMethod(Int_t inputRange, Bool_t fullP
     Double_t chi2 = 0;
 
     // use smoothed true (normalized) as new prior
-    Float_t norm = 1; //hTrueSmoothed->Integral();
+    norm = 1; //hTrueSmoothed->Integral();
 
     for (Int_t t=1; t<hTrueSmoothed->GetNbinsX(); t++)
     {

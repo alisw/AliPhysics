@@ -1,20 +1,31 @@
-void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, Bool_t mc = kTRUE, const char* option = "")
+void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug = kFALSE, Int_t aProof = 0, Bool_t mc = kTRUE, const char* option = "")
 {
+  // aProof option: 0 no proof
+  //                1 proof with chain
+  //                2 proof with dataset
+
+  if (nRuns < 0)
+    nRuns = 1234567890;
+
   if (aProof)
   {
     TProof::Open("lxb6046");
 
     // Enable the needed package
-    gProof->UploadPackage("STEERBase");
+    /*gProof->UploadPackage("STEERBase");
     gProof->EnablePackage("STEERBase");
     gProof->UploadPackage("ESD");
     gProof->EnablePackage("ESD");
     gProof->UploadPackage("AOD");
     gProof->EnablePackage("AOD");
     gProof->UploadPackage("ANALYSIS");
-    gProof->EnablePackage("ANALYSIS");
-    gProof->UploadPackage("PWG0base");
-    gProof->EnablePackage("PWG0base");
+    gProof->EnablePackage("ANALYSIS");*/
+
+    gProof->UploadPackage("$ALICE_ROOT/AF-v4-12");
+    gProof->EnablePackage("$ALICE_ROOT/AF-v4-12");
+
+    gProof->UploadPackage("$ALICE_ROOT/PWG0base");
+    gProof->EnablePackage("$ALICE_ROOT/PWG0base");
   }
   else
   {
@@ -26,16 +37,14 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     gSystem->Load("libPWG0base");
   }
 
-  // Create chain of input files
-  gROOT->LoadMacro("../CreateESDChain.C");
-  chain = CreateESDChain(data, nRuns, offset);
-
   // Create the analysis manager
   mgr = new AliAnalysisManager("testAnalysis");
 
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
+
   // selection of esd tracks
-  gROOT->ProcessLine(".L CreateCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
+  gROOT->ProcessLine(".L ../CreateStandardCuts.C");
+  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts(analysisMode);
   if (!esdTrackCuts)
   {
     printf("ERROR: esdTrackCuts could not be created\n");
@@ -47,14 +56,14 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     taskName += "+g";
 
   // Create, add task
-  if (aProof) {
+  if (aProof > 0) {
     gProof->Load(taskName);
   } else
     gROOT->Macro(taskName);
 
   task = new AliMultiplicityTask(option);
   task->SetTrackCuts(esdTrackCuts);
-  task->SetAnalysisMode(AliMultiplicityTask::kSPD);
+  task->SetAnalysisMode(analysisMode);
 
   if (mc)
     task->SetReadMC();
@@ -88,5 +97,20 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   // Run analysis
   mgr->InitAnalysis();
   mgr->PrintStatus();
-  mgr->StartAnalysis((aProof) ? "proof" : "local", chain);
+
+  if (aProof == 2)
+  {
+    // process dataset
+
+    mgr->StartAnalysis("proof", data, nRuns, offset);
+  }
+  else
+  {
+    // Create chain of input files
+    gROOT->LoadMacro("../CreateESDChain.C");
+    chain = CreateESDChain(data, nRuns, offset);
+
+    mgr->StartAnalysis((aProof > 0) ? "proof" : "local", chain);
+  }
+
 }

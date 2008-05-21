@@ -1,4 +1,4 @@
-void run(Int_t runWhat, Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Bool_t mc = kTRUE, const char* option = "")
+void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Bool_t mc = kTRUE, const char* option = "")
 {
   // runWhat options: 0 = AlidNdEtaTask
   //                  1 = AlidNdEtaCorrectionTask
@@ -60,6 +60,7 @@ void run(Int_t runWhat, Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDe
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
     gSystem->Load("libPWG0base");
   }
 
@@ -218,7 +219,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle, "ESD -> MB with trigger");
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle, "ESD -> MB with vertex");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
