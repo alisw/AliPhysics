@@ -1232,10 +1232,10 @@ Bool_t AliMUONTrackReconstructorK::RunSmoother(AliMUONTrack &track)
   AliMUONVCluster *cluster = previousTrackParam->GetClusterPtr();
   Double_t dX = cluster->GetX() - previousTrackParam->GetNonBendingCoor();
   Double_t dY = cluster->GetY() - previousTrackParam->GetBendingCoor();
-  Double_t localChi2 = dX * dX / cluster->GetErrX2() + dY * dY / cluster->GetErrY2();
+  Double_t chi2 = dX * dX / cluster->GetErrX2() + dY * dY / cluster->GetErrY2();
   
   // Save local chi2 at first cluster
-  previousTrackParam->SetLocalChi2(localChi2);
+  previousTrackParam->SetLocalChi2(chi2);
   
   AliMUONTrackParam *currentTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->After(previousTrackParam);
   while (currentTrackParam) {

@@ -319,7 +319,8 @@ void AliMUONTrackLight::FillMuonHistory(AliStack *stack, TParticle *part){
           this->GetParentFlavour(0), TMath::Abs(this->GetQuarkPDGCode(countP)))
         );
       
-      Int_t pdg = this->GetQuarkPDGCode(countP), line = this->GetQuarkPythiaLine(countP);
+      pdg = this->GetQuarkPDGCode(countP);
+      Int_t line = this->GetQuarkPythiaLine(countP);
       this->ResetQuarkInfo();
       while(TMath::Abs(pdg) != this->GetParentFlavour(0)){//pdg of q,g in Pythia listing following the wrong string end
                                                         //must coincide with the flavour of the last fragmented mother

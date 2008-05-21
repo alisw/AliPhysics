@@ -246,9 +246,9 @@ void AliMUONRecoCheck::MakeTrackRefs()
       hit->SetErrXY(0.,0.);
       
       // compute track parameters at hit
-      Double_t bendingSlope = 0;
-      Double_t nonBendingSlope = 0;
-      Double_t inverseBendingMomentum = 0;
+      bendingSlope = 0;
+      nonBendingSlope = 0;
+      inverseBendingMomentum = 0;
       if (TMath::Abs(pZ) > 0) {
 	bendingSlope = pY/pZ;
 	nonBendingSlope = pX/pZ;
