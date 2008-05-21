@@ -158,9 +158,13 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            return;
         }
         fHighVoltage = new AliDCSSensorArray(startTimeLocal, fEndTime, confTree);
+      }
 
    // High voltage status values
      
+      TString hvStatConf = fConfEnv->GetValue("HighVoltageStat","ON");
+      hvStatConf.ToUpper();
+      if (hvStatConf != "OFF" ) { 
         confTree=0;
         entry=0;
         entry = GetFromOCDB("Config", "HighVoltageStat");
@@ -396,19 +400,22 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
   }
   delete map;
 
-  TMap *map2 = fHighVoltageStat->ExtractDCS(dcsAliasMap);
-  if (map2) {
-    fHighVoltageStat->StoreGraph(map2);
-  } else {
-    Log("No high voltage status recordings extracted. \n");
-    result=9;
-  }
-  delete map2;
+  TString hvStatConf = fConfEnv->GetValue("HighVoltageStat","ON");
+  hvStatConf.ToUpper();
+  if (hvStatConf != "OFF" ) { 
+    TMap *map2 = fHighVoltageStat->ExtractDCS(dcsAliasMap);
+    if (map2) {
+      fHighVoltageStat->StoreGraph(map2);
+    } else {
+       Log("No high voltage status recordings extracted. \n");
+      result=9;
+    }
+    delete map2;
 
-  // add status maps to high voltage sensor array
+    // add status maps to high voltage sensor array
 
-  fHighVoltage->AddSensors(fHighVoltageStat);
-
+    fHighVoltage->AddSensors(fHighVoltageStat);
+   }
   // Now store the final CDB file
 
   if ( result == 0 ) {
