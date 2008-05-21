@@ -31,7 +31,7 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
  
  UInt_t eventSize = 10000000; // 10MB by default
  unsigned char *dateEvent = new unsigned char[eventSize];
- for(size_t gdcCounter=0; gdcCounter<t->GetEntries(); gdcCounter++) {
+ for(Long_t gdcCounter=0; gdcCounter<t->GetEntries(); gdcCounter++) {
   rootEvent=new AliRawEvent;
   t->GetEntry(gdcCounter);
   if (rootEvent->GetHeader()->GetEventSize() > eventSize) {
