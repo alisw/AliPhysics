@@ -2,13 +2,13 @@ void MakeEMCALResMisAlignment(){
   // Create TClonesArray of residual misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALResMisAlignment.C";
-  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName(),"");
-  if(!geom) {
+  const AliEMCALGeometry *emcalGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName(),"");
+  if(!emcalGeom) {
     Error("MakeEMCALResMisAlignment","Cannot obtain AliEMCALGeometry singleton\n");
     return;
   }
 
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",geom->GetNumberOfSuperModules());
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",emcalGeom->GetNumberOfSuperModules());
   TClonesArray &alobj = *array;
 
 
