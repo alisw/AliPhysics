@@ -189,7 +189,7 @@ Bool_t AliESDTagCreator::ReadCAFCollection(const char *filename) {
 }
 
 //_____________________________________________________________________________
-void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
+void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   //private method that creates tag files
   TString fSession = type;
   TString fguid, fmd5, fturl;
@@ -238,7 +238,7 @@ void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
   
   Int_t firstEvent = 0,lastEvent = 0;
   AliESDEvent *esd = new AliESDEvent();
-  esd->ReadFromTree(fChain);
+  esd->ReadFromTree(chain);
   AliESD *esdold = 0x0;
   
   //gSystem->GetMemInfo(meminfo);
@@ -246,12 +246,12 @@ void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
   //tempmem = meminfo->fMemUsed;
   
   Int_t iInitRunNumber = -1;
-  fChain->GetEntry(0);
-  TFile *f = fChain->GetFile();
+  chain->GetEntry(0);
+  TFile *f = chain->GetFile();
   fTempGuid = f->GetUUID().AsString();
 
   TString localFileName = "Run"; localFileName += esd->GetRunNumber(); 
-  localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; localFileName += fChain->GetEntries(); //localFileName += "."; localFileName += Counter;
+  localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; localFileName += chain->GetEntries(); //localFileName += "."; localFileName += Counter;
   localFileName += ".ESD.tag.root";
 
   TString fileName;
@@ -280,7 +280,7 @@ void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
   TBranch * btag = ttag.Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
 
-  for(Int_t iEventNumber = 0; iEventNumber < fChain->GetEntries(); iEventNumber++) {
+  for(Int_t iEventNumber = 0; iEventNumber < chain->GetEntries(); iEventNumber++) {
     ntrack = 0; nPos = 0; nNeg = 0; nNeutr =0;
     nK0s = 0; nNeutrons = 0; nPi0s = 0;
     nGamas = 0; nProtons = 0; nKaons = 0;
@@ -291,13 +291,13 @@ void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
     maxPt = .0; meanPt = .0; totalP = .0;
     fVertexflag = 1;
     
-    fChain->GetEntry(iEventNumber);    
+    chain->GetEntry(iEventNumber);    
     esdold = esd->GetAliESDOld();
     if(esdold) esd->CopyFromOldESD();
 
-    TFile *f = fChain->GetFile();
-    const TUrl *url = f->GetEndpointUrl();
-    fguid = f->GetUUID().AsString();
+    TFile *file = chain->GetFile();
+    const TUrl *url = file->GetEndpointUrl();
+    fguid = file->GetUUID().AsString();
     if(fSession == "grid") {
       TString fturltemp = "alien://"; fturltemp += url->GetFile();
       fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
@@ -499,19 +499,19 @@ void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
       tag->Clear("");
     }
     tag->AddEventTag(*evTag);
-    if(iEventNumber+1 == fChain->GetEntries()) {
+    if(iEventNumber+1 == chain->GetEntries()) {
       //AliInfo(Form("File: %s",fturl.Data()));
       ttag.Fill();
       tag->Clear("");
     }      
   }//event loop
-  lastEvent = fChain->GetEntries();
+  lastEvent = chain->GetEntries();
   
   //gSystem->GetMemInfo(meminfo);
   //AliInfo(Form("After the event and track loop - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
   //tempmem = meminfo->fMemUsed;
 
-  //fChain->Delete("");
+  //chain->Delete("");
   
   //gSystem->GetMemInfo(meminfo);
   //AliInfo(Form("After the t->Delete - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
