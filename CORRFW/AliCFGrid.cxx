@@ -769,14 +769,14 @@ TH1D *AliCFGrid::Slice(Int_t ivar, Double_t *varMin, Double_t* varMax) const
   for(Int_t i=0;i<fNVar;i++){
     Double_t xmin=varMin[i]; // the min values  
     Double_t xmax=varMax[i]; // the max values  
-    Int_t nbins=fNVarBins[i]+1;
-    Double_t *bins=new Double_t[nbins];
-    for(Int_t ibin =0;ibin<nbins;ibin++){
-     bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
+    Int_t nBins=fNVarBins[i]+1;
+    Double_t *Bins=new Double_t[nBins];
+    for(Int_t ibin =0;ibin<nBins;ibin++){
+     Bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
-    indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
-    indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
-    delete [] bins;
+    indexMin[i] = TMath::BinarySearch(nBins,Bins,xmin);
+    indexMax[i] = TMath::BinarySearch(nBins,Bins,xmax);
+    delete [] Bins;
   }
 
   Float_t sum=0;
