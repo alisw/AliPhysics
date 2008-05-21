@@ -33,8 +33,8 @@ ClassImp(AliStrLine)
 //________________________________________________________
 AliStrLine::AliStrLine() :
   TObject(),
-  fTpar(0),
-  fDebug(0)
+  fWMatrix(0),
+  fTpar(0)
  {
   // Default constructor
   for(Int_t i=0;i<3;i++) {
@@ -42,14 +42,13 @@ AliStrLine::AliStrLine() :
     fSigma2P0[i] = 0.;
     fCd[i] = 0.;
   }
-  for(Int_t i=0;i<9;i++) fWMatrix[i] = 0.;
 }
 
 //________________________________________________________
 AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
   TObject(),
-  fTpar(0),
-  fDebug(0)
+  fWMatrix(0),
+  fTpar(0)
 {
   // Standard constructor
   // if twopoints is true:  point and cd are the 3D coordinates of
@@ -60,7 +59,6 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
   for(Int_t i=0;i<3;i++){ 
     fSigma2P0[i] = 0.;
   }
-  for(Int_t i=0;i<9;i++) fWMatrix[i] = 0.;
   if(twopoints){
     InitTwoPoints(point,cd);
   }
@@ -72,8 +70,8 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
 //________________________________________________________
 AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
   TObject(),
-  fTpar(0),
-  fDebug(0)
+  fWMatrix(0),
+  fTpar(0)
 {
   // Standard constructor - with float arguments
   // if twopoints is true:  point and cd are the 3D coordinates of
@@ -88,7 +86,6 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
     cd[i] = cdf[i];
     fSigma2P0[i] = 0.;
   }
-  for(Int_t i=0;i<9;i++) fWMatrix[i] = 0.;
   if(twopoints){
     InitTwoPoints(point,cd);
   }
@@ -100,8 +97,8 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
 //________________________________________________________
 AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t twopoints) :
   TObject(),
-  fTpar(0),
-  fDebug(0)
+  fWMatrix(0),
+  fTpar(0)
 {
   // Standard constructor
   // if twopoints is true:  point and cd are the 3D coordinates of
@@ -112,7 +109,6 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t
   for(Int_t i=0;i<3;i++){ 
     fSigma2P0[i] = sig2point[i];
   }
-  for(Int_t i=0;i<9;i++) fWMatrix[i] = 0.;
   if(twopoints){
     InitTwoPoints(point,cd);
   }
@@ -124,8 +120,8 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t
 //________________________________________________________
 AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t twopoints) :
   TObject(),
-  fTpar(0),
-  fDebug(0)
+  fWMatrix(0),
+  fTpar(0)
 {
   // Standard constructor - with float arguments
   // if twopoints is true:  point and cd are the 3D coordinates of
@@ -140,7 +136,6 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t 
     cd[i] = cdf[i];
     fSigma2P0[i] = sig2point[i];
   }
-  for(Int_t i=0;i<9;i++) fWMatrix[i] = 0.;
   if(twopoints){
     InitTwoPoints(point,cd);
   }
@@ -151,8 +146,8 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t 
 //________________________________________________________
 AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Double_t *cd,Bool_t twopoints) :
   TObject(),
-  fTpar(0),
-  fDebug(0)
+  fWMatrix(0),
+  fTpar(0)
 {
   // Standard constructor
   // if twopoints is true:  point and cd are the 3D coordinates of
@@ -160,10 +155,12 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Dou
   // if twopoint is false: point represents the 3D coordinates of a point
   //                       belonging to the straight line and cd is the
   //                       direction in space
+  Int_t k = 0;
+  fWMatrix = new Double_t [6];
   for(Int_t i=0;i<3;i++){ 
     fSigma2P0[i] = sig2point[i];
+    for(Int_t j=0;j<3;j++)if(j>=i)fWMatrix[k++]=wmat[3*i+j];
   }
-  for(Int_t i=0;i<9;i++) fWMatrix[i] = wmat[i];
   if(twopoints){
     InitTwoPoints(point,cd);
   }
@@ -175,8 +172,8 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Dou
 //________________________________________________________
 AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float_t *cdf,Bool_t twopoints) :
   TObject(),
-  fTpar(0),
-  fDebug(0)
+  fWMatrix(0),
+  fTpar(0)
 {
   // Standard constructor - with float arguments
   // if twopoints is true:  point and cd are the 3D coordinates of
@@ -186,12 +183,14 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float
   //                       direction in space
   Double_t point[3];
   Double_t cd[3];
+  fWMatrix = new Double_t [6];
+  Int_t k = 0;
   for(Int_t i=0;i<3;i++){
     point[i] = pointf[i];
     cd[i] = cdf[i];
     fSigma2P0[i] = sig2point[i];
+    for(Int_t j=0;j<3;j++)if(j>=i)fWMatrix[k++]=wmat[3*i+j];
   }
-  for(Int_t i=0;i<9;i++) fWMatrix[i] = wmat[i];
   if(twopoints){
     InitTwoPoints(point,cd);
   }
@@ -199,6 +198,59 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float
     InitDirection(point,cd);
   }
 }
+
+//________________________________________________________
+AliStrLine::AliStrLine(const AliStrLine &source):TObject(source),
+fWMatrix(0),
+fTpar(source.fTpar){
+  // copy constructor
+  if(source.fWMatrix)fWMatrix = new Double_t [6];
+  for(Int_t i=0;i<3;i++){
+    fP0[i]=source.fP0[i];
+    fSigma2P0[i]=source.fSigma2P0[i];
+    fCd[i]=source.fCd[i];
+  }
+  for(Int_t i=0;i<6;i++)fWMatrix[i]=source.fWMatrix[i];
+}
+
+//________________________________________________________
+AliStrLine& AliStrLine::operator=(const AliStrLine& source){
+  // Assignment operator
+  if(this !=&source){
+    this->~AliStrLine();
+    new(this)AliStrLine(source);
+  }
+  return *this;
+}
+
+//________________________________________________________
+void AliStrLine::GetWMatrix(Double_t *wmat)const {
+// Getter for weighting matrix, as a [9] dim. array
+  if(!fWMatrix)return;
+  Int_t k = 0;
+  for(Int_t i=0;i<3;i++){
+    for(Int_t j=0;j<3;j++){
+      if(j>=i){
+	wmat[3*i+j]=fWMatrix[k++];
+      }
+      else{
+	wmat[3*i+j]=wmat[3*j+i];
+      }
+    }
+  }
+} 
+
+//________________________________________________________
+void AliStrLine::SetWMatrix(const Double_t *wmat) {
+// Setter for weighting matrix, strating from a [9] dim. array
+  if(fWMatrix)delete [] fWMatrix;
+  fWMatrix = new Double_t [6];
+  Int_t k = 0;
+  for(Int_t i=0;i<3;i++){
+    for(Int_t j=0;j<3;j++)if(j>=i)fWMatrix[k++]=wmat[3*i+j];
+  }
+}
+
 //________________________________________________________
 void AliStrLine::InitDirection(Double_t *point, Double_t *cd){
   // Initialization from a point and a direction
@@ -214,7 +266,6 @@ void AliStrLine::InitDirection(Double_t *point, Double_t *cd){
   SetP0(point);
   SetCd(cd);
   fTpar = 0.;
-  SetDebug();
 }
 
 //________________________________________________________
@@ -229,6 +280,7 @@ void AliStrLine::InitTwoPoints(Double_t *pA, Double_t *pB){
 //________________________________________________________
 AliStrLine::~AliStrLine() {
   // destructor
+  if(fWMatrix)delete [] fWMatrix;
 }
 
 //________________________________________________________
@@ -245,7 +297,6 @@ void AliStrLine::PrintStatus() const {
   for(Int_t i=0;i<3;i++)cout <<TMath::Sqrt(fSigma2P0[i])<<"; ";
   cout <<endl;
   cout <<"Current value for the parameter: "<<fTpar<<endl;
-  cout <<" Debug flag: "<<fDebug<<endl;
 }
 
 //________________________________________________________
@@ -295,16 +346,20 @@ Int_t AliStrLine::CrossPoints(AliStrLine *line, Double_t *point1, Double_t *poin
   line->GetCd(cd2);
   Int_t i;
   Double_t k1 = 0;
-  for(i=0;i<3;i++)k1+=(fP0[i]-p2[i])*fCd[i];
   Double_t k2 = 0;
-  for(i=0;i<3;i++)k2+=(fP0[i]-p2[i])*cd2[i];
   Double_t a11 = 0;
-  for(i=0;i<3;i++)a11+=fCd[i]*cd2[i];
+  for(i=0;i<3;i++){
+    k1+=(fP0[i]-p2[i])*fCd[i];
+    k2+=(fP0[i]-p2[i])*cd2[i];
+    a11+=fCd[i]*cd2[i];
+  }
   Double_t a22 = -a11;
   Double_t a21 = 0;
-  for(i=0;i<3;i++)a21+=cd2[i]*cd2[i];
   Double_t a12 = 0;
-  for(i=0;i<3;i++)a12-=fCd[i]*fCd[i];
+  for(i=0;i<3;i++){
+    a21+=cd2[i]*cd2[i];
+    a12-=fCd[i]*fCd[i];
+  }
   Double_t deno = a11*a22-a21*a12;
   if(deno == 0.) return -1;
   fTpar = (a11*k2-a21*k1) / deno;
