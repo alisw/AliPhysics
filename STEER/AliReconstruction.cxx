@@ -883,20 +883,20 @@ Bool_t AliReconstruction::InitRun(const char* input)
   }
   //Initialize the QA and start of cycle for out-of-cycle QA
   if (fRunQA) {
-     TString detStr(fFillESD); 
-     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-        if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-        AliQADataMakerRec *qadm = GetQADataMaker(iDet);  
-        if (!qadm) continue;
-        AliInfo(Form("Initializing the QA data maker for %s", 
-               fgkDetectorName[iDet]));
-        qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
-        qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
-        if (!fInLoopQA) {
-			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
-			qadm->StartOfCycle(AliQA::kESDS,"same");
-        }
-     }
+//      TString detStr(fFillESD); 
+//      for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+//         if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+//         AliQADataMakerRec *qadm = GetQADataMaker(iDet);  
+//         if (!qadm) continue;
+//         AliInfo(Form("Initializing the QA data maker for %s", 
+//                fgkDetectorName[iDet]));
+//         qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
+//         qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+//         if (!fInLoopQA) {
+// 			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
+// 			qadm->StartOfCycle(AliQA::kESDS,"same");
+//         }
+//      }
 	  if (fRunGlobalQA) {
 		  AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
 		  AliInfo(Form("Initializing the global QA data maker"));
@@ -1347,7 +1347,7 @@ Bool_t AliReconstruction::FinishRun()
 		  AliQADataMakerSteer qas;
 		  qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS, fSameQACycle);
 		  //qas.Reset() ;
-		  qas.Run(fRunTracking.Data(), AliQA::kESDS, fSameQACycle);
+		  qas.Run(fRunLocalReconstruction.Data(), AliQA::kESDS, fSameQACycle);
 		  if (fRunGlobalQA) {
 			 AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
 			  if (qadm) {
