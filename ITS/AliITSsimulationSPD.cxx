@@ -797,7 +797,7 @@ void AliITSsimulationSPD::CreateHistograms(){
     if(GetDebug(1)) Info("CreateHistograms","create histograms");
 
     fHis = new TObjArray(GetNPixelsZ());
-    TString fSPDname("spd_");
+    fSPDname="spd_";
     for(Int_t i=0;i<GetNPixelsZ();i++) {
         Char_t pixelz[4];
         sprintf(pixelz,"%d",i);

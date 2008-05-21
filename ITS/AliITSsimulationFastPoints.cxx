@@ -130,9 +130,9 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
 	  locals[0] += deltaXl;
 	  locals[2] += deltaZl;
 	  Int_t lab[4] = {hit->GetTrack(),-3,-3,ind};
-	  Float_t hit[5] = {locals[0],locals[2],sigmarphi*sigmarphi,sigmaz*sigmaz,kdEdXtoQ*(hitdestep+deltaDe)};
+	  Float_t hitv[5] = {locals[0],locals[2],sigmarphi*sigmarphi,sigmaz*sigmaz,kdEdXtoQ*(hitdestep+deltaDe)};
 	  Int_t info[3] = {0,0,lyr};
-	  AliITSRecPoint rp(lab,hit,info,kTRUE);
+	  AliITSRecPoint rp(lab,hitv,info,kTRUE);
 	  rp.SetdEdX(hitdestep+deltaDe);
 
 	  new (pt[irecp]) AliITSRecPoint(rp);

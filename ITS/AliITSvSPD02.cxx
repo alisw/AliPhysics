@@ -285,7 +285,7 @@ void AliITSvSPD02::BuildGeometry2002(){
     iITS0->cd();
     TNode *iITST = new TNode("ITST","SPD sensitive volume",iITSTshape,
                              0.0,0.0,0.0,0,0);
-    for(Int_t i=0;i<4;i++){
+    for(i=0;i<4;i++){
         iITSV->cd();
         sprintf(name,"ITEL%d",i);
         sprintf(title,"Test beam telescope element #%d",i+1);
