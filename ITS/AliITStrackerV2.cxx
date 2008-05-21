@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+/* $Id$ */
 //-------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
 //    It reads AliITSRecPoint clusters and creates AliITStrackV2 tracks
@@ -140,9 +140,10 @@ AliITStrackerV2::AliITStrackerV2(const Char_t *geom) :
         TGeoHMatrix m; AliITSgeomTGeo::GetOrigMatrix(i,j,k,m);
         const TGeoHMatrix *tm=AliITSgeomTGeo::GetTracking2LocalMatrix(i,j,k);
         m.Multiply(tm);
-        Double_t txyz[3]={0.}, xyz[3]={0.};
+        Double_t txyz[3]={0.}; 
+	xyz[0]=0.; xyz[1]=0.; xyz[2]=0.;
         m.LocalToMaster(txyz,xyz);
-        Double_t r=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+        r=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
         Double_t phi=TMath::ATan2(xyz[1],xyz[0]);
 
         if (phi<0) phi+=TMath::TwoPi();
@@ -1062,18 +1063,18 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
 
      Int_t idx=index[i];
      if (idx>=0) {
-        const AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(idx); 
-        if (idet != c->GetDetectorIndex()) {
-           idet=c->GetDetectorIndex();
-           const AliITSdetector &det=layer.GetDetector(idet);
-           if (!t->Propagate(det.GetPhi(),det.GetR())) {
+        const AliITSRecPoint *ccc=(AliITSRecPoint *)GetCluster(idx); 
+        if (idet != ccc->GetDetectorIndex()) {
+           idet=ccc->GetDetectorIndex();
+           const AliITSdetector &det2=layer.GetDetector(idet);
+           if (!t->Propagate(det2.GetPhi(),det2.GetR())) {
              return kFALSE;
            }
            t->SetDetectorIndex(idet);
         }
-        Double_t chi2=t->GetPredictedChi2(c);
+        Double_t chi2=t->GetPredictedChi2(ccc);
         if (chi2<maxchi2) { 
-	  cl=c; 
+	  cl=ccc; 
 	  maxchi2=chi2; 
 	} else {
 	  return kFALSE;
@@ -1108,19 +1109,20 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
         Double_t ymax=t->GetY() + phi*r + dy;
         layer.SelectClusters(zmin,zmax,ymin,ymax);
 
-        const AliITSRecPoint *c=0; Int_t ci=-1,cci=-1;
-        Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2(), tolerance=0.1;
-        while ((c=layer.GetNextCluster(ci))!=0) {
-           if (idet == c->GetDetectorIndex()) continue;
+        const AliITSRecPoint *cx=0; Int_t ci=-1,cci=-1;
+        maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2();
+	Double_t tolerance=0.1;
+        while ((cx=layer.GetNextCluster(ci))!=0) {
+           if (idet == cx->GetDetectorIndex()) continue;
 
-	   const AliITSdetector &det=layer.GetDetector(c->GetDetectorIndex());
+	   const AliITSdetector &detx=layer.GetDetector(cx->GetDetectorIndex());
 
-	   if (!tmp.Propagate(det.GetPhi(),det.GetR())) continue;
+	   if (!tmp.Propagate(detx.GetPhi(),detx.GetR())) continue;
            
-	   if (TMath::Abs(tmp.GetZ() - c->GetZ()) > tolerance) continue;
-           if (TMath::Abs(tmp.GetY() - c->GetY()) > tolerance) continue;
+	   if (TMath::Abs(tmp.GetZ() - cx->GetZ()) > tolerance) continue;
+           if (TMath::Abs(tmp.GetY() - cx->GetY()) > tolerance) continue;
 
-           Double_t chi2=tmp.GetPredictedChi2(c);
+           Double_t chi2=tmp.GetPredictedChi2(cx);
            if (chi2<maxchi2) { maxchi2=chi2; cci=ci; }
         }
         if (cci>=0) t->SetExtraCluster(i,(i<<28)+cci);
