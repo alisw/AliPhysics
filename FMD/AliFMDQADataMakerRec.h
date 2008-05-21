@@ -6,7 +6,7 @@
  * See cxx source for full Copyright notice                               
  */
 #include "AliQADataMakerRec.h"
-
+#include "TClonesArray.h"
 class TH1F; 
 class TH1I; 
 class TList; 
@@ -39,8 +39,8 @@ private:
   virtual void   StartOfDetectorCycle(); 
 
   ClassDef(AliFMDQADataMakerRec,0)  // description 
-  TClonesArray* fDigitsArray;
-  TClonesArray* fRecPointsArray;
+  TClonesArray fDigitsArray;
+  TClonesArray fRecPointsArray;
 
 };
 

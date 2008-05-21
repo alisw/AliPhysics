@@ -51,12 +51,11 @@ ClassImp(AliFMDQADataMakerRec)
 AliFMDQADataMakerRec::AliFMDQADataMakerRec() : 
   AliQADataMakerRec(AliQA::GetDetName(AliQA::kFMD), 
 		    "FMD Quality Assurance Data Maker"),
-  fDigitsArray(0),
-  fRecPointsArray(0)
+  fDigitsArray("AliFMDDigit", 1000),
+  fRecPointsArray("AliFMDRecPoints", 1000)
 {
   // ctor
-  fDigitsArray = new TClonesArray("AliFMDDigit", 1000) ; 
-  fRecPointsArray = new TClonesArray("AliFMDRecPoints", 1000) ; 
+ 
 }
 
 //_____________________________________________________________________
@@ -82,8 +81,7 @@ AliFMDQADataMakerRec& AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerR
 //_____________________________________________________________________
 AliFMDQADataMakerRec::~AliFMDQADataMakerRec()
 {
-  delete fDigitsArray;
-  delete fRecPointsArray;
+ 
 }
 
 
@@ -176,9 +174,9 @@ void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
     AliError("FMD Digit object not found!!") ;
     return;
   }
-  for(Int_t i=0;i<fDigitsArray->GetEntriesFast();i++) {
+  for(Int_t i=0;i<digits->GetEntriesFast();i++) {
     //Raw ADC counts
-    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray->At(i));
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
     GetDigitsData(0)->Fill(digit->Counts());
   }
 }
@@ -187,16 +185,16 @@ void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   
-  fDigitsArray->Clear();
+  fDigitsArray.Clear();
   TBranch*      branch = digitTree->GetBranch("FMD");
   if (!branch) {
     AliWarning("FMD branch in Digit Tree not found") ; 
     return;
   } 
-  
-  branch->SetAddress(&fDigitsArray);
+  TClonesArray* digitsAddress = &fDigitsArray;
+  branch->SetAddress(&digitsAddress);
   branch->GetEntry(0); 
-  MakeDigits(fDigitsArray); 
+  MakeDigits(digitsAddress);
 }
 
 //_____________________________________________________________________
@@ -209,18 +207,19 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* /*rawReader*/)
 void AliFMDQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
   // makes data from RecPoints
-  fRecPointsArray->Clear();
+  fRecPointsArray.Clear();
   TBranch *fmdbranch = clustersTree->GetBranch("FMD");
   if (!fmdbranch) { 
     AliError("can't get the branch with the FMD recpoints !");
     return;
   }
   
+  TClonesArray* RecPointsAddress = &fRecPointsArray;
   
-  fmdbranch->SetAddress(&fRecPointsArray);
+  fmdbranch->SetAddress(&RecPointsAddress);
   fmdbranch->GetEntry(0);
     
-  TIter next(fRecPointsArray) ; 
+  TIter next(RecPointsAddress) ; 
   AliFMDRecPoint * rp ; 
   while ((rp = static_cast<AliFMDRecPoint*>(next()))) {
     GetRecPointsData(0)->Fill(rp->Edep()) ;

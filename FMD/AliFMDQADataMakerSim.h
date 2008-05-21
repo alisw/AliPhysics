@@ -7,7 +7,7 @@
  */
 
 #include "AliQADataMakerSim.h"
-
+#include "TClonesArray.h"
 class TH1F ; 
 class TH1I ; 
 class TList ; 
@@ -43,9 +43,9 @@ class AliFMDQADataMakerSim: public AliQADataMakerSim {
   // virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
   
-  TClonesArray *fDigitsArray;
-  TClonesArray *fHitsArray;
-  
+  TClonesArray fDigitsArray;
+  TClonesArray fHitsArray;
+
   ClassDef(AliFMDQADataMakerSim,0)  // description 
     };
 

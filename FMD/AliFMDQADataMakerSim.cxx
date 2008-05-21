@@ -47,12 +47,11 @@ ClassImp(AliFMDQADataMakerSim)
 AliFMDQADataMakerSim::AliFMDQADataMakerSim() 
   :  AliQADataMakerSim(AliQA::GetDetName(AliQA::kFMD),
 		       "FMD Quality Assurance Data Maker"),
-     fDigitsArray(0),
-     fHitsArray(0)
+     fDigitsArray("AliFMDDigit", 1000),
+     fHitsArray("AliFMDHit", 10)
 {
   // ctor
-  fDigitsArray = new TClonesArray("AliFMDDigit", 1000) ; 
-  fHitsArray   = new TClonesArray("AliFMDHit", 10);
+
 }
 
 //_____________________________________________________________________
@@ -78,8 +77,7 @@ AliFMDQADataMakerSim& AliFMDQADataMakerSim::operator = (const AliFMDQADataMakerS
 //_____________________________________________________________________
 AliFMDQADataMakerSim::~AliFMDQADataMakerSim()
 {
-  delete fDigitsArray;
-  delete fHitsArray;
+
 }
 
 //_____________________________________________________________________
@@ -129,17 +127,21 @@ void AliFMDQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
   
+  fHitsArray.Clear();
+  
   TBranch * branch = hitTree->GetBranch("FMD") ;
   if (!branch) {
     AliWarning("FMD branch in Hit Tree not found") ; 
     return;
   }
-  fHitsArray->Clear();
-  branch->SetAddress(&fHitsArray) ;
+  
+  TClonesArray* hitsAddress = &fHitsArray;
+  
+  branch->SetAddress(&hitsAddress) ;
   
   for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
     branch->GetEntry(ientry);
-    MakeHits(fHitsArray);   //tmp); 
+    MakeHits(hitsAddress);   //tmp); 
   } 	
   
 }
@@ -150,7 +152,7 @@ void AliFMDQADataMakerSim::MakeDigits(TClonesArray * digits)
   // makes data from Digits
   if(!digits) return;
 
-  for(Int_t i = 0 ; i < fDigitsArray->GetEntriesFast() ; i++) {
+  for(Int_t i = 0 ; i < digits->GetEntriesFast() ; i++) {
     //Raw ADC counts
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
     GetDigitsData(0)->Fill(digit->Counts());
@@ -161,15 +163,16 @@ void AliFMDQADataMakerSim::MakeDigits(TClonesArray * digits)
 void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
 {
   
-  fDigitsArray->Clear();
+  fDigitsArray.Clear();
   TBranch * branch = digitTree->GetBranch("FMD") ;
   if (!branch)    {
       AliWarning("FMD branch in Digit Tree not found") ; 
       return;
   } 
-  branch->SetAddress(&fDigitsArray) ;
+  TClonesArray* digitAddress = &fDigitsArray;
+  branch->SetAddress(&digitAddress) ;
   branch->GetEntry(0) ; 
-  MakeDigits(fDigitsArray) ; 
+  MakeDigits(digitAddress) ; 
 }
 
 //_____________________________________________________________________ 
