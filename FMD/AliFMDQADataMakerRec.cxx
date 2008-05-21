@@ -50,7 +50,9 @@ ClassImp(AliFMDQADataMakerRec)
 //_____________________________________________________________________
 AliFMDQADataMakerRec::AliFMDQADataMakerRec() : 
   AliQADataMakerRec(AliQA::GetDetName(AliQA::kFMD), 
-		    "FMD Quality Assurance Data Maker")
+		    "FMD Quality Assurance Data Maker"),
+  fDigitsArray(0),
+  fRecPointsArray(0)
 {
   // ctor
   fDigitsArray = new TClonesArray("AliFMDDigit", 1000) ; 
@@ -58,13 +60,24 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec() :
 }
 
 //_____________________________________________________________________
-AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& /*qadm*/) 
-  : AliQADataMakerRec()
+AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) 
+  : AliQADataMakerRec(AliQA::GetDetName(AliQA::kFMD), 
+		      "FMD Quality Assurance Data Maker"),
+    fDigitsArray(qadm.fDigitsArray),
+    fRecPointsArray(qadm.fRecPointsArray)
 {
   // copy ctor 
   // Parameters: 
   //    qadm    Object to copy from
   
+}
+//_____________________________________________________________________
+AliFMDQADataMakerRec& AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm ) 
+{
+  fDigitsArray = qadm.fDigitsArray;
+  fRecPointsArray = qadm.fRecPointsArray;
+  
+  return *this;
 }
 //_____________________________________________________________________
 AliFMDQADataMakerRec::~AliFMDQADataMakerRec()
@@ -210,7 +223,7 @@ void AliFMDQADataMakerRec::MakeRecPoints(TTree* clustersTree)
   TIter next(fRecPointsArray) ; 
   AliFMDRecPoint * rp ; 
   while ((rp = static_cast<AliFMDRecPoint*>(next()))) {
-    GetRecPointsData(0)->Fill(rp->Particles()) ;
+    GetRecPointsData(0)->Fill(rp->Edep()) ;
   }
 
 }

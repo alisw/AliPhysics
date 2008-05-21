@@ -25,6 +25,7 @@ class AliFMDQADataMakerSim: public AliQADataMakerSim {
  public:
   AliFMDQADataMakerSim() ;          // ctor
   AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) ;   
+  AliFMDQADataMakerSim& operator = (const AliFMDQADataMakerSim& qadm) ;
   virtual ~AliFMDQADataMakerSim();  // dtor
   
  private:
@@ -42,8 +43,8 @@ class AliFMDQADataMakerSim: public AliQADataMakerSim {
   // virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
   
-  TClonesArray* fDigitsArray;
-  TClonesArray* fHitsArray;
+  TClonesArray *fDigitsArray;
+  TClonesArray *fHitsArray;
   
   ClassDef(AliFMDQADataMakerSim,0)  // description 
     };

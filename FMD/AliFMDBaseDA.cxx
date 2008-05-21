@@ -50,7 +50,7 @@ AliFMDBaseDA::AliFMDBaseDA() : TNamed(),
 //_____________________________________________________________________
 AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) : 
   TNamed(baseDA),
-  fDiagnosticsFilename(baseDA.fDiagnosticsFilename),
+  fDiagnosticsFilename(baseDA.fDiagnosticsFilename.Data()),
   fOutputFile(),
   fConditionsFile(),
   fSaveHistograms(baseDA.fSaveHistograms),
@@ -82,7 +82,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
   TFile* diagFile = 0;
   if(fSaveHistograms)
     {
-      diagFile = TFile::Open(fDiagnosticsFilename,"RECREATE");
+      diagFile = TFile::Open(fDiagnosticsFilename.Data(),"RECREATE");
       for(UShort_t det=1;det<=3;det++) {
 	UShort_t FirstRing = (det == 1 ? 1 : 0);
 	
@@ -91,13 +91,13 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
 	  UShort_t nsec = (ir == 0 ? 40  : 20);
 	  UShort_t nstr = (ir == 0 ? 256 : 512);
 	  
-	  gDirectory->cd(Form("%s:/",fDiagnosticsFilename));
+	  gDirectory->cd(Form("%s:/",fDiagnosticsFilename.Data()));
 	  gDirectory->mkdir(Form("FMD%d%c",det,ring),Form("FMD%d%c",det,ring));
 	  for(UShort_t sec =0; sec < nsec;  sec++)  {
-	    gDirectory->cd(Form("%s:/FMD%d%c",fDiagnosticsFilename,det,ring));
+	    gDirectory->cd(Form("%s:/FMD%d%c",fDiagnosticsFilename.Data(),det,ring));
 	    gDirectory->mkdir(Form("sector_%d",sec));
 	    for(UShort_t strip = 0; strip < nstr; strip++) {
-	      gDirectory->cd(Form("%s:/FMD%d%c/sector_%d",fDiagnosticsFilename,det,ring,sec));
+	      gDirectory->cd(Form("%s:/FMD%d%c/sector_%d",fDiagnosticsFilename.Data(),det,ring,sec));
 	      gDirectory->mkdir(Form("strip_%d",strip));
 	      
 	     }

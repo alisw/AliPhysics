@@ -22,7 +22,8 @@ class AliFMDQADataMakerRec: public AliQADataMakerRec
 {
 public:
   AliFMDQADataMakerRec();
-  AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm);   
+  AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm);
+  AliFMDQADataMakerRec& operator = (const AliFMDQADataMakerRec& qadm) ;
   virtual ~AliFMDQADataMakerRec();
 private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list);

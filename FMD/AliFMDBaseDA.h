@@ -22,7 +22,7 @@
 #include "TFile.h"
 #include "iostream"
 #include "fstream"
-
+#include "TString.h"
 #include "AliRawReader.h"
 #include "AliFMDDigit.h"
 #include "AliFMDParameters.h"
@@ -54,7 +54,8 @@ class AliFMDBaseDA: public TNamed {
   Int_t GetCurrentEvent() {return fCurrentEvent;}
   
   static const UInt_t kBaseDDL = 3072;
-  Char_t* fDiagnosticsFilename;
+  //Char_t* fDiagnosticsFilename;
+  TString fDiagnosticsFilename;
   std::ofstream fOutputFile;
   std::ofstream fConditionsFile;
   Bool_t fSaveHistograms;

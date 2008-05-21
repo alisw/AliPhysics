@@ -136,7 +136,7 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 	      << chi2ndf                     <<"\n";
   
   if(fSaveHistograms) {
-    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename,det,ring,sec,strip));
+    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename.Data(),det,ring,sec,strip));
     hChannel->GetXaxis()->SetRange(0,1023);
     hChannel->Write();
     

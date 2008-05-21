@@ -56,13 +56,24 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim()
 }
 
 //_____________________________________________________________________
-AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& /*qadm*/) 
-  : AliQADataMakerSim()
+AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) 
+  : AliQADataMakerSim(),
+    fDigitsArray(qadm.fDigitsArray),
+    fHitsArray(qadm.fHitsArray)
 {
   //copy ctor 
+  
   // Parameters: 
   //    qadm    Object to copy from
   
+}
+//_____________________________________________________________________
+AliFMDQADataMakerSim& AliFMDQADataMakerSim::operator = (const AliFMDQADataMakerSim& qadm ) 
+{
+  fDigitsArray = qadm.fDigitsArray;
+  fHitsArray = qadm.fHitsArray;
+  
+  return *this;
 }
 //_____________________________________________________________________
 AliFMDQADataMakerSim::~AliFMDQADataMakerSim()
@@ -107,7 +118,7 @@ void AliFMDQADataMakerSim::InitDigits()
 //_____________________________________________________________________
 void AliFMDQADataMakerSim::MakeHits(TClonesArray * hits)
 {
-  TIter next(fHitsArray);
+  TIter next(hits);
   AliFMDHit * hit;
   while ((hit = static_cast<AliFMDHit *>(next()))) 
     GetHitsData(0)->Fill(hit->Edep()/hit->Length()*0.032);
