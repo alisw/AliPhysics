@@ -398,7 +398,15 @@ void AliAnalysisManager::PackOutput(TList *target)
                // Clear file list to release object ownership to user.
                file->Clear();
                // Save data to file, then close.
-               output->GetData()->Write();
+               if (output->GetData()->InheritsFrom(TCollection::Class())) {
+                  // If data is a collection, we set the name of the collection 
+                  // as the one of the container and we save as a single key.
+                  TCollection *coll = (TCollection*)output->GetData();
+                  coll->SetName(output->GetName());
+                  coll->Write(output->GetName(), TObject::kSingleKey);
+               } else {
+                  output->GetData()->Write();
+               }      
                if (fDebug > 1) printf("PackOutput %s: memory merge, file resident output\n", output->GetName());
                if (fDebug > 2) {
                   printf("   file %s listing content:\n", filename);
@@ -429,7 +437,15 @@ void AliAnalysisManager::PackOutput(TList *target)
             }   
             file->cd();
             // Release object ownership to users after writing data to file
-            if (output->GetData()) output->GetData()->Write();
+            if (output->GetData()->InheritsFrom(TCollection::Class())) {
+               // If data is a collection, we set the name of the collection 
+               // as the one of the container and we save as a single key.
+               TCollection *coll = (TCollection*)output->GetData();
+               coll->SetName(output->GetName());
+               coll->Write(output->GetName(), TObject::kSingleKey);
+            } else {
+               output->GetData()->Write();
+            }      
             file->Clear();
             if (fDebug > 2) {
                printf("   file %s listing content:\n", output->GetFileName());
@@ -548,19 +564,24 @@ void AliAnalysisManager::Terminate()
    // Call Terminate() for tasks
    while ((task=(AliAnalysisTask*)next())) task->Terminate();
    //
-   if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
-   if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
-   if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
    TIter next1(fOutputs);
    AliAnalysisDataContainer *output;
    while ((output=(AliAnalysisDataContainer*)next1())) {
-      if (!output->GetData()) continue;
       // Close all files at output
+      // Special outputs have the files already closed and written.
+      if (output->IsSpecialOutput()) continue;
       const char *filename = output->GetFileName();
       if (!(strcmp(filename, "default"))) {
          if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
+         TFile *aodfile = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+         if (aodfile) {
+            if (fDebug > 1) printf("Writing output handler file: %s\n", filename);
+            aodfile->Write();
+            continue;
+         }   
       }      
       if (!strlen(filename)) continue;
+      if (!output->GetData()) continue;
       TFile *file = output->GetFile();
       TDirectory *opwd = gDirectory;
       if (file) {
@@ -571,10 +592,22 @@ void AliAnalysisManager::Terminate()
          output->SetFile(file);
       }   
       if (fDebug > 1) printf("   writing output data %s to file %s\n", output->GetData()->GetName(), file->GetName());
-      output->GetData()->Write();
+      if (output->GetData()->InheritsFrom(TCollection::Class())) {
+      // If data is a collection, we set the name of the collection 
+      // as the one of the container and we save as a single key.
+         TCollection *coll = (TCollection*)output->GetData();
+         coll->SetName(output->GetName());
+         coll->Write(output->GetName(), TObject::kSingleKey);
+      } else {
+         output->GetData()->Write();
+      }      
       file->Close();
       if (opwd) opwd->cd();
    }   
+
+   if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
+   if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
+   if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
 
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
    if (getsysInfo) {
