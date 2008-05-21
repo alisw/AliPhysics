@@ -161,6 +161,8 @@ void AliEMCALv2::StepManager(void){
     if(gMC->VolId("WSUC")==1) printf(" WSUC - cosmic ray stand geometry \n");
   }
   Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
+  Int_t parent;
+  TParticle* part;
 
   curVolName = gMC->CurrentVolName();
   if(curVolName.Contains(vn) || curVolName.Contains("SCX")) { // We are in a scintillator layer; SCX for 3X3
@@ -172,16 +174,20 @@ void AliEMCALv2::StepManager(void){
 
       if (fCurParent==-1 || tracknumber != fCurTrack) {
 	// Check parentage
-	Int_t parent=tracknumber;
+	//Int_t parent=tracknumber;
+	parent=tracknumber;
 	if (fCurParent != -1) {
 	  while (parent != fCurParent && parent != -1) {
-	    TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	    //TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	    part=gAlice->GetMCApp()->Particle(parent);
 	    parent=part->GetFirstMother();
 	  }
 	}
 	if (fCurParent==-1 || parent==-1) {
-	  Int_t parent=tracknumber;
-	  TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	  //Int_t parent=tracknumber;
+	  //TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	  parent=tracknumber;
+	  part=gAlice->GetMCApp()->Particle(parent);
 	  while (parent != -1 && fGeometry->IsInEMCAL(part->Vx(),part->Vy(),part->Vz())) {
 	    parent=part->GetFirstMother();
 	    if (parent!=-1) 
@@ -191,7 +197,8 @@ void AliEMCALv2::StepManager(void){
 	  if (fCurParent==-1)
 	    Error("StepManager","Cannot find parent");
 	  else {
-	    TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
+	    //TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
+	    part=gAlice->GetMCApp()->Particle(fCurParent);
 	    ienergy = part->Energy(); 
 	  }
 	  while (parent != -1) {

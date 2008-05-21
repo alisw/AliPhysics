@@ -255,7 +255,7 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 }
 
 //____________________________________________________________________________
-void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
+void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* /* rawReader */)
 {
   //Fill prepared histograms with Raw digit properties
 

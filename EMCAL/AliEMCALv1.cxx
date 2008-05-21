@@ -134,6 +134,9 @@ void AliEMCALv1::StepManager(void){
   
   AliEMCALGeometry * geom = GetGeometry() ; 
 
+  TParticle *part;
+  Int_t parent;
+
   static Int_t idXPHI = gMC->VolId("XPHI");
   if(gMC->CurrentVolID(copy) == idXPHI ) { // We are in a Scintillator Layer 
     Float_t depositedEnergy ; 
@@ -144,16 +147,20 @@ void AliEMCALv1::StepManager(void){
 
       if (fCurParent==-1 || tracknumber != fCurTrack) {
 	// Check parentage
-	Int_t parent=tracknumber;
+	//Int_t parent=tracknumber;
+	parent=tracknumber;
 	if (fCurParent != -1) {
 	  while (parent != fCurParent && parent != -1) {
-	    TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	    //TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	    part=gAlice->GetMCApp()->Particle(parent);
 	    parent=part->GetFirstMother();
 	  }
 	}
 	if (fCurParent==-1 || parent==-1) {
-	  Int_t parent=tracknumber;
-	  TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	  //Int_t parent=tracknumber;
+	  //TParticle *part=gAlice->GetMCApp()->Particle(parent);
+	  parent=tracknumber;
+	  part=gAlice->GetMCApp()->Particle(parent);
 	  while (parent != -1 && geom->IsInEMCAL(part->Vx(),part->Vy(),part->Vz())) {
 	    parent=part->GetFirstMother();
 	    if (parent!=-1) 
@@ -163,7 +170,8 @@ void AliEMCALv1::StepManager(void){
 	  if (fCurParent==-1)
 	    Error("StepManager","Cannot find parent");
 	  else {
-	    TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
+	    //TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
+	    part=gAlice->GetMCApp()->Particle(fCurParent);
 	    ienergy = part->Energy(); 
 	  }
 	  while (parent != -1) {
