@@ -1079,10 +1079,10 @@ void AliFRAMEv2::CreateGeometry()
   {
       
       Float_t rb   = (kBFMRin + kBFMRou)/2.;
-      Float_t phi = Float_t(iphi[i]) * 20.;
+      Float_t phib = Float_t(iphi[i]) * 20.;
       
-      Float_t xb = rb * TMath::Cos(phi * kDegrad);
-      Float_t yb = rb * TMath::Sin(phi * kDegrad);
+      Float_t xb = rb * TMath::Cos(phib * kDegrad);
+      Float_t yb = rb * TMath::Sin(phib * kDegrad);
       
       gMC->Gspos("BFRB", i + 1,  "BFMO", xb, yb,  dz, idrotm[2034 + iphi[i]], "ONLY");      
       gMC->Gspos("BFRB", i + 11, "BFMO", xb, yb, -dz, idrotm[2034 + iphi[i]], "ONLY");      
