@@ -40,6 +40,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliVEventHandler.h"
+#include "AliVEventPool.h"
 #include "AliSysInfo.h"
 #include "AliAnalysisManager.h"
 
@@ -54,6 +55,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fInputEventHandler(NULL),
                     fOutputEventHandler(NULL),
                     fMCtruthEventHandler(NULL),
+		    fEventPool(NULL),
                     fCurrentEntry(-1),
                     fNSysInfo(0),
                     fMode(kLocalAnalysis),
@@ -86,6 +88,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fInputEventHandler(NULL),
                     fOutputEventHandler(NULL),
                     fMCtruthEventHandler(NULL),
+		    fEventPool(NULL),
                     fCurrentEntry(-1),
                     fNSysInfo(0),
                     fMode(other.fMode),
@@ -119,6 +122,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fInputEventHandler   = other.fInputEventHandler;
       fOutputEventHandler  = other.fOutputEventHandler;
       fMCtruthEventHandler = other.fMCtruthEventHandler;
+      fEventPool           = other.fEventPool;
       fTree       = NULL;
       fCurrentEntry = -1;
       fNSysInfo   = other.fNSysInfo;

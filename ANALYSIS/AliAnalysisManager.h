@@ -24,6 +24,7 @@ class AliAnalysisSelector;
 class AliAnalysisDataContainer;
 class AliAnalysisTask;
 class AliVEventHandler;
+class AliVEventPool;
 
 
 class AliAnalysisManager : public TNamed {
@@ -93,11 +94,13 @@ enum EAliAnalysisFlags {
    void                SetInputEventHandler(AliVEventHandler*  handler)  {fInputEventHandler   = handler;}
    void                SetOutputEventHandler(AliVEventHandler*  handler) {fOutputEventHandler  = handler;}
    void                SetMCtruthEventHandler(AliVEventHandler* handler) {fMCtruthEventHandler = handler;}
+   void                SetEventPool(AliVEventPool* epool) {fEventPool = epool;}
    void                SetNSysInfo(Long64_t nevents) {fNSysInfo = nevents;}
    void                SetSelector(AliAnalysisSelector *sel) {fSelector = sel;}
    AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
+   AliVEventPool*      GetEventPool()           {return fEventPool;}
 
    // Container handling
    AliAnalysisDataContainer *CreateContainer(const char *name, TClass *datatype, 
@@ -134,6 +137,7 @@ private:
    AliVEventHandler       *fInputEventHandler;   //  Optional common input  event handler
    AliVEventHandler       *fOutputEventHandler;  //  Optional common output event handler
    AliVEventHandler       *fMCtruthEventHandler; //  Optional common MC Truth event handler
+   AliVEventPool          *fEventPool;           //  Event pool for mixing analysis
    Long64_t                fCurrentEntry;        //! Current processed entry in the tree
    Long64_t                fNSysInfo;            // Event frequency for collecting system information
    EAliAnalysisExecMode    fMode;                // Execution mode

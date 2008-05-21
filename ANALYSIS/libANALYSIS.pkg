@@ -3,7 +3,8 @@
 SRCS = AliAnalysisDataContainer.cxx AliAnalysisDataSlot.cxx \
        AliAnalysisManager.cxx AliAnalysisTask.cxx \
        AliAnalysisSelector.cxx \
-       AliAnalysisFilter.cxx AliAnalysisCuts.cxx	
+       AliAnalysisFilter.cxx AliAnalysisCuts.cxx \
+       AliVEventPool.cxx	
 
 
 
