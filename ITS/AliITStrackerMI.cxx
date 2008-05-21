@@ -2247,16 +2247,16 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
      if (extra) { // search for extra clusters in overlapped modules
        AliITStrackV2 tmp(*track);
-       Double_t dy,ymin,ymax;
+       Double_t dY,yMin,yMax;
        dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
        if (dz < 0.5*TMath::Abs(tmp.GetTgl())) dz=0.5*TMath::Abs(tmp.GetTgl());
-       dy=4*TMath::Sqrt(track->GetSigmaY2()+AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
-       if (dy < 0.5*TMath::Abs(tmp.GetSnp())) dy=0.5*TMath::Abs(tmp.GetSnp());
+       dY=4*TMath::Sqrt(track->GetSigmaY2()+AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
+       if (dY < 0.5*TMath::Abs(tmp.GetSnp())) dY=0.5*TMath::Abs(tmp.GetSnp());
        zmin=track->GetZ() - dz;
        zmax=track->GetZ() + dz;
-       ymin=track->GetY() + phi*r - dy;
-       ymax=track->GetY() + phi*r + dy;
-       layer.SelectClusters(zmin,zmax,ymin,ymax);
+       yMin=track->GetY() + phi*r - dY;
+       yMax=track->GetY() + phi*r + dY;
+       layer.SelectClusters(zmin,zmax,yMin,yMax);
        
        const AliITSRecPoint *clExtra=0; Int_t ci=-1,cci=-1;
        Int_t idetExtra=-1;  
@@ -2282,7 +2282,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 	 track->SetExtraModule(ilayer,idetExtra);
        }
      } // end search for extra clusters in overlapped modules
-     
+
      // Correct for material of the current layer
      if(!CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir)) return kFALSE;
                  
