@@ -129,6 +129,7 @@
 #include <TArrayS.h>
 #include <TArrayD.h>
 #include <TObjArray.h>
+#include <TMap.h>
 
 #include "AliReconstruction.h"
 #include "AliCodeTimer.h"
@@ -187,6 +188,7 @@
 #include "AliSysInfo.h" // memory snapshots
 #include "AliRawHLTManager.h"
 
+#include "AliMagWrapCheb.h"
 
 ClassImp(AliReconstruction)
 
@@ -718,23 +720,94 @@ Bool_t AliReconstruction::InitRun(const char* input)
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
    AliSysInfo::AddStamp("LoadGeom");
 
-  //QA
-  AliQADataMakerSteer qas ; 
-  if (fRunQA && fRawReader) { 
-    qas.Run(fRunLocalReconstruction, fRawReader) ; 
-	fSameQACycle = kTRUE ; 
+
+  // Get the GRP CDB entry
+  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+
+  TList *list=0;	
+  if (entryGRP) 
+  	list = dynamic_cast<TList*>(entryGRP->GetObject());  
+  fGRPData=dynamic_cast<TMap*>(list->FindObject("pp"));   // ????????? 
+
+  if (!fGRPData) {
+  	AliError("No GRP entry found in OCDB!");
+	return kFALSE;
   }
-  // checking the QA of previous steps
-  //CheckQA() ; 
- 
-  /*
-  // local reconstruction
-  if (!fRunLocalReconstruction.IsNull()) {
-    if (!RunLocalReconstruction(fRunLocalReconstruction)) {
-      if (fStopOnError) {CleanUp(); return kFALSE;}
+
+
+  // Magnetic field map
+  if (!AliTracker::GetFieldMap()) {
+    // Construct the field map out of the information retrieved from GRP.
+    //
+    // For the moment, this is a dummy piece of code.
+    // The actual map is expected to be already created in rec.C ! 
+    //
+
+    Float_t factor=1.;
+    Int_t map=AliMagWrapCheb::k5kG;
+    Bool_t dipoleON=kTRUE;
+
+    // L3
+    TObjString *l3Current=
+       dynamic_cast<TObjString*>(fGRPData->GetValue("fL3Current"));
+    if (!l3Current) {
+      AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
+      return kFALSE;
     }
+    TObjString *l3Polarity=
+       dynamic_cast<TObjString*>(fGRPData->GetValue("fL3Polarity"));
+    if (!l3Polarity) {
+      AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
+      return kFALSE;
+    }
+
+    // Dipole
+    TObjString *diCurrent=
+       dynamic_cast<TObjString*>(fGRPData->GetValue("fDipoleCurrent"));
+    if (!diCurrent) {
+      AliError("GRP/GRP/Data entry:  missing value for the dipole current !");
+      return kFALSE;
+    }
+    TObjString *diPolarity=
+       dynamic_cast<TObjString*>(fGRPData->GetValue("fDipolePolarity"));
+    if (!diPolarity) {
+      AliError("GRP/GRP/Data entry:  missing value for the dipole polarity !");
+      return kFALSE;
+    }
+
+
+    AliMagF *field=
+      new AliMagWrapCheb("Maps","Maps",2,factor,10.,map,dipoleON);
+    AliTracker::SetFieldMap(field,fUniformField);    
+
+    //Temporary measure
+    AliFatal("Please, provide the field map !  Crashing deliberately...");
+
   }
-  */
+
+
+  // Get the diamond profile from OCDB
+  AliCDBEntry* entry = AliCDBManager::Instance()
+  	->Get("GRP/Calib/MeanVertex");
+	
+  if(entry) {
+  	fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+  } else {
+  	AliError("No diamond profile found in OCDB!");
+  }
+
+  entry = 0;
+  entry = AliCDBManager::Instance()
+  	->Get("GRP/Calib/MeanVertexTPC");
+	
+  if(entry) {
+  	fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+  } else {
+  	AliError("No diamond profile found in OCDB!");
+  }
+
+  ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
+  if(fDiamondProfile && fMeanVertexConstraint) ftVertexer->SetVtxStart(fDiamondProfile);
 
   // get vertexer
   if (fRunVertexFinder && !CreateVertexer()) {
@@ -785,13 +858,6 @@ Bool_t AliReconstruction::InitRun(const char* input)
   fhltesd->CreateStdContent();
   fhltesd->WriteToTree(fhlttree);
 
-  /* CKB Why?
-  delete esd; delete hltesd;
-  esd = NULL; hltesd = NULL;
-  */
-  // create the branch with ESD additions
-
-
 
   if (fWriteESDfriend) {
     fesdf = new AliESDfriend();
@@ -800,37 +866,7 @@ Bool_t AliReconstruction::InitRun(const char* input)
     fesd->AddObject(fesdf);
   }
 
-  // Get the GRP CDB entry
-  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-	
-  if (entryGRP) 
-  	fGRPData = dynamic_cast<TMap*> (entryGRP->GetObject());  
-  
-  if (!fGRPData)
-  	AliError("No GRP entry found in OCDB!");
 
-  // Get the diamond profile from OCDB
-  AliCDBEntry* entry = AliCDBManager::Instance()
-  	->Get("GRP/Calib/MeanVertex");
-	
-  if(entry) {
-  	fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());  
-  } else {
-  	AliError("No diamond profile found in OCDB!");
-  }
-
-  entry = 0;
-  entry = AliCDBManager::Instance()
-  	->Get("GRP/Calib/MeanVertexTPC");
-	
-  if(entry) {
-  	fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());  
-  } else {
-  	AliError("No diamond profile found in OCDB!");
-  }
-
-  ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
-  if(fDiamondProfile && fMeanVertexConstraint) ftVertexer->SetVtxStart(fDiamondProfile);
 
   if (fRawReader) fRawReader->RewindEvents();
 
@@ -839,6 +875,12 @@ Bool_t AliReconstruction::InitRun(const char* input)
   AliInfo(Form("Current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual));
   
 
+  //QA
+  AliQADataMakerSteer qas ; 
+  if (fRunQA && fRawReader) { 
+    qas.Run(fRunLocalReconstruction, fRawReader) ; 
+	fSameQACycle = kTRUE ; 
+  }
   //Initialize the QA and start of cycle for out-of-cycle QA
   if (fRunQA) {
      TString detStr(fFillESD); 
@@ -2003,19 +2045,9 @@ Bool_t AliReconstruction::InitRunLoader()
       CleanUp();
       return kFALSE;
     }
+
     fRunLoader->CdGAFile();
-    if (gFile->GetKey(AliRunLoader::GetGAliceName())) {
-      if (fRunLoader->LoadgAlice() == 0) {
-	gAlice = fRunLoader->GetAliRun();
-	AliTracker::SetFieldMap(gAlice->Field(),fUniformField);
-      }
-    }
-    if (!gAlice && !fRawReader) {
-      AliError(Form("no gAlice object found in file %s",
-		    fGAliceFileName.Data()));
-      CleanUp();
-      return kFALSE;
-    }
+    fRunLoader->LoadgAlice();
 
     //PH This is a temporary fix to give access to the kinematics
     //PH that is needed for the labels of ITS clusters
