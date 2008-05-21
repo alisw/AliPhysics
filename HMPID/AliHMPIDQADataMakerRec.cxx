@@ -49,15 +49,14 @@ ClassImp(AliHMPIDQADataMakerRec)
            
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker")
+  AliQADataMakerRec(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0)
 {
-  fEvtRaw=0;
   // ctor
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec(const AliHMPIDQADataMakerRec& qadm) :
-  AliQADataMakerRec() 
+  AliQADataMakerRec(),fEvtRaw(qadm.fEvtRaw)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
