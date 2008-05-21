@@ -31,14 +31,14 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     Int_t GetAD() const {return fad;}
     Int_t GetADC() const {return fadc;}
 
-    void Setv11HybridDDLMapping();
-    void SetvPPRasymmFMDDDLMapping();
+    static Bool_t InitDDLModuleMap();  // Initialize DLL module map
+    static void Setv11HybridDDLMapping();
+    static void SetvPPRasymmFMDDDLMapping();
 
     enum {kDDLsNumber = 16};      // number of DDLs in SSD
     enum {kModulesPerDDL = 108};  // number of modules in each DDL
 
-    static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule)
-      {return fgkDDLModuleMap[iDDL][iModule];}
+    static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule);
 
     enum ESSDRawStreamError {
       kWrongModuleIdErr = 1
@@ -51,6 +51,7 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     Bool_t flag;
 
   protected :
+    static Bool_t fgkDDLModuleMapInit; // Module map is initialized or not
     static Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
 
     UInt_t           fData;         // data read for file

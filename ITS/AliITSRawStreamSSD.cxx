@@ -26,13 +26,15 @@
 #include "Riostream.h"
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
+#include <TClass.h>
 
 #include "AliITSRawStreamSSD.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
 
 ClassImp(AliITSRawStreamSSD)
-  
+
+Bool_t AliITSRawStreamSSD::fgkDDLModuleMapInit = kFALSE;  
 Int_t AliITSRawStreamSSD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
   {0,0,0,0,0,0,0,0,0,0,0,0,
    0,0,0,0,0,0,0,0,0,0,0,0,
@@ -222,6 +224,38 @@ AliITSRawStreamSSD::AliITSRawStreamSSD(AliRawReader* rawReader) :
   }
   //  fRawReader->Reset();
   fRawReader->Select("ITSSSD");
+}
+
+Int_t AliITSRawStreamSSD::GetModuleNumber(UInt_t iDDL, UInt_t iModule)
+{
+  if (!fgkDDLModuleMapInit) {
+    if (!InitDDLModuleMap()) return -1;
+  }
+  return fgkDDLModuleMap[iDDL][iModule];
+}
+
+Bool_t AliITSRawStreamSSD::InitDDLModuleMap()
+{
+  // Initialize the DDL
+  // module map
+  if(!gGeoManager){
+    AliErrorClass("Geometry is not initialized\n");
+    return kFALSE;
+  }
+  TGeoVolume *v = NULL;
+  v = gGeoManager->GetVolume("ITSssdSensitivL5");
+  if(!v) {
+    // new geometry AliITSvPPRasymmFMD
+    AliInfoClass(Form("Enabling the SSD DDL mapping for the AliITSvPPRasymmFMD"));
+    SetvPPRasymmFMDDDLMapping();
+  }
+  else {
+    // new geometry AliITSv11Hybrid
+    AliInfoClass(Form("Enabling the SSD DDL mapping for the AliITSv11Hybrid"));
+    Setv11HybridDDLMapping();
+  }
+  fgkDDLModuleMapInit = kTRUE;
+  return kTRUE;
 }
 
 void AliITSRawStreamSSD::Setv11HybridDDLMapping() {
