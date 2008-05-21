@@ -463,13 +463,14 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gspos("BM49", 7, "B076",  dx, -dy,  0., idrotm[2025], "ONLY");
   gMC->Gspos("BM49", 8, "B076", -dx, -dy,  0., idrotm[2024], "ONLY");
 
-
+//
 // The internal frame
 //
 //
 //
 //  Mother Volumes
 //
+
   ptrd1[0] =  49.8;
   ptrd1[1] =  70.7;
   ptrd1[2] = 376.0;    // CBL 4/4/08
@@ -481,6 +482,7 @@ void AliFRAMEv2::CreateGeometry()
   TString module[18];
   
   for (i = 0; i < 18; i++) {
+
       // Create volume i 
       char name[16];
       Int_t mod = i + 13;
@@ -500,6 +502,7 @@ void AliFRAMEv2::CreateGeometry()
       
       AliMatrix(idrotm[2034+i],  90.0, phi1, 0., 0., 90., phi2);  
       gMC->Gspos(name, 1, "B077", dx, dy, 0., idrotm[2034+i], "ONLY");
+
 //
 //    Position elements of outer Frame
 //
@@ -978,6 +981,29 @@ void AliFRAMEv2::CreateGeometry()
   tpar[1] = kBFMRou;
   tpar[2] = kBFMdz / 2.;
   gMC->Gsvolu("BFMO", "TUBE", kAir, tpar, 3);  
+
+  // CBL ////////////////////////////////////////////////////////
+  //
+  // TRD mother volume
+  //
+
+  ptrd1[0] = 47.4405 - 0.2;
+  ptrd1[1] = 61.1765 - 0.2;
+  ptrd1[2] = kBFMdz / 2.;
+  ptrd1[3] = 38.95;
+  gMC->Gsvolu("BFTRD", "TRD1", kAir, ptrd1, 4);
+  gGeoManager->GetVolume("BFTRD")->SetVisibility(kFALSE);
+
+  for (Int_t i = 0; i < 18; i++) {
+
+    Float_t phiBF  = i * 20.0;      
+    dx =  TMath::Sin(phiBF*kdeg2rad)*(342.0-12.62);
+    dy = -TMath::Cos(phiBF*kdeg2rad)*(342.0-12.62);      
+    gMC->Gspos("BFTRD",i,"BFMO",dx,dy,0.0,idrotm[2034+i],"ONLY");
+
+  }
+
+  // CBL ////////////////////////////////////////////////////////
   
   // Rings
   //
@@ -1126,6 +1152,23 @@ void AliFRAMEv2::CreateGeometry()
 
   gMC->Gsvolu("BBMO", "PGON", kAir, ppgon, 10);
   gMC->Gsdvn("BBCE", "BBMO", 18, 2);
+
+  // CBL ////////////////////////////////////////////////////////
+  //
+  // TRD mother volume
+  //
+
+  AliMatrix(idrotm[2092],  90.0,  90.0,   0.0,   0.0,   90.0,  0.0);
+
+  ptrd1[0] = 47.4405 - 2.5;
+  ptrd1[1] = 61.1765 - 2.5;
+  ptrd1[2] = kBBMdz / 2.;
+  ptrd1[3] = 38.95;
+  gMC->Gsvolu("BBTRD", "TRD1", kAir, ptrd1, 4);
+  gGeoManager->GetVolume("BBTRD")->SetVisibility(kFALSE);
+  gMC->Gspos("BBTRD", 1, "BBCE", 342.0-12.62, 0.0, 0.0, idrotm[2092], "ONLY");
+
+  // CBL ////////////////////////////////////////////////////////
 
   // Longitudinal bars
   bpar[0] =  kBBBdz/2.;
