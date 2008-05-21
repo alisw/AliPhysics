@@ -4,7 +4,7 @@ void LookupWrite(TChain* chain, const char* target) ;
 
 
 
-void runAliAnalysisTaskFlow(Int_t nRuns = 2, TString type = "ESD", Bool_t firstrun = kTRUE, Bool_t usesum = kTRUE, const Char_t* dataDir="/data/alice1/kolk/TherminatorFIX/", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t nRuns = 2, TString type = "ESD", Bool_t firstrun = kTRUE, Bool_t usesum = kTRUE, const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
 {
   TStopwatch timer;
   timer.Start();
