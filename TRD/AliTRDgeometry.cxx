@@ -1660,16 +1660,27 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   const Int_t kNparTube = 3;
   Float_t parTube[kNparTube];
 
+  // Services inside the baby frame
+  const Float_t kBBMdz = 223.0;
+  const Float_t kBBSdz =   8.5;
+
+  // Services inside the back frame
+  const Float_t kBFMdz = 118.0;
+  const Float_t kBFSdz =   8.5;
+
   // The rotation matrices
-  const Int_t kNmatrix = 7;
+  const Int_t kNmatrix = 10;
   Int_t   matrix[kNmatrix];
-  gMC->Matrix(matrix[0], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
-  gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0);
+  gMC->Matrix(matrix[0], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0); // rotation around y-axis
+  gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0); // rotation around y-axis
   gMC->Matrix(matrix[2],   0.0,   0.0,  90.0,  90.0,  90.0,   0.0);
   gMC->Matrix(matrix[3], 180.0,   0.0,  90.0,  90.0,  90.0, 180.0);
   gMC->Matrix(matrix[4],  90.0,   0.0,   0.0,   0.0,  90.0,  90.0);
   gMC->Matrix(matrix[5], 100.0,   0.0,  90.0, 270.0,  10.0,   0.0);
   gMC->Matrix(matrix[6],  80.0,   0.0,  90.0, 270.0,  10.0, 180.0);
+  gMC->Matrix(matrix[7],  90.0,  10.0,  90.0, 100.0,   0.0,   0.0); // rotation around z-axis
+  gMC->Matrix(matrix[8],  90.0, 350.0,  90.0,  80.0,   0.0,   0.0); // rotation around z-axis
+  gMC->Matrix(matrix[9],  90.0,  90.0,  90.0, 180.0,   0.0,   0.0); // rotation around z-axis
     
   //
   // The cooling arterias
@@ -1745,6 +1756,40 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
 
   }
 
+  for (iplan = 1; iplan < kNplan; iplan++) { 
+
+    // In baby frame
+    xpos      = fCwidth[iplan]/2.0 + kCOLwid/2.0;
+    ypos      = kBBSdz/2.0 - kBBMdz/2.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
+              + iplan * (fgkCH + fgkVspace);
+    parCOL[0] = kCOLwid/2.0;
+    parCOL[1] = kBBSdz /2.0;
+    parCOL[2] = kCOLhgt/2.0;
+    gMC->Gsposp("UTC3",iplan+6*kNplan,"BBTRD", xpos, ypos, zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC3",iplan+7*kNplan,"BBTRD",-xpos, ypos, zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
+
+  }
+
+  for (iplan = 1; iplan < kNplan; iplan++) { 
+
+    // In back frame
+    xpos      = fCwidth[iplan]/2.0 + kCOLwid/2.0 + kCOLposx;
+    ypos      = -kBFSdz/2.0 + kBFMdz/2.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
+              + iplan * (fgkCH + fgkVspace);
+    parCOL[0] = kCOLwid/2.0;
+    parCOL[1] = kBFSdz /2.0;
+    parCOL[2] = kCOLhgt/2.0;
+    gMC->Gsposp("UTC3",iplan+6*kNplan,"BFTRD", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC3",iplan+7*kNplan,"BFTRD",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
+
+  }
+
   // The upper most layer (reaching into TOF acceptance)
   // Along the chambers
   xpos      = fCwidth[5]/2.0 - kCOLhgt/2.0 - 1.3;
@@ -1779,6 +1824,28 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gsposp("UTC3",6+4*kNplan,"UTF2", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
   gMC->Gsposp("UTC3",6+5*kNplan,"UTF2",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  // In baby frame
+  xpos      = fCwidth[5]/2.0 - kCOLhgt/2.0 - 2.3;
+  ypos      = kBBSdz/2.0 - kBBMdz/2.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.4 - kCOLwid/2.0; 
+  parCOL[0] = kCOLwid/2.0;
+  parCOL[1] = kBBSdz /2.0;
+  parCOL[2] = kCOLhgt/2.0;
+  gMC->Gsposp("UTC3",6+6*kNplan,"BBTRD", xpos, ypos, zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC3",6+7*kNplan,"BBTRD",-xpos, ypos, zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  // In back frame
+  xpos      = fCwidth[5]/2.0 - kCOLhgt/2.0 - 1.3;
+  ypos      = -kBFSdz/2.0 + kBFMdz/2.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.4 - kCOLwid/2.0; 
+  parCOL[0] = kCOLwid/2.0;
+  parCOL[1] = kBFSdz /2.0;
+  parCOL[2] = kCOLhgt/2.0;
+  gMC->Gsposp("UTC3",6+6*kNplan,"BFTRD", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC3",6+7*kNplan,"BFTRD",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
 
   //
@@ -1839,11 +1906,45 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
 
   }
 
-  // The upper most layer (reaching into TOF acceptance)
+  for (iplan = 1; iplan < kNplan; iplan++) { 
+
+    // In baby frame
+    xpos      = fCwidth[iplan]/2.0 + kPWRwid/2.0 + 0.93;
+    ypos      = kBBSdz/2.0 - kBBMdz/2.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
+              + iplan * (fgkCH + fgkVspace);
+    parPWR[0] = kPWRwid/2.0;
+    parPWR[1] = kBBSdz /2.0;
+    parPWR[2] = kPWRhgt/2.0;
+    gMC->Gsposp("UTP3",iplan+6*kNplan,"BBTRD", xpos, ypos, zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP3",iplan+7*kNplan,"BBTRD",-xpos, ypos, zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
+
+  }
+
+  for (iplan = 1; iplan < kNplan; iplan++) { 
+
+    // In back frame
+    xpos      = fCwidth[iplan]/2.0 + kPWRwid/2.0 + kPWRposx;
+    ypos      = -kBFSdz/2.0 + kBFMdz/2.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
+              + iplan * (fgkCH + fgkVspace);
+    parPWR[0] = kPWRwid/2.0;
+    parPWR[1] = kBFSdz /2.0;
+    parPWR[2] = kPWRhgt/2.0;
+    gMC->Gsposp("UTP3",iplan+8*kNplan,"BFTRD", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP3",iplan+9*kNplan,"BFTRD",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
+
+  }
+
+  // The upper most layer
   // Along the chambers
   xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
-  ypos      = 0.0;
-  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
+  ypos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
+  zpos      = 0.0;
   parPWR[0] = kPWRwid   /2.0;
   parPWR[1] = fgkSlength/2.0;
   parPWR[2] = kPWRhgt   /2.0;
@@ -1873,6 +1974,28 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gsposp("UTP3",6+4*kNplan,"UTF2", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
   gMC->Gsposp("UTP3",6+5*kNplan,"UTF2",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  // In baby frame
+  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 2.3;
+  ypos      = kBBSdz/2.0 - kBBMdz/2.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
+  parPWR[0] = kPWRwid/2.0;
+  parPWR[1] = kBBSdz /2.0;
+  parPWR[2] = kPWRhgt/2.0;
+  gMC->Gsposp("UTP3",6+6*kNplan,"BBTRD", xpos, ypos, zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP3",6+7*kNplan,"BBTRD",-xpos, ypos, zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  // In back frame
+  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
+  ypos      = -kBFSdz/2.0 + kBFMdz/2.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
+  parPWR[0] = kPWRwid/2.0;
+  parPWR[1] = kBFSdz /2.0;
+  parPWR[2] = kPWRhgt/2.0;
+  gMC->Gsposp("UTP3",6+8*kNplan,"BFTRD", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP3",6+9*kNplan,"BFTRD",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
 
   //
