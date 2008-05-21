@@ -746,8 +746,7 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
   AliExternalTrackParam *track1;
   Double_t field=GetFieldkG();
   const Int_t knacc = (Int_t)fTrkArraySel.GetEntriesFast();
-  TClonesArray *linarray = new TClonesArray("AliStrLine",1000);
-  TClonesArray &lines = *linarray;
+  static TClonesArray linarray("AliStrLine",knacc);
   for(Int_t i=0; i<knacc; i++){
     track1 = (AliExternalTrackParam*)fTrkArraySel.At(i);
     Double_t alpha=track1->GetAlpha();
@@ -769,11 +768,10 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
 	iel++;
       }    
     }
-    new(lines[i]) AliStrLine(pos,sigmasq,wmat,dir);     
+    new(linarray[i]) AliStrLine(pos,sigmasq,wmat,dir);     
   }
-  fVert=TrackletVertexFinder(linarray,optUseWeights);
-  linarray->Delete();
-  delete linarray;
+  fVert=TrackletVertexFinder(&linarray,optUseWeights);
+  linarray.Clear("C");
 }
 //---------------------------------------------------------------------------
 AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights)
@@ -797,8 +795,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t 
   }
 
   for(Int_t i=0; i<knacc; i++){
-    AliStrLine* line1 = (AliStrLine*)lines->At(i);
-    if (!line1) continue;
+    AliStrLine* line1 = (AliStrLine*)lines->At(i); 
     Double_t p0[3],cd[3],sigmasq[3];
     Double_t wmat[9];
     line1->GetP0(p0);
@@ -1398,4 +1395,3 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedESDTracks(TObjArray *trkArray,
   return fCurrentVertex;
 }
 //--------------------------------------------------------------------------
-
