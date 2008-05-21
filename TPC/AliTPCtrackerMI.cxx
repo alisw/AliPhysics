@@ -125,6 +125,7 @@
 ClassImp(AliTPCtrackerMI)
 
 
+
 class AliTPCFastMath {
 public:
   AliTPCFastMath();  
@@ -1193,6 +1194,32 @@ void AliTPCtrackerMI::UnloadClusters()
   return ;
 }
 
+void AliTPCtrackerMI::FillClusterArray(TObjArray* array) const{
+  //
+  // Filling cluster to the array - For visualization purposes
+  //
+  Int_t nrows=0;
+  nrows = fOuterSec->GetNRows();
+  for (Int_t sec = 0;sec<fkNOS;sec++)
+    for (Int_t row = 0;row<nrows;row++){
+      AliTPCtrackerRow*  tpcrow = &(fOuterSec[sec%fkNOS][row]);
+      if (!tpcrow) continue;
+      for (Int_t icl = 0;icl<tpcrow->GetN();icl++){
+	array->AddLast((TObject*)((*tpcrow)[icl]));
+      }
+    } 
+  nrows = fInnerSec->GetNRows();
+  for (Int_t sec = 0;sec<fkNIS;sec++)
+    for (Int_t row = 0;row<nrows;row++){
+      AliTPCtrackerRow*  tpcrow = &(fInnerSec[sec%fkNIS][row]);
+      if (!tpcrow) continue;
+      for (Int_t icl = 0;icl<tpcrow->GetN();icl++){
+	array->AddLast((TObject*)(*tpcrow)[icl]);
+      }
+    }
+}
+
+
 void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   //
   //
@@ -1216,8 +1243,10 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   if (AliTPCReconstructor::StreamLevel()>1) {
     Float_t gx[3];
     cluster->GetGlobalXYZ(gx);
+    Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
     TTreeSRedirector &cstream = *fDebugStreamer;
     cstream<<"Transform"<<
+      "event="<<event<<
       "x0="<<x[0]<<
       "x1="<<x[1]<<
       "x2="<<x[2]<<
@@ -2559,7 +2588,6 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   }
   //FindKinks(fSeeds,event);
   Info("RefitInward","Number of refitted tracks %d",ntracks);
-  fEvent =0;
   return 0;
 }
 

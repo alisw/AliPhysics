@@ -46,6 +46,7 @@ public:
   virtual Int_t LoadClusters (TObjArray * arr); // another input
   Int_t  LoadClusters();
   void   UnloadClusters();
+  virtual void FillClusterArray(TObjArray* array) const;
   void   Transform(AliTPCclusterMI * cluster);
   //
   void FillESD(TObjArray* arr);
