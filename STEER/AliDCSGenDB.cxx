@@ -128,7 +128,7 @@ void AliDCSGenDB::MakeCalib(const char *list, const char *mapDCS,
    // Configuration read from ASCII file specified by list
    
    TClonesArray *arr = ReadList(list);
-   AliDCSSensorArray *fSensor = new AliDCSSensorArray(arr);
+   fSensor = new AliDCSSensorArray(arr);
    fSensor->SetStartTime(startTime);
    fSensor->SetEndTime(endTime);
    TMap* map = SetGraphFile(mapDCS);
