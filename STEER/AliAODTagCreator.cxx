@@ -380,7 +380,7 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
 }
 
 //_____________________________________________________________________________
-void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
+void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
   //private method that creates tag files
   TString fSession = type;
   TString fguid, fmd5, fturl;
@@ -423,15 +423,15 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
   }
   TTree *aodTree = (TTree*)file->Get("aodTree");*/
   AliAODEvent *aod = new AliAODEvent();
-  aod->ReadFromTree(fChain);
-  fChain->GetEntry(0);
-  TFile *f = fChain->GetFile();
+  aod->ReadFromTree(chain);
+  chain->GetEntry(0);
+  TFile *f = chain->GetFile();
   fTempGuid = f->GetUUID().AsString();
   Int_t firstEvent = 0, lastEvent = 0;
   //lastEvent = (Int_t)aodTree->GetEntries();
 
   TString localFileName = "Run"; localFileName += aod->GetRunNumber(); 
-  localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; localFileName += fChain->GetEntries(); //localFileName += "."; localFileName += Counter;
+  localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; localFileName += chain->GetEntries(); //localFileName += "."; localFileName += Counter;
   localFileName += ".AOD.tag.root";
 
   TString fileName;
@@ -470,7 +470,7 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
   AliInfo(Form("Creating the AOD tags......."));
 
   // loop over events 
-  Int_t nEvents = fChain->GetEntries();
+  Int_t nEvents = chain->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < nEvents; iEventNumber++) {
     AliEventTag *evTag = (AliEventTag *)evTagList->At(iEventNumber);
     ntrack = 0;
@@ -484,10 +484,10 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
     maxPt = .0; meanPt = .0; totalP = .0;
 
     // read events
-    fChain->GetEntry(iEventNumber);
-    TFile *f = fChain->GetFile();
-    const TUrl *url = f->GetEndpointUrl();
-    fguid = f->GetUUID().AsString();
+    chain->GetEntry(iEventNumber);
+    TFile *file = chain->GetFile();
+    const TUrl *url = file->GetEndpointUrl();
+    fguid = file->GetUUID().AsString();
     if(fSession == "grid") {
       TString fturltemp = "alien://"; fturltemp += url->GetFile();
       fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
@@ -610,13 +610,13 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
       tag->Clear("");
     }
     tag->AddEventTag(*evTag);
-    if(iEventNumber+1 == fChain->GetEntries()) {
+    if(iEventNumber+1 == chain->GetEntries()) {
       //AliInfo(Form("File: %s",fturl.Data()));
       ttag.Fill();
       tag->Clear("");
     }      
   }//event loop
-  lastEvent = fChain->GetEntries();
+  lastEvent = chain->GetEntries();
     
   ftag->cd();
   //ttag.Fill();
