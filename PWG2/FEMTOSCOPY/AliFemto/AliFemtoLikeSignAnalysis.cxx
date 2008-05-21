@@ -187,8 +187,8 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 	  if (fPairCut->Pass(tThePair)){
 	    for (tCorrFctnIter=fCorrFctnCollection->begin();
 		 tCorrFctnIter!=fCorrFctnCollection->end();tCorrFctnIter++){
-	      AliFemtoLikeSignCorrFctn* CorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*tCorrFctnIter);
-	      if (CorrFctn) CorrFctn->AddLikeSignPositivePair(tThePair);
+	      AliFemtoLikeSignCorrFctn* tCorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*tCorrFctnIter);
+	      if (tCorrFctn) tCorrFctn->AddLikeSignPositivePair(tThePair);
 	    }
 	  }  // if passed pair cut
 	}    // loop over second particle

@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoCutMonitorParticleMomRes - the cut monitor for particles to study  ///
-/// the difference between reconstructed and true momentum    ///
-///                                                                          ///
+//                                                                            //
+// AliFemtoCutMonitorParticleMomRes - the cut monitor for particles to study  //
+// the difference between reconstructed and true momentum                     //
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef AliFemtoCutMonitorParticleMomRes_H
 #define AliFemtoCutMonitorParticleMomRes_H
