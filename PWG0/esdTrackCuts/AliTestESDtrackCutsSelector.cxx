@@ -21,7 +21,7 @@
 #include <AliRunLoader.h>
 #include <AliStack.h>
 
-#include "esdTrackCuts/AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 
 

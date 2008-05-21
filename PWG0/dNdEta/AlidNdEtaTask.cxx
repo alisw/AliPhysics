@@ -29,7 +29,7 @@
 #include <AliMCEvent.h>
 #include <AliESDInputHandler.h>
 
-#include "esdTrackCuts/AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
@@ -259,7 +259,6 @@ void AlidNdEtaTask::Exec(Option_t*)
 
     if (fUseMCKine)
     {
-
       stack = mcEvent->Stack();
       if (!stack)
       {
@@ -411,7 +410,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       return;
     }
 
-    AliStack* stack = mcEvent->Stack();
+    stack = mcEvent->Stack();
     if (!stack)
     {
       AliDebug(AliLog::kError, "Stack not available");
@@ -644,7 +643,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fPartPt->Scale(1.0/events);
     fPartPt->Scale(1.0/fPartPt->GetBinWidth(1));
 
-    TFile* fout = new TFile("analysis_mc.root","RECREATE");
+    fout = new TFile("analysis_mc.root","RECREATE");
 
     fdNdEtaAnalysis->SaveHistograms();
     fdNdEtaAnalysisNSD->SaveHistograms();

@@ -1225,7 +1225,7 @@ void EfficiencySpecies()
   TCanvas* canvas = new TCanvas("EfficiencySpecies", "EfficiencySpecies", 1000, 500);
   canvas->Divide(2, 1);
 
-  for (Int_t loop=0; loop<2; ++loop)
+  for (Int_t loop=0; loop<1; ++loop)
   {
     Printf("%s", fileName[loop]);
 
@@ -1251,6 +1251,9 @@ void EfficiencySpecies()
       Printf("Could not open %s", fileName[loop]);
       return;
     }
+
+    Float_t sumGen = 0;
+    Float_t sumMeas = 0;
 
     for (Int_t i=0; i<3; ++i)
     {
@@ -1286,6 +1289,9 @@ void EfficiencySpecies()
 
       genePt->Sumw2();
       measPt->Sumw2();
+
+      sumGen += genePt->Integral();
+      sumMeas += measPt->Integral();
 
       TH1* effPt = (TH1*) genePt->Clone(Form("effPt_%d", i));
       effPt->Reset();
@@ -1325,6 +1331,8 @@ void EfficiencySpecies()
     }
 
     Printf("In total %.4f of the particles are below their effective pt cut off", (Float_t) below / total);
+
+    Printf("%f measured, %f generated, effiency: %f", sumGen, sumMeas, sumMeas / sumGen);
 
     legend->Draw();
   }

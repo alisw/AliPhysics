@@ -20,6 +20,7 @@
 #include <TNamed.h>
 #include "AlidNdEtaCorrection.h"
 #include "AliPWG0Helper.h"
+#include <TString.h>
 
 class TH1F;
 class TCollection;
@@ -32,7 +33,7 @@ public:
   enum { kVertexBinning = 1+2 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis();
-  dNdEtaAnalysis(Char_t* name, Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC);
+  dNdEtaAnalysis(Char_t* name, Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kInvalid);
   virtual ~dNdEtaAnalysis();
 
   dNdEtaAnalysis(const dNdEtaAnalysis &c);
@@ -67,7 +68,10 @@ protected:
   TH1F* fdNdEta[kVertexBinning];                   // dndeta results for different vertex bins (0 = full range)
   TH1F* fdNdEtaPtCutOffCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range), pt cut off corrected
 
-  ClassDef(dNdEtaAnalysis, 1)
+  AliPWG0Helper::AnalysisMode fAnalysisMode;       // detector (combination) used for the analysis
+  TString fTag;                                   // tag saved that describes the applied correction
+
+  ClassDef(dNdEtaAnalysis, 2)
 };
 
 #endif

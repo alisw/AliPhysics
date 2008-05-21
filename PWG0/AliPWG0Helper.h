@@ -22,7 +22,7 @@ class AliPWG0Helper : public TObject
 {
   public:
     enum Trigger { kMB1 = 0, kMB2 }; // definition from ALICE-INT-2005-025
-    enum AnalysisMode { kSPD = 0, kTPC, kTPCITS };
+    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS };
 
     static Bool_t IsEventTriggered(const AliESD* aEsd, Trigger trigger = kMB2);
     static Bool_t IsEventTriggered(ULong64_t triggerMask, Trigger trigger = kMB2);

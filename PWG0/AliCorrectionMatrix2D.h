@@ -39,6 +39,8 @@ public:
   TH1F* Get1DCorrection(Char_t* opt="x", Float_t min=0, Float_t max=0) {return Get1DCorrectionHistogram(opt,min,max);}
   TH1F* Get1DCorrectionHistogram(Char_t* opt="x", Float_t min=0, Float_t max=0);
 
+  void Rebin(Int_t x = 1, Int_t y = 1);
+
   void FillMeas(Float_t ax, Float_t ay);
   void FillGene(Float_t ax, Float_t ay);
   Float_t GetCorrection(Float_t ax, Float_t ay) const;

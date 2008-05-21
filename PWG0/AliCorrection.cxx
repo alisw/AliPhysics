@@ -45,7 +45,7 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
     static Float_t binLimitsPtTmp[] = {0.0, 0.05, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3, 0.325, 0.35, 0.375, 0.4, 0.425, 0.45, 0.475, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
     binLimitsPt = (Float_t*) binLimitsPtTmp;
     nBinsPt = 28;
-  } 
+  }
   else if (analysisMode == AliPWG0Helper::kSPD)
   {
     static Float_t binLimitsPtTmp[] = {-0.5, 100.0};
@@ -63,10 +63,11 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
   //Float_t binLimitsVtx[] = {-20,-15,-10,-6,-3,0,3,6,10,15,20};
   //Float_t binLimitsVtx[] = {-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
   Float_t binLimitsVtx[] = {-20,-15,-10,-8,-6,-4,-2,0,2,4,6,8,10,15,20};
-  Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+  Float_t binLimitsEta[] = {-2,-1.8,-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0};
+//  Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
 //  Float_t binLimitsEta[] = { -7.0, -6.9, -6.8, -6.7, -6.6, -6.5, -6.4, -6.3, -6.2, -6.1, -6.0, -5.9, -5.8, -5.7, -5.6, -5.5, -5.4, -5.3, -5.2, -5.1, -5.0, -4.9, -4.8, -4.7, -4.6, -4.5, -4.4, -4.3, -4.2, -4.1, -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, -0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 7.0 };
 
-  TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",14, binLimitsVtx, 40, binLimitsEta , nBinsPt, binLimitsPt);
+  TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",14, binLimitsVtx, 20, binLimitsEta , nBinsPt, binLimitsPt);
 
   fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 14, binLimitsVtx, 22, binLimitsN);
   fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
@@ -370,7 +371,7 @@ void AliCorrection::PrintInfo(Float_t ptCut)
 
   Printf("AliCorrection::PrintInfo: Whole phasespace:");
 
-  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %1.f, events generated %1.f", measured->Integral(), generated->Integral(), measuredEvents->Integral(), generatedEvents->Integral());
+  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", measured->Integral(), generated->Integral(), measuredEvents->Integral(), generatedEvents->Integral());
 
   Printf("AliCorrection::PrintInfo: Values in |eta| < 0.8, |vtx-z| < 10 and pt > %.2f:", ptCut);
 
@@ -380,7 +381,7 @@ void AliCorrection::PrintInfo(Float_t ptCut)
   Float_t eventsM = measuredEvents->Integral(measuredEvents->GetXaxis()->FindBin(-9.9), measuredEvents->GetXaxis()->FindBin(9.9), 1, measuredEvents->GetNbinsY());
   Float_t eventsG = generatedEvents->Integral(generatedEvents->GetXaxis()->FindBin(-9.9), generatedEvents->GetXaxis()->FindBin(9.9), 1, generatedEvents->GetNbinsY());
 
-  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %1.f, events generated %1.f", tracksM, tracksG, eventsM, eventsG);
+  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", tracksM, tracksG, eventsM, eventsG);
 
   if (tracksM > 0)
     Printf("Effective average correction factor for TRACKS: %.3f", tracksG / tracksM);

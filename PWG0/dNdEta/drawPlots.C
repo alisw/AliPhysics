@@ -303,7 +303,9 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBVtxNoPt->SetMarkerStyle(22);
   histESDMBTracksNoPt->SetMarkerStyle(23);
   
-  Float_t etaLimit = 1.2999;
+  //Float_t etaLimit = 1.2999;
+  Float_t etaLimit = 2.01;
+  Float_t etaPlotLimit = 2.2;
 
   histESDMBVtx->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMB->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
@@ -318,7 +320,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   Float_t max = TMath::Max(histESDMBVtx->GetMaximum(), histESDMB->GetMaximum());
   max = TMath::Max(max, histESD->GetMaximum());
 
-  TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0, max * 1.1);
+  TH2F* dummy = new TH2F("dummy", "", 100, -etaPlotLimit, etaPlotLimit, 1000, 0, max * 1.1);
   Prepare1DPlot(dummy);
   dummy->SetStats(kFALSE);
   dummy->SetXTitle("#eta");
@@ -346,9 +348,13 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   TFile* file2 = TFile::Open("analysis_mc.root");
   TH1* histMC = (TH1*) file2->Get("dndeta/dNdEta_corrected")->Clone("cloned");
   TH1* histMCnsd = (TH1*) file2->Get("dndetaNSD/dNdEta_corrected");
-  // FAKE
-  if (!histMCnsd)
-  	histMCnsd = histMC;
+  if (histMCnsd)
+  {
+  	histMCnsd = (TH1*) histMCnsd->Clone("clonedNSD");
+  }
+  else
+  	histMCnsd = new TH1F;
+
   TH1* histMCTr = (TH1*) file2->Get("dndetaTr/dNdEta_corrected")->Clone("cloned2");
   TH1* histMCTrVtx = (TH1*) file2->Get("dndetaTrVtx/dNdEta_corrected")->Clone("cloned3");
 
@@ -374,8 +380,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: Tracks w/o resolution effect");
   TH1* histMCTracksPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
-  TCanvas* canvas2 = new TCanvas("dNdEta2", "dNdEta2", 500, 500);
-
   Prepare1DPlot(histMC);
   Prepare1DPlot(histMCnsd);
   Prepare1DPlot(histMCTr);
@@ -384,8 +388,17 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   Prepare1DPlot(histMCPtCut);
   Prepare1DPlot(histMCTrPtCut);
   Prepare1DPlot(histMCTrVtxPtCut);
-  if (histMCTracksPtCut)
-    Prepare1DPlot(histMCTracksPtCut);
+  Prepare1DPlot(histMCTracksPtCut);
+
+  histMC->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histMCnsd->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histMCTr->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histMCTrVtx->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+
+  histMCPtCut->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histMCTrPtCut->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histMCTrVtxPtCut->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histMCTracksPtCut->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
 
   histMC->SetLineColor(1);
   histMCnsd->SetLineColor(6);
@@ -398,8 +411,9 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   if (histMCTracksPtCut)
     histMCTracksPtCut->SetLineColor(4);
 
+  TCanvas* canvas2 = new TCanvas("dNdEta2", "dNdEta2", 500, 500);
+
   TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
-  Prepare1DPlot(dummy2);
   dummy2->GetYaxis()->SetRangeUser(0, max * 1.1);
 
   dummy2->DrawCopy();
@@ -426,6 +440,10 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
     canvas2->SaveAs("dNdEta2.gif");
     canvas2->SaveAs("dNdEta2.eps");
   }
+
+  DrawdNdEtaRatio(histESD, histMC, "full_inelastic", etaPlotLimit);
+  DrawdNdEtaRatio(histESDMB, histMCTr, "triggered", etaPlotLimit);
+  DrawdNdEtaRatio(histESDMBVtx, histMCTrVtx, "triggered_vertex", etaPlotLimit);
 
   new TCanvas;
   dummy2->DrawCopy();
@@ -503,9 +521,10 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   Float_t minR = TMath::Min(0.961, ratio->GetMinimum() * 0.95);
   Float_t maxR = TMath::Max(1.049, ratio->GetMaximum() * 1.05);
 
-  TH1F dummy3("dummy3", ";#eta;Ratio: MC / ESD", 1, -1.5, 1.5);
+  TH1F dummy3("dummy3", ";#eta;Ratio: MC / ESD", 100, -etaPlotLimit, etaPlotLimit);
   dummy3.SetStats(kFALSE);
-  dummy3.SetBinContent(1, 1);
+  for (Int_t i=1; i<=100; ++i)
+    dummy3.SetBinContent(i, 1);
   dummy3.GetYaxis()->SetRangeUser(minR, maxR);
   dummy3.SetLineWidth(2);
   dummy3.GetXaxis()->SetLabelSize(0.06);
@@ -537,6 +556,77 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   legend->AddEntry(ratio, "mc/esd");
   legend->AddEntry(ratioNoPt, "mc/esd, not pt cut off corrected");
   legend->Draw();
+}
+
+void DrawdNdEtaRatio(TH1* corr, TH1* mc, const char* name, Float_t etaPlotLimit)
+{
+  TCanvas* canvas3 = new TCanvas(name, name, 700, 600);
+  canvas3->Range(0, 0, 1, 1);
+
+  TPad* pad1 = new TPad(Form("%s_1", name), "", 0, 0.5, 0.98, 0.98);
+  pad1->Draw();
+
+  TPad* pad2 = new TPad(Form("%s_2", name), "", 0, 0.02, 0.98, 0.5);
+  pad2->Draw();
+
+  pad1->SetRightMargin(0.05);
+  pad2->SetRightMargin(0.05);
+
+  // no border between them
+  pad1->SetBottomMargin(0);
+  pad2->SetTopMargin(0);
+
+  pad1->cd();
+
+  TLegend* legend = new TLegend(0.4, 0.05, 0.65, 0.3);
+  legend->SetFillColor(0);
+  legend->AddEntry(corr, "corrected");
+  legend->AddEntry(mc, "MC prediction");
+
+  TH2F* dummy = new TH2F("dummy", "", 100, -etaPlotLimit, etaPlotLimit, 1000, 0, corr->GetMaximum() * 1.1);
+  Prepare1DPlot(dummy);
+  dummy->SetStats(kFALSE);
+  dummy->SetXTitle("#eta");
+  dummy->SetYTitle("dN_{ch}/d#eta");
+  dummy->GetYaxis()->SetTitleOffset(1);
+
+  dummy->GetXaxis()->SetLabelSize(0.06);
+  dummy->GetYaxis()->SetLabelSize(0.06);
+  dummy->GetXaxis()->SetTitleSize(0.06);
+  dummy->GetYaxis()->SetTitleSize(0.06);
+  dummy->GetYaxis()->SetTitleOffset(0.7);
+  dummy->DrawCopy();
+
+  corr->Draw("SAME");
+  mc->Draw("SAME");
+
+  legend->Draw();
+
+  pad2->cd();
+  pad2->SetBottomMargin(0.15);
+
+  TH1* ratio = (TH1*) mc->Clone("ratio");
+  ratio->Divide(corr);
+
+  Float_t minR = TMath::Min(0.961, ratio->GetMinimum() * 0.95);
+  Float_t maxR = TMath::Max(1.049, ratio->GetMaximum() * 1.05);
+
+  TH1F dummy3("dummy3", ";#eta;Ratio: MC / corr", 100, -etaPlotLimit, etaPlotLimit);
+  dummy3.SetStats(kFALSE);
+  for (Int_t i=1; i<=100; ++i)
+  	dummy3.SetBinContent(i, 1);
+  dummy3.GetYaxis()->SetRangeUser(minR, maxR);
+  dummy3.SetLineWidth(2);
+  dummy3.GetXaxis()->SetLabelSize(0.06);
+  dummy3.GetYaxis()->SetLabelSize(0.06);
+  dummy3.GetXaxis()->SetTitleSize(0.06);
+  dummy3.GetYaxis()->SetTitleSize(0.06);
+  dummy3.GetYaxis()->SetTitleOffset(0.7);
+  dummy3.DrawCopy();
+
+  ratio->Draw("SAME");
+
+  canvas3->Modified();
 }
 
 void ptSpectrum()

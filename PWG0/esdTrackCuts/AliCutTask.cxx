@@ -7,7 +7,7 @@
 #include "TParticle.h"
 #include "TParticlePDG.h"
 
-#include "esdTrackCuts/AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 
 #include "AliAnalysisTask.h"

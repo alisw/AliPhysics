@@ -21,7 +21,7 @@
 #include <../STEER/AliGenPythiaEventHeader.h>
 #include <../STEER/AliGenCocktailEventHeader.h>
 
-#include "esdTrackCuts/AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
 

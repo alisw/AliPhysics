@@ -4,7 +4,9 @@
 #define AliMultiplicityTask_H
 
 #include "AliAnalysisTask.h"
+
 #include <TString.h>
+#include "AliPWG0Helper.h"
 
 class AliESDtrackCuts;
 class AliMultiplicityCorrection;
@@ -15,8 +17,6 @@ class AliESDEvent;
 
 class AliMultiplicityTask : public AliAnalysisTask {
   public:
-    enum AnalysisMethod { kSPD = 0, kTPC };
-
     AliMultiplicityTask(const char* opt = "");
     virtual ~AliMultiplicityTask();
 
@@ -28,14 +28,14 @@ class AliMultiplicityTask : public AliAnalysisTask {
     void SetTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts; }
     void SetPtSpectrum(TH1* hist) { fPtSpectrum = hist; }
 
-    void SetAnalysisMode(AnalysisMethod mode) { fAnalysisMode = mode; }
+    void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
 
  protected:
     AliESDEvent *fESD;    //! ESD object
 
     TString fOption;      // option string
-    AnalysisMethod fAnalysisMode; // detector that is used for analysis
+    AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
 
     AliMultiplicityCorrection* fMultiplicity; //! object containing the extracted data
