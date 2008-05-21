@@ -24,7 +24,7 @@ private:
   virtual void   InitESDs(); 
   virtual void   InitRecPoints() {;} 
   virtual void   InitRaws(); 
-  virtual void   MakeRecPoints(TTree * recTree) {;} 
+  virtual void   MakeRecPoints(TTree * /*recTree*/) {;} 
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
   virtual void   StartOfDetectorCycle() ; 
