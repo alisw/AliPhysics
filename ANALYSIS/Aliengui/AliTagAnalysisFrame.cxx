@@ -47,12 +47,12 @@
 ClassImp(AliTagAnalysisFrame)
 
 //___________________________________________________________________________
-AliTagAnalysisFrame::AliTagAnalysisFrame(const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI* fAliAnalysisGUI): 
+AliTagAnalysisFrame::AliTagAnalysisFrame(const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI* aliAnalysisGUI): 
   TGMainFrame(main, w, h, kHorizontalFrame), 
   fkNumberOfTags(3), 
   fVFrame1(0), fVFrame2(0),
   fGroup1(0), fGroup2(0), fGroup3(0),
-  fAliAnalysisGUI(fAliAnalysisGUI),
+  fAliAnalysisGUI(aliAnalysisGUI),
   fTagFrame(0), fAliEnBrowser(0),
   fLocalLabel1(0), fLocalPath(0),
   fLocalButton(0), fButtonInsert(0), fButtonRun(0),
