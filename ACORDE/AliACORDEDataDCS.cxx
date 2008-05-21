@@ -22,10 +22,11 @@ AliACORDEDataDCS::AliACORDEDataDCS():
 	fStartTime(0),
 	fEndTime(0),
 	fGraphs("TGraph",kNGraphs),
+        fFunc(0),
 	fIsProcessed(kFALSE)
 {
 	for(int i=0;i<kNHistos;i++) fHv[i]=0x0;
-        fFunc = 0;
+        
 }
 
 //---------------------------------------------------------------
@@ -35,13 +36,14 @@ AliACORDEDataDCS::AliACORDEDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime)
 	fStartTime(startTime),
 	fEndTime(endTime),
 	fGraphs("TGraph",kNGraphs),
+        fFunc(0),
 	fIsProcessed(kFALSE)
 {
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
 	TTimeStamp(startTime).AsString(),
 	TTimeStamp(endTime).AsString()));
 
-        fFunc = 0;
+       
 	Init();
 
 }
@@ -53,7 +55,52 @@ AliACORDEDataDCS::~AliACORDEDataDCS() {
 	fGraphs.Clear("C");
 	fFunc=0;
 }
+//---------------------------------------------------------------
 
+AliACORDEDataDCS::AliACORDEDataDCS(const AliACORDEDataDCS & data):
+TObject(),
+fRun(0),
+fStartTime(0),
+fEndTime(0),
+fGraphs("TGraph",kNGraphs),
+fFunc(0),
+fIsProcessed(kFALSE)
+{
+
+	fRun=data.fRun;
+	fStartTime=data.fStartTime;
+	fEndTime=data.fEndTime;
+	fFunc=data.fFunc;
+	fIsProcessed=data.fIsProcessed;
+
+
+        for(int i=0;i<kNAliases;i++){fAliasNames[i] = data.fAliasNames[i];}
+
+        for(int i=0;i<kNHistos;i++){fHv[i]=data.fHv[i];}
+
+
+
+        
+}
+//--------------------------------------------------------------
+AliACORDEDataDCS& AliACORDEDataDCS:: operator=(const AliACORDEDataDCS & data) { 
+
+	
+        this->fRun=data.fRun;
+	this->fStartTime=data.fStartTime;
+	this->fEndTime=data.fEndTime;
+	this->fFunc=data.fFunc;
+	this->fIsProcessed=data.fIsProcessed;
+
+
+        for(int i=0;i<kNAliases;i++){this->fAliasNames[i] = data.fAliasNames[i];}
+
+        for(int i=0;i<kNHistos;i++){this->fHv[i]=data.fHv[i];}
+
+	
+         return *this;
+ 
+}
 //---------------------------------------------------------------
 void AliACORDEDataDCS::ProcessData(TMap& aliasMap){
 
