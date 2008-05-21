@@ -160,7 +160,6 @@ void AliGenDPMjet::Generate()
 
   Float_t polar[3]    =   {0,0,0};
   Float_t origin[3]   =   {0,0,0};
-  Float_t origin0[3]  =   {0,0,0};
   Float_t p[3];
   Float_t tof;
 
@@ -202,12 +201,6 @@ void AliGenDPMjet::Generate()
 	  newPos[i]    = i;
 	  pSelected[i] = 0;
       }
-      
-//      Get event vertex
-      
-      fVertex[0] = origin0[0];
-      fVertex[1] = origin0[1];	
-      fVertex[2] = origin0[2];
       
 //      First select parent particles
 
