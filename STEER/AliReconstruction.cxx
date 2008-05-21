@@ -1055,6 +1055,14 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
       }
       detectors=fFillESD;
+      // Temporary fix to avoid problems with HLT that overwrites the offline ESDs
+      if (detectors.Contains("ALL")) {
+	detectors="";
+	for (Int_t idet=0; idet<fgkNDetectors; ++idet){
+	  detectors += fgkDetectorName[idet];
+	  detectors += " ";
+	}
+      }
       detectors.ReplaceAll("HLT", "");
       if (!FillESD(fesd, detectors)) {
 	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
