@@ -95,7 +95,7 @@ Bool_t AliMultiAODInputHandler::FinishEvent()
 }
 
 
-AliAODEvent* AliMultiAODInputHandler::GetEvent(Int_t iev)
+AliAODEvent* AliMultiAODInputHandler::GetEvent(Int_t iev) const
 {
     // Get event number iev from buffer
     if ((iev < 0) || (iev >= fBufferSize))
