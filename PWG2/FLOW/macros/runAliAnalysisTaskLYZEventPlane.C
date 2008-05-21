@@ -10,8 +10,8 @@ void runAliAnalysisTaskLYZEventPlane(Int_t nRuns = 2, TString type = "ESD", cons
   timer.Start();
 
   // include path (to find the .h files when compiling)
-  //gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
-  //gSystem->AddIncludePath("-I$ROOTSYS/include") ;
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+  gSystem->AddIncludePath("-I$ROOTSYS/include") ;
 
   // load needed libraries
   gSystem->Load("libTree.so");
@@ -19,19 +19,19 @@ void runAliAnalysisTaskLYZEventPlane(Int_t nRuns = 2, TString type = "ESD", cons
   cerr<<"libESD loaded..."<<endl;
   gSystem->Load("libANALYSIS.so");
   cerr<<"libANALYSIS.so loaded..."<<endl;
-  gSystem->Load("libPWG2flow.so");
+  //gSystem->Load("libPWG2flow.so");
   
-  //gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
-  //gROOT->LoadMacro("AliFlowVector.cxx+");
-  //gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
-  //gROOT->LoadMacro("AliFlowEventSimple.cxx+");
-  //gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonHist.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
-  //gROOT->LoadMacro("AliFlowLYZEventPlane.cxx+");
-  //gROOT->LoadMacro("AliFlowAnalysisWithLYZEventPlane.cxx+"); 
-  //gROOT->LoadMacro("AliAnalysisTaskLYZEventPlane.cxx+");
+  gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
+  gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
+  gROOT->LoadMacro("AliFlowVector.cxx+");
+  gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
+  gROOT->LoadMacro("AliFlowEventSimple.cxx+");
+  gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
+  gROOT->LoadMacro("AliFlowCommonHist.cxx+");
+  gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
+  gROOT->LoadMacro("AliFlowLYZEventPlane.cxx+");
+  gROOT->LoadMacro("AliFlowAnalysisWithLYZEventPlane.cxx+"); 
+  gROOT->LoadMacro("AliAnalysisTaskLYZEventPlane.cxx+");
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
   TChain* chain = CreateESDChain(dataDir, nRuns, offset);

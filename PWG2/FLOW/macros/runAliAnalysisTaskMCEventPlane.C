@@ -4,15 +4,15 @@ void LookupWrite(TChain* chain, const char* target) ;
 
 
 
-void runAliAnalysisTaskMCEventPlane(Int_t nRuns = 2, TString type = "MC", const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
+void runAliAnalysisTaskMCEventPlane(Int_t nRuns = 2, TString type = "MC", const Char_t* dataDir="/data/alice1/kolk/TherminatorFIX", Int_t offset = 0) 
 
 {
   TStopwatch timer;
   timer.Start();
 
   // include path (to find the .h files when compiling)
-  //gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
-  //gSystem->AddIncludePath("-I$ROOTSYS/include") ;
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+  gSystem->AddIncludePath("-I$ROOTSYS/include") ;
 
   // load needed libraries
   gSystem->Load("libTree.so");
@@ -20,17 +20,17 @@ void runAliAnalysisTaskMCEventPlane(Int_t nRuns = 2, TString type = "MC", const 
   cerr<<"libESD loaded..."<<endl;
   gSystem->Load("libANALYSIS.so");
   cerr<<"libANALYSIS.so loaded..."<<endl;
-  gSystem->Load("libPWG2flow.so");
+  //gSystem->Load("libPWG2flow.so");
   
-  //gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
-  //gROOT->LoadMacro("AliFlowVector.cxx+");
-  //gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
-  //gROOT->LoadMacro("AliFlowEventSimple.cxx+");
-  //gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonHist.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
-  //gROOT->LoadMacro("AliFlowAnalysisWithMCEventPlane.cxx+"); 
-  //gROOT->LoadMacro("AliAnalysisTaskMCEventPlane.cxx+");
+  gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
+  gROOT->LoadMacro("AliFlowVector.cxx+");
+  gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
+  gROOT->LoadMacro("AliFlowEventSimple.cxx+");
+  gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
+  gROOT->LoadMacro("AliFlowCommonHist.cxx+");
+  gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
+  gROOT->LoadMacro("AliFlowAnalysisWithMCEventPlane.cxx+"); 
+  gROOT->LoadMacro("AliAnalysisTaskMCEventPlane.cxx+");
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
   TChain* chain = CreateESDChain(dataDir, nRuns, offset);
@@ -39,7 +39,7 @@ void runAliAnalysisTaskMCEventPlane(Int_t nRuns = 2, TString type = "MC", const 
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
-  if (type == "ESD" || type == "MC" ) {
+  if (type == "ESD" || type == "ESDMC0" || type == "ESDMC1" || type == "MC" ) {
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
   }  

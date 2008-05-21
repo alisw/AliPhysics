@@ -78,6 +78,7 @@ void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
+    
     if (fAnalysisType == "MC") {
       cout<<"!!!!!reading MC kinematics only"<<endl;
       // we want to process only MC
@@ -91,7 +92,8 @@ void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)
 	fESD = esdH->GetEvent();
       }
     }
-    else if (fAnalysisType == "ESD") {
+
+    else if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
       cout<<"!!!!!reading the ESD only"<<endl;
       tree->SetBranchStatus("*", kFALSE);
       tree->SetBranchStatus("Tracks.*", kTRUE);
@@ -103,6 +105,7 @@ void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)
       } else
 	fESD = esdH->GetEvent();
     }
+
     else if (fAnalysisType == "AOD") {
       cout<<"!!!!!reading the AOD only"<<endl;
       AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -115,7 +118,7 @@ void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)
       }
     }
     else {
-      Printf("!!!!!Wrong analysis type: Only ESD, AOD and MC types are allowed!");
+      Printf("!!!!!Wrong analysis type: Only ESD, ESDMC0, ESDMC1, AOD and MC types are allowed!");
       exit(1);
       
     }
@@ -128,8 +131,8 @@ void AliAnalysisTaskMCEventPlane::CreateOutputObjects()
   // Called once
   cout<<"AliAnalysisTaskMCEventPlane::CreateOutputObjects()"<<endl;
 
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "MC")) {
-    cout<<"WRONG ANALYSIS TYPE! only ESD, AOD and MC are allowed."<<endl;
+  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD"  || fAnalysisType == "ESDMC0"  || fAnalysisType == "ESDMC1" || fAnalysisType == "MC")) {
+    cout<<"WRONG ANALYSIS TYPE! only ESD, ESDMC0, ESDMC1, AOD and MC are allowed."<<endl;
     exit(1);
   }
 
@@ -201,6 +204,7 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
 
     delete fEvent;
   }
+
   else if (fAnalysisType == "ESD") {
     if (!fESD) {
       Printf("ERROR: fESD not available");
@@ -213,6 +217,33 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     fMc->Make(fEvent,fRP);
     delete fEvent;
   }
+
+  else if (fAnalysisType == "ESDMC0") {
+    if (!fESD) {
+      Printf("ERROR: fESD not available");
+      return;
+    }
+    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+
+    // analysis 
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
+    fMc->Make(fEvent,fRP);
+    delete fEvent;
+  }
+
+  else if (fAnalysisType == "ESDMC1") {
+    if (!fESD) {
+      Printf("ERROR: fESD not available");
+      return;
+    }
+    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+
+    // analysis 
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,1); //0 = kine from ESD, 1 = kine from MC
+    fMc->Make(fEvent,fRP);
+    delete fEvent;
+  }
+
   else if (fAnalysisType == "AOD") {
     if (!fAOD) {
       Printf("ERROR: fAOD not available");
