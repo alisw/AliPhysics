@@ -4,14 +4,14 @@ void LookupWrite(TChain* chain, const char* target) ;
 
 
 
-void runAliAnalysisTaskLeeYangZeros(Int_t nRuns = 2, TString type = "ESD", Bool_t firstrun = kTRUE, Bool_t usesum = kTRUE, const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
+void runAliAnalysisTaskLeeYangZeros(Int_t nRuns = 2, Bool_t firstrun = kTRUE, TString type = "ESD", Bool_t usesum = kTRUE, const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
 {
   TStopwatch timer;
   timer.Start();
 
   // include path (to find the .h files when compiling)
-  //gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
-  //gSystem->AddIncludePath("-I$ROOTSYS/include") ;
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+  gSystem->AddIncludePath("-I$ROOTSYS/include") ;
 
   // load needed libraries
   gSystem->Load("libTree.so");
@@ -21,18 +21,18 @@ void runAliAnalysisTaskLeeYangZeros(Int_t nRuns = 2, TString type = "ESD", Bool_
   cerr<<"libANALYSIS.so loaded..."<<endl;
   gSystem->Load("libPWG2flow.so");
   
-  //gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
-  //gROOT->LoadMacro("AliFlowVector.cxx+");
-  //gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
-  //gROOT->LoadMacro("AliFlowEventSimple.cxx+");
-  //gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonHist.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
-  //gROOT->LoadMacro("AliFlowLYZHist1.cxx+");
-  //gROOT->LoadMacro("AliFlowLYZHist2.cxx+");
-  //gROOT->LoadMacro("AliFlowAnalysisWithLeeYangZeros.cxx+"); 
-  //gROOT->LoadMacro("AliAnalysisTaskLeeYangZeros.cxx+");
+  //  gROOT->LoadMacro("AliFlowLYZConstants.cxx+");
+  //  gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
+  //  gROOT->LoadMacro("AliFlowVector.cxx+");
+  //  gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
+  //  gROOT->LoadMacro("AliFlowEventSimple.cxx+");
+  //  gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
+  //  gROOT->LoadMacro("AliFlowCommonHist.cxx+");
+  //  gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
+  //  gROOT->LoadMacro("AliFlowLYZHist1.cxx+");
+  //  gROOT->LoadMacro("AliFlowLYZHist2.cxx+");
+  //  gROOT->LoadMacro("AliFlowAnalysisWithLeeYangZeros.cxx+"); 
+  //  gROOT->LoadMacro("AliAnalysisTaskLeeYangZeros.cxx+");
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
   TChain* chain = CreateESDChain(dataDir, nRuns, offset);

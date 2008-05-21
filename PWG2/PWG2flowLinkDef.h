@@ -18,9 +18,11 @@
 #pragma link C++ class AliFlowLYZEventPlane+;
 #pragma link C++ class AliFlowEventSimpleMaker+;
 #pragma link C++ class AliFlowAnalysisWithMCEventPlane+;
+#pragma link C++ class AliFlowAnalysisWithScalarProduct+;
 #pragma link C++ class AliFlowAnalysisWithLYZEventPlane+;
 #pragma link C++ class AliFlowAnalysisWithLeeYangZeros+;
 #pragma link C++ class AliFlowAnalysisWithCumulants+;
+#pragma link C++ class AliAnalysisTaskScalarProduct+;
 #pragma link C++ class AliAnalysisTaskMCEventPlane+;
 #pragma link C++ class AliAnalysisTaskLYZEventPlane+;
 #pragma link C++ class AliAnalysisTaskLeeYangZeros+;

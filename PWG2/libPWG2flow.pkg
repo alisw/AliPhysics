@@ -12,10 +12,12 @@ SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliFlowVector.cxx \
       FLOW/AliFlowLYZEventPlane.cxx \
       FLOW/AliFlowEventSimpleMaker.cxx \
+      FLOW/AliFlowAnalysisWithScalarProduct.cxx \
       FLOW/AliFlowAnalysisWithMCEventPlane.cxx \
       FLOW/AliFlowAnalysisWithLYZEventPlane.cxx \
       FLOW/AliFlowAnalysisWithLeeYangZeros.cxx \
       FLOW/AliFlowAnalysisWithCumulants.cxx \
+      FLOW/AliAnalysisTaskScalarProduct.cxx \
       FLOW/AliAnalysisTaskMCEventPlane.cxx \
       FLOW/AliAnalysisTaskLYZEventPlane.cxx \
       FLOW/AliAnalysisTaskLeeYangZeros.cxx

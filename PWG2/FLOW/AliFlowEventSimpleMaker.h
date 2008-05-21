@@ -33,6 +33,9 @@ class AliFlowEventSimpleMaker {
   AliFlowEventSimple* FillTracks(TTree* fInput);
   AliFlowEventSimple* FillTracks(AliMCEvent* fInput);
   AliFlowEventSimple* FillTracks(AliESDEvent* fInput);
+  AliFlowEventSimple* FillTracks(AliESDEvent* fInput, AliMCEvent* fInputMc, Int_t fOption);
+  // fOption = 0 : kine from ESD
+  // fOption = 1 : kine from MC
   AliFlowEventSimple* FillTracks(AliAODEvent* fInput);
     
  private:

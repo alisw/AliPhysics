@@ -89,7 +89,7 @@ void AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *)
 	fESD = esdH->GetEvent();
       }
     }
-    else if (fAnalysisType == "ESD") {
+    else if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1"  ) {
       tree->SetBranchStatus("*", kFALSE);
       tree->SetBranchStatus("Tracks.*", kTRUE);
 
@@ -111,7 +111,7 @@ void AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *)
       }
     }
     else {
-      Printf("Wrong analysis type: Only ESD, AOD and MC types are allowed!");
+      Printf("Wrong analysis type: Only ESD, ESDMC0, ESDMC1, AOD and MC types are allowed!");
 
     }
   }
@@ -123,8 +123,8 @@ void AliAnalysisTaskLeeYangZeros::CreateOutputObjects()
   // Called once
   cout<<"AliAnalysisTaskLeeYangZeros::CreateOutputObjects()"<<endl;
 
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "MC")) {
-    cout<<"WRONG ANALYSIS TYPE! only ESD, AOD and MC are allowed."<<endl;
+  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMC0"  || fAnalysisType == "ESDMC1" || fAnalysisType == "MC")) {
+    cout<<"WRONG ANALYSIS TYPE! only ESD, ESDMC0, ESDMC1, AOD and MC are allowed."<<endl;
     exit(1);
   }
 
@@ -198,6 +198,56 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
     fLyz->Make(fEvent);
     delete fEvent;
+  }
+  else if (fAnalysisType == "ESDMC0") {
+    if (!fESD) {
+      Printf("ERROR: fESD not available");
+      return;
+    }
+    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+    
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+
+    //lee yang zeros analysis 
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
+    fLyz->Make(fEvent);
+    delete fEvent;
+    //delete mcEvent;
+  }
+  else if (fAnalysisType == "ESDMC1") {
+    if (!fESD) {
+      Printf("ERROR: fESD not available");
+      return;
+    }
+    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+    
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+
+    //lee yang zeros analysis 
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,1); //0 = kine from ESD, 1 = kine from MC
+    fLyz->Make(fEvent);
+    delete fEvent;
+    //delete mcEvent;
   }
   else if (fAnalysisType == "AOD") {
     if (!fAOD) {
