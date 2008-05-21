@@ -36,7 +36,6 @@
 #include <TFile.h>
 #include <TH2F.h>
 
-//#include "AliAlignObj.h"
 #include "AliGeomManager.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
@@ -391,8 +390,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
   Float_t * trackPos[4];
   for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
-  Int_t * clind[6];
-  for (Int_t ii=0;ii<6;ii++) clind[ii] = new Int_t[fN];
+  Int_t * clind = new Int_t[fN];
   
   for (Int_t iseed=0; iseed<fNseedsTOF; iseed++) {
 
@@ -456,19 +454,14 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       Double_t cov2[3]= {dY*dY/12., 0., dZ*dZ/12.};
       if (trackTOFin->AliExternalTrackParam::GetPredictedChi2(p,cov2) > maxChi2)continue;
 
-      clind[0][nc] = c->GetDetInd(0);
-      clind[1][nc] = c->GetDetInd(1);
-      clind[2][nc] = c->GetDetInd(2);
-      clind[3][nc] = c->GetDetInd(3);
-      clind[4][nc] = c->GetDetInd(4);
-      clind[5][nc] = k;      
+      clind[nc] = k;      
       Char_t path[100];
       Int_t ind[5];
-      ind[0]=clind[0][nc];
-      ind[1]=clind[1][nc];
-      ind[2]=clind[2][nc];
-      ind[3]=clind[3][nc];
-      ind[4]=clind[4][nc];
+      ind[0]=c->GetDetInd(0);
+      ind[1]=c->GetDetInd(1);
+      ind[2]=c->GetDetInd(2);
+      ind[3]=c->GetDetInd(3);
+      ind[4]=c->GetDetInd(4);
       fGeom->GetVolumePath(ind,path);
       gGeoManager->cd(path);
       global[nc] = *gGeoManager->GetCurrentMatrix();
@@ -529,12 +522,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       Float_t dist3d[3];
       accept=kFALSE;
       for (Int_t i=0; i<nc; i++){
-	Int_t cind[5];
-	cind[0]= clind[0][i];
-	cind[1]= clind[1][i];
-	cind[2]= clind[2][i];
-	cind[3]= clind[3][i];
-	cind[4]= clind[4][i];
         isInside=fGeom->IsInsideThePad(global[i],ctrackPos,dist3d);
 
         if( mLastStep){
@@ -549,7 +536,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	  dist[nfound]=TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]);
 	  distZ[nfound]=dist3d[2];
 	  crecL[nfound]=trackPos[3][istep];
-	  index[nfound]=clind[5][i]; // store cluster id 	    
+	  index[nfound]=clind[i]; // store cluster id 	    
 	  cxpos[nfound]=AliTOFGeometry::RinTOF()+istep*0.1; //store prop.radius
 	  nfound++;
 	  if(accept &&!mLastStep)break;
@@ -690,7 +677,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     delete trackTOFout;
   }
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
-  for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
+  delete [] clind;
  
 }
 //_________________________________________________________________________
@@ -979,4 +966,18 @@ Float_t AliTOFtracker::GetTimeZerofromTOF(AliESDEvent * /*event*/) const {
     //place T0 algo here...
   }
   return 0.;
+}
+//_________________________________________________________________________
+
+void AliTOFtracker::FillClusterArray(TObjArray* arr) const
+{
+  //
+  // Returns the TOF cluster array
+  //
+
+  if (fN==0)
+    arr = 0x0;
+  else
+    for (Int_t i=0; i<fN; ++i) arr->Add(fClusters[i]);
+
 }

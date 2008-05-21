@@ -24,11 +24,9 @@
 #include <Rtypes.h>
 
 #include "TClonesArray.h"
-//#include "TGeoManager.h"
 #include "TTree.h"
 #include "TTreeStream.h"
 
-//#include "AliRun.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
@@ -338,8 +336,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];
   for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
-  Int_t * clind[6];
-  for (Int_t ii=0;ii<6;ii++) clind[ii] = new Int_t[fN];
+  Int_t * clind = new Int_t[fN];
 
   // Some init 
   
@@ -435,12 +432,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();
       if (TMath::Abs(dph)>dphi) continue;
 
-      clind[0][nc] = c->GetDetInd(0);
-      clind[1][nc] = c->GetDetInd(1);
-      clind[2][nc] = c->GetDetInd(2);
-      clind[3][nc] = c->GetDetInd(3);
-      clind[4][nc] = c->GetDetInd(4);
-      clind[5][nc] = k;
+      clind[nc] = k;
       nc++;
     }
 
@@ -452,8 +444,8 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     for (Int_t icl=0; icl<nc; icl++){
       Float_t distances[5];
       if (nfound>=1000) break;
-      index[nfound]=clind[5][icl];
-      AliTOFcluster *cluster = fClusters[clind[5][icl]];
+      index[nfound]=clind[icl];
+      AliTOFcluster *cluster = fClusters[clind[icl]];
       GetLinearDistances(trackTOFin,cluster, distances);
       dist3D[nfound][0] = distances[4];
       dist3D[nfound][1] = distances[1];
@@ -600,66 +592,11 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   //
   //
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
-  for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
+  delete [] clind;
   delete calib;
 }
-
-
-
-
-// //_________________________________________________________________________
-// Int_t AliTOFtrackerMI::LoadClusters(TTree *dTree) {
-//   //--------------------------------------------------------------------
-//   //This function loads the TOF clusters
-//   //--------------------------------------------------------------------
-
-//   TBranch *branch=dTree->GetBranch("TOF");
-//   if (!branch) { 
-//     AliError(" can't get the branch with the TOF digits !");
-//     return 1;
-//   }
-
-//   TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;
-//   branch->SetAddress(&digits);
-
-//   dTree->GetEvent(0);
-//   Int_t nd=digits->GetEntriesFast();
-//   Info("LoadClusters","number of digits: %d",nd);
-
-//   for (Int_t i=0; i<nd; i++) {
-//     AliTOFdigit *d=(AliTOFdigit*)digits->UncheckedAt(i);
-//     Int_t dig[5]; Float_t g[3];
-//     dig[0]=d->GetSector();
-//     dig[1]=d->GetPlate();
-//     dig[2]=d->GetStrip();
-//     dig[3]=d->GetPadz();
-//     dig[4]=d->GetPadx();
-
-//     fGeom->GetPos(dig,g);
-
-//     Double_t h[5];
-//     h[0]=TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
-//     h[1]=TMath::ATan2(g[1],g[0]); h[2]=g[2]; 
-//     h[3]=d->GetTdc(); h[4]=d->GetAdc();
-
-//     AliTOFcluster *cl=new AliTOFcluster(h,d->GetTracks(),dig,i);
-//     InsertCluster(cl);
-//   }  
-
-//   return 0;
-// }
-// //_________________________________________________________________________
-// void AliTOFtrackerMI::UnloadClusters() {
-//   //--------------------------------------------------------------------
-//   //This function unloads TOF clusters
-//   //--------------------------------------------------------------------
-//   for (Int_t i=0; i<fN; i++) delete fClusters[i];
-//   fN=0;
-// }
-
-
-
 //_________________________________________________________________________
+
 Int_t AliTOFtrackerMI::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
   //This function loads the TOF clusters
@@ -682,23 +619,7 @@ Int_t AliTOFtrackerMI::LoadClusters(TTree *cTree) {
 
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
-    /*
-    for (Int_t jj=0; jj<5; jj++) dig[jj]=c->GetDetInd(jj);
 
-    Double_t h[5];
-    h[0]=c->GetR();
-    h[1]=c->GetPhi();
-    h[2]=c->GetZ();
-    h[3]=c->GetTDC();
-    h[4]=c->GetADC();
-
-    Int_t indexDig[3];
-    for (Int_t jj=0; jj<3; jj++) indexDig[jj] = c->GetLabel(jj);
-
-    AliTOFcluster *cl=new AliTOFcluster(h,c->GetTracks(),dig,i);
-    */
-
-    //    fClusters[i]=c; fN++;
     fClusters[i]=new AliTOFcluster(*c); fN++;
 
     //AliInfo(Form("%4i %4i  %f %f %f  %f %f   %2i %1i %2i %1i %2i",i, fClusters[i]->GetIndex(),fClusters[i]->GetZ(),fClusters[i]->GetR(),fClusters[i]->GetPhi(), fClusters[i]->GetTDC(),fClusters[i]->GetADC(),fClusters[i]->GetDetInd(0),fClusters[i]->GetDetInd(1),fClusters[i]->GetDetInd(2),fClusters[i]->GetDetInd(3),fClusters[i]->GetDetInd(4)));
@@ -913,4 +834,18 @@ void    AliTOFtrackerMI::GetLikelihood(Float_t dy, Float_t dz, const Double_t *c
   p0 = 0.5*(1+TMath::Erf(normd-normwidth*0.5));
   p1 = 0.5*(1+TMath::Erf(normd+normwidth*0.5));  
   pz+= 0.25*(p1-p0);
+}
+//_________________________________________________________________________
+
+void AliTOFtrackerMI::FillClusterArray(TObjArray* arr) const
+{
+  //
+  // Returns the TOF cluster array
+  //
+
+  if (fN==0)
+    arr = 0x0;
+  else
+    for (Int_t i=0; i<fN; ++i) arr->Add(fClusters[i]);
+
 }

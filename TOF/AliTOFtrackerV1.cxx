@@ -36,7 +36,6 @@
 #include <TH2F.h>
 #include <TSeqCollection.h>
 
-//#include "AliAlignObj.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
@@ -797,4 +796,18 @@ Float_t AliTOFtrackerV1::GetTimeZerofromTOF(AliESDEvent * /*event*/) const {
     //place T0 algo here...
   }
   return 0.;
+}
+//_________________________________________________________________________
+
+void AliTOFtrackerV1::FillClusterArray(TObjArray* arr) const
+{
+  //
+  // Returns the TOF cluster array
+  //
+
+  if (fN==0)
+    arr = 0x0;
+  else
+    for (Int_t i=0; i<fN; ++i) arr->Add(fClusters[i]);
+
 }

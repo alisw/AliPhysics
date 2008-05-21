@@ -20,7 +20,6 @@
 //----------------------------------------------------------------------//
 
 #include "AliTracker.h"
-//#include "AliTOFpidESD.h"
 
 class TClonesArray;
 
@@ -54,6 +53,7 @@ public:
  Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
  void InitCheckHists();
  void SaveCheckHists();
+ void FillClusterArray(TObjArray* arr) const;
 
 private:
 
