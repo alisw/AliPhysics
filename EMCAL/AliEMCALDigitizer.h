@@ -50,12 +50,12 @@ public:
   Float_t GetTimeResolution() const { return fTimeResolution ; }
   Float_t GetECAchannel()     const { return fADCchannelEC ; }
   Float_t GetECApedestal()    const { return fADCpedestalEC ; }
- void   SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
+  void    SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void    SetDigitThreshold(Float_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   //General
-  Int_t   GetDigitsInRun()  const { return fDigitsInRun; } 
+  Int_t GetDigitsInRun()  const { return fDigitsInRun; } 
   void  MixWith(TString alirunFileName, 
 		TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; // Add another one file to mix
   void  Print(Option_t* option="") const ;
@@ -68,13 +68,14 @@ public:
   }
 
   virtual void Browse(TBrowser* b);
+  //JLK
   // hists
-  void   SetControlHists(Int_t var=0) {fControlHists=var;}
-  Int_t  GetControlHist() const {return fControlHists;}
-  TList *GetListOfHists() {return fHists;}
-  TList* BookControlHists(int var=0);
-  void   SaveHists(const char* name="RF/TRD1/Digitizations/DigiVar?",
-  Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
+  //void   SetControlHists(Int_t var=0) {fControlHists=var;}
+  //Int_t  GetControlHist() const {return fControlHists;}
+  //TList *GetListOfHists() {return fHists;}
+  //TList* BookControlHists(int var=0);
+  //void   SaveHists(const char* name="RF/TRD1/Digitizations/DigiVar?",
+  //Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
 
 private:
 
@@ -114,12 +115,15 @@ private:
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
+  //JLK
   // Control hists
-  Int_t   fControlHists;          //!
-  TList  *fHists;                 //!
+  //Int_t   fControlHists;          //!
+  //TList  *fHists;                 //!
   AliEMCALCalibData * fCalibData; //Calibration data pointer
 
-  ClassDef(AliEMCALDigitizer,6)  // description 
+  //JLK
+  //ClassDef(AliEMCALDigitizer,6)  // description 
+  ClassDef(AliEMCALDigitizer,7)  // description 
 };
 
 

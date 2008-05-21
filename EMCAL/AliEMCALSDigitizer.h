@@ -47,13 +47,14 @@ public:
   const AliEMCALSDigitizer & operator = (const AliEMCALSDigitizer & /*sd*/) {return *this ;}
 
   virtual void Browse(TBrowser* b);
+  //JLK
   // hists
-  void   SetControlHists(Int_t var=0) {fControlHists=var;}
-  Int_t  GetControlHist() const {return fControlHists;}
-  TList *GetListOfHists() {return fHists;}
-  TList* BookControlHists(int var=0);
-  void   SaveHists(const char* name="RF/TRD1/Digitizations/SDigiVar?", 
-  Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
+  //void   SetControlHists(Int_t var=0) {fControlHists=var;}
+  //Int_t  GetControlHist() const {return fControlHists;}
+  //TList *GetListOfHists() {return fHists;}
+  //TList* BookControlHists(int var=0);
+  //void   SaveHists(const char* name="RF/TRD1/Digitizations/SDigiVar?", 
+  //Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
 
 private:
   void     Init() ;
@@ -72,11 +73,14 @@ private:
   Int_t   fFirstEvent;             // first event to process
   Int_t   fLastEvent;              // last  event to process
   Float_t fSampling;               // See AliEMCALGeometry
+  //JLK
   // Control hists
-  Int_t   fControlHists;          //!
-  TList  *fHists;                 //!
+  //Int_t   fControlHists;          //!
+  //TList  *fHists;                 //!
 
-  ClassDef(AliEMCALSDigitizer,5)  // description 
+  //JLK
+  //ClassDef(AliEMCALSDigitizer,5)  // description 
+  ClassDef(AliEMCALSDigitizer,6)  // description 
 };
 
 #endif // AliEMCALSDigitizer_H

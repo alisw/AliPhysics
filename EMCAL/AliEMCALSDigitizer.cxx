@@ -68,7 +68,8 @@
 #include "AliEMCALHit.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALHistoUtilities.h"
+//JLK
+//#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -82,9 +83,10 @@ AliEMCALSDigitizer::AliEMCALSDigitizer()
     fSDigitsInRun(0),
     fFirstEvent(0),
     fLastEvent(0),
-    fSampling(0.),
-    fControlHists(0),
-    fHists(0)
+    fSampling(0.)
+    //JLK 
+    //fControlHists(0),
+    //fHists(0)
 {
   // ctor
   InitParameters();
@@ -101,14 +103,17 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
     fSDigitsInRun(0),
     fFirstEvent(0),
     fLastEvent(0),
-    fSampling(0.),
-    fControlHists(1),
-    fHists(0)
+    fSampling(0.)
+    //JLK
+    //fControlHists(1),
+    //fHists(0)
 {
   // ctor
   Init();
   InitParameters() ; 
-  if(fControlHists) BookControlHists(1);
+
+  //JLK
+  //if(fControlHists) BookControlHists(1);
 }
 
 
@@ -124,9 +129,10 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd)
     fSDigitsInRun(sd.fSDigitsInRun),
     fFirstEvent(sd.fFirstEvent),
     fLastEvent(sd.fLastEvent),
-    fSampling(sd.fSampling),
-    fControlHists(sd.fControlHists),
-    fHists(sd.fHists)
+    fSampling(sd.fSampling)
+    //JLK
+    //fControlHists(sd.fControlHists),
+    //fHists(sd.fHists)
 {
   //cpy ctor 
 }
@@ -303,19 +309,22 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     nSdigits = sdigits->GetEntriesFast() ;
     fSDigitsInRun += nSdigits ;  
     
-    Double_t e=0.,esum=0.;
-    AliEMCALHistoUtilities::FillH1(fHists, 0, double(sdigits->GetEntriesFast()));
+    //JLK
+    //Double_t e=0.,esum=0.;
+    //AliEMCALHistoUtilities::FillH1(fHists, 0, double(sdigits->GetEntriesFast()));
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
       AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
       sdigit->SetIndexInList(i) ;
       
-      AliEMCALHistoUtilities::FillH1(fHists, 2, double(sdigit->GetAmp()));
-      e = double(Calibrate(sdigit->GetAmp()));
-      esum += e;
-      AliEMCALHistoUtilities::FillH1(fHists, 3, e);
-      AliEMCALHistoUtilities::FillH1(fHists, 4, double(sdigit->GetId()));
+      //JLK
+      //AliEMCALHistoUtilities::FillH1(fHists, 2, double(sdigit->GetAmp()));
+      //e = double(Calibrate(sdigit->GetAmp()));
+      //esum += e;
+      //AliEMCALHistoUtilities::FillH1(fHists, 3, e);
+      //AliEMCALHistoUtilities::FillH1(fHists, 4, double(sdigit->GetId()));
     }
-    if(esum>0.) AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
+    //JLK
+    //if(esum>0.) AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
     
     // Now write SDigits    
     
@@ -349,7 +358,6 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 }
 
 //__________________________________________________________________
-
 Int_t AliEMCALSDigitizer::Digitize(Float_t energy)const {
   // Digitize the energy
     Double_t aSignal = fA + energy*fB;
@@ -403,9 +411,7 @@ Bool_t AliEMCALSDigitizer::operator==( AliEMCALSDigitizer const &sd )const
 void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
 {
   //Prints list of digits produced at the current pass of AliEMCALDigitizer
-  
-  
-  // AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+    
   AliEMCALLoader *rl = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
   const TClonesArray * sdigits = rl->SDigits() ; 
   
@@ -449,10 +455,12 @@ void AliEMCALSDigitizer::Unload() const
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::Browse(TBrowser* b)
 {
-  if(fHists) b->Add(fHists);
+  //JLK
+  //if(fHists) b->Add(fHists);
   TTask::Browse(b);
 }
 
+/*
 //____________________________________________________________________________ 
 TList *AliEMCALSDigitizer::BookControlHists(int var)
 { 
@@ -481,3 +489,4 @@ void AliEMCALSDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const ch
 {
   AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 
 }
+*/

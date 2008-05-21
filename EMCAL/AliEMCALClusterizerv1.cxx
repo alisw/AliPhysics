@@ -73,7 +73,8 @@ class TSystem;
 #include "AliEMCALDigitizer.h"
 #include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALHistoUtilities.h"
+//JLK
+//#include "AliEMCALHistoUtilities.h"
 #include "AliEMCALRecParam.h"
 #include "AliEMCALReconstructor.h"
 #include "AliCDBManager.h"
@@ -86,9 +87,11 @@ ClassImp(AliEMCALClusterizerv1)
 //____________________________________________________________________________
 AliEMCALClusterizerv1::AliEMCALClusterizerv1()
   : AliEMCALClusterizer(),
-    fHists(0),fPointE(0),fPointL1(0),fPointL2(0),
-    fPointDis(0),fPointMult(0),fDigitAmp(0),fMaxE(0),
-    fMaxL1(0),fMaxL2(0),fMaxDis(0),fGeom(0),
+    //JLK
+    //fHists(0),fPointE(0),fPointL1(0),fPointL2(0),
+    //fPointDis(0),fPointMult(0),fDigitAmp(0),fMaxE(0),
+    //fMaxL1(0),fMaxL2(0),fMaxDis(0),
+    fGeom(0),
     fDefaultInit(kFALSE),
     fToUnfold(kFALSE),
     fNumberOfECAClusters(0),fCalibData(0),
@@ -308,18 +311,6 @@ void AliEMCALClusterizerv1::GetCalibrationParameters()
   if(!fCalibData)
     AliFatal("Calibration parameters not found in CDB!");
  
-  //  Please fix it!! Or better just remove it...
-//    if(!fCalibData)
-//      {
-//        //If calibration is not available use default parameters
-//        //Loader
-//        if ( !emcalLoader->Digitizer() ) 
-// 	 emcalLoader->LoadDigitizer();
-//        AliEMCALDigitizer * dig = dynamic_cast<AliEMCALDigitizer*>(emcalLoader->Digitizer());
-       
-//        fADCchannelECA   = dig->GetECAchannel() ;
-//        fADCpedestalECA  = dig->GetECApedestal();
-//      }
 }
 
 //____________________________________________________________________________
@@ -339,7 +330,8 @@ void AliEMCALClusterizerv1::Init()
   if(!gMinuit) 
     gMinuit = new TMinuit(100) ;
 
-  fHists = BookHists();
+  //JLK
+  //fHists = BookHists();
 }
 
 //____________________________________________________________________________
@@ -429,8 +421,9 @@ void AliEMCALClusterizerv1::MakeClusters()
 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // clean up digits
     e = Calibrate(digit->GetAmp(), digit->GetId());
-    AliEMCALHistoUtilities::FillH1(fHists, 10, digit->GetAmp());
-    AliEMCALHistoUtilities::FillH1(fHists, 11, e);
+    //JLK
+    //AliEMCALHistoUtilities::FillH1(fHists, 10, digit->GetAmp());
+    //AliEMCALHistoUtilities::FillH1(fHists, 11, e);
     if ( e < fMinECut || digit->GetTimeR() > fTimeCut ) 
       digitsC->Remove(digit);
     else    
@@ -485,6 +478,7 @@ void AliEMCALClusterizerv1::MakeClusters()
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
 }
 
+//____________________________________________________________________________
 void AliEMCALClusterizerv1::MakeUnfolding() const
 {
   Fatal("AliEMCALClusterizerv1::MakeUnfolding", "--> Unfolding not implemented") ;
@@ -577,7 +571,8 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
    Float_t maxL2=0; 
    Float_t maxDis=0; 
 
-    AliEMCALHistoUtilities::FillH1(fHists, 12, double(fRecPoints->GetEntries()));
+   //JLK
+   //AliEMCALHistoUtilities::FillH1(fHists, 12, double(fRecPoints->GetEntries()));
 
     for (index = 0 ; index < fRecPoints->GetEntries() ; index++) {
       AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint * >(fRecPoints->At(index)) ; 
@@ -602,11 +597,12 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 	      maxL2=lambda[1];
 	      maxDis=rp->GetDispersion();
       }
-      fPointE->Fill(rp->GetEnergy());
-      fPointL1->Fill(lambda[0]);
-      fPointL2->Fill(lambda[1]);
-      fPointDis->Fill(rp->GetDispersion());
-      fPointMult->Fill(rp->GetMultiplicity());
+      //JLK
+      //fPointE->Fill(rp->GetEnergy());
+      //fPointL1->Fill(lambda[0]);
+      //fPointL2->Fill(lambda[1]);
+      //fPointDis->Fill(rp->GetDispersion());
+      //fPointMult->Fill(rp->GetMultiplicity());
       ///////////// 
       if(strstr(option,"deb")){ 
         for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
@@ -615,15 +611,18 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
       }
     }
 
-      fMaxE->Fill(maxE);
-      fMaxL1->Fill(maxL1);
-      fMaxL2->Fill(maxL2);
-      fMaxDis->Fill(maxDis);
+    //JLK
+    //      fMaxE->Fill(maxE);
+    //  fMaxL1->Fill(maxL1);
+    //  fMaxL2->Fill(maxL2);
+    //  fMaxDis->Fill(maxDis);
 
     if(strstr(option,"deb"))
     printf("\n-----------------------------------------------------------------------\n");
   }
 }
+
+/*
 TList* AliEMCALClusterizerv1::BookHists()
 {
   //set up histograms for monitoring clusterizer performance
@@ -652,21 +651,27 @@ void AliEMCALClusterizerv1::SaveHists(const char *fn)
 {
   AliEMCALHistoUtilities::SaveListOfHists(fHists, fn, kTRUE);
 }
+*/
 
+//___________________________________________________________________
 void  AliEMCALClusterizerv1::PrintRecoInfo()
 {
   printf(" AliEMCALClusterizerv1::PrintRecoInfo() : version %s \n", Version() );
-  TH1F *h = (TH1F*)fHists->At(12);
-  if(h) {
-    printf(" ## Multiplicity of RecPoints ## \n");
-    for(int i=1; i<=h->GetNbinsX(); i++) {
-      int nbin = int((*h)[i]);
-      int mult = int(h->GetBinCenter(i));
-      if(nbin > 0) printf(" %i : %5.5i %6.3f %% \n", mult, nbin, 100.*nbin/h->GetEntries()); 
-    }    
-  }
+  //JLK
+  //TH1F *h = (TH1F*)fHists->At(12);
+  //if(h) {
+  //  printf(" ## Multiplicity of RecPoints ## \n");
+  //  for(int i=1; i<=h->GetNbinsX(); i++) {
+  //    int nbin = int((*h)[i]);
+  //    int mult = int(h->GetBinCenter(i));
+  //    if(nbin > 0) printf(" %i : %5.5i %6.3f %% \n", mult, nbin, 100.*nbin/h->GetEntries()); 
+  //  }    
+  // }
+
 }
 
+/*
+//___________________________________________________________________
 void AliEMCALClusterizerv1::DrawLambdasHists()
 {
   if(fMaxL1) {
@@ -677,3 +682,4 @@ void AliEMCALClusterizerv1::DrawLambdasHists()
     }
   }
 }
+*/

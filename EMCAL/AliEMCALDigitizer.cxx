@@ -84,7 +84,8 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTick.h"
-#include "AliEMCALHistoUtilities.h"
+//JLK
+//#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALDigitizer)
 
@@ -112,8 +113,10 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fEventFolderName(""),
     fFirstEvent(0),
     fLastEvent(0),
-    fControlHists(0),
-    fHists(0),fCalibData(0x0)
+    //JLK
+    //fControlHists(0),
+    //fHists(0),
+    fCalibData(0x0)
 {
   // ctor
   InitParameters() ; 
@@ -143,8 +146,10 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fEventFolderName(eventFolderName),
     fFirstEvent(0),
     fLastEvent(0),
-    fControlHists(0),
-    fHists(0),fCalibData(0x0)
+    //JLK
+    //fControlHists(0),
+    //fHists(0),
+    fCalibData(0x0)
 {
   // ctor
   InitParameters() ; 
@@ -175,8 +180,10 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fEventFolderName(d.fEventFolderName),
     fFirstEvent(d.fFirstEvent),
     fLastEvent(d.fLastEvent),
-    fControlHists(d.fControlHists),
-    fHists(d.fHists),fCalibData(d.fCalibData)
+    //JLK
+    //fControlHists(d.fControlHists),
+    //fHists(d.fHists),
+    fCalibData(d.fCalibData)
 {
   // copyy ctor 
  }
@@ -204,8 +211,10 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
     fEventFolderName(0),
     fFirstEvent(0),
     fLastEvent(0),
-    fControlHists(0),
-    fHists(0),fCalibData(0x0)
+    //JLK
+    //fControlHists(0),
+    //fHists(0),
+    fCalibData(0x0)
 {
   // ctor Init() is called by RunDigitizer
   fManager = rd ; 
@@ -228,7 +237,8 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
 
-  if(fHists) delete fHists;
+  //JLK
+  //if(fHists) delete fHists;
 }
 
 //____________________________________________________________________________
@@ -433,9 +443,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   digits->Compress() ;  
   
   Int_t ndigits = digits->GetEntriesFast() ; 
-  
+
+  //JLK
   //Set indexes in list of digits and fill hists.
-  AliEMCALHistoUtilities::FillH1(fHists, 0, Double_t(ndigits));
+  //AliEMCALHistoUtilities::FillH1(fHists, 0, Double_t(ndigits));
   Float_t energy=0., esum=0.;
   for (i = 0 ; i < ndigits ; i++) { 
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
@@ -443,16 +454,18 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     energy = sDigitizer->Calibrate(digit->GetAmp()) ;
     esum += energy;
     digit->SetAmp(DigitizeEnergy(energy, digit->GetId()) ) ; // for what ??
-    AliEMCALHistoUtilities::FillH1(fHists, 2, double(digit->GetAmp()));
-    AliEMCALHistoUtilities::FillH1(fHists, 3, double(energy));
-    AliEMCALHistoUtilities::FillH1(fHists, 4, double(digit->GetId()));
+    //JLK
+    //AliEMCALHistoUtilities::FillH1(fHists, 2, double(digit->GetAmp()));
+    //AliEMCALHistoUtilities::FillH1(fHists, 3, double(energy));
+    //AliEMCALHistoUtilities::FillH1(fHists, 4, double(digit->GetId()));
     //    if(digit->GetId() == nEMC) {
     //  printf(" i %i \n", i );
     //  digit->Dump();
     //  assert(0);
     //}
   }
-  AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
+  //JLK
+  //AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
 }
 
 // //_____________________________________________________________________
@@ -640,9 +653,10 @@ void AliEMCALDigitizer::InitParameters()
   fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
 
   fTimeThreshold      = 0.001*10000000 ; // Means 1 MeV in terms of SDigits amplitude ??
+  //JLK
   // hists. for control; no hists on default
-  fControlHists = 0;
-  fHists        = 0;
+  //fControlHists = 0;
+  //fHists        = 0;
 }
 
 //__________________________________________________________________
@@ -848,10 +862,12 @@ void AliEMCALDigitizer::WriteDigits()
 //__________________________________________________________________
 void AliEMCALDigitizer::Browse(TBrowser* b)
 {
-  if(fHists) b->Add(fHists);
+  //JLK
+  //if(fHists) b->Add(fHists);
   TTask::Browse(b);
 }
 
+/*
 //__________________________________________________________________
 TList *AliEMCALDigitizer::BookControlHists(int var)
 { 
@@ -881,3 +897,4 @@ void AliEMCALDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const cha
 {
   AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 
 }
+*/
