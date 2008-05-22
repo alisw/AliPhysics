@@ -321,7 +321,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,2) // ITS reco parameters
+  ClassDef(AliITSRecoParam,3) // ITS reco parameters
 };
 
 #endif
