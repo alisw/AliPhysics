@@ -37,27 +37,27 @@ AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
   // Constructor
 }
 
-void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
+void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* energy,  Float_t* eta, Float_t* phi, Int_t* PDG)
 {
 // Set the stored tracklist
   fNTracks     = NTracks;
   for (Int_t i=0;i<NTracks;i++)
   {
-    fTrackEnergy[i] = Energy[i] ;
-    fTrackEta[i]    = Eta[i];
-    fTrackPhi[i]    = Phi[i];
+    fTrackEnergy[i] = energy[i] ;
+    fTrackEta[i]    = eta[i];
+    fTrackPhi[i]    = phi[i];
     fTrackPDG[i]    = PDG[i];
   }
 }
 
-void AliEMCALParton::GetTrackList(Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG) const
+void AliEMCALParton::GetTrackList(Float_t* energy,  Float_t* eta, Float_t* phi, Int_t* PDG) const
 {
 // retrieves the stored tracklist	
   for (Int_t i=0;i<fNTracks;i++)
   {
-    Energy[i] = fTrackEnergy[i] ;
-    Eta[i]    = fTrackEta[i];
-    Phi[i]    = fTrackPhi[i];
+    energy[i] = fTrackEnergy[i] ;
+    eta[i]    = fTrackEta[i];
+    phi[i]    = fTrackPhi[i];
     PDG[i]    = fTrackPDG[i];
   } 
 }

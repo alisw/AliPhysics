@@ -12,12 +12,12 @@
 class AliITSRawClusterSDD : public AliITSRawCluster {
  public:
     AliITSRawClusterSDD(); 
-    AliITSRawClusterSDD(Int_t wing,Float_t Anode,Float_t Time,Float_t Charge, 
-			Float_t PeakAmplitude,Int_t PeakPosition,
-			Float_t Asigma,Float_t Tsigma,Float_t DriftPath,
-			Float_t AnodeOffset,  Int_t Samples, 
-			Int_t Tstart, Int_t Tstop,Int_t Tstartf,Int_t Tstopf,
-			Int_t Anodes, Int_t Astart, Int_t Astop);
+    AliITSRawClusterSDD(Int_t wing, Float_t anode, Float_t time, Float_t charge, 
+			Float_t peakAmplitude,Int_t peakPosition,
+			Float_t asigma, Float_t tsigma, Float_t driftPath,
+			Float_t anodeOffset,  Int_t samples, 
+			Int_t tstart, Int_t tstop, Int_t tstartf, Int_t tstopf,
+			Int_t anodes, Int_t astart, Int_t astop);
     AliITSRawClusterSDD( const AliITSRawClusterSDD & source);
     virtual ~AliITSRawClusterSDD() {// destructor
     }
