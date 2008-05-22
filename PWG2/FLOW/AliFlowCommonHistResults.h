@@ -31,6 +31,9 @@ class AliFlowCommonHistResults{
  
  private:
 
+  AliFlowCommonHistResults(const AliFlowCommonHistResults& aSetOfResultHists);
+  AliFlowCommonHistResults& operator=(const AliFlowCommonHistResults& aSetOfResultHists);
+
   //integrated flow
   TH1D*     fHistIntFlow;         //!
   //differential flow

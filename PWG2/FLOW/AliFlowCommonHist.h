@@ -46,7 +46,9 @@ class AliFlowCommonHist {
  
  private:
 
-  //  AliFlowEventSimple* fEvent;     //!
+  AliFlowCommonHist(const AliFlowCommonHist& aSetOfHists);
+  AliFlowCommonHist& operator=(const AliFlowCommonHist& aSetOfHists);
+
   AliFlowTrackSimple* fTrack;     //!
 
   //define histograms here
