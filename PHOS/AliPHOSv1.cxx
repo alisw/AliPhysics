@@ -100,7 +100,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   // and the TreeD at the end of the event (branch is set in FinishEvent() ). 
   
   fHits= new TClonesArray("AliPHOSHit",1000) ;
-  TClonesArray fCPVDigits("AliPHOSCPVDigit",20);
+//   fCPVDigits("AliPHOSCPVDigit",20);
   gAlice->GetMCApp()->AddHitList(fHits) ; 
 
   fNhits = 0 ;
