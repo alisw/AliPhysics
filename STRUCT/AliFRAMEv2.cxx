@@ -994,7 +994,7 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gsvolu("BFTRD", "TRD1", kAir, ptrd1, 4);
   gGeoManager->GetVolume("BFTRD")->SetVisibility(kFALSE);
 
-  for (Int_t i = 0; i < 18; i++) {
+  for (i = 0; i < 18; i++) {
 
     Float_t phiBF  = i * 20.0;      
     dx =  TMath::Sin(phiBF*kdeg2rad)*(342.0-12.62);
