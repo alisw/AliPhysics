@@ -325,7 +325,7 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
 }
 
 //__________________________________________________________________________________
-void AliCFParticleGenCuts::FillHistograms(TObject* obj, Bool_t afterCuts)
+void AliCFParticleGenCuts::FillHistograms(TObject* /*obj*/, Bool_t afterCuts)
 {
   //
   // fill the QA histograms
