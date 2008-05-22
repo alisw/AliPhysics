@@ -77,12 +77,16 @@ AliHLTPHOSRcuAltroPatternTest::AddPattern(const int *inputPattern,  const int z,
     {
       //    cout << "AliHLTPHOSRcuAltroPatternTest::AddPattern creating new pattern z = "<< z <<" x =" << x <<"  gain = "<< gain <<endl;
       fPerChannelPatterns[z][x][gain] = new AliHLTPHOSPattern(&inputPattern[nPresamples], nSamples);
+      return 1;
     }
   else
     {
       //    cout << "AliHLTPHOSRcuAltroPatternTest::AddPattern adding new pattern to z = "<< z <<" x =" << x <<"  gain = "<< gain <<endl;
       fPerChannelPatterns[z][x][gain]->AddPattern(inputPattern,  nSamples, nPresamples);
+      return 0;
     }
+
+  
 }
 
 /*
@@ -120,7 +124,7 @@ AliHLTPHOSRcuAltroPatternTest::countPatterns(const AliHLTPHOSPattern *pattern) c
 //   const int  GetPattern(int *pattern,  const int maxlengths =  ALTRO_MAX_SAMPLES) const;
 //   const int GetPatternLength() const {return  fPatternLength;}; 
 const int 
-AliHLTPHOSRcuAltroPatternTest::countAllPatterns(const int length, const bool doprintpattern)
+AliHLTPHOSRcuAltroPatternTest::countAllPatterns(const int length, const bool /*doprintpattern*/)
 {
   fCnt ++;
 
@@ -153,22 +157,12 @@ AliHLTPHOSRcuAltroPatternTest::countAllPatterns(const int length, const bool dop
     } 
   
   int tmpcnt = countPatterns(tmpPattern);
- 
-  //  cout << "AliHLTPHOSRcuAltroPatternTest::countAllPatterns the total number of patterns found is" << tmpcnt << " fCnt ="<< fCnt  <<endl;
   cout << "AliHLTPHOSRcuAltroPatternTest::countAllPatterns the total number of patterns found is" << tmpcnt << endl;
-
-  
-  
   PrintPatterns(tmpPattern);
-
-//   if( (doprintpattern == true) && (fCnt%100 == 0) && (fCnt != 0) )
-//     {
-      
-//       PrintPatterns(tmpPattern);
-//     }
-
-
+  
   delete tmpPattern;
+  
+  return tmpcnt;
 
 }
 

@@ -14,7 +14,6 @@
  **************************************************************************/
 
 
-
 #include "AliPHOSRcuDA1.h"
 #include "AliHLTPHOSSharedMemoryInterface.h"
 #include "AliHLTPHOSRcuDAComponent.h"
@@ -43,12 +42,14 @@ AliHLTPHOSRcuDAComponent gAliHLTPHOSRcuDAComponent;
 
 AliHLTPHOSRcuDAComponent::AliHLTPHOSRcuDAComponent() : AliHLTPHOSRcuProperties(),
 						       AliHLTCalibrationProcessor(),
+						       fPhosEventCount(0),
 						       fPHOSDAPtr(0),
 						       fShmPtr(0) 
 						       //    fTest(-2)
 {
   fShmPtr = new AliHLTPHOSSharedMemoryInterface();
 }
+
 
 
 AliHLTPHOSRcuDAComponent::~AliHLTPHOSRcuDAComponent() 

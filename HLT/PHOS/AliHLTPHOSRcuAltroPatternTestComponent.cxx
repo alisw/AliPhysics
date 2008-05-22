@@ -300,7 +300,7 @@ AliHLTPHOSRcuAltroPatternTestComponent::Spawn()
 
 
 void 
-AliHLTPHOSRcuAltroPatternTestComponent::ScanPatternFromFile(const char *filename, int *pattern, const int length) const
+AliHLTPHOSRcuAltroPatternTestComponent::ScanPatternFromFile(const char *filename, int *pattern, const int /*length*/) const
 {
   FILE *fp = fopen(filename, "r");
 
@@ -312,6 +312,7 @@ AliHLTPHOSRcuAltroPatternTestComponent::ScanPatternFromFile(const char *filename
       fscanf(fp,"w 0x%X 0x%X\n", &dummy, &pattern[i]);
       //      cout << tmpPattern[i] << endl;
     }
+
   
   //  fPatternTestPtr->SetAltroPattern(tmpPattern);
 }

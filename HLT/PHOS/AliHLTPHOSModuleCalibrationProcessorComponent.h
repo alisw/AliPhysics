@@ -51,20 +51,6 @@ public:
   /** destructor */
   virtual ~AliHLTPHOSModuleCalibrationProcessorComponent();
       
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTPHOSModuleCalibrationProcessorComponent(const AliHLTPHOSModuleCalibrationProcessorComponent&) :
-    AliHLTCalibrationProcessor(),
-    fPHOSDAPtr(0),
-    fShmPtr(0)
-  {
-    HLTFatal("Copy constructor not implemented");
-  }
-
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTPHOSModuleCalibrationProcessorComponent& operator=(const AliHLTPHOSModuleCalibrationProcessorComponent&)
-  {
-    return *this;
-  }
 
   // Public functions to implement AliHLTComponent's interface.
   // These functions are required for the registration process
@@ -76,11 +62,6 @@ public:
   AliHLTComponent* Spawn();
 
 protected:
-      
-  // Protected functions to implement AliHLTComponent's interface.
-  // These functions provide initialization as well as the actual processing
-  // capabilities of the component. 
-      
   /** Initialize the calibration component. */
   Int_t InitCalibration();
 
@@ -100,11 +81,13 @@ protected:
 
   /** Reset the energy and timing arrays */
   void ResetArrays(Float_t e[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS], Float_t t[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]);
-
   int fCnt; ///TODO, remove this
 
 private:
-
+   /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTPHOSModuleCalibrationProcessorComponent(const AliHLTPHOSModuleCalibrationProcessorComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTPHOSModuleCalibrationProcessorComponent& operator=(const AliHLTPHOSModuleCalibrationProcessorComponent&);
   /** Pointer to the DA */
   AliPHOSRcuDA1* fPHOSDAPtr;   //! transient
 

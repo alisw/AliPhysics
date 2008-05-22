@@ -46,30 +46,10 @@ class TObjArray;
 class AliHLTPHOSRcuDAComponent:  public AliHLTPHOSRcuProperties, public AliHLTCalibrationProcessor
 {
 public:
-
   /** constructor */
   AliHLTPHOSRcuDAComponent();
-
- 
   /** destructor */
   virtual ~AliHLTPHOSRcuDAComponent();
-      
-  /** not a valid copy constructor, defined according to effective C++ style */
- AliHLTPHOSRcuDAComponent(const AliHLTPHOSRcuDAComponent&) : AliHLTPHOSRcuProperties(),
-                                                             AliHLTCalibrationProcessor(),
-                                                             fPHOSDAPtr(0),
-                                                             fShmPtr(0)
-  {
-    // AliHLTPHOSRcuProcessor::HLTFatal("Copy constructor not implemented");
-    //    AliHLTLogging::HLTFatal("Copy constructor not implemented");
-  }
-
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTPHOSRcuDAComponent& operator=(const AliHLTPHOSRcuDAComponent&)
-  {
-    return *this;
-  }
-
  /*  virtual int Deinit(); */
 /*   virtual int DoInit(int, const char**); */
 
@@ -83,7 +63,6 @@ public:
   AliHLTComponent* Spawn();
 
 protected:
-      
   // Protected functions to implement AliHLTComponent's interface.
   // These functions provide initialization as well as the actual processing
   // capabilities of the component. 
@@ -111,8 +90,11 @@ protected:
   //  int fCnt; ///TODO, remove this
 
 private:
+    /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTPHOSRcuDAComponent(const AliHLTPHOSRcuDAComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTPHOSRcuDAComponent& operator=(const AliHLTPHOSRcuDAComponent&);
   int fPhosEventCount;  ///TODO, remove this
-
 
   /** Pointer to the DA */
   AliPHOSRcuDA1* fPHOSDAPtr;   //! transient

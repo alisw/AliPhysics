@@ -41,8 +41,8 @@ AliHLTPHOSModuleCalibrationProcessorComponent gAliHLTPHOSModuleCalibrationProces
 
 AliHLTPHOSModuleCalibrationProcessorComponent::AliHLTPHOSModuleCalibrationProcessorComponent() :
   AliHLTCalibrationProcessor(),
-  fPHOSDAPtr(0),
   fCnt(0),
+  fPHOSDAPtr(0),
   fShmPtr(0) 
 {
   //See header file for documentation
