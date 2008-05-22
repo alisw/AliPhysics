@@ -7,8 +7,8 @@
 
 #include <TMath.h> 
   
-static const Double_t k2PI     = TMath::TwoPi();
-static const Double_t kDegrad  = TMath::DegToRad();
-static const Double_t kRaddeg  = TMath::RadToDeg();
+#define  k2PI     TMath::TwoPi()
+#define  kDegrad  TMath::DegToRad()
+#define  kRaddeg  TMath::RadToDeg()
 
 #endif 
