@@ -217,12 +217,15 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 	Swap(reinterpret_cast<UInt_t*>(fBuffer), dataSize / sizeof(UInt_t)); // Swap needed for mac power pc.
 #endif
 	
+	// Check if this is a scalar event.
+	bool scalerEvent = GetReader()->GetDataHeader()->GetL1TriggerMessage() == 0x1;
+	
 	bool result = false;
 	try
 	{
 		// Since we might allocate memory inside OnNewBuffer in the event
 		// handler we need to trap any memory allocation exception to be robust.
-		result = fDecoder.Decode(fBuffer, dataSize);
+		result = fDecoder.Decode(fBuffer, dataSize, scalerEvent);
 		fHadError = (result == true ? kFALSE : kTRUE);
 	}
 	catch (const std::bad_alloc&)
@@ -325,17 +328,17 @@ AliMUONDDLTrigger* AliMUONRawStreamTriggerHP::GetDDLTrigger() const
 		}
 		fDDLObject->AddRegHeader(regHeader);
 		
-		const AliLocalStruct* ls = rh->GetFirstLocalStruct();
-		while (ls != NULL)
+		const AliLocalStruct* lstruct = rh->GetFirstLocalStruct();
+		while (lstruct != NULL)
 		{
 			// Copy local structure and scalars and add everything into DDL object.
-			memcpy(localStruct.GetData(), ls->GetData(), sizeof(AliMUONLocalInfoStruct));
-			if (ls->GetScalars() != NULL)
+			memcpy(localStruct.GetData(), lstruct->GetData(), sizeof(AliMUONLocalInfoStruct));
+			if (lstruct->GetScalars() != NULL)
 			{
-				memcpy(localStruct.GetScalers(), ls->GetScalars(), sizeof(AliMUONLocalScalarsStruct));
+				memcpy(localStruct.GetScalers(), lstruct->GetScalars(), sizeof(AliMUONLocalScalarsStruct));
 			}
 			fDDLObject->AddLocStruct(localStruct, iReg);
-			ls = ls->Next();
+			lstruct = lstruct->Next();
 		}
 	}
 	
