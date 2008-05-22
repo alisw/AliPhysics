@@ -51,41 +51,41 @@ fAstop(0)
 
 //______________________________________________________________________
 AliITSRawClusterSDD::AliITSRawClusterSDD(Int_t wing,
-					 Float_t Anode,Float_t Time,
-					 Float_t Charge,Float_t PeakAmplitude,
-					 Int_t PeakPosition,
-					 Float_t Asigma,Float_t Tsigma,
-					 Float_t DriftPath,
-					 Float_t AnodeOffset,
-					 Int_t Samples,Int_t Tstart,
-					 Int_t Tstop,Int_t Tstartf,
-					 Int_t Tstopf,Int_t Anodes, 
-					 Int_t Astart, Int_t Astop):
+					 Float_t anode,Float_t time,
+					 Float_t charge,Float_t peakAmplitude,
+					 Int_t peakPosition,
+					 Float_t asigma,Float_t tsigma,
+					 Float_t driftPath,
+					 Float_t anodeOffset,
+					 Int_t samples,Int_t tstart,
+					 Int_t tstop,Int_t tstartf,
+					 Int_t tstopf,Int_t anodes, 
+					 Int_t astart, Int_t astop):
 fX(0),
 fZ(0),
-fQ(Charge),
+fQ(charge),
 fWing(wing),
-fAnode(Anode),
-fTime(Time),
-fAsigma(Asigma),
-fTsigma(Tsigma),
-fPeakAmplitude(PeakAmplitude),
+fAnode(anode),
+fTime(time),
+fAsigma(asigma),
+fTsigma(tsigma),
+fPeakAmplitude(peakAmplitude),
 fSumAmplitude(0),
-fPeakPosition(PeakPosition),
-fNanodes(Anodes),
-fTstart(Tstart),
-fTstop(Tstop),
-fTstartf(Tstartf),
-fTstopf(Tstopf),
-fAstart(Astart),
-fAstop(Astop){
+fPeakPosition(peakPosition),
+fNanodes(anodes),
+fTstart(tstart),
+fTstop(tstop),
+fTstartf(tstartf),
+fTstopf(tstopf),
+fAstart(astart),
+fAstop(astop){
     // constructor
 
     Int_t sign = 1;
     for(Int_t i=0;i<fWing; i++) sign *= (-1);
-    fX = DriftPath*sign/10000.;
-    fZ = AnodeOffset/10000.;
-    fMultiplicity = Samples;
+    fX = driftPath*sign/10000.;
+    fZ = anodeOffset/10000.;
+    fMultiplicity = samples;
 }
 //______________________________________________________________________
 AliITSRawClusterSDD::AliITSRawClusterSDD(const AliITSRawClusterSDD & source):
