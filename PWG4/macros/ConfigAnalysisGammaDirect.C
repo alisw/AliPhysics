@@ -1,5 +1,4 @@
-/* $Id: $ */
-/* $Log$ */
+/* $Id:$ */
 
 //------------------------------------
 // Configuration macro example:
@@ -28,7 +27,7 @@ AliAnaMaker*  ConfigAnalysis()
   fidCut->DoPHOSFidutialCut(kTRUE) ;
   
   fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-  f//idCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
+  //fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
   fidCut->SetSimplePHOSFidutialCut(0.13,220.,320.);
    
   fidCut->Print("");
