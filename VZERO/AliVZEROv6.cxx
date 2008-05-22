@@ -727,7 +727,6 @@ Int_t AliVZEROv6::GetCellId(Int_t *vol, Float_t *hits)
 //    cout << "X     = " << hits[0] << "    Y = " << hits[1] << endl;
    
    Float_t phi = Float_t(TMath::ATan2(Double_t(hits[1]),Double_t(hits[0])) ); 
-   Float_t kRaddeg = 180.0/TMath::Pi();
    phi = kRaddeg * phi;
     
    if (index < 7) index = index + 8; 

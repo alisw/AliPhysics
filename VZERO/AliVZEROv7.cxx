@@ -56,6 +56,7 @@
 #include "AliVZEROhit.h"
 #include "AliVZEROv7.h"
 #include "AliLog.h"
+#include "AliConst.h"
  
 ClassImp(AliVZEROv7)
 
@@ -644,8 +645,8 @@ void AliVZEROv7::CreateGeometry()
     /// Replicate sectors
     TGeoVolume *v0LE = new TGeoVolumeAssembly("V0LE");
     for(int i=0; i<8; i++) {
-      TGeoRotation *rot = new TGeoRotation("rot", 90., i*45.+90, 90., 90.+i*45.+90, 0., 0.);
-      v0LE->AddNode(v0ASec,i+1,rot);  /// modificacion +1 anhadido
+      TGeoRotation *rot1 = new TGeoRotation("rot", 90., i*45.+90, 90., 90.+i*45.+90, 0., 0.);
+      v0LE->AddNode(v0ASec,i+1,rot1);  /// modificacion +1 anhadido
     }
   
     /// Basis Construction
@@ -1051,7 +1052,6 @@ Int_t AliVZEROv7::GetCellId(Int_t *vol, Float_t *hits)
   fCellId          = 0;
 
   Float_t phi = Float_t(TMath::ATan2(Double_t(hits[1]),Double_t(hits[0])) ); 
-  Float_t kRaddeg = 180.0/TMath::Pi();
   phi = kRaddeg * phi;
 
   if (index < 7) index = index + 8;

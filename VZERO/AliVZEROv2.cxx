@@ -962,7 +962,6 @@ void AliVZEROv2::StepManager()
      
      Float_t        theta;
      Float_t        phi;
-     Float_t        kRaddeg = 180.0/TMath::Pi();
      Float_t        ringNumber;
 
      Int_t          ipart;
