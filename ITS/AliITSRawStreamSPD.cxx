@@ -62,6 +62,7 @@ AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
   fAdvLogger(NULL)
 {
   // create an object to read ITS SPD raw digits
+  fRawReader->Reset();
   fRawReader->Select("ITSSPD");
   // reset calib header words
   for (UInt_t iword=0; iword<kCalHeadLenMax; iword++) {
