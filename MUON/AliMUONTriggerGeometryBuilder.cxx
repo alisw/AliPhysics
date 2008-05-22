@@ -996,7 +996,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VD[i],iVolNum++,3, spar);
 
 
@@ -1014,7 +1014,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1HD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM-dpar[1]-sparysave,kZm-(dpar[2]-spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1H,volEnvSuppAng1HD[i],iVolNum++,3, spar);
 
 // gas pipe (low)
@@ -1030,7 +1030,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvInoxGasPipe1D[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvM-dpar[1]-sparysave-kOffsetGasPipe,kZm),rsupportpipe);
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volInoxGasPipe,volEnvInoxGasPipe1D[i],iVolNum++,3, ppar);
 
 // 2 vertical	   
@@ -1048,7 +1048,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM-dpar[1],-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport2V,volEnvSuppAng2VD[i],iVolNum++,3, spar);	    
 
 // 2 horizontal	   
@@ -1065,7 +1065,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2HD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM-dpar[1]-sparysave,-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport2H,volEnvSuppAng2HD[i],iVolNum++,3, spar);	    
 
 // 3 vertical	   
@@ -1083,7 +1083,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VD[i],iVolNum++,3, spar);
 
 
@@ -1101,7 +1101,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3HD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM+dpar[1]+sparysave,kZm-(dpar[2]-spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3H,volEnvSuppAng3HD[i],iVolNum++,3, spar);
 	        
 // gas pipe (high)
@@ -1117,7 +1117,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvInoxGasPipe2D[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvM+dpar[1]+sparysave+kOffsetGasPipe,kZm),rsupportpipe);
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volInoxGasPipe,volEnvInoxGasPipe2D[i],iVolNum++,3, ppar);
 
 // 4 vertical	   
@@ -1135,7 +1135,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM+dpar[1],-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport4V,volEnvSuppAng4VD[i],iVolNum++,3, spar);	    
 
 // 4 horizontal	   
@@ -1152,7 +1152,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4HD[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM+dpar[1]+sparysave,-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport4H,volEnvSuppAng4HD[i],iVolNum++,3, spar);	    
 
 // X horizontal	   
@@ -1169,7 +1169,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAngXHD[3], 0, true,
  	    TGeoTranslation(-(spar[0]+kYVSup[0]*zRatio),-yEnvM+dpar[1]+sparysave+1.0,-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupportXH,volEnvSuppAngXHD[i],iVolNum++,3, spar);	    
 
 // X vertical	   
@@ -1185,7 +1185,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAngXVD[3], 0, true,
  	    TGeoTranslation(-(spar[0]+kYVSup[0]*zRatio),-yEnvM+dpar[1]+sparysave+1.0+sparysavex+spar[1],-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupportXV,volEnvSuppAngXVD[i],iVolNum++,3, spar);	    
 
 // E
@@ -1238,7 +1238,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VE[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VE[i],iVolNum++,3, spar);
 
 
@@ -1256,7 +1256,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1HE[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvP-dpar[1]-sparysave,kZp+dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1H,volEnvSuppAng1HE[i],iVolNum++,3, spar);
 
 // gas pipe (low)
@@ -1272,7 +1272,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvInoxGasPipe1E[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvP-dpar[1]-sparysave-kOffsetGasPipe,kZp),rsupportpipe);
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volInoxGasPipe,volEnvInoxGasPipe1E[i],iVolNum++,3, ppar);
 
 // 2 vertical	   
@@ -1290,7 +1290,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VE[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvP-dpar[1],kSizeVSupExt[0]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport2V,volEnvSuppAng2VE[i],iVolNum++,3, spar);	    
 
 // 2 horizontal	   
@@ -1307,7 +1307,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2HE[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvP-dpar[1]-sparysave,kSizeVSupExt[0]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport2H,volEnvSuppAng2HE[i],iVolNum++,3, spar);	    
 
 // 3 vertical	   
@@ -1325,7 +1325,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VE[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VE[i],iVolNum++,3, spar);
 
 
@@ -1343,7 +1343,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3HE[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvP+dpar[1]+sparysave,kZp+dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3H,volEnvSuppAng3HE[i],iVolNum++,3, spar);
 
 // gas pipe (high)
@@ -1359,7 +1359,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvInoxGasPipe2E[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvP+dpar[1]+sparysave+kOffsetGasPipe,kZp),rsupportpipe);
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volInoxGasPipe,volEnvInoxGasPipe2E[i],iVolNum++,3, ppar);
 
 // 4 vertical	   
@@ -1377,7 +1377,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VE[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvP+dpar[1],kSizeVSupExt[0]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport4V,volEnvSuppAng4VE[i],iVolNum++,3, spar);	    
 
 // 4 horizontal	   
@@ -1394,7 +1394,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4HE[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvP+dpar[1]+sparysave,kSizeVSupExt[0]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport4H,volEnvSuppAng4HE[i],iVolNum++,3, spar);	    
 
 // X horizontal	   
@@ -1411,7 +1411,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAngXHE[3], 0, true,
  	    TGeoTranslation(-(spar[0]+kYVSup[0]*zRatio),yEnvP+dpar[1]+sparysave+1.0,kSizeVSupExt[0]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupportXH,volEnvSuppAngXHE[i],iVolNum++,3, spar);	    
 
 // X vertical	   
@@ -1427,7 +1427,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAngXVE[3], 0, true,
  	    TGeoTranslation(-(spar[0]+kYVSup[0]*zRatio),yEnvP+dpar[1]+sparysave+1.0+sparysavex+spar[1],kSizeVSupExt[0]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupportXV,volEnvSuppAngXVE[i],iVolNum++,3, spar);	    
 
 // F
@@ -1480,7 +1480,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
  	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VF[3], 0, true,
   	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
  	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VF[i],iVolNum++,3, spar);
 
 // 1 horizontal	   
@@ -1497,7 +1497,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1HF[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM-dpar[1]-sparysave,kZm-(dpar[2]-spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1H,volEnvSuppAng1HF[i],iVolNum++,3, spar);
 
 // gas pipe (low)
@@ -1513,7 +1513,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvInoxGasPipe1F[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvM-dpar[1]-sparysave-kOffsetGasPipe,kZm),rsupportpipe);
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volInoxGasPipe,volEnvInoxGasPipe1F[i],iVolNum++,3, ppar);
 
 // 2 vertical	   
@@ -1531,7 +1531,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VF[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM-dpar[1],-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport2V,volEnvSuppAng2VF[i],iVolNum++,3, spar);	    
 
 // 2 horizontal	   
@@ -1548,7 +1548,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2HF[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM-dpar[1]-sparysave,-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport2H,volEnvSuppAng2HF[i],iVolNum++,3, spar);	    
 
 // 3 vertical	   
@@ -1566,7 +1566,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
  	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VF[3], 0, true,
   	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
  	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VF[i],iVolNum++,3, spar);
 
 // 3 horizontal	   
@@ -1583,7 +1583,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3HF[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM+dpar[1]+sparysave,kZm-(dpar[2]-spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3H,volEnvSuppAng3HF[i],iVolNum++,3, spar);
 	    
 // gas pipe (high)
@@ -1599,7 +1599,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvInoxGasPipe2F[3], 0, true,
 	    TGeoTranslation(-xEnv,yEnvM+dpar[1]+sparysave+kOffsetGasPipe,kZm),rsupportpipe);
 
-            for(Int_t i=0;i<4;i++)
+            for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volInoxGasPipe,volEnvInoxGasPipe2F[i],iVolNum++,3, ppar);
 
 // 4 vertical	   
@@ -1617,7 +1617,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VF[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM+dpar[1],-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport4V,volEnvSuppAng4VF[i],iVolNum++,3, spar);	    
 
 // 4 horizontal	   
@@ -1634,7 +1634,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4HF[3], 0, true,
  	    TGeoTranslation(-xEnv,yEnvM+dpar[1]+sparysave,-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport4H,volEnvSuppAng4HF[i],iVolNum++,3, spar);	    
 
 
@@ -1652,7 +1652,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAngXHF[3], 0, true,
  	    TGeoTranslation(-(spar[0]+kYVSup[0]*zRatio),yEnvM+dpar[1]+sparysave+1.0,-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupportXH,volEnvSuppAngXHF[i],iVolNum++,3, spar);	    
 
 // X vertical	   
@@ -1668,7 +1668,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAngXVF[3], 0, true,
  	    TGeoTranslation(-(spar[0]+kYVSup[0]*zRatio),yEnvM+dpar[1]+sparysave+1.0+sparysavex+spar[1],-(kSizeVSupExt[0]+spar[2])),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
-	    for(Int_t i=0;i<4;i++)
+	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupportXV,volEnvSuppAngXVF[i],iVolNum++,3, spar);
 	    	    
 	} // end loop on detection planes

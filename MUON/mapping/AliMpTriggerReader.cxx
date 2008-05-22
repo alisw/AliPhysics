@@ -795,12 +795,12 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
 
   AliMpTrigger* triggerSlat = new AliMpTrigger(slatType, planeType);
     
-  for ( Int_t ilayer = 0; ilayer < layers.GetEntriesFast(); ++ilayer )
+  for ( ilayer = 0; ilayer < layers.GetEntriesFast(); ++ilayer )
   {
-    TList& lines = *((TList*)layers.At(ilayer));
+    TList& lines1 = *((TList*)layers.At(ilayer));
     std::ostringstream slatName;
     slatName << slatType << "-LAYER" << ilayer;
-    AliMpSlat* slat = BuildSlat(slatName.str().c_str(),planeType,lines,scale);
+    AliMpSlat* slat = BuildSlat(slatName.str().c_str(),planeType,lines1,scale);
     if ( slat )
     {
       Bool_t ok = triggerSlat->AdoptLayer(slat);
@@ -822,11 +822,11 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
         AliError("TriggerSlat is=");
         for ( Int_t j = 0; j < triggerSlat->GetSize(); ++j )
         {
-          AliMpSlat* slat = triggerSlat->GetLayer(j);
+          AliMpSlat* slat1 = triggerSlat->GetLayer(j);
           AliError(Form("Layer %d",j));
-          for ( Int_t i = 0; i < slat->GetSize(); ++i )
+          for ( Int_t i = 0; i < slat1->GetSize(); ++i )
           {
-            AliMpPCB* pcb = slat->GetPCB(i);
+            AliMpPCB* pcb = slat1->GetPCB(i);
             AliError(Form("ERR pcb %d size %e,%e (unscaled is %e,%e)",
                           i,pcb->DX()*2,pcb->DY()*2,
                           pcb->DX()*2/scale,pcb->DY()*2/scale));

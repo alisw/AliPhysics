@@ -186,8 +186,8 @@ Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
           in.getline(line,80);
           TString tmp(AliMpHelper::Normalize(line));
           AliMpHelper::DecodeName(tmp,' ',list);
-          for (Int_t i = 0; i < list.GetSize(); ++i) { 
-            if ( list[i] ) board->AddDE(list[i]);
+          for (Int_t ii = 0; ii < list.GetSize(); ++ii) { 
+            if ( list[ii] ) board->AddDE(list[ii]);
           }  
 
           // set copy number and transverse connector
