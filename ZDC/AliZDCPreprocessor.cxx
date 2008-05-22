@@ -116,12 +116,39 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   
 // *************** From DAQ ******************
 Bool_t resPedCal = kTRUE, resECal = kTRUE, resRecPar = kTRUE;
+// 
+const char* beamType = GetRunParameter("beamType");
+TString runType = GetRunType();
+printf("\n\t AliZDCPreprocessor -> beamType %s\n",beamType);
+printf("\t AliZDCPreprocessor -> runType  %s\n\n",runType.Data());
+//
+// 
+if(strcmp(beamType,"p-p")==0){
+   // --- Initializing pedestal calibration object
+   AliZDCCalib *eCalib = new AliZDCCalib("ZDC");
+   //
+   for(Int_t j=0; j<6; j++) eCalib->SetEnCalib(j,1.);
+   for(Int_t j=0; j<5; j++){  
+        eCalib->SetZN1EqualCoeff(j, 1.);
+        eCalib->SetZP1EqualCoeff(j, 1.);
+        eCalib->SetZN2EqualCoeff(j, 1.);
+        eCalib->SetZP2EqualCoeff(j, 1.);  
+   }
+   //eCalib->Print("");
+   // 
+   AliCDBMetaData metaData;
+   metaData.SetBeamPeriod(0);
+   metaData.SetResponsible("Chiara");
+   metaData.SetComment("AliZDCCalib object");  
+   //
+   resECal = Store("Calib","Calib",eCalib, &metaData, 0, 1);
+}
+// 
 // *****************************************************
 // [a] PEDESTALS -> Pedestal subtraction
 // *****************************************************
-TString runType = GetRunType();
-printf("\n\t AliZDCPreprocessor -> runType detected %s\n\n",runType.Data());
-if(runType == "STANDALONE_PEDESTAL"){
+// 
+if(runType=="STANDALONE_PEDESTAL"){
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for STANDALONE_PEDESTAL run %d !", fRun));
@@ -191,7 +218,7 @@ if(runType == "STANDALONE_PEDESTAL"){
 // *****************************************************
 // [b] EMD EVENTS -> Energy calibration and equalization
 // *****************************************************
-else if(runType == "STANDALONE_EMD"){
+else if(runType=="STANDALONE_EMD"){
   TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
   if(!daqSources){
     AliError(Form("No sources for STANDALONE_EMD run %d !", fRun));
@@ -236,7 +263,7 @@ else if(runType == "STANDALONE_EMD"){
 	   else{
 	     for(Int_t k=0; k<5; k++){
 	        fscanf(file,"%f",&equalCoeff[j][k]);
-	        if(j==6) eCalib->SetZN1EqualCoeff(k, equalCoeff[j][k]);
+	        if(j==6)      eCalib->SetZN1EqualCoeff(k, equalCoeff[j][k]);
 	 	else if(j==7) eCalib->SetZP1EqualCoeff(k, equalCoeff[j][k]);
 	 	else if(j==8) eCalib->SetZN2EqualCoeff(k, equalCoeff[j][k]);
 	 	else if(j==9) eCalib->SetZP2EqualCoeff(k, equalCoeff[j][k]);  
@@ -248,7 +275,7 @@ else if(runType == "STANDALONE_EMD"){
          Log(Form("File %s not found", emdFileName));
          return 1;
        }
-       //calibdata->Print("");
+       //eCalib->Print("");
       // 
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);
@@ -259,9 +286,10 @@ else if(runType == "STANDALONE_EMD"){
   }
 }
 // ********************************************************
-// [c] PHYSICS RUNS -> Parameters needed for reconstruction
+// [c] PHYSICS RUNS -> Parameters needed for reconstruction 
+// 		NB -> ONLY IN Pb-Pb!!!!!!!
 // ********************************************************
-else if(runType == "PHYSICS"){
+else if((runType=="PHYSICS") && (strcmp(beamType,"Pb-Pb")==0)){
   TList* daqSources = GetFileSources(kDAQ, "PHYSICS");
   if(!daqSources){
     AliError(Form("No sources for PHYSICS run %d !", fRun));

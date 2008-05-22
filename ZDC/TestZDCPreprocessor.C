@@ -70,9 +70,9 @@ void TestZDCPreprocessor()
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
- // shuttle->SetInputRunType("PEDESTAL_RUN");
-  shuttle->SetInputRunType("PULSER_RUN");
-//  shuttle->SetInputRunType("PHYSICS");
+  shuttle->SetInputRunType("STANDALONE_PEDESTAL");
+  //shuttle->SetInputRunType("STANDALONE_EMD");
+  //shuttle->SetInputRunType("PHYSICS");
 
   // TODO(4)
   //
@@ -80,6 +80,8 @@ void TestZDCPreprocessor()
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
+  //shuttle->AddInputRunParameter("beamType", "Pb-Pb");
+  shuttle->AddInputRunParameter("beamType", "p-p");
   shuttle->AddInputRunParameter("totalEvents", "1000");
   shuttle->AddInputRunParameter("NumberOfGDCs", "1");
 
@@ -91,7 +93,7 @@ void TestZDCPreprocessor()
   // a bool directly. 1 = HLT ON, 0 = HLT OFF
   //
   Bool_t hltStatus=kFALSE;
-  //shuttle->SetInputHLTStatus(hltStatus);
+  shuttle->SetInputHLTStatus(hltStatus);
 
   // TODO(6)
   //
@@ -185,19 +187,6 @@ TMap* CreateDCSAliasMap()
     aliasMap->Add(new TObjString(aliasName), valueSet);
   }
   // ******************************** HV values
-  /*TString ZNAAlias = "ZNA_HV.actual.vMon";
-  TString ZPAAlias = "ZPA_HV.actual.vMon";
-  TString ZNCAlias = "ZNC_HV.actual.vMon";
-  TString ZPCAlias = "ZPC_HV.actual.vMon";
-  TString idat[5];
-  for(int i=0;i<5;i++)
-  {
-    idat[i] = i;
-    aliasNames[i+3]  = ZNAAlias.Insert(6,idat[i]);
-    aliasNames[i+7]  = ZPAAlias.Insert(6,idat[i]);
-    aliasNames[i+11] = ZNCAlias.Insert(6,idat[i]);
-    aliasNames[i+15] = ZPCAlias.Insert(6,idat[i]);
-  }*/
   aliasNames[4]  = "ZDC_ZNA_HV0.actual.vMon";
   aliasNames[5]  = "ZDC_ZNA_HV1.actual.vMon";
   aliasNames[6]  = "ZDC_ZNA_HV2.actual.vMon";
@@ -269,8 +258,8 @@ void WriteDCSAliasMap()
 
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
-	metaData.SetResponsible("Responsible person");
-	metaData.SetComment("Test object for TestPreprocessor.C");
+	metaData.SetResponsible("Chiara Oppedisano");
+	metaData.SetComment("Test object for TestZDCPreprocessor.C");
 
   AliCDBId id("ZDC/DCS/Data", 0, 0);
 
