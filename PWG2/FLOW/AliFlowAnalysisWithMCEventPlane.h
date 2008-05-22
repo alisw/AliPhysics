@@ -54,6 +54,10 @@ class AliFlowAnalysisWithMCEventPlane {
   
    
  private:
+ 
+   AliFlowAnalysisWithMCEventPlane(const AliFlowAnalysisWithMCEventPlane& aAnalysis);
+   AliFlowAnalysisWithMCEventPlane& operator=(const AliFlowAnalysisWithMCEventPlane& aAnalysis);
+
       
 #ifndef __CINT__
    AliFlowVector  fQ;       // flow vector
@@ -83,3 +87,5 @@ class AliFlowAnalysisWithMCEventPlane {
  
      
 #endif
+
+

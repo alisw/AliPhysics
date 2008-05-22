@@ -1,4 +1,4 @@
-/* copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
@@ -39,6 +39,9 @@ class AliFlowEventSimpleMaker {
   AliFlowEventSimple* FillTracks(AliAODEvent* fInput);
     
  private:
+ 
+  AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& aAnalysis);
+  AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& aAnalysis);
   
   AliFlowEventSimple*   fEvent;      //!
   AliFlowTrackSimple*   fTrack;      //!

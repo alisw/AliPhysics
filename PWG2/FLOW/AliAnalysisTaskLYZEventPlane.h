@@ -6,8 +6,10 @@
 #define AliAnalysisTaskLYZEventPlane_H
 
 // AliAnalysisTaskLYZEventPlane:
-// analysis task for Lee Yang Zeros Event Plane
-// Author: Naomi van der Kolk (kolk@nikhef.nl)
+// analysis task for 
+// Lee Yang Zeros Event Plane
+// Author: 
+//        Naomi van der Kolk (kolk@nikhef.nl)
 
 class AliESDEvent;
 class AliAODEvent;
@@ -31,6 +33,10 @@ class AliAnalysisTaskLYZEventPlane : public AliAnalysisTask {
   void           SetAnalysisType(TString type) {this->fAnalysisType = type ; }
 
  private:
+ 
+  AliAnalysisTaskLYZEventPlane(const AliAnalysisTaskLYZEventPlane& aAnalysis);
+  AliAnalysisTaskLYZEventPlane& operator=(const AliAnalysisTaskLYZEventPlane& aAnalysis);
+
   AliESDEvent *fESD;                      //ESD object
   AliAODEvent *fAOD;                      //AOD object
   TString fAnalysisType;                  //string to set the kind of input for the analysis: ESD, AOD or MC
@@ -45,3 +51,4 @@ class AliAnalysisTaskLYZEventPlane : public AliAnalysisTask {
 };
 
 #endif
+
