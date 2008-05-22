@@ -52,7 +52,6 @@ ClassImp(AliT0RawData)
 			       fDataHeaderPos(0),
 			       fDRMDataHeaderPos(0),
 			       fTRMDataHeaderPos(0),
-			       fDigits(0),
 			       fParam(0),
 			       fLookUp(0)
   
@@ -122,7 +121,6 @@ AliT0RawData::AliT0RawData(const AliT0RawData &r):TObject(),
 						  fDataHeaderPos(0),
 						  fDRMDataHeaderPos(0),
 						  fTRMDataHeaderPos(0),
-						  fDigits(0)  ,
 						  fParam(0),
 						  fLookUp(0)
 
@@ -141,10 +139,6 @@ AliT0RawData::~AliT0RawData()
   //
   // Destructor
   //
-  if (fDigits) {
-    delete fDigits;
-    fDigits = NULL;
-  }
   delete fTimeCFD;
   delete fADC1;
   delete fTimeLED;
@@ -165,6 +159,7 @@ AliT0RawData &AliT0RawData::operator=(const AliT0RawData &r)
 
 //_____________________________________________________________________________
 void AliT0RawData::GetDigits(AliT0digit *fDigits)
+//void AliT0RawData::GetDigits(fDigits)
 {
  
   //This method packs the T0 digits in a proper 32 bits structure
@@ -252,6 +247,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
 	  iTDC = lookvalue->GetTDC();
 	  channel = lookvalue->GetChannel();
 	  FillTime(channel,  iTDC,  time);
+	  AliDebug(1,Form("  itrm %i ,  chain %i , iTDC %i, channel %i",itrm,chain,iTDC,channel));
 	}
       else
 	{
@@ -545,6 +541,7 @@ void  AliT0RawData::FillTime(Int_t ch, Int_t iTDC, Int_t time)
 //---------------------------------------------------------------------------------------
 
 Int_t AliT0RawData::RawDataT0(AliT0digit *fDigits)
+  //Int_t AliT0RawData::RawDataT0(*fDigits)
 {
    //This method creates the Raw data files for T0 detector
 

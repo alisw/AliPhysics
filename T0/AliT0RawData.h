@@ -72,7 +72,6 @@ class AliT0RawData : public TObject {
   UInt_t fDataHeaderPos;    //Data header position
   UInt_t fDRMDataHeaderPos; //Data DRM header position
   UInt_t fTRMDataHeaderPos; //Data TRM header position
-  AliT0digit *fDigits;      //! The T0 digits manager
   AliT0Parameters *fParam;  // pointer to T0parameters
   TMap fLookUp;             // LookUp Table
   

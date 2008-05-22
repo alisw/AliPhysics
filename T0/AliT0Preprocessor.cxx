@@ -302,7 +302,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	}
        else if(runType == "PHYSICS"){
 	        Int_t iresultPhysics = ProcessPhysics();
-		Int_t iresultCosmic = ProcessCosmic();
+		//	Int_t iresultCosmic = ProcessCosmic();
 		if(dcsDP==1){
 			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
 			return iresultDCS;
