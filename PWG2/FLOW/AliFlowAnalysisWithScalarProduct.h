@@ -35,7 +35,7 @@ class AliFlowAnalysisWithScalarProduct {
    virtual  ~AliFlowAnalysisWithScalarProduct();  //destructor
  
    void    Init();                             //defines variables and histograms
-   void    Make(AliFlowEventSimple* fEvent);   //calculates variables and fills histograms
+   void    Make(AliFlowEventSimple* anEvent);   //calculates variables and fills histograms
    void    Finish();                           //saves histograms
   
    void      SetDebug(Bool_t kt)                 { this->fDebug = kt ; }
@@ -57,7 +57,6 @@ class AliFlowAnalysisWithScalarProduct {
    
    Int_t     fEventNumber;  // event counter
          
-   AliFlowEventSimple*   fEvent ;     //!
    AliFlowTrackSimple*   fTrack ;     //!
      
    Bool_t       fDebug ;            //! flag for lyz analysis: more print statements

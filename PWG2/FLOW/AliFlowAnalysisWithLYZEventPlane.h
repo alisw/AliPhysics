@@ -30,6 +30,7 @@ class AliFlowAnalysisWithLYZEventPlane {
   
   virtual void   Init();
   virtual void   Make(AliFlowEventSimple* fEvent, AliFlowLYZEventPlane* fLYZEP);
+  //  virtual void   Make(AliFlowEventSimple* anEvent);
   virtual void   Finish();
 
   // input files
@@ -58,8 +59,8 @@ class AliFlowAnalysisWithLYZEventPlane {
 
  private:
 
-  //AliFlowAnalysisWithLYZEventPlane(const AliFlowAnalysisWithLYZEventPlane& lyz) {}    // AliFlowAnalysisWithLYZEventPlane object cannot be copied
-  //void operator=(const AliFlowAnalysisWithLYZEventPlane &lyz) {}   
+  //  AliFlowAnalysisWithLYZEventPlane(const AliFlowAnalysisWithLYZEventPlane& lyz);    // AliFlowAnalysisWithLYZEventPlane object cannot be copied
+  //  void operator=(const AliFlowAnalysisWithLYZEventPlane &lyz);   
  
   TFile*             fOutFile;                //! 
   TFile*             fFirstRunFile ;          //! pointer to file from first run
@@ -95,14 +96,14 @@ class AliFlowAnalysisWithLYZEventPlane {
   AliFlowCommonHistResults* fCommonHistsRes;  //!
 
   Int_t     fEventNumber;  // event counter
-  Double_t  fQX;           // local flow vector
-  Double_t  fQY;           // local flow vector
+  //  Double_t  fQX;           // local flow vector
+  //  Double_t  fQY;           // local flow vector
   AliFlowVector  fQ;       // flow vector
   TVector2  fQsum;         // flow vector sum
   Double_t  fQ2sum;        // flow vector sum squared
   Double_t  fQtheta;       // flow vector projected on ref. angle theta
    
-  AliFlowEventSimple*  fEvent ;               //!
+  //  AliFlowEventSimple*  fEvent ;               //!
   AliFlowTrackSimple*  fTrack ;               //!
   AliFlowLYZEventPlane* fLYZEP ;              //!
 

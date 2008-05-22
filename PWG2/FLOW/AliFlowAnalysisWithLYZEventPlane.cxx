@@ -80,13 +80,13 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
    fCommonHists(0),
    fCommonHistsRes(0),
    fEventNumber(0),
-   fQX(0),
-   fQY(0),
+//   fQX(0),
+//   fQY(0),
    fQ2sum(0),
    fQtheta(0),
-   fEvent(0x0),
-   fTrack(0x0),
-   fLYZEP(0x0)
+//   fEvent(0x0),
+   fTrack(NULL),
+   fLYZEP(NULL)
 {
 
   // Constructor.
@@ -186,16 +186,17 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
  
 //-----------------------------------------------------------------------
  
-void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* fEvent, AliFlowLYZEventPlane* fLYZEP) {
+void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlowLYZEventPlane* fLYZEP) {
+  //void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent) {
 
   //Get the event plane and weight for each event
-  if (fEvent) {
+  if (anEvent) {
          
     //fill control histograms     
-    fCommonHists->FillControlHistograms(fEvent);
+    fCommonHists->FillControlHistograms(anEvent);
 
     //get the Q vector from the FlowEvent
-    fQ = fEvent->GetQ(); 
+    fQ = anEvent->GetQ(); 
     //Weight with the multiplicity
     Double_t fQX = 0.;
     Double_t fQY = 0.;
@@ -243,10 +244,10 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* fEvent, AliFlowL
        
     //calculate flow
     //loop over the tracks of the event
-    Int_t fNumberOfTracks = fEvent->NumberOfTracks(); 
+    Int_t fNumberOfTracks = anEvent->NumberOfTracks(); 
     for (Int_t i=0;i<fNumberOfTracks;i++) 
       {
-	fTrack = fEvent->GetTrack(i) ; 
+	fTrack = anEvent->GetTrack(i) ; 
 	if (fTrack){
 	  if (fTrack->UseForDifferentialFlow()) {
 	    Double_t fPhi = fTrack->Phi();

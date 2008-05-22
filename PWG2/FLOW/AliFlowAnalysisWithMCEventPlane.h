@@ -40,7 +40,7 @@ class AliFlowAnalysisWithMCEventPlane {
    virtual  ~AliFlowAnalysisWithMCEventPlane();  //destructor
  
    void    Init();                             //defines variables and histograms
-   void    Make(AliFlowEventSimple* fEvent, Double_t fRP);   //calculates variables and fills histograms
+   void    Make(AliFlowEventSimple* anEvent, Double_t fRP);   //calculates variables and fills histograms
    void    Finish();                           //saves histograms
   
    void      SetDebug(Bool_t kt)                 { this->fDebug = kt ; }
@@ -65,7 +65,6 @@ class AliFlowAnalysisWithMCEventPlane {
    Int_t     fMult;         // multiplicity
    Int_t     fNbins;        // number of bins
       
-   AliFlowEventSimple*   fEvent ;     //!
    AliFlowTrackSimple*   fTrack ;     //!
      
    Bool_t       fDebug ;            //! flag for lyz analysis: more print statements

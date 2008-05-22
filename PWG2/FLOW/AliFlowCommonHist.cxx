@@ -39,7 +39,7 @@ ClassImp(AliFlowCommonHist)
 //-----------------------------------------------------------------------
 
   AliFlowCommonHist::AliFlowCommonHist(TString input):
-   fEvent(0),
+//   fEvent(0),
    fTrack(0), 
    fHistMultOrig(0),
    fHistMultInt(0),
@@ -175,10 +175,10 @@ AliFlowCommonHist::~AliFlowCommonHist()
 
 //----------------------------------------------------------------------- 
 
-Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* fEvent)
+Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* Event)
 {
   //Fills the control histograms
-  if (!fEvent){
+  if (!Event){
     cout<<"##### FillControlHistograms: FlowEvent pointer null"<<endl;
     return kFALSE;
   }
@@ -187,10 +187,10 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* fEvent)
 
 
   //fill the histograms
-  Int_t fNumberOfTracks = fEvent->NumberOfTracks();
+  Int_t fNumberOfTracks = Event->NumberOfTracks();
   fHistMultOrig->Fill(fNumberOfTracks);
 
-  AliFlowVector fQ = fEvent->GetQ(); 
+  AliFlowVector fQ = Event->GetQ(); 
   //weight by the Multiplicity
   Double_t fQX = fQ.X()/fQ.GetMult();
   Double_t fQY = fQ.Y()/fQ.GetMult();
@@ -200,7 +200,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* fEvent)
   Int_t fMultInt = 0;
   Int_t fMultDiff = 0;
   for (Int_t i=0;i<fNumberOfTracks;i++) {
-    fTrack = fEvent->GetTrack(i);
+    fTrack = Event->GetTrack(i);
     if (fTrack ) {
       if (fTrack->UseForIntegratedFlow()){
 	fPt = fTrack->Pt();

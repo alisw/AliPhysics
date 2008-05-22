@@ -46,15 +46,14 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fEventNumber(0),
    fMult(0),
    fNbins(0),
-   fEvent(0x0),
-   fTrack(0x0),
+   fTrack(NULL),
    fDebug(kFALSE),
    fHistFileName(0),
    fHistFile(0),
-   fCommonHists(0),
-   fCommonHistsRes(0),
-   fHistProFlow(0),
-   fHistRP(0)
+   fCommonHists(NULL),
+   fCommonHistsRes(NULL),
+   fHistProFlow(NULL),
+   fHistRP(NULL)
 
 {
 
@@ -105,16 +104,16 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
  
 //-----------------------------------------------------------------------
  
-void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* fEvent, Double_t fRP) {
+void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t fRP) {
 
   //Calculate v2 from the MC reaction plane
-  if (fEvent) {
+  if (anEvent) {
          
     //fill control histograms     
-    fCommonHists->FillControlHistograms(fEvent);
+    fCommonHists->FillControlHistograms(anEvent);
 
     //get the Q vector from the FlowEvent
-    fQ = fEvent->GetQ(); 
+    fQ = anEvent->GetQ(); 
     //cout<<"fQ.Mod() = " << fQ.Mod() << endl;
     //for chi calculation:
     fQsum += fQ;
@@ -126,10 +125,10 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* fEvent, Double_t 
               
     //calculate flow
     //loop over the tracks of the event
-    Int_t fNumberOfTracks = fEvent->NumberOfTracks(); 
+    Int_t fNumberOfTracks = anEvent->NumberOfTracks(); 
     for (Int_t i=0;i<fNumberOfTracks;i++) 
       {
-	fTrack = fEvent->GetTrack(i) ; 
+	fTrack = anEvent->GetTrack(i) ; 
 	if (fTrack){
 	  if (fTrack->UseForDifferentialFlow()) {
 	    Double_t fPhi = fTrack->Phi();
