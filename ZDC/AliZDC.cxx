@@ -156,7 +156,8 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //	  obtain digits at the end of each event
   //
   
-  static Float_t primKinEn, xImpact, yImpact, sFlag;
+  static Float_t primKinEn=0., xImpact=0., yImpact=0., sFlag=0.;
+  static Int_t   pcPDGcode;
 
   AliZDCHit *newquad, *curprimquad;
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
@@ -165,6 +166,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   if(fNhits==0){
       // First hit -> setting flag for primary or secondary particle
       Int_t primary = gAlice->GetMCApp()->GetPrimary(track);     
+      //
       if(track != primary){
         newquad->SetSFlag(1);  // SECONDARY particle entering the ZDC
       }
@@ -175,12 +177,14 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       primKinEn = newquad->GetPrimKinEn();
       xImpact 	= newquad->GetXImpact();
       yImpact 	= newquad->GetYImpact();
+      pcPDGcode	= newquad->GetPDGCode();
    }
    else{       
       newquad->SetPrimKinEn(primKinEn);
       newquad->SetXImpact(xImpact);
       newquad->SetYImpact(yImpact);
       newquad->SetSFlag(sFlag);
+      newquad->SetPDGCode(pcPDGcode);
    }
  
   Int_t j;

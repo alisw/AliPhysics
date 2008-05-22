@@ -20,6 +20,7 @@ public:
 
   // Getters 
   virtual Int_t   GetVolume(Int_t i) const {return fVolume[i];}
+  virtual Int_t   GetPDGCode() const	   {return fPDGCode;}
   virtual Float_t GetPrimKinEn() const     {return fPrimKinEn;}
   virtual Float_t GetXImpact() const       {return fXImpact;}
   virtual Float_t GetYImpact() const       {return fYImpact;}
@@ -29,6 +30,8 @@ public:
   virtual Float_t GetEnergy() const        {return fEnergy;}
 
   // Setters 
+  virtual void SetVolume(Int_t i, Float_t val) {fVolume[i]=val;} 
+  virtual void SetPDGCode(Int_t code)     {fPDGCode=code;}
   virtual void SetLightPMQ(Float_t value) {fLightPMQ=value;}
   virtual void SetLightPMC(Float_t value) {fLightPMC=value;}
   virtual void SetSFlag(Float_t value)    {fSFlag=value;}
@@ -64,9 +67,10 @@ protected:
   Float_t    fLightPMQ;     //Cerenkov light produced in each quadrant
   Float_t    fLightPMC;     //Cerenkov light seen by the common PM
   Float_t    fEnergy;       //Total energy deposited in eV
+  Int_t      fPDGCode;	    //PDG code of particle in the ZDC
  
 
-  ClassDef(AliZDCHit,1)  // Hits for the Zero Degree Calorimeters
+  ClassDef(AliZDCHit,2)  // Hits for the Zero Degree Calorimeters
 };
  
 #endif

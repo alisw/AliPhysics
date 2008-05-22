@@ -33,6 +33,7 @@
 #include <TTree.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
+#include <TParticle.h>
 
 // --- AliRoot classes
 #include "AliConst.h"
@@ -2242,19 +2243,16 @@ void AliZDCv3::StepManager()
   //
   // Routine called at every step in the Zero Degree Calorimeters
   //
-  Int_t j, vol[2], ibeta=0, ialfa, ibe, nphe;
-  Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, out;
-  //Float_t radius;
-  Float_t xalic[3], z, guiEff;
+  Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
+  Float_t hits[11], x[3], xdet[3], um[3], ud[3];
+  Float_t m=0., ekin=0., destep=0., be=0., out=0.;
   // Parametrization for light guide uniformity
-  // -> OBSOLETE!!!! For guide tilted @ 46 degrees
-  //Float_t guiPar[4]={0.31,-0.0004,0.0197,0.7958};
   // NEW!!! Light guide tilted @ 51 degrees
   Float_t guiPar[4]={0.31,-0.0006305,0.01337,0.8895};
   Double_t s[3], p[3];
   const char *knamed;
   //
-  for (j=0;j<10;j++) hits[j]=-999.;
+  for(j=0;j<11;j++) hits[j]=-999.;
   //
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
@@ -2438,8 +2436,13 @@ void AliZDCv3::StepManager()
         hits[7] = 0;
         hits[8] = 0;
         hits[9] = 0;
+	//
+	Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
+        TParticle *part = (gAlice->GetMCApp())->Particle(curTrackN);
+	hits[10] = part->GetPdgCode();
+	//printf("\t PDGCode = %d\n", part->GetPdgCode());
 
-	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
+	AddHit(curTrackN, vol, hits);
 	
 	if(fNoShower==1){
 	  //printf("\t VolName %s -> det %d quad %d - x = %f, y = %f, z = %f\n", 
@@ -2583,15 +2586,16 @@ void AliZDCv3::StepManager()
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 gMC->TrackPosition(s[0],s[1],s[2]);
-         for(j=0; j<=2; j++){
+	 Float_t xalic[3];
+         for(j=0; j<3; j++){
             xalic[j] = s[j];
          }
 	 // z-coordinate from ZEM front face 
 	 // NB-> fPosZEM[2]+fZEMLength = -1000.+2*10.3 = 979.69 cm
-	 z = -xalic[2]+fPosZEM[2]+2*fZEMLength-xalic[1];
+	 Float_t z = -xalic[2]+fPosZEM[2]+2*fZEMLength-xalic[1];
 //	 z = xalic[2]-fPosZEM[2]-fZEMLength-xalic[1]*(TMath::Tan(45.*kDegrad));
 //         printf("\n	fPosZEM[2]+2*fZEMLength = %f", fPosZEM[2]+2*fZEMLength);
-	 guiEff = guiPar[0]*(guiPar[1]*z*z+guiPar[2]*z+guiPar[3]);
+	 Float_t guiEff = guiPar[0]*(guiPar[1]*z*z+guiPar[2]*z+guiPar[3]);
 	 out = out*guiEff;
 	 nphe = gRandom->Poisson(out);
 //         printf("	out*guiEff = %f	nphe = %d", out, nphe);

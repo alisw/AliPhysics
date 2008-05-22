@@ -34,7 +34,8 @@ AliZDCHit::AliZDCHit() :
   fSFlag(0),
   fLightPMQ(0.),
   fLightPMC(0.),
-  fEnergy(0.) 
+  fEnergy(0.), 
+  fPDGCode(0)
 
 {
   //
@@ -52,7 +53,8 @@ AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits) :
   fSFlag(hits[6]),
   fLightPMQ(hits[7]),
   fLightPMC(hits[8]),
-  fEnergy(hits[9]) 
+  fEnergy(hits[9]), 
+  fPDGCode(hits[10])
 
 {
   //
@@ -74,7 +76,8 @@ AliZDCHit::AliZDCHit(const AliZDCHit &oldhit) :
   fSFlag(oldhit.GetSFlag()),
   fLightPMQ(oldhit.GetLightPMQ()), 
   fLightPMC(oldhit.GetLightPMC()),
-  fEnergy(oldhit.GetEnergy())
+  fEnergy(oldhit.GetEnergy()),
+  fPDGCode(oldhit.GetPDGCode())
 {
   // Copy constructor
   fX = oldhit.X();
@@ -88,9 +91,9 @@ AliZDCHit::AliZDCHit(const AliZDCHit &oldhit) :
 void AliZDCHit::Print(Option_t *) const 
 {
    // Print method
-   printf(" -> HIT: vol[0] =  %d vol[1] =  %d Track: %d \n" 
-	  "  Primary E = %f, Ximpact = %f, Yimpact = %f, SFlag = %f\n"
-          "  PMQLight = %f, PMCLight = %f,  Deposited E = %f\n ", 
-          fVolume[0],fVolume[1],fTrack,fPrimKinEn,fXImpact,fYImpact,
+   printf("\t ZDC HIT: det =  %d tow =  %d track %d pcPDGcode %d\n" 
+	  "\t  Primary E = %f, Ximpact = %f, Yimpact = %f, SFlag = %f\n"
+          "\t  PMQLight = %f, PMCLight = %f,  Deposited E = %f\n ", 
+          fVolume[0],fVolume[1],fTrack,fPDGCode,fPrimKinEn,fXImpact,fYImpact,
           fSFlag,fLightPMQ,fLightPMC,fEnergy);
 }
