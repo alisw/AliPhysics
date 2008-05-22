@@ -932,11 +932,11 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
   ss1[1] = s1 - ds1;
   for( Int_t i=0; i<2; i++){
     Double_t bs = bq*ss[i];
-    Double_t c = TMath::Cos(bs), s = TMath::Sin(bs);
+    Double_t c = TMath::Cos(bs), s3 = TMath::Sin(bs);
     Double_t cB,sB;
     if( TMath::Abs(bq)>1.e-8){
       cB= (1-c)/bq;     
-      sB= s/bq;  
+      sB= s3/bq;  
     }else{
       sB = (1. - bs*bs/6.)*ss[i];
       cB = .5*sB*bs;
@@ -944,14 +944,14 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
     g[i][0] = fP[0] + sB*px + cB*py;
     g[i][1] = fP[1] - cB*px + sB*py;
     g[i][2] = fP[2] + ss[i]*pz;
-    g[i][3] =       + c*px + s*py;
-    g[i][4] =       - s*px + c*py;
+    g[i][3] =       + c*px + s3*py;
+    g[i][4] =       - s3*px + c*py;
 
     bs = bq1*ss1[i];  
-    c =  TMath::Cos(bs); s = TMath::Sin(bs);
+    c =  TMath::Cos(bs); s3 = TMath::Sin(bs);
     if( TMath::Abs(bq1)>1.e-8){
       cB= (1-c)/bq1;   
-      sB= s/bq1;  
+      sB= s3/bq1;  
     }else{
       sB = (1. - bs*bs/6.)*ss1[i];
       cB = .5*sB*bs;
@@ -960,8 +960,8 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
     g1[i][0] = p.fP[0] + sB*px1 + cB*py1;
     g1[i][1] = p.fP[1] - cB*px1 + sB*py1;
     g1[i][2] = p.fP[2] + ss[i]*pz1;
-    g1[i][3] =         + c*px1 + s*py1;
-    g1[i][4] =         - s*px1 + c*py1;
+    g1[i][3] =         + c*px1 + s3*py1;
+    g1[i][4] =         - s3*px1 + c*py1;
   }
 
   Int_t i=0, i1=0;
