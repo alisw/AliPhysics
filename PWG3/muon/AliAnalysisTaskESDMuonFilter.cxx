@@ -53,7 +53,7 @@ AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name):
 void AliAnalysisTaskESDMuonFilter::UserCreateOutputObjects()
 {
   // Create the output container
-    OutputTree()->GetUserInfo()->Add(fTrackFilter);
+    if (fTrackFilter) OutputTree()->GetUserInfo()->Add(fTrackFilter);
 }
 
 void AliAnalysisTaskESDMuonFilter::Init()
