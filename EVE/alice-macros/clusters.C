@@ -1,0 +1,143 @@
+#ifndef __CINT__
+#include <TEveManager.h>
+#include <TEvePointSet.h>
+#include <EveBase/AliEveEventManager.h>
+
+#include "AliRunLoader.h"
+#include "AliCluster.h"
+#include "AliTracker.h"
+#include "AliReconstruction.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliESDfriend.h"
+#endif
+
+void clusters()
+{
+  AliEveEventManager::AssertGeometry();
+
+  AliRunLoader *rl        = AliEveEventManager::AssertRunLoader();
+  AliESDEvent  *esd       = AliEveEventManager::AssertESD();
+  AliESDfriend *esdfriend = AliEveEventManager::AssertESDfriend();
+  AliMagF      *magfield  = AliEveEventManager::AssertMagField();
+
+  AliTracker::SetFieldMap(magfield, kFALSE);
+
+  const char* detNames[] = { "ITS", "TPC", "TRD", "TOF" };
+  const Int_t detIds[]   = {   0,     1,     2,     3   };
+  const Int_t detN       = sizeof(detNames)/sizeof(char*);
+
+  AliReconstruction* reco = new AliReconstruction;
+  reco->ImportRunLoader(rl);
+  {
+    TString alldets;
+    for (Int_t i = 0; i < detN; ++i) {
+      alldets += detNames[i];
+      alldets += " ";
+    }
+    reco->CreateTrackers(alldets);
+  }
+
+  TObjArray* clarr = new TObjArray();
+
+  // Load clusters, fill them into clarr.
+
+  for (Int_t i = 0; i < detN; ++i)
+  {
+    Int_t det = detIds[i];
+    rl->LoadRecPoints(detNames[i]);
+
+    TTree *cTree = rl->GetTreeR(detNames[i], false);
+    if (cTree == 0)
+      continue;
+
+    AliTracker* tracker = reco->GetTracker(det);
+    tracker->LoadClusters(cTree);
+    tracker->FillClusterArray(clarr);
+  }
+
+  // Loop over tracks and friends, tag used clusters.
+
+  for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+  {
+    AliESDtrack* at = esd->GetTrack(n);
+
+    Int_t idx[200];
+    for (Int_t i = 0; i < detN; ++i)
+    {
+      Int_t det = detIds[i];
+      AliTracker* tracker = reco->GetTracker(det);
+      Int_t nclusters = at->GetClusters(det, idx);
+      for (Int_t c = 0; c < nclusters; ++c)
+      {
+        Int_t index = idx[c];
+        if (index >= 0) // Needed for TRD storing negative values.
+        {
+          AliCluster* cluster = tracker->GetCluster(index);
+          if (cluster) // Needed for TPC returning 0 sometimes.
+            cluster->IncreaseClusterUsage();
+        }
+      }
+    }
+  }
+
+  // Fill visualization structs
+
+  TEveElementList* list = new TEveElementList("Clusters");
+  gEve->AddElement(list);
+
+  TEvePointSet* shared = new TEvePointSet("Shared Clusters");
+  shared->SetMainColor((Color_t)2);
+  shared->SetMarkerSize(0.4);
+  shared->SetMarkerStyle(2);
+  list->AddElement(shared);
+
+  TEvePointSet* used = new TEvePointSet("Single-used Clusters");
+  used->SetMainColor((Color_t)3);
+  used->SetMarkerSize(0.4);
+  used->SetMarkerStyle(2);
+  list->AddElement(used);
+
+  TEvePointSet* nonused = new TEvePointSet("Not-used Clusters");
+  nonused->SetMainColor((Color_t)4);
+  nonused->SetMarkerSize(0.4);
+  nonused->SetMarkerStyle(2);
+  list->AddElement(nonused);
+
+  // Loop over all clusters, fill appropriate container based
+  // on shared/used information.
+
+  Int_t ncl = clarr->GetEntriesFast();
+  for (Int_t i = 0; i < ncl; ++i)
+  {
+    AliCluster   *cluster = (AliCluster*) clarr->UncheckedAt(i);
+    TEvePointSet *dest    = 0;
+    if (cluster->IsClusterShared())
+      dest = shared;
+    else if (cluster->IsClusterUsed())
+      dest = used;
+    else
+      dest = nonused;
+
+    Float_t g[3]; //global coordinates
+    cluster->GetGlobalXYZ(g);
+    dest->SetNextPoint(g[0], g[1], g[2]);
+    dest->SetPointId(cluster);
+  }
+
+  delete clarr;
+
+  // ??? What to do with trackers ???
+  // I'd propose: have global reconstruction that owns them.
+  // AliEveEventManager::AssertAliReconstruction();
+  // do we have bit-field for detectors, like
+  // enum AliDetectors_e {
+  //    kITS = BIT(0),
+  //    kTPC = BIT(1),
+  //    ...
+  //    kCentralTracking = kITS | kTPC | kTRD | kTOF,
+  //    ...
+  //  };
+
+  gEve->Redraw3D();
+}
