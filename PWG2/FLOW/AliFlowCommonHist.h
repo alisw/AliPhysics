@@ -25,7 +25,7 @@ class AliFlowCommonHist {
   virtual ~AliFlowCommonHist();
 
   //make fill methods here
-  Bool_t FillControlHistograms(AliFlowEventSimple* fEvent);
+  Bool_t FillControlHistograms(AliFlowEventSimple* Event);
  
   //make get methods here
   Double_t GetEntriesInPtBin(Int_t fBin);   //gets entries from fHistPtDiff
@@ -46,7 +46,7 @@ class AliFlowCommonHist {
  
  private:
 
-  AliFlowEventSimple* fEvent;     //!
+  //  AliFlowEventSimple* fEvent;     //!
   AliFlowTrackSimple* fTrack;     //!
 
   //define histograms here

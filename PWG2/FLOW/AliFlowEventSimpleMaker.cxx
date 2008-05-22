@@ -217,21 +217,21 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* fInput)
    
   //normal loop
   while (fGoodTracks < fN && ftrkN < fNumberOfInputTracks) {
-    AliMCParticle* fParticle = fInput->GetTrack(ftrkN);   //get input particle
+    AliMCParticle* myParticle = fInput->GetTrack(ftrkN);   //get input particle
     //cut on tracks
-    if (TMath::Abs(fParticle->Eta()) < 0.2)
+    if (TMath::Abs(myParticle->Eta()) < 0.2)
       {
 	if(
-	   TMath::Abs(fParticle->Particle()->GetPdgCode()) == 211
-	   //	      TMath::Abs(fParticle->Particle()->GetPdgCode()) == 211 ||
-	   //	      TMath::Abs(fParticle->Particle()->GetPdgCode()) == 321 ||
-	   //	      TMath::Abs(fParticle->Particle()->GetPdgCode()) == 2212
+	   TMath::Abs(myParticle->Particle()->GetPdgCode()) == 211
+	   //	      TMath::Abs(myParticle->Particle()->GetPdgCode()) == 211 ||
+	   //	      TMath::Abs(myParticle->Particle()->GetPdgCode()) == 321 ||
+	   //	      TMath::Abs(myParticle->Particle()->GetPdgCode()) == 2212
 	   )
 	  {
 	    fTrack = new AliFlowTrackSimple() ;
-	    fTrack->SetPt(fParticle->Pt() );
-	    fTrack->SetEta(fParticle->Eta() );
-	    fTrack->SetPhi(fParticle->Phi() );
+	    fTrack->SetPt(myParticle->Pt() );
+	    fTrack->SetEta(myParticle->Eta() );
+	    fTrack->SetPhi(myParticle->Phi() );
 	    fTrack->SetForIntegratedFlow(kTRUE);
 	    fTrack->SetForDifferentialFlow(kTRUE);
 
@@ -243,13 +243,13 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* fInput)
 	    fEvent->TrackCollection()->Add(fTrack) ;  	     
 	  }
 	  /*	  else if(
-		  TMath::Abs(fParticle->Particle()->GetPdgCode()) == 211
+		  TMath::Abs(myParticle->Particle()->GetPdgCode()) == 211
 		  )
 	    {
 	      fTrack = new AliFlowTrackSimple();
-	      fTrack->SetPt(fParticle->Pt() );
-	      fTrack->SetEta(fParticle->Eta() );
-	      fTrack->SetPhi(fParticle->Phi() );
+	      fTrack->SetPt(myParticle->Pt() );
+	      fTrack->SetEta(myParticle->Eta() );
+	      fTrack->SetPhi(myParticle->Phi() );
 	      fTrack->SetForIntegratedFlow(kFALSE);
 	      fTrack->SetForDifferentialFlow(kTRUE);
 
@@ -296,14 +296,14 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* fInput)
 
   //normal loop
   while (fGoodTracks < fN && ftrkN < fNumberOfInputTracks) {
-    AliESDtrack* fParticle = fInput->GetTrack(ftrkN);   //get input particle
+    AliESDtrack* myParticle = fInput->GetTrack(ftrkN);   //get input particle
     //cut on tracks
-    if (TMath::Abs(fParticle->Eta()) < 0.2)
+    if (TMath::Abs(myParticle->Eta()) < 0.2)
       {
 	fTrack = new AliFlowTrackSimple() ;
-	fTrack->SetPt(fParticle->Pt() );
-	fTrack->SetEta(fParticle->Eta() );
-	fTrack->SetPhi(fParticle->Phi() );
+	fTrack->SetPt(myParticle->Pt() );
+	fTrack->SetEta(myParticle->Eta() );
+	fTrack->SetPhi(myParticle->Phi() );
 	fTrack->SetForIntegratedFlow(kTRUE);
 	fTrack->SetForDifferentialFlow(kTRUE);
 
@@ -349,14 +349,14 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* fInput)
   
   //normal loop
   while (fGoodTracks < fN && ftrkN < fNumberOfInputTracks) {
-    AliAODTrack* fParticle = fInput->GetTrack(ftrkN);   //get input particle
+    AliAODTrack* myParticle = fInput->GetTrack(ftrkN);   //get input particle
     //cut on tracks
-    if (TMath::Abs(fParticle->Eta()) < 0.2)
+    if (TMath::Abs(myParticle->Eta()) < 0.2)
       {
 	fTrack = new AliFlowTrackSimple() ;
-	fTrack->SetPt(fParticle->Pt() );
-	fTrack->SetEta(fParticle->Eta() );
-	fTrack->SetPhi(fParticle->Phi() );
+	fTrack->SetPt(myParticle->Pt() );
+	fTrack->SetEta(myParticle->Eta() );
+	fTrack->SetPhi(myParticle->Phi() );
 	fTrack->SetForIntegratedFlow(kTRUE);
 	fTrack->SetForDifferentialFlow(kTRUE);
 
@@ -402,17 +402,17 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* fInput, Al
 
   //normal loop
   while (fGoodTracks < fN && ftrkN < fNumberOfInputTracks) {
-    AliESDtrack* fParticle = fInput->GetTrack(ftrkN);   //get input particle
+    AliESDtrack* myParticle = fInput->GetTrack(ftrkN);   //get input particle
     //get Label
-    Int_t fLabel = fParticle->GetLabel();
+    Int_t fLabel = myParticle->GetLabel();
     //match to mc particle
     AliMCParticle* fMcParticle = fInputMc->GetTrack(TMath::Abs(fLabel));
     
     //check
-    if (TMath::Abs(fParticle->GetLabel())!=fMcParticle->Label()) cout<<"fParticle->GetLabel()!=fMcParticle->Label() "<<fParticle->GetLabel()<<"  "<<fMcParticle->Label()<<endl;
+    if (TMath::Abs(myParticle->GetLabel())!=fMcParticle->Label()) cout<<"myParticle->GetLabel()!=fMcParticle->Label() "<<myParticle->GetLabel()<<"  "<<fMcParticle->Label()<<endl;
     
     //cut on tracks
-    if (TMath::Abs(fParticle->Eta()) < 0.2)
+    if (TMath::Abs(myParticle->Eta()) < 0.2)
       {
 	if(
 	   TMath::Abs(fMcParticle->Particle()->GetPdgCode()) == 211 //pions
@@ -423,9 +423,9 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* fInput, Al
 	  {
 	    if(fOption == 0) { //take the PID from the MC & the kinematics from the ESD
 	      fTrack = new AliFlowTrackSimple() ;
-	      fTrack->SetPt(fParticle->Pt() );
-	      fTrack->SetEta(fParticle->Eta() );
-	      fTrack->SetPhi(fParticle->Phi() );
+	      fTrack->SetPt(myParticle->Pt() );
+	      fTrack->SetEta(myParticle->Eta() );
+	      fTrack->SetPhi(myParticle->Phi() );
 	      fTrack->SetForIntegratedFlow(kTRUE);
 	      fTrack->SetForDifferentialFlow(kTRUE);
 	    }

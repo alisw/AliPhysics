@@ -44,13 +44,12 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
  
  AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
    fEventNumber(0),
-   fEvent(0x0),
-   fTrack(0x0),
+   fTrack(NULL),
    fDebug(kFALSE),
    fHistFileName(0),
-   fHistFile(0),
-   fHistProUQ(0),
-   fCommonHists(0)
+   fHistFile(NULL),
+   fHistProUQ(NULL),
+   fCommonHists(NULL)
 {
 
   // Constructor.
@@ -94,24 +93,24 @@ void AliFlowAnalysisWithScalarProduct::Init() {
  
 //-----------------------------------------------------------------------
  
-void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* fEvent) {
+void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
   //Fill histogram
-  if (fEvent) {
+  if (anEvent) {
 
     //fill control histograms     
-    fCommonHists->FillControlHistograms(fEvent);
+    fCommonHists->FillControlHistograms(anEvent);
          
     //get the Q vector from the FlowEvent
-    fQ = fEvent->GetQ();
+    fQ = anEvent->GetQ();
     //Double_t fMult =  fQ.GetMult();
             
     //loop over the tracks of the event
-    Int_t fNumberOfTracks = fEvent->NumberOfTracks(); 
+    Int_t fNumberOfTracks = anEvent->NumberOfTracks(); 
     for (Int_t i=0;i<fNumberOfTracks;i++) 
       {
 
-	fTrack = fEvent->GetTrack(i) ; 
+	fTrack = anEvent->GetTrack(i) ; 
 	if (fTrack){
 	  if (fTrack->UseForDifferentialFlow()) {
 	  Double_t fPhi = fTrack->Phi();
@@ -159,3 +158,5 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     	  
   cout<<".....finished"<<endl;
  }
+
+
