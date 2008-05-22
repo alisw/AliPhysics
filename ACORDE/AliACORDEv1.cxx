@@ -582,9 +582,9 @@ void AliACORDEv1::CreateAcorde()
 	TGeoVolume *upFace = new TGeoVolumeAssembly("ACORDE_2");
 	TGeoVolume *outFace = new TGeoVolumeAssembly("ACORDE_3");
 
-	TGeoVolume *inFacem = new TGeoVolumeAssembly("ACORDE_4");
-	TGeoVolume *upFacem = new TGeoVolumeAssembly("ACORDE_5");
-	TGeoVolume *outFacem = new TGeoVolumeAssembly("ACORDE_6");
+	//TGeoVolume *inFacem = new TGeoVolumeAssembly("ACORDE_4");
+	//TGeoVolume *upFacem = new TGeoVolumeAssembly("ACORDE_5");
+	//TGeoVolume *outFacem = new TGeoVolumeAssembly("ACORDE_6");
 	TGeoVolume *modules = new TGeoVolumeAssembly("ACORDE_MODULES");
 
 	// Define global variables
@@ -957,38 +957,38 @@ void AliACORDEv1::CreateAcorde()
 
 
 	count=24;
-	for(Int_t dy=0;dy<=4;dy++)
+	for(Int_t dyA=0;dyA<=4;dyA++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1+kro;
-		Float_t posz=constants->ModulePositionZ(dy);
-		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1+kro;
-		TGeoCombiTrans *aco7q4 = new TGeoCombiTrans("aco7q4",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7q5 = new TGeoCombiTrans("aco7q5",posx2,posy2,posz,idrotm231);
+		Float_t posx1=constants->ModulePositionX(dyA)+0.1*293*0.7071-56*0.7071-18+des;
+		Float_t posy1=constants->ModulePositionY(dyA)-0.1*293*0.7071-56*0.7071+3-des-q1+kro;
+		Float_t posza=constants->ModulePositionZ(dyA);
+		Float_t posx2=constants->ModulePositionX(dyA)-0.27*293*0.7071-56*0.7071-18+des;
+		Float_t posy2=constants->ModulePositionY(dyA)+0.27*293*0.7071-56*0.7071+3-des-q1+kro;
+		TGeoCombiTrans *aco7q4 = new TGeoCombiTrans("aco7q4",posx1,posy1,posza,idrotm231);
+		TGeoCombiTrans *aco7q5 = new TGeoCombiTrans("aco7q5",posx2,posy2,posza,idrotm231);
 		inFace->AddNode(aCORDE7,count,aco7q4);
 		inFace->AddNode(aCORDE7,count+1,aco7q5);
 		count=count+2;
-		dy++;
+		dyA++;
 	}	
 
 
 	count=34;
-	for(Int_t dy=5;dy<=9;dy++)
+	for(Int_t dyb=5;dyb<=9;dyb++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1+kro;
-		Float_t posz=constants->ModulePositionZ(dy+10);
-		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1+kro;
-		TGeoCombiTrans *aco7q6 = new TGeoCombiTrans("aco7q6",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7q7 = new TGeoCombiTrans("aco7q7",posx2,posy2,posz,idrotm231);
+		Float_t posx1=constants->ModulePositionX(dyb)+0.1*293*0.7071-56*0.7071-18+des;
+		Float_t posy1=constants->ModulePositionY(dyb)-0.1*293*0.7071-56*0.7071+3-des-q1+kro;
+		Float_t poszb=constants->ModulePositionZ(dyb+10);
+		Float_t posx2=constants->ModulePositionX(dyb)-0.27*293*0.7071-56*0.7071-18+des;
+		Float_t posy2=constants->ModulePositionY(dyb)+0.27*293*0.7071-56*0.7071+3-des-q1+kro;
+		TGeoCombiTrans *aco7q6 = new TGeoCombiTrans("aco7q6",posx1,posy1,poszb,idrotm231);
+		TGeoCombiTrans *aco7q7 = new TGeoCombiTrans("aco7q7",posx2,posy2,poszb,idrotm231);
 		inFace->AddNode(aCORDE7,count,aco7q6);
 		inFace->AddNode(aCORDE7,count+1,aco7q7);
 		count=count+2;
-		dy++;
+		dyb++;
 	}	
 
 
@@ -1010,44 +1010,44 @@ void AliACORDEv1::CreateAcorde()
 
 
 	count=48;
-	for(Int_t dy=10;dy<=14;dy++)
+	for(Int_t dyc=10;dyc<=14;dyc++)
 
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-0.8+kro;
-		Float_t posz=constants->ModulePositionZ(dy);
-		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-0.8+kro;
+		Float_t posx1=constants->ModulePositionX(dyc)+0.1*293*0.7071-56*0.7071-18+des;
+		Float_t posy1=constants->ModulePositionY(dyc)-0.1*293*0.7071-56*0.7071+3-des-0.8+kro;
+		Float_t poszc=constants->ModulePositionZ(dyc);
+		Float_t posx2=constants->ModulePositionX(dyc)-0.27*293*0.7071-56*0.7071-18+des;
+		Float_t posy2=constants->ModulePositionY(dyc)+0.27*293*0.7071-56*0.7071+3-des-1.5-0.8+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(70);
-		TGeoCombiTrans *aco7q12 = new TGeoCombiTrans("aco7q12",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7q13 = new TGeoCombiTrans("aco7q13",posx2+15,posy2-10,posz,rot1);
+		TGeoCombiTrans *aco7q12 = new TGeoCombiTrans("aco7q12",posx1,posy1,poszc,idrotm231);
+		TGeoCombiTrans *aco7q13 = new TGeoCombiTrans("aco7q13",posx2+15,posy2-10,poszc,rot1);
 		inFace->AddNode(aCORDE7,count,aco7q12);
 		inFace->AddNode(aCORDE7,count+1,aco7q13);// bars 25 grades
 		count=count+2;
-		dy++;
+		dyc++;
 	}
 
 
 	count=57;
-	for(Int_t dy=15;dy<=19;dy++)
+	for(Int_t dyd=15;dyd<=19;dyd++)
 
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1-0.8+kro;
-		Float_t posz=constants->ModulePositionZ(dy);
-		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-q1-0.8+kro;
+		Float_t posx1=constants->ModulePositionX(dyd)+0.1*293*0.7071-56*0.7071-18+des;
+		Float_t posy1=constants->ModulePositionY(dyd)-0.1*293*0.7071-56*0.7071+3-des-q1-0.8+kro;
+		Float_t poszd=constants->ModulePositionZ(dyd);
+		Float_t posx2=constants->ModulePositionX(dyd)-0.27*293*0.7071-56*0.7071-18+des;
+		Float_t posy2=constants->ModulePositionY(dyd)+0.27*293*0.7071-56*0.7071+3-des-1.5-q1-0.8+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(70);
-		TGeoCombiTrans *aco7q14 = new TGeoCombiTrans("aco7q14",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7q15 = new TGeoCombiTrans("aco7q15",posx2+15,posy2-10,posz,rot1);
+		TGeoCombiTrans *aco7q14 = new TGeoCombiTrans("aco7q14",posx1,posy1,poszd,idrotm231);
+		TGeoCombiTrans *aco7q15 = new TGeoCombiTrans("aco7q15",posx2+15,posy2-10,poszd,rot1);
 		inFace->AddNode(aCORDE7,count,aco7q14);
 		inFace->AddNode(aCORDE7,count+1,aco7q15);// bars 25 grades
 		count=count+2;
-		dy++;
+		dyd++;
 	}
 
 
@@ -1091,38 +1091,38 @@ void AliACORDEv1::CreateAcorde()
 
 
 	count=25;
-	for(Int_t dy=50;dy<=54;dy++)
+	for(Int_t dye=50;dye<=54;dye++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
-		Float_t posz=constants->ModulePositionZ(dy);
-		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
-		TGeoCombiTrans *aco7q22 = new TGeoCombiTrans("aco7q22",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7q23 = new TGeoCombiTrans("aco7q23",posx2,posy2,posz,idrotm232);
+		Float_t posx1=constants->ModulePositionX(dye)-0.1*293*0.7071+56*0.7071+18-des;
+		Float_t posy1=constants->ModulePositionY(dye)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
+		Float_t posze=constants->ModulePositionZ(dye);
+		Float_t posx2=constants->ModulePositionX(dye)+0.27*293*0.7071+56*0.7071+18-des;
+		Float_t posy2=constants->ModulePositionY(dye)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
+		TGeoCombiTrans *aco7q22 = new TGeoCombiTrans("aco7q22",posx1,posy1,posze,idrotm232);
+		TGeoCombiTrans *aco7q23 = new TGeoCombiTrans("aco7q23",posx2,posy2,posze,idrotm232);
 		outFace->AddNode(aCORDE7,count,aco7q22);
 		outFace->AddNode(aCORDE7,count+1,aco7q23);
 		count=count+2;
-		dy++;
+		dye++;
 	}
 
 
 	count=35;
-	for(Int_t dy=57;dy<=59;dy++)
+	for(Int_t dyf=57;dyf<=59;dyf++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
-		Float_t posz=constants->ModulePositionZ(dy-10);
-		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
-		TGeoCombiTrans *aco7q24 = new TGeoCombiTrans("aco7q24",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7q25 = new TGeoCombiTrans("aco7q25",posx2,posy2,posz,idrotm232);
+		Float_t posx1=constants->ModulePositionX(dyf)-0.1*293*0.7071+56*0.7071+18-des;
+		Float_t posy1=constants->ModulePositionY(dyf)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
+		Float_t poszf=constants->ModulePositionZ(dyf-10);
+		Float_t posx2=constants->ModulePositionX(dyf)+0.27*293*0.7071+56*0.7071+18-des;
+		Float_t posy2=constants->ModulePositionY(dyf)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
+		TGeoCombiTrans *aco7q24 = new TGeoCombiTrans("aco7q24",posx1,posy1,poszf,idrotm232);
+		TGeoCombiTrans *aco7q25 = new TGeoCombiTrans("aco7q25",posx2,posy2,poszf,idrotm232);
 		outFace->AddNode(aCORDE7,count,aco7q24);
 		outFace->AddNode(aCORDE7,count+1,aco7q25);
 		count=count+2;
-		dy++;
+		dyf++;
 	}
 
 
@@ -1145,42 +1145,42 @@ void AliACORDEv1::CreateAcorde()
 	outFace->AddNode(aCORDE7,44,aco7q29);
 
 	count=45;
-	for(Int_t dy=40;dy<=44;dy++)
+	for(Int_t dyg=40;dyg<=44;dyg++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
-		Float_t posz=constants->ModulePositionZ(dy);
-		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
+		Float_t posx1=constants->ModulePositionX(dyg)-0.1*293*0.7071+56*0.7071+18-des;
+		Float_t posy1=constants->ModulePositionY(dyg)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
+		Float_t poszg=constants->ModulePositionZ(dyg);
+		Float_t posx2=constants->ModulePositionX(dyg)+0.27*293*0.7071+56*0.7071+18-des;
+		Float_t posy2=constants->ModulePositionY(dyg)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(105);
-		TGeoCombiTrans *aco7q30 = new TGeoCombiTrans("aco7q30",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7q31 = new TGeoCombiTrans("aco7q31",posx2-15,posy2-10,posz,rot1);
+		TGeoCombiTrans *aco7q30 = new TGeoCombiTrans("aco7q30",posx1,posy1,poszg,idrotm232);
+		TGeoCombiTrans *aco7q31 = new TGeoCombiTrans("aco7q31",posx2-15,posy2-10,poszg,rot1);
 		outFace->AddNode(aCORDE7,count,aco7q30);
 		outFace->AddNode(aCORDE7,count+1,aco7q31);// bars 25 grades
 		count=count+2;
-		dy++;
+		dyg++;
 	}
 
 
 	count=55;
-	for(Int_t dy=45;dy<=49;dy++)
+	for(Int_t dyh=45;dyh<=49;dyh++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
-		Float_t posz=constants->ModulePositionZ(dy);
-		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
+		Float_t posx1=constants->ModulePositionX(dyh)-0.1*293*0.7071+56*0.7071+18-des;
+		Float_t posy1=constants->ModulePositionY(dyh)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
+		Float_t poszh=constants->ModulePositionZ(dyh);
+		Float_t posx2=constants->ModulePositionX(dyh)+0.27*293*0.7071+56*0.7071+18-des;
+		Float_t posy2=constants->ModulePositionY(dyh)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(105);
-		TGeoCombiTrans *aco7q32 = new TGeoCombiTrans("aco7q32",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7q33 = new TGeoCombiTrans("aco7q33",posx2-15,posy2-10,posz,rot1);
+		TGeoCombiTrans *aco7q32 = new TGeoCombiTrans("aco7q32",posx1,posy1,poszh,idrotm232);
+		TGeoCombiTrans *aco7q33 = new TGeoCombiTrans("aco7q33",posx2-15,posy2-10,poszh,rot1);
 		outFace->AddNode(aCORDE7,count,aco7q32);
 		outFace->AddNode(aCORDE7,count+1,aco7q33);// bars 25 grades
 		count=count+2;
-		dy++;
+		dyh++;
 	}
 
 
@@ -1216,38 +1216,38 @@ void AliACORDEv1::CreateAcorde()
 
 
 	count=71;
-	for(Int_t dy=0;dy<=4;dy++)
+	for(Int_t dyi=0;dyi<=4;dyi++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-4*box[0]-8+des+re;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm;
-		Float_t posz1=constants->ModulePositionZ(dy);
-		Float_t dyx2=constants->ModulePositionX(dy)-0.27*293*0.7071-4*box[0]-8+des+re;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm;
-		TGeoTranslation *aco75=new TGeoTranslation("aco75",posx1,posy1,posz1);
-		TGeoTranslation *aco76=new TGeoTranslation("aco76",dyx2,dyy2,posz1);
+		Float_t posx1a=constants->ModulePositionX(dyi)+0.1*293*0.7071-4*box[0]-8+des+re;
+		Float_t posy1a=constants->ModulePositionY(dyi)-0.1*293*0.7071-box[1]-18-2-des+sm;
+		Float_t posz1a=constants->ModulePositionZ(dyi);
+		Float_t dyx2=constants->ModulePositionX(dyi)-0.27*293*0.7071-4*box[0]-8+des+re;
+		Float_t dyy2=constants->ModulePositionY(dyi)+0.27*293*0.7071-box[1]-18-2-des+sm;
+		TGeoTranslation *aco75=new TGeoTranslation("aco75",posx1a,posy1a,posz1a);
+		TGeoTranslation *aco76=new TGeoTranslation("aco76",dyx2,dyy2,posz1a);
 		inFace->AddNode(aCORDE7q1,count,aco75);
 		inFace->AddNode(aCORDE7q1,count+1,aco76);
 		count=count+2;
-		dy++;
+		dyi++;
 	}
 
 
 	count=81;
-	for(Int_t dy=5;dy<=9;dy++)
+	for(Int_t dyj=5;dyj<=9;dyj++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-4*box[0]-8+des+re;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm;
-		Float_t posz1=constants->ModulePositionZ(dy+10);
-		Float_t dyx2=constants->ModulePositionX(dy)-0.27*293*0.7071-4*box[0]-8+des+re;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm;
-		TGeoTranslation *aco75=new TGeoTranslation("aco75",posx1,posy1,posz1);
-		TGeoTranslation *aco76=new TGeoTranslation("aco76",dyx2,dyy2,posz1);
+		Float_t posx1b=constants->ModulePositionX(dyj)+0.1*293*0.7071-4*box[0]-8+des+re;
+		Float_t posy1b=constants->ModulePositionY(dyj)-0.1*293*0.7071-box[1]-18-2-des+sm;
+		Float_t posz1b=constants->ModulePositionZ(dyj+10);
+		Float_t dyx2=constants->ModulePositionX(dyj)-0.27*293*0.7071-4*box[0]-8+des+re;
+		Float_t dyy2=constants->ModulePositionY(dyj)+0.27*293*0.7071-box[1]-18-2-des+sm;
+		TGeoTranslation *aco75=new TGeoTranslation("aco75",posx1b,posy1b,posz1b);
+		TGeoTranslation *aco76=new TGeoTranslation("aco76",dyx2,dyy2,posz1b);
 		inFace->AddNode(aCORDE7q1,count,aco75);
 		inFace->AddNode(aCORDE7q1,count+1,aco76);
 		count=count+2;
-		dy++;
+		dyj++;
 	}
 
 
@@ -1268,39 +1268,39 @@ void AliACORDEv1::CreateAcorde()
 	inFace->AddNode(aCORDE7q1,94,aco710);
 
 	count=95;
-	for(Int_t dy=10;dy<=14;dy++)
+	for(Int_t dyk=10;dyk<=14;dyk++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-4*box[0]-8+des+re+.83;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm;
-		Float_t posz1=constants->ModulePositionZ(dy);
-		Float_t dyx2=constants->ModulePositionX(dy)-0.27*293*0.7071-4*box[0]-4+des+re+0.83;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des+sm;
-		TGeoTranslation *aco711=new TGeoTranslation("aco711",posx1,posy1,posz1);
-		TGeoTranslation *aco712=new TGeoTranslation("aco712",dyx2,dyy2,posz1);
+		Float_t posx1c=constants->ModulePositionX(dyk)+0.1*293*0.7071-4*box[0]-8+des+re+.83;
+		Float_t posy1c=constants->ModulePositionY(dyk)-0.1*293*0.7071-box[1]-18-2-des+sm;
+		Float_t posz1c=constants->ModulePositionZ(dyk);
+		Float_t dyx2=constants->ModulePositionX(dyk)-0.27*293*0.7071-4*box[0]-4+des+re+0.83;
+		Float_t dyy2=constants->ModulePositionY(dyk)+0.27*293*0.7071-box[1]-18-5-des+sm;
+		TGeoTranslation *aco711=new TGeoTranslation("aco711",posx1c,posy1c,posz1c);
+		TGeoTranslation *aco712=new TGeoTranslation("aco712",dyx2,dyy2,posz1c);
 		inFace->AddNode(aCORDE7q1,count,aco711);
 		inFace->AddNode(aCORDE7q1,count+1,aco712);
 		count=count+2;
-		dy++;
+		dyk++;
 	}
 
 
 
 	count=105;
-	for(Int_t dy=15;dy<=19;dy++)
+	for(Int_t dyl=15;dyl<=19;dyl++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-4*box[0]-8+des+re+0.83;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm;
-		Float_t posz1=constants->ModulePositionZ(dy);
-		Float_t dyx2=constants->ModulePositionX(dy)-0.27*293*0.7071-4*box[0]-4+des+re+0.83;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des;
-		TGeoTranslation *aco713=new TGeoTranslation("aco713",posx1,posy1,posz1);
-		TGeoTranslation *aco714=new TGeoTranslation("aco714",dyx2,dyy2,posz1);
+		Float_t posx1d=constants->ModulePositionX(dyl)+0.1*293*0.7071-4*box[0]-8+des+re+0.83;
+		Float_t posy1d=constants->ModulePositionY(dyl)-0.1*293*0.7071-box[1]-18-2-des+sm;
+		Float_t posz1d=constants->ModulePositionZ(dyl);
+		Float_t dyx2=constants->ModulePositionX(dyl)-0.27*293*0.7071-4*box[0]-4+des+re+0.83;
+		Float_t dyy2=constants->ModulePositionY(dyl)+0.27*293*0.7071-box[1]-18-5-des;
+		TGeoTranslation *aco713=new TGeoTranslation("aco713",posx1d,posy1d,posz1d);
+		TGeoTranslation *aco714=new TGeoTranslation("aco714",dyx2,dyy2,posz1d);
 		inFace->AddNode(aCORDE7q1,count,aco713);
 		inFace->AddNode(aCORDE7q1,count+1,aco714);
 		count=count+2;
-		dy++;
+		dyl++;
 	}
 
 		//*** Out-Face ***
@@ -1336,39 +1336,39 @@ void AliACORDEv1::CreateAcorde()
 
 
 	count=65;
-	for(Int_t dy=50;dy<=54;dy++)
+	for(Int_t dym=50;dym<=54;dym++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+4*box[0]+8-des-re-1;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
-		Float_t posz1=constants->ModulePositionZ(dy);
-		Float_t dyx2=constants->ModulePositionX(dy)+0.27*293*0.7071+4*box[0]+8-des-re-1;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm-2.5;
-		TGeoTranslation *aco721=new TGeoTranslation("aco721",posx1,posy1,posz1);
-		TGeoTranslation *aco722=new TGeoTranslation("aco722",dyx2,dyy2,posz1);
+		Float_t posx1e=constants->ModulePositionX(dym)-0.1*293*0.7071+4*box[0]+8-des-re-1;
+		Float_t posy1e=constants->ModulePositionY(dym)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
+		Float_t posz1e=constants->ModulePositionZ(dym);
+		Float_t dyx2=constants->ModulePositionX(dym)+0.27*293*0.7071+4*box[0]+8-des-re-1;
+		Float_t dyy2=constants->ModulePositionY(dym)+0.27*293*0.7071-box[1]-18-2-des+sm-2.5;
+		TGeoTranslation *aco721=new TGeoTranslation("aco721",posx1e,posy1e,posz1e);
+		TGeoTranslation *aco722=new TGeoTranslation("aco722",dyx2,dyy2,posz1e);
 		outFace->AddNode(aCORDE7q1,count,aco721);
 		outFace->AddNode(aCORDE7q1,count+1,aco722);
 		count=count+2;
-		dy++;
+		dym++;
 	}
 
 
 
 	count=75;
-	for(Int_t dy=57;dy<=59;dy++)
+	for(Int_t dyn=57;dyn<=59;dyn++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+4*box[0]+8-des-re-1;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
-		Float_t posz1=constants->ModulePositionZ(dy-10);
-		Float_t dyx2=constants->ModulePositionX(dy)+0.27*293*0.7071+4*box[0]+8-des-re-1;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm-2.5;
-		TGeoTranslation *aco723=new TGeoTranslation("aco723",posx1,posy1,posz1);
-		TGeoTranslation *aco724=new TGeoTranslation("aco724",dyx2,dyy2,posz1);
+		Float_t posx1f=constants->ModulePositionX(dyn)-0.1*293*0.7071+4*box[0]+8-des-re-1;
+		Float_t posy1f=constants->ModulePositionY(dyn)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
+		Float_t posz1f=constants->ModulePositionZ(dyn-10);
+		Float_t dyx2=constants->ModulePositionX(dyn)+0.27*293*0.7071+4*box[0]+8-des-re-1;
+		Float_t dyy2=constants->ModulePositionY(dyn)+0.27*293*0.7071-box[1]-18-2-des+sm-2.5;
+		TGeoTranslation *aco723=new TGeoTranslation("aco723",posx1f,posy1f,posz1f);
+		TGeoTranslation *aco724=new TGeoTranslation("aco724",dyx2,dyy2,posz1f);
 		outFace->AddNode(aCORDE7q1,count,aco723);
 		outFace->AddNode(aCORDE7q1,count+1,aco724);
 		count=count+2;
-		dy++;
+		dyn++;
 	}
 
 
@@ -1390,39 +1390,39 @@ void AliACORDEv1::CreateAcorde()
 
 
 	count=89;
-	for(Int_t dy=40;dy<=44;dy++)
+	for(Int_t dyo=40;dyo<=44;dyo++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+4*box[0]+8-des-re-1;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
-		Float_t posz1=constants->ModulePositionZ(dy);
-		Float_t dyx2=constants->ModulePositionX(dy)+0.27*293*0.7071+4*box[0]+4-des-re-1+2.8;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des+sm-2.5+3;
-		TGeoTranslation *aco729=new TGeoTranslation("aco729",posx1,posy1,posz1);
-		TGeoTranslation *aco730=new TGeoTranslation("aco730",dyx2,dyy2,posz1);
+		Float_t posx1g=constants->ModulePositionX(dyo)-0.1*293*0.7071+4*box[0]+8-des-re-1;
+		Float_t posy1g=constants->ModulePositionY(dyo)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
+		Float_t posz1g=constants->ModulePositionZ(dyo);
+		Float_t dyx2=constants->ModulePositionX(dyo)+0.27*293*0.7071+4*box[0]+4-des-re-1+2.8;
+		Float_t dyy2=constants->ModulePositionY(dyo)+0.27*293*0.7071-box[1]-18-5-des+sm-2.5+3;
+		TGeoTranslation *aco729=new TGeoTranslation("aco729",posx1g,posy1g,posz1g);
+		TGeoTranslation *aco730=new TGeoTranslation("aco730",dyx2,dyy2,posz1g);
 		outFace->AddNode(aCORDE7q1,count,aco729);
 		outFace->AddNode(aCORDE7q1,count+1,aco730);
 		count=count+2;
-		dy++;
+		dyo++;
 	}
 
 
 
 	count=99;
-	for(Int_t dy=45;dy<=49;dy++)
+	for(Int_t dyp=45;dyp<=49;dyp++)
 	{
 
-		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+4*box[0]+8-des-re-1;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
-		Float_t posz1=constants->ModulePositionZ(dy);
-		Float_t dyx2=constants->ModulePositionX(dy)+0.27*293*0.7071+4*box[0]+4-des-re-1+2.8;
-		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des+sm-2.5+3;
-		TGeoTranslation *aco729=new TGeoTranslation("aco729",posx1,posy1,posz1);
-		TGeoTranslation *aco730=new TGeoTranslation("aco730",dyx2,dyy2,posz1);
+		Float_t posx1h=constants->ModulePositionX(dyp)-0.1*293*0.7071+4*box[0]+8-des-re-1;
+		Float_t posy1h=constants->ModulePositionY(dyp)-0.1*293*0.7071-box[1]-18-2-des+sm-2.5;
+		Float_t posz1h=constants->ModulePositionZ(dyp);
+		Float_t dyx2=constants->ModulePositionX(dyp)+0.27*293*0.7071+4*box[0]+4-des-re-1+2.8;
+		Float_t dyy2=constants->ModulePositionY(dyp)+0.27*293*0.7071-box[1]-18-5-des+sm-2.5+3;
+		TGeoTranslation *aco729=new TGeoTranslation("aco729",posx1h,posy1h,posz1h);
+		TGeoTranslation *aco730=new TGeoTranslation("aco730",dyx2,dyy2,posz1h);
 		outFace->AddNode(aCORDE7q1,count,aco729);
 		outFace->AddNode(aCORDE7q1,count+1,aco730);
 		count=count+2;
-		dy++;
+		dyp++;
 	}
 
 
