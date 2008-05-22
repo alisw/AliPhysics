@@ -8,21 +8,51 @@
 #include <Riostream.h>
 #include "AliAlignObj.h"
 #endif
-void DrawITSAlignObj(const char* filename="ITSfullMisalignment.root",
-		     const char* filenameOut="ITSfullModuleMisalignment.root",
-		     Bool_t local=kFALSE) {
-  //
+void DrawITSAlignObj(Bool_t local=kFALSE) {  //
   // Draw distribution of alignment constants
-  // (original version: A.Jacholkowski; modified by: A.Dainese)
+  // Set TOCDB and STORAGE environment variables to run the macro
+  // on an AliCDBEntry instead of on a file
   //
 
-/* $Id$ */
+  const char* filenameOut="ITSfullModuleMisalignment.root";
+  TClonesArray* ar = 0;
+  
+  AliCDBManager* cdb = AliCDBManager::Instance();
 
-  AliGeomManager::LoadGeometry("geometry.root");
-
-  TFile* f = TFile::Open(filename);
-  if(!f) {cerr<<"cannot open input file\n"; return;}
-
+  // Activate CDB storage and load geometry from CDB
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    cdb->SetDefaultStorage(Storage.Data());
+    cdb->SetRun(0);
+    AliCDBEntry *entry = cdb->Get("GRP/Geometry/Data");
+    if(!entry) Fatal("Could not get the specified CDB entry!");
+    entry->SetOwner(0);
+    TGeoManager* geom = (TGeoManager*) entry->GetObject();
+    AliGeomManager::SetGeometry(geom);
+    AliCDBEntry* eItsAlign = cdb->Get("ITS/Align/Data");
+    ar = (TClonesArray*)eItsAlign->GetObject();
+    if(!ar) {
+      Fatal("Could not get the alignment-objects array from the CDB entry!");
+      return;
+    }
+  }else{
+    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+    cdb->SetRun(0);
+    AliGeomManager::LoadGeometry("geometry.root"); //load geom from default CDB storage
+    const char* filename="ITSfullMisalignment.root";
+    TFile* f = TFile::Open(filename);
+    if(!f) {cerr<<"cannot open input file\n"; return;}
+    ar = (TClonesArray*)f->Get("ITSAlignObjs");
+    if(!ar) {
+      Fatal("Could not get the alignment-objects array from the file %s!", filename);
+      return;
+    }
+  }    
+		  
   TCanvas  *cSPDsector = new TCanvas("cSPDsector","SPD sectors alignobjs",0,0,800,600);
   cSPDsector->Divide(3,2);		    
   TH1F* hxSPDsector = new TH1F("hxSPDsector","x in SPD sectors",100,-0.1,0.1);
@@ -130,12 +160,11 @@ void DrawITSAlignObj(const char* filename="ITSfullMisalignment.root",
   hrzSSDsensor->SetXTitle("[deg]");
 
 
-
-  TClonesArray* ar = (TClonesArray*)f->Get("ITSAlignObjs");
   Int_t entries = ar->GetEntriesFast();
-  cout<<"number of alignment objects: "<<entries<<endl;
-  Bool_t overlaps;
-  AliGeomManager::ApplyAlignObjsToGeom(*ar,overlaps);
+  Printf("number of alignment objects: %d",entries);
+  //Bool_t overlaps;
+  if(!AliGeomManager::GetGeometry()) return;
+  AliGeomManager::ApplyAlignObjsToGeom(*ar); //,overlaps);
 
   AliAlignObj* a;
   Option_t *opt = NULL;
@@ -150,14 +179,15 @@ void DrawITSAlignObj(const char* filename="ITSfullMisalignment.root",
 
   for(Int_t i=0; i<entries; i++){
     a=(AliAlignObj*)ar->UncheckedAt(i);
+    TString symName = a->GetSymName();
+    UShort_t volUID = a->GetVolUID();
+    //printf("VolId %d    %s\n",volUID,symName.Data());
+    
     if(local) {
       a->GetLocalPars(tr,rot);
     } else {
       a->GetPars(tr,rot);
     }
-    TString symName = a->GetSymName();
-    UShort_t volUID = a->GetVolUID();
-    printf("VolId %d    %s\n",volUID,symName.Data());
 
     AliGeomManager::GetDeltaForBranch(*a,delta);
     //delta.Print();
@@ -335,3 +365,4 @@ void DrawITSAlignObj(const char* filename="ITSfullMisalignment.root",
   
   return;
 }
+
