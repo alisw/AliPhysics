@@ -7,8 +7,10 @@
 #define AliAnalysisTaskLeeYangZeros_H
 
 // AliAnalysisTaskLeeYangZeros:
-// analysis task for Lee Yang Zeroes method
-// Author: Naomi van der Kolk (kolk@nikhef.nl)
+// analysis task for 
+// Lee Yang Zeroes method
+// Author: 
+// Naomi van der Kolk (kolk@nikhef.nl)
 
 class AliESDEvent;
 class AliAODEvent;
@@ -36,6 +38,10 @@ class AliAnalysisTaskLeeYangZeros : public AliAnalysisTask {
   void           SetAnalysisType(TString type) {this->fAnalysisType = type ; }
  
  private:
+ 
+  AliAnalysisTaskLeeYangZeros(const AliAnalysisTaskLeeYangZeros& aAnalysis);
+  AliAnalysisTaskLeeYangZeros& operator=(const AliAnalysisTaskLeeYangZeros& aAnalysis);
+
   AliESDEvent *fESD;                      //ESD object
   AliAODEvent* fAOD;                      //AOD object
   TString fAnalysisType;                  //string to select which kind of input to analyse: ESD, AOD or MC
@@ -53,3 +59,4 @@ class AliAnalysisTaskLeeYangZeros : public AliAnalysisTask {
 };
 
 #endif
+

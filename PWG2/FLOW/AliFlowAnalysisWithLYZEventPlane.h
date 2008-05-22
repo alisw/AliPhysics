@@ -59,9 +59,9 @@ class AliFlowAnalysisWithLYZEventPlane {
 
  private:
 
-  //  AliFlowAnalysisWithLYZEventPlane(const AliFlowAnalysisWithLYZEventPlane& lyz);    // AliFlowAnalysisWithLYZEventPlane object cannot be copied
-  //  void operator=(const AliFlowAnalysisWithLYZEventPlane &lyz);   
- 
+  AliFlowAnalysisWithLYZEventPlane(const AliFlowAnalysisWithLYZEventPlane& aAnalysis);
+  AliFlowAnalysisWithLYZEventPlane& operator=(const AliFlowAnalysisWithLYZEventPlane& aAnalysis); 
+
   TFile*             fOutFile;                //! 
   TFile*             fFirstRunFile ;          //! pointer to file from first run
   TFile*             fSecondRunFile ;         //! pointer to file from second run
@@ -96,8 +96,7 @@ class AliFlowAnalysisWithLYZEventPlane {
   AliFlowCommonHistResults* fCommonHistsRes;  //!
 
   Int_t     fEventNumber;  // event counter
-  //  Double_t  fQX;           // local flow vector
-  //  Double_t  fQY;           // local flow vector
+
   AliFlowVector  fQ;       // flow vector
   TVector2  fQsum;         // flow vector sum
   Double_t  fQ2sum;        // flow vector sum squared

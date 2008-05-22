@@ -6,8 +6,10 @@
 #define AliAnalysisTaskMCEventPlane_H
 
 // AliAnalysisTaskMCEventPlane:
-// analysis task for Monte Carlo Event Plane
-// Author: Naomi van der Kolk (kolk@nikhef.nl)
+// analysis task for 
+// Monte Carlo Event Plane
+// Author: 
+//        Naomi van der Kolk (kolk@nikhef.nl)
 
 class AliESDEvent;
 class AliAODEvent;
@@ -31,6 +33,10 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
   TString GetAnalysisType() const    { return this->fAnalysisType; }
   
  private:
+ 
+  AliAnalysisTaskMCEventPlane(const AliAnalysisTaskMCEventPlane& aAnalysis);
+  AliAnalysisTaskMCEventPlane& operator=(const AliAnalysisTaskMCEventPlane& aAnalysis);
+  
   AliESDEvent *fESD;                      // ESD object
   AliAODEvent *fAOD;                      // AOD object
   AliFlowAnalysisWithMCEventPlane* fMc;   // MC EP analysis object
@@ -41,3 +47,4 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
 };
 
 #endif
+

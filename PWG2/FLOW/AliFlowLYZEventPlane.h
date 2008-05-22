@@ -46,6 +46,9 @@ class AliFlowLYZEventPlane {
 
  private:
   
+  AliFlowLYZEventPlane(const AliFlowLYZEventPlane& aAnalysis);
+  AliFlowLYZEventPlane& operator=(const AliFlowLYZEventPlane& aAnalysis);
+  
   TFile*   fFirstRunFile ;          //! pointer to file from first run
   TFile*   fSecondRunFile ;         //! pointer to file from second run
   TString  fFirstRunFileName;       //!
@@ -62,5 +65,4 @@ class AliFlowLYZEventPlane {
 };
 
 #endif
-
 

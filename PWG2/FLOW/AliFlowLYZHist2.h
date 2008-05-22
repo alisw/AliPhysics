@@ -38,6 +38,9 @@ class AliFlowLYZHist2 {
   TComplex GetfNumerPt(Int_t i);                    //get numerator for diff. flow (pt)
   
  private:
+ 
+  AliFlowLYZHist2(const AliFlowLYZHist2& aAnalysis);
+  AliFlowLYZHist2& operator=(const AliFlowLYZHist2& aAnalysis);
   
   TProfile* fHistProReNumer;                        //!
   TProfile* fHistProImNumer;                        //!
@@ -52,4 +55,3 @@ class AliFlowLYZHist2 {
  
      
 #endif
-

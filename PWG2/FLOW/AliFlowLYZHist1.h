@@ -32,6 +32,9 @@ class AliFlowLYZHist1 {
    
 private:
 
+  AliFlowLYZHist1(const AliFlowLYZHist1& aAnalysis);
+  AliFlowLYZHist1& operator=(const AliFlowLYZHist1& aAnalysis);
+
   TH1D* fHistGtheta;                          //!
   TProfile* fHistProReGtheta;                 //!
   TProfile* fHistProImGtheta;                 //!
@@ -42,4 +45,3 @@ private:
  
      
 #endif
-
