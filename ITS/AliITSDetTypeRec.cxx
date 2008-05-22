@@ -447,7 +447,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
 
   if(!entrySPD || !deadSPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || 
      !entryPedestalSSD || !entryBadChannelsSSD || 
-     !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapASDD || !mapTSDD || !entryRP){
+     !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapASDD || !mapTSDD ){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -508,15 +508,17 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   if(!cacheStatus)entry2SSD->SetObject(NULL);
   entry2SSD->SetOwner(kTRUE);
 
-  AliITSRecoParam *rp = (AliITSRecoParam*)entryRP->GetObject();
-  if(!cacheStatus)entryRP->SetObject(NULL);
-  entryRP->SetOwner(kTRUE);
   if(!AliITSReconstructor::GetRecoParam()){
+    if(!entryRP) AliFatal("Calibration object (RecoParam) retrieval from OCDB failed! Hint: as an alternative you can set it in your reconstruction macro ");
+    AliITSRecoParam *rp = (AliITSRecoParam*)entryRP->GetObject();
+    if(!cacheStatus)entryRP->SetObject(NULL);
+    entryRP->SetOwner(kTRUE);
     AliITSReconstructor::SetRecoParam(rp);
   }
   else {
-    AliWarning("AliITSRecoPAram object has been already set in AliITSReconstructor. The OCDB instance will not be used\n");
+    AliWarning("AliITSRecoParam object has been already set in AliITSReconstructor. The OCDB instance will not be used\n");
   }
+
 
   // DB entries are deleted. In this way metadeta objects are deleted as well
   if(!cacheStatus){
