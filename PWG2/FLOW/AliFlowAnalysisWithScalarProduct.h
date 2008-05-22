@@ -38,19 +38,19 @@ class AliFlowAnalysisWithScalarProduct {
    void    Make(AliFlowEventSimple* anEvent);   //calculates variables and fills histograms
    void    Finish();                           //saves histograms
   
-   void      SetDebug(Bool_t kt)                 { this->fDebug = kt ; }
-   Bool_t    GetDebug() const                    { return this->fDebug ; }
+   void      SetDebug(Bool_t kt)            { this->fDebug = kt ; }
+   Bool_t    GetDebug() const               { return this->fDebug ; }
 
 
    // Output 
-   void	    SetHistFileName(TString name) 	{ this->fHistFileName = name ; } // Sets output file name
-   TString  GetHistFileName() const		{ return this->fHistFileName ; } // Gets output file name
-   TFile*   GetHistFile() const                 { return this->fHistFile ; }     // Gets output file
+   void	    SetHistFileName(TString name) { this->fHistFileName = name ; } // Sets output file name
+   TString  GetHistFileName() const	  { return this->fHistFileName ; } // Gets output file name
+   TFile*   GetHistFile() const           { return this->fHistFile ; }     // Gets output file
   
    
  private:
-   //cp const
-   //ass op
+  AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& aAnalysis);
+  AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& aAnalysis); 
    
    AliFlowVector  fQ;       // flow vector
    TVector2  fU;            // particle unit vector

@@ -31,6 +31,10 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
   TString GetAnalysisType() const    { return this->fAnalysisType; }
   
  private:
+
+  AliAnalysisTaskScalarProduct(const AliAnalysisTaskScalarProduct& aAnalysisTask);
+  AliAnalysisTaskScalarProduct& operator=(const AliAnalysisTaskScalarProduct& aAnalysisTask); 
+
   AliESDEvent *fESD;                      // ESD object
   AliAODEvent *fAOD;                      // AOD object
   AliFlowAnalysisWithScalarProduct* fSP;  // analysis object
