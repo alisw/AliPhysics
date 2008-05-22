@@ -148,6 +148,35 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
     {
       Int_t moduleID;
       AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
+
+      cout <<The size of   <<
+      
+
+      unsigned int *t = (unsigned int*)cellEnergiesPtr;
+      
+      for(int i = 0; i < 10000; i++)
+	{
+	  printf("%f\t", (float)*t);
+	  if(i%30 == 0)
+	    {
+	      printf("\ni = %d", i);
+	    }
+	  t ++;
+	}
+
+      for(int gain = 1; gain < N_GAINS; gain ++)
+	{
+	  for(int x=0; x <N_XCOLUMNS_RCU; x ++ )
+	    {
+	      printf("\nnewline");
+	      for(int z=0; z <N_ZROWS_RCU; z ++ ) 
+		{
+		  printf("%f\t",cellEnergiesPtr->fValidData[x][z][gain].fEnergy);
+	    
+		}
+	    }
+	}
+
       moduleID = cellEnergiesPtr->fModuleID ;
       cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
 

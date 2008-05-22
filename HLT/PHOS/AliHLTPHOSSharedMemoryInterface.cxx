@@ -72,14 +72,25 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
 	      for(Int_t gain = 0; gain < N_GAINS; gain++)
 		{
 		  fCurrentChannel =  &(fCellEnergiesPtr->fValidData[x][z][gain]);
+		  
 		  if(fCurrentChannel->fID == fCurrentCnt)
 		    {
-		      fCurrentChannel->fData = fIntPtr; 
-		      fIntPtr +=  fCurrentChannel->fNSamples;
+		      
+
+		      /*
+			commented out by PT, temorary patc
+			the usage of a pointer AliHLTPHOSValidCellDataStruct
+			gives incompability between 64 and 32 bit machines.
+			data written on a 64 bit machine cannot be read on a 32 bit machine
+			since a pointer is 64 bit on a 64 bit machine and 32 bit on a 32 bit machine
+			fCurrentChannel->fData = fIntPtr; 
+			fIntPtr +=  fCurrentChannel->fNSamples;
+		      */
+		      
 		      fCurrentCnt ++;
 		      return fCurrentChannel;
 		    }
-     		}
+    		}
 	    }
 	}
     }

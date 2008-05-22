@@ -19,22 +19,33 @@
 #include "AliHLTDataTypes.h"
 #include "Rtypes.h"
 
+
+
 //#define N_DATA_SAMPLES 70
 //#define N_DATA_SAMPLES 510
+#define N_DATA_SAMPLES 300
 
 struct AliHLTPHOSValidCellDataStruct
 {
   Int_t fX;
   Int_t fZ;
   Int_t fID;
+
   Int_t fGain;
   Float_t fEnergy;
   Float_t fTime;
   Int_t fCrazyness;
   Int_t fNSamples;
-  Int_t *fData;
-  //  Int_t fData[N_DATA_SAMPLES];
+
+  //  Int_t *fData;
+  //  unsigned int  fDataOffset;
+  //  Int_t *fData2;
+  
+  Int_t fData[N_DATA_SAMPLES];
+
 };
+
+
 
 #endif
 

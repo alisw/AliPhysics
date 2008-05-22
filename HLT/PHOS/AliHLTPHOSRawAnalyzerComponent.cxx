@@ -16,10 +16,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-
-
-
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -240,7 +236,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  
 	  if((fPhosEventCount%10 ==0) && fPhosEventCount !=0)
 	    {
-	      float percent = ((float)(100*fNCorruptedBlocks))/((float)(fNOKBlocks + fNCorruptedBlocks) );
+	      //	      float percent = ((float)(100*fNCorruptedBlocks))/((float)(fNOKBlocks + fNCorruptedBlocks) );
 	    }
 	  
 	  crazyness = fSanityInspectorPtr->CheckInsanity((const UInt_t*)fAltroDataPtr->GetData(), (const Int_t)(fAltroDataPtr->GetDataSize() - 2));
@@ -265,14 +261,15 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
 	  baseline = 0;
 
-
 	  validCellPtr->fEnergy  = (float)fAnalyzerPtr->GetEnergy() - baseline;
 	  validCellPtr->fTime    = (float)fAnalyzerPtr->GetTiming();
 	  validCellPtr->fCrazyness = (int)crazyness;
 	  validCellPtr->fNSamples = nSamples;
 	  validCellPtr->fID = tmpChannelCnt;
 
-	  validCellPtr->fData = rawDataBufferPos;
+	  //	  validCellPtr->fData = rawDataBufferPos;
+	  //	  validCellPtr->fDataOffset = rawDataBufferPos;
+
 	  const UInt_t *tmpData =  fAltroDataPtr->GetData();
 	  //	  const int *tmpData =  fAltroDataPtr->GetData();
 
@@ -281,6 +278,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	      for(int sample = 0; sample < nSamples; sample++)
 		{
 		  (validCellPtr->fData)[sample] = tmpData[sample] - (int)baseline;
+		  //(validCellPtr->fDataOffset)[sample] = tmpData[sample] - (int)baseline;
 		}
 	    }
 	  if(fDoSelectiveReadOut)
