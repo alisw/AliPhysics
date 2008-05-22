@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
   AliRawReader *rawReader = NULL;
 
-  AliPHOSDA1 da2(2); // DA2 ("Checking for bad channels") for module2
+  AliPHOSDA2 da2(2); // DA2 ("Checking for bad channels") for module2
   
   Float_t q[64][56][2];
 
