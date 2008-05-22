@@ -281,23 +281,21 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
   Float_t theta2L1=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(dL1);
 */
   Int_t maxdim=TMath::Min(nrpL1*nrpL2,50000);  // temporary; to limit the size in PbPb
-  TClonesArray *points = new TClonesArray("AliITSZPoint",maxdim);
-  TClonesArray &pts = *points;
+  static TClonesArray points("AliITSZPoint",maxdim);
   Int_t nopoints =0;
   for(Int_t modul1= fFirstL1; modul1<=fLastL1;modul1++){   // Loop on modules of layer 1
     UShort_t ladder=int(modul1/4)+1;  // ladders are numbered starting from 1
     branch->GetEvent(modul1);
     Int_t nrecp1 = itsRec->GetEntries();
-    TClonesArray *prpl1 = new TClonesArray("AliITSRecPoint",nrecp1);
-    prpl1->SetOwner();
-    TClonesArray &rpl1 = *prpl1;
+    static TClonesArray prpl1("AliITSRecPoint",nrecp1);
+    prpl1.SetOwner();
     for(Int_t j=0;j<nrecp1;j++){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
-      new(rpl1[j])AliITSRecPoint(*recp);
+      new(prpl1[j])AliITSRecPoint(*recp);
     }
     detTypeRec.ResetRecPoints();
     for(Int_t j1=0;j1<nrecp1;j1++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)prpl1->At(j1);
+      AliITSRecPoint *recp = (AliITSRecPoint*)prpl1.At(j1);
       /*
       lc1[0]=recp->GetDetLocalX();
       lc1[2]=recp->GetDetLocalZ();
@@ -346,7 +344,7 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
         ezr0q+=r1*r1*(1+tgth*tgth)*theta2L1/2; // multiple scattering in layer 1
         ezr0q+=rBP*rBP*(1+tgth*tgth)*theta2BP/2; // multiple scattering in beam pipe
 	*/
-	      if(nopoints<maxdim) new(pts[nopoints++])AliITSZPoint(zr0,ezr0q);	      
+	      if(nopoints<maxdim) new(points[nopoints++])AliITSZPoint(zr0,ezr0q);	      
 	      fZCombc->Fill(zr0);
 	    }
 	  }
@@ -354,10 +352,10 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
 	}
       }
     }
-    delete prpl1;
+    prpl1.Clear(); 
   }
 
-  points->Sort();
+  points.Sort();
 
   Double_t contents = fZCombc->GetEntries()- fZCombc->GetBinContent(0)-fZCombc->GetBinContent(nbincoarse+1);
   if(contents<1.){
@@ -365,8 +363,7 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
     ResetHistograms();
     itsLoader->UnloadRecPoints();
     fCurrentVertex = new AliESDVertex(0.,5.3,-1);
-    points->Delete();
-    delete points; 
+    points.Clear();
     return;
   }
 
@@ -399,8 +396,8 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
     zm=0.;
     ezm=0.;
     ncontr=0;
-    for(Int_t i =0; i<points->GetEntriesFast(); i++){
-      AliITSZPoint* p=(AliITSZPoint*)points->UncheckedAt(i);
+    for(Int_t i =0; i<points.GetEntries(); i++){
+      AliITSZPoint* p=(AliITSZPoint*)points.UncheckedAt(i);
       if(p->GetZ()>lim1 && p->GetZ()<lim2){
         Float_t deno = p->GetErrZ();
         zm+=p->GetZ()/deno;
@@ -414,13 +411,11 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
   } while(niter<10 && TMath::Abs((zm-lim1)-(lim2-zm))>fTolerance);
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
   fCurrentVertex->SetTitle("vertexer: B");
-  delete points;
+  points.Clear();
   ResetHistograms();
   itsLoader->UnloadRecPoints();
   return;
 }
-
-
 
 //_____________________________________________________________________
 void AliITSVertexerZ::ResetHistograms(){

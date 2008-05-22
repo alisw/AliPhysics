@@ -11,9 +11,9 @@
 
 /* $Id$ */
 
+#include <TClonesArray.h>
 #include <AliESDVertex.h>
 
-class TClonesArray;
 class AliITSVertexer3D : public AliITSVertexer {
 
  public:
@@ -46,7 +46,7 @@ protected:
   void ResetVert3D();
 
 
-  TClonesArray *fLines;      //! array of tracklets
+  TClonesArray fLines;      //! array of tracklets
   AliESDVertex fVert3D;        // 3D Vertex
   Float_t fCoarseDiffPhiCut; // loose cut on DeltaPhi for RecPoint matching 
   Float_t fCoarseMaxRCut; // cut on tracklet DCA to Z axis
@@ -58,7 +58,7 @@ protected:
   Float_t fMeanPSelTrk; // GeV, mean P for tracks with dphi<0.01 rad
   Float_t fMeanPtSelTrk; // GeV, mean Pt for tracks with dphi<0.01 rad
 
-  ClassDef(AliITSVertexer3D,3);
+  ClassDef(AliITSVertexer3D,4);
 
 };
 

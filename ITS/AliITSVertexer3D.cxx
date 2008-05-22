@@ -14,7 +14,6 @@
  **************************************************************************/
 #include <TH3F.h>
 #include <TTree.h>
-#include <TClonesArray.h>
 #include "AliESDVertex.h"
 #include "AliLog.h"
 #include "AliStrLine.h"
@@ -65,7 +64,7 @@ fMeanPtSelTrk(0.)
 
 //______________________________________________________________________
 AliITSVertexer3D::AliITSVertexer3D(TString fn): AliITSVertexer(fn),
-fLines(),
+fLines("AliStrLine",1000),
 fVert3D(),
 fCoarseDiffPhiCut(0.),     
 fCoarseMaxRCut(0.),
@@ -78,7 +77,6 @@ fMeanPSelTrk(0.),
 fMeanPtSelTrk(0.)
 {
   // Standard constructor
-  fLines = new TClonesArray("AliStrLine",1000);
   SetCoarseDiffPhiCut();
   SetCoarseMaxRCut();
   SetMaxRCut();
@@ -93,10 +91,7 @@ fMeanPtSelTrk(0.)
 //______________________________________________________________________
 AliITSVertexer3D::~AliITSVertexer3D() {
   // Destructor
- if(fLines){
-    fLines->Delete();
-    delete fLines;
-  }
+  fLines.Clear("C");
 }
 
 //______________________________________________________________________
@@ -113,24 +108,24 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
   // Defines the AliESDVertex for the current event
   ResetVert3D();
   AliDebug(1,Form("FindVertexForCurrentEvent - 3D - PROCESSING EVENT %d",evnumber));
-  if(fLines)fLines->Clear();
+  fLines.Clear();
 
   Int_t nolines = FindTracklets(evnumber,0);
   fCurrentVertex = 0;
   if(nolines<2)return fCurrentVertex;
   Int_t rc=Prepare3DVertex(0);
-  if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(fLines,0);
+  if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
   /*  uncomment to debug
     printf("Vertex found in first iteration:\n");
     fVert3D.Print();
     printf("Start second iteration\n");
   end of debug lines  */
   if(fVert3D.GetNContributors()>0){
-    if(fLines) fLines->Delete();
+    fLines.Clear("C");
     nolines = FindTracklets(evnumber,1);
     if(nolines>=2){
       rc=Prepare3DVertex(1);
-      if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(fLines,0);
+      if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
     }
   }
   /*  uncomment to debug 
@@ -232,16 +227,15 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
     UShort_t ladder=int(modul1/4)+1; // ladders are numbered starting from 1
     branch->GetEvent(modul1);
     Int_t nrecp1 = itsRec->GetEntries();
-    TClonesArray *prpl1 = new TClonesArray("AliITSRecPoint",nrecp1);
-    prpl1->SetOwner();
-    TClonesArray &rpl1 = *prpl1;
+    static TClonesArray prpl1("AliITSRecPoint",nrecp1);
+    prpl1.SetOwner();
     for(Int_t j=0;j<nrecp1;j++){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
-      new(rpl1[j])AliITSRecPoint(*recp);
+      new(prpl1[j])AliITSRecPoint(*recp);
     }
     detTypeRec.ResetRecPoints();
     for(Int_t j=0;j<nrecp1;j++){
-      AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1->At(j);
+      AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1.At(j);
       // Local coordinates of this recpoint
       /*
       lc[0]=recp1->GetDetLocalX();
@@ -279,13 +273,8 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
 	    Double_t deltaZ=cp[2]-zvert;
 	    if(TMath::Abs(deltaZ)>dZmax)continue;
 
-	    TClonesArray &lines = *fLines;
 	    if(nolines == 0){
-	      if(fLines->GetEntriesFast()>0)fLines->Clear();
-	    }
-	    if(fLines->GetEntriesFast()==fLines->GetSize()){
-	      Int_t newsize=(Int_t) 1.5*fLines->GetEntriesFast();
-	      fLines->Expand(newsize);
+	      if(fLines.GetEntriesFast()>0)fLines.Clear("C");
 	    }
 	    Float_t cov[6];
 	    recp2->GetGlobalCov(cov);
@@ -338,14 +327,14 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
 	    if(sigmasq[0]!=0.) wmat[0]=1./sigmasq[0];
 	    if(sigmasq[1]!=0.) wmat[4]=1./sigmasq[1];
 	    if(sigmasq[2]!=0.) wmat[8]=1./sigmasq[2];
-	    new(lines[nolines++])AliStrLine(gc1,sigmasq,wmat,gc2,kTRUE);
+	    new(fLines[nolines++])AliStrLine(gc1,sigmasq,wmat,gc2,kTRUE);
 
 	  }
 	  detTypeRec.ResetRecPoints();
 	}
       }
     }
-    delete prpl1;
+    prpl1.Clear();
   }
   if(nolines == 0)return -2;
   return nolines;
@@ -396,13 +385,13 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   TH3F *h3d = new TH3F("h3d","xyz distribution",nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
 
   // cleanup of the TCLonesArray of tracklets (i.e. fakes are removed)
-  Int_t *validate = new Int_t [fLines->GetEntriesFast()];
-  for(Int_t i=0; i<fLines->GetEntriesFast();i++)validate[i]=0;
-  for(Int_t i=0; i<fLines->GetEntriesFast()-1;i++){
+  Int_t *validate = new Int_t [fLines.GetEntriesFast()];
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++)validate[i]=0;
+  for(Int_t i=0; i<fLines.GetEntriesFast()-1;i++){
     if(validate[i]==1)continue;
-    AliStrLine *l1 = (AliStrLine*)fLines->At(i);
-    for(Int_t j=i+1;j<fLines->GetEntriesFast();j++){
-      AliStrLine *l2 = (AliStrLine*)fLines->At(j);
+    AliStrLine *l1 = (AliStrLine*)fLines.At(i);
+    for(Int_t j=i+1;j<fLines.GetEntriesFast();j++){
+      AliStrLine *l2 = (AliStrLine*)fLines.At(j);
       Float_t dca=l1->GetDCA(l2);
       if(dca > fDCAcut || dca<0.00001) continue;
       Double_t point[3];
@@ -425,14 +414,14 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
 
   Int_t numbtracklets=0;
-  for(Int_t i=0; i<fLines->GetEntriesFast();i++)if(validate[i]>=1)numbtracklets++;
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++)if(validate[i]>=1)numbtracklets++;
   if(numbtracklets<2){delete [] validate; delete h3d; return retcode; }
 
-  for(Int_t i=0; i<fLines->GetEntriesFast();i++){
-    if(validate[i]<1)fLines->RemoveAt(i);
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+    if(validate[i]<1)fLines.RemoveAt(i);
   }
-  fLines->Compress();
-  AliDebug(1,Form("Number of tracklets (after compress)%d ",fLines->GetEntriesFast()));
+  fLines.Compress();
+  AliDebug(1,Form("Number of tracklets (after compress)%d ",fLines.GetEntriesFast()));
   delete [] validate;
 
 
@@ -462,26 +451,26 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
   //         Second selection loop
   Float_t bs=(binsizer+binsizez)/2.;
-  for(Int_t i=0; i<fLines->GetEntriesFast();i++){
-    AliStrLine *l1 = (AliStrLine*)fLines->At(i);
-    if(l1->GetDistFromPoint(peak)>2.5*bs)fLines->RemoveAt(i);
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+    AliStrLine *l1 = (AliStrLine*)fLines.At(i);
+    if(l1->GetDistFromPoint(peak)>2.5*bs)fLines.RemoveAt(i);
   }
-  fLines->Compress();
-  AliDebug(1,Form("Number of tracklets (after 2nd compression) %d",fLines->GetEntriesFast()));
+  fLines.Compress();
+  AliDebug(1,Form("Number of tracklets (after 2nd compression) %d",fLines.GetEntriesFast()));
 
-  if(fLines->GetEntriesFast()>1){
+  if(fLines.GetEntriesFast()>1){
     //  find a first candidate for the primary vertex
-    fVert3D=AliVertexerTracks::TrackletVertexFinder(fLines,0); 
+    fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0); 
     // make a further selection on tracklets based on this first candidate
     fVert3D.GetXYZ(peak);
     AliDebug(1,Form("FIRST V candidate: %f ; %f ; %f",peak[0],peak[1],peak[2]));
-    for(Int_t i=0; i<fLines->GetEntriesFast();i++){
-      AliStrLine *l1 = (AliStrLine*)fLines->At(i);
-      if(l1->GetDistFromPoint(peak)> fDCAcut)fLines->RemoveAt(i);
+    for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+      AliStrLine *l1 = (AliStrLine*)fLines.At(i);
+      if(l1->GetDistFromPoint(peak)> fDCAcut)fLines.RemoveAt(i);
     }
-    fLines->Compress();
-    AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines->GetEntriesFast()));
-    if(fLines->GetEntriesFast()>1) retcode=0; // this new tracklet selection is used
+    fLines.Compress();
+    AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines.GetEntriesFast()));
+    if(fLines.GetEntriesFast()>1) retcode=0; // this new tracklet selection is used
     else retcode =1; // the previous tracklet selection will be used
   }
   else {
