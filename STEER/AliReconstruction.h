@@ -119,6 +119,11 @@ public:
   virtual Bool_t FinishRun();
   virtual Bool_t Run(const char* input = NULL);
 
+  // Trackers
+  AliTracker* GetTracker(Int_t idx) { return fTracker[idx]; }
+  Bool_t      CreateTrackers(const TString& detectors);
+  void        ImportRunLoader(AliRunLoader* rl) { fRunLoader = rl; }
+
   // Quality Assurance 
   virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
   void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
@@ -148,7 +153,6 @@ private:
   Bool_t         InitRunLoader();
   AliReconstructor* GetReconstructor(Int_t iDet);
   Bool_t         CreateVertexer();
-  Bool_t         CreateTrackers(const TString& detectors);
   void           CleanUp(TFile* file = NULL, TFile* fileOld = NULL);
 
   Bool_t         ReadESD(AliESDEvent*& esd, const char* recStep) const;
