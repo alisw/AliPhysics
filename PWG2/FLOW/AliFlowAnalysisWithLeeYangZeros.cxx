@@ -52,14 +52,15 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
   //-----------------------------------------------------------------------
  
   AliFlowAnalysisWithLeeYangZeros::AliFlowAnalysisWithLeeYangZeros():
+    fQ(NULL),
+    fQsum(NULL),
     fQ2sum(0),
     fQtheta(0),
     fEventNumber(0),
     fMult(0),
     fNbins(0),
     fTheta(0),
-    fEvent(0),
-    fTrack(0),
+    fTrack(NULL),
     fFirstRun(kTRUE),
     fUseSum(kTRUE),
     fDoubleLoop(kFALSE),
@@ -93,9 +94,11 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
       fHist2[i]=0;
     }
 
-  fQ.Set(0.,0.);
-  fQ.SetMult(0);
-  fQsum.Set(0.,0.);
+  //  fQ.Set(0.,0.);
+  //  fQ.SetMult(0);
+  //  fQsum.Set(0.,0.);
+  fQ = new AliFlowVector();
+  fQsum = new TVector2();
 
 }
 
@@ -106,6 +109,8 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
  {
    //default destructor
    if (fDebug) cout<<"****~AliFlowAnalysisWithLeeYangZeros****"<<endl;
+   delete fQ;
+   delete fQsum;
    delete fHistFile;
  }
  
@@ -203,20 +208,20 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
  
  //-----------------------------------------------------------------------
  
-Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent) 
+Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent) 
 {
   //make method
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::Make()****"<<endl;
         
   //get tracks from event
-  if (fEvent) {
+  if (anEvent) {
     if (fFirstRun){
-      fCommonHists->FillControlHistograms(fEvent);
-      FillFromFlowEvent(fEvent);
+      fCommonHists->FillControlHistograms(anEvent);
+      FillFromFlowEvent(anEvent);
     }
     else {
-      fCommonHists->FillControlHistograms(fEvent);
-      SecondFillFromFlowEvent(fEvent);
+      fCommonHists->FillControlHistograms(anEvent);
+      SecondFillFromFlowEvent(anEvent);
     }
   }
  
@@ -278,9 +283,9 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
     Double_t  fSigma2 = 0;
     Double_t  fChi= 0;
     if (fEventNumber!=0) {
-      fQsum /= fEventNumber;
+      *fQsum /= fEventNumber;
       fQ2sum /= fEventNumber;
-      fSigma2 = fQ2sum - TMath::Power(fQsum.X(),2.) - TMath::Power(fQsum.Y(),2.) - TMath::Power(fV,2.);  //BP eq. 62
+      fSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(fV,2.);  //BP eq. 62
       if (fSigma2>0) fChi = fV/TMath::Sqrt(fSigma2);
       else fChi = -1.;
       fCommonHistsRes->FillChi(fChi);
@@ -433,12 +438,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
     Double_t  fSigma2 = 0;
     Double_t  fChi= 0;
     if (fEventNumber!=0) {
-      fQsum /= fEventNumber;
+      *fQsum /= fEventNumber;
       //cerr<<"fQsum.X() = "<<fQsum.X()<<endl;
       //cerr<<"fQsum.Y() = "<<fQsum.Y()<<endl;
       fQ2sum /= fEventNumber;
       //cout<<"fQ2sum = "<<fQ2sum<<endl;
-      fSigma2 = fQ2sum - TMath::Power(fQsum.X(),2.) - TMath::Power(fQsum.Y(),2.) - TMath::Power(fV,2.);  //BP eq. 62
+      fSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(fV,2.);  //BP eq. 62
       if (fSigma2>0) fChi = fV/TMath::Sqrt(fSigma2);
       else fChi = -1.;
       fCommonHistsRes->FillChi(fChi);
@@ -499,13 +504,13 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
 
 //-----------------------------------------------------------------------
  
- Bool_t AliFlowAnalysisWithLeeYangZeros::FillFromFlowEvent(AliFlowEventSimple* fEvent) 
+ Bool_t AliFlowAnalysisWithLeeYangZeros::FillFromFlowEvent(AliFlowEventSimple* anEvent) 
 { 
   // Get event quantities from AliFlowEvent for all particles
 
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::FillFromFlowEvent()****"<<endl;
    
-  if (!fEvent){
+  if (!anEvent){
     cout<<"##### FlowLeeYangZero: FlowEvent pointer null"<<endl;
     return kFALSE;
   }
@@ -520,18 +525,18 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
   Double_t fOrder = 2.;
       
   //get the Q vector 
-  fQ = fEvent->GetQ();
+  *fQ = anEvent->GetQ();
   //weight by the multiplicity
   Double_t fQX = 0;
   Double_t fQY = 0;
-  if (fQ.GetMult() != 0) {
-    fQX = fQ.X()/fQ.GetMult(); 
-    fQY = fQ.Y()/fQ.GetMult();
+  if (fQ->GetMult() != 0) {
+    fQX = fQ->X()/fQ->GetMult(); 
+    fQY = fQ->Y()/fQ->GetMult();
   }
-  fQ.Set(fQX,fQY);
+  fQ->Set(fQX,fQY);
   //for chi calculation:
-  fQsum += fQ;
-  fQ2sum += fQ.Mod2();
+  *fQsum += *fQ;
+  fQ2sum += fQ->Mod2();
   //cerr<<"fQ2sum = "<<fQ2sum<<endl;
 
   for (Int_t theta=0;theta<fNtheta;theta++)
@@ -539,7 +544,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
       fTheta = ((double)theta/fNtheta)*TMath::Pi()/fOrder; 
 	  
       //calculate fQtheta = cos(fOrder*(fPhi-fTheta);the projection of the Q vector on the reference direction fTheta
-      fQtheta = GetQtheta(fQ, fTheta);
+      fQtheta = GetQtheta(*fQ, fTheta);
 	     	   
       for (Int_t bin=1;bin<=fNbins;bin++)
 	{
@@ -554,7 +559,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
 	  else
 	    {
 	      //calculate the product generating function
-	      fGtheta = GetGrtheta(fEvent, fR, fTheta);  //make this function
+	      fGtheta = GetGrtheta(anEvent, fR, fTheta);  //make this function
 	      if (fGtheta.Rho2() > 100.) break;
 	    }
 
@@ -570,13 +575,13 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
 }
 
  //-----------------------------------------------------------------------   
- Bool_t AliFlowAnalysisWithLeeYangZeros::SecondFillFromFlowEvent(AliFlowEventSimple* fEvent) 
+ Bool_t AliFlowAnalysisWithLeeYangZeros::SecondFillFromFlowEvent(AliFlowEventSimple* anEvent) 
 { 
   //for differential flow
 
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::SecondFillFromFlowEvent()****"<<endl;
     
-  if (!fEvent){
+  if (!anEvent){
     cout<<"##### FlowLeeYangZero: FlowEvent pointer null"<<endl;
     return kFALSE;
   }
@@ -594,25 +599,25 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
   fOrder = 2.;
   
   //get the Q vector 
-  fQ = fEvent->GetQ();
+  *fQ = anEvent->GetQ();
   //weight by the multiplicity
   Double_t fQX = 0;
   Double_t fQY = 0;
-  if (fQ.GetMult() != 0) {
-    fQX = fQ.X()/fQ.GetMult(); 
-    fQY = fQ.Y()/fQ.GetMult();
+  if (fQ->GetMult() != 0) {
+    fQX = fQ->X()/fQ->GetMult(); 
+    fQY = fQ->Y()/fQ->GetMult();
   }
-  fQ.Set(fQX,fQY);               
+  fQ->Set(fQX,fQY);               
   //for chi calculation:
-  fQsum += fQ;
-  fQ2sum += fQ.Mod2();
+  *fQsum += *fQ;
+  fQ2sum += fQ->Mod2();
 
   for (Int_t theta=0;theta<fNtheta;theta++)
     {
       fTheta = ((double)theta/fNtheta)*TMath::Pi()/fOrder;   
 
       //calculate fQtheta = cos(fOrder*(fPhi-fTheta);the projection of the Q vector on the reference direction fTheta	  
-      fQtheta = GetQtheta(fQ, fTheta);
+      fQtheta = GetQtheta(*fQ, fTheta);
       //cerr<<"fQtheta for fdenom = "<<fQtheta<<endl;
   	 
       //denominator for differential v
@@ -629,9 +634,9 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
 	  fExpo(0.,fR0*fQtheta);
 	  fDenom = fQtheta*(TComplex::Exp(fExpo)); //BP eq 12
 	  //loop over tracks in event
-	  Int_t fNumberOfTracks = fEvent->NumberOfTracks();
+	  Int_t fNumberOfTracks = anEvent->NumberOfTracks();
 	  for (Int_t i=0;i<fNumberOfTracks;i++)  {
-	    fTrack = fEvent->GetTrack(i);
+	    fTrack = anEvent->GetTrack(i);
 	    if (fTrack) {
 	      if (fTrack->UseForDifferentialFlow()) {
 		fEta = fTrack->Eta();
@@ -656,7 +661,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
 	} //sum
       else                                                        //product generating function
 	{
-	  fDenom = GetDiffFlow(fEvent, fR0, theta); 
+	  fDenom = GetDiffFlow(anEvent, fR0, theta); 
 		   
 	}//product
       if (fHistProReDenom && fHistProImDenom) {
@@ -674,7 +679,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
   
 }
  //-----------------------------------------------------------------------   
- Double_t AliFlowAnalysisWithLeeYangZeros::GetQtheta(TVector2 fQ, Double_t fTheta) 
+ Double_t AliFlowAnalysisWithLeeYangZeros::GetQtheta(AliFlowVector myQ, Double_t fTheta) 
 {
   //calculate Qtheta. Qtheta is the sum over all particles of cos(fOrder*(fPhi-fTheta)) BP eq. 3
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::GetQtheta()****"<<endl;
@@ -682,7 +687,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
   Double_t fQtheta = 0.;
   Double_t fOrder = 2.;
   
-  fQtheta = fQ.X()*cos(fOrder*fTheta)+fQ.Y()*sin(fOrder*fTheta);
+  fQtheta = myQ.X()*cos(fOrder*fTheta)+myQ.Y()*sin(fOrder*fTheta);
 
   return fQtheta;
  
@@ -690,7 +695,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* fEvent)
  
 
 //-----------------------------------------------------------------------   
-TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* fEvent, Double_t fR, Double_t fTheta) 
+TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* anEvent, Double_t fR, Double_t fTheta) 
 {
   // Product Generating Function for LeeYangZeros method
   // PG Eq. 3 (J. Phys. G Nucl. Part. Phys 30 S1213 (2004))
@@ -702,11 +707,11 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* fEvent,
   Double_t fOrder =  2.;
   Double_t fWgt = 1.;
   
-  Int_t fNumberOfTracks = fEvent->NumberOfTracks();
+  Int_t fNumberOfTracks = anEvent->NumberOfTracks();
   
   for (Int_t i=0;i<fNumberOfTracks;i++) //loop over tracks in event
     {
-      fTrack = fEvent->GetTrack(i) ; 
+      fTrack = anEvent->GetTrack(i) ; 
       if (fTrack){
 	if (fTrack->UseForIntegratedFlow()) {
 	  Double_t fPhi = fTrack->Phi();
@@ -724,7 +729,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* fEvent,
 
 
 //-----------------------------------------------------------------------   
-TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* fEvent, Double_t fR0, Int_t theta) 
+TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* anEvent, Double_t fR0, Int_t theta) 
 {
   // Sum for the denominator for diff. flow for the Product Generating Function for LeeYangZeros method
   // PG Eq. 9 (J. Phys. G Nucl. Part. Phys 30 S1213 (2004))
@@ -738,14 +743,14 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* fEvent
   Double_t fOrder =  2.;
   Double_t fWgt = 1.;
   
-  Int_t fNumberOfTracks = fEvent->NumberOfTracks();
+  Int_t fNumberOfTracks = anEvent->NumberOfTracks();
   
   Int_t fNtheta = AliFlowLYZConstants::kTheta;
   Double_t fTheta = ((double)theta/fNtheta)*TMath::Pi()/fOrder;
   
   for (Int_t i=0;i<fNumberOfTracks;i++) //loop over tracks in event
     {
-      fTrack = fEvent->GetTrack(i) ;  
+      fTrack = anEvent->GetTrack(i) ;  
       if (fTrack){
 	if (fTrack->UseForDifferentialFlow()) {
 	  Double_t fPhi = fTrack->Phi();
@@ -765,7 +770,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* fEvent
   
   for (Int_t i=0;i<fNumberOfTracks;i++) 
     {
-      fTrack = fEvent->GetTrack(i) ;  
+      fTrack = anEvent->GetTrack(i) ;  
       if (fTrack){
 	if (fTrack->UseForDifferentialFlow()) {
 	  Double_t fEta = fTrack->Eta();

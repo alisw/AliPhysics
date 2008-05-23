@@ -52,46 +52,47 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
   //-----------------------------------------------------------------------
  
  AliFlowAnalysisWithLYZEventPlane::AliFlowAnalysisWithLYZEventPlane():
-   fOutFile(0), 
-   fFirstRunFile(0),
-   fSecondRunFile(0),
-   fFirstRunFileName(0),
-   fSecondRunFileName(0),
-   fOutFileName(0),
-   fSecondReDtheta(0),
-   fSecondImDtheta(0),
-   fFirstr0theta(0),
-   fSecondVPt(0),
-   fHistProFlow(0),
-   fHistProFlow2(0),
-   fHistProWr(0),
-   fHistProWrCorr(0),
-   fHistFlow(0),
-   fHistDeltaPhi(0),
-   fHistDeltaPhi2(0),
-   fHistDeltaPhihere(0),
-   fHistPhiEP(0),
-   fHistPhiEPhere(0),
-   fHistPhiLYZ(0),
-   fHistPhiLYZ2(0),
-   fHistProR0theta(0),
-   fHistProReDtheta(0),
-   fHistProImDtheta(0),
-   fCommonHists(0),
-   fCommonHistsRes(0),
-   fEventNumber(0),
-//   fQX(0),
-//   fQY(0),
-   fQ2sum(0),
-   fQtheta(0),
-//   fEvent(0x0),
-   fTrack(NULL),
-   fLYZEP(NULL)
+  fOutFile(0), 
+  fFirstRunFile(0),
+  fSecondRunFile(0),
+  fFirstRunFileName(0),
+  fSecondRunFileName(0),
+  fOutFileName(0),
+  fSecondReDtheta(0),
+  fSecondImDtheta(0),
+  fFirstr0theta(0),
+  fSecondVPt(0),
+  fHistProFlow(0),
+  fHistProFlow2(0),
+  fHistProWr(0),
+  fHistProWrCorr(0),
+  fHistFlow(0),
+  fHistDeltaPhi(0),
+  fHistDeltaPhi2(0),
+  fHistDeltaPhihere(0),
+  fHistPhiEP(0),
+  fHistPhiEPhere(0),
+  fHistPhiLYZ(0),
+  fHistPhiLYZ2(0),
+  fHistProR0theta(0),
+  fHistProReDtheta(0),
+  fHistProImDtheta(0),
+  fCommonHists(0),
+  fCommonHistsRes(0),
+  fEventNumber(0),
+  fQ(NULL),
+  fQsum(NULL),
+  fQ2sum(0),
+  fQtheta(0),
+  fTrack(NULL),
+  fLYZEP(NULL)
 {
 
   // Constructor.
-  fQ.Set(0.,0.);           // flow vector
-  fQsum.Set(0.,0.);        // flow vector sum
+  //  fQ.Set(0.,0.);           // flow vector
+  //  fQsum.Set(0.,0.);        // flow vector sum
+  fQ = new AliFlowVector();           // flow vector
+  fQsum = new TVector2();        // flow vector sum
   fLYZEP = new AliFlowLYZEventPlane();
 }
 
@@ -103,6 +104,8 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
  AliFlowAnalysisWithLYZEventPlane::~AliFlowAnalysisWithLYZEventPlane() 
  {
    //destructor
+   delete fQ;
+   delete fQsum;
    delete fLYZEP;
  }
  
@@ -196,24 +199,24 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
     fCommonHists->FillControlHistograms(anEvent);
 
     //get the Q vector from the FlowEvent
-    fQ = anEvent->GetQ(); 
+    *fQ = anEvent->GetQ(); 
     //Weight with the multiplicity
     Double_t fQX = 0.;
     Double_t fQY = 0.;
-    if (fQ.GetMult()!=0.) {
-      fQX = fQ.X()/fQ.GetMult();
-      fQY = fQ.Y()/fQ.GetMult();
-    } else {cerr<<"fQ.GetMult() is zero!"<<endl; }
-    fQ.Set(fQX,fQY);
-    //cout<<"fQ.Mod() = " << fQ.Mod() << endl;
+    if (fQ->GetMult()!=0.) {
+      fQX = fQ->X()/fQ->GetMult();
+      fQY = fQ->Y()/fQ->GetMult();
+    } else {cerr<<"fQ->GetMult() is zero!"<<endl; }
+    fQ->Set(fQX,fQY);
+    //cout<<"fQ->Mod() = " << fQ->Mod() << endl;
     //for chi calculation:
-    fQsum += fQ;
+    *fQsum += *fQ;
     //cout<<"fQsum.Mod() = "<<fQsum.Mod()<<endl;
-    fQ2sum += fQ.Mod2();
+    fQ2sum += fQ->Mod2();
     cout<<"fQ2sum = "<<fQ2sum<<endl;
 
     //call AliFlowLYZEventPlane::CalculateRPandW() here!
-    fLYZEP->CalculateRPandW(fQ);
+    fLYZEP->CalculateRPandW(*fQ);
 
     Double_t fWR = fLYZEP->GetWR();     
     Double_t fRP = fLYZEP->GetPsi();
@@ -222,7 +225,7 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
     fHistPhiLYZ->Fill(fRP);   
     
     //plot difference between event plane from EP-method and LYZ-method
-    Double_t fRPEP = fQ.Phi()/2;                              //gives distribution from (0 to pi)
+    Double_t fRPEP = fQ->Phi()/2;                              //gives distribution from (0 to pi)
     //Float_t fRPEP = 0.5*TMath::ATan2(fQ.Y(),fQ.X());       //gives distribution from (-pi/2 to pi/2)
     //cout<<"fRPEP = "<< fRPEP <<endl;
     fHistPhiEP->Fill(fRPEP);
@@ -240,7 +243,7 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
       fWR = -fWR;
       cerr<<"*** fRP modified ***"<<endl;
     }
-    fHistProWr->Fill(fQ.Mod(),fWR); //corrected weight
+    fHistProWr->Fill(fQ->Mod(),fWR); //corrected weight
        
     //calculate flow
     //loop over the tracks of the event
@@ -292,13 +295,13 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   Double_t  fSigma2 = 0;
   Double_t  fChi= 0;
   if (fEventNumber!=0) {
-    fQsum /= fEventNumber;
+    *fQsum /= fEventNumber;
     //cerr<<"fQsum.X() = "<<fQsum.X()<<endl;
     //cerr<<"fQsum.Y() = "<<fQsum.Y()<<endl;
     fQ2sum /= fEventNumber;
     cerr<<"fEventNumber = "<<fEventNumber<<endl;
     cerr<<"fQ2sum = "<<fQ2sum<<endl;
-    fSigma2 = fQ2sum - TMath::Power(fQsum.X(),2.) - TMath::Power(fQsum.Y(),2.) - TMath::Power(fV,2.);  //BP eq. 62
+    fSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(fV,2.);  //BP eq. 62
     if (fSigma2>0) fChi = fV/TMath::Sqrt(fSigma2);
     else fChi = -1.;
     fCommonHistsRes->FillChi(fChi);

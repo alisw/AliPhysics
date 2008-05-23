@@ -43,18 +43,22 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
   //-----------------------------------------------------------------------
  
  AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
-   fEventNumber(0),
-   fTrack(NULL),
-   fDebug(kFALSE),
-   fHistFileName(0),
-   fHistFile(NULL),
-   fHistProUQ(NULL),
-   fCommonHists(NULL)
+  fQ(NULL),
+  fU(NULL),
+  fEventNumber(0),
+  fTrack(NULL),
+  fDebug(kFALSE),
+  fHistFileName(0),
+  fHistFile(NULL),
+  fHistProUQ(NULL),
+  fCommonHists(NULL)
 {
 
   // Constructor.
-  fQ.Set(0.,0.);           // flow vector
-  fU.Set(0.,0.);           // particle unit vector
+  fU = new TVector2;
+  fQ = new AliFlowVector;
+  //  fQ.Set(0.,0.);           // flow vector
+  //  fU.Set(0.,0.);           // particle unit vector
 
 }
  //-----------------------------------------------------------------------
@@ -62,6 +66,8 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
 
  AliFlowAnalysisWithScalarProduct::~AliFlowAnalysisWithScalarProduct() 
  {
+   delete fU;
+   delete fQ;
    //destructor
    
  }
@@ -102,7 +108,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     fCommonHists->FillControlHistograms(anEvent);
          
     //get the Q vector from the FlowEvent
-    fQ = anEvent->GetQ();
+    *fQ = anEvent->GetQ();
     //Double_t fMult =  fQ.GetMult();
             
     //loop over the tracks of the event
@@ -118,12 +124,15 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	  //calculate fU
 	  Double_t fUX = TMath::Cos(2*fPhi);
 	  Double_t fUY = TMath::Sin(2*fPhi);
-	  fU.Set(fUX,fUY);
-	  Double_t fModulus = fU.Mod();
-	  if (fModulus!=0.) fU.Set(fUX/fModulus,fUY/fModulus);  // make length 1
+	  //	  fU.Set(fUX,fUY);
+	  fU->Set(fUX,fUY);
+	  //	  Double_t fModulus = fU.Mod();
+	  Double_t fModulus = fU->Mod();
+	  //	  if (fModulus!=0.) fU.Set(fUX/fModulus,fUY/fModulus);  // make length 1
+	  if (fModulus!=0.) fU->Set(fUX/fModulus,fUY/fModulus);  // make length 1
 	  else cerr<<"fModulus is zero!"<<endl;
 
-	  TVector2 fQm = fQ;
+	  TVector2 fQm = *fQ;
 	  //subtrackt particle from the flowvector if used to define it
 	  if (fTrack->UseForIntegratedFlow()) {
 	    Double_t fQmX = fQm.X() - fUX;
@@ -132,7 +141,8 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	  }
 
 	  //Double_t fUQ = scalar product of fU and fQm
-	  Double_t fUQ = fU*fQm;
+	  //	  Double_t fUQ = fU*fQm;
+	  Double_t fUQ = *fU * fQm;
 	  Double_t fPt = fTrack->Pt();
 	  //fill the profile histogram
 	  fHistProUQ->Fill(fPt,fUQ); 

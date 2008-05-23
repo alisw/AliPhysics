@@ -60,8 +60,10 @@ class AliFlowAnalysisWithMCEventPlane {
 
       
 #ifndef __CINT__
-   AliFlowVector  fQ;       // flow vector
-   TVector2  fQsum;         // flow vector sum
+   //   AliFlowVector  fQ;       // flow vector
+   //   TVector2  fQsum;         // flow vector sum
+   AliFlowVector*  fQ;       // flow vector
+   TVector2*  fQsum;         // flow vector sum
    Double_t  fQ2sum;        // flow vector sum squared
 #endif /*__CINT__*/
 

@@ -97,8 +97,10 @@ class AliFlowAnalysisWithLYZEventPlane {
 
   Int_t     fEventNumber;  // event counter
 
-  AliFlowVector  fQ;       // flow vector
-  TVector2  fQsum;         // flow vector sum
+  //  AliFlowVector  fQ;       // flow vector
+  //  TVector2  fQsum;         // flow vector sum
+  AliFlowVector  *fQ;       // flow vector
+  TVector2  *fQsum;         // flow vector sum
   Double_t  fQ2sum;        // flow vector sum squared
   Double_t  fQtheta;       // flow vector projected on ref. angle theta
    
