@@ -53,6 +53,8 @@
 #pragma link C++ class AliCodeTimer+;
 #pragma link C++ class AliCodeTimer::AliPair+;
 
+#pragma link C++ class  AliPDG+;
+
 #pragma link C++ class AliQA+;
 
 #pragma link C++ class AliTimeStamp+;

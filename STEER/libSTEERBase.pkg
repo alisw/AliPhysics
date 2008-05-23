@@ -18,6 +18,7 @@ SRCS = AliVParticle.cxx \
        AliMCEvent.cxx AliMCParticle.cxx \
        AliMagF.cxx \
        AliCodeTimer.cxx \
+       AliPDG.cxx \
        AliQA.cxx \
        AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx
 
