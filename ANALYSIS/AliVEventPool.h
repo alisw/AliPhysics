@@ -19,12 +19,19 @@ class AliVEventPool : public TNamed
  public:
     AliVEventPool();
     AliVEventPool(const char* name, const char* title);
-    AliVEventPool(const AliVEventPool& obj);  
+
     virtual ~AliVEventPool() {;}
-    virtual void  GetNextChain(TChain* /*chain*/) = 0;
+    // Interface
+    virtual TChain* GetNextChain()                = 0;
     virtual void  GetCurrentBin(Float_t* /*bin*/) = 0;
     virtual Int_t GetDimension()                  = 0;
+    // Basic functionality
+    virtual void SetChain(TChain* chain) {fChain = chain;}
  private:
+    AliVEventPool(const AliVEventPool& obj);
+    AliVEventPool& operator=(const AliVEventPool& other);
+ protected:
+    TChain* fChain;   // Chain of trees
     ClassDef(AliVEventPool, 0); 
 };
  

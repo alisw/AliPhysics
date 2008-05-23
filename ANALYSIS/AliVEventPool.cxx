@@ -29,18 +29,17 @@ ClassImp(AliVEventPool)
 ////////////////////////////////////////////////////////////////////////
 
 AliVEventPool::AliVEventPool():
-    TNamed()
+    TNamed(),
+    fChain(0)
 {
   // Default constructor
 }
 
 AliVEventPool::AliVEventPool(const char* name, const char* title):
-    TNamed(name, title)
+    TNamed(name, title), 
+    fChain()
 {
   // Constructor
 }
 
-AliVEventPool::AliVEventPool(const AliVEventPool& obj):
-    TNamed(obj)
-{
-}
+
