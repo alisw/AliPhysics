@@ -269,8 +269,8 @@ TMap *AliGRPPreprocessor::ProcessDaqLB()
 {
   //Getting the DAQ lb information
   
-  const char* timeStart         = GetRunParameter("time_start");
-  const char* timeEnd           = GetRunParameter("time_end");
+  const char* timeStart         = GetRunParameter("DAQ_time_start");
+  const char* timeEnd           = GetRunParameter("DAQ_time_end");
   const char* beamEnergy        = GetRunParameter("beamEnergy");
   const char* beamType          = GetRunParameter("beamType");
   const char* numberOfDetectors = GetRunParameter("numberOfDetectors");
