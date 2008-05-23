@@ -157,6 +157,7 @@ void AliAnalysisSelector::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
+   if (fAnalysis->GetAnalysisType() == AliAnalysisManager::kMixingAnalysis) return;
    if (fAnalysis->GetDebugLevel() > 0) {
       cout << "->AliAnalysisSelector::SlaveTerminate()" << endl;
    }   
@@ -176,6 +177,8 @@ void AliAnalysisSelector::Terminate()
       Error("Terminate","AliAnalysisSelector::Terminate: No analysis manager!!!");
       return;
    }   
+   // No Terminate() in case of event mixing
+   if (fAnalysis->GetAnalysisType() == AliAnalysisManager::kMixingAnalysis) return;
    if (fAnalysis->GetDebugLevel() > 0) {
       cout << "->AliAnalysisSelector::Terminate()" << endl;
    }   

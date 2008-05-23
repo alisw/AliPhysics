@@ -490,6 +490,13 @@ Bool_t AliAnalysisTask::Notify()
 }
 
 //______________________________________________________________________________
+Bool_t AliAnalysisTask::NotifyBinChange()
+{
+// Overload this IF you need to treat bin change in event mixing.
+   return kTRUE;
+}
+
+//______________________________________________________________________________
 void AliAnalysisTask::Terminate(Option_t *)
 {
 // Method called by the framework at the end of data processing.

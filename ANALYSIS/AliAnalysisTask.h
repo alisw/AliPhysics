@@ -88,6 +88,8 @@ public:
   virtual void              LocalInit();
   // === OVERLOAD THIS IF YOU NEED TO TREAT INPUT FILE/TREE CHANGE
   virtual Bool_t            Notify();
+  // === OVERLOAD THIS IF YOU NEED TO TREAT BIN CHANGE IN EVENT MIXING
+  virtual Bool_t            NotifyBinChange();
   //=====================================================================
   // Optional method that will be called in SlaveTerminate phase for each task
   // Warning: in PROOF mode this is called before merging so their cleanup is

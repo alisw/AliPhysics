@@ -227,7 +227,9 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
    if (fDebug > 0) printf("->AliAnalysisManager::SlaveBegin()\n");
-
+   static Bool_t isCalled = kFALSE;
+   // Call SlaveBegin only once in case of mixing
+   if (isCalled && fMode==kMixingAnalysis) return;
    // Call Init of EventHandler
    if (fOutputEventHandler) {
       if (fMode == kProofAnalysis) {
@@ -262,6 +264,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       task->CreateOutputObjects();
       if (curdir) curdir->cd();
    }
+   isCalled = kTRUE;
 
    if (fDebug > 0) printf("<-AliAnalysisManager::SlaveBegin()\n");
 }
@@ -856,8 +859,8 @@ void AliAnalysisManager::ResetAnalysis()
 //______________________________________________________________________________
 void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t nentries, Long64_t firstentry)
 {
-// Start analysis for this manager. Analysis task can be: LOCAL, PROOF or GRID.
-// Process nentries starting from firstentry
+// Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
+// MIX. Process nentries starting from firstentry
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
       return;
@@ -869,6 +872,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    if (tree) {
       if (anaType.Contains("proof"))     fMode = kProofAnalysis;
       else if (anaType.Contains("grid")) fMode = kGridAnalysis;
+      else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
    }
    if (fMode == kGridAnalysis) {
       Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
@@ -877,7 +881,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    char line[256];
    SetEventLoop(kFALSE);
    // Enable event loop mode if a tree was provided
-   if (tree) SetEventLoop(kTRUE);
+   if (tree || fMode==kMixingAnalysis) SetEventLoop(kTRUE);
 
    TChain *chain = 0;
    TString ttype = "TTree";
@@ -890,7 +894,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       ttype = "TChain";
    }   
 
-   // Initialize locally all tasks
+   // Initialize locally all tasks (happens for all modes)
    TIter next(fTasks);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next())) {
@@ -913,10 +917,8 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
          } 
          // Run tree-based analysis via AliAnalysisSelector  
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
-         sprintf(line, "AliAnalysisSelector *selector = new AliAnalysisSelector((AliAnalysisManager*)0x%lx);",(ULong_t)this);
-         gROOT->ProcessLine(line);
-         sprintf(line, "((%s*)0x%lx)->Process(selector, \"\",%lld, %lld);",ttype.Data(),(ULong_t)tree, nentries, firstentry);
-         gROOT->ProcessLine(line);
+         fSelector = new AliAnalysisSelector(this);
+         tree->Process(fSelector, "", nentries, firstentry);
          break;
       case kProofAnalysis:
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
@@ -936,6 +938,26 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
          break;
       case kGridAnalysis:
          Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
+         break;
+      case kMixingAnalysis:   
+         // Run event mixing analysis
+         if (!fEventPool) {
+            Error("StartAnalysis", "Cannot run event mixing without event pool");
+            return;
+         }
+         cout << "===== RUNNING EVENT MIXING ANALYSIS " << GetName() << endl;
+         fSelector = new AliAnalysisSelector(this);
+         TChain *chain;
+         while ((chain=fEventPool->GetNextChain())) {
+            TIter next(fTasks);
+            AliAnalysisTask *task;
+            // Call NotifyBinChange for all tasks
+            while ((task=(AliAnalysisTask*)next()))
+               if (!task->IsPostEventLoop()) task->NotifyBinChange();
+            chain->Process(fSelector);
+         }
+         PackOutput(fSelector->GetOutputList());
+         Terminate();
    }   
 }   
 

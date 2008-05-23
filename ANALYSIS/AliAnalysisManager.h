@@ -40,7 +40,8 @@ enum EAliAnalysisContType {
 enum EAliAnalysisExecMode {
    kLocalAnalysis    = 0,
    kProofAnalysis    = 1,
-   kGridAnalysis     = 2
+   kGridAnalysis     = 2,
+   kMixingAnalysis   = 3
 };
 
 enum EAliAnalysisFlags {
