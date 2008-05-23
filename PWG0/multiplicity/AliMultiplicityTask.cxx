@@ -286,6 +286,7 @@ void AliMultiplicityTask::Exec(Option_t*)
   // eta range for nMCTracksSpecies, nESDTracksSpecies
   Float_t etaRange = -1;
   switch (fAnalysisMode) {
+    case AliPWG0Helper::kInvalid: break;
     case AliPWG0Helper::kTPC:
     case AliPWG0Helper::kTPCITS:
     	etaRange = 0.9; break;
