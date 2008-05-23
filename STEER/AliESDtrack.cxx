@@ -1047,6 +1047,16 @@ Int_t AliESDtrack::GetClusters(Int_t idet, Int_t *idx) const
       ncls = 1;
     }
     break;
+  case 4: //PHOS
+    break;
+  case 5:
+    if (fHMPIDcluIdx != 0) {
+      idx[0] = GetHMPIDcluIdx();
+      ncls = 1;
+    }    
+    break;
+  case 6: //EMCAL
+    break;
   default:
     break;
   }
