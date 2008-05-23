@@ -724,10 +724,8 @@ Bool_t AliReconstruction::InitRun(const char* input)
   // Get the GRP CDB entry
   AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
 
-  TList *list=0;	
   if (entryGRP) 
-  	list = dynamic_cast<TList*>(entryGRP->GetObject());  
-  fGRPData=dynamic_cast<TMap*>(list->FindObject("pp"));   // ????????? 
+  	fGRPData = dynamic_cast<TMap*>(entryGRP->GetObject());  
 
   if (!fGRPData) {
   	AliError("No GRP entry found in OCDB!");
