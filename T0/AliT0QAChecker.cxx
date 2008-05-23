@@ -50,8 +50,8 @@ AliT0QAChecker& AliT0QAChecker::operator = (const AliT0QAChecker& qac )
   new(this) AliT0QAChecker(qac);
   return *this;
 }
-//__________________________________________________________________
 
+//__________________________________________________________________
 const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 {
 

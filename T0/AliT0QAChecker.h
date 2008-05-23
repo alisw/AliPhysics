@@ -33,7 +33,7 @@ public:
 private:
   //  virtual const Double_t Check(TObjArray * list) ;
   virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
-  virtual const Double_t Check(AliQA::ALITASK_t index) {};
+  virtual const Double_t Check(AliQA::ALITASK_t ) {return 0.;} 
   virtual const Double_t Check() {return 0.;} ;
   
 
