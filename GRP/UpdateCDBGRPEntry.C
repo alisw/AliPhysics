@@ -10,6 +10,7 @@ void UpdateCDBGRPEntry() {
   // Get root version
   const char* rootv = gROOT->GetVersion();
 
+  /*
   // Get AliRoot version from file to set it in the metadata of the entry
   TFile *fv= TFile::Open("$ALICE_ROOT/CVS/Repository?filetype=raw","READ");
   Int_t size = fv->GetSize();
@@ -25,20 +26,18 @@ void UpdateCDBGRPEntry() {
     alirootv="HEAD";
   }else{
     alirootv = buf;
-    metadata->SetResponsible("Panos.Christakoglou@cern.ch");
-    metadata->SetComment("Default values for the GRP monitored parameters");
     metadata->SetAliRootVersion(alirootv);
   }
-  
-  TList *list = new TList();
+  */
+    metadata->SetResponsible("Chiara.Zampolli@cern.ch");
+    metadata->SetComment("Default values for the GRP monitored parameters");
+
   TMap *mappp = GetGRPList("pp");
-  list->Add(mappp);
-  TMap *mappbpb = GetGRPList("PbPb");
-  list->Add(mappbpb);
+  //TMap *mappbpb = GetGRPList("PbPb");   // not used as default!!!
 
-  Printf("Storing in CDB the default values for the GRP %d parameters produced with root %s and AliRoot version %s",list->GetEntries(),rootv,alirootv);
+  //  Printf("Storing in CDB the default values for the GRP %d parameters produced with root %s and AliRoot version %s",list->GetEntries(),rootv,alirootv);
 
-  man->Put(list,id,metadata);
+  man->Put(mappp,id,metadata);
 }
 
 //_______________________________________//
