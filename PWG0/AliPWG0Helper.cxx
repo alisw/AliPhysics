@@ -500,6 +500,7 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
 
   switch (analysisMode)
   {
+    case kInvalid: str += "invalid setting"; break;
     case kSPD : str += "SPD-only"; break;
     case kTPC : str += "TPC-only"; break;
     case kTPCITS : str += "Global tracking"; break;
