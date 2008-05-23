@@ -337,9 +337,9 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
 int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evtData, 
 					    const AliHLTComponent_BlockData* blocks, 
 					    AliHLTComponent_TriggerData& trigData, 
-					    AliHLTUInt8_t* outputPtr, 
+					    AliHLTUInt8_t* /*outputPtr*/, 
 					    AliHLTUInt32_t& size, 
-					    vector<AliHLTComponent_BlockData>& outputBlocks )
+					    vector<AliHLTComponent_BlockData>& /*outputBlocks*/ )
 {
   // Process an event
   HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
@@ -352,7 +352,6 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
   //   void *triggerData = trigData.fData;
   HLTDebug("Trigger data received. Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
-  HLTDebug("Output status. Output pointer at 0x%x Output vector blocks at 0x%x", outputPtr, &outputBlocks);
 
   // Loop over all input blocks in the event
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
@@ -431,7 +430,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   TTree *fcTree = fClusterizer->GetClusterTree();
   
   PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, dBlockSpecification);
- 
-  HLTDebug("Output size %d", size);
+
+  size=0; // this function did not write data to the buffer directly
   return 0;
 }
