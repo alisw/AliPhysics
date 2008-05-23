@@ -30,7 +30,7 @@ public:
   virtual Float_t GetEnergy() const        {return fEnergy;}
 
   // Setters 
-  virtual void SetVolume(Int_t i, Float_t val) {fVolume[i]=val;} 
+  virtual void SetVolume(Int_t i, Int_t val) {fVolume[i]=val;} 
   virtual void SetPDGCode(Int_t code)     {fPDGCode=code;}
   virtual void SetLightPMQ(Float_t value) {fLightPMQ=value;}
   virtual void SetLightPMC(Float_t value) {fLightPMC=value;}
