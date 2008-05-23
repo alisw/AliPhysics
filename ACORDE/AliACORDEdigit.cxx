@@ -50,6 +50,7 @@ AliACORDEdigit::AliACORDEdigit(Int_t* tracks, Int_t module, Float_t pulse_time)
 //_____________________________________________________________________________
 AliACORDEdigit::AliACORDEdigit(Int_t* modules, Float_t pulse_time)
   : AliDigit(modules),
+    fModule(0),
     fTime(pulse_time)
 {
 	//MRC's part
