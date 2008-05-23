@@ -16,6 +16,7 @@ public:
   virtual            ~AliKineTrackCuts(){;}
   
             Bool_t    IsSelected(TObject* obj);
+	    Bool_t    IsSelected(TList* /*list*/) {return kTRUE;}
             
   // track kinematic cut setters
               void    SetPRange(Float_t r1=0, Float_t r2=1e10)       {fPMin=r1;   fPMax=r2;}
