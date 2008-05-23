@@ -123,7 +123,7 @@ UInt_t AliT0Preprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap){
             metaDataDCS.SetResponsible("Tomasz Malkiewicz");
             metaDataDCS.SetComment("This preprocessor fills an AliTODataDCS object.");
             AliInfo("Storing DCS Data");
-            resultDCSStore = Store("Calib","DCSData",fData, &metaDataDCS);
+            resultDCSStore = StoreReferenceData("Calib","DCSData",fData, &metaDataDCS);
             if (!resultDCSStore)
             {
               Log("Some problems occurred while storing DCS data results in ReferenceDB");
