@@ -486,6 +486,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
    AliAnalysisDataWrapper   *wrap;
    Int_t icont = 0;
    while ((cont=(AliAnalysisDataContainer*)next())) {
+      wrap = 0;
       if (cont->GetProducer()->IsPostEventLoop()) continue;
       if (cont->IsSpecialOutput()) {
          if (strlen(fSpecialOutputLocation.Data())) continue;
@@ -500,9 +501,16 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          // Normally we should connect data from the copied file to the
          // corresponding output container, but it is not obvious how to do this
          // automatically if several objects in file...
-         continue;
+         TFile *f = new TFile(cont->GetFileName(), "READ");
+         TObject *obj = f->Get(cont->GetName());
+         if (!obj) {
+            Error("ImportWrappers", "Could not find object %s in file %s", cont->GetName(), cont->GetFileName());
+            continue;
+         }
+         wrap = new AliAnalysisDataWrapper(obj);
+         wrap->SetDeleteData(kFALSE);
       }   
-      wrap = (AliAnalysisDataWrapper*)source->FindObject(cont->GetName());
+      if (!wrap) wrap = (AliAnalysisDataWrapper*)source->FindObject(cont->GetName());
       if (!wrap) {
          Error("ImportWrappers","Container %s not found in analysis output !", cont->GetName());
          continue;

@@ -76,7 +76,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
 AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *type)
                          :TNamed(name,""),
                           fDataReady(kFALSE),
-                          fOwnedData(kTRUE),
+                          fOwnedData(kFALSE),
                           fFileName(),
                           fFile(NULL),
                           fData(NULL),
