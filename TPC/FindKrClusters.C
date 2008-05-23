@@ -32,6 +32,19 @@
 
 Int_t FindKrClusters(){
 
+  //
+  //Load DataBase
+  //
+  char *ocdbpath ="local:///afs/cern.ch/alice/tpctest/OCDB";
+  //char *ocdbpath ="local:///home/matyja/baza/OCDB";
+  if (ocdbpath==0){
+    ocdbpath="alien://folder=/alice/data/2007/LHC07w/OCDB/";
+  }
+  printf("OCDB PATH = %s\n",ocdbpath); 
+  AliCDBManager * man = AliCDBManager::Instance();
+  man->SetDefaultStorage(ocdbpath);
+  man->SetRun(0);
+
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
   if (rl == 0x0) {
     cerr<<"Can not open session"<<endl;

@@ -127,7 +127,7 @@ void AliTPCclusterKr::SetCenter(){
     fADCcluster+=adc;
     rX += ((iclus)->GetX() * adc);
     rY += ((iclus)->GetY() * adc);
-    rT += ((iclus)->GetTime() * adc);
+    rT += ((iclus)->GetT() * adc);
   }
   fCenterX=rX/fADCcluster;
   fCenterY=rY/fADCcluster;

@@ -25,6 +25,8 @@ class TTree;
 class TH1F;
 class TH2F;
 
+class AliTPCTransform;
+
 //used in raw data finder
 class AliTPCROC;
 class AliTPCCalPad;
@@ -146,7 +148,7 @@ private:
   TH1F *fHistoTime;//!debug histo for timebins
   TH2F *fHistoRowPad;//!debug histo for rows and pads
 
-  ClassDef(AliTPCclustererKr,5)  // Time Projection Chamber Kr clusters
+  ClassDef(AliTPCclustererKr,6)  // Time Projection Chamber Kr clusters
 };
 
 
