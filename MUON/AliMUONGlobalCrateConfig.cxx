@@ -62,6 +62,7 @@ AliMUONGlobalCrateConfig::AliMUONGlobalCrateConfig()
     fFirstDarcDisable(0),
     fFirstDarcL0Delay(0),
     fFirstDarcL1TimeOut(0),
+    fFirstDarcGlobalL0(0),
     fFirstDarcConfig(0), 
     fSecondDarcVmeAddr(0x0),
     fSecondDarcType(0),
@@ -108,7 +109,6 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
       return kFALSE;
     }
 
-    TArrayI list;
     Int_t nDarc = 0;
 
     char line[255];
@@ -131,7 +131,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
     if (tmp.Contains(GetJtagName())) {
         // vme addr
         in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
+        tmp = AliMpHelper::Normalize(line);
         ULong_t addr;
         sscanf(tmp.Data(), "%lx", &addr);
         SetJtagVmeAddr(addr);
@@ -173,7 +173,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
     if (tmp.Contains(GetFirstDarcName())) {
         // vme addr
         in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
+        tmp = AliMpHelper::Normalize(line);
         ULong_t addr;
         sscanf(tmp.Data(), "%lx", &addr);
         if (addr) nDarc++;
@@ -229,7 +229,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
     if (tmp.Contains(GetSecondDarcName())) {
         // vme addr
         in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
+        tmp = AliMpHelper::Normalize(line);
         ULong_t addr;
         if (addr) nDarc++;
         sscanf(tmp.Data(), "%lx", &addr);
@@ -283,7 +283,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
     tmp = AliMpHelper::Normalize(line);
     if (tmp.Contains(GetGlobalName())) {
         in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
+        tmp = AliMpHelper::Normalize(line);
         ULong_t addr;
         sscanf(tmp.Data(), "%lx", &addr);
         SetGlobalVmeAddr(addr);
@@ -291,7 +291,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
 
         for (Int_t i = 0; i < GetGlobalNofRegisters(); ++i) {
             in.getline(line, 255);
-            TString tmp(AliMpHelper::Normalize(line));
+            tmp = AliMpHelper::Normalize(line);
             UInt_t reg;
             sscanf(tmp.Data(), "%x", &reg);
             SetGlobalRegister(i, reg);
@@ -303,7 +303,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
     tmp = AliMpHelper::Normalize(line);
     if (tmp.Contains(GetFetName())) {
         in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
+        tmp = AliMpHelper::Normalize(line);
         ULong_t addr;
         sscanf(tmp.Data(), "%lx", &addr);
         SetFetVmeAddr(addr);
@@ -311,7 +311,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
 
         for (Int_t i = 0; i < GetFetNofRegisters(); ++i) {
             in.getline(line, 255);
-            TString tmp(AliMpHelper::Normalize(line));
+            tmp = AliMpHelper::Normalize(line);
             UInt_t reg;
             sscanf(tmp.Data(), "%x", &reg);
             SetFetRegister(i, reg);
