@@ -131,8 +131,6 @@ Bool_t AliMpGlobalCrate::ReadData(const TString& fileName)
       return kFALSE;
     }
 
-    TArrayI list;
-
     char line[255];
     in.getline(line, 255);
     TString tmp(AliMpHelper::Normalize(line));
