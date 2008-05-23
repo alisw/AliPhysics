@@ -50,6 +50,7 @@ ClassImp(AliHLTTPCHistogramHandlerComponent) //ROOT macro for the implementation
 
 AliHLTTPCHistogramHandlerComponent::AliHLTTPCHistogramHandlerComponent()
     :    
+    fSpecification(0),
     fNoiseHistograms(0),
     fKryptonHistograms(0),
     fSlice(-99),
@@ -130,9 +131,9 @@ int AliHLTTPCHistogramHandlerComponent::DoInit( int argc, const char** argv ) {
   
   TString configuration="";
   TString argument="";
-  for (int i=0; i<argc && iResult>=0; i++) {
+  for (int j=0; j<argc && iResult>=0; j++) {
     
-    argument=argv[i];
+    argument=argv[j];
     if (!configuration.IsNull()) configuration+=" ";
     configuration+=argument;    
   }
@@ -181,7 +182,7 @@ int AliHLTTPCHistogramHandlerComponent::DoDeinit() {
    return 0;
 }
 
-int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData){
+int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/* evtData*/, AliHLTComponentTriggerData& /*trigData*/){
 // see header file for class documentation
 
   HLTInfo("--- Entering DoEvent() in TPCHistogramHandler ---");
@@ -192,7 +193,7 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData& 
   fTotalClusterChargeOROCAll = new TH1F("fTotalClusterChargeOROCAll","Total Charge of clusters in all OROC",4000,0,4000);
   fQMaxPartitionAll          = new TH1F("fQMaxPartitionAll",         "QMax for All Partitions",             216,0,216);
   fPlotQmaxROCAll            = new TH1F("fQMaxROCAll",               "QMax for All ROC",                    72,0,72);
-  fNumberOfClusters          = new TH1F("fNumberOfClusters",         "Total Number of Clusters",            100,0,100);
+  fNumberOfClusters          = new TH1F("fNumberOfClusters",         "Total Number of Clusters",            1,0,1);
     
   fHistTH2Tmp = new TH2F("fHistTH2Tmp","fHistTH2Tmp",250,-250,250,250,-250,250);    
   fHistTPCSideA = new TH2F("fHistTPCSideA","TPC side A (max signal)",250,-250,250,250,-250,250);
@@ -257,21 +258,26 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData& 
 	   fTotalClusterChargeOROCAll->Add(fTotalClusterChargeOROCAll,fHistTH1Tmp,1,1);
 	} 
 	else if(name=="fQMaxPartitionAll"){
-	  AliHLTUInt8_t partitionNr=patch+slice*6;
-	  //	  if(fHistTH1Tmp->GetBinContent(partitionNr)>fQMaxPartitionAll->GetBinContent(partitionNr)){
-	   fQMaxPartitionAll->SetBinContent(partitionNr,fHistTH1Tmp->GetBinContent(partitionNr));
-	   //	  }
-	   fQMaxPartitionAll->Add(fQMaxPartitionAll,fHistTH1Tmp,1,1);
+	  for(Int_t t=0;t<216;t++){
+	    if(fHistTH1Tmp->GetBinContent(t)>fQMaxPartitionAll->GetBinContent(t)){
+	      fQMaxPartitionAll->SetBinContent(t,fHistTH1Tmp->GetBinContent(t));
+	    }
+	  } 
 	} 
-	else if(name=="fPlotQmaxROCAll"){
-	  //	  if(fHistTH1Tmp->GetBinContent(thissector)>fPlotQmaxROCAll->GetBinContent(thissector)){
-	  //   fPlotQmaxROCAll->SetBinContent(thissector,fHistTH1Tmp->GetBinContent(thissector));
-	    //	  }
-	  fPlotQmaxROCAll->Add(fPlotQmaxROCAll,fHistTH1Tmp,1,1);
-	}
+	else if(name=="fQMaxROCAll"){
+	  for(Int_t t=0;t<72;t++){
+	    if(fHistTH1Tmp->GetBinContent(t)>fPlotQmaxROCAll->GetBinContent(t)){
+	      fPlotQmaxROCAll->SetBinContent(t,fHistTH1Tmp->GetBinContent(t));
+	    }
+	  }
+	} 
 	else if(name=="fNumberOfClusters"){ 
-	  //   fNumberOfClusters->Add(fNumberOfClusters,fHistTH1Tmp,1,1);
-	} else continue;     
+	  fNumberOfClusters->Add(fNumberOfClusters,fHistTH1Tmp,1,1);
+	} 
+	else{
+	  HLTWarning("No histogram names match. %s",name.Data());
+	  continue;
+	}     
      } //endif fKryptonHistograms==kTRUE	   	         
   } // end for loop over histogram blocks
   
@@ -285,9 +291,20 @@ void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
   if(fNoiseHistograms){ 
     PushBack((TObject*)fHistTPCSideA,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 0,17,0,5));
     PushBack((TObject*)fHistTPCSideC,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(18,35,0,5));
-    delete fHistTH2Tmp;
-    delete fHistTPCSideA;
-    delete fHistTPCSideC;
+
+    if(fHistTH2Tmp){
+      delete fHistTH2Tmp;
+    }
+    if(fHistTPCSideA){
+      delete fHistTPCSideA;
+    }
+    if(fHistTPCSideC){
+      delete fHistTPCSideC;
+    }
+    
+    fHistTH2Tmp=NULL;
+    fHistTPCSideA=NULL;
+    fHistTPCSideC=NULL;
   }  
   
   if(fKryptonHistograms){
@@ -297,11 +314,30 @@ void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
      PushBack((TObject*)fPlotQmaxROCAll,	   kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5));
      PushBack((TObject*)fNumberOfClusters,	   kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5));
           
-     delete fTotalClusterChargeIROCAll;
-     delete fTotalClusterChargeOROCAll;
-     delete fQMaxPartitionAll;
-     delete fPlotQmaxROCAll;
-     delete fNumberOfClusters;
+     if(fTotalClusterChargeIROCAll){
+       delete fTotalClusterChargeIROCAll;
+       fTotalClusterChargeIROCAll=NULL;
+     }
+     if(fTotalClusterChargeOROCAll){
+       delete fTotalClusterChargeOROCAll;
+       fTotalClusterChargeOROCAll=NULL;
+     }
+     if(fQMaxPartitionAll){
+       delete fQMaxPartitionAll;
+       fQMaxPartitionAll=NULL;
+     }
+     if(fPlotQmaxROCAll){
+       delete fPlotQmaxROCAll;
+       fPlotQmaxROCAll=NULL;
+     }
+     if(fNumberOfClusters){
+       delete fNumberOfClusters;
+       fNumberOfClusters=NULL;
+     }
+     if(fHistTH1Tmp){
+       delete fHistTH1Tmp;
+       fHistTH1Tmp=NULL;
+     }
   }
  
 //  TObjArray histos;

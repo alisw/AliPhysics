@@ -38,15 +38,15 @@ AliHLTTPCOfflineCluster::AliHLTTPCOfflineCluster()
 //constructor  
 }
 
-AliHLTTPCOfflineCluster::AliHLTTPCOfflineCluster(const AliHLTTPCSpacePointData& hltCluster){
+AliHLTTPCOfflineCluster::AliHLTTPCOfflineCluster(const AliHLTTPCSpacePointData& /*hltCluster*/){
   
 }
 
-AliHLTTPCOfflineCluster::AliHLTTPCOfflineCluster(const AliTPCclusterMI& offCluster){
+AliHLTTPCOfflineCluster::AliHLTTPCOfflineCluster(const AliTPCclusterMI& /*offCluster*/){
  
 }
 
-AliHLTTPCOfflineCluster& AliHLTTPCOfflineCluster::operator=(const AliTPCclusterMI& offCluster){
+AliHLTTPCOfflineCluster& AliHLTTPCOfflineCluster::operator=(const AliTPCclusterMI& /*offCluster*/){
   return *this;
 }
 
@@ -84,8 +84,8 @@ AliHLTTPCSpacePointData AliHLTTPCOfflineCluster::ConvertOfflineToHLT(AliTPCclust
    spacePoint.fX      = offCluster->GetPad();
    spacePoint.fPadRow = offCluster->GetRow();
    spacePoint.fZ      = offCluster->GetTimeBin();
-   spacePoint.fCharge = offCluster->GetQ();
-   spacePoint.fMaxQ   = offCluster->GetMax();
+   spacePoint.fCharge = (UInt_t)offCluster->GetQ();
+   spacePoint.fMaxQ   = (UInt_t)offCluster->GetMax();
 
    return spacePoint;
    

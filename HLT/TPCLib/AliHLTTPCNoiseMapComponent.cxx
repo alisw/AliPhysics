@@ -117,8 +117,8 @@ int AliHLTTPCNoiseMapComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& 
 void AliHLTTPCNoiseMapComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
 // see header file for class documentation
 
-  constBase=0;
-  inputMultiplier=1.0;
+  constBase=800000;
+  inputMultiplier=0.0;
 }
 
 AliHLTComponent* AliHLTTPCNoiseMapComponent::Spawn() { 
@@ -137,9 +137,9 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
   
   TString configuration="";
   TString argument="";
-  for (int i=0; i<argc && iResult>=0; i++) {
+  for (int j=0; j<argc && iResult>=0; j++) {
     
-    argument=argv[i];
+    argument=argv[j];
     if (!configuration.IsNull()) configuration+=" ";
     configuration+=argument;    
   }
@@ -225,7 +225,7 @@ int AliHLTTPCNoiseMapComponent::DoDeinit() {
     return 0;
 }
 
-int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData){
+int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/){
 // see header file for class documentation
  
   HLTInfo("--- Entering DoEvent() in TPCNoiseMap ---");

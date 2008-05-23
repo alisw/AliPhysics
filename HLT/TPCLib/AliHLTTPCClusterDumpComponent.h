@@ -68,6 +68,9 @@ class AliHLTTPCClusterDumpComponent : public AliHLTFileWriter {
   /** target directory */
   TString    fDirectory;                                           // see above
 
+  /** slice */
+  Int_t fSlice;                                                    //! transient
+
   ClassDef(AliHLTTPCClusterDumpComponent, 0);
 };
 

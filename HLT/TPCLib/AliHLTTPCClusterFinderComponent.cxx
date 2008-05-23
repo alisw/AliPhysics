@@ -355,6 +355,11 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 {
   // see header file for class documentation
 
+  if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
+    size=0;
+    return 0;
+  }
+
   //  == init iter (pointer to datablock)
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;

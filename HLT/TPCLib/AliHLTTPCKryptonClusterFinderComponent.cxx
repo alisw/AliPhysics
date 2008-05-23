@@ -164,14 +164,17 @@ int AliHLTTPCKryptonClusterFinderComponent::DoDeinit()
 }
 
 int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, 
-					      const AliHLTComponentBlockData* blocks, 
+						     const AliHLTComponentBlockData* /*blocks*/, 
 					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, 
 					      vector<AliHLTComponentBlockData>& outputBlocks )
 {
   // see header file for class documentation
 
-  if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
+  if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
+    size=0;
+    return 0;
+  }
 
   //  == init iter (pointer to datablock)
   const AliHLTComponentBlockData* iter = NULL;

@@ -59,7 +59,7 @@ fTotalClusterChargeOROCAll(NULL),
   fPlotChargePartSel(kFALSE),
   fPlotQmaxPartAll(kTRUE),  
   fPlotQmaxROCAll(kTRUE),   
-  fPlotNClusters(kFALSE)    
+  fPlotNClusters(kTRUE)    
 {
   // see header file for class documentation
   // or
@@ -159,7 +159,7 @@ int AliHLTTPCClusterHistoComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTTPCClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData)
+int AliHLTTPCClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   
   int TotalSpacePoint = 0;

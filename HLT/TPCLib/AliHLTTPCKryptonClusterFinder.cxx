@@ -149,8 +149,7 @@ Bool_t AliHLTTPCKryptonClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTP
       cluster->fTime2 += candidate->fTime2;
       cluster->fPad+=candidate->fPad;
       cluster->fPad2=candidate->fPad2;
-      cluster->fLastMergedPad=candidate->fPad/candidate->fTotalCharge;
-      
+      cluster->fLastMergedPad=nextPad->GetPadNumber();
       if(candidate->fQMax>cluster->fQMax){
 	cluster->fQMax = candidate->fQMax;
       }
@@ -243,27 +242,44 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
 	    if((Int_t)nextCluster->fQMax>fMaxQOfCluster){
 	      fMaxQOfCluster = nextCluster->fQMax;
 	    }
-	    
-	    
+	    	    
+
+
 	    if(tmpCluster->fFlags!=99){//means that this is the first time normal clusters match
 	      CheckForCandidateOnPreviousRow(tmpCluster);
-	      for(UInt_t ap = tmpCluster->fFirstPad ; ap<=tmpCluster->fLastMergedPad ; ap++){
-	      fHWAddressVector.push_back((AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(nextCluster->fRowNumber/nextCluster->fTotalCharge-AliHLTTPCTransform::GetFirstRow(fCurrentPatch),ap));
-	      //		fHWAddressVector.push_back((AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(tmpCluster->fRowNumber,ap));
+	      Int_t minFirst=0;
+	      Int_t maxFirst=0;
+	      if(tmpCluster->fFirstPad>1){
+		minFirst=2;
 	      }
-	      
+	      if(tmpCluster->fLastMergedPad+2<(UInt_t)AliHLTTPCTransform::GetNPads(prevRow)){
+		maxFirst=2;
+	      }
+		
+	      for(UInt_t ap = tmpCluster->fFirstPad -minFirst; ap<=tmpCluster->fLastMergedPad+maxFirst; ap++){
+		fHWAddressVector.push_back((AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(tmpCluster->fRowNumber/tmpCluster->fTotalCharge-AliHLTTPCTransform::GetFirstRow(fCurrentPatch),ap));
+	      }
 	    }
-	    for(UInt_t ap = nextCluster->fFirstPad ; ap<=nextCluster->fLastMergedPad ; ap++){
+	      
+	    UInt_t minNext=0;
+	    UInt_t maxNext=0;
+	    if(nextCluster->fFirstPad>1){
+	      minNext=2;
+	    }
+	    if(nextCluster->fLastMergedPad+2<(UInt_t)AliHLTTPCTransform::GetNPads(prevRow+1)){
+	      maxNext=2;
+	    }
+	    for(UInt_t ap = nextCluster->fFirstPad-minNext; ap<=nextCluster->fLastMergedPad+maxNext; ap++){
 	      fHWAddressVector.push_back((AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(nextCluster->fRowNumber/nextCluster->fTotalCharge-AliHLTTPCTransform::GetFirstRow(fCurrentPatch),ap));
 	      HLTDebug("Pushing back hw address %d from row: %d and Pad: %d",fDigitReader->GetAltroBlockHWaddr(nextCluster->fRowNumber/nextCluster->fTotalCharge-AliHLTTPCTransform::GetFirstRow(fCurrentPatch),ap),nextCluster->fRowNumber/nextCluster->fTotalCharge,ap);
 	    }
-
+	      
 	    prevRow=nextCluster->fRowNumber/nextCluster->fTotalCharge;
 	    nextCluster->fFlags=99;
 	    tmpCluster->fFlags=99;
 	    if(j!=fClusters.size()-1){
 	      continue;
-	    }	    
+	    }
 	  }
 	}
       }
@@ -292,6 +308,7 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
 	  Int_t thissector=-1;
 	  AliHLTTPCTransform::Slice2Sector(fCurrentSlice, (Int_t)(tmpCluster->fRowNumber/tmpCluster->fTotalCharge), thissector, thisrow);
 	  AliHLTTPCTransform::Raw2Local(xyz, thissector, thisrow,(Float_t)(tmpCluster->fPad/tmpCluster->fTotalCharge),(Float_t)(tmpCluster->fTime/tmpCluster->fTotalCharge));
+	  fSpacePointData[fNKryptonClusters].fID = fCurrentSlice*10 +fCurrentPatch;
 	  fSpacePointData[fNKryptonClusters].fX = xyz[0];
 	  fSpacePointData[fNKryptonClusters].fY = xyz[1];
 	  fSpacePointData[fNKryptonClusters].fZ = xyz[2];
@@ -322,15 +339,15 @@ void AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow(AliHLTTPCClus
     for(Int_t p=-1;p<2;p++){
       if(tmpCluster->fPad+p>0 && tmpCluster->fPad+p<fNumberOfPadsInRow[tmpCluster->fRowNumber/tmpCluster->fTotalCharge-1]){
 	if(tmpCluster->fTotalCharge==0){
-	  HLTFatal("Charge of tmpCluster in AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow is 0");
+	  HLTDebug("Charge of tmpCluster in AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow is 0");
 	  return;
 	}
-	if(tmpCluster->fRowNumber/tmpCluster->fTotalCharge-1-AliHLTTPCTransform::GetFirstRow(fCurrentPatch)<0){
-	  HLTFatal("AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow:    Rownumber is below 0");
+	if((Int_t)(tmpCluster->fRowNumber/tmpCluster->fTotalCharge-1-AliHLTTPCTransform::GetFirstRow(fCurrentPatch))<0){
+	  HLTDebug("AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow:    Rownumber is below 0");
 	  return;
 	}
 	if(tmpCluster->fRowNumber/tmpCluster->fTotalCharge-1-AliHLTTPCTransform::GetFirstRow(fCurrentPatch)>fNumberOfRows){
-	  HLTFatal("AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow:    Rownumber is too high");
+	  HLTDebug("AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow:    Rownumber is too high");
 	  return;
 	}
 	AliHLTTPCPad *prevPad=fRowPadVector[tmpCluster->fRowNumber/tmpCluster->fTotalCharge-1-AliHLTTPCTransform::GetFirstRow(fCurrentPatch)][tmpCluster->fPad/tmpCluster->fTotalCharge+p];

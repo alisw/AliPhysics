@@ -27,6 +27,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCTransform.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterDumpComponent)
@@ -34,7 +35,8 @@ ClassImp(AliHLTTPCClusterDumpComponent)
   AliHLTTPCClusterDumpComponent::AliHLTTPCClusterDumpComponent()
     :
     AliHLTFileWriter(),
-    fDirectory("")
+    fDirectory(""),
+    fSlice(-1)
 {
   // see header file for class documentation
   // or
@@ -84,9 +86,16 @@ int AliHLTTPCClusterDumpComponent::ScanArgument(int argc, const char** argv)
     if (i>=argc || (argument=argv[i]).IsNull()) continue;
     
     // -directory
-    if (argument.CompareTo("-directory")==0) {
+    if (argument.CompareTo("-directory-clusterdump")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       fDirectory=argv[i];
+      break;
+    }
+    //-slice
+    if (argument.CompareTo("-slice")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString str= argv[i];
+      fSlice=str.Atoi();
       break;
     }
   }while(0);
@@ -117,20 +126,25 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
 
   //building the filename
   fCurrentFileName="";
-  ios::openmode filemode=(ios::openmode)0;
   if (!fDirectory.IsNull()) {
     fCurrentFileName+=fDirectory;
   }
-  fCurrentFileName+="TPCClusterDump_Event";
-  fCurrentFileName+=Form("_%d", GetEventCount());
-  ofstream dump(fCurrentFileName.Data(), filemode);
+  fCurrentFileName+="ClusterDump";
+  fCurrentFileName+=Form("_RunNo-%d",GetRunNo());
+  if(fSlice!=-1){
+    fCurrentFileName+=Form("_Slice-%d", fSlice);
+  }
+  fCurrentFileName+=Form("_Event-%d", GetEventCount());
+
+  ofstream dump;
+  dump.open(fCurrentFileName.Data());
 
   for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     HLTDebug("event %Lu block %d: %s 0x%08x size %d", evtData.fEventID, blockno, DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
 
     if(pDesc->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){continue;}
  
-     if (dump.good()) {
+    if (dump.good() || 1) {//the || 1 is there since dump.good() will return false( EOF )
        iResult=1;
        const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) pDesc->fPtr;
        Int_t nSpacepoints = (Int_t) clusterData->fSpacePointCnt;
@@ -139,17 +153,14 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
        for(int i=0;i<nSpacepoints;i++){
 	 dump << "" << endl;
 	 dump << "ClusterNumber: " << spacePointCounter << endl;
-	 dump << "Slice:         " << clusters[i].fUsed    << endl;//quick fix to get the partiion and slice numbers to the clusterdump
-	 dump << "Partition:     " << clusters[i].fTrackN  << endl;//quick fix to get the partiion and slice numbers to the clusterdump
-	 dump << "X:             " << clusters[i].fX       << endl;
-	 dump << "Y:             " << clusters[i].fY       << endl;
-	 dump << "Z:             " << clusters[i].fZ       << endl;
-	 dump << "ID:            " << clusters[i].fID      << endl;
-	 dump << "Pad row:       " << clusters[i].fPadRow << endl;
-	 dump << "fSigmaY2:      " << clusters[i].fSigmaY2 << endl;
-	 dump << "fSigmaZ2:      " << clusters[i].fSigmaZ2 << endl;
-	 dump << "Charge:        " << clusters[i].fCharge << endl;
-	 dump << "Q Max:         " << clusters[i].fMaxQ << endl;
+	 dump << "Slice:         " << (Int_t)(clusters[i].fID/10) << endl;//quick fix to get the partiion and slice numbers to the clusterdump
+	 dump << "Partition:     " << (Int_t)(clusters[i].fID%10) << endl;//quick fix to get the partiion and slice numbers to the clusterdump
+	 dump << "[X,Y,Z]:       [" << clusters[i].fX<<" , "<<clusters[i].fY<<" , "<<clusters[i].fZ <<"]"<< endl;
+	 Float_t xyz[3]={clusters[i].fX,clusters[i].fY,clusters[i].fZ};
+	 AliHLTTPCTransform::LocHLT2Raw(xyz,(Int_t)(clusters[i].fID/10),(Int_t)(clusters[i].fID%10));
+	 dump << "[R,P,T]:       [" << xyz[0]<<" , "<<xyz[1]<<" , "<<xyz[2] <<"]"<< endl;
+	 dump << "Total Charge:  " << clusters[i].fCharge         << endl;
+	 dump << "Q Max:         " << clusters[i].fMaxQ           << endl;
 	 spacePointCounter++;
        }
        
@@ -159,7 +170,7 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
        iResult=-EBADF;
      }
 
-    dump.close();
   }
+  dump.close();
   return iResult;
 }

@@ -195,7 +195,7 @@ int AliHLTTPCClusterConverterComponent::DoDeinit(){
   return 0;
 }
 
-int AliHLTTPCClusterConverterComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData){
+int AliHLTTPCClusterConverterComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/){
 // see header file for class documentation
 
   //Logging(kHLTLogDebug, "HLT::TPCClusterConverter::DoEvent", "DoEvent", "DoEvent()");
