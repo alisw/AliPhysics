@@ -346,9 +346,9 @@ void AliHLTTPCCompModelConverter::ExpandTrackData()
 	      AliHLTTPCSpacePointData *points = fClusters[lastSlice][0]->fSpacePoints;//->GetDataPointer(size);
 	      bool* clustersUsed = fClusterUsed[lastSlice][0];
 	      
-	      Float_t angle = 0;
-	      AliHLTTPCTransform::Local2GlobalAngle(&angle,lastSlice);
-	      if(!track->CalculateReferencePoint(angle,AliHLTTPCTransform::Row2X(padrow)))
+	      Float_t globalangle = 0;
+	      AliHLTTPCTransform::Local2GlobalAngle(&globalangle,lastSlice);
+	      if(!track->CalculateReferencePoint(globalangle,AliHLTTPCTransform::Row2X(padrow)))
 		continue;
 	      Float_t xyzCross[3] = {track->GetPointX(),track->GetPointY(),track->GetPointZ()};
 	      AliHLTTPCTransform::Global2LocHLT(xyzCross,lastSlice);
@@ -676,14 +676,14 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 #endif
     }
 
-int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const data, unsigned long& dataSize )
+int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt, unsigned long& dataSize )
     { 
       // see header file for class documentation
       
       const Int_t nrows = AliHLTTPCTransform::GetNRows();
       Int_t * npoints = new Int_t[nrows];
       unsigned long dataWritten = 0;
-      AliHLTUInt8_t* writePtr = data;
+      AliHLTUInt8_t* writePtr = pTgt;
       
       *(AliHLTUInt32_t*)writePtr = 0; // Write format version
       dataWritten += sizeof(AliHLTUInt32_t);

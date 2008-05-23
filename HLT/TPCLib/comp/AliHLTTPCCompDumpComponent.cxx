@@ -384,9 +384,9 @@ int AliHLTTPCCompDumpComponent::DoEvent( const AliHLTComponent_EventData& evtDat
 	      HLTInfo( "Remaining cluster model block version %u", 
 		       (unsigned)*(AliHLTUInt32_t*)blocks[n].fPtr );
 	      AliHLTUInt8_t* readPtr = (AliHLTUInt8_t*)(((AliHLTUInt8_t*)blocks[n].fPtr)+sizeof(AliHLTUInt32_t));
-	      for(Int_t slice=0; slice<36; slice++)
+	      for(Int_t lslice=0; lslice<36; lslice++)
 		{
-		  for(Int_t patch=0; patch < 6; patch++)
+		  for(Int_t lpatch=0; lpatch < 6; lpatch++)
 		    {
 		      if ( !readPtr )
 			{
@@ -408,9 +408,9 @@ int AliHLTTPCCompDumpComponent::DoEvent( const AliHLTComponent_EventData& evtDat
 		       clusterCount );
 	      readPtr = (AliHLTUInt8_t*)(((AliHLTUInt8_t*)blocks[n].fPtr)+sizeof(AliHLTUInt32_t));
 	      clusterCount = 0;
-	      for(Int_t slice=0; slice<36; slice++)
+	      for(Int_t lslice=0; lslice<36; lslice++)
 		{
-		  for(Int_t patch=0; patch < 6; patch++)
+		  for(Int_t lpatch=0; lpatch < 6; lpatch++)
 		    {
 		      if ( !readPtr )
 			{
@@ -420,7 +420,7 @@ int AliHLTTPCCompDumpComponent::DoEvent( const AliHLTComponent_EventData& evtDat
 		      unsigned rows = (unsigned)*readPtr;
 		      readPtr++;
 		      if ( rows )
-			HLTInfo( "  Slice %d - Partition %d", slice, patch );
+			HLTInfo( "  Slice %d - Partition %d", lslice, lpatch );
 		      for ( unsigned ii=0; ii<rows; ii++ )
 			{
 			  AliHLTTPCRemainingRow* thisRow = (AliHLTTPCRemainingRow*)readPtr;
@@ -700,9 +700,9 @@ int AliHLTTPCCompDumpComponent::DoEvent( const AliHLTComponent_EventData& evtDat
 	    Pad8Bits();
 	    
 	    unsigned long clusterCount=0;
-	    for(Int_t slice=0; slice<=35; slice++)
+	    for(Int_t lslice=0; lslice<=35; lslice++)
 	      {
-		for(Int_t patch=0; patch < 6; patch++)
+		for(Int_t lpatch=0; lpatch < 6; lpatch++)
 		  {
 		    UInt_t i;
 		    //Write number of padrows with clusters
@@ -714,7 +714,7 @@ int AliHLTTPCCompDumpComponent::DoEvent( const AliHLTComponent_EventData& evtDat
 			return EIO;
 		      }
 		    HLTInfo( "slice %u patch %u: %u padrows",
-			     (unsigned)slice, (unsigned)patch, (unsigned)nRows );
+			     (unsigned)lslice, (unsigned)lpatch, (unsigned)nRows );
 		    if ( !nRows )
 		      {
 			continue;
