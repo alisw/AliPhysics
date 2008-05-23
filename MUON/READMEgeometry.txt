@@ -161,10 +161,15 @@ afterwards.
 The macro MUONCheckMisAligner.C performs the misalignment on an existing muon 
 arm geometry based on the standard definition of the detector elements.
 
+To be run from aliroot:
+<pre>
+AliMpCDB::LoadMpSegmentation2();
+.x MUONCheckMisAligner.C
+</pre>
+
 It uses AliMUONGeometryAligner : 
 - Creates a new AliMUONGeometryTransformer and AliMUONGeometryAligner
-- Reads the transformations in from the transform.dat file (make sure that
-this file is the _standard_ one by comparing it to the one in CVS)
+- Loads the geometry from the specified geometry file (default is geometry.root)
 - Creates a second AliMUONGeometryTransformer by misaligning the existing 
 one using AliMUONAligner::MisAlign
 

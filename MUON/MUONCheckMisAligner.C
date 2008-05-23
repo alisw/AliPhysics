@@ -25,8 +25,7 @@
 ///
 /// It uses AliMUONGeometryMisAligner : 
 /// - Creates a new AliMUONGeometryTransformer and AliMUONGeometryMisAligner
-/// - Reads the transformations in from the transform.dat file (make sure that
-///   this file is the _standard_ one by comparing it to the one in CVS)
+/// - Loads the geometry from the specified geometry file (default is geometry.root)
 /// - Creates a second AliMUONGeometryTransformer by misaligning the existing 
 ///   one using AliMUONGeometryMisAligner::MisAlign
 /// - User has to specify the magnitude of the alignments, in the Cartesian 
@@ -99,9 +98,10 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
      *const_cast<TClonesArray*>(newTransform->GetMisAlignmentData()));
   // Save new geometry file
   gGeoManager->Export("geometry2.root");
-  
+
   // Extract new transformations
   AliMUONGeometryTransformer* transform3 = new AliMUONGeometryTransformer();
+  gGeoManager->UnlockGeometry();
   transform3->LoadGeometryData("geometry2.root");
   transform3->WriteTransformations("transform3.dat");
                // Check that transform3.dat is equal to transform2.dat
@@ -113,12 +113,12 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
   sLocCDB += nameCDB;
   // CDB manager
   AliCDBManager* cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage(sLocCDB.Data());
-  
+  cdbManager->SetSpecificStorage("MUON/Align/Data",sLocCDB.Data());
+
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON alignment objects with residual misalignment");
-  AliCDBId id("MUON/Align/Data", 0, 0); 
+  AliCDBId id("MUON/Align/Data", 0, AliCDBRunRange::Infinity());
   cdbManager->Put(const_cast<TClonesArray*>(array), id, cdbData);
 
   // To run simulation with misaligned geometry, you have to set
