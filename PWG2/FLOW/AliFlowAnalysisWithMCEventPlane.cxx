@@ -42,6 +42,8 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
   //-----------------------------------------------------------------------
  
  AliFlowAnalysisWithMCEventPlane::AliFlowAnalysisWithMCEventPlane():
+   fQ(NULL),
+   fQsum(NULL),
    fQ2sum(0),
    fEventNumber(0),
    fMult(0),
@@ -58,8 +60,11 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
 {
 
   // Constructor.
-  fQ.Set(0.,0.);           // flow vector
-  fQsum.Set(0.,0.);        // flow vector sum
+  //  fQ.Set(0.,0.);           // flow vector
+  //  fQsum.Set(0.,0.);        // flow vector sum
+
+  fQ = new AliFlowVector;           // flow vector
+  fQsum = new TVector2;        // flow vector sum
 }
 
  
@@ -69,7 +74,8 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
  AliFlowAnalysisWithMCEventPlane::~AliFlowAnalysisWithMCEventPlane() 
  {
    //destructor
-   
+   delete fQ;
+   delete fQsum;
  }
  
 
@@ -113,12 +119,12 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t
     fCommonHists->FillControlHistograms(anEvent);
 
     //get the Q vector from the FlowEvent
-    fQ = anEvent->GetQ(); 
+    *fQ = anEvent->GetQ(); 
     //cout<<"fQ.Mod() = " << fQ.Mod() << endl;
     //for chi calculation:
-    fQsum += fQ;
+    *fQsum += *fQ;
     //cout<<"fQsum.Mod() = "<<fQsum.Mod()<<endl;
-    fQ2sum += fQ.Mod2();
+    fQ2sum += fQ->Mod2();
     cout<<"fQ2sum = "<<fQ2sum<<endl;
         
     fHistRP->Fill(fRP);   

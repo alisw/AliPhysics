@@ -40,10 +40,10 @@ class AliFlowAnalysisWithLeeYangZeros {
    virtual  ~AliFlowAnalysisWithLeeYangZeros();                                   //destructor
  
    Bool_t    Init();                             //defines variables and histograms
-   Bool_t    Make(AliFlowEventSimple* fEvent);    //calculates variables and fills histograms
+   Bool_t    Make(AliFlowEventSimple* anEvent);    //calculates variables and fills histograms
    Bool_t    Finish();                           //saves histograms
 
-   Double_t  GetQtheta(TVector2 fQ, Double_t fTheta);
+   Double_t  GetQtheta(AliFlowVector myQ, Double_t fTheta);
 
    void      SetFirstRun(Bool_t kt)              { this->fFirstRun = kt ; }
    Bool_t    GetFirstRun() const                 { return this->fFirstRun ; }
@@ -70,19 +70,21 @@ class AliFlowAnalysisWithLeeYangZeros {
   AliFlowAnalysisWithLeeYangZeros(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);
    AliFlowAnalysisWithLeeYangZeros& operator=(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);
 
-   Bool_t   MakeControlHistograms(AliFlowEventSimple* fEvent); 
-   Bool_t   FillFromFlowEvent(AliFlowEventSimple* fEvent);
-   Bool_t   SecondFillFromFlowEvent(AliFlowEventSimple* fEvent);
+   Bool_t   MakeControlHistograms(AliFlowEventSimple* anEvent); 
+   Bool_t   FillFromFlowEvent(AliFlowEventSimple* anEvent);
+   Bool_t   SecondFillFromFlowEvent(AliFlowEventSimple* anEvent);
 
-   TComplex GetGrtheta(AliFlowEventSimple* fEvent, Double_t fR, Double_t fTheta);
-   TComplex GetDiffFlow(AliFlowEventSimple* fEvent, Double_t fR, Int_t theta); 
+   TComplex GetGrtheta(AliFlowEventSimple* anEvent, Double_t fR, Double_t fTheta);
+   TComplex GetDiffFlow(AliFlowEventSimple* anEvent, Double_t fR, Int_t theta); 
    Double_t  GetR0(TH1D* fHistGtheta);
 
   
    
 #ifndef __CINT__
-   AliFlowVector  fQ;       // flow vector
-   TVector2  fQsum;         // flow vector sum
+   //   AliFlowVector  fQ;       // flow vector
+   //   TVector2  fQsum;         // flow vector sum
+   AliFlowVector*  fQ;       // flow vector
+   TVector2*  fQsum;         // flow vector sum
    Double_t  fQ2sum;        // flow vector sum squared
    Double_t  fQtheta;       // flow vector projected on ref. angle theta
    
@@ -93,7 +95,6 @@ class AliFlowAnalysisWithLeeYangZeros {
    Int_t     fNbins;        // number of bins
    Double_t  fTheta;        // ref. angle theta
    
-   AliFlowEventSimple*  fEvent ;     //!
    AliFlowTrackSimple*   fTrack ;      //!
   
    Bool_t       fFirstRun ;         //! flag for lyz analysis: true=first run over data, false=second run 

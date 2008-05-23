@@ -52,25 +52,27 @@ class AliFlowAnalysisWithScalarProduct {
   AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& aAnalysis);
   AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& aAnalysis); 
    
-   AliFlowVector  fQ;       // flow vector
-   TVector2  fU;            // particle unit vector
+  //  AliFlowVector  fQ;       // flow vector
+  //   TVector2  fU;            // particle unit vector
+  AliFlowVector  *fQ;       // flow vector
+  TVector2  *fU;            // particle unit vector
    
-   Int_t     fEventNumber;  // event counter
+  Int_t     fEventNumber;  // event counter
          
-   AliFlowTrackSimple*   fTrack ;     //!
+  AliFlowTrackSimple*   fTrack ;     //!
      
-   Bool_t       fDebug ;            //! flag for lyz analysis: more print statements
+  Bool_t       fDebug ;            //! flag for lyz analysis: more print statements
 
-   TString      fHistFileName;      //!
-   TFile*       fHistFile;          //!
-      
-   TProfile*      fHistProUQ;              //!
+  TString      fHistFileName;      //!
+  TFile*       fHistFile;          //!
+  
+  TProfile*      fHistProUQ;              //!
 
-   AliFlowCommonHist* fCommonHists;              //!
-   //AliFlowCommonHistResults* fCommonHistsRes;    //!
+  AliFlowCommonHist* fCommonHists;              //!
+  //AliFlowCommonHistResults* fCommonHistsRes;    //!
 
-   ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
-     };
+  ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
+    };
  
-     
+
 #endif
