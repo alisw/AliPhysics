@@ -23,8 +23,8 @@ void clusters()
 
   AliTracker::SetFieldMap(magfield, kFALSE);
 
-  const char* detNames[] = { "ITS", "TPC", "TRD", "TOF" };
-  const Int_t detIds[]   = {   0,     1,     2,     3   };
+  const char* detNames[] = { "ITS", "TPC", "TRD", "TOF", "HMPID" };
+  const Int_t detIds[]   = {   0,     1,     2,     3,     5   };
   const Int_t detN       = sizeof(detNames)/sizeof(char*);
 
   AliReconstruction* reco = new AliReconstruction;
