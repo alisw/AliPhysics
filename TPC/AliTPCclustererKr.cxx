@@ -202,6 +202,7 @@ delete stream;
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TTreeStream.h"
 
 #include "AliTPCTransform.h"
 
@@ -222,7 +223,6 @@ ClassImp(AliTPCclustererKr)
 AliTPCclustererKr::AliTPCclustererKr()
   :TObject(),
   fRawData(kFALSE),
-  fRowCl(0),
   fInput(0),
   fOutput(0),
   fParam(0),
@@ -255,7 +255,6 @@ AliTPCclustererKr::AliTPCclustererKr()
 AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   :TObject(),
   fRawData(kFALSE),
-  fRowCl(0),
   fInput(0),
   fOutput(0),
   fParam(0),
@@ -286,7 +285,6 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fParam = param.fParam;
   fRecoParam = param.fRecoParam;
   fRawData = param.fRawData;
-  fRowCl  = param.fRowCl ;
   fInput  = param.fInput ;
   fOutput = param.fOutput;
   fDigarr = param.fDigarr;
@@ -319,7 +317,6 @@ AliTPCclustererKr & AliTPCclustererKr::operator = (const AliTPCclustererKr & par
   fParam = param.fParam;
   fRecoParam = param.fRecoParam;
   fRawData = param.fRawData;
-  fRowCl  = param.fRowCl ;
   fInput  = param.fInput ;
   fOutput = param.fOutput;
   fDigarr = param.fDigarr;
@@ -349,6 +346,7 @@ AliTPCclustererKr::~AliTPCclustererKr()
   //
   // destructor
   //
+  delete fOutput;
 }
 
 void AliTPCclustererKr::SetRecoParam(AliTPCRecoParam *recoParam)
@@ -382,17 +380,12 @@ void AliTPCclustererKr::SetInput(TTree * tree)
   }
 }
 
-void AliTPCclustererKr::SetOutput(TTree * tree) 
+void AliTPCclustererKr::SetOutput(TTree * /*tree*/) 
 {
   //
-  // set output
+  //dummy
   //
-  fOutput= tree;  
-  AliTPCClustersRow clrow;
-  AliTPCClustersRow *pclrow=&clrow;  
-  clrow.SetClass("AliTPCclusterKr");
-  clrow.SetArray(1); // to make Clones array
-  fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000,200);    
+  fOutput = new TTreeSRedirector("Krypton.root");
 }
 
 ////____________________________________________________________________________
@@ -443,12 +436,6 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
   const Int_t kNOS = fParam->GetNOuterSector();//number of outer sectors
   const Int_t kNS = kNIS + kNOS;//all sectors
 
-//  //set cluster finder parameters
-//  SetZeroSup(fParam->GetZeroSup());//zero suppression parameter
-//  SetFirstBin(60);
-//  SetLastBin(950);
-//  SetMaxNoiseAbs(2);
-//  SetMaxNoiseSigma(3);
 
   //crate TPC view
   AliTPCDigitsArray *digarr=new AliTPCDigitsArray(kFALSE);//data not sim
@@ -536,6 +523,7 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
       }
 
       //check row consistency
+      if (iRow < 0 ) continue;
       if (iRow < 0 || iRow >= nRows){
 	AliError(Form("Pad-row index (%d) outside the range (%d -> %d) !",
 		      iRow, 0, nRows -1));
@@ -638,7 +626,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	  bool ifMaximum=false;//flag - check if it could be maximum
 
 	  for(Short_t iTimeBin=0;iTimeBin<kNTime;iTimeBin++){
-	    Short_t adc = digrow->GetDigitFast(iTimeBin,iPad);
+	    Short_t adc = digrow->GetDigitUnchecked(iTimeBin,iPad);
 	    if(adc<fMinAdc){//standard was 3
 	      if(ifMaximum){
 		if(iTimeBin-increaseBegin<fMinTimeBins){//at least 2 time bins
@@ -668,7 +656,6 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 						      increaseBegin,
 						      iTimeBin-1,
 						      sumAdc);
-		//maximaInSector.push_back(oneMaximum);
 		maximaInSector->AddLast(oneMaximum);
 		
 		timeBinMax=-1;
@@ -711,7 +698,6 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 						    increaseBegin,
 						    iTimeBin-1,
 						    sumAdc);
-	      //maximaInSector.push_back(oneMaximum);
 	      maximaInSector->AddLast(oneMaximum);
 		
 	      timeBinMax=-1;
@@ -731,7 +717,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
     }//end loop over rows
 
     //    cout<<"EF" <<maximaInSector->GetEntriesFast()<<" E "<<maximaInSector->GetEntries()<<" "<<maximaInSector->GetLast()<<endl;
-    maximaInSector->Compress();
+    //maximaInSector->Compress();
     // GetEntriesFast() - liczba wejsc w array of maxima
     //cout<<"EF" <<maximaInSector->GetEntriesFast()<<" E"<<maximaInSector->GetEntries()<<endl;
 
@@ -753,7 +739,8 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
     for(Int_t it1 = 0; it1 < maximaInSector->GetEntriesFast(); ++it1 ) {
 
       AliPadMax *mp1=(AliPadMax *)maximaInSector->At(it1);
-      AliTPCclusterKr *tmp=new AliTPCclusterKr();
+      if (!mp1) continue;
+      AliTPCclusterKr clusterKr;
       
       Short_t nUsedPads=1;
       Int_t clusterValue=0;
@@ -780,18 +767,17 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
       digrowTmp->ExpandBuffer(); //decrunch
 
       for(Short_t itb=(mp1)->GetBegin(); itb<((mp1)->GetEnd())+1; itb++){
-	Short_t adcTmp = digrowTmp->GetDigitFast(itb,(mp1)->GetPad());
+	Short_t adcTmp = digrowTmp->GetDigitUnchecked(itb,(mp1)->GetPad());
 	AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp1)->GetPad(),(mp1)->GetRow(),(mp1)->GetX(),(mp1)->GetY(),(mp1)->GetT());
-	//tmp->fCluster.push_back(vtpr);
-	tmp->AddDigitToCluster(vtpr);
+	clusterKr.AddDigitToCluster(vtpr);
       }
-      tmp->SetCenter();//set centr of the cluster
+      clusterKr.SetCenter();//set centr of the cluster
       
       //maximaInSector.erase(mp1);
       //mp1--;
       //cout<<maximaInSector->GetEntriesFast()<<" ";
-      maximaInSector->RemoveAt(it1);
-      maximaInSector->Compress();
+      delete maximaInSector->RemoveAt(it1);
+      //maximaInSector->Compress();
       it1--;
       //     cout<<maximaInSector->GetEntriesFast()<<" "<<endl;
 
@@ -799,13 +785,14 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 //	   mp2 != maximaInSector.end(); ++mp2 ) {
       for(Int_t it2 = 0; it2 < maximaInSector->GetEntriesFast(); ++it2 ) {
 	AliPadMax *mp2=(AliPadMax *)maximaInSector->At(it2);
+	if (!mp2) continue;
 
 //	if(abs(maxRow - (*mp2)->GetRow()) < fMaxRowRange && //3
 //         abs(maxPad - (*mp2)->GetPad()) < fMaxPadRange && //4
 	  
-	if(TMath::Abs(tmp->GetCenterX() - (mp2)->GetX()) < fMaxPadRangeCm &&
-	   TMath::Abs(tmp->GetCenterY() - (mp2)->GetY()) < fMaxRowRangeCm &&
-	   TMath::Abs(tmp->GetCenterT() - (mp2)->GetT()) < fMaxTimeRange){//7
+	if(TMath::Abs(clusterKr.GetCenterX() - (mp2)->GetX()) < fMaxPadRangeCm &&
+	   TMath::Abs(clusterKr.GetCenterY() - (mp2)->GetY()) < fMaxRowRangeCm &&
+	   TMath::Abs(clusterKr.GetCenterT() - (mp2)->GetT()) < fMaxTimeRange){//7
 	  
 	  clusterValue+=(mp2)->GetSum();
 
@@ -821,13 +808,12 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	  digrowTmp1->ExpandBuffer(); //decrunch
 	  
 	  for(Short_t itb=(mp2)->GetBegin(); itb<(mp2)->GetEnd()+1; itb++){
-	    Short_t adcTmp = digrowTmp1->GetDigitFast(itb,(mp2)->GetPad());
+	    Short_t adcTmp = digrowTmp1->GetDigitUnchecked(itb,(mp2)->GetPad());
 	    AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp2)->GetPad(),(mp2)->GetRow(),(mp2)->GetX(),(mp2)->GetY(),(mp2)->GetT());
-	    //tmp->fCluster.push_back(vtpr);
-	    tmp->AddDigitToCluster(vtpr);
+	    clusterKr.AddDigitToCluster(vtpr);
 	  }
 	  
-	  tmp->SetCenter();//set center of the cluster
+	  clusterKr.SetCenter();//set center of the cluster
 
 	  //which one is bigger
 	  if( (mp2)->GetAdc() > maxDig ){
@@ -851,8 +837,8 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	      maxT        =(mp2)->GetT() ;
 	    }
 	  }
-	  maximaInSector->RemoveAt(it2);
-	  maximaInSector->Compress();
+	  delete maximaInSector->RemoveAt(it2);
+	  //maximaInSector->Compress();
 	  it2--;
 
 	  //maximaInSector.erase(mp2);
@@ -860,49 +846,42 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	}
       }//inside loop
 
-      tmp->SetSize();
+      clusterKr.SetSize();
       //through out ADC=6,7 on 1 pad, 2 tb and ADC=12 on 2 pads,2 tb
-      //if(nUsedPads==1 && clusterValue/tmp->fCluster.size()<3.6)continue;
-      //if(nUsedPads==2 && clusterValue/tmp->fCluster.size()<3.1)continue;
+      //if(nUsedPads==1 && clusterValue/clusterKr.fCluster.size()<3.6)continue;
+      //if(nUsedPads==2 && clusterValue/clusterKr.fCluster.size()<3.1)continue;
 
       //through out clusters on the edge and noise
-      //if(clusterValue/tmp->fCluster.size()<fValueToSize)continue;
-      if(clusterValue/(tmp->GetSize())<fValueToSize)continue;
+      //if(clusterValue/clusterKr.fCluster.size()<fValueToSize)continue;
+      if(clusterValue/(clusterKr.GetSize())<fValueToSize)continue;
 
-      tmp->SetADCcluster(clusterValue);
-      tmp->SetNPads(nUsedPads);
-      tmp->SetMax(AliTPCvtpr(maxDig,maxTimeBin,maxPad,maxRow,maxX,maxY,maxT));
-      tmp->SetSec(iSec);
-      tmp->SetSize();
+      clusterKr.SetADCcluster(clusterValue);
+      clusterKr.SetNPads(nUsedPads);
+      clusterKr.SetMax(AliTPCvtpr(maxDig,maxTimeBin,maxPad,maxRow,maxX,maxY,maxT));
+      clusterKr.SetSec(iSec);
+      clusterKr.SetSize();
 
       nUsedRows.sort();
       nUsedRows.unique();
-      tmp->SetNRows(nUsedRows.size());
-      tmp->SetCenter();
+      clusterKr.SetNRows(nUsedRows.size());
+      clusterKr.SetCenter();
 
       clusterCounter++;
       
 
       //save each cluster into file
-
-      AliTPCClustersRow *clrow= new AliTPCClustersRow();
-      fRowCl=clrow;
-      clrow->SetClass("AliTPCclusterKr");
-      clrow->SetArray(1);
-      fOutput->GetBranch("Segment")->SetAddress(&clrow);
-
-      Int_t tmpCluster=0;
-      TClonesArray * arr = fRowCl->GetArray();
-      AliTPCclusterKr * cl = new ((*arr)[tmpCluster]) AliTPCclusterKr(*tmp);
-      
-      fOutput->Fill(); 
-      delete clrow;
+      if (fOutput){
+	(*fOutput)<<"Kr"<<
+	  "Cl.="<<&clusterKr<<
+	  "\n";
+      }
       //end of save each cluster into file adc.root
     }//outer loop
-
+    maximaInSector->SetOwner(kTRUE);
+    maximaInSector->Delete();
+    delete maximaInSector;
   }//end sector for
   cout<<"Number of clusters in event: "<<clusterCounter<<endl;
-
   return 0;
 }
 

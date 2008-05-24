@@ -103,7 +103,11 @@ AliTPCclusterKr::~AliTPCclusterKr()
   //
   // destructor
   //
-  if(fCluster)delete fCluster;
+  if(fCluster) {
+    fCluster->SetOwner(kTRUE);
+    fCluster->Delete();
+    delete fCluster;
+  }
   fCluster=0;
 }
 

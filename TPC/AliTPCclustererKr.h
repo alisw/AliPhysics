@@ -37,7 +37,7 @@ class AliTPCRecoParam;
 class AliTPCReconstructor;
 class AliRawReader;
 class AliTPCCalROC;
-
+class TTreeSRedirector;
 //_____________________________________________________________________________
 class AliTPCclustererKr: public TObject{
 public:
@@ -115,10 +115,10 @@ public:
 
 private:
   Bool_t fRawData; //flag =0 for MC =1 for real data
-  AliTPCClustersRow * fRowCl;  //! current cluster row (used in rootuple fill)
 
   TTree * fInput;   //!input  tree with digits - object not owner
-  TTree * fOutput;   //!output tree with clusters - object not owner
+  TTreeSRedirector * fOutput;   //!output tree with clusters - object not owner
+
   AliTPCParam * fParam;//!TPC parameters
   AliTPCDigitsArray *fDigarr;//! pointer to current array if digits
 
