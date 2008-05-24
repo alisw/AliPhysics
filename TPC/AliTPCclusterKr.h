@@ -38,7 +38,7 @@ public:
   //void AddDigitToCluster(AliTPCvtpr *q){fCluster.push_back(q);}
   virtual void AddDigitToCluster(AliTPCvtpr *q){
     fCluster->AddLast(q);
-    fCluster->Compress();
+    //fCluster->Compress();
   }
 
   AliTPCvtpr GetMax() const {return fMax;}

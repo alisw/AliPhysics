@@ -30,6 +30,20 @@ The output is created for each processed file in root file named adc.root.
 For each data subsample the same named file is created. So be careful 
 do not overwrite them. 
 
+Additional selection criteria to select the GOLD cluster
+Example:
+// open  file with clusters
+TFile f("Krypton.root");
+TTree * tree = (TTree*)f.Get("Kr")
+TCut cutR0("cutR0","fADCcluster/fSize<100");        // adjust it according v seetings - 
+TCut cutR1("cutR1","fADCcluster/fSize>7");          // cosmic tracks and noise removal
+TCut cutR2("cutR2","fMax.fAdc/fADCcluster<0.2");    // digital noise removal
+TCut cutR3("cutR3","fMax.fAdc/fADCcluster>0.01");   // noise removal
+TCut cutS1("cutS1","fSize<200");    // adjust it according v seetings - cosmic tracks
+TCut cutAll = cutR0+cutR1+cutR2+cutR3+cutS1;
+This values are typical values to be applied in selectors
+
+
 *
 **** MC ****
 *
@@ -475,7 +489,7 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
       isAltro=kTRUE;
       // Allocate memory for rows in sector (pads(depends on row) x timebins)
       for(Int_t iRow = 0; iRow < nRows; iRow++) {
-	digarr->CreateRow(iSec,iRow);
+	digarr->CreateRow(iSec,iRow); 
       }//end loop over rows
     }
     rawReader->Reset();
@@ -485,15 +499,16 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
     // Begin loop over altro data
     //
     while (input.Next()) {
-
+      
       //check sector consistency
       if (input.GetSector() != iSec)
 	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",iSec,input.GetSector()));
       
-      Short_t iRow = input.GetRow();
-      Short_t iPad = input.GetPad();
-      Short_t iTimeBin = input.GetTime();
+      Int_t iRow = input.GetRow();
+      Int_t iPad = input.GetPad();
+      Int_t iTimeBin = input.GetTime();
 
+      //
       if(fDebugLevel==72){
 	fHistoRow->Fill(iRow);
 	fHistoPad->Fill(iPad);
@@ -531,7 +546,7 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
       }
 
       //check pad consistency
-      if (iPad < 0 || iPad >= (Short_t)(roc->GetNPads(iSec,iRow))) {
+      if (iPad < 0 || iPad >= (Int_t)(roc->GetNPads(iSec,iRow))) {
 	AliError(Form("Pad index (%d) outside the range (%d -> %d) !",
 		      iPad, 0, roc->GetNPads(iSec,iRow) ));
 	continue;
@@ -564,9 +579,7 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
 	digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
 	continue;
       }
-
-      digarr->GetRow(iSec,iRow)->SetDigitFast(signal,iTimeBin,iPad);
-
+      digarr->GetRow(iSec,iRow)->SetDigitFast(signal,iTimeBin,iPad);      
     }//end of loop over altro data
   }//end of loop over sectors
   
@@ -580,21 +593,14 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
 ////____________________________________________________________________________
 Int_t AliTPCclustererKr::FindClusterKrIO()
 {
-  //fParam and  fDigarr must be set to run this method
 
-//  //set parameters 
-//  SetMinAdc(3);//usually is 3 
-//  SetMinTimeBins(2);//should be 2 - the best result of shape in MC
-////  SetMaxPadRange(4);
-////  SetMaxRowRange(3);
-//  SetMaxTimeRange(7);
-//  SetValueToSize(3.5);//3.5
-//  SetMaxPadRangeCm(2.5);
-//  SetMaxRowRangeCm(3.5);
+  //
+  //fParam and  fDigarr must be set to run this method
+  //
 
   Int_t clusterCounter=0;
-  const Short_t nTotalSector=fParam->GetNSector();//number of sectors
-  for(Short_t iSec=0; iSec<nTotalSector; ++iSec){
+  const Int_t nTotalSector=fParam->GetNSector();//number of sectors
+  for(Int_t iSec=0; iSec<nTotalSector; ++iSec){
     
     //vector of maxima for each sector
     //std::vector<AliPadMax*> maximaInSector;
@@ -604,8 +610,8 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
     //  looking for the maxima on the pad
     //
 
-    const Short_t kNRows=fParam->GetNRow(iSec);//number of rows in sector
-    for(Short_t iRow=0; iRow<kNRows; ++iRow){
+    const Int_t kNRows=fParam->GetNRow(iSec);//number of rows in sector
+    for(Int_t iRow=0; iRow<kNRows; ++iRow){
       AliSimDigits *digrow;
       if(fRawData){
 	digrow = (AliSimDigits*)fDigarr->GetRow(iSec,iRow);//real data
@@ -614,19 +620,24 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
       }
       if(digrow){//if pointer exist
 	digrow->ExpandBuffer(); //decrunch
-	const Short_t kNPads = digrow->GetNCols();  // number of pads
-	const Short_t kNTime = digrow->GetNRows(); // number of timebins
-	for(Short_t iPad=0;iPad<kNPads;iPad++){
+	const Int_t kNPads = digrow->GetNCols();  // number of pads
+	const Int_t kNTime = digrow->GetNRows(); // number of timebins
+	for(Int_t iPad=0;iPad<kNPads;iPad++){
 	  
-	  Short_t timeBinMax=-1;//timebin of maximum 
-	  Short_t valueMaximum=-1;//value of maximum in adc
-	  Short_t increaseBegin=-1;//timebin when increase starts
-	  Short_t sumAdc=0;//sum of adc on the pad in maximum surrounding
+	  Int_t timeBinMax=-1;//timebin of maximum 
+	  Int_t valueMaximum=-1;//value of maximum in adc
+	  Int_t increaseBegin=-1;//timebin when increase starts
+	  Int_t sumAdc=0;//sum of adc on the pad in maximum surrounding
 	  bool ifIncreaseBegin=true;//flag - check if increasing started
 	  bool ifMaximum=false;//flag - check if it could be maximum
-
-	  for(Short_t iTimeBin=0;iTimeBin<kNTime;iTimeBin++){
-	    Short_t adc = digrow->GetDigitUnchecked(iTimeBin,iPad);
+	  Short_t* val = digrow->GetDigitsColumn(iPad);
+	  for(Int_t iTimeBin=1;iTimeBin<kNTime-1;iTimeBin++){
+	    if (!ifMaximum)  {
+	      if (val[iTimeBin]==-1) break;   // 0 until the end
+	      for( ; iTimeBin<kNTime-2&&val[iTimeBin]<fMinAdc ;iTimeBin++);
+	    }
+	    //
+	    Short_t adc = val[iTimeBin];
 	    if(adc<fMinAdc){//standard was 3
 	      if(ifMaximum){
 		if(iTimeBin-increaseBegin<fMinTimeBins){//at least 2 time bins
@@ -645,7 +656,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 		Int_t i[]={iSec};
 		AliTPCTransform trafo;
 		trafo.Transform(x,i,0,1);
-
+		
 		AliPadMax *oneMaximum = new AliPadMax(AliTPCvtpr(valueMaximum,
 								 timeBinMax,
 								 iPad,
@@ -716,167 +727,8 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
       }//end if poiner exists
     }//end loop over rows
 
-    //    cout<<"EF" <<maximaInSector->GetEntriesFast()<<" E "<<maximaInSector->GetEntries()<<" "<<maximaInSector->GetLast()<<endl;
-    //maximaInSector->Compress();
-    // GetEntriesFast() - liczba wejsc w array of maxima
-    //cout<<"EF" <<maximaInSector->GetEntriesFast()<<" E"<<maximaInSector->GetEntries()<<endl;
-
+    MakeClusters(maximaInSector,iSec,clusterCounter);
     //
-    // Making clusters
-    //
-
-    Short_t maxDig=0;
-    Short_t maxSumAdc=0;
-    Short_t maxTimeBin=0;
-    Short_t maxPad=0;
-    Short_t maxRow=0;
-    Double_t maxX=0;
-    Double_t maxY=0;
-    Double_t maxT=0;
-
-//    for( std::vector<AliPadMax*>::iterator mp1  = maximaInSector.begin();
-//	 mp1 != maximaInSector.end(); ++mp1 ) {
-    for(Int_t it1 = 0; it1 < maximaInSector->GetEntriesFast(); ++it1 ) {
-
-      AliPadMax *mp1=(AliPadMax *)maximaInSector->At(it1);
-      if (!mp1) continue;
-      AliTPCclusterKr clusterKr;
-      
-      Short_t nUsedPads=1;
-      Int_t clusterValue=0;
-      clusterValue+=(mp1)->GetSum();
-      list<Short_t> nUsedRows;
-      nUsedRows.push_back((mp1)->GetRow());
-
-      maxDig      =(mp1)->GetAdc() ;
-      maxSumAdc   =(mp1)->GetSum() ;
-      maxTimeBin  =(mp1)->GetTime();
-      maxPad      =(mp1)->GetPad() ;
-      maxRow      =(mp1)->GetRow() ;
-      maxX        =(mp1)->GetX();
-      maxY        =(mp1)->GetY();
-      maxT        =(mp1)->GetT();
-
-      AliSimDigits *digrowTmp;
-      if(fRawData){
-	digrowTmp = (AliSimDigits*)fDigarr->GetRow(iSec,(mp1)->GetRow());
-      }else{
-	digrowTmp = (AliSimDigits*)fDigarr->LoadRow(iSec,(mp1)->GetRow());
-      }
-
-      digrowTmp->ExpandBuffer(); //decrunch
-
-      for(Short_t itb=(mp1)->GetBegin(); itb<((mp1)->GetEnd())+1; itb++){
-	Short_t adcTmp = digrowTmp->GetDigitUnchecked(itb,(mp1)->GetPad());
-	AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp1)->GetPad(),(mp1)->GetRow(),(mp1)->GetX(),(mp1)->GetY(),(mp1)->GetT());
-	clusterKr.AddDigitToCluster(vtpr);
-      }
-      clusterKr.SetCenter();//set centr of the cluster
-      
-      //maximaInSector.erase(mp1);
-      //mp1--;
-      //cout<<maximaInSector->GetEntriesFast()<<" ";
-      delete maximaInSector->RemoveAt(it1);
-      //maximaInSector->Compress();
-      it1--;
-      //     cout<<maximaInSector->GetEntriesFast()<<" "<<endl;
-
-//      for( std::vector<AliPadMax*>::iterator mp2  = maximaInSector.begin();
-//	   mp2 != maximaInSector.end(); ++mp2 ) {
-      for(Int_t it2 = 0; it2 < maximaInSector->GetEntriesFast(); ++it2 ) {
-	AliPadMax *mp2=(AliPadMax *)maximaInSector->At(it2);
-	if (!mp2) continue;
-
-//	if(abs(maxRow - (*mp2)->GetRow()) < fMaxRowRange && //3
-//         abs(maxPad - (*mp2)->GetPad()) < fMaxPadRange && //4
-	  
-	if(TMath::Abs(clusterKr.GetCenterX() - (mp2)->GetX()) < fMaxPadRangeCm &&
-	   TMath::Abs(clusterKr.GetCenterY() - (mp2)->GetY()) < fMaxRowRangeCm &&
-	   TMath::Abs(clusterKr.GetCenterT() - (mp2)->GetT()) < fMaxTimeRange){//7
-	  
-	  clusterValue+=(mp2)->GetSum();
-
-	  nUsedPads++;
-	  nUsedRows.push_back((mp2)->GetRow());
-
-	  AliSimDigits *digrowTmp1;
-	  if(fRawData){
-	    digrowTmp1 = (AliSimDigits*)fDigarr->GetRow(iSec,(mp2)->GetRow());
-	  }else{
-	    digrowTmp1 = (AliSimDigits*)fDigarr->LoadRow(iSec,(mp2)->GetRow());
-	  }
-	  digrowTmp1->ExpandBuffer(); //decrunch
-	  
-	  for(Short_t itb=(mp2)->GetBegin(); itb<(mp2)->GetEnd()+1; itb++){
-	    Short_t adcTmp = digrowTmp1->GetDigitUnchecked(itb,(mp2)->GetPad());
-	    AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp2)->GetPad(),(mp2)->GetRow(),(mp2)->GetX(),(mp2)->GetY(),(mp2)->GetT());
-	    clusterKr.AddDigitToCluster(vtpr);
-	  }
-	  
-	  clusterKr.SetCenter();//set center of the cluster
-
-	  //which one is bigger
-	  if( (mp2)->GetAdc() > maxDig ){
-	    maxDig      =(mp2)->GetAdc() ;
-	    maxSumAdc   =(mp2)->GetSum() ;
-	    maxTimeBin  =(mp2)->GetTime();
-	    maxPad      =(mp2)->GetPad() ;
-	    maxRow      =(mp2)->GetRow() ;
-	    maxX        =(mp2)->GetX() ;
-	    maxY        =(mp2)->GetY() ;
-	    maxT        =(mp2)->GetT() ;
-	  } else if ( (mp2)->GetAdc() == maxDig ){
-	    if( (mp2)->GetSum() > maxSumAdc){
-	      maxDig      =(mp2)->GetAdc() ;
-	      maxSumAdc   =(mp2)->GetSum() ;
-	      maxTimeBin  =(mp2)->GetTime();
-	      maxPad      =(mp2)->GetPad() ;
-	      maxRow      =(mp2)->GetRow() ;
-	      maxX        =(mp2)->GetX() ;
-	      maxY        =(mp2)->GetY() ;
-	      maxT        =(mp2)->GetT() ;
-	    }
-	  }
-	  delete maximaInSector->RemoveAt(it2);
-	  //maximaInSector->Compress();
-	  it2--;
-
-	  //maximaInSector.erase(mp2);
-	  //mp2--;
-	}
-      }//inside loop
-
-      clusterKr.SetSize();
-      //through out ADC=6,7 on 1 pad, 2 tb and ADC=12 on 2 pads,2 tb
-      //if(nUsedPads==1 && clusterValue/clusterKr.fCluster.size()<3.6)continue;
-      //if(nUsedPads==2 && clusterValue/clusterKr.fCluster.size()<3.1)continue;
-
-      //through out clusters on the edge and noise
-      //if(clusterValue/clusterKr.fCluster.size()<fValueToSize)continue;
-      if(clusterValue/(clusterKr.GetSize())<fValueToSize)continue;
-
-      clusterKr.SetADCcluster(clusterValue);
-      clusterKr.SetNPads(nUsedPads);
-      clusterKr.SetMax(AliTPCvtpr(maxDig,maxTimeBin,maxPad,maxRow,maxX,maxY,maxT));
-      clusterKr.SetSec(iSec);
-      clusterKr.SetSize();
-
-      nUsedRows.sort();
-      nUsedRows.unique();
-      clusterKr.SetNRows(nUsedRows.size());
-      clusterKr.SetCenter();
-
-      clusterCounter++;
-      
-
-      //save each cluster into file
-      if (fOutput){
-	(*fOutput)<<"Kr"<<
-	  "Cl.="<<&clusterKr<<
-	  "\n";
-      }
-      //end of save each cluster into file adc.root
-    }//outer loop
     maximaInSector->SetOwner(kTRUE);
     maximaInSector->Delete();
     delete maximaInSector;
@@ -885,17 +737,154 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
   return 0;
 }
 
+void AliTPCclustererKr::MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int_t &clusterCounter){
+  //
+  // Make clusters
+  //
+
+  Int_t maxDig=0;
+  Int_t maxSumAdc=0;
+  Int_t maxTimeBin=0;
+  Int_t maxPad=0;
+  Int_t maxRow=0;
+  Double_t maxX=0;
+  Double_t maxY=0;
+  Double_t maxT=0;
+  Int_t entriesArr = maximaInSector->GetEntriesFast();
+  for(Int_t it1 = 0; it1 < entriesArr; ++it1 ) {
+    
+    AliPadMax *mp1=(AliPadMax *)maximaInSector->UncheckedAt(it1);
+    if (!mp1) continue;
+    AliTPCclusterKr clusterKr;
+    
+    Int_t nUsedPads=1;
+    Int_t clusterValue=0;
+    clusterValue+=(mp1)->GetSum();
+    list<Int_t> nUsedRows;
+    nUsedRows.push_back((mp1)->GetRow());
+    
+    maxDig      =(mp1)->GetAdc() ;
+    maxSumAdc   =(mp1)->GetSum() ;
+    maxTimeBin  =(mp1)->GetTime();
+    maxPad      =(mp1)->GetPad() ;
+    maxRow      =(mp1)->GetRow() ;
+    maxX        =(mp1)->GetX();
+    maxY        =(mp1)->GetY();
+    maxT        =(mp1)->GetT();
+    
+    AliSimDigits *digrowTmp;
+    if(fRawData){
+      digrowTmp = (AliSimDigits*)fDigarr->GetRow(iSec,(mp1)->GetRow());
+    }else{
+      digrowTmp = (AliSimDigits*)fDigarr->LoadRow(iSec,(mp1)->GetRow());
+    }
+    
+    digrowTmp->ExpandBuffer(); //decrunch
+    
+    for(Int_t itb=(mp1)->GetBegin(); itb<((mp1)->GetEnd())+1; itb++){
+      Int_t adcTmp = digrowTmp->GetDigitUnchecked(itb,(mp1)->GetPad());
+      AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp1)->GetPad(),(mp1)->GetRow(),(mp1)->GetX(),(mp1)->GetY(),(mp1)->GetT());
+      clusterKr.AddDigitToCluster(vtpr);
+    }
+    clusterKr.SetCenter();//set centr of the cluster
+    
+    for(Int_t it2 = it1+1; it2 < entriesArr; ++it2 ) {
+      AliPadMax *mp2=(AliPadMax *)maximaInSector->UncheckedAt(it2);
+      if (!mp2) continue;
+      if (TMath::Abs(clusterKr.GetCenterX() - (mp2)->GetX())>fMaxPadRangeCm) continue;
+      if (TMath::Abs(clusterKr.GetCenterY() - (mp2)->GetY()) > fMaxRowRangeCm) continue;      
+      if (TMath::Abs(clusterKr.GetCenterT() - (mp2)->GetT()) >fMaxTimeRange) continue;
+
+      {
+	clusterValue+=(mp2)->GetSum();
+	
+	nUsedPads++;
+	nUsedRows.push_back((mp2)->GetRow());
+	
+	AliSimDigits *digrowTmp1;
+	if(fRawData){
+	  digrowTmp1 = (AliSimDigits*)fDigarr->GetRow(iSec,(mp2)->GetRow());
+	}else{
+	  digrowTmp1 = (AliSimDigits*)fDigarr->LoadRow(iSec,(mp2)->GetRow());
+	}
+	digrowTmp1->ExpandBuffer(); //decrunch
+	
+	for(Int_t itb=(mp2)->GetBegin(); itb<(mp2)->GetEnd()+1; itb++){
+	  Int_t adcTmp = digrowTmp1->GetDigitUnchecked(itb,(mp2)->GetPad());
+	  AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp2)->GetPad(),(mp2)->GetRow(),(mp2)->GetX(),(mp2)->GetY(),(mp2)->GetT());
+	  clusterKr.AddDigitToCluster(vtpr);
+	}
+	
+	clusterKr.SetCenter();//set center of the cluster
+	
+	//which one is bigger
+	if( (mp2)->GetAdc() > maxDig ){
+	  maxDig      =(mp2)->GetAdc() ;
+	  maxSumAdc   =(mp2)->GetSum() ;
+	  maxTimeBin  =(mp2)->GetTime();
+	  maxPad      =(mp2)->GetPad() ;
+	  maxRow      =(mp2)->GetRow() ;
+	  maxX        =(mp2)->GetX() ;
+	  maxY        =(mp2)->GetY() ;
+	  maxT        =(mp2)->GetT() ;
+	} else if ( (mp2)->GetAdc() == maxDig ){
+	  if( (mp2)->GetSum() > maxSumAdc){
+	    maxDig      =(mp2)->GetAdc() ;
+	    maxSumAdc   =(mp2)->GetSum() ;
+	    maxTimeBin  =(mp2)->GetTime();
+	    maxPad      =(mp2)->GetPad() ;
+	    maxRow      =(mp2)->GetRow() ;
+	    maxX        =(mp2)->GetX() ;
+	    maxY        =(mp2)->GetY() ;
+	    maxT        =(mp2)->GetT() ;
+	  }
+	}
+	delete maximaInSector->RemoveAt(it2);
+      }
+    }//inside loop
+    delete maximaInSector->RemoveAt(it1);          
+    clusterKr.SetSize();
+    //through out clusters on the edge and noise
+    //if(clusterValue/clusterKr.fCluster.size()<fValueToSize)continue;
+    if(clusterValue/(clusterKr.GetSize())<fValueToSize)continue;
+    
+    clusterKr.SetADCcluster(clusterValue);
+    clusterKr.SetNPads(nUsedPads);
+    clusterKr.SetMax(AliTPCvtpr(maxDig,maxTimeBin,maxPad,maxRow,maxX,maxY,maxT));
+    clusterKr.SetSec(iSec);
+    clusterKr.SetSize();
+    
+    nUsedRows.sort();
+    nUsedRows.unique();
+    clusterKr.SetNRows(nUsedRows.size());
+    clusterKr.SetCenter();
+    
+    clusterCounter++;
+    
+    
+    //save each cluster into file
+    if (fOutput){
+      (*fOutput)<<"Kr"<<
+	"Cl.="<<&clusterKr<<
+	"\n";
+    }
+    //end of save each cluster into file adc.root
+  }//outer loop
+}
+
+
+
 ////____________________________________________________________________________
 
 
-void AliTPCclustererKr::GetXY(Short_t sec,Short_t row,Short_t pad,Double_t& xGlob,Double_t& yGlob){
+void AliTPCclustererKr::GetXY(Int_t sec,Int_t row,Int_t pad,Double_t& xGlob,Double_t& yGlob){
   //
   //gives global XY coordinate of the pad
   //
 
   Double_t yLocal = fParam->GetPadRowRadii(sec,row);//radius of row in sector in cm
 
-  Short_t padmax = fParam->GetNPads(sec,row);//number of pads in a given row
+  Int_t padmax = fParam->GetNPads(sec,row);//number of pads in a given row
   Float_t padXSize;
   if(sec<fParam->GetNInnerSector())padXSize=0.4;
   else padXSize=0.6;

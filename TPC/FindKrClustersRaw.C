@@ -1,6 +1,11 @@
+//
+
+Int_t FindKrClusterCheck(const char *fileName="data.root");
+
+
 Int_t FindKrClustersRaw(const char *fileName="data.root"){
 
-
+  
 
   //
   // remove Altro warnings
@@ -12,15 +17,15 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   //
   // Get calibration
   //
-  //  char *ocdbpath = gSystem->Getenv("OCDB_PATH");
-  char *ocdbpath ="local:///afs/cern.ch/alice/tpctest/OCDB";
+  char *ocdbpath = gSystem->Getenv("OCDB_PATH");
+  //char *ocdbpath ="local:///afs/cern.ch/alice/tpctest/OCDB";
   if (ocdbpath==0){
     ocdbpath="alien://folder=/alice/data/2007/LHC07w/OCDB/";
   }
   printf("OCDB PATH = %s\n",ocdbpath); 
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbpath);
-  man->SetRun(0);
+  man->SetRun(100000000);
 
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
@@ -42,15 +47,6 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
     TH2F *histoRowPad=new TH2F("histoRowPad","pads-vs-rows" ,150,0.,150.,100,0.,100.);
   }
 
-  AliRawReader *reader = new AliRawReaderRoot(fileName);
-  //AliRawReader *reader = new AliRawReaderDate(fileName);
-  reader->Reset();
-
-  TStopwatch timer;
-  timer.Start();
-
-  AliAltroRawStreamFast* stream = new AliAltroRawStreamFast(reader);
-  stream->SelectRawData("TPC");
 
   //one general output
   AliTPCclustererKr *clusters = new AliTPCclustererKr();
@@ -91,22 +87,26 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   clusters->SetValueToSize(3.5);//cut reduce peak at 0
 
 
+  AliRawReader *reader = new AliRawReaderRoot(fileName);
+  reader->Reset();
 
+  TStopwatch timer;
+  timer.Start();
+
+  AliAltroRawStreamFast* stream = new AliAltroRawStreamFast(reader);
+  stream->SelectRawData("TPC");
 
   Int_t evtnr=0;
   while (reader->NextEvent()) {
     //output for each event
-  //  AliTPCclustererKr *clusters = new AliTPCclustererKr();
-  //  clusters->SetOutput(mytree);
-  //  clusters->SetRecoParam(0);
-  //  clusters->SetParam(param);
 
-    // if(evtnr++>5) break;
+    if(evtnr>4) break;
     cout<<"Evt = "<<evtnr<<endl;
     clusters->FinderIO(reader);
     evtnr++;
-
+    AliSysInfo::AddStamp(Form("Event%d",evtnr),evtnr);
   }
+
 
   mytree->Print();//print rootuple summary 
   // Save all objects in this file
@@ -116,27 +116,50 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
 
   timer.Stop();
   timer.Print();
-
+  printf("Deleting clusterer\n");
+  delete clusters;
+  printf("Deleting stream\n");
   delete stream;
+  printf("Deleting raw reader\n");
+  delete reader;
 
+//   TCanvas *c2=new TCanvas("c2","title",800,800);
+//   c2->SetHighLightColor(2);
+//   c2->Range(-458.9552,-2948.238,3296.642,26856.6);
+//   c2->SetBorderSize(2);
+//   c2->SetLeftMargin(0.15);
+//   c2->SetRightMargin(0.06);
+//   c2->SetFrameFillColor(0);
 
-  TCanvas *c2=new TCanvas("c2","title",800,800);
-  c2->SetHighLightColor(2);
-  c2->Range(-458.9552,-2948.238,3296.642,26856.6);
-  c2->SetBorderSize(2);
-  c2->SetLeftMargin(0.15);
-  c2->SetRightMargin(0.06);
-  c2->SetFrameFillColor(0);
-
-  gStyle->SetOptStat(111111);
-  histoRow->Draw();
-  c2->Print("rows.ps");
-  histoPad->Draw();
-  c2->Print("pads.ps");
-  histoTime->Draw();
-  c2->Print("timebins.ps");
-  histoRowPad->Draw();
-  c2->Print("row-pad.ps");
+//   gStyle->SetOptStat(111111);
+//   histoRow->Draw();
+//   c2->Print("rows.ps");
+//   histoPad->Draw();
+//   c2->Print("pads.ps");
+//   histoTime->Draw();
+//   c2->Print("timebins.ps");
+//   histoRowPad->Draw();
+//   c2->Print("row-pad.ps");
 
   return 0;
+}
+
+
+Int_t FindKrClusterCheck(const char *fileName){
+  //
+  //
+  gSystem->Load("$ROOTSYS/lib/libGui.so");
+  gSystem->Load("$ROOTSYS/lib/libTree.so");
+  gSystem->Load("$MEMSTAT/libMemStat.so");
+  {
+    TMemStat memstat(1000000,100000,kTRUE);
+    AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);
+    FindKrClustersRaw(fileName); 
+  }
+  // the output memstat.root file
+  TMemStat draw("memstat.root");
+  // Print some information
+  // code info
+  draw.MakeReport(0,0);
+
 }

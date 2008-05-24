@@ -52,7 +52,7 @@ public:
   virtual Int_t FindClusterKrIO();//main routine for finding clusters
 
   //other
-  void GetXY(Short_t sec,Short_t row,Short_t pad,Double_t& xGlob,Double_t& yGlob);//give XY coordinate of the pad
+  void GetXY(Int_t sec,Int_t row,Int_t pad,Double_t& xGlob,Double_t& yGlob);//give XY coordinate of the pad
 
   virtual void SetInput(TTree * tree);  //set input tree with digits    
   virtual void SetOutput(TTree * tree); //set output tree with clusters
@@ -64,16 +64,16 @@ public:
 
   //setters for cluster finder parameters
   virtual void SetZeroSup(Int_t v){fZeroSup=v;}//set zero suppresion parameter
-  virtual void SetFirstBin(Short_t v){fFirstBin=v;}//set first considered timebin
-  virtual void SetLastBin(Short_t v){fLastBin=v;}//set last considered timebin
+  virtual void SetFirstBin(Int_t v){fFirstBin=v;}//set first considered timebin
+  virtual void SetLastBin(Int_t v){fLastBin=v;}//set last considered timebin
   virtual void SetMaxNoiseAbs(Float_t v){fMaxNoiseAbs=v;}//set maximal noise value
   virtual void SetMaxNoiseSigma(Float_t v){fMaxNoiseSigma=v;}//set maximal noise sigma
 
-  virtual void SetMinAdc(Short_t v){v<=0?fMinAdc=1:fMinAdc=v;}//set fMinAdc
-  virtual void SetMinTimeBins(Short_t v){fMinTimeBins=v;}//set fMinTimeBins
-//  virtual void SetMaxPadRange(Short_t v){fMaxPadRange=v;}//set fMaxPadRange
-//  virtual void SetMaxRowRange(Short_t v){fMaxRowRange=v;}//set fMaxRowRange
-  virtual void SetMaxTimeRange(Short_t v){fMaxTimeRange=v;}//set fMaxTimeRange
+  virtual void SetMinAdc(Int_t v){v<=0?fMinAdc=1:fMinAdc=v;}//set fMinAdc
+  virtual void SetMinTimeBins(Int_t v){fMinTimeBins=v;}//set fMinTimeBins
+//  virtual void SetMaxPadRange(Int_t v){fMaxPadRange=v;}//set fMaxPadRange
+//  virtual void SetMaxRowRange(Int_t v){fMaxRowRange=v;}//set fMaxRowRange
+  virtual void SetMaxTimeRange(Int_t v){fMaxTimeRange=v;}//set fMaxTimeRange
   virtual void SetValueToSize(Float_t v){fValueToSize=v;}//set fValueToSize
 
   virtual void SetMaxPadRangeCm(Double_t v){fMaxPadRangeCm=v;}//set fMaxPadRangeCm
@@ -92,16 +92,16 @@ public:
 
   //getters for cluster finder parameters
   Int_t GetZeroSup() const {return fZeroSup;}//get zero suppresion parameter
-  Short_t GetFirstBin() const {return fFirstBin;}//get first considered timebin
-  Short_t GetLastBin() const {return fLastBin;}//get last considered timebin
+  Int_t GetFirstBin() const {return fFirstBin;}//get first considered timebin
+  Int_t GetLastBin() const {return fLastBin;}//get last considered timebin
   Float_t GetMaxNoiseAbs() const {return fMaxNoiseAbs;}//get maximal noise value
   Float_t GetMaxNoiseSigma() const {return fMaxNoiseSigma;}//get maximal noise sigma
 
-  Short_t GetMinAdc() const {return fMinAdc;}//get fMinAdc
-  Short_t GetMinTimeBins() const {return fMinTimeBins;}//get fMinTimeBins
-//  Short_t GetMaxPadRange() const {return fMaxPadRange;}//get fMaxPadRange
-//  Short_t GetMaxRowRange() const {return fMaxRowRange;}//get fMaxRowRange
-  Short_t GetMaxTimeRange() const {return fMaxTimeRange;}//get fMaxTimeRange
+  Int_t GetMinAdc() const {return fMinAdc;}//get fMinAdc
+  Int_t GetMinTimeBins() const {return fMinTimeBins;}//get fMinTimeBins
+//  Int_t GetMaxPadRange() const {return fMaxPadRange;}//get fMaxPadRange
+//  Int_t GetMaxRowRange() const {return fMaxRowRange;}//get fMaxRowRange
+  Int_t GetMaxTimeRange() const {return fMaxTimeRange;}//get fMaxTimeRange
   Float_t GetValueToSize() const {return fValueToSize;}//get fValueToSize
 
   Double_t GetMaxPadRangeCm() const {return fMaxPadRangeCm;}//get fMaxPadRangeCm
@@ -114,6 +114,7 @@ public:
   TH2F * GetHistoRowPad(){return fHistoRowPad;}
 
 private:
+  void MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int_t &clusterCounter);
   Bool_t fRawData; //flag =0 for MC =1 for real data
 
   TTree * fInput;   //!input  tree with digits - object not owner
@@ -127,16 +128,16 @@ private:
 
   //cluster finder parameters
   Int_t fZeroSup;//zero suppresion parameter = 2 def.
-  Short_t fFirstBin;//first considered time bin used by cluster finder = 60 def.
-  Short_t fLastBin;//last considered time bin used by cluster finder = 950 def.
+  Int_t fFirstBin;//first considered time bin used by cluster finder = 60 def.
+  Int_t fLastBin;//last considered time bin used by cluster finder = 950 def.
   Float_t fMaxNoiseAbs;// maximal noise value on pad used in cluster finder = 2 def.
   Float_t fMaxNoiseSigma;// maximal noise sigma on pad used in cluster finder = 3 def.
 
-  Short_t fMinAdc;//minimal value of acd count in each timebin = 3 def.
-  Short_t fMinTimeBins;//minimal value of time bins one after each other = 2 def.
-//  Short_t fMaxPadRange;//maximal pad range from maximum = 4 def.
-//  Short_t fMaxRowRange;//maximal row range from maximum = 3 def.
-  Short_t fMaxTimeRange;//maximal time bin range from maximum = 7 def.
+  Int_t fMinAdc;//minimal value of acd count in each timebin = 3 def.
+  Int_t fMinTimeBins;//minimal value of time bins one after each other = 2 def.
+//  Int_t fMaxPadRange;//maximal pad range from maximum = 4 def.
+//  Int_t fMaxRowRange;//maximal row range from maximum = 3 def.
+  Int_t fMaxTimeRange;//maximal time bin range from maximum = 7 def.
   Float_t fValueToSize;//ratio cluster value to cluster size = 3.5 def.
 
   Double_t fMaxPadRangeCm;//maximal pad range in cm from maximum = 2.5cm def.
