@@ -91,7 +91,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     if(!badmap_OK) Log(Form("WARNING!! FindBadChannels() completed with BAD status!"));
     
     Bool_t calibEmc_OK = CalibrateEmc();
-
+    
     if(calibEmc_OK && badmap_OK) return 0;
     else
       return 1;
@@ -204,24 +204,60 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
 
 Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
 {
+  //Loop over two systems: DAQ and HLT.
+  //For each system the same algorithm implemented in DoFindBadChannelsEmc() invokes.
+
+  TList* list=0;
+  TString path;
+  
+  Int_t system[2] = { kDAQ, kHLT };
+  const char* sysn[] = { "DAQ","HLT" };
+  Bool_t result[2] = { kTRUE, kTRUE };
+
+  for (Int_t i=0; i<2; i++) {
+
+    AliPHOSEmcBadChannelsMap badMap;
+    list = GetFileSources(system[i], "BAD_CHANNELS");
+
+    if(!list) {
+      Log(Form("%s sources list for BAD_CHANNELS not found!",sysn[i]));
+      result[i] = kFALSE;
+      continue;
+    }
+
+    if(!list->GetEntries()) {
+      Log(Form("Got empty sources list. It seems %s DA2 did not produce any files!",sysn[i]));
+      result[i] = kFALSE;
+      continue;
+    }
+
+    result[i] *= DoFindBadChannelsEmc(system[i],list,badMap);
+
+    // Store the bad channels map.
+  
+    AliCDBMetaData md;
+    md.SetResponsible("Boris Polishchuk");
+
+    if(system[i] == kDAQ) 
+      path = "Calib";
+    else 
+      path = "HLT";
+  
+    // Data valid from current run fRun until being updated (validityInfinite=kTRUE)
+    result[i] *= Store(path.Data(), "EmcBadChannels", &badMap, &md, fRun, kTRUE);
+    
+  }
+  
+  if(result[0] || result[1]) return kTRUE;
+  else return kFALSE;
+}
+
+Bool_t AliPHOSPreprocessor::DoFindBadChannelsEmc(Int_t system, TList* list, AliPHOSEmcBadChannelsMap& badMap)
+{
   //Creates the bad channels map for PHOS EMC.
 
   // The file fileName contains histograms which have been produced by DA2 detector algorithm.
   // It is a responsibility of the SHUTTLE framework to form the fileName.
-
-  AliPHOSEmcBadChannelsMap badMap;
-
-  TList* list = GetFileSources(kDAQ, "BAD_CHANNELS");
-
-  if(!list) {
-    Log("Sources list for BAD_CHANNELS not found, exit.");
-    return kFALSE;
-  }
-
-  if(!list->GetEntries()) {
-    Log(Form("Got empty sources list. It seems DA2 did not produce any files!"));
-    return kFALSE;
-  }
 
   TIter iter(list);
   TObjString *source;
@@ -235,7 +271,7 @@ Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
 
     AliInfo(Form("found source %s", source->String().Data()));
 
-    TString fileName = GetFile(kDAQ, "BAD_CHANNELS", source->GetName());
+    TString fileName = GetFile(system, "BAD_CHANNELS", source->GetName());
     AliInfo(Form("Got filename: %s",fileName.Data()));
 
     TFile f(fileName);
@@ -277,19 +313,74 @@ Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
     
   } // end of loop over sources
   
-  // Store the bad channels map.
-  
-  AliCDBMetaData md;
-  md.SetResponsible("Boris Polishchuk");
-
-  // Data valid from current run fRun until being updated (validityInfinite=kTRUE)
-  Bool_t result = Store("Calib", "EmcBadChannels", &badMap, &md, fRun, kTRUE);
-  return result;
-
+  return kTRUE;
 }
 
 Bool_t AliPHOSPreprocessor::CalibrateEmc()
 {
+  //Loop over two systems: DAQ and HLT.
+  //For each system the same algorithm implemented in DoCalibrateEmc() invokes.
+
+  const AliPHOSEmcBadChannelsMap* badMap=0;
+  AliCDBEntry* entryBCM=0;
+  TList* list=0;
+  TString path;
+  
+  Int_t system[2] = { kDAQ, kHLT };
+  const char* sysn[] = { "DAQ","HLT" };
+  Bool_t result[2] = { kTRUE, kTRUE };
+
+  for (Int_t i=0; i<2; i++) {
+
+    AliPHOSEmcCalibData calibData;
+    list = GetFileSources(system[i], "AMPLITUDES");
+  
+    if(!list) {
+      Log(Form("%s sources list not found!",sysn[i]));
+      result[i] = kFALSE;
+      continue;
+    }
+
+    if(!list->GetEntries()) {
+      Log(Form("Got empty sources list. It seems %s DA1 did not produce any files!",sysn[i]));
+      result[i] = kFALSE;
+      continue;
+    }
+
+    // Retrieve the Bad Channels Map (BCM)
+
+    if(system[i] == kDAQ) 
+      path = "Calib";
+    else 
+      path = "HLT";
+  
+    entryBCM = GetFromOCDB(path.Data(), "EmcBadChannels");
+
+    if(!entryBCM)
+      Log(Form("WARNING!! Cannot find any AliCDBEntry for [%s, EmcBadChannels]!",path.Data()));
+    else
+      badMap = (AliPHOSEmcBadChannelsMap*)entryBCM->GetObject();
+
+    if(!badMap)
+      Log(Form("WARNING!! Nothing for %s in AliCDBEntry. All cells considered GOOD!",sysn[i]));
+
+    result[i] *= DoCalibrateEmc(system[i],list,badMap,calibData);
+
+    //Store EMC calibration data
+
+    AliCDBMetaData emcMetaData;
+    result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE);
+  
+  }
+  
+  if(result[0] || result[1]) return kTRUE;
+  else return kFALSE;
+}
+
+
+Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliPHOSEmcBadChannelsMap* badMap, AliPHOSEmcCalibData& calibData)
+{
+  // Return kTRUE if OK.
   // I.  Calculates the set of calibration coefficients to equalyze the mean energies deposited at high gain.
   // II. Extracts High_Gain/Low_Gain ratio for each channel.
 
@@ -297,32 +388,6 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
   // It is a responsibility of the SHUTTLE framework to form the fileName.
 
   gRandom->SetSeed(0); //the seed is set to the current  machine clock!
-  AliPHOSEmcCalibData calibData;
-  
-  TList* list = GetFileSources(kDAQ, "AMPLITUDES");
-  
-  if(!list) {
-    Log("Sources list not found, exit.");
-    return 1;
-  }
-
-  if(!list->GetEntries()) {
-    Log(Form("Got empty sources list. It seems DA1 did not produce any files!"));
-    return kFALSE;
-  }
-
-  // Retrieve Bad Channels Map (BCM)
-
-  const AliPHOSEmcBadChannelsMap* badMap=0;
-  AliCDBEntry* entryBCM = GetFromOCDB("Calib", "EmcBadChannels");
-
-  if(!entryBCM)
-    Log(Form("WARNING!! Cannot find any AliCDBEntry for [Calib, EmcBadChannels]!"));
-  else
-    badMap = (AliPHOSEmcBadChannelsMap*)entryBCM->GetObject();
-
-  if(!badMap)
-    Log(Form("WARNING!! No Bad Channels Map in AliCDBEntry. All cells considered _GOOD_!"));
 
   TIter iter(list);
   TObjString *source;
@@ -330,14 +395,14 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
   while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
     AliInfo(Form("found source %s", source->String().Data()));
 
-    TString fileName = GetFile(kDAQ, "AMPLITUDES", source->GetName());
+    TString fileName = GetFile(system, "AMPLITUDES", source->GetName());
     AliInfo(Form("Got filename: %s",fileName.Data()));
 
     TFile f(fileName);
 
     if(!f.IsOpen()) {
       Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
-      return 1;
+      return kFALSE;
     }
     
     const Int_t nMod=5; // 1:5 modules
@@ -364,7 +429,7 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
     
     if(nkeys< 2){
       Log(Form("Not enough histograms (%d) for calibration.",nkeys));
-      return 1;
+      return 0;
     }
     
     while(!ok){
@@ -403,7 +468,7 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
       
       if(!ok && counter > nkeys){
 	Log("No histogram with enough statistics for reference. Exit.");
-	return 1;
+	return 0;
       }
     }
     
@@ -446,12 +511,7 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
     f.Close();
   }
   
-  //Store EMC calibration data
-  
-  AliCDBMetaData emcMetaData;
-  Bool_t result = Store("Calib", "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE); // valid from 0 to infinity);
-  return result;
-
+  return 1;
 }
 
      
