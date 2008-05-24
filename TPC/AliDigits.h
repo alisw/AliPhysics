@@ -47,6 +47,9 @@ public:
   Int_t GetSize();//return total size of object in bytes
   Int_t GetDigitSize(); //return total size of pure digits 
   Int_t GetOverTh(Float_t threshold,Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); //return number of digits over threshold 
+
+  inline Short_t * GetDigitsColumn(Int_t row);                              //return row  pointer to the array digits
+
 protected:
   virtual  void Invalidate();  
   void ExpandBuffer1(); //expand buffer of type to twodimensional array
@@ -100,6 +103,14 @@ inline Short_t AliDigits::GetDigitUnchecked(Int_t row, Int_t column)
   //
   return fElements->fArray[fIndex->fArray[column]+row]; 
 }
+
+inline Short_t * AliDigits::GetDigitsColumn(Int_t column){
+  //
+  //return row  pointer to the array digits
+  //
+  return &(fElements->fArray[fIndex->fArray[column]]);
+}
+
 
 inline void  AliDigits::SetDigitFast(Short_t value, Int_t row, Int_t column)
 {
