@@ -23,6 +23,7 @@ public:
   virtual ~AliDigits();
   Short_t * GetDigits(){return fElements->GetArray();}   //return row  pointer to the array digits
   Short_t GetDigitFast(Int_t row, Int_t column);  //return value at given row and collumn
+  Short_t GetDigitUnchecked(Int_t row, Int_t column);  //return value at given row and collumn
   void  SetDigitFast(Short_t value,Int_t row, Int_t column);  //set value at given row and collumn
   Bool_t BoundsOK(const char *where, Int_t row, Int_t col) ;  //Check If Bound Ok
   Bool_t OutOfBoundsError(const char *where, Int_t row, Int_t column);
@@ -89,6 +90,15 @@ inline Short_t AliDigits::GetDigitFast(Int_t row, Int_t column)
   //if out of range return dummy value  ( value at row = 0, collumn = 0)
   //
   return fElements->At(fIndex->At(column)+row); 
+}
+
+inline Short_t AliDigits::GetDigitUnchecked(Int_t row, Int_t column)
+{
+  //
+  //return digit from  fDigits array
+  //if out of range return dummy value  ( value at row = 0, collumn = 0)
+  //
+  return fElements->fArray[fIndex->fArray[column]+row]; 
 }
 
 inline void  AliDigits::SetDigitFast(Short_t value, Int_t row, Int_t column)
