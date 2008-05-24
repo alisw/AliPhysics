@@ -203,6 +203,8 @@ delete stream;
 #include "TH1F.h"
 #include "TH2F.h"
 
+#include "AliTPCTransform.h"
+
 //used in raw data finder
 #include "AliTPCROC.h"
 #include "AliTPCCalPad.h"
@@ -649,15 +651,20 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 		  continue;
 		}
 		//insert maximum, default values and set flags
-		Double_t xCord,yCord;
-		GetXY(iSec,iRow,iPad,xCord,yCord);
+		//Double_t xCord,yCord;
+		//GetXY(iSec,iRow,iPad,xCord,yCord);
+		Double_t x[]={iRow,iPad,iTimeBin};
+		Int_t i[]={iSec};
+		AliTPCTransform trafo;
+		trafo.Transform(x,i,0,1);
+
 		AliPadMax *oneMaximum = new AliPadMax(AliTPCvtpr(valueMaximum,
 								 timeBinMax,
 								 iPad,
 								 iRow,
-								 xCord,
-								 yCord,
-								 timeBinMax),
+								 x[0],//xCord,
+								 x[1],//yCord,
+								 x[2]/*timeBinMax*/),
 						      increaseBegin,
 						      iTimeBin-1,
 						      sumAdc);
@@ -688,15 +695,19 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	    if(iTimeBin==kNTime-1 && ifMaximum && kNTime-increaseBegin>fMinTimeBins){//on the edge
 	      //at least 3 timebins
 	      //insert maximum, default values and set flags
-	      Double_t xCord,yCord;
-	      GetXY(iSec,iRow,iPad,xCord,yCord);
+	      //Double_t xCord,yCord;
+	      //GetXY(iSec,iRow,iPad,xCord,yCord);
+	      Double_t x[]={iRow,iPad,iTimeBin};
+	      Int_t i[]={iSec};
+	      AliTPCTransform trafo;
+	      trafo.Transform(x,i,0,1);
 	      AliPadMax *oneMaximum = new AliPadMax(AliTPCvtpr(valueMaximum,
 							       timeBinMax,
 							       iPad,
 							       iRow,
-							       xCord,
-							       yCord,
-							       timeBinMax),
+							       x[0],//xCord,
+							       x[1],//yCord,
+							       x[2]/*timeBinMax*/),
 						    increaseBegin,
 						    iTimeBin-1,
 						    sumAdc);
@@ -735,7 +746,8 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
     Short_t maxRow=0;
     Double_t maxX=0;
     Double_t maxY=0;
-    
+    Double_t maxT=0;
+
 //    for( std::vector<AliPadMax*>::iterator mp1  = maximaInSector.begin();
 //	 mp1 != maximaInSector.end(); ++mp1 ) {
     for(Int_t it1 = 0; it1 < maximaInSector->GetEntriesFast(); ++it1 ) {
@@ -756,6 +768,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
       maxRow      =(mp1)->GetRow() ;
       maxX        =(mp1)->GetX();
       maxY        =(mp1)->GetY();
+      maxT        =(mp1)->GetT();
 
       AliSimDigits *digrowTmp;
       if(fRawData){
@@ -768,7 +781,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 
       for(Short_t itb=(mp1)->GetBegin(); itb<((mp1)->GetEnd())+1; itb++){
 	Short_t adcTmp = digrowTmp->GetDigitFast(itb,(mp1)->GetPad());
-	AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp1)->GetPad(),(mp1)->GetRow(),(mp1)->GetX(),(mp1)->GetY(),itb);
+	AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp1)->GetPad(),(mp1)->GetRow(),(mp1)->GetX(),(mp1)->GetY(),(mp1)->GetT());
 	//tmp->fCluster.push_back(vtpr);
 	tmp->AddDigitToCluster(vtpr);
       }
@@ -809,7 +822,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	  
 	  for(Short_t itb=(mp2)->GetBegin(); itb<(mp2)->GetEnd()+1; itb++){
 	    Short_t adcTmp = digrowTmp1->GetDigitFast(itb,(mp2)->GetPad());
-	    AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp2)->GetPad(),(mp2)->GetRow(),(mp2)->GetX(),(mp2)->GetY(),itb);
+	    AliTPCvtpr *vtpr=new AliTPCvtpr(adcTmp,itb,(mp2)->GetPad(),(mp2)->GetRow(),(mp2)->GetX(),(mp2)->GetY(),(mp2)->GetT());
 	    //tmp->fCluster.push_back(vtpr);
 	    tmp->AddDigitToCluster(vtpr);
 	  }
@@ -825,6 +838,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	    maxRow      =(mp2)->GetRow() ;
 	    maxX        =(mp2)->GetX() ;
 	    maxY        =(mp2)->GetY() ;
+	    maxT        =(mp2)->GetT() ;
 	  } else if ( (mp2)->GetAdc() == maxDig ){
 	    if( (mp2)->GetSum() > maxSumAdc){
 	      maxDig      =(mp2)->GetAdc() ;
@@ -834,6 +848,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	      maxRow      =(mp2)->GetRow() ;
 	      maxX        =(mp2)->GetX() ;
 	      maxY        =(mp2)->GetY() ;
+	      maxT        =(mp2)->GetT() ;
 	    }
 	  }
 	  maximaInSector->RemoveAt(it2);
@@ -856,7 +871,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 
       tmp->SetADCcluster(clusterValue);
       tmp->SetNPads(nUsedPads);
-      tmp->SetMax(AliTPCvtpr(maxDig,maxTimeBin,maxPad,maxRow,maxX,maxY,maxTimeBin));
+      tmp->SetMax(AliTPCvtpr(maxDig,maxTimeBin,maxPad,maxRow,maxX,maxY,maxT));
       tmp->SetSec(iSec);
       tmp->SetSize();
 
