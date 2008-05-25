@@ -84,7 +84,7 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   clusters->SetMaxRowRangeCm(3.5);//distance of the cluster center to the center of a padrow (in cm)
   clusters->SetMaxTimeRange(7);//distance of the cluster center to the max time bin on a pad (in tackts)
   //ie. fabs(centerT - time)<7
-  clusters->SetValueToSize(3.5);//cut reduce peak at 0
+  clusters->SetValueToSize(6);//cut reduce peak at 0
 
 
   AliRawReader *reader = new AliRawReaderRoot(fileName);
@@ -100,7 +100,7 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   while (reader->NextEvent()) {
     //output for each event
 
-    if(evtnr>4) break;
+    //if(evtnr>4) break;
     cout<<"Evt = "<<evtnr<<endl;
     clusters->FinderIO(reader);
     evtnr++;
