@@ -292,9 +292,16 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
     Float_t rmsz2p30R  = seed->GetCMeanSigmaZ2p30R();
 
     AliExternalTrackParam param(*seed); 
+    static TVectorD gcl(3),gtr(3);
+    Float_t gclf[3];
+    param.GetXYZ(gcl.GetMatrixArray());
+    cluster->GetGlobalXYZ(gclf);
+    gcl[0]=gclf[0];    gcl[1]=gclf[1];    gcl[2]=gclf[2];
     (*fDebugStreamer)<<"ErrParam"<<
       "Cl.="<<cluster<<
       "T.="<<&param<<
+      "gcl.="<<&gcl<<
+      "gtr.="<<&gtr<<
       "erry2="<<sy2<<
       "errz2="<<sz2<<
       "rmsy2="<<rmsy2<<
