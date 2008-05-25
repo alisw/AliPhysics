@@ -139,8 +139,7 @@ fi
 echo Current Dir
 pwd
 
-#aliroot -b -q $ALICE_ROOT/TPC/macros/testTPC/AliTPCjobs.cxx
-aliroot -b -q /afs/cern.ch/user/w/wiechula/SOURCE/aliroot/job_agend/AliTPCjobs.cxx
+aliroot -b -q $ALICE_ROOT/TPC/macros/testTPC/AliTPCjobs.cxx
 
 #alien_cp -d job.list alien:${alien_HOME}job.list@$AGENTSE
 
