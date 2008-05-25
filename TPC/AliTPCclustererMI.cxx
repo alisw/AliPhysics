@@ -1131,7 +1131,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     dsignal[i] = signal[i];
   }
 
-  TGraph * graph;
+  TGraph * graph=0;
   //
   // Big signals dumping
   //    
