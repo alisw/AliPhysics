@@ -89,14 +89,14 @@ Bool_t AliTPCJobs::GetNextJob(){
     ins>>outputDir;
     ins>>action;
     if (!inputData.Contains(".root")) SetFail(id);
-    if (!IsStaged(inputData)){
-	Stage(inputData,id);
-	continue;
-    }
     if (IsFail(id)) continue;
     if (!IsLocked(id)){
       hasJob=kTRUE;
       break;
+    }
+    if (!IsStaged(inputData)){
+      //Stage(inputData,id);
+      continue;
     }
   }
   printf("Process %s\n",id.Data());
@@ -196,8 +196,7 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
     //TFile::Cp(inputData.Data(), outputDir.Data());
   }else{
     char command[10000];
-    //sprintf(command,"$ALICE_ROOT/TPC/macros/testTPC/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());    
-    sprintf(command,"/afs/cern.ch/user/w/wiechula/SOURCE/aliroot/job_agend/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());
+    sprintf(command,"$ALICE_ROOT/TPC/macros/testTPC/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());    
     printf("%s\n\n",command);
     gSystem->Exec(command);
     printf("\n\n");
