@@ -82,7 +82,7 @@ touch $flist
 # ALIEN - PROBLEM WITH HOST CERTIFICATE
 #
 if [  ${#alien_HOME} -gt 1 ]; then
-    dirname=`echo $alien_HOME$3/$4 | sed s/.root//g  `
+    dirname=`echo $alien_HOME$3/$4 | sed s/.root//g  `$ASUFIX
     echo alien_mkdir $dirname
     alien_mkdir -p $dirname
     echo ALIEN COPY DATA START 
@@ -96,38 +96,6 @@ if [  ${#alien_HOME} -gt 1 ]; then
 fi;
 
 
-
-if [  ${#isxrd} -lt 1 ]; then
-   dirname=`echo $CASTOR_HOME$3/$4 | sed s/.root//g  `
-   echo CASTOR COPPING DATA - START
-   echo DIRNAME  - $dirname
-   echo XRD PATH = root://voalice04.cern.ch:1094/$dirname
-   echo     
-   rfmkdir -p  $dirname
-   #
-   for name in `ls *.root`; do
-	echo  rfcp  $name $dirname/$name
-	rfcp $name $dirname/$name
-	echo root://voalice04.cern.ch:1094/$dirname/$name >>$flist
-    done
-    echo rfcp $4.zip $dirname/$4.zip
-    rfcp $4.zip $dirname/$4.zip
-    echo root://voalice04.cern.ch:1094/$dirname/$4.zip >>$flist
-    echo END OF COPY    
-else
-    echo XRD COPY DATA START
-    dirname=`echo $3/$4 | sed s/.root//g` 
-    echo DIRNAME  - $dirname
-    for name in `ls *.root`; do
-	echo  xrdcp $name $dirname/$name
-	xrdcp -np $name $dirname/$name
-	echo $dirname/$name >>$flist
-    done
-    echo xrdcp -np  $4.zip  $dirname.zip
-    xrdcp -np $4.zip  $dirname/$4.zip 
-    echo $dirname/$4.zip >>$flist
-    echo END OF COPY
-fi;
 
 
 
