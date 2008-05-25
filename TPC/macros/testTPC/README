@@ -14,7 +14,7 @@ AGENT to run some action:
 
 0. CREATE ACTION LIST 
 
-   0.a  Setup root, aliroot, alien (e.g. by doing 'source ~wiechula/public/.bagentsetup')
+   0.a  Setup root, aliroot, alien (e.g. by doing 'source ~miranov/public/.bagentsetup')
    0.a  Get a valid token: with 'alien-token-init' 
    0.b  source the alien env: with 'source /tmp/gclient_env_$UID'
    0.c  create the action list 'job.list' by following the 
@@ -37,7 +37,7 @@ AGENT to run some action:
 2. ENVIRONMENT SETUP:
 
    2.a  Copy the script  to setup aliroot, root and the user specific env to the  ~/.bagentsetup
-       (see /afs/cern.ch/user/w/wiechula/public/.bagentsetup for an example)
+       (see /afs/cern.ch/user/m/miranov/public/.bagentsetup for an example)
    2.b  Export envirnment variables needed OCDB_PATH, AGENTINPUTTYPE, AGENTSE in the .bagentsetup script
    2.c  Get a valid token: with 'alien-token-init' if not done above
    2.d  Copy certificates to default place -  ~/.agentauth/
