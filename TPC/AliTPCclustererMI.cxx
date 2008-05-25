@@ -811,6 +811,10 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 
       
       Int_t iRow = input.GetRow();
+      if (iRow < 0){
+	continue;
+      }
+
       if (iRow < 0 || iRow >= nRows){
 	AliError(Form("Pad-row index (%d) outside the range (%d -> %d) !",
 		      iRow, 0, nRows -1));
@@ -840,6 +844,29 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       //signal
       Float_t signal = input.GetSignal();
       if (!calcPedestal && signal <= zeroSup) continue;      
+      if (AliTPCReconstructor::StreamLevel()>3 && signal>3) {
+	Double_t x[]={iRow,iPad,iTimeBin};
+	Int_t i[]={fSector};
+	AliTPCTransform trafo;
+	trafo.Transform(x,i,0,1);
+	Double_t gx[3]={x[0],x[1],x[2]};
+	trafo.RotatedGlobal2Global(fSector,gx);
+	
+	(*fDebugStreamer)<<"Digits"<<
+	  "sec="<<fSector<<
+	  "row="<<iRow<<
+	  "pad="<<iPad<<
+	  "sig="<<signal<<
+	  "x="<<x[0]<<
+	  "y="<<x[1]<<
+	  "z="<<x[2]<<
+	  "gx="<<gx[0]<<
+	  "gy="<<gx[1]<<
+	  "gz="<<gx[2]<<
+	  "\n";
+      }
+
+
       if (!calcPedestal) {
 	Int_t bin = iPad*fMaxTime+iTimeBin;
 	allBins[iRow][bin] = signal/gain;
@@ -940,12 +967,12 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   delete [] allSigBins;
   delete [] allNSigBins;
   
-//   if (rawReader->GetEventId() && fOutput ){
-//     Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
-//   }else{
-//     Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
+  if (rawReader->GetEventId() && fOutput ){
+    Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
+  }else{
+    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
     
-//   }
+  }
   
 }
 
@@ -1014,7 +1041,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   // ESTIMATE pedestal and the noise
   // 
   const Int_t kPedMax = 100;
-  Double_t kMaxDebugSize = 5000000.;
   Float_t  max    =  0;
   Float_t  maxPos =  0;
   Int_t    median =  -1;
@@ -1118,8 +1144,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   // fill pedestal histogram
   //
-  AliTPCROC * roc = AliTPCROC::Instance();
-
   //
   //
   //
