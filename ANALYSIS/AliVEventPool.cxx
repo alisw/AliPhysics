@@ -22,7 +22,6 @@
 
 #include "AliVEventPool.h"
 
-
 ClassImp(AliVEventPool)
 
 
@@ -43,3 +42,18 @@ AliVEventPool::AliVEventPool(const char* name, const char* title):
 }
 
 
+AliVEventPool::AliVEventPool(const AliVEventPool& obj):
+    TNamed(obj),
+    fChain(0)
+{
+    // Copy constructor
+    fChain = obj.fChain;
+}
+
+AliVEventPool& AliVEventPool::operator=(const AliVEventPool& other)
+{
+// Assignment operator
+    TNamed::operator=(other);
+    fChain = other.fChain;
+    return *this;
+}
