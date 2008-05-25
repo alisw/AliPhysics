@@ -33,6 +33,13 @@ public:
   // Main method to perform the trackleter and the SPD efficiency evaluation
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes, AliStack* pStack=0x0, TTree* tRef=0x0);
 
+  void SetReflectClusterAroundZAxisForLayer(Int_t ilayer,Bool_t b=kTRUE){  // method to study residual background:
+    if(b) AliInfo(Form("All clusters on layer %d will be rotated by 180 deg around z",ilayer)); 
+    if(ilayer==0) fReflectClusterAroundZAxisForLayer0=b;                   // a rotation by 180degree around the Z axis  
+    else if(ilayer==1) fReflectClusterAroundZAxisForLayer1=b;              // (x->-x; y->-y) to all RecPoints on a 
+    else AliInfo("Nothing done: input argument (ilayer) either 0 or 1");   // given layer is applied. In such a way 
+  }                                                                        // you remove all the true tracklets.
+
   void SetPhiWindowL1(Float_t w=0.08) {fPhiWindowL1=w;}  // method to set the cuts in the interpolation
   void SetZetaWindowL1(Float_t w=1.) {fZetaWindowL1=w;}  // phase; use method of the base class for extrap.
   void SetOnlyOneTrackletPerC1(Bool_t b = kTRUE) {fOnlyOneTrackletPerC1 = b;} // as in the base class but 
@@ -130,6 +137,8 @@ protected:
   Bool_t*       fChipUpdatedInEvent;          //  boolean (chip by chip) to flag which chip has been updated its efficiency
                                               //  in that event
   AliITSPlaneEffSPD* fPlaneEffSPD; // pointer to SPD plane efficiency class
+  Bool_t   fReflectClusterAroundZAxisForLayer0;  // if kTRUE, then a 180degree rotation around Z is applied to all 
+  Bool_t   fReflectClusterAroundZAxisForLayer1;  // clusters on that layer (x->-x; y->-y)
   Bool_t   fMC; // Boolean to access Kinematics (only for MC events )
   Bool_t   fUseOnlyPrimaryForPred; // Only for MC: if this is true, build tracklet prediction using only primary particles
   Bool_t   fUseOnlySecondaryForPred; // Only for MC: if this is true build tracklet prediction using only secondary particles
@@ -188,8 +197,10 @@ protected:
   Bool_t SaveHists();
   void BookHistos(); // booking of extra histograms w.r.t. base class
   void DeleteHistos(); //delete histos from memory
+  // Method to apply a rotation by 180degree to all RecPoints (x->-x; y->-y) on a given layer
+  void ReflectClusterAroundZAxisForLayer(Int_t ilayer); // to be used for backgnd estimation on real data 
 
-  ClassDef(AliITSTrackleterSPDEff,2)
+  ClassDef(AliITSTrackleterSPDEff,3)
 };
 // Input and output function for standard C++ input/output (for the cut values and MC statistics).
 ostream &operator<<(ostream &os,const AliITSTrackleterSPDEff &s);

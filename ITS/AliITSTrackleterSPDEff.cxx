@@ -61,6 +61,8 @@ fOnlyOneTrackletPerC1(0),
 fUpdateOncePerEventPlaneEff(0),
 fChipUpdatedInEvent(0),
 fPlaneEffSPD(0),
+fReflectClusterAroundZAxisForLayer0(kFALSE),
+fReflectClusterAroundZAxisForLayer1(kFALSE),
 fMC(0),
 fUseOnlyPrimaryForPred(0),
 fUseOnlySecondaryForPred(0), 
@@ -124,6 +126,8 @@ fOnlyOneTrackletPerC1(mr.fOnlyOneTrackletPerC1),
 fUpdateOncePerEventPlaneEff(mr.fUpdateOncePerEventPlaneEff),
 fChipUpdatedInEvent(mr.fChipUpdatedInEvent),
 fPlaneEffSPD(mr.fPlaneEffSPD),
+fReflectClusterAroundZAxisForLayer0(mr.fReflectClusterAroundZAxisForLayer0),
+fReflectClusterAroundZAxisForLayer1(mr.fReflectClusterAroundZAxisForLayer1),
 fMC(mr.fMC),
 fUseOnlyPrimaryForPred(mr.fUseOnlyPrimaryForPred),
 fUseOnlySecondaryForPred(mr.fUseOnlySecondaryForPred),
@@ -214,6 +218,10 @@ AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t*, 
   fNSingleCluster = 0; 
   // loading the clusters 
   LoadClusterArrays(clusterTree);
+  // to study residual background (i.e. contribution from TT' to measured efficiency) 
+  if(fReflectClusterAroundZAxisForLayer0) ReflectClusterAroundZAxisForLayer(0);
+  if(fReflectClusterAroundZAxisForLayer1) ReflectClusterAroundZAxisForLayer(1);
+  //
   if(fMC && !pStack) {AliError("You asked for MC infos but AliStack not properly loaded"); return;}
   if(fMC && !tRef) {AliError("You asked for MC infos but TrackRef Tree not properly loaded"); return;}
   Bool_t found;
@@ -1195,7 +1203,8 @@ void AliITSTrackleterSPDEff::PrintAscii(ostream *os)const{
     //   none.
     *os << fPhiWindowL1 <<" "<< fZetaWindowL1 << " " << fPhiWindow <<" "<< fZetaWindow 
         << " " << fOnlyOneTrackletPerC1 << " " << fOnlyOneTrackletPerC2 
-        << " " << fUpdateOncePerEventPlaneEff ;
+        << " " << fUpdateOncePerEventPlaneEff << " " << fReflectClusterAroundZAxisForLayer0
+        << " " << fReflectClusterAroundZAxisForLayer1;
     *os << " " << fMC;
     if(!fMC) {AliInfo("Writing only cuts, no MC info"); return;}
     *os << " " << fUseOnlyPrimaryForPred << " " << fUseOnlySecondaryForPred
@@ -1227,7 +1236,8 @@ void AliITSTrackleterSPDEff::ReadAscii(istream *is){
 
     *is >> fPhiWindowL1 >> fZetaWindowL1 >> fPhiWindow >> fZetaWindow 
         >> fOnlyOneTrackletPerC1 >> fOnlyOneTrackletPerC2  
-        >> fUpdateOncePerEventPlaneEff ;
+        >> fUpdateOncePerEventPlaneEff >> fReflectClusterAroundZAxisForLayer0
+        >> fReflectClusterAroundZAxisForLayer1;
     *is >> fMC;
     if(!fMC) {AliInfo("Reading only cuts, no MC info available");return;}
     *is >> fUseOnlyPrimaryForPred >> fUseOnlySecondaryForPred
@@ -1509,4 +1519,30 @@ for(Int_t iref=0;iref<nref;iref++) { // loop over all the refs of the matching t
 }
 delete tcaRef;
 return ret;
+}
+//_________________________________________________________________________
+void AliITSTrackleterSPDEff::ReflectClusterAroundZAxisForLayer(Int_t ilayer){
+//
+// this method apply a rotation by 180 degree around the Z (beam) axis to all 
+// the RecPoints in a given layer to be used to build tracklets.
+// **************** VERY IMPORTANT:: ***************
+// It must be called just after LoadClusterArrays, since afterwards the datamember
+// fClustersLay1[iC1][0] and fClustersLay1[iC1][1] are redefined using polar coordinate 
+// instead of Cartesian
+//
+if(ilayer<0 || ilayer>1) {AliInfo("Input argument (ilayer) should be either 0 or 1: nothing done"); return ;}
+AliDebug(3,Form("Applying a rotation by 180 degree around z axiz to all clusters on layer %d",ilayer));
+if(ilayer==0) {
+  for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {
+    fClustersLay1[iC1][0]*=-1;
+    fClustersLay1[iC1][1]*=-1;
+  }
+}
+if(ilayer==1) {
+  for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {
+    fClustersLay2[iC2][0]*=-1;
+    fClustersLay2[iC2][1]*=-1;
+  }
+}
+return;
 }
