@@ -30,10 +30,11 @@
 /*
   gSystem->Load("libXrdClient.so");
   gSystem->Load("libNetx.so");
-  .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
   //Raw data example
   char *mask = "20225";
   char *path = "/alice/data/2008/"
+
+  .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
   //
   AlienToolkit toolkit;
   toolkit.MakeCollection(path,mask); // make a list of the registerd data
@@ -117,13 +118,14 @@ TGridCollection* AlienToolkit::MakeCollection(const char *path,  char *mask){
   Int_t counterm=0;
   Int_t counterf=0;
   TMap *filemap;
+  TObjString  lastLFN;
+
   while ( (filemap = collection->Next())) { 
     TIterator *nextfile = filemap->MakeIterator();
     TMap *attributes;
     while ((attributes = (TMap *) nextfile->Next())) {
       printf("%d\t%d\t%d\n",counter, counterm,counterf); 
       TMap * map = new TMap;
-      fInfoArray.AddLast(map);
 
       TObjString *surl = new TObjString(collection->GetSURL(attributes->GetName()));
       TObjString *turl =  new TObjString(collection->GetTURL(attributes->GetName()));
@@ -131,8 +133,9 @@ TGridCollection* AlienToolkit::MakeCollection(const char *path,  char *mask){
       map->Add(new TObjString("alienLFN"),lfn);
       map->Add(new TObjString("alienSURL"),surl);
       map->Add(new TObjString("alienTURL"),turl);
-     
-
+      
+      if (lastLFN.String().CompareTo(lfn->String())==0) continue;
+      lastLFN = *lfn;
       Int_t   isOnline = collection->IsOnline(attributes->GetName());
       printf("Base Name:\t%s\n",attributes->GetName());
       printf("Size:\t%d\n",(Int_t)collection->GetSize());
@@ -144,6 +147,7 @@ TGridCollection* AlienToolkit::MakeCollection(const char *path,  char *mask){
       printf("SURL Name:\t%s\n",surl->String().Data());
       counter++;
       counterf++;
+      fInfoArray.AddLast(map);
       
     }
     counterf=0;
