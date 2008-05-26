@@ -45,21 +45,21 @@ void AliEveTRDLoaderManager::Add(Int_t type, const Text_t *name, const Text_t *t
 
   AliEveTRDLoader *trdl = 0x0;
   switch(type){
-    case 0:
-      AddElement(new AliEveTRDLoaderSim(name, title));
-      break;
-    case 1:
-    case 2:
-    case 3:
-      AddElement(trdl = new AliEveTRDLoader(name, title));
-      trdl->SetDataType((AliEveTRDLoader::TRDDataTypes)type);
-      break;
-    case 4:
-    case 5:
-      AddElement(trdl = new AliEveTRDLoaderRaw(name, title));
-      trdl->SetDataType((AliEveTRDLoader::TRDDataTypes)type);
-      break;
+  case AliEveTRDLoader::kTRDHits:
+  case AliEveTRDLoader::kTRDDigits:
+  case AliEveTRDLoader::kTRDClusters:
+  case AliEveTRDLoader::kTRDTracklets:
+    AddElement(trdl = new AliEveTRDLoader(name, title));
+    break;
+  case AliEveTRDLoader::kTRDRawRoot:
+  case AliEveTRDLoader::kTRDRawDate:
+    AddElement(trdl = new AliEveTRDLoaderRaw(name, title));
+    break;
+  default:
+    AddElement(trdl = new AliEveTRDLoaderSim(name, title));
+    break;
   }
+  trdl->SetDataType(type);
 
   gEve->Redraw3D();
 }
@@ -113,12 +113,13 @@ AliEveTRDLoaderManagerEditor(const TGWindow* p, Int_t width, Int_t height,
 
   // combo box
   fSelector = new TGComboBox(fHorizontalFrame539,-1,kHorizontalFrame | kSunkenFrame | kDoubleBorder | kOwnBackground);
-  fSelector->AddEntry("MC (gAlice) ",0);
-  fSelector->AddEntry("Digits ",1);
-  fSelector->AddEntry("Clusters ",2);
-  fSelector->AddEntry("Tracklets ",3);
-  fSelector->AddEntry("Raw (ROOT) ",4);
-  fSelector->AddEntry("Raw (DATE) ",5);
+  fSelector->AddEntry("MC (gAlice) ", AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
+  fSelector->AddEntry("Hits ", AliEveTRDLoader::kTRDHits);
+  fSelector->AddEntry("Digits ", AliEveTRDLoader::kTRDDigits);
+  fSelector->AddEntry("Clusters ", AliEveTRDLoader::kTRDClusters);
+  fSelector->AddEntry("Tracklets ", AliEveTRDLoader::kTRDTracklets);
+  fSelector->AddEntry("Raw (ROOT) ", AliEveTRDLoader::kTRDRawRoot);
+  fSelector->AddEntry("Raw (DATE) ", AliEveTRDLoader::kTRDRawDate);
   fSelector->Resize(136,22);
   fHorizontalFrame539->AddFrame(fSelector, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY,2,2,2,2));
 
@@ -154,24 +155,6 @@ void AliEveTRDLoaderManagerEditor::Add()
     AddFrame(fGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX, 2,2,2,2));
 
     fRemove = new TClonesArray("TGTextButton", 3);
-  }
-
-  char *title[] = {"MC loader", "Single file loader", "Raw data loader"};
-  // char *color[] = {"#ff0000", "#0000ff", "#59d454"};
-  int id = fSelector->GetSelected(), type;
-  switch(id){
-    case 1:
-    case 2:
-    case 3:
-      type = 1;
-      break;
-    case 4:
-    case 5:
-      type = 2;
-      break;
-    default:
-      type = 0;
-      break;
   }
 
 
@@ -210,6 +193,24 @@ void AliEveTRDLoaderManagerEditor::Add()
   Resize(GetDefaultSize());
   MapWindow();
 
+  char *title[] = {"MC loader", "Single file loader", "Raw data loader"};
+  // char *color[] = {"#ff0000", "#0000ff", "#59d454"};
+  int id = fSelector->GetSelected(), type;
+  switch(id){
+  case AliEveTRDLoader::kTRDHits:
+  case AliEveTRDLoader::kTRDDigits:
+  case AliEveTRDLoader::kTRDClusters:
+  case AliEveTRDLoader::kTRDTracklets:
+    type = 1;
+    break;
+  case AliEveTRDLoader::kTRDRawRoot:
+  case AliEveTRDLoader::kTRDRawDate:
+    type = 2;
+    break;
+  default:
+    type = 0;
+    break;
+  }
   fM->Add(id, entry->GetText()->GetString(), title[type]);
 }
 

@@ -9,6 +9,7 @@
 
 #include "AliEveTRDLoaderImp.h"
 #include "AliEveTRDModuleImp.h"
+#include "EveBase/AliEveEventManager.h"
 
 #include <TEveManager.h>
 
@@ -25,10 +26,6 @@
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
 
-#include "AliTRDv1.h"
-#include "AliTRDhit.h"
-//#include "AliTRDdigitsManager.h"
-
 ClassImp(AliEveTRDLoaderSim)
 ClassImp(AliEveTRDLoaderRaw)
 ClassImp(AliEveTRDLoaderSimEditor)
@@ -41,10 +38,11 @@ ClassImp(AliEveTRDLoaderSimEditor)
 
 //______________________________________________________________________________
 AliEveTRDLoaderSim::AliEveTRDLoaderSim(const Text_t* n, const Text_t* t) :
-  AliEveTRDLoader(n, t),
-  fRunLoader(0)
+  AliEveTRDLoader(n, t)
+  ,fRunLoader(0x0)
 {
   // Constructor.
+  if(gAlice && (fRunLoader = AliEveEventManager::AssertRunLoader())) SetDataLinked();
 }
 
 //______________________________________________________________________________
@@ -56,7 +54,7 @@ Bool_t	AliEveTRDLoaderSim::GoToEvent(int ev)
     AliWarning("Please select first the chamber that you want to monitor from \"Chamber(s) selector\".");
     return kFALSE;
   }
-  if(!fLoadHits && !fLoadDigits && !fLoadClusters && !fLoadTracks){
+  if(!fDataType){
     AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
     return kFALSE;
   }
@@ -72,27 +70,25 @@ Bool_t	AliEveTRDLoaderSim::GoToEvent(int ev)
 
   if(fRunLoader->GetEvent(ev)) return kFALSE;
   TTree *t = 0;
-  if(fLoadHits){
+  if(fDataType&kTRDHits){
     fRunLoader->LoadHits("TRD", "READ");
     t = fRunLoader->GetTreeH("TRD", kFALSE);
     if(!t) return kFALSE;
-    fTRD->SetTreeAddress();
     if(!LoadHits(t)) return kFALSE;
   }
-  if(fLoadDigits){
+  if(fDataType&kTRDDigits){
     fRunLoader->LoadDigits("TRD", "READ");
     t = fRunLoader->GetTreeD("TRD", kFALSE);
     if(!t) return kFALSE;
-    fTRD->SetTreeAddress();
     if(!LoadDigits(t)) return kFALSE;
   }
-  if(fLoadClusters){
+  if(fDataType&kTRDClusters){
     fRunLoader->LoadRecPoints("TRD", "READ");
     t = fRunLoader->GetTreeR("TRD", kFALSE);
     if(!t) return kFALSE;
     if(!LoadClusters(t)) return kFALSE;
   }
-  if(fLoadTracks){
+  if(fDataType&kTRDTracklets){
     fRunLoader->LoadTracks("TRD", "READ");
     t = fRunLoader->GetTreeT("TRD", kFALSE);
     if(!t) return kFALSE;
@@ -105,65 +101,27 @@ Bool_t	AliEveTRDLoaderSim::GoToEvent(int ev)
 
 
 //______________________________________________________________________________
-Bool_t	AliEveTRDLoaderSim::LoadHits(TTree *tH)
-{
-  // Load hits.
-
-  Info("LoadHits()", "Loading ...");
-  if(!fChildren.size()) return kTRUE;
-
-  AliEveTRDChamber *chmb = 0x0;
-  AliTRDhit *hit = 0x0;
-  Int_t d;
-  for(int iTrack=0; iTrack<tH->GetEntries(); iTrack++){
-    gAlice->ResetHits();
-    if(!tH->GetEvent(iTrack)) continue;
-    hit = (AliTRDhit*)fTRD->FirstHit(-1);
-    if(!hit) continue;
-    d = hit->GetDetector();
-    chmb = GetChamber(d);
-    while(hit){
-      if(d != hit->GetDetector()){
-        d = hit->GetDetector();
-        chmb = GetChamber(d);
-      }
-      if(chmb) chmb->AddHit(hit);
-      hit = (AliTRDhit*)fTRD->NextHit();
-    }
-  }
-  return kTRUE;
-}
-
-//______________________________________________________________________________
 Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 {
   // Open file in given dir.
 
-  fFilename = filename;
-  fDir = dir;
-  fDir += "/";
-
+  if(fRunLoader) return kTRUE;
+  
   fRunLoader = AliRunLoader::GetRunLoader();
   if(!fRunLoader) fRunLoader = AliRunLoader::Open(filename,
-                                                  AliConfig::GetDefaultEventFolderName(),"read");
-  if(!fRunLoader){
-    AliError("Couldn't find run loader");
-    return kFALSE;
-  }
-  fRunLoader->SetDirName(fDir);
+         AliConfig::GetDefaultEventFolderName(),"read");
+  if(!fRunLoader) return kFALSE;
 
   gAlice = fRunLoader->GetAliRun();
   if(!gAlice) fRunLoader->LoadgAlice();
-  if(!gAlice){
-    AliError("Couldn't find gAlice object");
-    return kFALSE;
-  }
-  fTRD = (AliTRDv1*)gAlice->GetDetector("TRD");
-  if(!fTRD){
-    AliError("Couldn't find TRD");
-    return kFALSE;
-  }
+  if(!gAlice) return kFALSE;
+ 
+  fFilename = filename;
+  fDir = dir;
+  fDir += "/";
+  fRunLoader->SetDirName(fDir);
 
+  SetDataLinked();
   return kTRUE;
 }
 
@@ -179,7 +137,6 @@ AliEveTRDLoaderRaw::AliEveTRDLoaderRaw(const Text_t* n, const Text_t* t) :
   fRawDateReader (0),
   fRawRootReader (0),
   fRaw           (0),
-  fDataRoot      (kTRUE),
   fEventOld      (-1)
 {
   // Constructor.
@@ -197,24 +154,20 @@ Bool_t  AliEveTRDLoaderRaw::Open(const char *filename, const char *dir)
   if(fRaw) delete fRaw;
   fRaw = new AliTRDrawData();
 
-  if(fDataRoot){
+  if(fDataType&kTRDRawRoot){
     if(fRawRootReader) delete fRawRootReader;
     fRawRootReader = new AliRawReaderRoot(filename);
-  } else {
+  } else if(fDataType&kTRDRawDate){
     if(fRawDateReader) delete fRawDateReader;
     fRawDateReader = new AliRawReaderDate(fDir+fFilename);
+  } else {
+    AliError("No data type was set.");
+    return kFALSE;
   }
-
+  SetDataLinked();
   return kTRUE;
 }
 
-//______________________________________________________________________________
-void AliEveTRDLoaderRaw::SetDataType(TRDDataTypes type)
-{
-  // Set data type.
-
-  fDataRoot = (type == kRawRoot) ? kTRUE : kFALSE;
-}
 
 //______________________________________________________________________________
 Bool_t AliEveTRDLoaderRaw::GoToEvent(int ev)
@@ -270,7 +223,7 @@ Bool_t AliEveTRDLoaderRaw::LoadEvent()
 }
 
 //______________________________________________________________________________
-void AliEveTRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
+Bool_t AliEveTRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
 {
   // Go to next event.
 
@@ -288,6 +241,7 @@ void AliEveTRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
       fEventOld = 0;
     } else throw(kEH + "last event reached.");
   }
+  return kTRUE;
 }
 
 
@@ -299,8 +253,12 @@ void AliEveTRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
 //______________________________________________________________________________
 AliEveTRDLoaderSimEditor::AliEveTRDLoaderSimEditor(const TGWindow* p, Int_t width, Int_t height,
                                                    UInt_t options, Pixel_t back) :
-  TGedFrame(p, width, height, options | kVerticalFrame, back),
-  fM(0), fLoadHits(0), fLoadDigits(0), fLoadClusters(0), fLoadTracks(0)
+  TGedFrame(p, width, height, options | kVerticalFrame, back)
+  ,fM(0x0)
+  ,fCheckedHits(0x0)
+  ,fCheckedDigits(0x0)
+  ,fCheckedClusters(0x0)
+  ,fCheckedTracklets(0x0)
 {
   // Constructor.
 
@@ -308,21 +266,21 @@ AliEveTRDLoaderSimEditor::AliEveTRDLoaderSimEditor(const TGWindow* p, Int_t widt
 
   // "Data selector" group frame
   TGGroupFrame *fGroupFrame = new TGGroupFrame(this,"Data selector");
-  fLoadHits = new TGCheckButton(fGroupFrame,"  Hits");
-  fLoadHits->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, "Toggle(=0)");
-  fGroupFrame->AddFrame(fLoadHits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+  fCheckedHits = new TGCheckButton(fGroupFrame,"  Hits");
+  fCheckedHits->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, Form("Toggle(=%d)", (Int_t)AliEveTRDLoader::kTRDHits));
+  fGroupFrame->AddFrame(fCheckedHits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
-  fLoadDigits = new TGCheckButton(fGroupFrame,"  Digits");
-  fLoadDigits->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, "Toggle(=1)");
-  fGroupFrame->AddFrame(fLoadDigits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+  fCheckedDigits = new TGCheckButton(fGroupFrame,"  Digits");
+  fCheckedDigits->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, Form("Toggle(=%d)", (Int_t)AliEveTRDLoader::kTRDDigits));
+  fGroupFrame->AddFrame(fCheckedDigits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
-  fLoadClusters = new TGCheckButton(fGroupFrame,"  Clusters");
-  fLoadClusters->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, "Toggle(=2)");
-  fGroupFrame->AddFrame(fLoadClusters, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+  fCheckedClusters = new TGCheckButton(fGroupFrame,"  Clusters");
+  fCheckedClusters->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, Form("Toggle(=%d)", (Int_t)AliEveTRDLoader::kTRDClusters));
+  fGroupFrame->AddFrame(fCheckedClusters, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
-  fLoadTracks = new TGCheckButton(fGroupFrame,"  Tracklets ");
-  fLoadTracks->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, "Toggle(=3)");
-  fGroupFrame->AddFrame(fLoadTracks, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+  fCheckedTracklets = new TGCheckButton(fGroupFrame,"  Tracklets ");
+  fCheckedTracklets->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, Form("Toggle(=%d)", (Int_t)AliEveTRDLoader::kTRDTracklets));
+  fGroupFrame->AddFrame(fCheckedTracklets, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
   fGroupFrame->SetLayoutManager(new TGVerticalLayout(fGroupFrame));
   //	fGroupFrame->Resize(164,116);
@@ -336,17 +294,16 @@ void AliEveTRDLoaderSimEditor::SetModel(TObject* obj)
 
   fM = dynamic_cast<AliEveTRDLoaderSim*>(obj);
 
-  Bool_t kFile = kTRUE;
-  if(fM->fFilename.CompareTo("") == 0) kFile = kFALSE;
+  Bool_t kRL   = (fM->IsDataLinked()) ? kTRUE : kFALSE;
 
-  fLoadHits->SetEnabled(kFile);
-  if(kFile) fLoadHits->SetState(fM->fLoadHits ? kButtonDown : kButtonUp);
-  fLoadDigits->SetEnabled(kFile);
-  if(kFile) fLoadDigits->SetState(fM->fLoadDigits ? kButtonDown : kButtonUp);
-  fLoadClusters->SetEnabled(kFile);
-  if(kFile) fLoadClusters->SetState(fM->fLoadClusters ? kButtonDown : kButtonUp);
-  fLoadTracks->SetEnabled(kFile);
-  if(kFile) fLoadTracks->SetState(fM->fLoadTracks ? kButtonDown : kButtonUp);
+  fCheckedHits->SetEnabled(kRL);
+  if(kRL) fCheckedHits->SetState(fM->fDataType&AliEveTRDLoader::kTRDHits ? kButtonDown : kButtonUp);
+  fCheckedDigits->SetEnabled(kRL);
+  if(kRL) fCheckedDigits->SetState(fM->fDataType&AliEveTRDLoader::kTRDDigits ? kButtonDown : kButtonUp);
+  fCheckedClusters->SetEnabled(kRL);
+  if(kRL) fCheckedClusters->SetState(fM->fDataType&AliEveTRDLoader::kTRDClusters ? kButtonDown : kButtonUp);
+  fCheckedTracklets->SetEnabled(kRL);
+  if(kRL) fCheckedTracklets->SetState(fM->fDataType&AliEveTRDLoader::kTRDTracklets ? kButtonDown : kButtonUp);
 }
 
 //______________________________________________________________________________
@@ -355,17 +312,17 @@ void AliEveTRDLoaderSimEditor::Toggle(Int_t id)
   // Toggle given button id.
 
   switch(id){
-    case 0:
-      fM->fLoadHits = fLoadHits->IsDown() ? kTRUE : kFALSE;
-      break;
-    case 1:
-      fM->fLoadDigits = fLoadDigits->IsDown() ? kTRUE : kFALSE;
-      break;
-    case 2:
-      fM->fLoadClusters = fLoadClusters->IsDown() ? kTRUE : kFALSE;
-      break;
-    case 3:
-      fM->fLoadTracks = fLoadTracks->IsDown() ? kTRUE : kFALSE;
-      break;
+  case AliEveTRDLoader::kTRDHits:
+    fM->fDataType |= fCheckedHits->IsDown() ? AliEveTRDLoader::kTRDHits : 0;
+    break;
+  case AliEveTRDLoader::kTRDDigits:
+    fM->fDataType |= fCheckedDigits->IsDown() ? AliEveTRDLoader::kTRDDigits : 0;
+    break;
+  case AliEveTRDLoader::kTRDClusters:
+    fM->fDataType |= fCheckedClusters->IsDown() ? AliEveTRDLoader::kTRDClusters : 0;
+    break;
+  case AliEveTRDLoader::kTRDTracklets:
+    fM->fDataType |= fCheckedTracklets->IsDown() ? AliEveTRDLoader::kTRDTracklets : 0;
+    break;
   }
 }

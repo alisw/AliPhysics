@@ -25,57 +25,53 @@
 
 #include "AliEveTRDModule.h"
 
-class AliTRDpadPlane;
-class AliTRDgeometry;
-class AliTRDhit;
-class AliTRDdataArrayI;
-class AliTRDdigitsManager;
 class TObjArray;
+class TClonesArray;
 
 class TEveTrack;
+class TEveGeoTopNode;
+
+class AliTRDgeometry;
+class AliTRDdataArrayI;
+class AliTRDdigitsManager;
 
 class AliEveTRDHits;
 class AliEveTRDDigits;
-
 class AliEveTRDChamber : public TEveElement, public AliEveTRDModule
 {
   friend class AliEveTRDDigits;
 
 public:
 
-  AliEveTRDChamber(Int_t det=0);
+  AliEveTRDChamber(Int_t det=-1);
   virtual ~AliEveTRDChamber() {}
 
-  void  AddHit(AliTRDhit *hit);
-  Int_t GetRowMax()  const {return fRowMax;}
-  Int_t GetColMax()  const {return fColMax;}
-  Int_t GetTimeMax() const {return fTimeMax;}
-  Int_t GetSM() const;
-  Int_t GetSTK() const;
-  Int_t GetPlane() const {return fPla;}
+  Int_t GetNrows()  const {return fNrows;}
+  Int_t GetNcols()  const {return fNcols;}
+  Int_t GetNtime() const {return fNtime;}
 
+  void  LoadHits(TClonesArray *hits, Int_t &idx);
   void  LoadClusters(TObjArray *cs);
   void  LoadDigits(AliTRDdigitsManager *digits);
   void  LoadTracklets(TObjArray *ts);
+
   void  Paint(Option_t* option="");
   void  Reset();
+
   void  SetGeometry(AliTRDgeometry *geo);
+  void  SetNtime(Int_t nt) {fNtime = nt;}
 
 protected:
-  AliEveTRDDigits         *fDigits;    // digits representation
-  AliEveTRDHits           *fHits;      // hits representation
-  AliEveTRDHits           *fRecPoints; // cluster representation
+  AliEveTRDDigits  *fDigits;    // digits representation
+  AliEveTRDHits    *fHits;      // hits representation
+  AliEveTRDHits    *fRecPoints; // cluster representation
   std::vector<TEveTrack*> *fTracklets; // mcm tracklets
-
+  AliTRDgeometry   *fGeo;      // TRD geometry
+  TEveGeoTopNode   *fShape;    // rendarable geometry of the chamber 
   // data representation section
-  Int_t           fRowMax;   // number of rows for this pad plane
-  Int_t           fColMax;   // number of columns for this pad plane
-  Int_t           fTimeMax;  // number of timebins
-  Float_t         fSamplingFrequency; // sampling frequency
-  Float_t         fX0;       // radial distance from vertex to the chamber
-  Int_t           fPla;      // detector plane
-  AliTRDpadPlane *fPadPlane; // pad plane object
-  AliTRDgeometry *fGeo;      // TRD geometry
+  Int_t           fNrows;   // number of rows for this pad plane
+  Int_t           fNcols;   // number of columns for this pad plane
+  Int_t           fNtime;  // number of timebins
 
 private:
   AliEveTRDChamber(const AliEveTRDChamber&);            // Not implemented.

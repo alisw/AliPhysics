@@ -9,36 +9,32 @@
 
 #include "AliEveTRDLoader.h"
 #include "AliEveTRDModuleImp.h"
+#include "EveBase/AliEveEventManager.h"
 
 #include <TEveManager.h>
 #include <TEveGValuators.h>
 
+#include "TGeoManager.h"
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
-//#include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "TClonesArray.h"
 
 #include <TGLabel.h>
 #include <TGButton.h>
 #include <TGTextEntry.h>
-//#include <TGNumberEntry.h>
 #include <TGFileDialog.h>
-//#include <TGListTree.h>
-//#include <TGToolTip.h>
 
 #include "AliLog.h"
 #include "AliCDBManager.h"
 
-//#include "AliTRDv1.h"
-//#include "AliTRDhit.h"
+#include "AliTRDhit.h"
 #include "AliTRDcluster.h"
 #include "AliTRDmcmTracklet.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
-
-#include <algorithm>
 
 class AliTRDdataArrayI;
 
@@ -51,43 +47,36 @@ ClassImp(AliEveTRDLoaderEditor)
 
 
 //______________________________________________________________________________
-AliEveTRDLoader::AliEveTRDLoader(const Text_t* n, const Text_t* t) :
-  TEveElementList(n, t),
-  fLoadHits     (kFALSE), fLoadDigits (kFALSE),
-  fLoadClusters (kFALSE), fLoadTracks (kFALSE),
-  fSM           (-1),     fStack      (-1),     fLy(-1),
-  fFilename     (""),     fDir        ("."),
-  fEvent        (-1),
-  fTRD          (0x0),
-  fGeo          (new AliTRDgeometry())
+AliEveTRDLoader::AliEveTRDLoader(const Text_t* n, const Text_t* t) : TEveElementList(n, t)
+  ,fDataType(0)
+  ,fSM(-1)
+  ,fStack(-1)
+  ,fLy(-1)
+  ,fEvent(-1)
+  ,fGeo(0x0)
+  ,fFilename("")
+  ,fDir(".")
 {
   // Constructor.
 
   AliCDBManager *fCDBManager=AliCDBManager::Instance();
   fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
   fCDBManager->SetRun(0);
+
+  if(!AliEveEventManager::AssertGeometry()){
+    TGeoManager::Import("geometry.root");
+  }
+
+  fGeo = new AliTRDgeometry();
+  //fGeo->CreateClusterMatrixArray();
 }
 
 //______________________________________________________________________________
-namespace
-{
-template<class T>
-class ID
-{
-public:
-  ID(int value) : fkId(value) {}
-  bool operator()(const T &t) const {
-    return ((dynamic_cast<AliEveTRDModule*>(t))->GetID() == fkId);
-  }
-private:
-  const int fkId;
-};
-}
-
 void AliEveTRDLoader::AddChambers(int sm, int stk, int ly)
 {
   // Add specified chambers.
 
+  fSM=sm; fStack=stk; fLy=ly;
   Int_t ismStart = (sm == -1) ?  0 : sm;
   Int_t ismStop  = (sm == -1) ? 18 : sm+1;
   Int_t istkStart= (stk == -1)?  0 : stk;
@@ -106,33 +95,27 @@ void AliEveTRDLoader::AddChambers(int sm, int stk, int ly)
   AliEveTRDChamber *lCHMB = 0x0;
   int det;
   for (int ism=ismStart; ism<ismStop; ism++){
-    ichmb = find_if(fChildren.begin(), fChildren.end(), ID<TEveElement*>(ism));
-    if (ichmb != fChildren.end()) {
-      lSM = (AliEveTRDNode*)(*ichmb);
-      lSM->SetRnrSelf(kTRUE);
-    } else {
+    if(!(lSM = (AliEveTRDNode*)FindChild(Form("SM%03d", ism)))){
       AddElement(lSM = new AliEveTRDNode("SM", ism));
       lSM->SetElementTitle(Form("Supermodule %2d", ism));
     }
+    lSM->SetRnrSelf(kTRUE);
+
     for (int istk=istkStart; istk<istkStop; istk++) {
-      ichmb = find_if(lSM->begin(), lSM->end(), ID<TEveElement*>(istk));
-      if (ichmb != lSM->end()) {
-        lSTK = (AliEveTRDNode*)(*ichmb);
-        lSTK->SetRnrSelf(kTRUE);
-      } else {
+      if(!(lSTK = (AliEveTRDNode*)lSM->FindChild("Stack%03d"))){
         lSM->AddElement(lSTK = new AliEveTRDNode("Stack", istk));
         lSTK->SetElementTitle(Form("SM %2d Stack %1d", ism, istk));
       }
+      lSTK->SetRnrSelf(kTRUE);
+      
       for (int ily=ilyStart; ily<ilyStop; ily++) {
         det = fGeo->GetDetector(ily, istk, ism);
-        ichmb = find_if(lSTK->begin(), lSTK->end(), ID<TEveElement*>(det));
-        if(ichmb != lSTK->end()) {
-          (*ichmb)->SetRnrSelf(kTRUE);
-        } else {
+        if(!(lCHMB = (AliEveTRDChamber*)lSTK->FindChild(Form("Chmb%03d", det)))){
           lSTK->AddElement(lCHMB = new AliEveTRDChamber(det));
           lCHMB->SetGeometry(fGeo);
           lCHMB->SetElementTitle(Form("SM %2d Stack %1d Layer %1d", ism, istk, ily));
         }
+        lCHMB->SetRnrSelf(kTRUE);
       }
     }
   }
@@ -144,15 +127,13 @@ AliEveTRDChamber* AliEveTRDLoader::GetChamber(int d)
 {
   // Get given chamber.
 
-  List_i ism, istack, ichmb;
-
-  ism = find_if(fChildren.begin(), fChildren.end(), ID<TEveElement*>(fGeo->GetSector(d)));
-  if(ism == fChildren.end()) return 0x0;
-  istack = find_if(((AliEveTRDNode*)(*ism))->begin(), ((AliEveTRDNode*)(*ism))->end(), ID<TEveElement*>(fGeo->GetChamber(d)));
-  if(istack == ((AliEveTRDNode*)(*ism))->end()) return 0x0;
-  ichmb = find_if(((AliEveTRDNode*)(*istack))->begin(), ((AliEveTRDNode*)(*istack))->end(), ID<TEveElement*>(d));
-  if(ichmb == ((AliEveTRDNode*)(*istack))->end()) return 0x0;
-  return dynamic_cast<AliEveTRDChamber*>(*ichmb);
+  Int_t ism  = fGeo->GetSector(d), 
+        istk = fGeo->GetChamber(d); 
+  
+  AliEveTRDNode *node = 0x0;
+  if(!(node = (AliEveTRDNode*)FindChild(Form("SM%03d", ism)))) return 0x0;
+  if(!(node = (AliEveTRDNode*)node->FindChild(Form("Stack%03d", istk)))) return 0x0;
+  return (AliEveTRDChamber*)node->FindChild(Form("Chmb%03d", d));
 }
 
 //______________________________________________________________________________
@@ -170,31 +151,71 @@ Bool_t AliEveTRDLoader::GoToEvent(int ev)
   Unload();
 
   TTree *t = 0x0;
-  TFile *f = new TFile(Form("%s/%s", fDir.Data(), fFilename.Data()));
+  TFile *f = TFile::Open(Form("%s/%s", fDir.Data(), fFilename.Data()));
   if(! f->cd(Form("Event%d", ev))){
     AliError(Form("Couldn't find event %d in file \"%s/%s\".", ev, fDir.Data(), fFilename.Data()));
-    f->Close(); delete f;
+    f->Close(); //delete f;
     return kFALSE;
   }
 
-  if(fLoadDigits){
+  if(fDataType&kTRDHits){
+    t = (TTree*)gDirectory->Get("TreeH");
+    if(!t) return kFALSE;
+    if(!LoadHits(t)) return kFALSE;
+  } else if(fDataType&kTRDDigits){
     t = (TTree*)gDirectory->Get("TreeD");
     if(!t) return kFALSE;
     if(!LoadDigits(t)) return kFALSE;
-  } else if(fLoadClusters){
+  } else if(fDataType&kTRDClusters){
     t = (TTree*)gDirectory->Get("TreeR");
     if(!t) return kFALSE;
     if(!LoadClusters(t)) return kFALSE;
-  } else if(fLoadTracks){
+  } else if(fDataType&kTRDTracklets){
     t = (TTree*)gDirectory->Get("TreeT");
     if(!t) return kFALSE;
     if(!LoadTracklets(t)) return kFALSE;
   } else AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
 
-  f->Close(); delete f;
+  f->Close(); //delete f;
 
   gEve->Redraw3D();
 
+  return kTRUE;
+}
+
+
+//______________________________________________________________________________
+Bool_t AliEveTRDLoader::LoadHits(TTree *tH)
+{
+  // Load hits.
+
+  AliInfo("Loading ...");
+  if(!fChildren.size()) return kFALSE;
+
+  AliEveTRDChamber *chmb = 0x0;
+  TClonesArray *hits = new TClonesArray("AliTRDhit", 100);
+  tH->SetBranchAddress("TRD", &hits);
+  Int_t idx, nhits;
+  for(int iTrack=0; iTrack<tH->GetEntries(); iTrack++){
+    if(!tH->GetEvent(iTrack)) continue;
+    if(!(nhits = hits->GetEntriesFast())) continue;
+
+    idx = 0;
+    while(idx < nhits){
+      Int_t det = ((AliTRDhit*)hits->UncheckedAt(idx))->GetDetector();
+      chmb = GetChamber(det);
+      if(chmb) chmb->LoadHits(hits, idx);
+      else{
+        AliTRDhit *hit = 0x0;
+        while(idx < nhits){
+          hit = (AliTRDhit*)hits->UncheckedAt(idx);
+          if(hit->GetDetector() != det) break;
+          idx++;
+        }
+      }
+    }
+    hits->Delete();
+  }
   return kTRUE;
 }
 
@@ -277,38 +298,48 @@ Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
   fFilename = filename;
   fDir = dir;
   Int_t count = 0;
-  count += fLoadDigits ? 1 : 0;
-  count += fLoadClusters ? 1 : 0;
-  count += fLoadTracks ? 1 : 0;
+  count += fDataType&kTRDHits;
+  count += fDataType&kTRDDigits;
+  count += fDataType&kTRDClusters;
+  count += fDataType&kTRDTracklets;
 
   TObjArray *so = fFilename.Tokenize(".");
 
   if(((TObjString*)(*so)[0])->GetString().CompareTo("TRD") != 0){
-    if(!count){
-      AliWarning("Filename didn't fulfill naming conventions. No TRD data will be loaded.");
-      return kFALSE;
-    } else {
-      Warning("Open()", "Filename didn't fulfill naming conventions.");
-      return kTRUE;
-    }
+    AliError("Filename didn't fulfill naming conventions. No TRD data will be loaded.");
+    return kFALSE;
   }
-  if(((TObjString*)(*so)[1])->GetString().CompareTo("Digits") == 0){
-    if(!fLoadDigits) AliWarning("Data type set to DIGITS according to file name. Previous settings with SetDataType() will be discarded.");
-    fLoadDigits = kTRUE;
+
+  if(((TObjString*)(*so)[1])->GetString().CompareTo("Hits") == 0){
+    if(count && !fDataType&kTRDHits){ 
+      AliWarning("Data type set to HITS according to file name. Previous settings will be overwritten.");
+      fDataType = 0; 
+    }
+    fDataType|=kTRDHits;
+  } else   if(((TObjString*)(*so)[1])->GetString().CompareTo("Digits") == 0){
+    if(count && !fDataType&kTRDDigits){ 
+      AliWarning("Data type set to DIGITS according to file name. Previous settings will be overwritten.");
+      fDataType = 0; 
+    }
+    fDataType|=kTRDDigits;
   } else if(((TObjString*)(*so)[1])->GetString().CompareTo("RecPoints") == 0){
-    if(!fLoadClusters) AliWarning("Data type set to CLUSTERS according to file name. Previous settings with SetDataType() will be discarded.");
-    fLoadClusters = kTRUE;
+    if(count && !fDataType&kTRDClusters){ 
+      AliWarning("Data type set to CLUSTERS according to file name. Previous settings will be overwritten.");
+      fDataType = 0; 
+    }
+    fDataType|=kTRDClusters;  
   } else if(((TObjString*)(*so)[1])->GetString().CompareTo("Tracks") == 0){
-    if(!fLoadTracks) AliWarning("Data type set to TRACKLETS according to file name. Previous settings with SetDataType() will be discarded.");
-    fLoadTracks = kTRUE;
-  } else if(count){
-    AliWarning("Filename didn't fulfill naming conventions.");
-    return kTRUE;
+    if(count && !fDataType&kTRDTracklets){ 
+      AliWarning("Data type set to TRACKLETS according to file name. Previous settings will be overwritten.");
+      fDataType = 0; 
+    }
+    fDataType|=kTRDTracklets; 
   } else {
     AliError("Filename didn't fulfill naming conventions. No data will be loaded.");
     return kFALSE;
   }
 
+  SetDataLinked();
   return kTRUE;
 }
 
@@ -324,24 +355,6 @@ void AliEveTRDLoader::Paint(Option_t *option)
   }
 }
 
-//______________________________________________________________________________
-void AliEveTRDLoader::SetDataType(TRDDataTypes type)
-{
-  // Set type of data.
-
-  fLoadHits     = kFALSE;
-  fLoadDigits   = kFALSE;
-  fLoadClusters = kFALSE;
-  fLoadTracks   = kFALSE;
-  switch(type){
-    case kHits:     fLoadHits = kTRUE; break;
-    case kDigits:   fLoadDigits = kTRUE; break;
-    case kClusters: fLoadClusters = kTRUE; break;
-    case kTracks:   fLoadTracks = kTRUE; break;
-    case kRawRoot: break;
-    case kRawData: break;
-  }
-}
 
 //______________________________________________________________________________
 void AliEveTRDLoader::Unload()
@@ -363,15 +376,15 @@ void AliEveTRDLoader::Unload()
 AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height,
 					     UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
-  fM(0), fFile(0), fEvent(0),
+  fM(0), fFile(0), fBrowse(0x0), fEvent(0),
   fSMNumber(0), fStackNumber(0), fPlaneNumber(0)
 {
   // Constructor.
 
   MakeTitle("AliEveTRDLoader");
 
+  // file browser frame
   Int_t labelW = 42;
-
   TGHorizontalFrame* f = new TGHorizontalFrame(this);
   TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
   TGLabel* l = new TGLabel(g, "File: ");
@@ -383,22 +396,10 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
   fFile->Connect("DoubleClicked()", "AliEveTRDLoaderEditor", this, "FileOpen()");
   f->AddFrame(fFile);
 
-  TGTextButton* openFile = new TGTextButton(f, "Browse");
-  f->AddFrame(openFile);
-  openFile->Connect("Clicked()", "AliEveTRDLoaderEditor", this, "FileOpen()");
-  AddFrame(f);
-
-
-  fEvent = new TEveGValuator(this, "Event:", 110, 0);
-  fEvent->SetShowSlider(kFALSE);
-  fEvent->SetLabelWidth(labelW);
-  fEvent->SetNELength(6);
-  fEvent->Build();
-  fEvent->SetLimits(-1, 1000);
-  fEvent->SetToolTip("Set event number to be monitored");
-  fEvent->Connect("ValueSet(Double_t)",
-                  "AliEveTRDLoaderEditor", this, "SetEvent(Double_t)");
-  AddFrame(fEvent);
+  fBrowse = new TGTextButton(f, "Browse");
+  f->AddFrame(fBrowse);
+  fBrowse->Connect("Clicked()", "AliEveTRDLoaderEditor", this, "FileOpen()");
+  AddFrame(f, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,5,5,5,5));
 
 
   // "Chamber(s) selector" group frame
@@ -443,15 +444,38 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
                            "AliEveTRDLoaderEditor", this, "AddChambers()");
 
   fGroupFrame1974->SetLayoutManager(new TGHorizontalLayout(fGroupFrame1974));
-  AddFrame(fGroupFrame1974, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+  AddFrame(fGroupFrame1974, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,5,5,5,5));
 
 
-  TGTextButton *fTextButton2004 = new TGTextButton(this,"Load");
-  fTextButton2004->SetTextJustify(36);
-  fTextButton2004->Resize(164,22);
-  AddFrame(fTextButton2004, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-  fTextButton2004->SetToolTipText("Load data according to selection", 400);
-  fTextButton2004->Connect("Clicked()", "AliEveTRDLoaderEditor", this, "Load()");
+  // Event steering frame
+  f = new TGHorizontalFrame(this);
+  TGTextButton *fGoTo = new TGTextButton(f, "GoTo");
+  fGoTo->SetTextJustify(36);
+  fGoTo->Resize(164,22);
+  f->AddFrame(fGoTo, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+  fGoTo->SetToolTipText("Skip to event", 400);
+  fGoTo->Connect("Clicked()", "AliEveTRDLoaderEditor", this, "GoTo()");
+
+  fEvent = new TEveGValuator(f, "Event:", 110, 0);
+  fEvent->SetShowSlider(kFALSE);
+  fEvent->SetLabelWidth(labelW);
+  fEvent->SetNELength(6);
+  fEvent->Build();
+  fEvent->SetLimits(-1, 1000);
+  fEvent->SetToolTip("Set event number to be monitored");
+  fEvent->Connect("ValueSet(Double_t)",
+                  "AliEveTRDLoaderEditor", this, "SetEvent(Double_t)");
+  f->AddFrame(fEvent, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2,2,2,2));
+
+  TGTextButton *fNext = new TGTextButton(f, "Next");
+  fNext->SetTextJustify(36);
+  fNext->Resize(164,22);
+  f->AddFrame(fNext, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+  fNext->SetToolTipText("Next event", 400);
+  fNext->Connect("Clicked()", "AliEveTRDLoaderEditor", this, "Next()");
+
+  AddFrame(f,new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,5,5,5,5));
+
 }
 
 //______________________________________________________________________________
@@ -461,23 +485,22 @@ void AliEveTRDLoaderEditor::SetModel(TObject* obj)
 
   fM = dynamic_cast<AliEveTRDLoader*>(obj);
 
+  fFile->SetEnabled(!fM->IsDataLinked());
   fFile->SetText(gSystem->BaseName(fM->fFilename.Data()));
+  fBrowse->SetEnabled(!fM->IsDataLinked());
 
-  Bool_t kFile = kTRUE;
-  if(fM->fFilename.CompareTo("") == 0) kFile = kFALSE;
-
-  fEvent->SetEnabled(kFile);
+  fEvent->SetEnabled(fM->IsDataLinked());
   fEvent->GetEntry()->SetIntNumber(fM->fEvent);
 
-  fSMNumber->SetEnabled(kFile);
+  fSMNumber->SetEnabled(fM->IsDataLinked());
   fSMNumber->GetEntry()->SetIntNumber(fM->fSM);
 
 
-  fStackNumber->SetEnabled(kFile);
+  fStackNumber->SetEnabled(fM->IsDataLinked());
   fStackNumber->GetEntry()->SetIntNumber(fM->fStack);
 
 
-  fPlaneNumber->SetEnabled(kFile);
+  fPlaneNumber->SetEnabled(fM->IsDataLinked());
   fPlaneNumber->GetEntry()->SetIntNumber(fM->fLy);
 }
 
@@ -505,17 +528,24 @@ void AliEveTRDLoaderEditor::FileOpen()
   new TGFileDialog(fClient->GetRoot(), gEve->GetMainWindow(), kFDOpen, &fi);
   if (!fi.fFilename) return;
 
-  fFile->SetToolTipText(gSystem->DirName (fi.fFilename));
-  fFile->SetText       (gSystem->BaseName(fi.fFilename));
-
-  fM->Open(gSystem->BaseName(fi.fFilename), gSystem->DirName (fi.fFilename));
+  if(fM->Open(gSystem->BaseName(fi.fFilename), gSystem->DirName (fi.fFilename))){ 
+    fFile->SetToolTipText(gSystem->DirName (fi.fFilename));
+    fFile->SetText       (gSystem->BaseName(fi.fFilename));
+  } else fFile->Clear();
 
   this->SetModel(fM);
 }
 
-void AliEveTRDLoaderEditor::Load()
+void AliEveTRDLoaderEditor::GoTo()
 {
   // Slot for loading of event.
 
   fM->GoToEvent(fM->fEvent);
+}
+
+void AliEveTRDLoaderEditor::Next()
+{
+  // Slot for loading of event.
+
+  fM->NextEvent();
 }

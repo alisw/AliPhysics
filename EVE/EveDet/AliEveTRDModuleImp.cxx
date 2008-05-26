@@ -10,10 +10,16 @@
 #include "AliEveTRDModuleImp.h"
 #include "AliEveTRDData.h"
 
-#include <TGListTree.h>
+#include "TGListTree.h"
+#include "TClonesArray.h"
+#include "TGeoManager.h"
+#include "TGeoMatrix.h"
 
 #include "TEveManager.h"
 #include "TEveTrack.h"
+#include "TEveGeoNode.h"
+#include "TEveTrans.h"
+
 
 #include "AliLog.h"
 #include "AliTRDgeometry.h"
@@ -219,44 +225,23 @@ void AliEveTRDNode::UpdateNode()
 
 //______________________________________________________________________________
 AliEveTRDChamber::AliEveTRDChamber(Int_t det) :
-  TEveElement(), AliEveTRDModule("Chmb", det),
-  fDigits(0), fHits(0), fRecPoints(0), fTracklets(0),
-  fRowMax(-1), fColMax(-1), fTimeMax(22), fSamplingFrequency(0),
-  fX0(0.), fPla(-1),
-  fPadPlane (0),
-  fGeo      (0)
+  TEveElement()
+  ,AliEveTRDModule("Chmb", det)
+  ,fDigits(0x0)
+  ,fHits(0x0)
+  ,fRecPoints(0x0)
+  ,fTracklets(0x0)
+  ,fGeo(0x0)
+  ,fShape(0x0)
+  ,fNrows(-1)
+  ,fNcols(-1)
+  ,fNtime(22)
 {
   //
   // Constructor
   //
-
-  AliTRDCommonParam* parCom = AliTRDCommonParam::Instance();
-  fSamplingFrequency = parCom->GetSamplingFrequency();
 }
 
-//______________________________________________________________________________
-Int_t AliEveTRDChamber::GetSM() const
-{
-  // Get supermodule.
-
-  if(!fGeo){
-    AliWarning("Fail. No TRD geometry defined.");
-    return -1;
-  }
-  return fGeo->GetSector(fDet);
-}
-
-//______________________________________________________________________________
-Int_t AliEveTRDChamber::GetSTK() const
-{
-  // Get stack.
-
-  if(!fGeo){
-    AliWarning("Fail. No TRD geometry defined.");
-    return -1;
-  }
-  return fGeo->GetChamber(fDet);
-}
 
 //______________________________________________________________________________
 void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
@@ -271,26 +256,23 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
   }
 
   if(!fRecPoints){
-    fRecPoints = new AliEveTRDClusters(this);
-    fRecPoints->SetMarkerSize(1.);
+    AddElement(fRecPoints = new AliEveTRDClusters(this));
+    fRecPoints->SetMarkerSize(.2);
     fRecPoints->SetMarkerStyle(24);
-    fRecPoints->SetMarkerColor(6);
+    fRecPoints->SetMarkerColor(kGreen);
     fRecPoints->SetOwnIds(kTRUE);
-  } else fRecPoints->Reset();
+  }
+  fRecPoints->Reset();
 
   Float_t q;
-  Double_t cloc[3], cglo[3];
-
+  Float_t g[3]; //global coordinates
   AliTRDcluster *c=0x0;
   for(int iclus=0; iclus<clusters->GetEntriesFast(); iclus++){
     c = (AliTRDcluster*)clusters->UncheckedAt(iclus);
-    cloc[0] = c->GetX();
-    cloc[1] = c->GetY();
-    cloc[2] = c->GetZ();
+    c->GetGlobalXYZ(g); 
     q = c->GetQ();
-    fGeo->RotateBack(fDet,cloc,cglo);
-    fRecPoints->SetNextPoint(cglo[0], cglo[1], cglo[2]);
-    fRecPoints->SetPointId(c);
+    Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);    
+    fRecPoints->SetPointId(id, new AliTRDcluster(*c));
   }
   fLoadRecPoints = kTRUE;
 }
@@ -307,31 +289,40 @@ void AliEveTRDChamber::LoadDigits(AliTRDdigitsManager *digits)
   }
   // Info("LoadDigits()", Form("digits =0x%x", digits));
 
-  if(!fDigits) fDigits = new AliEveTRDDigits(this);
-  else fDigits->Reset();
+  if(!fDigits) AddElement(fDigits = new AliEveTRDDigits(this));
 
+  fDigits->Reset();
   fDigits->SetData(digits);
   fLoadDigits = kTRUE;
 }
 
 //______________________________________________________________________________
-void AliEveTRDChamber::AddHit(AliTRDhit *hit)
+void AliEveTRDChamber::LoadHits(TClonesArray *hits, Int_t &idx)
 {
   //
   // Draw hits
   //
-  // Info("AddHit()", Form("%s", GetName()));
+  //Info("AddHit()", Form("%s", GetName()));
 
   if(!fHits){
-    fHits = new AliEveTRDHits(this);
+    AddElement(fHits = new AliEveTRDHits(this));
     fHits->SetMarkerSize(.1);
     fHits->SetMarkerColor(2);
     fHits->SetOwnIds(kTRUE);
   }
-
-  fHits->SetNextPoint(hit->X(), hit->Y(), hit->Z());
-  fHits->SetPointId(hit);
   fLoadHits = kTRUE;
+  Int_t nhits = hits->GetEntriesFast();
+
+  AliTRDhit *hit = 0x0;
+  while(idx<nhits){
+    hit = (AliTRDhit*)hits->UncheckedAt(idx);
+    if(hit->GetDetector() != fDet) return;
+
+    Int_t id = fHits->SetNextPoint(hit->X(), hit->Y(), hit->Z());
+    fHits->SetPointId(id, new AliTRDhit(*hit));
+    idx++;
+  }
+  return;
 }
 
 //______________________________________________________________________________
@@ -378,6 +369,7 @@ void AliEveTRDChamber::Paint(Option_t* option)
 {
   // Paint object.
 
+  //AliInfo(GetName());
   if(!fRnrSelf) return;
   if(fDigits && fRnrDigits){
     if(fDigitsNeedRecompute){
@@ -386,8 +378,11 @@ void AliEveTRDChamber::Paint(Option_t* option)
     }
     fDigits->Paint(option);
   }
+
   if(fRecPoints && fRnrRecPoints) fRecPoints->GetObject()->Paint(option);
+
   if(fHits && fRnrHits) fHits->GetObject()->Paint(option);
+
   if(fTracklets && fRnrTracklets){
     for(std::vector<TEveTrack*>::iterator i=fTracklets->begin(); i != fTracklets->end(); ++i) (*i)->Paint(option);
   }
@@ -405,6 +400,7 @@ void AliEveTRDChamber::Reset()
   if(fDigits){
     fDigits->Reset();
     fLoadDigits = kFALSE;
+    fDigitsNeedRecompute = kTRUE;
   }
   if(fRecPoints){
     fRecPoints->Reset();
@@ -423,11 +419,35 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
 
   fGeo = geo;
 
-  fPla = fGeo->GetPlane(fDet);
-  fX0 = fGeo->GetTime0(fPla);
+  Int_t  ism  = geo->GetSector(fDet);
+  Int_t  istk = geo->GetChamber(fDet);
+  Int_t  ipla = geo->GetPlane(fDet);
+  Int_t icha  = istk*6+ipla;
 
-  fPadPlane = fGeo->GetPadPlane(fPla,fGeo->GetChamber(fDet));
-  fRowMax   = fPadPlane->GetNrows();
-  fColMax   = fPadPlane->GetNcols();
+  // define pad plane size in pads
+  AliTRDpadPlane *pp = fGeo->GetPadPlane(ipla, istk);
+  fNrows   = pp->GetNrows();
+  fNcols   = pp->GetNcols();
+
+// this version for setting the rendarable object is not working very nice
+// Int_t shape_offset = TEveGeoShape::Class()->GetDataMemberOffset("fShape");
+// TEveGeoShape* eg_shape = new TEveGeoShape("geometry");
+// eg_shape->RefMainTrans().SetFrom(* gGeoManager->GetCurrentMatrix());
+// * (TGeoShape**) (((char*)eg_shape) + shape_offset) = gGeoManager->GetCurrentVolume()->GetShape();
+// 
+// eg_shape->StampColorSelection();
+
+  // define rendarable volumes
+  gGeoManager->cd(Form("/B077_1/BSEGMO%d_1/BTRD%d_1/UTR1_1/UTS1_1/UTI1_1/UT%02d_1", ism, ism, icha));
+  fShape = new TEveGeoTopNode(gGeoManager, gGeoManager->GetCurrentNode());
+  fShape->RefMainTrans().SetFrom(*gGeoManager->GetCurrentMatrix());
+  fShape->DisableListElements();
+  fShape->SetRnrSelf(kFALSE);
+// try to set the properties but it is crashing !!
+//   TEveGeoNode *node = 0x0; 
+//   if((node = (TEveGeoNode*)fShape->FindChild(Form("UA%02d_1", icha)))) node->SetRnrState(kTRUE);
+//   else AliWarning(Form("Can not retrieve geo node UA%02d_1", icha));
+
+  AddElement(fShape);
 }
 

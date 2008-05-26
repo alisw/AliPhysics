@@ -22,23 +22,24 @@
 #include <TEveQuadSet.h>
 #include <TEveBoxSet.h>
 #include <TEvePointSet.h>
+#include <TEveLine.h>
 
-#include <TGedFrame.h>
 
 #include "AliTRDdataArrayI.h"
+#include "AliTRDseedV1.h"
+#include "AliTRDtrackV1.h"
 
-class AliTRDdigitsManager;
 class AliEveTRDChamber;
-
 class AliEveTRDHits : public TEvePointSet
 {
 public:
   AliEveTRDHits(AliEveTRDChamber *p);
+  ~AliEveTRDHits();
 
   void PointSelected(Int_t n);
 
 protected:
-  AliEveTRDChamber *fParent; // Chaber holding the hits.
+  AliEveTRDChamber *fParent; // Chamber holding the hits.
 
 private:
   AliEveTRDHits(const AliEveTRDHits&);            // Not implemented
@@ -48,32 +49,14 @@ private:
 };
 
 
-class AliEveTRDHitsEditor : public TGedFrame
-{
-public:
-  AliEveTRDHitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		      UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveTRDHitsEditor() {}
-
-  virtual void SetModel(TObject* obj);
-
-protected:
-  AliEveTRDHits* fM; // Model object.
-
-private:
-  AliEveTRDHitsEditor(const AliEveTRDHitsEditor&);            // Not implemented
-  AliEveTRDHitsEditor& operator=(const AliEveTRDHitsEditor&); // Not implemented
-
-  ClassDef(AliEveTRDHitsEditor, 0); // Editor for AliEveTRDHits.
-};
-
-
+class AliTRDdigitsManager;
 class AliEveTRDDigits : public TEveQuadSet
 {
   friend class AliEveTRDDigitsEditor;
 
 public:
   AliEveTRDDigits(AliEveTRDChamber *p);
+  ~AliEveTRDDigits();
 
   void			ComputeRepresentation();
   void			Paint(Option_t *opt="");
@@ -94,25 +77,6 @@ private:
 };
 
 
-class AliEveTRDDigitsEditor : public TGedFrame
-{
-public:
-  AliEveTRDDigitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveTRDDigitsEditor() {}
-
-  virtual void SetModel(TObject* obj);
-
-protected:
-  AliEveTRDDigits* fM; // Model object.
-
-private:
-  AliEveTRDDigitsEditor(const AliEveTRDDigitsEditor&);            // Not implemented
-  AliEveTRDDigitsEditor& operator=(const AliEveTRDDigitsEditor&); // Not implemented
-
-  ClassDef(AliEveTRDDigitsEditor, 0); // Editor for AliEveTRDDigits
-};
-
 
 class AliEveTRDClusters : public AliEveTRDHits
 {
@@ -127,5 +91,39 @@ private:
 
   ClassDef(AliEveTRDClusters, 0); // Base class for TRD clusters visualisation
 };
+
+
+
+
+class AliEveTRDTracklet : public TEveLine, public AliTRDseedV1 
+{
+public:
+  AliEveTRDTracklet();
+//  ~AliEveTRDTracklet();
+  
+
+private:
+  AliEveTRDTracklet(const AliEveTRDTracklet&);            // Not implemented
+  AliEveTRDTracklet& operator=(const AliEveTRDTracklet&); // Not implemented
+
+  ClassDef(AliEveTRDTracklet, 0); // TRD tracklet visualisation
+};
+
+
+
+
+class AliEveTRDTrack : public TEveLine, public AliTRDtrackV1
+{
+public:
+  AliEveTRDTrack();
+//  ~AliEveTRDTrack();
+  
+private:
+  AliEveTRDTrack(const AliEveTRDTrack&);            // Not implemented
+  AliEveTRDTrack& operator=(const AliEveTRDTrack&); // Not implemented
+
+  ClassDef(AliEveTRDTrack, 0); // TRD track visualisation
+};
+
 
 #endif

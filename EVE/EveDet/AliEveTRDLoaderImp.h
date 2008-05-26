@@ -36,12 +36,12 @@ public:
   virtual ~AliEveTRDLoaderSim() {}
 
   Bool_t	GoToEvent(int ev);
-  Bool_t	LoadHits(TTree *tH);
   Bool_t	Open(const char *file, const char *dir=".");
 
-private:
+protected:
   AliRunLoader *fRunLoader; // Run Loader
 
+private:
   AliEveTRDLoaderSim(const AliEveTRDLoaderSim&);            // Not implemented
   AliEveTRDLoaderSim& operator=(const AliEveTRDLoaderSim&); // Not implemented
 
@@ -56,17 +56,15 @@ public:
   virtual ~AliEveTRDLoaderRaw() {}
 
   Bool_t	GoToEvent(int ev);
-  Bool_t 	LoadEvent();
+  Bool_t  NextEvent(Bool_t rewindOnEnd=kTRUE);
   Bool_t	Open(const char *file, const char *dir=".");
-  void		SetDataType(TRDDataTypes type);
 
 private:
-  void NextEvent(Bool_t rewindOnEnd=kTRUE);
+  Bool_t 	LoadEvent();
 
   AliRawReaderDate	*fRawDateReader; // raw data reader
   AliRawReaderRoot	*fRawRootReader; // raw root reader
   AliTRDrawData		*fRaw;           // raw data
-  Bool_t		 fDataRoot;      // data in root format
   Int_t			 fEventOld;      // old event
 
   AliEveTRDLoaderRaw(const AliEveTRDLoaderRaw&);            // Not implemented
@@ -88,7 +86,7 @@ public:
 
 protected:
   AliEveTRDLoaderSim  *fM; // Model object.
-  TGCheckButton       *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadTracks; // What data to load.
+  TGCheckButton       *fCheckedHits, *fCheckedDigits, *fCheckedClusters, *fCheckedTracklets; // What data to load.
 
 private:
   AliEveTRDLoaderSimEditor(const AliEveTRDLoaderSimEditor&);            // Not implemented

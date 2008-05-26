@@ -41,40 +41,45 @@ class AliEveTRDLoader : public TEveElementList
 
 public:
   enum TRDDataTypes {
-    kHits     = 0,
-    kDigits   = 1,
-    kClusters = 2,
-    kTracks   = 3,
-    kRawRoot  = 4,
-    kRawData  = 5
+    kTRDHits     = BIT(0),
+    kTRDDigits   = BIT(1),
+    kTRDClusters = BIT(2),
+    kTRDTracklets= BIT(3),
+    kTRDRawRoot  = BIT(4),
+    kTRDRawDate  = BIT(5)
   };
-
 
   AliEveTRDLoader(const Text_t* n="AliEveTRDLoader", const Text_t* t=0);
   virtual ~AliEveTRDLoader() {}
 
-  virtual void 		Paint(Option_t *option="");
-  virtual void		SetDataType(TRDDataTypes type);
-
-
-protected:
   virtual void		AddChambers(int sm=-1, int stk=-1, int ly=-1);
   virtual AliEveTRDChamber*	GetChamber(int d);
   virtual Bool_t	GoToEvent(int ev);
+          Bool_t  IsDataLinked() const {return TestBit(1);}
+
+  virtual Bool_t	Open(const char *file, const char *dir = ".");
+  inline virtual  Bool_t  NextEvent(Bool_t rewind = kTRUE);
+  virtual void 		Paint(Option_t *option="");
+
+  virtual void		SetDataType(UChar_t type = 0){fDataType = type;}
+
+
+protected:
+  virtual Bool_t	LoadHits(TTree *tH);
   virtual Bool_t	LoadClusters(TTree *tC);
   virtual Bool_t	LoadDigits(TTree *tD);
   virtual Bool_t	LoadTracklets(TTree *tT);
-  virtual Bool_t	Open(const char *file, const char *dir = ".");
+          void    SetDataLinked(Bool_t linked = kTRUE) {SetBit(1, linked);}
+
   virtual void		Unload();
 
-  Bool_t	fLoadHits, fLoadDigits, fLoadClusters, fLoadTracks; // flags for data-loading
-  Int_t		fSM, fStack, fLy; // supermodule, stack, layer
+  UChar_t fDataType;        // data type
+  //Bool_t	fLoadHits, fLoadDigits, fLoadClusters, fLoadTracks; // flags for data-loading
+  Char_t	fSM, fStack, fLy; // supermodule, stack, layer
+  Short_t		fEvent;         // current event to be displayed
+  AliTRDgeometry		*fGeo;  // the TRD geometry
   TString	fFilename;        // name of data file
   TString	fDir;             // data directory
-  Int_t		fEvent;           // current event to be displayed
-
-  AliTRDv1			*fTRD; // the TRD detector
-  AliTRDgeometry		*fGeo; // the TRD geometry
 
 private:
   AliEveTRDLoader(const AliEveTRDLoader&);            // Not implemented
@@ -83,6 +88,11 @@ private:
   ClassDef(AliEveTRDLoader, 0); // Alieve Loader class for the TRD detector.
 };
 
+Bool_t AliEveTRDLoader::NextEvent(Bool_t)
+{
+  fEvent++;
+  return GoToEvent(fEvent);
+}
 
 class AliEveTRDLoaderEditor : public TGedFrame
 {
@@ -93,13 +103,15 @@ public:
 
   virtual void	AddChambers();
   virtual void	FileOpen();
-  virtual void	Load();
+  virtual void	GoTo();
+  virtual void	Next();
   virtual void	SetEvent(Double_t ev){fM->fEvent = (Int_t)ev;}
   virtual void	SetModel(TObject* obj);
 
 protected:
   AliEveTRDLoader	*fM;     // Model object.
-  TGTextEntry		*fFile;  // File name weed.
+  TGTextEntry		*fFile;    // File name weed.
+  TGTextButton  *fBrowse;  // browse button
   TEveGValuator		*fEvent; // Event no weed.
   TEveGValuator		*fSMNumber, *fStackNumber, *fPlaneNumber; // Detector id weeds.
 

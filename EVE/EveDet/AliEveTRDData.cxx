@@ -7,19 +7,27 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include "TEveTrans.h"
+
 #include "AliEveTRDData.h"
 #include "AliEveTRDModuleImp.h"
 
+#include "AliLog.h"
+
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
-#include "AliTRDcalibDB.h"
+#include "AliTRDseedV1.h"
+#include "AliTRDtrackV1.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDtransform.h"
 #include "AliTRDdigitsManager.h"
 
 ClassImp(AliEveTRDHits)
 ClassImp(AliEveTRDDigits)
 ClassImp(AliEveTRDClusters)
+ClassImp(AliEveTRDTracklet)
+ClassImp(AliEveTRDTrack)
 
 ///////////////////////////////////////////////////////////
 /////////////   AliEveTRDDigits       /////////////////////
@@ -33,18 +41,9 @@ AliEveTRDDigits::AliEveTRDDigits(AliEveTRDChamber *p) :
 }
 
 //______________________________________________________________________________
-void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
+AliEveTRDDigits::~AliEveTRDDigits()
 {
-  // Set data source.
-
-  fData.Allocate(fParent->fRowMax, fParent->fColMax, fParent->fTimeMax);
-  //	digits->Expand();
-  for (Int_t  row = 0;  row <  fParent->fRowMax;  row++)
-    for (Int_t  col = 0;  col <  fParent->fColMax;  col++)
-      for (Int_t time = 0; time < fParent->fTimeMax; time++) {
-	if(digits->GetDigitAmp(row, col, time, fParent->GetID()) < 0) continue;
-	fData.SetDataUnchecked(row, col, time, digits->GetDigitAmp(row, col, time, fParent->GetID()));
-      }
+//  AliInfo(GetTitle());
 }
 
 //______________________________________________________________________________
@@ -56,82 +55,68 @@ void AliEveTRDDigits::ComputeRepresentation()
   // - digits threshold
   // - digits apparence (quads/boxes)
 
-  TEveQuadSet::Reset(TEveQuadSet::kQT_FreeQuad, kTRUE, 64);
-  // MT fBoxes.fBoxes.clear();
+  TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
 
-  Double_t colSize, rowSize, scale;
-  Double_t x, y, z;
+  Double_t scale, dy, dz;
+  Int_t q, color;
+  Int_t nrows = fParent->fNrows,
+        ncols = fParent->fNcols,
+        ntbs  = fParent->fNtime,
+        det   = fParent->GetID();
+  Float_t threshold = fParent->GetDigitsThreshold();
 
-  Int_t charge;
-  Float_t t0;
-  Float_t timeBinSize;
+  AliTRDtransform transform(det);
+  AliTRDgeometry *geo = fParent->fGeo;
+  AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetPlane(det), geo->GetChamber(det));
 
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  Double_t cloc[4][3], cglo[3];
-  Int_t color, dimension;
+  // express position in tracking coordinates
   fData.Expand();
-  for (Int_t  row = 0;  row <  fParent->fRowMax;  row++) {
-    rowSize = .5 * fParent->fPadPlane->GetRowSize(row);
-    z = fParent->fPadPlane->GetRowPos(row) - rowSize;
+  for (Int_t ir = 0; ir < nrows; ir++) {
+    dz = pp->GetRowSize(ir);
+    for (Int_t ic = 0; ic < ncols; ic++) {
+      dy = pp->GetColSize(ic);
+      for (Int_t it = 0; it < ntbs; it++) {
+        q = fData.GetDataUnchecked(ir, ic, it);
+        if (q < threshold) continue;
 
-    for (Int_t  col = 0;  col <  fParent->fColMax;  col++) {
-      colSize = .5 * fParent->fPadPlane->GetColSize(col);
-      y = fParent->fPadPlane->GetColPos(col) - colSize;
-      t0 = calibration->GetT0(fParent->fDet, col, row);
-      timeBinSize = calibration->GetVdrift(fParent->fDet, col, row)/fParent->fSamplingFrequency;
+        Double_t x[6] = {0., 0., Double_t(q), 0., 0., 0.}; 
+        Int_t  roc[3] = {ir, ic, 0}; 
+        Bool_t    out = kTRUE;
+        transform.Transform(&x[0], &roc[0], UInt_t(it), out, 0);
 
-      for (Int_t time = 0; time < fParent->fTimeMax; time++) {
-	charge = fData.GetDataUnchecked(row, col, time);
-	if (charge < fParent->GetDigitsThreshold()) continue;
-
-	x = fParent->fX0 - (time+0.5-t0)*timeBinSize;
-	scale = fParent->GetDigitsLog() ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
-	color  = 50+int(scale*50.);
-
-	cloc[0][2] = z - rowSize * scale;
-	cloc[0][1] = y - colSize * scale;
-	cloc[0][0] = x;
-
-	cloc[1][2] = z - rowSize * scale;
-	cloc[1][1] = y + colSize * scale;
-	cloc[1][0] = x;
-
-	cloc[2][2] = z + rowSize * scale;
-	cloc[2][1] = y + colSize * scale;
-	cloc[2][0] = x;
-
-	cloc[3][2] = z + rowSize * scale;
-	cloc[3][1] = y - colSize * scale;
-	cloc[3][0] = x;
-
-	Float_t* p = 0;
-	if( fParent->GetDigitsBox()){
-	  // MT fBoxes.fBoxes.push_back(Box());
-	  // MT fBoxes.fBoxes.back().color[0] = (UChar_t)color;
-	  // MT fBoxes.fBoxes.back().color[1] = (UChar_t)color;
-	  // MT fBoxes.fBoxes.back().color[2] = (UChar_t)color;
-	  // MT fBoxes.fBoxes.back().color[3] = (UChar_t)color;
-	  // MT p = fBoxes.fBoxes.back().vertices;
-	  dimension = 2;
-	} else {
-	  AddQuad((Float_t*)0);
-	  QuadColor(color);
-	  p = ((QFreeQuad_t*) fLastDigit)->fVertices;
-	  dimension = 1;
-	}
-
-	for(int id=0; id<dimension; id++)
-	  for (Int_t ic = 0; ic < 4; ic++) {
-	    cloc[ic][0] -= .5 * id * timeBinSize;
-	    fParent->fGeo->RotateBack(fParent->fDet,cloc[ic],cglo);
-	    p[0] = cglo[0]; p[1] = cglo[1]; p[2] = cglo[2];
-	    p+=3;
-	  }
+        scale = q < 512 ? q/512. : 1.;
+        color  = 50+int(scale*50.);
+    
+        AddQuad(x[1]-.45*dy, x[2]-.5*dz*scale, x[0], .9*dy, dz*scale);
+        QuadValue(q);
+        QuadColor(Color_t(color));
+        QuadId(new TNamed(Form("Charge%d", q), "dummy title"));
       }  // end time loop
     }  // end col loop
   }  // end row loop
   fData.Compress(1);
+  
+  // rotate to global coordinates
+  //RefitPlex();
+  TEveTrans& t = RefMainTrans();
+  t.SetRotByAngles((geo->GetSector(det)+.5)*AliTRDgeometry::GetAlpha(), 0.,0.);
 }
+
+//______________________________________________________________________________
+void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
+{
+  // Set data source.
+
+  fData.Allocate(fParent->fNrows, fParent->fNcols, fParent->fNtime);
+  //	digits->Expand();
+  for (Int_t  row = 0;  row <  fParent->fNrows;  row++)
+    for (Int_t  col = 0;  col <  fParent->fNcols;  col++)
+      for (Int_t time = 0; time < fParent->fNtime; time++) {
+        if(digits->GetDigitAmp(row, col, time, fParent->GetID()) < 0) continue;
+        fData.SetDataUnchecked(row, col, time, digits->GetDigitAmp(row, col, time, fParent->GetID()));
+      }
+}
+
 
 //______________________________________________________________________________
 void AliEveTRDDigits::Paint(Option_t *option)
@@ -147,7 +132,7 @@ void AliEveTRDDigits::Reset()
 {
   // Reset raw and visual data.
 
-  TEveQuadSet::Reset(TEveQuadSet::kQT_FreeQuad, kTRUE, 64);
+  TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
   // MT fBoxes.fBoxes.clear();
   fData.Reset();
 }
@@ -161,6 +146,13 @@ AliEveTRDHits::AliEveTRDHits(AliEveTRDChamber *p) :
   TEvePointSet("hits", 20), fParent(p)
 {
   // Constructor.
+  SetTitle(Form("Hits for Det %d", p->GetID()));
+}
+
+//______________________________________________________________________________
+AliEveTRDHits::~AliEveTRDHits()
+{
+  //AliInfo(GetTitle());
 }
 
 //______________________________________________________________________________
@@ -180,13 +172,15 @@ void AliEveTRDHits::PointSelected(Int_t n)
 
 
 ///////////////////////////////////////////////////////////
-/////////////   AliEveTRDHits         /////////////////////
+/////////////   AliEveTRDClusters         /////////////////////
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
 AliEveTRDClusters::AliEveTRDClusters(AliEveTRDChamber *p):AliEveTRDHits(p)
 {
   // Constructor.
+  SetName("clusters");
+  SetTitle(Form("Clusters for Det %d", p->GetID()));
 }
 
 //______________________________________________________________________________
@@ -214,55 +208,26 @@ void AliEveTRDClusters::PointSelected(Int_t n)
 }
 
 ///////////////////////////////////////////////////////////
-////////////   AliEveTRDHitsEditor      ///////////////////
+/////////////   AliEveTRDTracklet         /////////////////////
 ///////////////////////////////////////////////////////////
-AliEveTRDHitsEditor::AliEveTRDHitsEditor(const TGWindow* p, Int_t width, Int_t height,
-					 UInt_t options, Pixel_t back) :
-  TGedFrame(p, width, height, options, back),
-  fM(0)
+
+//______________________________________________________________________________
+AliEveTRDTracklet::AliEveTRDTracklet():TEveLine(), AliTRDseedV1()
 {
   // Constructor.
-
-  MakeTitle("TRD Hits");
-}
-
-void AliEveTRDHitsEditor::SetModel(TObject* obj)
-{
-  // Set model object.
-
-  fM = dynamic_cast<AliEveTRDHits*>(obj);
-
-  // 	Float_t x, y, z;
-  // 	for(int ihit=0; ihit<fM->GetN(); ihit++){
-  // 		fM->GetPoint(ihit, x, y, z);
-  // 		printf("%3d : x=%6.3f y=%6.3f z=%6.3f\n", ihit, x, y, z);
-  // 	}
+  SetName("tracklet");
+  //SetTitle(Form("Clusters for Det %d", p->GetID()));
 }
 
 ///////////////////////////////////////////////////////////
-/////////////   AliEveTRDDigitsEditor /////////////////////
+/////////////   AliEveTRDTrack         /////////////////////
 ///////////////////////////////////////////////////////////
-AliEveTRDDigitsEditor::AliEveTRDDigitsEditor(const TGWindow* p, Int_t width, Int_t height,
-					     UInt_t options, Pixel_t back) :
-  TGedFrame(p, width, height, options, back),
-  fM(0)
+
+//______________________________________________________________________________
+AliEveTRDTrack::AliEveTRDTrack():TEveLine(), AliTRDtrackV1()
 {
   // Constructor.
-
-  MakeTitle("TRD Digits");
+  SetName("track");
+  //SetTitle(Form("Clusters for Det %d", p->GetID()));
 }
 
-void AliEveTRDDigitsEditor::SetModel(TObject* obj)
-{
-  // Set model object.
-
-  fM = dynamic_cast<AliEveTRDDigits*>(obj);
-  fM->fParent->SpawnEditor();
-
-  // 	printf("Chamber %d", fM->fParent->GetID());
-  // 	for (Int_t  row = 0;  row <  fM->fParent->GetRowMax();  row++)
-  // 		for (Int_t  col = 0;  col <  fM->fParent->GetColMax();  col++)
-  // 			for (Int_t time = 0; time < fM->fParent->GetTimeMax(); time++) {
-  // 				printf("\tA(%d %d %d) = %d\n", row, col, time, fM->fData.GetDataUnchecked(row, col, time));
-  // 			}
-}

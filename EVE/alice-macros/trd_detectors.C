@@ -1,3 +1,16 @@
+//
+// How to steer the basic TRD data containers from a macro.
+// 
+// The loading and looping over events is performed by the
+// AliEve mechanism. For a stand alone TRD loop control check 
+// the macro "trd_loader.C"
+// 
+// Usage:
+// .x trd_detectors.C(sector)
+// 
+// Author:
+// Alex Bercuci (A.Bercuci@gsi.de)
+// 
 #ifdef __CINT__
 class TEvePointSet;
 class TEveElement;
@@ -11,66 +24,65 @@ class TEveElement;
 #include "AliTRDcluster.h"
 #endif
 
-TEveElementList* trd_detectors(TEveElement *cont = 0)
+TEveElementList* trd_detectors(Int_t sector = 2, TEveElement *cont = 0)
 {
   // Link data containers
-	AliEveEventManager::AssertGeometry();
-	AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
+  AliCDBManager *fCDBManager=AliCDBManager::Instance();
+  fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
+  fCDBManager->SetRun(0);
 
-	// define EVE containers
-	Int_t nclusters = 0;
-  TEveElementList *clusters = new TEveElementList("TRD clusters"); 	
-  TEvePointSet *clustersDet = 0x0;
+  TGeoManager  *gGeoManager = AliEveEventManager::AssertGeometry();
 
-
-//   AliTRDgeometry geo;
-//   AliEveTRDChamber *chm = 0x0;
-
-  // Fill EVE containers
-	TObjArray *TRDcluster = 0x0;
-	rl->LoadRecPoints("TRD");
-	TTree *recPoints = rl->GetTreeR("TRD", kFALSE);
-	recPoints->SetBranchAddress("TRDcluster", &TRDcluster);
-	
-  Int_t nentr=(Int_t)recPoints->GetEntries();
-  for (Int_t i=0; i<nentr; i++) {
-    if (!recPoints->GetEvent(i)) continue;
-
-
-    Int_t det = -1;
-    Int_t ncl=TRDcluster->GetEntriesFast();
-    nclusters+=ncl;
-    while (ncl--) {
-      AliTRDcluster *c = (AliTRDcluster*)TRDcluster->UncheckedAt(ncl);
-      Float_t g[3]; //global coordinates
-      c->GetGlobalXYZ(g); 
-      if(det<0){
-        det = c->GetDetector();
-        clustersDet= new TEvePointSet(Form("detector %d", det));
-        clustersDet->SetOwnIds(kTRUE);
-        clustersDet->SetMarkerStyle(2);
-        clustersDet->SetMarkerSize(0.2);
-        clustersDet->SetMarkerColor(kBlue);
-
-/*        chm = new AliEveTRDChamber(det);
-        chm->SetGeometry(&geo);
-        chm->LoadClusters(TRDcluster);
-        break;*/
-      }
-			Int_t id = clustersDet->SetNextPoint(g[0], g[1], g[2]);
-      clustersDet->SetPointId(id, new AliTRDcluster(*c));
-    }
-    clustersDet->SetTitle(Form("Clusters %d", clustersDet->Size()));
-    clusters->AddElement(clustersDet);
-
-    //clusters->AddElement(chm);
-
-    TRDcluster->Clear();
-  }
-  clusters->SetTitle(Form("Clusters %d", nclusters));
+  AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
   
-  gEve->AddElement(clusters, cont);
+  // define EVE containers
+  TEveElementList *list = new TEveElementList("TRD Detectors");
+  
+  AliTRDgeometry *geo = new AliTRDgeometry();
+  //geo->CreateClusterMatrixArray();
+  
+  AliEveTRDNode *sm = 0x0, *stk = 0x0; 
+  AliEveTRDChamber *chm=0x0;
+
+  // Link TRD containers
+  TObjArray *clusters = 0x0;
+  rl->LoadRecPoints("TRD");
+  TTree *tR = rl->GetTreeR("TRD", kFALSE);
+  tR->SetBranchAddress("TRDcluster", &clusters);
+
+  rl->LoadDigits("TRD");
+  TTree *tD = rl->GetTreeD("TRD", kFALSE);
+  AliTRDdigitsManager dm; dm.ReadDigits(tD);
+
+  for(Int_t i=0; i<tR->GetEntries(); i++) {
+    if (!tR->GetEvent(i)) continue;
+
+    Int_t idet, ism, istk, ipla, icl=0; 
+    AliTRDcluster *c = 0x0;
+    while(!(c = (AliTRDcluster*)clusters->UncheckedAt(icl++))) {;}
+    idet = c->GetDetector();
+    ism  = geo->GetSector(idet);
+    istk = geo->GetChamber(idet);
+    ipla = geo->GetPlane(idet);
+    if(ism != sector) continue;
+    if(!sm){ 
+      list->AddElement(sm = new AliEveTRDNode("SM", ism));
+      sm->SetElementTitle(Form("Supermodule %2d", ism));
+    }
+    if(!(stk=sm->FindChild(Form("Stack%03d", istk)))){
+      sm->AddElement(stk = new AliEveTRDNode("Stack", istk));
+      stk->SetElementTitle(Form("SM %2d Stack %1d", ism, istk));
+    }
+    stk->AddElement(chm = new AliEveTRDChamber(idet));
+    chm->SetGeometry(geo);
+    chm->LoadClusters(clusters);
+    chm->LoadDigits(&dm);
+
+    clusters->Clear();
+  }
+
+  gEve->AddElement(list, cont);
   gEve->Redraw3D();
 
-  return clusters;
+  return list;
 }
