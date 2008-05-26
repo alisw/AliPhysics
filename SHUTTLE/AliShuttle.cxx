@@ -3205,7 +3205,7 @@ Bool_t AliShuttle::GetHLTStatus()
 	}
 
 	// TODO implement when HLTMode is inserted in run logbook
-	TString hltMode = fLogbookEntry->GetRunParameter("HLTMode");
+	TString hltMode = fLogbookEntry->GetRunParameter("HLTmode");
 	TSubString firstChar = hltMode(0,1);
 	AliDebug(2,Form("First char = %s ",firstChar.Data())); 
 	if (firstChar == "A") {
