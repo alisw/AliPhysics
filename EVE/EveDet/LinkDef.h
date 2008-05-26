@@ -11,6 +11,9 @@
 #pragma link off all globals;
 #pragma link off all classes;
 
+// FMD
+#pragma link C++ class AliEveFMDLoader+;
+
 // ITS
 #pragma link C++ class AliEveITSModuleSelection+;
 #pragma link C++ class AliEveITSDigitsInfo+;
