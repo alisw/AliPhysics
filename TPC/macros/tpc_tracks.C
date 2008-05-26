@@ -61,8 +61,8 @@ void tpc_tracks(const char *input=0)
   geom = gg;
 
   // event
-  gEvent->AddNewEventCommand("on_new_event();");
-  gEvent->GotoEvent(0);
+  gAliEveEvent->AddNewEventCommand("on_new_event();");
+  gAliEveEvent->GotoEvent(0);
 
   gEve->Redraw3D(kTRUE);
 }
