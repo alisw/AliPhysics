@@ -112,6 +112,7 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
   fMultPalette.IncRefCount();
   
   // Initialize the FMD geometry manager 
+  AliEveEventManager::AssertGeometry();
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
   geom->InitTransformations();
