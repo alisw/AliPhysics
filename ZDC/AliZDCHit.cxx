@@ -54,7 +54,7 @@ AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits) :
   fLightPMQ(hits[7]),
   fLightPMC(hits[8]),
   fEnergy(hits[9]), 
-  fPDGCode(hits[10])
+  fPDGCode((Int_t) hits[10])
 
 {
   //
