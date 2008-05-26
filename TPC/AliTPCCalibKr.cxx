@@ -48,62 +48,43 @@
 // The AliTPCCalibKr class description (TPC Kr calibration).
 //
 //
-// The AliTPCCalibKr fills the array of TH3F histograms (TPC_max_padraw,TPC_max_pad,TPC_ADC_cluster),
-// its data memebers.   
+// The AliTPCCalibKr keeps the array of TH3F histograms (TPC_max_padraw,TPC_max_pad,TPC_ADC_cluster),
+// its data memebers and is filled by AliTPCCalibKrTask under conditions (Accept()).   
 // 
-// As the input it requires the tree with reconstructed Kr clusters (AliTPCclusterKr objects). 
-// The AliTPCCalibKr objects containing an array of TH3F histograms are stored (by default) in the 
-// ouptut (outHistFile.root) file.
-//
 // The ouput TH3F histograms are later used to determine the calibration parameters of TPC chambers.
 // These calculations are done by using AliTPCCalibKr::Analyse() function. The ouput calibration 
 // parameters (details in AliTPCCalibKr::Analyse()) are stored in the calibKr.root file for each TPC pad.
 // In addition the debugCalibKr.root file with debug information is created.
 //
+
+/*
+ 
 // Usage example:
 //
-// 1. Create outHistFile.root histogram file:
-//
-// -- Load libXrdClient.so if data on Xrd cluster e.g. (GSI)
-// gSystem->Load("/usr/local/grid/XRootd/GSI/lib64/libXrdClient.so");
-//
-// -- Load toolkit
-// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
-// AliXRDPROOFtoolkit tool;
-//
-// -- Make chain of files
-// TChain * chain = tool.MakeChain("KrClusters.txt","Kr","",1000,0);
-//
-// -- Run AliTPCCalibKr task (Only TPC C side)
-// AliTPCCalibKr *task = new AliTPCCalibKr;
-// task->SetInputChain(chain);
-// task->SetASide(kFALSE);
-//
-// task->Process();
-// 
-// 2. Analyse output histograms:
-//
-// TFile f("outHistFile.root");
-// AliTPCCalibKr.Analyse();
-//
-// 3. See calibration parameters e.g.:
-//
-// TFile f("calibKr.root");
-// spectrMean->GetCalROC(70)->GetValue(40,40);
-// fitMean->GetCalROC(70)->GetValue(40,40);
-//
-// 4. See debug information e.g.:
-//
-// TFile f("debugCalibKr.root");
-// .ls;
-//
+
+// 1. Analyse output histograms:
+TFile f("outHistFile.root");
+AliTPCCalibKr *obj = (AliTPCCalibKr*) cOutput.FindObject("AliTPCCalibKr")
+obj->Analyse();
+
+// 2. See calibration parameters e.g.:
+TFile f("calibKr.root");
+spectrMean->GetCalROC(70)->GetValue(40,40);
+fitMean->GetCalROC(70)->GetValue(40,40);
+
+// 3. See debug information e.g.:
+TFile f("debugCalibKr.root");
+.ls;
+
 // -- Print calibKr TTree content 
-// calibKr->Print();
-//
+calibKr->Print();
+
 // -- Draw calibKr TTree variables
-// calibKr.Draw("fitMean");
-//
+calibKr.Draw("fitMean");
+
+*/
+
+
 //
 // Author: Jacek Otwinowski (J.Otwinowski@gsi.de) and Stafan Geartner (S.Gaertner@gsi.de)
 //-----------------------------------------------------------------------------
@@ -113,29 +94,24 @@ ClassImp(AliTPCCalibKr)
 AliTPCCalibKr::AliTPCCalibKr() : 
   TObject(),
   
-  bOutputHisto(kTRUE),
   bASide(kTRUE),
   bCSide(kTRUE),
-  fClusters(0),
-  fClustKr(0),
-  fTree(0),
   fHistoKrArray(72)
 {
   //
   // default constructor
   //
+
+  // init histograms
+  Init();
 }
 
 //_____________________________________________________________________
 AliTPCCalibKr::AliTPCCalibKr(const AliTPCCalibKr& pad) : 
   TObject(pad),
   
-  bOutputHisto(pad.bOutputHisto),
   bASide(pad.bASide),
   bCSide(pad.bCSide),
-  fClusters(pad.fClusters),
-  fClustKr(pad.fClustKr),
-  fTree(pad.fTree),
   fHistoKrArray(72)
 {
   // copy constructor
@@ -156,9 +132,12 @@ AliTPCCalibKr::~AliTPCCalibKr()
   //
   // destructor
   //
-  if(fClustKr)  delete fClustKr; fClustKr = 0;
-  if(fClusters) delete fClusters; fClusters = 0;
-  if(fTree)     delete fTree; fTree = 0;
+
+  for (Int_t iSec = 0; iSec < 72; ++iSec) 
+  {
+      TH3F *hNew = (TH3F*)fHistoKrArray.At(iSec);
+      if(hNew) delete hNew; hNew = 0; 
+  }
   fHistoKrArray.Delete();
 }
 
@@ -179,24 +158,7 @@ void AliTPCCalibKr::Init()
   // 
   // init input tree and output histograms 
   //
-
-  // set input tree
-  if(!fTree) { 
-   Printf("ERROR: Could not read chain from input");
-  }
-  else {
-   fTree->SetBranchStatus("*",1); 
-  }
-
-  // set branch address
-  fClusters = new TClonesArray("AliTPCclusterKr");
-
-  if(!fTree->GetBranch("fClusters")) {
-    Printf("ERROR: Could not get fClusters branch from input");
-  } else {
-   fTree->GetBranch("fClusters")->SetAddress(&fClusters);
-  }
-  
+ 
   // create output TObjArray
   fHistoKrArray.Clear();
 
@@ -214,68 +176,19 @@ void AliTPCCalibKr::Init()
       TH3F *hist = CreateHisto(i);
       if(hist) fHistoKrArray.AddAt(hist,i);
 	}
-
   }
-}
-
-//_____________________________________________________________________
-Bool_t AliTPCCalibKr::ReadEntry(Int_t evt)
-{
-  // 
-  // read entry from the tree
-  //
-  Long64_t centry = fTree->LoadTree(evt);
-  if(centry < 0) return kFALSE;
-
-  if(!fTree->GetBranch("fClusters")) 
-  {
-    Printf("ERROR: Could not get fClusters branch from input");
-	return kFALSE;
-  } else {
-   fTree->GetBranch("fClusters")->SetAddress(&fClusters);
-  }
-
-  fTree->GetEntry(evt);
-
-return kTRUE;
 }
  
 //_____________________________________________________________________
-Bool_t AliTPCCalibKr::Process()
+Bool_t AliTPCCalibKr::Process(AliTPCclusterKr *cluster)
 {
   //
   // process events 
   // call event by event
   //
 
-  // init tree
-  Init();
-
-  // get events
-  if(!fTree) return kFALSE;
-  Int_t nEvents = fTree->GetEntries();
-
-  // fill histograms 
-  for(Int_t i=0; i<nEvents; ++i)
-  {
-    if(ReadEntry(i) == kFALSE) return kFALSE;
-
-    if(!(i%10000)) cout << "evt: " << i << endl; 
-
-    // get TClonesArray entries
-    fClustKr = 0;
-    Int_t entries = fClusters->GetEntries();
-    for(Int_t j=0; j < entries; ++j)
-	{
-	  fClustKr = (AliTPCclusterKr*)fClusters->At(j);
-
-      if(fClustKr) Update(fClustKr);
-	  else return kFALSE;
-	}
-  }
-
-  // write output 
-  return Terminate();
+  if(cluster) Update(cluster);
+  else return kFALSE;
 }
 
 //_____________________________________________________________________
@@ -340,6 +253,7 @@ Bool_t AliTPCCalibKr::Update(AliTPCclusterKr  *cl)
   return kTRUE;
 }
 
+//_____________________________________________________________________
 Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
   //
   // cuts
@@ -353,13 +267,13 @@ Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
     TCut cutAll = cutR0+cutR1+cutR2+cutR3+cutS1;
   */
   //R0
-  if (cl->GetADCcluster()/ cl->GetSize() >200)        return kFALSE;
+  if (cl->GetADCcluster()/ Float_t(cl->GetSize()) >200)        return kFALSE;
   // R1
-  if (cl->GetADCcluster()/ cl->GetSize() <7)          return kFALSE;
+  if (cl->GetADCcluster()/ Float_t(cl->GetSize()) <7)          return kFALSE;
   //R2
-  if (cl->GetMax().GetAdc()/ cl->GetADCcluster() >0.4)  return kFALSE;
+  if (cl->GetMax().GetAdc()/ Float_t(cl->GetADCcluster()) >0.4)  return kFALSE;
   //R3
-  if (cl->GetMax().GetAdc()/ cl->GetADCcluster() <0.01) return kFALSE;
+  if (cl->GetMax().GetAdc()/ Float_t(cl->GetADCcluster()) <0.01) return kFALSE;
   //S1
   if (cl->GetSize()>200) return kFALSE;
   if (cl->GetSize()<6)  return kFALSE;
@@ -367,45 +281,11 @@ Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
 
 }
 
-
-
 //_____________________________________________________________________
 TH3F* AliTPCCalibKr::GetHistoKr(Int_t chamber) const
 {
   // get histograms from fHistoKrArray
   return (TH3F*) fHistoKrArray.At(chamber);
-}
-
-//_____________________________________________________________________
-Bool_t AliTPCCalibKr::Terminate() 
-{
-  //
-  // store AliTPCCalibKr in the output file 
-  //
-  if(bOutputHisto) {
-    TFile *outFile = new TFile("outHistFile.root","RECREATE"); 
-   
-    if(outFile) 
-	{
-	  outFile->cd();
-
-	  for(int i=0; i<72; ++i) {
-	     if( IsCSide(i) == kTRUE && bCSide == kTRUE)
-	       printf("C side chamber: %d, 3D histo entries: %10.f \n",i,((TH3F*)fHistoKrArray.At(i))->GetEntries());
-
-	     if( IsCSide(i) == kFALSE && bASide == kTRUE)
-	       printf("A side chamber: %d, 3D histo entries: %10.f \n",i,((TH3F*)fHistoKrArray.At(i))->GetEntries());
-	  }
-	  this->Write();
-	  outFile->Close();
-
-	  return kTRUE;
-	}
-	else 
-	  return kFALSE;
-  }
-
-return kFALSE;
 }
  
 //_____________________________________________________________________
@@ -498,7 +378,7 @@ void AliTPCCalibKr::Analyse()
         delete gausFit;
         delete projH;
         if (fitMean <= 0) continue;
-        printf("[ch%i r%i, p%i] entries = %f, maxEntries = %f, fitMean = %f, fitRMS = %f\n", chamber, iRow, iPad, entries, maxEntries, fitMean, fitRMS);
+        //printf("[ch%i r%i, p%i] entries = %f, maxEntries = %f, fitMean = %f, fitRMS = %f\n", chamber, iRow, iPad, entries, maxEntries, fitMean, fitRMS);
     
         // write the calibration parameters for each pad that the 3d histogram was projected onto
         // (with considering the step size) to the CalPads
@@ -581,4 +461,42 @@ TH1D* AliTPCCalibKr::ProjectHisto(TH3F* histo3D, const char* name, Int_t xMin, I
   }
   projH->SetEntries((Long64_t)entries);
   return projH;
+}
+
+//_____________________________________________________________________
+Long64_t AliTPCCalibKr::Merge(TCollection* list) {
+// merge function 
+//
+cout << "Merge " << endl;
+
+if (!list)
+return 0;
+
+if (list->IsEmpty())
+return 1;
+
+TIterator* iter = list->MakeIterator();
+TObject* obj = 0;
+
+    iter->Reset();
+    Int_t count=0;
+	while((obj = iter->Next()) != 0)
+	{
+	  AliTPCCalibKr* entry = dynamic_cast<AliTPCCalibKr*>(obj);
+	  if (entry == 0) continue; 
+
+		for(int i=0; i<72; ++i) { 
+		  if(IsCSide(i) == kTRUE && bCSide == kTRUE) { 
+		  ((TH3F*)fHistoKrArray.At(i))->Add( ((TH3F*)entry->fHistoKrArray.At(i)) );  
+		  } 
+
+		  if(IsCSide(i) == kFALSE && bASide == kTRUE) { 
+		    ((TH3F*)fHistoKrArray.At(i))->Add( ((TH3F*)entry->fHistoKrArray.At(i)) );  
+		  } 
+		} 
+
+	  count++;
+	}
+
+return count;
 }
