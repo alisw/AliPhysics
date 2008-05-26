@@ -642,11 +642,14 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     }
 
     UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
-    const char *symname = AliGeomManager::SymName(volid);
-    TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
-    const char *path = symname;
-    if(pne) path=pne->GetTitle();
-    if (!gGeoManager->cd(path)) return kFALSE;      
+    TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID(volid);
+    if(!pne)
+    {
+      AliError(Form("Alignable entry for volume ID %d not in geometry. Exiting!",volid));
+      return kFALSE;
+    }
+    const char *path = pne->GetTitle();
+    if (!gGeoManager->cd(path)) return kFALSE;
     TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
  
     //
