@@ -26,6 +26,7 @@
 #pragma link C++ class  AliTPCcalibV0+;
 #pragma link C++ class  AliTPCAnalysisTaskcalib+;
 #pragma link C++ class AliTPCCalibKr+;
+#pragma link C++ class AliTPCCalibKrTask+;
 
 #endif
 
