@@ -18,6 +18,7 @@
 // --- ROOT system ---
 
 #include "TObject.h" 
+#include "AliLog.h"
 
 class AliEMCALRecParam : public TObject
 {
@@ -26,13 +27,17 @@ public:
   AliEMCALRecParam() ;
   virtual ~AliEMCALRecParam() {}
  
- //Clustering
+  //Clustering (Unfolding : Cynthia)
   Float_t GetClusteringThreshold() const     {return fClusteringThreshold;}
   Float_t GetW0                 () const     {return fW0                 ;}
   Float_t GetMinECut            () const     {return fMinECut            ;}
+  Float_t GetLocMaxCut          () const     {return fLocMaxCut            ;}
+  Bool_t  GetUnfold             () const     {return fUnfold            ;}
   void SetClusteringThreshold(Float_t thrsh)   {fClusteringThreshold = thrsh;}
   void SetW0                 (Float_t w0)      {fW0 = w0                    ;}
   void SetMinECut            (Float_t minEcut) {fMinECut = minEcut          ;}
+  void SetLocMaxCut          (Float_t locMaxCut) {fLocMaxCut = locMaxCut    ;}
+  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold          ; if(fUnfold) AliInfo("Cluster Unfolding ON. Implementing only for eta=0 case!!!");}
 
   //PID (Guenole)
   Double_t GetGamma(Int_t i, Int_t j) const    {return fGamma[i][j];} 
@@ -86,6 +91,8 @@ private:
   Float_t fClusteringThreshold ; // minimum energy to seed a EC digit in a cluster
   Float_t fW0 ;                  // logarithmic weight for the cluster center of gravity calculation
   Float_t fMinECut;              // Minimum energy for a digit to be a member of a cluster
+  Bool_t fUnfold;               // flag to perform cluster unfolding
+  Float_t fLocMaxCut;            // minimum energy difference to consider local maxima in a cluster
 
   //PID (Guenole)
   Double_t fGamma[6][6];        // Parameter to Compute PID      
@@ -111,7 +118,7 @@ private:
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
 
-  ClassDef(AliEMCALRecParam,4)   // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,5)   // Reconstruction parameters
 
 } ;
 

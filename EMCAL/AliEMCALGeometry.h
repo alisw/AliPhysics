@@ -146,7 +146,9 @@ public:
   Bool_t GetPhiBoundariesOfSM   (Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const;
   Bool_t GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
   //
-  virtual Bool_t Impact(const TParticle *) const {return kTRUE;}
+  
+  virtual Bool_t Impact(const TParticle *) const;
+  void ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi, Int_t & absId, TVector3 & vimpact) const;
   Bool_t IsInEMCAL(Double_t x, Double_t y, Double_t z) const;
 
   ////////////////////////////////////////

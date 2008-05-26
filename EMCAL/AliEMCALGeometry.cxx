@@ -63,7 +63,7 @@
 #include <TObjString.h>
 #include <TVector2.h>
 #include <TVector3.h>
-
+#include <TParticle.h>
 // -- ALICE Headers.
 #include "AliLog.h"
 
@@ -1369,4 +1369,124 @@ Double_t AliEMCALGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
   int i = nsupmod/2;
   return fPhiCentersOfSM[i];
 
+}
+//____________________________________________________________________________
+Bool_t  AliEMCALGeometry::Impact(const TParticle * particle) const 
+{
+  // Tells if a particle enters EMCAL
+  Bool_t in=kFALSE;
+  Int_t AbsID=0;
+  TVector3 vtx(particle->Vx(),particle->Vy(),particle->Vz());
+  TVector3 vimpact(0,0,0);
+  ImpactOnEmcal(vtx,particle->Theta(),particle->Phi(),AbsID,vimpact);
+  if(AbsID!=0) 
+    in=kTRUE;
+  return in;
+}
+//____________________________________________________________________________
+void AliEMCALGeometry::ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi, 
+				     Int_t & absId, TVector3 & vimpact) const
+{
+  // calculates the impact coordinates on EMCAL (centre of a tower/not on EMCAL surface) 
+  // of a neutral particle  
+  // emitted in the vertex vtx[3] with direction theta and phi in the ALICE global coordinate system
+
+  TVector3 p(TMath::Sin(theta)*TMath::Cos(phi),TMath::Sin(theta)*TMath::Sin(phi),TMath::Cos(theta)) ;
+
+  vimpact.SetXYZ(0,0,0);
+  absId=-1;
+  if(phi==0 || theta==0) return;
+
+   TVector3 direction;
+   Double_t factor = (GetIPDistance()-vtx[1])/p[1];
+  direction = vtx + factor*p;
+
+  if (!gGeoManager){
+    AliFatal("Geo manager not initialized\n");
+  }
+  //from particle direction -> tower hitted
+  GetAbsCellIdFromEtaPhi(direction.Eta(),direction.Phi(),absId);
+  
+  //tower absID hitted -> tower/module plane (evaluated at the center of the tower)
+  Int_t nSupMod, nModule, nIphi, nIeta;
+  Double_t loc[3],loc2[3],loc3[3];
+  Double_t glob[3]={},glob2[3]={},glob3[3]={};
+  
+  if(!RelPosCellInSModule(absId,loc)) return;
+  
+  //loc is cell center of tower
+  GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
+
+  //look at 2 neighbours-s cell using nIphi={0,1} and nIeta={0,1}
+  Int_t nIphi2,nIeta2,absId2,absId3;
+  if(nIeta==0) nIeta2=1;
+  else nIeta2=0;
+  absId2=GetAbsCellId(nSupMod,nModule,nIphi,nIeta2);  
+  if(nIphi==0) nIphi2=1;
+  else nIphi2=0;
+  absId3=GetAbsCellId(nSupMod,nModule,nIphi2,nIeta);
+
+  //2nd point on emcal cell plane
+  if(!RelPosCellInSModule(absId2,loc2)) return;
+    
+  //3rd point on emcal cell plane
+  if(!RelPosCellInSModule(absId3,loc3)) return;
+    
+  TString volpath = "ALIC_1/XEN1_1/SMOD_";
+  volpath += (nSupMod+1);
+  
+  if(GetKey110DEG() && nSupMod>=10) {
+    volpath = "ALIC_1/XEN1_1/SM10_";
+    volpath += (nSupMod-10+1);
+  }
+  if(!gGeoManager->cd(volpath.Data())){
+    AliFatal(Form("GeoManager cannot find path %s!",volpath.Data()))
+    return;
+  }
+  TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
+  if(m) {
+    m->LocalToMaster(loc, glob);
+    m->LocalToMaster(loc2, glob2);
+    m->LocalToMaster(loc3, glob3);
+  } else {
+    AliFatal("Geo matrixes are not loaded \n") ;
+  }
+
+  //Equation of Plane from glob,glob2,glob3 (Ax+By+Cz+D=0)
+   Double_t A = glob[1]*(glob2[2]-glob3[2]) + glob2[1]*(glob3[2]-glob[2]) + glob3[1]*(glob[2]-glob2[2]);
+   Double_t B = glob[2]*(glob2[0]-glob3[0]) + glob2[2]*(glob3[0]-glob[0]) + glob3[2]*(glob[0]-glob2[0]);
+   Double_t C = glob[0]*(glob2[1]-glob3[1]) + glob2[0]*(glob3[1]-glob[1]) + glob3[0]*(glob[1]-glob2[1]);
+   Double_t D = glob[0]*(glob2[1]*glob3[2]-glob3[1]*glob2[2]) + glob2[0]*(glob3[1]*glob[2]-glob[1]*glob3[2]) + glob3[0]*(glob[1]*glob2[2]-glob2[1]*glob[2]);
+  D=-D;
+  
+  //shift equation of plane from tower/module center to surface along vector (A,B,C) normal to tower/module plane
+  Double_t dist = GetLongModuleSize()/2.;
+  Double_t norm = TMath::Sqrt(A*A+B*B+C*C);
+  Double_t glob4[3]={};
+  TVector3 dir(A,B,C);
+  TVector3 point(glob[0],glob[1],glob[2]); 
+  if(point.Dot(dir)<0) dist*=-1;
+  glob4[0]=glob[0]-dist*A/norm;
+  glob4[1]=glob[1]-dist*B/norm;
+  glob4[2]=glob[2]-dist*C/norm;
+  D = glob4[0]*A +  glob4[1]*B +  glob4[2]*C ;
+  D = -D;
+
+  //Line determination (2 points for equation of line : vtx and direction)
+  //impact between line (particle) and plane (module/tower plane)
+  Double_t den = A*(vtx(0)-direction(0)) + B*(vtx(1)-direction(1)) + C*(vtx(2)-direction(2));
+  if(den==0){
+    printf("ImpactOnEmcal() No solution :\n");
+    return;
+  }
+  
+  Double_t length = A*vtx(0)+B*vtx(1)+C*vtx(2)+D;
+  length /=den;
+  
+  vimpact.SetXYZ(vtx(0)+length*(direction(0)-vtx(0)),vtx(1)+length*(direction(1)-vtx(1)),vtx(2)+length*(direction(2)-vtx(2)));
+  
+  //shift vimpact from tower/module surface to center along vector (A,B,C) normal to tower/module plane
+  vimpact.SetXYZ(vimpact(0)+dist*A/norm,vimpact(1)+dist*B/norm,vimpact(2)+dist*C/norm);
+  
+  return;
 }

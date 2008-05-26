@@ -412,7 +412,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->SetM02(elipAxis[0]*elipAxis[0]) ;
       ec->SetM20(elipAxis[1]*elipAxis[1]) ;
       ec->SetTOF(clust->GetTime()) ; //time-of-fligh
-
+      ec->SetNExMax(clust->GetNExMax());          //number of local maxima
       TArrayI arrayTrackMatched(1);// Only one track, temporal solution.
       arrayTrackMatched[0]= matchedTrack[iClust];
       ec->AddTracksMatched(arrayTrackMatched);

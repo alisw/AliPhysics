@@ -62,7 +62,7 @@ public:
   virtual void SetECALogWeight(Float_t w)                { fECAW0 = w ; }
   virtual void SetTimeCut(Float_t gate)                 { fTimeCut = gate ;}
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    {fToUnfold = toUnfold ;}  
-  static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
+  static Double_t ShowerShape(Double_t x, Double_t y) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
@@ -106,10 +106,10 @@ private:
   void Init() ;
   void InitParameters() ;
 
-  virtual void   MakeUnfolding() const;
-  void           UnfoldCluster(AliEMCALRecPoint * /*iniEmc*/, Int_t /*Nmax*/, 
-			       AliEMCALDigit ** /*maxAt*/,
-			       Float_t * /*maxAtEnergy*/ ) const; //Unfolds cluster using TMinuit package
+  virtual void   MakeUnfolding();
+  void           UnfoldCluster(AliEMCALRecPoint * iniEmc, Int_t Nmax, 
+			       AliEMCALDigit ** maxAt,
+			       Float_t * maxAtEnergy ); //Unfolds cluster using TMinuit package
   void           PrintRecPoints(Option_t * option) ;
 
 private:

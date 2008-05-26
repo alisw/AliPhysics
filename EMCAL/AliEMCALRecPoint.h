@@ -106,7 +106,11 @@ class AliEMCALRecPoint : public AliCluster {
   virtual Int_t GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
-  
+  // Number of local maxima found in cluster in unfolding:
+  // 0: no unfolding
+  //-1: unfolding failed
+  Short_t     GetNExMax(void) const {return fNExMax ;}  // Number of maxima found in cluster in unfolding
+  void        SetNExMax(Int_t nmax=1){fNExMax = static_cast<Short_t>(nmax) ;}
   Int_t       GetPrimaryIndex() const  ;
   Float_t     GetTime(void) const{return  fTime ; }
  
@@ -154,6 +158,7 @@ private:
 	  Float_t *fTimeList ;        //[fMulDigit] time of digits
           Int_t   *fAbsIdList;        //[fMulDigit] absId  of digits
 	  Float_t fTime ;             // Time of the digit with maximal energy deposition
+	  Short_t fNExMax ;           // number of (Ex-)maxima before unfolding
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated
 	  Float_t *fDETracksList ;    //[fMulTrack] list of tracks to which the point was assigned
 	  Int_t fMulParent;           // Multiplicity of the parents
@@ -164,7 +169,7 @@ private:
           // Aug 16, 2007
           Int_t   fDigitIndMax;       // Index of digit with max energy in array fAbsIdList
 
-  ClassDef(AliEMCALRecPoint,10) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,11) // RecPoint for EMCAL (Base Class)
  
 };
 

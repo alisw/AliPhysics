@@ -58,6 +58,8 @@ void SetRecParam()
   recParamDB->SetClusteringThreshold(0.5);
   recParamDB->SetW0(4.5);
   recParamDB->SetMinECut(0.45);
+  recParamDB->SetUnfold(kFALSE);
+  recParamDB->SetLocMaxCut(0.03);
 
   //Track matching
   recParamDB->SetTrkCutX(6.0);
@@ -206,7 +208,8 @@ void GetRecParam()
 
   TString DBFolder;
 
-  DBFolder  ="local://LocalCDB";
+  //  DBFolder  ="local://LocalCDB";
+  DBFolder  ="local://$ALICE_ROOT";
   Int_t runNumber = 0;
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");

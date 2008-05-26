@@ -33,7 +33,7 @@ TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings
 //-----------------------------------------------------------------------------
 
 AliEMCALRecParam::AliEMCALRecParam():
-  fClusteringThreshold(0.5),fW0(4.5),fMinECut(0.45), //clustering
+  fClusteringThreshold(0.5),fW0(4.5),fMinECut(0.45), fUnfold(kFALSE), fLocMaxCut(0.03), //clustering
   fTrkCutX(6.0), fTrkCutY(6.0), fTrkCutZ(6.0),  fTrkCutR(10.0),//track matching
   fTrkCutAlphaMin(-50.0), fTrkCutAlphaMax(50.0), fTrkCutAngle(10000.0), //track matching
   fHighLowGainFactor(16.0), fOrderParameter(2), fTau(2.35), fNoiseThreshold(3), fNPedSamples(5) //raw signal
@@ -155,8 +155,8 @@ void AliEMCALRecParam::Print(Option_t *) const
 {
   printf("AliEMCALRecParam::Print()\n");
   // Print reconstruction parameters to stdout
-  AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f\n",
-	       fClusteringThreshold,fW0,fMinECut));
+  AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f \n",
+	       fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut));
 
   AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle));
 
