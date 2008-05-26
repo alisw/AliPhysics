@@ -27,6 +27,7 @@ public:
   void Init();
   Bool_t Process();
   Bool_t ReadEntry(Int_t evt);
+  Bool_t Accept(AliTPCclusterKr *cluster);
   Bool_t Update(AliTPCclusterKr *cluster);
   TH3F*  CreateHisto(Int_t chamber);
 

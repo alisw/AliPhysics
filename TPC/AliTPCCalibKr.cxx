@@ -330,14 +330,44 @@ Bool_t AliTPCCalibKr::Update(AliTPCclusterKr  *cl)
   //
   // fill existing histograms
   //
-	TH3F *h = (TH3F*)fHistoKrArray.At(cl->GetSec());
-	if(!h) return kFALSE;
 
-	if(cl->GetSize()>20) 
-	  h->Fill(cl->GetMax().GetRow(),cl->GetMax().GetPad(),cl->GetADCcluster());
-
-return kTRUE;
+  if (!Accept(cl)) return kFALSE;
+  TH3F *h = (TH3F*)fHistoKrArray.At(cl->GetSec());
+  if(!h) return kFALSE;
+  
+  h->Fill(cl->GetMax().GetRow(),cl->GetMax().GetPad(),cl->GetADCcluster());
+  
+  return kTRUE;
 }
+
+Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
+  //
+  // cuts
+  //
+  /*
+    TCut cutR0("cutR0","fADCcluster/fSize<200");        // adjust it according v seetings - 
+    TCut cutR1("cutR1","fADCcluster/fSize>7");          // cosmic tracks and noise removal
+    TCut cutR2("cutR2","fMax.fAdc/fADCcluster<0.4");    // digital noise removal
+    TCut cutR3("cutR3","fMax.fAdc/fADCcluster>0.01");   // noise removal
+    TCut cutS1("cutS1","fSize<200");    // adjust it according v seetings - cosmic tracks
+    TCut cutAll = cutR0+cutR1+cutR2+cutR3+cutS1;
+  */
+  //R0
+  if (cl->GetADCcluster()/ cl->GetSize() >200)        return kFALSE;
+  // R1
+  if (cl->GetADCcluster()/ cl->GetSize() <7)          return kFALSE;
+  //R2
+  if (cl->GetMax().GetAdc()/ cl->GetADCcluster() >0.4)  return kFALSE;
+  //R3
+  if (cl->GetMax().GetAdc()/ cl->GetADCcluster() <0.01) return kFALSE;
+  //S1
+  if (cl->GetSize()>200) return kFALSE;
+  if (cl->GetSize()<6)  return kFALSE;
+  return kTRUE;
+
+}
+
+
 
 //_____________________________________________________________________
 TH3F* AliTPCCalibKr::GetHistoKr(Int_t chamber) const
