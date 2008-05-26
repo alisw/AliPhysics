@@ -624,6 +624,11 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
   fClusterMatrix = new TGeoHMatrix*[fNSector];
   if (fGlobalMatrix) delete [] fGlobalMatrix;
   fGlobalMatrix = new TGeoHMatrix*[fNSector];
+  for (Int_t isec=0; isec<fNSector; isec++) {
+    fGlobalMatrix[isec] = 0;
+    fClusterMatrix[isec]= 0;
+    fTrackingMatrix[isec]=0;
+  }   
   //
   for (Int_t isec=0; isec<fNSector; isec++) {
     fGlobalMatrix[isec] = 0;
