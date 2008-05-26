@@ -3,18 +3,21 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliAODParticleCorrelation.h 20609 2007-08-31 11:17:02Z morsch $ */
+/* $Id: AliAODParticleCorrelation.h  $ */
 
 //-------------------------------------------------------------------------
-//     Copy of AOD photon class
+//     Copy of AOD photon class, adapted for particle identification
+//     and correlations analysis
 //     Author: Yves Schutz, CERN, Gustavo Conesa, INFN
 //-------------------------------------------------------------------------
 
-#include "TLorentzVector.h"
-#include "AliVParticle.h"
-//#include "AliAODVertex.h"
+//-- ROOT system --
+#include <TLorentzVector.h>
+class TString;
+
+//-- Analysis system
 #include "AliAODJet.h"
-#include "TString.h"
+#include "AliVParticle.h"
 
 class AliAODParticleCorrelation : public AliVParticle {
 
@@ -91,11 +94,14 @@ class AliAODParticleCorrelation : public AliVParticle {
     virtual void SetLeadingDetector(TString d)   {fLeadingDetector = d ; }
     virtual TString GetLeadingDetector()   const {return fLeadingDetector ; }
     
-    virtual TLorentzVector * GetLeading()           const { return  fLeading;}
-    virtual void  SetLeading(TLorentzVector *lead) {fLeading = lead;}
+    virtual TLorentzVector  GetLeading()           const { return  fLeading;}
+    virtual void  SetLeading(TLorentzVector lead) {fLeading = lead;}
 
-    virtual TLorentzVector * GetCorrelatedJet()           const { return  fCorrJet;}
-    virtual void  SetCorrelatedJet(TLorentzVector *jet) {fCorrJet = jet;}
+    virtual TLorentzVector  GetCorrelatedJet()           const { return  fCorrJet;}
+    virtual void  SetCorrelatedJet(TLorentzVector jet) {fCorrJet = jet;}
+
+    virtual TLorentzVector  GetCorrelatedBackground()           const { return  fCorrBkg;}
+    virtual void  SetCorrelatedBackground(TLorentzVector bkg) {fCorrBkg = bkg;}
 
     void SetRefJet(AliAODJet* jet)  { fRefJet = jet;}
     //AliAODJet* GetJet() {return ((AliAODJet*) fRefJet);}
@@ -103,11 +109,11 @@ class AliAODParticleCorrelation : public AliVParticle {
 
  private:
     TLorentzVector* fMomentum;           // Photon 4-momentum vector
-    Int_t          fPdg; // id of particle
-    Int_t          fTag; // tag of particle (decay, fragment, prompt photon)
-    Int_t          fLabel; // MC label
-    TString          fDetector; // Detector where particle was measured.
-    Float_t        fR ; // Isolation cone size
+    Int_t           fPdg; // id of particle
+    Int_t           fTag; // tag of particle (decay, fragment, prompt photon)
+    Int_t           fLabel; // MC label
+    TString         fDetector; // Detector where particle was measured.
+    Float_t         fR ; // Isolation cone size
     TRefArray*     fRefTracks;  // array of references to the tracks belonging to the jet / all selected hadrons  
     TRefArray*     fRefClusters; // array of references to the clusters belonging to the jet / all selected hadrons  
     
@@ -117,22 +123,23 @@ class AliAODParticleCorrelation : public AliVParticle {
     TRefArray*     fRefBackgroundTracks;  // array of references to the tracks for background stimation
     TRefArray*     fRefBackgroundClusters; // array of references to the clusters for background stimation 
 
-    TString     fLeadingDetector; // Detector where leading particle was measured.
-    TLorentzVector* fLeading;     // Leading Particle 4-momentum vector
+    TString        fLeadingDetector; // Detector where leading particle was measured.
+    TLorentzVector fLeading;     // Leading Particle 4-momentum vector
     
-    TLorentzVector* fCorrJet;     // Jet  4-momentum vector
-    
-    TRef        fRefJet; // Rerence to jet found with JETAN and correlated with particle
+    TLorentzVector fCorrJet;     // Jet  4-momentum vector
+    TLorentzVector fCorrBkg;     // Background  4-momentum vector
 
-  ClassDef(AliAODParticleCorrelation,1);
+    TRef           fRefJet; // Rerence to jet found with JETAN and correlated with particle
+
+    ClassDef(AliAODParticleCorrelation,1);
 };
 
 inline Double_t AliAODParticleCorrelation::Phi() const
 {
-    // Return phi
-    Double_t phi = fMomentum->Phi();
-    if (phi < 0.) phi += 2. * TMath::Pi();
-    return phi;
+  // Return phi
+  Double_t phi = fMomentum->Phi();
+  if (phi < 0.) phi += 2. * TMath::Pi();
+  return phi;
 }
 
 #endif
