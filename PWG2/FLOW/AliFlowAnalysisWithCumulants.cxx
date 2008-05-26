@@ -54,28 +54,32 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
   fCommonHistsRes4(NULL),
   fCommonHistsRes6(NULL),
   fCommonHistsRes8(NULL)
-  {
+ {
    //constructor 
    fR0=AliFlowCumuConstants::fgR0;
    fPtMax=AliFlowCommonConstants::GetPtMax(); 
    fPtMin=AliFlowCommonConstants::GetPtMin();
    fBinWidth=(fPtMax-fPtMin)/fgknBins;
-  
+   
    for(Int_t n=0;n<fgknBins;n++){
-    fBinEventEntries[n]=0;
-    fBinNoOfParticles[n]=0;
-    fBinMeanPt[n]=0;
-    for(Int_t p=0;p<fgkPmax;p++){
-     for(Int_t q=0;q<fgkQmax;q++){
-      fAvG[p][q]=0;
-      fBinEventDRe[n][p][q]=0; 
-      fBinEventDIm[n][p][q]=0;
+     fBinEventEntries[n]=0;
+     fBinNoOfParticles[n]=0;
+     fBinMeanPt[n]=0;
+     for(Int_t p=0;p<fgkPmax;p++){
+       for(Int_t q=0;q<fgkQmax;q++){
+	 fAvG[p][q]=0;
+	 fBinEventDRe[n][p][q]=0; 
+	 fBinEventDIm[n][p][q]=0;
+       }
      }
-    }
    }
-  }
+ }
 
+AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants(){
+  //desctructor
+}
 
+  
 //___________________________________________________________________________
 void AliFlowAnalysisWithCumulants::CreateOutputObjects(){
  //output histograms
@@ -125,28 +129,28 @@ void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* anEvent) {
   
     //------------------------------------------------------------------------------------
     //STARTING THE FIRST LOOP (CALCULATING THE GENERATING FUNCTION FOR INTEGRATED FLOW)
-    for(Int_t i=0;i<nPrim;i++){
+  for(Int_t i=0;i<nPrim;i++){
     fTrack=anEvent->GetTrack(i);
-     if(fTrack&&fTrack->UseForIntegratedFlow()){
+    if(fTrack&&fTrack->UseForIntegratedFlow()){
       fSelTracksIntFlow++;
       for(Int_t p=0;p<fgkPmax;p++){
-       for(Int_t q=0;q<fgkQmax;q++){
-	fG[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/fEventNSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)); 
-       }
+	for(Int_t q=0;q<fgkQmax;q++){
+	  fG[p][q]*=(1.+(2.*fR0*sqrt(p+1.)/fEventNSelTracksIntFlow)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)); 
+	}
       }
-     }
     }
-    // ENDING THE FIRST LOOP OVER TRACKS
-    //------------------------------------------------------------------------------------
-          
+  }
+  // ENDING THE FIRST LOOP OVER TRACKS
+  //------------------------------------------------------------------------------------
+  
   
   //------------------------------------------------------------------------------------
   //avarage multiplicity
   fAvM+=fSelTracksIntFlow;
   //avarage of the generating function for integrated flow
   for(Int_t p=0;p<fgkPmax;p++){
-   for(Int_t q=0;q<fgkQmax;q++){
-    fAvG[p][q]+=1.*fG[p][q];
+    for(Int_t q=0;q<fgkQmax;q++){
+      fAvG[p][q]+=1.*fG[p][q];
    } 
   }  
   //------------------------------------------------------------------------------------
@@ -181,9 +185,9 @@ void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* anEvent) {
   } 
   //ENDING THE SECOND LOOP OVER TRACKS 
   //----------------------------------------------------------------------------------------------- 
-   
-   
-   
+  
+  
+  
   //----------------------------------------------------------
   //AVARAGING OVER ALL pt BINS WITHIN ONE EVENT 
   for(Int_t b=0;b<fgknBins;b++){
