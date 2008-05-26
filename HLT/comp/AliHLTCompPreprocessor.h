@@ -20,6 +20,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTModulePreprocessor.h"
+#include "AliHLTPreprocessor.h"
 
 /**
  * @class AliHLTCompPreprocessor

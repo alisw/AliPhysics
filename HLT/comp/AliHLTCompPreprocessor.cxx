@@ -25,7 +25,6 @@
 
 #include "AliHLTCompPreprocessor.h"
 #include "AliCDBMetaData.h"
-#include "AliPreprocessor.h"
 #include "TObjString.h"
 #include "TString.h"
 #include "TList.h"
@@ -92,6 +91,7 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
   UInt_t retVal = 0;
 
   // get all huffman tables stored at FXS	
+  //TList* HuffmanList = GetFileSources(AliPreprocessor::kHLT, fgkHuffmanFileId);
   TList* HuffmanList = GetFileSources(AliPreprocessor::kHLT, fgkHuffmanFileId);
   // -> list of all DDL numbers that own a huffman table
 
@@ -106,16 +106,19 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
   TList* TPCHuffmanList;
   TList* PHOSHuffmanList;
 
-  if(fTPCactive)
+  TPCHuffmanList = new TList();
+
+  if(!fTPCactive)
     {
-      TPCHuffmanList = new TList();
+      delete TPCHuffmanList;
     };
 
-  if(fPHOSactive)
+  PHOSHuffmanList = new TList();
+
+  if(!fPHOSactive)
     {
-      PHOSHuffmanList = new TList();
+      delete PHOSHuffmanList;
     };
-	
 
   // loop over all DDL numbers and put huffman tables into special containers
   // (one for each detector)
@@ -143,7 +146,7 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
       TFile* currenthuffmanfile = new TFile(fileName, "READ");
 
       // if current huffman table file does not contain a table, return an error
-      if ( currenthuffmanfile->Get("fHuffmanData") == NULL)
+      if ( currenthuffmanfile->Get("HuffmanData") == NULL)
 	{
 	  char logging[1000];
 	  sprintf(logging,"Local file %s does not contain a Huffman code table.", fileName.Data());
@@ -152,13 +155,13 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
 	  retVal = 0;
 	}
 	    
-      TObject* huffmandata = (TObject*) currenthuffmanfile->Get("fHuffmanData");
+      TObject* huffmandata = (TObject*) currenthuffmanfile->Get("HuffmanData");
       // class object not needed since container uses TObjects!
-      //AliHLTCOMPHuffmanData* currenthuffmandata = (AliHLTCOMPHuffmanData*) huffmandata;
+      AliHLTCOMPHuffmanData* currenthuffmandata = (AliHLTCOMPHuffmanData*) currenthuffmanfile->Get("HuffmanData");
 
       // specifications necessary for sorting process
-      TString detectororigin = "";//currenthuffmandata->GetOrigin();
-      Int_t tablespec = 0;//currenthuffmandata->GetDataSpec();
+      TString detectororigin = currenthuffmandata->GetOrigin();
+      Int_t tablespec = currenthuffmandata->GetDataSpec();
 	   
 	    
       // plug them into a container:

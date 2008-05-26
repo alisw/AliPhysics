@@ -1214,15 +1214,15 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
   fTranslationTable = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct[TIMEBINS];
 
   // initialise the array with validcodelengths 0 and codes = 0
-  for(Int_t kk = 0; kk < TIMEBINS; kk++)
+  for(Int_t kk1 = 0; kk1 < TIMEBINS; kk1++)
     {
       // validation test for correct HuffmanCode()
-      // fTranslationTable[kk].famplitude = TIMEBINS+1; // check if eventnames are written
+      // fTranslationTable[kk1].famplitude = TIMEBINS+1; // check if eventnames are written
 
-      fTranslationTable[kk].famplitude = kk;
-      fTranslationTable[kk].fhuffmancode = 0;
-      fTranslationTable[kk].fvalidcodelength = 0;
-      // fTranslationTable[kk].morecode = NULL;
+      fTranslationTable[kk1].famplitude = kk1;
+      fTranslationTable[kk1].fhuffmancode = 0;
+      fTranslationTable[kk1].fvalidcodelength = 0;
+      // fTranslationTable[kk1].morecode = NULL;
     }
 
   // create HuffmanCode and abort when HuffmanCode produces errors
@@ -1246,14 +1246,14 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
     UInt_t maxcodelength = fTranslationTable[0].fvalidcodelength;
     UInt_t mincodelength = TIMEBINS;
 
-    for (Int_t kk = 0; kk < TIMEBINS; kk++)
+    for (Int_t kk2 = 0; kk2 < TIMEBINS; kk2++)
       {
-	//	if(fTranslationTable[kk].fvalidcodelength != 0) {cout << kk << " |  " << fTranslationTable[kk].fhuffmancode << " |  " << fTranslation "Table[kk].fvalidcodelength << endl;}
+	//	if(fTranslationTable[kk2].fvalidcodelength != 0) {cout << kk2 << " |  " << fTranslationTable[kk2].fhuffmancode << " |  " << fTranslation "Table[kk2].fvalidcodelength << endl;}
 
-	if(fTranslationTable[kk].fvalidcodelength > maxcodelength)
-	  { maxcodelength = fTranslationTable[kk].fvalidcodelength;};
-	if( (fTranslationTable[kk].fvalidcodelength != 0) && (fTranslationTable[kk].fvalidcodelength < mincodelength) )
-	  { mincodelength = fTranslationTable[kk].fvalidcodelength;};
+	if(fTranslationTable[kk2].fvalidcodelength > maxcodelength)
+	  { maxcodelength = fTranslationTable[kk2].fvalidcodelength;};
+	if( (fTranslationTable[kk2].fvalidcodelength != 0) && (fTranslationTable[kk2].fvalidcodelength < mincodelength) )
+	  { mincodelength = fTranslationTable[kk2].fvalidcodelength;};
       }
 
     // print results to screen
