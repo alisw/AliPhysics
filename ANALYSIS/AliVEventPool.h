@@ -25,9 +25,9 @@ class AliVEventPool : public TNamed
     virtual TChain* GetNextChain()                = 0;
     virtual void  GetCurrentBin(Float_t* /*bin*/) = 0;
     virtual Int_t GetDimension()                  = 0;
+    virtual void  Init()                          = 0;
     // Basic functionality
     virtual void SetChain(TChain* chain) {fChain = chain;}
- private:
     AliVEventPool(const AliVEventPool& obj);
     AliVEventPool& operator=(const AliVEventPool& other);
  protected:
