@@ -19,7 +19,7 @@
 #pragma link C++ class AliAnaGammaDirect+;
 #pragma link C++ class AliAnaParticlePartonCorrelation+;
 #pragma link C++ class AliAnaParticleHadronCorrelation+;
-//#pragma link C++ class AliAnaParticleJetLeadingConeCorrelation+;
+#pragma link C++ class AliAnaParticleJetLeadingConeCorrelation+;
 //#pragma link C++ class AliAnaParticleJetFinderCorrelation+;
 #pragma link C++ class AliAnalysisTaskParticleCorrelation+;
 #pragma link C++ class AliCaloTrackReader+;
