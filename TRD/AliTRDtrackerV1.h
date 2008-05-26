@@ -49,80 +49,87 @@ class AliTrackPoint;
 class AliTRDtrackerV1 : public AliTracker
 {
 public:
-	enum{
-		kMaxLayersPerSector   = 1000
-		, kMaxTimeBinIndex    = 216
-		, kTrackingSectors    = 18
-		, kNTimeBins          = 35
-		, kNPlanes            = 6
-		, kNSeedPlanes        = 4
-		, kMaxTracksStack     = 100
-		, kNConfigs           = 15
-	};
-	AliTRDtrackerV1();
-	virtual ~AliTRDtrackerV1();
+  enum{
+    kMaxLayersPerSector   = 1000
+    , kMaxTimeBinIndex    = 216
+    , kTrackingSectors    = 18
+    , kNTimeBins          = 35
+    , kNPlanes            = 6
+    , kNSeedPlanes        = 4
+    , kMaxTracksStack     = 100
+    , kNConfigs           = 15
+  };
+  AliTRDtrackerV1();
+  virtual ~AliTRDtrackerV1();
   
   //temporary
   AliTRDtrackingSector* GetTrackingSector(Int_t sec) {return &fTrSec[sec];}
   
-	Int_t          Clusters2Tracks(AliESDEvent *esd);
+  Int_t           Clusters2Tracks(AliESDEvent *esd);
   static TTreeSRedirector* DebugStreamer() {return fgDebugStreamer;}
-  static void SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
-  AliCluster*    GetCluster(Int_t index) const;
-	static void    GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
-	static const Int_t   GetNTimeBins() {return fgNTimeBins;}
-	static void    GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
-	static TLinearFitter *GetTiltedRiemanFitter();
-	static TLinearFitter *GetTiltedRiemanFitterConstraint();
-	static AliRieman *GetRiemanFitter();
-	static void    FitRieman(AliTRDcluster **clusters, Double_t chi2[2]);
-	static Float_t FitRieman(AliTRDseedV1 *tracklets, Double_t *chi2, Int_t *planes = 0x0);
-	static Float_t FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Double_t zVertex);
-	static Float_t FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigError);
-	
-	Int_t          FollowBackProlongation(AliTRDtrackV1 &t);
-	Int_t          FollowProlongation(AliTRDtrackV1 &t);
-  Int_t          LoadClusters(TTree *cTree);
-	Int_t          PropagateBack(AliESDEvent *event);
-  Int_t          ReadClusters(TClonesArray* &array, TTree *in) const;
-	Int_t          RefitInward(AliESDEvent *event);
-	void           UnloadClusters();
+  AliCluster*     GetCluster(Int_t index) const;
+  AliTRDseedV1*   GetTracklet(Int_t index) const;
+  AliKalmanTrack* GetTrack(Int_t index) const;
+  TClonesArray*   GetListOfClusters() {return fClusters;}
+  TClonesArray*   GetListOfTracklets() {return fTracklets;}
+  TClonesArray*   GetListOfTracks() {return fTracks;}
+  static const Int_t     GetNTimeBins() {return fgNTimeBins;}
+  static void     GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
+  static void     GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
+  static TLinearFitter*  GetTiltedRiemanFitter();
+  static TLinearFitter*  GetTiltedRiemanFitterConstraint();
+  static AliRieman*      GetRiemanFitter();
+  static void     FitRieman(AliTRDcluster **clusters, Double_t chi2[2]);
+  static Float_t  FitRieman(AliTRDseedV1 *tracklets, Double_t *chi2, Int_t *planes = 0x0);
+  static Float_t  FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Double_t zVertex);
+  static Float_t  FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigError);
   
-  static Int_t   Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
+ 	static Double_t FitRiemanTilt(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
+ 	//static Double_t FitKalman(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = 0x0);
 
-	class AliTRDLeastSquare{
-	public:
-					AliTRDLeastSquare();
-					~AliTRDLeastSquare(){};
-		
-		void		AddPoint(Double_t *x, Double_t y, Double_t sigmaY);
-		void		RemovePoint(Double_t *x, Double_t y, Double_t sigmaY);
-		void		Eval();
-		
-		Double_t	GetFunctionParameter(Int_t ParNumber) const {return fParams[ParNumber];}
-		Double_t	GetFunctionValue(Double_t *xpos) const;
-		void		GetCovarianceMatrix(Double_t *storage) const;
-	private:
-					AliTRDLeastSquare(const AliTRDLeastSquare &);
-		AliTRDLeastSquare& operator=(const AliTRDLeastSquare &);
-		Double_t 	fParams[2];						// Fitparameter	
-		Double_t 	fCovarianceMatrix[3];			// Covariance Matrix
-		Double_t 	fSums[6];						// Sums
-	};
+  Int_t           FollowBackProlongation(AliTRDtrackV1 &t);
+  Int_t           FollowProlongation(AliTRDtrackV1 &t);
+  Int_t           LoadClusters(TTree *cTree);
+  Int_t           PropagateBack(AliESDEvent *event);
+  Int_t           ReadClusters(TClonesArray* &array, TTree *in) const;
+  Int_t           RefitInward(AliESDEvent *event);
+  static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
+  void            UnloadClusters();
+  
+  static Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
+
+  class AliTRDLeastSquare{
+  public:
+    AliTRDLeastSquare();
+    ~AliTRDLeastSquare(){};
+    
+    void		AddPoint(Double_t *x, Double_t y, Double_t sigmaY);
+    void		RemovePoint(Double_t *x, Double_t y, Double_t sigmaY);
+    void		Eval();
+    
+    Double_t	GetFunctionParameter(Int_t ParNumber) const {return fParams[ParNumber];}
+    Double_t	GetFunctionValue(Double_t *xpos) const;
+    void		GetCovarianceMatrix(Double_t *storage) const;
+  private:
+          AliTRDLeastSquare(const AliTRDLeastSquare &);
+    AliTRDLeastSquare& operator=(const AliTRDLeastSquare &);
+    Double_t 	fParams[2];						// Fitparameter	
+    Double_t 	fCovarianceMatrix[3];			// Covariance Matrix
+    Double_t 	fSums[6];						// Sums
+  };
 
 protected:
-  Bool_t         AdjustSector(AliTRDtrackV1 *track); 
-	Double_t       BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int_t *configs);
-	static Float_t CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref);
-	Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
-	Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray *esdTrackList);
-	AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *trk, Int_t plane, Int_t &idx);
-	Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
-	Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
-	AliTRDtrackV1* MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
-  Int_t          PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
-	Int_t          SetTracklet(AliTRDseedV1 *tracklet);
-	Bool_t         UpdateTracklet(AliTRDseedV1 *tracklet, Int_t index);
+  static Bool_t  AdjustSector(AliTRDtrackV1 *track); 
+  Double_t       BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int_t *configs);
+  static Float_t CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref);
+  Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
+  Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray *esdTrackList);
+  AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *trk, Int_t plane, Int_t &idx);
+  Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
+  Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
+  AliTRDtrackV1* MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
+  static Int_t   PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
+  AliTRDseedV1*  SetTracklet(AliTRDseedV1 *tracklet);
 
 private:
 	AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
