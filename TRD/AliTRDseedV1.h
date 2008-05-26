@@ -29,7 +29,7 @@ class AliRieman;
 
 class AliTRDtrackingChamber;
 class AliTRDcluster;
-class AliTRDtrack;
+class AliTRDtrackV1;
 class AliTRDseedV1 : public AliTRDseed
 {
 
@@ -51,7 +51,7 @@ class AliTRDseedV1 : public AliTRDseed
 	void    Draw(Option_t* o = "");
 	Bool_t  Fit();
 
-	Bool_t  Init(AliTRDtrack *track);
+	Bool_t  Init(AliTRDtrackV1 *track);
 	inline void      Init(const AliRieman *fit);
 	Bool_t    IsOwner() const          { return TestBit(1);}
 	Bool_t    IsRowCross() const       { return TestBit(2);}

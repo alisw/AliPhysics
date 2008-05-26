@@ -62,6 +62,7 @@
 #include "AliTRDtrigParam.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
+#include "AliTRDtrack.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliRawReader.h"

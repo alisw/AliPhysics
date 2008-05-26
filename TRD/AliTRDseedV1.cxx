@@ -33,9 +33,9 @@
 #include "AliLog.h"
 #include "AliMathBase.h"
 
-#include "AliTRDseedV1.h"
 #include "AliTRDcluster.h"
-#include "AliTRDtrack.h"
+#include "AliTRDseedV1.h"
+#include "AliTRDtrackV1.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDchamberTimeBin.h"
 #include "AliTRDtrackingChamber.h"
@@ -139,7 +139,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
 
 
 //____________________________________________________________
-Bool_t AliTRDseedV1::Init(AliTRDtrack *track)
+Bool_t AliTRDseedV1::Init(AliTRDtrackV1 *track)
 {
 // Initialize this tracklet using the track information
 //
