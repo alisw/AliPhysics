@@ -955,10 +955,8 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
          }
          cout << "===== RUNNING EVENT MIXING ANALYSIS " << GetName() << endl;
          fSelector = new AliAnalysisSelector(this);
-         TChain *chain;
          while ((chain=fEventPool->GetNextChain())) {
-            TIter next(fTasks);
-            AliAnalysisTask *task;
+            next.Reset();
             // Call NotifyBinChange for all tasks
             while ((task=(AliAnalysisTask*)next()))
                if (!task->IsPostEventLoop()) task->NotifyBinChange();
