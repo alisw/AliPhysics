@@ -69,6 +69,8 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   // Define input and output slots here
   DefineInput(0, TChain::Class());
   DefineOutput(0, TList::Class());
+
+  AliLog::SetClassDebugLevel("AlidNdEtaTask", AliLog::kWarning);
 }
 
 AlidNdEtaTask::~AlidNdEtaTask()
@@ -86,6 +88,14 @@ AlidNdEtaTask::~AlidNdEtaTask()
   }
 }
 
+Bool_t AlidNdEtaTask::Notify()
+{
+  static Int_t count = 0;
+  count++;
+  Printf("Processing %d. file", count);
+  return kTRUE;
+}
+
 //________________________________________________________________________
 void AlidNdEtaTask::ConnectInputData(Option_t *)
 {
@@ -94,33 +104,33 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
 
   Printf("AlidNdEtaTask::ConnectInputData called");
 
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read tree from input slot 0");
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+
+  if (!esdH) {
+    Printf("ERROR: Could not get ESDInputHandler");
   } else {
-    // Disable all branches and enable only the needed ones
-    //tree->SetBranchStatus("*", 0);
+    fESD = esdH->GetEvent();
 
-    tree->SetBranchStatus("TriggerMask", 1);
-    tree->SetBranchStatus("SPDVertex*", 1);
-    tree->SetBranchStatus("PrimaryVertex*", 1);
-    tree->SetBranchStatus("TPCVertex*", 1);
+    TTree* tree = esdH->GetTree();
+    if (!tree) {
+      Printf("ERROR: Could not read tree");
+    } else {
+      // Disable all branches and enable only the needed ones
+      tree->SetBranchStatus("*", 0);
 
-    if (fAnalysisMode == AliPWG0Helper::kSPD) {
-      tree->SetBranchStatus("AliMultiplicity*", 1);
+      tree->SetBranchStatus("AliESDHeader*", 1);
+      tree->SetBranchStatus("*Vertex*", 1);
+
+      if (fAnalysisMode == AliPWG0Helper::kSPD) {
+        tree->SetBranchStatus("AliMultiplicity*", 1);
+      }
+
+      if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
+        //AliESDtrackCuts::EnableNeededBranches(tree);
+        tree->SetBranchStatus("Tracks*", 1);
+      }
+
     }
-
-    if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
-      //AliESDtrackCuts::EnableNeededBranches(tree);
-      tree->SetBranchStatus("Tracks*", 1);
-    }
-
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else
-      fESD = esdH->GetEvent();
   }
 
   // disable info messages of AliMCEvent (per event)
@@ -317,7 +327,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       ++inputCount;
     }
 
-    Printf("Accepted %d tracklets", inputCount);
+    //Printf("Accepted %d tracklets", inputCount);
   }
   else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
   {
@@ -426,6 +436,12 @@ void AlidNdEtaTask::Exec(Option_t*)
 
     // get the MC vertex
     AliGenEventHeader* genHeader = header->GenEventHeader();
+    if (!genHeader)
+    {
+      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      return;
+    }
+
     TArrayF vtxMC(3);
     genHeader->PrimaryVertex(vtxMC);
 

@@ -38,17 +38,24 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     //gProof->SetParallel(1);
 
     // Enable the needed package
-    /*gProof->UploadPackage("STEERBase");
-    gProof->EnablePackage("STEERBase");
-    gProof->UploadPackage("ESD");
-    gProof->EnablePackage("ESD");
-    gProof->UploadPackage("AOD");
-    gProof->EnablePackage("AOD");
-    gProof->UploadPackage("ANALYSIS");
-    gProof->EnablePackage("ANALYSIS");*/
-
-    gProof->UploadPackage("$ALICE_ROOT/AF-v4-12");
-    gProof->EnablePackage("$ALICE_ROOT/AF-v4-12");
+    if (1)
+    {
+      gProof->UploadPackage("$ALICE_ROOT/STEERBase");
+      gProof->EnablePackage("$ALICE_ROOT/STEERBase");
+      gProof->UploadPackage("$ALICE_ROOT/ESD");
+      gProof->EnablePackage("$ALICE_ROOT/ESD");
+      gProof->UploadPackage("$ALICE_ROOT/AOD");
+      gProof->EnablePackage("$ALICE_ROOT/AOD");
+      gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
+      gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
+      gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
+      gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
+    }
+    else
+    {
+      gProof->UploadPackage("$ALICE_ROOT/AF-v4-12");
+      gProof->EnablePackage("$ALICE_ROOT/AF-v4-12");
+    }
 
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
     gProof->EnablePackage("$ALICE_ROOT/PWG0base");
@@ -128,6 +135,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
+  //esdH->SetInactiveBranches("*");
   mgr->SetInputEventHandler(esdH);
 
   // Attach input
@@ -193,6 +201,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
     return;
   }
 
+    // Note: the last parameter does not define which analysis is going to happen, the histograms will be overwritten when loading from the f
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaNSD", "dndetaNSD");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kNSD, "ESD -> NSD");

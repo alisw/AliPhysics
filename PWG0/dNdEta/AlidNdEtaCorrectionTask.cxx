@@ -103,18 +103,17 @@ void AlidNdEtaCorrectionTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read tree from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
-    //tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("*", 0);
 
-    tree->SetBranchStatus("fTriggerMask", 1);
-    tree->SetBranchStatus("fSPDVertex*", 1);
-    // PrimaryVertex
+    tree->SetBranchStatus("AliESDHeader.*", 1);
+    tree->SetBranchStatus("*Vertex*", 1);
 
     if (fAnalysisMode == AliPWG0Helper::kSPD)
-      tree->SetBranchStatus("fSPDMult*", 1);
+      tree->SetBranchStatus("AliMultiplicity*", 1);
 
     if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
-      AliESDtrackCuts::EnableNeededBranches(tree);
-      tree->SetBranchStatus("fTracks.fLabel", 1);
+      //AliESDtrackCuts::EnableNeededBranches(tree);
+      tree->SetBranchStatus("Tracks*", 1);
     }
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -292,7 +291,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     Double_t diff = vtxMC[2] - vtx[2];
     if (vtxESD->GetZRes() > 0) 
       fVertexShiftNorm->Fill(diff / vtxESD->GetZRes());
-  } 
+  }
   else
     Printf("No vertex found");
 
@@ -300,7 +299,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   Int_t biny = (Int_t) eventTriggered + 2 * (Int_t) eventVertex;
   // INEL
   fEventStats->Fill(0.0, biny);
-  // NDS
+  // NSD
   if (processType != 92 && processType != 93)
     fEventStats->Fill(1.0, biny);
   
