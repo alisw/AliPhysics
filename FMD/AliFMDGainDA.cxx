@@ -18,13 +18,16 @@
     @date    Mon Mar 13 13:46:05 2008
     @brief   Derived class for the pulse gain detector algorithm.
 */
-// This class contains the implementation of the gain detector algorithms (DA) for the FMD.
-// The data is collected in histograms that are reset for each pulse length after the 
-// mean and standard deviation are put into a TGraphErrors object. After a certain number of pulses
-// (usually 8) the graph is fitted to a straight line. The gain is then slope of this line as
-// it combines the known pulse and the response of the detector.
-
-
+//____________________________________________________________________
+//
+// This class contains the implementation of the gain detector
+// algorithms (DA) for the FMD.  The data is collected in histograms
+// that are reset for each pulse length after the mean and standard
+// deviation are put into a TGraphErrors object. After a certain
+// number of pulses (usually 8) the graph is fitted to a straight
+// line. The gain is then slope of this line as it combines the known
+// pulse and the response of the detector.
+//
 #include "AliFMDGainDA.h"
 #include "iostream"
 #include "fstream"
@@ -37,51 +40,52 @@
 
 //_____________________________________________________________________
 ClassImp(AliFMDGainDA)
+#if 0 // Do not delete - here to let Emacs indent properly
+;
+#endif
 
 //_____________________________________________________________________
-AliFMDGainDA::AliFMDGainDA() : AliFMDBaseDA(),
-  fGainArray(),
-  fPulseSize(32),
-  fHighPulse(256), 
-  fPulseLength(100),
-  fEventsPerChannel(0),
-  fCurrentPulse(0),
-  fCurrentChannel(0),
-  fNumberOfStripsPerChip(128)
+AliFMDGainDA::AliFMDGainDA() 
+  : AliFMDBaseDA(),
+    fGainArray(),
+    fPulseSize(32),
+    fHighPulse(256), 
+    fPulseLength(100),
+    fEventsPerChannel(0),
+    fCurrentPulse(0),
+    fCurrentChannel(0),
+    fNumberOfStripsPerChip(128)
 {
   fOutputFile.open("gains.csv");
-  fGainArray.SetOwner();
-  
+  fGainArray.SetOwner(); 
 }
 
 //_____________________________________________________________________
-AliFMDGainDA::AliFMDGainDA(const AliFMDGainDA & gainDA) :  
-  AliFMDBaseDA(gainDA),
-  fGainArray(gainDA.fGainArray),
-  fPulseSize(gainDA.fPulseSize),
-  fHighPulse(gainDA.fHighPulse),
-  fPulseLength(gainDA.fPulseLength),
-  fEventsPerChannel(gainDA.fEventsPerChannel),
-  fCurrentPulse(gainDA.fCurrentPulse),
-  fCurrentChannel(gainDA.fCurrentChannel),
-  fNumberOfStripsPerChip(gainDA.fNumberOfStripsPerChip)
+AliFMDGainDA::AliFMDGainDA(const AliFMDGainDA & gainDA) 
+  :  AliFMDBaseDA(gainDA),
+     fGainArray(gainDA.fGainArray),
+     fPulseSize(gainDA.fPulseSize),
+     fHighPulse(gainDA.fHighPulse),
+     fPulseLength(gainDA.fPulseLength),
+     fEventsPerChannel(gainDA.fEventsPerChannel),
+     fCurrentPulse(gainDA.fCurrentPulse),
+     fCurrentChannel(gainDA.fCurrentChannel),
+     fNumberOfStripsPerChip(gainDA.fNumberOfStripsPerChip)
+{  
+}
+
+//_____________________________________________________________________
+AliFMDGainDA::~AliFMDGainDA() 
 {
-  
 }
 
 //_____________________________________________________________________
-AliFMDGainDA::~AliFMDGainDA() {
-  
- 
-
-}
-
-//_____________________________________________________________________
-void AliFMDGainDA::Init() {
-    
+void AliFMDGainDA::Init() 
+{
   fEventsPerChannel = (fPulseLength*fHighPulse) / fPulseSize ;
   
-  SetRequiredEvents(fEventsPerChannel*fNumberOfStripsPerChip); //8 pulser values * 128 strips * 100 samples
+  //8 pulser values * 128 strips * 100 samples
+  SetRequiredEvents(fEventsPerChannel*fNumberOfStripsPerChip); 
   TObjArray* detArray;
   TObjArray* ringArray;
   TObjArray* sectorArray;
@@ -102,7 +106,9 @@ void AliFMDGainDA::Init() {
 	sectorArray->SetOwner();
 	ringArray->AddAtAndExpand(sectorArray,sec);
 	for(UShort_t strip = 0; strip < nstr; strip++) {
-	  TH1S* hChannel = new TH1S(Form("hFMD%d%c_%d_%d",det,ring,sec,strip),Form("hFMD%d%c_%d_%d",det,ring,sec,strip),1024,0,1023);
+	  TH1S* hChannel = new TH1S(Form("hFMD%d%c_%d_%d",det,ring,sec,strip),
+				    Form("hFMD%d%c_%d_%d",det,ring,sec,strip),
+				    1024,0,1023);
 	  hChannel->SetDirectory(0);
 	  sectorArray->AddAtAndExpand(hChannel,strip);
 	}
@@ -113,12 +119,15 @@ void AliFMDGainDA::Init() {
 
 //_____________________________________________________________________
 void AliFMDGainDA::AddChannelContainer(TObjArray* sectorArray, 
-				       UShort_t det, 
-				       Char_t ring, 
+				       UShort_t det  , 
+				       Char_t   ring,  
 				       UShort_t sec, 
-				       UShort_t strip) {
-  
+				       UShort_t strip) 
+{  
   TGraphErrors* hChannel  = new TGraphErrors();
+  hChannel->SetName(Form("FMD%d%c[%02d,%03d]", det, ring, sec, strip));
+  hChannel->SetTitle(Form("FMD%d%c[%02d,%03d] ADC vs DAC", 
+			  det, ring, sec, strip));
   sectorArray->AddAtAndExpand(hChannel,strip);
 }
 
@@ -131,9 +140,9 @@ void AliFMDGainDA::FillChannels(AliFMDDigit* digit) {
   UShort_t strip = digit->Strip();
   
   
-  if(strip%fNumberOfStripsPerChip) return;
-  Int_t VAchip = strip / fNumberOfStripsPerChip; 
-  TH1S* hChannel = GetChannelHistogram(det,ring,sec,VAchip);
+  if(strip % fNumberOfStripsPerChip) return;
+  Int_t vaChip   = strip / fNumberOfStripsPerChip; 
+  TH1S* hChannel = GetChannelHistogram(det, ring, sec, vaChip);
   hChannel->Fill(digit->Counts());
   UpdatePulseAndADC(det,ring,sec,strip);
 }
@@ -145,7 +154,8 @@ void AliFMDGainDA::Analyse(UShort_t det,
 			   UShort_t strip) {
   TGraphErrors* grChannel = GetChannel(det,ring,sec,strip);
   if(!grChannel->GetN()) {
-    // AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",det, ring , sec, strip));
+    // AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",
+    //                 det, ring , sec, strip));
     return;
   }
   TF1 fitFunc("fitFunc","pol1",-10,280); 
@@ -173,8 +183,8 @@ void AliFMDGainDA::Analyse(UShort_t det,
   
   
   if(fSaveHistograms) {
-    
-    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename.Data(),det,ring,sec,strip));
+    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",
+			fDiagnosticsFilename,det,ring,sec,strip));
     grChannel->Write(Form("grFMD%d%c_%d_%d",det,ring,sec,strip));
   }
   
@@ -210,44 +220,46 @@ TH1S* AliFMDGainDA::GetChannelHistogram(UShort_t det,
 }
 
 //_____________________________________________________________________
-TGraphErrors* AliFMDGainDA::GetChannel(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip) {
+TGraphErrors* AliFMDGainDA::GetChannel(UShort_t det, 
+				       Char_t ring, 
+				       UShort_t sec, 
+				       UShort_t strip) {
   
-  UShort_t  Ring = 1;
-  if(ring == 'O')
-    Ring = 0;
-  
-  
-  TObjArray* detArray          = static_cast<TObjArray*>(fDetectorArray.At(det));
-  TObjArray* ringArray         = static_cast<TObjArray*>(detArray->At(Ring));
-  TObjArray* secArray          = static_cast<TObjArray*>(ringArray->At(sec));
-  TGraphErrors* hChannel       = static_cast<TGraphErrors*>(secArray->At(strip));
+  UShort_t      iring     = (ring == 'O' ? 0 : 1);
+  TObjArray*    detArray  = static_cast<TObjArray*>(fDetectorArray.At(det));
+  TObjArray*    ringArray = static_cast<TObjArray*>(detArray->At(iring));
+  TObjArray*    secArray  = static_cast<TObjArray*>(ringArray->At(sec));
+  TGraphErrors* hChannel  = static_cast<TGraphErrors*>(secArray->At(strip));
   
   return hChannel;
 }
 
 //_____________________________________________________________________
-void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip) {
-  
-  if(strip%fNumberOfStripsPerChip) return;
-  if(((GetCurrentEvent())%fPulseLength) && GetCurrentEvent()>0) return;
+void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, 
+				     Char_t ring, 
+				     UShort_t sec, 
+				     UShort_t strip) 
+{
+  if(strip % fNumberOfStripsPerChip) return;
+  if(((GetCurrentEvent()) % fPulseLength) && GetCurrentEvent() > 0) return;
     
-  Int_t VAchip = strip/fNumberOfStripsPerChip; 
-  TH1S* hChannel = GetChannelHistogram(det,ring,sec,VAchip);
+  Int_t vaChip = strip/fNumberOfStripsPerChip; 
+  TH1S* hChannel = GetChannelHistogram(det,ring,sec,vaChip);
   
   if(!hChannel->GetEntries()) {
-    AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",det, ring , sec, strip));
+    AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",
+		    det, ring , sec, strip));
     return;
   }
   Double_t mean      = hChannel->GetMean();
   Double_t rms       = hChannel->GetRMS();
-  Double_t pulse     = (Double_t)fCurrentPulse*fPulseSize;
-  
-  Int_t firstBin = hChannel->GetXaxis()->GetFirst();
-  Int_t lastBin  = hChannel->GetXaxis()->GetLast();
+  Double_t pulse     = Double_t(fCurrentPulse) * fPulseSize;
+  Int_t    firstBin  = hChannel->GetXaxis()->GetFirst();
+  Int_t    lastBin   = hChannel->GetXaxis()->GetLast();
   hChannel->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
   
-  mean      = hChannel->GetMean();
-  rms       = hChannel->GetRMS();
+  mean               = hChannel->GetMean();
+  rms                = hChannel->GetRMS();
   
   hChannel->GetXaxis()->SetRange(firstBin,lastBin);
   
@@ -258,11 +270,11 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, US
   channel->SetPoint(fCurrentPulse,pulse,mean);
   channel->SetPointError(fCurrentPulse,0,rms);
   
- 
-  
   if(fSaveHistograms) {
-    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename.Data(),det,ring,sec,channelNumber));
-    hChannel->Write(Form("hFMD%d%c_%d_%d_pulse_%d",det,ring,sec,channelNumber,fCurrentPulse));
+    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",
+			fDiagnosticsFilename,det,ring,sec,channelNumber));
+    hChannel->Write(Form("hFMD%d%c_%d_%d_pulse_%d",
+			 det,ring,sec,channelNumber,fCurrentPulse));
   }
   
   hChannel->Reset();
@@ -270,22 +282,19 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, US
 }
 
 //_____________________________________________________________________
-void AliFMDGainDA::ResetPulseAndUpdateChannel() {
-  
-  fCurrentPulse   = 0;
-  
+void AliFMDGainDA::ResetPulseAndUpdateChannel() 
+{  
+  fCurrentPulse = 0; 
 }
 
 //_____________________________________________________________________
-void AliFMDGainDA::FinishEvent() {
-  
-  if(GetCurrentEvent()>0 && (GetCurrentEvent()%fPulseLength==0))
+void AliFMDGainDA::FinishEvent() 
+{
+  if(GetCurrentEvent()>0 && (GetCurrentEvent() % fPulseLength == 0))
     fCurrentPulse++;
   
-  if(GetCurrentEvent()>0 && (GetCurrentEvent())%fEventsPerChannel==0)
+  if(GetCurrentEvent()>0 && (GetCurrentEvent()) % fEventsPerChannel == 0)
     fCurrentPulse = 0;
-
-
 }
 //_____________________________________________________________________
 //

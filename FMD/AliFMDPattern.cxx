@@ -103,8 +103,10 @@ AliFMDPattern::AliFMDPatternDetector::DrawShape(TObjArray& a)
 
 //____________________________________________________________________
 void
-AliFMDPattern::AliFMDPatternDetector::Begin(Int_t nlevel, Double_t r, 
-			       TObjArray& inners, TObjArray& outers)
+AliFMDPattern::AliFMDPatternDetector::Begin(Int_t      nlevel, 
+					    Double_t   r, 
+					    TObjArray& inners, 
+					    TObjArray& outers)
 {
   // Start of a run. 
   // 
@@ -143,7 +145,7 @@ AliFMDPattern::AliFMDPatternDetector::Begin(Int_t nlevel, Double_t r,
     g->Draw("same p");
     fGraphs.AddAtAndExpand(g, i);
   }
-  TIter   next(&fGraphs);
+  // TIter   next(&fGraphs);
 }
 
 //____________________________________________________________________
@@ -171,8 +173,10 @@ AliFMDPattern::AliFMDPatternDetector::End()
 }
 //____________________________________________________________________
 void
-AliFMDPattern::AliFMDPatternDetector::AddMarker(Double_t x, Double_t y, Float_t s, 
-				   Float_t max)
+AliFMDPattern::AliFMDPatternDetector::AddMarker(Double_t x, 
+						Double_t y, 
+						Float_t  s, 
+						Float_t  max)
 {
   // Add a marker at (X,Y,Z).  The marker color and size is chosen
   // relative to the MAX argument. 
@@ -417,7 +421,7 @@ AliFMDPattern::ProcessHit(AliFMDHit* hit, TParticle*)
 void
 AliFMDPattern::AddMarker(UShort_t det, Char_t rng, 
 			 UShort_t sec, UShort_t str,
-			 TObject*, Float_t s, Float_t min, Float_t max)
+			 TObject*, Float_t s, Float_t /*min*/, Float_t max)
 {
   // Add a marker to the display
   //
