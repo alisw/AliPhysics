@@ -227,7 +227,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
   Float_t xxmax = (kBframeLength - kNulocLength)/2.; 
   Int_t index=0;
   Int_t* fStations = new Int_t[5];
-  for (Int_t i=0; i<5; i++) fStations[i] = 1;
+  for (Int_t iSt=0; iSt<5; iSt++) fStations[iSt] = 1;
   fStations[2] = 1;
      
   if (fStations[2])
@@ -261,7 +261,6 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       Float_t senspar2[3]   = { tlength/2., senspar[1],   senspar[2]}; 
       Float_t hFramepar2[3] = { tlength/2., hFramepar[1], hFramepar[2]}; 
       Float_t bFramepar2[3] = { tlength/2., bFramepar[1], bFramepar[2]}; 
-      Float_t *dum=0;
       Float_t pcbDLength3   = (kPcbLength - tlength);
       
       // For rounded pcb of central slat
@@ -294,7 +293,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       char idSlatCh6[5];
       Float_t xSlat3;
       Float_t ySlat3 = 0;
-      Float_t angle = 0.;
+      angle = 0.;
+
       Float_t spar2[3];
       for (i = 0; i < kNslats3; i++){
 
@@ -660,7 +660,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  // position the panels and the insulating material 
 	  for (j = 0; j < kNPCB3[i]; j++){
 	    index++;
-	    Float_t xx = kSensLength * (-kNPCB3[i]/2. + j + 0.5); 
+	    xx = kSensLength * (-kNPCB3[i]/2. + j + 0.5); 
 	    Float_t xx2 = xx - pcbDLength3/2.; 
 	    Float_t xx3 = xx + (kSensLength-csvPcbLength)/2.;
 
@@ -1287,7 +1287,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	// position the panels and the insulating material 
 	for (j = 0; j < kNPCB4[i]; j++){
 	  index++;
-	  Float_t xx = kSensLength * (-kNPCB4[i]/2.+j+.5); 
+	  xx = kSensLength * (-kNPCB4[i]/2.+j+.5); 
 	  Float_t zPanel = spar[2] - nomexbpar[2]; 
 	  if (i==1 && j==0){ // Rounded pcb of rounded slat
 	    GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7X", idSlatCh7, 2*index-1,TGeoTranslation(xx,0.,zPanel));
@@ -1836,7 +1836,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	// position the panels and the insulating material 
 	for (j = 0; j < kNPCB5[i]; j++){
 	  index++;
-	  Float_t xx = kSensLength * (-kNPCB5[i]/2.+j+.5); 
+	  xx = kSensLength * (-kNPCB5[i]/2.+j+.5); 
 
 	  Float_t zPanel = spar[2] - nomexbpar[2]; 
 	  if (i==1 && j==0){ // Rounded pcb of rounded slat 
