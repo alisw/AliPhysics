@@ -184,7 +184,7 @@ void AliFMDGainDA::Analyse(UShort_t det,
   
   if(fSaveHistograms) {
     gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",
-			fDiagnosticsFilename,det,ring,sec,strip));
+			fDiagnosticsFilename.Data(),det,ring,sec,strip));
     grChannel->Write(Form("grFMD%d%c_%d_%d",det,ring,sec,strip));
   }
   
@@ -272,7 +272,8 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
   
   if(fSaveHistograms) {
     gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",
-			fDiagnosticsFilename,det,ring,sec,channelNumber));
+			fDiagnosticsFilename.Data(),
+			det,ring,sec,channelNumber));
     hChannel->Write(Form("hFMD%d%c_%d_%d_pulse_%d",
 			 det,ring,sec,channelNumber,fCurrentPulse));
   }
