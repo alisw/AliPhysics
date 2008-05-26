@@ -142,10 +142,10 @@ void AliAnalysisTaskMCEventPlane::CreateOutputObjects()
   fMc  = new AliFlowAnalysisWithMCEventPlane() ;
 
   //output file
-  TString fName = "outputFromMCEventPlaneAnalysis" ;
-  fName += fAnalysisType.Data() ;
-  fName += ".root" ;
-  fMc->SetHistFileName( fName.Data() );
+  TString outputName = "outputFromMCEventPlaneAnalysis" ;
+  outputName += fAnalysisType.Data() ;
+  outputName += ".root" ;
+  fMc->SetHistFileName( outputName.Data() );
     
   fMc-> Init();
 

@@ -137,14 +137,14 @@ void AliAnalysisTaskLeeYangZeros::CreateOutputObjects()
   fLyz -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
 
   //output file
-  TString fName = "outputFromLeeYangZerosAnalysis" ;
-  fName += fAnalysisType.Data() ;
+  TString outputName = "outputFromLeeYangZerosAnalysis" ;
+  outputName += fAnalysisType.Data() ;
   if (fFirstRunLYZ) {
-    fName += "_firstrun.root" ;
+    outputName += "_firstrun.root" ;
   } else {
-    fName += "_secondrun.root" ;
+    outputName += "_secondrun.root" ;
   }
-  fLyz->SetHistFileName( fName.Data() );
+  fLyz->SetHistFileName( outputName.Data() );
   
   // Get data from input slot 1
   if (GetNinputs() == 2) {                   //if there are two input slots
