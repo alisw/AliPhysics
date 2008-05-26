@@ -67,7 +67,7 @@ class AliFlowAnalysisWithLeeYangZeros {
 
  private:
 
-  AliFlowAnalysisWithLeeYangZeros(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);
+   AliFlowAnalysisWithLeeYangZeros(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);
    AliFlowAnalysisWithLeeYangZeros& operator=(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);
 
    Bool_t   MakeControlHistograms(AliFlowEventSimple* anEvent); 

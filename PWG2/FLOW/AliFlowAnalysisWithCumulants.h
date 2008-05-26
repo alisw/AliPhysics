@@ -31,9 +31,8 @@ class AliFlowAnalysisWithCumulants {
   virtual void Terminate(Int_t nEvents);
 
  private:
-  AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants&);
-  AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants&);
-
+  AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants& aAnalysis);
+  AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants& aAnalysis);
 
   AliFlowTrackSimple* fTrack;//track
   static const Int_t fgkQmax=AliFlowCumuConstants::kQmax;//needed for numerics
