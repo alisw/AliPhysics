@@ -262,7 +262,7 @@ void AliTOFv6T0::AddAlignableVolumes() const
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
 
-      modUID = AliGeomManager::LayerToVolUID(idTOF,modnum++);
+      modUID = AliGeomManager::LayerToVolUID(idTOF, modnum++);
       if (fTOFSectors[isect]==-1) continue;
 
       if (fTOFHoles && (isect==13 || isect==14 || isect==15)) {
@@ -1698,19 +1698,19 @@ void AliTOFv6T0::MakeSuperModuleCooling(Float_t xtof, Float_t ytof, Float_t zlen
     }
 
     ycoor =  ytub + (tubepar[1] + 2.*bar2[1] + lonpar1[1]);
-    zcoor = (198.8 + 56.82)*0.5 - (zlenA*0.5 + fgkInterCentrModBorder2)*0.5;
+    zcoor = (198.8 + 56.82)*0.5;
     gMC->Gspos("FLO2", 2, "FAIB",-24., ycoor,-zcoor, 0, "MANY");
     gMC->Gspos("FLO2", 1, "FAIB",-24., ycoor, zcoor, 0, "MANY");
-    zcoor = (366.9 + 198.8)*0.5 - (zlenA*0.5 + fgkInterCentrModBorder2)*0.5;
+    zcoor = (366.9 + 198.8)*0.5;
     gMC->Gspos("FLO3", 2, "FAIB",-24., ycoor,-zcoor, 0, "MANY");
     gMC->Gspos("FLO3", 1, "FAIB",-24., ycoor, zcoor, 0, "MANY");
     ycoor =  ytub - (tubepar[1] + 2.*bar2[1] + lonpar1[1]);
-    zcoor = (198.8 + 56.82)*0.5 - (zlenA*0.5 + fgkInterCentrModBorder2)*0.5;
-    gMC->Gspos("FLO2", 4, "FAIB",-24., ycoor,-zcoor, 0, "MANY");
-    gMC->Gspos("FLO2", 3, "FAIB",-24., ycoor, zcoor, 0, "MANY");
-    zcoor = (366.9 + 198.8)*0.5 - (zlenA*0.5 + fgkInterCentrModBorder2)*0.5;
-    gMC->Gspos("FLO3", 4, "FAIB",-24., ycoor,-zcoor, 0, "MANY");
-    gMC->Gspos("FLO3", 3, "FAIB",-24., ycoor, zcoor, 0, "MANY");
+    zcoor = (198.8 + 56.82)*0.5;
+    gMC->Gspos("FLO2", 4, "FAIB", 24., ycoor,-zcoor, 0, "MANY");
+    gMC->Gspos("FLO2", 3, "FAIB", 24., ycoor, zcoor, 0, "MANY");
+    zcoor = (366.9 + 198.8)*0.5;
+    gMC->Gspos("FLO3", 4, "FAIB", 24., ycoor,-zcoor, 0, "MANY");
+    gMC->Gspos("FLO3", 3, "FAIB", 24., ycoor, zcoor, 0, "MANY");
 
   }
 
