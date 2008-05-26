@@ -7,21 +7,28 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include "TVector.h"
+#include "TLinearFitter.h"
 #include "TEveTrans.h"
 
 #include "AliEveTRDData.h"
 #include "AliEveTRDModuleImp.h"
 
 #include "AliLog.h"
+#include "AliPID.h"
+#include "AliTrackPointArray.h"
 
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
+#include "AliTRDtrackerV1.h"
 #include "AliTRDpadPlane.h"
+#include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDtransform.h"
-#include "AliTRDdigitsManager.h"
+#include "AliTRDReconstructor.h"
+#include "AliTRDrecoParam.h"
 
 ClassImp(AliEveTRDHits)
 ClassImp(AliEveTRDDigits)
@@ -142,11 +149,12 @@ void AliEveTRDDigits::Reset()
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-AliEveTRDHits::AliEveTRDHits(AliEveTRDChamber *p) :
-  TEvePointSet("hits", 20), fParent(p)
+AliEveTRDHits::AliEveTRDHits() : TEvePointSet("hits", 20)
 {
   // Constructor.
-  SetTitle(Form("Hits for Det %d", p->GetID()));
+  SetMarkerSize(.1);
+  SetMarkerColor(2);
+  SetOwnIds(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -160,7 +168,6 @@ void AliEveTRDHits::PointSelected(Int_t n)
 {
   // Handle an individual point selection from GL.
 
-  fParent->SpawnEditor();
   AliTRDhit *h = dynamic_cast<AliTRDhit*>(GetPointId(n));
   printf("\nDetector             : %d\n", h->GetDetector());
   printf("Region of production : %c\n", h->FromAmplification() ? 'A' : 'D');
@@ -176,11 +183,15 @@ void AliEveTRDHits::PointSelected(Int_t n)
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-AliEveTRDClusters::AliEveTRDClusters(AliEveTRDChamber *p):AliEveTRDHits(p)
+AliEveTRDClusters::AliEveTRDClusters():AliEveTRDHits()
 {
   // Constructor.
   SetName("clusters");
-  SetTitle(Form("Clusters for Det %d", p->GetID()));
+
+  SetMarkerSize(.2);
+  SetMarkerStyle(24);
+  SetMarkerColor(kGreen);
+  SetOwnIds(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -188,7 +199,6 @@ void AliEveTRDClusters::PointSelected(Int_t n)
 {
   // Handle an individual point selection from GL.
 
-  fParent->SpawnEditor();
   AliTRDcluster *c = dynamic_cast<AliTRDcluster*>(GetPointId(n));
   printf("\nDetector             : %d\n", c->GetDetector());
   printf("Charge               : %f\n", c->GetQ());
@@ -212,11 +222,53 @@ void AliEveTRDClusters::PointSelected(Int_t n)
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-AliEveTRDTracklet::AliEveTRDTracklet():TEveLine(), AliTRDseedV1()
+AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
+  ,fClusters(0x0)
 {
   // Constructor.
   SetName("tracklet");
-  //SetTitle(Form("Clusters for Det %d", p->GetID()));
+  
+  SetUserData(trklt);
+  Int_t det = -1, sec;
+  Float_t g[3];
+  AliTRDcluster *c = 0x0;
+  AddElement(fClusters = new AliEveTRDClusters());
+  for(Int_t ic=0; ic<35; ic++){
+    if(!(c = trklt->GetClusters(ic))) continue;
+    det = c->GetDetector();
+    c->GetGlobalXYZ(g); 
+    Int_t id = fClusters->SetNextPoint(g[0], g[1], g[2]);    
+    fClusters->SetPointId(id, new AliTRDcluster(*c));
+  } 
+
+  SetTitle(Form("Det[%d] Plane[%d] P[%7.3f]", det, trklt->GetPlane(), trklt->GetMomentum()));
+  SetLineColor(kYellow);
+  //SetOwnIds(kTRUE);
+  
+  sec = det/30;
+  Double_t alpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); 
+  Double_t x0 = trklt->GetX0(), 
+    y0f = trklt->GetYfit(0), 
+    ysf = trklt->GetYfit(1),
+    z0r = trklt->GetZref(0), 
+    zsr = trklt->GetZref(1);
+  Double_t xg =  x0 * TMath::Cos(alpha) - y0f * TMath::Sin(alpha); 
+  Double_t yg = x0 * TMath::Sin(alpha) + y0f * TMath::Cos(alpha);
+  SetPoint(0, xg, yg, z0r);
+  //SetPointId(0, new AliTRDseedV1(*trackletObj));
+  Double_t x1 = x0-3.5, 
+    y1f = y0f - ysf*3.5,
+    z1r = z0r - zsr*3.5; 
+  xg =  x1 * TMath::Cos(alpha) - y1f * TMath::Sin(alpha); 
+  yg = x1 * TMath::Sin(alpha) + y1f * TMath::Cos(alpha);
+  SetPoint(1, xg, yg, z1r);
+}
+
+//______________________________________________________________________________
+void AliEveTRDTracklet::ProcessData()
+{
+  AliTRDseedV1 *tracklet = (AliTRDseedV1*)GetUserData();
+  tracklet->Print();
 }
 
 ///////////////////////////////////////////////////////////
@@ -224,10 +276,60 @@ AliEveTRDTracklet::AliEveTRDTracklet():TEveLine(), AliTRDseedV1()
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-AliEveTRDTrack::AliEveTRDTrack():TEveLine(), AliTRDtrackV1()
+AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
 {
   // Constructor.
   SetName("track");
-  //SetTitle(Form("Clusters for Det %d", p->GetID()));
+
+  SetUserData(trk);
+  
+  AliTRDtrackerV1::SetNTimeBins(24);
+  AliTrackPoint points[AliTRDtrackV1::kMAXCLUSTERSPERTRACK];
+  Int_t nc = 0, sec = -1; Float_t alpha = 0.;
+  AliTRDcluster *c = 0x0;
+  AliTRDseedV1 *tracklet = 0x0;
+  for(Int_t ip=0; ip<AliTRDgeometry::kNplan; ip++){
+    if(!(tracklet = trk->GetTracklet(ip))) continue;
+    if(!tracklet->IsOK()) continue;
+    AddElement(fTracklet[ip] = new AliEveTRDTracklet(tracklet));
+
+    for(Int_t ic=34; ic>=0; ic--){
+      if(!(c = tracklet->GetClusters(ic))) continue;
+      if(sec<0){
+        sec = c->GetDetector()/30;
+        alpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); 
+      }
+      points[nc].SetXYZ(c->GetX(),0.,0.);
+      nc++;
+    }
+  }
+
+  AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, points);
+  //AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, points);
+
+  Float_t global[3];
+  for(Int_t ip=0; ip<nc; ip++){
+    points[ip].Rotate(-alpha).GetXYZ(global);
+    SetNextPoint(global[0], global[1], global[2]);
+  }
+
+  SetMarkerColor(kCyan);
+  SetLineColor(kCyan);
+  SetSmooth(kTRUE);
+}
+
+//______________________________________________________________________________
+void AliEveTRDTrack::ProcessData()
+{
+  AliTRDtrackV1 *track = (AliTRDtrackV1*)GetUserData();
+  AliInfo(Form("Clusters[%d]", track->GetNumberOfClusters()));
+  
+  AliTRDReconstructor::RecoParam()->SetPIDMethod(0);
+  track->CookPID();
+  printf("PIDLQ : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
+
+  AliTRDReconstructor::RecoParam()->SetPIDMethod(1);
+  track->CookPID();
+  printf("PIDNN : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
 }
 

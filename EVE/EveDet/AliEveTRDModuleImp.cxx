@@ -255,12 +255,9 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
     return;
   }
 
-  if(!fRecPoints){
-    AddElement(fRecPoints = new AliEveTRDClusters(this));
-    fRecPoints->SetMarkerSize(.2);
-    fRecPoints->SetMarkerStyle(24);
-    fRecPoints->SetMarkerColor(kGreen);
-    fRecPoints->SetOwnIds(kTRUE);
+  if(!fRecPoints){ 
+    AddElement(fRecPoints = new AliEveTRDClusters());
+    fRecPoints->SetTitle(Form("Clusters for Det %d", GetID()));
   }
   fRecPoints->Reset();
 
@@ -304,11 +301,9 @@ void AliEveTRDChamber::LoadHits(TClonesArray *hits, Int_t &idx)
   //
   //Info("AddHit()", Form("%s", GetName()));
 
-  if(!fHits){
-    AddElement(fHits = new AliEveTRDHits(this));
-    fHits->SetMarkerSize(.1);
-    fHits->SetMarkerColor(2);
-    fHits->SetOwnIds(kTRUE);
+  if(!fHits){ 
+    AddElement(fHits = new AliEveTRDHits());
+    fHits->SetTitle(Form("Hits for Det %d", GetID()));
   }
   fLoadHits = kTRUE;
   Int_t nhits = hits->GetEntriesFast();

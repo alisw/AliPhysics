@@ -26,20 +26,16 @@
 
 
 #include "AliTRDdataArrayI.h"
-#include "AliTRDseedV1.h"
-#include "AliTRDtrackV1.h"
 
 class AliEveTRDChamber;
 class AliEveTRDHits : public TEvePointSet
 {
 public:
-  AliEveTRDHits(AliEveTRDChamber *p);
+  AliEveTRDHits();
   ~AliEveTRDHits();
 
   void PointSelected(Int_t n);
 
-protected:
-  AliEveTRDChamber *fParent; // Chamber holding the hits.
 
 private:
   AliEveTRDHits(const AliEveTRDHits&);            // Not implemented
@@ -81,7 +77,7 @@ private:
 class AliEveTRDClusters : public AliEveTRDHits
 {
 public:
-  AliEveTRDClusters(AliEveTRDChamber *p);
+  AliEveTRDClusters();
 
   void PointSelected(Int_t n);
 
@@ -94,15 +90,17 @@ private:
 
 
 
-
-class AliEveTRDTracklet : public TEveLine, public AliTRDseedV1 
+class AliTRDseedV1;
+class AliEveTRDTracklet : public TEveLine
 {
 public:
-  AliEveTRDTracklet();
+  AliEveTRDTracklet(AliTRDseedV1 *trklt);
 //  ~AliEveTRDTracklet();
-  
-
+  AliEveTRDClusters* GetClusters() const {return fClusters;}
+  void               ProcessData(); // *MENU*
 private:
+  AliEveTRDClusters *fClusters;  // clusters
+
   AliEveTRDTracklet(const AliEveTRDTracklet&);            // Not implemented
   AliEveTRDTracklet& operator=(const AliEveTRDTracklet&); // Not implemented
 
@@ -111,14 +109,18 @@ private:
 
 
 
-
-class AliEveTRDTrack : public TEveLine, public AliTRDtrackV1
+class AliTRDtrackV1;
+class AliEveTRDTrack : public TEveLine
 {
 public:
-  AliEveTRDTrack();
+  AliEveTRDTrack(AliTRDtrackV1 *trk);
 //  ~AliEveTRDTrack();
-  
+  AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : 0x0;}
+  void               ProcessData(); // *MENU* 
+ 
 private:
+  AliEveTRDTracklet  *fTracklet[6]; // tracklets
+
   AliEveTRDTrack(const AliEveTRDTrack&);            // Not implemented
   AliEveTRDTrack& operator=(const AliEveTRDTrack&); // Not implemented
 
