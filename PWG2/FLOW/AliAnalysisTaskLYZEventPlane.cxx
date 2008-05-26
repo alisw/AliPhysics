@@ -139,10 +139,10 @@ void AliAnalysisTaskLYZEventPlane::CreateOutputObjects()
   fLyz = new AliFlowAnalysisWithLYZEventPlane() ;
 
   //output file
-  TString fName = "outputFromLYZEventPlaneAnalysis" ;
-  fName += fAnalysisType.Data() ;
-  fName += ".root" ;
-  fLyz->SetOutFileName( fName.Data() );
+  TString outputName = "outputFromLYZEventPlaneAnalysis" ;
+  outputName += fAnalysisType.Data() ;
+  outputName += ".root" ;
+  fLyz->SetOutFileName( outputName.Data() );
      
   // Get data from input slot 1 and 2
   fFirstRunFile = (TFile*)GetInputData(1);

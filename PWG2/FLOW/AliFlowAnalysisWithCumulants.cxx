@@ -39,10 +39,7 @@ ClassImp(AliFlowAnalysisWithCumulants)
 //________________________________________________________________________
 
 AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():  
-  fEvent(0),
-  fTrack(0),
-  fnEvts(0),
-  fnPrim(0),
+  fTrack(NULL),
   fAvM(0),
   fR0(0),
   fPtMax(0),
@@ -52,13 +49,11 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
   fAvQy(0),
   fAvQ2x(0),
   fAvQ2y(0),
-  fHistFileName(0),
-  fHistFile(0),
-  fCommonHists(0),
-  fCommonHistsRes2(0),
-  fCommonHistsRes4(0),
-  fCommonHistsRes6(0),
-  fCommonHistsRes8(0)
+  fCommonHists(NULL),
+  fCommonHistsRes2(NULL),
+  fCommonHistsRes4(NULL),
+  fCommonHistsRes6(NULL),
+  fCommonHistsRes8(NULL)
   {
    //constructor 
    fR0=AliFlowCumuConstants::fgR0;
@@ -80,63 +75,12 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
    }
   }
 
-//________________________________________________________________________
-
-AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants&):  
-  fEvent(0),
-  fTrack(0),
-  fnEvts(0),
-  fnPrim(0),
-  fAvM(0),
-  fR0(0),
-  fPtMax(0),
-  fPtMin(0),
-  fBinWidth(0),
-  fAvQx(0),
-  fAvQy(0),
-  fAvQ2x(0),
-  fAvQ2y(0),
-  fHistFileName(0),
-  fHistFile(0),
-  fCommonHists(0),
-  fCommonHistsRes2(0),
-  fCommonHistsRes4(0),
-  fCommonHistsRes6(0),
-  fCommonHistsRes8(0)
-  {
-  //copy constructor 
-   fR0=AliFlowCumuConstants::fgR0;
-   fPtMax=AliFlowCommonConstants::GetPtMax(); 
-   fPtMin=AliFlowCommonConstants::GetPtMin();
-   fBinWidth=(fPtMax-fPtMin)/fgknBins;
-  
-   for(Int_t n=0;n<fgknBins;n++){
-    fBinEventEntries[n]=0;
-    fBinNoOfParticles[n]=0;
-    fBinMeanPt[n]=0;
-    for(Int_t p=0;p<fgkPmax;p++){
-     for(Int_t q=0;q<fgkQmax;q++){
-      fAvG[p][q]=0;
-      fBinEventDRe[n][p][q]=0; 
-      fBinEventDIm[n][p][q]=0;
-     }
-    }
-   }
-  }
-
-AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants(){
-//desctructor
-}  
-
-AliFlowAnalysisWithCumulants& AliFlowAnalysisWithCumulants::operator=(const AliFlowAnalysisWithCumulants&)
-{
- return *this;
-}
 
 //___________________________________________________________________________
 void AliFlowAnalysisWithCumulants::CreateOutputObjects(){
  //output histograms
  TString fHistFileName = "cumulants.root";
+ TFile* fHistFile;
  fHistFile = new TFile(fHistFileName.Data(),"RECREATE");
  fCommonHists = new AliFlowCommonHist("Cumulants");//control histograms
  fCommonHistsRes2 = new AliFlowCommonHistResults("Cumulants2");
@@ -146,10 +90,10 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects(){
 }
 
 //________________________________________________________________________
-void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* fEvent) {
+void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* anEvent) {
   //running over data
  
-  fCommonHists->FillControlHistograms(fEvent);   
+  fCommonHists->FillControlHistograms(anEvent);   
   
   Double_t fG[fgkPmax][fgkQmax];//generating function for integrated flow
   for(Int_t p=0;p<fgkPmax;p++){
@@ -164,7 +108,7 @@ void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* fEvent) {
   fQVector.Set(0.,0.);
   fQVector.SetMult(0);
   
-  fQVector=fEvent->GetQ();//get the Q vector for this event
+  fQVector=anEvent->GetQ();//get the Q vector for this event
   
   fAvQx+=fQVector.X();
   fAvQy+=fQVector.Y();
@@ -172,17 +116,17 @@ void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* fEvent) {
   fAvQ2y+=pow(fQVector.Y(),2.);
   //----------------------------------------------------------
     
-  Int_t fnPrim = fEvent->NumberOfTracks();
-  Int_t fEventNSelTracksIntFlow = fEvent->GetEventNSelTracksIntFlow();
+  Int_t nPrim = anEvent->NumberOfTracks();
+  Int_t fEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow();
   Int_t fSelTracksIntFlow = 0;
     
-  cout<<"Number of input tracks for cumulant analysis: "<<fnPrim<<endl;
+  cout<<"Number of input tracks for cumulant analysis: "<<nPrim<<endl;
   cout<<"Number of selected tracks for cumulant analysis: "<<fEventNSelTracksIntFlow<<endl;
   
     //------------------------------------------------------------------------------------
     //STARTING THE FIRST LOOP (CALCULATING THE GENERATING FUNCTION FOR INTEGRATED FLOW)
-    for(Int_t i=0;i<fnPrim;i++){
-    fTrack=fEvent->GetTrack(i);
+    for(Int_t i=0;i<nPrim;i++){
+    fTrack=anEvent->GetTrack(i);
      if(fTrack&&fTrack->UseForIntegratedFlow()){
       fSelTracksIntFlow++;
       for(Int_t p=0;p<fgkPmax;p++){
@@ -215,8 +159,8 @@ void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* fEvent) {
   
   //------------------------------------------------------------------------------------------------
   //STARTING THE SECOND LOOP OVER TRACKS (CALCULATING THE GENERATING FUNCTION FOR DIFFERENTIAL FLOW)
-  for(Int_t i=0;i<fnPrim;i++){
-    fTrack=fEvent->GetTrack(i);
+  for(Int_t i=0;i<nPrim;i++){
+    fTrack=anEvent->GetTrack(i);
     if (fTrack && fTrack->UseForDifferentialFlow()) {
       Int_t fBin=TMath::Nint(floor(fTrack->Pt()/fBinWidth));
       if(fBin>=fgknBins)continue;//ignoring the particles with pt>ptMax
@@ -256,32 +200,30 @@ void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* fEvent) {
 }
 
 //________________________________________________________________________
-void AliFlowAnalysisWithCumulants::Terminate(Int_t fCount){
+void AliFlowAnalysisWithCumulants::Terminate(Int_t nEvents){
   //final results
   cout<<""<<endl;
   cout<<"***************************************"<<endl;
   cout<<"**** results of cumulant analysis: ****"<<endl;
   cout<<"***************************************"<<endl;
   cout<<""<<endl;
-  cout<<"nEvts = "<<fCount<<endl;
-  
-  Int_t fnEvts=fCount;
+  cout<<"number of events = "<<nEvents<<endl;
   
   //final avarage multiplicity
-  fAvM/=fnEvts;
+  fAvM/=nEvents;
   
   //final avarage of generating function for the integrated flow
   for(Int_t p=0;p<fgkPmax;p++){
    for(Int_t q=0;q<fgkQmax;q++){
-    fAvG[p][q]/=fnEvts;
+    fAvG[p][q]/=nEvents;
    }
   }    
   
   //final avarage of the Q vector stuff
-  fAvQx/=fnEvts;
-  fAvQy/=fnEvts;
-  fAvQ2x/=fnEvts;
-  fAvQ2y/=fnEvts;
+  fAvQx/=nEvents;
+  fAvQy/=nEvents;
+  fAvQ2x/=nEvents;
+  fAvQ2y/=nEvents;
   
   /////////////////////////////////////////////////////////////////////////////      
   //////////////////gen. function for the cumulants////////////////////////////
@@ -361,7 +303,7 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t fCount){
    if (fCumulant[0]>=0.){ 
     fV2=sqrt(fCumulant[0]);    
     fChiQ[0]=fAvM*fV2/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV2*fAvM,2.),0.5);
-    fSdQ[0]=pow(((1./(2.*fAvM*fnEvts))*((1.+1.*pow(fChiQ[0],2))/(1.*pow(fChiQ[0],2)))),0.5);
+    fSdQ[0]=pow(((1./(2.*fAvM*nEvents))*((1.+1.*pow(fChiQ[0],2))/(1.*pow(fChiQ[0],2)))),0.5);
     cout<<" v_"<<fgkFlow<<"{2} = "<<100.*fV2<<"%, chi{2} = "<<fChiQ[0]<<", sd{2} = "<<100.*fSdQ[0]<<"%"<<endl;
     fCommonHistsRes2->FillIntegratedFlow(100.*fV2,100.*fSdQ[0]);
     fCommonHistsRes2->FillChi(fChiQ[0]);
@@ -371,7 +313,7 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t fCount){
   if (fCumulant[1]<=0.){
     fV4=pow(-fCumulant[1],(1./4.));
     fChiQ[1]=fAvM*fV4/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV4*fAvM,2.),0.5);
-    fSdQ[1]=(1./(pow(2.*fAvM*fnEvts,.5)))*pow((1.+2.*pow(fChiQ[1],2)+(1./4.)*pow(fChiQ[1],4.)+(1./4.)*pow(fChiQ[1],6.))/((1./4.)*pow(fChiQ[1],6.)),.5);
+    fSdQ[1]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((1.+2.*pow(fChiQ[1],2)+(1./4.)*pow(fChiQ[1],4.)+(1./4.)*pow(fChiQ[1],6.))/((1./4.)*pow(fChiQ[1],6.)),.5);
     cout<<" v_"<<fgkFlow<<"{4} = "<<100.*fV4<<"%, chi{4} = "<<fChiQ[1]<<", sd{4} = "<<100.*fSdQ[1]<<"%"<<endl;
     fCommonHistsRes4->FillIntegratedFlow(100.*fV4,100.*fSdQ[1]);
     fCommonHistsRes4->FillChi(fChiQ[1]);
@@ -381,7 +323,7 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t fCount){
   if (fCumulant[2]>=0.){
     fV6=pow((1./4.)*fCumulant[2],(1./6.));
     fChiQ[2]=fAvM*fV6/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV6*fAvM,2.),0.5);
-    fSdQ[2]=(1./(pow(2.*fAvM*fnEvts,.5)))*pow((3.+18.*pow(fChiQ[2],2)+9.*pow(fChiQ[2],4.)+28.*pow(fChiQ[2],6.)+12.*pow(fChiQ[2],8.)+24.*pow(fChiQ[2],10.))/(24.*pow(fChiQ[2],10.)),.5);
+    fSdQ[2]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((3.+18.*pow(fChiQ[2],2)+9.*pow(fChiQ[2],4.)+28.*pow(fChiQ[2],6.)+12.*pow(fChiQ[2],8.)+24.*pow(fChiQ[2],10.))/(24.*pow(fChiQ[2],10.)),.5);
     cout<<" v_"<<fgkFlow<<"{6} = "<<100.*fV6<<"%, chi{6} = "<<fChiQ[2]<<", sd{6} = "<<100.*fSdQ[2]<<"%"<<endl;
     fCommonHistsRes6->FillIntegratedFlow(100.*fV6,100.*fSdQ[2]);
     fCommonHistsRes6->FillChi(fChiQ[2]);
@@ -391,7 +333,7 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t fCount){
   if (fCumulant[3]<=0.){
     fV8=pow(-(1./33.)*fCumulant[3],(1./8.));
     fChiQ[3]=fAvM*fV8/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV8*fAvM,2.),0.5);
-    fSdQ[3]=(1./(pow(2.*fAvM*fnEvts,.5)))*pow((12.+96.*pow(fChiQ[3],2)+72.*pow(fChiQ[3],4.)+304.*pow(fChiQ[3],6.)+257.*pow(fChiQ[3],8.)+804.*pow(fChiQ[3],10.)+363.*pow(fChiQ[3],12.)+726.*pow(fChiQ[3],14.))/(726.*pow(fChiQ[3],14.)),.5);
+    fSdQ[3]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((12.+96.*pow(fChiQ[3],2)+72.*pow(fChiQ[3],4.)+304.*pow(fChiQ[3],6.)+257.*pow(fChiQ[3],8.)+804.*pow(fChiQ[3],10.)+363.*pow(fChiQ[3],12.)+726.*pow(fChiQ[3],14.))/(726.*pow(fChiQ[3],14.)),.5);
     cout<<" v_"<<fgkFlow<<"{8} = "<<100.*fV8<<"%, chi{8} = "<<fChiQ[3]<<", sd{8} = "<<100.*fSdQ[3]<<"%"<<endl;
      fCommonHistsRes8->FillIntegratedFlow(100.*fV8,100.*fSdQ[3]);
      fCommonHistsRes8->FillChi(fChiQ[3]);

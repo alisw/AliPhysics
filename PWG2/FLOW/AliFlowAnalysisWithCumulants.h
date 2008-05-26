@@ -24,17 +24,17 @@ class AliFlowVector;
 class AliFlowAnalysisWithCumulants {
  public:
   AliFlowAnalysisWithCumulants();
-  AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants&);
   virtual ~AliFlowAnalysisWithCumulants();
   
-  AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants&);
-  
   virtual void CreateOutputObjects();
-  virtual void Exec(AliFlowEventSimple* fEvent);
-  virtual void Terminate(Int_t fCount);
+  virtual void Exec(AliFlowEventSimple* anEvent);
+  virtual void Terminate(Int_t nEvents);
 
  private:
-  AliFlowEventSimple* fEvent;//event     
+  AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants&);
+  AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants&);
+
+
   AliFlowTrackSimple* fTrack;//track
   static const Int_t fgkQmax=AliFlowCumuConstants::kQmax;//needed for numerics
   static const Int_t fgkPmax=AliFlowCumuConstants::kPmax;//needed for numerics  
@@ -42,8 +42,6 @@ class AliFlowAnalysisWithCumulants {
   static const Int_t fgkMltpl=AliFlowCumuConstants::kMltpl;//the multiple in p=m*n (diff. flow) 
   static const Int_t fgknBins=100;//number of pt bins
       
-  Int_t fnEvts;//number of events
-  Int_t fnPrim;//total multiplicity (no selection)
   Double_t fAvM;//avarage SELECTED multiplicity
 
   Double_t fR0;//needed for numerics
@@ -56,9 +54,6 @@ class AliFlowAnalysisWithCumulants {
   Double_t fAvQ2x;//<(Q_x)^2>
   Double_t fAvQ2y;//<(Q_y)^2>
  
-  TString      fHistFileName;//final output     
-  TFile*       fHistFile;//final output           
-  
   AliFlowCommonHist* fCommonHists;//control histograms
   AliFlowCommonHistResults *fCommonHistsRes2, *fCommonHistsRes4, *fCommonHistsRes6, *fCommonHistsRes8;//histograms with various order final results 
   

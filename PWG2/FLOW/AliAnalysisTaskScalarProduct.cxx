@@ -136,10 +136,10 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
   fSP  = new AliFlowAnalysisWithScalarProduct() ;
 
   //output file
-  TString fName = "outputFromScalarProductAnalysis" ;
-  fName += fAnalysisType.Data() ;
-  fName += ".root" ;
-  fSP->SetHistFileName( fName.Data() );
+  TString outputName = "outputFromScalarProductAnalysis" ;
+  outputName += fAnalysisType.Data() ;
+  outputName += ".root" ;
+  fSP->SetHistFileName( outputName.Data() );
     
   fSP-> Init();
 
