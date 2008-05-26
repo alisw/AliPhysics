@@ -4,39 +4,25 @@
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- */
-
 //_________________________________________________________________________
-// Base class for gamma and particle correlation analysis
-// It is called by the task class AliAnalysisGammaTask and it connects the input (ESD/AOD/MonteCarlo)
-// got with AliCaloTrackReader (produces TClonesArrays of TParticles), with the analysis classes 
-// that derive from AliAnaBaseClass
+// Steering class for particle (gamma, hadron) identification and correlation analysis
+// It is called by the task class AliAnalysisTaskParticleCorrelation and it connects the input 
+// (ESD/AOD/MonteCarlo) got with AliCaloTrackReader (produces TClonesArrays of AODs 
+// (TParticles in MC case if requested)), with the 
+// analysis classes that derive from AliAnaBaseClass
 //
-//*-- Author: Gustavo Conesa (INFN-LNF)
+// -- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
-/* #include <TParticle.h>  */
-#include <TList.h> 
-#include <TClonesArray.h> 
-/* #include <TH2F.h> */
+class TList; 
+class TClonesArray;
 #include<TObject.h>
-/* #include <TTree.h> */
-#include <TString.h>
+class TString;
 
-// --- AliRoot system ---
-#include <AliLog.h>
-#include "AliAnaBaseClass.h"
-/* #include "AliAODCaloCluster.h" */
-/* #include "AliAODTrack.h" */
-/* #include "AliAODPhoton.h" */
-
+// --- Analysis system ---
+#include "AliLog.h"
 class AliCaloTrackReader ;
 
-// --- AliRoot
 class AliAnaMaker : public TObject {
 
 public: 

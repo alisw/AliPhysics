@@ -14,36 +14,25 @@
  **************************************************************************/
 /* $Id: $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
-// Base class for particle (gamma, hadron) identification and correlation analysis
-// It is called by the task class AliAnalysisGammaTask and it connects the input 
-// (ESD/AOD/MonteCarlo)
-// got with AliCaloTrackReader (produces TClonesArrays of TParticles), with the 
+// Steering class for particle (gamma, hadron) identification and correlation analysis
+// It is called by the task class AliAnalysisTaskParticleCorrelation and it connects the input 
+// (ESD/AOD/MonteCarlo) got with AliCaloTrackReader (produces TClonesArrays of AODs 
+// (TParticles in MC case if requested)), with the 
 // analysis classes that derive from AliAnaBaseClass
 //
-//*-- Author: Gustavo Conesa (INFN-LNF)
+// -- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
-
-	      //#include <TParticle.h>
-	      //#include <TH2.h>
+#include <TClonesArray.h>
+#include <TString.h>
 
 //---- AliRoot system ---- 
 #include "AliAnaBaseClass.h" 
 #include "AliAnaMaker.h" 
 #include "AliCaloTrackReader.h" 
-// #include "AliAODCaloCluster.h"
-// #include "AliAODTrack.h"
-// #include "AliAODEvent.h"
-#include "Riostream.h"
 #include "AliLog.h"
+
 
 ClassImp(AliAnaMaker)
 
@@ -186,12 +175,13 @@ Bool_t AliAnaMaker::ProcessEvent(Int_t iEntry){
   if(fAnaDebug >= 0 ) printf("***  Event %d   ***  \n",iEntry);
 
   //Each event needs an empty branch
-  fAODBranch->Delete();
+  fAODBranch->Clear();
   
   //Tell the reader to fill the data in the 3 detector lists
   fReader->FillInputEvent();
 
   //Loop on analysis algorithms
+  if(fAnaDebug > 0 ) printf("*** Begin analysis *** \n");
   Int_t nana = fAnalysisContainer->GetEntries() ;
   for(Int_t iana = 0; iana <  nana; iana++){
     
@@ -207,7 +197,9 @@ Bool_t AliAnaMaker::ProcessEvent(Int_t iEntry){
     if(fMakeHisto) ana->MakeAnalysisFillHistograms()  ;
     
   }
-  
+
+  if(fAnaDebug > 0 ) printf("*** End analysis *** \n");
+
   fReader->ResetLists();
   
   return kTRUE ;
