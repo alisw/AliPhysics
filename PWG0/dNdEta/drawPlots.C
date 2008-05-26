@@ -518,7 +518,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   pad2->cd();
   pad2->SetBottomMargin(0.15);
 
-  Float_t minR = TMath::Min(0.961, ratio->GetMinimum() * 0.95);
+  Float_t minR = 0.9; //TMath::Min(0.961, ratio->GetMinimum() * 0.95);
   Float_t maxR = TMath::Max(1.049, ratio->GetMaximum() * 1.05);
 
   TH1F dummy3("dummy3", ";#eta;Ratio: MC / ESD", 100, -etaPlotLimit, etaPlotLimit);
@@ -1717,4 +1717,20 @@ void DrawTrackletOrigin()
       printf("%6.2f  |  ", (hist[i]->GetEntries() > 0) ? (100.0 * hist[i]->Integral(integralBegin, integralEnd) / hist[i]->GetEntries()) : -1.0);
     Printf("");
   }
+}
+
+void DetermineAcceptance(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction")
+{
+  loadlibs();
+
+  TFile::Open(fileName);
+
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(dirName, dirName);
+  if (!dNdEtaCorrection->LoadHistograms())
+    return;
+
+  hist = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram();
+
+  proj = hist->Project3D("yx");
+
 }

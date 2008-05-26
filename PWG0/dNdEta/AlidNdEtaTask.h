@@ -22,6 +22,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     virtual void   CreateOutputObjects();
     virtual void   Exec(Option_t*);
     virtual void   Terminate(Option_t*);
+    virtual Bool_t   Notify();
 
     void SetTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts; }
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }

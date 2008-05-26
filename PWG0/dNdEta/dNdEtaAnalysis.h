@@ -60,6 +60,8 @@ public:
   TH1F* GetdNdEtaPtCutOffCorrectedHistogram(Int_t i = 0) { return fdNdEtaPtCutOffCorrected[i]; }
 
 protected:
+  Float_t GetVtxMin(Float_t eta);
+
   AliCorrection* fData;     // we store the data in an AliCorrection
   TH1F* fMult;              // (raw) multiplicity distribution of triggered events
 
