@@ -6,11 +6,11 @@ SRCS = AliAnaCaloTrigger.cxx AliAnaCaloTriggerMC.cxx \
        AliAnaScale.cxx AliAnaMaker.cxx \
        AliAnaBaseClass.cxx  AliAnaExample.cxx AliAnaGammaDirect.cxx  \
        AliAnaParticlePartonCorrelation.cxx AliAnaParticleHadronCorrelation.cxx \
-       AliAnalysisTaskParticleCorrelation.cxx \
+       AliAnaParticleJetLeadingConeCorrelation.cxx AliAnalysisTaskParticleCorrelation.cxx \
        AliCaloTrackReader.cxx AliCaloTrackESDReader.cxx \
        AliCaloTrackAODReader.cxx AliCaloTrackMCReader.cxx  
 
-       #AliAnaParticleJetLeadingConeCorrelation.cxx  AliAnaParticleJetFinderCorrelation.cxx \
+       #AliAnaParticleJetFinderCorrelation.cxx \
 
 HDRS:= $(SRCS:.cxx=.h) 
 

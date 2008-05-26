@@ -14,15 +14,9 @@
  **************************************************************************/
 /* $Id: $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
-// Class for the analysis of gamma-jet correlations:
+// Class that contains the algorithm for the reconstruction of jet, cone around leading particle
+// The seed is a backward particle (direct photon)
 // 1)Take the trigger particle stored in AliAODParticleCorrelation,
 // 2) Search for the highest pt leading particle opposite to the photon within a phi, pt window
 // 3) Take all particles around leading in a cone R with pt larger than threshold and construct the jet
@@ -35,174 +29,304 @@
 
 
 // --- ROOT system ---
+#include "TH2F.h"
 
-//---- AliRoot system ----
+//---- Analysis system ----
+#include "AliAODTrack.h"
+#include "AliAODCaloCluster.h"
+#include "AliCaloTrackReader.h"
 #include "AliNeutralMesonSelection.h"
-#include "AliAnaParticleJetLeadingCone.h"  
 #include "AliLog.h"
+#include "AliAnaParticleJetLeadingConeCorrelation.h"  
 
-ClassImp(AliAnaParticleJetLeadingCone)
+
+ClassImp(AliAnaParticleJetLeadingConeCorrelation)
 
 
 //____________________________________________________________________________
-  AliAnaParticleJetLeadingCone::AliAnaParticleJetLeadingCone() : 
-    AliAnaBaseClass(),  fPbPb(kFALSE),     
-    fSeveralConeAndPtCuts(0),  
-    fJetCTSRatioMaxCut(0.), fJetCTSRatioMinCut(0.), fJetRatioMaxCut(0.),
-    fJetRatioMinCut(0.), 
+  AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation() : 
+    AliAnaBaseClass(), fJetsOnlyInCTS(kFALSE), fPbPb(kFALSE),     
+    fSeveralConeAndPtCuts(0),  fReMakeJet(0),
+    fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), 
+    fLeadingRatioMaxCut(0.),  fLeadingRatioMinCut(0.), 
+    fJetCTSRatioMaxCut(0.), fJetCTSRatioMinCut(0.), 
+    fJetRatioMaxCut(0.),  fJetRatioMinCut(0.), 
     fJetNCone(0),fJetNPt(0), fJetCone(0), 
     fJetPtThreshold(0),fJetPtThresPbPb(0),
-    fPtJetSelectionCut(0.0), fSelect(0),
-    fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
-    fhDeltaPhiGammaCharged(0),  fhDeltaPhiGammaNeutral(0), 
-    fhDeltaEtaGammaCharged(0), fhDeltaEtaGammaNeutral(0), 
-    fhAnglePairLeading(), fhInvMassPairLeading(), 
-    fhChargedRatio(0), fhNeutralRatio (0), 
-    fhNBkg (0), fhNLeading(0), fhNJet(0), fhJetRatio(0), fhJetPt (0), 
-    fhBkgRatio (0), fhBkgPt(0),  fhJetFragment(0), fhBkgFragment(0), 
-    fhJetPtDist(0),  fhBkgPtDist(0) 
+    fPtTriggerSelectionCut(0.0), fSelect(0),
+    //Histograms
+    fOutCont(0x0),
+    fhChargedLeadingPt(0),fhChargedLeadingPhi(0),fhChargedLeadingEta(0),
+    fhChargedLeadingDeltaPt(0),fhChargedLeadingDeltaPhi(0),fhChargedLeadingDeltaEta(0),
+    fhChargedLeadingRatioPt(0),
+    fhNeutralLeadingPt(0),fhNeutralLeadingPhi(0),fhNeutralLeadingEta(0),
+    fhNeutralLeadingDeltaPt(0),fhNeutralLeadingDeltaPhi(0),fhNeutralLeadingDeltaEta(0),
+    fhNeutralLeadingRatioPt(0),
+    fhJetPt(0),fhJetRatioPt(0),fhJetDeltaPhi(0), fhJetDeltaEta(0),
+    fhJetLeadingRatioPt(0),fhJetLeadingDeltaPhi(0),fhJetLeadingDeltaEta(0),
+    fhJetFFz(0),fhJetFFxi(0),fhJetFFpt(0),fhJetNTracksInCone(0),
+    fhBkgPt(0),fhBkgRatioPt(0),fhBkgDeltaPhi(0), fhBkgDeltaEta(0),
+    fhBkgLeadingRatioPt(0),fhBkgLeadingDeltaPhi(0),fhBkgLeadingDeltaEta(0),
+    fhBkgFFz(0),fhBkgFFxi(0),fhBkgFFpt(0),fhBkgNTracksInCone(0),
+    //Several cones and thres histograms
+    fhJetPts(),fhJetRatioPts(),fhJetDeltaPhis(), fhJetDeltaEtas(),
+    fhJetLeadingRatioPts(),fhJetLeadingDeltaPhis(),fhJetLeadingDeltaEtas(),
+    fhJetFFzs(),fhJetFFxis(),fhJetFFpts(),fhJetNTracksInCones(),
+    fhBkgPts(),fhBkgRatioPts(),fhBkgDeltaPhis(), fhBkgDeltaEtas(),
+    fhBkgLeadingRatioPts(),fhBkgLeadingDeltaPhis(),fhBkgLeadingDeltaEtas(),
+    fhBkgFFzs(),fhBkgFFxis(),fhBkgFFpts(),fhBkgNTracksInCones()
 {
   //Default Ctor
 
   //Initialize parameters
 
-  SetCorrelationType(kJetLeadCone);
+  for(Int_t i = 0; i<6; i++){
+    fJetXMin1[i]     = 0.0 ;
+    fJetXMin2[i]     = 0.0 ;
+    fJetXMax1[i]     = 0.0 ;
+    fJetXMax2[i]     = 0.0 ;
+    fBkgMean[i]      = 0.0 ;
+    fBkgRMS[i]       = 0.0 ;
+    if( i < 2 ){
+      fJetE1[i]        = 0.0 ;
+      fJetE2[i]        = 0.0 ;
+      fJetSigma1[i]    = 0.0 ;
+      fJetSigma2[i]    = 0.0 ;
+    }
+  }
 
-  for(Int_t i = 0; i<10; i++){
+  //Several cones and thres histograms
+  for(Int_t i = 0; i<5; i++){
     fJetCones[i]         = 0.0 ;
     fJetNameCones[i]     = ""  ;
     fJetPtThres[i]      = 0.0 ;
     fJetNamePtThres[i]  = ""  ;
-    if( i < 6 ){
-      fJetXMin1[i]     = 0.0 ;
-      fJetXMin2[i]     = 0.0 ;
-      fJetXMax1[i]     = 0.0 ;
-      fJetXMax2[i]     = 0.0 ;
-      fBkgMean[i]      = 0.0 ;
-      fBkgRMS[i]       = 0.0 ;
-      if( i < 2 ){
-	fJetE1[i]        = 0.0 ;
-	fJetE2[i]        = 0.0 ;
-	fJetSigma1[i]    = 0.0 ;
-	fJetSigma2[i]    = 0.0 ;
-      }
+    for(Int_t j = 0; j<5; j++){
+      fhJetPts[i][j]=0 ;
+      fhJetRatioPts[i][j]=0 ;
+      fhJetDeltaPhis[i][j]=0 ; 
+      fhJetDeltaEtas[i][j]=0 ;
+      fhJetLeadingRatioPts[i][j]=0 ;
+      fhJetLeadingDeltaPhis[i][j]=0 ;
+      fhJetLeadingDeltaEtas[i][j]=0 ;
+      fhJetFFzs[i][j]=0 ;
+      fhJetFFxis[i][j]=0 ;
+      fhJetFFpts[i][j]=0 ;
+      fhJetNTracksInCones[i][j]=0 ;
+      fhBkgPts[i][j]=0 ;
+      fhBkgRatioPts[i][j]=0 ;
+      fhBkgDeltaPhis[i][j]=0 ; 
+      fhBkgDeltaEtas[i][j]=0 ;
+      fhBkgLeadingRatioPts[i][j]=0 ;
+      fhBkgLeadingDeltaPhis[i][j]=0 ;
+      fhBkgLeadingDeltaEtas[i][j]=0 ;
+      fhBkgFFzs[i][j]=0 ;
+      fhBkgFFxis[i][j]=0 ;
+      fhBkgFFpts[i][j]=0 ;
+      fhBkgNTracksInCones[i][j]=0 ;
     }
   }
 
   InitParameters();
+
 }
 
 //____________________________________________________________________________
-AliAnaParticleJetLeadingCone::AliAnaParticleJetLeadingCone(const AliAnaParticleJetLeadingCone & g) :   
-  AliAnaBaseClass(g), fPbPb(g.fPbPb), 
-  fSeveralConeAndPtCuts(g.fSeveralConeAndPtCuts), 
-  fJetCTSRatioMaxCut(g.fJetCTSRatioMaxCut),
-  fJetCTSRatioMinCut(g.fJetCTSRatioMinCut), fJetRatioMaxCut(g.fJetRatioMaxCut),
-  fJetRatioMinCut(g.fJetRatioMinCut),  fJetNCone(g.fJetNCone),
-  fJetNPt(g.fJetNPt), fJetCone(g.fJetCone),
-  fJetPtThreshold(g.fJetPtThreshold),fJetPtThresPbPb(g.fJetPtThresPbPb),
-  fPtJetSelectionCut(g.fPtJetSelectionCut), fSelect(g.fSelect),  
-  fhPhiCharged(g.fhPhiCharged), fhPhiNeutral(g.fhPhiNeutral), 
-  fhEtaCharged(g.fhEtaCharged), fhEtaNeutral(g.fhEtaNeutral), 
-  fhDeltaPhiGammaCharged(g.fhDeltaPhiGammaCharged),  
-  fhDeltaPhiGammaNeutral(g.fhDeltaPhiGammaNeutral), 
-  fhDeltaEtaGammaCharged(g.fhDeltaEtaGammaCharged), 
-  fhDeltaEtaGammaNeutral(g.fhDeltaEtaGammaNeutral), 
-  fhAnglePairLeading(g.fhAnglePairLeading), fhInvMassPairLeading(g.fhInvMassPairLeading), 
-  fhChargedRatio(g.fhChargedRatio), fhNeutralRatio(g.fhNeutralRatio), 
-  fhNBkg(g. fhNBkg), fhNLeading(g. fhNLeading), fhNJet(g.fhNJet), fhJetRatio(g.fhJetRatio), fhJetPt(g.fhJetPt), 
-  fhBkgRatio (g.fhBkgRatio), fhBkgPt(g.fhBkgPt),  fhJetFragment(g.fhJetFragment), fhBkgFragment(g.fhBkgFragment), 
-  fhJetPtDist(g.fhJetPtDist),  fhBkgPtDist(g.fhBkgPtDist)   
+AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & jetlc) :   
+  AliAnaBaseClass(jetlc), fJetsOnlyInCTS(jetlc.fJetsOnlyInCTS), fPbPb(jetlc.fPbPb), 
+  fSeveralConeAndPtCuts(jetlc.fSeveralConeAndPtCuts),  fReMakeJet(jetlc. fReMakeJet),
+  fDeltaPhiMaxCut(jetlc. fDeltaPhiMaxCut), fDeltaPhiMinCut(jetlc.fDeltaPhiMinCut), 
+  fLeadingRatioMaxCut(jetlc.fLeadingRatioMaxCut),  fLeadingRatioMinCut(jetlc.fLeadingRatioMinCut), 
+  fJetCTSRatioMaxCut(jetlc.fJetCTSRatioMaxCut),
+  fJetCTSRatioMinCut(jetlc.fJetCTSRatioMinCut), fJetRatioMaxCut(jetlc.fJetRatioMaxCut),
+  fJetRatioMinCut(jetlc.fJetRatioMinCut),  fJetNCone(jetlc.fJetNCone),
+  fJetNPt(jetlc.fJetNPt), fJetCone(jetlc.fJetCone),
+  fJetPtThreshold(jetlc.fJetPtThreshold),fJetPtThresPbPb(jetlc.fJetPtThresPbPb),
+  fPtTriggerSelectionCut(jetlc.fPtTriggerSelectionCut), fSelect(jetlc.fSelect),  
+  //Histograms
+  fOutCont(jetlc. fOutCont),
+  fhChargedLeadingPt(jetlc.fhChargedLeadingPt), fhChargedLeadingPhi(jetlc.fhChargedLeadingPhi),
+  fhChargedLeadingEta(jetlc.fhChargedLeadingEta), fhChargedLeadingDeltaPt(jetlc.fhChargedLeadingDeltaPt),
+  fhChargedLeadingDeltaPhi(jetlc.fhChargedLeadingDeltaPhi),fhChargedLeadingDeltaEta(jetlc.fhChargedLeadingDeltaEta),
+  fhChargedLeadingRatioPt(jetlc.fhChargedLeadingRatioPt),
+  fhNeutralLeadingPt(jetlc.fhNeutralLeadingPt),fhNeutralLeadingPhi(jetlc.fhNeutralLeadingPhi),
+  fhNeutralLeadingEta(jetlc.fhNeutralLeadingEta), fhNeutralLeadingDeltaPt(jetlc.fhNeutralLeadingDeltaPt),
+  fhNeutralLeadingDeltaPhi(jetlc.fhNeutralLeadingDeltaPhi),fhNeutralLeadingDeltaEta(jetlc.fhNeutralLeadingDeltaEta),
+  fhNeutralLeadingRatioPt(jetlc.fhNeutralLeadingRatioPt),
+  fhJetPt(jetlc.fhJetPt),fhJetRatioPt(jetlc.fhJetRatioPt),fhJetDeltaPhi(jetlc.fhJetDeltaPhi), 
+  fhJetDeltaEta(jetlc.fhJetDeltaEta), fhJetLeadingRatioPt(jetlc.fhJetLeadingRatioPt),
+  fhJetLeadingDeltaPhi(jetlc.fhJetLeadingDeltaPhi),fhJetLeadingDeltaEta(jetlc.fhJetLeadingDeltaEta),
+  fhJetFFz(jetlc.fhJetFFz),fhJetFFxi(jetlc.fhJetFFxi),fhJetFFpt(jetlc.fhJetFFpt),
+  fhJetNTracksInCone(jetlc.fhJetNTracksInCone),
+  fhBkgPt(jetlc.fhBkgPt),fhBkgRatioPt(jetlc.fhBkgRatioPt),fhBkgDeltaPhi(jetlc.fhBkgDeltaPhi), 
+  fhBkgDeltaEta(jetlc.fhBkgDeltaEta), fhBkgLeadingRatioPt(jetlc.fhBkgLeadingRatioPt),
+  fhBkgLeadingDeltaPhi(jetlc.fhBkgLeadingDeltaPhi),fhBkgLeadingDeltaEta(jetlc.fhBkgLeadingDeltaEta),
+  fhBkgFFz(jetlc.fhBkgFFz),fhBkgFFxi(jetlc.fhBkgFFxi),fhBkgFFpt(jetlc.fhBkgFFpt),
+  fhBkgNTracksInCone(jetlc.fhBkgNTracksInCone),
+  //Several cones and thres histograms
+  fhJetPts(),fhJetRatioPts(),fhJetDeltaPhis(), fhJetDeltaEtas(),
+  fhJetLeadingRatioPts(),fhJetLeadingDeltaPhis(),fhJetLeadingDeltaEtas(),
+  fhJetFFzs(),fhJetFFxis(),fhJetFFpts(),fhJetNTracksInCones(),
+  fhBkgPts(),fhBkgRatioPts(),fhBkgDeltaPhis(), fhBkgDeltaEtas(),
+  fhBkgLeadingRatioPts(),fhBkgLeadingDeltaPhis(),fhBkgLeadingDeltaEtas(),
+  fhBkgFFzs(),fhBkgFFxis(),fhBkgFFpts(),fhBkgNTracksInCones()
 {
   // cpy ctor
 
-  for(Int_t i = 0; i<10; i++){
-    fJetCones[i]        = g.fJetCones[i] ;
-    fJetNameCones[i]    = g.fJetNameCones[i] ;
-    fJetPtThres[i]      = g.fJetPtThres[i] ;
-    fJetNamePtThres[i]  = g.fJetNamePtThres[i] ;
-    if( i < 6 ){
-      fJetXMin1[i]       = g.fJetXMin1[i] ;
-      fJetXMin2[i]       = g.fJetXMin2[i] ;
-      fJetXMax1[i]       = g.fJetXMax1[i] ;
-      fJetXMax2[i]       = g.fJetXMax2[i] ;
-      fBkgMean[i]        = g.fBkgMean[i] ;
-      fBkgRMS[i]         = g.fBkgRMS[i] ;
-      if( i < 2 ){
-	fJetE1[i]        = g.fJetE1[i] ;
-	fJetE2[i]        = g.fJetE2[i] ;
-	fJetSigma1[i]    = g.fJetSigma1[i] ;
-	fJetSigma2[i]    = g.fJetSigma2[i] ;
-      }
-    }          
-  } 
+  for(Int_t i = 0; i<6; i++){
+    fJetXMin1[i]       = jetlc.fJetXMin1[i] ;
+    fJetXMin2[i]       = jetlc.fJetXMin2[i] ;
+    fJetXMax1[i]       = jetlc.fJetXMax1[i] ;
+    fJetXMax2[i]       = jetlc.fJetXMax2[i] ;
+    fBkgMean[i]        = jetlc.fBkgMean[i] ;
+    fBkgRMS[i]         = jetlc.fBkgRMS[i] ;
+    if( i < 2 ){
+      fJetE1[i]        = jetlc.fJetE1[i] ;
+      fJetE2[i]        = jetlc.fJetE2[i] ;
+      fJetSigma1[i]    = jetlc.fJetSigma1[i] ;
+      fJetSigma2[i]    = jetlc.fJetSigma2[i] ;
+    }
+  }          
 
-  
+  //Several cones and thres histograms
+  for(Int_t i = 0; i<5; i++){
+    fJetCones[i]        = jetlc.fJetCones[i] ;
+    fJetNameCones[i]    = jetlc.fJetNameCones[i] ;
+    fJetPtThres[i]      = jetlc.fJetPtThres[i] ;
+    fJetNamePtThres[i]  = jetlc.fJetNamePtThres[i] ;
+    for(Int_t j = 0; j<5; j++){
+      fhJetPts[i][j] = jetlc.fhJetPts[i][j] ;
+      fhJetRatioPts[i][j] = jetlc.fhJetRatioPts[i][j] ;
+      fhJetDeltaPhis[i][j] = jetlc.fhJetDeltaPhis[i][j] ; 
+      fhJetDeltaEtas[i][j] = jetlc.fhJetDeltaEtas[i][j] ;
+      fhJetLeadingRatioPts[i][j] = jetlc.fhJetLeadingRatioPts[i][j] ;
+      fhJetLeadingDeltaPhis[i][j] = jetlc.fhJetLeadingDeltaPhis[i][j] ;
+      fhJetLeadingDeltaEtas[i][j] = jetlc.fhJetLeadingDeltaEtas[i][j] ;
+      fhJetFFzs[i][j] = jetlc.fhJetFFzs[i][j] ;
+      fhJetFFxis[i][j] = jetlc.fhJetFFxis[i][j] ;
+      fhJetFFpts[i][j] = jetlc.fhJetFFpts[i][j] ;
+      fhJetNTracksInCones[i][j] = fhJetNTracksInCones[i][j] ;
+      fhBkgPts[i][j] = jetlc.fhBkgPts[i][j] ;
+      fhBkgRatioPts[i][j] = jetlc.fhBkgRatioPts[i][j] ;
+      fhBkgDeltaPhis[i][j] = jetlc.fhBkgDeltaPhis[i][j] ; 
+      fhBkgDeltaEtas[i][j] = jetlc.fhBkgDeltaEtas[i][j] ;
+      fhBkgLeadingRatioPts[i][j] = jetlc.fhBkgLeadingRatioPts[i][j] ;
+      fhBkgLeadingDeltaPhis[i][j] = jetlc.fhBkgLeadingDeltaPhis[i][j] ;
+      fhBkgLeadingDeltaEtas[i][j] = jetlc.fhBkgLeadingDeltaEtas[i][j] ;
+      fhBkgFFzs[i][j] = jetlc.fhBkgFFzs[i][j] ;
+      fhBkgFFxis[i][j] = jetlc.fhBkgFFxis[i][j] ;
+      fhBkgFFpts[i][j] = jetlc.fhBkgFFpts[i][j] ;
+      fhBkgNTracksInCones[i][j] = jetlc.fhBkgNTracksInCones[i][j] ;
+    }
+  }  
 }
 
 //_________________________________________________________________________
-AliAnaParticleJetLeadingCone & AliAnaParticleJetLeadingCone::operator = (const AliAnaParticleJetLeadingCone & source)
+AliAnaParticleJetLeadingConeCorrelation & AliAnaParticleJetLeadingConeCorrelation::operator = (const AliAnaParticleJetLeadingConeCorrelation & jetlc)
 {
   // assignment operator
 
-  if(this == &source)return *this;
-  ((AliAnaBaseClass *)this)->operator=(source);
+  if(this == &jetlc)return *this;
+  ((AliAnaBaseClass *)this)->operator=(jetlc);
 
-  fSeveralConeAndPtCuts = source.fSeveralConeAndPtCuts ; 
-  fPbPb = source.fPbPb ;
-  fJetCTSRatioMaxCut = source.fJetCTSRatioMaxCut ;
-  fJetCTSRatioMinCut = source.fJetCTSRatioMinCut ; fJetRatioMaxCut = source.fJetRatioMaxCut ;
-  fJetRatioMinCut = source.fJetRatioMinCut ;  fJetNCone = source.fJetNCone ;
-  fJetNPt = source.fJetNPt ; fJetCone = source.fJetCone ; 
-  fJetPtThreshold = source.fJetPtThreshold ;
-  fJetPtThresPbPb = source.fJetPtThresPbPb ;
-  fPtJetSelectionCut = source.fPtJetSelectionCut ;
-  fSelect = source.fSelect ;  fhChargedRatio = source.fhChargedRatio ; fhNeutralRatio = source.fhNeutralRatio ; 
+  fSeveralConeAndPtCuts = jetlc.fSeveralConeAndPtCuts ; 
+  fPbPb = jetlc.fPbPb ;
+  fReMakeJet = jetlc.fReMakeJet ;
+  fJetsOnlyInCTS = jetlc.fJetsOnlyInCTS;
 
-  fhPhiCharged = source.fhPhiCharged ; fhPhiNeutral = source.fhPhiNeutral ; 
-  fhEtaCharged = source.fhEtaCharged ; fhEtaNeutral = source.fhEtaNeutral ; 
-  fhDeltaPhiGammaCharged = source.fhDeltaPhiGammaCharged ;  
-  fhDeltaPhiGammaNeutral = source.fhDeltaPhiGammaNeutral ; 
-  fhDeltaEtaGammaCharged = source.fhDeltaEtaGammaCharged ; 
-  fhDeltaEtaGammaNeutral = source.fhDeltaEtaGammaNeutral ; 
+  fDeltaPhiMaxCut = jetlc.fDeltaPhiMaxCut ; 
+  fDeltaPhiMinCut = jetlc.fDeltaPhiMinCut ; 
+  fLeadingRatioMaxCut = jetlc.fLeadingRatioMaxCut ;
+  fLeadingRatioMinCut = jetlc.fLeadingRatioMinCut ;
   
-  fhAnglePairLeading = source.fhAnglePairLeading ; 
-  fhInvMassPairLeading = source.fhInvMassPairLeading ; 
-  fhNBkg = source. fhNBkg ; fhNLeading = source. fhNLeading ; 
-  fhNJet = source.fhNJet ; fhJetRatio = source.fhJetRatio ; fhJetPt = source.fhJetPt ; 
-  fhBkgRatio  = source.fhBkgRatio ; fhBkgPt = source.fhBkgPt ;  
-  fhJetFragment = source.fhJetFragment ; fhBkgFragment = source.fhBkgFragment ; 
-  fhJetPtDist = source.fhJetPtDist ;  fhBkgPtDist = source.fhBkgPtDist ;
+  fJetCTSRatioMaxCut = jetlc.fJetCTSRatioMaxCut ;
+  fJetCTSRatioMinCut = jetlc.fJetCTSRatioMinCut ; 
+  fJetRatioMaxCut = jetlc.fJetRatioMaxCut ;
+  fJetRatioMinCut = jetlc.fJetRatioMinCut ; 
+ 
+  fJetNCone = jetlc.fJetNCone ;
+  fJetNPt = jetlc.fJetNPt ; fJetCone = jetlc.fJetCone ; 
+  fJetPtThreshold = jetlc.fJetPtThreshold ;
+  fJetPtThresPbPb = jetlc.fJetPtThresPbPb ;
+  fPtTriggerSelectionCut = jetlc.fPtTriggerSelectionCut ;
+  fSelect = jetlc.fSelect ;  
+
+  for(Int_t i = 0; i<6; i++){
+    fJetXMin1[i]       = jetlc.fJetXMin1[i] ;
+    fJetXMin2[i]       = jetlc.fJetXMin2[i] ;
+    fJetXMax1[i]       = jetlc.fJetXMax1[i] ;
+    fJetXMax2[i]       = jetlc.fJetXMax2[i] ;
+    fBkgMean[i]        = jetlc.fBkgMean[i] ;
+    fBkgRMS[i]         = jetlc.fBkgRMS[i] ;
+    if( i < 2 ){
+      fJetE1[i]        = jetlc.fJetE1[i] ;
+      fJetE2[i]        = jetlc.fJetE2[i] ;
+      fJetSigma1[i]    = jetlc.fJetSigma1[i] ;
+      fJetSigma2[i]    = jetlc.fJetSigma2[i] ;
+    }
+  }     
+
+  //Histograms
+  fOutCont = jetlc. fOutCont ;
+  fhChargedLeadingPt = jetlc.fhChargedLeadingPt; fhChargedLeadingPhi = jetlc.fhChargedLeadingPhi;
+  fhChargedLeadingEta = jetlc.fhChargedLeadingEta; fhChargedLeadingDeltaPt = jetlc.fhChargedLeadingDeltaPt;
+  fhChargedLeadingDeltaPhi = jetlc.fhChargedLeadingDeltaPhi;fhChargedLeadingDeltaEta = jetlc.fhChargedLeadingDeltaEta;
+  fhChargedLeadingRatioPt = jetlc.fhChargedLeadingRatioPt;
+  fhNeutralLeadingPt = jetlc.fhNeutralLeadingPt;fhNeutralLeadingPhi = jetlc.fhNeutralLeadingPhi;
+  fhNeutralLeadingEta = jetlc.fhNeutralLeadingEta; fhNeutralLeadingDeltaPt = jetlc.fhNeutralLeadingDeltaPt;
+  fhNeutralLeadingDeltaPhi = jetlc.fhNeutralLeadingDeltaPhi;fhNeutralLeadingDeltaEta = jetlc.fhNeutralLeadingDeltaEta;
+  fhNeutralLeadingRatioPt = jetlc.fhNeutralLeadingRatioPt;
+  fhJetPt = jetlc.fhJetPt;fhJetRatioPt = jetlc.fhJetRatioPt;fhJetDeltaPhi = jetlc.fhJetDeltaPhi; 
+  fhJetDeltaEta = jetlc.fhJetDeltaEta; fhJetLeadingRatioPt = jetlc.fhJetLeadingRatioPt;
+  fhJetLeadingDeltaPhi = jetlc.fhJetLeadingDeltaPhi;fhJetLeadingDeltaEta = jetlc.fhJetLeadingDeltaEta;
+  fhJetFFz = jetlc.fhJetFFz;fhJetFFxi = jetlc.fhJetFFxi;fhJetFFpt = jetlc.fhJetFFpt;
+  fhJetNTracksInCone = jetlc.fhJetNTracksInCone;
+  fhBkgPt = jetlc.fhBkgPt;fhBkgRatioPt = jetlc.fhBkgRatioPt;fhBkgDeltaPhi = jetlc.fhBkgDeltaPhi; 
+  fhBkgDeltaEta = jetlc.fhBkgDeltaEta; fhBkgLeadingRatioPt = jetlc.fhBkgLeadingRatioPt;
+  fhBkgLeadingDeltaPhi = jetlc.fhBkgLeadingDeltaPhi;fhBkgLeadingDeltaEta = jetlc.fhBkgLeadingDeltaEta;
+  fhBkgFFz = jetlc.fhBkgFFz;fhBkgFFxi = jetlc.fhBkgFFxi;fhBkgFFpt = jetlc.fhBkgFFpt;
+  fhBkgNTracksInCone = jetlc.fhBkgNTracksInCone;
 
 
-  for(Int_t i = 0; i<10; i++){
-    fJetCones[i]        = source.fJetCones[i] ;
-    fJetNameCones[i]    = source.fJetNameCones[i] ;
-    fJetPtThres[i]      = source.fJetPtThres[i] ;
-    fJetNamePtThres[i]  = source.fJetNamePtThres[i] ;
-    if( i < 6 ){
-      fJetXMin1[i]       = source.fJetXMin1[i] ;
-      fJetXMin2[i]       = source.fJetXMin2[i] ;
-      fJetXMax1[i]       = source.fJetXMax1[i] ;
-      fJetXMax2[i]       = source.fJetXMax2[i] ;
-      fBkgMean[i]        = source.fBkgMean[i] ;
-      fBkgRMS[i]         = source.fBkgRMS[i] ;
-      if( i < 2 ){
-	fJetE1[i]        = source.fJetE1[i] ;
-	fJetE2[i]        = source.fJetE2[i] ;
-	fJetSigma1[i]    = source.fJetSigma1[i] ;
-	fJetSigma2[i]    = source.fJetSigma2[i] ;
-
-      }
-    }          
-  } 
+  //Several cones and thres histograms
+  for(Int_t i = 0; i<5; i++){
+    fJetCones[i]        = jetlc.fJetCones[i] ;
+    fJetNameCones[i]    = jetlc.fJetNameCones[i] ;
+    fJetPtThres[i]      = jetlc.fJetPtThres[i] ;
+    fJetNamePtThres[i]  = jetlc.fJetNamePtThres[i] ;
+    
+    for(Int_t j = 0; j<5; j++){
+      fhJetPts[i][j] = jetlc.fhJetPts[i][j] ;
+      fhJetRatioPts[i][j] = jetlc.fhJetRatioPts[i][j] ;
+      fhJetDeltaPhis[i][j] = jetlc.fhJetDeltaPhis[i][j] ; 
+      fhJetDeltaEtas[i][j] = jetlc.fhJetDeltaEtas[i][j] ;
+      fhJetLeadingRatioPts[i][j] = jetlc.fhJetLeadingRatioPts[i][j] ;
+      fhJetLeadingDeltaPhis[i][j] = jetlc.fhJetLeadingDeltaPhis[i][j] ;
+      fhJetLeadingDeltaEtas[i][j] = jetlc.fhJetLeadingDeltaEtas[i][j] ;
+      fhJetFFzs[i][j] = jetlc.fhJetFFzs[i][j] ;
+      fhJetFFxis[i][j] = jetlc.fhJetFFxis[i][j] ;
+      fhJetFFpts[i][j] = jetlc.fhJetFFpts[i][j] ;
+      fhJetNTracksInCones[i][j] = fhJetNTracksInCones[i][j] ;
+      fhBkgPts[i][j] = jetlc.fhBkgPts[i][j] ;
+      fhBkgRatioPts[i][j] = jetlc.fhBkgRatioPts[i][j] ;
+      fhBkgDeltaPhis[i][j] = jetlc.fhBkgDeltaPhis[i][j] ; 
+      fhBkgDeltaEtas[i][j] = jetlc.fhBkgDeltaEtas[i][j] ;
+      fhBkgLeadingRatioPts[i][j] = jetlc.fhBkgLeadingRatioPts[i][j] ;
+      fhBkgLeadingDeltaPhis[i][j] = jetlc.fhBkgLeadingDeltaPhis[i][j] ;
+      fhBkgLeadingDeltaEtas[i][j] = jetlc.fhBkgLeadingDeltaEtas[i][j] ;
+      fhBkgFFzs[i][j] = jetlc.fhBkgFFzs[i][j] ;
+      fhBkgFFxis[i][j] = jetlc.fhBkgFFxis[i][j] ;
+      fhBkgFFpts[i][j] = jetlc.fhBkgFFpts[i][j] ;
+      fhBkgNTracksInCones[i][j] = jetlc.fhBkgNTracksInCones[i][j] ;
+    }
+  }      
 
   return *this;
 
 }
 
 //____________________________________________________________________________
-AliAnaParticleJetLeadingCone::~AliAnaParticleJetLeadingCone() 
+AliAnaParticleJetLeadingConeCorrelation::~AliAnaParticleJetLeadingConeCorrelation() 
 {
    // Remove all pointers except analysis output pointers.
   delete [] fJetE1;  
@@ -221,335 +345,636 @@ AliAnaParticleJetLeadingCone::~AliAnaParticleJetLeadingCone()
   delete [] fJetNamePtThres;  
 }
 
+//____________________________________________________________________________
+Double_t AliAnaParticleJetLeadingConeCorrelation::CalculateJetRatioLimit(const Double_t ptg, const Double_t *par, const Double_t *x) {
+  //Calculate the ratio of the jet and trigger particle limit for the selection
+  //WARNING: need to check what it does
+  //Info("CalculateLimit","x1 %f, x2%f",x[0],x[1]);
+  Double_t Epp = par[0] + par[1] * ptg ;
+  Double_t Spp = par[2] + par[3] * ptg ;
+  Double_t f   = x[0]   + x[1]   * ptg ;
+  Double_t Epb = Epp + par[4] ;
+  Double_t Spb = TMath::Sqrt(Spp*Spp+ par[5]*par[5]) ;
+  Double_t rat = (Epb - Spb * f) / ptg ;
+  //Info("CalculateLimit","Epp %f, Spp %f, f %f", Epp, Spp, f);
+  //Info("CalculateLimit","Epb %f, Spb %f, rat %f", Epb, Spb, rat);
+  return rat ;
+}
 
+//____________________________________________________________________________
+void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODParticleCorrelation * particle, const TLorentzVector  leading, const TLorentzVector jet, const TString type, const TString lastname)
+{
+  //Fill jet and background histograms 
+  Double_t ptTrig = particle->Pt();
+  Double_t ptJet = jet.Pt();
+  Double_t ptLead = leading.Pt();
+  Double_t phiTrig = particle->Phi();
+  Double_t phiJet = jet.Phi();
+  Double_t phiLead = leading.Phi();
+  Double_t etaTrig = particle->Eta();
+  Double_t etaJet = jet.Eta();
+  Double_t etaLead = leading.Eta();
+
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"Pt"+lastname))->
+     Fill(ptTrig,ptJet);
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"RatioPt"+lastname))->
+     Fill(ptTrig,ptJet/ptTrig);
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"LeadingRatioPt"+lastname))->
+     Fill(ptTrig,ptLead/ptJet);
+//   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"Phi"+lastname))->
+//     Fill(ptTrig,phiJet);
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"DeltaPhi"+lastname))->
+     Fill(ptTrig,phiJet-phiTrig);
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"LeadingDeltaPhi"+lastname))->
+     Fill(ptTrig,phiJet-phiLead);
+   
+   //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"Eta"+lastname))->
+   //     Fill(ptTrig,etaJet);
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"DeltaEta"+lastname))->
+     Fill(ptTrig,etaJet-etaTrig);
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"LeadingDeltaEta"+lastname))->
+     Fill(ptTrig,etaJet-etaLead);
+  
+  //Construct fragmentation function
+  TRefArray * pl = new TRefArray;
+  if(type == "Jet") pl = particle->GetRefTracks();
+  else if(type == "Bkg") pl = particle->GetRefBackgroundTracks();
+
+  //Different pt cut for jet particles in different collisions systems
+  //Only needed when jet is recalculated from AODs
+  Float_t ptcut = fJetPtThreshold;
+  if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
+  
+  TVector3 p3;
+  Int_t nTracksInCone = 0; 
+  for(Int_t ipr = 0;ipr < pl->GetEntries() ; ipr ++ ){
+    AliAODTrack* track = dynamic_cast<AliAODTrack *>(pl->At(ipr)) ;
+    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+    
+    //Recheck if particle is in jet cone
+    if(fReMakeJet || fSeveralConeAndPtCuts)
+      if(!IsParticleInJetCone(p3.Eta(), p3.Phi(), leading.Eta(), leading.Phi()) ) continue ; 
+    
+    nTracksInCone++; 
+   
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"FFz"+lastname))
+      ->Fill(ptTrig,p3.Pt()/ptTrig);
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"FFxi"+lastname))
+      ->Fill(ptTrig,TMath::Log(ptTrig/p3.Pt()));
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"FFpt"+lastname))
+      ->Fill(ptTrig,p3.Pt());
+    
+  }//track loop
+
+  if(nTracksInCone > 0) dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"NTracksInCone"+lastname))
+    ->Fill(ptTrig, nTracksInCone);
+  
+}
 
 //________________________________________________________________________
-TList *  AliAnaParticleJetLeadingCone::GetCreateOutputObjects()
+TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file and 
-  // store them in fOutputContainer
+  // store them in fOutCont
  
-  AliDebug(1,"Init jet in leading cone histograms");
+  if(GetDebug()>1) printf("Init histograms \n");
   
-  TList * outputContainer = new TList() ; 
-  outputContainer->SetName("GammaJetCorrelationHistos") ; 
+  fOutCont = new TList() ; 
+  fOutCont->SetName("ParticleJetLeadingInConeCorrelationHistograms") ; 
 
-  fhChargedRatio  = new TH2F
-    ("ChargedRatio","p_{T leading charge} /p_{T #gamma} vs p_{T #gamma}",
-     120,0,120,120,0,1); 
-  fhChargedRatio->SetYTitle("p_{T lead charge} /p_{T #gamma}");
-  fhChargedRatio->SetXTitle("p_{T #gamma} (GeV/c)");
+  fhChargedLeadingPt  = new TH2F("ChargedLeadingPt","p_{T leading charge} vs p_{T trigger}",120,0,120,120,0,120); 
+  fhChargedLeadingPt->SetYTitle("p_{T leading charge} /p_{T trigger}");
+  fhChargedLeadingPt->SetXTitle("p_{T trigger} (GeV/c)");
   
-  fhPhiCharged  = new TH2F
-    ("PhiCharged","#phi_{#pi^{#pm}}  vs p_{T #gamma}",
-     120,0,120,120,0,7); 
-  fhPhiCharged->SetYTitle("#phi_{#pi^{#pm}} (rad)");
-  fhPhiCharged->SetXTitle("p_{T #gamma} (GeV/c)");
+  fhChargedLeadingPhi  = new TH2F("ChargedLeadingPhi","#phi_{h^{#pm}}  vs p_{T trigger}", 120,0,120,120,0,TMath::TwoPi()); 
+  fhChargedLeadingPhi->SetYTitle("#phi_{h^{#pm}} (rad)");
+  fhChargedLeadingPhi->SetXTitle("p_{T trigger} (GeV/c)");
   
-  fhEtaCharged  = new TH2F
-    ("EtaCharged","#eta_{#pi^{#pm}}  vs p_{T #gamma}",
-     120,0,120,120,-1,1); 
-  fhEtaCharged->SetYTitle("#eta_{#pi^{#pm}} (rad)");
-  fhEtaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
+  fhChargedLeadingEta  = new TH2F("ChargedLeadingEta","#eta_{h^{#pm}}  vs p_{T trigger}",120,0,120,120,-1,1); 
+  fhChargedLeadingEta->SetYTitle("#eta_{h^{#pm}} ");
+  fhChargedLeadingEta->SetXTitle("p_{T trigger} (GeV/c)");
   
-  fhDeltaPhiGammaCharged  = new TH2F
-    ("DeltaPhiGammaCharged","#phi_{#gamma} - #phi_{charged #pi} vs p_{T #gamma}",
-     200,0,120,200,0,6.4); 
-  fhDeltaPhiGammaCharged->SetYTitle("#Delta #phi");
-  fhDeltaPhiGammaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
-  
-  fhDeltaEtaGammaCharged  = new TH2F
-    ("DeltaEtaGammaCharged","#eta_{#gamma} - #eta_{#pi^{#pm}} vs p_{T #gamma}",
-     200,0,120,200,-2,2); 
-  fhDeltaEtaGammaCharged->SetYTitle("#Delta #eta");
-  fhDeltaEtaGammaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
-  
-  outputContainer->Add(fhPhiCharged) ;
-  outputContainer->Add(fhEtaCharged) ;
-  outputContainer->Add(fhChargedRatio) ;
-  outputContainer->Add(fhDeltaPhiGammaCharged) ; 
-  outputContainer->Add(fhDeltaEtaGammaCharged) ; 
+  fhChargedLeadingDeltaPt  = new TH2F("ChargedLeadingDeltaPt","#p_{T trigger} - #p_{T h^{#pm}} vs p_{T trigger}",120,0,120,120,0,120); 
+  fhChargedLeadingDeltaPt->SetYTitle("#Delta p_{T} (GeV/c)");
+  fhChargedLeadingDeltaPt->SetXTitle("p_{T trigger} (GeV/c)");
 
-  if(!AreJetsOnlyInCTS()){
-    
-    fhNeutralRatio  = new TH2F
-      ("NeutralRatio","p_{T leading  #pi^{0}} /p_{T #gamma} vs p_{T #gamma}",
-       120,0,120,120,0,1); 
-    fhNeutralRatio->SetYTitle("p_{T lead  #pi^{0}} /p_{T #gamma}");
-    fhNeutralRatio->SetXTitle("p_{T #gamma} (GeV/c)");
-    
-    //
-    fhAnglePairLeading  = new TH2F
-      ("AnglePairLeading",
-       "Angle between all #gamma pair finally selected vs p_{T  #pi^{0}}",
-       200,0,50,200,0,0.2); 
-    fhAnglePairLeading->SetYTitle("Angle (rad)");
-    fhAnglePairLeading->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    
-    fhInvMassPairLeading  = new TH2F
-      ("InvMassPairLeading",
-       "Invariant Mass of #gamma pair selected vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairLeading->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairLeading->SetXTitle("p_{T #gamma} (GeV/c)");
+  fhChargedLeadingDeltaPhi  = new TH2F("ChargedLeadingDeltaPhi","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}",120,0,120,120,0,TMath::TwoPi()); 
+  fhChargedLeadingDeltaPhi->SetYTitle("#Delta #phi (rad)");
+  fhChargedLeadingDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)");
+  
+  fhChargedLeadingDeltaEta  = new TH2F("ChargedLeadingDeltaEta","#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}",120,0,120,120,-2,2); 
+  fhChargedLeadingDeltaEta->SetYTitle("#Delta #eta");
+  fhChargedLeadingDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
+  
+  fhChargedLeadingRatioPt  = new TH2F("ChargedLeadingRatioPt","p_{T leading charge} /p_{T trigger} vs p_{T trigger}",120,0,120,120,0,2); 
+  fhChargedLeadingRatioPt->SetYTitle("p_{T lead charge} /p_{T trigger}");
+  fhChargedLeadingRatioPt->SetXTitle("p_{T trigger} (GeV/c)");
 
-    fhPhiNeutral  = new TH2F
-      ("PhiNeutral","#phi_{#pi^{0}}  vs p_{T #gamma}",
-       120,0,120,120,0,7); 
-    fhPhiNeutral->SetYTitle("#phi_{#pi^{0}} (rad)");
-    fhPhiNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
-    
-    fhEtaNeutral  = new TH2F
-      ("EtaNeutral","#eta_{#pi^{0}}  vs p_{T #gamma}",
-       120,0,120,120,-1,1); 
-    fhEtaNeutral->SetYTitle("#eta_{#pi^{0}} (rad)");
-    fhEtaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
-    
-    fhDeltaPhiGammaNeutral  = new TH2F
-      ("DeltaPhiGammaNeutral","#phi_{#gamma} - #phi_{#pi^{0}} vs p_{T #gamma}",
-       200,0,120,200,0,6.4); 
-    fhDeltaPhiGammaNeutral->SetYTitle("#Delta #phi");
-    fhDeltaPhiGammaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
-    
-    fhDeltaEtaGammaNeutral  = new TH2F
-      ("DeltaEtaGammaNeutral","#eta_{#gamma} - #eta_{#pi^{#pm}} vs p_{T #gamma}",
-       200,0,120,200,-2,2); 
-    fhDeltaEtaGammaNeutral->SetYTitle("#Delta #eta");
-    fhDeltaEtaGammaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutCont->Add(fhChargedLeadingPt) ;
+  fOutCont->Add(fhChargedLeadingPhi) ;
+  fOutCont->Add(fhChargedLeadingEta) ;
+  fOutCont->Add(fhChargedLeadingDeltaPt) ; 
+  fOutCont->Add(fhChargedLeadingDeltaPhi) ; 
+  fOutCont->Add(fhChargedLeadingDeltaEta) ; 
+  fOutCont->Add(fhChargedLeadingRatioPt) ;
 
-    outputContainer->Add(fhPhiNeutral) ;  
-    outputContainer->Add(fhEtaNeutral) ;  
-    outputContainer->Add(fhNeutralRatio) ; 
-    outputContainer->Add(fhDeltaPhiGammaNeutral) ; 
-    outputContainer->Add(fhDeltaEtaGammaNeutral) ;
+  if(!fJetsOnlyInCTS){
     
-    outputContainer->Add(fhInvMassPairLeading) ; 
-    outputContainer->Add(fhAnglePairLeading) ; 
+    fhNeutralLeadingPt  = new TH2F("NeutralLeadingPt","p_{T leading #pi^{0}} vs p_{T trigger}",120,0,120,120,0,120); 
+    fhNeutralLeadingPt->SetYTitle("p_{T leading #pi^{0}} /p_{T trigger}");
+    fhNeutralLeadingPt->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhNeutralLeadingPhi  = new TH2F("NeutralLeadingPhi","#phi_{#pi^{0}}  vs p_{T trigger}", 120,0,120,120,0,TMath::TwoPi()); 
+    fhNeutralLeadingPhi->SetYTitle("#phi_{#pi^{0}} (rad)");
+    fhNeutralLeadingPhi->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhNeutralLeadingEta  = new TH2F("NeutralLeadingEta","#eta_{#pi^{0}}  vs p_{T trigger}",120,0,120,120,-1,1); 
+    fhNeutralLeadingEta->SetYTitle("#eta_{#pi^{0}} ");
+    fhNeutralLeadingEta->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhNeutralLeadingDeltaPt  = new TH2F("NeutralLeadingDeltaPt","#p_{T trigger} - #p_{T #pi^{0}} vs p_{T trigger}",120,0,120,120,0,120); 
+    fhNeutralLeadingDeltaPt->SetYTitle("#Delta p_{T} (GeV/c)");
+    fhNeutralLeadingDeltaPt->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhNeutralLeadingDeltaPhi  = new TH2F("NeutralLeadingDeltaPhi","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T trigger}",120,0,120,120,0,TMath::TwoPi()); 
+    fhNeutralLeadingDeltaPhi->SetYTitle("#Delta #phi (rad)");
+    fhNeutralLeadingDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhNeutralLeadingDeltaEta  = new TH2F("NeutralLeadingDeltaEta","#eta_{trigger} - #eta_{#pi^{0}} vs p_{T trigger}",120,0,120,120,-2,2); 
+    fhNeutralLeadingDeltaEta->SetYTitle("#Delta #eta");
+    fhNeutralLeadingDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhNeutralLeadingRatioPt  = new TH2F("NeutralLeadingRatioPt","p_{T leading #pi^{0}} /p_{T trigger} vs p_{T trigger}",120,0,120,120,0,2); 
+    fhNeutralLeadingRatioPt->SetYTitle("p_{T lead #pi^{0}} /p_{T trigger}");
+    fhNeutralLeadingRatioPt->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fOutCont->Add(fhNeutralLeadingPt) ;
+    fOutCont->Add(fhNeutralLeadingPhi) ;
+    fOutCont->Add(fhNeutralLeadingEta) ;
+    fOutCont->Add(fhNeutralLeadingDeltaPt) ; 
+    fOutCont->Add(fhNeutralLeadingDeltaPhi) ; 
+    fOutCont->Add(fhNeutralLeadingDeltaEta) ; 
+    fOutCont->Add(fhNeutralLeadingRatioPt) ;
+    
   }
   
   if(!fSeveralConeAndPtCuts){// not several cones
-    
-    //Count
-    fhNBkg = new TH1F("NBkg","bkg multiplicity",9000,0,9000); 
-    fhNBkg->SetYTitle("counts");
-    fhNBkg->SetXTitle("N");
-    outputContainer->Add(fhNBkg) ; 
-    
-    fhNLeading  = new TH2F
-      ("NLeading","Accepted Jet Leading", 240,0,120,240,0,120); 
-    fhNLeading->SetYTitle("p_{T charge} (GeV/c)");
-    fhNLeading->SetXTitle("p_{T #gamma}(GeV/c)");
-    outputContainer->Add(fhNLeading) ; 
-    
-    fhNJet  = new TH1F("NJet","Accepted jets",240,0,120); 
-    fhNJet->SetYTitle("N");
-    fhNJet->SetXTitle("p_{T #gamma}(GeV/c)");
-    outputContainer->Add(fhNJet) ; 
-    
-    //Ratios and Pt dist of reconstructed (not selected) jets
-    //Jet
-    fhJetRatio  = new TH2F
-      ("JetRatio","p_{T jet lead}/p_{T #gamma} vs p_{T #gamma}",
-       240,0,120,200,0,10);
-    fhJetRatio->SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-    fhJetRatio->SetXTitle("p_{T #gamma} (GeV/c)");
-    outputContainer->Add(fhJetRatio) ; 
-    
-    fhJetPt  = new TH2F
-      ("JetPt", "p_{T jet lead} vs p_{T #gamma}",240,0,120,400,0,200);
-    fhJetPt->SetYTitle("p_{T jet}");
-    fhJetPt->SetXTitle("p_{T #gamma} (GeV/c)");
-    outputContainer->Add(fhJetPt) ; 
-    
-    //Bkg
-    
-    fhBkgRatio  = new TH2F
-      ("BkgRatio","p_{T bkg lead}/p_{T #gamma} vs p_{T #gamma}",
-       240,0,120,200,0,10);
-    fhBkgRatio->SetYTitle("p_{T bkg lead charge}/p_{T #gamma}");
-    fhBkgRatio->SetXTitle("p_{T #gamma} (GeV/c)");
-    outputContainer->Add(fhBkgRatio) ;
-    
-    fhBkgPt  = new TH2F
-      ("BkgPt","p_{T jet lead} vs p_{T #gamma}",240,0,120,400,0,200);
-    fhBkgPt->SetYTitle("p_{T jet lead charge}/p_{T #gamma}");
-    fhBkgPt->SetXTitle("p_{T #gamma} (GeV/c)");
-    outputContainer->Add(fhBkgPt) ;
-    
+  
     //Jet Distributions
+    fhJetPt  = new TH2F("JetPt","p_{T  jet} vs p_{T trigger}",120,0,120,120,0,120); 
+    fhJetPt->SetYTitle("p_{T  jet}");
+    fhJetPt->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhJetRatioPt  = new TH2F("JetRatioPt","p_{T  jet}/p_{T trigger} vs p_{T trigger}",120,0,120,120,0,2); 
+    fhJetRatioPt->SetYTitle("p_{T  jet}/p_{T trigger}");
+    fhJetRatioPt->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhJetDeltaPhi  = new TH2F("JetDeltaPhi","#phi_{jet} - #phi_{trigger} vs p_{T trigger}",120,0,120,120,0,TMath::TwoPi()); 
+    fhJetDeltaPhi->SetYTitle("#Delta #phi (rad)");
+    fhJetDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)");
     
-    fhJetFragment  = 
-      new TH2F("JetFragment","x = p_{T i charged}/p_{T #gamma}",
-	       240,0.,120.,1000,0.,1.2); 
-    fhJetFragment->SetYTitle("x_{T}");
-    fhJetFragment->SetXTitle("p_{T #gamma}");
-    outputContainer->Add(fhJetFragment) ;
+    fhJetDeltaEta  = new TH2F("JetDeltaEta","#eta_{jet} - #eta_{trigger} vs p_{T trigger}",120,0,120,120,-2,2); 
+    fhJetDeltaEta->SetYTitle("#Delta #eta");
+    fhJetDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
     
-    fhBkgFragment  = new TH2F
-      ("BkgFragment","x = p_{T i charged}/p_{T #gamma}",
-       240,0.,120.,1000,0.,1.2);
-    fhBkgFragment->SetYTitle("x_{T}");
-    fhBkgFragment->SetXTitle("p_{T #gamma}");
-    outputContainer->Add(fhBkgFragment) ;
+    fhJetLeadingRatioPt  = new TH2F("JetLeadingRatioPt","p_{T  jet} vs p_{T trigger}",120,0,120,120,0,2); 
+    fhJetLeadingRatioPt->SetYTitle("p_{T  leading}/p_{T jet}");
+    fhJetLeadingRatioPt->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhJetLeadingDeltaPhi  = new TH2F("JetLeadingDeltaPhi","#phi_{jet} - #phi_{leading} vs p_{T trigger}",120,0,120,120,0,TMath::TwoPi()); 
+    fhJetLeadingDeltaPhi->SetYTitle("#Delta #phi (rad)");
+    fhJetLeadingDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)");
     
-    fhJetPtDist  = 
-      new TH2F("JetPtDist","x = p_{T i charged}",240,0.,120.,400,0.,200.); 
-    fhJetPtDist->SetXTitle("p_{T #gamma} (GeV/c)");
-    outputContainer->Add(fhJetPtDist) ;
+    fhJetLeadingDeltaEta  = new TH2F("JetLeadingDeltaEta","#eta_{jet} - #eta_{leading} vs p_{T trigger}",120,0,120,120,-2,2); 
+    fhJetLeadingDeltaEta->SetYTitle("#Delta #eta");
+    fhJetLeadingDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhJetFFz  = new TH2F("JetFFz","z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
+    fhJetFFz->SetYTitle("z");
+    fhJetFFz->SetXTitle("p_{T trigger}");
+
+    fhJetFFxi  = new TH2F("JetFFxi","#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
+    fhJetFFxi->SetYTitle("#xi");
+    fhJetFFxi->SetXTitle("p_{T trigger}");
+
+    fhJetFFpt  = new TH2F("JetFFpt","#xi = p_{T i charged}) vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
+    fhJetFFpt->SetYTitle("p_{T charged hadron}");
+    fhJetFFpt->SetXTitle("p_{T trigger}");
+
+    fhJetNTracksInCone  = new TH2F("JetNTracksInCone","N particles in cone vs p_{T trigger}",120,0,120,5000,0, 5000); 
+    fhJetNTracksInCone->SetYTitle("N tracks in jet cone");
+    fhJetNTracksInCone->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fOutCont->Add(fhJetPt) ; 
+    fOutCont->Add(fhJetRatioPt) ; 
+    fOutCont->Add(fhJetDeltaPhi) ;
+    fOutCont->Add(fhJetDeltaEta) ;
+    fOutCont->Add(fhJetLeadingRatioPt) ;
+    fOutCont->Add(fhJetLeadingDeltaPhi) ;
+    fOutCont->Add(fhJetLeadingDeltaEta) ;
+    fOutCont->Add(fhJetFFz) ;
+    fOutCont->Add(fhJetFFxi) ;
+    fOutCont->Add(fhJetFFpt) ;
+    fOutCont->Add(fhJetNTracksInCone) ;
+
+    //Bkg Distributions
+    fhBkgPt  = new TH2F("BkgPt","p_{T  bkg} vs p_{T trigger}",120,0,120,120,0,120); 
+    fhBkgPt->SetYTitle("p_{T  bkg}");
+    fhBkgPt->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhBkgRatioPt  = new TH2F("BkgRatioPt","p_{T  bkg}/p_{T trigger} vs p_{T trigger}",120,0,120,120,0,2); 
+    fhBkgRatioPt->SetYTitle("p_{T  bkg}/p_{T trigger}");
+    fhBkgRatioPt->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhBkgDeltaPhi  = new TH2F("BkgDeltaPhi","#phi_{bkg} - #phi_{trigger} vs p_{T trigger}",120,0,120,120,0,TMath::TwoPi()); 
+    fhBkgDeltaPhi->SetYTitle("#Delta #phi (rad)");
+    fhBkgDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)");
     
-    fhBkgPtDist  = new TH2F
-      ("BkgPtDist","x = p_{T i charged}",240,0.,120.,400,0.,200.); 
-    fhBkgPtDist->SetXTitle("p_{T #gamma} (GeV/c)");
-    outputContainer->Add(fhBkgPtDist) ;
+    fhBkgDeltaEta  = new TH2F("BkgDeltaEta","#eta_{bkg} - #eta_{trigger} vs p_{T trigger}",120,0,120,120,-2,2); 
+    fhBkgDeltaEta->SetYTitle("#Delta #eta");
+    fhBkgDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
     
+    fhBkgLeadingRatioPt  = new TH2F("BkgLeadingRatioPt","p_{T  bkg} vs p_{T trigger}",120,0,120,120,0,2); 
+    fhBkgLeadingRatioPt->SetYTitle("p_{T  leading}/p_{T bkg}");
+    fhBkgLeadingRatioPt->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhBkgLeadingDeltaPhi  = new TH2F("BkgLeadingDeltaPhi","#phi_{bkg} - #phi_{leading} vs p_{T trigger}",120,0,120,120,0,TMath::TwoPi()); 
+    fhBkgLeadingDeltaPhi->SetYTitle("#Delta #phi (rad)");
+    fhBkgLeadingDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhBkgLeadingDeltaEta  = new TH2F("BkgLeadingDeltaEta","#eta_{bkg} - #eta_{leading} vs p_{T trigger}",120,0,120,120,-2,2); 
+    fhBkgLeadingDeltaEta->SetYTitle("#Delta #eta");
+    fhBkgLeadingDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhBkgFFz  = new TH2F("BkgFFz","z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
+    fhBkgFFz->SetYTitle("z");
+    fhBkgFFz->SetXTitle("p_{T trigger}");
+
+    fhBkgFFxi  = new TH2F("BkgFFxi","#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
+    fhBkgFFxi->SetYTitle("#xi");
+    fhBkgFFxi->SetXTitle("p_{T trigger}");
+
+    fhBkgFFpt  = new TH2F("BkgFFpt","p_{T charged hadron } vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
+    fhBkgFFpt->SetYTitle("p_{T charged} hadron");
+    fhBkgFFpt->SetXTitle("p_{T trigger}");
+
+    fhBkgNTracksInCone  = new TH2F("BkgNTracksInCone","N particles in cone vs p_{T trigger}",120,0,120,5000,0, 5000); 
+    fhBkgNTracksInCone->SetYTitle("N tracks in bkg cone");
+    fhBkgNTracksInCone->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fOutCont->Add(fhBkgPt) ; 
+    fOutCont->Add(fhBkgRatioPt) ; 
+    fOutCont->Add(fhBkgDeltaPhi) ;
+    fOutCont->Add(fhBkgDeltaEta) ;
+    fOutCont->Add(fhBkgLeadingRatioPt) ;
+    fOutCont->Add(fhBkgLeadingDeltaPhi) ;
+    fOutCont->Add(fhBkgLeadingDeltaEta) ;
+    fOutCont->Add(fhBkgFFz) ;
+    fOutCont->Add(fhBkgFFxi) ;
+    fOutCont->Add(fhBkgFFpt) ;
+    fOutCont->Add(fhBkgNTracksInCone) ;
+
   }//not several cones
   else{ //If we want to study the jet for different cones and pt
     for(Int_t icone = 0; icone<fJetNCone; icone++){//icone
       for(Int_t ipt = 0; ipt<fJetNPt;ipt++){ //ipt
 	
-	//Jet
+	TString lastnamehist ="Cone"+ fJetNameCones[icone]+"Pt"+ fJetNamePtThres[ipt];
+	TString lastnametitle =", cone ="+fJetNameCones[icone]+", pt > " +fJetNamePtThres[ipt]+" GeV/c";
 	
-	fhJetRatios[icone][ipt]  = new TH2F
-	  ("JetRatioCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt], 
-	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fJetNameCones[icone]+", pt>" +fJetNamePtThres[ipt]+" GeV/c",
-	   240,0,120,200,0,10);
-	fhJetRatios[icone][ipt]->
-	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-	fhJetRatios[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	outputContainer->Add(fhJetRatios[icone][ipt]) ; 
+	//Jet Distributions
+	fhJetPts[icone][ipt] = new TH2F("JetPt"+lastnamehist,"p_{T  jet} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,120); 
+	fhJetPts[icone][ipt]->SetYTitle("p_{T  jet}");
+	fhJetPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
+	fhJetRatioPts[icone][ipt] = new TH2F("JetRatioPt"+lastnamehist,"p_{T  jet}/p_{T trigger} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,2); 
+	fhJetRatioPts[icone][ipt]->SetYTitle("p_{T  jet}/p_{T trigger}");
+	fhJetRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetPts[icone][ipt]  = new TH2F
-	  ("JetPtCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt], 
-	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fJetNameCones[icone]+", pt>" +fJetNamePtThres[ipt]+" GeV/c",
-	   240,0,120,400,0,200);
-	fhJetPts[icone][ipt]->
-	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-	fhJetPts[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	outputContainer->Add(fhJetPts[icone][ipt]) ; 
+	fhJetDeltaPhis[icone][ipt] = new TH2F("JetDeltaPhi"+lastnamehist,"#phi_{jet} - #phi_{trigger} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,TMath::TwoPi()); 
+	fhJetDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
+	fhJetDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	//Bkg
-	fhBkgRatios[icone][ipt]  = new TH2F
-	  ("BkgRatioCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt], 
-	   "p_{T bkg lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fJetNameCones[icone]+", pt>" +fJetNamePtThres[ipt]+" GeV/c",
-	   240,0,120,200,0,10);
-	fhBkgRatios[icone][ipt]->
-	  SetYTitle("p_{T bkg lead #pi^{0}}/p_{T #gamma}");
-	fhBkgRatios[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	outputContainer->Add(fhBkgRatios[icone][ipt]) ; 
+	fhJetDeltaEtas[icone][ipt] = new TH2F("JetDeltaEta"+lastnamehist,"#eta_{jet} - #eta_{trigger} vs p_{T trigger}"+lastnametitle,120,0,120,120,-2,2); 
+	fhJetDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
+	fhJetDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgPts[icone][ipt]  = new TH2F
-	  ("BkgPtCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt], 
-	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fJetNameCones[icone]+", pt>" +fJetNamePtThres[ipt]+" GeV/c",
-	   240,0,120,400,0,200);
-	fhBkgPts[icone][ipt]->
-	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-	fhBkgPts[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	outputContainer->Add(fhBkgPts[icone][ipt]) ; 
+	fhJetLeadingRatioPts[icone][ipt] = new TH2F("JetLeadingRatioPt"+lastnamehist,"p_{T  jet} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,2); 
+	fhJetLeadingRatioPts[icone][ipt]->SetYTitle("p_{T  leading}/p_{T jet}");
+	fhJetLeadingRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	//Counts
-	fhNBkgs[icone][ipt]  = new TH1F
-	  ("NBkgCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt],
-	   "bkg multiplicity cone ="+fJetNameCones[icone]+", pt>" 
-	   +fJetNamePtThres[ipt]+" GeV/c",9000,0,9000); 
-	fhNBkgs[icone][ipt]->SetYTitle("counts");
-	fhNBkgs[icone][ipt]->SetXTitle("N");
-	outputContainer->Add(fhNBkgs[icone][ipt]) ; 
+	fhJetLeadingDeltaPhis[icone][ipt] = new TH2F("JetLeadingDeltaPhi"+lastnamehist,"#phi_{jet} - #phi_{leading} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,TMath::TwoPi()); 
+	fhJetLeadingDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
+	fhJetLeadingDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhNLeadings[icone][ipt]  = new TH2F
-	  ("NLeadingCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt],
-	   "p_{T #gamma} vs p_{T #pi^{0}} cone ="+fJetNameCones[icone]+", pt>" 
-	   +fJetNamePtThres[ipt]+" GeV/c",120,0,120,120,0,120); 
-	fhNLeadings[icone][ipt]->SetYTitle("p_{T #pi^{0}}(GeV/c)");
-	fhNLeadings[icone][ipt]->SetXTitle("p_{T #gamma}(GeV/c)");
-	outputContainer->Add(fhNLeadings[icone][ipt]) ; 
+	fhJetLeadingDeltaEtas[icone][ipt] = new TH2F("JetLeadingDeltaEta"+lastnamehist,"#eta_{jet} - #eta_{leading} vs p_{T trigger}"+lastnametitle,120,0,120,120,-2,2); 
+	fhJetLeadingDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
+	fhJetLeadingDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhNJets[icone][ipt]  = new TH1F
-	  ("NJetCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt],
-	   "Number of neutral jets, cone ="+fJetNameCones[icone]+", pt>" 
-	   +fJetNamePtThres[ipt]+" GeV/c",120,0,120); 
-	fhNJets[icone][ipt]->SetYTitle("N");
-	fhNJets[icone][ipt]->SetXTitle("p_{T #gamma}(GeV/c)");
-	outputContainer->Add(fhNJets[icone][ipt]) ; 
+	fhJetFFzs[icone][ipt] = new TH2F("JetFFz"+lastnamehist,"z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
+	fhJetFFzs[icone][ipt]->SetYTitle("z");
+	fhJetFFzs[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	//Fragmentation Function
-	fhJetFragments[icone][ipt]  = new TH2F
-	  ("JetFragmentCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt],
-	   "x_{T} = p_{T i}/p_{T #gamma}, cone ="+fJetNameCones[icone]+", pt>" 
-	   +fJetNamePtThres[ipt]+" GeV/c",120,0.,120.,240,0.,1.2); 
-	fhJetFragments[icone][ipt]->SetYTitle("x_{T}");
-	fhJetFragments[icone][ipt]->SetXTitle("p_{T #gamma}");
-	outputContainer->Add(fhJetFragments[icone][ipt]) ; 
+	fhJetFFxis[icone][ipt] = new TH2F("JetFFxi"+lastnamehist,"#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
+	fhJetFFxis[icone][ipt]->SetYTitle("#xi");
+	fhJetFFxis[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	fhBkgFragments[icone][ipt]  = new TH2F
-	  ("BkgFragmentCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt],
-	   "x_{T} = p_{T i}/p_{T #gamma}, cone ="+fJetNameCones[icone]+", pt>" 
-	   +fJetNamePtThres[ipt]+" GeV/c",120,0.,120.,240,0.,1.2); 
-	fhBkgFragments[icone][ipt]->SetYTitle("x_{T}");
-	fhBkgFragments[icone][ipt]->SetXTitle("p_{T #gamma}");
-	outputContainer->Add(fhBkgFragments[icone][ipt]) ; 
+	fhJetFFpts[icone][ipt] = new TH2F("JetFFpt"+lastnamehist,"p_{T charged hadron } in jet vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
+	fhJetFFpts[icone][ipt]->SetYTitle("p_{T charged hadron}");
+	fhJetFFpts[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	//Jet particle distribution
+	fhJetNTracksInCones[icone][ipt] = new TH2F("JetNTracksInCone"+lastnamehist,"N particles in cone vs p_{T trigger}"+lastnametitle,120,0,120,5000,0, 5000); 
+	fhJetNTracksInCones[icone][ipt]->SetYTitle("N tracks in jet cone");
+	fhJetNTracksInCones[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetPtDists[icone][ipt]  = new TH2F
-	  ("JetPtDistCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt],
-	   "p_{T i}, cone ="+fJetNameCones[icone]+", pt>" +fJetNamePtThres[ipt]+
-	   " GeV/c",120,0.,120.,120,0.,120.); 
-	fhJetPtDists[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	outputContainer->Add(fhJetPtDists[icone][ipt]) ; 
+	fOutCont->Add(fhJetPts[icone][ipt]) ; 
+	fOutCont->Add(fhJetRatioPts[icone][ipt]) ; 
+	fOutCont->Add(fhJetDeltaPhis[icone][ipt]) ;
+	fOutCont->Add(fhJetDeltaEtas[icone][ipt]) ;
+	fOutCont->Add(fhJetLeadingRatioPts[icone][ipt]) ;
+	fOutCont->Add(fhJetLeadingDeltaPhis[icone][ipt]) ;
+	fOutCont->Add(fhJetLeadingDeltaEtas[icone][ipt]) ;
+	fOutCont->Add(fhJetFFzs[icone][ipt]) ;
+	fOutCont->Add(fhJetFFxis[icone][ipt]) ;
+	fOutCont->Add(fhJetFFpts[icone][ipt]) ;
+	fOutCont->Add(fhJetNTracksInCones[icone][ipt]) ;
 	
-	fhBkgPtDists[icone][ipt]  = new TH2F
-	  ("BkgPtDistCone"+fJetNameCones[icone]+"Pt"+fJetNamePtThres[ipt],
-	   "p_{T i}, cone ="+fJetNameCones[icone]+", pt>" +fJetNamePtThres[ipt]+
-	   " GeV/c",120,0.,120.,120,0.,120.); 
-	fhBkgPtDists[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	outputContainer->Add(fhBkgPtDists[icone][ipt]) ; 
+	//Bkg Distributions
+	fhBkgPts[icone][ipt] = new TH2F("BkgPt"+lastnamehist,"p_{T  bkg} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,120); 
+	fhBkgPts[icone][ipt]->SetYTitle("p_{T  bkg}");
+	fhBkgPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fhBkgRatioPts[icone][ipt] = new TH2F("BkgRatioPt"+lastnamehist,"p_{T  bkg}/p_{T trigger} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,2); 
+	fhBkgRatioPts[icone][ipt]->SetYTitle("p_{T  bkg}/p_{T trigger}");
+	fhBkgRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fhBkgDeltaPhis[icone][ipt] = new TH2F("BkgDeltaPhi"+lastnamehist,"#phi_{bkg} - #phi_{trigger} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,TMath::TwoPi()); 
+	fhBkgDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
+	fhBkgDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fhBkgDeltaEtas[icone][ipt] = new TH2F("BkgDeltaEta"+lastnamehist,"#eta_{bkg} - #eta_{trigger} vs p_{T trigger}"+lastnametitle,120,0,120,120,-2,2); 
+	fhBkgDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
+	fhBkgDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fhBkgLeadingRatioPts[icone][ipt] = new TH2F("BkgLeadingRatioPt"+lastnamehist,"p_{T  bkg} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,2); 
+	fhBkgLeadingRatioPts[icone][ipt]->SetYTitle("p_{T  leading}/p_{T bkg}");
+	fhBkgLeadingRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fhBkgLeadingDeltaPhis[icone][ipt] = new TH2F("BkgLeadingDeltaPhi"+lastnamehist,"#phi_{bkg} - #phi_{leading} vs p_{T trigger}"+lastnametitle,120,0,120,120,0,TMath::TwoPi()); 
+	fhBkgLeadingDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
+	fhBkgLeadingDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fhBkgLeadingDeltaEtas[icone][ipt] = new TH2F("BkgLeadingDeltaEta"+lastnamehist,"#eta_{bkg} - #eta_{leading} vs p_{T trigger}"+lastnametitle,120,0,120,120,-2,2); 
+	fhBkgLeadingDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
+	fhBkgLeadingDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fhBkgFFzs[icone][ipt] = new TH2F("BkgFFz"+lastnamehist,"z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
+	fhBkgFFzs[icone][ipt]->SetYTitle("z");
+	fhBkgFFzs[icone][ipt]->SetXTitle("p_{T trigger}");
+	
+	fhBkgFFxis[icone][ipt] = new TH2F("BkgFFxi"+lastnamehist,"#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
+	fhBkgFFxis[icone][ipt]->SetYTitle("#xi");
+	fhBkgFFxis[icone][ipt]->SetXTitle("p_{T trigger}");
+	
+	fhBkgFFpts[icone][ipt] = new TH2F("BkgFFpt"+lastnamehist,"p_{T charged hadron} in jet vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
+	fhBkgFFpts[icone][ipt]->SetYTitle("p_{T charged hadron}");
+	fhBkgFFpts[icone][ipt]->SetXTitle("p_{T trigger}");
+	
+	fhBkgNTracksInCones[icone][ipt] = new TH2F("BkgNTracksInCone"+lastnamehist,"N particles in cone vs p_{T trigger}"+lastnametitle,120,0,120,5000,0, 5000); 
+	fhBkgNTracksInCones[icone][ipt]->SetYTitle("N tracks in bkg cone");
+	fhBkgNTracksInCones[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
+	
+	fOutCont->Add(fhBkgPts[icone][ipt]) ; 
+	fOutCont->Add(fhBkgRatioPts[icone][ipt]) ; 
+	fOutCont->Add(fhBkgDeltaPhis[icone][ipt]) ;
+	fOutCont->Add(fhBkgDeltaEtas[icone][ipt]) ;
+	fOutCont->Add(fhBkgLeadingRatioPts[icone][ipt]) ;
+	fOutCont->Add(fhBkgLeadingDeltaPhis[icone][ipt]) ;
+	fOutCont->Add(fhBkgLeadingDeltaEtas[icone][ipt]) ;
+	fOutCont->Add(fhBkgFFzs[icone][ipt]) ;
+	fOutCont->Add(fhBkgFFxis[icone][ipt]) ;
+	fOutCont->Add(fhBkgFFpts[icone][ipt]) ;
+	fOutCont->Add(fhBkgNTracksInCones[icone][ipt]) ;
 	
       }//ipt
     } //icone
   }//If we want to study any cone or pt threshold
+  
+  if(GetDebug()>2){
+    printf("All histograms names \n");
+  
+    for(Int_t i  = 0 ;  i<  fOutCont->GetEntries(); i++)
+      printf("Histo i %d name %s",i,((fOutCont->At(i))->GetName()));
+      //cout<< (fOutCont->At(i))->GetName()<<endl;
+  }
 
-  return outputContainer;
+  return fOutCont;
 }
 
-  //____________________________________________________________________________
-  void AliAnaParticleJetLeadingCone::InitParameters()
+//____________________________________________________________________________
+Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODParticleCorrelation *particle, TLorentzVector & pLeading) 
 {
- 
-  //Initialize the parameters of the analysis.
-  SetJetsOnlyInCTS(kFALSE) ;
-  fPbPb                = kFALSE ;
+  //Search Charged or Neutral leading particle, select the highest one and fill AOD
+  
+  TLorentzVector pLeadingCh(0,0,0,0) ;
+  TLorentzVector pLeadingPi0(0,0,0,0) ;
+  
+  GetLeadingCharge(particle, pLeadingCh) ;
+  if(!fJetsOnlyInCTS) GetLeadingPi0(particle, pLeadingPi0) ;
+  
+  Double_t ptch = pLeadingCh.Pt(); 
+  Double_t ptpi = pLeadingPi0.Pt(); 
+  
+  if (ptch > 0 || ptpi > 0){
+    if((ptch >= ptpi)){
+      if(GetDebug() > 1)printf("Leading found in CTS \n");
+      pLeading = pLeadingCh;
+      if(GetDebug() > 1) printf("Found Leading: pt %f, phi %f deg, eta %f\n", pLeading.Pt(),pLeading.Phi()*TMath::RadToDeg(),pLeading.Eta()) ;
+      //Put leading in AOD
+       particle->SetLeading(pLeadingCh);
+       particle->SetLeadingDetector("CTS");
+       return kTRUE;
+    }
+    else{
+      if(GetDebug() > 1)printf("Leading found in EMCAL \n");
+      pLeading = pLeadingPi0;
+      if(GetDebug() > 1) printf("Found Leading: pt %f, phi %f, eta %f\n", pLeading.Pt(),pLeading.Phi()*TMath::RadToDeg(),pLeading.Eta()) ;
+      //Put leading in AOD
+      particle->SetLeading(pLeadingPi0);
+      particle->SetLeadingDetector("EMCAL");
+      return kTRUE;   
+    }
+  }  
+  
+  if(GetDebug() > 1)printf ("NO LEADING PARTICLE FOUND \n");
+  
+  return kFALSE; 
+  
+}
 
-  SetDeltaPhiCutRange(2.9,3.4) ; 
-  SetRatioCutRange(0.1,1.0) ; 
+//____________________________________________________________________________
+void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliAODParticleCorrelation * particle, TLorentzVector & pLeading) 
+{  
+  //Search for the charged particle with highest pt and with 
+  //Phi=Phi_trigger-Pi and pT=0.1E_gamma 
+  
+  if(GetAODCTS()){
+    Double_t ptTrig = particle->Pt();
+    Double_t phiTrig = particle->Phi();
+    Double_t rat  = -100 ;
+    Double_t ptl  = -100 ;
+    Double_t phil = -100 ;
+    Double_t pt  = -100.;
+    Double_t phi = -100.;
+    TVector3 p3;
+    
+    for(Int_t ipr = 0;ipr < GetAODCTS()->GetEntries() ; ipr ++ ){
+      AliAODTrack* track = dynamic_cast<AliAODTrack *>(GetAODCTS()->At(ipr)) ;
+      p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+      pt    = p3.Pt();
+      phi  = p3.Phi() ;
+      if(phi<0) phi+=TMath::TwoPi();
+      rat  = pt/ptTrig ;
+
+      //Selection within angular and energy limits
+      if(((phiTrig-phi) > fDeltaPhiMinCut) && ((phiTrig-phi)<fDeltaPhiMaxCut) &&
+	 (rat > fLeadingRatioMinCut) && (rat < fLeadingRatioMaxCut)  && (pt  > ptl)) {
+	phil = phi ;
+	ptl  = pt ;
+	pLeading.SetVect(p3);
+      }
+    }// track loop
+    
+    if(GetDebug() > 1&& ptl>0 ) printf("Leading in CTS: pt %f eta %f phi %f pt/ptTrig %f \n", ptl, pLeading.Eta(), phil,ptl/ptTrig) ;
+    
+  }//CTS list exist
+}
+
+//____________________________________________________________________________
+void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODParticleCorrelation * particle, TLorentzVector & pLeading) 
+{  
+  //Search for the neutral pion with highest pt and with 
+  //Phi=Phi_trigger-Pi and pT=0.1E_gamma
+ 
+  if(GetAODEMCAL()){
+    Double_t ptTrig = particle->Pt();
+    Double_t phiTrig = particle->Phi();
+    Double_t rat  = -100 ;
+    Double_t ptl  = -100 ;
+    Double_t phil = -100 ;
+    Double_t pt  = -100.;
+    Double_t phi = -100.;
+    
+    TLorentzVector gammai;
+    TLorentzVector gammaj;
+    
+    Double_t vertex[] = {0,0,0};
+    if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
+    
+    //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
+    for(Int_t iclus = 0;iclus < GetAODEMCAL()->GetEntries() ; iclus ++ ){
+      AliAODCaloCluster * calo = dynamic_cast< AliAODCaloCluster *>(GetAODEMCAL()->At(iclus)) ;
+      
+      //Cluster selection, not charged, with photon or pi0 id and in fidutial cut
+      Int_t pdgi=0;
+      if(!SelectCluster(calo,vertex, gammai, pdgi)) continue ;
+      
+      if(GetDebug() > 2) printf("neutral cluster: pt %f, phi %f \n", gammai.Pt(),gammai.Phi());
+      
+      //2 gamma overlapped, found with PID
+      if(pdgi == AliCaloPID::kPi0){ 
+	pt = gammai.Pt();
+	rat = pt/ptTrig;
+	phi = gammai.Phi();
+	if(phi<0) phi+=TMath::TwoPi();
+	
+	//Selection within angular and energy limits
+	if(ptl > pt  && rat > fLeadingRatioMinCut  && rat < fLeadingRatioMaxCut  && 
+	   (phiTrig-phil) > fDeltaPhiMinCut && (phiTrig-phil) < fDeltaPhiMaxCut )
+	  {
+	    phi = phil ;
+	    pt  = ptl ;
+	    pLeading.SetPxPyPzE(gammai.Px(),gammai.Py(),gammai.Pz(),gammai.E());
+	  }// cuts
+      }// pdg = AliCaloPID::kPi0
+         //Make invariant mass analysis
+      else if(pdgi == AliCaloPID::kPhoton){	
+	//Search the photon companion in case it comes from  a Pi0 decay
+	//Apply several cuts to select the good pair
+	for(Int_t jclus = iclus+1; jclus < GetAODEMCAL()->GetEntries() ; jclus ++ ){
+	  AliAODCaloCluster * calo2 = dynamic_cast< AliAODCaloCluster *>(GetAODEMCAL()->At(jclus)) ;
+	  
+	  //Cluster selection, not charged with photon or pi0 id and in fidutial cut
+	  Int_t pdgj=0;
+	  if(!SelectCluster(calo2,vertex, gammaj, pdgj)) continue ;
+	  
+	  if(pdgj == AliCaloPID::kPhoton ){
+	    
+	    pt  = (gammai+gammaj).Pt();
+	    phi = (gammai+gammaj).Phi();
+	    rat = pt/ptTrig;
+	    
+	    //Selection within angular and energy limits
+	    if(ptl > pt  && rat > fLeadingRatioMinCut  && rat < fLeadingRatioMaxCut  && 
+	       (phiTrig-phil) > fDeltaPhiMinCut && (phiTrig-phil) < fDeltaPhiMaxCut ){
+	      //Select good pair (aperture and invariant mass)
+ 	      if(GetNeutralMesonSelection()->SelectPair(gammai, gammaj)){
+ 		phi = phil ;
+  		pt  = ptl ;
+  		pLeading=(gammai+gammaj);
+  	      }//pi0 selection
+	      
+ 	      if(GetDebug() > 3 ) printf("Neutral Hadron Correlation: Selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f, M %2.3f\n",
+ 					 (gammai+gammaj).Pt(),(gammai+gammaj).Phi(),(gammai+gammaj).Eta(), (gammai+gammaj).M());
+ 	    }//Pair selected as leading
+ 	  }//if pair of gammas
+ 	}//2nd loop
+      }// if pdg = 22
+    }// 1st Loop
+    
+    if(GetDebug()>2 && pLeading.Pt() >0 ) printf("Leading EMCAL: pt %f eta %f phi %f pt/Eg %f \n",  pLeading.Pt(), pLeading.Eta(),  pLeading.Phi(),  pLeading.Pt()/ptTrig) ;
+    
+  }//EMCAL list exists
+  
+}
+
+//____________________________________________________________________________
+void AliAnaParticleJetLeadingConeCorrelation::InitParameters()
+{
+  
+  //Initialize the parameters of the analysis.
+  fJetsOnlyInCTS      = kFALSE ;
+  fPbPb               = kFALSE ;
+  fReMakeJet          = kFALSE ;
+
+  //Leading selection parameters
+  fDeltaPhiMinCut     = 2.9 ;
+  fDeltaPhiMaxCut     = 3.4 ; 
+  fLeadingRatioMinCut = 0.1;
+  fLeadingRatioMaxCut = 1.5; 
 
   //Jet selection parameters
   //Fixed cut   
-  fJetRatioMaxCut = 1.2 ; 
-  fJetRatioMinCut = 0.3 ; 
-  fJetCTSRatioMaxCut = 1.2 ;
-  fJetCTSRatioMinCut = 0.3 ;
-  fSelect         = 0  ;
+  fJetRatioMaxCut     = 1.2 ; 
+  fJetRatioMinCut     = 0.3 ; 
+  fJetCTSRatioMaxCut  = 1.2 ;
+  fJetCTSRatioMinCut  = 0.3 ;
+  fSelect               = 0  ; //0, Accept all jets, 1, selection depends on energy, 2 fixed selection
 
   //Cut depending on gamma energy
-
-  fPtJetSelectionCut = 20.; //For Low pt jets+BKG, another limits applied
+  fPtTriggerSelectionCut = 10.; //For Low pt jets+BKG, another limits applied
   //Reconstructed jet energy dependence parameters 
   //e_jet = a1+e_gamma b2. 
   //Index 0-> Pt>2 GeV r = 0.3; Index 1-> Pt>0.5 GeV r = 0.3
   fJetE1[0] = -5.75; fJetE1[1] = -4.1;
   fJetE2[0] = 1.005; fJetE2[1] = 1.05;
-
+  
   //Reconstructed sigma of jet energy dependence parameters 
   //s_jet = a1+e_gamma b2. 
   //Index 0-> Pt>2 GeV r = 0.3; Index 1-> Pt>0.5 GeV r = 0.3
   fJetSigma1[0] = 2.65;   fJetSigma1[1] = 2.75;
   fJetSigma2[0] = 0.0018; fJetSigma2[1] = 0.033;
-
+  
   //Background mean energy and RMS
   //Index 0-> No BKG; Index 1-> BKG > 2 GeV; 
   //Index 2-> (low pt jets)BKG > 0.5 GeV;
@@ -593,36 +1018,145 @@ TList *  AliAnaParticleJetLeadingCone::GetCreateOutputObjects()
   fJetPtThres[3]  = 2.0  ; fJetNamePtThres[3] = "20" ;
 }
 
-//__________________________________________________________________
-void AliAnaParticleJetLeadingCone::Print(const Option_t * opt) const
-{
+//__________________________________________________________________________-
+Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(const Double_t ptTrig, const Double_t ptjet){
+  //Given the pt of the jet and the trigger particle, select the jet or not
+  //3 options, fSelect=0 accepts all, fSelect=1 selects jets depending on a 
+  //function energy dependent and fSelect=2 selects on simple fixed cuts
 
-  //Print some relevant parameters set for the analysis
-  if(! opt)
-    return;
+  if(ptjet == 0) return kFALSE;
+
+  Double_t rat = ptTrig / ptjet ;
   
-  Info("Print", "%s %s", GetName(), GetTitle() ) ;
-  printf("Correlation analysis           =     %d\n",kJetLeadCone) ;
-  
-  
-  printf("Phi gamma-Leading      <     %f\n", GetDeltaPhiMaxCut()) ; 
-  printf("Phi gamma-Leading      >     %f\n", GetDeltaPhiMinCut()) ;
-  printf("pT Leading / pT Gamma             <     %f\n", GetRatioMaxCut()) ; 
-  printf("pT Leading / pT Gamma             >     %f\n", GetRatioMinCut()) ;
-  
-  if(fSelect == 2){
-    printf("pT Jet / pT Gamma                     <    %f\n", fJetRatioMaxCut) ; 
-    printf("pT Jet / pT Gamma                     >    %f\n", fJetRatioMinCut) ;
-    printf("pT Jet (Only CTS)/ pT Gamma   <    %f\n", fJetCTSRatioMaxCut) ; 
-    printf("pT Jet (Only CTS)/ pT Gamma   >    %f\n", fJetCTSRatioMinCut) ;
+  //###############################################################
+  if(fSelect == 0)
+    return kTRUE; //Accept all jets, no restriction
+  //###############################################################
+  else if(fSelect == 1){
+    //Check if the energy of the reconstructed jet is within an energy window
+    //WARNING: to be rechecked, don't remember what all the steps mean
+    Double_t par[6];
+    Double_t xmax[2];
+    Double_t xmin[2];
+    
+    Int_t iCTS = 0;
+    if(fJetsOnlyInCTS)
+      iCTS = 3 ;
+    
+    if(!fPbPb){
+      //Phythia alone, jets with pt_th > 0.2, r = 0.3 
+      par[0] = fJetE1[0]; par[1] = fJetE2[0]; 
+      //Energy of the jet peak
+      //e_jet = fJetE1[0]+fJetE2[0]*e_gamma, simulation fit
+      par[2] = fJetSigma1[0]; par[3] = fJetSigma2[0];
+      //Sigma  of the jet peak
+      //sigma_jet = fJetSigma1[0]+fJetSigma2[0]*e_gamma, simulation fit
+      par[4] = fBkgMean[0 + iCTS]; par[5] = fBkgRMS[0 + iCTS];
+      //Parameters reserved for PbPb bkg.
+      xmax[0] = fJetXMax1[0 + iCTS]; xmax[1] = fJetXMax2[0 + iCTS];
+      xmin[0] = fJetXMin1[0 + iCTS]; xmin[1] = fJetXMin2[0 + iCTS];
+      //Factor that multiplies sigma to obtain the best limits, 
+      //by observation, of mono jet ratios (ptjet/ptTrig)
+      //X_jet = fJetX1[0]+fJetX2[0]*e_gamma
+      
+    }
+    else{
+      if(ptTrig > fPtTriggerSelectionCut){
+	//Phythia +PbPb with  pt_th > 2 GeV/c, r = 0.3 
+	par[0] = fJetE1[0]; par[1] = fJetE2[0]; 
+	//Energy of the jet peak, same as in pp
+	//e_jet = fJetE1[0]+fJetE2[0]*e_gamma, simulation fit
+	par[2] = fJetSigma1[0]; par[3] = fJetSigma2[0];
+	//Sigma  of the jet peak, same as in pp
+	//sigma_jet = fJetSigma1[0]+fJetSigma2[0]*e_gamma, simulation fit
+	par[4] = fBkgMean[1 + iCTS]; par[5] = fBkgRMS[1 + iCTS];
+	//Mean value and RMS of PbPb Bkg 
+	xmax[0] = fJetXMax1[1 + iCTS]; xmax[1] = fJetXMax2[1 + iCTS];
+	xmin[0] = fJetXMin1[1 + iCTS]; xmin[1] = fJetXMin2[1 + iCTS];
+	//Factor that multiplies sigma to obtain the best limits, 
+	//by observation, of mono jet ratios (ptjet/ptTrig) mixed with PbPb Bkg, 
+	//pt_th > 2 GeV, r = 0.3
+	//X_jet = fJetX1[0]+fJetX2[0]*e_gamma
+	
+      }
+      else{
+	//Phythia + PbPb with  pt_th > 0.5 GeV/c, r = 0.3
+	par[0] = fJetE1[1]; par[1] = fJetE2[1]; 
+	//Energy of the jet peak, pt_th > 2 GeV/c, r = 0.3 
+	//e_jet = fJetE1[0]+fJetE2[0]*e_gamma, simulation fit
+	par[2] = fJetSigma1[1]; par[3] = fJetSigma2[1];
+	//Sigma  of the jet peak, pt_th > 2 GeV/c, r = 0.3
+	//sigma_jet = fJetSigma1[0]+fJetSigma2[0]*e_gamma, simulation fit
+	par[4] = fBkgMean[2 + iCTS]; par[5] = fBkgRMS[2 + iCTS];
+	//Mean value and RMS of PbPb Bkg in a 0.3 cone, pt > 2 GeV.
+	xmax[0] = fJetXMax1[2 + iCTS]; xmax[1] = fJetXMax2[2 + iCTS];
+	xmin[0] = fJetXMin1[2 + iCTS]; xmin[1] = fJetXMin2[2 + iCTS];
+	//Factor that multiplies sigma to obtain the best limits, 
+	//by observation, of mono jet ratios (ptjet/ptTrig) mixed with PbPb Bkg, 
+	//pt_th > 2 GeV, r = 0.3
+	//X_jet = fJetX1[0]+fJetX2[0]*e_gamma
+	
+      }//If low pt jet in bkg
+    }//if Bkg
+    
+    //Calculate minimum and maximum limits of the jet ratio.
+    Double_t min = CalculateJetRatioLimit(ptTrig, par, xmin);
+    Double_t max = CalculateJetRatioLimit(ptTrig, par, xmax);
+    
+    AliDebug(3,Form("Jet selection?  : Limits min %f, max %f,  pt_jet %f,  pt_gamma %f, pt_jet / pt_gamma %f",min,max,ptjet,ptTrig,rat));
+    
+    if(( min < rat ) && ( max > ptjet/rat))
+      return kTRUE;
+    else
+      return kFALSE;
+  }//fSelect = 1
+  //###############################################################
+  else if(fSelect == 2){
+    //Simple selection
+    if(!fJetsOnlyInCTS){
+      if((rat <  fJetRatioMaxCut) && (rat > fJetRatioMinCut )) return kTRUE;
+    }
+    else{
+      if((rat <  fJetCTSRatioMaxCut) && (rat > fJetCTSRatioMinCut )) return kTRUE;
+    }
+  }// fSelect = 2
+  //###############################################################
+  else{
+    AliError("Jet selection option larger than 2, DON'T SELECT JETS");
+    return kFALSE ;
   }
   
-} 
+  return kFALSE;
+  
+}
+
+//___________________________________________________________________
+Bool_t AliAnaParticleJetLeadingConeCorrelation::IsParticleInJetCone(const Double_t eta, Double_t phi, const Double_t etal,  Double_t phil)
+{
+  //Check if the particle is inside the cone defined by the leading particle
+  //WARNING: To be rechecked
+
+  if(phi < 0) phi+=TMath::TwoPi();
+  if(phil < 0) phil+=TMath::TwoPi();  
+  Double_t  rad = 10000 + fJetCone;
+  
+  if(TMath::Abs(phi-phil) <= (TMath::TwoPi() - fJetCone))
+    rad = TMath::Sqrt(TMath::Power(eta-etal,2)+TMath::Power(phi-phil,2));
+  else{
+    if(phi-phil > TMath::TwoPi() - fJetCone)
+      rad = TMath::Sqrt(TMath::Power(eta-etal,2)+TMath::Power((phi-TMath::TwoPi())-phil,2));
+    if(phi-phil < -(TMath::TwoPi() - fJetCone))
+      rad = TMath::Sqrt(TMath::Power(eta-etal,2)+TMath::Power((phi+TMath::TwoPi())-phil,2));
+  }
+  
+  if(rad < fJetCone) return kTRUE ;
+  else return kFALSE ;
+  
+}
 
 //__________________________________________________________________
-void  AliAnaParticleJetLeadingCone::MakeAnalysisFillAOD() 
-{
-  
+void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD() 
+{  
   //Particle-Hadron Correlation Analysis, fill AODs
   if(GetDebug() > 1){
     printf("Begin jet leading cone  correlation analysis, fill AODs \n");
@@ -630,8 +1164,8 @@ void  AliAnaParticleJetLeadingCone::MakeAnalysisFillAOD()
     printf("In CTS aod entries %d\n", GetAODCTS()->GetEntries());
     printf("In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntries());
   }
- 
-  TLorentzVector * pLeading = new TLorentVector; //It will contain the kinematics of the found leading particle
+  
+  TLorentzVector pLeading(0,0,0,0); //It will contain the kinematics of the found leading particle
   
   //Loop on stored AOD particles, trigger
   Int_t naod = GetAODBranch()->GetEntriesFast();
@@ -641,19 +1175,19 @@ void  AliAnaParticleJetLeadingCone::MakeAnalysisFillAOD()
     //Search leading particles in CTS and EMCAL 
     if(GetLeadingParticle(particle, pLeading)){
       
-      if(GetDebug() > 1) printf("Leading: pt %f, phi %f, eta %f", pLeading->Pt(),pLeading->Phi(),pLeading->Eta())) ;
+      //Construct the jet around the leading, Fill AOD jet particle list, select jet 
+      //and fill AOD with jet and background     
+      MakeAODJet(particle, pLeading);
       
-    MakeJet(particle, pLeading,"", kFALSE);
-
-    }//Leading
+    }//Leading found
   }//AOD trigger particle loop
   
   if(GetDebug() >1)printf("End of jet leading cone analysis, fill AODs \n");
-
+  
 } 
 
 //__________________________________________________________________
-void  AliAnaParticleJetLeadingCone::MakeAnalysisFillHistograms() 
+void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms() 
 {
   
   //Particle-Hadron Correlation Analysis, fill AODs
@@ -664,7 +1198,7 @@ void  AliAnaParticleJetLeadingCone::MakeAnalysisFillHistograms()
     printf("In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntries());
   }
  
-  TLorentzVector * pLeading = new TLorentzVector;
+  TLorentzVector pLeading(0,0,0,0) ;
   
   //Loop on stored AOD particles, trigger
   Int_t naod = GetAODBranch()->GetEntriesFast();
@@ -679,39 +1213,58 @@ void  AliAnaParticleJetLeadingCone::MakeAnalysisFillHistograms()
     pLeading = particle->GetLeading();
     TString det = particle->GetLeadingDetector();      
 
-    if(det!="" && pLeading){
-      Double_t ptL = pLeading->Pt(); 
-      Double_t phiL = pLeading->Phi(); 
+    if(det!="" && pLeading.Pt() > 0){
+      Double_t ptL = pLeading.Pt(); 
+      Double_t phiL = pLeading.Phi(); 
       if(phiL < 0 ) phiL+=TMath::TwoPi();
-      Double_t etaL = pLeading->Eta(); 
+      Double_t etaL = pLeading.Eta(); 
       
-      if(GetDebug() > 1) printf("Leading found in %s, with pt %3.2f, phi %2.2f, eta %2.2f",det.Data(), ptL, phiL, etaL);
+      if(GetDebug() > 1) printf("Leading found in %s, with pt %3.2f, phi %2.2f, eta %2.2f\n",det.Data(), ptL, phiL, etaL);
       if(det == "CTS"){
-	fhChargedRatio->Fill(pt,ptL/particle->Pt());
-	fhEtaCharged->Fill(pt,etaL);
-	fhPhiCharged->Fill(pt,phiL);
-	fhDeltaPhiGammaCharged->Fill(pt,phi-phiL);
-	fhDeltaEtaGammaCharged->Fill(pt,eta-etaL);
+	fhChargedLeadingPt->Fill(pt,ptL);
+	fhChargedLeadingPhi->Fill(pt,phiL);
+	fhChargedLeadingEta->Fill(pt,etaL);
+	fhChargedLeadingDeltaPt->Fill(pt,pt-ptL);
+	fhChargedLeadingDeltaPhi->Fill(pt,phi-phiL);
+	fhChargedLeadingDeltaEta->Fill(pt,eta-etaL);
+	fhChargedLeadingRatioPt->Fill(pt,ptL/pt);
       }
       else if(det== "EMCAL"){
-	fhNeutralRatio->Fill(pt,ptL/particle->Pt());
-	fhEtaNeutral->Fill(pt,etaL);
-	fhPhiNeutral->Fill(pt,phiL);
-	fhDeltaPhiGammaNeutral->Fill(pt,phi-phiL);
-	fhDeltaEtaGammaNeutral->Fill(pt,eta-etaL);
+	fhNeutralLeadingPt->Fill(pt,ptL);
+	fhNeutralLeadingPhi->Fill(pt,phiL);
+	fhNeutralLeadingEta->Fill(pt,etaL);
+	fhNeutralLeadingDeltaPt->Fill(pt,pt-ptL);
+	fhNeutralLeadingDeltaPhi->Fill(pt,phi-phiL);
+	fhNeutralLeadingDeltaEta->Fill(pt,eta-etaL);
+	fhNeutralLeadingRatioPt->Fill(pt,ptL/pt);
       }
-    }
       
-      //Search Jet
-      if(!fSeveralConeAndPtCuts)
-	MakeJet(particle, pLeading, "", kTRUE);
-      else{
+      //Fill Jet histograms
+      TLorentzVector bkg(0,0,0,0);
+      TLorentzVector jet(0,0,0,0);
+      if(!fSeveralConeAndPtCuts){//just fill histograms      
+	if(!fReMakeJet){
+	  jet=particle->GetCorrelatedJet();
+	  bkg=particle->GetCorrelatedBackground();
+	}
+	else  MakeJetFromAOD(particle, pLeading, jet,bkg);
+	
+	if(jet.Pt() > 0){//Jet was found
+	  FillJetHistos(particle, pLeading, jet,"Jet","");
+	  FillJetHistos(particle, pLeading, bkg,"Bkg","");
+	}
+      }
+      else if(fSeveralConeAndPtCuts){
 	for(Int_t icone = 0; icone<fJetNCone; icone++) {
+	  fJetCone=fJetCones[icone];	  
 	  for(Int_t ipt = 0; ipt<fJetNPt;ipt++) {  
 	    TString lastname ="Cone"+ fJetNameCones[icone]+"Pt"+ fJetNamePtThres[ipt];
-	    fJetCone=fJetCones[icone];
 	    fJetPtThreshold=fJetPtThres[ipt];
-	    MakeJet(particle, pLeading, lastname);
+	    MakeJetFromAOD(particle, pLeading, jet,bkg);
+	    if(jet.Pt() > 0) {//Jet was found
+	      FillJetHistos(particle, pLeading, jet,"Jet",lastname);
+	      FillJetHistos(particle, pLeading, bkg,"Bkg",lastname);
+	    }
 	  }//icone
 	}//ipt
       }//fSeveralConeAndPtCuts
@@ -719,497 +1272,173 @@ void  AliAnaParticleJetLeadingCone::MakeAnalysisFillHistograms()
   }//AOD trigger particle loop
   
   if(GetDebug() >1)printf("End of jet leading cone analysis, fill histograms \n");
-
+  
 } 
 
 //____________________________________________________________________________
-Bool_t  AliAnaParticleJetLeadingCone::GetLeadingParticle(AliAODParticleCorrelation *particle, TLorentzVector * pLeading) 
-{
-  //Search Charged or Neutral leading particle, select the highest one.
-  
-  TLorentzVector *pLeadingCh = new TLorentzVector;
-  TLorentzVector *pLeadingPi0 = new TLorentzVector;
-  
-  Double_t pt  =  particle->Pt(); 
-  Double_t phi = particle->Phi(); 
-  Double_t eta = particle->Eta(); 
-
-  GetLeadingCharge(particle, pLeadingCh) ;
-  if(!AreJetsOnlyInCTS()) GetLeadingPi0(particle, pLeadingPi0) ;
-      
-  Double_t ptch = pLeadingCh->Pt(); 
-  Double_t phich = pLeadingCh->Phi(); 
-  if(phich < 0 ) phich+=TMath::TwoPi();
-  Double_t etach = pLeadingCh->Eta(); 
-  Double_t ptpi = pLeadingPi0->Pt(); 
-  Double_t phipi = pLeadingPi0->Phi(); 
-  if(phipi < 0 ) phipi+=TMath::TwoPi();
-  Double_t etapi = pLeadingPi0->Eta(); 
-      
-  if (ptch > 0 || ptpi > 0){
-    if((ptch >= ptpi)){
-      if(GetDebug() > 1)printf("Leading found in CTS \n");
-      pLeading = pLeadingCh;
-      particle->SetLeading(pLeading);
-      return kTRUE;
-    }
-    else{
-      if(GetDebug() > 1)printf("Leading found in EMCAL \n");
-      pLeading = pLeadingPi0;
-      particle->SetLeading(pLeading);	 
-      return kTRUE;   
-    }
-    
-    if(GetDebug() > 1)printf ("NO LEADING PARTICLE FOUND \n");
-    return kFALSE; 
-  
-}
-
-//____________________________________________________________________________
-void  AliAnaParticleJetLeadingCone::GetLeadingCharge(AliAODParticleCorrelation * particle, TLorentzVector * pLeading) 
-{  
-  //Search for the charged particle with highest pt and with 
-  //Phi=Phi_trigger-Pi and pT=0.1E_gamma 
-
-  if(GetAODCTS()){
-    Double_t ptTrig = particle->Pt();
-    Double_t phiTrig = particle->Phi();
-    Double_t rat  = -100 ;
-    Double_t ptl  = -100 ;
-    Double_t phil = -100 ;
-    Double_t pt  = -100.;
-    Double_t phi = -100.;
-    TVector3 p3;
-    
-    for(Int_t ipr = 0;ipr < GetAODCTS()->GetEntries() ; ipr ++ ){
-      AliAODTrack* track = dynamic_cast<AliAODTrack *>(GetAODCTS()->At(ipr)) ;
-      p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-      pt    = p3.Pt();
-      phi  = p3.Phi() ;
-      if(phi<0) phi+=TMath::TwoPi();
-      rat  = ptl/particle->Pt() ;
-      
-      //Selection within angular and energy limits
-      if(((phiTrig-phi) > GetDeltaPhiMinCut()) && ((phiTrig-phi)<GetDeltaPhiMaxCut()) &&
-	 (rat > GetRatioMinCut()) && (rat < GetRatioMaxCut())  && (pt  > ptl)) {
-	phil = phi ;
-	ptl  = pt ;
-	pLeading->SetMomentum(p3.Px(),p3.Py(),p3.Pz(),0);
-      }
-    }// track loop
-  }//CTS list exist
-  
-  if(GetDebug() > 1)printf("Leading in CTS: pt %f eta %f phi %f pt/ptTrig %f \n", ptl, pLeading->Eta(), phil,ptl/ptTrig)) ;
- 
-}
-
-//____________________________________________________________________________
-void  AliAnaParticleJetLeadingCone::GetLeadingPi0(AliAODParticleCorrelation * particle, TLorentzVector * pLeading) 
-{  
-  //Search for the neutral pion with highest pt and with 
-  //Phi=Phi_trigger-Pi and pT=0.1E_gamma 
-  if(GetAODEMCAL()){
-    Double_t ptTrig = particle->Pt();
-    Double_t phiTrig = particle->Phi();
-    Double_t rat  = -100 ;
-    Double_t ptl  = -100 ;
-    Double_t phil = -100 ;
-    Double_t pt  = -100.;
-    Double_t phi = -100.;
-    
-    TLorentzVector gammai;
-    TLorentzVector gammaj;
-    
-    Double_t vertex[] = {0,0,0};
-    
-    if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
-    
-    //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
-    for(Int_t iclus = 0;iclus < GetAODEMCAL()->GetEntries() ; iclus ++ ){
-      AliAODCaloCluster * calo = dynamic_cast< AliAODCaloCluster *>(GetAODEMCAL()->At(iclus)) ;
-      
-      //Cluster selection, not charged, with photon or pi0 id and in fidutial cut
-      Int_t pdg=0;
-      if(!SelectCluster(calo2,vertex, gammaj, pdgj)) continue ;
-      
-      if(GetDebug() > 2) printf("neutral cluster: pt %f, phi %f \n", gammai.Pt(),gammai.Phi());
-	
-      //2 gamma overlapped, found with PID
-      if(pdg == AliCaloPID::kPi0){ 
-	pt = gammai->Pt();
-	rat = pt/ptTrig;
-	phi = gammai->Phi();
-	if(phi<0) phi+=TMath::TwoPi();
-	
-	//Selection within angular and energy limits
-	if(ptl > pt  && rat > GetRatioMinCut()  && rat < GetRatioMaxCut()  && 
-	   (phig-phil) > GetDeltaPhiMinCut() && (phig-phil) < GetDeltaPhiMaxCut() )
-	  {
-	    phi = phil ;
-	    pt  = ptl ;
-	    pLeading->SetMomentum(gammai.Px(),gammai.Py(),gammai.Pz(),gammai.E());
-	  }// cuts
-      }// pdg = 111 
-      //Make invariant mass analysis
-      else if(pdg == AliCaloPID::kPhoton){	
-	//Search the photon companion in case it comes from  a Pi0 decay
-	//Apply several cuts to select the good pair;
-	for(Int_t jclus = iclus+1; jclus < GetAODEMCAL()->GetEntries() ; jclus ++ ){
-	  AliAODCaloCluster * calo2 = dynamic_cast< AliAODCaloCluster *>(GetAODEMCAL()->At(jclus)) ;
-	  
-	  //Cluster selection, not charged with photon or pi0 id and in fidutial cut
-	  Int_t pdgj=0;
-	  if(!SelectCluster(calo2,vertex, gammaj, pdgj)) continue ;
-	  
-	  if(pdgj == AliCaloPID::kPhoton ){
-	    
-	    pt  = (gammai+gammaj).Pt();
-	    phi = (gammai+gammaj).Phi();
-	    rat = pt/ptTrig;
-	    
-	    //Selection within angular and energy limits
-	    if(ptl > pt  && rat > GetRatioMinCut()  && rat < GetRatioMaxCut()  && 
-	       (phig-phil) > GetDeltaPhiMinCut() && (phig-phil) < GetDeltaPhiMaxCut() ){
-	      //Select good pair (aperture and invariant mass)
- 	      if(GetNeutralMesonSelection()->SelectPair(gammai, gammaj)){
-		phi = phil ;
- 		pt  = ptl ;
- 		pLeading->SetMomentum(gammai.Px(),gammai.Py(),gammai.Pz(),gammai.E());
- 	      }//pi0 selection
-	      
-	      if(GetDebug() > 3 ) printf("Neutral Hadron Correlation: Selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f, M %2.3f",
-					 (gammai+gammaj).Pt(),(gammai+gammaj).Phi(),(gammai+gammaj).Eta(), (gammai+gammaj).M());
-	    }//Pair selected as leading
-	  }//if pair of gammas
-	}//2nd loop
-      }// if pdg = 22
-    }// 1st Loop
-  }//EMCAL list exists
-
-  if(GetDebug()>2) printf("Leading EMCAL: pt %f eta %f phi %f pt/Eg %f \n",  pLeading->Pt(), pLeading->Eta(),  pLeading->Phi(),  pLeading->Pt()/ptTrig) ;
-  
-}
-
-
-//__________________________________________________________________________-
-Bool_t AliAnaParticleJetLeadingCone::IsJetSelected(const Double_t ptg, const Double_t ptj){
-  //Check if the energy of the reconstructed jet is within an energy window
-
-  Double_t par[6];
-  Double_t xmax[2];
-  Double_t xmin[2];
-
-  Int_t iCTS = 0;
-  if(AreJetsOnlyInCTS())
-    iCTS = 3 ;
-
-  if(!fPbPb){
-    //Phythia alone, jets with pt_th > 0.2, r = 0.3 
-    par[0] = fJetE1[0]; par[1] = fJetE2[0]; 
-    //Energy of the jet peak
-    //e_jet = fJetE1[0]+fJetE2[0]*e_gamma, simulation fit
-    par[2] = fJetSigma1[0]; par[3] = fJetSigma2[0];
-    //Sigma  of the jet peak
-    //sigma_jet = fJetSigma1[0]+fJetSigma2[0]*e_gamma, simulation fit
-    par[4] = fBkgMean[0 + iCTS]; par[5] = fBkgRMS[0 + iCTS];
-    //Parameters reserved for PbPb bkg.
-    xmax[0] = fJetXMax1[0 + iCTS]; xmax[1] = fJetXMax2[0 + iCTS];
-    xmin[0] = fJetXMin1[0 + iCTS]; xmin[1] = fJetXMin2[0 + iCTS];
-    //Factor that multiplies sigma to obtain the best limits, 
-    //by observation, of mono jet ratios (ptjet/ptg)
-    //X_jet = fJetX1[0]+fJetX2[0]*e_gamma
-   
-  }
-  else{
-    if(ptg > fPtJetSelectionCut){
-      //Phythia +PbPb with  pt_th > 2 GeV/c, r = 0.3 
-      par[0] = fJetE1[0]; par[1] = fJetE2[0]; 
-      //Energy of the jet peak, same as in pp
-      //e_jet = fJetE1[0]+fJetE2[0]*e_gamma, simulation fit
-      par[2] = fJetSigma1[0]; par[3] = fJetSigma2[0];
-      //Sigma  of the jet peak, same as in pp
-      //sigma_jet = fJetSigma1[0]+fJetSigma2[0]*e_gamma, simulation fit
-      par[4] = fBkgMean[1 + iCTS]; par[5] = fBkgRMS[1 + iCTS];
-      //Mean value and RMS of PbPb Bkg 
-      xmax[0] = fJetXMax1[1 + iCTS]; xmax[1] = fJetXMax2[1 + iCTS];
-      xmin[0] = fJetXMin1[1 + iCTS]; xmin[1] = fJetXMin2[1 + iCTS];
-      //Factor that multiplies sigma to obtain the best limits, 
-      //by observation, of mono jet ratios (ptjet/ptg) mixed with PbPb Bkg, 
-      //pt_th > 2 GeV, r = 0.3
-      //X_jet = fJetX1[0]+fJetX2[0]*e_gamma
-     
-    }
-    else{
-      //Phythia + PbPb with  pt_th > 0.5 GeV/c, r = 0.3
-      par[0] = fJetE1[1]; par[1] = fJetE2[1]; 
-      //Energy of the jet peak, pt_th > 2 GeV/c, r = 0.3 
-      //e_jet = fJetE1[0]+fJetE2[0]*e_gamma, simulation fit
-      par[2] = fJetSigma1[1]; par[3] = fJetSigma2[1];
-      //Sigma  of the jet peak, pt_th > 2 GeV/c, r = 0.3
-      //sigma_jet = fJetSigma1[0]+fJetSigma2[0]*e_gamma, simulation fit
-      par[4] = fBkgMean[2 + iCTS]; par[5] = fBkgRMS[2 + iCTS];
-      //Mean value and RMS of PbPb Bkg in a 0.3 cone, pt > 2 GeV.
-      xmax[0] = fJetXMax1[2 + iCTS]; xmax[1] = fJetXMax2[2 + iCTS];
-      xmin[0] = fJetXMin1[2 + iCTS]; xmin[1] = fJetXMin2[2 + iCTS];
-      //Factor that multiplies sigma to obtain the best limits, 
-      //by observation, of mono jet ratios (ptjet/ptg) mixed with PbPb Bkg, 
-      //pt_th > 2 GeV, r = 0.3
-      //X_jet = fJetX1[0]+fJetX2[0]*e_gamma
-     
-    }//If low pt jet in bkg
-  }//if Bkg
-
- //Calculate minimum and maximum limits of the jet ratio.
-  Double_t min = CalculateJetRatioLimit(ptg, par, xmin);
-  Double_t max = CalculateJetRatioLimit(ptg, par, xmax);
-  
-  AliDebug(3,Form("Jet selection?  : Limits min %f, max %f,  pt_jet %f,  pt_gamma %f, pt_jet / pt_gamma %f",min,max,ptj,ptg,ptj/ptg));
-
-  if(( min < ptj/ptg ) && ( max > ptj/ptg))
-    return kTRUE;
-  else
-    return kFALSE;
-
-}
-
-//____________________________________________________________________________
-void AliAnaParticleJetLeadingCone::MakeJet(AliAODParticleCorrelation *particle, TParticle* pLeading,TString lastname)
+void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODParticleCorrelation *particle, const TLorentzVector  pLeading)
 {
   //Fill the jet with the particles around the leading particle with 
   //R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and 
-  //check if we select it. Fill jet histograms
+  //fill aod with found information 
   
-  TClonesArray * jetList = new TClonesArray("TParticle",1000);
-  TClonesArray * bkgList = new TClonesArray("TParticle",1000);
-
-  TLorentzVector jet   (0,0,0,0);  
   TLorentzVector bkg(0,0,0,0);
-  TLorentzVector lv (0,0,0,0);
-
-  Double_t ptjet = 0.0;
-  Double_t ptbkg = 0.0;
-  Int_t n0 = 0;
-  Int_t n1 = 0;  
-  Bool_t b1 = kFALSE;
-  Bool_t b0 = kFALSE;
+  TLorentzVector jet(0,0,0,0);
+  TLorentzVector lv (0,0,0,0); //Temporal container for jet particles kinematics 
   
-  Double_t ptg  = pGamma->Pt();
-  Double_t phig = pGamma->Phi();
-  Double_t ptl  = pLeading->Pt();
-  Double_t phil = pLeading->Phi();
-  Double_t etal = pLeading->Eta();
-
+  Double_t ptTrig  = particle->Pt();
+  Double_t phiTrig = particle->Phi();
+  Double_t phil = pLeading.Phi();
+  if(phil<0) phil+=TMath::TwoPi();
+  Double_t etal = pLeading.Eta();
+  
+  //Different pt cut for jet particles in different collisions systems
   Float_t ptcut = fJetPtThreshold;
-  if(fPbPb && !fSeveralConeAndPtCuts && ptg > fPtJetSelectionCut)  ptcut = fJetPtThresPbPb ;
- 
-  //Add charged particles to jet
-  TIter nextch(plCTS) ; 
-  TParticle * particle = 0 ; 
-  while ( (particle = dynamic_cast<TParticle*>(nextch())) ) {
-    
-    b0 = kFALSE;
-    b1 = kFALSE;
-
-    //Particles in jet 
-    SetJet(particle, b0, fJetCone, etal, phil) ;  
-
-    if(b0){
-      new((*jetList)[n0++]) TParticle(*particle) ;
-      particle->Momentum(lv);
-      if(particle->Pt() > ptcut ){
-	jet+=lv;
-	ptjet+=particle->Pt();
-      }
-    }
-
-    //Background around (phi_gamma-pi, eta_leading)
-    SetJet(particle, b1, fJetCone,etal, phig) ;
-
-    if(b1) { 
-      new((*bkgList)[n1++]) TParticle(*particle) ;
-      particle->Momentum(lv);
-      if(particle->Pt() > ptcut ){
-	bkg+=lv;
-	ptbkg+=particle->Pt();    
-      }  
-    }
-  }
-
-   //Add neutral particles to jet
-  TIter nextne(plNe) ; 
-  particle = 0 ; 
-  while ( (particle = dynamic_cast<TParticle*>(nextne())) ) {
-    
-    b0 = kFALSE;
-    b1 = kFALSE;
-
-    //Particles in jet 
-    SetJet(particle, b0, fJetCone, etal, phil) ;  
-
-    if(b0){
-      new((*jetList)[n0++]) TParticle(*particle) ;
-      particle->Momentum(lv);
-      if(particle->Pt() > ptcut ){
-	jet+=lv;
-	ptjet+=particle->Pt();
-      }
-    }
-
-    //Background around (phi_gamma-pi, eta_leading)
-    SetJet(particle, b1, fJetCone,etal, phig) ;
-
-    if(b1) { 
-      new((*bkgList)[n1++]) TParticle(*particle) ;
-      particle->Momentum(lv);
-      if(particle->Pt() > ptcut ){
-	bkg+=lv;
-	ptbkg+=particle->Pt();    
-      }  
-    }
+  if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
+  
+  //Add charged particles to jet if they are in cone around the leading particle
+  if(!GetAODCTS()) {
+    AliFatal("Cannot construct jets without tracks, STOP analysis");
+    return;
   }
   
-  ptjet = jet.Pt();
-  ptbkg = bkg.Pt();
-
-  if(ptjet > 0.) {
-
-    AliDebug(2,Form("Gamma   pt %f, Jet pt %f, Bkg pt %f",ptg,ptjet,ptbkg));
+  //Fill jet with tracks
+  TVector3 p3;
+  for(Int_t ipr = 0;ipr < (GetAODCTS())->GetEntries() ; ipr ++ ){
+    AliAODTrack* track = dynamic_cast<AliAODTrack *>((GetAODCTS())->At(ipr)) ;
+    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
     
-    //Fill histograms
-    
-    Double_t ratjet   = ptjet/ptg ;
-    Double_t ratbkg  = ptbkg/ptg ;
-
-    dynamic_cast<TH2F*>
-      (GetOutputContainer()->FindObject("JetRatio"+lastname))
-      ->Fill(ptg,ratjet);	 
-    dynamic_cast<TH2F*>
-      (GetOutputContainer()->FindObject("JetPt"+lastname))
-      ->Fill(ptg,ptjet);
-    
-    dynamic_cast<TH2F*>
-      (GetOutputContainer()->FindObject("BkgRatio"+lastname))
-      ->Fill(ptg,ratbkg);
-    
-    dynamic_cast<TH2F*>
-      (GetOutputContainer()->FindObject("BkgPt"+lastname))
-      ->Fill(ptg,ptbkg);
-
-    //Jet selection
-    Bool_t kSelect = kFALSE;
-    if(fSelect == 0)
-      kSelect = kTRUE; //Accept all jets, no restriction
-    else if(fSelect == 1){
-      //Selection with parametrized cuts
-      if(IsJetSelected(ptg,ptjet))   kSelect = kTRUE;
-    }
-    else if(fSelect == 2){
-      //Simple selection
-      if(!AreJetsOnlyInCTS()){
-	if((ratjet <  fJetRatioMaxCut) && (ratjet > fJetRatioMinCut )) kSelect = kTRUE;
+    //Particles in jet 
+    if(IsParticleInJetCone(p3.Eta(), p3.Phi(), etal, phil)){
+      particle->AddTrack(track); 
+      if(p3.Pt() > ptcut ){
+	lv.SetVect(p3);
+	jet+=lv;
       }
-      else{
-	if((ratjet <  fJetCTSRatioMaxCut) && (ratjet > fJetCTSRatioMinCut )) kSelect = kTRUE;
+    } 
+    //Background around (phi_gamma-pi, eta_leading)
+    else if(IsParticleInJetCone(p3.Eta(),p3.Phi(),etal, phiTrig)) { 
+      particle->AddBackgroundTrack(track); 
+      if(p3.Pt() > ptcut ){
+	lv.SetVect(p3);
+	bkg+=lv;
       }
     }
-    else
-      AliError("Jet selection option larger than 2, DON'T SELECT JETS");
+  }//Track loop
+  
+  //Add neutral particles to jet
+  if(!fJetsOnlyInCTS && GetAODEMCAL()){
     
+    Double_t vertex[] = {0,0,0};
+    if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
     
-     if(kSelect){
-       AliDebug(1,Form("Jet Selected: pt %f ", ptjet)) ;
+    for(Int_t iclus = 0;iclus < (GetAODEMCAL())->GetEntries() ; iclus ++ ){
+      AliAODCaloCluster * calo = dynamic_cast< AliAODCaloCluster *>(GetAODEMCAL()->At(iclus)) ;
       
-       FillJetHistos(jetList, ptg, ptl,"Jet",lastname);
-       FillJetHistos(bkgList, ptg, ptl, "Bkg",lastname);
-     }
-  } //ptjet > 0
+      //Cluster selection, not charged
+      if(calo->GetNTracksMatched() > 0) continue ;
+      
+      calo->GetMomentum(lv,vertex);
+      //Particles in jet 
+      if(IsParticleInJetCone(lv.Eta(),lv.Phi(), etal, phil)){
+	particle->AddCluster(calo); 
+	if(lv.Pt() > ptcut )  jet+=lv;
+      }
+      //Background around (phi_gamma-pi, eta_leading)
+      else if(IsParticleInJetCone(lv.Eta(),lv.Phi(),etal, phiTrig)){
+	particle->AddBackgroundCluster(calo); 
+	if(lv.Pt() > ptcut )  bkg+=lv;
+      }
+    }//cluster loop
+  }//jets with neutral particles
   
-  jetList ->Delete();
-  bkgList ->Delete();
-  
-}
-
-//___________________________________________________________________
-void AliAnaParticleJetLeadingCone::SetJet(TParticle * part, Bool_t & b, Float_t cone, 
-			     Double_t eta, Double_t phi)
-{
-
-  //Check if the particle is inside the cone defined by the leading particle
-  b = kFALSE;
-  
-  if(phi > TMath::TwoPi())
-    phi-=TMath::TwoPi();
-  if(phi < 0.)
-    phi+=TMath::TwoPi();
-  
-  Double_t  rad = 10000 + cone;
-  
-  if(TMath::Abs(part->Phi()-phi) <= (TMath::TwoPi() - cone))
-    rad = TMath::Sqrt(TMath::Power(part->Eta()-eta,2)+
-		      TMath::Power(part->Phi()-phi,2));
-  else{
-    if(part->Phi()-phi > TMath::TwoPi() - cone)
-      rad = TMath::Sqrt(TMath::Power(part->Eta()-eta,2)+
-			TMath::Power((part->Phi()-TMath::TwoPi())-phi,2));
-    if(part->Phi()-phi < -(TMath::TwoPi() - cone))
-      rad = TMath::Sqrt(TMath::Power(part->Eta()-eta,2)+
-			TMath::Power((part->Phi()+TMath::TwoPi())-phi,2));
-  }
-
-  if(rad < cone )
-    b = kTRUE;
+  //If there is any jet found, select after some criteria and 
+  //and fill AOD with corresponding TLorentzVector kinematics
+  if(IsJetSelected(particle->Pt(), jet.Pt())) {
+    particle->SetCorrelatedJet(jet);
+    particle->SetCorrelatedBackground(bkg);
+    if(GetDebug()>1) printf("Found jet: Trigger  pt %f, Jet pt %f, Bkg pt %f\n",ptTrig,jet.Pt(),bkg.Pt());
+  }  
   
 }
 
 //____________________________________________________________________________
-void AliAnaParticleJetLeadingCone::FillJetHistos(TClonesArray * pl, Double_t ptg, Double_t ptl, TString type, TString lastname)
+void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODParticleCorrelation *particle, const TLorentzVector  pLeading, TLorentzVector & jet, TLorentzVector & bkg)
 {
-  //Fill histograms wth jet fragmentation 
-  //and number of selected jets and leading particles
-  //and the background multiplicity
-  TParticle * particle = 0 ;
-  Int_t ipr = 0;
-  Float_t  charge = 0;
+  //Fill the jet with the particles around the leading particle with 
+  //R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and 
+  //fill aod tlorentzvectors with jet and bakcground found
+
+  TLorentzVector lv (0,0,0,0); //Temporal container for jet particles kinematics 
   
-  TIter next(pl) ; 
-  while ( (particle = dynamic_cast<TParticle*>(next())) ) {
-    ipr++ ;
-    Double_t pt = particle->Pt();
-    
-    charge = TDatabasePDG::Instance()
-      ->GetParticle(particle->GetPdgCode())->Charge();
-    if(charge != 0){//Only jet Charged particles 
-      dynamic_cast<TH2F*>
-     	(GetOutputContainer()->FindObject(type+"Fragment"+lastname))
-     	->Fill(ptg,pt/ptg);
-      dynamic_cast<TH2F*>
-     	(GetOutputContainer()->FindObject(type+"PtDist"+lastname))
-     	->Fill(ptg,pt);
-    }//charged
-    
-  }//while
+  Double_t ptTrig  = particle->Pt();
+  Double_t phiTrig = particle->Phi();
+  Double_t phil = pLeading.Phi();
+  Double_t etal = pLeading.Eta();
   
-  if(type == "Bkg")
-    dynamic_cast<TH1F*>
-      (GetOutputContainer()->FindObject("NBkg"+lastname))
-      ->Fill(ipr);
-  else{
-    dynamic_cast<TH1F*>
-      (GetOutputContainer()->FindObject("NJet"+lastname))->
-      Fill(ptg);
-    dynamic_cast<TH2F*>
-      (GetOutputContainer()->FindObject("NLeading"+lastname))
-      ->Fill(ptg,ptl);
+  //Different pt cut for jet particles in different collisions systems
+  Float_t ptcut = fJetPtThreshold;
+  if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
+
+  //Fill jet with tracks
+  //Particles in jet   
+  TVector3 p3;
+  for(Int_t ipr = 0;ipr < (particle->GetRefTracks())->GetEntries() ; ipr ++ ){
+    AliAODTrack* track = dynamic_cast<AliAODTrack *>((particle-> GetRefTracks())->At(ipr)) ;
+    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+    if(p3.Pt() > ptcut && IsParticleInJetCone(p3.Eta(), p3.Phi(), etal, phil) ){
+      lv.SetVect(p3);
+      jet+=lv;
+    }
+  }//jet Track loop
+  
+  //Particles in background   
+  for(Int_t ipr = 0;ipr < (particle-> GetRefBackgroundTracks())->GetEntries() ; ipr ++ ){
+    AliAODTrack* track = dynamic_cast<AliAODTrack *>((particle->GetRefBackgroundTracks())->At(ipr)) ;
+    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+    if(p3.Pt() > ptcut && IsParticleInJetCone(p3.Eta(),p3.Phi(),etal, phiTrig) ) {  
+      lv.SetVect(p3);
+      bkg+=lv;   
+    }
+  }//background Track loop
+  
+  //Add neutral particles to jet
+  if(!fJetsOnlyInCTS && (particle->GetRefClusters())){
+    
+    Double_t vertex[] = {0,0,0};
+    if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
+    
+    //Loop on jet particles
+    for(Int_t iclus = 0;iclus < (particle->GetRefClusters())->GetEntries() ; iclus ++ ){
+      AliAODCaloCluster * calo = dynamic_cast< AliAODCaloCluster *>((particle->GetRefClusters())->At(iclus)) ;
+      calo->GetMomentum(lv,vertex); 
+      if(lv.Pt() > ptcut && IsParticleInJetCone(lv.Eta(),lv.Phi(), etal, phil)) jet+=lv;   
+    }//jet cluster loop
+    
+     //Loop on background particles
+    for(Int_t iclus = 0;iclus < (particle->GetRefClusters())->GetEntries() ; iclus ++ ){
+      AliAODCaloCluster * calo = dynamic_cast< AliAODCaloCluster *>((particle->GetRefClusters())->At(iclus)) ;
+      calo->GetMomentum(lv,vertex);
+      if( lv.Pt() > ptcut &&IsParticleInJetCone(lv.Eta(),lv.Phi(),etal, phiTrig)) bkg+=lv;
+    }//background cluster loop 
+  }//clusters in jet
+  
+  //If there is any jet found, leave jet and bkg as they are, 
+  //if not set them to 0.
+  if(!IsJetSelected(particle->Pt(), jet.Pt())) {
+    jet.SetPxPyPzE(0.,0.,0.,0.);
+    bkg.SetPxPyPzE(0.,0.,0.,0.);
   }
+  else
+    if(GetDebug()>1) printf("Found jet: Trigger  pt %f, Jet pt %f, Bkg pt %f\n",ptTrig,jet.Pt(),bkg.Pt());
   
 }
-
 
 //____________________________________________________________________________
 Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg){
-   //Select cluster depending on its pid and acceptance selections
-   
-   //Skip matched clusters with tracks
+  //Select cluster depending on its pid and acceptance selections
+  
+  //Skip matched clusters with tracks
   if(calo->GetNTracksMatched() > 0) return kFALSE;
    
    //Check PID
@@ -1225,9 +1454,9 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster
      
      if(GetDebug() > 1) printf("PDG of identified particle %d\n",pdg);
      //If it does not pass pid, skip
-     if(pdg != AliCaloPID::kPhoton || pdg != AliCaloPID::kPi0) {
+     if(pdg != AliCaloPID::kPhoton || pdg != AliCaloPID::kPi0) 
        return kFALSE ;
-   }
+   }//CaloPID
    
    //Check acceptance selection
    if(IsFidutialCutOn()){
@@ -1237,6 +1466,44 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster
    
    if(GetDebug() > 1) printf("cluster selection cuts passed: pT %3.2f, pdg %d\n",mom.Pt(), pdg);
    
-   return kTRUE;
+   return kTRUE; 
    
- }
+}
+
+//__________________________________________________________________
+void AliAnaParticleJetLeadingConeCorrelation::Print(const Option_t * opt) const
+{
+
+  //Print some relevant parameters set for the analysis
+  if(! opt)
+    return;
+  
+  Info("Print", "%s %s", GetName(), GetTitle() ) ;
+  
+  if(fJetsOnlyInCTS)printf("Jets reconstructed in CTS \n");
+  else printf("Jets reconstructed in CTS+EMCAL \n");
+
+  if(fPbPb) printf("PbPb events, pT cut in jet cone energy reconstruction %2.1f \n", fJetPtThreshold);
+  else printf("pp events, pT cut in jet cone energy reconstruction %2.1f \n", fJetPtThresPbPb);
+
+  printf("If pT of trigger < %f, select jets as in pp? \n", fPtTriggerSelectionCut);
+
+  printf("Phi gamma-Leading        <     %3.2f\n", fDeltaPhiMaxCut) ; 
+  printf("Phi gamma-Leading        >     %3.2f\n", fDeltaPhiMinCut) ;
+  printf("pT Leading / pT Trigger  <     %3.2f\n", fLeadingRatioMaxCut) ; 
+  printf("pT Leading / pT Trigger  >     %3.2f\n", fLeadingRatioMinCut) ;
+  
+  if(fSelect == 2){
+    printf("pT Jet / pT Gamma                     <    %3.2f\n", fJetRatioMaxCut) ; 
+    printf("pT Jet / pT Gamma                     >    %3.2f\n", fJetRatioMinCut) ;
+    printf("pT Jet (Only CTS)/ pT Trigger   <    %3.2f\n", fJetCTSRatioMaxCut) ; 
+    printf("pT Jet (Only CTS)/ pT Trigger   >    %3.2f\n", fJetCTSRatioMinCut) ;
+  }
+  else if(fSelect == 0)
+    printf("Accept all reconstructed jets \n") ;
+  else   if(fSelect == 1)
+    printf("Accept jets depending on trigger energy \n") ;
+  else 
+    printf("Wrong jet selection option:   %d \n", fSelect) ;
+
+} 
