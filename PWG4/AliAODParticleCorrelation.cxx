@@ -13,16 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:  $ */
+/* $Id:   AliAODParticleCorrelation.h $ */
 
 //-------------------------------------------------------------------------
 //     AOD class for photon and other particles storage and 
 //     correlation studies
-//     Author: Yves Schutz, CERN
+//     Author: Yves Schutz, CERN, Gustavo Conesa, INFN
 //-------------------------------------------------------------------------
 
-#include <TLorentzVector.h>
-#include "AliAODJet.h"
+//-- ROOT system --
+
+//-- Analysis system
 #include "AliAODParticleCorrelation.h"
 
 ClassImp(AliAODParticleCorrelation)
@@ -35,7 +36,7 @@ AliAODParticleCorrelation::AliAODParticleCorrelation() :
     fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
     fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
     fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
-    fLeadingDetector(""), fLeading(0), fCorrJet(0), fRefJet(0)
+    fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0)
 {
   // constructor
 }
@@ -47,7 +48,8 @@ AliAODParticleCorrelation::AliAODParticleCorrelation(Double_t px, Double_t py, D
     fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
     fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
     fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),
-    fLeadingDetector(""),  fLeading(new TLorentzVector), fCorrJet(new TLorentzVector), fRefJet(0)
+    fLeadingDetector(""),  fLeading(), fCorrJet(),
+    fCorrBkg(), fRefJet(0)
 {
   // constructor
     fMomentum = new TLorentzVector(px, py, pz, e);
@@ -60,7 +62,7 @@ AliAODParticleCorrelation::AliAODParticleCorrelation(TLorentzVector & p):
     fRefTracks(new TRefArray()), fRefClusters(new TRefArray()),
     fRefIsolationConeTracks(new TRefArray()), fRefIsolationConeClusters(new TRefArray()),
     fRefBackgroundTracks(new TRefArray()), fRefBackgroundClusters(new TRefArray()),  
-    fLeadingDetector(""),  fLeading(new TLorentzVector), fCorrJet(new TLorentzVector), fRefJet(0)
+    fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0)
 {
   // constructor
     fMomentum = new TLorentzVector(p);
@@ -78,8 +80,7 @@ AliAODParticleCorrelation::~AliAODParticleCorrelation()
     delete fRefIsolationConeClusters;
     delete fRefBackgroundTracks;
     delete fRefBackgroundClusters;
-    delete fLeading;
-    delete fCorrJet;
+
 }
 
 //______________________________________________________________________________
@@ -91,13 +92,11 @@ AliAODParticleCorrelation::AliAODParticleCorrelation(const AliAODParticleCorrela
     fRefTracks(), fRefClusters(),
     fRefIsolationConeTracks(), fRefIsolationConeClusters(),
     fRefBackgroundTracks(), fRefBackgroundClusters(),   
-    fLeadingDetector(part.fLeadingDetector), fLeading(0),  
-    fCorrJet(0), fRefJet(part.fRefJet)
+    fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
+    fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet)
 {
   // Copy constructor
   fMomentum = new TLorentzVector(*part.fMomentum);
-  fLeading = new TLorentzVector(*part.fLeading);
-  fCorrJet = new TLorentzVector(*part.fCorrJet);
   fRefTracks = new TRefArray(*part.fRefTracks);
   fRefClusters = new TRefArray(*part.fRefClusters);
   fRefIsolationConeTracks = new TRefArray(*part.fRefIsolationConeTracks);
@@ -120,10 +119,11 @@ AliAODParticleCorrelation& AliAODParticleCorrelation::operator=(const AliAODPart
   fRefJet = part.fRefJet ;
   fDetector =part.fDetector;
   fLeadingDetector =part.fLeadingDetector;
+  fLeading = part.fLeading;
+  fCorrJet = part.fCorrJet ;
+  fCorrBkg = part.fCorrBkg;
 
   if (fMomentum ) delete fMomentum;
-  if (fLeading ) delete fLeading;
-  if (fCorrJet ) delete fCorrJet;
   if( fRefTracks ) delete fRefTracks ;
   if( fRefClusters) delete fRefClusters ;
   if( fRefIsolationConeTracks ) delete fRefIsolationConeTracks ;
@@ -132,8 +132,6 @@ AliAODParticleCorrelation& AliAODParticleCorrelation::operator=(const AliAODPart
   if( fRefBackgroundClusters ) delete fRefBackgroundClusters ;
 
   fMomentum = new TLorentzVector(*part.fMomentum);
-  fLeading = new TLorentzVector(*part.fLeading);
-  fCorrJet = new TLorentzVector(*part.fCorrJet);
   fRefTracks = new TRefArray(*part.fRefTracks);
   fRefClusters = new TRefArray(*part.fRefClusters);
   fRefIsolationConeTracks = new TRefArray(*part.fRefIsolationConeTracks);
@@ -155,8 +153,8 @@ void AliAODParticleCorrelation::Print(Option_t* /*option*/) const
   printf("pdg : %d\n",fPdg);
   printf("tag : %d\n",fTag);
   printf("R : %2.2f\n",fR);
-  printf("Detector : %s\n",fDetector.Data());
-
+  printf("Trigger Detector : %s\n",fDetector.Data());
+  printf("Leading Detector : %s\n",fLeadingDetector.Data());
   // if(fRefJet) fRefJet.Print();
 
 }
