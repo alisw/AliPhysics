@@ -228,7 +228,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   x[2] = sign*( param->GetZLength(sector) - x[2]);
 }
 
-inline void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x) const {
+void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x) const {
   //
   // transform possition rotated global to the global
   //
@@ -239,7 +239,7 @@ inline void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x) cons
   x[1]=-sin*tmp+cos*x[1];
 }
 
-inline void AliTPCTransform::Global2RotatedGlobal(Int_t sector,Double_t *x) const {
+void AliTPCTransform::Global2RotatedGlobal(Int_t sector,Double_t *x) const {
   //
   // tranform possition Global2RotatedGlobal
   //
@@ -250,7 +250,7 @@ inline void AliTPCTransform::Global2RotatedGlobal(Int_t sector,Double_t *x) cons
   x[1]= sin*tmp+cos*x[1];
 }
 
-inline void AliTPCTransform::GetCosAndSin(Int_t sector,Double_t &cos,
+void AliTPCTransform::GetCosAndSin(Int_t sector,Double_t &cos,
 					  Double_t &sin) const {
   cos=fCoss[sector%18];
   sin=fSins[sector%18];
