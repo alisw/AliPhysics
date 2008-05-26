@@ -52,41 +52,40 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
   //-----------------------------------------------------------------------
  
   AliFlowAnalysisWithLeeYangZeros::AliFlowAnalysisWithLeeYangZeros():
-    fQ(NULL),
-    fQsum(NULL),
-    fQ2sum(0),
-    fQtheta(0),
-    fEventNumber(0),
-    fMult(0),
-    fNbins(0),
-    fTheta(0),
-    fTrack(NULL),
-    fFirstRun(kTRUE),
-    fUseSum(kTRUE),
-    fDoubleLoop(kFALSE),
-    fDebug(kFALSE),
-    fHistFileName(0),
-    fHistFile(0),
-    fSummaryFile(0),
-    firstRunFileName(0),
-    firstRunFile(0),
-    fHistProVtheta(0),
-    fHistProVeta(0),
-    fHistProVPt(0),
-    fHistProR0theta(0),
-    fHistProReDenom(0),
-    fHistProImDenom(0),
-    fHistProReDtheta(0),
-    fHistProImDtheta(0),
-    fCommonHists(0),
-    fCommonHistsRes(0)
+  fQ(NULL),
+  fQsum(NULL),
+  fQ2sum(0),
+  fQtheta(0),
+  fEventNumber(0),
+  fMult(0),
+  fTheta(0),
+  fTrack(NULL),
+  fFirstRun(kTRUE),
+  fUseSum(kTRUE),
+  fDoubleLoop(kFALSE),
+  fDebug(kFALSE),
+  fHistFileName(0),
+  fHistFile(0),
+  fSummaryFile(0),
+  firstRunFileName(0),
+  firstRunFile(NULL),
+  fHistProVtheta(NULL),
+  fHistProVeta(NULL),
+  fHistProVPt(NULL),
+  fHistProR0theta(NULL),
+  fHistProReDenom(NULL),
+  fHistProImDenom(NULL),
+  fHistProReDtheta(NULL),
+  fHistProImDtheta(NULL),
+  fCommonHists(NULL),
+  fCommonHistsRes(NULL)
   
 {
   //default constructor
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::AliFlowAnalysisWithLeeYangZeros default constructor****"<<endl;
 
   // output file (histograms)
-  TString fHistFileName = "outputFromLYZAnalysis.root" ;
+  fHistFileName = "outputFromLYZAnalysis.root" ;
 
   for(Int_t i = 0;i<5;i++)
     {
@@ -297,15 +296,15 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     Double_t fRelErr2comb = 0.;
     Int_t nEvts = fEventNumber;
     for (Int_t theta=0;theta<fNtheta;theta++){
-      Double_t fTheta = ((double)theta/fNtheta)*TMath::Pi(); 
+      Double_t anTheta = ((double)theta/fNtheta)*TMath::Pi(); 
       Double_t fApluscomb = TMath::Exp((fJ01*fJ01)/(2*fChi*fChi)*
-				       TMath::Cos(fTheta));
+				       TMath::Cos(anTheta));
       Double_t fAmincomb = TMath::Exp(-(fJ01*fJ01)/(2*fChi*fChi)*
-				      TMath::Cos(fTheta));
+				      TMath::Cos(anTheta));
       fRelErr2comb += (1/(2*nEvts*(fJ01*fJ01)*TMath::BesselJ1(fJ01)*
 			  TMath::BesselJ1(fJ01)))*
-	(fApluscomb*TMath::BesselJ0(2*fJ01*TMath::Sin(fTheta/2)) + 
-	 fAmincomb*TMath::BesselJ0(2*fJ01*TMath::Cos(fTheta/2)));
+	(fApluscomb*TMath::BesselJ0(2*fJ01*TMath::Sin(anTheta/2)) + 
+	 fAmincomb*TMath::BesselJ0(2*fJ01*TMath::Cos(anTheta/2)));
     }
     fRelErr2comb /= fNtheta;
     Double_t fRelErrcomb = TMath::Sqrt(fRelErr2comb);
@@ -407,7 +406,8 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       } //loop over bins be
 	 
       //v as a function of Pt
-      Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+      //      Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+      // Rai: already defined
       for (Int_t bp=1;bp<=fNbinsPt;bp++)  {
 	fPt = fHist2[theta]->GetBinCenterPt(bp);
 	fNumer = fHist2[theta]->GetfNumerPt(bp);
@@ -459,15 +459,15 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       //calculate error
       if (fNprime!=0.) { 
 	for (Int_t theta=0;theta<fNtheta;theta++) {
-	  Double_t fTheta = ((double)theta/fNtheta)*TMath::Pi(); 
+	  Double_t anTheta = ((double)theta/fNtheta)*TMath::Pi(); 
 	  Double_t fApluscomb = TMath::Exp((fJ01*fJ01)/(2*fChi*fChi)*
-					   TMath::Cos(fTheta));
+					   TMath::Cos(anTheta));
 	  Double_t fAmincomb = TMath::Exp(-(fJ01*fJ01)/(2*fChi*fChi)*
-					  TMath::Cos(fTheta));
-	  fErr2difcomb += (TMath::Cos(fTheta)/(4*fNprime*TMath::BesselJ1(fJ01)*
+					  TMath::Cos(anTheta));
+	  fErr2difcomb += (TMath::Cos(anTheta)/(4*fNprime*TMath::BesselJ1(fJ01)*
 						 TMath::BesselJ1(fJ01)))*
-	    ((fApluscomb*TMath::BesselJ0(2*fJ01*TMath::Sin(fTheta/2))) - 
-	     (fAmincomb*TMath::BesselJ0(2*fJ01*TMath::Cos(fTheta/2))));
+	    ((fApluscomb*TMath::BesselJ0(2*fJ01*TMath::Sin(anTheta/2))) - 
+	     (fAmincomb*TMath::BesselJ0(2*fJ01*TMath::Cos(anTheta/2))));
 	} //loop over theta
       } 
       
@@ -679,23 +679,23 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
   
 }
  //-----------------------------------------------------------------------   
- Double_t AliFlowAnalysisWithLeeYangZeros::GetQtheta(AliFlowVector myQ, Double_t fTheta) 
+ Double_t AliFlowAnalysisWithLeeYangZeros::GetQtheta(AliFlowVector myQ, Double_t myTheta) 
 {
   //calculate Qtheta. Qtheta is the sum over all particles of cos(fOrder*(fPhi-fTheta)) BP eq. 3
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::GetQtheta()****"<<endl;
 
-  Double_t fQtheta = 0.;
+  Double_t aQtheta = 0.;
   Double_t fOrder = 2.;
   
-  fQtheta = myQ.X()*cos(fOrder*fTheta)+myQ.Y()*sin(fOrder*fTheta);
+  aQtheta = myQ.X()*cos(fOrder*myTheta)+myQ.Y()*sin(fOrder*myTheta);
 
-  return fQtheta;
+  return aQtheta;
  
 }
  
 
 //-----------------------------------------------------------------------   
-TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* anEvent, Double_t fR, Double_t fTheta) 
+TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* anEvent, Double_t fR, Double_t myTheta) 
 {
   // Product Generating Function for LeeYangZeros method
   // PG Eq. 3 (J. Phys. G Nucl. Part. Phys 30 S1213 (2004))
@@ -715,7 +715,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* anEvent
       if (fTrack){
 	if (fTrack->UseForIntegratedFlow()) {
 	  Double_t fPhi = fTrack->Phi();
-	  Double_t fGIm = fR * fWgt*cos(fOrder*(fPhi - fTheta));
+	  Double_t fGIm = fR * fWgt*cos(fOrder*(fPhi - myTheta));
 	  TComplex fGi(1., fGIm);
 	  fG *= fGi;     //product over all tracks
 	}
@@ -746,7 +746,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* anEven
   Int_t fNumberOfTracks = anEvent->NumberOfTracks();
   
   Int_t fNtheta = AliFlowLYZConstants::kTheta;
-  Double_t fTheta = ((double)theta/fNtheta)*TMath::Pi()/fOrder;
+  Double_t anTheta = ((double)theta/fNtheta)*TMath::Pi()/fOrder;
   
   for (Int_t i=0;i<fNumberOfTracks;i++) //loop over tracks in event
     {
@@ -754,7 +754,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* anEven
       if (fTrack){
 	if (fTrack->UseForDifferentialFlow()) {
 	  Double_t fPhi = fTrack->Phi();
-	  Double_t fCosTerm = fWgt*cos(fOrder*(fPhi - fTheta));
+	  Double_t fCosTerm = fWgt*cos(fOrder*(fPhi - anTheta));
 	  //GetGr0theta
 	  Double_t fGIm = fR0 * fCosTerm;
 	  TComplex fGi(1., fGIm);
@@ -776,7 +776,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* anEven
 	  Double_t fEta = fTrack->Eta();
 	  Double_t fPt = fTrack->Pt();
 	  Double_t fPhi = fTrack->Phi();
-	  Double_t fCosTerm = cos(fOrder*(fPhi-fTheta));
+	  Double_t fCosTerm = cos(fOrder*(fPhi-anTheta));
 	  TComplex fCosTermComplex(1.,fR0*fCosTerm);
 	  TComplex fNumer = fG*fCosTerm/fCosTermComplex;  //PG Eq. 9
 	  fHist2[theta]->Fill(fEta,fPt,fNumer);

@@ -43,7 +43,7 @@ class AliFlowAnalysisWithLeeYangZeros {
    Bool_t    Make(AliFlowEventSimple* anEvent);    //calculates variables and fills histograms
    Bool_t    Finish();                           //saves histograms
 
-   Double_t  GetQtheta(AliFlowVector myQ, Double_t fTheta);
+   Double_t  GetQtheta(AliFlowVector myQ, Double_t myTheta);
 
    void      SetFirstRun(Bool_t kt)              { this->fFirstRun = kt ; }
    Bool_t    GetFirstRun() const                 { return this->fFirstRun ; }
@@ -74,7 +74,7 @@ class AliFlowAnalysisWithLeeYangZeros {
    Bool_t   FillFromFlowEvent(AliFlowEventSimple* anEvent);
    Bool_t   SecondFillFromFlowEvent(AliFlowEventSimple* anEvent);
 
-   TComplex GetGrtheta(AliFlowEventSimple* anEvent, Double_t fR, Double_t fTheta);
+   TComplex GetGrtheta(AliFlowEventSimple* anEvent, Double_t fR, Double_t myTheta);
    TComplex GetDiffFlow(AliFlowEventSimple* anEvent, Double_t fR, Int_t theta); 
    Double_t  GetR0(TH1D* fHistGtheta);
 
@@ -92,7 +92,6 @@ class AliFlowAnalysisWithLeeYangZeros {
 
    Int_t     fEventNumber;  // event counter
    Int_t     fMult;         // multiplicity
-   Int_t     fNbins;        // number of bins
    Double_t  fTheta;        // ref. angle theta
    
    AliFlowTrackSimple*   fTrack ;      //!
