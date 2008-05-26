@@ -21,8 +21,14 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
   AliCDBManager* cdb = AliCDBManager::Instance();
   // we set the default storage to the repository because some dets require
   // already at the time of geometry creation to find calibration objects in the cdb
+  AliCDBStorage* storage = 0;
   if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBStorage* storage = cdb->GetStorage(cdbUri);
+  storage = cdb->GetStorage(cdbUri);
+  if(!storage) 
+  {
+    Printf("unable to create valid storage from: %s", cdbUri);
+    return;
+  }
   cdb->SetRun(0);
   AliCDBId id("GRP/Geometry/Data",0,AliCDBRunRange::Infinity());
   AliCDBMetaData *md= new AliCDBMetaData();
