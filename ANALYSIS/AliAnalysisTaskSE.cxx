@@ -27,8 +27,10 @@
 #include "AliESDEvent.h"
 #include "AliESD.h"
 #include "AliAODEvent.h"
+#include "AliAODHeader.h"
 #include "AliVEvent.h"
 #include "AliAODHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
@@ -39,6 +41,8 @@
 ClassImp(AliAnalysisTaskSE)
 
 ////////////////////////////////////////////////////////////////////////
+Bool_t        AliAnalysisTaskSE::fgHeaderCopied = kFALSE;
+AliAODHeader* AliAnalysisTaskSE::fgAODHeader    = NULL;
 
 AliAnalysisTaskSE::AliAnalysisTaskSE():
     AliAnalysisTask(),
@@ -145,6 +149,16 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     if (handler) {
 	fOutputAOD   = handler->GetAOD();
 	fTreeA = handler->GetTree();
+	fTreeA->Print();
+	
+	// Check if AOD Header replication has been required
+	if (!(handler->IsStandard())            && 
+	    (handler->NeedsHeaderReplication()) &&
+	    !(fgAODHeader))
+	{
+	    fgAODHeader = new AliAODHeader;
+	    handler->AddBranch("AliAODHeader", &fgAODHeader);
+	}
     } else {
 	AliWarning("No AOD Event Handler connected.") ; 
     }
@@ -162,7 +176,23 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
        fEntry = fMCEvent->Header()->GetEvent(); 
     if ( !((Entry()-1)%100) && fDebug > 0) 
          AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
-         
+
+    AliAODHandler* handler = (AliAODHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+
+    if (!(handler->IsStandard())            && 
+	(handler->NeedsHeaderReplication()) &&
+	(fgAODHeader))
+    {
+	// Header should be replicated
+	AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
+	if (aodH) {
+	    // Input is AOD
+	    fgAODHeader =  dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
+	    fgHeaderCopied = kTRUE;
+	}
+    }
+
 // Call the user analysis    
     UserExec(option);
     PostData(0, fTreeA);

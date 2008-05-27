@@ -9,6 +9,7 @@
 #include "AliAnalysisTask.h"
 class AliVEvent;
 class AliAODEvent;
+class AliAODHeader;
 class AliMCEvent;
 class AliInputEventHandler;
 class TTree;
@@ -50,6 +51,8 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     AliAODEvent*          fOutputAOD;       //! AOD out 
     AliMCEvent*           fMCEvent;         //! MC
     TTree*                fTreeA;           //  AOD output Tree
+    static Bool_t         fgHeaderCopied;   //  Flag to signal replicated AOD header
+    static AliAODHeader*  fgAODHeader;      //! Header for replication
     ClassDef(AliAnalysisTaskSE, 1); // Analysis task for standard jet analysis
 };
  
