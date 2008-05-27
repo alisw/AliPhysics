@@ -258,6 +258,8 @@ protected:
     
   virtual TCollection* Children() const;
 
+  mutable TH1* fHistogram; //!< histogram
+  
 private:
   
     void FlatList(TList& list);
@@ -290,9 +292,6 @@ private:
   Int_t fLineWidth; ///< our outline width
   Int_t fID[2]; ///< our ids
   Bool_t fIsValid; ///< whether we were properly initialized
-  
-protected:
-  mutable TH1* fHistogram; //!< histogram
   
   ClassDef(AliMUONVPainter,3) // Base class of a graphical object for MUON spectrometer
 };

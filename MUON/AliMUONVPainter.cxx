@@ -96,6 +96,7 @@ ClassImp(AliMUONVPainter)
 AliMUONVPainter::AliMUONVPainter(const char* type)
 : TObject(), 
   TQObject(),
+  fHistogram(0x0),
   fName(""),
   fPathName(""),
   fType(type),
@@ -111,8 +112,7 @@ AliMUONVPainter::AliMUONVPainter(const char* type)
   fAttributes(),
   fLineColor(1),
   fLineWidth(1),
-  fIsValid(kTRUE),
-  fHistogram(0x0)
+  fIsValid(kTRUE)
 {
     /// ctor
     SetID(-1,-1);
@@ -122,6 +122,7 @@ AliMUONVPainter::AliMUONVPainter(const char* type)
 AliMUONVPainter::AliMUONVPainter(const AliMUONVPainter& rhs)
 : TObject(rhs),
 TQObject(),
+fHistogram(0x0),
 fName(""),
 fPathName(""),
 fType(""),
@@ -137,8 +138,7 @@ fPad(0x0),
 fAttributes(),
 fLineColor(-1),
 fLineWidth(-1),
-fIsValid(kTRUE),
-fHistogram(0x0)
+fIsValid(kTRUE)
 {
   /// copy ctor
   rhs.Copy(*this);

@@ -465,7 +465,7 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 /// Return digitizer
   
   AliMUONDigitizerV3* digitizer = new AliMUONDigitizerV3(manager, fDigitizerWithNoise);
-  digitizer->setCalibrationData(fCalibrationData);
+  digitizer->SetCalibrationData(fCalibrationData);
   return digitizer;
 }
 

@@ -28,10 +28,9 @@ class TString;
 
 class AliMpExMap : public TObject
 {
+  friend class AliMpExMapIterator;
+  
   public:
-  
-    friend class AliMpExMapIterator;
-  
     AliMpExMap();
     AliMpExMap(TRootIOCtor* /*ioCtor*/);
     AliMpExMap(const AliMpExMap& rhs);

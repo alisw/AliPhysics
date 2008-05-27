@@ -357,7 +357,7 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   
   // maximum distance between the center of the chamber and a detection element
   // (accounting for the inclination of the chamber)
-  static const Double_t gkMaxDZ = 15.; // 15 cm
+  static const Double_t kMaxDZ = 15.; // 15 cm
   
   // extrapolate track parameters to the chamber
   AliMUONTrackParam extrapTrackParam(trackParam);
@@ -365,12 +365,12 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   
   // build the searching area using the track resolution and the maximum-distance-to-track value
   const TMatrixD& kParamCov = extrapTrackParam.GetCovariances();
-  Double_t errX2 = kParamCov(0,0) + gkMaxDZ * gkMaxDZ * kParamCov(1,1) + 2. * gkMaxDZ * TMath::Abs(kParamCov(0,1));
-  Double_t errY2 = kParamCov(2,2) + gkMaxDZ * gkMaxDZ * kParamCov(3,3) + 2. * gkMaxDZ * TMath::Abs(kParamCov(2,3));
-  Double_t dX = TMath::Abs(trackParam.GetNonBendingSlope()) * gkMaxDZ +
+  Double_t errX2 = kParamCov(0,0) + kMaxDZ * kMaxDZ * kParamCov(1,1) + 2. * kMaxDZ * TMath::Abs(kParamCov(0,1));
+  Double_t errY2 = kParamCov(2,2) + kMaxDZ * kMaxDZ * kParamCov(3,3) + 2. * kMaxDZ * TMath::Abs(kParamCov(2,3));
+  Double_t dX = TMath::Abs(trackParam.GetNonBendingSlope()) * kMaxDZ +
 		AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack() +
 		AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errX2);
-  Double_t dY = TMath::Abs(trackParam.GetBendingSlope()) * gkMaxDZ +
+  Double_t dY = TMath::Abs(trackParam.GetBendingSlope()) * kMaxDZ +
 		AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack() +
 		AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errY2);
   TVector2 dimensions(dX, dY);

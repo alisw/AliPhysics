@@ -369,9 +369,9 @@ AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
   ///
   /// Return all the manuIds (=MotifPositionIDs) of this slat
   ///
-  Int_t N(GetNofElectronicCards());
-  assert(N>0);
-  ecn.Set(N);
+  Int_t nofElectronicCards(GetNofElectronicCards());
+  assert(nofElectronicCards>0);
+  ecn.Set(nofElectronicCards);
 //#ifdef WITH_ROOT
   TIter next(fManuMap.CreateIterator());
   AliMpMotifPosition* mp;
@@ -381,7 +381,7 @@ AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
     ecn.AddAt(mp->GetID(),n);
     ++n;
   }
-  assert(n==N);
+  assert(n==nofElectronicCards);
 //#else
   // missing here
 //#endif      

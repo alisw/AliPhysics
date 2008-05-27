@@ -15,6 +15,13 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
+// Class AliMpExMapIterator
+// ------------------------
+// Implementation of TIterator for AliMpExMap
+// Author: Laurent Aphecetche
+//-----------------------------------------------------------------------------
+
 #include "AliMpExMapIterator.h"
 
 #include "AliLog.h"

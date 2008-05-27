@@ -47,7 +47,7 @@ public:
                                        Bool_t noiseOnly=kFALSE);
   
          /// Set calibration data
-  void setCalibrationData(AliMUONCalibrationData* calibrationData) 
+  void SetCalibrationData(AliMUONCalibrationData* calibrationData) 
                           {fCalibrationData = calibrationData;}
   
 private:
