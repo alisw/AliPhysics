@@ -20,7 +20,7 @@
 /// This class provides ITS SSD data handling
 /// used by DA. 
 //  Author: Oleksandr Borysov
-//  Date: 20/04/2008
+//  Date: 19/05/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h> 
@@ -49,6 +49,7 @@ using namespace std;
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModules = 1698;       // Number of SSD modules in ITS
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerDdl = 108;  // Number of SSD modules in DDL
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerSlot = 12;  // Number of SSD modules in Slot
+const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDDDLs = 16;            // Number of SSD modules in Slot
 const Float_t  AliITSHandleDaSSD::fgkPedestalThresholdFactor = 3.0;   // Defalt value for fPedestalThresholdFactor 
 const Float_t  AliITSHandleDaSSD::fgkCmThresholdFactor = 3.0;         // Defalt value for fCmThresholdFactor
 
@@ -61,6 +62,8 @@ AliITSHandleDaSSD::AliITSHandleDaSSD() :
   fModIndRead(0),
   fModIndex(NULL),
   fNumberOfEvents(0),
+  fStaticBadChannelsMap(NULL),
+  fDDLModuleMap(NULL),
   fLdcId(0),
   fRunId(0),
   fPedestalThresholdFactor(fgkPedestalThresholdFactor),
@@ -79,6 +82,8 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(Char_t *rdfname) :
   fModIndRead(0),
   fModIndex(NULL),
   fNumberOfEvents(0),
+  fStaticBadChannelsMap(NULL),
+  fDDLModuleMap(NULL),
   fLdcId(0),
   fRunId(0),
   fPedestalThresholdFactor(fgkPedestalThresholdFactor) ,
@@ -98,6 +103,8 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   fModIndRead(ssdadldc.fModIndRead),
   fModIndex(NULL),
   fNumberOfEvents(ssdadldc.fNumberOfEvents),
+  fStaticBadChannelsMap(ssdadldc.fStaticBadChannelsMap),
+  fDDLModuleMap(ssdadldc.fDDLModuleMap),
   fLdcId(ssdadldc.fLdcId),
   fRunId(ssdadldc.fRunId),
   fPedestalThresholdFactor(ssdadldc.fPedestalThresholdFactor),
@@ -177,6 +184,8 @@ AliITSHandleDaSSD::~AliITSHandleDaSSD()
     delete [] fModules;
   }
   if (fModIndex) delete [] fModIndex;
+  if (fStaticBadChannelsMap) { fStaticBadChannelsMap->Delete(); delete fStaticBadChannelsMap; }
+  if (fDDLModuleMap) delete [] fDDLModuleMap;
 }
 
 
@@ -191,6 +200,14 @@ void AliITSHandleDaSSD::Reset()
     fModules = NULL;
   }
   if (fModIndex) { delete [] fModIndex; fModIndex = NULL; }
+/*
+  if (fStaticBadChannelsMap) {
+    fStaticBadChannelsMap->Delete();
+    delete fStaticBadChannelsMap;
+    fStaticBadChannelsMap = NULL; 
+  }    
+  if (fDDLModuleMap) { delete [] fDDLModuleMap; fDDLModuleMap = NULL; }
+*/
   fRawDataFileName = NULL;
   fModIndProcessed = fModIndRead = 0;
   fNumberOfEvents = 0;
@@ -379,6 +396,77 @@ Bool_t AliITSHandleDaSSD::SetNumberOfModules (const Int_t numberofmodules)
 
 
 //______________________________________________________________________________
+Bool_t AliITSHandleDaSSD::ReadStaticBadChannelsMap(const Char_t *filename)
+{
+// Reads Static Bad Channels Map from the file
+  TFile *bcfile;
+  if (!filename) {
+    AliWarning("No file name is specified for Static Bad Channels Map!");
+    return kFALSE;
+  } 
+  bcfile = new TFile(filename, "READ");
+  if (bcfile->IsZombie()) {
+    AliWarning(Form("Error reading file %s with Static Bad Channels Map!", filename));
+    return kFALSE;
+  }
+  bcfile->GetObject("BadChannels;1", fStaticBadChannelsMap);
+  if (!fStaticBadChannelsMap) {
+    AliWarning("Error fStaticBadChannelsMap == NULL!");
+    bcfile->Close();
+    delete bcfile;
+    return kFALSE;
+  }
+  bcfile->Close();
+  delete bcfile;
+  return kTRUE;
+}
+
+
+
+Bool_t AliITSHandleDaSSD::ReadDDLModuleMap(const Char_t *filename)
+{
+// Reads the SSD DDL Map from the file
+  ifstream             ddlmfile;
+  AliRawReaderDate    *rwr = NULL;
+  AliITSRawStreamSSD  *rsm = NULL;
+  void                *event = NULL;
+  if (fDDLModuleMap) { delete [] fDDLModuleMap; fDDLModuleMap = NULL;}
+  fDDLModuleMap = new (nothrow) Int_t [fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl];
+  if (!fDDLModuleMap) {
+    AliWarning("Error allocation memory for DDL Map!");
+    return kFALSE;
+  }    
+  if (!filename) {
+    AliWarning("No file name is specified for SSD DDL Map, using the one from AliITSRawStreamSSD!");
+    rwr = new AliRawReaderDate(event);
+    rsm = new AliITSRawStreamSSD(rwr);
+    rsm->Setv11HybridDDLMapping();
+    for (Int_t ddli = 0; ddli < fgkNumberOfSSDDDLs; ddli++)
+      for (Int_t mi = 0; mi < fgkNumberOfSSDModulesPerDdl; mi++)
+        fDDLModuleMap[(ddli * fgkNumberOfSSDModulesPerDdl + mi)] = rsm->GetModuleNumber(ddli, mi);
+    if (rsm) delete rsm;
+    if (rwr) delete rwr;	
+    return kTRUE;
+  } 
+  ddlmfile.open(filename, ios::in);
+  if (!ddlmfile.is_open()) {
+    AliWarning(Form("Error reading file %s with SSD DDL Map!", filename));
+    if (fDDLModuleMap) { delete [] fDDLModuleMap; fDDLModuleMap = NULL;}
+    return kFALSE;
+  }
+  Int_t ind = 0;
+  while((!ddlmfile.eof()) && (ind < (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl))) {
+    ddlmfile >> fDDLModuleMap[ind++];
+  }
+  if (ind != (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl))
+    AliWarning(Form("Only %i (< %i) entries were read from DDL Map!", ind, (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl)));
+  ddlmfile.close();
+  return kTRUE;
+}
+
+
+
+//______________________________________________________________________________
 Int_t AliITSHandleDaSSD::ReadCalibrationDataFile (char* fileName, const Long_t eventsnumber)
 {
 // Reads raw data from file
@@ -408,6 +496,7 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
     AliError("AliITSHandleDaSSD: Error ReadModuleRawData: no structure was allocated for data");
     return 0;
   }
+  if (!fDDLModuleMap) if (!ReadDDLModuleMap()) AliWarning("DDL map is not defined, ModuleID will be set to 0!");
   stream = new AliITSRawStreamSSD(rawreaderdate);
   stream->Setv11HybridDDLMapping();
   rawreaderdate->SelectEvents(-1);
@@ -433,14 +522,9 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
       if (((modpos > 0) && (modpos < fModIndRead)) || ((modpos < 0) && (modind == modulesnumber))) continue;
       if ((modpos < 0) && (modind < modulesnumber)) {
         module = new AliITSModuleDaSSD(AliITSModuleDaSSD::GetStripsPerModuleConst());
-        Int_t mddli = ((ad - 1) * fgkNumberOfSSDModulesPerSlot) + (adc < 6 ? adc : (adc - 2));
-        if ((ddlID < AliITSRawStreamSSD::kDDLsNumber) && (mddli < AliITSRawStreamSSD::kModulesPerDDL)) {
-          mddli = stream->GetModuleNumber(ddlID, mddli);
-	}  
-        else {
-          AliWarning(Form("Module index  = %d or ddlID = %d is out of range -1 is rturned", ddlID, mddli));
-          mddli = 0;
-        }
+        Int_t mddli;
+        if (fDDLModuleMap) mddli = RetrieveModuleId(ddlID, ad, adc);
+        else  mddli = 0;
 	if (!module->SetModuleIdData (ddlID, ad, adc, mddli)) return 0;
 //	if (!module->SetModuleIdData (ddlID, ad, adc, RetrieveModuleId(ddlID, ad, adc))) return 0;
         module->SetModuleRorcId (equipid, equiptype);
@@ -745,17 +829,17 @@ Bool_t AliITSHandleDaSSD::ProcessRawData(const Int_t nmread)
 Short_t AliITSHandleDaSSD::RetrieveModuleId(const UChar_t ddlID, const UChar_t ad, const UChar_t adc) const
 {
 // Retrieve ModuleId from the DDL map which is defined in AliITSRawStreamSSD class
-
-  Int_t mddli = (ad - 1) * 12 + ((adc<6) ? adc : (adc-2));
-  if ((ddlID < AliITSRawStreamSSD::kDDLsNumber) && (mddli < AliITSRawStreamSSD::kModulesPerDDL)) {
-    mddli = AliITSRawStreamSSD::GetModuleNumber(ddlID, mddli);
-    if (mddli > SHRT_MAX) return SHRT_MAX;
-    else return (Short_t)mddli;
-  }
+  if (!fDDLModuleMap) return 0;
+  Int_t mddli = ((ad - 1) * fgkNumberOfSSDModulesPerSlot) + (adc < 6 ? adc : (adc - 2));
+  if ((ddlID < fgkNumberOfSSDDDLs) && (mddli < fgkNumberOfSSDModulesPerDdl)) {
+    mddli = fDDLModuleMap[ddlID * fgkNumberOfSSDModulesPerDdl + mddli];
+  }  
   else {
-    AliWarning(Form("Module index  = %d or ddlID = %d is out of range -1 is rturned", ddlID, mddli));
-    return -1;
+    AliWarning(Form("Module index  = %d or ddlID = %d is out of range 0 is rturned", ddlID, mddli));
+    mddli = 0;
   }
+  if (mddli > SHRT_MAX) return SHRT_MAX;
+  else return (Short_t)mddli;
 }
 
 
@@ -827,7 +911,8 @@ Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname) const
   }
   fileRun->WriteTObject(ldcn);
   fileRun->WriteTObject(ldcp);
-  fileRun->WriteTObject(ldcbc);
+  if (fStaticBadChannelsMap) fileRun->WriteTObject(fStaticBadChannelsMap);
+  else fileRun->WriteTObject(ldcbc);
   fileRun->Close();
   ldcn->Delete();
   delete fileRun;
@@ -957,4 +1042,3 @@ Bool_t AliITSHandleDaSSD::AllocateSimulatedModules(const Int_t copymodind)
   for (UShort_t modind = 0; modind < fNumberOfModules; modind++) fModules[modind]->SetModuleId(modind + 1080);  
   return kTRUE;
 }
-

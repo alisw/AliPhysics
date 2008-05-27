@@ -14,7 +14,7 @@
 /// This class provides ITS SSD data handling
 /// used by DA. 
 //  Author: Oleksandr Borysov
-//  Date: 20/04/2008
+//  Date: 19/05/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 class TObjArray;
@@ -46,6 +46,8 @@ class AliITSHandleDaSSD : public TObject {
     void    SetModIndRead (Int_t mr)  {fModIndRead = mr;}
     Bool_t  SetNumberOfModules (const Int_t numberofmodules);
     Bool_t  SetModule(AliITSModuleDaSSD *const module, const Int_t index); 
+    virtual Bool_t  ReadStaticBadChannelsMap(const Char_t *filename = NULL);  
+    virtual Bool_t  ReadDDLModuleMap(const Char_t *filename = NULL);  
     Int_t   ReadCalibrationDataFile (char* fileName, const Long_t eventsnumber);
     Int_t   ReadModuleRawData (const Int_t modulesnumber);  
 
@@ -72,12 +74,14 @@ class AliITSHandleDaSSD : public TObject {
     static Int_t GetNumberOfSSDModulesConst() { return fgkNumberOfSSDModules; }
 
   protected :
+  
     static const Int_t    fgkNumberOfSSDModules ;        // Number of SSD modules in ITS
     static const Int_t    fgkNumberOfSSDModulesPerDdl;   // Number of SSD modules in DDL
     static const Int_t    fgkNumberOfSSDModulesPerSlot;  // Number of SSD modules in Slot
+    static const Int_t    fgkNumberOfSSDDDLs;            // Number of DDLs in SSD
     static const Float_t  fgkPedestalThresholdFactor;    // Defalt value for fPedestalThresholdFactor 
     static const Float_t  fgkCmThresholdFactor;          // Defalt value for fCmThresholdFactor 
-
+    
     Char_t              *fRawDataFileName;       // Name of the file with raw data
     Int_t                fNumberOfModules;       // number of AliITSModuleDaSSD to allocate
     AliITSModuleDaSSD  **fModules;               //[fNumberOfModules] array of pointer on AliITSModuleDaSSD objects (1698 SSD  Modules)
@@ -85,6 +89,9 @@ class AliITSHandleDaSSD : public TObject {
     Int_t                fModIndRead;            //! index of the last module in fModules array with adc data present (read)
     Int_t               *fModIndex;              //! index array for fModules
     Long_t               fNumberOfEvents;        // Number of physics or calibration events in raw data file fRawDataFileName
+
+    TObjArray           *fStaticBadChannelsMap;  // Static bad channels map read from the file
+    Int_t               *fDDLModuleMap;          //! DDL map  
     
     UInt_t               fLdcId;                 //  LDC number, read from header
     UInt_t               fRunId;                 //  Run number, read from header
@@ -95,9 +102,8 @@ class AliITSHandleDaSSD : public TObject {
   private :
     Bool_t   SignalOutOfRange (const Short_t signal) const { return (signal >= AliITSChannelDaSSD::GetOverflowConst()); }
 
-    ClassDef(AliITSHandleDaSSD, 4)
+    ClassDef(AliITSHandleDaSSD, 5)
 
 };
 
 #endif
-
