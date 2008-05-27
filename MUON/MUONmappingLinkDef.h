@@ -1,8 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id $
-// $MpId: basicLinkDefIn.h,v 1.8 2006/01/11 10:09:18 ivana Exp $ 
+// $Id$
 
 /// \file MUONmappingLinkDef.h
 /// \brief The CINT link definitions for \ref mapping 
