@@ -451,9 +451,14 @@ void AliAnalysisManager::PackOutput(TList *target)
          // Special outputs
             TDirectory *opwd = gDirectory;
             TFile *file = output->GetFile();
+            if (fDebug > 1 && file) printf("PackOutput %s: file merge, special output\n", output->GetName());
             if (isManagedByHandler) {
                // Terminate IO for files managed by the output handler
                if (file) file->Write();
+               if (file && fDebug > 2) {
+                  printf("   handled file %s listing content:\n", file->GetName());
+                  file->ls();
+               }   
                fOutputEventHandler->TerminateIO();
                continue;
             }   
@@ -541,8 +546,9 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          // corresponding output container, but it is not obvious how to do this
          // automatically if several objects in file...
          TFile *f = new TFile(filename, "READ");
-         TObject *obj = f->Get(cont->GetName());
-         if (!obj) {
+         TObject *obj = 0;
+         if (!isManagedByHandler) obj = f->Get(cont->GetName());
+         if (!obj && !isManagedByHandler) {
             Error("ImportWrappers", "Could not find object %s in file %s", cont->GetName(), filename);
             continue;
          }
