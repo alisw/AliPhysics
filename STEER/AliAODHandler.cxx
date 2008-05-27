@@ -34,6 +34,7 @@ ClassImp(AliAODHandler)
 AliAODHandler::AliAODHandler() :
     AliVEventHandler(),
     fIsStandard(kTRUE),
+    fNeedsHeaderReplication(kFALSE),
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
@@ -46,6 +47,7 @@ AliAODHandler::AliAODHandler() :
 AliAODHandler::AliAODHandler(const char* name, const char* title):
     AliVEventHandler(name, title),
     fIsStandard(kTRUE),
+    fNeedsHeaderReplication(kFALSE),
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
