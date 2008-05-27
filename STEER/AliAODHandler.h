@@ -24,8 +24,8 @@ class AliAODHandler : public AliVEventHandler {
     AliAODHandler();
     AliAODHandler(const char* name, const char* title);
     virtual ~AliAODHandler();
-    virtual void         SetOutputFileName(const char* fname) {fName = fname;}
-    virtual const char*  GetOutputFileName() {return fName;}
+    virtual void         SetOutputFileName(const char* fname);
+    virtual const char*  GetOutputFileName();
     virtual Bool_t       Init(Option_t* option);
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t /*entry*/)  {return kTRUE;}
@@ -38,7 +38,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetCreateNonStandardAOD() {fIsStandard = kFALSE;}
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
-    TTree*               GetTree() {return fTreeA;}
+    virtual TTree*       GetTree() {return fTreeA;}
     void                 CreateTree(Int_t flag);
     void                 FillTree();
     void                 AddAODtoTreeUserInfo();
@@ -50,12 +50,12 @@ class AliAODHandler : public AliVEventHandler {
     AliAODHandler(const AliAODHandler&);             // Not implemented
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
  private:
-    Bool_t                   fIsStandard; //! Flag for standard aod creation 
+    Bool_t                   fIsStandard; // Flag for standard aod creation 
     AliAODEvent             *fAODEvent;   //! Pointer to the AOD event
     TTree                   *fTreeA;      //! tree for AOD persistency
     TFile                   *fFileA;      //! Output file
-    const char              *fName;       //! Output file name
-    ClassDef(AliAODHandler, 1);
+    TString                  fFileName;   //  Output file name
+    ClassDef(AliAODHandler, 2);
 };
 
 #endif

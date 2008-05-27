@@ -23,6 +23,7 @@
 
 #include <TTree.h>
 #include <TFile.h>
+#include <TString.h>
 
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -36,7 +37,7 @@ AliAODHandler::AliAODHandler() :
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
-    fName("")
+    fFileName("")
 {
   // default constructor
 }
@@ -48,7 +49,7 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
-    fName("")
+    fFileName("")
 {
 }
 
@@ -62,11 +63,10 @@ AliAODHandler::~AliAODHandler()
     delete fFileA;
   }
   delete fTreeA;
-  delete fName;
  // destructor
 }
 
-
+//______________________________________________________________________________
 Bool_t AliAODHandler::Init(Option_t* opt)
 {
   // Initialize IO
@@ -78,14 +78,22 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   }
   //
   // File opening according to execution mode
-  
-  if (!(strcmp(opt, "proof"))) {
+  TString option(opt);
+  option.ToLower();
+  if (option.Contains("proof")) {
     // proof
-    CreateTree(0);
+    if (option.Contains("special")) {
+       // File for tree already opened on slave -> merging via files
+       fFileA = gFile;
+       CreateTree(1);
+    } else {   
+       // Merging in memory
+       CreateTree(0);
+    }   
   } else {
     // local and grid
     TDirectory *owd = gDirectory;
-    fFileA = new TFile(fName, "RECREATE");
+    fFileA = new TFile(fFileName.Data(), "RECREATE");
     CreateTree(1);
     owd->cd();
   }
@@ -101,6 +109,7 @@ Bool_t AliAODHandler::FinishEvent()
     return kTRUE;
 }
 
+//______________________________________________________________________________
 Bool_t AliAODHandler::Terminate()
 {
     // Terminate 
@@ -108,6 +117,7 @@ Bool_t AliAODHandler::Terminate()
     return kTRUE;
 }
 
+//______________________________________________________________________________
 Bool_t AliAODHandler::TerminateIO()
 {
     // Terminate IO
@@ -118,7 +128,7 @@ Bool_t AliAODHandler::TerminateIO()
     return kTRUE;
 }
 
-
+//______________________________________________________________________________
 void AliAODHandler::CreateTree(Int_t flag)
 {
     // Creates the AOD Tree
@@ -127,19 +137,21 @@ void AliAODHandler::CreateTree(Int_t flag)
     if (flag == 0) fTreeA->SetDirectory(0);
 }
 
+//______________________________________________________________________________
 void AliAODHandler::FillTree()
 {
     // Fill the AOD Tree
     fTreeA->Fill();
 }
 
-
+//______________________________________________________________________________
 void AliAODHandler::AddAODtoTreeUserInfo()
 {
     // Add aod event to tree user info
     fTreeA->GetUserInfo()->Add(fAODEvent);
 }
 
+//______________________________________________________________________________
 void AliAODHandler::AddBranch(const char* cname, void* addobj)
 {
     // Add a new branch to the aod 
@@ -152,4 +164,18 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj)
     fTreeA->Branch(obj->GetName(), cname, addobj);
     fAODEvent->AddObject(obj);
     owd->cd();
+}
+
+//______________________________________________________________________________
+void AliAODHandler::SetOutputFileName(const char* fname)
+{
+// Set file name.
+   fFileName = fname;
+}
+
+//______________________________________________________________________________
+const char *AliAODHandler::GetOutputFileName()
+{
+// Get file name.
+   return fFileName.Data();
 }
