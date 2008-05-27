@@ -117,6 +117,20 @@ void AliExternalTrackParam::Reset() {
   for (Int_t i = 0; i < 15; i++) fC[i] = 0;
 }
 
+//_____________________________________________________________________________
+void AliExternalTrackParam::AddCovariance(const Double_t c[15]) {
+  //
+  // Add "something" to the track covarince matrix.
+  // May be needed to account for unknown mis-calibration/mis-alignment
+  //
+    fC[0] +=c[0];
+    fC[1] +=c[1];  fC[2] +=c[2];
+    fC[3] +=c[3];  fC[4] +=c[4];  fC[5] +=c[5];
+    fC[6] +=c[6];  fC[7] +=c[7];  fC[8] +=c[8];  fC[9] +=c[9];
+    fC[10]+=c[10]; fC[11]+=c[11]; fC[12]+=c[12]; fC[13]+=c[13]; fC[14]+=c[14];
+}
+
+
 Double_t AliExternalTrackParam::GetP() const {
   //---------------------------------------------------------------------
   // This function returns the track momentum

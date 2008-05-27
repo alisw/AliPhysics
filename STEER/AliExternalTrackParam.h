@@ -47,6 +47,7 @@ class AliExternalTrackParam: public AliVParticle {
 
   void Reset();
   void ResetCovariance(Double_t s2);
+  void AddCovariance(const Double_t cov[15]);
 
   const Double_t *GetParameter() const {return fP;}
   const Double_t *GetCovariance() const {return fC;}
