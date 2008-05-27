@@ -65,6 +65,8 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
 
   AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
   
+  //MuonRec->SetRunQA(kFALSE);
+  
   MuonRec->Run();
   
   delete MuonRec;
