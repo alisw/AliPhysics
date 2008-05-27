@@ -228,12 +228,25 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // The tree argument is deprecated (on PROOF 0 is passed).
    if (fDebug > 0) printf("->AliAnalysisManager::SlaveBegin()\n");
    static Bool_t isCalled = kFALSE;
+   TDirectory *curdir = gDirectory;
    // Call SlaveBegin only once in case of mixing
    if (isCalled && fMode==kMixingAnalysis) return;
    // Call Init of EventHandler
    if (fOutputEventHandler) {
       if (fMode == kProofAnalysis) {
-         fOutputEventHandler->Init("proof");
+         TIter nextout(fOutputs);
+         AliAnalysisDataContainer *c_aod;
+         while ((c_aod=(AliAnalysisDataContainer*)nextout())) if (!strcmp(c_aod->GetFileName(),"default")) break;
+         if (c_aod && c_aod->IsSpecialOutput()) {
+            // Merging via files
+            if (fDebug > 1) printf("   Initializing special output file %s...\n", fOutputEventHandler->GetOutputFileName());
+            OpenProofFile(fOutputEventHandler->GetOutputFileName(), "RECREATE");
+            c_aod->SetFile(gFile);
+            fOutputEventHandler->Init("proofspecial");
+         } else {
+            // Merging in memory
+            fOutputEventHandler->Init("proof");
+         }   
       } else {
          fOutputEventHandler->Init("local");
       }
@@ -255,12 +268,13 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
          fMCtruthEventHandler->Init("local");
       }
    }
-
+   if (curdir) curdir->cd();
+   
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
    while ((task=(AliAnalysisTask*)next())) {
-      TDirectory *curdir = gDirectory;
+      curdir = gDirectory;
       task->CreateOutputObjects();
       if (curdir) curdir->cd();
    }
@@ -371,22 +385,24 @@ void AliAnalysisManager::PackOutput(TList *target)
    if (fMode == kProofAnalysis) {
       TIter next(fOutputs);
       AliAnalysisDataContainer *output;
+      Bool_t isManagedByHandler = kFALSE;
       while ((output=(AliAnalysisDataContainer*)next())) {
          // Do not consider outputs of post event loop tasks
          if (output->GetProducer()->IsPostEventLoop()) continue;
+         const char *filename = output->GetFileName();
+         if (!(strcmp(filename, "default")) && fOutputEventHandler) {
+            isManagedByHandler = kTRUE;
+            filename = fOutputEventHandler->GetOutputFileName();
+         }
          // Check if data was posted to this container. If not, issue an error.
-         if (!output->GetData() ) {
+         if (!output->GetData() && !isManagedByHandler) {
             Error("PackOutput", "No data for output container %s. Forgot to PostData ?\n", output->GetName());
             continue;
          }   
          if (!output->IsSpecialOutput()) {
             // Normal outputs
-            const char *filename = output->GetFileName();
-            if (!(strcmp(filename, "default"))) {
-               if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
-            }      
-            if (strlen(filename)) {
-            // File resident outputs
+            if (strlen(filename) && !isManagedByHandler) {
+               // File resident outputs
                TFile *file = output->GetFile();
                // Backup current folder
                TDirectory *opwd = gDirectory;
@@ -420,17 +436,28 @@ void AliAnalysisManager::PackOutput(TList *target)
                if (opwd) opwd->cd();
             } else {
                // Memory-resident outputs   
-               if (fDebug > 1) printf("PackOutput %s: memory merge memory resident output\n", output->GetName());
+               if (fDebug > 1) printf("PackOutput %s: memory merge memory resident output\n", filename);
             }   
-            AliAnalysisDataWrapper *wrap = output->ExportData();
+            AliAnalysisDataWrapper *wrap = 0;
+            if (isManagedByHandler) {
+               wrap = new AliAnalysisDataWrapper(fOutputEventHandler->GetTree());
+               wrap->SetName(output->GetName());
+            }   
+            else                    wrap =output->ExportData();
             // Output wrappers must delete data after merging (AG 13/11/07)
             wrap->SetDeleteData(kTRUE);
             target->Add(wrap);
-         }   
+         } else {
          // Special outputs
-         if (output->IsSpecialOutput()) {
             TDirectory *opwd = gDirectory;
             TFile *file = output->GetFile();
+            if (isManagedByHandler) {
+               // Terminate IO for files managed by the output handler
+               if (file) file->Write();
+               fOutputEventHandler->TerminateIO();
+               continue;
+            }   
+            
             if (!file) {
                AliAnalysisTask *producer = output->GetProducer();
                Error("PackOutput", 
@@ -488,23 +515,35 @@ void AliAnalysisManager::ImportWrappers(TList *source)
    while ((cont=(AliAnalysisDataContainer*)next())) {
       wrap = 0;
       if (cont->GetProducer()->IsPostEventLoop()) continue;
+      const char *filename = cont->GetFileName();
+      Bool_t isManagedByHandler = kFALSE;
+      if (!(strcmp(filename, "default")) && fOutputEventHandler) {
+         isManagedByHandler = kTRUE;
+         filename = fOutputEventHandler->GetOutputFileName();
+      }
       if (cont->IsSpecialOutput()) {
-         if (strlen(fSpecialOutputLocation.Data())) continue;
+         if (strlen(fSpecialOutputLocation.Data()) && !isManagedByHandler) continue;
          // Copy merged file from PROOF scratch space
+         char full_path[512];
+         TObject *pof =  source->FindObject(filename);
+         if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
+            Error("ImportWrappers", "TProofOutputFile object not found in output list for container %s", cont->GetName());
+            continue;
+         }
+         gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", full_path, pof));
          if (fDebug > 1) 
-            printf("   Copying file %s from PROOF scratch space\n", cont->GetFileName());
-         Bool_t gotit = TFile::Cp(Form("root://lxb6045.cern.ch:11094//pool/scratch/%s",cont->GetFileName()),
-                   cont->GetFileName()); 
+            printf("   Copying file %s from PROOF scratch space\n", full_path);
+         Bool_t gotit = TFile::Cp(full_path, filename); 
          if (!gotit) {
             Error("ImportWrappers", "Could not get file %s from proof scratch space", cont->GetFileName());
          }
          // Normally we should connect data from the copied file to the
          // corresponding output container, but it is not obvious how to do this
          // automatically if several objects in file...
-         TFile *f = new TFile(cont->GetFileName(), "READ");
+         TFile *f = new TFile(filename, "READ");
          TObject *obj = f->Get(cont->GetName());
          if (!obj) {
-            Error("ImportWrappers", "Could not find object %s in file %s", cont->GetName(), cont->GetFileName());
+            Error("ImportWrappers", "Could not find object %s in file %s", cont->GetName(), filename);
             continue;
          }
          wrap = new AliAnalysisDataWrapper(obj);
@@ -518,7 +557,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
       icont++;
       if (fDebug > 1) {
          printf("   Importing data for container %s", cont->GetName());
-         if (strlen(cont->GetFileName())) printf("    -> file %s\n", cont->GetFileName());
+         if (strlen(filename)) printf("    -> file %s\n", cont->GetFileName());
          else printf("\n");
       }   
       cont->ImportData(wrap);
@@ -877,11 +916,10 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    TString anaType = type;
    anaType.ToLower();
    fMode = kLocalAnalysis;
-   if (tree) {
-      if (anaType.Contains("proof"))     fMode = kProofAnalysis;
-      else if (anaType.Contains("grid")) fMode = kGridAnalysis;
-      else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
-   }
+   if (anaType.Contains("proof"))     fMode = kProofAnalysis;
+   else if (anaType.Contains("grid")) fMode = kGridAnalysis;
+   else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
+
    if (fMode == kGridAnalysis) {
       Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
       fMode = kLocalAnalysis;
@@ -893,7 +931,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
 
    TChain *chain = 0;
    TString ttype = "TTree";
-   if (tree->IsA() == TChain::Class()) {
+   if (tree && tree->IsA() == TChain::Class()) {
       chain = (TChain*)tree;
       if (!chain || !chain->GetListOfFiles()->First()) {
          Error("StartAnalysis", "Cannot process null or empty chain...");
