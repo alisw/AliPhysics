@@ -55,9 +55,11 @@ int AliHLTMUONProcessor::FetchMappingStores(
 	/// \note AliMpDDLStore::Instance() and AliMpDEStore::Instance() must be used
 	///      to fetch the objects after this method returns a code equal to zero.
 	
+	Bool_t warn = kFALSE;
+	
 	// Check if the objects are already loaded. If they are then exit early,
 	// otherwise we need to try load the objects.
-	if (AliMpDDLStore::Instance() != NULL and AliMpDEStore::Instance() != NULL)
+	if (AliMpDDLStore::Instance(warn) != NULL and AliMpDEStore::Instance(warn) != NULL)
 		return 0;
 	
 	const char* defaultPath = "local://$ALICE_ROOT";
@@ -106,7 +108,6 @@ int AliHLTMUONProcessor::FetchMappingStores(
 	Int_t runUsed = cdbManager->GetRun();
 	
 	// Now we can try load the DDL and DE store objects.
-	Bool_t warn = kFALSE;
 	if (not AliMpCDB::LoadDDLStore(warn))
 	{
 		HLTError("Failed to load DDL or detector element store specified"
@@ -116,7 +117,7 @@ int AliHLTMUONProcessor::FetchMappingStores(
 		return -ENOENT;
 	}
 	
-	if (AliMpDDLStore::Instance() == NULL or AliMpDEStore::Instance() == NULL)
+	if (AliMpDDLStore::Instance(warn) == NULL or AliMpDEStore::Instance(warn) == NULL)
 	{
 		HLTError("Could not find or load the DDL or detector element store instance.");
 		return -EIO;
