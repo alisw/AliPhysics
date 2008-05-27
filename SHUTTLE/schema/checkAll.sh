@@ -11,5 +11,10 @@ for I in $DETS
 do
         echo $I
 	aliroot -b -q TestDPs.C\(\"$I\",1210083077,1210083078\) > $I.out 2>&1
+	echo -n "OK: "
+	grep Retrieved $I.out | wc -l
+	echo -n "Failed: "
+	grep Cannot $I.out | wc -l
+	echo
 done
 
