@@ -171,7 +171,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   rawReader->Reset() ; 
 
-  TClonesArray *digitsArr = new TClonesArray("AliEMCALDigit",100);
+  TClonesArray *digitsArr = new TClonesArray("AliEMCALDigit",200);
   Int_t bufsize = 32000;
   digitsTree->Branch("EMCAL", &digitsArr, bufsize);
 
