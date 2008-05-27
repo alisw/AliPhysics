@@ -46,14 +46,14 @@ ClassImp(AliAnalysisTaskLYZEventPlane)
 //________________________________________________________________________
 AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) : 
   AliAnalysisTask(name, ""), 
-  fESD(0), 
-  fAOD(0),
+  fESD(NULL), 
+  fAOD(NULL),
   fAnalysisType("ESD"), 
-  fLyzEp(0),
-  fLyz(0),
-  fEventMaker(0),
-  fFirstRunFile(0),
-  fSecondRunFile(0)
+  fLyzEp(NULL),
+  fLyz(NULL),
+  fEventMaker(NULL),
+  fFirstRunFile(NULL),
+  fSecondRunFile(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name)"<<endl;
