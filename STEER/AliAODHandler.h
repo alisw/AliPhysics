@@ -38,7 +38,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetCreateNonStandardAOD() {fIsStandard = kFALSE;}
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
-    virtual TTree*       GetTree() {return fTreeA;}
+    virtual TTree*       GetTree() const {return fTreeA;}
     void                 CreateTree(Int_t flag);
     void                 FillTree();
     void                 AddAODtoTreeUserInfo();
