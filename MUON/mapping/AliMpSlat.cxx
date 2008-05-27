@@ -18,6 +18,7 @@
 
 #include "AliMpSlat.h"
 
+#include "AliMpExMapIterator.h"
 #include "AliLog.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpPCB.h"
@@ -25,6 +26,8 @@
 #include "Riostream.h"
 
 #include "TArrayI.h"
+
+#include <cassert>
 
 //-----------------------------------------------------------------------------
 /// Representation of a slat cathode (bending or non-bending).
@@ -44,7 +47,7 @@ ClassImp(AliMpSlat)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpSlat::AliMpSlat() 
+AliMpSlat::AliMpSlat(TRootIOCtor* ioCtor) 
 : TObject(), 
   fId(""), 
   fPlaneType(AliMp::kNonBendingPlane),
@@ -52,7 +55,7 @@ AliMpSlat::AliMpSlat()
   fDY(0),
   fNofPadsX(0), 
   fMaxNofPadsY(0),
-  fManuMap(),
+  fManuMap(ioCtor),
   fPCBs(),
   fPosition(),
   fNofPads(0)
@@ -76,7 +79,7 @@ AliMpSlat::AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending)
   fDY(0),
   fNofPadsX(0), 
   fMaxNofPadsY(0),
-  fManuMap(kTRUE),
+  fManuMap(),
   fPCBs(),
   fPosition(),
   fNofPads(0)
@@ -101,7 +104,7 @@ AliMpSlat::~AliMpSlat()
 #ifdef WITH_ROOT    
   fPCBs.Delete();
 #else
-  for ( size_t i = 0; i < fPCBs.size(); ++i )
+  for ( UInt_t i = 0; i < fPCBs.size(); ++i )
   {
     delete fPCBs[i];
   }
@@ -138,7 +141,8 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
   fDX += pcb->DX();
   fNofPadsX += pcb->GetNofPadsX();
   fMaxNofPadsY = TMath::Max(fMaxNofPadsY,pcb->GetNofPadsY());
-  for ( AliMpPCB::Size_t i = 0; i < pcb->GetSize(); ++i )
+  Int_t n(0);
+  for ( Int_t i = 0; i < pcb->GetSize(); ++i )
 	{
 		AliMpMotifPosition* mp = pcb->GetMotifPosition(i);
 		Int_t manuID = mp->GetID();
@@ -147,6 +151,8 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
     TObject* there = fManuMap.GetValue(manuID);
     if ( there == 0 )
     {
+      ++n;
+      AliDebug(1,Form("Adding %d-th manuId=%d (%d) to ManuMap (size=%d)",n,manuID,mp->GetID(),fManuMap.GetSize()));
       fManuMap.Add(manuID,(TObject*)mp);
     }
     else
@@ -257,7 +263,7 @@ AliMpSlat::FindPCB(Int_t ix) const
   ///
   /// Returns the PCB containing x-integer-position ix
   ///
-  for ( Size_t i = 0; i < GetSize(); ++i ) 
+  for ( Int_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
 		if ( ix >= pcb->Ixmin() && ix <= pcb->Ixmax() )
@@ -275,7 +281,7 @@ AliMpSlat::FindPCBIndex(Int_t ix) const
   ///
   /// Returns the index of the PCB containing x-integer-position ix.
   ///
-  for ( Size_t i = 0; i < GetSize(); ++i ) 
+  for ( Int_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
 		if ( ix >= pcb->Ixmin() && ix <= pcb->Ixmax() )
@@ -293,7 +299,7 @@ AliMpSlat::FindPCB(Double_t x, Double_t y) const
   ///
   /// Returns the PCB containing position (x,y)
   ///
-  for ( Size_t i = 0; i < GetSize(); ++i ) 
+  for ( Int_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
 //		if ( x >= pcb->Xmin() && x < pcb->Xmax() &&
@@ -318,7 +324,7 @@ AliMpSlat::FindPCBIndex(Double_t x, Double_t y) const
   ///
   /// Returns the index of the PCB containing position (x,y)
   ///
-  for ( Size_t i = 0; i < GetSize(); ++i ) 
+  for ( Int_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
 		if ( x >= pcb->Xmin() && x < pcb->Xmax() &&
@@ -335,7 +341,7 @@ Int_t
 AliMpSlat::FindPCBIndexByMotifPositionID(Int_t manuId) const
 {
   /// Find the index of the PCB containing a given manu
-  for ( Size_t i = 0; i< GetSize(); ++i )
+  for ( Int_t i = 0; i< GetSize(); ++i )
   {
     AliMpPCB* pcb = GetPCB(i);
     if ( pcb->HasMotifPositionID(manuId) ) return i;
@@ -363,17 +369,19 @@ AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
   ///
   /// Return all the manuIds (=MotifPositionIDs) of this slat
   ///
-  ecn.Set(GetNofElectronicCards());
+  Int_t N(GetNofElectronicCards());
+  assert(N>0);
+  ecn.Set(N);
 //#ifdef WITH_ROOT
-  TExMapIter it(fManuMap.GetIterator());
-  Long_t key;
-  Long_t value;
+  TIter next(fManuMap.CreateIterator());
+  AliMpMotifPosition* mp;
   Int_t n(0);
-  while ( it.Next(key,value) == kTRUE )
+  while ( ( mp = static_cast<AliMpMotifPosition*>(next()) ) )
   {
-    ecn.AddAt((Int_t)(key),n);
+    ecn.AddAt(mp->GetID(),n);
     ++n;
   }
+  assert(n==N);
 //#else
   // missing here
 //#endif      
@@ -460,7 +468,7 @@ AliMpSlat::GetNofPadsX() const
 
 //_____________________________________________________________________________
 AliMpPCB*
-AliMpSlat::GetPCB(AliMpSlat::Size_t i) const
+AliMpSlat::GetPCB(Int_t i) const
 {
   ///
   /// Returns the i-th PCB of this slat.
@@ -469,13 +477,13 @@ AliMpSlat::GetPCB(AliMpSlat::Size_t i) const
   if ( i >= fPCBs.GetEntriesFast() ) return 0;
   return (AliMpPCB*)fPCBs[i];
 #else
-  if ( i >= fPCBs.size() ) return 0;
+  if ( i >= Int_t(fPCBs.size()) ) return 0;
   return fPCBs[i];
 #endif  
 }
 
 //_____________________________________________________________________________
-AliMpSlat::Size_t
+Int_t
 AliMpSlat::GetSize() const
 {
   ///
@@ -505,7 +513,7 @@ AliMpSlat::Print(Option_t* option) const
   
   if ( soption.Contains("P") )
 	{
-    for ( Size_t i = 0; i < GetSize() ; ++i )
+    for ( Int_t i = 0; i < GetSize() ; ++i )
 		{
       cout << "    ";
 			if ( option )
@@ -523,12 +531,11 @@ AliMpSlat::Print(Option_t* option) const
   {
     cout << fManuMap.GetSize() << " ";
     cout << "Electronic card (manu or local board) Ids : ";
-    
-    TExMapIter iter(fManuMap.GetIterator());
-    Long_t key, value;
-    while ( iter.Next(key,value) )
+    TIter next(fManuMap.CreateIterator());
+    AliMpMotifPosition* mp;
+    while ( ( mp = static_cast<AliMpMotifPosition*>(next())) )
     {
-      cout << key << " ";
+      cout << mp->GetID() << " ";
     }
     cout << endl;
   }

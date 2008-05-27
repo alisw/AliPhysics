@@ -275,10 +275,9 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
   
   // FILL UP/DOWN OF CURRENT BOARD (DONE VIA J3 BUS IN REAL LIFE)
   AliMUONTriggerCrate* cr;
+  TIter next2(fCrates->CreateCrateIterator());
   
-  fCrates->FirstCrate();
-  
-  while ( ( cr = fCrates->NextCrate() ) )
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(next2()) ) )
   {            
     TObjArray *boards = cr->Boards();
     
@@ -318,10 +317,9 @@ void AliMUONTriggerElectronics::Feed(UShort_t pattern[2][4])
   /// FILL INPUTS
   ///
   AliMUONTriggerCrate* cr;
+  TIter next(fCrates->CreateCrateIterator());
    
-   fCrates->FirstCrate();
-   
-   while ( ( cr = fCrates->NextCrate() ) )
+   while ( ( cr = static_cast<AliMUONTriggerCrate*>(next()) ) )
    {                 
      TObjArray *boards = cr->Boards();
      
@@ -358,10 +356,9 @@ void AliMUONTriggerElectronics::Scan(Option_t *option)
   ///
 
   AliMUONTriggerCrate* cr;
+  TIter next(fCrates->CreateCrateIterator());  
   
-  fCrates->FirstCrate();
-  
-  while ( ( cr = fCrates->NextCrate() ) )
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(next()) ) )
   {                
     TObjArray *boards = cr->Boards();
     
@@ -393,10 +390,8 @@ void AliMUONTriggerElectronics::Reset()
   ///
   
    AliMUONTriggerCrate* cr;
-   
-   fCrates->FirstCrate();
-   
-   while ( ( cr = fCrates->NextCrate() ) )
+  TIter next(fCrates->CreateCrateIterator());
+   while ( ( cr = static_cast<AliMUONTriggerCrate*>(next()) ) )
    {            
       TObjArray *boards = cr->Boards();
             
@@ -423,12 +418,11 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 
   
   AliMUONTriggerCrate* cr;
-  
-  fCrates->FirstCrate();
+  TIter next(fCrates->CreateCrateIterator());
   
   Int_t irb(0);
   
-  while ( ( cr = fCrates->NextCrate() ) )
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(next()) ) )
   {            
     TObjArray *boards = cr->Boards();
     
@@ -483,10 +477,9 @@ void AliMUONTriggerElectronics::LocalResponse()
 /// Compute the response for local cards
 	
   AliMUONTriggerCrate* cr;
+  TIter next(fCrates->CreateCrateIterator());
   
-  fCrates->FirstCrate();
-  
-  while ( ( cr = fCrates->NextCrate() ) )
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(next()) ) )
   {            
     
     TObjArray *boards = cr->Boards();
@@ -532,10 +525,9 @@ void AliMUONTriggerElectronics::RegionalResponse()
 {
   /// Compute the response for all regional cards.
   AliMUONTriggerCrate* cr;
+  TIter next(fCrates->CreateCrateIterator());
   
-  fCrates->FirstCrate();
-  
-  while ( ( cr = fCrates->NextCrate() ) )
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(next()) ) )
   {            
       TObjArray *boards = cr->Boards();
 
@@ -556,8 +548,6 @@ void AliMUONTriggerElectronics::GlobalResponse()
   UShort_t regional[16];
   
   AliMUONTriggerCrate* cr;
-  
-  fCrates->FirstCrate();
   Int_t irb(0);
   
   if ( !fCrates->NumberOfCrates() >= 16 ) 
@@ -565,8 +555,10 @@ void AliMUONTriggerElectronics::GlobalResponse()
     AliFatal(Form("Something is wrong : too many crates %d",
                   fCrates->NumberOfCrates()));
   }
-  
-  while ( ( cr = fCrates->NextCrate() ) )
+
+  TIter next(fCrates->CreateCrateIterator());
+
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(next())))
   {            
     AliMUONTriggerBoard* rb = 
       static_cast<AliMUONTriggerBoard*>(cr->Boards()->At(0));

@@ -3,6 +3,7 @@
 
 SRCS:=  mapping/AliMpIntPair.cxx  \
         mapping/AliMpExMap.cxx  \
+        mapping/AliMpExMapIterator.cxx  \
         mapping/AliMpArrayI.cxx  \
         mapping/AliMpStringObjMap.cxx  \
         AliMUONObjectPair.cxx \
@@ -12,7 +13,6 @@ SRCS:=  mapping/AliMpIntPair.cxx  \
         AliMUON2DMapIteratorByI.cxx \
         AliMUON1DArray.cxx \
         AliMUON1DMap.cxx \
-        AliMUON1DMapIterator.cxx \
         AliMUONCheckItem.cxx \
         AliMUONCheckItemIterator.cxx \
         AliMUONVStore.cxx \

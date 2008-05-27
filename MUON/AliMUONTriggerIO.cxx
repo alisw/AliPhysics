@@ -212,10 +212,10 @@ AliMUONTriggerIO::ReadLocalMasks(const char* localFile, AliMUONVStore& localMask
   UShort_t maskBuffer[8];
   
   Int_t nLocalBoards(0);
-  
+    
   while ( fread ( maskBuffer, 2, 8, fp ) )
   {
-    Int_t localBoardId = LocalBoardId(nLocalBoards);
+    Int_t localBoardId = fRegionalTrigger.LocalBoardId(nLocalBoards);
     AliDebug(1,Form("LB %03d X1 %4x X2 %4x X3 %4x X4 %4x "
                     "Y1 %4x Y2 %4x Y3 %4x Y4 %4x",
                     localBoardId,
@@ -370,7 +370,7 @@ AliMUONTriggerIO::ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut)
   
   for ( Int_t i = 0; i < NofLocalBoards(); ++i ) 
   {
-    ReadLocalLUT(lut,LocalBoardId(i),flut);
+    ReadLocalLUT(lut,fRegionalTrigger.LocalBoardId(i),flut);
   }
   
   fclose(flut);
@@ -467,7 +467,7 @@ AliMUONTriggerIO::WriteLUT(const AliMUONTriggerLut& lut,
   
   for ( Int_t i = 0; i < NofLocalBoards(); ++i ) 
   {
-    WriteLocalLUT(lut,LocalBoardId(i),flut);
+    WriteLocalLUT(lut,fRegionalTrigger.LocalBoardId(i),flut);
   }
   
   fclose(flut);
@@ -595,12 +595,11 @@ AliMUONTriggerIO::WriteRegionalConfig(const char* regionalFile, AliMUONRegionalT
       AliError("Could not write regional no configuration in memory");
       return kFALSE;
     }
-
-      
-   for (Int_t iCrate = 0; iCrate < nCrate; ++iCrate) 
-      {
-      AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(iCrate);
-      
+    
+    TIter next(fRegionalTrigger.CreateCrateIterator());
+    AliMpTriggerCrate* crate;
+    while ( ( crate = static_cast<AliMpTriggerCrate*>(next()) ) )
+    {
       AliMUONTriggerCrateConfig* crateConfig = regionalConfig->FindTriggerCrate(crate->GetName());
       if (!crateConfig) 
       {
@@ -661,10 +660,11 @@ AliMUONTriggerIO::WriteLocalMasks(const char* localFile, AliMUONVStore& localMas
 
     UShort_t maskBuffer[8];
 
-    for (Int_t iCrate = 0; iCrate < regionalConfig->GetNofTriggerCrates(); ++iCrate) 
-    {
-      AliMUONTriggerCrateConfig* crate = regionalConfig->GetTriggerCrateFast(iCrate);
-      
+    TIter next(regionalConfig->CreateCrateIterator());
+    AliMUONTriggerCrateConfig* crate;
+    
+    while ( ( crate = static_cast<AliMUONTriggerCrateConfig*>(next()) ) )
+    {      
       UShort_t mask = crate->GetMask(); // getting mask from current config
 
       for (Int_t iLocal = 0; iLocal < crate->GetNofLocalBoards(); ++iLocal) 
@@ -789,9 +789,5 @@ AliMUONTriggerIO::LocalBoardId(Int_t index) const
 {  
   /// Return the i-th localBoardId, or -1 if index is out of bounds
 
-  AliMpLocalBoard* board = fRegionalTrigger.GetLocalBoard(index);
-  if ( ! board ) return -1;
-  
-  return board->GetId(); 
+  return fRegionalTrigger.LocalBoardId(index);
 }
-

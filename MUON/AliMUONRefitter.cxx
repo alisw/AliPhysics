@@ -101,11 +101,12 @@ AliMUONVTrackStore* AliMUONRefitter::ReconstructFromDigits()
   if (!newTrackStore) return 0x0;
   
   // loop over tracks and refit them (create new tracks)
-  Int_t nTracks = fESDInterface->GetNTracks();
-  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-    AliMUONTrack *track = RetrackFromDigits(iTrack);
-    newTrackStore->Add(track);
-    delete track;
+  AliMUONTrack *track;
+  TIter next(fESDInterface->CreateTrackIterator());
+  while ((track = static_cast<AliMUONTrack*>(next()))) {
+    AliMUONTrack *newTrack = RetrackFromDigits(*track);
+    newTrackStore->Add(newTrack);
+    delete newTrack;
   }
   
   return newTrackStore;
@@ -138,12 +139,9 @@ AliMUONVTrackStore* AliMUONRefitter::ReconstructFromClusters()
 }
 
 //_____________________________________________________________________________
-AliMUONTrack* AliMUONRefitter::RetrackFromDigits(Int_t iTrack)
+AliMUONTrack* AliMUONRefitter::RetrackFromDigits(UInt_t trackId)
 {
-  /// refit track "iTrack" from the digits (i.e. re-clusterized the attached clusters):
-  /// several new clusters may be reconstructed per initial ESD cluster:
-  /// -> all the combinations of clusters are considered to build the new tracks
-  /// -> return the best track (largest number of clusters or best chi2 in case of equality)
+  /// refit track "trackId" from the digits (i.e. re-clusterized the attached clusters)
   /// it is the responsability of the user to delete the returned track
   
   if (!fESDInterface) {
@@ -152,92 +150,15 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(Int_t iTrack)
   }
   
   // get the track to refit
-  AliMUONTrack* track = fESDInterface->GetTrack(iTrack);
-  if (!track) return 0x0;
+  AliMUONTrack* track = fESDInterface->FindTrack(trackId);
   
-  // check if digits exist
-  if (fESDInterface->GetNDigits(iTrack) == 0) {
-    AliError(Form("no digit attached to track #%d",iTrack));
-    return 0x0;
-  }
-  
-  // prepare new track(s)
-  AliMUONVTrackStore* newTrackStore = AliMUONESDInterface::NewTrackStore();
-  if (!newTrackStore) return 0x0;
-  newTrackStore->Add(*track)->Clear("C");
-  
-  // prepare new cluster store
-  AliMUONVClusterStore* newClusterStore = AliMUONESDInterface::NewClusterStore();
-  if (!newClusterStore) {
-    delete newTrackStore;
-    return 0x0;
-  }
-  
-  // loop over clusters, re-clusterize and build new tracks
-  Int_t nClusters = track->GetNClusters();
-  for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-    
-    // reset the new cluster store
-    newClusterStore->Clear();
-    
-    // get the current cluster
-    AliMUONVCluster* cluster = fESDInterface->GetClusterFast(iTrack,iCluster);
-    
-    // re-clusterize current cluster
-    TIter next(fESDInterface->CreateDigitIterator(iTrack, iCluster));
-    fClusterServer->UseDigits(next);
-    Int_t nNewClusters = fClusterServer->Clusterize(cluster->GetChamberId(),*newClusterStore,AliMpArea());
-    
-    // check that re-clusterizing succeeded
-    if (nNewClusters == 0) {
-      AliWarning(Form("refit gave no cluster (chamber %d)",cluster->GetChamberId()));
-      AliInfo("initial ESD cluster:");
-      cluster->Print("FULL");
-      continue;
-    }
-    
-    // add the new cluster(s) to the tracks
-    AddClusterToTracks(*newClusterStore, *newTrackStore);
-    
-  }
-  
-  // refit the tracks and pick up the best one
-  AliMUONTrack *currentTrack, *bestTrack = 0x0;
-  Double_t currentChi2, bestChi2 = 1.e10;
-  Int_t currentNCluster, bestNClusters = 0;
-  TIter next(newTrackStore->CreateIterator());
-  while ((currentTrack = static_cast<AliMUONTrack*>(next()))) {
-    
-    // set the track parameters at first cluster if any (used as seed in original tracking)
-    AliMUONTrackParam* param = (AliMUONTrackParam*) currentTrack->GetTrackParamAtCluster()->First();
-    if (param) *param = *((AliMUONTrackParam*) track->GetTrackParamAtCluster()->First());
-    
-    // refit the track
-    if (!fTracker->RefitTrack(*currentTrack)) break;
-    
-    // find best track (the one with the higher number of cluster or the best chi2 in case of equality)
-    currentNCluster = currentTrack->GetNClusters();
-    currentChi2 = currentTrack->GetGlobalChi2();
-    if (currentNCluster > bestNClusters || (currentNCluster == bestNClusters && currentChi2 < bestChi2)) {
-      bestTrack = currentTrack;
-      bestNClusters = currentNCluster;
-      bestChi2 = currentChi2;
-    }
-    
-  }
-  
-  // copy best track and free memory
-  AliMUONTrack* newTrack = bestTrack ? new AliMUONTrack(*bestTrack) : 0x0;
-  delete newClusterStore;
-  delete newTrackStore;
-  
-  return newTrack;
+  return track ? RetrackFromDigits(*track) : 0x0;
 }
 
 //_____________________________________________________________________________
-AliMUONTrack* AliMUONRefitter::RetrackFromClusters(Int_t iTrack)
+AliMUONTrack* AliMUONRefitter::RetrackFromClusters(UInt_t trackId)
 {
-  /// refit track "iTrack" form the clusters (i.e. do not re-clusterize)
+  /// refit track "trackId" form the clusters (i.e. do not re-clusterize)
   /// it is the responsability of the user to delete the returned track
   
   if (!fESDInterface) {
@@ -246,7 +167,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromClusters(Int_t iTrack)
   }
   
   // get the track to refit
-  AliMUONTrack* track = fESDInterface->GetTrack(iTrack);
+  AliMUONTrack* track = fESDInterface->FindTrack(trackId);
   if (!track) return 0x0;
   
   // refit the track (create a new one)
@@ -260,9 +181,9 @@ AliMUONTrack* AliMUONRefitter::RetrackFromClusters(Int_t iTrack)
 }
 
 //_____________________________________________________________________________
-AliMUONVClusterStore* AliMUONRefitter::ReClusterize(Int_t iTrack, Int_t iCluster)
+AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t trackId, UInt_t clusterId)
 {
-  /// re-clusterize cluster numbered "iCluster" in track "iTrack"
+  /// re-clusterize cluster numbered "clusterId" in track "trackId"
   /// several new clusters may be reconstructed
   /// it is the responsability of the user to delete the returned store
   
@@ -272,12 +193,12 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(Int_t iTrack, Int_t iCluster
   }
   
   // get the cluster to re-clusterize
-  AliMUONVCluster* cluster = fESDInterface->GetCluster(iTrack,iCluster);
+  AliMUONVCluster* cluster = fESDInterface->FindCluster(trackId,clusterId);
   if (!cluster) return 0x0;
   
   // check if digits exist
   if (cluster->GetNDigits() == 0) {
-    AliError(Form("no digit attached to cluster #%d in track %d",iCluster,iTrack));
+    AliError(Form("no digit attached to cluster #%d in track %d",clusterId,trackId));
     return 0x0;
   }
   
@@ -286,7 +207,7 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(Int_t iTrack, Int_t iCluster
   if (!clusterStore) return 0x0;
   
   // re-clusterize
-  TIter next(fESDInterface->CreateDigitIterator(iTrack, iCluster));
+  TIter next(fESDInterface->CreateDigitIterator(trackId, clusterId));
   fClusterServer->UseDigits(next);
   fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea());
   
@@ -342,6 +263,92 @@ void AliMUONRefitter::CreateClusterServer(AliMUONGeometryTransformer& transforme
   /// Create cluster server
   AliMUONVClusterFinder* clusterFinder = AliMUONReconstructor::CreateClusterFinder(AliMUONReconstructor::GetRecoParam()->GetClusteringMode());
   fClusterServer = clusterFinder ? new AliMUONSimpleClusterServer(clusterFinder,transformer) : 0x0;
+}
+
+//_____________________________________________________________________________
+AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
+{
+  /// refit the given track from the digits (i.e. re-clusterized the attached clusters):
+  /// several new clusters may be reconstructed per initial ESD cluster:
+  /// -> all the combinations of clusters are considered to build the new tracks
+  /// -> return the best track (largest number of clusters or best chi2 in case of equality)
+  
+  // check if digits exist
+  UInt_t trackId = track.GetUniqueID();
+  if (fESDInterface->GetNDigits(trackId) == 0) {
+    AliError(Form("no digit attached to track #%d",trackId));
+    return 0x0;
+  }
+  
+  // prepare new track(s)
+  AliMUONVTrackStore* newTrackStore = AliMUONESDInterface::NewTrackStore();
+  if (!newTrackStore) return 0x0;
+  newTrackStore->Add(track)->Clear("C");
+  
+  // prepare new cluster store
+  AliMUONVClusterStore* newClusterStore = AliMUONESDInterface::NewClusterStore();
+  if (!newClusterStore) {
+    delete newTrackStore;
+    return 0x0;
+  }
+  
+  // loop over clusters, re-clusterize and build new tracks
+  AliMUONVCluster* cluster;
+  TIter nextCluster(fESDInterface->CreateClusterIterator(trackId));
+  while ((cluster = static_cast<AliMUONVCluster*>(nextCluster()))) {
+    
+    // reset the new cluster store
+    newClusterStore->Clear();
+    
+    // re-clusterize current cluster
+    TIter nextDigit(fESDInterface->CreateDigitIterator(trackId, cluster->GetUniqueID()));
+    fClusterServer->UseDigits(nextDigit);
+    Int_t nNewClusters = fClusterServer->Clusterize(cluster->GetChamberId(),*newClusterStore,AliMpArea());
+    
+    // check that re-clusterizing succeeded
+    if (nNewClusters == 0) {
+      AliWarning(Form("refit gave no cluster (chamber %d)",cluster->GetChamberId()));
+      AliInfo("initial ESD cluster:");
+      cluster->Print("FULL");
+      continue;
+    }
+    
+    // add the new cluster(s) to the tracks
+    AddClusterToTracks(*newClusterStore, *newTrackStore);
+    
+  }
+  
+  // refit the tracks and pick up the best one
+  AliMUONTrack *currentTrack, *bestTrack = 0x0;
+  Double_t currentChi2, bestChi2 = 1.e10;
+  Int_t currentNCluster, bestNClusters = 0;
+  TIter next(newTrackStore->CreateIterator());
+  while ((currentTrack = static_cast<AliMUONTrack*>(next()))) {
+    
+    // set the track parameters at first cluster if any (used as seed in original tracking)
+    AliMUONTrackParam* param = (AliMUONTrackParam*) currentTrack->GetTrackParamAtCluster()->First();
+    if (param) *param = *((AliMUONTrackParam*) track.GetTrackParamAtCluster()->First());
+    
+    // refit the track
+    if (!fTracker->RefitTrack(*currentTrack)) break;
+    
+    // find best track (the one with the higher number of cluster or the best chi2 in case of equality)
+    currentNCluster = currentTrack->GetNClusters();
+    currentChi2 = currentTrack->GetGlobalChi2();
+    if (currentNCluster > bestNClusters || (currentNCluster == bestNClusters && currentChi2 < bestChi2)) {
+      bestTrack = currentTrack;
+      bestNClusters = currentNCluster;
+      bestChi2 = currentChi2;
+    }
+    
+  }
+  
+  // copy best track and free memory
+  AliMUONTrack* newTrack = bestTrack ? new AliMUONTrack(*bestTrack) : 0x0;
+  delete newClusterStore;
+  delete newTrackStore;
+  
+  return newTrack;
 }
 
 //_____________________________________________________________________________

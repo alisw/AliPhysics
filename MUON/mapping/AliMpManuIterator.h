@@ -17,7 +17,7 @@
 #endif
 
 class AliMpBusPatch;
-class TExMapIter;
+class TIterator;
 
 class AliMpManuIterator : public TObject
 {
@@ -31,21 +31,18 @@ public:
   void Reset();
   
 private:
+   /// not implemented
+   AliMpManuIterator(const AliMpManuIterator& rhs);
+   /// not implemented
+   AliMpManuIterator& operator=(const AliMpManuIterator& rhs);
 
-    /// not implemented
-    AliMpManuIterator(const AliMpManuIterator& rhs);
-  /// not implemented
-  AliMpManuIterator& operator=(const AliMpManuIterator& rhs);
-
-    AliMpBusPatch* NextBusPatch() const;
-    
 private:
 
-    TExMapIter* fIterator; ///< internal iterator
+    TIterator* fIterator; ///< internal iterator
     AliMpBusPatch* fCurrentBusPatch; ///< current bus patch
     Int_t fCurrentManuIndex; ///< current manu index in current bus patch
     
-  ClassDef(AliMpManuIterator,1) // Iterator on MUON tracker manus
+  ClassDef(AliMpManuIterator,2) // Iterator on MUON tracker manus
 };
 
 #endif

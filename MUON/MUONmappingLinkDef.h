@@ -26,9 +26,6 @@
 #pragma link C++ enum   AliMp::StationType;
 #pragma link C++ enum   AliMp::CathodType;
 
-#pragma link C++ function operator-(const AliMpIntPair& ,const AliMpIntPair& );
-#pragma link C++ function operator+(const AliMpIntPair& ,const AliMpIntPair& );
-#pragma link C++ function operator<<(ostream& ,const AliMpIntPair& );
 #pragma link C++ function operator<<(ostream& ,const AliMpPad& );
 #pragma link C++ function operator<<(ostream& ,const AliMpArea& );
 #pragma link C++ function operator<(const AliMpPad& ,const AliMpPad& );
@@ -138,3 +135,12 @@
 #pragma link C++ class  AliMpPCBPainter+;
 #pragma link C++ class  AliMpDEVisu+;
 #pragma link C++ class  AliMpIteratorPainter+;
+
+#ifdef WITH_STL
+#pragma link C++ class  std::pair<Int_t, TVector2>+;
+#pragma link C++ class  std::pair<Int_t, AliMpMotifPosition*>+;
+#pragma link C++ class  std::pair<TString, AliMpVMotif*>+;
+#pragma link C++ class  std::pair<TString, AliMpMotifType*>+;
+#pragma link C++ class  std::pair<AliMpIntPair, AliMpConnection*>+;
+#pragma link C++ class  std::pair<AliMpIntPair, AliMpMotifPosition*>+;
+#endif

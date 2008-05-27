@@ -119,7 +119,7 @@ AliMpSlatPadIterator::Prepare(const AliMpArea& area)
   /// Split area into smaller area intersecting pcbs,
   /// and allocate the corresponding delegate iterators.
 	
-  for ( AliMpSlat::Size_t i = 0; i < fkSlat->GetSize(); ++i )
+  for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
 	{
 		const AliMpPCB* pcb = fkSlat->GetPCB(i);
 		AliMpArea pcbArea(pcb->Area());

@@ -62,24 +62,16 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetDDLfromBus(Int_t busPatchId) const;
     Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
     
-    /// Return trigger crates iterator
-    TExMapIter GetTriggerCrateItr() const { return fRegionalTrigger.GetTriggerCrateItr(); }
-
-    /// Return trigger local board iterator
-    TExMapIter GetLocalBoardItr() const { return fRegionalTrigger.GetLocalBoardItr(); }
-
-    /// Get an iterator to loop over bus patches
-    TExMapIter GetBusPatchesIterator() const { return fBusPatches.GetIterator(); }
-    
     /// Get detection elt and Manu number from serial number
     AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
 
-    /// print info of all manus
+    /// Print info of all manus
     void PrintAllManu() const;
     
     // Set methods
     void SetRegionalTrigger(const AliMpRegionalTrigger& regionalTrigger);
 
+    TIterator* CreateBusPatchIterator() const; 
     
   private:
     AliMpDDLStore();

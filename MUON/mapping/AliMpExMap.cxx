@@ -26,6 +26,7 @@
 
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"
+#include "AliMpExMapIterator.h"
 
 #include "AliLog.h"
 
@@ -61,12 +62,20 @@ Long_t  AliMpExMap::GetIndex(const AliMpIntPair& pair)
 {
 /// Convert the pair of integers to integer.
 
-  if (pair.GetFirst() >= fgkSeparator1 || pair.GetSecond() >= fgkSeparator1) {
-    AliFatalClass("Index out of limit.");
-    exit(1); 
-  }  
-      
-  return pair.GetFirst()*fgkSeparator1 + pair.GetSecond() + 1;
+  if ( pair.GetFirst() >= 0xFFFF || pair.GetSecond() >= 0xFFFF ) 
+  {
+    AliFatalClass("Index out of limit");
+    return 0;
+  }
+  
+  return 1 + ( pair.GetFirst() | ( pair.GetSecond() << 16 ) );
+           
+//  if (pair.GetFirst() >= fgkSeparator1 || pair.GetSecond() >= fgkSeparator1) {
+//    AliFatalClass("Index out of limit.");
+//    exit(1); 
+//  }  
+//      
+//  return pair.GetFirst()*fgkSeparator1 + pair.GetSecond() + 1;
 }  
 
 //_____________________________________________________________________________
@@ -89,9 +98,12 @@ Long_t  AliMpExMap::GetIndex(const TString& s)
 //______________________________________________________________________________
 AliMpIntPair  AliMpExMap::GetPair(Long_t index)
 {
-/// Convert the integer index to the pair of integers.
+// Convert the integer index to the pair of integers.
 
-  return AliMpIntPair((index-1)/fgkSeparator1,(index-1)%fgkSeparator1);
+//  return AliMpIntPair((index-1)/fgkSeparator1,(index-1)%fgkSeparator1);
+  return AliMpIntPair( 
+                       ( (index-1) & 0xFFFF ) ,
+                       ( (index-1) & 0xFFFF0000 ) >> 16 );
 }  
 
 //_____________________________________________________________________________
@@ -113,25 +125,25 @@ TString  AliMpExMap::GetString(Long_t index)
 //
 
 //_____________________________________________________________________________
-AliMpExMap::AliMpExMap(Bool_t /*standardConstructor*/) 
+AliMpExMap::AliMpExMap() 
   : TObject(),
     fMap(fgkDefaultSize),
     fObjects(fgkDefaultSize),
     fKeys(fgkDefaultSize)
 {
-/// Standard constructor
+      /// Default constructor
 
   fObjects.SetOwner(fgkDefaultOwnership);
 }
 
 //_____________________________________________________________________________
-AliMpExMap::AliMpExMap() 
+AliMpExMap::AliMpExMap(TRootIOCtor*) 
   : TObject(),
     fMap(),
     fObjects(),
     fKeys()
 {
-/// Default constructor
+      /// "Root - I/O" constructor
 }
 
 
@@ -158,6 +170,39 @@ AliMpExMap::operator=(const AliMpExMap& rhs)
 
   rhs.Copy(*this);
   return *this;
+}
+
+//_____________________________________________________________________________
+AliMpExMap::~AliMpExMap() 
+{
+/// Destructor 
+}
+
+//
+// private methods
+//
+
+//_____________________________________________________________________________
+void AliMpExMap::FillMap()
+{
+/// Fill transient map from the arrays of objects and keys
+
+  for (Int_t i=0; i<fObjects.GetEntriesFast(); i++) 
+    fMap.Add(fKeys.At(i), (Long_t)fObjects.At(i)); 
+}
+
+//_____________________________________________________________________________
+void AliMpExMap::AddKey(Long_t key)
+{
+/// Add key in array with checking size
+
+  // Resize array if needed
+  if (fObjects.GetEntriesFast() == fKeys.GetSize()) {
+   fKeys.Set(2*fKeys.GetSize());
+   AliDebugStream(1) << "AliMpExMap::AddKey: resized Key array " << endl;
+  } 
+   
+  fKeys.AddAt(key, fObjects.GetEntriesFast());      
 }
 
 //_____________________________________________________________________________
@@ -189,39 +234,6 @@ AliMpExMap::Copy(TObject& dest) const
   m.fObjects.SetOwner(kTRUE);
 }
 
-//_____________________________________________________________________________
-AliMpExMap::~AliMpExMap() 
-{
-/// Destructor 
-}
-
-//
-// private methods
-//
-
-//_____________________________________________________________________________
-void AliMpExMap::FillMap()
-{
-/// Fill transient map from the arrays of objects and keys
-
-  for (Int_t i=0; i<fObjects.GetEntriesFast(); i++) 
-    fMap.Add(fKeys.At(i), (Long_t)fObjects.At(i)); 
-}
-
-//_____________________________________________________________________________
-void AliMpExMap::AddKey(Long_t key)
-{
-/// Add key in array with checking size
-
-  // Resize array if needed
-  if (fObjects.GetEntriesFast() == fKeys.GetSize()) {
-   fKeys.Set(2*fKeys.GetSize());
-   AliWarningStream() << "AliMpExMap::AddKey: resized Key array " << endl;
-  } 
-   
-  fKeys.AddAt(key, fObjects.GetEntriesFast());      
-}
-
 //
 // public methods
 //
@@ -234,6 +246,29 @@ void AliMpExMap::Clear(Option_t* option)
   fMap.Delete();
   fObjects.Clear(option);
   fKeys.Reset();
+}
+
+//_____________________________________________________________________________
+void AliMpExMap::Print(Option_t* opt) const
+{
+/// Print out
+
+  cout << Form("fMap size/capacity %d/%d",fMap.GetSize(),fMap.Capacity()) 
+       << Form(" fObjects.GetSize/Entries %d/%d",fObjects.GetSize(),fObjects.GetEntries()) 
+       << Form(" fKeys.GetSize %d",fKeys.GetSize()) << endl;
+  
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("FULL") ) 
+  {
+    TIter next(CreateIterator());
+    TObject* o;
+    while ( ( o = next() ) )
+    {
+      o->Print();
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -293,36 +328,21 @@ Int_t AliMpExMap::GetSize() const
 }
 
 //_____________________________________________________________________________
-TExMapIter AliMpExMap::GetIterator() const
+Int_t AliMpExMap::GetCapacity() const
 {
-/// Return TExMap iterator set to the beginning of the map
-
-  return TExMapIter(&fMap);
+  /// Return the map capacity
+  
+  return fObjects.GetSize();
 }
 
 //_____________________________________________________________________________
-TObject* AliMpExMap::GetObject(Int_t index) const
+AliMpExMapIterator*
+AliMpExMap::CreateIterator() const
 {
-/// Return the object via its index in the array
-/// (This function makes possible looping over map as over an array)
+/// Return iterator set to the beginning of the map
 
-  if ( index < 0 || index >= fObjects.GetEntriesFast() ) {
-    AliErrorStream() << "Index outside limits" << endl;
-    return 0;
-  }
-  
-  return fObjects.UncheckedAt(index);
-}      
-
-//_____________________________________________________________________________
-TObject* AliMpExMap::GetObjectFast(Int_t index) const
-{
-  /// Return the object via its index in the array
-  /// (This function makes possible looping over map as over an array)
-  /// without bound checking.
-  
-  return fObjects.UncheckedAt(index);
-}      
+  return new AliMpExMapIterator(*this);
+}
 
 //_____________________________________________________________________________
 TObject* AliMpExMap::GetValue(const AliMpIntPair& key) const
@@ -363,27 +383,5 @@ void AliMpExMap::Streamer(TBuffer &R__b)
   } 
   else {
     AliMpExMap::Class()->WriteBuffer(R__b, this);
-  }
-}
-
-//_____________________________________________________________________________
-void AliMpExMap::Print(Option_t* opt) const
-{
-  /// print out
-  cout << Form("fMap size/capacity %d/%d",fMap.GetSize(),fMap.Capacity()) 
-    << Form(" fObjects.GetSize/Entries %d/%d",fObjects.GetSize(),fObjects.GetEntries()) 
-  << Form(" fKeys.GetSize %d",fKeys.GetSize()) << endl;
-  
-  TString sopt(opt);
-  sopt.ToUpper();
-  
-  if ( sopt.Contains("FULL") ) 
-  {
-    TIter next(&fObjects);
-    TObject* o;
-    while ( ( o = next() ) )
-    {
-      o->Print();
-    }
   }
 }

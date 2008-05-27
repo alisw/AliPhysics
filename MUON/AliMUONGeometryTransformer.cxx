@@ -39,7 +39,7 @@
 #include <TVector2.h>
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
-
+#include "AliMpExMapIterator.h"
 #include "AliLog.h"
 #include "AliAlignObjMatrix.h"
 #include "AliAlignObj.h"
@@ -120,7 +120,7 @@ AliMUONGeometryTransformer::CreateDEAreas() const
 {
   /// Create DE areas
   
-  fDEAreas = new AliMpExMap(true);
+  fDEAreas = new AliMpExMap;
   
   AliMpDEIterator it;
 
@@ -455,11 +455,11 @@ AliMUONGeometryTransformer::LoadTransformations()
     
     // Loop over detection elements
     AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
-   
-    for (Int_t j=0; j<detElements->GetSize(); j++) {
-      AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
-
+    TIter next(detElements->CreateIterator());    
+    AliMUONGeometryDetElement* detElement;
+    
+    while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
+    {
       // Det element  symbolic name
       TString symnameDE = GetDESymName(detElement->GetId());
     
@@ -538,10 +538,10 @@ void AliMUONGeometryTransformer::WriteDetElemTransforms(ofstream& out) const
     AliMUONGeometryModuleTransformer* moduleTransformer 
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
     AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
-
-    for (Int_t j=0; j<detElements->GetSize(); j++) {
-      AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
+    TIter next(detElements->CreateIterator());
+    AliMUONGeometryDetElement* detElement;
+    while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
+    {
       const TGeoMatrix* transform 
         = detElement->GetLocalTransformation(); 
 	
@@ -822,11 +822,11 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
 
     // Detection elements
     AliMpExMap* detElements = module->GetDetElementStore();    
-
-    for (Int_t j=0; j<detElements->GetSize(); j++) {
-      AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
-	
+    TIter next(detElements->CreateIterator());    
+    AliMUONGeometryDetElement* detElement;
+    
+    while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
+    {
       // Set detection element symbolic name
       TGeoPNEntry* pnEntryDE
         = gGeoManager->SetAlignableEntry(GetDESymName(detElement->GetId()), 
@@ -878,12 +878,13 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
 
-    for (Int_t j=0; j<detElements->GetSize(); j++) {
-      AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
-	
+    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
+    TIter next(detElements->CreateIterator());    
+    AliMUONGeometryDetElement* detElement;
+    
+    while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
+    {
       Int_t detElemId = detElement->GetId();
   
       // Align object ID

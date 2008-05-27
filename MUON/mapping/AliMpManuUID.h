@@ -20,7 +20,7 @@ class AliMpManuUID : public TObject
 {
 public:
   AliMpManuUID();
-  AliMpManuUID(Int_t detElemId, Int_t manuId, Int_t nofChannels=0);
+  AliMpManuUID(Int_t detElemId, Int_t manuId);
   virtual ~AliMpManuUID();
   
   /// Get detection element
@@ -28,9 +28,6 @@ public:
 
   /// Get manu identifier
   Int_t ManuId() const { return AliMpManuUID::ManuId(GetUniqueID()); }
-
-  /// Get number of channels in this manu
-  Int_t NofChannels() const { return fNofChannels; }
   
   static UInt_t BuildUniqueID(Int_t detElemId, Int_t manuId);
   
@@ -38,10 +35,7 @@ public:
   
   static Int_t ManuId(UInt_t uniqueID);
   
-private:
-    Int_t fNofChannels; ///< number of channels in this manu (<=64)
-  
-  ClassDef(AliMpManuUID,1) // Unique ID for MUON tracker manus
+  ClassDef(AliMpManuUID,2) // Unique ID for MUON tracker manus
 };
 
 #endif

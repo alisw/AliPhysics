@@ -128,9 +128,8 @@ AliMUONTrackerData::Add(const AliMUONVStore& store)
     // get number of bus patches and number of detection element
     // to initialize fBusPatchValues and fDEValues below
     
-    TExMapIter it(AliMpDDLStore::Instance()->GetBusPatchesIterator());
-    Long_t key,value;
-    while ( it.Next(key,value) ) ++numberOfBusPatches;
+    TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+    while ( next() ) ++numberOfBusPatches;
     AliMpDEIterator deIt;
     deIt.First();
     while (!deIt.IsDone())

@@ -70,8 +70,7 @@ fStatusMapMaker(0x0),
 fPedestals(0x0),
 fGains(0x0),
 fApplyGains(0),
-fCapacitances(0x0),
-fNofChannelsPerDE(new TExMap)
+fCapacitances(0x0)
 {
   /// ctor
   
@@ -130,36 +129,6 @@ fNofChannelsPerDE(new TExMap)
   {
     fCapacitances = calib.Capacitances();
   }
-  
-  // FIXME: get the nof of channels per de directly within AliMpDetElement ?
-  // or use the AliMUONTrackerData class for that ?
-  
-  AliMpDEIterator it;
-  
-  it.First();
-  
-  while ( !it.IsDone() ) 
-  {
-    
-    AliMpDetElement* det = it.CurrentDE();
-    Int_t detElemId = det->GetId();
-    Int_t nchannels(0);
-    
-    for ( Int_t i = 0; i < det->GetNofBusPatches(); ++i ) 
-    {
-      Int_t busPatchId = det->GetBusPatchId(i);
-      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(busPatchId);
-      for ( Int_t j = 0; j < bp->GetNofManus(); ++j ) 
-      {
-        Int_t manuId = bp->GetManuId(j);
-        nchannels += det->NofChannelsInManu(manuId);
-      }        
-    }
-    
-    it.Next();
-    
-    fNofChannelsPerDE->Add((Long_t)detElemId,(Long_t)nchannels);
-  }
 }
 
 //_____________________________________________________________________________
@@ -173,7 +142,6 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
   fLogger->Print();
 
   delete fLogger;
-  delete fNofChannelsPerDE;
 }
 
 //_____________________________________________________________________________
@@ -194,7 +162,8 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     {
       // Find out occupancy of that DE
       detElemId = digit->DetElemId();
-      Double_t nchannels = fNofChannelsPerDE->GetValue(detElemId);
+      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+      Double_t nchannels = de->NofChannels();
       Double_t occ = digitStore.GetSize(detElemId)/nchannels;
       if ( occ > 0.05 ) 
       {

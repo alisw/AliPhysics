@@ -49,7 +49,7 @@ class AliMpMotifType : public TObject
     AliMpMotifType(const TString &id);
     AliMpMotifType(const AliMpMotifType& rhs);
     AliMpMotifType& operator=(const AliMpMotifType& rhs);
-    AliMpMotifType();
+    AliMpMotifType(TRootIOCtor* ioCtor);
     virtual ~AliMpMotifType();
 
     TObject* Clone(const char* newname="") const;
@@ -99,6 +99,8 @@ class AliMpMotifType : public TObject
       void Copy(TObject& o) const;
     
   private:
+    /// Not implemented
+    AliMpMotifType();
     // static data members
     static const Int_t  fgkPadNumForA; ///< the pad number for the pad "A"
   

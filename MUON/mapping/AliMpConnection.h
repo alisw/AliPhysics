@@ -24,7 +24,8 @@ class AliMpConnection : public TObject
 {
   public:
     AliMpConnection();
-    AliMpConnection(Int_t padNum,Int_t bergNum,Int_t kaptonNum,Int_t gassiNum);
+    AliMpConnection(Int_t padNum,Int_t bergNum,Int_t kaptonNum,Int_t gassiNum,
+                    const AliMpIntPair& localIndices);
     virtual ~AliMpConnection();
 
     // methods
@@ -55,6 +56,8 @@ class AliMpConnection : public TObject
           /// Set the motif type which contains this connection
     void SetOwner(AliMpMotifType *owner) {fOwner=owner;}
 
+    // void SetLocalIndices(const AliMpIntPair& pair);
+    
   private:
     /// Not implemented
     AliMpConnection(const AliMpConnection& right);
@@ -77,8 +80,8 @@ class AliMpConnection : public TObject
 inline TString AliMpConnection::PadName() const 
 { return fOwner->PadName(fPadNum); }
 
-          /// Return the local indices of this pad in the motif
-inline AliMpIntPair AliMpConnection::LocalIndices() const
-{ return fOwner->FindLocalIndicesByConnection(this);}
+//          /// Return the local indices of this pad in the motif
+//inline AliMpIntPair AliMpConnection::LocalIndices() const
+//{ return fOwner->FindLocalIndicesByConnection(this);}
 
 #endif //ALI_MP_CONNECTION_H

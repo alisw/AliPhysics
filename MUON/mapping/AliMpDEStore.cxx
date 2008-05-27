@@ -34,6 +34,7 @@
 #include "AliMpHelper.h"
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
+#include "AliMpExMapIterator.h"
 
 #include "AliLog.h"
 
@@ -93,7 +94,7 @@ AliMpDEStore* AliMpDEStore::ReadData(Bool_t warn)
 //______________________________________________________________________________
 AliMpDEStore::AliMpDEStore()
 : TObject(),
-  fDetElements(true)
+  fDetElements()
 {  
 /// Standard constructor
 
@@ -105,9 +106,9 @@ AliMpDEStore::AliMpDEStore()
 }
 
 //______________________________________________________________________________
-AliMpDEStore::AliMpDEStore(TRootIOCtor* /*ioCtor*/)
+AliMpDEStore::AliMpDEStore(TRootIOCtor* ioCtor)
 : TObject(),
-  fDetElements()
+  fDetElements(ioCtor)
 {  
 /// Constructor for IO
 
@@ -325,8 +326,8 @@ AliMpDEStore::ReadDENames(AliMp::StationType station)
                       " of DetElemId %d",detElemId));
       }
       
-      AliMpDetElement* detElement 
-        = new AliMpDetElement(detElemId, name, name0, planeForCathode[0]);
+      AliMpDetElement* detElement = new AliMpDetElement(detElemId, name, name0, planeForCathode[0]);
+      
       if ( ! fDetElements.GetValue(detElemId) ) 
       {
         AliDebugClassStream(3)  
@@ -393,11 +394,12 @@ AliMpDetElement* AliMpDEStore::GetDetElement(const TString& deName, Bool_t warn)
 {
 /// Return det element for given deName
 
-  for ( Int_t i = 0; i < fDetElements.GetSize(); i++ ) {
-    
-    AliMpDetElement* detElement 
-      = (AliMpDetElement*)fDetElements.GetObject(i);
-      
+  TIter next(fDetElements.CreateIterator());
+  AliMpDetElement* detElement;
+  
+  while ( ( detElement = static_cast<AliMpDetElement*>(next()) ) )
+  {
+             
     if (deName.CompareTo(detElement->GetDEName()) == 0) 
 
       return detElement;
@@ -416,11 +418,11 @@ AliMpIntPair  AliMpDEStore::GetDetElemIdManu(Int_t manuSerial) const
 {
 /// Return the detElemId and manuId for given serial manu number
 
-  for ( Int_t i = 0; i < fDetElements.GetSize(); i++ ) {
-    
-    AliMpDetElement* detElement 
-      = (AliMpDetElement*)fDetElements.GetObject(i);
-      
+  TIter next(fDetElements.CreateIterator());
+  AliMpDetElement* detElement;
+  
+  while ( ( detElement = static_cast<AliMpDetElement*>(next()) ) )
+  {
     Int_t manuId = detElement->GetManuIdFromSerial(manuSerial);
     if ( manuId ) return AliMpIntPair(detElement->GetId(), manuId);
   }    

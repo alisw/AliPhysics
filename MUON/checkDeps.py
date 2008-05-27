@@ -30,6 +30,176 @@ def append(list,a):
   if not a in list:
     list.append(a)
     
+#_______________________________________________________________________________
+def isempty(line):
+
+  return len(line) < 2
+  
+#_______________________________________________________________________________
+def iscomment(line):
+
+  return re.search("^#",line)
+
+#_______________________________________________________________________________
+def iscontinuation(line):
+
+  return line.find('\\') > 0
+
+#_______________________________________________________________________________
+def compactLines(ilines):
+  """ Given an array of lines, remove empty lines, comment lines
+  and concatenate lines that should be one (i.e. removing the \ continuation
+  marks...
+  """
+  
+  continuation = False
+
+  olines = []
+  
+  currentline = ""
+  
+  i = 0
+  
+  for line in ilines:
+    
+    i = i + 1
+    
+    if line.find('\\') > 0:
+      line = re.sub("\t|\n|\r|\\\\","",line)
+      continuation = True
+    else:
+      continuation = False
+      if isempty(currentline):
+        currentline = line
+      else:
+        l = re.sub("\t","",line)
+        currentline = currentline + re.sub(" {1,}"," ",l)
+      if not iscomment(currentline) and not isempty(currentline):
+        olines.append(re.sub(" {1,}"," ",currentline))
+      currentline = ""
+          
+    if continuation:
+      currentline = currentline + line
+      
+  return olines
+
+#_______________________________________________________________________________
+def tokenizeLines(lines):
+  """
+  Return a dict of keys -> value items.
+  keys are the left part of lines supposed to be of the form :
+  KEY:=VALUE
+  or
+  KEY+=VALUE
+  or
+  KEY=VALUE
+  """
+  
+  tokens = {}
+  
+  define = ":="
+  plus = "+="
+  equal = "="
+  
+  separators = [ define, plus, equal ]
+  
+  for l in lines:
+    sep = False
+    for s in separators:
+      if s in l:        
+        a = l.split(s,1)
+        key = a[0].strip()
+        value = re.sub("\n|\t|\n","",a[1])
+        if len(a) > 2:
+          print "Something fishy here !"
+        sep = True
+        break
+    if not sep:
+      continue
+    if not key in tokens.keys():
+      tokens[key] = ""
+    if s == plus:
+      tokens[key] += value
+    else:
+      tokens[key] = value
+      
+  return tokens
+
+#_______________________________________________________________________________
+def variableSubstitution(tokenname,alltokens):
+  """
+  """
+
+  value = alltokens.get(tokenname,"")
+      
+  for k in alltokens.keys():
+    if re.search("\$\(%s\)"%k,value):
+      # found something like $(VARIABLE), so expand that variable, 
+      # by calling us again
+      rep = value.replace("$(%s)"%k,variableSubstitution(k,alltokens))
+      return rep
+    if re.search("\$\(%s\:"%k,value):
+      # found something like $(VARIABLE: 
+      # we suppose it's then something like $(VARIABLE:.x=.y)
+      # i.e. we replace x by y in VARIABLE's expansion
+      t = variableSubstitution(k,alltokens)
+      i1 = value.index(":")
+      i2 = value.index(")")
+      change = value[i1+1:i2].split("=")
+      return t.replace(change[0],change[1])
+
+  return value
+
+#_______________________________________________________________________________
+def patternSubstitution(value):
+
+  if re.search("\$\(patsubst",value):
+    rv = []
+    # found the Makefile function $(patsubst %.x, %.y, list)
+    i1 = value.index("(")
+    i2 = value.rindex(")")
+    a = value[i1+1:i2].split(",")
+    source = a[0].replace("patsubst ","")
+    destination = a[1].replace("%","")
+    if source != "%":      
+      print "Houston, we have a problem : ",value
+      sys.exit(1)
+    for l in a[2].split():
+      rv.append(destination + l)
+    return rv
+    
+  return value.split()
+
+#_______________________________________________________________________________
+def getSourceFiles2(lib,rootsys,alice_root):
+  """Extract the list of files from a libXXX.pkg file
+    Return a pair of list (sourceFiles,einclude), where einclude
+    is the list of directories needed to be included compile the files.
+  """
+  
+  try:
+    f = open(lib)
+  except:
+    print "Cannot open file ", file
+    sys.exit(1)
+
+  filelines = f.readlines()
+  
+  f.close()
+  
+  lines = compactLines(filelines)
+  
+  tokens = tokenizeLines(lines)
+
+  sourcesfiles = patternSubstitution(variableSubstitution("SRCS",tokens))
+  eincludes = patternSubstitution(variableSubstitution("EINCLUDE",tokens))
+  
+  pkg = getLibPackage(lib)
+  dir = os.path.join(alice_root,pkg)
+  
+  sourcesfiles = [ os.path.join(dir,x) for x in sourcesfiles ]
+  
+  return sourcesfiles,eincludes
 
 #_______________________________________________________________________________
 def getSourceFiles(lib,rootsys,alice_root):
@@ -311,7 +481,8 @@ def main():
 
   dirs.append(dir)
     
-  requestedPackages = [ "MUON", "STEER", "RAW", "ITS", "TRD", "VZERO", "TPC", "PHOS", "TOF", "ZDC", "EMCAL", "HMPID", "SHUTTLE", "ACORDE" ];
+#  requestedPackages = [ "MUON", "STEER", "RAW", "ITS", "TRD", "VZERO", "TPC", "PHOS", "TOF", "ZDC", "EMCAL", "HMPID", "SHUTTLE", "ACORDE", "HLT", "EVE" ];
+  requestedPackages = [ "RAW", "STEER", "MUON", "HLT","EVE" ]
   
   # find the libraries defined in this directory (looking for libXXXX.pkg files)  
   libraries = []
@@ -375,7 +546,7 @@ def main():
 
       if not re.search("da.pkg",lib):
         # handle the special case of DAs which are not part of libs, really
-        lib2src[lib], eincludes[lib] = getSourceFiles(lib,rootsys,alice_root)
+        lib2src[lib], eincludes[lib] = getSourceFiles2(lib,rootsys,alice_root)        
       else:
         l = lib
         l = re.sub("lib","",l)

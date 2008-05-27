@@ -234,11 +234,14 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
     ix = AliMpExMap::GetPair(value).GetFirst();
     iy = AliMpExMap::GetPair(value).GetSecond();
+    
 #endif
 
-    motifType->AddConnection(AliMpIntPair(ix,iy),
-                  new AliMpConnection(padNum,numBerg,numKapton,gassiNum));
-
+    AliMpConnection* connection 
+      = new AliMpConnection(padNum,numBerg,numKapton,gassiNum, AliMpIntPair(ix,iy));
+    
+    motifType->AddConnection(AliMpIntPair(ix,iy),connection);
+                  
     if (ix>=nofPadsX) nofPadsX=ix+1;
     if (iy>=nofPadsY) nofPadsY=iy+1;
 

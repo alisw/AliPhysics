@@ -17,16 +17,12 @@
 #endif
 
 class AliMUONClusterStoreV2;
-class TExMapIter;
 
 class AliMUONClusterStoreV2Iterator : public TIterator
 {
 public:
   AliMUONClusterStoreV2Iterator(const AliMUONClusterStoreV2* store,
                                 Int_t firstChamberId, Int_t lastChamberId);
-  AliMUONClusterStoreV2Iterator(const AliMUONClusterStoreV2Iterator& rhs);
-  AliMUONClusterStoreV2Iterator& operator=(const AliMUONClusterStoreV2Iterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
   
   virtual ~AliMUONClusterStoreV2Iterator();
   
@@ -41,11 +37,17 @@ private:
   TObject* NextInCurrentChamber() const;
   
 private:
+  /// Not implemented
+  AliMUONClusterStoreV2Iterator(const AliMUONClusterStoreV2Iterator& rhs);
+  /// Not implemented
+  AliMUONClusterStoreV2Iterator& operator=(const AliMUONClusterStoreV2Iterator& rhs);
+  TIterator& operator=(const TIterator& rhs);
+
   const AliMUONClusterStoreV2* fStore; ///< store to iterate upon
   Int_t fFirstChamberId; ///< first chamber
   Int_t fLastChamberId; ///< last chamber
   Int_t fCurrentChamberId; ///< current chamber
-  TExMapIter* fChamberIterator; ///< helper iterator
+  TIterator* fChamberIterator; ///< helper iterator
   
   ClassDef(AliMUONClusterStoreV2Iterator,0) // Implementation of TIterator
 };

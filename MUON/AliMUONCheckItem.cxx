@@ -43,7 +43,7 @@ TNamed(name,name),
 fID(id),
 fDead(-1),
 fMaximum(maxNumber),
-fMissing(new AliMpExMap(kTRUE))
+fMissing(new AliMpExMap)
 {
   /// ctor. id is the number of that item, maxNumber is the maximum number
   /// of sub-item it can contains, and name is a label, e.g. de, chamber, manu.

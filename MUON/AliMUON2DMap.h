@@ -20,7 +20,8 @@ class AliMpExMap;
 class AliMUON2DMap : public AliMUONVStore
 {
 public:
-  AliMUON2DMap(Bool_t optimizeForDEManu=kFALSE);  
+  AliMUON2DMap(TRootIOCtor* ioCtor);
+  AliMUON2DMap(Bool_t optimizeForDEManu);  
   AliMUON2DMap(const AliMUON2DMap& other);
   AliMUON2DMap&  operator = (const AliMUON2DMap& other);
   virtual ~AliMUON2DMap();
@@ -55,9 +56,11 @@ public:
   virtual Int_t GetSize(Int_t i) const;
 
 private:
+  /// Not implemented
+  AliMUON2DMap();
+
   Bool_t Set(Int_t i, Int_t j, TObject* object, Bool_t replace);
 
-private:
   static const Int_t fgkOptimalSizeForDEManu; ///< Optimal size for DEManu
 
   AliMpExMap* fMap; ///< Our internal map (an AliMpExMap of AliMpExMaps)

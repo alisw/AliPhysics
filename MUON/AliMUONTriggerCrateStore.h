@@ -21,7 +21,7 @@
 class AliMUONLocalTriggerBoard;
 class AliMUONTriggerCrate;
 class AliMpExMap;
-class TExMapIter;
+class TIterator;
 class AliMUONCalibrationData;
 
 class AliMUONTriggerCrateStore : public TObject
@@ -31,17 +31,18 @@ public:
   virtual ~AliMUONTriggerCrateStore();
   
   Int_t NumberOfCrates() const;
-  void FirstCrate();
-  AliMUONTriggerCrate* NextCrate();
+
   AliMUONTriggerCrate* Crate(const char* crateName) const;
   AliMUONTriggerCrate* Crate(Int_t ddl, Int_t reg) const;
 
   Int_t NumberOfLocalBoards() const;
-  void FirstLocalBoard();
-  AliMUONLocalTriggerBoard* NextLocalBoard();
+
   AliMUONLocalTriggerBoard* LocalBoard(Int_t boardNumber) const;
   
   void ReadFromFile(AliMUONCalibrationData* calibData);
+  TIterator* CreateCrateIterator() const;
+  
+  TIterator* CreateLocalBoardIterator() const;
 
 protected:
   /// Not implemented
@@ -55,14 +56,10 @@ private:
 private:
   AliMpExMap* fCrates; ///< list of crates
   AliMpExMap* fLocalBoards; ///< local boards (indexed by their number)
-  TExMapIter* fCrateIterator; //!< iterator for the crate map above
-  TExMapIter* fLBIterator; //!< iterator for boards (through crates)
-  AliMUONTriggerCrate* fCurrentCrate; //!< used for iterating on local board
-  Int_t fCurrentLocalBoard; //!< used for iterating on local board
 
   TString GetCrateName(Int_t ddl, Int_t reg) const;
 
-  ClassDef(AliMUONTriggerCrateStore,1) // Reader for CRATE.TXT file
+  ClassDef(AliMUONTriggerCrateStore,2) // Reader for CRATE.TXT file
 };
 
 #endif

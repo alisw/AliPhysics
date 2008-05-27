@@ -29,14 +29,14 @@ ClassImp(AliMpManuUID)
 
 //_____________________________________________________________________________
 AliMpManuUID::AliMpManuUID()
-  : TObject(), fNofChannels(0)
+  : TObject()
 {
     /// default ctor
 }
 
 //_____________________________________________________________________________
-AliMpManuUID::AliMpManuUID(Int_t detElemId, Int_t manuId, Int_t nofChannels)
-: TObject(), fNofChannels(nofChannels)
+AliMpManuUID::AliMpManuUID(Int_t detElemId, Int_t manuId)
+: TObject()
 {
   /// normal ctor
   SetUniqueID(BuildUniqueID(detElemId,manuId));                            

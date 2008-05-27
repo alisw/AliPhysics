@@ -28,76 +28,38 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUON2DMapIteratorByI.h"
-
+#include "AliMpExMapIterator.h"
 #include "AliMpExMap.h"
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUON2DMapIteratorByI)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUON2DMapIteratorByI::AliMUON2DMapIteratorByI(const AliMpExMap& theMap,
-                                                 Int_t firstI,
-                                                 Int_t lastI)
+AliMUON2DMapIteratorByI::AliMUON2DMapIteratorByI(const AliMpExMap& theMap, Int_t firstI, Int_t lastI)
 : TIterator(),
 fkMap(&theMap),
+fIter1(theMap.CreateIterator()),
 fIter2(0x0),
-fCurrentI(-1),
-fCurrentJ(-1),
 fFirstI(firstI),
-fLastI(lastI)
+fLastI(lastI),
+fCurrentI(-1)
 {
   /// default ctor
   Reset();
 }
 
 //_____________________________________________________________________________
-AliMUON2DMapIteratorByI::AliMUON2DMapIteratorByI(const AliMUON2DMapIteratorByI& rhs)
-:TIterator(rhs),
-fkMap(rhs.fkMap),
-fIter2(0x0),
-fCurrentI(rhs.fCurrentI),
-fCurrentJ(rhs.fCurrentJ),
-fFirstI(rhs.fFirstI),
-fLastI(rhs.fLastI)
-{
-  /// copy ctor
-  if ( rhs.fIter2 ) fIter2 = new TExMapIter(*(rhs.fIter2));
-}
-
-//_____________________________________________________________________________
-AliMUON2DMapIteratorByI&
-AliMUON2DMapIteratorByI::operator=(const AliMUON2DMapIteratorByI& rhs)
-{
-  /// assignment operator
-  if ( this != &rhs ) 
-  {
-    fkMap = rhs.fkMap;
-    fIter2 = 0x0;
-    if ( rhs.fIter2 ) fIter2 = new TExMapIter(*(rhs.fIter2));
-    fCurrentI = rhs.fCurrentI;
-    fCurrentJ = rhs.fCurrentJ;
-    fFirstI = rhs.fFirstI;
-    fLastI = rhs.fLastI;
-  }
-  return *this;
-}
-
-//_____________________________________________________________________________
-TIterator&
+TIterator& 
 AliMUON2DMapIteratorByI::operator=(const TIterator& rhs)
 {
-  /// overriden assigment operator (imposed by Root's declaration of TIterator ?)
+  /// overriden operator= (imposed by Root's definition of TIterator::operator= ?)
+  
   if ( this != &rhs && rhs.IsA() == AliMUON2DMapIteratorByI::Class() ) 
   {
-    const AliMUON2DMapIteratorByI& rhs1 = static_cast<const AliMUON2DMapIteratorByI&>(rhs);
-    fkMap = rhs1.fkMap;
-    fIter2 = 0x0;
-    if ( rhs1.fIter2 ) fIter2 = new TExMapIter(*(rhs1.fIter2));
-    fCurrentI = rhs1.fCurrentI;
-    fCurrentJ = rhs1.fCurrentJ;
-    fFirstI = rhs1.fFirstI;
-    fLastI = rhs1.fLastI;
+    //    const AliMUON2DMapIteratorByI& rhs1 = static_cast<const AliMUON2DMapIteratorByI&>(rhs);
+    AliFatalGeneral("operator=(TIterator&)",""); // as in copy ctor
   }
   return *this;
 }
@@ -106,56 +68,46 @@ AliMUON2DMapIteratorByI::operator=(const TIterator& rhs)
 AliMUON2DMapIteratorByI::~AliMUON2DMapIteratorByI()
 {
   /// dtor
-  delete fIter2;
 }
 
 //_____________________________________________________________________________
 const TCollection* 
 AliMUON2DMapIteratorByI::GetCollection() const
 {
-  /// Not implemented
+  /// Return 0 as we're not really dealing with a Root TCollection...
   return 0x0;
 }
 
 //_____________________________________________________________________________
-TObject*
-AliMUON2DMapIteratorByI::GetValue(TExMapIter& iter, Int_t& theKey) const
+AliMpExMapIterator*
+AliMUON2DMapIteratorByI::NextIterator()
 {
-  /// return the value corresponding to theKey in iterator iter
-  theKey = -1;
-  Long_t key, value;
-  Bool_t ok = iter.Next(key,value);
-  if (!ok) return 0x0;
-  theKey = (Int_t)(key & 0xFFFF);
-  return reinterpret_cast<TObject*>(value);
+  /// Get next map (from fIter1) and create an iterator to it
+  
+  AliMpExMap* m = static_cast<AliMpExMap*>(fIter1->Next(fCurrentI));
+  
+  if (!m) return 0x0;
+  
+  if ( fCurrentI < fFirstI || fCurrentI > fLastI ) return NextIterator(); // try again
+
+  return m->CreateIterator();
 }
 
 //_____________________________________________________________________________
 TObject*
 AliMUON2DMapIteratorByI::Next()
 {
-  /// logic :
-  /// get TObject* from fIter2
-  /// if null, increment fIter2 by getting next map from fMap
-  
+  /// return next object
+
   if (!fIter2) return 0x0;
   
-  TObject* o = GetValue(*fIter2,fCurrentJ);
+  TObject* o = fIter2->Next();
+  
   if (!o)
   {
-    // fIter2 exhausted, try to get the next one
-    delete fIter2;
-    fIter2 = 0x0;
-    AliMpExMap* m(0x0);
-    while ( !m && fCurrentI < fLastI ) 
-    {
-      ++fCurrentI;
-      m = static_cast<AliMpExMap*>(fkMap->GetValue(fCurrentI));
-    }
-    if (!m) return 0x0; // we are done
-    fIter2 = new TExMapIter(m->GetIterator());
-    o = GetValue(*fIter2,fCurrentJ);
-  }
+    fIter2 = NextIterator();
+    return Next();
+  }  
   
   return o;
 }
@@ -165,19 +117,10 @@ void
 AliMUON2DMapIteratorByI::Reset()
 {
   /// rewind the iterator
+  
   delete fIter2;
-  fIter2 = 0x0;
-  fCurrentI = fFirstI;
-  AliMpExMap* m;
-  
-  while ( !(  m = static_cast<AliMpExMap*>(fkMap->GetValue(fCurrentI) ) ) && 
-          fCurrentI < fLastI )
-  {
-    ++fCurrentI;
-  }
-  
-  if ( m ) 
-  {
-    fIter2 = new TExMapIter(m->GetIterator());
-  }
+  fIter1->Reset();
+  fIter2 = NextIterator();
+  fCurrentI = -1;
 }
+

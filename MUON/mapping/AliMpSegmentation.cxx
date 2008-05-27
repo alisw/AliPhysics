@@ -53,6 +53,8 @@
 #include <TSystem.h>
 #include <TClass.h>
 
+#include <cassert>
+
 /// \cond CLASSIMP
 ClassImp(AliMpSegmentation)
 /// \endcond
@@ -101,14 +103,13 @@ AliMpSegmentation* AliMpSegmentation::ReadData(Bool_t warn)
 AliMpSegmentation::AliMpSegmentation()
 : TObject(),
   fDetElements(0),
-  fMpSegmentations(true),
-  fElCardsMap(true),
+  fMpSegmentations(),
+  fElCardsMap(),
   fSlatMotifMap(AliMpSlatMotifMap::Instance())
 {  
 /// Standard constructor - segmentation is loaded from ASCII data files
 
   AliDebug(1,"");
-  fElCardsMap.SetOwner(true);
   
   // Load DE data
   if ( ! AliMpDEStore::Instance(false) )  
@@ -116,29 +117,32 @@ AliMpSegmentation::AliMpSegmentation()
   fDetElements = AliMpDEStore::Instance();  
 
   // Create mapping segmentations for all detection elements
-  for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; cath ++ ) { 
-    AliMpDEIterator it;
-    for ( it.First(); ! it.IsDone(); it.Next() ) {
-      CreateMpSegmentation(it.CurrentDEId(), AliMp::GetCathodType(cath));
-    } 
-  }  
-
-  // Fill el cards map for all detection elements
-  // of tracking chambers
   AliMpDEIterator it;
-  for ( it.First(); ! it.IsDone(); it.Next() ) { 
-    if ( AliMpDEManager::GetStationType(it.CurrentDEId()) != AliMp::kStationTrigger ) {
-      FillElCardsMap(it.CurrentDEId());
+  for ( it.First(); ! it.IsDone(); it.Next() ) 
+  {
+    Int_t n(0);
+    
+    for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath ) 
+    { 
+      if ( CreateMpSegmentation(it.CurrentDEId(), AliMp::GetCathodType(cath)) ) ++n;
     }
-  }  
+     
+    if ( n == 2 &&  // should always be the case except when we play with the CreateMpSegmentation method...
+        AliMpDEManager::GetStationType(it.CurrentDEId()) != AliMp::kStationTrigger ) // only for tracker
+    {
+        // Fill el cards map for all detection elements
+        // of tracking chambers
+        FillElCardsMap(it.CurrentDEId());
+    }      
+  } 
 }
 
 //______________________________________________________________________________
-AliMpSegmentation::AliMpSegmentation(TRootIOCtor* /*ioCtor*/)
+AliMpSegmentation::AliMpSegmentation(TRootIOCtor* ioCtor)
 : TObject(),
   fDetElements(0),
   fMpSegmentations(),
-  fElCardsMap(),
+  fElCardsMap(ioCtor),
   fSlatMotifMap(0)
 {  
 /// Constructor for IO
@@ -214,7 +218,7 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
   else   
     AliErrorStream() << "Unknown station type" << endl;
 
-  fMpSegmentations.Add(deSegName, mpSegmentation); 
+  if ( mpSegmentation ) fMpSegmentations.Add(deSegName, mpSegmentation); 
   
 //  StdoutToAliDebug(3, fSlatMotifMap.Print(););
   
@@ -230,33 +234,27 @@ AliMpSegmentation::FillElCardsMap(Int_t detElemId)
 
   AliDebugStream(2) << "detElemId=" << detElemId << endl;;
   
-  AliMpExMap* mde = new AliMpExMap(true);
+  AliMpExMap* mde = new AliMpExMap;
   mde->SetOwner(kFALSE);
   fElCardsMap.Add(detElemId,mde);
 
   const AliMpVSegmentation* seg[2];
   TArrayI ecn[2];
   
-  // Do it in 2 steps to be able to set the AliMpExMap size once for all,
-  // to avoid annoying warning message in case of dynamical resizing.
-  // (not critical).
   for ( Int_t cathode = AliMp::kCath0; cathode <= AliMp::kCath1; ++cathode )
   {
     seg[cathode] = GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
     seg[cathode]->GetAllElectronicCardIDs(ecn[cathode]);
-  }
-  
-  mde->SetSize(ecn[0].GetSize()+ecn[1].GetSize());
-  
-  for ( Int_t cathode = AliMp::kCath0; cathode <= AliMp::kCath1; ++ cathode )
-  {
     for ( Int_t i = 0; i < ecn[cathode].GetSize(); ++i )
     {
       mde->Add(ecn[cathode][i],const_cast<AliMpVSegmentation*>(seg[cathode]));
     }
   }
   
+  assert( mde->GetSize() > 0 );
+  
   return mde;
+  
 }
 
 //

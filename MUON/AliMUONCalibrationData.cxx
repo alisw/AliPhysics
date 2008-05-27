@@ -447,5 +447,102 @@ AliMUONCalibrationData::Reset()
   fNeighbours = 0x0;
 }
 
+//_____________________________________________________________________________
+void
+AliMUONCalibrationData::Check(Int_t runNumber)
+{
+  /// Self-check to see if we can read all data for a given run 
+  /// from the current OCDB...
+  
+  if ( ! CreateCapacitances(runNumber) )
+  {
+    AliErrorClass("Could not read capacitances");
+  }
+  else
+  {
+    AliInfoClass("Capacitances read OK");
+  }
+
+  if ( ! CreateGains(runNumber) ) 
+  {
+    AliErrorClass("Could not read gains");
+  }
+  else
+  {
+    AliInfoClass("Gains read OK");
+  }
+
+  if ( ! CreateGlobalTriggerCrateConfig(runNumber) ) 
+  {
+    AliErrorClass("Could not read Trigger Crate Config");
+  }
+  else
+  {
+    AliInfoClass("TriggerBoardMasks read OK");
+  }
+
+  if ( !  CreateHV(runNumber) )
+  {
+    AliErrorClass("Could not read HV");
+  }
+  else
+  {
+    AliInfoClass("HV read OK");
+  }
+
+  if ( ! CreateNeighbours(runNumber) )
+  {
+    AliErrorClass("Could not read Neighbours");
+  }
+  else
+  {
+    AliInfoClass("Neighbours read OK");
+  }
+
+  if ( !  CreateLocalTriggerBoardMasks(runNumber) )
+  {
+    AliErrorClass("Could not read LocalTriggerBoardMasks");
+  }
+  else
+  {
+    AliInfoClass("LocalTriggerBoardMasks read OK");
+  }
+  
+  if ( ! CreatePedestals(runNumber) )
+  {
+    AliErrorClass("Could not read pedestals");
+  }
+  else
+  {
+    AliInfoClass("Pedestals read OK");
+  }
+  
+  if ( ! CreateRegionalTriggerConfig(runNumber) )
+  {
+    AliErrorClass("Could not read RegionalTriggerConfig");
+  }
+  else
+  {
+    AliInfoClass("RegionalTriggerBoardMasks read OK");
+  }
+  
+  if ( ! CreateTriggerLut(runNumber) )
+  {
+    AliErrorClass("Could not read TriggerLut");
+  }
+  else
+  {
+    AliInfoClass("TriggerLut read OK");
+  }
+
+  if ( ! CreateTriggerEfficiency(runNumber) )
+  {
+    AliErrorClass("Could not read TriggerEfficiency");
+  }
+  else    
+  {
+    AliInfoClass("TriggerEfficiency read OK");
+  }
+}
 
 

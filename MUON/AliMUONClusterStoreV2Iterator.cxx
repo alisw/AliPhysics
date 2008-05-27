@@ -25,12 +25,12 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUONClusterStoreV2Iterator.h"
-
 #include "AliMUONClusterStoreV2.h"
 
+#include "AliMpExMapIterator.h"
 #include "AliMpExMap.h"
 
-#include <TExMap.h>
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterStoreV2Iterator)
@@ -55,40 +55,15 @@ AliMUONClusterStoreV2Iterator::AliMUONClusterStoreV2Iterator(const AliMUONCluste
 }
 
 //_____________________________________________________________________________
-AliMUONClusterStoreV2Iterator::AliMUONClusterStoreV2Iterator(const AliMUONClusterStoreV2Iterator& iter)
-: TIterator(iter),
-  fStore(iter.fStore),
-  fFirstChamberId(iter.fFirstChamberId),
-  fLastChamberId(iter.fLastChamberId),
-  fCurrentChamberId(iter.fCurrentChamberId),
-  fChamberIterator(0x0)
-{
-  /// Copy constructor
-  if (iter.fChamberIterator) fChamberIterator = new TExMapIter(*(iter.fChamberIterator));
-}
-
-//_____________________________________________________________________________
-AliMUONClusterStoreV2Iterator& AliMUONClusterStoreV2Iterator::operator=(const AliMUONClusterStoreV2Iterator& iter)
-{
-  /// Assignment operator
-  if ( this != &iter ) {
-    fFirstChamberId = iter.fFirstChamberId;
-    fLastChamberId = iter.fLastChamberId;
-    fCurrentChamberId = iter.fCurrentChamberId;
-    delete fChamberIterator;
-    fChamberIterator = 0x0;
-    if (iter.fChamberIterator) fChamberIterator = new TExMapIter(*(iter.fChamberIterator));
-  }
-  return *this;
-}
-
-//_____________________________________________________________________________
-TIterator& AliMUONClusterStoreV2Iterator::operator=(const TIterator& iter)
+TIterator& AliMUONClusterStoreV2Iterator::operator=(const TIterator& /*iter*/)
 {
   /// Overriden operator= (imposed by Root's definition of TIterator::operator= ?)
+/*
   if ( this != &iter && iter.IsA() == AliMUONClusterStoreV2Iterator::Class() ) {
     (*this) = static_cast<const AliMUONClusterStoreV2Iterator&>(iter);
   }
+*/
+  AliFatalGeneral("AliMUONClusterStoreV2Iterator::operator=","reimplement me");
   return *this;
 }
 
@@ -103,9 +78,8 @@ AliMUONClusterStoreV2Iterator::~AliMUONClusterStoreV2Iterator()
 TObject* AliMUONClusterStoreV2Iterator::NextInCurrentChamber() const
 {
   /// Return the value corresponding to theKey in iterator iter
-  Long_t key, value;
-  if (fChamberIterator->Next(key,value)) return reinterpret_cast<TObject*>(value);
-  else return 0x0;
+  
+  return fChamberIterator->Next();
 }
 
 //_____________________________________________________________________________
@@ -120,7 +94,7 @@ TObject* AliMUONClusterStoreV2Iterator::Next()
     
     fCurrentChamberId++;
     delete fChamberIterator;
-    fChamberIterator = new TExMapIter(static_cast<AliMpExMap*>(fStore->fMap->UncheckedAt(fCurrentChamberId))->GetIterator());
+    fChamberIterator = static_cast<AliMpExMap*>(fStore->fMap->UncheckedAt(fCurrentChamberId))->CreateIterator();
     
     o = NextInCurrentChamber();
   }
@@ -134,5 +108,5 @@ void AliMUONClusterStoreV2Iterator::Reset()
   /// Reset the iterator
   fCurrentChamberId = fFirstChamberId;
   delete fChamberIterator;
-  fChamberIterator = new TExMapIter(static_cast<AliMpExMap*>(fStore->fMap->UncheckedAt(fCurrentChamberId))->GetIterator());
+  fChamberIterator = static_cast<AliMpExMap*>(fStore->fMap->UncheckedAt(fCurrentChamberId))->CreateIterator();
 }

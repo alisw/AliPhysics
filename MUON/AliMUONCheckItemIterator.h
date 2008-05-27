@@ -34,8 +34,7 @@ private:
   AliMUONCheckItemIterator(const AliMUONCheckItemIterator&);
   /// Not implemented
   AliMUONCheckItemIterator& operator=(const AliMUONCheckItemIterator&);
-  
-private:
+
   TExMapIter* fIter; //!< the actual iterator doing the job
   
   ClassDef(AliMUONCheckItemIterator,1) // Iterator for AliMUONCheckItem objects

@@ -74,6 +74,9 @@ class AliMpDetElement : public  TObject {
     
     const AliMpArrayI* ManusForHV(Int_t hvIndex) const;
     
+           /// Return the number of channels in this detection element    
+    Int_t NofChannels() const { return fNofChannels; }
+    
   private:
     /// Not implemented
     AliMpDetElement();
@@ -101,7 +104,9 @@ class AliMpDetElement : public  TObject {
     
     AliMpExMap fHVmanus; ///< map of HV->manu
     
-  ClassDef(AliMpDetElement,2)  // The manager class for definition of detection element types
+    Int_t fNofChannels; ///< number of channels in this detection element
+    
+  ClassDef(AliMpDetElement,3)  // The manager class for definition of detection element types
 };
 
 // inline function

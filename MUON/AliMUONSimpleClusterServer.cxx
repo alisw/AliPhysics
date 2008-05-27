@@ -76,8 +76,8 @@ AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder* cl
     /// Ctor
     /// Note that we take ownership of the clusterFinder
     
-    fPads[0] = new AliMpExMap(true);
-    fPads[1] = new AliMpExMap(true);
+    fPads[0] = new AliMpExMap;
+    fPads[1] = new AliMpExMap;
     
 }
 

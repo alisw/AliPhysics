@@ -788,11 +788,11 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSlat* slat)
   AliMpMotifPosition* motifPos = 0x0;
   Int_t manuId = 0;
 
-  for ( AliMpSlat::Size_t i = 0; i < slat->GetSize(); ++i ) {
+  for ( Int_t i = 0; i < slat->GetSize(); ++i ) {
     
     AliMpPCB* pcb = slat->GetPCB(i);
     
-    for ( AliMpPCB::Size_t j = 0; j < slat->GetPCB(i)->GetSize(); ++j ) {
+    for ( Int_t j = 0; j < slat->GetPCB(i)->GetSize(); ++j ) {
       
       motifPos = pcb->GetMotifPosition(j);
       

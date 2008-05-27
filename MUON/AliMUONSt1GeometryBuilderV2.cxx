@@ -2460,7 +2460,6 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
           if (find(alreadyDone.begin(),alreadyDone.end(),motifPosId)
               != alreadyDone.end()) continue; // don't treat the same motif twice
 
-          AliMUONSt1SpecialMotif spMot = specialMap[motifPosId];
 #endif
 #ifdef WITH_ROOT
           Bool_t isDone = false;
@@ -2470,9 +2469,9 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
 	    i++;
 	  }  
 	  if (isDone) continue; // don't treat the same motif twice
+#endif
 
           AliMUONSt1SpecialMotif spMot = *((AliMUONSt1SpecialMotif*)specialMap.GetValue(motifPosId));
-#endif
 	  AliDebugStream(2) << chamber << " processing special motif: " << motifPosId << endl;  
 
           AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(motifPosId);

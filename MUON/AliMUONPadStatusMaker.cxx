@@ -37,7 +37,6 @@
 #include "AliMpArrayI.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
-#include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
 #include "AliMpHVNamer.h"

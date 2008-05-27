@@ -90,7 +90,11 @@ void AliMUONClusterStoreV2::Clear(Option_t*)
   /// Clear the internal cluster array AND the index
   fClusters->Clear("C");
   if (fMap) {
-    fMap->Clear("C");
+    Int_t nChamber = AliMpConstants::NofTrackingChambers();
+    for (Int_t chamber=0; chamber<nChamber; chamber++) {
+      AliMpExMap *map = static_cast<AliMpExMap *>(fMap->UncheckedAt(chamber));
+      map->Clear("C");
+    }
     fMapped = kFALSE;
   }
 }
@@ -219,13 +223,13 @@ void AliMUONClusterStoreV2::ReMap()
     // Create one map per chamber
     AliMpExMap *map;
     for (Int_t chamber=0; chamber<nChamber; chamber++) {
-      map = new((*fMap)[chamber]) AliMpExMap(kTRUE);
+      map = new((*fMap)[chamber]) AliMpExMap;
       map->SetOwner(kFALSE);
     }
   }
   else {
     for (Int_t chamber=0; chamber<nChamber; chamber++) {
-      AliMpExMap *map = static_cast<AliMpExMap *>(fMap->At(chamber));
+      AliMpExMap *map = static_cast<AliMpExMap *>(fMap->UncheckedAt(chamber));
       map->Clear("C");
     }
   }  

@@ -38,11 +38,11 @@ public:
   AliMUONVTrackStore* ReconstructFromClusters();
   
   // refit a particular track in the ESD event
-  AliMUONTrack* RetrackFromDigits(Int_t iTrack);
-  AliMUONTrack* RetrackFromClusters(Int_t iTrack);
+  AliMUONTrack* RetrackFromDigits(UInt_t trackId);
+  AliMUONTrack* RetrackFromClusters(UInt_t trackId);
   
   // re-clusterize a particular cluster in the ESD event
-  AliMUONVClusterStore* ReClusterize(Int_t iTrack, Int_t iCluster);
+  AliMUONVClusterStore* ReClusterize(UInt_t trackId, UInt_t clusterId);
   AliMUONVClusterStore* ReClusterize(UInt_t clusterId);
   
   
@@ -54,8 +54,10 @@ protected:
   
 private:
   
-  void                   CreateGeometryTransformer();
-  void                   CreateClusterServer(AliMUONGeometryTransformer& transformer);
+  void CreateGeometryTransformer();
+  void CreateClusterServer(AliMUONGeometryTransformer& transformer);
+  
+  AliMUONTrack* RetrackFromDigits(const AliMUONTrack& track);
   
   void AddClusterToTracks(const AliMUONVClusterStore &localClusterStore, AliMUONVTrackStore &trackStore);
   

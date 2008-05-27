@@ -51,15 +51,7 @@ class AliMpSlat : public TObject
 {
  public:
 
-#ifdef WITH_ROOT
-  /// Type def for the array size
-  typedef Int_t Size_t;
-#else
-  /// Type def for the array size
-  typedef UInt_t Size_t;
-#endif  
-  
-  AliMpSlat();
+  AliMpSlat(TRootIOCtor* ioCtor);
   AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending);
   virtual ~AliMpSlat();
 
@@ -93,7 +85,7 @@ class AliMpSlat : public TObject
   Int_t FindPCBIndex(Double_t x, Double_t y) const;
 
   /// Returns the i-th PCB of this slat.
-  AliMpPCB* GetPCB(Size_t i) const;
+  AliMpPCB* GetPCB(Int_t i) const;
 
   /// Returns the MotifPosition containing location (x,y).
   AliMpMotifPosition* FindMotifPosition(Double_t x, Double_t y) const;
@@ -125,7 +117,7 @@ class AliMpSlat : public TObject
   Int_t GetNofPadsX() const;
  
   /// Returns the number of PCBs of this slat.
-  Size_t GetSize() const;
+  Int_t GetSize() const;
     
   void Print(Option_t* option="") const;
 
@@ -141,6 +133,8 @@ class AliMpSlat : public TObject
   Int_t NofPads() const { return fNofPads; }
  
  private:
+  /// Not implemented
+  AliMpSlat();
   /// Not implemented
   AliMpSlat(const AliMpSlat& rhs);
   /// Not implemented

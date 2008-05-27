@@ -78,8 +78,8 @@ class AliMpMotifMap : public TObject
 #endif    
 
   public:
-    AliMpMotifMap(Bool_t /*standardConstructor*/);
     AliMpMotifMap();
+    AliMpMotifMap(TRootIOCtor* ioCtor);
     virtual ~AliMpMotifMap();
     
     // methods

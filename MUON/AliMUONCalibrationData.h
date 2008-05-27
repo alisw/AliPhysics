@@ -116,6 +116,8 @@ public:
 
   static TObject* CreateObject(Int_t runNumber, const char* path);
   
+  static void Check(Int_t runNumber);
+  
 protected:
   /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);

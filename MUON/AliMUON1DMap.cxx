@@ -16,8 +16,8 @@
 // $Id$
 
 #include "AliMUON1DMap.h"
-#include "AliMUON1DMapIterator.h"
 #include "AliMpExMap.h"
+#include "AliMpExMapIterator.h"
 
 #include "AliLog.h"
 
@@ -35,17 +35,28 @@ ClassImp(AliMUON1DMap)
 /// \endcond
 
 //_____________________________________________________________________________
+AliMUON1DMap::AliMUON1DMap(TRootIOCtor*)
+: AliMUONVStore(),
+fMap(0x0)
+{
+  /// I/O ctor
+  
+}
+
+//_____________________________________________________________________________
 AliMUON1DMap::AliMUON1DMap(Int_t theSize)
 : AliMUONVStore(),
-  fMap(new AliMpExMap(kTRUE))
+  fMap(new AliMpExMap)
 {
 /// Default ctor
 
-  if ( theSize ) 
+    AliInfo("");
+    
+  if ( theSize > 0) 
   {
     fMap->SetSize(theSize);
   }
-    fMap->SetOwner(kTRUE);
+  fMap->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -122,7 +133,7 @@ AliMUON1DMap::CreateIterator() const
 {
   /// Create and return an iterator on this map
   /// Returned iterator must be deleted by user.
-  return new AliMUON1DMapIterator(*fMap);
+  return fMap->CreateIterator();
 }
 
 //_____________________________________________________________________________

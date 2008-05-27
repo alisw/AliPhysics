@@ -20,13 +20,14 @@
 
 class AliMpTriggerCrate;
 class AliMpLocalBoard;
+class TIterator;
 
 class AliMpRegionalTrigger : public  TObject{
 
   public:
     AliMpRegionalTrigger();
     AliMpRegionalTrigger(const AliMpRegionalTrigger& rhs);
-    AliMpRegionalTrigger(TRootIOCtor* /*ioCtor*/);
+    AliMpRegionalTrigger(TRootIOCtor* ioCtor);
     virtual ~AliMpRegionalTrigger();
     
     // operators
@@ -39,35 +40,26 @@ class AliMpRegionalTrigger : public  TObject{
     AliMpLocalBoard*   FindLocalBoard(Int_t localBoardId, Bool_t warn = true) const;
 
     // method for looping
+
+    TIterator* CreateCrateIterator() const;
+    
+    TIterator* CreateLocalBoardIterator() const;
+    
+    Int_t LocalBoardId(Int_t index) const;
     
     Int_t GetNofTriggerCrates() const;
-    AliMpTriggerCrate* GetTriggerCrate(Int_t index) const;
-    AliMpTriggerCrate* GetTriggerCrateFast(Int_t index) const;
-    TExMapIter GetTriggerCrateItr() const;
 
     Int_t GetNofLocalBoards() const;
-    AliMpLocalBoard* GetLocalBoard(Int_t index) const;
-    AliMpLocalBoard* GetLocalBoardFast(Int_t index) const;
-    TExMapIter GetLocalBoardItr() const;
 
   private:
     // data members  
     AliMpExMap  fTriggerCrates; ///< map for trigger crates
-    AliMpExMap  fLocalBoards;   ///< map for local boards
+    AliMpExMap fLocalBoardMap; ///< map of local boards (owner of boards)
+    TObjArray  fLocalBoardArray; ///< array of local boards (not owner of boards, the map is the owner)
  
-  ClassDef(AliMpRegionalTrigger,1) // Regional trigger crate
+  ClassDef(AliMpRegionalTrigger,2) // Regional trigger crate
 };
 
-/// Return trigger crates iterator
-inline TExMapIter AliMpRegionalTrigger::GetTriggerCrateItr() const { 
-  return fTriggerCrates.GetIterator(); 
-}
-
-/// Return trigger local board iterator
-inline TExMapIter AliMpRegionalTrigger::GetLocalBoardItr() const { 
-  return fLocalBoards.GetIterator(); 
-}
- 
 
 #endif //ALI_MP_REGIONAL__CRATE_H
 

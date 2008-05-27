@@ -22,21 +22,19 @@
 
 #include <TArrayI.h>
 
-class AliMpDEStore;
 class AliMpDetElement;
-
+class TIterator;
 class TString;
-
 
 class AliMpDEIterator : public  TObject {
 
   public:
     AliMpDEIterator();
-    AliMpDEIterator(const AliMpDEIterator& rhs);
+    //AliMpDEIterator(const AliMpDEIterator& rhs);
     virtual ~AliMpDEIterator();
 
     // Operators
-    AliMpDEIterator& operator=(const AliMpDEIterator& rhs);
+    //AliMpDEIterator& operator=(const AliMpDEIterator& rhs);
     
     // Methods for iterating over DE elements
     // 
@@ -49,13 +47,15 @@ class AliMpDEIterator : public  TObject {
     Int_t CurrentDEId() const;
 
   private:
-    // methods
-    AliMpDetElement*  GetDetElement(Int_t index) const;
+    /// Not implemented
+    AliMpDEIterator(const AliMpDEIterator& rhs);
+    /// Not implemented
+    AliMpDEIterator& operator=(const AliMpDEIterator& rhs);
 
     // data members	
-    AliMpDEStore*  fDEStore;   ///< DE store 
-    Int_t          fIndex;     ///< Current DE index
-    Int_t          fChamberId; ///< The iterated chamber 
+    AliMpDetElement* fCurrentDE; ///< current element in iteration
+    TIterator*       fIterator;  ///< iterator
+    Int_t            fChamberId; ///< The iterated chamber 
 
   ClassDef(AliMpDEIterator,0)  // The iterator over valid detection element IDs
 };

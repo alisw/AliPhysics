@@ -52,14 +52,6 @@ class AliMpPCB : public TObject
 {
  public:
 
-#ifdef WITH_ROOT
-  /// Type def for the array size
-  typedef Int_t  Size_t;
-#else  
-  /// Type def for the array size
-  typedef UInt_t Size_t;
-#endif
-  
   AliMpPCB();
   /** Ctor. The sizes are given in mm.
       See full doc for the meaning of enveloppe parameters.
@@ -125,7 +117,7 @@ class AliMpPCB : public TObject
   /** Returns the i-th motifPosition of this PCB.
       i : [0..GetSize()-1]
   */
-  AliMpMotifPosition* GetMotifPosition(Size_t i) const;
+  AliMpMotifPosition* GetMotifPosition(Int_t i) const;
 
   /// Returns the motifPosition which contains the pad at (ix,iy).
   AliMpMotifPosition* FindMotifPosition(Int_t ix, Int_t iy) const;
@@ -134,7 +126,7 @@ class AliMpPCB : public TObject
   AliMpMotifPosition* FindMotifPosition(Double_t x, Double_t y) const;
 
   /// The number of motifs, aka manus.
-  Size_t GetSize() const;
+  Int_t GetSize() const;
 
   Int_t GetNofPadsX() const;
   Int_t GetNofPadsY() const;

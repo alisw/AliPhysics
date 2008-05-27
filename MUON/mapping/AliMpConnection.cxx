@@ -34,7 +34,7 @@ ClassImp(AliMpConnection)
 
 //_____________________________________________________________________________
 AliMpConnection::AliMpConnection(Int_t padNum, Int_t bergNum,Int_t kaptonNum,
-		                 Int_t gassiNum) 
+		                 Int_t gassiNum, const AliMpIntPair& localIndices) 
   : TObject(),
     fPadNum(padNum),
     fBergNum(bergNum),
@@ -43,8 +43,12 @@ AliMpConnection::AliMpConnection(Int_t padNum, Int_t bergNum,Int_t kaptonNum,
     fOwner(0)
 {
 /// Standard constructor
+
+      SetUniqueID(localIndices.GetFirst() | ( localIndices.GetSecond() << 16 ));
+
       AliDebug(1,Form("this=%p padNum=%d bergNum=%d kaptonNum=%d gassiNum=%d",
                       this,padNum,bergNum,kaptonNum,gassiNum));
+
 }
 
 //_____________________________________________________________________________
@@ -66,3 +70,23 @@ AliMpConnection::~AliMpConnection()
 /// Destructor  
   AliDebug(1,Form("this=%p"));
 }
+
+/*
+//_____________________________________________________________________________
+void
+AliMpConnection::SetLocalIndices(const AliMpIntPair& pair)
+{
+  SetUniqueID(pair.GetFirst() | ( pair.GetSecond() << 16 ));
+}
+*/
+
+//_____________________________________________________________________________
+AliMpIntPair AliMpConnection::LocalIndices() const
+{
+/// Return local indices 
+
+  Int_t f = GetUniqueID() & 0xFFFF;
+  Int_t s = ( ( GetUniqueID() & 0xFFFF0000 ) >> 16);
+  return AliMpIntPair(f,s);
+}
+

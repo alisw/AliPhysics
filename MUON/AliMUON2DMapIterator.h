@@ -23,9 +23,6 @@ class AliMUON2DMapIterator : public TIterator
 {
 public:
   AliMUON2DMapIterator(const AliMpExMap& theMap);
-  AliMUON2DMapIterator(const AliMUON2DMapIterator& rhs);
-  AliMUON2DMapIterator& operator=(const AliMUON2DMapIterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
   
   virtual ~AliMUON2DMapIterator();
   
@@ -37,16 +34,20 @@ public:
   virtual const TCollection* GetCollection() const;
   
 private:
-    
-  AliMpExMap* Map(Int_t i) const;
+  TIterator* NextIterator();
   
 private:
+  /// Not implemented
+  AliMUON2DMapIterator(const AliMUON2DMapIterator& rhs);
+  /// Not implemented
+  AliMUON2DMapIterator& operator=(const AliMUON2DMapIterator& rhs);
+  TIterator& operator=(const TIterator& rhs);
+
   const AliMpExMap* fkMap; ///< Top map we iterate upon
-  AliMpExMap* fCurrentMap; ///< Current map (inside top map) we are iterating upon
-  Int_t fI;                ///< Map(fI) is fCurrentMap  
-  Int_t fJ;                ///< Current position in fCurrentMap
+  TIterator* fIter1; ///< first iterator
+  TIterator* fIter2; ///< second iterator
   
-  ClassDef(AliMUON2DMapIterator,0) // VDataIterator for 2D maps
+  ClassDef(AliMUON2DMapIterator,0) // TIterator for AliMUON2D maps
 };
 
 

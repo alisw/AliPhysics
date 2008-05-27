@@ -29,6 +29,7 @@
 
 #include <cstdlib>
 #include "AliMpDDLStore.h"
+#include "AliMpExMapIterator.h"
 #include "AliMpConstants.h"
 #include "AliMpDEStore.h"
 #include "AliMpDDL.h"
@@ -105,7 +106,7 @@ AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn)
 AliMpDDLStore::AliMpDDLStore()
         : TObject(),
         fDDLs(fgkNofDDLs+fgkNofTriggerDDLs), // FIXEME
-        fBusPatches(true),
+        fBusPatches(),
         fManuList12(),
         fManuBridge2(),
         fRegionalTrigger()
@@ -135,7 +136,7 @@ AliMpDDLStore::AliMpDDLStore()
 AliMpDDLStore::AliMpDDLStore(TRootIOCtor* ioCtor)
         : TObject(),
         fDDLs(),
-        fBusPatches(),
+        fBusPatches(ioCtor),
         fRegionalTrigger(ioCtor)
 {
     /// Constructor for I0
@@ -300,17 +301,17 @@ Bool_t  AliMpDDLStore::ReadTrigger()
 }
 
 //______________________________________________________________________________
-Bool_t  AliMpDDLStore::SetTriggerDDLs() 
+Bool_t  
+AliMpDDLStore::SetTriggerDDLs() 
 {
-/// Create trigger DDLs and set DDL Ids in the regional trigger
-  
+  /// Create trigger DDLs and set DDL Ids in the regional trigger
 
   Int_t iDDL = -1;
-
-  for ( Int_t i=0; i<fRegionalTrigger.GetNofTriggerCrates(); ++i ) {
+  TIter next(fRegionalTrigger.CreateCrateIterator());
+  AliMpTriggerCrate* crate;
   
-    AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(i);
-
+  while ( ( crate = static_cast<AliMpTriggerCrate*>(next()) ) )
+  {
     TString crateName = crate->GetName();
 
     // determine ddl number vs crate side
@@ -628,12 +629,11 @@ Bool_t AliMpDDLStore::SetBusPatchLength() {
 Int_t AliMpDDLStore::GetLocalBoardId(TString name) const {
     /// return the first board with a given side and line
 
-
-    TExMapIter i = fRegionalTrigger.GetLocalBoardItr();
-    Long_t key, value;
-    while ( i.Next(key, value) ) {
-        AliMpLocalBoard* local = (AliMpLocalBoard*)value;
-
+  TIter next(fRegionalTrigger.CreateLocalBoardIterator());
+  AliMpLocalBoard* local;
+  
+  while ( ( local = static_cast<AliMpLocalBoard*>(next()) ) )
+  {
         TString tmp(&local->GetName()[4], 2);
         if (name.Contains(tmp))
             if (name[0] == local->GetName()[0])
@@ -641,7 +641,6 @@ Int_t AliMpDDLStore::GetLocalBoardId(TString name) const {
     }
 
     return 0;
-
 }
 
 //
@@ -893,3 +892,13 @@ void AliMpDDLStore::SetRegionalTrigger(const AliMpRegionalTrigger& regionalTrigg
   // Set new trigger DDLs from new regional trigger
   SetTriggerDDLs();
 }  
+
+
+//______________________________________________________________________________
+TIterator* 
+AliMpDDLStore::CreateBusPatchIterator() const
+{
+/// Create the iterator over bus patches
+
+  return fBusPatches.CreateIterator();
+}

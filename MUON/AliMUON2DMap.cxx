@@ -21,6 +21,7 @@
 #include "AliMUON2DMapIterator.h"
 #include "AliMUON2DMapIteratorByI.h"
 #include "AliMpExMap.h"
+#include "AliMpExMapIterator.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUON2DMap
@@ -37,31 +38,26 @@ ClassImp(AliMUON2DMap)
 
 const Int_t AliMUON2DMap::fgkOptimalSizeForDEManu = 228;
 
-namespace
+//_____________________________________________________________________________
+AliMUON2DMap::AliMUON2DMap(TRootIOCtor*)
+: AliMUONVStore(), 
+fMap(0x0),
+fOptimizeForDEManu(kFALSE)
 {
-  //___________________________________________________________________________
-  TObject* GetValue(TExMapIter& iter, Int_t& theKey) 
-  {
-    /// return the next value corresponding to theKey in iterator iter
-    theKey = -1;
-    Long_t key, value;
-    Bool_t ok = iter.Next(key,value);
-    if (!ok) return 0x0;
-    theKey = (Int_t)(key & 0xFFFF);
-    return reinterpret_cast<TObject*>(value);
-  }
+  /// Root I/O constructor.
 }
 
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap(Bool_t optimizeForDEManu) 
 : AliMUONVStore(), 
-  fMap(new AliMpExMap(kTRUE)),
+  fMap(new AliMpExMap),
   fOptimizeForDEManu(optimizeForDEManu)
 {
   /// Default constructor.
   // hard-coded constant in order not to depend on mapping
   // if this number ever change, it will not break the code, simply the
   // automatic resizing will give a warning...
+    
   if ( fOptimizeForDEManu ) fMap->SetSize(fgkOptimalSizeForDEManu); 
 }
 
@@ -163,13 +159,17 @@ Int_t
 AliMUON2DMap::GetSize() const
 {
   /// Return the number of objects we hold
-  TExMapIter iter(fMap->GetIterator());
-  Int_t i;
+  TIter next(fMap->CreateIterator());
   Int_t theSize(0);
+  AliMpExMap* m;
   
-  while ( GetValue(iter,i) ) 
+  while ( ( m = static_cast<AliMpExMap*>(next()) ) )
   {
-    theSize += GetSize(i);
+    TIter next2(m->CreateIterator());
+    while ( next2() ) 
+    {
+      ++theSize;
+    }
   }
   return theSize;
 }
@@ -195,7 +195,7 @@ AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
   TObject* o = fMap->GetValue(i);
   if ( !o )
   {
-    AliMpExMap* m = new AliMpExMap(true);
+    AliMpExMap* m = new AliMpExMap;
     if ( fOptimizeForDEManu ) 
     {
       m->SetSize(451); // same remark as for the SetSize in ctor...

@@ -21,7 +21,8 @@ class AliMpExMap;
 class AliMUON1DMap : public AliMUONVStore
 {
 public:
-  AliMUON1DMap(Int_t theSize=0);
+  AliMUON1DMap(Int_t theSize);
+  AliMUON1DMap(TRootIOCtor* ioCtor);
   AliMUON1DMap(const AliMUON1DMap& other);
   AliMUON1DMap& operator=(const AliMUON1DMap& other);
   virtual ~AliMUON1DMap();
@@ -50,6 +51,8 @@ private:
   virtual Bool_t Set(Int_t i, TObject* object);
   
 private:  
+    /// Not implemented
+    AliMUON1DMap();
     
     AliMpExMap* fMap; ///< Internal array (map)
   

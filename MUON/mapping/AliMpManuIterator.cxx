@@ -20,6 +20,7 @@
 #include "AliMpBusPatch.h"
 #include "AliMpDDLStore.h"
 #include "TExMap.h"
+#include "AliLog.h"
 
 /// \class AliMpManuIterator
 ///
@@ -34,7 +35,7 @@ ClassImp(AliMpManuIterator)
 //_____________________________________________________________________________
 AliMpManuIterator::AliMpManuIterator()
 : TObject(), 
-fIterator(new TExMapIter(AliMpDDLStore::Instance()->GetBusPatchesIterator())),
+fIterator(AliMpDDLStore::Instance()->CreateBusPatchIterator()),
 fCurrentBusPatch(0x0),
 fCurrentManuIndex(-1)
 {
@@ -65,7 +66,7 @@ AliMpManuIterator::Next(Int_t& detElemId, Int_t& manuId)
   }
   else
   {
-    fCurrentBusPatch = NextBusPatch();
+    fCurrentBusPatch = static_cast<AliMpBusPatch*>(fIterator->Next());
     if (!fCurrentBusPatch ) 
     {
       return kFALSE;
@@ -76,30 +77,13 @@ AliMpManuIterator::Next(Int_t& detElemId, Int_t& manuId)
 }
 
 //_____________________________________________________________________________
-AliMpBusPatch* 
-AliMpManuIterator::NextBusPatch() const
-{
-  /// Return next bus patch
-  
-  Long_t key, value;
-  
-  Bool_t ok = fIterator->Next(key,value);
-
-  if (ok)
-  {
-    return reinterpret_cast<AliMpBusPatch*>(value);
-  }
-  return 0x0;
-}
-
-//_____________________________________________________________________________
 void
 AliMpManuIterator::Reset()
 {
   /// Rewind the iterator
   fIterator->Reset();
   
-  fCurrentBusPatch = NextBusPatch();
+  fCurrentBusPatch = static_cast<AliMpBusPatch*>(fIterator->Next());
   
   fCurrentManuIndex = -1;
 }

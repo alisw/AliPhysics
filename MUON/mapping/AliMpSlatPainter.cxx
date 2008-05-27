@@ -108,7 +108,7 @@ AliMpSlatPainter::Draw(Option_t* option)
   switch (option[0])
     {
     case 'P':
-      for ( AliMpSlat::Size_t i = 0; i < fkSlat->GetSize(); ++i )
+      for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
 	{
 	  AliMpPCB* pcb = fkSlat->GetPCB(i);
 	  

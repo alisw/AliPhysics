@@ -14,8 +14,8 @@
 
 #include <AliMpExMap.h>
 #include <TObject.h>
-#include <TClonesArray.h>
 #include <TString.h>
+#include "AliLog.h"
 
 class AliMUONTrack;
 class AliMUONVTrackStore;
@@ -49,35 +49,25 @@ public: // methods to play with internal objects
   // Return numbers of tracks/clusters/digits
   Int_t GetNTracks() const;
   Int_t GetNClusters() const;
-  Int_t GetNClusters(Int_t iTrack) const;
+  Int_t GetNClusters(UInt_t trackId) const;
   Int_t GetNDigits() const;
-  Int_t GetNDigits(Int_t iTrack) const;
-  Int_t GetNDigits(Int_t iTrack, Int_t iCluster) const;
+  Int_t GetNDigits(UInt_t trackId) const;
+  Int_t GetNDigits(UInt_t trackId, UInt_t clusterId) const;
   Int_t GetNDigitsInCluster(UInt_t clusterId) const;
   
-  // Return internal MUON objects (faster than finders)
-  // ordering of the MUON objects is the same as in ESD
-  AliMUONTrack*    GetTrack(Int_t iTrack) const;
-  AliMUONVCluster* GetCluster(Int_t iTrack, Int_t iCluster) const;
-  AliMUONVDigit*   GetDigit(Int_t iTrack, Int_t iCluster, Int_t iDigit) const;
-  
-  // Quickly return internal MUON objects (indices unchecked)
-  // ordering of the MUON objects is the same as in ESD
-  AliMUONTrack*    GetTrackFast(Int_t iTrack) const;
-  AliMUONVCluster* GetClusterFast(Int_t iTrack, Int_t iCluster) const;
-  AliMUONVDigit*   GetDigitFast(Int_t iTrack, Int_t iCluster, Int_t iDigit) const;
-  
-  // Find internal MUON objects (slower than getters)
+  // Find internal MUON objects
+  AliMUONTrack*    FindTrack(UInt_t trackId) const;
   AliMUONVCluster* FindCluster(UInt_t clusterId) const;
+  AliMUONVCluster* FindCluster(UInt_t trackId, UInt_t clusterId) const;
   AliMUONVDigit*   FindDigit(UInt_t digitId) const;
   
   // iterate over internal MUON objects
   TIterator* CreateTrackIterator() const;
   TIterator* CreateClusterIterator() const;
-  TIterator* CreateClusterIterator(Int_t iTrack) const;
+  TIterator* CreateClusterIterator(UInt_t trackId) const;
   TIterator* CreateDigitIterator() const;
-  TIterator* CreateDigitIterator(Int_t iTrack) const;
-  TIterator* CreateDigitIterator(Int_t iTrack, Int_t iCluster) const;
+  TIterator* CreateDigitIterator(UInt_t trackId) const;
+  TIterator* CreateDigitIterator(UInt_t trackId, UInt_t clusterId) const;
   TIterator* CreateDigitIteratorInCluster(UInt_t clusterId) const;
   
   
@@ -147,36 +137,12 @@ private:
   AliMUONVDigitStore* fDigits; ///< digit container
   
   // maps (to speed up data retrieval)
-  AliMpExMap*   fTrackMap;   ///< map of tracks
-  AliMpExMap*   fClusterMap; ///< map of clusters
-  TClonesArray* fDigitMap;   ///< map of digits
+  AliMpExMap* fClusterMap; ///< map of clusters
+  AliMpExMap* fDigitMap;   ///< map of digits
     
     
   ClassDef(AliMUONESDInterface,0)
 };
-
-
-//___________________________________________________________________________
-inline AliMUONTrack* AliMUONESDInterface::GetTrackFast(Int_t iTrack) const
-{
-  /// return MUON track "iTrack" without any check
-  return (AliMUONTrack*) fTrackMap->GetObjectFast(iTrack);
-}
-
-//___________________________________________________________________________
-inline AliMUONVCluster* AliMUONESDInterface::GetClusterFast(Int_t iTrack, Int_t iCluster) const
-{
-  /// return MUON cluster numbered "iCluster" in track "iTrack" without any check
-  return (AliMUONVCluster*) ((AliMpExMap*) fClusterMap->GetObjectFast(iTrack))->GetObjectFast(iCluster);
-}
-
-//___________________________________________________________________________
-inline AliMUONVDigit* AliMUONESDInterface::GetDigitFast(Int_t iTrack, Int_t iCluster, Int_t iDigit) const
-{
-  /// return MUON digit numbered "iDigit" in cluster numbered "iCluster" of track "iTrack" without any check
-  return (AliMUONVDigit*) ((AliMpExMap*) ((AliMpExMap*) fDigitMap->UncheckedAt(iTrack))->GetObjectFast(iCluster))->GetObjectFast(iDigit);
-}
-
 
 #endif
 

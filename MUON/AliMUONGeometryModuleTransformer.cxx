@@ -66,7 +66,7 @@ AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleI
   fTransformation = new TGeoHMatrix("");
 
   // Det elements transformation stores
-  fDetElements = new AliMpExMap(true);
+  fDetElements = new AliMpExMap;
 }
 
 

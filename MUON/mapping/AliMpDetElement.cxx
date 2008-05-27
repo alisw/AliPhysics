@@ -58,17 +58,18 @@ AliMpDetElement::AliMpDetElement(Int_t id, const TString& name,
     fSegType(segType),
     fPlaneType(planeType),
     fBusPatchIds(false),
-    fManuToSerialNbs(1700),
-    fSerialNbToManus(1700),
-    fManuList(1700),
-    fTrackerChannels(1700*AliMpConstants::ManuNofChannels()),
-    fHVmanus(true)
+    fManuToSerialNbs(),
+    fSerialNbToManus(),
+    fManuList(),
+    fTrackerChannels(),
+    fHVmanus(),
+    fNofChannels(0)
 {
 /// Standard constructor
 }
 
 //______________________________________________________________________________
-AliMpDetElement::AliMpDetElement(TRootIOCtor* /*ioCtor*/)
+AliMpDetElement::AliMpDetElement(TRootIOCtor* ioCtor)
   : TObject(),
     fId(0),
     fDdlId(-1),
@@ -78,9 +79,10 @@ AliMpDetElement::AliMpDetElement(TRootIOCtor* /*ioCtor*/)
     fBusPatchIds(),
     fManuToSerialNbs(),
     fSerialNbToManus(),
-    fManuList(true),
-    fTrackerChannels(true),
-    fHVmanus(true)
+    fManuList(),
+    fTrackerChannels(),
+    fHVmanus(ioCtor),
+    fNofChannels()
 {
 /// Root IO constructor
 }
@@ -331,6 +333,8 @@ AliMpDetElement::AddManu(Int_t manuId)
   }
   
   fManuList.Add(AliMpManuUID::BuildUniqueID(fId,manuId),(Long_t)n);
+
+  fNofChannels += n;
   
   AliMpHVNamer hvNamer;
   

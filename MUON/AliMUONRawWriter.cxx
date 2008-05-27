@@ -164,7 +164,7 @@ Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
   {
     AliCodeTimerAuto("for Tracker")
 
-    AliMpExMap busPatchMap(true);
+    AliMpExMap busPatchMap;
 
     Int_t nDDLs = AliDAQ::NumberOfDdls("MUONTRK");
     
@@ -235,7 +235,10 @@ AliMUONRawWriter::Digits2BusPatchMap(const AliMUONVDigitStore& digitStore,
   UChar_t channelId = 0;
   UShort_t charge = 0;
   Int_t busPatchId = 0;
+  Int_t currentBusPatchId = -1;
   UInt_t word;
+  
+  AliMUONBusStruct* busStruct(0x0);
   
   TIter next(digitStore.CreateTrackerIterator());
   AliMUONVDigit* digit;
@@ -281,9 +284,13 @@ AliMUONRawWriter::Digits2BusPatchMap(const AliMUONVDigitStore& digitStore,
       parity ^=  ((word >> i) & 0x1);
     }
     AliBitPacking::PackWord((UInt_t)parity,word,31,31);
-    
-    AliMUONBusStruct* busStruct = 
-      static_cast<AliMUONBusStruct*>(busPatchMap.GetValue(busPatchId));
+
+    if ( currentBusPatchId != busPatchId ) 
+    {
+      busStruct = 
+        static_cast<AliMUONBusStruct*>(busPatchMap.GetValue(busPatchId));
+      currentBusPatchId = busPatchId;
+    }
     
     if (!busStruct)
     {

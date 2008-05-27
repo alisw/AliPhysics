@@ -22,12 +22,12 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
-#include "AliMUON1DMapIterator.h"
 #include "AliMUON2DMapIterator.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONConstants.h"
 
+#include "AliMpExMapIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpIntPair.h"
@@ -72,7 +72,6 @@ AliMUONESDInterface::AliMUONESDInterface()
 : TObject(),
   fTracks(0x0),
   fDigits(0x0),
-  fTrackMap(0x0),
   fClusterMap(0x0),
   fDigitMap(0x0)
 {
@@ -85,7 +84,6 @@ AliMUONESDInterface::~AliMUONESDInterface()
   /// Destructor
   delete fTracks;
   delete fDigits;
-  delete fTrackMap;
   delete fClusterMap;
   delete fDigitMap;
 }
@@ -100,7 +98,6 @@ void AliMUONESDInterface::Clear(Option_t*)
   /// clear memory
   delete fTracks; fTracks = 0x0;
   delete fDigits; fDigits = 0x0;
-  delete fTrackMap; fTrackMap = 0x0;
   delete fClusterMap; fClusterMap = 0x0;
   delete fDigitMap; fDigitMap = 0x0;
 }
@@ -116,16 +113,13 @@ void AliMUONESDInterface::Reset()
   if (fDigits) fDigits->Clear("C");
   else fDigits = NewDigitStore();
   
-  if (fTrackMap) fTrackMap->Clear();
-  else fTrackMap = new AliMpExMap(kTRUE);
-  fTrackMap->SetOwner(kFALSE);
-  
   if (fClusterMap) fClusterMap->Clear();
-  else fClusterMap = new AliMpExMap(kTRUE);
+  else fClusterMap = new AliMpExMap;
   fClusterMap->SetOwner(kTRUE);
   
-  if (fDigitMap) fDigitMap->Clear("C");
-  else fDigitMap = new TClonesArray("AliMpExMap",10);
+  if (fDigitMap) fDigitMap->Clear();
+  else fDigitMap = new AliMpExMap;
+  fDigitMap->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -146,17 +140,15 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
     // add it to track store
     AliMUONTrack* track = Add(*esdTrack, *fTracks);
     
-    // fill track map
-    fTrackMap->Add(iTrack, track);
-    
     // prepare cluster map
-    fClusterMap->Add(iTrack, new AliMpExMap(kTRUE));
-    AliMpExMap* cMap = (AliMpExMap*) fClusterMap->GetObjectFast(iTrack);
+    AliMpExMap* cMap = new AliMpExMap;
     cMap->SetOwner(kFALSE);
+    fClusterMap->Add(esdTrack->GetUniqueID(), cMap);
     
     // prepare digit maps
-    AliMpExMap* dMaps = new((*fDigitMap)[iTrack]) AliMpExMap(kTRUE);
+    AliMpExMap* dMaps = new AliMpExMap;
     dMaps->SetOwner(kTRUE);
+    fDigitMap->Add(esdTrack->GetUniqueID(), dMaps);
     
     // loop over ESD clusters
     Int_t nClusters = esdTrack->GetNClusters();
@@ -172,9 +164,9 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
       cMap->Add(cluster->GetUniqueID(), cluster);
       
       // prepare digit map
-      dMaps->Add(esdCluster->GetUniqueID(), new AliMpExMap(kTRUE));
-      AliMpExMap* dMap = (AliMpExMap*) dMaps->GetObjectFast(iCluster);
+      AliMpExMap* dMap =new AliMpExMap;
       dMap->SetOwner(kFALSE);
+      dMaps->Add(esdCluster->GetUniqueID(), dMap);
       
       // loop over ESD pads
       Int_t nPads = esdCluster->GetNPads();
@@ -202,7 +194,7 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
 Int_t AliMUONESDInterface::GetNTracks() const
 {
   /// return the number of tracks
-  return fTrackMap ? fTrackMap->GetSize() : 0;
+  return fTracks ? fTracks->GetSize() : 0;
 }
 
 //___________________________________________________________________________
@@ -210,16 +202,17 @@ Int_t AliMUONESDInterface::GetNClusters() const
 {
   /// return the number of clusters
   Int_t nClusters = 0;
-  Int_t nTracks = GetNTracks();
-  for (Int_t i = 0; i < nTracks; i++) nClusters += GetTrackFast(i)->GetNClusters();
+  AliMUONTrack *track;
+  TIter next(CreateTrackIterator());
+  while ((track = static_cast<AliMUONTrack*>(next()))) nClusters += track->GetNClusters();
   return nClusters;
 }
 
 //___________________________________________________________________________
-Int_t AliMUONESDInterface::GetNClusters(Int_t iTrack) const
+Int_t AliMUONESDInterface::GetNClusters(UInt_t trackId) const
 {
-  /// return the number of clusters in track "iTrack"
-  AliMUONTrack* track = GetTrack(iTrack);
+  /// return the number of clusters in track "trackId"
+  AliMUONTrack* track = FindTrack(trackId);
   return track ? track->GetNClusters() : 0;
 }
 
@@ -231,20 +224,21 @@ Int_t AliMUONESDInterface::GetNDigits() const
 }
 
 //___________________________________________________________________________
-Int_t AliMUONESDInterface::GetNDigits(Int_t iTrack) const
+Int_t AliMUONESDInterface::GetNDigits(UInt_t trackId) const
 {
-  /// return the number of digits in all clusters of track "iTrack"
+  /// return the number of digits in all clusters of track "trackId"
   Int_t nDigits = 0;
-  Int_t nClusters = GetNClusters(iTrack);
-  for (Int_t j = 0; j <  nClusters; j++) nDigits += GetClusterFast(iTrack,j)->GetNDigits();
+  AliMUONVCluster *cluster;
+  TIter next(CreateClusterIterator(trackId));
+  while ((cluster = static_cast<AliMUONVCluster*>(next()))) nDigits += cluster->GetNDigits();
   return nDigits;
 }
 
 //___________________________________________________________________________
-Int_t AliMUONESDInterface::GetNDigits(Int_t iTrack, Int_t iCluster) const
+Int_t AliMUONESDInterface::GetNDigits(UInt_t trackId, UInt_t clusterId) const
 {
   /// return the number of digits in cluster numbered "iCluster" of track "iTrack"
-  AliMUONVCluster* cluster = GetCluster(iTrack, iCluster);
+  AliMUONVCluster* cluster = FindCluster(trackId, clusterId);
   return cluster ? cluster->GetNDigits() : 0;
 }
 
@@ -257,50 +251,44 @@ Int_t AliMUONESDInterface::GetNDigitsInCluster(UInt_t clusterId) const
 }
 
 //___________________________________________________________________________
-AliMUONTrack* AliMUONESDInterface::GetTrack(Int_t iTrack) const
+AliMUONTrack* AliMUONESDInterface::FindTrack(UInt_t trackId) const
 {
-  /// return MUON track "iTrack" (0x0 if not found)
-  AliMUONTrack* track = fTrackMap ? (AliMUONTrack*) fTrackMap->GetObject(iTrack) : 0x0;
-  if (!track) AliWarning(Form("track %d does not exist",iTrack));
+  /// return track "trackId" (0x0 if not found)
+  AliMUONTrack *track = fTracks ? static_cast<AliMUONTrack*>(fTracks->FindObject(trackId)) : 0x0;
+  if (!track) AliWarning(Form("track %d does not exist",trackId));
   return track;
-}
-
-//___________________________________________________________________________
-AliMUONVCluster* AliMUONESDInterface::GetCluster(Int_t iTrack, Int_t iCluster) const
-{
-  /// return MUON cluster numbered "iCluster" in track "iTrack" (0x0 if not found)
-  AliMpExMap* cMap = fClusterMap ? (AliMpExMap*) fClusterMap->GetObject(iTrack) : 0x0;
-  AliMUONVCluster* cluster = cMap ? (AliMUONVCluster*) cMap->GetObject(iCluster) : 0x0;
-  if (!cluster) AliWarning(Form("cluster #%d in track %d does not exist",iCluster,iTrack));
-  return cluster;
-}
-
-//___________________________________________________________________________
-AliMUONVDigit* AliMUONESDInterface::GetDigit(Int_t iTrack, Int_t iCluster, Int_t iDigit) const
-{
-  /// return MUON digit numbered "iDigit" in cluster numbered "iCluster" of track "iTrack" (0x0 if not found)
-  AliMpExMap* dMaps = fDigitMap ? (AliMpExMap*) fDigitMap->At(iTrack) : 0x0;
-  AliMpExMap* dMap = dMaps ? (AliMpExMap*) dMaps->GetObject(iCluster) : 0x0;
-  AliMUONVDigit* digit = dMap ? (AliMUONVDigit*) dMap->GetObject(iDigit) : 0x0;
-  if (!digit) AliWarning(Form("digit #%d in cluster #%d of track %d does not exist",iDigit,iCluster,iTrack));
-  return digit;
 }
 
 //___________________________________________________________________________
 AliMUONVCluster* AliMUONESDInterface::FindCluster(UInt_t clusterId) const
 {
-  /// return cluster "clusterId" (0x0 if not found)
+  /// loop over tracks and return the first cluster "clusterId" found (0x0 if not found)
+  AliMpExMap *cMap;
   AliMUONVCluster* cluster = 0x0;
   
-  Int_t nTracks = GetNTracks();
-  for (Int_t i = 0; i < nTracks; i++) {
+  if (fClusterMap) {
     
-    cluster = (AliMUONVCluster*) ((AliMpExMap*) fClusterMap->GetObjectFast(i))->GetValue(clusterId);
-    if (cluster) break;
+    TIter next(fClusterMap->CreateIterator());
+    while ((cMap = static_cast<AliMpExMap*>(next()))) {
+      
+      cluster = static_cast<AliMUONVCluster*>(cMap->GetValue(clusterId));
+      if (cluster) return cluster;
+      
+    }
     
   }
   
   if (!cluster) AliWarning(Form("cluster %d does not exist",clusterId));
+  return 0x0;
+}
+
+//___________________________________________________________________________
+AliMUONVCluster* AliMUONESDInterface::FindCluster(UInt_t trackId, UInt_t clusterId) const
+{
+  /// return cluster "clusterId" in track "trackId" (0x0 if not found)
+  AliMpExMap *cMap = fClusterMap ? static_cast<AliMpExMap*>(fClusterMap->GetValue(trackId)) : 0x0;
+  AliMUONVCluster* cluster = cMap ? static_cast<AliMUONVCluster*>(cMap->GetValue(clusterId)) : 0x0;
+  if (!cluster) AliWarning(Form("cluster %d does not exist in track %d", clusterId, trackId));
   return cluster;
 }
 
@@ -328,11 +316,11 @@ TIterator* AliMUONESDInterface::CreateClusterIterator() const
 }
 
 //___________________________________________________________________________
-TIterator* AliMUONESDInterface::CreateClusterIterator(Int_t iTrack) const
+TIterator* AliMUONESDInterface::CreateClusterIterator(UInt_t trackId) const
 {
-  /// return iterator over clusters of track "iTrack"
-  AliMpExMap* cMap = fClusterMap ? (AliMpExMap*) fClusterMap->GetObject(iTrack) : 0x0;
-  return cMap ? new AliMUON1DMapIterator(*cMap) : 0x0;
+  /// return iterator over clusters of track "trackId"
+  AliMpExMap *cMap = fClusterMap ? static_cast<AliMpExMap*>(fClusterMap->GetValue(trackId)) : 0x0;
+  return cMap ? cMap->CreateIterator() : 0x0;
 }
 
 //___________________________________________________________________________
@@ -343,37 +331,42 @@ TIterator* AliMUONESDInterface::CreateDigitIterator() const
 }
 
 //___________________________________________________________________________
-TIterator* AliMUONESDInterface::CreateDigitIterator(Int_t iTrack) const
+TIterator* AliMUONESDInterface::CreateDigitIterator(UInt_t trackId) const
 {
-  /// return iterator over all digits of track "iTrack"
-  AliMpExMap* dMaps = fDigitMap ? (AliMpExMap*) fDigitMap->At(iTrack) : 0x0;
+  /// return iterator over all digits of track "trackId"
+  AliMpExMap* dMaps = fDigitMap ? static_cast<AliMpExMap*>(fDigitMap->GetValue(trackId)) : 0x0;
   return dMaps ? new AliMUON2DMapIterator(*dMaps) : 0x0;
 }
 
 //___________________________________________________________________________
-TIterator* AliMUONESDInterface::CreateDigitIterator(Int_t iTrack, Int_t iCluster) const
+TIterator* AliMUONESDInterface::CreateDigitIterator(UInt_t trackId, UInt_t clusterId) const
 {
-  /// return iterator over digits of cluster numbered "iCluster" in track "iTrack"
-  AliMpExMap* dMaps = fDigitMap ? (AliMpExMap*) fDigitMap->At(iTrack) : 0x0;
-  AliMpExMap* dMap = dMaps ? (AliMpExMap*) dMaps->GetObject(iCluster) : 0x0;
-  return dMap ? new AliMUON1DMapIterator(*dMap) : 0x0;
+  /// return iterator over digits of cluster "clusterId" in track "trackId"
+  AliMpExMap* dMaps = fDigitMap ? static_cast<AliMpExMap*>(fDigitMap->GetValue(trackId)) : 0x0;
+  AliMpExMap* dMap = dMaps ? static_cast<AliMpExMap*>(dMaps->GetValue(clusterId)) : 0x0;
+  return dMap ? dMap->CreateIterator() : 0x0;
 }
 
 //___________________________________________________________________________
 TIterator* AliMUONESDInterface::CreateDigitIteratorInCluster(UInt_t clusterId) const
 {
-  /// return iterator over digits of cluster "clusterId"
+  /// return iterator over digits of the first cluster "clusterId" found by looping over all tracks
+  AliMpExMap *dMaps;
   AliMpExMap* dMap = 0x0;
   
-  Int_t nTracks = GetNTracks();
-  for (Int_t i = 0; i < nTracks; i++) {
+  if (fDigitMap) {
     
-    dMap = (AliMpExMap*) ((AliMpExMap*) fDigitMap->UncheckedAt(i))->GetValue(clusterId);
-    if (dMap) break;
+    TIter next(fDigitMap->CreateIterator());
+    while ((dMaps = static_cast<AliMpExMap*>(next()))) {
+      
+      dMap = static_cast<AliMpExMap*>(dMaps->GetValue(clusterId));
+      if (dMap) return dMap->CreateIterator();
+      
+    }
     
   }
   
-  return dMap ? new AliMUON1DMapIterator(*dMap) : 0x0;
+  return 0x0;
 }
 
 //___________________________________________________________________________
@@ -742,11 +735,11 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCl
   esdCluster.SetUniqueID(cluster.GetUniqueID());
   esdCluster.SetXYZ(cluster.GetX(), cluster.GetY(), cluster.GetZ());
   esdCluster.SetErrXY(cluster.GetErrX(), cluster.GetErrY());
+  esdCluster.SetCharge(cluster.GetCharge());
+  esdCluster.SetChi2(cluster.GetChi2());
   
-  if (digits) { // transfert all data...
+  if (digits) { // transfert all data if required
     
-    esdCluster.SetCharge(cluster.GetCharge());
-    esdCluster.SetChi2(cluster.GetChi2());
     AliESDMuonPad esdPad;
     for (Int_t i=0; i<cluster.GetNDigits(); i++) {
       AliMUONVDigit* digit = digits->FindObject(cluster.GetDigitId(i));
@@ -757,11 +750,6 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDMuonCl
       MUONToESD(*digit, esdPad);
       esdCluster.AddPad(esdPad);
     }
-    
-  } else { // ...or not
-    
-    esdCluster.SetCharge(0.);
-    esdCluster.SetChi2(0.);
     
   }
   

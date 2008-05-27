@@ -13,6 +13,7 @@
 
 #pragma link C++ class  AliMpIntPair+;
 #pragma link C++ class  AliMpExMap-;
+#pragma link C++ class  AliMpExMapIterator+;
 #pragma link C++ class  AliMpArrayI+;
 #pragma link C++ class  AliMpStringObjMap+;
 
@@ -23,12 +24,15 @@
 #pragma link C++ class AliMUON2DMapIteratorByI+;
 #pragma link C++ class AliMUON1DArray+;
 #pragma link C++ class AliMUON1DMap+;
-#pragma link C++ class AliMUON1DMapIterator+;
 #pragma link C++ class AliMUONCheckItem+;
 #pragma link C++ class AliMUONCheckItemIterator+;
 #pragma link C++ class AliMUONVStore+;
 #pragma link C++ class AliMUONTreeManager+;
 #pragma link C++ class AliMUONLogger+;
+
+#pragma link C++ function operator-(const AliMpIntPair& ,const AliMpIntPair& );
+#pragma link C++ function operator+(const AliMpIntPair& ,const AliMpIntPair& );
+#pragma link C++ function operator<<(ostream& ,const AliMpIntPair& );
 
 #endif
 

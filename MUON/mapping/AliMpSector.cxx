@@ -62,8 +62,7 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
 
   AliDebugStream(1) << "this = " << this << endl;
 
-  fMotifMap = new AliMpMotifMap(true);
-  //fMotifMap = new AliMpMotifMap();
+  fMotifMap = new AliMpMotifMap;
 
 #ifdef WITH_STL
   for (Int_t izone = 0; izone<nofZones; izone++) 

@@ -216,8 +216,8 @@ AliMUONPainterHelper::GenerateGeometry()
   AliMUONGeometryTransformer transformer;
   transformer.LoadGeometryData("transform.dat");
 //  transformer.LoadGeometryData("geometry.root"); //FIXME: add a protection if geometry.root file does not exist
-  fExplodedGlobalTransformations = new AliMpExMap(true);
-  fRealGlobalTransformations = new AliMpExMap(true);
+  fExplodedGlobalTransformations = new AliMpExMap;
+  fRealGlobalTransformations = new AliMpExMap;
   AliMpDEIterator deIt;
   deIt.First();
   while ( !deIt.IsDone() )

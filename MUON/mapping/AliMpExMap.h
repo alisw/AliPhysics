@@ -22,14 +22,18 @@
 #include <TExMap.h>
 
 class AliMpIntPair;
+class AliMpExMapIterator;
 
 class TString;
 
 class AliMpExMap : public TObject
 {
   public:
+  
+    friend class AliMpExMapIterator;
+  
     AliMpExMap();
-    AliMpExMap(Bool_t standardConstructor);
+    AliMpExMap(TRootIOCtor* /*ioCtor*/);
     AliMpExMap(const AliMpExMap& rhs);
     AliMpExMap& operator=(const AliMpExMap& rhs);
     virtual ~AliMpExMap();
@@ -40,11 +44,13 @@ class AliMpExMap : public TObject
     //
     static Long_t  GetIndex(const AliMpIntPair& pair);
     static Long_t  GetIndex(const TString& s);
+
     static AliMpIntPair  GetPair(Long_t index);
     static TString       GetString(Long_t index);
 
     // methods from base class
     virtual void Clear(Option_t* opt="");
+    virtual void Print(Option_t* opt="") const;
 
     // set methods
     void Add(const AliMpIntPair& key, TObject* object);
@@ -55,23 +61,20 @@ class AliMpExMap : public TObject
     void SetOwner(Bool_t owner);
     
     // get methods
-    Int_t       GetSize() const;
-    TExMapIter  GetIterator() const;
-    TObject*    GetObject(Int_t index) const;
-    TObject*    GetObjectFast(Int_t index) const;
-
+    Int_t GetSize() const;
+    Int_t GetCapacity() const;
+    
     TObject*    GetValue(const AliMpIntPair& key) const;
     TObject*    GetValue(const TString& key) const;
     TObject*    GetValue(Int_t key) const;
 
-    void Copy(TObject& dest) const;
+    AliMpExMapIterator* CreateIterator() const;
     
-  virtual void Print(Option_t* opt="") const;
-
   private:  
     // methods
     void FillMap();
     void AddKey(Long_t key);
+    void Copy(TObject& dest) const;
     
     // static data members
     static const Int_t    fgkDefaultSize;      ///< Default initial size

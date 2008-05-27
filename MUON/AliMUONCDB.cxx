@@ -49,7 +49,6 @@
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
-#include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
 #include "AliMpFiles.h"
@@ -632,7 +631,7 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
   AliCodeTimerAuto("");
   
   Int_t ngenerated(0);
-  // Generate fake mask values for 234 localboards and put that into
+  // Generate fake mask values for all localboards and put that into
   // one single container (localBoardMasks)
   for ( Int_t i = 1; i <= AliMpConstants::TotalNofLocalBoards(); ++i )
   {
@@ -832,7 +831,7 @@ AliMUONCDB::WriteLocalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
   /// Write local trigger masks to OCDB
   
-  AliMUONVStore* ltm = new AliMUON1DArray(235);
+  AliMUONVStore* ltm = new AliMUON1DArray(AliMpConstants::TotalNofLocalBoards()+1);
   Int_t ngenerated = MakeLocalTriggerMaskStore(*ltm);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)

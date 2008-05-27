@@ -28,6 +28,7 @@
 
 #include "AliMpDEManager.h"
 #include "AliMUONVDigit.h"
+#include "TObjArray.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDigitStoreV1Iterator)

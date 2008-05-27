@@ -95,7 +95,7 @@ AliMpPCBPainter::Draw(Option_t* option)
   switch (option[0])
   {
     case 'M':
-      for ( AliMpPCB::Size_t i = 0; i < fPCB->GetSize(); ++i )
+      for ( Int_t i = 0; i < fPCB->GetSize(); ++i )
       {
         AliMpMotifPosition* pos = fPCB->GetMotifPosition(i);
         

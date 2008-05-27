@@ -41,27 +41,11 @@ ClassImp(AliMpMotifSpecial)
 
 
 //______________________________________________________________________________
-AliMpMotifSpecial::AliMpMotifSpecial():
-  AliMpVMotif(),
-  fDimensions(),
-  fPadDimensionsVector(),
-  fPadDimensionsVector2()
-{
-  /// Default constructor
-}
-
-
-//______________________________________________________________________________
 AliMpMotifSpecial::AliMpMotifSpecial(const TString &id, 
                                      AliMpMotifType *motifType)
   : AliMpVMotif(id,motifType),
     fDimensions(),
-#ifdef WITH_STL
     fPadDimensionsVector(),
-#endif    
-#ifdef WITH_ROOT
-    fPadDimensionsVector(true),
-#endif    
     fPadDimensionsVector2()
   
 {
@@ -71,6 +55,22 @@ AliMpMotifSpecial::AliMpMotifSpecial(const TString &id,
   fPadDimensionsVector.resize(motifType->GetNofPadsX()*motifType->GetNofPadsY());
 #endif  
 }
+
+//______________________________________________________________________________
+AliMpMotifSpecial::AliMpMotifSpecial(TRootIOCtor* ioCtor):
+  AliMpVMotif(),
+  fDimensions(),
+#ifdef WITH_STL
+  fPadDimensionsVector(),
+#endif    
+#ifdef WITH_ROOT
+  fPadDimensionsVector(ioCtor),
+#endif    
+  fPadDimensionsVector2()
+{
+  /// Root IO constructor
+}
+
 
 //______________________________________________________________________________
 AliMpMotifSpecial::~AliMpMotifSpecial()

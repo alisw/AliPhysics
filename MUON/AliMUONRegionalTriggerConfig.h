@@ -16,8 +16,6 @@
 
 #include "AliMpExMap.h"
 
-#include <TObjArray.h>
-
 class AliMUONTriggerCrateConfig;
 class AliMUONLocalBoardConfig;
 
@@ -39,10 +37,8 @@ class AliMUONRegionalTriggerConfig : public  TObject{
     // method for looping
     
     Int_t GetNofTriggerCrates() const;
-    AliMUONTriggerCrateConfig* GetTriggerCrate(Int_t index) const;
-    AliMUONTriggerCrateConfig* GetTriggerCrateFast(Int_t index) const;
-    TExMapIter GetTriggerCrateItr() const;
-
+    
+    TIterator* CreateCrateIterator() const;
   
   private:
     // data members  
@@ -51,10 +47,6 @@ class AliMUONRegionalTriggerConfig : public  TObject{
   ClassDef(AliMUONRegionalTriggerConfig,1) // Regional trigger crate config
 };
 
-/// Return trigger crates iterator
-inline TExMapIter AliMUONRegionalTriggerConfig::GetTriggerCrateItr() const { 
-  return fTriggerCrates.GetIterator(); 
-}
 #endif 
 
 

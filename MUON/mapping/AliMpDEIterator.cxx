@@ -25,6 +25,8 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpDEIterator.h"
+
+#include "AliMpExMapIterator.h"
 #include "AliMpDEStore.h"
 #include "AliMpDetElement.h"
 #include "AliMpDEManager.h"
@@ -41,22 +43,12 @@ ClassImp(AliMpDEIterator)
 
 //______________________________________________________________________________
 AliMpDEIterator::AliMpDEIterator()
-    : TObject(),
-      fDEStore(AliMpDEStore::Instance()),
-      fIndex(-1),
-      fChamberId(-1)
+: TObject(),
+  fCurrentDE(0x0),
+  fIterator(AliMpDEStore::Instance()->fDetElements.CreateIterator()),
+  fChamberId(-1)
 {  
 /// Standard and default constructor
-}
-
-//______________________________________________________________________________
-AliMpDEIterator::AliMpDEIterator(const AliMpDEIterator& rhs)
- : TObject(rhs),
-   fDEStore(rhs.fDEStore),
-   fIndex(rhs.fIndex),
-   fChamberId(rhs.fChamberId)
-{
-/// Copy constructor
 }
 
 //______________________________________________________________________________
@@ -64,36 +56,8 @@ AliMpDEIterator::AliMpDEIterator(const AliMpDEIterator& rhs)
 AliMpDEIterator::~AliMpDEIterator()
 {
 /// Destructor
-}
 
-//______________________________________________________________________________
-AliMpDEIterator&  AliMpDEIterator::operator=(const AliMpDEIterator& rhs)
-{
-/// Assignement operator
-
-  // check assignment to self
-  if (this == &rhs) return *this;
-
-  // base class assignment
-  TObject::operator=(rhs);
-
-  fDEStore = rhs.fDEStore;
-  fIndex = rhs.fIndex;
-  fChamberId = rhs.fChamberId;
-
-  return *this;
-} 
-
-//
-// private methods
-//
-
-//______________________________________________________________________________
-AliMpDetElement*  AliMpDEIterator::GetDetElement(Int_t index) const
-{
-/// Return the detection element from the map via index
-
-  return static_cast<AliMpDetElement*>(fDEStore->fDetElements.GetObject(index));
+  delete fIterator;
 }
 
 //
@@ -105,7 +69,8 @@ void AliMpDEIterator::First()
 {
 /// Set iterator to the first DE Id defined 
 
-  fIndex = 0;
+  fIterator->Reset();
+  fCurrentDE = static_cast<AliMpDetElement*>(fIterator->Next());
   fChamberId = -1;
 }  
 
@@ -114,29 +79,22 @@ void AliMpDEIterator::First(Int_t chamberId)
 {
 /// Reset the iterator, so that it points to the first DE
  
-  fChamberId = -1;
-  fIndex = -1;  
   if ( ! AliMpDEManager::IsValidChamberId(chamberId) ) {
     AliErrorStream() << "Invalid chamber Id " << chamberId << endl;
+    fIterator->Reset();
+    fChamberId = -1;    
+    fCurrentDE = 0x0;
     return;
   }    
 
-  Int_t i=0;
-  while ( i < fDEStore->fDetElements.GetSize() && fChamberId < 0 ) {
-    Int_t detElemId = GetDetElement(i)->GetId();
-    if ( AliMpDEManager::GetChamberId(detElemId) == chamberId ) {
-      fChamberId = chamberId;
-      fIndex = i;
-    } 
-    i++; 
+  fIterator->Reset();
+  fChamberId = -1;
+  while ( fChamberId != chamberId ) 
+  {
+    fCurrentDE = static_cast<AliMpDetElement*>(fIterator->Next());
+    if (!fCurrentDE) return;
+    fChamberId = AliMpDEManager::GetChamberId(CurrentDEId());
   }
-
-  if ( fChamberId < 0 ) {
-    AliErrorStream() 
-      << "No DEs of Chamber Id " << chamberId << " found" << endl;
-    return;
-  }    
-
 }
 
 //______________________________________________________________________________
@@ -144,14 +102,20 @@ void AliMpDEIterator::Next()
 {
 /// Increment iterator to next DE
 
-  fIndex++;
-
-  // Invalidate if at the end
-  if ( ( fIndex == fDEStore->fDetElements.GetSize() ) ||
-       ( fChamberId >= 0 &&    
-         AliMpDEManager::GetChamberId(CurrentDEId()) != fChamberId ) ) {
-    fIndex = -1;
-  }   
+  if ( fChamberId < 0 ) 
+  {
+    fCurrentDE = static_cast<AliMpDetElement*>(fIterator->Next());
+  }
+  else
+  {
+    fCurrentDE = static_cast<AliMpDetElement*>(fIterator->Next());
+    
+    while ( fCurrentDE && (AliMpDEManager::GetChamberId(fCurrentDE->GetId()) != fChamberId) )
+    {
+      fCurrentDE = static_cast<AliMpDetElement*>(fIterator->Next());
+      if (!fCurrentDE) return;
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -159,7 +123,7 @@ Bool_t AliMpDEIterator::IsDone() const
 {
 /// Is the iterator in the end?
 
-  return ( fIndex < 0 );
+  return ( fCurrentDE == 0x0 );
 }   
 
 //______________________________________________________________________________
@@ -167,22 +131,19 @@ AliMpDetElement* AliMpDEIterator::CurrentDE() const
 {
 /// Current DE Id
 
-  if ( ! IsDone() )
-    return GetDetElement(fIndex);
-  else {   
-    AliErrorStream()
-      << "Not in valid position - returning invalid DE." << endl;
-    return 0;
-  }  
+  return fCurrentDE;
 }
     
 //______________________________________________________________________________
-Int_t AliMpDEIterator::CurrentDEId() const
+Int_t 
+AliMpDEIterator::CurrentDEId() const
 {
 /// Current DE Id
 
-  if ( ! IsDone() )
-    return GetDetElement(fIndex)->GetId();
+  if ( fCurrentDE )
+  {
+    return fCurrentDE->GetId();
+  }
   else {   
     AliErrorStream()
       << "Not in valid position - returning invalid DE." << endl;

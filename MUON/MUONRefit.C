@@ -128,7 +128,7 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
       // get the ESD track
       AliESDMuonTrack* esdTrack = (AliESDMuonTrack*) esdTracks->UncheckedAt(iTrack);
       // get the corresponding MUON track
-      AliMUONTrack* track = esdInterface.GetTrackFast(iTrack);
+      AliMUONTrack* track = esdInterface.FindTrack(esdTrack->GetUniqueID());
       // Find the corresponding re-fitted MUON track
       AliMUONTrack* newTrack = (AliMUONTrack*) newTrackStore->FindObject(esdTrack->GetUniqueID());
       
@@ -215,7 +215,7 @@ void Prepare()
   
   // set reconstruction parameters
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  muonRecoParam->ImproveTracks(kFALSE);
+  muonRecoParam->CombineClusterTrackReco(kFALSE);
   muonRecoParam->Print("FULL");
   AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
   

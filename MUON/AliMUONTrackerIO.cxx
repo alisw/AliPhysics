@@ -261,8 +261,7 @@ AliMUONTrackerIO::ReadCapacitances(const char* file, AliMUONVStore& capaStore)
       if (param)
       {
         AliErrorClass(Form("serialNumber %d appears several times !",serialNumber));
-        capaStore.Clear();
-        break;
+        continue;
       }
       param = new AliMUONCalibParamNF(2,AliMpConstants::ManuNofChannels(),serialNumber,0,1.0);
       Bool_t ok = capaStore.Add(param);

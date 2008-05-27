@@ -50,13 +50,12 @@ private:
     AliMUONVStore* fGains; //!< gain values
     Int_t fApplyGains; //!< whether we should apply gains or not, capa or not...
     AliMUONVStore* fCapacitances; //!< capa values
-    TExMap* fNofChannelsPerDE; //!< store nof channels within detection elements
     
     static const Int_t fgkNoGain; //!< do not apply gain calib at all
     static const Int_t fgkGainConstantCapa; //!< apply gain (from OCDB) with constant capa
     static const Int_t fgkGain; //!< apply gain and capa (from OCDB)
     
-  ClassDef(AliMUONDigitCalibrator,6) // Calibrate raw digit
+  ClassDef(AliMUONDigitCalibrator,7) // Calibrate raw digit
 };
 
 #endif

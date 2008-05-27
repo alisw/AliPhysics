@@ -18,9 +18,7 @@
 
 #include "AliMpContainers.h"
 
-#ifdef WITH_ROOT
-  #include "TExMap.h"
-#endif
+#include <TExMap.h>
 
 #ifdef WITH_STL
   #include <map>

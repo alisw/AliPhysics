@@ -49,7 +49,7 @@ class AliMpMotifSpecial : public AliMpVMotif
 
  public:
   AliMpMotifSpecial(const TString &id, AliMpMotifType *motifType);
-  AliMpMotifSpecial();
+  AliMpMotifSpecial(TRootIOCtor* ioCtor);
   virtual ~AliMpMotifSpecial();
 
   // Access methods
@@ -70,6 +70,8 @@ class AliMpMotifSpecial : public AliMpVMotif
   virtual AliMpIntPair PadIndicesLocal(const TVector2& localPos) const;
 
  private:
+  /// Not implemented
+  AliMpMotifSpecial();
   // methods
   Int_t VectorIndex(const AliMpIntPair& indices) const;
 

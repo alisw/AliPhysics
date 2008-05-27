@@ -19,6 +19,7 @@
 #include "TExMap.h"
 #include "AliMpExMap.h"
 #include "AliMUONCheckItem.h"
+#include "AliLog.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONCheckItemIterator
@@ -45,8 +46,10 @@ AliMUONCheckItemIterator::AliMUONCheckItemIterator(const AliMUONCheckItem& item)
 fIter(0x0)
 {
   /// ctor
+  /// \todo To be reimplemented
   AliMpExMap* m = item.fMissing;
-  fIter = new TExMapIter(m->GetIterator());
+  AliFatal("Reimplement me w/o AliMpExMap::GetIterator()");
+//  fIter = new TExMapIter(m->GetIterator());
 }
 
 //_____________________________________________________________________________

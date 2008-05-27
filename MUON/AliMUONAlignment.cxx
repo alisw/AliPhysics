@@ -39,6 +39,7 @@
 #include "AliMillepede.h"
 
 #include "AliMpExMap.h"
+#include "AliMpExMapIterator.h"
 
 #include "AliLog.h"
 
@@ -991,13 +992,12 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
     if (verbose)
       AliInfo(Form("%i DEs in old GeometryStore  %i",detElements->GetSize(), iMt));
 
-    for (Int_t iDe = 0; iDe < detElements->GetSize(); iDe++) {
-      // detection elements.
-      AliMUONGeometryDetElement *detElement =
-	(AliMUONGeometryDetElement *) detElements->GetObject(iDe);
-      if (!detElement)
-	AliFatal("Detection element not found.");
-
+    TIter next(detElements->CreateIterator());
+    AliMUONGeometryDetElement* detElement;
+    Int_t iDe(-1);
+    while ( ( detElement = static_cast<AliMUONGeometryDetElement*>(next()) ) )
+    {
+      ++iDe;
       /// make a new detection element
       AliMUONGeometryDetElement *newDetElement =
 	new AliMUONGeometryDetElement(detElement->GetId(),

@@ -16,7 +16,7 @@
 // $Id$
 
 #include "AliMUONTriggerCrateStore.h"
-
+#include "AliMpExMapIterator.h"
 #include "AliMUONTriggerCrate.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRegionalTriggerBoard.h"
@@ -36,7 +36,6 @@
 #include <TSystem.h>
 #include <Riostream.h>
 
-
 //-----------------------------------------------------------------------------
 /// \class AliMUONTriggerCrateStore
 /// 
@@ -54,11 +53,7 @@ ClassImp(AliMUONTriggerCrateStore)
 AliMUONTriggerCrateStore::AliMUONTriggerCrateStore()
 : TObject(),
 fCrates(0x0),
-fLocalBoards(0x0),
-fCrateIterator(0x0),
-fLBIterator(0x0),
-fCurrentCrate(0x0),
-fCurrentLocalBoard(-1)
+fLocalBoards(0x0)
 {
 /// Default constructor
 }
@@ -67,8 +62,6 @@ fCurrentLocalBoard(-1)
 AliMUONTriggerCrateStore::~AliMUONTriggerCrateStore()
 {
 /// Destructor
-  delete fCrateIterator;
-  delete fLBIterator;
   delete fCrates;
   delete fLocalBoards;
 }
@@ -109,6 +102,24 @@ AliMUONTriggerCrateStore::LocalBoard(Int_t boardNumber) const
   }
 
   return static_cast<AliMUONLocalTriggerBoard*>(fLocalBoards->GetValue(boardNumber));
+}
+
+//_____________________________________________________________________________
+TIterator*
+AliMUONTriggerCrateStore::CreateCrateIterator() const
+{
+  /// Create iterator over crates
+
+  return fCrates ? fCrates->CreateIterator() : 0x0;
+}
+
+//_____________________________________________________________________________
+TIterator*
+AliMUONTriggerCrateStore::CreateLocalBoardIterator() const
+{
+  /// Create iterator over local boards
+
+  return fLocalBoards ? fLocalBoards->CreateIterator() : 0x0;
 }
 
 //_____________________________________________________________________________
@@ -170,100 +181,6 @@ TString AliMUONTriggerCrateStore::GetCrateName(Int_t ddl, Int_t reg) const
   return TString(name);
 }
 //_____________________________________________________________________________
-void
-AliMUONTriggerCrateStore::FirstCrate()
-{
-  /// initialize iteration
-  if ( !fCrates )
-  {
-    AliError("Object not properly initialized");
-    return;
-  }
-  if (!fCrateIterator)
-  {
-    fCrateIterator = new TExMapIter(fCrates->GetIterator());
-  }
-  fCrateIterator->Reset();
-}
-
-//_____________________________________________________________________________
-void
-AliMUONTriggerCrateStore::FirstLocalBoard()
-{
-  /// Initialize iterator on local boards.
-  /// Please note that we're not using directly the FirstCrate() and
-  /// NextCrate() methods here to avoid mix and match between crate iterator
-  /// and local board iterator
-  fCurrentCrate = 0x0;
-  fCurrentLocalBoard = 0;
-
-  if ( !fLBIterator ) 
-  {
-    fLBIterator = new TExMapIter(fCrates->GetIterator());
-  }
-  fLBIterator->Reset();
-  Long_t key, value;
-  Bool_t ok = fLBIterator->Next(key,value);
-  if ( ok )
-  {
-    fCurrentCrate = reinterpret_cast<AliMUONTriggerCrate*>(value);
-    fCurrentLocalBoard = 1;
-  }
-}
-
-//_____________________________________________________________________________
-AliMUONTriggerCrate*
-AliMUONTriggerCrateStore::NextCrate()
-{
-  /// Return the next crate in iteration, or 0 if iteration is ended.
-  if (!fCrateIterator) return 0x0;
-  
-  Long_t key, value;
-  Bool_t ok = fCrateIterator->Next(key,value);
-  if (ok)
-  {
-    return reinterpret_cast<AliMUONTriggerCrate*>(value);
-  }
-  else
-  {
-    return 0x0;
-  }
-}
-
-//_____________________________________________________________________________
-AliMUONLocalTriggerBoard*
-AliMUONTriggerCrateStore::NextLocalBoard()
-{  
-  /// Return the next local board in iteration, or 0 if iteration is ended.
-  if ( !fLBIterator ) return 0x0;
-
-  if ( fCurrentLocalBoard >= fCurrentCrate->Boards()->GetLast() +1)
-//  if ( fCurrentLocalBoard >= fCurrentCrate->Boards()->GetLast() )
-  {
-    // try to go to next crate, if some are left
-    Long_t key, value;
-    Bool_t ok = fLBIterator->Next(key,value);
-    if ( ok )
-    {
-      fCurrentCrate = reinterpret_cast<AliMUONTriggerCrate*>(value);
-      fCurrentLocalBoard = 1;
-    }
-    else
-    {
-      fCurrentLocalBoard = 0;
-      return 0x0;
-    }
-  }
-
-  AliMUONLocalTriggerBoard* lb = static_cast<AliMUONLocalTriggerBoard*>
-    (fCurrentCrate->Boards()->At(fCurrentLocalBoard));
-  
-  ++fCurrentLocalBoard;
-  
-  return lb;
-}
-
-//_____________________________________________________________________________
 Int_t
 AliMUONTriggerCrateStore::NumberOfCrates() const
 {
@@ -286,9 +203,9 @@ void
 AliMUONTriggerCrateStore::ReadFromFile(AliMUONCalibrationData* calibData) 
 {
   /// create crate and local board objects from mapping & calib (Ch.F)
-    fCrates = new AliMpExMap(kTRUE);
+    fCrates = new AliMpExMap;
     fCrates->SetOwner(kTRUE);
-    fLocalBoards = new AliMpExMap(kTRUE);
+    fLocalBoards = new AliMpExMap;
     fLocalBoards->SetOwner(kFALSE);
   
   
@@ -301,13 +218,11 @@ AliMUONTriggerCrateStore::ReadFromFile(AliMUONCalibrationData* calibData)
   if (!regionalConfig)
      AliWarning("No valid regional trigger configuration in CDB");
   
-    TExMapIter itr = AliMpDDLStore::Instance()->GetTriggerCrateItr();
+  TIter next(AliMpDDLStore::Instance()->GetRegionalTrigger()->CreateCrateIterator());
+  AliMpTriggerCrate* crateMapping;
   
-    Long_t key, value;
-  
-    while(itr.Next(key, value))
+  while ( ( crateMapping = static_cast<AliMpTriggerCrate*>(next()) ) )
     {
-      AliMpTriggerCrate* crateMapping =  reinterpret_cast<AliMpTriggerCrate*>(value);
     
       TString crateName = crateMapping->GetName();
       AliMUONTriggerCrate *crate = Crate(crateName.Data());

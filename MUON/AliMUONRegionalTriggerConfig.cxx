@@ -28,7 +28,7 @@
 #include "AliMpConstants.h"
 #include "AliMpFiles.h"
 #include "AliMpHelper.h"
-
+#include "AliMpExMapIterator.h"
 #include "AliLog.h"
 
 #include <TArrayI.h>
@@ -45,7 +45,7 @@ ClassImp(AliMUONRegionalTriggerConfig)
 //______________________________________________________________________________
 AliMUONRegionalTriggerConfig::AliMUONRegionalTriggerConfig()
   : TObject(),
-    fTriggerCrates(true)
+    fTriggerCrates()
 {
 /// Standard constructor
   
@@ -192,20 +192,11 @@ Int_t AliMUONRegionalTriggerConfig::GetNofTriggerCrates() const
 }
 
 //______________________________________________________________________________
-AliMUONTriggerCrateConfig* AliMUONRegionalTriggerConfig::GetTriggerCrate(Int_t index) const
+TIterator* 
+AliMUONRegionalTriggerConfig::CreateCrateIterator() const 
 { 
-    /// Return the trigger crates with given index;
-
-    return static_cast<AliMUONTriggerCrateConfig*>(fTriggerCrates.GetObject(index)); 
-}
-
-//______________________________________________________________________________
-AliMUONTriggerCrateConfig* AliMUONRegionalTriggerConfig::GetTriggerCrateFast(Int_t index) const
-{ 
-    /// Return the trigger crates with given index;
-    /// the index is not checked as we use the fast method in AliMpExMap.
-
-    return static_cast<AliMUONTriggerCrateConfig*>(fTriggerCrates.GetObjectFast(index)); 
+  /// Return trigger crates iterator
+  return fTriggerCrates.CreateIterator(); 
 }
 
 

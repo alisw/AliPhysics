@@ -207,7 +207,7 @@ AliMpPCB::~AliMpPCB()
   ///
   AliDebug(1,Form("this=%p",this));
 #ifndef WITH_ROOT
-  for ( size_t i = 0; i < fMotifPositions.size(); ++i )
+  for ( UInt_t i = 0; i < fMotifPositions.size(); ++i )
   {
     delete fMotifPositions[i];
   }
@@ -378,7 +378,7 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
 
   // Then change the internal MotifPositions wrt manu id
   // and position (offset in x).
-  for ( Size_t i = 0; i < pcb->GetSize(); ++i )
+  for ( Int_t i = 0; i < pcb->GetSize(); ++i )
     {
       AliMpMotifPosition* mp = pcb->GetMotifPosition(i);
       mp->SetID(manuids[i]);
@@ -434,16 +434,16 @@ AliMpPCB::Copy(TObject& o) const
   pcb.fMotifPositions.Delete();
   AliDebug(1,"Deleting pcb.fMotifPositions : done");
 #else
-  for ( Size_t i = 0; i < pcb.fMotifPositions.size(); ++i )
+  for ( UInt_t i = 0; i < pcb.fMotifPositions.size(); ++i )
   {
     delete pcb.fMotifPositions[i];
   }
 #endif
 
 #ifdef WITH_ROOT
-  for ( Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+  for ( Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else
-  for ( Size_t i = 0; i < fMotifPositions.size(); ++i )
+  for ( UInt_t i = 0; i < fMotifPositions.size(); ++i )
 #endif  
     {
       AliMpMotifPosition* pos = (AliMpMotifPosition*)fMotifPositions[i];
@@ -528,9 +528,9 @@ AliMpPCB::FindMotifPosition(Int_t ix, Int_t iy) const
   ///
   
 #ifdef WITH_ROOT
-  for (Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+  for (Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else  
-  for (Size_t i = 0; i < fMotifPositions.size(); ++i )
+  for (UInt_t i = 0; i < fMotifPositions.size(); ++i )
 #endif
     {
       AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifPositions[i];
@@ -551,9 +551,9 @@ AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
   ///
   
 #ifdef WITH_ROOT
-  for (Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+  for (Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else  
-  for (Size_t i = 0; i < fMotifPositions.size(); ++i )
+  for (UInt_t i = 0; i < fMotifPositions.size(); ++i )
 #endif   
   {
     AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifPositions[i];
@@ -583,7 +583,7 @@ AliMpPCB::GetID() const
 
 //_____________________________________________________________________________
 AliMpMotifPosition*
-AliMpPCB::GetMotifPosition(AliMpPCB::Size_t i) const
+AliMpPCB::GetMotifPosition(Int_t i) const
 {
   ///
   /// Get the i-th motifPosition stored in this PCB's internal array.
@@ -592,7 +592,7 @@ AliMpPCB::GetMotifPosition(AliMpPCB::Size_t i) const
 #ifdef WITH_ROOT
   if ( i >= fMotifPositions.GetEntriesFast() ) return 0;
 #else
-  if ( i >= fMotifPositions.size() ) return 0;
+  if ( i >= Int_t(fMotifPositions.size()) ) return 0;
 #endif  
   return (AliMpMotifPosition*)fMotifPositions[i];
 }
@@ -620,7 +620,7 @@ AliMpPCB::GetNofPadsY() const
 }
 
 //_____________________________________________________________________________
-AliMpPCB::Size_t
+Int_t
 AliMpPCB::GetSize() const
 {
   ///
@@ -649,7 +649,10 @@ AliMpPCB::HasMotifPositionID(Int_t manuId) const
   }
   return kFALSE;
 #else
-  AliFatal("Not implemented");
+  for ( UInt_t i=0; i<fMotifPositions.size(); ++i ) {
+    if ( fMotifPositions[i]->GetID() == manuId ) return kTRUE;
+  }  
+  return kFALSE;
 #endif
 }
 
@@ -739,9 +742,9 @@ AliMpPCB::Print(Option_t* option) const
   if ( option && option[0] == 'M' )
   {
 #ifdef WITH_ROOT
-    for ( Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+    for ( Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else  
-    for ( Size_t i = 0; i < fMotifPositions.size(); ++i )
+    for ( UInt_t i = 0; i < fMotifPositions.size(); ++i )
 #endif    
     {
       if (option)
@@ -769,9 +772,9 @@ AliMpPCB::Save() const
   lines.SetOwner(kTRUE);
   
 #ifdef WITH_ROOT
-  for ( Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+  for ( Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else  
-  for ( Size_t i = 0; i < fMotifPositions.size(); ++i )
+  for ( UInt_t i = 0; i < fMotifPositions.size(); ++i )
 #endif    
   {
     AliMpMotifPosition* pos = GetMotifPosition(i);
