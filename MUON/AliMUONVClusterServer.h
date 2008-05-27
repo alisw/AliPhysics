@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup reco
+/// \ingroup rec
 /// \class AliMUONVClusterServer
 /// \brief Interface of a cluster finder for combined tracking
 /// 

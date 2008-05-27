@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup reco
+/// \ingroup rec
 /// \class AliMUONSimpleClusterServer
 /// \brief Implementation of AliMUONVClusterServer interface
 /// 

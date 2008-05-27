@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup graphics
+/// \ingroup calib
 /// \class AliMUONVTrackerData
 /// \brief Base class for MUON data that can be presented at different levels
 /// in the hierarchy of the MUON system.

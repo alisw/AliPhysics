@@ -8,7 +8,6 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONVCluster.cxx \
         AliMUONRawCluster.cxx \
         AliMUONRawClusterV2.cxx \
-        AliMUONCalibrationData.cxx \
         AliMUONDigitMaker.cxx \
         AliMUONRawWriter.cxx \
         AliMUONCDB.cxx \
@@ -23,8 +22,7 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONVDigit.cxx \
         AliMUONTriggerCircuit.cxx \
         AliMUONVTriggerStore.cxx \
-        AliMUONTriggerStoreV1.cxx \
-        AliMUONTriggerCrateStore.cxx
+        AliMUONTriggerStoreV1.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

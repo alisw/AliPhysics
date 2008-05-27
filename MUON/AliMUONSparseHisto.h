@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup graphics
+/// \ingroup calib
 /// \class AliMUONSparseHisto
 /// \brief A very memory compact histogram to hold some tracker distributions
 /// 

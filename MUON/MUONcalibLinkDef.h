@@ -16,6 +16,7 @@
 #pragma link C++ class AliMUONCalibParamND+;
 #pragma link C++ class AliMUONCalibParamNF+;
 #pragma link C++ class AliMUONCalibParamNI+;
+#pragma link C++ class AliMUONCalibrationData+;
 #pragma link C++ class AliMUONTriggerEfficiencyCells+;
 #pragma link C++ class AliMUONTriggerLut+;
 #pragma link C++ class AliMUONRegionalTriggerConfig+;

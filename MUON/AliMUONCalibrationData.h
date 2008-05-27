@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUONCalibrationData
 /// \brief Single entry point to access MUON calibration data.
 /// 

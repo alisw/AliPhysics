@@ -6,6 +6,8 @@
 #ifndef ALIMUONTRIGGER_H
 #define ALIMUONTRIGGER_H
 
+// $Id$
+
 /// \ingroup sim
 /// \class AliMUONTrigger
 /// \brief MUON trigger detector class

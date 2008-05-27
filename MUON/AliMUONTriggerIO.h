@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup trigger
+/// \ingroup calib
 /// \class AliMUONTriggerIO
 /// \brief Handles read/write of masks and LUT to/from online files
 /// 
