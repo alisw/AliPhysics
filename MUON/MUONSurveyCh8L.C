@@ -89,18 +89,13 @@ AliMUONGeometryTransformer *ReAlign(const AliMUONGeometryTransformer * transform
 void MUONSurveyCh8L() {
   
   char str[100];
-  char opt[100];
-  char var[100];
   char filename[100];
-  Char_t histoName[20];
-  Char_t histoTitle[50];
   
   int saveps = 1;
-  const int font = 41; // Helvetica + precision 1
   const int cWidth = (int)(700*(29./21.));
   const int cHeight = 700;
-  const int   lineColor = 1;
-  const int   fillColor = 4;
+//   const int   lineColor = 1;
+//   const int   fillColor = 4;
 //   const int   filetype  = 111; // portrait  
   const int   filetype  = 112; // landscape  
   
@@ -278,7 +273,7 @@ void MUONSurveyCh8L() {
   }
   
   // Keep the id of slat sticker targets next to slat button targets
-  Int_t iSSBT[13][2] = {0};
+  Int_t iSSBT[13][2] = {{0}};
   
   // Fill graph with sticker target positions
   for (int iSlat=0; iSlat<nSlats; iSlat++){
@@ -400,12 +395,12 @@ void MUONSurveyCh8L() {
     fPhiYSlat[iSlat][1][1] = new TF2(fphiyName,phiypp,yMin,yMax,yMin,yMax,7);   
   }
 
-  Double_t *xce = new Double_t[nSlats]; 
-  Double_t *yce = new Double_t[nSlats]; 
-  Double_t *zce = new Double_t[nSlats]; 
+//   Double_t *xce = new Double_t[nSlats]; 
+//   Double_t *yce = new Double_t[nSlats]; 
+//   Double_t *zce = new Double_t[nSlats]; 
   Double_t *psi = new Double_t[nSlats]; 
   Double_t *tht = new Double_t[nSlats]; 
-  Double_t *phi = new Double_t[nSlats]; 
+//   Double_t *phi = new Double_t[nSlats]; 
 
   Double_t **lCenSlat = new Double_t*[nSlats];
   Double_t **lRotSlat = new Double_t*[nSlats];
@@ -527,14 +522,14 @@ void MUONSurveyCh8L() {
     cout << "BSdiff: " << TMath::Abs(pointSBT[0]->GetY() - pointSSBT[0]->GetY()) << " " << TMath::Abs(pointSBT[1]->GetY() - pointSSBT[1]->GetY()) << " " << tempDiff1/(iSlat+1) << " " << tempDiff2/(iSlat+1) << " " << tempDiff/(iSlat+1) << endl;
 
 
-    Double_t p0l[3] = {0};
+    //    Double_t p0l[3] = {0};
     Double_t p1l[3] = {0};
     Double_t p2l[3] = {0};
-    Double_t p0g[3] = {0};
+    //    Double_t p0g[3] = {0};
     Double_t p1g[3] = {0};
     Double_t p2g[3] = {0};
 
-    p0l[2] = lSBTLoc6[iSlat][0][2];
+    //    p0l[2] = lSBTLoc6[iSlat][0][2];
     // Button targets local coordinates
     for(Int_t iCor=0; iCor<3; iCor++){
       p1l[iCor]= lSBTLoc6[iSlat][0][iCor];
@@ -746,7 +741,6 @@ void MUONSurveyCh8L() {
     trfSlat[iSlat].SetTranslation(lCenSlat[iSlat]); 
   }
 
-  Double_t *myTrans = 0;
   for(Int_t iSlat=0; iSlat<nSlats; iSlat++){
     dtrfSlat[iSlat].SetTranslation(dtransSlat[iSlat]);
     dtrfSlat[iSlat].SetRotation(drotSlat[iSlat]);

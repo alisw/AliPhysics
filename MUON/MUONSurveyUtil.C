@@ -34,7 +34,7 @@
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryBuilder.h"
 #include "AliMpExMap.h"
-
+#include "AliMpExMapIterator.h"
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
@@ -561,77 +561,72 @@ AliMUONGeometryTransformer *ReAlign(const AliMUONGeometryTransformer * transform
     if (verbose)
       printf("%i DEs in old GeometryStore  %i\n",detElements->GetSize(), iMt);
     TGeoCombiTrans *deltaLocalTransform;
-    for (Int_t iDe = 0; iDe < detElements->GetSize(); iDe++) {
-      // detection elements.
-      AliMUONGeometryDetElement *detElement =
-	(AliMUONGeometryDetElement *) detElements->GetObject(iDe);
-      if (!detElement) {
-	printf("Detection element not found.\n");
-	break;
-      }
+    TIter next(detElements->CreateIterator());
+    AliMUONGeometryDetElement *detElement;
+    while ((detElement = static_cast<AliMUONGeometryDetElement*>(next()))){
       /// make a new detection element
-	AliMUONGeometryDetElement *newDetElement =
-	  new AliMUONGeometryDetElement(detElement->GetId(),
-					detElement->GetVolumePath());
-	TString lDetElemName(detElement->GetDEName());
-	lDetElemName.ReplaceAll("DE","");
-	iDetElemId = lDetElemName.Atoi();
-	iDetElemNumber = iDetElemId%100;
-	iCh = iDetElemId/100 -1;
-	if(iMt==rMod){
-	  if (iCh<4) {
-	    iDetElemIndex = iDetElemId;
-	  } else {
-	    if ((iDetElemNumber > (fgNDetElemCh[iCh]-2)/4) &&
-		(iDetElemNumber < fgNDetElemCh[iCh]-(fgNDetElemCh[iCh]-2)/4)) {
-	      iDetElemIndex = (+fgNDetElemCh[iCh] 
-			       -(1+(fgNDetElemCh[iCh]-2)/4) 
-			       -iDetElemNumber);
-	    } else {
-	      iDetElemIndex = (+fgNDetElemCh[iCh] 
-			       -fgNDetElemCh[iCh]/2
-			       -((1+(fgNDetElemCh[iCh]-2)/4) 
-				 -TMath::Min(iDetElemNumber,
-					     TMath::Abs(iDetElemNumber-fgNDetElemCh[iCh]))));
-	    }
-	  }
-	  deltaLocalTransform = new TGeoCombiTrans(deltaDetElemTransf[iDetElemIndex]);       
+      AliMUONGeometryDetElement *newDetElement =
+	new AliMUONGeometryDetElement(detElement->GetId(),
+				      detElement->GetVolumePath());
+      TString lDetElemName(detElement->GetDEName());
+      lDetElemName.ReplaceAll("DE","");
+      iDetElemId = lDetElemName.Atoi();
+      iDetElemNumber = iDetElemId%100;
+      iCh = iDetElemId/100 -1;
+      if(iMt==rMod){
+	if (iCh<4) {
+	  iDetElemIndex = iDetElemId;
 	} else {
-	  deltaLocalTransform = new TGeoCombiTrans(*gGeoIdentity);
+	  if ((iDetElemNumber > (fgNDetElemCh[iCh]-2)/4) &&
+	      (iDetElemNumber < fgNDetElemCh[iCh]-(fgNDetElemCh[iCh]-2)/4)) {
+	    iDetElemIndex = (+fgNDetElemCh[iCh] 
+			     -(1+(fgNDetElemCh[iCh]-2)/4) 
+			     -iDetElemNumber);
+	  } else {
+	    iDetElemIndex = (+fgNDetElemCh[iCh] 
+			     -fgNDetElemCh[iCh]/2
+			     -((1+(fgNDetElemCh[iCh]-2)/4) 
+			       -TMath::Min(iDetElemNumber,
+					   TMath::Abs(iDetElemNumber-fgNDetElemCh[iCh]))));
+	  }
 	}
+	deltaLocalTransform = new TGeoCombiTrans(deltaDetElemTransf[iDetElemIndex]);       
+      } else {
+	deltaLocalTransform = new TGeoCombiTrans(*gGeoIdentity);
+      }
 
-	// local transformation of this detection element.
-	TGeoCombiTrans localTransform
-	  = TGeoCombiTrans(*detElement->GetLocalTransformation());
-	//      TGeoHMatrix newLocalMatrix = localTransform * (*deltaLocalTransform);
-	TGeoCombiTrans newLocalTransform 
-	  = TGeoCombiTrans(localTransform * (*deltaLocalTransform));
-	newDetElement->SetLocalTransformation(newLocalTransform);	  
-	// global transformation
-	TGeoHMatrix newGlobalTransform =
-	  AliMUONGeometryBuilder::Multiply(*newModuleTransform,
-					   newLocalTransform);
-	newDetElement->SetGlobalTransformation(newGlobalTransform);
-	  
-	// add this det element to module
-	newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(),
-							newDetElement);
-
-	// In the Alice Alignment Framework misalignment objects store
-	// global delta transformation
-	// Get detection "intermediate" global transformation
-	TGeoHMatrix newOldGlobalTransform = (*newModuleTransform) * localTransform;
-	// Get detection element global delta transformation: 
-	// Tdelta = Tnew * Told.inverse
-	TGeoHMatrix  deltaGlobalTransform
-	  = AliMUONGeometryBuilder::Multiply(newGlobalTransform, 
-					     newOldGlobalTransform.Inverse());
-	  
-	// Create mis alignment matrix
-	newGeometryTransformer
-	  ->AddMisAlignDetElement(detElement->GetId(), deltaGlobalTransform);
-    }
+      // local transformation of this detection element.
+      TGeoCombiTrans localTransform
+	= TGeoCombiTrans(*detElement->GetLocalTransformation());
+      //      TGeoHMatrix newLocalMatrix = localTransform * (*deltaLocalTransform);
+      TGeoCombiTrans newLocalTransform 
+	= TGeoCombiTrans(localTransform * (*deltaLocalTransform));
+      newDetElement->SetLocalTransformation(newLocalTransform);	  
+      // global transformation
+      TGeoHMatrix newGlobalTransform =
+	AliMUONGeometryBuilder::Multiply(*newModuleTransform,
+					 newLocalTransform);
+      newDetElement->SetGlobalTransformation(newGlobalTransform);
       
+      // add this det element to module
+      newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(),
+						      newDetElement);
+      
+      // In the Alice Alignment Framework misalignment objects store
+      // global delta transformation
+      // Get detection "intermediate" global transformation
+      TGeoHMatrix newOldGlobalTransform = (*newModuleTransform) * localTransform;
+      // Get detection element global delta transformation: 
+      // Tdelta = Tnew * Told.inverse
+      TGeoHMatrix  deltaGlobalTransform
+	= AliMUONGeometryBuilder::Multiply(newGlobalTransform, 
+					   newOldGlobalTransform.Inverse());
+      
+      // Create mis alignment matrix
+      newGeometryTransformer
+	->AddMisAlignDetElement(detElement->GetId(), deltaGlobalTransform);
+    }
+    
     if (verbose)
       printf("Added module transformer %i to the transformer\n", iMt);
     newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
