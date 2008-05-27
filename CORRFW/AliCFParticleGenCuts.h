@@ -35,6 +35,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TBits;
+class TArrayF;
 
 class AliCFParticleGenCuts : public AliCFCutBase
 {
@@ -117,10 +118,11 @@ class AliCFParticleGenCuts : public AliCFCutBase
   Double32_t fDecayRxyMax;        // max decay length in transverse plane wrt (0,0,0)
 
   //QA histos
-  TH1F*  fhCutStatistics;		// Histogram: statistics of what cuts the tracks did not survive
-  TH2F*  fhCutCorrelation;		// Histogram: 2d statistics plot
-  TH1F*  fhQA[kNCuts][kNStepQA];        // QA Histograms
-  TBits* fBitmap ; 			// stores single selection decisions
+  TH1F*    fhCutStatistics;        // Histogram: statistics of what cuts the tracks did not survive
+  TH2F*    fhCutCorrelation;	   // Histogram: 2d statistics plot
+  TH1F*    fhQA[kNCuts][kNStepQA]; // QA Histograms
+  TArrayF* fCutValues;             // array of cut values
+  TBits* fBitmap ;                 // stores single selection decisions
 
   void SelectionBitMap(TObject* obj);
   void FillHistograms(TObject* obj, Bool_t afterCuts);

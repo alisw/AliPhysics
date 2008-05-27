@@ -33,6 +33,7 @@
 #include "TH2F.h"
 #include "TBits.h"
 #include "TList.h"
+#include "TArrayF.h"
 
 ClassImp(AliCFParticleGenCuts)
 
@@ -64,6 +65,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
   fDecayRxyMax(1.e+09),
   fhCutStatistics(0x0),
   fhCutCorrelation(0x0),
+  fCutValues(new TArrayF(kNCuts)),
   fBitmap(new TBits(0))
 {
   //
@@ -102,6 +104,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
   fDecayRxyMax(1.e+09),
   fhCutStatistics(0x0),
   fhCutCorrelation(0x0),
+  fCutValues(new TArrayF(kNCuts)),
   fBitmap(new TBits(0))
 {
   //
@@ -140,14 +143,12 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) :
   fDecayRxyMax(c.fDecayLengthMin),
   fhCutStatistics(new TH1F(*c.fhCutStatistics)),
   fhCutCorrelation(new TH2F(*c.fhCutCorrelation)),
+  fCutValues(new TArrayF(*c.fCutValues)),
   fBitmap(new TBits(*c.fBitmap))
 {
   //
   //copy ctor
   //
-  if (c.fhCutStatistics)  fhCutStatistics  = new TH1F(*c.fhCutStatistics)  ;
-  if (c.fhCutCorrelation) fhCutCorrelation = new TH2F(*c.fhCutCorrelation) ;
-
   for (int i=0; i<kNCuts; i++)
     for (int j=0; j<kNStepQA; j++)
       fhQA[i][j]=(TH1F*)c.fhQA[i][j]->Clone();
@@ -184,6 +185,7 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
     fDecayLengthMax=c.fDecayLengthMax;
     fDecayRxyMin=c.fDecayRxyMin;
     fDecayRxyMax=c.fDecayRxyMax;
+    fCutValues=new TArrayF(*c.fCutValues);
     fBitmap=new TBits(*c.fBitmap);
     
     if (fhCutStatistics)  fhCutStatistics =new TH1F(*c.fhCutStatistics) ;
@@ -213,7 +215,7 @@ Bool_t AliCFParticleGenCuts::IsSelected(TObject* obj) {
   if (fIsQAOn) FillHistograms(obj,1);
   return kTRUE;
 }
-
+	     
 //__________________________________________________________________________________
 void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
 {
@@ -221,8 +223,11 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
   // test if the track passes the single cuts
   // and store the information in a bitmap
   //
-
-  for (UInt_t i=0; i<kNCuts; i++) fBitmap->SetBitNumber(i,kFALSE);
+  
+  for (UInt_t i=0; i<kNCuts; i++) {
+    fBitmap->SetBitNumber(i,kFALSE);
+    fCutValues->SetAt((Double32_t)0,i) ;
+  }
 
   if (!obj) return  ;
   TString className(obj->ClassName());
@@ -230,11 +235,13 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
     AliError("argument must point to an AliMCParticle !");
     return ;
   }
-
-  AliMCParticle* mcPart = (AliMCParticle*) obj ;
+  
+  AliMCParticle* mcPart = dynamic_cast<AliMCParticle*>(obj) ;
   TParticle* part = mcPart->Particle();
   AliStack*  stack = fMCInfo->Stack();
 
+
+  // fill the cut array
   Double32_t partVx=(Double32_t)part->Vx();
   Double32_t partVy=(Double32_t)part->Vy();
   Double32_t partVz=(Double32_t)part->Vz();
@@ -257,72 +264,67 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
     decayRxy = TMath::Sqrt(TMath::Power(decayVx,2) + TMath::Power(decayVy,2) ) ;
   }
 
-
-  Int_t iCutBit = 0;
-
+  fCutValues->SetAt(partVx  ,kCutProdVtxXMin) ;
+  fCutValues->SetAt(partVy  ,kCutProdVtxYMin) ;
+  fCutValues->SetAt(partVz  ,kCutProdVtxZMin) ;
+  fCutValues->SetAt(partVx  ,kCutProdVtxXMax) ;
+  fCutValues->SetAt(partVy  ,kCutProdVtxYMax) ;
+  fCutValues->SetAt(partVz  ,kCutProdVtxZMax) ;
+  fCutValues->SetAt(decayVx ,kCutDecVtxXMin)  ;
+  fCutValues->SetAt(decayVy ,kCutDecVtxYMin)  ;
+  fCutValues->SetAt(decayVz ,kCutDecVtxZMin)  ;
+  fCutValues->SetAt(decayVx ,kCutDecVtxXMax)  ;
+  fCutValues->SetAt(decayVy ,kCutDecVtxYMax)  ;
+  fCutValues->SetAt(decayVz ,kCutDecVtxZMax)  ;
+  fCutValues->SetAt(decayL  ,kCutDecLgthMin)  ;
+  fCutValues->SetAt(decayL  ,kCutDecLgthMax)  ;
+  fCutValues->SetAt(decayRxy,kCutDecRxyMin)   ;
+  fCutValues->SetAt(decayRxy,kCutDecRxyMax)   ;
+  
   // cut on charge
   if ( fRequireIsCharged || fRequireIsNeutral ) {
-    if(fRequireIsCharged &&  IsCharged(mcPart)) fBitmap->SetBitNumber(iCutBit,kTRUE);
-    if(fRequireIsNeutral && !IsCharged(mcPart)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+    if (fRequireIsCharged &&  IsCharged(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutCharge) ;
+    if (fRequireIsNeutral && !IsCharged(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutCharge) ;
   } 
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutCharge) ;
   
   // cut on primary/secondary
   if ( fRequireIsPrimary || fRequireIsSecondary) {
-    if (fRequireIsPrimary   &&  IsPrimary(mcPart,stack)) fBitmap->SetBitNumber(iCutBit,kTRUE);
-    if (fRequireIsSecondary && !IsPrimary(mcPart,stack)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+    if (fRequireIsPrimary   &&  IsPrimary(mcPart,stack)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
+    if (fRequireIsSecondary && !IsPrimary(mcPart,stack)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
   } 
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
+  
   // cut on PDG code
-  if ( fRequirePdgCode ){
-    if (IsA(mcPart,fPdgCode,kFALSE)) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fRequirePdgCode ) {
+    if (IsA(mcPart,fPdgCode,kFALSE)) fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
   }
-  else fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-
-  // production vertex cuts
-  if ( partVx > fProdVtxXMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( partVx < fProdVtxXMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( partVy > fProdVtxYMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( partVy < fProdVtxYMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( partVz > fProdVtxZMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( partVz < fProdVtxZMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
   
-  // decay vertex cuts
-  if ( decayVx > fDecayVtxXMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( decayVx < fDecayVtxXMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( decayVy > fDecayVtxYMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( decayVy < fDecayVtxYMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( decayVz > fDecayVtxZMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( decayVz < fDecayVtxZMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-
-  // decay length cuts
-  if ( decayL > fDecayLengthMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( decayL < fDecayLengthMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
   
-  // transverse decay length cuts
-  if ( decayRxy > fDecayRxyMin ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if ( decayRxy < fDecayRxyMax ) fBitmap->SetBitNumber(iCutBit,kTRUE);
-
+  // now array of cut is build, fill the bitmap consequently
+  Int_t iCutBit = -1;
+  if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fProdVtxXMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fProdVtxXMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fProdVtxYMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fProdVtxYMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fProdVtxZMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fProdVtxZMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayVtxXMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayVtxXMax)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayVtxYMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayVtxYMax)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayVtxZMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayVtxZMax)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayLengthMin) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayLengthMax) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayRxyMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayRxyMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
 }
+
 
 //__________________________________________________________________________________
 void AliCFParticleGenCuts::FillHistograms(TObject* /*obj*/, Bool_t afterCuts)
@@ -332,7 +334,7 @@ void AliCFParticleGenCuts::FillHistograms(TObject* /*obj*/, Bool_t afterCuts)
   //
 
   for (int iCutNumber = 0; iCutNumber < kNCuts; iCutNumber++) 
-    fhQA[iCutNumber][afterCuts]->Fill(fBitmap->TestBitNumber(iCutNumber));
+    fhQA[iCutNumber][afterCuts]->Fill(fCutValues->At(iCutNumber));
 
   // fill cut statistics and cut correlation histograms with information from the bitmap
   if (afterCuts) return;
@@ -340,7 +342,7 @@ void AliCFParticleGenCuts::FillHistograms(TObject* /*obj*/, Bool_t afterCuts)
   // Number of single cuts in this class
   UInt_t ncuts = fBitmap->GetNbits();
   for(UInt_t bit=0; bit<ncuts;bit++) {
-   if (!fBitmap->TestBitNumber(bit)) {
+    if (!fBitmap->TestBitNumber(bit)) {
       fhCutStatistics->Fill(bit+1);
       for (UInt_t bit2=bit; bit2<ncuts;bit2++) {
 	if (!fBitmap->TestBitNumber(bit2)) 
@@ -410,9 +412,9 @@ void AliCFParticleGenCuts::DefineHistograms() {
   for (int i=0; i<kNStepQA; i++) {
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
-    fhQA[kCutCharge]     [i] = new TH1F(Form("%s_charge%s"      ,GetName(),str),"",2,-0.5,1.5);
-    fhQA[kCutPrimSec]    [i] = new TH1F(Form("%s_primSec%s"     ,GetName(),str),"",2,-0.5,1.5);
-    fhQA[kCutPDGCode]    [i] = new TH1F(Form("%s_pdgCode%s"     ,GetName(),str),"",10000,-5000,5000);
+    fhQA[kCutCharge]     [i] = new TH1F(Form("%s_charge%s"      ,GetName(),str),"",2,0,2);
+    fhQA[kCutPrimSec]    [i] = new TH1F(Form("%s_primSec%s"     ,GetName(),str),"",2,0,2);
+    fhQA[kCutPDGCode]    [i] = new TH1F(Form("%s_pdgCode%s"     ,GetName(),str),"",2,0,2);
     fhQA[kCutProdVtxXMin][i] = new TH1F(Form("%s_prodVtxXMin%s" ,GetName(),str),"",100,0,10);
     fhQA[kCutProdVtxXMax][i] = new TH1F(Form("%s_prodVtxXMax%s" ,GetName(),str),"",100,0,10);
     fhQA[kCutProdVtxYMin][i] = new TH1F(Form("%s_prodVtxYMin%s" ,GetName(),str),"",100,0,10);
