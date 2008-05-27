@@ -33,7 +33,7 @@ Depending on how this one is constructed, and depending on the runtype, it will
 <pre> 
 detName   runType                     task to be done           worker class (AliMUONVSubprocessor child)
 --------------------------------------------------------------------------------------------------------
-MCH       PEDESTAL_RUN                read ASCII ped files      AliMUONPedestalSubprocessor
+MCH       PEDESTAL                    read ASCII ped files      AliMUONPedestalSubprocessor
                                       and put them into OCDB
                         
 MCH       GMS                         read GMS alignment files  AliMUONGMSSubprocessor
@@ -42,7 +42,7 @@ MCH       GMS                         read GMS alignment files  AliMUONGMSSubpro
 MCH       PHYSICS                     read DCS HV values and    AliMUONHVSubprocessor
                                       put them into OCDB
                                       
-MCH       ELECTRONICS_CALIBRATION_RUN read ASCII gain files     prototype only = AliMUONGainSubprocessor
+MCH       CALIBRATION                 read ASCII gain files     AliMUONGainSubprocessor
                                       and put them into OCDB
                                       
 MTR       to be defined               to be defined             to be done
@@ -61,12 +61,25 @@ using the WritePedestals() method of AliMUONCDB class
 
 So first generate a valid pedestal CDB entry by using the AliMUONCDB class. There's one
  little trick : you should first point to the "default" OCDB (local://$ALICE_ROOT) in
- order to get the mapping loaded. Then only you can play with another OCDB.
-
+ order to get the mapping loaded, then only you can play with another OCDB. 
+ Or, alternatively, you can put the mapping stuff in the test OCDB, like this :
+ 
 <pre>
-root[] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-root[] AliCDBManager::Instance()->SetRun(0);
-root[] AliMpCDB::LoadDDLStore();
+root[] AliMpDDLStore::ReadData(); // read mapping from ASCII files
+root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
+root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath);
+root[] AliMpCDB::WriteMpSegmentation();
+root[] AliMpCDB::WriteDDLStore();
+</pre>
+
+If you've not put the mapping in the test database, then you must start with the default OCDB, load the mapping, and then only switch to the 
+ test database :
+ 
+<pre>
+root[] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT"); // only if you've not put the mapping in test OCDB
+root[] AliCDBManager::Instance()->SetRun(0); // only if you've not put the mapping in test OCDB
+root[] AliMpCDB::LoadDDLStore(); // only if you've not put the mapping in test OCDB
+// below are lines to be executed whatever you did with the mapping...
 root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 root[] AliMUONCDB cdb(cdbpath)
 root[] Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
@@ -91,6 +104,7 @@ Then use the AliMUONPedestalEventGenerator to produce simulated pedestal events.
 
 Usage (from the Root prompt) :
 <pre>
+AliMpCDB::LoadDDLStore2(); // load mapping from "default" OCDB=local://$ALICE_ROOT
 AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
 // back pedestals values generated in the previous step
 const char* dateFileName = "raw.date"; // base filename for the output
@@ -111,13 +125,11 @@ per LDC, as will be used in real life), the latter ones being roughly 100 MB eac
 // FIXME : instructions below should be replaced with usage of MUONTRKda
 //
 
-The raw.date.LDC* files are then processed using the makeped online program 
-(currently found, pending an agreement on where to put online programs under cvs,
- under /afs/cern.ch/user/a/abaldiss/public/v16; Please contact Alberto to check 
- it's the latest version) which outputs manus-*.ped ASCII files (one per LDC) :
+The raw.date.LDC* files are then processed using the DA online program (which is not built by default, but must be made
+ explicitely using make daqDA-MCH from $ALICE_ROOT, and requires some DATE setup..., see \ref READMEmchda.txt )
  
 <pre>
- makeped -f raw.date.LCDi -a LDCi.ped (i=0,1,2,3)
+ MUONTRKda.exe -f raw.date.LCDi -a LDCi.ped (i=0,1,2,3)
  
  (repeat for each LDC)
 </pre>

@@ -19,8 +19,8 @@
 
 #include "AliLog.h"
 #include "AliMpExMap.h"
+#include "AliMpExMapIterator.h"
 #include "Riostream.h"
-#include "AliMUONCheckItemIterator.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONCheckItem
@@ -109,17 +109,24 @@ AliMUONCheckItem::ComputeDead() const
   }
   else
   {
-    AliMUONCheckItemIterator it(*this);
+      TIter next(CreateIterator());
     AliMUONCheckItem* item;
-    it.First();
     Int_t ndead(0);
     fDead=0;
-    while ( ( item = dynamic_cast<AliMUONCheckItem*>(it.Next()) ) )
+    while ( ( item = dynamic_cast<AliMUONCheckItem*>(next()) ) )
     {
       if ( item->IsDead() ) ++ndead;
     }
     if ( ndead == fMaximum ) fDead = 1;
   }
+}
+
+//_____________________________________________________________________________
+TIterator*
+AliMUONCheckItem::CreateIterator() const
+{
+    /// Create iterator on this item
+    return fMissing->CreateIterator();
 }
 
 //_____________________________________________________________________________
@@ -163,11 +170,9 @@ AliMUONCheckItem::Print(Option_t* opt) const
   {
     TObject* object(0x0);
   
-    AliMUONCheckItemIterator it(*this);
+      TIter next(CreateIterator());
   
-    it.First();
-  
-    while ( ( object = it.Next() ) )
+    while ( ( object = next() ) )
     {
       object->Print(opt);
     }

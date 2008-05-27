@@ -17,14 +17,15 @@
 
 #include "AliMUONPedestalEventGenerator.h"
 
+#include "AliCodeTimer.h"
+#include "AliDAQ.h"
 #include "AliHeader.h"
 #include "AliLog.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONVDigitStore.h"
 #include "AliMUONRawWriter.h"
-#include "AliCodeTimer.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
+#include "AliMUONVDigitStore.h"
 #include "AliMUONVStore.h"
 #include "AliMpCathodType.h"
 #include "AliMpConstants.h"
@@ -32,6 +33,7 @@
 #include "AliMpDetElement.h"
 #include "AliMpIntPair.h"
 #include "AliMpPlaneType.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliRunLoader.h"
 #include <TClonesArray.h>
 #include <TMath.h>
@@ -39,7 +41,6 @@
 #include <TRandom.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
-#include "AliDAQ.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONPedestalEventGenerator
@@ -320,7 +321,12 @@ AliMUONPedestalEventGenerator::Digits2Raw(Int_t event)
   
   AliCodeTimerAuto("")
   
-  if (!fRawWriter) fRawWriter = new AliMUONRawWriter;
+  if (!fRawWriter) 
+  {
+      AliRawDataHeaderSim header;
+      fRawWriter = new AliMUONRawWriter;
+      fRawWriter->SetHeader(header);
+  }
   
   // Generate RAW data from the digits
   // Be carefull to create&change to the correct directory first...

@@ -19,7 +19,6 @@
 
 #include "AliLog.h"
 #include "AliMUONCheckItem.h"
-#include "AliMUONCheckItemIterator.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVStore.h"
 #include "AliMpConstants.h"
@@ -204,11 +203,9 @@ AliMUON2DStoreValidator::ReportManu(TList& lines, AliMUONCheckItem& manu)
   /// Report list of missing channels from this manu
   
   TObjString* channel(0x0);
-  AliMUONCheckItemIterator it(manu);
+  TIter next(manu.CreateIterator());
   
-  it.First();
-  
-  while ( ( channel = static_cast<TObjString*>(it.Next()) ) )
+  while ( ( channel = static_cast<TObjString*>(next()) ) )
   {
     lines.Add(new TObjString(Form("\t\t\tChannel %s is missing or dead",
                                   channel->GetString().Data())));
@@ -222,13 +219,13 @@ AliMUON2DStoreValidator::ReportDE(TList& lines, AliMUONCheckItem& de)
 {  
   /// Report list of missing manus from this de
   AliMUONCheckItem* manu(0x0);
-  AliMUONCheckItemIterator it(de);
+  
+  TIter next(de.CreateIterator());
   
   lines.Add(new TObjString(Form("DE %5d",de.GetID())));
   
-  it.First();
   
-  while ( ( manu = static_cast<AliMUONCheckItem*>(it.Next()) ) )
+  while ( ( manu = static_cast<AliMUONCheckItem*>(next()) ) )
   {
     if ( manu->IsDead() )
     {
@@ -248,11 +245,9 @@ AliMUON2DStoreValidator::ReportChamber(TList& lines, AliMUONCheckItem& chamber)
   /// Report list of missing de from this chamber
   
   AliMUONCheckItem* de(0x0);
-  AliMUONCheckItemIterator it(chamber);
+  TIter next(chamber.CreateIterator());
   
-  it.First();
-  
-  while ( ( de = static_cast<AliMUONCheckItem*>(it.Next()) ) )
+  while ( ( de = static_cast<AliMUONCheckItem*>(next()) ) )
   {
     if ( de->IsDead() )
     {

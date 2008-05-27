@@ -17,13 +17,10 @@
 #endif
 
 class AliMpExMap;
-class TExMapIter;
-class AliMUONCheckItemIterator;
+class TIterator;
 
 class AliMUONCheckItem : public TNamed
 {
-  friend class AliMUONCheckItemIterator;
-
 public:
 
   AliMUONCheckItem(Int_t id, Int_t maxNumber, const char* name);
@@ -40,6 +37,8 @@ public:
   
   void Print(Option_t* opt="") const;
   
+    TIterator* CreateIterator() const;
+    
 private:
   /// Not implemented
   AliMUONCheckItem(const AliMUONCheckItem&);

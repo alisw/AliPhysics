@@ -14,7 +14,6 @@ SRCS:=  mapping/AliMpIntPair.cxx  \
         AliMUON1DArray.cxx \
         AliMUON1DMap.cxx \
         AliMUONCheckItem.cxx \
-        AliMUONCheckItemIterator.cxx \
         AliMUONVStore.cxx \
         AliMUONTreeManager.cxx \
         AliMUONLogger.cxx

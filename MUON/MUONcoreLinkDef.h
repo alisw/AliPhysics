@@ -25,7 +25,6 @@
 #pragma link C++ class AliMUON1DArray+;
 #pragma link C++ class AliMUON1DMap+;
 #pragma link C++ class AliMUONCheckItem+;
-#pragma link C++ class AliMUONCheckItemIterator+;
 #pragma link C++ class AliMUONVStore+;
 #pragma link C++ class AliMUONTreeManager+;
 #pragma link C++ class AliMUONLogger+;
