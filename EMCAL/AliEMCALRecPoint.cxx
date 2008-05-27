@@ -55,7 +55,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
     fMulTrack(0), fDigitsList(0), fTracksList(0),
     fClusterType(-1), fCoreEnergy(0), fDispersion(0),
     fEnergyList(0), fTimeList(0), fAbsIdList(0),
-    fTime(0.), fCoreRadius(10),  //HG check this
+    fTime(0.), fNExMax(0), fCoreRadius(10),  //HG check this 
     fDETracksList(0), fMulParent(0), fMaxParent(0),
     fParentsList(0), fDEParentsList(0), fSuperModuleNumber(0),
     fDigitIndMax(-1)
@@ -77,7 +77,7 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char *)
     fDigitsList(new Int_t[fMaxDigit]), fTracksList(new Int_t[fMaxTrack]),
     fClusterType(-1), fCoreEnergy(0), fDispersion(0),
     fEnergyList(new Float_t[fMaxDigit]), fTimeList(new Float_t[fMaxDigit]), 
-    fAbsIdList(new Int_t[fMaxDigit]), fTime(-1.), fCoreRadius(10),
+    fAbsIdList(new Int_t[fMaxDigit]), fTime(-1.), fNExMax(0), fCoreRadius(10),
     fDETracksList(new Float_t[fMaxTrack]), fMulParent(0), fMaxParent(1000),
     fParentsList(new Int_t[fMaxParent]), fDEParentsList(new Float_t[fMaxParent]),
     fSuperModuleNumber(0), fDigitIndMax(-1)
@@ -106,7 +106,7 @@ AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp)
     fClusterType(rp.fClusterType), fCoreEnergy(rp.fCoreEnergy), 
     fDispersion(rp.fDispersion),
     fEnergyList(new Float_t[rp.fMaxDigit]), fTimeList(new Float_t[rp.fMaxDigit]), 
-    fAbsIdList(new Int_t[rp.fMaxDigit]), fTime(rp.fTime), fCoreRadius(rp.fCoreRadius),
+    fAbsIdList(new Int_t[rp.fMaxDigit]), fTime(rp.fTime), fNExMax(rp.fNExMax),fCoreRadius(rp.fCoreRadius),
     fDETracksList(new Float_t[rp.fMaxTrack]), fMulParent(rp.fMulParent), 
     fMaxParent(rp.fMaxParent), fParentsList(new Int_t[rp.fMaxParent]), 
     fDEParentsList(new Float_t[rp.fMaxParent]),
@@ -179,6 +179,7 @@ AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
     fAbsIdList[i] = rp.fAbsIdList[i];
   }
   fTime = rp.fTime;
+  fNExMax = rp.fNExMax;
   fCoreRadius = rp.fCoreRadius;
   for(Int_t i = 0; i < fMaxTrack; i++) fDETracksList[i] = rp.fDETracksList[i];
   fMulParent = rp.fMulParent;

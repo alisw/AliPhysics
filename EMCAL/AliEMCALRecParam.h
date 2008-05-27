@@ -37,7 +37,7 @@ public:
   void SetW0                 (Float_t w0)      {fW0 = w0                    ;}
   void SetMinECut            (Float_t minEcut) {fMinECut = minEcut          ;}
   void SetLocMaxCut          (Float_t locMaxCut) {fLocMaxCut = locMaxCut    ;}
-  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold          ; if(fUnfold) AliInfo("Cluster Unfolding ON. Implementing only for eta=0 case!!!");}
+  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold          ; if(fUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!");}
 
   //PID (Guenole)
   Double_t GetGamma(Int_t i, Int_t j) const    {return fGamma[i][j];} 

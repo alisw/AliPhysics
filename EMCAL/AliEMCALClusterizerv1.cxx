@@ -270,7 +270,7 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * RecPoint, AliEMCALDigit
   Double_t p2 = 0.0 ;
 
   gMinuit->mnexcm("SET STR", &p2, 0, ierflg) ;   // force TMinuit to reduce function calls
-  gMinuit->mnexcm("SET GRA", &p1, 1, ierflg) ;   // force TMinuit to use my gradient
+  //  gMinuit->mnexcm("SET GRA", &p1, 1, ierflg) ;   // force TMinuit to use my gradient
   gMinuit->SetMaxIterations(5);
   gMinuit->mnexcm("SET NOW", &p2 , 0, ierflg) ;  // No Warnings
   gMinuit->mnexcm("MIGRAD", &p0, 0, ierflg) ;    // minimize
@@ -355,6 +355,7 @@ void AliEMCALClusterizerv1::InitParameters()
     fECAW0                  = recParam->GetW0();
     fMinECut                = recParam->GetMinECut();    
     fToUnfold               = recParam->GetUnfold();
+    if(fToUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!"); 
     fECALocMaxCut           = recParam->GetLocMaxCut();
 
     AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f, fToUnfold=%d, fECALocMaxCut=%.3f",
