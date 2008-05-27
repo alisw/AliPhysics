@@ -81,6 +81,9 @@ void clusters()
     }
   }
 
+  for (Int_t i = 0; i < detN; ++i)
+    rl->UnloadRecPoints(detNames[i]);
+
   // Fill visualization structs
 
   TEveElementList* list = new TEveElementList("Clusters");
