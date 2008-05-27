@@ -214,8 +214,8 @@ TMap* CreateDCSAliasMap()
   aliasNames[24]  = "ZDC_ZEM_HV0.actual.vMon";
   aliasNames[25]  = "ZDC_ZEM_HV1.actual.vMon";
   //
-  aliasNames[26]  = "ZDC_REFA_HV0.actual.vMon";
-  aliasNames[27]  = "ZDC_REFC_HV1.actual.vMon";
+  aliasNames[26]  = "ZDC_REFA_HV.actual.vMon";
+  aliasNames[27]  = "ZDC_REFC_HV.actual.vMon";
   //
   for(int nAlias=4;nAlias<28;nAlias++)
   {
