@@ -391,9 +391,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		
 		if (fDDL != -1)
 		{
-			bool ddl[22];
-			AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
-			if (not ddl[fDDL])
+			if (AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification) != fDDL)
 			{
 				HLTWarning("Received raw data from an unexpected DDL.");
 			}
@@ -522,43 +520,11 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 		return -EINVAL;
 	}
 
-	Bool_t warn = kFALSE;
-	
-	AliCDBManager* cdbManager = AliCDBManager::Instance();
-	if (cdbManager == NULL)
-	{
-		HLTError("CDB manager instance does not exist.");
-		return -EIO;
-	}
-	
-	const char* cdbPathUsed = "unknown (not set)";
-	if (cdbPath != NULL)
-	{
-		cdbManager->SetDefaultStorage(cdbPath);
-		cdbPathUsed = cdbPath;
-	}
-	else
-	{
-		AliCDBStorage* store = cdbManager->GetDefaultStorage();
-		if (store != NULL) cdbPathUsed = store->GetURI().Data();
-	}
-	
-	if (run != -1) cdbManager->SetRun(run);
-	Int_t runUsed = cdbManager->GetRun();
-	
-	if (not AliMpCDB::LoadDDLStore(warn))
-	{
-		HLTError("Failed to load DDL store specified for CDB path '%s' and run no. %d",
-			cdbPathUsed, runUsed
-		);
-		return -ENOENT;
-	}
+	int result = FetchMappingStores(cdbPath, run);
+	// Error message already generated in FetchMappingStores.
+	if (result != 0) return result;
 	AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
-	if (ddlStore == NULL)
-	{
-		HLTError("Could not find DDL store instance.");
-		return -EIO;
-	}
+	
 	AliMpSegmentation* segmentation = AliMpSegmentation::Instance();
 	if (segmentation == NULL)
 	{

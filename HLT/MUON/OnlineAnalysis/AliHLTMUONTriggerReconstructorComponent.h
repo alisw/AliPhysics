@@ -79,7 +79,9 @@ protected:
 private:
 
 	// Do not allow copying of this class.
+	/// Not implemented.
 	AliHLTMUONTriggerReconstructorComponent(const AliHLTMUONTriggerReconstructorComponent& /*obj*/);
+	/// Not implemented.
 	AliHLTMUONTriggerReconstructorComponent& operator = (const AliHLTMUONTriggerReconstructorComponent& /*obj*/);
 
 	int ReadLookUpTable(const char* lutpath);

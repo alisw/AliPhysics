@@ -8,7 +8,7 @@
 ///
 /// @file   AliHLTMUONUtils.h
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   
+/// @date   17 May 2007
 /// @brief  Class containing various dimuon HLT utility routines and macros.
 ///
 
@@ -19,13 +19,17 @@
 extern "C" {
 struct AliHLTMUONTriggerRecordStruct;
 struct AliHLTMUONTriggerRecordsBlockStruct;
+struct AliHLTMUONTrigRecInfoStruct;
 struct AliHLTMUONTrigRecsDebugBlockStruct;
 struct AliHLTMUONTriggerChannelsBlockStruct;
 struct AliHLTMUONRecHitsBlockStruct;
+struct AliHLTMUONClusterStruct;
 struct AliHLTMUONClustersBlockStruct;
+struct AliHLTMUONChannelStruct;
 struct AliHLTMUONChannelsBlockStruct;
 struct AliHLTMUONMansoTrackStruct;
 struct AliHLTMUONMansoTracksBlockStruct;
+struct AliHLTMUONMansoCandidateStruct;
 struct AliHLTMUONMansoCandidatesBlockStruct;
 struct AliHLTMUONTrackDecisionStruct;
 struct AliHLTMUONSinglesDecisionBlockStruct;
@@ -268,6 +272,36 @@ public:
 		AliHLTInt32_t ddl = SpecToDDLNumber(spec);
 		return (0 <= ddl and ddl <= 19);
 	}
+
+	/**
+	 * Returns true if the given specification is in principle valid.
+	 * It checks if the bits that should be zero are indeed zero.
+	 */
+	static bool IsSpecValid(AliHLTUInt32_t spec)
+	{
+		AliHLTUInt32_t mask = ~((1 << 22) - 1);  // First 22 bits indicate DDL number.
+		return (spec & mask) == 0x0;
+	}
+
+	/**
+	 * Returns true if the data specification indicates the data block contains
+	 * information generated from a trigger DDL or data fragments thereof.
+	 */
+	static bool ContainsDataFromTrigger(AliHLTUInt32_t spec)
+	{
+		AliHLTUInt32_t mask = ((1 << 22) - 1) & ~((1 << 20) - 1);
+		return (spec & mask) != 0x0;
+	}
+
+	/**
+	 * Returns true if the data specification indicates the data block contains
+	 * information generated from a tracker DDL or data fragments thereof.
+	 */
+	static bool ContainsDataFromTracker(AliHLTUInt32_t spec)
+	{
+		AliHLTUInt32_t mask = ((1 << 20) - 1);
+		return (spec & mask) != 0x0;
+	}
 	
 	/**
 	* Parses the string containing the type name of a dHLT data block and
@@ -277,7 +311,7 @@ public:
 	*      is invalid.
 	*/
 	static AliHLTMUONDataBlockType ParseCommandLineTypeString(const char* type);
-
+	
 	/**
 	 * These codes indicate the reason why a data block failed its
 	 * validity check.
@@ -287,16 +321,32 @@ public:
 		kNoReason,   ///< There was no reason for failure.
 		kHeaderContainsWrongType,  ///< The common header contains an incorrect type ID.
 		kHeaderContainsWrongRecordWidth,  ///< The common header contains an incorrect data record width.
+		kInvalidIdValue,  ///< The structure identifier does not have a valid value.
+		kInvalidTriggerIdValue,  ///< The trigger structure identifier does not have a valid value.
+		kInvalidTrackIdValue,  ///< The track structure identifier does not have a valid value.
 		kReservedBitsNotZero,  ///< Reserved bits have not been set to zero.
 		kParticleSignBitsNotValid,  ///< The particle sign bits are not a valid value.
 		kHitNotMarkedAsNil,  ///< A hit was marked as not found, but the corresponding hit structure was not set to nil.
-		kFoundDuplicateIDs,  ///< Found duplicate identifiers, but they should all be unique.
+		kInvalidDetElementNumber,  ///< An invalid detector element ID was found.
+		kHitIsNil,  ///< The hit cannot be set to a nil value.
+		kInvalidChannelCount,  ///< The number of channels indicated is zero or outside the valid range.
+		kInvalidBusPatchId,  ///< The bus patch ID is outside the valid range.
+		kInvalidManuId,  ///< The MANU ID is outside the valid range.
+		kInvalidChannelAddress,  ///< The MANU channel address is outside the valid range.
+		kInvalidSignal,  ///< The ADC signal value is outside the valid range.
+		kDataWordDifferent, ///< The raw data word is different from the unpacked values.
+		kChiSquareInvalid,  ///< The chi squared value must be a positive value or -1 indicating a fitting error.
+		kMomentumVectorNotZero, ///< The chi sqaured value is set to -1, but momentum vector not zero.
+		kRoiRadiusInvalid, ///< The region of interest radius is invalid.
+		kHitNotWithinRoi, ///< A tracks hit is not within the corresponding region of interest.
 		kPtValueNotValid,  ///< The pT value is not positive nor -1 indicating an invalid value.
-		kFoundDuplicateTriggers,  ///< Found duplicate trigger decisions.
 		kPairTrackIdsAreIdentical,  ///< The track IDs of the track pair are identical.
 		kMassValueNotValid,  ///< The invariant mass value is not positive nor -1 indicating an invalid value.
 		kLowPtCountInvalid,  ///< The low pT trigger count is greater than 2, which is invalid.
-		kHighPtCountInvalid  ///< The high pT trigger count is greater than 2, which is invalid.
+		kHighPtCountInvalid,  ///< The high pT trigger count is greater than 2, which is invalid.
+		kFoundDuplicateIDs,  ///< Found duplicate identifiers, but they should all be unique.
+		kFoundDuplicateHits,  ///< Found duplicate hits.
+		kFoundDuplicateTriggers  ///< Found duplicate trigger decisions.
 	};
 	
 	/**
@@ -311,67 +361,672 @@ public:
 	static const char* FailureReasonToMessage(WhyNotValid reason);
 
 	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the trigger records data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the trigger debug information data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	// this method is deprecated.
+	static bool HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the reconstructed hits data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONRecHitsBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the clusters data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONClustersBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the channels data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONChannelsBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the Manso tracks data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONMansoTracksBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the Manso candidates data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONMansoCandidatesBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the single tracks dHLT trigger decision data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONSinglesDecisionBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+	
+	/**
+	 * Method used to check if the header information corresponds to the
+	 * supposed type of the track pairs dHLT trigger decision data block.
+	 * This method will return either kHeaderContainsWrongType or
+	 * kHeaderContainsWrongRecordWidth as the reason code.
+	 * [in]  \param block  The data block to check.
+	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 *      by this pointer will be filled with the reason code describing why
+	 *      the header is not valid, if and only if a problem is found with
+	 *      the data.
+	 * \returns  true if there is no problem with the header and false otherwise.
+	 */
+	static bool HeaderOk(const AliHLTMUONPairsDecisionBlockStruct& block, WhyNotValid* reason = NULL)
+	{
+		AliHLTUInt32_t count = 1;
+		return HeaderOk(block, reason, count);
+	}
+
+	/**
 	 * Methods used to check if the header information corresponds to the
 	 * supposed type of the data block.
-	 * If the 'reason' parameter is not NULL then these methods will fill the
-	 * memory pointed to by reason with a code describing why the header is
-	 * not valid, if and only if a problem is found with the data.
-	 * These methods will return either kHeaderContainsWrongType or
-	 * kHeaderContainsWrongRecordWidth as the reason.
+	 * If the 'reason' parameter should point to an array which will store
+	 * the reason codes indicating the problems with the data block.
+	 * The 'reasonCount' parameter should initialy contain the number of
+	 * elements that can be stored in reason. When the method exits it will
+	 * store the number of elements in the 'reason' array actually filled.
 	 */
-	static bool HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONRecHitsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONClustersBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONChannelsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONMansoTracksBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONMansoCandidatesBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONSinglesDecisionBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool HeaderOk(const AliHLTMUONPairsDecisionBlockStruct& block, WhyNotValid* reason = NULL);
+	static bool HeaderOk(
+			const AliHLTMUONTriggerRecordsBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONTrigRecsDebugBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONRecHitsBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONClustersBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONChannelsBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONMansoTracksBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONMansoCandidatesBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONSinglesDecisionBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool HeaderOk(
+			const AliHLTMUONPairsDecisionBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * trigger record structure is OK and returns true in that case.
+	 * [in] \param tr  The trigger record structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the structure and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONTriggerRecordStruct& tr,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(tr, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The trigger record data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the trigger record that had a problem. This value will
+	 *      only contain a valid value if the method RecordNumberWasSet(*reason)
+	 *      returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONTriggerRecordsBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * trigger record debug information structure is OK and returns true in that case.
+	 * [in] \param trigInfo  The trigger record debug information structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the structure and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONTrigRecInfoStruct& trigInfo,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(trigInfo, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The trigger record debugging information data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the trigger record debug information structure that had
+	 *      a problem. This value will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONTrigRecsDebugBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
+	
+	// this method is deprecated.
+	static bool IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The reconstructed hits data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONRecHitsBlockStruct& block,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * cluster data structure is OK and returns true in that case.
+	 * [in] \param cluster  The cluster structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONClusterStruct& cluster,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(cluster, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The clusters data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the cluster structure that had a problem. This value
+	 *      will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONClustersBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * channel data structure is OK and returns true in that case.
+	 * [in] \param cluster  The channel structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONChannelStruct& channel,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(channel, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The ADC channels data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the channel structure that had a problem. This value
+	 *      will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONChannelsBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * Manso track structure is OK and returns true in that case.
+	 * [in] \param track  The Manso track structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the structure and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONMansoTrackStruct& track,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(track, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The Manso track data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the Manso track structure that had a problem.
+	 *      This value will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONMansoTracksBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * Manso track candidate structure is OK and returns true in that case.
+	 * [in] \param candidate  The Manso track candidate structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the structure and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONMansoCandidateStruct& candidate,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(candidate, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The Manso track candidate data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the Manso track candidate structure that had a problem.
+	 *      This value will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONMansoCandidatesBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * single track trigger decision structure is OK and returns true in that case.
+	 * [in] \param decision  The trigger decision structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the structure and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONTrackDecisionStruct& decision,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(decision, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The single track trigger decision data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the single track trigger decision structure that had
+	 *      a problem. This value will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONSinglesDecisionBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * track pair trigger decision structure is OK and returns true in that case.
+	 * [in] \param decision  The trigger decision structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the structure and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONPairDecisionStruct& decision,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(decision, reason, count);
+	}
+	
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * dHLT raw internal data block is OK and returns true in that case.
+	 * [in] \param block  The track pair trigger decision data block to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the data block is not valid, if and
+	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the track pairs trigger decision structure that had
+	 *      a problem. This value will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONPairsDecisionBlockStruct& block,
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(block, reason, recordNum, count);
+	}
 
 	/**
 	 * Methods used to check more extensively if the integrity of various
 	 * types of data blocks are Ok and returns true in that case.
 	 * These can be slow and should generally only be used for debugging.
+	 * The methods are able to return multiple reasons for the problems related
+	 * to the data block under test.
 	 */
-	static bool IntegrityOk(const AliHLTMUONTriggerRecordStruct& tr, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(
+			const AliHLTMUONTriggerRecordStruct& tr,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
 	
 	static bool IntegrityOk(
 			const AliHLTMUONTriggerRecordsBlockStruct& block,
-			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
 		);
-		
-	static bool IntegrityOk(const AliHLTMUONTrigRecsDebugBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool IntegrityOk(const AliHLTMUONClustersBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool IntegrityOk(const AliHLTMUONChannelsBlockStruct& block, WhyNotValid* reason = NULL);
-	static bool IntegrityOk(const AliHLTMUONMansoTrackStruct& track, WhyNotValid* reason = NULL);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONTrigRecInfoStruct& trigInfo,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONTrigRecsDebugBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONRecHitsBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONClusterStruct& cluster,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONClustersBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONChannelStruct& channel,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONChannelsBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONMansoTrackStruct& track,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
 	
 	static bool IntegrityOk(
 			const AliHLTMUONMansoTracksBlockStruct& block,
-			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONMansoCandidateStruct& candidate,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 		);
 	
 	static bool IntegrityOk(
 			const AliHLTMUONMansoCandidatesBlockStruct& block,
-			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
 		);
 	
-	static bool IntegrityOk(const AliHLTMUONTrackDecisionStruct& decision, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(
+			const AliHLTMUONTrackDecisionStruct& decision,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
 	
 	static bool IntegrityOk(
 			const AliHLTMUONSinglesDecisionBlockStruct& block,
-			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
 		);
 	
-	static bool IntegrityOk(const AliHLTMUONPairDecisionStruct& decision, WhyNotValid* reason = NULL);
+	static bool IntegrityOk(
+			const AliHLTMUONPairDecisionStruct& decision,
+			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
 	
 	static bool IntegrityOk(
 			const AliHLTMUONPairsDecisionBlockStruct& block,
-			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
 		);
+	
+	/**
+	 * Returns true if the \em recordNum in the corresponding IntegrityOk method
+	 * would have been set, if it returned false and a reason was set.
+	 * This helper method makes it easy to test if the \em recordNum parameter
+	 * is filled with a valid value or not.
+	 */
+	static bool RecordNumberWasSet(WhyNotValid reason);
 
 private:
 	// Should never have to create or destroy this object.

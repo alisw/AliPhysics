@@ -15,12 +15,16 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONChannelsBlockStruct.cxx
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Implementation of the stream and comparison operators.
- */
+///
+/// @file   AliHLTMUONChannelsBlockStruct.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   18 May 2007
+/// @brief  Implementation of the stream and comparison operators.
+///
+/// The channels blocks are internal dimuon HLT block structures containing
+/// debugging information about channels that belong to reconstructed
+/// hit clusters.
+///
 
 #include "AliHLTMUONChannelsBlockStruct.h"
 #include "AliHLTMUONUtils.h"
@@ -31,6 +35,7 @@ std::ostream& operator << (
 	)
 {
 	stream	<< "{fClusterId = " << channel.fClusterId
+		<< ", fBusPatch = " << channel.fBusPatch
 		<< ", fManu = " << channel.fManu
 		<< ", fChannelAddress = " << channel.fChannelAddress
 		<< ", fSignal = " << channel.fSignal

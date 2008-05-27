@@ -43,7 +43,7 @@ public:
 	virtual AliHLTComponent* Spawn();
 	
 	/**
-	 * Generates a ASCII text file containing the lookup table (LUT) from
+	 * Generates an ASCII text file containing the lookup table (LUT) from
 	 * the CDB, which can be used for the hit reconstructor component later.
 	 * @param ddl  Must be the DDL for which to generate the DDL,
 	 *             in the range [12..19].
@@ -61,7 +61,7 @@ protected:
 	
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing
-	// capabilities of the component. 
+	// capabilities of the component.
 
 	virtual int DoInit(int argc, const char** argv);
 	virtual int DoDeinit();
@@ -79,7 +79,9 @@ protected:
 private:
 
 	// Do not allow copying of this class.
+	/// Not implemented.
 	AliHLTMUONHitReconstructorComponent(const AliHLTMUONHitReconstructorComponent& /*obj*/);
+	/// Not implemented.
 	AliHLTMUONHitReconstructorComponent& operator = (const AliHLTMUONHitReconstructorComponent& /*obj*/);
 	
 	void FreeMemory();

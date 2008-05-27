@@ -18,7 +18,7 @@
 ///
 /// @file   AliHLTMUONUtils.cxx
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   
+/// @date   17 May 2007
 /// @brief  Implementation of AliHLTMUONUtils utility routines.
 ///
 
@@ -34,7 +34,9 @@
 #include "AliHLTMUONMansoCandidatesBlockStruct.h"
 #include "AliHLTMUONSinglesDecisionBlockStruct.h"
 #include "AliHLTMUONPairsDecisionBlockStruct.h"
+#include "AliMUONTrackerDDLDecoderEventHandler.h"
 #include <cstring>
+#include <cmath>
 #include <cassert>
 
 
@@ -435,16 +437,32 @@ const char* AliHLTMUONUtils::FailureReasonToString(WhyNotValid reason)
 	case kNoReason: return "kNoReason";
 	case kHeaderContainsWrongType: return "kHeaderContainsWrongType";
 	case kHeaderContainsWrongRecordWidth: return "kHeaderContainsWrongRecordWidth";
+	case kInvalidIdValue: return "kInvalidIdValue";
+	case kInvalidTriggerIdValue: return "kInvalidTriggerIdValue";
+	case kInvalidTrackIdValue: return "kInvalidTrackIdValue";
 	case kReservedBitsNotZero: return "kReservedBitsNotZero";
 	case kParticleSignBitsNotValid: return "kParticleSignBitsNotValid";
 	case kHitNotMarkedAsNil: return "kHitNotMarkedAsNil";
-	case kFoundDuplicateIDs: return "kFoundDuplicateIDs";
+	case kInvalidDetElementNumber: return "kInvalidDetElementNumber";
+	case kHitIsNil: return "kHitIsNil";
+	case kInvalidChannelCount: return "kInvalidChannelCount";
+	case kInvalidBusPatchId: return "kInvalidBusPatchId";
+	case kInvalidManuId: return "kInvalidManuId";
+	case kInvalidChannelAddress: return "kInvalidChannelAddress";
+	case kInvalidSignal: return "kInvalidSignal";
+	case kDataWordDifferent: return "kDataWordDifferent";
+	case kChiSquareInvalid: return "kChiSquareInvalid";
+	case kMomentumVectorNotZero: return "kMomentumVectorNotZero";
+	case kRoiRadiusInvalid: return "kRoiRadiusInvalid";
+	case kHitNotWithinRoi: return "kHitNotWithinRoi";
 	case kPtValueNotValid: return "kPtValueNotValid";
-	case kFoundDuplicateTriggers: return "kFoundDuplicateTriggers";
 	case kPairTrackIdsAreIdentical: return "kPairTrackIdsAreIdentical";
 	case kMassValueNotValid: return "kMassValueNotValid";
 	case kLowPtCountInvalid: return "kLowPtCountInvalid";
 	case kHighPtCountInvalid: return "kHighPtCountInvalid";
+	case kFoundDuplicateIDs: return "kFoundDuplicateIDs";
+	case kFoundDuplicateHits: return "kFoundDuplicateHits";
+	case kFoundDuplicateTriggers: return "kFoundDuplicateTriggers";
 	default: return "INVALID";
 	}
 }
@@ -460,9 +478,19 @@ const char* AliHLTMUONUtils::FailureReasonToMessage(WhyNotValid reason)
 	case kNoReason:
 		return "There was no problem with the data block.";
 	case kHeaderContainsWrongType:
-		return "The common data header contains an incorrect type identifier.";
+		return "The common data header contains an incorrect type"
+			" identifier.";
 	case kHeaderContainsWrongRecordWidth:
-		return "The common data header contains an incorrect data record width.";
+		return "The common data header contains an incorrect data"
+			" record width.";
+	case kInvalidIdValue:
+		return "The structure identifier does not have a valid value.";
+	case kInvalidTriggerIdValue:
+		return "The trigger structure identifier does not have a valid"
+			" value.";
+	case kInvalidTrackIdValue:
+		return "The track structure identifier does not have a valid"
+			" value.";
 	case kReservedBitsNotZero:
 		return "Reserved bits have not been set to zero.";
 	case kParticleSignBitsNotValid:
@@ -470,85 +498,193 @@ const char* AliHLTMUONUtils::FailureReasonToMessage(WhyNotValid reason)
 	case kHitNotMarkedAsNil:
 		return "A hit was marked as not found, but the corresponding hit"
 			" structure was not set to nil.";
-	case kFoundDuplicateIDs:
-		return "Found duplicate data record identifiers, but they should all be unique.";
+	case kInvalidDetElementNumber:
+		return "An invalid detector element ID was found.";
+	case kHitIsNil:
+		return "The hit cannot be set to a nil value.";
+	case kInvalidChannelCount:
+		return "The number of channels indicated is zero or outside"
+			" the valid range.";
+	case kInvalidBusPatchId:
+		return "The bus patch identifier is outside the valid range.";
+	case kInvalidManuId:
+		return "The MANU identifier is outside the valid range.";
+	case kInvalidChannelAddress:
+		return "The MANU channel address is outside the valid range.";
+	case kInvalidSignal:
+		return "The ADC signal value is outside the valid range.";
+	case kDataWordDifferent:
+		return "The raw data word is different from the unpacked values.";
+	case kChiSquareInvalid:
+		return "The chi squared value must be a positive value or -1"
+			" indicating a fitting error.";
+	case kMomentumVectorNotZero:
+		return "The chi sqaured value is set to -1 indicating momentum"
+			" was not fitted, but the momentum vector was not zero.";
+	case kRoiRadiusInvalid:
+		return "The region of interest radius is invalid.";
+	case kHitNotWithinRoi:
+		return "A tracks hit is not within the corresponding region"
+			" of interest.";
 	case kPtValueNotValid:
-		return "The pT value is not positive, nor -1 indicating an invalid value.";
-	case kFoundDuplicateTriggers:
-		return "Found duplicate trigger decisions.";
+		return "The pT value is not positive, nor -1 indicating an"
+			" invalid value.";
 	case kPairTrackIdsAreIdentical:
 		return "The track identifiers of the track pair are identical.";
 	case kMassValueNotValid:
-		return "The invariant mass value is not positive, nor -1 indicating an invalid value.";
+		return "The invariant mass value is not positive, nor -1"
+			" indicating an invalid value.";
 	case kLowPtCountInvalid:
-		return "The low pT trigger count is greater than 2, which is invalid.";
+		return "The low pT trigger count is greater than 2,"
+			" which is invalid.";
 	case kHighPtCountInvalid:
-		return "The high pT trigger count is greater than 2, which is invalid.";
+		return "The high pT trigger count is greater than 2,"
+			" which is invalid.";
+	case kFoundDuplicateIDs:
+		return "Found duplicate data record identifiers, but they"
+			" should all be unique.";
+	case kFoundDuplicateHits:
+		return "Found duplicate hit structures, but they should all"
+			" be unique.";
+	case kFoundDuplicateTriggers:
+		return "Found duplicate trigger decisions.";
 	default:
 		return "UNKNOWN REASON CODE";
 	}
 }
 
 
+bool AliHLTMUONUtils::RecordNumberWasSet(WhyNotValid reason)
+{
+	/// Returns true if the \em recordNum in the corresponding IntegrityOk method
+	/// would have been set, if it returned false and a reason was set.
+	/// This helper method makes it easy to test if the \em recordNum parameter
+	/// is filled with a valid value or not.
+	/// \param reason  The reason code as returned by the IntegrityOk method.
+	/// \returns  true if the \em recordNum parameter was set for the given
+	///      reason code.
+	
+	switch (reason)
+	{
+	case kInvalidIdValue:
+	case kInvalidTriggerIdValue:
+	case kInvalidTrackIdValue:
+	case kReservedBitsNotZero:
+	case kParticleSignBitsNotValid:
+	case kHitNotMarkedAsNil:
+	case kInvalidDetElementNumber:
+	case kHitIsNil:
+	case kInvalidChannelCount:
+	case kInvalidBusPatchId:
+	case kInvalidManuId:
+	case kInvalidChannelAddress:
+	case kInvalidSignal:
+	case kDataWordDifferent:
+	case kChiSquareInvalid:
+	case kPtValueNotValid:
+	case kPairTrackIdsAreIdentical:
+	case kMassValueNotValid:
+	case kLowPtCountInvalid:
+	case kHighPtCountInvalid:
+		return true;
+	default: return false;
+	}
+}
+
+
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONTriggerRecordsBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
-	 
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kTriggerRecordsDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTriggerRecordStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONTrigRecsDebugBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kTrigRecsDebugDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTrigRecInfoStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
@@ -585,247 +721,395 @@ bool AliHLTMUONUtils::HeaderOk(
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONRecHitsBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kRecHitsDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONRecHitStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONClustersBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kClustersDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONClusterStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONChannelsBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kChannelsDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONChannelStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONMansoTracksBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kMansoTracksDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONMansoTrackStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONMansoCandidatesBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kMansoCandidatesDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONMansoCandidateStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONSinglesDecisionBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kSinglesDecisionDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTrackDecisionStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONPairsDecisionBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason, AliHLTUInt32_t& reasonCount
 	)
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
 	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the header is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the header and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
 	
 	// The block must have the correct type.
 	if (block.fHeader.fType != kPairsDecisionDataBlock)
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongType;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONPairDecisionStruct))
 	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHeaderContainsWrongRecordWidth;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONTriggerRecordStruct& tr,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// trigger record structure is OK and returns true in that case.
 	/// [in] \param tr  The trigger record structure to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the structure is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// Check that the ID has a valid value.
+	if (not (tr.fId >= 0 or tr.fId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
 	
 	// Make sure that the reserved bits in the fFlags field are set
 	// to zero.
 	if ((tr.fFlags & 0x3FFFFFF0) != 0)
 	{
-		if (reason != NULL) *reason = kReservedBitsNotZero;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kReservedBitsNotZero;
+			reasonCount++;
+		}
+		result = false;
 	}
 
 	// Make sure the sign is not invalid.
 	if ((tr.fFlags & 0xC0000000) == 0xC0000000)
 	{
-		if (reason != NULL) *reason = kParticleSignBitsNotValid;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kParticleSignBitsNotValid;
+			reasonCount++;
+		}
+		result = false;
 	}
 
 	// Check that fHit[i] is nil if the corresponding bit in the
@@ -838,35 +1122,51 @@ bool AliHLTMUONUtils::IntegrityOk(
 	     ((tr.fFlags & 0x8) == 0 and tr.fHit[3] != nilhit)
 	   )
 	{
-		if (reason != NULL) *reason = kHitNotMarkedAsNil;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHitNotMarkedAsNil;
+			reasonCount++;
+		}
+		result = false;
 	}
 
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONTriggerRecordsBlockStruct& block,
 		WhyNotValid* reason,
-		AliHLTUInt32_t* recordNum
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT raw internal data block is OK and returns true in that case.
 	/// [in] \param block  The trigger record data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
-	/// [out] \param recordNum  If this is not NULL, then it will be filled with
-	///      the number of the trigger record that had a problem. This value will
-	///      only contain a valid value if 'reason' contains one of:
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the trigger record that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidIdValue
 	///        - kReservedBitsNotZero
 	///        - kParticleSignBitsNotValid
 	///        - kHitNotMarkedAsNil
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
 	
 	const AliHLTMUONTriggerRecordStruct* triggerRecord =
 		reinterpret_cast<const AliHLTMUONTriggerRecordStruct*>(&block + 1);
@@ -875,12 +1175,16 @@ bool AliHLTMUONUtils::IntegrityOk(
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
 		AliHLTInt32_t id = triggerRecord[i].fId;
-		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
 		{
 			if (id == triggerRecord[j].fId)
 			{
-				if (reason != NULL) *reason = kFoundDuplicateIDs;
-				return false;
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateIDs;
+					reasonCount++;
+				}
+				result = false;
 			}
 		}
 	}
@@ -888,32 +1192,152 @@ bool AliHLTMUONUtils::IntegrityOk(
 	// Check integrity of individual trigger records.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(triggerRecord[i], reason))
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(triggerRecord[i], reason+reasonCount, filledCount))
 		{
-			if (recordNum != NULL) *recordNum = i;
-			return false;
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
 		}
 	}
 
-	return true;
+	return result;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONTrigRecInfoStruct& trigInfo,
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
+	)
+{
+	/// This method is used to check more extensively if the integrity of the
+	/// trigger record debug information structure is OK and returns true in that case.
+	/// [in] \param trigInfo  The trigger record debug information structure to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
+	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// Check that the trigger ID has a valid value.
+	if (not (trigInfo.fTrigRecId >= 0 or trigInfo.fTrigRecId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Check that the fDetElemId[i] numbers are valid.
+	if ( not (trigInfo.fDetElemId[0] >= 0 or trigInfo.fDetElemId[0] == -1) or
+	     not (trigInfo.fDetElemId[1] >= 0 or trigInfo.fDetElemId[1] == -1) or
+	     not (trigInfo.fDetElemId[2] >= 0 or trigInfo.fDetElemId[2] == -1) or
+	     not (trigInfo.fDetElemId[3] >= 0 or trigInfo.fDetElemId[3] == -1)
+	   )
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidDetElementNumber;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONTrigRecsDebugBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT raw internal data block is OK and returns true in that case.
-	/// [in] \param block  The trigger record debugging information data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
+	/// [in] \param block  The trigger record debugging information data block
+	///      to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the trigger record debug information
+	///      structure that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidIdValue
+	///        - kInvalidDetElementNumber
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
-	return true;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
+	
+	const AliHLTMUONTrigRecInfoStruct* triggerInfo =
+		reinterpret_cast<const AliHLTMUONTrigRecInfoStruct*>(&block + 1);
+
+	// Check if any trigger debug info structure has duplicated trigger IDs.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTInt32_t id = triggerInfo[i].fTrigRecId;
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
+		{
+			if (id == triggerInfo[j].fTrigRecId)
+			{
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateIDs;
+					reasonCount++;
+				}
+				result = false;
+			}
+		}
+	}
+
+	// Check integrity of individual trigger records.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(triggerInfo[i], reason+reasonCount, filledCount))
+		{
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
+		}
+	}
+	
+	return result;
 }
 
 
@@ -937,36 +1361,157 @@ bool AliHLTMUONUtils::IntegrityOk(
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONRecHitsBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT raw internal data block is OK and returns true in that case.
 	/// [in] \param block  The reconstructed hits data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
-	return true;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
+	
+	const AliHLTMUONRecHitStruct* hit =
+		reinterpret_cast<const AliHLTMUONRecHitStruct*>(&block + 1);
+
+	// Check if any hit structure has been duplicated.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		const AliHLTMUONRecHitStruct& h = hit[i];
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
+		{
+			if (h == hit[j])
+			{
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateHits;
+					reasonCount++;
+				}
+				result = false;
+			}
+		}
+	}
+	
+	return result;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONClusterStruct& cluster,
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
+	)
+{
+	/// This method is used to check more extensively if the integrity of the
+	/// cluster structure is OK and returns true in that case.
+	/// [in] \param cluster  The cluster structure to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
+	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// Check that the cluster ID has a valid value.
+	if (not (cluster.fId >= 0 or cluster.fId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the cluster does not have a nil value for its hit.
+	if (cluster.fHit == AliHLTMUONConstants::NilRecHitStruct())
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHitIsNil;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Make sure the detector element is a valid value.
+	if (not (cluster.fDetElemId >= 0 or cluster.fDetElemId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidDetElementNumber;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// The number of channels should be in a reasonable range.
+	// between 1 and the maximum number of channels per DDL.
+	// 1<<17 taken from the 11 bits MANU ID + 6 bits channel address.
+	if (cluster.fNchannels < 1 or (1<<17) < cluster.fNchannels)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidChannelCount;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONClustersBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
+	/// dHLT internal clusters data block is OK and returns true in that case.
 	/// [in] \param block  The clusters data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the cluster structure that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidIdValue
+	///        - kHitIsNil
+	///        - kInvalidDetElementNumber
+	///        - kInvalidChannelCount
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
 
 	const AliHLTMUONClusterStruct* cluster =
 		reinterpret_cast<const AliHLTMUONClusterStruct*>(&block + 1);
@@ -975,64 +1520,305 @@ bool AliHLTMUONUtils::IntegrityOk(
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
 		AliHLTInt32_t id = cluster[i].fId;
-		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
 		{
 			if (id == cluster[j].fId)
 			{
-				if (reason != NULL) *reason = kFoundDuplicateIDs;
-				return false;
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateIDs;
+					reasonCount++;
+				}
+				result = false;
 			}
 		}
 	}
+
+	// Check if any hit structure has been duplicated.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		const AliHLTMUONRecHitStruct& h = cluster[i].fHit;
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
+		{
+			if (h == cluster[j].fHit)
+			{
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateHits;
+					reasonCount++;
+				}
+				result = false;
+			}
+		}
+	}
+
+	// Check integrity of individual cluster structures.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(cluster[i], reason+reasonCount, filledCount))
+		{
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
+		}
+	}
 	
-	return true;
+	return result;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONChannelStruct& channel,
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
+	)
+{
+	/// This method is used to check more extensively if the integrity of the
+	/// channel structure is OK and returns true in that case.
+	/// [in] \param cluster  The channel structure to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
+	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// Check that the channel ID has a valid value.
+	if (not (channel.fClusterId >= 0 or channel.fClusterId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the bus patch ID has a valid value, which fits into 12 bits.
+	if ((channel.fBusPatch & (~0xFFF)) != 0)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidBusPatchId;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the MANU ID has a valid value, which fits into 11 bits.
+	if ((channel.fManu & (~0x7FF)) != 0)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidManuId;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the channel address has a valid value, which fits into 6 bits.
+	if ((channel.fChannelAddress & (~0x3F)) != 0)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidChannelAddress;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the ADC signal has a valid value, which fits into 12 bits.
+	if ((channel.fSignal & (~0xFFF)) != 0)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidSignal;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the raw data word corresponds to the unpacked values for
+	// the ADC signal, MANU ID and channel address.
+	UShort_t manuId; UChar_t channelId; UShort_t adc;
+	AliMUONTrackerDDLDecoderEventHandler::UnpackADC(
+			channel.fRawDataWord, manuId, channelId, adc
+		);
+	if (manuId != channel.fManu or channelId != channel.fChannelAddress
+	    or adc != channel.fSignal
+	   )
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kDataWordDifferent;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONChannelsBlockStruct& block,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
-	/// [in] \param block  The ADC channels data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
+	/// dHLT internal channels data block is OK and returns true in that case.
+	/// [in] \param block  The channels data block to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the channel structure that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidIdValue
+	///        - kInvalidBusPatchId
+	///        - kInvalidManuId
+	///        - kInvalidChannelAddress
+	///        - kInvalidSignal
+	///        - kDataWordDifferent
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
-	return true;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
+	
+	const AliHLTMUONChannelStruct* channel =
+		reinterpret_cast<const AliHLTMUONChannelStruct*>(&block + 1);
+	
+	// Check if any cluster ID is duplicated.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTInt32_t id = channel[i].fClusterId;
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
+		{
+			if (id == channel[j].fClusterId)
+			{
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateIDs;
+					reasonCount++;
+				}
+				result = false;
+			}
+		}
+	}
+
+	// Check integrity of individual channel structures.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(channel[i], reason+reasonCount, filledCount))
+		{
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
+		}
+	}
+	
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONMansoTrackStruct& track,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// Manso track structure is OK and returns true in that case.
 	/// [in] \param track  The track structure to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the structure is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// Check that the Manso track ID has a valid value.
+	if (not (track.fId >= 0 or track.fId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Check that the corresponding trigger record ID has a valid value.
+	if (not (track.fTrigRec >= 0 or track.fTrigRec == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidTriggerIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
 	
 	// Make sure that the reserved bits in the fFlags field are set
 	// to zero.
 	if ((track.fFlags & 0x3FFFFFF0) != 0)
 	{
-		if (reason != NULL) *reason = kReservedBitsNotZero;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kReservedBitsNotZero;
+			reasonCount++;
+		}
+		result = false;
 	}
 
 	// Make sure the sign is not invalid.
 	if ((track.fFlags & 0xC0000000) == 0xC0000000)
 	{
-		if (reason != NULL) *reason = kParticleSignBitsNotValid;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kParticleSignBitsNotValid;
+			reasonCount++;
+		}
+		result = false;
 	}
 
 	// Check that fHit[i] is nil if the corresponding bit in the
@@ -1045,36 +1831,79 @@ bool AliHLTMUONUtils::IntegrityOk(
 	     ((track.fFlags & 0x8) == 0 and track.fHit[3] != nilhit)
 	   )
 	{
-		if (reason != NULL) *reason = kHitNotMarkedAsNil;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHitNotMarkedAsNil;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Check that the chi squared value is valid
+	if (not (track.fChi2 >= 0 or track.fChi2 == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kChiSquareInvalid;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	// Check that if chi squared is -1 then the momentum vector is zero.
+	if (track.fChi2 == -1 and
+	    not (track.fPx == 0 and track.fPy == 0 and track.fPz == 0)
+	   )
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kMomentumVectorNotZero;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONMansoTracksBlockStruct& block,
 		WhyNotValid* reason,
-		AliHLTUInt32_t* recordNum
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
+	/// dHLT internal Manso track data block is OK and returns true in that case.
 	/// [in] \param block  The Manso track data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
-	/// [out] \param recordNum  If this is not NULL, then it will be filled with
-	///      the number of the track that had a problem. This value will only
-	///      contain a valid value if 'reason' contains one of:
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the Manso track that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidIdValue
+	///        - kInvalidTriggerIdValue
 	///        - kReservedBitsNotZero
 	///        - kParticleSignBitsNotValid
 	///        - kHitNotMarkedAsNil
+	///        - kChiSquareInvalid
+	///        - kMomentumVectorNotZero
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
-
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
+	
 	const AliHLTMUONMansoTrackStruct* track =
 		reinterpret_cast<const AliHLTMUONMansoTrackStruct*>(&block + 1);
 	
@@ -1082,51 +1911,143 @@ bool AliHLTMUONUtils::IntegrityOk(
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
 		AliHLTInt32_t id = track[i].fId;
-		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
 		{
 			if (id == track[j].fId)
 			{
-				if (reason != NULL) *reason = kFoundDuplicateIDs;
-				return false;
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateIDs;
+					reasonCount++;
+				}
+				result = false;
 			}
 		}
 	}
-
-	// Check that the tracks have integrity.
+	
+	// Check that all the tracks have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(track[i], reason))
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(track[i], reason+reasonCount, filledCount))
 		{
-			if (recordNum != NULL) *recordNum = i;
-			return false;
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
 		}
 	}
+	
+	return result;
+}
 
-	return true;
+
+bool AliHLTMUONUtils::IntegrityOk(
+		const AliHLTMUONMansoCandidateStruct& candidate,
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
+	)
+{
+	/// This method is used to check more extensively if the integrity of the
+	/// Manso track candidate structure is OK and returns true in that case.
+	/// [in] \param track  The track candidate structure to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
+	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	// First check the integrity of the candidate track structure.
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = IntegrityOk(candidate.fTrack, reason, reasonCount);
+	
+	// Now check that the ROIs are reasonable.
+	// The radius must be positive or -1 indicating computation error and
+	// the corresponding hit in the track must be within the ROI.
+	for (AliHLTUInt32_t i = 0; i < 4; i++)
+	{
+		if (not (candidate.fRoI[i].fRadius >= 0 or candidate.fRoI[i].fRadius == -1))
+		{
+			if (reason != NULL and reasonCount < maxCount)
+			{
+				reason[reasonCount] = kRoiRadiusInvalid;
+				reasonCount++;
+			}
+			result = false;
+		}
+		
+		// Check if the corresponding hit was even found in the track.
+		if ( (candidate.fTrack.fFlags & (0x1 << i)) == 0 ) continue;
+		
+		double dx = candidate.fRoI[i].fX - candidate.fTrack.fHit[i].fX;
+		double dy = candidate.fRoI[i].fY - candidate.fTrack.fHit[i].fY;
+		double dz = candidate.fRoI[i].fZ - candidate.fTrack.fHit[i].fZ;
+		double r = sqrt(dx*dx + dy*dy);
+		// Check if the projected distance between ROI centre and hit is
+		// bigger than the ROI radius. Also the difference between z
+		// coordinates should not exceed 20 cm.
+		if (r > candidate.fRoI[i].fRadius or fabs(dz) > 20.)
+		{
+			if (reason != NULL and reasonCount < maxCount)
+			{
+				reason[reasonCount] = kHitNotWithinRoi;
+				reasonCount++;
+			}
+			result = false;
+		}
+	}
+	
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONMansoCandidatesBlockStruct& block,
 		WhyNotValid* reason,
-		AliHLTUInt32_t* recordNum
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
+	/// dHLT internal Manso candidates data block is OK and returns true in
+	/// that case.
 	/// [in] \param block  The Manso track candidate data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
-	/// [out] \param recordNum  If this is not NULL, then it will be filled with
-	///      the number of the track candidate that had a problem. This value will
-	///      only contain a valid value if 'reason' contains one of:
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the track candidate that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidIdValue
+	///        - kInvalidTriggerIdValue
 	///        - kReservedBitsNotZero
 	///        - kParticleSignBitsNotValid
 	///        - kHitNotMarkedAsNil
+	///        - kChiSquareInvalid
+	///        - kRoiRadiusInvalid
+	///        - kHitNotWithinRoi
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
 
 	const AliHLTMUONMansoCandidateStruct* candidate =
 		reinterpret_cast<const AliHLTMUONMansoCandidateStruct*>(&block + 1);
@@ -1135,82 +2056,136 @@ bool AliHLTMUONUtils::IntegrityOk(
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
 		AliHLTInt32_t id = candidate[i].fTrack.fId;
-		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
 		{
 			if (id == candidate[j].fTrack.fId)
 			{
-				if (reason != NULL) *reason = kFoundDuplicateIDs;
-				return false;
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateIDs;
+					reasonCount++;
+				}
+				result = false;
 			}
 		}
 	}
 	
-	// Check that the tracks have integrity.
+	// Check that all the track candidates have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(candidate[i].fTrack, reason))
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(candidate[i], reason+reasonCount, filledCount))
 		{
-			if (recordNum != NULL) *recordNum = i;
-			return false;
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
 		}
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONTrackDecisionStruct& decision,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// single track trigger decision structure is OK and returns true in that case.
 	/// [in] \param decision  The trigger decision structure to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the structure is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// The track ID value must be positive or -1.
+	if (not (decision.fTrackId >= 0 or decision.fTrackId == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidTrackIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
 	
 	// Make sure that the reserved bits in the fTriggerBits field are set
 	// to zero.
 	if ((decision.fTriggerBits & 0xFFFFFFFC) != 0)
 	{
-		if (reason != NULL) *reason = kReservedBitsNotZero;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kReservedBitsNotZero;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The pT should be -1 or a positive number.
 	if (decision.fPt != -1. and decision.fPt < 0.)
 	{
-		if (reason != NULL) *reason = kPtValueNotValid;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kPtValueNotValid;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONSinglesDecisionBlockStruct& block,
 		WhyNotValid* reason,
-		AliHLTUInt32_t* recordNum
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
+	/// dHLT internal single track trigger decision data block is OK and returns
+	/// true in that case.
 	/// [in] \param block  The single track trigger decision data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
-	/// [out] \param recordNum  If this is not NULL, then it will be filled with
-	///      the number of the trigger decisions that had a problem. This value will
-	///      only contain a valid value if 'reason' contains one of:
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the trigger decision that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidTrackIdValue
 	///        - kReservedBitsNotZero
 	///        - kPtValueNotValid
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
 	
 	const AliHLTMUONTrackDecisionStruct* decision =
 		reinterpret_cast<const AliHLTMUONTrackDecisionStruct*>(&block + 1);
@@ -1219,12 +2194,16 @@ bool AliHLTMUONUtils::IntegrityOk(
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
 		AliHLTInt32_t id = decision[i].fTrackId;
-		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
 		{
 			if (id == decision[j].fTrackId)
 			{
-				if (reason != NULL) *reason = kFoundDuplicateTriggers;
-				return false;
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateTriggers;
+					reasonCount++;
+				}
+				result = false;
 			}
 		}
 	}
@@ -1232,50 +2211,95 @@ bool AliHLTMUONUtils::IntegrityOk(
 	// Check that the trigger bits for each track have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(decision[i], reason))
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(decision[i], reason+reasonCount, filledCount))
 		{
-			if (recordNum != NULL) *recordNum = i;
-			return false;
+			// Reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
 		}
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONPairDecisionStruct& decision,
-		WhyNotValid* reason
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// track pair trigger decision structure is OK and returns true in that case.
 	/// [in] \param decision  The trigger decision structure to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the structure is not valid, if and
-	///      only if a problem is found with the data.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is not
+	///      valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
 	/// \returns  true if there is no problem with the structure and false otherwise.
+	
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	//kInvalidTrackIdValue
+	
+	// The track IDs must have a positive value or -1.
+	if (not (decision.fTrackAId >= 0 or decision.fTrackAId == -1) or
+	    not (decision.fTrackBId >= 0 or decision.fTrackBId == -1)
+	   )
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidTrackIdValue;
+			reasonCount++;
+		}
+		result = false;
+	}
 	
 	// Make sure that the reserved bits in the fTriggerBits field are set
 	// to zero.
 	if ((decision.fTriggerBits & 0xFFFFFF80) != 0)
 	{
-		if (reason != NULL) *reason = kReservedBitsNotZero;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kReservedBitsNotZero;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// Check that the track IDs are not the same.
 	if (decision.fTrackAId == decision.fTrackBId)
 	{
-		if (reason != NULL) *reason = kPairTrackIdsAreIdentical;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kPairTrackIdsAreIdentical;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// The invariant mass should be -1 or a positive number.
 	if (decision.fInvMass != -1. and decision.fInvMass < 0.)
 	{
-		if (reason != NULL) *reason = kMassValueNotValid;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kMassValueNotValid;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
 	// Neither the high pt (hipt) or low pt (lopt) count bits can be > 2.
@@ -1283,42 +2307,63 @@ bool AliHLTMUONUtils::IntegrityOk(
 	AliHLTUInt8_t highPtCount = (decision.fTriggerBits & 0x0000000C) >> 2;
 	if (lowPtCount > 2)
 	{
-		if (reason != NULL) *reason = kLowPtCountInvalid;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kLowPtCountInvalid;
+			reasonCount++;
+		}
+		result = false;
 	}
 	if (highPtCount > 2)
 	{
-		if (reason != NULL) *reason = kHighPtCountInvalid;
-		return false;
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kHighPtCountInvalid;
+			reasonCount++;
+		}
+		result = false;
 	}
 	
-	return true;
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONPairsDecisionBlockStruct& block,
 		WhyNotValid* reason,
-		AliHLTUInt32_t* recordNum
+		AliHLTUInt32_t* recordNum,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
+	/// dHLT internal track pair trigger decision data block is OK and returns
+	/// true in that case.
 	/// [in] \param block  The track pair trigger decision data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
-	/// [out] \param recordNum  If this is not NULL, then it will be filled with
-	///      the number of the trigger decisions that had a problem. This value will
-	///      only contain a valid value if 'reason' contains one of:
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the data block is
+	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the trigger decision that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kInvalidTrackIdValue
 	///        - kReservedBitsNotZero
 	///        - kPairTrackIdsAreIdentical
 	///        - kMassValueNotValid
 	///        - kLowPtCountInvalid
 	///        - kHighPtCountInvalid
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
+	AliHLTUInt32_t maxCount = reasonCount;
+	bool result = HeaderOk(block, reason, reasonCount);
 
 	const AliHLTMUONPairDecisionStruct* decision =
 		reinterpret_cast<const AliHLTMUONPairDecisionStruct*>(&block + 1);
@@ -1328,12 +2373,16 @@ bool AliHLTMUONUtils::IntegrityOk(
 	{
 		AliHLTInt32_t ta = decision[i].fTrackAId;
 		AliHLTInt32_t tb = decision[i].fTrackBId;
-		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
 		{
 			if (ta == decision[j].fTrackAId and tb == decision[j].fTrackBId)
 			{
-				if (reason != NULL) *reason = kFoundDuplicateTriggers;
-				return false;
+				if (reason != NULL and reasonCount < maxCount)
+				{
+					reason[reasonCount] = kFoundDuplicateTriggers;
+					reasonCount++;
+				}
+				result = false;
 			}
 		}
 	}
@@ -1341,12 +2390,21 @@ bool AliHLTMUONUtils::IntegrityOk(
 	// Check that the trigger bits for each track pair have integrity.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		if (not IntegrityOk(decision[i], reason))
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(decision[i], reason+reasonCount, filledCount))
 		{
-			if (recordNum != NULL) *recordNum = i;
-			return false;
+			// Reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
 		}
 	}
 	
-	return true;
+	return result;
 }
+

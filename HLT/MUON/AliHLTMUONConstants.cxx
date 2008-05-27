@@ -179,7 +179,8 @@ const char* AliHLTMUONConstants::fgkHitReconstructorId = "MUONHitReconstructor";
 const char* AliHLTMUONConstants::fgkMansoTrackerFSMId = "MUONMansoTrackerFSM";
 const char* AliHLTMUONConstants::fgkDecisionComponentId = "MUONDecisionComponent";
 const char* AliHLTMUONConstants::fgkRootifierComponentId = "MUONRootifier";
-const char* AliHLTMUONConstants::fgkEmptyEventFilterComponentId = "MUONEmptyEventFilterComponent";
+const char* AliHLTMUONConstants::fgkEmptyEventFilterComponentId = "MUONEmptyEventFilter";
+const char* AliHLTMUONConstants::fgkDataCheckerComponentId = "MUONDataChecker";
 
 const char* AliHLTMUONConstants::fgkDecisionComponentCDBPath = "HLT/ConfigMUON/DecisionComponent";
 

@@ -212,6 +212,11 @@ public:
 		return fgkEmptyEventFilterComponentId;
 	}
 	
+	static const char* DataCheckerComponentId()
+	{
+		return fgkDataCheckerComponentId;
+	}
+	
 	static const char* DecisionComponentCDBPath()
 	{
 		return fgkDecisionComponentCDBPath;
@@ -261,6 +266,7 @@ private:
 	static const char* fgkDecisionComponentId; // dHLT decision component name.
 	static const char* fgkRootifierComponentId; // The name of the event filter debugging component.
 	static const char* fgkEmptyEventFilterComponentId; // The name of the event filter debugging component.
+	static const char* fgkDataCheckerComponentId; // Name of data checking component for debugging.
 	
 	// CDB path entries to configuration information.
 	static const char* fgkDecisionComponentCDBPath; // Path to CDB entry for trigger decision component.

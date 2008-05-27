@@ -243,10 +243,10 @@ int DumpRecHitsBlock(
 
 
 int DumpTriggerRecordStruct(
-               const char* buffer, unsigned long bufferSize, 
-               const AliHLTMUONTriggerRecordStruct* record,
-               bool continueParse
-       )
+		const char* buffer, unsigned long bufferSize,
+		const AliHLTMUONTriggerRecordStruct* record,
+		bool continueParse
+	)
 {
 	// Step through the fields trying to print them.
 	// At each step check if we have not overflowed the buffer. If we have
@@ -330,10 +330,11 @@ int DumpTriggerRecordsBlock(
 }
 
 
-int DumpTrigRecInfoStruct(const char* buffer, unsigned long bufferSize, 
-                          const AliHLTMUONTrigRecInfoStruct* debuginfo, 
-                          bool continueParse
-                          )
+int DumpTrigRecInfoStruct(
+		const char* buffer, unsigned long bufferSize,
+		const AliHLTMUONTrigRecInfoStruct* debuginfo,
+		bool continueParse
+	)
 {
 	// Step through the fields trying to print them.
 	// At each step check if we have not overflowed the buffer. If we have
@@ -385,10 +386,11 @@ int DumpTrigRecsDebugBlock(
 }
 
 
-int DumpTriggerChannelStruct(const char* buffer, unsigned long bufferSize, 
-                      const AliHLTMUONTriggerChannelStruct* triggerchannel, 
-                      bool continueParse
-                      )
+int DumpTriggerChannelStruct(
+		const char* buffer, unsigned long bufferSize,
+		const AliHLTMUONTriggerChannelStruct* triggerchannel,
+		bool continueParse
+	)
 {
 	// Step through the fields trying to print them.
 	// At each step check if we have not overflowed the buffer. If we have
@@ -441,10 +443,10 @@ int DumpTriggerChannelsBlock(
 
 
 int DumpClusterStruct(
-		      const char* buffer, unsigned long bufferSize,
-                      const AliHLTMUONClusterStruct* cluster,
-                      bool continueParse
-       )
+		const char* buffer, unsigned long bufferSize,
+		const AliHLTMUONClusterStruct* cluster,
+		bool continueParse
+	)
 {
 	// Step through the fields trying to print them.
 	// At each step check if we have not overflowed the buffer. If we have
@@ -500,10 +502,10 @@ int DumpClustersBlock(
 
 
 int DumpChannelStruct(
-               const char* buffer, unsigned long bufferSize,
-               const AliHLTMUONChannelStruct* channel,
-               bool continueParse                 
-       )
+		const char* buffer, unsigned long bufferSize,
+		const AliHLTMUONChannelStruct* channel,
+		bool continueParse
+	)
 {
 	// Step through the fields trying to print them.
 	// At each step check if we have not overflowed the buffer. If we have
@@ -513,13 +515,17 @@ int DumpChannelStruct(
 	if (result != EXIT_SUCCESS) return result;
 	cout << setw(16) << left << channel->fClusterId << setw(0);
 
+	result = CheckField(channel->fBusPatch, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(16) << left << channel->fBusPatch << setw(0);
+
 	result = CheckField(channel->fManu, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
 	cout << setw(16) << left << channel->fManu << setw(0);
 
 	result = CheckField(channel->fChannelAddress, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << setw(19) << left << channel->fChannelAddress << setw(0);
+	cout << setw(16) << left << channel->fChannelAddress << setw(0);
 
 	result = CheckField(channel->fSignal, buffer, bufferSize, continueParse);
 	if(result != EXIT_SUCCESS) return result;
@@ -547,8 +553,8 @@ int DumpChannelsBlock(
 	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
 	
 	// Print the data block record entries.
-	cout << "Cluster Id  | Manu Address  | Channel Address  | Signal Value  | Raw Data Word " <<endl;
-	cout << "-------------------------------------------------------------------------------" <<endl;
+	cout << "Cluster Id    | Bus Patch     | Manu Address  | Channel Addr  | Signal Value  | Raw Data Word " << endl;
+	cout << "----------------------------------------------------------------------------------------------" << endl;
 	const AliHLTMUONChannelStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
 	{ 

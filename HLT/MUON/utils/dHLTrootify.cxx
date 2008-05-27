@@ -108,6 +108,9 @@ const char* TypeToString(AliHLTMUONDataBlockType type)
  * @param numOfFiles  Number of entries in the 'filenames' and 'filetypes' arrays.
  * @param outputFile  The output file name to use.
  * @param maxLogging  If set then all debug messages are printed. (default = false)
+ * @param checkData  Flag indicating if the internal raw data should be checked for
+ *          consistency. Errors and warnings will be generated for consistency errors,
+ *          but the rootification of the data will continue.
  * @return  Returns HLTSYSTEM_ERROR if there was a problem reported by AliHLTSystem
  *          and EXIT_SUCCESS if the ROOT file was created OK. SYSTEM_ERROR is
  *          returned if there was a problem allocating memory for HLT configuration
@@ -118,7 +121,8 @@ int RootifyFiles(
 		AliHLTMUONDataBlockType* filetypes,
 		int numOfFiles,
 		const char* outputFile,
-		bool maxLogging = false
+		bool maxLogging = false,
+		bool checkData = false
 	)
 {
 	AliHLTSystem sys;
@@ -186,6 +190,13 @@ int RootifyFiles(
 		}
 		
 		return SYSTEM_ERROR;
+	}
+	
+	// Setup the component for data integrity checking.
+	if (checkData)
+	{
+		AliHLTConfiguration checker("checker", "MUONDataChecker", sources, "-warn_on_unexpected_block -ignorespec");
+		sources = "checker";
 	}
 	
 	// Setup the component which converts the raw internal dHLT data to ROOT objects.
@@ -273,7 +284,8 @@ int DecodeFileType(const char* filename, AliHLTMUONDataBlockType& type)
 void PrintUsage(bool asError = true)
 {
 	std::ostream& os = asError ? cerr : cout;
-	os << "Usage: dHLTrootify [-help|-h] [-outfile|-o <output_file>] [-type|-t <typename>] [-debug|-d] <filename> [<filename> ...]" << endl;
+	os << "Usage: dHLTrootify [-help|-h] [-outfile|-o <output_file>] [-type|-t <typename>]" << endl;
+	os << "         [-debug|-d] [-check|-c] <filename> [<filename> ...]" << endl;
 	os << "Where <filename> is the name of a file containing a raw data block." << endl;
 	os << "Options:" << endl;
 	os << " -help | -h" << endl;
@@ -299,6 +311,10 @@ void PrintUsage(bool asError = true)
 	os << "                      detected." << endl;
 	os << " -debug | -d" << endl;
 	os << "       If specified then the all debug messages are printed by the AliHLTSystem." << endl;
+	os << " -check | -c" << endl;
+	os << "       If specified then data integrity checks are performed on the raw data." << endl;
+	os << "       Warnings and errors are printed as problems are found with the data, but" << endl;
+	os << "       the data will still be converted into ROOT objects as best as possible." << endl;
 }
 
 /**
@@ -312,6 +328,7 @@ void PrintUsage(bool asError = true)
  *                    and added to 'filenames'.
  * @param outputFile  The output file name to use. Set to NULL if none specified.
  * @param maxLogging  Set to true if maximal logging was requested.
+ * @param checkData  Set to true if data integrity checking was requested.
  * @return  A status flag suitable for returning from main(), containing either
  *          EXIT_SUCCESS or CMDLINE_ERROR or SYSTEM_ERROR.
  */
@@ -322,12 +339,14 @@ int ParseCommandLine(
 		AliHLTMUONDataBlockType* filetypes,
 		int& numOfFiles,
 		const char*& outputFile,
-		bool& maxLogging
+		bool& maxLogging,
+		bool& checkData
 	)
 {
 	numOfFiles = 0;
 	outputFile = NULL;
 	maxLogging = false;
+	checkData = false;
 	AliHLTMUONDataBlockType currentType = kUnknownDataBlock;
 
 	// Parse the command line.
@@ -377,6 +396,10 @@ int ParseCommandLine(
 		else if (strcmp(argv[i], "-debug") == 0 or strcmp(argv[i], "-d") == 0)
 		{
 			maxLogging = true;
+		}
+		else if (strcmp(argv[i], "-check") == 0 or strcmp(argv[i], "-c") == 0)
+		{
+			checkData = true;
 		}
 		else
 		{
@@ -446,6 +469,7 @@ int main(int argc, const char** argv)
 	int numOfFiles = 0;
 	const char* outputFile = NULL;
 	bool maxLogging = false;
+	bool checkData = false;
 	int returnCode = EXIT_SUCCESS;
 
 	try
@@ -457,7 +481,7 @@ int main(int argc, const char** argv)
 		
 		returnCode = ParseCommandLine(
 				argc, argv, filename, filetype, numOfFiles,
-				outputFile, maxLogging
+				outputFile, maxLogging, checkData
 			);
 		if (outputFile == NULL)
 		{
@@ -467,7 +491,7 @@ int main(int argc, const char** argv)
 		{
 			returnCode = RootifyFiles(
 					filename, filetype, numOfFiles,
-					outputFile, maxLogging
+					outputFile, maxLogging, checkData
 				);
 		}
 		

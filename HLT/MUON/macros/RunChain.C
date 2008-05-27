@@ -93,6 +93,8 @@ using std::endl;
  * @param lutDir  This is the directory in which the LUTs can be found.
  *      If it is set to "CDB" (case sensitive) then the LUTs will be loaded from
  *      CDB instead. The default behaviour is to read from the local CDB store.
+ * @param checkData  A flag for indicating if the event data should be checked
+ *      for consistency with the AliHLTMUONDataCheckerComponent.
  */
 void RunChain(
 		const char* chainType = "full",
@@ -101,7 +103,8 @@ void RunChain(
 		const char* output = "bin",
 		const char* dataSource = "sim",
 		const char* logLevel = "normal",
-		const char* lutDir = "CDB"
+		const char* lutDir = "CDB",
+		bool checkData = false
 	)
 {
 	// Setup the CDB default storage and run number if nothing was set.
@@ -406,6 +409,14 @@ void RunChain(
 		// Add the trigger decision component if it was enabled.
 		sources += " decision";
 	}
+	
+	// Build the data checker component if so requested.
+	if (checkData)
+	{
+		AliHLTConfiguration checker("checker", "MUONDataChecker", sources, "-warn_on_unexpected_block");
+		sources = "checker";
+	}
+	
 	if (useRootWriter)
 	{
 		AliHLTConfiguration convert("convert", "MUONRootifier", sources, "");

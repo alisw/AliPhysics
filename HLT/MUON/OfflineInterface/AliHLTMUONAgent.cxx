@@ -31,6 +31,7 @@
 #include "AliHLTMUONMansoTrackerFSMComponent.h"
 #include "AliHLTMUONDecisionComponent.h"
 #include "AliHLTMUONEmptyEventFilterComponent.h"
+#include "AliHLTMUONDataCheckerComponent.h"
 #include "AliRunLoader.h"
 
 // The single global instance of the dimuon HLT agent.
@@ -121,6 +122,7 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 	pHandler->AddComponent(new AliHLTMUONMansoTrackerFSMComponent);
 	pHandler->AddComponent(new AliHLTMUONDecisionComponent);
 	pHandler->AddComponent(new AliHLTMUONEmptyEventFilterComponent);
+	pHandler->AddComponent(new AliHLTMUONDataCheckerComponent);
 	return 0;
 }
 

@@ -5,17 +5,15 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONChannelsBlockStruct.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Definition of internal dimuon HLT block structure containing
- *         debugging information about channels that belong to reconstructed
- *         hit clusters.
- * 
- * The structures are defined with C linkage since C generally gives us more
- * binary compatibility between compilers.
- */
+///
+/// @file   AliHLTMUONChannelsBlockStruct.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   18 May 2007
+/// @brief  Definition of internal dHLT channels block structure corresponding to clusters.
+///
+/// The structures are defined with C linkage since C generally gives us more
+/// binary compatibility between compilers.
+///
 
 #include "AliHLTMUONDataTypes.h"
 #include <ostream>
@@ -32,6 +30,7 @@ struct AliHLTMUONChannelStruct
 	AliHLTInt32_t fClusterId;   // ID corresponding to the cluster this
 	                            // channel is part of. -1 == invalid.
 
+	AliHLTUInt32_t fBusPatch;    // Bus patch to which this is connected.
 	AliHLTUInt16_t fManu;        // The MANU address on electronics.
 	AliHLTUInt16_t fChannelAddress; // The channel address on electronics.
 	AliHLTUInt32_t fSignal;      // ADC value of signal.
@@ -56,7 +55,7 @@ struct AliHLTMUONChannelsBlockStruct
 /**
  * Stream operator for usage with std::ostream classes which prints the
  * AliHLTMUONChannelStruct in the following format:
- *   {fClusterId = xx, fManu = yy, fChannelAddress = zz, fSignal = ww,
+ *   {fClusterId = xx, fBusPatch = yy, fManu = zz, fChannelAddress = uu, fSignal = ww,
  *    fRawDataWord = 0xXXXXXXXX}
  */
 std::ostream& operator << (
@@ -78,8 +77,8 @@ inline bool operator == (
 		const AliHLTMUONChannelStruct& b
 	)
 {
-	return a.fClusterId == b.fClusterId and a.fManu == b.fManu and
-		a.fChannelAddress == b.fChannelAddress and
+	return a.fClusterId == b.fClusterId and a.fBusPatch == b.fBusPatch and
+		a.fManu == b.fManu and a.fChannelAddress == b.fChannelAddress and
 		a.fSignal == b.fSignal and a.fRawDataWord == b.fRawDataWord;
 }
 
