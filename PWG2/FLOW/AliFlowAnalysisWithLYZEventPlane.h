@@ -106,7 +106,7 @@ class AliFlowAnalysisWithLYZEventPlane {
    
   //  AliFlowEventSimple*  fEvent ;               //!
   AliFlowTrackSimple*  fTrack ;               //!
-  AliFlowLYZEventPlane* fLYZEP ;              //!
+  //  AliFlowLYZEventPlane* fLYZEP ;              //!
 
   ClassDef(AliFlowAnalysisWithLYZEventPlane, 0);          // lyz analysis 
 };

@@ -84,8 +84,8 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
   fQsum(NULL),
   fQ2sum(0),
   fQtheta(0),
-  fTrack(NULL),
-  fLYZEP(NULL)
+  fTrack(NULL)
+//  fLYZEP(NULL)
 {
 
   // Constructor.
@@ -93,7 +93,7 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
   //  fQsum.Set(0.,0.);        // flow vector sum
   fQ = new AliFlowVector();           // flow vector
   fQsum = new TVector2();        // flow vector sum
-  fLYZEP = new AliFlowLYZEventPlane();
+  //  fLYZEP = new AliFlowLYZEventPlane();
 }
 
  
@@ -106,7 +106,7 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
    //destructor
    delete fQ;
    delete fQsum;
-   delete fLYZEP;
+   //   delete fLYZEP;
  }
  
 
@@ -190,7 +190,7 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
 //-----------------------------------------------------------------------
  
 void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlowLYZEventPlane* fLYZEP) {
-  //void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent) {
+//void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent) {
 
   //Get the event plane and weight for each event
   if (anEvent) {
