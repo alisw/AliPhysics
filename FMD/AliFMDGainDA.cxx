@@ -149,7 +149,7 @@ void AliFMDGainDA::FillChannels(AliFMDDigit* digit) {
 
 //_____________________________________________________________________
 void AliFMDGainDA::Analyse(UShort_t det, 
-			   Char_t ring, 
+			   Char_t   ring, 
 			   UShort_t sec, 
 			   UShort_t strip) {
   TGraphErrors* grChannel = GetChannel(det,ring,sec,strip);
@@ -160,7 +160,7 @@ void AliFMDGainDA::Analyse(UShort_t det,
   }
   TF1 fitFunc("fitFunc","pol1",-10,280); 
   fitFunc.SetParameters(100,3);
-  grChannel->Fit("fitFunc","Q","Q",0,fHighPulse);
+  grChannel->Fit("fitFunc","Q0+","",0,fHighPulse);
   AliFMDParameters* pars = AliFMDParameters::Instance();
   UInt_t ddl, board,chip,channel;
   pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
@@ -183,28 +183,51 @@ void AliFMDGainDA::Analyse(UShort_t det,
   
   
   if(fSaveHistograms) {
-    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",
-			fDiagnosticsFilename.Data(),det,ring,sec,strip));
-    grChannel->Write(Form("grFMD%d%c_%d_%d",det,ring,sec,strip));
-  }
-  
- 
-  
+    gDirectory->cd(GetSectorPath(det,ring, sec, kTRUE));
+    
+    TH1F* summary = dynamic_cast<TH1F*>(gDirectory->Get("Summary"));
+    if (!summary) { 
+      Int_t nStr = (ring == 'I' ? 512 : 256);
+      summary = new TH1F("Summary", Form("Summary of gains in FMD%d%c[%02d]", 
+					 det, ring, sec), 
+			 nStr, -.5, nStr-.5);
+      summary->SetXTitle("Strip");
+      summary->SetYTitle("Gain [ADC/DAC]");
+      summary->SetDirectory(gDirectory);
+    }
+    summary->SetBinContent(strip+1, fitFunc.GetParameter(1));
+    summary->SetBinError(strip+1, fitFunc.GetParError(1));
+    
+    gDirectory->cd(GetStripPath(det,ring,sec,strip, kTRUE));
+    grChannel->SetName(Form("FMD%d%c[%02d,%03d]",det,ring,sec,strip));
+    // grChannel->SetDirectory(gDirectory);
+    grChannel->Write();
+    // grChannel->Write(Form("grFMD%d%c_%d_%d",det,ring,sec,strip));
+  }  
 }
 
 //_____________________________________________________________________
-void AliFMDGainDA::WriteHeaderToFile() {
+void AliFMDGainDA::WriteHeaderToFile() 
+{
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fOutputFile.write(Form("# %s \n",pars->GetGainShuttleID()),9);
-  fOutputFile.write("# Rcu, Board, Chip, Channel, Strip, Gain, Error, Chi2/NDF \n",59);
+  fOutputFile.write("# Rcu, "
+		    "Board, "
+		    "Chip, "
+		    "Channel, "
+		    "Strip, "
+		    "Gain, "
+		    "Error, "
+		    "Chi2/NDF \n",59);
   
 }
 
 //_____________________________________________________________________
 TH1S* AliFMDGainDA::GetChannelHistogram(UShort_t det, 
-					Char_t ring, 
+					Char_t   ring, 
 					UShort_t sec, 
-					UShort_t strip) {
+					UShort_t strip) 
+{
   
   UShort_t  Ring = 1;
   if(ring == 'O')
@@ -221,10 +244,10 @@ TH1S* AliFMDGainDA::GetChannelHistogram(UShort_t det,
 
 //_____________________________________________________________________
 TGraphErrors* AliFMDGainDA::GetChannel(UShort_t det, 
-				       Char_t ring, 
+				       Char_t   ring, 
 				       UShort_t sec, 
-				       UShort_t strip) {
-  
+				       UShort_t strip) 
+{  
   UShort_t      iring     = (ring == 'O' ? 0 : 1);
   TObjArray*    detArray  = static_cast<TObjArray*>(fDetectorArray.At(det));
   TObjArray*    ringArray = static_cast<TObjArray*>(detArray->At(iring));

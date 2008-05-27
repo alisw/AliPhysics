@@ -1,26 +1,59 @@
-void TestPedestalDA(Char_t* fileName, Int_t runNumber){
+//____________________________________________________________________
+//
+// $Id: TestRawIO.C 13249 2006-03-24 16:09:36Z cholm $
+//
+// Test of AliFMDPedestalDA
+//
+/** @ingroup simple_script
+ */
+#ifndef __CINT__
+# include <TSystem.h>
+# include <TStopwatch.h>
+# include <AliCDBManager.h>
+# include <AliRawReader.h>
+# include <AliFMDPedestalDA.h>
+# include <AliFMDParameters.h>
+#endif
+void TestPedestalDA(Char_t* fileName="data.raw", Int_t runNumber=1, 
+		    Bool_t  oldFormat=kTRUE, Bool_t diagnostics=kFALSE)
+{
   
   //This script runs the pedestal DA using the class AliFMDPedestalDA
-  
-  
+#ifdef __CINT__
+  // Load utility library
   gSystem->Load("libFMDutil");
-  Bool_t old = kTRUE;
+#endif
+
+  // Set-up CDB interface 
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(runNumber);
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
+
+  // Set debug level
   AliLog::SetModuleDebugLevel("FMD", 1);
-  AliFMDParameters::Instance()->Init();
-  AliFMDParameters::Instance()->UseRcuTrailer(!old);
-  AliFMDParameters::Instance()->UseCompleteHeader(!old);
+
+  // Set-up paramters 
+  AliFMDParameters* params = AliFMDParameters::Instance();
+  params->Init();
+  params->UseCompleteHeader(oldFormat);
   
+  // Set-up raw readers 
   AliRawReader *reader = new AliRawReaderDate(fileName,-1);
+
+
+  // Set-up timer 
   TStopwatch timer;
   timer.Start();
+  
+  // Make and run DA
   AliFMDPedestalDA pedestalDA;
-  //pedestalDA.SetSaveDiagnostics(kTRUE);
+  pedestalDA.SetSaveDiagnostics(diagnostics);
   pedestalDA.Run(reader);
+
+  // Stop and print summary
   timer.Stop();
   timer.Print();
-
-  
 }
+//
+// EOF
+//

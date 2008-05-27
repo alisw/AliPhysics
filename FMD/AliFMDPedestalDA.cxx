@@ -19,11 +19,12 @@
     @brief   Derived class for the pedestal detector algorithm.
 */
 //
-// This class implements the virtual functions of the AliFMDBaseDA class.
-// The most important of these functions, FillChannels(..) and Analyse(...) collect 
-// and analyse the data of each channel. The resulting pedestal and noise values are
-// written to a comma separated values (csv) file on the go. The csv files produced 
-// in this way are the basic input to the AliFMDPreprocessor.
+// This class implements the virtual functions of the AliFMDBaseDA
+// class.  The most important of these functions, FillChannels(..) and
+// Analyse(...) collect and analyse the data of each channel. The
+// resulting pedestal and noise values are written to a comma
+// separated values (csv) file on the go. The csv files produced in
+// this way are the basic input to the AliFMDPreprocessor.
 //
 
 #include "AliFMDPedestalDA.h"
@@ -50,56 +51,85 @@ AliFMDPedestalDA::AliFMDPedestalDA(const AliFMDPedestalDA & pedDA) :
 }
 
 //_____________________________________________________________________
-AliFMDPedestalDA::~AliFMDPedestalDA() {
- 
+AliFMDPedestalDA::~AliFMDPedestalDA() 
+{ 
 }
 
 //_____________________________________________________________________
-void AliFMDPedestalDA::Init() {
- 
+void AliFMDPedestalDA::Init() 
+{ 
   SetRequiredEvents(1000);
 }
 
 //_____________________________________________________________________
 void AliFMDPedestalDA::AddChannelContainer(TObjArray* sectorArray, 
 					   UShort_t det, 
-					   Char_t ring, 
+					   Char_t   ring, 
 					   UShort_t sec, 
-					   UShort_t strip) {
-
+					   UShort_t strip) 
+{
+#ifdef USE_SAMPLES
+  AliFMDParameters* pars        = AliFMDParameters::Instance();
+  Int_t             samples     = pars->GetSampleRate(det, ring, sec, strip);
+  TObjArray*        sampleArray = new TObjArray(samples);
+  for (size_t sample = 0; sample < samples; sample++) {
+    TH1S* hSample = new TH1S(Form("FMD%d%c[%02d,03%d]_%d",
+				  det,ring,sec,strip,sample),
+			     Form("FMD%d%c[%02d,%03%d]_%d",
+				  det,ring,sec,strip),
+			     1024,-.5,1023.5);
+    hSample->SetXTitle("ADC");
+    hSample->SetYTitle("Events");
+    sampleArray->AddAt(hSample, sample);
+  }
+  sectorArray->AddAtAndExpand(sampleArray, strip);
+#else
   TH1S* hChannel = new TH1S(Form("hFMD%d%c_%d_%d",det,ring,sec,strip),
 			    Form("hFMD%d%c_%d_%d",det,ring,sec,strip),
-			    1024,0,1023);
+			    1024,-.5,1023.5);
   
   hChannel->SetDirectory(0);
   sectorArray->AddAtAndExpand(hChannel,strip);
+#endif
+
 }
 
 //_____________________________________________________________________
-void AliFMDPedestalDA::FillChannels(AliFMDDigit* digit) {
+void AliFMDPedestalDA::FillChannels(AliFMDDigit* digit) 
+{
   UShort_t det   = digit->Detector();
   Char_t   ring  = digit->Ring();
   UShort_t sec   = digit->Sector();
   UShort_t strip = digit->Strip();
-    
-  TH1S* hChannel       = GetChannel(det, ring, sec, strip);
+
+#ifdef USE_SAMPLES    
+  AliFMDParameters* pars     = AliFMDParameters::Instance();
+  Int_t             samples  = pars->GetSampleRate(det, ring, sec, strip);
+  for (size_t sample = 0; sample < samples; sample++) {
+    TH1S* hSample = GetChannel(det, ring, sec, strip, sample);
+    hSample->Fill(digit->Count(sample));
+  }
+#else
+  TH1S* hChannel = GetChannel(det, ring, sec, strip);
   hChannel->Fill(digit->Counts());
-  
+#endif
 }
 
 //_____________________________________________________________________
 void AliFMDPedestalDA::Analyse(UShort_t det, 
-			       Char_t ring, 
+			       Char_t   ring, 
 			       UShort_t sec, 
 			       UShort_t strip) {
 
   TH1S* hChannel       = GetChannel(det, ring, sec, strip);
   if(hChannel->GetEntries() == 0) {
-    //  AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",det,ring,sec,strip));
+    //  AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",
+    //                  det,ring,sec,strip));
     return;
   }
   
-  //std::cout<<"Fitting Channel #"<<Form("FMD%d%c_%d_%d",det,ring,sec,strip)<<" with "<<hChannel->GetEntries()<<" entries     \r"<<std::flush;
+  AliDebug(50, Form("Fitting FMD%d%c_%d_%d with %d entries",det,ring,sec,strip,
+		   hChannel->GetEntries()));
   
   Float_t mean = hChannel->GetMean();
   Float_t rms  = hChannel->GetRMS();
@@ -109,17 +139,19 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
   mean = hChannel->GetMean();
   rms  = hChannel->GetRMS();
   
-  hChannel->Fit("gaus","QO","QO",mean-5*rms,mean+5*rms);
+  hChannel->Fit("gaus","Q0+","",mean-5*rms,mean+5*rms);
   TF1* fitFunc = hChannel->GetFunction("gaus");
     
   UInt_t ddl, board, chip, channel;
   
-  UShort_t relStrip = strip%128;
-  AliFMDParameters* pars = AliFMDParameters::Instance();
+  UShort_t          relStrip = strip%128;
+  AliFMDParameters* pars     = AliFMDParameters::Instance();
   pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
+
   Float_t chi2ndf = 0;
   if(fitFunc->GetNDF())
     chi2ndf = fitFunc->GetChisquare() / fitFunc->GetNDF();
+
   ddl = ddl + kBaseDDL;
   
   fOutputFile << ddl                         << ','
@@ -136,36 +168,78 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 	      << chi2ndf                     <<"\n";
   
   if(fSaveHistograms) {
-    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename.Data(),det,ring,sec,strip));
-    hChannel->GetXaxis()->SetRange(0,1023);
+    gDirectory->cd(GetSectorPath(det, ring, sec, kTRUE));
+    TH1F* sumPed   = dynamic_cast<TH1F*>(gDirectory->Get("Pedestals"));
+    TH1F* sumNoise = dynamic_cast<TH1F*>(gDirectory->Get("Noise"));
+    Int_t nStr = (ring == 'I' ? 512 : 256);
+    if (!sumPed) {
+      sumPed = new TH1F("Pedestals", 
+			Form("Summary of pedestals in FMD%d%c[%02d]", 
+			     det, ring, sec), 
+			nStr, -.5, nStr-.5);
+      sumPed->SetXTitle("Strip");
+      sumPed->SetYTitle("Pedestal [ADC]");
+      sumPed->SetDirectory(gDirectory);
+    }
+    if (!sumNoise) { 
+      sumNoise = new TH1F("Noise", 
+			  Form("Summary of noise in FMD%d%c[%02d]", 
+			       det, ring, sec), 
+			  nStr, -.5, nStr-.5);
+      sumNoise->SetXTitle("Strip");
+      sumNoise->SetYTitle("Noise [ADC]");
+      sumNoise->SetDirectory(gDirectory);
+    }
+    sumPed->SetBinContent(strip+1, mean);
+    sumPed->SetBinError(strip+1, rms);
+    sumNoise->SetBinContent(strip+1, rms);
+
+    gDirectory->cd(GetStripPath(det, ring, sec, strip, kTRUE));
+    hChannel->GetXaxis()->SetRange(-.5,1023.5);
+    // hChannel->SetDirectory(gDirectory);
     hChannel->Write();
-    
-  }
-  
+  }  
 }
 
 //_____________________________________________________________________
-void AliFMDPedestalDA::WriteHeaderToFile() {
+void AliFMDPedestalDA::WriteHeaderToFile() 
+{
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fOutputFile.write(Form("# %s \n",pars->GetPedestalShuttleID()),13);
-  fOutputFile.write("# Rcu, Board, Chip, Channel, Strip, Sample, TimeBin, Pedestal, Noise, Mu, Sigma, Chi2/NDF \n",91);
-  
+  fOutputFile.write("# Rcu, "
+		    "Board, "
+		    "Chip, "
+		    "Channel, "
+		    "Strip, "
+		    "Sample, "
+		    "TimeBin, "
+		    "Pedestal, "
+		    "Noise, "
+		    "Mu, "
+		    "Sigma, "
+		    "Chi2/NDF \n",91);
 }
 
 //_____________________________________________________________________
-TH1S* AliFMDPedestalDA::GetChannel(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip) {
-  
-  UShort_t  Ring = 1;
-  if(ring == 'O')
-    Ring = 0;
-  
-  
+TH1S* AliFMDPedestalDA::GetChannel(UShort_t det, 
+				   Char_t   ring, 
+				   UShort_t sec, 
+				   UShort_t strip) 
+{
+  UShort_t   iring     = (ring == 'O' ? 0 : 1);
   TObjArray* detArray  = static_cast<TObjArray*>(fDetectorArray.At(det));
-  TObjArray* ringArray = static_cast<TObjArray*>(detArray->At(Ring));
+  TObjArray* ringArray = static_cast<TObjArray*>(detArray->At(iring));
   TObjArray* secArray  = static_cast<TObjArray*>(ringArray->At(sec));
-  TH1S* hChannel       = static_cast<TH1S*>(secArray->At(strip));
-  
+#ifdef USE_SAMPLES
+  AliFMDParameters* pars        = AliFMDParameters::Instance();
+  Int_t             samples     = pars->GetSampleRate(det, ring, sec, strip);
+  TObjArray*        sampleArray = static_cast<TObjArray*>(secArray->At(strip));
+  TH1S*      hSample = static_cast<TH1S*>(sampleArray->At(sample));
+  return hSample;
+#else
+  TH1S*      hChannel  = static_cast<TH1S*>(secArray->At(strip));
   return hChannel;
+#endif  
 }
 //_____________________________________________________________________
 //

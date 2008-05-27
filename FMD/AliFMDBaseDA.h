@@ -1,3 +1,4 @@
+// -*- mode: C++ -*- 
 #ifndef ALIFMDBASEDA_H
 #define ALIFMDBASEDA_H
 
@@ -7,13 +8,16 @@
  * See cxx source for full Copyright notice                               
  */
 //
-//This class provides a base interface for the Detector Algorithms (DA) of the FMD. 
-//At least three implementations are needed: AliFMDPedestalDA, AliFMDGainDA and AliFMDPhysicsDA . 
-//These classes will provide the calibration data for the AliFMDPreprocessor to be used in the shuttle.
-//The input for this class are raw data (AliRawReader) and the output is a comma-separated file
-//(std::ofstream) that contains the values defined in the implementations of this class.
+// This class provides a base interface for the Detector Algorithms
+// (DA) of the FMD.  At least three implementations are needed:
+// AliFMDPedestalDA, AliFMDGainDA and AliFMDPhysicsDA .  These classes
+// will provide the calibration data for the AliFMDPreprocessor to be
+// used in the shuttle.  The input for this class are raw data
+// (AliRawReader) and the output is a comma-separated file
+// (std::ofstream) that contains the values defined in the
+// implementations of this class.
 //
-//Author: Hans Hjersing Dalsgaard, hans.dalsgaard@cern.ch
+// Author: Hans Hjersing Dalsgaard, hans.dalsgaard@cern.ch
 //
 
 #include "TNamed.h"
@@ -26,11 +30,12 @@
 #include "AliRawReader.h"
 #include "AliFMDDigit.h"
 #include "AliFMDParameters.h"
+class TDirectory;
 
 
 class AliFMDBaseDA: public TNamed {
   
- public:
+public:
   AliFMDBaseDA() ;
   AliFMDBaseDA(const AliFMDBaseDA & baseDA) ;
   //  AliFMDBaseDA& operator = (const AliFMDBaseDA & baseDA) ; 
@@ -41,7 +46,7 @@ class AliFMDBaseDA: public TNamed {
   void SetSaveDiagnostics(Bool_t save) {fSaveHistograms = save;}
   void SetRequiredEvents(Int_t nEvents) {fRequiredEvents = nEvents;}
   Int_t GetRequiredEvents() {return fRequiredEvents ;}
- protected:
+protected:
   
   virtual void Init()  {};
   virtual void FillChannels(AliFMDDigit* )  {};
@@ -61,15 +66,22 @@ class AliFMDBaseDA: public TNamed {
   Bool_t fSaveHistograms;
   TObjArray fDetectorArray;
   
+  const char* GetDetectorPath(UShort_t det, Bool_t full=kTRUE) const;
+  const char* GetRingPath(UShort_t det, Char_t ring, Bool_t full=kTRUE) const;
+  const char* GetSectorPath(UShort_t det, Char_t ring, UShort_t sec, 
+			    Bool_t full=kTRUE) const;
+  const char* GetStripPath(UShort_t det, Char_t ring, UShort_t sec, 
+			   UShort_t str, Bool_t full=kTRUE) const;
   
- private:
+private:
  
   void WriteConditionsData();
   void SetCurrentEvent(Int_t currentEvent) {fCurrentEvent = currentEvent; }
-  void InitContainer();
+  void InitContainer(TDirectory* dir);
   Int_t fRequiredEvents;
   Int_t fCurrentEvent;   
-   
+
+  
   ClassDef(AliFMDBaseDA,0)
 
 };
