@@ -164,8 +164,8 @@ Bool_t AliDCSClient::Connect()
 			return kTRUE;
 		}
 
-		AliError(Form("%d *** Connection to AMANDA server failed! Tried <%d> times ...", tries+1));
-		if(tries<fRetries-1) AliInfo(Form("%d *** Waiting %d seconds before next retry.", sleeptime));
+		AliError(Form(" *** Connection to AMANDA server failed Tried <%d> times ...", tries+1));
+		if(tries<fRetries-1) AliInfo(Form(" *** Waiting %d seconds before next retry.", sleeptime));
 
 		delete fSocket;
 		fSocket = NULL;
