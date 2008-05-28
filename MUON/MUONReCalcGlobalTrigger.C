@@ -26,13 +26,15 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONTriggerCrate.h"
+#include "AliMUONTriggerCrateConfig.h"
+#include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONRegionalTriggerBoard.h"
+#include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONTriggerBoard.h"
 
 #include <TArrayS.h>
-#include <TIterator.h>
 #include <TObjArray.h>
 #include <TMath.h>
 
@@ -43,6 +45,10 @@ UShort_t locResp[235];
 AliMUONCalibrationData *calibData;
 AliMUONTriggerCrateStore *fCrates;
 AliMUONGlobalTriggerBoard *fGlobalTriggerBoard;
+AliMUONRegionalTriggerConfig* regionalConfig;
+AliMUONGlobalCrateConfig * globalConfig;
+
+TIterator *cratesIterator;
 
 Int_t debug;
 
@@ -74,7 +80,7 @@ void PrintGloBin(UShort_t s) {
 }
 
 //___________________________________________________________________________
-Bool_t ReCalcGlobalTrigger() {
+Bool_t ReCalcGlobalTrigger(TIter *nextCrates) {
   /// re-calculate regional/global decision from array of local triggers
 
   Int_t loLpt, loHpt;
@@ -82,11 +88,11 @@ Bool_t ReCalcGlobalTrigger() {
 
   // regional response
   
-  fCrates->FirstCrate();
+  nextCrates->Reset();
   
   Int_t irb(0);
   
-  while ( ( cr = fCrates->NextCrate() ) ) {
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(nextCrates->Next()) ) ) {
     
     if (debug) printf("Crate nr = %2d \n",++irb);
     
@@ -126,8 +132,8 @@ Bool_t ReCalcGlobalTrigger() {
       
     }  // local board loop
     
-    AliMUONVCalibParam* regionalBoardMasks = calibData->RegionalTriggerBoardMasks(irb);
-    UShort_t rmask = static_cast<UShort_t>(regionalBoardMasks->ValueAsInt(0) & 0xFFFF);
+    AliMUONTriggerCrateConfig* crateConfig = regionalConfig->FindTriggerCrate(cr->GetName());
+    UShort_t rmask= crateConfig->GetMask();
     regb->Mask(rmask);
     regb->SetLocalResponse(regLocResp);
     regb->Response();
@@ -142,13 +148,18 @@ Bool_t ReCalcGlobalTrigger() {
   
   fGlobalTriggerBoard->Reset();
   
-  AliMUONVCalibParam* globalBoardMasks = calibData->GlobalTriggerBoardMasks();
-  for ( Int_t i = 0; i < globalBoardMasks->Size(); ++i ) {
-    UShort_t gmask = static_cast<UShort_t>(globalBoardMasks->ValueAsInt(i) & 0xFF);
-    fGlobalTriggerBoard->Mask(i,gmask);
-  }
+  if (!globalConfig)
+    printf("No valid trigger crate configuration in CDB\n");
+
+  UShort_t gmask = 0;
+
+  gmask = globalConfig->GetFirstDarcDisable();
+  fGlobalTriggerBoard->Mask(0,gmask);
   
-  fCrates->FirstCrate();
+  gmask = globalConfig->GetSecondDarcDisable();
+  fGlobalTriggerBoard->Mask(1,gmask);
+  
+  nextCrates->Reset();
   
   UShort_t regional[16];
   irb = 0;
@@ -158,7 +169,7 @@ Bool_t ReCalcGlobalTrigger() {
     return kFALSE;
   }
   
-  while ( ( cr = fCrates->NextCrate() ) ) {
+  while ( ( cr = static_cast<AliMUONTriggerCrate*>(nextCrates->Next()) ) ) {
     AliMUONTriggerBoard* rb =
       static_cast<AliMUONTriggerBoard*>(cr->Boards()->At(0));
     regional[irb] = rb->GetResponse();
@@ -195,9 +206,15 @@ void MUONReCalcGlobalTrigger(const char* input) {
 
   calibData = new AliMUONCalibrationData(runNumber);
 
+  regionalConfig = calibData->RegionalTriggerConfig();
+  globalConfig = calibData->GlobalTriggerCrateConfig();
+
   fCrates = new AliMUONTriggerCrateStore;
-  fCrates->ReadFromFile();
+  fCrates->ReadFromFile(calibData);
+  cratesIterator = fCrates->CreateCrateIterator();
   fGlobalTriggerBoard = new AliMUONGlobalTriggerBoard;
+  
+  TIter nextCrates(cratesIterator);
 
   AliMUONDataInterface diRec(input);
 
@@ -209,7 +226,6 @@ void MUONReCalcGlobalTrigger(const char* input) {
   TArrayS xPattern[235];
   TArrayS yPattern[235];
 
-  nEvents = 100;
   for (Int_t ievent = 0; ievent < nEvents; ++ievent) {
 
     for (Int_t i = 0; i < 234; i++) {
@@ -218,7 +234,10 @@ void MUONReCalcGlobalTrigger(const char* input) {
 
     AliMUONVTriggerStore* triggerStore = diRec.TriggerStore(ievent,"R");
     TIter nextLocal(triggerStore->CreateLocalIterator());
-    while ( (localTrig = static_cast<AliMUONLocalTrigger*>( nextLocal() )) != NULL ) {
+    while ( (localTrig = static_cast<AliMUONLocalTrigger*>( nextLocal() )) ) {
+
+      if (localTrig->IsNull()) continue;
+
       circ = localTrig->LoCircuit();
       
       loLpt = localTrig->LoLpt();
@@ -243,7 +262,7 @@ void MUONReCalcGlobalTrigger(const char* input) {
       
     } // local trigger loop
 
-    if (ReCalcGlobalTrigger()) {
+    if (ReCalcGlobalTrigger(&nextCrates)) {
       printf("............ for event %5d \n",ievent);
       for (Int_t ic = 1; ic <= 234; ic++) {
 	if (locResp[ic] != 0) {
@@ -269,6 +288,10 @@ void MUONReCalcGlobalTrigger(const char* input) {
     }
     
   } // event loop
+
+  delete fGlobalTriggerBoard;
+  delete fCrates;
+  delete calibData;
 
 }
 
