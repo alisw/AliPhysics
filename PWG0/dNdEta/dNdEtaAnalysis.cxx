@@ -393,11 +393,16 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       // adjust acceptance range for SPD
       if (fAnalysisMode == AliPWG0Helper::kSPD)
       {
-        //const Int_t binBegin[20] = { 11, 10, 9, 7, 5, 4, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1 };
-        const Int_t binBegin[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 };
+        //const Int_t binBegin[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 };
+        const Int_t binBegin[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
+        //const Int_t binBegin[30] = { -1, -1, -1, 17, 15, 14, 12, 10, 8, 7, 6, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, -1, -1, -1};  // limit in correction map is 10
 
         Int_t vtxBegin = binBegin[iEta - 1];
         Int_t vtxEnd   = 18 + 1 - binBegin[30 - iEta];
+
+        // eta range not accessible
+        if (vtxBegin == -1)
+          continue;
 
         //Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
         //Printf("%d %d | %d %d", vtxBegin, vertexHist->GetXaxis()->FindBin(GetVtxMin(eta)), vtxEnd, vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta)));
