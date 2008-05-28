@@ -70,12 +70,14 @@ void DrawEffectOfChangeInCrossSection(const char* fileName) {
   //get the data
   TFile* fin = TFile::Open(fileName);
 
-  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore" };
+  //const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore" };
+  const Char_t* changes[]  = { "pythia", "qgsm", "phojet" };
+  const Int_t nChanges = 3;
   //const Char_t* changes[]  = {"pythia","ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
   Int_t colors[] = {1,1,kRed,kBlue,kGreen,kPink,1,kRed,kBlue};
 
-  TH1F* hRatios[9];
-  for(Int_t i=0; i<9; i++) {
+  TH1F* hRatios[3];
+  for(Int_t i=0; i<nChanges; i++) {
     hRatios[i] = (TH1F*)fin->Get(Form("ratio_vertexReco_triggerBias_%s",changes[i]));
     hRatios[i]->SetLineWidth(2);
     hRatios[i]->SetLineColor(colors[i]);
@@ -95,9 +97,9 @@ void DrawEffectOfChangeInCrossSection(const char* fileName) {
   null->GetYaxis()->SetTitle("Ratio pythia/modified cross-sections");
   null->Draw();
 
-  TLatex* text[9];
+  TLatex* text[3];
 
-  for(Int_t i=1; i<9; i++) {
+  for(Int_t i=1; i<nChanges; i++) {
     hRatios[i]->Draw("same");
     
     TString str(hRatios[i]->GetTitle());

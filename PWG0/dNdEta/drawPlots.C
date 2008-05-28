@@ -1779,3 +1779,21 @@ void DetermineAcceptance(const char* fileName = "correction_map.root", const cha
   Printf("End array (mirrored) (should be the same):");
   Printf("%s", arrayEnd.Data());
 }
+
+void AverageMultiplicity(const char* fileName = "correction_map.root", const char* correctionMapFolder = "dndeta_correction")
+{
+  loadlibs();
+
+  TFile::Open(fileName);
+
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
+  dNdEtaCorrection->LoadHistograms();
+  TH2* events = dNdEtaCorrection->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetGeneratedHistogram();
+  TH3* tracks = dNdEtaCorrection->GetTriggerBiasCorrectionINEL()->GetTrackCorrection()->GetGeneratedHistogram();
+
+  Float_t nEvents = events->Integral(events->GetXaxis()->FindBin(-1), events->GetXaxis()->FindBin(1), 0, events->GetNbinsY()+1);
+  Float_t nTracks = tracks->Integral(tracks->GetXaxis()->FindBin(-1), tracks->GetXaxis()->FindBin(1), tracks->GetYaxis()->FindBin(-0.39), tracks->GetYaxis()->FindBin(0.59), 0, tracks->GetNbinsZ()+1);
+
+  Printf("%f %f --> %f", nEvents, nTracks, nTracks / nEvents);
+}
+

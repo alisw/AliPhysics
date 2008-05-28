@@ -796,9 +796,20 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
   loadlibs();
 
   const Char_t* typeName[] = { "vertexreco", "trigger", "vtxtrigger" };
+
+  /*
   const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25"};
+  // add scalesND!!!
   Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
   Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
+  Int_t nChanges = 17;
+  */
+
+  const Char_t* changes[]  = { "pythia", "qgsm", "phojet"};
+  Float_t scalesND[] = {1.0, 1.10, 1.11};
+  Float_t scalesSD[] = {1.0, 0.69, 0.86};
+  Float_t scalesDD[] = {1.0, 0.98, 0.61};
+  Int_t nChanges = 3;
 
   // cross section from Pythia
   Float_t sigmaND = 55.2;
@@ -823,7 +834,7 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
   Int_t counter = 0;
   for (Int_t j=0; j<3; j++) { // j = 0 (change vtx), j = 1 (change trg), j = 2 (change both)
 
-    for (Int_t i=0; i<17; i++) {
+    for (Int_t i=0; i<nChanges; i++) {
       TFile::Open(correctionFileName);
 
       TString name;
@@ -854,17 +865,21 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
       // scale
       if (j == 0 || j == 2)
       {
+        dNdEtaCorrectionND->GetVertexRecoCorrection()->Scale(scalesND[i]);
         dNdEtaCorrectionDD->GetVertexRecoCorrection()->Scale(scalesDD[i]);
         dNdEtaCorrectionSD->GetVertexRecoCorrection()->Scale(scalesSD[i]);
       }
       if (j == 1 || j == 2)
       {
+        dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->Scale(scalesND[i]);
         dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->Scale(scalesDD[i]);
         dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->Scale(scalesSD[i]);
 
+        dNdEtaCorrectionND->GetTriggerBiasCorrectionNSD()->Scale(scalesND[i]);
         dNdEtaCorrectionDD->GetTriggerBiasCorrectionNSD()->Scale(scalesDD[i]);
         dNdEtaCorrectionSD->GetTriggerBiasCorrectionNSD()->Scale(scalesSD[i]);
 
+        dNdEtaCorrectionND->GetTriggerBiasCorrectionND()->Scale(scalesND[i]);
         dNdEtaCorrectionDD->GetTriggerBiasCorrectionND()->Scale(scalesDD[i]);
         dNdEtaCorrectionSD->GetTriggerBiasCorrectionND()->Scale(scalesSD[i]);
       }
@@ -891,8 +906,8 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
       dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("fdNdEtaAnalysisESD", "fdNdEtaAnalysisESD");
       fdNdEtaAnalysis->LoadHistograms();
 
-      fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kINEL);
-      //fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kNSD);
+      //fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kINEL, Form("%d %d", j, i));
+      fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kNSD);
 
       name = "ratio";
       if (j==0) name.Append("_vetexReco_");
@@ -920,7 +935,7 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
   // to make everything consistent
   hRatios[0]->Divide(hRatios[0],hRatios[0],1,1);
 
-  for (Int_t i=0; i<51; i++)
+  for (Int_t i=0; i<nChanges * 3; i++)
   {
     corrections[i]->SaveHistograms();
     hRatios[i]->Write();
