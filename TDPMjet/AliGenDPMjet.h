@@ -33,6 +33,7 @@ class AliGenDPMjet : public AliGenMC
     virtual ~AliGenDPMjet(); 
     virtual void    Generate();
     virtual void    Init();
+    virtual void    FinishRun();
     virtual void    SetEnergyCMS(Float_t energy = 14000.) {fEnergyCMS = energy; fBeamEn = energy / 2.;}
     virtual void    SetImpactParameterRange(Float_t bmin=0., Float_t bmax=1.)
 			{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
@@ -53,7 +54,6 @@ class AliGenDPMjet : public AliGenMC
     virtual Int_t   GetSpectators()        {return fSpectators;}
     virtual Int_t   GetFlavor()            {return fFlavor;}
 
-    // Temporeaneo!?!
     virtual void    SetGenImpPar(Float_t bValue) {fGenImpPar=bValue;}
     virtual Float_t GetGenImpPar() {return fGenImpPar;}
     
