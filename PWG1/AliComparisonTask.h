@@ -35,8 +35,8 @@ class AliComparisonTask : public AliAnalysisTask {
   AliESDRecInfo *fInfoRC;         //! AliESDRecInfo object
 
   TList* fOutput;                 //! list send on output slot 0
-  static Int_t evtNumber;         //! event number
-  TIterator *pitList;             //! iterator over the output objetcs  
+  static Int_t fEvtNumber;        //! event number
+  TIterator *fPitList;            //! iterator over the output objetcs  
   TList *fCompList;               // list of comparison objects
 
   AliComparisonTask(const AliComparisonTask&); // not implemented
