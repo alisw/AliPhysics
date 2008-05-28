@@ -18,6 +18,8 @@
 #pragma link C++ class AliEMCALCalibData+;
 #pragma link C++ class AliEMCALCalibHistoProducer+;
 #pragma link C++ class AliEMCALPreprocessor+;
+#pragma link C++ class AliEMCALSensorTemp+;
+#pragma link C++ class AliEMCALSensorTempArray+;
 #pragma link C++ class AliCaloCalibPedestal+;
 #pragma link C++ class AliEMCALSurvey+;
 #pragma link C++ class AliEMCALRecParam+;
