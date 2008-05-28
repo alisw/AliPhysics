@@ -54,7 +54,7 @@ void AliITSMapSDD::SetMap(TH2F* hmap){
   // with anodes on x axis and drift dist. on y axis
   for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
     for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
-      fMap[iAn][iDr]=hmap->GetBinContent(iAn+1,iDr+1);
+      SetCellContent(iAn,iDr,hmap->GetBinContent(iAn+1,iDr+1));
     }
   }
 }
@@ -81,7 +81,7 @@ TH2F* AliITSMapSDD::GetMapHisto() const{
   TH2F* hmap=new TH2F(hname,"",fgkNAnodPts,-0.5,255.5,fgkNDrifPts,0.,35.);
   for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
     for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
-      hmap->SetBinContent(iAn+1,iDr+1,fMap[iAn][iDr]);
+      hmap->SetBinContent(iAn+1,iDr+1,GetCellContent(iAn,iDr));
     }
   }
   return hmap;
@@ -94,7 +94,7 @@ TH1F* AliITSMapSDD::GetResidualDistr(Float_t dmin, Float_t dmax) const{
   TH1F* hd=new TH1F(hname,"",100,dmin,dmax);
   for(Int_t iAn=0;iAn<fgkNAnodPts; iAn++){
     for(Int_t iDr=0;iDr<fgkNDrifPts; iDr++){
-      hd->Fill(fMap[iAn][iDr]);
+      hd->Fill(GetCellContent(iAn,iDr));
     }
   }
   return hd;

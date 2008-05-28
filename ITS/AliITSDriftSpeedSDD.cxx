@@ -67,5 +67,5 @@ void AliITSDriftSpeedSDD::PrintDriftSpeedParameters() const {
   // printout drift speed parametrization
   printf("Injector event #%d at time %d\n",fEvNum,fTimestamp);
   printf("Coefficients of %d degree poly fit:\n",fPolDeg);
-  for(Int_t i=0; i<fgkMaxPolDeg+1; i++) printf("par[%d]=%f\n",i,fDriftSpeedParam[i]);
+  for(Int_t i=0; i<fgkMaxPolDeg+1; i++) printf("par[%d]=%G\n",i,fDriftSpeedParam[i]);
 }

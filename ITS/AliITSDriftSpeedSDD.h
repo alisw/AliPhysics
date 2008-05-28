@@ -36,7 +36,7 @@ class AliITSDriftSpeedSDD : public TObject {
 
   Int_t GetEventNumber() const {return fEvNum;}
   UInt_t GetEventTimestamp() const {return fTimestamp;}
-  Double_t GetDriftSpeedParameter(Int_t i) const {return fDriftSpeedParam[i];}
+  Float_t GetDriftSpeedParameter(Int_t i) const {return fDriftSpeedParam[i];}
   Double_t GetDriftSpeedAtAnode(Double_t nAnode) const{
     Double_t drSpeed=fDriftSpeedParam[fgkMaxPolDeg];
     for(Int_t i=fgkMaxPolDeg-1; i>=0; --i) drSpeed=fDriftSpeedParam[i]+nAnode*drSpeed;
@@ -44,11 +44,12 @@ class AliITSDriftSpeedSDD : public TObject {
   }
 
  protected:
-  static const Int_t fgkMaxPolDeg=5; // max. degree of the poly fit
+  static const UShort_t fgkMaxPolDeg=5; // max. degree of the poly fit
   Int_t fEvNum;  // event number of injector event
   UInt_t fTimestamp; // event timestamp
-  Int_t fPolDeg;    // degree of the ploy fit to drift speed vs. anode
-  Double32_t fDriftSpeedParam[fgkMaxPolDeg+1];  // coefficients of the poly fit
-  ClassDef(AliITSDriftSpeedSDD,2);
+  Char_t fPolDeg;    // degree of the ploy fit to drift speed vs. anode
+                     // saved as char since 1 byte is enough
+  Float_t fDriftSpeedParam[fgkMaxPolDeg+1];  // coefficients of the poly fit
+  ClassDef(AliITSDriftSpeedSDD,3);
 };
 #endif

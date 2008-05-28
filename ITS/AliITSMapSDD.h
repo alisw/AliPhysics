@@ -35,11 +35,11 @@ class AliITSMapSDD : public TNamed {
     return kTRUE;
   }
   void SetCellContent(Int_t iAn, Int_t iTb, Float_t devMicron){
-    if(CheckBounds(iAn,iTb)) fMap[iAn][iTb]=devMicron;
+    if(CheckBounds(iAn,iTb)) fMap[iAn][iTb]=(Short_t)(devMicron*10.+0.5);
   }
 
   Float_t GetCellContent(Int_t iAn, Int_t iTb) const {
-    if(CheckBounds(iAn,iTb)) return fMap[iAn][iTb];
+    if(CheckBounds(iAn,iTb)) return (Float_t)fMap[iAn][iTb]/10.;
     else return 0.;
   }
   Float_t GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg);
@@ -52,8 +52,11 @@ class AliITSMapSDD : public TNamed {
  protected:
   static const Int_t fgkNAnodPts = 256; // number of map points along anodes
   static const Int_t fgkNDrifPts = 72; // number of map points along anodes
-  Float_t fMap[fgkNAnodPts][fgkNDrifPts];   // map of deviations
+  Short_t fMap[fgkNAnodPts][fgkNDrifPts];   // map of deviations
+                                            // stored as Short_t: integer 
+                                            // values from -32000 to 32000
+                                            // in the range -3.2 - 3.2 mm
 
-  ClassDef(AliITSMapSDD,1);
+  ClassDef(AliITSMapSDD,2);
 };
 #endif
