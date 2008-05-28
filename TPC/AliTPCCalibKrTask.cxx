@@ -22,6 +22,7 @@
 // The AliTPCCalibKr output calibration component contains an array of TH3F histograms which can be stored 
 // in the ouptut file.
 //
+//  Author: Jacek Otwinowski (J.Otwinowski@gsi.de)
 
 /*
  
@@ -117,7 +118,8 @@ AliTPCCalibKrTask::~AliTPCCalibKrTask()
   //
   // destructor
   //
-  if(fClustKr) delete fClustKr; fClustKr = 0;
+  if(fOutput) fOutput->Delete();
+  delete fOutput; fOutput = 0;
 }
 
 //_____________________________________________________________________
@@ -133,6 +135,7 @@ void AliTPCCalibKrTask::ConnectInputData(Option_t *)
   }
   else {
    fTree->SetBranchStatus("*",1); 
+   fTree->SetBranchStatus("Cl.fCluster",0); 
   }
 
   // set branch address
@@ -148,7 +151,7 @@ void AliTPCCalibKrTask::CreateOutputObjects()
 {
   // create object to the output 
   fOutput = new TList;
-  fOutput->SetOwner();
+  fOutput->SetOwner(); // is owner of the fTPCCalibKr objects
 
   if(fTPCCalibKr) fOutput->Add(fTPCCalibKr);
   //fTPCCalibKr = new AliTPCCalibKr;
@@ -192,7 +195,7 @@ void AliTPCCalibKrTask::Exec(Option_t *)
       if(fClustKr) fTPCCalibKr->Process(fClustKr);
   }
  
-  if( !( evtNumber % 10000) ) {
+  if( !( evtNumber % 100000) ) {
     cout << evtNumber << endl; }
 
   evtNumber++;

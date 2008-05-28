@@ -47,10 +47,8 @@ public:
   
 private:
 
-  Bool_t bOutputHisto;        //!
-  Bool_t bASide;              //!
-  Bool_t bCSide;              //!
-
+  Bool_t bASide;              //! Only A side
+  Bool_t bCSide;              //! Only C side 
   TObjArray fHistoKrArray;    //  Calibration histograms for Kr distribution
 
 public:

@@ -93,7 +93,6 @@ ClassImp(AliTPCCalibKr)
 
 AliTPCCalibKr::AliTPCCalibKr() : 
   TObject(),
-  
   bASide(kTRUE),
   bCSide(kTRUE),
   fHistoKrArray(72)
@@ -101,6 +100,10 @@ AliTPCCalibKr::AliTPCCalibKr() :
   //
   // default constructor
   //
+
+  // TObjArray with histograms
+  fHistoKrArray.SetOwner(kTRUE); // is owner of histograms
+  fHistoKrArray.Clear();
 
   // init histograms
   Init();
@@ -116,6 +119,10 @@ AliTPCCalibKr::AliTPCCalibKr(const AliTPCCalibKr& pad) :
 {
   // copy constructor
  
+  // TObjArray with histograms
+  fHistoKrArray.SetOwner(kTRUE); // is owner of histograms
+  fHistoKrArray.Clear();
+
   for (Int_t iSec = 0; iSec < 72; ++iSec) 
   {
     TH3F *hOld = pad.GetHistoKr(iSec);
@@ -133,11 +140,9 @@ AliTPCCalibKr::~AliTPCCalibKr()
   // destructor
   //
 
-  for (Int_t iSec = 0; iSec < 72; ++iSec) 
-  {
-      TH3F *hNew = (TH3F*)fHistoKrArray.At(iSec);
-      if(hNew) delete hNew; hNew = 0; 
-  }
+  // for (Int_t iSec = 0; iSec < 72; ++iSec) {
+  //     if (fHistoKrArray.At(iSec)) delete fHistoKrArray.RemoveAt(iSec);
+  // }
   fHistoKrArray.Delete();
 }
 
@@ -156,17 +161,14 @@ AliTPCCalibKr& AliTPCCalibKr::operator = (const  AliTPCCalibKr &source)
 void AliTPCCalibKr::Init()
 {
   // 
-  // init input tree and output histograms 
+  // init output histograms 
   //
- 
-  // create output TObjArray
-  fHistoKrArray.Clear();
 
   // add histograms to the TObjArray
   for(Int_t i=0; i<72; ++i) {
     
 	// C - side
-	if( IsCSide(i) == kTRUE && bCSide == kTRUE) {
+	if(IsCSide(i) == kTRUE && bCSide == kTRUE) {
       TH3F *hist = CreateHisto(i);
       if(hist) fHistoKrArray.AddAt(hist,i);
 	}
@@ -189,6 +191,8 @@ Bool_t AliTPCCalibKr::Process(AliTPCclusterKr *cluster)
 
   if(cluster) Update(cluster);
   else return kFALSE;
+ 
+ return kTRUE;
 }
 
 //_____________________________________________________________________
@@ -204,9 +208,9 @@ TH3F* AliTPCCalibKr::CreateHisto(Int_t chamber)
 
     if( IsIROC(chamber) == kTRUE ) 
 	{
-	   h = new TH3F(name,name,63,0,63,100,0,100,150,100,3000);
+	   h = new TH3F(name,name,63,0,63,108,0,108,200,100,2500);
 	} else {
-	   h = new TH3F(name,name,96,0,96,100,0,100,150,100,3000);
+	   h = new TH3F(name,name,96,0,96,140,0,140,200,100,1700);
 	}
     h->SetXTitle("padrow");
     h->SetYTitle("pad");
@@ -267,13 +271,13 @@ Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
     TCut cutAll = cutR0+cutR1+cutR2+cutR3+cutS1;
   */
   //R0
-  if (cl->GetADCcluster()/ Float_t(cl->GetSize()) >200)        return kFALSE;
+  if ((float)cl->GetADCcluster()/ cl->GetSize() >200)        return kFALSE;
   // R1
-  if (cl->GetADCcluster()/ Float_t(cl->GetSize()) <7)          return kFALSE;
+  if ((float)cl->GetADCcluster()/ cl->GetSize() <7)          return kFALSE;
   //R2
-  if (cl->GetMax().GetAdc()/ Float_t(cl->GetADCcluster()) >0.4)  return kFALSE;
+  if ((float)cl->GetMax().GetAdc()/ cl->GetADCcluster() >0.4)  return kFALSE;
   //R3
-  if (cl->GetMax().GetAdc()/ Float_t(cl->GetADCcluster()) <0.01) return kFALSE;
+  if ((float)cl->GetMax().GetAdc()/ cl->GetADCcluster() <0.01) return kFALSE;
   //S1
   if (cl->GetSize()>200) return kFALSE;
   if (cl->GetSize()<6)  return kFALSE;
@@ -312,8 +316,9 @@ void AliTPCCalibKr::Analyse()
   Double_t windowFrac = 0.12;
   // the 3d histogram will be projected on the pads given by the following window size
   // set the numbers to 0 if you want to do a pad-by-pad calibration
-  UInt_t rowRadius = 5;
-  UInt_t padRadius = 10;
+  UInt_t rowRadius = 2;
+  UInt_t padRadius = 4;
+  
   // the step size by which pad and row are incremented is given by the following numbers
   // set them to 1 if you want the finest granularity
   UInt_t rowStep = 1;    // formerly: 2*rowRadius
@@ -361,9 +366,16 @@ void AliTPCCalibKr::Analyse()
     
         // find maximum in spectrum to define a range (given by windowFrac) for which a Gauss is fitted
         Double_t maxEntries = projH->GetBinCenter(projH->GetMaximumBin());
+		Int_t minBin = projH->FindBin((1.-windowFrac) * maxEntries);
+		Int_t maxBin = projH->FindBin((1.+windowFrac) * maxEntries);
+        Double_t integCharge =  projH->Integral(minBin,maxBin); 
+
         Int_t fitResult = projH->Fit("gaus", "Q0", "", (1.-windowFrac) * maxEntries, (1.+windowFrac) * maxEntries);
+
         if (fitResult != 0) {
-          Error("Analyse", "Error while fitting spectrum for chamber %i, rows %i - %i, pads %i - %i.", chamber, rowLow, rowUp, padLow, padUp);
+          Error("Analyse", "Error while fitting spectrum for chamber %i, rows %i - %i, pads %i - %i, integrated charge %f.", chamber, rowLow, rowUp, padLow, padUp, integCharge);
+          //printf("[ch%i r%i, p%i] entries = %f, maxEntries = %f,  %f\n", chamber, iRow, iPad, entries, maxEntries);
+    
           delete projH;
           continue;
         }
