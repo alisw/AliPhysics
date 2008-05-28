@@ -50,7 +50,7 @@ fCurrentChamberId(-1)
 }
 
 //_____________________________________________________________________________
-TIterator& 
+AliMUONTOTCAStoreIterator& 
 AliMUONTOTCAStoreIterator::operator=(const TIterator& rhs)
 {
   /// Overriden operator= (imposed by Root's declaration of TIterator ?)

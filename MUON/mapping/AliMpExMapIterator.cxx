@@ -37,14 +37,16 @@ ClassImp(AliMpExMapIterator)
 
 //_____________________________________________________________________________
 AliMpExMapIterator::AliMpExMapIterator(const AliMpExMap& theMap)
-: fIterator(new TExMapIter(&(theMap.fMap)))
+: TIterator(),
+  fIterator(new TExMapIter(&(theMap.fMap)))
 {
 /// Standard constructor
 }
 
 //_____________________________________________________________________________
 AliMpExMapIterator::AliMpExMapIterator(const AliMpExMapIterator& rhs)
-: fIterator(rhs.fIterator)
+: TIterator(rhs),
+  fIterator(rhs.fIterator)
 {
 /// Copy constructor
 }
@@ -63,10 +65,10 @@ AliMpExMapIterator::operator=(const AliMpExMapIterator& rhs)
 }
 
 //_____________________________________________________________________________
-TIterator& 
+AliMpExMapIterator& 
 AliMpExMapIterator::operator=(const TIterator& rhs)
 {
-  /// overriden operator= (imposed by Root's definition of TIterator::operator= ?)
+  /// Overriden operator= (imposed by Root's definition of TIterator::operator= ?)
   
   if ( this != &rhs && rhs.IsA() == AliMpExMapIterator::Class() ) 
   {

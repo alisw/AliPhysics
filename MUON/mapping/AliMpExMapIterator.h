@@ -28,7 +28,7 @@ public:
   AliMpExMapIterator(const AliMpExMap& theMap);
   AliMpExMapIterator(const AliMpExMapIterator& rhs);
   AliMpExMapIterator& operator=(const AliMpExMapIterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
+  AliMpExMapIterator& operator=(const TIterator& rhs);
   
   virtual ~AliMpExMapIterator();
   

@@ -41,7 +41,8 @@ private:
   AliMUON2DMapIterator(const AliMUON2DMapIterator& rhs);
   /// Not implemented
   AliMUON2DMapIterator& operator=(const AliMUON2DMapIterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
+  /// Overriden TIterator virtual operator=
+  AliMUON2DMapIterator& operator=(const TIterator& rhs);
 
   const AliMpExMap* fkMap; ///< Top map we iterate upon
   TIterator* fIter1; ///< first iterator

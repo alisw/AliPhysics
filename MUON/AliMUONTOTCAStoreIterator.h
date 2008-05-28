@@ -22,7 +22,7 @@ class AliMUONTOTCAStoreIterator : public TIterator
 public:
   AliMUONTOTCAStoreIterator(const TObjArray* a, Int_t firstChamberId, Int_t lastChamberId);
   AliMUONTOTCAStoreIterator(const AliMUONTOTCAStoreIterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
+  AliMUONTOTCAStoreIterator& operator=(const TIterator& rhs);
   AliMUONTOTCAStoreIterator& operator=(const AliMUONTOTCAStoreIterator& rhs);
   virtual ~AliMUONTOTCAStoreIterator();
     

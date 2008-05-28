@@ -41,7 +41,8 @@ private:
   AliMUONClusterStoreV2Iterator(const AliMUONClusterStoreV2Iterator& rhs);
   /// Not implemented
   AliMUONClusterStoreV2Iterator& operator=(const AliMUONClusterStoreV2Iterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
+  /// Overriden TIterator virtual operator=
+  AliMUONClusterStoreV2Iterator& operator=(const TIterator& rhs);
 
   const AliMUONClusterStoreV2* fStore; ///< store to iterate upon
   Int_t fFirstChamberId; ///< first chamber

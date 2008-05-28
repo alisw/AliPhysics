@@ -27,9 +27,6 @@ public:
                               Int_t firstDetElemId,
                               Int_t lastDetElemId,
                               Int_t cathode=2);
-  AliMUONDigitStoreVImplIterator(const AliMUONDigitStoreVImplIterator& rhs);
-  AliMUONDigitStoreVImplIterator& operator=(const AliMUONDigitStoreVImplIterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
   
   virtual ~AliMUONDigitStoreVImplIterator();
   
@@ -41,6 +38,13 @@ public:
   virtual const TCollection* GetCollection() const { return 0x0; }
   
 private:
+  /// Not implemented
+  AliMUONDigitStoreVImplIterator(const AliMUONDigitStoreVImplIterator& rhs);
+  /// Not implemented
+  AliMUONDigitStoreVImplIterator& operator=(const AliMUONDigitStoreVImplIterator& rhs);
+  /// Overriden TIterator virtual operator=
+  AliMUONDigitStoreVImplIterator& operator=(const TIterator& rhs);
+
   const AliMUONDigitStoreVImpl* fStore; //!< store to iterate upon
   Int_t fFirstDetElemId; //!< first de
   Int_t fLastDetElemId; //!< last de

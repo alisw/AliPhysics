@@ -46,16 +46,12 @@ fIter2(NextIterator())
 }
 
 //_____________________________________________________________________________
-TIterator& 
-AliMUON2DMapIterator::operator=(const TIterator& rhs)
+AliMUON2DMapIterator& 
+AliMUON2DMapIterator::operator=(const TIterator& /*rhs*/)
 {
-  /// overriden operator= (imposed by Root's definition of TIterator::operator= ?)
+  // overriden operator= (imposed by Root's definition of TIterator::operator= ?)
   
-  if ( this != &rhs && rhs.IsA() == AliMUON2DMapIterator::Class() ) 
-  {
-//    const AliMUON2DMapIterator& rhs1 = static_cast<const AliMUON2DMapIterator&>(rhs);
-    AliFatalGeneral("operator=(TIterator&)",""); // as in copy ctor
-  }
+  AliFatalGeneral("operator=(TIterator&)",""); // as in copy ctor
   return *this;
 }
 

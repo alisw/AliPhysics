@@ -21,7 +21,7 @@ class AliMUONDigitStoreV1Iterator : public AliMUONTOTCAStoreIterator
 {
 public:
   AliMUONDigitStoreV1Iterator(const AliMUONDigitStoreV1Iterator& rhs);
-  TIterator& operator=(const TIterator& rhs);
+  AliMUONDigitStoreV1Iterator& operator=(const TIterator& rhs);
   AliMUONDigitStoreV1Iterator& operator=(const AliMUONDigitStoreV1Iterator& rhs);
   AliMUONDigitStoreV1Iterator(TObjArray* a,
                               Int_t firstDetElemId,

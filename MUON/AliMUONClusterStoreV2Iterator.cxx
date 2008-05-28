@@ -55,14 +55,11 @@ AliMUONClusterStoreV2Iterator::AliMUONClusterStoreV2Iterator(const AliMUONCluste
 }
 
 //_____________________________________________________________________________
-TIterator& AliMUONClusterStoreV2Iterator::operator=(const TIterator& /*iter*/)
+AliMUONClusterStoreV2Iterator& 
+AliMUONClusterStoreV2Iterator::operator=(const TIterator& /*iter*/)
 {
-  /// Overriden operator= (imposed by Root's definition of TIterator::operator= ?)
-/*
-  if ( this != &iter && iter.IsA() == AliMUONClusterStoreV2Iterator::Class() ) {
-    (*this) = static_cast<const AliMUONClusterStoreV2Iterator&>(iter);
-  }
-*/
+  // Overriden operator= (imposed by Root's definition of TIterator::operator= ?)
+
   AliFatalGeneral("AliMUONClusterStoreV2Iterator::operator=","reimplement me");
   return *this;
 }

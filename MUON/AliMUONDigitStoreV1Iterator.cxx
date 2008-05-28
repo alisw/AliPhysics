@@ -61,7 +61,7 @@ AliMUONDigitStoreV1Iterator::AliMUONDigitStoreV1Iterator(const AliMUONDigitStore
 }
 
 //_____________________________________________________________________________
-TIterator& 
+AliMUONDigitStoreV1Iterator& 
 AliMUONDigitStoreV1Iterator::operator=(const TIterator& rhs)
 {
   /// overriden assignment operator (imposed by Root's definition of TIterator ?)
@@ -70,10 +70,7 @@ AliMUONDigitStoreV1Iterator::operator=(const TIterator& rhs)
     const AliMUONDigitStoreV1Iterator& rhs1 = 
     static_cast<const AliMUONDigitStoreV1Iterator&>(rhs);
     
-    fArray = rhs1.fArray;
-    fFirstDetElemId = rhs1.fFirstDetElemId;
-    fLastDetElemId = rhs1.fLastDetElemId;
-    fCathode = rhs1.fCathode;
+    AliMUONDigitStoreV1Iterator::operator=(rhs1);
   }
   return *this;
 }

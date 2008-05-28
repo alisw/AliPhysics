@@ -69,34 +69,10 @@ fCurrentCalibParamIndex(-1)
 }
 
 //_____________________________________________________________________________
-AliMUONDigitStoreVImplIterator::AliMUONDigitStoreVImplIterator(const AliMUONDigitStoreVImplIterator& rhs)
-: TIterator(rhs),
-fStore(rhs.fStore),
-fFirstDetElemId(rhs.fFirstDetElemId),
-fLastDetElemId(rhs.fLastDetElemId),
-fCathode(rhs.fCathode),
-fStoreIterator(0x0),
-fCurrentCalibParam(0x0),
-fCurrentCalibParamIndex(-1)
-{
-  /// copy ctor
-  Fatal("AliMUONDigitStoreVImplIterator::copy tor","Not implementeable"); // because there's no clone in TIterator :-(
-}
-
-//_____________________________________________________________________________
 AliMUONDigitStoreVImplIterator&
-AliMUONDigitStoreVImplIterator::operator=(const AliMUONDigitStoreVImplIterator&)
-{
-  /// assignment operator
-  Fatal("AliMUONDigitStoreVImplIterator::operator=","Not implementeable"); // because there's no clone in TIterator :-(
-  return *this;
-}
-
-//_____________________________________________________________________________
-TIterator&
 AliMUONDigitStoreVImplIterator::operator=(const TIterator&)
 {
-  /// overriden assignment operator (imposed by Root's declaration of Titerator ?)
+  // overriden assignment operator (imposed by Root's declaration of Titerator ?)
   Fatal("TIterator::operator=","Not implementeable"); // because there's no clone in TIterator :-(
   return *this;
 }
