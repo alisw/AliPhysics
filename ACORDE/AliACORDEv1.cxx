@@ -1589,7 +1589,7 @@ void AliACORDEv1::StepManager()
   // only in sensitive material
   if (gMC->CurrentVolID(copy) == idScint) {
 
-    printf("Hay particula cargada en el volumen %d \n",idScint);
+    //printf("Hay particula cargada en el volumen %d \n",idScint);
     step  += gMC->TrackStep();
     eloss += gMC->Edep();
     // set all hit variables except eloss which is resetted
@@ -1609,14 +1609,14 @@ void AliACORDEv1::StepManager()
       hits[0]  = (Float_t ) gMC->TrackPid(); 
 
 
-      hits[1] = pos[0]; printf("PosX %f \n",hits[1]);
-      hits[2] = pos[1]; printf("PosY %f \n",hits[2]);
-      hits[3] = pos[2]; printf("PosZ %f \n",hits[3]);
-      hits[4] = gMC->TrackTime();printf("TimeTracking %f \n",hits[4]);
-      hits[5] = mom[0]; printf("MomentoX %f \n",hits[5]);
-      hits[6] = mom[1]; printf("MomentoY %f \n",hits[6]);
-      hits[7] = mom[2]; printf("MomentoZ %f \n",hits[7]);
-      hits[8] = gMC->Etot();printf("EnergiaTotal %f \n",hits[8]);
+      hits[1] = pos[0]; //printf("PosX %f \n",hits[1]);
+      hits[2] = pos[1]; //printf("PosY %f \n",hits[2]);
+      hits[3] = pos[2]; //printf("PosZ %f \n",hits[3]);
+      hits[4] = gMC->TrackTime();//printf("TimeTracking %f \n",hits[4]);
+      hits[5] = mom[0]; //printf("MomentoX %f \n",hits[5]);
+      hits[6] = mom[1]; //printf("MomentoY %f \n",hits[6]);
+      hits[7] = mom[2]; //printf("MomentoZ %f \n",hits[7]);
+      hits[8] = gMC->Etot();//printf("EnergiaTotal %f \n",hits[8]);
       // volume: 
       //  [0] = module number 1-60 (1==>(0-0), 60 (5-9)
       //  [1] = Plastic number: 0 (down) to 1 (up)
@@ -1628,13 +1628,14 @@ void AliACORDEv1::StepManager()
       vol[0] = copyModule;
       // plastic: 0 = down, 1 = up
       vol[1] = copyPlastic - 4 ; // !!!!!!!
+    // vol[1] = copyPlastic;
     } // end if gMC->IsTrackEntering()
 
     // set hit[9] = total energy loss and book hit
     if( gMC->IsTrackExiting() || 
 	gMC->IsTrackStop() || 
 	gMC->IsTrackDisappeared()){
-      hits[9] = eloss;printf("Energia Perdida %f \n",hits[9]);
+      hits[9] = eloss;//printf("Energia Perdida %f \n",hits[9]);
       hits[10] = step;
       eloss = 0.0;
       step = 0.0;
