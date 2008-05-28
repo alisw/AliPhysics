@@ -1,3 +1,30 @@
+
+/*
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTPCcalib");
+  //..
+  //
+  //
+  
+  //Example usage 
+  TFile f("KrHisto.root");
+  AliTPCCalibKr *kr = f.Get("AliTPCCalibKr");
+  
+  kr->ProjectHisto(kr->GetHistoKr(71),"aaa",30,36,30,40)->Draw()
+  //
+  //
+  //
+  MakeTree();
+  //default cuts
+  TCut cutKr("cutKr","entries.fElements<5000&&fitNormChi2.fElements<3&&fitNormChi2.fElements>0.2&&abs(fitRMS.fElements/fitMean.fElements-0.06)<0.025");
+
+AliTPCCalibViewerGUI::ShowGUI("kryptonTree.root")
+
+
+ */
+
+
 void RunAliTPCCalibKrTask(const char* list="KrClusters_250508.txt",Bool_t bProof = kFALSE)
 {
 
@@ -48,4 +75,20 @@ void RunAliTPCCalibKrTask(const char* list="KrClusters_250508.txt",Bool_t bProof
   mgr->PrintStatus();
   if(bProof) mgr->StartAnalysis("proof", chain);
   else mgr->StartAnalysis("local", chain);
+}
+
+
+
+void MakeTree(){
+
+  TFile fpad("calibKr.root");
+  AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;  
+  preprocesor->AddComponent(spectrMean->Clone());
+  preprocesor->AddComponent(spectrRMS->Clone());
+  preprocesor->AddComponent(fitMean->Clone());
+  preprocesor->AddComponent(fitRMS->Clone());
+  preprocesor->AddComponent(fitNormChi2->Clone());
+  preprocesor->AddComponent(entries->Clone());
+  preprocesor->DumpToFile("kryptonTree.root");
+  
 }
