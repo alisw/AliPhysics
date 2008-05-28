@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -22,13 +23,19 @@
 //  INFN Torino
 
 // --- ROOT system ---
+#include "TH1.h"
+#include <TCanvas.h>
 
 // --- AliRoot header files ---
 #include "AliITSQASDDChecker.h"
 #include "AliLog.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliQACheckerBase.h"
+#include "TSystem.h"
+
 
 ClassImp(AliITSQASDDChecker)
-
 //__________________________________________________________________
 AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qac ) 
 {
@@ -39,48 +46,86 @@ AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qa
 }
 
 //__________________________________________________________________
-const Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/, Int_t SubDetOffset) 
+const Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
 {  
-  AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", SubDetOffset));
-  /*
-  TObjArray * list
-  Double_t test = 0.0  ;
-  Int_t count = 0 ;
-
-  if (list->GetEntries() == 0){
-    test = 1. ; // nothing to check
-  }
-  else {
-    TIter next(list) ;
-    TH1 * hdata ;
-    count = 0 ;
-    while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-      if (hdata) {
-        Double_t rv = 0.;
-        if(hdata->GetEntries()>0)rv=1;
-        AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ;
-        count++ ;
-        test += rv ;
-      }
-      else{
-        AliError("Data type cannot be processed") ;
-      }
-
-    }
-    if (count != 0) {
-      if (test==0) {
-        AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
-        test = 0.5;  //upper limit value to set kWARNING flag for a task
-      }
-      else {
-        test /= count ;
-      }
-    }
+  AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
+  AliCDBEntry *QARefObj = AliCDBManager::Instance()->Get("ITS/QARef/SDD");
+  if( !QARefObj){
+    AliError("Calibration object retrieval failed! SDD will not be processed");
+    return 1.;
   }
 
-  AliInfo(Form("Test Result = %f", test)) ;
-  return test ;
-  */
-  return 0.;	
+  Double_t test = 0.0;
+  Int_t offset = 0;
+
+  if(index==0){  //analizing RAWS
+    TH1F *ModPattern = (TH1F*)QARefObj->GetObject();
+    if (list->GetEntries() == 0){
+      test = 1. ; // nothing to check
+    }
+    else {
+      TIter next(list) ;
+      TH1 * hdata ;
+      for(offset =0;offset < fSubDetOffset; offset++){
+	hdata = dynamic_cast<TH1 *>(next());  
+      }
+
+      while ( (hdata = dynamic_cast<TH1 *>(next())) && offset >= fSubDetOffset){
+	if (hdata) {
+	  if(offset == fSubDetOffset){ //ModPattern check
+	    if ( hdata->Integral() == 0 ) {
+	      AliWarning(Form("Spectrum %s is empty", hdata->GetName())) ; 
+	      return 0.5 ;
+	    }
+	    test = hdata->Chi2Test(ModPattern,"UU,p");
+	  }  // ModPattern check
+	}
+	else{
+	  AliError("Data type cannot be processed") ;
+	}
+	offset++;
+      }  //SDD histo
+
+      while ( (hdata = dynamic_cast<TH1 *>(next()))) {
+	offset++;
+      }
+    } //else entries !=0
+  AliInfo(Form("Test Result for RAWS = %f", test)) ;
+  } // if(index==0)
+
+  
+  if( index==2){ //analizing RECP
+    //printf("analizing recp, offset %d \n",fSubDetOffset);
+    if (list->GetEntries() == 0){
+      test = 1. ; // nothing to check
+    }
+    else {
+      TIter next(list) ;
+      TH1 * hdata ;
+      for(offset =0;offset < fSubDetOffset; offset++){
+	hdata = dynamic_cast<TH1 *>(next());    // magari TIter++ ?? 
+	//printf("Skipping histo %s, offset %d \n",hdata->GetName(),fSubDetOffset);
+      }
+        
+      while ( (hdata = dynamic_cast<TH1 *>(next())) && offset >= fSubDetOffset ){
+	if (hdata) { // offset=9 ModPatternRP
+	  //printf("Treating histo %s, offset %d \n",hdata->GetName(),fSubDetOffset);
+	  if( offset == 9 && hdata->GetEntries()>0)test = 0.1;	  
+	}
+	else{
+	  AliError("Data type cannot be processed") ;
+	}
+	offset++;
+      }
+    } // GetEntries loop
+  AliInfo(Form("Test Result for RECP = %f", test)) ; 
+  } // if(index==2) loop
+
+  return test;	
 }
  
+//__________________________________________________________________
+void AliITSQASDDChecker::SetTaskOffset(Int_t TaskOffset)
+{
+  fSubDetOffset = TaskOffset;
+}

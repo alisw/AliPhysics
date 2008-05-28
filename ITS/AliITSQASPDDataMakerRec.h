@@ -13,7 +13,7 @@
 //  M. Nicassio D. Elia INFN Bari March 2008
 //  maria.nicassio@ba.infn.it
 
-/* $Id:$  */
+/* $Id$  */
 
 class TObjArray;
 class AliRawReader;
@@ -35,9 +35,8 @@ public:
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerRec();   // dtor
-  Int_t Raws() const { return fSPDhRaws; }
-  Int_t Recs() const { return fSPDhRecs; }
   Int_t GetOffset() { return fGenOffset; }
+  Int_t GetTaskHisto() { return fSPDhTask; }
 
 private: 
 
@@ -48,9 +47,8 @@ private:
   AliITSQADataMakerRec *fAliITSQADataMakerRec;//pointer to the main ctor
   Bool_t  fkOnline;                           //online (1) or offline (0) use
   Int_t   fLDC;                               //LDC number (0 for offline, 1 to 4 for online) 
-  Int_t   fSPDhRaws;                          //number of booked SPD Raws histograms;
-  Int_t   fSPDhRecs;                          //number of booked SPD Recs histograms;
-  Int_t   fGenOffset;                         // qachecking offset       
+  Int_t   fSPDhTask;                          //number of booked SPD histograms for each task;
+  Int_t   fGenOffset;                         // qachecking offset
 
   AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 

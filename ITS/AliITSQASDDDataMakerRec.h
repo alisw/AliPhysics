@@ -37,9 +37,8 @@ public:
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASDDDataMakerRec(); // dtor
-  Int_t Raws() { return fSDDhRaws; }
-  Int_t Recs() { return fSDDhRecs; }
   Int_t GetOffset() { return fGenOffset; }
+  Int_t GetTaskHisto() { return fSDDhTask; }
 
 private:
 
@@ -56,8 +55,7 @@ private:
   AliITSQADataMakerRec *fAliITSQADataMakerRec;//pointer to the main ctor
   Bool_t  fkOnline;                        //online (1) or offline (0) use
   Int_t   fLDC;                            //LDC number (0 for offline, 1 to 4 for online) 
-  Int_t   fSDDhRaws;                       // number of histo booked for Raws SDD
-  Int_t   fSDDhRecs;                       // number of histo booked for Recs SDD
+  Int_t   fSDDhTask;                       // number of histo booked for each Task SDD
   Int_t   fGenOffset;                         // qachecking offset       
   AliITSDDLModuleMapSDD  *fDDLModuleMap;// SDD Detector configuration for the decoding
 /*

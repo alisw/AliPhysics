@@ -18,11 +18,12 @@
 // *****************************************
 //  Checks the quality assurance 
 //  by comparing with reference data
-//  W. Ferrarese Oct 2007
+//  W.Ferrarese  P.Cerello  Mag 2008
 //  INFN Torino
 
 // --- ROOT system ---
 #include "TH1.h"
+#include <Riostream.h>
 
 // --- AliRoot header files ---
 #include "AliITSQAChecker.h"
@@ -70,33 +71,43 @@ AliITSQAChecker& AliITSQAChecker::operator = (const AliITSQAChecker& qac )
 //____________________________________________________________________________
 const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 {
-
+  
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
   Double_t spdCheck, sddCheck, ssdCheck;
   Double_t retval = 0.;
   if(fDet == 0 || fDet == 1) {
     AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
-    if(!fSPDChecker) fSPDChecker = new AliITSQASPDChecker();
-    spdCheck = fSPDChecker->Check(index, list, fSPDOffset);
+    if(!fSPDChecker) {
+      fSPDChecker = new AliITSQASPDChecker();
+    }
+    fSPDChecker->SetTaskOffset(fSPDOffset);
+    spdCheck = fSPDChecker->Check(index, list);
     if(spdCheck>retval)retval = spdCheck;
   }
   if(fDet == 0 || fDet == 2) {
     AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
-    if(!fSDDChecker) fSDDChecker = new AliITSQASDDChecker();
-    sddCheck = fSDDChecker->Check(index, list, fSDDOffset);
+    if(!fSDDChecker) {
+      fSDDChecker = new AliITSQASDDChecker();
+    }
+    fSDDChecker->SetTaskOffset(fSDDOffset);
+    sddCheck = fSDDChecker->Check(index, list);
     if(sddCheck>retval)retval = sddCheck;
-  }
+ }
   if(fDet == 0 || fDet == 3) {
     AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
-    if(!fSSDChecker) fSSDChecker = new AliITSQASSDChecker();
-    //AliInfo(Form("Number of monitored objects SSD: %d", list->GetEntries()));	     
-    ssdCheck = fSSDChecker->Check(index, list, fSSDOffset);
-    if(ssdCheck>retval)retval = ssdCheck;
-  }
+    if(!fSSDChecker) {
+      fSSDChecker = new AliITSQASSDChecker();
+      AliInfo(Form("Number of monitored objects SSD: %d", list->GetEntries()));
+    }
+    fSSDChecker->SetTaskOffset(fSSDOffset);
+    ssdCheck = fSSDChecker->Check(index, list);
+    if(ssdCheck>retval)retval = ssdCheck;  }
   // here merging part for common ITS QA result
   // 
+  AliDebug(1,Form("AliITSQAChecker::QAChecker returned value is %f \n",retval));
   return retval;
+  
 }
 
 

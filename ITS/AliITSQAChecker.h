@@ -10,7 +10,7 @@
 //  Checks the quality assurance. 
 //  By comparing with reference data
 //  INFN Torino
-//  W. Ferrarese Oct 2007
+//  W.Ferrarese  P.Cerello  Mag 2008
 //
 
 
@@ -35,7 +35,6 @@ friend class AliITSQASSDChecker;
 
 public:
   AliITSQAChecker(Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0) ;         // ctor
-  //AliITSQAChecker(Int_t SPDoffset, Int_t SDDoffset, Int_t SSDoffset, Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0) ;
   AliITSQAChecker(const AliITSQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fkOnline(kFALSE), fDet(0), fLDC(0), fSPDOffset(0), fSDDOffset(0), fSSDOffset(0), fSPDChecker(0), fSDDChecker(0), fSSDChecker(0) {;} // cpy ctor   
   AliITSQAChecker& operator = (const AliITSQAChecker& qac) ; //operator =
   virtual ~AliITSQAChecker() {;} // dtor
@@ -48,9 +47,8 @@ public:
   virtual void SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset);
 
  protected:
-
+  virtual const Double_t Check(AliQA::ALITASK_t /*index*/){return 0.5;}
   virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list ) ;
-  virtual const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/, Int_t /*SubDetOffset*/) {return 0.;};
 
 private:
 

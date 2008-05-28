@@ -38,17 +38,13 @@ public:
   virtual void MakeDigits(TTree * digits);
   virtual void MakeSDigits(TTree * sdigits);
   virtual void MakeHits(TTree * hits);
-  const Int_t Digits() { return fSSDhDigits; }
-  const Int_t SDigits() { return fSSDhSDigits; }
-  const Int_t Hits() { return fSSDhHits; }
   Int_t GetOffset() { return fGenOffset; }
+  Int_t GetTaskHisto() { return fSSDhTask; }
 
 private:
 
   AliITSQADataMakerSim *fAliITSQADataMakerSim; //pointer to the main ctor
-  Int_t   fSSDhDigits;    //number of booked SSD Digits histograms;
-  Int_t   fSSDhSDigits;   //number of booked SSD SDigits histograms;
-  Int_t   fSSDhHits;      //number of booked SSD Hits histograms;
+  Int_t   fSSDhTask;    //number of booked SSD histograms for each task;
   Int_t   fGenOffset;                         // qachecking offset
 
   static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips

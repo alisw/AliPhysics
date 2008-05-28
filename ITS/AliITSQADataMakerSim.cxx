@@ -121,7 +121,8 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   
   AliQAChecker *qac = AliQAChecker::Instance();
   AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
-  qacb->SetTaskOffset(fSPDDataMaker->GetOffset(), fSDDDataMaker->GetOffset(), fSSDDataMaker->GetOffset()); //Setting the offset for the QAChecker list
+  if(fSubDetector == 0 )
+    qacb->SetTaskOffset(fSPDDataMaker->GetOffset(), fSDDDataMaker->GetOffset(), fSSDDataMaker->GetOffset()); //Setting the offset for the QAChecker list
   qac->Run( AliQA::kITS , task, list);  //temporary skipping the checking
 }
 

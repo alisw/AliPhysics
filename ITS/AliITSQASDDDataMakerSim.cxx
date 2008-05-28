@@ -51,9 +51,7 @@ ClassImp(AliITSQASDDDataMakerSim)
 AliITSQASDDDataMakerSim::AliITSQASDDDataMakerSim(AliITSQADataMakerSim *aliITSQADataMakerSim) :
 TObject(),
 fAliITSQADataMakerSim(aliITSQADataMakerSim),
-fSDDhDigits(0),
-fSDDhSDigits(0),
-fSDDhHits(0),
+fSDDhTask(0),
 fGenOffset(0)
 {
   //ctor used to discriminate OnLine-Offline analysis   
@@ -63,9 +61,7 @@ fGenOffset(0)
 AliITSQASDDDataMakerSim::AliITSQASDDDataMakerSim(const AliITSQASDDDataMakerSim& qadm) :
 TObject(),
 fAliITSQADataMakerSim(qadm.fAliITSQADataMakerSim),
-fSDDhDigits(qadm.fSDDhDigits),
-fSDDhSDigits(qadm.fSDDhSDigits),
-fSDDhHits(qadm.fSDDhHits),
+fSDDhTask(qadm.fSDDhTask),
 fGenOffset(qadm.fGenOffset)
 {
   //copy ctor 
@@ -102,28 +98,28 @@ void AliITSQASDDDataMakerSim::InitDigits()
 { 
   // Initialization for DIGIT data - SDD -  
   fGenOffset = (fAliITSQADataMakerSim->fDigitsQAList)->GetEntries();
-  //fSDDhDigits must be incremented by one unit every time a histogram is ADDED to the QA List
+  //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   TH1F* h0=new TH1F("SDD DIGITS Module Pattern","SDD DIGITS Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h0,fGenOffset);
-  fSDDhDigits ++;
+  fSDDhTask ++;
   TH1F* h1=new TH1F("SDD Anode Distribution","DIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h1,1+fGenOffset);
-  fSDDhDigits ++;
+  fSDDhTask ++;
   TH1F* h2=new TH1F("SDD Tbin Distribution","DIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h2,2+fGenOffset);
-  fSDDhDigits ++;
+  fSDDhTask ++;
   TH1F* h3=new TH1F("SDD ADC Counts Distribution","DIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h3,3+fGenOffset);
-  fSDDhDigits ++;
-  AliDebug(1,Form("%d SDD Digits histograms booked\n",fSDDhDigits));
+  fSDDhTask ++;
+  AliDebug(1,Form("%d SDD Digits histograms booked\n",fSDDhTask));
 }
 
 //____________________________________________________________________________
@@ -156,29 +152,29 @@ void AliITSQASDDDataMakerSim::InitSDigits()
 { 
   // Initialization for SDIGIT data - SDD -
   fGenOffset = (fAliITSQADataMakerSim->fSDigitsQAList)->GetEntries();
-  //fSDDhSDigits must be incremented by one unit every time a histogram is ADDED to the QA List
+  //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   TH1F* h0=new TH1F("SDD SDIGITS Module Pattern","SDIGITS SDD Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h0,fGenOffset);
-  fSDDhSDigits ++;
+  fSDDhTask ++;
   TH1F* h1=new TH1F("SDD Anode Distribution","SDIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h1,1+fGenOffset);
-  fSDDhSDigits ++;
+  fSDDhTask ++;
   TH1F* h2=new TH1F("SDD Tbin Distribution","SDIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h2,2+fGenOffset);
-  fSDDhSDigits ++;
+  fSDDhTask ++;
   TH1F* h3=new TH1F("SDD ADC Counts Distribution","SDIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h3,3+fGenOffset);
-  fSDDhSDigits ++;
+  fSDDhTask ++;
 
-  AliDebug(1,Form("%d SDD SDigits histograms booked\n",fSDDhSDigits));
+  AliDebug(1,Form("%d SDD SDigits histograms booked\n",fSDDhTask));
 }
 
 //____________________________________________________________________________
@@ -227,30 +223,30 @@ void AliITSQASDDDataMakerSim::InitHits()
 { 
   // Initialization for HITS data - SDD -
   fGenOffset = (fAliITSQADataMakerSim->fHitsQAList)->GetEntries();
-  //fSDDhHits must be incremented by one unit every time a histogram is ADDED to the QA List
+  //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   //printf("AliITSQASDDDataMakerSim::InitHits called \n");
   TH1F *h0=new TH1F("SDD HITS Module Pattern","SDD HITS Module Pattern",260,239.5,499.5);  
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# HITS");
   fAliITSQADataMakerSim->Add2HitsList(h0,fGenOffset);
-  fSDDhHits ++;
+  fSDDhTask ++;
   TH1F *h1=new TH1F("SDD HIT lenght along local Y Coord","HIT lenght along local Y Coord",200,0.,350.);
   h1->GetXaxis()->SetTitle("HIT lenght (um)");
   h1->GetYaxis()->SetTitle("# HITS");
   fAliITSQADataMakerSim->Add2HitsList(h1,1+fGenOffset);
-  fSDDhHits ++;
+  fSDDhTask ++;
   TH1F *h2=new TH1F("SDD HIT lenght along local Y Coord - Zoom","SDD HIT lenght along local Y Coord - Zoom",200,250.,350.);
   h2->GetXaxis()->SetTitle("HIT lenght (um)");
   h2->GetYaxis()->SetTitle("# HITS");
   fAliITSQADataMakerSim->Add2HitsList(h2,2+fGenOffset);
-  fSDDhHits ++;
+  fSDDhTask ++;
   TH1F *h3=new TH1F("SDD Deposited Energy Distribution (loc Y > 200um)","SDD HITS Deposited Energy Distribution (loc Y > 200um)",200,0.,350.);
   h3->GetXaxis()->SetTitle("ADC counts???");
   h3->GetYaxis()->SetTitle("# HITS");
   fAliITSQADataMakerSim->Add2HitsList(h3,3+fGenOffset);
-  fSDDhHits ++;
-  //printf("%d SDD Hits histograms booked\n",fSDDhHits);
-  AliDebug(1,Form("%d SDD Hits histograms booked\n",fSDDhHits));
+  fSDDhTask ++;
+  //printf("%d SDD Hits histograms booked\n",fSDDhTask);
+  AliDebug(1,Form("%d SDD Hits histograms booked\n",fSDDhTask));
 }
 
 //____________________________________________________________________________

@@ -40,19 +40,15 @@ public:
   virtual void MakeDigits(TTree * digits);
   virtual void MakeSDigits(TTree * sdigits);
   virtual void MakeHits(TTree * hits);
-  const Int_t Digits() { return fSDDhDigits; }
-  const Int_t SDigits() { return fSDDhSDigits; }
-  const Int_t Hits() { return fSDDhHits; }
   Int_t GetOffset() { return fGenOffset; }
+  Int_t GetTaskHisto() { return fSDDhTask; }
 
 private:
 
   AliITSQADataMakerSim *fAliITSQADataMakerSim;//pointer to the main ctor
-  Int_t   fSDDhDigits;                        //number of booked SDD Digits histograms;
-  Int_t   fSDDhSDigits;                       //number of booked SDD SDigits histograms;
-  Int_t   fSDDhHits;                          //number of booked SDD Hits histograms;
+  Int_t   fSDDhTask;                        //number of booked SDD histograms for each task;
   Int_t   fGenOffset;                         // qachecking offset
-  ClassDef(AliITSQASDDDataMakerSim,1)      // description 
+  ClassDef(AliITSQASDDDataMakerSim,2)      // description 
 
 };
 

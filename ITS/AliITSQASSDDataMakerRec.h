@@ -3,7 +3,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*  $Id:$  */
+/*  $Id$  */
 
 //
 //  Checks the quality assurance. 
@@ -38,10 +38,8 @@ public:
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASSDDataMakerRec(); // dtor
-  Int_t Raws() { return fSSDhRaws; }
-  Int_t Recs() { return fSSDhRecs; }
-  Int_t ESDs() { return fSSDhESDs; }
   Int_t GetOffset() { return fGenOffset; }
+  Int_t GetTaskHisto() { return fSSDhTask; }
 
  private:
 
@@ -63,10 +61,8 @@ public:
   Bool_t  fkOnline;                             //online (1) or offline (0) use
   Int_t   fLDC;                                 //LDC number (0 for offline, 1 to 4 for online) 
   Int_t   fSSDRawsOffset;                       // SSD raw data plot offset
-  Int_t   fSSDhRaws;                            // number of histo booked for Raws SSD
-  Int_t   fSSDhRecs;                            // number of histo booked for Recs SSD
-  Int_t   fSSDhESDs;                            // number of histo booked for ESDs SSD
-  Int_t   fGenOffset;                           // qachecking offset       
+  Int_t   fSSDhTask;                            // number of histo booked for each SSD task
+  Int_t   fGenOffset;                           // qachecking offset
   TH1D *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD
   ClassDef(AliITSQASSDDataMakerRec,2)           // description 
 

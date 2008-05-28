@@ -27,14 +27,17 @@ class AliITSLoader ;
 class AliITSQASSDChecker: public TObject {
 
 public:
-  AliITSQASSDChecker() {;}          // ctor
+  AliITSQASSDChecker():fSubDetOffset(0) {;}          // ctor
   AliITSQASSDChecker& operator = (const AliITSQASSDChecker& qac) ; //operator =
   virtual ~AliITSQASSDChecker() {;} // dtor
-  const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/, Int_t SubDetOffset);
+  const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/);
+  void SetTaskOffset(Int_t TaskOffset);
+
 
 private:
   
-  AliITSQASSDChecker(const AliITSQASSDChecker& /*qac*/):TObject(){;} // cpy ctor   
+  AliITSQASSDChecker(const AliITSQASSDChecker& /*qac*/):TObject(),fSubDetOffset(0) {;} // cpy ctor   
+  Int_t fSubDetOffset;            // checking operation starting point
   ClassDef(AliITSQASSDChecker,1)  // description 
 
 };

@@ -31,7 +31,6 @@
 #include "AliLog.h"
 
 ClassImp(AliITSQASSDChecker)
-
 //__________________________________________________________________
 AliITSQASSDChecker& AliITSQASSDChecker::operator = (const AliITSQASSDChecker& qac ) 
 {
@@ -42,8 +41,8 @@ AliITSQASSDChecker& AliITSQASSDChecker::operator = (const AliITSQASSDChecker& qa
 }
 
 //__________________________________________________________________
-const Double_t AliITSQASSDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list, Int_t SubDetOffset) {  
-  AliDebug(1,Form("AliITSQASSDChecker called with offset: %d\n", SubDetOffset));
+const Double_t AliITSQASSDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) {  
+  AliDebug(1,Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset));
   
   Double_t test = 0.0  ;
   Int_t count = 0 ;
@@ -89,4 +88,8 @@ const Double_t AliITSQASSDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray *
   
 }
 
- 
+//__________________________________________________________________
+void AliITSQASSDChecker::SetTaskOffset(Int_t TaskOffset)
+{
+  fSubDetOffset = TaskOffset;
+}
