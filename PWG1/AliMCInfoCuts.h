@@ -45,7 +45,8 @@ public:
   void Init();
 
   // check MC tracks
-  Bool_t IsSelected(TObject *) {return kTRUE;}
+  virtual Bool_t IsSelected(TObject *) {return kTRUE;}
+  virtual Bool_t IsSelected(TList *) {return kTRUE;}
 
   // add particle to array 
   void AddPdgParticle(Int_t idx=-1, Int_t pdgcode=0) const;

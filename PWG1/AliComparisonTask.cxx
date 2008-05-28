@@ -60,7 +60,7 @@ using namespace std;
 
 ClassImp(AliComparisonTask)
 
-Int_t AliComparisonTask::evtNumber = 0;
+Int_t AliComparisonTask::fEvtNumber = 0;
 
 //_____________________________________________________________________________
 AliComparisonTask::AliComparisonTask(const char *name) 
@@ -69,7 +69,7 @@ AliComparisonTask::AliComparisonTask(const char *name)
   , fInfoMC(0)
   , fInfoRC(0)
   , fOutput(0)
-  , pitList(0)
+  , fPitList(0)
   , fCompList(0)
 {
   // Constructor
@@ -134,7 +134,7 @@ void AliComparisonTask::CreateOutputObjects()
   // create output list
   fOutput = new TList;
   fOutput->SetOwner();
-  pitList = fOutput->MakeIterator();
+  fPitList = fOutput->MakeIterator();
 
   AliComparisonObject *pObj=0;
   Int_t count=0;
@@ -181,19 +181,19 @@ void AliComparisonTask::Exec(Option_t *)
   }
 
   // Process comparison
-  Bool_t status = ReadEntry(evtNumber);
+  Bool_t status = ReadEntry(fEvtNumber);
   if(status == kTRUE) 
   {
-    pitList->Reset();
-    while(( pObj = (AliComparisonObject *)pitList->Next()) != NULL) {
+    fPitList->Reset();
+    while(( pObj = (AliComparisonObject *)fPitList->Next()) != NULL) {
        pObj->Exec(fInfoMC,fInfoRC);
     }
   }
 
-  if( !( evtNumber % 10000) ) { 
-    cout << evtNumber << endl;
+  if( !( fEvtNumber % 10000) ) { 
+    cout << fEvtNumber << endl;
   }
-  evtNumber++;
+  fEvtNumber++;
 
   // Post output data.
   PostData(0, fOutput);
