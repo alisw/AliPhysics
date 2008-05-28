@@ -19,7 +19,7 @@ public:
 TEveStraightLineSet* esd_spd_tracklets(Float_t rad=8)
 {
   AliESDEvent         * esd = AliEveEventManager::AssertESD();
-  AliESDVertex   * pv  = esd->GetPrimaryVertex();
+  AliESDVertex   * pv  = esd->GetPrimaryVertexSPD();
   AliMultiplicity* mul = esd->GetMultiplicity();
 
   Double_t pvx[3], pve[3];
