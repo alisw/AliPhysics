@@ -1138,6 +1138,8 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   fOutputBufferSize=size;
   fOutputBufferFilled=0;
   fOutputBlocks.clear();
+  outputBlockCnt=0;
+  outputBlocks=NULL;
 
   bool bSkipDataProcessing=false;
   // find special events
@@ -1268,8 +1270,6 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     if (iResult<0) {
       HLTFatal("component %s (%p): can not convert output block descriptor list", GetComponentID(), this);
     }
-  } else {
-    size=0;
   }
   if (iResult<0 || bSkipDataProcessing) {
     outputBlockCnt=0;
@@ -1278,6 +1278,10 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   CleanupInputObjects();
   if (iResult>=0 && !bSkipDataProcessing) {
     IncrementEventCounter();
+  }
+  if (outputBlockCnt==0) {
+    // no output blocks, set size to 0
+    size=0;
   }
   return iResult;
 }
