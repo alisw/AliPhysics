@@ -640,6 +640,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!AliGeomManager::GetGeometry()) {
     // Initialize the geometry manager
     AliGeomManager::LoadGeometry("geometry.root");
+    if(!AliGeomManager::CheckSymNamesLUT())
+	AliFatalClass("Current loaded geometry differs in the definition of symbolic names!");
     if (!AliGeomManager::GetGeometry()) if (fStopOnError) return kFALSE;
     // Misalign geometry
     if(!MisalignGeometry()) if (fStopOnError) return kFALSE;
@@ -833,6 +835,8 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Misalign geometry
 #if ROOT_VERSION_CODE < 331527
   AliGeomManager::SetGeometry(gGeoManager);
+  if(!AliGeomManager::CheckSymNamesLUT())
+    AliFatalClass("Current loaded geometry differs in the definition of symbolic names!");
   MisalignGeometry(runLoader);
 #endif
 

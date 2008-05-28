@@ -70,35 +70,7 @@ const char* AliGeomManager::fgLayerName[kLastLayer - kFirstLayer] = {
   "EMCAL layer"
 };
 
-TString* AliGeomManager::fgSymName[kLastLayer - kFirstLayer] = {
-  0x0,0x0,
-  0x0,0x0,
-  0x0,0x0,
-  0x0,0x0,
-  0x0,0x0,0x0,
-  0x0,0x0,0x0,
-  0x0,
-  0x0,0x0,
-  0x0,
-  0x0,
-  0x0
-};
-
 TGeoPNEntry** AliGeomManager::fgPNEntry[kLastLayer - kFirstLayer] = {
-  0x0,0x0,
-  0x0,0x0,
-  0x0,0x0,
-  0x0,0x0,
-  0x0,0x0,0x0,
-  0x0,0x0,0x0,
-  0x0,
-  0x0,0x0,
-  0x0,
-  0x0,
-  0x0
-};
-
-TGeoHMatrix** AliGeomManager::fgOrigMatrix[kLastLayer - kFirstLayer] = {
   0x0,0x0,
   0x0,0x0,
   0x0,0x0,
@@ -155,9 +127,7 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
 		      AliCDBManager::Instance()->GetURI("Geometry/Align/Data")));
   }
 
-  InitSymNamesLUT();
   InitPNEntriesLUT();
-  InitOrigMatricesLUT();
 }
 
 //_____________________________________________________________________________
@@ -167,10 +137,7 @@ void AliGeomManager::SetGeometry(TGeoManager *geom)
   if (!geom) AliFatalClass("Pointer to the active geometry is 0x0!");
 
   fgGeometry = geom;
-
-  InitSymNamesLUT();
   InitPNEntriesLUT();
-  InitOrigMatricesLUT();
 }
 
 //_____________________________________________________________________________
@@ -478,29 +445,28 @@ const char* AliGeomManager::SymName(ELayerID layerId, Int_t modId)
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
   }
-  InitSymNamesLUT();
 
-  return fgSymName[layerId-kFirstLayer][modId].Data();
+  return fgPNEntry[layerId-kFirstLayer][modId]->GetName();
 }
 
 //_____________________________________________________________________________
-void AliGeomManager::InitSymNamesLUT()
+Bool_t AliGeomManager::CheckSymNamesLUT()
 {
-  // Initialize the look-up table which associates the unique
-  // numerical identity of each alignable volume to the 
-  // corresponding symbolic volume name
-  // The LUTs are static; they are created at the creation of the
-  // AliGeomManager instance and recreated if the geometry has changed
-  //
-
-  if(fgSymName[0]) return;
-
-  for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
-    if(!fgSymName[iLayer]) fgSymName[iLayer]=new TString[fgLayerSize[iLayer]];
-  }
+  // Check the look-up table which associates the unique numerical identity of
+  // each alignable volume to the corresponding symbolic volume name.
+  // The LUT is now hold inside the geometry and handled by TGeo.
+  // The method is meant to be launched when loading a geometry to verify that
+  // no changes in the symbolic names have been introduced, which would prevent
+  // backward compatibility with alignment objects.
+  // To accept both complete and partial geometry, this method skips the check
+  // for TRD and TOF volumes which are missing in the partial geometry.
+  // 
 
   TString symname;
-  Int_t modnum; // in the following, set it to 0 at the start of each layer
+  const char* sname;
+  TGeoPNEntry* pne = 0x0;
+  Int_t uid; // global unique identity
+  Int_t modnum; // unique id inside layer; in the following, set it to 0 at the start of each layer
 
   /*********************       ITS layers  ***********************/
   TString strSPD = "ITS/SPD";
@@ -539,8 +505,20 @@ void AliGeomManager::InitSymNamesLUT()
 	    symname = strEntryName3;
 	    symname += strLadder;
 	    symname += cLad+cHS*2;
-	    fgSymName[kSPD1-kFirstLayer][modnum] = symname.Data();
-	    modnum++;
+	    uid = LayerToVolUID(kSPD1,modnum++);
+	    pne = fgGeometry->GetAlignableEntryByUID(uid);
+	    if(!pne)
+	    {
+	      AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	      return kFALSE;
+	    }
+	    sname = pne->GetName();
+	    if(symname.CompareTo(sname)) 
+	    {
+	      AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d."
+		    "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	      return kFALSE;
+	    }
 	  }
 	}
       }
@@ -571,69 +549,25 @@ void AliGeomManager::InitSymNamesLUT()
 	    symname = strEntryName3;
 	    symname += strLadder;
 	    symname += cLad+cHS*2;
-	    fgSymName[kSPD2-kFirstLayer][modnum] = symname.Data();
-	    modnum++;
+	    uid = LayerToVolUID(kSPD2,modnum++);
+	    pne = fgGeometry->GetAlignableEntryByUID(uid);
+	    if(!pne)
+	    {
+	      AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	      return kFALSE;
+	    }
+	    sname = pne->GetName();
+	    if(symname.CompareTo(sname)) 
+	    {
+	      AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d."
+		    "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	      return kFALSE;
+	    }
 	  }
 	}
       }
     }
   }
-
-//   /*********************       SPD layer1  ***********************/
-//   {
-//     modnum = 0;
-
-//     for(Int_t c1 = 1; c1<=10; c1++){
-//       strEntryName1 = strSPD;
-//       strEntryName1 += 0;
-//       strEntryName1 += strSector;
-//       strEntryName1 += (c1-1);
-//       for(Int_t c2 =1; c2<=2; c2++){
-// 	strEntryName2 = strEntryName1;
-// 	strEntryName2 += strStave;
-// 	strEntryName2 += (c2-1);
-// 	for(Int_t c3 =1; c3<=4; c3++){
-// 	  symname = strEntryName2;
-// 	  symname += strLadder;
-// 	  symname += (c3-1);
-// 	  fgSymName[kSPD1-kFirstLayer][modnum] = symname.Data();
-// 	  modnum++;
-// 	}
-//       }
-//     }
-//   }
-  
-//   /*********************       SPD layer2  ***********************/
-//   {
-//     modnum = 0;
-
-//     for(Int_t c1 = 1; c1<=10; c1++){
-//       strEntryName1 = strSPD;
-//       strEntryName1 += 1;
-//       strEntryName1 += strSector;
-//       strEntryName1 += (c1-1);
-//       for(Int_t c2 =1; c2<=4; c2++){
-// 	strEntryName2 = strEntryName1;
-// 	strEntryName2 += strStave;
-// 	strEntryName2 += (c2-1);
-// 	for(Int_t c3 =1; c3<=4; c3++){
-// 	  symname = strEntryName2;
-// 	  symname += strLadder;
-// 	  symname += (c3-1);
-// 	  fgSymName[kSPD2-kFirstLayer][modnum] = symname.Data();
-// 	  modnum++;
-// 	}
-//       }
-//     }
-//   }
-
-
-
-
-
-
-
-
 
   /*********************       SDD layer1  ***********************/
   {
@@ -648,8 +582,20 @@ void AliGeomManager::InitSymNamesLUT()
 	symname = strEntryName1;
 	symname += strSensor;
 	symname += (c2-1);
-	fgSymName[kSDD1-kFirstLayer][modnum] = symname.Data();
-	modnum++;
+	uid = LayerToVolUID(kSDD1,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
   }
@@ -667,8 +613,20 @@ void AliGeomManager::InitSymNamesLUT()
 	symname = strEntryName1;
 	symname += strSensor;
 	symname += (c2-1);
-	fgSymName[kSDD2-kFirstLayer][modnum] = symname.Data();
-	modnum++;
+	uid = LayerToVolUID(kSDD2,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
   }
@@ -686,8 +644,20 @@ void AliGeomManager::InitSymNamesLUT()
 	symname = strEntryName1;
 	symname += strSensor;
 	symname += (c2-1);
-	fgSymName[kSSD1-kFirstLayer][modnum] = symname.Data();
-	modnum++;
+	uid = LayerToVolUID(kSSD1,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
   }
@@ -705,8 +675,20 @@ void AliGeomManager::InitSymNamesLUT()
 	symname = strEntryName1;
 	symname += strSensor;
 	symname += (c2-1);
-	fgSymName[kSSD2-kFirstLayer][modnum] = symname.Data();
-	modnum++;
+	uid = LayerToVolUID(kSSD2,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
   }
@@ -726,15 +708,39 @@ void AliGeomManager::InitSymNamesLUT()
       symname = sAsector;
       symname += cnt;
       symname += sInner;
-      fgSymName[kTPC1-kFirstLayer][modnum] = symname.Data();
-      modnum++;
+      uid = LayerToVolUID(kTPC1,modnum++);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
     for(Int_t cnt=1; cnt<=18; cnt++){
       symname = sCsector;
       symname += cnt;
       symname += sInner;
-      fgSymName[kTPC1-kFirstLayer][modnum] = symname.Data();
-      modnum++;
+      uid = LayerToVolUID(kTPC1,modnum++);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
   }
 
@@ -746,15 +752,39 @@ void AliGeomManager::InitSymNamesLUT()
       symname = sAsector;
       symname += cnt;
       symname += sOuter;
-      fgSymName[kTPC2-kFirstLayer][modnum] = symname.Data();
-      modnum++;
+      uid = LayerToVolUID(kTPC2,modnum++);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
     for(Int_t cnt=1; cnt<=18; cnt++){
       symname = sCsector;
       symname += cnt;
       symname += sOuter;
-      fgSymName[kTPC2-kFirstLayer][modnum] = symname.Data();
-      modnum++;
+      uid = LayerToVolUID(kTPC2,modnum++);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
   }    
 
@@ -767,6 +797,8 @@ void AliGeomManager::InitSymNamesLUT()
     Int_t nstrC=19;
     Int_t nSectors=18;
     Int_t nStrips=nstrA+2*nstrB+2*nstrC;
+
+    Int_t activeSectors[18]={0,0,1,1,1,0,1,1,0,0,0,-1,-1,0,1,1,1,1};// as in config-file for partial geometry
     
     TString snSM  = "TOF/sm";
     TString snSTRIP = "/strip";
@@ -777,8 +809,22 @@ void AliGeomManager::InitSymNamesLUT()
 	symname += Form("%02d",isect);
 	symname += snSTRIP;
 	symname += Form("%02d",istr);
-	fgSymName[kTOF-kFirstLayer][modnum] = symname.Data();	
-	modnum++;
+	uid = LayerToVolUID(kTOF,modnum++);
+	if(!activeSectors[isect]) continue; // taking possible missing TOF sectors (partial geometry) into account
+	if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue; //taking holes into account
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
   } 
@@ -790,7 +836,20 @@ void AliGeomManager::InitSymNamesLUT()
     for (modnum=0; modnum < 7; modnum++) {
       symname = str;
       symname += modnum;
-      fgSymName[kHMPID-kFirstLayer][modnum] = symname.Data();
+      uid = LayerToVolUID(kHMPID,modnum);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
   }
 
@@ -799,6 +858,8 @@ void AliGeomManager::InitSymNamesLUT()
   {
     Int_t arTRDlayId[6] = {kTRD1, kTRD2, kTRD3, kTRD4, kTRD5, kTRD6};
 
+    Int_t activeSectors[18]={0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0};// as in config-file for partial geometry
+    
     TString snStr  = "TRD/sm";
     TString snApp1 = "/st";
     TString snApp2 = "/pl";
@@ -813,8 +874,22 @@ void AliGeomManager::InitSymNamesLUT()
 	  symname += icham;
 	  symname += snApp2;
 	  symname += layer;
-	  fgSymName[arTRDlayId[layer]-kFirstLayer][modnum] = symname.Data();
-	  modnum++;
+	  uid = LayerToVolUID(arTRDlayId[layer],modnum++);
+	  if(!activeSectors[isect]) continue;
+	  if ((isect==13 || isect==14 || isect==15) && icham==2) continue; //keeping holes into account
+	  pne = fgGeometry->GetAlignableEntryByUID(uid);
+	  if(!pne)
+	  {
+	    AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	    return kFALSE;
+	  }
+	  sname = pne->GetName();
+	  if(symname.CompareTo(sname)) 
+	  {
+	    AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		  "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	    return kFALSE;
+	  }
 	}
       }
     }
@@ -829,7 +904,20 @@ void AliGeomManager::InitSymNamesLUT()
       symname = str;
       symname += iModule;
       modnum = iModule-1;
-      fgSymName[kPHOS1-kFirstLayer][modnum] = symname.Data();
+      uid = LayerToVolUID(kPHOS1,modnum);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
   }
 
@@ -843,7 +931,20 @@ void AliGeomManager::InitSymNamesLUT()
       symname += iModule;
       symname += "/CPV";
       modnum = iModule-1;
-      fgSymName[kPHOS2-kFirstLayer][modnum] = symname.Data();
+      uid = LayerToVolUID(kPHOS2,modnum);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
   }
 
@@ -860,9 +961,24 @@ void AliGeomManager::InitSymNamesLUT()
 	symname += iModule-10;
       }
       modnum = iModule-1;
-      fgSymName[kEMCAL-kFirstLayer][modnum] = symname.Data();
+      uid = LayerToVolUID(kEMCAL,modnum);
+      pne = fgGeometry->GetAlignableEntryByUID(uid);
+      if(!pne)
+      {
+	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	return kFALSE;
+      }
+      sname = pne->GetName();
+      if(symname.CompareTo(sname)) 
+      {
+	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	return kFALSE;
+      }
     }
   }
+  
+  return kTRUE;
 
 }
 
@@ -885,35 +1001,9 @@ void AliGeomManager::InitPNEntriesLUT()
   for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
     fgPNEntry[iLayer] = new TGeoPNEntry*[fgLayerSize[iLayer]];
     for(Int_t modnum=0; modnum<fgLayerSize[iLayer]; modnum++){
-      fgPNEntry[iLayer][modnum] = fgGeometry->GetAlignableEntry(fgSymName[iLayer][modnum]);
+      fgPNEntry[iLayer][modnum] = fgGeometry->GetAlignableEntryByUID(LayerToVolUID(iLayer+1,modnum));
     }
   }
-}
-
-//_____________________________________________________________________________
-void AliGeomManager::InitOrigMatricesLUT()
-{
-  // Initialize the storage for the look-up table with the original global
-  // matrices for each alignable volume.
-  // The LUTs are static; the matrices are created on demand and recreated
-  // if the geometry has changed.
-  if (fgOrigMatrix[0]) return;
-
-  if (!fgGeometry || !fgGeometry->IsClosed()) {
-    AliErrorClass("Impossible to initialize orignal matrices LUT without an active geometry");
-    return;
-  }
-
-  for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
-    fgOrigMatrix[iLayer] = new TGeoHMatrix*[fgLayerSize[iLayer]];
-    for(Int_t modnum=0; modnum<fgLayerSize[iLayer]; modnum++){
-      if (!fgPNEntry[iLayer][modnum]) continue;
-      TGeoHMatrix *m = GetOrigGlobalMatrix(fgPNEntry[iLayer][modnum]);
-      if (!m) continue;
-      fgOrigMatrix[iLayer][modnum] = new TGeoHMatrix(*m);
-    }
-  }
-
 }
 
 //______________________________________________________________________
@@ -1033,7 +1123,10 @@ Bool_t AliGeomManager::GetDeltaForBranch(AliAlignObj& aao, TGeoHMatrix &inclusiv
 Bool_t AliGeomManager::GetOrigGlobalMatrix(const char* symname, TGeoHMatrix &m) 
 {
   // Get the global transformation matrix (ideal geometry) for a given alignable volume
-  // identified by its symbolic name 'symname' by quering the TGeoManager
+  // The alignable volume is identified by 'symname' which has to be either a valid symbolic
+  // name, the query being performed after alignment, or a valid volume path if the query is
+  // performed before alignment.
+  //
   m.Clear();
 
   if (!fgGeometry || !fgGeometry->IsClosed()) {
@@ -1055,7 +1148,8 @@ Bool_t AliGeomManager::GetOrigGlobalMatrix(const char* symname, TGeoHMatrix &m)
   TGeoPNEntry* pne = fgGeometry->GetAlignableEntry(symname);
   const char* path = NULL;
   if(pne){
-    path = pne->GetTitle();
+    m = *pne->GetGlobalOrig();
+    return kTRUE;
   }else{
     AliWarningClass(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as a volume path!",symname));
     path=symname;
@@ -1125,12 +1219,7 @@ TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(TGeoPNEntry* pne)
     return NULL;
   }
 
-  const char* path = pne->GetTitle();
-  static TGeoHMatrix m;
-  if (!GetOrigGlobalMatrixFromPath(path,m))
-    return NULL;
-
-  return &m;
+  return pne->GetGlobalOrig();
 }
 
 //______________________________________________________________________
@@ -1145,16 +1234,8 @@ TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(Int_t index)
   // for fast access. The LUT is reset in case a
   // new geometry is loaded.
   //
-  Int_t modId;
-  ELayerID layerId = VolUIDToLayer(index,modId);
-
-  if (fgOrigMatrix[layerId-kFirstLayer][modId])
-    return fgOrigMatrix[layerId-kFirstLayer][modId];
-  else {
-    TGeoPNEntry *pne = GetPNEntry(index);
-    if (!pne) return NULL;
-    return GetOrigGlobalMatrix(pne);
-  }
+  TGeoPNEntry* pne = GetPNEntry(index);
+  return pne->GetGlobalOrig();
 }
 
 //______________________________________________________________________

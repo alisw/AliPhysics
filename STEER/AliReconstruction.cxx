@@ -714,6 +714,8 @@ Bool_t AliReconstruction::InitRun(const char* input)
     TString geom(gSystem->DirName(fGAliceFileName));
     geom += "/geometry.root";
     AliGeomManager::LoadGeometry(geom.Data());
+    if(!AliGeomManager::CheckSymNamesLUT())
+	  AliFatalClass("Current loaded geometry differs in the definition of symbolic names!");
     if (!gGeoManager) if (fStopOnError) return kFALSE;
   }
 

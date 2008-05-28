@@ -2,12 +2,16 @@
 #define ALI_GEOM_MANAGER_H
 
 //
-// Class for interfacing to the geometry; it also builds and manages two
-// look-up tables for fast access to volumes :
-// 1) the look-up table mapping unique volume ids to symbolic volume names
-// 2) the look-up table mapping unique volume ids to TGeoPNEntries
-// this allows to access directly the functionality of the physical node
-// associated to a given alignable volume by means of its index
+// Class for interfacing to the geometry; it also builds and manages the
+// look-up tables for fast access to geometry and alignment information
+// for sensitive alignable volumes:
+// 1) the look-up table mapping unique volume ids to TGeoPNEntries
+//    this allows to access directly by means of the unique index
+//    the associated symbolic name and original global matrix
+//    in addition to the functionality of the physical node
+//    associated to a given alignable volume
+// 2) the look-up table of the alignment objects associated to the
+//    indexed alignable volumes
 //
 
 #include <TObject.h>
@@ -92,6 +96,7 @@ public:
 				      Int_t sversion);
   static Bool_t         ApplyAlignObjsFromCDB(const char* AlDetsList);
   static Bool_t         LoadAlignObjsFromCDBSingleDet(const char* detName, TObjArray& alignObjArray);
+  static Bool_t         CheckSymNamesLUT();
 
   ~AliGeomManager();
 
@@ -108,17 +113,13 @@ public:
   static TGeoPNEntry* GetPNEntry(ELayerID layerId, Int_t modId);
 
   static void        InitAlignObjFromGeometry();
-  static void        InitSymNamesLUT();
   static void        InitPNEntriesLUT();
-  static void        InitOrigMatricesLUT();
 
   static TGeoManager* fgGeometry;
 
   static Int_t       fgLayerSize[kLastLayer - kFirstLayer]; // Size of layers
   static const char* fgLayerName[kLastLayer - kFirstLayer]; // Name of layers
-  static TString*    fgSymName[kLastLayer - kFirstLayer]; // Symbolic volume names
   static TGeoPNEntry** fgPNEntry[kLastLayer - kFirstLayer]; // TGeoPNEntries
-  static TGeoHMatrix** fgOrigMatrix[kLastLayer - kFirstLayer]; // Original matrices before misalignment
   static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer]; // Alignment objects
 
   ClassDef(AliGeomManager, 0);
