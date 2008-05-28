@@ -292,6 +292,7 @@ void AliComparisonDEdx::Analyse()
   gr->SetName("TPCdEdxMeanTanPt_1");
   gr->GetHistogram()->Draw("colz"); 
 
+  gr->GetHistogram()->SetName("TPCdEdxMeanTanPt_1");
   aFolderObj->Add(gr->GetHistogram());
   //
   gr = AliMathBase::MakeStat2D(comp->fTPCSignalNormTanSPt,3,1,5);
@@ -301,6 +302,7 @@ void AliComparisonDEdx::Analyse()
   gr->SetName("TPCdEdxMeanTanPt_2");
   gr->GetHistogram()->Draw("colz"); 
 
+  gr->GetHistogram()->SetName("TPCdEdxMeanTanPt_2");
   aFolderObj->Add(gr->GetHistogram());
 
   // export objects to analysis folder

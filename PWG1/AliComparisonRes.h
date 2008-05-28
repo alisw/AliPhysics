@@ -71,10 +71,14 @@ private:
   //
   // Control histograms
   //
-  TH2F* fPtResolLPT;        //-> pt resolution - low pt
-  TH2F* fPtResolHPT;        //-> pt resolution - high pt 
-  TH2F* fPtPullLPT;         //-> pt resolution - low pt
-  TH2F* fPtPullHPT;         //-> pt resolution - high pt 
+  TH2F *fPtResolLPT;        //-> pt resolution - low pt
+  TH2F *fPtResolHPT;        //-> pt resolution - high pt 
+  TH2F *fPtPullLPT;         //-> pt resolution - low pt
+  TH2F *fPtPullHPT;         //-> pt resolution - high pt 
+  TH2F *fPhiResolTan;       //-> angular resolution 
+  TH2F *fTanResolTan;       //-> angular resolution
+  TH2F *fPhiPullTan;        //-> angular resolution
+  TH2F *fTanPullTan;        //-> angular resolution
 
   //
   // Resolution constrained param
