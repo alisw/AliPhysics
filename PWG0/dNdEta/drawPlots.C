@@ -247,6 +247,39 @@ Double_t PrintIntegratedDeviation(TH1* histMC, TH1* histESD, const char* desc = 
   return diffFullRange;
 }
 
+void dNdEtaNoResolution()
+{
+  loadlibs();
+
+  TFile::Open("correction_map.root");
+
+  const char* correctionMapFolder = "dndeta_correction";
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
+  dNdEtaCorrection->LoadHistograms();
+  dNdEtaCorrection->GetTrack2ParticleCorrection()->PrintInfo(0.3);
+
+  TFile::Open("analysis_mc.root");
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
+  fdNdEtaAnalysis->LoadHistograms();
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle, "ESD (no resolution effect) -> MB with vertex");
+  fdNdEtaAnalysis->GetdNdEtaPtCutOffCorrectedHistogram(0)->SetMarkerStyle(21);
+
+  TFile::Open("analysis_mc.root");
+  dNdEtaAnalysis* fdNdEtaAnalysisMC = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
+  fdNdEtaAnalysisMC->LoadHistograms();
+  fdNdEtaAnalysisMC->Finish(0, 0, AlidNdEtaCorrection::kNone, "MC: MB with vertex");
+
+  DrawdNdEtaRatio(fdNdEtaAnalysis->GetdNdEtaPtCutOffCorrectedHistogram(0), fdNdEtaAnalysisMC->GetdNdEtaPtCutOffCorrectedHistogram(0), "MB with vertex (no resolution effect)", 3);
+}
+
+TH1* GetMCHist(const char* folder, Float_t ptCut, const char* tag)
+{
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis(folder, folder);
+  fdNdEtaAnalysis->LoadHistograms();
+  fdNdEtaAnalysis->Finish(0, ptCut, AlidNdEtaCorrection::kNone, tag);
+  return fdNdEtaAnalysis->GetdNdEtaHistogram(0);
+}
+
 void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
 {
   TFile* file = TFile::Open("analysis_esd.root");
@@ -304,8 +337,8 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBTracksNoPt->SetMarkerStyle(23);
   
   //Float_t etaLimit = 1.2999;
-  Float_t etaLimit = 2.01;
-  Float_t etaPlotLimit = 2.2;
+  Float_t etaLimit = 2.41;
+  Float_t etaPlotLimit = 2.6;
 
   histESDMBVtx->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMB->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
@@ -346,39 +379,16 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   loadlibs();
 
   TFile* file2 = TFile::Open("analysis_mc.root");
-  TH1* histMC = (TH1*) file2->Get("dndeta/dNdEta_corrected")->Clone("cloned");
-  TH1* histMCnsd = (TH1*) file2->Get("dndetaNSD/dNdEta_corrected");
-  if (histMCnsd)
-  {
-  	histMCnsd = (TH1*) histMCnsd->Clone("clonedNSD");
-  }
-  else
-  	histMCnsd = new TH1F;
 
-  TH1* histMCTr = (TH1*) file2->Get("dndetaTr/dNdEta_corrected")->Clone("cloned2");
-  TH1* histMCTrVtx = (TH1*) file2->Get("dndetaTrVtx/dNdEta_corrected")->Clone("cloned3");
+  TH1* histMC =            (TH1*) GetMCHist("dndeta", -1, "MC: full inelastic")->Clone("histMC");
+  TH1* histMCTr =          (TH1*) GetMCHist("dndetaTr", -1, "MC: minimum bias")->Clone("histMCTr");
+  TH1* histMCTrVtx =       (TH1*) GetMCHist("dndetaTrVtx", -1, "MC: MB with trigger")->Clone("histMCTrVtx");
+  TH1* histMCnsd =         (TH1*) GetMCHist("dndetaNSD", -1, "MC: NSD")->Clone("histMCnsd");
 
-  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
-  fdNdEtaAnalysis->LoadHistograms();
-  dNdEtaAnalysis* fdNdEtaAnalysis2 = (dNdEtaAnalysis*) fdNdEtaAnalysis->Clone();
-
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: full inelastic");
-  TH1* histMCPtCut = (TH1*) fdNdEtaAnalysis->GetdNdEtaHistogram(0)->Clone("histMCPtCut");
-
-  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
-  fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: minimum bias");
-  TH1* histMCTrPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
-
-  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
-  fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: MB with trigger");
-  TH1* histMCTrVtxPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
-
-  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
-  fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "MC: Tracks w/o resolution effect");
-  TH1* histMCTracksPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
+  TH1* histMCPtCut =       (TH1*) GetMCHist("dndeta", 0.3, "MC: full inelastic, pt cut")->Clone("histMCPtCut");
+  TH1* histMCTrPtCut =     (TH1*) GetMCHist("dndetaTr", 0.3, "MC: minimum bias, pt cut")->Clone("histMCTrPtCut");
+  TH1* histMCTrVtxPtCut =  (TH1*) GetMCHist("dndetaTrVtx", 0.3, "MC: MB with trigger, pt cut")->Clone("histMCTrVtxPtCut");
+  TH1* histMCTracksPtCut = (TH1*) GetMCHist("dndetaTracks", 0.3, "MC: Tracks w/o resolution effect, pt cut")->Clone("histMCTracksPtCut");
 
   Prepare1DPlot(histMC);
   Prepare1DPlot(histMCnsd);
@@ -519,7 +529,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   pad2->SetBottomMargin(0.15);
 
   Float_t minR = 0.9; //TMath::Min(0.961, ratio->GetMinimum() * 0.95);
-  Float_t maxR = TMath::Max(1.049, ratio->GetMaximum() * 1.05);
+  Float_t maxR = 1.1; //TMath::Max(1.049, ratio->GetMaximum() * 1.05);
 
   TH1F dummy3("dummy3", ";#eta;Ratio: MC / ESD", 100, -etaPlotLimit, etaPlotLimit);
   dummy3.SetStats(kFALSE);
@@ -1732,5 +1742,40 @@ void DetermineAcceptance(const char* fileName = "correction_map.root", const cha
   hist = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram();
 
   proj = hist->Project3D("yx");
+  proj->Draw("COLZ");
 
+  const Float_t limit = 10;
+
+  TString array = "{";
+  TString arrayEnd = "}";
+
+  for (Int_t y=1; y<=proj->GetNbinsY(); ++y)
+  {
+    Int_t begin = -1;
+    Int_t end = -1;
+    for (Int_t x=1; x<=proj->GetNbinsX(); ++x)
+    {
+      if (begin == -1 && proj->GetBinContent(x, y) > 0 && proj->GetBinContent(x, y) < limit)
+        begin = x;
+      if (begin != -1 && proj->GetBinContent(x, y) > 0 && proj->GetBinContent(x, y) < limit)
+        end = x;
+    }
+    Printf("Limits for y = %d are %d to %d", y, begin, end);
+
+    if (y > 1)
+      array += ", ";
+    array += Form("%d", begin);
+
+    if (y > 1)
+      arrayEnd.Prepend(", ");
+    arrayEnd.Prepend(Form("%d", (end == -1) ? -1 : proj->GetNbinsX() + 1 - end));
+  }
+  array += "}";
+  arrayEnd.Prepend("{");
+
+  Printf("Begin array:");
+  Printf("%s", array.Data());
+
+  Printf("End array (mirrored) (should be the same):");
+  Printf("%s", arrayEnd.Data());
 }
