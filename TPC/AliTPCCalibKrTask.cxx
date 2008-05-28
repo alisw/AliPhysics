@@ -93,7 +93,7 @@ mgr->StartAnalysis("local", chain);
 #include "AliTPCCalibKr.h"
 #include "AliTPCCalibKrTask.h"
 
-Int_t AliTPCCalibKrTask::evtNumber = 0;
+Int_t AliTPCCalibKrTask::fEvtNumber = 0;
 
 ClassImp(AliTPCCalibKrTask)
 
@@ -188,17 +188,17 @@ void AliTPCCalibKrTask::Exec(Option_t *)
   
   // read entry
   if(fClustKr) delete fClustKr; fClustKr=0;
-  Bool_t status = ReadEntry(evtNumber);
+  Bool_t status = ReadEntry(fEvtNumber);
   if(status==kTRUE) 
   {
 	  // Process output objects
       if(fClustKr) fTPCCalibKr->Process(fClustKr);
   }
  
-  if( !( evtNumber % 100000) ) {
-    cout << evtNumber << endl; }
+  if( !( fEvtNumber % 100000) ) {
+    cout << fEvtNumber << endl; }
 
-  evtNumber++;
+  fEvtNumber++;
 
   // Post output data.
   PostData(0, fOutput);

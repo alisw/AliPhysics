@@ -36,7 +36,7 @@ public:
 
 private:
 
-  static Int_t evtNumber;     //! event number
+  static Int_t  fEvtNumber;     //! event number
   AliTPCclusterKr *fClustKr;  //! input AliTPCclusterKr objects
   AliTPCCalibKr *fTPCCalibKr; // output AliTPCCalibKr objects
 

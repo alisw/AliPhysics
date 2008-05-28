@@ -93,8 +93,8 @@ ClassImp(AliTPCCalibKr)
 
 AliTPCCalibKr::AliTPCCalibKr() : 
   TObject(),
-  bASide(kTRUE),
-  bCSide(kTRUE),
+  fASide(kTRUE),
+  fCSide(kTRUE),
   fHistoKrArray(72)
 {
   //
@@ -113,8 +113,8 @@ AliTPCCalibKr::AliTPCCalibKr() :
 AliTPCCalibKr::AliTPCCalibKr(const AliTPCCalibKr& pad) : 
   TObject(pad),
   
-  bASide(pad.bASide),
-  bCSide(pad.bCSide),
+  fASide(pad.fASide),
+  fCSide(pad.fCSide),
   fHistoKrArray(72)
 {
   // copy constructor
@@ -168,13 +168,13 @@ void AliTPCCalibKr::Init()
   for(Int_t i=0; i<72; ++i) {
     
 	// C - side
-	if(IsCSide(i) == kTRUE && bCSide == kTRUE) {
+	if(IsCSide(i) == kTRUE && fCSide == kTRUE) {
       TH3F *hist = CreateHisto(i);
       if(hist) fHistoKrArray.AddAt(hist,i);
 	}
     
 	// A - side
-	if(IsCSide(i) == kFALSE && bASide == kTRUE) {
+	if(IsCSide(i) == kFALSE && fASide == kTRUE) {
       TH3F *hist = CreateHisto(i);
       if(hist) fHistoKrArray.AddAt(hist,i);
 	}
@@ -498,11 +498,11 @@ TObject* obj = 0;
 	  if (entry == 0) continue; 
 
 		for(int i=0; i<72; ++i) { 
-		  if(IsCSide(i) == kTRUE && bCSide == kTRUE) { 
+		  if(IsCSide(i) == kTRUE && fCSide == kTRUE) { 
 		  ((TH3F*)fHistoKrArray.At(i))->Add( ((TH3F*)entry->fHistoKrArray.At(i)) );  
 		  } 
 
-		  if(IsCSide(i) == kFALSE && bASide == kTRUE) { 
+		  if(IsCSide(i) == kFALSE && fASide == kTRUE) { 
 		    ((TH3F*)fHistoKrArray.At(i))->Add( ((TH3F*)entry->fHistoKrArray.At(i)) );  
 		  } 
 		} 

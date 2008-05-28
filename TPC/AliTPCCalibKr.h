@@ -39,16 +39,16 @@ public:
   void Analyse();
   static TH1D* ProjectHisto(TH3F* histo3D, const char* name = "_pz", Int_t firstxbin = 0, Int_t lastxbin = 0, Int_t firstybin = 0, Int_t lastybin = 0);
 
-  void SetASide(Bool_t bA = kTRUE) {bASide = bA;} // fill histo only A TPC side
-  void SetBSide(Bool_t bC = kTRUE) {bCSide = bC;} // fill histo only C TPC side
+  void SetASide(Bool_t bA = kTRUE) {fASide = bA;} // fill histo only A TPC side
+  void SetBSide(Bool_t bC = kTRUE) {fCSide = bC;} // fill histo only C TPC side
 
   //Merge output objects (needed by PROOF)
   virtual Long64_t Merge(TCollection* list);
   
 private:
 
-  Bool_t bASide;              //! Only A side
-  Bool_t bCSide;              //! Only C side 
+  Bool_t fASide;              //! Only A side
+  Bool_t fCSide;              //! Only C side 
   TObjArray fHistoKrArray;    //  Calibration histograms for Kr distribution
 
 public:
