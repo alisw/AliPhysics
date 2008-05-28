@@ -398,7 +398,7 @@ void AliGenDPMjet::MakeHeader()
 // Event Vertex
     header->SetPrimaryVertex(fVertex);
     gAlice->SetGenEventHeader(header);    
- AddHeader(header);
+    AddHeader(header);
 }
 
 void AliGenDPMjet::AddHeader(AliGenEventHeader* header)
@@ -420,5 +420,12 @@ AliGenDPMjet& AliGenDPMjet::operator=(const  AliGenDPMjet& /*rhs*/)
 }
 
 
+void AliGenDPMjet::FinishRun()
+{
+    // Print run statistics
+    fDPMjet->Dt_Dtuout();
+}
+
+    
 
 //______________________________________________________________________________
