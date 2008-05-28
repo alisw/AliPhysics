@@ -47,7 +47,7 @@ AliEveTPCSector2DGL::~AliEveTPCSector2DGL()
   // Destructor.
   // !!!! Should unregister texture via ContextIdentity!
 
-  if (fImage)   delete fImage;
+  if (fImage)   delete [] fImage;
   if (fTexture) glDeleteTextures(1, &fTexture);
 }
 
@@ -210,7 +210,7 @@ void AliEveTPCSector2DGL::CreateTexture() const
 {
   // Create texture that holds pad data.
 
-  if (fImage == 0 ) {
+  if (fImage == 0) {
     fImage = new UChar_t[fgkTextureByteSize];
     glGenTextures(1, &fTexture);
   }
