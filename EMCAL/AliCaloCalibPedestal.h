@@ -82,6 +82,10 @@ class AliCaloCalibPedestal : public TObject {
   void SetRunNumber(int runNo) {fRunNumber = runNo;};
   int GetRunNumber() const {return fRunNumber;};
   int GetRefRunNumber() const {if (fReference) return fReference->GetRunNumber(); else return -1;};
+
+  // Basic counters
+  int GetNEvents() const {return fNEvents;};
+  int GetNChanFills() const {return fNChanFills;};
   
   /////////////////////////////
   //Analysis functions
@@ -89,7 +93,9 @@ class AliCaloCalibPedestal : public TObject {
   double GetDeadTowerRatio() const {return fDeadTowers/(double)(fRows*fColumns);}; //returns the percentage of dead towers, relative to a full module
   int GetDeadTowerNew() const {return fNewDeadTowers;}; //return the new dead towers compared to the reference
   int GetDeadTowerResurrected() const {return fResurrectedTowers;}; //The the towers resurrected since the reference run
+
   void Reset();//Resets the whole class.
+  Bool_t AddInfo(const AliCaloCalibPedestal *ped);//picks up new info from supplied argument
   
   //////////////////////////////////////////////////////
   //Functions related to comparing this with another (reference) run.
@@ -127,7 +133,11 @@ class AliCaloCalibPedestal : public TObject {
   TObjArray fPeakMinusPedHighGainRatio; //!
   
   TObjArray fDeadMap;//The deadmap
-  
+
+  // status counters
+  int fNEvents; //# total events processed, 
+  int fNChanFills; //# total channel fills (NChan * NEvents if not zero-suppressed)
+
   //The dead tower counts
   int fDeadTowers; //!
   int fNewDeadTowers; //! Towers that have died since the reference run

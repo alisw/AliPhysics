@@ -65,6 +65,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fPeakMinusPedLowGainRatio(),
   fPeakMinusPedHighGainRatio(),
   fDeadMap(),
+  fNEvents(0),
+  fNChanFills(0),
   fDeadTowers(0),
   fNewDeadTowers(0),
   fResurrectedTowers(0),
@@ -178,6 +180,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fPeakMinusPedLowGainRatio(),
   fPeakMinusPedHighGainRatio(),
   fDeadMap(),
+  fNEvents(ped.GetNEvents()),
+  fNChanFills(ped.GetNChanFills()),
   fDeadTowers(ped.GetDeadTowerCount()),
   fNewDeadTowers(ped.GetDeadTowerNew()),
   fResurrectedTowers(ped.GetDeadTowerResurrected()),
@@ -243,6 +247,8 @@ void AliCaloCalibPedestal::Reset()
       GetPeakProfileHighGainRatio(i)->Reset();
     }
   }
+  fNEvents = 0;
+  fNChanFills = 0;
   fDeadTowers = 0;
   fNewDeadTowers = 0;
   fResurrectedTowers = 0;
@@ -251,11 +257,29 @@ void AliCaloCalibPedestal::Reset()
 }
 
 //_____________________________________________________________________
+Bool_t AliCaloCalibPedestal::AddInfo(const AliCaloCalibPedestal *ped)
+{
+  // just do this for the basic histograms/profiles that get filled in ProcessEvent
+  // may not have data for all modules, but let's just Add everything..
+  for (int i = 0; i < fModules; i++) {
+    fPedestalLowGain.Add( ped->GetPedProfileLowGain(i) );
+    fPedestalHighGain.Add( ped->GetPedProfileHighGain(i) );
+    fPeakMinusPedLowGain.Add( ped->GetPeakProfileLowGain(i) );
+    fPeakMinusPedHighGain.Add( ped->GetPeakProfileHighGain(i) );
+  }//end for nModules 
+
+  // DeadMap; Diff profiles etc would need to be redone after this operation
+
+  return kTRUE;//We succesfully added info from the supplied object
+}
+
+//_____________________________________________________________________
 Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 { 
   // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
   
+  fNEvents++; // one more event
   int sample, i = 0; //The sample temp, and the sample number in current event.
   int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the pedestal
   int gain = 0;
@@ -280,6 +304,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 	printf("Oh no: arrayPos = %i.\n", arrayPos); 
       }
 
+      fNChanFills++; // one more channel found, and profile to be filled
       //NOTE: coordinates are (column, row) for the profiles
       if (gain == 0) {
 	//fill the low gain histograms
@@ -290,7 +315,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 	((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), -in->GetRow() - 1, min);
 	((TProfile2D*)fPeakMinusPedHighGain[arrayPos])->Fill(in->GetColumn(), -in->GetRow() - 1, max - min);
       }//end if gain
-      
+
       max = fgkSampleMin; min = fgkSampleMax;
       i = 0;
     
