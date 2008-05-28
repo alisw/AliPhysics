@@ -82,15 +82,18 @@ AliFMDBaseDA::GetDetectorPath(UShort_t det,
 }
 
 //_____________________________________________________________________
-AliFMDBaseDA::AliFMDBaseDA() : TNamed(),
+AliFMDBaseDA::AliFMDBaseDA() : 
+  TNamed(),
   fDiagnosticsFilename("diagnosticsHistograms.root"),
   fOutputFile(),
   fConditionsFile(),
   fSaveHistograms(kFALSE),
   fDetectorArray(),
+  fPulseSize(16),
+  fPulseLength(16),
   fRequiredEvents(0),
   fCurrentEvent(0)
-{
+ {
   fDetectorArray.SetOwner();
   fConditionsFile.open("conditions.csv");
 }
@@ -102,6 +105,8 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   fConditionsFile(),
   fSaveHistograms(baseDA.fSaveHistograms),
   fDetectorArray(baseDA.fDetectorArray),
+  fPulseSize(baseDA.fPulseSize),
+  fPulseLength(baseDA.fPulseLength),
   fRequiredEvents(baseDA.fRequiredEvents),
   fCurrentEvent(baseDA.fCurrentEvent)
 {
@@ -123,6 +128,9 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   if (fSaveHistograms)
     diagFile = TFile::Open(fDiagnosticsFilename.Data(),"RECREATE");
 
+  
+  WriteConditionsData();
+  
   InitContainer(diagFile);
   Init();
 
@@ -131,9 +139,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   
   AliFMDRawReader* fmdReader  = new AliFMDRawReader(reader,0);
   TClonesArray*    digitArray = new TClonesArray("AliFMDDigit",0);
-  
-  WriteConditionsData();
-  
+    
   reader->NextEvent(); // Read Start-of-Run event
   reader->NextEvent(); // Read Start-of-Files event
   int lastProgress = 0;
@@ -178,7 +184,8 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   	}
 	std::cout << '.' << std::flush;
       }
-      diagFile->Flush();
+      if(fSaveHistograms)
+	diagFile->Flush();
       std::cout << "done" << std::endl;
     }
   }
@@ -263,10 +270,14 @@ void AliFMDBaseDA::WriteConditionsData()
 {
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fConditionsFile.write(Form("# %s \n",pars->GetConditionsShuttleID()),14);
-  fConditionsFile.write("# Sample Rate, timebins \n",25);
+  
+  // fConditionsFile.write("# Sample Rate, timebins \n",25);
+  
+  // Sample Rate
   
   UInt_t defSampleRate = 4;
-  UInt_t timebins   = 544;
+  UInt_t sampleRateFromSOD;
+  //UInt_t timebins   = 544;
   AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
   for(UShort_t det=1;det<=3;det++) {
     UShort_t FirstRing = (det == 1 ? 1 : 0);
@@ -276,7 +287,14 @@ void AliFMDBaseDA::WriteConditionsData()
       UShort_t nstr = (ir == 0 ? 256 : 512);
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
-	  sampleRate->Set(det,ring,sec,strip,defSampleRate);
+	  sampleRateFromSOD = defSampleRate;
+	  sampleRate->Set(det,ring,sec,strip,sampleRateFromSOD);
+	  fConditionsFile << det                 << ',' 
+			  << ring                << ','
+			  << sec                 << ','
+			  << strip               << ','
+			  << "samplerate"        << ','
+			  << sampleRateFromSOD   << "\n";
 	}
       }
     }
@@ -284,18 +302,53 @@ void AliFMDBaseDA::WriteConditionsData()
   
   pars->SetSampleRate(sampleRate);
   
+  // Zero Suppresion
   
-  fConditionsFile     << defSampleRate   << ',' 
-		      << timebins     <<"\n";
+  // Strip Range
+  
+  // Gain Relevant stuff
+  
+  UShort_t defPulseSize = 32 ; 
+  UShort_t defPulseLength = 100 ; 
+  UShort_t pulseSizeFromSOD;
+  UShort_t pulseLengthFromSOD;  
+  
+  fPulseSize.Reset(defPulseSize);
+  fPulseLength.Reset(defPulseLength);
+  
+  for(UShort_t det=1;det<=3;det++)
+    for(UShort_t iring=0;iring<=1;iring++)
+      for(UShort_t board=0;board<=1;board++) {
+	pulseSizeFromSOD = defPulseSize;
+	pulseLengthFromSOD = defPulseLength;
+
+	fPulseSize.AddAt(pulseSizeFromSOD,GetHalfringIndex(det,iring,board));
+	fPulseLength.AddAt(pulseLengthFromSOD,GetHalfringIndex(det,iring,board));
+      }
+	  
+  
+  //  fConditionsFile     << defSampleRate   << ',' 
+  //		      << timebins     <<"\n";
   
   if(fConditionsFile.is_open()) {
     
-    //  fConditionsFile.write("# EOF\n",6);
+    fConditionsFile.write("# EOF\n",6);
     fConditionsFile.close();
     
   }
   
 }
+//_____________________________________________________________________ 
+Int_t AliFMDBaseDA::GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board) {
+
+  UShort_t iring  =  (ring == 'I' ? 1 : 0);
+  
+  Int_t index = (((det-1) << 2) | (iring << 1) | (board << 0));
+  
+  return index;
+  
+}
+
 
 //_____________________________________________________________________ 
 //

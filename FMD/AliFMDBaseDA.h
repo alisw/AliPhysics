@@ -30,6 +30,7 @@
 #include "AliRawReader.h"
 #include "AliFMDDigit.h"
 #include "AliFMDParameters.h"
+#include "TArrayS.h"
 class TDirectory;
 
 
@@ -65,6 +66,15 @@ protected:
   std::ofstream fConditionsFile;
   Bool_t fSaveHistograms;
   TObjArray fDetectorArray;
+
+  Int_t GetHalfringIndex(UShort_t, Char_t, UShort_t);
+  Int_t GetPulseSize(UShort_t det , 
+		     Char_t ring, 
+		     UShort_t board) {return fPulseSize.At(GetHalfringIndex(det,ring,board));}
+  Int_t GetPulseLength(UShort_t det, 
+		       Char_t ring, 
+		       UShort_t board) {return fPulseLength.At(GetHalfringIndex(det,ring,board));}
+
   
   const char* GetDetectorPath(UShort_t det, Bool_t full=kTRUE) const;
   const char* GetRingPath(UShort_t det, Char_t ring, Bool_t full=kTRUE) const;
@@ -73,6 +83,9 @@ protected:
   const char* GetStripPath(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str, Bool_t full=kTRUE) const;
   
+  TArrayS fPulseSize;
+  TArrayS fPulseLength;
+
 private:
  
   void WriteConditionsData();
@@ -81,6 +94,8 @@ private:
   Int_t fRequiredEvents;
   Int_t fCurrentEvent;   
 
+  
+  
   
   ClassDef(AliFMDBaseDA,0)
 

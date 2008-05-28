@@ -24,9 +24,9 @@ class AliFMDGainDA: public AliFMDBaseDA {
   //  AliFMDGainDA& operator = (const AliFMDGainDA & gainDA) ; 
   virtual ~AliFMDGainDA();
   void Init();
-  void SetPulseSize(Int_t pulseSize = 32) {fPulseSize = pulseSize; }
+  // void SetPulseSize(Int_t pulseSize = 32) {fPulseSize = pulseSize; }
   void SetMaxPulse(Int_t highPulse = 256) {fHighPulse = highPulse; }
-  void SetPulseLength(Int_t pulseLength = 100) {fPulseLength = pulseLength; }
+  //  void SetPulseLength(Int_t pulseLength = 100) {fPulseLength = pulseLength; }
   void SetNumberOfStrips(Int_t nStrips) {fNumberOfStripsPerChip = nStrips;}
 
  protected:
@@ -44,12 +44,12 @@ class AliFMDGainDA: public AliFMDBaseDA {
   TH1S* GetChannelHistogram(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
   TGraphErrors* GetChannel(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
   TObjArray fGainArray;
-  Int_t fPulseSize;
+  //  Int_t fPulseSize;
   Int_t fHighPulse;
-  Int_t fPulseLength;
-  Int_t fEventsPerChannel;
-  Int_t fCurrentPulse;
-  Int_t fCurrentChannel;
+  //Int_t fPulseLength;
+  TArrayS fEventsPerChannel;
+  TArrayS fCurrentPulse;
+  TArrayS fCurrentChannel;
   Int_t fNumberOfStripsPerChip;
   
   ClassDef(AliFMDGainDA,0)
