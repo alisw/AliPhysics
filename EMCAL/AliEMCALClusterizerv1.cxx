@@ -266,7 +266,7 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * RecPoint, AliEMCALDigit
 
   Double_t p0 = 0.1 ; // "Tolerance" Evaluation stops when EDM = 0.0001*p0 ; 
                       // The number of function call slightly depends on it.
-  Double_t p1 = 1.0 ;
+  //Double_t p1 = 1.0 ;
   Double_t p2 = 0.0 ;
 
   gMinuit->mnexcm("SET STR", &p2, 0, ierflg) ;   // force TMinuit to reduce function calls
