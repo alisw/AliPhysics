@@ -178,8 +178,10 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
 
   Int_t   sector = -1, row = -1, pad = -1, rowOffset = 0;
   Short_t time,  signal;
-  Bool_t  inFill   = kFALSE;
-  Short_t lastTime = 9999;
+  Bool_t  inFill       = kFALSE;
+  Short_t pdrwCnt      = 9999; // Count time-bins in padrow; needed to detect more than 1024 time-bins per padrow.
+  Short_t lastTime     = 9999; // Last time-bin stored; needed to check for out-of-order time bins.
+  Bool_t  pdrwCntWarn  = kFALSE;
   Bool_t  lastTimeWarn = kFALSE;
   AliEveTPCSectorData* secData = 0;
 
@@ -223,15 +225,26 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
 
       secData->BeginPad(row, pad, kTRUE);
       inFill   = kTRUE;
+      pdrwCnt  = 0;     pdrwCntWarn  = kFALSE;
       lastTime = 1024;  lastTimeWarn = kFALSE;
     }
 
     time   = input.GetTime();
     signal = input.GetSignal();
+    ++pdrwCnt;
+    if (pdrwCnt > 1024) {
+      if (pdrwCntWarn == kFALSE) {
+        if (warn)
+	  Warning(kEH.Data(), "more than 1024 time-bins (row=%d, pad=%d, time=%d).\nFurther warnings of this type will be suppressed for this padrow.",
+		  row, pad, time);
+        pdrwCntWarn = kTRUE;
+      }
+      continue;
+    }
     if (time >= lastTime) {
       if (lastTimeWarn == kFALSE) {
 	if (warn)
-	  Warning(kEH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).",
+	  Warning(kEH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).\nFurther warnings of this type will be suppressed for this padrow.",
 		  row, pad, time, lastTime);
         lastTimeWarn = kTRUE;
       }
