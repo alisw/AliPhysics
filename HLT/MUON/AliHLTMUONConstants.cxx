@@ -64,7 +64,7 @@ AliHLTMUONConstants::fgkNilClusterStruct = {
 };
 
 const AliHLTMUONChannelStruct
-AliHLTMUONConstants::fgkNilChannelStruct = {0, 0, 0, 0, 0};
+AliHLTMUONConstants::fgkNilChannelStruct = {0, 0, 0, 0, 0, 0};
 
 const AliHLTMUONMansoTrackStruct
 AliHLTMUONConstants::fgkNilMansoTrackStruct = {
