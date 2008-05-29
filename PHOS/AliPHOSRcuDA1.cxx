@@ -30,8 +30,6 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu) : TNamed(),
   fHistoFile =  new TFile(rootname,"update");
   fHistoArray.SetName("histo_container");
 
-  TObjArray* objr = (TObjArray*)fHistoFile->Get(fHistoArray.GetName());
-
   char hname[128];
   TH1F* hist1=0;
   TH2F* hist2=0;
@@ -40,8 +38,7 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu) : TNamed(),
     for(Int_t iZ=0; iZ<56; iZ++) {
 
       sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
-      if(objr)
-	hist1 = (TH1F*)objr->FindObject(hname);
+      hist1 = (TH1F*)fHistoFile->Get(hname);
       if(hist1) { 
 	fHgLgRatio[iX][iZ] = hist1;
 	fHistoArray.Add(hist1);
@@ -51,8 +48,7 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu) : TNamed(),
 
       for(Int_t iGain=0; iGain<2; iGain++) {
 	sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
-	if(objr)
-	  hist2 = (TH2F*)objr->FindObject(hname);
+	hist2 = (TH2F*)fHistoFile->Get(hname);
 	if(hist2) {
 	  fTimeEnergy[iX][iZ][iGain] = hist2;
 	  fHistoArray.Add(hist2);
