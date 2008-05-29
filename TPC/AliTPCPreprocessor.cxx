@@ -38,9 +38,10 @@
 const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
 const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
 const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
-const TString kPulserRunType = "PULSER";   // pulser run identifier
+const TString kPulserRunType = "CALIBRATION_PULSER";   // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
+const TString kStandAlonePulserRunType = "STANDALONE_PULSER"; // standalone run identifier
 const TString kCosmicRunType = "COSMIC"; // cosmic run identifier
 const TString kLaserRunType = "LASER";   // laser run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
@@ -68,6 +69,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AddRunType(kPulserRunType);
   AddRunType(kPhysicsRunType);
   AddRunType(kStandAloneRunType);
+  AddRunType(kStandAlonePulserRunType);
   AddRunType(kCosmicRunType);
   AddRunType(kLaserRunType);
   AddRunType(kDaqRunType);
