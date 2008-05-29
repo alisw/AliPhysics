@@ -1,6 +1,6 @@
 // $Id$
 // The class categories definitions for Doxygen
-// From EVGENLinkDef.h revision 1.70
+// From EVGENLinkDef.h revision 23866 2008-02-12 07:36:44Z hristov
 
 /** @defgroup EVGEN EVGEN
  *  Category of AliRoot event generator classes
@@ -44,7 +44,6 @@
     class  AliGenGeVSimEventHeader {};
     class  AliGeVSimParticle {};
     class  AliGenBeamGas {};
-    class  AliGenBeamGasNew {};
     class  AliGenAfterBurnerFlow {};
     class  AliGenSlowNucleons {};
     class  AliSlowNucleonModel {};

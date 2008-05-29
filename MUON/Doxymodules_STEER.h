@@ -11,8 +11,10 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h revision 1.10
+// From STEERBaseLinkDef.h revision 26112 2008-05-23 14:00:18Z kleinb
 
+    enum  AliLog::EType_t {};
+ 
     class AliVParticle {};
     class AliVEvent {};
     class AliVHeader {};
@@ -40,7 +42,7 @@
     class AliGenPythiaEventHeader {};
     class AliGenHijingEventHeader {};
     class AliCollisionGeometry {};
-
+    class AliGenDPMjetEventHeader {};
     class AliStack {};
     class AliMCEventHandler {};
     class AliInputEventHandler {};
@@ -53,6 +55,17 @@
 
     class  AliMagF {};
 
+    class AliCodeTimer {};
+    class AliCodeTimer::AliPair {};
+
+    class  AliPDG {};
+
+    class AliQA {};
+
+    class AliTimeStamp {};
+    class AliTriggerScalers {};
+    class AliTriggerScalersRecord {};
+
 /** @} */
 
 /** @defgroup STEER0 STEER0
@@ -60,12 +73,10 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h revision 1.126
+// From STEERLinkDef.h revision 26112 2008-05-23 14:00:18Z kleinb
 
     enum VertexSmear_t {};
     enum VertexSource_t {};
-
-    class  AliPDG {};
 
     class  AliGenerator {};
     class  AliVertexGenerator {};
@@ -84,6 +95,7 @@
     class  AliMagFCheb {};
     class  AliCheb3DCalc {};
     class  AliCheb3D {};
+    class  AliMagWrapCheb {};
     class  AliLego {};
     class  AliLegoGenerator {};
     class  AliLegoGeneratorXYZ {};
@@ -179,14 +191,12 @@
     class AliSurveyObj {};
     class AliSurveyPoint {};
 
-    class AliCodeTimer {};
-    class AliCodeTimer::AliPair {};
-
     class AliFstream {};
     class AliCTPRawData {};
 
-    class AliQA {};
     class AliQADataMaker {};
+    class AliQADataMakerSim {};
+    class AliQADataMakerRec {};
     class AliGlobalQADataMaker {};
     class AliQADataMakerSteer {};
     class AliQAChecker {};
@@ -195,6 +205,10 @@
 
     class AliDetectorRecoParam {};
     class AliRecoParam {};
+    class AliPlaneEff {};
+
+    class AliTriggerRunScalers {};
+    class AliGRPPreprocessor {};
 
 /** @} */
 
@@ -203,7 +217,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h revision 1.45
+// From ESDLinkDef.h revision 25661 2008-05-08 15:24:44Z cvetan
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -211,6 +225,7 @@
     class  AliESD {};
     class  AliESDEvent {};
     class  AliESDInputHandler {};
+    class  AliESDInputHandlerRP {};
     class  AliESDRun {};
     class  AliESDHeader {};
     class  AliESDZDC {};
@@ -231,6 +246,7 @@
     class  AliESDV0Params {};
     class  AliESDCaloCluster {};
     class  AliESDMuonCluster {};
+    class  AliESDMuonPad {};
 
     class  AliKFParticleBase {};
     class  AliKFParticle {};
@@ -254,6 +270,8 @@
 
     class  AliESDVZERO {};
     class  AliESDTZERO {};
+    class  AliESDACORDE {};
+
 
     class  AliESDMultITS {};
     class  AliMultiplicity {};
@@ -272,7 +290,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From CDBLinkDef.h revision 1.13
+// From CDBLinkDef.h revision 23864 2008-02-12 06:25:33Z hristov
 
     class AliCDBPath {};
     class AliCDBRunRange {};
@@ -303,7 +321,6 @@
 
     class AliShuttleInterface {};
 
-    class AliGRPPreprocessor {};
     class AliGRPDCS {};
 
     class  TTreeDataElement {};
@@ -317,11 +334,11 @@
  *  @ingroup STEER
  *  @{
  */
-// From AODLinkDef.h revision 1.16
+// From AODLinkDef.h revision 25938 2008-05-20 10:51:03Z morsch
 
     enum   AliAODVertex::AODVtx_t {};
     enum   AliAODTrack::AODTrk_t {};
-    enum   AliAODTrack::AODTrkPID_ {}t;
+    enum   AliAODTrack::AODTrkPID_t {};
     enum   AliAODCluster::AODClu_t {};
     enum   AliAODCluster::AODCluPID_t {};
 
@@ -343,9 +360,11 @@
     class AliAODv0 {};
     class AliAODHandler {};
     class AliAODInputHandler {};
+    class AliMultiAODInputHandler {};
     class AliAODTracklets {};
     class AliAODTagCreator {};
     class AliAODCaloCells {};
+    class AliAODDiJet {};
 
 /** @} */
 
