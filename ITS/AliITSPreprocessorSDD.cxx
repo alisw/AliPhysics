@@ -183,6 +183,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   Int_t evNumb,polDeg; 
   UInt_t timeStamp;
   Bool_t modSet[2*kNumberOfSDD]; // flag modules with good inj.
+  for(Int_t ihyb=0; ihyb<2*kNumberOfSDD; ihyb++) modSet[ihyb]=0;
   Double_t nPt = 0;
 
   Double_t param[4];    // parameters of poly fit
@@ -219,7 +220,6 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
       if(modID==-1) continue;
       modID-=240; // to have SDD modules numbering from 0 to 260
       for(Int_t isid=0;isid<=1;isid++){
-	modSet[2*modID+isid]=0;
 	AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
 	sprintf(inpFileName,"./SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	FILE* injFil = fopen(inpFileName,"read");
@@ -295,3 +295,4 @@ Bool_t AliITSPreprocessorSDD::ProcessDCSDataPoints(TMap* dcsAliasMap){
   Bool_t retCode = StoreReferenceData("DCS","DataSDD",&refDCS,md);
   return retCode;
 }
+
