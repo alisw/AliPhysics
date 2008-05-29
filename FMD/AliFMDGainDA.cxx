@@ -277,7 +277,7 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
   pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,ch);
   Int_t halfring = GetHalfringIndex(det,ring,board%16);
   if(GetCurrentEvent()> (fNumberOfStripsPerChip*fEventsPerChannel.At(halfring)))
-    return
+    return;
   if(strip % fNumberOfStripsPerChip) return;
   if(((GetCurrentEvent()) % fPulseLength.At(halfring)) && GetCurrentEvent() > 0) return;
      
