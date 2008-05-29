@@ -71,6 +71,15 @@ DAQDADIR=${DAQDALIB_PATH}
 endif
 DAQDALIB=$(DAQDADIR)/libdaqDA.a
 
+ifneq ($(shell amore-config 2>&1 |grep -i usage),)
+AMOREFLAGS = -DALI_AMORE $(shell amore-config --cflags --includes)
+CXXFLAGS  += $(AMOREFLAGS)
+CFLAGS    += $(AMOREFLAGS)
+CINTFLAGS += $(AMOREFLAGS)
+DEPINC    += $(AMOREFLAGS)
+DAQDALIB  += $(shell amore-config --auxlibs)
+endif
+
 ROOTLIBDIR=$(shell root-config --libdir)
 
 SYSLIBS=-ldl -lpthread

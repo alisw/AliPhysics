@@ -58,9 +58,8 @@ endif
 #-------------------------------------------------------------------------------
 # Check if DATE is installed
 
-ifdef DATE_ROOT
-DATEFLAGS  = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} \
-             -Dlong64='${DATE_LONG64}' -DdatePointer=${DATE_POINTER} -I${DATE_COMMON_DEFS} -I${DATE_MONITOR_DIR}
+ifneq ($(shell date-config 2>&1 | grep -i usage),)
+DATEFLAGS  = -DALI_DATE $(shell date-config --cflags)
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
