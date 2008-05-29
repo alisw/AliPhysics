@@ -47,7 +47,7 @@ ClassImp(AliMUONPreClusterFinder)
 //_____________________________________________________________________________
 AliMUONPreClusterFinder::AliMUONPreClusterFinder()
 : AliMUONVClusterFinder(),
-  fClusters(0x0),
+  fClusters("AliMUONCluster"),
   fPads(0x0),
   fDetElemId(0),
   fArea(),
@@ -60,7 +60,6 @@ AliMUONPreClusterFinder::AliMUONPreClusterFinder()
 AliMUONPreClusterFinder::~AliMUONPreClusterFinder()
 {
   /// dtor : note we're owner of the clusters, but not of the pads
-  delete fClusters;
 }
 
 //_____________________________________________________________________________
@@ -87,10 +86,9 @@ AliMUONPreClusterFinder::Prepare(Int_t detElemId,
                                  const AliMpArea& area)
 {
   /// Prepare for clustering, by giving access to segmentations and digit lists
-  
-  delete fClusters;
-  fClusters = new TClonesArray("AliMUONCluster");
 
+  fClusters.Clear("C");
+  
   fPads = pads;
   fDetElemId = detElemId;
   fArea = area;
@@ -197,8 +195,8 @@ AliMUONPreClusterFinder::NextCluster()
 //  AliCodeTimerAuto("pre-clustering")
   
   // Start a new cluster
-  Int_t id = fClusters->GetLast()+1;
-  AliMUONCluster* cluster = new ((*fClusters)[id]) AliMUONCluster;
+  Int_t id = fClusters.GetLast()+1;
+  AliMUONCluster* cluster = new (fClusters[id]) AliMUONCluster;
   cluster->SetUniqueID(id);
   
   AliMUONPad* pad = GetNextPad(0);
@@ -240,8 +238,8 @@ AliMUONPreClusterFinder::NextCluster()
   if ( ShouldAbort() ) 
   {
     AliError("Aborting clustering of that DE because we've got too many pads");
-    fClusters->Remove(cluster);
-    fClusters->Compress();
+    fClusters.Remove(cluster);
+    fClusters.Compress();
     return 0x0;
   }
   
@@ -254,8 +252,8 @@ AliMUONPreClusterFinder::NextCluster()
     }
     // else only 1 pad (not suspicious, but kind of useless, probably noise)
     // so we remove it from our list
-    fClusters->Remove(cluster);
-    fClusters->Compress();
+    fClusters.Remove(cluster);
+    fClusters.Compress();
     // then proceed further
     return NextCluster();
   }

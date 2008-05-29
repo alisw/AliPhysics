@@ -142,7 +142,8 @@ fCalibrationData(0x0),
 fDigitCalibrator(0x0),
 fClusterServer(0x0),
 fTriggerStore(0x0),
-fTrackStore(0x0)
+fTrackStore(0x0),
+fClusterStore(0x0)
 {
   /// normal ctor
 
@@ -169,6 +170,7 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fClusterServer;
   delete fTriggerStore;
   delete fTrackStore;
+  delete fClusterStore;
 }
 
 //_____________________________________________________________________________
@@ -531,11 +533,12 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
     }
   }
 
-  AliMUONVClusterStore* clusterStore(0x0);
-  
   if ( !alone )
   {
-    clusterStore = new AliMUONClusterStoreV2;
+    if (!fClusterStore)
+    {
+      fClusterStore = new AliMUONClusterStoreV2;
+    }
     
     CreateClusterServer();
     
@@ -552,17 +555,17 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
       {
         if ( i >= 6 && AliMUONReconstructor::GetRecoParam()->BypassSt45() ) continue;
         
-        fClusterServer->Clusterize(i,*clusterStore,area);
+        fClusterServer->Clusterize(i,*fClusterStore,area);
       }
     }
     
-    Bool_t cok = clusterStore->Connect(clustersTree,alone);
+    Bool_t cok = fClusterStore->Connect(clustersTree,alone);
     
     if (!cok) AliError("Could not connect clusterStore to clusterTree");
     
-    AliDebug(1,Form("Number of clusters found = %d",clusterStore->GetSize()));
+    AliDebug(1,Form("Number of clusters found = %d",fClusterStore->GetSize()));
     
-    StdoutToAliDebug(1,clusterStore->Print());
+    StdoutToAliDebug(1,fClusterStore->Print());
   }
          
   if (ok) // at least one type of branches created successfully
@@ -570,7 +573,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
     clustersTree.Fill();
   }
   
-  delete clusterStore;
+  fClusterStore->Clear();
 }
 
 //_____________________________________________________________________________

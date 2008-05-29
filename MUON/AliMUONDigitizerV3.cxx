@@ -104,7 +104,8 @@ fGenerateNoisyDigits(generateNoisyDigits),
 fLogger(new AliMUONLogger(1000)),
 fTriggerStore(new AliMUONTriggerStoreV1),
 fDigitStore(0x0),
-fOutputDigitStore(0x0)
+fOutputDigitStore(0x0),
+fInputDigitStore(0x0)
 {
   /// Ctor.
 
@@ -125,7 +126,8 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   delete fTriggerStore;
   delete fDigitStore;
   delete fOutputDigitStore;
-   
+  delete fInputDigitStore;
+  
   AliInfo("Summary of messages");
   fLogger->Print();
   
@@ -329,6 +331,43 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
 
 //_____________________________________________________________________________
 void
+AliMUONDigitizerV3::CreateInputDigitStore()
+{
+  /// Create an input digit store, and check that all input files
+  /// actually contains the same type of AliMUONVDigitStore
+  
+  fInputDigitStore = 0x0;
+  
+  for ( Int_t iFile = 0; iFile < fManager->GetNinputs(); ++iFile )
+  {    
+    AliLoader* inputLoader = GetLoader(fManager->GetInputFolderName(iFile));
+    
+    inputLoader->LoadSDigits("READ");
+    
+    TTree* iTreeS = inputLoader->TreeS();
+    if (!iTreeS)
+    {
+      AliFatal(Form("Could not get access to input file #%d",iFile));
+    }
+    
+    AliMUONVDigitStore* inputStore = AliMUONVDigitStore::Create(*iTreeS);
+    
+    if (!fInputDigitStore)
+    {
+      fInputDigitStore = inputStore;
+    }
+    else
+    {
+      if ( inputStore->IsA() != fInputDigitStore->IsA() )
+      {
+        AliFatal("Got different types of AliMUONVDigitStore here. Please implement me.");
+      }
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void
 AliMUONDigitizerV3::Exec(Option_t*)
 {
   /// Main method.
@@ -380,17 +419,20 @@ AliMUONDigitizerV3::Exec(Option_t*)
     {
       AliFatal(Form("Could not get access to input file #%d",iFile));
     }
-    
-    AliMUONVDigitStore* inputStore = AliMUONVDigitStore::Create(*iTreeS);
-    inputStore->Connect(*iTreeS);
+
+    if (!fInputDigitStore)
+    {
+      CreateInputDigitStore();
+    }
+    fInputDigitStore->Connect(*iTreeS);
     
     iTreeS->GetEvent(0);
     
-    MergeWithSDigits(fDigitStore,*inputStore,fManager->GetMask(iFile));
+    MergeWithSDigits(fDigitStore,*fInputDigitStore,fManager->GetMask(iFile));
 
     inputLoader->UnloadSDigits();
     
-    delete inputStore;
+    fInputDigitStore->Clear();
   }
   
   // At this point, we do have digit arrays (one per chamber) which contains 

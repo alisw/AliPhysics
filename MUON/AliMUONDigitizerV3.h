@@ -46,7 +46,7 @@ public:
                                        Bool_t addNoise=kFALSE,
                                        Bool_t noiseOnly=kFALSE);
   
-         /// Set calibration data
+  /// Set calibration data
   void SetCalibrationData(AliMUONCalibrationData* calibrationData) 
                           {fCalibrationData = calibrationData;}
   
@@ -75,6 +75,8 @@ private:
   
   static TF1* NoiseFunction();
   
+  void CreateInputDigitStore();
+
 private:
   Bool_t fIsInitialized; ///< are we initialized ?
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
@@ -87,8 +89,9 @@ private:
   AliMUONVTriggerStore* fTriggerStore; //!< trigger objects
   AliMUONVDigitStore* fDigitStore; //!< temporary digits
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
-
-  ClassDef(AliMUONDigitizerV3,7) // MUON Digitizer V3-5
+  AliMUONVDigitStore* fInputDigitStore; //!< input digit store
+  
+  ClassDef(AliMUONDigitizerV3,8) // MUON Digitizer V3-8
 };
 
 #endif

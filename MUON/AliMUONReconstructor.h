@@ -16,27 +16,21 @@
 #  include "AliReconstructor.h"
 #endif
 
-class AliMUONDigitMaker;
-class AliMUONVDigitStore;
-class AliMUONVTriggerStore;
-
-class AliMUONGeometryTransformer;
-
-class AliMUONTriggerCircuit;
-class TClonesArray;
-class AliMUONVTriggerStore;
-
-class AliMUONDigitCalibrator;
 class AliMUONCalibrationData;
-
-class AliMUONTracker;
-class AliMUONVTrackStore;
-
+class AliMUONDigitCalibrator;
+class AliMUONDigitMaker;
+class AliMUONGeometryTransformer;
 class AliMUONRecoParam;
-
+class AliMUONTracker;
+class AliMUONTriggerCircuit;
 class AliMUONVClusterFinder;
-
 class AliMUONVClusterServer;
+class AliMUONVClusterStore;
+class AliMUONVDigitStore;
+class AliMUONVTrackStore;
+class AliMUONVTriggerStore;
+class AliMUONVTriggerStore;
+class TClonesArray;
 
 class AliMUONReconstructor : public AliReconstructor
 {
@@ -89,10 +83,11 @@ private:
   mutable AliMUONVClusterServer* fClusterServer; //!<  Clusterizer
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
+  mutable AliMUONVClusterStore* fClusterStore; //!< cluster store (when not in combined tracking mode)
   
   static AliMUONRecoParam* fgRecoParam; //!< parameters used to tune the MUON reconstruction
-  
-  ClassDef(AliMUONReconstructor,6) // Implementation of AliReconstructor
+    
+  ClassDef(AliMUONReconstructor,7) // Implementation of AliReconstructor
 };
 
 #endif

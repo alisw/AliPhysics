@@ -18,6 +18,9 @@
 #ifndef ALI_MP_AREA_H
 #  include "AliMpArea.h"
 #endif
+#ifndef ROOT_TClonesArray
+#  include <TClonesArray.h>
+#endif
 
 class TStopwatch;
 class AliMUONPad;
@@ -52,13 +55,13 @@ private:
   virtual Bool_t ShouldAbort() const { return fShouldAbort; }
   
 private:
-  TClonesArray* fClusters; //!< the clusters we've found (owner)
+  TClonesArray fClusters; //!< the clusters we've found (owner)
   TClonesArray** fPads; //!< the pads corresponding to the digits (not owner)
   Int_t fDetElemId; //!< which DE we're considering
   AliMpArea fArea; //!< area into which to consider pads to *start* a cluster
   Bool_t fShouldAbort; //!< to indicate clustering should stop right now
   
-  ClassDef(AliMUONPreClusterFinder,3) // A basic pre-cluster finder
+  ClassDef(AliMUONPreClusterFinder,4) // A basic pre-cluster finder
 };
 
 #endif
