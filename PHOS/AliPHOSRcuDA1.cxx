@@ -13,10 +13,13 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu) : TNamed(),
   // Checks existence of histograms which might have been left
   // from the previous runs to continue their filling.
   // Histogram names: module_iX_iZ_gain for TH2 and  module_iX_iZ for TH1.
-  // Root file name: PHOS_ModuleX_Calib.root, where X - module number.
+  // Root file name: PHOS_ModuleX_RCUY_Calib.root, where X - module number,
+  // Y - RCU number. If no RCU specified (rcu<0), file name is simply
+  // PHOS_ModuleX_Calib.root.
   
   char name[128];
-  sprintf(name,"PHOS_Module%d_RCU%d_Calib",fMod,fRCU);
+  if(rcu<0) sprintf(name,"PHOS_Module%d_Calib",fMod);
+  else sprintf(name,"PHOS_Module%d_RCU%d_Calib",fMod,fRCU);
   SetName(name);
 
   SetTitle("Calibration Detector Algorithm");
@@ -73,7 +76,8 @@ AliPHOSRcuDA1::AliPHOSRcuDA1(Int_t module, Int_t rcu, TObjArray* oldTimeEnergy) 
   // By default the final histograms will not be saved to the root file.
 
   char name[128];
-  sprintf(name,"PHOS_Module%d_RCU%d_Calib",fMod,fRCU);
+  if(rcu<0) sprintf(name,"PHOS_Module%d_Calib",fMod);
+  else sprintf(name,"PHOS_Module%d_RCU%d_Calib",fMod,fRCU);
   SetName(name);
   
   SetTitle("Calibration Detector Algorithm");
