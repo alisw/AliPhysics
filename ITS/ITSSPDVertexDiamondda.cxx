@@ -27,6 +27,11 @@ extern "C" {
 #include "event.h"
 #include "monitor.h"
 
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+int amore::da::Updated(char const*) {}
+#endif
+
 #include <TTree.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -124,6 +129,10 @@ int main(int argc, char **argv) {
   detTypeRec->SetDefaults();
   detTypeRec->SetDefaultClusterFindersV2(kTRUE);
 
+  // Initialization of AMORE sender
+#ifdef ALI_AMORE
+  amore::da::AmoreDA vtxAmore(amore::da::AmoreDA::kSender);
+#endif
   /* main loop (infinite) */
   for(;;) {
     
@@ -233,6 +242,11 @@ int main(int argc, char **argv) {
   hXY->Write(hXY->GetName(),TObject::kOverwrite);
   hZ->Write(hZ->GetName(),TObject::kOverwrite);
   outFile.Close();
+
+#ifdef ALI_AMORE
+  // send the histos to AMORE pool
+  printf("AMORE send status: %d",vtxAmore.Send(hXY->GetName(),hXY));
+#endif
 
   delete minuitFit;
   TVirtualFitter::SetFitter(0);
