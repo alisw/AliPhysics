@@ -9,17 +9,21 @@
  * current directory, you might need to start the macro in one of the raw<x>
  * folders. You can easily change the sectors and readout partitions below.
  *
- * In order to apply the macro on real RCU v1 data (only on trailer word)
- * you have to specify the trailer length explicitly, look for the 
+ * The simple test writes a fake file with the list of the selected channels.
  *
- * The first version allows to write a fake file with the list of the
- * selected channels. Later it will be extended to use the ClusterFinder
- * or, better, a separate component.
+ * There are two switches in the code:
+ * - directDump=true/false <br>
+ *   determines whether the input data should be forwarded directly. Selection
+ *   of channels is disabled if \em true
+ * - textDump=true/false   <br>
+ *   write output either in ascii text dump using the TPCDigitDump or in
+ *   binary data
  *
  * Please note that this macro uses also the TPC module, but this does not
  * imply dependencies to the libAliHLTTPC.
  *
- * Matthias.Richter@ift.uib.no
+ * @author Matthias.Richter@ift.uib.no
+ * @ingroup alihlt_rcu
  */
 {
   // this is just a tool to switch the logging systems
@@ -62,7 +66,7 @@
   bool directDump=false;
 
   // choose if you want to dump to file or translate digits to text file
-  bool textDump=true;
+  bool textDump=false;
 
   // the configuration
   int iMinSlice=0; 
@@ -109,9 +113,9 @@
 
   // the writer configuration
   if (textDump)
-    AliHLTConfiguration digitdump("digitdump", "TPCDigitDump"   , writerInput.Data(), "-specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+    AliHLTConfiguration digitdump("digitdump", "TPCDigitDump"   , writerInput.Data(), "-datafile digit.dump -specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
   else
-    AliHLTConfiguration digitdump("digitdump", "FileWriter"   , writerInput.Data(), "-specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+    AliHLTConfiguration digitdump("digitdump", "FileWriter"   , writerInput.Data(), "-datafile RAW.ddl -specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
 
   // build the ask list and execute
   gHLT.BuildTaskList("digitdump");
