@@ -202,7 +202,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			unsigned long num = strtoul(argv[i+1], &cpErr, 0);
 			if (cpErr == NULL or *cpErr != '\0')
 			{
-				HLTError("Cannot convert '%s' to a DDL Number.", argv[i+1] );\
+				HLTError("Cannot convert '%s' to a DDL Number.", argv[i+1]);
 				// Make sure to delete fTrigRec to avoid partial initialisation.
 				delete fTrigRec;
 				fTrigRec = NULL;
