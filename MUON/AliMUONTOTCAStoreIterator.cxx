@@ -25,6 +25,7 @@
 
 #include "AliMUONTOTCAStoreIterator.h"
 
+#include "AliLog.h"
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
@@ -54,12 +55,18 @@ AliMUONTOTCAStoreIterator&
 AliMUONTOTCAStoreIterator::operator=(const TIterator& rhs)
 {
   /// Overriden operator= (imposed by Root's declaration of TIterator ?)
-  if ( this != &rhs && rhs.IsA() == AliMUONTOTCAStoreIterator::Class() )
+  if ( this != &rhs )
   {
-    const AliMUONTOTCAStoreIterator& rhs1 = 
-    static_cast<const AliMUONTOTCAStoreIterator&>(rhs);
-    
-    rhs1.CopyTo(*this);
+    if ( rhs.IsA() != AliMUONTOTCAStoreIterator::Class() )
+    {
+      AliErrorGeneral("AliMUONTOTCAStoreIterator::operator=","Wrong type");
+    }
+    else
+    {
+      const AliMUONTOTCAStoreIterator& rhs1 = 
+      static_cast<const AliMUONTOTCAStoreIterator&>(rhs);
+      rhs1.CopyTo(*this);
+    }
   }
   return *this;
 }

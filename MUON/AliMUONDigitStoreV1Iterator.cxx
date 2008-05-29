@@ -26,6 +26,7 @@
 
 #include "AliMUONDigitStoreV1Iterator.h"
 
+#include "AliLog.h"
 #include "AliMpDEManager.h"
 #include "AliMUONVDigit.h"
 #include "TObjArray.h"
@@ -65,12 +66,20 @@ AliMUONDigitStoreV1Iterator&
 AliMUONDigitStoreV1Iterator::operator=(const TIterator& rhs)
 {
   /// overriden assignment operator (imposed by Root's definition of TIterator ?)
-  if ( this != &rhs && rhs.IsA() == AliMUONDigitStoreV1Iterator::Class()) 
+  
+  if ( this != &rhs )
   {
-    const AliMUONDigitStoreV1Iterator& rhs1 = 
-    static_cast<const AliMUONDigitStoreV1Iterator&>(rhs);
-    
-    AliMUONDigitStoreV1Iterator::operator=(rhs1);
+    if ( rhs.IsA() != AliMUONDigitStoreV1Iterator::Class() )
+    {
+      AliErrorGeneral("AliMUONDigitStoreV1Iterator::operator=","Wrong type");
+    }
+    else
+    {
+      const AliMUONDigitStoreV1Iterator& rhs1 = 
+      static_cast<const AliMUONDigitStoreV1Iterator&>(rhs);
+      
+      AliMUONDigitStoreV1Iterator::operator=(rhs1);
+    }
   }
   return *this;
 }
@@ -82,6 +91,7 @@ AliMUONDigitStoreV1Iterator::operator=(const AliMUONDigitStoreV1Iterator& rhs)
   /// assignement operator
   if ( this != &rhs ) 
   {
+    TIterator::operator=(rhs);
     fArray = rhs.fArray;
     fFirstDetElemId = rhs.fFirstDetElemId;
     fLastDetElemId = rhs.fLastDetElemId;
