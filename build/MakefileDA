@@ -77,7 +77,9 @@ CXXFLAGS  += $(AMOREFLAGS)
 CFLAGS    += $(AMOREFLAGS)
 CINTFLAGS += $(AMOREFLAGS)
 DEPINC    += $(AMOREFLAGS)
-DAQDALIB  += $(shell amore-config --auxlibs)
+AMOREDALIBS+=$(shell amore-config --auxlibs)
+else
+AMOREDALIBS=
 endif
 
 ROOTLIBDIR=$(shell root-config --libdir)
@@ -119,7 +121,7 @@ $(DAEXE): $(DAOBJ) $(LIBPATH) $(DALIB) $(DAQDALIB) $(EXTRAROOTLIB)
 	$(EXTRAROOTLIB) \
 	$(ROOTLIBDIR)/libRoot.a \
 	$(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a \
-	$(DAQDALIB) $(MONITORLIBS) \
+	$(DAQDALIB) $(MONITORLIBS) $(AMOREDALIBS) \
 	$(SYSLIBS)
 
 $(DAOBJ): $(DASRC) $(DAQDADIR) $(DADEP) $(DATARGETDIR)
@@ -181,6 +183,7 @@ $(DAMAKEFILE): $(DATARGETDIR)
 	@echo "endif" >> $@
 	@echo "" >> $@
 	@echo "DAQDALIB=""$$""(DAQDADIR)/libdaqDA.a" >> $@
+	@echo "AMOREDALIBS=""$$""(shell amore-config --auxlibs)" >> $@
 	@echo "MONITORLIBS=""$$""(shell date-config --monitorlibs=noshift)" >> $@
 	@echo "" >> $@
 	@echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe: ${DAMODULE}${SUBDAMODULE}${DANAME}da.o" >> $@
@@ -189,7 +192,7 @@ $(DAMAKEFILE): $(DATARGETDIR)
 	@echo "		$(EXTRAROOTLIB) \\" >> $@
 	@echo "		""$$""(ROOTSYS)/lib/libRoot.a \\" >> $@
 	@echo "		""$$""(ROOTSYS)/lib/libfreetype.a ""$$""(ROOTSYS)/lib/libpcre.a \\" >> $@
-	@echo "		""$$""(DAQDALIB) ""$$""(MONITORLIBS) \\" >> $@
+	@echo "		""$$""(DAQDALIB) ""$$""(MONITORLIBS) ""$$""(AMOREDALIBS) \\" >> $@
 	@echo "		$(SYSLIBS)" >> $@
 	@echo "" >> $@
 	@echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.o: ${DAMODULE}${SUBDAMODULE}${DANAME}da.cxx" >> $@
