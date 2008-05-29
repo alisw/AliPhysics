@@ -55,7 +55,7 @@ protected:
   virtual void WriteHeaderToFile()  {};
   virtual void AddChannelContainer(TObjArray*, UShort_t, Char_t, UShort_t, UShort_t )  {};
   virtual void FinishEvent()  {};
-  
+  virtual void Terminate(TFile* ) {};
   
   Int_t GetCurrentEvent() {return fCurrentEvent;}
   
@@ -82,6 +82,8 @@ protected:
 			    Bool_t full=kTRUE) const;
   const char* GetStripPath(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str, Bool_t full=kTRUE) const;
+  
+
   
   TArrayS fPulseSize;
   TArrayS fPulseLength;

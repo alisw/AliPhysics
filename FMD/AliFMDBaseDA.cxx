@@ -196,6 +196,9 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   }
   
   if(fSaveHistograms ) {
+    
+    Terminate(diagFile);
+  
     AliInfo("Closing diagnostics file - please wait ...");
     // diagFile->Write();
     diagFile->Close();

@@ -32,12 +32,16 @@
 #include "fstream"
 #include "AliLog.h"
 #include "TF1.h"
+#include "TObject.h"
 
 //_____________________________________________________________________
 ClassImp(AliFMDPedestalDA)
 
 //_____________________________________________________________________
-AliFMDPedestalDA::AliFMDPedestalDA() : AliFMDBaseDA()
+AliFMDPedestalDA::AliFMDPedestalDA() : AliFMDBaseDA(),
+  fCurrentChannel(0),
+  fPedSummary("PedestalSummary","pedestals",51200,0,51200),
+  fNoiseSummary("NoiseSummary","noise",51200,0,51200)
 {
   fOutputFile.open("peds.csv");
   
@@ -45,7 +49,10 @@ AliFMDPedestalDA::AliFMDPedestalDA() : AliFMDBaseDA()
 
 //_____________________________________________________________________
 AliFMDPedestalDA::AliFMDPedestalDA(const AliFMDPedestalDA & pedDA) : 
-  AliFMDBaseDA(pedDA)
+  AliFMDBaseDA(pedDA),
+  fCurrentChannel(0),
+  fPedSummary("PedestalSummary","pedestals",51200,0,51200),
+  fNoiseSummary("NoiseSummary","noise",51200,0,51200)
 {
   
 }
@@ -142,25 +149,14 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
   hChannel->Fit("gaus","Q0+","",mean-5*rms,mean+5*rms);
   TF1* fitFunc = hChannel->GetFunction("gaus");
     
-  UInt_t ddl, board, chip, channel;
-  
-  UShort_t          relStrip = strip%128;
-  AliFMDParameters* pars     = AliFMDParameters::Instance();
-  pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
-
   Float_t chi2ndf = 0;
   if(fitFunc->GetNDF())
     chi2ndf = fitFunc->GetChisquare() / fitFunc->GetNDF();
 
-  ddl = ddl + kBaseDDL;
-  
-  fOutputFile << ddl                         << ','
-	      << board                       << ','
-	      << chip                        << ','
-	      << channel                     << ','
-	      << relStrip                    << ','
-	      << 0                           << ','
-	      << 0                           << ','
+  fOutputFile << det                         << ','
+	      << ring                        << ','
+	      << sec                         << ','
+              << strip                       << ','
 	      << mean                        << ','
 	      << rms                         << ','
 	      << fitFunc->GetParameter(1)    << ','
@@ -188,17 +184,37 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 			  nStr, -.5, nStr-.5);
       sumNoise->SetXTitle("Strip");
       sumNoise->SetYTitle("Noise [ADC]");
+      
       sumNoise->SetDirectory(gDirectory);
     }
     sumPed->SetBinContent(strip+1, mean);
     sumPed->SetBinError(strip+1, rms);
     sumNoise->SetBinContent(strip+1, rms);
-
+    
+    if(sumNoise->GetEntries() == nStr)
+      sumNoise->Write(sumNoise->GetName(),TObject::kOverwrite);
+    if(sumPed->GetEntries() == nStr)
+      sumPed->Write(sumPed->GetName(),TObject::kOverwrite);
+    
+    fPedSummary.SetBinContent(fCurrentChannel,mean);
+    fNoiseSummary.SetBinContent(fCurrentChannel,rms);
+    fCurrentChannel++;
+    
     gDirectory->cd(GetStripPath(det, ring, sec, strip, kTRUE));
-    hChannel->GetXaxis()->SetRange(-.5,1023.5);
-    // hChannel->SetDirectory(gDirectory);
+    hChannel->GetXaxis()->SetRange(1,1024);
+    
     hChannel->Write();
   }  
+}
+
+//_____________________________________________________________________
+void AliFMDPedestalDA::Terminate(TFile* diagFile) 
+{
+  diagFile->cd();
+  
+  fPedSummary.Write();
+  fNoiseSummary.Write();
+  
 }
 
 //_____________________________________________________________________
@@ -206,18 +222,15 @@ void AliFMDPedestalDA::WriteHeaderToFile()
 {
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fOutputFile.write(Form("# %s \n",pars->GetPedestalShuttleID()),13);
-  fOutputFile.write("# Rcu, "
-		    "Board, "
-		    "Chip, "
-		    "Channel, "
+  fOutputFile.write("# Detector, "
+		    "Ring, "
+		    "Sector, "
 		    "Strip, "
-		    "Sample, "
-		    "TimeBin, "
 		    "Pedestal, "
 		    "Noise, "
 		    "Mu, "
 		    "Sigma, "
-		    "Chi2/NDF \n",91);
+		    "Chi2/NDF \n", 71);
 }
 
 //_____________________________________________________________________

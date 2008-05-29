@@ -177,22 +177,15 @@ void AliFMDGainDA::Analyse(UShort_t det,
   TF1 fitFunc("fitFunc","pol1",-10,280); 
   fitFunc.SetParameters(100,3);
   grChannel->Fit("fitFunc","Q0+","",0,fHighPulse);
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  UInt_t ddl, board,chip,channel;
-  pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
-    
+     
   Float_t chi2ndf = 0;
   if(fitFunc.GetNDF())
     chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
-  ddl = ddl + kBaseDDL;
-  
-  Int_t relStrip = strip%fNumberOfStripsPerChip;
-  
-  fOutputFile << ddl                         << ','
-	      << board                       << ','
-	      << chip                        << ','
-	      << channel                     << ','
-	      << relStrip                    << ','
+   
+  fOutputFile << det                         << ','
+	      << ring                        << ','
+	      << sec                         << ','
+	      << strip                       << ','
 	      << fitFunc.GetParameter(1)     << ','
 	      << fitFunc.GetParError(1)      << ','
 	      << chi2ndf                     <<"\n";
@@ -227,14 +220,13 @@ void AliFMDGainDA::WriteHeaderToFile()
 {
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fOutputFile.write(Form("# %s \n",pars->GetGainShuttleID()),9);
-  fOutputFile.write("# Rcu, "
-		    "Board, "
-		    "Chip, "
-		    "Channel, "
+  fOutputFile.write("# Detector, "
+		    "Ring, "
+		    "Sector, "
 		    "Strip, "
 		    "Gain, "
 		    "Error, "
-		    "Chi2/NDF \n",59);
+		    "Chi2/NDF \n",56);
   
 }
 
@@ -279,10 +271,13 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
 				     UShort_t sec, 
 				     UShort_t strip) 
 {
+  
   AliFMDParameters* pars = AliFMDParameters::Instance();
   UInt_t ddl, board,chip,ch;
   pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,ch);
   Int_t halfring = GetHalfringIndex(det,ring,board%16);
+  if(GetCurrentEvent()> (fNumberOfStripsPerChip*fEventsPerChannel.At(halfring)))
+    return
   if(strip % fNumberOfStripsPerChip) return;
   if(((GetCurrentEvent()) % fPulseLength.At(halfring)) && GetCurrentEvent() > 0) return;
      
@@ -314,11 +309,9 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
   channel->SetPointError(fCurrentPulse.At(halfring),0,rms);
   
   if(fSaveHistograms) {
-    gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",
-			fDiagnosticsFilename.Data(),
-			det,ring,sec,channelNumber));
-    hChannel->Write(Form("hFMD%d%c_%d_%d_pulse_%d",
-			 det,ring,sec,channelNumber,fCurrentPulse.At(halfring)));
+    gDirectory->cd(GetStripPath(det,ring,sec,channelNumber));
+    hChannel->Write(Form("%s_pulse_%03d",hChannel->GetName(),(Int_t)pulse));
+    
   }
   
   
