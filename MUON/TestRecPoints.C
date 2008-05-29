@@ -203,7 +203,7 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10.
     // Load geometry data
     transformer->LoadGeometryData();
     clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
-    clusterServer = new AliMUONSimpleClusterServer(*clusterFinder,*transformer);
+    clusterServer = new AliMUONSimpleClusterServer(clusterFinder,*transformer);
   }
   
   AliMUONDigitStoreV1 digitStore;
@@ -293,7 +293,7 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10.
         digitStoreTrackCut.Add(*mDigit, AliMUONVDigitStore::kDeny);
       } // loop on digits
       
-      TIter nextDigitTrackCut(digitStoreTrackCut->CreateIterator());
+      TIter nextDigitTrackCut(digitStoreTrackCut.CreateIterator());
       clusterServer->UseDigits(nextDigitTrackCut);
       
       for (Int_t ch = firstChamber; ch <= lastChamber; ++ch ){
