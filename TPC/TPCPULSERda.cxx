@@ -3,7 +3,7 @@ TPC DA for online calibration
 
 Contact: Haavard.Helstrup@cern.ch
 Link:
-Run Type: PULSER_RUN
+Run Type: CALIBRATION_PULSER
 DA Type: LDC
 Number of events needed: 100
 Input Files: 
