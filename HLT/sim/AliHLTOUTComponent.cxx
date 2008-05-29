@@ -326,7 +326,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
   if (bufferSize<=fBuffer.size()) {
     AliRawDataHeader* pCDH=reinterpret_cast<AliRawDataHeader*>(&fBuffer[0]);
     AliHLTOUT::AliHLTOUTEventHeader* pHLTH=reinterpret_cast<AliHLTOUT::AliHLTOUTEventHeader*>(&fBuffer[sizeof(AliRawDataHeader)]);
-    memset(pCDH, 0, sizeof(AliRawDataHeader));
+    *pCDH = AliRawDataHeader();  // Fill with default values.
     memset(pHLTH, 0, sizeof(AliHLTOUT::AliHLTOUTEventHeader));
 
     if (pWriter) {
@@ -337,7 +337,8 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
       pCDH->fStatusMiniEventID|=0x1<<(AliHLTOUT::kCDHStatusFlagsOffset+AliHLTOUT::kCDHFlagsHLTPayload);
     }
     pHLTH->fLength+=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
-    pHLTH->fEventID=eventNo;
+    // pHLTH->fEventIDLow is already set to zero in memset above.
+    pHLTH->fEventIDLow = eventNo;
     // version does not really matter since we do not add decision data
     pHLTH->fVersion=AliHLTOUT::kVersion1;
 

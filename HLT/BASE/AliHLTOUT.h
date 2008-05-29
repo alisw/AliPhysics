@@ -76,8 +76,10 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTUInt32_t fLength; //! see above
     /** version of the header */
     AliHLTUInt32_t fVersion; //! see above
-    /** event id */
-    AliHLTUInt64_t fEventID; //! see above
+    /** High 32 bit word of event id */
+    AliHLTUInt32_t fEventIDHigh; //! see above
+    /** Low 32 bit word of event id */
+    AliHLTUInt32_t fEventIDLow; //! see above
   };
 
   enum {
