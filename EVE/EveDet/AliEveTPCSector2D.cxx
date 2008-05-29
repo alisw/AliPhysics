@@ -68,7 +68,7 @@ void AliEveTPCSector2D::MakeSector3D()
   s->SetDataSource(fTPCData);
   s->SetSectorID(fSectorID);
   s->SetAutoTrans(fAutoTrans);
-  s->CopyVizParams(*this);
+  s->CopyVizParams(this);
   AddElement(s);
   ElementChanged(kFALSE, kTRUE);
 }

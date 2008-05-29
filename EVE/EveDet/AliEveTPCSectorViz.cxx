@@ -66,18 +66,21 @@ AliEveTPCSectorViz::~AliEveTPCSectorViz()
   delete [] fColorArray;
 }
 
-void AliEveTPCSectorViz::CopyVizParams(const AliEveTPCSectorViz& v)
+void AliEveTPCSectorViz::CopyVizParams(const TEveElement* el)
 {
   // Copy basic viualization parameters from another TPCSectorViz.
 
-  fMinTime   = v.fMinTime;
-  fMaxTime   = v.fMaxTime;
-  fThreshold = v.fThreshold;
-  fMaxVal    = v.fMaxVal;
+  const AliEveTPCSectorViz* v = dynamic_cast<const AliEveTPCSectorViz*>(el);
+  if (v) {
+    fMinTime   = v->fMinTime;
+    fMaxTime   = v->fMaxTime;
+    fThreshold = v->fThreshold;
+    fMaxVal    = v->fMaxVal;
 
-  fRnrInn    = v.fRnrInn;
-  fRnrOut1   = v.fRnrOut1;
-  fRnrOut2   = v.fRnrOut2;
+    fRnrInn    = v->fRnrInn;
+    fRnrOut1   = v->fRnrOut1;
+    fRnrOut2   = v->fRnrOut2;
+  }
 }
 
 /******************************************************************************/

@@ -300,7 +300,7 @@ void AliEveTPCLoader::CreateSectors3D()
       if (fDoubleSR)
 	s->SetDriftVel(2.273);
       if (fSec2Ds[i] != 0)
-	s->CopyVizParams(*fSec2Ds[i]);
+	s->CopyVizParams(fSec2Ds[i]);
 
       s->SetAutoTrans(kTRUE);
       s->SetFrameColor(36);

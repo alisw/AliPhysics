@@ -45,7 +45,7 @@ public:
   AliEveTPCSectorViz(const Text_t* n="AliEveTPCSectorViz", const Text_t* t=0);
   virtual ~AliEveTPCSectorViz();
 
-  virtual void CopyVizParams(const AliEveTPCSectorViz& v);
+  virtual void CopyVizParams(const TEveElement* el);
 
   virtual UInt_t IncRTS() { return ++fRTS; }
   virtual Bool_t CanEditMainColor() const { return kTRUE; }
