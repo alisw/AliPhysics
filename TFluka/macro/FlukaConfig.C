@@ -35,15 +35,18 @@ void Config()
   gRandom->SetSeed(12345);
   cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl;
 
+  gSystem->Load("liblhapdf.so");      // Parton density functions
+  gSystem->Load("libEGPythia6.so");   // TGenerator interface
+  gSystem->Load("libpythia6.so");     // Pythia
+  gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
   
   
-  // libraries required by fluka21
 
   Bool_t isFluka = kTRUE;
   if (isFluka) {
     gSystem->Load("libGeom");
     cout << "\t* Loading TFluka..." << endl;  
-    gSystem->Load("libTFluka");    
+    gSystem->Load("libfluka");    
     
     cout << "\t* Instantiating TFluka..." << endl;
     new  TFluka("C++ Interface to Fluka", 0/*verbositylevel*/);
@@ -184,27 +187,27 @@ void Config()
     rl->CdGAFile();
     gAlice->SetField(field);
  
-  Int_t   iABSO  = 1; 
-  Int_t   iACORDE   = 1; 
-  Int_t   iDIPO  = 1; 
-  Int_t   iFMD   = 1; 
-  Int_t   iFRAME = 1; 
-  Int_t   iHALL  = 1; 
-  Int_t   iITS   = 1; 
-  Int_t   iMAG   = 1; 
-  Int_t   iMUON  = 1; 
-  Int_t   iPHOS  = 1; 
-  Int_t   iPIPE  = 1; 
-  Int_t   iPMD   = 1; 
-  Int_t   iHMPID  = 1; 
-  Int_t   iSHIL  = 1; 
-  Int_t   iT0 = 1; 
-  Int_t   iTOF   = 1; 
-  Int_t   iTPC   = 1;
-  Int_t   iTRD   = 1; 
-  Int_t   iZDC   = 1; 
-  Int_t   iEMCAL = 0; 
-  Int_t   iVZERO = 1;
+  Int_t   iABSO    = 1; 
+  Int_t   iACORDE  = 0; 
+  Int_t   iDIPO    = 1; 
+  Int_t   iFMD     = 1; 
+  Int_t   iFRAME   = 1; 
+  Int_t   iHALL    = 1; 
+  Int_t   iITS     = 1; 
+  Int_t   iMAG     = 1; 
+  Int_t   iMUON    = 1; 
+  Int_t   iPHOS    = 1; 
+  Int_t   iPIPE    = 1; 
+  Int_t   iPMD     = 1; 
+  Int_t   iHMPID   = 1; 
+  Int_t   iSHIL    = 1; 
+  Int_t   iT0      = 1; 
+  Int_t   iTOF     = 1; 
+  Int_t   iTPC     = 1;
+  Int_t   iTRD     = 1; 
+  Int_t   iZDC     = 1; 
+  Int_t   iEMCAL   = 0; 
+  Int_t   iVZERO   = 1;
  
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
