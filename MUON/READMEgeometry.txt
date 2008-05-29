@@ -45,6 +45,10 @@ gAlice->Init("$ALICE_ROOT/MUON/Config.C");
 gGeoManager->GetMasterVolume()->Draw();
 </pre>
 
+A helper macro for adding and removing volumes in the
+scene, MUONGeometryViewingHelper.C is also available.
+ 
+
 \section geometry_s3  How to check the overlaps with the Root geometrical modeler
 
 \see  ftp://root.cern.ch/root/doc/chapter16.pdf
@@ -60,9 +64,25 @@ gGeoManager->PrintOverlaps();
 More extensive, but also more time consuming checking,
 can be performed in this way:
 <pre>
-gGeoManager->CheckGeometryFull();
+gGeoManager->CheckGeometryFull(1000000,0,0,0,"o"); >& check_full.out
 </pre>
-
+Then, you will find in the output file \em check_full.out the list of
+volumes where any overlaps have been detected. As TGeoManager
+does not remember all overlaps found during checking,
+in order to investigate them, one has to re-run the checking for 
+each listed volume:
+<pre>
+gGeoManager->FindVolumeFast("MyVolume")->CheckOverlaps(0.01, "s");
+gGeoManager->PrintOverlaps(); >& overlaps_MyVolume.txt 
+</pre>
+At this stage the overlaps found for the selected volume can be also browsed 
+with TBrowser. Sometimes it happens that the reported overlapping
+volumes are assemblies and nothing is visualized on the scene
+when clicking on the overlap icon in the browser.
+In this case you can use the function setDaughtersVisibility()
+from the MUONGeometryViewingHelper.C macro, which propagates the
+visibility setting through all assembly levels up to the real
+volumes.
 
 \section geometry_s4 Macro  MUONGenerateGeometryData.C
 						
