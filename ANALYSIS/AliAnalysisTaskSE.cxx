@@ -149,8 +149,6 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     if (handler) {
 	fOutputAOD   = handler->GetAOD();
 	fTreeA = handler->GetTree();
-	fTreeA->Print();
-	
 	// Check if AOD Header replication has been required
 	if (!(handler->IsStandard())            && 
 	    (handler->NeedsHeaderReplication()) &&
