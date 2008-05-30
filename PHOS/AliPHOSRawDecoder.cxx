@@ -190,6 +190,7 @@ Bool_t AliPHOSRawDecoder::NextDigit()
 
      fLowGainFlag = in->IsLowGain();
 //     fTime =   in->GetTime();
+     fTime = 1;
      fModule = in->GetModule()+1;
      fRow    = in->GetRow()   +1;
      fColumn = in->GetColumn()+1;
