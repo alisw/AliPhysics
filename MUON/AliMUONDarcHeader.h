@@ -46,7 +46,7 @@ public:
             /// Return serial number
    UChar_t GetSerialNb()   const {return (UChar_t)(fWord >> 20) &  0xF;}
             /// Return version
-   UChar_t GetVersion()    const {return (UChar_t)(fWord >> 13) &  0xFF;}
+   UChar_t GetVersion()    const {return (UChar_t)(fWord >> 12) &  0xFF;}
             /// Return VME trig
    Bool_t  GetVMETrig()    const {return (fWord &  0x800);}
             /// Return global flag
