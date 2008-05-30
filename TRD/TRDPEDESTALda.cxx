@@ -12,7 +12,8 @@ Trigger types used:
 
 */
 
-#define RESULT_FILE "trdCalibration.root"
+#define RESULT_FILE  "trdPedestal.root"
+#define FILE_ID "PADSTATUS"
 
 extern "C" {
 #include <daqDA.h>
@@ -94,8 +95,10 @@ int main(int argc, char **argv) {
   // setting
   // AliTRDrawStreamTB::SetNoDebug();
   AliTRDrawStreamTB::SetNoErrorWarning();
-  AliTRDrawStreamTB::SetForceCleanDataOnly();
+  //AliTRDrawStreamTB::SetForceCleanDataOnly();
   AliTRDrawStreamTB::AllowCorruptedData();
+  AliTRDrawStreamTB::DisableStackNumberChecker();
+  AliTRDrawStreamTB::DisableStackLinkNumberChecker();
   //AliTRDrawStreamTB::SetSkipCDH();
   //AliTRDrawStreamTB::SetExtraWordsFix();
   //AliTRDrawStreamTB::EnableDebugStream();
@@ -165,7 +168,7 @@ int main(int argc, char **argv) {
   fileTRD->Close();   
      
   /* store the result file on FES */
-  status=daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE);
+  status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
   if (status) {
     printf("Failed to export file : %d\n",status);
     return -1;

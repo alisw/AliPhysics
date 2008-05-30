@@ -12,7 +12,8 @@ Trigger types used: PHYSICS_EVENT
 
 */
 
-#define RESULT_FILE "trdCalibrationv.root"
+#define RESULT_FILE  "trdVdrift.root"
+#define FILE_ID "VDRIFT"
 
 
 extern "C" {
@@ -114,8 +115,10 @@ int main(int argc, char **argv) {
    // setting
   // AliTRDrawStreamTB::SetNoDebug();
   AliTRDrawStreamTB::SetNoErrorWarning();
-  AliTRDrawStreamTB::SetForceCleanDataOnly();
+  //AliTRDrawStreamTB::SetForceCleanDataOnly();
   AliTRDrawStreamTB::AllowCorruptedData();
+  AliTRDrawStreamTB::DisableStackNumberChecker();
+  AliTRDrawStreamTB::DisableStackLinkNumberChecker();
   //AliTRDrawStreamTB::SetSkipCDH();
   //AliTRDrawStreamTB::SetExtraWordsFix();
   //AliTRDrawStreamTB::EnableDebugStream();
@@ -209,7 +212,7 @@ int main(int argc, char **argv) {
   fileTRD->Close();
   status=0;
   // Export the file in any case to see if problems
-  if(daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE)) status = -2;
+  if(daqDA_FES_storeFile(RESULT_FILE,FILE_ID)) status = -2;
   
   delete fileTRD;  
 
