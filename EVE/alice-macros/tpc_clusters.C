@@ -72,7 +72,7 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 
   delete clrow;
 
-  rl->LoadRecPoints("TPC");
+  rl->UnloadRecPoints("TPC");
 
   if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE)
   {
