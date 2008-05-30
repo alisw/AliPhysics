@@ -15,6 +15,7 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lITSbase \
                          -lMUONgeometry -lMUONmapping -lMUONrec -lMUONsim -lMUONbase -lMUONcore \
                          -lPMDbase -lT0base -lTOFbase -lTOFsim -lTPCbase -lTRDbase -lTRDrec \
+                         -lFMDbase -lFMDrec \
                          -lRAWDatarec -lRAWDatabase \
                          -L$(shell root-config --libdir) -lEve -lRGL -lGed -lGui -lGeom -lEG
 
