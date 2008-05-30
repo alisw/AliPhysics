@@ -24,6 +24,7 @@
 #include <AliGenEventHeader.h>
 #include <AliGenPythiaEventHeader.h>
 #include <AliGenCocktailEventHeader.h>
+#include <AliGenDPMjetEventHeader.h>
 
 //____________________________________________________________________
 ClassImp(AliPWG0Helper)
@@ -328,46 +329,123 @@ const char* AliPWG0Helper::GetAxisTitle(TH3* hist, const char axis)
   return 0;
 }
 
-//____________________________________________________________________
-Int_t AliPWG0Helper::GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug) {
+
+Int_t AliPWG0Helper::GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
+
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader);
+
+  if (!pythiaGenHeader) {
+    printf("AliPWG0Helper::GetProcessType : Unknown gen Header type). \n");
+    return kInvalidProcess;
+  }
+
+
+  Int_t pythiaType = pythiaGenHeader->ProcessType();
+  MCProcessType globalType = kInvalidProcess;  
+
+
+  if (adebug) {
+    printf("AliPWG0Helper::GetProcessType : Pythia process type found: %d \n",pythiaType);
+  }
+
+
+  if(pythiaType==92||pythiaType==93){
+    globalType = kSD;
+  }
+  else if(pythiaType==94){
+    globalType = kDD;
+  }
+  //else if(pythiaType != 91){ // also exclude elastic to be sure... CKB??
+  else {
+    globalType = kND;
+  }
+  return globalType;
+}
+
+
+Int_t AliPWG0Helper::GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
   //
   // get the process type of the event.
   //
 
   // can only read pythia headers, either directly or from cocktalil header
-  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader->GenEventHeader());
+  AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(aHeader);
 
-  if (!pythiaGenHeader) {
-
-    AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(aHeader->GenEventHeader());
-    if (!genCocktailHeader) {
-      printf("AliPWG0Helper::GetProcessType : Unknown header type (not Pythia or Cocktail). \n");
-      return -1;
-    }
-
-    TList* headerList = genCocktailHeader->GetHeaders();
-    if (!headerList) {
-      return -1;
-    }
-
-    for (Int_t i=0; i<headerList->GetEntries(); i++) {
-      pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
-      if (pythiaGenHeader)
-        break;
-    }
-
-    if (!pythiaGenHeader) {
-      printf("AliPWG0Helper::GetProcessType : Could not find Pythia header. \n");
-      return -1;
-    }
+  if (!dpmJetGenHeader) {
+    printf("AliPWG0Helper::GetDPMjetProcessType : Unknown header type (not DPMjet or). \n");
+    return kInvalidProcess;
   }
+
+  Int_t dpmJetType = dpmJetGenHeader->ProcessType();
+  MCProcessType globalType = kInvalidProcess;  
+
 
   if (adebug) {
-    printf("AliPWG0Helper::GetProcessType : Pythia process type found: %d \n",pythiaGenHeader->ProcessType());
+    printf("AliPWG0Helper::GetDPMJetProcessType : DPMJet process type found: %d \n",dpmJetType);
   }
 
-  return pythiaGenHeader->ProcessType();
+
+  if(dpmJetType == 1){ // this is explicitly inelastic
+    globalType = kND;
+  }  
+  else if(dpmJetType==5||dpmJetType==6){
+    globalType = kSD;
+  }
+  else if(dpmJetType==7||dpmJetType==4){// DD and double pomeron
+    globalType = kDD;
+  }
+  return globalType;
 }
+
+
+Int_t AliPWG0Helper::GetEventProcessType(AliHeader* aHeader, Bool_t adebug) {
+  //
+  // get the process type of the event.
+  //
+
+
+  // Check for simple headers first
+
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader->GenEventHeader());
+  if (pythiaGenHeader) {
+    return GetPythiaEventProcessType(pythiaGenHeader,adebug);
+  }
+
+  AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(aHeader->GenEventHeader());
+  if (dpmJetGenHeader) {
+    return GetDPMjetEventProcessType(dpmJetGenHeader,adebug);
+  }
+  
+
+  // check for cocktail
+
+  AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(aHeader->GenEventHeader());
+  if (!genCocktailHeader) {
+    printf("AliPWG0Helper::GetProcessType : Unknown header type (not Pythia or Cocktail). \n");
+    return kInvalidProcess;
+  }
+
+  TList* headerList = genCocktailHeader->GetHeaders();
+  if (!headerList) {
+    return kInvalidProcess;
+  }
+
+  for (Int_t i=0; i<headerList->GetEntries(); i++) {
+
+    pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
+    if (pythiaGenHeader) {
+      return GetPythiaEventProcessType(pythiaGenHeader,adebug);
+    }
+
+    dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(headerList->At(i));
+    if (dpmJetGenHeader) {
+      return GetDPMjetEventProcessType(dpmJetGenHeader,adebug);
+    }
+  }
+  return kInvalidProcess;
+}
+
+
 
 //____________________________________________________________________
 TParticle* AliPWG0Helper::FindPrimaryMother(AliStack* stack, Int_t label)

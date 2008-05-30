@@ -266,12 +266,12 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     return;
   }
 
-  // get process type; NB: this only works for Pythia
-  Int_t processType = AliPWG0Helper::GetPythiaEventProcessType(header);
-  AliDebug(AliLog::kDebug+1, Form("Found pythia process type %d", processType));
+  // get process type;
+  Int_t processType = AliPWG0Helper::GetEventProcessType(header);
+  AliDebug(AliLog::kDebug+1, Form("Found process type %d", processType));
 
-  if (processType<0)
-    AliDebug(AliLog::kError, Form("Unknown Pythia process type %d.", processType));
+  if (processType == AliPWG0Helper::kInvalidProcess)
+    AliDebug(AliLog::kError, Form("Unknown process type %d.", processType));
 
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
@@ -300,7 +300,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   // INEL
   fEventStats->Fill(0.0, biny);
   // NSD
-  if (processType != 92 && processType != 93)
+  if (processType != AliPWG0Helper::kSD )
     fEventStats->Fill(1.0, biny);
   
   // create list of (label, eta, pt) tuples
@@ -429,15 +429,15 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     if (fdNdEtaCorrectionProcessType[0])
     {
       // non diffractive
-      if (processType!=92 && processType!=93 && processType!=94)
+      if (processType==AliPWG0Helper::kND)
         fdNdEtaCorrectionProcessType[0]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
 
       // single diffractive
-      if (processType==92 || processType==93)
+      if (processType==AliPWG0Helper::kSD)
         fdNdEtaCorrectionProcessType[1]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
 
       // double diffractive
-      if (processType==94)
+      if (processType==AliPWG0Helper::kDD)
         fdNdEtaCorrectionProcessType[2]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
     }
 
@@ -531,15 +531,15 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       if (fdNdEtaCorrectionProcessType[0])
       {
         // non diffractive
-        if (processType!=92 && processType!=93 && processType!=94)
+        if (processType == AliPWG0Helper::kND)
           fdNdEtaCorrectionProcessType[0]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
 
         // single diffractive
-        if (processType==92 || processType==93)
+        if (processType == AliPWG0Helper::kSD )
           fdNdEtaCorrectionProcessType[1]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
 
         // double diffractive
-        if (processType==94)
+        if (processType == AliPWG0Helper::kDD)
           fdNdEtaCorrectionProcessType[2]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
       }
 
@@ -615,15 +615,15 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   if (fdNdEtaCorrectionProcessType[0])
   {
     // non diffractive
-    if (processType!=92 && processType!=93 && processType!=94)
+    if (processType == AliPWG0Helper::kND )
       fdNdEtaCorrectionProcessType[0]->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
 
     // single diffractive
-    if (processType==92 || processType==93)
+    if (processType == AliPWG0Helper::kSD)
       fdNdEtaCorrectionProcessType[1]->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
 
     // double diffractive
-    if (processType==94)
+    if (processType == AliPWG0Helper::kDD)
       fdNdEtaCorrectionProcessType[2]->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
   }
 

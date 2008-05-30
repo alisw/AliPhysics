@@ -15,6 +15,7 @@ class TH1;
 class TH2;
 class TH3;
 class AliHeader;
+class AliGenEventHeader;
 class AliStack;
 class TTree;
 
@@ -23,6 +24,8 @@ class AliPWG0Helper : public TObject
   public:
     enum Trigger { kMB1 = 0, kMB2 }; // definition from ALICE-INT-2005-025
     enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS };
+    // in case we want to use bitmaps...
+    enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4 }; 
 
     static Bool_t IsEventTriggered(const AliESD* aEsd, Trigger trigger = kMB2);
     static Bool_t IsEventTriggered(ULong64_t triggerMask, Trigger trigger = kMB2);
@@ -32,7 +35,10 @@ class AliPWG0Helper : public TObject
 
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
 
-    static Int_t GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug = kFALSE);
+    static Int_t GetEventProcessType(AliHeader* aHeader, Bool_t adebug = kFALSE);
+    static Int_t GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
+    static Int_t GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
+
     static TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
     static Int_t FindPrimaryMotherLabel(AliStack* stack, Int_t label);
 

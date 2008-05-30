@@ -354,20 +354,20 @@ void AliMultiplicityTask::Exec(Option_t*)
     if (fSelectProcessType > 0)
     {
       // getting process information; NB: this only works for Pythia
-      Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
+      Int_t processtype = AliPWG0Helper::GetEventProcessType(header);
 
       processEvent = kFALSE;
 
       // non diffractive
-      if (fSelectProcessType == 1 && processtype !=92 && processtype !=93 && processtype != 94)
+      if (fSelectProcessType == 1 && processtype == AliPWG0Helper::kND )
         processEvent = kTRUE;
 
       // single diffractive
-      if (fSelectProcessType == 2 && (processtype == 92 || processtype == 93))
+      if (fSelectProcessType == 2 && processtype == AliPWG0Helper::kSD )
         processEvent = kTRUE;
 
       // double diffractive
-      if (fSelectProcessType == 3 && processtype == 94)
+      if (fSelectProcessType == 3 && processtype == AliPWG0Helper::kDD )
         processEvent = kTRUE;
 
       if (!processEvent)

@@ -221,8 +221,8 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     return kFALSE;
   }
   
-  // getting process information NB: this only works for Pythia !!!
-  Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
+  // getting process information
+  Int_t processtype = AliPWG0Helper::GetEventProcessType(header);
 
   // can only read pythia headers, either directly or from cocktalil header
   AliGenEventHeader* genHeader = (AliGenEventHeader*)(header->GenEventHeader());
@@ -243,20 +243,20 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
   Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
   
   // non diffractive
-  if (processtype!=92 && processtype!=93 && processtype!=94) {
-    // NB: passing the wrong process type here (1), since the process type is defined by the index in the array (here non-diffractive)
+  if (processtype == AliPWG0Helper::kND) {
+    // NB: passing the wrong process type here (1), since the process type is defined by the index in the array (here non-diffractive) // ???? CKB ???
     if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);      
     if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
   }
   
   // single diffractive
-  if (processtype==92 || processtype==93) { 
+  if (processtype == AliPWG0Helper::kSD) { 
     if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);     
     if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
   }
   
   // double diffractive
-  if (processtype==94) { 
+  if (processtype==AliPWG0Helper::kDD) { 
     if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);     
     if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
   }
@@ -321,17 +321,17 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     }
     
     // non diffractive
-    if (processtype!=92 && processtype!=93 && processtype!=94) { 
+    if (processtype==AliPWG0Helper::kND) { 
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
     }
     // single diffractive
-    if (processtype==92 || processtype==93) { 
+    if (processtype==AliPWG0Helper::kSD) { 
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
     }
     // double diffractive
-    if (processtype==94) { 
+    if (processtype==AliPWG0Helper::kDD) { 
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
     }
@@ -373,19 +373,19 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     Float_t pt  = particle->Pt();
     
     // non diffractive
-    if (processtype!=92 && processtype!=93 && processtype!=94) { 
+    if (processtype==AliPWG0Helper::kND) { 
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillTrackedParticle(vtxMC[2], eta, pt);
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillTrackedParticle(vtxMC[2], eta, pt);
     }
     
     // single diffractive
-    if (processtype==92 || processtype==93) { 
+    if (processtype==AliPWG0Helper::kSD) { 
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillTrackedParticle(vtxMC[2], eta, pt);
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillTrackedParticle(vtxMC[2], eta, pt);
     }
 
     // double diffractive
-    if (processtype==94) { 
+    if (processtype==AliPWG0Helper::kDD) { 
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillTrackedParticle(vtxMC[2], eta, pt);
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillTrackedParticle(vtxMC[2], eta, pt);
     }

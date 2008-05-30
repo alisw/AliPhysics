@@ -445,12 +445,12 @@ void AlidNdEtaTask::Exec(Option_t*)
     TArrayF vtxMC(3);
     genHeader->PrimaryVertex(vtxMC);
 
-    // get process type; NB: this only works for Pythia
-    Int_t processType = AliPWG0Helper::GetPythiaEventProcessType(header);
-    AliDebug(AliLog::kDebug+1, Form("Found pythia process type %d", processType));
+    // get process type
+    Int_t processType = AliPWG0Helper::GetEventProcessType(header);
+    AliDebug(AliLog::kDebug+1, Form("Found process type %d", processType));
 
-    if (processType<0)
-      AliDebug(AliLog::kError, Form("Unknown Pythia process type %d.", processType));
+    if (processType==AliPWG0Helper::kInvalidProcess)
+      AliDebug(AliLog::kError, Form("Unknown process type %d.", processType));
 
     // loop over mc particles
     Int_t nPrim  = stack->GetNprimary();
@@ -479,7 +479,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       fdNdEtaAnalysis->FillTrack(vtxMC[2], eta, pt);
       fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
 
-      if (processType != 92 && processType != 93)
+      if (processType != AliPWG0Helper::kSD )
         fdNdEtaAnalysisNSD->FillTrack(vtxMC[2], eta, pt);
 
       if (eventTriggered)
@@ -494,7 +494,7 @@ void AlidNdEtaTask::Exec(Option_t*)
     }
 
     fdNdEtaAnalysis->FillEvent(vtxMC[2], nAcceptedParticles);
-    if (processType != 92 && processType != 93)
+    if (processType != AliPWG0Helper::kSD )
       fdNdEtaAnalysisNSD->FillEvent(vtxMC[2], nAcceptedParticles);
 
     if (eventTriggered)
