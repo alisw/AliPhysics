@@ -495,8 +495,10 @@ void Config()
 
     //=================== ITS parameters ============================
     //
- 	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
+
+      AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     }
+
 
     if (iTPC)
     {
