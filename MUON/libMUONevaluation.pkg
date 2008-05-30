@@ -9,7 +9,9 @@ SRCS:= AliMUONPairLight.cxx \
        AliMUONTriggerGUI.cxx \
        AliMUONTriggerGUIbdmap.cxx \
        AliMUONTriggerGUIdimap.cxx \
-       AliMUONTriggerGUIboard.cxx
+       AliMUONTriggerGUIboard.cxx \
+       AliMUONClusterInfo.cxx \
+       AliMUONPadInfo.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
