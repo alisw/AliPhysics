@@ -54,7 +54,9 @@ AliFMDGainDA::AliFMDGainDA()
     fEventsPerChannel(16),
     fCurrentPulse(16),
     fCurrentChannel(16),
-    fNumberOfStripsPerChip(128)
+    fNumberOfStripsPerChip(128),
+    fSummaryGains("GainsSummary","Summary of gains",51200,0,51200),
+    fCurrentSummaryStrip(0)
 {
   fCurrentPulse.Reset(0);
   fCurrentChannel.Reset(0);
@@ -72,7 +74,9 @@ AliFMDGainDA::AliFMDGainDA(const AliFMDGainDA & gainDA)
      fEventsPerChannel(gainDA.fEventsPerChannel),
      fCurrentPulse(gainDA.fCurrentPulse),
      fCurrentChannel(gainDA.fCurrentChannel),
-     fNumberOfStripsPerChip(gainDA.fNumberOfStripsPerChip)
+     fNumberOfStripsPerChip(gainDA.fNumberOfStripsPerChip),
+     fSummaryGains(gainDA.fSummaryGains),
+     fCurrentSummaryStrip(gainDA.fCurrentSummaryStrip)
 {  
   fCurrentPulse.Reset(0);
   fCurrentChannel.Reset(0);
@@ -191,6 +195,9 @@ void AliFMDGainDA::Analyse(UShort_t det,
 	      << chi2ndf                     <<"\n";
   
   
+  fSummaryGains.SetBinContent(fCurrentSummaryStrip,fitFunc.GetParameter(1));
+  fSummaryGains.SetBinError(fCurrentSummaryStrip,fitFunc.GetParError(1));
+  fCurrentSummaryStrip++;
   if(fSaveHistograms) {
     gDirectory->cd(GetSectorPath(det,ring, sec, kTRUE));
     
@@ -213,6 +220,13 @@ void AliFMDGainDA::Analyse(UShort_t det,
     grChannel->Write();
     // grChannel->Write(Form("grFMD%d%c_%d_%d",det,ring,sec,strip));
   }  
+}
+
+//_____________________________________________________________________
+void AliFMDGainDA::Terminate(TFile* diagFile)
+{
+  diagFile->cd();
+  fSummaryGains.Write();
 }
 
 //_____________________________________________________________________

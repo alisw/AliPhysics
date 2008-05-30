@@ -38,6 +38,7 @@ class AliFMDGainDA: public AliFMDBaseDA {
   void UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
   void ResetPulseAndUpdateChannel();
   void FinishEvent();
+  void Terminate(TFile* );
   
  private:
   
@@ -51,6 +52,9 @@ class AliFMDGainDA: public AliFMDBaseDA {
   TArrayS fCurrentPulse;
   TArrayS fCurrentChannel;
   Int_t fNumberOfStripsPerChip;
+  
+  TH1F fSummaryGains;
+  Int_t fCurrentSummaryStrip;
   
   ClassDef(AliFMDGainDA,0)
 

@@ -152,7 +152,6 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   // cdb->SetRun(0);
   AliFMDParameters* pars = AliFMDParameters::Instance();
   pars->Init(this, false, AliFMDParameters::kAltroMap);
-
   // This is if the SOR contains Fee parameters, and we run a DA to
   // extract these parameters.   The same code could work if we get
   // the information from DCS via the FXS 
@@ -311,36 +310,33 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
 	Log(Form("Bad read at line %d in %s", lineno, filename));
 	break;
       }
-      UInt_t ddl=2, board, chip, channel, strip, sample, tb;
+      UShort_t det, sec, strip;
+      Char_t ring;
       Float_t ped, noise, mu, sigma, chi2ndf;
-      Char_t c[11];
+      Char_t c[8];
 	  
-      in >> ddl      >> c[0] 
-	 >> board    >> c[1]
-	 >> chip     >> c[2]
-	 >> channel  >> c[3]
-	 >> strip    >> c[4]
-	 >> sample   >> c[5]
-	 >> tb       >> c[6]
-	 >> ped      >> c[7]
-	 >> noise    >> c[8]
-	 >> mu       >> c[9]
-	 >> sigma    >> c[10]
+      in >> det      >> c[0] 
+	 >> ring     >> c[1]
+	 >> sec      >> c[2]
+	 >> strip    >> c[3]
+	 >> ped      >> c[4]
+	 >> noise    >> c[5]
+	 >> mu       >> c[6]
+	 >> sigma    >> c[7]
 	 >> chi2ndf;
       lineno++;
       
       // Ignore trailing garbage 
-      if (strip > 127) continue;
+      // if (strip > 127) continue;
       
       //Setting DDL to comply with the FMD in DAQ
-      UInt_t FmdDDLBase = 3072; 
-      ddl = ddl - FmdDDLBase;
+      // UInt_t FmdDDLBase = 3072; 
+      // ddl = ddl - FmdDDLBase;
       //Setting the pedestals via the hardware address
-      UShort_t det, sec, str;
-      Char_t ring;
       
-      pars->Hardware2Detector(ddl,board,chip,channel,det,ring,sec,str);
-      strip += str;
+      
+      // pars->Hardware2Detector(ddl,board,chip,channel,det,ring,sec,str);
+      // strip += str;
      
       calibPed->Set(det,ring,sec,strip,ped,noise);
      
@@ -394,31 +390,30 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
 	Log(Form("Bad read at line %d in %s", lineno, filename));
 	break;
       }
-      UInt_t ddl=2, board, chip, channel, strip;
+      UShort_t det, sec, strip;
+      Char_t ring;
+      
       Float_t gain,error,  chi2ndf;
-      Char_t c[7];
-	      
-      in >> ddl      >> c[0] 
-	 >> board    >> c[1]
-	 >> chip     >> c[2]
-	 >> channel  >> c[3]
-	 >> strip    >> c[4]
-	 >> gain     >> c[5]
-	 >> error    >> c[6]
+      Char_t c[6];
+      
+      in >> det      >> c[0] 
+	 >> ring     >> c[1]
+	 >> sec      >> c[2]
+	 >> strip    >> c[3]
+	 >> gain     >> c[4]
+	 >> error    >> c[5]
 	 >> chi2ndf;
       lineno++;
       // Ignore trailing garbage
-      if(strip > 127) continue;
+      //if(strip > 127) continue;
       
       //Setting DDL to comply with the FMD in DAQ
-      UInt_t FmdDDLBase = 3072; 
-      ddl = ddl - FmdDDLBase;
+      // UInt_t FmdDDLBase = 3072; 
+      // ddl = ddl - FmdDDLBase;
       //Setting the pedestals via the hardware address
-      UShort_t det, sec, str;
-      Char_t ring;
-      pars->Hardware2Detector(ddl,board,chip,channel,det,ring,sec,str);
+      //   pars->Hardware2Detector(ddl,board,chip,channel,det,ring,sec,str);
 
-      strip += str;
+      // strip += str;
       calibGain->Set(det,ring,sec,strip,gain);
     }
   }
