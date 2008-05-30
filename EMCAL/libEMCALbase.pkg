@@ -32,6 +32,6 @@ EINCLUDE:=PYTHIA6 RAW EVGEN THijing
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lCDB -lSTEER \
-                         -lRAWDatarec \
+                         -lRAWDatarec -lRAWDatabase \
                          -L$(shell root-config --libdir) -lVMC -lGeom -lMinuit
 endif

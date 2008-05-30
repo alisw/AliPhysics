@@ -255,7 +255,7 @@ else
 	  $(MUTE)$(LD) $(@PACKAGE@LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(@PACKAGE@BLIBS) $(EXEFLAGS) -o $@
 endif
 
-$(@PACKAGE@DAL): $(@PACKAGE@CINTHDRS) @MODULE@/module.mk @MODULE@/tgt_$(ALICE_TARGET)/@PACKAGE@_srcslist
+$(@PACKAGE@DAL): $(@PACKAGE@CINTHDRS) @MODULE@/module.mk
 ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";
 endif
@@ -269,7 +269,7 @@ endif
 	   echo "#pragma link C++ class $(i)+;" >> $@ ;)
 	$(MUTE)echo '#endif' >> $@
 
-$(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk @MODULE@/tgt_$(ALICE_TARGET)/@PACKAGE@_srcslist
+$(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk
 ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";
 endif
@@ -283,15 +283,6 @@ ifndef ALIQUIET
 endif
 		$(MUTE)$(CXX) $(@PACKAGE@DEFINE) -c $(@PACKAGE@INC)  -I$(ALICE_ROOT) $< -o $@ $(@PACKAGE@DCXXFLAGS)
 
-$(MODDIRO)/@PACKAGE@_srcslist: @MODULE@/@TYPE@@PACKAGE@.pkg
-	$(MUTE)if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi
-	$(MUTE)for i in $(@PACKAGE@CS) $(@PACKAGE@S) xyz; do echo $$i; done | sort > $@.new
-	$(MUTE)for j in `diff -w $@ $@.new 2>/dev/null | awk '/^\</{sub(".c.*",".",$$2); print $$2}' | $(XARGS) basename` ;\
-	do grep -l $$j `find */tgt_$(ALICE_TARGET) -name "*.d"` | $(XARGS) echo \rm -f ;\
-	(find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}d" ; find @MODULE@/tgt_$(ALICE_TARGET) -name "$${j}o") | $(XARGS) echo \rm -f ;\
-	done
-	$(MUTE)diff -q -w >/dev/null 2>&1 $@ $@.new ;\
-	if [ $$? -ne 0 ]; then \mv $@.new $@; else \rm $@.new; fi
 
 #Different targets for the module
 
