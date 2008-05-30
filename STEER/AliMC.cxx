@@ -212,7 +212,7 @@ Bool_t  AliMC::MisalignGeometry()
    // Misalign geometry via AliSimulation instance
    if (!AliSimulation::GetInstance()) return kFALSE;
    AliGeomManager::SetGeometry(gGeoManager);
-   if(!AliGeomManager::CheckSymNamesLUT())
+   if(!AliGeomManager::CheckSymNamesLUT("ALL"))
     AliFatal("Current loaded geometry differs in the definition of symbolic names!");
 
    return AliSimulation::GetInstance()->MisalignGeometry(gAlice->GetRunLoader());

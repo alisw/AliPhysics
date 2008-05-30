@@ -640,8 +640,24 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!AliGeomManager::GetGeometry()) {
     // Initialize the geometry manager
     AliGeomManager::LoadGeometry("geometry.root");
-    if(!AliGeomManager::CheckSymNamesLUT())
+    
+//    // Check that the consistency of symbolic names for the activated subdetectors
+//    // in the geometry loaded by AliGeomManager
+//    AliRunLoader* runLoader = LoadRun("READ");
+//    if (!runLoader) return kFALSE;
+//
+//    TString detsToBeChecked = "";
+//    TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+//    for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+//      AliModule* det = (AliModule*) detArray->At(iDet);
+//      if (!det || !det->IsActive()) continue;
+//      detsToBeChecked += det->GetName();
+//      detsToBeChecked += " ";
+//    } // end loop over detectors
+//    if(!AliGeomManager::CheckSymNamesLUT(detsToBeChecked.Data()))
+    if(!AliGeomManager::CheckSymNamesLUT("ALL"))
 	AliFatalClass("Current loaded geometry differs in the definition of symbolic names!");
+	
     if (!AliGeomManager::GetGeometry()) if (fStopOnError) return kFALSE;
     // Misalign geometry
     if(!MisalignGeometry()) if (fStopOnError) return kFALSE;
@@ -835,7 +851,18 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Misalign geometry
 #if ROOT_VERSION_CODE < 331527
   AliGeomManager::SetGeometry(gGeoManager);
-  if(!AliGeomManager::CheckSymNamesLUT())
+  
+  // Check that the consistency of symbolic names for the activated subdetectors
+  // in the geometry loaded by AliGeomManager
+  TString detsToBeChecked = "";
+  TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+    AliModule* det = (AliModule*) detArray->At(iDet);
+    if (!det || !det->IsActive()) continue;
+    detsToBeChecked += det->GetName();
+    detsToBeChecked += " ";
+  } // end loop over detectors
+  if(!AliGeomManager::CheckSymNamesLUT(detsToBeChecked.Data()))
     AliFatalClass("Current loaded geometry differs in the definition of symbolic names!");
   MisalignGeometry(runLoader);
 #endif
@@ -1779,3 +1806,5 @@ void AliSimulation::ProcessEnvironmentVars()
     
     AliInfo(Form("Run number = %d", fRun)); 
 }
+
+

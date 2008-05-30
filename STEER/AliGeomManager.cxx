@@ -441,6 +441,10 @@ const char* AliGeomManager::SymName(ELayerID layerId, Int_t modId)
   // Returns the symbolic volume name given for a given layer
   // and module ID
   //
+  if(!fgGeometry){
+    AliErrorClass("No geometry instance loaded yet!");
+    return NULL;
+  }
   if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
@@ -450,7 +454,7 @@ const char* AliGeomManager::SymName(ELayerID layerId, Int_t modId)
 }
 
 //_____________________________________________________________________________
-Bool_t AliGeomManager::CheckSymNamesLUT()
+Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
 {
   // Check the look-up table which associates the unique numerical identity of
   // each alignable volume to the corresponding symbolic volume name.
@@ -462,336 +466,370 @@ Bool_t AliGeomManager::CheckSymNamesLUT()
   // for TRD and TOF volumes which are missing in the partial geometry.
   // 
 
+//  TString detsString(detsToBeChecked);
+//  if(detsString.Contains("ALL")) detsString="ITS TPC TOF TRD HMPID PHOS EMCAL";
+
+  // Temporary measure to face the case of reconstruction over detectors not present in the geometry
+  TString detsString = "";
+  if(fgGeometry->CheckPath("ALIC_1/ITSV_1")) detsString+="ITS ";
+  if(fgGeometry->CheckPath("ALIC_1/TPC_M_1")) detsString+="TPC ";
+  if(fgGeometry->CheckPath("ALIC_1/B077_1/BSEGMO0_1/BTOF0_1/FTOA_0")) detsString+="TOF ";
+  if(fgGeometry->CheckPath("ALIC_1/B077_1/BSEGMO0_1/BTRD0_1/UTR1_1")) detsString+="TRD ";
+  if(fgGeometry->CheckPath("ALIC_1/Hmp0_0")) detsString+="HMPID ";
+  if(fgGeometry->CheckPath("ALIC_1/PHOS_1")) detsString+="PHOS ";
+  if(fgGeometry->CheckPath("ALIC_1/XEN1_1")) detsString+="EMCAL";
+
+  
   TString symname;
   const char* sname;
   TGeoPNEntry* pne = 0x0;
   Int_t uid; // global unique identity
   Int_t modnum; // unique id inside layer; in the following, set it to 0 at the start of each layer
 
+  if(detsString.Contains("ITS")){
   /*********************       ITS layers  ***********************/
-  TString strSPD = "ITS/SPD";
-  TString strSDD = "ITS/SDD";
-  TString strSSD = "ITS/SSD";
-  TString strStave = "/Stave";
-  TString strHalfStave = "/HalfStave";
-  TString strLadder = "/Ladder";
-  TString strSector = "/Sector";
-  TString strSensor = "/Sensor";
-  TString strEntryName1;
-  TString strEntryName2;
-  TString strEntryName3;
+    AliDebugClass(2,"Checking consistency of symbolic names for ITS layers");
+    TString strSPD = "ITS/SPD";
+    TString strSDD = "ITS/SDD";
+    TString strSSD = "ITS/SSD";
+    TString strStave = "/Stave";
+    TString strHalfStave = "/HalfStave";
+    TString strLadder = "/Ladder";
+    TString strSector = "/Sector";
+    TString strSensor = "/Sensor";
+    TString strEntryName1;
+    TString strEntryName2;
+    TString strEntryName3;
 
-  /*********************       SPD layer1  ***********************/
-  {
-    modnum = 0;
-    
-    for(Int_t cSect = 0; cSect<10; cSect++){
-      strEntryName1 = strSPD;
-      strEntryName1 += 0;
-      strEntryName1 += strSector;
-      strEntryName1 += cSect;
-      
-      for(Int_t cStave =0; cStave<2; cStave++){
-	strEntryName2 = strEntryName1;
-	strEntryName2 += strStave;
-	strEntryName2 += cStave;
+    /*********************       SPD layer1  ***********************/
+    {
+      modnum = 0;
 
-	for (Int_t cHS=0; cHS<2; cHS++) {
-	  strEntryName3 = strEntryName2;
-	  strEntryName3 += strHalfStave;
-	  strEntryName3 += cHS;
-	  
-	  for(Int_t cLad =0; cLad<2; cLad++){
-	    symname = strEntryName3;
-	    symname += strLadder;
-	    symname += cLad+cHS*2;
-	    uid = LayerToVolUID(kSPD1,modnum++);
-	    pne = fgGeometry->GetAlignableEntryByUID(uid);
-	    if(!pne)
-	    {
-	      AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	      return kFALSE;
-	    }
-	    sname = pne->GetName();
-	    if(symname.CompareTo(sname)) 
-	    {
-	      AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d."
-		    "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	      return kFALSE;
-	    }
-	  }
-	}
-      }
-    }
-  }
-  
-  /*********************       SPD layer2  ***********************/
-  {
-    modnum = 0;
+      for(Int_t cSect = 0; cSect<10; cSect++){
+	strEntryName1 = strSPD;
+	strEntryName1 += 0;
+	strEntryName1 += strSector;
+	strEntryName1 += cSect;
 
-    for(Int_t cSect = 0; cSect<10; cSect++){
-      strEntryName1 = strSPD;
-      strEntryName1 += 1;
-      strEntryName1 += strSector;
-      strEntryName1 += cSect;
+	for(Int_t cStave =0; cStave<2; cStave++){
+	  strEntryName2 = strEntryName1;
+	  strEntryName2 += strStave;
+	  strEntryName2 += cStave;
 
-      for(Int_t cStave =0; cStave<4; cStave++){
-	strEntryName2 = strEntryName1;
-	strEntryName2 += strStave;
-	strEntryName2 += cStave;
+	  for (Int_t cHS=0; cHS<2; cHS++) {
+	    strEntryName3 = strEntryName2;
+	    strEntryName3 += strHalfStave;
+	    strEntryName3 += cHS;
 
-	for (Int_t cHS=0; cHS<2; cHS++) {
-	  strEntryName3 = strEntryName2;
-	  strEntryName3 += strHalfStave;
-	  strEntryName3 += cHS;
-
-	  for(Int_t cLad =0; cLad<2; cLad++){
-	    symname = strEntryName3;
-	    symname += strLadder;
-	    symname += cLad+cHS*2;
-	    uid = LayerToVolUID(kSPD2,modnum++);
-	    pne = fgGeometry->GetAlignableEntryByUID(uid);
-	    if(!pne)
-	    {
-	      AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	      return kFALSE;
-	    }
-	    sname = pne->GetName();
-	    if(symname.CompareTo(sname)) 
-	    {
-	      AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d."
-		    "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	      return kFALSE;
+	    for(Int_t cLad =0; cLad<2; cLad++){
+	      symname = strEntryName3;
+	      symname += strLadder;
+	      symname += cLad+cHS*2;
+	      uid = LayerToVolUID(kSPD1,modnum++);
+	      pne = fgGeometry->GetAlignableEntryByUID(uid);
+	      if(!pne)
+	      {
+		AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+		return kFALSE;
+	      }
+	      sname = pne->GetName();
+	      if(symname.CompareTo(sname)) 
+	      {
+		AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d."
+		      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+		return kFALSE;
+	      }
 	    }
 	  }
 	}
       }
     }
-  }
 
-  /*********************       SDD layer1  ***********************/
-  {
-    modnum=0;
+    /*********************       SPD layer2  ***********************/
+    {
+      modnum = 0;
 
-    for(Int_t c1 = 1; c1<=14; c1++){
-      strEntryName1 = strSDD;
-      strEntryName1 += 2;
-      strEntryName1 +=strLadder;
-      strEntryName1 += (c1-1);
-      for(Int_t c2 =1; c2<=6; c2++){
-	symname = strEntryName1;
-	symname += strSensor;
-	symname += (c2-1);
-	uid = LayerToVolUID(kSDD1,modnum++);
-	pne = fgGeometry->GetAlignableEntryByUID(uid);
-	if(!pne)
-	{
-	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	  return kFALSE;
-	}
-	sname = pne->GetName();
-	if(symname.CompareTo(sname)) 
-	{
-	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-		"Expected was %s, found was %s!", uid, symname.Data(), sname));
-	  return kFALSE;
-	}
-      }
-    }
-  }
+      for(Int_t cSect = 0; cSect<10; cSect++){
+	strEntryName1 = strSPD;
+	strEntryName1 += 1;
+	strEntryName1 += strSector;
+	strEntryName1 += cSect;
 
-  /*********************       SDD layer2  ***********************/
-  {
-    modnum=0;
+	for(Int_t cStave =0; cStave<4; cStave++){
+	  strEntryName2 = strEntryName1;
+	  strEntryName2 += strStave;
+	  strEntryName2 += cStave;
 
-    for(Int_t c1 = 1; c1<=22; c1++){
-      strEntryName1 = strSDD;
-      strEntryName1 += 3;
-      strEntryName1 +=strLadder;
-      strEntryName1 += (c1-1);
-      for(Int_t c2 = 1; c2<=8; c2++){
-	symname = strEntryName1;
-	symname += strSensor;
-	symname += (c2-1);
-	uid = LayerToVolUID(kSDD2,modnum++);
-	pne = fgGeometry->GetAlignableEntryByUID(uid);
-	if(!pne)
-	{
-	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	  return kFALSE;
-	}
-	sname = pne->GetName();
-	if(symname.CompareTo(sname)) 
-	{
-	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-		"Expected was %s, found was %s!", uid, symname.Data(), sname));
-	  return kFALSE;
+	  for (Int_t cHS=0; cHS<2; cHS++) {
+	    strEntryName3 = strEntryName2;
+	    strEntryName3 += strHalfStave;
+	    strEntryName3 += cHS;
+
+	    for(Int_t cLad =0; cLad<2; cLad++){
+	      symname = strEntryName3;
+	      symname += strLadder;
+	      symname += cLad+cHS*2;
+	      uid = LayerToVolUID(kSPD2,modnum++);
+	      pne = fgGeometry->GetAlignableEntryByUID(uid);
+	      if(!pne)
+	      {
+		AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+		return kFALSE;
+	      }
+	      sname = pne->GetName();
+	      if(symname.CompareTo(sname)) 
+	      {
+		AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d."
+		      "Expected was %s, found was %s!", uid, symname.Data(), sname));
+		return kFALSE;
+	      }
+	    }
+	  }
 	}
       }
     }
-  }
 
-  /*********************       SSD layer1  ***********************/
-  {
-    modnum=0;
+    /*********************       SDD layer1  ***********************/
+    {
+      modnum=0;
 
-    for(Int_t c1 = 1; c1<=34; c1++){
-      strEntryName1 = strSSD;
-      strEntryName1 += 4;
-      strEntryName1 +=strLadder;
-      strEntryName1 += (c1-1);
-      for(Int_t c2 = 1; c2<=22; c2++){
-	symname = strEntryName1;
-	symname += strSensor;
-	symname += (c2-1);
-	uid = LayerToVolUID(kSSD1,modnum++);
-	pne = fgGeometry->GetAlignableEntryByUID(uid);
-	if(!pne)
-	{
-	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	  return kFALSE;
-	}
-	sname = pne->GetName();
-	if(symname.CompareTo(sname)) 
-	{
-	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-		"Expected was %s, found was %s!", uid, symname.Data(), sname));
-	  return kFALSE;
-	}
-      }
-    }
-  }
-
-  /*********************       SSD layer2  ***********************/
-  {
-    modnum=0;
-
-    for(Int_t c1 = 1; c1<=38; c1++){
-      strEntryName1 = strSSD;
-      strEntryName1 += 5;
-      strEntryName1 +=strLadder;
-      strEntryName1 += (c1-1);
-      for(Int_t c2 = 1; c2<=25; c2++){
-	symname = strEntryName1;
-	symname += strSensor;
-	symname += (c2-1);
-	uid = LayerToVolUID(kSSD2,modnum++);
-	pne = fgGeometry->GetAlignableEntryByUID(uid);
-	if(!pne)
-	{
-	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	  return kFALSE;
-	}
-	sname = pne->GetName();
-	if(symname.CompareTo(sname)) 
-	{
-	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-		"Expected was %s, found was %s!", uid, symname.Data(), sname));
-	  return kFALSE;
+      for(Int_t c1 = 1; c1<=14; c1++){
+	strEntryName1 = strSDD;
+	strEntryName1 += 2;
+	strEntryName1 +=strLadder;
+	strEntryName1 += (c1-1);
+	for(Int_t c2 =1; c2<=6; c2++){
+	  symname = strEntryName1;
+	  symname += strSensor;
+	  symname += (c2-1);
+	  uid = LayerToVolUID(kSDD1,modnum++);
+	  pne = fgGeometry->GetAlignableEntryByUID(uid);
+	  if(!pne)
+	  {
+	    AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	    return kFALSE;
+	  }
+	  sname = pne->GetName();
+	  if(symname.CompareTo(sname)) 
+	  {
+	    AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		  "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	    return kFALSE;
+	  }
 	}
       }
     }
+
+    /*********************       SDD layer2  ***********************/
+    {
+      modnum=0;
+
+      for(Int_t c1 = 1; c1<=22; c1++){
+	strEntryName1 = strSDD;
+	strEntryName1 += 3;
+	strEntryName1 +=strLadder;
+	strEntryName1 += (c1-1);
+	for(Int_t c2 = 1; c2<=8; c2++){
+	  symname = strEntryName1;
+	  symname += strSensor;
+	  symname += (c2-1);
+	  uid = LayerToVolUID(kSDD2,modnum++);
+	  pne = fgGeometry->GetAlignableEntryByUID(uid);
+	  if(!pne)
+	  {
+	    AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	    return kFALSE;
+	  }
+	  sname = pne->GetName();
+	  if(symname.CompareTo(sname)) 
+	  {
+	    AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		  "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	    return kFALSE;
+	  }
+	}
+      }
+    }
+
+    /*********************       SSD layer1  ***********************/
+    {
+      modnum=0;
+
+      for(Int_t c1 = 1; c1<=34; c1++){
+	strEntryName1 = strSSD;
+	strEntryName1 += 4;
+	strEntryName1 +=strLadder;
+	strEntryName1 += (c1-1);
+	for(Int_t c2 = 1; c2<=22; c2++){
+	  symname = strEntryName1;
+	  symname += strSensor;
+	  symname += (c2-1);
+	  uid = LayerToVolUID(kSSD1,modnum++);
+	  pne = fgGeometry->GetAlignableEntryByUID(uid);
+	  if(!pne)
+	  {
+	    AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	    return kFALSE;
+	  }
+	  sname = pne->GetName();
+	  if(symname.CompareTo(sname)) 
+	  {
+	    AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		  "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	    return kFALSE;
+	  }
+	}
+      }
+    }
+
+    /*********************       SSD layer2  ***********************/
+    {
+      modnum=0;
+
+      for(Int_t c1 = 1; c1<=38; c1++){
+	strEntryName1 = strSSD;
+	strEntryName1 += 5;
+	strEntryName1 +=strLadder;
+	strEntryName1 += (c1-1);
+	for(Int_t c2 = 1; c2<=25; c2++){
+	  symname = strEntryName1;
+	  symname += strSensor;
+	  symname += (c2-1);
+	  uid = LayerToVolUID(kSSD2,modnum++);
+	  pne = fgGeometry->GetAlignableEntryByUID(uid);
+	  if(!pne)
+	  {
+	    AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	    return kFALSE;
+	  }
+	  sname = pne->GetName();
+	  if(symname.CompareTo(sname)) 
+	  {
+	    AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		  "Expected was %s, found was %s!", uid, symname.Data(), sname));
+	    return kFALSE;
+	  }
+	}
+      }
+    }
+
+    AliDebugClass(2,"Consistency check for ITS symbolic names finished successfully.");
   }
 
-
-  /***************    TPC inner and outer layers    ****************/
-  TString sAsector="TPC/EndcapA/Sector";
-  TString sCsector="TPC/EndcapC/Sector";
-  TString sInner="/InnerChamber";
-  TString sOuter="/OuterChamber";
-  
-  /***************    TPC inner chambers' layer    ****************/
+  if(detsString.Contains("TPC"))
   {
-    modnum = 0;
+    /***************    TPC inner and outer layers    ****************/
     
-    for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = sAsector;
-      symname += cnt;
-      symname += sInner;
-      uid = LayerToVolUID(kTPC1,modnum++);
-      pne = fgGeometry->GetAlignableEntryByUID(uid);
-      if(!pne)
+    AliDebugClass(2,"Checking consistency of symbolic names for TPC layers");
+    TString sAsector="TPC/EndcapA/Sector";
+    TString sCsector="TPC/EndcapC/Sector";
+    TString sInner="/InnerChamber";
+    TString sOuter="/OuterChamber";
+
+    /***************    TPC inner chambers' layer    ****************/
+    {
+      modnum = 0;
+
+      for(Int_t cnt=1; cnt<=18; cnt++)
       {
-	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	return kFALSE;
+	symname = sAsector;
+	symname += cnt;
+	symname += sInner;
+	uid = LayerToVolUID(kTPC1,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
-      sname = pne->GetName();
-      if(symname.CompareTo(sname)) 
+
+      for(Int_t cnt=1; cnt<=18; cnt++)
       {
-	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	return kFALSE;
+	symname = sCsector;
+	symname += cnt;
+	symname += sInner;
+	uid = LayerToVolUID(kTPC1,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
-    for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = sCsector;
-      symname += cnt;
-      symname += sInner;
-      uid = LayerToVolUID(kTPC1,modnum++);
-      pne = fgGeometry->GetAlignableEntryByUID(uid);
-      if(!pne)
+
+    /***************    TPC outer chambers' layer    ****************/
+    {
+      modnum = 0;
+
+      for(Int_t cnt=1; cnt<=18; cnt++)
       {
-	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	return kFALSE;
+	symname = sAsector;
+	symname += cnt;
+	symname += sOuter;
+	uid = LayerToVolUID(kTPC2,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
-      sname = pne->GetName();
-      if(symname.CompareTo(sname)) 
+
+      for(Int_t cnt=1; cnt<=18; cnt++)
       {
-	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	return kFALSE;
+	symname = sCsector;
+	symname += cnt;
+	symname += sOuter;
+	uid = LayerToVolUID(kTPC2,modnum++);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
+
+    AliDebugClass(2,"Consistency check for TPC symbolic names finished successfully.");
   }
 
-  /***************    TPC outer chambers' layer    ****************/
+  if(detsString.Contains("TOF"))
   {
-    modnum = 0;
-    
-    for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = sAsector;
-      symname += cnt;
-      symname += sOuter;
-      uid = LayerToVolUID(kTPC2,modnum++);
-      pne = fgGeometry->GetAlignableEntryByUID(uid);
-      if(!pne)
-      {
-	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	return kFALSE;
-      }
-      sname = pne->GetName();
-      if(symname.CompareTo(sname)) 
-      {
-	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	return kFALSE;
-      }
-    }
-    for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = sCsector;
-      symname += cnt;
-      symname += sOuter;
-      uid = LayerToVolUID(kTPC2,modnum++);
-      pne = fgGeometry->GetAlignableEntryByUID(uid);
-      if(!pne)
-      {
-	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	return kFALSE;
-      }
-      sname = pne->GetName();
-      if(symname.CompareTo(sname)) 
-      {
-	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	return kFALSE;
-      }
-    }
-  }    
+    /*********************       TOF layer   ***********************/
 
-  /*********************       TOF layer   ***********************/
-  {
+    AliDebugClass(2,"Checking consistency of symbolic names for TOF layers");
     modnum=0;
-    
+
     Int_t nstrA=15;
     Int_t nstrB=19;
     Int_t nstrC=19;
@@ -827,10 +865,15 @@ Bool_t AliGeomManager::CheckSymNamesLUT()
 	}
       }
     }
+    
+    AliDebugClass(2,"Consistency check for TOF symbolic names finished successfully.");
   } 
 
-  /*********************      HMPID layer   ***********************/
+  if(detsString.Contains("HMPID"))
   {
+    /*********************      HMPID layer   ***********************/
+
+    AliDebugClass(2,"Checking consistency of symbolic names for HMPID layers");
     TString str = "/HMPID/Chamber";
 
     for (modnum=0; modnum < 7; modnum++) {
@@ -851,11 +894,16 @@ Bool_t AliGeomManager::CheckSymNamesLUT()
 	return kFALSE;
       }
     }
+
+    AliDebugClass(2,"Consistency check for HMPID symbolic names finished successfully.");
   }
 
-  /*********************      TRD layers 1-6   *******************/
-  //!! 6 layers with index increasing in outwards direction
+  if(detsString.Contains("TRD"))
   {
+    /*********************      TRD layers 1-6   *******************/
+    //!! 6 layers with index increasing in outwards direction
+    
+    AliDebugClass(2,"Checking consistency of symbolic names for TRD layers");
     Int_t arTRDlayId[6] = {kTRD1, kTRD2, kTRD3, kTRD4, kTRD5, kTRD6};
 
     Int_t activeSectors[18]={0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0};// as in config-file for partial geometry
@@ -893,63 +941,76 @@ Bool_t AliGeomManager::CheckSymNamesLUT()
 	}
       }
     }
+
+    AliDebugClass(2,"Consistency check for TRD symbolic names finished successfully.");
   }
 
-  /*********************      PHOS EMC layer   ***********************/
+  if(detsString.Contains("PHOS"))
   {
-    TString str = "PHOS/Module";
-    modnum=0;
+    /*********************      PHOS EMC layer   ***********************/
 
-    for (Int_t iModule=1; iModule <= 5; iModule++) {
-      symname = str;
-      symname += iModule;
-      modnum = iModule-1;
-      uid = LayerToVolUID(kPHOS1,modnum);
-      pne = fgGeometry->GetAlignableEntryByUID(uid);
-      if(!pne)
-      {
-	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	return kFALSE;
-      }
-      sname = pne->GetName();
-      if(symname.CompareTo(sname)) 
-      {
-	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	return kFALSE;
+    AliDebugClass(2,"Checking consistency of symbolic names for PHOS layers");
+    
+    {
+      TString str = "PHOS/Module";
+      modnum=0;
+
+      for (Int_t iModule=1; iModule <= 5; iModule++) {
+	symname = str;
+	symname += iModule;
+	modnum = iModule-1;
+	uid = LayerToVolUID(kPHOS1,modnum);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
-  }
 
-  /*********************      PHOS CPV layer   ***********************/
-  {
-    TString str = "PHOS/Module";
-    modnum=0;
+    /*********************      PHOS CPV layer   ***********************/
+    {
+      TString str = "PHOS/Module";
+      modnum=0;
 
-    for (Int_t iModule=1; iModule <= 5; iModule++) {
-      symname = str;
-      symname += iModule;
-      symname += "/CPV";
-      modnum = iModule-1;
-      uid = LayerToVolUID(kPHOS2,modnum);
-      pne = fgGeometry->GetAlignableEntryByUID(uid);
-      if(!pne)
-      {
-	AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
-	return kFALSE;
-      }
-      sname = pne->GetName();
-      if(symname.CompareTo(sname)) 
-      {
-	AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
-	      "Expected was %s, found was %s!", uid, symname.Data(), sname));
-	return kFALSE;
+      for (Int_t iModule=1; iModule <= 5; iModule++) {
+	symname = str;
+	symname += iModule;
+	symname += "/CPV";
+	modnum = iModule-1;
+	uid = LayerToVolUID(kPHOS2,modnum);
+	pne = fgGeometry->GetAlignableEntryByUID(uid);
+	if(!pne)
+	{
+	  AliErrorClass(Form("In the currently loaded geometry there is no TGeoPNEntry with unique id %d",uid));
+	  return kFALSE;
+	}
+	sname = pne->GetName();
+	if(symname.CompareTo(sname)) 
+	{
+	  AliErrorClass(Form("Current loaded geometry differs in the definition of symbolic name for uid %d"
+		"Expected was %s, found was %s!", uid, symname.Data(), sname));
+	  return kFALSE;
+	}
       }
     }
+
+    AliDebugClass(2,"Consistency check for PHOS symbolic names finished successfully.");
   }
 
-  /*********************      EMCAL layer   ***********************/
+  if(detsString.Contains("EMCAL"))
   {
+    /*********************      EMCAL layer   ***********************/
+
+    AliDebugClass(2,"Checking consistency of symbolic names for EMCAL layers");
     TString str = "EMCAL/FullSupermodule";
     modnum=0;
 
@@ -976,6 +1037,8 @@ Bool_t AliGeomManager::CheckSymNamesLUT()
 	return kFALSE;
       }
     }
+  
+    AliDebugClass(2,"Consistency check for EMCAL symbolic names finished successfully.");
   }
   
   return kTRUE;
