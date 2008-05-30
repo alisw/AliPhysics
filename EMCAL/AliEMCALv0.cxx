@@ -124,10 +124,10 @@ void AliEMCALv0::BuildGeometry()
       fEnvelop1[1] = geom->GetArm1PhiMax() - geom->GetArm1PhiMin(); // angular range in phi
       fEnvelop1[2] = geom->GetNPhiSuperModule();
       fEnvelop1[3] = 2; // 2 z coordinates
-      fEnvelop1[4] = -350.;
+      fEnvelop1[4] = -geom->GetEnvelop(2)/2.; //zmin
       fEnvelop1[5] = geom->GetEnvelop(0) ; // rmin at z1
       fEnvelop1[6] = geom->GetEnvelop(1) ; // rmax at z1
-      fEnvelop1[7] = 350.;
+      fEnvelop1[7] = geom->GetEnvelop(2)/2.; //zmax
       fEnvelop1[8] = fEnvelop1[5] ;        // radii are the same.
       fEnvelop1[9] = fEnvelop1[6] ;        // radii are the same.	
     }
@@ -295,16 +295,10 @@ void AliEMCALv0::CreateGeometry()
     envelopA[1] = geom->GetArm1PhiMax() - geom->GetArm1PhiMin(); // angular range in phi
     envelopA[2] = geom->GetNPhiSuperModule();                    // number of sections in phi
     envelopA[3] = 2;                                             // 2 z coordinates
-    // envelopA[4] = geom->ZFromEtaR(geom->GetEnvelop(1),
-    //geom->GetArm1EtaMin());       // z coordinate 1
-    envelopA[4] = -350.; // AM 30/5/2006
-    
-    //add some padding for mother volume
-    envelopA[5] = geom->GetEnvelop(0) ;                          // rmin at z1
-    envelopA[6] = geom->GetEnvelop(1) ;                          // rmax at z1
-    //      envelopA[7] = geom->ZFromEtaR(geom->GetEnvelop(1),
-    //				  geom->GetArm1EtaMax());        // z coordinate 2
-    envelopA[7] = 350.; // AM 30/5/2006
+    envelopA[4] = -geom->GetEnvelop(2)/2.;                       // zmin - includes padding
+    envelopA[5] = geom->GetEnvelop(0) ;                          // rmin at z1 - includes padding
+    envelopA[6] = geom->GetEnvelop(1) ;                          // rmax at z1 - includes padding
+    envelopA[7] = geom->GetEnvelop(2)/2.;                        // zmax includes padding
     
     envelopA[8] = envelopA[5] ;                                  // radii are the same.
     envelopA[9] = envelopA[6] ;                                  // radii are the same.

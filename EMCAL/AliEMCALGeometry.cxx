@@ -307,6 +307,9 @@ void AliEMCALGeometry::Init(void){
   fPhiModuleSize = 12.26 - fPhiGapForSM / Float_t(fNPhi); // first assumption
   fEtaModuleSize = fPhiModuleSize;
 
+  fZLength              = 700.;     // Z coverage (cm)
+
+
   //needs to be called for each geometry and before setting geometry
   //parameters which can depend on the outcome
   CheckAdditionalOptions();
@@ -343,16 +346,17 @@ void AliEMCALGeometry::Init(void){
   fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);  
   f2Trd1Dx2 = fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.);
   if(!fGeoName.Contains("WSUC")) fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
-  
-  fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax); // Z coverage
-  fEnvelop[0]     = fIPDistance; // mother volume inner radius
-  fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
-  fEnvelop[2]     = 1.00001*fZLength; // add some padding for mother volume. 
+
+  //These parameters are used to create the mother volume to hold the supermodules
+  //2cm padding added to allow for misalignments - JLK 30-May-2008
+  fEnvelop[0]     = fIPDistance - 1.; // mother volume inner radius
+  fEnvelop[1]     = fIPDistance + fShellThickness + 1.; // mother volume outer r.
+  fEnvelop[2]     = fZLength + 2.; //mother volume length 
 
   // Local coordinates
   fParSM[0] = GetShellThickness()/2.;        
   fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
-  fParSM[2] = 350./2.;
+  fParSM[2] = fZLength/4.;  //divide by 4 to get half-length of SM
 
   // SM phi boundaries - (0,1),(2,3) .. (10,11) - has the same boundaries; Nov 7, 2006 
   fPhiBoundariesOfSM.Set(fNumberOfSuperModules);
