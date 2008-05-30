@@ -19,7 +19,12 @@
   //default cuts
   TCut cutKr("cutKr","entries.fElements<5000&&fitNormChi2.fElements<3&&fitNormChi2.fElements>0.2&&abs(fitRMS.fElements/fitMean.fElements-0.06)<0.025");
 
-AliTPCCalibViewerGUI::ShowGUI("kryptonTree.root")
+TObjArray * array = AliTPCCalibViewerGUI::ShowGUI("kryptonTree.root");
+AliTPCCalibViewerGUI * viewer = (AliTPCCalibViewerGUI*)array->At(0);
+TTree * tree = viewer->GetViewer()->GetTree();
+
+tree->SetAlias("cutAll","abs(fitNormChi2.fElements-2.)<1.8&&entries.fElements/entries_Median.fElements<4&&entries.fElements/entries_Median.fElements>0.4&&fitRMS.fElements/fitMean.fElements<0.09&&fitRMS.fElements/fitMean.fElements>0.02")
+
 
 
  */
