@@ -262,10 +262,10 @@ Bool_t AliCaloCalibPedestal::AddInfo(const AliCaloCalibPedestal *ped)
   // just do this for the basic histograms/profiles that get filled in ProcessEvent
   // may not have data for all modules, but let's just Add everything..
   for (int i = 0; i < fModules; i++) {
-    fPedestalLowGain.Add( ped->GetPedProfileLowGain(i) );
-    fPedestalHighGain.Add( ped->GetPedProfileHighGain(i) );
-    fPeakMinusPedLowGain.Add( ped->GetPeakProfileLowGain(i) );
-    fPeakMinusPedHighGain.Add( ped->GetPeakProfileHighGain(i) );
+    GetPedProfileLowGain(i)->Add( ped->GetPedProfileLowGain(i) );
+    GetPedProfileHighGain(i)->Add( ped->GetPedProfileHighGain(i) );
+    GetPeakProfileLowGain(i)->Add( ped->GetPeakProfileLowGain(i) );
+    GetPeakProfileHighGain(i)->Add( ped->GetPeakProfileHighGain(i) );
   }//end for nModules 
 
   // DeadMap; Diff profiles etc would need to be redone after this operation
