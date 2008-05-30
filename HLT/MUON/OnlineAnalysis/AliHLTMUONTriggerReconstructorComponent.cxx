@@ -20,7 +20,7 @@
 ///
 /// @file   AliHLTMUONTriggerReconstructorComponent.cxx
 /// @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
-/// @date
+/// @date   18 Sep 2007
 /// @brief  Implementation of the trigger DDL reconstructor component.
 ///
 
@@ -532,7 +532,11 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 		return -EIO;
 	}
 	
-	AliGeomManager::LoadGeometry();
+	// Only load geometry if not already loaded.
+	if (AliGeomManager::GetGeometry() == NULL)
+	{
+		AliGeomManager::LoadGeometry();
+	}
 	AliMUONGeometryTransformer transformer;
 	if (not transformer.LoadGeometryData())
 	{
@@ -625,7 +629,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 			}
 		}
 	}
-
+	
 	return 0;
 }
 

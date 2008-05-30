@@ -591,7 +591,11 @@ int AliHLTMUONHitReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
 		return -EIO;
 	}
 	
-	AliGeomManager::LoadGeometry();
+	// Only load geometry if not already loaded.
+	if (AliGeomManager::GetGeometry() == NULL)
+	{
+		AliGeomManager::LoadGeometry();
+	}
 	AliMUONGeometryTransformer chamberGeometryTransformer;
 	if (not chamberGeometryTransformer.LoadGeometryData())
 	{
