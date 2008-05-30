@@ -64,7 +64,7 @@ public:
   void WriteTracker(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
   
   void WriteNeighbours(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
-  void WriteHV(Bool_t defaultValues, Int_t startRun, Int_t endRun);
+  void WriteHV(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WritePedestals(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
