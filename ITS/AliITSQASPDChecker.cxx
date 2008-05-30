@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id $ */
 
 // *****************************************
 //  Checks the quality assurance 
@@ -22,6 +22,8 @@
 //  INFN Torino
 
 // --- ROOT system ---
+#include "TH1.h"
+#include "TString.h"
 
 // --- AliRoot header files ---
 #include "AliITSQASPDChecker.h"
@@ -39,34 +41,33 @@ AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qa
 
 
 //__________________________________________________________________
-const Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/) 
+const Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) 
 {
   AliDebug(1,Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
 
-/*
-  TObjArray * list
-  Double_t test = 0.0  ;
-  Int_t count = 0 ;
+  Double_t test = 0.0;
+  Int_t count = 0;
 
-  if (list->GetEntries() == 0){
-    test = 1. ; // nothing to check
+  if (list->GetEntries() == 0) {
+    test = 1.; // nothing to check
   }
   else {
-    TIter next(list) ;
-    TH1 * hdata ;
-    count = 0 ;
+    TIter next(list);
+    TH1 * hdata;
+    count = 0;
     while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
       if (hdata) {
+        TString histName = hdata->GetName();
+        if (!histName.Contains("_SPD")) continue;
         Double_t rv = 0.;
-        if(hdata->GetEntries()>0)rv=1;
-        AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ;
-        count++ ;
-        test += rv ;
+        if (hdata->GetEntries()>0) rv = 1;
+        AliInfo(Form("%s -> %f", hdata->GetName(), rv));
+        count++;
+        test += rv;
       }
       else{
         AliError("Data type cannot be processed") ;
       }
-
     }
     if (count != 0) {
       if (test==0) {
@@ -74,15 +75,14 @@ const Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray *
         test = 0.5;  //upper limit value to set kWARNING flag for a task
       }
       else {
-        test /= count ;
+        test /= count;
       }
     }
   }
 
-  AliInfo(Form("Test Result = %f", test)) ;
+  AliInfo(Form("Test Result = %f", test));
   return test ;
-*/
-  return 0.;	
+	
 } 
 
 
