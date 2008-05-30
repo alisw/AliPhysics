@@ -109,41 +109,16 @@ void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   gFile = TFile::Open(filePhys);
   gFile->ls();
   Char_t buf1[30];
-  for (Int_t i=0; i<24; i++)
+ for (Int_t i=0; i<24; i++)
   {
-    //    if(i<12) sprintf(buf1,"CFD1minCFD%d",i+1);
-    // if(i>11) sprintf(buf1,"CFD13minCFD%d",i+1);
-    if(i<12) sprintf(buf1,"T0_C_%i_CFD",i+1);
-    if(i>11) sprintf(buf1,"T0_A_%i_CFD",i+1-12);
-    printf(" i = %d buf1 = %s\n", i, buf1);
+    sprintf(buf1,"CFD1-CFD%d",i+1);
     TH1F *cfd = (TH1F*) gFile->Get(buf1);
-    
     //    printf(" i = %d buf1 = %s\n", i, buf1);
     Double_t mean=cfd->GetMean();
-    printf(" ipmt %i mean = %f \n", i,mean) ;
-
-    /*    
-    TSpectrum *s = new TSpectrum(2*npeaks,1.);
-    // printf(" buf1 = %s cfd = %x\n", buf1, cfd);
-    Int_t nfound = s->Search(cfd,sigma,"goff",0.2);
-    printf(" nfound = %d\n", nfound);
-    if(nfound!=0)
-    {
-      Float_t *xpeak = s->GetPositionX();
-      TMath::Sort(nfound, xpeak, index,down);
-      Float_t xp = xpeak[index[0]];
-      Float_t hmax = xp+3*sigma;
-      Float_t hmin = xp-3*sigma;
-      cfd->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
-      TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
-      cfd->Fit("g1","IRQN");
-     printf(" ipmt %i fit mean = %f \n", i, g1->GetParameter(1)) ;
-     
-    }
-    */
-      SetTimeEq(i,Int_t(mean));
+    SetTimeEq(i,mean);
+    delete cfd;
   }
-  // delete cfd;
+
   
    gFile->Close();
    delete gFile;
