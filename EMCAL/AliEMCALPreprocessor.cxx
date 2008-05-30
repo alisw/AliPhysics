@@ -14,189 +14,447 @@
  **************************************************************************/
 
 /* $Id$ */
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.7  2007/06/20 08:50:14  gustavo
- * Change wrong directory data name from EmcGainPedestals to Data
- *
- * Revision 1.6  2007/04/29 15:06:19  gustavo
- * New return value, and some minor fixes
- *
- * Revision 1.5  2007/02/01 15:02:42  gustavo
- * Added log message in case there are no source files
- *
- * Revision 1.4  2007/01/24 16:57:14  gustavo
- * Calibratio file sources machines are now not hardcoded but retreived from shuttle
- *
- * Revision 1.3  2006/12/20 10:53:28  gustavo
- * Change const char * by TString, change AliInfos per AliPreprocessor::Log or AliDebug
- *
- * Revision 1.2  2006/12/12 17:16:09  gustavo
- * Detector name hardcoded in Preprocesor with new detector name notation (3 letters). New way to take reference histogram to avoid problems in case of low number of entries or no existing histogram. Change return 0 by return 1
- *
- * Revision 1.1  2006/12/07 16:32:16  gustavo
- * First shuttle code, online calibration histograms producer, EMCAL preprocessor
- * 
- *
-*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // EMCAL Preprocessor class. It runs by Shuttle at the end of the run,
-// calculates calibration coefficients and dead/bad channels
-// to be posted in OCDB
+// calculates stuff to be posted in OCDB
 //
 // Author: Boris Polichtchouk, 4 October 2006
 // Adapted for EMCAL by Gustavo Conesa Balbastre, October 2006
+// Updated by David Silvermyr May 2008, based on TPC code
 ///////////////////////////////////////////////////////////////////////////////
 
 //Root
 #include "TFile.h"
-#include "TH1.h"
-#include "TMap.h"
-#include "TRandom.h"
-#include "TKey.h"
-#include "TList.h"
-#include "TString.h"
-#include "TObjString.h"
+#include "TTree.h"
+#include "TEnv.h"
+#include "TParameter.h"
+
+#include <TTimeStamp.h>
 
 //AliRoot
+#include "AliShuttleInterface.h"
 #include "AliEMCALPreprocessor.h"
 #include "AliLog.h"
 #include "AliCDBMetaData.h"
-#include "AliEMCALCalibData.h"
+#include "AliCaloCalibPedestal.h"
+#include "AliCaloCalibSignal.h"
+#include "AliEMCALSensorTempArray.h"
+
+const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
+const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
+const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
+const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
+const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
+const TString kAmandaTemp = "EMC_PT_%d_TEMPERATURE"; // Amanda string for temperature entries
+//const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required 
+const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits during commissioning 
+
+const TString kMetaResponsible = "David Silvermyr";
+//legacy comments and return codes from TPC
+const TString kMetaComment = "Preprocessor AliEMCAL data base entries.";
+const int kReturnCodeNoInfo = 9;
+const int kReturnCodeNoObject = 2;
+const int kReturnCodeNoEntries = 1;
 
 ClassImp(AliEMCALPreprocessor)
-
+  
 //_______________________________________________________________________________________
 AliEMCALPreprocessor::AliEMCALPreprocessor() :
-AliPreprocessor("EMC",0)
+  AliPreprocessor("EMC",0),
+  fConfEnv(0), 
+  fTemp(0), 
+  fConfigOK(kTRUE)
 {
   //default constructor
 }
 
 //_______________________________________________________________________________________
 AliEMCALPreprocessor::AliEMCALPreprocessor(AliShuttleInterface* shuttle):
-AliPreprocessor("EMC",shuttle)
+  AliPreprocessor("EMC",shuttle),
+  fConfEnv(0), 
+  fTemp(0), 
+  fConfigOK(kTRUE)
 {
-  // Constructor
-  AddRunType("PHYSICS");
-  AddRunType("STANDALONE");
-
+  // Constructor AddRunType(kPedestalRunType);
+  
+  // define run types to be processed
+  AddRunType(kPedestalRunType);
+  AddRunType(kPhysicsRunType);
+  AddRunType(kStandAloneRunType);
 }
 
-//_______________________________________________________________________________________
-UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
+//______________________________________________________________________________________________
+AliEMCALPreprocessor::AliEMCALPreprocessor(const AliEMCALPreprocessor&  ) :
+  AliPreprocessor("EMCAL",0),
+  fConfEnv(0), fTemp(0), fConfigOK(kTRUE)
 {
-  // process data retrieved by the Shuttle
-  
-  // The fileName with the histograms which have been produced by
-  // AliEMCALCalibHistoProducer.
-  // It is a responsibility of the SHUTTLE framework to form the fileName
+  Fatal("AliEMCALPreprocessor", "copy constructor not implemented");
+}
 
-   gRandom->SetSeed(0); //the seed is set to the current  machine clock!
-  AliEMCALCalibData calibData;
+// assignment operator; use copy ctor to make life easy.
+//______________________________________________________________________________________________
+AliEMCALPreprocessor& AliEMCALPreprocessor::operator = (const AliEMCALPreprocessor &source ) 
+{
+  // assignment operator; use copy ctor
+  if (&source == this) return *this;
   
+  new (this) AliEMCALPreprocessor(source);
+  return *this;
+}
+
+//____________________________________________________________________________
+AliEMCALPreprocessor::~AliEMCALPreprocessor()
+{
+  // destructor
+  if (fTemp) delete fTemp;
+}
+
+//______________________________________________________________________________________________
+void AliEMCALPreprocessor::Initialize(Int_t run, UInt_t startTime,
+				      UInt_t endTime)
+{
+  // Creates AliTestDataDCS object -- start maps half an hour beforre actual run start
+  UInt_t startTimeLocal = startTime-1800;
+  AliPreprocessor::Initialize(run, startTimeLocal, endTime);
   
-  TList* list = GetFileSources(kDAQ, "AMPLITUDES");
-  if(!list) {
-    Log("Sources list not found, exit.");
-    return 1;
+  AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
+	       TTimeStamp((time_t)startTime,0).AsString(),
+	       TTimeStamp((time_t)endTime,0).AsString()));
+  
+  // Preprocessor configuration
+  AliCDBEntry* entry = GetFromOCDB("Config", "Preprocessor");
+  if (entry) fConfEnv = (TEnv*) entry->GetObject();
+  if ( fConfEnv==0 ) {
+    Log("AliEMCALPreprocsessor: Preprocessor Config OCDB entry missing.\n");
+    fConfigOK = kFALSE;
+    return;
   }
   
-  AliInfo("The following sources produced files with the id AMPLITUDES");
-  list->Print();
+  // Temperature sensors
+  TTree *confTree = 0;
   
-  TIter iter(list);
-  TObjString *source;
-  
-  while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-    AliInfo(Form("found source %s", source->String().Data()));
-	
-    TString fileName = GetFile(kDAQ, "AMPLITUDES", source->GetName());
-    Log(Form("Got filename: %s",fileName.Data()));
-	
-    TFile f(fileName);
-	
-    if(!f.IsOpen()) {
-      Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
-      return 1;
+  TString tempConf = fConfEnv->GetValue("Temperature","ON");
+  tempConf.ToUpper();
+  if (tempConf != "OFF" ) {
+    entry = GetFromOCDB("Config", "Temperature");
+    if (entry) confTree = (TTree*) entry->GetObject();
+    if ( confTree==0 ) {
+      Log("AliEMCALPreprocsessor: Temperature Config OCDB entry missing.\n");
+      fConfigOK = kFALSE;
+      return;
     }
-	
-	
-    const Int_t nMod=12; // 1:5 modules
-    const Int_t nCol=48; //1:56 columns in each module
-    Int_t nRow=24; //1:64 rows in each module
-    const Int_t nRowHalfSM = 12; //Supermodules 11 and 12 are half supermodules
-	
-    Double_t coeff;
-    char hnam[80];
-    TH1F* histo=0;	
-	
-    //Get reference histogram
-    TList * keylist = f.GetListOfKeys();
-    Int_t nkeys   = f.GetNkeys();
-    Bool_t ok = kFALSE;
-    TKey  *key;
-    TString refHistoName= "";
-    Int_t ikey = 0;
-    Int_t counter = 0;
-    TH1F* hRef = new TH1F();
-    
-    //Check if the file contains any histogram
+    fTemp = new AliEMCALSensorTempArray(startTimeLocal, fEndTime, confTree, kAmandaTemp);
+    fTemp->SetValCut(kValCutTemp);
+    fTemp->SetDiffCut(kDiffCutTemp);
+  }
+  
+  return;
+}
 
-    if(nkeys< 2){
-      Log(Form("Not enough histograms for calibration, nhist = %d",nkeys));
-      return 1;
-    }
-	
-    while(!ok){
-      ikey = gRandom->Integer(nkeys);
-      key = (TKey*)keylist->At(ikey);
-      refHistoName = key->GetName();
-      hRef = (TH1F*)f.Get(refHistoName);
-      counter++;
-      // Check if the reference has too little statistics and 
-      // if the histogram has the correct name (2 kinds, mod#col#row for 
-      // reference here, and mod#, see AliEMCALHistoProducer.
-      if(refHistoName.Contains("col") && hRef->GetEntries()>2 && hRef->GetMean()>0) 
-	ok=kTRUE;
-      if(!ok && counter >= nMod*nCol*nRow+nMod){
-	Log("No histogram with enough statistics for reference");
-	return 1;
+//______________________________________________________________________________________________
+UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
+{
+  // Fills data into EMCAL calibrations objects
+  // Amanda servers provide information directly through dcsAliasMap
+  
+  if (!fConfigOK) return kReturnCodeNoInfo;
+  UInt_t result = 0;
+  TObjArray *resultArray = new TObjArray();
+  TString errorHandling = fConfEnv->GetValue("ErrorHandling","ON");
+  errorHandling.ToUpper();
+  TObject * status;
+  
+  UInt_t dcsResult=0;
+  if (errorHandling == "OFF" ) {
+    if (!dcsAliasMap) dcsResult = kReturnCodeNoEntries;
+    if (dcsAliasMap->GetEntries() == 0 ) dcsResult = kReturnCodeNoEntries;  
+    status = new TParameter<int>("dcsResult",dcsResult);
+    resultArray->Add(status);
+  } 
+  else {
+    if (!dcsAliasMap) return kReturnCodeNoInfo;
+    if (dcsAliasMap->GetEntries() == 0 ) return kReturnCodeNoInfo;
+  }
+  
+  TString runType = GetRunType();
+  
+  // Temperature sensors are processed by AliEMCALCalTemp
+  TString tempConf = fConfEnv->GetValue("Temperature","ON");
+  tempConf.ToUpper();
+  if (tempConf != "OFF" ) {
+    UInt_t tempResult = MapTemperature(dcsAliasMap);
+    result=tempResult;
+    status = new TParameter<int>("tempResult",tempResult);
+    resultArray->Add(status);
+  }
+  
+  // Other calibration information will be retrieved through FXS files
+  //  examples:
+  //    TList* fileSourcesDAQ = GetFile(AliShuttleInterface::kDAQ, "pedestals");
+  //    const char* fileNamePed = GetFile(AliShuttleInterface::kDAQ, "pedestals", "LDC1");
+  //
+  //    TList* fileSourcesHLT = GetFile(AliShuttleInterface::kHLT, "calib");
+  //    const char* fileNameHLT = GetFile(AliShuttleInterface::kHLT, "calib", "LDC1");
+  
+  // PEDESTAL ENTRIES:
+  
+  if(runType == kPedestalRunType) {
+    Int_t numSources = 1;
+    Int_t pedestalSource[2] = {AliShuttleInterface::kDAQ, AliShuttleInterface::kHLT} ;
+    TString source = fConfEnv->GetValue("Pedestal","DAQ");
+    source.ToUpper();
+    if (source != "OFF" ) { 
+      if ( source == "HLT") pedestalSource[0] = AliShuttleInterface::kHLT;
+      if (!GetHLTStatus()) pedestalSource[0] = AliShuttleInterface::kDAQ;
+      if (source == "HLTDAQ" ) {
+	numSources=2;
+	pedestalSource[0] = AliShuttleInterface::kHLT;
+	pedestalSource[1] = AliShuttleInterface::kDAQ;
       }
-    }
-	
-    Double_t refMean=hRef->GetMean();
-	
-    // Calculates relative calibration coefficients for all non-zero channels
-    
-    for(Int_t mod=0; mod<nMod; mod++) {
-      if(mod > 10) nRow = nRowHalfSM ;
-      for(Int_t col=0; col<nCol; col++) {
-	for(Int_t row=0; row<nRow; row++) {
-	  sprintf(hnam,"mod%dcol%drow%d",mod,col,row);
-	  histo = (TH1F*)f.Get(hnam);
-	  //TODO: dead channels exclusion!
-	  if(histo && histo->GetMean() > 0) {
-	    coeff = histo->GetMean()/refMean;
-	    calibData.SetADCchannel(mod+1,col+1,row+1,1./coeff);
-	    AliDebug(1,Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
-	  }
-	  else
-	    calibData.SetADCchannel(mod+1,col+1,row+1,-111); 
-	}
+      if (source == "DAQHLT" ) numSources=2;
+      UInt_t pedestalResult=0;
+      for (Int_t i=0; i<numSources; i++ ) {	
+	pedestalResult = ExtractPedestals(pedestalSource[i]);
+	if ( pedestalResult == 0 ) break;
       }
+      result += pedestalResult;
+      status = new TParameter<int>("pedestalResult",pedestalResult);
+      resultArray->Add(status);
     }
-    f.Close();
-  }//while
+  }
   
-  //Store EMCAL calibration data
+  // SIGNAL/LED ENTRIES:
   
-  AliCDBMetaData emcalMetaData;
-  Bool_t emcalOK = Store("Calib", "Data", &calibData, &emcalMetaData);
+  if( runType == kPhysicsRunType || runType == kStandAloneRunType ) {
+    Int_t numSources = 1;
+    Int_t signalSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
+    TString source = fConfEnv->GetValue("Signal","DAQ");
+    source.ToUpper();
+    if ( source != "OFF") { 
+      if ( source == "HLT") signalSource[0] = AliShuttleInterface::kHLT;
+      if (!GetHLTStatus()) signalSource[0] = AliShuttleInterface::kDAQ;
+      if (source == "HLTDAQ" ) {
+	numSources=2;
+	signalSource[0] = AliShuttleInterface::kHLT;
+	signalSource[1] = AliShuttleInterface::kDAQ;
+      }
+      if (source == "DAQHLT" ) numSources=2;
+      UInt_t signalResult=0;
+      for (Int_t i=0; i<numSources; i++ ) {	
+	signalResult = ExtractSignal(signalSource[i]);
+	if ( signalResult == 0 ) break;
+      }
+      result += signalResult;
+      status = new TParameter<int>("signalResult",signalResult);
+      resultArray->Add(status);
+    }
+  }
   
-  if(emcalOK) return 0;
-  else
-    return 1;
+  
+  // overall status at the end
+  if (errorHandling == "OFF" ) {
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible(kMetaResponsible);
+    metaData.SetComment("Preprocessor AliEMCAL status.");
+    Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
+    resultArray->Delete();
+    return 0;
+  } 
+  else { 
+    return result;
+  }
   
 }
+//______________________________________________________________________________________________
+UInt_t AliEMCALPreprocessor::MapTemperature(TMap* dcsAliasMap)
+{
+  // extract DCS temperature maps. Perform fits to save space
+  UInt_t result=0;
+
+  TMap *map = fTemp->ExtractDCS(dcsAliasMap);
+  if (map) {
+    fTemp->MakeSplineFit(map);
+    Double_t fitFraction = 1.0*fTemp->NumFits()/fTemp->NumSensors(); 
+    if (fitFraction > kFitFraction ) {
+      AliInfo(Form("Temperature values extracted, fits performed.\n"));
+    } 
+    else { 
+      Log ("Too few temperature maps fitted. \n");
+      result = kReturnCodeNoInfo;
+    }
+  } 
+  else {
+    Log("No temperature map extracted. \n");
+    result = kReturnCodeNoInfo;
+  }
+  delete map;
+  // Now store the final CDB file
+  
+  if ( result == 0 ) { // some info was found
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible(kMetaResponsible);
+    metaData.SetComment(kMetaComment);
+    
+    Bool_t storeOK = Store("Calib", "Temperature", fTemp, &metaData, 0, kFALSE);
+    if ( !storeOK )  result=1;
+  }
+  
+  return result;
+}
+
+//______________________________________________________________________________________________
+UInt_t AliEMCALPreprocessor::ExtractPedestals(Int_t sourceFXS)
+{
+  UInt_t result=0;
+  //
+  //  Read pedestal file from file exchange server
+  //  Keep original entry from OCDB in case no new pedestals are available
+  //
+  AliCaloCalibPedestal *calibPed=0;
+  AliCDBEntry* entry = GetFromOCDB("Calib", "Pedestals");
+  if (entry) calibPed = (AliCaloCalibPedestal*)entry->GetObject();
+  if ( calibPed==NULL ) {
+    Log("AliEMCALPreprocsessor: No previous EMCAL pedestal entry available.\n");
+    calibPed = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
+  }
+  
+  TList* list = GetFileSources(sourceFXS,"pedestals");
+  if (list && list->GetEntries()>0) {
+    
+    calibPed->Reset(); // let's make a fresh start before possibly adding stuff below
+    
+    //  loop through all files from LDCs
+
+    int changes = 0;
+    UInt_t index = 0;
+    while (list->At(index)!=NULL) {
+      TObjString* fileNameEntry = (TObjString*) list->At(index);
+      if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(sourceFXS, "pedestals",
+				   fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        if (!f) {
+	  Log ("Error opening pedestal file.");
+	  result = kReturnCodeNoObject;
+	  break;
+	}
+        AliCaloCalibPedestal *calPed;
+	f->GetObject("emcCalibPedestal",calPed);
+        if ( !calPed ) {
+	  Log ("No pedestal calibration object in file.");
+	  result = kReturnCodeNoObject;
+	  break;
+	}
+	if ( calPed->GetNEvents()>0 && calPed->GetNChanFills()>0 ) {
+	  // add info for the modules available in the present file
+	  Bool_t status = calibPed->AddInfo(calPed);
+	  if (status) { changes++; }
+	}
+	
+        delete calPed; 
+        f->Close();
+      }
+      index++;
+    }  // while(list)
+    
+    //
+    //  Store updated pedestal entry to OCDB
+    //
+    if (changes>0) {
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0);
+      metaData.SetResponsible(kMetaResponsible);
+      metaData.SetComment(kMetaComment); 
+      
+      Bool_t storeOK = StoreReferenceData("Calib", "Pedestals", calibPed, &metaData);
+      if ( !storeOK ) result++;
+    }
+  } 
+  else {
+    Log ("Error: no entries in input file list!");
+    result = kReturnCodeNoEntries;
+  }
+  
+  return result;
+}
+
+//______________________________________________________________________________________________
+UInt_t AliEMCALPreprocessor::ExtractSignal(Int_t sourceFXS)
+{
+  UInt_t result=0;
+  //
+  //  Read signal file from file exchange server
+  //  Keep original entry from OCDB in case no new signal are available
+  //
+  AliCaloCalibSignal *calibSig=0;
+  AliCDBEntry* entry = GetFromOCDB("Calib", "Signal");
+  if (entry) calibSig = (AliCaloCalibSignal*)entry->GetObject();
+  if ( calibSig==NULL ) {
+    Log("AliEMCALPreprocsessor: No previous EMCAL signal entry available.\n");
+    calibSig = new AliCaloCalibSignal(AliCaloCalibSignal::kEmCal); 
+  }
+  
+  TList* list = GetFileSources(sourceFXS,"signal");
+  if (list && list->GetEntries()>0) {
+    
+    calibSig->Reset(); // let's make a fresh start before possibly adding stuff below
+    
+    //  loop through all files from LDCs
+    
+    int changes = 0;
+    UInt_t index = 0;
+    while (list->At(index)!=NULL) {
+      TObjString* fileNameEntry = (TObjString*) list->At(index);
+      if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(sourceFXS, "signal",
+				   fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        if (!f) {
+	  Log ("Error opening signal file.");
+	  result = kReturnCodeNoObject;
+	  break;
+	}
+	AliCaloCalibSignal *calSig;
+	f->GetObject("emcCalibSignal",calSig);
+        if ( !calSig ) {
+	  Log ("No signal calibration object in file.");
+	  result = kReturnCodeNoObject;
+	  break;
+	}
+	if ( calSig->GetNEvents()>0 ) {
+	  // add info for the modules available in the present file
+	  Bool_t status = calibSig->AddInfo(calSig);
+	  if (status) { changes++; }
+	}
+	
+        delete calSig; 
+        f->Close();
+      }
+      index++;
+    }  // while(list)
+    
+    //
+    //  Store updated signal entry to OCDB
+    //
+    if (changes>0) {
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0);
+      metaData.SetResponsible(kMetaResponsible);
+      metaData.SetComment(kMetaComment); 
+      
+      Bool_t storeOK = Store("Calib", "Signal", calibSig, &metaData, 0, kFALSE);
+      if ( !storeOK ) result++;
+    }
+  } 
+  else {
+    Log ("Error: no entries in input file list!");
+    result = kReturnCodeNoEntries;
+  }
+
+  return result;
+}
+
+

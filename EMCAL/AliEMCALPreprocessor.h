@@ -4,14 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.1  2006/12/07 16:32:16  gustavo
- * First shuttle code, online calibration histograms producer, EMCAL preprocessor
- *
- *
- */
 ///////////////////////////////////////////////////////////////////////////////
 // Class AliEMCALPreprocessor
 ///////////////////////////////////////////////////////////////////////////////
@@ -19,17 +11,33 @@
 
 #include "AliPreprocessor.h"
 
+class AliEMCALSensorTempArray;
+class TEnv;
+
 class AliEMCALPreprocessor : public AliPreprocessor {
-public:
 
-  AliEMCALPreprocessor();
-  AliEMCALPreprocessor(AliShuttleInterface* shuttle);
+ public:
+  
+  AliEMCALPreprocessor(); //! ctor
+  AliEMCALPreprocessor(AliShuttleInterface* shuttle); //! overloaded ctor
+  AliEMCALPreprocessor(const AliEMCALPreprocessor &); //! copy ctor
+  AliEMCALPreprocessor& operator = (const  AliEMCALPreprocessor &source); //! assignment operator
+  virtual ~AliEMCALPreprocessor();//! dtor
 
-protected:
+ protected:
 
-  virtual UInt_t Process(TMap* valueSet);
+  virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);//!
+  virtual UInt_t Process(TMap* dcsAliasMap);//!
+  UInt_t  MapTemperature(TMap* dcsAliasMap);//!
+  UInt_t  ExtractPedestals(Int_t sourceFXS);
+  UInt_t  ExtractSignal(Int_t sourceFXS);//!
 
-  ClassDef(AliEMCALPreprocessor,0);
+ private:
+  TEnv                   *fConfEnv;  // Preprocessor configuration map
+  AliEMCALSensorTempArray  *fTemp;     // CDB class for temperature sensors
+  Bool_t                 fConfigOK;  // Identify succesful reading of OCDB Config
+    
+  ClassDef(AliEMCALPreprocessor,1);
 
 };
 
