@@ -2,7 +2,14 @@
 How to run the MUON display
 ---------------------------
 
+New (30 May 2008): a new flag argument is added to the MUON_display macro for displaying
+-----------------  the clusters taken from the ESD (default) or from MUONRecPoints:
+
+MUON_displaySimu(x,x,1) - clusters from ESD (default); only clusters of the found tracks
+MUON_displaySimu(x,x,0) - clusters from rec points; all found clusters
+
 New (28 Apr 2008): there are two version of the MUON_display macro
+-----------------
 
 MUON_displaySimu   - to be used with simulations (shows also reference tracks,
                      Monte-Carlo tracks and hits)
