@@ -32,5 +32,5 @@ ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lCDB -lSTEER \
                          -lRAWDatarec \
-                         -L$(shell root-config --libdir) -lVMC -lGeom
+                         -L$(shell root-config --libdir) -lVMC -lGeom -lMinuit
 endif
