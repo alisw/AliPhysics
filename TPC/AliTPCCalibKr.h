@@ -44,12 +44,27 @@ public:
 
   //Merge output objects (needed by PROOF)
   virtual Long64_t Merge(TCollection* list);
-  
+
+  // Setters
+  void SetADCOverClustSizeRange(Float_t min=0.0,Float_t max=1.0e9)   {fADCOverClustSizeMin = min ; fADCOverClustSizeMax = max;  }
+  void SetMaxADCOverClustADCRange(Float_t min=0.0,Float_t max=1.0e9) {fMaxADCOverClustADCMin = min ; fMaxADCOverClustADCMax = max;  }
+  void SetTimeRange(Float_t min=0.0, Float_t max=1.0e9)              {fTimeMin = min ; fTimeMax = max; }
+  void SetClustSizeRange(Float_t min=0.0, Float_t max=1.0e9)         {fClustSizeMin = min ; fClustSizeMax = max; }
+
 private:
 
   Bool_t fASide;              //! Only A side
   Bool_t fCSide;              //! Only C side 
   TObjArray fHistoKrArray;    //  Calibration histograms for Kr distribution
+
+  Float_t fADCOverClustSizeMin; // min ADCcluster over Cluster size ratio
+  Float_t fADCOverClustSizeMax; // max ADCcluster over Cluster size ratio
+  Float_t fMaxADCOverClustADCMin; // min MaxADC over ADCcluster ratio 
+  Float_t fMaxADCOverClustADCMax; // max MaxADC over ADCcluster ratio
+  Float_t fTimeMin; // min time bin for MaxADC
+  Float_t fTimeMax; // max time bin for MaxADC
+  Float_t fClustSizeMin; // min cluster size
+  Float_t fClustSizeMax; // max cluster size
 
 public:
   ClassDef(AliTPCCalibKr, 1)  // Implementation of the TPC pedestal and noise calibration

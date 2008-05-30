@@ -95,7 +95,15 @@ AliTPCCalibKr::AliTPCCalibKr() :
   TObject(),
   fASide(kTRUE),
   fCSide(kTRUE),
-  fHistoKrArray(72)
+  fHistoKrArray(72),
+  fADCOverClustSizeMin(0.0),
+  fADCOverClustSizeMax(1.0e9),
+  fMaxADCOverClustADCMin(0.0),
+  fMaxADCOverClustADCMax(1.0e9),
+  fTimeMin(0.0),
+  fTimeMax(1.0e9),
+  fClustSizeMin(0.0),
+  fClustSizeMax(1.0e9)
 {
   //
   // default constructor
@@ -104,7 +112,13 @@ AliTPCCalibKr::AliTPCCalibKr() :
   // TObjArray with histograms
   fHistoKrArray.SetOwner(kTRUE); // is owner of histograms
   fHistoKrArray.Clear();
-
+ 
+  // init cuts
+  SetADCOverClustSizeRange(7,200);
+  SetMaxADCOverClustADCRange(0.01,0.4);
+  SetTimeRange(200,600);
+  SetClustSizeRange(6,200);
+ 
   // init histograms
   Init();
 }
@@ -115,7 +129,15 @@ AliTPCCalibKr::AliTPCCalibKr(const AliTPCCalibKr& pad) :
   
   fASide(pad.fASide),
   fCSide(pad.fCSide),
-  fHistoKrArray(72)
+  fHistoKrArray(72),
+  fADCOverClustSizeMin(pad.fADCOverClustSizeMin),
+  fADCOverClustSizeMax(pad.fADCOverClustSizeMax),
+  fMaxADCOverClustADCMin(pad.fMaxADCOverClustADCMin),
+  fMaxADCOverClustADCMax(pad.fMaxADCOverClustADCMax),
+  fTimeMin(pad.fTimeMin),
+  fTimeMax(pad.fTimeMax),
+  fClustSizeMin(pad.fClustSizeMin),
+  fClustSizeMax(pad.fClustSizeMax)
 {
   // copy constructor
  
@@ -267,9 +289,12 @@ Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
     TCut cutR1("cutR1","fADCcluster/fSize>7");          // cosmic tracks and noise removal
     TCut cutR2("cutR2","fMax.fAdc/fADCcluster<0.4");    // digital noise removal
     TCut cutR3("cutR3","fMax.fAdc/fADCcluster>0.01");   // noise removal
+    TCut cutR4("cutR4","fMax.fTime>200");   // noise removal
+    TCut cutR5("cutR5","fMax.fTime<600");   // noise removal
     TCut cutS1("cutS1","fSize<200");    // adjust it according v seetings - cosmic tracks
-    TCut cutAll = cutR0+cutR1+cutR2+cutR3+cutS1;
+    TCut cutAll = cutR0+cutR1+cutR2+cutR3+cutR4+cutR5+cutS1;
   */
+  /*
   //R0
   if ((float)cl->GetADCcluster()/ cl->GetSize() >200)        return kFALSE;
   // R1
@@ -278,9 +303,36 @@ Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
   if ((float)cl->GetMax().GetAdc()/ cl->GetADCcluster() >0.4)  return kFALSE;
   //R3
   if ((float)cl->GetMax().GetAdc()/ cl->GetADCcluster() <0.01) return kFALSE;
+  //R4
+  if (cl->GetMax().GetTime() < 200) return kFALSE;
+  //R5
+  if (cl->GetMax().GetTime() > 600) return kFALSE;
   //S1
   if (cl->GetSize()>200) return kFALSE;
   if (cl->GetSize()<6)  return kFALSE;
+
+  SetADCOverClustSizeRange(7,200);
+  SetMaxADCOverClustADCRange(0.01,0.4);
+  SetTimeRange(200,600);
+  SetClustSizeRange(6,200);
+  */
+
+  //R0
+  if ((float)cl->GetADCcluster()/ cl->GetSize() >fADCOverClustSizeMax)        return kFALSE;
+  // R1
+  if ((float)cl->GetADCcluster()/ cl->GetSize() <fADCOverClustSizeMin)          return kFALSE;
+  //R2
+  if ((float)cl->GetMax().GetAdc()/ cl->GetADCcluster() >fMaxADCOverClustADCMax)  return kFALSE;
+  //R3
+  if ((float)cl->GetMax().GetAdc()/ cl->GetADCcluster() <fMaxADCOverClustADCMin) return kFALSE;
+  //R4
+  if (cl->GetMax().GetTime() > fTimeMax) return kFALSE;
+  //R5
+  if (cl->GetMax().GetTime() < fTimeMin) return kFALSE;
+  //S1
+  if (cl->GetSize()>fClustSizeMax) return kFALSE;
+  if (cl->GetSize()<fClustSizeMin)  return kFALSE;
+
   return kTRUE;
 
 }
