@@ -18,6 +18,7 @@ AliEMCALPreprocessor.cxx \
 AliEMCALSensorTemp.cxx \
 AliEMCALSensorTempArray.cxx \
 AliCaloCalibPedestal.cxx \
+AliCaloCalibSignal.cxx \
 AliEMCALSurvey.cxx \
 AliEMCALRecParam.cxx \
 AliEMCALQAChecker.cxx

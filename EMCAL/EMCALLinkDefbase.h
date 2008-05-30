@@ -21,6 +21,7 @@
 #pragma link C++ class AliEMCALSensorTemp+;
 #pragma link C++ class AliEMCALSensorTempArray+;
 #pragma link C++ class AliCaloCalibPedestal+;
+#pragma link C++ class AliCaloCalibSignal+;
 #pragma link C++ class AliEMCALSurvey+;
 #pragma link C++ class AliEMCALRecParam+;
 #pragma link C++ class AliEMCALQAChecker+;
