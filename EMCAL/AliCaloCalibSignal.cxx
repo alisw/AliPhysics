@@ -249,19 +249,47 @@ Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
 {
   // just do this for the basic graphs/profiles that get filled in ProcessEvent
   // may not have data for all channels, but let's just Add everything..
+  // Note: this method will run into problems with TProfile adding if the binning of
+  // the local profiles is not the same as those provided by the argument *sig..
+  int numGraphPoints = 0;
+  int id = 0;
+  int ip = 0;
   for (int i = 0; i < fModules; i++) {
     for (int j = 0; j < fColumns; j++) {
       for (int k = 0; k < fRows; k++) {
 	
-	int id = GetTowerNum(i,j,k);
-	if(fUseAverage){
- 	  GetProfAmpVsTimeHighGain(id)->Add(sig->GetProfAmpVsTimeHighGain(id));
- 	  GetProfAmpVsTimeLowGain(id)->Add(sig->GetProfAmpVsTimeLowGain(id));
+	id = GetTowerNum(i,j,k);
+
+	if(fUseAverage){ // add to Profiles
+ 	  if (sig->GetProfAmpVsTimeHighGain(id)) {
+	    GetProfAmpVsTimeHighGain(id)->Add(sig->GetProfAmpVsTimeHighGain(id));
+	  }
+ 	  if (sig->GetProfAmpVsTimeLowGain(id)) {
+	    GetProfAmpVsTimeLowGain(id)->Add(sig->GetProfAmpVsTimeLowGain(id));
+	  }
 	}
-	else{	  
-	  //DS
-// 	  sig->GetGraphAmpVsTimeHighGain(i,j,k);
-// 	  sig->GetGraphAmpVsTimeLowGain(i,j,k);
+	else{ // add to Graphs	  
+	  // high gain
+	  numGraphPoints= sig->GetGraphAmpVsTimeHighGain(id)->GetN();
+	  if (numGraphPoints > 0) {
+	    // get the values
+	    double *graphX = sig->GetGraphAmpVsTimeHighGain(id)->GetX();
+	    double *graphY = sig->GetGraphAmpVsTimeHighGain(id)->GetY();
+	    for(ip=0; ip < numGraphPoints; ip++){
+	      fGraphAmpVsTimeHighGain[id]->SetPoint(fNHighGain[id]++,graphX[ip],graphY[ip]);
+	    }
+	  }
+	  // low gain
+	  numGraphPoints= sig->GetGraphAmpVsTimeLowGain(id)->GetN();
+	  if (numGraphPoints > 0) {
+	    // get the values
+	    double *graphX = sig->GetGraphAmpVsTimeLowGain(id)->GetX();
+	    double *graphY = sig->GetGraphAmpVsTimeLowGain(id)->GetY();
+	    for(ip=0; ip < numGraphPoints; ip++){
+	      fGraphAmpVsTimeLowGain[id]->SetPoint(fNLowGain[id]++,graphX[ip],graphY[ip]);
+	    }
+	  }
+
 	}
 
       }//end for nModules 
