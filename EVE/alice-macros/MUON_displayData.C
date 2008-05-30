@@ -18,7 +18,7 @@ Bool_t g_fromRaw      = kFALSE;
 
 AliMagFMaps *g_field = 0;
 
-void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
+void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t clustersFromESD = kTRUE)
 {
   //
   // display from real data, eventually with recreated digits
@@ -85,13 +85,16 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
     }
   }
 
-  rl->LoadRecPoints("MUON");
-  ct = rl->GetTreeR("MUON", false);
-
   TString esdDataPath = TString(gAliEveEvent->GetTitle());
   esdDataPath.Append("/AliESDs.root");
-  g_muon_data->LoadRecPointsFromESD(esdDataPath.Data());
-
+  if (clustersFromESD) {
+    g_muon_data->LoadRecPointsFromESD(esdDataPath.Data());
+  } else {
+    rl->LoadRecPoints("MUON");
+    ct = rl->GetTreeR("MUON", false);
+    g_muon_data->LoadRecPoints(ct);
+  }
+  
   g_muon_last_event = gAliEveEvent;
 
   g_currentEvent = g_muon_last_event->GetEventId();
