@@ -21,9 +21,6 @@ public:
   AliTPCCalibKrTask(const char *name = "AliTPCCalibKrTask");
   virtual ~AliTPCCalibKrTask();
 
-  AliTPCCalibKrTask(const AliTPCCalibKrTask&); // not implemented
-  AliTPCCalibKrTask operator=(const AliTPCCalibKrTask&); // not implemented
-
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
@@ -35,6 +32,9 @@ public:
   void SetTPCCalibKr(AliTPCCalibKr *calibKr) {fTPCCalibKr = calibKr;}
 
 private:
+
+  AliTPCCalibKrTask(const AliTPCCalibKrTask&); // not implemented
+  AliTPCCalibKrTask operator=(const AliTPCCalibKrTask&); // not implemented
 
   static Int_t  fEvtNumber;     //! event number
   AliTPCclusterKr *fClustKr;  //! input AliTPCclusterKr objects
