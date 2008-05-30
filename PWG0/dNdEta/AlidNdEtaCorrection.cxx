@@ -272,10 +272,10 @@ void AlidNdEtaCorrection::FillMCParticle(Float_t vtx, Float_t eta, Float_t pt, B
 
   fTriggerBiasCorrectionMBToINEL->GetTrackCorrection()->FillGene(vtx, eta, pt);
 
-  if (processType != 92 && processType != 93)
+  if (processType != AliPWG0Helper::kSD )
     fTriggerBiasCorrectionMBToNSD->GetTrackCorrection()->FillGene(vtx, eta, pt);
 
-  if (processType!=92 && processType!=93 && processType!=94)
+  if (processType == AliPWG0Helper::kND )
     fTriggerBiasCorrectionMBToND->GetTrackCorrection()->FillGene(vtx, eta, pt);
 
   if (!trigger)
@@ -309,10 +309,10 @@ void AlidNdEtaCorrection::FillEvent(Float_t vtx, Float_t n, Bool_t trigger, Bool
 
   fTriggerBiasCorrectionMBToINEL->GetEventCorrection()->FillGene(vtx, n);
 
-  if (processType != 92 && processType != 93)
+  if ( processType != AliPWG0Helper::kSD )
     fTriggerBiasCorrectionMBToNSD->GetEventCorrection()->FillGene(vtx, n);
 
-  if (processType!=92 && processType!=93 && processType!=94)
+  if (processType == AliPWG0Helper::kND )
     fTriggerBiasCorrectionMBToND->GetEventCorrection()->FillGene(vtx, n);
 
   if (!trigger)
