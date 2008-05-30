@@ -25,6 +25,7 @@
 #include <AliMUONTrackParam.h>
 #include <AliMUONConstants.h>
 #include <AliMUONESDInterface.h>
+#include <AliMUONVCluster.h>
 
 #include <TClonesArray.h>
 #include <TStyle.h>
@@ -474,7 +475,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   if (!fIsESDTrack) {
     if (!fIsRefTrack) {
       fIsMUONTrack = kTRUE;
-      fTrack    = mtrack;
+      fTrack = mtrack;
     } else {
       fTrack = new AliMUONTrack(*mtrack);
     }
@@ -484,21 +485,18 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   Float_t ax, bx, ay, by;
   Float_t xr[28], yr[28], zr[28];
   Float_t xrc[28], yrc[28], zrc[28];
+  Int_t chr[28];
   char form[1000];
 
   TMatrixD smatrix(2,2);
   TMatrixD sums(2,1);
   TMatrixD res(2,1);
 
-  Float_t xRec, xRec0;
-  Float_t yRec, yRec0;
-  Float_t zRec, zRec0;
-
   // middle z between the two detector planes of the trigger chambers
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
   Float_t pt    = 0.0;
-  Float_t pv[3] = { 0.0 };
+  Float_t pv[3] = {0., 0., 0.};
 
   if (fIsMUONTrack) {
     if (mtrack->GetMatchTrigger()) {
@@ -510,24 +508,20 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     SetLineStyle(1);
   }
 
-  AliMUONTrackParam *trackParam = mtrack->GetTrackParamAtVertex();
-  xRec0  = trackParam->GetNonBendingCoor();
-  yRec0  = trackParam->GetBendingCoor();
-  zRec0  = trackParam->GetZ();
-
+  AliMUONTrackParam *trackParam = 0x0;
   if (fIsMUONTrack || fIsESDTrack) {
-    SetPoint(fCount,xRec0,yRec0,zRec0);
+    trackParam = mtrack->GetTrackParamAtVertex();
+    SetPoint(fCount,trackParam->GetNonBendingCoor(),trackParam->GetBendingCoor(),trackParam->GetZ());
     fCount++;
   }
 
-  for (Int_t i = 0; i < 28; i++) xr[i]=yr[i]=zr[i]=0.0;
-
+  for (Int_t i = 0; i < 28; i++) {
+    xr[i]=yr[i]=zr[i]=0.0;
+    chr[i]=-1;
+  }
+  
   Int_t nTrackHits = mtrack->GetNClusters();
-
-  Bool_t hitChamber[14] = {kFALSE};
-  Int_t iCha;
   TClonesArray* trackParamAtCluster = mtrack->GetTrackParamAtCluster();
-
   for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
 
     trackParam = (AliMUONTrackParam*) trackParamAtCluster->At(iHit);
@@ -544,141 +538,25 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
       fP.Set(pv);
     }
 
-    xRec  = trackParam->GetNonBendingCoor();
-    yRec  = trackParam->GetBendingCoor();
-    zRec  = trackParam->GetZ();
-
-    iCha = AliMUONConstants::ChamberNumber(zRec);
-
-    xr[iHit] = xRec;
-    yr[iHit] = yRec;
-    zr[iHit] = zRec;
-
-    hitChamber[iCha] = kTRUE;
+    xr[iHit] = trackParam->GetNonBendingCoor();
+    yr[iHit] = trackParam->GetBendingCoor();
+    zr[iHit] = trackParam->GetZ();
+    chr[iHit] = trackParam->GetClusterPtr()->GetChamberId();
 
   }
-
-  Int_t crntCha, lastHitSt12, firstHitSt3, lastHitSt3, firstHitSt45;
-
-  if (fIsMUONTrack || fIsESDTrack) nTrackHits = 10;
-
-  lastHitSt12  = -1;
-  firstHitSt3  = -1;
-  lastHitSt3   = -1;
-  firstHitSt45 = -1;
-  for (Int_t iHit = 0; iHit < nTrackHits; iHit++) {
-    crntCha = AliMUONConstants::ChamberNumber(zr[iHit]);
-    if (hitChamber[crntCha] && crntCha >= 0 && crntCha <= 3) {
-      lastHitSt12 = iHit;
-    }
-    if (hitChamber[crntCha] && crntCha >= 4 && crntCha <= 5) {
-      if (firstHitSt3 == -1) firstHitSt3 = iHit;
-      lastHitSt3 = iHit;
-    }
-    if (hitChamber[crntCha] && crntCha >= 6 && crntCha <= 9) {
-      if (firstHitSt45 == -1) firstHitSt45 = iHit;
-    }
-  }
-
-  if (lastHitSt12 >= 0) {
-    for (Int_t iHit = 0; iHit <= lastHitSt12; iHit++) {
-      SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-      fCount++;
-    }
-    if (firstHitSt3 >= 0) {
-      Propagate(xr,yr,zr,lastHitSt12,firstHitSt3);
-      SetPoint(fCount,xr[firstHitSt3],yr[firstHitSt3],zr[firstHitSt3]);
-      fCount++;
-      if (lastHitSt3 >= 0) {
-	SetPoint(fCount,xr[lastHitSt3],yr[lastHitSt3],zr[lastHitSt3]);
-	fCount++;
-	if (firstHitSt45 >= 0) {
-	  Propagate(xr,yr,zr,lastHitSt3,firstHitSt45);
-	  for (Int_t iHit = firstHitSt45; iHit < nTrackHits; iHit++) {
-	    SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-	    fCount++;
-	  }
-	} else {
-	  Propagate(xr,yr,zr,lastHitSt3,9999);
-	}
-      } else if (firstHitSt45 >= 0) {
-	Propagate(xr,yr,zr,firstHitSt3,firstHitSt45);
-	for (Int_t iHit = firstHitSt45; iHit < nTrackHits; iHit++) {
-	  SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-	  fCount++;
-	}
-      } else {
-	Propagate(xr,yr,zr,firstHitSt3,9999);
-      }
-    } else if (lastHitSt3 >= 0) {
-      Propagate(xr,yr,zr,lastHitSt12,lastHitSt3);
-      SetPoint(fCount,xr[lastHitSt3],yr[lastHitSt3],zr[lastHitSt3]);
-      fCount++;
-      if (firstHitSt45 >= 0) {
-	Propagate(xr,yr,zr,lastHitSt3,firstHitSt45);
-	for (Int_t iHit = firstHitSt45; iHit < nTrackHits; iHit++) {
-	  SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-	  fCount++;
-	}
-      } else {
-	Propagate(xr,yr,zr,lastHitSt3,9999);
-      }
-    } else if (firstHitSt45 >= 0){
-      Propagate(xr,yr,zr,lastHitSt12,firstHitSt45);
-      for (Int_t iHit = firstHitSt45; iHit < nTrackHits; iHit++) {
-	SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-	fCount++;
-      }
-    } else {
-      Propagate(xr,yr,zr,lastHitSt12,9999);
-    }
-  } else if (firstHitSt3 >= 0) {
-    SetPoint(fCount,xr[firstHitSt3],yr[firstHitSt3],zr[firstHitSt3]);
+  
+  SetPoint(fCount,xr[0],yr[0],zr[0]);
+  fCount++;
+  for (Int_t iHit = 1; iHit < nTrackHits; iHit++) {
+    if (chr[iHit] > 3 && chr[iHit-1] < 6) Propagate(xr,yr,zr,iHit-1,iHit);
+    SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
     fCount++;
-    if (lastHitSt3 >= 0) {
-      SetPoint(fCount,xr[lastHitSt3],yr[lastHitSt3],zr[lastHitSt3]);
-      fCount++;
-      if (firstHitSt45) {
-	Propagate(xr,yr,zr,lastHitSt3,firstHitSt45);
-	for (Int_t iHit = firstHitSt45; iHit < nTrackHits; iHit++) {
-	  SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-	  fCount++;
-	}
-      } else {
-	Propagate(xr,yr,zr,lastHitSt3,9999);
-      }
-    } else if (firstHitSt45 >= 0) {
-      Propagate(xr,yr,zr,firstHitSt3,firstHitSt45);
-      for (Int_t iHit = firstHitSt45; iHit < nTrackHits; iHit++) {
-	SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-	fCount++;
-      }
-    } else {
-      Propagate(xr,yr,zr,firstHitSt3,9999);
-    }
-  } else if (lastHitSt3 >= 0) {
-    SetPoint(fCount,xr[lastHitSt3],yr[lastHitSt3],zr[lastHitSt3]);
-    fCount++;
-    if (firstHitSt45 >= 0) {
-      Propagate(xr,yr,zr,lastHitSt3,firstHitSt45);
-      for (Int_t iHit = firstHitSt45; iHit < nTrackHits; iHit++) {
-	SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-	fCount++;
-      }
-    } else {
-      Propagate(xr,yr,zr,lastHitSt3,9999);
-    }
-  } else {
-    for (Int_t iHit = 0; iHit < nTrackHits; iHit++) {
-      SetPoint(fCount,xr[iHit],yr[iHit],zr[iHit]);
-      fCount++;
-    }
   }
-
+  
   if (!fIsMUONTrack && !fIsESDTrack) return;
 
   Int_t nrc = 0;
-  if (mtrack->GetMatchTrigger() && 1) {
+  if (mtrack->GetMatchTrigger()) {
 
     for (Int_t i = 0; i < nTrackHits; i++) {
       if (TMath::Abs(zr[i]) > 1000.0) {
@@ -800,49 +678,12 @@ void AliEveMUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
   // create a simple track from the ESD track
   AliMUONESDInterface::ESDToMUON(*mtrack,*fTrack);
 
+  // reset track parameters at vertex to the ones at DCA
+  AliMUONTrackParam paramAtDCA;
+  AliMUONESDInterface::GetParamAtDCA(*mtrack, paramAtDCA);
+  fTrack->SetTrackParamAtVertex(&paramAtDCA);
+  
   MakeMUONTrack(fTrack);
-  return;
-
-  AliMUONTrackParam trackParam;
-  AliMUONESDInterface::GetParamAtVertex(*mtrack, trackParam);
-  fTrack->SetTrackParamAtVertex(&trackParam);
-  fTrack->SetMatchTrigger(mtrack->GetMatchTrigger());
-
-  Double_t vect[7], vout[7];
-  Double_t step = 1.0;
-
-  Int_t charge = (Int_t)TMath::Sign(1.0,trackParam.GetInverseBendingMomentum());
-  Float_t pv[3];
-  pv[0] = trackParam.Px();
-  pv[1] = trackParam.Py();
-  pv[2] = trackParam.Pz();
-  fP.Set(pv);
-
-  vect[0] = trackParam.GetNonBendingCoor();
-  vect[1] = trackParam.GetBendingCoor();
-  vect[2] = trackParam.GetZ();
-  vect[3] = trackParam.Px()/trackParam.P();
-  vect[4] = trackParam.Py()/trackParam.P();
-  vect[5] = trackParam.Pz()/trackParam.P();
-  vect[6] = trackParam.P();
-
-  //cout << "vertex " << vect[0] << "   " << vect[1] << "   " << vect[2] << "   " << endl;
-
-  Double_t zMax = -1750.0;
-  Double_t rMax =   350.0;
-  Double_t r    =     0.0;
-
-  Int_t nSteps = 0;
-  while ((vect[2] > zMax) && (nSteps < 10000) && (r < rMax)) {
-    nSteps++;
-    OneStepRungekutta(charge, step, vect, vout);
-    SetPoint(fCount,vout[0],vout[1],vout[2]);
-    fCount++;
-    for (Int_t i = 0; i < 7; i++) {
-      vect[i] = vout[i];
-    }
-    r = TMath::Sqrt(vect[0]*vect[0]+vect[1]*vect[1]);
-  }
 
 }
 
@@ -944,21 +785,21 @@ void AliEveMUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1,
 
   if (IsMUONTrack() || IsESDTrack()) {
     trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1);
-    charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
+    charge = (Int_t)trackParam->GetCharge();
   }
   if (IsRefTrack()) {
     trackParam = fTrack->GetTrackParamAtVertex();
-    charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
+    charge = (Int_t)trackParam->GetCharge();
     trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1);
   }
 
   vect[0] = xr[i1];
   vect[1] = yr[i1];
   vect[2] = zr[i1];
-  vect[3] = trackParam->Px()/trackParam->P();
-  vect[4] = trackParam->Py()/trackParam->P();
-  vect[5] = trackParam->Pz()/trackParam->P();
   vect[6] = trackParam->P();
+  vect[3] = trackParam->Px()/vect[6];
+  vect[4] = trackParam->Py()/vect[6];
+  vect[5] = trackParam->Pz()/vect[6];
 
   Int_t nSteps = 0;
   while ((vect[2] > zMax) && (nSteps < 10000)) {
