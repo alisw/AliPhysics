@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -10,7 +10,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -152,7 +152,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 					"Missing parameter",
 					"Expected one of 'left', 'right' or 'all' after '-plane'."
 				);
-				return EINVAL;
+				return -EINVAL;
 			}
 			if (strcmp(argv[i], "left") == 0)
 				fSelection = kLeftPlane;
@@ -169,7 +169,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 					  " 'right' or 'all'.",
 					argv[i]
 				);
-				return EINVAL;
+				return -EINVAL;
 			}
 		}
 		else if (strcmp(argv[i], "-firstevent") == 0)
@@ -184,7 +184,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 			if (i >= argc)
 			{
 				HLTError("Expected a positive number after -firstevent.");
-				return EINVAL;
+				return -EINVAL;
 			}
 			char* end = "";
 			long num = strtol(argv[i], &end, 0);
@@ -194,7 +194,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 					"Expected a positive number after -firstevent"
 					" but got: %s", argv[i]
 				));
-				return EINVAL;
+				return -EINVAL;
 			}
 			fCurrentEventIndex = Int_t(num);
 			firstEventSet = true;
@@ -218,7 +218,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 				"The argument '%s' is invalid.",
 				argv[i]
 			);
-			return EINVAL;
+			return -EINVAL;
 		}
 	}
 
@@ -236,7 +236,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 			"Missing arguments",
 			"Must have one and only one of -hitdata, -simdata or -recdata specified."
 		);
-		return EINVAL;
+		return -EINVAL;
 	}
 	
 	// Must load the mapping data for AliMpTriggerCrate::GetDdlId()  //TODO AliMpTriggerCrate => AliMpDetElement
@@ -266,7 +266,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 				"Out of memory",
 				"Not enough memory to allocate AliMUONMCDataInterface."
 			);
-			return ENOMEM;
+			return -ENOMEM;
 		}
 	}
 	else if (recdata)
@@ -288,7 +288,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 				"Out of memory",
 				"Not enough memory to allocate AliMUONDataInterface."
 			);
-			return ENOMEM;
+			return -ENOMEM;
 		}
 	}
 	
@@ -404,7 +404,7 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 			sizeof(AliHLTComponentEventData)
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return EINVAL;
+		return -EINVAL;
 	}
 	
 	// Use the fEventID as the event number to load if fCurrentEventIndex == -1,
@@ -433,7 +433,7 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 			maxevent
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return EINVAL;
+		return -EINVAL;
 	}
 	
 	// Create and initialise a new data block.
@@ -449,7 +449,7 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 			block.BufferSize()
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return ENOBUFS;
+		return -ENOBUFS;
 	}
 	
 	// Initialise the DDL list containing the DDLs which contributed to the
@@ -534,7 +534,7 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 					block.BufferSize()
 				);
 				size = 0; // Important to tell framework that nothing was generated.
-				return ENOBUFS;
+				return -ENOBUFS;
 			}
 			
 			// Fill the new trigger record with the hit information.
@@ -635,7 +635,7 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 			"Neither AliMUONDataInterface nor AliMUONMCDataInterface were created."
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return EFAULT;
+		return -EFAULT;
 	}
 	
 	AliHLTComponentBlockData bd;

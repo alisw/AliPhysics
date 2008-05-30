@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -10,7 +10,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -111,7 +111,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 					"Missing parameter",
 					"Expected one of 'left', 'right' or 'all' after '-plane'."
 				);
-				return EINVAL;
+				return -EINVAL;
 			}
 			if (strcmp(argv[i], "left") == 0)
 				fSelection = kLeftPlane;
@@ -128,7 +128,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 					  " 'right' or 'all'.",
 					argv[i]
 				);
-				return EINVAL;
+				return -EINVAL;
 			}
 		}
 		else if (strcmp(argv[i], "-chamber") == 0)
@@ -142,7 +142,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 					"Expected a chamber number, range eg. '1-10' or list eg."
 					  " '1,2,3' after '-chamber'."
 				);
-				return EINVAL;
+				return -EINVAL;
 			}
 			int result = ParseChamberString(argv[i]);
 			if (result != 0) return result;
@@ -160,17 +160,17 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 			if (i >= argc)
 			{
 				HLTError("Expected a positive number after -firstevent.");
-				return EINVAL;
+				return -EINVAL;
 			}
 			char* end = "";
 			long num = strtol(argv[i], &end, 0);
 			if (*end != '\0' or num < 0) // Check if the conversion is OK.
 			{
-				HLTError(Form(
+				HLTError(
 					"Expected a positive number after -firstevent"
 					" but got: %s", argv[i]
-				));
-				return EINVAL;
+				);
+				return -EINVAL;
 			}
 			fCurrentEventIndex = Int_t(num);
 			firstEventSet = true;
@@ -194,7 +194,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 				"The argument '%s' is invalid.",
 				argv[i]
 			);
-			return EINVAL;
+			return -EINVAL;
 		}
 	}
 
@@ -206,7 +206,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 			"Invalid arguments",
 			"Cannot have both -simdata and -recdata set."
 		);
-		return EINVAL;
+		return -EINVAL;
 	}
 	
 	if (not simdata and not recdata)
@@ -216,7 +216,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 			"Missing arguments",
 			"Must have either -simdata or -recdata specified."
 		);
-		return EINVAL;
+		return -EINVAL;
 	}
 	
 	if (not chamberWasSet)
@@ -254,7 +254,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 				"Out of memory",
 				"Not enough memory to allocate AliMUONMCDataInterface."
 			);
-			return ENOMEM;
+			return -ENOMEM;
 		}
 	}
 	else if (recdata)
@@ -276,7 +276,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 				"Out of memory",
 				"Not enough memory to allocate AliMUONDataInterface."
 			);
-			return ENOMEM;
+			return -ENOMEM;
 		}
 	}
 	
@@ -390,7 +390,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			sizeof(AliHLTComponentEventData)
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return EINVAL;
+		return -EINVAL;
 	}
 	
 	// Use the fEventID as the event number to load if fCurrentEventIndex == -1,
@@ -419,7 +419,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			maxevent
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return EINVAL;
+		return -EINVAL;
 	}
 	
 	// Create and initialise a new data block.
@@ -435,7 +435,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			block.BufferSize()
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return ENOBUFS;
+		return -ENOBUFS;
 	}
 	
 	// Initialise the DDL list containing the DDLs which contributed to the
@@ -483,7 +483,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 						block.BufferSize()
 					);
 					size = 0; // Important to tell framework that nothing was generated.
-					return ENOBUFS;
+					return -ENOBUFS;
 				}
 				
 				rechit->fX = hit->Xref();
@@ -539,7 +539,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 						block.BufferSize()
 					);
 					size = 0; // Important to tell framework that nothing was generated.
-					return ENOBUFS;
+					return -ENOBUFS;
 				}
 				
 				rechit->fX = cluster->GetX();
@@ -567,7 +567,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			"Neither AliMUONDataInterface nor AliMUONMCDataInterface were created."
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return EFAULT;
+		return -EFAULT;
 	}
 	
 	AliHLTComponentBlockData bd;
@@ -613,7 +613,7 @@ int AliHLTMUONRecHitsSource::ParseChamberString(const char* str)
 				"Expected a number in the range [1..%d] but got '%s'.",
 				AliMUONConstants::NTrackingCh(), current
 			);
-			return EINVAL;
+			return -EINVAL;
 		}
 		if (chamber < 1 or AliMUONConstants::NTrackingCh() < chamber)
 		{
@@ -623,7 +623,7 @@ int AliHLTMUONRecHitsSource::ParseChamberString(const char* str)
 				"Got the chamber number %d which is outside the valid range of [1..%d].",
 				chamber, AliMUONConstants::NTrackingCh()
 			);
-			return EINVAL;
+			return -EINVAL;
 		}
 		
 		// Skip any whitespace after the number
@@ -657,7 +657,7 @@ int AliHLTMUONRecHitsSource::ParseChamberString(const char* str)
 				  " or end of line but got '%c' at character %d.",
 				str, *end, (int)(end - str) +1
 			);
-			return EINVAL;
+			return -EINVAL;
 		}
 		
 		// Set the range of chambers to publish for.
