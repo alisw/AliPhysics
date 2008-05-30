@@ -534,12 +534,6 @@ void Config()
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
         AliTRDgeometry *geoTRD = TRD->GetGeometry();
-	// Partial geometry: modules at 2,3,4,6,11,12,14,15
-	// starting at 6h in positive direction
-	//Hole on SM 13 and 14 for PHOS
-        geoTRD->SetSMstatus(13,0);
-        geoTRD->SetSMstatus(14,0);
-        geoTRD->SetSMstatus(15,0);
     }
 
     if (iFMD)
