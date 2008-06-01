@@ -72,6 +72,26 @@
 // The debug level -  different procedure produce tree for numerical debugging
 //                    To enable them set AliTPCReconstructor::SetStreamLevel(n); where nis bigger 1
 //
+
+//
+// Adding systematic errors to the covariance:
+// 
+// The systematic errors due to the misalignment and miscalibration are added to the covariance matrix
+// of the tracks (not to the clusters as they are dependent):
+// The parameters form AliTPCRecoParam are used AliTPCRecoParam::GetSystematicError
+// The systematic errors are expressed there in RMS - position (cm), angle (rad), curvature (1/cm)
+// The default values are 0. 
+//
+// The sytematic errors are added to the covariance matrix in following places:
+//
+// 1. During fisrt itteration - AliTPCtrackerMI::FillESD
+// 2. Second iteration - 
+//      2.a ITS->TPC   - AliTPCtrackerMI::ReadSeeds 
+//      2.b TPC->TRD   - AliTPCtrackerMI::PropagateBack
+// 3. Third iteration  -
+//      3.a TRD->TPC   - AliTPCtrackerMI::ReadSeeds
+//      3.b TPC->ITS   - AliTPCtrackerMI::RefitInward
+//
 // There are several places in the code which can be numerically debuged
 // This code is keeped in order to enable code development and to check the calibration implementtion
 //
@@ -448,6 +468,7 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
       AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
       if (!pt) continue; 
       pt->UpdatePoints();
+      AddCovariance(pt);
       //      pt->PropagateTo(fParam->GetInnerRadiusLow());
       if (pt->GetKinkIndex(0)<=0){  //don't propagate daughter tracks 
 	pt->PropagateTo(fParam->GetInnerRadiusLow());
@@ -2556,6 +2577,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
 
     seed->PropagateTo(fParam->GetInnerRadiusLow());
     seed->UpdatePoints();
+    AddCovariance(seed);
     MakeBitmaps(seed);
     AliESDtrack *esd=event->GetTrack(i);
     seed->CookdEdx(0.02,0.6);
@@ -2621,6 +2643,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
     if (!seed) continue;
     if (seed->GetKinkIndex(0)<0)  UpdateKinkQualityM(seed);  // update quality informations for kinks
     seed->UpdatePoints();
+    AddCovariance(seed);
     AliESDtrack *esd=event->GetTrack(i);
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
@@ -2691,6 +2714,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESDEvent *event, Int_t direction)
     //    AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
     AliTPCseed *seed = new AliTPCseed(t/*,t.GetAlpha()*/);
     seed->SetUniqueID(esd->GetID());
+    AddCovariance(seed);   //add systematic ucertainty
     for (Int_t ikink=0;ikink<3;ikink++) {
       Int_t index = esd->GetKinkIndex(ikink);
       seed->GetKinkIndexes()[ikink] = index;
@@ -6909,4 +6933,28 @@ void AliTPCtrackerMI::MakeBitmaps(AliTPCseed *t)
       t->SetSharedMapBit(iter, kFALSE);
     }
   }
+}
+
+
+
+void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){
+  //
+  // Adding systematic error
+  // !!!! the systematic error for element 4 is in 1/cm not in pt 
+
+  const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
+  Double_t covar[15];
+  for (Int_t i=0;i<15;i++) covar[i]=0;
+  // 0
+  // 1    2
+  // 3    4    5
+  // 6    7    8    9 
+  // 10   11   12   13   14
+  covar[0] = param[0]*param[0];
+  covar[2] = param[1]*param[1];
+  covar[5] = param[2]*param[2];
+  covar[9] = param[3]*param[3];
+  Double_t facC =  AliTracker::GetBz()*kB2C;
+  covar[14]= param[4]*param[4]*facC*facC;
+  seed->AddCovariance(covar);
 }

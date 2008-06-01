@@ -73,7 +73,6 @@ public:
    virtual Int_t   CookLabel(AliTPCseed *t,Float_t wrong, Int_t first,Int_t last ) const; 
    
    void RotateToLocal(AliTPCseed *seed);
-  
    
    Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0, Int_t step=1);
    Int_t FollowProlongationFast(AliTPCseed& t, Int_t rf=0, Int_t step=1);
@@ -122,6 +121,8 @@ public:
 private:
   AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
   AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
+  void AddCovariance(AliTPCseed * seed);               // add covariance
+
    inline AliTPCtrackerRow &GetRow(Int_t sec, Int_t row);
    inline Bool_t     IsActive(Int_t sec, Int_t row);
    inline Double_t  GetXrow(Int_t row) const;
