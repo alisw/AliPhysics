@@ -1051,7 +1051,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Int_t    firstBin = AliTPCReconstructor::GetRecoParam()->GetFirstBin();
   //
   UShort_t histo[kPedMax];
-  memset(histo,0,kPedMax*sizeof(UShort_t));
+  //memset(histo,0,kPedMax*sizeof(UShort_t));
+  for (Int_t i=0; i<kPedmax; i++) histo[i]=0;
   for (Int_t i=0; i<fMaxTime; i++){
     if (signal[i]<=0) continue;
     if (signal[i]>max && i>firstBin) {
