@@ -55,6 +55,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
   Bool_t   GetBYMirror() const { return fBYMirror;}
   void     SetBYMirror(Bool_t mirror)  { fBYMirror = mirror;} //
+  //
+  void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
+  const Double_t * GetSystematicError() const { return fSystematicErrors;}
+
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env. 
   static   AliTPCRecoParam *GetHLTParam(); // special setting for HLT  
@@ -89,7 +93,11 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   fBSpecialSeeding; // special seeding with big inclination angles allowed (for Cosmic and laser)
   Bool_t   fBKinkFinder;     // do kink finder reconstruction
   Int_t    fLastSeedRowSec;     // Most Inner Row to make seeding for secondaries
-  ClassDef(AliTPCRecoParam, 2)
+  //
+  //  misscalibration
+  //
+  Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix    
+  ClassDef(AliTPCRecoParam, 3)
 };
 
 

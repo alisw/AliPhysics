@@ -31,6 +31,18 @@
   In the future  reconstruction parameters should be changed on event basis
   But for the moment, event types are still not defined 
 
+
+  // Setting for systematic errors addition
+  [0] - systematic RMSY
+  [1] - systematic RMSZ
+  [2] - systematic RMSSNP
+  [3] - systematic RMSTheta
+  [4] - systematic RMSCuravture -  systematic error in 1/cm not in 1/pt
+  //
+  //  How to add it example - 3 mm systematic error y, 3 cm systematic error z (drift)
+  Double_t sysError[5]={0.3,3, 0.3/150., 3./150.,1/(0.3*150*150.)}
+  param->SetSystematicError(sysError);
+
 */
                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,6 +86,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   //
   SetName("TPC");
   SetTitle("TPC");
+  for (Int_t i=0;i<5;i++) fSystematicErrors[i]=0;
 }
 
 //_____________________________________________________________________________
@@ -122,7 +135,8 @@ AliTPCRecoParam *AliTPCRecoParam::GetHLTParam(){
   param->fFirstBin = 80;
   param->fLastBin  = 1000;  
   param->fMaxSnpTracker = 0.9; 
-  param->fMaxC          = 0.06;
+  param->fMaxC          = 0.06; 
+  param->fBYMirror      = kFALSE;
   //
   param->SetName("Hlt Param");
   param->SetTitle("Hlt Param"); 
