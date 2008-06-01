@@ -57,6 +57,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void     SetBYMirror(Bool_t mirror)  { fBYMirror = mirror;} //
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env. 
+  static   AliTPCRecoParam *GetHLTParam(); // special setting for HLT  
   static   AliTPCRecoParam *GetLaserTestParam(Bool_t bPedestal);  // special setting for laser 
   static   AliTPCRecoParam *GetCosmicTestParam(Bool_t bPedestal); // special setting for cosmic  
   //

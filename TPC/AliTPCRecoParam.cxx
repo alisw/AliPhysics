@@ -95,6 +95,8 @@ AliTPCRecoParam *AliTPCRecoParam::GetLowFluxParam(){
   param->fCtgRange = 10;
   param->fFirstBin = 0;
   param->fLastBin  = 1000;
+  param->SetName("Low Flux");
+  param->SetTitle("Low Flux");
   return param;
 }
 
@@ -106,6 +108,25 @@ AliTPCRecoParam *AliTPCRecoParam::GetHighFluxParam(){
   param->fCtgRange = 1.05;
   param->fFirstBin = 0;
   param->fLastBin  = 1000;  
+  param->SetName("High Flux");
+  param->SetTitle("High Flux");
+  return param;
+}
+
+AliTPCRecoParam *AliTPCRecoParam::GetHLTParam(){
+  //
+  // make reco parameters for high flux env.
+  //
+  AliTPCRecoParam *param = new AliTPCRecoParam;
+  param->fCtgRange = 1.05;
+  param->fFirstBin = 80;
+  param->fLastBin  = 1000;  
+  param->fMaxSnpTracker = 0.9; 
+  param->fMaxC          = 0.06;
+  //
+  param->SetName("Hlt Param");
+  param->SetTitle("Hlt Param"); 
+  param->fBKinkFinder   = kFALSE;
   return param;
 }
 
@@ -128,6 +149,8 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   param->fBYMirror      = kFALSE;
   //
   //
+  param->SetName("Laser Flux");
+  param->SetTitle("Laser Flux");
   return param;
 }
 
@@ -146,6 +169,9 @@ AliTPCRecoParam *AliTPCRecoParam::GetCosmicTestParam(Bool_t bPedestal){
   param->fMaxC          = 0.07;
   param->fBKinkFinder   = kFALSE;
   param->fBYMirror      = kFALSE;
+  param->SetName("Cosmic Flux");
+  param->SetTitle("Cosmic Flux");
+
   return param;
 }
 
