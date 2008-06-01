@@ -160,11 +160,21 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
                     , cov[10]*cnv, cov[11]*cnv, c42*cnv, cov[13]*cnv, cov[14]*cnv*cnv };
   
 	Set(x,alpha,pp,cc);
+  Int_t ncls = 0;
 	for(int iplane=0; iplane<kNplane; iplane++){
-		fTrackletIndex[iplane] = 0xffff;
-		fTracklet[iplane] = &trklts[iplane];
+    fTrackletIndex[iplane] = 0xffff;
+		if(!trklts[iplane].IsOK()) fTracklet[iplane] = 0x0;
+    else{ 
+      fTracklet[iplane] = new AliTRDseedV1(trklts[iplane]);
+      ncls += fTracklet[iplane]->GetN();
+    }
 	}
-	SetNumberOfClusters();
+  AliKalmanTrack::SetNumberOfClusters(ncls);		
+  for(int i =0; i<3; i++) fBudget[i] = 0.;
+  
+  Float_t pid = 1./AliPID::kSPECIES;
+  for(int is =0; is<AliPID::kSPECIES; is++) fPID[is] = pid;
+
 }
 
 //_______________________________________________________________
@@ -564,6 +574,9 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t index)
   // Set the tracklets
   //
   Int_t plane = trklt->GetPlane();
+  if(fTrackletIndex[plane]==0xffff && fTracklet[plane]){ 
+    delete fTracklet[plane];
+  }
   fTracklet[plane]      = trklt;
   fTrackletIndex[plane] = index;
 }
