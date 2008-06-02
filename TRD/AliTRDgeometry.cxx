@@ -2845,6 +2845,9 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       if (pne) {
         path = pne->GetTitle();
       }
+      else {
+	continue;
+      }
       if (!strstr(path,"ALIC")) {
         AliDebug(1,Form("Not a valid path: %s\n",path));
         continue;
