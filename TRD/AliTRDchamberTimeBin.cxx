@@ -326,7 +326,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
 		fX += cl->GetX(); 
 		
 		// Debug Streaming
-		if(AliTRDtrackerV1::DebugStreamer() && AliTRDReconstructor::StreamLevel() >= 3){
+		if(AliTRDtrackerV1::DebugStreamer() && AliTRDReconstructor::RecoParam()->GetStreamLevel() >= 3){
 			TTreeSRedirector &cstream = *AliTRDtrackerV1::DebugStreamer();
 			cstream << "BuildIndices"
 			<< "Plane="    << fPlane

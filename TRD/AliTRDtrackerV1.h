@@ -130,6 +130,7 @@ protected:
   Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
   AliTRDtrackV1* MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
   static Int_t   PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
+  AliTRDtrackV1* SetTrack(AliTRDtrackV1 *track);
   AliTRDseedV1*  SetTracklet(AliTRDseedV1 *tracklet);
 
 private:

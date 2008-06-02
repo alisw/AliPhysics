@@ -328,7 +328,7 @@ AliTRDchamberTimeBin *AliTRDtrackingChamber::GetSeedingLayer(AliTRDgeometry *geo
 	fakeLayer->BuildIndices();
 	//fakeLayer->PrintClusters();
 	
-	if(AliTRDReconstructor::StreamLevel() >= 3){
+	if(AliTRDReconstructor::RecoParam()->GetStreamLevel() >= 3){
 		//TMatrixD hist(nRows, nCols);
 		//for(Int_t i = 0; i < nRows; i++)
 		//	for(Int_t j = 0; j < nCols; j++)

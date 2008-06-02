@@ -355,7 +355,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 	}
 
 	AliTRDchamberTimeBin *layer = 0x0;
-	if(AliTRDReconstructor::StreamLevel()>=7 && c){
+	if(AliTRDReconstructor::RecoParam()->GetStreamLevel()>=7 && c){
 		TClonesArray clusters("AliTRDcluster", 24);
 		clusters.SetOwner(kTRUE);
 		AliTRDcluster *cc = 0x0;
@@ -423,7 +423,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 			fZ[iTime]        = cl->GetZ();
 			ncl++;
 		}
-  	if(AliTRDReconstructor::StreamLevel()>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fPlane, ncl));
+  	if(AliTRDReconstructor::RecoParam()->GetStreamLevel()>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fPlane, ncl));
 		
 		if(ncl>1){	
 			// calculate length of the time bin (calibration aware)
@@ -464,7 +464,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 			
 			AliTRDseed::Update();
 		}
-  	if(AliTRDReconstructor::StreamLevel()>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fPlane, fN2));
+  	if(AliTRDReconstructor::RecoParam()->GetStreamLevel()>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fPlane, fN2));
 		
 		if(IsOK()){
 			tquality = GetQuality(kZcorr);

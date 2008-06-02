@@ -41,10 +41,7 @@
 
 ClassImp(AliTRDReconstructor)
 
-Bool_t AliTRDReconstructor::fgkSeedingOn  = kFALSE;
-Int_t  AliTRDReconstructor::fgStreamLevel = 0;      // Stream (debug) level
 AliTRDrecoParam* AliTRDReconstructor::fgRecoParam = 0x0; 
-
 
 //_____________________________________________________________________________
 AliTRDReconstructor::~AliTRDReconstructor()                  { 

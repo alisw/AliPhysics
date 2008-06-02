@@ -48,6 +48,9 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkChi2Z(30./*14.*//*12.5*/)
   ,fkChi2Y(.25)
   ,fkTrackLikelihood(-15.)
+  ,fkStreamLevel(0)
+  ,fSeedingOn(kFALSE)
+  ,fVertexConstrained(kTRUE)
   ,fClusMaxThresh(4.5)
   ,fClusSigThresh(3.5)
   ,fLUTOn(kTRUE)
@@ -93,6 +96,8 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
   par->SetADCbaseline(10);
+  par->SetSeedingOn(kTRUE);
+  par->SetVertexConstrained(kTRUE);
   return par;
 
 }

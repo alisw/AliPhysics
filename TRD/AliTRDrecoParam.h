@@ -46,7 +46,11 @@ class AliTRDrecoParam : public AliDetectorRecoParam
 	Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
 
 	Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
+	Int_t    GetStreamLevel() const           { return fkStreamLevel;           }
 
+	Bool_t SeedingOn() const { return fSeedingOn; }
+	Bool_t IsVertexConstrained() const { return fVertexConstrained; }
+	
         Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
         Double_t GetClusSigThresh() const         { return fClusSigThresh;   };
         Int_t    GetTCnexp() const                { return fTCnexp;          };
@@ -54,13 +58,16 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         Bool_t   TCOn() const                     { return fTCOn;            };
 
         Int_t    GetADCbaseline() const           { return fADCbaseline;     };
-
+        
 	static   AliTRDrecoParam *GetLowFluxParam();
         static   AliTRDrecoParam *GetHighFluxParam();
         static   AliTRDrecoParam *GetCosmicTestParam();
 
 	void     SetClusterSharing(Bool_t share = kTRUE) { fkClusterSharing = share;  };
 	void     SetPIDMethod(Int_t pid = 1)             { fkPIDMethod = pid ? 1 : 0; };
+	void     SetSeedingOn(Bool_t seedingOn = kTRUE)  { fSeedingOn = seedingOn; }
+	void     SetVertexConstrained(Bool_t vertexConstrained = kTRUE) { fVertexConstrained = vertexConstrained; }
+	void     SetStreamLevel(Int_t streamLevel= 1) { fkStreamLevel = streamLevel; }
         void     SetLUT(Int_t lutOn = 1)                 { fLUTOn           = lutOn;  };
         void     SetClusMaxThresh(Float_t thresh)        { fClusMaxThresh   = thresh; };
         void     SetClusSigThresh(Float_t thresh)        { fClusSigThresh   = thresh; };
@@ -90,6 +97,10 @@ class AliTRDrecoParam : public AliDetectorRecoParam
 	Double_t  fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
 	Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
 	Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
+	Int_t     fkStreamLevel;					 // Streaming Level in TRD Reconstruction
+	
+	Bool_t    fSeedingOn;	             // Do stand alone tracking in the TRD
+	Bool_t    fVertexConstrained;      // Perform vertex constrained fit
 
         // Clusterization parameter
         Double_t  fClusMaxThresh;          // Threshold value for cluster maximum

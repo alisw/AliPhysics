@@ -40,17 +40,11 @@ class AliTRDReconstructor: public AliReconstructor
                                                                  , esd);                    }
   virtual void             FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
 
-  static  void             SetSeedingOn(Bool_t seeding)          { fgkSeedingOn  = seeding; }  
-  static  void             SetStreamLevel(Int_t level)           { fgStreamLevel = level;   }
   static  void             SetRecoParam(AliTRDrecoParam *reco)   { fgRecoParam   = reco;    }
 
-  static  Bool_t           SeedingOn()                           { return fgkSeedingOn;     }
-  static  Int_t            StreamLevel()                         { return fgStreamLevel;    }
 
  private:
 
-  static  Bool_t           fgkSeedingOn;  //  Set flag for seeding during reconstruction
-  static  Int_t            fgStreamLevel; //  Flag for streaming
   static  AliTRDrecoParam *fgRecoParam;   //  Reconstruction parameters
 
   ClassDef(AliTRDReconstructor,0)         //  Class for the TRD reconstruction
