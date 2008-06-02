@@ -27,8 +27,8 @@ class AliFlowAnalysisWithCumulants {
   virtual ~AliFlowAnalysisWithCumulants();
   
   virtual void CreateOutputObjects();
-  virtual void Exec(AliFlowEventSimple* anEvent);
-  virtual void Terminate(Int_t nEvents);
+  virtual void Make(AliFlowEventSimple* anEvent);
+  virtual void Finish();
 
   // Output 
   void	SetHistFileName(TString name)  {this->fHistFileName = name ;} // Sets output file name
@@ -60,7 +60,9 @@ class AliFlowAnalysisWithCumulants {
   Double_t fAvQy;//<Q_y>
   Double_t fAvQ2x;//<(Q_x)^2>
   Double_t fAvQ2y;//<(Q_y)^2>
- 
+   
+  Int_t fNumberOfEvents;//number of events 
+   
   AliFlowCommonHist* fCommonHists;//control histograms
   AliFlowCommonHistResults *fCommonHistsRes2, *fCommonHistsRes4, *fCommonHistsRes6, *fCommonHistsRes8;//histograms with various order final results 
   
@@ -70,10 +72,9 @@ class AliFlowAnalysisWithCumulants {
   Double_t fBinMeanPt[fgknBins];//mean pt per bin
   Double_t fBinEventDRe[fgknBins][fgkPmax][fgkQmax];//real part of the generating function used for differential flow
   Double_t fBinEventDIm[fgknBins][fgkPmax][fgkQmax];//imaginary part of the generating function used for differential flow
-  
+    
   ClassDef(AliFlowAnalysisWithCumulants, 0);
 };
 #endif
-
 
 

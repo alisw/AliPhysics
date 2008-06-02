@@ -48,4 +48,3 @@ class AliAnalysisTaskCumulants : public AliAnalysisTask {
 };
 
 #endif
-

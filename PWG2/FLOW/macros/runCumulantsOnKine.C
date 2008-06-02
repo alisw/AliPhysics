@@ -7,7 +7,7 @@ Int_t offset = 0 ;
 //int runCumulantsOnKine(Int_t aRuns = 144, Bool_t fFirstRunLYZ = kTRUE, Bool_t fDouble = kFALSE, const char * dir = "/users/alice/KineOnly3/")
 //int runCumulantsOnKine(Int_t aRuns = 10, Bool_t fFirstRunLYZ = kTRUE, Bool_t fDouble = kFALSE, const char * dir = "/data/alice2/LHyquid3_rot/")
 //int runCumulantsOnKine(Int_t aRuns = 144, const char * dir = "/Users/snelling/alice_data/KineOnly3/")
-int runCumulantsOnKine(Int_t aRuns = 144, const char * dir = "/Users/snelling/alice_data/TherminatorFIX/")
+int runCumulantsOnKine(Int_t aRuns = 100, const char * dir = "/Users/snelling/alice_data/TherminatorFIX/")
 //int runCumulantsOnKine(Int_t aRuns = 200, Bool_t fFirstRunLYZ = kTRUE, Bool_t fDouble = kFALSE, const char * dir = "/data/alice2/abDeleteMeASAP/")
 {
   TStopwatch timer;
@@ -18,12 +18,12 @@ int runCumulantsOnKine(Int_t aRuns = 144, const char * dir = "/Users/snelling/al
   gSystem->AddIncludePath("-I$ROOTSYS/include") ;
   gROOT->LoadMacro("AliFlowVector.cxx+");
   gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
-  gROOT->LoadMacro("AliFlowCommonHist.cxx+");
-  gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
   gROOT->LoadMacro("AliFlowCumuConstants.cxx+");
   gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
   gROOT->LoadMacro("AliFlowEventSimple.cxx+");
   gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
+  gROOT->LoadMacro("AliFlowCommonHist.cxx+");
+  gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
   gROOT->LoadMacro("AliFlowAnalysisWithCumulants.cxx+");
 
   cout<<" loaded macros "<<endl;
