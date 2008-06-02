@@ -480,7 +480,51 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
   TString detsString = "";
   if(fgGeometry->CheckPath("ALIC_1/ITSV_1")) detsString+="ITS ";
   if(fgGeometry->CheckPath("ALIC_1/TPC_M_1")) detsString+="TPC ";
-  if(fgGeometry->CheckPath("ALIC_1/B077_1/BSEGMO0_1/BTOF0_1/FTOA_0")) detsString+="TOF ";
+
+  TString tofsm;
+  TString baseTof("ALIC_1/B077_1/BSEGMO");
+  TString middleTof("_1/BTOF");
+  TString trailTof("_1/FTOA_0");
+  Bool_t tofActive=kFALSE;
+  Bool_t tofSMs[18];
+  for(Int_t sm=0; sm<18; sm++)
+  {
+    tofSMs[sm]=kFALSE;
+    tofsm=baseTof;
+    tofsm += sm;
+    tofsm += middleTof;
+    tofsm += sm;
+    tofsm += trailTof;
+    if(fgGeometry->CheckPath(tofsm.Data()))
+    {
+      tofActive=kTRUE;
+      tofSMs[sm]=kTRUE;
+    }
+  }
+  if(tofActive) detsString+="TOF ";
+  
+  TString trdsm;
+  TString baseTrd("ALIC_1/B077_1/BSEGMO");
+  TString middleTrd("_1/BTRD");
+  TString trailTrd("_1/UTR1_1");
+  Bool_t trdActive=kFALSE;
+  Bool_t trdSMs[18];
+  for(Int_t sm=0; sm<18; sm++)
+  {
+    trdSMs[sm]=kFALSE;
+    trdsm=baseTrd;
+    trdsm += sm;
+    trdsm += middleTrd;
+    trdsm += sm;
+    trdsm += trailTrd;
+    if(fgGeometry->CheckPath(trdsm.Data()))
+    {
+      trdActive=kTRUE;
+      trdSMs[sm]=kTRUE;
+    }
+  }
+  if(trdActive) detsString+="TRD ";
+
   if(fgGeometry->CheckPath("ALIC_1/B077_1/BSEGMO0_1/BTRD0_1/UTR1_1")) detsString+="TRD ";
   if(fgGeometry->CheckPath("ALIC_1/Hmp0_0")) detsString+="HMPID ";
   if(fgGeometry->CheckPath("ALIC_1/PHOS_1")) detsString+="PHOS ";
@@ -843,8 +887,6 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
     Int_t nSectors=18;
     Int_t nStrips=nstrA+2*nstrB+2*nstrC;
 
-    Int_t activeSectors[18]={0,0,1,1,1,0,1,1,0,0,0,-1,-1,0,1,1,1,1};// as in config-file for partial geometry
-    
     TString snSM  = "TOF/sm";
     TString snSTRIP = "/strip";
     
@@ -855,7 +897,8 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
 	symname += snSTRIP;
 	symname += Form("%02d",istr);
 	uid = LayerToVolUID(kTOF,modnum++);
-	if(!activeSectors[isect]) continue; // taking possible missing TOF sectors (partial geometry) into account
+	if(!tofSMs[isect]) continue; // taking possible missing TOF sectors (partial geometry) into account
+	AliDebugClass(2,Form("Consistency check for symnames of TOF supermodule %d.",isect));
 	if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue; //taking holes into account
 	pne = fgGeometry->GetAlignableEntryByUID(uid);
 	if(!pne)
@@ -913,8 +956,6 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
     AliDebugClass(2,"Checking consistency of symbolic names for TRD layers");
     Int_t arTRDlayId[6] = {kTRD1, kTRD2, kTRD3, kTRD4, kTRD5, kTRD6};
 
-    Int_t activeSectors[18]={0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0};// as in config-file for partial geometry
-    
     TString snStr  = "TRD/sm";
     TString snApp1 = "/st";
     TString snApp2 = "/pl";
@@ -930,7 +971,8 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
 	  symname += snApp2;
 	  symname += layer;
 	  uid = LayerToVolUID(arTRDlayId[layer],modnum++);
-	  if(!activeSectors[isect]) continue;
+	  if(!trdSMs[isect]) continue;
+	  AliDebugClass(2,Form("Consistency check for symnames of TRD supermodule %d.",isect));
 	  if ((isect==13 || isect==14 || isect==15) && icham==2) continue; //keeping holes into account
 	  pne = fgGeometry->GetAlignableEntryByUID(uid);
 	  if(!pne)
