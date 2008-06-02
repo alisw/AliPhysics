@@ -30,6 +30,12 @@ class AliFlowAnalysisWithCumulants {
   virtual void Exec(AliFlowEventSimple* anEvent);
   virtual void Terminate(Int_t nEvents);
 
+  // Output 
+  void	SetHistFileName(TString name)  {this->fHistFileName = name ;} // Sets output file name
+  TString GetHistFileName() const { return this->fHistFileName ; } // Gets output file name
+  TFile* GetHistFile() const { return this->fHistFile ; }     // Gets output file
+
+
  private:
   AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants& aAnalysis);
   AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants& aAnalysis);
@@ -40,7 +46,9 @@ class AliFlowAnalysisWithCumulants {
   static const Int_t fgkFlow=AliFlowCumuConstants::kFlow;//integrated flow coefficient to be calculated
   static const Int_t fgkMltpl=AliFlowCumuConstants::kMltpl;//the multiple in p=m*n (diff. flow) 
   static const Int_t fgknBins=100;//number of pt bins
-      
+ 
+  TString  fHistFileName;      //! The output file name     
+  TFile* fHistFile; // histogram file for Cumulants
   Double_t fAvM;//avarage SELECTED multiplicity
 
   Double_t fR0;//needed for numerics

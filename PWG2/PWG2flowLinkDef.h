@@ -26,5 +26,6 @@
 #pragma link C++ class AliAnalysisTaskMCEventPlane+;
 #pragma link C++ class AliAnalysisTaskLYZEventPlane+;
 #pragma link C++ class AliAnalysisTaskLeeYangZeros+;
+#pragma link C++ class AliAnalysisTaskCumulants+;
 
 #endif
