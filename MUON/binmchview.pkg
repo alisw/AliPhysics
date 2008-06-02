@@ -26,7 +26,7 @@ MUONrec \
 MUONgraphics \
 MUONcore
 
-ifneq (macosx,$(ALICE_TARGET))
+ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 ELIBS+=\
 lhapdf \
 pythia6 \
