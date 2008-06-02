@@ -31,6 +31,13 @@ public:
 
   virtual void Clear(Option_t* opt = "");
   
+  void Reset();
+  
+  // Return kTRUE if the track contain tracker data
+  Bool_t ContainTrackerData() const {return (fMuonClusterMap>0) ? kTRUE : kFALSE;}
+  // Return kTRUE if the track contain trigger data
+  Bool_t ContainTriggerData() const {return (LoCircuit()>0) ? kTRUE : kFALSE;}
+  
   // Get and Set methods for data at vertex
   Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
   void     SetInverseBendingMomentum(Double_t InverseBendingMomentum) 
@@ -102,14 +109,14 @@ public:
   Int_t    LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
   
   // Get and Set methods for the hit strips pattern in the trigger chambers
-  UShort_t GetTriggerX1Pattern() { return fX1Pattern; }
-  UShort_t GetTriggerY1Pattern() { return fY1Pattern; }
-  UShort_t GetTriggerX2Pattern() { return fX2Pattern; }
-  UShort_t GetTriggerY2Pattern() { return fY2Pattern; }
-  UShort_t GetTriggerX3Pattern() { return fX3Pattern; }
-  UShort_t GetTriggerY3Pattern() { return fY3Pattern; }
-  UShort_t GetTriggerX4Pattern() { return fX4Pattern; }
-  UShort_t GetTriggerY4Pattern() { return fY4Pattern; }
+  UShort_t GetTriggerX1Pattern() const { return fX1Pattern; }
+  UShort_t GetTriggerY1Pattern() const { return fY1Pattern; }
+  UShort_t GetTriggerX2Pattern() const { return fX2Pattern; }
+  UShort_t GetTriggerY2Pattern() const { return fY2Pattern; }
+  UShort_t GetTriggerX3Pattern() const { return fX3Pattern; }
+  UShort_t GetTriggerY3Pattern() const { return fY3Pattern; }
+  UShort_t GetTriggerX4Pattern() const { return fX4Pattern; }
+  UShort_t GetTriggerY4Pattern() const { return fY4Pattern; }
   void     SetTriggerX1Pattern(UShort_t pat) { fX1Pattern = pat; }
   void     SetTriggerY1Pattern(UShort_t pat) { fY1Pattern = pat; }
   void     SetTriggerX2Pattern(UShort_t pat) { fX2Pattern = pat; }
@@ -122,8 +129,8 @@ public:
   // Get and Set methods for muon cluster map
   UInt_t   GetMuonClusterMap() const {return fMuonClusterMap;}
   void     SetMuonClusterMap(UInt_t muonClusterMap) {fMuonClusterMap = muonClusterMap;}
-  void     AddInMuonClusterMap(Int_t chamber);
-  Bool_t   IsInMuonClusterMap(Int_t chamber) const;
+  void     AddInMuonClusterMap(Int_t chamber) {fMuonClusterMap |= BIT(chamber);}
+  Bool_t   IsInMuonClusterMap(Int_t chamber) const {return (Bool_t) ((fMuonClusterMap & BIT(chamber)) != 0);}
   
   // Methods to get, fill and check the array of associated clusters
   Int_t         GetNClusters() const;
@@ -215,9 +222,9 @@ protected:
   UShort_t fX4Pattern;             ///< x-strips pattern in st7/ch2
   UShort_t fY4Pattern;             ///< y-strips pattern in st7/ch2
   
-  UInt_t     fMuonClusterMap;      ///< Map of clusters in tracking chambers
-  UShort_t   fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
-  UChar_t    fNHit;                ///< number of hit in the track
+  UInt_t   fMuonClusterMap;        ///< Map of clusters in tracking chambers
+  UShort_t fHitsPatternInTrigCh;   ///< Word containing info on the hits left in trigger chambers
+  UChar_t  fNHit;                  ///< number of hit in the track
   
   mutable TClonesArray* fClusters; ///< Array of clusters attached to the track
   

@@ -37,18 +37,18 @@ ClassImp(AliESDMuonTrack)
 //_____________________________________________________________________________
 AliESDMuonTrack::AliESDMuonTrack ():
   AliVParticle(),
-  fInverseBendingMomentum(0),
+  fInverseBendingMomentum(FLT_MAX),
   fThetaX(0),
   fThetaY(0),
   fZ(0),
   fBendingCoor(0),
   fNonBendingCoor(0),
-  fInverseBendingMomentumAtDCA(0),
+  fInverseBendingMomentumAtDCA(FLT_MAX),
   fThetaXAtDCA(0),
   fThetaYAtDCA(0),
   fBendingCoorAtDCA(0),
   fNonBendingCoorAtDCA(0),
-  fInverseBendingMomentumUncorrected(0),
+  fInverseBendingMomentumUncorrected(FLT_MAX),
   fThetaXUncorrected(0),
   fThetaYUncorrected(0),
   fZUncorrected(0),
@@ -221,6 +221,46 @@ void AliESDMuonTrack::Clear(Option_t* opt)
 {
   /// Clear arrays
   if (fClusters) fClusters->Clear(opt);
+}
+
+//__________________________________________________________________________
+void AliESDMuonTrack::Reset()
+{
+  /// Reset to default values
+  SetUniqueID(0);
+  fInverseBendingMomentum = FLT_MAX;
+  fThetaX = 0.;
+  fThetaY = 0.;
+  fZ = 0.;
+  fBendingCoor = 0.;
+  fNonBendingCoor = 0.;
+  fInverseBendingMomentumAtDCA = FLT_MAX;
+  fThetaXAtDCA = 0.;
+  fThetaYAtDCA = 0.;
+  fBendingCoorAtDCA = 0.;
+  fNonBendingCoorAtDCA = 0.;
+  fInverseBendingMomentumUncorrected = FLT_MAX;
+  fThetaXUncorrected = 0.;
+  fThetaYUncorrected = 0.;
+  fZUncorrected = 0.;
+  fBendingCoorUncorrected = 0.;
+  fNonBendingCoorUncorrected = 0.;
+  fChi2 = 0.;
+  fChi2MatchTrigger = 0.;
+  fLocalTrigger = 0;
+  fX1Pattern = 0;
+  fY1Pattern = 0;
+  fX2Pattern = 0;
+  fY2Pattern = 0;
+  fX3Pattern = 0;
+  fY3Pattern = 0;
+  fX4Pattern = 0;
+  fY4Pattern = 0;
+  fMuonClusterMap = 0;
+  fHitsPatternInTrigCh = 0;
+  fNHit = 0;
+  delete fClusters; fClusters = 0x0;
+  for (Int_t i = 0; i < 15; i++) fCovariances[i] = 0.;
 }
 
 //_____________________________________________________________________________
@@ -479,28 +519,6 @@ Int_t AliESDMuonTrack::GetMatchTrigger() const
     return 3;
   }
 
-}
-
-//_____________________________________________________________________________
-void AliESDMuonTrack::AddInMuonClusterMap(Int_t chamber)
-{
-  // Update the muon cluster map by adding this chamber(0..)
-  
-  static const UInt_t kMask[10] = {0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80, 0x100, 0x200};
-  
-  fMuonClusterMap |= kMask[chamber];
-  
-}
-
-//_____________________________________________________________________________
-Bool_t AliESDMuonTrack::IsInMuonClusterMap(Int_t chamber) const
-{
-  // return kTRUE if this chamber(0..) is in the muon cluster map
-  
-  static const UInt_t kMask[10] = {0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80, 0x100, 0x200};
-  
-  return ((fMuonClusterMap | kMask[chamber]) == fMuonClusterMap) ? kTRUE : kFALSE;
-  
 }
 
 //_____________________________________________________________________________
