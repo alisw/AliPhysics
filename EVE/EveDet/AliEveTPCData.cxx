@@ -213,7 +213,7 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
       row = input.GetRow() + rowOffset;
       pad = input.GetPad();
 
-      if (pad >= AliEveTPCSectorData::GetNPadsInRow(row)) {
+      if (pad >= AliEveTPCSectorData::GetNPadsInRow(row) || pad < 0) {
 	if (warn) {
 	  Warning(kEH.Data(), "pad out of range (row=%d, pad=%d, maxpad=%d).",
 		  row, pad, AliEveTPCSectorData::GetNPadsInRow(row));
