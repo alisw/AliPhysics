@@ -450,7 +450,14 @@ const char* AliGeomManager::SymName(ELayerID layerId, Int_t modId)
     return NULL;
   }
 
-  return fgPNEntry[layerId-kFirstLayer][modId]->GetName();
+  TGeoPNEntry* pne = fgPNEntry[layerId-kFirstLayer][modId];
+  if(!pne)
+  {
+    AliWarningClass(Form("Module %d of layer %s is not activated!",modId,LayerName(layerId)));
+    return NULL;
+  }
+  return pne->GetName();
+
 }
 
 //_____________________________________________________________________________
