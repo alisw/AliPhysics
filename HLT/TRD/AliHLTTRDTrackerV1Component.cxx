@@ -306,6 +306,11 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
       return -1;
     }
 
+  // this is important in case we want to ::PropagateBack - see the TrackerV1.cxx
+  fRecoParam->SetSeedingOn(kTRUE);
+  // no debug stream -> no debug files! on HLT
+  fRecoParam->SetStreamLevel(0);
+  
   AliTRDReconstructor::SetRecoParam(fRecoParam);
     
   // geometry:
@@ -338,12 +343,6 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
       return -1;
     }
 
-  // this is important in case we want to ::PropagateBack - see the TrackerV1.cxx
-  AliTRDReconstructor::SetSeedingOn(kTRUE);
-
-  // no debug stream -> no debug files! on HLT
-  AliTRDReconstructor::SetStreamLevel(0);
-  
   return 0;
 }
 

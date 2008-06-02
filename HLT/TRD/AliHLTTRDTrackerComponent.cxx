@@ -33,6 +33,7 @@ using namespace std;
 #include "AliCDBManager.h"
 
 #include "AliTRDReconstructor.h"
+#include "AliTRDrecoParam.h"
 #include "AliESDEvent.h"
 //#include "AliTRDtrackerHLT.h"
 #include "AliTRDtracker.h"
@@ -187,6 +188,10 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
     {
       fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
       //fTracker = new AliTRDtrackerHLT(fGeometryFile);
+     	AliTRDrecoParam *fPars = AliTRDrecoParam::GetLowFluxParam();
+			fPars->SetSeedingOn(kTRUE);
+			fPars->SetStreamLevel(0);
+			AliTRDReconstructor::SetRecoParam(fPars);
       fTracker = new AliTRDtracker(fGeometryFile);
       //fTracker = new AliTRDtracker(fGeometryFile);
     }
@@ -299,8 +304,6 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
       Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "nextBLOCK", "Pointer = 0x%x", tobjin);
       clusterTree = (TTree*)tobjin;
     }
-
-  AliTRDReconstructor::SetSeedingOn(kTRUE);
 
   fTracker->SetAddTRDseeds();
 
