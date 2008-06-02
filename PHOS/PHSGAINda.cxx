@@ -1,18 +1,13 @@
 /*
-
-DAcase2.c
-
-This program connects to the DAQ data source passed as argument
-and populates local "./result.txt" file with the ids of events received
-during the run.
-
-The program exits when being asked to shut down (daqDA_checkshutdown)
-or End of Run event.
-
-Messages on stdout are exported to DAQ log system.
-
-contact: alice-datesupport@cern.ch
-
+contact: Boris.Polishchuk@cern.ch
+link: see comments in the $ALICE_ROOT/PHOS/AliPHOSRcuDA1.cxx
+reference run: /castor/cern.ch/alice/phos/2007/10/04/18/07000008249001.1000.root
+run type: PHYSICS, STANDALONE
+DA type: MON 
+number of events needed: 1000
+input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data
+Output files: PHOS_Module2_Calib.root
+trigger types used: L0
 */
 
 
@@ -29,8 +24,8 @@ extern "C" {
 
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliPHOSDA1.h"
-#include "AliPHOSRawDecoderv1.h"
+#include "AliPHOSRcuDA1.h"
+#include "AliPHOSRawDecoder.h"
 #include "AliCaloAltroMapping.h"
 
 
@@ -46,20 +41,11 @@ int main(int argc, char **argv) {
     printf("Wrong number of arguments\n");
     return -1;
   }
-
-
-  /* open result file */
-  FILE *fp=NULL;
-  fp=fopen("./result.txt","a");
-  if (fp==NULL) {
-    printf("Failed to open file\n");
-    return -1;
-  }
-
+  
   /* Open mapping files */
   AliAltroMapping *mapping[4];
-  TString path = gSystem->Getenv("ALICE_ROOT");
-  path += "/PHOS/mapping/RCU";
+  TString path = "./";
+  path += "RCU";
   TString path2;
   for(Int_t i = 0; i < 4; i++) {
     path2 = path;
@@ -89,18 +75,13 @@ int main(int argc, char **argv) {
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
   
-
-  /* log start of process */
-  printf("DA example case2 monitoring program started\n");  
-
-
-  /* init some counters */
+   /* init some counters */
   int nevents_physics=0;
   int nevents_total=0;
 
   AliRawReader *rawReader = NULL;
 
-  AliPHOSDA1 da1(2); // DA1 (Calibration DA) for module2
+  AliPHOSRcuDA1 da1(2,-1); // DA1 (Calibration DA) for module2
   
   Float_t e[64][56][2];
   Float_t t[64][56][2];
@@ -139,13 +120,6 @@ int main(int argc, char **argv) {
     eventT=event->eventType;
     
     if (eventT==PHYSICS_EVENT) {
-      fprintf(fp,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
-	  (unsigned long)event->eventRunNb,
-        (unsigned long)event->eventSize,
-        EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
-        EVENT_ID_GET_ORBIT(event->eventId),
-        EVENT_ID_GET_PERIOD(event->eventId)
-      );
       
       for(Int_t iX=0; iX<64; iX++) {
 	for(Int_t iZ=0; iZ<56; iZ++) {
@@ -157,7 +131,8 @@ int main(int argc, char **argv) {
       }
 
       rawReader = new AliRawReaderDate((void*)event);
-      AliPHOSRawDecoderv1 dc(rawReader,mapping);
+//       AliPHOSRawDecoderv1 dc(rawReader,mapping);
+      AliPHOSRawDecoder dc(rawReader,mapping);
       dc.SubtractPedestals(kTRUE);
       
       while(dc.NextDigit()) {
@@ -192,15 +167,8 @@ int main(int argc, char **argv) {
       break;
     }
   }
-
+  
   for(Int_t i = 0; i < 4; i++) delete mapping[i];  
-
-  /* write report */
-  fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
-
-  /* close result file */
-  fclose(fp);
-
-
+  
   return status;
 }
