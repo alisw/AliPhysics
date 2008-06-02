@@ -167,7 +167,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
 
     //Cumulants analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
-    fMyCumuAnalysis->Exec(fEvent);
+    fMyCumuAnalysis->Make(fEvent);
     delete fEvent;
   }
   else if (fAnalysisType == "ESD") {
@@ -179,7 +179,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
     
     //Cumulant analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
-    fMyCumuAnalysis->Exec(fEvent);
+    fMyCumuAnalysis->Make(fEvent);
     delete fEvent;
   }
   else if (fAnalysisType == "ESDMC0") {
@@ -203,7 +203,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
 
     //Cumulant analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
-    fMyCumuAnalysis->Exec(fEvent);
+    fMyCumuAnalysis->Make(fEvent);
     delete fEvent;
     //delete mcEvent;
   }
@@ -228,7 +228,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
 
     //Cumulant analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,1); //0 = kine from ESD, 1 = kine from MC
-    fMyCumuAnalysis->Exec(fEvent);
+    fMyCumuAnalysis->Make(fEvent);
     delete fEvent;
     //delete mcEvent;
   }
@@ -241,7 +241,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
 
     //Cumulant analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);
-    fMyCumuAnalysis->Exec(fEvent);
+    fMyCumuAnalysis->Make(fEvent);
     delete fEvent;
   }
   
@@ -253,8 +253,7 @@ void AliAnalysisTaskCumulants::Terminate(Option_t *)
   // Called once at the end of the query
   cerr<<"fMyCumuAnalysis->GetHistFile() -> IsOpen() = "<<fMyCumuAnalysis->GetHistFile() -> IsOpen()<<endl;
 
-  //  fMyCumuAnalysis->Terminate(); // how it should be Ante please fix
-  fMyCumuAnalysis->Terminate(100);
+  fMyCumuAnalysis->Finish(); 
 
   PostData(0,fMyCumuAnalysis->GetHistFile());
 

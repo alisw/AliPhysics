@@ -40,7 +40,7 @@ ClassImp(AliFlowAnalysisWithCumulants)
 
 AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():  
   fTrack(NULL),
-  fHistFileName("cummulants.root"),
+  fHistFileName("cumulants.root"),
   fHistFile(NULL),
   fAvM(0),
   fR0(0),
@@ -51,6 +51,7 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
   fAvQy(0),
   fAvQ2x(0),
   fAvQ2y(0),
+  fNumberOfEvents(0),
   fCommonHists(NULL),
   fCommonHistsRes2(NULL),
   fCommonHistsRes4(NULL),
@@ -95,9 +96,9 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects(){
 }
 
 //________________________________________________________________________
-void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* anEvent) {
+void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent) {
   //running over data
- 
+   
   fCommonHists->FillControlHistograms(anEvent);   
   
   Double_t fG[fgkPmax][fgkQmax];//generating function for integrated flow
@@ -202,11 +203,17 @@ void AliFlowAnalysisWithCumulants::Exec(AliFlowEventSimple* anEvent) {
     }
   }
   //----------------------------------------------------------
+
+fNumberOfEvents++;
+
 }
 
 //________________________________________________________________________
-void AliFlowAnalysisWithCumulants::Terminate(Int_t nEvents){
+void AliFlowAnalysisWithCumulants::Finish(){
   //final results
+    
+  Int_t nEvents=fNumberOfEvents;
+  
   cout<<""<<endl;
   cout<<"***************************************"<<endl;
   cout<<"**** results of cumulant analysis: ****"<<endl;
@@ -307,44 +314,57 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t nEvents){
   Double_t fChiQ[4]={0.};
    if (fCumulant[0]>=0.){ 
     fV2=sqrt(fCumulant[0]);    
-    fChiQ[0]=fAvM*fV2/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV2*fAvM,2.),0.5);
-    fSdQ[0]=pow(((1./(2.*fAvM*nEvents))*((1.+1.*pow(fChiQ[0],2))/(1.*pow(fChiQ[0],2)))),0.5);
-    cout<<" v_"<<fgkFlow<<"{2} = "<<100.*fV2<<"%, chi{2} = "<<fChiQ[0]<<", sd{2} = "<<100.*fSdQ[0]<<"%"<<endl;
-    fCommonHistsRes2->FillIntegratedFlow(100.*fV2,100.*fSdQ[0]);
-    fCommonHistsRes2->FillChi(fChiQ[0]);
+    if (fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV2*fAvM,2.)>0.){
+     fChiQ[0]=fAvM*fV2/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV2*fAvM,2.),0.5);
+     fSdQ[0]=pow(((1./(2.*fAvM*nEvents))*((1.+1.*pow(fChiQ[0],2))/(1.*pow(fChiQ[0],2)))),0.5);
+     cout<<" v_"<<fgkFlow<<"{2} = "<<100.*fV2<<"%, chi{2} = "<<fChiQ[0]<<", sd{2} = "<<100.*fSdQ[0]<<"%"<<endl;
+     fCommonHistsRes2->FillIntegratedFlow(100.*fV2,100.*fSdQ[0]);
+     fCommonHistsRes2->FillChi(fChiQ[0]);
+    }
    } else {
     cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl;  
   }
   if (fCumulant[1]<=0.){
     fV4=pow(-fCumulant[1],(1./4.));
-    fChiQ[1]=fAvM*fV4/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV4*fAvM,2.),0.5);
-    fSdQ[1]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((1.+2.*pow(fChiQ[1],2)+(1./4.)*pow(fChiQ[1],4.)+(1./4.)*pow(fChiQ[1],6.))/((1./4.)*pow(fChiQ[1],6.)),.5);
-    cout<<" v_"<<fgkFlow<<"{4} = "<<100.*fV4<<"%, chi{4} = "<<fChiQ[1]<<", sd{4} = "<<100.*fSdQ[1]<<"%"<<endl;
-    fCommonHistsRes4->FillIntegratedFlow(100.*fV4,100.*fSdQ[1]);
-    fCommonHistsRes4->FillChi(fChiQ[1]);
+    if (fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV4*fAvM,2.)>0.){
+     fChiQ[1]=fAvM*fV4/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV4*fAvM,2.),0.5);
+     fSdQ[1]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((1.+2.*pow(fChiQ[1],2)+(1./4.)*pow(fChiQ[1],4.)+(1./4.)*pow(fChiQ[1],6.))/((1./4.)*pow(fChiQ[1],6.)),.5);
+     cout<<" v_"<<fgkFlow<<"{4} = "<<100.*fV4<<"%, chi{4} = "<<fChiQ[1]<<", sd{4} = "<<100.*fSdQ[1]<<"%"<<endl;
+     fCommonHistsRes4->FillIntegratedFlow(100.*fV4,100.*fSdQ[1]);
+     fCommonHistsRes4->FillChi(fChiQ[1]);
+    } else {
+      cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;
+    }
   } else {
     cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
   } 
   if (fCumulant[2]>=0.){
     fV6=pow((1./4.)*fCumulant[2],(1./6.));
-    fChiQ[2]=fAvM*fV6/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV6*fAvM,2.),0.5);
-    fSdQ[2]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((3.+18.*pow(fChiQ[2],2)+9.*pow(fChiQ[2],4.)+28.*pow(fChiQ[2],6.)+12.*pow(fChiQ[2],8.)+24.*pow(fChiQ[2],10.))/(24.*pow(fChiQ[2],10.)),.5);
-    cout<<" v_"<<fgkFlow<<"{6} = "<<100.*fV6<<"%, chi{6} = "<<fChiQ[2]<<", sd{6} = "<<100.*fSdQ[2]<<"%"<<endl;
-    fCommonHistsRes6->FillIntegratedFlow(100.*fV6,100.*fSdQ[2]);
-    fCommonHistsRes6->FillChi(fChiQ[2]);
+    if (fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV6*fAvM,2.)>0.){
+     fChiQ[2]=fAvM*fV6/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV6*fAvM,2.),0.5);
+     fSdQ[2]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((3.+18.*pow(fChiQ[2],2)+9.*pow(fChiQ[2],4.)+28.*pow(fChiQ[2],6.)+12.*pow(fChiQ[2],8.)+24.*pow(fChiQ[2],10.))/(24.*pow(fChiQ[2],10.)),.5);
+     cout<<" v_"<<fgkFlow<<"{6} = "<<100.*fV6<<"%, chi{6} = "<<fChiQ[2]<<", sd{6} = "<<100.*fSdQ[2]<<"%"<<endl;
+     fCommonHistsRes6->FillIntegratedFlow(100.*fV6,100.*fSdQ[2]);
+     fCommonHistsRes6->FillChi(fChiQ[2]);
+    } else {
+      cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl; 
+    }
   } else {
     cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
   }
   if (fCumulant[3]<=0.){
     fV8=pow(-(1./33.)*fCumulant[3],(1./8.));
-    fChiQ[3]=fAvM*fV8/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV8*fAvM,2.),0.5);
-    fSdQ[3]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((12.+96.*pow(fChiQ[3],2)+72.*pow(fChiQ[3],4.)+304.*pow(fChiQ[3],6.)+257.*pow(fChiQ[3],8.)+804.*pow(fChiQ[3],10.)+363.*pow(fChiQ[3],12.)+726.*pow(fChiQ[3],14.))/(726.*pow(fChiQ[3],14.)),.5);
-    cout<<" v_"<<fgkFlow<<"{8} = "<<100.*fV8<<"%, chi{8} = "<<fChiQ[3]<<", sd{8} = "<<100.*fSdQ[3]<<"%"<<endl;
-     fCommonHistsRes8->FillIntegratedFlow(100.*fV8,100.*fSdQ[3]);
-     fCommonHistsRes8->FillChi(fChiQ[3]);
+    if (fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV8*fAvM,2.)>0.){
+     fChiQ[3]=fAvM*fV8/pow(fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV8*fAvM,2.),0.5);
+     fSdQ[3]=(1./(pow(2.*fAvM*nEvents,.5)))*pow((12.+96.*pow(fChiQ[3],2)+72.*pow(fChiQ[3],4.)+304.*pow(fChiQ[3],6.)+257.*pow(fChiQ[3],8.)+804.*pow(fChiQ[3],10.)+363.*pow(fChiQ[3],12.)+726.*pow(fChiQ[3],14.))/(726.*pow(fChiQ[3],14.)),.5);
+     cout<<" v_"<<fgkFlow<<"{8} = "<<100.*fV8<<"%, chi{8} = "<<fChiQ[3]<<", sd{8} = "<<100.*fSdQ[3]<<"%"<<endl;
+      fCommonHistsRes8->FillIntegratedFlow(100.*fV8,100.*fSdQ[3]);
+      fCommonHistsRes8->FillChi(fChiQ[3]);
+     } else {
+       cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;
+     }
   } else {
-    cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;
-     
+    cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;     
   }
   if (fCumulant[4]>=0.){
     cout<<"v_"<<fgkFlow<<"{10} = "<<100.*pow((1./456.)*fCumulant[4],(1./10.))<<"%"<<endl;
@@ -368,9 +388,9 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t nEvents){
   }
   cout<<"***************************"<<endl;
   
-  cout<<""<<endl;
-  cout<<"continuing with calculations for differential flow..."<<endl;
-  cout<<""<<endl;
+  //cout<<""<<endl;
+  //cout<<"continuing with calculations for differential flow..."<<endl;
+  //cout<<""<<endl;
  
   Double_t fBinEventDReAv[fgknBins][fgkPmax][fgkQmax]={0.};
   Double_t fBinEventDImAv[fgknBins][fgkPmax][fgkQmax]={0.};
@@ -396,9 +416,10 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t nEvents){
       }
     }   
   } 
-  cout<<""<<endl;
-  cout<<"I have calculated X and Y."<<endl;
-  cout<<""<<endl;
+  
+  //cout<<""<<endl;
+  //cout<<"I have calculated X and Y."<<endl;
+  //cout<<""<<endl;
   
   Double_t fD[fgknBins][fgkPmax]={0.};//implementing relation (11) from PG
   
@@ -412,9 +433,9 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t nEvents){
     }
   } 
   
-  cout<<""<<endl;
-  cout<<"calculating differential cumulants now..."<<endl;
-  cout<<""<<endl;
+  //cout<<""<<endl;
+  //cout<<"calculating differential cumulants now..."<<endl;
+  //cout<<""<<endl;
   
   Double_t fDiffCumulant2[fgknBins]={0.};//implementing relation (12) from PG
   Double_t fDiffCumulant4[fgknBins]={0.};
@@ -432,47 +453,54 @@ void AliFlowAnalysisWithCumulants::Terminate(Int_t nEvents){
   Double_t fAvPt[fgknBins];
   Double_t fSddiff2[fgknBins],fSddiff4[fgknBins];
 
-  cout<<"number of pt bins: "<<fgknBins<<endl;
-  cout<<"****************************************"<<endl;
+  //cout<<"number of pt bins: "<<fgknBins<<endl;
+  //cout<<"****************************************"<<endl;
   for (Int_t b=0;b<fgknBins;b++){ 
     if(fBinNoOfParticles[b]==0)continue;
     fAvPt[b]=fBinMeanPt[b]/fBinNoOfParticles[b];
-    cout<<"pt bin: "<<b*fBinWidth<<"-"<<(b+1)*fBinWidth<<" GeV"<<endl;
-    cout<<"number of particles in this pt bin: "<<fBinNoOfParticles[b]<<endl;
-    cout<<"mean pt in this bin: "<<fAvPt[b]<<" GeV"<<endl;
+    //cout<<"pt bin: "<<b*fBinWidth<<"-"<<(b+1)*fBinWidth<<" GeV"<<endl;
+    //cout<<"number of particles in this pt bin: "<<fBinNoOfParticles[b]<<endl;
+    //cout<<"mean pt in this bin: "<<fAvPt[b]<<" GeV"<<endl;
     if(fCumulant[0]>=0){
       fv2[b]=100.*fDiffCumulant2[b]/pow(fCumulant[0],.5);
-      fSddiff2[b]=pow((1./(2.*fBinNoOfParticles[b]))*((1.+pow(fChiQ[0],2.))/pow(fChiQ[0],2.)),0.5);
-      cout<<"v'_2/2{2} = "<<fv2[b]<<"%, "<<" "<<"sd{2} = "<<100.*fSddiff2[b]<<"%"<<endl;
-      fCommonHistsRes2->FillDifferentialFlow(b+1,fv2[b],100.*fSddiff2[b]);
+      if (fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV2*fAvM,2.)>0.){
+       fSddiff2[b]=pow((1./(2.*fBinNoOfParticles[b]))*((1.+pow(fChiQ[0],2.))/pow(fChiQ[0],2.)),0.5);
+       //cout<<"v'_2/2{2} = "<<fv2[b]<<"%, "<<" "<<"sd{2} = "<<100.*fSddiff2[b]<<"%"<<endl;
+       fCommonHistsRes2->FillDifferentialFlow(b+1,fv2[b],100.*fSddiff2[b]);
+      } else {
+        //cout<<"v'_2/2{2} = Im"<<endl;
+      }
     }else{
-      cout<<"v'_2/2{2} = Im"<<endl;
+      //cout<<"v'_2/2{2} = Im"<<endl;
     } 
     if(fCumulant[1]<=0){
       fv4[b]=-100.*fDiffCumulant4[b]/pow(-fCumulant[1],.75);
-      fSddiff4[b]=pow((1./(2.*fBinNoOfParticles[b]))*((2.+6.*pow(fChiQ[1],2.)+pow(fChiQ[1],4.)+pow(fChiQ[1],6.))/pow(fChiQ[1],6.)),0.5);
-      cout<<"v'_2/2{4} = "<<fv4[b]<<"%, "<<" "<<"sd{4} = "<<100.*fSddiff4[b]<<"%"<<endl;
-      fCommonHistsRes4->FillDifferentialFlow(b+1,fv4[b],100.*fSddiff4[b]);
+      if (fAvQ2x+fAvQ2y-pow(fAvQx,2.)-pow(fAvQy,2.)-pow(fV4*fAvM,2.)>0.){
+       fSddiff4[b]=pow((1./(2.*fBinNoOfParticles[b]))*((2.+6.*pow(fChiQ[1],2.)+pow(fChiQ[1],4.)+pow(fChiQ[1],6.))/pow(fChiQ[1],6.)),0.5);
+       //cout<<"v'_2/2{4} = "<<fv4[b]<<"%, "<<" "<<"sd{4} = "<<100.*fSddiff4[b]<<"%"<<endl;
+       fCommonHistsRes4->FillDifferentialFlow(b+1,fv4[b],100.*fSddiff4[b]);
+      } else {
+        //cout<<"v'_2/2{4} = Im"<<endl;
+      } 
     }else{
-      cout<<"v'_2/2{4} = Im"<<endl;
+      //cout<<"v'_2/2{4} = Im"<<endl;
     }  
     if(fCumulant[2]>=0){
-      cout<<"v'_2/2{6} = "<<100.*fDiffCumulant6[b]/(4.*pow((1./4.)*fCumulant[2],(5./6.)))<<"%"<<endl;
+      //cout<<"v'_2/2{6} = "<<100.*fDiffCumulant6[b]/(4.*pow((1./4.)*fCumulant[2],(5./6.)))<<"%"<<endl;
       fv6[b]=100.*fDiffCumulant6[b]/(4.*pow((1./4.)*fCumulant[2],(5./6.)));
       fCommonHistsRes6->FillDifferentialFlow(b+1,fv6[b],0.);
     }else{
-      cout<<"v'_2/2{6} = Im"<<endl;
+      //cout<<"v'_2/2{6} = Im"<<endl;
     }     
     if(fCumulant[3]<=0){
-      cout<<"v'_2/2{8} = "<<-100.*fDiffCumulant8[b]/(33.*pow(-(1./33.)*fCumulant[3],(7./8.)))<<"%"<<endl;
+      //cout<<"v'_2/2{8} = "<<-100.*fDiffCumulant8[b]/(33.*pow(-(1./33.)*fCumulant[3],(7./8.)))<<"%"<<endl;
       fv8[b]=-100.*fDiffCumulant8[b]/(33.*pow(-(1./33.)*fCumulant[3],(7./8.))); 
       fCommonHistsRes8->FillDifferentialFlow(b+1,fv8[b],0.);
     }else{
-      cout<<"v'_2/2{8} = Im"<<endl;
+      //cout<<"v'_2/2{8} = Im"<<endl;
     }       
-    cout<<"****************************************"<<endl;
+    //cout<<"****************************************"<<endl;
   }  
 }
-
 
 

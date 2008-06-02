@@ -2,8 +2,8 @@
 TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
 
-//void runAliAnalysisTaskCumulants(Int_t nRuns = 2, TString type = "ESD", const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
-void runAliAnalysisTaskCumulants(Int_t nRuns = 2, TString type = "MC", const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFix", Int_t offset = 0) 
+void runAliAnalysisTaskCumulants(Int_t nRuns = 100, TString type = "ESD", const Char_t* dataDir="/data/alice2/ab2/", Int_t offset = 0) 
+//void runAliAnalysisTaskCumulants(Int_t nRuns = 2, TString type = "MC", const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFix", Int_t offset = 0) 
 {
   TStopwatch timer;
   timer.Start();
@@ -179,4 +179,3 @@ void LookupWrite(TChain* chain, const char* target)
   
   delete iter;
 }
-
