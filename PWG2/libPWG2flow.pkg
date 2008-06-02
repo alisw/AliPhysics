@@ -20,6 +20,7 @@ SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliAnalysisTaskScalarProduct.cxx \
       FLOW/AliAnalysisTaskMCEventPlane.cxx \
       FLOW/AliAnalysisTaskLYZEventPlane.cxx \
+      FLOW/AliAnalysisTaskCumulants.cxx \
       FLOW/AliAnalysisTaskLeeYangZeros.cxx
 
 HDRS= $(SRCS:.cxx=.h) 

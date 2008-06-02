@@ -40,6 +40,8 @@ ClassImp(AliFlowAnalysisWithCumulants)
 
 AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():  
   fTrack(NULL),
+  fHistFileName("cummulants.root"),
+  fHistFile(NULL),
   fAvM(0),
   fR0(0),
   fPtMax(0),
@@ -83,8 +85,7 @@ AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants(){
 //___________________________________________________________________________
 void AliFlowAnalysisWithCumulants::CreateOutputObjects(){
  //output histograms
- TString fHistFileName = "cumulants.root";
- TFile* fHistFile;
+
  fHistFile = new TFile(fHistFileName.Data(),"RECREATE");
  fCommonHists = new AliFlowCommonHist("Cumulants");//control histograms
  fCommonHistsRes2 = new AliFlowCommonHistResults("Cumulants2");
