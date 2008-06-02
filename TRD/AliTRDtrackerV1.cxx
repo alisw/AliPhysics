@@ -1067,6 +1067,74 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 }
 
 
+//____________________________________________________________________
+Double_t AliTRDtrackerV1::FitLine(AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t err, Int_t np, AliTrackPoint *points)
+{
+  AliTRDLeastSquare yfitter, zfitter;
+  AliTRDcluster *cl = 0x0;
+
+  AliTRDseedV1 work[kNPlanes], *tracklet = 0x0;
+  if(!tracklets){
+    for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
+      if(!(tracklet = track->GetTracklet(ipl))) continue;
+      if(!tracklet->IsOK()) continue;
+      new(&work[ipl]) AliTRDseedV1(*tracklet);
+    }
+    tracklets = &work[0];
+  }
+
+  Double_t xref = CalculateReferenceX(tracklets);
+  Double_t x, y, z, dx, ye, yr, tilt;
+  for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
+    if(!tracklets[ipl].IsOK()) continue;
+    for(Int_t itb = 0; itb < fgNTimeBins; itb++){
+      if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
+      if (!tracklets[ipl].IsUsable(itb)) continue;
+      x = cl->GetX();
+      z = cl->GetZ();
+      dx = x - xref;
+      zfitter.AddPoint(&dx, z, static_cast<Double_t>(TMath::Sqrt(cl->GetSigmaZ2())));
+    }
+  }
+  zfitter.Eval();
+  Double_t z0    = zfitter.GetFunctionParameter(0);
+  Double_t dzdx  = zfitter.GetFunctionParameter(1);
+  for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
+    if(!tracklets[ipl].IsOK()) continue;
+    for(Int_t itb = 0; itb < fgNTimeBins; itb++){
+      if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
+      if (!tracklets[ipl].IsUsable(itb)) continue;
+      x = cl->GetX();
+      y = cl->GetY();
+      z = cl->GetZ();
+      tilt = tracklets[ipl].GetTilt();
+      dx = x - xref;
+      yr = y + tilt*(z - z0 - dzdx*dx); 
+      // error definition changes for the different calls
+      ye = tilt*TMath::Sqrt(cl->GetSigmaZ2());
+      ye += err ? tracklets[ipl].GetSigmaY() : 0.2;
+      yfitter.AddPoint(&dx, yr, ye);
+    }
+  }
+  yfitter.Eval();
+  Double_t y0   = yfitter.GetFunctionParameter(0);
+  Double_t dydx = yfitter.GetFunctionParameter(1);
+  Double_t chi2 = 0.;//yfitter.GetChisquare()/Double_t(nPoints);
+
+  //update track points array
+  if(np && points){
+    Float_t xyz[3];
+    for(int ip=0; ip<np; ip++){
+      points[ip].GetXYZ(xyz);
+      xyz[1] = y0 + dydx * (xyz[0] - xref);
+      xyz[2] = z0 + dzdx * (xyz[0] - xref);
+      points[ip].SetXYZ(xyz);
+    }
+  }
+  return chi2;
+}
+
+
 //_________________________________________________________________________
 Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t sigError, Int_t np, AliTrackPoint *points)
 {
