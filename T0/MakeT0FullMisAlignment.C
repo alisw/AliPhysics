@@ -1,7 +1,7 @@
 void MakeT0FullMisAlignment(){
   // Create TClonesArray of full misalignment objects for T0
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",30);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",4);
   TClonesArray &alobj = *array;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
@@ -15,26 +15,19 @@ void MakeT0FullMisAlignment(){
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  Int_t j=0;
-  for (Int_t imod=0; imod<24; imod++){
-    if (imod < 12){
-      sn="T0/C/PMT";
-    }else{
-      sn="T0/A/PMT";
-    }
-    symName = sn;
-    symName += imod+1;
-
+  for (Int_t imod=0; imod<2; imod++)
+  {
+    symName="/ALIC_1/0STR_1";
+    if(imod==1) symName="/ALIC_1/0STL_1";	
     dx = rnd->Gaus(0.,sigmatr);
     dy = rnd->Gaus(0.,sigmatr);
     dz = rnd->Gaus(0.,sigmatr);
     dpsi = rnd->Gaus(0.,sigmarot);
     dtheta = rnd->Gaus(0.,sigmarot);
     dphi = rnd->Gaus(0.,sigmarot);
-
-    new(alobj[j++]) AliAlignObjParams(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[imod]) AliAlignObjParams(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
-
+    
   const char* macroname = "MakeT0FullMisAlignment.C";
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file

@@ -1,30 +1,26 @@
 void MakeT0ZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for T0
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",4);
   TClonesArray &alobj = *array;
 
-  Double_t dx=0, dy=0, dz=0, dpsi=0, dtheta=0, dphi=0;
+  Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
-  TString symName, sn;
+  TString symName;
 
   Int_t iIndex=0;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  Int_t j=0;
-  for (Int_t imod=0; imod<24; imod++)
+  for (Int_t imod=0; imod<2; imod++)
+  {
+    symName="/ALIC_1/0STR_1";
+    if(imod==1) 
     {
-      if (imod < 12){
-	sn="T0/C/PMT";
-      }else{
-	sn="T0/A/PMT";
-      }
-      symName = sn;
-      symName += imod+1;
-
-      new(alobj[j++]) AliAlignObjParams(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+      symName="/ALIC_1/0STL_1";
     }
+    new(alobj[imod]) AliAlignObjParams(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  }
 
   const char* macroname = "MakeT0ZeroMisAlignment.C";
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
