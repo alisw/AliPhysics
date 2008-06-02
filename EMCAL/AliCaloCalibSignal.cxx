@@ -370,7 +370,10 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
   
   // now check if it was a led event, only use high gain (that should be sufficient)
   if (fReqFractionAboveAmp) {
-    bool ok = CheckFractionAboveAmp(AmpValHighGain, nHighChan);
+    bool ok = false;
+    if (nHighChan > 0) { 
+      ok = CheckFractionAboveAmp(AmpValHighGain, nHighChan); 
+    }
     if (!ok) return false; // skip event
   }
 

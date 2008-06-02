@@ -2,7 +2,7 @@
   EMCAL DA for online calibration
   
   Contact: silvermy@ornl.gov
-  Run Type: PEDESTAL_RUN or PULSER_RUN
+  Run Type: PEDESTAL or PHYSICS or STANDALONE
   DA Type: LDC
   Number of events needed: ~100
   Input Files: argument list
@@ -13,12 +13,13 @@
 */
 /*
   This process reads RAW data from the files provided as command line arguments
-  and save results in a file (named from RESULT_FILE define - see below).
+  and save results (class itself) in a file (named from RESULT_FILE define - see below).
 */
 
 #define RESULT_FILE  "EMCALda.root"
 #define FILE_ID "EMCALda"
 #define AliDebugLevel() -1
+#define ClassName "emcCalibPedestal"
 
 extern "C" {
 #include <daqDA.h>
@@ -110,12 +111,21 @@ int main(int argc, char **argv) {
   } // loop over files
 
   //
-  // write results/histograms to rootfile
+  // write class to rootfile
   //
 
   printf ("%d physics/calibration events processed.\n",nevents);
-  calibPedestal->SaveHistograms(RESULT_FILE);
-  printf("Wrote %s.\n",RESULT_FILE);
+
+  TFile f(RESULT_FILE, "recreate");
+  if (!f.IsZombie()) { 
+    f.cd();
+    calibPedestal->Write(ClassName);
+    f.Close();
+    printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, ClassName); 
+  } 
+  else {
+    printf("Could not save the object to file \"%s\".\n", RESULT_FILE);
+  }
 
   /* store the result file on FES */
   status = daqDA_FES_storeFile(RESULT_FILE, FILE_ID);
