@@ -58,6 +58,7 @@ public:
   Float_t        GetEdep() const {return fDE;}
   inline Float_t GetMomentum(Int_t plane) const;
   inline Int_t   GetNCross();
+  inline Int_t   GetNumberOfTracklets() const;
   Double_t       GetPIDsignal() const {return 0.;}
   Double_t       GetPID(Int_t is) const { return (is >=0 && is < AliPID::kSPECIES) ? fPID[is] : -1.;}
   Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet) const;
@@ -116,6 +117,17 @@ inline Int_t AliTRDtrackV1::GetNCross()
     ncross += fTracklet[ip]->IsRowCross();
   }
   return ncross;
+}
+
+//____________________________________________________
+inline Int_t AliTRDtrackV1::GetNumberOfTracklets() const
+{
+  Int_t n = 0;
+  for(Int_t ip=0; ip<kNplane; ip++){
+    if(!fTracklet[ip]) continue;
+    n++;
+  }
+  return n;
 }
 
 //____________________________________________________________________________
