@@ -19,7 +19,7 @@
  * @file   dHLTdumpraw.cxx
  * @author Artur Szostak <artursz@iafrica.com>,
  *         Seforo Mohlalisi <seforomohlalisi@yahoo.co.uk>
- * @date   
+ * @date   1 July 2007
  * @brief  Command line utility to dump dHLT's internal raw data blocks.
  */
 
@@ -35,9 +35,21 @@
 #endif
 
 #include "AliHLTMUONUtils.h"
+#include "AliHLTMUONConstants.h"
+#include "Rtypes.h"
+#include "AliRawDataHeader.h"
+#include "AliMUONTrackerDDLDecoder.h"
+#include "AliMUONTriggerDDLDecoder.h"
+#include "AliHLTSystem.h"
+#include "AliHLTConfiguration.h"
+#include "AliLog.h"
+#include "TClassTable.h"
+#include "TString.h"
+#include "TRegexp.h"
 
 #include <cstring>
 #include <cstdlib>
+#include <cstdio>
 #include <cassert>
 #include <new>
 #include <fstream>
@@ -54,6 +66,7 @@ using std::dec;
 #include <iomanip>
 using std::setw;
 using std::left;
+using std::right;
 using std::internal;
 
 
@@ -61,6 +74,16 @@ using std::internal;
 #define PARSE_ERROR 2
 #define SYSTEM_ERROR 3
 #define FATAL_ERROR 4
+#define HLTSYSTEM_ERROR 5
+
+
+// Adding enum types for extending AliHLTMUONDataBlockType with the
+// raw DDL data types.
+enum AliHLTMUONDDLRawDataType
+{
+	kTrackerDDLRawData = 10,
+	kTriggerDDLRawData = 11
+};
 
 
 void PrintRubbishData(AliHLTUInt32_t offset, const char* padByte, AliHLTUInt32_t padCount)
@@ -186,6 +209,314 @@ AliHLTUInt32_t CalculateNEntries(BlockType& block, unsigned long bufferSize)
 			nentries++;
 	}
 	return nentries;
+}
+
+
+namespace
+{
+	/**
+	 * Common methods for DDL decoder event handlers.
+	 */
+	class AliDecoderHandler
+	{
+	public:
+		AliDecoderHandler() :
+			fBufferStart(NULL),
+			fDumpStart(NULL),
+			fDumpData(false)
+		{
+		}
+		
+		virtual ~AliDecoderHandler() {}
+		
+	protected:
+		
+		// Do not allow copying of this class.
+		AliDecoderHandler(const AliDecoderHandler& obj);
+		AliDecoderHandler& operator = (const AliDecoderHandler& obj);
+		
+		void HandleError(
+				const char* errorMessage, int errorCode,
+				const char* errorCodeString, const void* location
+			)
+		{
+			unsigned long offset = (unsigned long)location - (unsigned long)fBufferStart
+				+ sizeof(AliRawDataHeader);
+			
+			cerr << "ERROR: " << errorMessage
+				<< " [Error code = " << errorCode << " ("
+				<< errorCodeString << "), at byte "
+				<< offset << " (" << noshowbase << hex << "0x"
+				<< offset << dec << ")]" << endl;
+			
+			if (fDumpStart == NULL) fDumpStart = location;
+			fDumpData = true;
+		}
+	
+		void TryDumpCorruptData(const void* dumpEnd)
+		{
+			if (dumpEnd < fDumpStart) return;
+			if (not fDumpData) return;
+			
+			unsigned long startOffset = (unsigned long)fDumpStart - (unsigned long)fBufferStart
+				+ sizeof(AliRawDataHeader);
+			unsigned long endOffset = (unsigned long)dumpEnd - (unsigned long)fBufferStart
+				+ sizeof(AliRawDataHeader);
+			if (endOffset - startOffset > 264)
+			{
+				endOffset = startOffset + 264;
+				dumpEnd = reinterpret_cast<const char*>(fBufferStart) + endOffset;
+			}
+			cerr << "Dumping corrupt data words from byte " << startOffset
+				<< " (" << noshowbase << hex << "0x" << startOffset
+				<< dec << "), to byte " << endOffset << " (" << noshowbase
+				<< hex << "0x" << endOffset << dec << "):" << endl;
+			const UInt_t* start = reinterpret_cast<const UInt_t*>(fDumpStart);
+			const UInt_t* end = reinterpret_cast<const UInt_t*>(dumpEnd);
+			cerr << "     Start byte     | Data words" << endl;
+			for (const UInt_t* current = start; current < end; current++)
+			{
+				unsigned long currentByte = (unsigned long)current
+					- (unsigned long)fBufferStart + sizeof(AliRawDataHeader);
+				cerr << right << setw(9) << dec << currentByte << setw(0)
+					<< " 0x" << left << setw(7) << noshowbase << hex
+					<< currentByte << setw(0) << right << " | ";
+				char fillChar = cerr.fill();
+				cerr.fill('0');
+				for (int i = 0; i < 4 and current < end; i++, current++)
+				{
+					cerr << noshowbase << hex << "0x" << setw(8)
+						<< (*current) << setw(0) << dec << " ";
+				}
+				cerr.fill(fillChar);
+				cerr << endl;
+			}
+			fDumpStart = NULL;
+			fDumpData = false;
+		}
+		
+		const void* fBufferStart;  ///< Start location of buffer.
+		const void* fDumpStart;  ///< Start location of corrupt data to dump.
+		bool fDumpData;  ///< Flag indicating if fDumpStart points to corrupt data and should be dumped.
+	};
+
+	/**
+	 * Event handler for the tracker DDL decoder.
+	 * It simply prints the structure to standard output.
+	 */
+	class AliTrackerDecoderHandler :
+		public AliMUONTrackerDDLDecoderEventHandler, public AliDecoderHandler
+	{
+	public:
+		AliTrackerDecoderHandler() :
+			AliMUONTrackerDDLDecoderEventHandler(),
+			AliDecoderHandler()
+		{}
+		
+		virtual ~AliTrackerDecoderHandler() {}
+	
+		void OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/)
+		{
+			fBufferStart = buffer;
+		}
+		
+		void OnEndOfBuffer(const void* buffer, UInt_t bufferSize)
+		{
+			const char* bufferEnd =
+				reinterpret_cast<const char*>(buffer) + bufferSize;
+			TryDumpCorruptData(bufferEnd);
+		}
+		
+		void OnNewBlock(const AliMUONBlockHeaderStruct* header, const void* /*data*/)
+		{
+			TryDumpCorruptData(header);
+			
+			//TODO print nicely.
+			cout << "block: " << header << endl;
+		}
+		
+		void OnNewDSP(const AliMUONDSPHeaderStruct* header, const void* /*data*/)
+		{
+			TryDumpCorruptData(header);
+			
+			//TODO print nicely.
+			cout << "DSP: " << header << endl;
+		}
+		
+		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* /*data*/)
+		{
+			TryDumpCorruptData(header);
+			
+			//TODO print nicely.
+			cout << "buspatch: " << header << endl;
+		}
+		
+		void OnData(UInt_t data, bool parityError)
+		{
+			if (parityError)
+			{
+				// TODO complete
+				cerr << "Raw data word with parity error" << data << endl;
+			}
+			else
+			{
+				//TODO print nicely.
+				cout << "data word: 0x" << hex << data << dec << endl;
+			}
+		}
+		
+		void OnError(ErrorCode error, const void* location)
+		{
+			TryDumpCorruptData(location);
+			HandleError(
+				ErrorCodeToMessage(error), error,
+				ErrorCodeToString(error), location
+			);
+		}
+	};
+
+	/**
+	 * Event handler for the trigger DDL decoder.
+	 * It simply prints the structure to standard output.
+	 */
+	class AliTriggerDecoderHandler :
+		public AliMUONTriggerDDLDecoderEventHandler, public AliDecoderHandler
+	{
+	public:
+		AliTriggerDecoderHandler() :
+			AliMUONTriggerDDLDecoderEventHandler(),
+			AliDecoderHandler()
+		{}
+		
+		virtual ~AliTriggerDecoderHandler() {}
+	
+		void OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/)
+		{
+			fBufferStart = buffer;
+		}
+		
+		void OnEndOfBuffer(const void* buffer, UInt_t bufferSize)
+		{
+			const char* bufferEnd =
+				reinterpret_cast<const char*>(buffer) + bufferSize;
+			TryDumpCorruptData(bufferEnd);
+		}
+		
+		void OnDarcHeader(
+				UInt_t header,
+				const AliMUONDarcScalarsStruct* scalars,
+				const void* data
+			)
+		{
+			if (scalars != NULL)
+				TryDumpCorruptData(scalars);
+			else
+				TryDumpCorruptData(data);
+			
+			//TODO print nicely.
+			cout << "DARC header: " << header << endl;
+		}
+		
+		void OnGlobalHeader(
+				const AliMUONGlobalHeaderStruct* header,
+				const AliMUONGlobalScalarsStruct* /*scalars*/,
+				const void* /*data*/
+			)
+		{
+			TryDumpCorruptData(header);
+			
+			//TODO print nicely.
+			cout << "global header: " << header << endl;
+		}
+		
+		void OnNewRegionalStruct(
+				const AliMUONRegionalHeaderStruct* regionalStruct,
+				const AliMUONRegionalScalarsStruct* /*scalars*/,
+				const void* /*data*/
+			)
+		{
+			TryDumpCorruptData(regionalStruct);
+			
+			//TODO print nicely.
+			cout << "regional struct: " << regionalStruct << endl;
+		}
+		
+		void OnLocalStruct(
+				const AliMUONLocalInfoStruct* localStruct,
+				const AliMUONLocalScalarsStruct* /*scalars*/
+			)
+		{
+			TryDumpCorruptData(localStruct);
+			
+			//TODO print nicely.
+			cout << "local struct: " << localStruct << endl;
+		}
+		
+		void OnError(ErrorCode error, const void* location)
+		{
+			TryDumpCorruptData(location);
+			HandleError(
+				ErrorCodeToMessage(error), error,
+				ErrorCodeToString(error), location
+			);
+		}
+	};
+
+} // end of namespace
+
+
+int DumpTrackerDDLRawStream(
+		const char* buffer, unsigned long bufferSize,
+		bool continueParse
+	)
+{
+	// TODO dump the CDH header.
+
+	// Setup the decoder for the DDL payload.
+	AliMUONTrackerDDLDecoder<AliTrackerDecoderHandler> decoder;
+	decoder.ExitOnError(not continueParse);
+	decoder.SendDataOnParityError(false);
+	decoder.TryRecover(false);
+	decoder.AutoDetectTrailer(true);
+	decoder.CheckForTrailer(true);
+	const char* payload = buffer + sizeof(AliRawDataHeader);
+	UInt_t payloadSize = bufferSize - sizeof(AliRawDataHeader);
+	if (decoder.Decode(payload, payloadSize))
+	{
+		return EXIT_SUCCESS;
+	}
+	else
+	{
+		return PARSE_ERROR;
+	}
+}
+
+
+int DumpTriggerDDLRawStream(
+		const char* buffer, unsigned long bufferSize,
+		bool continueParse
+	)
+{
+	// TODO dump the CDH header.
+	
+	const AliRawDataHeader* header =
+		reinterpret_cast<const AliRawDataHeader*>(buffer);
+	bool scalarEvent = header->GetL1TriggerMessage() == 0x1;
+	
+	AliMUONTriggerDDLDecoder<AliTriggerDecoderHandler> decoder;
+	decoder.ExitOnError(not continueParse);
+	decoder.TryRecover(false);
+	decoder.AutoDetectScalars(false);
+	const char* payload = buffer + sizeof(AliRawDataHeader);
+	UInt_t payloadSize = bufferSize - sizeof(AliRawDataHeader);
+	if (decoder.Decode(payload, payloadSize, scalarEvent))
+	{
+		return EXIT_SUCCESS;
+	}
+	else
+	{
+		return PARSE_ERROR;
+	}
 }
 
 
@@ -982,61 +1313,216 @@ int DumpCommonHeader(
 	return result;
 }
 
+/**
+ * Method to look for a certain data word key in the buffer.
+ * \param buffer  The start location in the buffer to search.
+ * \param end  The end of the buffer.
+ * \returns  the pointer position just past the word found or
+ *     NULL if the word was not found in the buffer.
+ */
+const char* FindDataWord(const char* buffer, const char* end, UInt_t word)
+{
+	for (const char* current = buffer; (current+1) <= end; current += sizeof(UInt_t))
+	{
+		const UInt_t* currentWord = reinterpret_cast<const UInt_t*>(current);
+		if (*currentWord == word) return current + sizeof(UInt_t);
+	}
+	return NULL;
+}
 
+/**
+ * Method to check if the data buffer is really a raw DDL stream.
+ * \returns  kUnknownDataBlock if this does not look like a raw DDL stream.
+ *     kTrackerDDLRawData if this looks like a raw DDL stream from the tracker.
+ *     kTriggerDDLRawData if this looks like a raw DDL stream from the trigger.
+ */
+int CheckIfDDLStream(const char* buffer, unsigned long bufferSize)
+{
+	if (bufferSize < sizeof(AliRawDataHeader)) return kUnknownDataBlock;
+	
+	const AliRawDataHeader* cdhHeader =
+		reinterpret_cast<const AliRawDataHeader*>(buffer);
+	
+	// Keep scores of indicators / tests that show this is a raw DDL stream
+	// either from the trigger or tracker. We will decide if the stream is
+	// indeed a raw DDL stream if the largest of the two scores is above a
+	// minimum threshold.
+	int trackerScore = 0;
+	int triggerScore = 0;
+	
+	if (cdhHeader->fSize == UInt_t(-1) or cdhHeader->fSize == bufferSize)
+	{
+		trackerScore++;
+		triggerScore++;
+	}
+	
+	if (cdhHeader->GetVersion() == 2)
+	{
+		trackerScore++;
+		triggerScore++;
+	}
+	
+	const char* payload = buffer + sizeof(AliRawDataHeader);
+	const char* payloadEnd = buffer + bufferSize;
+	
+	typedef AliMUONTrackerDDLDecoder<AliMUONTrackerDDLDecoderEventHandler> AliTrkDecoder;
+	typedef AliMUONTriggerDDLDecoder<AliMUONTriggerDDLDecoderEventHandler> AliTrgDecoder;
+	
+	// See if the DDL data has a payload with data word keys as expected by
+	// AliMUONTrackerDDLDecoder.
+	const char* current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrkDecoder::BlockDataKeyWord())) != NULL )
+	{
+		trackerScore++;
+	}
+	current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrkDecoder::DspDataKeyWord())) != NULL )
+	{
+		trackerScore++;
+	}
+	current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrkDecoder::BusPatchDataKeyWord())) != NULL )
+	{
+		trackerScore++;
+	}
+	current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrkDecoder::EndOfDDLWord())) != NULL )
+	{
+		trackerScore++;
+	}
+	
+	// See if the DDL data has a payload with data word keys as expected by
+	// AliMUONTriggerDDLDecoder.
+	current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrgDecoder::EndOfDarcWord())) != NULL )
+	{
+		triggerScore++;
+	}
+	current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrgDecoder::EndOfGlobalWord())) != NULL )
+	{
+		triggerScore++;
+	}
+	current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrgDecoder::EndOfRegionalWord())) != NULL )
+	{
+		triggerScore++;
+	}
+	current = payload;
+	while ( (current = FindDataWord(current, payloadEnd, AliTrgDecoder::EndOfLocalWord())) != NULL )
+	{
+		triggerScore++;
+	}
+	
+	if (triggerScore > trackerScore)
+	{
+		if (triggerScore >= 6) return kTriggerDDLRawData;
+	}
+	else
+	{
+		if (trackerScore >= 6) return kTrackerDDLRawData;
+	}
+	return kUnknownDataBlock;
+}
+
+/**
+ * Parses the buffer and prints the contents to screen.
+ * [in] \param buffer  The pointer to the buffer to parse.
+ * [in] \param bufferSize  The size of the buffer in bytes.
+ * [in] \param continueParse  If specified then the we try to continue parsing the
+ *           buffer as much as possible.
+ * [in/out] \param type  Initialy this should indicate the type of the data block
+ *           or kUnknownDataBlock if not known. On exit it will be filled with
+ *           the type of the data block as discovered by this routine if type
+ *           initially contained kUnknownDataBlock.
+ * \returns  The error code indicating the problem. EXIT_SUCCESS is returned
+ *           on success.
+ */
 int ParseBuffer(
 		const char* buffer, unsigned long bufferSize,
-		bool continueParse, AliHLTMUONDataBlockType type
+		bool continueParse, int& type
 	)
 {
 	assert( buffer != NULL );
 	int result = EXIT_SUCCESS;
+	int subResult = EXIT_FAILURE;
 	
-	if (bufferSize < sizeof(AliHLTMUONDataBlockHeader))
-	{
-		cerr << "ERROR: The size of the file is too small to contain a"
-			" valid data block." << endl;
-		result = PARSE_ERROR;
-		if (not continueParse) return result;
-	}
-	const AliHLTMUONDataBlockHeader* header =
-		reinterpret_cast<const AliHLTMUONDataBlockHeader*>(buffer);
-
-	int subResult = DumpCommonHeader(buffer, bufferSize, header, continueParse);
-	if (subResult != EXIT_SUCCESS) return subResult;
-
-	
-	// Check if the block type in the header corresponds to the type given
-	// by the '-type' command line parameter. If they do not then print an
-	// error or big fat warning message and force interpretation of the data
-	// block with the type given by '-type'.
-	AliHLTMUONDataBlockType headerType = AliHLTMUONDataBlockType(header->fType);
-	
+	// If the -type|-t option was not used in the command line then we need to
+	// figure out what type of data block this is from the data itself.
+	bool ddlStream = false;
 	if (type == kUnknownDataBlock)
 	{
-		// -type not used in the command line so just use what is given
-		// by the data block header.
-		type = headerType;
+		// First check if this is a raw DDL stream, if not then assume it is
+		// some kind of internal dHLT raw data block.
+		int streamType = CheckIfDDLStream(buffer, bufferSize);
+		if (streamType == kTrackerDDLRawData or streamType == kTriggerDDLRawData)
+		{
+			type = streamType;
+			ddlStream = true;
+		}
 	}
-	else if (type != headerType)
+	else if (type == kTrackerDDLRawData or type == kTriggerDDLRawData)
 	{
-		cerr << "WARNING: The data block header indicates a type"
-			" different from what was specified on the command line."
-			" The data could be corrupt."
-			<< endl;
-		cerr << "WARNING: The type value in the file is "
-			<< showbase << hex << header->fType
-			<< " (" << headerType << "), but on the command line it is "
-			<< showbase << hex << int(type) << dec
-			<< " (" << type << ")."
-			<< endl;
-		cerr << "WARNING: Will force the interpretation of the data block"
-			" with a type of " << type << "." << endl;
+		ddlStream = true;
 	}
 	
-	// Now we know what type the data block is supposed to be so we can
+	if (not ddlStream)
+	{
+		if (bufferSize < sizeof(AliHLTMUONDataBlockHeader))
+		{
+			cerr << "ERROR: The size of the file is too small to contain a"
+				" valid data block." << endl;
+			result = PARSE_ERROR;
+			if (not continueParse) return result;
+		}
+		const AliHLTMUONDataBlockHeader* header =
+			reinterpret_cast<const AliHLTMUONDataBlockHeader*>(buffer);
+	
+		subResult = DumpCommonHeader(buffer, bufferSize, header, continueParse);
+		if (subResult != EXIT_SUCCESS) return subResult;
+	
+		
+		// Check if the block type in the header corresponds to the type given
+		// by the '-type' command line parameter. If they do not then print an
+		// error or big fat warning message and force interpretation of the data
+		// block with the type given by '-type'.
+		AliHLTMUONDataBlockType headerType = AliHLTMUONDataBlockType(header->fType);
+		
+		if (type == kUnknownDataBlock)
+		{
+			// -type not used in the command line so just use what is given
+			// by the data block header.
+			type = headerType;
+		}
+		else if (type != headerType)
+		{
+			cerr << "WARNING: The data block header indicates a type"
+				" different from what was specified on the command line."
+				" The data could be corrupt."
+				<< endl;
+			cerr << "WARNING: The type value in the file is "
+				<< showbase << hex << header->fType
+				<< " (" << headerType << "), but on the command line it is "
+				<< showbase << hex << int(type) << dec
+				<< " (" << type << ")."
+				<< endl;
+			cerr << "WARNING: Will force the interpretation of the data block"
+				" with a type of " << type << "." << endl;
+		}
+	}
+	
+	// Now we know what type the data block is supposed to be, so we can
 	// dump it to screen with the appropriate dump routine.
 	switch (type)
 	{
+	case kTrackerDDLRawData:
+		subResult = DumpTrackerDDLRawStream(buffer, bufferSize, continueParse);
+		if (subResult != EXIT_SUCCESS) result = subResult;
+		break;
+	case kTriggerDDLRawData:
+		subResult = DumpTriggerDDLRawStream(buffer, bufferSize, continueParse);
+		if (subResult != EXIT_SUCCESS) result = subResult;
+		break;
 	case kTriggerRecordsDataBlock:
 		subResult = DumpTriggerRecordsBlock(buffer, bufferSize, continueParse);
 		if (subResult != EXIT_SUCCESS) result = subResult;
@@ -1085,6 +1571,165 @@ int ParseBuffer(
 	}
 	
 	return result;
+}
+
+/**
+ * Convert the type code to a string.
+ */
+const char* TypeToString(int type)
+{
+	if (type == kTrackerDDLRawData or type == kTriggerDDLRawData)
+	{
+		static char str[kAliHLTComponentDataTypefIDsize+1];
+		AliHLTComponentDataType t = AliHLTMUONConstants::DDLRawDataType();
+		memcpy(&str, &t.fID, kAliHLTComponentDataTypefIDsize);
+		// Must insert the NULL character to make this an ANSI C string.
+		str[kAliHLTComponentDataTypefIDsize] = '\0';
+		return &str[0];
+	}
+	else
+	{
+		return AliHLTMUONUtils::DataBlockTypeToString(AliHLTMUONDataBlockType(type));
+	}
+}
+
+/**
+ * Find the data specification from the filename and return it in string format.
+ */
+const char* TryDecodeDataSpec(const char* filename)
+{
+	TString name = filename;
+	
+	TRegexp re1("MUONTR[GK]_[0123456789]+\\.ddl$");
+	Ssiz_t length = 0;
+	Ssiz_t pos = re1.Index(name, &length);
+	if (pos != kNPOS)
+	{
+		TString substr;
+		for (Ssiz_t i = 0; i < length; i++)
+			substr += name[pos+i];
+		TRegexp re("[0123456789]+");
+		pos = re.Index(substr, &length);
+		TString num;
+		for (Ssiz_t i = 0; i < length; i++)
+			num += substr[pos+i];
+		AliHLTUInt32_t spec = AliHLTMUONUtils::EquipIdToSpec(num.Atoi());
+		static char strbuf[32];
+		sprintf(&strbuf[0], "0x%8.8X", spec);
+		return &strbuf[0];
+	}
+	
+	TRegexp re2("_MUON\\:.+_0x[0123456789abscefABCDEF]+\\.dat$");
+	pos = re2.Index(name, &length);
+	if (pos != kNPOS)
+	{
+		TString substr;
+		for (Ssiz_t i = 0; i < length; i++)
+			substr += name[pos+i];
+		TRegexp re("0x[0123456789abscefABCDEF]+");
+		pos = re.Index(substr, &length);
+		TString num;
+		for (Ssiz_t i = 0; i < length; i++)
+			num += substr[pos+i];
+		static TString result = num;
+		return result.Data();
+	}
+	
+	return NULL;
+}
+
+/**
+ * Performs basic data integrity checks of the data block using the
+ * AliHLTMUONDataCheckerComponent.
+ * [in] \param sys  The HLT system framework.
+ * [in] \param filename  The name of the file containing the data block to check.
+ * [in] \param type  Must indicate the type of the data block.
+ * [in] \param dataspec The data specification of the data block. NULL if none.
+ * [in] \param maxLogging  If set to true then full logging is turned on for AliHLTSystem.
+ * \returns  The error code indicating the problem. EXIT_SUCCESS is returned
+ *           on success.
+ */
+int CheckDataIntegrity(
+		AliHLTSystem& sys, const char* filename, int type,
+		const char* dataspec, bool maxLogging
+	)
+{
+	if (maxLogging)
+	{
+		AliLog::SetGlobalLogLevel(AliLog::kMaxType);
+		sys.SetGlobalLoggingLevel(kHLTLogAll);
+	}
+	else
+	{
+		AliLog::SetGlobalLogLevel(AliLog::kWarning);
+		int level = kHLTLogWarning | kHLTLogError | kHLTLogFatal;
+		sys.SetGlobalLoggingLevel(AliHLTComponentLogSeverity(level));
+	}
+	
+	// Check if required libraries are there and load them if not.
+	if (gClassTable->GetID("AliHLTAgentUtil") < 0)
+	{
+		sys.LoadComponentLibraries("libAliHLTUtil.so");
+	}
+	if (gClassTable->GetID("AliHLTMUONAgent") < 0)
+	{
+		sys.LoadComponentLibraries("libAliHLTMUON.so");
+	}
+	
+	// Setup the component parameter lists and then the components.
+	TString dcparams = "-return_error -warn_on_unexpected_block -no_global_check";
+	TString fpparams = "-datatype '";
+	fpparams += TypeToString(type);
+	fpparams += "' 'MUON'";
+	if (dataspec != NULL)
+	{
+		fpparams += " -dataspec ";
+		fpparams += dataspec;
+	}
+	else
+	{
+		const char* spec = TryDecodeDataSpec(filename);
+		if (spec != NULL)
+		{
+			fpparams += " -dataspec ";
+			fpparams += spec;
+		}
+		else
+		{
+			dcparams += " -ignorespec";
+		}
+	}
+	fpparams += " -datafile ";
+	fpparams += filename;
+	TString fpname = "filePublisher_";
+	fpname += filename;
+	TString dcname = "checker_";
+	dcname += filename;
+	
+	if (maxLogging)
+	{
+		cout << "DEBUG: Using the following flags for FilePublisher: \""
+			<< fpparams.Data() << "\""<< endl;
+		cout << "DEBUG: Using the following flags for "
+			<< AliHLTMUONConstants::DataCheckerComponentId()
+			<< ": \"" << dcparams.Data() << "\""<< endl;
+	}
+	
+	AliHLTConfiguration(fpname.Data(), "FilePublisher", NULL, fpparams.Data());
+	AliHLTConfiguration checker(
+			dcname.Data(), AliHLTMUONConstants::DataCheckerComponentId(),
+			fpname.Data(), dcparams.Data()
+		);
+	
+	// Build and run the HLT tasks.
+	if (sys.BuildTaskList(dcname.Data()) != 0) return HLTSYSTEM_ERROR;
+	if (maxLogging) sys.PrintTaskList();
+	if (sys.Run() != 1) return HLTSYSTEM_ERROR;
+	
+	// Now clean up.
+	if (sys.CleanTaskList() != 0) return HLTSYSTEM_ERROR;
+
+	return EXIT_SUCCESS;
 }
 
 
@@ -1165,7 +1810,8 @@ int ReadFile(const char* filename, char*& buffer, unsigned long& bufferSize)
 void PrintUsage(bool asError = true)
 {
 	std::ostream& os = asError ? cerr : cout;
-	os << "Usage: dHLTdumpraw [-help|-h] [-continue|-c] [-type|-t <typename>] <filename> [<filename> ...]" << endl;
+	os << "Usage: dHLTdumpraw [-help|-h] [-continue|-c] [-type|-t <typename>] [-check|-k]" << endl;
+	os << "         [-debug|-d] [-dataspec|-s <number>] <filename> [<filename> ...]" << endl;
 	os << "Where <filename> is the name of a file containing a raw data block." << endl;
 	os << "Options:" << endl;
 	os << " -help | -h" << endl;
@@ -1177,6 +1823,8 @@ void PrintUsage(bool asError = true)
 	os << "       Forces the contents of the subsequent files specified on the command" << endl;
 	os << "       line to be interpreted as a specific type of data block." << endl;
 	os << "       Where <typename> can be one of:" << endl;
+	os << "         rawtracker - raw DDL stream from tracker chambers." << endl;
+	os << "         rawtrigger - raw DDL stream from trigger chambers." << endl;
 	os << "         trigrecs - trigger records data." << endl;
 	os << "         trigrecsdebug - debugging information about trigger records." << endl;
 	os << "         trigchannels - channel debugging in." << endl;
@@ -1189,6 +1837,16 @@ void PrintUsage(bool asError = true)
 	os << "         pairsdecision - trigger decisions for track pairs." << endl;
 	os << "         autodetect - the type of the data block will be automatically" << endl;
 	os << "                      detected." << endl;
+	os << " -check | -k" << endl;
+	os << "       If specified then data integrity checks are performed on the raw data." << endl;
+	os << "       Warnings and errors are printed as problems are found with the data, but" << endl;
+	os << "       the data will still be converted into ROOT objects as best as possible." << endl;
+	os << " -debug | -d" << endl;
+	os << "       If specified, then the all debug messages are printed by the AliHLTSystem." << endl;
+	os << "       This is only useful if experiencing problems with the -check|-k option." << endl;
+	os << " -dataspec | -s <number>" << endl;
+	os << "       When specified, then <number> is used as the data specification for the" << endl;
+	os << "       data file that follows. This option is only useful with the -check|-k option." << endl;
 }
 
 /**
@@ -1196,10 +1854,15 @@ void PrintUsage(bool asError = true)
  * @param argc  Number of arguments as given in main().
  * @param argv  Array of arguments as given in main().
  * @param filenames  Pointer to buffer storing file name strings.
- * @param numOfFiles  Receives the number of file name strings that were found
- *                    and added to 'filenames'.
  * @param filetypes  Array that receives the type of the data block expected, i.e.
  *                   the value of the -type flag for the corresponding file.
+ * @param dataspecs  Data specifications to use for the data files.
+ * @param numOfFiles  Receives the number of file name strings that were found
+ *                    and added to 'filenames'.
+ * @param continueParse  Set to true if the user requested to continue to parse
+ *                      after errors.
+ * @param checkData  Set to true if data integrity checking was requested.
+ * @param maxLogging  Set to true if maximal logging was requested.
  * @return  A status flag suitable for returning from main(), containing either
  *          EXIT_SUCCESS or CMDLINE_ERROR.
  */
@@ -1207,14 +1870,20 @@ int ParseCommandLine(
 		int argc,
 		const char** argv,
 		const char** filenames,
+		int* filetypes,
+		const char** dataspecs,
 		int& numOfFiles,
 		bool& continueParse,
-		AliHLTMUONDataBlockType* filetypes
+		bool& checkData,
+		bool& maxLogging
 	)
 {
 	numOfFiles = 0;
 	continueParse = false;
-	AliHLTMUONDataBlockType currentType = kUnknownDataBlock;
+	maxLogging = false;
+	checkData = false;
+	int currentType = kUnknownDataBlock;
+	const char* currentDataSpec = NULL;
 
 	// Parse the command line.
 	for (int i = 1; i < argc; i++)
@@ -1232,7 +1901,7 @@ int ParseCommandLine(
 		{
 			if (++i >= argc)
 			{
-				cerr << "ERROR: Missing a type specifier." << endl;
+				cerr << "ERROR: Missing a type specifier." << endl << endl;
 				PrintUsage();
 				return CMDLINE_ERROR;
 			}
@@ -1240,6 +1909,14 @@ int ParseCommandLine(
 			if (strcmp(argv[i], "autodetect") == 0)
 			{
 				currentType = kUnknownDataBlock;
+			}
+			else if (strcmp(argv[i], "rawtracker") == 0)
+			{
+				currentType = kTrackerDDLRawData;
+			}
+			else if (strcmp(argv[i], "rawtrigger") == 0)
+			{
+				currentType = kTriggerDDLRawData;
 			}
 			else
 			{
@@ -1254,11 +1931,46 @@ int ParseCommandLine(
 				}
 			}
 		}
+		else if (strcmp(argv[i], "-debug") == 0 or strcmp(argv[i], "-d") == 0)
+		{
+			maxLogging = true;
+		}
+		else if (strcmp(argv[i], "-check") == 0 or strcmp(argv[i], "-k") == 0)
+		{
+			checkData = true;
+		}
+		else if (strcmp(argv[i], "-dataspec") == 0 or strcmp(argv[i], "-s") == 0)
+		{
+			if (++i >= argc)
+			{
+				cerr << "ERROR: Missing a specification number." << endl << endl;
+				PrintUsage();
+				return CMDLINE_ERROR;
+			}
+			
+			char* errPos = NULL;
+			unsigned long num = strtoul(argv[i], &errPos, 0);
+			if (errPos == NULL or *errPos != '\0')
+			{
+				cerr << "ERROR: Cannot convert '%s' to a data specification number."
+					<< argv[i] << endl;
+				return CMDLINE_ERROR;
+			}
+			if (not AliHLTMUONUtils::IsSpecValid(num))
+			{
+				cerr << "ERROR: The data specification number is not a valid format."
+					<< endl;
+				return CMDLINE_ERROR;
+			}
+			currentDataSpec = argv[i];
+		}
 		else
 		{
 			assert( numOfFiles < argc );
 			filenames[numOfFiles] = argv[i];
 			filetypes[numOfFiles] = currentType;
+			dataspecs[numOfFiles] = currentDataSpec;
+			currentDataSpec = NULL;  // Reset because '-dataspec' option is only valid for one file.
 			numOfFiles++;
 		}
 	}
@@ -1304,17 +2016,30 @@ int main(int argc, const char** argv)
 
 	int numOfFiles = 0;
 	bool continueParse = false;
+	bool checkData = false;
+	bool maxLogging = false;
 	int returnCode = EXIT_SUCCESS;
 	char* buffer = NULL;
+	const char** filename = NULL;
+	int* filetype = NULL;
+	const char** dataspec = NULL;
 
 	try
 	{
+		// Reduce logging now to get rid of informationals from AliHLTSystem constructor.
+		AliLog::SetGlobalLogLevel(AliLog::kWarning);
+		AliHLTSystem sys;
+	
 		// There will be at least 'argc' number of filenames.
 		typedef const char* AnsiString;
-		const char** filename = new AnsiString[argc];
-		AliHLTMUONDataBlockType* filetype = new AliHLTMUONDataBlockType[argc];
+		filename = new AnsiString[argc];
+		filetype = new int[argc];
+		dataspec = new AnsiString[argc];
 		
-		returnCode = ParseCommandLine(argc, argv, filename, numOfFiles, continueParse, filetype);
+		returnCode = ParseCommandLine(
+				argc, argv, filename, filetype, dataspec, numOfFiles,
+				continueParse, checkData, maxLogging
+			);
 
 		if (returnCode == EXIT_SUCCESS)
 		{
@@ -1325,7 +2050,8 @@ int main(int argc, const char** argv)
 				if (returnCode != EXIT_SUCCESS) break;
 				if (numOfFiles > 1)
 				{
-					cout << "########## Start of dump for file: " << filename[i] << " ##########" << endl;
+					cout << "########## Start of dump for file: "
+						<< filename[i] << " ##########" << endl;
 				}
 				int result = ParseBuffer(buffer, bufferSize, continueParse, filetype[i]);
 				if (buffer != NULL) delete [] buffer;
@@ -1334,21 +2060,38 @@ int main(int argc, const char** argv)
 					returnCode = result;
 					if (not continueParse) break;
 				}
+				if (checkData)
+				{
+					result = CheckDataIntegrity(
+							sys, filename[i], filetype[i],
+							dataspec[i], maxLogging
+						);
+					if (result != EXIT_SUCCESS)
+					{
+						returnCode = result;
+						if (not continueParse) break;
+					}
+				}
 				if (numOfFiles > 1)
 				{
-					cout << "##########   End of dump for file: " << filename[i] << " ##########" << endl;
+					cout << "##########   End of dump for file: " <<
+						filename[i] << " ##########" << endl;
 				}
 			}
 		}
 		
 		delete [] filename;
 		delete [] filetype;
+		delete [] dataspec;
 	}
 	catch (...)
 	{
 		cerr << "FATAL ERROR: An unknown exception occurred!" << endl << endl;
 		returnCode = FATAL_ERROR;
 		if (buffer != NULL) delete [] buffer;
+		if (filename != NULL) delete [] filename;
+		if (filetype != NULL) delete [] filetype;
+		if (dataspec != NULL) delete [] dataspec;
 	}
 	
 	return returnCode;

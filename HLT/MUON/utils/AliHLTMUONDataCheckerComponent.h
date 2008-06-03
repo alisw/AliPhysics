@@ -4,12 +4,12 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: $ */
+/* $Id: AliHLTMUONDataCheckerComponent.h 26179 2008-05-29 22:27:27Z aszostak $ */
 
 ///
 /// @file   AliHLTMUONDataCheckerComponent.h
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   2007-12-12
+/// @date   27 May 2008
 /// @brief  Declaration of a component to check and validate the integrity of dHLT data.
 ///
 
@@ -58,6 +58,11 @@ extern "C" struct AliHLTMUONRecHitStruct;
  *       Indicates if a warning message should be generated when this component
  *       receives an unknown data block type.
  *       (default behaviour is not to just log a debugging message)<br>
+ * \li -return_error <br>
+ *       Indicates if error codes should be returned from the DoEvent method which
+ *       would tell the framework that processing of the event failed. Otherwise
+ *       errors are just logged but the data is considered to be processed successfully.
+ *       (default behaviour is not to return errors)<br>
  *
  * @ingroup alihlt_dimuon_component
  */
@@ -290,6 +295,7 @@ private:
 	bool fFilterBadBlocks; ///< Flag indicating if we should pass through only bad blocks to output.
 	bool fNoGlobalChecks;  ///< Flag indicating if we should perform global data consistancy checks between all the data blocks.
 	bool fWarnForUnexpecedBlock; ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fReturnError; ///< Flag indicating if we should return error codes from DoEvent.
 
 	ClassDef(AliHLTMUONDataCheckerComponent, 0)  // dHLT raw internal data block checking component.
 };

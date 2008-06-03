@@ -428,6 +428,55 @@ AliHLTMUONDataBlockType AliHLTMUONUtils::ParseCommandLineTypeString(const char* 
 }
 
 
+const char* AliHLTMUONUtils::DataBlockTypeToString(AliHLTMUONDataBlockType type)
+{
+	/// Converts a type ID to a type string compatible with
+	/// HLT data types.
+	
+	static char str[kAliHLTComponentDataTypefIDsize+1];
+	AliHLTComponentDataType t;
+	switch (type)
+	{
+	case kTriggerRecordsDataBlock:
+		t = AliHLTMUONConstants::TriggerRecordsBlockDataType();
+		break;
+	case kTrigRecsDebugDataBlock:
+		t = AliHLTMUONConstants::TrigRecsDebugBlockDataType();
+		break;
+	case kTriggerChannelsDataBlock:
+		t = AliHLTMUONConstants::TriggerChannelBlockDataType();
+		break;
+	case kRecHitsDataBlock:
+		t = AliHLTMUONConstants::RecHitsBlockDataType();
+		break;
+	case kClustersDataBlock:
+		t = AliHLTMUONConstants::ClusterBlockDataType();
+		break;
+	case kChannelsDataBlock:
+		t = AliHLTMUONConstants::ChannelBlockDataType();
+		break;
+	case kMansoTracksDataBlock:
+		t = AliHLTMUONConstants::MansoTracksBlockDataType();
+		break;
+	case kMansoCandidatesDataBlock:
+		t = AliHLTMUONConstants::MansoCandidatesBlockDataType();
+		break;
+	case kSinglesDecisionDataBlock:
+		t = AliHLTMUONConstants::SinglesDecisionBlockDataType();
+		break;
+	case kPairsDecisionDataBlock:
+		t = AliHLTMUONConstants::PairsDecisionBlockDataType();
+		break;
+	default:
+		return "UNKNOWN";
+	}
+	memcpy(&str, &t.fID, kAliHLTComponentDataTypefIDsize);
+	// Must insert the NULL character to make this an ANSI C string.
+	str[kAliHLTComponentDataTypefIDsize] = '\0';
+	return &str[0];
+}
+
+
 const char* AliHLTMUONUtils::FailureReasonToString(WhyNotValid reason)
 {
 	/// This method converts the WhyNotValid enumeration to a string representation.

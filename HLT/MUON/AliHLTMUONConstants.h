@@ -177,9 +177,14 @@ public:
 		return fgkTriggerRecordsSourceId;
 	}
 	
-	static const char* MansoTracksSourceId()
+	static const char* TracksSourceId()
 	{
-		return fgkMansoTracksSourceId;
+		return fgkTracksSourceId;
+	}
+	
+	static const char* DigitPublisherId()
+	{
+		return fgkDigitPublisherId;
 	}
 	
 	static const char* TriggerReconstructorId()
@@ -215,6 +220,16 @@ public:
 	static const char* DataCheckerComponentId()
 	{
 		return fgkDataCheckerComponentId;
+	}
+	
+	static const char* HitReconstructorCDBPath()
+	{
+		return fgkHitReconstructorCDBPath;
+	}
+	
+	static const char* MansoTrackerFSMCDBPath()
+	{
+		return fgkMansoTrackerFSMCDBPath;
 	}
 	
 	static const char* DecisionComponentCDBPath()
@@ -259,7 +274,8 @@ private:
 	// Component ID names:
 	static const char* fgkRecHitsSourceId; // Name of source component for reconstructed hits for debugging.
 	static const char* fgkTriggerRecordsSourceId; // Name of source component for trigger records for debugging.
-	static const char* fgkMansoTracksSourceId; // Name of source component for Manso tracks for debugging.
+	static const char* fgkTracksSourceId; // Name of source component for tracks for debugging.
+	static const char* fgkDigitPublisherId; // Component name for publishing DDL streams from digits.
 	static const char* fgkTriggerReconstructorId; // Trigger record reconstructor component name.
 	static const char* fgkHitReconstructorId; // Centre of gravity cluster finder component name.
 	static const char* fgkMansoTrackerFSMId; // Manso tracker FSM implementation component name.
@@ -269,6 +285,8 @@ private:
 	static const char* fgkDataCheckerComponentId; // Name of data checking component for debugging.
 	
 	// CDB path entries to configuration information.
+	static const char* fgkHitReconstructorCDBPath; // Path to CDB entry for the hit reconstruction component.
+	static const char* fgkMansoTrackerFSMCDBPath; // Path to CDB entry for the Manso FSM tracker component.
 	static const char* fgkDecisionComponentCDBPath; // Path to CDB entry for trigger decision component.
 };
 

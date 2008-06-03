@@ -41,6 +41,7 @@
 #pragma link C++ class AliHLTMUONProcessor+;
 #pragma link C++ class AliHLTMUONTriggerRecordsSource+;
 #pragma link C++ class AliHLTMUONRecHitsSource+;
+#pragma link C++ class AliHLTMUONDigitPublisherComponent+;
 #pragma link C++ class AliHLTMUONTriggerReconstructorComponent+;
 #pragma link C++ class AliHLTMUONHitReconstructorComponent+;
 #pragma link C++ class AliHLTMUONMansoTrackerFSMComponent+;

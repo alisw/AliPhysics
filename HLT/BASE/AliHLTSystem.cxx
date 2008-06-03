@@ -53,7 +53,7 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   "libAliHLTTPC.so", 
   //  "libAliHLTSample.so",
   //"libAliHLTPHOS.so",
-  //"libAliHLTMUON.so",
+  "libAliHLTMUON.so",
   "libAliHLTTRD.so",
   "libAliHLTTrigger.so",
   NULL

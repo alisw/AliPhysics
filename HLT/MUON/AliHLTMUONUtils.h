@@ -304,13 +304,19 @@ public:
 	}
 	
 	/**
-	* Parses the string containing the type name of a dHLT data block and
-	* returns the corresponding AliHLTMUONDataBlockType value.
-	* \param  type  The string containing the type name.
-	* \returns  The data block type or kUnknownDataBlock if the type name
-	*      is invalid.
-	*/
+	 * Parses the string containing the type name of a dHLT data block and
+	 * returns the corresponding AliHLTMUONDataBlockType value.
+	 * \param  type  The string containing the type name.
+	 * \returns  The data block type or kUnknownDataBlock if the type name
+	 *      is invalid.
+	 */
 	static AliHLTMUONDataBlockType ParseCommandLineTypeString(const char* type);
+	
+	/**
+	 * Converts a type ID to a type string to be used for the dHLT FilePublisher
+	 * component configuration parameters for example.
+	 */
+	static const char* DataBlockTypeToString(AliHLTMUONDataBlockType type);
 	
 	/**
 	 * These codes indicate the reason why a data block failed its

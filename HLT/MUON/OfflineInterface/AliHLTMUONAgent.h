@@ -8,7 +8,7 @@
 ///
 /// @file   AliHLTMUONAgent.h
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   
+/// @date   28 May 2007
 /// @brief  The HLT module agent for libAliHLTMUON.so which interfaces HLT
 ///         components with offline.
 ///
@@ -67,7 +67,7 @@ private:
 	// The following instance is used for automatic agent and component registration.
 	static AliHLTMUONAgent fgkInstance;  // The single global instance of the dimuon HLT agent.
 
-	ClassDef(AliHLTMUONAgent, 1); // Dimuon HLT module agent which handles processing configurations.
+	ClassDef(AliHLTMUONAgent, 0); // Dimuon HLT module agent which handles processing configurations.
 };
 
 #endif // ALIHLTMUONAGENT_H

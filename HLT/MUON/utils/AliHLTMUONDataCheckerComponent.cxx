@@ -14,12 +14,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+/* $Id: AliHLTMUONDataCheckerComponent.cxx 26179 2008-05-29 22:27:27Z aszostak $ */
 
 ///
 /// @file   AliHLTMUONDataCheckerComponent.cxx
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   2007-12-12
+/// @date   27 May 2008
 /// @brief  Implementation of the dHLT data integrity checker component.
 ///
 /// This component is used to check the data integrity of dHLT raw internal data
@@ -95,7 +95,8 @@ AliHLTMUONDataCheckerComponent::AliHLTMUONDataCheckerComponent() :
 	fDontForward(false),
 	fFilterBadBlocks(false),
 	fNoGlobalChecks(false),
-	fWarnForUnexpecedBlock(false)
+	fWarnForUnexpecedBlock(false),
+	fReturnError(false)
 {
 	/// Default constructor.
 }
@@ -170,6 +171,7 @@ int AliHLTMUONDataCheckerComponent::DoInit(int argc, const char** argv)
 	fFilterBadBlocks = false;
 	fNoGlobalChecks = false;
 	fWarnForUnexpecedBlock = false;
+	fReturnError = false;
 
 	for (int i = 0; i < argc; i++)
 	{
@@ -197,17 +199,22 @@ int AliHLTMUONDataCheckerComponent::DoInit(int argc, const char** argv)
 			HLTInfo("Passing only bad blocks to output.");
 			continue;
 		}
-		if (strcmp(argv[i], "--no_global_check") == 0)
+		if (strcmp(argv[i], "-no_global_check") == 0)
 		{
 			fNoGlobalChecks = true;
 			HLTInfo("Only per block data consistancy checks will be applied,"
-				"but no global checks will be made."
+				" but no global checks will be made."
 			);
 			continue;
 		}
 		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
 		{
 			fWarnForUnexpecedBlock = true;
+			continue;
+		}
+		if (strcmp(argv[i], "-return_error") == 0)
+		{
+			fReturnError = true;
 			continue;
 		}
 		
@@ -246,7 +253,8 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 	);
 	
 	// Allocate an array of flags indicating if the data block is OK or not,
-	// also arrays to store specific 
+	// also arrays to store specific.
+	bool dataProblems = false;
 	bool* blockOk = NULL;
 	typedef const AliHLTComponentBlockData* PAliHLTComponentBlockData;
 	PAliHLTComponentBlockData* trigRecBlocks = NULL;
@@ -462,6 +470,12 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 				outputBlocks.push_back(blocks[n]);
 			}
 		}
+		
+		// Set dataProblems flag is there was at least one block with problems.
+		for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
+		{
+			if (not blockOk[n]) dataProblems = true;
+		}
 	}
 	finally
 	(
@@ -481,6 +495,14 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 	// Finally we set the total size of output memory we consumed, which is
 	// zero since we just copied the input descriptors to output if anything.
 	size = 0;
+	
+	if (fReturnError)
+	{
+		// If we were requested to return errors if there were integrity
+		// problems then check if any data blocks had problems and return
+		// an error code.
+		if (dataProblems) return -EFAULT;
+	}
 	return 0;
 }
 
@@ -1270,6 +1292,78 @@ bool AliHLTMUONDataCheckerComponent::CheckRawDataBlock(
 	
 	const AliRawDataHeader* header =
 		reinterpret_cast<const AliRawDataHeader*>(block.fPtr);
+	
+	if (header->GetVersion() != 2)
+	{
+		HLTError("Problem found with data block %d, fDataType = '%s',"
+			 " fPtr = %p and fSize = %u bytes."
+			 " Assuming this is a DDL raw data block."
+			 " Problem: The common DDL data header indicates an"
+			 " incorrect version number. Expected 2 but got %d.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			int( header->GetVersion() )
+		);
+		result = false;
+	}
+	
+	if (header->fSize != 0xFFFFFFFF and header->fSize != block.fSize)
+	{
+		HLTError("Problem found with data block %d, fDataType = '%s',"
+			 " fPtr = %p and fSize = %u bytes."
+			 " Assuming this is a DDL raw data block."
+			 " Problem: The common DDL data header indicates an"
+			 " incorrect DDL buffer size. Expected %d bytes but"
+			 " size reported in header is %d bytes.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			block.fSize,
+			header->fSize
+		);
+		result = false;
+	}
+	
+	if (header->fSize != 0xFFFFFFFF and header->fSize != block.fSize)
+	{
+		HLTError("Problem found with data block %d, fDataType = '%s',"
+			 " fPtr = %p and fSize = %u bytes."
+			 " Assuming this is a DDL raw data block."
+			 " Problem: The common DDL data header indicates an"
+			 " incorrect DDL buffer size. Expected %d bytes but"
+			 " size reported in header is %d bytes.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize,
+			block.fSize,
+			header->fSize
+		);
+		result = false;
+	}
+	
+	// Check that the bits that should be zero in the CDH are infact zero.
+	if ((header->fWord2 & 0x00C03000) != 0 or
+	    (header->fEventID2 & 0xFF000000) != 0 or
+	    (header->fStatusMiniEventID & 0xF0000000) != 0 or
+	    (header->fROILowTriggerClassHigh & 0x0FFC0000) != 0
+	   )
+	{
+		HLTError("Problem found with data block %d, fDataType = '%s',"
+			 " fPtr = %p and fSize = %u bytes."
+			 " Assuming this is a DDL raw data block."
+			 " Problem: The common DDL data header has non-zero"
+			 " bits that are reserved and must be set to zero.",
+			blockNumber,
+			DataType2Text(block.fDataType).c_str(),
+			block.fPtr,
+			block.fSize
+		);
+		result = false;
+	}
 	
 	AliHLTUInt32_t payloadSize = block.fSize - sizeof(AliRawDataHeader);
 	const AliHLTUInt8_t* payload =

@@ -52,55 +52,6 @@ using std::endl;
 
 
 /**
- * Converts a type ID to a type string to be used for the dHLT FilePublisher
- * component configuration parameters.
- */
-const char* TypeToString(AliHLTMUONDataBlockType type)
-{
-	static char str[kAliHLTComponentDataTypefIDsize+1];
-	AliHLTComponentDataType t;
-	switch (type)
-	{
-	case kTriggerRecordsDataBlock:
-		t = AliHLTMUONConstants::TriggerRecordsBlockDataType();
-		break;
-	case kTrigRecsDebugDataBlock:
-		t = AliHLTMUONConstants::TrigRecsDebugBlockDataType();
-		break;
-	case kTriggerChannelsDataBlock:
-		t = AliHLTMUONConstants::TriggerChannelBlockDataType();
-		break;
-	case kRecHitsDataBlock:
-		t = AliHLTMUONConstants::RecHitsBlockDataType();
-		break;
-	case kClustersDataBlock:
-		t = AliHLTMUONConstants::ClusterBlockDataType();
-		break;
-	case kChannelsDataBlock:
-		t = AliHLTMUONConstants::ChannelBlockDataType();
-		break;
-	case kMansoTracksDataBlock:
-		t = AliHLTMUONConstants::MansoTracksBlockDataType();
-		break;
-	case kMansoCandidatesDataBlock:
-		t = AliHLTMUONConstants::MansoCandidatesBlockDataType();
-		break;
-	case kSinglesDecisionDataBlock:
-		t = AliHLTMUONConstants::SinglesDecisionBlockDataType();
-		break;
-	case kPairsDecisionDataBlock:
-		t = AliHLTMUONConstants::PairsDecisionBlockDataType();
-		break;
-	default:
-		return "UNKNOWN";
-	}
-	memcpy(&str, &t.fID, kAliHLTComponentDataTypefIDsize);
-	// Must insert the NULL character to make this an ANSI C string.
-	str[kAliHLTComponentDataTypefIDsize] = '\0';
-	return &str[0];
-}
-
-/**
  * Uses AliHLTSystem and the AliHLTMUONRootifierComponent to convert the files
  * into ROOT object format.
  * @param filenames  Array of file name strings.
@@ -166,7 +117,7 @@ int RootifyFiles(
 			name += filenames[i];
 			sources += name + " ";
 			TString params = "-datatype '";
-			params += TypeToString(filetypes[i]);
+			params += AliHLTMUONUtils::DataBlockTypeToString(filetypes[i]);
 			params += "' 'MUON' -dataspec 0x0 -datafile ";
 			params += filenames[i];
 			filePubs[i] = new AliHLTConfiguration(
@@ -195,12 +146,15 @@ int RootifyFiles(
 	// Setup the component for data integrity checking.
 	if (checkData)
 	{
-		AliHLTConfiguration checker("checker", "MUONDataChecker", sources, "-warn_on_unexpected_block -ignorespec");
+		AliHLTConfiguration checker(
+				"checker", AliHLTMUONConstants::DataCheckerComponentId(),
+				sources, "-warn_on_unexpected_block -ignorespec"
+			);
 		sources = "checker";
 	}
 	
 	// Setup the component which converts the raw internal dHLT data to ROOT objects.
-	AliHLTConfiguration convert("convert", "MUONRootifier", sources, "");
+	AliHLTConfiguration convert("convert", AliHLTMUONConstants::RootifierComponentId(), sources, "");
 	
 	// Setup the ROOT file writer.
 	TString params = "-concatenate-events -datafile ";
@@ -361,7 +315,7 @@ int ParseCommandLine(
 		{
 			if (++i >= argc)
 			{
-				cerr << "ERROR: Missing an output filename." << endl;
+				cerr << "ERROR: Missing an output filename." << endl << endl;
 				PrintUsage();
 				return CMDLINE_ERROR;
 			}
@@ -371,7 +325,7 @@ int ParseCommandLine(
 		{
 			if (++i >= argc)
 			{
-				cerr << "ERROR: Missing a type specifier." << endl;
+				cerr << "ERROR: Missing a type specifier." << endl << endl;
 				PrintUsage();
 				return CMDLINE_ERROR;
 			}

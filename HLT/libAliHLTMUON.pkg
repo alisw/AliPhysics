@@ -6,6 +6,7 @@
 CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OfflineInterface/AliHLTMUONTriggerRecordsSource.h \
 		OfflineInterface/AliHLTMUONRecHitsSource.h \
+		OfflineInterface/AliHLTMUONDigitPublisherComponent.h \
 		OfflineInterface/AliHLTMUONRootifierComponent.h \
 		OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
