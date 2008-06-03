@@ -666,9 +666,9 @@ AliTRDarrayI* AliTRDCalibraVector::GetEntriesCH(Int_t det
 
     // if we are forced and AliTRDarrayI doesn't yes exist create it
     AliTRDarrayI *croc = new AliTRDarrayI();
-    Int_t chamber = GetChamber(det);
-    Int_t ngroup  = 0;
-    if(chamber == 2) ngroup = fDetCha2[0]*fNumberBinCharge;
+    Int_t stack  = GetStack(det);
+    Int_t ngroup = 0;
+    if(stack == 2) ngroup = fDetCha2[0]*fNumberBinCharge;
     else ngroup = fDetCha0[0]*fNumberBinCharge;
     // init
     croc->Expand(ngroup);
@@ -692,9 +692,9 @@ AliTRDarrayI* AliTRDCalibraVector::GetEntriesPRF(Int_t det
 
     // if we are forced and AliTRDarrayI doesn't yes exist create it
     AliTRDarrayI *croc = new AliTRDarrayI();
-    Int_t chamber = GetChamber(det);
-    Int_t ngroup  = 0;
-    if(chamber == 2) ngroup = fDetCha2[2]*fNumberBinPRF;
+    Int_t stack  = GetStack(det);
+    Int_t ngroup = 0;
+    if(stack == 2) ngroup = fDetCha2[2]*fNumberBinPRF;
     else ngroup = fDetCha0[2]*fNumberBinPRF;
     // init
     croc->Expand(ngroup);
@@ -719,9 +719,9 @@ AliTRDarrayI* AliTRDCalibraVector::GetEntriesPH(Int_t det
 
     // if we are forced and AliTRDarrayI doesn't yes exist create it
     AliTRDarrayI *croc = new AliTRDarrayI();
-    Int_t chamber = GetChamber(det);
-    Int_t ngroup  = 0;
-    if(chamber == 2) ngroup = fDetCha2[1]*fTimeMax;
+    Int_t stack  = GetStack(det);
+    Int_t ngroup = 0;
+    if(stack == 2) ngroup = fDetCha2[1]*fTimeMax;
     else ngroup = fDetCha0[1]*fTimeMax;
     // init
     croc->Expand(ngroup);
@@ -746,9 +746,9 @@ AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPH(Int_t det
 
     // if we are forced and AliTRDarrayF doesn't yes exist create it
     AliTRDarrayF *croc = new AliTRDarrayF();
-    Int_t chamber = GetChamber(det);
-    Int_t ngroup  = 0;
-    if(chamber == 2) ngroup = fDetCha2[1]*fTimeMax;
+    Int_t stack  = GetStack(det);
+    Int_t ngroup = 0;
+    if(stack == 2) ngroup = fDetCha2[1]*fTimeMax;
     else ngroup = fDetCha0[1]*fTimeMax;
     // init
     croc->Expand(ngroup);
@@ -772,9 +772,9 @@ AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPRF(Int_t det
 
     // if we are forced and AliTRDarrayF doesn't yes exist create it
     AliTRDarrayF *croc = new AliTRDarrayF();
-    Int_t chamber = GetChamber(det);
-    Int_t ngroup  = 0;
-    if(chamber == 2) ngroup = fDetCha2[2]*fNumberBinPRF;
+    Int_t stack  = GetStack(det);
+    Int_t ngroup = 0;
+    if(stack == 2) ngroup = fDetCha2[2]*fNumberBinPRF;
     else ngroup = fDetCha0[2]*fNumberBinPRF;
     // init
     croc->Expand(ngroup);
@@ -785,10 +785,10 @@ AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPRF(Int_t det
     return croc;
 }
 //_____________________________________________________________________________
-Int_t AliTRDCalibraVector::GetChamber(Int_t d) const
+Int_t AliTRDCalibraVector::GetStack(Int_t d) const
 {
   //
-  // Reconstruct the chamber number from the detector number
+  // Reconstruct the stack number from the detector number
   //
 
   return ((Int_t) (d % 30) / 6);

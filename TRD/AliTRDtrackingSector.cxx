@@ -46,7 +46,7 @@ AliTRDtrackingSector::AliTRDtrackingSector()
 		fChamber[ic] = 0x0;
 		fIndex[ic]   = -1;
 	}
-	for(int ip=0; ip<AliTRDgeometry::kNplan; ip++) fX0[ip] = 0.;
+	for(int il=0; il<AliTRDgeometry::kNlayer; il++) fX0[il] = 0.;
 }
 
 //_____________________________________________________________________________
@@ -63,7 +63,7 @@ AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry *geo, Int_t gs)
 		fChamber[ic] = 0x0;
 		fIndex[ic]   = -1;
 	}
-	for(int ip=0; ip<AliTRDgeometry::kNplan; ip++) fX0[ip] = 0.;
+	for(int il=0; il<AliTRDgeometry::kNlayer; il++) fX0[il] = 0.;
 }
 
 //_____________________________________________________________________________
@@ -97,20 +97,20 @@ void AliTRDtrackingSector::Init()
 	AliTRDtrackingChamber *tc = 0x0; int ic = 0; 
 	while((ic<kNChambersSector) && (tc = fChamber[ic++])) tc->Build(fGeom);
 		
-	Int_t np;
-	for(int ip=0; ip<AliTRDgeometry::kNplan; ip++){
-		fX0[ip] = 0.; np = 0;
-		for(int is=0; is<AliTRDgeometry::kNcham; is++){
-			Int_t idx = is*AliTRDgeometry::kNplan + ip;
+	Int_t nl;
+	for(int il=0; il<AliTRDgeometry::kNlayer; il++){
+		fX0[il] = 0.; nl = 0;
+		for(int is=0; is<AliTRDgeometry::kNstack; is++){
+			Int_t idx = is*AliTRDgeometry::kNlayer + il;
 			if(fIndex[idx]<0) continue;
 			tc = GetChamber(fIndex[idx]);
-			fX0[ip] += tc->GetX(); np++; 
+			fX0[il] += tc->GetX(); nl++; 
 		}
-		if(!np){
+		if(!nl){
 			//printf("Could not estimate radial position  of plane %d in sector %d.\n", ip, fSector);
 			continue;
 		}
-		fX0[ip] /= Float_t(np);
+		fX0[il] /= Float_t(nl);
 	}
 }
 //_____________________________________________________________________________
@@ -127,12 +127,12 @@ void AliTRDtrackingSector::Clear(const Option_t *opt)
 }
 
 //_____________________________________________________________________________
-AliTRDtrackingChamber* AliTRDtrackingSector::GetChamber(Int_t stack, Int_t plane, Bool_t build)
+AliTRDtrackingChamber* AliTRDtrackingSector::GetChamber(Int_t stack, Int_t layer, Bool_t build)
 {
 // Return chamber at position (stack, plane) in current 
 // sector or build a new one if it is not already created
 	
-	Int_t ch = stack*AliTRDgeometry::kNplan + plane;
+	Int_t ch = stack*AliTRDgeometry::kNlayer + layer;
 	if(fIndex[ch] >= 0) return fChamber[Int_t(fIndex[ch])];
 	else if(!build) return 0x0;
 	
@@ -144,7 +144,7 @@ AliTRDtrackingChamber* AliTRDtrackingSector::GetChamber(Int_t stack, Int_t plane
 	memmove(&fChamber[Int_t(fIndex[ch])+1], &fChamber[Int_t(fIndex[ch])], (kNChambersSector-fIndex[ch]-1)*sizeof(void*));
 	for(Int_t ic = ch+1; ic<kNChambersSector; ic++) fIndex[ic] += fIndex[ic] >= 0 ? 1 : 0;
 	
-	return fChamber[Int_t(fIndex[ch])] = new AliTRDtrackingChamber(AliTRDgeometry::GetDetector(plane, stack, fSector));
+	return fChamber[Int_t(fIndex[ch])] = new AliTRDtrackingChamber(AliTRDgeometry::GetDetector(layer, stack, fSector));
 }
 
 //_____________________________________________________________________________
@@ -153,14 +153,14 @@ AliTRDtrackingChamber** AliTRDtrackingSector::GetStack(Int_t stack)
 // Return chamber at position (stack, plane) in current 
 // sector or build a new one if it is not already created
 	
-	if(stack<0 || stack>=AliTRDgeometry::kNcham) return 0x0;
+	if(stack<0 || stack>=AliTRDgeometry::kNstack) return 0x0;
 	
 	Int_t ich, n = 0;
-	for(int ip=0; ip<AliTRDgeometry::kNplan; ip++){
-		ich = stack*AliTRDgeometry::kNplan + ip;
-		if(fIndex[ich] < 0) fStack[ip] = 0x0; 
+	for(int il=0; il<AliTRDgeometry::kNlayer; il++){
+		ich = stack*AliTRDgeometry::kNlayer + il;
+		if(fIndex[ich] < 0) fStack[il] = 0x0; 
 		else{
-			fStack[ip] = fChamber[Int_t(fIndex[ich])];
+			fStack[il] = fChamber[Int_t(fIndex[ich])];
 			n++;
 		}
 	}
@@ -175,9 +175,9 @@ void AliTRDtrackingSector::Print(Option_t *)
 // 
 
 	printf("\tSector %2d\n", fSector);
-	for(int ip=0; ip<6; ip++){
+	for(int il=0; il<6; il++){
 		for(int is =0; is<5; is++){
-			Int_t ch = is*AliTRDgeometry::kNplan + ip;
+			Int_t ch = is*AliTRDgeometry::kNlayer + il;
 			printf("%2d[%2d] ", fIndex[ch], fIndex[ch]>=0 ? fChamber[Int_t(fIndex[ch])]->GetNClusters() : 0);
 		}
 		printf("\n");

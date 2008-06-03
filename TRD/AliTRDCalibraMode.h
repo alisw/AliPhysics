@@ -27,8 +27,8 @@ class AliTRDCalibraMode : public TObject {
   AliTRDCalibraMode &operator=(const AliTRDCalibraMode &) { return *this; }
 
    
-  Bool_t   ModePadFragmentation(Int_t iPlane,Int_t iChamb, Int_t iSect, Int_t i);
-  void     ModePadCalibration(Int_t iChamb, Int_t i);
+  Bool_t   ModePadFragmentation(Int_t iLayer,Int_t iStack, Int_t iSector, Int_t i);
+  void     ModePadCalibration(Int_t iStack, Int_t i);
   void     ReconstructionRowPadGroup(Int_t idect, Int_t i);
   void     CalculXBins(Int_t idect, Int_t i);
   void     ResetMinMax(Int_t i);
@@ -84,8 +84,8 @@ class AliTRDCalibraMode : public TObject {
           Short_t  fDetChamb2[3];           // Number of Xbins for chamber 2
 
   // Some basic geometry function
-  virtual Int_t    GetPlane(Int_t d) const;
-  virtual Int_t    GetChamber(Int_t d) const;
+  virtual Int_t    GetLayer(Int_t d) const;
+  virtual Int_t    GetStack(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
  
   ClassDef(AliTRDCalibraMode,2)             // TRD Calibration class

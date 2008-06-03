@@ -62,16 +62,12 @@ class AliTRDSignalIndex : public TObject
 
           void     SetSM(Int_t ix)        { fSM      =    ix; }
           void     SetStack(Int_t ix)     { fStack   =    ix; }
-          void     SetChamber(Int_t ix)   { SetStack(ix);     }
           void     SetLayer(Int_t ix)     { fLayer   =    ix; }
-          void     SetPlane(Int_t ix)     { SetLayer(ix);     }
           void     SetDetNumber(Int_t ix) { fDet     =    ix; }
   
   virtual Int_t    GetDetNumber() const   { return fDet;      } // Get Det number
-  virtual Int_t    GetLayer() const       { return fLayer;    } // Layer = Plane = position of the chamber in TRD
-  virtual Int_t    GetPlane() const       { return fLayer;    } // Layer = Plane = position of the chamber in TRD
-  virtual Int_t    GetStack() const       { return fStack;    } // Stack = Chameber = position of the chamber in TRD
-  virtual Int_t    GetChamber() const     { return fStack;    } // Stack = Chameber = position of the chamber in TRD
+  virtual Int_t    GetLayer() const       { return fLayer;    } // Layer position of the chamber in TRD
+  virtual Int_t    GetStack() const       { return fStack;    } // Stack position of the chamber in TRD
   virtual Int_t    GetSM() const          { return fSM;       } // Super module of the TRD
           TArrayI *GetArray() const       { return fIndex;    } // Get the tarrayi pointer for god knows what reason
 
@@ -84,8 +80,8 @@ class AliTRDSignalIndex : public TObject
  private:
 
   Int_t     fDet;                //  Detector number
-  Int_t     fLayer;              //  Aka plane - position in the full TRD
-  Int_t     fStack;              //  Aka chamber - position in the full TRD
+  Int_t     fLayer;              //  Layer position in the full TRD
+  Int_t     fStack;              //  Stack position in the full TRD
   Int_t     fSM;                 //  Super module - position in the full TRD
 
   TArrayI  *fIndex;              //! Monitor active pads and tbins

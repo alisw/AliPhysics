@@ -922,7 +922,7 @@ void AliTRDcalibDB::SamplePRF()
 
   const Int_t kPRFbin = 61;
 
-  Float_t prf[kNplan][kPRFbin] = { 
+  Float_t prf[kNlayer][kPRFbin] = { 
                    {2.9037e-02, 3.3608e-02, 3.9020e-02, 4.5292e-02,
                     5.2694e-02, 6.1362e-02, 7.1461e-02, 8.3362e-02,
                     9.7063e-02, 1.1307e-01, 1.3140e-01, 1.5235e-01,
@@ -1034,13 +1034,13 @@ void AliTRDcalibDB::SamplePRF()
   fPRFpad = ((Int_t) (1.0 / fPRFwid));
 
   if (fPRFsmp) delete [] fPRFsmp;
-  fPRFsmp = new Float_t[kNplan*fPRFbin];
+  fPRFsmp = new Float_t[kNlayer*fPRFbin];
 
   Int_t   ipos1;
   Int_t   ipos2;
   Float_t diff;
 
-  for (Int_t iPla = 0; iPla < kNplan; iPla++) {
+  for (Int_t iLayer = 0; iLayer < kNlayer; iLayer++) {
 
     for (Int_t iBin = 0; iBin < fPRFbin; iBin++) {
 
@@ -1051,18 +1051,18 @@ void AliTRDcalibDB::SamplePRF()
         diff = bin - pad[ipos2++];
       } while ((diff > 0) && (ipos2 < kPRFbin));
       if      (ipos2 == kPRFbin) {
-        fPRFsmp[iPla*fPRFbin+iBin] = prf[iPla][ipos2-1];
+        fPRFsmp[iLayer*fPRFbin+iBin] = prf[iLayer][ipos2-1];
       }
       else if (ipos2 == 1) {
-        fPRFsmp[iPla*fPRFbin+iBin] = prf[iPla][ipos2-1];
+        fPRFsmp[iLayer*fPRFbin+iBin] = prf[iLayer][ipos2-1];
       }
       else {
         ipos2--;
         if (ipos2 >= kPRFbin) ipos2 = kPRFbin - 1;
         ipos1 = ipos2 - 1;
-        fPRFsmp[iPla*fPRFbin+iBin] = prf[iPla][ipos2] 
-                                   + diff * (prf[iPla][ipos2] - prf[iPla][ipos1]) 
-                                          / sPRFwid;
+        fPRFsmp[iLayer*fPRFbin+iBin] = prf[iLayer][ipos2] 
+                                     + diff * (prf[iLayer][ipos2] - prf[iLayer][ipos1]) 
+                                     / sPRFwid;
       }
 
     }
@@ -1072,7 +1072,7 @@ void AliTRDcalibDB::SamplePRF()
 
 //_____________________________________________________________________________
 Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
-                                , Int_t plane, Double_t *pad) const
+                                , Int_t layer, Double_t *pad) const
 {
   //
   // Applies the pad response
@@ -1081,7 +1081,7 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
   //
 
   Int_t iBin  = ((Int_t) (( - dist - fPRFlo) / fPRFwid));
-  Int_t iOff  = plane * fPRFbin;
+  Int_t iOff  = layer * fPRFbin;
 
   Int_t iBin0 = iBin - fPRFpad + iOff;
   Int_t iBin1 = iBin           + iOff;
@@ -1090,13 +1090,13 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
   pad[0] = 0.0;
   pad[1] = 0.0;
   pad[2] = 0.0;
-  if ((iBin1 >= 0) && (iBin1 < (fPRFbin*kNplan))) {
+  if ((iBin1 >= 0) && (iBin1 < (fPRFbin*kNlayer))) {
 
     if (iBin0 >= 0) {
       pad[0] = signal * fPRFsmp[iBin0];
     }
     pad[1] = signal * fPRFsmp[iBin1];
-    if (iBin2 < (fPRFbin*kNplan)) {
+    if (iBin2 < (fPRFbin*kNlayer)) {
       pad[2] = signal * fPRFsmp[iBin2];
     }
 

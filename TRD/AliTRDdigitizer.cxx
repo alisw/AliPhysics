@@ -969,7 +969,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
   Float_t elAttachProp = simParam->GetElAttachProp() / 100.0; 
 
   AliTRDpadPlane *padPlane = fGeo->GetPadPlane(det);
-  Int_t   plane   = fGeo->GetPlane(det);
+  Int_t   layer   = fGeo->GetLayer(det);
   Float_t row0    = padPlane->GetRow0ROC();
   Int_t   nRowMax = padPlane->GetNrows();
   Int_t   nColMax = padPlane->GetNcols();
@@ -1149,7 +1149,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
                       / padPlane->GetColSize(colE);
         // This is a fixed parametrization, i.e. not dependent on
         // calibration values !
-        if (!(calibration->PadResponse(signal,dist,plane,padSignal))) continue;
+        if (!(calibration->PadResponse(signal,dist,layer,padSignal))) continue;
       }
       else {
         padSignal[0] = 0.0;

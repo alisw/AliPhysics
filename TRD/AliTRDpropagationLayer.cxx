@@ -226,10 +226,10 @@ void AliTRDpropagationLayer::SetZ(Double_t *center, Double_t *w, Double_t *wsens
   // Set centers and the width of sectors
   //
 
-  for (Int_t icham = 0; icham < AliTRDgeometry::kNcham; icham++) {
-    fZc[icham]            = center[icham];  
-    fZmax[icham]          = w[icham];
-    fZmaxSensitive[icham] = wsensitive[icham];
+  for (Int_t istack = 0; istack < AliTRDgeometry::kNstack; istack++) {
+    fZc[istack]            = center[istack];  
+    fZmax[istack]          = w[istack];
+    fZmaxSensitive[istack] = wsensitive[istack];
   }  
 
 }
@@ -243,9 +243,9 @@ void AliTRDpropagationLayer::SetHoles(Bool_t *holes)
 
   fHole = kFALSE;
 
-  for (Int_t icham = 0; icham < AliTRDgeometry::kNcham; icham++) {
-    fIsHole[icham] = holes[icham]; 
-    if (holes[icham]) {
+  for (Int_t istack = 0; istack < AliTRDgeometry::kNstack; istack++) {
+    fIsHole[istack] = holes[istack]; 
+    if (holes[istack]) {
       fHole = kTRUE;
     }
   }  

@@ -129,7 +129,7 @@ class AliTRDCalibraVector : public TObject {
 	  AliTRDarrayI  *GetEntriesCH(Int_t det, TObjArray *array, Bool_t force);
 
   // Some basic geometry function
-          virtual Int_t    GetChamber(Int_t d) const;
+          virtual Int_t    GetStack(Int_t d) const;
   
   ClassDef(AliTRDCalibraVector,1)                   // TRD Calibration class
 

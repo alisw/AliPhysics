@@ -61,11 +61,11 @@ AliTRDmodule::AliTRDmodule()
   gAlice->Field(x,b);  // b[] is in kilo Gauss
   fField = b[2] * 0.1; // Tesla
 
-  for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+  for (Int_t iLayer = 0; iLayer < AliTRDgeometry::Nlayer(); iLayer++) {
     for (Int_t i = 0; i < kNsubZchan; i++) {
-      fZnchan[iPlan][i] = 0;
+      fZnchan[iLayer][i] = 0;
       for (Int_t j = 0; j < kNmaxZchan; j++) {
-        fZtrkid[iPlan][j][i] = -1;
+        fZtrkid[iLayer][j][i] = -1;
       }
     }
   }
@@ -88,11 +88,11 @@ AliTRDmodule::AliTRDmodule(const AliTRDmodule &m)
   // AliTRDmodule copy constructor
   //
 
-  for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+  for (Int_t iLayer = 0; iLayer < AliTRDgeometry::Nlayer(); iLayer++) {
     for (Int_t i = 0; i < kNsubZchan; i++) {
-      ((AliTRDmodule &) m).fZnchan[iPlan][i] = 0;
+      ((AliTRDmodule &) m).fZnchan[iLayer][i] = 0;
       for (Int_t j = 0; j < kNmaxZchan; j++) {
-        ((AliTRDmodule &) m).fZtrkid[iPlan][j][i] = -1;
+        ((AliTRDmodule &) m).fZtrkid[iLayer][j][i] = -1;
       }
     }
   }
@@ -136,11 +136,11 @@ void AliTRDmodule::Copy(TObject &m) const
   ((AliTRDmodule &) m).fLTUtrk     = NULL;
   ((AliTRDmodule &) m).fGTUtrk     = NULL;
 
-  for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+  for (Int_t iLayer = 0; iLayer < AliTRDgeometry::Nlayer(); iLayer++) {
     for (Int_t i = 0; i < kNsubZchan; i++) {
-      ((AliTRDmodule &) m).fZnchan[iPlan][i] = 0;
+      ((AliTRDmodule &) m).fZnchan[iLayer][i] = 0;
       for (Int_t j = 0; j < kNmaxZchan; j++) {
-        ((AliTRDmodule &) m).fZtrkid[iPlan][j][i] = -1;
+        ((AliTRDmodule &) m).fZtrkid[iLayer][j][i] = -1;
       }
     }
   }
@@ -356,11 +356,11 @@ void AliTRDmodule::InitZLUT()
   // Initialize the pad row sorting look-up-table
   //
 
-  for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+  for (Int_t iLayer = 0; iLayer < AliTRDgeometry::Nlayer(); iLayer++) {
     for (Int_t i = 0; i < kNsubZchan; i++) {
-      fZnchan[iPlan][i] = 0;
+      fZnchan[iLayer][i] = 0;
       for (Int_t j = 0; j < kNmaxZchan; j++) {
-        fZtrkid[iPlan][j][i] = -1;
+        fZtrkid[iLayer][j][i] = -1;
       }
     }
   }

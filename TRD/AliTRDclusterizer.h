@@ -80,10 +80,10 @@ class AliTRDclusterizer : public TNamed {
 		                 , Float_t ADCthreshold
 		                 , AliTRDCalROC *calGainFactorROC
 		                 , Float_t calGainFactorDetValue);
-  virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
+  virtual Double_t Unfold(Double_t eps, Int_t layer, Double_t *padSignal);
           Double_t GetCOG(Double_t signal[5]) const; 
           void     FillLUT();
-          Double_t LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
+          Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
 
   virtual void     ResetHelperIndexes(AliTRDSignalIndex *indexesIn);
 

@@ -25,10 +25,10 @@ class AliTRDcalibDB : public TObject {
 
  public:
 
-  enum { kNplan =   6
-       , kNcham =   5
-       , kNsect =  18
-       , kNdet  = 540 };
+  enum { kNlayer  =   6
+       , kNstack  =   5
+       , kNsector =  18
+       , kNdet    = 540 };
   
   static AliTRDcalibDB               *Instance();
   static void                         Terminate();
@@ -80,7 +80,7 @@ class AliTRDcalibDB : public TObject {
   // Related functions, these depend on calibration data
   static Float_t                      GetOmegaTau(Float_t vdrift, Float_t bz);
          Int_t                        PadResponse(Double_t signal, Double_t dist
-                                                , Int_t plane, Double_t *pad) const;
+                                                , Int_t layer, Double_t *pad) const;
   
  protected:
 

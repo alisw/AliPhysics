@@ -138,8 +138,6 @@ AliTRDclusterizer::~AliTRDclusterizer()
   // AliTRDclusterizer destructor
   //
 
-  printf("----> AliTRDclusterizer::dtor\n");
-
   if (fRecPoints) 
     {
       fRecPoints->Delete();
@@ -189,6 +187,7 @@ AliTRDclusterizer &AliTRDclusterizer::operator=(const AliTRDclusterizer &c)
     {
       ((AliTRDclusterizer &) c).Copy(*this);
     }
+
   return *this;
 
 }
@@ -658,13 +657,13 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   Double_t padSignal[kNsig];   
   Double_t clusterSignal[kNclus];
 
-  Int_t icham = indexesIn->GetChamber();
-  Int_t iplan = indexesIn->GetPlane();
-  Int_t isect = indexesIn->GetSM();
+  Int_t istack  = indexesIn->GetStack();
+  Int_t ilayer  = indexesIn->GetLayer();
+  Int_t isector = indexesIn->GetSM();
 
   // Start clustering in the chamber
 
-  Int_t idet  = AliTRDgeometry::GetDetector(iplan,icham,isect);
+  Int_t idet  = AliTRDgeometry::GetDetector(ilayer,istack,isector);
   if (idet != det)
     {
       AliError("Strange Detector number Missmatch!");
@@ -674,9 +673,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // TRD space point transformation
   fTransform->SetDetector(det);
 
-  Int_t    ilayer  = AliGeomManager::kTRD1 + iplan;
-  Int_t    imodule = icham + AliTRDgeometry::Ncham() * isect;
-  UShort_t volid   = AliGeomManager::LayerToVolUID(ilayer,imodule); 
+  Int_t    iGeoLayer  = AliGeomManager::kTRD1 + ilayer;
+  Int_t    iGeoModule = istack + AliTRDgeometry::Nstack() * isector;
+  UShort_t volid      = AliGeomManager::LayerToVolUID(iGeoLayer,iGeoModule); 
 
   Int_t nColMax    = digitsIn->GetNcol();
   Int_t nRowMax    = digitsIn->GetNrow();
@@ -837,7 +836,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
           }
           // Unfold the two maxima and set the signal on 
           // the overlapping pad to the ratio
-          ratioRight        = Unfold(kEpsilon,iplan,padSignal);
+          ratioRight        = Unfold(kEpsilon,ilayer,padSignal);
           ratioLeft         = 1.0 - ratioRight; 
           clusterSignal[2] *= ratioRight;
           iUnfold = 1;
@@ -848,7 +847,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
         if (AliTRDReconstructor::RecoParam()->LUTOn()) {
           // Calculate the position of the cluster by using the
           // lookup table method
-          clusterPosCol = LUTposition(iplan,clusterSignal[0]
+          clusterPosCol = LUTposition(ilayer,clusterSignal[0]
               ,clusterSignal[1]
               ,clusterSignal[2]);
         } else {
@@ -1057,7 +1056,7 @@ Double_t AliTRDclusterizer::GetCOG(Double_t signal[5]) const
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDclusterizer::Unfold(Double_t eps, Int_t plane, Double_t *padSignal)
+Double_t AliTRDclusterizer::Unfold(Double_t eps, Int_t layer, Double_t *padSignal)
 {
   //
   // Method to unfold neighbouring maxima.
@@ -1095,14 +1094,14 @@ Double_t AliTRDclusterizer::Unfold(Double_t eps, Int_t plane, Double_t *padSigna
                       / ((1.0 - ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
 
     // Set cluster charge ratio
-    irc = calibration->PadResponse(1.0,maxLeft ,plane,newSignal);
+    irc = calibration->PadResponse(1.0,maxLeft ,layer,newSignal);
     Double_t ampLeft  = padSignal[1] / newSignal[1];
-    irc = calibration->PadResponse(1.0,maxRight,plane,newSignal);
+    irc = calibration->PadResponse(1.0,maxRight,layer,newSignal);
     Double_t ampRight = padSignal[3] / newSignal[1];
 
     // Apply pad response to parameters
-    irc = calibration->PadResponse(ampLeft ,maxLeft ,plane,newLeftSignal );
-    irc = calibration->PadResponse(ampRight,maxRight,plane,newRightSignal);
+    irc = calibration->PadResponse(ampLeft ,maxLeft ,layer,newLeftSignal );
+    irc = calibration->PadResponse(ampRight,maxRight,layer,newRightSignal);
 
     // Calculate new overlapping ratio
     ratio = TMath::Min((Double_t) 1.0
@@ -1286,10 +1285,10 @@ void AliTRDclusterizer::FillLUT()
 
   const Int_t kNlut = 128;
 
-  fLUTbin = AliTRDgeometry::kNplan * kNlut;
+  fLUTbin = AliTRDgeometry::kNlayer * kNlut;
 
   // The lookup table from Bogdan
-  Float_t lut[AliTRDgeometry::kNplan][kNlut] = {  
+  Float_t lut[AliTRDgeometry::kNlayer][kNlut] = {  
     {
       0.0070, 0.0150, 0.0224, 0.0298, 0.0374, 0.0454, 0.0533, 0.0611, 
       0.0684, 0.0755, 0.0827, 0.0900, 0.0975, 0.1049, 0.1120, 0.1187, 
@@ -1405,16 +1404,16 @@ void AliTRDclusterizer::FillLUT()
   }
   fLUT = new Double_t[fLUTbin];
 
-  for (Int_t iplan = 0; iplan < AliTRDgeometry::kNplan; iplan++) {
+  for (Int_t ilayer = 0; ilayer < AliTRDgeometry::kNlayer; ilayer++) {
     for (Int_t ilut  = 0; ilut  <  kNlut; ilut++  ) {
-      fLUT[iplan*kNlut+ilut] = lut[iplan][ilut];
+      fLUT[ilayer*kNlut+ilut] = lut[ilayer][ilut];
     }
   }
 
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDclusterizer::LUTposition(Int_t iplane, Double_t ampL
+Double_t AliTRDclusterizer::LUTposition(Int_t ilayer, Double_t ampL
                                       , Double_t ampC, Double_t ampR) const
 {
   //
@@ -1433,10 +1432,10 @@ Double_t AliTRDclusterizer::LUTposition(Int_t iplane, Double_t ampL
   Int_t    side = 0;
   Int_t    ix;
 
-  Double_t xMin[AliTRDgeometry::kNplan] = { 0.006492, 0.006377, 0.006258
-                                          , 0.006144, 0.006030, 0.005980 };
-  Double_t xMax[AliTRDgeometry::kNplan] = { 0.960351, 0.965870, 0.970445
-                                          , 0.974352, 0.977667, 0.996101 };
+  Double_t xMin[AliTRDgeometry::kNlayer] = { 0.006492, 0.006377, 0.006258
+                                           , 0.006144, 0.006030, 0.005980 };
+  Double_t xMax[AliTRDgeometry::kNlayer] = { 0.960351, 0.965870, 0.970445
+                                           , 0.974352, 0.977667, 0.996101 };
 
   if      (ampL > ampR) {
     x    = (ampL - ampR) / ampC;
@@ -1449,8 +1448,8 @@ Double_t AliTRDclusterizer::LUTposition(Int_t iplane, Double_t ampL
 
   if (ampL != ampR) {
 
-    xmin = xMin[iplane] + 0.000005;
-    xmax = xMax[iplane] - 0.000005;
+    xmin = xMin[ilayer] + 0.000005;
+    xmax = xMax[ilayer] - 0.000005;
     xwid = (xmax - xmin) / 127.0;
 
     if      (x < xmin) {
@@ -1461,7 +1460,7 @@ Double_t AliTRDclusterizer::LUTposition(Int_t iplane, Double_t ampL
     } 
     else {
       ix  = (Int_t) ((x - xmin) / xwid);
-      pos = side * fLUT[iplane*kNlut+ix];
+      pos = side * fLUT[ilayer*kNlut+ix];
     }
        
   } 

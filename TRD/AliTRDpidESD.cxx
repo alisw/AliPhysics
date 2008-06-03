@@ -165,18 +165,18 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) 
                   p[iSpecies] = 1./AliPID::kSPECIES;
 
-		for (Int_t iPlan = 0; iPlan < AliTRDgeometry::kNplan; iPlan++) {
+		for (Int_t iLayer = 0; iLayer < AliTRDgeometry::kNlayer; iLayer++) {
 			// read data for track segment
 			for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
-				dedx[iSlice] = t->GetTRDslice(iPlan, iSlice);
-			dEdx    = t->GetTRDslice(iPlan, -1);
-			timebin = t->GetTRDTimBin(iPlan);
+				dedx[iSlice] = t->GetTRDslice(iLayer, iSlice);
+			dEdx    = t->GetTRDslice(iLayer, -1);
+			timebin = t->GetTRDTimBin(iLayer);
 
 			// check data
 			if ((dEdx <=  0.) || (timebin <= -1.)) continue;
 
 			// retrive kinematic info for this track segment
-			if(!RecalculateTrackSegmentKine(t, iPlan, mom, length)){
+			if(!RecalculateTrackSegmentKine(t, iLayer, mom, length)){
 				// information is not fully reliable especialy for length
 				// estimation. To be used in the future. 
 			}
@@ -186,7 +186,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 
 			// Get the probabilities for the different particle species
 			for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
-				p[iSpecies] *= pd->GetProbability(iSpecies, mom, dedx, length, iPlan);
+				p[iSpecies] *= pd->GetProbability(iSpecies, mom, dedx, length, iLayer);
 				//p[iSpecies] *= pd->GetProbabilityT(iSpecies, mom, timebin);
 			}
 		}
@@ -235,7 +235,7 @@ Bool_t AliTRDpidESD::CheckTrack(AliESDtrack *t)
 
 //_____________________________________________________________________________
 Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd
-                                               , Int_t plan
+                                               , Int_t layer
                                                , Float_t &mom
                                                , Float_t &length)
 {
@@ -249,7 +249,7 @@ Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd
 
 	const Float_t kAmHalfWidth = AliTRDgeometry::AmThick() / 2.;
         const Float_t kDrWidth     = AliTRDgeometry::DrThick();
-	const Float_t kTime0       = AliTRDgeometry::GetTime0(plan);
+	const Float_t kTime0       = AliTRDgeometry::GetTime0(layer);
 
 	// set initial length value to chamber height 
 	length = 2 * kAmHalfWidth + kDrWidth;

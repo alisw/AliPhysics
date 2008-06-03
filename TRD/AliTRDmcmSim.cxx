@@ -272,8 +272,8 @@ void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos )
   fGeo           = new AliTRDgeometry();
   fChaId         = chaId;
   fSector        = fGeo->GetSector( fChaId );
-  fStack         = fGeo->GetChamber( fChaId );
-  fLayer         = fGeo->GetPlane( fChaId );
+  fStack         = fGeo->GetStack( fChaId );
+  fLayer         = fGeo->GetLayer( fChaId );
   fRobPos        = robPos;
   fMcmPos        = mcmPos;
   fNADC          = fFeeParam->GetNadcMcm();
@@ -349,17 +349,17 @@ Bool_t AliTRDmcmSim::CheckInitialized()
 
 
 void AliTRDmcmSim::SetPosLUT() {
-  Double_t iHi = (Double_t)fCal->GetPRFhi();
-  Double_t iLo = (Double_t)fCal->GetPRFlo();
-  Int_t   nBin = fCal->GetPRFbin();
-  Int_t   iOff = fLayer * nBin;
-  Int_t kNplan = fGeo->Nplan();
+  Double_t iHi  = (Double_t)fCal->GetPRFhi();
+  Double_t iLo  = (Double_t)fCal->GetPRFlo();
+  Int_t   nBin  = fCal->GetPRFbin();
+  Int_t   iOff  = fLayer * nBin;
+  Int_t kNlayer = fGeo->Nlayer();
 
-  Float_t  *sPRFsmp   = new Float_t[nBin*kNplan];
+  Float_t  *sPRFsmp   = new Float_t[nBin*kNlayer];
   Double_t *sPRFlayer = new Double_t[nBin];
   
   
-  for(Int_t i = 0; i<nBin*kNplan; i++){
+  for(Int_t i = 0; i<nBin*kNlayer; i++){
     
     //printf("%f\n",fCal->GetSampledPRF()[i]);
     sPRFsmp[i] = fCal->GetSampledPRF()[i]; 

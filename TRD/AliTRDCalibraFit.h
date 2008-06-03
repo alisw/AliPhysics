@@ -132,16 +132,16 @@ class AliTRDCalibraFit : public TObject {
        
        
        // Debug
-       void     SetDebugLevel(Short_t level)                              { fDebugLevel = level;           }
-       void     SetDet(Int_t iPlane, Int_t iChamb, Int_t iSect)           { fDet[0]  = iPlane; 
-       fDet[1]  = iChamb; 
-       fDet[2]  = iSect;               }
+       void     SetDebugLevel(Short_t level)                              { fDebugLevel = level;            }
+       void     SetDet(Int_t iLayer, Int_t iStack, Int_t iSector)         { fDet[0]  = iLayer; 
+                                                                            fDet[1]  = iStack; 
+                                                                            fDet[2]  = iSector;             }
        void     SetFitVoir(Int_t fitVoir)                                 { fFitVoir = fitVoir;             }
        // Magnetic field  
        void     SetMagneticField(Float_t magneticfield)                   { fMagneticField = magneticfield; }
        
        // Get the scale factor
-       Double_t GetScaleFitFactor() const                                { return fScaleFitFactor;         }
+       Double_t GetScaleFitFactor() const                                 { return fScaleFitFactor;         }
        
        // Vector Fit getter
        TObjArray  GetVectorFit() const                                    { return fVectorFit;              }
@@ -180,7 +180,7 @@ class AliTRDCalibraFit : public TObject {
        // Debug Modes
        TTreeSRedirector   *fDebugStreamer;         //!Debug streamer
        Short_t     fDebugLevel;            // Flag for debugging
-       Int_t       fDet[3];                // Detector  visualised (plane,chamb,sect) si debugging == 3 or 4
+       Int_t       fDet[3];                // Detector  visualised (layer,stack,sector) si debugging == 3 or 4
        Int_t       fFitVoir;               // Fit visualised si debugging == 2
        
        // Magnetic field lorentz angle
@@ -294,7 +294,7 @@ class AliTRDCalibraFit : public TObject {
        Bool_t   CalculPRFCoefMean();
        Bool_t   CalculT0CoefMean();
        Bool_t   CalculVdriftLorentzCoef();
-       Float_t  GetPRFDefault(Int_t plane) const;
+       Float_t  GetPRFDefault(Int_t layer) const;
        void     SetCalROC(Int_t i);
        
        // Fit methods
@@ -315,8 +315,8 @@ class AliTRDCalibraFit : public TObject {
        TH1F    *ReBin(TH1F *hist) const;
        
        // Some basic geometry function
-       virtual Int_t    GetPlane(Int_t d) const;
-       virtual Int_t    GetChamber(Int_t d) const;
+       virtual Int_t    GetLayer(Int_t d) const;
+       virtual Int_t    GetStack(Int_t d) const;
        virtual Int_t    GetSector(Int_t d) const;
        
        // Instance of this class and so on

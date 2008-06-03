@@ -65,11 +65,11 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *geo)
 // Calculates radial position of the chamber based on 
 // radial positions of the time bins (calibration/alignment aware)
 //
-	Int_t stack = geo->GetChamber(fDetector);
-	Int_t plane = geo->GetPlane(fDetector);
-	AliTRDpadPlane *pp = geo->GetPadPlane(plane, stack);
+	Int_t stack = geo->GetStack(fDetector);
+	Int_t layer = geo->GetLayer(fDetector);
+	AliTRDpadPlane *pp = geo->GetPadPlane(layer, stack);
 	Double_t zl = pp->GetRow0ROC() - pp->GetRowEndROC();
-	Double_t z0 = geo->GetRow0(plane, stack, 0) - zl;
+	Double_t z0 = geo->GetRow0(layer, stack, 0) - zl;
 	Int_t nrows = pp->GetNrows();
 	
 	Int_t index[50], jtb = 0;
@@ -168,10 +168,10 @@ AliTRDchamberTimeBin *AliTRDtrackingChamber::GetSeedingLayer(AliTRDgeometry *geo
 	const Int_t kMaxPads = 2304;
 		
 	// Get the geometrical data of the chamber
-	Int_t plane = geo->GetPlane(fDetector);
-	Int_t stack = geo->GetChamber(fDetector);
+	Int_t layer = geo->GetLayer(fDetector);
+	Int_t stack = geo->GetStack(fDetector);
 	Int_t sector= geo->GetSector(fDetector);
-	AliTRDpadPlane *pp = geo->GetPadPlane(plane, stack);
+	AliTRDpadPlane *pp = geo->GetPadPlane(layer, stack);
 	Int_t nCols = pp->GetNcols();
 	Float_t ymin = TMath::Min(pp->GetCol0(), pp->GetColEnd());
 	Float_t ymax = TMath::Max(pp->GetCol0(), pp->GetColEnd());
@@ -293,7 +293,7 @@ AliTRDchamberTimeBin *AliTRDtrackingChamber::GetSeedingLayer(AliTRDgeometry *geo
 	
 	Float_t pos[3], sig[2];
 	Short_t signal[7]; memset(&signal[0], 0, 7*sizeof(Short_t));
-	AliTRDchamberTimeBin *fakeLayer = new AliTRDchamberTimeBin(plane, stack, sector, z0, zl);
+	AliTRDchamberTimeBin *fakeLayer = new AliTRDchamberTimeBin(layer, stack, sector, z0, zl);
 	AliTRDcluster *cluster = 0x0;
 	if(nCandidates){
 		UInt_t fakeIndex = 0;
@@ -335,7 +335,7 @@ AliTRDchamberTimeBin *AliTRDtrackingChamber::GetSeedingLayer(AliTRDgeometry *geo
 		//		hist(i,j) = histogram[i][j];
 		TTreeSRedirector &cstreamer = *AliTRDtrackerV1::DebugStreamer();
 		cstreamer << "GetSeedingLayer"
-		<< "plane="      << plane
+		<< "layer="      << layer
 		<< "ymin="       << ymin
 		<< "ymax="       << ymax
 		<< "zmin="       << zmin

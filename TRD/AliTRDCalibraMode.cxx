@@ -237,7 +237,7 @@ void AliTRDCalibraMode::ModePadCalibration(Int_t iChamb, Int_t i)
 }
 
 //_____________________________________________________________________________________________
-Bool_t AliTRDCalibraMode::ModePadFragmentation(Int_t iPlane,Int_t iChamb, Int_t iSect, Int_t i)
+Bool_t AliTRDCalibraMode::ModePadFragmentation(Int_t iLayer,Int_t iStack, Int_t iSect, Int_t i)
 {
   //
   // Definition of the calibration mode
@@ -249,8 +249,8 @@ Bool_t AliTRDCalibraMode::ModePadFragmentation(Int_t iPlane,Int_t iChamb, Int_t 
   fNfragRphi[i] = 0;
 
   // A little geometry:
-  Int_t rowMax = fGeo->GetRowMax(iPlane,iChamb,iSect);
-  Int_t colMax = fGeo->GetColMax(iPlane);
+  Int_t rowMax = fGeo->GetRowMax(iLayer,iStack,iSect);
+  Int_t colMax = fGeo->GetColMax(iLayer);
   
   // The fragmentation
   if (fNnZ[i]    != 0) {
@@ -308,10 +308,10 @@ void AliTRDCalibraMode::CalculXBins(Int_t idect, Int_t i)
   Int_t sector = GetSector(idect);
   fXbins[i] += sector*(6*fDetChamb2[i]+6*4*fDetChamb0[i]);
  
-  // In which chamber?
-  Int_t chamber = GetChamber(idect);
+  // In which stack?
+  Int_t stack = GetStack(idect);
   Int_t kc      = 0;
-  while (kc < chamber) {
+  while (kc < stack) {
     if (kc == 2) {
       fXbins[i] += 6 * fDetChamb2[i];
     }
@@ -321,13 +321,13 @@ void AliTRDCalibraMode::CalculXBins(Int_t idect, Int_t i)
     kc ++;
   }
   
-  // In which plane?
-  Int_t plane = GetPlane(idect);
-  if (chamber == 2) {
-    fXbins[i] += plane*fDetChamb2[i];
+  // In which layer?
+  Int_t layer = GetLayer(idect);
+  if (stack == 2) {
+    fXbins[i] += layer*fDetChamb2[i];
   }
   else {
-    fXbins[i] += plane*fDetChamb0[i];
+    fXbins[i] += layer*fDetChamb0[i];
   }
  
 }
@@ -369,7 +369,7 @@ void AliTRDCalibraMode::SetDetChamb2(Int_t i)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDCalibraMode::GetPlane(Int_t d) const
+Int_t AliTRDCalibraMode::GetLayer(Int_t d) const
 {
   //
   // Reconstruct the plane number from the detector number
@@ -380,15 +380,15 @@ Int_t AliTRDCalibraMode::GetPlane(Int_t d) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDCalibraMode::GetChamber(Int_t d) const
+Int_t AliTRDCalibraMode::GetStack(Int_t d) const
 {
   //
-  // Reconstruct the chamber number from the detector number
+  // Reconstruct the stack number from the detector number
   //
 
-  Int_t fgkNplan = 6;
+  const Int_t kNlayer = 6;
 
-  return ((Int_t) (d % 30) / fgkNplan);
+  return ((Int_t) (d % 30) / kNlayer);
 
 }
 

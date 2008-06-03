@@ -25,14 +25,14 @@ class AliTRDpadPlane : public TObject {
  public:
 
   AliTRDpadPlane();
-  AliTRDpadPlane(Int_t plane, Int_t chamber);
+  AliTRDpadPlane(Int_t layer, Int_t stack);
   AliTRDpadPlane(const AliTRDpadPlane &p);
   virtual           ~AliTRDpadPlane();
   AliTRDpadPlane    &operator=(const AliTRDpadPlane &p);
   virtual void       Copy(TObject &p) const;
 
-  void     SetPlane(Int_t p)                   { fPla            = p; };
-  void     SetChamber(Int_t c)                 { fCha            = c; };
+  void     SetLayer(Int_t l)                   { fLayer          = l; };
+  void     SetStack(Int_t s)                   { fStack          = s; };
   void     SetRowSpacing(Double_t s)           { fRowSpacing     = s; };
   void     SetColSpacing(Double_t s)           { fColSpacing     = s; };
   void     SetLengthRim(Double_t l)            { fLengthRim      = l; };
@@ -118,8 +118,8 @@ class AliTRDpadPlane : public TObject {
 
  protected:
 
-  Int_t     fPla;             //  Plane number
-  Int_t     fCha;             //  Chamber number
+  Int_t     fLayer;           //  Layer number
+  Int_t     fStack;           //  Stack number
 
   Double_t  fLength;          //  Length of pad plane in z-direction (row)
   Double_t  fWidth;           //  Width of pad plane in rphi-direction (col)
@@ -147,7 +147,7 @@ class AliTRDpadPlane : public TObject {
 
   Double_t  fPadRowSMOffset;  //  To be added to translate local ROC system to local SM system
 
-  ClassDef(AliTRDpadPlane,4)  //  TRD ROC pad plane
+  ClassDef(AliTRDpadPlane,5)  //  TRD ROC pad plane
 
 };
 

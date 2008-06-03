@@ -96,7 +96,7 @@ AliTRDtrackerV1::AliTRDtrackerV1()
   }
   if(!fgNTimeBins) fgNTimeBins = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
-  for (Int_t isector = 0; isector < AliTRDgeometry::kNsect; isector++) new(&fTrSec[isector]) AliTRDtrackingSector(fGeom, isector);
+  for (Int_t isector = 0; isector < AliTRDgeometry::kNsector; isector++) new(&fTrSec[isector]) AliTRDtrackingSector(fGeom, isector);
 
   if (!AliTRDReconstructor::RecoParam()){
   	AliWarning("RecoParams not set in AliTRDReconstructor. Setting to default LowFluxParam.");
@@ -153,7 +153,7 @@ Int_t AliTRDtrackerV1::Clusters2Tracks(AliESDEvent *esd)
   
   //AliInfo("Start Track Finder ...");
   Int_t ntracks = 0;
-  for(int ism=0; ism<AliTRDgeometry::kNsect; ism++){
+  for(int ism=0; ism<AliTRDgeometry::kNsector; ism++){
     //	for(int ism=1; ism<2; ism++){
     //AliInfo(Form("Processing supermodule %i ...", ism));
     ntracks += Clusters2TracksSM(ism, esd);
@@ -188,7 +188,7 @@ Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t index, AliTrackPoint &p) const
   
   // setting volume id
   AliGeomManager::ELayerID iLayer = AliGeomManager::kTRD1;
-  switch (fGeom->GetPlane(idet)) {
+  switch (fGeom->GetLayer(idet)) {
   case 0:
     iLayer = AliGeomManager::kTRD1;
     break;
@@ -208,7 +208,7 @@ Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t index, AliTrackPoint &p) const
     iLayer = AliGeomManager::kTRD6;
     break;
   };
-  Int_t    modId = fGeom->GetSector(idet) * fGeom->Ncham() + fGeom->GetChamber(idet);
+  Int_t    modId = fGeom->GetSector(idet) * fGeom->Nstack() + fGeom->GetStack(idet);
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer, modId);
   p.SetVolumeID(volid);
     
@@ -232,7 +232,7 @@ TLinearFitter* AliTRDtrackerV1::GetTiltedRiemanFitterConstraint()
 //____________________________________________________________________	
 AliRieman* AliTRDtrackerV1::GetRiemanFitter()
 {
-  if(!fgRieman) fgRieman = new AliRieman(AliTRDtrackingChamber::kNTimeBins * AliTRDgeometry::kNplan);
+  if(!fgRieman) fgRieman = new AliRieman(AliTRDtrackingChamber::kNTimeBins * AliTRDgeometry::kNlayer);
   return fgRieman;
 }
   
@@ -616,38 +616,38 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   
   AliTRDseedV1 tracklet, *ptrTracklet = 0x0;
 
-  // Loop through the TRD planes
-  for (Int_t iplane = 0; iplane < AliTRDgeometry::Nplan(); iplane++) {
+  // Loop through the TRD layers
+  for (Int_t ilayer = 0; ilayer < AliTRDgeometry::Nlayer(); ilayer++) {
     // BUILD TRACKLET IF NOT ALREADY BUILT
     Double_t x = 0., y, z, alpha;
-    ptrTracklet  = t.GetTracklet(iplane);
+    ptrTracklet  = t.GetTracklet(ilayer);
     if(!ptrTracklet){
-      ptrTracklet = new(&tracklet) AliTRDseedV1(iplane);
+      ptrTracklet = new(&tracklet) AliTRDseedV1(ilayer);
       alpha = t.GetAlpha();
-      Int_t sector = Int_t(alpha/AliTRDgeometry::GetAlpha() + (alpha>0. ? 0 : AliTRDgeometry::kNsect));
+      Int_t sector = Int_t(alpha/AliTRDgeometry::GetAlpha() + (alpha>0. ? 0 : AliTRDgeometry::kNsector));
 
       if(!fTrSec[sector].GetNChambers()) continue;
       
-      if((x = fTrSec[sector].GetX(iplane)) < 1.) continue;
+      if((x = fTrSec[sector].GetX(ilayer)) < 1.) continue;
     
       if (!t.GetProlongation(x, y, z)) break;
-      Int_t stack = fGeom->GetChamber(z, iplane);
+      Int_t stack = fGeom->GetStack(z, ilayer);
       Int_t nCandidates = stack >= 0 ? 1 : 2;
       z -= stack >= 0 ? 0. : 4.; 
       
       for(int icham=0; icham<nCandidates; icham++, z+=8){
-        if((stack = fGeom->GetChamber(z, iplane)) < 0) continue;
+        if((stack = fGeom->GetStack(z, ilayer)) < 0) continue;
       
-        if(!(chamber = fTrSec[sector].GetChamber(stack, iplane))) continue;
+        if(!(chamber = fTrSec[sector].GetChamber(stack, ilayer))) continue;
       
         if(chamber->GetNClusters() < fgNTimeBins*AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
       
         x = chamber->GetX();
       
-        AliTRDpadPlane *pp = fGeom->GetPadPlane(iplane, stack);
+        AliTRDpadPlane *pp = fGeom->GetPadPlane(ilayer, stack);
         tracklet.SetTilt(TMath::Tan(-TMath::DegToRad()*pp->GetTiltingAngle()));
         tracklet.SetPadLength(pp->GetLengthIPad());
-        tracklet.SetPlane(iplane);
+        tracklet.SetPlane(ilayer);
         tracklet.SetX0(x);
         if(!tracklet.Init(&t)){
           t.SetStopped(kTRUE);
@@ -706,7 +706,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       //t.SetTracklet(&tracklet, index);
     }
     // Reset material budget if 2 consecutive gold
-    if(iplane>0 && t.GetTracklet(iplane-1) && ptrTracklet->GetN() + t.GetTracklet(iplane-1)->GetN() > 20) t.SetBudget(2, 0.);
+    if(ilayer>0 && t.GetTracklet(ilayer-1) && ptrTracklet->GetN() + t.GetTracklet(ilayer-1)->GetN() > 20) t.SetBudget(2, 0.);
 
     // Make backup of the track until is gold
     // TO DO update quality check of the track.
@@ -729,7 +729,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         (TMath::Abs(t.GetSnp())  <  0.85) &&
         (t.GetNumberOfClusters() >    20)) t.MakeBackupTrack();
     
-  } // end planes loop
+  } // end layers loop
 
   if(AliTRDReconstructor::RecoParam()->GetStreamLevel() > 1){
     TTreeSRedirector &cstreamer = *fgDebugStreamer;
@@ -855,15 +855,15 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
   Float_t x, y, z, w, t, error, tilt;
   Double_t uvt[2];
   Int_t nPoints = 0;
-  for(Int_t ipl = 0; ipl < AliTRDgeometry::kNplan; ipl++){
-    if(!tracklets[ipl].IsOK()) continue;
+  for(Int_t ilr = 0; ilr < AliTRDgeometry::kNlayer; ilr++){
+    if(!tracklets[ilr].IsOK()) continue;
     for(Int_t itb = 0; itb < fgNTimeBins; itb++){
-      if(!tracklets[ipl].IsUsable(itb)) continue;
-      cl = tracklets[ipl].GetClusters(itb);
+      if(!tracklets[ilr].IsUsable(itb)) continue;
+      cl = tracklets[ilr].GetClusters(itb);
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
-      tilt = tracklets[ipl].GetTilt();
+      tilt = tracklets[ilr].GetTilt();
       // Transformation
       t = 1./(x * x + y * y);
       uvt[0] = 2. * x * t;
@@ -1320,7 +1320,7 @@ Float_t AliTRDtrackerV1::CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset
   // Output:     - The Chi2 value of the track in z-Direction
   //
   Float_t chi2Z = 0, nLayers = 0;
-  for (Int_t iLayer = 0; iLayer < AliTRDgeometry::kNplan; iLayer++) {
+  for (Int_t iLayer = 0; iLayer < AliTRDgeometry::kNlayer; iLayer++) {
     if(!tracklets[iLayer].IsOK()) continue;
     Double_t z = offset + slope * (tracklets[iLayer].GetX0() - xref);
     chi2Z += TMath::Abs(tracklets[iLayer].GetMeanz() - z);
@@ -1471,14 +1471,14 @@ Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
     if(c->IsInChamber()) nin++;
     Int_t detector       = c->GetDetector();
     Int_t sector         = fGeom->GetSector(detector);
-    Int_t stack          = fGeom->GetChamber(detector);
-    Int_t plane          = fGeom->GetPlane(detector);
+    Int_t stack          = fGeom->GetStack(detector);
+    Int_t layer          = fGeom->GetLayer(detector);
     
-    fTrSec[sector].GetChamber(stack, plane, kTRUE)->InsertCluster(c, icl);
+    fTrSec[sector].GetChamber(stack, layer, kTRUE)->InsertCluster(c, icl);
   }
   AliInfo(Form("Clusters %d in %6.2f %%", ncl, 100.*float(nin)/ncl));
   
-  for(int isector =0; isector<AliTRDgeometry::kNsect; isector++){ 
+  for(int isector =0; isector<AliTRDgeometry::kNsector; isector++){ 
     if(!fTrSec[isector].GetNChambers()) continue;
     fTrSec[isector].Init();
   }
@@ -1498,7 +1498,7 @@ void AliTRDtrackerV1::UnloadClusters()
   if(fTracklets) fTracklets->Delete();
   if(fClusters) fClusters->Delete();
 
-  for (int i = 0; i < AliTRDgeometry::kNsect; i++) fTrSec[i].Clear();
+  for (int i = 0; i < AliTRDgeometry::kNsector; i++) fTrSec[i].Clear();
 
   // Increment the Event Number
   AliTRDtrackerDebug::SetEventNumber(AliTRDtrackerDebug::GetEventNumber()  + 1);
@@ -1567,7 +1567,7 @@ AliTRDseedV1* AliTRDtrackerV1::SetTracklet(AliTRDseedV1 *tracklet)
   // and adds the new tracklet to the list.
   //
   if(!fTracklets){
-    fTracklets = new TClonesArray("AliTRDseedV1", AliTRDgeometry::Nsect()*kMaxTracksStack);
+    fTracklets = new TClonesArray("AliTRDseedV1", AliTRDgeometry::Nsector()*kMaxTracksStack);
     fTracklets->SetOwner(kTRUE);
   }
   Int_t nentries = fTracklets->GetEntriesFast();
@@ -1590,7 +1590,7 @@ AliTRDtrackV1* AliTRDtrackerV1::SetTrack(AliTRDtrackV1 *track)
   // and adds the new track to the list.
   //
   if(!fTracks){
-    fTracks = new TClonesArray("AliTRDtrackV1", AliTRDgeometry::Nsect()*kMaxTracksStack);
+    fTracks = new TClonesArray("AliTRDtrackV1", AliTRDgeometry::Nsector()*kMaxTracksStack);
     fTracks->SetOwner(kTRUE);
   }
   Int_t nentries = fTracks->GetEntriesFast();
@@ -1628,14 +1628,14 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
   Int_t nTracks   = 0;
   Int_t nChambers = 0;
   AliTRDtrackingChamber **stack = 0x0, *chamber = 0x0;
-  for(int istack = 0; istack<AliTRDgeometry::kNcham; istack++){
+  for(int istack = 0; istack<AliTRDgeometry::kNstack; istack++){
     if(!(stack = fTrSec[sector].GetStack(istack))) continue;
     nChambers = 0;
-    for(int iplane=0; iplane<AliTRDgeometry::kNplan; iplane++){
-      if(!(chamber = stack[iplane])) continue;
+    for(int ilayer=0; ilayer<AliTRDgeometry::kNlayer; ilayer++){
+      if(!(chamber = stack[ilayer])) continue;
       if(chamber->GetNClusters() < fgNTimeBins * AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
       nChambers++;
-      //AliInfo(Form("sector %d stack %d plane %d clusters %d", sector, istack, iplane, chamber->GetNClusters()));
+      //AliInfo(Form("sector %d stack %d layer %d clusters %d", sector, istack, ilayer, chamber->GetNClusters()));
     }
     if(nChambers < 4) continue;
     //AliInfo(Form("Doing stack %d", istack));
@@ -2096,7 +2096,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   
   // Init chambers geometry
   Int_t ic = 0; while(!(chamber = stack[ic])) ic++;
-  Int_t istack = fGeom->GetChamber(chamber->GetDetector());
+  Int_t istack = fGeom->GetStack(chamber->GetDetector());
   Double_t hL[kNPlanes];       // Tilting angle
   Float_t padlength[kNPlanes]; // pad lenghts
   AliTRDpadPlane *pp = 0x0;

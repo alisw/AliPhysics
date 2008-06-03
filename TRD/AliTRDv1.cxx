@@ -138,16 +138,16 @@ void AliTRDv1::AddAlignableVolumes() const
   //                           ...
   //                         TRD/sm17
   //
-  for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
+  for (Int_t isector = 0; isector < AliTRDgeometry::Nsector(); isector++) {
 
     volPath  = vpStr;
-    volPath += isect;
+    volPath += isector;
     volPath += vpApp1;
-    volPath += isect;
+    volPath += isector;
     volPath += vpApp2;
 
     symName  = snStr;
-    symName += Form("%02d",isect);
+    symName += Form("%02d",isector);
 
     gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
 
@@ -162,28 +162,28 @@ void AliTRDv1::AddAlignableVolumes() const
   AliGeomManager::ELayerID idTRD1 = AliGeomManager::kTRD1;
   Int_t layer, modUID;
   
-  for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
+  for (Int_t isector = 0; isector < AliTRDgeometry::Nsector(); isector++) {
 
-    if (fGeometry->GetSMstatus(isect) == 0) continue;
+    if (fGeometry->GetSMstatus(isector) == 0) continue;
 
-    for (Int_t icham = 0; icham < AliTRDgeometry::Ncham(); icham++) {
-      for (Int_t iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
+    for (Int_t istack = 0; istack < AliTRDgeometry::Nstack(); istack++) {
+      for (Int_t ilayer = 0; ilayer < AliTRDgeometry::Nlayer(); ilayer++) {
 
-	layer = idTRD1 + iplan;
-	modUID = AliGeomManager::LayerToVolUIDSafe(layer,isect*5+icham);
-	
-        Int_t idet = AliTRDgeometry::GetDetectorSec(iplan,icham);
+	layer = idTRD1 + ilayer;
+	modUID = AliGeomManager::LayerToVolUIDSafe(layer,isector*5+istack);
+
+        Int_t idet = AliTRDgeometry::GetDetectorSec(ilayer,istack);
 
         volPath  = vpStr;
-        volPath += isect;
+        volPath += isector;
         volPath += vpApp1;
-        volPath += isect;
+        volPath += isector;
         volPath += vpApp2;
-        switch (isect) {
+        switch (isector) {
         case 13:
         case 14:
         case 15:
-          if (icham == 2) {
+          if (istack == 2) {
             continue;
 	  }
           volPath += vpApp3c;
@@ -199,11 +199,11 @@ void AliTRDv1::AddAlignableVolumes() const
         volPath += vpApp2;
 
         symName  = snStr;
-        symName += Form("%02d",isect);
+        symName += Form("%02d",isector);
         symName += snApp1;
-        symName += icham;
+        symName += istack;
         symName += snApp2;
-        symName += iplan;
+        symName += ilayer;
 
         TGeoPNEntry *alignableEntry = 
 	  gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data(),modUID);
@@ -212,7 +212,7 @@ void AliTRDv1::AddAlignableVolumes() const
 	if (alignableEntry) {
   	  // Is this correct still????
 	  TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
-	  Double_t sectorAngle = 20.0 * (isect % 18) + 10.0;
+	  Double_t sectorAngle = 20.0 * (isector % 18) + 10.0;
 	  TGeoHMatrix *t2lMatrix  = new TGeoHMatrix();
 	  t2lMatrix->RotateZ(sectorAngle);
 	  t2lMatrix->MultiplyLeft(&(globMatrix->Inverse()));
@@ -441,10 +441,10 @@ void AliTRDv1::StepManagerGeant()
   // Version by A. Bercuci
   //
 
-  Int_t    pla = 0;
-  Int_t    cha = 0;
-  Int_t    sec = 0;
-  Int_t    det = 0;
+  Int_t    layer  = 0;
+  Int_t    stack  = 0;
+  Int_t    sector = 0;
+  Int_t    det    = 0;
   Int_t    iPdg;
   Int_t    qTot;
 
@@ -476,9 +476,9 @@ void AliTRDv1::StepManagerGeant()
 
   TArrayI        processes;
 
-  const Int_t    kNplan       = AliTRDgeometry::Nplan();
-  const Int_t    kNcham       = AliTRDgeometry::Ncham();
-  const Int_t    kNdetsec     = kNplan * kNcham;
+  const Int_t    kNlayer      = AliTRDgeometry::Nlayer();
+  const Int_t    kNstack      = AliTRDgeometry::Nstack();
+  const Int_t    kNdetsec     = kNlayer * kNstack;
 
   const Double_t kBig         = 1.0e+12; // Infinitely big
   const Float_t  kWion        = 23.53;   // Ionization energy
@@ -536,17 +536,17 @@ void AliTRDv1::StepManagerGeant()
       cIdPath      = gGeoManager->GetPath();
       cIdSector[0] = cIdPath[21];
       cIdSector[1] = cIdPath[22];
-      sec = atoi(cIdSector);
+      sector = atoi(cIdSector);
 
-      // The plane and chamber number
+      // The layer and stack number
       cIdChamber[0]   = cIdCurrent[2];
       cIdChamber[1]   = cIdCurrent[3];
       Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-      cha = ((Int_t) idChamber / kNplan);
-      pla = ((Int_t) idChamber % kNplan);
+      stack = ((Int_t) idChamber / kNlayer);
+      layer = ((Int_t) idChamber % kNlayer);
 
       // The detector number
-      det = fGeometry->GetDetector(pla,cha,sec);
+      det = fGeometry->GetDetector(layer,stack,sector);
 
       // Special hits only in the drift region
       if      ((drRegion) &&
@@ -590,7 +590,7 @@ void AliTRDv1::StepManagerGeant()
         pid = 0;
       }
       else {
-        pid =	processes[nofprocesses-1];		
+        pid = processes[nofprocesses-1];		
       }		
 		
       // Generate Edep according to GEANT parametrisation
@@ -698,10 +698,10 @@ void AliTRDv1::StepManagerErmilova()
   // a spectrum taken from Ermilova et al.
   //
 
-  Int_t    pla = 0;
-  Int_t    cha = 0;
-  Int_t    sec = 0;
-  Int_t    det = 0;
+  Int_t    layer  = 0;
+  Int_t    stack  = 0;
+  Int_t    sector = 0;
+  Int_t    det    = 0;
   Int_t    iPdg;
   Int_t    qTot;
 
@@ -732,9 +732,9 @@ void AliTRDv1::StepManagerErmilova()
   TLorentzVector pos;
   TLorentzVector mom;
 
-  const Int_t    kNplan       = AliTRDgeometry::Nplan();
-  const Int_t    kNcham       = AliTRDgeometry::Ncham();
-  const Int_t    kNdetsec     = kNplan * kNcham;
+  const Int_t    kNlayer      = AliTRDgeometry::Nlayer();
+  const Int_t    kNstack      = AliTRDgeometry::Nstack();
+  const Int_t    kNdetsec     = kNlayer * kNstack;
 
   const Double_t kBig         = 1.0e+12; // Infinitely big
   const Float_t  kWion        = 23.53;   // Ionization energy
@@ -783,17 +783,17 @@ void AliTRDv1::StepManagerErmilova()
       cIdPath      = gGeoManager->GetPath();
       cIdSector[0] = cIdPath[21];
       cIdSector[1] = cIdPath[22];
-      sec = atoi(cIdSector);
+      sector = atoi(cIdSector);
 
       // The plane and chamber number
       cIdChamber[0] = cIdCurrent[2];
       cIdChamber[1] = cIdCurrent[3];
       Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-      cha = ((Int_t) idChamber / kNplan);
-      pla = ((Int_t) idChamber % kNplan);
+      stack = ((Int_t) idChamber / kNlayer);
+      layer = ((Int_t) idChamber % kNlayer);
 
       // The detector number
-      det = fGeometry->GetDetector(pla,cha,sec);
+      det = fGeometry->GetDetector(layer,stack,sector);
 
       // Special hits only in the drift region
       if      ((drRegion) &&
@@ -906,10 +906,10 @@ void AliTRDv1::StepManagerFixedStep()
   // PDG code electron
   const Int_t   kPdgElectron = 11;
 
-  Int_t    pla = 0;
-  Int_t    cha = 0;
-  Int_t    sec = 0;
-  Int_t    det = 0;
+  Int_t    layer  = 0;
+  Int_t    stack  = 0;
+  Int_t    sector = 0;
+  Int_t    det    = 0;
   Int_t    qTot;
 
   Float_t  hits[3];
@@ -931,9 +931,9 @@ void AliTRDv1::StepManagerFixedStep()
   TLorentzVector pos;
   TLorentzVector mom;
 
-  const Int_t    kNplan       = AliTRDgeometry::Nplan();
-  const Int_t    kNcham       = AliTRDgeometry::Ncham();
-  const Int_t    kNdetsec     = kNplan * kNcham;
+  const Int_t    kNlayer      = AliTRDgeometry::Nlayer();
+  const Int_t    kNstack      = AliTRDgeometry::Nstack();
+  const Int_t    kNdetsec     = kNlayer * kNstack;
 
   const Double_t kBig         = 1.0e+12;
 
@@ -975,17 +975,17 @@ void AliTRDv1::StepManagerFixedStep()
   cIdPath      = gGeoManager->GetPath();
   cIdSector[0] = cIdPath[21];
   cIdSector[1] = cIdPath[22];
-  sec = atoi(cIdSector);
+  sector = atoi(cIdSector);
 
   // The plane and chamber number
   cIdChamber[0]   = cIdCurrent[2];
   cIdChamber[1]   = cIdCurrent[3];
   Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-  cha = ((Int_t) idChamber / kNplan);
-  pla = ((Int_t) idChamber % kNplan);
+  stack = ((Int_t) idChamber / kNlayer);
+  layer = ((Int_t) idChamber % kNlayer);
 
   // The detector number
-  det = fGeometry->GetDetector(pla,cha,sec);
+  det = fGeometry->GetDetector(layer,stack,sector);
 
   // 0: InFlight 1:Entering 2:Exiting
   Int_t trkStat = 0;

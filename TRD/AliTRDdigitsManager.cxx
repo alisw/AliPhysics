@@ -544,8 +544,8 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
 
     AliTRDSignalIndex *indexes = GetIndexes(det);
     indexes->SetSM(geom.GetSector(det));
-    indexes->SetChamber(geom.GetChamber(det));
-    indexes->SetPlane(geom.GetPlane(det));
+    indexes->SetStack(geom.GetStack(det));
+    indexes->SetLayer(geom.GetLayer(det));
     indexes->SetDetNumber(det);
 
     if (indexes->IsAllocated() == kFALSE) {

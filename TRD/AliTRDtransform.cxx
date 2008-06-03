@@ -190,9 +190,9 @@ void AliTRDtransform::SetDetector(Int_t det)
   fCalT0DetValue     = fCalT0Det->GetValue(det);
 
   // Shift needed to define Z-position relative to middle of chamber
-  Int_t pla          = fGeo->GetPlane(det);
-  Int_t cha          = fGeo->GetChamber(det);
-  fPadPlane          = fGeo->GetPadPlane(pla,cha);
+  Int_t layer        = fGeo->GetLayer(det);
+  Int_t stack        = fGeo->GetStack(det);
+  fPadPlane          = fGeo->GetPadPlane(layer,stack);
   fZShiftIdeal       = 0.5 * (fPadPlane->GetRow0() + fPadPlane->GetRowEnd());
 
   // Get the current transformation matrix

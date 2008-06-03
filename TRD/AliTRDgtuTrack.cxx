@@ -233,8 +233,8 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   fNclusters  = 0;
   fNplanes    = 0;
   fNtracklets = GetNtracklets();
-  Int_t inDetector[kNplan];
-  for (i = 0; i < kNplan; i++) {
+  Int_t inDetector[kNlayer];
+  for (i = 0; i < kNlayer; i++) {
     inDetector[i] = -1;
   }
 

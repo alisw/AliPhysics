@@ -19,7 +19,7 @@ class AliTRDgtuTrack : public TObject {
 
  public:
 
-  enum { kNmaxTrk = 12, kNplan = 6 };
+  enum { kNmaxTrk = 12, kNlayer = 6 };
 
   AliTRDgtuTrack();
   AliTRDgtuTrack(const AliTRDgtuTrack &t);

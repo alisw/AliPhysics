@@ -1511,10 +1511,10 @@ AliTRDrawStreamTB::IsHCheaderOK()
      }
     }
 
-  if (fHC->fLayer < 0 || fHC->fLayer >= AliTRDgeometry::kNplan)
+  if (fHC->fLayer < 0 || fHC->fLayer >= AliTRDgeometry::kNlayer)
     {
-      if (fgWarnError) AliWarning(Form("Wrong plane(layer) %d", fHC->fLayer));
-      if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongLayer, "Wrong Plane"); 
+      if (fgWarnError) AliWarning(Form("Wrong layer %d", fHC->fLayer));
+      if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongLayer, "Wrong layer"); 
       return kFALSE;
     }
 
@@ -1523,9 +1523,9 @@ AliTRDrawStreamTB::IsHCheaderOK()
 
       if ((fHC->fLayer * 2 != fStackLinkNumber) && (fHC->fLayer * 2 != fStackLinkNumber - 1)) 
         {
-          if (fgWarnError) AliWarning(Form("Missmatch: plane(layer) in HCheader %d HW-Link %d | %s", 
+          if (fgWarnError) AliWarning(Form("Missmatch: layer in HCheader %d HW-Link %d | %s", 
 	 			       fHC->fLayer, fStackLinkNumber, DumpStackInfo(fStack)));
-          if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongLayer, "Plane-Link missmatch"); 
+          if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongLayer, "Layer-Link missmatch"); 
           fStackLinkNumber = -1;
           return kFALSE;      
         }
@@ -1550,7 +1550,7 @@ AliTRDrawStreamTB::IsHCheaderOK()
   // SLOW GEOM
   // this check fails - raw data inconsistent with geometry?
   if (fHC->fSM != fGeometry->GetSector(fHC->fDET)
-      || fHC->fSM <0 || fHC->fSM >= AliTRDgeometry::kNsect)
+      || fHC->fSM <0 || fHC->fSM >= AliTRDgeometry::kNsector)
     {
       if (fgWarnError) AliWarning(Form("Wrong SM(sector) %d (Geometry says: %d) Stack=%d Layer=%d Det=%d", 
 				       fHC->fSM, fGeometry->GetSector(fHC->fDET),
@@ -1582,7 +1582,7 @@ AliTRDrawStreamTB::IsHCheaderOK()
       return kFALSE;
     }
   // extra - not needed
-  //   if (fHC->fSM <0 || fHC->fSM >= AliTRDgeometry::kNsect)
+  //   if (fHC->fSM <0 || fHC->fSM >= AliTRDgeometry::kNsector)
   //     {
   //       if (fgWarnError) AliWarning(Form("Wrong SM(sector) %d (Geometry says: %d) Stack=%d Layer=%d", 
   // 		      fHC->fSM, fGeometry->GetDetectorSec(fHC->fLayer, fHC->fStack),

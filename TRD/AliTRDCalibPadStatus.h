@@ -98,8 +98,8 @@ public:
 		 Char_t *type, Bool_t force);
 
   // Some basic geometry function
-  virtual Int_t    GetPlane(Int_t d) const;
-  virtual Int_t    GetChamber(Int_t d) const;
+  virtual Int_t    GetLayer(Int_t d) const;
+  virtual Int_t    GetStack(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
 
   ClassDef(AliTRDCalibPadStatus,1)

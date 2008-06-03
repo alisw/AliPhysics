@@ -297,12 +297,12 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
     return;
   }
 
-  Int_t iplan, icham;
+  Int_t ilayer, istack;
 
-  iplan = geo->GetPlane(fDetector);
-  icham = geo->GetChamber(fDetector);
+  ilayer = geo->GetLayer(fDetector);
+  istack = geo->GetStack(fDetector);
 
-  AliTRDpadPlane *padPlane = fGeo->GetPadPlane(iplan,icham);
+  AliTRDpadPlane *padPlane = fGeo->GetPadPlane(ilayer,istack);
 
   Float_t samplFreq = AliTRDCommonParam::Instance()->GetSamplingFrequency();
 
@@ -325,7 +325,7 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
 
     if (amp[0] < 0.0 || amp[1] < 0.0 || amp[2] < 0.0) continue;
 
-    ypos = GetClusY(amp,iplan);
+    ypos = GetClusY(amp,ilayer);
 
     colSize = padPlane->GetColSize(col);
     vDrift = calibration->GetVdrift(fDetector,col,fRow);
@@ -337,16 +337,16 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
     lorentzAngle = TMath::ATan(omegaTau)*180.0/TMath::Pi();
     
     xpos = (time+0.5) * timeBinSize;
-    xpos = geo->GetTime0(iplan) - xpos;
+    xpos = geo->GetTime0(ilayer) - xpos;
 
     ypos = padPlane->GetColPos(col) - (ypos + 0.5) * colSize;
 
     // ExB correction
-    xzero = geo->GetTime0(iplan);
+    xzero = geo->GetTime0(ilayer);
     ypos = ypos + (xpos-xzero) * omegaTau;
 
     // tilted pads correction
-    thetaSlope = - padPlane->GetRowPos(fRow)/geo->GetTime0(iplan);
+    thetaSlope = - padPlane->GetRowPos(fRow)/geo->GetTime0(ilayer);
     tiltingAngle = padPlane->GetTiltingAngle()/180.0*TMath::Pi();
     ypos = ypos - (xpos-xzero) * thetaSlope * TMath::Sin(tiltingAngle);
 
@@ -357,7 +357,7 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
 
   fGPos->Set(npg);
   
-  fTime0 = geo->GetTime0(iplan) - AliTRDgeometry::CdrHght() - 0.5*AliTRDgeometry::CamHght();
+  fTime0 = geo->GetTime0(ilayer) - AliTRDgeometry::CdrHght() - 0.5*AliTRDgeometry::CamHght();
   fRowz = padPlane->GetRowPos(fRow) - padPlane->GetRowSize(fRow)/2.0;
 
   Double_t xMin = 0;
@@ -425,7 +425,7 @@ void AliTRDmcmTracklet::MakeClusAmpGraph()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDmcmTracklet::GetClusY(Float_t *adc, Int_t pla) const
+Float_t AliTRDmcmTracklet::GetClusY(Float_t *adc, Int_t layer) const
 {
   //
   // Cluster position in the phi direction in pad units (relative to the pad border)
@@ -443,7 +443,7 @@ Float_t AliTRDmcmTracklet::GetClusY(Float_t *adc, Int_t pla) const
 
   Float_t sigma = 0.0;
 
-  switch(pla) {
+  switch(layer) {
   case 0:
     sigma = 0.515; break;
   case 1:
@@ -457,7 +457,7 @@ Float_t AliTRDmcmTracklet::GetClusY(Float_t *adc, Int_t pla) const
   case 5:
     sigma = 0.463; break;
   default:
-    AliError("Wrong plane number.");
+    AliError("Wrong layer number.");
     return 0.0;
   }
 

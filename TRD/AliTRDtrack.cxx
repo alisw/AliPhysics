@@ -517,7 +517,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
     if (!cluster) continue;
 
     // Read info from current cluster
-    plane  = AliTRDgeometry::GetPlane(cluster->GetDetector());
+    plane  = AliTRDgeometry::GetLayer(cluster->GetDetector());
     if (plane < 0 || plane >= kNplane) {
       AliError(Form("Wrong plane %d", plane));
       continue;
@@ -586,7 +586,7 @@ void AliTRDtrack::CookdEdxNN(Float_t *dedx)
     }
 	  
     // Read info from current cluster
-    plane   = AliTRDgeometry::GetPlane(cluster->GetDetector());
+    plane   = AliTRDgeometry::GetLayer(cluster->GetDetector());
     if (plane < 0 || plane >= kNplane) {
       AliError(Form("Wrong plane %d",plane));
       continue;
@@ -697,7 +697,7 @@ Bool_t AliTRDtrack::CookPID(Int_t &pidQuality)
   // Skip tracks which have no TRD signal at all
   if (fdEdx == 0.) return kFALSE;
 	
-  for (Int_t iPlane = 0; iPlane < AliTRDgeometry::kNplan; iPlane++) {
+  for (Int_t iPlane = 0; iPlane < AliTRDgeometry::kNlayer; iPlane++) {
 
     length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick())
            / TMath::Sqrt((1.0 - fSnp[iPlane]*fSnp[iPlane]) 
@@ -1132,7 +1132,7 @@ Int_t AliTRDtrack::GetSector() const
   //
 
   return Int_t(TVector2::Phi_0_2pi(GetAlpha()) / AliTRDgeometry::GetAlpha())
-             % AliTRDgeometry::kNsect;
+             % AliTRDgeometry::kNsector;
 
 }
 

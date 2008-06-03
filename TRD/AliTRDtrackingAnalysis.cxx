@@ -427,7 +427,7 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 	//fTracker->Transform(cls);
 	fClPos->Fill(cls->GetZ(), cls->GetY());
 		
-	int plane = fGeo->GetPlane(cls->GetDetector());
+	int layer = fGeo->GetLayer(cls->GetDetector());
 	
 	int nl = 0;
 	for(int k=0; k<3; k++) if (cls->GetLabel(k) > -1) nl++;
@@ -440,7 +440,7 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 	fClZXcl->Fill(cls->GetZ(), cls->GetX());
 	fClZXref->Fill(zref, cls->GetX());
 
-	AliTRDpadPlane *padPlane = fGeo->GetPadPlane(plane,0);
+	AliTRDpadPlane *padPlane = fGeo->GetPadPlane(layer,0);
 	Double_t h01   = TMath::Tan(-TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
 	
 	//double dz = zref - padPlane->GetRow0();
@@ -457,7 +457,7 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 	fClZZ->Fill(zref, cls->GetZ());
 	fClZ->Fill(dz);
 	fTgPhi->Fill(tgphi);
-	fClYX->Fill(cls->GetY(), cls->GetX() - fGeo->GetTime0(plane));
+	fClYX->Fill(cls->GetY(), cls->GetX() - fGeo->GetTime0(layer));
       }
     }    
   }

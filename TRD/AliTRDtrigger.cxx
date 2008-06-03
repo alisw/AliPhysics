@@ -336,14 +336,14 @@ Bool_t AliTRDtrigger::ReadTracklets(AliRunLoader *rl)
 
       fTrk   = (AliTRDmcmTracklet *) tracklets->UncheckedAt(itrk);
       idet   = fTrk->GetDetector();
-      iStack = idet / (AliTRDgeometry::Nplan());
+      iStack = idet / (AliTRDgeometry::Nlayer());
 
       if (iStackPrev != iStack) {
 	if (iStackPrev == -1) {
 	  iStackPrev = iStack;
 	} 
         else {
-	  MakeTracks(idet - AliTRDgeometry::Nplan());
+	  MakeTracks(idet - AliTRDgeometry::Nlayer());
 	  ResetTracklets();
 	  iStackPrev = iStack;
 	}
@@ -354,7 +354,7 @@ Bool_t AliTRDtrigger::ReadTracklets(AliRunLoader *rl)
       if ((iEntry == (nEntries-1)) && 
           (itrk   == (tracklets->GetEntriesFast() - 1))) {
 	idet++;
-	MakeTracks(idet-AliTRDgeometry::Nplan());
+	MakeTracks(idet-AliTRDgeometry::Nlayer());
 	ResetTracklets();
       }
 
@@ -375,12 +375,12 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
   // Create tracklets from digits
   //
 
-  Int_t chamBeg = 0;
-  Int_t chamEnd = AliTRDgeometry::Ncham();
-  Int_t planBeg = 0;
-  Int_t planEnd = AliTRDgeometry::Nplan();
-  Int_t sectBeg = 0;
-  Int_t sectEnd = AliTRDgeometry::Nsect();
+  Int_t stackBeg  = 0;
+  Int_t stackEnd  = AliTRDgeometry::Nstack();
+  Int_t layerBeg  = 0;
+  Int_t layerEnd  = AliTRDgeometry::Nlayer();
+  Int_t sectorBeg = 0;
+  Int_t sectorEnd = AliTRDgeometry::Nsector();
 
   fTrkTest = new AliTRDmcmTracklet(0,0,0);
   fMCM     = new AliTRDmcm(0);
@@ -391,43 +391,43 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
   Int_t   col1;
   Int_t   col2;
   Int_t   idet       = -1;
-  Int_t   iStack     = -1;
+  Int_t   iStackCur  = -1;
   Int_t   iStackPrev = -1;
   Float_t amp;
 
-  for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
+  for (Int_t isector = sectorBeg; isector < sectorEnd; isector++) {
 
-    for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
+    for (Int_t istack = stackBeg; istack < stackEnd; istack++) {
 
       // Number of ROBs in the chamber
-      if(icham == 2) {
+      if(istack == 2) {
 	fNROB = 6;
       } 
       else {
 	fNROB = 8;
       }
 
-      for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
+      for (Int_t ilayer = layerBeg; ilayer < layerEnd; ilayer++) {
 
-        idet = fGeo->GetDetector(iplan,icham,isect);
+        idet = fGeo->GetDetector(ilayer,istack,isector);
 	ResetTracklets();
 	
 	if (makeTracks) {
-	  iStack = idet / (AliTRDgeometry::Nplan());
-	  if (iStackPrev != iStack) {
+	  iStackCur = idet / (AliTRDgeometry::Nlayer());
+	  if (iStackPrev != iStackCur) {
 	    if (iStackPrev == -1) {
-	      iStackPrev = iStack;
+	      iStackPrev = iStackCur;
 	    } 
             else {
-	      MakeTracks(idet-AliTRDgeometry::Nplan());
+	      MakeTracks(idet-AliTRDgeometry::Nlayer());
 	      ResetTracklets();
-	      iStackPrev = iStack;
+	      iStackPrev = iStackCur;
 	    }
 	  }
 	}
 
-        Int_t nRowMax    = fGeo->GetRowMax(iplan,icham,isect);
-	Int_t nColMax    = fGeo->GetColMax(iplan);
+        Int_t nRowMax    = fGeo->GetRowMax(ilayer,istack,isector);
+	Int_t nColMax    = fGeo->GetColMax(ilayer);
         Int_t nTimeTotal = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
         // Get the digits
@@ -521,7 +521,7 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
   if (makeTracks) {
     idet++;
-    MakeTracks(idet - AliTRDgeometry::Nplan());
+    MakeTracks(idet - AliTRDgeometry::Nlayer());
     ResetTracklets();
   }
 
@@ -804,7 +804,7 @@ void AliTRDtrigger::MakeTracks(Int_t det)
   
   fModule->Reset();
 
-  Int_t nRowMax, iplan, icham, isect, row;
+  Int_t nRowMax, ilayer, istack, isector, row;
 
   if ((det < 0) || (det >= AliTRDgeometry::Ndet())) {
     AliError(Form("Unexpected detector index %d.",det));
@@ -818,11 +818,11 @@ void AliTRDtrigger::MakeTracks(Int_t det)
     
     trk = (AliTRDmcmTracklet *) Tracklets()->UncheckedAt(i);
     
-    iplan = fGeo->GetPlane(trk->GetDetector());
-    icham = fGeo->GetChamber(trk->GetDetector());
-    isect = fGeo->GetSector(trk->GetDetector());
+    ilayer  = fGeo->GetLayer(trk->GetDetector());
+    istack  = fGeo->GetStack(trk->GetDetector());
+    isector = fGeo->GetSector(trk->GetDetector());
 
-    nRowMax = fGeo->GetRowMax(iplan,icham,isect);
+    nRowMax = fGeo->GetRowMax(ilayer,istack,isector);
     row = trk->GetRow();
 
     fModule->AddTracklet(trk->GetDetector(),
@@ -839,7 +839,7 @@ void AliTRDtrigger::MakeTracks(Int_t det)
 
   fModule->SortTracklets();
   fModule->RemoveMultipleTracklets();
-  fModule->SortZ((Int_t)fGeo->GetChamber(det));
+  fModule->SortZ((Int_t)fGeo->GetStack(det));
   fModule->FindTracks();
   fModule->SortTracks();
   fModule->RemoveMultipleTracks();

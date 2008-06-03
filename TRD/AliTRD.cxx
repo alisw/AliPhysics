@@ -335,7 +335,7 @@ void AliTRD::BuildGeometry()
   Float_t zmax1;
   Float_t zmax2;
 
-  Int_t   iPlan;
+  Int_t   iLayer;
  
   const Int_t kColorTRD = 46;
   
@@ -344,7 +344,7 @@ void AliTRD::BuildGeometry()
   
   if      (fDisplayType == 0) {
 
-    pgon = new TPGON("S_TRD","TRD","void",0,360,AliTRDgeometry::Nsect(),4);
+    pgon = new TPGON("S_TRD","TRD","void",0,360,AliTRDgeometry::Nsector(),4);
     rmin = kRmin;
     rmax = kRmax;
     pgon->DefineSection(0,-kZmax1,rmax,rmax);
@@ -370,10 +370,10 @@ void AliTRD::BuildGeometry()
     zmax2 = kZmax2 + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::DrThick();
 
-    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (iLayer = 0; iLayer < AliTRDgeometry::Nlayer(); iLayer++) {
 
-      sprintf(name,"S_TR1%d",iPlan);
-      pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
+      sprintf(name,"S_TR1%d",iLayer);
+      pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsector(),4);
       pgon->DefineSection(0,-zmax1,rmax,rmax);
       pgon->DefineSection(1,-zmax2,rmin,rmax);
       pgon->DefineSection(2, zmax2,rmin,rmax);
@@ -397,10 +397,10 @@ void AliTRD::BuildGeometry()
     zmax2      = kZmax2 + slope * thickness;
     zmax1      = zmax2  + slope * AliTRDgeometry::AmThick();
 
-    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (iLayer = 0; iLayer < AliTRDgeometry::Nlayer(); iLayer++) {
 
-      sprintf(name,"S_TR2%d",iPlan);
-      pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
+      sprintf(name,"S_TR2%d",iLayer);
+      pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsector(),4);
       pgon->DefineSection(0,-zmax1,rmax,rmax);
       pgon->DefineSection(1,-zmax2,rmin,rmax);
       pgon->DefineSection(2, zmax2,rmin,rmax);

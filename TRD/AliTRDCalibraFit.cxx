@@ -247,7 +247,7 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
     AliTRDFitInfo *fitInfo = new AliTRDFitInfo();
     Int_t detector         = ((AliTRDFitInfo *)c.fVectorFit.UncheckedAt(k))->GetDetector();
     Int_t ntotal = 1;
-    if (GetChamber(detector) == 2) {
+    if (GetStack(detector) == 2) {
       ntotal = 1728;
     }
     else {
@@ -266,7 +266,7 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
     AliTRDFitInfo *fitInfo = new AliTRDFitInfo();
     Int_t detector         = ((AliTRDFitInfo *)c.fVectorFit2.UncheckedAt(k))->GetDetector();
     Int_t ntotal = 1;
-    if (GetChamber(detector) == 2) {
+    if (GetStack(detector) == 2) {
       ntotal = 1728;
     }
     else {
@@ -1338,8 +1338,8 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectVdrift(TObjArray *vectorFit, Bool
     }
     else {
       Int_t   count = 0;
-      Int_t rowMax    = fGeo->GetRowMax(GetPlane(detector),GetChamber(detector),GetSector(detector));
-      Int_t colMax    = fGeo->GetColMax(GetPlane(detector));
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
       for (Int_t row = 0; row < rowMax; row++) {
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
@@ -1382,8 +1382,8 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(TObjArray *vectorFit, Double
     }
     else{
       Int_t   count = 0;
-      Int_t rowMax    = fGeo->GetRowMax(GetPlane(detector),GetChamber(detector),GetSector(detector));
-      Int_t colMax    = fGeo->GetColMax(GetPlane(detector));
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
       for (Int_t row = 0; row < rowMax; row++) {
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
@@ -1423,8 +1423,8 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectT0(TObjArray *vectorFit, Bool_t p
       min = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[0];
     }
     else{
-      Int_t rowMax    = fGeo->GetRowMax(GetPlane(detector),GetChamber(detector),GetSector(detector));
-      Int_t colMax    = fGeo->GetColMax(GetPlane(detector));
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
       for (Int_t row = 0; row < rowMax; row++) {
 	for (Int_t col = 0; col < colMax; col++) {
 	  value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[(Int_t)(col*rowMax+row)];
@@ -1459,8 +1459,8 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectLorentzAngle(TObjArray *vectorFit
   for (Int_t k = 0; k < loop; k++) {
     detector  = ((AliTRDFitInfo *) vectorFit->At(k))->GetDetector();
     /*
-      Int_t rowMax    = fGeo->GetRowMax(GetPlane(detector),GetChamber(detector),GetSector(detector));
-      Int_t colMax    = fGeo->GetColMax(GetPlane(detector));
+      Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
+      Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
       Float_t min  = 100.0;
       for (Int_t row = 0; row < rowMax; row++) {
       for (Int_t col = 0; col < colMax; col++) {
@@ -1862,7 +1862,7 @@ Bool_t AliTRDCalibraFit::FillVectorFit()
   AliTRDFitInfo *fitInfo = new AliTRDFitInfo();
 
   Int_t ntotal = 1;
-  if (GetChamber(fCountDet) == 2) {
+  if (GetStack(fCountDet) == 2) {
     ntotal = 1728;
   }
   else {
@@ -1894,7 +1894,7 @@ Bool_t AliTRDCalibraFit::FillVectorFit2()
   AliTRDFitInfo *fitInfo = new AliTRDFitInfo();
 
   Int_t ntotal = 1;
-  if (GetChamber(fCountDet) == 2) {
+  if (GetStack(fCountDet) == 2) {
     ntotal = 1728;
   }
   else {
@@ -2159,10 +2159,10 @@ void AliTRDCalibraFit::InitfCountDetAndfCount(Int_t i)
     fCount    = fCalibraMode->GetXbins(i);
     fCountDet--;
     // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
-    fCalibraMode->ModePadCalibration((Int_t) GetChamber(fCountDet),i);
-    fCalibraMode->ModePadFragmentation((Int_t) GetPlane(fCountDet)
-				       ,(Int_t) GetChamber(fCountDet)
-				       ,(Int_t) GetSector(fCountDet),i);
+    fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),i);
+    fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+				      ,(Int_t) GetStack(fCountDet)
+				      ,(Int_t) GetSector(fCountDet),i);
   }
 }
 //_______________________________________________________________________________
@@ -2211,10 +2211,10 @@ void AliTRDCalibraFit::CalculDect1Dect2(Int_t i)
     fCalibraMode->CalculXBins(fCountDet,i);
     fDect1 = fCalibraMode->GetXbins(i);
     // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
-    fCalibraMode->ModePadCalibration((Int_t) GetChamber(fCountDet),i);
-    fCalibraMode->ModePadFragmentation((Int_t) GetPlane(fCountDet)
-				       ,(Int_t) GetChamber(fCountDet)
-				       ,(Int_t) GetSector(fCountDet),i);
+    fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),i);
+    fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+				      ,(Int_t) GetStack(fCountDet)
+				      ,(Int_t) GetSector(fCountDet),i);
     // Set for the next detector
     fDect2 = fDect1 + fCalibraMode->GetNfragZ(i)*fCalibraMode->GetNfragRphi(i);
   }
@@ -2248,10 +2248,10 @@ void AliTRDCalibraFit::UpdatefCountDetAndfCount(Int_t idect, Int_t i)
      // On en est au detector
      fCountDet += 1;
      // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
-     fCalibraMode->ModePadCalibration((Int_t) GetChamber(fCountDet),i);
-     fCalibraMode->ModePadFragmentation((Int_t) GetPlane(fCountDet)
-				,(Int_t) GetChamber(fCountDet)
-                          ,(Int_t) GetSector(fCountDet),i);
+     fCalibraMode->ModePadCalibration((Int_t) GetStack(fCountDet),i);
+     fCalibraMode->ModePadFragmentation((Int_t) GetLayer(fCountDet)
+			     	       ,(Int_t) GetStack(fCountDet)
+                                       ,(Int_t) GetSector(fCountDet),i);
      // Set for the next detector
      fCount += fCalibraMode->GetNfragZ(i)*fCalibraMode->GetNfragRphi(i);
      // calib objects
@@ -2290,9 +2290,9 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticCH(Int_t idect)
     // Calcul the coef from the database choosen
     CalculChargeCoefMean(kFALSE);
 
-    //chamber 2, not chamber 2
+    //stack 2, not stack 2
     Int_t factor = 0;
-    if(GetChamber(fCountDet) == 2) factor = 12;
+    if(GetStack(fCountDet) == 2) factor = 12;
     else factor = 16;
     
     // Fill the fCurrentCoefDetector with negative value to say: not fitted
@@ -2332,9 +2332,9 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPH(Int_t idect)
     CalculVdriftCoefMean();
     CalculT0CoefMean();
   
-    //chamber 2 and not chamber 2
+    //stack 2 and not stack 2
     Int_t factor = 0;
-    if(GetChamber(fCountDet) == 2) factor = 12;
+    if(GetStack(fCountDet) == 2) factor = 12;
     else factor = 16;
 
 
@@ -2380,9 +2380,9 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPRF(Int_t idect)
     
     CalculPRFCoefMean();
     
-    // chamber 2 and not chamber 2
+    // stack 2 and not stack 2
     Int_t factor = 0;
-    if(GetChamber(fCountDet) == 2) factor = 12;
+    if(GetStack(fCountDet) == 2) factor = 12;
     else factor = 16;
 
     
@@ -2416,7 +2416,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticLinearFitter()
   CalculVdriftLorentzCoef();
 
   Int_t factor = 0;
-  if(GetChamber(fCountDet) == 2) factor = 1728;
+  if(GetStack(fCountDet) == 2) factor = 1728;
   else factor = 2304;
     
     
@@ -2450,7 +2450,7 @@ Bool_t AliTRDCalibraFit::FillInfosFitCH(Int_t idect)
   if (fDebugLevel != 1) {
     
     Int_t factor = 0;
-    if(GetChamber(fCountDet) == 2) factor = 12;
+    if(GetStack(fCountDet) == 2) factor = 12;
     else factor = 16; 
     
     for (Int_t k = fCalibraMode->GetRowMin(0); k < fCalibraMode->GetRowMax(0); k++) {
@@ -2477,7 +2477,7 @@ Bool_t AliTRDCalibraFit::FillInfosFitPH(Int_t idect)
   if (fDebugLevel != 1) {
 
     Int_t factor = 0;
-    if(GetChamber(fCountDet) == 2) factor = 12;
+    if(GetStack(fCountDet) == 2) factor = 12;
     else factor = 16; 
     
     for (Int_t k = fCalibraMode->GetRowMin(1); k < fCalibraMode->GetRowMax(1); k++) {
@@ -2501,7 +2501,7 @@ Bool_t AliTRDCalibraFit::FillInfosFitPRF(Int_t idect)
   if (fDebugLevel != 1) {
 
     Int_t factor = 0;
-    if(GetChamber(fCountDet) == 2) factor = 12;
+    if(GetStack(fCountDet) == 2) factor = 12;
     else factor = 16; 
     
     // Pointer to the branch
@@ -2525,7 +2525,7 @@ Bool_t AliTRDCalibraFit::FillInfosFitLinearFitter()
   //
   
   Int_t factor = 0;
-  if(GetChamber(fCountDet) == 2) factor = 1728;
+  if(GetStack(fCountDet) == 2) factor = 1728;
   else factor = 2304; 
   
   // Pointer to the branch
@@ -2675,7 +2675,7 @@ void AliTRDCalibraFit::FillFillPRF(Int_t idect)
       } 
       
       Int_t   detector     = fCountDet;
-      Int_t   plane        = GetPlane(fCountDet);
+      Int_t   layer        = GetLayer(fCountDet);
       Int_t   caligroup    = idect;
       Short_t rowmin       = fCalibraMode->GetRowMin(2);
       Short_t rowmax       = fCalibraMode->GetRowMax(2);
@@ -2687,7 +2687,7 @@ void AliTRDCalibraFit::FillFillPRF(Int_t idect)
 
       (* fDebugStreamer) << "FillFillPRF"<<
 	"detector="<<detector<<
-	"plane="<<plane<<
+	"layer="<<layer<<
 	"caligroup="<<caligroup<<
 	"rowmin="<<rowmin<<
 	"rowmax="<<rowmax<<
@@ -2729,13 +2729,13 @@ void AliTRDCalibraFit::FillFillLinearFitter()
     } 
     
     //Debug: comparaison of the different methods (okey for first time but not for iterative procedure)
-    AliTRDpadPlane *padplane = fGeo->GetPadPlane(GetPlane(fCountDet),GetChamber(fCountDet));
+    AliTRDpadPlane *padplane = fGeo->GetPadPlane(GetLayer(fCountDet),GetStack(fCountDet));
     Float_t rowmd            = (padplane->GetRow0()+padplane->GetRowEnd())/2.;
-    Float_t r                = AliTRDgeometry::GetTime0(GetPlane(fCountDet)); 
+    Float_t r                = AliTRDgeometry::GetTime0(GetLayer(fCountDet)); 
     Float_t tiltangle        = padplane->GetTiltingAngle();
     Int_t   detector         = fCountDet;
-    Int_t   chamber          = GetChamber(fCountDet);
-    Int_t   plane            = GetChamber(fCountDet);
+    Int_t   stack            = GetStack(fCountDet);
+    Int_t   layer            = GetLayer(fCountDet);
     Float_t vf               = fCurrentCoef[0]; 
     Float_t vs               = fCurrentCoef[1]; 
     Float_t vfE              = fCurrentCoefE;
@@ -2745,8 +2745,8 @@ void AliTRDCalibraFit::FillFillLinearFitter()
    
     (* fDebugStreamer) << "FillFillLinearFitter"<<
       "detector="<<detector<<
-      "chamber="<<chamber<<
-      "plane="<<plane<<
+      "stack="<<stack<<
+      "layer="<<layer<<
       "rowmd="<<rowmd<<
       "r="<<r<<
       "tiltangle="<<tiltangle<<
@@ -2787,12 +2787,12 @@ Bool_t AliTRDCalibraFit::CalculT0CoefMean()
 	fCurrentCoef2[1] = fCalDet2->GetValue(fCountDet);
       }
       else{
-	for(Int_t row = 0; row < fGeo->GetRowMax(GetPlane(fCountDet),GetChamber(fCountDet),GetSector(fCountDet)); row++){
-	  for(Int_t col = 0; col < fGeo->GetColMax(GetPlane(fCountDet)); col++){
+	for(Int_t row = 0; row < fGeo->GetRowMax(GetLayer(fCountDet),GetStack(fCountDet),GetSector(fCountDet)); row++){
+	  for(Int_t col = 0; col < fGeo->GetColMax(GetLayer(fCountDet)); col++){
 	    fCurrentCoef2[1] += (Float_t) (fCalROC2->GetValue(col,row)+fCalDet2->GetValue(fCountDet));
 	  }
 	}
-	fCurrentCoef2[1] = fCurrentCoef2[1] / ((fGeo->GetRowMax(GetPlane(fCountDet),GetChamber(fCountDet),GetSector(fCountDet)))*(fGeo->GetColMax(GetPlane(fCountDet))));
+	fCurrentCoef2[1] = fCurrentCoef2[1] / ((fGeo->GetRowMax(GetLayer(fCountDet),GetStack(fCountDet),GetSector(fCountDet)))*(fGeo->GetColMax(GetLayer(fCountDet))));
       }
     }
   }
@@ -2885,12 +2885,12 @@ Bool_t AliTRDCalibraFit::CalculVdriftLorentzCoef()
   return kTRUE;
 }
 //_____________________________________________________________________________
-Float_t AliTRDCalibraFit::GetPRFDefault(Int_t plane) const
+Float_t AliTRDCalibraFit::GetPRFDefault(Int_t layer) const
 {
   //
   // Default width of the PRF if there is no database as reference
   //
-  switch(plane)
+  switch(layer)
     {
       // default database
       //case 0:  return 0.515;
@@ -2950,7 +2950,7 @@ void AliTRDCalibraFit::SetCalROC(Int_t i)
       {
       case 0:
 	if(fCalROC) delete fCalROC;
-	fCalROC = new AliTRDCalROC(GetPlane(fCountDet),GetChamber(fCountDet)); 
+	fCalROC = new AliTRDCalROC(GetLayer(fCountDet),GetStack(fCountDet)); 
 	for(Int_t k = 0; k < fCalROC->GetNchannels(); k++){
 	  fCalROC->SetValue(k,1.0);
 	}
@@ -2958,8 +2958,8 @@ void AliTRDCalibraFit::SetCalROC(Int_t i)
       case 1:
 	if(fCalROC)  delete fCalROC;
 	if(fCalROC2) delete fCalROC2;
-	fCalROC  = new AliTRDCalROC(GetPlane(fCountDet),GetChamber(fCountDet));
-	fCalROC2 = new AliTRDCalROC(GetPlane(fCountDet),GetChamber(fCountDet));
+	fCalROC  = new AliTRDCalROC(GetLayer(fCountDet),GetStack(fCountDet));
+	fCalROC2 = new AliTRDCalROC(GetLayer(fCountDet),GetStack(fCountDet));
 	for(Int_t k = 0; k < fCalROC->GetNchannels(); k++){
 	  fCalROC->SetValue(k,1.0);
 	  fCalROC2->SetValue(k,0.0);
@@ -2967,8 +2967,8 @@ void AliTRDCalibraFit::SetCalROC(Int_t i)
 	break;
       case 2:
 	if(fCalROC) delete fCalROC;
-	value = GetPRFDefault(GetPlane(fCountDet));
-	fCalROC = new AliTRDCalROC(GetPlane(fCountDet),GetChamber(fCountDet)); 
+	value = GetPRFDefault(GetLayer(fCountDet));
+	fCalROC = new AliTRDCalROC(GetLayer(fCountDet),GetStack(fCountDet)); 
 	for(Int_t k = 0; k < fCalROC->GetNchannels(); k++){
 	  fCalROC->SetValue(k,value);
 	}
@@ -3873,12 +3873,12 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
       } 
       
       Int_t    detector     = fCountDet;
-      Int_t    plane        = GetPlane(fCountDet);
+      Int_t    layer        = GetLayer(fCountDet);
       Int_t    group        = ibin;    
      
       (* fDebugStreamer) << "FitGausMIFill"<<
 	"detector="<<detector<<
-	"plane="<<plane<<
+	"layer="<<layer<<
 	"nbins="<<nBins<<
 	"group="<<group<<
 	"entriesI="<<entriesI<<
@@ -3926,12 +3926,12 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
       } 
       
       Int_t    detector     = fCountDet;
-      Int_t    plane        = GetPlane(fCountDet);
+      Int_t    layer        = GetLayer(fCountDet);
            
      
       (* fDebugStreamer) << "FitGausMIFit"<<
 	"detector="<<detector<<
-	"plane="<<plane<<
+	"layer="<<layer<<
 	"nbins="<<nBins<<
 	"errorsigma="<<chi2<<
 	"mean="<<(*param)[1]<<
@@ -4055,7 +4055,7 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
       } 
       
       Int_t    detector     = fCountDet;
-      Int_t    plane        = GetPlane(fCountDet);
+      Int_t    layer        = GetLayer(fCountDet);
       Int_t    nbtotal      = total;  
       Int_t    group        = k;    
       Float_t  low          = lowedge;
@@ -4066,7 +4066,7 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
 
       (* fDebugStreamer) << "FitTnpRange0"<<
 	"detector="<<detector<<
-	"plane="<<plane<<
+	"layer="<<layer<<
 	"nbtotal="<<nbtotal<<
 	"group="<<group<<
 	"low="<<low<<
@@ -4136,14 +4136,14 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
       } 
       
       Int_t    detector     = fCountDet;
-      Int_t    plane        = GetPlane(fCountDet);
+      Int_t    layer        = GetLayer(fCountDet);
       Int_t    nbtotal      = total;
       Double_t colsize[6]   = {0.635,0.665,0.695,0.725,0.755,0.785};  
-      Double_t sigmax       = TMath::Sqrt(TMath::Abs(pars0[2]))*10000*colsize[plane];      
+      Double_t sigmax       = TMath::Sqrt(TMath::Abs(pars0[2]))*10000*colsize[layer];      
 
       (* fDebugStreamer) << "FitTnpRange1"<<
 	"detector="<<detector<<
-	"plane="<<plane<<
+	"layer="<<layer<<
 	"nbtotal="<<nbtotal<<
 	"par0="<<pars0[0]<<
 	"par1="<<pars0[1]<<
@@ -4534,10 +4534,10 @@ void AliTRDCalibraFit::NormierungCharge()
     Int_t    detector = ((AliTRDFitInfo *) fVectorFit.At(k))->GetDetector();
     Float_t *coef     = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef();
     //printf("detector %d coef[0] %f\n",detector,coef[0]);
-    if (GetChamber(detector) == 2) {
+    if (GetStack(detector) == 2) {
       total = 1728;
     }
-    if (GetChamber(detector) != 2) {
+    if (GetStack(detector) != 2) {
       total = 2304;
     }
     for (Int_t j = 0; j < total; j++) {
@@ -4679,7 +4679,7 @@ TH1F *AliTRDCalibraFit::CorrectTheError(TGraphErrors *hist)
 //
 
 //_____________________________________________________________________________
-Int_t AliTRDCalibraFit::GetPlane(Int_t d) const
+Int_t AliTRDCalibraFit::GetLayer(Int_t d) const
 {
   //
   // Reconstruct the plane number from the detector number
@@ -4690,14 +4690,14 @@ Int_t AliTRDCalibraFit::GetPlane(Int_t d) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDCalibraFit::GetChamber(Int_t d) const
+Int_t AliTRDCalibraFit::GetStack(Int_t d) const
 {
   //
-  // Reconstruct the chamber number from the detector number
+  // Reconstruct the stack number from the detector number
   //
-  Int_t fgkNplan = 6;
+  const Int_t kNlayer = 6;
 
-  return ((Int_t) (d % 30) / fgkNplan);
+  return ((Int_t) (d % 30) / kNlayer);
 
 }
 

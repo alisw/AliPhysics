@@ -401,10 +401,10 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
     sprintf(title,"%s calibration histogram detector %.2d;ADC channel;Channel (pad)",type,det);
 
    
-    Int_t nbchannels = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))*fGeo->GetColMax(GetPlane(det));
+    Int_t nbchannels = fGeo->GetRowMax(GetLayer(det),GetStack(det),GetSector(det))*fGeo->GetColMax(GetLayer(det));
     
     // we will add 3*8*rowMax channels at the end for the double counted
-    nbchannels += 3*8*(fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det)));
+    nbchannels += 3*8*(fGeo->GetRowMax(GetLayer(det),GetStack(det),GetSector(det)));
 
 
     // new histogram with calib information. One value for each pad!
@@ -441,7 +441,7 @@ AliTRDCalROC* AliTRDCalibPadStatus::GetCalRoc(Int_t det, TObjArray* arr, Bool_t 
     // if we are forced and histogram doesn't yes exist create it
 
     // new AliTRDCalROC. One value for each pad!
-    AliTRDCalROC *croc = new AliTRDCalROC(GetPlane(det),GetChamber(det));
+    AliTRDCalROC *croc = new AliTRDCalROC(GetLayer(det),GetStack(det));
     arr->AddAt(croc,det);
     return croc;
 }
@@ -783,10 +783,10 @@ void AliTRDCalibPadStatus::SetCalRocRMSd(AliTRDCalROC *rms, Int_t det) /*FOLD00*
   
 }
 //_____________________________________________________________________________
-Int_t AliTRDCalibPadStatus::GetPlane(Int_t d) const
+Int_t AliTRDCalibPadStatus::GetLayer(Int_t d) const
 {
   //
-  // Reconstruct the plane number from the detector number
+  // Reconstruct the layer number from the detector number
   //
 
   return ((Int_t) (d % 6));
@@ -794,7 +794,7 @@ Int_t AliTRDCalibPadStatus::GetPlane(Int_t d) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDCalibPadStatus::GetChamber(Int_t d) const
+Int_t AliTRDCalibPadStatus::GetStack(Int_t d) const
 {
   //
   // Reconstruct the chamber number from the detector number

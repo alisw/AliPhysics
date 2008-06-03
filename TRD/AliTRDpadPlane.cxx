@@ -38,8 +38,8 @@ ClassImp(AliTRDpadPlane)
 //_____________________________________________________________________________
 AliTRDpadPlane::AliTRDpadPlane()
   :TObject()
-  ,fPla(0)
-  ,fCha(0)
+  ,fLayer(0)
+  ,fStack(0)
   ,fLength(0)
   ,fWidth(0)
   ,fLengthRim(0)
@@ -65,10 +65,10 @@ AliTRDpadPlane::AliTRDpadPlane()
 }
 
 //_____________________________________________________________________________
-AliTRDpadPlane::AliTRDpadPlane(Int_t plane, Int_t chamber)
+AliTRDpadPlane::AliTRDpadPlane(Int_t layer, Int_t stack)
   :TObject()
-  ,fPla(plane)
-  ,fCha(chamber)
+  ,fLayer(layer)
+  ,fStack(stack)
   ,fLength(0)
   ,fWidth(0)
   ,fLengthRim(0)
@@ -96,8 +96,8 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t plane, Int_t chamber)
 //_____________________________________________________________________________
 AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
   :TObject(p)
-  ,fPla(p.fPla)
-  ,fCha(p.fCha)
+  ,fLayer(p.fLayer)
+  ,fStack(p.fStack)
   ,fLength(p.fLength)
   ,fWidth(p.fWidth)
   ,fLengthRim(p.fLengthRim)
@@ -183,8 +183,8 @@ void AliTRDpadPlane::Copy(TObject &p) const
 
   Int_t iBin = 0;
 
-  ((AliTRDpadPlane &) p).fPla            = fPla;
-  ((AliTRDpadPlane &) p).fCha            = fCha;
+  ((AliTRDpadPlane &) p).fLayer          = fLayer;
+  ((AliTRDpadPlane &) p).fStack          = fStack;
 
   ((AliTRDpadPlane &) p).fLength         = fLength;
   ((AliTRDpadPlane &) p).fWidth          = fWidth;

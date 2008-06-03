@@ -22,7 +22,7 @@ class AliTRDCommonParam : public TObject
 
   public:
   
-    enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
+    enum { kNlayer = 6, kNstack = 5, kNsector = 18, kNdet = 540 };
     
     AliTRDCommonParam(TRootIoCtor *);
     AliTRDCommonParam(const AliTRDCommonParam &p);   

@@ -157,7 +157,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
   Bool_t newEvent = kFALSE;  // only for correct readout tree
 
   // sect is same as iDDL, so I use only sect here.
-  for (Int_t sect = 0; sect < fGeo->Nsect(); sect++) { 
+  for (Int_t sect = 0; sect < fGeo->Nsector(); sect++) { 
 
     char name[1024];
     sprintf(name,"TRD_%d.ddl",sect + AliTRDRawStream::kDDLOffset);
@@ -175,25 +175,25 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     
 
     // GTU common data header (5x4 bytes per super module, shows link mask)
-    for( Int_t cham = 0; cham < fGeo->Ncham(); cham++ ) {
+    for( Int_t stack = 0; stack < fGeo->Nstack(); stack++ ) {
       UInt_t gtuCdh = (UInt_t)(0xe << 28);
-      for( Int_t plan = 0; plan < fGeo->Nplan(); plan++) {
-	Int_t iDet = fGeo->GetDetector(plan, cham, sect);
+      for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
+	Int_t iDet = fGeo->GetDetector(layer, stack, sect);
 	
 	// If chamber status is ok, we assume that the optical link is also OK.
         // This is shown in the GTU link mask.
 	if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
-	  gtuCdh = gtuCdh | (3 << (2*plan));
+	  gtuCdh = gtuCdh | (3 << (2*layer));
       }
       of->WriteBuffer((char *) (& gtuCdh), sizeof(gtuCdh));
       npayloadbyte += 4;
     }
 
     // Prepare chamber data
-    for( Int_t cham = 0; cham < fGeo->Ncham(); cham++) {
-      for( Int_t plan = 0; plan < fGeo->Nplan(); plan++) {
+    for( Int_t stack = 0; stack < fGeo->Nstack(); stack++) {
+      for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
 
-        Int_t iDet = fGeo->GetDetector(plan,cham,sect);
+        Int_t iDet = fGeo->GetDetector(layer,stack,sect);
 	if (iDet == 0) newEvent = kTRUE; // it is expected that each event has at least one tracklet; this is only needed for correct readout tree
 	// Get the digits array
         AliTRDdataArrayS *digits = (AliTRDdataArrayS *) digitsManager->GetDigits(iDet);
@@ -275,11 +275,11 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
 
   Int_t           nw = 0;                       // Number of written    words
   Int_t           of = 0;                       // Number of overflowed words
-  Int_t         plan = fGeo->GetPlane( det );   // Plane
-  Int_t         cham = fGeo->GetChamber( det ); // Chamber
+  Int_t        layer = fGeo->GetLayer( det );   // Layer
+  Int_t        stack = fGeo->GetStack( det );   // Stack
   Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
-  Int_t         nRow = fGeo->GetRowMax( plan, cham, sect );
-  Int_t         nCol = fGeo->GetColMax( plan );
+  Int_t         nRow = fGeo->GetRowMax( layer, stack, sect );
+  Int_t         nCol = fGeo->GetColMax( layer );
   const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   Int_t          iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
@@ -297,8 +297,8 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
     return 0;
   }
 
-  AliDebug(1,Form("Producing raw data for sect=%d plan=%d cham=%d side=%d"
-                 ,sect,plan,cham,side));
+  AliDebug(1,Form("Producing raw data for sect=%d layer=%d stack=%d side=%d"
+                 ,sect,layer,stack,side));
 
   // Tracklet should be processed here but not implemented yet
 
@@ -314,7 +314,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
   if      ( rv == 1 ) {
     // Now it is the same version as used in SM-I commissioning.
     Int_t  dcs = det+100;      // DCS Serial (in simulation, it is meaningless
-    x = (dcs<<20) | (sect<<15) | (plan<<12) | (cham<<9) | (side<<8) | 1;
+    x = (dcs<<20) | (sect<<15) | (layer<<12) | (stack<<9) | (side<<8) | 1;
     if (nw < maxSize) {
       buf[nw++] = x; 
     }
@@ -326,7 +326,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
     // h[0] (there are 3 HC header)
     Int_t minorv = 0;      // The minor version number
     Int_t add    = 2;      // The number of additional header words to follow
-    x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
+    x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (layer<<6) | (stack<<3) | (side<<2) | 1;
     if (nw < maxSize) {
       buf[nw++] = x; 
     }
@@ -446,11 +446,11 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_
 
   Int_t           nw = 0;                       // Number of written    words
   Int_t           of = 0;                       // Number of overflowed words
-  Int_t         plan = fGeo->GetPlane( det );   // Plane
-  Int_t         cham = fGeo->GetChamber( det ); // Chamber
+  Int_t        layer = fGeo->GetLayer( det );   // Layer
+  Int_t        stack = fGeo->GetStack( det );   // Stack
   Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
-  Int_t         nRow = fGeo->GetRowMax( plan, cham, sect );
-  Int_t         nCol = fGeo->GetColMax( plan );
+  Int_t         nRow = fGeo->GetRowMax( layer, stack, sect );
+  Int_t         nCol = fGeo->GetColMax( layer );
   const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   //Int_t          iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
@@ -470,8 +470,8 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_
     return 0;
   }
 
-  AliDebug(1,Form("Producing raw data for sect=%d plan=%d cham=%d side=%d"
-                 ,sect,plan,cham,side));
+  AliDebug(1,Form("Producing raw data for sect=%d layer=%d stack=%d side=%d"
+                 ,sect,layer,stack,side));
 
   AliTRDmcmSim** mcm = new AliTRDmcmSim*[(kCtype + 3)*(fGeo->MCMmax())];
 
@@ -656,8 +656,8 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 //_____________________________________________________________________________
 void AliTRDrawData::WriteIntermediateWords(UInt_t* buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side) {
     
-    Int_t         plan = fGeo->GetPlane( det );   // Plane
-    Int_t         cham = fGeo->GetChamber( det ); // Chamber
+    Int_t        layer = fGeo->GetLayer( det );   // Layer
+    Int_t        stack = fGeo->GetStack( det );   // Stack
     Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
     Int_t           rv = fFee->GetRAWversion();
     const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
@@ -675,7 +675,7 @@ void AliTRDrawData::WriteIntermediateWords(UInt_t* buf, Int_t& nw, Int_t& of, co
   // h[0] (there are 3 HC header)
     Int_t minorv = 0;    // The minor version number
     Int_t add    = 2;    // The number of additional header words to follow
-    x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
+    x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (layer<<6) | (stack<<3) | (side<<2) | 1;
     if (nw < maxSize) {
 	buf[nw++] = x; 
     }

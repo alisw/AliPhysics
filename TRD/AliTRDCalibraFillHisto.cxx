@@ -487,7 +487,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDtrack *t)
          
       //If the same track, then look if the previous detector is in
       //the same plane, if yes: not a good track
-      if ((GetPlane(detector) == GetPlane(fDetectorPreviousTrack))) {
+      if ((GetLayer(detector) == GetLayer(fDetectorPreviousTrack))) {
 	return kFALSE;
       }
       
@@ -617,13 +617,13 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
     //////////////////////////////////////////
     // localisation of the tracklet and dqdl
     //////////////////////////////////////////
-    Int_t plane    = tracklet->GetPlane();
+    Int_t layer    = tracklet->GetPlane();
     Int_t ic = 0;
     while(!(cl = tracklet->GetClusters(ic++))) continue;
     Int_t detector = cl->GetDetector();
     if (detector != fDetectorPreviousTrack) {
       // don't use the rest of this track if in the same plane
-      if ((plane == GetPlane(fDetectorPreviousTrack))) {
+      if ((layer == GetLayer(fDetectorPreviousTrack))) {
 	break;
       }
       //Localise the detector bin
@@ -709,8 +709,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
   ////////////////
   Int_t    detector                   = ((AliTRDcluster *) t->GetCluster(index0))->GetDetector(); //detector
   // parameters of the track
-  Double_t snp                        = t->GetSnpPlane(GetPlane(detector)); // sin angle in the plan yx track
-  Double_t tgl                        = t->GetTglPlane(GetPlane(detector)); // dz/dl and not dz/dx!  
+  Double_t snp                        = t->GetSnpPlane(GetLayer(detector)); // sin angle in the plan yx track
+  Double_t tgl                        = t->GetTglPlane(GetLayer(detector)); // dz/dl and not dz/dx!  
   Double_t tnp                        = 0.0;                                // tan angle in the plan xy track
   if( TMath::Abs(snp) <  1.){
     tnp = snp / (TMath::Sqrt(1-(snp*snp)));
@@ -719,7 +719,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
   // tilting pad and cross row
   Int_t    crossrow                   = 0;                                  // if it crosses a pad row
   Int_t    rowp                       = -1;                                 // if it crosses a pad row
-  AliTRDpadPlane *padplane            = fGeo->GetPadPlane(GetPlane(detector),GetChamber(detector));
+  AliTRDpadPlane *padplane            = fGeo->GetPadPlane(GetLayer(detector),GetStack(detector));
   Double_t tiltingangle               = padplane->GetTiltingAngle();        // tiltingangle of the pad      
   Float_t  tnt                        = TMath::Tan(tiltingangle/180.*TMath::Pi()); // tan tiltingangle
   // linear fit
@@ -793,13 +793,13 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
 
 
     Int_t nbclusters = index1-index0;
-    Int_t plane      = GetPlane(fDetectorPreviousTrack);
+    Int_t layer      = GetLayer(fDetectorPreviousTrack);
 
     (* fDebugStreamer) << "FindP1TrackPHtracklet1"<<
       //"snpright="<<snpright<<
       "nbclusters="<<nbclusters<<
       "detector="<<fDetectorPreviousTrack<<
-      "plane="<<plane<<
+      "layer="<<layer<<
       "\n";     
 
   }
@@ -925,13 +925,13 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     } 
     
 
-    Int_t plane = GetPlane(fDetectorPreviousTrack);
+    Int_t layer = GetLayer(fDetectorPreviousTrack);
         
     (* fDebugStreamer) << "FindP1TrackPHtrackletV1"<<
       //"snpright="<<snpright<<
       "nbclusters="<<nbclusters<<
       "detector="<<fDetectorPreviousTrack<<
-      "plane="<<plane<<
+      "layer="<<layer<<
       "snp="<<snp<<
       "tnp="<<tnp<<
       "tgl="<<tgl<<
@@ -998,8 +998,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     padPositions[k] = 0.0;
   } 
   // Take the tgl and snp with the track t now
-  Double_t  tgl = t->GetTglPlane(GetPlane(detector)); //dz/dl and not dz/dx
-  Double_t  snp = t->GetSnpPlane(GetPlane(detector)); // sin angle in xy plan
+  Double_t  tgl = t->GetTglPlane(GetLayer(detector)); //dz/dl and not dz/dx
+  Double_t  snp = t->GetSnpPlane(GetLayer(detector)); // sin angle in xy plan
   Float_t  dzdx = 0.0;                                // dzdx
   Float_t  tnp  = 0.0;
   if(TMath::Abs(snp) < 1.0){
@@ -1112,8 +1112,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     Int_t     caligroup    = fCalibraMode->GetXbins(2)+ grouplocal;     // calcul the corresponding group
     Float_t   xcl          = cl->GetY();                                // y cluster
     Float_t   qcl          = cl->GetQ();                                // charge cluster 
-    Int_t     plane        = GetPlane(detector);                        // plane 
-    Int_t     chamber      = GetChamber(detector);                      // chamber  
+    Int_t     layer        = GetLayer(detector);                        // layer 
+    Int_t     stack        = GetStack(detector);                        // stack
     Double_t  xdiff        = dpad;                                      // reconstructed position constant
     Double_t  x            = dpad;                                      // reconstructed position moved
     Float_t   ep           = pointError;                                // error of fit
@@ -1141,8 +1141,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
       (* fDebugStreamer) << "HandlePRFtracklet"<<
 	"caligroup="<<caligroup<<
 	"detector="<<detector<<
-	"plane="<<plane<<
-	"chamber="<<chamber<<
+	"layer="<<layer<<
+	"stack="<< stack <<
 	"npoints="<<npoints<<
 	"Np="<<nb3pc<<
 	"ep="<<ep<<
@@ -1171,8 +1171,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
       (* fDebugStreamer) << "HandlePRFtracklet"<<
 	"caligroup="<<caligroup<<
 	"detector="<<detector<<
-	"plane="<<plane<<
-	"chamber="<<chamber<<
+	"layer="<<layer<<
+	"stack="<<stack<<
 	"npoints="<<npoints<<
 	"Np="<<nb3pc<<
 	"ep="<<ep<<
@@ -1201,8 +1201,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
       (* fDebugStreamer) << "HandlePRFtracklet"<<
 	"caligroup="<<caligroup<<
 	"detector="<<detector<<
-	"plane="<<plane<<
-	"chamber="<<chamber<<
+	"layer="<<layer<<
+	"stack="<<stack<<
 	"npoints="<<npoints<<
 	"Np="<<nb3pc<<
 	"ep="<<ep<<
@@ -1431,8 +1431,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     Int_t     caligroup    = fCalibraMode->GetXbins(2)+ grouplocal;     // calcul the corresponding group
     Float_t   xcl          = cl->GetY();                                // y cluster
     Float_t   qcl          = cl->GetQ();                                // charge cluster 
-    Int_t     plane        = GetPlane(fDetectorPreviousTrack);          // plane 
-    Int_t     chamber      = GetChamber(fDetectorPreviousTrack);        // chamber  
+    Int_t     layer        = GetLayer(fDetectorPreviousTrack);          // layer 
+    Int_t     stack        = GetStack(fDetectorPreviousTrack);          // stack  
     Double_t  xdiff        = dpad;                                      // reconstructed position constant
     Double_t  x            = dpad;                                      // reconstructed position moved
     Float_t   ep           = pointError;                                // error of fit
@@ -1460,8 +1460,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
       (* fDebugStreamer) << "HandlePRFtrackletV1"<<
 	"caligroup="<<caligroup<<
 	"detector="<<fDetectorPreviousTrack<<
-	"plane="<<plane<<
-	"chamber="<<chamber<<
+	"layer="<<layer<<
+	"stack="<<stack<<
 	"npoints="<<nbclusters<<
 	"Np="<<nb3pc<<
 	"ep="<<ep<<
@@ -1490,8 +1490,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
       (* fDebugStreamer) << "HandlePRFtrackletV1"<<
 	"caligroup="<<caligroup<<
 	"detector="<<fDetectorPreviousTrack<<
-	"plane="<<plane<<
-	"chamber="<<chamber<<
+	"layer="<<layer<<
+	"stack="<<stack<<
 	"npoints="<<nbclusters<<
 	"Np="<<nb3pc<<
 	"ep="<<ep<<
@@ -1520,8 +1520,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
       (* fDebugStreamer) << "HandlePRFtrackletV1"<<
 	"caligroup="<<caligroup<<
 	"detector="<<fDetectorPreviousTrack<<
-	"plane="<<plane<<
-	"chamber="<<chamber<<
+	"layer="<<layer<<
+	"stack="<<stack<<
 	"npoints="<<nbclusters<<
 	"Np="<<nb3pc<<
 	"ep="<<ep<<
@@ -1760,9 +1760,9 @@ Bool_t AliTRDCalibraFillHisto::LocalisationDetectorXbins(Int_t detector)
 
   // fragmentation of idect
   for (Int_t i = 0; i < 3; i++) {
-    fCalibraMode->ModePadCalibration((Int_t) GetChamber(detector),i);
-    fCalibraMode->ModePadFragmentation((Int_t) GetPlane(detector)
-                       , (Int_t) GetChamber(detector)
+    fCalibraMode->ModePadCalibration((Int_t) GetStack(detector),i);
+    fCalibraMode->ModePadFragmentation((Int_t) GetLayer(detector)
+                       , (Int_t) GetStack(detector)
                        , (Int_t) GetSector(detector),i);
   }
   
@@ -3289,10 +3289,10 @@ void  AliTRDCalibraFillHisto::FillCH2d(Int_t x, Float_t y)
 // Geometrical functions
 ///////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
-Int_t AliTRDCalibraFillHisto::GetPlane(Int_t d) const
+Int_t AliTRDCalibraFillHisto::GetLayer(Int_t d) const
 {
   //
-  // Reconstruct the plane number from the detector number
+  // Reconstruct the layer number from the detector number
   //
 
   return ((Int_t) (d % 6));
@@ -3300,14 +3300,14 @@ Int_t AliTRDCalibraFillHisto::GetPlane(Int_t d) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDCalibraFillHisto::GetChamber(Int_t d) const
+Int_t AliTRDCalibraFillHisto::GetStack(Int_t d) const
 {
   //
-  // Reconstruct the chamber number from the detector number
+  // Reconstruct the stack number from the detector number
   //
-  Int_t fgkNplan = 6;
+  const Int_t kNlayer = 6;
 
-  return ((Int_t) (d % 30) / fgkNplan);
+  return ((Int_t) (d % 30) / kNlayer);
 
 }
 
