@@ -23,7 +23,9 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetMCReader.cxx \
 	AliJetMCReaderHeader.cxx \
 	AliJetHistos.cxx \
-	AliAnalysisTaskDiJets.cxx
+	AliAnalysisTaskDiJets.cxx \
+	AliAnalysisTaskJetsCDF.cxx AliCdfJetFinder.cxx AliCdfJetHeader.cxx
+
 
 ifneq ($(FASTJET),)
 	SRCS+= AliFastJetFinder.cxx AliFastJetHeader.cxx 
