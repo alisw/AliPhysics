@@ -38,6 +38,7 @@
 #include <TString.h>
 #include <TList.h>
 #include <TCollection.h>
+#include "TSAXParser.h"
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
@@ -47,8 +48,10 @@
 #include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibPadStatus.h"
+#include "AliTRDSaxHandler.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalPadStatus.h"
+#include "Cal/AliTRDCalDCS.h"
 
 ClassImp(AliTRDPreprocessor)
 
@@ -96,7 +99,12 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
 
   TString runType = GetRunType();
   Log(Form("runtype %s\n",runType.Data()));
-  
+
+  // always process the configuration data
+  Int_t resultDCSC = ProcessDCSConfigData();
+  // if there was an error, return with its code
+  if (resultDCSC != 0) return resultDCSC;
+
   if (runType=="PEDESTAL"){
     if(ExtractPedestals()) return 1;
     return 0;
@@ -677,3 +685,61 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
   return error;
   
 }
+
+//_____________________________________________________________________________
+UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
+{
+  // 
+  // process the configuration of FEE, PTR and GTU
+  // reteive XML file from the DCS FXS
+  // parse it and store TObjArrays in the CDB
+  // return 0 for success, otherwise:
+  // 5: could not get the file from the FXS
+  // 6: ERROR in XML validation: something wrong with the file
+  // 7: ERROR while creating calibration objects in the handler
+  // 8: error while storing data in the CDB
+  //
+
+  Log("Processing the DCS config summary file.");
+
+  // get the XML file
+  const char * nameFile = GetFile(kDCS,"CONFIGSUMMARY","");
+  if (nameFile == NULL) {
+    return 5;
+    Log(Form("File %s not found!",nameFile));
+  }
+
+  // create parser and parse
+  TSAXParser saxParser;
+  AliTRDSaxHandler saxHandler;
+  saxParser.ConnectToHandler("AliTRDSaxHandler", &saxHandler);
+  saxParser.ParseFile(nameFile);
+
+  // report errors if present
+  if (saxParser.GetParseCode() == 0) {
+    Log("XML file validation OK");
+  } else {
+    Log(Form("ERROR in XML file validation. Parsecode: %s", saxParser.GetParseCode()));
+    return 6;
+  }
+  if (saxHandler.GetHandlerStatus() != 0) {
+    Log(Form("ERROR while creating calibration objects. Error code: %s", saxHandler.GetHandlerStatus()));
+    return 7;
+  }
+
+  // get the calibration object storing the data from the handler
+  AliTRDCalDCS* fCalDCSObj = saxHandler.GetCalDCSObj();
+
+  // store the DCS calib data in the CDB
+  AliCDBMetaData metaData1;
+  metaData1.SetBeamPeriod(0);
+  metaData1.SetResponsible("Frederick Kramer");
+  metaData1.SetComment("DCS configuration data in one AliTRDCalDCS object.");
+  if (!Store("Calib", "DCSCONFIG", fCalDCSObj, &metaData1, 0, kTRUE)) {
+    Log("problems while storing DCS config data object");
+    return 8;
+  }
+
+  return 0;
+}
+

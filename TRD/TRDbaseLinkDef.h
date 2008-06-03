@@ -44,6 +44,10 @@
 #pragma link C++ class  AliTRDCalPad+;
 #pragma link C++ class  AliTRDCalDet+;
 #pragma link C++ class  AliTRDCalFEE+;
+#pragma link C++ class  AliTRDCalDCS+;
+#pragma link C++ class  AliTRDCalDCSFEE+;
+#pragma link C++ class  AliTRDCalDCSPTR+;
+#pragma link C++ class  AliTRDCalDCSGTU+;
 #pragma link C++ class  AliTRDCalPID+;
 #pragma link C++ class  AliTRDCalPIDLQ+;
 #pragma link C++ class  AliTRDCalPIDNN+;
@@ -65,6 +69,7 @@
 #pragma link C++ class  AliTRDCalibPadStatus+;
 
 #pragma link C++ class  AliTRDPreprocessor+;
+#pragma link C++ class  AliTRDSaxHandler+;
 
 #pragma link C++ class  AliTRDDataDCS+;
 #pragma link C++ class  AliTRDSensor+;

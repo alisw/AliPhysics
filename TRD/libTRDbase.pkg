@@ -28,6 +28,10 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalPad.cxx \
       Cal/AliTRDCalDet.cxx \
       Cal/AliTRDCalFEE.cxx \
+      Cal/AliTRDCalDCS.cxx \
+      Cal/AliTRDCalDCSFEE.cxx \
+      Cal/AliTRDCalDCSPTR.cxx \
+      Cal/AliTRDCalDCSGTU.cxx \
       Cal/AliTRDCalPID.cxx \
       Cal/AliTRDCalPIDLQ.cxx \
       Cal/AliTRDCalPIDNN.cxx \
@@ -43,6 +47,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDCalibPadStatus.cxx \
       AliTRDQAChecker.cxx \
       AliTRDPreprocessor.cxx \
+      AliTRDSaxHandler.cxx \
       AliTRDDataDCS.cxx \
       AliTRDSensor.cxx \
       AliTRDSensorArray.cxx \

@@ -38,9 +38,10 @@ class AliTRDPreprocessor : public AliPreprocessor
 
  private:
 
-          Bool_t  fVdriftHLT;       // HLT Vdrift
+          Bool_t  fVdriftHLT;             // HLT Vdrift
+	  UInt_t  ProcessDCSConfigData(); // process DCS configuration
 
-  ClassDef(AliTRDPreprocessor,1)    // The SHUTTLE preprocessor for TRD
+  ClassDef(AliTRDPreprocessor,1)          // The SHUTTLE preprocessor for TRD
 
 };
 #endif
