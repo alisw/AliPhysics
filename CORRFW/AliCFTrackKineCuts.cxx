@@ -400,7 +400,7 @@ void AliCFTrackKineCuts::SelectionBitMap(TObject* obj) {
   if ((particle->Phi() >= fPhiMin) && (particle->Phi() <= fPhiMax))
 	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (fCharge == 10 || (particle->Charge() == fCharge))
+  if (fCharge >= 10 || (particle->Charge() == fCharge))
 	fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
   if (fRequireIsCharged && particle->Charge()!=0)
