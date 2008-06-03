@@ -1025,7 +1025,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Lo
    TString anaType = type;
    anaType.ToLower();
    if (!anaType.Contains("proof")) {
-      Error("Cannot process datasets in %s mode. Try PROOF.", type);
+      Error("StartAnalysis", "Cannot process datasets in %s mode. Try PROOF.", type);
       return;
    }   
    fMode = kProofAnalysis;
