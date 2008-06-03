@@ -2,12 +2,12 @@
   EMCAL DA for online calibration
   
   Contact: silvermy@ornl.gov
-  Run Type: PEDESTAL or PHYSICS or STANDALONE
+  Run Type: PHYSICS or STANDALONE
   DA Type: LDC
   Number of events needed: ~1000
   Input Files: argument list
-  Output Files: RESULT_FILE=EMCALCalibPedestal.root, to be exported to the DAQ FXS
-  fileId:  FILE_ID=EMCALCalibPedestal    
+  Output Files: RESULT_FILE=EMCALCalibSignal.root, to be exported to the DAQ FXS
+  fileId:  FILE_ID=EMCALCalibSignal    
   Trigger types used: CALIBRATION_EVENT (temporarily also PHYSICS_EVENT to start with)
 
 */
@@ -16,10 +16,10 @@
   and save results (class itself) in a file (named from RESULT_FILE define - see below).
 */
 
-#define RESULT_FILE  "EMCALCalibPedestal.root"
-#define FILE_ID "EMCALCalibPedestal"
+#define RESULT_FILE  "EMCALCalibSignal.root"
+#define FILE_ID "EMCALCalibSignal"
 #define AliDebugLevel() -1
-#define ClassName "emcCalibPedestal"
+#define ClassName "emcCalibSignal"
 
 extern "C" {
 #include <daqDA.h>
@@ -42,10 +42,10 @@ extern "C" {
 //
 // EMC calibration-helper algorithm includes
 //
-#include "AliCaloCalibPedestal.h"
+#include "AliCaloCalibSignal.h"
 
 /*
-  Main routine, EMC pedestal detector algorithm to be run on EMC LDC
+  Main routine, EMC signal detector algorithm to be run on EMC LDC
   Arguments: list of DATE raw data files
 */
 
@@ -72,8 +72,8 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  AliCaloCalibPedestal * calibPedestal = new 
-    AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal); // pedestal and noise calibration
+  AliCaloCalibSignal * calibSignal = new 
+    AliCaloCalibSignal(AliCaloCalibSignal::kEmCal); // signal and noise calibration
 
   /* loop over RAW data files */
   int nevents=0;
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
       if (daqDA_checkShutdown()) {break;}
 
       aliHeader = (AliRawEventHeaderBase*) rawReader->GetEventHeader();
-      calibPedestal->SetRunNumber( aliHeader->Get("RunNb") ); // just for fun; keep info on last run looked at
+      calibSignal->SetRunNumber( aliHeader->Get("RunNb") ); // just for fun; keep info on last run looked at
 
       // select physics and calibration events now (only calibration in future)
       if ( aliHeader->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent || 
@@ -101,8 +101,8 @@ int main(int argc, char **argv) {
 
 	nevents++;
 
-	//  Pedestal calibration
-	calibPedestal->ProcessEvent(in);
+	//  Signal calibration
+	calibSignal->ProcessEvent(in);
       }
     } // loop over all events in file
     /* cleanup the reading handles */
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
-    calibPedestal->Write(ClassName);
+    calibSignal->Write(ClassName);
     f.Close();
     printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, ClassName); 
   } 
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
   status = daqDA_FES_storeFile(RESULT_FILE, FILE_ID);
 
   // see if we can delete our analysis helper also
-  delete calibPedestal;
+  delete calibSignal;
 
   return status;
 }
