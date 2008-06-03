@@ -293,18 +293,18 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
                                         //Float_t length;
 					Double_t dedx[AliTRDtrack::kNslice], dEdx;
 					Int_t timebin;
-					for (Int_t iPlane=0; iPlane<AliTRDgeometry::kNplan; iPlane++){
+					for (Int_t iLayer=0; iLayer<AliTRDgeometry::kNlayer; iLayer++){
 						// read data for track segment
 						for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
-							dedx[iSlice] = esdTrack->GetTRDslice(iPlane, iSlice);
-						dEdx    = esdTrack->GetTRDslice(iPlane, -1);
-						timebin = esdTrack->GetTRDTimBin(iPlane);
+							dedx[iSlice] = esdTrack->GetTRDslice(iLayer, iSlice);
+						dEdx    = esdTrack->GetTRDslice(iLayer, -1);
+						timebin = esdTrack->GetTRDTimBin(iLayer);
 			
 						// check data
 						if ((dEdx <=  0.) || (timebin <= -1.)) continue;
 			
 						// retrive kinematic info for this track segment
-						//if(!AliTRDpidESD::RecalculateTrackSegmentKine(esdTrack, iPlane, mom, length)) continue;
+						//if(!AliTRDpidESD::RecalculateTrackSegmentKine(esdTrack, iLayer, mom, length)) continue;
 						mom = esdTrack->GetOuterParam()->GetP();
 						
 						// find segment length and momentum bin
@@ -313,7 +313,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 						if(TMath::Abs(trackMomentum[jmom-1] - mom) < trackMomentum[jmom-1] * .2) refMom = jmom-1;
 						else if(TMath::Abs(trackMomentum[jmom] - mom) < trackMomentum[jmom] * .2) refMom = jmom;
 						if(refMom<0){
-							AliInfo(Form("Momentum at plane %d entrance not in momentum window. [@ momentum %3.1f batch %03d event %d track %d]", iPlane, trackMomentum[imom], ibatch, iEvent, iTrack));
+							AliInfo(Form("Momentum at plane %d entrance not in momentum window. [@ momentum %3.1f batch %03d event %d track %d]", iLayer, trackMomentum[imom], ibatch, iEvent, iTrack));
 							continue;
 						}
 						/*while(jleng<AliTRDCalPID::kNLength-1 && length>trackSegLength[jleng]) jleng++;*/
