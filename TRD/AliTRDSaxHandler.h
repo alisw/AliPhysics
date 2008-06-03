@@ -1,21 +1,30 @@
-#ifndef AliTRDSaxHandler_H
-#define AliTRDSaxHandler_H
-
+#ifndef AliTRDSAXHANDLER_H
+#define AliTRDSAXHANDLER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * * See cxx source for full Copyright notice */
-/* $Id$ */
 
+/* $Id: AliTRDSaxHandler.h 26327 2008-06-02 15:36:18Z cblume $ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  The SAX XML file handler used in the preprocessor                     //
+//                                                                        //
+//  Author:                                                               //
+//    Frederick Kramer (kramer@ikf.uni-frankfurt.de)                      //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "Cal/AliTRDCalDCS.h"
-#include "Cal/AliTRDCalDCSFEE.h"
-#include "Cal/AliTRDCalDCSPTR.h"
-#include "Cal/AliTRDCalDCSGTU.h"
-#include <TObjArray.h>
-#include <TList.h>
 
+class TObjArray;
+
+class AliTRDCalDCS;
+class AliTRDCalDCSFEE;
+class AliTRDCalDCSPTR;
+class AliTRDCalDCSGTU;
 
 class AliTRDSaxHandler : public TObject {
+
 public:
   enum { kInsideFEE = 1, kInsidePTR = 2, kInsideGTU = 3 };
 
@@ -43,7 +52,7 @@ public:
   void          OnFatalError(const char *name);
   void          OnCdataBlock(const char *name, Int_t len);
 
-private:
+ private:
 
   Int_t            fHandlerStatus; // 0: everything OK, >0: error
   Int_t            fNDCSPTR;       // number of current PTR unit (to be abandonned soon)
@@ -60,6 +69,7 @@ private:
   AliTRDCalDCSGTU* fDCSGTUObj;     // the calib object for one GTU DCS board
   AliTRDCalDCS*    fCalDCSObj;     // the complete calib obj containing all inform.
 
-  ClassDef(AliTRDSaxHandler,1);
+  ClassDef(AliTRDSaxHandler,1);    // The XML file handler for the preprocessor
+
 };
 #endif

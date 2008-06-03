@@ -38,7 +38,7 @@
 #include <TString.h>
 #include <TList.h>
 #include <TCollection.h>
-#include "TSAXParser.h"
+//#include <TSAXParser.h>
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
@@ -48,7 +48,8 @@
 #include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibPadStatus.h"
-#include "AliTRDSaxHandler.h"
+//#include "AliTRDSaxHandler.h"
+
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "Cal/AliTRDCalDCS.h"
@@ -709,36 +710,36 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
     Log(Form("File %s not found!",nameFile));
   }
 
-  // create parser and parse
-  TSAXParser saxParser;
-  AliTRDSaxHandler saxHandler;
-  saxParser.ConnectToHandler("AliTRDSaxHandler", &saxHandler);
-  saxParser.ParseFile(nameFile);
+//   // create parser and parse
+//   TSAXParser saxParser;
+//   AliTRDSaxHandler saxHandler;
+//   saxParser.ConnectToHandler("AliTRDSaxHandler", &saxHandler);
+//   saxParser.ParseFile(nameFile);
 
-  // report errors if present
-  if (saxParser.GetParseCode() == 0) {
-    Log("XML file validation OK");
-  } else {
-    Log(Form("ERROR in XML file validation. Parsecode: %s", saxParser.GetParseCode()));
-    return 6;
-  }
-  if (saxHandler.GetHandlerStatus() != 0) {
-    Log(Form("ERROR while creating calibration objects. Error code: %s", saxHandler.GetHandlerStatus()));
-    return 7;
-  }
+//   // report errors if present
+//   if (saxParser.GetParseCode() == 0) {
+//     Log("XML file validation OK");
+//   } else {
+//     Log(Form("ERROR in XML file validation. Parsecode: %s", saxParser.GetParseCode()));
+//     return 6;
+//   }
+//   if (saxHandler.GetHandlerStatus() != 0) {
+//     Log(Form("ERROR while creating calibration objects. Error code: %s", saxHandler.GetHandlerStatus()));
+//     return 7;
+//   }
 
-  // get the calibration object storing the data from the handler
-  AliTRDCalDCS* fCalDCSObj = saxHandler.GetCalDCSObj();
+//   // get the calibration object storing the data from the handler
+//   AliTRDCalDCS* fCalDCSObj = saxHandler.GetCalDCSObj();
 
-  // store the DCS calib data in the CDB
-  AliCDBMetaData metaData1;
-  metaData1.SetBeamPeriod(0);
-  metaData1.SetResponsible("Frederick Kramer");
-  metaData1.SetComment("DCS configuration data in one AliTRDCalDCS object.");
-  if (!Store("Calib", "DCSCONFIG", fCalDCSObj, &metaData1, 0, kTRUE)) {
-    Log("problems while storing DCS config data object");
-    return 8;
-  }
+//   // store the DCS calib data in the CDB
+//   AliCDBMetaData metaData1;
+//   metaData1.SetBeamPeriod(0);
+//   metaData1.SetResponsible("Frederick Kramer");
+//   metaData1.SetComment("DCS configuration data in one AliTRDCalDCS object.");
+//   if (!Store("Calib", "DCSCONFIG", fCalDCSObj, &metaData1, 0, kTRUE)) {
+//     Log("problems while storing DCS config data object");
+//     return 8;
+//   }
 
   return 0;
 }

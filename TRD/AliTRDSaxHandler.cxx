@@ -19,7 +19,7 @@
 //                                                                        //
 //  The SAX XML file handler used in the preprocessor                     //
 //                                                                        //
-//  Authors:                                                              //
+//  Author:                                                               //
 //    Frederick Kramer (kramer@ikf.uni-frankfurt.de)                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
@@ -27,21 +27,20 @@
 #include <Riostream.h>
 #include <TList.h>
 #include <TObjArray.h>
-#include <TXMLParser.h>
-#include <TSAXParser.h>
-#include "AliTRDSaxHandler.h"
 #include <TXMLAttr.h>
+#include <TObject.h>
+
+#include "AliLog.h"
+
+#include "AliTRDSaxHandler.h"
+#include "AliTRDgeometry.h"
+
 #include "Cal/AliTRDCalDCS.h"
 #include "Cal/AliTRDCalDCSFEE.h"
 #include "Cal/AliTRDCalDCSPTR.h"
 #include "Cal/AliTRDCalDCSGTU.h"
-#include "AliTRDgeometry.h"
-#include <AliLog.h>
-
 
 ClassImp(AliTRDSaxHandler)
-
-
 
 //_____________________________________________________________________________
 AliTRDSaxHandler::AliTRDSaxHandler()
@@ -281,7 +280,7 @@ void AliTRDSaxHandler::OnError(const char *text)
 }
 
 //_____________________________________________________________________________
-void AliTRDSaxHandler::OnFatalError(const char *text)
+vois AliTRDSaxHandler::OnFatalError(const char *text)
 {
   // process fatal errors here
   AliError(Form("Fatal error: %s",text)); // use AliFatal?
