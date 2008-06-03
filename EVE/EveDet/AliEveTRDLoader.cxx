@@ -128,7 +128,7 @@ AliEveTRDChamber* AliEveTRDLoader::GetChamber(int d)
   // Get given chamber.
 
   Int_t ism  = fGeo->GetSector(d), 
-        istk = fGeo->GetChamber(d); 
+        istk = fGeo->GetStack(d); 
   
   AliEveTRDNode *node = 0x0;
   if(!(node = (AliEveTRDNode*)FindChild(Form("SM%03d", ism)))) return 0x0;

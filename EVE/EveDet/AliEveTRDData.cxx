@@ -74,7 +74,7 @@ void AliEveTRDDigits::ComputeRepresentation()
 
   AliTRDtransform transform(det);
   AliTRDgeometry *geo = fParent->fGeo;
-  AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetPlane(det), geo->GetChamber(det));
+  AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetLayer(det), geo->GetStack(det));
 
   // express position in tracking coordinates
   fData.Expand();
@@ -288,10 +288,10 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
   Int_t nc = 0, sec = -1; Float_t alpha = 0.;
   AliTRDcluster *c = 0x0;
   AliTRDseedV1 *tracklet = 0x0;
-  for(Int_t ip=0; ip<AliTRDgeometry::kNplan; ip++){
-    if(!(tracklet = trk->GetTracklet(ip))) continue;
+  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
+    if(!(tracklet = trk->GetTracklet(il))) continue;
     if(!tracklet->IsOK()) continue;
-    AddElement(fTracklet[ip] = new AliEveTRDTracklet(tracklet));
+    AddElement(fTracklet[il] = new AliEveTRDTracklet(tracklet));
 
     for(Int_t ic=34; ic>=0; ic--){
       if(!(c = tracklet->GetClusters(ic))) continue;

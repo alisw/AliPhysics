@@ -415,12 +415,12 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
   fGeo = geo;
 
   Int_t  ism  = geo->GetSector(fDet);
-  Int_t  istk = geo->GetChamber(fDet);
-  Int_t  ipla = geo->GetPlane(fDet);
-  Int_t icha  = istk*6+ipla;
+  Int_t  istk = geo->GetStack(fDet);
+  Int_t  ilyr = geo->GetLayer(fDet);
+  Int_t  icha = istk*6+ilyr;
 
   // define pad plane size in pads
-  AliTRDpadPlane *pp = fGeo->GetPadPlane(ipla, istk);
+  AliTRDpadPlane *pp = fGeo->GetPadPlane(ilyr, istk);
   fNrows   = pp->GetNrows();
   fNcols   = pp->GetNcols();
 
