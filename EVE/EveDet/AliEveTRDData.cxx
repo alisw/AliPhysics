@@ -25,6 +25,8 @@
 #include "AliTRDtrackerV1.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDdataArrayDigits.h"
+#include "AliTRDSignalIndex.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDtransform.h"
 #include "AliTRDReconstructor.h"
@@ -62,13 +64,17 @@ void AliEveTRDDigits::ComputeRepresentation()
   // - digits threshold
   // - digits apparence (quads/boxes)
 
+  if(!fData.HasData()){
+    return;
+  }
+
   TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
 
   Double_t scale, dy, dz;
   Int_t q, color;
-  Int_t nrows = fParent->fNrows,
-        ncols = fParent->fNcols,
-        ntbs  = fParent->fNtime,
+  Int_t nrows = fData.GetNrow(),
+        ncols = fData.GetNcol(),
+        ntbs  = fData.GetNtime(),
         det   = fParent->GetID();
   Float_t threshold = fParent->GetDigitsThreshold();
 
@@ -114,14 +120,34 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
 {
   // Set data source.
 
-  fData.Allocate(fParent->fNrows, fParent->fNcols, fParent->fNtime);
-  //	digits->Expand();
-  for (Int_t  row = 0;  row <  fParent->fNrows;  row++)
-    for (Int_t  col = 0;  col <  fParent->fNcols;  col++)
-      for (Int_t time = 0; time < fParent->fNtime; time++) {
-        if(digits->GetDigitAmp(row, col, time, fParent->GetID()) < 0) continue;
-        fData.SetDataUnchecked(row, col, time, digits->GetDigitAmp(row, col, time, fParent->GetID()));
+  Int_t det = fParent->GetID();
+  AliTRDdataArrayDigits *data = digits->GetDigits(det);
+  if(!data->HasData()) return;
+  data->Expand();
+
+  AliTRDSignalIndex *indexes = digits->GetIndexes(det);
+  if(!indexes->IsAllocated()) digits->BuildIndexes(det);
+
+  if(!fData.HasData()) fData.Allocate(data->GetNrow(), data->GetNcol(), data->GetNtime());
+  fData.Expand();
+
+  Int_t row, col, time, adc;
+  indexes->ResetCounters();
+  while (indexes->NextRCIndex(row, col)){
+    indexes->ResetTbinCounter();
+    while (indexes->NextTbinIndex(time)){
+      if(data->IsPadCorrupted(row, col, time)){
+        // we should mark this position
+        break;
       }
+      adc = data->GetData(row, col, time);
+      if(adc <= 1) continue;
+      fData.SetDataUnchecked(row, col, time, adc);
+      //fIndex->AddIndexTBin(row,col,time);
+      //printf("\tr[%d] c[%d] t[%d] ADC[%d]\n", row, col, time, adc);
+    } 
+  }
+  fData.Compress(1);
 }
 
 
@@ -306,6 +332,7 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
 
   AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, points);
   //AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, points);
+  //AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, points);
 
   Float_t global[3];
   for(Int_t ip=0; ip<nc; ip++){

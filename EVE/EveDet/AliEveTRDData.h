@@ -55,6 +55,7 @@ public:
   ~AliEveTRDDigits();
 
   void			ComputeRepresentation();
+  const AliTRDdataArrayI*	GetData() const {return fData.GetNelems() ? &fData : 0x0;}
   void			Paint(Option_t *opt="");
   void			Reset();
   void			SetData(AliTRDdigitsManager *digits);

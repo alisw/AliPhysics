@@ -264,13 +264,15 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
   Float_t q;
   Float_t g[3]; //global coordinates
   AliTRDcluster *c=0x0;
-  for(int iclus=0; iclus<clusters->GetEntriesFast(); iclus++){
+  Int_t nc = clusters->GetEntriesFast();
+  for(int iclus=0; iclus<nc; iclus++){
     c = (AliTRDcluster*)clusters->UncheckedAt(iclus);
     c->GetGlobalXYZ(g); 
     q = c->GetQ();
     Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);    
     fRecPoints->SetPointId(id, new AliTRDcluster(*c));
   }
+  fRecPoints->SetStamp(TEveElement::kCBObjProps);
   fLoadRecPoints = kTRUE;
 }
 
@@ -284,12 +286,13 @@ void AliEveTRDChamber::LoadDigits(AliTRDdigitsManager *digits)
     AliError(Form("Geometry not set for chamber %d. Please call first AliEveTRDChamber::SetGeometry().", fDet));
     return;
   }
-  // Info("LoadDigits()", Form("digits =0x%x", digits));
 
   if(!fDigits) AddElement(fDigits = new AliEveTRDDigits(this));
 
   fDigits->Reset();
   fDigits->SetData(digits);
+  fDigits->SetStamp(TEveElement::kCBObjProps);
+  fDigitsNeedRecompute = kTRUE;  
   fLoadDigits = kTRUE;
 }
 
@@ -299,7 +302,6 @@ void AliEveTRDChamber::LoadHits(TClonesArray *hits, Int_t &idx)
   //
   // Draw hits
   //
-  //Info("AddHit()", Form("%s", GetName()));
 
   if(!fHits){ 
     AddElement(fHits = new AliEveTRDHits());
@@ -315,6 +317,7 @@ void AliEveTRDChamber::LoadHits(TClonesArray *hits, Int_t &idx)
 
     Int_t id = fHits->SetNextPoint(hit->X(), hit->Y(), hit->Z());
     fHits->SetPointId(id, new AliTRDhit(*hit));
+    fHits->SetStamp(TEveElement::kCBObjProps);
     idx++;
   }
   return;
@@ -330,7 +333,6 @@ void AliEveTRDChamber::LoadTracklets(TObjArray *tracks)
     Error("LoadTracklets()", Form("Geometry not set for chamber %d. Please call first AliEveTRDChamber::SetGeometry().", fDet));
     return;
   }
-  // Info("LoadTracklets()", Form("tracks = 0x%x", tracks));
 
   if(!fTracklets){
     fTracklets = new std::vector<TEveTrack*>;
@@ -364,7 +366,6 @@ void AliEveTRDChamber::Paint(Option_t* option)
 {
   // Paint object.
 
-  //AliInfo(GetName());
   if(!fRnrSelf) return;
   if(fDigits && fRnrDigits){
     if(fDigitsNeedRecompute){

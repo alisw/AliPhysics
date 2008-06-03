@@ -23,6 +23,9 @@
 #include "AliRunLoader.h"
 //#include "AliLoader.h"
 #include "AliTRDrawData.h"
+#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStreamBase.h"
+#include "AliTRDdigitsManager.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
 
@@ -133,11 +136,11 @@ Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 
 //______________________________________________________________________________
 AliEveTRDLoaderRaw::AliEveTRDLoaderRaw(const Text_t* n, const Text_t* t) :
-  AliEveTRDLoader(n, t),
-  fRawDateReader (0),
-  fRawRootReader (0),
-  fRaw           (0),
-  fEventOld      (-1)
+  AliEveTRDLoader(n, t)
+  ,fRawDateReader (0x0)
+  ,fRawRootReader (0x0)
+  ,fRaw           (0x0)
+  ,fEventCnt(-1)
 {
   // Constructor.
 }
@@ -174,6 +177,9 @@ Bool_t AliEveTRDLoaderRaw::GoToEvent(int ev)
 {
   // Go to given event.
 
+  //AliInfo(Form("Event %d %d %d", ev, fEvent, fEventCnt));
+
+
   if(!fChildren.size()){
     AliWarning("Please select first the chamber that you want to monitor from \"Chamber(s) selector\".");
     return kFALSE;
@@ -182,28 +188,35 @@ Bool_t AliEveTRDLoaderRaw::GoToEvent(int ev)
   static const TEveException kEH("AliEveTRDLoader::GotoEvent ");
   if(fRawRootReader == 0x0) throw(kEH + "data file not opened.");
 
-
-  if(ev == fEventOld) return kTRUE;
-  Bool_t checkEnd;
-  if(ev < fEventOld) {
+  fEvent = ev;
+  if(ev == fEventCnt) return kTRUE;
+  if(ev < fEventCnt) {
     fRawRootReader->RewindEvents();
-    fEventOld = -1;
-    checkEnd = kFALSE;
-  } else checkEnd = kTRUE;
+    fEventCnt = -1;
+  }
 
-  do NextEvent(); while(fEventOld != ev && !(checkEnd == kTRUE && fEventOld == 0));
+  Bool_t FOUND = kFALSE;
+  while(fRawRootReader->NextEvent()){ 
+    fEventCnt++;
+    if(fEventCnt == ev){
+      FOUND = kTRUE;
+      break;
+    }  
+  }
+  if(!FOUND) return kFALSE;
+  
   LoadEvent();
   gEve->Redraw3D();
 
   return kTRUE;
 }
 
+
 //______________________________________________________________________________
 Bool_t AliEveTRDLoaderRaw::LoadEvent()
 {
   // Load event.
-
-  Info("LoadEvent()", "Loading ...");
+  AliInfo("Loading ...");
 
   static const TEveException kEH("AliEveTRDLoader::LoadEvent ");
   if(fRawRootReader == 0x0) throw(kEH + "data file not opened.");
@@ -211,36 +224,37 @@ Bool_t AliEveTRDLoaderRaw::LoadEvent()
 
   fRawRootReader->Reset();
 
+  AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDrealStream);
+  AliTRDrawStreamTB::AllowCorruptedData();
+  AliTRDrawStreamTB::DisableStackNumberChecker();
+  AliTRDrawStreamTB::DisableStackLinkNumberChecker();
+
+  AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(fRawRootReader);
+  AliTRDrawStreamBase &input = *pinput;
+
+ // AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
+
   AliEveTRDChamber *chmb;
-  AliTRDdigitsManager *dm;
-  dm = fRaw->Raw2Digits(fRawRootReader);
+  AliTRDdigitsManager *dm = new AliTRDdigitsManager();
+  dm->CreateArrays();
 
-  for(int idet=0; idet<540; idet++){
-    if(!(chmb=GetChamber(idet))) continue;
+  Int_t det    = 0;
+  while ((det = input.NextChamber(dm)) >= 0){
+    if(!(chmb=GetChamber(det))) continue;
     chmb->LoadDigits(dm);
+
+    dm->RemoveDigits(det);
+    dm->RemoveDictionaries(det);
+    dm->ClearIndexes(det);
   }
-  return kTRUE;
-}
 
-//______________________________________________________________________________
-Bool_t AliEveTRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
-{
-  // Go to next event.
+  delete dm;
+  dm = NULL;
 
-  static const TEveException kEH("AliEveTRDLoader::NextEvent ");
-  if(fRawRootReader == 0x0) throw(kEH + "data file not opened.");
+  delete pinput;
+  pinput = NULL;
 
 
-  if(fRawRootReader->NextEvent() == kTRUE) ++fEventOld;
-  else {
-    if(fEventOld == -1) throw(kEH + "no events available.");
-    if(rewindOnEnd) {
-      Warning("NextEvent()", Form("Reached end of stream (event=%d), rewinding to first event.", fEventOld));
-      fRawRootReader->RewindEvents();
-      fRawRootReader->NextEvent();
-      fEventOld = 0;
-    } else throw(kEH + "last event reached.");
-  }
   return kTRUE;
 }
 

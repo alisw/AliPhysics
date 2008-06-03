@@ -56,7 +56,7 @@ public:
   virtual ~AliEveTRDLoaderRaw() {}
 
   Bool_t	GoToEvent(int ev);
-  Bool_t  NextEvent(Bool_t rewindOnEnd=kTRUE);
+  //Bool_t  NextEvent(Bool_t rewindOnEnd=kTRUE);
   Bool_t	Open(const char *file, const char *dir=".");
 
 private:
@@ -64,8 +64,8 @@ private:
 
   AliRawReaderDate	*fRawDateReader; // raw data reader
   AliRawReaderRoot	*fRawRootReader; // raw root reader
-  AliTRDrawData		*fRaw;           // raw data
-  Int_t			 fEventOld;      // old event
+  AliTRDrawData		  *fRaw;           // raw data
+  Int_t             fEventCnt;       // event contor
 
   AliEveTRDLoaderRaw(const AliEveTRDLoaderRaw&);            // Not implemented
   AliEveTRDLoaderRaw& operator=(const AliEveTRDLoaderRaw&); // Not implemented
