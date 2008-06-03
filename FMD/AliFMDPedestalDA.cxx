@@ -39,7 +39,7 @@ ClassImp(AliFMDPedestalDA)
 
 //_____________________________________________________________________
 AliFMDPedestalDA::AliFMDPedestalDA() : AliFMDBaseDA(),
-  fCurrentChannel(0),
+  fCurrentChannel(1),
   fPedSummary("PedestalSummary","pedestals",51200,0,51200),
   fNoiseSummary("NoiseSummary","noise",51200,0,51200)
 {
@@ -50,7 +50,7 @@ AliFMDPedestalDA::AliFMDPedestalDA() : AliFMDBaseDA(),
 //_____________________________________________________________________
 AliFMDPedestalDA::AliFMDPedestalDA(const AliFMDPedestalDA & pedDA) : 
   AliFMDBaseDA(pedDA),
-  fCurrentChannel(0),
+  fCurrentChannel(1),
   fPedSummary("PedestalSummary","pedestals",51200,0,51200),
   fNoiseSummary("NoiseSummary","noise",51200,0,51200)
 {

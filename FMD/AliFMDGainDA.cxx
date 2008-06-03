@@ -56,7 +56,7 @@ AliFMDGainDA::AliFMDGainDA()
     fCurrentChannel(16),
     fNumberOfStripsPerChip(128),
     fSummaryGains("GainsSummary","Summary of gains",51200,0,51200),
-    fCurrentSummaryStrip(0)
+    fCurrentSummaryStrip(1)
 {
   fCurrentPulse.Reset(0);
   fCurrentChannel.Reset(0);
