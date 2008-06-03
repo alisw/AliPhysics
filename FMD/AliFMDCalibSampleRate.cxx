@@ -29,6 +29,7 @@
 #include "AliFMDCalibSampleRate.h"	// ALIFMDCALIBGAIN_H
 // #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
 // #include <AliLog.h>
+#include "TString.h"
 #include "AliFMDDebug.h" // Better debug macros
 
 //____________________________________________________________________
@@ -84,6 +85,73 @@ AliFMDCalibSampleRate::Rate(UShort_t det, Char_t ring,
   AliFMDDebug(10, ("Getting sample rate for FMD%d%c[%2d,0] (board %d)", 
 		    det, ring, sec, board));
   return fRates(det, ring, board, 0);
+}
+//____________________________________________________________________
+void 
+AliFMDCalibSampleRate::WriteToFile(ofstream &outFile)
+{
+  outFile.write("# SampleRate \n",14);
+  for(Int_t det=1;det<=3;det++) {
+    UShort_t FirstRing = (det == 1 ? 1 : 0);
+    for (UShort_t ir = FirstRing; ir < 2; ir++) {
+      Char_t   ring = (ir == 0 ? 'O' : 'I');
+      UShort_t nsec = (ir == 0 ? 40  : 20);
+      UShort_t nstr = (ir == 0 ? 256 : 512);
+      for(UShort_t sec =0; sec < nsec;  sec++)  {
+	outFile << det                   << ','
+		<< ring                  << ','
+		<< sec                   << ','
+		<< Rate(det,ring,sec)    << "\n";
+	  
+
+      }
+    }
+  }
+ 
+      
+}
+//____________________________________________________________________
+void 
+AliFMDCalibSampleRate::ReadFromFile(ifstream &inFile)
+{
+  TString line;
+  Bool_t readData=kFALSE;
+
+  while(line.ReadLine(inFile)) {
+    if(line.Contains("samplerate",TString::kIgnoreCase)) {
+      readData = kTRUE;
+      break;
+    }
+    
+  }
+  
+  UShort_t det, sec;
+  Char_t ring;
+  UShort_t sampleRate;
+  Int_t thisline = inFile.tellg();
+  Char_t c[3];
+  
+  while(line.ReadLine(inFile) && readData ) {
+    thisline = inFile.tellg();
+    thisline = thisline--;
+    if(line.Contains("# ",TString::kIgnoreCase)) {
+      readData = kFALSE;
+      continue;
+    }
+    
+    inFile.seekg(thisline);
+    inFile     >> det          >> c[0]
+	       >> ring         >> c[1]
+	       >> sec          >> c[2]
+	       >> sampleRate;
+    
+    Set(det,ring,sec,0,sampleRate);
+
+  }
+  
+  inFile.seekg(0);
+ 
+  
 }
 
 //____________________________________________________________________

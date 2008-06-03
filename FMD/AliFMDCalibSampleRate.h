@@ -19,6 +19,9 @@
     @brief   Per digitizer card pulser calibration
     @ingroup FMD_base    
 */
+
+#include <iostream>
+#include <fstream>
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
@@ -59,6 +62,10 @@ public:
       @param str  Strip number (not used)
       @return Sample rate */
   UShort_t Rate(UShort_t det, Char_t ring, UShort_t sec, UShort_t str=0) const;
+
+  void WriteToFile(ofstream &);
+  
+  void ReadFromFile(ifstream &);
 protected:
   // TArrayI fRates; // Sample rates 
   AliFMDUShortMap fRates; // Sample rates

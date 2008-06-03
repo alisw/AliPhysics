@@ -31,6 +31,7 @@
 
 #include "AliFMDRawReader.h"
 #include "AliFMDCalibSampleRate.h"
+#include "AliFMDCalibStripRange.h"
 #include "AliLog.h"
 //_____________________________________________________________________
 ClassImp(AliFMDBaseDA)
@@ -278,36 +279,51 @@ void AliFMDBaseDA::WriteConditionsData()
   
   // Sample Rate
   
-  UInt_t defSampleRate = 4;
-  UInt_t sampleRateFromSOD;
+  UShort_t defSampleRate = 4;
+  UShort_t sampleRateFromSOD;
   //UInt_t timebins   = 544;
   AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
-  for(UShort_t det=1;det<=3;det++) {
+
+  UShort_t firstStrip = 0;
+  UShort_t lastStrip  = 127;
+  UShort_t firstStripSOD;
+  UShort_t lastStripSOD;
+  AliFMDCalibStripRange* stripRange = new AliFMDCalibStripRange();
+  
+  for(Int_t det=1;det<=3;det++) {
     UShort_t FirstRing = (det == 1 ? 1 : 0);
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
       UShort_t nsec = (ir == 0 ? 40  : 20);
       UShort_t nstr = (ir == 0 ? 256 : 512);
       for(UShort_t sec =0; sec < nsec;  sec++)  {
-	for(UShort_t strip = 0; strip < nstr; strip++) {
-	  sampleRateFromSOD = defSampleRate;
-	  sampleRate->Set(det,ring,sec,strip,sampleRateFromSOD);
-	  fConditionsFile << det                 << ',' 
-			  << ring                << ','
-			  << sec                 << ','
-			  << strip               << ','
-			  << "samplerate"        << ','
-			  << sampleRateFromSOD   << "\n";
-	}
+	for(UShort_t strip = 0 ; strip <nstr; nstr++)
+	  {
+	    sampleRateFromSOD = defSampleRate;
+	    sampleRate->Set(det,ring,sec,strip,sampleRateFromSOD);
+	    firstStripSOD = firstStrip;
+	    lastStripSOD  = lastStrip;
+	    stripRange->Set(det,ring,sec,strip,firstStripSOD,lastStripSOD);
+	   
+	  }
+	
       }
     }
   }
   
-  pars->SetSampleRate(sampleRate);
+  sampleRate->WriteToFile(fConditionsFile);
   
+  pars->SetSampleRate(sampleRate);
+  pars->SetStripRange(firstStrip,lastStrip);
+
+ 
   // Zero Suppresion
   
   // Strip Range
+  
+ 
+  
+  
   
   // Gain Relevant stuff
   
