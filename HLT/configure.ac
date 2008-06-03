@@ -298,6 +298,20 @@ if test ! "x$have_aliroot" = "xno" ; then
 				       ALITPC_LIBS= ])
     fi
     AC_MSG_RESULT([$have_alitpc])
+
+    have_tpc_load_clusters=no
+    AC_MSG_CHECKING(for on-line features of TPC offline tracker)
+      ALITPC_LIBS="-lGui -lTPCbase -lTPCrec"
+      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliTPCtrackerMI.h>
+				       #include <TObjArray.h>], 
+                                      [AliTPCtrackerMI tracker;
+				       TObjArray* array=NULL;
+				       tracker.LoadClusters(array);])],
+                                      [have_tpc_load_clusters=yes], 
+  				      [AC_DEFINE(HAVE_NOT_TPC_LOAD_CLUSTERS)])
+    AC_MSG_RESULT([$have_tpc_load_clusters])
+
   fi
   AC_CHECK_HEADERS([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
   AC_CHECK_HEADERS([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])

@@ -14,6 +14,11 @@
 */
 
 #include "AliHLTProcessor.h"
+class AliTPCRecoParam;
+class AliTPCParam;
+class AliTPCclustererMI;
+class AliRawReaderMemory;
+class AliMagFMaps;
 
 /**
  * @class AliHLTTPCOfflineClustererComponent
@@ -88,6 +93,16 @@ private:
    */
   int Configure(const char* arguments);
 
-  ClassDef(AliHLTTPCOfflineClustererComponent, 0)
+  unsigned fOutputPercentage; //! Output volume in percentage of the input
+  string fGeometryFileName;  //! Geometry file with full path
+
+  AliTPCRecoParam *fTPCRecoParam; //! TPC reco params
+  AliTPCParam *fTPCGeomParam; //! TPC geometry params
+
+  AliRawReaderMemory *fRawReader; //! Memory reader
+  AliTPCclustererMI *fClusterer;  //! TPC clusterer
+  AliMagFMaps *fMagField; //! Magnetic field map
+
+  ClassDef(AliHLTTPCOfflineClustererComponent, 1)
 };
 #endif

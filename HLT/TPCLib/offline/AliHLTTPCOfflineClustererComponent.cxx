@@ -23,10 +23,16 @@
 
 #include "AliHLTTPCOfflineClustererComponent.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliRawReaderMemory.h"
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
+#include "AliTPCRecoParam.h"
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
+#include "AliRawReaderMemory.h"
 #include "AliTPCclustererMI.h"
+#include "AliTPCClustersRow.h"
+#include "AliMagFMaps.h"
+#include "AliTracker.h"
 #include "AliDAQ.h"
 #include "TString.h"
 #include "TObjArray.h"
@@ -36,63 +42,90 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCOfflineClustererComponent)
 
-AliHLTTPCOfflineClustererComponent::AliHLTTPCOfflineClustererComponent()
+AliHLTTPCOfflineClustererComponent::AliHLTTPCOfflineClustererComponent() 
+: AliHLTProcessor(),
+fOutputPercentage(100),
+fGeometryFileName(""),
+fTPCRecoParam(0),
+fTPCGeomParam(0),
+fRawReader(0),
+fClusterer(0),
+fMagField(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // Default constructor
+  fGeometryFileName = getenv("ALICE_ROOT");
+  fGeometryFileName += "/HLT/TPCLib/offline/geometry.root";
 }
 
 AliHLTTPCOfflineClustererComponent::~AliHLTTPCOfflineClustererComponent()
 {
-  // see header file for class documentation
+  // Destructor
 }
 
 const char* AliHLTTPCOfflineClustererComponent::GetComponentID()
 {
-  // see header file for class documentation
+  // Return component ID
   return "TPCOfflineClusterer";
 }
 
 void AliHLTTPCOfflineClustererComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  // see header file for class documentation
+  // Get the list of input data types
   list.push_back(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC);
 }
 
 AliHLTComponentDataType AliHLTTPCOfflineClustererComponent::GetOutputDataType()
 {
-  // see header file for class documentation
-  return kAliHLTDataTypeAliTreeR|kAliHLTDataOriginTPC;
+  // Return output data type
+  // Tree or TObjArray of clusters
+  return  kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/;
+
 }
 
 void AliHLTTPCOfflineClustererComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
-  // see header file for class documentation
-  constBase = 0;inputMultiplier = 1;
+  // Get output data size
+  constBase = 0;
+  inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
 
 AliHLTComponent* AliHLTTPCOfflineClustererComponent::Spawn()
 {
-  // see header file for class documentation
+  // Return a new instance of the class 
   return new AliHLTTPCOfflineClustererComponent;
 }
 
 int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  // Perfom initialisation. Checks arguments (argc,argv)  
+  // and make initialisation. Returns 0 if success.  
+  //
   int iResult=0;
+  HLTInfo("parsing %d arguments", argc);
 
   TString argument="";
   TString configuration=""; 
   int bMissingParam=0;
+
+  // loop over input parameters
   for (int i=0; i<argc && iResult>=0; i++) {
     argument=argv[i];
     if (argument.IsNull()) continue;
 
-  }
+    if (argument.CompareTo("-geometry")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+
+      HLTInfo("got \'-geometry\' argument: %s", argv[i]);
+      fGeometryFileName = argv[i];
+      HLTInfo("Geometry file is: %s", fGeometryFileName.c_str());
+
+      // the remaining arguments are treated as configuration
+    } else {
+      if (!configuration.IsNull()) configuration+=" ";
+      configuration+=argument;
+    }
+  } // end loop
+
   if (bMissingParam) {
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
@@ -104,69 +137,120 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
     iResult=Reconfigure(NULL, NULL);
   }
 
+  //
+  // initialisation
+  //
+
+  /*
+   
+  // Load geometry
+  HLTInfo("Geometry file %s",fGeometryFileName.c_str());
+  AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
+  if((AliGeomManager::GetGeometry()) == 0) {
+    HLTError("Cannot load geometry from file %s",fGeometryFileName.c_str());
+    iResult=-EINVAL;
+  }
+ 
+  // Magnetic field
+  fMagField = new AliMagFMaps("Maps","Maps", 2, 1.0, 10., 2);
+  AliTracker::SetFieldMap(fMagField,kFALSE);
+
+  */
+
+  // Raw Reader
+  fRawReader = new AliRawReaderMemory;
+
+  // TPC reconstruction parameters
+  fTPCRecoParam = AliTPCRecoParam::GetLowFluxParam();
+  if (fTPCRecoParam) {
+    fTPCRecoParam->SetClusterSharing(kTRUE);
+  }
+
+  // TPC geometry parameters
+  fTPCGeomParam = new AliTPCParamSR;
+  if (fTPCGeomParam) {
+    fTPCGeomParam->ReadGeoMatrices();
+  }
+
+  // Init clusterer
+  fClusterer = new AliTPCclustererMI(fTPCGeomParam,fTPCRecoParam);
+
+  if (!fRawReader || !fClusterer || !fTPCRecoParam || !fTPCGeomParam) {
+    HLTError("failed creating internal objects");
+    iResult=-ENOMEM;
+  }
   return iResult;
 }
 
 int AliHLTTPCOfflineClustererComponent::DoDeinit()
 {
-  // see header file for class documentation
+  // Deinitialisation of the component
+  if (fTPCRecoParam) delete fTPCRecoParam; fTPCRecoParam=0;
+  if (fTPCGeomParam) delete fTPCGeomParam; fTPCGeomParam=0;
+  if (fRawReader) delete fRawReader; fRawReader=0;
+  if (fClusterer) delete fClusterer; fClusterer=0;
+  if (fMagField) delete fMagField; fMagField=0;
+
   return 0;
 }
 
 int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   // see header file for class documentation
+  HLTInfo("processing data");
+
   int iResult=0;
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC);
-       pBlock!=NULL; 
+       pBlock!=NULL && iResult>=0;
        pBlock=GetNextInputBlock()) {
     int slice=AliHLTTPCDefinitions::GetMinSliceNr(pBlock->fSpecification);
     int patch=AliHLTTPCDefinitions::GetMinPatchNr(pBlock->fSpecification);
+
     if (slice!=AliHLTTPCDefinitions::GetMaxSliceNr(pBlock->fSpecification) ||
-	patch!=AliHLTTPCDefinitions::GetMaxPatchNr(pBlock->fSpecification)) {
-      HLTError("ambiguous readout partition (specification 0x%08x), skipping input block", pBlock->fSpecification);
-      break;
+	    patch!=AliHLTTPCDefinitions::GetMaxPatchNr(pBlock->fSpecification)) {
+          HLTError("ambiguous readout partition (specification 0x%08x), skipping input block", pBlock->fSpecification);
+          break;
     }
     if (slice<0 || slice>35 || patch<0 || patch>5) {
       HLTError("invalid readout partition %d/%d (specification 0x%08x, skipping input block", slice, patch,  pBlock->fSpecification);
       break;
     }
 
-    TTree* pTreeR=new TTree("TreeR", "Reconstructed Points Container");
-    AliRawReaderMemory* pRawReader=new AliRawReaderMemory;
-
-    // TODO: choose the right parameter
-    AliTPCParam* pParam = new AliTPCParamSR;
-    AliTPCclustererMI* pClusterer = new AliTPCclustererMI(pParam);
-
-    if (pTreeR && pRawReader && pClusterer) {
+    if (fRawReader && fClusterer) {
       // setup raw reader and cluster finder
-      pRawReader->SetMemory( reinterpret_cast<UChar_t*>( pBlock->fPtr ), pBlock->fSize );
+      fRawReader->SetMemory( reinterpret_cast<UChar_t*>( pBlock->fPtr ), pBlock->fSize );
       int ddlId=AliDAQ::DdlIDOffset("TPC");
       if (patch<2) {
 	ddlId+=2*slice+patch;
       } else {
 	ddlId+=72;
-	ddlId+=4*slice+patch;	  
+	ddlId+=4*slice+patch-2;	  
       }
-      pRawReader->SetEquipmentID(ddlId);
-
-      // TODO: find out from the data
-      //pClusterer->SetOldRCUFormat(kTRUE);
+      fRawReader->SetEquipmentID(ddlId);
 
       // run the cluster finder
-      pClusterer->SetOutput(pTreeR);
-      pClusterer->Digits2Clusters(pRawReader);
+      fClusterer->Digits2Clusters(fRawReader);
 
-      // insert tree into output stream
-      PushBack(pTreeR, kAliHLTDataTypeAliTreeR|kAliHLTDataOriginTPC, pBlock->fSpecification);
+      AliTPCClustersRow *clrow = 0x0;
+      Int_t nbClusters = 0;
+      Int_t lower   = fClusterer->GetOutputArray()->LowerBound();
+      Int_t entries = fClusterer->GetOutputArray()->GetEntriesFast();
 
-      if (pClusterer) delete pClusterer; pClusterer=NULL;
-      if (pParam)     delete pParam;	 pParam=NULL;
-      if (pRawReader) delete pRawReader; pRawReader=NULL;
-      if (pTreeR)     delete pTreeR;	 pTreeR=NULL;
+      for (Int_t i=lower; i<entries; i++) {
+	clrow = (AliTPCClustersRow*) fClusterer->GetOutputArray()->At(i);
+	if(!clrow) continue;
+	if(!clrow->GetArray()) continue;
+
+	nbClusters += clrow->GetArray()->GetEntries() ;
+      }
+
+      // insert TObjArray of clusters into output stream
+      PushBack(fClusterer->GetOutputArray(), kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/, pBlock->fSpecification);
+      HLTInfo("processing done: DDL %d Number of clusters %d",ddlId, nbClusters);
+
     } else {
-      iResult=-ENOMEM;
+      HLTError("component not initialized");
+      iResult=-EFAULT;
     }
   }
 

@@ -52,6 +52,11 @@
  * To be determined.
  *
  */
+
+class AliTPCParam;
+class AliTPCtrackerMI;
+class AliESDEvent;
+
 class AliHLTTPCOfflineTrackerComponent : public AliHLTProcessor {
 public:
   AliHLTTPCOfflineTrackerComponent();
@@ -80,6 +85,11 @@ private:
   AliHLTTPCOfflineTrackerComponent(const AliHLTTPCOfflineTrackerComponent&);
   /** assignment operator prohibited */
   AliHLTTPCOfflineTrackerComponent& operator=(const AliHLTTPCOfflineTrackerComponent&);
+  
+  Double_t fOutputPercentage; // percentage of output data  
+  AliTPCParam *fTPCGeomParam; // TPC geometry params
+  AliTPCtrackerMI *fTracker;  // TPC tracker
+  AliESDEvent *fESD;          // AliESDEvent needed by TPC tracker
 
   /**
    * Configure the component.
