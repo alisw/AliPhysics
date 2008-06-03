@@ -26,6 +26,7 @@
 #include "AliHLTConfiguration.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTOUT.h"
+#include "AliRunLoader.h"
 
 /** global instance for agent registration */
 AliHLTTPCAgent gAliHLTTPCAgent;
@@ -138,7 +139,8 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
     // reconstruction chains for AliRoot simulation
     // Note: run loader is only available while running embedded into
     // AliRoot simulation
-    return "TPC-esd-converter";
+    if (runloader->GetLoader("TPCLoader") != NULL)
+      return "TPC-esd-converter";
   }
   return NULL;
 }

@@ -34,6 +34,7 @@
 #include "AliHLTMUONDecisionComponent.h"
 #include "AliHLTMUONEmptyEventFilterComponent.h"
 #include "AliHLTMUONDataCheckerComponent.h"
+#include "AliRawReader.h"
 #include "AliRunLoader.h"
 #include "TSystem.h"
 #include "TString.h"
@@ -76,16 +77,34 @@ const char* AliHLTMUONAgent::GetReconstructionChains(AliRawReader* rawReader,
 	
 	if (rawReader != NULL)
 	{
-		return "dHLT-sim-fromRaw";
+		// Check if there is any data from the tracker and trigger.
+		bool dataFromTracker = false;
+		bool dataFromTrigger = false;
+		rawReader->Select("MUONTRK", 0, 19);
+		for (Int_t i = 0; i < 20; i++)
+		{
+			if (rawReader->ReadHeader()) dataFromTracker = true;
+		}
+		rawReader->Select("MUONTRG", 0, 1);
+		for (Int_t i = 0; i < 2; i++)
+		{
+			if (rawReader->ReadHeader()) dataFromTrigger = true;
+		}
+		rawReader->RewindEvents();
+		
+		// If raw data was found for our detector then select the
+		// appropriate chain.
+		if (dataFromTracker and dataFromTrigger)
+			return "dHLT-sim-fromRaw";
 	}
-	else if (runloader != NULL)
+	
+	if (runloader != NULL)
 	{
-		return "dHLT-sim";
+		if (runloader->GetLoader("MUONLoader") != NULL)
+			return "dHLT-sim";
 	}
-	else
-	{
-		return "";
-	}
+	
+	return "";
 }
 
 const char* AliHLTMUONAgent::GetRequiredComponentLibraries() const
