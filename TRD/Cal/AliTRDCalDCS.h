@@ -12,12 +12,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include <TObjArray.h>
-#include "AliTRDCalDCSFEE.h"
-#include "AliTRDCalDCSPTR.h"
-#include "AliTRDCalDCSGTU.h"
+#include "TObjArray.h"
 
 class TString;
+
+class AliTRDCalDCSFEE;
+class AliTRDCalDCSPTR;
+class AliTRDCalDCSGTU;
 
 class AliTRDCalDCS : public TNamed {
 
