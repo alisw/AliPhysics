@@ -1,6 +1,11 @@
 #-*- Mode: Makefile -*-
 
-SRCS=  EBYE/AliBalance.cxx
+SRCS=  EBYE/AliBalance.cxx \
+       EBYE/LRC/AliLRCAnalysis.cxx \
+       EBYE/LRC/AliLRCFit.cxx \
+       EBYE/LRC/AliLRCNN.cxx \
+       EBYE/LRC/AliLRCPtN.cxx \
+       EBYE/LRC/AliLRCPtPt.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
