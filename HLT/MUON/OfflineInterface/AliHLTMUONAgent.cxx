@@ -137,7 +137,6 @@ const char* AliHLTMUONAgent::GetRequiredComponentLibraries() const
 		"libProof.so",
 		"libThread.so",
 		"libGeom.so",
-		"libMinuit.so",
 		"libEG.so",
 		"libTreePlayer.so",
 		"libXMLIO.so",

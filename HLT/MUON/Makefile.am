@@ -11,7 +11,7 @@ include $(top_srcdir)/libAliHLTMUON.pkg
 
 lib_LTLIBRARIES			=  libAliHLTMUON.la
 
-LIBRARY_VERSION			= '0:1:0'
+LIBRARY_VERSION			= '0:9:0'
 
 # library sources
 # The source files are specified in libAliHLTMUON.pkg
@@ -30,11 +30,27 @@ AM_CPPFLAGS			= -DMODULE=$(MODULE) \
 					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 
 # linking flags of the library
+libAliHLTMUON_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
 libAliHLTMUON_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @HLTBASE_LDFLAGS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
+				  -lRAWDatasim \
+				  -lRAWDatarec \
+				  -lRAWDatabase \
+				  -lMUONcore \
+				  -lMUONraw \
+				  -lMUONbase \
+				  -lMUONgeometry \
+				  -lMUONmapping \
+				  -lMUONcalib \
+				  -lMUONsim \
+				  -lMUONtrigger \
+				  -lMUONevaluation \
+				  -lMUONrec \
+				  -lHLTbase \
+				  -lAliHLTUtil \
 				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
