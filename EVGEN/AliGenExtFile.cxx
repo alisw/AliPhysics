@@ -141,7 +141,7 @@ void AliGenExtFile::Generate()
 	p[0] = jparticle->Px();
 	p[1] = jparticle->Py();
 	p[2] = jparticle->Pz();
-	Int_t idpart = iparticle->GetPdgCode();
+	Int_t idpart = jparticle->GetPdgCode();
 	if(fVertexSmear==kPerTrack) 
 	{
 	    Rndm(random,6);
