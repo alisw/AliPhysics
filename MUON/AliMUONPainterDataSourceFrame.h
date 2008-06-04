@@ -35,6 +35,8 @@ public:
   
   void CreateOCDBDataSource();
 
+  void CreateACFDataSource();
+
   void CreateRawDataSource();
   
   void DataMakerWasRegistered(AliMUONVTrackerDataMaker* reader);
@@ -44,6 +46,8 @@ public:
   void HistogramButtonClicked();
   
   void OpenFileDialog();
+  
+  void OpenFileDialogACF();
   
   void OpenRecentSource();
 
@@ -65,6 +69,10 @@ private:
 
   void CreateOCDBDataSource(const TString& cdbPath, Int_t runNumber, const TString& type);
 
+  void CreateACFDataSource(const TString& uri);
+
+  void CreateACFDataSource(const TString& acfPath, const TString& type);
+  
 private:
     
   TGGroupFrame* fRecentSourceSelector; ///< to select recently used sources   
@@ -91,10 +99,14 @@ private:
   TGComboBox* fRecentSources; ///< recent sources combo box  
   TObjArray* fItems; ///< list of data readers we handle
   
+  TGGroupFrame* fACFSelector; ///< to select ACF (ASCII calibration files)
+  TGTextEntry* fACFPath; ///< path to ASCII calibration file
+  TGComboBox* fACFTypes; ///< types of ASCII calibration files 
+
   static const char* fgkNumberOfDataSourcesKey; ///< key used to store the # of data sources in the resource file
   static const char* fgkDataSourceURIKey; ///< key usde to store the data source URIs in the resource file
 
-  ClassDef(AliMUONPainterDataSourceFrame,2) // Data source selection frame
+  ClassDef(AliMUONPainterDataSourceFrame,3) // Data source selection frame
 };
 
 #endif

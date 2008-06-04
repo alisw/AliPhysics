@@ -33,7 +33,8 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONMchViewApplication.cxx \
   AliMUONTrackerDataHistogrammer.cxx \
   AliMUONTrackerDataWrapper.cxx \
-  AliMUONTrackerDataCompareDialog.cxx
+  AliMUONTrackerDataCompareDialog.cxx \
+  AliMUONTrackerACFDataMaker.cxx
   
 HDRS:= $(SRCS:.cxx=.h) 
 

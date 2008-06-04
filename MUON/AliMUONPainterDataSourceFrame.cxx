@@ -18,12 +18,12 @@
 #include <cstdlib>
 #include "AliMUONPainterDataSourceFrame.h"
 
-
 #include "AliLog.h"
 #include "AliMUONPainterDataSourceItem.h"
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONPainterRegistry.h"
+#include "AliMUONTrackerACFDataMaker.h"
 #include "AliMUONTrackerCalibratedDataMaker.h"
 #include "AliMUONTrackerOCDBDataMaker.h"
 #include "AliMUONTrackerRawDataMaker.h"
@@ -78,7 +78,10 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fRunSelector(new TGNumberEntry(fOCDBSelector,0)),
   fOCDBTypes(new TGComboBox(fOCDBSelector)),
   fRecentSources(new TGComboBox(fRecentSourceSelector)),
-  fItems(new TObjArray)
+  fItems(new TObjArray),
+  fACFSelector(new TGGroupFrame(this,"ASCII Calib File",kHorizontalFrame)),
+  fACFPath(new TGTextEntry(fACFSelector,"")),
+  fACFTypes(new TGComboBox(fACFSelector))
 {
   /// Ctor
   
@@ -117,7 +120,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     
     fRecentSourceSelector->AddFrame(fRecentSources,new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
     fRecentSourceSelector->AddFrame(createRecentButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
-                                    
+                     
     /// Raw file selection
     
     TGButton* openButton = new TGPictureButton(fRawSelector21,
@@ -180,11 +183,40 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
                              this,
                              "CreateOCDBDataSource()");
     
-    
     fOCDBSelector->AddFrame(fOCDBPath,new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));    
     fOCDBSelector->AddFrame(fRunSelector,new TGLayoutHints(kLHintsTop,5,5,5,5));
     fOCDBSelector->AddFrame(fOCDBTypes,new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
     fOCDBSelector->AddFrame(createOCDBButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
+    
+    
+    /// ASCII calibration file selection
+    
+    TGButton* openButtonACF = new TGPictureButton(fACFSelector,
+                                                  gClient->GetPicture("fileopen.xpm"));
+    openButtonACF->SetToolTipText("Click to open file dialog");
+    
+    fACFTypes->AddEntry("Pedestals",0);
+    fACFTypes->AddEntry("Gains",1);
+    fACFTypes->AddEntry("Capacitances",2);
+    fACFTypes->Select(0);
+    fACFTypes->Resize(100,20);
+    
+    fACFSelector->AddFrame(openButtonACF,new TGLayoutHints(kLHintsTop,5,5,5,5));                                      
+    fACFSelector->AddFrame(fACFPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
+    fACFSelector->AddFrame(fACFTypes,new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
+
+    TGButton* createACFButton = new TGTextButton(fACFSelector,"Create data source");
+    createACFButton->Connect("Clicked()",
+                              "AliMUONPainterDataSourceFrame",
+                              this,                              
+                             "CreateACFDataSource()");
+    
+    openButtonACF->Connect("Clicked()",
+                           "AliMUONPainterDataSourceFrame",
+                           this,
+                           "OpenFileDialogACF()");
+    
+    fACFSelector->AddFrame(createACFButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
 
     AddFrame(fRecentSourceSelector,new TGLayoutHints(kLHintsExpandX,10,10,10,10));
 
@@ -192,6 +224,8 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
 
     AddFrame(fOCDBSelector,new TGLayoutHints(kLHintsExpandX,10,10,10,10));
 
+    AddFrame(fACFSelector,new TGLayoutHints(kLHintsExpandX,10,10,10,10));
+    
     AddFrame(fDataReaders, new TGLayoutHints(kLHintsExpandX,10,10,10,10));
     
 }
@@ -266,6 +300,22 @@ AliMUONPainterDataSourceFrame::HistogramButtonClicked()
 
 //_____________________________________________________________________________
 void
+AliMUONPainterDataSourceFrame::CreateACFDataSource()
+{
+  /// Create an ACF data source (using information from the widgets)
+  
+  TString acfPath = fACFPath->GetText();
+  TGTextLBEntry* t = static_cast<TGTextLBEntry*>(fACFTypes->GetSelectedEntry());
+  TString type = t->GetText()->GetString();
+  
+  CreateACFDataSource(acfPath,type);
+  
+  fACFPath->SetText("");
+}
+
+
+//_____________________________________________________________________________
+void
 AliMUONPainterDataSourceFrame::CreateOCDBDataSource()
 {
   /// Create an OCDB data source (using information from the widgets)
@@ -283,6 +333,22 @@ AliMUONPainterDataSourceFrame::CreateOCDBDataSource()
 
 //_____________________________________________________________________________
 void
+AliMUONPainterDataSourceFrame::CreateACFDataSource(const TString& uri)
+{
+  /// Create an ACF data source, given it's URI
+  
+  TObjArray* a = uri.Tokenize(";");
+  TString acfPath = static_cast<TObjString*>(a->At(1))->String();
+  TString type = static_cast<TObjString*>(a->At(2))->String();
+  
+  CreateACFDataSource(acfPath,type);
+  
+  delete a;
+}
+
+
+//_____________________________________________________________________________
+void
 AliMUONPainterDataSourceFrame::CreateOCDBDataSource(const TString& uri)
 {
   /// Create an OCDB data source, given it's URI
@@ -295,6 +361,36 @@ AliMUONPainterDataSourceFrame::CreateOCDBDataSource(const TString& uri)
   CreateOCDBDataSource(cdbPath,atoi(srun.Data()),type);
   
   delete a;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceFrame::CreateACFDataSource(const TString& acfPath, const TString& type)
+{
+  /// Create an ACF data source for a given (path,type) 
+
+  AliMUONVTrackerDataMaker* reader = new AliMUONTrackerACFDataMaker(acfPath.Data(),
+                                                                    type.Data());
+  
+  if ( reader->IsValid() ) 
+  {
+    AliMUONPainterRegistry::Instance()->Register(reader);
+    
+    AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+    
+    Int_t n = env->Integer(fgkNumberOfDataSourcesKey);
+    
+    env->Set(fgkNumberOfDataSourcesKey,n+1);
+    
+    TString ds(Form("ACF;%s;%s",acfPath.Data(),type.Data()));
+    
+    env->Set(Form(fgkDataSourceURIKey,n),ds.Data());
+    
+    env->Save();
+    
+    AddRecentSource(ds.Data());
+  }
+  
 }
 
 //_____________________________________________________________________________
@@ -576,6 +672,35 @@ AliMUONPainterDataSourceFrame::OpenFileDialog()
 
 //_____________________________________________________________________________
 void
+AliMUONPainterDataSourceFrame::OpenFileDialogACF()
+{
+  /// Open a file dialog to select an ASCII calibration file to be read
+  
+  TGFileInfo fileInfo;
+  
+  const char* fileTypes[] = { 
+    "All files","*",
+    0,0 };
+  
+  fileInfo.fFileTypes = fileTypes;
+  delete[] fileInfo.fIniDir;
+  
+  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+  
+  fileInfo.fIniDir = StrDup(env->String("LastOpenDirACF","."));
+  
+  new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
+                   kFDOpen,&fileInfo);
+  
+  fACFPath->SetText(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)));
+  
+  env->Set("LastOpenDirACF",fileInfo.fIniDir);
+  env->Save();  
+}
+
+
+//_____________________________________________________________________________
+void
 AliMUONPainterDataSourceFrame::OpenRecentSource()
 {
   /// Open one source from the recently used ones
@@ -592,6 +717,10 @@ AliMUONPainterDataSourceFrame::OpenRecentSource()
   else if ( uri.Contains(TRegexp("^OCDB")) )
   {
     CreateOCDBDataSource(uri);
+  }
+  else if ( uri.Contains(TRegexp("^ACF")) )
+  {
+    CreateACFDataSource(uri);
   }
   
   fRecentSources->Select(-1);

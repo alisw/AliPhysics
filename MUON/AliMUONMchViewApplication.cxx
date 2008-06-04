@@ -340,6 +340,13 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
   
+  rn->AddLine("0.94");
+  rn->AddLine("");
+  rn->AddLine("New features");
+  rn->AddLine("");
+  rn->AddLine("Can now read ASCII calibration files produced by the DA");
+  rn->AddLine("");
+  
   rn->AddLine("0.93");
   rn->AddLine("");
   rn->AddLine("New features");
