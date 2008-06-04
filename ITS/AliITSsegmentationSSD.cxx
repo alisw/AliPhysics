@@ -27,7 +27,7 @@
 // silicon strips                                   //
 //                                                  //
 //////////////////////////////////////////////////////
-const Float_t AliITSsegmentationSSD::fgkDxDefault = 72960.;
+const Float_t AliITSsegmentationSSD::fgkDxDefault = 73000.;
 const Float_t AliITSsegmentationSSD::fgkDzDefault = 40000.;
 const Float_t AliITSsegmentationSSD::fgkDyDefault = 300.;
 const Float_t AliITSsegmentationSSD::fgkPitchDefault = 95.;
