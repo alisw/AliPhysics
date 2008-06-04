@@ -65,11 +65,12 @@ public:
 
   class AliITSdetector { 
   public:
-    AliITSdetector():fR(0),fPhi(0),fSinPhi(0),fCosPhi(0),fYmin(0),fYmax(0),fZmin(0),fZmax(0),fIsBad(kFALSE),fNChips(0),fChipIsBad(0) {}
-    AliITSdetector(Double_t r,Double_t phi):fR(r),fPhi(phi),fSinPhi(TMath::Sin(phi)),fCosPhi(TMath::Cos(phi)),fYmin(10000),fYmax(-1000),fZmin(10000),fZmax(-1000),fIsBad(kFALSE),fNChips(0),fChipIsBad(0) {}
+    AliITSdetector():fR(0),fRmisal(0),fPhi(0),fSinPhi(0),fCosPhi(0),fYmin(0),fYmax(0),fZmin(0),fZmax(0),fIsBad(kFALSE),fNChips(0),fChipIsBad(0) {}
+    AliITSdetector(Double_t r,Double_t phi):fR(r),fRmisal(r),fPhi(phi),fSinPhi(TMath::Sin(phi)),fCosPhi(TMath::Cos(phi)),fYmin(10000),fYmax(-1000),fZmin(10000),fZmax(-1000),fIsBad(kFALSE),fNChips(0),fChipIsBad(0) {}
     ~AliITSdetector() {if(fChipIsBad) delete [] fChipIsBad;}
     inline void GetGlobalXYZ( const AliITSRecPoint *cl, Double_t xyz[3]) const;
     Double_t GetR()   const {return fR;}
+    Double_t GetRmisal()   const {return fRmisal;}
     Double_t GetPhi() const {return fPhi;}
     Double_t GetYmin() const {return fYmin;}
     Double_t GetYmax() const {return fYmax;}
@@ -78,6 +79,7 @@ public:
     Bool_t   IsBad() const {return fIsBad;}
     Int_t    GetNChips() const {return fNChips;}
     Bool_t   IsChipBad(Int_t iChip) const {return (fChipIsBad ? fChipIsBad[iChip] : kFALSE);}
+    void SetRmisal(Double_t rmisal) {fRmisal = rmisal;}
     void SetYmin(Double_t min) {fYmin = min;}
     void SetYmax(Double_t max) {fYmax = max;}
     void SetZmin(Double_t min) {fZmin = min;}
@@ -89,8 +91,9 @@ public:
     AliITSdetector & operator=(const AliITSdetector& det){
       this->~AliITSdetector();new(this) AliITSdetector(det);
       return *this;}
-    Double_t fR;    // polar coordinates 
-    Double_t fPhi;  // of this detector
+    Double_t fR;    // polar coordinates: r 
+    Double_t fRmisal;    // polar coordinates: r, with misalignment 
+    Double_t fPhi;  // polar coordinates: phi
     Double_t fSinPhi; // sin of phi;
     Double_t fCosPhi; // cos of phi 
     Double_t fYmin;   //  local y minimal
@@ -196,6 +199,7 @@ public:
   AliITStrackerMI::AliITSdetector & GetDetector(Int_t layer, Int_t n) const {return GetLayer(layer).GetDetector(n); }
 
 protected:
+  Bool_t ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
   Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
   void FindV02(AliESDEvent *event);  //try to find V0
   void RefitV02(AliESDEvent *event);  //try to refit  V0's
@@ -245,7 +249,7 @@ protected:
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
   void ReadBadFromDetTypeRec();
   Int_t CheckSkipLayer(AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
-  Int_t CheckDeadZone(AliITStrackMI *track,Int_t ilayer,Int_t idet,Double_t zmin,Double_t zmax,Double_t ymin,Double_t ymax,Bool_t noClusters=kFALSE) const;
+  Int_t CheckDeadZone(AliITStrackMI *track,Int_t ilayer,Int_t idet,Double_t dz,Double_t dy,Bool_t noClusters=kFALSE) const;
   Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,AliITStrackMI *track,
 			  Float_t &xloc,Float_t &zloc) const;
 // method to be used for Plane Efficiency evaluation
@@ -293,7 +297,7 @@ protected:
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,5)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,6)   //ITS tracker MI
 };
 
 

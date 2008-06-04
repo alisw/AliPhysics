@@ -171,6 +171,14 @@ fPlaneEff(0) {
 
         AliITSdetector &det=fgLayers[i-1].GetDetector((j-1)*ndet + k-1); 
         new(&det) AliITSdetector(r,phi); 
+	// compute the real radius (with misalignment)
+        TGeoHMatrix mmisal(*(AliITSgeomTGeo::GetMatrix(i,j,k)));
+        mmisal.Multiply(tm);
+	xyz[0]=0.;xyz[1]=0.;xyz[2]=0.;
+        mmisal.LocalToMaster(txyz,xyz);
+        Double_t rmisal=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+	det.SetRmisal(rmisal);
+	
       } // end loop on detectors
     } // end loop on ladders
   } // end loop on layers
@@ -553,9 +561,9 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
      for (fCurrentEsdTrack=0; fCurrentEsdTrack<nentr; fCurrentEsdTrack++) {
-       //cerr<<fPass<<"    "<<fCurrentEsdTrack<<'\n';
        AliITStrackMI *t=(AliITStrackMI*)itsTracks.UncheckedAt(fCurrentEsdTrack);
        if (t==0) continue;              //this track has been already tracked
+       //cout<<"========== "<<fPass<<"    "<<fCurrentEsdTrack<<" =========\n";
        if (t->GetReconstructed()&&(t->GetNUsed()<1.5)) continue;  //this track was  already  "succesfully" reconstructed
        Float_t dz[2]; t->GetDZ(GetX(),GetY(),GetZ(),dz);              //I.B.
        if (fConstraint[fPass]) { 
@@ -569,6 +577,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
        ResetBestTrack();
 
        FollowProlongationTree(t,fCurrentEsdTrack,fConstraint[fPass]);
+ 
 
        SortTrackHypothesys(fCurrentEsdTrack,20,0);  //MI change
        //
@@ -584,7 +593,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
        if (fConstraint[fPass]&&(!besttrack->IsGoldPrimary())) continue;  //to be tracked also without vertex constrain 
 
        t->SetReconstructed(kTRUE);
-       ntrk++;                     
+       ntrk++;  
      }
      GetBestHypothesysMIP(itsTracks); 
   } // end loop on the two tracking passes
@@ -926,6 +935,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   //
   // follow prolongations
   for (Int_t ilayer=5; ilayer>=0; ilayer--) {
+    //printf("FollowProlongationTree: layer %d\n",ilayer);
     fI = ilayer;
     //
     AliITSlayer &layer=fgLayers[ilayer];
@@ -990,46 +1000,17 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       const AliITSdetector &det=layer.GetDetector(idet);
       new(&currenttrack2)  AliITStrackMI(currenttrack1);
       if (!currenttrack1.Propagate(det.GetPhi(),det.GetR())) continue;
-
-      LocalModuleCoord(ilayer,idet,&currenttrack1,xloc,zloc); // local module coords
       currenttrack2.Propagate(det.GetPhi(),det.GetR());
       currenttrack1.SetDetectorIndex(idet);
       currenttrack2.SetDetectorIndex(idet);
+      LocalModuleCoord(ilayer,idet,&currenttrack1,xloc,zloc); // local module coords
 
       //***************
-      // DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
+      // DEFINITION OF SEARCH ROAD AND CLUSTERS SELECTION
       //
-      Double_t dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
-                    TMath::Sqrt(currenttrack1.GetSigmaZ2() + 
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-		    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
-      Double_t dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
-                    TMath::Sqrt(currenttrack1.GetSigmaY2() + 
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-		    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
-      
-      // track at boundary between detectors, enlarge road
-      Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidth();
-      if ( (currenttrack1.GetY()-dy < det.GetYmin()+boundaryWidth) || 
-	   (currenttrack1.GetY()+dy > det.GetYmax()-boundaryWidth) || 
-	   (currenttrack1.GetZ()-dz < det.GetZmin()+boundaryWidth) ||
-	   (currenttrack1.GetZ()+dz > det.GetZmax()-boundaryWidth) ) {
-     	Float_t tgl = TMath::Abs(currenttrack1.GetTgl());
-	if (tgl > 1.) tgl=1.;
-	Double_t deltaXNeighbDets=AliITSRecoParam::GetDeltaXNeighbDets();
-	dz = TMath::Sqrt(dz*dz+deltaXNeighbDets*deltaXNeighbDets*tgl*tgl);
-	Float_t snp = TMath::Abs(currenttrack1.GetSnp());
-	if (snp > AliITSReconstructor::GetRecoParam()->GetMaxSnp()) continue;
-	dy = TMath::Sqrt(dy*dy+deltaXNeighbDets*deltaXNeighbDets*snp*snp);
-      } // boundary
-      
       // road in global (rphi,z) [i.e. in tracking ref. system]
-      Double_t zmin = currenttrack1.GetZ() - dz; 
-      Double_t zmax = currenttrack1.GetZ() + dz;
-      Double_t ymin = currenttrack1.GetY() + r*det.GetPhi() - dy;
-      Double_t ymax = currenttrack1.GetY() + r*det.GetPhi() + dy;
+      Double_t zmin,zmax,ymin,ymax;
+      if (!ComputeRoad(&currenttrack1,ilayer,idet,zmin,zmax,ymin,ymax)) continue;
 
       // select clusters in road
       layer.SelectClusters(zmin,zmax,ymin,ymax); 
@@ -1053,6 +1034,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       }
       msz = 1./msz; // 1/RoadZ^2
       msy = 1./msy; // 1/RoadY^2
+
       //
       //
       // LOOP OVER ALL POSSIBLE TRACK PROLONGATIONS ON THIS LAYER
@@ -1066,7 +1048,10 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       // check if the road contains a dead zone 
       Bool_t noClusters = kFALSE;
       if (!layer.GetNextCluster(clidx,kTRUE)) noClusters=kTRUE;
-      Int_t dead = CheckDeadZone(&currenttrack1,ilayer,idet,zmin,zmax,ymin,ymax,noClusters); 
+      //if (noClusters) printf("no clusters in road\n");
+      Double_t dz=0.5*(zmax-zmin);
+      Double_t dy=0.5*(ymax-ymin);
+      Int_t dead = CheckDeadZone(&currenttrack1,ilayer,idet,dz,dy,noClusters); 
       // create a prolongation without clusters (check also if there are no clusters in the road)
       if (dead || 
 	  (noClusters && 
@@ -1114,15 +1099,23 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	Int_t idetc=cl->GetDetectorIndex();
 
 	if (currenttrack->GetDetectorIndex()==idetc) { // track already on the cluster's detector
+	  // take into account misalignment (bring track to real detector plane)
+	  Double_t xTrOrig = currenttrack->GetX();
+	  currenttrack->PropagateTo(xTrOrig+cl->GetX(),0.,0.);
 	  // a first cut on track-cluster distance
 	  if ( (currenttrack->GetZ()-cl->GetZ())*(currenttrack->GetZ()-cl->GetZ())*msz + 
 	       (currenttrack->GetY()-cl->GetY())*(currenttrack->GetY()-cl->GetY())*msy > 1. ) 
-	    continue; // cluster not associated to track
+	    {  // cluster not associated to track
+	      //printf("not ass\n");
+	      continue;
+	    }
+	  // bring track back to ideal detector plane
+	  currenttrack->PropagateTo(xTrOrig,0.,0.);
 	} else {                                      // have to move track to cluster's detector
 	  const AliITSdetector &detc=layer.GetDetector(idetc);
 	  // a first cut on track-cluster distance
 	  Double_t y;
-	  if (!currenttrack2.GetProlongationFast(detc.GetPhi(),detc.GetR(),y,z)) continue;
+	  if (!currenttrack2.GetProlongationFast(detc.GetPhi(),detc.GetR()+cl->GetX(),y,z)) continue;
 	  if ( (z-cl->GetZ())*(z-cl->GetZ())*msz + 
 	       (y-cl->GetY())*(y-cl->GetY())*msy > 1. ) 
 	    continue; // cluster not associated to track
@@ -1144,6 +1137,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	// calculate track-clusters chi2
 	chi2trkcl = GetPredictedChi2MI(currenttrack,cl,ilayer); 
 	// chi2 cut
+	//printf("chi2 %f max %f\n",chi2trkcl,AliITSReconstructor::GetRecoParam()->GetMaxChi2s(ilayer));
 	if (chi2trkcl < AliITSReconstructor::GetRecoParam()->GetMaxChi2s(ilayer)) {
 	  if (cl->GetQ()==0) deadzoneSPD=kTRUE; // only 1 prolongation with virtual cluster	  
 	  if (ntracks[ilayer]>=100) continue;
@@ -1152,7 +1146,10 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  if (changedet) new (&currenttrack2) AliITStrackMI(backuptrack);
 
 	  if (cl->GetQ()!=0) { // real cluster
-	    if (!UpdateMI(updatetrack,cl,chi2trkcl,(ilayer<<28)+clidx)) continue; 
+	    if (!UpdateMI(updatetrack,cl,chi2trkcl,(ilayer<<28)+clidx)) {
+	      //printf("update failed\n");
+	      continue;
+	    } 
 	    updatetrack->SetSampledEdx(cl->GetQ(),updatetrack->GetNumberOfClusters()-1); //b.b.
 	    modstatus = 1; // found
 	  } else {             // virtual cluster in dead zone
@@ -1187,6 +1184,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  } //apply vertex constrain	  	  
 	  ntracks[ilayer]++;
 	}  // create new hypothesis
+	//else printf("chi2 too large\n");
       } // loop over possible prolongations 
      
       // allow one prolongation without clusters
@@ -1681,6 +1679,58 @@ Int_t AliITStrackerMI::AliITSlayer::FindClusterIndex(Float_t z) const {
   return m;
 }
 //------------------------------------------------------------------------
+Bool_t AliITStrackerMI::ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const {
+  //--------------------------------------------------------------------
+  // This function computes the rectangular road for this track
+  //--------------------------------------------------------------------
+
+
+  AliITSdetector &det = fgLayers[ilayer].GetDetector(idet);
+  // take into account the misalignment: propagate track to misaligned detector plane
+  if (!track->Propagate(det.GetPhi(),det.GetRmisal())) return kFALSE;
+
+  Double_t dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
+                    TMath::Sqrt(track->GetSigmaZ2() + 
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+		    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
+  Double_t dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
+                    TMath::Sqrt(track->GetSigmaY2() + 
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+		    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
+      
+  // track at boundary between detectors, enlarge road
+  Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidth();
+  if ( (track->GetY()-dy < det.GetYmin()+boundaryWidth) || 
+       (track->GetY()+dy > det.GetYmax()-boundaryWidth) || 
+       (track->GetZ()-dz < det.GetZmin()+boundaryWidth) ||
+       (track->GetZ()+dz > det.GetZmax()-boundaryWidth) ) {
+    Float_t tgl = TMath::Abs(track->GetTgl());
+    if (tgl > 1.) tgl=1.;
+    Double_t deltaXNeighbDets=AliITSRecoParam::GetDeltaXNeighbDets();
+    dz = TMath::Sqrt(dz*dz+deltaXNeighbDets*deltaXNeighbDets*tgl*tgl);
+    Float_t snp = TMath::Abs(track->GetSnp());
+    if (snp > AliITSReconstructor::GetRecoParam()->GetMaxSnp()) return kFALSE;
+    dy = TMath::Sqrt(dy*dy+deltaXNeighbDets*deltaXNeighbDets*snp*snp);
+  } // boundary
+  
+  // add to the road a term (up to 2-3 mm) to deal with misalignments
+  dy = TMath::Sqrt(dy*dy + AliITSReconstructor::GetRecoParam()->GetRoadMisal()*AliITSReconstructor::GetRecoParam()->GetRoadMisal());
+  dz = TMath::Sqrt(dz*dz + AliITSReconstructor::GetRecoParam()->GetRoadMisal()*AliITSReconstructor::GetRecoParam()->GetRoadMisal());
+
+  Double_t r = fgLayers[ilayer].GetR();
+  zmin = track->GetZ() - dz; 
+  zmax = track->GetZ() + dz;
+  ymin = track->GetY() + r*det.GetPhi() - dy;
+  ymax = track->GetY() + r*det.GetPhi() + dy;
+
+  // bring track back to idead detector plane
+  if (!track->Propagate(det.GetPhi(),det.GetR())) return kFALSE;
+
+  return kTRUE;
+}
+//------------------------------------------------------------------------
 void AliITStrackerMI::AliITSlayer::
 SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
   //--------------------------------------------------------------------
@@ -1932,6 +1982,7 @@ const {
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITSdetector::AliITSdetector(const AliITSdetector& det):
 fR(det.fR),
+fRmisal(det.fRmisal),
 fPhi(det.fPhi),
 fSinPhi(det.fSinPhi),
 fCosPhi(det.fCosPhi),
@@ -2173,8 +2224,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      if (idet<0) return kFALSE;
 
      const AliITSdetector &det=layer.GetDetector(idet);
-     phi=det.GetPhi();
-     if (!track->Propagate(phi,det.GetR())) return kFALSE;
+     if (!track->Propagate(det.GetPhi(),det.GetR())) return kFALSE;
 
      track->SetDetectorIndex(idet);
      LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
@@ -2196,7 +2246,6 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 	   track->SetDetectorIndex(idet);
 	   LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
 	 }
-	 //Double_t chi2=track->GetPredictedChi2(cl);
 	 Int_t cllayer = (idx & 0xf0000000) >> 28;;
 	 Double_t chi2=GetPredictedChi2MI(track,cl,cllayer);
 	 if (chi2<maxchi2) { 
@@ -2218,21 +2267,10 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
        } else {
 	 modstatus = 5; // no cls in road
 	 // check dead
-	 dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
-                    TMath::Sqrt(track->GetSigmaZ2() + 
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-		    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
-	 zmin=track->GetZ() - dz;
-	 zmax=track->GetZ() + dz;
-	 dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
-                    TMath::Sqrt(track->GetSigmaY2() + 
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-		    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
-	 ymin=track->GetY() - dy;
-	 ymax=track->GetY() + dy;
-	 Int_t dead = CheckDeadZone(track,ilayer,idet,zmin,zmax,ymin,ymax,kTRUE);
+	 if (!ComputeRoad(track,ilayer,idet,zmin,zmax,ymin,ymax)) return kFALSE;
+	 dz = 0.5*(zmax-zmin);
+	 dy = 0.5*(ymax-ymin);
+	 Int_t dead = CheckDeadZone(track,ilayer,idet,dz,dy,kTRUE);
 	 if (dead==1) modstatus = 7; // holes in z in SPD
 	 if (dead==2 || dead==3) modstatus = 2; // dead from OCDB
        }
@@ -2247,16 +2285,8 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
      if (extra) { // search for extra clusters in overlapped modules
        AliITStrackV2 tmp(*track);
-       Double_t dY,yMin,yMax;
-       dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
-       if (dz < 0.5*TMath::Abs(tmp.GetTgl())) dz=0.5*TMath::Abs(tmp.GetTgl());
-       dY=4*TMath::Sqrt(track->GetSigmaY2()+AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
-       if (dY < 0.5*TMath::Abs(tmp.GetSnp())) dY=0.5*TMath::Abs(tmp.GetSnp());
-       zmin=track->GetZ() - dz;
-       zmax=track->GetZ() + dz;
-       yMin=track->GetY() + phi*r - dY;
-       yMax=track->GetY() + phi*r + dY;
-       layer.SelectClusters(zmin,zmax,yMin,yMax);
+       if (!ComputeRoad(track,ilayer,idet,zmin,zmax,ymin,ymax)) return kFALSE;
+       layer.SelectClusters(zmin,zmax,ymin,ymax);
        
        const AliITSRecPoint *clExtra=0; Int_t ci=-1,cci=-1;
        Int_t idetExtra=-1;  
@@ -2269,10 +2299,10 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 	 
 	 const AliITSdetector &detx=layer.GetDetector(idetExtra);
 	 
-	 if (!tmp.Propagate(detx.GetPhi(),detx.GetR())) continue;
-	 
+	 if (!tmp.Propagate(detx.GetPhi(),detx.GetR()+clExtra->GetX())) continue;
 	 if (TMath::Abs(tmp.GetZ() - clExtra->GetZ()) > tolerance) continue;
 	 if (TMath::Abs(tmp.GetY() - clExtra->GetY()) > tolerance) continue;
+	 if (!tmp.Propagate(detx.GetPhi(),detx.GetR())) continue;
 	 
 	 Double_t chi2=tmp.GetPredictedChi2(clExtra);
 	 if (chi2<maxchi2) { maxchi2=chi2; cci=ci; }
@@ -2282,7 +2312,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 	 track->SetExtraModule(ilayer,idetExtra);
        }
      } // end search for extra clusters in overlapped modules
-
+     
      // Correct for material of the current layer
      if(!CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir)) return kFALSE;
                  
@@ -3579,7 +3609,16 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   Float_t phi   = track->GetSnp();
   phi = TMath::Sqrt(phi*phi/(1.-phi*phi));
   AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz);
+  //printf(" chi2: tr-cl   %f  %f   tr X %f cl X %f\n",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX());
+ 
+  // Take into account the mis-alignment (bring track to cluster plane)
+  Double_t xTrOrig=track->GetX();
+  if (!track->PropagateTo(xTrOrig+cluster->GetX(),0.,0.)) return 1000.;
+  //printf(" chi2: tr-cl   %f  %f   tr X %f cl X %f\n",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX());
   Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz);
+  // Bring the track back to detector plane in ideal geometry
+  // [mis-alignment will be accounted for in UpdateMI()]
+  if (!track->PropagateTo(xTrOrig,0.,0.)) return 1000.;
   Float_t ny,nz;
   AliITSClusterParam::GetNTeor(layer,cluster,theta,phi,ny,nz);  
   Double_t delta = cluster->GetNy()+cluster->GetNz()-nz-ny;
@@ -3614,20 +3653,27 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
 
   if (cl->GetQ()<=0) return 0;  // ingore the "virtual" clusters
 
-  //  Float_t clxyz[3]; cl->GetGlobalXYZ(clxyz);Double_t trxyz[3]; track->GetXYZ(trxyz);//printf("gtr %f %f %f\n",trxyz[0],trxyz[1],trxyz[2]);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);
 
+  // Take into account the mis-alignment (bring track to cluster plane)
+  Double_t xTrOrig=track->GetX();
+  //Float_t clxyz[3]; cl->GetGlobalXYZ(clxyz);Double_t trxyz[3]; track->GetXYZ(trxyz);printf("gtr %f %f %f\n",trxyz[0],trxyz[1],trxyz[2]);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);
+  //printf(" xtr %f  xcl %f\n",track->GetX(),cl->GetX());
 
-  // Take into account the mis-alignment
-  Double_t x=track->GetX()+cl->GetX();
-  if (!track->PropagateTo(x,0.,0.)) return 0;
-
+  if (!track->PropagateTo(xTrOrig+cl->GetX(),0.,0.)) return 0;
 
   
   AliCluster c(*cl);
   c.SetSigmaY2(track->GetSigmaY(layer)*track->GetSigmaY(layer));
   c.SetSigmaZ2(track->GetSigmaZ(layer)*track->GetSigmaZ(layer));
 
-  return track->UpdateMI(&c,chi2,index);
+
+  Int_t updated = track->UpdateMI(&c,chi2,index);
+
+  // Bring the track back to detector plane in ideal geometry
+  if (!track->PropagateTo(xTrOrig,0.,0.)) return 0;
+
+  //if(!updated) printf("update failed\n");
+  return updated;
 }
 
 //------------------------------------------------------------------------
@@ -4992,8 +5038,7 @@ Int_t AliITStrackerMI::CheckSkipLayer(AliITStrackMI *track,
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 				     Int_t ilayer,Int_t idet,
-				     Double_t zmin,Double_t zmax,
-				     Double_t ymin,Double_t ymax,
+				     Double_t dz,Double_t dy,
 				     Bool_t noClusters) const {
   //-----------------------------------------------------------------
   // This method is used to decide whether to allow a prolongation 
@@ -5013,7 +5058,7 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 			  fSPDdetzcentre[2] - 0.5*AliITSRecoParam::GetSPDdetzlength(),
 			  fSPDdetzcentre[3] - 0.5*AliITSRecoParam::GetSPDdetzlength()};
     for (Int_t i=0; i<3; i++)
-      if (zmin<zmaxdead[i] && zmax>zmindead[i]) return 1;  
+      if (track->GetZ()-dz<zmaxdead[i] && track->GetZ()+dz>zmindead[i]) return 1;  
   }
 
   // check bad zones from OCDB
@@ -5047,10 +5092,10 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
   // check if the road overlaps with bad chips
   Float_t xloc,zloc;
   LocalModuleCoord(ilayer,idet,track,xloc,zloc);
-  Float_t zlocmin = zloc-0.5*(zmax-zmin);
-  Float_t zlocmax = zloc+0.5*(zmax-zmin);
-  Float_t xlocmin = xloc-0.5*(ymax-ymin);
-  Float_t xlocmax = xloc+0.5*(ymax-ymin);
+  Float_t zlocmin = zloc-dz;
+  Float_t zlocmax = zloc+dz;
+  Float_t xlocmin = xloc-dy;
+  Float_t xlocmax = xloc+dy;
   Int_t chipsInRoad[100];
 
   if (TMath::Max(TMath::Abs(xlocmin),TMath::Abs(xlocmax))>0.5*detSizeX ||
@@ -5113,7 +5158,9 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
 
   Double_t xyzGlob[3],xyzLoc[3];
 
-  track->GetXYZ(xyzGlob);
+  AliITSdetector &detector = fgLayers[ilayer].GetDetector(idet);
+  // take into account the misalignment: xyz at real detector plane
+  track->GetXYZAt(detector.GetRmisal(),GetBz(),xyzGlob);
 
   AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,det,xyzGlob,xyzLoc);
 
@@ -5191,7 +5238,7 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
   Float_t gdz=dz;
   Float_t gdy=dy*TMath::Abs(TMath::Cos(tmp.GetAlpha()));
 
- // exclude tracks at boundary between detectors
+  // exclude tracks at boundary between detectors
   //Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidth();
   Double_t boundaryWidth=0; // for the time being hard-wired, later on from AliITSRecoParam
   AliDebug(2,Form("Tracking: track impact x=%f, y=%f, z=%f",tmp.GetX(), tmp.GetY(), tmp.GetZ()));
@@ -5242,36 +5289,23 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   //Double_t trackGlobXYZ1[3];
   //tmp.GetXYZ(trackGlobXYZ1);
 
-//propagate to the intersection with the detector plane
+  //propagate to the intersection with the detector plane
   const AliITSdetector &det=layer.GetDetector(idet);
   if (!tmp.Propagate(det.GetPhi(),det.GetR())) return;
 
   //Float_t xloc,zloc;
 
-//***************
-// DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
-//
-  Double_t dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
-                    TMath::Sqrt(tmp.GetSigmaZ2() +
-                    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-                    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-                    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
-  Double_t dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
-                    TMath::Sqrt(tmp.GetSigmaY2() +
-                    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-                    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-                    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
+  //***************
+  // DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
+  //
+  // road in global (rphi,z) [i.e. in tracking ref. system]
+  Double_t zmin,zmax,ymin,ymax;
+  if (!ComputeRoad(&tmp,ilayer,idet,zmin,zmax,ymin,ymax)) return;
 
-// road in global (rphi,z) [i.e. in tracking ref. system]
-  Double_t zmin = tmp.GetZ() - dz;
-  Double_t zmax = tmp.GetZ() + dz;
-  Double_t ymin = tmp.GetY() + r*det.GetPhi() - dy;
-  Double_t ymax = tmp.GetY() + r*det.GetPhi() + dy;
-
-// select clusters in road
+  // select clusters in road
   layer.SelectClusters(zmin,zmax,ymin,ymax);
 
-// Define criteria for track-cluster association
+  // Define criteria for track-cluster association
   Double_t msz = tmp.GetSigmaZ2() +
   AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
   AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
@@ -5289,7 +5323,7 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   }
   msz = 1./msz; // 1/RoadZ^2
   msy = 1./msy; // 1/RoadY^2
-//
+  //
 
   const AliITSRecPoint *cl=0; Int_t clidx=-1, ci=-1;
   Int_t idetc=-1;
@@ -5320,9 +5354,14 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
     idetc = cl->GetDetectorIndex();
     if(idet!=idetc) continue;
     // here real control to see whether the cluster can be associated to the track.
+    // take into account the misalignment
+    tmp.PropagateTo(tmp.GetX()+cl->GetX(),0.,0.);
     // cluster not associated to track
     if ( (tmp.GetZ()-cl->GetZ())*(tmp.GetZ()-cl->GetZ())*msz +
          (tmp.GetY()-cl->GetY())*(tmp.GetY()-cl->GetY())*msy   > 1. ) continue;
+    // bring track back to ideal detector plane, 
+    // important for correct treatment of misalignment in GetPredictedChi2MI()
+    tmp.PropagateTo(det.GetR(),0.,0.);
     // calculate track-clusters chi2
     chi2 = GetPredictedChi2MI(&tmp,cl,ilayer); // note that this method change track tmp
                                                // in particular, the error associated to the cluster 

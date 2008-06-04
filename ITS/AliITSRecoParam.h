@@ -78,6 +78,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t GetNSigma2RoadZC() const { return fNSigma2RoadZC; }
   Double_t GetNSigma2RoadYNonC() const { return fNSigma2RoadYNonC; }
   Double_t GetNSigma2RoadZNonC() const { return fNSigma2RoadZNonC; }
+  Double_t GetRoadMisal() const { return fRoadMisal; }
+  void     SetRoadMisal(Double_t road=0) { fRoadMisal=road; }
 
   Double_t GetChi2PerCluster() const { return fChi2PerCluster; }
   Double_t GetMaxChi2PerCluster(Int_t i) const { return fMaxChi2PerCluster[i]; }
@@ -247,6 +249,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t fNSigma2RoadYC; // y
   Double_t fNSigma2RoadZNonC; // z
   Double_t fNSigma2RoadYNonC; // y
+
+  Double_t fRoadMisal; // [cm] increase of road for misalignment (MI)
   //
   // chi2 cuts
   Double_t fMaxChi2PerCluster[AliITSgeomTGeo::kNLayers-1]; // max chi2 for MIP (MI)
@@ -321,7 +325,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,3) // ITS reco parameters
+  ClassDef(AliITSRecoParam,4) // ITS reco parameters
 };
 
 #endif

@@ -71,6 +71,7 @@ fNSigma2RoadZC(0),
 fNSigma2RoadYC(0),
 fNSigma2RoadZNonC(0),
 fNSigma2RoadYNonC(0),
+fRoadMisal(0),
 fMaxNormChi2NonCForHypothesis(0),
 fMaxChi2(0),
 fMaxRoad(0),
@@ -461,7 +462,7 @@ void AliITSRecoParam::PrintParameters() const
   //
 
   printf("=============================  AliITSRecoParam::PrintParameters ");
-  printf("============================= \n \n ");
+  printf("============================= \n \n");
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {
     if(!fLayersToSkip[i]) {
       printf("ITS Traking: using layer %d\n",i);
