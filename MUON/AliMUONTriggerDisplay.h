@@ -23,13 +23,15 @@ class AliMUONTriggerDisplay: public TObject {
 public:
   AliMUONTriggerDisplay();
   virtual ~AliMUONTriggerDisplay();
-
+  
+  /// Display element inidices (strip,board,slat)
   enum EDisplayType {
     kDisplayStrips,    ///< Draw strips
     kDisplayBoards,    ///< Draw boards
     kDisplaySlats      ///< Draw slats
   };
 
+  /// Display options inidices
   enum EDisplayOption {
     kDefaultDisplay,   ///< Default display
     kNumbered,         ///< Histogram filled with board numbers
