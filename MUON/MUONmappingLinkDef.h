@@ -93,7 +93,6 @@
 #pragma link C++ class  AliMpTrigger+;
 #pragma link C++ class  AliMpTriggerReader+;
 #pragma link C++ class  AliMpTriggerSegmentation+;
-#pragma link C++ class  AliMpGlobalCrate+;
 #pragma link C++ class  AliMpRegionalTrigger+;
 #pragma link C++ class  AliMpTriggerCrate+;
 #pragma link C++ class  AliMpLocalBoard+;

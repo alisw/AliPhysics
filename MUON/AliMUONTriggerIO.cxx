@@ -55,8 +55,7 @@ const UInt_t AliMUONTriggerIO::fgkLocalLutSize = 1 << 14; // 16384
 //_____________________________________________________________________________
 AliMUONTriggerIO::AliMUONTriggerIO() 
     : TObject(), 
-      fRegionalTrigger(),
-      fGlobalCrate()
+      fRegionalTrigger()
 {
   /// ctor
 }
@@ -64,8 +63,7 @@ AliMUONTriggerIO::AliMUONTriggerIO()
 //_____________________________________________________________________________
 AliMUONTriggerIO::AliMUONTriggerIO(const char* regionalFileToRead) 
     :TObject(), 
-     fRegionalTrigger(),
-     fGlobalCrate()
+     fRegionalTrigger()
 {
   /// ctor
   ReadRegionalConfig(regionalFileToRead,0);

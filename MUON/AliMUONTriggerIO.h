@@ -17,7 +17,6 @@
 #endif
 
 #include "AliMpExMap.h"
-#include "AliMpGlobalCrate.h"
 #include "AliMpRegionalTrigger.h"
 
 
@@ -101,7 +100,6 @@ private:
   
 private:
   AliMpRegionalTrigger  fRegionalTrigger; //!< Regional trigger
-  AliMpGlobalCrate      fGlobalCrate;     //!< Global crate object
  
   static const UInt_t  fgkLocalLutSize;  ///< length of the lut for one local board
 

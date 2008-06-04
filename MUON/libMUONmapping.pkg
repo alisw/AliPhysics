@@ -76,7 +76,6 @@ SRCS +=  \
 	 mapping/AliMpTrigger.cxx  \
 	 mapping/AliMpTriggerReader.cxx  \
 	 mapping/AliMpTriggerSegmentation.cxx  \
-         mapping/AliMpGlobalCrate.cxx \
          mapping/AliMpRegionalTrigger.cxx \
          mapping/AliMpTriggerCrate.cxx \
          mapping/AliMpLocalBoard.cxx \
