@@ -23,6 +23,8 @@
 //  Date: 19/05/2008
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <string>
+#include <fstream>
 #include <Riostream.h> 
 #include "AliITSHandleDaSSD.h"
 #include <math.h>
@@ -49,9 +51,15 @@ using namespace std;
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModules = 1698;       // Number of SSD modules in ITS
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerDdl = 108;  // Number of SSD modules in DDL
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerSlot = 12;  // Number of SSD modules in Slot
+const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDSlotsPerDDL = 9;      // Number of SSD slots per DDL
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDDDLs = 16;            // Number of SSD modules in Slot
 const Float_t  AliITSHandleDaSSD::fgkPedestalThresholdFactor = 3.0;   // Defalt value for fPedestalThresholdFactor 
 const Float_t  AliITSHandleDaSSD::fgkCmThresholdFactor = 3.0;         // Defalt value for fCmThresholdFactor
+
+const UInt_t   AliITSHandleDaSSD::fgkZsBitMask      = 0x0000003F;     // Bit mask for FEROM ZS
+const UInt_t   AliITSHandleDaSSD::fgkOffSetBitMask  = 0x000003FF;     // Bit mask for FEROM Offset correction
+const UInt_t   AliITSHandleDaSSD::fgkBadChannelMask = 0x00000001;     // Mask to suppress the channel from the bad channel list
+const Int_t    AliITSHandleDaSSD::fgkAdcPerDBlock   = 6;              // FEROM configuration file constant
 
 //______________________________________________________________________________
 AliITSHandleDaSSD::AliITSHandleDaSSD() :
@@ -67,7 +75,10 @@ AliITSHandleDaSSD::AliITSHandleDaSSD() :
   fLdcId(0),
   fRunId(0),
   fPedestalThresholdFactor(fgkPedestalThresholdFactor),
-  fCmThresholdFactor(fgkCmThresholdFactor) 
+  fCmThresholdFactor(fgkCmThresholdFactor),
+  fZsDefault(-1),
+  fOffsetDefault(INT_MAX),
+  fZsFactor(3.0)
 {
 // Default constructor
 }
@@ -87,7 +98,10 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(Char_t *rdfname) :
   fLdcId(0),
   fRunId(0),
   fPedestalThresholdFactor(fgkPedestalThresholdFactor) ,
-  fCmThresholdFactor(fgkCmThresholdFactor) 
+  fCmThresholdFactor(fgkCmThresholdFactor),
+  fZsDefault(-1),
+  fOffsetDefault(INT_MAX),
+  fZsFactor(3.0)
 {
   if (!Init(rdfname)) AliError("AliITSHandleDaSSD::AliITSHandleDaSSD() initialization error!");
 }
@@ -108,7 +122,10 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   fLdcId(ssdadldc.fLdcId),
   fRunId(ssdadldc.fRunId),
   fPedestalThresholdFactor(ssdadldc.fPedestalThresholdFactor),
-  fCmThresholdFactor(ssdadldc.fCmThresholdFactor) 
+  fCmThresholdFactor(ssdadldc.fCmThresholdFactor),
+  fZsDefault(ssdadldc.fZsDefault),
+  fOffsetDefault(ssdadldc.fOffsetDefault),
+  fZsFactor(ssdadldc.fZsFactor)
 {
   // copy constructor
   if ((ssdadldc.fNumberOfModules > 0) && (ssdadldc.fModules)) {
@@ -219,7 +236,7 @@ void AliITSHandleDaSSD::Reset()
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
+Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
 {
 // Read raw data file and set initial and configuration parameters
   Long_t physeventind = 0, strn = 0, nofstripsev, nofstrips = 0;
@@ -228,7 +245,6 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
   UChar_t *data = NULL;
   Long_t datasize = 0, eqbelsize = 1;
 
-  if (configfname) ReadConfigurationFile(configfname);
   rawreaderdate = new AliRawReaderDate(rdfname, 0);
   if (!(rawreaderdate->GetAttributes() || rawreaderdate->GetEventId())) {
     AliError(Form("AliITSHandleDaSSD: Error reading raw data file %s by RawReaderDate", rdfname));
@@ -256,7 +272,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
         AliError(Form("AliITSHandleDaSSD: Error Init(%s): event data size %i is not an integer of equipment data size %i", 
 	                            rdfname, datasize, eqbelsize));
         MakeZombie();
-	return kFALSE;
+	    return kFALSE;
       }
       nofstripsev += (Int_t) (datasize / eqbelsize);
     }
@@ -287,14 +303,6 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
     }  
   }
   MakeZombie();
-  return kFALSE;
-}
-
-
-//______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::ReadConfigurationFile(const Char_t * /* configfname */) 
-const {
-// Dowload configuration parameters from configuration file or database
   return kFALSE;
 }
 
@@ -457,6 +465,7 @@ Bool_t AliITSHandleDaSSD::ReadDDLModuleMap(const Char_t *filename)
   Int_t ind = 0;
   while((!ddlmfile.eof()) && (ind < (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl))) {
     ddlmfile >> fDDLModuleMap[ind++];
+    if (ddlmfile.fail()) AliError(Form("Error extracting number from the DDL map file %s, ind: ", filename, ind));
   }
   if (ind != (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl))
     AliWarning(Form("Only %i (< %i) entries were read from DDL Map!", ind, (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl)));
@@ -526,8 +535,7 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
         if (fDDLModuleMap) mddli = RetrieveModuleId(ddlID, ad, adc);
         else  mddli = 0;
 	if (!module->SetModuleIdData (ddlID, ad, adc, mddli)) return 0;
-//	if (!module->SetModuleIdData (ddlID, ad, adc, RetrieveModuleId(ddlID, ad, adc))) return 0;
-        module->SetModuleRorcId (equipid, equiptype);
+    module->SetModuleRorcId (equipid, equiptype);
 	module->SetCMFeromEventsNumber(fNumberOfEvents);
 	modpos = fModIndRead + modind;
 	modind += 1;
@@ -1041,4 +1049,193 @@ Bool_t AliITSHandleDaSSD::AllocateSimulatedModules(const Int_t copymodind)
   }
   for (UShort_t modind = 0; modind < fNumberOfModules; modind++) fModules[modind]->SetModuleId(modind + 1080);  
   return kTRUE;
+}
+
+
+    
+//___________________________________________________________________________________________
+Bool_t AliITSHandleDaSSD::AdDataPresent(const Int_t ddl, const Int_t ad) const
+{
+// Check if there are calibration data for given ddl and slot
+  for (Int_t modind = 0; modind < fNumberOfModules; modind++)
+    if ((GetModule(modind)->GetAD() == ad) && (GetModule(modind)->GetDdlId() == ddl)) return kTRUE;
+  return kFALSE;
+}
+
+   
+
+//___________________________________________________________________________________________
+Bool_t AliITSHandleDaSSD::SaveEqSlotCalibrationData(const Int_t ddl, const Int_t ad, const Char_t *fname) const
+// Saves calibration files for selected equipment (DDL)
+{
+  fstream    feefile;
+  Int_t      zsml, offsetml;
+  ULong_t    zsth, offset, zsoffset;
+  if (!fname) {
+    AliError("File name must be specified!");
+    return kFALSE;   
+  }
+  if (!AdDataPresent(ddl, ad)) {
+    AliError(Form("Error SaveEqSlotCalibrationData(ddl = %i, ad = %i) no data present", ddl, ad)); 
+    return kFALSE;
+  }
+  feefile.open(fname, ios::out);
+  if (!feefile.is_open()) {
+	AliError(Form("Can not open the file %s for output!", fname)); 
+    return kFALSE;
+  }
+  for (zsml = 0; fgkZsBitMask >> zsml; zsml++);
+  for (offsetml = 0; fgkOffSetBitMask >> offsetml; offsetml++);
+  for (Int_t strind = 0; strind < AliITSModuleDaSSD::GetStripsPerModuleConst(); strind++) {
+    for (Int_t adcb = 0; adcb < fgkAdcPerDBlock; adcb++) {
+      zsoffset = 0x0;
+      for (Int_t j = 0; j < 2; j++) {
+        Int_t adc = adcb + j * 8;
+        zsth = ZsThreshold(ddl, ad, adc, strind);
+        offset = OffsetValue(ddl, ad, adc, strind);
+        zsoffset = zsoffset | (((zsth << offsetml) | offset) << ((j == 0) ? (offsetml + zsml) : 0));
+      }
+      feefile << "0x" << ConvBase(static_cast<unsigned long>(zsoffset), 16) << endl;
+    }
+  }
+  feefile.close();
+  return kTRUE;
+}
+
+
+//______________________________________________________________________________
+Int_t AliITSHandleDaSSD::ChannelIsBad(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const
+{
+// Check if the channel is bad
+  AliITSBadChannelsSSD  *badch = NULL;
+  TArrayI                bcharray;
+  Int_t                  strsiden, modn = -1;
+  if (fStaticBadChannelsMap && fDDLModuleMap) {
+    modn = RetrieveModuleId(ddl, ad, adc);
+    if (modn < 0) return -1;
+    Int_t modind = 0;
+    while ((modind < fStaticBadChannelsMap->GetEntriesFast() && (!badch))) {
+      AliITSBadChannelsSSD  *bc = static_cast<AliITSBadChannelsSSD*>(fStaticBadChannelsMap->At(modind++));
+      if ((bc->GetMod()) == modn) badch = bc; 
+    }
+    if (badch) {
+      if (strn < AliITSModuleDaSSD::GetPNStripsPerModule()) { 
+        bcharray = badch->GetBadPChannelsList();
+        strsiden = strn;
+      } else {
+        bcharray = badch->GetBadNChannelsList();
+        strsiden = AliITSChannelDaSSD::GetMaxStripIdConst() - strn;
+      }
+      if (bcharray.GetSize() <  AliITSModuleDaSSD::GetPNStripsPerModule()) {
+	    AliWarning(Form("No entry found in bad channels list TArrayI for ddl/ad/adc/str: %i/%i/%i/%i", ddl, ad, adc, strn));
+	    return 0;
+      } 
+      return (bcharray[strsiden] & fgkBadChannelMask);
+    } else {
+      AliWarning(Form("No entry found in bad channels list for ddl = %i,  ad = %i,  adc = %i", ddl, ad, adc));
+      return 0;
+    }  
+  } else {
+    AliError("Error ether bad channels list or DDLMap is not initialized or both, return 0!");
+	return 0;
+  }
+}
+        
+        
+//______________________________________________________________________________
+ULong_t AliITSHandleDaSSD::OffsetValue(const AliITSChannelDaSSD *strip, 
+                                       const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const
+{
+// Calculate the offset value to be upload to FEROM	
+  Int_t  pedint;
+  if (fOffsetDefault < INT_MAX) pedint = fOffsetDefault;
+  else pedint = TMath::Nint(strip->GetPedestal());
+  if (pedint > static_cast<Int_t>((fgkOffSetBitMask >> 1))) {
+    if (!ChannelIsBad(ddl, ad, adc, strn)) 
+      AliError(Form("Offset %i, channel(ddl/ad/adc/strip) %i/%i/%i/%i  can not be represented with mask %i, Offset = %i",
+                   pedint, ddl, ad, adc, strn, ConvBase(fgkOffSetBitMask, 16).c_str(), fgkOffSetBitMask));
+    return fgkOffSetBitMask;
+  }  
+  if ((-pedint) > static_cast<Int_t>(((fgkOffSetBitMask + 1) >> 1))) {
+    if (!ChannelIsBad(ddl, ad, adc, strn)) 
+      AliError(Form("Offset %i, channel(ddl/ad/adc/strip) %i/%i/%i/%i  can not be represented with mask %i, Offset = %i", 
+                   pedint, ddl, ad, adc, strn, ConvBase(fgkOffSetBitMask, 16).c_str(), (fgkOffSetBitMask & (~fgkOffSetBitMask >> 1))));
+    return fgkOffSetBitMask & (~fgkOffSetBitMask >> 1);
+  }
+  return fgkOffSetBitMask & (pedint >= 0 ? pedint : pedint + fgkOffSetBitMask + 1);
+}
+
+
+
+//______________________________________________________________________________
+ULong_t AliITSHandleDaSSD::OffsetValue(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const
+{
+// Calculate the offset value to be upload to FEROM	
+  AliITSChannelDaSSD    *strip = NULL;
+  AliITSModuleDaSSD     *module = NULL;
+  if (module = GetModule(ddl, ad, adc)) {
+    if (strip = module->GetStrip(strn)) return OffsetValue(strip, ddl, ad, adc, strn);
+    else {
+      AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
+      return 0ul;
+    }
+  } else {
+    AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i, 0 is used!", ddl, ad, adc));
+    return 0ul;
+  }  
+}
+
+
+
+//______________________________________________________________________________
+ULong_t AliITSHandleDaSSD::ZsThreshold(AliITSChannelDaSSD *strip) const
+{ 
+// Calculate the value of zero suppression threshold to be upload to FEROM
+  ULong_t zs;
+  if (fZsDefault < 0) zs = TMath::Nint(fZsFactor * strip->GetNoiseCM());
+  else zs = fZsDefault;
+  return (zs < fgkZsBitMask) ? (zs & fgkZsBitMask) : fgkZsBitMask;
+}
+
+
+//______________________________________________________________________________
+ULong_t AliITSHandleDaSSD::ZsThreshold(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const
+{
+// Calculate the value of zero suppression threshold to be upload to FEROM, account bad channels list
+  AliITSChannelDaSSD    *strip = NULL;
+  AliITSModuleDaSSD     *module = NULL;
+  if (ChannelIsBad(ddl, ad, adc, strn)) return fgkZsBitMask;
+  if (module = GetModule(ddl, ad, adc)) {
+    if (strip = module->GetStrip(strn))  return ZsThreshold(strip);
+    else {
+      AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
+      return 0ul;
+    }
+  } else {
+    AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i, 0 is used!", ddl, ad, adc));
+    return 0ul;
+  }
+}
+
+            
+//______________________________________________________________________________
+string AliITSHandleDaSSD::ConvBase(const unsigned long value, const long base) const
+{
+// Converts the unsigned long number into that in another base 
+  string digits = "0123456789ABCDEF";
+  string result;
+  unsigned long v = value;
+  if((base < 2) || (base > 16)) {
+    result = "Error: base out of range.";
+  }
+  else {
+    int i = 0;
+    do {
+      result = digits[v % base] + result;
+      v /= base;
+      i++;
+    }
+    while((v) || (i<8));
+  }
+  return result;
 }

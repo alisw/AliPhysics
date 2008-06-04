@@ -6,6 +6,7 @@
 /*                                                                        */
 /* $Id$ */
 
+#include <string>
 #include "TObject.h"
 #include "AliITSModuleDaSSD.h"
 
@@ -17,6 +18,8 @@
 //  Date: 19/05/2008
 ///////////////////////////////////////////////////////////////////////////////
 
+using namespace std;
+
 class TObjArray;
 
 class AliITSHandleDaSSD : public TObject {
@@ -27,10 +30,21 @@ class AliITSHandleDaSSD : public TObject {
     AliITSHandleDaSSD& operator = (const AliITSHandleDaSSD& ssdadldc);
     virtual ~AliITSHandleDaSSD();
 
-    virtual Bool_t Init(Char_t *rdfname, const Char_t *configfname = NULL);
-    virtual Bool_t ReadConfigurationFile(const Char_t *configfname = NULL) const;
+    virtual Bool_t Init(Char_t *rdfname);
     Bool_t  SetRawFileName (Char_t *rdfname) {return Init(rdfname); }
 
+    void    SetZsDefaul(Int_t zs)        { fZsDefault = zs;       }
+    void    SetOffsetDefault(Int_t offs) { fOffsetDefault = offs; }
+    void    SetZsFactor(Float_t zsf)     { fZsFactor = zsf;       }
+    void    SetPedestalThresholdFactor(Float_t pthf) { fPedestalThresholdFactor = pthf; }
+    void    SetCmThresholdFactor(Float_t cmthf)      { fCmThresholdFactor = cmthf;      }
+
+    Int_t   GetZsDefault() const     { return fZsDefault;     }
+    Int_t   GetOffsetDefault() const { return fOffsetDefault; }
+    Float_t GetZsFactor() const      { return fZsFactor;      }
+    Float_t GetPedestalThresholdFactor() const { return fPedestalThresholdFactor; }
+    Float_t GetCmThresholdFactor() const       { return fCmThresholdFactor;       }
+    
     Int_t              GetNumberOfModules() const { return fNumberOfModules; }
     UInt_t             GetLdcId() const { return fLdcId; }
     UInt_t             GetRunId() const { return fRunId; }
@@ -59,7 +73,17 @@ class AliITSHandleDaSSD : public TObject {
     virtual Bool_t  ProcessRawData(const Int_t nmread = fgkNumberOfSSDModulesPerDdl);
     virtual Bool_t  RelocateModules();
     virtual Bool_t  AllocateSimulatedModules(const Int_t copymodind = 0);
-     
+
+    Bool_t  AdDataPresent(const Int_t ddl, const Int_t ad) const;
+    Int_t   DdlToEquipmentId (Int_t ddl) const { return (512 + ddl); }
+    Int_t   ChannelIsBad(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const;
+    Bool_t  SaveEqSlotCalibrationData(const Int_t ddl, const Int_t ad, const Char_t *fname) const;
+    ULong_t OffsetValue(const AliITSChannelDaSSD *strip, const UChar_t ddl = 0, const UChar_t ad = 0, 
+                                 const UChar_t adc = 0, const Int_t strn = -1) const;
+    ULong_t OffsetValue(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const;
+    ULong_t ZsThreshold(AliITSChannelDaSSD *strip) const;
+    ULong_t ZsThreshold(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const;
+    
     virtual void    Reset();
     virtual Short_t RetrieveModuleId(const UChar_t ddlID, const UChar_t ad, const UChar_t adc) const;
     Bool_t  DumpModInfo(const Float_t meannosethreshold) const;
@@ -74,14 +98,20 @@ class AliITSHandleDaSSD : public TObject {
     static Int_t GetNumberOfSSDModulesConst() { return fgkNumberOfSSDModules; }
 
   protected :
-  
+
     static const Int_t    fgkNumberOfSSDModules ;        // Number of SSD modules in ITS
     static const Int_t    fgkNumberOfSSDModulesPerDdl;   // Number of SSD modules in DDL
     static const Int_t    fgkNumberOfSSDModulesPerSlot;  // Number of SSD modules in Slot
     static const Int_t    fgkNumberOfSSDDDLs;            // Number of DDLs in SSD
+    static const Int_t    fgkNumberOfSSDSlotsPerDDL;     // Number of SSD slots per DDL
     static const Float_t  fgkPedestalThresholdFactor;    // Defalt value for fPedestalThresholdFactor 
     static const Float_t  fgkCmThresholdFactor;          // Defalt value for fCmThresholdFactor 
-    
+   
+    static const UInt_t   fgkZsBitMask ;           // Bit mask for FEROM ZS
+    static const UInt_t   fgkOffSetBitMask;        // Bit mask for FEROM Offset correction
+    static const UInt_t   fgkBadChannelMask;       // Mask to suppress the channel from the bad channel list
+    static const Int_t    fgkAdcPerDBlock;         // FEROM configuration file constant
+     
     Char_t              *fRawDataFileName;       // Name of the file with raw data
     Int_t                fNumberOfModules;       // number of AliITSModuleDaSSD to allocate
     AliITSModuleDaSSD  **fModules;               //[fNumberOfModules] array of pointer on AliITSModuleDaSSD objects (1698 SSD  Modules)
@@ -96,14 +126,19 @@ class AliITSHandleDaSSD : public TObject {
     UInt_t               fLdcId;                 //  LDC number, read from header
     UInt_t               fRunId;                 //  Run number, read from header
 
-    Float_t     fPedestalThresholdFactor;        // configuration parameter: ThresholdFactor for pedestal calculation 
-    Float_t     fCmThresholdFactor;              // configuration parameter: ThresholdFactor for CM calculation 
+    Float_t         fPedestalThresholdFactor;        // configuration parameter: ThresholdFactor for pedestal calculation 
+    Float_t         fCmThresholdFactor;              // configuration parameter: ThresholdFactor for CM calculation 
+    Int_t           fZsDefault;                      // default value for ZS threshold
+    Int_t           fOffsetDefault;                  // default value for offset correction
+    Float_t         fZsFactor;                       // zs factor 3.0
 
-  private :
+  protected :
     Bool_t   SignalOutOfRange (const Short_t signal) const { return (signal >= AliITSChannelDaSSD::GetOverflowConst()); }
+    string   ConvBase(const unsigned long value, const long base) const;
 
     ClassDef(AliITSHandleDaSSD, 5)
 
 };
 
 #endif
+
