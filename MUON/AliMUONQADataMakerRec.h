@@ -72,8 +72,6 @@ private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
 
   void DisplayTriggerInfo(AliQA::TASKINDEX_t task);
-  Bool_t InitDisplayHistos(AliQA::TASKINDEX_t task);
-  Bool_t AddSortedPoint(Float_t currVal, TArrayF& position, const Float_t kResetValue);
   
   Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
   Bool_t  fIsInitRecPoints;  //!<  info if InitRecPoints() went ok

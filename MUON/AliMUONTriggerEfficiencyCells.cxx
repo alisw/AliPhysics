@@ -19,12 +19,9 @@
 #include "AliMpConstants.h"
 
 // Classes for display
-#include "AliMUONGeometryTransformer.h"
-#include "AliMpCDB.h"
+#include "AliMUONTriggerDisplay.h"
 #include "AliCDBManager.h"
 #include "AliMpDDLStore.h"
-#include "AliMpDDL.h"
-#include "AliMpTriggerCrate.h"
 #include "AliMpLocalBoard.h"
 #include "AliMpPad.h"
 #include "AliMpVSegmentation.h"
@@ -270,10 +267,10 @@ void AliMUONTriggerEfficiencyCells::ReadHistoBoards(const Char_t *filename)
 	AliWarning(Form("Can't read file %s",filename));
 	return;
     }
-    Char_t histoName[40];
-    Char_t *cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
+    TString histoName;
+    TString cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
     enum {kAllChEff, kChNonEff, kNumOfHistoTypes};
-    Char_t *histoTypeName[2] = {"CountInCh", "NonCountInCh"};
+    TString histoTypeName[2] = {"CountInCh", "NonCountInCh"};
 
     if(!fCountHistoList) fCountHistoList = new TList();
     else fCountHistoList->Delete();
@@ -286,8 +283,8 @@ void AliMUONTriggerEfficiencyCells::ReadHistoBoards(const Char_t *filename)
     
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
       for(Int_t hType=0; hType<kNumOfHistoTypes; hType++){
-	sprintf(histoName, "%sChamber%s", cathCode[cath], histoTypeName[hType]);
-	histo = (TH1F*)file->Get(histoName);
+	histoName = Form("%sChamber%s", cathCode[cath].Data(), histoTypeName[hType].Data());
+	histo = (TH1F*)file->Get(histoName.Data());
 	currList[hType]->Add(histo);
       }
     }
@@ -295,8 +292,8 @@ void AliMUONTriggerEfficiencyCells::ReadHistoBoards(const Char_t *filename)
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
       for(Int_t ch=0; ch<fgkNchambers; ch++){
 	for(Int_t hType=0; hType<kNumOfHistoTypes; hType++){
-	  sprintf(histoName, "%sSlat%s%i", cathCode[cath], histoTypeName[hType], 11+ch);
-	  histo = (TH1F*)file->Get(histoName);
+	  histoName = Form("%sSlat%s%i", cathCode[cath].Data(), histoTypeName[hType].Data(), 11+ch);
+	  histo = (TH1F*)file->Get(histoName.Data());
 	  currList[hType]->Add(histo);
 	}
       }
@@ -305,8 +302,8 @@ void AliMUONTriggerEfficiencyCells::ReadHistoBoards(const Char_t *filename)
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
       for(Int_t ch=0; ch<fgkNchambers; ch++){
 	for(Int_t hType=0; hType<kNumOfHistoTypes; hType++){
-	  sprintf(histoName, "%sBoard%s%i", cathCode[cath], histoTypeName[hType], 11+ch);
-	  histo = (TH1F*)file->Get(histoName);
+	  histoName = Form("%sBoard%s%i", cathCode[cath].Data(), histoTypeName[hType].Data(), 11+ch);
+	  histo = (TH1F*)file->Get(histoName.Data());
 	  currList[hType]->Add(histo);
 	}
       }
@@ -362,17 +359,17 @@ AliMUONTriggerEfficiencyCells::InitHistos()
   const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
   const Int_t kNslats = 18;
   Int_t chCath=0;
-  Char_t histoName[40];
+  TString histoName;
 
-  Char_t *cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
+  TString cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
 
   for(Int_t ch=0; ch<fgkNchambers; ch++){
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
       chCath = fgkNchambers*cath + ch;
-      sprintf(histoName, "%sBoardEffChamber%i", cathCode[cath], 11+ch);
-      fBoardEfficiency[chCath] = new TH1F(histoName, histoName, kNumOfBoards, 1-0.5, kNumOfBoards+1.-0.5);
-      sprintf(histoName, "%sSlatEffChamber%i", cathCode[cath], 11+ch);
-      fSlatEfficiency[chCath] = new TH1F(histoName, histoName, kNslats, 0-0.5, kNslats-0.5);
+      histoName = Form("%sBoardEffChamber%i", cathCode[cath].Data(), 11+ch);
+      fBoardEfficiency[chCath] = new TH1F(histoName.Data(), histoName.Data(), kNumOfBoards, 1-0.5, kNumOfBoards+1.-0.5);
+      histoName = Form("%sSlatEffChamber%i", cathCode[cath].Data(), 11+ch);
+      fSlatEfficiency[chCath] = new TH1F(histoName.Data(), histoName.Data(), kNslats, 0-0.5, kNslats-0.5);
     }
   }
 }
@@ -450,8 +447,7 @@ void AliMUONTriggerEfficiencyCells::CalculateEfficiency(Int_t trigger44, Int_t t
 
 
 //_____________________________________________________________________________
-void AliMUONTriggerEfficiencyCells::CheckFiredStrips(const Char_t* geoFilename,
-						     const Char_t* cdbStorage,
+void AliMUONTriggerEfficiencyCells::CheckFiredStrips(const Char_t* cdbStorage,
 						     Int_t runNumber)
 {
   //
@@ -466,9 +462,9 @@ void AliMUONTriggerEfficiencyCells::CheckFiredStrips(const Char_t* geoFilename,
     return;
   }
 
-  GetListsForCheck(geoFilename, cdbStorage, runNumber);
+  GetListsForCheck(cdbStorage, runNumber);
 
-  Char_t histoName[40], histoTitle[90];
+  TString histoName;
 
   // Check fired pads (when available)
   if(fFiredFitHistoList){
@@ -487,7 +483,9 @@ void AliMUONTriggerEfficiencyCells::CheckFiredStrips(const Char_t* geoFilename,
     }
     for(Int_t iCan=0; iCan<nPrintCan; iCan++){
       histo1D = (TH1F*)fFiredFitHistoList->At(iCan);
-      histoFiredCan[iCan] = new TCanvas(histoName, histoTitle, 100+10*iCan, 10*iCan, 700, 700);
+      histoName = histo1D->GetName();
+      histoName.Append("Can");
+      histoFiredCan[iCan] = new TCanvas(histoName.Data(), histoName.Data(), 100+10*iCan, 10*iCan, 700, 700);
       histoFiredCan[iCan]->SetRightMargin(0.14);
       histoFiredCan[iCan]->SetLeftMargin(0.12);
       histo1D->Draw("E");
@@ -504,7 +502,6 @@ void AliMUONTriggerEfficiencyCells::CheckFiredStrips(const Char_t* geoFilename,
 
 //_____________________________________________________________________________
 void AliMUONTriggerEfficiencyCells::DisplayEfficiency(Bool_t perSlat,
-						      const Char_t* geoFilename,
 						      const Char_t* cdbStorage,
 						      Int_t runNumber)
 {
@@ -527,32 +524,26 @@ void AliMUONTriggerEfficiencyCells::DisplayEfficiency(Bool_t perSlat,
     return;
   }
   
-  GetListsForCheck(geoFilename, cdbStorage, runNumber);
+  GetListsForCheck(cdbStorage, runNumber);
 
-  const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
+  //const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
 
   TH2F *histo = 0x0;
-  Char_t histoName[40], histoTitle[90];
-  TPaveLabel *boardLabel = 0x0;
+  TString histoName, histoTitle;
 
   // Plot fired strips (when available)
   if(fFiredDisplayHistoList){
     TCanvas *displayFiredCan[fgkNplanes];
     for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
       histo = (TH2F*)fFiredDisplayHistoList->At(chCath);
-      sprintf(histoName, "%sCan", histo->GetName());
-      sprintf(histoTitle, "%s", histo->GetTitle());
-      displayFiredCan[chCath] = new TCanvas(histoName, histoTitle, 100+10*chCath, 10*chCath, 700, 700);
+      histoName = Form("%sCan", histo->GetName());
+      histoTitle = Form("%s", histo->GetTitle());
+      displayFiredCan[chCath] = new TCanvas(histoName.Data(), histoTitle.Data(), 100+10*chCath, 10*chCath, 700, 700);
       displayFiredCan[chCath]->SetRightMargin(0.14);
       displayFiredCan[chCath]->SetLeftMargin(0.12);
       histo->GetYaxis()->SetTitleOffset(1.4);
       histo->SetStats(kFALSE);
       histo->Draw("COLZ");
-      for (Int_t board = 0; board < kNumOfBoards; board++) {
-	Int_t currLabel = chCath * kNumOfBoards + board;
-	boardLabel = (TPaveLabel*)fBoardLabelList->At(currLabel);
-	boardLabel->Draw("same");
-      }
     }
   }
 
@@ -563,29 +554,25 @@ void AliMUONTriggerEfficiencyCells::DisplayEfficiency(Bool_t perSlat,
       Int_t currChCath = chCath;
       if(perSlat==kTRUE) currChCath += fgkNplanes;
       histo = (TH2F*)fDisplayHistoList->At(currChCath);
-      sprintf(histoName, "%sCan", histo->GetName());
-      sprintf(histoTitle, "%s", histo->GetTitle());
-      can[chCath] = new TCanvas(histoName, histoTitle, 100+10*chCath, 10*chCath, 700, 700);
+      histoName = Form("%sCan", histo->GetName());
+      histoTitle = Form("%s", histo->GetTitle());
+      can[chCath] = new TCanvas(histoName.Data(), histoTitle.Data(), 100+10*chCath, 10*chCath, 700, 700);
       can[chCath]->SetRightMargin(0.14);
       can[chCath]->SetLeftMargin(0.12);
       histo->GetZaxis()->SetRangeUser(0.,1.);
       histo->GetYaxis()->SetTitleOffset(1.4);
       histo->SetStats(kFALSE);
       histo->Draw("COLZ");
-      for (Int_t board = 0; board < kNumOfBoards; board++) {
-	Int_t currLabel = chCath * kNumOfBoards + board;
-	if(perSlat==kTRUE) currLabel += kNumOfBoards * fgkNplanes;
-	boardLabel = (TPaveLabel*)fBoardLabelList->At(currLabel);
-	boardLabel->Draw("same");
-      }
+      if(perSlat==kTRUE) continue;
+      histo = (TH2F*)fBoardLabelList->At(currChCath);
+      histo->Draw("textsame");
     }
   }
 }
 
 
 //__________________________________________________________________________
-Bool_t AliMUONTriggerEfficiencyCells::GetListsForCheck(const Char_t* geoFilename,
-						       const Char_t* cdbStorage,
+Bool_t AliMUONTriggerEfficiencyCells::GetListsForCheck(const Char_t* cdbStorage,
 						       Int_t runNumber)
 {
   //
@@ -593,8 +580,6 @@ Bool_t AliMUONTriggerEfficiencyCells::GetListsForCheck(const Char_t* geoFilename
   /// map of fired strips entering efficiency calculations,
   /// fits for checking switched-off elements in chambers.
   //
-
-  const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
   const Float_t kChi2RedMax = 1.5;
   const Float_t kDummyFired = 1e-5;
 
@@ -608,278 +593,120 @@ Bool_t AliMUONTriggerEfficiencyCells::GetListsForCheck(const Char_t* geoFilename
   AliCDBManager::Instance()->SetDefaultStorage(cdbStorage);
   AliCDBManager::Instance()->SetRun(runNumber);
 
-  AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer();
-  transform->LoadGeometryData(geoFilename);
-
-  if(!AliMpCDB::LoadDDLStore()) // Load DDL store from OCDB
-    AliFatal("Could not access mapping OCDB");
-
-  AliMpDDLStore *ddlStore = AliMpDDLStore::Instance();
-  Int_t line, slat;
-  Float_t xLocal1=0., yLocal1=0., xLocal2=0., yLocal2=0.;
-  Float_t xg1, yg1, zg1, xg2, yg2, zg2;
-  Float_t xWidth=0., yWidth=0.;
-  Float_t x1Label=0., x2Label=0., y1Label=0., y2Label=0.;
-  Float_t x1LabelSlat=0., x2LabelSlat=0., y1LabelSlat=0., y2LabelSlat=0.;
-  Int_t x1=0, y1=0, x2=0, y2=0, localId;
-
-  gStyle->SetPalette(1);
-
-  Char_t *cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
-
-  Float_t boardsX = 280.00;  // cm
-  Float_t boardsY = 335.00;  // cm
-
-  // Check fired pads (when available)  
-  Int_t maxY[fgkNcathodes] = {64,1};
-  TH3F *padFired[fgkNplanes];
-  TH1F *histoFired[fgkNplanes][234];
-  TH2F *histoFiredDisplay[fgkNplanes];
-  TF1 *fitFunc = 0x0;
+  TH3F* padFired = 0x0;
+  TH2F* displayHisto = 0x0;
+  TH1F* histoFired[fgkNplanes][234];
+  TF1* fitFunc = 0x0;
   Bool_t isStripOffInBoard[fgkNplanes][234];
+  Int_t bin=0;
+  TString histoName, histoTitle;
+  TString cathName[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
 
-  TH2F *histo[fgkNplanes];
-  TH2F *histoSlat[fgkNplanes];
-  TPaveLabel *boardLabel[fgkNplanes][234];
-  TPaveLabel *boardLabelSlat[fgkNplanes][234];
-  assert(kNumOfBoards==234);
-
-  Char_t histoName[40], histoTitle[90], labelTxt[5], labelSlatTxt[5];
-
-  Float_t efficiency, efficiencyError, efficiencySlat, efficiencySlatError;
-
+  AliMUONTriggerDisplay triggerDisplay;
   // Book histos
-  for(Int_t cath=0; cath<fgkNcathodes; cath++){
-    padFired[cath] = 0x0;
-    if(fFiredStrips) padFired[cath] = (TH3F*)fFiredStrips->At(cath);
-    for(Int_t ch=0; ch<fgkNchambers; ch++){
-      Int_t chCath = fgkNchambers*cath + ch;
-      sprintf(histoName, "%sChamber%i", cathCode[cath], 11+ch);
-      sprintf(histoTitle, "Chamber %i: efficiency %s", 11+ch, cathCode[cath]);
-      histo[chCath] = new TH2F(histoName, histoTitle, (Int_t)boardsX, -boardsX, boardsX, (Int_t)boardsY, -boardsY, boardsY);
-      histo[chCath]->SetXTitle("X (cm)");
-      histo[chCath]->SetYTitle("Y (cm)");
-      fDisplayHistoList->Add(histo[chCath]);
+  for(Int_t iCath=0; iCath<fgkNcathodes; iCath++){
+    if(fFiredStrips) padFired = (TH3F*)fFiredStrips->At(iCath);
+    for(Int_t iCh=0; iCh<fgkNchambers; iCh++){
+      Int_t chCath = fgkNchambers*iCath + iCh;
+      Int_t currCh = 11 + iCh;
+      histoName = Form("%sChamber%i", cathName[iCath].Data(), currCh);
+      histoTitle = Form("Chamber %i: efficiency %s", currCh, cathName[iCath].Data());
+      displayHisto = 
+	(TH2F*)triggerDisplay.GetDisplayHistogram(fBoardEfficiency[chCath], histoName,
+						  AliMUONTriggerDisplay::kDisplayBoards,
+						  iCath,currCh,histoTitle,
+						  AliMUONTriggerDisplay::kShowZeroes);
+      fDisplayHistoList->Add(displayHisto);
+
+      histoName = Form("labels%sChamber%i", cathName[iCath].Data(), currCh);
+      displayHisto = 
+	(TH2F*)triggerDisplay.GetBoardNumberHisto(histoName,currCh);
+      fBoardLabelList->Add(displayHisto);
 
       if(!fFiredStrips) continue;
-      sprintf(histoName, "firedPads%sChamber%i", cathCode[cath], 11+ch);
-      sprintf(histoTitle, "Chamber %i: Fired pads %s", 11+ch, cathCode[cath]);
-      histoFiredDisplay[chCath] = new TH2F(histoName, histoTitle, (Int_t)boardsX, -boardsX, boardsX, (Int_t)boardsY, -boardsY, boardsY);
-      histoFiredDisplay[chCath]->SetXTitle("X (cm)");
-      histoFiredDisplay[chCath]->SetYTitle("Y (cm)");
-      fFiredDisplayHistoList->Add(histoFiredDisplay[chCath]);
+      histoName = Form("firedPads%sChamber%i", cathName[iCath].Data(), currCh);
+      histoTitle = Form("Chamber %i: Fired pads %s", currCh, cathName[iCath].Data());
+      bin = padFired->GetXaxis()->FindBin(currCh);
+      padFired->GetXaxis()->SetRange(bin,bin);
+      displayHisto = 
+	(TH2F*)triggerDisplay.GetDisplayHistogram(padFired->Project3D("zy"),histoName,
+						  AliMUONTriggerDisplay::kDisplayStrips,
+						  iCath,currCh,histoTitle);
+      fFiredDisplayHistoList->Add(displayHisto);
       
-      for(Int_t ib=0; ib<kNumOfBoards; ib++){
-	sprintf(histoName, "%sChamber%iBoard%i", cathCode[cath], 11+ch, ib+1);
-	sprintf(histoTitle, "Chamber %i: fired pads %s board = %i", 11+ch, cathCode[cath], ib+1);
-	histoFired[chCath][ib] = new TH1F(histoName, histoTitle, 16, -0.5, 15.5);
+      for(Int_t ib=0; ib<AliMpConstants::NofLocalBoards(); ib++){
+	histoName = Form("%sChamber%iBoard%i", cathName[iCath].Data(), currCh, ib+1);
+	histoTitle = Form("Chamber %i: fired pads %s board = %i", currCh, cathName[iCath].Data(), ib+1);
+	histoFired[chCath][ib] = new TH1F(histoName.Data(), histoTitle.Data(), 16, -0.5, 15.5);
 	histoFired[chCath][ib]->SetXTitle("board");
 	isStripOffInBoard[chCath][ib] = kFALSE;
       } // loop on board
     } // loop on chamber
   } // loop on cathode
 
-  for(Int_t cath=0; cath<fgkNcathodes; cath++){
-    for(Int_t ch=0; ch<fgkNchambers; ch++){
-      Int_t chCath = fgkNchambers*cath + ch;
-      sprintf(histoName, "%sChamber%iSlatEff", cathCode[cath], 11+ch);
-      sprintf(histoTitle, "Chamber %i: efficiency %s per slat", 11+ch, cathCode[cath]);
-      histoSlat[chCath] = new TH2F(histoName, histoTitle, (Int_t)boardsX, -boardsX, boardsX, (Int_t)boardsY, -boardsY, boardsY);
-      histoSlat[chCath]->SetXTitle("X (cm)");
-      histoSlat[chCath]->SetYTitle("Y (cm)");
-      fDisplayHistoList->Add(histoSlat[chCath]);
+  for(Int_t iCath=0; iCath<fgkNcathodes; iCath++){
+    for(Int_t iCh=0; iCh<fgkNchambers; iCh++){
+      Int_t chCath = fgkNchambers*iCath + iCh;
+      Int_t currCh = 11+iCh;
+      histoName = Form("%sChamber%iSlatEff", cathName[iCath].Data(), currCh);
+      histoTitle = Form("Chamber %i: efficiency %s per slat", currCh, cathName[iCath].Data());
+      displayHisto = 
+	(TH2F*)triggerDisplay.GetDisplayHistogram(fSlatEfficiency[chCath], histoName,
+						  AliMUONTriggerDisplay::kDisplaySlats,
+						  iCath,currCh,histoTitle);
+      fDisplayHistoList->Add(displayHisto);
     }
   }
 
-  // loop over the trigger DDL (Right: 20, Left: 21)
-  for (Int_t iDDL = 20; iDDL <= 21; ++iDDL) {
-    AliMpDDL* ddl = ddlStore->GetDDL(iDDL);
-    Int_t nCrate = ddl->GetNofTriggerCrates();
-    // loop over the number of crates in DDL
-    for (Int_t index = 0; index < nCrate; ++index) {
-      // get crate object
-      AliMpTriggerCrate* crate = ddlStore->GetTriggerCrate(iDDL, index);
-      Int_t nLocal = crate->GetNofLocalBoards();
-      for (Int_t iLocal = 0; iLocal < nLocal; ++iLocal) {
-	// get local board Id from crate object
-	localId = crate->GetLocalBoardId(iLocal);
-	// get local board object
-	AliMpLocalBoard* localBoard = ddlStore->GetLocalBoard(localId);
+  if(!fFiredStrips) return kTRUE;
 
-	if (!localBoard->IsNotified()) continue;
+  // Check fired pads (when available)
+  for(Int_t iLoc = 0; iLoc < AliMpConstants::NofLocalBoards(); iLoc++) {  
+    Int_t iBoard = iLoc+1;
+    for(Int_t iCh=0; iCh<AliMpConstants::NofChambers(); iCh++){
+      Int_t iChamber = iCh + AliMpConstants::NofTrackingChambers();
 
-	// get detection element connected to this board
-	for (Int_t ch = 0; ch < fgkNchambers; ++ch) {
-	  Int_t iCh = ch + AliMpConstants::NofTrackingChambers();
-	  Int_t detElemId = ddlStore->GetDEfromLocalBoard(localId, iCh);
+      Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromLocalBoard(iBoard, iChamber);
 
-	  if (!detElemId) continue;
+      if (!detElemId) continue;
 
-	  // get segmentation
-	  for (Int_t cath = 0; cath < fgkNcathodes; ++cath) {
-	    const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
-	      ->GetMpSegmentation(detElemId,
-				  AliMp::GetCathodType(cath));
+      AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(iBoard, kFALSE);
 
-	    Int_t chCath = fgkNchambers*cath + ch;
-	    slat = detElemId%100;
-	    Int_t nStrips=0;
+      // skip copy cards
+      if( !localBoard->IsNotified()) 
+	continue;
+      
+      for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
+	Int_t chCath = fgkNchambers*iCath + iCh;
+	// loop over strips
+	const AliMpVSegmentation* seg = 
+	  AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(iCath));
+	Int_t nStrips=0;
+	for (Int_t iStrip = 0; iStrip < 16; ++iStrip) {
+	  AliMpPad pad = seg->PadByLocation(AliMpIntPair(iBoard,iStrip),kFALSE);
+	  if (!pad.IsValid()) continue;
+	  nStrips++;
+	  padFired = (TH3F*)fFiredStrips->At(iCath);
+	  Float_t nFired = padFired->GetBinContent(11+iCh, iBoard, iStrip);
+	  if(nFired==0.) nFired = kDummyFired;
+	  histoFired[chCath][iLoc]->Fill(iStrip, nFired);
+	}
 
-	    // loop over strips
-	    for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
-	      // get pad from electronics
-	      AliMpPad pad = seg->PadByLocation(AliMpIntPair(localId,
-							       ibitxy),kFALSE);
-		
-	      if (!pad.IsValid()) continue;
-	      if(cath==0){ // Geometry info from bending plane only
-		if(ibitxy==0) {
-		  xLocal1 = pad.Position().X();
-		  yLocal1 = pad.Position().Y();
-		  xWidth = pad.Dimensions().X();
-		  yWidth = pad.Dimensions().Y();
-		}
-		xLocal2 = pad.Position().X();
-		yLocal2 = pad.Position().Y();
-	      }
-	      
-	      // Check fired pads (when available)
-	      if(padFired[cath]) {
-		Int_t padX = pad.GetIndices().GetFirst();
-		Int_t padY = pad.GetIndices().GetSecond();
-		Int_t currPair = padX*maxY[cath] + padY;
-		nStrips++;
-		//printf("cath %i board = %i  (%2i, %2i) -> %i\n",
-		//cath, localId, padX, padY, currPair);
-		Int_t chBin = padFired[cath]->GetXaxis()->FindBin(ch);
-		Int_t slatBin = padFired[cath]->GetYaxis()->FindBin(slat);
-		Int_t pairBin = padFired[cath]->GetZaxis()->FindBin(currPair);
-		Float_t nFired = padFired[cath]->GetBinContent(chBin, slatBin, pairBin);;
-
-		Float_t dimX = pad.Dimensions().X();
-		Float_t dimY = pad.Dimensions().Y();
-
-		Float_t stripX1 = pad.Position().X();
-		Float_t stripY1 = pad.Position().Y();
-		Float_t stripX2 = pad.Position().X();
-		Float_t stripY2 = pad.Position().Y();
-
-		transform->Local2Global(detElemId, stripX1, stripY1, 0, xg1, yg1, zg1);
-		transform->Local2Global(detElemId, stripX2, stripY2, 0, xg2, yg2, zg2);
-
-		Float_t x1Float = TMath::Min(xg1,xg2) - dimX;
-		Float_t y1Float = TMath::Min(yg1,yg2) - dimY;
-		Float_t x2Float = TMath::Max(xg1,xg2) + dimX;
-		Float_t y2Float = TMath::Max(yg1,yg2) + dimY;  
-
-		Int_t x1Int = histoFiredDisplay[chCath]->GetXaxis()->FindBin(x1Float)+1;
-		Int_t y1Int = histoFiredDisplay[chCath]->GetYaxis()->FindBin(y1Float)+1;
-		Int_t x2Int = histoFiredDisplay[chCath]->GetXaxis()->FindBin(x2Float)-1;
-		Int_t y2Int = histoFiredDisplay[chCath]->GetYaxis()->FindBin(y2Float)-1;
-
-		for(Int_t binX=x1Int; binX<=x2Int; binX++){
-		  for(Int_t binY=y1Int; binY<=y2Int; binY++){
-		    histoFiredDisplay[chCath]->SetBinContent(binX, binY, nFired);
-		  }
-		}
-
-		if(nFired==0.) nFired = kDummyFired;
-		histoFired[chCath][localId-1]->Fill(ibitxy, nFired);
-	      }
-	    } // loop on strips
-
-	    if(cath==0){ // Geometry info from bending plane only
-	      transform->Local2Global(detElemId, xLocal1, yLocal1, 0, xg1, yg1, zg1);
-	      transform->Local2Global(detElemId, xLocal2, yLocal2, 0, xg2, yg2, zg2);
-
-	      // Per board
-	      x1Label = TMath::Min(xg1,xg2) - xWidth;
-	      y1Label = TMath::Min(yg1,yg2) - yWidth;
-	      x2Label = TMath::Max(xg1,xg2) + xWidth;
-	      y2Label = TMath::Max(yg1,yg2) + yWidth;
-
-	      x1 = histo[ch]->GetXaxis()->FindBin(x1Label)+1;
-	      y1 = histo[ch]->GetYaxis()->FindBin(y1Label)+1;
-	      x2 = histo[ch]->GetXaxis()->FindBin(x2Label)-1;
-	      y2 = histo[ch]->GetYaxis()->FindBin(y2Label)-1;
-
-	      sprintf(labelTxt,"%3d", localId);
-
-	      // Per slat
-	      line = localBoard->GetPosition().GetFirst();
-	      x1LabelSlat = 140.;
-	      x2LabelSlat = x1LabelSlat + 40.;
-	      y1LabelSlat = -285. + ((Float_t)(line - 1)) * 68;
-	      y2LabelSlat = y1LabelSlat + 34.;
-	      if(localId>kNumOfBoards/2){
-		x1LabelSlat = -x2LabelSlat;
-		x2LabelSlat = x1LabelSlat + 40.;
-	      }
-	      sprintf(labelSlatTxt,"%2d", slat);
-	    }
-
-	    boardLabel[chCath][localId-1] = new TPaveLabel(x1Label, y1Label, x2Label, y2Label, labelTxt);
-	    boardLabel[chCath][localId-1]->SetFillStyle(0);
-	    boardLabel[chCath][localId-1]->SetBorderSize(0);
-
-	    boardLabelSlat[chCath][localId-1] = new TPaveLabel(x1LabelSlat, y1LabelSlat, x2LabelSlat, y2LabelSlat, labelSlatTxt);
-	    boardLabelSlat[chCath][localId-1]->SetFillStyle(0);
-	    boardLabelSlat[chCath][localId-1]->SetBorderSize(0);
-
-	    Int_t histoBin = localId;
-	    efficiency = fBoardEfficiency[chCath]->GetBinContent(histoBin);
-	    efficiencyError = fBoardEfficiency[chCath]->GetBinError(histoBin);
-	    if(efficiency==0.) efficiency = kDummyFired; // It allows to graphically distinguish
-	                                                 // efficiency = 0 from no hit on board
-
-	    histoBin = slat+1;
-	    efficiencySlat = fSlatEfficiency[chCath]->GetBinContent(histoBin);
-	    efficiencySlatError = fSlatEfficiency[chCath]->GetBinError(histoBin);
-	    if(efficiencySlat==0.) efficiencySlat = kDummyFired; // It allows to graphically distinguish
-	                                                         // efficiency = 0 from no hit on slat
-
-	    for(Int_t binX=x1; binX<=x2; binX++){
-	      for(Int_t binY=y1; binY<=y2; binY++){
-		histo[chCath]->SetBinContent(binX, binY, efficiency);
-		histo[chCath]->SetBinError(binX, binY, efficiencyError);
-		histoSlat[chCath]->SetBinContent(binX, binY, efficiencySlat);
-		histoSlat[chCath]->SetBinError(binX, binY, efficiencySlatError);
-	      }
-	    }
-
-	    // Check fired pads (when available)
-	    if(padFired[cath]) {
-	      histoFired[chCath][localId-1]->Fit("pol0","Q0R","",0., (Float_t)nStrips-1.);
-	      fitFunc = histoFired[chCath][localId-1]->GetFunction("pol0");
-	      Float_t chi2 = fitFunc->GetChisquare();
-	      Float_t ndf = (Float_t)fitFunc->GetNDF();
-	      Float_t reducedChi2 = chi2/ndf;
-	      if(reducedChi2>kChi2RedMax) {
-		isStripOffInBoard[chCath][localId-1] = kTRUE;
-		//printf("Chamber = %i Cath = %i Board %i: chi2/NDF = %f\tparam = %f\n", ch, cath, localId, reducedChi2, fitFunc->GetParameter(0));
-		fFiredFitHistoList->Add(histoFired[chCath][localId-1]);
-	      }
-	    }
-	  } // loop on cathodes
-	} // loop on chambers
-      } // loop on boards
-    } // loop on crates
-  } // loop on DDL
-
-  for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
-    for(Int_t ib=0; ib<kNumOfBoards; ib++){
-      fBoardLabelList->Add(boardLabel[chCath][ib]);
-    }
-  }
-  for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
-    for(Int_t ib=0; ib<kNumOfBoards; ib++){
-      fBoardLabelList->Add(boardLabelSlat[chCath][ib]);
-    }
-  }
+	histoFired[chCath][iLoc]->Fit("pol0","Q0R","",0., (Float_t)nStrips-1.);
+	fitFunc = histoFired[chCath][iLoc]->GetFunction("pol0");
+	Float_t chi2 = fitFunc->GetChisquare();
+	Float_t ndf = (Float_t)fitFunc->GetNDF();
+	Float_t reducedChi2 = chi2/ndf;
+	if(reducedChi2>kChi2RedMax) {
+	  isStripOffInBoard[chCath][iLoc] = kTRUE;
+	  fFiredFitHistoList->Add(histoFired[chCath][iLoc]);
+	}
+      } // loop on cathodes
+    } // loop on chambers
+  } // loop on local boards 
 
   return kTRUE;
 }
-
 
 //__________________________________________________________________________
 Bool_t AliMUONTriggerEfficiencyCells::SumRunEfficiency(const AliMUONTriggerEfficiencyCells &other)

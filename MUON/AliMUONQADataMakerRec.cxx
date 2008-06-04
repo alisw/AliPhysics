@@ -36,13 +36,10 @@
 #include "AliMUONDarcHeader.h"
 #include "AliMUONLocalStruct.h"
 
-#include "AliMUONGeometryTransformer.h"
+#include "AliMUONTriggerDisplay.h"
 
 #include "AliMpDDLStore.h"
-#include "AliMpVSegmentation.h"
-#include "AliMpSegmentation.h"
 #include "AliMpConstants.h"
-#include "AliMpPad.h"
 #include "AliMpBusPatch.h"
 #include "AliMpTriggerCrate.h"
 #include "AliMpLocalBoard.h"
@@ -179,7 +176,20 @@ void AliMUONQADataMakerRec::InitRaws()
     h4->GetZaxis()->SetTitle("Strip");
     Add2RawsList(h4, kTriggerScalersNBP);
 
-    fIsInitRaws = InitDisplayHistos(AliQA::kRAWS);
+    AliMUONTriggerDisplay triggerDisplay;
+    TString histoName, histoTitle;
+    for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
+      TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
+      for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
+	histoName = Form("hScalers%sChamber%i", cathName.Data(), 11+iChamber);
+	histoTitle = Form("Chamber %i: Scalers %s", 11+iChamber, cathName.Data());
+	TH2F* h5 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
+							      iCath, iChamber, histoTitle);
+	Add2RawsList(h5, kTriggerScalersDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
+      }
+    }
+    
+    fIsInitRaws = kTRUE;
 }
 
 //____________________________________________________________________________ 
@@ -207,7 +217,24 @@ void AliMUONQADataMakerRec::InitRecPoints()
     TH1F* h2 = new TH1F("hTriggeredBoards", "Triggered boards", 234, 0.5, 234.5);
     Add2RecPointsList(h2, kTriggeredBoards);
 
-    fIsInitRecPoints = InitDisplayHistos(AliQA::kRECPOINTS);
+    AliMUONTriggerDisplay triggerDisplay;
+    TString histoName, histoTitle;
+    for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
+      TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
+      for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
+	histoName = Form("hTriggerDigits%sChamber%i", cathName.Data(), 11+iChamber);
+	histoTitle = Form("Chamber %i: Fired pads %s", 11+iChamber, cathName.Data());
+	TH2F* h3 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
+							      iCath, iChamber, histoTitle);
+	Add2RecPointsList(h3, kTriggerDigitsDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
+      }
+    }
+
+    TH2F* h4 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto("hFiredBoardsDisplay", AliMUONTriggerDisplay::kDisplayBoards,
+							  0, 0, "Fired boards");
+    Add2RecPointsList(h4, kTriggerBoardsDisplay);
+
+    fIsInitRecPoints = kTRUE;
 }
 
 
@@ -443,33 +470,17 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
   //
   if(task!=AliQA::kRECPOINTS && task!=AliQA::kRAWS) return;
 
-  AliMpCDB::LoadDDLStore();
-
-  Int_t detElemId;
-  Float_t xg1, yg1, zg1, xg2, yg2, zg2, binContent;
-  Float_t xLocal1=0., yLocal1=0., xLocal2=0., yLocal2=0., xWidth=0., yWidth=0.;
-  Float_t x1Label, y1Label, x2Label, y2Label;
-  Int_t x1Int, x2Int, y1Int, y2Int;
-  Int_t binCh, binBoard, binStrip;
-
-  AliMUONGeometryTransformer transform;
-  transform.LoadGeometryData();
-
+  AliMUONTriggerDisplay triggerDisplay;
+  
   TH3F* histoStrips=0x0;
   TH2F* histoDisplayStrips=0x0;
-  TH2F* histoDisplayBoards=0x0;
-  TH1F* histoBoards=0x0;
 
-  const Float_t kShift = 0.15;
-
-  for (Int_t iCath = 0; iCath < 2; ++iCath)
+  for (Int_t iCath = 0; iCath < AliMpConstants::NofCathodes(); iCath++)
   {
-
     if(task==AliQA::kRECPOINTS){
       ERecPoints hindex 
 	= ( iCath == 0 ) ? kTriggerDigitsBendPlane : kTriggerDigitsNonBendPlane;
       histoStrips = (TH3F*)GetRecPointsData(hindex);
-      histoBoards = (TH1F*)GetRecPointsData(kTriggeredBoards);
     }
     else if(task==AliQA::kRAWS){
       ERaw hindex 
@@ -478,345 +489,23 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
       if(histoStrips->GetEntries()==0) return; // No scalers found
     }
     
-    // Load mapping
-    if ( ! AliMpSegmentation::Instance(kFALSE) ) {
-      /// Load mapping
-      if ( ! AliMpCDB::LoadDDLStore() ) {
-        AliError("Could not access mapping from OCDB !");
-        return;
-      }
-    }  
-
-    for (Int_t iChamber = 0; iChamber < 4; ++iChamber)
+    for (Int_t iChamber = 0; iChamber < AliMpConstants::NofTriggerChambers(); iChamber++)
     {
-      Int_t iCh = iChamber + AliMpConstants::NofTrackingChambers();
-
       if(task==AliQA::kRECPOINTS){
-	histoDisplayStrips = (TH2F*)GetRecPointsData(kTriggerDigitsDisplay + 4*iCath + iChamber);
-	histoDisplayBoards = (TH2F*)GetRecPointsData(kTriggerBoardsDisplay);
+	histoDisplayStrips = (TH2F*)GetRecPointsData(kTriggerDigitsDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
       }
       else if(task==AliQA::kRAWS){
-	histoDisplayStrips = (TH2F*)GetRawsData(kTriggerScalersDisplay + 4*iCath + iChamber);
+	histoDisplayStrips = (TH2F*)GetRawsData(kTriggerScalersDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
       }
-
-      for(Int_t iBoard=1; iBoard<=234; iBoard++){
-	// get detElemId
-	detElemId = AliMpDDLStore::Instance()->GetDEfromLocalBoard(iBoard, iCh);
-
-	if (!detElemId) continue;
-
-	AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(iBoard, false);
-
-	// skip copy cards
-	if( !localBoard->IsNotified()) 
-	  continue;
-
-	const AliMpVSegmentation* seg 
-	  = AliMpSegmentation::Instance()
-	  ->GetMpSegmentation(detElemId, AliMp::GetCathodType(iCath));  
-        
-	// loop over strips
-	for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) 
-	{
-	  AliMpPad pad = seg->PadByLocation(AliMpIntPair(iBoard,ibitxy),kFALSE);
-                        
-	  if (!pad.IsValid())
-	    continue;
-
-	  if(iCath==0){ // Geometry info from bending plane only
-	    if(ibitxy==0) {
-	      xLocal1 = pad.Position().X();
-	      yLocal1 = pad.Position().Y();
-	      xWidth = pad.Dimensions().X();
-	      yWidth = pad.Dimensions().Y();
-	    }
-	    xLocal2 = pad.Position().X();
-	    yLocal2 = pad.Position().Y();
-	  }
-
-	  Float_t dimX = pad.Dimensions().X();
-	  Float_t dimY = pad.Dimensions().Y();
-
-	  Float_t stripX = pad.Position().X();
-	  Float_t stripY = pad.Position().Y();
-		   
-	  transform.Local2Global(detElemId, stripX, stripY, 0, xg1, yg1, zg1);
-
-	  x1Int = histoDisplayStrips->GetXaxis()->FindBin(xg1 - dimX + kShift);
-	  y1Int = histoDisplayStrips->GetYaxis()->FindBin(yg1 - dimY + kShift);
-	  x2Int = histoDisplayStrips->GetXaxis()->FindBin(xg1 + dimX - kShift);
-	  y2Int = histoDisplayStrips->GetYaxis()->FindBin(yg1 + dimY - kShift);
-
-	  binCh = histoStrips->GetXaxis()->FindBin(iCh+1);
-	  binBoard = histoStrips->GetYaxis()->FindBin(iBoard);
-	  binStrip = histoStrips->GetZaxis()->FindBin(ibitxy);
-	  binContent = histoStrips->GetBinContent(binCh, binBoard, binStrip);
-
-	  if(binContent==0) continue;
-
-	  for(Int_t binX=x1Int; binX<=x2Int; binX++){
-	    for(Int_t binY=y1Int; binY<=y2Int; binY++){	      
-	      histoDisplayStrips->SetBinContent(binX, binY, binContent);
-	    }
-	  }
-	}// ibitxy
-
-	if(task != AliQA::kRECPOINTS) continue;
-	if(iCath>0 || iChamber>0) continue; // Geometry info from bending plane only
-	transform.Local2Global(detElemId, xLocal1, yLocal1, 0, xg1, yg1, zg1);
-	transform.Local2Global(detElemId, xLocal2, yLocal2, 0, xg2, yg2, zg2);
-
-	// Per board
-	x1Label = TMath::Min(xg1,xg2) - xWidth + kShift;
-	y1Label = TMath::Min(yg1,yg2) - yWidth + kShift;
-	x2Label = TMath::Max(xg1,xg2) + xWidth - kShift;
-	y2Label = TMath::Max(yg1,yg2) + yWidth - kShift;
-
-	x1Int = histoDisplayBoards->GetXaxis()->FindBin(x1Label);
-	y1Int = histoDisplayBoards->GetYaxis()->FindBin(y1Label);
-	x2Int = histoDisplayBoards->GetXaxis()->FindBin(x2Label);
-	y2Int = histoDisplayBoards->GetYaxis()->FindBin(y2Label);
-
-	binBoard = histoBoards->GetXaxis()->FindBin(iBoard);
-	binContent = histoBoards->GetBinContent(binBoard);
-
-	if(binContent==0) continue;
-
-	for(Int_t binX=x1Int; binX<=x2Int; binX++){
-	  for(Int_t binY=y1Int; binY<=y2Int; binY++){
-	    histoDisplayBoards->SetBinContent(binX, binY, binContent);
-	  }
-	}
-      } // iBoard
+      Int_t bin = histoStrips->GetXaxis()->FindBin(11+iChamber);
+      histoStrips->GetXaxis()->SetRange(bin,bin);
+      TH2F* inputHisto = (TH2F*)histoStrips->Project3D("zy");
+      triggerDisplay.FillDisplayHistogram(inputHisto, histoDisplayStrips, AliMUONTriggerDisplay::kDisplayStrips, iCath, iChamber);
     } // iChamber
   } // iCath
+
+  if(task!=AliQA::kRECPOINTS) return;
+  TH1F* histoBoards = (TH1F*)GetRecPointsData(kTriggeredBoards);
+  TH2F* histoDisplayBoards = (TH2F*)GetRecPointsData(kTriggerBoardsDisplay);
+  triggerDisplay.FillDisplayHistogram(histoBoards, histoDisplayBoards, AliMUONTriggerDisplay::kDisplayBoards, 0, 0);
 }
-
-
-//____________________________________________________________________________ 
-Bool_t AliMUONQADataMakerRec::InitDisplayHistos(AliQA::TASKINDEX_t task)
-{
-  //
-  /// Initialize trigger information display histograms,
-  /// using mapping and geometry
-  //
-  AliMpCDB::LoadDDLStore();
-
-  const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
-
-  AliMUONGeometryTransformer transform;
-  transform.LoadGeometryData();
-
-  TString cathCode[2] = {"BendPlane", "NonBendPlane"};
-
-  TArrayF xLocal1[4], yLocal1[4], xLocal2[4], yLocal2[4], xWidth[4], yWidth[4];
-
-  TArrayF xAxisStrip[8];
-  TArrayF yAxisStrip[8];
-  TArrayF xAxisBoard[8];
-  TArrayF yAxisBoard[8];
-
-  TH2F* histoStrips=0x0;
-  TH2F* histoBoards=0x0;
-
-  const Float_t kResetValue=1234567.;
-   
-  for(Int_t ch=0; ch<4; ch++){
-    xLocal1[ch].Set(kNumOfBoards);
-    yLocal1[ch].Set(kNumOfBoards);
-    xLocal2[ch].Set(kNumOfBoards);
-    yLocal2[ch].Set(kNumOfBoards);
-    xWidth[ch].Set(kNumOfBoards);
-    yWidth[ch].Set(kNumOfBoards);
-  }
-
-  for(Int_t cath=0; cath<2; cath++){
-    for(Int_t ch=0; ch<4; ch++){
-      Int_t chCath = 4*cath + ch;
-      xAxisBoard[chCath].Set(60);
-      xAxisBoard[chCath].Reset(kResetValue);
-      yAxisBoard[chCath].Set(60);
-      yAxisBoard[chCath].Reset(kResetValue);
-
-      xAxisStrip[chCath].Set(700);
-      xAxisStrip[chCath].Reset(kResetValue);
-      yAxisStrip[chCath].Set(700);
-      yAxisStrip[chCath].Reset(kResetValue);
-    }
-  }
-   
-  Float_t xg1, yg1, zg1, xg2, yg2, zg2;
-
-  TString histoName, histoTitle;
-
-  const Float_t kShift = 0.;
-
-  // Load mapping
-  if ( ! AliMpSegmentation::Instance(kFALSE) ) {
-    /// Load mapping
-    if ( ! AliMpCDB::LoadDDLStore() ) {
-      AliError("Could not access mapping from OCDB !");
-      return kFALSE;
-    }
-  }  
-
-  for(Int_t iCath=0; iCath<2; iCath++){
-    for (Int_t iChamber = 0; iChamber < 4; ++iChamber) {
-      Int_t iCh = iChamber + AliMpConstants::NofTrackingChambers();
-      for(Int_t iLoc = 0; iLoc < 234; iLoc++) {  
-	Int_t iBoard = iLoc+1;
-	Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromLocalBoard(iBoard, iCh);
-
-	if (!detElemId) continue;
-
-	AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(iBoard, kFALSE);
-
-	// skip copy cards
-	if( !localBoard->IsNotified()) 
-	  continue;
-
-	// get segmentation
-	const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
-	  ->GetMpSegmentation(detElemId,
-			      AliMp::GetCathodType(iCath));
-
-	Int_t chCath = 4*iCath + iChamber;
-	// loop over strips
-	for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
-	  // get pad from electronics
-	  AliMpPad pad = seg->PadByLocation(AliMpIntPair(iBoard,ibitxy),kFALSE);
-
-	  if (!pad.IsValid()) continue;
-
-	  if(iCath==0){
-	    if(ibitxy==0) {
-	      xLocal1[iChamber][iLoc] = pad.Position().X();
-	      yLocal1[iChamber][iLoc] = pad.Position().Y();
-	      xWidth[iChamber][iLoc] = pad.Dimensions().X();
-	      yWidth[iChamber][iLoc] = pad.Dimensions().Y();
-	    }
-	    xLocal2[iChamber][iLoc] = pad.Position().X();
-	    yLocal2[iChamber][iLoc] = pad.Position().Y();
-	  }
-
-	  // Check fired pads
-	  Float_t dimX = pad.Dimensions().X();
-	  Float_t dimY = pad.Dimensions().Y();
-     
-	  Float_t stripX = pad.Position().X();
-	  Float_t stripY = pad.Position().Y();
-
-	  transform.Local2Global(detElemId, stripX, stripY, 0, xg1, yg1, zg1);
-
-	  AddSortedPoint(xg1 - dimX + kShift, xAxisStrip[chCath], kResetValue);
-	  AddSortedPoint(xg1 + dimX - kShift, xAxisStrip[chCath], kResetValue);
-
-	  AddSortedPoint(yg1 - dimY + kShift, yAxisStrip[chCath], kResetValue);
-	  AddSortedPoint(yg1 + dimY - kShift, yAxisStrip[chCath], kResetValue);
-	} // loop on strips  
-
-	transform.Local2Global(detElemId, xLocal1[iChamber][iLoc], yLocal1[iChamber][iLoc], 0, xg1, yg1, zg1);
-	transform.Local2Global(detElemId, xLocal2[iChamber][iLoc], yLocal2[iChamber][iLoc], 0, xg2, yg2, zg2);
-
-	// Per board
-	AddSortedPoint(TMath::Min(xg1,xg2) - xWidth[iChamber][iLoc] + kShift, xAxisBoard[chCath], kResetValue);
-	AddSortedPoint(TMath::Max(xg1,xg2) + xWidth[iChamber][iLoc] - kShift, xAxisBoard[chCath], kResetValue);
-
-	AddSortedPoint(TMath::Min(yg1,yg2) - yWidth[iChamber][iLoc] + kShift, yAxisBoard[chCath], kResetValue);
-	AddSortedPoint(TMath::Max(yg1,yg2) + yWidth[iChamber][iLoc] - kShift, yAxisBoard[chCath], kResetValue);
-      } // loop on local boards 
-    } // loop on chambers
-  } // loop on cathodes
-
-  const Float_t kMinDiff = 0.1;
-
-  // Book histos
-  for(Int_t iCath=0; iCath<2; iCath++){
-    for(Int_t iChamber=0; iChamber<4; iChamber++){
-      Int_t chCath = 4*iCath + iChamber;
-      Int_t ipoint=0;
-      while(TMath::Abs(xAxisStrip[chCath][ipoint]-kResetValue)>kMinDiff) { ipoint++; }
-      xAxisStrip[chCath].Set(ipoint);
-
-      ipoint = 0;
-      while(TMath::Abs(yAxisStrip[chCath][ipoint]-kResetValue)>kMinDiff) { ipoint++; }
-      yAxisStrip[chCath].Set(ipoint);
-
-      ipoint = 0;
-      while(TMath::Abs(xAxisBoard[chCath][ipoint]-kResetValue)>kMinDiff) { ipoint++; }
-      xAxisBoard[chCath].Set(ipoint);
-
-      ipoint = 0;
-      while(TMath::Abs(yAxisBoard[chCath][ipoint]-kResetValue)>kMinDiff) { ipoint++; }
-      yAxisBoard[chCath].Set(ipoint);
-
-      if(task==AliQA::kRECPOINTS){
-	histoName = Form("hTriggerDigits%sChamber%i", cathCode[iCath].Data(), 11+iChamber);
-	histoTitle = Form("Chamber %i: Fired pads %s", 11+iChamber, cathCode[iCath].Data());
-      }
-      else if(task==AliQA::kRAWS){
-	histoName = Form("hScalers%sChamber%i", cathCode[iCath].Data(), 11+iChamber);
-	histoTitle = Form("Chamber %i: Scalers %s", 11+iChamber, cathCode[iCath].Data());
-      }
-      histoStrips = new TH2F(histoName.Data(), histoTitle.Data(), 
-			     xAxisStrip[chCath].GetSize()-1, xAxisStrip[chCath].GetArray(),
-			     yAxisStrip[chCath].GetSize()-1, yAxisStrip[chCath].GetArray());
-      histoStrips->SetXTitle("X (cm)");
-      histoStrips->SetYTitle("Y (cm)");
-
-      if(task==AliQA::kRECPOINTS){
-	Add2RecPointsList(histoStrips, kTriggerDigitsDisplay + 4*iCath + iChamber);
-      }
-      else if(task==AliQA::kRAWS){
-	Add2RawsList(histoStrips, kTriggerScalersDisplay + 4*iCath + iChamber);
-      }
-
-      if(task != AliQA::kRECPOINTS) continue;
-      if(iCath>0 || iChamber>0) continue;
-
-      histoName = "hFiredBoardsDisplay";
-      histoTitle = "Fired boards";
-      histoBoards = new TH2F(histoName.Data(), histoTitle.Data(), 
-			     xAxisBoard[chCath].GetSize()-1, xAxisBoard[chCath].GetArray(),
-			     yAxisBoard[chCath].GetSize()-1, yAxisBoard[chCath].GetArray());
-      histoBoards->SetXTitle("X (cm)");
-      histoBoards->SetYTitle("Y (cm)");
-
-      Add2RecPointsList(histoBoards, kTriggerBoardsDisplay + 4*iCath + iChamber);
-    } // loop on chamber
-  } // loop on cathode
-  
-  return kTRUE;
-}
-
-
-//____________________________________________________________________________ 
-Bool_t AliMUONQADataMakerRec::AddSortedPoint(Float_t currVal, TArrayF& position, const Float_t kResetValue)
-{
-  //
-  /// Add sorted point in array according to an increasing order.
-  /// Used to build display histograms axis.
-  //
-  Int_t nEntries = position.GetSize();
-  Float_t tmp1, tmp2;
-  const Float_t kMinDiff = 0.1;
-  for(Int_t i=0; i<nEntries; i++){
-    if(TMath::Abs(position[i]-currVal)<kMinDiff) return kFALSE;
-    if(TMath::Abs(position[i]-kResetValue)<kMinDiff) {
-      position[i] = currVal;
-      return kTRUE;
-    }
-    if(currVal>position[i]) continue;
-    tmp1 = position[i];
-    position[i] = currVal;
-    for(Int_t j=i+1; j<nEntries; j++){
-      tmp2 = position[j];
-      position[j] = tmp1;
-      tmp1 = tmp2;
-      if(tmp1==kResetValue) break;
-    }
-    return kTRUE;
-  }
-  return kFALSE;
-}
-

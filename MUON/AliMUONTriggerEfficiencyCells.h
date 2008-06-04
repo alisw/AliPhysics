@@ -38,15 +38,13 @@ public:
 
   // Methods for display
   void DisplayEfficiency(Bool_t perSlat=kFALSE,
-			 const Char_t* geoFilename="geometry.root",
 			 const Char_t* cdbStorage = "local://$ALICE_ROOT",
 			 Int_t runNumber=0);
 
   // Methods for efficiency check
   /// Set the list of fired strips
   void SetFiredStrips(TList *firedStrips){fFiredStrips = firedStrips;}
-  void CheckFiredStrips(const Char_t *geoFilename="geometry.root",
-			const Char_t* cdbStorage = "local://$ALICE_ROOT",
+  void CheckFiredStrips(const Char_t* cdbStorage = "local://$ALICE_ROOT",
 			Int_t runNumber=0);
                                 // Check for strips with lower counts than others:
                                 // syntomatic of possible read-out problems in boards
@@ -65,8 +63,7 @@ private:
     void ReadHistoBoards(const Char_t* filename="MUON.TriggerEfficiencyMap.root");
     void InitHistos();
     void FillHistosFromList();
-    Bool_t GetListsForCheck(const Char_t* geoFilename,
-			    const Char_t* cdbStorage, Int_t runNumber);
+    Bool_t GetListsForCheck(const Char_t* cdbStorage, Int_t runNumber);
     
     static const Int_t fgkNcathodes=2; ///<Number of cathodes
     static const Int_t fgkNchambers=4; ///<Number of chambers
