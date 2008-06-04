@@ -59,13 +59,15 @@ Int_t AliRawDB::fgkDetBranches[AliDAQ::kNDetectors+1] = {1,1,1,18,1,1,1,1,1,1,1,
 AliRawDB::AliRawDB(AliRawEvent *event,
 		   AliESDEvent *esd, 
 		   Int_t compress,
-                   const char* fileName) :
+                   const char* fileName,
+		   Int_t basketsize) :
   fRawDB(NULL),
   fTree(NULL),
   fEvent(event),
   fESDTree(NULL),
   fESD(esd),
   fCompress(compress),
+  fBasketSize(basketsize),
   fMaxSize(-1),
   fFS1(""),
   fFS2(""),
@@ -271,22 +273,21 @@ void AliRawDB::MakeTree()
 
    fTree->BranchRef();
 
-   Int_t bufsize = 256000;
    // splitting 29.6 MB/s, no splitting 35.3 MB/s on P4 2GHz 15k SCSI
    //Int_t split   = 1;
    Int_t split   = 0;
-   fTree->Branch("rawevent", "AliRawEvent", &fEvent, bufsize, split);
+   fTree->Branch("rawevent", "AliRawEvent", &fEvent, fBasketSize, split);
 
    // Make brach for each sub-detector
    for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
      for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
        fTree->Branch(Form("%s%d",AliDAQ::DetectorName(iDet),iBranch),"AliRawDataArray",
-		     &fDetRawData[iDet][iBranch],bufsize,split);
+		     &fDetRawData[iDet][iBranch],fBasketSize,split);
    }
    // Make special branch for unrecognized raw-data payloads
    for (Int_t iBranch = 0; iBranch < fgkDetBranches[AliDAQ::kNDetectors]; iBranch++)
      fTree->Branch(Form("Common%d",iBranch),"AliRawDataArray",
-		   &fDetRawData[AliDAQ::kNDetectors][iBranch],bufsize,split);
+		   &fDetRawData[AliDAQ::kNDetectors][iBranch],fBasketSize,split);
 
    // Create tree which will contain the HLT ESD information
 
@@ -294,7 +295,7 @@ void AliRawDB::MakeTree()
      fESDTree = new TTree("esdTree", Form("ALICE HLT ESD tree (%s)", GetAliRootTag()));
      fESDTree->SetAutoSave(21000000000LL);  // autosave when 21 Gbyte written
      split   = 0;
-     fESDTree->Branch("ESD", "AliESDEvent", &fESD, bufsize, split);
+     fESDTree->Branch("ESD", "AliESDEvent", &fESD, fBasketSize, split);
    }
 
 }

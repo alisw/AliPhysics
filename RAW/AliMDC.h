@@ -64,7 +64,8 @@ public:
    AliMDC(Int_t compress, Bool_t deleteFiles, 
 	  EFilterMode filterMode = kFilterTransparent, 
 	  Double_t maxSizeTagDB = -1, const char* fileNameTagDB = NULL,
-	  const char* guidFileFolder = NULL);
+	  const char* guidFileFolder = NULL,
+	  Int_t basketsize = 32000);
    virtual ~AliMDC();
 
    Int_t      Open(EWriteMode mode, const char* fileName,
@@ -103,6 +104,7 @@ private:
    AliTagDB    *fTagDB;       // tag DB
    AliRawEventTag *fEventTag; // raw-data event tag object
    Int_t        fCompress;    // compression factor used for raw output DB
+   Int_t        fBasketSize;  // root i/o basket size (default = 32000)
    Bool_t       fDeleteFiles; // flag for deletion of files
    EFilterMode  fFilterMode;  // high level filter mode
    TObjArray    fFilters;     // filter algorithms
@@ -125,7 +127,7 @@ private:
                                  Bool_t isSwapped, char*& data);
    Int_t     ReadRawData(AliRawData &raw, Int_t size, char*& data);
 
-   ClassDef(AliMDC,2)  // MDC processor
+   ClassDef(AliMDC,3)  // MDC processor
 };
 
 #endif

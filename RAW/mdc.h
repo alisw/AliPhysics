@@ -17,7 +17,8 @@ extern "C" {
 
 void* alimdcCreate(int compress, int filterMode, 
 		   double maxSizeTagDB, const char* fileNameTagDB,
-		   const char* guidFileFolder);
+		   const char* guidFileFolder,
+		   int basketsize);
 int   alimdcOpen(void* alimdc, int mode, const char* fileName);
 int   alimdcProcessEvent(void* alimdc, void* event, int isIovecArray);
 long long  alimdcGetTotalFileSize(void* alimdc);

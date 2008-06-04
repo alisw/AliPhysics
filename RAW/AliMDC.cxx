@@ -87,7 +87,8 @@ const char* const AliMDC::fgkFilterName[kNFilters] = {"AliHoughFilter"};
 //______________________________________________________________________________
 AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode, 
 	       Double_t maxSizeTagDB, const char* fileNameTagDB,
-	       const char *guidFileFolder) :
+	       const char *guidFileFolder,
+	       Int_t basketsize) :
   fEvent(new AliRawEvent),
   fESD(NULL),
   fStats(NULL),
@@ -95,6 +96,7 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   fTagDB(NULL),
   fEventTag(new AliRawEventTag),
   fCompress(compress),
+  fBasketSize(basketsize),
   fDeleteFiles(deleteFiles),
   fFilterMode(filterMode),
   fFilters(),

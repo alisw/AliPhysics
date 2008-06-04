@@ -269,9 +269,10 @@ int main(int argc, char **argv)
       }
    }
 
+   Int_t basketsize = 32000;
    // Create MDC processor object and process input stream
    AliMDC mdcproc(compress, delFiles, AliMDC::EFilterMode(filterMode), 
-		  maxTagSize, tagDBFS);
+		  maxTagSize, tagDBFS,NULL,basketsize);
 
    Int_t result = mdcproc.Run(file, useLoop, wmode, maxFileSize, fs1, fs2);
 
