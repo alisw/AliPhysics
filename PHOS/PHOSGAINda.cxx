@@ -21,6 +21,8 @@ extern "C" {
 #include <stdlib.h>
 
 #include <TSystem.h>
+#include <TROOT.h>
+#include <TPluginManager.h>
 
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
@@ -35,11 +37,28 @@ extern "C" {
 */
 int main(int argc, char **argv) {
 
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()");
+
   int status;
   
   if (argc!=2) {
     printf("Wrong number of arguments\n");
     return -1;
+  }
+
+  /* Retrieve mapping files from DAQ DB */ 
+  const char* mapFiles[4] = {"RCU0.data","RCU1.data","RCU2.data","RCU3.data"};
+
+  for(Int_t iFile=0; iFile<4; iFile++) {
+    int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
+    if(failed) { 
+      printf("Cannot retrieve file %s from DAQ DB. Exit.\n",mapFiles[iFile]);
+      return -1;
+    }
   }
   
   /* Open mapping files */
@@ -169,6 +188,19 @@ int main(int argc, char **argv) {
   }
   
   for(Int_t i = 0; i < 4; i++) delete mapping[i];  
+  
+  /* Be sure that all histograms are saved */
+
+  da1.UpdateHistoFile();
+  da1.SetWriteToFile(kFALSE);
+  
+  /* Store output files to the File Exchange Server */
+  char localfile[128];
+  
+  for(Int_t iMod=0; iMod<5; iMod++) {
+    sprintf(localfile,"PHOS_Module%d_Calib.root",iMod);
+    daqDA_FES_storeFile(localfile,"AMPLITUDES");
+  }
   
   return status;
 }
