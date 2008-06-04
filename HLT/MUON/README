@@ -22,10 +22,10 @@ Directories:
 HLT/MUON
 	Contains common source code and files.
 
-HLT/MUON/OfflineInterface
+HLT/MUON/OnlineAnalysis
 	All online analysis components and algorithm codes are found here.
 
-HLT/MUON/OnlineAnalysis
+HLT/MUON/OfflineInterface
 	Components used specifically to interface with AliRoot are placed in
 	this directory.
 
