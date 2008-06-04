@@ -94,17 +94,16 @@ int main(int argc, char **argv) {
       if (daqDA_checkShutdown()) {break;}
 
       aliHeader = (AliRawEventHeaderBase*) rawReader->GetEventHeader();
-      calibSignal->SetRunNumber( aliHeader->Get("RunNb") ); // just for fun; keep info on last run looked at
 
       // select physics and calibration events now (only calibration in future)
-      if ( aliHeader->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent || 
-	   aliHeader->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent  ) {
+      // For running on testbeam files: we don't have any event classifications then: commented out selection with //DS below 
+      //DS      if ( aliHeader->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent || aliHeader->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent  ) {
 
 	nevents++;
 
 	//  Signal calibration
 	calibSignal->ProcessEvent(in, aliHeader);
-      }
+	//DS      } // event selection 
     } // loop over all events in file
     /* cleanup the reading handles */
     delete in;
