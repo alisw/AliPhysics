@@ -75,7 +75,7 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
   Double_t spdCheck, sddCheck, ssdCheck;
-  Double_t retval = 0.;
+  Double_t retval = 1.;
   if(fDet == 0 || fDet == 1) {
     AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
     if(!fSPDChecker) {
@@ -83,7 +83,7 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     }
     fSPDChecker->SetTaskOffset(fSPDOffset);
     spdCheck = fSPDChecker->Check(index, list);
-    if(spdCheck>retval)retval = spdCheck;
+    if(spdCheck<retval)retval = spdCheck;
   }
   if(fDet == 0 || fDet == 2) {
     AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
@@ -92,7 +92,7 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     }
     fSDDChecker->SetTaskOffset(fSDDOffset);
     sddCheck = fSDDChecker->Check(index, list);
-    if(sddCheck>retval)retval = sddCheck;
+    if(sddCheck<retval)retval = sddCheck;
  }
   if(fDet == 0 || fDet == 3) {
     AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
@@ -102,7 +102,7 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     }
     fSSDChecker->SetTaskOffset(fSSDOffset);
     ssdCheck = fSSDChecker->Check(index, list);
-    if(ssdCheck>retval)retval = ssdCheck;  }
+    if(ssdCheck<retval)retval = ssdCheck;  }
   // here merging part for common ITS QA result
   // 
   AliDebug(1,Form("AliITSQAChecker::QAChecker returned value is %f \n",retval));
