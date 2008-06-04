@@ -264,6 +264,10 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
     for ( Int_t iTrack1 = 0; iTrack1<nTracks; ++iTrack1 ) 
     { //1st loop
       AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack1);
+      
+      // skip fake tracks (ghosts)
+      if (!muonTrack->ContainTrackerData()) continue;
+      
       ftracktot++;
       
       thetaX = muonTrack->GetThetaX();

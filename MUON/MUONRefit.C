@@ -113,7 +113,10 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
     // loop over digit to modify their charge
     AliMUONVDigit *digit;
     TIter next(esdInterface.CreateDigitIterator());
-    while ((digit = static_cast<AliMUONVDigit*>(next()))) digit->SetCharge(digit->ADC());
+    while ((digit = static_cast<AliMUONVDigit*>(next()))) {
+      digit->SetCharge(digit->ADC());
+      digit->Calibrated(kFALSE);
+    }
     
     // refit the tracks from digits
     AliMUONVTrackStore* newTrackStore = refitter.ReconstructFromDigits();
@@ -127,8 +130,13 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
       
       // get the ESD track
       AliESDMuonTrack* esdTrack = (AliESDMuonTrack*) esdTracks->UncheckedAt(iTrack);
+      
+      // skip ghost tracks (leave them unchanged in the new ESD file)
+      if (!esdTrack->ContainTrackerData()) continue;
+      
       // get the corresponding MUON track
       AliMUONTrack* track = esdInterface.FindTrack(esdTrack->GetUniqueID());
+      
       // Find the corresponding re-fitted MUON track
       AliMUONTrack* newTrack = (AliMUONTrack*) newTrackStore->FindObject(esdTrack->GetUniqueID());
       

@@ -29,6 +29,8 @@ class AliMUONTrack : public TObject
   AliMUONTrack (const AliMUONTrack& track); // copy constructor
   AliMUONTrack& operator=(const AliMUONTrack& track); // assignment operator
 
+  void Reset();
+  
   TClonesArray* GetTrackParamAtCluster() const;
   void          AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster &cluster, Bool_t copy = kFALSE); 
   void          RemoveTrackParamAtCluster(AliMUONTrackParam *trackParam);

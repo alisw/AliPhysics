@@ -59,13 +59,14 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
   muonRecoParam->CombineClusterTrackReco(kFALSE);
+  //muonRecoParam->SaveFullClusterInESD(kTRUE,100.);
   //muonRecoParam->SetClusteringMode("PEAKFIT");
   //muonRecoParam->SetClusteringMode("PEAKCOG");
   muonRecoParam->Print("FULL");
 
   AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
   
-  //MuonRec->SetRunQA(kFALSE);
+  MuonRec->SetRunQA(kFALSE);
   
   MuonRec->Run();
   

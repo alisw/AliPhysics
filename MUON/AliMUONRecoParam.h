@@ -77,9 +77,9 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   /// set the vertex dispersion (cm) in non bending plane (used for original tracking only)
   void     SetNonBendingVertexDispersion(Double_t val) {fNonBendingVertexDispersion = val;} 
-  /// return the vertex dispersion (cm) in bending plane (used for original tracking only)
+  /// return the vertex dispersion (cm) in non bending plane (used for original tracking only)
   Double_t GetNonBendingVertexDispersion() const {return fNonBendingVertexDispersion;}
-  /// set the vertex dispersion (cm) in non bending plane (used for original tracking only)
+  /// set the vertex dispersion (cm) in bending plane (used for original tracking only)
   void     SetBendingVertexDispersion(Double_t val) {fBendingVertexDispersion = val;} 
   /// return the vertex dispersion (cm) in bending plane (used for original tracking only)
   Double_t GetBendingVertexDispersion() const {return fBendingVertexDispersion;}

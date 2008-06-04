@@ -34,7 +34,7 @@ class TClonesArray;
 class AliMUONVTrackReconstructor : public TObject {
 
  public:
-  AliMUONVTrackReconstructor(AliMUONVClusterServer& clusterServer); // default Constructor
+  AliMUONVTrackReconstructor(AliMUONVClusterServer* clusterServer); // default Constructor
   virtual ~AliMUONVTrackReconstructor(); // Destructor
 
   void EventReconstruct(AliMUONVClusterStore& clusterStore,
@@ -50,7 +50,7 @@ class AliMUONVTrackReconstructor : public TObject {
                                  const AliMUONTrackHitPattern& trackHitPattern);
   
   /// re-fit the given track
-  virtual Bool_t RefitTrack(AliMUONTrack &track) = 0;
+  virtual Bool_t RefitTrack(AliMUONTrack &track, Bool_t enableImprovement = kTRUE) = 0;
   
   
  protected:
@@ -58,7 +58,7 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray *fRecTracksPtr; ///< pointer to array of reconstructed tracks
   Int_t fNRecTracks; ///< number of reconstructed tracks
 
-  AliMUONVClusterServer& fClusterServer; ///< reference to our cluster server
+  AliMUONVClusterServer* fClusterServer; ///< reference to our cluster server
 
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor

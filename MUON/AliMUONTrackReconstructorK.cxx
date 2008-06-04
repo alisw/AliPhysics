@@ -51,7 +51,7 @@ ClassImp(AliMUONTrackReconstructorK) // Class implementation in ROOT context
 /// \endcond
 
   //__________________________________________________________________________
-AliMUONTrackReconstructorK::AliMUONTrackReconstructorK(AliMUONVClusterServer& clusterServer)
+AliMUONTrackReconstructorK::AliMUONTrackReconstructorK(AliMUONVClusterServer* clusterServer)
   : AliMUONVTrackReconstructor(clusterServer)
 {
   /// Constructor
@@ -90,7 +90,7 @@ void AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clust
   
   for (Int_t i = firstChamber; i <= lastChamber; ++i ) 
   {
-    if (AliMUONReconstructor::GetRecoParam()->UseChamber(i)) fClusterServer.Clusterize(i, clusterStore, AliMpArea());
+    if (fClusterServer && AliMUONReconstructor::GetRecoParam()->UseChamber(i)) fClusterServer->Clusterize(i, clusterStore, AliMpArea());
   }
   
   // Loop over stations(1..) 5 and 4 and make track candidates
@@ -1532,7 +1532,7 @@ void AliMUONTrackReconstructorK::FinalizeTrack(AliMUONTrack &track)
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONTrackReconstructorK::RefitTrack(AliMUONTrack &track)
+Bool_t AliMUONTrackReconstructorK::RefitTrack(AliMUONTrack &track, Bool_t enableImprovement)
 {
   /// re-fit the given track
   
@@ -1546,7 +1546,8 @@ Bool_t AliMUONTrackReconstructorK::RefitTrack(AliMUONTrack &track)
   RetraceTrack(track,kTRUE);
   
   // Improve the reconstructed tracks if required
-  if (AliMUONReconstructor::GetRecoParam()->ImproveTracks()) ImproveTrack(track);
+  track.SetImproved(kFALSE);
+  if (enableImprovement && AliMUONReconstructor::GetRecoParam()->ImproveTracks()) ImproveTrack(track);
   
   // Fill AliMUONTrack data members
   FinalizeTrack(track);

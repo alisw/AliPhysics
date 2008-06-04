@@ -300,6 +300,29 @@ void AliMUONTrack::Clear(Option_t* opt)
 }
 
   //__________________________________________________________________________
+void AliMUONTrack::Reset()
+{
+  /// Reset to default values
+  SetUniqueID(0);
+  fFitWithVertex = kFALSE;
+  fVertexErrXY2[0] = 0.;
+  fVertexErrXY2[1] = 0.;
+  fFitWithMCS = kFALSE;
+  fGlobalChi2 = -1.;
+  fImproved = kFALSE;
+  fMatchTrigger = -1;
+  floTrgNum = -1;
+  fChi2MatchTrigger = 0.;
+  fTrackID = 0;
+  fHitsPatternInTrigCh = 0;
+  fLocalTrigger = 0;
+  delete fTrackParamAtCluster; fTrackParamAtCluster = 0x0;
+  delete fClusterWeightsNonBending; fClusterWeightsNonBending = 0x0;
+  delete fClusterWeightsBending; fClusterWeightsBending = 0x0;
+  delete fTrackParamAtVertex; fTrackParamAtVertex = 0x0;
+}
+
+  //__________________________________________________________________________
 TClonesArray* AliMUONTrack::GetTrackParamAtCluster() const
 {
   /// return array of track parameters at cluster (create it if needed)

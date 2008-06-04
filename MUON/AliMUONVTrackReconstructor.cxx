@@ -93,13 +93,14 @@ ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
 /// \endcond
 
   //__________________________________________________________________________
-AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONVClusterServer& clusterServer)
+AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONVClusterServer* clusterServer)
   : TObject(),
     fRecTracksPtr(0x0),
     fNRecTracks(0),
-  fClusterServer(clusterServer)
+    fClusterServer(clusterServer)
 {
   /// Constructor for class AliMUONVTrackReconstructor
+  /// WARNING: if clusterServer=0x0, no clusterization will be possible at this level
   
   // Memory allocation for the TClonesArray of reconstructed tracks
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 100);
@@ -353,7 +354,7 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   /// Ask the clustering to reconstruct new clusters around the track candidate position
   
   // check if the current chamber is useable
-  if (!AliMUONReconstructor::GetRecoParam()->UseChamber(chamber)) return;
+  if (!fClusterServer || !AliMUONReconstructor::GetRecoParam()->UseChamber(chamber)) return;
   
   // maximum distance between the center of the chamber and a detection element
   // (accounting for the inclination of the chamber)
@@ -378,7 +379,7 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   AliMpArea area(position, dimensions);
   
   // ask to cluterize in the given area of the given chamber
-  fClusterServer.Clusterize(chamber, clusterStore, area);
+  fClusterServer->Clusterize(chamber, clusterStore, area);
   
 }
 

@@ -232,7 +232,7 @@ Double_t AliMUONTrackParam::P() const
   if (TMath::Abs(fParameters(4,0)) > 0) {
     Double_t pYZ = TMath::Abs(1.0 / fParameters(4,0));
     Double_t pZ = - pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
-    return TMath::Abs(pZ) * TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
+    return - pZ * TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
   } else return FLT_MAX;
 }
 

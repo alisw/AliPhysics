@@ -186,10 +186,12 @@ void AliMUONRecoCheck::MakeReconstructedTracks()
   /// Make reconstructed tracks
   if (!(fRecoTrackStore = AliMUONESDInterface::NewTrackStore())) return;
   
-  // loop over all reconstructed tracks and add them to the store
+  // loop over all reconstructed tracks and add them to the store (skip ghosts)
   Int_t nTracks = (Int_t) fESDEvent->GetNumberOfMuonTracks();
-  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++)
-    AliMUONESDInterface::Add(*(fESDEvent->GetMuonTrack(iTrack)), *fRecoTrackStore);
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+    AliESDMuonTrack* esdTrack = fESDEvent->GetMuonTrack(iTrack);
+    if (esdTrack->ContainTrackerData()) AliMUONESDInterface::Add(*esdTrack, *fRecoTrackStore);
+  }
   
 }
 

@@ -22,10 +22,15 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONVTriggerStore.h"
 #include "AliMUON2DMapIterator.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONConstants.h"
+#include "AliMUONTracker.h"
+#include "AliMUONRecoParam.h"
+#include "AliMUONVTrackReconstructor.h"
 
 #include "AliMpExMapIterator.h"
 #include "AliMpVSegmentation.h"
@@ -53,7 +58,7 @@
 /// 
 /// 1) using the static methods converting the objects one by one
 ///
-/// 2) loading a whole ESDEvent and using the getters and/or the iterators
+/// 2) loading a whole ESDEvent and using the finders and/or the iterators
 ///    to access the corresponding MUON objects
 ///
 /// \author Philippe Pillot
@@ -63,15 +68,19 @@
 ClassImp(AliMUONESDInterface)
 /// \endcond
 
+AliMUONVTrackReconstructor* AliMUONESDInterface::fgTracker = 0x0;
+
 TString AliMUONESDInterface::fgTrackStoreName = "AliMUONTrackStoreV1";
 TString AliMUONESDInterface::fgClusterStoreName = "AliMUONClusterStoreV2";
 TString AliMUONESDInterface::fgDigitStoreName = "AliMUONDigitStoreV2R";
+TString AliMUONESDInterface::fgTriggerStoreName = "AliMUONTriggerStoreV1";
 
 //_____________________________________________________________________________
 AliMUONESDInterface::AliMUONESDInterface()
 : TObject(),
   fTracks(0x0),
   fDigits(0x0),
+  fTriggers(0x0),
   fClusterMap(0x0),
   fDigitMap(0x0)
 {
@@ -84,6 +93,7 @@ AliMUONESDInterface::~AliMUONESDInterface()
   /// Destructor
   delete fTracks;
   delete fDigits;
+  delete fTriggers;
   delete fClusterMap;
   delete fDigitMap;
 }
@@ -98,6 +108,7 @@ void AliMUONESDInterface::Clear(Option_t*)
   /// clear memory
   delete fTracks; fTracks = 0x0;
   delete fDigits; fDigits = 0x0;
+  delete fTriggers; fTriggers = 0x0;
   delete fClusterMap; fClusterMap = 0x0;
   delete fDigitMap; fDigitMap = 0x0;
 }
@@ -112,6 +123,9 @@ void AliMUONESDInterface::Reset()
   
   if (fDigits) fDigits->Clear("C");
   else fDigits = NewDigitStore();
+  
+  if (fTriggers) fTriggers->Clear("C");
+  else fTriggers = NewTriggerStore();
   
   if (fClusterMap) fClusterMap->Clear();
   else fClusterMap = new AliMpExMap;
@@ -136,6 +150,12 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
     
     // get ESD track
     AliESDMuonTrack* esdTrack = esdEvent.GetMuonTrack(iTrack);
+    
+    // fill trigger store if related info are availables
+    if (esdTrack->ContainTriggerData()) Add(*esdTrack, *fTriggers);
+    
+    // fill tracker data if availables
+    if (!esdTrack->ContainTrackerData()) continue;
     
     // add it to track store
     AliMUONTrack* track = Add(*esdTrack, *fTracks);
@@ -170,7 +190,7 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
       
       // loop over ESD pads
       Int_t nPads = esdCluster->GetNPads();
-      for (Int_t iPad = 0; iPad <  nPads; iPad++) {
+      for (Int_t iPad = 0; iPad < nPads; iPad++) {
 	
 	// get ESD pad
 	AliESDMuonPad *esdPad = (AliESDMuonPad*) esdCluster->GetPads().UncheckedAt(iPad);
@@ -251,6 +271,13 @@ Int_t AliMUONESDInterface::GetNDigitsInCluster(UInt_t clusterId) const
 }
 
 //___________________________________________________________________________
+Int_t AliMUONESDInterface::GetNTriggers() const
+{
+  /// return the number of triggers
+  return fTriggers ? fTriggers->GetSize() : 0;
+}
+
+//___________________________________________________________________________
 AliMUONTrack* AliMUONESDInterface::FindTrack(UInt_t trackId) const
 {
   /// return track "trackId" (0x0 if not found)
@@ -299,6 +326,13 @@ AliMUONVDigit* AliMUONESDInterface::FindDigit(UInt_t digitId) const
   AliMUONVDigit *digit = fDigits ? fDigits->FindObject(digitId) : 0x0;
   if (!digit) AliWarning(Form("digit %d does not exist",digitId));
   return digit;
+}
+
+//___________________________________________________________________________
+AliMUONLocalTrigger* AliMUONESDInterface::FindLocalTrigger(Int_t boardNumber) const
+{
+  /// return MUON local trigger "boardNumber"
+  return (fTriggers) ? fTriggers->FindLocal(boardNumber) : 0x0;
 }
 
 //___________________________________________________________________________
@@ -370,6 +404,13 @@ TIterator* AliMUONESDInterface::CreateDigitIteratorInCluster(UInt_t clusterId) c
 }
 
 //___________________________________________________________________________
+TIterator* AliMUONESDInterface::CreateLocalTriggerIterator() const
+{
+  /// return iterator over all local trigger
+  return fTriggers ? fTriggers->CreateLocalIterator() : 0x0;
+}
+
+//___________________________________________________________________________
 AliMUONVCluster* AliMUONESDInterface::FindClusterInTrack(const AliMUONTrack& track, UInt_t clusterId) const
 {
   /// find the cluster with the given Id into the track
@@ -423,6 +464,18 @@ AliMUONVDigitStore* AliMUONESDInterface::NewDigitStore()
     return 0x0;
   }
   return reinterpret_cast<AliMUONVDigitStore*>(classPtr->New());
+}
+
+//_____________________________________________________________________________
+AliMUONVTriggerStore* AliMUONESDInterface::NewTriggerStore()
+{
+  /// Create an empty trigger store of type fgTriggerStoreName
+  TClass* classPtr = TClass::GetClass(fgTriggerStoreName);
+  if (!classPtr || !classPtr->InheritsFrom("AliMUONVTriggerStore")) {
+    cout<<"E-AliMUONESDInterface::NewTriggerStore: Unable to create store of type "<<fgTriggerStoreName.Data()<<endl;
+    return 0x0;
+  }
+  return reinterpret_cast<AliMUONVTriggerStore*>(classPtr->New());
 }
 
 //_________________________________________________________________________
@@ -559,6 +612,13 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
 {
   /// Transfert data from ESDMuon track to MUON track
   
+  // if the ESDMuon track is a ghost then return an empty MUON track
+  if (!esdTrack.ContainTrackerData()) {
+    track.Reset();
+    track.SetUniqueID(esdTrack.GetUniqueID());
+    return;
+  }
+  
   track.Clear("C");
   
   // global info
@@ -617,8 +677,9 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
     firstTrackParam->SetZ(esdTrack.GetZUncorrected()); // reset the z to the one stored in ESD
     AliMUONTrackExtrap::ExtrapToZCov(firstTrackParam,firstTrackParam->GetClusterPtr()->GetZ());
     
-    // Compute track parameters and covariances at each cluster from those at the first one
-    track.UpdateCovTrackParamAtCluster();
+    // refit the track to get better parameters and covariances at each cluster (temporary disable track improvement)
+    if (!fgTracker) fgTracker = AliMUONTracker::CreateTrackReconstructor(AliMUONReconstructor::GetRecoParam()->GetTrackingMode(),0x0);
+    if (!fgTracker->RefitTrack(track, kFALSE)) track.UpdateCovTrackParamAtCluster();
     
   } else {
     
@@ -639,6 +700,37 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
   
   delete cluster;
   delete cStore;
+  
+}
+
+//_____________________________________________________________________________
+void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLocalTrigger& locTrg)
+{
+  /// Transfert trigger data from ESDMuon track to the MUONLocalTtrigger object
+  
+  // if the ESDMuon track is a ghost then return an empty MUON track
+  if (!esdTrack.ContainTriggerData()) {
+    AliMUONLocalTrigger emptyLocTrg;
+    locTrg = emptyLocTrg;
+    return;
+  }
+  
+  locTrg.SetLoCircuit(esdTrack.LoCircuit());
+  locTrg.SetLoStripX(esdTrack.LoStripX());
+  locTrg.SetLoStripY(esdTrack.LoStripY());
+  locTrg.SetLoDev(esdTrack.LoDev());
+  locTrg.SetLoLpt(esdTrack.LoLpt());
+  locTrg.SetLoHpt(esdTrack.LoHpt());
+  locTrg.SetLoSdev(1);
+  locTrg.SetLoTrigY(1);
+  locTrg.SetX1Pattern(esdTrack.GetTriggerX1Pattern());
+  locTrg.SetX2Pattern(esdTrack.GetTriggerX2Pattern());
+  locTrg.SetX3Pattern(esdTrack.GetTriggerX3Pattern());
+  locTrg.SetX4Pattern(esdTrack.GetTriggerX4Pattern());
+  locTrg.SetY1Pattern(esdTrack.GetTriggerY1Pattern());
+  locTrg.SetY2Pattern(esdTrack.GetTriggerY2Pattern());
+  locTrg.SetY3Pattern(esdTrack.GetTriggerY3Pattern());
+  locTrg.SetY4Pattern(esdTrack.GetTriggerY4Pattern());
   
 }
 
@@ -671,9 +763,9 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& 
   const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(esdPad.GetDetElemId(), esdPad.GetManuId());  
   AliMpPad pad = seg->PadByLocation(AliMpIntPair(esdPad.GetManuId(), esdPad.GetManuChannel()), kFALSE);
   
-  digit.Saturated(kFALSE);
+  digit.Saturated(esdPad.IsSaturated());
   digit.Used(kFALSE);
-  digit.Calibrated(kTRUE);
+  digit.Calibrated(esdPad.IsCalibrated());
   digit.SetUniqueID(esdPad.GetUniqueID());
   digit.SetCharge(esdPad.GetCharge());
   digit.SetADC(esdPad.GetADC());
@@ -682,12 +774,30 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& 
 }
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& esdTrack, const Double_t vertex[3], const AliMUONVDigitStore* digits)
+void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& esdTrack, const Double_t vertex[3],
+				    const AliMUONVDigitStore* digits, const AliMUONLocalTrigger* locTrg)
 {
   /// Transfert data from MUON track to ESDMuon track
   /// Incorporate the ESDPads if the digits are provided
+  /// Add trigger info if the MUON track is matched with a trigger track
+  
+  // empty MUON track -> produce a ghost ESDMuon track if trigger info are available otherwise produce an empty track
+  if (track.GetNClusters() == 0) {
+    if (locTrg) MUONToESD(*locTrg, esdTrack, track.GetUniqueID());
+    else {
+      cout<<"W-AliMUONESDInterface::MUONToESD: will produce an empty ESDMuon track"<<endl;
+      esdTrack.Reset();
+      esdTrack.SetUniqueID(0xFFFFFFFF);
+    }
+    return;
+  }
   
   esdTrack.Clear("C");
+  
+  // set global info
+  esdTrack.SetUniqueID(track.GetUniqueID());
+  esdTrack.SetChi2(track.GetGlobalChi2());
+  esdTrack.SetNHit(track.GetNClusters());
   
   // set param at first cluster
   AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>((track.GetTrackParamAtCluster())->First());
@@ -704,14 +814,6 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
   AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&trackParamAtDCA, vertex[2]);
   SetParamAtDCA(trackParamAtDCA, esdTrack);
   
-  // set global info
-  esdTrack.SetUniqueID(track.GetUniqueID());
-  esdTrack.SetChi2(track.GetGlobalChi2());
-  esdTrack.SetNHit(track.GetNClusters());
-  esdTrack.SetLocalTrigger(track.GetLocalTrigger());
-  esdTrack.SetChi2MatchTrigger(track.GetChi2MatchTrigger());
-  esdTrack.SetHitsPatternInTrigCh(track.GetHitsPatternInTrigCh());
-  
   // set muon cluster info
   AliESDMuonCluster esdCluster;
   esdTrack.SetMuonClusterMap(0);
@@ -721,6 +823,60 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
     esdTrack.AddInMuonClusterMap(esdCluster.GetChamberId());
     trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->After(trackParam));
   }
+  
+  // set trigger info
+  esdTrack.SetLocalTrigger(track.GetLocalTrigger());
+  esdTrack.SetChi2MatchTrigger(track.GetChi2MatchTrigger());
+  esdTrack.SetHitsPatternInTrigCh(track.GetHitsPatternInTrigCh());
+  if (locTrg) {
+    esdTrack.SetTriggerX1Pattern(locTrg->GetX1Pattern());
+    esdTrack.SetTriggerY1Pattern(locTrg->GetY1Pattern());
+    esdTrack.SetTriggerX2Pattern(locTrg->GetX2Pattern());
+    esdTrack.SetTriggerY2Pattern(locTrg->GetY2Pattern());
+    esdTrack.SetTriggerX3Pattern(locTrg->GetX3Pattern());
+    esdTrack.SetTriggerY3Pattern(locTrg->GetY3Pattern());
+    esdTrack.SetTriggerX4Pattern(locTrg->GetX4Pattern());
+    esdTrack.SetTriggerY4Pattern(locTrg->GetY4Pattern());
+  } else {
+    esdTrack.SetTriggerX1Pattern(0);
+    esdTrack.SetTriggerY1Pattern(0);
+    esdTrack.SetTriggerX2Pattern(0);
+    esdTrack.SetTriggerY2Pattern(0);
+    esdTrack.SetTriggerX3Pattern(0);
+    esdTrack.SetTriggerY3Pattern(0);
+    esdTrack.SetTriggerX4Pattern(0);
+    esdTrack.SetTriggerY4Pattern(0);
+  }
+  
+}
+
+//_____________________________________________________________________________
+void AliMUONESDInterface::MUONToESD(const AliMUONLocalTrigger& locTrg, AliESDMuonTrack& esdTrack, UInt_t trackId)
+{
+  /// Build ghost ESDMuon track containing only informations about trigger track
+  
+  esdTrack.Reset();
+  esdTrack.SetUniqueID(trackId);
+  
+  // set trigger info
+  AliMUONTrack muonTrack;
+  muonTrack.SetLocalTrigger(locTrg.LoCircuit(),
+			    locTrg.LoStripX(),
+			    locTrg.LoStripY(),
+			    locTrg.LoDev(),
+			    locTrg.LoLpt(),
+			    locTrg.LoHpt());
+  esdTrack.SetLocalTrigger(muonTrack.GetLocalTrigger());
+  esdTrack.SetChi2MatchTrigger(0.);
+  esdTrack.SetHitsPatternInTrigCh(0);
+  esdTrack.SetTriggerX1Pattern(locTrg.GetX1Pattern());
+  esdTrack.SetTriggerY1Pattern(locTrg.GetY1Pattern());
+  esdTrack.SetTriggerX2Pattern(locTrg.GetX2Pattern());
+  esdTrack.SetTriggerY2Pattern(locTrg.GetY2Pattern());
+  esdTrack.SetTriggerX3Pattern(locTrg.GetX3Pattern());
+  esdTrack.SetTriggerY3Pattern(locTrg.GetY3Pattern());
+  esdTrack.SetTriggerX4Pattern(locTrg.GetX4Pattern());
+  esdTrack.SetTriggerY4Pattern(locTrg.GetY4Pattern());
   
 }
 
@@ -762,16 +918,29 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVDigit& digit, AliESDMuonPad& e
   esdPad.SetUniqueID(digit.GetUniqueID());
   esdPad.SetADC(digit.ADC());
   esdPad.SetCharge(digit.Charge());
+  esdPad.SetCalibrated(digit.IsCalibrated());
+  esdPad.SetSaturated(digit.IsSaturated());
 }
 
 //___________________________________________________________________________
 AliMUONTrack* AliMUONESDInterface::Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore)
 {
   /// Create MUON track from ESDMuon track and add it to the store
-  /// return a pointer to the track into the store
+  /// return a pointer to the track into the store (0x0 if the track already exist)
+  if(trackStore.FindObject(esdTrack.GetUniqueID())) return 0x0;
   AliMUONTrack* track = trackStore.Add(AliMUONTrack());
   ESDToMUON(esdTrack, *track);
   return track;
+}
+
+//___________________________________________________________________________
+void AliMUONESDInterface::Add(const AliESDMuonTrack& esdTrack, AliMUONVTriggerStore& triggerStore)
+{
+  /// Create MUON local trigger from ESDMuon track and add it to the store if not already there
+  if (triggerStore.FindLocal(esdTrack.LoCircuit())) return;
+  AliMUONLocalTrigger locTrg;
+  ESDToMUON(esdTrack, locTrg);
+  triggerStore.Add(locTrg);
 }
 
 //___________________________________________________________________________

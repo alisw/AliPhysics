@@ -438,6 +438,10 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
     for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
 
       AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
+      
+      // skip "ghosts"
+      if (!muonTrack->ContainTrackerData()) continue;
+      
       muonTrack->LorentzP(v1);
 
       GetESDsData(1)->Fill(v1.P());

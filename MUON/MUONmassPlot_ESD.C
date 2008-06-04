@@ -218,6 +218,9 @@ Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVert
     // loop over all reconstructed tracks (also first track of combination)
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
 
+      // skip ghosts
+      if (!esd->GetMuonTrack(iTrack)->ContainTrackerData()) continue;
+      
       AliESDMuonTrack* muonTrack = new AliESDMuonTrack(*(esd->GetMuonTrack(iTrack)));
 
       // extrapolate to vertex if required and available
@@ -270,6 +273,9 @@ Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVert
 	}
 	// loop over second track of combination
 	for (Int_t iTrack2 = iTrack + 1; iTrack2 < nTracks; iTrack2++) {
+	  
+	  // skip ghosts
+	  if (!esd->GetMuonTrack(iTrack2)->ContainTrackerData()) continue;
 	  
 	  AliESDMuonTrack* muonTrack2 = new AliESDMuonTrack(*(esd->GetMuonTrack(iTrack2)));
 	  
