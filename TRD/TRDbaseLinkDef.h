@@ -69,6 +69,7 @@
 #pragma link C++ class  AliTRDCalibPadStatus+;
 
 #pragma link C++ class  AliTRDPreprocessor+;
+#pragma link C++ class  AliTRDSaxHandler+;
 
 #pragma link C++ class  AliTRDDataDCS+;
 #pragma link C++ class  AliTRDSensor+;

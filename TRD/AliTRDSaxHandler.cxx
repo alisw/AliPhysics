@@ -26,9 +26,9 @@
 
 #include <Riostream.h>
 #include <TList.h>
-#include <TObjArray.h>
 #include <TXMLAttr.h>
-#include <TObject.h>
+#include <TSAXParser.h>
+#include <TObjArray.h>
 
 #include "AliLog.h"
 
@@ -109,10 +109,24 @@ AliTRDSaxHandler::~AliTRDSaxHandler()
   //
   // AliTRDSaxHandler destructor
   //
-  delete fFEEArr;
-  delete fPTRArr;
-  delete fGTUArr;
-  delete fCalDCSObj;
+
+  if (fFEEArr) {
+    delete fFEEArr;
+    fFEEArr    = 0x0;
+  }
+  if (fPTRArr) {
+    delete fPTRArr;
+    fPTRArr    = 0x0;
+  }
+  if (fGTUArr) {
+    delete fGTUArr;
+    fGTUArr    = 0x0;
+  }
+  if (fCalDCSObj) {
+    delete fCalDCSObj;
+    fCalDCSObj = 0x0;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -280,7 +294,7 @@ void AliTRDSaxHandler::OnError(const char *text)
 }
 
 //_____________________________________________________________________________
-vois AliTRDSaxHandler::OnFatalError(const char *text)
+void AliTRDSaxHandler::OnFatalError(const char *text)
 {
   // process fatal errors here
   AliError(Form("Fatal error: %s",text)); // use AliFatal?

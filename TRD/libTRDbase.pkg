@@ -47,6 +47,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDCalibPadStatus.cxx \
       AliTRDQAChecker.cxx \
       AliTRDPreprocessor.cxx \
+      AliTRDSaxHandler.cxx \
       AliTRDDataDCS.cxx \
       AliTRDSensor.cxx \
       AliTRDSensorArray.cxx \
