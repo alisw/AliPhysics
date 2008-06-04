@@ -19,6 +19,9 @@
     @brief   Per digitizer card pulser calibration
     @ingroup FMD_base
 */
+#ifndef FSTREAM
+# include <fstream>
+#endif
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
@@ -28,6 +31,7 @@
 #ifndef ROOT_TArrayI
 # include <TArrayI.h>
 #endif
+
 //____________________________________________________________________
 /** @brief Per digitizer card pulser calibration
     @ingroup FMD_base
@@ -67,6 +71,17 @@ public:
       @param str  Strip number (not used)
       @return Maximum strip  */
   UShort_t Max(UShort_t det, Char_t ring, UShort_t sec, UShort_t str=0) const;
+  /**
+     Dump stored strip ranges to file passed as ofstream
+     @param outFile Outputfile
+  */
+  void WriteToFile(ofstream &);
+  /**
+     Read information from file and set values
+     @param inFile inputFile
+   */
+  void ReadFromFile(ifstream &);
+  
 protected:
   // TArrayI fRates; // Sample rates 
   AliFMDUShortMap fRanges; // Min max 

@@ -295,26 +295,21 @@ void AliFMDBaseDA::WriteConditionsData()
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
       UShort_t nsec = (ir == 0 ? 40  : 20);
-      UShort_t nstr = (ir == 0 ? 256 : 512);
       for(UShort_t sec =0; sec < nsec;  sec++)  {
-	for(UShort_t strip = 0 ; strip <nstr; nstr++)
-	  {
-	    sampleRateFromSOD = defSampleRate;
-	    sampleRate->Set(det,ring,sec,strip,sampleRateFromSOD);
-	    firstStripSOD = firstStrip;
-	    lastStripSOD  = lastStrip;
-	    stripRange->Set(det,ring,sec,strip,firstStripSOD,lastStripSOD);
-	   
-	  }
+	sampleRateFromSOD = defSampleRate;
+	sampleRate->Set(det,ring,sec,0,sampleRateFromSOD);
+	firstStripSOD = firstStrip;
+	lastStripSOD  = lastStrip;
+	stripRange->Set(det,ring,sec,0,firstStripSOD,lastStripSOD);
 	
       }
     }
   }
   
   sampleRate->WriteToFile(fConditionsFile);
-  
+  stripRange->WriteToFile(fConditionsFile);
   pars->SetSampleRate(sampleRate);
-  pars->SetStripRange(firstStrip,lastStrip);
+  pars->SetStripRange(stripRange);
 
  
   // Zero Suppresion

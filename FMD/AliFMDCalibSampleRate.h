@@ -20,8 +20,9 @@
     @ingroup FMD_base    
 */
 
-#include <iostream>
-#include <fstream>
+#ifndef FSTREAM
+# include <fstream>
+#endif
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
@@ -62,9 +63,13 @@ public:
       @param str  Strip number (not used)
       @return Sample rate */
   UShort_t Rate(UShort_t det, Char_t ring, UShort_t sec, UShort_t str=0) const;
-
+  /** Write stored samplerates to file
+      @param outFile Output file stream
+   */
   void WriteToFile(ofstream &);
-  
+  /** Read information from file and set sample rates
+      @param inFile input file stream
+   */
   void ReadFromFile(ifstream &);
 protected:
   // TArrayI fRates; // Sample rates 

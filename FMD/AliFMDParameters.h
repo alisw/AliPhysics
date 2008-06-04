@@ -162,6 +162,7 @@ public:
       @param min Minimum strip number (0-127). 
       @param max Maximum strip number (0-127). */
   void SetStripRange(UShort_t min=0, UShort_t max=127);
+  void SetStripRange(AliFMDCalibStripRange* r) { fStripRange = r; }
   /** Whether raw data has full common data header (8 32bit words) or
       the older invalid format (7 32bit words with bogus entries)
       @param yes if true the raw data has complete data header */ 
