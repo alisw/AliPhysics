@@ -177,19 +177,21 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
     AliAODHandler* handler = (AliAODHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-
-    if (!(handler->IsStandard())            && 
-	(handler->NeedsHeaderReplication()) &&
-	(fgAODHeader))
-    {
-	// Header should be replicated
-	AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
-	if (aodH) {
-	    // Input is AOD
-	    fgAODHeader =  dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
-	    fgHeaderCopied = kTRUE;
+    if (handler) {
+	if (!(handler->IsStandard())            && 
+	    (handler->NeedsHeaderReplication()) &&
+	    (fgAODHeader))
+	{
+	    // Header should be replicated
+	    AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
+	    if (aodH) {
+		// Input is AOD
+		fgAODHeader =  dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
+		fgHeaderCopied = kTRUE;
+	    }
 	}
     }
+    
 
 // Call the user analysis    
     UserExec(option);
