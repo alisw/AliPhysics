@@ -62,7 +62,7 @@ int main(int argc, char **argv)
   AliRawReader *reader = 0;
   TString fileNam(fileName);
   if (fileNam.EndsWith(".root")) reader = new AliRawReaderRoot(fileName);
-  else if (fileNam.EndsWith(".raw")) reader = new AliRawReaderDate(fileName);
+  else reader = new AliRawReaderDate(fileName);
   if (!reader) { 
     std::cerr << "Don't know how to make reader for " << fileNam 
 	      << std::endl;
