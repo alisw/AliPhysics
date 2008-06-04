@@ -982,7 +982,7 @@ Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 		return kFALSE;
 	}
 	
-	SendMLInfo();
+	SendMLDetInfo();
 
 	return kTRUE;
 }
@@ -1018,11 +1018,11 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
 
 	AliCDBManager::Instance()->GetStorage(fgkLocalCDB)->Put(fStatusEntry);
 
-	SendMLInfo();
+	SendMLDetInfo();
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::SendMLInfo()
+void AliShuttle::SendMLDetInfo()
 {
 	//
 	// sends ML information about the current status of the current detector being processed
@@ -1031,7 +1031,7 @@ void AliShuttle::SendMLInfo()
 	AliShuttleStatus* status = dynamic_cast<AliShuttleStatus*> (fStatusEntry->GetObject());
 	
 	if (!status){
-		Log("SHUTTLE", "SendMLInfo - UNEXPECTED: status could not be read from current CDB entry");
+		Log("SHUTTLE", "SendMLDetInfo - UNEXPECTED: status could not be read from current CDB entry");
 		return;
 	}
 	
@@ -1181,6 +1181,31 @@ Bool_t AliShuttle::ContinueProcessing()
 }
 
 //______________________________________________________________________________________________
+void AliShuttle::SendMLRunInfo(const char* status)
+{
+	// 
+	// Send information about this run to ML
+	
+	TMonaLisaText  mlStatus("SHUTTLE_status", status);
+	TString runType(fLogbookEntry->GetRunType());
+	if (strlen(fLogbookEntry->GetRunParameter("log")) > 0){
+
+		runType += "(";
+		runType += fLogbookEntry->GetRunParameter("log");
+		runType += ")";
+	}
+	TMonaLisaText  mlRunType("SHUTTLE_runtype", runType);
+
+	TList mlList;
+	mlList.Add(&mlStatus);
+	mlList.Add(&mlRunType);
+
+	TString mlID;
+	mlID.Form("%d", GetCurrentRun());
+	fMonaLisa->SendParameters(&mlList, mlID);	
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 {
 	//
@@ -1197,26 +1222,10 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	Log("SHUTTLE", Form("\t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^*",
 					GetCurrentRun()));
 
-	// Send the information to ML
 	CountOpenRuns();
 	
-	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
-	TString runType(entry->GetRunType());
-	if (strlen(entry->GetRunParameter("log")) > 0){
-
-		runType += "(";
-		runType += entry->GetRunParameter("log");
-		runType += ")";
-	}
-	TMonaLisaText  mlRunType("SHUTTLE_runtype", runType);
-
-	TList mlList;
-	mlList.Add(&mlStatus);
-	mlList.Add(&mlRunType);
-
-	TString mlID;
-	mlID.Form("%d", GetCurrentRun());
-	fMonaLisa->SendParameters(&mlList, mlID);
+	// Send the information to ML
+	SendMLRunInfo("Processing");
 
 	if (fLogbookEntry->IsDone())
 	{
@@ -1541,10 +1550,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					fFirstUnprocessed[iDet] = kFALSE;
 				}
 			}
-			TMonaLisaText  mlStatusPending("SHUTTLE_status", "Pending");
-			mlList.Clear();
-			mlList.Add(&mlStatusPending);
-			fMonaLisa->SendParameters(&mlList, mlID);
+			SendMLRunInfo("Pending");
 		}
 	}
 
@@ -1905,31 +1911,38 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	TString totEventsStr = entry->GetRunParameter("totalEvents");  
 	Int_t totEvents = totEventsStr.Atoi();
 	
-	if (startTime != 0 && endTime != 0 && endTime > startTime && totEvents > 0 && ecsSuccess)
+	// runs are accepted if they have ecsSuccess set or more than 1 event
+	if (startTime != 0 && endTime != 0 && endTime > startTime && (totEvents > 1 || ecsSuccess))
+	{
+		if (ecsSuccess == kFALSE)
+			Log("SHUTTLE", Form("Processing run %d although in status ECS failure, Reason: %s", run, entry->GetRunParameter("eor_reason")));
 		return entry;
-		
-	if (ecsSuccess == kFALSE)
-	{
-		Log("SHUTTLE", Form("Skipped run %d due to ECS failure, Reason: %s", run, entry->GetRunParameter("eor_reason")));
 	}
-	else if (totEvents < 1) 
+
+	Bool_t skip = kFALSE;
+				
+	if (totEvents <= 1) 
 	{
-		Log("SHUTTLE", Form("QueryRunParameters - Run %d has 0 events - Skipping!", run));
-	}
+		Log("SHUTTLE", Form("QueryRunParameters - Run %d has 1 event or less - Skipping!", run));
+		skip = kTRUE;
+	} 
 	else
 	{
 		Log("SHUTTLE", Form("QueryRunParameters - Invalid parameters for Run %d: "
 			"startTime = %d, endTime = %d. Skipping (Shuttle won't be marked as DONE)!",
 			run, startTime, endTime));
 	}
-
-	//Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
-	//fLogbookEntry = entry;	
-	//if (!UpdateShuttleLogbook("shuttle_done"))
-	//{
-	//	AliError(Form("Could not update logbook for run %d !", run));
-	//}
-	//fLogbookEntry = 0;
+	
+	if (skip)
+	{
+		Log("SHUTTLE", Form("Marking SHUTTLE skipped for run %d", run));
+		fLogbookEntry = entry;
+		if (!UpdateShuttleLogbook("shuttle_skipped"))
+		{
+			AliError(Form("Could not update logbook for run %d !", run));
+		}
+		fLogbookEntry = 0;
+	}
 			
 	delete entry;
 	return 0;
@@ -2586,29 +2599,21 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 
 	TString detName(detector);
 	TString setClause;
-	if (detName == "shuttle_done" || detName == "shuttle_ignored")
+	if (detName == "shuttle_done" || detName == "shuttle_skipped")
 	{
 		setClause = "set shuttle_done=1";
-
+		
 		if (detName == "shuttle_done")
 		{
-			if (TouchFile()==kTRUE){
-				//Send the information to ML
-				TMonaLisaText  mlStatus("SHUTTLE_status", "Done");
-
-				TList mlList;
-				mlList.Add(&mlStatus);
-				
-				TString mlID;
-				mlID.Form("%d", GetCurrentRun());
-				fMonaLisa->SendParameters(&mlList, mlID);
-			}
-			else{
+			if (TouchFile() != kTRUE)
 				return kFALSE;
-			}
-					
+			
+			SendMLRunInfo("Done");
 		}
-	} else {
+		else 
+			SendMLRunInfo("Skipped");
+	} 
+	else {
 		TString statusStr(status);
 		if(statusStr.Contains("done", TString::kIgnoreCase) ||
 		   statusStr.Contains("failed", TString::kIgnoreCase)){
@@ -3123,9 +3128,9 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 				fCurrentDetector.Data());
 	if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
 	{
-		body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?time=24 \n\n");
 	} else {
-		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?instance=PROD&time=168 \n\n");
+		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?instance=PROD&time=24 \n\n");
 	}
 	
 	

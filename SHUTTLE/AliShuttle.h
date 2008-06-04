@@ -130,7 +130,8 @@ private:
 	void SetLastAction(const char* action);
 	
 	void SendAlive();
-	void SendMLInfo();
+	void SendMLDetInfo();
+	void SendMLRunInfo(const char* status);
 	virtual Bool_t TouchFile();
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
