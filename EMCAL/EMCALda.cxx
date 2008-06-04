@@ -19,7 +19,7 @@
 #define RESULT_FILE  "EMCALCalibPedestal.root"
 #define FILE_ID "EMCALCalibPedestal"
 #define AliDebugLevel() -1
-#define ClassName "emcCalibPedestal"
+#define FILE_ClassName "emcCalibPedestal"
 
 extern "C" {
 #include <daqDA.h>
@@ -43,6 +43,7 @@ extern "C" {
 // EMC calibration-helper algorithm includes
 //
 #include "AliCaloCalibPedestal.h"
+#include <TFile.h> // ROOT
 
 /*
   Main routine, EMC pedestal detector algorithm to be run on EMC LDC
@@ -119,9 +120,9 @@ int main(int argc, char **argv) {
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
-    calibPedestal->Write(ClassName);
+    calibPedestal->Write(FILE_ClassName);
     f.Close();
-    printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, ClassName); 
+    printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, FILE_ClassName); 
   } 
   else {
     printf("Could not save the object to file \"%s\".\n", RESULT_FILE);

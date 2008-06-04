@@ -19,7 +19,7 @@
 #define RESULT_FILE  "EMCALCalibSignal.root"
 #define FILE_ID "EMCALCalibSignal"
 #define AliDebugLevel() -1
-#define ClassName "emcCalibSignal"
+#define FILE_ClassName "emcCalibSignal"
 
 extern "C" {
 #include <daqDA.h>
@@ -43,6 +43,7 @@ extern "C" {
 // EMC calibration-helper algorithm includes
 //
 #include "AliCaloCalibSignal.h"
+#include <TFile.h> // ROOT 
 
 /*
   Main routine, EMC signal detector algorithm to be run on EMC LDC
@@ -102,7 +103,7 @@ int main(int argc, char **argv) {
 	nevents++;
 
 	//  Signal calibration
-	calibSignal->ProcessEvent(in);
+	calibSignal->ProcessEvent(in, aliHeader);
       }
     } // loop over all events in file
     /* cleanup the reading handles */
@@ -119,9 +120,9 @@ int main(int argc, char **argv) {
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
-    calibSignal->Write(ClassName);
+    calibSignal->Write(FILE_ClassName);
     f.Close();
-    printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, ClassName); 
+    printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, FILE_ClassName); 
   } 
   else {
     printf("Could not save the object to file \"%s\".\n", RESULT_FILE);
