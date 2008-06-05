@@ -9,7 +9,8 @@ void MakeZDCRecoParam(Int_t type=0){
 //========================================================================
 
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://OCDB");
+  //if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://OCDB");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT");
   
   AliZDCRecoParam *zdcRecoParam = 0;
   //
@@ -32,6 +33,7 @@ void MakeZDCRecoParam(Int_t type=0){
   md->SetComment("Reconstruction parameters for ZDC");
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetBeamPeriod(0);
+  md->SetObjectClassName("AliZDCRecoParam");
   AliCDBId id("ZDC/Calib/RecoParam",0,AliCDBRunRange::Infinity());
   AliCDBManager::Instance()->GetDefaultStorage()->Put(zdcRecoParam,id, md);
 
