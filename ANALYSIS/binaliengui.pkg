@@ -37,9 +37,6 @@ ELIBSDIR+=$(FINK_ROOT)/lib
 endif
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
-ifeq (yes,$(CHECKXML))
-PACKBLIBS += -lXMLParser
-endif
 
 
 

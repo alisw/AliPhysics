@@ -88,6 +88,7 @@ ROOTCLIBS     := $(shell $(ROOTCONFIG) --glibs) \
 			-lGeom 			\
 			-lTreePlayer 		\
 			-lXMLIO 		\
+			-lXMLParser 		\
 			-lProof 		\
 			-lProofPlayer 		\
 			-lMLP 			\
