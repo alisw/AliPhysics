@@ -573,7 +573,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
     clustersTree.Fill();
   }
   
-  fClusterStore->Clear();
+  if (fClusterStore) fClusterStore->Clear();
 }
 
 //_____________________________________________________________________________
