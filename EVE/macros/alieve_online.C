@@ -13,9 +13,9 @@ void alieve_online_init()
   gROOT->LoadMacro("primary_vertex.C");
   gROOT->LoadMacro("esd_tracks.C");
 
-  gROOT->LoadMacro("its_clusters.C+");
-  gROOT->LoadMacro("tpc_clusters.C+");
-  gROOT->LoadMacro("trd_clusters.C+");
+  gROOT->LoadMacro("its_clusters.C++");
+  gROOT->LoadMacro("tpc_clusters.C++");
+  gROOT->LoadMacro("trd_clusters.C++");
 
   gROOT->LoadMacro("acorde_raw.C");
   gROOT->LoadMacro("its_raw.C");
@@ -23,7 +23,7 @@ void alieve_online_init()
 
   gGeomGentle = geom_gentle();
 
-  gROOT->ProcessLine(".L SplitGLView.C+g"); // !!!! debug-mode
+  gROOT->ProcessLine(".L SplitGLView.C++g"); // !!!! debug-mode
   TEveBrowser* browser = gEve->GetBrowser();
   browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
 
