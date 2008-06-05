@@ -196,10 +196,12 @@ int main(int argc, char **argv) {
   
   /* Store output files to the File Exchange Server */
   char localfile[128];
+  char fesfileid[128];
   
   for(Int_t iMod=0; iMod<5; iMod++) {
     sprintf(localfile,"PHOS_Module%d_Calib.root",iMod);
-    daqDA_FES_storeFile(localfile,"AMPLITUDES");
+    sprintf(fesfileid,"PHOS_Module%d_AMPLITUDES",iMod);
+    daqDA_FES_storeFile(localfile,fesfileid);
   }
   
   return status;
