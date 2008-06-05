@@ -22,13 +22,13 @@ class AliZDCRawStream: public TObject {
     virtual ~AliZDCRawStream();
     virtual Bool_t   Next();
 
-    UInt_t           GetADCRaw() const {return fRawADC;};
-    Int_t            GetSector(Int_t i) const {return fSector[i];};
-    Int_t            GetADCModule() const {return fADCModule;};
-    Int_t            GetADCChannel() const {return fADCChannel;};
-    Int_t            GetADCValue() const {return fADCValue;};
-    Int_t            GetADCGain() const {return fADCGain;};
-    Bool_t           IsADCDataWord() const {return fIsADCDataWord;};
+    UInt_t  GetADCRaw() const {return fRawADC;};
+    Int_t   GetSector(Int_t i) const {return fSector[i];};
+    Int_t   GetADCModule() const {return fADCModule;};
+    Int_t   GetADCChannel() const {return fADCChannel;};
+    Int_t   GetADCValue() const {return fADCValue;};
+    Int_t   GetADCGain() const {return fADCGain;};
+    Bool_t  IsADCDataWord() const {return fIsADCDataWord;};
 
   enum EZDCRawStreamError {
     kInvalidADCModule = 1

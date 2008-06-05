@@ -9,7 +9,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliZDC+;
-#pragma link C++ class  AliZDCv2+;
 #pragma link C++ class  AliZDCv3+;
 
 #pragma link C++ class  AliZDCHit+;

@@ -16,7 +16,6 @@
 
 class AliZDCPedestals;
 class AliZDCCalib;
-class AliZDCRecParam;
  
 class AliZDC : public AliDetector {
 
@@ -53,7 +52,6 @@ public:
   char*   GetZDCCalibFName() const {return (char*)fZDCCalibFName.Data();}
   AliZDCPedestals* GetPedCalib()   const  {return fPedCalib;}
   AliZDCCalib*     GetECalibData() const  {return fCalibData;}
-  AliZDCRecParam*  GetRecParams()  const  {return fRecParam;}
 
   // Trigger
   virtual AliTriggerDetector* CreateTriggerDetector() const
@@ -70,10 +68,10 @@ protected:
   //Calibration data member 
   AliZDCPedestals* fPedCalib;		// Pedestal data for ZDC
   AliZDCCalib*     fCalibData;		// Energy and equalization data for ZDC
-  AliZDCRecParam*  fRecParam;		// Parameters for reconstruction for ZDC
+
   TString          fZDCCalibFName; 	// Name of the ZDC calibration data
   
-  ClassDef(AliZDC,6)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,7)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration

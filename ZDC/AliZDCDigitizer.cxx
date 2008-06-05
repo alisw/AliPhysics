@@ -46,7 +46,6 @@
 class AliCDBStorage;
 class AliZDCPedestals;
 class AliZDCCalib;
-class AliZDCRecParam;
 
 ClassImp(AliZDCDigitizer)
 
@@ -55,8 +54,7 @@ ClassImp(AliZDCDigitizer)
 AliZDCDigitizer::AliZDCDigitizer() :
   fIsCalibration(0), 
   fPedData(0), 
-  fCalibData(0),
-  fRecParam(0)
+  fCalibData(0)
 {
 // Default constructor    
 
@@ -67,8 +65,7 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager),
   fIsCalibration(0), //By default the simulation doesn't create calib. data
   fPedData(GetPedData()), 
-  fCalibData(GetCalibData()),
-  fRecParam(GetRecParam())
+  fCalibData(GetCalibData())
 {
   // Get calibration data
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
@@ -88,8 +85,7 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   AliDigitizer(),
   fIsCalibration(digitizer.fIsCalibration),
   fPedData(digitizer.fPedData),
-  fCalibData(digitizer.fCalibData),
-  fRecParam(digitizer.fRecParam)
+  fCalibData(digitizer.fCalibData)
 {
   // Copy constructor
 
@@ -517,19 +513,3 @@ AliZDCCalib* AliZDCDigitizer::GetCalibData() const
 
   return calibdata;
 }
-
-//_____________________________________________________________________________
-AliZDCRecParam* AliZDCDigitizer::GetRecParam() const
-{
-
-  // Getting calibration object for ZDC set
-
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/RecParam");
-  if(!entry) AliFatal("No calibration data loaded!");  
-
-  AliZDCRecParam *calibdata = dynamic_cast<AliZDCRecParam*>  (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
-  return calibdata;
-}
-

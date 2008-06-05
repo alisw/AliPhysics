@@ -16,10 +16,11 @@
 #include "AliCDBStorage.h"
 #include "AliZDCPedestals.h"
 #include "AliZDCCalib.h"
-#include "AliZDCRecParam.h"
+#include "AliZDCRecoParam.h"
+#include "AliZDCRecoParampp.h"
+#include "AliZDCRecoParamPbPb.h"
 #include "AliLog.h"
 
-class TF1;
 class AliLoader;
 
 class AliZDCReconstructor: public AliReconstructor {
@@ -37,38 +38,33 @@ public:
   virtual void FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, AliESDEvent* esd) const 
   	        {FillZDCintoESD(clustersTree,esd);}
     
+  // parameter settings for reconstruction
+  static void SetRecoParam(AliZDCRecoParam * param){fRecoParam = param;}
+  static const AliZDCRecoParam* GetRecoParam(){return fRecoParam;}
+  
+  // OCDB objects for reconstruction
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCPedestals *GetPedData() const; 
   AliZDCCalib     *GetECalibData() const; 
-  AliZDCRecParam  *GetRecParams() const; 
   
 private:
   AliZDCReconstructor(const AliZDCReconstructor&);
   AliZDCReconstructor& operator =(const AliZDCReconstructor&);
 
-  void   ReconstructEvent(TTree *clustersTree, 
+  void   ReconstructEventpp(TTree *clustersTree, 
+  	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
+	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2) const;
+  void   ReconstructEventPbPb(TTree *clustersTree, 
   	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
 	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2) const;
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 
-  TF1*   fZNCen;     //! Nspectator n true vs. EZN
-  TF1*   fZNPer;     //! Nspectator n true vs. EZN
-  TF1*   fZPCen;     //! Nspectator p true vs. EZP
-  TF1*   fZPPer;     //! Nspectator p true vs. EZP
-  TF1*   fZDCCen;    //! Nspectators true vs. EZDC
-  TF1*   fZDCPer;    //! Nspectators true vs. EZDC
-  TF1*   fbCen;      //! b vs. EZDC
-  TF1*   fbPer;      //! b vs. EZDC
-  TF1*   fZEMn;      //! Nspectators n from ZEM energy
-  TF1*   fZEMp;      //! Nspectators p from ZEM energy
-  TF1*   fZEMsp;     //! Nspectators from ZEM energy
-  TF1*   fZEMb;      //! b from ZEM energy
-  
+  static AliZDCRecoParam *fRecoParam; // reconstruction parameters
+
   AliZDCPedestals *fPedData; 	//! pedestal calibration data
   AliZDCCalib     *fECalibData; //! energy and equalization calibration data
-  AliZDCRecParam  *fRecParam; 	//! reconstruction parameters
 
-  ClassDef(AliZDCReconstructor, 3)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 4)   // class for the ZDC reconstruction
 };
 
 #endif

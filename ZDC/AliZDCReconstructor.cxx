@@ -34,39 +34,18 @@
 #include "AliZDCReconstructor.h"
 #include "AliZDCPedestals.h"
 #include "AliZDCCalib.h"
-#include "AliZDCRecParam.h"
+#include "AliZDCRecoParam.h"
+#include "AliZDCRecoParampp.h"
+#include "AliZDCRecoParamPbPb.h"
 
 
 ClassImp(AliZDCReconstructor)
-
+AliZDCRecoParam *AliZDCReconstructor::fRecoParam=0;  //reconstruction parameters
 
 //_____________________________________________________________________________
 AliZDCReconstructor:: AliZDCReconstructor() :
-
-  fZNCen(new TF1("fZNCen", 
-	"(-2.287920+sqrt(2.287920*2.287920-4*(-0.007629)*(11.921710-x)))/(2*(-0.007629))",0.,164.)),
-  fZNPer(new TF1("fZNPer",
-      "(-37.812280-sqrt(37.812280*37.812280-4*(-0.190932)*(-1709.249672-x)))/(2*(-0.190932))",0.,164.)),
-  fZPCen(new TF1("fZPCen",
-       "(-1.321353+sqrt(1.321353*1.321353-4*(-0.007283)*(3.550697-x)))/(2*(-0.007283))",0.,60.)),
-  fZPPer(new TF1("fZPPer",
-      "(-42.643308-sqrt(42.643308*42.643308-4*(-0.310786)*(-1402.945615-x)))/(2*(-0.310786))",0.,60.)),
-  fZDCCen(new TF1("fZDCCen",
-      "(-1.934991+sqrt(1.934991*1.934991-4*(-0.004080)*(15.111124-x)))/(2*(-0.004080))",0.,225.)),
-  fZDCPer(new TF1("fZDCPer",
-      "(-34.380639-sqrt(34.380639*34.380639-4*(-0.104251)*(-2612.189017-x)))/(2*(-0.104251))",0.,225.)),
-  fbCen(new TF1("fbCen","-0.056923+0.079703*x-0.0004301*x*x+0.000001366*x*x*x",0.,220.)),
-  fbPer(new TF1("fbPer","17.943998-0.046846*x+0.000074*x*x",0.,220.)),
-  //
-  fZEMn(new TF1("fZEMn","121.7-0.1934*x+0.00007565*x*x",0.,1200.)),
-  fZEMp(new TF1("fZEMp","80.05-0.1315*x+0.00005327*x*x",0.,1200.)),
-  fZEMsp(new TF1("fZEMsp","201.7-0.325*x+0.0001292*x*x",0.,1200.)),
-  fZEMb(new TF1("fZEMb",
-	"13.83-0.02851*x+5.101e-5*x*x-7.305e-8*x*x*x+5.101e-11*x*x*x*x-1.25e-14*x*x*x*x*x",0.,1200.)),
-  //
   fPedData(GetPedData()),
-  fECalibData(GetECalibData()),
-  fRecParam(GetRecParams())
+  fECalibData(GetECalibData())
 {
   // **** Default constructor
 
@@ -77,22 +56,10 @@ AliZDCReconstructor:: AliZDCReconstructor() :
 AliZDCReconstructor::~AliZDCReconstructor()
 {
 // destructor
-
-  delete fZNCen;
-  delete fZNPer;
-  delete fZPCen;
-  delete fZPPer;
-  delete fZDCCen;
-  delete fZDCPer;
-  delete fbCen;
-  delete fbPer;
-  delete fZEMn;
-  delete fZEMp;
-  delete fZEMsp;
-  delete fZEMb;
-
+   if(fRecoParam)  delete fRecoParam;
+   if(fPedData)    delete fPedData;    
+   if(fECalibData) delete fECalibData;
 }
-
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
@@ -202,7 +169,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   }
 
   // reconstruct the event
-    ReconstructEvent(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+  ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
     	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
 
 }
@@ -218,7 +185,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   for(Int_t jj=0; jj<48; jj++) meanPed[jj] = fPedData->GetMeanPed(jj);
 
   rawReader->Reset();
-
+  
   // loop over raw data
   Float_t tZN1Corr[10], tZP1Corr[10], tZN2Corr[10], tZP2Corr[10]; 
   Float_t dZEM1Corr[2], dZEM2Corr[2], PMRef1[2], PMRef2[2]; 
@@ -286,13 +253,13 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   }
     
   // reconstruct the event
-    ReconstructEvent(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
+  ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
     	dZEM1Corr, dZEM2Corr, PMRef1, PMRef2);
 
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCCorr, 
+void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* ZN1ADCCorr, 
 	Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
 	Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2) const
 {
@@ -312,26 +279,6 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCC
   // --- Energy calibration factors ------------------------------------
   Float_t calibEne[4];
   for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fECalibData->GetEnCalib(ij);
-  //
-  // --- Reconstruction parameters ------------------
-  Float_t endPointZEM = fRecParam->GetZEMEndValue();
-  Float_t cutFractionZEM = fRecParam->GetZEMCutFraction();
-  Float_t dZEMSup = fRecParam->GetDZEMSup();
-  Float_t dZEMInf = fRecParam->GetDZEMInf();
-  //
-  Float_t cutValueZEM = endPointZEM*cutFractionZEM;
-  Float_t supValueZEM = cutValueZEM+(endPointZEM*dZEMSup);
-  Float_t infValueZEM = cutValueZEM-(endPointZEM*dZEMInf);
-  //
-  Float_t maxValEZN1  = fRecParam->GetEZN1MaxValue();
-  Float_t maxValEZP1  = fRecParam->GetEZP1MaxValue();
-  Float_t maxValEZDC1 = fRecParam->GetEZDC1MaxValue();
-  Float_t maxValEZN2  = fRecParam->GetEZN2MaxValue();
-  Float_t maxValEZP2  = fRecParam->GetEZP2MaxValue();
-  Float_t maxValEZDC2 = fRecParam->GetEZDC2MaxValue();
-  //
-  //printf("\n\t AliZDCReconstructor -> ZEMEndPoint %1.0f, ZEMCutValue %1.0f,"
-  //   " ZEMSupValue %1.0f, ZEMInfValue %1.0f\n",endPointZEM,cutValueZEM,supValueZEM,infValueZEM);
   
   // Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
@@ -369,14 +316,135 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCC
        calibSumZP2[1] += calibTowZP2[gi];
      }
   }
+
+  //
+  // --- Reconstruction parameters ------------------ 
+  if(!fRecoParam)  fRecoParam = (AliZDCRecoParampp*) AliZDCRecoParampp::GetppRecoParam();
   
   //  ---      Number of detected spectator nucleons
   //  *** N.B. -> It works only in Pb-Pb
   Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
-  nDetSpecNLeft = (Int_t) (calibSumZN1[0]/2.760);
-  nDetSpecPLeft = (Int_t) (calibSumZP1[0]/2.760);
-  nDetSpecNRight = (Int_t) (calibSumZN2[0]/2.760);
-  nDetSpecPRight = (Int_t) (calibSumZP2[0]/2.760);
+  Float_t beamE = fRecoParam->GetBeamEnergy();
+  nDetSpecNLeft = (Int_t) (calibSumZN1[0]/beamE);
+  nDetSpecPLeft = (Int_t) (calibSumZP1[0]/beamE);
+  nDetSpecNRight = (Int_t) (calibSumZN2[0]/beamE);
+  nDetSpecPRight = (Int_t) (calibSumZP2[0]/beamE);
+  /*printf("\n\t AliZDCReconstructor -> nDetSpecNLeft %d, nDetSpecPLeft %d,"
+    " nDetSpecNRight %d, nDetSpecPRight %d\n",nDetSpecNLeft, nDetSpecPLeft, 
+    nDetSpecNRight, nDetSpecPRight);*/
+
+  //  ---      Number of generated spectator nucleons (from HIJING parameterization)
+  Int_t nGenSpecNLeft=0, nGenSpecPLeft=0, nGenSpecLeft=0;
+  Int_t nGenSpecNRight=0, nGenSpecPRight=0, nGenSpecRight=0;
+  Int_t nPartTotLeft=0, nPartTotRight=0;
+  Double_t impPar=0.;
+  
+  // create the output tree
+  AliZDCReco reco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
+  		  calibTowZN1, calibTowZN2, calibTowZP1, calibTowZP2, 
+		  ZEM1ADCCorr, ZEM2ADCCorr, PMRef1, PMRef2,
+		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
+		  nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
+		  nGenSpecPRight, nGenSpecRight, nPartTotLeft, nPartTotRight, impPar);
+		  
+  AliZDCReco* preco = &reco;
+  const Int_t kBufferSize = 4000;
+  clustersTree->Branch("ZDC", "AliZDCReco", &preco, kBufferSize);
+
+  // write the output tree
+  clustersTree->Fill();
+}
+
+//_____________________________________________________________________________
+void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, Float_t* ZN1ADCCorr, 
+	Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
+	Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2) const
+{
+  // ***** Reconstruct one event
+  
+  // *** RECONSTRUCTION FROM "REAL" DATA
+  //
+  // Retrieving calibration data
+  // --- Equalization coefficients ---------------------------------------------
+  Float_t equalCoeffZN1[5], equalCoeffZP1[5], equalCoeffZN2[5], equalCoeffZP2[5];
+  for(Int_t ji=0; ji<5; ji++){
+     equalCoeffZN1[ji] = fECalibData->GetZN1EqualCoeff(ji);
+     equalCoeffZP1[ji] = fECalibData->GetZP1EqualCoeff(ji); 
+     equalCoeffZN2[ji] = fECalibData->GetZN2EqualCoeff(ji); 
+     equalCoeffZP2[ji] = fECalibData->GetZP2EqualCoeff(ji); 
+  }
+  // --- Energy calibration factors ------------------------------------
+  Float_t calibEne[4];
+  for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fECalibData->GetEnCalib(ij);
+  
+  // Equalization of detector responses
+  Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
+  for(Int_t gi=0; gi<5; gi++){
+     equalTowZN1[gi] = ZN1ADCCorr[gi]*equalCoeffZN1[gi];
+     equalTowZN1[gi+5] = ZN1ADCCorr[gi+5]*equalCoeffZN1[gi];
+     equalTowZP1[gi] = ZP1ADCCorr[gi]*equalCoeffZP1[gi];
+     equalTowZP1[gi+5] = ZP1ADCCorr[gi+5]*equalCoeffZP1[gi];
+     equalTowZN2[gi] = ZN2ADCCorr[gi]*equalCoeffZN2[gi];
+     equalTowZN2[gi+5] = ZN2ADCCorr[gi+5]*equalCoeffZN2[gi];
+     equalTowZP2[gi] = ZP2ADCCorr[gi]*equalCoeffZP2[gi];
+     equalTowZP2[gi+5] = ZP2ADCCorr[gi+5]*equalCoeffZP2[gi];
+  }
+  
+  // Energy calibration of detector responses
+  Float_t calibTowZN1[10], calibTowZN2[10], calibTowZP1[10], calibTowZP2[10];
+  Float_t calibSumZN1[]={0,0}, calibSumZN2[]={0,0}, calibSumZP1[]={0,0}, calibSumZP2[]={0,0};
+  for(Int_t gi=0; gi<10; gi++){
+     calibTowZN1[gi] = equalTowZN1[gi]*calibEne[0];
+     calibTowZP1[gi] = equalTowZP1[gi]*calibEne[1];
+     calibTowZN2[gi] = equalTowZN2[gi]*calibEne[2];
+     calibTowZP2[gi] = equalTowZP2[gi]*calibEne[3];
+     //
+     if(gi<5){
+       calibSumZN1[0] += calibTowZN1[gi];
+       calibSumZP1[0] += calibTowZP1[gi];
+       calibSumZN2[0] += calibTowZN2[gi];
+       calibSumZP2[0] += calibTowZP2[gi];
+     }
+     //
+     else{
+       calibSumZN1[1] += calibTowZN1[gi];
+       calibSumZP1[1] += calibTowZP1[gi];
+       calibSumZN2[1] += calibTowZN2[gi];
+       calibSumZP2[1] += calibTowZP2[gi];
+     }
+  }
+
+  //
+  // --- Reconstruction parameters ------------------ 
+  if(!fRecoParam)  fRecoParam = (AliZDCRecoParamPbPb*) AliZDCRecoParamPbPb::GetPbPbRecoParam();
+  //
+  Float_t endPointZEM = fRecoParam->GetZEMEndValue();
+  Float_t cutFractionZEM = fRecoParam->GetZEMCutFraction();
+  Float_t dZEMSup = fRecoParam->GetDZEMSup();
+  Float_t dZEMInf = fRecoParam->GetDZEMInf();
+  //
+  Float_t cutValueZEM = endPointZEM*cutFractionZEM;
+  Float_t supValueZEM = cutValueZEM+(endPointZEM*dZEMSup);
+  Float_t infValueZEM = cutValueZEM-(endPointZEM*dZEMInf);
+  //
+  Float_t maxValEZN1  = fRecoParam->GetEZN1MaxValue();
+  Float_t maxValEZP1  = fRecoParam->GetEZP1MaxValue();
+  Float_t maxValEZDC1 = fRecoParam->GetEZDC1MaxValue();
+  Float_t maxValEZN2  = fRecoParam->GetEZN2MaxValue();
+  Float_t maxValEZP2  = fRecoParam->GetEZP2MaxValue();
+  Float_t maxValEZDC2 = fRecoParam->GetEZDC2MaxValue();
+  //
+  //printf("\n\t AliZDCReconstructor -> ZEMEndPoint %1.0f, ZEMCutValue %1.0f,"
+  //   " ZEMSupValue %1.0f, ZEMInfValue %1.0f\n",endPointZEM,cutValueZEM,supValueZEM,infValueZEM);
+  
+  //  ---      Number of detected spectator nucleons
+  //  *** N.B. -> It works only in Pb-Pb
+  Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
+  Float_t beamE = fRecoParam->GetBeamEnergy();
+  nDetSpecNLeft = (Int_t) (calibSumZN1[0]/beamE);
+  nDetSpecPLeft = (Int_t) (calibSumZP1[0]/beamE);
+  nDetSpecNRight = (Int_t) (calibSumZN2[0]/beamE);
+  nDetSpecPRight = (Int_t) (calibSumZP2[0]/beamE);
   /*printf("\n\t AliZDCReconstructor -> nDetSpecNLeft %d, nDetSpecPLeft %d,"
     " nDetSpecNRight %d, nDetSpecPRight %d\n",nDetSpecNLeft, nDetSpecPLeft, 
     nDetSpecNRight, nDetSpecPRight);*/
@@ -386,40 +454,39 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCC
   Int_t nGenSpecNRight=0, nGenSpecPRight=0, nGenSpecRight=0;
   Double_t impPar=0.;
   //
-  //
   Float_t corrADCZEMHG = ZEM1ADCCorr[0] + ZEM2ADCCorr[0];
   //
   if(corrADCZEMHG > supValueZEM){
-    nGenSpecNLeft  = (Int_t) (fZNCen->Eval(calibSumZN1[0]));
-    nGenSpecPLeft  = (Int_t) (fZPCen->Eval(calibSumZP1[0]));
-    nGenSpecLeft   = (Int_t) (fZDCCen->Eval(calibSumZN1[0]+calibSumZP1[0]));
-    nGenSpecNRight = (Int_t) (fZNCen->Eval(calibSumZN2[0]));
-    nGenSpecPRight = (Int_t) (fZNCen->Eval(calibSumZP2[0]));
-    nGenSpecRight  = (Int_t) (fZNCen->Eval(calibSumZN2[0]+calibSumZP2[0]));
-    impPar  = fbCen->Eval(calibSumZN1[0]+calibSumZP1[0]);
+    nGenSpecNLeft  = (Int_t) ((fRecoParam->GetfZNCen())->Eval(calibSumZN1[0]));
+    nGenSpecPLeft  = (Int_t) ((fRecoParam->GetfZPCen())->Eval(calibSumZP1[0]));
+    nGenSpecLeft   = (Int_t) ((fRecoParam->GetfZDCCen())->Eval(calibSumZN1[0]+calibSumZP1[0]));
+    nGenSpecNRight = (Int_t) ((fRecoParam->GetfZNCen())->Eval(calibSumZN2[0]));
+    nGenSpecPRight = (Int_t) ((fRecoParam->GetfZNCen())->Eval(calibSumZP2[0]));
+    nGenSpecRight  = (Int_t) ((fRecoParam->GetfZNCen())->Eval(calibSumZN2[0]+calibSumZP2[0]));
+    impPar  = (fRecoParam->GetfbCen())->Eval(calibSumZN1[0]+calibSumZP1[0]);
   }
   else if(corrADCZEMHG < infValueZEM){
-    nGenSpecNLeft = (Int_t) (fZNPer->Eval(calibSumZN1[0])); 
-    nGenSpecPLeft = (Int_t) (fZPPer->Eval(calibSumZP1[0]));
-    nGenSpecLeft  = (Int_t) (fZDCPer->Eval(calibSumZN1[0]+calibSumZP1[0]));
-    impPar   = fbPer->Eval(calibSumZN1[0]+calibSumZP1[0]);
+    nGenSpecNLeft = (Int_t) ((fRecoParam->GetfZNPer())->Eval(calibSumZN1[0])); 
+    nGenSpecPLeft = (Int_t) ((fRecoParam->GetfZPPer())->Eval(calibSumZP1[0]));
+    nGenSpecLeft  = (Int_t) ((fRecoParam->GetfZDCPer())->Eval(calibSumZN1[0]+calibSumZP1[0]));
+    impPar   = (fRecoParam->GetfbPer())->Eval(calibSumZN1[0]+calibSumZP1[0]);
   }
   else if(corrADCZEMHG >= infValueZEM && corrADCZEMHG <= supValueZEM){
-    nGenSpecNLeft = (Int_t) (fZEMn->Eval(corrADCZEMHG));
-    nGenSpecPLeft = (Int_t) (fZEMp->Eval(corrADCZEMHG));
-    nGenSpecLeft  = (Int_t)(fZEMsp->Eval(corrADCZEMHG));
-    impPar   =  fZEMb->Eval(corrADCZEMHG);
+    nGenSpecNLeft = (Int_t) ((fRecoParam->GetfZEMn())->Eval(corrADCZEMHG));
+    nGenSpecPLeft = (Int_t) ((fRecoParam->GetfZEMp())->Eval(corrADCZEMHG));
+    nGenSpecLeft  = (Int_t)((fRecoParam->GetfZEMsp())->Eval(corrADCZEMHG));
+    impPar   =  (fRecoParam->GetfZEMb())->Eval(corrADCZEMHG);
   }
   // 
-  if(calibSumZN1[0]/maxValEZN1>1.)  nGenSpecNLeft = (Int_t) (fZEMn->Eval(corrADCZEMHG));
-  if(calibSumZP1[0]/maxValEZP1>1.)  nGenSpecPLeft = (Int_t) (fZEMp->Eval(corrADCZEMHG));
+  if(calibSumZN1[0]/maxValEZN1>1.)  nGenSpecNLeft = (Int_t) ((fRecoParam->GetfZEMn())->Eval(corrADCZEMHG));
+  if(calibSumZP1[0]/maxValEZP1>1.)  nGenSpecPLeft = (Int_t) ((fRecoParam->GetfZEMp())->Eval(corrADCZEMHG));
   if((calibSumZN1[0]+calibSumZP1[0]/maxValEZDC1)>1.){
-     nGenSpecLeft = (Int_t)(fZEMsp->Eval(corrADCZEMHG));
-     impPar = fZEMb->Eval(corrADCZEMHG);
+     nGenSpecLeft = (Int_t)((fRecoParam->GetfZEMsp())->Eval(corrADCZEMHG));
+     impPar = (fRecoParam->GetfZEMb())->Eval(corrADCZEMHG);
   }
-  if(calibSumZN2[0]/maxValEZN2>1.)  nGenSpecNRight = (Int_t) (fZEMn->Eval(corrADCZEMHG));
-  if(calibSumZP2[0]/maxValEZP2>1.)  nGenSpecPRight = (Int_t) (fZEMp->Eval(corrADCZEMHG));
-  if((calibSumZN2[0]+calibSumZP2[0]/maxValEZDC2)>1.) nGenSpecRight = (Int_t)(fZEMsp->Eval(corrADCZEMHG));
+  if(calibSumZN2[0]/maxValEZN2>1.)  nGenSpecNRight = (Int_t) ((fRecoParam->GetfZEMn())->Eval(corrADCZEMHG));
+  if(calibSumZP2[0]/maxValEZP2>1.)  nGenSpecPRight = (Int_t) ((fRecoParam->GetfZEMp())->Eval(corrADCZEMHG));
+  if((calibSumZN2[0]+calibSumZP2[0]/maxValEZDC2)>1.) nGenSpecRight = (Int_t)((fRecoParam->GetfZEMsp())->Eval(corrADCZEMHG));
   //
   if(nGenSpecNLeft>125)    nGenSpecNLeft=125;
   else if(nGenSpecNLeft<0) nGenSpecNLeft=0;
@@ -561,17 +628,3 @@ AliZDCCalib* AliZDCReconstructor::GetECalibData() const
   return calibdata;
 }
 
-//_____________________________________________________________________________
-AliZDCRecParam* AliZDCReconstructor::GetRecParams() const
-{
-
-  // Getting energy and equalization calibration object for ZDC set
-
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/RecParam");
-  if(!entry) AliFatal("No calibration data loaded!");  
-
-  AliZDCRecParam *calibdata = dynamic_cast<AliZDCRecParam*>  (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
-  return calibdata;
-}

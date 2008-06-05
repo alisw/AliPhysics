@@ -9,6 +9,9 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliZDCReco+;
+#pragma link C++ class  AliZDCRecoParam+;
+#pragma link C++ class  AliZDCRecoParampp+;
+#pragma link C++ class  AliZDCRecoParamPbPb+;
 #pragma link C++ class  AliZDCReconstructor+;
 #pragma link C++ class  AliZDCQADataMakerRec+;
 

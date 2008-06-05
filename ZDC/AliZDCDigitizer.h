@@ -14,7 +14,6 @@
 #include "AliCDBStorage.h"
 #include "AliZDCPedestals.h"
 #include "AliZDCCalib.h"
-#include "AliZDCRecParam.h"
 
 class AliRunDigitizer;
 
@@ -48,7 +47,6 @@ public:
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCPedestals *GetPedData() const; 
   AliZDCCalib     *GetCalibData() const; 
-  AliZDCRecParam  *GetRecParam() const; 
 
 private:
 
@@ -71,8 +69,7 @@ private:
   
   AliZDCPedestals *fPedData; 	//! pedestal calibration data
   AliZDCCalib     *fCalibData; 	//! energy and equalization calibration data
-  AliZDCRecParam  *fRecParam; 	//! parameters used in reconstruction
        
-  ClassDef(AliZDCDigitizer, 6)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 7)     // digitizer for ZDC
 };    
 #endif

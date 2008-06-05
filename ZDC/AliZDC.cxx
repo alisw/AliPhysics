@@ -51,7 +51,6 @@
 #include "AliZDCRawStream.h"
 #include "AliZDCPedestals.h"
 #include "AliZDCCalib.h"
-#include "AliZDCRecParam.h"
 #include "AliFstream.h"
 
  
@@ -63,7 +62,6 @@ AliZDC::AliZDC() :
   fNoShower(0),
   fPedCalib(0),
   fCalibData(0),
-  fRecParam(0),
   fZDCCalibFName("")
 {
   //
@@ -84,7 +82,6 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fNoShower  (0),
   fPedCalib(0),
   fCalibData(0),
-  fRecParam(0),
   fZDCCalibFName("")
 {
   //
@@ -116,7 +113,6 @@ AliZDC::~AliZDC()
   fIshunt = 0;
   delete fPedCalib;
   delete fCalibData;
-  delete fRecParam;
 
 }
 
@@ -126,7 +122,6 @@ AliDetector("ZDC","ZDC"),
 fNoShower(ZDC.fNoShower),
 fPedCalib(ZDC.fPedCalib),
 fCalibData(ZDC.fCalibData),
-fRecParam(ZDC.fRecParam),
 fZDCCalibFName(ZDC.fZDCCalibFName)
 {
   // copy constructor
@@ -140,7 +135,6 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
     fNoShower = ZDC.fNoShower;
     fPedCalib = ZDC.fPedCalib;
     fCalibData = ZDC.fCalibData;
-    fRecParam = ZDC.fRecParam;
     fZDCCalibFName = ZDC.fZDCCalibFName;
   } return *this;
 }

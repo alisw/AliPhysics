@@ -16,7 +16,6 @@
 #include "AliZDCDataDCS.h"
 #include "AliZDCPedestals.h"
 #include "AliZDCCalib.h"
-#include "AliZDCRecParam.h"
 
 /////////////////////////////////////////////////////////////////////
 //								   //
@@ -285,68 +284,6 @@ else if(runType=="STANDALONE_EMD"){
       resECal = Store("Calib","Calib",eCalib, &metaData, 0, 1);
   }
 }
-// ********************************************************
-// [c] PHYSICS RUNS -> Parameters needed for reconstruction 
-// 		NB -> ONLY IN Pb-Pb!!!!!!!
-// ********************************************************
-else if((runType=="PHYSICS") && (strcmp(beamType,"Pb-Pb")==0)){
-  TList* daqSources = GetFileSources(kDAQ, "PHYSICS");
-  if(!daqSources){
-    AliError(Form("No sources for PHYSICS run %d !", fRun));
-    return 1;
-  }
-  Log("\t List of sources for PHYSICS");
-  daqSources->Print();
-  //
-  TIter iter2(daqSources);
-  TObjString* source = 0;
-  Int_t i=0;
-  while((source = dynamic_cast<TObjString*> (iter2.Next()))){
-       Log(Form("\n\t Getting file #%d\n",++i));
-       TString stringPHYSFileName = GetFile(kDAQ, "PHYSICS", source->GetName());
-       if(stringPHYSFileName.Length() <= 0){
-         Log(Form("No PHYSICS file from source %s!", source->GetName()));
-	 return 1;
-       }
-       // --- Initializing pedestal calibration object
-       AliZDCRecParam *recCalib = new AliZDCRecParam("ZDC");
-       // --- Reading file with pedestal calibration data
-       const char* physFileName = stringPHYSFileName.Data();
-       if(physFileName){
-    	 FILE *file;
-    	 if((file = fopen(physFileName,"r")) == NULL){
-    	   printf("Cannot open file %s \n",physFileName);
-	   return 1;
-    	 }
-    	 Log(Form("File %s connected to process data from PHYSICS runs", physFileName));
-    	 //
-	 Float_t physRecParam[10]; 
-    	 for(Int_t j=0; j<10; j++) fscanf(file,"%f",&physRecParam[j]);
-	 recCalib->SetZEMEndValue(physRecParam[0]);
-	 recCalib->SetZEMCutFraction(physRecParam[1]);
-	 recCalib->SetDZEMSup(physRecParam[2]);
-	 recCalib->SetDZEMInf(physRecParam[3]);
-	 recCalib->SetEZN1MaxValue(physRecParam[4]);
-	 recCalib->SetEZP1MaxValue(physRecParam[5]);
-	 recCalib->SetEZDC1MaxValue(physRecParam[6]);
-	 recCalib->SetEZN2MaxValue(physRecParam[7]);
-	 recCalib->SetEZP2MaxValue(physRecParam[8]);
-	 recCalib->SetEZDC2MaxValue(physRecParam[9]);
-       }
-       else{
-         Log(Form("File %s not found", physFileName));
-         return 1;
-       }
-       //calibdata->Print("");
-      // 
-      AliCDBMetaData metaData;
-      metaData.SetBeamPeriod(0);
-      metaData.SetResponsible("Chiara");
-      metaData.SetComment("Filling AliZDCCalib object");  
-      //
-      resRecPar = Store("Calib","RecParam",recCalib, &metaData, 0, 1);
-  }
-} 
 else {
   Log(Form("Nothing to do: run type is %s", runType.Data()));
   return 0;

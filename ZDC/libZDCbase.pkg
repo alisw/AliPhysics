@@ -2,7 +2,7 @@
 # $Id$
 
 SRCS= AliZDCDigit.cxx AliZDCRawStream.cxx \
-      AliZDCPedestals.cxx AliZDCCalib.cxx AliZDCRecParam.cxx \
+      AliZDCPedestals.cxx AliZDCCalib.cxx \
       AliZDCDataDCS.cxx AliZDCPreprocessor.cxx AliZDCQAChecker.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
