@@ -570,7 +570,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   
   TExMap specialMap;
   specialMap.Add(76, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.1, 0.72), 90.));
-  specialMap.Add(75, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36)));
+  specialMap.Add(75, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.7, 0.36)));
   specialMap.Add(47, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
 
   // Load mapping from OCDB
@@ -604,11 +604,11 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   }
   specialMap.Delete();
   specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.51),90.));
-  specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96,-0.04)));
+  specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.20,-0.04)));
   specialMap.Add(47 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.18,-1.11)));
   specialMap.Add(20 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
   specialMap.Add(46 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.6 , 0.17)));
-  specialMap.Add(74 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, -0.10)));  
+  specialMap.Add(74 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.405, -0.10)));  
       // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
       // in the true position)   
       // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
@@ -1804,25 +1804,25 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     // TopFrameAnode place 2 layers of TopFrameAnode cuboids  
     posX = kHxTFA;
     posY = 2.*kHyInHFrame+2.*kHyH1mm+kIAF+2.*kHyInVFrame+kHyTFA;   
-    posZ = kHzOuterFrameInox;
+    posZ = -kHzOuterFrameInox;
     gMC->Gspos("SQ02",1,quadrantMLayerName,posX, posY, posZ,0,"ONLY"); 
-    posZ = posZ+kHzOuterFrameInox;
+    posZ = kHzOuterFrameEpoxy;
     gMC->Gspos("SQ03",1,quadrantMLayerName,posX, posY, posZ,0,"ONLY");
     
     // place 2 layers of TopFrameAnodeA trapezoids 
     posX = 35.8932+fgkDeltaQuadLHC;
     posY = 92.6745+fgkDeltaQuadLHC;
-    posZ = kHzOuterFrameInox; 
+    posZ = -kHzOuterFrameInox; 
     gMC->Gspos("SQ04",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
-    posZ = posZ+kHzOuterFrameInox;
+    posZ = kHzOuterFrameEpoxy;
     gMC->Gspos("SQ05",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
     
     // place 2 layers of TopFrameAnodeB trapezoids 
     posX = 44.593+fgkDeltaQuadLHC;
     posY = 90.737+fgkDeltaQuadLHC;
-    posZ = kHzOuterFrameInox; 
+    posZ = -kHzOuterFrameInox; 
     gMC->Gspos("SQ06",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
-    posZ = posZ+kHzOuterFrameInox;
+    posZ = kHzOuterFrameEpoxy;
     gMC->Gspos("SQ07",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");    
 
     // TopAnode1 place 2 layers  
@@ -1830,7 +1830,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posY = 99.85+fgkDeltaQuadLHC;
     posZ = -1.*kHzAnodeFR4;
     gMC->Gspos("SQ08",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");  
-    posZ = posZ+kHzTopAnodeSteel1;
+    posZ = kHzTopAnodeSteel1;
     gMC->Gspos("SQ09",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");    
          
     // TopAnode2 place 2 layers
@@ -1838,7 +1838,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posY = 99.482+fgkDeltaQuadLHC; 
     posZ = -1.*kHzAnodeFR4;    
     gMC->Gspos("SQ10",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
-    posZ = posZ+kHzTopAnodeSteel2;    
+    posZ = kHzTopAnodeSteel2;    
     gMC->Gspos("SQ11",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");       
     
     // TopAnode3 place 1 layer
@@ -1920,7 +1920,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     gMC->Gspos("SQ23",1,quadrantMLayerName, xCenter[3], yCenter[3], posZ, rot2,"ONLY");
     gMC->Gspos("SQ23",2,quadrantMLayerName, xCenter[7], yCenter[7], posZ, rot3,"ONLY");
      
-    posZ = posZ+kHzOuterFrameEpoxy + kHzOuterFrameInox;
+    posZ = kHzOuterFrameEpoxy;
    
     gMC->Gspos("SQ18",1,quadrantMLayerName, xCenter[0], yCenter[0], posZ, rot2,"ONLY");
     gMC->Gspos("SQ18",2,quadrantMLayerName, xCenter[4], yCenter[4], posZ, rot3,"ONLY");
@@ -2754,7 +2754,6 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
     
     // Place the quadrant
     for (Int_t i=0; i<4; i++) {
-
       // DE envelope
       GReal_t posx0, posy0, posz0;
       posx0 = fgkPadXOffsetBP * scale[i].X();
