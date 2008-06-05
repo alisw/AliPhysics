@@ -197,7 +197,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     vtx->GetCovMatrix(covVtx); //covariance matrix
     
     AliAODVertex * primary = new(vertices[jVertices++])
-	AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, AliAODVertex::kPrimary);
+	AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
     if (fDebug > 0) primary->Print();
 
     // Create vertices starting from the most complex objects
