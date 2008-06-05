@@ -25,10 +25,10 @@ class AliITSMeanVertexer : public TObject {
     AliITSMeanVertexer();   
     // standard constructor. filename is the name of the file containing
     // raw data either in ROOT or DATE format according to file extension
-    AliITSMeanVertexer(TString filename);   
+    AliITSMeanVertexer(TString &filename);   
     // constructor with explicit assignment of names for geometry and loaders
-    AliITSMeanVertexer(TString filename, TString loaderfilename, 
-                       TString geometryfilename);
+    AliITSMeanVertexer(TString &filename, TString &loaderfilename, 
+                       TString &geometryfilename);
     virtual ~AliITSMeanVertexer();
     void SetLoaderFileName(TString fn="ITSMeanVertexer.root")
                            {fLoaderFileName = fn;}
@@ -49,7 +49,7 @@ class AliITSMeanVertexer : public TObject {
     AliITSMeanVertexer(const AliITSMeanVertexer& vtxr);
     // assignment operator (NO assignment allowed)
     AliITSMeanVertexer& operator=(const AliITSMeanVertexer& /* vtxr */);
-    void Init(TString filename);  // initialization invoked by constructors
+    void Init(TString &filename);  // initialization invoked by constructors
     Bool_t Filter(AliESDVertex *vert,AliMultiplicity *mult);
     void AddToMean(AliESDVertex *vert);
     Bool_t ComputeMean();

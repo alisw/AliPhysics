@@ -18,6 +18,7 @@
 #include "AliLog.h"
 #include "AliESDVertex.h"
 #include "AliVertexer.h"
+#include "AliMultiplicity.h"
 
 ClassImp(AliVertexer)
 
@@ -30,10 +31,8 @@ ClassImp(AliVertexer)
 
 //______________________________________________________________________
 AliVertexer::AliVertexer() :
-  fCurrentVertex(0),
-  fFirstEvent(0),
-  fLastEvent(0),
-  fMult()
+  fCurrentVertex(NULL),
+  fMult(NULL)
 {
   //
   // Default Constructor
@@ -42,38 +41,11 @@ AliVertexer::AliVertexer() :
   for(Int_t i=0;i<6;i++)fNominalCov[i]=0.;
 }
 
-
-//______________________________________________________________________
-AliVertexer::AliVertexer(const AliVertexer &vtxr) : 
-  TObject(vtxr),
-  fCurrentVertex(vtxr.fCurrentVertex),
-  fFirstEvent(vtxr.fFirstEvent),
-  fLastEvent(vtxr.fLastEvent),
-  fMult(vtxr.fMult)
-{
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  AliFatal("Copy constructor not allowed");
-}
-
-//______________________________________________________________________
-AliVertexer& AliVertexer::operator=(const AliVertexer& /* vtxr */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  AliFatal("Assignment operator not allowed");
-  return *this;
-}
-
 //______________________________________________________________________
 AliVertexer::~AliVertexer() {
   // Default Destructor
 
   if(fMult) delete fMult;
-  // The objects pointed by the following pointers are not owned
-  // by this class and are not deleted
-
-    fCurrentVertex  = 0;
-
 }
 
 

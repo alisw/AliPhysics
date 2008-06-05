@@ -18,8 +18,6 @@
 #include "AliLog.h"
 #include "AliStrLine.h"
 #include "AliTracker.h"
-#include "AliRunLoader.h"
-#include "AliITSLoader.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
@@ -38,7 +36,7 @@ ClassImp(AliITSVertexer3D)
 
 //______________________________________________________________________
 AliITSVertexer3D::AliITSVertexer3D():AliITSVertexer(),
-fLines(),
+fLines("AliStrLine",1000),
 fVert3D(),
 fCoarseDiffPhiCut(0.),
 fCoarseMaxRCut(0.),
@@ -51,32 +49,6 @@ fMeanPSelTrk(0.),
 fMeanPtSelTrk(0.)
 {
   // Default constructor
-  SetCoarseDiffPhiCut();
-  SetCoarseMaxRCut();
-  SetMaxRCut();
-  SetZCutDiamond();
-  SetMaxZCut();
-  SetDCAcut();
-  SetDiffPhiMax();
-  SetMeanPSelTracks();
-  SetMeanPtSelTracks();
-}
-
-//______________________________________________________________________
-AliITSVertexer3D::AliITSVertexer3D(TString fn): AliITSVertexer(fn),
-fLines("AliStrLine",1000),
-fVert3D(),
-fCoarseDiffPhiCut(0.),     
-fCoarseMaxRCut(0.),
-fMaxRCut(0.),
-fZCutDiamond(0.),
-fMaxZCut(0.),
-fDCAcut(0.),
-fDiffPhiMax(0.),
-fMeanPSelTrk(0.),
-fMeanPtSelTrk(0.)
-{
-  // Standard constructor
   SetCoarseDiffPhiCut();
   SetCoarseMaxRCut();
   SetMaxRCut();
@@ -104,13 +76,13 @@ void AliITSVertexer3D::ResetVert3D(){
   fVert3D.SetNContributors(0);
 }
 //______________________________________________________________________
-AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
+AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
   ResetVert3D();
-  AliDebug(1,Form("FindVertexForCurrentEvent - 3D - PROCESSING EVENT %d",evnumber));
+  AliDebug(1,"FindVertexForCurrentEvent - 3D - PROCESSING NEXT EVENT");
   fLines.Clear();
 
-  Int_t nolines = FindTracklets(evnumber,0);
+  Int_t nolines = FindTracklets(itsClusterTree,0);
   fCurrentVertex = 0;
   if(nolines<2)return fCurrentVertex;
   Int_t rc=Prepare3DVertex(0);
@@ -122,7 +94,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
   end of debug lines  */
   if(fVert3D.GetNContributors()>0){
     fLines.Clear("C");
-    nolines = FindTracklets(evnumber,1);
+    nolines = FindTracklets(itsClusterTree,1);
     if(nolines>=2){
       rc=Prepare3DVertex(1);
       if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
@@ -145,24 +117,18 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
     fCurrentVertex->SetName("Vertex");
     fCurrentVertex->SetDispersion(fVert3D.GetDispersion());
   }
-  FindMultiplicity(evnumber);
+  FindMultiplicity(itsClusterTree);
   return fCurrentVertex;
 }  
 
 //______________________________________________________________________
-Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
+Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   // All the possible combinations between recpoints on layer 1and 2 are
   // considered. Straight lines (=tracklets)are formed. 
   // The tracklets are processed in Prepare3DVertex
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  //  AliITSgeom* geom = itsLoader->GetITSgeom();
-  itsLoader->LoadRecPoints();
-  rl->GetEvent(evnumber);
-
   AliITSDetTypeRec detTypeRec;
 
-  TTree *tR = itsLoader->TreeR();
+  TTree *tR = itsClusterTree;
   detTypeRec.SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
@@ -210,7 +176,6 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
     detTypeRec.ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
-    itsLoader->UnloadRecPoints();
     return -1;
   }
   AliDebug(1,Form("RecPoints on Layer 1,2 = %d, %d\n",nrpL1,nrpL2));
@@ -339,22 +304,6 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   if(nolines == 0)return -2;
   return nolines;
 }
-
-//______________________________________________________________________
-void AliITSVertexer3D::FindVertices(){
-  // computes the vertices of the events in the range FirstEvent - LastEvent
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  itsLoader->ReloadRecPoints();
-  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
-    rl->GetEvent(i);
-    FindVertexForCurrentEvent(i);
-    if(fCurrentVertex){
-      WriteCurrentVertex();
-    }
-  }
-}
-
 
 //______________________________________________________________________
 Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
@@ -512,5 +461,4 @@ void AliITSVertexer3D::PrintStatus() const {
   printf("Cut on DCA - tracklet to tracklet and to vertex %f\n",fDCAcut);
   printf(" Max Phi difference: %f\n",fDiffPhiMax);
   printf("=======================================================\n");
-
 }

@@ -1,5 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TROOT.h>
 #include <TClassTable.h>
+#include <TStopwatch.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <Riostream.h>
@@ -10,6 +12,7 @@
 #include <AliRunLoader.h>
 #include <AliITSVertexerIons.h>
 #include <AliITSLoader.h>
+#include <AliGenHijingEventHeader.h>
 #include <unistd.h>
 
 #endif
@@ -37,12 +40,16 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t NumbofEv=1, const char *fil
   // Open output file for vertices (default name: ITS.Vertex.root 
   // and Create vertexer
 
-  AliITSVertexerIons *vertexer = new AliITSVertexerIons("default");
+  AliITSVertexerIons *vertexer = new AliITSVertexerIons();
+  vertexer->Init("default");
   //vertexer->SetDebug(1);
   
   AliESDVertex *V;
   //   Loop over events 
    
+  AliITSLoader* itsloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  itsloader->LoadRecPoints("read");
+
   for (int nev=evNumber1; nev< evNumber2; nev++) {
     cout<<"=============================================================\n";
     cout<<" Processing event "<<nev<<endl;
@@ -60,7 +67,8 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t NumbofEv=1, const char *fil
     TStopwatch timer;
     timer.Start();
 
-    V=vertexer->FindVertexForCurrentEvent(nev);
+    TTree* cltree = itsloader->TreeR();
+    V=vertexer->FindVertexForCurrentEvent(cltree);
 
     TVector3 vtrue(primaryVertex[0],primaryVertex[1],primaryVertex[2]);
     TVector3 vfound(V->GetXv(),V->GetYv(),V->GetZv());

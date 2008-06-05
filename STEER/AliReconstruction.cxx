@@ -1535,11 +1535,22 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
   }
 
   if (fVertexer) {
-    if(fDiamondProfile) fVertexer->SetVtxStart(fDiamondProfile);
     AliInfo("running the ITS vertex finder");
-    if (fLoader[0]) fLoader[0]->LoadRecPoints();
-    vertex = fVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
-    if (fLoader[0]) fLoader[0]->UnloadRecPoints();
+    if (fLoader[0]) {
+      fLoader[0]->LoadRecPoints();
+      TTree* cltree = fLoader[0]->TreeR();
+      if (cltree) {
+	if(fDiamondProfile) fVertexer->SetVtxStart(fDiamondProfile);
+	vertex = fVertexer->FindVertexForCurrentEvent(cltree);
+      }
+      else {
+	AliError("Can't get the ITS cluster tree");
+      }
+      fLoader[0]->UnloadRecPoints();
+    }
+    else {
+      AliError("Can't get the ITS loader");
+    }
     if(!vertex){
       AliWarning("Vertex not found");
       vertex = new AliESDVertex();

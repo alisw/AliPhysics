@@ -88,8 +88,10 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
 //   tree->SetBranchAddress("ESD", &esd);
 
   Double_t xnom=0.,ynom=0.;
-  AliITSVertexerZ *vertz = new AliITSVertexerZ("default",xnom,ynom);
-  AliITSVertexer3D *vert3d = new AliITSVertexer3D("default");
+  AliITSVertexerZ *vertz = new AliITSVertexerZ(xnom,ynom);
+  vertz->Init("default");
+  AliITSVertexer3D *vert3d = new AliITSVertexer3D();
+  vert3d->Init("default");
   //  vert3d->SetDebug(10);
   //  vertz->ConfigIterations(5);
 
@@ -130,7 +132,9 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
     }
     if(optdebug) printf(" dNch/dy = %f\n",dNchdy);
  
-    AliESDVertex* vtxz = vertz->FindVertexForCurrentEvent(iEvent);
+    TTree* cltree = ITSloader->TreeR();
+
+    AliESDVertex* vtxz = vertz->FindVertexForCurrentEvent(cltree);
     AliMultiplicity *alimult = vertz->GetMultiplicity();
     Int_t ntrklets=0,nrecp1=0;
     if(alimult) {
@@ -141,7 +145,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
       }
     }
 
-    AliESDVertex* vtx3d = vert3d->FindVertexForCurrentEvent(iEvent);
+    AliESDVertex* vtx3d = vert3d->FindVertexForCurrentEvent(cltree);
 
     TDirectory *current = gDirectory;
     fint->cd();

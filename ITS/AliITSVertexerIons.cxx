@@ -44,59 +44,20 @@ fMaxDeltaZ(0){
 }
 
 //______________________________________________________________________
-AliITSVertexerIons::AliITSVertexerIons(TString fn):AliITSVertexer(fn),
-fNpThreshold(0),
-fMaxDeltaPhi(0),
-fMaxDeltaZ(0) {
-  // Standard constructor
-  
-  //fITS = 0;
-  SetNpThreshold();
-  SetMaxDeltaPhi();
-  SetMaxDeltaZ();
-}
-/*
-//______________________________________________________________________
-AliITSVertexerIons::AliITSVertexerIons(const AliITSVertexerIons &source):AliITSVertexer(source) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSVertexerIons","Copy constructor not allowed\n");
-}
-*/
-//_________________________________________________________________________
-//AliITSVertexerIons& AliITSVertexerIons::operator=(const AliITSVertexerIons &/*source*/) {
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  //Error("= operator","Assignment operator not allowed\n");
-  //return *this;
-//}
-
-
-//______________________________________________________________________
 AliITSVertexerIons::~AliITSVertexerIons() {
   // Default Destructor
   //fITS = 0;
 }
 
 //______________________________________________________________________
-AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){ 
+AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(TTree *itsClusterTree){ 
 // Defines the AliESDVertex for the current event
 
   fCurrentVertex = 0;
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* itsloader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  /*
-  TDirectory * olddir = gDirectory;
-  rl->CdGAFile();
-  AliITSgeom* g2  = (AliITSgeom*)gDirectory->Get("AliITSgeom");
-  olddir->cd(); 
-  */
-
-  TTree *tr =  itsloader->TreeR();
   AliITSDetTypeRec detTypeRec;
 
-  detTypeRec.SetTreeAddressR(tr);
+  detTypeRec.SetTreeAddressR(itsClusterTree);
 
   TClonesArray  *recpoints = detTypeRec.RecPoints();
   AliITSRecPoint *pnt;
@@ -128,7 +89,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t np1=0, np2=0;
   for(Int_t i=AliITSgeomTGeo::GetModuleIndex(1,1,1);i<=AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;i++) {
     detTypeRec.ResetRecPoints();
-    tr->GetEvent(i);
+    itsClusterTree->GetEvent(i);
     npoints = recpoints->GetEntries();
     for (Int_t ipoint=0;ipoint<npoints;ipoint++) {
       pnt = (AliITSRecPoint*)recpoints->UncheckedAt(ipoint);
@@ -163,8 +124,8 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   if(np1<fNpThreshold) {
     Warning("FindVertexForCurrentEvent","AliITSVertexerIons finder is not reliable for low multiplicity events. Switching to AliITSVertexerZ with default parameters...\n");
     Warning("FindVertexForCurrentEvent","N rec points = %d - Threshold is %d",np1,fNpThreshold);
-    AliITSVertexerZ *dovert = new AliITSVertexerZ("default");
-    fCurrentVertex =dovert->FindVertexForCurrentEvent(rl->GetEventNumber());
+    AliITSVertexerZ *dovert = new AliITSVertexerZ();
+    fCurrentVertex =dovert->FindVertexForCurrentEvent(itsClusterTree);
     delete dovert;
     return fCurrentVertex;
   }
@@ -235,7 +196,6 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
     Double_t resolution[3]={0,0,0};
     Double_t snr[3]={0,0,0};
     Char_t name[30];
-    AliDebug(1,Form("Vertex found for event %d",evnumber));
     sprintf(name,"Vertex");
     fCurrentVertex = new AliESDVertex(position,resolution,snr,name);
     return fCurrentVertex;
@@ -292,7 +252,6 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   Double_t snr[3]={0,0,0};
   
   Char_t name[30];
-  AliDebug(1,Form("Vertex found for event %d",evnumber));
   sprintf(name,"Vertex");
   fCurrentVertex = new AliESDVertex(position,resolution,snr,name);
 
@@ -308,30 +267,10 @@ void AliITSVertexerIons::PhiFunc(Double_t &x,Double_t &y,Double_t &phi) {
   if(y<0 && x>0) phi=(TMath::ATan((Double_t)(y/x))*57.29578)+360;;
 }
 
-//______________________________________________________________________
-void AliITSVertexerIons::FindVertices(){
-  // computes the vertices of the events in the range FirstEvent - LastEvent
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* itsloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  itsloader->LoadRecPoints("read");
-  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
-    rl->GetEvent(i);
-    FindVertexForCurrentEvent(i);
-    if(fCurrentVertex){
-      WriteCurrentVertex();
-    }
-    else {
-      AliDebug(1,Form("Vertex not found for event %d",i));
-    }
-  }
-}
-
 //________________________________________________________
 void AliITSVertexerIons::PrintStatus() const {
   // Print current status
   cout <<"=======================================================\n";
-  cout<<"First event to be processed "<<fFirstEvent;
-  cout<<"\n Last event to be processed "<<fLastEvent<<endl;
   if(fCurrentVertex)fCurrentVertex->PrintStatus();
 }
 

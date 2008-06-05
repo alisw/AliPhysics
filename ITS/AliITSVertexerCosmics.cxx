@@ -14,10 +14,9 @@
  **************************************************************************/
 
 #include <TClonesArray.h>
+#include <TTree.h>
 #include "AliLog.h"
 #include "AliESDVertex.h"
-#include "AliRunLoader.h"
-#include "AliITSLoader.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
 #include "AliITSReconstructor.h"
@@ -83,20 +82,14 @@ fMinDist2Vtxs(0)
   SetMinDist2Vtxs();
 }
 //--------------------------------------------------------------------------
-AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber) 
+AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsClusterTree) 
 {
   // Defines the AliESDVertex for the current event
 
   fCurrentVertex = 0;
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  itsLoader->LoadRecPoints();
-  rl->GetEvent(evnumber);
-
-  TTree *rpTree = itsLoader->TreeR();
 
   TClonesArray *recpoints=new TClonesArray("AliITSRecPoint",10000);
-  rpTree->SetBranchAddress("ITSRecPoints",&recpoints);
+  itsClusterTree->SetBranchAddress("ITSRecPoints",&recpoints);
 
   Int_t lay,lad,det; 
 
@@ -114,7 +107,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
     }
     Int_t nHitModules=0;
     for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer]; imodule++) {
-      rpTree->GetEvent(imodule);
+      itsClusterTree->GetEvent(imodule);
       AliITSgeomTGeo::GetModuleId(imodule,lay,lad,det);
       lay -= 1;  // AliITSgeomTGeo gives layer from 1 to 6, we want 0 to 5
       if(lay!=ilayer) AliFatal("Layer mismatch!");
@@ -136,7 +129,6 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
   if(ilayer>4 || ilayer2>5) {
     AliWarning("Not enough clusters");
     delete recpoints;
-    itsLoader->UnloadRecPoints();
     fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
     fCurrentVertex->SetTitle("cosmics fake vertex (failed)");
     fCurrentVertex->SetNContributors(ncontributors);
@@ -165,7 +157,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 
   // Collect clusters in the selected layer and the outer one
   for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer2]; imodule++) {
-    rpTree->GetEvent(imodule);
+    itsClusterTree->GetEvent(imodule);
     AliITSgeomTGeo::GetModuleId(imodule,lay,lad,det);
     lay -= 1; // AliITSgeomTGeo gives layer from 1 to 6, we want 0 to 5
     nRecPoints=recpoints->GetEntriesFast();
@@ -201,7 +193,6 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 	//AliFatal("More than arrSize clusters per layer");
 	AliWarning("Too many clusters per layer");
 	delete recpoints;
-	itsLoader->UnloadRecPoints();
 	fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
 	fCurrentVertex->SetTitle("cosmics fake vertex (failed)");
 	fCurrentVertex->SetNContributors(ncontributors);
@@ -317,26 +308,10 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
   //fCurrentVertex->Print();
 
   delete recpoints;
-  itsLoader->UnloadRecPoints();
 
   return fCurrentVertex;
 }  
-//-------------------------------------------------------------------------
-void AliITSVertexerCosmics::FindVertices()
-{
-  // computes the vertices of the events in the range FirstEvent - LastEvent
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  itsLoader->ReloadRecPoints();
-  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
-    //  printf("Processing event %d\n",i);
-    rl->GetEvent(i);
-    FindVertexForCurrentEvent(i);
-    if(fCurrentVertex){
-      WriteCurrentVertex();
-    }
-  }
-}
+
 //-------------------------------------------------------------------------
 void AliITSVertexerCosmics::PrintStatus() const 
 {

@@ -20,9 +20,8 @@ class AliITSVertexerCosmics : public AliITSVertexer {
 
   AliITSVertexerCosmics();
   virtual ~AliITSVertexerCosmics() {}
-  AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
-  void FindVertices();
-  void PrintStatus() const;
+  virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
+  virtual void PrintStatus() const;
   void SetFirstLastModules(Int_t ilayer=0,Int_t m1=0,Int_t m2=79) 
     {fFirst[ilayer] = m1; fLast[ilayer] = m2;}
   void SetMaxDistOnOuterLayer(Double_t max=0.1) {fMaxDistOnOuterLayer=max;}
@@ -40,7 +39,7 @@ class AliITSVertexerCosmics : public AliITSVertexer {
   Double_t fMaxVtxRadius[6];    // maximum radial pos of vertex
   Double_t fMinDist2Vtxs;    // minimum distance between two vertices
 
-  ClassDef(AliITSVertexerCosmics,2); // vertexer for cosmics
+  ClassDef(AliITSVertexerCosmics,4); // vertexer for cosmics
 };
 
 #endif

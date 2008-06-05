@@ -42,13 +42,16 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
   
   AliGeomManager::LoadGeometry("geometry.root");
 
-  AliITSVertexerZ *dovert = new AliITSVertexerZ("default",initx,inity);
+  AliITSVertexerZ *dovert = new AliITSVertexerZ(initx,inity);
+  dovert->Init("default");
   //dovert->SetDebug(0);
   //  dovert->SetDiffPhiMax(delphi);
   //  dovert->SetWindow(window);
   dovert->PrintStatus();
   Int_t sigmazero=0;
   AliESDVertex *vert = 0;
+  AliITSLoader* itsloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  itsloader->LoadRecPoints("read");
   for(Int_t i=0; i<rl->TreeE()->GetEntries(); i++){
     rl->GetEvent(i);
     // The true Z coord. is fetched for comparison
@@ -56,7 +59,8 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
     AliGenEventHeader* genEventHeader = header->GenEventHeader();
     TArrayF primaryVertex(3);
     genEventHeader->PrimaryVertex(primaryVertex);
-    vert = dovert->FindVertexForCurrentEvent(i);
+    TTree* cltree = itsloader->TreeR();
+    vert = dovert->FindVertexForCurrentEvent(cltree);
     if(kDebug>0){
       // Prints the results
       cout <<"========================================================\n";

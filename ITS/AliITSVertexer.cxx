@@ -1,9 +1,8 @@
-#include <AliESDVertex.h>
+#include "AliLog.h"
+#include "AliMultiplicity.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSVertexer.h"
-#include "AliRunLoader.h"
 #include "AliITSLoader.h"
-#include "AliMultiplicity.h"
 #include "AliITSMultReconstructor.h"
 
 const Float_t AliITSVertexer::fgkPipeRadius = 3.0;
@@ -20,60 +19,12 @@ ClassImp(AliITSVertexer)
 //______________________________________________________________________
 AliITSVertexer::AliITSVertexer():AliVertexer(),
 fLadders(), 
-fLadOnLay2(0)	 {
+fLadOnLay2(0),
+fFirstEvent(0),
+fLastEvent(-1)
+{
   // Default Constructor
   SetLaddersOnLayer2();
-}
-
-AliITSVertexer::AliITSVertexer(TString filename):AliVertexer(),
-fLadders(), 
-fLadOnLay2(0)
-{
-  // Standard constructor
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  if(!rl){
-    Fatal("AliITSVertexer","Run Loader not found");
-  }
-  /*
-  if(rl->LoadgAlice()){
-    Fatal("AliITSVertexer","The AliRun object is not available - nothing done");
-  }
-  */
-  fCurrentVertex  = 0;   
-  SetFirstEvent(0);
-  SetLastEvent(0);
-  //  rl->LoadHeader();
-  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  if(!filename.Contains("default"))itsLoader->SetVerticesFileName(filename);
-  if(!filename.Contains("null"))itsLoader->LoadVertices("recreate");
-
-  //  Int_t lst;
-  SetLastEvent(rl->GetNumberOfEvents()-1);
-  /*
-  if(rl->TreeE()){
-    lst = static_cast<Int_t>(rl->TreeE()->GetEntries());
-    SetLastEvent(lst-1);
-  }
-  */
-  SetLaddersOnLayer2();
-}
-
-//______________________________________________________________________
-AliITSVertexer::AliITSVertexer(const AliITSVertexer &vtxr) : AliVertexer(vtxr),
-fLadders(), 
-fLadOnLay2(0) 
-{
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSVertexer","Copy constructor not allowed\n");
-}
-
-//______________________________________________________________________
-AliITSVertexer& AliITSVertexer::operator=(const AliITSVertexer& /* vtxr */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
 }
 
 //______________________________________________________________________
@@ -83,7 +34,7 @@ AliITSVertexer::~AliITSVertexer() {
 }
 
 //______________________________________________________________________
-void AliITSVertexer::FindMultiplicity(Int_t evnumber){
+void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   // Invokes AliITSMultReconstructor to determine the
   // charged multiplicity in the pixel layers
   if(fMult){delete fMult; fMult = 0;}
@@ -95,13 +46,9 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
     return;
   }
   AliITSMultReconstructor* multReco = new AliITSMultReconstructor();
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  itsLoader->LoadRecPoints();
-  rl->GetEvent(evnumber);
-  TTree* itsClusterTree = itsLoader->TreeR();
+
   if (!itsClusterTree) {
-    AliError(" Can't get the ITS cluster tree !\n");
+    AliError(" Invalid ITS cluster tree !\n");
     return;
   }
   Double_t vtx[3];
@@ -138,7 +85,7 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
   delete [] phs;
   delete [] labels;
   delete [] labelsL2;
-  itsLoader->UnloadRecPoints();
+
   delete multReco;
   return;
 }
@@ -148,9 +95,6 @@ void AliITSVertexer::SetLaddersOnLayer2(Int_t ladwid){
   // Calculates the array of ladders on layer 2 to be used with a 
   // given ladder on layer 1
   fLadOnLay2=ladwid;
-  //  AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  //  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  //  AliITSgeom* geom = itsLoader->GetITSgeom();
   Int_t ladtot1=AliITSgeomTGeo::GetNLadders(1);
   if(fLadders) delete [] fLadders;
   fLadders=new UShort_t[ladtot1];
@@ -185,6 +129,22 @@ void AliITSVertexer::SetLaddersOnLayer2(Int_t ladwid){
   }
 }
 
+#include "AliRunLoader.h"
+
+//______________________________________________________________________
+void AliITSVertexer::Init(TString filename){
+  // Initialize the vertexer in case of
+  // analysis of an entire file
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  if(!rl){
+    Fatal("AliITSVertexer","Run Loader not found");
+  }
+  if (fLastEvent < 0) SetLastEvent(rl->GetNumberOfEvents()-1);
+
+  AliITSLoader* itsloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  if(!filename.Contains("default"))itsloader->SetVerticesFileName(filename);
+  if(!filename.Contains("null"))itsloader->LoadVertices("recreate");
+}
 
 //______________________________________________________________________
 void AliITSVertexer::WriteCurrentVertex(){
@@ -198,3 +158,22 @@ void AliITSVertexer::WriteCurrentVertex(){
   rc = itsLoader->WriteVertices();
 }
 
+//______________________________________________________________________
+void AliITSVertexer::FindVertices(){
+  // computes the vertices of the events in the range FirstEvent - LastEvent
+
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliITSLoader* itsloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  itsloader->LoadRecPoints("read");
+  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
+    rl->GetEvent(i);
+    TTree* cltree = itsloader->TreeR();
+    FindVertexForCurrentEvent(cltree);
+    if(fCurrentVertex){
+      WriteCurrentVertex();
+    }
+    else {
+      AliDebug(1,Form("Vertex not found for event %d",i));
+    }
+  }
+}

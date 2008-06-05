@@ -18,8 +18,7 @@
 #include<TH1.h>
 #include <TString.h>
 #include<TTree.h>
-#include "AliRunLoader.h"
-#include "AliITSLoader.h"
+#include "AliESDVertex.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
@@ -67,7 +66,7 @@ fWindowWidth(0) {
 }
 
 //______________________________________________________________________
-AliITSVertexerZ::AliITSVertexerZ(TString fn, Float_t x0, Float_t y0):AliITSVertexer(fn),
+AliITSVertexerZ::AliITSVertexerZ(Float_t x0, Float_t y0):AliITSVertexer(),
 fFirstL1(0),
 fLastL1(0),
 fFirstL2(0),
@@ -95,35 +94,6 @@ fWindowWidth(0) {
   SetWindowWidth();
   SetVtxStart((Double_t)x0,(Double_t)y0,0.);
 
-}
-
-//______________________________________________________________________
-AliITSVertexerZ::AliITSVertexerZ(const AliITSVertexerZ &vtxr) : AliITSVertexer(vtxr),
-fFirstL1(vtxr.fFirstL1),
-fLastL1(vtxr.fLastL1),
-fFirstL2(vtxr.fFirstL2),
-fLastL2(vtxr.fLastL2),
-fDiffPhiMax(vtxr.fDiffPhiMax),
-fZFound(vtxr.fZFound),
-fZsig(vtxr.fZsig),
-fZCombc(vtxr.fZCombc),
-fLowLim(vtxr.fLowLim),
-fHighLim(vtxr.fHighLim),
-fStepCoarse(vtxr.fStepCoarse),
-fTolerance(vtxr.fTolerance),
-fMaxIter(vtxr.fMaxIter),
-fWindowWidth(vtxr.fWindowWidth){
-  // Copy constructor
-
-}
-
-//______________________________________________________________________
-AliITSVertexerZ& AliITSVertexerZ::operator=(const AliITSVertexerZ&  vtxr ){
-  // Assignment operator
-
-  this->~AliITSVertexerZ();
-  new(this) AliITSVertexerZ(vtxr);
-  return *this;
 }
 
 //______________________________________________________________________
@@ -197,36 +167,30 @@ Int_t AliITSVertexerZ::GetPeakRegion(TH1F*h, Int_t &binmin, Int_t &binmax) const
   return npeaks;
 }
 //______________________________________________________________________
-AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
+AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
-  VertexZFinder(evnumber);
+  VertexZFinder(itsClusterTree);
   Int_t ntrackl=0;
   for(Int_t iteraz=0;iteraz<fMaxIter;iteraz++){
     if(fCurrentVertex) ntrackl=fCurrentVertex->GetNContributors();
     if(!fCurrentVertex || ntrackl==0 || ntrackl==-1){
       Float_t diffPhiMaxOrig=fDiffPhiMax;
       fDiffPhiMax=GetPhiMaxIter(iteraz);
-      VertexZFinder(evnumber);
+      VertexZFinder(itsClusterTree);
       fDiffPhiMax=diffPhiMaxOrig;
     }
   }
-  FindMultiplicity(evnumber);
+  FindMultiplicity(itsClusterTree);
   return fCurrentVertex;
 }  
 
 //______________________________________________________________________
-void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
+void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  //  AliITSgeom* geom = itsLoader->GetITSgeom();
-  itsLoader->LoadRecPoints();
-  rl->GetEvent(evnumber);
-
   AliITSDetTypeRec detTypeRec;
 
-  TTree *tR = itsLoader->TreeR();
+  TTree *tR = itsClusterTree;
   detTypeRec.SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
@@ -257,7 +221,6 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     ResetHistograms();
-    itsLoader->UnloadRecPoints();
     fCurrentVertex = new AliESDVertex(0.,5.3,-2);
     return;
   }
@@ -303,8 +266,8 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
       // Global coordinates of this recpoints
       */
       recp->GetGlobalXYZ(gc1);
-      gc1[0]-=fNominalPos[0]; // Possible beam offset in the bending plane
-      gc1[1]-=fNominalPos[1]; //   "               "
+      gc1[0]-=GetNominalPos()[0]; // Possible beam offset in the bending plane
+      gc1[1]-=GetNominalPos()[1]; //   "               "
       Float_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
       Float_t phi1 = TMath::ATan2(gc1[1],gc1[0]);
       if(phi1<0)phi1+=2*TMath::Pi();
@@ -325,8 +288,8 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
 	    geom->LtoG(modul2,lc2,gc2);
 	    */
 	    recp->GetGlobalXYZ(gc2);
-	    gc2[0]-=fNominalPos[0];
-	    gc2[1]-=fNominalPos[1];
+	    gc2[0]-=GetNominalPos()[0];
+	    gc2[1]-=GetNominalPos()[1];
 	    Float_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
 	    Float_t phi2 = TMath::ATan2(gc2[1],gc2[0]);
 	    if(phi2<0)phi2+=2*TMath::Pi();
@@ -361,7 +324,6 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
   if(contents<1.){
     //    Warning("FindVertexForCurrentEvent","Insufficient number of rec. points\n");
     ResetHistograms();
-    itsLoader->UnloadRecPoints();
     fCurrentVertex = new AliESDVertex(0.,5.3,-1);
     points.Clear();
     return;
@@ -413,7 +375,6 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
   fCurrentVertex->SetTitle("vertexer: B");
   points.Clear();
   ResetHistograms();
-  itsLoader->UnloadRecPoints();
   return;
 }
 
@@ -422,22 +383,6 @@ void AliITSVertexerZ::ResetHistograms(){
   // delete TH1 data members
   if(fZCombc)delete fZCombc;
   fZCombc = 0;
-}
-
-//______________________________________________________________________
-void AliITSVertexerZ::FindVertices(){
-  // computes the vertices of the events in the range FirstEvent - LastEvent
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  itsLoader->ReloadRecPoints();
-  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
-    //  cout<<"Processing event "<<i<<endl;
-    rl->GetEvent(i);
-    FindVertexForCurrentEvent(i);
-    if(fCurrentVertex){
-      WriteCurrentVertex();
-    }
-  }
 }
 
 //________________________________________________________
@@ -452,8 +397,6 @@ void AliITSVertexerZ::PrintStatus() const {
   cout <<"Limits for Z histograms: "<<fLowLim<<"; "<<fHighLim<<endl;
   cout <<"Bin sizes for coarse z histos "<<fStepCoarse<<endl;
   cout <<" Current Z "<<fZFound<<"; Z sig "<<fZsig<<endl;
-  cout <<"First event to be processed "<<fFirstEvent;
-  cout <<"\n Last event to be processed "<<fLastEvent<<endl;
   if(fZCombc){
     cout<<"fZCombc exists - entries="<<fZCombc->GetEntries()<<endl;
   }

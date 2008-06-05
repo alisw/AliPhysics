@@ -6,7 +6,7 @@
   #include "AliITSVertexerFast.h"
   #include "AliRun.h"
   #include "AliRunLoader.h"
-  #include "AliTPCLoader.h"
+//  #include "AliTPCLoader.h"
   #include "AliITSLoader.h"
   #include "TStopwatch.h"
   #include "AliMagF.h"
@@ -78,10 +78,12 @@ Int_t AliITSFindTracksSA(Int_t evin=0,Int_t nevents=1,char *opt="onlyITS+6/6",co
    for(Int_t iev=evin;iev<nevents;iev++){
      rl->GetEvent(iev);
      itsl->LoadRecPoints();
+
      //AliITSVertexerPPZ* vertexer = new AliITSVertexerPPZ("vertici.root");
      Double_t smear[3]={0.0150,0.0150,0.0150};
      AliITSVertexerFast* vertexer = new AliITSVertexerFast(smear);
-     AliITSVertex* vert = vertexer->FindVertexForCurrentEvent(iev);
+     TTree* cltree = itsl->TreeR();
+     AliITSVertex* vert = vertexer->FindVertexForCurrentEvent(cltree);
      AliITStrackerSA tracker(geom,vert);  
      tracker.SetEventNumber(iev);
      

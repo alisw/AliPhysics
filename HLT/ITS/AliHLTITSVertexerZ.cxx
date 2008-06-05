@@ -42,8 +42,8 @@ AliHLTITSVertexerZ::AliHLTITSVertexerZ():
   SetBinWidthFine();
 }
 
-AliHLTITSVertexerZ::AliHLTITSVertexerZ(TString filename,Float_t x0, Float_t y0):
-  AliITSVertexerZ(filename,x0,y0),
+AliHLTITSVertexerZ::AliHLTITSVertexerZ(Float_t x0, Float_t y0):
+  AliITSVertexerZ(x0,y0),
   fZCombf(0),
   fStepFine(0)
 {
@@ -55,55 +55,6 @@ AliHLTITSVertexerZ::~AliHLTITSVertexerZ()
 {
   // Destructor
   if (fZCombf) delete fZCombf;
-}
-
-//______________________________________________________________________
-AliHLTITSVertexerZ::AliHLTITSVertexerZ(const AliHLTITSVertexerZ &vtxr) :
-  AliITSVertexerZ(vtxr),
-  fZCombf(vtxr.fZCombf),
-  fStepFine(vtxr.fStepFine)
-{
-  // Copy constructor
-
-}
-
-//______________________________________________________________________
-AliHLTITSVertexerZ& AliHLTITSVertexerZ::operator=(const AliHLTITSVertexerZ&  vtxr )
-{
-  // Assignment operator
-  this->~AliHLTITSVertexerZ();
-  new(this) AliHLTITSVertexerZ(vtxr);
-  fZCombf = vtxr.fZCombf;
-  fStepFine = vtxr.fStepFine;
-
-  return *this;
-}
-//______________________________________________________________________
-AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
-  // Defines the AliESDVertex for the current event
-
-  fCurrentVertex = 0;
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  itsLoader->LoadRecPoints();
-  rl->GetEvent(evnumber);
-
-  /*  if(!fITS)  {
-    fITS = (AliITS*)gAlice->GetModule("ITS");
-    if(!fITS) {
-      Error("FindVertexForCurrentEvent","AliITS object was not found");
-      return fCurrentVertex;
-    }
-  }
-  */
-
-  // fITS->SetTreeAddress();
-  rl->CdGAFile();
-
-  AliITSgeom* geom=itsLoader->GetITSgeom();
-  TTree *tR = itsLoader->TreeR();
-  
-  return FindVertexForCurrentEvent(geom,tR);
 }
 
 //______________________________________________________________________
@@ -176,8 +127,8 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTr
       lc[0]=-recp->GetY()+yshift;
       lc[2]=-recp->GetZ()+zshift[module%4];
       geom->LtoG(module,lc,gc);
-      gc[0]-=fNominalPos[0];
-      gc[1]-=fNominalPos[1];
+      gc[0]-=GetNominalPos()[0];
+      gc[1]-=GetNominalPos()[1];
       Float_t xc1,yc1;
       xc1=gc[0];
       yc1=gc[1];
@@ -205,8 +156,8 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTr
       lc[0]=recp->GetY()+yshift;
       lc[2]=-recp->GetZ()+zshift[module%4];
       geom->LtoG(module,lc,gc);
-      gc[0]-=fNominalPos[0];
-      gc[1]-=fNominalPos[1];
+      gc[0]-=GetNominalPos()[0];
+      gc[1]-=GetNominalPos()[1];
       Float_t xc2,yc2;
       xc2=gc[0];
       yc2=gc[1];

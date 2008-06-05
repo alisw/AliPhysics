@@ -19,13 +19,9 @@ class AliITSVertexer3D : public AliITSVertexer {
  public:
 
   AliITSVertexer3D();
-  AliITSVertexer3D(TString filename);
   virtual ~AliITSVertexer3D();
-  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
-  virtual void FindVertices();
+  virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
   AliESDVertex GetVertex3D() const {return fVert3D;}
-//   virtual void MakeTracklet(Double_t *pA, Double_t *pB, Int_t &nolines); */
-//   virtual void MakeTracklet(Float_t *pA, Float_t *pB, Int_t &nolines); */
   virtual void PrintStatus() const;
   void SetCoarseDiffPhiCut(Float_t dphi = 0.5){fCoarseDiffPhiCut=dphi;}
   void SetCoarseMaxRCut(Float_t rad = 2.5){fCoarseMaxRCut=rad;}
@@ -41,7 +37,7 @@ class AliITSVertexer3D : public AliITSVertexer {
 protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
   AliITSVertexer3D& operator=(const AliITSVertexer3D& /* vtxr */);
-  Int_t FindTracklets(Int_t evnumber, Int_t optCuts);
+  Int_t FindTracklets(TTree *itsClusterTree, Int_t optCuts);
   Int_t Prepare3DVertex(Int_t optCuts);
   void ResetVert3D();
 
@@ -58,7 +54,7 @@ protected:
   Float_t fMeanPSelTrk; // GeV, mean P for tracks with dphi<0.01 rad
   Float_t fMeanPtSelTrk; // GeV, mean Pt for tracks with dphi<0.01 rad
 
-  ClassDef(AliITSVertexer3D,4);
+  ClassDef(AliITSVertexer3D,6);
 
 };
 

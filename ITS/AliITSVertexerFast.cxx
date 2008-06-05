@@ -70,11 +70,12 @@ AliITSVertexerFast::~AliITSVertexerFast(){
 }
 
 //______________________________________________________________________
-AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
+AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(TTree *itsClusterTree){
   // Defines the AliITSVertex for the current event
+  AliWarning(Form("This class should be used only with simulated events!! Input cluster tree (%p) will not be used!!",itsClusterTree));
+
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  rl->GetEvent(evnumb);
   TArrayF primaryVertex(3);  // true vertex
   AliHeader* header = rl->GetAliRun()->GetHeader();
   AliGenEventHeader* genEventHeader = header->GenEventHeader();   
@@ -86,31 +87,9 @@ AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
     vrttrue[k] = static_cast<Double_t>(primaryVertex[k]);
     vrtx[k] = gRandom->Gaus(vrttrue[k],fSmear[k]);
   }
-  char name[30];
-  sprintf(name,"Vertex_%d",evnumb);
-  fCurrentVertex = new AliESDVertex(vrtx,fSmear,name);
+  fCurrentVertex = new AliESDVertex(vrtx,fSmear,"Smeared Generated Vertex");
   return fCurrentVertex;
   
-}
-
-//______________________________________________________________________
-void AliITSVertexerFast::FindVertices(){
-  // computes the vertices of the events in the range FirstEvent - LastEvent
-
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* iTSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  iTSloader->ReloadRecPoints();
-  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
-    rl->GetEvent(i);
-    FindVertexForCurrentEvent(i);   
-    if(fCurrentVertex) WriteCurrentVertex();
-    else {
-      cout<<"Vertex not found for event "<<i<<endl;
-
-    }
-
-  }
-
 }
 
 //________________________________________________________
@@ -118,27 +97,8 @@ void AliITSVertexerFast::PrintStatus() const {
   // Print current status
   cout <<"=======================================================\n";
 
-  cout<<"First event to be processed "<<fFirstEvent;
-  cout<<"\n Last event to be processed "<<fLastEvent<<endl;
   cout<<"RMS for gaussian smearing: ";
   for(Int_t k=0;k<3;k++)cout<<" "<<fSmear[k];
   cout<<endl;
 }
 
-//______________________________________________________________________
-AliITSVertexerFast::AliITSVertexerFast(const AliITSVertexerFast &vtxr) : 
-  AliITSVertexer(vtxr),
-fSmear(0)  {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSVertexerFast","Copy constructor not allowed\n");
-}
-
-//______________________________________________________________________
-AliITSVertexerFast& AliITSVertexerFast::operator=(const 
-                    AliITSVertexerFast& /* vtxr */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
-}

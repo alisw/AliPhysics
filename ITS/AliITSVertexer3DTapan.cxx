@@ -30,7 +30,7 @@
 
 ClassImp(AliITSVertexer3DTapan)
 
-Int_t AliITSVertexer3DTapan::LoadClusters(TTree *cTree) {
+void AliITSVertexer3DTapan::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
   //This function loads the SPD clusters
   //--------------------------------------------------------------------
@@ -92,15 +92,14 @@ Int_t AliITSVertexer3DTapan::LoadClusters(TTree *cTree) {
    }
    ficlu1 = nc1; ficlu2 = nc2;
    AliInfo(Form("Number of clusters: %d (first layer) and %d (second layer)",ficlu1,ficlu2));
-   return 0;
 }
 
-void AliITSVertexer3DTapan::FindVertexForCurrentEvent(AliESDVertex *vtx) {
+AliESDVertex *AliITSVertexer3DTapan::FindVertexForCurrentEvent(TTree *cTree) {
   //
   // This function reconstructs ....
   //
   //
-  if (vtx==0) return; 
+  LoadClusters(cTree);
 
   Double_t pos[3], postemp[3], sigpos[3];
   Int_t ncontr, ncontrtemp;
@@ -151,8 +150,8 @@ void AliITSVertexer3DTapan::FindVertexForCurrentEvent(AliESDVertex *vtx) {
   }
   AliInfo(Form("Final step: %d %f %f %f st=%d",ncontr,pos[0],pos[1],pos[2],vtxstatus));
 
-  new(vtx) AliESDVertex(pos,sigpos,(Double_t)vtxstatus,ncontr,"AliITSVertexer3DTapan");
-  return;
+  return new AliESDVertex(pos,sigpos,(Double_t)vtxstatus,ncontr,"AliITSVertexer3DTapan");
+
 }
 
 

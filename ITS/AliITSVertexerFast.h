@@ -20,11 +20,11 @@ class AliITSVertexerFast : public AliITSVertexer {
   AliITSVertexerFast();
   AliITSVertexerFast(Double_t *smear);
   virtual ~AliITSVertexerFast(); 
-  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
-  virtual void FindVertices();
+  virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
+
   virtual void PrintStatus() const;
 
- protected:
+ private:
 
   // copy constructor (NO copy allowed: the constructor is protected
   // to avoid misuse)
@@ -35,7 +35,7 @@ class AliITSVertexerFast : public AliITSVertexer {
   Double_t *fSmear;         // rms of gaussians used for smearing
 
 
-ClassDef(AliITSVertexerFast,1);
+ClassDef(AliITSVertexerFast,2);
 };
 
 #endif

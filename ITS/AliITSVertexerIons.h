@@ -26,10 +26,8 @@ class AliITSVertexerIons : public AliITSVertexer {
 
  public:
   AliITSVertexerIons();
-  AliITSVertexerIons(TString fn); 
   virtual ~AliITSVertexerIons(); // destructor
-  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t event);
-  virtual void FindVertices();
+  virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
   virtual void PhiFunc(Double_t &x,Double_t &y,Double_t &phi);
   virtual void PrintStatus() const;
   Int_t GetNpThreshold() const {return fNpThreshold;}
@@ -48,7 +46,7 @@ class AliITSVertexerIons : public AliITSVertexer {
   AliITSVertexerIons(const AliITSVertexerIons &source); // copy constructor (NO copy allowed: the constructor is protected to avoid misuse)   
   AliITSVertexerIons& operator=(const AliITSVertexerIons &source); // assignment operator (NO assignment allowed)
 
-  ClassDef(AliITSVertexerIons,4);
+  ClassDef(AliITSVertexerIons,5);
 };
 
 #endif

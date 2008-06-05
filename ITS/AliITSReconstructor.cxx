@@ -179,7 +179,7 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   TString selectedVertexer = GetOption();
   if(selectedVertexer.Contains("ions") || selectedVertexer.Contains("IONS")){
     Info("CreateVertexer","a AliITSVertexerIons object has been selected\n");
-    return new AliITSVertexerIons("null");
+    return new AliITSVertexerIons();
   }
   if(selectedVertexer.Contains("smear") || selectedVertexer.Contains("SMEAR")){
     Double_t smear[3]={0.005,0.005,0.01};
@@ -188,7 +188,7 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   }
   if(selectedVertexer.Contains("3d") || selectedVertexer.Contains("3D")){
     Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
-    return new AliITSVertexer3D("null");
+    return new AliITSVertexer3D();
   }
   if(selectedVertexer.Contains("cosmics") || selectedVertexer.Contains("COSMICS")){
     Info("CreateVertexer","a AliITSVertexerCosmics object has been selected\n");
@@ -196,7 +196,7 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   }
   // by default an AliITSVertexerZ object is instatiated
   Info("CreateVertexer","a AliITSVertexerZ object has been selected\n");
-  return new AliITSVertexerZ("null");
+  return new AliITSVertexerZ();
 }
 
 //_____________________________________________________________________________

@@ -19,7 +19,7 @@ class AliITSVertexerZ : public AliITSVertexer {
  public:
 
   AliITSVertexerZ();
-  AliITSVertexerZ(TString filename,Float_t x0=0., Float_t y0=0.);
+  AliITSVertexerZ(Float_t x0, Float_t y0);
   virtual ~AliITSVertexerZ();
   // The number of contributors set in the AliESDVertex object is the
   // number of tracklets used to determine the vertex position
@@ -27,8 +27,7 @@ class AliITSVertexerZ : public AliITSVertexer {
   // and by default the Z coordinate is set to 0
   // Number of contributors = -1  --> No tracklets 
   // Number of contributors = -2  --> No SPD recpoints
-  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
-  virtual void FindVertices();
+  virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
   virtual void PrintStatus() const;
   void SetDiffPhiMax(Float_t pm = 0.01){fDiffPhiMax = pm;}
   void ConfigIterations(Int_t noiter=3,Float_t *ptr=0);
@@ -47,10 +46,8 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t GetTolerance() const {return fTolerance;}
   //  virtual void MakeTracklet(Double_t * /* pA */, Double_t * /*pB */, Int_t & /* nolines */) {} // implemented in a derived class
  protected:
-  AliITSVertexerZ(const AliITSVertexerZ& vtxr);
-  AliITSVertexerZ& operator=(const AliITSVertexerZ& vtxr );
   void ResetHistograms();
-  void VertexZFinder(Int_t evnumber);
+  void VertexZFinder(TTree *itsClusterTree);
   Float_t GetPhiMaxIter(Int_t i) const {return fPhiDiffIter[i];}
 
 
@@ -70,8 +67,11 @@ class AliITSVertexerZ : public AliITSVertexer {
   Int_t fMaxIter;            // Maximum number of iterations (<=5)
   Float_t fPhiDiffIter[5];   // Delta phi used in iterations
   Float_t fWindowWidth;      // Z window width for symmetrization
+ private:
+  AliITSVertexerZ(const AliITSVertexerZ& vtxr);
+  AliITSVertexerZ& operator=(const AliITSVertexerZ& vtxr );
 
-  ClassDef(AliITSVertexerZ,7);
+  ClassDef(AliITSVertexerZ,10);
 };
 
 #endif

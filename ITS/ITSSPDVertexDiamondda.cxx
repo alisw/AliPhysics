@@ -29,7 +29,7 @@ extern "C" {
 
 #ifdef ALI_AMORE
 #include <AmoreDA.h>
-int amore::da::Updated(char const*) {}
+//int amore::da::Updated(char const*) {}
 #endif
 
 #include <TTree.h>
@@ -179,9 +179,7 @@ int main(int argc, char **argv) {
 
       // Run vertex-finder
       AliITSVertexer3DTapan *vertexer = new AliITSVertexer3DTapan(geom,1000);
-      vertexer->LoadClusters(clustersTree);
-      AliESDVertex *vtx = new AliESDVertex();
-      vertexer->FindVertexForCurrentEvent(vtx);
+      AliESDVertex *vtx = vertexer->FindVertexForCurrentEvent(clustersTree);
 
       if (TMath::Abs(vtx->GetChi2()) < 0.1) {
 	// Fill the vertex into the histos

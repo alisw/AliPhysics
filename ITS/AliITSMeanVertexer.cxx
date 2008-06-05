@@ -64,7 +64,7 @@ fWriteVertices(kFALSE)
 }
 
 //______________________________________________________________________
-AliITSMeanVertexer::AliITSMeanVertexer(TString filename):TObject(),
+AliITSMeanVertexer::AliITSMeanVertexer(TString &filename):TObject(),
 fLoaderFileName(),
 fGeometryFileName(),
 fMVFileName(fgkMVFileNameDefault),
@@ -92,9 +92,9 @@ fWriteVertices(kTRUE)
   Init(filename);
 }
 //______________________________________________________________________
-AliITSMeanVertexer::AliITSMeanVertexer(TString filename, 
-                                       TString loaderfilename, 
-				       TString geometryfilename):TObject(),
+AliITSMeanVertexer::AliITSMeanVertexer(TString &filename, 
+                                       TString &loaderfilename, 
+				       TString &geometryfilename):TObject(),
 fLoaderFileName(),
 fGeometryFileName(),
 fMVFileName(fgkMVFileNameDefault),
@@ -121,7 +121,7 @@ fWriteVertices(kTRUE)
 }
 
 //______________________________________________________________________
-void AliITSMeanVertexer::Init(TString filename){
+void AliITSMeanVertexer::Init(TString &filename){
   // Initialization part common to different constructors
   if(filename.IsNull()){
     AliFatal("Please, provide a valid file name for raw data file\n");
@@ -244,12 +244,13 @@ void AliITSMeanVertexer::Reconstruct(){
 void AliITSMeanVertexer::DoVertices(){
   // Loop on all events and compute 3D vertices
   AliITSLoader* loader = static_cast<AliITSLoader*>(fRunLoader->GetLoader("ITSLoader"));
-  AliITSVertexer3D *dovert = new AliITSVertexer3D("ITS.Vert3D.root");
+  AliITSVertexer3D *dovert = new AliITSVertexer3D();
   AliESDVertex *vert = 0;
   Int_t nevents = fRunLoader->TreeE()->GetEntries();
   for(Int_t i=0; i<nevents; i++){
     fRunLoader->GetEvent(i);
-    vert = dovert->FindVertexForCurrentEvent(i);
+    TTree* cltree = loader->TreeR();
+    vert = dovert->FindVertexForCurrentEvent(cltree);
     AliMultiplicity *mult = dovert->GetMultiplicity();
     if(Filter(vert,mult)){
       AddToMean(vert); 
