@@ -33,6 +33,7 @@
 #include "AliLog.h"
 #include "TF1.h"
 #include "TObject.h"
+#include "TMath.h"
 
 //_____________________________________________________________________
 ClassImp(AliFMDPedestalDA)
@@ -134,33 +135,37 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
     //                  det,ring,sec,strip));
     return;
   }
-  
+ 
   AliDebug(50, Form("Fitting FMD%d%c_%d_%d with %d entries",det,ring,sec,strip,
 		   hChannel->GetEntries()));
+  TF1 fitFunc("fitFunc","gausn",0,300);
+  fitFunc.SetParameters(100,100,1);
+  hChannel->Fit("fitFunc","Q0+","",10,200);
   
   Float_t mean = hChannel->GetMean();
   Float_t rms  = hChannel->GetRMS();
   
-  hChannel->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
+  
+  
+  hChannel->GetXaxis()->SetRangeUser(mean-5*rms,mean+5*rms);
   
   mean = hChannel->GetMean();
   rms  = hChannel->GetRMS();
   
-  hChannel->Fit("gaus","Q0+","",mean-5*rms,mean+5*rms);
-  TF1* fitFunc = hChannel->GetFunction("gaus");
-    
-  Float_t chi2ndf = 0;
-  if(fitFunc->GetNDF())
-    chi2ndf = fitFunc->GetChisquare() / fitFunc->GetNDF();
 
+
+  Float_t chi2ndf = 0;
+  if(fitFunc.GetNDF())
+    chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
+ 
   fOutputFile << det                         << ','
 	      << ring                        << ','
 	      << sec                         << ','
               << strip                       << ','
 	      << mean                        << ','
 	      << rms                         << ','
-	      << fitFunc->GetParameter(1)    << ','
-	      << fitFunc->GetParameter(2)    << ','
+	      << fitFunc.GetParameter(1)     << ','
+	      << fitFunc.GetParameter(2)     << ','
 	      << chi2ndf                     <<"\n";
   
   if(fSaveHistograms) {
@@ -205,6 +210,7 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
     
     hChannel->Write();
   }  
+  
 }
 
 //_____________________________________________________________________
@@ -254,6 +260,7 @@ TH1S* AliFMDPedestalDA::GetChannel(UShort_t det,
   return hChannel;
 #endif  
 }
+
 //_____________________________________________________________________
 //
 //EOF
