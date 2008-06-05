@@ -35,7 +35,7 @@ class AliFMDPedestalDA: public AliFMDBaseDA {
   void Terminate(TFile* );
  private:
   TH1S* GetChannel(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
-  
+ 
   Int_t fCurrentChannel;
   TH1F  fPedSummary;
   TH1F  fNoiseSummary;
