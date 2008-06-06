@@ -29,7 +29,7 @@ AliHLTPHOSProcessor::AliHLTPHOSProcessor():AliHLTProcessor(),
 					   fPrintInfoFrequncyModule(1000), 
 					   fRunNumber(0)
 {
-  ScanRunNumberFromFile();
+  //  ScanRunNumberFromFile();
 }
 
 
@@ -94,6 +94,8 @@ AliHLTPHOSProcessor::ScanRunNumberFromFile()
   sprintf(tmpDirectory, "%s", getenv("HOME"));  
 
   //TODO, remove hardcoded file path
+ 
+  
   sprintf(tmpFileName, "%s%s", tmpDirectory, "/hlt/rundir/runNumber.txt");
  
   if(CheckFileLog( __FILE__ , tmpFileName , "r")== true) 
@@ -102,6 +104,10 @@ AliHLTPHOSProcessor::ScanRunNumberFromFile()
       fscanf(fp, "%d", &fRunNumber);
       fclose(fp);
     }
+
+  
+
+
  }
 
 const char*
