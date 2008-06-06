@@ -354,7 +354,7 @@ alimdc-static: $(LIBPATH) $(BINPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB) $(
 	 $(LIBPATH)/libAliMDC.a \
 	 $(ROOTALIBDIR)/libRoot.a \
 	 $(ROOTALIBDIR)/libfreetype.a $(ROOTALIBDIR)/libpcre.a \
-	 -ldl
+	 -pthread -ldl
 
 alilibs-static: $(LIBPATH) modules $(ALLALIBS)
 
