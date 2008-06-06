@@ -106,7 +106,7 @@ class AliAODEvent : public AliVEvent {
 
   // -- Vertex
   TClonesArray *GetVertices()            const { return fVertices; }
-  Int_t         GetNVertices()           const { return fVertices->GetEntriesFast(); }
+  Int_t         GetNumberOfVertices()    const { return fVertices->GetEntriesFast(); }
   AliAODVertex *GetVertex(Int_t nVertex) const { return (AliAODVertex*)fVertices->UncheckedAt(nVertex); }
   Int_t         AddVertex(const AliAODVertex* vtx)
   {new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*vtx); return fVertices->GetEntriesFast()-1;}
@@ -116,7 +116,7 @@ class AliAODEvent : public AliVEvent {
 
   // V0
   TClonesArray *GetV0s()                 const { return fV0s; }
-  Int_t         GetNV0s()                const { return fV0s->GetEntriesFast(); }
+  Int_t         GetNumberOfV0s()         const { return fV0s->GetEntriesFast(); }
   AliAODv0     *GetV0(Int_t nV0)         const { return (AliAODv0*)fV0s->UncheckedAt(nV0); }
   Int_t         AddV0(const AliAODv0* v0)
   {new((*fV0s)[fV0s->GetEntriesFast()]) AliAODv0(*v0); return fV0s->GetEntriesFast()-1;}

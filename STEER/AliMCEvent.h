@@ -88,6 +88,7 @@ public:
     // Tracks
     virtual AliMCParticle *GetTrack(Int_t i) const;
     virtual Int_t     GetNumberOfTracks()    const {return fNparticles;}
+    virtual Int_t     GetNumberOfV0s()       const {return -1;}
 
     //
     // MC Specific methods

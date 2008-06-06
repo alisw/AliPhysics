@@ -80,6 +80,7 @@ public:
   virtual AliVParticle *GetTrack(Int_t i) const = 0;
   //virtual Int_t        AddTrack(const AliVParticle *t) = 0;
   virtual Int_t        GetNumberOfTracks() const = 0;
+  virtual Int_t        GetNumberOfV0s() const = 0;
 
   //---------- end of new stuff
 
