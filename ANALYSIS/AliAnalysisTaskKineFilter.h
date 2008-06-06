@@ -26,7 +26,7 @@ class AliAnalysisTaskKineFilter : public AliAnalysisTaskSE
                                   AliAnalysisTaskKineFilter();
                                   AliAnalysisTaskKineFilter( const char* name );
                                   AliAnalysisTaskKineFilter(const AliAnalysisTaskKineFilter& obj);
-    virtual                      ~AliAnalysisTaskKineFilter() {;}
+    virtual                      ~AliAnalysisTaskKineFilter();
      AliAnalysisTaskKineFilter&   operator=(const AliAnalysisTaskKineFilter& other);
     
     // Implementation of interface methods
@@ -34,14 +34,14 @@ class AliAnalysisTaskKineFilter : public AliAnalysisTaskSE
     virtual                void   Exec( Option_t *option );
     
     // Setters
-    virtual                void   SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
+    virtual                void   SetTrackFilter(AliAnalysisFilter* trackF) { fTrackFilter = trackF; }
     
  private:
                           Int_t   LoopOverSecondaries(TParticle *mother, Int_t& jTracks, Int_t& jVertices, Int_t& nPos, Int_t& nNeg );
                            void   SetChargeAndPID(Int_t pdgCode, AliAODTrack *track);
                            void   SetVertexType(TParticle *part, AliAODVertex *vertex);
                          
-              AliAnalysisFilter*  fTrackFilter; //  Track Filter
+              AliAnalysisFilter*  fTrackFilter;          //  Track Filter
                     
     ClassDef( AliAnalysisTaskKineFilter, 1 ); // Analysis task for Kinematic filtering
 };

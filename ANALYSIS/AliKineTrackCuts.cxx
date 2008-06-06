@@ -32,6 +32,8 @@ ClassImp(AliKineTrackCuts)
 //____________________________________________________________________
 AliKineTrackCuts::AliKineTrackCuts(const Char_t* name, const Char_t* title) : 
   AliAnalysisCuts(name,title),
+  fOnlyFinalParticles(kFALSE),
+  fOnlyPrimary(kFALSE), 
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -67,6 +69,10 @@ Bool_t  AliKineTrackCuts::IsSelected(TObject* obj)
 {
 
   TParticle * part = (TParticle *)obj;
+  
+  // only final particles
+  if( fOnlyFinalParticles && part->GetStatusCode() !=1 ) return kFALSE;
+  if( fOnlyPrimary && part->IsPrimary() !=1 ) return kFALSE;
   
   // getting the kinematic variables of the track
   Float_t momentum = part->P();

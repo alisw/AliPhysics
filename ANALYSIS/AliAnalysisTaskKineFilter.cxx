@@ -66,6 +66,12 @@ AliAnalysisTaskKineFilter::AliAnalysisTaskKineFilter(const AliAnalysisTaskKineFi
 // Copy constructor
     fTrackFilter = obj.fTrackFilter;
 }
+//____________________________________________________________________
+AliAnalysisTaskKineFilter::~AliAnalysisTaskKineFilter()
+{
+  //  if( fTrackFilter ) delete fTrackFilter;
+}
+
 
 //____________________________________________________________________
 AliAnalysisTaskKineFilter& AliAnalysisTaskKineFilter::operator=(const AliAnalysisTaskKineFilter& other)
@@ -100,6 +106,7 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
   AliStack* stack = MCEvent()->Stack();
   Int_t nTracks = stack->GetNtrack();
   Int_t nPrims = stack->GetNprimary();
+  Int_t nPrimsAdd = 0;
 
   AliAODVertex *primary = NULL; 
   Int_t nPos = 0;
@@ -155,8 +162,6 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
                    AliAODVertex(x, NULL, -999., NULL, AliAODVertex::kPrimary);  
     }
     
-    // only final particles
-    if( part->GetStatusCode() !=1 ) continue;  
     
     //
     // Track selection
@@ -171,7 +176,7 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
 
     // add primary tracks
     primary->AddDaughter(new(tracks[jTracks++]) AliAODTrack(0, // ID,
-                                                            0, // Label
+                                                            iTrack, // Label
                                                             p,
                                                             kTRUE,
                                                             x,
@@ -182,10 +187,10 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
                                                             NULL,
                                                             primary,
                                                             kFALSE,  // no fit performed
-                                                            kFALSE, // no fit preformed
+                                                            kFALSE,  // no fit preformed
                                                             AliAODTrack::kPrimary,
                                                             selectInfo));
-                                                            
+
     AliAODTrack* currTrack = (AliAODTrack*)tracks.Last();
     SetChargeAndPID(part->GetPdgCode(), currTrack);
     if (currTrack->Charge() != -99) {
@@ -193,8 +198,9 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
         nPos++;
       } else if (currTrack->Charge() < 0) {
         nNeg++;
-      }            
+      }
     }
+    ++nPrimsAdd;
     LoopOverSecondaries(part, jTracks, jVertices, nPos, nNeg);
     
   } // end of track loop
@@ -205,7 +211,7 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
     
   if( fDebug > 1 ) 
      AliInfo(Form("primaries: %d secondaries: %d (pos: %d neg: %d), vertices: %d", 
-                   nPrims, tracks.GetEntriesFast()-nPrims, nPos, nNeg, vertices.GetEntriesFast() ) );
+                   nPrimsAdd, tracks.GetEntriesFast()-nPrimsAdd, nPos, nNeg, vertices.GetEntriesFast() ) );
   return;
 }
 
@@ -227,7 +233,6 @@ Int_t AliAnalysisTaskKineFilter::LoopOverSecondaries(TParticle *mother, Int_t &j
     for (Int_t iDaughter = mother->GetFirstDaughter(); iDaughter <= mother->GetLastDaughter(); iDaughter++) {
       TParticle *part = stack->Particle(iDaughter);
       // only final particles
-      if( part->GetStatusCode() !=1 ) continue;  
       
       p[0] = part->Px(); 
       p[1] = part->Py(); 
@@ -240,11 +245,10 @@ Int_t AliAnalysisTaskKineFilter::LoopOverSecondaries(TParticle *mother, Int_t &j
         // add secondary vertex
         secondary = new(vertices[jVertices++])
                        AliAODVertex(x, NULL, -999., tracks.Last(), AliAODVertex::kUndef);
-        
         SetVertexType(part, secondary);
       }
-      
-      UInt_t selectInfo = 0; 
+
+      UInt_t selectInfo = 0;
       //
       // Track selection
       if (fTrackFilter) {
@@ -254,7 +258,7 @@ Int_t AliAnalysisTaskKineFilter::LoopOverSecondaries(TParticle *mother, Int_t &j
         
       // add secondary tracks
       secondary->AddDaughter(new(tracks[jTracks++]) AliAODTrack(0, // ID
-                                                                0, // label
+                                                                iDaughter, // label
                                                                 p,
                                                                 kTRUE,
                                                                 x,
@@ -276,7 +280,7 @@ Int_t AliAnalysisTaskKineFilter::LoopOverSecondaries(TParticle *mother, Int_t &j
           nPos++;
         } else if (currTrack->Charge() < 0) {
           nNeg++;
-        }            
+        }
       }
 
       LoopOverSecondaries(part, jTracks, jVertices, nPos, nNeg);
