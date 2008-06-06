@@ -27,6 +27,8 @@
 #include "TH2.h"
 #include "TObjArray.h"
 class AliCaloRawStream;
+class AliCaloAltroMapping;
+class AliRawReader;
 
 class AliCaloCalibPedestal : public TObject {
   
@@ -46,9 +48,15 @@ class AliCaloCalibPedestal : public TObject {
   //Functions to ask for the constants (in case a GUI needs them, for an example
   static const int GetSampleMax() {return fgkSampleMax;};
   static const int GetSampleMin() {return fgkSampleMin;};
-  
+
+  // Event processing methods:  
+  Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStream    *in);
   
+  // Mapping handling
+  AliCaloAltroMapping **GetAltroMapping() { return fMapping; };
+  void  SetAltroMapping(AliCaloAltroMapping **mapp) { fMapping = mapp; };
+
   ////////////////////////////
   //Simple getters
   // Main profiles:
@@ -73,6 +81,7 @@ class AliCaloCalibPedestal : public TObject {
 
   // Basic info: getters  
   kDetType GetDetectorType() const {return fDetType;};//Returns if this is a PHOS or EMCAL object
+  TString GetCaloString() const {return fCaloString;}; //Returns if this is a PHOS or EMCAL object
   
   int GetColumns() const {return fColumns;}; //The number of columns per module
   int GetRows() const {return fRows;}; //The number of rows per module
@@ -149,8 +158,10 @@ class AliCaloCalibPedestal : public TObject {
   int fColumns;	//The number of columns per module
   int fRows;	//The number of rows per module
   int fModules;	//The number of modules
+  TString fCaloString; // id for which detector type we have 
+  AliCaloAltroMapping **fMapping;    //! Altro Mapping object
   int fRunNumber; //The run number. Needs to be set by the user.
-  
+
   //Constants needed by the class
   static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
   static const int fgkSampleMin = 0; // lowest possible sample value 

@@ -25,6 +25,8 @@
 #include "TGraph.h"
 #include "TProfile.h"
 class AliCaloRawStream;
+class AliCaloAltroMapping;
+class AliRawReader;
 class AliRawEventHeaderBase;
 
 class AliCaloCalibSignal : public TObject {
@@ -40,8 +42,14 @@ class AliCaloCalibSignal : public TObject {
   AliCaloCalibSignal(const AliCaloCalibSignal &sig); // copy ctor
   AliCaloCalibSignal& operator = (const  AliCaloCalibSignal &source); //!
   
+  // Event processing methods:
+  Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderBase *aliHeader); // added header for time info
   Bool_t CheckFractionAboveAmp(int *AmpVal, int nTotChan); // check fraction of signals to check for LED events
+
+  // Mapping handling
+  AliCaloAltroMapping **GetAltroMapping() { return fMapping; };
+  void  SetAltroMapping(AliCaloAltroMapping **mapp) { fMapping = mapp; };
 
   ////////////////////////////
   //Simple getters
@@ -75,7 +83,8 @@ class AliCaloCalibSignal : public TObject {
 
   // Basic info: getters  
   kDetType GetDetectorType() const {return fDetType;};//Returns if this is a PHOS or EMCAL object
-  
+  TString GetCaloString() const {return fCaloString;}; //Returns if this is a PHOS or EMCAL object  
+
   int GetColumns() const {return fColumns;}; //The number of columns per module
   int GetRows() const {return fRows;}; //The number of rows per module
   int GetModules() const {return fModules;}; //The number of modules
@@ -139,6 +148,8 @@ class AliCaloCalibSignal : public TObject {
   int fColumns;	//The number of columns per module
   int fRows;	//The number of rows per module
   int fModules;	//The number of modules
+  TString fCaloString; // id for which detector type we have 
+  AliCaloAltroMapping **fMapping;    //! Altro Mapping object
   int fRunNumber; //The run number. Needs to be set by the user.
   int fStartTime;  // Time of first event
 

@@ -75,6 +75,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fColumns(0),
   fRows(0),
   fModules(0),
+  fCaloString(),
+  fMapping(NULL),
   fRunNumber(-1)
 {
   //Default constructor. First we set the detector-type related constants.
@@ -82,6 +84,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     fColumns = fgkPhosCols;
     fRows = fgkPhosRows;
     fModules = fgkPhosModules;
+    fCaloString = "PHOS";
   } 
   else {
     //We'll just trust the enum to keep everything in line, so that if detectorType
@@ -90,6 +93,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     fColumns = fgkEmCalCols;
     fRows = fgkEmCalRows;
     fModules = fgkEmCalModules;
+    fCaloString = "EMCAL";
   } 
   fDetType = detectorType;
  
@@ -190,6 +194,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fColumns(ped.GetColumns()),
   fRows(ped.GetRows()),
   fModules(ped.GetModules()),
+  fCaloString(ped.GetCaloString()),
+  fMapping(NULL), //! note that we are not copying the map info
   fRunNumber(ped.GetRunNumber())
 {
   // Then the ObjArray ones; we add the histograms rather than trying TObjArray = assignment
@@ -271,6 +277,14 @@ Bool_t AliCaloCalibPedestal::AddInfo(const AliCaloCalibPedestal *ped)
   // DeadMap; Diff profiles etc would need to be redone after this operation
 
   return kTRUE;//We succesfully added info from the supplied object
+}
+
+//_____________________________________________________________________
+Bool_t AliCaloCalibPedestal::ProcessEvent(AliRawReader *rawReader)
+{ 
+  // if fMapping is NULL the rawstream will crate its own mapping
+  AliCaloRawStream rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
+  return ProcessEvent(&rawStream);
 }
 
 //_____________________________________________________________________

@@ -35,6 +35,7 @@
 
 #include "TFile.h"
 
+#include "AliRawReader.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliCaloRawStream.h"
 
@@ -53,6 +54,8 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fColumns(0),
   fRows(0),
   fModules(0),
+  fCaloString(),
+  fMapping(NULL),
   fRunNumber(-1),
   fStartTime(0),
   fAmpCut(50),
@@ -70,6 +73,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
     fColumns = fgkPhosCols;
     fRows = fgkPhosRows;
     fModules = fgkPhosModules;
+    fCaloString = "PHOS";
   } 
   else {
     //We'll just trust the enum to keep everything in line, so that if detectorType
@@ -78,6 +82,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
     fColumns = fgkEmCalCols;
     fRows = fgkEmCalRows;
     fModules = fgkEmCalModules;
+    fCaloString = "EMCAL";
   }
 
   fDetType = detectorType;
@@ -127,6 +132,8 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
   fColumns(sig.GetColumns()),
   fRows(sig.GetRows()),
   fModules(sig.GetModules()),
+  fCaloString(sig.GetCaloString()),
+  fMapping(NULL), //! note that we are not copying the map info
   fRunNumber(sig.GetRunNumber()),
   fStartTime(sig.GetStartTime()),
   fAmpCut(sig.GetAmpCut()),
@@ -299,6 +306,14 @@ Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
   return kTRUE;//We succesfully added info from the supplied object
 }
 
+//_____________________________________________________________________
+Bool_t AliCaloCalibSignal::ProcessEvent(AliRawReader *rawReader)
+{
+  // if fMapping is NULL the rawstream will crate its own mapping
+  AliCaloRawStream rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
+
+  return ProcessEvent( &rawStream, (AliRawEventHeaderBase*)rawReader->GetEventHeader() );
+}
 
 //_____________________________________________________________________
 Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderBase *aliHeader)
