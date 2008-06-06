@@ -125,9 +125,9 @@ public:
   void        ImportRunLoader(AliRunLoader* rl) { fRunLoader = rl; }
 
   // Quality Assurance 
-  virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
+  virtual Bool_t RunQA(AliESDEvent *& esd);
   void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
-  void    SetRunQA(Bool_t flag=kTRUE)      {fRunQA = flag ;} 
+  Bool_t  SetRunQA(TString detAndAction="ALL:ALL") ; 
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
   void    SetInLoopQA(Bool_t flag=kTRUE)   {fInLoopQA    = flag;} 
 
@@ -240,10 +240,12 @@ private:
   //Quality Assurance
   AliQADataMakerRec *fQADataMaker[fgkNDetectors+1];  //! array of QA data makers
   Int_t fQACycles[   fgkNDetectors];// # events over which QA data are accumulated
+  TString            fQADetectors ;  // list of detectors to be QA'ed 	
+  TString            fQATasks ;      // list of QA tasks to be performed	
   Bool_t             fRunQA ;        // Run QA flag
   Bool_t             fRunGlobalQA;   // Run global QA flag
   Bool_t             fInLoopQA;      // In-loop QA flag
-  Bool_t             fSameQACycle;   //! open a vew QA data file or not
+  Bool_t             fSameQACycle;   //! open a new QA data file or not
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 

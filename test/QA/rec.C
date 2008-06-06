@@ -18,7 +18,12 @@ void rec() {
   //AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
   //	recEmc->SetSubtractPedestals(kFALSE);
   //	AliPHOSReconstructor::SetRecoParamEmc(recEmc);  
-  reco.SetRunQA(kTRUE) ; 
+	if (! reco.SetRunQA("PHOS:ESD") ) {
+		printf("SetRunQA ERROR\n") ; 
+		exit ; 
+	}
+	reco.SetInLoopQA() ; 
+	  
   AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefDataDirName("Sim") ; //Data, Pedestals, BlackEvent, .....
   
