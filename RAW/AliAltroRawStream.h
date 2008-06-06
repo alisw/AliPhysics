@@ -50,6 +50,30 @@ class AliAltroRawStream: public TObject {
     Bool_t  GetRCUTrailerData(UChar_t*& data) const;              // Provide a pointer to RCU trailer
     Int_t   GetRCUTrailerSize() const { return fRCUTrailerSize; } // Provide size of RCU trailer
 
+    // RCU trailer related getters
+    UInt_t  GetFECERRA() const { return fFECERRA; }
+    UInt_t  GetFECERRB() const { return fFECERRB; }
+    UShort_t GetERRREG2() const { return fERRREG2; }
+    UShort_t GetActiveFECsA() const { return fActiveFECsA; }
+    UShort_t GetActiveFECsB() const { return fActiveFECsB; }
+
+    UChar_t GetBaselineCorr() const { return fAltroCFG1 & 0xF; }
+    UChar_t GetNPresamples() const  { return (fAltroCFG1 >> 4) & 0x3; }
+    UChar_t GetNPostsamples() const { return (fAltroCFG1 >> 6) & 0xF; }
+    Bool_t  GetSecondBaselineCorr() const { return (fAltroCFG1 >> 10) & 0x1; }
+    UChar_t GetGlitchFilter() const { return (fAltroCFG1 >> 11) & 0x3; }
+    UChar_t GetNNonZSPostsamples() const { return (fAltroCFG1 >> 13) & 0x7; }
+    UChar_t GetNNonZSPresamples() const  { return (fAltroCFG1 >> 16) & 0x3; }
+    Bool_t  GetZeroSupp() const          { return (fAltroCFG1 >> 18) & 0x1; }
+    
+    Bool_t   GetNAltroBuffers() const     { return (fAltroCFG2 >> 24) & 0x1; }
+    UChar_t  GetNPretriggerSamples() const{ return (fAltroCFG2 >> 20) & 0xF; }
+    UShort_t GetNSamplesPerCh() const     { return (fAltroCFG2 >> 10) & 0x3FF; }
+    Bool_t   GetSparseRO() const          { return (fAltroCFG2 >> 9) & 0x1; }
+    UChar_t  GetSamplingFq() const        { return (fAltroCFG2 >> 5) & 0xF; }
+    UChar_t  GetL1Phase() const           { return fAltroCFG2 & 0x1F; }
+    void     PrintRCUTrailer() const;
+ 
     void SelectRawData(Int_t detId);                           // Select raw data for specific detector id
     void SelectRawData(const char *detName);                   // Select raw data for specific detector name
 
@@ -89,6 +113,7 @@ class AliAltroRawStream: public TObject {
     void             ReadAmplitude();
     Int_t            GetPosition();
     UInt_t           Get32bitWord(Int_t &index);
+    Int_t            ReadRCUTrailer(Int_t &index, Int_t trailerSize);
 
     Int_t            fDDLNumber;    // index of current DDL number
     Int_t            fPrevDDLNumber;// index of previous DDL number
@@ -112,6 +137,15 @@ class AliAltroRawStream: public TObject {
 
     UChar_t*         fRCUTrailerData; // pointer to RCU trailer data
     Int_t            fRCUTrailerSize; // size of RCU trailer data in bytes
+
+    // RCU trailer contents
+    UInt_t           fFECERRA;      // contains errors related to ALTROBUS transactions
+    UInt_t           fFECERRB;      // contains errors related to ALTROBUS transactions
+    UShort_t         fERRREG2;      // contains errors related to ALTROBUS transactions or trailer of ALTRO channel block
+    UShort_t         fActiveFECsA;  // bit pattern of active FECs in branch A
+    UShort_t         fActiveFECsB;  // bit pattern of active FECs in branch B
+    UInt_t           fAltroCFG1;    // ALTROCFG1 register
+    UInt_t           fAltroCFG2;    // ALTROCFG2 and ALTROIF registers
 
     ClassDef(AliAltroRawStream, 0)  // base class for reading Altro raw digits
 };

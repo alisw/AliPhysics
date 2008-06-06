@@ -53,7 +53,14 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fCount(0),
   fBunchLength(0),
   fRCUTrailerData(NULL),
-  fRCUTrailerSize(0)
+  fRCUTrailerSize(0),
+  fFECERRA(0),
+  fFECERRB(0),
+  fERRREG2(0),
+  fActiveFECsA(0),
+  fActiveFECsB(0),
+  fAltroCFG1(0),
+  fAltroCFG2(0)
 {
 // create an object to read Altro raw digits
   fSegmentation[0] = fSegmentation[1] = fSegmentation[2] = -1;
@@ -80,7 +87,14 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   fCount(stream.fCount),
   fBunchLength(stream.fBunchLength),
   fRCUTrailerData(stream.fRCUTrailerData),
-  fRCUTrailerSize(stream.fRCUTrailerSize)
+  fRCUTrailerSize(stream.fRCUTrailerSize),
+  fFECERRA(stream.fFECERRA),
+  fFECERRB(stream.fFECERRB),
+  fERRREG2(stream.fERRREG2),
+  fActiveFECsA(stream.fActiveFECsA),
+  fActiveFECsB(stream.fActiveFECsB),
+  fAltroCFG1(stream.fAltroCFG1),
+  fAltroCFG2(stream.fAltroCFG2)
 {
   fSegmentation[0]   = stream.fSegmentation[0];
   fSegmentation[1]   = stream.fSegmentation[1];
@@ -111,6 +125,13 @@ AliAltroRawStream& AliAltroRawStream::operator = (const AliAltroRawStream& strea
   fBunchLength       = stream.fBunchLength;
   fRCUTrailerData    = stream.fRCUTrailerData;
   fRCUTrailerSize    = stream.fRCUTrailerSize;
+  fFECERRA           = stream.fFECERRA;
+  fFECERRB           = stream.fFECERRB;
+  fERRREG2           = stream.fERRREG2;
+  fActiveFECsA       = stream.fActiveFECsA;
+  fActiveFECsB       = stream.fActiveFECsB;
+  fAltroCFG1         = stream.fAltroCFG1;
+  fAltroCFG2         = stream.fAltroCFG2;
 
   fSegmentation[0]   = stream.fSegmentation[0];
   fSegmentation[1]   = stream.fSegmentation[1];
@@ -135,6 +156,8 @@ void AliAltroRawStream::Reset()
 
   fRCUTrailerData = NULL;
   fRCUTrailerSize = 0;
+
+  fFECERRA = fFECERRB = fERRREG2 = fActiveFECsA = fActiveFECsB = fAltroCFG1 = fAltroCFG2 = 0;
 
   fDDLNumber = fPrevDDLNumber = fRCUId = fPrevRCUId = fHWAddress = fPrevHWAddress = fTime = fPrevTime = fSignal = fTimeBunch = -1;
 
@@ -408,18 +431,8 @@ Int_t AliAltroRawStream::GetPosition()
       AliWarning(Form("Invalid trailer size found (%d bytes) !",
 		      trailerSize*4));
     }
-    fRCUTrailerSize = (trailerSize-2)*4;
-    index -= fRCUTrailerSize;
-    if (index < 4) {
-      fRawReader->AddMajorErrorLog(kRCUTrailerErr,Form("tr=%d raw=%d bytes",
-                                                       trailerSize*4,
-						       fRawReader->GetDataSize()));
-      AliWarning(Form("Invalid trailer size found (%d bytes) ! The size is bigger than the raw data size (%d bytes)!",
-		      trailerSize*4,
-		      fRawReader->GetDataSize()));
-    }
-    fRCUTrailerData = fData + index;
-    Int_t position = Get32bitWord(index);
+
+    Int_t position = ReadRCUTrailer(index,trailerSize);
     // The size is specified in a number of 40bits
     // Therefore we need to transform it to number of bytes
     position *= 5;
@@ -521,6 +534,108 @@ UInt_t AliAltroRawStream::Get32bitWord(Int_t &index)
   word |= fData[--index];
 
   return word;
+}
+
+//_____________________________________________________________________________
+Int_t AliAltroRawStream::ReadRCUTrailer(Int_t &index, Int_t trailerSize)
+{
+  // The method decodes the RCU trailer data
+  // according to the RCU fw ver.2 specs
+  
+  fRCUTrailerSize = trailerSize*4;
+
+  for (trailerSize -= 2; trailerSize > 0; trailerSize--) {
+    Int_t word = Get32bitWord(index);
+    Int_t parCode = word >> 26;
+    Int_t parData = word & 0x3FFFFFF;
+    switch (parCode) {
+    case 1:
+      // ERR_REG1
+      fFECERRA = ((parData >> 13) & 0x1FFF) << 7;
+      fFECERRB = ((parData & 0x1FFF)) << 7;
+      break;
+    case 2:
+      // ERR_REG2
+      fERRREG2 = parData & 0x1FF;
+      break;
+    case 3:
+      // ERR_REG3
+      if (parData != 0xAAAAAA) {
+	fRawReader->AddMinorErrorLog(kRCUTrailerErr,"no 0xAAAAAA");
+	AliWarning(Form("Parameter code %d : no 0xAAAAAA found !",
+			parCode));
+      }
+      break;
+    case 4:
+      // ERR_REG4
+      if (parData != 0xAAAAAA) {
+	fRawReader->AddMinorErrorLog(kRCUTrailerErr,"no 0xAAAAAA");
+	AliWarning(Form("Parameter code %d : no 0xAAAAAA found !",
+			parCode));
+      }
+      break;
+    case 5:
+      // FEC_RO_A
+      fActiveFECsA = parData & 0xFFFF;
+      break;
+    case 6:
+      // FEC_RO_B
+      fActiveFECsB = parData & 0xFFFF;
+      break;
+    case 7:
+      // RDO_CFG1
+      fAltroCFG1 = parData & 0x7FFFF;
+      break;
+    case 8:
+      // RDO_CFG2
+      fAltroCFG2 = parData & 0x1FFFFFF;
+     break;
+    default:
+      fRawReader->AddMinorErrorLog(kRCUTrailerErr,"undef word");
+      AliWarning(Form("Undefined parameter code %d, ignore it !",
+		      parCode));
+      break;
+    }
+  }
+
+  if (index < 4) {
+    fRawReader->AddMajorErrorLog(kRCUTrailerErr,Form("tr=%d raw=%d bytes",
+						     trailerSize*4,
+						     fRawReader->GetDataSize()));
+    AliWarning(Form("Invalid trailer size found (%d bytes) ! The size is bigger than the raw data size (%d bytes)!",
+		    trailerSize*4,
+		    fRawReader->GetDataSize()));
+  }
+  fRCUTrailerSize = trailerSize*4;
+  fRCUTrailerData = fData + index;
+
+  Int_t position = Get32bitWord(index);
+
+
+  return position;
+}
+
+//_____________________________________________________________________________
+void AliAltroRawStream::PrintRCUTrailer() const
+{
+  // Prints the contents of
+  // the RCU trailer data
+  printf("RCU trailer:\n===========\n");
+  printf("FECERRA: 0x%x\nFECERRB: 0x%x\n",fFECERRA,fFECERRB);
+  printf("ERRREG2: 0x%x\n",fERRREG2);
+  printf("Active FECs (branch A): 0x%x\nActive FECs (branch B): 0x%x\n",fActiveFECsA,fActiveFECsB);
+  printf("Baseline corr: 0x%x\n",GetBaselineCorr());
+  printf("Number of presamples: %d\nNumber of postsamples: %d\n",GetNPresamples(),GetNPostsamples());
+  printf("Second baseline corr: %d\n",GetSecondBaselineCorr());
+  printf("GlitchFilter: %d\n",GetGlitchFilter());
+  printf("Number of non-ZS postsamples: %d\nNumber of non-ZS presamples: %d\n",GetNNonZSPostsamples(),GetNNonZSPresamples());
+  printf("Number of ALTRO buffers: %d\n",GetNAltroBuffers());
+  printf("Number of pretrigger samples: %d\n",GetNPretriggerSamples());
+  printf("Number of samples per channel: %d\n",GetNSamplesPerCh());
+  printf("Sparse readout: %d\n",GetSparseRO());
+  printf("Sampling frequency: 0x%x\n",GetSamplingFq());
+  printf("L1 Phase: 0x%x\n",GetL1Phase());
+  printf("===========\n");
 }
 
 //_____________________________________________________________________________
