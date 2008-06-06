@@ -20,7 +20,7 @@
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
 //#include <iostream>
 #include <cmath>
-
+#include "AliHLTPHOSUtilities.h" 
 
 using std::cout;
 using std::endl;
@@ -35,8 +35,14 @@ ClassImp(AliHLTPHOSRawAnalyzerPeakFinder)
  * a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in
  * calculation is of type double.
  **/
-AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRawAnalyzer(), fTVectorPtr(0), fAVectorPtr(0), fTVectorSize(0), fAVectorSize(0)
+AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRawAnalyzer(), 
+                                                                   fTVectorPtr(0), 
+								   fAVectorPtr(0), 
+								   fTVectorSize(0), 
+								   fAVectorSize(0)
+//  fUtilitiesPtr(0)
 {
+  //  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
   //  cout <<"PeakFinder:You cannot invoke the Fitter without arguments"<<endl;;
 }
 
@@ -128,7 +134,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t /*start*/, Int_t length)
       if(fDAmpl > 900)
 	{
 	  //	  Double_t tmpMax = MaxValue(const_cast<unsigned int*>(fIntDataPtr), tmpLength);  removed 18 april 2008   
-	  double tmpMax = MaxValue(fDoubleDataPtr, tmpLength); 
+	  double tmpMax = fUtilitiesPtr->MaxValue(fDoubleDataPtr, tmpLength); 
 
 	  if(tmpMax == 1023)
 	    {

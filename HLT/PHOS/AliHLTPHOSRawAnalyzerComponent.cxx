@@ -62,30 +62,11 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuPr
   fSanityInspectorPtr = new AliHLTPHOSSanityInspector();
   fSelectedChannelsList = new AliHLTUInt16_t[N_XCOLUMNS_RCU*N_ZROWS_RCU*N_GAINS];
 }
+
+
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
- 
-  //comment
-  if(fMapperPtr)
-    {
-      delete  fMapperPtr;
-      fMapperPtr = 0;
-    }
-  if(fAltroDataPtr)
-    {
-      delete fAltroDataPtr;
-      fAltroDataPtr = 0;
-    }
-  if(fAltroBunchPtr)
-    {
-      delete fAltroBunchPtr;
-      fAltroBunchPtr = 0;
-    }
-  if(fDecoderPtr)
-    {
-      delete fDecoderPtr;
-      fDecoderPtr = 0;
-    }
+  Deinit();
 }
 
 
@@ -119,13 +100,13 @@ AliHLTPHOSRawAnalyzerComponent::Deinit()
 }
 
 
-
 const char* 
 AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 {
   //comment
   return "AliPhosTestRaw";
 }
+
 
 void
 AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
@@ -189,6 +170,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   UInt_t nSelected = 0;
   UInt_t specification = 0;
  
+  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent analyzing event " << fPhosEventCount << endl;
  
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -203,9 +185,9 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	{
 	  continue; 
 	}
-       specification = specification|iter->fSpecification;
+      specification = specification|iter->fSpecification;
 
-       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
+      fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
        //      fDecoderPtr->SetMemory(reinterpret_cast<char*>( iter->fPtr ), iter->fSize);
 
       fDecoderPtr->Decode();
@@ -301,6 +283,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       
       if(fDoPushCellEnergies)
 	{
+	  //	  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent, pushing cell energies"   << endl;
 	  AliHLTComponentBlockData bdCellEnergy;
 	  FillBlockData( bdCellEnergy );
 	  bdCellEnergy.fOffset = offset;
@@ -312,6 +295,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  tSize += mysize;
 	  outBPtr += mysize;
 	}
+      else
+	{
+	  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent, WARNING we are not pushing cell energies"   << endl;
+	}
+      
       
       //Making Digits
       if(fDoMakeDigits)
@@ -410,61 +398,46 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
       return -4;
     }
 
-  iResult = ScanArguments(argc, argv);
-
-  int nSigmas = 3;
+  const int nSigmas = 3;
   
   fDigitMakerPtr = new AliHLTPHOSDigitMaker();
+ 
+  char tmprmsfile[256];
+  if (fUtilitiesPtr->ScanSingleNameArgument(argc, argv, "-rmsfilepath", tmprmsfile) == true)
+    {
+      fDigitMakerPtr->SetDigitThresholds( tmprmsfile, nSigmas);
+      SetSelectiveReadOutThresholds( tmprmsfile, nSigmas);
+    }
+
+  char tmpbaselinfile[256];
+  if(fUtilitiesPtr->ScanSingleNameArgument(argc, argv, "-baselinefile", tmpbaselinfile) == true  )
+    {
+      SetBaselines(tmpbaselinfile);
+    }
+
+  float tmpLGFactor = 0;
+  if(fUtilitiesPtr->ScanSingleFloatArgument(argc, argv, "-lowgainfactor", &tmpLGFactor) == true)
+    {
+      fDigitMakerPtr->SetGlobalLowGainFactor(tmpLGFactor);
+    } 
+
   
-  for(int i = 0; i < argc; i++)
+  float tmpHGFactor = 0;
+  if(fUtilitiesPtr->ScanSingleFloatArgument(argc, argv, "-lowgainfactor", &tmpHGFactor) == true )
     {
-      if(!strcmp("-rmsfilepath", argv[i]))
-	{
-	  fDigitMakerPtr->SetDigitThresholds(argv[i+1], nSigmas);
-	  SetSelectiveReadOutThresholds(argv[i+1], nSigmas);
-	}
+      fDigitMakerPtr->SetGlobalHighGainFactor(tmpHGFactor);
+    }   
 
-      if(!strcmp("-baselinefile", argv[i]))
-	{
-	  SetBaselines(argv[i+1]);
-	}
-      if(!strcmp("-lowgainfactor", argv[i]))
-	{
-	  fDigitMakerPtr->SetGlobalLowGainFactor(atof(argv[i+1]));
-	}
-      if(!strcmp("-highgainfactor", argv[i]))
-	{
-	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
-	}
-      if(!strcmp("-selectivereadout", argv[i]))
-	{
-	  fDoSelectiveReadOut = true;
-	}
-      if(!strcmp("-makedigits", argv[i]))
-	{
-	  fDoMakeDigits = true;
-	}
-      if(!strcmp("-pushcellenergies", argv[i]))
-       	{
-	  fDoPushCellEnergies = true;
- 	}
-      if(!strcmp("-checkdatasize", argv[i]))
-	{
-	  fDoCheckDataSize = true;
-	}
-    }
+  fDoSelectiveReadOut = fUtilitiesPtr->ScanSingleArgument(argc, argv, "-selectivereadout");
+  fDoMakeDigits	 = fUtilitiesPtr->ScanSingleArgument(argc, argv, "-makedigits");		 
 
-  if(fIsSetEquippmentID == kFALSE)
-    {
-      Logging( kHLTLogFatal, __FILE__, "Missing argument",
-	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
-      iResult = -3; 
-    }
-  else
-    {
-      iResult = 0; 
-    }
+  //  CRAP PTH
+  //  fDoPushCellEnergies = fUtilitiesPtr->ScanSingleArgument(argc, argv, "-pushcellenergies");
+  fDoPushCellEnergies = true;
 
+  fDoCheckDataSize = fUtilitiesPtr->ScanSingleArgument(argc, argv, "-checkdatasize");
+ 
+  iResult = ScanArguments(argc, argv);
   return iResult;
 }
 

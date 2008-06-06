@@ -13,18 +13,12 @@ class  AliHLTPHOSRcuProcessor : public AliHLTPHOSProcessor, public AliHLTPHOSRcu
   AliHLTPHOSRcuProcessor();
   virtual ~AliHLTPHOSRcuProcessor();
 
-/*   const AliHLTUInt16_t  GetEquippmentID() const; */
-/*   virtual int ScanArguments(int argc, const char** argv); */
-/*   void SetEquippmentID(AliHLTUInt16_t id); */
-/*   void SetCoordinates(AliHLTUInt16_t equippmentID); */
-/*   const AliHLTUInt16_t fkEquippmentID;  /\**<Equippment ID as defined by ALICE*\/ */
-/*   AliHLTUInt8_t  fModuleID; /\**<ID of the module this component read data from (0-4)*\/ */
-/*   AliHLTUInt8_t  fRcuX;                 /\**<X position of RCU the data from this Equippment comes from (0 or 1)*\/ */
-/*   AliHLTUInt8_t  fRcuZ;                 /\**<Z position of RCU the data from this Equippment comes from (0 or 1)*\/ */
-/*   AliHLTUInt8_t  fRcuZOffset;           /\**<offset in therms of towers in the Z direction relative to the module*\/  */
-/*   AliHLTUInt8_t  fRcuXOffset;           /\**<offset in therms of towers in the X direction relative to the module*\/ */
+ private:
+  AliHLTPHOSRcuProcessor (const AliHLTPHOSRcuProcessor & );
+  AliHLTPHOSRcuProcessor   & operator = (const  AliHLTPHOSRcuProcessor  &);
 
-/*   Bool_t fIsSetEquippmentID;            /\**<wether or not the EquippmentID is set*\/ */
+
+
 };
 
 #endif

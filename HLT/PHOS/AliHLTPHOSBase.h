@@ -44,49 +44,6 @@ class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
  public:
   AliHLTPHOSBase();
   virtual ~AliHLTPHOSBase();
-  bool CheckFile(const char *fileName, const char *opt) const;
-
-
-  template<typename T> 
-  void  DumpData(T *array, int N, int nPerLine)
-  {
-    //   cout <<   "DumpData N=  " << N <<endl;
-    for(int i= 0; i< N; i++)
-      {
-	if((i%nPerLine == 0)  &&  (i != 0))
-	  {
-	    printf("\n");
-	  }
-
-	cout << array[i]<< "\t";
-      }
-    printf("\n");
-  }
-
-  template<typename T> 
-  void  ResetArray(T *array, int N) const
-  {
-    for(int i= 0; i< N; i++)
-      {
-	array[i] = 0;
-      }
-  }
- 
-  template<typename T> 
-  T  MaxValue(T *array, int N) const
-  {
-    T tmpMax = 0;
-
-    for(int i = 0; i < N; i++)
-      {
-	if(array[i] > tmpMax)
-	  {
-	    tmpMax = array[i];
-	  }
-      }
-  
-    return tmpMax;
-  }
 
   
 protected:

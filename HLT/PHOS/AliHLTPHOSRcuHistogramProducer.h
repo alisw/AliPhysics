@@ -20,13 +20,15 @@
 class TH1;
 class TH2D;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
+class AliHLTPHOSUtilities; 
 
 #define XBIN_LOW  0
 #define XBIN_UP   1023
 #define N_BINS    1023
 
-class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSBase
+//class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSBase
 //class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSRcuProcessor
+class AliHLTPHOSRcuHistogramProducer 
 {
  public:
   //  AliHLTPHOSRcuHistogramProducer();
@@ -69,6 +71,9 @@ class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSBase
   AliHLTUInt8_t fModuleID; /**<ID of the module this component read data from (0-4)*/
   AliHLTUInt8_t fRcuX;     /**<X position of RCU the data from this Equippment comes from (0 or 1)*/
   AliHLTUInt8_t fRcuZ;     /**<Z position of RCU the data from this Equippment comes from (0 or 1)*/
+
+  AliHLTPHOSUtilities *fUtilitiesPtr;
+
 };
 
 #endif

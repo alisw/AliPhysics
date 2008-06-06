@@ -7,7 +7,7 @@
 //#include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"
 //#include "AliHLTPHOSBase.h"
-
+//class AliHLTPHOSUtilities;
 
 class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
 {
@@ -69,9 +69,12 @@ class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
  AliHLTPHOSRawAnalyzerPeakFinder & operator = (const AliHLTPHOSRawAnalyzerPeakFinder &);
 
  Double_t   *fTVectorPtr;  //[1008]        /**<Peakfinder vector for TOF reconstruction*/
-  Double_t   *fAVectorPtr;  //[1008]        /**<Peakfinder vector for Energy reconstruction*/  
-  Int_t       fTVectorSize;
-  Int_t       fAVectorSize;
+ Double_t   *fAVectorPtr;  //[1008]        /**<Peakfinder vector for Energy reconstruction*/  
+ Int_t       fTVectorSize;
+ Int_t       fAVectorSize;
+ 
+ // AliHLTPHOSUtilities *fUtilitiesPtr;
+
 
   ClassDef(AliHLTPHOSRawAnalyzerPeakFinder, 2) 
   

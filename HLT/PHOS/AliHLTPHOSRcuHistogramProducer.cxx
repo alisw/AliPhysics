@@ -20,7 +20,7 @@
 #include "TFile.h"
 #include "unistd.h"
 #include <time.h>
-
+#include "AliHLTPHOSUtilities.h" 
 
 #define THRESHOLD 30
 
@@ -36,26 +36,34 @@ using  namespace std;
 **************************************************************************/
 
 
-AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSBase(), 
+AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer(): // AliHLTPHOSBase(), 
+  //		    AliHLTPHOSRcuProcessor(),
 								    fCellAccEnergy(), 
 								    fModuleID(0), 
 								    fRcuX(0), 
-								    fRcuZ(0)
+								    fRcuZ(0),
+								    fUtilitiesPtr(0)
 {
+  fUtilitiesPtr = new  AliHLTPHOSUtilities;
+
   //Default constructor
   //  cout << "WARNING: You cannot invoke the AliHLTPHOSRcuHistogramProducer without arguments" << endl;
   //  cout << "Usage AliHLTPHOSRcuHistogramProducer(ModuleID, X. Z)" << endl;
 } 
 
 
-AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ): AliHLTPHOSBase(), 
+AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ): //AliHLTPHOSBase(), 
+  //	AliHLTPHOSRcuProcessor(),
 																fCellAccEnergy(),
 																fModuleID(moduleID), 
 																fRcuX(rcuX), 
-																fRcuZ(rcuZ)
+																fRcuZ(rcuZ),
+																fUtilitiesPtr(0)
 {
 
   //Se header file for documentation
+  fUtilitiesPtr = new AliHLTPHOSUtilities();
+
   char *tmp = getenv("HOME");
   if(tmp == 0)
     {
@@ -276,9 +284,9 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
   char runNumberFile[256]; 
   char timeString[256];
 
-  ResetArray(runNumberFile, 256);
-  ResetArray(tmpEFileName, 256);
-  ResetArray(timeString, 256);
+  fUtilitiesPtr->ResetArray(runNumberFile, 256);
+  fUtilitiesPtr->ResetArray(tmpEFileName, 256);
+  fUtilitiesPtr->ResetArray(timeString, 256);
   
 
   sprintf(runNumberFile, "%s/rundir/runNumber.txt", getenv("HOME"));

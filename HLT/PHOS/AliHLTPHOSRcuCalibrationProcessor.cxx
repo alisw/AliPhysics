@@ -20,10 +20,12 @@
 #include "TFile.h"
 #include "unistd.h"
 #include <time.h>
+//#include "AliHLTPHOSUtilities.h" 
 
 #define THRESHOLD 30
 
 using  namespace std;
+
 
 
 /*************************************************************************
@@ -34,17 +36,21 @@ using  namespace std;
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
 
-
+/*
 AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLTPHOSBase(), 
 									  fCellAccEnergy(),
 									  fModuleID(0), 
 									  fRcuX(0), 
 									  fRcuZ(0)
-{
+									  //  fUtilitiesPtr(0)
+									  */
+//{
+  
+  //  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
   //Default constructor
   //  cout << "WARNING: You cannot invoke the AliHLTPHOSRcuCalibrationProcessor without arguments" << endl;
   //  cout << "Usage AliHLTPHOSRcuCalibrationProcessor(ModuleID, X. Z)" << endl;
-} 
+//} 
 
 //AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
 AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ):AliHLTPHOSBase(),
@@ -52,9 +58,11 @@ AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8
 																     fModuleID(moduleID), 
 																     fRcuX(rcuX), 
 																     fRcuZ(rcuZ)
-
+																     
 {
   //Se header file for documentation
+  //  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
+
   char *tmp = getenv("HOME");
 
   if(tmp == 0)
@@ -260,10 +268,12 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
   char tmpDeadFileName_gain1[256]; 
   char runNumberFile[256]; 
   char timeString[256];
-  ResetArray(runNumberFile, 256);
-  ResetArray(tmpEFileName, 256);
-  ResetArray(timeString, 256);
-  
+
+  /*
+  fUtilitiesPtr->ResetArray(runNumberFile, 256);
+  fUtilitiesPtr->ResetArray(tmpEFileName, 256);
+  fUtilitiesPtr->ResetArray(timeString, 256);
+  */
 
   sprintf(runNumberFile, "%s/rundir/runNumber.txt", getenv("HOME"));
 

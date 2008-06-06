@@ -8,6 +8,7 @@
 //#include "AliHLTPHOSConstants.h"
 //using  namespace PhosHLTConst;
 #include "AliHLTPHOSBase.h"
+class AliHLTPHOSUtilities;
 
 
 class AliHLTPHOSPattern : public AliHLTPHOSBase
@@ -37,7 +38,10 @@ class AliHLTPHOSPattern : public AliHLTPHOSBase
   int fN; /**<The number of detected patterns equal to fPattern*/ 
   int fCnt; 
   AliHLTPHOSPattern *fPattern;
- };
+   
+  AliHLTPHOSUtilities *fUtilitiesPtr;
+
+};
 
 #endif
 

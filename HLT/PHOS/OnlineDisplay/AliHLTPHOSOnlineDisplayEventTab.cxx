@@ -148,10 +148,7 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
     {
       Int_t moduleID;
       AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
-
-      cout <<The size of   <<
       
-
       unsigned int *t = (unsigned int*)cellEnergiesPtr;
       
       for(int i = 0; i < 10000; i++)
@@ -213,6 +210,8 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	    
 	      //  cout <<   << endl;
 
+	      // CRAP PTH
+	      
 	      gAliEveBoxSet->AddBox(2.2*(tmpX + N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX) - 1.1,
 				    0,
 				    2.2*(tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ) - 1.1,
@@ -220,6 +219,7 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 				    0.4*140*currentChannel->fEnergy/1024,
 				    2.2);
 	      gAliEveBoxSet->DigitValue(TMath::Nint(currentChannel->fEnergy));
+	      
 
 	      for(int j= 0; j< currentChannel->fNSamples; j++)
 		{
@@ -237,6 +237,16 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	  
 	  else if(tmpGain == LOW_GAIN)
 	    {
+	      /*	 
+	      gAliEveBoxSet->AddBox(2.2*(tmpX + N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX) - 1.1,
+				    0,
+				    2.2*(tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ) - 1.1,
+				    2.2,
+				    0.4*140*currentChannel->fEnergy/1024,
+				    2.2);
+	      gAliEveBoxSet->DigitValue(TMath::Nint(currentChannel->fEnergy));
+	      */
+
 	      fgLegoPlotLGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,
 				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ,    currentChannel->fEnergy);
 	      for(int j= 0; j< currentChannel->fNSamples; j++)

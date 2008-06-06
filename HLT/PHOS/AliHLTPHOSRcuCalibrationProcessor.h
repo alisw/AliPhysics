@@ -20,6 +20,7 @@
 class TH1;
 class TH2D;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
+//class AliHLTPHOSUtilities;
 
 #define XBIN_LOW  0
 #define XBIN_UP   1023
@@ -45,11 +46,11 @@ class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
  protected:
  
  private:
+  AliHLTPHOSRcuCalibrationProcessor();
   AliHLTPHOSRcuCalibrationProcessor(const  AliHLTPHOSRcuCalibrationProcessor & );
   AliHLTPHOSRcuCalibrationProcessor & operator = (const  AliHLTPHOSRcuCalibrationProcessor &);
   void SetDefaultHistoOutDir(); 
   void ScanTimeString(char *timeString);
-  AliHLTPHOSRcuCalibrationProcessor();
   char fHistoOutDir[512];
 
   TH1F *fEnergyHistogramPtrs[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    /**<Array to store energy distribution per channel for one rcu*/
@@ -67,6 +68,9 @@ class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
   AliHLTUInt8_t fModuleID; /**<ID of the module this component read data from (0-4)*/
   AliHLTUInt8_t fRcuX;     /**<X position of RCU the data from this Equippment comes from (0 or 1)*/
   AliHLTUInt8_t fRcuZ;     /**<Z position of RCU the data from this Equippment comes from (0 or 1)*/
+
+  //  AliHLTPHOSUtilities *fUtilitiesPtr;
+
 };
 
 #endif

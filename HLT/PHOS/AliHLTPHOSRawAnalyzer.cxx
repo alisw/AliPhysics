@@ -15,10 +15,11 @@
 
 
 #include "AliHLTPHOSRawAnalyzer.h"
-
+#include "AliHLTPHOSUtilities.h" 
 
 AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),  
-						 fDoCorrectBaselineUsingFirstFiveSamples(false),
+						 //	 fDoCorrectBaselineUsingFirstFiveSamples(false),
+						 fDoCorrectBaselineUsingFirstFiveSamples(true),
 						 fDoubleDataPtr(0), 
 						 fIntDataPtr(0), 
 						 fSampleFrequency(10),
@@ -27,12 +28,13 @@ AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),
 						 fTau(2), 
 						 fDTof(99999), 
 						 fDAmpl(99999),
-						 fStartIndex(0) 
+						 fStartIndex(0),
+						 fUtilitiesPtr(0)
 {
   //  fIntDataPtr = new UInt_t[1008];
 
   //  fDoubleDataPtr;   
-
+  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
 }
 
 AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
@@ -80,19 +82,28 @@ AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t *data, const 
 {
   //  cout << "AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples" << endl;
 
-  int sumOfFirstFiveSamples = 0;
+  
+  unsigned int sumOfFirstFiveSamples = 0;
 
   for(int i=0; i< 5; i++)
     {
       sumOfFirstFiveSamples += data[i];
     }
 
-  int valueToSubtract = sumOfFirstFiveSamples/5;
+  unsigned int valueToSubtract = sumOfFirstFiveSamples/5;
 
   for(int j = 0; j < length; j++)
     {
-      data[j] = data[j] - valueToSubtract;
+      if( (int)(data[j] - valueToSubtract) > 0)
+	{
+	  data[j] = data[j] - valueToSubtract;
+	}
+      else
+	{
+	  data[j] = 0;
+	}
     }
+  
 }
 
 

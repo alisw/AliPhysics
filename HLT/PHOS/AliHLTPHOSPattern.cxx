@@ -16,7 +16,7 @@
 
 #include "AliHLTPHOSPattern.h"
 #include <iostream>
-
+#include "AliHLTPHOSUtilities.h" 
 
 using namespace std;
 
@@ -25,8 +25,10 @@ AliHLTPHOSPattern::AliHLTPHOSPattern(const int *pattern, const int length) : Ali
 									     fPatternLength(0), 
 									     fN(0), 
 									     fCnt(0), 
-									     fPattern(0)
+									     fPattern(0),
+									     fUtilitiesPtr(0)
 {
+  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
   SetPattern(pattern, length);
 }
 
@@ -201,10 +203,11 @@ AliHLTPHOSPattern::GetPattern(int *pattern,  const int maxlength) const
 }
 
 
+
 void 
 AliHLTPHOSPattern::PrintPattern(const int nPerLine)
 {
-  DumpData(fVal, fPatternLength  , nPerLine);
+  fUtilitiesPtr->DumpData(fVal, fPatternLength  , nPerLine);
 }
 
 // void  DumpData(T *array, int N, int nPerLine)

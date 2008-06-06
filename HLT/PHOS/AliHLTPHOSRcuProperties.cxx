@@ -17,14 +17,11 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRcuProperties.h"
-//#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSUtilities.h"
 
 
-//#include ""
 
-
-AliHLTPHOSRcuProperties::AliHLTPHOSRcuProperties() :fTest(-2),
-						    fkEquippmentID(0),
+AliHLTPHOSRcuProperties::AliHLTPHOSRcuProperties() :fkEquippmentID(0),
 						    fModID(2), 
 						    fRcuID(0),
 						    fRcuX(0), 
@@ -35,8 +32,11 @@ AliHLTPHOSRcuProperties::AliHLTPHOSRcuProperties() :fTest(-2),
 						    fPrintInfoFrequncy(10000),
 						    fIsSetEquippmentID(kFALSE),
 						    fLog(),
-						    fIsInitialized(false)
+						    fIsInitialized(false),
+						    fUtilitiesPtr(0)
 {
+ 
+  fUtilitiesPtr = new AliHLTPHOSUtilities();
 
 }
 
@@ -46,7 +46,7 @@ AliHLTPHOSRcuProperties::~AliHLTPHOSRcuProperties()
 }
 
 
-const AliHLTUInt16_t
+const int
 AliHLTPHOSRcuProperties::GetEquippmentID() const
 {
   return fkEquippmentID;
@@ -56,131 +56,46 @@ AliHLTPHOSRcuProperties::GetEquippmentID() const
 const int 
 AliHLTPHOSRcuProperties::GetRCUID() const
 {
-  cout << "AliHLTPHOSRcuProperties::GetRCUI returning " <<  fRcuID  << endl;
-  if(fIsInitialized == true)
-    {
-      cout <<"AliHLTPHOSRcuProperties::GetRCUID fIsInitialized = TRUE"  << endl;
-    }
-  else
-    {
-      cout <<"AliHLTPHOSRcuProperties::GetRCUID fIsInitialized = FALSE"  << endl;
-    }
-
- return fRcuID;
-  // cout << "AliHLTPHOSRcuProperties::GetRCUI returning " <<  fRcuID  << endl;
-
-  // int tmpRcuId = 0;
-
-
-  /*
-  if(fRcuZ ==0 && fRcuX == 0)
-    {
-      tmpRcuId = 0; 
-    }
-
-  if(fRcuZ ==1 && fRcuX == 0)
-    {
-      tmpRcuId = 1; 
-    }
-  
-  if(fRcuZ ==1 && fRcuX == 1)
-    {
-      tmpRcuId = 2; 
-    }
-
-    if(fRcuZ ==0 && fRcuX == 1)
-    {
-      tmpRcuId = 3; 
-    }
-  */   
-
-  //  return tmpRcuId;
-}
-
-
-
-void 
-AliHLTPHOSRcuProperties::SetEquippmentID(AliHLTUInt16_t id)
-{
-  AliHLTUInt16_t  &ref = const_cast<AliHLTUInt16_t&>(fkEquippmentID); 
-  ref = id;
+  return fRcuID;
 }
 
 
 int
 AliHLTPHOSRcuProperties::ScanArguments(int argc, const char** argv)
 {
-  fPrintInfo = kFALSE;
-  int iResult=0;
-  TString argument="";
+  int iResult=0; 
+  //       -equipmentID
+  fIsSetEquippmentID = fUtilitiesPtr->ScanSingleIntArgument(argc, argv, "-equipmentID", &fkEquippmentID);
 
-  for(int i=0; i<argc && iResult>=0; i++) 
+  if(fIsSetEquippmentID == true)
     {
-      argument=argv[i];
-      
-    
-      if (argument.IsNull()) 
-	{
-	  continue;
-	}
-                        
-    if (argument.CompareTo("-equipmentID") == 0) 
-	{
-	  cout << "AliHLTPHOSRcuProperties:ScanArguments  argument = -equipmentID   "  <<endl;  
-	  if(i+1 <= argc)
-	    {
-	      SetEquippmentID((AliHLTUInt16_t)atoi(argv[i+1]));
-	      cout <<"AliHLTPHOSRcuProperties:ScanArguments  equipmentID =  " << fkEquippmentID  <<endl;
-	      fLog.Logging(kHLTLogInfo, __FILE__ , "Init info", "  setting equippment ID to  %lu ", fkEquippmentID); 
-	      SetCoordinates(fkEquippmentID);
-	      fIsSetEquippmentID = kTRUE;
-	    }
-	  else
-	    {
-	       iResult= -1;
-	       fLog.Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuProperties::ScanArguments( int argc, const char** argv )", "Missing argument",
-			"The argument -equippmentID expects a number");
-	       return  iResult;   
-	    }
-	}
-    
-    
-    if (argument.CompareTo("-printinfo") == 0) 
-      {
-	if(i+1 <= argc)
-	  {
-	    argument=argv[i+1];
-	    fPrintInfoFrequncy = atoi(argv[i+1]);
-	    fPrintInfo = kTRUE;
-	    fLog.Logging(kHLTLogInfo, __FILE__ , "Info output", " setting printinfo = kTRUE, with update frequency every %lu th event ", fPrintInfoFrequncy);
-	  }
-	else
-	  {
-	    //	    cout << "WARNING: asking for event info, but no update frequency is specified, option is ignored" << endl;
-	    fLog.Logging(kHLTLogWarning, __FILE__ , "Invalid request", " asking for event info, but no update frequency is specified, request  ignored");
-	  }
-      }
- 
+      cout << "AliHLTPHOSRcuProperties::ScanArguments fIsSetEquippmentID  == true" << endl;
     }
+  else
+    {
+      cout << "AliHLTPHOSRcuProperties::ScanArguments  fIsSetEquippmentID  == false" << endl;
+    }
+  
 
-
+  InitializeCoordinates(fkEquippmentID);
+  //  fPrintInfo = fIsSetEquippmentID = fUtilitiesPtr->ScanSingleIntArgument(argc, argv, "-printinfo", &fPrintInfoFrequncy);
+  fPrintInfo  = fUtilitiesPtr->ScanSingleIntArgument(argc, argv, "-printinfo", &fPrintInfoFrequncy);
+  
   if(fIsSetEquippmentID == kFALSE)
     {
       fLog.Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuProperties::DoInt( int argc, const char** argv )", "Missing argument",
 	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
       iResult = -3; 
     }
+  
   return iResult;
 }
 
 
 void 
-AliHLTPHOSRcuProperties::SetCoordinates(AliHLTUInt16_t /*equippmentID*/)
+AliHLTPHOSRcuProperties::InitializeCoordinates(AliHLTUInt16_t /*equippmentID*/)
 {
-  // int rcuIndex =  (fkEquippmentID - 1792)%N_RCUS_PER_MODULE;
-
   fRcuID =  (fkEquippmentID - 1792)%N_RCUS_PER_MODULE;
-  //  fModID = (fkEquippmentID  -1792 -rcuIndex)/N_RCUS_PER_MODULE;
   fModID = (fkEquippmentID  -1792 - fRcuID)/N_RCUS_PER_MODULE;
  
   if( fRcuID  == 0)
@@ -209,16 +124,6 @@ AliHLTPHOSRcuProperties::SetCoordinates(AliHLTUInt16_t /*equippmentID*/)
 
   fRcuZOffset =  N_ZROWS_RCU*fRcuZ;
   fRcuXOffset =  N_XCOLUMNS_RCU*fRcuX;
-  
-  // cout <<"********InitInfo************"<< endl;
-//   cout <<"AliHLTPHOSRcuProperties::SetCoordinate casted"<< endl;
-//   cout <<"rcuIndex"<< fRcuID  <<endl;
-//   cout <<"Equpippment ID =\t"<< fkEquippmentID <<endl;
-//   cout <<"Mod ID =\t"<<  (int)fModID<<endl;
-//   cout <<"RCUX =\t\t" << (int)fRcuX << endl;
-//   cout <<"RCUZ =\t\t" << (int)fRcuZ << endl;
-//   cout <<"RcuZOffset = \t" <<  (int)fRcuZOffset << endl;
-//   cout <<"RcuXOffset = \t" <<  (int)fRcuXOffset << endl << endl;
   fIsInitialized = true;
 }
 

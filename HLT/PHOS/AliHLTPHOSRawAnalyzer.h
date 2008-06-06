@@ -8,6 +8,7 @@
 
 
 #include "AliHLTPHOSBase.h"
+class AliHLTPHOSUtilities;
 
 class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
 //class AliHLTPHOSRawAnalyzer
@@ -77,6 +78,9 @@ class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
   int        fStartIndex;      /**<Starindex of the time dependent altro signal*/
 
   //  double unsigned fTest;
+
+ protected:
+  AliHLTPHOSUtilities *fUtilitiesPtr;
 
  private:
   AliHLTPHOSRawAnalyzer(const AliHLTPHOSRawAnalyzer & );

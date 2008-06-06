@@ -25,39 +25,36 @@
 
 using namespace PhosHLTConst;
 
-//class  AliHLTPHOSRcuProperties : public AliHLTLogging
+#include "AliHLTPHOSUtilities.h"
+
 class  AliHLTPHOSRcuProperties
 {
 public:
   AliHLTPHOSRcuProperties();
   virtual ~AliHLTPHOSRcuProperties();
-
-  const AliHLTUInt16_t  GetEquippmentID() const;
+  const int  GetEquippmentID() const;
   const int GetRCUID() const;
   virtual int ScanArguments(int argc, const char** argv);
-  void SetEquippmentID(AliHLTUInt16_t id);
-  void SetCoordinates(AliHLTUInt16_t equippmentID);
-
-  
-  int fTest;
-
+  void InitializeCoordinates(const AliHLTUInt16_t equippmentID);
+ 
  protected:
-  const AliHLTUInt16_t fkEquippmentID;  /**<Equippment ID as defined by ALICE*/
+  int fkEquippmentID;  /**<Equippment ID as defined by ALICE*/
   AliHLTUInt8_t  fModID; /**<ID of the module this component read data from (0-4)*/
   int fRcuID;
   AliHLTUInt8_t  fRcuX;                 /**<X position of RCU the data from this Equippment comes from (0 or 1)*/
   AliHLTUInt8_t  fRcuZ;                 /**<Z position of RCU the data from this Equippment comes from (0 or 1)*/
   AliHLTUInt8_t  fRcuZOffset;           /**<offset in therms of towers in the Z direction relative to the module*/ 
   AliHLTUInt8_t  fRcuXOffset;           /**<offset in therms of towers in the X direction relative to the module*/
-  Bool_t fPrintInfo;                    /**<wether or not to print debugg info to std out*/
+  bool fPrintInfo;                    /**<wether or not to print debugg info to std out*/
   int fPrintInfoFrequncy;               /**<Defines the update frequency for information printet to std out*/
-
-  Bool_t fIsSetEquippmentID;            /**<wether or not the EquippmentID is set*/
+  bool fIsSetEquippmentID;            /**<wether or not the EquippmentID is set*/
   AliHLTLogging fLog;
-
   bool fIsInitialized; 
- 
-  
+  AliHLTPHOSUtilities *fUtilitiesPtr;
+
+ private:
+  AliHLTPHOSRcuProperties   (const AliHLTPHOSRcuProperties  & );
+  AliHLTPHOSRcuProperties    & operator = (const AliHLTPHOSRcuProperties &);
 
 };
 

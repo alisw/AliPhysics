@@ -16,6 +16,7 @@
 
 
 
+
 #include "AliHLTPHOSRcuAltroPatternTestComponent.h"
 #include "AliHLTPHOSSharedMemoryInterface.h"
 #include "AliHLTPHOSValidCellDataStruct.h" 
@@ -270,7 +271,7 @@ AliHLTPHOSRcuAltroPatternTestComponent::DoInit(int argc, const char** argv )
       return -7;
       
     }
-  else  if(CheckFile(patternFilename, "r") == false)
+  else  if(fUtilitiesPtr->CheckFile(patternFilename, "r") == false)
     {
       char tmpMessage[1024];
       sprintf(tmpMessage, "the file %s could not be found, please check that file exist and that you have read access to it", patternFilename);

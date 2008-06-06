@@ -118,6 +118,7 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
 {
   char tmpHistoName[256]; 
 
+  // fgLegoPlotHGPtr = new TH2D("a Homer","HLT: #pi^{0} 5 - 30Gev HG, High gain",  
   fgLegoPlotHGPtr = new TH2D("a Homer","HLT: #pi^{0} 5 - 30Gev HG, High gain",  
 			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
                              N_ZROWS_MOD,               0, N_ZROWS_MOD);
@@ -150,6 +151,7 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
       
       
       sprintf(tmpHistoName, "TAB b Calibration Data HLT: #pi^{0} 5 - 30GeV gain %d", gain);
+      
       fgHitsHistPtr[gain] = new TH2I(tmpHistoName, tmpHistoName,  
 				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
@@ -157,7 +159,7 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
       fgHitsHistPtr[gain]->Reset();
       fgHitsHistPtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
      
-      sprintf(tmpHistoName, "TAB c Average Data HLT: #pi^{0} 5 - 30GeV gain %d", gain);
+      sprintf(tmpHistoName, "Average Energy gain %d", gain);
       fgAveragePtr[gain] = new TH2D(tmpHistoName,tmpHistoName,  
 				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
@@ -165,7 +167,8 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
       fgAveragePtr[gain]->Reset();
       fgAveragePtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
 
-      sprintf(tmpHistoName, "Dead Channel Map gain%d", gain);
+      //sprintf(tmpHistoName, "Dead Channel Map gain%d", gain);
+      sprintf(tmpHistoName,  "Dead Channel Map gain%d", gain);
       fDeadCannelMapPtr[gain] = new TH2D(tmpHistoName,tmpHistoName,  
 				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
