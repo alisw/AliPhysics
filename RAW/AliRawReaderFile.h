@@ -39,7 +39,7 @@ class AliRawReaderFile: public AliRawReader {
     virtual UInt_t   GetGDCId() const {return 0;};
     virtual UInt_t   GetTimestamp() const {return 0;};
 
-    virtual Int_t    GetEquipmentSize() const {return 0;};
+    virtual Int_t    GetEquipmentSize() const {return fEquipmentSize;};
     virtual Int_t    GetEquipmentType() const {return 0;};
     virtual Int_t    GetEquipmentId() const {return fEquipmentId;};
     virtual const UInt_t* GetEquipmentAttributes() const {return NULL;};
@@ -67,6 +67,7 @@ class AliRawReaderFile: public AliRawReader {
     Int_t            fEquipmentId; // equipment ID from file name
     UChar_t*         fBuffer;      // buffer for payload
     Int_t            fBufferSize;  // size of fBuffer in bytes
+    Int_t            fEquipmentSize; // equipment size from raw-data payload
 
   private :
     AliRawReaderFile(const AliRawReaderFile& rawReader);

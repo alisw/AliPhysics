@@ -45,7 +45,8 @@ AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
   fStream(NULL),
   fEquipmentId(-1),
   fBuffer(NULL),
-  fBufferSize(0)
+  fBufferSize(0),
+  fEquipmentSize(0)
 {
 // create an object to read digits from the given event
 // in the current directory
@@ -62,7 +63,8 @@ AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
   fStream(NULL),
   fEquipmentId(-1),
   fBuffer(NULL),
-  fBufferSize(0)
+  fBufferSize(0),
+  fEquipmentSize(0)
 {
 // create an object to read digits from the given directory
 
@@ -84,7 +86,7 @@ AliRawReaderFile::~AliRawReaderFile()
 #endif
     delete fStream;
   }
-  delete fHeader;
+  if (fHeader) delete fHeader;
   if (fBuffer) delete[] fBuffer;
 }
 
@@ -93,8 +95,14 @@ void AliRawReaderFile::RequireHeader(Bool_t required)
   // Reading of raw data in case of missing
   // raw data header is not implemented for
   // this class
-  if (!required)
-    Fatal("AliRawReaderFile","Reading of raw data without raw data header is not implemented !");
+  if (!required) {
+    Warning("AliRawReaderFile","Reading of raw data without raw data header is not implemented !");
+    if (fHeader) delete fHeader;
+    fHeader = NULL;
+  }
+  else {
+    if (!fHeader) fHeader = new AliRawDataHeader;
+  }
 
   AliRawReader::RequireHeader(required);
 }
@@ -137,6 +145,7 @@ Bool_t AliRawReaderFile::OpenNextFile()
     delete fStream;
     fStream = NULL;
     fEquipmentId = -1;
+    fEquipmentSize = 0;
   }
 
   if (!fDirectory) return kFALSE;
@@ -173,10 +182,12 @@ Bool_t AliRawReaderFile::ReadHeader()
   if (!fStream) return kFALSE;
   do {
     if (fCount > 0) fStream->seekg(Int_t(fStream->tellg()) + fCount);
-    while (!fStream->read((char*) fHeader, sizeof(AliRawDataHeader))) {
-      if (!OpenNextFile()) return kFALSE;
+    if (fHeader) {
+      while (!fStream->read((char*) fHeader, sizeof(AliRawDataHeader))) {
+	if (!OpenNextFile()) return kFALSE;
+      }
     }
-    if (fHeader->fSize != 0xFFFFFFFF) {
+    if (fHeader && fHeader->fSize != 0xFFFFFFFF) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
     } else {
       UInt_t currentPos = fStream->tellg();
@@ -184,6 +195,8 @@ Bool_t AliRawReaderFile::ReadHeader()
       fCount = UInt_t(fStream->tellg()) - currentPos;
       fStream->seekg(currentPos);
     }
+    fEquipmentSize = fCount;
+    if (fHeader) fEquipmentSize += sizeof(AliRawDataHeader);
   } while (!IsSelected());
   return kTRUE;
 }
