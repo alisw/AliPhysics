@@ -268,7 +268,7 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
     
     Int_t nTracks = aod->GetNTracks();
     // loop over vertices
-    Int_t nVtxs = aod->GetNVertices();
+    Int_t nVtxs = aod->GetNumberOfVertices();
     for (Int_t nVtx = 0; nVtx < nVtxs; nVtx++) {
       // print track info
       AliAODVertex *vertex = aod->GetVertex(nVtx);
@@ -499,7 +499,7 @@ void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
 
     Int_t nTracks = aod->GetNTracks();
     // loop over vertices 
-    Int_t nVtxs = aod->GetNVertices();
+    Int_t nVtxs = aod->GetNumberOfVertices();
     for (Int_t nVtx = 0; nVtx < nVtxs; nVtx++) {
       AliAODVertex *vertex = aod->GetVertex(nVtx);
       if(vertex->GetType() == 1) nKinks += 1;
@@ -710,7 +710,7 @@ void AliAODTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
 
     Int_t nTracks = aod->GetNTracks();
     // loop over vertices 
-    Int_t nVtxs = aod->GetNVertices();
+    Int_t nVtxs = aod->GetNumberOfVertices();
     for (Int_t nVtx = 0; nVtx < nVtxs; nVtx++) {
       AliAODVertex *vertex = aod->GetVertex(nVtx);
       if(vertex->GetType() == 1) nKinks += 1;
@@ -927,7 +927,7 @@ void AliAODTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     
     Int_t nTracks = aod->GetNTracks();
     // loop over vertices
-    Int_t nVtxs = aod->GetNVertices();
+    Int_t nVtxs = aod->GetNumberOfVertices();
     for (Int_t nVtx = 0; nVtx < nVtxs; nVtx++) {
       // print track info
       AliAODVertex *vertex = aod->GetVertex(nVtx);
