@@ -68,8 +68,6 @@ class AliITSCalibration : public TObject {
     virtual const char  *DataType() const {return fDataType.Data();}
     // Type of data - real or simulated
     virtual void    SetDataType(const char *data="simulated") {fDataType=data;}
-    // Set parameters options: "same" or read from "file" or "SetInvalid" or...
-    //  virtual void   SetParamOptions(const char*,const char*) = 0;
     // Set noise parameters 
     virtual void   SetNoiseParam(Double_t, Double_t) = 0;
     // Number of parameters to be set
@@ -77,8 +75,6 @@ class AliITSCalibration : public TObject {
     // Set detector parameters: gain, coupling ...
     virtual  void   SetDetParam(Double_t *) = 0;
 
-    // Parameters options
-    //  virtual void   ParamOptions(char *,char*) const = 0;
     virtual Int_t  NDetParam() const = 0;
     virtual void   GetDetParam(Double_t *) const = 0;
     virtual void   GetNoiseParam(Double_t&, Double_t&) const = 0;
@@ -157,11 +153,6 @@ class AliITSCalibration : public TObject {
 
     virtual void SetDiffCoeff(Float_t p1, Float_t p2) {fResponse->SetDiffCoeff(p1,p2);}
     virtual void DiffCoeff(Float_t &diff,Float_t &diff1) const {fResponse->DiffCoeff(diff,diff1);} 
-    virtual void SetFilenames(const char *f1="",const char *f2="",
-				 const char *f3="") {fResponse->SetFilenames(f1,f2,f3);}    
-    virtual void Filenames(char* input,char* baseline,char* param) {fResponse->Filenames(input,baseline,param);}
-    virtual void SetOutputOption(Bool_t write=kFALSE) {fResponse->SetOutputOption(write);}
-    virtual Bool_t OutputOption() const {return fResponse->OutputOption();} 
 
  protected:
     AliITSCalibration(const AliITSCalibration &ob); // copy constructor

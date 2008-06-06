@@ -24,8 +24,6 @@
 
 
 const Float_t AliITSresponseSSD::fgkDiffCoeffDefault = 0.;
-const TString AliITSresponseSSD::fgkOption1Default = "";
-const TString AliITSresponseSSD::fgkOption2Default = "";
 const Double_t AliITSresponseSSD::fgkfCouplingPR = 0.01;
 const Double_t AliITSresponseSSD::fgkfCouplingPL = 0.01;
 const Double_t AliITSresponseSSD::fgkfCouplingNR = 0.01;
@@ -43,13 +41,10 @@ fCouplingPR(0),
 fCouplingPL(0),
 fCouplingNR(0),
 fCouplingNL(9),
-fZSThreshold(0),
-fOption1(),
-fOption2(){
+fZSThreshold(0){
     // Default Constructor
 
   SetDiffCoeff(fgkDiffCoeffDefault,0.);
-  SetParamOptions(fgkOption1Default.Data(),fgkOption2Default.Data());
   SetADCpereV();
   SetKeVperADC();
   SetCouplings(fgkfCouplingPR,fgkfCouplingPL,fgkfCouplingNR,fgkfCouplingNL);
@@ -64,9 +59,7 @@ fCouplingPR(ob.fCouplingPR),
 fCouplingPL(ob.fCouplingPL),
 fCouplingNR(ob.fCouplingNR),
 fCouplingNL(ob.fCouplingNL),
-fZSThreshold(ob.fZSThreshold),
-fOption1(ob.fOption1),
-fOption2(ob.fOption2) {
+fZSThreshold(ob.fZSThreshold){
   // Copy constructor
 
 }

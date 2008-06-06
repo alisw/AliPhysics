@@ -33,11 +33,9 @@ const Float_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;
 const Float_t AliITSresponseSDD::fgkfChargeLossDefault = 0;
 const Float_t AliITSresponseSDD::fgkDiffCoeffDefault = 3.23;
 const Float_t AliITSresponseSDD::fgkDiffCoeff1Default = 30.;
-const TString AliITSresponseSDD::fgkParam1Default = "same";
-const TString AliITSresponseSDD::fgkParam2Default = "same";
 const TString AliITSresponseSDD::fgkOptionDefault = "ZS";
 const Float_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
-const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 53.57;
+const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 54.30;
 const Float_t AliITSresponseSDD::fgkADC2keVDefault = 5.243;
 const Float_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
 const Int_t AliITSresponseSDD::fgkNcompsDefault = 121;
@@ -57,9 +55,7 @@ fMaxAdc(fgkMaxAdcDefault),
 fNsigmas(fgkNsigmasDefault),
 fGaus(),
 fNcomps(fgkNcompsDefault),
-fOption(),
-fParam1(),
-fParam2() {
+fOption(){
   // default constructor
   fGaus = 0;
   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
@@ -69,9 +65,7 @@ fParam2() {
   SetElectronics();
   SetDynamicRange(fgkDynamicRangeDefault);
   SetChargeLoss(fgkfChargeLossDefault);
-  SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
   SetZeroSupp(fgkOptionDefault);
-  SetOutputOption();
 }
 
 

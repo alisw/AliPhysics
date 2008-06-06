@@ -67,8 +67,6 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
 
     virtual void GetCouplingOption(char *opt) const {((AliITSresponseSPD*)fResponse)->CouplingOption(opt);}
     virtual void SetCouplingOption(const char* opt) {((AliITSresponseSPD*)fResponse)->SetCouplingOption(opt);}
-    virtual void SetParamOptions(const char* a,const char* b) {((AliITSresponseSPD*)fResponse)->SetParamOptions(a,b);}
-    virtual void GetParamOptions(char *a,char* b) const {((AliITSresponseSPD*)fResponse)->ParamOptions(a,b);}
     virtual void SetSigmaDiffusionAsymmetry(Double_t ecc) {((AliITSresponseSPD*)fResponse)->SetSigmaDiffusionAsymmetry(ecc);}
     virtual void GetSigmaDiffusionAsymmetry(Double_t &ecc) const {((AliITSresponseSPD*)fResponse)->GetSigmaDiffusionAsymmetry(ecc);}
     

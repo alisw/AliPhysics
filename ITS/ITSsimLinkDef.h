@@ -50,7 +50,6 @@
 #pragma link C++ class  AliITSHuffman+;
 #pragma link C++ class  AliITSetfSDD+;
 // SSD simulation and reconstruction
-#pragma link C++ class  AliITSdcsSSD+;
 #pragma link C++ class AliITSsDigitize+;
 #pragma link C++ class AliITSDigitizer+;
 #pragma link C++ class AliITSFDigitizer+;

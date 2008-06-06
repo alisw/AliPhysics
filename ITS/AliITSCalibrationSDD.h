@@ -159,8 +159,6 @@ class AliITSCalibrationSDD : public AliITSCalibration {
       if(nAnode<256) return fDrSpeed0->GetDriftSpeed(0,nAnode);
       else return fDrSpeed1->GetDriftSpeed(0,nAnode-256);
     }
-    virtual void SetParamOptions(const char *opt1,const char *opt2) {((AliITSresponseSDD*)fResponse)->SetParamOptions(opt1,opt2);}
-    virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSDD*)fResponse)->ParamOptions(opt1,opt2);}
 
     virtual void SetZeroSupp (const char *opt) {((AliITSresponseSDD*)fResponse)->SetZeroSupp(opt);} 
     virtual const char *GetZeroSuppOption() const {return ((AliITSresponseSDD*)fResponse)->ZeroSuppOption();}

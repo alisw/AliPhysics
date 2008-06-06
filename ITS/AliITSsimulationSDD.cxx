@@ -177,8 +177,6 @@ void AliITSsimulationSDD::Init(){
     fElectronics = new AliITSetfSDD(timeStep/fScaleSize,
                                     res->Electronics());
 
-    char opt1[20], opt2[20];
-    res->ParamOptions(opt1,opt2);
 
     fITS       = (AliITS*)gAlice->GetModule("ITS");
  
@@ -678,9 +676,7 @@ void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAdd
   // add baseline, noise, gain, electronics and ADC saturation effects
   // apply dead channels
 
-  char opt1[20], opt2[20];
   AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(mod);
-  res->GetParamOptions(opt1,opt2);
   Double_t baseline=0; 
   Double_t noise=0; 
   Double_t gain=0; 

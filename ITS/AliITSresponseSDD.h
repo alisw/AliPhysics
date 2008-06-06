@@ -50,11 +50,6 @@ class AliITSresponseSDD : public AliITSresponse {
     virtual Float_t ADC2keV()const {return fADC2keV;}
     static Float_t DefaulttADC2keV() {return fgkADC2keVDefault;}
 
-    virtual void SetParamOptions(const char *opt1,const char *opt2) {
-	// Parameters: "same" or read from "file" 
-	fParam1=opt1; fParam2=opt2;}
-    virtual void   ParamOptions(char *opt1,char *opt2) const {// options
-	strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());}
  
     void    SetZeroSupp (const char *opt) {
 	// Zero-suppression option - could be ZS or NOTSUPP
@@ -89,8 +84,6 @@ class AliITSresponseSDD : public AliITSresponse {
     static const Float_t fgkfChargeLossDefault; // default for fChargeLoss
     static const Float_t fgkDiffCoeffDefault; // default for fDiffCoeff
     static const Float_t fgkDiffCoeff1Default; // default for fDiffCoeff1 
-    static const TString fgkParam1Default; // default for fParam1
-    static const TString fgkParam2Default; // default for fParam2
     static const TString fgkOptionDefault; // default for fOption
     static const Float_t fgkDriftSpeedDefault; // default for drift speed
     static const Float_t fgkTimeOffsetDefault; // default for fTimeOffset
@@ -111,15 +104,13 @@ class AliITSresponseSDD : public AliITSresponse {
     TArrayF   *fGaus;          // Gaussian lookup table for signal generation
     Int_t      fNcomps;        // Number of samplings along the gaussian
     TString    fOption;        // Zero-suppresion option (ZS or non-ZS)
-    TString    fParam1;        // Read baselines from file option
-    TString    fParam2;        // Read compression algo thresholds from file
 
  private:
 
    AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
    AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-    ClassDef(AliITSresponseSDD,11) // Base response class 
+    ClassDef(AliITSresponseSDD,12) // Base response class 
     
     };
 #endif

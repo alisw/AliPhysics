@@ -2,7 +2,6 @@
 #include "AliCDBManager.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSgeomTGeo.h"
-#include "AliITSresponseSDD.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
@@ -12,13 +11,12 @@
 #include <TRandom3.h>
 #endif
 
-void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999999999 ){
+void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the calibration files for SDD         //
   // Generates:                                                        //
   //  1 file with 260 AliITSCalibrationSDD objects with                //
   //    baselines, noise, gain, drift speed for each module (CalibSDD) //
-  //  1 file with the AliITSrespionseSDD object (RespSDD)              //
   ///////////////////////////////////////////////////////////////////////
   
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
@@ -26,28 +24,15 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999
   }
   
 
-  AliCDBMetaData *md1= new AliCDBMetaData(); // metaData describing the object
-  md1->SetObjectClassName("TObjArray");
-  md1->SetResponsible("Francesco Prino");
-  md1->SetBeamPeriod(0);
-  md1->SetComment("Simulated data");
-
-  AliCDBMetaData *md2 = new AliCDBMetaData();
-  md2->SetObjectClassName("AliITSresponse");
-  md2->SetResponsible("Francesco Prino");
-  md2->SetBeamPeriod(0);
-  md2->SetComment("Simulated data");
-
+  AliCDBMetaData *md= new AliCDBMetaData(); // metaData describing the object
+  md->SetObjectClassName("TObjArray");
+  md->SetResponsible("Francesco Prino");
+  md->SetBeamPeriod(0);
+  md->SetComment("Simulated data");
 
   AliCDBId idCalSDD("ITS/Calib/CalibSDD",firstRun, lastRun);
-  TObjArray respSDD(260);
-  respSDD.SetOwner(kFALSE);
-
-
-
-  AliCDBId idRespSDD("ITS/Calib/RespSDD",firstRun, lastRunResp);
-  AliITSresponseSDD* rd = new AliITSresponseSDD();
-
+  TObjArray calSDD(260);
+  calSDD.SetOwner(kFALSE);
 
   // BAD modules data 
   const Int_t nbadmod=6;
@@ -249,14 +234,14 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999
       resd->SetChipBad(3);
     }
 
-    respSDD.Add(resd);
+    calSDD.Add(resd);
     printf("Added module %d\n",mod);
 	}
     
   FILE* out = fopen("deadchannels.dat","w");
   for(Int_t i=0;i<260;i++){
     fprintf(out,"MODULE=%d\n",i);
-    AliITSCalibrationSDD* cl = (AliITSCalibrationSDD*)respSDD.At(i);
+    AliITSCalibrationSDD* cl = (AliITSCalibrationSDD*)calSDD.At(i);
     Int_t ndead=cl->GetDeadChannels();
     fprintf(out,"n %d\n",ndead);
     for(Int_t n=0;n<ndead;n++){
@@ -264,6 +249,5 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999
     }   
   }
   fclose(out);
-  AliCDBManager::Instance()->GetDefaultStorage()->Put(&respSDD, idCalSDD, md1);   
-  AliCDBManager::Instance()->GetDefaultStorage()->Put(rd, idRespSDD, md2);  
+  AliCDBManager::Instance()->GetDefaultStorage()->Put(&calSDD, idCalSDD, md);   
 }

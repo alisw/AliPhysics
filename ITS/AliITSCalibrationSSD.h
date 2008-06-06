@@ -125,8 +125,6 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     virtual void   Thresholds(Double_t & /* a */, Double_t & /* b */) const 
       {NotImplemented("Thresholds");}
   
-    virtual void SetParamOptions(const char *opt1, const char *opt2) {((AliITSresponseSSD*)fResponse)->SetParamOptions(opt1,opt2);}
-    virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSSD*)fResponse)->ParamOptions(opt1,opt2);}
     virtual void SetADCpereV(Double_t a=120./24888.9) {((AliITSresponseSSD*)fResponse)->SetADCpereV(a);}
     virtual Double_t GetDEvToADC(Double_t eV) const {return ((AliITSresponseSSD*)fResponse)->DEvToADC(eV);}
     virtual Int_t IEvToADC(Double_t eV) const {return ((AliITSresponseSSD*)fResponse)->IEvToADC(eV);} 

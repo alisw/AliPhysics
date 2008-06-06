@@ -23,10 +23,6 @@ class AliITSresponseSPD :  public AliITSresponse {
         {fEccDiff=ecc;}   
     virtual  void   GetSigmaDiffusionAsymmetry(Double_t &ecc) const 
         {ecc=fEccDiff;}
-    virtual void   SetParamOptions(const char* /* a */,const char* /* b */)
-      {NotImplemented("SetParamOptions");}
-    virtual void   ParamOptions(char *,char*) const
-      {NotImplemented("ParamOptions");} 
 
  protected:
 
