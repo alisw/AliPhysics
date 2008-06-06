@@ -656,7 +656,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       vkink,
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
-							       AliAODTrack::kPrimary);
+							       AliAODTrack::kSecondary);
 			if (esdTrackD->GetSign() > 0) nPosTracks++;
 			daughter->SetFlags(esdTrackD->GetStatus());
 			daughter->ConvertAliPIDtoAODPID();
