@@ -19,7 +19,6 @@ class AliRunDigitizer;
 
 class AliZDC;
 class AliZDCHit;
-class AliZDCMergedHit;
 class AliZDCDigit;
 
 class AliZDCDigitizer: public AliDigitizer {
