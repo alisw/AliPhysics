@@ -1,32 +1,40 @@
-#ifndef AliAnalysisTaskESDCheckV0_cxx
-#define AliAnalysisTaskESDCheckV0_cxx
+#ifndef AliAnalysisTaskCheckV0_cxx
+#define AliAnalysisTaskCheckV0_cxx
 
 /*  See cxx source for full Copyright notice */
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskESDCheckV0 class
-//            This task is for QAing the V0s from the ESD
+//                 AliAnalysisTaskCheckV0 class
+//            This task is for QAing the V0s from ESD/AOD
 //              Origin: B.H. Nov2007, hippolyt@in2p3.fr
 //-----------------------------------------------------------------
 
+class TString;
 class TList;
 class TH1F;
 class AliESDEvent;
+class AliAODEvent;
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskESDCheckV0 : public AliAnalysisTask {
+class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskESDCheckV0(const char *name = "AliAnalysisTaskESDCheckV0");
-  virtual ~AliAnalysisTaskESDCheckV0() {}
+  AliAnalysisTaskCheckV0(const char *name = "AliAnalysisTaskCheckV0");
+  virtual ~AliAnalysisTaskCheckV0() {}
   
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+
+  void   SetCollidingSystems(Int_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
+  void   SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   
  private:
   AliESDEvent *fESD;                            //! ESD object
+  AliAODEvent *fAOD;                            //! AOD object
+  TString      fAnalysisType;                   //  ESD or AOD
+  Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb  
   TList       *fListHist;                       //! List of histograms
   TH1F        *fHistTrackMultiplicity;          //! Track multiplicity distribution
   TH1F        *fHistV0Multiplicity;             //! V0 multiplicity distribution
@@ -60,10 +68,10 @@ class AliAnalysisTaskESDCheckV0 : public AliAnalysisTask {
   TH1F        *fHistMassLambdaOn;               //! Invariant Mass of Lambda
   TH1F        *fHistMassAntiLambdaOn;           //! Invariant Mass of Anti-Lambda
    
-  AliAnalysisTaskESDCheckV0(const AliAnalysisTaskESDCheckV0&);            // not implemented
-  AliAnalysisTaskESDCheckV0& operator=(const AliAnalysisTaskESDCheckV0&); // not implemented
+  AliAnalysisTaskCheckV0(const AliAnalysisTaskCheckV0&);            // not implemented
+  AliAnalysisTaskCheckV0& operator=(const AliAnalysisTaskCheckV0&); // not implemented
   
-  ClassDef(AliAnalysisTaskESDCheckV0, 1);
+  ClassDef(AliAnalysisTaskCheckV0, 0);
 };
 
 #endif
