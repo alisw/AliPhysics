@@ -65,11 +65,11 @@ public:
   void SetStartTime (TTimeStamp time)  {fStartTime = time.GetSec(); }
   void SetEndTime (UInt_t stime)  {fEndTime = stime; }
   void SetEndTime (TTimeStamp time)  {fEndTime = time.GetSec(); }
-  Double_t GetValue(UInt_t timeSec);
-  Double_t GetValue(TTimeStamp time);
+  Double_t GetValue(UInt_t timeSec);   // timeSec offset for individual sensor map
+  Double_t GetValue(TTimeStamp time);  // use this for absolute time stamp
   Double_t Eval(const TTimeStamp& time, Bool_t inside=true) const;
   Double_t EvalGraph(const Double_t& timeHour) const;
-  TGraph *MakeGraph (Int_t nPoints=100) const;
+  TGraph *MakeGraph (Int_t nPoints=100, Bool_t debug=kFALSE) const;
   static TClonesArray *  ReadTree(TTree *tree);
   
 

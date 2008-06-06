@@ -58,7 +58,7 @@ class AliDCSSensorArray : public TNamed {
   TGraph* MakeGraph (TObjArray *valueSet);
   void ClearGraph();
   void ClearFit();
-  Double_t GetValue  (UInt_t timeSec, Int_t sensor);
+  Double_t GetValue (UInt_t timeSec, Int_t sensor) const;
   AliDCSSensor* GetSensor (Int_t IdDCS);
   AliDCSSensor* GetSensor (Double_t x, Double_t y, Double_t z);
   AliDCSSensor* GetSensor (const TString& stringID);

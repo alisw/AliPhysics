@@ -23,6 +23,7 @@
 
 
 #include "AliDCSSensor.h"
+#include "TDatime.h"
 ClassImp(AliDCSSensor)
 
 const Double_t kSecInHour = 3600.; // seconds in one hour
@@ -78,7 +79,13 @@ Double_t AliDCSSensor::GetValue(UInt_t timeSec)
 {
  //
  // Get temperature value for actual sensor
- //  timeSec given as offset from start-of-run measured in seconds
+ //  timeSec given as offset from start-of-map measured in seconds
+ //  *NOTE* In the current TPC setup, start-of-map is defined as the 
+ //         first measured point for each sensor. This will be different
+ //         for each sensor in the array. If you want to get a value at the 
+ //         same absolute time, use AliDCSSensor::GetValue(TTimeStamp time)
+ //         or AliDCSSensorArray::GetValue (UInt_t timeSec, Int_t sensor)
+ //         which measure offsets with respect to the (global) start-of-run
  //
  Bool_t inside=kTRUE;
  return Eval(TTimeStamp((time_t)(fStartTime+timeSec),0),inside);
@@ -155,21 +162,35 @@ Double_t AliDCSSensor::EvalGraph(const Double_t& timeHour) const
 	
 
 //_____________________________________________________________________________
-TGraph* AliDCSSensor::MakeGraph(Int_t nPoints) const
+TGraph* AliDCSSensor::MakeGraph(Int_t nPoints, Bool_t debug) const
 {
   //
   // Make graph from start time to end time of DCS values 
   //
 
+ 
+
   UInt_t stepTime = (fEndTime-fStartTime)/nPoints;
+  
+  if (debug==kTRUE) {
+     printf ("Start time %d, End time %d, step time %d\n",
+     fStartTime,fEndTime,stepTime);
+     TTimeStamp t((time_t)fStartTime,0); t.Print();
+     TTimeStamp t2((time_t)fEndTime,0); t2.Print();
+  }     
   
   if ( !fFit ) return 0;
 
   Double_t *x = new Double_t[nPoints+1];
   Double_t *y = new Double_t[nPoints+1];
   for (Int_t ip=0; ip<nPoints; ip++) {
-    x[ip] = fStartTime+ip*stepTime;
+    x[ip] = (time_t)(fStartTime+ip*stepTime);
     y[ip] = fFit->Eval(ip*stepTime/kSecInHour);
+    if (debug==kTRUE) {
+     TTimeStamp t3((time_t)x[ip],0); 
+     printf ("x=%f, y=%f  ",x[ip],y[ip]);
+     t3.Print();
+    }
   }
   
   TGraph *graph = new TGraph(nPoints,x,y);

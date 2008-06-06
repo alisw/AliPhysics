@@ -632,6 +632,7 @@ void AliSplineFit::SplineFit(Int_t nder){
   Int_t nknots  = fN;
   if (nknots < 2 ) return;
   Int_t npoints = graph->GetN(); 
+  if (npoints < fMinPoints ) return;
   //
   //
   // spline fit
@@ -1022,7 +1023,7 @@ void AliSplineFit::Cleanup(){
  // deletes extra information to reduce amount of information stored on the data
  // base
     
-     delete fGraph;  fGraph=0;
+ //    delete fGraph;  fGraph=0;   // Don't delete fGraph -- input parameter 
      delete fParams; fParams=0;
      delete fCovars; fCovars=0;
      delete [] fIndex; fIndex=0;
@@ -1035,13 +1036,13 @@ void AliSplineFit::CopyGraph() {
   // enter graph points directly to fit parameters 
   // (to bee used when too few points are available)
   //
-  fN = fGraph->GetN();
+  fN = fGraph->GetN();   
   fX = new Double_t[fN];
   fY0 = new Double_t[fN];
   fY1 = new Double_t[fN];
   for (Int_t i=0; i<fN; i++ ) {
     fX[i]  = fGraph->GetX()[i];
-    fY0[i] = fGraph->GetY()[i];
+    fY0[i] = fGraph->GetY()[i];     
     fY1[i] = 0;
   }
 }

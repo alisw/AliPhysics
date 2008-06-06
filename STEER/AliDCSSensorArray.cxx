@@ -228,9 +228,9 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
       entry->SetFit(fit);
     } else {
       AliWarning(Form("sensor %s: no fit performed, DCS graph kept.",stringID.Data()));
-      entry->SetGraph(gr);
+      entry->SetGraph((TGraph*)gr->Clone());
     }
-    if (keepMap) entry->SetGraph(gr);
+    if (keepMap) entry->SetGraph((TGraph*)gr->Clone());
   }
 }
 //_____________________________________________________________________________
@@ -243,7 +243,7 @@ void AliDCSSensorArray::StoreGraph(TMap *map)
   for ( Int_t isensor=0; isensor<nsensors; isensor++) {
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
     TString stringID = entry->GetStringID();
-    TGraph *gr = (TGraph*)map->GetValue(stringID.Data());
+    TGraph *gr = (TGraph*)map->GetValue(stringID.Data())->Clone();
     if (!gr ) {
       entry->SetFit(0);
       entry->SetGraph(0);
@@ -270,14 +270,14 @@ Int_t AliDCSSensorArray::NumFits() const
   return nfit;
 }
 //_____________________________________________________________________________
-Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor)
+Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor) const
 {
   //
   // Return sensor value at time timeSec (obtained from fitted function)
   //  timeSec = time in seconds from start of run
   //
   AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(sensor);
-  return entry->GetValue(timeSec);
+  return entry->GetValue(TTimeStamp((time_t)fStartTime.GetSec()+timeSec,0));
 }
 
 
@@ -491,7 +491,7 @@ TArrayI AliDCSSensorArray::OutsideThreshold(Double_t threshold, UInt_t timeSec, 
   Int_t outside=0;
   for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over sensors
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
-    Double_t val=entry->GetValue(timeSec);
+    Double_t val=GetValue(timeSec,isensor);
     if (below) {
       if (val<threshold) array[outside++] = entry->GetIdDCS();
     } else {
