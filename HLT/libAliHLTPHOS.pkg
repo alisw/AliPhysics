@@ -54,7 +54,8 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSRcuAltroPatternTestComponent.h \
 		  AliHLTPHOSModuleCalibrationProcessorComponent.h \
 		  AliHLTPHOSRcuDAComponent.h \
-                  AliHLTPHOSRcuProperties.h
+                  AliHLTPHOSRcuProperties.h \
+		  AliHLTPHOSUtilities.h 
 #		  AliHLTPHOSTreeMaker.h \
 #  		  AliHLTPHOSTreeMakerComponent.h \
 #		  AliHLTPHOSEmcCalibrationHistogramProducer.h 
