@@ -235,6 +235,9 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex, const char 
 	} // event loop	
 //	// Save QA data for all detectors
 	rv = Finish(taskIndex, mode) ;
+	
+	if ( taskIndex == AliQA::kRAWS ) 
+		fRawReader->RewindEvents() ;
 
 	return rv ; 
 }
