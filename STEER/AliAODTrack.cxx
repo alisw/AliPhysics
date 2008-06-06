@@ -46,6 +46,8 @@ AliAODTrack::AliAODTrack() :
 
   SetP();
   SetPosition((Float_t*)NULL);
+  SetXYAtDCA(-999., -999.);
+  SetPxPyPzAtDCA(-999., -999., -999.);
   SetPID((Float_t*)NULL);
 }
 
@@ -70,7 +72,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2MatchTrigger(0.),
   fFlags(0),
   fLabel(label),
-  fITSMuonClusterMap(itsClusMap),
+  fITSMuonClusterMap(0),
   fFilterMap(selectInfo),
   fID(id),
   fCharge(charge),
@@ -83,11 +85,13 @@ AliAODTrack::AliAODTrack(Short_t id,
  
   SetP(p, cartesian);
   SetPosition(x, isDCA);
+  SetXYAtDCA(-999., -999.);
+  SetPxPyPzAtDCA(-999., -999., -999.);
   SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
-
+  SetITSClusterMap(itsClusMap);
 }
 
 //______________________________________________________________________________
@@ -111,7 +115,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2MatchTrigger(0.),
   fFlags(0),
   fLabel(label),
-  fITSMuonClusterMap(itsClusMap),
+  fITSMuonClusterMap(0),
   fFilterMap(selectInfo),
   fID(id),
   fCharge(charge),
@@ -124,10 +128,13 @@ AliAODTrack::AliAODTrack(Short_t id,
  
   SetP(p, cartesian);
   SetPosition(x, isDCA);
+  SetXYAtDCA(-999., -999.);
+  SetPxPyPzAtDCA(-999., -999., -999.);
   SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
+  SetITSClusterMap(itsClusMap);
 }
 
 //______________________________________________________________________________
@@ -158,6 +165,8 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
 
   trk.GetP(fMomentum);
   trk.GetPosition(fPosition);
+  SetXYAtDCA(trk.XAtDCA(), trk.YAtDCA());
+  SetPxPyPzAtDCA(trk.PxAtDCA(), trk.PyAtDCA(), trk.PzAtDCA());
   SetUsedForVtxFit(trk.GetUsedForVtxFit());
   SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
   if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
@@ -177,6 +186,9 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     trk.GetPosition(fPosition);
     trk.GetPID(fPID);
 
+    SetXYAtDCA(trk.XAtDCA(), trk.YAtDCA());
+    SetPxPyPzAtDCA(trk.PxAtDCA(), trk.PyAtDCA(), trk.PzAtDCA());
+    
     fChi2perNDF = trk.fChi2perNDF;
     fChi2MatchTrigger = trk.fChi2MatchTrigger;
 
@@ -457,12 +469,6 @@ void AliAODTrack::SetMatchTrigger(Int_t matchTrig){
   }
 }
 
-void AliAODTrack::SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh){
-//
-// Set the MUON hit pattern (1 bit per chamber) 
-  fITSMuonClusterMap=(fITSMuonClusterMap&0xffff00ff)|(hitsPatternInTrigCh<<8);
-}
-
 Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Char_t *cathode){
 //
 // Retrieve hit information for MUON identified by  (station, plane, cathode)
@@ -528,23 +534,28 @@ Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Char_t *cathode){
 }
 
 Int_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber){
-// Retrieve hit information for MUON Chamber
-  switch(MuonChamber){
-    case 11:
-      return HitsMT(1,1);
-    case 12:
-      return HitsMT(1,2);
-    case 13:
-      return HitsMT(2,1);
-    case 14:
-      return HitsMT(2,2);
-    default:
-      printf("Unknown MUON chamber: %d\n",MuonChamber);
-      return 0;
+  //
+  // Retrieve hit information for MUON Tracker/Trigger Chamber
+  // WARNING: chamber number start from 1 instead of 0
+  
+  if (MuonChamber > 0 && MuonChamber < 11) {
+    return ((GetMUONClusterMap() & BIT(MuonChamber-1)) != 0) ? 1 : 0;
+  } else {
+    switch(MuonChamber){
+      case 11:
+	return HitsMT(1,1);
+      case 12:
+	return HitsMT(1,2);
+      case 13:
+	return HitsMT(2,1);
+      case 14:
+	return HitsMT(2,2);
+      default:
+	printf("Unknown MUON chamber: %d\n",MuonChamber);
+	return 0;
+    }
   }
 }
-
-
 
 Bool_t AliAODTrack::PropagateTo(Double_t xk, Double_t b) {
   //----------------------------------------------------------------
