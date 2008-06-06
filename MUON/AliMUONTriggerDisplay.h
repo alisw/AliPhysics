@@ -5,7 +5,7 @@
 
 // $Id$
 
-/// \ingroup rec
+/// \ingroup calib
 /// \class AliMUONTriggerDisplay
 /// \brief Converts histograms as a function of strip/board/slat number in human readable histograms
 ///

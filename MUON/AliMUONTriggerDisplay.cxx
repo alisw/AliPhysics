@@ -17,7 +17,6 @@
 
 // --- MUON header files ---
 #include "AliMUONTriggerDisplay.h"
-#include "AliMUONConstants.h"  
 
 #include "AliMpDDLStore.h"
 #include "AliMpVSegmentation.h"
