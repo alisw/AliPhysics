@@ -46,8 +46,8 @@ class AliCFPairIsPrimaryCuts : public AliCFCutBase
   ClassDef(AliCFPairIsPrimaryCuts,1);
 
  private :
-  AliCFTrackIsPrimaryCuts *fCutNeg ; //! isprimary cut on negative daughter
-  AliCFTrackIsPrimaryCuts *fCutPos ; //! isprimary cut on positive daughter
+  AliCFTrackIsPrimaryCuts *fCutNeg ; // isprimary cut on negative daughter
+  AliCFTrackIsPrimaryCuts *fCutPos ; // isprimary cut on positive daughter
 
 };
 

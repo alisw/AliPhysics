@@ -56,8 +56,8 @@ class AliCFPairPidCut : public AliCFCutBase
   Bool_t IsSelected(TObject *obj); //boolean for detectors
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
  private:
-  AliCFTrackCutPid* fCutNeg; //! PID cut on negative daughter
-  AliCFTrackCutPid* fCutPos; //! PID cut on positive daughter
+  AliCFTrackCutPid* fCutNeg; // PID cut on negative daughter
+  AliCFTrackCutPid* fCutPos; // PID cut on positive daughter
 
   ClassDef(AliCFPairPidCut,1);
 };

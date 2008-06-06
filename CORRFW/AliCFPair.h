@@ -70,10 +70,10 @@ class AliCFPair : public AliVParticle {
 
 
  private:
-  Bool_t fIsV0;            //! true if V0 passed to the constructor
-  AliESDtrack* fTrackNeg;  //! pointer to the negative track
-  AliESDtrack* fTrackPos;  //! pointer to the positive track
-  AliESDv0*    fV0;        //! pointer to the V0 if V0 is passed to the constructor
+  Bool_t fIsV0;            // true if V0 passed to the constructor
+  AliESDtrack* fTrackNeg;  // pointer to the negative track
+  AliESDtrack* fTrackPos;  // pointer to the positive track
+  AliESDv0*    fV0;        // pointer to the V0 if V0 is passed to the constructor
   
   ClassDef(AliCFPair,0);
 };
