@@ -12,7 +12,7 @@ class TH1D;
 // Class to organize the common histograms for Flow Analysis
 // authors: N. van der Kolk (kolk@nikhef.nl) and A. Bilandzic (anteb@nikhef.nl)
 
-class AliFlowCommonHistResults{
+class AliFlowCommonHistResults : public TObject {
 
  public:
 
@@ -35,11 +35,11 @@ class AliFlowCommonHistResults{
   AliFlowCommonHistResults& operator=(const AliFlowCommonHistResults& aSetOfResultHists);
 
   //integrated flow
-  TH1D*     fHistIntFlow;         //!
+  TH1D*     fHistIntFlow;      
   //differential flow
-  TH1D*     fHistDiffFlow;        //!
+  TH1D*     fHistDiffFlow; 
   //resolution
-  TH1D*     fHistChi;             //!
+  TH1D*     fHistChi;
   
   ClassDef(AliFlowCommonHistResults,0)                 // macro for rootcint
 };
