@@ -29,13 +29,13 @@ class AliFlowCommonHist;
 // Class to organize the common histograms for Flow Analysis
 // Holds v2(pt), integrated v2 and chi (resolution)
 //
-// authors: N. van der Kolk (kolk@nikhef.nl) and A. Bilandzic (anteb@nikhef.nl)
+// authors: N.K A.B. R.S
 
 ClassImp(AliFlowCommonHistResults)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHistResults::AliFlowCommonHistResults(TString input):
+  AliFlowCommonHistResults::AliFlowCommonHistResults(TString input): TObject(),
   fHistIntFlow(0),
   fHistDiffFlow(0),
   fHistChi(0)
