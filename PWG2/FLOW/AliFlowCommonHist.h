@@ -8,7 +8,7 @@
 
 // AliFlowCommonHist:
 // Description: Class to organise common histograms for Flow Analysis
-// authors: N. van der Kolk (kolk@nikhef.nl) and A. Bilandzic (anteb@nikhef.nl)
+// authors: N.K A.B R.S
 
              
 class AliFlowEventSimple;
@@ -17,7 +17,7 @@ class TH1F;
 class TH1D;
 class TProfile;
 
-class AliFlowCommonHist {
+class AliFlowCommonHist: public TObject {
 
  public:
 
@@ -49,21 +49,19 @@ class AliFlowCommonHist {
   AliFlowCommonHist(const AliFlowCommonHist& aSetOfHists);
   AliFlowCommonHist& operator=(const AliFlowCommonHist& aSetOfHists);
 
-  AliFlowTrackSimple* fTrack;     //!
-
   //define histograms here
   //control histograms
-  TH1F*     fHistMultOrig;        //!
-  TH1F*     fHistMultInt;         //!
-  TH1F*     fHistMultDiff;        //!
-  TH1F*     fHistPtInt;           //!
-  TH1F*     fHistPtDiff;          //!
-  TH1F*     fHistPhiInt;          //!
-  TH1F*     fHistPhiDiff;         //!
-  TH1F*     fHistEtaInt;          //!
-  TH1F*     fHistEtaDiff;         //!
-  TProfile* fHistProMeanPtperBin; //!
-  TH1F*     fHistQ;               //!
+  TH1F*     fHistMultOrig;        
+  TH1F*     fHistMultInt;        
+  TH1F*     fHistMultDiff;       
+  TH1F*     fHistPtInt;          
+  TH1F*     fHistPtDiff;         
+  TH1F*     fHistPhiInt;          
+  TH1F*     fHistPhiDiff;         
+  TH1F*     fHistEtaInt;          
+  TH1F*     fHistEtaDiff;         
+  TProfile* fHistProMeanPtperBin; 
+  TH1F*     fHistQ;               
   
   ClassDef(AliFlowCommonHist,0);                 // macro for rootcint
 };
