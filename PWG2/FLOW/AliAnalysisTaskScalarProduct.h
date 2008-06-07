@@ -40,6 +40,7 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
   AliFlowAnalysisWithScalarProduct* fSP;  // analysis object
   AliFlowEventSimpleMaker* fEventMaker;   // FlowEventSimple maker object
   TString fAnalysisType;                  // can be MC, ESD or AOD
+  TList  *fListHistos;                    //collection of output
 
   ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
 };

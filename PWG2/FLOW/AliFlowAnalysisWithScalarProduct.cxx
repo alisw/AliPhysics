@@ -17,6 +17,7 @@
  
 #include "Riostream.h"  //needed as include
 #include "TFile.h"      //needed as include
+#include "TList.h"
 #include "TMath.h"
 #include "TProfile.h"
 #include "TVector2.h"
@@ -46,20 +47,17 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
   fQ(NULL),
   fU(NULL),
   fEventNumber(0),
-  fTrack(NULL),
   fDebug(kFALSE),
-  fHistFileName(0),
-  fHistFile(NULL),
+  fHistList(NULL),
   fHistProUQ(NULL),
   fCommonHists(NULL)
 {
-
   // Constructor.
   fU = new TVector2;
   fQ = new AliFlowVector;
+  fHistList = new TList(); 
   //  fQ.Set(0.,0.);           // flow vector
   //  fU.Set(0.,0.);           // particle unit vector
-
 }
  //-----------------------------------------------------------------------
 
@@ -68,6 +66,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
  {
    delete fU;
    delete fQ;
+   delete fHistList;
    //destructor
    
  }
@@ -77,22 +76,23 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
 void AliFlowAnalysisWithScalarProduct::Init() {
 
   //Define all histograms
-  cout<<"---Analysis with the Scalar Product Method---"<<endl;
+  cout<<"---Analysis with the Scalar Product Method--- Init"<<endl;
 
   Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
   Double_t  fPtMin = AliFlowCommonConstants::GetPtMin();	     
   Double_t  fPtMax = AliFlowCommonConstants::GetPtMax();
 
   // analysis file (output)
-  fHistFile = new TFile(fHistFileName.Data(),"RECREATE") ;
 
   fHistProUQ = new TProfile("Flow_UQ_SP","Flow_UQ_SP",fNbinsPt,fPtMin,fPtMax);
   fHistProUQ->SetXTitle("p_t (GeV)");
   fHistProUQ->SetYTitle("<uQ>");
+  fHistList->Add(fHistProUQ);
 
   fCommonHists = new AliFlowCommonHist("SP");
   //fCommonHistsRes = new AliFlowCommonHistResults("SP");
- 
+  fHistList->Add(fCommonHists); 
+
   fEventNumber = 0;  //set number of events to zero
       
 } 
@@ -112,6 +112,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     //Double_t fMult =  fQ.GetMult();
             
     //loop over the tracks of the event
+    AliFlowTrackSimple*   fTrack = NULL; 
     Int_t fNumberOfTracks = anEvent->NumberOfTracks(); 
     for (Int_t i=0;i<fNumberOfTracks;i++) 
       {
@@ -149,7 +150,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	  }  
 	}//track selected
       }//loop over tracks
-	  
+	 
     fEventNumber++;
     cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
   }
@@ -164,7 +165,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   fHistProUQ->Draw();
 
   // write to file
-  fHistFile->Write();
+//  fHistFile->Write();
     	  
   cout<<".....finished"<<endl;
  }
