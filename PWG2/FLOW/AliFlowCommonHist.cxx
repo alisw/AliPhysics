@@ -38,20 +38,18 @@ ClassImp(AliFlowCommonHist)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHist::AliFlowCommonHist(TString input):
-//   fEvent(0),
-   fTrack(0), 
-   fHistMultOrig(0),
-   fHistMultInt(0),
-   fHistMultDiff(0),
-   fHistPtInt(0),
-   fHistPtDiff(0),
-   fHistPhiInt(0),
-   fHistPhiDiff(0),
-   fHistEtaInt(0),
-   fHistEtaDiff(0),
-   fHistProMeanPtperBin(0),
-   fHistQ(0)
+  AliFlowCommonHist::AliFlowCommonHist(TString input):TObject(),
+   fHistMultOrig(NULL),
+   fHistMultInt(NULL),
+   fHistMultDiff(NULL),
+   fHistPtInt(NULL),
+   fHistPtDiff(NULL),
+   fHistPhiInt(NULL),
+   fHistPhiDiff(NULL),
+   fHistEtaInt(NULL),
+   fHistEtaDiff(NULL),
+   fHistProMeanPtperBin(NULL),
+   fHistQ(NULL)
  {
   //constructor creating histograms 
   Int_t fNbinsMult = AliFlowCommonConstants::GetNbinsMult();
@@ -199,6 +197,9 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* Event)
 
   Int_t fMultInt = 0;
   Int_t fMultDiff = 0;
+  
+  AliFlowTrackSimple* fTrack = NULL;     
+
   for (Int_t i=0;i<fNumberOfTracks;i++) {
     fTrack = Event->GetTrack(i);
     if (fTrack ) {
