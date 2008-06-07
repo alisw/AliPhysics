@@ -101,7 +101,7 @@ void AliFMDGainDA::Init()
       
     }
   
-  std::cout<<nEventsRequired<<std::endl;
+  
   //8 pulser values * 128 strips * 100 samples
   
   
