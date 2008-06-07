@@ -8,8 +8,9 @@
 #define AliFlowAnalysisWithScalarProduct_H
 
 #include "TVector2.h"          //called explicitly
-#include "AliFlowVector.h"
 #include "TString.h"
+
+#include "AliFlowVector.h"
 
 class AliFlowTrackSimple;
 class AliFlowEventSimple;
@@ -17,7 +18,7 @@ class AliFlowCommonHist;
 //class AliFlowCommonHistResults;
 
 class TProfile;
-class TFile;
+class TList;
 class Riostream;
 
 
@@ -43,33 +44,24 @@ class AliFlowAnalysisWithScalarProduct {
 
 
    // Output 
-   void	    SetHistFileName(TString name) { this->fHistFileName = name ; } // Sets output file name
-   TString  GetHistFileName() const	  { return this->fHistFileName ; } // Gets output file name
-   TFile*   GetHistFile() const           { return this->fHistFile ; }     // Gets output file
+   TList*   GetHistList() const           { return this->fHistList ; }     // Gets output histogram list
   
    
  private:
   AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& aAnalysis);
   AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& aAnalysis); 
    
-  //  AliFlowVector  fQ;       // flow vector
-  //   TVector2  fU;            // particle unit vector
   AliFlowVector  *fQ;       // flow vector
-  TVector2  *fU;            // particle unit vector
+  TVector2       *fU;       // particle unit vector
    
-  Int_t     fEventNumber;  // event counter
+  Int_t          fEventNumber;  // event counter
          
-  AliFlowTrackSimple*   fTrack ;     //!
-     
-  Bool_t       fDebug ;            //! flag for lyz analysis: more print statements
+  Bool_t         fDebug ;            // flag for lyz analysis: more print statements
 
-  TString      fHistFileName;      //!
-  TFile*       fHistFile;          //!
-  
-  TProfile*      fHistProUQ;              //!
+  TList*         fHistList;      
+  TProfile*      fHistProUQ; 
 
-  AliFlowCommonHist* fCommonHists;              //!
-  //AliFlowCommonHistResults* fCommonHistsRes;    //!
+  AliFlowCommonHist* fCommonHists;  
 
   ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
     };

@@ -47,11 +47,12 @@ ClassImp(AliAnalysisTaskScalarProduct)
 //________________________________________________________________________
 AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) : 
   AliAnalysisTask(name, ""), 
-  fESD(0),
-  fAOD(0),
-  fSP(0),
-  fEventMaker(0),
-  fAnalysisType("ESD")
+  fESD(NULL),
+  fAOD(NULL),
+  fSP(NULL),
+  fEventMaker(NULL),
+  fAnalysisType("ESD"),
+  fListHistos(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
@@ -61,6 +62,12 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) :
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
+
+ //event maker
+  fEventMaker = new AliFlowEventSimpleMaker();
+  //Analyser
+  fSP  = new AliFlowAnalysisWithScalarProduct() ;
+  fSP-> Init();
 }
 
 //________________________________________________________________________
@@ -124,26 +131,14 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
 {
   // Called once
   cout<<"AliAnalysisTaskScalarProduct::CreateOutputObjects()"<<endl;
+  
 
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "MC")) {
-    cout<<"WRONG ANALYSIS TYPE! only ESD, AOD and MC are allowed."<<endl;
-    exit(1);
+  if (fSP->GetHistList()) {
+	fSP->GetHistList()->Print();
+//	*fListHistos = new TList();
+	fListHistos = fSP->GetHistList();
   }
-
-  //event maker
-  fEventMaker = new AliFlowEventSimpleMaker();
-  //Analyser
-  fSP  = new AliFlowAnalysisWithScalarProduct() ;
-
-  //output file
-  TString outputName = "outputFromScalarProductAnalysis" ;
-  outputName += fAnalysisType.Data() ;
-  outputName += ".root" ;
-  fSP->SetHistFileName( outputName.Data() );
-    
-  fSP-> Init();
-
-
+  else {Printf("ERROR: Could not retrieve histogram list"); }
 }
 
 //________________________________________________________________________
@@ -202,6 +197,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
     delete fEvent;
   }
 
+  PostData(0,fListHistos);
 }      
 
 //________________________________________________________________________
@@ -209,7 +205,7 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
 {
   // Called once at the end of the query
   fSP->Finish();
-  PostData(0,fSP->GetHistFile());
+  PostData(0,fListHistos);
 
   delete fSP;
   delete fEventMaker;

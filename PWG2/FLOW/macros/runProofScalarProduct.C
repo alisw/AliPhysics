@@ -1,4 +1,4 @@
-void runProof() {
+void runProofScalarProduct() {
   TStopwatch timer;
   timer.Start();
 
