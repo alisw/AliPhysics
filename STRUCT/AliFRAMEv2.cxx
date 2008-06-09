@@ -725,8 +725,8 @@ void AliFRAMEv2::CreateGeometry()
 
 
   dz = -iFrH/2.+ringH/2.+kEps;
-  Float_t dz0 = 3. - 0.2;  
-  Float_t dx0 = 60.82 - 1.0;
+  Float_t dz0 = 3. - 0.22;  
+  Float_t dx0 = 60.82 - 1.066;
   
   for (jmod = 0; jmod< 18; jmod++)
   {
