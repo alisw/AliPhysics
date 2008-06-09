@@ -143,11 +143,12 @@ AliHLTUInt32_t AliHLTMUONUtils::PackPairDecisionBits(
 	///                    in the pair.
 	/// @return  Returns the 32 bit packed word.
 	///
-	/// Note: Must have highPtCount + lowPtCount <= 2 and unlike == true if
-	/// highMass or lowMass is true.
+	/// Note: Must have highPtCount <= 2, lowPtCount <= 2 and
+	/// unlike == true if highMass or lowMass is true.
 	///
 	
-	assert( highPtCount + lowPtCount <= 2 );
+	assert( lowPtCount <= 2 );
+	assert( highPtCount <= 2 );
 	// highMass and lowMass must be false if unlike is false:
 	assert( not unlike ? (highMass == false and lowMass == false) : true );
 	
