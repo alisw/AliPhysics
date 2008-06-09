@@ -270,6 +270,12 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 }
 
 //______________________________________________________________________________
+void AliMUONSt1GeometryBuilder::SetVolumes() 
+{
+/// Define the volumes for the station2 chambers.
+}
+
+//______________________________________________________________________________
 void AliMUONSt1GeometryBuilder::SetTransformations()
 {
 /// Define the transformations for the station2 chambers.

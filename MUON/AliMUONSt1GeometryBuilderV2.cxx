@@ -2801,9 +2801,9 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
 }
 
 //______________________________________________________________________________
-void AliMUONSt1GeometryBuilderV2::SetTransformations() 
+void AliMUONSt1GeometryBuilderV2::SetVolumes() 
 {
-/// Define the transformations for the station2 chambers.
+/// Define the volumes for the station2 chambers.
 
   if (gAlice->GetModule("SHIL")) {
     SetMotherVolume(0, "YOUT1");
@@ -2812,6 +2812,12 @@ void AliMUONSt1GeometryBuilderV2::SetTransformations()
 
   SetVolume(0, "SC01", true);
   SetVolume(1, "SC02", true);
+}
+
+//______________________________________________________________________________
+void AliMUONSt1GeometryBuilderV2::SetTransformations() 
+{
+/// Define the transformations for the station2 chambers.
 
   Double_t zpos1 = - AliMUONConstants::DefaultChamberZ(0); 
   SetTranslation(0, TGeoTranslation(0., 0., zpos1));

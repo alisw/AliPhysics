@@ -1676,9 +1676,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 }
 
 //______________________________________________________________________________
-void AliMUONTriggerGeometryBuilder::SetTransformations() 
+void AliMUONTriggerGeometryBuilder::SetVolumes() 
 {
-/// Defines the transformations for the trigger chambers.
+/// Defines the volumes for the trigger chambers.
 
     if (gAlice->GetModule("SHIL")) {
       SetMotherVolume(16, "YOUT2");
@@ -1691,6 +1691,12 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
     SetVolume(17, "SC12");
     SetVolume(18, "SC13");
     SetVolume(19, "SC14");
+}
+
+//______________________________________________________________________________
+void AliMUONTriggerGeometryBuilder::SetTransformations() 
+{
+/// Defines the transformations for the trigger chambers.
 
     Double_t zpos1= AliMUONConstants::DefaultChamberZ(10); 
     SetTranslation(16, TGeoTranslation(0., 0., zpos1));

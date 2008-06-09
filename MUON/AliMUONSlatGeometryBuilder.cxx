@@ -2054,11 +2054,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 }
 
-
 //______________________________________________________________________________
-void AliMUONSlatGeometryBuilder::SetTransformations()
+void AliMUONSlatGeometryBuilder::SetVolumes()
 {
-/// Defines the transformations for the station345 chambers.
+/// Defines the volumes for the station345 chambers.
 
   if (gAlice->GetModule("DIPO")) {
     // if DIPO is preset, the whole station will be placed in DDIP volume
@@ -2091,6 +2090,13 @@ void AliMUONSlatGeometryBuilder::SetTransformations()
   SetVolume(13, "SC09O", true);
   SetVolume(14, "SC10I", true);
   SetVolume(15, "SC10O", true);
+}
+
+
+//______________________________________________________________________________
+void AliMUONSlatGeometryBuilder::SetTransformations()
+{
+/// Defines the transformations for the station345 chambers.
 
 // Stations 345 are not perpendicular to the beam axis
 // See AliMUONConstants class

@@ -350,12 +350,14 @@ void  AliMUONVGeometryBuilder::SetReferenceFrame(
   }          
 }
 
-
 //______________________________________________________________________________
-void  AliMUONVGeometryBuilder::CreateDetElements() const
+void  AliMUONVGeometryBuilder::UpdateDetElements(Bool_t create) const
 {
-/// Create detection elements and fill their global and
-/// local transformations from geometry.
+/// Create or update detection elements:
+/// - if parameter create is true: detection elements are
+/// created and their global and local transformations are filled from geometry.
+/// - otherwise: only the volume path is passed from geometry
+/// to detection elements
 
   for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
     AliMUONGeometryModule* geometry 
@@ -381,29 +383,39 @@ void  AliMUONVGeometryBuilder::CreateDetElements() const
       TString volPath = geometry->GetVolumePath();
       volPath += ComposePath(envelope->GetName(), envelope->GetCopyNo());
 
-      // Create detection element 
-      AliMUONGeometryDetElement* detElement
-        = new AliMUONGeometryDetElement(detElemId, volPath);
-      detElements->Add(detElemId, detElement);
+      if ( create ) {
+        // Create detection element 
+        AliMUONGeometryDetElement* detElement
+          = new AliMUONGeometryDetElement(detElemId, volPath);
+        detElements->Add(detElemId, detElement);
       
-      // Compose  local transformation
-      const TGeoCombiTrans* transform = envelope->GetTransformation(); 
-      // Apply frame transform
-      TGeoHMatrix localTransform = ConvertDETransform(*transform);
-      detElement->SetLocalTransformation(localTransform);
+        // Compose  local transformation
+        const TGeoCombiTrans* transform = envelope->GetTransformation(); 
+        // Apply frame transform
+        TGeoHMatrix localTransform = ConvertDETransform(*transform);
+        detElement->SetLocalTransformation(localTransform);
 
-      // Compose global transformation
-      TGeoHMatrix globalTransform 
-	= AliMUONGeometryBuilder::Multiply( 
+        // Compose global transformation
+        TGeoHMatrix globalTransform 
+	  = AliMUONGeometryBuilder::Multiply( 
 	            (*geometry->GetTransformer()->GetTransformation()),
 	             localTransform );
 		    ;
-      // Set the global transformation to detection element
-      detElement->SetGlobalTransformation(globalTransform);
-      
-    }  
+        // Set the global transformation to detection element
+        detElement->SetGlobalTransformation(globalTransform);
+      }
+      else {
+        // Get existing det elements
+        AliMUONGeometryDetElement* detElement
+          = (AliMUONGeometryDetElement*)detElements->GetValue(detElemId);
+          
+        // Set volume path  
+        detElement->SetVolumePath(volPath); 
+      }
+    }    
   }
 }
+
 //_____ _________________________________________________________________________
 void  AliMUONVGeometryBuilder::RebuildSVMaps(Bool_t withEnvelopes) const
 {

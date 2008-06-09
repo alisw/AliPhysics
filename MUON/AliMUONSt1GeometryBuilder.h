@@ -27,6 +27,7 @@ class AliMUONSt1GeometryBuilder : public AliMUONVGeometryBuilder
   
     // methods
     virtual void CreateGeometry();
+    virtual void SetVolumes();
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
     

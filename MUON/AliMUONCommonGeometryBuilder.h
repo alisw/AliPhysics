@@ -28,6 +28,7 @@ class AliMUONCommonGeometryBuilder : public AliMUONVGeometryBuilder
     virtual void  CreateMaterials();
     virtual void  CreateGeometry()      {}  ///< No geometry is created
     virtual void  SetSensitiveVolumes() {}  ///< No sensitive volumes are set
+    virtual void  SetVolumes()          {}  ///< No volumes are set
     virtual void  SetTransformations()  {}  ///< No transformations are set
 
   protected:

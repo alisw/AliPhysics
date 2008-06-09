@@ -43,6 +43,7 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
 
     virtual void CreateMaterials();
     virtual void CreateGeometry();
+    virtual void SetVolumes();
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
    

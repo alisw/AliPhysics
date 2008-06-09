@@ -762,14 +762,18 @@ void AliMUONGeometryTransformer::CreateModules()
   // Load mapping as its info is used to define modules & DEs
   LoadMapping();
 
-  // Loop over geometry module
-  for (Int_t moduleId = 0; moduleId < AliMpConstants::NofGeomModules(); ++moduleId ) {
+  if ( fModuleTransformers->GetEntriesFast() == 0 ) {
+    // Create modules only if they do not yet exist
+
+    // Loop over geometry module
+    for (Int_t moduleId = 0; moduleId < AliMpConstants::NofGeomModules(); ++moduleId ) {
     
-    // Create geometry module transformer
-    AliMUONGeometryModuleTransformer* moduleTransformer
-      = new AliMUONGeometryModuleTransformer(moduleId);
-    AddModuleTransformer(moduleTransformer);
-  }   
+      // Create geometry module transformer
+      AliMUONGeometryModuleTransformer* moduleTransformer
+        = new AliMUONGeometryModuleTransformer(moduleId);
+      AddModuleTransformer(moduleTransformer);
+    }
+  }     
     
   // Loop over detection elements
   AliMpDEIterator it;
@@ -810,8 +814,8 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
                                        module->GetVolumePath());
     if ( ! pnEntry ) {
       AliErrorStream() 
-        << "Volume path for geometry module "
-        << module->GetModuleId()
+        << "Volume path " << module->GetVolumePath().Data()
+        << " for geometry module " << module->GetModuleId() << " " << module
         << " not found in geometry." << endl;
     }
     else {
@@ -833,8 +837,9 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
                                          detElement->GetVolumePath());
       if ( ! pnEntryDE ) {
         AliErrorStream() 
-          << "Volume path for detection element "
-          << detElement->GetId()
+          << "Volume path " 
+          << detElement->GetVolumePath().Data() 
+          << " for detection element " << detElement->GetId()
           << " not found in geometry." << endl;
       }
       else {

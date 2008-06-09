@@ -254,6 +254,7 @@ void AliMUONGeometryBuilder::CreateGeometryWithTGeo()
     // Create geometry + envelopes
     //
     builder->CreateGeometry();
+    builder->SetVolumes();
     if (!fAlign) builder->SetTransformations();
     
     // Place module volumes and envelopes
@@ -541,10 +542,11 @@ void AliMUONGeometryBuilder::CreateGeometry()
     // Get the builder
     AliMUONVGeometryBuilder* builder
       = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
-
-    // Create detection elements from built geometry
-    builder->CreateDetElements();
-  }  
+ 
+    // Update detection elements from built geometry
+    Bool_t create = ! fAlign;
+    builder->UpdateDetElements(create);
+  }
 }
 
 //_____________________________________________________________________________

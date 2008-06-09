@@ -37,7 +37,7 @@ class AliMUONVGeometryBuilder : public TObject
     // methods
     void  SetReferenceFrame(const TGeoCombiTrans& referenceFrame);
     void  RebuildSVMaps(Bool_t withEnvelopes = true) const;
-    void  CreateDetElements() const;
+    void  UpdateDetElements(Bool_t create) const;
 
                   /// Function to be overriden in a concrete chamber/station
 		  /// geometry builder class.
@@ -54,6 +54,12 @@ class AliMUONVGeometryBuilder : public TObject
 		  /// (They will be then placed automatically 
 		  /// usind the provided transformation.
     virtual void CreateGeometry() = 0;
+
+                  /// Function to be overriden in a concrete chamber/station
+		  /// geometry class. \n
+		  /// The volume name for each geometry module, its virtuality
+                  /// and eventually the mother volume name should be defined
+    virtual void SetVolumes() = 0;
 
                   /// Function to be overriden in a concrete chamber/station
 		  /// geometry class. \n
