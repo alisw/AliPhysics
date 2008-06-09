@@ -26,6 +26,7 @@
 // strips, and dead areas can be handled off-line. 
 // This information comes from DCS or the like.
 //
+#include "iostream"
 #include "AliFMDCalibStripRange.h"	// ALIFMDCALIBGAIN_H
 #include "TString.h"
 // #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
@@ -68,7 +69,7 @@ AliFMDCalibStripRange::Set(UShort_t det, Char_t ring,
 			   UShort_t max)
 {
   // Set the min and max for a half-ring 
-  UInt_t nSec  = (ring == 'I' ? 20 : 40);
+  UInt_t nSec  = (ring == 'I' ? 10 : 20);
   UInt_t board = sector / nSec;
   fRanges(det, ring, board, 0) = ((max & 0x7f) << 8) + (min & 0x7f);
 }
@@ -79,8 +80,9 @@ AliFMDCalibStripRange::Min(UShort_t det, Char_t ring,
 			   UShort_t sec, UShort_t) const
 {
   // Get the min for a half-ring 
-  UInt_t nSec  = (ring == 'I' ? 20 : 40);
+  UInt_t nSec  = (ring == 'I' ? 10 : 20);
   UInt_t board = sec / nSec;
+ 
   return (fRanges(det, ring, board, 0) & 0x7f);
 }
 
@@ -90,7 +92,7 @@ AliFMDCalibStripRange::Max(UShort_t det, Char_t ring,
 			   UShort_t sec, UShort_t) const
 {
   // Get the max for a half-ring 
-  UInt_t nSec  = (ring == 'I' ? 20 : 40);
+  UInt_t nSec  = (ring == 'I' ? 10 : 20);
   UInt_t board = sec / nSec;
   return ((fRanges(det, ring, board, 0) >> 8) & 0x7f);
 }
@@ -140,13 +142,14 @@ AliFMDCalibStripRange::ReadFromFile(ifstream &inFile)
   Int_t thisline = inFile.tellg();
   Char_t c[4];
   
-  while(line.ReadLine(inFile) && readData ) {
+  while( readData ) {
     thisline = inFile.tellg();
-    thisline = thisline--;
-    if(line.Contains("# ",TString::kIgnoreCase)) {
-      readData = kFALSE;
-      continue;
-    }
+    line.ReadLine(inFile);
+   
+      if(line.Contains("# ",TString::kIgnoreCase)) {
+	readData = kFALSE;
+	continue;
+      }
     
     inFile.seekg(thisline);
     inFile     >> det          >> c[0]
@@ -156,7 +159,7 @@ AliFMDCalibStripRange::ReadFromFile(ifstream &inFile)
 	       >> max;
     
     Set(det,ring,sec,0,min,max);
-
+  
   }
   
   inFile.seekg(0);

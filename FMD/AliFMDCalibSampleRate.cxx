@@ -31,6 +31,7 @@
 // #include <AliLog.h>
 #include "TString.h"
 #include "AliFMDDebug.h" // Better debug macros
+#include "iostream"
 
 //____________________________________________________________________
 ClassImp(AliFMDCalibSampleRate)
@@ -69,9 +70,10 @@ AliFMDCalibSampleRate::Set(UShort_t det, Char_t ring,
 			   UShort_t sector, UShort_t, UShort_t rate)
 {
   // Set values.  Strip argument is ignored 
-  UInt_t nSec  = (ring == 'I' ? 20 : 40);
+  UInt_t nSec  = (ring == 'I' ? 10 : 20);
   UInt_t board = sector / nSec;
   fRates(det, ring, board, 0) = rate;
+  
 }
 
 //____________________________________________________________________
@@ -80,7 +82,7 @@ AliFMDCalibSampleRate::Rate(UShort_t det, Char_t ring,
 			    UShort_t sec, UShort_t) const
 {
   // Get the sample rate 
-  UInt_t nSec  = (ring == 'I' ? 20 : 40);
+  UInt_t nSec  = (ring == 'I' ? 10 : 20);
   UInt_t board = sec / nSec;
   AliFMDDebug(10, ("Getting sample rate for FMD%d%c[%2d,0] (board %d)", 
 		    det, ring, sec, board));
@@ -131,9 +133,9 @@ AliFMDCalibSampleRate::ReadFromFile(ifstream &inFile)
   Int_t thisline = inFile.tellg();
   Char_t c[3];
   
-  while(line.ReadLine(inFile) && readData ) {
+  while( readData ) {
     thisline = inFile.tellg();
-    thisline = thisline--;
+    line.ReadLine(inFile);
     if(line.Contains("# ",TString::kIgnoreCase)) {
       readData = kFALSE;
       continue;
@@ -145,8 +147,10 @@ AliFMDCalibSampleRate::ReadFromFile(ifstream &inFile)
 	       >> sec          >> c[2]
 	       >> sampleRate;
     
+   
     Set(det,ring,sec,0,sampleRate);
-
+    
+    
   }
   
   inFile.seekg(0);
