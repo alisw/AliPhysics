@@ -57,19 +57,19 @@ public:
   Double_t   fDeltaPhiMinCut ;      //  Maximum Delta Phi Gamma-Hadron
 
   //Histograms
-  TH2F * fhPhiCharged  ; //Phi distribution of selected charged particles
-  TH2F * fhPhiNeutral   ;  //Phi distribution of selected neutral particles
-  TH2F * fhEtaCharged  ; //Eta distribution of selected charged particles
-  TH2F * fhEtaNeutral   ; //Eta distribution of selected neutral particles
-  TH2F * fhDeltaPhiCharged  ;  //Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
-  TH2F * fhDeltaPhiNeutral   ;  //Difference of neutral particle phi and trigger particle  phi as function of  trigger particle pT
-  TH2F * fhDeltaEtaCharged  ;  //Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT
-  TH2F * fhDeltaEtaNeutral  ;  //Difference of neutral particle eta and trigger particle  eta as function of  trigger particle pT
-  TH2F * fhDeltaPhiChargedPt  ;  //Difference of charged particle phi and trigger particle  phi as function of charged particle pT
-  TH2F * fhDeltaPhiNeutralPt  ;  //Difference of neutral particle phi and trigger particle  phi as function of neutral particle particle pT
+  TH2F * fhPhiCharged  ; //! Phi distribution of selected charged particles
+  TH2F * fhPhiNeutral   ;  //! Phi distribution of selected neutral particles
+  TH2F * fhEtaCharged  ; //! Eta distribution of selected charged particles
+  TH2F * fhEtaNeutral   ; //! Eta distribution of selected neutral particles
+  TH2F * fhDeltaPhiCharged  ;  //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
+  TH2F * fhDeltaPhiNeutral   ;  //! Difference of neutral particle phi and trigger particle  phi as function of  trigger particle pT
+  TH2F * fhDeltaEtaCharged  ;  //! Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT
+  TH2F * fhDeltaEtaNeutral  ;  //! Difference of neutral particle eta and trigger particle  eta as function of  trigger particle pT
+  TH2F * fhDeltaPhiChargedPt  ;  //! Difference of charged particle phi and trigger particle  phi as function of charged particle pT
+  TH2F * fhDeltaPhiNeutralPt  ;  //! Difference of neutral particle phi and trigger particle  phi as function of neutral particle particle pT
 
-  TH2F * fhPtImbalanceNeutral  ; //Trigger particle - neutral hadron momentum imbalance histogram 
-  TH2F * fhPtImbalanceCharged  ; //Trigger particle -charged hadron momentim imbalance histogram
+  TH2F * fhPtImbalanceNeutral  ; //! Trigger particle - neutral hadron momentum imbalance histogram 
+  TH2F * fhPtImbalanceCharged  ; //! Trigger particle -charged hadron momentim imbalance histogram
   
   ClassDef(AliAnaParticleHadronCorrelation,1)
 } ;

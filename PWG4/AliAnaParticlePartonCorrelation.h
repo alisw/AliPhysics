@@ -43,15 +43,15 @@ class AliAnaParticlePartonCorrelation : public AliAnaBaseClass {
        
   private:
        
-       TH2F * fhDeltaEtaNearParton; //Difference of parton eta and prompt trigger particle eta
-       TH2F * fhDeltaPhiNearParton; //Difference of parton phi and prompt trigger particle phi
-       TH2F * fhDeltaPtNearParton; //Difference of parton pT and prompt trigger particle pT
-       TH2F * fhPtRatNearParton; //Ratio of parton pT and prompt trigger particle pT
+       TH2F * fhDeltaEtaNearParton; //! Difference of parton eta and prompt trigger particle eta
+       TH2F * fhDeltaPhiNearParton; //! Difference of parton phi and prompt trigger particle phi
+       TH2F * fhDeltaPtNearParton; //! Difference of parton pT and prompt trigger particle pT
+       TH2F * fhPtRatNearParton; //! Ratio of parton pT and prompt trigger particle pT
        
-       TH2F * fhDeltaEtaAwayParton; //Difference of parton eta and prompt trigger particle eta
-       TH2F * fhDeltaPhiAwayParton; //Difference of parton phi and prompt trigger particle phi
-       TH2F * fhDeltaPtAwayParton; //Difference of parton pT and prompt trigger particle pT
-       TH2F * fhPtRatAwayParton; //Ratio of parton pT and prompt trigger particle pT
+       TH2F * fhDeltaEtaAwayParton; //! Difference of parton eta and prompt trigger particle eta
+       TH2F * fhDeltaPhiAwayParton; //! Difference of parton phi and prompt trigger particle phi
+       TH2F * fhDeltaPtAwayParton; //! Difference of parton pT and prompt trigger particle pT
+       TH2F * fhPtRatAwayParton; //! Ratio of parton pT and prompt trigger particle pT
 
        ClassDef(AliAnaParticlePartonCorrelation,1)
  } ;

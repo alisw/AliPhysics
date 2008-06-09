@@ -56,15 +56,15 @@ class AliAnaExample : public AliAnaBaseClass {
        TString fDetector ; //detector selection
        //Histograms
        //CaloClusters 
-       TH1F * fhPt; //pT distribution
-       TH1F * fhPhi; //phi distribution
-       TH1F * fhEta; //phi distribution
-       TH2F * fh2Pt; //pT distribution, reconstructed vs generated
-       TH2F * fh2Phi; //phi distribution, reconstructed vs generated
-       TH2F * fh2Eta; //phi distribution, reconstructed vs generated
+       TH1F * fhPt; //! pT distribution
+       TH1F * fhPhi; //! phi distribution
+       TH1F * fhEta; //! eta distribution
+       TH2F * fh2Pt; //!pT distribution, reconstructed vs generated
+       TH2F * fh2Phi; //! phi distribution, reconstructed vs generated
+       TH2F * fh2Eta; //! eta distribution, reconstructed vs generated
        //Calo Cells
-       TH1F * fhNCells; //Number of towers/crystals with signal
-       TH1F * fhAmplitude; //Amplitude measured in towers/crystals
+       TH1F * fhNCells; //! Number of towers/crystals with signal
+       TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
        ClassDef(AliAnaExample,1)
  } ;
 

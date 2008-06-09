@@ -84,6 +84,44 @@ ClassImp(AliAnaGammaDirect)
   //Initialize parameters
   InitParameters();
 
+  for(Int_t i = 0; i < 5 ; i++){ 
+    fConeSizes[i] = 0 ; 
+    fhPtSumIsolated[i] = 0 ;  
+    
+    fhPtSumIsolatedPrompt[i] = 0 ;  
+    fhPtSumIsolatedFragmentation[i] = 0 ;  
+    fhPtSumIsolatedPi0Decay[i] = 0 ;  
+    fhPtSumIsolatedOtherDecay[i] = 0 ;  
+    fhPtSumIsolatedConversion[i] = 0 ;  
+    fhPtSumIsolatedUnknown[i] = 0 ;  
+    
+    for(Int_t j = 0; j < 5 ; j++){ 
+      fhPtThresIsolated[i][j] = 0 ;  
+      fhPtFracIsolated[i][j] = 0 ; 
+      
+      fhPtThresIsolatedPrompt[i][j] = 0 ;  
+      fhPtThresIsolatedFragmentation[i][j] = 0 ; 
+      fhPtThresIsolatedPi0Decay[i][j] = 0 ;  
+      fhPtThresIsolatedOtherDecay[i][j] = 0 ;  
+      fhPtThresIsolatedConversion[i][j] = 0 ;  
+      fhPtThresIsolatedUnknown[i][j] = 0 ;  
+  
+      fhPtFracIsolatedPrompt[i][j] = 0 ;  
+      fhPtFracIsolatedFragmentation[i][j] = 0 ;  
+      fhPtFracIsolatedPi0Decay[i][j] = 0 ;  
+      fhPtFracIsolatedOtherDecay[i][j] = 0 ;  
+      fhPtFracIsolatedConversion[i][j] = 0 ;
+      fhPtFracIsolatedUnknown[i][j] = 0 ;  
+ 
+    }  
+  } 
+  
+  for(Int_t i = 0; i < 5 ; i++){ 
+    fPtFractions[i]=  0 ; 
+    fPtThresholds[i]= 0 ; 
+  } 
+
+
 }
 
 //____________________________________________________________________________

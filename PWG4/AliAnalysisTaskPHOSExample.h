@@ -48,14 +48,14 @@ private:
 
   // Histograms
   TList   * fOutputList ;	//! output data list
-  TNtuple * fhPHOSPos ;		// PHOS (x,y)
-  TNtuple * fhPHOS ;		// all PHOS parameters
-  TH1D    * fhPHOSEnergy ;	// PHOS energy 
-  TH1I    * fhPHOSDigits ;	// PHOS numer of SDigits 
-  TH1D    * fhPHOSRecParticles ;// PHOS number of RecParticles
-  TH1I    * fhPHOSPhotons ;		// PHOS number of photons
-  TH1D    * fhPHOSInvariantMass ;// PHOS invariant mass
-  TH1I    * fhPHOSDigitsEvent ;		//PHOS numbet of Sdigits per event	
+  TNtuple * fhPHOSPos ;		//! PHOS (x,y)
+  TNtuple * fhPHOS ;		//! all PHOS parameters
+  TH1D    * fhPHOSEnergy ;	//! PHOS energy 
+  TH1I    * fhPHOSDigits ;	//! PHOS numer of SDigits 
+  TH1D    * fhPHOSRecParticles ;//! PHOS number of RecParticles
+  TH1I    * fhPHOSPhotons ;	//! PHOS number of photons
+  TH1D    * fhPHOSInvariantMass ; //! PHOS invariant mass
+  TH1I    * fhPHOSDigitsEvent ;	  //! PHOS numbet of Sdigits per event	
    
   ClassDef(AliAnalysisTaskPHOSExample, 1); // a PHOS photon analysis task 
 };
