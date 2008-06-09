@@ -86,8 +86,8 @@ AliAnalysisTaskKineFilter& AliAnalysisTaskKineFilter::operator=(const AliAnalysi
 void AliAnalysisTaskKineFilter::UserCreateOutputObjects()
 {
 // Create the output container
-
-    OutputTree()->GetUserInfo()->Add(fTrackFilter);
+    if (OutputTree()) 
+	OutputTree()->GetUserInfo()->Add(fTrackFilter);
 }
 
 
