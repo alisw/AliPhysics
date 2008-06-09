@@ -1061,7 +1061,7 @@ void AliFRAMEv2::CreateGeometry()
 
   for (i = 0; i < 18; i++)
   {
-      Float_t ro   = kBFMRou - kBFBd / 2.;
+      Float_t ro   = kBFMRou - kBFBd / 2. - 0.02;
       Float_t ri   = kBFMRin + kBFBd / 2.;
 
       Float_t phi0 = Float_t(i) * 20.;
@@ -1451,7 +1451,7 @@ void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
     sprintf(t1name, "BTSHT1_%s", name);
     gMC->Gsvolu(t1name,  "TUBE", kAlu, thshT,  3);
     dx = - dxP / 2. + 8. - 0.5;
-    gMC->Gspos(t1name, 1, mname,  dx, 0., 0.05, rot1);
+    gMC->Gspos(t1name, 1, mname,  dx, 0., 0.025, rot1);
     //
     sprintf(t2name, "BTSHT2_%s", name);
     sprintf(t3name, "BTSHT3_%s", name);
@@ -1473,16 +1473,16 @@ void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
 	Float_t dy1 =  - (thshM[1] - 15.5) * sig;
 	Float_t dy2 =  - (thshM[1] -  7.5) * sig;
 	
-	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.05, rot1);
+	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.025, rot1);
 	dx += 6.9;
-	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.05, rot1);      
+	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.025, rot1);      
 	
-	gMC->Gspos(t3name, i+1,   mname, dx - 3.45, dy1, 0.05, rot2);      
-	gMC->Gspos(t4name, i+1,   mname, dx - 3.45, dy2, 0.05, rot2);      
+	gMC->Gspos(t3name, i+1,   mname, dx - 3.45, dy1, 0.025, rot2);      
+	gMC->Gspos(t4name, i+1,   mname, dx - 3.45, dy2, 0.025, rot2);      
     }
     dx += 8.;
-    gMC->Gspos(t1name, 2, mname, dx, 0., 0.05, rot1);
-    gMC->Gspos(t3name, 6,   mname, dx - 3.45, -(thshM[1] - 7.5), 0.05, rot2);      
+    gMC->Gspos(t1name, 2, mname, dx, 0., 0.025, rot1);
+    gMC->Gspos(t3name, 6,   mname, dx - 3.45, -(thshM[1] - 7.5), 0.025, rot2);      
 }
 
 
