@@ -5,7 +5,6 @@
 //
 
 #include "../CreateESDChain.C"
-#include "../PWG0Helper.C"
 
 void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* option = "")
 {
@@ -101,9 +100,9 @@ void SetTPC()
   AliMultiplicityCorrection::SetQualityRegions(kFALSE);
 }
 
-void draw(const char* fileName = "multiplicityMC.root", const char* folder = "Multiplicity")
+void draw(const char* fileName = "multiplicity.root", const char* folder = "Multiplicity")
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   AliMultiplicityCorrection* mult = new AliMultiplicityCorrection(folder, folder);
 
@@ -132,6 +131,7 @@ void loadlibs()
 
   gSystem->Load("libSTEERBase");
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");
 }
 
