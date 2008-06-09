@@ -156,10 +156,10 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
     TParticle *part = stack->Particle(iTrack);
     
     if (iTrack == 0) {
-      // add primary vertex
-      x[0] = part->Vx(); x[1] = part->Vy(); x[2] = part->Vz();
-      primary = new(vertices[jVertices++])
-                   AliAODVertex(x, NULL, -999., NULL, AliAODVertex::kPrimary);  
+	// add primary vertex
+	x[0] = part->Vx(); x[1] = part->Vy(); x[2] = part->Vz();
+	primary = new(vertices[jVertices++])
+	    AliAODVertex(x, NULL, -999., NULL, -1, AliAODVertex::kPrimary);  
     }
     
     
@@ -243,9 +243,9 @@ Int_t AliAnalysisTaskKineFilter::LoopOverSecondaries(TParticle *mother, Int_t &j
 
       if (iDaughter == mother->GetFirstDaughter()) {
         // add secondary vertex
-        secondary = new(vertices[jVertices++])
-                       AliAODVertex(x, NULL, -999., tracks.Last(), AliAODVertex::kUndef);
-        SetVertexType(part, secondary);
+	  secondary = new(vertices[jVertices++])
+	      AliAODVertex(x, NULL, -999., tracks.Last(), iDaughter, AliAODVertex::kUndef);
+	  SetVertexType(part, secondary);
       }
 
       UInt_t selectInfo = 0;
