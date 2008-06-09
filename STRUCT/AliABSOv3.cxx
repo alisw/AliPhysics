@@ -178,7 +178,7 @@ void AliABSOv3::CreateGeometry()
       // Front insert 
       Float_t dzSteelEnvelopeFI    =  1.;
       Float_t rInSteelEnvelopeFI   = 42.0/2.;
-      Float_t rOuSteelEnvelopeFI   = 85.0/2.;      
+      Float_t rOuSteelEnvelopeFI   = 85.0/2.+ 0.06;      
       
       TGeoPcon* shFaSteelEnvelopeC = new TGeoPcon(0., 360., 7);
       z = 0.;
@@ -381,7 +381,7 @@ void AliABSOv3::CreateGeometry()
       Float_t rInFaWTube2C1 =   9.10/2.;
       Float_t rInFaWTube2C2 =  12.58/2.;
       Float_t rOuFaWTube2C1 =  20.70/2.;
-      Float_t rOuFaWTube2C2 =  30.72/2.;
+      Float_t rOuFaWTube2C2 =  30.72/2.- 0.05;
       // Front Flange 
       Float_t dzFaWTube2F   =  0.6;
       Float_t rInFaWTube2F  = 15.4/2.;
@@ -890,7 +890,7 @@ void AliABSOv3::CreateGeometry()
       voFA->AddNode(voFaM,        1, gGeoIdentity);
       voFA->AddNode(voFaEndPlate, 1, new TGeoTranslation(0., 0., dzFa + dzEndPlate/2.));
       voFA->AddNode(voFass, 1, new TGeoTranslation(0., 0., 388.45));
-      voFA->AddNode(voFassAlRing, 1, new TGeoTranslation(0., 0., 382. - 3.5));
+      voFA->AddNode(voFassAlRing, 1, new TGeoTranslation(0., 0., 382. - 3.56));
       top->AddNode(voFA, 1, new TGeoCombiTrans(0., 0., -90., rotxz));
 }
 
