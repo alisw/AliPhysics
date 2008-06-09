@@ -51,7 +51,9 @@ class AliTRDrecoParam : public AliDetectorRecoParam
 	Bool_t SeedingOn() const { return fSeedingOn; }
 	Bool_t IsVertexConstrained() const { return fVertexConstrained; }
 	
-        Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
+	Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
+	Double_t GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;  };
+	Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
         Double_t GetClusSigThresh() const         { return fClusSigThresh;   };
         Int_t    GetTCnexp() const                { return fTCnexp;          };
         Bool_t   LUTOn() const                    { return fLUTOn;           };
@@ -63,17 +65,19 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         static   AliTRDrecoParam *GetHighFluxParam();
         static   AliTRDrecoParam *GetCosmicTestParam();
 
-	void     SetClusterSharing(Bool_t share = kTRUE) { fkClusterSharing = share;  };
-	void     SetPIDMethod(Int_t pid = 1)             { fkPIDMethod = pid ? 1 : 0; };
-	void     SetSeedingOn(Bool_t seedingOn = kTRUE)  { fSeedingOn = seedingOn; }
+	void     SetClusterSharing(Bool_t share = kTRUE)            { fkClusterSharing = share;  };
+	void     SetPIDMethod(Int_t pid = 1)                        { fkPIDMethod = pid ? 1 : 0; };
+	void     SetSeedingOn(Bool_t seedingOn = kTRUE)             { fSeedingOn = seedingOn; }
 	void     SetVertexConstrained(Bool_t vertexConstrained = kTRUE) { fVertexConstrained = vertexConstrained; }
-	void     SetStreamLevel(Int_t streamLevel= 1) { fkStreamLevel = streamLevel; }
-        void     SetLUT(Int_t lutOn = 1)                 { fLUTOn           = lutOn;  };
-        void     SetClusMaxThresh(Float_t thresh)        { fClusMaxThresh   = thresh; };
-        void     SetClusSigThresh(Float_t thresh)        { fClusSigThresh   = thresh; };
-        void     SetTailCancelation(Int_t tcOn = 1)      { fTCOn            = tcOn;   };
-        void     SetNexponential(Int_t nexp)             { fTCnexp          = nexp;   };
-        void     SetADCbaseline(Int_t base)              { fADCbaseline     = base;   };
+	void     SetStreamLevel(Int_t streamLevel= 1)               { fkStreamLevel = streamLevel; }
+        void     SetLUT(Int_t lutOn = 1)                            { fLUTOn           = lutOn;  };
+	void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; };
+	void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
+        void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
+        void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
+        void     SetTailCancelation(Int_t tcOn = 1)                 { fTCOn            = tcOn;   };
+        void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
+        void     SetADCbaseline(Int_t base)                         { fADCbaseline     = base;   };
 
  private:
 
@@ -103,6 +107,8 @@ class AliTRDrecoParam : public AliDetectorRecoParam
 	Bool_t    fVertexConstrained;      // Perform vertex constrained fit
 
         // Clusterization parameter
+	Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
+	Double_t  fMinLeftRightCutSigma;   // Threshold sigma noise sum pad
         Double_t  fClusMaxThresh;          // Threshold value for cluster maximum
         Double_t  fClusSigThresh;          // Threshold value for cluster signal
         Int_t     fLUTOn;                  // Switch for the lookup table method  

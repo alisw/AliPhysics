@@ -36,6 +36,10 @@ class AliTRDcalibDB : public TObject {
   void                                SetRun(Long64_t run);
   Long64_t                            GetRun() const { return fRun; }
 
+  Float_t                             GetNoise(Int_t det, Int_t col, Int_t row);
+        AliTRDCalROC                 *GetNoiseROC(Int_t det);
+  const AliTRDCalDet                 *GetNoiseDet();
+
   Float_t                             GetVdrift(Int_t det, Int_t col, Int_t row);
   Float_t                             GetVdriftAverage(Int_t det);
         AliTRDCalROC                 *GetVdriftROC(Int_t det);
@@ -85,13 +89,15 @@ class AliTRDcalibDB : public TObject {
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
-  enum { kCDBCacheSize = 16 };   // Number of cached objects
+  enum { kCDBCacheSize = 18 };   // Number of cached objects
   enum { kIDVdriftPad = 0
        , kIDVdriftChamber
        , kIDT0Pad
        , kIDT0Chamber
        , kIDGainFactorPad
        , kIDGainFactorChamber
+       , kIDNoiseChamber
+       , kIDNoisePad
        , kIDPRFWidth
        , kIDFEE
        , kIDChamberPos

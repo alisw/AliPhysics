@@ -645,6 +645,11 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Threshold value for the digit signal
   Float_t sigThresh      = AliTRDReconstructor::RecoParam()->GetClusSigThresh();
 
+  // Threshold value for the maximum ( cut noise)
+  Float_t minMaxCutSigma = AliTRDReconstructor::RecoParam()->GetMinMaxCutSigma();
+  // Threshold value for the sum pad ( cut noise)
+  Float_t minLeftRightCutSigma = AliTRDReconstructor::RecoParam()->GetMinLeftRightCutSigma();
+
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
   const Int_t   kNclus   = 3;  
@@ -688,6 +693,14 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration value for chamber wise gain factor
   Float_t                       calGainFactorDetValue = calGainFactorDet->GetValue(idet);
 
+
+  // Detector wise calibration object for the noise
+  const AliTRDCalDet           *calNoiseDet           = calibration->GetNoiseDet();
+  // Calibration object with pad wise values for the noise
+  AliTRDCalROC                 *calNoiseROC           = calibration->GetNoiseROC(idet);
+  // Calibration value for chamber wise noise
+  Float_t                       calNoiseDetValue      = calNoiseDet->GetValue(idet);
+
   Int_t nClusters = 0;
 
   AliTRDdataArrayF *digitsOut = new AliTRDdataArrayF(nRowMax, nColMax, nTimeTotal);
@@ -717,57 +730,62 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     status[1] = digitsIn->GetPadStatus(row,col,time);
     if(status[1]) SETBIT(ipos, AliTRDcluster::kMaskedCenter);
 
-    // Look for the maximum
-    if (signalM >= maxThresh) {
-      if (col + 1 >= nColMax || col-1 < 0) continue;
+    if(signalM < maxThresh) continue; 
+
+    Float_t  noiseMiddleThresh = minMaxCutSigma*calNoiseDetValue*calNoiseROC->GetValue(col,row);
+    if (signalM < noiseMiddleThresh) continue;
+
+    if (col + 1 >= nColMax || col-1 < 0) continue;
     
-      Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
-      status[0] = digitsIn->GetPadStatus(row,col+1,time);
-      if(status[0]) SETBIT(ipos, AliTRDcluster::kMaskedLeft);
+    Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
+    status[0] = digitsIn->GetPadStatus(row,col+1,time);
+    if(status[0]) SETBIT(ipos, AliTRDcluster::kMaskedLeft);
     
-      Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
-      status[2] = digitsIn->GetPadStatus(row,col-1,time);
-      if(status[2]) SETBIT(ipos, AliTRDcluster::kMaskedRight);
+    Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
+    status[2] = digitsIn->GetPadStatus(row,col-1,time);
+    if(status[2]) SETBIT(ipos, AliTRDcluster::kMaskedRight);
     
-      // reject candidates with more than 1 problematic pad
-      if(ipos == 3 || ipos > 4) continue;
+    // reject candidates with more than 1 problematic pad
+    if(ipos == 3 || ipos > 4) continue;
     
-      if(!status[1]){ // good central pad
-        if(!ipos){ // all pads are OK
-          if ((signalL <= signalM) && (signalR <  signalM)) {
-            if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
-              // Maximum found, mark the position by a negative signal
-              digitsOut->SetDataUnchecked(row,col,time,-signalM);
+    if(!status[1]){ // good central pad
+      if(!ipos){ // all pads are OK
+	if ((signalL <= signalM) && (signalR <  signalM)) {
+	  if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
+	    Float_t  noiseSumThresh    = minLeftRightCutSigma*calNoiseDetValue*calNoiseROC->GetValue(col,row);
+	    if((signalL+signalR+signalM) >= noiseSumThresh){
+	      // Maximum found, mark the position by a negative signal
+	      digitsOut->SetDataUnchecked(row,col,time,-signalM);
+	      fIndexesMaxima->AddIndexTBin(row,col,time);
+	      padStatus.SetDataUnchecked(row, col, time, ipos);
+	    }
+	  }
+	}
+      } else { // one of the neighbouring pads are bad
+	if(status[0] && signalR < signalM && signalR >= sigThresh){
+	  digitsOut->SetDataUnchecked(row,col,time,-signalM);
+	  digitsOut->SetDataUnchecked(row, col, time+1, 0.);
+	  fIndexesMaxima->AddIndexTBin(row,col,time);
+	  padStatus.SetDataUnchecked(row, col, time, ipos);
+	} else if(status[2] && signalL <= signalM && signalL >= sigThresh){
+	  digitsOut->SetDataUnchecked(row,col,time,-signalM);
+	  digitsOut->SetDataUnchecked(row, col, time-1, 0.);
               fIndexesMaxima->AddIndexTBin(row,col,time);
               padStatus.SetDataUnchecked(row, col, time, ipos);
-              }
-            }
-          } else { // one of the neighbouring pads are bad
-            if(status[0] && signalR < signalM && signalR >= sigThresh){
-              digitsOut->SetDataUnchecked(row,col,time,-signalM);
-              digitsOut->SetDataUnchecked(row, col, time+1, 0.);
-              fIndexesMaxima->AddIndexTBin(row,col,time);
-              padStatus.SetDataUnchecked(row, col, time, ipos);
-            } else if(status[2] && signalL <= signalM && signalL >= sigThresh){
-              digitsOut->SetDataUnchecked(row,col,time,-signalM);
-              digitsOut->SetDataUnchecked(row, col, time-1, 0.);
-              fIndexesMaxima->AddIndexTBin(row,col,time);
-              padStatus.SetDataUnchecked(row, col, time, ipos);
-            }
-          }
-        } else { // wrong maximum pad
-          if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
-            // Maximum found, mark the position by a negative signal
-            digitsOut->SetDataUnchecked(row,col,time,-maxThresh);
-            fIndexesMaxima->AddIndexTBin(row,col,time);
-            padStatus.SetDataUnchecked(row, col, time, ipos);
-          }
-        }
+	}
+      }
+    } else { // wrong maximum pad
+      if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
+	// Maximum found, mark the position by a negative signal
+	digitsOut->SetDataUnchecked(row,col,time,-maxThresh);
+	fIndexesMaxima->AddIndexTBin(row,col,time);
+	padStatus.SetDataUnchecked(row, col, time, ipos);
       }
     }
+  }
 
     // The index to the first cluster of a given ROC
-    Int_t firstClusterROC = -1;
+  Int_t firstClusterROC = -1;
     // The number of cluster in a given ROC
     Int_t nClusterROC     =  0;
 

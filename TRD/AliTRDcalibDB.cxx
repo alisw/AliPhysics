@@ -223,6 +223,13 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
     case kIDGainFactorChamber : 
       return CacheCDBEntry(kIDGainFactorChamber ,"TRD/Calib/ChamberGainFactor"); 
       break;
+    case kIDNoiseChamber : 
+      return CacheCDBEntry(kIDNoiseChamber ,"TRD/Calib/DetNoise"); 
+      break;
+    case kIDNoisePad : 
+      return CacheCDBEntry(kIDNoisePad ,"TRD/Calib/PadNoise"); 
+      break;
+
 
     // Parameters defined per pad
     case kIDPRFWidth : 
@@ -328,6 +335,76 @@ void AliTRDcalibDB::Invalidate()
       fCDBEntries[i] = 0;
       fCDBCache[i]   = 0;
     }
+  }
+
+}
+//_____________________________________________________________________________
+Float_t AliTRDcalibDB::GetNoise(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns the noise level in ADC counts for the given pad.
+  //
+
+  const AliTRDCalPad *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                   (GetCachedCDBObject(kIDNoisePad));
+  if (!calPad) {
+    return -1;
+  }
+
+  AliTRDCalROC       *roc        = calPad->GetCalROC(det);
+  if (!roc) {
+    return -1;
+  }
+
+  const AliTRDCalDet *calChamber = dynamic_cast<const AliTRDCalDet *> 
+                                   (GetCachedCDBObject(kIDNoiseChamber));
+  if (!calChamber) {
+    return -1;
+  }
+
+  return calChamber->GetValue(det) * roc->GetValue(col,row);
+
+}
+ 
+//_____________________________________________________________________________
+AliTRDCalROC *AliTRDcalibDB::GetNoiseROC(Int_t det)
+{
+  //
+  // Returns the Vdrift calibration object for a given ROC
+  // containing one number per pad 
+  //
+  
+  const AliTRDCalPad     *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                       (GetCachedCDBObject(kIDNoisePad));
+  if (!calPad) {
+    return 0;
+  }
+
+  AliTRDCalROC           *roc        = calPad->GetCalROC(det);
+  if (!roc) {
+    return 0;
+  }
+  else {
+    return roc;
+  }
+
+}
+
+//_____________________________________________________________________________
+const AliTRDCalDet *AliTRDcalibDB::GetNoiseDet()
+{
+  //
+  // Returns the Vdrift calibration object
+  // containing one number per detector
+  //
+  
+  const AliTRDCalDet     *calChamber = dynamic_cast<const AliTRDCalDet *> 
+                                       (GetCachedCDBObject(kIDNoiseChamber));
+  if (!calChamber) {
+    return 0;
+  }
+  else {
+    return calChamber;
   }
 
 }
