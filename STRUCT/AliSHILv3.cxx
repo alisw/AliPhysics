@@ -350,19 +350,19 @@ void AliSHILv3::CreateGeometry()
 // Radii
 // 1
       Float_t rOuSaa1StEnv1 = 40.4/2.;
-      Float_t rInSaa1StEnv1 = rOuSaa1StEnv1 - dSt;
+      Float_t rInSaa1StEnv1 = rOuSaa1StEnv1 - dSt - 0.05;
 // 2  
       Float_t rInSaa1StEnv2 = 41.7/2.;
-      Float_t rOuSaa1StEnv2 = rInSaa1StEnv2 + dSt / TMath::Cos(2.0 * kDegRad);
+      Float_t rOuSaa1StEnv2 = rInSaa1StEnv2 + dSt / TMath::Cos(2.0 * kDegRad) - 0.05;
 // 3         
       Float_t rOuSaa1StEnv3 = 57.6/2.;
-      Float_t rInSaa1StEnv3 = rOuSaa1StEnv3 - dSt;
+      Float_t rInSaa1StEnv3 = rOuSaa1StEnv3 - dSt - 0.05;
 // 4
       Float_t rInSaa1StEnv4 = 63.4/2.;
-      Float_t rOuSaa1StEnv4 = rInSaa1StEnv4 + dSt / TMath::Cos(1.6 * kDegRad);
+      Float_t rOuSaa1StEnv4 = rInSaa1StEnv4 + dSt / TMath::Cos(1.6 * kDegRad) - 0.05;
 // end         
       Float_t rInSaa1StEnv5 = 74.28/2.;
-      Float_t rOuSaa1StEnv5 = rInSaa1StEnv5 + dSt / TMath::Cos(1.6 * kDegRad);
+      Float_t rOuSaa1StEnv5 = rInSaa1StEnv5 + dSt / TMath::Cos(1.6 * kDegRad) - 0.05;
 // Relative starting position
       Float_t zSaa1StEnvS = 3.;
       
@@ -609,7 +609,7 @@ void AliSHILv3::CreateGeometry()
       Float_t dzSaa1 = 659.2;
       //
       TGeoPcon* shSaa1M  = new TGeoPcon(0., 360., 20);
-      Float_t kSec = 0.01; // security distance to avoid trivial extrusions
+      Float_t kSec = 0.2; // security distance to avoid trivial extrusions
       Float_t rmin = rInSaa1InnerTube - dSaa1InnerTube - kSec;
       rmax = rOuSaa1InnerTube - dSaa1InnerTube - kSec;
       z = 0.;
@@ -653,7 +653,7 @@ void AliSHILv3::CreateGeometry()
       for (Int_t i  = 2; i < 15; i++) {
 	  Double_t zp = shSaa1M->GetZ(i);
 	  Double_t r2 = shSaa1M->GetRmax(i);	 
-	  Double_t r1 = rmin + (zp - 0.9) * TMath::Tan(1.69 / 2. * kDegRad) - kSec;
+	  Double_t r1 = rmin + (zp - 0.9) * TMath::Tan(1.686 / 2. * kDegRad) - kSec;
 	  shSaa1M->DefineSection(i, zp, r1, r2);
       }
 
@@ -1235,7 +1235,7 @@ void AliSHILv3::CreateGeometry()
       voSaa->AddNode(voFaWTail,    1, new TGeoTranslation(0., 0., ziFaWTail));
       voSaa->AddNode(voFaSaa1,     1, new TGeoTranslation(0., 0., ziFaSaa1));
       voSaa->AddNode(voSaa1 ,      1, new TGeoTranslation(0., 0., ziSaa1));
-      voSaa->AddNode(voSaa1Saa2,   1, new TGeoTranslation(0., 0., ziSaa1Saa2));
+      voSaa->AddNode(voSaa1Saa2,   1, new TGeoTranslation(0., 0., ziSaa1Saa2 - 0.1));
       voSaa->AddNode(voSaa2 ,      1, new TGeoTranslation(0., 0., ziSaa2));
       voSaa->AddNode(voSaa3,       1, new TGeoTranslation(0., 0., zcSaa3));
       
