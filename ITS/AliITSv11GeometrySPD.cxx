@@ -1099,7 +1099,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     sB3 = new TGeoBBox((Double_t*)kMountBlock);
     // SPD sector cooling tubes
     sTB0 = new TGeoTube("ITS SPD Cooling Tube End TB0", 0.0,
-                   0.5*ksecCoolTubeROuter,0.5*(sB0->GetZ(1)-sB0->GetZ(0)));
+                   0.5*ksecCoolTubeROuter,0.5*(sB1->GetZ(1)-sB1->GetZ(0)));
     sTB1 = new TGeoTube("ITS SPD Cooling Tube End coolant TB0", 0.0,
                         sTB0->GetRmax() - ksecCoolTubeThick,sTB0->GetDz());
     //
@@ -2684,7 +2684,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
                                    
     TGeoVolume *ext1 = mgr->MakeBox("Extender1", medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
 	TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - extThickness, 0.5*extWidth, 0.5*extThickness);
-	TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, extThickness, 0.5*extWidth, 0.5*ext2Length);
+	TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, extThickness, 0.5*(extWidth-0.8*fgkmm), 0.5*ext2Length); // Hardcode fix of a small overlap
     bus->SetLineColor(kYellow + 2);
     pt1000->SetLineColor(kGreen + 3);
     res->SetLineColor(kRed + 1);
@@ -2783,7 +2783,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) con
     
     Double_t cableThickness = 1.5 * fgkmm;
     Double_t cableL1 = 350.0 * fgkmm - extThickness - ext1Length - ext2Length;
-    Double_t cableL2 = 430.0 * fgkmm;
+    Double_t cableL2 = 426.0 * fgkmm;
     //Double_t cableL3 = 570.0 * fgkmm;
     Double_t cableL3 = 57.0 * fgkmm;
     Double_t cableW1 =  11.0 * fgkmm;
@@ -3319,7 +3319,7 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
 
     // bus (length and thickness direction)
     Double_t xBus = xLadGlue + 0.5*ladGlueThickness + 0.5*busThickness;
-    Double_t yBus  = 0.5*(fullWidth - busWidth);
+    Double_t yBus  = 0.5*(fullWidth - busWidth) + 0.075; // Hardcode fix of a small overlap
     Double_t zBus = -0.5*busLength - sepBusCenter;
     if (!isRight) zBus = -zBus;
     TGeoTranslation *trBus = new TGeoTranslation(xBus, yBus, zBus);

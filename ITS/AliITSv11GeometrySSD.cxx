@@ -430,7 +430,7 @@ const Double_t AliITSv11GeometrySSD::fgkEndCapSideCoverThickness = 0.4*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardBackLength[3] = 
 													   {62.0*fgkmm,21.87*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardBackWidth[2] = 
-													    {47.1*fgkmm,0.35*fgkmm};
+													    {47.0*fgkmm,0.35*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardBackThickness = 
 																	  1.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardLength = 61.8*fgkmm;
@@ -4646,7 +4646,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 										+ fgkSSDMountingBlockHeight[1]
 										- 0.5*fgkCoolingTubeSupportHeight
 										- fgkSSDModuleCoolingBlockToSensor
-										- fgkSSDModuleVerticalDisalignment;
+										- 2.*fgkSSDModuleVerticalDisalignment;
 	mountingblockpiecedownxvertex[i][2] = 0.5*fgkSSDMountingBlockLength[0];	
 	mountingblockpiecedownyvertex[i][2] = mountingblockpiecedownyvertex[i][1];
 	mountingblockpiecedownxvertex[i][3] = mountingblockpiecedownxvertex[i][2];	
@@ -4681,7 +4681,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 										+ fgkSSDMountingBlockHeight[1]
 										- 0.5*fgkCoolingTubeSupportHeight
 										- fgkSSDModuleCoolingBlockToSensor
-										- fgkSSDModuleVerticalDisalignment;
+										- 2.*fgkSSDModuleVerticalDisalignment;
 	mountingblockpieceupxvertex[i][2] = 0.5*fgkSSDMountingBlockLength[0];	
 	mountingblockpieceupyvertex[i][2] = mountingblockpieceupyvertex[i][1];
 	mountingblockpieceupxvertex[i][3] = mountingblockpieceupxvertex[i][2];	
