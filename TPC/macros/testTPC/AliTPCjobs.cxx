@@ -1,6 +1,6 @@
-//#include <fstream>
-//#include <TFile.h>
-//#include <TSystem.h>
+#include <fstream>
+#include <TFile.h>
+#include <TSystem.h>
 
 
 /*
@@ -36,7 +36,7 @@ public:
   void    SetDone(TString jobID);
   void    SetFail(TString jobID);
 
-  Int_t   Stage(TString inputData,TString jobID);
+  void    Stage(TString inputData,TString jobID);
 
   Bool_t  IsLocked(TString jobID);
   Bool_t  IsFail(TString jobID);
@@ -88,7 +88,7 @@ Bool_t AliTPCJobs::GetNextJob(){
     ins>>inputData;
     ins>>outputDir;
     ins>>action;
-    if (!inputData.Contains(".root")) SetFail(id);
+    //if (!inputData.Contains(".root")) SetFail(id);
     if (IsFail(id)) continue;
     if (!IsLocked(id)){
       hasJob=kTRUE;
@@ -106,16 +106,25 @@ Bool_t AliTPCJobs::GetNextJob(){
 
 
 void    AliTPCJobs::SetLock(TString jobID){
+  //
+  // 
+  //
   printf("touch out/%s.lock\n",jobID.Data());
   gSystem->Exec(Form("touch out/%s.lock",jobID.Data()));
 }
 
 void    AliTPCJobs::SetDone(TString jobID){ 
+  //
+  //
+  //
   printf("touch out/%s.done\n",jobID.Data());
   gSystem->Exec(Form("touch out/%s.done", jobID.Data()));
 }
 
 void    AliTPCJobs::SetFail(TString jobID){
+  //
+  //
+  // 
   printf("touch out/%s.fail\n",jobID.Data());
   gSystem->Exec(Form("touch out/%s.fail", jobID.Data()));
 }
@@ -147,6 +156,9 @@ Bool_t    AliTPCJobs::IsLocked(TString jobID){
 }
 
 Bool_t    AliTPCJobs::IsFail(TString jobID){
+  //
+  //
+  //
   TString path = "out/";
   path+=jobID;
   path+=".fail";
@@ -189,8 +201,12 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
   // 4. Create Done file
   SetLock(jobID);
   if (action.Contains("COPY")){
+    
     char command[10000];
-      sprintf(command,"xrdcp  -DIFirstConnectMaxCnt 4 -DIConnectTimeout 4 -DIRequestTimeout 4 -DIMaxRedirectcount 4 -DIRedirCntTimeout 4 %s\t%s\n",inputData.Data(), outputDir.Data());
+    sprintf(command,"mkdirhier %s",gSystem->DirName(outputDir.Data()));
+    printf("Exec\t%s\n", command);
+    gSystem->Exec(command);
+    sprintf(command,"xrdcp  -DIFirstConnectMaxCnt 4 -DIConnectTimeout 4 -DIRequestTimeout 4 -DIMaxRedirectcount 4 -DIRedirCntTimeout 4 %s\t%s\n",inputData.Data(), outputDir.Data());
     printf("Exec\t%s\n", command);
     gSystem->Exec(command);
     //TFile::Cp(inputData.Data(), outputDir.Data());
