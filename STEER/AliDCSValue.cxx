@@ -244,7 +244,7 @@ const Char_t* AliDCSValue::ToString() const
     case kInvalid: break;
   }
 
-  return Form("%s Timestamp: %s", str.Data(), TTimeStamp(fTimeStamp).AsString());
+  return Form("%s Timestamp: %s (%d)", str.Data(), TTimeStamp(fTimeStamp).AsString(), fTimeStamp);
 }
 
 void AliDCSValue::Print(Option_t* /*opt*/) const
