@@ -3,7 +3,7 @@ TPC DA for online calibration
 
 Contact: Haavard.Helstrup@cern.ch
 Link: 
-Run Type: PHYSICS_RUN STANDALONE DAQ
+Run Type: PHYSICS STANDALONE DAQ
 DA Type: MON
 Number of events needed: 500
 Input Files: 
