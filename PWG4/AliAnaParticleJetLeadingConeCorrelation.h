@@ -172,75 +172,75 @@ public:
   
   //Histograms
   //Leading particle distributions
-  TList *  fOutCont ; // Container for histograms
+  TList *  fOutCont ; //! Container for histograms
 
-  TH2F * fhChargedLeadingPt  ;    //Pt(Pt trigger) distribution of charged hadrons
-  TH2F * fhChargedLeadingPhi  ;   //Phi(Pt trigger) distribution of charged hadrons
-  TH2F * fhChargedLeadingEta  ;   //Eta(Pt trigger) distribution of charged hadrons
-  TH2F * fhChargedLeadingDeltaPt  ;   //Difference of charged hadron and trigger  pT as function of trigger p
-  TH2F * fhChargedLeadingDeltaPhi  ;  //Difference of charged hadron and trigger  phi as function of trigger pT
-  TH2F * fhChargedLeadingDeltaEta ;   //Difference of charged particle and trigger eta as function of trigger pT
-  TH2F * fhChargedLeadingRatioPt  ; //Ratio of Pt leading charge and trigger
+  TH2F * fhChargedLeadingPt  ;    //! Pt(Pt trigger) distribution of charged hadrons
+  TH2F * fhChargedLeadingPhi  ;   //! Phi(Pt trigger) distribution of charged hadrons
+  TH2F * fhChargedLeadingEta  ;   //! Eta(Pt trigger) distribution of charged hadrons
+  TH2F * fhChargedLeadingDeltaPt  ;   //! Difference of charged hadron and trigger  pT as function of trigger p
+  TH2F * fhChargedLeadingDeltaPhi  ;  //! Difference of charged hadron and trigger  phi as function of trigger pT
+  TH2F * fhChargedLeadingDeltaEta ;   //! Difference of charged particle and trigger eta as function of trigger pT
+  TH2F * fhChargedLeadingRatioPt  ; //! Ratio of Pt leading charge and trigger
 
-  TH2F * fhNeutralLeadingPt   ;   //Pt(Pt trigger) distribution of neutral hadrons
-  TH2F * fhNeutralLeadingPhi   ;  //Phi(Pt trigger) distribution of neutral hadrons
-  TH2F * fhNeutralLeadingEta   ;  //Eta(Pt trigger) distribution of neutral hadrons
-  TH2F * fhNeutralLeadingDeltaPt   ;  //Difference of neutral hadron and trigger pT as function of trigger pT
-  TH2F * fhNeutralLeadingDeltaPhi  ;  //Difference of neutral hadron and trigger phi as function of trigger pT
-  TH2F * fhNeutralLeadingDeltaEta ;   //Difference of charged particle and trigger eta as function of trigger pT
-  TH2F * fhNeutralLeadingRatioPt   ;  //Ratio of Pt leading neutral and trigger
+  TH2F * fhNeutralLeadingPt   ;   //! Pt(Pt trigger) distribution of neutral hadrons
+  TH2F * fhNeutralLeadingPhi   ;  //! Phi(Pt trigger) distribution of neutral hadrons
+  TH2F * fhNeutralLeadingEta   ;  //! Eta(Pt trigger) distribution of neutral hadrons
+  TH2F * fhNeutralLeadingDeltaPt   ;  //! Difference of neutral hadron and trigger pT as function of trigger pT
+  TH2F * fhNeutralLeadingDeltaPhi  ;  //! Difference of neutral hadron and trigger phi as function of trigger pT
+  TH2F * fhNeutralLeadingDeltaEta ;   //! Difference of charged particle and trigger eta as function of trigger pT
+  TH2F * fhNeutralLeadingRatioPt   ;  //! Ratio of Pt leading neutral and trigger
 
-  //Jet distributions
-  //Fixed cone and pt threshold
-  TH2F * fhJetPt  ; //leading pt jet vs pt trigger
-  TH2F * fhJetRatioPt  ; //Ratio of pt jet and pt trigger
-  TH2F * fhJetDeltaPhi  ; //Delta phi jet-trigger
-  TH2F * fhJetDeltaEta  ; //Delta eta jet-trigger
-  TH2F * fhJetLeadingRatioPt  ; //Ratio of pt leading and pt jet
-  TH2F * fhJetLeadingDeltaPhi  ; //Delta phi jet-leading
-  TH2F * fhJetLeadingDeltaEta  ; //Delta eta jet-leading
-  TH2F * fhJetFFz; //Accepted reconstructed jet fragmentation function, z=ptjet/pttrig
-  TH2F * fhJetFFxi; //Accepted reconstructed jet fragmentation function, xsi = ln(pttrig/ptjet)
-  TH2F * fhJetFFpt; //Jet particle pt distribution in cone
-  TH2F * fhJetNTracksInCone   ; //jet multiplicity in cone
+  // Jet distributions
+  // Fixed cone and pt threshold
+  TH2F * fhJetPt  ; //! leading pt jet vs pt trigger
+  TH2F * fhJetRatioPt  ; //! Ratio of pt jet and pt trigger
+  TH2F * fhJetDeltaPhi  ; //! Delta phi jet-trigger
+  TH2F * fhJetDeltaEta  ; //! Delta eta jet-trigger
+  TH2F * fhJetLeadingRatioPt  ; //! Ratio of pt leading and pt jet
+  TH2F * fhJetLeadingDeltaPhi  ; //! Delta phi jet-leading
+  TH2F * fhJetLeadingDeltaEta  ; //! Delta eta jet-leading
+  TH2F * fhJetFFz; //! Accepted reconstructed jet fragmentation function, z=ptjet/pttrig
+  TH2F * fhJetFFxi; //! Accepted reconstructed jet fragmentation function, xsi = ln(pttrig/ptjet)
+  TH2F * fhJetFFpt; //! Jet particle pt distribution in cone
+  TH2F * fhJetNTracksInCone   ; //! jet multiplicity in cone
 
-  TH2F * fhBkgPt  ; //leading pt bakground vs pt trigger
-  TH2F * fhBkgRatioPt  ; //Ratio of pt background and pt trigger
-  TH2F * fhBkgDeltaPhi  ; //Delta phi background-trigger
-  TH2F * fhBkgDeltaEta  ; //Delta eta background-trigger
-  TH2F * fhBkgLeadingRatioPt  ; //Ratio of pt leading and pt background
-  TH2F * fhBkgLeadingDeltaPhi  ; //Delta phi background-leading
-  TH2F * fhBkgLeadingDeltaEta  ; //Delta eta background-leading
-  TH2F * fhBkgFFz; //Accepted reconstructed background fragmentation function, z=ptjet/pttrig
-  TH2F * fhBkgFFxi; //Accepted reconstructed background fragmentation function, xsi = ln(pttrig/ptjet)
-  TH2F * fhBkgFFpt; //Background particle pt distribution in cone
-  TH2F * fhBkgNTracksInCone   ; //Background multiplicity in cone
+  TH2F * fhBkgPt  ; //! leading pt bakground vs pt trigger
+  TH2F * fhBkgRatioPt  ; //! Ratio of pt background and pt trigger
+  TH2F * fhBkgDeltaPhi  ; //! Delta phi background-trigger
+  TH2F * fhBkgDeltaEta  ; //! Delta eta background-trigger
+  TH2F * fhBkgLeadingRatioPt  ; //! Ratio of pt leading and pt background
+  TH2F * fhBkgLeadingDeltaPhi  ; //! Delta phi background-leading
+  TH2F * fhBkgLeadingDeltaEta  ; //! Delta eta background-leading
+  TH2F * fhBkgFFz; //! Accepted reconstructed background fragmentation function, z=ptjet/pttrig
+  TH2F * fhBkgFFxi; //! Accepted reconstructed background fragmentation function, xsi = ln(pttrig/ptjet)
+  TH2F * fhBkgFFpt; //! Background particle pt distribution in cone
+  TH2F * fhBkgNTracksInCone   ; //! Background multiplicity in cone
 
-  //Variable cone and pt threshold
+  // Variable cone and pt threshold
 
-  TH2F * fhJetPts[5][5]; //leading pt jet vs pt trigger
-  TH2F * fhJetRatioPts[5][5]; //Ratio of pt jet and pt trigger
-  TH2F * fhJetDeltaPhis[5][5]; //Delta phi jet-trigger
-  TH2F * fhJetDeltaEtas[5][5]; //Delta eta jet-trigger
-  TH2F * fhJetLeadingRatioPts[5][5]; //Ratio of pt leading and pt jet
-  TH2F * fhJetLeadingDeltaPhis[5][5]; //Delta phi jet-leading
-  TH2F * fhJetLeadingDeltaEtas[5][5]; //Delta eta jet-leading
-  TH2F * fhJetFFzs[5][5]; //Accepted reconstructed jet fragmentation function, z=ptjet/pttrig
-  TH2F * fhJetFFxis[5][5]; //Accepted reconstructed jet fragmentation function, xsi = ln(pttrig/ptjet)
-  TH2F * fhJetFFpts[5][5]; //Jet particle pt distribution in cone
-  TH2F * fhJetNTracksInCones[5][5]; //jet multiplicity in cone
+  TH2F * fhJetPts[5][5]; //! leading pt jet vs pt trigger
+  TH2F * fhJetRatioPts[5][5]; //! Ratio of pt jet and pt trigger
+  TH2F * fhJetDeltaPhis[5][5]; //! Delta phi jet-trigger
+  TH2F * fhJetDeltaEtas[5][5]; //! Delta eta jet-trigger
+  TH2F * fhJetLeadingRatioPts[5][5]; //! Ratio of pt leading and pt jet
+  TH2F * fhJetLeadingDeltaPhis[5][5]; //! Delta phi jet-leading
+  TH2F * fhJetLeadingDeltaEtas[5][5]; //! Delta eta jet-leading
+  TH2F * fhJetFFzs[5][5]; //! Accepted reconstructed jet fragmentation function, z=ptjet/pttrig
+  TH2F * fhJetFFxis[5][5]; //! Accepted reconstructed jet fragmentation function, xsi = ln(pttrig/ptjet)
+  TH2F * fhJetFFpts[5][5]; //! Jet particle pt distribution in cone
+  TH2F * fhJetNTracksInCones[5][5]; //! jet multiplicity in cone
 
-  TH2F * fhBkgPts[5][5]; //leading pt bakground vs pt trigger
-  TH2F * fhBkgRatioPts[5][5]; //Ratio of pt background and pt trigger
-  TH2F * fhBkgDeltaPhis[5][5]; //Delta phi background-trigger
-  TH2F * fhBkgDeltaEtas[5][5]; //Delta eta background-trigger
-  TH2F * fhBkgLeadingRatioPts[5][5]; //Ratio of pt leading and pt background
-  TH2F * fhBkgLeadingDeltaPhis[5][5]; //Delta phi background-leading
-  TH2F * fhBkgLeadingDeltaEtas[5][5]; //Delta eta background-leading
-  TH2F * fhBkgFFzs[5][5]; //Accepted reconstructed background fragmentation function, z=ptjet/pttrig
-  TH2F * fhBkgFFxis[5][5]; //Accepted reconstructed background fragmentation function, xsi = ln(pttrig/ptjet)
-  TH2F * fhBkgFFpts[5][5]; //Background particle pt distribution in cone
-  TH2F * fhBkgNTracksInCones[5][5]; //Background multiplicity in cone
+  TH2F * fhBkgPts[5][5]; //! leading pt bakground vs pt trigger
+  TH2F * fhBkgRatioPts[5][5]; //! Ratio of pt background and pt trigger
+  TH2F * fhBkgDeltaPhis[5][5]; //! Delta phi background-trigger
+  TH2F * fhBkgDeltaEtas[5][5]; //! Delta eta background-trigger
+  TH2F * fhBkgLeadingRatioPts[5][5]; //! Ratio of pt leading and pt background
+  TH2F * fhBkgLeadingDeltaPhis[5][5]; //! Delta phi background-leading
+  TH2F * fhBkgLeadingDeltaEtas[5][5]; //! Delta eta background-leading
+  TH2F * fhBkgFFzs[5][5]; //! Accepted reconstructed background fragmentation function, z=ptjet/pttrig
+  TH2F * fhBkgFFxis[5][5]; //! Accepted reconstructed background fragmentation function, xsi = ln(pttrig/ptjet)
+  TH2F * fhBkgFFpts[5][5]; //! Background particle pt distribution in cone
+  TH2F * fhBkgNTracksInCones[5][5]; //! Background multiplicity in cone
   
   
   ClassDef(AliAnaParticleJetLeadingConeCorrelation,1)

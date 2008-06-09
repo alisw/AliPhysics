@@ -32,8 +32,8 @@ class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
     AliAnalysisTaskParticleCorrelation& operator=(const AliAnalysisTaskParticleCorrelation&); // Not implemented
 
     AliAnaMaker* fAna; //  Pointer to the jet finder 
-    TList * fOutputContainer ; // Histogram container
-    TClonesArray * fAODBranch; //AOD branch
+    TList * fOutputContainer ; //! Histogram container
+    TClonesArray * fAODBranch; //! AOD branch
     TString fConfigName ; //Configuration file name
 
     ClassDef(AliAnalysisTaskParticleCorrelation, 1); // Analysis task for standard gamma correlation analysis
