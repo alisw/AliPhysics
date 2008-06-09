@@ -7,6 +7,7 @@
 #include "AliAnalysisCuts.h"
 
 class  TObject;
+class  TList;
 
 class AliKineTrackCuts : public AliAnalysisCuts
 {
@@ -15,7 +16,8 @@ public:
                       AliKineTrackCuts(const Char_t* name = "AliKineTrackCuts", const Char_t* title = "");
   virtual            ~AliKineTrackCuts(){;}
   
-            Bool_t    IsSelected(TObject* obj);
+              Bool_t  IsSelected(TObject* obj);
+	      Bool_t  IsSelected(TList* /*list*/) {return kTRUE;}
             
               void    SetFinalParticles( Bool_t val=kTRUE )          { fOnlyFinalParticles = val; }
               void    SetPrimaryParticles( Bool_t val=kTRUE )        { fOnlyPrimary = val; }
