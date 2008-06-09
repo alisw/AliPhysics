@@ -105,8 +105,8 @@ AliHLTMUONTriggerRecordsSource::~AliHLTMUONTriggerRecordsSource()
 	/// Default destructor.
 	///
 	
-	assert( fMCDataInterface == NULL );
-	assert( fDataInterface == NULL );
+	if (fMCDataInterface != NULL) delete fMCDataInterface;
+	if (fDataInterface != NULL) delete fDataInterface;
 }
 
 
@@ -117,8 +117,18 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 	/// Parses the command line parameters and initialises the component.
 	///
 	
-	assert( fMCDataInterface == NULL );
-	assert( fDataInterface == NULL );
+	HLTInfo("Initialising dHLT trigger record source component.");
+	
+	if (fMCDataInterface != NULL)
+	{
+		delete fMCDataInterface;
+		fMCDataInterface = NULL;
+	}
+	if (fDataInterface != NULL)
+	{
+		delete fDataInterface;
+		fDataInterface = NULL;
+	}
 	
 	// Parse the command line arguments:
 	bool hitdata = false;
@@ -317,6 +327,8 @@ int AliHLTMUONTriggerRecordsSource::DoDeinit()
 	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
 	///
 	
+	HLTInfo("Deinitialising dHLT trigger record source component.");
+	
 	if (fMCDataInterface != NULL)
 	{
 		delete fMCDataInterface;
@@ -409,12 +421,14 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 	
 	// Use the fEventID as the event number to load if fCurrentEventIndex == -1,
 	// check it and load that event with the runloader.
-	// If fCurrentEventIndex is a positive number then us it instead and
+	// If fCurrentEventIndex is a positive number then use it instead and
 	// increment it.
 	UInt_t eventnumber = UInt_t(evtData.fEventID);
-	UInt_t maxevent = fMCDataInterface != NULL ?
-		UInt_t(fMCDataInterface->NumberOfEvents())
-		: UInt_t(fDataInterface->NumberOfEvents());
+	UInt_t maxevent = 0;
+	if (fMCDataInterface != NULL)
+		maxevent = UInt_t(fMCDataInterface->NumberOfEvents());
+	else if (fDataInterface != NULL)
+		maxevent = UInt_t(fDataInterface->NumberOfEvents());
 	if (fCurrentEventIndex != -1)
 	{
 		eventnumber = UInt_t(fCurrentEventIndex);

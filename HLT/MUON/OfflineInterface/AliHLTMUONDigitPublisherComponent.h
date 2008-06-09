@@ -19,6 +19,12 @@
 #define std
 #endif
 
+class AliMUONVDigitStore;
+class AliMUONVTriggerStore;
+class AliMpExMap;
+class AliMUONMCDataInterface;
+class AliMUONDataInterface;
+
 /**
  * @class AliHLTMUONDigitPublisherComponent
  * The component is used to convert simulated or reconstructed digits into DDL
@@ -37,6 +43,9 @@
  *       dimuon trigger.<br>
  *
  * Optional arguments:<br>
+ * \li -makescalars <br>
+ *       If set then the scalar events will be generated for the trigger DDLs.
+ *       (default is not to generate the scalars)<br>
  * \li -simdata <br>
  *       Indicates that the simulated digits should be used. (default option)<br>
  * \li -recdata <br>
@@ -93,11 +102,44 @@ private:
 	AliHLTMUONDigitPublisherComponent(const AliHLTMUONDigitPublisherComponent& /*obj*/);
 	AliHLTMUONDigitPublisherComponent& operator = (const AliHLTMUONDigitPublisherComponent& /*obj*/);
 	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	// Methods copied from AliMUONRawWriter.
+	//TODO: This is not ideal. We should have AliMUONRawWriter re-factored so that
+	// we can have raw data generated into a memory resident buffer, rather than
+	// always written to a file on disk, as it is now. But this will take some time
+	// since people need to be convinced of this fact.
+	void Digits2BusPatchMap(
+			const AliMUONVDigitStore& digitStore,
+			AliMpExMap& busPatchMap, Int_t iDDL
+		);
+	
+	int WriteTrackerDDL(
+			const AliMUONVDigitStore* digitStore, Int_t iDDL,
+			AliHLTUInt8_t* outBuffer, AliHLTUInt32_t& outBufferSize
+		);
+	
+	int WriteTriggerDDL(
+			const AliMUONVTriggerStore* triggerStore, Int_t iDDL,
+			AliHLTUInt8_t* outBuffer, AliHLTUInt32_t& outBufferSize,
+			bool scalarEvent = false
+		);
+	
+	static void LocalWordPacking(UInt_t &word, UInt_t locId, UInt_t locDec,
+				UInt_t trigY, UInt_t posY, UInt_t posX,
+				UInt_t sdevX, UInt_t devX);
+	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	
 	AliHLTInt32_t fDDL;  ///< DDL number in the range [0..21]. Set to -1 for invalid/unspecified value.
 	
 	Int_t fCurrentEventIndex;  ///< The current event index that is to be loaded.
 	                           //  -1 indicates that we should rather use the event
 	                           // numbers as given by the system.
+	
+	bool fMakeScalars;  ///< Flag indicating if the scalars should be generated for the trigger DDLs.
+	
+	AliMUONMCDataInterface* fMCDataInterface; ///< Access to MUON MC-related data.
+	AliMUONDataInterface* fDataInterface; ///< Access to MUON data.
 	
 	ClassDef(AliHLTMUONDigitPublisherComponent, 0)  // dHLT component for publishing DDL streams from digits on the fly.
 };
