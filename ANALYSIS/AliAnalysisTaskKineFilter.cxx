@@ -101,6 +101,11 @@ void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
     
   // get AliAOD Event 
   AliAODEvent* aod = AODEvent();
+  if (!aod) {
+      AliWarning("No Output Handler connected, doing nothing !") ;
+      return;
+  }
+  
 //  aod->CreateStdContent();
 
   AliStack* stack = MCEvent()->Stack();
