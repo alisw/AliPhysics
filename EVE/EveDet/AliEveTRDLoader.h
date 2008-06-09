@@ -54,6 +54,8 @@ public:
 
   virtual void		AddChambers(int sm=-1, int stk=-1, int ly=-1);
   virtual AliEveTRDChamber*	GetChamber(int d);
+  virtual Int_t   GetDataType() const {return fDataType;}
+  virtual Int_t   GetEvent() const {return fEvent;}
   virtual Bool_t	GoToEvent(int ev);
           Bool_t  IsDataLinked() const {return TestBit(1);}
 
