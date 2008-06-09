@@ -57,6 +57,7 @@ class AliAltroRawStream: public TObject {
     UShort_t GetActiveFECsA() const { return fActiveFECsA; }
     UShort_t GetActiveFECsB() const { return fActiveFECsB; }
 
+    UInt_t  GetAltroCFG1() const { return fAltroCFG1; }
     UChar_t GetBaselineCorr() const { return fAltroCFG1 & 0xF; }
     UChar_t GetNPresamples() const  { return (fAltroCFG1 >> 4) & 0x3; }
     UChar_t GetNPostsamples() const { return (fAltroCFG1 >> 6) & 0xF; }
@@ -66,12 +67,13 @@ class AliAltroRawStream: public TObject {
     UChar_t GetNNonZSPresamples() const  { return (fAltroCFG1 >> 16) & 0x3; }
     Bool_t  GetZeroSupp() const          { return (fAltroCFG1 >> 18) & 0x1; }
     
+    UInt_t   GetAltroCFG2() const { return fAltroCFG2; }
     Bool_t   GetNAltroBuffers() const     { return (fAltroCFG2 >> 24) & 0x1; }
     UChar_t  GetNPretriggerSamples() const{ return (fAltroCFG2 >> 20) & 0xF; }
     UShort_t GetNSamplesPerCh() const     { return (fAltroCFG2 >> 10) & 0x3FF; }
     Bool_t   GetSparseRO() const          { return (fAltroCFG2 >> 9) & 0x1; }
-    UChar_t  GetSamplingFq() const        { return (fAltroCFG2 >> 5) & 0xF; }
-    UChar_t  GetL1Phase() const           { return fAltroCFG2 & 0x1F; }
+    Double_t GetTSample() const;
+    Double_t GetL1Phase() const;
     void     PrintRCUTrailer() const;
  
     void SelectRawData(Int_t detId);                           // Select raw data for specific detector id

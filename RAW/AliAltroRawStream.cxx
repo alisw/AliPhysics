@@ -616,6 +616,61 @@ Int_t AliAltroRawStream::ReadRCUTrailer(Int_t &index, Int_t trailerSize)
 }
 
 //_____________________________________________________________________________
+Double_t AliAltroRawStream::GetTSample() const
+{
+  // Returns the sampling time
+  // in seconds. In case the rcu trailer
+  // was note read, return an invalid number (0)
+
+  if (!fRCUTrailerData) return 0.;
+
+  const Double_t kLHCTimeSample = 25.0e-9; // LHC clocks runs at 40 MHz
+  UChar_t fq = (fAltroCFG2 >> 5) & 0xF;
+  Double_t tSample;
+  switch (fq) {
+  case 0:
+    // 20 MHz
+    tSample = 2.0*kLHCTimeSample;
+    break;
+  case 1:
+    // 10 Mhz
+    tSample = 4.0*kLHCTimeSample;
+    break;
+  case 2:
+    // 5 MHz
+    tSample = 8.0*kLHCTimeSample;
+    break;
+  default:
+    AliWarning(Form("Invalid sampling frequency value %d !",
+		      fq));
+    tSample = 0.;
+    break;
+  }
+
+  return tSample;
+}
+
+//_____________________________________________________________________________
+Double_t AliAltroRawStream::GetL1Phase() const
+{
+  // Returns the L1 phase w.r.t to the
+  // LHC clock
+  if (!fRCUTrailerData) return 0.;
+
+  const Double_t kLHCTimeSample = 25.0e-9; // LHC clocks runs at 40 MHz
+  Double_t phase = ((Double_t)(fAltroCFG2 & 0x1F))*kLHCTimeSample;
+
+  Double_t tSample = GetTSample();
+  if (phase >= tSample) {
+    AliWarning(Form("Invalid L1 trigger phase (%f >= %d) !",
+		    phase,tSample));
+    phase = 0.;
+  }
+
+  return phase;
+}
+
+//_____________________________________________________________________________
 void AliAltroRawStream::PrintRCUTrailer() const
 {
   // Prints the contents of
@@ -633,8 +688,8 @@ void AliAltroRawStream::PrintRCUTrailer() const
   printf("Number of pretrigger samples: %d\n",GetNPretriggerSamples());
   printf("Number of samples per channel: %d\n",GetNSamplesPerCh());
   printf("Sparse readout: %d\n",GetSparseRO());
-  printf("Sampling frequency: 0x%x\n",GetSamplingFq());
-  printf("L1 Phase: 0x%x\n",GetL1Phase());
+  printf("Sampling time: %f s\n",GetTSample());
+  printf("L1 Phase: %f s\n",GetL1Phase());
   printf("===========\n");
 }
 
