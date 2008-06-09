@@ -137,3 +137,22 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,Int_t iHVsec,AliESDtrack *pTrk,T
   else return 1;                                                                                // error code: 0=no error,1=fit not performed;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDTracker::FillClusterArray(TObjArray* array) const {
+  
+ // Publishes all pointers to clusters known to the tracker into the
+  // passed object array.
+  // The ownership is not transfered - the caller is not expected to delete
+  // the clusters
+ 
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){    
+    TClonesArray *pCluArr=(TClonesArray*)(*fClu)[iCh];
+    for (Int_t iClu=0; iClu<pCluArr->GetEntriesFast();iClu++){
+      AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluArr->UncheckedAt(iClu);    
+      array->AddLast(pClu);
+    }//cluster loop in iCh
+    pCluArr->Delete();
+  }//Ch loop
+    
+  return;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

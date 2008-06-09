@@ -24,6 +24,7 @@ public:
          Int_t       PropagateBack  (AliESDEvent *pEsd               );                  //pure virtual from AliTracker   
          Int_t       RefitInward    (AliESDEvent *                   )       {return 0;} //pure virtual from AliTracker 
          void        UnloadClusters (                           )       {         } //pure virtual from AliTracker 
+         void        FillClusterArray(TObjArray* array) const;                              //             from AliTracker 
 //private part  
   static Int_t       IntTrkCha     (AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc,Float_t &xRa,Float_t &yRa,Float_t &theta,Float_t &phi);//find track-PC intersection, retuns chamber ID
   static Int_t       Recon         (AliESDEvent *pEsd,TObjArray *pCluAll,TObjArray *pNmean=0,TObjArray *pQthre=0);//do actual job, returns status code  
