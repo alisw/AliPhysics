@@ -64,8 +64,8 @@ class AliTRDCalROC : public TObject
   Bool_t Divide(const AliTRDCalROC * roc);   
   
   //Plots
-  TH2F *   MakeHisto2D(Float_t min, Float_t max,Int_t type);
-  TH1F *   MakeHisto1D(Float_t min, Float_t max,Int_t type);
+  TH2F *   MakeHisto2D(Float_t min, Float_t max,Int_t type, Float_t mu = 1.0);
+  TH1F *   MakeHisto1D(Float_t min, Float_t max,Int_t type, Float_t mu = 1.0);
   
  protected:
 

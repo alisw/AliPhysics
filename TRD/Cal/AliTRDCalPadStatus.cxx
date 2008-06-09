@@ -202,9 +202,11 @@ TH2F *AliTRDCalPadStatus::MakeHisto2DSmPl(Int_t sm, Int_t pl)
 	for (Int_t irow=0; irow<calRoc->GetNrows(); irow++){
 	  Int_t binz     = 0;
 	  Int_t kb       = kNcham-1-k;
-	  if(kb > 2) binz = 16*(kb-1)+12+irow+1+2*(kb+1);
-	  else binz = 16*kb+irow+1+2*(kb+1); 
-	  Int_t biny = icol+1+2;
+	  Int_t krow     = calRoc->GetNrows()-1-irow;
+	  Int_t kcol     = calRoc->GetNcols()-1-icol;
+	  if(kb > 2) binz = 16*(kb-1)+12+krow+1+2*(kb+1);
+	  else binz = 16*kb+krow+1+2*(kb+1); 
+	  Int_t biny = kcol+1+2;
 	  Float_t value = calRoc->GetStatus(icol,irow);
 	  his->SetBinContent(binz,biny,value);
 	}
@@ -215,25 +217,25 @@ TH2F *AliTRDCalPadStatus::MakeHisto2DSmPl(Int_t sm, Int_t pl)
 	  Int_t kb       = kNcham-1-k;
 	  if(kb > 2) binz = 16*(kb-1)+12+1+2*(kb+1)-(l+1);
 	  else binz = 16*kb+1+2*(kb+1)-(l+1); 
-	  his->SetBinContent(binz,icol,20.0);
+	  his->SetBinContent(binz,icol,50.0);
 	}
       }
     }
   }
   for(Int_t icol = 1; icol < 147; icol++){
-    his->SetBinContent(88,icol,20.0);
-    his->SetBinContent(87,icol,20.0);
+    his->SetBinContent(88,icol,50.0);
+    his->SetBinContent(87,icol,50.0);
   }
   for(Int_t irow = 1; irow < 89; irow++){
-    his->SetBinContent(irow,1,20.0);
-    his->SetBinContent(irow,2,20.0);
-    his->SetBinContent(irow,147,20.0);
-    his->SetBinContent(irow,148,20.0);
+    his->SetBinContent(irow,1,50.0);
+    his->SetBinContent(irow,2,50.0);
+    his->SetBinContent(irow,147,50.0);
+    his->SetBinContent(irow,148,50.0);
   }
 
   his->SetXTitle("z (cm)");
   his->SetYTitle("y (cm)");
-  his->SetMaximum(10);
+  his->SetMaximum(50);
   his->SetMinimum(0.0);
   his->SetStats(0);
 

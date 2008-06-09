@@ -151,6 +151,23 @@ Bool_t AliTRDCalPad::ScaleROCs(const AliTRDCalDet* values)
 }
 
 //_____________________________________________________________________________
+void AliTRDCalPad::SetCalROC(Int_t det, AliTRDCalROC* calroc)
+{
+  // 
+  // Set the AliTRDCalROC to this one
+  //
+  
+  if (!calroc) return;
+  if (fROC[det]) { 
+    for(Int_t icol = 0; icol < calroc->GetNcols(); icol++){
+      for(Int_t irow = 0; irow < calroc->GetNrows(); irow++){
+	fROC[det]->SetValue(icol,irow,calroc->GetValue(icol,irow));
+      }
+    }
+  }
+
+}
+//_____________________________________________________________________________
 Double_t AliTRDCalPad::GetMeanRMS(Double_t &rms, const AliTRDCalDet *calDet, Int_t type)
 {
     //

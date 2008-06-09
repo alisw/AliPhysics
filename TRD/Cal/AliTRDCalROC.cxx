@@ -408,7 +408,7 @@ Bool_t AliTRDCalROC::Divide(const AliTRDCalROC*  roc)
 }
 
 //__________________________________________________________________________________
-TH2F * AliTRDCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type)
+TH2F * AliTRDCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type,  Float_t mu)
 {
   //
   // make 2D histo
@@ -452,7 +452,7 @@ TH2F * AliTRDCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type)
   TH2F * his = new TH2F(name,name,fNrows,0, fNrows, fNcols, 0, fNcols);
   for (Int_t irow=0; irow<fNrows; irow++){
     for (Int_t icol=0; icol<fNcols; icol++){
-      his->Fill(irow+0.5,icol+0.5,GetValue(icol,irow));
+      his->Fill(irow+0.5,icol+0.5,GetValue(icol,irow)*mu);
     }
   }
   his->SetStats(0);
@@ -462,7 +462,7 @@ TH2F * AliTRDCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type)
 }
 
 //_______________________________________________________________________________________
-TH1F * AliTRDCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type)
+TH1F * AliTRDCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type,  Float_t mu)
 {
   //
   // make 1D histo
@@ -507,7 +507,7 @@ TH1F * AliTRDCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type)
   TH1F * his = new TH1F(name,name,100, min,max);
   for (Int_t irow=0; irow<fNrows; irow++){
     for (Int_t icol=0; icol<fNcols; icol++){
-      his->Fill(GetValue(icol,irow));
+      his->Fill(GetValue(icol,irow)*mu);
     }
   }
   return his;

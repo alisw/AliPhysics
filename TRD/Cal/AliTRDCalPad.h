@@ -41,6 +41,8 @@ class AliTRDCalPad : public TNamed
   
   Bool_t              ScaleROCs(const AliTRDCalDet* values);
 
+  void                SetCalROC(Int_t det, AliTRDCalROC *calroc);
+
   // Statistic
   Double_t GetMeanRMS(Double_t &rms, const AliTRDCalDet *calDet = 0, Int_t type = 0);
   Double_t GetMean(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
