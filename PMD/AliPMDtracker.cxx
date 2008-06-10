@@ -51,7 +51,7 @@ ClassImp(AliPMDtracker)
 
 AliPMDtracker::AliPMDtracker():
   fTreeR(0),
-  fRecpoints(new TClonesArray("AliPMDrecpoint1", 1000)),
+  fRecpoints(new TClonesArray("AliPMDrecpoint1", 10)),
   fPMDcontin(new TObjArray()),
   fPMDcontout(new TObjArray()),
   fPMDutil(new AliPMDUtility()),
@@ -105,21 +105,30 @@ AliPMDtracker::~AliPMDtracker()
   // Destructor
   if (fRecpoints)
     {
+      fRecpoints->Clear();
+      /*
       fRecpoints->Delete();
       delete fRecpoints;
       fRecpoints=0;
+      */
     }
   if (fPMDcontin)
     {
+      fPMDcontin->Clear();
+      /*
       fPMDcontin->Delete();
       delete fPMDcontin;
       fPMDcontin=0;
+      */
     }
   if (fPMDcontout)
-    {
+  {
+      fPMDcontout->Clear();
+      /*
       fPMDcontout->Delete();
       delete fPMDcontout;
       fPMDcontout=0;
+      */
     }
   delete fPMDutil;
 }

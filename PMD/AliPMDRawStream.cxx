@@ -44,17 +44,22 @@ ClassImp(AliPMDRawStream)
 
 //_____________________________________________________________________________
 AliPMDRawStream::AliPMDRawStream(AliRawReader* rawReader) :
-  fRawReader(rawReader)
+    fRawReader(rawReader),
+    fData(NULL),
+    fPosition(-1)
 {
 // create an object to read PMD raw digits
 
+  fRawReader->Reset();
   fRawReader->Select("PMD");
 }
 
 //_____________________________________________________________________________
 AliPMDRawStream::AliPMDRawStream(const AliPMDRawStream& stream) :
   TObject(stream),
-  fRawReader(NULL)
+  fRawReader(NULL),
+  fData(NULL),
+  fPosition(-1)
 {
 // copy constructor
 
@@ -81,35 +86,30 @@ AliPMDRawStream::~AliPMDRawStream()
 
 //_____________________________________________________________________________
 
-Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
+Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
 
+    
+
+    Int_t iddl = -1;
 
   AliPMDddldata *pmdddldata;
 
-  if (!fRawReader->ReadHeader()) return kFALSE;
-  Int_t  iddl  = fRawReader->GetDDLID();
+  if (!fRawReader->ReadHeader()) return iddl;
+
+  iddl           = fRawReader->GetDDLID();
   Int_t dataSize = fRawReader->GetDataSize();
   Int_t totaldataword = dataSize/4;
 
-  if (dataSize <= 0) return kFALSE;
-  if (indexDDL != iddl)
-    {
-      AliWarning("Mismatch in the DDL index");
-      fRawReader->AddFatalErrorLog(kDDLIndexMismatch);
-      return kFALSE;
-    }
+  if (dataSize <= 0) return -1;
 
-  UInt_t *buffer;
-  buffer = new UInt_t[totaldataword];
   UInt_t data;
-  for (Int_t i = 0; i < totaldataword; i++)
-    {
-      fRawReader->ReadNextInt(data);
-      buffer[i] = data;
-    }
+
+  fRawReader->ReadNextData(fData);
+
+  fPosition = 0;
 
   // --- Open the mapping file
 
@@ -141,6 +141,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 
   ifstream infile;
   infile.open(fileName.Data(), ios::in); // ascii file
+
   if(!infile) {
     AliError(Form("Could not read the mapping file for DDL No = %d",iddl));
     fRawReader->AddFatalErrorLog(kNoMappingFile,Form("ddl=%d",iddl));
@@ -210,11 +211,11 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   Int_t dspHeaderWord[10];
   Int_t pbusHeaderWord[4];
 
-  Int_t ilowLimit       = 0;
-  Int_t iuppLimit       = 0;
-  Int_t blRawDataLength = 0;
-  Int_t iwordcount      = 0;
-
+  Int_t ilowLimit        = 0;
+  Int_t iuppLimit        = 0;
+  Int_t blRawDataLength  = 0;
+  Int_t dspRawDataLength = 0;
+  Int_t iwordddl         = 2;
 
   for (Int_t iblock = 0; iblock < 2; iblock++)
     {
@@ -223,24 +224,37 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 
       for (Int_t i = ilowLimit; i < iuppLimit; i++)
 	{
-	  blHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
+	    iwordddl++;
+
+	    blHeaderWord[i-ilowLimit] = (Int_t) GetNextWord();
 	}
 
       blockHeader.SetHeader(blHeaderWord);
-
       blRawDataLength = blockHeader.GetRawDataLength();
+
+      if (iwordddl == totaldataword) continue;
+
+      Int_t iwordblk = 0;
 
       for (Int_t idsp = 0; idsp < 5; idsp++)
 	{
+
+
 	  ilowLimit = iuppLimit;
 	  iuppLimit = ilowLimit + kdspHLen;
 
 	  for (Int_t i = ilowLimit; i < iuppLimit; i++)
 	    {
-	      iwordcount++;
-	      dspHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
+		iwordddl++;
+		iwordblk++;
+		dspHeaderWord[i-ilowLimit] = (Int_t) GetNextWord();
 	    }
 	  dspHeader.SetHeader(dspHeaderWord);
+	  dspRawDataLength = dspHeader.GetRawDataLength();
+
+	  if (iwordddl == totaldataword) continue;
+
+	  Int_t iworddsp = 0;
 
 	  for (ibus = 0; ibus < 5; ibus++)
 	    {
@@ -249,9 +263,12 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 
 	      for (Int_t i = ilowLimit; i < iuppLimit; i++)
 		{
-		  iwordcount++;
-		  pbusHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
+		    iwordddl++;
+		    iwordblk++;
+		    iworddsp++;
+		  pbusHeaderWord[i-ilowLimit] = (Int_t) GetNextWord();
 		}
+
 	      pbusHeader.SetHeader(pbusHeaderWord);
 	      Int_t rawdatalength = pbusHeader.GetRawDataLength();
 	      Int_t pbusid = pbusHeader.GetPatchBusId();
@@ -261,11 +278,15 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 
 	      Int_t imodule = moduleNo[pbusid];
 
+	      if (iwordddl == totaldataword) continue;
 
 	      for (Int_t iword = ilowLimit; iword < iuppLimit; iword++)
 		{
-		  iwordcount++;
-		  data = buffer[iword];
+		    iwordddl++;
+		    iwordblk++;
+		    iworddsp++;
+		    data = 0;
+		    data = GetNextWord();
 
 		  Int_t isig =  data & 0x0FFF;
 		  Int_t ich  = (data >> 12) & 0x003F;
@@ -304,21 +325,30 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 		  
 		} // data word loop
 
-	      if (iwordcount == blRawDataLength) break;
+	      if (iwordddl == totaldataword) break;
+
+	      if (iworddsp == dspRawDataLength) break; // raw data
 
 	    } // patch bus loop
 
-	  if (dspHeader.GetPaddingWord() == 1) iuppLimit++;
-	  if (iwordcount == blRawDataLength) break;
+	  if (dspHeader.GetPaddingWord() == 1)
+	  {
+	      iuppLimit++;
+	      iwordddl++;
+	      iwordblk++;
+	      iworddsp++;
+	      data = GetNextWord();
+	  }
+
+	  if (iwordblk == blRawDataLength) break; // for raw data
 
 	} // end of DSP
-      if (iwordcount == blRawDataLength) break;
 
     } // end of BLOCK
   
-  delete [] buffer;
+//  delete [] buffer;
 
-  return kTRUE;
+  return iddl;
 }
 //_____________________________________________________________________________
 void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t smn, Int_t pbusid,
@@ -328,8 +358,6 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t smn, Int_t pbusid,
 				Int_t &row, Int_t &col) const
 {
 // decode: ddlno, patchbusid, mcmno, chno -> um, row, col
-
-
 
   UInt_t iCh[64];
 
@@ -539,7 +567,7 @@ void AliPMDRawStream::TransformH2S(Int_t smn, Int_t &row, Int_t &col) const
   col = icolnew;
 }
 //_____________________________________________________________________________
-Int_t AliPMDRawStream::ComputeParity(Int_t data)
+Int_t AliPMDRawStream::ComputeParity(UInt_t data)
 {
 // Calculate the parity bit
 
@@ -556,3 +584,19 @@ Int_t AliPMDRawStream::ComputeParity(Int_t data)
 }
 
 //_____________________________________________________________________________
+UInt_t AliPMDRawStream::GetNextWord()
+{
+    // Returns the next 32 bit word
+    // inside the raw data payload.
+
+    if (!fData || fPosition < 0) AliFatal("Raw data payload buffer is not yet initialized !");
+
+    UInt_t word = 0;
+    word |= fData[fPosition++];
+    word |= fData[fPosition++] << 8;
+    word |= fData[fPosition++] << 16;
+    word |= fData[fPosition++] << 24;
+
+    return word;
+}
+

@@ -4,11 +4,11 @@ PMD DA for online calibration
 contact: basanta@phy.iitb.ac.in
 Link:/afs/cern.ch/user/a/alicepmd/public/pedestaldata/run31270.raw
 Run Type: STANDALONE
-DA Type: MON
+DA Type: LDC
 Number of events needed: 1000
 Input Files: data raw
 Output Files: pmd_ped.root, to be exported to the DAQ FXS
-Trigger types used: PULSER
+Trigger types used: PHYSICS_EVENT
 
 */
 extern "C" {
@@ -67,7 +67,6 @@ int main(int argc, char **argv) {
 	return -1;
     }
 
-
     
     /* define data source : this is argument 1 */  
     status=monitorSetDataSource( argv[1] );
@@ -91,8 +90,7 @@ int main(int argc, char **argv) {
     printf("DA example case2 monitoring program started\n");  
     
     /* init some counters */
-    int nevents_physics=0;
-    int nevents_total=0;
+
 
     struct eventHeaderStruct *event;
     eventTypeType eventT;
@@ -136,8 +134,9 @@ int main(int argc, char **argv) {
 	    case END_OF_RUN:
 		break;
 		
-	    case PULSER:
+	    case PHYSICS_EVENT:
 		printf(" event number = %i \n",iev);
+		//if (iev == 10) break;
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 		calibped.ProcessEvent(rawReader);
 		
@@ -154,17 +153,21 @@ int main(int argc, char **argv) {
 	    calibped.Analyse(ped);
 	    break;
 	}
+
+	/*
+	if (iev == 10) {
+	    printf("EOR event detected\n");
+	    calibped.Analyse(ped);
+	    break;
+	}
+	*/
     }
     
     
-    TFile * pedRun = new TFile ("pmd_ped.root","RECREATE"); 
+    TFile * pedRun = new TFile ("PMD_PED.root","RECREATE"); 
     ped->Write();
     pedRun->Close();
 
 
-    /* close result file */
-    fclose(fp);
-    
-    
     return status;
 }

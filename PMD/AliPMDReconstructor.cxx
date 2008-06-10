@@ -37,10 +37,8 @@ void AliPMDReconstructor::Reconstruct(AliRawReader *rawReader,
 				      TTree *clustersTree) const
 {
 // reconstruct clusters from Raw Data
-
-  AliPMDClusterFinder pmdClus;
-  pmdClus.Digits2RecPoints(rawReader, clustersTree);
-
+    static AliPMDClusterFinder pmdClus;
+    pmdClus.Digits2RecPoints(rawReader, clustersTree);
 }
 
 // ------------------------------------------------------------------------ //
@@ -49,7 +47,7 @@ void AliPMDReconstructor::Reconstruct(TTree *digitsTree,
 {
 // reconstruct clusters from Raw Data
 
-  AliPMDClusterFinder pmdClus;
+  static AliPMDClusterFinder pmdClus;
   pmdClus.Digits2RecPoints(digitsTree, clustersTree);
 
 }
@@ -58,17 +56,17 @@ void AliPMDReconstructor::Reconstruct(TTree *digitsTree,
 void AliPMDReconstructor::FillESD(AliRawReader* /*rawReader*/,
 				  TTree* clustersTree, AliESDEvent* esd) const
 {
-  AliPMDtracker pmdtracker;
-  pmdtracker.LoadClusters(clustersTree);
-  pmdtracker.Clusters2Tracks(esd);
+    static AliPMDtracker pmdtracker;
+    pmdtracker.LoadClusters(clustersTree);
+    pmdtracker.Clusters2Tracks(esd);
 }
 // ------------------------------------------------------------------------ //
 void AliPMDReconstructor::FillESD(TTree * /*digitsTree*/,
 				  TTree* clustersTree, AliESDEvent* esd) const
 {
-  AliPMDtracker pmdtracker;
-  pmdtracker.LoadClusters(clustersTree);
-  pmdtracker.Clusters2Tracks(esd);
+    static AliPMDtracker pmdtracker;
+    pmdtracker.LoadClusters(clustersTree);
+    pmdtracker.Clusters2Tracks(esd);
 }
 
 

@@ -124,21 +124,30 @@ AliPMDClusterFinder::~AliPMDClusterFinder()
   // Destructor
   if (fDigits)
     {
-      fDigits->Delete();
-      delete fDigits;
-      fDigits=0;
+	/*
+	  fDigits->Delete();
+	  delete fDigits;
+	  fDigits=0;
+	*/
+	fDigits->Clear();
     }
   if (fRecpoints)
     {
-      fRecpoints->Delete();
-      delete fRecpoints;
-      fRecpoints=0;
+      fRecpoints->Clear();
+      /*
+	fRecpoints->Delete();
+	delete fRecpoints;
+	fRecpoints=0;
+      */
     }
   if (fRechits)
     {
-      fRechits->Delete();
-      delete fRechits;
-      fRechits=0;
+      fRechits->Clear();
+      /*
+	fRechits->Delete();
+	delete fRechits;
+	fRechits=0;
+      */
     }
 }
 // ------------------------------------------------------------------------- //
@@ -401,16 +410,17 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   TBranch * branch2 = clustersTree->Branch("PMDRechit", &fRechits, bufsize); 
 
-  const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
   const Int_t kRow = 48;
   const Int_t kCol = 96;
 
   Int_t idet = 0;
   Int_t iSMN = 0;
 
+  Int_t indexDDL = -1;
+  AliPMDRawStream pmdinput(rawReader);
 
-  for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
-    {
+  while ((indexDDL = pmdinput.DdlData(&pmdddlcont)) >=0)
+  {
       if (indexDDL < 4)
 	{
 	  iSMN = 6;
@@ -437,12 +447,6 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	    }
 	}
       ResetCellADC();
-      rawReader->Reset();
-      AliPMDRawStream pmdinput(rawReader);
-
-      rawReader->Select("PMD", indexDDL, indexDDL);
-
-      pmdinput.DdlData(indexDDL,&pmdddlcont);
 
       Int_t indexsmn = 0;
       Int_t ientries = pmdddlcont.GetEntries();
@@ -602,6 +606,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	}
       for (Int_t i=0; i<iSMN; i++) delete [] precpvADC[i];
       delete precpvADC;
+
     } // DDL Loop
   
   ResetCellADC();
@@ -641,15 +646,17 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   TBranch *branch1 = fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
   TBranch *branch2 = fTreeR->Branch("PMDRechit", &fRechits, bufsize); 
 
-  const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
   const Int_t kRow = 48;
   const Int_t kCol = 96;
 
   Int_t idet = 0;
   Int_t iSMN = 0;
-  
-  for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
-    {
+
+  AliPMDRawStream pmdinput(rawReader);
+  Int_t indexDDL = -1;
+
+  while ((indexDDL = pmdinput.DdlData(&pmdddlcont)) >=0) {
+
       if (indexDDL < 4)
 	{
 	  iSMN = 6;
@@ -676,11 +683,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	    }
 	}
       ResetCellADC();
-      rawReader->Reset();
-      rawReader->Select("PMD", indexDDL, indexDDL);
 
-      AliPMDRawStream pmdinput(rawReader);
-      pmdinput.DdlData(indexDDL,&pmdddlcont);
     
       Int_t indexsmn = 0;
       Int_t ientries = pmdddlcont.GetEntries();

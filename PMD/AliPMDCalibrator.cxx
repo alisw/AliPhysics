@@ -123,7 +123,7 @@ AliPMDCalibrator &AliPMDCalibrator::operator=(const AliPMDCalibrator &pmdcalibra
 AliPMDCalibrator::~AliPMDCalibrator()
 {
   // destructor
-  if(fHdetIso)  delete fHdetIso ;
+  if(fHdetIso) delete fHdetIso ;
   if(fHsmIso)  delete fHsmIso ;
   if(fHadcIso) delete fHadcIso ;
   delete fCalibGain;
@@ -179,7 +179,7 @@ void AliPMDCalibrator::CalculateIsoCell()
   // Calculates the ADC of isolated cell
 
   TObjArray pmdddlcont;
-  const Int_t kDDL           = AliDAQ::NumberOfDdls("PMD");
+
   const Int_t kCellNeighbour = 6;
 
   Int_t neibx[6] = {1,0,-1,-1,0,1};
@@ -238,10 +238,11 @@ void AliPMDCalibrator::CalculateIsoCell()
   while(reader.NextEvent())
     { 
       // New PMD Reader is plugged in
-      for (Int_t iddl = 0; iddl < kDDL; iddl++)
-	{
-	  reader.Select("PMD", iddl, iddl);
-	  stream.DdlData(iddl,&pmdddlcont);
+	Int_t iddl = -1;
+	while ((iddl = stream.DdlData(&pmdddlcont)) >=0) {
+
+	    //reader.Select("PMD", iddl, iddl);
+	    //stream.DdlData(iddl,&pmdddlcont);
 	  Int_t ientries = pmdddlcont.GetEntries();
 	  for (Int_t ient = 0; ient < ientries; ient++)
 	    {

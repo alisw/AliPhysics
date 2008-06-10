@@ -129,7 +129,6 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
   Int_t isocount; //number of neighbours with 0 signal
 
   Float_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
-  Bool_t  streamout = kFALSE;
 
   for(Int_t idet = 0; idet < kDet; idet++)
     {
@@ -147,11 +146,13 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
 
   AliPMDRawStream rawStream(rawReader);
 
-  for (Int_t iddl = 0; iddl < kDDL; iddl++)
-  {
-      rawReader->Select("PMD", iddl, iddl);
-      streamout = rawStream.DdlData(iddl,&pmdddlcont);
-      
+  Int_t iddl;
+
+  Int_t numberofDDLs = 0;
+
+    while ((iddl = rawStream.DdlData(&pmdddlcont)) >=0) {
+      numberofDDLs++;
+
       Int_t ientries = pmdddlcont.GetEntries();
       for (Int_t ient = 0; ient < ientries; ient++)
       {
@@ -209,7 +210,11 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
       }
       
   }
-  return streamout;
+
+  if (numberofDDLs < kDDL)
+      return kFALSE;
+  return kTRUE;
+
 }
 // ------------------------------------------------------------------------ //
 void AliPMDCalibGain::Analyse(TTree *gaintree)

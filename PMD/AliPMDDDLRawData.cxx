@@ -179,6 +179,8 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
       Int_t dspBlockARDL    = 0;
       Int_t dspBlockBRDL    = 0;
+      Int_t remainder       = 0;
+
 
       for (Int_t i = 0; i < 5; i++)
 	{
@@ -187,7 +189,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	  if (dsp[ieven] > 0)
 	    {
 	      dspBlockARDL += dsp[ieven];
-	      Int_t remainder = dsp[ieven]%2;
+	      remainder = dsp[ieven]%2;
 	      if (remainder == 1)
 		{
 		  dspBlockARDL++;
@@ -196,14 +198,14 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	  if (dsp[iodd] > 0)
 	    {
 	      dspBlockBRDL += dsp[iodd];
-	      Int_t remainder = dsp[ieven]%2;
+	      remainder = dsp[iodd]%2;
 	      if (remainder == 1)
 		{
-		  dspBlockARDL++;
+		  dspBlockBRDL++;
 		}
 	    }
 	}
-      
+
       // Start writing the DDL file
 
       AliPMDBlockHeader blHeader;
@@ -219,6 +221,9 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       UInt_t dspHeaderWord[10];
       UInt_t patchBusHeaderWord[4];
       Int_t  iskip[5];
+      UInt_t ddlEndWord[2] = {0xDEADFACE, 0xDEADFACE};
+
+      Int_t bknJunk = 0;
 
 
       for (Int_t iblock = 0; iblock < 2; iblock++)
@@ -278,19 +283,21 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 		{
 		  dspHeaderWord[i] = 0;
 		}
-	      Int_t remainder = dspRDL%2;
+	      remainder = dspRDL%2;
 	      if (remainder == 1) dspRDL++;
 
 	      dspHeaderWord[1] = dspRDL + kdspHLen;
 	      dspHeaderWord[2] = dspRDL;
 	      dspHeaderWord[3] = dspno;
 	      if (remainder == 1) dspHeaderWord[8] = 1; // setting the padding word
+
+
 	      outfile->WriteBuffer((char*)dspHeaderWord,kdspHLen*sizeof(UInt_t));
 
 	      for (Int_t ibus = 0; ibus < 5; ibus++)
 		{
 		  // Patch Bus Header
-		  // BKN - just added 1
+
 		  Int_t busno = iskip[idsp] + ibus + 1;
 		  Int_t patchbusRDL = contentsBus[busno];
 
@@ -312,6 +319,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
 		  outfile->WriteBuffer((char*)patchBusHeaderWord,4*sizeof(UInt_t));
 
+		  bknJunk += patchbusRDL;
 
 		  for (Int_t iword = 0; iword < patchbusRDL; iword++)
 		    {
@@ -331,6 +339,9 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 		}
 	    }
 	}
+
+      // Write two extra word at the end of each DDL file
+      outfile->WriteBuffer((char*)ddlEndWord,2*sizeof(UInt_t));
 
       // Write real data header
       // take the pointer to the beginning of the data header

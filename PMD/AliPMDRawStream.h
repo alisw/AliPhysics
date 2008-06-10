@@ -21,7 +21,7 @@ class AliPMDRawStream: public TObject {
     AliPMDRawStream(AliRawReader* rawReader);
     virtual ~AliPMDRawStream();
 
-    Bool_t DdlData(Int_t indexDDL, TObjArray *pmdddlcont);
+    Int_t DdlData(TObjArray *pmdddlcont);
 
     enum {kDDLOffset = 0xC00};      // offset for DDL numbers
 
@@ -43,12 +43,14 @@ class AliPMDRawStream: public TObject {
     void             ConvertDDL2SMN(Int_t iddl, Int_t imodule,
 				    Int_t &smn, Int_t &detector) const;
     void             TransformH2S(Int_t smn, Int_t &row, Int_t &col) const;
-    int              ComputeParity(Int_t data);
+    Int_t            ComputeParity(UInt_t data1);
+    UInt_t           GetNextWord();
 
     AliRawReader*    fRawReader;    // object for reading the raw data
+    UChar_t*         fData;         // pointer to the data
+    Int_t            fPosition;
 
-
-    ClassDef(AliPMDRawStream, 4)    // class for reading PMD raw digits
+    ClassDef(AliPMDRawStream, 5)    // class for reading PMD raw digits
 };
 
 #endif
