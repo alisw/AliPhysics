@@ -91,7 +91,7 @@ void AliFlowAnalysisWithScalarProduct::Init() {
 
   fCommonHists = new AliFlowCommonHist("SP");
   //fCommonHistsRes = new AliFlowCommonHistResults("SP");
-  fHistList->Add(fCommonHists); 
+  //  fHistList->Add(fCommonHists); 
 
   fEventNumber = 0;  //set number of events to zero    
 }
