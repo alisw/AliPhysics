@@ -51,6 +51,7 @@ AliAODEvent::AliAODEvent() :
   AliVEvent(),
   fAODObjects(new TList()),
   fAODFolder(0),
+  fConnected(kFALSE),
   fHeader(0),
   fTracks(0),
   fVertices(0),
@@ -71,6 +72,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AliVEvent(aod),
   fAODObjects(new TList()),
   fAODFolder(new TFolder()),
+  fConnected(kFALSE),
   fHeader(new AliAODHeader(*aod.fHeader)),
   fTracks(new TClonesArray(*aod.fTracks)),
   fVertices(new TClonesArray(*aod.fVertices)),
@@ -95,7 +97,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fCaloClusters);
   AddObject(fFmdClusters);
   AddObject(fPmdClusters);
-
+  fConnected = aod.fConnected;
   GetStdContent();
 }
 
@@ -109,6 +111,7 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
 
     fAODObjects      = new TList();
     fAODFolder       = new TFolder();
+    fConnected       = aod.fConnected;
     fHeader          = new AliAODHeader(*aod.fHeader);
     fTracks          = new TClonesArray(*aod.fTracks);
     fVertices        = new TClonesArray(*aod.fVertices);
@@ -143,7 +146,12 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
 AliAODEvent::~AliAODEvent() 
 {
 // destructor
-    delete fAODObjects;
+    if(fAODObjects&&!fConnected)
+    {
+	delete fAODObjects;
+	fAODObjects = 0;
+    }
+
     delete fAODFolder;
 }
 
@@ -413,6 +421,7 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 	fAODObjects->Delete();
 	fAODObjects = connectedList;
 	GetStdContent(); 
+	fConnected = kTRUE;
 	return;
     }
     // Connect to tree
@@ -482,6 +491,7 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     // we are not owner of the list objects 
     // must not delete it
     tree->GetUserInfo()->Add(fAODObjects);
+    fConnected = kTRUE;
   }// no aodEvent
   else {
     // we can't get the list from the user data, create standard content

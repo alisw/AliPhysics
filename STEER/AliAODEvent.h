@@ -183,7 +183,7 @@ class AliAODEvent : public AliVEvent {
 
   TList   *fAODObjects; //  list of AODObjects
   TFolder *fAODFolder;  //  folder structure of branches
- 
+  Bool_t   fConnected;  //! flag if leaves are alreday connected 
   // standard content
   AliAODHeader    *fHeader;       //! event information
   TClonesArray    *fTracks;       //! charged tracks
