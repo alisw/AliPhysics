@@ -33,6 +33,9 @@ public:
   void     ResetV0();
   void     Print(Option_t* option = "") const;
 
+  void     SetOnFlyStatus(Bool_t status){fOnFlyStatus=status;}
+  Bool_t   GetOnFlyStatus() const {return fOnFlyStatus;}
+
   Double_t DecayVertexV0X() const;
   Double_t DecayVertexV0Y() const;
   Double_t DecayVertexV0Z() const;
@@ -88,7 +91,9 @@ public:
 
 protected:
   Double32_t fDcaV0ToPrimVertex;    // dca of V0 to primary vertex 
-  ClassDef(AliAODv0,1)
+  Bool_t     fOnFlyStatus;          // if kTRUE, then this V0 is recontructed
+                                    // "on fly" during the tracking
+  ClassDef(AliAODv0,2)
 };
 
 inline Double_t AliAODv0::DecayVertexV0X() const {return this->GetSecVtxX();}

@@ -30,7 +30,8 @@ ClassImp(AliAODv0)
 
   AliAODv0::AliAODv0() : 
     AliAODRecoDecay(),
-    fDcaV0ToPrimVertex(999)
+    fDcaV0ToPrimVertex(999),
+    fOnFlyStatus(kFALSE)
 {
   //--------------------------------------------------------------------
   // Default constructor
@@ -85,7 +86,8 @@ ClassImp(AliAODv0)
 AliAODv0::AliAODv0(AliAODVertex* rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
 	   Double_t *rMomPos, Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex) :
   AliAODRecoDecay(rAODVertex,2,0,rDcaDaughterToPrimVertex),
-  fDcaV0ToPrimVertex(rDcaV0ToPrimVertex)
+  fDcaV0ToPrimVertex(rDcaV0ToPrimVertex),
+  fOnFlyStatus(kFALSE)
 {
   //--------------------------------------------------------------------
   // Constructor via setting each data member
@@ -115,7 +117,8 @@ AliAODv0::AliAODv0(AliAODVertex* rAODVertex, Double_t rDcaV0Daughters, Double_t 
 
 AliAODv0::AliAODv0(const AliAODv0& rAliAODv0) :
   AliAODRecoDecay(rAliAODv0),
-  fDcaV0ToPrimVertex(rAliAODv0.fDcaV0ToPrimVertex)
+  fDcaV0ToPrimVertex(rAliAODv0.fDcaV0ToPrimVertex),
+  fOnFlyStatus(rAliAODv0.fOnFlyStatus)
  {
   //--------------------------------------------------------------------
   // Copy constructor
@@ -127,6 +130,7 @@ AliAODv0& AliAODv0::operator=(const AliAODv0& rAliAODv0){
   // Assignment overload
   //--------------------------------------------------------------------
   this->fDcaV0ToPrimVertex  = rAliAODv0.fDcaV0ToPrimVertex ;
+  this->fOnFlyStatus        = rAliAODv0.fOnFlyStatus;
   return *this;
 }
 
