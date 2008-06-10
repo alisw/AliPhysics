@@ -3318,6 +3318,8 @@ Bool_t AliShuttle::TouchFile()
 	TMap *mapLs = dynamic_cast<TMap*>(resultLs->At(0));
 	if (!mapLs){
 		Log("SHUTTLE",Form("No map for %s command, returning without touching",commandLs.Data()));
+		delete resultLs;
+		resultLs = 0x0;
 		return kFALSE;
 	}
 	TObjString *valueLsPath = dynamic_cast<TObjString*>(mapLs->GetValue("path"));
@@ -3329,6 +3331,14 @@ Bool_t AliShuttle::TouchFile()
 		Bool_t boolMkdir = gGrid->Mkdir(dir.Data());
 		if (!boolMkdir) {
 			Log("SHUTTLE",Form("Impossible to create dir %s in alien catalogue for run %i!",dir.Data(),GetCurrentRun()));
+			if (valueLsPath) {
+				delete valueLsPath;
+				valueLsPath = 0x0;
+			}
+			delete mapLs;
+			mapLs = 0x0;
+			delete resultLs;
+			resultLs = 0x0;
 			return kFALSE;
 		}
 		Log("SHUTTLE",Form("Directory %s successfully created in alien catalogue for run %i",dir.Data(),GetCurrentRun()));
@@ -3336,6 +3346,13 @@ Bool_t AliShuttle::TouchFile()
 	else {
 		Log("SHUTTLE",Form("Directory %s correctly found for run %i",dir.Data(),GetCurrentRun()));
 	}
+
+	delete valueLsPath;
+	valueLsPath = 0x0;
+	delete mapLs;
+	mapLs = 0x0;
+	delete resultLs;
+	resultLs = 0x0;
 
 	TString command;
 	command.Form("touch %s/%i", dir.Data(), GetCurrentRun());
@@ -3348,17 +3365,35 @@ Bool_t AliShuttle::TouchFile()
 	TMap *mapTouch = dynamic_cast<TMap*>(resultTouch->At(0));
 	if (!mapTouch){
 		Log("SHUTTLE",Form("No map for touching command, returning without touching for run %i",GetCurrentRun()));
+		delete resultTouch;
+		resultTouch = 0x0; 
 		return kFALSE;
 	}
 	TObjString *valueTouch = dynamic_cast<TObjString*>(mapTouch->GetValue("__result__"));
 	if (!valueTouch){
 		Log("SHUTTLE",Form("No value for \"__result__\" key set in the map for touching command, returning without touching for run %i",GetCurrentRun()));
+		delete mapTouch;
+		mapTouch = 0x0; 
+		delete resultTouch;
+		resultTouch = 0x0; 
 		return kFALSE;
 	}
 	if (valueTouch->GetString()!="1"){
 		Log("SHUTTLE",Form("Failing the touching command, returning without touching for run %i",GetCurrentRun()));
+		delete valueTouch;
+		valueTouch = 0x0; 
+		delete mapTouch;
+		mapTouch = 0x0; 
+		delete resultTouch;
+		resultTouch = 0x0; 
 		return kFALSE;
 	}
+	delete valueTouch;
+	valueTouch = 0x0; 
+	delete mapTouch;
+	mapTouch = 0x0; 
+	delete resultTouch;
+	resultTouch = 0x0; 
 	return kTRUE;
 }
 
