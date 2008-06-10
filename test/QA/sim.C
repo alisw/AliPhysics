@@ -6,10 +6,10 @@ void sim(Int_t nev=1) {
   simu.SetMakeDigitsFromHits("ITS TPC");
   simu.SetWriteRawData("ALL","raw.root",kTRUE);
 //  simu.SetDefaultStorage("alien://Folder=/alice/simulation/2007/PDC07_v4-09-Rev-00/Ideal/CDB/");
-  simu->SetDefaultStorage("local://$ALICE_ROOT");
+  simu.SetDefaultStorage("local://$ALICE_ROOT");
   simu.SetSpecificStorage("EMCAL/*","local://DB");
 
-  simu.SetQA(kTRUE) ; 
+  simu.SetRunQA("ALL:ALL") ; 
   AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefDataDirName("Sim") ; //Data, Pedestals, BlackEvent, .....
 
