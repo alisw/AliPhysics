@@ -882,11 +882,16 @@ void AliZDCv3::CreateBeamLine()
   zd2 += 2.*tubpar[2];    
       
   // Vacuum chamber containing TDI  
+  tubpar[0] = 0.;
+  tubpar[1] = 54.6/2.;
+  tubpar[2] = 540.0/2.;
+  gMC->Gsvolu("Q13TM", "TUBE", idtmed[10], tubpar, 3);
+  gMC->Gspos("Q13TM", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   tubpar[0] = 54.0/2.;
   tubpar[1] = 54.6/2.;
   tubpar[2] = 540.0/2.;
   gMC->Gsvolu("Q13T", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("Q13T", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  gMC->Gspos("Q13T", 1, "Q13TM", 0., 0., 0., 0, "ONLY");
   // Ch.debug
   //printf("	Q13T TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
 
@@ -897,20 +902,20 @@ void AliZDCv3::CreateBeamLine()
   boxpar[1] = 9.0/2.;
   boxpar[2] = 540.0/2.;
   gMC->Gsvolu("QTD1", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD1", 1, "Q13T", -3.8, 10.5,  0., 0, "ONLY");
+  gMC->Gspos("QTD1", 1, "Q13TM", -3.8, 10.5,  0., 0, "ONLY");
   boxpar[0] = 11.0/2.;
   boxpar[1] = 9.0/2.;
   boxpar[2] = 540.0/2.;
   gMC->Gsvolu("QTD2", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD2", 1, "Q13T", -3.8, -10.5,  0., 0, "ONLY");  
+  gMC->Gspos("QTD2", 1, "Q13TM", -3.8, -10.5,  0., 0, "ONLY");  
   boxpar[0] = 5.1/2.;
   boxpar[1] = 0.2/2.;
   boxpar[2] = 540.0/2.;
   gMC->Gsvolu("QTD3", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD3", 1, "Q13T", -3.8+5.5+boxpar[0], 6.1,  0., 0, "ONLY");  
-  gMC->Gspos("QTD3", 2, "Q13T", -3.8+5.5+boxpar[0], -6.1,  0., 0, "ONLY"); 
-  gMC->Gspos("QTD3", 3, "Q13T", -3.8-5.5-boxpar[0], 6.1,  0., 0, "ONLY");  
-  gMC->Gspos("QTD3", 4, "Q13T", -3.8-5.5-boxpar[0], -6.1,  0., 0, "ONLY");  
+  gMC->Gspos("QTD3", 1, "Q13TM", -3.8+5.5+boxpar[0], 6.1,  0., 0, "ONLY");  
+  gMC->Gspos("QTD3", 2, "Q13TM", -3.8+5.5+boxpar[0], -6.1,  0., 0, "ONLY"); 
+  gMC->Gspos("QTD3", 3, "Q13TM", -3.8-5.5-boxpar[0], 6.1,  0., 0, "ONLY");  
+  gMC->Gspos("QTD3", 4, "Q13TM", -3.8-5.5-boxpar[0], -6.1,  0., 0, "ONLY");  
   //
   tubspar[0] = 12.0/2.;
   tubspar[1] = 12.4/2.;
@@ -918,14 +923,14 @@ void AliZDCv3::CreateBeamLine()
   tubspar[3] = 90.;
   tubspar[4] = 270.;  
   gMC->Gsvolu("QTD4", "TUBS", idtmed[7], tubspar, 5);
-  gMC->Gspos("QTD4", 1, "Q13T", -3.8-10.6, 0.,  0., 0, "ONLY");
+  gMC->Gspos("QTD4", 1, "Q13TM", -3.8-10.6, 0.,  0., 0, "ONLY");
   tubspar[0] = 12.0/2.;
   tubspar[1] = 12.4/2.;
   tubspar[2] = 540.0/2.;
   tubspar[3] = -90.;
   tubspar[4] = 90.;  
   gMC->Gsvolu("QTD5", "TUBS", idtmed[7], tubspar, 5);
-  gMC->Gspos("QTD5", 1, "Q13T", -3.8+10.6, 0.,  0., 0, "ONLY"); 
+  gMC->Gspos("QTD5", 1, "Q13TM", -3.8+10.6, 0.,  0., 0, "ONLY"); 
   //---------------- END DEFINING TDI INSIDE Q13T -------------------------------
   
   // skewed transition piece (ID=212 mm) (after TDI)  
