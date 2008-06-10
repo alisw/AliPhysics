@@ -17,7 +17,7 @@
 //               Implementation of the V0 vertexer class
 //                  reads tracks writes out V0 vertices
 //                      fills the ESD with the V0s       
-//     Origin: Iouri Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch
+//     Origin: Iouri Belikov, IPHC, Strasbourg, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
 
 
@@ -46,8 +46,21 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
   //This function reconstructs V0 vertices
   //--------------------------------------------------------------------
-   const AliESDVertex *vtx=event->GetVertex();
-   Double_t xv=vtx->GetXv(), yv=vtx->GetYv(), zv=vtx->GetZv();
+
+   const AliESDVertex *vtxSPD=event->GetVertex();
+   const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
+
+   Double_t xPrimaryVertex=999, yPrimaryVertex=999, zPrimaryVertex=999;
+   if (vtxT3D->GetStatus()) {
+     xPrimaryVertex=vtxT3D->GetXv();
+     yPrimaryVertex=vtxT3D->GetYv();
+     zPrimaryVertex=vtxT3D->GetZv();
+   }
+   else {
+     xPrimaryVertex=vtxSPD->GetXv();
+     yPrimaryVertex=vtxSPD->GetYv();
+     zPrimaryVertex=vtxSPD->GetZv();
+   }
 
    Int_t nentr=event->GetNumberOfTracks();
    Double_t b=event->GetMagneticField();
@@ -67,7 +80,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
      if ((status&AliESDtrack::kITSrefit)==0)
         if ((status&AliESDtrack::kTPCrefit)==0) continue;
 
-     Double_t d=esdTrack->GetD(xv,yv,b);
+     Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
      if (TMath::Abs(d)<fDPmin) continue;
      if (TMath::Abs(d)>fRmax) continue;
 
@@ -84,8 +97,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
          Int_t pidx=pos[k];
 	 AliESDtrack *ptrk=event->GetTrack(pidx);
 
-         if (TMath::Abs(ntrk->GetD(xv,yv,b))<fDNmin)
-	   if (TMath::Abs(ptrk->GetD(xv,yv,b))<fDNmin) continue;
+         if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fDNmin)
+	   if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fDNmin) continue;
 
          Double_t xn, xp, dca=ntrk->GetDCA(ptrk,b,xn,xp);
          if (dca > fDCAmax) continue;
@@ -114,7 +127,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
          AliESDv0 vertex(nt,nidx,pt,pidx);
          if (vertex.GetChi2V0() > fChi2max) continue;
 	 
-	 Float_t cpa=vertex.GetV0CosineOfPointingAngle(xv,yv,zv);
+	 Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
 	 if (cpa < fCPAmin) continue;
 	 vertex.SetDcaV0Daughters(dca);
          vertex.SetV0CosineOfPointingAngle(cpa);
