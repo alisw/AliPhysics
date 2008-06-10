@@ -214,9 +214,9 @@ AliEveTRDClusters::AliEveTRDClusters():AliEveTRDHits()
   // Constructor.
   SetName("clusters");
 
-  SetMarkerSize(.2);
+  SetMarkerSize(.4);
   SetMarkerStyle(24);
-  SetMarkerColor(kGreen);
+  SetMarkerColor(kGray);
   SetOwnIds(kTRUE);
 }
 
@@ -268,7 +268,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   } 
 
   SetTitle(Form("Det[%d] Plane[%d] P[%7.3f]", det, trklt->GetPlane(), trklt->GetMomentum()));
-  SetLineColor(kYellow);
+  SetLineColor(kRed);
   //SetOwnIds(kTRUE);
   
   sec = det/30;
@@ -330,9 +330,9 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
     }
   }
 
-  AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, points);
+  //AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, points);
   //AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, points);
-  //AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, points);
+  AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, points);
 
   Float_t global[3];
   for(Int_t ip=0; ip<nc; ip++){
@@ -340,8 +340,8 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
     SetNextPoint(global[0], global[1], global[2]);
   }
 
-  SetMarkerColor(kCyan);
-  SetLineColor(kCyan);
+  SetMarkerColor(kBlack);
+  SetLineColor(kBlack);
   SetSmooth(kTRUE);
 }
 
@@ -351,11 +351,16 @@ void AliEveTRDTrack::ProcessData()
   AliTRDtrackV1 *track = (AliTRDtrackV1*)GetUserData();
   AliInfo(Form("Clusters[%d]", track->GetNumberOfClusters()));
   
-  AliTRDReconstructor::RecoParam()->SetPIDMethod(0);
+  AliTRDrecoParam *rec = 0x0;
+  if(!(rec = AliTRDReconstructor::RecoParam())){
+    AliWarning("TRD reco param missing.");
+    return;
+  } 
+  rec->SetPIDMethod(AliTRDrecoParam::kLQPID);
   track->CookPID();
   printf("PIDLQ : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
 
-  AliTRDReconstructor::RecoParam()->SetPIDMethod(1);
+  rec->SetPIDMethod(AliTRDrecoParam::kNNPID);
   track->CookPID();
   printf("PIDNN : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
 }
