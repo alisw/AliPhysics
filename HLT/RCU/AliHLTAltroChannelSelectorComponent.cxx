@@ -142,6 +142,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
   AliAltroDecoder* decoder=NULL;
   for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     iResult=0;
+    if (pDesc->fSize<=32) continue;
 
     // search for the active pad information
     AliHLTUInt16_t* pActiveHwAddressArray=NULL;
