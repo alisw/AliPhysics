@@ -1490,7 +1490,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   // Position of the corner ledges
   const Float_t kSCLposxUa = 0.7;
   const Float_t kSCLposxUb = 3.3;
-  const Float_t kSCLposzUa = 1.6;
+  const Float_t kSCLposzUa = 1.65;
   const Float_t kSCLposzUb = 0.3;
   // Vertical
   parSCL[0]  = kSCLthkUa /2.0;
@@ -1527,7 +1527,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   const Float_t kSCLwidLa  =  8.5;
   const Float_t kSCLwidLb  =  3.3;
   // Position of the corner ledges
-  const Float_t kSCLposxLa =  0.1;
+  const Float_t kSCLposxLa =  0.15;
   const Float_t kSCLposxLb =  2.6;
   const Float_t kSCLposzLa = -4.25;
   const Float_t kSCLposzLb = -0.5;
@@ -1597,12 +1597,12 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   xpos      =  0.0;
   ypos      =  0.0;
   zpos      =  fgkSheight/2.0 - fgkSMpltT/2.0;
-  parPlt[0] = fgkSwidth2/2.0;
+  parPlt[0] = fgkSwidth2/2.0 - 0.2;
   parPlt[1] = fgkFlength/2.0;
   parPlt[2] = fgkSMpltT /2.0;
   gMC->Gsposp("UTA2",1,"UTF2",xpos,ypos,zpos
                     ,        0,"ONLY",parPlt,kNparPlt);
-  xpos      = (fgkSwidth1 + fgkSwidth2)/4.0;
+  xpos      = (fgkSwidth1 + fgkSwidth2)/4.0 - fgkSMpltT/2.0;
   ypos      =  0.0;
   zpos      =  0.0;
   parPlt[0] = fgkSMpltT /2.0;
@@ -1759,7 +1759,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   for (ilayer = 1; ilayer < kNlayer; ilayer++) { 
 
     // In baby frame
-    xpos      = fCwidth[ilayer]/2.0 + kCOLwid/2.0;
+    xpos      = fCwidth[ilayer]/2.0 + kCOLwid/2.0 - 0.93;
     ypos      = kBBSdz/2.0 - kBBMdz/2.0;
     zpos      = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
               + ilayer * (fgkCH + fgkVspace);
@@ -1909,7 +1909,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   for (ilayer = 1; ilayer < kNlayer; ilayer++) { 
 
     // In baby frame
-    xpos      = fCwidth[ilayer]/2.0 + kPWRwid/2.0 + 0.93;
+    xpos      = fCwidth[ilayer]/2.0 + kPWRwid/2.0;
     ypos      = kBBSdz/2.0 - kBBMdz/2.0;
     zpos      = fgkVrocsm + fgkSMpltT + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
               + ilayer * (fgkCH + fgkVspace);
@@ -1942,9 +1942,6 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
 
   // The upper most layer
   // Along the chambers
-//   xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
-//   ypos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
-//   zpos      = 0.0;
   xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
   ypos      = 0.0;
   zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
@@ -1979,7 +1976,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gsposp("UTP3",6+5*kNlayer,"UTF2",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
   // In baby frame
-  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 2.3;
+  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 3.0;
   ypos      = kBBSdz/2.0 - kBBMdz/2.0;
   zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
   parPWR[0] = kPWRwid/2.0;
@@ -2376,7 +2373,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     gMC->Gspos("UTPC",ilayer        ,"UTF1", xpos,ypos,zpos,matrix[0],"ONLY");
     gMC->Gspos("UTPC",ilayer+kNlayer,"UTF1",-xpos,ypos,zpos,matrix[1],"ONLY");
   }
-  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
+  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 2.0;
   ypos      = 0.0;
   zpos      = fgkSheight/2.0 - fgkSMpltT - 2.0; 
   gMC->Gspos("UTPC",5        ,"UTF1", xpos,ypos,zpos,matrix[3],"ONLY");
