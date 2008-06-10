@@ -181,6 +181,8 @@ AliSimulation::AliSimulation(const char* configFileName,
   fInitRunNumberCalled(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fEmbeddingFlag(kFALSE),
+  fQADetectors("ALL"),                  
+  fQATasks("ALL"),	
   fRunQA(kTRUE), 
   fRunHLT("default")
 {
@@ -227,7 +229,9 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fInitRunNumberCalled(sim.fInitRunNumberCalled),
   fSetRunNumberFromDataCalled(sim.fSetRunNumberFromDataCalled),
   fEmbeddingFlag(sim.fEmbeddingFlag),
-  fRunQA(kTRUE), 
+  fQADetectors(sim.fQADetectors),                  
+  fQATasks(sim.fQATasks),	
+  fRunQA(sim.fRunQA), 
   fRunHLT(sim.fRunHLT)
 {
 // copy constructor
@@ -1755,18 +1759,63 @@ Bool_t AliSimulation::RunQA()
 
 	TString detectorsw("") ;  
 	Bool_t rv = kTRUE ; 
-	detectorsw =  qas.Run("ALL", AliQA::kHITS) ; 
+	if (fQATasks.Contains(Form("%d", AliQA::kHITS))) 
+		detectorsw =  qas.Run(fQADetectors.Data(), AliQA::kHITS) ; 
 //	qas.Reset() ; 
-	detectorsw += qas.Run(fMakeSDigits.Data(), AliQA::kSDIGITS) ;   
+	if (fQATasks.Contains(Form("%d", AliQA::kSDIGITS))) 
+		detectorsw += qas.Run(fQADetectors.Data(), AliQA::kSDIGITS) ;   
 //	qas.Reset() ; 
-	detectorsw += qas.Run(fMakeDigits.Data(), AliQA::kDIGITS) ; 	
-//	qas.Reset() ; 
-	detectorsw += qas.Run(fMakeDigitsFromHits.Data(), AliQA::kDIGITS) ; 
-	
+	if (fQATasks.Contains(Form("%d", AliQA::kDIGITS))) 
+		detectorsw += qas.Run(fQADetectors.Data(), AliQA::kDIGITS) ; 	
+
 	if ( detectorsw.IsNull() ) 
 		rv = kFALSE ; 
 	return rv ; 
 }
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::SetRunQA(TString detAndAction) 
+{
+	// Allows to run QA for a selected set of detectors
+	// and a selected set of tasks among HITS, SDIGITS and DIGITS
+	// all selected detectors run the same selected tasks
+	
+	if (!detAndAction.Contains(":")) {
+		AliError( Form("%s is a wrong syntax, use \"DetectorList:ActionList\" \n", detAndAction.Data()) ) ;
+		fRunQA = kFALSE ;
+		return kFALSE ; 		
+	}
+	Int_t colon = detAndAction.Index(":") ; 
+	fQADetectors = detAndAction(0, colon) ; 
+	if (fQADetectors.Contains("ALL") )
+		fQADetectors = Form("%s %s", fMakeDigits.Data(), fMakeDigitsFromHits.Data()) ; 
+	fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
+	if (fQATasks.Contains("ALL") ) {
+		fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
+	} else {
+		fQATasks.ToUpper() ; 
+		TString tempo("") ; 
+		if ( fQATasks.Contains("HIT") ) 
+			tempo = Form("%d ", AliQA::kHITS) ; 
+		if ( fQATasks.Contains("SDIGIT") ) 
+			tempo += Form("%d ", AliQA::kSDIGITS) ; 
+		if ( fQATasks.Contains("DIGIT") ) 
+			tempo += Form("%d ", AliQA::kDIGITS) ; 
+		fQATasks = tempo ; 
+		if (fQATasks.IsNull()) {
+			AliInfo("No QA requested\n")  ;
+			fRunQA = kFALSE ;
+			return kTRUE ; 
+		}
+	}	
+	TString tempo(fQATasks) ; 
+    tempo.ReplaceAll(Form("%d", AliQA::kHITS), AliQA::GetTaskName(AliQA::kHITS)) 	;
+    tempo.ReplaceAll(Form("%d", AliQA::kSDIGITS), AliQA::GetTaskName(AliQA::kSDIGITS)) ;	
+    tempo.ReplaceAll(Form("%d", AliQA::kDIGITS), AliQA::GetTaskName(AliQA::kDIGITS)) ; 	
+	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  
+	fRunQA = kTRUE ;
+	return kTRUE; 
+} 
 
 //_____________________________________________________________________________
 void AliSimulation::ProcessEnvironmentVars()
