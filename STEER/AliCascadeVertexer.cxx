@@ -61,8 +61,20 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   // This function reconstructs cascade vertices
   //      Adapted to the ESD by I.Belikov (Jouri.Belikov@cern.ch)
   //--------------------------------------------------------------------
-   const AliESDVertex *vtx=event->GetVertex();
-   Double_t xv=vtx->GetXv(), yv=vtx->GetYv(), zv=vtx->GetZv();
+   const AliESDVertex *vtxSPD=event->GetVertex();
+   const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
+
+   Double_t xPrimaryVertex=999, yPrimaryVertex=999, zPrimaryVertex=999;
+   if (vtxT3D->GetStatus()) {
+     xPrimaryVertex=vtxT3D->GetXv();
+     yPrimaryVertex=vtxT3D->GetYv();
+     zPrimaryVertex=vtxT3D->GetZv();
+   }
+   else {
+     xPrimaryVertex=vtxSPD->GetXv();
+     yPrimaryVertex=vtxSPD->GetYv();
+     zPrimaryVertex=vtxSPD->GetZv();
+   }
 
    Double_t b=event->GetMagneticField();
    Int_t nV0=(Int_t)event->GetNumberOfV0s();
@@ -73,7 +85,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
    for (i=0; i<nV0; i++) {
        AliESDv0 *v=event->GetV0(i);
        if (v->GetOnFlyStatus()) continue;
-       if (v->GetD(xv,yv,zv)<fDV0min) continue;
+       if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
        vtcs.AddLast(v);
    }
    nV0=vtcs.GetEntriesFast();
@@ -88,7 +100,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
        if ((status&AliESDtrack::kITSrefit)==0)
 	  if ((status&AliESDtrack::kTPCrefit)==0) continue;
 
-       if (TMath::Abs(esdtr->GetD(xv,yv,b))<fDBachMin) continue;
+       if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fDBachMin) continue;
 
        trk[ntr++]=i;
    }   
@@ -132,7 +144,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
 
-  	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) <fCPAmin) continue; //condition on the cascade pointing angle 
+  	 if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) <fCPAmin) continue; //condition on the cascade pointing angle 
 	 
 	 event->AddCascade(&cascade);
          ncasc++;
@@ -175,7 +187,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          if (r2 > (x1*x1+y1*y1)) continue;
          if (z*z > z1*z1) continue;
 
-	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) < fCPAmin) continue; //condition on the cascade pointing angle 
+	 if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) < fCPAmin) continue; //condition on the cascade pointing angle 
 	 event->AddCascade(&cascade);
          ncasc++;
 
