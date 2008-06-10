@@ -214,6 +214,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
     delete fEvent;
   }
 
+  fListHistos->Print();	
   PostData(0,fListHistos);
 }      
 
@@ -221,9 +222,9 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
 void AliAnalysisTaskScalarProduct::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  fSP->Finish();
+//  fSP->Finish();
   //  PostData(0,fListHistos);
 
-  delete fSP;
-  delete fEventMaker;
+//  delete fSP;
+//  delete fEventMaker;
 }
