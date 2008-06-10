@@ -1942,9 +1942,12 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
 
   // The upper most layer
   // Along the chambers
+//   xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
+//   ypos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
+//   zpos      = 0.0;
   xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
-  ypos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
-  zpos      = 0.0;
+  ypos      = 0.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
   parPWR[0] = kPWRwid   /2.0;
   parPWR[1] = fgkSlength/2.0;
   parPWR[2] = kPWRhgt   /2.0;

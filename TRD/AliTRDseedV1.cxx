@@ -221,7 +221,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 		nclusters[slice]++;
 	} // End of loop over clusters
 
-	if(AliTRDReconstructor::RecoParam()->GetPIDMethod() == 0){
+	if(AliTRDReconstructor::RecoParam()->GetPIDMethod() == AliTRDrecoParam::kLQPID){
 	// calculate mean charge per slice (only LQ PID)
 		for(int is=0; is<nslices; is++){ 
 	    if(nclusters[is]) fdEdx[is] /= nclusters[is];
@@ -256,8 +256,14 @@ Double_t* AliTRDseedV1::GetProbability()
     return 0x0;
   }
 
+  AliTRDrecoParam *rec = AliTRDReconstructor::RecoParam();
+  if (!rec) {
+    AliError("No TRD reco param.");
+    return 0x0;
+  }
+
   // Retrieve the CDB container class with the parametric detector response
-  const AliTRDCalPID *pd = calibration->GetPIDObject(AliTRDReconstructor::RecoParam()->GetPIDMethod());
+  const AliTRDCalPID *pd = calibration->GetPIDObject(rec->GetPIDMethod());
   if (!pd) {
     AliError("No access to AliTRDCalPID object");
     return 0x0;
@@ -269,7 +275,7 @@ Double_t* AliTRDseedV1::GetProbability()
   /// TMath::Sqrt((1.0 - fSnp[iPlane]*fSnp[iPlane]) / (1.0 + fTgl[iPlane]*fTgl[iPlane]));
   
   //calculate dE/dx
-  CookdEdx(AliTRDReconstructor::RecoParam()->GetNdEdxSlices());
+  CookdEdx(rec->GetNdEdxSlices());
   
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {

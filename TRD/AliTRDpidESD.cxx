@@ -37,6 +37,7 @@
 #include "AliTracker.h"
 #include "AliRun.h"
 
+#include "AliTRDReconstructor.h"
 #include "AliTRDpidESD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
@@ -133,8 +134,14 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 		return -1;
 	}
 	
+  AliTRDrecoParam *rec = AliTRDReconstructor::RecoParam();
+  if (!rec) {
+    AliErrorGeneral("AliTRDpidESD::MakePID()", "No TRD reco param.");
+    return 0x0;
+  }
+
 	// Retrieve the CDB container class with the probability distributions
-	const AliTRDCalPID *pd = calibration->GetPIDObject(1);
+	const AliTRDCalPID *pd = calibration->GetPIDObject(rec->GetPIDMethod());
 	if (!pd) {
 		AliErrorGeneral("AliTRDpidESD::MakePID()"
 			,"No access to AliTRDCalPID");

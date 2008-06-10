@@ -11,7 +11,13 @@
 
 /* $Id$ */
 
+#ifndef ROOT_TObject
 #include "TObject.h"
+#endif
+
+#ifndef ALITRDRECOPARAM_H
+#include "AliTRDrecoParam.h"
+#endif
 
 class AliCDBEntry;
 
@@ -52,10 +58,10 @@ class AliTRDcalibDB : public TObject {
 
   Float_t                             GetGainFactor(Int_t det, Int_t col, Int_t row);
   Float_t                             GetGainFactorAverage(Int_t det);
-        AliTRDCalROC                 *GetGainFactorROC(Int_t det);
+  AliTRDCalROC                       *GetGainFactorROC(Int_t det);
   const AliTRDCalDet                 *GetGainFactorDet();
 
-        AliTRDCalROC                 *GetPRFROC(Int_t det);
+  AliTRDCalROC                       *GetPRFROC(Int_t det);
   Float_t                             GetPRFWidth(Int_t det, Int_t col, Int_t row);
 
   Float_t*                            GetSampledPRF() { return fPRFsmp; };
@@ -66,7 +72,7 @@ class AliTRDcalibDB : public TObject {
   Int_t                               GetNumberOfTimeBins();
 
   Char_t                              GetPadStatus(Int_t det, Int_t col, Int_t row);
-        AliTRDCalSingleChamberStatus *GetPadStatusROC(Int_t det);
+  AliTRDCalSingleChamberStatus       *GetPadStatusROC(Int_t det);
 
   Char_t                              GetChamberStatus(Int_t det);
 
@@ -79,7 +85,7 @@ class AliTRDcalibDB : public TObject {
   Bool_t                              IsChamberMasked(Int_t det);
 
   const AliTRDCalMonitoring          *GetMonitoringObject();
-  const AliTRDCalPID                 *GetPIDObject(const Int_t method);
+  const AliTRDCalPID                 *GetPIDObject(AliTRDrecoParam::AliTRDpidMethod method);
 
   // Related functions, these depend on calibration data
   static Float_t                      GetOmegaTau(Float_t vdrift, Float_t bz);

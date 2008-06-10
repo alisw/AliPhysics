@@ -29,6 +29,7 @@
 
 #include "AliLog.h"
 
+#include "AliTRDReconstructor.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDltuTracklet.h"
@@ -390,7 +391,14 @@ void AliTRDgtuTrack::MakePID()
     AliError("No instance of AliTRDcalibDB.");
     return;  
   }
-  const AliTRDCalPID *pd = calibration->GetPIDObject(1);
+
+  AliTRDrecoParam *rec = AliTRDReconstructor::RecoParam();
+  if (!rec) {
+    AliError("No TRD reco param.");
+    return;
+  }
+
+  const AliTRDCalPID *pd = calibration->GetPIDObject(rec->GetPIDMethod());
   
   AliTRDltuTracklet *trk;
   Int_t   nTracklets = GetNtracklets();

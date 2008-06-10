@@ -34,7 +34,7 @@ ClassImp(AliTRDrecoParam)
 AliTRDrecoParam::AliTRDrecoParam()
   :AliDetectorRecoParam()
   ,fkClusterSharing(0)
-  ,fkPIDMethod(0) // LQ PID
+  ,fkPIDMethod(kLQPID) // LQ PID
   ,fkMaxTheta(1.0)
   ,fkMaxPhi(2.0)
   ,fkRoad0y(6.0)
