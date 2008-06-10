@@ -18,7 +18,7 @@ void rec() {
   //AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
   //	recEmc->SetSubtractPedestals(kFALSE);
   //	AliPHOSReconstructor::SetRecoParamEmc(recEmc);  
-	if (! reco.SetRunQA("PHOS:ESD") ) {
+	if (! reco.SetRunQA("ALL:ALL") ) {
 		printf("SetRunQA ERROR\n") ; 
 		exit ; 
 	}
