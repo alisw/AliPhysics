@@ -63,11 +63,22 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) :
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
 
- //event maker
-  fEventMaker = new AliFlowEventSimpleMaker();
-  //Analyser
-  fSP  = new AliFlowAnalysisWithScalarProduct() ;
-  fSP-> Init();
+}
+
+//________________________________________________________________________
+AliAnalysisTaskScalarProduct::~AliAnalysisTaskScalarProduct()
+{
+  //
+  // Destructor
+  //
+
+  // histograms are in the output list and deleted when the output
+  // list is deleted by the TSelector dtor
+
+  //  if (ListHistos) {
+  //    delete fListHistos;
+  //    fListHistos = NULL;
+  //  }
 }
 
 //________________________________________________________________________
@@ -129,14 +140,20 @@ void AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskScalarProduct::CreateOutputObjects() 
 {
-  // Called once
+  // Called at every worker node to initialize
   cout<<"AliAnalysisTaskScalarProduct::CreateOutputObjects()"<<endl;
+  //event maker
+  fEventMaker = new AliFlowEventSimpleMaker();
+  //Analyser
+  fSP  = new AliFlowAnalysisWithScalarProduct() ;
+  fSP-> Init();
   
 
   if (fSP->GetHistList()) {
 	fSP->GetHistList()->Print();
-//	*fListHistos = new TList();
+//	fListHistos = new TList(fSP->GetHistList());
 	fListHistos = fSP->GetHistList();
+	fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
 }
@@ -205,7 +222,7 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
 {
   // Called once at the end of the query
   fSP->Finish();
-  PostData(0,fListHistos);
+  //  PostData(0,fListHistos);
 
   delete fSP;
   delete fEventMaker;

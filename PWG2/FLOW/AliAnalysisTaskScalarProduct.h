@@ -1,6 +1,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
-/* $Id$ */
+/* $Id: $ */
 
 #ifndef AliAnalysisTaskScalarProduct_H
 #define AliAnalysisTaskScalarProduct_H
@@ -19,8 +19,8 @@ class AliFlowEventSimpleMaker;
 
 class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
  public:
-  AliAnalysisTaskScalarProduct(const char *name = "AliAnalysisTaskScalarProduct");
-  virtual ~AliAnalysisTaskScalarProduct() {}
+  AliAnalysisTaskScalarProduct(const char *name = "");
+  virtual ~AliAnalysisTaskScalarProduct();
   
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();

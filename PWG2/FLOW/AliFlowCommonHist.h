@@ -43,6 +43,7 @@ class AliFlowCommonHist: public TObject {
   TProfile* GetfHistProMeanPtperBin()        {return fHistProMeanPtperBin; } ;
   TH1F*     GetfHistQ()                      {return fHistQ; } ;            
    
+  //  virtual Long64_t  Merge(TCollection *list);
  
  private:
 
