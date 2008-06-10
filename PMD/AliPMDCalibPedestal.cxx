@@ -157,7 +157,7 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 	    fPedValSq[det][smn][row][col] += sig*sig;
 	    fPedCount[det][smn][row][col]++;
 	}
-	pmdddlcont.Clear();
+      pmdddlcont.Delete();
     }
     if (numberofDDLs < kDDL)
       return kFALSE;
