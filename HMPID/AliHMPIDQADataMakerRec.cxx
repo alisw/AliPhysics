@@ -268,13 +268,15 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
- //  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj);
-
+  
   if(task==AliQA::kRAWS) {
     for(Int_t iddl=0;iddl<14;iddl++) {
      TH1F *h = (TH1F*)histos->At(14+iddl); //ddl histos scaled by the number of events 
      h->Scale(1./(Float_t)fEvtRaw);
     }
   }
+  
+   AliQAChecker::Instance()->Run(AliQA::kHMPID, task, histos);
+
 }
 
