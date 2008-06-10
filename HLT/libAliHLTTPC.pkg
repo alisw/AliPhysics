@@ -15,6 +15,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCDigitReaderDecoder.h \
 		AliHLTTPCDigitDumpComponent.h \
 		AliHLTTPCZeroSuppressionComponent.h \
+		AliHLTTPCNoiseMap.h \
 		AliHLTTPCNoiseMapComponent.h \
 		AliHLTTPCVertex.h \
 		AliHLTTPCVertexArray.h \
@@ -76,6 +77,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCKryptonClusterFinder.h \
 		AliHLTTPCKryptonClusterFinderComponent.h \
 		AliHLTTPCClusterHistoComponent.h \
+		AliHLTTPCTrackHistoComponent.h \
+		AliHLTTPCTrackDumpComponent.h \
 		AliHLTTPCClusterDumpComponent.h
 
 
