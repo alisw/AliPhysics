@@ -129,8 +129,8 @@ const Float_t AliTOFv6T0::fgkInterCentrModBorder1  =  49.5 ; // cm
 const Float_t AliTOFv6T0::fgkInterCentrModBorder2  =  57.5 ; // cm
 const Float_t AliTOFv6T0::fgkExterInterModBorder1  = 196.0 ; // cm
 const Float_t AliTOFv6T0::fgkExterInterModBorder2  = 203.5 ; // cm
-const Float_t AliTOFv6T0::fgkLengthInCeModBorder   =   4.7 ; // cm
-const Float_t AliTOFv6T0::fgkLengthExInModBorder   =   7.0 ; // cm
+const Float_t AliTOFv6T0::fgkLengthInCeModBorder   =   7.2 ; // cm // it was 4.7 cm (AdC)
+const Float_t AliTOFv6T0::fgkLengthExInModBorder   =   5.0 ; // cm // it was 7.0 cm (AdC)
 const Float_t AliTOFv6T0::fgkModuleCoverThickness  =   2.0 ; // cm
 const Float_t AliTOFv6T0::fgkFEAwidth1    = 19.0; // cm
 const Float_t AliTOFv6T0::fgkFEAwidth2    = 39.5;//38.5; // cm
@@ -1245,11 +1245,11 @@ void AliTOFv6T0::CreateBackZone(Float_t xtof, Float_t ytof, Float_t zlenA) const
   Float_t feaParam[3] = {fgkFEAparameters[0], fgkFEAparameters[1], fgkFEAparameters[2]};
   Float_t feaRoof1[3] = {fgkRoof1parameters[0], fgkRoof1parameters[1], fgkRoof1parameters[2]};
   Float_t al3[3] = {fgkAl3parameters[0], fgkAl3parameters[1], fgkAl3parameters[2]};
-  Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
+  //Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
 
   // FEA card mother-volume definition
   Float_t carpar[3] = {xtof*0.5 - fgkCBLw - fgkSawThickness,
-		       feaParam[1] + feaRoof1[1] + feaRoof2[1]*0.5,
+		       feaParam[1] + feaRoof1[1] + fgkRoof2parameters[1]*0.5,
 		       feaRoof1[2] + fgkBetweenLandMask*0.5 + al3[2]};
   gMC->Gsvolu("FCA1", "BOX ", idtmed[500], carpar, 3); // Air
   gMC->Gsvolu("FCA2", "BOX ", idtmed[500], carpar, 3); // Air
@@ -1342,10 +1342,10 @@ void AliTOFv6T0::MakeFrontEndElectronics(Float_t xtof) const
   Float_t al1[3] = {fgkAl1parameters[0], fgkAl1parameters[1], fgkAl1parameters[2]};
   Float_t al3[3] = {fgkAl3parameters[0], fgkAl3parameters[1], fgkAl3parameters[2]};
   Float_t feaRoof1[3] = {fgkRoof1parameters[0], fgkRoof1parameters[1], fgkRoof1parameters[2]};
-  Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
+  //Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
 
   Float_t carpar[3] = {xtof*0.5 - fgkCBLw - fgkSawThickness,
-		       feaParam[1] + feaRoof1[1] + feaRoof2[1]*0.5,
+		       feaParam[1] + feaRoof1[1] + fgkRoof2parameters[1]*0.5,
 		       feaRoof1[2] + fgkBetweenLandMask*0.5 + al3[2]};
 
   // FEA card volume positioning
@@ -1384,10 +1384,10 @@ void AliTOFv6T0::MakeFEACooling(Float_t xtof) const
   gMC->Gsvolu("FRO1", "BOX ", idtmed[504], feaRoof1, 3); // Al
 
   Float_t al3[3] = {fgkAl3parameters[0], fgkAl3parameters[1], fgkAl3parameters[2]};
-  Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
+  //Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
 
   // definition and positioning of a small air groove in the FRO1 volume
-  Float_t airHole[3] = {feaRoof2[0], feaRoof2[1]*0.5, feaRoof1[2]};
+  Float_t airHole[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1]*0.5, feaRoof1[2]};
   gMC->Gsvolu("FREE", "BOX ", idtmed[500], airHole, 3); // Air
   gMC->Gspos("FREE", 1, "FRO1", 0., feaRoof1[1]-airHole[1], 0., 0, "ONLY");
   gGeoManager->GetVolume("FRO1")->VisibleDaughters(kFALSE);
@@ -1399,7 +1399,7 @@ void AliTOFv6T0::MakeFEACooling(Float_t xtof) const
   Float_t feaParam[3] = {fgkFEAparameters[0], fgkFEAparameters[1], fgkFEAparameters[2]};
 
   Float_t carpar[3] = {xtof*0.5 - fgkCBLw - fgkSawThickness,
-		       feaParam[1] + feaRoof1[1] + feaRoof2[1]*0.5,
+		       feaParam[1] + feaRoof1[1] + fgkRoof2parameters[1]*0.5,
 		       feaRoof1[2] + fgkBetweenLandMask*0.5 + al3[2]};
 
   // fourth FEA cooling element definition
@@ -1412,7 +1412,7 @@ void AliTOFv6T0::MakeFEACooling(Float_t xtof) const
 
   // first FEA cooling element positioning
   Float_t xcoor = xtof*0.5 - 25.;
-  Float_t ycoor = carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - al1[1];
+  Float_t ycoor = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - al1[1];
   Float_t zcoor =-carpar[2] + 2.*feaRoof1[2] - al1[2];
   gMC->Gspos("FAL1", 1, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FAL1", 4, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
@@ -1426,21 +1426,21 @@ void AliTOFv6T0::MakeFEACooling(Float_t xtof) const
 
   // second FEA cooling element positioning
   xcoor = xtof*0.5 - 25.;
-  ycoor = carpar[1] - 2.*feaRoof2[1]*0.5 - feaRoof1[1];
+  ycoor = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - feaRoof1[1];
   zcoor =-carpar[2] + feaRoof1[2];
-  gMC->Gspos("FRO1", 1, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
-  gMC->Gspos("FRO1", 4, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
+  gMC->Gspos("FRO1", 1, "FCA1",-xcoor, ycoor, zcoor, 0, "MANY"); // (AdC)
+  gMC->Gspos("FRO1", 4, "FCA1", xcoor, ycoor, zcoor, 0, "MANY"); // (AdC)
   gMC->Gspos("FRO1", 1, "FCA2",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FRO1", 4, "FCA2", xcoor, ycoor, zcoor, 0, "ONLY");
   xcoor = feaParam[0] + (fgkFEAwidth2*0.5 - fgkFEAwidth1);
-  gMC->Gspos("FRO1", 2, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
-  gMC->Gspos("FRO1", 3, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
+  gMC->Gspos("FRO1", 2, "FCA1",-xcoor, ycoor, zcoor, 0, "MANY"); // (AdC)
+  gMC->Gspos("FRO1", 3, "FCA1", xcoor, ycoor, zcoor, 0, "MANY"); // (AdC)
   gMC->Gspos("FRO1", 2, "FCA2",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FRO1", 3, "FCA2", xcoor, ycoor, zcoor, 0, "ONLY");
 
   // third FEA cooling element positioning
   xcoor = xtof*0.5 - 25.;
-  ycoor = carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - bar[1];
+  ycoor = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - bar[1];
   zcoor =-carpar[2] + bar[2];
   gMC->Gspos("FBAR", 1, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FBAR", 4, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
@@ -1455,7 +1455,7 @@ void AliTOFv6T0::MakeFEACooling(Float_t xtof) const
   // fourth FEA cooling element positioning
   Float_t tubepar[3] = {0., 0.4, xtof*0.5 - fgkCBLw};
   xcoor = xtof*0.5 - 25.;
-  ycoor = carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - bar[1];
+  ycoor = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - bar[1];
   zcoor =-carpar[2] + 2.*bar[2] + 2.*tubepar[1] + bar1[2];
   gMC->Gspos("FBA1", 1, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FBA1", 4, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
@@ -1469,7 +1469,7 @@ void AliTOFv6T0::MakeFEACooling(Float_t xtof) const
 
   // fifth FEA cooling element positioning
   xcoor = xtof*0.5 - 25.;
-  ycoor = carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - bar2[1];
+  ycoor = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - bar2[1];
   zcoor =-carpar[2] + 2.*bar[2] + bar2[2];
   gMC->Gspos("FBA2", 1, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FBA2", 4, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
@@ -1482,7 +1482,7 @@ void AliTOFv6T0::MakeFEACooling(Float_t xtof) const
   gMC->Gspos("FBA2", 3, "FCA2", xcoor, ycoor, zcoor, 0, "ONLY");
 
   xcoor = xtof*0.5 - 25.;
-  ycoor = carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - 2.*tubepar[1] - bar2[1];
+  ycoor = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - 2.*tubepar[1] - bar2[1];
   zcoor =-carpar[2] + 2.*bar[2] + bar2[2];
   gMC->Gspos("FBA2", 5, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FBA2", 8, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
@@ -1523,7 +1523,7 @@ void AliTOFv6T0::MakeNinoMask(Float_t xtof) const
   Float_t feaParam[3] = {fgkFEAparameters[0], fgkFEAparameters[1], fgkFEAparameters[2]};
 
   Float_t carpar[3] = {xtof*0.5 - fgkCBLw - fgkSawThickness,
-		       feaParam[1] + feaRoof1[1] + feaRoof2[1]*0.5,
+		       feaParam[1] + feaRoof1[1] + fgkRoof2parameters[1]*0.5,
 		       feaRoof1[2] + fgkBetweenLandMask*0.5 + al3[2]};
 
   // first Nino ASIC mask volume positioning
@@ -1548,8 +1548,8 @@ void AliTOFv6T0::MakeNinoMask(Float_t xtof) const
 
   // third Nino ASIC mask volume positioning
   xcoor = xtof*0.5 - 25.;
-  ycoor = carpar[1] - feaRoof2[1];
-  zcoor = carpar[2] - 2.*al3[2] - feaRoof2[2];
+  ycoor = carpar[1] - fgkRoof2parameters[1];
+  zcoor = carpar[2] - 2.*al3[2] - fgkRoof2parameters[2];
   gMC->Gspos("FRO2", 1, "FCA1",-xcoor, ycoor, zcoor, 0, "ONLY");
   gMC->Gspos("FRO2", 4, "FCA1", xcoor, ycoor, zcoor, 0, "ONLY");
   xcoor = feaParam[0] + (fgkFEAwidth2*0.5 - fgkFEAwidth1);
@@ -1594,17 +1594,17 @@ void AliTOFv6T0::MakeSuperModuleCooling(Float_t xtof, Float_t ytof, Float_t zlen
   Float_t bar[3] = {fgkBar[0], fgkBar[1], fgkBar[2]};
   Float_t bar2[3] = {fgkBar2[0], fgkBar2[1], fgkBar2[2]};
   Float_t al3[3] = {fgkAl3parameters[0], fgkAl3parameters[1], fgkAl3parameters[2]};
-  Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
+  //Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
 
   Float_t carpar[3] = {xtof*0.5 - fgkCBLw - fgkSawThickness,
-		       feaParam[1] + feaRoof1[1] + feaRoof2[1]*0.5,
+		       feaParam[1] + feaRoof1[1] + fgkRoof2parameters[1]*0.5,
 		       feaRoof1[2] + fgkBetweenLandMask*0.5 + al3[2]};
 
   Float_t ytub =-(ytof*0.5 - fgkModuleCoverThickness)*0.5 + carpar[1] +
-    carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - tubepar[1];
+    carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - tubepar[1];
 
   // Positioning of tubes for the SM cooling system
-  Float_t ycoor = carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - tubepar[1];
+  Float_t ycoor = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - tubepar[1];
   Float_t zcoor =-carpar[2] + 2.*bar[2] + tubepar[1];
   gMC->Gspos("FTUB", 1, "FCA1", 0., ycoor, zcoor, idrotm[0], "ONLY");
   gMC->Gspos("FTUB", 1, "FCA2", 0., ycoor, zcoor, idrotm[0], "ONLY");
@@ -1723,7 +1723,7 @@ void AliTOFv6T0::MakeSuperModuleCooling(Float_t xtof, Float_t ytof, Float_t zlen
   Float_t barS2[3] = {fgkBarS2[0], fgkBarS2[1], fgkBarS2[2]};
   gMC->Gsvolu("FBS2", "BOX ", idtmed[504], barS2, 3); // Al
 
-  Float_t ytubBis = carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - 2.*barS2[1] - tubepar[1];
+  Float_t ytubBis = carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - 2.*barS2[1] - tubepar[1];
   ycoor = ytubBis;
   zcoor =-carpar[2] + barS[2];
   gMC->Gspos("FBAS", 1, "FCA1",-24., ycoor, zcoor, 0, "ONLY");
@@ -1770,7 +1770,7 @@ void AliTOFv6T0::MakeSuperModuleServices(Float_t xtof, Float_t ytof, Float_t zle
   Float_t al1[3] = {fgkAl1parameters[0], fgkAl1parameters[1], fgkAl1parameters[2]};
   Float_t al3[3] = {fgkAl3parameters[0], fgkAl3parameters[1], fgkAl3parameters[2]};
   Float_t feaRoof1[3] = {fgkRoof1parameters[0], fgkRoof1parameters[1], fgkRoof1parameters[2]};
-  Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
+  //Float_t feaRoof2[3] = {fgkRoof2parameters[0], fgkRoof2parameters[1], fgkRoof2parameters[2]};
   Float_t feaParam[3] = {fgkFEAparameters[0], fgkFEAparameters[1], fgkFEAparameters[2]};
 
   // FEA cables definition
@@ -1784,12 +1784,12 @@ void AliTOFv6T0::MakeSuperModuleServices(Float_t xtof, Float_t ytof, Float_t zle
   AliMatrix(idrotm[0], 180., 90., 90., 90., 90., 0.);
 
   Float_t carpar[3] = {xtof*0.5 - fgkCBLw - fgkSawThickness,
-		       feaParam[1] + feaRoof1[1] + feaRoof2[1]*0.5,
+		       feaParam[1] + feaRoof1[1] + fgkRoof2parameters[1]*0.5,
 		       feaRoof1[2] + fgkBetweenLandMask*0.5 + al3[2]};
 
   Float_t bar2[3] = {fgkBar2[0], fgkBar2[1], fgkBar2[2]};
   Float_t ytub =-(ytof*0.5 - fgkModuleCoverThickness)*0.5 + carpar[1] +
-    carpar[1] - 2.*feaRoof2[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - tubepar[1];
+    carpar[1] - 2.*fgkRoof2parameters[1]*0.5 - 2.*feaRoof1[1] - 2.*bar2[1] - tubepar[1];
 
   // FEA cables positioning
   Float_t xcoor = (tubepar[2] + (fgkFEAwidth2 - fgkFEAwidth1/6.)*0.5)*0.5;
