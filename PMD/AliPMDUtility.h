@@ -27,11 +27,18 @@ class AliPMDUtility
 		       Float_t & xpos, Float_t & ypos);
   void RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad,
 		       Float_t & xpos, Float_t & ypos);
+
+  void GenerateBoundaryPoints(Int_t ism, Float_t &x1ism, Float_t &y1ism
+			      , Float_t &x2ism, Float_t &y2ism);
+
+  void DrawPMDModule(); 
+
   void ApplyVertexCorrection(Float_t vertex[], 
 			     Float_t xpos, Float_t ypos, Float_t zpos);
   void ApplyAlignment();
   void SetPxPyPz(Float_t px, Float_t py, Float_t pz);
   void SetXYZ(Float_t xpos, Float_t ypos, Float_t zpos);
+  void SetWriteModule(Int_t wrmod);
   void CalculateEta();
   void CalculatePhi();
   void CalculateEtaPhi();
@@ -50,6 +57,7 @@ class AliPMDUtility
   Float_t fTheta;  // Polar angle in radian
   Float_t fEta;    // Pseudo-rapidity
   Float_t fPhi;    // Azimuthal angle in radian
+  Int_t   fWriteModule;  // Module number writing 
   
   ClassDef(AliPMDUtility,4) // Utility class for the detector set:PMD
 };

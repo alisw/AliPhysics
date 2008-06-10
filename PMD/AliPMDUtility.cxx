@@ -22,10 +22,14 @@
 //-----------------------------------------------------//
 
 #include "Riostream.h"
-#include "AliPMDUtility.h"
 #include "TMath.h"
+#include "TText.h"
+#include "TLine.h"
+
 #include <stdio.h>
 #include <math.h>
+
+#include "AliPMDUtility.h"
 
 
 ClassImp(AliPMDUtility)
@@ -36,7 +40,8 @@ AliPMDUtility::AliPMDUtility():
   fPz(0.),
   fTheta(0.),
   fEta(0.),
-  fPhi(0.)
+  fPhi(0.),
+  fWriteModule(1)
 {
   // Default constructor
 }
@@ -47,7 +52,8 @@ AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz):
   fPz(pz),
   fTheta(0.),
   fEta(0.),
-  fPhi(0.)
+  fPhi(0.),
+  fWriteModule(1)
 {
   // Constructor
 }
@@ -57,7 +63,8 @@ AliPMDUtility::AliPMDUtility(const AliPMDUtility &pmdutil):
   fPz(pmdutil.fPz),
   fTheta(pmdutil.fTheta),
   fEta(pmdutil.fEta),
-  fPhi(pmdutil.fPhi)
+  fPhi(pmdutil.fPhi),
+  fWriteModule(pmdutil.fWriteModule)
 {
   // copy constructor
 }
@@ -72,6 +79,7 @@ AliPMDUtility & AliPMDUtility::operator=(const AliPMDUtility &pmdutil)
       fTheta = pmdutil.fTheta;
       fEta = pmdutil.fEta;
       fPhi = pmdutil.fPhi;
+      fWriteModule = pmdutil.fWriteModule;
     }
   return *this;
 }
@@ -259,6 +267,131 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad, Float
     }
 
 }
+// -------------------------------------------------------- //
+
+void AliPMDUtility::GenerateBoundaryPoints(Int_t ism, Float_t &x1ism, 
+					   Float_t &y1ism, Float_t &x2ism,
+					   Float_t &y2ism)
+{
+  // Generate bounding-box.
+
+
+    Float_t xism = 0, yism = 0;
+    Float_t dxism, dyism;
+
+    const Float_t kRad     = 0.25;
+    const Float_t kSqRoot3 = 1.732050808;
+    const Float_t kDia     = 0.50;
+
+
+  const Double_t kXcorner[24] =
+    {
+      74.8833,  53.0045, 31.1255,    //Type-A
+      74.8833,  53.0045, 31.1255,    //Type-A
+      -74.8833, -53.0044, -31.1255,  //Type-AR
+      -74.8833, -53.0044, -31.1255,  //Type-AR
+      8.9165, -33.7471,            //Type-B
+      8.9165, -33.7471,            //Type-B
+      8.9165, -33.7471,            //Type-B
+      -8.9165, 33.7471,            //Type-BR
+      -8.9165, 33.7471,            //Type-BR
+      -8.9165, 33.7471,            //Type-BR
+    };
+
+
+  const Double_t kYcorner[24] =
+    {
+      86.225,  86.225,  86.225,      //Type-A
+      37.075,  37.075,  37.075,      //Type-A
+      -86.225, -86.225, -86.225,     //Type-AR
+      -37.075, -37.075, -37.075,     //Type-AR
+      86.225,  86.225,               //Type-B
+      61.075,  61.075,               //Type-B
+      35.925,  35.925,               //Type-B
+      -86.225, -86.225,              //Type-BR
+      -61.075, -61.075,              //Type-BR
+      -35.925, -35.925               //Type-BR
+    };
+
+
+  if (ism > 23) ism -= 24;
+
+
+  if (ism < 6)
+    {
+      xism  = kXcorner[ism] + kRad;
+      yism  = kYcorner[ism] + kRad;
+      dxism = -kRad*kSqRoot3*48.;
+      dyism = -kDia*96. - kRad;
+  }
+  if (ism >= 6 && ism < 12)
+    {
+      xism  = kXcorner[ism] - kRad;
+      yism  = kYcorner[ism] - kRad;
+      dxism = kRad*kSqRoot3*48.;
+      dyism = kDia*96. + kRad;
+  }
+  if (ism >= 12 && ism < 18)
+    {
+      xism  = kXcorner[ism] + kRad;
+      yism  = kYcorner[ism] + kRad;
+      dxism = -kRad*kSqRoot3*96.;
+      dyism = -kDia*48. - kRad;
+  }
+  if (ism >= 18 && ism < 24)
+    {
+      xism  = kXcorner[ism] - kRad;
+      yism  = kYcorner[ism] - kRad;
+      dxism = kRad*kSqRoot3*96.;
+      dyism = kDia*48. + kRad;
+  }
+
+  x1ism = xism;
+  x2ism = xism + dxism;
+  y1ism = yism;
+  y2ism = yism + dyism;
+
+}
+// ------------------------------------------------------------------- //
+
+void AliPMDUtility::DrawPMDModule()
+{
+
+    Float_t x1ism, x2ism, y1ism, y2ism;
+    Float_t deltaX, deltaY;
+    
+    //TH2F *h2 = new TH2F("h2","Y vs. X",200,-100.,100.,200,-100.,100.);
+    //h2->Draw();
+
+    TLine t;
+    t.SetLineColor(2);
+
+    TText tt;
+    tt.SetTextColor(4);
+
+    Char_t smnumber[10];
+
+    for(Int_t ism=0; ism < 24; ism++)
+    {
+	GenerateBoundaryPoints(ism, x1ism, y1ism, x2ism, y2ism);
+	deltaX = (x2ism - x1ism)/2.;
+	deltaY = (y2ism - y1ism)/2.;
+	if (fWriteModule == 1)
+	{
+	    sprintf(smnumber,"%d",ism);
+	    tt.DrawText(x1ism+deltaX,y1ism+deltaY,smnumber);
+	}
+	t.DrawLine(x1ism, y1ism, x1ism, y2ism);
+	t.DrawLine(x1ism, y1ism, x2ism, y1ism);
+	t.DrawLine(x2ism, y1ism, x2ism, y2ism);
+	t.DrawLine(x1ism, y2ism, x2ism, y2ism);
+    }
+
+}
+
+// ------------------------------------------------------------------- //
+
+
 void AliPMDUtility::ApplyVertexCorrection(Float_t vertex[], Float_t xpos,
 					  Float_t ypos, Float_t zpos)
 {
@@ -284,6 +417,10 @@ void AliPMDUtility::SetXYZ(Float_t xpos, Float_t ypos, Float_t zpos)
   fPx = xpos;
   fPy = ypos;
   fPz = zpos;
+}
+void AliPMDUtility::SetWriteModule(Int_t wrmod)
+{
+    fWriteModule = wrmod;
 }
 void AliPMDUtility::CalculateEta()
 {
@@ -392,4 +529,5 @@ Float_t AliPMDUtility::GetZ() const
 {
   return fPz;
 }
+
 

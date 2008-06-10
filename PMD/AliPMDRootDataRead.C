@@ -4,8 +4,8 @@ void AliPMDRootDataRead(Int_t NEVT = 10)
   TObjArray pmdddlcont;
 
   gBenchmark->Start("");
-  
-  Bool_t junk;
+  gStyle->SetOptStat(0);
+
 
   Int_t   xpad, ypad;
   Float_t xx, yy;
@@ -76,7 +76,8 @@ void AliPMDRootDataRead(Int_t NEVT = 10)
 
   }
   h2->Draw();
-
+  cc->SetWriteModule(1);
+  cc->DrawPMDModule();
   gBenchmark->Show("");
 
 
