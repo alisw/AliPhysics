@@ -189,7 +189,7 @@ void AliSHILv3::CreateGeometry()
 //    FA W-Ring 2                //
 //    Drawing ALIP2A__0220       //
 ///////////////////////////////////
-      const Float_t kFaWring2Rinner  = 15.40;
+      const Float_t kFaWring2Rinner  = 15.41;
       const Float_t kFaWring2Router  = 18.40;
       const Float_t kFaWring2HWidth  =  3.75;
       const Float_t kFaWring2Cutoffx =  3.35;
@@ -208,7 +208,7 @@ void AliSHILv3::CreateGeometry()
 //    FA W-Ring 3                //
 //    Drawing ALIP2A__0219       //
 ///////////////////////////////////
-      const Float_t kFaWring3Rinner  = 15.40;
+      const Float_t kFaWring3Rinner  = 15.41;
       const Float_t kFaWring3Router  = 18.40;
       const Float_t kFaWring3HWidth  =  3.75;
       const Float_t kFaWring3Cutoffx =  3.35;
@@ -227,7 +227,7 @@ void AliSHILv3::CreateGeometry()
 //    FA W-Ring 5                //
 //    Drawing ALIP2A__0221       //
 ///////////////////////////////////
-      const Float_t kFaWring5Rinner = 15.40;
+      const Float_t kFaWring5Rinner = 15.41;
       const Float_t kFaWring5Router = 18.67;
       const Float_t kFaWring5HWidth =  1.08;
       TGeoVolume* voFaWring5    = new TGeoVolume("YFA_WRING5", new TGeoTube(kFaWring5Rinner, kFaWring5Router, kFaWring5HWidth), kMedNiW);
@@ -303,7 +303,7 @@ void AliSHILv3::CreateGeometry()
       TGeoPcon* shFaSaa1 = new TGeoPcon(0., 360., 8);
       z = 0;
 // Flange FA side      
-      shFaSaa1->DefineSection( 0, z, rInFaSaa1F1, rOuFaSaa1F1);
+      shFaSaa1->DefineSection( 0, z, rInFaSaa1F1, rOuFaSaa1F1 - 0.01);
       z += dzFaSaa1F1;
       shFaSaa1->DefineSection( 1, z, rInFaSaa1F1, 40.0);
       shFaSaa1->DefineSection( 2, z, rInFaSaa1S1, 40.0);
@@ -319,7 +319,7 @@ void AliSHILv3::CreateGeometry()
       shFaSaa1->DefineSection( 6, z, rInFaSaa1F2, 40.0);
 // Flange SAA1 side
       z = dzFaSaa1;
-      shFaSaa1->DefineSection( 7, z, rInFaSaa1F2, rOuFaSaa1E);
+      shFaSaa1->DefineSection( 7, z, rInFaSaa1F2, rOuFaSaa1E - 0.01);
 
 // Outer 2 deg line
       for (Int_t i  = 1; i < 7; i++) {
@@ -331,7 +331,7 @@ void AliSHILv3::CreateGeometry()
       TGeoVolume* voFaSaa1 = new TGeoVolume("YFASAA1", shFaSaa1, kMedNiWsh);
 //
 // Outer region with lower transport cuts
-      TGeoCone* shFaSaa1O   = new TGeoCone(dzFaSaa1/2., rOuFaSaa1F1 - 3.5, rOuFaSaa1F1, rOuFaSaa1E - 3.5, rOuFaSaa1E);
+      TGeoCone* shFaSaa1O   = new TGeoCone(dzFaSaa1/2., rOuFaSaa1F1 - 3.5, rOuFaSaa1F1 - 0.01, rOuFaSaa1E - 3.5, rOuFaSaa1E - 0.01);
       TGeoVolume* voFaSaa1O = new TGeoVolume("YFASAA1O", shFaSaa1O, kMedNiW);
       voFaSaa1->AddNode(voFaSaa1O, 1, new TGeoTranslation(0., 0., dzFaSaa1/2.));
       
@@ -672,15 +672,15 @@ void AliSHILv3::CreateGeometry()
 ///////////////////////////////////
       Float_t saa1Wring1Width  =  5.85;
       TGeoPcon* shSaa1Wring1    = new TGeoPcon(0., 360., 2);
-      shSaa1Wring1->DefineSection(0, 0.00           , 20.30, 23.175);
-      shSaa1Wring1->DefineSection(1, saa1Wring1Width, 20.30, 23.400);
+      shSaa1Wring1->DefineSection(0, 0.00           , 20.31, 23.175);
+      shSaa1Wring1->DefineSection(1, saa1Wring1Width, 20.31, 23.400);
       TGeoVolume* voSaa1Wring1  =  new TGeoVolume("YSAA1_WRING1", shSaa1Wring1, kMedNiW);
 
 ///////////////////////////////////
 //    SAA1 W-Ring 2              //
 //    Drawing ALIP2A__0055       //
 ///////////////////////////////////
-      Float_t saa1Wring2Rinner  = 20.30;
+      Float_t saa1Wring2Rinner  = 20.31;
       Float_t saa1Wring2Router  = 23.40;
       Float_t saa1Wring2HWidth  =  3.75;
       Float_t saa1Wring2Cutoffx =  4.45;
@@ -700,7 +700,7 @@ void AliSHILv3::CreateGeometry()
 //    Drawing ALIP2A__0216       //
 ///////////////////////////////////
 
-      Float_t saa1Wring3Rinner  = 20.30;
+      Float_t saa1Wring3Rinner  = 20.31;
       Float_t saa1Wring3Router  = 23.40;
       Float_t saa1Wring3HWidth  =  3.75;
       Float_t saa1Wring3Cutoffx =  4.50;
@@ -721,10 +721,10 @@ void AliSHILv3::CreateGeometry()
 ///////////////////////////////////
       Float_t saa1Wring4Width  =  5.85;
       TGeoPcon* shSaa1Wring4  = new TGeoPcon(0., 360., 5);
-      shSaa1Wring4->DefineSection(0, 0.00, 20.30, 23.40);
-      shSaa1Wring4->DefineSection(1, 1.00, 20.30, 23.40);
-      shSaa1Wring4->DefineSection(2, 1.00, 20.30, 24.50);      
-      shSaa1Wring4->DefineSection(3, 4.85, 20.30, 24.80);
+      shSaa1Wring4->DefineSection(0, 0.00, 20.31, 23.40);
+      shSaa1Wring4->DefineSection(1, 1.00, 20.31, 23.40);
+      shSaa1Wring4->DefineSection(2, 1.00, 20.31, 24.50);      
+      shSaa1Wring4->DefineSection(3, 4.85, 20.31, 24.80);
       shSaa1Wring4->DefineSection(4, 5.85, 24.10, 24.80);
       TGeoVolume* voSaa1Wring4  =  new TGeoVolume("YSAA1_WRING4", shSaa1Wring4, kMedNiW);
 
@@ -732,7 +732,7 @@ void AliSHILv3::CreateGeometry()
 //    SAA1 W-Ring 5              //
 //    Drawing ALIP2A__0218       //
 ///////////////////////////////////
-      Float_t saa1Wring5Rinner = 20.30;
+      Float_t saa1Wring5Rinner = 20.31;
       Float_t saa1Wring5Router = 23.40;
       Float_t saa1Wring5HWidth =  0.85;
       TGeoVolume* voSaa1Wring5    = new TGeoVolume("YSAA1_WRING5", 
