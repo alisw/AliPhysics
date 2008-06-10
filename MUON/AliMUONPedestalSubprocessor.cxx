@@ -148,7 +148,9 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("MUON TRK");
-	metaData.SetComment("Computed by AliMUONPedestalSubprocessor $Id$");
+  TString comment("Computed by AliMUONPedestalSubprocessor $Id$");
+  comment.ReplaceAll("$","");
+	metaData.SetComment(comment.Data());
   
   Bool_t validToInfinity = kTRUE;
 	Bool_t result = Master()->Store("Calib", "Pedestals", fPedestals, &metaData, 0, validToInfinity);
