@@ -371,7 +371,7 @@ void AliPIPEv3::CreateGeometry()
 //  Central beam pipe support collars
 //  LHCVC2C_0019
 //  Position at z = -46., 40., 150.
-    TGeoVolume* voCpSupC = new TGeoVolume("CpSupC", new TGeoTube(3.0, 4.0, 0.35), kMedAco);
+    TGeoVolume* voCpSupC = new TGeoVolume("CpSupC", new TGeoTube(3.051, 4.0, 0.35), kMedAco);
     voCp1->AddNode(voCpSupC, 1, new TGeoTranslation(0., 0.,  kCP1Length / 2. - 81.5));
     voCp1->AddNode(voCpSupC, 2, new TGeoTranslation(0., 0.,  kCP1Length / 2.- 191.5));
 //  Beam Pipe Protection Tube
@@ -2394,7 +2394,7 @@ void AliPIPEv3::CreateGeometry()
       const Float_t kRB26s5CompTubeInnerR    = 10.00/2.;  // Connection tubes inner radius     [Pos 2 + 3]
       const Float_t kRB26s5CompTubeOuterR    = 10.30/2.;  // Connection tubes outer radius     [Pos 2 + 3]
       const Float_t kRB26s5WeldingTubeLeftL  =  3.70/2.;  // Left connection tube half length  [Pos 2]
-      const Float_t kRB26s5WeldingTubeRightL = 13.42/2.;  // Right connection tube half length [Pos 3]   (0.3 cm added for welding)
+      const Float_t kRB26s5WeldingTubeRightL = 13.40/2.;  // Right connection tube half length [Pos 3]   (0.3 cm added for welding)
       const Float_t kRB26s5RingInnerR        = 11.2/2.;   // Ring inner radius                 [Pos 4]
       const Float_t kRB26s5RingOuterR        = 16.0/2.;   // Ring inner radius                 [Pos 4]
       const Float_t kRB26s5RingL             =  0.4/2.;   // Ring half length                  [Pos 4]
