@@ -356,8 +356,10 @@ public:
   /**
    * Vector of used clustercandidates, used so one do not use candidates multiple times
    */
-  vector<Int_t> fUsedClusterCandidates;                            //! transient
-
+  vector<Int_t> fUsedClusterCandidates;  //! transient
+  Bool_t fSelectedPad;                   //! transient
+  AliHLTUInt16_t fHWAddress;             //! transient
+ 
  private:
   /** copy constructor prohibited */
   AliHLTTPCPad(const AliHLTTPCPad&);

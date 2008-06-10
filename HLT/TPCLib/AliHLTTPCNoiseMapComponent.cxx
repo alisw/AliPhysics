@@ -232,18 +232,23 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
  
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
   
-  fHistSideA = new TH2F("fHistSideA","TPC Side A",250,-250,250,250,-250,250);		
-  fHistSideA->SetXTitle("global X (cm)"); fHistSideA->SetYTitle("global Y (cm)");
-          
-  fHistSideC = new TH2F("fHistSideC","TPC Side C",250,-250,250,250,-250,250);
-  fHistSideC->SetXTitle("global X (cm)"); fHistSideC->SetYTitle("global Y (cm)");
- 
+  if(fPlotSideA){
+     fHistSideA = new TH2F("fHistSideA","TPC Side A",250,-250,250,250,-250,250);		
+     fHistSideA->SetXTitle("global X (cm)"); fHistSideA->SetYTitle("global Y (cm)");
+  }   
+  
+  if(fPlotSideC){    
+     fHistSideC = new TH2F("fHistSideC","TPC Side C",250,-250,250,250,-250,250);
+     fHistSideC->SetXTitle("global X (cm)"); fHistSideC->SetYTitle("global Y (cm)");
+  }
+  
   const AliHLTComponentBlockData *iter = NULL;
 
-  char name[100];  
   Float_t xyz[3]; 
   Int_t thissector, thisrow;
-  
+ 
+  fHistPartition = new TH2F("fHistPartition","fHistPartition",250,-250,250,250,-250,250);
+ 
   for(iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
       
      HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
@@ -269,8 +274,8 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
      pDigitReader->InitBlock(iter->fPtr,iter->fSize,partition,slice);
      if(!pDigitReader) break;
        
-     sprintf(name,"hMaxSignal_slice%d_partition%d", slice, partition);
-     fHistPartition = new TH2F(name,name,250,-250,250,250,-250,250);
+     //sprintf(name,"hMaxSignal_slice%d_partition%d", slice, partition);
+     //fHistPartition = new TH2F(name,name,250,-250,250,250,-250,250);
             
      while( pDigitReader->Next() ){ 
      //while( pDigitReader->NextChannel()) { // pad loop 
@@ -315,7 +320,8 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
          if(slice<18) fHistSideA->Fill(xyz[0],xyz[1],maxSignal);
          else	      fHistSideC->Fill(xyz[0],xyz[1],maxSignal);			     
       } // end if plotting sides	    
-     } // end of while loop
+     } // end of while loop  
+     delete pDigitReader;
   } // end of for loop over data blocks
  
   if(fResetHistograms) ResetHistograms();
@@ -349,16 +355,16 @@ void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
   //PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram, fSpecification);    
  
   delete fHistPartition;
-  delete fHistSideA; 
-  delete fHistSideC;
+  if(fHistSideA) delete fHistSideA; fHistSideA=NULL;
+  if(fHistSideC) delete fHistSideC; fHistSideC=NULL;
 }
 
 void AliHLTTPCNoiseMapComponent::ResetHistograms(){
 // see header file for class documentation
 
   fHistPartition->Reset();
-  fHistSideA->Reset();
-  fHistSideC->Reset();
+  if(fHistSideA) fHistSideA->Reset();
+  if(fHistSideC) fHistSideC->Reset();
 }
 
 int AliHLTTPCNoiseMapComponent::Configure(const char* arguments) { 

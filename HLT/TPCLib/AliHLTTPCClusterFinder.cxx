@@ -44,6 +44,8 @@ ClassImp(AliHLTTPCClusterFinder)
 
 AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   :
+  fClustersHWAddressVector(),
+  fRowPadVector(),
   fSpacePointData(NULL),
   fDigitReader(NULL),
   fPtr(NULL),
@@ -69,11 +71,11 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fOccupancyLimit(1.0),
   fUnsorted(0),
   fVectorInitialized(kFALSE),
-  fRowPadVector(),
   fClusters(),
   fNumberOfPadsInRow(NULL),
   fNumberOfRows(0),
-  fRowOfFirstCandidate(0)
+  fRowOfFirstCandidate(0),
+  fDoPadSelection(kFALSE)
 {
   //constructor  
 }
@@ -721,6 +723,26 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
       cluster->fPad+=candidate->fPad;
       cluster->fPad2=candidate->fPad2;
       cluster->fLastMergedPad=candidate->fPad;
+            
+      //cout<<"Adding "<<candidate->fTotalCharge<<"   to the pad "<<nextPad->GetPadNumber()<<"  row: "<<nextPad->GetRowNumber()<<"   HWAddress: "<<(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(nextPad->GetRowNumber(),nextPad->GetPadNumber())<<endl;
+
+      if(fDoPadSelection){
+       UInt_t rowNo = nextPad->GetRowNumber();
+       UInt_t padNo = nextPad->GetPadNumber();
+       if(padNo-1>0){
+	 fRowPadVector[rowNo][padNo-2]->fSelectedPad=kTRUE;
+	 fRowPadVector[rowNo][padNo-2]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo-2);
+       }
+       fRowPadVector[rowNo][padNo-1]->fSelectedPad=kTRUE;// quick solution to set the first pad to selected
+       fRowPadVector[rowNo][padNo-1]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo-1);
+       fRowPadVector[rowNo][padNo]->fSelectedPad=kTRUE;
+       fRowPadVector[rowNo][padNo]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo);
+       /*      if(padNo+1<(Int_t)fNumberOfPadsInRow[fRowOfFirstCandidate]){
+	 fRowPadVector[rowNo][padNo]->fSelectedPad=kTRUE;
+	 fRowPadVector[rowNo][padNo]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo);
+	 }*/
+       //      cout<<"We have an active pad in row: "<<rowNo<<"  pad: "<<padNo<<"   hwadd: "<<(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo)<<endl;
+      }
 
       //setting the matched pad to used
       nextPad->fUsedClusterCandidates[candidateNumber]=1;
@@ -738,6 +760,26 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
     }
   }
   return kFALSE;
+}
+
+Int_t AliHLTTPCClusterFinder::FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t maxHWadd){
+  Int_t counter=0;
+  for(UInt_t row=0;row<fNumberOfRows;row++){
+    for(UInt_t pad=0;pad<fNumberOfPadsInRow[row]-1;pad++){
+      if(fRowPadVector[row][pad]->fSelectedPad){
+       if(counter<maxHWadd){
+	 hwaddlist[counter]=(AliHLTUInt16_t)fRowPadVector[row][pad]->fHWAddress;
+	 //cout<<"Filling the f.. hardwareaddress: "<<fRowPadVector[row][pad]->fHWAddress<<endl;
+	 counter++;
+       }
+       else{
+	 HLTWarning("To many hardwareaddresses, skip adding");
+       }
+       
+      }
+    }
+  }  
+  return counter;
 }
 
 void AliHLTTPCClusterFinder::FindClusters()

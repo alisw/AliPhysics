@@ -137,7 +137,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	 */
 	Int_t fGetActivePads;                                                          //!transient
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 3)
+	ClassDef(AliHLTTPCClusterFinderComponent, 4)
 
 };
 #endif

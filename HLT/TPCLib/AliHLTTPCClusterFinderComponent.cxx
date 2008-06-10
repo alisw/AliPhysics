@@ -122,6 +122,7 @@ int AliHLTTPCClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataTypeL
   // see header file for class documentation
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
+  tgtList.push_back(kAliHLTDataTypeHwAddr16);
   return tgtList.size();
 }
 
@@ -429,6 +430,10 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       fClusterFinder->SetOutputArray( (AliHLTTPCSpacePointData*)outPtr->fSpacePoints );
 	
       if(fUnsorted){
+      	if(fGetActivePads){
+	  fClusterFinder->SetDoPadSelection(kTRUE);
+	}
+
 	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
 
 	fClusterFinder->FindClusters();
@@ -467,6 +472,26 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 		   tSize, size );
 	  return EMSGSIZE;
 	}
+	
+      if(fUnsorted && fGetActivePads){
+       Int_t maxNumberOfHW=(Int_t)((size-tSize)/sizeof(AliHLTUInt16_t)-1);
+       AliHLTUInt16_t* outputHWPtr= (AliHLTUInt16_t*)(outputPtr+tSize);
+       Int_t nHWAdd = fClusterFinder->FillHWAddressList(outputHWPtr, maxNumberOfHW);
+      
+       //cout<<"Number of hardwareaddresses: "<<nHWAdd<<endl;
+       for(AliHLTUInt16_t test=0;test<nHWAdd;test++){
+	 //cout<<"The HW address is: "<<(AliHLTUInt16_t)outputHWPtr[test]<<endl;
+       }
+       AliHLTComponentBlockData bdHW;
+       FillBlockData( bdHW );
+       bdHW.fOffset = tSize ;
+       bdHW.fSize = nHWAdd*sizeof(AliHLTUInt16_t);
+       bdHW.fSpecification = iter->fSpecification;
+       bdHW.fDataType = kAliHLTDataTypeHwAddr16;
+       outputBlocks.push_back( bdHW );
+       
+       tSize+=nHWAdd*sizeof(AliHLTUInt16_t);
+      }
     }
     
   size = tSize;

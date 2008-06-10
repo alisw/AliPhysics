@@ -155,6 +155,17 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void InitializePadArray();
   Int_t DeInitializePadArray();
   Bool_t ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* candidate,Int_t nextPadToRead);
+
+  void SetDoPadSelection(Bool_t input){fDoPadSelection=input;}
+  
+  Int_t FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t maxHWAddress);
+  
+  vector<AliHLTUInt16_t> fClustersHWAddressVector;  //! transient
+  
+  typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
+  
+  vector<AliHLTTPCPadVector> fRowPadVector;	 //! transient
+ 
  protected: 
   /** copy constructor prohibited */
   AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
@@ -194,9 +205,9 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t fUnsorted;       // enable for processing of unsorted digit data
   Bool_t fVectorInitialized;
 
-  typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
+  //typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
 
-  vector<AliHLTTPCPadVector> fRowPadVector;                        //! transient
+  //vector<AliHLTTPCPadVector> fRowPadVector;                        //! transient
 
   vector<AliHLTTPCClusters> fClusters;                             //! transient
   
@@ -204,13 +215,15 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   UInt_t fNumberOfRows;                                            //! transient
   
-  UInt_t fRowOfFirstCandidate;
+  UInt_t fRowOfFirstCandidate;  				   //! transient
+
+  Bool_t fDoPadSelection;					   //! transient
 
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,4) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,5) //Fast cluster finder
 };
 #endif

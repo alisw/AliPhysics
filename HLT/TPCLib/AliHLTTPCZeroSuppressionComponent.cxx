@@ -423,7 +423,9 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   //  HLTDebug("Max number of signals: %d",size/sizeof(Int_t));
 
-  if(wasInput && fHwAddressList.size()>0){
+  if(wasInput>0){
+  //if(wasInput && fHwAddressList.size()>0){
+  
     AliHLTAltroEncoder altroEncoder;
     altroEncoder.SetBuffer(outputPtr,size); //tests if one overwrite the buffer is done in the encoder
 
@@ -496,6 +498,8 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
     
     size = dataOffsetBeforeHW+sizeOfHWArray;
 
+  } else {
+    size=0;
   }
   return 0;
 }

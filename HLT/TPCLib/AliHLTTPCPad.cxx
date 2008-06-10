@@ -56,6 +56,8 @@ AliHLTTPCPad::AliHLTTPCPad()
   :
   fClusterCandidates(),
   fUsedClusterCandidates(),
+  fSelectedPad(kFALSE),
+  fHWAddress(0),
   fRowNo(-1),
   fPadNo(-1),
   fThreshold(0),
@@ -98,6 +100,8 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t dummy)
   :
   fClusterCandidates(),
   fUsedClusterCandidates(),
+  fSelectedPad(kFALSE),
+  fHWAddress(0),
   fRowNo(-1),
   fPadNo(-1),
   fThreshold(0),
@@ -133,6 +137,8 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   :
   fClusterCandidates(),
   fUsedClusterCandidates(),
+  fSelectedPad(kFALSE),
+  fHWAddress(0),
   fRowNo(-1),
   fPadNo(-1),
   fThreshold(0),
