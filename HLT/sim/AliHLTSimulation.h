@@ -31,7 +31,41 @@ class AliRawReader;
 
 /**
  * @class AliHLTSimulation
- * Base class of HLT data processing simulations.
+ * Plugin for HLT reconstruction embedded into <tt>AliSimulation</tt>.
+ *
+ * HLT has a special role in the normal data flow  of simulation and
+ * reconstruction. Since the HLT reconstruction and analysis runs on-line
+ * on the HLT farm, the raw data produced by HLT as a detector contains
+ * already reconstructed events. Consequently, the HLT response has to be
+ * simulated as well as the data of all other detectors. Since the detector
+ * data is needed, the HLT simulation is run at the end of AliSimulation.
+ * As a matter of fact, HLT always reconstructs data, <em><b>HLT simulation
+ * </b></em> means <em><b>HLT reconstruction embedded into AliRoot</b></em>.
+ *
+ * The AliHLTSimulation class is the steering class called from AliSimulation.
+ * An instance of AliHLTSystem is used to run the chains defined by the
+ * available libraries or a configuration macro.
+ *
+ * The libraries to be loaded can be specified as an option to AliSimulation.
+ * <pre>
+ * AliSimulation sim;
+ * sim.SetRunHLT("libAliHLTSample.so");
+ * </pre>
+ * will only load <tt>libAliHLTSample.so</tt>
+ *
+ * Other available options:
+ * \li loglevel=<i>level</i>                                            <br>
+ *     logging level for this processing, default level is 0x79 filtering
+ *     out everything below level 'warning'. 0x7c allows info messages as
+ *     well, 0x3f is the highest loglevel.
+ * \li alilog=off                                                       <br>
+ *     disable redirection of log messages to AliLog class
+ * \li config=<i>macro</i>                                              <br>
+ *     configuration macro: normal ROOT macro defining HLT component
+ *     configurations by means of AliHLTConfiguration.
+ * \li chains=<i>configuration</i>                                      <br>
+ *     comma separated list of configurations to be run during simulation
+ *
  */
 class AliHLTSimulation : public TObject {
  public:

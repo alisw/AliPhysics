@@ -46,8 +46,8 @@ class AliHLTModulePreprocessor;
  * @note There must not be more than one agent per module/library.
  *
  * If a run loader is available, reconstruction is performed on simulated
- * data as part of <tt>AliSimulation</tt>, if the raw reader is present on
- * raw data as part of <tt>AliReconstruction</tt>. The configurations
+ * data as part of <tt>AliSimulation</tt>, if only the raw reader is present,
+ * on raw data as part of <tt>AliReconstruction</tt>. The configurations
  * can adapt to the two cases.
  *
  * All HLT component libraries are loaded on demand through the HLT steering
@@ -70,8 +70,8 @@ class AliHLTModulePreprocessor;
  *       Create HLT configuration forming an HLT analysis chain.            <br>
  *       Reconstruction of raw data or simulated data from digits needs
  *       usually different configurations. If a run loader is available,
- *       reconstruction is performed on simulated data, on raw data if the
- *       raw reader is present.
+ *       reconstruction is performed on simulated data, on raw data if Run
+ *       loader is NULL and only the raw reader present.
  *
  * - @ref GetReconstructionChains                                           <br>
  *       Configurations run during event reconstruction.                    <br>
@@ -158,9 +158,11 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * AliHLTConfigurationHandler. The agent can adapt the configurations
    * to be registered to the current AliRoot setup by checking the
    * runloader and the raw reader. <br>
-   * Run loader and raw reader are usually not present at the same time.
-   * If a run loader is available, reconstruction is performed on simulated
-   * data, if the raw reader is present on raw data. The configurations
+   * The presence of Run loader and raw reader determines the mode of the
+   * HLT reconstruction. If a run loader is available, reconstruction is
+   * performed on simulated data, a raw reader might be available in that
+   * case also. When running embedded into AliReconstruction, the Run loader
+   * is always NULL and the raw gives access to data. The configurations
    * can adapt to the two cases.
    *
    * @param handler   [in] the configuration handler
