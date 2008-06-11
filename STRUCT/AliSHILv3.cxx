@@ -355,8 +355,8 @@ void AliSHILv3::CreateGeometry()
       Float_t rInSaa1StEnv2 = 41.7/2.;
       Float_t rOuSaa1StEnv2 = rInSaa1StEnv2 + dSt / TMath::Cos(2.0 * kDegRad) - 0.05;
 // 3         
-      Float_t rOuSaa1StEnv3 = 57.6/2.;
-      Float_t rInSaa1StEnv3 = rOuSaa1StEnv3 - dSt - 0.05;
+      Float_t rOuSaa1StEnv3 = 57.6/2.; 
+      Float_t rInSaa1StEnv3 = rOuSaa1StEnv3 - dSt + 0.05;
 // 4
       Float_t rInSaa1StEnv4 = 63.4/2.;
       Float_t rOuSaa1StEnv4 = rInSaa1StEnv4 + dSt / TMath::Cos(1.6 * kDegRad) - 0.05;
@@ -641,12 +641,12 @@ void AliSHILv3::CreateGeometry()
       shSaa1M->DefineSection(14, z, 0.,    rmaxSaa1);
       shSaa1M->DefineSection(15, z, rmax,  rmaxSaa1);
       z = zSaa1StRing;     
-      shSaa1M->DefineSection(16, z, rmax, rOuSaa1String);
+      shSaa1M->DefineSection(16, z, rmax + 0.4, rOuSaa1String);
       z += dzSaa1PbCompF1;
-      shSaa1M->DefineSection(17, z, rmax, rOuSaa1String);
-      shSaa1M->DefineSection(18, z, rmax, rOuSaa1PbCompF3);
+      shSaa1M->DefineSection(17, z, rmax + 0.4, rOuSaa1String);
+      shSaa1M->DefineSection(18, z, rmax + 0.4, rOuSaa1PbCompF3);
       z += dzSaa1PbCompF2;
-      shSaa1M->DefineSection(19, z, rmax, rOuSaa1PbCompF3);
+      shSaa1M->DefineSection(19, z, rmax + 0.4, rOuSaa1PbCompF3);
 
 //
 //    Inner 1.69deg line
