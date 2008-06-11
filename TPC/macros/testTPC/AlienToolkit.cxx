@@ -38,9 +38,9 @@
   //
   AlienToolkit toolkit;
   toolkit.MakeCollection(path,mask); // make a list of the registerd data
-  toolkit.StageCastor();    // stage files on castor
+  //toolkit.StageCastor();    // stage files on castor
   //
-  toolkit.MakeJobList("job.list","", "", "rec");
+  toolkit.MakeJobList("job.list","", "", "FindKrClustersRaw");
 
 */
 
@@ -193,10 +193,10 @@ void AlienToolkit::StageCastor(){
     gSystem->Exec(command);    
     sprintf(command,"stager_get -M %s", cstr);
     aout<<command<<endl;
-    gSystem->Exec(command);
+    //gSystem->Exec(command);
   }
   aout.close();
-  gSystem->Exec("source stage.sh");
+  //gSystem->Exec("source stage.sh &");
 }
 
 void AlienToolkit::LocalCopy(const char *destination){
