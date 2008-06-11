@@ -40,7 +40,9 @@ ClassImp(AliPMDCalibPedestal)
 
 
 AliPMDCalibPedestal::AliPMDCalibPedestal() :
-  TObject()
+  TObject(),
+  fRunNumber(-1),
+  fEventNumber(0)
 {
     //
     // default constructor
@@ -57,7 +59,20 @@ AliPMDCalibPedestal::AliPMDCalibPedestal() :
 		    fPedVal[i][j][k][l]   = 0.;
 		    fPedValSq[i][j][k][l] = 0.;
 		    fPedCount[i][j][k][l] = 0.;
-		    fPedChain[i][j][k][l] = 0;
+		}
+	    }
+	}
+    }
+
+    for (int i = 0; i < 6; i++)
+    {
+	for (int j = 0; j < 51; j++)
+	{
+	    for (int k = 0; k < 25; k++)
+	    {
+		for (int l = 0; l < 64; l++)
+		{
+		    fPedChain[i][j][k][l] = -1;
 		}
 	    }
 	}
@@ -67,7 +82,9 @@ AliPMDCalibPedestal::AliPMDCalibPedestal() :
 }
 //_____________________________________________________________________
 AliPMDCalibPedestal::AliPMDCalibPedestal(const AliPMDCalibPedestal &ped) :
-  TObject(ped)
+  TObject(ped),
+  fRunNumber(ped.fRunNumber),
+  fEventNumber(ped.fEventNumber)
 {
     //
     // copy constructor
@@ -83,7 +100,20 @@ AliPMDCalibPedestal::AliPMDCalibPedestal(const AliPMDCalibPedestal &ped) :
 		    fPedVal[i][j][k][l]   = ped.fPedVal[i][j][k][l];
 		    fPedValSq[i][j][k][l] = ped.fPedValSq[i][j][k][l];
 		    fPedCount[i][j][k][l] = ped.fPedCount[i][j][k][l];
-		    fPedChain[i][j][k][l] = ped.fPedChain[i][j][k][l];
+		}
+	    }
+	}
+    }
+
+    for (int i = 0; i < 6; i++)
+    {
+	for (int j = 0; j < 51; j++)
+	{
+	    for (int k = 0; k < 25; k++)
+	    {
+		for (int l = 0; l < 64; l++)
+		{
+		    fPedChain[i][j][k][l] = -1;
 		}
 	    }
 	}
@@ -109,7 +139,7 @@ AliPMDCalibPedestal::~AliPMDCalibPedestal()
     //
 }
 //_____________________________________________________________________
-Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
+Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlcont)
 {
   //
   //  Event processing loop - AliRawReader
@@ -117,22 +147,25 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 
     const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
 
-    UInt_t busmcmch;
+    UInt_t detsmnrowcol;
     UInt_t pbus, mcm, chno;
+
+    fRunNumber = rawReader->GetRunNumber();
 
     AliPMDRawStream rawStream(rawReader);
 
-    TObjArray pmdddlcont;
+    fEventNumber++;
+
     Int_t iddl = -1;
     Int_t numberofDDLs = 0;
 
-    while ((iddl = rawStream.DdlData(&pmdddlcont)) >=0) {
+    while ((iddl = rawStream.DdlData(pmdddlcont)) >=0) {
       numberofDDLs++;
-      Int_t ientries = pmdddlcont.GetEntries();
+      Int_t ientries = pmdddlcont->GetEntries();
       //printf("iddl = %d ientries = %d\n",iddl, ientries);
       for (Int_t ient = 0; ient < ientries; ient++)
 	{
-	    AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
+	    AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont->UncheckedAt(ient);
 	    
 	    Int_t det = pmdddl->GetDetector();
 	    Int_t smn = pmdddl->GetSMN();
@@ -144,21 +177,23 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 	    mcm  = (UInt_t) pmdddl->GetMCM();
 	    chno = (UInt_t) pmdddl->GetChannel();
 
-	    busmcmch = 0;
-	    AliBitPacking::PackWord(chno,busmcmch,0,7);
-	    AliBitPacking::PackWord(mcm,busmcmch,8,15);
-	    AliBitPacking::PackWord(pbus,busmcmch,16,23);
+	    detsmnrowcol = 0;
+	    AliBitPacking::PackWord(det,detsmnrowcol,0,7);
+	    AliBitPacking::PackWord(smn,detsmnrowcol,8,15);
+	    AliBitPacking::PackWord(row,detsmnrowcol,16,23);
+	    AliBitPacking::PackWord(col,detsmnrowcol,24,31);
 
+	    if (fPedChain[iddl][pbus][mcm][chno] == -1)
+		fPedChain[iddl][pbus][mcm][chno] = (Int_t)detsmnrowcol;
 
-	    if (fPedChain[det][smn][row][col] == 0)
-		fPedChain[det][smn][row][col]   = busmcmch;
 
 	    fPedVal[det][smn][row][col]   += sig;
 	    fPedValSq[det][smn][row][col] += sig*sig;
 	    fPedCount[det][smn][row][col]++;
 	}
-      pmdddlcont.Delete();
+      pmdddlcont->Delete();
     }
+
     if (numberofDDLs < kDDL)
       return kFALSE;
     return kTRUE;
@@ -171,6 +206,12 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
     //  Calculate pedestal Mean and RMS
     //
 
+    UInt_t  detsmnrowcol;
+    Int_t   det, sm, row, col;
+    Int_t   idet, ism, irow, icol;
+    Float_t mean, rms;
+    Float_t meansq, diff;
+
     FILE *fpw0 = fopen("pedestal2304.ped","w");
     FILE *fpw1 = fopen("pedestal2305.ped","w");
     FILE *fpw2 = fopen("pedestal2306.ped","w");
@@ -178,14 +219,141 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
     FILE *fpw4 = fopen("pedestal2308.ped","w");
     FILE *fpw5 = fopen("pedestal2309.ped","w");
 
-    UInt_t  busmcmch;
-    UInt_t  pbus, mcm, chno;
-    Int_t   ddlno;
-    Int_t   det, sm, row, col;
-    Float_t mean, rms;
-    Float_t meansq, diff;
+    fprintf(fpw0,"//=============================================\n");
+    fprintf(fpw0,"//     Pedestal file Calculated by Online DA\n");
+    fprintf(fpw0,"//=============================================\n");
+    fprintf(fpw0,"//     RUN             :%d\n",fRunNumber);
+    fprintf(fpw0,"//     Statistics      :%d\n",fEventNumber);
+    fprintf(fpw0,"//---------------------------------------------\n");
+    fprintf(fpw0,"//format:CHAIN_NO  FEE_ID  CHANNEL  MEAN  SIGMA\n");
+    fprintf(fpw0,"//---------------------------------------------\n");
+
+    fprintf(fpw1,"//=============================================\n");
+    fprintf(fpw1,"//     Pedestal file Calculated by Online DA\n");
+    fprintf(fpw1,"//=============================================\n");
+    fprintf(fpw1,"//     RUN             :%d\n",fRunNumber);
+    fprintf(fpw1,"//     Statistics      :%d\n",fEventNumber);
+    fprintf(fpw1,"//---------------------------------------------\n");
+    fprintf(fpw1,"//format:CHAIN_NO  FEE_ID  CHANNEL  MEAN  SIGMA\n");
+
+    fprintf(fpw2,"//=============================================\n");
+    fprintf(fpw2,"//     Pedestal file Calculated by Online DA\n");
+    fprintf(fpw2,"//=============================================\n");
+    fprintf(fpw2,"//     RUN             :%d\n",fRunNumber);
+    fprintf(fpw2,"//     Statistics      :%d\n",fEventNumber);
+    fprintf(fpw2,"//---------------------------------------------\n");
+    fprintf(fpw2,"//format:CHAIN_NO  FEE_ID  CHANNEL  MEAN  SIGMA\n");
+    fprintf(fpw2,"//---------------------------------------------\n");
+
+    fprintf(fpw3,"//=============================================\n");
+    fprintf(fpw3,"//     Pedestal file Calculated by Online DA\n");
+    fprintf(fpw3,"//=============================================\n");
+    fprintf(fpw3,"//     RUN             :%d\n",fRunNumber);
+    fprintf(fpw3,"//     Statistics      :%d\n",fEventNumber);
+    fprintf(fpw3,"//---------------------------------------------\n");
+    fprintf(fpw3,"//format:CHAIN_NO  FEE_ID  CHANNEL  MEAN  SIGMA\n");
+    fprintf(fpw3,"//---------------------------------------------\n");
+
+    fprintf(fpw4,"//=============================================\n");
+    fprintf(fpw4,"//     Pedestal file Calculated by Online DA\n");
+    fprintf(fpw4,"//=============================================\n");
+    fprintf(fpw4,"//     RUN             :%d\n",fRunNumber);
+    fprintf(fpw4,"//     Statistics      :%d\n",fEventNumber);
+    fprintf(fpw4,"//---------------------------------------------\n");
+    fprintf(fpw4,"//format:CHAIN_NO  FEE_ID  CHANNEL  MEAN  SIGMA\n");
+    fprintf(fpw4,"//---------------------------------------------\n");
+
+    fprintf(fpw5,"//=============================================\n");
+    fprintf(fpw5,"//     Pedestal file Calculated by Online DA\n");
+    fprintf(fpw5,"//=============================================\n");
+    fprintf(fpw5,"//     RUN             :%d\n",fRunNumber);
+    fprintf(fpw5,"//     Statistics      :%d\n",fEventNumber);
+    fprintf(fpw5,"//---------------------------------------------\n");
+    fprintf(fpw5,"//format:CHAIN_NO  FEE_ID  CHANNEL  MEAN  SIGMA\n");
+    fprintf(fpw5,"//---------------------------------------------\n");
 
 
+    for(Int_t iddl = 0; iddl < 6; iddl++)
+      {
+	for(Int_t ibus = 1; ibus < 51; ibus++)
+	  {
+	    for(Int_t imcm = 1; imcm < 25; imcm++)
+	      {
+		for(Int_t ich = 0; ich < 64; ich++)
+		  {
+
+		    if (fPedChain[iddl][ibus][imcm][ich] != -1)
+		      {
+			detsmnrowcol = (UInt_t)fPedChain[iddl][ibus][imcm][ich];
+
+			idet =  detsmnrowcol & 0x00FF;
+			ism  = (detsmnrowcol >> 8) & 0x00FF;
+			irow = (detsmnrowcol >> 16) & 0x00FF;
+			icol = (detsmnrowcol >> 24) & 0x00FF;
+			
+			mean = 0.;
+			rms  = 0.;
+			if (fPedCount[idet][ism][irow][icol] > 0)
+			  {
+			    mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+			    
+			    meansq = fPedValSq[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+			    
+			    diff = meansq - mean*mean;
+			    if (diff > 0.)
+			      {
+				rms  = sqrt(diff);
+			      }
+			    else
+			      {
+				rms = 0.;
+			      }
+
+
+			    if (iddl == 0)
+			      {
+				fprintf(fpw0,"%d %d %d %f %f\n",
+					ibus, imcm, ich, mean, rms);
+			      }
+			    else if (iddl == 1)
+			      {
+				fprintf(fpw1,"%d %d %d %f %f\n",
+					ibus, imcm, ich, mean, rms);
+			      }
+			    else if (iddl == 2)
+			      {
+				fprintf(fpw2,"%d %d %d %f %f\n",
+					ibus, imcm, ich, mean, rms);
+			      }
+			    else if (iddl == 3)
+			      {
+				fprintf(fpw3,"%d %d %d %f %f\n",
+					ibus, imcm, ich, mean, rms);
+			      }
+			    else if (iddl == 4)
+			      {
+				fprintf(fpw4,"%d %d %d %f %f\n",
+					ibus, imcm, ich, mean, rms);
+			      }
+			    else if (iddl == 5)
+			      {
+				fprintf(fpw5,"%d %d %d %f %f\n",
+					ibus, imcm, ich, mean, rms);
+			      }
+			  }
+		      }
+		  }
+	      }
+	  }
+      }
+    
+
+    fclose(fpw0);
+    fclose(fpw1);
+    fclose(fpw2);
+    fclose(fpw3);
+    fclose(fpw4);
+    fclose(fpw5);
 
     pedtree->Branch("det",&det,"det/I");
     pedtree->Branch("sm",&sm,"sm/I");
@@ -194,128 +362,42 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
     pedtree->Branch("mean",&mean,"mean/F");
     pedtree->Branch("rms",&rms,"rms/F");
 
-    for (int idet = 0; idet < kDet; idet++)
-    {
-	for (int ism = 0; ism < kMaxSMN; ism++)
-	{
-	    ConvertDDL(idet,ism,ddlno);
-	    for (int irow = 0; irow < kMaxRow; irow++)
-	    {
-		for (int icol = 0; icol < kMaxCol; icol++)
-		{
+    for (idet = 0; idet < kDet; idet++)
+      {
+	for (ism = 0; ism < kMaxSMN; ism++)
+	  {
+	    for (irow = 0; irow < kMaxRow; irow++)
+	      {
+		for (icol = 0; icol < kMaxCol; icol++)
+		  {
 		    det  = idet;
 		    sm   = ism;
 		    row  = irow;
 		    col  = icol;
 		    mean = 0.;
 		    rms  = 0.;
-
+		    
 		    if (fPedCount[idet][ism][irow][icol] > 0)
-		    {
-		      mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
-
-		      meansq = fPedValSq[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
-
+		      {
+			mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+			
+			meansq = fPedValSq[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+			
 			diff = meansq - mean*mean;
 			if (diff > 0.)
-			{
+			  {
 			    rms  = sqrt(diff);
-			}
+			  }
 			else
-			{
+			  {
 			    rms = 0.;
-			}
+			  }
 			pedtree->Fill();
-
-			busmcmch = fPedChain[idet][ism][irow][icol];
-
-			chno = busmcmch & 0x00FF;
-			mcm  = (busmcmch >> 8) & 0x00FF;
-			pbus = (busmcmch >> 16) & 0x00FF;
-			
-			if (ddlno == 0)
-			{
-			    fprintf(fpw0,"%d %d %d %f %f\n",
-				    pbus, mcm, chno, mean, rms);
-			}
-			else if (ddlno == 1)
-			{
-			    fprintf(fpw1,"%d %d %d %f %f\n",
-				    pbus, mcm, chno, mean, rms);
-			}
-			else if (ddlno == 2)
-			{
-			    fprintf(fpw2,"%d %d %d %f %f\n",
-				    pbus, mcm, chno, mean, rms);
-			}
-			else if (ddlno == 3)
-			{
-			    fprintf(fpw3,"%d %d %d %f %f\n",
-				    pbus, mcm, chno, mean, rms);
-			}
-			else if (ddlno == 4)
-			{
-			    fprintf(fpw4,"%d %d %d %f %f\n",
-				    pbus, mcm, chno, mean, rms);
-			}
-			else if (ddlno == 5)
-			{
-			    fprintf(fpw5,"%d %d %d %f %f\n",
-				    pbus, mcm, chno, mean, rms);
-			}
-			
-		    }
+		      }
 		    
-		}
-	    }
-	}
-    }
-    
-    fclose(fpw0);
-    fclose(fpw1);
-    fclose(fpw2);
-    fclose(fpw3);
-    fclose(fpw4);
-    fclose(fpw5);
+		  }
+	      }
+	  }
+      }
 }
-
-
 // -------------------------------------------------------------------
-
-void AliPMDCalibPedestal::ConvertDDL(Int_t det, Int_t smn, Int_t &ddlno)
-{
-// Given the plane number and serial module number, ddlno is calculated
-
-    if (det == 0)
-    {
-	if (smn <= 5)
-	{
-	    ddlno = 0;
-	}
-	else if (smn > 5 && smn <= 11)
-	{
-	    ddlno = 1;
-	}
-	else if (smn > 11 && smn <= 17)
-	{
-	    ddlno = 2;
-	}
-	else if (smn > 17 && smn <= 23)
-	{
-	    ddlno = 3;
-	}
-    }
-    else if (det == 1)
-    {
-	if (smn <= 5 || (smn >= 18 && smn <=23))
-	{
-	    ddlno = 4;
-	}
-	else if (smn >= 6 && smn <= 17)
-	{
-	    ddlno = 5;
-	}
-    }
-
-}
-

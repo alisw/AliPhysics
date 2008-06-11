@@ -53,9 +53,9 @@ int main(int argc, char **argv) {
     
     AliPMDCalibPedestal calibped;
 
-    TTree *ped  = new TTree("ped","PMD Pedestal tree");
+    TTree *ped = NULL;
 
-    TH1F::AddDirectory(0);
+    //    TH1F::AddDirectory(0);
   
       
     // decoding the events
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 
 
     struct eventHeaderStruct *event;
-    eventTypeType eventT;
+    eventTypeType eventT = 0;
     Int_t iev=0;
     
     /* main loop (infinite) */
@@ -138,8 +138,11 @@ int main(int argc, char **argv) {
 		printf(" event number = %i \n",iev);
 		//if (iev == 10) break;
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-		calibped.ProcessEvent(rawReader);
+		TObjArray *pmdddlcont = new TObjArray();
+		calibped.ProcessEvent(rawReader,pmdddlcont);
 		
+		delete pmdddlcont;
+		pmdddlcont = 0;
 		delete rawReader;
 		rawReader = 0x0;
 	}
@@ -148,26 +151,20 @@ int main(int argc, char **argv) {
 	free(event);
 	
 	/* exit when last event received, no need to wait for TERM signal */
-	if (eventT==END_OF_RUN) {
-	    printf("EOR event detected\n");
-	    calibped.Analyse(ped);
-	    break;
-	}
 
-	/*
-	if (iev == 10) {
-	    printf("EOR event detected\n");
-	    calibped.Analyse(ped);
-	    break;
-	}
-	*/
     }
     
+    if (eventT==END_OF_RUN) {
+      printf("EOR event detected\n");
+      ped = new TTree("ped","PMD Pedestal tree");
+      calibped.Analyse(ped);
+    }
     
     TFile * pedRun = new TFile ("PMD_PED.root","RECREATE"); 
     ped->Write();
     pedRun->Close();
 
-
+    delete ped;
+    ped = 0;
     return status;
 }
