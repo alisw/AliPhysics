@@ -1,7 +1,7 @@
 #include <fstream>
 #include <TFile.h>
 #include <TSystem.h>
-
+#include <TMap.h>
 
 /*
 
@@ -28,8 +28,11 @@ jobs.ProcessAllJobs();
 class AliTPCJobs : public TNamed{
 public:
   AliTPCJobs();
+  void GetListOfJobs();
+
   void ProcessAllJobs();
   Bool_t GetNextJob();
+  Bool_t GetNextJobOld();
   void ProcessJob(TString jobID, TString inputData, TString outputDir, TString   action);
   
   void    SetLock(TString jobID);
@@ -42,9 +45,12 @@ public:
   Bool_t  IsFail(TString jobID);
   Bool_t  IsStaged(TString inputData);
   Bool_t  IsCastorFile(TString filename);
-
+  //
+  //
   TString  fJobFile;
   TString  fWorkDir;
+  TObjArray fJobInfo;  // array of job infos
+
   ClassDef(AliTPCJobs,0)
 };
 
@@ -52,16 +58,50 @@ public:
 
 AliTPCJobs::AliTPCJobs(){
   // 
-  //
+  // load neccessary libraries 
   //
   gSystem->Load("libXrdClient.so");
   gSystem->Load("libNetx.so");
 }
 
+void AliTPCJobs::GetListOfJobs(){
+  //
+  // char * fJobFile ="job.list"
+  //
+  //  Update the list of jobs - using the "local file"
+  //
+  ifstream ins;
+  ins.open(fJobFile);
+  char line[10000];
+  TObjArray *arrayList=0;
+  while(ins.good()) {
+    ins.getline(line,10000);
+    //printf("%s\n",line);     
+    arrayList = (TString(line)).Tokenize(" ");
+    if (arrayList->GetEntries()>3){
+      TObjString * jobID = (TObjString*)arrayList->At(0);
+      TMap *map =  (TMap*)fJobInfo.FindObject(jobID->GetName());
+      if (!map) {
+	map = new TMap();
+	map->SetName(jobID->GetName());
+	fJobInfo.AddLast(map);
+	map->Add(new TObjString("Input"),arrayList->At(1));
+	map->Add(new TObjString("Output"),arrayList->At(2));
+	map->Add(new TObjString("Action"),arrayList->At(3));
+	map->Add(new TObjString("Status"),new TObjString("0"));	
+      }
+    }else{
+      delete arrayList;
+    }
+  }
+}
+
+
 void AliTPCJobs::ProcessAllJobs(){
   //
   //
   //
+  GetListOfJobs();
   Int_t counter=0;
   while (GetNextJob()){
     //
@@ -73,6 +113,48 @@ void AliTPCJobs::ProcessAllJobs(){
 
 
 Bool_t AliTPCJobs::GetNextJob(){
+  //
+  // GetNextJob  - get job from the list which is not locked
+  //
+  TString id;
+  TString inputData;
+  TString outputDir;
+  TString action;
+  TString status;  
+	
+  Bool_t hasJob=kFALSE;
+  Int_t entries  = fJobInfo.GetEntries();	
+  TMap *map=0;
+  for (Int_t i=0; i<entries; i++){
+    map = (TMap*)fJobInfo.At(i);
+    status=(*map)("Status")->GetName();
+    id=map->GetName();
+    inputData=(*map)("Input")->GetName();
+    outputDir=(*map)("Output")->GetName();
+    action=(*map)("Action")->GetName();
+    if (status.Contains("1")) continue;
+//    if (IsFail(id)) continue;
+    if (!IsLocked(id)){
+      hasJob=kTRUE;
+      ((TObjString*)(*map)("Status"))->SetString("1");
+      if (!IsStaged(inputData)){
+        //Stage(inputData,id);
+       continue;
+      }
+      break;
+    }
+  }
+
+  printf("Process %s\n",id.Data());
+  if (hasJob) {
+    ProcessJob(id,inputData,outputDir, action);    
+  }
+  return hasJob;
+}
+
+
+
+Bool_t AliTPCJobs::GetNextJobOld(){
   //
   // GetNextJob  - get job from the list which is not locked
   //
@@ -200,6 +282,13 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
   // 3. Process data
   // 4. Create Done file
   SetLock(jobID);
+  if (action.Contains("TEST")){
+    char command[10000];
+    sprintf(command,"$ALICE_ROOT/TPC/macros/testTPC/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());    
+    printf("%s\n\n",command); 
+    SetDone(jobID);
+    return;
+  }
   if (action.Contains("COPY")){
     
     char command[10000];
