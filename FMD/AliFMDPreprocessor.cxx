@@ -160,13 +160,13 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   AliFMDCalibStripRange*      calibRange = 0;
   AliFMDCalibZeroSuppression* calibZero  = 0;
   // Disabled for now. 
-#if 0
+  //#if 0
   if (GetAndCheckFileSources(files, kDAQ,pars->GetConditionsShuttleID()))
     GetInfoCalibration(files, calibRate, calibRange, calibZero);
   resultRate  = (!calibRate  ? kFALSE : kTRUE);
   resultRange = (!calibRange ? kFALSE : kTRUE);
   resultZero  = (!calibZero  ? kFALSE : kTRUE);
-#endif
+  //#endif
 
   // Gt the run type 
   TString runType(GetRunType()); 
@@ -216,12 +216,12 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
     delete calibZero;
   }
 
-#if 0
+  //#if 0
   // Disabled until we implement GetInfoCalibration properly
   Bool_t success = (resultPed && resultGain  && resultRange && 
 		    resultRate  && resultZero);
-#endif
-  Bool_t success = resultPed && resultGain;
+  //#endif
+  //  Bool_t success = resultPed && resultGain;
   Log(Form("FMD preprocessor was %s", (success ? "successful" : "failed")));
   return (success ? 0 : 1);
 }
@@ -259,6 +259,8 @@ AliFMDPreprocessor::GetInfoCalibration(TList* files,
       Log(Form("File %s not found!", filename));
       continue;
     }
+    s->ReadFromFile(in);
+    r->ReadFromFile(in);
   }
   return kTRUE;
 }
