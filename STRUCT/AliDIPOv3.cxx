@@ -415,7 +415,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
     asHS->AddNode(voHS1, 1, gGeoIdentity);
     asHS->AddNode(voHS2, 1, new TGeoTranslation(0., +14., 0.));
     asHS->AddNode(voHS2, 2, new TGeoTranslation(0., -14., 0.));
-    asHS->AddNode(voHS3, 1, new TGeoTranslation(0., -hsH/2. - 14., hsLength/2. - 25./2.));
+    asHS->AddNode(voHS3, 1, new TGeoTranslation(0., -hsH/2. - 14. -1.5, hsLength/2. - 25./2.));
     
     
 
@@ -452,7 +452,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
     // Hanger (Support)
     dy = gapHeight/2. + blockHeight + 14.;
     
-    asDipole->AddNode(asHS, 1, new TGeoTranslation(0., dy, ((zHanger2 - kZDipole - yokeLength/2.) + 25./2.)/2.));
+    asDipole->AddNode(asHS, 1, new TGeoTranslation(0., dy + 1.5, ((zHanger2 - kZDipole - yokeLength/2.) + 25./2.)/2.));
     
     
     asDipole->SetVisContainers(1);

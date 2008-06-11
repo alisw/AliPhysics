@@ -345,7 +345,7 @@ void AliHALLv3::CreateGeometry()
   //
   // Dipole foundation
   ys = yFloor + dyFloor / 2.;
-  dy = 263.54/2;
+  dy = (263.54 - 6.2)/2.;
   ys += dy;
   TGeoVolume* voFmsDf1 = new TGeoVolume("FmsDf1", new TGeoBBox(370., dy,  448.0 / 2.), kMedCC);
   asFMS->AddNode(voFmsDf1, 1, new TGeoTranslation(0., ys, zFil + 240. + 224.));
