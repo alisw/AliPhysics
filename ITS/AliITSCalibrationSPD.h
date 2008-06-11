@@ -3,10 +3,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
+/* $Id$ */
 #include "TRandom.h"
 #include "AliITSCalibration.h"
-#include "TArrayI.h"
+#include "TArrayS.h"
 #include "AliITSresponseSPD.h"
 
 
@@ -80,7 +80,7 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     Bool_t IsPixelBad(Int_t col, Int_t row) const ;
     void GetBadPixel(Int_t i, Int_t &row, Int_t &col) const;
 
-    void   SetBadList(TArrayI badlist) {fBadChannels=badlist;}
+    void   SetBadList(TArrayS badlist) {fBadChannels=badlist;}
     void   SetNrBad(UInt_t nr) {fNrBad=nr;}
     virtual Bool_t IsBad() const {return (GetNrBad()==256*160);};
     virtual Bool_t IsChipBad(Int_t chip) const {return (GetNrBadInChip(chip)==256*32);};
@@ -101,9 +101,9 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     Double_t fCouplRow;        // Coupling parameter along the rows
     Double_t fBiasVoltage;     // Bias Voltage for the SPD (used to compute DistanceOverVoltage)
     UInt_t   fNrBad;           // Nr of bad pixels
-    TArrayI  fBadChannels;     // Array with bad channels info (col0,row0,col1...rowN) N = fNrBad
+    TArrayS  fBadChannels;     // Array with bad channels info (col0,row0,col1...rowN) N = fNrBad
 
-    ClassDef(AliITSCalibrationSPD,5) // SPD response
+    ClassDef(AliITSCalibrationSPD,6) // SPD response
 };
 
 #endif

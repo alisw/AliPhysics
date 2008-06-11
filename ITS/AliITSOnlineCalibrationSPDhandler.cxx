@@ -2,7 +2,7 @@
 // Author: Henrik Tydesjo                                           //
 // For easier handling of dead and noisy pixels they are kept in    //
 // container maps (AliITSIntMap).                                   //
-// The TArrayI objects that are put in the AliITSCalibrationSPD     //
+// The TArrayS objects that are put in the AliITSCalibrationSPD     //
 // objects can be obtained from the methods GetDeadArray and        //
 // GetNoisyArray.                                                   //
 //////////////////////////////////////////////////////////////////////   
@@ -11,7 +11,7 @@
 #include "AliITSOnlineCalibrationSPD.h"
 #include "AliITSIntMap.h"
 #include <TObjArray.h>
-#include <TArrayI.h>
+#include <TArrayS.h>
 #include <TFile.h>
 #include <TError.h>
 #include <fstream>
@@ -658,9 +658,9 @@ void AliITSOnlineCalibrationSPDhandler::GenerateDCSConfigFile(const Char_t* file
   dcsfile.close();
 }
 //____________________________________________________________________________________________
-TArrayI AliITSOnlineCalibrationSPDhandler::GetDeadArray(UInt_t module, Bool_t treeSerial) {
-  // get a TArrayI of the dead pixels (format for the AliITSCalibrationSPD object)
-  TArrayI returnArray;
+TArrayS AliITSOnlineCalibrationSPDhandler::GetDeadArray(UInt_t module, Bool_t treeSerial) {
+  // get a TArrayS of the dead pixels (format for the AliITSCalibrationSPD object)
+  TArrayS returnArray;
 
   UInt_t eq = GetEqIdFromOffline(module);
   UInt_t hs = GetHSFromOffline(module);
@@ -686,9 +686,9 @@ TArrayI AliITSOnlineCalibrationSPDhandler::GetDeadArray(UInt_t module, Bool_t tr
   }
   return returnArray;
 }
-TArrayI AliITSOnlineCalibrationSPDhandler::GetNoisyArray(UInt_t module, Bool_t treeSerial) {
-  // get a TArrayI of the noisy pixels (format for the AliITSCalibrationSPD object)
-  TArrayI returnArray;
+TArrayS AliITSOnlineCalibrationSPDhandler::GetNoisyArray(UInt_t module, Bool_t treeSerial) {
+  // get a TArrayS of the noisy pixels (format for the AliITSCalibrationSPD object)
+  TArrayS returnArray;
 
   UInt_t eq = GetEqIdFromOffline(module);
   UInt_t hs = GetHSFromOffline(module);
@@ -714,9 +714,9 @@ TArrayI AliITSOnlineCalibrationSPDhandler::GetNoisyArray(UInt_t module, Bool_t t
   }
   return returnArray;
 }
-TArrayI AliITSOnlineCalibrationSPDhandler::GetDeadArrayOnline(UInt_t eq) {
-  // get a TArrayI of the dead pixels (format for the AliITSOnlineCalibrationSPD object)
-  TArrayI returnArray;
+TArrayS AliITSOnlineCalibrationSPDhandler::GetDeadArrayOnline(UInt_t eq) {
+  // get a TArrayS of the dead pixels (format for the AliITSOnlineCalibrationSPD object)
+  TArrayS returnArray;
   // fix size of array
   UInt_t size=0;
   for (UInt_t hs=0; hs<6; hs++) {
@@ -741,9 +741,9 @@ TArrayI AliITSOnlineCalibrationSPDhandler::GetDeadArrayOnline(UInt_t eq) {
   }
   return returnArray;
 }
-TArrayI AliITSOnlineCalibrationSPDhandler::GetNoisyArrayOnline(UInt_t eq) {
-  // get a TArrayI of the noisy pixels (format for the AliITSOnlineCalibrationSPD object)
-  TArrayI returnArray;
+TArrayS AliITSOnlineCalibrationSPDhandler::GetNoisyArrayOnline(UInt_t eq) {
+  // get a TArrayS of the noisy pixels (format for the AliITSOnlineCalibrationSPD object)
+  TArrayS returnArray;
   // fix size of array
   UInt_t size=0;
   for (UInt_t hs=0; hs<6; hs++) {
