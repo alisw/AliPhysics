@@ -1025,11 +1025,12 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
   }
   int iResult=0;
   AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+  TString extralibs;
   while (pAgent && iResult>=0) {
     const char* deplibs=pAgent->GetRequiredComponentLibraries();
     if (deplibs) {
-      HLTDebug("load libraries \'%s\' for agent %s (%p)", deplibs, pAgent->GetName(), pAgent);
-      iResult=LoadComponentLibraries(deplibs);
+      HLTDebug("required libraries \'%s\' for agent %s (%p)", deplibs, pAgent->GetName(), pAgent);
+      extralibs+=deplibs;
     }
     if (iResult>=0) {
       HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
@@ -1037,6 +1038,10 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
       pAgent=AliHLTModuleAgent::GetNextAgent();
     }
   }
+  if (iResult>=0) {
+    iResult=LoadComponentLibraries(extralibs.Data());
+  }
+
   return iResult;
 }
 
