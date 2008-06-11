@@ -54,6 +54,9 @@ class AliAltroRawStream: public TObject {
     UInt_t  GetFECERRA() const { return fFECERRA; }
     UInt_t  GetFECERRB() const { return fFECERRB; }
     UShort_t GetERRREG2() const { return fERRREG2; }
+    UShort_t GetNChAddrMismatch() const { return fERRREG3; }
+    UShort_t GetNChLengthMismatch() const { return fERRREG4; }
+
     UShort_t GetActiveFECsA() const { return fActiveFECsA; }
     UShort_t GetActiveFECsB() const { return fActiveFECsB; }
 
@@ -144,6 +147,8 @@ class AliAltroRawStream: public TObject {
     UInt_t           fFECERRA;      // contains errors related to ALTROBUS transactions
     UInt_t           fFECERRB;      // contains errors related to ALTROBUS transactions
     UShort_t         fERRREG2;      // contains errors related to ALTROBUS transactions or trailer of ALTRO channel block
+    UShort_t         fERRREG3;      // contains number of altro channels skipped due to an address mismatch 
+    UShort_t         fERRREG4;      // contains number of altro channels skipped due to a block length mismatch 
     UShort_t         fActiveFECsA;  // bit pattern of active FECs in branch A
     UShort_t         fActiveFECsB;  // bit pattern of active FECs in branch B
     UInt_t           fAltroCFG1;    // ALTROCFG1 register

@@ -57,6 +57,8 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fFECERRA(0),
   fFECERRB(0),
   fERRREG2(0),
+  fERRREG3(0),
+  fERRREG4(0),
   fActiveFECsA(0),
   fActiveFECsB(0),
   fAltroCFG1(0),
@@ -91,6 +93,8 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   fFECERRA(stream.fFECERRA),
   fFECERRB(stream.fFECERRB),
   fERRREG2(stream.fERRREG2),
+  fERRREG3(stream.fERRREG3),
+  fERRREG4(stream.fERRREG4),
   fActiveFECsA(stream.fActiveFECsA),
   fActiveFECsB(stream.fActiveFECsB),
   fAltroCFG1(stream.fAltroCFG1),
@@ -128,6 +132,8 @@ AliAltroRawStream& AliAltroRawStream::operator = (const AliAltroRawStream& strea
   fFECERRA           = stream.fFECERRA;
   fFECERRB           = stream.fFECERRB;
   fERRREG2           = stream.fERRREG2;
+  fERRREG3           = stream.fERRREG3;
+  fERRREG4           = stream.fERRREG4;
   fActiveFECsA       = stream.fActiveFECsA;
   fActiveFECsB       = stream.fActiveFECsB;
   fAltroCFG1         = stream.fAltroCFG1;
@@ -157,7 +163,7 @@ void AliAltroRawStream::Reset()
   fRCUTrailerData = NULL;
   fRCUTrailerSize = 0;
 
-  fFECERRA = fFECERRB = fERRREG2 = fActiveFECsA = fActiveFECsB = fAltroCFG1 = fAltroCFG2 = 0;
+  fFECERRA = fFECERRB = fERRREG2 = fERRREG3 = fERRREG4 = fActiveFECsA = fActiveFECsB = fAltroCFG1 = fAltroCFG2 = 0;
 
   fDDLNumber = fPrevDDLNumber = fRCUId = fPrevRCUId = fHWAddress = fPrevHWAddress = fTime = fPrevTime = fSignal = fTimeBunch = -1;
 
@@ -178,7 +184,7 @@ Bool_t AliAltroRawStream::Next()
   fPrevTime = fTime;
 
   while (fCount == 0) {  // next trailer
-    if (fPosition <= 0) {  // next payload
+    while (fPosition <= 0) {  // next payload
       do {
 	if (!fRawReader->ReadNextData(fData)) return kFALSE;
       } while (fRawReader->GetDataSize() == 0);
@@ -256,9 +262,10 @@ Bool_t AliAltroRawStream::ReadTrailer()
   if (nFillWords == 0) {
     fRawReader->AddMajorErrorLog(kAltroTrailerErr,"no 0x2AA");
     //    PrintDebug();
-    AliWarning("Incorrect trailer found ! Expected 0x2AA not found !");
+    AliWarning(Form("Incorrect trailer found ! Expected 0x2AA not found (0x%x != 0x2AA) ! Current position %d, DDL=%d",
+		    temp,fPosition,fDDLNumber));
     // trying to recover and find the next bunch
-    while ((fPosition > 5) && (temp != 0x2AA)) temp = GetNextWord();
+    while ((fPosition > 2) && (temp != 0x2AA)) temp = GetNextWord();
     if (temp != 0x2AA) {
       fCount = fPosition = 0;
       return kFALSE;
@@ -267,9 +274,9 @@ Bool_t AliAltroRawStream::ReadTrailer()
   }
 
   //Then read the trailer
-  if (fPosition < 5) {
+  if (fPosition < 2) {
     fRawReader->AddMajorErrorLog(kAltroTrailerErr,Form("size %d < 5",
-						    fPosition));
+						       fPosition));
     //    PrintDebug();
     AliWarning(Form("Incorrect raw data size ! Expected at least 5 words but found %d !",fPosition));
     fCount = fPosition = 0;
@@ -295,7 +302,7 @@ Bool_t AliAltroRawStream::ReadTrailer()
     return kFALSE;
   }
   fCount |= ((temp & 0x3FF) >> 6);
-  if (fCount == 0) return kFALSE;
+
   if (fCount >= fPosition) {
     fRawReader->AddMajorErrorLog(kAltroTrailerErr,"invalid size");
     //    PrintDebug();
@@ -560,19 +567,11 @@ Int_t AliAltroRawStream::ReadRCUTrailer(Int_t &index, Int_t trailerSize)
       break;
     case 3:
       // ERR_REG3
-      if (parData != 0xAAAAAA) {
-	fRawReader->AddMinorErrorLog(kRCUTrailerErr,"no 0xAAAAAA");
-	AliWarning(Form("Parameter code %d : no 0xAAAAAA found !",
-			parCode));
-      }
+      fERRREG3 = parData & 0xFFF;
       break;
     case 4:
       // ERR_REG4
-      if (parData != 0xAAAAAA) {
-	fRawReader->AddMinorErrorLog(kRCUTrailerErr,"no 0xAAAAAA");
-	AliWarning(Form("Parameter code %d : no 0xAAAAAA found !",
-			parCode));
-      }
+      fERRREG4 = parData & 0xFFF;
       break;
     case 5:
       // FEC_RO_A
@@ -678,6 +677,8 @@ void AliAltroRawStream::PrintRCUTrailer() const
   printf("RCU trailer:\n===========\n");
   printf("FECERRA: 0x%x\nFECERRB: 0x%x\n",fFECERRA,fFECERRB);
   printf("ERRREG2: 0x%x\n",fERRREG2);
+  printf("#channels skipped due to address mismatch: %d\n",GetNChAddrMismatch());
+  printf("#channels skipped due to bad block length: %d\n",GetNChLengthMismatch());
   printf("Active FECs (branch A): 0x%x\nActive FECs (branch B): 0x%x\n",fActiveFECsA,fActiveFECsB);
   printf("Baseline corr: 0x%x\n",GetBaselineCorr());
   printf("Number of presamples: %d\nNumber of postsamples: %d\n",GetNPresamples(),GetNPostsamples());
@@ -688,8 +689,9 @@ void AliAltroRawStream::PrintRCUTrailer() const
   printf("Number of pretrigger samples: %d\n",GetNPretriggerSamples());
   printf("Number of samples per channel: %d\n",GetNSamplesPerCh());
   printf("Sparse readout: %d\n",GetSparseRO());
-  printf("Sampling time: %f s\n",GetTSample());
-  printf("L1 Phase: %f s\n",GetL1Phase());
+  printf("Sampling time: %e s\n",GetTSample());
+  printf("L1 Phase: %e s\n",GetL1Phase());
+  printf("AltroCFG1: 0x%x\nAltroCFG2: 0x%x\n",GetAltroCFG1(),GetAltroCFG2());
   printf("===========\n");
 }
 
