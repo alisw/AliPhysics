@@ -4,7 +4,7 @@ void LookupWrite(TChain* chain, const char* target) ;
 
 
 
-void runAliAnalysisTaskScalarProduct(Int_t nRuns = 2, TString type = "ESD", const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
+void runAliAnalysisTaskScalarProduct(Int_t nRuns = 50, TString type = "ESD", const Char_t* dataDir="/Users/snelling/alice_data/TherminatorFIX", Int_t offset = 0) 
 
 {
   TStopwatch timer;
@@ -21,16 +21,7 @@ void runAliAnalysisTaskScalarProduct(Int_t nRuns = 2, TString type = "ESD", cons
   gSystem->Load("libANALYSIS.so");
   cerr<<"libANALYSIS.so loaded..."<<endl;
   gSystem->Load("libPWG2flow.so");
-  
-  //  gROOT->LoadMacro("AliFlowCommonConstants.cxx+");
-  //  gROOT->LoadMacro("AliFlowVector.cxx+");
-  //  gROOT->LoadMacro("AliFlowTrackSimple.cxx+");
-  //  gROOT->LoadMacro("AliFlowEventSimple.cxx+");
-  //  gROOT->LoadMacro("AliFlowEventSimpleMaker.cxx+");
-  //  gROOT->LoadMacro("AliFlowCommonHist.cxx+");
-  //gROOT->LoadMacro("AliFlowCommonHistResults.cxx+");
-  //  gROOT->LoadMacro("AliFlowAnalysisWithScalarProduct.cxx+"); 
-  //  gROOT->LoadMacro("AliAnalysisTaskScalarProduct.cxx+");
+  cerr<<"libPWG2flow.so loaded..."<<endl;
 
   // create the TChain. CreateESDChain() is defined in CreateESDChain.C
   TChain* chain = CreateESDChain(dataDir, nRuns, offset);
@@ -48,8 +39,9 @@ void runAliAnalysisTaskScalarProduct(Int_t nRuns = 2, TString type = "ESD", cons
   AliVEventHandler* aodH = new AliAODInputHandler;
   mgr->SetInputEventHandler(aodH); }
   
+  if (type == "MC"){
   AliMCEventHandler *mc = new AliMCEventHandler();
-  mgr->SetMCtruthEventHandler(mc);
+  mgr->SetMCtruthEventHandler(mc); }
   //____________________________________________//
   // 1st MC EP task
   AliAnalysisTaskScalarProduct *task1 = new AliAnalysisTaskScalarProduct("TaskScalarProduct");
@@ -60,7 +52,8 @@ void runAliAnalysisTaskScalarProduct(Int_t nRuns = 2, TString type = "ESD", cons
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = 
-    mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer);
+    //        mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer);
+    mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer,"outputFromScalarProductAnalysisESD.root");
 
   //____________________________________________//
   mgr->ConnectInput(task1,0,cinput1);

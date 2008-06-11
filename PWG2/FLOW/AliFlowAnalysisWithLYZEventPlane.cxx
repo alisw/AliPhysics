@@ -80,20 +80,12 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
   fCommonHists(0),
   fCommonHistsRes(0),
   fEventNumber(0),
-  fQ(NULL),
   fQsum(NULL),
-  fQ2sum(0),
-  fQtheta(0),
-  fTrack(NULL)
-//  fLYZEP(NULL)
+  fQ2sum(0)
 {
 
   // Constructor.
-  //  fQ.Set(0.,0.);           // flow vector
-  //  fQsum.Set(0.,0.);        // flow vector sum
-  fQ = new AliFlowVector();           // flow vector
   fQsum = new TVector2();        // flow vector sum
-  //  fLYZEP = new AliFlowLYZEventPlane();
 }
 
  
@@ -104,9 +96,7 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
  AliFlowAnalysisWithLYZEventPlane::~AliFlowAnalysisWithLYZEventPlane() 
  {
    //destructor
-   delete fQ;
    delete fQsum;
-   //   delete fLYZEP;
  }
  
 
@@ -143,13 +133,13 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
   fCommonHistsRes = new AliFlowCommonHistResults("LYZEP");
   
   // output histograms
-  Int_t fNtheta = AliFlowLYZConstants::kTheta;
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Double_t  fPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  fPtMax = AliFlowCommonConstants::GetPtMax();
+  Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
 
 
-  fHistProFlow = new TProfile("FlowPro_VPt_LYZEP","FlowPro_VPt_LYZEP",fNbinsPt,fPtMin,fPtMax);
+  fHistProFlow = new TProfile("FlowPro_VPt_LYZEP","FlowPro_VPt_LYZEP",iNbinsPt,dPtMin,dPtMax);
   fHistProFlow->SetXTitle("Pt");
   fHistProFlow->SetYTitle("v2 (%)");
   
@@ -170,15 +160,15 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
   fHistPhiEP->SetYTitle("Counts");
 
   
-  fHistProR0theta  = new TProfile("FlowPro_r0theta_LYZEP","FlowPro_r0theta_LYZEP",fNtheta,-0.5,fNtheta-0.5);
+  fHistProR0theta  = new TProfile("FlowPro_r0theta_LYZEP","FlowPro_r0theta_LYZEP",iNtheta,-0.5,iNtheta-0.5);
   fHistProR0theta->SetXTitle("#theta");
   fHistProR0theta->SetYTitle("r_{0}^{#theta}");
 
-  fHistProReDtheta = new TProfile("FlowPro_ReDtheta_LYZEP","FlowPro_ReDtheta_LYZEP",fNtheta, -0.5, fNtheta-0.5);
+  fHistProReDtheta = new TProfile("FlowPro_ReDtheta_LYZEP","FlowPro_ReDtheta_LYZEP",iNtheta, -0.5, iNtheta-0.5);
   fHistProReDtheta->SetXTitle("#theta");
   fHistProReDtheta->SetYTitle("Re(D^{#theta})");
 
-  fHistProImDtheta = new TProfile("FlowPro_ImDtheta_LYZEP","FlowPro_ImDtheta_LYZEP",fNtheta, -0.5, fNtheta-0.5);
+  fHistProImDtheta = new TProfile("FlowPro_ImDtheta_LYZEP","FlowPro_ImDtheta_LYZEP",iNtheta, -0.5, iNtheta-0.5);
   fHistProImDtheta->SetXTitle("#theta");
   fHistProImDtheta->SetYTitle("Im(D^{#theta})");
 
@@ -189,9 +179,8 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
  
 //-----------------------------------------------------------------------
  
-void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlowLYZEventPlane* fLYZEP) {
-//void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent) {
-
+void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlowLYZEventPlane* aLYZEP) {
+  
   //Get the event plane and weight for each event
   if (anEvent) {
          
@@ -199,67 +188,65 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
     fCommonHists->FillControlHistograms(anEvent);
 
     //get the Q vector from the FlowEvent
-    *fQ = anEvent->GetQ(); 
+    AliFlowVector vQ = anEvent->GetQ(); 
     //Weight with the multiplicity
-    Double_t fQX = 0.;
-    Double_t fQY = 0.;
-    if (fQ->GetMult()!=0.) {
-      fQX = fQ->X()/fQ->GetMult();
-      fQY = fQ->Y()/fQ->GetMult();
-    } else {cerr<<"fQ->GetMult() is zero!"<<endl; }
-    fQ->Set(fQX,fQY);
-    //cout<<"fQ->Mod() = " << fQ->Mod() << endl;
+    Double_t dQX = 0.;
+    Double_t dQY = 0.;
+    if (vQ.GetMult()!=0.) {
+      dQX = vQ.X()/vQ.GetMult();
+      dQY = vQ.Y()/vQ.GetMult();
+    } else {cerr<<"vQ.GetMult() is zero!"<<endl; }
+    vQ.Set(dQX,dQY);
     //for chi calculation:
-    *fQsum += *fQ;
-    //cout<<"fQsum.Mod() = "<<fQsum.Mod()<<endl;
-    fQ2sum += fQ->Mod2();
+    *fQsum += vQ;
+    fQ2sum += vQ.Mod2();
     cout<<"fQ2sum = "<<fQ2sum<<endl;
 
     //call AliFlowLYZEventPlane::CalculateRPandW() here!
-    fLYZEP->CalculateRPandW(*fQ);
+    aLYZEP->CalculateRPandW(vQ);
 
-    Double_t fWR = fLYZEP->GetWR();     
-    Double_t fRP = fLYZEP->GetPsi();
+    Double_t dWR = aLYZEP->GetWR();     
+    Double_t dRP = aLYZEP->GetPsi();
 
-    //fHistProWr->Fill(fQ.Mod(),fWR); //this weight is always positive
-    fHistPhiLYZ->Fill(fRP);   
+    //fHistProWr->Fill(vQ.Mod(),dWR); //this weight is always positive
+    fHistPhiLYZ->Fill(dRP);   
     
     //plot difference between event plane from EP-method and LYZ-method
-    Double_t fRPEP = fQ->Phi()/2;                              //gives distribution from (0 to pi)
-    //Float_t fRPEP = 0.5*TMath::ATan2(fQ.Y(),fQ.X());       //gives distribution from (-pi/2 to pi/2)
-    //cout<<"fRPEP = "<< fRPEP <<endl;
-    fHistPhiEP->Fill(fRPEP);
+    Double_t dRPEP = vQ.Phi()/2;                              //gives distribution from (0 to pi)
+    //Double_t dRPEP = 0.5*TMath::ATan2(vQ.Y(),vQ.X());       //gives distribution from (-pi/2 to pi/2)
+    //cout<<"dRPEP = "<< dRPEP <<endl;
+    fHistPhiEP->Fill(dRPEP);
 
-    Double_t fDeltaPhi = fRPEP - fRP;
-    if (fDeltaPhi < 0.) { fDeltaPhi += TMath::Pi(); }        //to shift distribution from (-pi/2 to pi/2) to (0 to pi)
-    //cout<<"fDeltaPhi = "<<fDeltaPhi<<endl;
-    fHistDeltaPhi->Fill(fDeltaPhi); 
+    Double_t dDeltaPhi = dRPEP - dRP;
+    if (dDeltaPhi < 0.) { dDeltaPhi += TMath::Pi(); }        //to shift distribution from (-pi/2 to pi/2) to (0 to pi)
+    //cout<<"dDeltaPhi = "<<dDeltaPhi<<endl;
+    fHistDeltaPhi->Fill(dDeltaPhi); 
 
     //Flip sign of WR
-    Double_t low = TMath::Pi()/4.;
-    Double_t high = 3.*(TMath::Pi()/4.);
-    if ((fDeltaPhi > low) && (fDeltaPhi < high)){
-      fRP -= (TMath::Pi()/2);
-      fWR = -fWR;
-      cerr<<"*** fRP modified ***"<<endl;
+    Double_t dLow = TMath::Pi()/4.;
+    Double_t dHigh = 3.*(TMath::Pi()/4.);
+    if ((dDeltaPhi > dLow) && (dDeltaPhi < dHigh)){
+      dRP -= (TMath::Pi()/2);
+      dWR = -dWR;
+      cerr<<"*** dRP modified ***"<<endl;
     }
-    fHistProWr->Fill(fQ->Mod(),fWR); //corrected weight
+    fHistProWr->Fill(vQ.Mod(),dWR); //corrected weight
        
     //calculate flow
     //loop over the tracks of the event
-    Int_t fNumberOfTracks = anEvent->NumberOfTracks(); 
-    for (Int_t i=0;i<fNumberOfTracks;i++) 
+    Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+    for (Int_t i=0;i<iNumberOfTracks;i++) 
       {
-	fTrack = anEvent->GetTrack(i) ; 
-	if (fTrack){
-	  if (fTrack->UseForDifferentialFlow()) {
-	    Double_t fPhi = fTrack->Phi();
-	    //if (fPhi<0.) fPhi+=2*TMath::Pi();
+	AliFlowTrackSimple* pTrack = anEvent->GetTrack(i) ; 
+	if (pTrack){
+	  if (pTrack->UseForDifferentialFlow()) {
+	    Double_t dPhi = pTrack->Phi();
+	    //if (dPhi<0.) fPhi+=2*TMath::Pi();
 	    //calculate flow v2:
-	    Double_t fv2 = fWR * TMath::Cos(2*(fPhi-fRP));
-	    Double_t fPt = fTrack->Pt();
+	    Double_t dv2 = dWR * TMath::Cos(2*(dPhi-dRP));
+	    Double_t dPt = pTrack->Pt();
 	    //fill histogram
-	    fHistProFlow->Fill(fPt,100*fv2);  
+	    fHistProFlow->Fill(dPt,100*dv2);  
 	  }  
 	}//track selected
       }//loop over tracks
@@ -275,25 +262,23 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   //plot histograms etc. 
   cout<<"AliFlowAnalysisWithLYZEventPlane::Terminate()"<<endl;
   //constands:
-  Double_t  fJ01 = 2.405; 
-  Int_t fNtheta = AliFlowLYZConstants::kTheta;
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  //Double_t fErr2difcomb = 0.;
-  //Double_t fErrdifcomb = 0.;
-  
-  //calculate fV the mean of fVtheta
-  Double_t  fVtheta = 0; 
-  Double_t  fV = 0; 
-  for (Int_t theta=0;theta<fNtheta;theta++)	{
-    Double_t fR0 = fFirstr0theta->GetBinContent(theta+1); 
-    if (fR0!=0.) { fVtheta = fJ01/fR0 ;}
-    fV += fVtheta;
+  Double_t  dJ01 = 2.405; 
+  Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+    
+  //calculate dV the mean of dVtheta
+  Double_t  dVtheta = 0; 
+  Double_t  dV = 0; 
+  for (Int_t theta=0;theta<iNtheta;theta++)	{
+    Double_t dR0 = fFirstr0theta->GetBinContent(theta+1); 
+    if (dR0!=0.) { dVtheta = dJ01/dR0 ;}
+    dV += dVtheta;
   }
-  fV /= fNtheta;
+  dV /= iNtheta;
 
-  //calculate fChi 
-  Double_t  fSigma2 = 0;
-  Double_t  fChi= 0;
+  //calculate dChi 
+  Double_t  dSigma2 = 0;
+  Double_t  dChi= 0;
   if (fEventNumber!=0) {
     *fQsum /= fEventNumber;
     //cerr<<"fQsum.X() = "<<fQsum.X()<<endl;
@@ -301,46 +286,46 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     fQ2sum /= fEventNumber;
     cerr<<"fEventNumber = "<<fEventNumber<<endl;
     cerr<<"fQ2sum = "<<fQ2sum<<endl;
-    fSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(fV,2.);  //BP eq. 62
-    if (fSigma2>0) fChi = fV/TMath::Sqrt(fSigma2);
-    else fChi = -1.;
-    fCommonHistsRes->FillChi(fChi);
-    cerr<<"fV = "<<fV<<" and chi = "<<fChi<<endl;
+    dSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(dV,2.);  //BP eq. 62
+    if (dSigma2>0) dChi = dV/TMath::Sqrt(dSigma2);
+    else dChi = -1.;
+    fCommonHistsRes->FillChi(dChi);
+    cerr<<"dV = "<<dV<<" and chi = "<<dChi<<endl;
   }
   
-  for(Int_t b=0;b<fNbinsPt;b++){
-    Double_t fv2pro = 0.;
-    Double_t fErr2difcomb = 0.;   
-    Double_t fErrdifcomb = 0.;
+  for(Int_t b=0;b<iNbinsPt;b++){
+    Double_t dv2pro = 0.;
+    Double_t dErr2difcomb = 0.;   
+    Double_t dErrdifcomb = 0.;
     if(fHistProFlow) {
-      fv2pro = fHistProFlow->GetBinContent(b);
+      dv2pro = fHistProFlow->GetBinContent(b);
       //calculate error
-      for (Int_t theta=0;theta<fNtheta;theta++) {
-	Double_t fTheta = ((double)theta/fNtheta)*TMath::Pi(); 
-	Int_t fNprime = TMath::Nint(fHistProFlow->GetBinEntries(b));
-	//cerr<<"fNprime = "<<fNprime<<endl;
-	if (fNprime!=0.) { 
-	  Double_t fApluscomb = TMath::Exp((fJ01*fJ01)/(2*fChi*fChi)*
-					   TMath::Cos(fTheta));
-	  Double_t fAmincomb = TMath::Exp(-(fJ01*fJ01)/(2*fChi*fChi)*
-					  TMath::Cos(fTheta));
-	  fErr2difcomb += (TMath::Cos(fTheta)/(4*fNprime*TMath::BesselJ1(fJ01)*
-						 TMath::BesselJ1(fJ01)))*
-	    ((fApluscomb*TMath::BesselJ0(2*fJ01*TMath::Sin(fTheta/2))) - 
-	     (fAmincomb*TMath::BesselJ0(2*fJ01*TMath::Cos(fTheta/2))));
+      for (Int_t theta=0;theta<iNtheta;theta++) {
+	Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi(); 
+	Int_t iNprime = TMath::Nint(fHistProFlow->GetBinEntries(b));
+	//cerr<<"iNprime = "<<iNprime<<endl;
+	if (iNprime!=0) { 
+	  Double_t dApluscomb = TMath::Exp((dJ01*dJ01)/(2*dChi*dChi)*
+					   TMath::Cos(dTheta));
+	  Double_t dAmincomb = TMath::Exp(-(dJ01*dJ01)/(2*dChi*dChi)*
+					  TMath::Cos(dTheta));
+	  dErr2difcomb += (TMath::Cos(dTheta)/(4*iNprime*TMath::BesselJ1(dJ01)*
+						 TMath::BesselJ1(dJ01)))*
+	    ((dApluscomb*TMath::BesselJ0(2*dJ01*TMath::Sin(dTheta/2))) - 
+	     (dAmincomb*TMath::BesselJ0(2*dJ01*TMath::Cos(dTheta/2))));
 	} //if !=0
-	//else { cout<<"fNprime = 0."<<endl; }
+	//else { cout<<"iNprime = 0"<<endl; }
       } //loop over theta
       
-      if (fErr2difcomb!=0.) {
-	fErr2difcomb /= fNtheta;
-	fErrdifcomb = TMath::Sqrt(fErr2difcomb)*100;
-	//cerr<<"fErrdifcomb = "<<fErrdifcomb<<endl;
+      if (dErr2difcomb!=0.) {
+	dErr2difcomb /= iNtheta;
+	dErrdifcomb = TMath::Sqrt(dErr2difcomb)*100;
+	//cerr<<"dErrdifcomb = "<<dErrdifcomb<<endl;
       }
-      else {fErrdifcomb = 0.; }
+      else {dErrdifcomb = 0.; }
 
       //fill TH1D
-      fCommonHistsRes->FillDifferentialFlow(b, fv2pro, fErrdifcomb); 
+      fCommonHistsRes->FillDifferentialFlow(b, dv2pro, dErrdifcomb); 
     
     } //if fHistProFLow
     else  {
@@ -381,3 +366,4 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   	  
   cout<<".....finished"<<endl;
  }
+

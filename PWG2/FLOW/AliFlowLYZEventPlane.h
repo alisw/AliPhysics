@@ -22,7 +22,7 @@ class AliFlowLYZEventPlane {
   virtual ~AliFlowLYZEventPlane();
 
   void Init();
-  void CalculateRPandW(AliFlowVector fQ);
+  void CalculateRPandW(AliFlowVector aQ);
 
   Double_t GetWR() const  {return this->fWR; }
   Double_t GetPsi() const {return this->fPsi; }
@@ -40,14 +40,14 @@ class AliFlowLYZEventPlane {
   TString  GetSecondRunFileName() const		
     { return this->fSecondRunFileName ; }     // Gets output file name
   void     SetSecondRunFile(TFile* file)         
-    { this->fSecondRunFile = file ; }         // Sets first run file
+    { this->fSecondRunFile = file ; }         // Sets second run file
 
 
 
  private:
   
-  AliFlowLYZEventPlane(const AliFlowLYZEventPlane& aAnalysis);
-  AliFlowLYZEventPlane& operator=(const AliFlowLYZEventPlane& aAnalysis);
+  AliFlowLYZEventPlane(const AliFlowLYZEventPlane& aAnalysis);             // copy constructor
+  AliFlowLYZEventPlane& operator=(const AliFlowLYZEventPlane& aAnalysis);  // assignment operator
   
   TFile*   fFirstRunFile ;          //! pointer to file from first run
   TFile*   fSecondRunFile ;         //! pointer to file from second run
@@ -57,9 +57,9 @@ class AliFlowLYZEventPlane {
   Double_t fWR;            // event weight
   Double_t fPsi;           // reaction plane
 
-  TProfile* fSecondReDtheta; //!
-  TProfile* fSecondImDtheta; //!
-  TProfile* fFirstr0theta;   //!
+  TProfile* fSecondReDtheta; // holds Re of Dtheta
+  TProfile* fSecondImDtheta; // holds Im of Dtheta
+  TProfile* fFirstr0theta;   // holds r0(theta)
 
   ClassDef(AliFlowLYZEventPlane, 0);          
 };

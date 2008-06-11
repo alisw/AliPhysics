@@ -24,20 +24,20 @@ class AliFlowLYZHist1 {
   AliFlowLYZHist1(Int_t theta);               //constructor
   virtual  ~AliFlowLYZHist1();                //destructor
   
-  void Fill(Double_t f, TComplex C);          //fill the histograms
+  void Fill(Double_t f, TComplex c);          //fill the histograms
   TH1D* FillGtheta();                         //fills fHistGtheta
   Double_t GetR0();                           //get R0
   Double_t GetBinCenter(Int_t i);             //Get a bincentre of fHistGtheta
-  Int_t GetNBins();                           //Gets fNbins
+  Int_t GetNBins();                           //Gets Nbins
    
 private:
 
-  AliFlowLYZHist1(const AliFlowLYZHist1& aAnalysis);
-  AliFlowLYZHist1& operator=(const AliFlowLYZHist1& aAnalysis);
+  AliFlowLYZHist1(const AliFlowLYZHist1& aAnalysis);             //copy constructor
+  AliFlowLYZHist1& operator=(const AliFlowLYZHist1& aAnalysis);  //assignment operator
 
-  TH1D* fHistGtheta;                          //!
-  TProfile* fHistProReGtheta;                 //!
-  TProfile* fHistProImGtheta;                 //!
+  TH1D* fHistGtheta;                          //holds |Gtheta|^2(r)
+  TProfile* fHistProReGtheta;                 //holds Re of Gtheta(r)
+  TProfile* fHistProImGtheta;                 //holds Im of Gtheta(r)
   
 
   ClassDef(AliFlowLYZHist1,0)                 // macro for rootcint

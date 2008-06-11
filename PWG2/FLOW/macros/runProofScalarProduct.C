@@ -17,14 +17,9 @@ void runProofScalarProduct() {
   gProof->EnablePackage("ANALYSISalice");
   gProof->UploadPackage("PWG2AOD.par");
   gProof->EnablePackage("PWG2AOD");
+  gProof->ClearPackage("PWG2flow");
   gProof->UploadPackage("PWG2flow.par");
   gProof->EnablePackage("PWG2flow");
-  gSystem->SetIncludePath("-I$ROOTSYS/include -I./PWG2flow/FLOW -I./ESD -I./AOD -I./ANALYSIS -I./PWG2AOD/AOD");
-  gProof->AddIncludePath("./PWG2AOD/AOD");
-  gProof->AddIncludePath("./PWG2flow/FLOW");
-
-
-  //  TChain *chain = 0x0;
 
   //____________________________________________//
   // Make the analysis manager
@@ -35,7 +30,7 @@ void runProofScalarProduct() {
   //____________________________________________//
   // 1st Pt task
   AliAnalysisTaskScalarProduct *task1 = new AliAnalysisTaskScalarProduct("TaskScalarProduct");
-
+  task1->SetAnalysisType("ESD");
   mgr->AddTask(task1);
 
 

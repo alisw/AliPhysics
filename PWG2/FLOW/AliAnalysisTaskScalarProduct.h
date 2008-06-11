@@ -19,7 +19,8 @@ class AliFlowEventSimpleMaker;
 
 class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
  public:
-  AliAnalysisTaskScalarProduct(const char *name = "");
+  AliAnalysisTaskScalarProduct();
+  AliAnalysisTaskScalarProduct(const char *name);
   virtual ~AliAnalysisTaskScalarProduct();
   
   virtual void   ConnectInputData(Option_t *);
