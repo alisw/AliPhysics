@@ -132,6 +132,7 @@ AliFMDParameters::Init(Bool_t forceReInit, UInt_t what)
   if (what & kSampleRate)      InitSampleRate();
   if (what & kZeroSuppression) InitZeroSuppression();
   if (what & kAltroMap)        InitAltroMap();
+  if (what & kStripRange)      InitStripRange();
   fIsInit = kTRUE;
 }
 //__________________________________________________________________
@@ -148,6 +149,7 @@ AliFMDParameters::Init(AliFMDPreprocessor* pp, Bool_t forceReInit, UInt_t what)
   if (what & kSampleRate)      InitSampleRate(pp);
   if (what & kZeroSuppression) InitZeroSuppression(pp);
   if (what & kAltroMap)        InitAltroMap(pp);
+  if (what & kStripRange)      InitStripRange(pp);
   fIsInit = kTRUE;
 }
 

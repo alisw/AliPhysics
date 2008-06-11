@@ -91,7 +91,10 @@ public:
     /** Zero suppression parameters */ 
     kZeroSuppression = 0x10, // Zero suppression parameters 
     /** ALTRO data map */ 
-    kAltroMap = 0x20 // Altro channel map
+    kAltroMap = 0x20, // Altro channel map
+    /** Strip Range */
+    kStripRange = 0x40 //Strip range
+    
   };
   
   /** Singleton access
@@ -103,7 +106,7 @@ public:
    */
   void Init(Bool_t forceReInit=kFALSE, 
 	    UInt_t what = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
-			   kZeroSuppression|kAltroMap));
+			   kZeroSuppression|kAltroMap|kStripRange));
   /** Initialize the manager.  This tries to read the parameters from
       CDB.  If that fails, the class uses the hard-coded parameters. 
    */
