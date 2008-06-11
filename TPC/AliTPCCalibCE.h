@@ -72,6 +72,11 @@ public:
     const Float_t GetMeanQrms() {return fMeanQrms;}
     const Float_t GetMeanRMSrms() {return fMeanRMSrms;}
 
+    const Int_t   GetPeakDetectionMinus(){return fPeakMinus;}
+    const Int_t   GetPeakDetectionPlus(){return fPeakPlus;}
+    const Float_t GetNnoiseThresholdMax() {return fNoiseThresholdMax;}
+    const Float_t GetNnoiseThresholdSum() {return fNoiseThresholdSum;}
+
     TH1S* GetHistoTmean(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
 
     //needed here to merge ClibCE objects
@@ -94,6 +99,10 @@ public:
     void  SetRangeRefT0 (Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsT0  = nBins; fXminT0  = xMin; fXmaxT0  = xMax; }   //Set range for T0 reference histograms
     void  SetRangeRefRMS(Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsRMS = nBins; fXminRMS = xMin; fXmaxRMS = xMax; }   //Set range for T0 reference histograms
     //
+    void  SetRangePeakDetection(Int_t minus, Int_t plus) { fPeakMinus=minus; fPeakPlus=plus;}
+    void  SetNnoiseThresholdMax(Float_t n) {fNoiseThresholdMax=n;}
+    void  SetNnoiseThresholdSum(Float_t n) {fNoiseThresholdSum=n;}
+    //
     void  SetTimeStampEvent(Double_t timestamp){ fTimeStamp = timestamp; }
     void  SetRunNumber(Double_t eventnumber){ fRunNumber = eventnumber; }
 
@@ -103,10 +112,15 @@ public:
 
     void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
 
+    void  SetIsZeroSuppressed(Bool_t zs=kTRUE) { fIsZeroSuppressed=zs; }
+
     Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
     Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
 
     Int_t GetNeventsProcessed() const { return fNevents; }
+
+    Bool_t GetIsZeroSuppressed() const { return fIsZeroSuppressed; }
+
 
     void Merge(AliTPCCalibCE *ce);
 
@@ -128,6 +142,12 @@ private:
     Int_t   fNbinsRMS;                //  Number of bins for T0 reference histogram
     Float_t fXminRMS;                 //  xmin   of T0 reference histogram
     Float_t fXmaxRMS;                 //  xmax   of T0 reference histogram
+    Int_t   fPeakMinus;               //  Consecutive timebins on rising edge to be regarded as a signal
+    Int_t   fPeakPlus;                //  Consecutive timebins on falling edge to be regarded as a signal
+    Float_t fNoiseThresholdMax;       //  Analysis Treshold for signal finding: Max>fNoiseThresholdMax*PadNoise
+    Float_t fNoiseThresholdSum;       //  Analysis Treshold for signal finding: Sum>fNoiseThresholdSum*PadNoise
+
+    Bool_t  fIsZeroSuppressed;        //  If data is Zero Suppressed -> Don't subtrakt pedestals!
 
     Int_t     fLastSector;            //! Last sector processed
 
@@ -225,7 +245,7 @@ private:
     TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
-    ClassDef(AliTPCCalibCE,6)  //Implementation of the TPC Central Electrode calibration
+    ClassDef(AliTPCCalibCE,7)  //Implementation of the TPC Central Electrode calibration
 
 };
 

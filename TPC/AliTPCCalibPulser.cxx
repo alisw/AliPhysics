@@ -213,6 +213,7 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     fNbinsRMS(100),
     fXminRMS(0.1),
     fXmaxRMS(5.1),
+    fIsZeroSuppressed(kFALSE),
     fLastSector(-1),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
@@ -251,6 +252,7 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     // AliTPCSignal default constructor
     //
 
+    fParam->Update();
 }
 //_____________________________________________________________________
 AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
@@ -266,6 +268,7 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
     fNbinsRMS(sig.fNbinsRMS),
     fXminRMS(sig.fXminRMS),
     fXmaxRMS(sig.fXmaxRMS),
+    fIsZeroSuppressed(sig.fIsZeroSuppressed),
     fLastSector(-1),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
@@ -336,6 +339,7 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
 	}
     }
 
+    fParam->Update();
 }
 //_____________________________________________________________________
 AliTPCCalibPulser& AliTPCCalibPulser::operator = (const  AliTPCCalibPulser &source)
@@ -510,6 +514,7 @@ void AliTPCCalibPulser::FindPedestal(Float_t part)
 	    fPadNoise    = rms;
 	} 
     }
+    fPadPedestal*=(Float_t)(!fIsZeroSuppressed);
 }
 //_____________________________________________________________________
 void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
@@ -687,28 +692,26 @@ Bool_t AliTPCCalibPulser::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
   // Event Processing loop - AliTPCRawStream
   //
   ResetEvent();
-
   Bool_t withInput = kFALSE;
-
   while ( rawStreamFast->NextDDL() ){
-      while ( rawStreamFast->NextChannel() ){
-	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
-	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
-	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
+    while ( rawStreamFast->NextChannel() ){
+      Int_t isector  = rawStreamFast->GetSector();                       //  current sector
+      Int_t iRow     = rawStreamFast->GetRow();                          //  current row
+      Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
 
-	  while ( rawStreamFast->NextBunch() ){
-  	      Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-              Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
-		  Update(isector,iRow,iPad,iTimeBin+1,signal);
-		  withInput = kTRUE;
-	      }
-	  }
+      while ( rawStreamFast->NextBunch() ){
+        Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+	Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+	for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+          Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
+          Update(isector,iRow,iPad,iTimeBin+1,signal);
+          withInput = kTRUE;
+	}
       }
+    }
   }
   if (withInput){
-      EndEvent();
+    EndEvent();
   }
   return withInput;
 }

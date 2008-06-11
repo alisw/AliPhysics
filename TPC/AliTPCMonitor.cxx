@@ -752,7 +752,7 @@ Int_t AliTPCMonitor::ReadDataDATESubEventLoop(AliTPCMonitorDateFormat* dateform,
 	  
 	  eventPtr = dateform->GetFirstDataPointer();
 	  eventPtrUI = (UInt_t *) eventPtr;
-	  Int_t payload = dateform->GetPayloadSize();
+	  Int_t payload = dateform->GetPayloadSize(); // 40Bit words
 	  
 	  if(fVerb)DumpHeader(dateform);	  
 	  if(fVerb) cout << "Check sector and fEqId  " << endl;
@@ -767,7 +767,7 @@ Int_t AliTPCMonitor::ReadDataDATESubEventLoop(AliTPCMonitorDateFormat* dateform,
 	  if(CheckEqId(secid,fEqId)) 
 	    {
 	      if(fVerb) cout << " init altro " << endl;
-	      AliTPCMonitorAltro* altro  = new AliTPCMonitorAltro((UInt_t *)eventPtrUI,(payload/4),1);
+	      AliTPCMonitorAltro* altro  = new AliTPCMonitorAltro((UInt_t *)eventPtrUI,(payload/4),1); //hier
 	      altro->SetWrite10Bit(GetWrite10Bit());
 	      altro->SetActFilename(GetFile());
 	      if(fVerb) cout << " allocated 10bit " << endl;
@@ -910,7 +910,7 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
   Double_t  hrms             = 0.0;
   Double_t  hmean            = 0.0;
   Int_t     supnextpos        = 0;
-  TH1D*     hbase             =  new TH1D("hbase","hbase",GetTimeBins(),0.5,(GetTimeBins()+0.5));
+//  TH1D*     hbase             =  new TH1D("hbase","hbase",GetTimeBins(),0.5,(GetTimeBins()+0.5));
  
   while(lastpos>0) 
     {
@@ -926,7 +926,8 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
       fPad[fChannelIter][0] = nextHwAddress ;
       
       if(fPadMapHw[nextHwAddress]!=-1 ) 
-	{
+      {
+          return;
 	  //Int_t hw_before1 = fPad[fChannelIter-2][0];
 	  //Int_t hw_before2 = fPad[fChannelIter-3][0];
 	  
@@ -966,7 +967,7 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
       sum           = 0.0;
       sumn          = 0;
       
-      hbase->Reset();
+//      hbase->Reset();
       
       for(Int_t iterwords = 0 ; iterwords< nwords ; iterwords++) 
 	{
@@ -978,23 +979,25 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
 	      samplebins   =  0;
 	      timestamp    =  entries[blockpos-iterwords-1];
 	      iterwords++;
+              sampleiter-=2;
 	    }
 	  else 
 	    {
 	      ntime = timestamp-samplebins;
 	      adc   = entries[blockpos-iterwords];
 	      fPad[fChannelIter][ntime]  = adc;
-	      if( (adc!=0)  && (ntime>=GetRangeBaseMin()  ) && (ntime<GetRangeBaseMax()    ))  {hbase->Fill(adc)        ;}
+//	      if( (adc!=0)  && (ntime>=GetRangeBaseMin()  ) && (ntime<GetRangeBaseMax()    ))  {hbase->Fill(adc)        ;}
 	      if( (adc>max) && (ntime>=GetRangeMaxAdcMin()) && (ntime<GetRangeMaxAdcMax()  ))  {max = adc;maxx = ntime ;}
 	      if(              (ntime>=GetRangeSumMin())    && (ntime<GetRangeSumMax()     ))  {sum+=adc; sumn++;}
 	      samplebins++;
+              sampleiter--;
 	    }
 	}
       
-      hmean = hbase->GetMean();
-      hbase->GetXaxis()->SetRangeUser(hmean- hmean/3 , hmean + hmean/3);
-      hmean =  hbase->GetMean();
-      hrms  = hbase->GetRMS();
+//      hmean = hbase->GetMean();
+//      hbase->GetXaxis()->SetRangeUser(hmean- hmean/3 , hmean + hmean/3);
+//      hmean =  hbase->GetMean();
+//      hrms  = hbase->GetRMS();
 
       if(       GetPedestals()==1) fHistAddrMaxAdc->SetBinContent(  nextHwAddress,max- hmean);
       else                         fHistAddrMaxAdc->SetBinContent(  nextHwAddress,max        );
@@ -1025,7 +1028,7 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
       fChannelIter++;
       if(nextpos<0)  { AliError("Error :  next pos < 0 "); break  ;}
     }
-  delete hbase;
+//  delete hbase;
   return ;
 }
 

@@ -36,8 +36,8 @@ class AliTPCMonitorAltro : public TNamed {
 
     Long64_t*    Get40BitArray();
     Short_t     *Get10BitArray();     
-    Int_t        Get40BitArraySize()     const { return fmemory[fsize-1];}  
-    Int_t        Get10BitArraySize()     const { return fmemory[fsize-1]*4;}  
+    Int_t        Get40BitArraySize()     const { return fmemory[fsize-GetRCUTrailerSize()];}   //hier ändern
+    Int_t        Get10BitArraySize()     const { return fmemory[fsize-GetRCUTrailerSize()]*4;}  //number of 10 bit words from trailer
     Char_t*      GetActFileName()        const { return ffilename;}
     
     static Int_t GetHwMaskFEC()                { return fgkHwMaskFEC;}
@@ -55,6 +55,8 @@ class AliTPCMonitorAltro : public TNamed {
     Int_t        GetTrailerDataPos()     const { return fTrailerDataPos  ;}
     Int_t        GetTrailerBlockPos()    const { return fTrailerBlockPos ;}
     Int_t        GetTrailerPos()         const { return fTrailerPos      ;} 
+
+    Int_t        GetRCUTrailerSize()     const { Int_t ts=(fmemory[fsize-1]>>16==0xaaaa)*(fmemory[fsize-1]&0x3F); return (ts>0)?ts:1;}
 
     void         SetDataOffset(Int_t val){ foffset     =val ;} 
     void         SetWrite10Bit(Int_t wr) { fwrite10bit =wr  ;}
@@ -82,7 +84,7 @@ class AliTPCMonitorAltro : public TNamed {
     Int_t                    fTrailerDataPos;                                           // from Trailer: position of first adc value 
     Int_t                    fTrailerBlockPos;                                          // from Trailer: number of 40 bit words for channel
     Int_t                    fTrailerPos;                                               // trailer position
-    
+
     Int_t                    fNextPos;                                                  // position of next trailer
     Char_t*                  ffilename;                                                 // name of processed file
     

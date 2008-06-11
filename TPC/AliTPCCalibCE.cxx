@@ -275,6 +275,7 @@ END_HTML */
 #include <TFile.h>
 
 //AliRoot includes
+#include "AliLog.h"
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
@@ -308,6 +309,11 @@ AliTPCCalibCE::AliTPCCalibCE() :
     fNbinsRMS(100),
     fXminRMS(0.1),
     fXmaxRMS(5.1),
+    fPeakMinus(2),
+    fPeakPlus(3),
+    fNoiseThresholdMax(5.),
+    fNoiseThresholdSum(8.),
+    fIsZeroSuppressed(kFALSE),
     fLastSector(-1),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
@@ -363,6 +369,7 @@ AliTPCCalibCE::AliTPCCalibCE() :
     // AliTPCSignal default constructor
     //
 //    fHTime0 = new TH1F("hTime0Event","hTime0Event",(fLastTimeBin-fFirstTimeBin)*10,fFirstTimeBin,fLastTimeBin);
+    fParam->Update();
 }
 //_____________________________________________________________________
 AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
@@ -378,6 +385,11 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fNbinsRMS(sig.fNbinsRMS),
     fXminRMS(sig.fXminRMS),
     fXmaxRMS(sig.fXmaxRMS),
+    fPeakMinus(sig.fPeakMinus),
+    fPeakPlus(sig.fPeakPlus),
+    fNoiseThresholdMax(sig.fNoiseThresholdMax),
+    fNoiseThresholdSum(sig.fNoiseThresholdSum),
+    fIsZeroSuppressed(sig.fIsZeroSuppressed),
     fLastSector(-1),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
@@ -509,6 +521,7 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fVEventTime.SetElements(sig.fVEventTime.GetMatrixArray());
     fVEventNumber.SetElements(sig.fVEventNumber.GetMatrixArray());
 
+    fParam->Update();
 }
 //_____________________________________________________________________
 AliTPCCalibCE& AliTPCCalibCE::operator = (const  AliTPCCalibCE &source)
@@ -568,6 +581,11 @@ Int_t AliTPCCalibCE::Update(const Int_t icsector,
     // assumes that it is looped over consecutive time bins of one pad
     //
 
+    //temp
+//    if (icsector<36) return 0;
+//    if (icsector%36>17) return 0;
+
+
   if (icRow<0) return 0;
   if (icPad<0) return 0;
   if (icTimeBin<0) return 0;
@@ -617,7 +635,7 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 	}
 
 	if ( fPedestalROC&&fPadNoiseROC ){
-	    fPadPedestal = fPedestalROC->GetValue(fCurrentChannel);
+	    fPadPedestal = fPedestalROC->GetValue(fCurrentChannel)*fIsZeroSuppressed;
 	    fPadNoise    = fPadNoiseROC->GetValue(fCurrentChannel);
             noPedestal   = kFALSE;
 	}
@@ -627,6 +645,9 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
     //if we are not running with pedestal database, or for the current sector there is no information
     //available, calculate the pedestal and noise on the fly
     if ( noPedestal ) {
+	fPadPedestal = 0;
+	fPadNoise    = 0;
+        if ( fIsZeroSuppressed ) return;
 	const Int_t kPedMax = 100;  //maximum pedestal value
 	Float_t  max    =  0;
 	Float_t  maxPos =  0;
@@ -672,8 +693,6 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 		rms  +=histo[median+idelta]*(median+idelta)*(median+idelta);
 	    }
 	}
-	fPadPedestal = 0;
-	fPadNoise    = 0;
 	if ( count > 0 ) {
 	    mean/=count;
 	    rms    = TMath::Sqrt(TMath::Abs(rms/count-mean*mean));
@@ -693,7 +712,7 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
 
     Float_t ceQmax  =0, ceQsum=0, ceTime=0, ceRMS=0;
     Int_t   cemaxpos       = 0;
-    Float_t ceSumThreshold = 8.*fPadNoise;  // threshold for the signal sum
+    Float_t ceSumThreshold = fNoiseThresholdSum*fPadNoise;  // threshold for the signal sum
     const Int_t    kCemin  = 4;             // range for the analysis of the ce signal +- channels from the peak
     const Int_t    kCemax  = 7;
 
@@ -768,12 +787,12 @@ void AliTPCCalibCE::FindLocalMaxima(TVectorF &maxima)
     //
     // Find local maxima on the pad signal and Histogram them
     //
-  Float_t ceThreshold = 5.*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal
+  Float_t ceThreshold = fNoiseThresholdMax*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal
     Int_t   count       = 0;
-    Int_t   tminus      = 2;
-    Int_t   tplus       = 3;
-    for (Int_t i=fLastTimeBin-tplus-1; i>=fFirstTimeBin+tminus; --i){
-	if ( (fPadSignal[i]-fPadPedestal)>ceThreshold && IsPeak(i,tminus,tplus) ){
+//    Int_t   tminus      = 2;
+//    Int_t   tplus       = 3;
+    for (Int_t i=fLastTimeBin-fPeakPlus-1; i>=fFirstTimeBin+fPeakMinus; --i){
+	if ( (fPadSignal[i]-fPadPedestal)>ceThreshold && IsPeak(i,fPeakMinus,fPeakPlus) ){
 	  if (count<maxima.GetNrows()){
 	    maxima.GetMatrixArray()[count++]=i;
 	    GetHistoTmean(fCurrentSector,kTRUE)->Fill(i);
@@ -794,6 +813,8 @@ void AliTPCCalibCE::ProcessPad()
                              // however if we are on a high noise pad a lot more peaks due to the noise might occur
     FindLocalMaxima(maxima);
     if ( (fNevents == 0) || (fOldRunNumber!=fRunNumber) ) return;  // return because we don't have Time0 info for the CE yet
+
+    if ( !GetTMeanEvents(fCurrentSector) ) return; //return if we don't have time 0 info, eg if only one side has laser
 
     TVectorD param(3);
     Float_t  qSum;
@@ -835,6 +856,8 @@ void AliTPCCalibCE::EndEvent()
     //check if last pad has allready been processed, if not do so
     if ( fMaxTimeBin>-1 ) ProcessPad();
 
+//    AliDebug(5,
+
     TVectorD param(3);
     TMatrixD dummy(3,3);
 //    TVectorF vMeanTime(72);
@@ -863,8 +886,9 @@ void AliTPCCalibCE::EndEvent()
 	TH1S *hMeanT    = GetHistoTmean(iSec); //histogram with local maxima position information
 	if ( !hMeanT ) continue;
         //continue if not enough data is filled in the meanT histogram. This is the case if we do not have a laser event.
-        if ( hMeanT->GetEntries() < fROC->GetNChannels(iSec)*2/3 ){
-          hMeanT->Reset();
+	if ( hMeanT->GetEntries() < fROC->GetNChannels(iSec)*2/3 ){
+	    hMeanT->Reset();
+	    AliDebug(3,Form("Skipping sec. '%02d': Not enough statistics\n",iSec));
           continue;
         }
 
@@ -1061,24 +1085,24 @@ Bool_t AliTPCCalibCE::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
   ResetEvent();
   Bool_t withInput = kFALSE;
   while ( rawStreamFast->NextDDL() ){
-      while ( rawStreamFast->NextChannel() ){
-	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
-	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
-	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
+    while ( rawStreamFast->NextChannel() ){
+      Int_t isector  = rawStreamFast->GetSector();                       //  current sector
+      Int_t iRow     = rawStreamFast->GetRow();                          //  current row
+      Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
 
-	  while ( rawStreamFast->NextBunch() ){
-            Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-            Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-            for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
-		  Update(isector,iRow,iPad,iTimeBin+1,signal);
-		  withInput = kTRUE;
-	      }
-	  }
+      while ( rawStreamFast->NextBunch() ){
+        Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+        Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+        for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+          Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
+	  Update(isector,iRow,iPad,iTimeBin+1,signal);
+	  withInput = kTRUE;
+	}
       }
+    }
   }
   if (withInput){
-      EndEvent();
+    EndEvent();
   }
   return withInput;
 }

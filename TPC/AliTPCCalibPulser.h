@@ -74,11 +74,15 @@ public:
 
     void  SetDebugLevel(Short_t debug=1){ fDebugLevel = debug;}
 
+    void  SetIsZeroSuppressed(Bool_t zs=kTRUE){ fIsZeroSuppressed=zs;}
+
     void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
     void  SetOutliers(AliTPCCalPad *outliers)  {fOutliers = outliers;}
 
     Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
     Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
+
+    Bool_t GetIsZeroSupperssed() const { return fIsZeroSuppressed; }
 
     void Merge(AliTPCCalibPulser *sig);
 
@@ -101,6 +105,8 @@ private:
     Int_t   fNbinsRMS;                //  Number of bins for T0 reference histogram
     Float_t fXminRMS;                 //  xmin   of T0 reference histogram
     Float_t fXmaxRMS;                 //  xmax   of T0 reference histogram
+
+    Bool_t  fIsZeroSuppressed;        //  if data is zero suppressed
 
     Int_t     fLastSector;            //! Last sector processed
 
@@ -175,7 +181,7 @@ private:
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
 
-  ClassDef(AliTPCCalibPulser,2)           //Implementation of the TPC pulser calibration
+  ClassDef(AliTPCCalibPulser,3)           //Implementation of the TPC pulser calibration
 };
 
 
