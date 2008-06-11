@@ -140,7 +140,7 @@ void AliHALLv3::CreateGeometry()
 				      new TGeoTrd1(xl +dl, xl, hullen, dh / 2.),
 				      kMedCC);
   r2 = hullen + zHall26;
-  asHall->AddNode(voHUFL, 1, new TGeoCombiTrans(70., -100. - dh / 2., -r2, rot000));
+  asHall->AddNode(voHUFL, 1, new TGeoCombiTrans(70., -100. - dh / 2., -r2 - 0.75, rot000));
 
   //
   // RB24/26 wall 
@@ -167,7 +167,7 @@ void AliHALLv3::CreateGeometry()
   
   TGeoCompositeShape*  shHUWAT = new TGeoCompositeShape("HUWAT", "(shHUWAT1-shHUWAT2:tHUWAT2)-shHUWAT3:tHUWAT3");
   TGeoVolume* voHUWAT = new TGeoVolume("HUWAT", shHUWAT, kMedAir);
-  asHall->AddNode(voHUWAT, 1, new TGeoTranslation(70., 40., -zHall26 - hullen));
+  asHall->AddNode(voHUWAT, 1, new TGeoTranslation(70., 40., -zHall26 - hullen - 0.75));
   
   //
   //  Hall floor 
@@ -274,7 +274,7 @@ void AliHALLv3::CreateGeometry()
 				      new TGeoTrd1(dx1FloorL3, dx2FloorL3, dzL3/2., dyFloorL3/2.), 
 				      kMedCC);
 
-  asHall->AddNode(voHHF2, 1, new TGeoCombiTrans(0., yFloor - dyFloor / 2. + dyFloorL3 / 2.,0., rot000));
+  asHall->AddNode(voHHF2, 1, new TGeoCombiTrans(0., yFloor - dyFloor / 2. + dyFloorL3 / 2. - 0.5,0., rot000));
   //
   // Tunnel roof and pit
   // Roof
