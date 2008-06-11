@@ -1602,7 +1602,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   parPlt[2] = fgkSMpltT /2.0;
   gMC->Gsposp("UTA2",1,"UTF2",xpos,ypos,zpos
                     ,        0,"ONLY",parPlt,kNparPlt);
-  xpos      = (fgkSwidth1 + fgkSwidth2)/4.0 - fgkSMpltT/2.0;
+  xpos      = (fgkSwidth1 + fgkSwidth2)/4.0 - fgkSMpltT/2.0 - 0.0016;
   ypos      =  0.0;
   zpos      =  0.0;
   parPlt[0] = fgkSMpltT /2.0;
