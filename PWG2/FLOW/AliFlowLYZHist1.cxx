@@ -48,9 +48,9 @@ ClassImp(AliFlowLYZHist1)
 {
 
   //constructor creating histograms 
-  Int_t fNbins = AliFlowLYZConstants::kNbins;
-  Double_t fMin = AliFlowLYZConstants::fgMin;
-  Double_t fMax = AliFlowLYZConstants::fgMax;
+  Int_t iNbins = AliFlowLYZConstants::kNbins;
+  Double_t dMin = AliFlowLYZConstants::fgMin;
+  Double_t dMax = AliFlowLYZConstants::fgMax;
   TString title, name;
  
   
@@ -61,7 +61,7 @@ ClassImp(AliFlowLYZHist1)
   title = "First_Flow_Gtheta";
   title +=theta;
   title +="_LYZ";
-  fHistGtheta = new TH1D(name.Data(),title.Data(),fNbins,fMin,fMax);  
+  fHistGtheta = new TH1D(name.Data(),title.Data(),iNbins,dMin,dMax);  
   fHistGtheta->SetXTitle("r");
   fHistGtheta->SetYTitle("|G^{#theta}(ir)|^{2}");
   
@@ -72,7 +72,7 @@ ClassImp(AliFlowLYZHist1)
   title = "First_FlowPro_ReGtheta";
   title +=theta;
   title +="_LYZ";
-  fHistProReGtheta = new TProfile(name.Data(),title.Data(),fNbins,fMin,fMax);
+  fHistProReGtheta = new TProfile(name.Data(),title.Data(),iNbins,dMin,dMax);
   fHistProReGtheta->SetXTitle("r");
   fHistProReGtheta->SetYTitle("Re G^{#theta}(ir)");
   
@@ -83,7 +83,7 @@ ClassImp(AliFlowLYZHist1)
   title = "First_FlowPro_ImGtheta";
   title +=theta;
   title +="_LYZ";
-  fHistProImGtheta = new TProfile(name.Data(),title.Data(),fNbins,fMin,fMax);
+  fHistProImGtheta = new TProfile(name.Data(),title.Data(),iNbins,dMin,dMax);
   fHistProImGtheta->SetXTitle("r");
   fHistProImGtheta->SetYTitle("Im G^{#theta}(ir)");
       
@@ -101,12 +101,12 @@ AliFlowLYZHist1::~AliFlowLYZHist1()
 
 //----------------------------------------------------------------------- 
 
-void AliFlowLYZHist1::Fill(Double_t f, TComplex C)
+void AliFlowLYZHist1::Fill(Double_t f, TComplex c)
 {
   //fill the histograms
 
-  fHistProReGtheta->Fill(f, C.Re());
-  fHistProImGtheta->Fill(f, C.Im());
+  fHistProReGtheta->Fill(f, c.Re());
+  fHistProImGtheta->Fill(f, c.Im());
 }
 
 //----------------------------------------------------------------------- 
@@ -114,16 +114,16 @@ void AliFlowLYZHist1::Fill(Double_t f, TComplex C)
 TH1D* AliFlowLYZHist1::FillGtheta()
 {
   //fill the fHistGtheta histograms
-  Int_t fNbins = fHistGtheta->GetNbinsX();
-  for (Int_t bin=1;bin<=fNbins;bin++)
+  Int_t iNbins = fHistGtheta->GetNbinsX();
+  for (Int_t bin=1;bin<=iNbins;bin++)
 	{
 	  //get bincentre of bins in histogram
-	  Double_t fBin = fHistGtheta->GetBinCenter(bin); 
-	  Double_t fRe = fHistProReGtheta->GetBinContent(bin);
-	  Double_t fIm = fHistProImGtheta->GetBinContent(bin);
-	  TComplex fGtheta(fRe,fIm);
-	  //fill fHistGtheta with the modulus squared of fGtheta
-	  fHistGtheta->Fill(fBin,fGtheta.Rho2());
+	  Double_t dBin = fHistGtheta->GetBinCenter(bin); 
+	  Double_t dRe = fHistProReGtheta->GetBinContent(bin);
+	  Double_t dIm = fHistProImGtheta->GetBinContent(bin);
+	  TComplex cGtheta(dRe,dIm);
+	  //fill fHistGtheta with the modulus squared of cGtheta
+	  fHistGtheta->Fill(dBin,cGtheta.Rho2());
 	}
 
   return fHistGtheta;
@@ -135,24 +135,24 @@ Double_t AliFlowLYZHist1::GetR0()
 {
   //find the first minimum of the square of the modulus of Gtheta 
 
-  Int_t fNbins = fHistGtheta->GetNbinsX();
-  Double_t fR0 = 0; 
+  Int_t iNbins = fHistGtheta->GetNbinsX();
+  Double_t dR0 = 0.; 
 
-  for (Int_t b=2;b<fNbins;b++)
+  for (Int_t b=2;b<iNbins;b++)
     {
-      Double_t fG0 = fHistGtheta->GetBinContent(b);
-      Double_t fGnext = fHistGtheta->GetBinContent(b+1);
-      Double_t fGnextnext = fHistGtheta->GetBinContent(b+2);
+      Double_t dG0 = fHistGtheta->GetBinContent(b);
+      Double_t dGnext = fHistGtheta->GetBinContent(b+1);
+      Double_t dGnextnext = fHistGtheta->GetBinContent(b+2);
       
-      if (fGnext > fG0 && fGnextnext > fG0)
+      if (dGnext > dG0 && dGnextnext > dG0)
 	{
-	  Double_t fGlast = fHistGtheta->GetBinContent(b-1);
-	  Double_t fXlast = fHistGtheta->GetBinCenter(b-1);
-	  Double_t fX0 = fHistGtheta->GetBinCenter(b);
-	  Double_t fXnext = fHistGtheta->GetBinCenter(b+1);
+	  Double_t dGlast = fHistGtheta->GetBinContent(b-1);
+	  Double_t dXlast = fHistGtheta->GetBinCenter(b-1);
+	  Double_t dX0 = fHistGtheta->GetBinCenter(b);
+	  Double_t dXnext = fHistGtheta->GetBinCenter(b+1);
 
-	  fR0 = fX0 - ((fX0-fXlast)*(fX0-fXlast)*(fG0-fGnext) - (fX0-fXnext)*(fX0-fXnext)*(fG0-fGlast))/
-	    (2.*((fX0-fXlast)*(fG0-fGnext) - (fX0-fXnext)*(fG0-fGlast))); //interpolated minimum
+	  dR0 = dX0 - ((dX0-dXlast)*(dX0-dXlast)*(dG0-dGnext) - (dX0-dXnext)*(dX0-dXnext)*(dG0-dGlast))/
+	    (2.*((dX0-dXlast)*(dG0-dGnext) - (dX0-dXnext)*(dG0-dGlast))); //interpolated minimum
 	  
 	  break; //stop loop if minimum is found
 	} //if
@@ -160,23 +160,23 @@ Double_t AliFlowLYZHist1::GetR0()
     }//b
 
       
-  return fR0;
+  return dR0;
 }
    
 //----------------------------------------------------------------------- 
 Double_t AliFlowLYZHist1::GetBinCenter(Int_t i)
 {
   //gets bincenter of histogram
-  Double_t fR = fHistGtheta->GetBinCenter(i);
-  return fR;
+  Double_t dR = fHistGtheta->GetBinCenter(i);
+  return dR;
 }
 
 //----------------------------------------------------------------------- 
 
 Int_t AliFlowLYZHist1::GetNBins()
 {
-  //gets fNbins
-  Int_t fNbins = fHistGtheta->GetNbinsX();
-  return fNbins;
+  //gets iNbins
+  Int_t iNbins = fHistGtheta->GetNbinsX();
+  return iNbins;
 }
 

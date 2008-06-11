@@ -59,8 +59,8 @@ class AliFlowAnalysisWithLYZEventPlane {
 
  private:
 
-  AliFlowAnalysisWithLYZEventPlane(const AliFlowAnalysisWithLYZEventPlane& aAnalysis);
-  AliFlowAnalysisWithLYZEventPlane& operator=(const AliFlowAnalysisWithLYZEventPlane& aAnalysis); 
+  AliFlowAnalysisWithLYZEventPlane(const AliFlowAnalysisWithLYZEventPlane& aAnalysis);             // copy constructor
+  AliFlowAnalysisWithLYZEventPlane& operator=(const AliFlowAnalysisWithLYZEventPlane& aAnalysis);  // assignment operator
 
   TFile*             fOutFile;                //! 
   TFile*             fFirstRunFile ;          //! pointer to file from first run
@@ -71,44 +71,38 @@ class AliFlowAnalysisWithLYZEventPlane {
 
   //histograms
   //input
-  TProfile*  fSecondReDtheta;                 //!
-  TProfile*  fSecondImDtheta;                 //!
-  TProfile*  fFirstr0theta;                   //!
-  TProfile*  fSecondVPt;                      //!
+  TProfile*  fSecondReDtheta;                 // input profile
+  TProfile*  fSecondImDtheta;                 // input profile
+  TProfile*  fFirstr0theta;                   // input profile
+  TProfile*  fSecondVPt;                      // input profile
   //output
-  TProfile*  fHistProFlow;                    //!
-  TProfile*  fHistProFlow2;                   //!
-  TProfile*  fHistProWr;                      //!
-  TProfile*  fHistProWrCorr;                  //!
-  TH1D*      fHistFlow;                       //!
-  TH1F*      fHistDeltaPhi;                   //!
-  TH1F*      fHistDeltaPhi2;                  //!
-  TH1F*      fHistDeltaPhihere;               //!
-  TH1F*      fHistPhiEP;                      //!
-  TH1F*      fHistPhiEPhere;                  //!
-  TH1F*      fHistPhiLYZ;                     //!
-  TH1F*      fHistPhiLYZ2;                    //!
-  TProfile*  fHistProR0theta;                 //!
-  TProfile*  fHistProReDtheta;                //!
-  TProfile*  fHistProImDtheta;                //!
+  TProfile*  fHistProFlow;                    //
+  TProfile*  fHistProFlow2;                   //
+  TProfile*  fHistProWr;                      //
+  TProfile*  fHistProWrCorr;                  //
+  TH1D*      fHistFlow;                       //
+  TH1F*      fHistDeltaPhi;                   //
+  TH1F*      fHistDeltaPhi2;                  //
+  TH1F*      fHistDeltaPhihere;               //
+  TH1F*      fHistPhiEP;                      //
+  TH1F*      fHistPhiEPhere;                  //
+  TH1F*      fHistPhiLYZ;                     //
+  TH1F*      fHistPhiLYZ2;                    //
+  TProfile*  fHistProR0theta;                 //
+  TProfile*  fHistProReDtheta;                //
+  TProfile*  fHistProImDtheta;                //
   
-  AliFlowCommonHist* fCommonHists;            //!
-  AliFlowCommonHistResults* fCommonHistsRes;  //!
+  AliFlowCommonHist* fCommonHists;            //
+  AliFlowCommonHistResults* fCommonHistsRes;  //
 
-  Int_t     fEventNumber;  // event counter
+  Int_t     fEventNumber;                     // event counter
 
-  //  AliFlowVector  fQ;       // flow vector
-  //  TVector2  fQsum;         // flow vector sum
-  AliFlowVector  *fQ;       // flow vector
   TVector2  *fQsum;         // flow vector sum
   Double_t  fQ2sum;        // flow vector sum squared
-  Double_t  fQtheta;       // flow vector projected on ref. angle theta
-   
-  //  AliFlowEventSimple*  fEvent ;               //!
-  AliFlowTrackSimple*  fTrack ;               //!
-  //  AliFlowLYZEventPlane* fLYZEP ;              //!
+     
 
   ClassDef(AliFlowAnalysisWithLYZEventPlane, 0);          // lyz analysis 
 };
 
  #endif
+

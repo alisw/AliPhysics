@@ -53,13 +53,13 @@ ClassImp(AliFlowLYZHist2)
 
   //constructor creating histograms 
   TString title, name;
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Int_t fNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
 
-  Double_t  fPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  fPtMax = AliFlowCommonConstants::GetPtMax();
-  Double_t  fEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t  fEtaMax = AliFlowCommonConstants::GetEtaMax();
+  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
+  Double_t  dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
+  Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();
     
   //fHistProReNumer
   name = "Second_FlowPro_ReNumer";
@@ -68,7 +68,7 @@ ClassImp(AliFlowLYZHist2)
   title = "Second_FlowPro_ReNumer";
   title +=theta;
   title +="_LYZ";
-  fHistProReNumer = new TProfile(name.Data(),title.Data(),fNbinsEta,fEtaMin,fEtaMax); 
+  fHistProReNumer = new TProfile(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax); 
   fHistProReNumer->SetXTitle("eta");
   fHistProReNumer->SetYTitle("v (%)");
 
@@ -79,7 +79,7 @@ ClassImp(AliFlowLYZHist2)
   title = "Second_FlowPro_ImNumer";
   title +=theta;
   title +="_LYZ";
-  fHistProImNumer = new TProfile(name.Data(),title.Data(),fNbinsEta,fEtaMin,fEtaMax);  
+  fHistProImNumer = new TProfile(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax);  
   fHistProImNumer->SetXTitle("eta");
   fHistProImNumer->SetYTitle("v (%)");
 
@@ -90,7 +90,7 @@ ClassImp(AliFlowLYZHist2)
   title = "Second_FlowPro_ReNumerPt";
   title +=theta;
   title +="_LYZ";
-  fHistProReNumerPt = new TProfile(name.Data(),title.Data(),fNbinsPt,fPtMin,fPtMax); 
+  fHistProReNumerPt = new TProfile(name.Data(),title.Data(),iNbinsPt,dPtMin,dPtMax); 
   fHistProReNumerPt->SetXTitle("Pt");
   fHistProReNumerPt->SetYTitle("v (%)");
 
@@ -101,7 +101,7 @@ ClassImp(AliFlowLYZHist2)
   title = "Second_FlowPro_ImNumerPt";
   title +=theta;
   title +="_LYZ";
-  fHistProImNumerPt = new TProfile(name.Data(),title.Data(),fNbinsPt,fPtMin,fPtMax);  
+  fHistProImNumerPt = new TProfile(name.Data(),title.Data(),iNbinsPt,dPtMin,dPtMax);  
   fHistProImNumerPt->SetXTitle("Pt");
   fHistProImNumerPt->SetYTitle("v (%)");
 
@@ -112,7 +112,7 @@ ClassImp(AliFlowLYZHist2)
   title = "Second_FlowPro_ReNumer2D";
   title +=theta;
   title +="_LYZ";
-  fHistProReNumer2D = new TProfile2D(name.Data(),title.Data(),fNbinsEta,fEtaMin,fEtaMax,fNbinsPt,fPtMin,fPtMax);  
+  fHistProReNumer2D = new TProfile2D(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax,iNbinsPt,dPtMin,dPtMax);  
   fHistProReNumer2D->SetXTitle("eta");
   fHistProReNumer2D->SetYTitle("Pt (GeV/c)");
 
@@ -123,7 +123,7 @@ ClassImp(AliFlowLYZHist2)
   title = "Second_FlowPro_ImNumer2D";
   title +=theta;
   title +="_LYZ";
-  fHistProImNumer2D = new TProfile2D(name.Data(),title.Data(),fNbinsEta,fEtaMin,fEtaMax,fNbinsPt,fPtMin,fPtMax);  
+  fHistProImNumer2D = new TProfile2D(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax,iNbinsPt,dPtMin,dPtMax);  
   fHistProImNumer2D->SetXTitle("eta");
   fHistProImNumer2D->SetYTitle("Pt (GeV/c)");
 }
@@ -142,38 +142,38 @@ AliFlowLYZHist2::~AliFlowLYZHist2()
 }
 
 //----------------------------------------------------------------------- 
-void AliFlowLYZHist2::Fill(Double_t f1, Double_t f2, TComplex C)
+void AliFlowLYZHist2::Fill(Double_t f1, Double_t f2, TComplex c)
 {
   //fill the real and imaginary part of fNumer
 
-  fHistProReNumer->Fill(f1, C.Re());  
-  fHistProImNumer->Fill(f1, C.Im());
+  fHistProReNumer->Fill(f1, c.Re());  
+  fHistProImNumer->Fill(f1, c.Im());
    
-  fHistProReNumerPt->Fill(f2, C.Re());  
-  fHistProImNumerPt->Fill(f2, C.Im());
+  fHistProReNumerPt->Fill(f2, c.Re());  
+  fHistProImNumerPt->Fill(f2, c.Im());
   
-  fHistProReNumer2D->Fill(f1, f2, C.Re());          
-  fHistProImNumer2D->Fill(f1, f2, C.Im());           
+  fHistProReNumer2D->Fill(f1, f2, c.Re());          
+  fHistProImNumer2D->Fill(f1, f2, c.Im());           
 }
 
 //-----------------------------------------------------------------------
-TComplex AliFlowLYZHist2::GetfNumer(Int_t i)
+TComplex AliFlowLYZHist2::GetNumerEta(Int_t i)
 {
   //get the real and imaginary part of fNumer
-  Double_t fReNumer = fHistProReNumer->GetBinContent(i);
-  Double_t fImNumer = fHistProImNumer->GetBinContent(i);
-  TComplex fNumer(fReNumer,fImNumer);
-  //if (fNumer.Rho()==0) {cerr<<"modulus of fNumer is zero in AliFlowLYZHist2::GetfNumer(Int_t i)"<<endl;}
-  return fNumer;
+  Double_t dReNumer = fHistProReNumer->GetBinContent(i);
+  Double_t dImNumer = fHistProImNumer->GetBinContent(i);
+  TComplex cNumer(dReNumer,dImNumer);
+  //if (dNumer.Rho()==0) {cerr<<"modulus of dNumer is zero in AliFlowLYZHist2::GetNumer(Int_t i)"<<endl;}
+  return cNumer;
 }
 
 //----------------------------------------------------------------------- 
-TComplex AliFlowLYZHist2::GetfNumerPt(Int_t i)
+TComplex AliFlowLYZHist2::GetNumerPt(Int_t i)
 {
   //get the real and imaginary part of fNumer
-  Double_t fReNumer = fHistProReNumerPt->GetBinContent(i);
-  Double_t fImNumer = fHistProImNumerPt->GetBinContent(i);
-  TComplex fNumer(fReNumer,fImNumer);
-  return fNumer;
+  Double_t dReNumer = fHistProReNumerPt->GetBinContent(i);
+  Double_t dImNumer = fHistProImNumerPt->GetBinContent(i);
+  TComplex cNumer(dReNumer,dImNumer);
+  return cNumer;
 }
 

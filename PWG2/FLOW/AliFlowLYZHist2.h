@@ -25,29 +25,29 @@ class AliFlowLYZHist2 {
   AliFlowLYZHist2(Int_t theta);                     //constructor
   virtual  ~AliFlowLYZHist2();                      //destructor
   
-  void Fill(Double_t f1,Double_t f2, TComplex C);   //fill the histograms
+  void Fill(Double_t f1,Double_t f2, TComplex c);   //fill the histograms
   Int_t GetNbinsX()                
-    {Int_t fMaxEtaBins = fHistProReNumer->GetNbinsX();  return fMaxEtaBins;}     
+    {Int_t iMaxEtaBins = fHistProReNumer->GetNbinsX();  return iMaxEtaBins;}     
   Int_t GetNbinsXPt()              
-    {Int_t fMaxPtBins = fHistProReNumerPt->GetNbinsX(); return fMaxPtBins;}
+    {Int_t iMaxPtBins = fHistProReNumerPt->GetNbinsX(); return iMaxPtBins;}
   Double_t GetBinCenter(Int_t i)   
-    {Double_t fEta = fHistProReNumer->GetXaxis()->GetBinCenter(i);  return fEta;}
+    {Double_t dEta = fHistProReNumer->GetXaxis()->GetBinCenter(i);  return dEta;}
   Double_t GetBinCenterPt(Int_t i) 
-    {Double_t fPt = fHistProReNumerPt->GetXaxis()->GetBinCenter(i); return fPt;}
-  TComplex GetfNumer(Int_t i);                      //get numerator for diff. flow (eta)
-  TComplex GetfNumerPt(Int_t i);                    //get numerator for diff. flow (pt)
+    {Double_t dPt = fHistProReNumerPt->GetXaxis()->GetBinCenter(i); return dPt;}
+  TComplex GetNumerEta(Int_t i);                   //get numerator for diff. flow (eta)
+  TComplex GetNumerPt(Int_t i);                    //get numerator for diff. flow (pt)
   
  private:
  
-  AliFlowLYZHist2(const AliFlowLYZHist2& aAnalysis);
-  AliFlowLYZHist2& operator=(const AliFlowLYZHist2& aAnalysis);
+  AliFlowLYZHist2(const AliFlowLYZHist2& aAnalysis);             //copy constructor
+  AliFlowLYZHist2& operator=(const AliFlowLYZHist2& aAnalysis);  //assignment operator
   
-  TProfile* fHistProReNumer;                        //!
-  TProfile* fHistProImNumer;                        //!
-  TProfile* fHistProReNumerPt;                      //!
-  TProfile* fHistProImNumerPt;                      //!
-  TProfile2D* fHistProReNumer2D;                    //!
-  TProfile2D* fHistProImNumer2D;                    //!
+  TProfile* fHistProReNumer;                        //holds Re of Numerator(eta)
+  TProfile* fHistProImNumer;                        //holds Im of Numerator(eta)
+  TProfile* fHistProReNumerPt;                      //holds Re of Numerator(pt)
+  TProfile* fHistProImNumerPt;                      //holds Im of Numerator(pt)
+  TProfile2D* fHistProReNumer2D;                    //holds Re of Numerator
+  TProfile2D* fHistProImNumer2D;                    //holds Im of Numerator
   
 
   ClassDef(AliFlowLYZHist2,0)                    // macro for rootcint

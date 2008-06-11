@@ -66,6 +66,19 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) :
 }
 
 //________________________________________________________________________
+AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() : 
+  fESD(NULL),
+  fAOD(NULL),
+  fSP(NULL),
+  fEventMaker(NULL),
+  fAnalysisType("ESD"),
+  fListHistos(NULL)
+{
+  // Constructor
+  cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
+}
+
+//________________________________________________________________________
 AliAnalysisTaskScalarProduct::~AliAnalysisTaskScalarProduct()
 {
   //
@@ -165,25 +178,27 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
   // Called for each event
 
   
-  // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
-  // This handler can return the current MC event
 
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
-    Printf("ERROR: Could not retrieve MC event handler");
-    return;
-  }
-
-  AliMCEvent* mcEvent = eventHandler->MCEvent();
-  if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
-    return;
-  }
-
-  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
       
   if (fAnalysisType == "MC") {
+
+    // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
+    // This handler can return the current MC event
+
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+
     // analysis 
+    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
     fSP->Make(fEvent);
 
@@ -216,7 +231,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
 
   fListHistos->Print();	
   PostData(0,fListHistos);
-}      
+} 
 
 //________________________________________________________________________
 void AliAnalysisTaskScalarProduct::Terminate(Option_t *) 
@@ -224,7 +239,16 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
   // Called once at the end of the query
 //  fSP->Finish();
   //  PostData(0,fListHistos);
-
+  fListHistos = (TList*)GetOutputData(0);
+  cout << "histgram list in Terminate" << endl;
+  if (fListHistos) 
+    {
+      fListHistos->Print();
+    }	
+  else
+    {
+      cout << "histgram list pointer is empty" << endl;
+    }
 //  delete fSP;
 //  delete fEventMaker;
 }
