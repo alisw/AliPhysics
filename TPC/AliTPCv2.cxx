@@ -388,8 +388,8 @@ void AliTPCv2::CreateGeometry()
   TGeoTube *cs = new TGeoTube(56.9,61.2,0.1);
   TGeoMedium *sm7 = gGeoManager->GetMedium("TPC_Mylar");
   TGeoVolume *csv = new TGeoVolume("TPC_CDRS",cs,sm7);
-  v1->AddNode(csv,1,new TGeoTranslation(0.,0.,-71.));
-  v1->AddNode(csv,2,new TGeoTranslation(0.,0.,71.));
+  v1->AddNode(csv,1,new TGeoTranslation(0.,0.,-71.2));
+  v1->AddNode(csv,2,new TGeoTranslation(0.,0.,71.2));
   //
   // seal collars 
   TGeoPcon *se = new TGeoPcon(0.,360.,6);
