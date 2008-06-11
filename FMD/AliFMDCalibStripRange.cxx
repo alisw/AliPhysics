@@ -105,14 +105,12 @@ AliFMDCalibStripRange::WriteToFile(ofstream &outFile)
     UShort_t FirstRing = (det == 1 ? 1 : 0);
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
-      UShort_t nsec = (ir == 0 ? 40  : 20);
-      UShort_t nstr = (ir == 0 ? 256 : 512);
-      for(UShort_t sec =0; sec < nsec;  sec++)  {
-	outFile << det                   << ','
-		<< ring                  << ','
-		<< sec                   << ','
-		<< Min(det,ring,sec)     << ','
-		<< Max(det,ring,sec)     << "\n";
+      for(UShort_t board =0; board < 2;  board++)  {
+	outFile << det                     << ','
+		<< ring                    << ','
+		<< board                   << ','
+		<< Min(det,ring,board)     << ','
+		<< Max(det,ring,board)     << "\n";
 	  
 
       }
@@ -136,9 +134,10 @@ AliFMDCalibStripRange::ReadFromFile(ifstream &inFile)
     
   }
   
-  UShort_t det, sec;
+  UShort_t det, board;
   Char_t ring;
   UShort_t min, max;
+  
   Int_t thisline = inFile.tellg();
   Char_t c[4];
   
@@ -154,12 +153,14 @@ AliFMDCalibStripRange::ReadFromFile(ifstream &inFile)
     inFile.seekg(thisline);
     inFile     >> det          >> c[0]
 	       >> ring         >> c[1]
-	       >> sec          >> c[2]
+	       >> board        >> c[2]
 	       >> min          >> c[3]
 	       >> max;
     
-    Set(det,ring,sec,0,min,max);
-  
+    UInt_t nSec  = (ring == 'I' ? 10 : 20);
+    UShort_t sector = board*nSec;
+    Set(det,ring,sector,0,min,max);
+    std::cout<<det<<"  "<<board<<"   "<<min<<"   "<<max<<std::endl;
   }
   
   inFile.seekg(0);

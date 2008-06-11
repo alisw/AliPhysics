@@ -97,13 +97,13 @@ AliFMDCalibSampleRate::WriteToFile(ofstream &outFile)
     UShort_t FirstRing = (det == 1 ? 1 : 0);
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
-      UShort_t nsec = (ir == 0 ? 40  : 20);
-      UShort_t nstr = (ir == 0 ? 256 : 512);
-      for(UShort_t sec =0; sec < nsec;  sec++)  {
-	outFile << det                   << ','
-		<< ring                  << ','
-		<< sec                   << ','
-		<< Rate(det,ring,sec)    << "\n";
+      // UShort_t nsec = (ir == 0 ? 40  : 20);
+      
+      for(UShort_t board = 0; board < 2;  board++)  {
+	outFile << det                     << ','
+		<< ring                    << ','
+		<< board                   << ','
+		<< Rate(det,ring,board)    << "\n";
 	  
 
       }
@@ -127,7 +127,7 @@ AliFMDCalibSampleRate::ReadFromFile(ifstream &inFile)
     
   }
   
-  UShort_t det, sec;
+  UShort_t det, board;
   Char_t ring;
   UShort_t sampleRate;
   Int_t thisline = inFile.tellg();
@@ -144,11 +144,12 @@ AliFMDCalibSampleRate::ReadFromFile(ifstream &inFile)
     inFile.seekg(thisline);
     inFile     >> det          >> c[0]
 	       >> ring         >> c[1]
-	       >> sec          >> c[2]
+	       >> board        >> c[2]
 	       >> sampleRate;
     
-   
-    Set(det,ring,sec,0,sampleRate);
+    UInt_t nSec  = (ring == 'I' ? 10 : 20);
+    UShort_t sector = board*nSec;
+    Set(det,ring,sector,0,sampleRate);
     
     
   }
