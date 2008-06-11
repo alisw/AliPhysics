@@ -511,7 +511,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Matrix(irotpipe8,90.+1.0027,0.,90.,90.,1.0027,0.);
 
   // -- Mother of the ZDCs (Vacuum PCON)		
-  zd2 = 1910.;// zd2 initial value
+  zd2 = 1910.22;// zd2 initial value
   
   conpar[0] = 0.;
   conpar[1] = 360.;
@@ -528,7 +528,7 @@ void AliZDCv3::CreateBeamLine()
   // BEAM PIPE from 19.10 m to inner triplet beginning (22.965 m)  
   tubpar[0] = 6.0/2.;
   tubpar[1] = 6.4/2.;
-  tubpar[2] = 386.5/2.;
+  tubpar[2] = (386.5 - 0.22)/2.;
   gMC->Gsvolu("QA01", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QA01", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
@@ -1781,7 +1781,7 @@ void AliZDCv3::CreateZDC()
   // --- Positioning the vacuum slice into the tranche
   Float_t displFib = fDimZEM[1]/fDivZEM[0];
   gMC->Gspos("ZEV0", 1,"ZETR", -dimVoid[0], 0., 0., 0, "ONLY");
-  gMC->Gspos("ZEV1", 1,"ZETR", -dimVoid[0]+zTran, 0., displFib, 0, "ONLY");
+  gMC->Gspos("ZEV1", 1,"ZETR", -dimVoid[0]+zTran, 0., 0., 0, "ONLY");
 
   // --- Positioning the ZEM into the ZDC - rotation for 90 degrees  
   // NB -> ZEM is positioned in ALIC (instead of in ZDC) volume
