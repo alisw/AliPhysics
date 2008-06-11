@@ -102,28 +102,28 @@ if [ ! -d out ]; then
 fi
 
 # check if we are able to write to this dir, the alien SE, can readback from the alien SE and delete stuff
-touch agend_alien_tst.txt || exit 1
-date >> agend_alien_tst.txt
+touch agend_alien_tst$HOSTNAME.txt || exit 1
+date >> agend_alien_tst$HOSTNAME.txt
 #copy to alien
-alien_cp -dn agend_alien_tst.txt alien:${alien_HOME}agend_alien_tst.txt@$AGENTSE
+alien_cp -dn agend_alien_tst$HOSTNAME.txt alien:${alien_HOME}agend_alien_tst$HOSTNAME.txt@$AGENTSE
 
 #see if it is there
-res=`alien_ls ${alien_HOME}agend_alien_tst.txt | grep agend_alien_tst`
+res=`alien_ls ${alien_HOME}agend_alien_tst$HOSTNAME.txt | grep agend_alien_tst`
 if [ "x$res" == "x" ]; then
   echo "ERROR: could not write on storage element '$AGENTSE'"
   exit 1
 fi
 
 #copy back
-alien_cp -n alien:${alien_HOME}agend_alien_tst.txt agend_alien_tst_back.txt 
-res=`diff agend_alien_tst.txt agend_alien_tst_back.txt`
+alien_cp -n alien:${alien_HOME}agend_alien_tst$HOSTNAME.txt agend_alien_tst_back.txt 
+res=`diff agend_alien_tst$HOSTNAME.txt agend_alien_tst_back.txt`
 if [ "x$res" != "x" ]; then
   echo "ERROR: problems reading from storage element '$AGENTSE'"
   exit 1
 fi
 
 #try to delete from alien
-res=`alien_rm -d ${alien_HOME}agend_alien_tst.txt`
+res=`alien_rm -d ${alien_HOME}agend_alien_tst$HOSTNAME.txt`
 if [ "x$res" != "x" ]; then
   echo "ERROR: cannot delete from storage element '$AGENTSE'"
   exit 1
@@ -139,7 +139,7 @@ fi
 echo Current Dir
 pwd
 
-aliroot -b -q $ALICE_ROOT/TPC/macros/testTPC/AliTPCjobs.cxx
+aliroot -b -q $ALICE_ROOT/TPC/macros/testTPC/AliTPCjobs.cxx+
 
 #alien_cp -d job.list alien:${alien_HOME}job.list@$AGENTSE
 
