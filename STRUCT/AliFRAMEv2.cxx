@@ -189,7 +189,7 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gsvolu("B034", "BOX", kAir, pbox, 3);
   gMC->Gspos("B034", 1, "B033", 0., 0., 0., 0, "ONLY");
 
-  pbox[0] =   1.0;
+  pbox[0] =   0.9;
   pbox[1] =   5.0;
   pbox[2] = 375.5;
   
@@ -534,15 +534,15 @@ void AliFRAMEv2::CreateGeometry()
 // 
 //
 //
-  ptrd1[0] =  287. * TMath::Sin(10.* kdeg2rad) - 2.;
-  ptrd1[1] =  293. * TMath::Sin(10.* kdeg2rad) - 2.;
+  ptrd1[0] =  287. * TMath::Sin(10.* kdeg2rad) - 2.1;
+  ptrd1[1] =  293. * TMath::Sin(10.* kdeg2rad) - 2.1;
   ptrd1[2] =  ringW/2.;
   ptrd1[3] =  ringH/2.;  
   
   gMC->Gsvolu("B072", "TRD1", kSteel, ptrd1, 4);
 
-  ptrd1[0] =  287.5 * TMath::Sin(10. * kdeg2rad) - 2.;
-  ptrd1[1] =  292.5 * TMath::Sin(10. * kdeg2rad) - 2.;
+  ptrd1[0] =  287.5 * TMath::Sin(10. * kdeg2rad) - 2.1;
+  ptrd1[1] =  292.5 * TMath::Sin(10. * kdeg2rad) - 2.1;
   ptrd1[2] =  ringW / 2. - 0.5;
   ptrd1[3] =  ringH / 2. - 0.5;  
 
@@ -564,7 +564,7 @@ void AliFRAMEv2::CreateGeometry()
   theta = TMath::ACos(x);
   Float_t thetaP = (TMath::Pi()-theta)*krad2deg;
   
-  ptrap[0]  = dz/2.;
+  ptrap[0]  = dz/2. - 0.15;
   ptrap[1]  = thetaP;
   ptrap[2]  =  0.;
   ptrap[3]  =  dwh;
@@ -671,7 +671,7 @@ void AliFRAMEv2::CreateGeometry()
 
   theta = krad2deg * TMath::ACos(x);
   
-  ptrap[0]  = dz/2.;
+  ptrap[0]  = dz/2 - 0.15;
   ptrap[1]  = theta;
   ptrap[2]  =  0.;
   ptrap[3]  =  dwh;
@@ -768,10 +768,10 @@ void AliFRAMEv2::CreateGeometry()
 
   dy = (dymodL[2]+dymodU[1])/2.-dwl/2.;
   for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B065", 4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2076], "ONLY");
-      gMC->Gspos("B065", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2075], "ONLY");
-      gMC->Gspos("B065", 4*jmod+3, module[jmod], -dx0,   dy, dz0, idrotm[2078], "ONLY");
-      gMC->Gspos("B065", 4*jmod+4, module[jmod], -dx0,  -dy, dz0, idrotm[2077], "ONLY");
+      gMC->Gspos("B065", 4*jmod+1, module[jmod],  dx0,   dy, dz0 + 0.14, idrotm[2076], "ONLY");
+      gMC->Gspos("B065", 4*jmod+2, module[jmod],  dx0,  -dy, dz0 + 0.14, idrotm[2075], "ONLY");
+      gMC->Gspos("B065", 4*jmod+3, module[jmod], -dx0,   dy, dz0 + 0.14, idrotm[2078], "ONLY");
+      gMC->Gspos("B065", 4*jmod+4, module[jmod], -dx0,  -dy, dz0 + 0.14, idrotm[2077], "ONLY");
   }
   
 
@@ -987,8 +987,8 @@ void AliFRAMEv2::CreateGeometry()
   // TRD mother volume
   //
 
-  ptrd1[0] = 47.4405 - 0.2;
-  ptrd1[1] = 61.1765 - 0.2;
+  ptrd1[0] = 47.4405 - 0.3;
+  ptrd1[1] = 61.1765 - 0.3;
   ptrd1[2] = kBFMdz / 2.;
   ptrd1[3] = 38.95;
   gMC->Gsvolu("BFTRD", "TRD1", kAir, ptrd1, 4);
