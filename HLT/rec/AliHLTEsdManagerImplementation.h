@@ -1,20 +1,19 @@
 //-*- Mode: C++ -*-
 // $Id$
 
-#ifndef ALIHLTESDMANAGER_H
-#define ALIHLTESDMANAGER_H
+#ifndef ALIHLTESDMANAGERIMPLEMENTATION_H
+#define ALIHLTESDMANAGERIMPLEMENTATION_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTEsdManager.h
+/** @file   AliHLTEsdManagerImplementation.h
     @author Matthias Richter
     @date   
-    @brief  Manager for merging and writing of HLT ESDs
+    @brief  Implementation of the AliHLTEsdManager
 */
 
-#include "AliHLTDataTypes.h"
-#include "AliHLTLogging.h"
+#include "AliHLTEsdManager.h"
 #include "TString.h"
 #include <vector>
 
@@ -23,25 +22,22 @@ class TTree;
 class TFile;
 
 /**
- * @class AliHLTEsdManager
- * Tool to write and merge HLT ESD objects.
+ * @class AliHLTEsdManagerImplementation
+ * Implementation of the AliHLTEsdManager.
  *
- * HLT components can produce ESD output. The ESD objects are sent via
- * a TMessage like mechanism as part of the HLTOUT data. This class retrieves
- * streamed AliESDEvent objects from an HLT output block. An ESD object can be
- * copied to a global ESD provided by the caller or to files. The name of the
- * ROOT files follows the scheme AliHLTDETESDs.root where DET denotes a detector.
- * E.g. the ESD from a data block of type {ESD_TREE,TPC} will be added to the
- * file AliHLTTPCESDs.root.
+ * For the sake of library (in)dependencies, the concrete implementation of
+ * the AliHLTEsdManager is separated from the libHLTbase class as this would
+ * introduce dependencies to AliRoot libraries. See AliHLTEsdManager for
+ * usage.
  *
  * @ingroup alihlt_aliroot_reconstruction
  */
-class AliHLTEsdManager : public AliHLTLogging {
+class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
  public:
   /** constructor */
-  AliHLTEsdManager();
+  AliHLTEsdManagerImplementation();
   /** destructor */
-  virtual ~AliHLTEsdManager();
+  virtual ~AliHLTEsdManagerImplementation();
 
   /**
    * Convert data buffer to ESD.
@@ -89,9 +85,9 @@ class AliHLTEsdManager : public AliHLTLogging {
 
  private:
   /** copy constructor prohibited */
-  AliHLTEsdManager(const AliHLTEsdManager&);
+  AliHLTEsdManagerImplementation(const AliHLTEsdManagerImplementation&);
   /** assignment operator prohibited */
-  AliHLTEsdManager& operator=(const AliHLTEsdManager&);
+  AliHLTEsdManagerImplementation& operator=(const AliHLTEsdManagerImplementation&);
 
   class AliHLTEsdListEntry : public AliHLTLogging {
   public:
@@ -170,7 +166,7 @@ class AliHLTEsdManager : public AliHLTLogging {
   /** target directory */
   TString fDirectory; //!transient
 
-  ClassDef(AliHLTEsdManager, 1)
+  ClassDef(AliHLTEsdManagerImplementation, 1)
 };
 
 #endif

@@ -70,7 +70,7 @@ AliHLTReconstructor::~AliHLTReconstructor()
     }
   }
 
-  if (fpEsdManager) delete fpEsdManager;
+  if (fpEsdManager) AliHLTEsdManager::Delete(fpEsdManager);
   fpEsdManager=NULL;
 }
 
@@ -159,7 +159,7 @@ void AliHLTReconstructor::Init()
   gSystem->Load("libHLTinterface.so");
   fFctProcessHLTOUT=gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemProcessHLTOUT");
 
-  fpEsdManager=new AliHLTEsdManager;
+  fpEsdManager=AliHLTEsdManager::New();
 }
 
 void AliHLTReconstructor::Reconstruct(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/) const 

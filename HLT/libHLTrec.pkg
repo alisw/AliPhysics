@@ -6,7 +6,7 @@ LIBHLTREC_VERSION := 1
 CLASS_HDRS:=  	AliHLTReconstructor.h \
 		AliRawReaderHLT.h \
 		AliHLTOUTHomerCollection.h \
-		AliHLTEsdManager.h \
+		AliHLTEsdManagerImplementation.h \
 		AliHLTOUTDigitReader.h \
 		AliHLTOUTRawReader.h
 

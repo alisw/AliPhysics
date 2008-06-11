@@ -16,13 +16,13 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTEsdManager.cxx
+/** @file   AliHLTEsdManagerImplementation.cxx
     @author Matthias Richter
     @date   
     @brief  Manager for merging and writing of HLT ESDs
 */
 
-#include "AliHLTEsdManager.h"
+#include "AliHLTEsdManagerImplementation.h"
 #include "AliHLTComponent.h"
 #include "AliESDEvent.h"
 #include "AliHLTMessage.h"
@@ -37,9 +37,9 @@
 #include "TList.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTEsdManager)
+ClassImp(AliHLTEsdManagerImplementation)
 
-AliHLTEsdManager::AliHLTEsdManager()
+AliHLTEsdManagerImplementation::AliHLTEsdManagerImplementation()
   :
   fESDs(),
   fDirectory()
@@ -51,7 +51,7 @@ AliHLTEsdManager::AliHLTEsdManager()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTEsdManager::~AliHLTEsdManager()
+AliHLTEsdManagerImplementation::~AliHLTEsdManagerImplementation()
 {
   // see header file for class documentation
   for (unsigned int i=0; i<fESDs.size(); i++) {
@@ -62,7 +62,7 @@ AliHLTEsdManager::~AliHLTEsdManager()
   }
 }
 
-AliHLTEsdManager::AliHLTEsdListEntry* AliHLTEsdManager::Find(AliHLTComponentDataType dt) const
+AliHLTEsdManagerImplementation::AliHLTEsdListEntry* AliHLTEsdManagerImplementation::Find(AliHLTComponentDataType dt) const
 {
   // see header file for class documentation
   AliHLTEsdListEntry* pEntry=NULL;
@@ -74,7 +74,7 @@ AliHLTEsdManager::AliHLTEsdListEntry* AliHLTEsdManager::Find(AliHLTComponentData
   return pEntry;
 }
 
-int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
+int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
 			       AliHLTComponentDataType dt, AliESDEvent* tgtesd, int eventno)
 {
   // see header file for class documentation
@@ -152,7 +152,7 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
   return iResult;
 }
 
-int AliHLTEsdManager::PadESDs(int eventno)
+int AliHLTEsdManagerImplementation::PadESDs(int eventno)
 {
   // see header file for class documentation
   int iResult=0;
@@ -165,7 +165,7 @@ int AliHLTEsdManager::PadESDs(int eventno)
   return iResult;
 }
 
-void AliHLTEsdManager::SetDirectory(const char* directory)
+void AliHLTEsdManagerImplementation::SetDirectory(const char* directory)
 {
   // see header file for class documentation
   if (!directory) return;
@@ -177,7 +177,7 @@ void AliHLTEsdManager::SetDirectory(const char* directory)
   }
 }
 
-TString AliHLTEsdManager::GetFileNames(AliHLTComponentDataType dt) const
+TString AliHLTEsdManagerImplementation::GetFileNames(AliHLTComponentDataType dt) const
 {
   TString result;
   for (unsigned int i=0; i<fESDs.size(); i++) {
@@ -189,7 +189,7 @@ TString AliHLTEsdManager::GetFileNames(AliHLTComponentDataType dt) const
   return result;
 }
 
-TTree* AliHLTEsdManager::EmbedIntoTree(AliESDEvent* pESD, const char* name, const char* title)
+TTree* AliHLTEsdManagerImplementation::EmbedIntoTree(AliESDEvent* pESD, const char* name, const char* title)
 {
   // see header file for class documentation
   int iResult=0;
@@ -210,7 +210,7 @@ TTree* AliHLTEsdManager::EmbedIntoTree(AliESDEvent* pESD, const char* name, cons
   return pTree;
 }
 
-AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType dt)
+AliHLTEsdManagerImplementation::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType dt)
   :
   fName(),
   fDirectory(),
@@ -222,7 +222,7 @@ AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType
   // see header file for class documentation
 }
 
-AliHLTEsdManager::AliHLTEsdListEntry::~AliHLTEsdListEntry()
+AliHLTEsdManagerImplementation::AliHLTEsdListEntry::~AliHLTEsdListEntry()
 {
   // see header file for class documentation
   if (fpEsd) delete fpEsd;
@@ -235,13 +235,13 @@ AliHLTEsdManager::AliHLTEsdListEntry::~AliHLTEsdListEntry()
   fpFile=NULL;
 }
 
-bool AliHLTEsdManager::AliHLTEsdListEntry::operator==(AliHLTComponentDataType dt) const
+bool AliHLTEsdManagerImplementation::AliHLTEsdListEntry::operator==(AliHLTComponentDataType dt) const
 {
   // see header file for class documentation
   return fDt==dt;
 }
 
-int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eventno)
+int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eventno)
 {
   // see header file for class documentation
   int iResult=0;
@@ -509,7 +509,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eve
   return iResult;
 }
 
-TString AliHLTEsdManager::AliHLTEsdListEntry::WriteTempFile(AliESDEvent* pESD) const
+TString AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteTempFile(AliESDEvent* pESD) const
 {
   // see header file for class documentation
   int iResult=0;
@@ -521,7 +521,7 @@ TString AliHLTEsdManager::AliHLTEsdListEntry::WriteTempFile(AliESDEvent* pESD) c
 
     TFile file(tmpfilename, "RECREATE");
     if (!file.IsZombie()) {
-      TTree* pTree=AliHLTEsdManager::EmbedIntoTree(pESD);
+      TTree* pTree=AliHLTEsdManagerImplementation::EmbedIntoTree(pESD);
       if (pTree) {
 	file.cd();
 	if (pTree->Write()>0) {
@@ -555,7 +555,7 @@ TString AliHLTEsdManager::AliHLTEsdListEntry::WriteTempFile(AliESDEvent* pESD) c
   return tmpfilename;
 }
 
-void AliHLTEsdManager::AliHLTEsdListEntry::SetDirectory(const char* directory)
+void AliHLTEsdManagerImplementation::AliHLTEsdListEntry::SetDirectory(const char* directory)
 {
   // see header file for class documentation
   if (!directory) return;
@@ -566,7 +566,7 @@ void AliHLTEsdManager::AliHLTEsdListEntry::SetDirectory(const char* directory)
   fDirectory=directory;
 }
 
-void AliHLTEsdManager::AliHLTEsdListEntry::Delete()
+void AliHLTEsdManagerImplementation::AliHLTEsdListEntry::Delete()
 {
   // see header file for class documentation
   if (fName.IsNull()) return;
@@ -578,7 +578,7 @@ void AliHLTEsdManager::AliHLTEsdListEntry::Delete()
   fName="";
 }
 
-const char* AliHLTEsdManager::AliHLTEsdListEntry::GetFileName() const
+const char* AliHLTEsdManagerImplementation::AliHLTEsdListEntry::GetFileName() const
 {
   // see header file for class documentation
   return fName.Data();
