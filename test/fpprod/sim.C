@@ -5,7 +5,7 @@ void sim(Int_t nev=20) {
   simulator.SetMakeDigitsFromHits("ITS TPC");
   simulator.SetWriteRawData("ALL","raw.root",kTRUE);
   simulator.SetRunHLT("");
-  simulator.SetQA(kFALSE);
+  simulator.SetRunQA("");
  
   TStopwatch timer;
   timer.Start();
