@@ -498,21 +498,29 @@ int AliHLTDataBuffer::DeleteRawBuffers()
 {
   // see header file for function documentation
   int iResult=0;
-//   int iTotalSize=0;
-//   int iCount=fgFreeBuffers.size()+fgActiveBuffers.size();
+#ifdef ALIHLTSYSTEM_PROFILING
+  int iTotalSize=0;
+  int iCount=fgFreeBuffers.size()+fgActiveBuffers.size();
+#endif //ALIHLTSYSTEM_PROFILING
   AliHLTRawBufferPList::iterator buffer;;
   while ((buffer=fgFreeBuffers.begin())!=fgFreeBuffers.end()) {
-//     iTotalSize+=(*buffer)->GetTotalSize();
+#ifdef ALIHLTSYSTEM_PROFILING
+    iTotalSize+=(*buffer)->GetTotalSize();
+#endif //ALIHLTSYSTEM_PROFILING
     delete *buffer;
     fgFreeBuffers.erase(buffer);
   }
   while ((buffer=fgActiveBuffers.begin())!=fgActiveBuffers.end()) {
-//     iTotalSize+=(*buffer)->GetTotalSize();
+#ifdef ALIHLTSYSTEM_PROFILING
+    iTotalSize+=(*buffer)->GetTotalSize();
+#endif //ALIHLTSYSTEM_PROFILING
     fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", (*buffer)->GetPointer(), (*buffer)->GetTotalSize());
     delete *buffer;
     fgActiveBuffers.erase(buffer);
   }
-//   fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "Total memory allocation: %d byte in %d buffers", iTotalSize, iCount);
+#ifdef ALIHLTSYSTEM_PROFILING
+  fgLogging.Logging(kHLTLogImportant, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "Total memory allocation: %d byte in %d buffers", iTotalSize, iCount);
+#endif //ALIHLTSYSTEM_PROFILING
   return iResult;
 }
 
