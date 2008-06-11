@@ -119,6 +119,7 @@ class AliAODTrack : public AliVParticle {
   virtual const Double_t *PID() const { return fPID; }
   AODTrkPID_t GetMostProbablePID() const;
   void ConvertAliPIDtoAODPID();
+  void SetDetPID(AliAODPid *aodpid) {fDetPid = aodpid;}
 
   template <class T> void GetPID(T *pid) const {
     for(Int_t i=0; i<10; ++i) pid[i]=fPID[i];}
