@@ -325,7 +325,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
 					 new TGeoTubeSeg(coilRo, coilRo + 3.125, sW/2., 21., 51.),
 					 kMedAlu);
     TGeoVolume* voDCS021 = new TGeoVolume("DCS021", 
-					 new TGeoConeSeg(sW/2., coilRo, 320., coilRo, coilRo + 2., 21., 21.4),
+					 new TGeoConeSeg(sW/2., coilRo + 3.124, 320., coilRo + 3.125, coilRo + 5.125, 21., 21.4),
 					 kMedAlu);
     
 
