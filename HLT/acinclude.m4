@@ -28,10 +28,12 @@ AC_DEFUN([AC_DEBUG],
     [AC_HELP_STRING([--enable-debug],[Enable debugging symbols in objects])],
     [],[enable_debug=no])
   if test "x$enable_debug" = "xno" ; then
+    AC_DEFINE(NDEBUG)
     CFLAGS=`echo $CFLAGS | sed 's,-g,,'`
     CXXFLAGS=`echo $CXXFLAGS | sed 's,-g,,'`
   else
     AC_DEFINE(__DEBUG)
+    AC_DEFINE(DEBUG)
     case $CXXFLAGS in
     *-g*) ;;
     *)    CXXFLAGS="$CXXFLAGS -g" ;;
@@ -239,6 +241,7 @@ AC_ARG_ENABLE([$1],
    if test "x$have_aliroot" = "xno" ; then
      enable_module="no...requires.AliRoot"
    else
+     AC_MSG_NOTICE([-------------------------------------------------])
      AC_MSG_NOTICE([checking dependencies for [$1] library])
 
      AC_LANG_PUSH(C++)

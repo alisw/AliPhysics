@@ -566,6 +566,8 @@ fi
 
 if test "x$enable_tpc" = "xyes" ; then 
   AC_DEFINE(HLT_TPC)
+else
+  enable_module=$enable_tpc
 fi
 AM_CONDITIONAL(EN_HLT_TPC, test x$enable_tpc = xyes)
 AC_MSG_CHECKING([whether to compile TPC library])
@@ -612,6 +614,8 @@ fi
 
 if test "x$enable_rcu" = "xyes" ; then 
   AC_DEFINE(HLT_RCU)
+else
+  enable_module=$enable_rcu
 fi
 AM_CONDITIONAL(EN_HLT_RCU, test x$enable_rcu = xyes)
 AC_MSG_CHECKING([whether to compile RCU library])
@@ -662,6 +666,8 @@ fi
 if test "x$enable_phos" = "xyes" ; then 
   AC_DEFINE(HLT_PHOS)
   ALIPHOS_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_phos
 fi
 AM_CONDITIONAL(EN_HLT_PHOS, test x$enable_phos = xyes)
 AC_MSG_CHECKING([whether to compile PHOS library])
@@ -689,12 +695,14 @@ else
     AC_LANG_PUSH(C++)
     save_CPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/TRD"
-    AC_MSG_CHECKING([for required functions in AliTRDclusterizer])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
-                                       [AliTRDclusterizer c;
-				       c.SetRawVersion(0)])],
+    # AliTRDclusterizer::SetRawVersion() requires >v4-07-Release
+    # changed to AliTRDrecoParam::SetSeedingOn() due to revision 26327, Mon Jun 2 2008
+    AC_MSG_CHECKING([for required functions in AliTRDrecoParam])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrecoParam.h>], 
+                                       [AliTRDrecoParam p;
+				       p.SetSeedingOn()])],
                                        [], 
-  				       [enable_trd="no...requires.AliRoot>v4-07-Release"])
+  				       [enable_trd="no...requires.AliRoot>v4-13-Release"])
     AC_MSG_RESULT([$enable_trd])       
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
@@ -704,6 +712,8 @@ fi
 if test "x$enable_trd" = "xyes" ; then 
   AC_DEFINE(HLT_TRD)
   ALITRD_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_trd
 fi
 AM_CONDITIONAL(EN_HLT_TRD, test x$enable_trd = xyes)
 AC_MSG_CHECKING([whether to compile TRD library])
@@ -733,6 +743,8 @@ fi
 if test "x$enable_muon" = "xyes" ; then 
   AC_DEFINE(HLT_MUON)
   ALIMUON_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_muon
 fi
 AM_CONDITIONAL(EN_HLT_MUON, test x$enable_muon = xyes)
 AC_MSG_CHECKING([whether to compile MUON library])
@@ -761,6 +773,8 @@ fi
 if test "x$enable_trigger" = "xyes" ; then 
   AC_DEFINE(HLT_TRIGGER)
   ALITRIGGER_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_trigger
 fi
 AM_CONDITIONAL(EN_HLT_TRIGGER, test x$enable_trigger = xyes)
 AC_MSG_CHECKING([whether to compile Trigger library])
@@ -784,11 +798,29 @@ elif test "x$enable_module" = "xforce"; then
   enable_its="yes"
 else
   enable_its=$enable_module
+  if test "x$enable_its" = "xyes" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/ITS"
+    # changes in the AliVertexer base class revision 26414, Thu Jun 5 15:36:18 2008
+    # require AliVertexer::GetNominalPos()
+    AC_MSG_CHECKING([for required functions in AliITSVertexer])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliITSVertexerZ.h>], 
+                                       [AliITSVertexerZ v;
+				       v.GetNominalPos()])],
+                                       [], 
+  				       [enable_its="no...requires.AliRoot>v4-13-Release"])
+    AC_MSG_RESULT([$enable_its])       
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
 fi
 
 if test "x$enable_its" = "xyes" ; then 
   AC_DEFINE(HLT_ITS)
   ALIITS_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_its
 fi
 AM_CONDITIONAL(EN_HLT_ITS, test x$enable_its = xyes)
 AC_MSG_CHECKING([whether to compile ITS library])
@@ -817,6 +849,8 @@ fi
 if test "x$enable_comp" = "xyes" ; then 
   AC_DEFINE(HLT_COMP)
   ALICOMP_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_comp
 fi
 AM_CONDITIONAL(EN_HLT_COMP, test x$enable_comp = xyes)
 AC_MSG_CHECKING([whether to compile comp library])
