@@ -2,11 +2,12 @@
 PMD DA for online calibration
 
 contact: basanta@phy.iitb.ac.in
-Link:/afs/cern.ch/user/b/bnandi/public/
+Link:http://www.veccal.ernet.in/~pmd/
+Reference run:
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 1 million for PB+PB, 200 milion for p+p
-Input Files: data raw
+Input Files: 
 Output Files: pmd_calib.root, to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
 
@@ -53,9 +54,9 @@ int main(int argc, char **argv) {
 
     AliPMDCalibGain calibgain;
 
-    TTree *gain = new TTree("gain","PMD Gain tree");
+    TTree *ic = NULL;
 
-    TH1F::AddDirectory(0);
+    //TH1F::AddDirectory(0);
   
     
     // decoding the events
@@ -101,7 +102,8 @@ int main(int argc, char **argv) {
     int nevents_total=0;
     
     struct eventHeaderStruct *event;
-    eventTypeType eventT;
+    eventTypeType eventT = 0;
+
     Int_t iev=0;
     
     /* main loop (infinite) */
@@ -145,9 +147,13 @@ int main(int argc, char **argv) {
 		
 	    case PHYSICS_EVENT:
 		nevents_physics++;
+		if(nevents_physics%100 == 0)printf("Physis Events = %d\n",nevents_physics);
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-		calibgain.ProcessEvent(rawReader);
+		TObjArray *pmdddlcont = new TObjArray();
+		calibgain.ProcessEvent(rawReader, pmdddlcont);
 
+		delete pmdddlcont;
+		pmdddlcont = 0x0;
 		delete rawReader;
 		rawReader = 0x0;
 		
@@ -156,13 +162,15 @@ int main(int argc, char **argv) {
 	/* free resources */
 	free(event);
 	
-	/* exit when last event received, no need to wait for TERM signal */
-	if (eventT==END_OF_RUN) {
-	    printf("EOR event detected\n");
-	    calibgain.Analyse(gain);
-	    
-	    break;
-	}
+    }
+
+    /* exit when last event received, no need to wait for TERM signal */
+    if (eventT==END_OF_RUN) {
+      printf("EOR event detected\n");
+
+      ic = new TTree("ic","PMD Gain tree");
+      calibgain.Analyse(ic);
+      //break;
     }
     
     //write the Run level file   
@@ -177,15 +185,16 @@ int main(int argc, char **argv) {
     fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
     
 
-    TFile * gainRun = new TFile ("pmd_calib.root","RECREATE"); 
-    gain->Write();
+    TFile * gainRun = new TFile ("PMDGAINS.root","RECREATE"); 
+    ic->Write();
     gainRun->Close();
     
     
-    
+    delete ic;
+    ic = 0;
+
     /* close result file */
     fclose(fp);
-    
-    
+
     return status;
 }

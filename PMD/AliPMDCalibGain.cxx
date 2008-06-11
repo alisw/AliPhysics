@@ -113,11 +113,11 @@ AliPMDCalibGain::~AliPMDCalibGain()
 
 }
 // ------------------------------------------------------------------------ //
-Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
+Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlcont)
 {
   // Calculates the ADC of isolated cell
 
-  TObjArray pmdddlcont;
+  //TObjArray pmdddlcont;
 
   const Int_t kDDL           = AliDAQ::NumberOfDdls("PMD");
   const Int_t kCellNeighbour = 6;
@@ -150,13 +150,13 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
 
   Int_t numberofDDLs = 0;
 
-    while ((iddl = rawStream.DdlData(&pmdddlcont)) >=0) {
+    while ((iddl = rawStream.DdlData(pmdddlcont)) >=0) {
       numberofDDLs++;
 
-      Int_t ientries = pmdddlcont.GetEntries();
+      Int_t ientries = pmdddlcont->GetEntries();
       for (Int_t ient = 0; ient < ientries; ient++)
       {
-	  AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
+	  AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont->UncheckedAt(ient);
 	  
 	  Int_t idet = pmdddl->GetDetector();
 	  Int_t ismn = pmdddl->GetSMN();
@@ -171,7 +171,7 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
 	      d1[idet][ismn][irow][icol] = (Float_t) isig;
 	  }
       }
-      pmdddlcont.Clear();
+      pmdddlcont->Delete();
   }
   
   for(Int_t idet=0; idet < kDet; idet++)
@@ -235,10 +235,8 @@ void AliPMDCalibGain::Analyse(TTree *gaintree)
     {
 	for(Int_t ism = 0; ism < kMaxSMN; ism++)
 	{
-
 	    if (fSMCount[idet][ism] > 0)
 		modmean = fSMIso[idet][ism]/fSMCount[idet][ism];
-
 	    for(Int_t irow = 0; irow < kMaxRow; irow++)
 	    {
 		for(Int_t icol = 0; icol < kMaxCol; icol++)

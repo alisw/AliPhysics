@@ -17,7 +17,7 @@ class AliPMDCalibGain : public TObject
 
   virtual ~AliPMDCalibGain() ;     // dtor
 
-  Bool_t ProcessEvent(AliRawReader *rawReader);  //Looks for iso cells
+  Bool_t ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlcont);  //Looks for iso cells
 
   void Analyse(TTree *gaintree);
   
@@ -36,6 +36,6 @@ class AliPMDCalibGain : public TObject
   Float_t fCellIso[kDet][kMaxSMN][kMaxRow][kMaxCol]; // adc of iso cells
   Float_t fCellCount[kDet][kMaxSMN][kMaxRow][kMaxCol]; // counter
 
-ClassDef(AliPMDCalibGain,2)        // description 
+ClassDef(AliPMDCalibGain,3)        // description 
 };
 #endif // ALIPMDCALIBGAIN_H
