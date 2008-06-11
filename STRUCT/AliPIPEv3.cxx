@@ -988,8 +988,8 @@ void AliPIPEv3::CreateGeometry()
 // Pos 2.1 RF Contact Flange      LHCVSR__0003
 //
     TGeoPcon* shRB24B1RCTFlange = new TGeoPcon(0., 360., 6);
-    const Float_t kRB24B1RCTFlangeRin  = 8.06/2.;  // Inner radius
-    const Float_t kRB24B1RCTFlangeL    = 1.45;     // Length
+    const Float_t kRB24B1RCTFlangeRin  = 8.06/2. + 0.05;  // Inner radius
+    const Float_t kRB24B1RCTFlangeL    = 1.45;            // Length
     
     z = 0.;
     shRB24B1RCTFlange->DefineSection(0, z, kRB24B1RCTFlangeRin,  8.20/2.);
@@ -1020,7 +1020,7 @@ void AliPIPEv3::CreateGeometry()
     z =  kRB24B1RCTL -  kRB24B1RCTSL;
     // In the (VSR0004) this section is straight in (LHCVC2U_0001) it is conical ????
     shRB24B1RCT->DefineSection(1, z,  kRB24B1RCTRin + 0.35,  kRB24B1RCTRin + 0.35 + kRB24B1RCTd);
-    z = kRB24B1RCTL;
+    z = kRB24B1RCTL - 0.03;
     shRB24B1RCT->DefineSection(2, z,  kRB24B1RCTRin,  kRB24B1RCTRin + kRB24B1RCTd);
 
     TGeoVolume* voRB24B1RCT = new TGeoVolume("RB24B1RCT", shRB24B1RCT, kMedCu);
