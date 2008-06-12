@@ -101,6 +101,7 @@
 #include <TFile.h>
 #include <TClass.h>
 #include <TTree.h>
+#include <TROOT.h>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataSlot.h"
@@ -472,8 +473,11 @@ TFile *AliAnalysisTask::OpenFile(Int_t iout, Option_t *option) const
    }   
    if (mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis && cont->IsSpecialOutput())
       f = mgr->OpenProofFile(cont->GetFileName(),option);
-   else
-      f = new TFile(cont->GetFileName(), option);
+   else {
+      // Check first if the file is already opened
+      f = (TFile*)gROOT->GetListOfFiles()->FindObject(cont->GetFileName());
+      if (!f) f = new TFile(cont->GetFileName(), option);
+   }   
    if (f && !f->IsZombie()) {
       cont->SetFile(f);
       return f;

@@ -624,7 +624,6 @@ void AliAnalysisManager::Terminate()
    TIter next1(fOutputs);
    AliAnalysisDataContainer *output;
    while ((output=(AliAnalysisDataContainer*)next1())) {
-      // Close all files at output
       // Special outputs have the files already closed and written.
       if (output->IsSpecialOutput()) continue;
       const char *filename = output->GetFileName();
@@ -641,13 +640,11 @@ void AliAnalysisManager::Terminate()
       if (!output->GetData()) continue;
       TFile *file = output->GetFile();
       TDirectory *opwd = gDirectory;
-      if (file) {
-         file->cd();
-      } else {
-         file = new TFile(filename, "RECREATE");
-         if (file->IsZombie()) continue;
-         output->SetFile(file);
-      }   
+      file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+      if (!file) file = new TFile(filename, "RECREATE");
+      if (file->IsZombie()) continue;
+      output->SetFile(file);
+      file->cd();
       if (fDebug > 1) printf("   writing output data %s to file %s\n", output->GetData()->GetName(), file->GetName());
       if (output->GetData()->InheritsFrom(TCollection::Class())) {
       // If data is a collection, we set the name of the collection 
@@ -658,7 +655,13 @@ void AliAnalysisManager::Terminate()
       } else {
          output->GetData()->Write();
       }      
-      file->Close();
+      if (opwd) opwd->cd();
+   }   
+   next1.Reset();
+   while ((output=(AliAnalysisDataContainer*)next1())) {
+      // Close all files at output
+      TDirectory *opwd = gDirectory;
+      if (output->GetFile()) output->GetFile()->Close();
       if (opwd) opwd->cd();
    }   
 
