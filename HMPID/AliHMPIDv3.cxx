@@ -507,8 +507,6 @@ void AliHMPIDv3::Init()
 // Arguments: none
 //   Returns: none      
   AliDebug(1,"Start v2 HMPID.");    
-  fIdPad     = gMC->VolId("Hpad");
-  fIdCell    = gMC->VolId("Hcel");
   AliDebug(1,"Stop v2 HMPID.");    
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -19,8 +19,8 @@ class TGeoMedium;
 class AliHMPIDv3 : public AliHMPID //TObject-TNamed-AliModule-AliDetector-AliHMPID-AliHMPIDv3
 {
 public:
-                 AliHMPIDv3()                                   :AliHMPID(          ),fIdPad(-1),fIdCell(-1) {;}          //default ctor
-                 AliHMPIDv3(const char *name, const char *title):AliHMPID(name,title),fIdPad(-1),fIdCell(-1) {;}          //named ctor
+                 AliHMPIDv3()                                   :AliHMPID(          ) {;}          //default ctor
+                 AliHMPIDv3(const char *name, const char *title):AliHMPID(name,title) {;}          //named ctor
   virtual       ~AliHMPIDv3()                                                         {;}          //dtor
 //framework part++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
           void    AddAlignableVolumes(                               )const;                                   //from AliModule invoked from AliMC           
@@ -53,8 +53,7 @@ static    void    IdealPositionCradle(Int_t iCh,TGeoHMatrix *m);                
 protected:
   enum EMedia {kAir=1,kRoha=2,kSiO2=3,kC6F14=4,kCH4=5,kCsI=6,kAl=7,kCu=8,kW=9,kNeo=10,kAr=11};                       //media ids, used for geometry creation  
   enum Ecounters {kMipEnterRad=1,kCkovNew,kCkovNewRad,kCkovNewWin,kCkovNewProxGap,kCkovNewAmpGap,kCkovEnterPc,kPhotoEle};    //counters id's
-  Int_t fIdPad,fIdCell;                                                                 //! volumes ID's used in StepManager() and Count()
-  ClassDef(AliHMPIDv3,1)                                                                //HMPID full version for simulation
+  ClassDef(AliHMPIDv3,2)                                                                //HMPID full version for simulation
 };
 
 #endif
