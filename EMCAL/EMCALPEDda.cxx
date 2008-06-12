@@ -1,34 +1,39 @@
 /*
-  EMCAL DA for online calibration
+  EMCAL DA for online calibration: for pedestal studies
   
   Contact: silvermy@ornl.gov
-  Run Type: PEDESTAL or PHYSICS or STANDALONE
-  DA Type: LDC (PEDESTAL), MON (PHYSICS or STANDALONE)
+  Run Type: PEDESTAL 
+  DA Type: LDC 
   Number of events needed: ~1000
+  Frequency: expect to run this once per day initially 
+             (maybe less frequent later)
   Input Files: argument list
-  Output Files: RESULT_FILE=EMCALCalibPedestal.root, to be exported to the DAQ FXS
-  fileId:  FILE_ID=EMCALCalibPedestal    
-  Trigger types used: CALIBRATION_EVENT (temporarily also PHYSICS_EVENT to start with)
+  Output Files: RESULT_FILE=EMCALPED.root, to be exported to the DAQ FXS
+  fileId:  FILE_ID=EMCALPED    
 
+  Trigger types used: at least for now, all events in special PEDESTAL run
+  (physics, calibration, systemSoftwareTrigger, detectorSoftwareTrigger)
+  [When we have real data files later, we may restrict this further]
 */
 /*
   This process reads RAW data from the files provided as command line arguments
-  and save results (class itself) in a file (named from RESULT_FILE define - see below).
+  and save results (class itself) in a file (named from RESULT_FILE define 
+  - see below).
 */
 
-#define RESULT_FILE  "EMCALCalibPedestal.root"
-#define FILE_ID "EMCALCalibPedestal"
+#define RESULT_FILE  "EMCALPED.root"
+#define FILE_ID "EMCALPED"
 #define AliDebugLevel() -1
-#define FILE_ClassName "emcCalibPedestal"
+#define FILE_PEDClassName "emcCalibPedestal"
 const int kNRCU = 2;
 /* LOCAL_DEBUG is used to bypass daq* calls, for local testing */
-// #define LOCAL_DEBUG 1 // comment out to run normally
+//#define LOCAL_DEBUG 1 // comment out to run normally
 
 extern "C" {
 #include <daqDA.h>
 }
-#include "event.h"
-#include "monitor.h"
+#include "event.h" /* in $DATE_COMMON_DEFS/; includes definition of event types */
+#include "monitor.h" /* in $DATE_MONITOR_DIR/; monitor* interfaces */
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -161,10 +166,11 @@ int main(int argc, char **argv) {
       if (event==NULL) {
 	continue;
       }
-      eventT = event->eventType; // just shorthand
+      eventT = event->eventType; /* just convenient shorthand */
 
       /* skip start/end of run events */
-      if ( (eventT != physicsEvent) && (eventT != calibrationEvent) ) {
+      if ( (eventT != physicsEvent) && (eventT != calibrationEvent) &&
+	   (eventT != systemSoftwareTriggerEvent) && (eventT != detectorSoftwareTriggerEvent) ) {
 	continue;
       }
 
@@ -190,15 +196,19 @@ int main(int argc, char **argv) {
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
-    calibPedestal->Write(FILE_ClassName);
+    calibPedestal->Write(FILE_PEDClassName);
     f.Close();
-    printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, FILE_ClassName); 
+    printf("Object saved to file \"%s\" as \"%s\".\n", 
+	   RESULT_FILE, FILE_PEDClassName); 
   } 
   else {
-    printf("Could not save the object to file \"%s\".\n", RESULT_FILE);
+    printf("Could not save the object to file \"%s\".\n", 
+	   RESULT_FILE);
   }
 
-  // see if we can delete our analysis helper also
+  //
+  // closing down; see if we can delete our analysis helper also
+  //
   delete calibPedestal;
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     if (mapping[iFile]) delete mapping[iFile];

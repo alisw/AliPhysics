@@ -1,33 +1,35 @@
 /*
-  EMCAL DA for online calibration
+  EMCAL DA for online calibration: for LED studies
   
   Contact: silvermy@ornl.gov
   Run Type: PHYSICS or STANDALONE
   DA Type: MON 
-  Number of events needed: ~1000
+  Number of events needed: continously accumulating for all runs, rate ~0.1-1 Hz
   Input Files: argument list
-  Output Files: RESULT_FILE=EMCALCalibSignal.root, to be exported to the DAQ FXS
-  fileId:  FILE_ID=EMCALCalibSignal    
+  Output Files: RESULT_FILE=EMCALLED.root, to be exported to the DAQ FXS
+  fileId:  FILE_ID=EMCALLED    
   Trigger types used: CALIBRATION_EVENT (temporarily also PHYSICS_EVENT to start with)
-
+  [When we have real data files later, we should only use CALIBRATION_EVENT]
 */
 /*
   This process reads RAW data from the files provided as command line arguments
-  and save results (class itself) in a file (named from RESULT_FILE define - see below).
+  and save results (class itself) in a file (named from RESULT_FILE define - 
+  see below).
 */
 
-#define RESULT_FILE  "EMCALCalibSignal.root"
-#define FILE_ID "EMCALCalibSignal"
+#define RESULT_FILE  "EMCALLED.root"
+#define FILE_ID "EMCALLED"
 #define AliDebugLevel() -1
-#define FILE_ClassName "emcCalibSignal"
+#define FILE_PEDClassName "emcCalibPedestal"
+#define FILE_SIGClassName "emcCalibSignal"
 const int kNRCU = 2;
 /* LOCAL_DEBUG is used to bypass daq* calls that do not work locally */
-// #define LOCAL_DEBUG 1 // comment out to run normally                                                            
+//#define LOCAL_DEBUG 1 // comment out to run normally                                                            
 extern "C" {
 #include <daqDA.h>
 }
-#include "event.h"
-#include "monitor.h"
+#include "event.h" /* in $DATE_COMMON_DEFS/; includes definition of event types */
+#include "monitor.h" /* in $DATE_MONITOR_DIR/; monitor* interfaces */
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -51,6 +53,7 @@ extern "C" {
 //
 // EMC calibration-helper algorithm includes
 //
+#include "AliCaloCalibPedestal.h"
 #include "AliCaloCalibSignal.h"
 
 /*
@@ -118,11 +121,14 @@ int main(int argc, char **argv) {
     mapping[i] = new AliCaloAltroMapping(path2.Data());
   }
   
-  /* set up our analysis class */  
+  /* set up our analysis classes */  
+  AliCaloCalibPedestal * calibPedestal = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal); 
+  calibPedestal->SetAltroMapping( mapping );
   AliCaloCalibSignal * calibSignal = new AliCaloCalibSignal(AliCaloCalibSignal::kEmCal); 
   calibSignal->SetAltroMapping( mapping );
 
   AliRawReader *rawReader = NULL;
+  AliRawReader *rawReader2 = NULL;
   int nevents=0;
 
   /* loop over RAW data files */
@@ -160,7 +166,7 @@ int main(int argc, char **argv) {
       if (event==NULL) {
 	continue;
       }
-      eventT = event->eventType; // just shorthand
+      eventT = event->eventType; /* just convenient shorthand */
 
       /* skip start/end of run events */
       if ( (eventT != physicsEvent) && (eventT != calibrationEvent) ) {
@@ -173,6 +179,11 @@ int main(int argc, char **argv) {
       rawReader = new AliRawReaderDate((void*)event);
       calibSignal->ProcessEvent(rawReader);
       delete rawReader;
+      // seems like we need a fresh rawreader for a 2nd read customer(?)
+      // otherwise, we have already fast-forwarded past the event(?)
+      rawReader2 = new AliRawReaderDate((void*)event);
+      calibPedestal->ProcessEvent(rawReader2);
+      delete rawReader2;
 
       /* free resources */
       free(event);    
@@ -189,15 +200,21 @@ int main(int argc, char **argv) {
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
-    calibSignal->Write(FILE_ClassName);
+    calibPedestal->Write(FILE_PEDClassName);
+    calibSignal->Write(FILE_SIGClassName);
     f.Close();
-    printf("Object saved to file \"%s\" as \"%s\".\n", RESULT_FILE, FILE_ClassName); 
+    printf("Objects saved to file \"%s\" as \"%s\" and \"%s\".\n", 
+	   RESULT_FILE, FILE_PEDClassName, FILE_SIGClassName); 
   } 
   else {
-    printf("Could not save the object to file \"%s\".\n", RESULT_FILE);
+    printf("Could not save the object to file \"%s\".\n", 
+	   RESULT_FILE);
   }
 
-  // see if we can delete our analysis helper also
+  //
+  // closing down; see if we can delete our analysis helper(s) also
+  //
+  delete calibPedestal;
   delete calibSignal;
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     if (mapping[iFile]) delete mapping[iFile];
