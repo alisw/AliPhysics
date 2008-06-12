@@ -18,6 +18,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TArrayI.h>
+#include <TRandom.h>
 
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisManager.h"
@@ -26,7 +27,6 @@
 #include "AliESDInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisFilter.h"
-#include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
@@ -46,7 +46,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     AliAnalysisTaskSE(),
     fTrackFilter(0x0),
     fKinkFilter(0x0),
-    fV0Filter(0x0)
+    fV0Filter(0x0),
+    fHighPthreshold(0),
+    fPtshape(0x0)     
 {
   // Default constructor
 }
@@ -55,7 +57,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     AliAnalysisTaskSE(name),
     fTrackFilter(0x0),
     fKinkFilter(0x0),
-    fV0Filter(0x0)
+    fV0Filter(0x0),
+    fHighPthreshold(0),
+    fPtshape(0x0)
 {
   // Constructor
 }
@@ -81,7 +85,8 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
 					    
   Long64_t ientry = Entry();
   if (fDebug > 0) printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
-
+  if (fHighPthreshold == 0) AliInfo("detector PID signals are stored in each track");
+  if (!fPtshape) AliInfo("detector PID signals are not stored below the pt threshold");
   ConvertESDtoAOD();
 }
 
@@ -157,7 +162,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     AODEvent()->ResetStd(nTracks, nVertices, nV0s+nCascades, nJets, nCaloClus, nFmdClus, nPmdClus);
 
     AliAODTrack *aodTrack = 0x0;
-    
+    AliAODPid   *detpid   = 0x0;
+    Double_t timezero = 0; //TO BE FIXED
+ 
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
     if (nTracks>0) {
@@ -329,6 +336,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
+            SetAODPID(esdTrack,aodTrack,detpid,timezero);
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
@@ -366,6 +374,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());	    
+            SetAODPID(esdTrack,aodTrack,detpid,timezero);
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
@@ -410,6 +419,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
+            SetAODPID(esdTrack,aodTrack,detpid,timezero);
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
@@ -482,6 +492,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
+            SetAODPID(esdTrack,aodTrack,detpid,timezero);
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " V0 " << nV0
@@ -519,6 +530,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
+            SetAODPID(esdTrack,aodTrack,detpid,timezero);
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " V0 " << nV0
@@ -612,6 +624,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			mother->ConvertAliPIDtoAODPID();
 			primary->AddDaughter(mother);
 			mother->ConvertAliPIDtoAODPID();
+                        SetAODPID(esdTrackM,mother,detpid,timezero);
 		    }
 		    else {
 //			cerr << "Error: event " << esd->GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
@@ -662,6 +675,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			daughter->ConvertAliPIDtoAODPID();
 			vkink->AddDaughter(daughter);
 			daughter->ConvertAliPIDtoAODPID();
+                       SetAODPID(esdTrackD,daughter,detpid,timezero);
 		    }
 		    else {
 //			cerr << "Error: event " << esd->GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
@@ -724,6 +738,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->SetFlags(esdTrack->GetStatus());
 	    aodTrack->ConvertAliPIDtoAODPID();
+            SetAODPID(esdTrack,aodTrack,detpid,timezero);
 	}
 	else {
 	  // outside the beam pipe: orphan track
@@ -883,6 +898,31 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
     return;
 }
+
+void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero)
+{
+  //
+  // Setter for the raw PID detector signals
+  //
+
+  if(esdtrack->Pt()>fHighPthreshold) {
+    detpid = new AliAODPid();
+    detpid->SetDetectorRawSignals(esdtrack,timezero);
+    aodtrack->SetDetPID(detpid);
+  } else {
+    if(fPtshape){
+      if(esdtrack->Pt()> fPtshape->GetXmin()){
+	Double_t y = fPtshape->Eval(esdtrack->Pt())/fPtshape->Eval(fHighPthreshold);
+	if(gRandom->Rndm(0)<1./y){
+	  detpid = new AliAODPid();
+	  detpid->SetDetectorRawSignals(esdtrack,timezero);
+	  aodtrack->SetDetPID(detpid);
+	}//end rndm
+      }//end if p < pmin
+    }//end if p function
+  }// end else
+}
+
 
 void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
 {

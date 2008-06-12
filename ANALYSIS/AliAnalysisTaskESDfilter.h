@@ -7,8 +7,11 @@
 /* $Id: AliAnalysisTaskESDfilter.h 24429 2008-03-12 10:27:50Z jgrosseo $ */
 
 #include <TList.h> 
+#include <TF1.h> 
 #include "AliAnalysisTaskSE.h"
-
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliAODPid.h"
 class AliAnalysisFilter;
 
 class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
@@ -30,6 +33,11 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
     virtual void SetKinkFilter (AliAnalysisFilter*  KinkF) {fKinkFilter  =  KinkF;}
     virtual void SetV0Filter   (AliAnalysisFilter*    V0F) {fV0Filter    =    V0F;}
+    virtual void SetPthreshold (Double_t p)             {fHighPthreshold =      p;}
+    virtual void SetPshape     (TF1 *func)             {fPtshape         =    func;}
+
+    virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero);
+
 
  private:
     AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
@@ -37,6 +45,9 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     AliAnalysisFilter* fTrackFilter; //  Track Filter
     AliAnalysisFilter* fKinkFilter;  //  Kink  Filter
     AliAnalysisFilter* fV0Filter;    //  V0    Filter    
+    Double_t     fHighPthreshold;    //  Pt threshold for detector signal setting
+    TF1 *        fPtshape;           //  Pt spectrum distribution
+
     ClassDef(AliAnalysisTaskESDfilter, 1); // Analysis task for standard ESD filtering
 };
  
