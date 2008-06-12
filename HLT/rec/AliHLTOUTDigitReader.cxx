@@ -212,3 +212,14 @@ int AliHLTOUTDigitReader::CloseTree()
 
   return iResult;
 }
+
+void AliHLTOUTDigitReader::SetParam(TTree* /*pDigitTree*/, int event)
+{
+  // see header file for class documentation
+
+  // TODO: here we have the implemented to correct loading of
+  // the digit file from the run loader. At time of writing
+  // (Jun 2008) the AliLoader for the HLT is missing in the AliRoot
+  // framework.
+  fEvent=event;
+}

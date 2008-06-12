@@ -8,6 +8,8 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTRootFileStreamerComponent.h \
 		AliHLTLoaderPublisherComponent.h \
 		AliHLTRawReaderPublisherComponent.h \
+		AliHLTOUTPublisherComponent.h \
+		AliHLTEsdCollectorComponent.h \
 		AliHLTDataGenerator.h \
 		AliHLTBlockFilterComponent.h \
 		AliHLTAgentUtil.h

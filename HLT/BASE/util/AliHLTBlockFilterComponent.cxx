@@ -1,32 +1,26 @@
 // @(#) $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTBlockFilterComponent.cxx
     @author Matthias Richter
     @date   
     @brief  A simple data block filter and merger, merges block descriptors
-
-                                                                          */
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+*/
 
 #include <cstdlib>
 #include "AliHLTBlockFilterComponent.h"
@@ -176,16 +170,6 @@ int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtDa
       HLTDebug("block type %s %#x discarded by filter rules", DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification);
     }
   }
-//   for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
-//     if (IsSelected(blocks[n])) {
-//       HLTDebug("block %d type %s %#x (ptr=%p offset=%d size=%d) selected by filter rules", 
-// 	       n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification, 
-// 	       blocks[n].fPtr, blocks[n].fOffset, blocks[n].fSize);
-//       outputBlocks.push_back(blocks[n]);
-//     } else {
-//       HLTDebug("block %d type %s %#x discarded by filter rules", n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification);
-//     }
-//   }
   size=0;
   return iResult;
 }

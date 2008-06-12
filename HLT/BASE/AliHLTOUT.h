@@ -21,6 +21,8 @@ class AliHLTOUTHandler;
 class AliHLTOUTHandlerDesc; // AliHLTModuleAgent.h
 class AliESDEvent;
 class AliHLTReconstructor;
+class AliRawReader;
+class TTree;
 
 #define AliHLTOUTInvalidIndex (~(AliHLTUInt32_t)0)
 
@@ -41,6 +43,28 @@ class AliHLTOUT : public AliHLTLogging {
   AliHLTOUT();
   /** standard destructor */
   virtual ~AliHLTOUT();
+
+  /**
+   * Create an AliHLTOUTRawReader instance.
+   * Helper function to transparently access classes from the
+   * libHLTrec library.
+   */
+  static AliHLTOUT* New(AliRawReader* pRawReader);
+
+  /**
+   * Create an AliHLTOUTDigitReader instance
+   * Helper function to transparently access classes from the
+   * libHLTrec library.
+   */
+  static AliHLTOUT* New(TTree* pDigitTree, int event=-1);
+
+  /**
+   * Delete an instance of the HLTOUT.
+   * Helper function to transparently access classes from the
+   * libHLTrec library. Before deleting, the availability of the
+   * library is checked.
+   */
+  static void Delete(AliHLTOUT* pInstance);
 
   /**
    * Locking guard for the AliHLTOUT object.
@@ -231,7 +255,7 @@ class AliHLTOUT : public AliHLTLogging {
    * @param dt    [in]  data type to match                                <br>
    * @param spec  [in]  data specification to match                       <br>
    * @param handlerType [in]  type of the handler
-   * @return identifier >0 if success, 0 if no block found                <br>
+   * @return block index: >= 0 if success, -ENOENT if no block found      <br>
    *         neg. error code if failed                                    <br>
    *                        -EPERM if access denied (object locked)
    */
@@ -242,7 +266,7 @@ class AliHLTOUT : public AliHLTLogging {
   /**
    * Select the next data block of data type and specification of the previous
    * call to @ref SelectFirstDataBlock.
-   * @return identifier >0 if success, 0 if no block found                <br>
+   * @return block index: >= 0 if success, -ENOENT if no block found      <br>
    *         neg. error code if failed                                    <br>
    *                        -EPERM if access denied (object locked)
    */
@@ -473,6 +497,27 @@ class AliHLTOUT : public AliHLTLogging {
    * Find handler description for a certain block index.
    */
   const AliHLTOUTHandlerListEntry& FindHandlerDesc(AliHLTUInt32_t blockIndex);
+
+  /**
+   * Internal New function for the external HLTOUT instances.
+   * Currently supported classes are AliHLTOUTRawReader and
+   * AliHLTOUTDigitReader, both implemented in libHLTrec.so.
+   */
+  static AliHLTOUT* New(const char* classname);
+
+  /**
+   * Set the RawReader as parameter.
+   * The function is for internal use only in conjunction with the
+   * New() functions.
+   */
+  virtual void SetParam(AliRawReader* pRawReader);
+
+  /**
+   * Set the RunLoader as parameter
+   * The function is for internal use only in conjunction with the
+   * New() functions.
+   */
+  virtual void SetParam(TTree* pDigitTree, int event=-1);
 
   /** data type for the current block search, set from @ref SelectFirstDataBlock */
   AliHLTComponentDataType fSearchDataType; //!transient

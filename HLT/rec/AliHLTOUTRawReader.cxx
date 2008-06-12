@@ -28,6 +28,18 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUTRawReader)
 
+AliHLTOUTRawReader::AliHLTOUTRawReader()
+  :
+  AliHLTOUTHomerCollection(),
+  fpRawreader(NULL)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
+
 AliHLTOUTRawReader::AliHLTOUTRawReader(AliRawReader* pRawreader, int event, AliHLTEsdManager* pEsdManager)
   :
   AliHLTOUTHomerCollection(event, pEsdManager),

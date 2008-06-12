@@ -30,6 +30,9 @@
 #include <cerrno>
 #include <cassert>
 #include "AliHLTOUT.h"
+#include "TSystem.h"
+#include "TClass.h"
+#include "TROOT.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUT)
@@ -457,4 +460,95 @@ AliHLTUInt32_t AliHLTOUT::ByteSwap32(AliHLTUInt32_t src)
     ((src & 0xFF00ULL) << 8) | 
     ((src & 0xFF0000ULL) >> 8) | 
     ((src & 0xFF000000ULL) >> 24);
+}
+
+AliHLTOUT* AliHLTOUT::New(AliRawReader* pRawReader)
+{
+  // see header file for class documentation
+  AliHLTOUT* instance=New("AliHLTOUTRawReader");
+  if (instance) {
+    instance->SetParam(pRawReader);
+  }
+  return instance;
+}
+
+AliHLTOUT* AliHLTOUT::New(TTree* pDigitTree, int event)
+{
+  // see header file for class documentation
+  AliHLTOUT* instance=New("AliHLTOUTDigitReader");
+  if (instance) {
+    instance->SetParam(pDigitTree, event);
+  }
+  return instance;
+}
+
+AliHLTOUT* AliHLTOUT::New(const char* classname)
+{
+  // see header file for class documentation
+  int iLibResult=0;
+  AliHLTOUT* instance=NULL;
+  AliHLTLogging log;
+  TClass* pCl=NULL;
+  ROOT::NewFunc_t pNewFunc=NULL;
+  do {
+    pCl=TClass::GetClass(classname);
+  } while (!pCl && (iLibResult=gSystem->Load("libHLTRec.so"))==0);
+  if (iLibResult>=0) {
+    if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
+      void* p=(*pNewFunc)(NULL);
+      if (p) {
+	instance=reinterpret_cast<AliHLTOUT*>(p);
+	if (!instance) {
+	  log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "type cast to AliHLTOUT instance failed");
+	}
+      } else {
+	log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "can not create AliHLTOUT instance from class descriptor");
+      }
+    } else {
+      log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "can not find AliHLTOUT class descriptor");
+    }
+  } else {
+    log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "can not load libHLTrec library");
+  }
+  return instance;
+}
+
+void AliHLTOUT::Delete(AliHLTOUT* pInstance)
+{
+  // see header file for class documentation
+  if (!pInstance) return;
+
+  // check if the library is still there in order to have the
+  // destructor available
+  TClass* pCl1=TClass::GetClass("AliHLTOUTRawReader");
+  TClass* pCl2=TClass::GetClass("AliHLTOUTDigitReader");
+  if (!pCl1 && !pCl2) {
+    AliHLTLogging log;
+    log.Logging(kHLTLogError, "AliHLTOUT::Delete", "HLTOUT handling", "potential memory leak: libHLTrec library not available, skipping destruction %p", pInstance);    
+    return;
+  }
+
+  delete pInstance;  
+}
+
+void AliHLTOUT::SetParam(AliRawReader* /*pRawReader*/)
+{
+  // see header file for class documentation
+  // default implementation, we should never get here
+  // this function can only be called from the class itsself and
+  // is intended to be used with the New functions. If we get into
+  // the default implementation there is a class mismatch.
+  assert(0);
+  HLTFatal("severe internal error: class mismatch");
+}
+
+void AliHLTOUT::SetParam(TTree* /*pDigitTree*/, int /*event*/)
+{
+  // see header file for class documentation
+  // default implementation, we should never get here
+  // this function can only be called from the class itsself and
+  // is intended to be used with the New functions. If we get into
+  // the default implementation there is a class mismatch.
+  assert(0);
+  HLTFatal("severe internal error: class mismatch");
 }

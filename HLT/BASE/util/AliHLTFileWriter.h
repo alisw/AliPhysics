@@ -207,6 +207,11 @@ class AliHLTFileWriter : public AliHLTDataSink  {
   void SetExtension(const char* extension) {fExtension=extension!=NULL?extension:"";}
 
   /**
+   * Get the target directory
+   */
+  TString GetDirectory() {return fDirectory;}
+
+  /**
    * Working modes of the writer
    * @internal
    */

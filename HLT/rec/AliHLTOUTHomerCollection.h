@@ -110,9 +110,11 @@ class AliHLTOUTHomerCollection : public AliHLTOUTHomerBuffer {
   /** current instance of the HOMER reader */
   AliHLTHOMERReader* fpCurrent;  //!transient
 
+protected:
   /** current event no */
   int fEvent; //!transient
 
+private:
   /** instance of the ESD manager for writing and merging */
   AliHLTEsdManager* fpEsdManager; //!transient
 

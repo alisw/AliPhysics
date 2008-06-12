@@ -24,6 +24,8 @@ class AliHLTHOMERReader;
  */
 class AliHLTOUTRawReader : public AliHLTOUTHomerCollection {
  public:
+  /** standard constructor */
+  AliHLTOUTRawReader();
   /** constructor */
   AliHLTOUTRawReader(AliRawReader* pRawReader, int event=-1, AliHLTEsdManager* pEsdManager=NULL);
   /** destructor */
@@ -39,12 +41,17 @@ class AliHLTOUTRawReader : public AliHLTOUTHomerCollection {
   int GetEquipmentId();
 
  private:
-  /** standard constructor prohibited */
-  AliHLTOUTRawReader();
   /** copy constructor prohibited */
   AliHLTOUTRawReader(const AliHLTOUTRawReader&);
   /** assignment operator prohibited */
   AliHLTOUTRawReader& operator=(const AliHLTOUTRawReader&);
+
+  /**
+   * Set the RawReader as parameter.
+   * The function is for internal use only in conjunction with the
+   * AliHLTOUT::New() functions.
+   */
+  void SetParam(AliRawReader* pRawReader) {fpRawreader=pRawReader;}
 
   /** the rawreader */
   AliRawReader* fpRawreader; //!transient

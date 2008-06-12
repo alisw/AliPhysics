@@ -61,6 +61,13 @@ class AliHLTOUTDigitReader : public AliHLTOUTHomerCollection {
    */
   int CloseTree();
 
+  /**
+   * Set the RunLoader as parameter
+   * The function is for internal use only in conjunction with the
+   * AliHLTOUT::New() functions.
+   */
+  void SetParam(TTree* pDigitTree, int event=-1);
+
   /** name of the digit file */
   TString fDigitFileName; //! transient
 
