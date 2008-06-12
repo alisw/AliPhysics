@@ -19,7 +19,8 @@ class AliAODEvent;
 
 class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskCheckV0(const char *name = "AliAnalysisTaskCheckV0");
+  AliAnalysisTaskCheckV0();
+  AliAnalysisTaskCheckV0(const char *name);
   virtual ~AliAnalysisTaskCheckV0() {}
   
   virtual void   ConnectInputData(Option_t *);
@@ -36,6 +37,9 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   TString      fAnalysisType;                   //  ESD or AOD
   Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb  
   TList       *fListHist;                       //! List of histograms
+  TH1F        *fHistPrimaryVertexPosX;          //! Primary vertex position in X
+  TH1F        *fHistPrimaryVertexPosY;          //! Primary vertex position in Y
+  TH1F        *fHistPrimaryVertexPosZ;          //! Primary vertex position in Z
   TH1F        *fHistTrackMultiplicity;          //! Track multiplicity distribution
   TH1F        *fHistV0Multiplicity;             //! V0 multiplicity distribution
   TH1F        *fHistV0OnFlyStatus;              //! V0 on fly status distribution
