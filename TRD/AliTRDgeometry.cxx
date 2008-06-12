@@ -1323,11 +1323,11 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   // Lower bar (aluminum)
   parBOX[0] = 90.22/2.0;
   parBOX[1] =  1.20/2.0;
-  parBOX[2] =  1.90/2.0;
+  parBOX[2] =  1.74/2.0;
   gMC->Gsvolu("USD8","BOX ",idtmed[1301-1],parBOX,kNparBOX);
   xpos       =   0.0;
-  ypos       =   fClength[5][2]/2.0;
-  zpos       =  -fgkSheight/2.0 + 2.35;
+  ypos       =   fClength[5][2]/2.0 - 0.1;
+  zpos       =  -fgkSheight/2.0 + fgkSMpltT + 2.27;
   gMC->Gspos("USD8",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
   gMC->Gspos("USD8",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
   gMC->Gspos("USD8",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
@@ -1445,11 +1445,11 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   // Lower bar (aluminum)
   parBOX[0] = 90.22/2.0;
   parBOX[1] =  1.50/2.0;
-  parBOX[2] =  2.20/2.0;
+  parBOX[2] =  2.00/2.0;
   gMC->Gsvolu("USC5","BOX ",idtmed[1301-1],parBOX,kNparBOX);
   xpos       =   0.0;
   ypos       =   fClength[5][2]/2.0 + fClength[5][1] + fClength[5][0];
-  zpos       =  -fgkSheight/2.0 + 2.70;
+  zpos       =  -fgkSheight/2.0 + fgkSMpltT + 2.60;
   gMC->Gspos("USC5",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
   gMC->Gspos("USC5",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
   gMC->Gspos("USC5",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
@@ -1528,7 +1528,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   const Float_t kSCLwidLb  =  3.3;
   // Position of the corner ledges
   const Float_t kSCLposxLa =  0.15;
-  const Float_t kSCLposxLb =  2.6;
+  const Float_t kSCLposxLb =  2.7;
   const Float_t kSCLposzLa = -4.25;
   const Float_t kSCLposzLb = -0.5;
   // Vertical
