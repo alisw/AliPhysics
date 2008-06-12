@@ -34,6 +34,7 @@
 #include "TBits.h"
 #include "TList.h"
 #include "TArrayF.h"
+#include "TDecayChannel.h"
 
 ClassImp(AliCFParticleGenCuts)
 
@@ -63,6 +64,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
   fDecayLengthMax(1.e+09),
   fDecayRxyMin(-1),
   fDecayRxyMax(1.e+09),
+  fDecayChannel(0x0),
   fhCutStatistics(0x0),
   fhCutCorrelation(0x0),
   fCutValues(new TArrayF(kNCuts)),
@@ -102,6 +104,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
   fDecayLengthMax(1.e+09),
   fDecayRxyMin(-1.),
   fDecayRxyMax(1.e+09),
+  fDecayChannel(0x0),
   fhCutStatistics(0x0),
   fhCutCorrelation(0x0),
   fCutValues(new TArrayF(kNCuts)),
@@ -141,6 +144,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) :
   fDecayLengthMax(c.fDecayLengthMin),
   fDecayRxyMin(c.fDecayLengthMin),
   fDecayRxyMax(c.fDecayLengthMin),
+  fDecayChannel(c.fDecayChannel),
   fhCutStatistics(new TH1F(*c.fhCutStatistics)),
   fhCutCorrelation(new TH2F(*c.fhCutCorrelation)),
   fCutValues(new TArrayF(*c.fCutValues)),
@@ -185,6 +189,7 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
     fDecayLengthMax=c.fDecayLengthMax;
     fDecayRxyMin=c.fDecayRxyMin;
     fDecayRxyMax=c.fDecayRxyMax;
+    fDecayChannel=c.fDecayChannel;
     fCutValues=new TArrayF(*c.fCutValues);
     fBitmap=new TBits(*c.fBitmap);
     
@@ -301,6 +306,31 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
   }
   else fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
   
+  // cut on decay channel
+  if ( fDecayChannel ) {
+    Bool_t goodDecay = kTRUE ;
+    Short_t nDaughters = mcPart->Particle()->GetNDaughters() ;
+    if (nDaughters != fDecayChannel->NDaughters()) goodDecay = kFALSE ;
+    if (goodDecay) {
+      // now check if decay channel is respected
+      // first try
+      for (Int_t iDaughter = 0; iDaughter<nDaughters; iDaughter++) {
+	TParticle* daug = stack->Particle(mcPart->Particle()->GetDaughter(iDaughter)) ;
+	if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
+      }
+      if (!goodDecay) {
+	//second try inverting the order of the daughters
+	goodDecay = kTRUE ;
+	for (Int_t iDaughter = 0; iDaughter<nDaughters; iDaughter++) {
+	  TParticle* daug = stack->Particle(mcPart->Particle()->GetDaughter(nDaughters-(iDaughter+1))) ;
+	  if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
+	}
+      }
+    }
+    fCutValues->SetAt((Double32_t)goodDecay,kCutDecayChannel) ;
+  }
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutDecayChannel);
+  
   
   // now array of cut is build, fill the bitmap consequently
   Int_t iCutBit = -1;
@@ -323,6 +353,7 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
   if ( fCutValues->At(++iCutBit) < fDecayLengthMax) fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) > fDecayRxyMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) < fDecayRxyMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) != 0 )             fBitmap->SetBitNumber(iCutBit,kTRUE);
 }
 
 
@@ -399,6 +430,7 @@ void AliCFParticleGenCuts::DefineHistograms() {
   fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecLgthMax") ; k++;
   fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecRxyMin")  ; k++;
   fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecRxyMax")  ; k++;
+  fhCutStatistics->GetXaxis()->SetBinLabel(k,"DecChannel") ; k++;
 
 
   fhCutCorrelation = new TH2F(Form("%s_cut_correlation",GetName()),"",kNCuts,0.5,kNCuts+0.5,kNCuts,0.5,kNCuts+0.5);
@@ -412,25 +444,26 @@ void AliCFParticleGenCuts::DefineHistograms() {
   for (int i=0; i<kNStepQA; i++) {
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
-    fhQA[kCutCharge]     [i] = new TH1F(Form("%s_charge%s"      ,GetName(),str),"",2,0,2);
-    fhQA[kCutPrimSec]    [i] = new TH1F(Form("%s_primSec%s"     ,GetName(),str),"",2,0,2);
-    fhQA[kCutPDGCode]    [i] = new TH1F(Form("%s_pdgCode%s"     ,GetName(),str),"",2,0,2);
-    fhQA[kCutProdVtxXMin][i] = new TH1F(Form("%s_prodVtxXMin%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxXMax][i] = new TH1F(Form("%s_prodVtxXMax%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxYMin][i] = new TH1F(Form("%s_prodVtxYMin%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxYMax][i] = new TH1F(Form("%s_prodVtxYMax%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxZMin][i] = new TH1F(Form("%s_prodVtxZMin%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxZMax][i] = new TH1F(Form("%s_prodVtxZMax%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecVtxXMin] [i] = new TH1F(Form("%s_decVtxXMin%s"  ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecVtxXMax] [i] = new TH1F(Form("%s_decVtxXMax%s"  ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecVtxYMin] [i] = new TH1F(Form("%s_decVtxYMin%s"  ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecVtxYMax] [i] = new TH1F(Form("%s_decVtxYMax%s"  ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecVtxZMin] [i] = new TH1F(Form("%s_decVtxZMin%s"  ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecVtxZMax] [i] = new TH1F(Form("%s_decVtxZMax%s"  ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecLgthMin] [i] = new TH1F(Form("%s_decLengthMin%s",GetName(),str),"",100,0,10);
-    fhQA[kCutDecLgthMax] [i] = new TH1F(Form("%s_decLengthMax%s",GetName(),str),"",100,0,10);
-    fhQA[kCutDecRxyMin]  [i] = new TH1F(Form("%s_decRxyMin%s"   ,GetName(),str),"",100,0,10);
-    fhQA[kCutDecRxyMax]  [i] = new TH1F(Form("%s_decRxyMax%s"   ,GetName(),str),"",100,0,10);
+    fhQA[kCutCharge]      [i] = new TH1F(Form("%s_charge%s"      ,GetName(),str),"",2,0,2);
+    fhQA[kCutPrimSec]     [i] = new TH1F(Form("%s_primSec%s"     ,GetName(),str),"",2,0,2);
+    fhQA[kCutPDGCode]     [i] = new TH1F(Form("%s_pdgCode%s"     ,GetName(),str),"",2,0,2);
+    fhQA[kCutProdVtxXMin] [i] = new TH1F(Form("%s_prodVtxXMin%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxXMax] [i] = new TH1F(Form("%s_prodVtxXMax%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxYMin] [i] = new TH1F(Form("%s_prodVtxYMin%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxYMax] [i] = new TH1F(Form("%s_prodVtxYMax%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxZMin] [i] = new TH1F(Form("%s_prodVtxZMin%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxZMax] [i] = new TH1F(Form("%s_prodVtxZMax%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxXMin]  [i] = new TH1F(Form("%s_decVtxXMin%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxXMax]  [i] = new TH1F(Form("%s_decVtxXMax%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxYMin]  [i] = new TH1F(Form("%s_decVtxYMin%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxYMax]  [i] = new TH1F(Form("%s_decVtxYMax%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxZMin]  [i] = new TH1F(Form("%s_decVtxZMin%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecVtxZMax]  [i] = new TH1F(Form("%s_decVtxZMax%s"  ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecLgthMin]  [i] = new TH1F(Form("%s_decLengthMin%s",GetName(),str),"",100,0,10);
+    fhQA[kCutDecLgthMax]  [i] = new TH1F(Form("%s_decLengthMax%s",GetName(),str),"",100,0,10);
+    fhQA[kCutDecRxyMin]   [i] = new TH1F(Form("%s_decRxyMin%s"   ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecRxyMax]   [i] = new TH1F(Form("%s_decRxyMax%s"   ,GetName(),str),"",100,0,10);
+    fhQA[kCutDecayChannel][i] = new TH1F(Form("%s_decayChannel%s",GetName(),str),"",2,0,2);
   }
   for(Int_t i=0; i<kNCuts; i++) fhQA[i][1]->SetLineColor(color);
 }

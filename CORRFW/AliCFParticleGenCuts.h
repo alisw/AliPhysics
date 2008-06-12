@@ -36,6 +36,7 @@ class TH1F;
 class TH2F;
 class TBits;
 class TArrayF;
+class TDecayChannel;
 
 class AliCFParticleGenCuts : public AliCFCutBase
 {
@@ -67,6 +68,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   void SetDecayVtxRangeZ   (Double32_t zmin, Double32_t zmax) {fDecayVtxZMin  =zmin; fDecayVtxZMax  =zmax;}
   void SetDecayLengthRange (Double32_t rmin, Double32_t rmax) {fDecayLengthMin=rmin; fDecayLengthMax=rmax;}
   void SetDecayRxyRange    (Double32_t rmin, Double32_t rmax) {fDecayRxyMin   =rmin; fDecayRxyMax   =rmax;}
+  void SetDecayChannel     (TDecayChannel* dc) {fDecayChannel = dc ;}
 
   enum { 
     kCutCharge,       // ischarged cut
@@ -88,6 +90,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
     kCutDecLgthMax,   // decay length cut
     kCutDecRxyMin,    // transverse decay length cut
     kCutDecRxyMax,    // transverse decay length cut
+    kCutDecayChannel, // decay channel reuired
     kNCuts,           // number of single selections
     kNStepQA=2        // number of QA steps (before/after the cuts)
   };
@@ -116,6 +119,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   Double32_t fDecayLengthMax;     // max decay length (absolute)
   Double32_t fDecayRxyMin;        // min decay length in transverse plane wrt (0,0,0)
   Double32_t fDecayRxyMax;        // max decay length in transverse plane wrt (0,0,0)
+  TDecayChannel* fDecayChannel;   // decay channel 
 
   //QA histos
   TH1F*    fhCutStatistics;        // Histogram: statistics of what cuts the tracks did not survive
