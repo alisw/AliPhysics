@@ -572,6 +572,13 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
     tOutputList->Add(obj);
   }
 
+  TList *eventCut = fEventCut->GetOutputList();
+
+  TIter nextevent(eventCut);
+  while (TObject *obj = nextevent()) {
+    tOutputList->Add(obj);
+  }
+
   AliFemtoCorrFctnIterator iter;
   for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
     TList *tListCf = (*iter)->GetOutputList();
