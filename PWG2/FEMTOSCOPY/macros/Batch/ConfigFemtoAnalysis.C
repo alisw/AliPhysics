@@ -25,6 +25,7 @@
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
+#include "AliFemtoVertexMultAnalysis.h"
 
 AliFemtoManager *ConfigFemtoAnalysis()
 {
