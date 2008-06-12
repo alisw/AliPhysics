@@ -6,34 +6,39 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // Base Class for Detector reconstruction parameters                         //
+// Revision: cvetan.cheshkov@cern.ch 12/06/2008                              //
+// Its structure has been revised and it is interfaced to AliEventInfo.      //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
 #include "TNamed.h"
 class AliDetectorRecoParam;
+class AliEventInfo;
 
 class AliRecoParam : public TNamed
 {
-  enum EventType0 {kUndef=0, kPhysic=1, kCalib=2};  
+
  public: 
   AliRecoParam();
+  AliRecoParam(const char *detector);
   virtual ~AliRecoParam();  
-  static AliRecoParam * Instance();
   //
-  virtual void        Print(Option_t *option="") const;
-  TObjArray * GetRecoParam(const char * detType, Int_t *eventType=0);  
-  void        RegisterRecoParam(AliDetectorRecoParam* param);
+  virtual void                  Print(Option_t *option="") const;
+  TObjArray                    *GetAllRecoParams() const { return fRecoParamArray; }
+  virtual AliDetectorRecoParam *GetRecoParam(const AliEventInfo &evInfo) const = 0;
+  void                          AddRecoParam(AliDetectorRecoParam* param);
 
 protected:
-  TObjArray *fRecoParamArray;   //array with registerd reconstruction parameters
-  static AliRecoParam* fgInstance; // Reconstruction parameters instance
+
+  TObjArray *fRecoParamArray;   //array with reconstruction-parameter objects
 
 private:
+
   AliRecoParam(const AliRecoParam&); // Not implemented
   AliRecoParam& operator=(const AliRecoParam&); // Not implemented
 
-  ClassDef(AliRecoParam, 1)
+  ClassDef(AliRecoParam, 2)
 };
 
 

@@ -16,21 +16,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// ALICE Reconstruction parameterization:
-// 
-//
-// Retrieving paramaters:
-// 0.  Read the parameters from database
-// 1.  Using the ConfigRecoParam.C script (example : $ALICE_ROOT/macros)
-// 2.  Register additional parametes (AliRecoParam::Instance()->RegisterRecoParam(tpcRecoParam);
-//
-//
-// Using the reconstruction parameters
-//    AliRecoParam::Instance()->GetRecoParam(detType, eventType)                                                                       //  
-//  detType: 
-//  1. Detectors - ITS, TPC, TRD, TOF ...
-//  2. Process   - V0, Kink, ESDcuts
-
+// ALICE Reconstruction parameterization:                                    //
+//                                                                           //
+//                                                                           //
+// Base Class for Detector reconstruction parameters                         //
+// Revision: cvetan.cheshkov@cern.ch 12/06/2008                              //
+// Its structure has been revised and it is interfaced to AliEventInfo.      //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -42,49 +33,37 @@
 
 ClassImp(AliRecoParam)
 
-
-AliRecoParam* AliRecoParam::fgInstance = 0x0;
-
-
-//_____________________________________________________________________________
-AliRecoParam* AliRecoParam::Instance()
-{
-  //
-  // returns AliRecoParam instance (singleton)
-  //
-  if (!fgInstance) {
-    fgInstance = new AliRecoParam();
-  }
-  
-  return fgInstance;
-}
-
-
-
 AliRecoParam::AliRecoParam(): 
-  TNamed("ALICE","ALICE"),
+  TNamed("",""),
   fRecoParamArray(0)
 {
-  //
-  //
-  //
+  // Default constructor
+  // ...
+}
+
+AliRecoParam::AliRecoParam(const char *detector): 
+  TNamed(detector,detector),
+  fRecoParamArray(0)
+{
+  // Default constructor
+  // ...
 }
 
 AliRecoParam::~AliRecoParam(){
-  //
-  //
-  //
+  // Destructor
+  // ...
+  // Delete the array with the reco-param objects
   if (fRecoParamArray){
     fRecoParamArray->Delete();
     delete fRecoParamArray;
   }
 }
 
-void  AliRecoParam::Print(Option_t *option) const{
+void  AliRecoParam::Print(Option_t *option) const {
   //
   // Print reconstruction setup
   //
-  printf("AliRecoParam\n"); 
+  printf("AliRecoParam object for %s\n",GetName()); 
   if (!fRecoParamArray) return;
   Int_t nparam = fRecoParamArray->GetEntriesFast();
   for (Int_t iparam=0; iparam<nparam; iparam++){
@@ -94,31 +73,10 @@ void  AliRecoParam::Print(Option_t *option) const{
   }
 }
 
-void  AliRecoParam::RegisterRecoParam(AliDetectorRecoParam* param){
-  //
-  //
+void  AliRecoParam::AddRecoParam(AliDetectorRecoParam* param){
+  // Add an instance of reco params object into
+  // the fRecoParamArray
   //
   if (!fRecoParamArray) fRecoParamArray = new TObjArray;
   fRecoParamArray->AddLast(param);
 }
-
-TObjArray * AliRecoParam::GetRecoParam(const char * detType, Int_t */*eventType*/){
-  //
-  // Get the list of Reconstruction parameters for given detector
-  // and event type
-  //
-  if (!fRecoParamArray) return 0;
-  TObjArray * array = 0;
-  Int_t nparam = fRecoParamArray->GetEntriesFast();
-  for (Int_t iparam=0;iparam<nparam; iparam++){
-    AliDetectorRecoParam * param = (AliDetectorRecoParam *)fRecoParamArray->At(iparam);
-    if (!param) continue;
-    TString str(param->GetName());
-    if (!str.Contains(detType)) continue;
-    if (!array) array = new TObjArray;
-    array->AddLast(param);    
-  }
-  return array;
-}
-
-

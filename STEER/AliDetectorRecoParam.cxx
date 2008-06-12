@@ -40,7 +40,6 @@ AliDetectorRecoParam::AliDetectorRecoParam():
   //
   // default constructor
   //
-  for (Int_t i=0;i<5; i++) fEventType[i]=0;
 }
 
 AliDetectorRecoParam::~AliDetectorRecoParam(){

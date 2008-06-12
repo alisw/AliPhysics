@@ -178,25 +178,9 @@ const AliMUONRecoParam* AliMUONReconstructor::GetRecoParam()
 {
   /// get reconstruction parameters
   
-  if (!fgRecoParam) {
-    
-    // get reconstruction parameters from AliRecoParam if any
-    TObjArray *recoParams = AliRecoParam::Instance()->GetRecoParam("MUON");
-    
-    if (recoParams) {
-      
-      fgRecoParam = (AliMUONRecoParam*) recoParams->Last();
-      
-    } else {
-      
-      // initialize reconstruction parameters if not already done
-      cout<<"W-AliMUONReconstructor::GetRecoParam: Reconstruction parameters not initialized - Use default one"<<endl;
-      fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
-      AliRecoParam::Instance()->RegisterRecoParam(fgRecoParam);
-      
-    }
-    
-  }
+  // initialize reconstruction parameters if not already done
+  cout<<"W-AliMUONReconstructor::GetRecoParam: Reconstruction parameters not initialized - Use default one"<<endl;
+  fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
   
   return fgRecoParam;
 }
