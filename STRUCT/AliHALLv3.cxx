@@ -271,7 +271,7 @@ void AliHALLv3::CreateGeometry()
   
   
   TGeoVolume* voHHF2 = new TGeoVolume("HHF2", 
-				      new TGeoTrd1(dx1FloorL3, dx2FloorL3, dzL3/2., dyFloorL3/2.), 
+				      new TGeoTrd1(dx1FloorL3 - 0.5, dx2FloorL3 - 0.5, dzL3/2., dyFloorL3/2.), 
 				      kMedCC);
 
   asHall->AddNode(voHHF2, 1, new TGeoCombiTrans(0., yFloor - dyFloor / 2. + dyFloorL3 / 2. - 0.5,0., rot000));
@@ -335,7 +335,7 @@ void AliHALLv3::CreateGeometry()
   ys += dy;
   dy = 91.32/2.;
   ys += dy;
-  TGeoVolume* voFmsMfTb1 = new TGeoVolume("FmsMfTb1", new TGeoBBox(330., dy,  90.), kMedCC);
+  TGeoVolume* voFmsMfTb1 = new TGeoVolume("FmsMfTb1", new TGeoBBox(330., dy,  60.), kMedCC);
   asFMS->AddNode(voFmsMfTb1, 1, new TGeoTranslation(0., ys, zFil));
   ys += dy;
   dy = 41.14/2.;
