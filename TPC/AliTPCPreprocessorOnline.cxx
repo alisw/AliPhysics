@@ -147,7 +147,7 @@ void AliTPCPreprocessorOnline::AddComponent(TObject *obj) {
 
    
    // printf(" ****** AliTPCPreprocessorOnline::AddComponent ****** \n");
-   
+  if (!obj) return;
    TString objName = obj->GetName();
    
    // Add a whole AliTPCCalPad to the list
