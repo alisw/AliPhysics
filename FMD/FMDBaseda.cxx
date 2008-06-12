@@ -5,12 +5,13 @@
   Contact:                 canute@nbi.dk
   Link:                    fmd.nbi.dk/fmd/offline
   Run Type:                PHYSICS
-  DA Type:                 LDC
+  DA Type:                 MON
   Number of events needed: depending on the run, being run-level
   Input Files:             raw data 
   Output Files:            conditions.csv
   Trigger types used:      PHYSICS_EVENT
 */
+#include "monitor.h"
 #include <TSystem.h>
 #include <TString.h>
 #include <AliFMDParameters.h>
@@ -37,6 +38,12 @@ int main(int argc, char **argv)
 					"TStreamerInfo()");
 #endif
   
+  
+  Char_t* tableSOD[]  = {"SOD","all",NULL};
+  Char_t* tablePHYS[] = {"PHY","no",NULL};
+
+  monitorDeclareTable(tableSOD);
+  monitorDeclareTable(tablePHYS);
   
   Char_t* fileName = argv[1];
   
