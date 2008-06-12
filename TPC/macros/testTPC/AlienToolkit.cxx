@@ -294,6 +294,8 @@ void AlienToolkit::RemoteCopy(const char *destination,Int_t maxfiles){
     TString dnames=lfn->String().Data();
     TString dname=destination;
     dname+=dnames;
+    
+    (*aout)<< "mkdirhier "<<gSystem->DirName(dname.Data())<<endl;
     (*aout)<<"xrdcp -d 1 "<<pfn->String().Data()<<" "<<dname.Data()<<endl;
   }
   aout->close();
