@@ -46,6 +46,10 @@ public:
 
 private:
   TH2D *fYPt;    // Rapidity vs. Pt monitor
+  TH2D *fYPhi;   // Rapidity cs. Phi monitor
+  TH2D *fPtPhi;  // Pt vs. Phi monitor
+  TH2D *fEtaPhi; // Pseudorapidity vs. Phi monitor
+  TH2D *fEtaPt;  // Pseudorapidity vs. Pt monitor
   float fMass;   // Mass hypothesis
 };
 
