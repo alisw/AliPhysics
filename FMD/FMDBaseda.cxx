@@ -40,10 +40,10 @@ int main(int argc, char **argv)
   
   
   Char_t* tableSOD[]  = {"SOD","all",NULL};
-  Char_t* tablePHYS[] = {"PHY","no",NULL};
+
 
   monitorDeclareTable(tableSOD);
-  monitorDeclareTable(tablePHYS);
+
   
   Char_t* fileName = argv[1];
   
