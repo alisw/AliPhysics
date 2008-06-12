@@ -15,7 +15,8 @@ class TF1;
 
 class AliAnalysisTaskProtons : public AliAnalysisTask {
  public:
-  AliAnalysisTaskProtons(const char *name = "AliAnalysisTaskProtons");
+  AliAnalysisTaskProtons();
+  AliAnalysisTaskProtons(const char *name);
   virtual ~AliAnalysisTaskProtons() {}
   
   virtual void   ConnectInputData(Option_t *);
