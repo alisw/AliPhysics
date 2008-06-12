@@ -33,9 +33,12 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   AliFemtoEvent* ReturnHbtEvent();
   AliFemtoString Report();
   void SetConstrained(const bool constrained);
-  bool GetConstrained() const;
   void SetReadTPCInner(const bool readinner);
+  void SetUseTPCOnly(const bool usetpconly);
+
+  bool GetConstrained() const;
   bool GetReadTPCInner() const;
+  bool GetUseTPCOnly() const;
 
   void SetESDSource(AliESDEvent *aESD);
   //  void SetESDfriendSource(AliESDfriend *aFriend);
@@ -45,8 +48,10 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
  private:
   string         fFileName;      //name of current ESD file
   bool           fConstrained;   //flag to set which momentum from ESD file will be use
-  bool           fReadInner;        // flag to set if one wants to read TPC-only momentum
-                                    // instead of the global one
+  bool           fReadInner;     // flag to set if one wants to read TPC-only momentum
+                                 // and store it in the hidden info
+  bool           fUseTPCOnly;    // flag to set if one wants to replace the global parameters 
+                                 // by the TPC only ones
   int            fNumberofEvent; //number of Events in ESD file
   int            fCurEvent;      //number of current event
   unsigned int   fCurFile;       //number of current file
@@ -56,7 +61,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 /*   list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared */
 /*   list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow */
 		
-  Float_t GetSigmaToVertex(const AliESDtrack* esdTrack);
+  Float_t GetSigmaToVertex(double *impact, double *covar);
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)
