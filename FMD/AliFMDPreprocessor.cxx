@@ -58,7 +58,7 @@
 // Latest changes by Christian Holm Christensen
 //
 
-// #include <iostream>
+ #include <iostream>
 
 #include <fstream>
 #include "AliFMDPreprocessor.h"
@@ -142,7 +142,7 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   Bool_t resultRange = kTRUE;
   Bool_t resultRate  = kTRUE;
   Bool_t resultZero  = kTRUE;
-
+  Bool_t infoCalib   = kTRUE;
   // Do we need this ?
   // if(!dcsAliasMap) return 1;
   // 
@@ -159,16 +159,16 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   AliFMDCalibSampleRate*      calibRate  = 0;
   AliFMDCalibStripRange*      calibRange = 0;
   AliFMDCalibZeroSuppression* calibZero  = 0;
-  // Disabled for now. 
-  //#if 0
+  
   if (GetAndCheckFileSources(files, kDAQ,pars->GetConditionsShuttleID()))
-    GetInfoCalibration(files, calibRate, calibRange, calibZero);
+    infoCalib = GetInfoCalibration(files, calibRate, calibRange, calibZero);
+ 
   resultRate  = (!calibRate  ? kFALSE : kTRUE);
   resultRange = (!calibRange ? kFALSE : kTRUE);
   resultZero  = (!calibZero  ? kFALSE : kTRUE);
-  //#endif
+  
 
-  // Gt the run type 
+  // Get the run type 
   TString runType(GetRunType()); 
 
   //Creating calibration objects
@@ -216,12 +216,9 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
     delete calibZero;
   }
 
-  //#if 0
-  // Disabled until we implement GetInfoCalibration properly
   Bool_t success = (resultPed && resultGain  && resultRange && 
-		    resultRate  && resultZero);
-  //#endif
-  //  Bool_t success = resultPed && resultGain;
+		    resultRate  && resultZero && infoCalib);
+  
   Log(Form("FMD preprocessor was %s", (success ? "successful" : "failed")));
   return (success ? 0 : 1);
 }
@@ -241,8 +238,8 @@ AliFMDPreprocessor::GetInfoCalibration(TList* files,
   //     z     On return, newly allocated object 
   // Return: 
   //     kTRUE on success
-  if (!files) return kTRUE; // Should really be false
-  if (files->GetEntries() <= 0) return kTRUE;
+  if (!files) return kFALSE; // Should really be false
+  if (files->GetEntries() <= 0) return kFALSE;
   
   s = new AliFMDCalibSampleRate();
   r = new AliFMDCalibStripRange();
@@ -296,7 +293,7 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
     TString header;
     header.ReadLine(in);
     header.ToLower();
-    if(!header.Contains("pedestal")) {
+    if(!header.Contains(pars->GetPedestalShuttleID())) {
       Log("File header is not from pedestal!");
       continue;
     }
@@ -376,7 +373,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
     TString header;
     header.ReadLine(in);
     header.ToLower();
-    if(!header.Contains("gain")) {
+    if(!header.Contains(pars->GetGainShuttleID())) {
       Log("File header is not from gain!");
       continue;
     }
