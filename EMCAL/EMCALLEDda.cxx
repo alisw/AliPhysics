@@ -128,7 +128,6 @@ int main(int argc, char **argv) {
   calibSignal->SetAltroMapping( mapping );
 
   AliRawReader *rawReader = NULL;
-  AliRawReader *rawReader2 = NULL;
   int nevents=0;
 
   /* loop over RAW data files */
@@ -178,12 +177,9 @@ int main(int argc, char **argv) {
       //  Signal calibration
       rawReader = new AliRawReaderDate((void*)event);
       calibSignal->ProcessEvent(rawReader);
+      rawReader->Reset();
+      calibPedestal->ProcessEvent(rawReader);
       delete rawReader;
-      // seems like we need a fresh rawreader for a 2nd read customer(?)
-      // otherwise, we have already fast-forwarded past the event(?)
-      rawReader2 = new AliRawReaderDate((void*)event);
-      calibPedestal->ProcessEvent(rawReader2);
-      delete rawReader2;
 
       /* free resources */
       free(event);    
