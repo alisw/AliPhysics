@@ -8,7 +8,8 @@
 
 # Or submit as many agents you want on batch machines:
 # bsub -q 1nd $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx
-
+# myvar=0
+#while [ $myvar -ne 100 ] ; do   bsub -q 1nd $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/alice/tpctest/test2008/cosmic/37562 ;   myvar=$(( $myvar + 1)); echo $myvar; done
 #
 #  AGENT to run some action:
 #  3 components to be present
