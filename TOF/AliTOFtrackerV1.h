@@ -47,7 +47,9 @@ public:
  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
  virtual Int_t LoadClusters(TTree * cTree); // Load Clusters
  virtual void  UnloadClusters();// UnLoad Clusters
- virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
+ virtual AliCluster *GetCluster(Int_t index) const
+   {if (index==-1 || index >= fN) return NULL;
+   return (AliCluster *) fClusters[index];};
  Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
  void InitCheckHists();
  void SaveCheckHists();

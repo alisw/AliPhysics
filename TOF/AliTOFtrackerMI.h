@@ -44,7 +44,9 @@ public:
  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
  virtual Int_t LoadClusters(TTree *dTree); // Loading Clusters from Digits
  virtual void  UnloadClusters();// UnLoad Clusters
- virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
+ virtual AliCluster *GetCluster(Int_t index) const
+   {if (index==-1 || index >= fN) return NULL;
+   return (AliCluster *) fClusters[index];};
  void    GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * track, Float_t & py, Float_t &pz);
  void FillClusterArray(TObjArray* arr) const;
 

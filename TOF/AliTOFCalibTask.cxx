@@ -580,8 +580,8 @@ Bool_t AliTOFCalibTask::Select(AliESDtrack *t){
   //  return 0;  // skipping momentum cut
   } 
    
-  UInt_t assignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
-  if(assignedTOFcluster==0){ // not matched
+  Int_t assignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
+  if(assignedTOFcluster==-1){ // not matched
     return 0;
   }
   fnESDassTOFcl++;
