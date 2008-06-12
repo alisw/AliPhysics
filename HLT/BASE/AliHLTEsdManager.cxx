@@ -72,7 +72,6 @@ AliHLTEsdManager* AliHLTEsdManager::New()
       } else {
 	log.Logging(kHLTLogError, "AliHLTEsdManager::New", "ESD handling", "can not create AliHLTEsdManager instance from class descriptor");
       }
-      delete pCl;
     } else {
       log.Logging(kHLTLogError, "AliHLTEsdManager::New", "ESD handling", "can not find AliHLTEsdManager class descriptor");
     }
@@ -89,9 +88,12 @@ void AliHLTEsdManager::Delete(AliHLTEsdManager* instance)
 
   // check if the library is still there in order to have the
   // destructor available
-  TClass* pCl=TClass::GetClass("AliHLTEsdManagerImlementation");
-  if (!pCl) return;
-  delete pCl;
+  TClass* pCl=TClass::GetClass(fgkImplName);
+  if (!pCl) {
+    AliHLTLogging log;
+    log.Logging(kHLTLogError, "AliHLTEsdManager::Delete", "ESD handling", "potential memory leak: libHLTrec library not available, skipping destruction %p", instance);    
+    return;
+  }
 
   delete instance;
 }
