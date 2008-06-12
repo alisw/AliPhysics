@@ -144,7 +144,7 @@ void AliCFV0Task::UserExec(Option_t *)
     //check the MC-level cuts
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
     containerInput[0] = mcPart->Pt();
-    containerInput[1] = mcPart->Eta() ;
+    containerInput[1] = mcPart->Y() ;
     //fill the container for Gen-level selection
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);
     
@@ -176,8 +176,6 @@ void AliCFV0Task::UserExec(Option_t *)
     //check if associated MC v0 passes the cuts
     AliMCParticle* mcV0 = fMCEvent->GetTrack(labMCV0);
     if (!mcV0) continue;
-
-    Info("UserExec","is v0 primary : %d",AliCFParticleGenCuts::IsPrimary(mcV0,fMCEvent->Stack()));
 
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcV0)) continue; 
     

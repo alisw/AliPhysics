@@ -133,7 +133,7 @@ void AliCFRsnTask::UserExec(Option_t *)
     //check the MC-level cuts
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
     containerInput[0] = mcPart->Pt();
-    containerInput[1] = mcPart->Eta() ;
+    containerInput[1] = mcPart->Y() ;
     //fill the container for Gen-level selection
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);
     
