@@ -34,6 +34,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fFileName(" "),
   fConstrained(true),
   fReadInner(false),
+  fUseTPCOnly(false),
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
@@ -56,6 +57,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fFileName(" "),
   fConstrained(true),
   fReadInner(false),
+  fUseTPCOnly(false),
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
@@ -64,6 +66,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   // Copy constructor
   fConstrained = aReader.fConstrained;
   fReadInner = aReader.fReadInner;
+  fUseTPCOnly = aReader.fUseTPCOnly;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
@@ -114,6 +117,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
 
   fConstrained = aReader.fConstrained;
   fReadInner = aReader.fReadInner;
+  fUseTPCOnly = aReader.fUseTPCOnly;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
@@ -188,6 +192,17 @@ bool AliFemtoEventReaderESDChain::GetReadTPCInner() const
   return fReadInner;
 }
 
+//__________________
+void AliFemtoEventReaderESDChain::SetUseTPCOnly(const bool usetpconly)
+{
+  fUseTPCOnly=usetpconly;
+}
+
+bool AliFemtoEventReaderESDChain::GetUseTPCOnly() const
+{
+  return fUseTPCOnly;
+}
+
 AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 {
   // Get the event, read all the relevant information
@@ -217,7 +232,12 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	
   //Vertex
   double fV1[3];
-  fEvent->GetVertex()->GetXYZ(fV1);
+  if (fUseTPCOnly) {
+    fEvent->GetPrimaryVertexTPC()->GetXYZ(fV1);
+  }
+  else {
+    fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+  }
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
@@ -279,53 +299,121 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetPidProbProton(esdpid[4]);
 						
       double pxyz[3];
-      if (fReadInner == true) {
-	
-	if (esdtrack->GetTPCInnerParam()) {
-	  AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
-	  param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
-	  param->GetPxPyPz(pxyz);//reading noconstarined momentum
-	  delete param;
+      double rxyz[3];
+      double impact[2];
+      double covimpact[3];
+      
+      if (fUseTPCOnly) {
+	if (!esdtrack->GetTPCInnerParam()) {
+	  delete trackCopy;
+	  continue;
+	}
 
+
+	AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	param->GetXYZ(rxyz);
+	param->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impact, covimpact);
+	param->GetPxPyPz(pxyz);//reading noconstarined momentum
+
+	if (fReadInner == true) {
 	  AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
 	  tInfo->SetPDGPid(211);
 	  tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
 	  tInfo->SetMass(0.13957);
+	  //	  tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
+	  //	  tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
+	  tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
 	  trackCopy->SetHiddenInfo(tInfo);
 	}
-      }
-      if (fConstrained==true)		    
-	tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
-      else
-	tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	
+	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	if (v.mag() < 0.0001) {
+	  //	cout << "Found 0 momentum ???? " <<endl;
+	  delete trackCopy;
+	  continue;
+	}
+	trackCopy->SetP(v);//setting momentum
+	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
 
-      AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-      if (v.mag() < 0.0001) {
-	//	cout << "Found 0 momentum ???? " <<endl;
-	delete trackCopy;
-	continue;
+	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	//setting helix I do not if it is ok
+	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	trackCopy->SetHelix(helix);
+
+	//some stuff which could be useful 
+	trackCopy->SetImpactD(impact[0]);
+	trackCopy->SetImpactZ(impact[1]);
+	trackCopy->SetCdd(covimpact[0]);
+	trackCopy->SetCdz(covimpact[1]);
+	trackCopy->SetCzz(covimpact[2]);
+	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));	
+
+	delete param;
       }
-      trackCopy->SetP(v);//setting momentum
-      trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-      const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
-      const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
-      //setting helix I do not if it is ok
-      AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
-      trackCopy->SetHelix(helix);
-	    	
+      else {
+	if (fReadInner == true) {
+	  
+	  if (esdtrack->GetTPCInnerParam()) {
+	    AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	    param->GetXYZ(rxyz);
+	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
+	    param->GetPxPyPz(pxyz);//reading noconstarined momentum
+	    delete param;
+	    
+	    AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+	    tInfo->SetPDGPid(211);
+	    tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+	    tInfo->SetMass(0.13957);
+	    //	    tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
+	    tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
+	    //	    tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+	    printf("%.3f %.3fy %.3fz\n", rxyz[0], rxyz[1], rxyz[2]);
+	    trackCopy->SetHiddenInfo(tInfo);
+	  }
+	}
+	if (fConstrained==true)		    
+	  tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	else
+	  tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	
+	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	if (v.mag() < 0.0001) {
+	  //	cout << "Found 0 momentum ???? " <<endl;
+	  delete trackCopy;
+	  continue;
+	}
+	trackCopy->SetP(v);//setting momentum
+	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	//setting helix I do not if it is ok
+	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	trackCopy->SetHelix(helix);
+
+	//some stuff which could be useful 
+	float imp[2];
+	float cim[3];
+	esdtrack->GetImpactParameters(imp,cim);
+
+	impact[0] = imp[0];
+	impact[1] = imp[1];
+	covimpact[0] = cim[0];
+	covimpact[1] = cim[1];
+	covimpact[2] = cim[2];
+
+	trackCopy->SetImpactD(impact[0]);
+	trackCopy->SetImpactZ(impact[1]);
+	trackCopy->SetCdd(covimpact[0]);
+	trackCopy->SetCdz(covimpact[1]);
+	trackCopy->SetCzz(covimpact[2]);
+	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact,covimpact));
+      }
+
       trackCopy->SetTrackId(esdtrack->GetID());
       trackCopy->SetFlags(esdtrack->GetStatus());
       trackCopy->SetLabel(esdtrack->GetLabel());
 		
-      //some stuff which could be useful 
-      float impact[2];
-      float covimpact[3];
-      esdtrack->GetImpactParameters(impact,covimpact);
-      trackCopy->SetImpactD(impact[0]);
-      trackCopy->SetImpactZ(impact[1]);
-      trackCopy->SetCdd(covimpact[0]);
-      trackCopy->SetCdz(covimpact[1]);
-      trackCopy->SetCzz(covimpact[2]);
       trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
       trackCopy->SetITSncls(esdtrack->GetNcls(0));     
       trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
@@ -333,21 +421,17 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
       trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
       trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
-      trackCopy->SetSigmaToVertex(GetSigmaToVertex(esdtrack));
 
       trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
       trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
-      double pvrt[3];
-      fEvent->GetPrimaryVertex()->GetXYZ(pvrt);
-
       double xtpc[3];
       esdtrack->GetInnerXYZ(xtpc);
-      xtpc[2] -= pvrt[2];
+      xtpc[2] -= fV1[2];
       trackCopy->SetNominalTPCEntrancePoint(xtpc);
 
       esdtrack->GetOuterXYZ(xtpc);
-      xtpc[2] -= pvrt[2];
+      xtpc[2] -= fV1[2];
       trackCopy->SetNominalTPCExitPoint(xtpc);
 
       int indexes[3];
@@ -392,18 +476,20 @@ void AliFemtoEventReaderESDChain::SetESDSource(AliESDEvent *aESD)
 // }
 
 //____________________________________________________________________
-Float_t AliFemtoEventReaderESDChain::GetSigmaToVertex(const AliESDtrack* esdTrack)
+Float_t AliFemtoEventReaderESDChain::GetSigmaToVertex(double *impact, double *covar)
 {
   // Calculates the number of sigma to the vertex.
 
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
-  esdTrack->GetImpactParameters(b,bCov);
-//   if (bCov[0]<=0 || bCov[2]<=0) {
-//     AliDebug(1, "Estimated b resolution lower or equal zero!");
-//     bCov[0]=0; bCov[2]=0;
-//   }
+
+  b[0] = impact[0];
+  b[1] = impact[1];
+  bCov[0] = covar[0];
+  bCov[1] = covar[1];
+  bCov[2] = covar[2];
+
   bRes[0] = TMath::Sqrt(bCov[0]);
   bRes[1] = TMath::Sqrt(bCov[2]);
 
