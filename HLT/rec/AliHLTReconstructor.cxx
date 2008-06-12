@@ -162,29 +162,15 @@ void AliHLTReconstructor::Init()
   fpEsdManager=AliHLTEsdManager::New();
 }
 
-void AliHLTReconstructor::Reconstruct(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/) const 
+void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clustersTree*/) const 
 {
   // reconstruction of real data without writing of ESD
   // For each event, HLT reconstruction chains can be executed and
   // added to the existing HLTOUT data
   // The HLTOUT data is finally processed in FillESD
-  AliHLTSystem* pSystem=GetInstance();
-  AliInfo("running raw data reconstruction");
-}
-
-void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree*/, 
-				  AliESDEvent* esd) const
-{
-  // reconstruct real data and fill ESD
-  if (!rawReader || !esd) {
-    AliError("missing raw reader or esd object");
-    return;
-  }
-
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // code needs to be moved back to Reconstruct as soon es HLT loader is implemented
   int iResult=0;
   AliHLTSystem* pSystem=GetInstance();
+
   if (pSystem) {
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
       AliError("HLT system in error state");
@@ -197,7 +183,18 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
     if ((iResult=pSystem->Reconstruct(1, NULL, rawReader))>=0) {
     }
   }
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+}
+
+void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree*/, 
+				  AliESDEvent* esd) const
+{
+  // reconstruct real data and fill ESD
+  if (!rawReader || !esd) {
+    AliError("missing raw reader or esd object");
+    return;
+  }
+
+  AliHLTSystem* pSystem=GetInstance();
 
   if (pSystem) {
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
