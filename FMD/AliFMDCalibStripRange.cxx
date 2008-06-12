@@ -160,7 +160,7 @@ AliFMDCalibStripRange::ReadFromFile(ifstream &inFile)
     UInt_t nSec  = (ring == 'I' ? 10 : 20);
     UShort_t sector = board*nSec;
     Set(det,ring,sector,0,min,max);
-    std::cout<<det<<"  "<<board<<"   "<<min<<"   "<<max<<std::endl;
+   
   }
   
   inFile.seekg(0);
