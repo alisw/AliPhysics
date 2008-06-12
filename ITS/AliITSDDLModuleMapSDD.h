@@ -28,6 +28,7 @@ class AliITSDDLModuleMapSDD : public TObject {
   void SetDec07part1Map();
   void SetDec07part2Map();
   void SetFeb08Map();
+  void SetJun08Map();
   void SetDDLMapElement(Int_t iDDL, Int_t iChan, Int_t iMod){fDDLModuleMap[iDDL][iChan]=iMod;}
   void SetDDLMap(AliITSDDLModuleMapSDD* ddlmap);
   void ReadDDLModuleMap(Char_t *ddlmapfile);
