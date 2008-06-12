@@ -24,7 +24,7 @@ class AliFemtoCutMonitorParticleMomRes : public AliFemtoCutMonitor{
   
 public:
   AliFemtoCutMonitorParticleMomRes();
-  AliFemtoCutMonitorParticleMomRes(const char *aName, float aMass);
+  AliFemtoCutMonitorParticleMomRes(const char *aName);
   AliFemtoCutMonitorParticleMomRes(const AliFemtoCutMonitorParticleMomRes &aCut);
   virtual ~AliFemtoCutMonitorParticleMomRes();
 
@@ -51,7 +51,6 @@ private:
   TH2D *fImpactXY;    // XY impact parameter
   TH2D *fImpactZ;     // Z impact parameter
   TH2D *fSigma;       // Sigma to vertex vs momentum
-  float fMass;        // Mass hypothesis
 };
 
 #endif

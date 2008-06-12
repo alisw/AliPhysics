@@ -18,8 +18,7 @@ AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes():
   fMomResZvsP(0),
   fImpactXY(0),
   fImpactZ(0),
-  fSigma(0),
-  fMass(0.13957)
+  fSigma(0)
 {
   // Default constructor
   fMomRes3D = new TH3D("MomRes3D", "Momentum resolution", 100, -0.05, 0.05, 100, -0.05, 0.05, 100, -0.05, 0.05);
@@ -31,15 +30,14 @@ AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes():
   fSigma      = new TH2D("Sigma",     "Sigma to vertex vs P" , 100, 0.1, 2.0, 200, -5.0, 5.0);
 }
 
-AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes(const char *aName, float aMass):
+AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes(const char *aName):
   fMomRes3D(0),
   fMomResXvsP(0),
   fMomResYvsP(0),
   fMomResZvsP(0),
   fImpactXY(0),
   fImpactZ(0),
-  fSigma(0),
-  fMass(aMass)
+  fSigma(0)
 {
   // Normal constructor
   char name[200];
@@ -67,8 +65,7 @@ AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes(const AliFemt
   fMomResZvsP(0),
   fImpactXY(0),
   fImpactZ(0),
-  fSigma(0),
-  fMass(0.13957)
+  fSigma(0)
 {
   // copy constructor
   if (fMomRes3D) delete fMomRes3D;
@@ -85,7 +82,6 @@ AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes(const AliFemt
   fImpactZ = new TH2D(*aCut.fImpactZ);
   if (fSigma) delete fSigma;
   fSigma = new TH2D(*aCut.fSigma);
-  fMass = aCut.fMass; 
 }
 
 AliFemtoCutMonitorParticleMomRes::~AliFemtoCutMonitorParticleMomRes()
@@ -135,22 +131,24 @@ void AliFemtoCutMonitorParticleMomRes::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill momentum resolution histograms for the particle
   AliFemtoModelHiddenInfo *tInf = ( AliFemtoModelHiddenInfo *) aTrack->GetHiddenInfo();
-  fMomRes3D->Fill(tInf->GetTrueMomentum()->x() - aTrack->P().x(),
-		  tInf->GetTrueMomentum()->y() - aTrack->P().y(),
-		  tInf->GetTrueMomentum()->z() - aTrack->P().z());
-
-  fMomResXvsP->Fill(aTrack->P().mag(),
-		    tInf->GetTrueMomentum()->x() - aTrack->P().x());
-  fMomResYvsP->Fill(aTrack->P().mag(),
-		    tInf->GetTrueMomentum()->y() - aTrack->P().y());
-  fMomResZvsP->Fill(aTrack->P().mag(),
+  if (tInf) {
+    fMomRes3D->Fill(tInf->GetTrueMomentum()->x() - aTrack->P().x(),
+		    tInf->GetTrueMomentum()->y() - aTrack->P().y(),
 		    tInf->GetTrueMomentum()->z() - aTrack->P().z());
-  fImpactXY->Fill(aTrack->P().mag(),
-		  aTrack->ImpactD());
-  fImpactZ->Fill(aTrack->P().mag(),
-		 aTrack->ImpactZ());
-  fSigma->Fill(aTrack->P().mag(),
-	       aTrack->SigmaToVertex());
+    
+    fMomResXvsP->Fill(aTrack->P().mag(),
+		      tInf->GetTrueMomentum()->x() - aTrack->P().x());
+    fMomResYvsP->Fill(aTrack->P().mag(),
+		      tInf->GetTrueMomentum()->y() - aTrack->P().y());
+    fMomResZvsP->Fill(aTrack->P().mag(),
+		      tInf->GetTrueMomentum()->z() - aTrack->P().z());
+    fImpactXY->Fill(aTrack->P().mag(),
+		    aTrack->ImpactD());
+    fImpactZ->Fill(aTrack->P().mag(),
+		   aTrack->ImpactZ());
+    fSigma->Fill(aTrack->P().mag(),
+		 aTrack->SigmaToVertex());
+  }
 }
 
 void AliFemtoCutMonitorParticleMomRes::Write()
