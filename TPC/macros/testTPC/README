@@ -43,3 +43,22 @@ AGENT to run some action:
    2.d  Copy certificates to default place -  ~/.agentauth/
         cp /tmp/*$UID* ~/.agentauth/
    2.e  Run agent as described in the beginning examples
+
+
+
+
+
+REMOTE COPIES
+
+Following script genearte a bash script stage.sh 
+with the xrdcp commands for selected files 
+(see AlienToolkit.cxx -  AlienToolkit::MakeCollection(dir, mask))
+
+Example:
+gSystem->Load("libXrdClient.so");
+gSystem->Load("libNetx.so");
+.L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
+//
+AlienToolkit toolkit;
+toolkit.MakeCollection("/alice/cern.ch/user/m/miranov/","08000031843019.1*AliESDs*")
+toolkit.RemoteCopy("/lustre_alpha/alice/TPCdata/cosmics_may2008/",10000000000)
