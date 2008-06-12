@@ -76,7 +76,7 @@ AliESDtrack::AliESDtrack() :
   fTPCLabel(0),
   fTRDLabel(0),
   fTOFCalChannel(0),
-  fTOFindex(0),
+  fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(0),
   fEMCALindex(kEMCALNoMatch),
@@ -255,7 +255,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTPCLabel(0),
   fTRDLabel(0),
   fTOFCalChannel(0),
-  fTOFindex(0),
+  fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(0),
   fEMCALindex(kEMCALNoMatch),
@@ -698,7 +698,7 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // Reset TOF related track information
   fTOFchi2 = 0;        
-  fTOFindex = 0;       
+  fTOFindex = -1;       
   fTOFsignal = 0;      
   fTOFCalChannel = 0;
   fTOFsignalToT = 0;
@@ -1017,7 +1017,7 @@ Int_t AliESDtrack::GetNcls(Int_t idet) const
     ncls = fTRDncls;
     break;
   case 3:
-    if (fTOFindex != 0)
+    if (fTOFindex != -1)
       ncls = 1;
     break;
   default:
@@ -1042,8 +1042,8 @@ Int_t AliESDtrack::GetClusters(Int_t idet, Int_t *idx) const
     ncls = GetTRDclusters(idx);
     break;
   case 3:
-    if (fTOFindex != 0) {
-      idx[0] = GetTOFcluster();
+    if (fTOFindex != -1) {
+      idx[0] = fTOFindex;
       ncls = 1;
     }
     break;
