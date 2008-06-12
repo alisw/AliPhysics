@@ -1,4 +1,4 @@
-void runProofScalarProduct() {
+void runProofScalarProduct(const Char_t* data="/PWG2/akisiel/LHC500C2030", Int_t nRuns=20, Int_t offset=0) {
   TStopwatch timer;
   timer.Start();
 
@@ -36,8 +36,8 @@ void runProofScalarProduct() {
 
 
   // Create chain of input files
-  gROOT->LoadMacro("CreateESDChain.C");
-  chain = CreateESDChain("ESD82XX_30K.txt",200);
+  //  gROOT->LoadMacro("CreateESDChain.C");
+  //  chain = CreateESDChain("ESD82XX_30K.txt",200);
 
 
   // Create containers for input/output
@@ -51,7 +51,9 @@ void runProofScalarProduct() {
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  mgr->StartAnalysis("proof",chain);
+  // old way with a chain
+  //  mgr->StartAnalysis("proof",chain);
+  mgr->StartAnalysis("proof",data,nRuns,offset);
 
   timer.Stop();
   timer.Print();
