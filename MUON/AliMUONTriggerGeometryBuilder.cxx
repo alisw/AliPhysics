@@ -118,7 +118,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
     const Float_t kSizeVSupInt[3]={1.2,1.2,306.+5.};  
 // transverse dimensions of angular supports 
     const Float_t kSizeSupport1V[3]={0.,1.5,0.1}; 
-    const Float_t kSizeSupport1H[3]={0.,0.1,1.2}; // z should be 1.4 in the installed set-up 
+    const Float_t kSizeSupport1H[3]={0.,0.1,1.15}; // z should be 1.4 in the installed set-up 
     const Float_t kSizeSupport2V[3]={0.,3.0,0.1}; 
     const Float_t kSizeSupport2H[3]={0.,0.1,1.9}; 
     const Float_t kSizeSupportXV[3]={0.,1.25,0.25}; 
@@ -440,9 +440,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    Float_t sparysave=spar[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VA[0], 0, true,
-	    TGeoTranslation(xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.));
+	    TGeoTranslation(xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VA[1], 0, true,
- 	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VA[0],iVolNum++,3, spar);
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VA[1],iVolNum++,3, spar);	    
@@ -476,7 +476,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VA[0], 0, true,
 	    TGeoTranslation(xEnv,yEnvP-dpar[1],kSizeVSupExt[0]+spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VA[1], 0, true,
@@ -505,9 +505,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VA[0], 0, true,
-	    TGeoTranslation(xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.));
+	    TGeoTranslation(xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VA[1], 0, true,
- 	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VA[0],iVolNum++,3, spar);
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VA[1],iVolNum++,3, spar);	    
@@ -541,7 +541,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VA[0], 0, true,
 	    TGeoTranslation(xEnv,yEnvP+dpar[1],kSizeVSupExt[0]+spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VA[1], 0, true,
@@ -651,9 +651,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    sparysave=spar[1];
 
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VBC[0], 0, true,
-	    TGeoTranslation(xEnv,-yEnvM-dpar[1]-dysave,kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv,-yEnvM-dpar[1]-dysave,kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VBC[2], 0, true,
- 	    TGeoTranslation(-xEnv,-yEnvP-dpar[1]-dysave,kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,-yEnvP-dpar[1]-dysave,kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VBC[0],iVolNum++,3, spar);
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VBC[2],iVolNum++,3, spar);
@@ -686,7 +686,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VBC[0], 0, true,
 	    TGeoTranslation(xEnv,-yEnvM-dpar[1]-dysave,-(kSizeVSupExt[0]+spar[2])));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VBC[2], 0, true,
@@ -712,11 +712,10 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[1]=kSizeSupport1V[1];
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
-
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VBC[0], 0, true,
-	    TGeoTranslation(xEnv+xpossave,-yEnvM+dpar[1]+dysave,kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv+xpossave,-yEnvM+dpar[1]+dysave,kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VBC[2], 0, true,
- 	    TGeoTranslation(-xEnv-xpossave,-yEnvP+dpar[1]+dysave,kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv-xpossave,-yEnvP+dpar[1]+dysave,kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VBC[0],iVolNum++,3, spar);
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VBC[2],iVolNum++,3, spar);
@@ -725,8 +724,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dxsave-kAvoidExtrusion;
 	    spar[1]=kSizeSupport1H[1];
 	    spar[2]=kSizeSupport1H[2];
-	    
-       	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3HBC[0], 0, true,
+	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3HBC[0], 0, true,
 	    TGeoTranslation(xEnv+xpossave,-yEnvM+dpar[1]+dysave+sparysave,kZm-(dpar[2]-spar[2])));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3HBC[2], 0, true,
  	    TGeoTranslation(-xEnv-xpossave,-yEnvP+dpar[1]+dysave+sparysave,kZp+dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
@@ -749,7 +747,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dxsave-kAvoidExtrusion;
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VBC[0], 0, true,
 	    TGeoTranslation(xEnv+xpossave,-yEnvM+dpar[1]+dysave,-(kSizeVSupExt[0]+spar[2])));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VBC[2], 0, true,
@@ -802,9 +800,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
             GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VBC[1], 0, true,
-	    TGeoTranslation(xEnv+xpossave,yEnvM-dpar[1]-dysave,kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv+xpossave,yEnvM-dpar[1]-dysave,kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VBC[3], 0, true,
- 	    TGeoTranslation(-xEnv-xpossave,yEnvP-dpar[1]-dysave,kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv-xpossave,yEnvP-dpar[1]-dysave,kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VBC[1],iVolNum++,3, spar);
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VBC[3],iVolNum++,3, spar);
 
@@ -837,7 +835,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dxsave-kAvoidExtrusion;
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VBC[1], 0, true,
 	    TGeoTranslation(xEnv+xpossave,yEnvM-dpar[1]-dysave,-(kSizeVSupExt[0]+spar[2])));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VBC[3], 0, true,
@@ -864,9 +862,10 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
             GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VBC[1], 0, true,
-	    TGeoTranslation(xEnv,yEnvM+dpar[1]+dysave,kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv,yEnvM+dpar[1]+dysave,kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VBC[3], 0, true,
- 	    TGeoTranslation(-xEnv,yEnvP+dpar[1]+dysave,kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,yEnvP+dpar[1]+dysave,kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VBC[1],iVolNum++,3, spar);
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VBC[3],iVolNum++,3, spar);
 
@@ -897,7 +896,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VBC[1], 0, true,
 	    TGeoTranslation(xEnv,yEnvM+dpar[1]+dysave,-(kSizeVSupExt[0]+spar[2])));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VBC[3], 0, true,
@@ -988,13 +987,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VD[0], 0, true,
-	    TGeoTranslation(xEnv,-yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.));
+	    TGeoTranslation(xEnv,-yEnvP-dpar[1],kZp+dpar[2]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VD[1], 0, true,
-	    TGeoTranslation(xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.));
+	    TGeoTranslation(xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VD[2], 0, true,
- 	    TGeoTranslation(-xEnv,-yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,-yEnvM-dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VD[3], 0, true,
- 	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
             for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VD[i],iVolNum++,3, spar);
@@ -1038,7 +1037,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VD[0], 0, true,
 	    TGeoTranslation(xEnv,-yEnvP-dpar[1],kSizeVSupExt[0]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VD[1], 0, true,
@@ -1075,13 +1074,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VD[0], 0, true,
-	    TGeoTranslation(xEnv,-yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.));
+	    TGeoTranslation(xEnv,-yEnvP+dpar[1],kZp+dpar[2]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VD[1], 0, true,
-	    TGeoTranslation(xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.));
+	    TGeoTranslation(xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VD[2], 0, true,
- 	    TGeoTranslation(-xEnv,-yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,-yEnvM+dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VD[3], 0, true,
- 	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+ 	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 
             for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VD[i],iVolNum++,3, spar);
@@ -1125,7 +1124,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VD[0], 0, true,
 	    TGeoTranslation(xEnv,-yEnvP+dpar[1],kSizeVSupExt[0]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VD[1], 0, true,
@@ -1230,13 +1229,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VE[0], 0, true,
-	    TGeoTranslation(xEnv,-yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv,-yEnvM-dpar[1],kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VE[1], 0, true,
-	    TGeoTranslation(xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VE[2], 0, true,
-	    TGeoTranslation(-xEnv,-yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+	    TGeoTranslation(-xEnv,-yEnvP-dpar[1],kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VE[3], 0, true,
-	    TGeoTranslation(-xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+	    TGeoTranslation(-xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
 	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VE[i],iVolNum++,3, spar);
@@ -1280,7 +1279,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VE[0], 0, true,
 	    TGeoTranslation(xEnv,-yEnvM-dpar[1],-(kSizeVSupExt[0]+spar[2])));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VE[1], 0, true,
@@ -1317,13 +1316,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VE[0], 0, true,
-	    TGeoTranslation(xEnv,-yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv,-yEnvM+dpar[1],kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VE[1], 0, true,
-	    TGeoTranslation(xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.));
+	    TGeoTranslation(xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VE[2], 0, true,
-	    TGeoTranslation(-xEnv,-yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+	    TGeoTranslation(-xEnv,-yEnvP+dpar[1],kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
 	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VE[3], 0, true,
-	    TGeoTranslation(-xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+	    TGeoTranslation(-xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
 	    for(i=0;i<4;i++)
 	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VE[i],iVolNum++,3, spar);
@@ -1367,7 +1366,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VE[0], 0, true,
 	    TGeoTranslation(xEnv,-yEnvM+dpar[1],-(kSizeVSupExt[0]+spar[2])));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VE[1], 0, true,
@@ -1472,13 +1471,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VF[0], 0, true,
- 	    TGeoTranslation(xEnv,-yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.));
+ 	    TGeoTranslation(xEnv,-yEnvP-dpar[1],kZp+dpar[2]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VF[1], 0, true,
- 	    TGeoTranslation(xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]/2.));
+ 	    TGeoTranslation(xEnv,yEnvP-dpar[1],kZp+dpar[2]+spar[2]));
  	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VF[2], 0, true,
-  	    TGeoTranslation(-xEnv,-yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+  	    TGeoTranslation(-xEnv,-yEnvM-dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng1VF[3], 0, true,
-  	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+  	    TGeoTranslation(-xEnv,yEnvM-dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
             for(i=0;i<4;i++)
  	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport1V,volEnvSuppAng1VF[i],iVolNum++,3, spar);
@@ -1521,7 +1520,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VF[0], 0, true,
 	    TGeoTranslation(xEnv,-yEnvP-dpar[1],kSizeVSupExt[0]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng2VF[1], 0, true,
@@ -1558,13 +1557,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[2]=kSizeSupport1V[2];
 	    sparysave=spar[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VF[0], 0, true,
- 	    TGeoTranslation(xEnv,-yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.));
+ 	    TGeoTranslation(xEnv,-yEnvP+dpar[1],kZp+dpar[2]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VF[1], 0, true,
- 	    TGeoTranslation(xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]/2.));
+ 	    TGeoTranslation(xEnv,yEnvP+dpar[1],kZp+dpar[2]+spar[2]));
  	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VF[2], 0, true,
-  	    TGeoTranslation(-xEnv,-yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+  	    TGeoTranslation(-xEnv,-yEnvM+dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng3VF[3], 0, true,
-  	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]/2.),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
+  	    TGeoTranslation(-xEnv,yEnvM+dpar[1],kZm-dpar[2]-spar[2]),TGeoRotation("rot1",90.,180.,90.,90.,180.,0.));
  
             for(i=0;i<4;i++)
  	    GetEnvelopes(16+icount)->AddEnvelopeConstituentParam(volAluAngSupport3V,volEnvSuppAng3VF[i],iVolNum++,3, spar);
@@ -1607,7 +1606,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    spar[0]=dpar[0];
 	    spar[1]=kSizeSupport2V[1];
 	    spar[2]=kSizeSupport2V[2];
-	    sparysave=spar[1];
+	    sparysave=spar[1]+kSizeSupport2H[1];
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VF[0], 0, true,
 	    TGeoTranslation(xEnv,-yEnvP+dpar[1],kSizeVSupExt[0]+spar[2]));
        	    GetEnvelopes(16+icount)->AddEnvelope(volEnvSuppAng4VF[1], 0, true,
