@@ -37,6 +37,8 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelFreezeOutGenerator.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelWeightGeneratorLednicky.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitorParticleYPt.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCutMonitorParticleVertPos.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCutMonitorEventMult.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoKTPairCut.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCorrFctnNonIdDR.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCorrFctn3DSpherical.cxx \
