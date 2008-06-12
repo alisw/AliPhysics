@@ -26,7 +26,7 @@ class AliRecoParam : public TNamed
   //
   virtual void                  Print(Option_t *option="") const;
   TObjArray                    *GetAllRecoParams() const { return fRecoParamArray; }
-  virtual AliDetectorRecoParam *GetRecoParam(const AliEventInfo &evInfo) const = 0;
+  virtual AliDetectorRecoParam *GetRecoParam(const AliEventInfo &/*evInfo*/) const;
   void                          AddRecoParam(AliDetectorRecoParam* param);
 
 protected:

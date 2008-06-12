@@ -34,6 +34,12 @@ class AliEventInfo : public TObject {
   virtual void Print(Option_t */*option=""*/) const { Dump(); }
 
   const char *GetLHCState() const { return fLHCState.GetString().Data(); }
+  const char *GetRunType() const { return fRunType.GetString().Data(); }
+  const char *GetActiveDetectors() const { return fActiveDetectors.GetString().Data(); }
+  UInt_t      GetEventType() const { return fEventType; }
+  const char *GetTriggerClasses() const { return fTriggerClasses.GetString().Data(); }
+  ULong_t     GetTriggerMask() const { return fTriggerMask; }
+  const char *GetTriggerCluster() const { return fTriggerCluster.GetString().Data(); }
 
   AliEventInfo(const AliEventInfo &evInfo);
   AliEventInfo& operator= (const AliEventInfo& evInfo);

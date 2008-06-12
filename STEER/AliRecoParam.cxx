@@ -28,6 +28,7 @@
 #include "TObjArray.h"
 #include "AliDetectorRecoParam.h"
 
+#include "AliLog.h"
 #include "AliRecoParam.h"
 
 
@@ -71,6 +72,16 @@ void  AliRecoParam::Print(Option_t *option) const {
     if (!param) continue;
     param->Print(option);
   }
+}
+
+AliDetectorRecoParam *AliRecoParam::GetRecoParam(const AliEventInfo &/*evInfo*/) const {
+  // To be implemented by the detectors
+  // Here we return the last AliDetectorRecoParam!!
+  if (!fRecoParamArray) return NULL;
+  if (fRecoParamArray->GetEntriesFast() != 1)
+    AliWarning(Form("Method not implemented by the detector %s, using the last AliDetectorRecoParam !",GetName()));
+
+  return (AliDetectorRecoParam *)fRecoParamArray->Last();
 }
 
 void  AliRecoParam::AddRecoParam(AliDetectorRecoParam* param){
