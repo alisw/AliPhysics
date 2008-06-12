@@ -57,7 +57,7 @@ scene, MUONGeometryViewingHelper.C is also available.
 <pre>
 AliMpCDB::LoadMpSegmentation2(); 
 gAlice->Init("$ALICE_ROOT/MUON/Config.C");
-gGeoManager->CheckOverlaps();
+gGeoManager->CheckOverlaps(0.001);
 gGeoManager->PrintOverlaps();
 </pre>
 
@@ -72,7 +72,7 @@ does not remember all overlaps found during checking,
 in order to investigate them, one has to re-run the checking for 
 each listed volume:
 <pre>
-gGeoManager->FindVolumeFast("MyVolume")->CheckOverlaps(0.01, "s");
+gGeoManager->FindVolumeFast("MyVolume")->CheckOverlaps(0.001, "s");
 gGeoManager->PrintOverlaps(); >& overlaps_MyVolume.txt 
 </pre>
 At this stage the overlaps found for the selected volume can be also browsed 
