@@ -1967,11 +1967,16 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
   if (fRawReader) {
     AliCTPRawStream input(fRawReader);
     if (!input.Next()) {
-      AliError("No valid CTP (trigger) DDL raw data is found ! The trigger information is not stored in the ESD !");
-      return kFALSE;
+      AliWarning("No valid CTP (trigger) DDL raw data is found ! The trigger mask will be taken from the event header, trigger cluster mask will be empty !");
+      ULong_t mask = (((ULong_t)fRawReader->GetTriggerPattern()[1]) << 32) +
+	fRawReader->GetTriggerPattern()[0];
+      esd->SetTriggerMask(mask);
+      esd->SetTriggerCluster(0);
     }
-    esd->SetTriggerMask(input.GetClassMask());
-    esd->SetTriggerCluster(input.GetClusterMask());
+    else {
+      esd->SetTriggerMask(input.GetClassMask());
+      esd->SetTriggerCluster(input.GetClusterMask());
+    }
 
     aCTP = new AliCentralTrigger();
     TString configstr("");
@@ -2003,7 +2008,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
   // Now fill the trigger class names into AliESDRun object
   AliTriggerConfiguration *config = aCTP->GetConfiguration();
   if (!config) {
-    AliError("No trigger configuration has been found! The trigger classes information will no be stored in ESD!");
+    AliError("No trigger configuration has been found! The trigger classes information will not be stored in ESD!");
     if (fRawReader) delete aCTP;
     return kFALSE;
   }
