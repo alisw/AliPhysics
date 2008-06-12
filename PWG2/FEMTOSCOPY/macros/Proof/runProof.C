@@ -1,9 +1,23 @@
-void runProof() {
+void runProof(int dataType=0, const char *dataSource="ESD82XX_30K.txt") {
+  // Run on PROOF with data from:
+  // dataType =
+  // 0 - a local file list
+  // 1 - a PROOF dataset
+  // 
+  // for dataTpye = 0
+  // dataSource is the list file name
+  // for dataType = 1
+  // dataSource is the PROOF dataset name
+
   TStopwatch timer;
   timer.Start();
 
   printf("*** Connect to PROOF ***\n");
+  // ****
+  // You have to change this to Your own username !!!!
   TProof::Open("akisiel@lxb6046.cern.ch");
+  //
+  // ****
 
   gProof->UploadPackage("STEERBase.par");
   gProof->EnablePackage("STEERBase");
@@ -31,8 +45,10 @@ void runProof() {
 
   TChain *chain = 0x0;
 
-  gROOT->LoadMacro("CreateESDChain.C");
-  chain = CreateESDChain("ESD82XX_30K.txt",200);
+  if (dataType == 0) {
+    gROOT->LoadMacro("CreateESDChain.C");
+    chain = CreateESDChain("ESD82XX_30K.txt",200);
+  }
 
   //____________________________________________//
   // Make the analysis manager
@@ -56,7 +72,10 @@ void runProof() {
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  mgr->StartAnalysis("proof",chain);
+  if (dataType == 0)
+    mgr->StartAnalysis("proof",chain);
+  else if (dataType == 1)
+    mgr->StartAnalysis("proof",dataSource, -1, 0);
 
   timer.Stop();
   timer.Print();
