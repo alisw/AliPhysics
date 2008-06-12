@@ -604,14 +604,13 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   }
   specialMap.Delete();
   specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.51),90.));
-  specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.20,-0.04)));
-  specialMap.Add(47 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.18,-1.11)));
+  specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.20,-0.08)));
+  specialMap.Add(47 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(2.40,-1.11)));
   specialMap.Add(20 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
-  specialMap.Add(46 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.6 , 0.17)));
+  specialMap.Add(46 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.92 , 0.17)));
   specialMap.Add(74 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.405, -0.10)));  
       // Fix (7) - overlap of SQ42 with MCHL (after moving the whole sector
       // in the true position)   
-      // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
 
   const AliMpSectorSegmentation* kSegmentation2 
     = dynamic_cast<const AliMpSectorSegmentation*>(
@@ -1842,7 +1841,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     gMC->Gspos("SQ11",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");       
     
     // TopAnode3 place 1 layer
-    posX = 25.80+fgkDeltaQuadLHC;
+    posX = 25.804+fgkDeltaQuadLHC;
     posY = 98.61+fgkDeltaQuadLHC;
     posZ = 0.;    
     gMC->Gspos("SQ12",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");  
@@ -2486,11 +2485,15 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
           posX = where.X() + motifPos->Position().X() + spMot.GetDelta().X();
           posY = where.Y() + motifPos->Position().Y() + spMot.GetDelta().Y();
           posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
+          // Shift the hole for special motif 46 to avoid debording into S047
+          if ( copyNo == 2070 ) posX -= 0.1;
           gMC->Gspos(fgkHoleName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
           // then place the daughter board for the motif, wrt the requested rotation angle
           posX = posX+fgkDeltaFilleEtamX;
           posY = posY+fgkDeltaFilleEtamY;
+          // Do not shift the daughter board
+          if ( copyNo == 2070 ) posX += 0.1;
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
           gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
