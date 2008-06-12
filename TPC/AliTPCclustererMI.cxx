@@ -856,10 +856,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	  "sec="<<fSector<<
 	  "row="<<iRow<<
 	  "pad="<<iPad<<
+	  "time="<<iTimeBin<<
 	  "sig="<<signal<<
 	  "x="<<x[0]<<
 	  "y="<<x[1]<<
-	  "z="<<x[2]<<
+	  "z="<<x[2]<<	  
 	  "gx="<<gx[0]<<
 	  "gy="<<gx[1]<<
 	  "gz="<<gx[2]<<
