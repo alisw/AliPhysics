@@ -106,29 +106,20 @@ AliPMDtracker::~AliPMDtracker()
   if (fRecpoints)
     {
       fRecpoints->Clear();
-      /*
-      fRecpoints->Delete();
-      delete fRecpoints;
-      fRecpoints=0;
-      */
     }
   if (fPMDcontin)
     {
-      fPMDcontin->Clear();
-      /*
       fPMDcontin->Delete();
       delete fPMDcontin;
       fPMDcontin=0;
-      */
+      
     }
   if (fPMDcontout)
   {
-      fPMDcontout->Clear();
-      /*
       fPMDcontout->Delete();
       delete fPMDcontout;
       fPMDcontout=0;
-      */
+
     }
   delete fPMDutil;
 }
@@ -250,6 +241,10 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 
       event->AddPmdTrack(esdpmdtr);
     }
+
+  fPMDcontin->Delete();
+  fPMDcontout->Delete();
+
 }
 //--------------------------------------------------------------------//
 void AliPMDtracker::SetVertex(Double_t vtx[3], Double_t evtx[3])
