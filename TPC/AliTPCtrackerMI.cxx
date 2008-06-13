@@ -303,7 +303,7 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
   Double_t rdistance2  = rdistancey2+rdistancez2;
   //Int_t  accept =0;
   
-  if (AliTPCReconstructor::StreamLevel()>5) {
+  if (AliTPCReconstructor::StreamLevel()>5 && seed->GetNumberOfClusters()>20) {
     Float_t rmsy2 = seed->GetCurrentSigmaY2();
     Float_t rmsz2 = seed->GetCurrentSigmaZ2();
     Float_t rmsy2p30 = seed->GetCMeanSigmaY2p30();
