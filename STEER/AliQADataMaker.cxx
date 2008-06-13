@@ -76,6 +76,11 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list)
 { 
 	// Set histograms memory resident and add to the list
 	// Maximm allowed is 10000
+        TString className(hist->ClassName()) ;
+        if( ! className.BeginsWith("TH") ) {
+	        AliError(Form("QA data Object must be a generic TH1 ROOT object and not %s", className.Data())) ; 
+	        return -1 ;
+	}
 	if ( index > 10000 ) {
 		AliError("Max number of authorized QA objects is 10000") ; 
 		return -1 ; 
