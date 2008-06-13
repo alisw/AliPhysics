@@ -5171,7 +5171,17 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
 }
 //------------------------------------------------------------------------
 Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) const {
-// Method still to be implemented: 
+//
+// Method to be optimized further: 
+// Aim: decide whether a track can be used for PlaneEff evaluation
+//      the decision is taken based on the track quality at the layer under study
+//      no information on the clusters on this layer has to be used
+//      The criterium is to reject tracks at boundaries between basic block (e.g. SPD chip)
+//      the cut is done on number of sigmas from the boundaries
+//
+//  Input: Actual track, layer [0,5] under study
+//  Output: none
+//  Return: kTRUE if this is a good track
 //
 // it will apply a pre-selection to obtain good quality tracks.  
 // Here also  you will have the possibility to put a control on the 
@@ -5179,12 +5189,11 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
 // this will be done by calling a proper method of the AliITSPlaneEff class.  
 //
 // input: AliITStrackMI* track, ilayer= layer number [0,5]
-// output: Bool_t   -> kTRUE 2f usable track, kFALSE if not usable. 
-  if(!fPlaneEff) 
+// return: Bool_t   -> kTRUE if usable track, kFALSE if not usable. 
+  if(!fPlaneEff)
     {AliWarning("IsOKForPlaneEff: null pointer to AliITSPlaneEff"); return kFALSE;}
   AliITSlayer &layer=fgLayers[ilayer];
   Double_t r=layer.GetR();
-  //AliITStrackV2 tmp(*track);
   AliITStrackMI tmp(*track);
 
 // detector number
@@ -5202,56 +5211,34 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
 
   Float_t locx; //
   Float_t locz; //
-  LocalModuleCoord(ilayer,idet,&tmp,locx,locz);
+  if(!LocalModuleCoord(ilayer,idet,&tmp,locx,locz)) return kFALSE;
   UInt_t key=fPlaneEff->GetKeyFromDetLocCoord(ilayer,idet,locx,locz);
   if(key>fPlaneEff->Nblock()) return kFALSE;
   Float_t blockXmn,blockXmx,blockZmn,blockZmx;
   if (!fPlaneEff->GetBlockBoundaries(key,blockXmn,blockXmx,blockZmn,blockZmx)) return kFALSE;
-  // transform Local boundaries of the basic block into 
-  //  Global (i.e. ALICE, not tracking reference) coordinate
-  //
-  Double_t a1[3]={blockXmn,0.,blockZmn};
-  Double_t a2[3]={blockXmx,0.,blockZmn};
-  Double_t a3[3]={blockXmn,0.,blockZmx};
-  Int_t ndet=AliITSgeomTGeo::GetNDetectors(ilayer+1); // layers from 1 to 6
-  Int_t lad = Int_t(idet/ndet) + 1;
-  Int_t hdet = idet - (lad-1)*ndet + 1;
-  Double_t xyzGlob[3];
-  AliITSgeomTGeo::LocalToGlobal(ilayer+1,lad,hdet,a1,a1);
-  AliITSgeomTGeo::LocalToGlobal(ilayer+1,lad,hdet,a2,a2);
-  AliITSgeomTGeo::LocalToGlobal(ilayer+1,lad,hdet,a3,a3);
-  Double_t gBlockYmn,gBlockYmx,gBlockZmn,gBlockZmx;
-  if(a1[1]>a2[1]) {gBlockYmn=a2[1]; gBlockYmx=a1[1];}
-  else            {gBlockYmn=a1[1]; gBlockYmx=a2[1];}
-  if(a2[2]>a3[2]) {gBlockZmn=a3[2]; gBlockZmx=a2[2];}
-  else            {gBlockZmn=a2[2]; gBlockZmx=a3[2];}
-  AliDebug(2,Form("Boundaries in Global system Ymin=%f, Ymax=%f, Zmin=%f, Zmax=%f", 
-           gBlockYmn,gBlockYmx,gBlockZmn,gBlockZmx));
-
   //***************
-  // DEFINITION OF SEARCH ROAD FOR accepting a track 
+  // DEFINITION OF SEARCH ROAD FOR accepting a track
   //
   //For the time being they are hard-wired, later on from AliITSRecoParam
-  Double_t dz=4.*TMath::Sqrt(tmp.GetSigmaZ2());  // those are precisions in the tracking reference system
-  Double_t dy=4.*TMath::Sqrt(tmp.GetSigmaY2());  // dy needs to be reduced (it is max now) if you do  
-                                                 // comparison in Global Reference system 
-  Float_t gdz=dz;
-  Float_t gdy=dy*TMath::Abs(TMath::Cos(tmp.GetAlpha()));
+  // Double_t nsigx=AliITSRecoParam::GetNSigXFarFromBoundary();
+  // Double_t nsigz=AliITSRecoParam::GetNSigZFarFromBoundary();
+  Double_t nsigz=4; 
+  Double_t nsigx=4; 
+  Double_t dx=nsigx*TMath::Sqrt(tmp.GetSigmaY2());  // those are precisions in the tracking reference system
+  Double_t dz=nsigz*TMath::Sqrt(tmp.GetSigmaZ2());  // Use it also for the module reference system, as it is
+                                                // done for RecPoints
 
   // exclude tracks at boundary between detectors
-  //Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidth();
+  //Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidthPlaneEff();
   Double_t boundaryWidth=0; // for the time being hard-wired, later on from AliITSRecoParam
   AliDebug(2,Form("Tracking: track impact x=%f, y=%f, z=%f",tmp.GetX(), tmp.GetY(), tmp.GetZ()));
-  tmp.GetXYZ(xyzGlob);
-  AliDebug(2,Form("Global:   track impact x=%f, y=%f, z=%f",xyzGlob[0],xyzGlob[1],xyzGlob[2]));
-  //AliInfo(Form("TEST GLOBAL track y = %f, z=%f",tmp.GetY(),tmp.GetZ()));
-  AliDebug(2,Form("Search Road. Tracking: dy=%f , dz=%f",dy,dz));
-  AliDebug(2,Form("Search Road. Global: Gdy=%f , Gdz=%f",gdy,gdz));
-  if ( (xyzGlob[1]-gdy < gBlockYmn+boundaryWidth) ||
-       (xyzGlob[1]+gdy > gBlockYmx-boundaryWidth) ||
-       (xyzGlob[2]-gdz < gBlockZmn+boundaryWidth) ||
-       (xyzGlob[2]+gdz > gBlockZmx-boundaryWidth) ) return kFALSE;
+  AliDebug(2,Form("Local:    track impact x=%f, z=%f",locx,locz));
+  AliDebug(2,Form("Search Road. Tracking: dy=%f , dz=%f",dx,dz));
 
+  if ( (locx-dx < blockXmn+boundaryWidth) ||
+       (locx+dx > blockXmx-boundaryWidth) ||
+       (locz-dz < blockZmn+boundaryWidth) ||
+       (locz+dz > blockZmx-boundaryWidth) ) return kFALSE;
   return kTRUE;
 }
 //------------------------------------------------------------------------
@@ -5275,7 +5262,6 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
     {AliWarning("UseTrackForPlaneEff: null pointer to AliITSPlaneEff"); return;}
   AliITSlayer &layer=fgLayers[ilayer];
   Double_t r=layer.GetR();
-  //AliITStrackV2 tmp(*track);
   AliITStrackMI tmp(*track);
 
 // detector number
@@ -5286,26 +5272,36 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   if(idet<0) { AliInfo(Form("cannot find detector"));
     return;}
 
-  //Double_t trackGlobXYZ1[3];
-  //tmp.GetXYZ(trackGlobXYZ1);
 
-  //propagate to the intersection with the detector plane
+//propagate to the intersection with the detector plane
   const AliITSdetector &det=layer.GetDetector(idet);
   if (!tmp.Propagate(det.GetPhi(),det.GetR())) return;
 
-  //Float_t xloc,zloc;
 
-  //***************
-  // DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
-  //
-  // road in global (rphi,z) [i.e. in tracking ref. system]
-  Double_t zmin,zmax,ymin,ymax;
-  if (!ComputeRoad(&tmp,ilayer,idet,zmin,zmax,ymin,ymax)) return;
+//***************
+// DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
+//
+  Double_t dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
+                    TMath::Sqrt(tmp.GetSigmaZ2() +
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+                    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
+  Double_t dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
+                    TMath::Sqrt(tmp.GetSigmaY2() +
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+                    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
 
-  // select clusters in road
+// road in global (rphi,z) [i.e. in tracking ref. system]
+  Double_t zmin = tmp.GetZ() - dz;
+  Double_t zmax = tmp.GetZ() + dz;
+  Double_t ymin = tmp.GetY() + r*det.GetPhi() - dy;
+  Double_t ymax = tmp.GetY() + r*det.GetPhi() + dy;
+
+// select clusters in road
   layer.SelectClusters(zmin,zmax,ymin,ymax);
 
-  // Define criteria for track-cluster association
+// Define criteria for track-cluster association
   Double_t msz = tmp.GetSigmaZ2() +
   AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
   AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
@@ -5323,7 +5319,7 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   }
   msz = 1./msz; // 1/RoadZ^2
   msy = 1./msy; // 1/RoadY^2
-  //
+//
 
   const AliITSRecPoint *cl=0; Int_t clidx=-1, ci=-1;
   Int_t idetc=-1;
@@ -5342,7 +5338,7 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   }*/
   Float_t locx; //
   Float_t locz; //
-  LocalModuleCoord(ilayer,idet,&tmp,locx,locz);
+  if(!LocalModuleCoord(ilayer,idet,&tmp,locx,locz)) return;
 //
   AliDebug(2,Form("ilayer= %d, idet=%d, x= %f, z=%f",ilayer,idet,locx,locz));
   UInt_t key=fPlaneEff->GetKeyFromDetLocCoord(ilayer,idet,locx,locz);
@@ -5354,14 +5350,9 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
     idetc = cl->GetDetectorIndex();
     if(idet!=idetc) continue;
     // here real control to see whether the cluster can be associated to the track.
-    // take into account the misalignment
-    tmp.PropagateTo(tmp.GetX()+cl->GetX(),0.,0.);
     // cluster not associated to track
     if ( (tmp.GetZ()-cl->GetZ())*(tmp.GetZ()-cl->GetZ())*msz +
          (tmp.GetY()-cl->GetY())*(tmp.GetY()-cl->GetY())*msy   > 1. ) continue;
-    // bring track back to ideal detector plane, 
-    // important for correct treatment of misalignment in GetPredictedChi2MI()
-    tmp.PropagateTo(det.GetR(),0.,0.);
     // calculate track-clusters chi2
     chi2 = GetPredictedChi2MI(&tmp,cl,ilayer); // note that this method change track tmp
                                                // in particular, the error associated to the cluster 
@@ -5379,25 +5370,12 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
     Float_t tr[4]={99999.,99999.,9999.,9999.};    // initialize to high values 
     Float_t clu[4]={-99999.,-99999.,9999.,9999.}; // (in some cases GetCov fails) 
     Int_t cltype[2]={-999,-999};
-    Int_t ndet=AliITSgeomTGeo::GetNDetectors(ilayer+1); // layers from 1 to 6
-    Int_t lad = Int_t(idet/ndet) + 1;
-    Int_t hdet = idet - (lad-1)*ndet + 1;
-    Double_t xyzGlob[3],xyzLoc[3],cv[21],exyzLoc[3],exyzGlob[3];
-    if(tmp.GetXYZ(xyzGlob)) {
-      if (AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,hdet,xyzGlob,xyzLoc)) {
-        tr[0]=xyzLoc[0];
-        tr[1]=xyzLoc[2];
-      }
-    }
-    if(tmp.GetCovarianceXYZPxPyPz(cv)) {
-      exyzGlob[0]=TMath::Sqrt(cv[0]);
-      exyzGlob[1]=TMath::Sqrt(cv[2]);
-      exyzGlob[2]=TMath::Sqrt(cv[5]);
-      if (AliITSgeomTGeo::GlobalToLocalVect(AliITSgeomTGeo::GetModuleIndex(ilayer+1,lad,hdet),exyzGlob,exyzLoc)) { 
-        tr[2]=TMath::Abs(exyzLoc[0]);
-        tr[3]=TMath::Abs(exyzLoc[2]);
-      }
-    }
+
+    tr[0]=locx;
+    tr[1]=locz;
+    tr[2]=TMath::Sqrt(tmp.GetSigmaY2());  // those are precisions in the tracking reference system
+    tr[3]=TMath::Sqrt(tmp.GetSigmaZ2());  // Use it also for the module reference system, as it is
+
     if (found){
       clu[0]=layer.GetCluster(ci)->GetDetLocalX();
       clu[1]=layer.GetCluster(ci)->GetDetLocalZ();
@@ -5416,21 +5394,13 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
         AliCluster c(*layer.GetCluster(ci));
         c.SetSigmaY2(tmp.GetSigmaY(ilayer)*tmp.GetSigmaY(ilayer));
         c.SetSigmaZ2(tmp.GetSigmaZ(ilayer)*tmp.GetSigmaZ(ilayer));
-        Float_t cov[6];
         //if (layer.GetCluster(ci)->GetGlobalCov(cov))  // by using this, instead, you got nominal cluster errors
-        if (c.GetGlobalCov(cov)) 
-        {
-          exyzGlob[0]=TMath::Sqrt(cov[0]);
-          exyzGlob[1]=TMath::Sqrt(cov[3]);
-          exyzGlob[2]=TMath::Sqrt(cov[5]);
-          if (AliITSgeomTGeo::GlobalToLocalVect(AliITSgeomTGeo::GetModuleIndex(ilayer+1,lad,hdet),exyzGlob,exyzLoc)) {
-            clu[2]=TMath::Abs(exyzLoc[0]);  
-            clu[3]=TMath::Abs(exyzLoc[2]);  
-          }
-        }
+        clu[2]=TMath::Sqrt(c.GetSigmaY2());
+        clu[3]=TMath::Sqrt(c.GetSigmaZ2());
       //}
     }
     fPlaneEff->FillHistos(key,found,tr,clu,cltype);
   }
 return;
 }
+
