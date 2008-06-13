@@ -36,6 +36,8 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   AliFemtoString Report();
   void SetConstrained(const bool constrained);
   bool GetConstrained() const;
+  void SetUseTPCOnly(const bool usetpconly);
+  bool GetUseTPCOnly() const;
 
   void SetESDSource(AliESDEvent *aESD);
   void SetStackSource(AliStack *aStack);
@@ -46,12 +48,15 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
  private:
   string         fFileName;      // name of current ESD file
   bool           fConstrained;   // flag to set which momentum from ESD file will be use
+  bool           fUseTPCOnly;    // flog to set to read TPC only momentum instead of the full
   int            fNumberofEvent; // number of Events in ESD file
   int            fCurEvent;      // number of current event
   unsigned int   fCurFile;       // number of current file
   AliESDEvent*   fEvent;         // ESD event
   AliStack      *fStack;         // Kinematics stack pointer
   AliGenEventHeader *fGenHeader; // Link to the generator event header
+
+  Float_t GetSigmaToVertex(double *impact, double *covar);
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChainKine, 1)

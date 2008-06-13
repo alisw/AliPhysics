@@ -36,6 +36,7 @@ using namespace std;
 AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fFileName(" "),
   fConstrained(true),
+  fUseTPCOnly(false),
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
@@ -51,6 +52,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   AliFemtoEventReader(aReader),
   fFileName(" "),
   fConstrained(true),
+  fUseTPCOnly(false),
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
@@ -60,6 +62,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
+  fUseTPCOnly = aReader.fUseTPCOnly;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
@@ -81,6 +84,7 @@ AliFemtoEventReaderESDChainKine& AliFemtoEventReaderESDChainKine::operator=(cons
     return *this;
 
   fConstrained = aReader.fConstrained;
+  fUseTPCOnly = aReader.fUseTPCOnly;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
@@ -141,7 +145,12 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	
   //Vertex
   double fV1[3];
-  fEvent->GetVertex()->GetXYZ(fV1);
+  if (fUseTPCOnly) {
+    fEvent->GetPrimaryVertexTPC()->GetXYZ(fV1);
+  }
+  else {
+    fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+  }
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
@@ -157,6 +166,31 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   int nofTracks=0;  //number of reconstructed tracks in event
   nofTracks=fEvent->GetNumberOfTracks();
   int realnofTracks=0;//number of track which we use ina analysis
+
+  Int_t *motherids;
+  motherids = new Int_t[fStack->GetNtrack()];
+  for (int ip=0; ip<fStack->GetNtrack(); ip++) motherids[ip] = 0;
+
+  // Read in mother ids
+  TParticle *motherpart;
+  for (int ip=0; ip<fStack->GetNtrack(); ip++) {
+    motherpart = fStack->Particle(ip);
+    if (motherpart->GetDaughter(0) > 0)
+      motherids[motherpart->GetDaughter(0)] = ip;
+    if (motherpart->GetDaughter(1) > 0)
+      motherids[motherpart->GetDaughter(1)] = ip;
+
+//     if (motherpart->GetPdgCode() == 211) {
+//       cout << "Mother " << ip << " has daughters " 
+// 	   << motherpart->GetDaughter(0) << " " 
+// 	   << motherpart->GetDaughter(1) << " " 
+// 	   << motherpart->Vx() << " " 
+// 	   << motherpart->Vy() << " " 
+// 	   << motherpart->Vz() << " " 
+// 	   << endl;
+      
+//     }
+  }
 
   for (int i=0;i<nofTracks;i++)
     {
@@ -180,38 +214,89 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       trackCopy->SetPidProbProton(esdpid[4]);
 						
       double pxyz[3];
-      if (fConstrained==true)		    
-	tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
-      else
-	tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+      double rxyz[3];
+      double impact[2];
+      double covimpact[3];
+      
+      if (fUseTPCOnly) {
+	if (!esdtrack->GetTPCInnerParam()) {
+	  delete trackCopy;
+	  continue;
+	}
 
-      AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-      if (v.mag() < 0.0001) {
-	//	cout << "Found 0 momentum ???? " <<endl;
-	delete trackCopy;
-	continue;
+	AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	param->GetXYZ(rxyz);
+	param->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impact, covimpact);
+	param->GetPxPyPz(pxyz);//reading noconstarined momentum
+
+	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	if (v.mag() < 0.0001) {
+	  //	cout << "Found 0 momentum ???? " <<endl;
+	  delete trackCopy;
+	  continue;
+	}
+	trackCopy->SetP(v);//setting momentum
+	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+
+	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	//setting helix I do not if it is ok
+	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	trackCopy->SetHelix(helix);
+
+	//some stuff which could be useful 
+	trackCopy->SetImpactD(impact[0]);
+	trackCopy->SetImpactZ(impact[1]);
+	trackCopy->SetCdd(covimpact[0]);
+	trackCopy->SetCdz(covimpact[1]);
+	trackCopy->SetCzz(covimpact[2]);
+	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));	
+
+	delete param;
       }
-      trackCopy->SetP(v);//setting momentum
-      trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-      const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
-      const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
-      //setting helix I do not if it is ok
-      AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
-      trackCopy->SetHelix(helix);
+      else {
+	if (fConstrained==true)		    
+	  tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	else
+	  tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	
+	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	if (v.mag() < 0.0001) {
+	  //	cout << "Found 0 momentum ???? " <<endl;
+	  delete trackCopy;
+	  continue;
+	}
+	trackCopy->SetP(v);//setting momentum
+	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	//setting helix I do not if it is ok
+	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	trackCopy->SetHelix(helix);
+	
+	//some stuff which could be useful 
+	float imp[2];
+	float cim[3];
+	esdtrack->GetImpactParameters(imp,cim);
+
+	impact[0] = imp[0];
+	impact[1] = imp[1];
+	covimpact[0] = cim[0];
+	covimpact[1] = cim[1];
+	covimpact[2] = cim[2];
+
+	trackCopy->SetImpactD(impact[0]);
+	trackCopy->SetImpactZ(impact[1]);
+	trackCopy->SetCdd(covimpact[0]);
+	trackCopy->SetCdz(covimpact[1]);
+	trackCopy->SetCzz(covimpact[2]);
+	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact,covimpact));
+      }
 	    	
       trackCopy->SetTrackId(esdtrack->GetID());
       trackCopy->SetFlags(esdtrack->GetStatus());
       trackCopy->SetLabel(esdtrack->GetLabel());
 		
-      //some stuff which could be useful 
-      float impact[2];
-      float covimpact[3];
-      esdtrack->GetImpactParameters(impact,covimpact);
-      trackCopy->SetImpactD(impact[0]);
-      trackCopy->SetImpactZ(impact[1]);
-      trackCopy->SetCdd(covimpact[0]);
-      trackCopy->SetCdz(covimpact[1]);
-      trackCopy->SetCzz(covimpact[2]);
       trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
       trackCopy->SetITSncls(esdtrack->GetNcls(0));     
       trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
@@ -224,16 +309,13 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
       trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
-      double pvrt[3];
-      fEvent->GetPrimaryVertex()->GetXYZ(pvrt);
-
       double xtpc[3];
       esdtrack->GetInnerXYZ(xtpc);
-      xtpc[2] -= pvrt[2];
+      xtpc[2] -= fV1[2];
       trackCopy->SetNominalTPCEntrancePoint(xtpc);
 
       esdtrack->GetOuterXYZ(xtpc);
-      xtpc[2] -= pvrt[2];
+      xtpc[2] -= fV1[2];
       trackCopy->SetNominalTPCExitPoint(xtpc);
 
       int indexes[3];
@@ -244,6 +326,38 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
       // Fill the hidden information with the simulated data
       TParticle *tPart = fStack->Particle(TMath::Abs(esdtrack->GetLabel()));
+
+      // Check the mother information
+
+      // Using the new way of storing the freeze-out information
+      // Final state particle is stored twice on the stack
+      // one copy (mother) is stored with original freeze-out information
+      //   and is not tracked
+      // the other one (daughter) is stored with primary vertex position
+      //   and is tracked
+	
+      // Freeze-out coordinates
+      double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+      fpx = tPart->Vx();
+      fpy = tPart->Vy();
+      fpz = tPart->Vz();
+      fpt = tPart->T();
+
+      if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
+ 	TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
+ 	// Check if this is the same particle stored twice on the stack
+  	if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
+	  // It is the same particle
+	  // Read in the original freeze-out information
+	  // and convert it from to [fm]
+ 	  fpx = mother->Vx()*1e13;
+ 	  fpy = mother->Vy()*1e13;
+ 	  fpz = mother->Vz()*1e13;
+ 	  fpt = mother->T()*1e13*3e10;
+	  
+	}
+      }
+
       AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
       tInfo->SetPDGPid(tPart->GetPdgCode());
       tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
@@ -256,9 +370,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       else 
 	tInfo->SetMass(0.0);
 
-      tInfo->SetEmissionPoint(tPart->Vx()*1e13*0.197327, tPart->Vy()*1e13*0.197327, tPart->Vz()*1e13*0.197327, tPart->T()*1e13*300000000*0.197327);
+      tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
       trackCopy->SetHiddenInfo(tInfo);
-
+      
       //decision if we want this track
       //if we using diffrent labels we want that this label was use for first time 
       //if we use hidden info we want to have match between sim data and ESD
@@ -274,7 +388,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	}
 		
     }
-
+  
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   fCurEvent++;	
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
@@ -302,11 +416,54 @@ void AliFemtoEventReaderESDChainKine::SetGenEventHeader(AliGenEventHeader *aGenH
   fGenHeader = aGenHeader;
 }
 
+//__________________
+void AliFemtoEventReaderESDChainKine::SetUseTPCOnly(const bool usetpconly)
+{
+  fUseTPCOnly=usetpconly;
+}
 
+bool AliFemtoEventReaderESDChainKine::GetUseTPCOnly() const
+{
+  return fUseTPCOnly;
+}
+Float_t AliFemtoEventReaderESDChainKine::GetSigmaToVertex(double *impact, double *covar)
+{
+  // Calculates the number of sigma to the vertex.
 
+  Float_t b[2];
+  Float_t bRes[2];
+  Float_t bCov[3];
 
+  b[0] = impact[0];
+  b[1] = impact[1];
+  bCov[0] = covar[0];
+  bCov[1] = covar[1];
+  bCov[2] = covar[2];
 
+  bRes[0] = TMath::Sqrt(bCov[0]);
+  bRes[1] = TMath::Sqrt(bCov[2]);
 
+  // -----------------------------------
+  // How to get to a n-sigma cut?
+  //
+  // The accumulated statistics from 0 to d is
+  //
+  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
+  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
+  //
+  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
+  // Can this be expressed in a different way?
 
+  if (bRes[0] == 0 || bRes[1] ==0)
+    return -1;
 
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
 
+  // stupid rounding problem screws up everything:
+  // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
+  if (TMath::Exp(-d * d / 2) < 1e-10)
+    return 1000;
+
+  d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  return d;
+}
