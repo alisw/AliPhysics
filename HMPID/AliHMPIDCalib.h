@@ -30,7 +30,7 @@ public:
           void FillPedestal(Int_t pad,Int_t q);                             //absolute pad number and the charge of the pad
           void FillErrors(Int_t nDDL,Int_t nErrType, Int_t nErr);           //Fill the errors from RawStream
           void FillDDLCnt(Int_t iddl,Int_t inDDL, Int_t outDDL);            //Fill the errors from RawStream
-        Bool_t CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv);           //number of the DDL, name of the output file and the number of events processed
+        Bool_t CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t nEv);           //number of the DDL, name of the output file and the number of events processed
         Bool_t CalcPedestalPaolo(Int_t nDDL, Char_t* name, Int_t nEv);      //number of the DDL, name of the output file and the number of events processed
         
         Bool_t WriteErrors(Int_t nDDL, Char_t* name, Int_t nEv);            //number of the DDL, name of the output file and the number of events processed
@@ -40,13 +40,7 @@ public:
          void CloseFile();                                                  //Close the file
          void SetRunParams(ULong_t runNum,Int_t timeStamp, Int_t ldcId);    //Set Run Parameters such as Run Number, TimeStamp, LDCid 
          void SetSigCut(Int_t nSigCut) { fSigCut=nSigCut;}                  //Set Sigma Cuts from Setter
-         void SetSigCutFromFile(Char_t* name);                              //Set Sigma Cuts from File
-         void SetSigCutFromShell(Char_t* name);                             //Set Sigma Cuts from Bash Shell
-         void SetDaOutFromShell(Char_t* name);                              //Set out dir. of DA from Bash Shell
-         void SetFeeInFromShell(Char_t* name);                              //Set out dir. for Fe2C from Bash Shell
-             
-         TString GetDaOutFromShell() {return  fDaOut;}                      //Get out dir. of DA from Bash Shell
-         TString GetFeeInFromShell() {return  fFeeIn;}                      //Get out dir. for Fe2C from Bash Shell
+         void SetSigCutFromFile(TString name);                              //Set Sigma Cuts from File
          void SetWriteHistoPads(Bool_t isOn) {fWritePads=isOn;}             //Set wether ADC histos of pads are written or not
          void SetWriteHistoPads(Bool_t isOn,Bool_t isLarge,Int_t nDDL) {fWritePads=isOn;fLargeHisto=isLarge;fSelectDDL=nDDL;}             //Set wether ADC histos of pads are written or not
          Bool_t GetWritePads()       const{return fWritePads;}              //Set wether ADC histos of pads are written or not
@@ -73,8 +67,6 @@ protected:
     Bool_t      fLargeHisto;                                                   //Default is kFALSE.if kTRUE then write large pad histograms with 4093 bins!!!! Only if you have 2GB of RAM!!!   
     Int_t       fSelectDDL;                                                    //Select the DDL to write for the in the large histograms. Only ONE at one time!
 
-    TString     fDaOut;                                                        //Store the DA output files in this directory
-    TString     fFeeIn;                                                        //
 private:
   AliHMPIDCalib(const AliHMPIDCalib& c);              //dummy copy constructor
   AliHMPIDCalib &operator=(const AliHMPIDCalib& c);   //dummy assignment operator
@@ -82,3 +74,4 @@ private:
     ClassDef(AliHMPIDCalib,3)                                                  //HMPID calibration and pedestal class        
 };
 #endif
+

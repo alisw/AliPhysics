@@ -43,15 +43,16 @@ extern "C" {
 int main(int argc, char **argv){ 
 
   int status;
+  const Char_t         *hmpConfigFile = "HmpDaqDaConfig.txt"; 
+  const Int_t               ddlOffset = 1536;
+        TString                 hmpIn;
+        TString                 feeIn;
 
+  
   /* log start of process */
   printf("HMPID DA program started\n");  
 
-  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-                                        "*",
-                                        "TStreamerInfo",
-                                        "RIO",
-                                        "TStreamerInfo()");
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo","*","TStreamerInfo","RIO","TStreamerInfo()");
   
   /* check that we got some arguments = list of files */
   if (argc<2) {
@@ -59,13 +60,10 @@ int main(int argc, char **argv){
     return -1;
   }
 
-  /* copy locally a file from daq detector config db
-  status=daqDA_DB_getFile("myconfig","./myconfig.txt");
-  if (status) {
-    printf("Failed to get config file : %d\n",status);
-    return -1;
-  }
-  and possibly use it */
+  /* copy locally a file from daq detector config db */
+  hmpIn=Form("./%s",hmpConfigFile);
+  status=daqDA_DB_getFile(hmpConfigFile,hmpIn.Data());
+  if (status) { printf("Failed to get HMPID config file status: %d\n",status); return -1; }
 
   /* report progress */
   daqDA_progressReport(10);
@@ -83,12 +81,7 @@ int main(int argc, char **argv){
   AliHMPIDCalib *pCal=new AliHMPIDCalib();
   /* Set the number of sigma cuts inside the file HmpidSigmaCut.txt on BOTH LDCs! */
   /* If the file is NOT present then the default cut 3 will be used!*/
-
-  //pCal->SetSigCutFromFile("HmpidSigmaCut.txt");
-  pCal->SetSigCutFromShell("HMPID_SIGMA_CUT");                        //decision to make later: wether to use file or env variable...
-  pCal->SetDaOutFromShell("HMPID_DA_OUT");                            //decision to make later: wether to use file or env variable...
-  pCal->SetFeeInFromShell("HMPID_FEE_IN");                            //decision to make later: wether to use file or env variable...
-   
+  pCal->SetSigCutFromFile(hmpIn);
   
   /* ONLY set this option to kTRUE if you want to create the ADC dsitributions for all 161280 pads!!!!*/  
   /* kTRUE is not suggested for production mode b/c of the memory consumption! */
@@ -199,23 +192,22 @@ int main(int argc, char **argv){
 
   /* report progress */
   daqDA_progressReport(90);
-  TString sDaOut=pCal->GetDaOutFromShell();
   
-  for(Int_t nDDL=0; nDDL < AliHMPIDRawStream::kNDDL; nDDL++) {
-    
+  for(Int_t nDDL=0; nDDL < AliHMPIDRawStream::kNDDL; nDDL++) {   
+    feeIn=Form("thr%d.dat",ddlOffset+nDDL);         
     /* Calculate pedestal for the given ddl, if there is no ddl go t next */
-    if(!pCal->CalcPedestal(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
+    if(pCal->CalcPedestal(nDDL,Form("HmpidPedDdl%02i.txt",nDDL),Form("%s",feeIn.Data()),iEvtNcal)) {
+      status=daqDA_DB_storeFile(feeIn.Data(),feeIn.Data());                                               //store a single threshold file for a DDL in DAQ DB  
+      if (status) { printf("Failed to store file %s in DAQ DB, status: %d\n",feeIn.Data(),status); }
+      status=daqDA_FES_storeFile(Form("HmpidPedDdl%02i.txt",nDDL),Form("HmpidPedDdl%02i.txt",nDDL));      //store a single pedestal file for a DDL
+      if (status) { printf("Failed to export file on FES: %d\n",status); }
+    }//pedestals and thresholds
+    if(pCal->WriteErrors(nDDL,Form("HmpidErrorsDdl%02i.txt",nDDL),iEvtNcal)) {
+      status=daqDA_FES_storeFile(Form("HmpidErrorsDdl%02i.txt",nDDL),Form("HmpidErrorsDdl%02i.txt",nDDL));
+      if (status) { printf("Failed to export file : %d\n",status); }
+    }//errors
     /* to create pedestal file as Paolo uncomment the line */
-    //if(!pCal->CalcPedestalPaolo(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
-    if(!pCal->WriteErrors(nDDL,Form("%sHmpidErrorsDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
-    
-    /* store the result file on FES */
-   
-    status=daqDA_FES_storeFile(Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),Form("HmpidPedDdl%02i.txt",nDDL));
-    if (status) { printf("Failed to export file : %d\n",status); }
-    status=daqDA_FES_storeFile(Form("%sHmpidErrorsDdl%02i.txt",sDaOut.Data(),nDDL),Form("HmpidErrorsDdl%02i.txt",nDDL));
-    if (status) { printf("Failed to export file : %d\n",status); }
-    
+    //if(!pCal->CalcPedestalPaolo(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue; 
   }//nDDL
 
   if(pCal->GetWritePads()==kTRUE) pCal->CloseFile();
@@ -228,3 +220,4 @@ int main(int argc, char **argv){
   
   return status;
 }
+

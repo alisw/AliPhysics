@@ -48,9 +48,7 @@ fWritePads(0),
 fnDDLInStream(0x0),
 fnDDLOutStream(0x0),
 fLargeHisto(kFALSE),
-fSelectDDL(0),  
-fDaOut(0),
-fFeeIn(0)
+fSelectDDL(0)
 {
   //
   //constructor
@@ -187,10 +185,7 @@ void AliHMPIDCalib::Init()
   //
     
   fSigCut=3;  //the standard cut
-  fFeeIn="";
-  fDaOut="";
-  
-      
+       
   for(Int_t iDDL=0; iDDL< AliHMPIDRawStream::kNDDL; iDDL++) 
       {
          for(Int_t ierr=0; ierr <AliHMPIDRawStream::kSumErr ; ierr++) {
@@ -213,7 +208,7 @@ void AliHMPIDCalib::SetRunParams(ULong_t runNum,Int_t timeStamp, Int_t ldcId)
   fLdcId=ldcId;
 }//SetRunParams()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::SetSigCutFromFile(Char_t* name)
+void AliHMPIDCalib::SetSigCutFromFile(TString hmpInFile)
 {
   //
   //Set Sigma Cut from the file on the LDC, if the input file is not present default value is set!
@@ -221,85 +216,18 @@ void AliHMPIDCalib::SetSigCutFromFile(Char_t* name)
   //Returns: none
   //
   Int_t nSigCut=0;
-  ifstream infile(name);
+  ifstream infile(hmpInFile.Data());
   if(!infile.is_open()) {fSigCut=3; return;}
   while(!infile.eof())
     {
     infile>>nSigCut;
   }
   infile.close();
+  if(nSigCut< 0 || nSigCut > 15 ) {Printf("WARNING: DAQ Sigma Cut from DAQ DB is out of bounds: %d, resetting it to 3!!!",nSigCut);nSigCut=3;}
+  Printf("DAQ Sigma Cut from DAQ DB is: %d",nSigCut);
   fSigCut=nSigCut; 
 }//SetSigCutFromFile()    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::SetSigCutFromShell(Char_t *env)
-{
-  //
-  //Set Sigma Cut from the Shell on the LDC, if the input file is not present default value is set!
-  //Arguments: none
-  //Returns: none
-  //
-  Int_t nSigCut=0;
-  TString ssc(gSystem->Getenv(env));
-  //make it nicer later...
-       if(ssc=="1") {  nSigCut=1;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="2") {  nSigCut=2;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="3") {  nSigCut=3;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="4") {  nSigCut=4;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="5") {  nSigCut=5;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="6") {  nSigCut=6;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="7") {  nSigCut=7;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="8") {  nSigCut=8;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="9") {  nSigCut=9;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="10") {  nSigCut=10;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="11") {  nSigCut=11;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="12") {  nSigCut=12;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="13") {  nSigCut=13;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="14") {  nSigCut=14;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else if(ssc=="15") {  nSigCut=15;  Printf("DAQ Sigma Cut from shell is: %d",nSigCut);}
-  else  {  nSigCut=3;  Printf("DAQ Sigma Cut from shell is too large set it back to default: %d",nSigCut);}
-  
-  fSigCut=nSigCut; 
-}//SetSigCutFromFile()    
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     void SetDaOutFromShell(Char_t* name);                             //Set out dir. of DA from Bash Shell
-void AliHMPIDCalib::SetFeeInFromShell(Char_t* env)
-{
-   //
-  //Set the path where the Fe2C is looking for the threshold files
-  //Arguments: none
-  //Returns: none
-  //
-  TString sFeeIn(gSystem->Getenv(env));
-  if(sFeeIn.Data()=="") sFeeIn="/local/home/hmpid/";
-  if(sFeeIn.EndsWith("/")) fFeeIn=sFeeIn;
-  else fFeeIn=Form("%s/",sFeeIn.Data());
-  if(gSystem->OpenDirectory(fFeeIn.Data())==0) 
-  {
-    Printf("========== HMPID-DA WARNING: directory %s does not exist! Switching to /tmp! ==========",fFeeIn.Data());
-    fFeeIn="/tmp/";
-  }
-  Printf("HMPID_FEE_IN=%s",fFeeIn.Data()); 
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     void SetDaOutFromShell(Char_t* name);                             //Set out dir. of DA from Bash Shell
-void AliHMPIDCalib::SetDaOutFromShell(Char_t* env)
-{
-   //
-  //Set the standard path where the DA write the output
-  //Arguments: none
-  //Returns: none
-  //
-  TString sDaOut(gSystem->Getenv(env));
-  if(sDaOut=="") sDaOut="/local/home/hmpid/";
-  if(sDaOut.EndsWith("/")) fDaOut=sDaOut;
-  else fDaOut=Form("%s/",sDaOut.Data());
-  
-  if(gSystem->OpenDirectory(fDaOut.Data())==0) 
-  {
-    Printf("========== HMPID-DA WARNING: directory %s does not exist! Switching to /tmp! ==========",fDaOut.Data());
-    fDaOut="/tmp/";
-  } 
-  Printf("HMPID_DA_OUT=%s",fDaOut.Data()); 
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 void AliHMPIDCalib::InitHisto(Int_t q,Int_t histocnt,Char_t* name)
 {
   //
@@ -471,7 +399,7 @@ Bool_t AliHMPIDCalib::WriteErrors(Int_t nDDL, Char_t* name, Int_t nEv)
     
 }//FillErrors()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv)    
+Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t nEv)    
 {
   //
   //Calculate pedestal for each pad  
@@ -480,15 +408,13 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv)
   //
   
   if(faddl[nDDL]==kFALSE) return kFALSE;                   //if ddl is missing no ped file is created (and also for LDC selection). Check with Paolo what he checks for?!  
-  Int_t ddlOffset=1536;
-  Int_t feeOffset=196657;
-  ofstream feeInput[24]; 
-  
-  for(Int_t ir=0;ir<AliHMPIDRawStream::kNRows;ir++) feeInput[ir].open(Form("%sthr%d_%d.dat",fFeeIn.Data(),ddlOffset+nDDL,ir+1));  //for Fe2C every row has a file only with inhard        
 
+  Int_t feeOffset=196657;
+  ofstream feeInput; feeInput.open(Form("%s",name2));      //write thr file for Fe2C
+  
   Double_t mean=0,sigma=0;
   Double_t qs2m=0,qsm2=0;
-  ofstream out;                                           //to write the pedestal text files
+  ofstream out;                                            //to write the pedestal text files
   Int_t inhard;
   Int_t nEvPerPad=0;
   out.open(name);
@@ -499,10 +425,11 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv)
   out << Form("%8s %2d\n","TotDDLEvt",      fnDDLInStream[nDDL]);                                     //read number of bad events for DDL # nDDL processed
   out << Form("%8s %2d\n","NumBadEvt",      fnDDLInStream[nDDL]-fnDDLOutStream[nDDL]);                //read number of bad events for DDL # nDDL processed
   out << Form("%8s %2f\n","NBadE(%)",       (fnDDLInStream[nDDL]-fnDDLOutStream[nDDL])*100.0/nEv);    //read number of bad events (in %) for DDL # nDDL processed
-  out << Form("%8s %2.2d\n","#SigCut",      fSigCut);                                                 //# of sigma cuts
+  out << Form("%8s %d\n","#SigCut",      fSigCut);                                                 //# of sigma cuts
       
   for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows; row++){
-    //write thr file for Fe2C
+    feeInput << Form("0xabcdabcd \n");                                                                    //before each row we write a marker to separate the rows within a DDL                       
+    
    
     for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){
       for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
@@ -525,19 +452,19 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv)
         inhard=((Int_t(mean+fSigCut*sigma))<<9)+Int_t(mean); //right calculation, xchecked with Paolo 8/4/2008
         out << Form("%2i %2i %2i %5.3f %5.3f %4.4x \n",row,dil,pad,mean,sigma,inhard);
 
-        feeInput[row-1] << Form("0x%4.4x\n",inhard);                 
+        feeInput << Form("0x%4.4x\n",inhard);                 
        //if(sigma > 3.0) Printf("WARNING SIGMA DDL: %2d row: %2d dil: %2d pad: %2d mean: %3.2f sigma: %2.2f nEvPerPad: %02d fnDDLOutStream: %02d fpedQ0: %02d",nDDL,row,dil,pad,mean,sigma,nEvPerPad,fnDDLOutStream[nDDL],fpedQ0[nDDL][row][dil][pad]);         
         }//adr
         
         //we have to write up to 64 not 48 in the DILOGIC since they are daisy chained!
         //offset and format is defined for the Fe2C code
-        for(Int_t idd=0;idd<16;idd++) feeInput[row-1] << Form("0x%4.4x\n",idd+feeOffset);                 
+        for(Int_t idd=0;idd<16;idd++) feeInput << Form("0x%4.4x\n",idd+feeOffset);                 
       }//dil
       
       
     }//row
     out.close();                                          //write pedestal file
-    for(Int_t ir=0;ir<AliHMPIDRawStream::kNRows;ir++) feeInput[ir].close();
+    feeInput.close();
  
   return kTRUE;
 }//CaclPedestal()
@@ -561,7 +488,7 @@ Bool_t AliHMPIDCalib::CalcPedestalPaolo(Int_t nDDL, Char_t* /*name*/, Int_t nEv)
   Int_t nEvPerPad2=0;
     
   ofstream pped[3]; 
-  for(Int_t iseg=1;iseg<4;iseg++) pped[iseg-1].open(Form("%sHmpidPed%d_%d.dat",fDaOut.Data(),nDDL+ddlOffset,iseg));
+  for(Int_t iseg=1;iseg<4;iseg++) pped[iseg-1].open(Form("HmpidPed%d_%d.dat",nDDL+ddlOffset,iseg));
     
   for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows/2; row++){
      
@@ -601,5 +528,6 @@ Bool_t AliHMPIDCalib::CalcPedestalPaolo(Int_t nDDL, Char_t* /*name*/, Int_t nEv)
    return kTRUE;
 }//CalcPedestalPaolo()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 
