@@ -7,29 +7,26 @@
 // .L trd_loader.C
 // AliEveTRDLoader *loader = trd_loader();
 // loader->NextEvent();
-// 
-// Caution:
-// In order to update the screen one has to go to GLViewer 
-// and click the UpdateScene button after each NextEvent().
+// loop(loader)
 // 
 // Author:
 // Alex Bercuci (A.Bercuci@gsi.de)
 //
-AliEveTRDLoader* trd_loader()
+AliEveTRDLoader* trd_loader(Int_t event=70)
 {
-  // init MC loader
-  AliEveTRDLoader *loader = new AliEveTRDLoaderSim("MC");
-  
   // init single file loader
-  // AliEveTRDLoader *loader = new AliEveTRDLoader("Digits");
+  AliEveTRDLoader *loader = new AliEveTRDLoader("Clusters");
 
   // link the run loader and define the chamber setting and data type
-  loader->Open("galice.root");
-  loader->AddChambers(3, 3);
-  loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
+  loader->Open("TRD.RecPoints.root");
+  loader->AddChambers(0);
+  loader->AddChambers(8);
+  loader->AddChambers(9);
+  loader->AddChambers(17);
+  loader->SetDataType(AliEveTRDLoader::kTRDClusters);
 
   // load first event
-  loader->GoToEvent(0);
+  loader->GoToEvent(event);
   
   // register loader with alieve
   gEve->AddElement(loader);
@@ -37,4 +34,15 @@ AliEveTRDLoader* trd_loader()
   gEve->Redraw3D();
 
   return loader;
+}
+
+
+void loop(AliEveTRDLoader *loader)
+{
+  while(loader->NextEvent()){ 
+    printf("Event[%d]\n", loader->GetEvent());
+    gEve->Redraw3D();
+    gSystem->ProcessEvents();
+    gSystem->Sleep(2000);
+  }
 }
