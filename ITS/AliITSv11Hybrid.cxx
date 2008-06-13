@@ -4781,8 +4781,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     
   // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER - UPPER PART
   
-  dgh[0] = 74.5;
-  dgh[1] = 79.5;
+  dgh[0] = 70.5;
+  dgh[1] = 75.5;
   dgh[2] = 2.5;
   dgh[3] = 12.;
   dgh[4] = 168.;    
@@ -4791,8 +4791,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   
   // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER - LOWER PART
   
-  dgh[0] = 74.5;
-  dgh[1] = 79.5;
+  dgh[0] = 70.5;
+  dgh[1] = 75.5;
   dgh[2] = 2.5;
   dgh[3] = 192.;
   dgh[4] = 348.;    
