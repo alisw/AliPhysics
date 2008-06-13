@@ -920,13 +920,17 @@ void AliTPCv1::CreateGeometry()
   TGeoVolume *rrov = new TGeoVolume("TPC_RR_O",rro,m6);  
   //
   //
-  rrov->AddNode(crov,1,new TGeoCombiTrans(0.5,0.866,0.,&rotr));
-  rrov->AddNode(crov,2,new TGeoCombiTrans(0.5,-0.866,0.,&rotr));
-  rrov->AddNode(prov,1);
+  TGeoVolumeAssembly *rrin = new TGeoVolumeAssembly("TPC_RROD_I");
+  TGeoVolumeAssembly *rrou = new TGeoVolumeAssembly("TPC_RROD_O");
+  rrin->AddNode(rriv,1);
+  rrin->AddNode(criv,1,new TGeoTranslation(0.5,0.866, 0.));
+  rrin->AddNode(criv,2,new TGeoTranslation(0.5,-0.866, 0.)); 
+  rrin->AddNode(priv,1); 
   //
-  rriv->AddNode(criv,1,new TGeoCombiTrans(0.5,0.866,0.,&rotr));
-  rriv->AddNode(criv,2,new TGeoCombiTrans(0.5,-0.866,0.,&rotr));
-  rriv->AddNode(priv,1);     
+  rrou->AddNode(rrov,1);
+  rrou->AddNode(crov,1,new TGeoTranslation(0.5,0.866, 0.));
+  rrou->AddNode(crov,2,new TGeoTranslation(0.5,-0.866, 0.)); 
+  rrou->AddNode(prov,1);   
   for(Int_t i=0;i<18;i++){
     Double_t angle,x,y;
     Double_t z,r; 
@@ -937,8 +941,8 @@ void AliTPCv1::CreateGeometry()
     upar[2]=126.64; //lower
     z= 126.96;
     if(i==3){
-      v9->AddNode(rriv,1,new TGeoTranslation(x,y,z)); //A
-      v9->AddNode(rriv,2,new TGeoTranslation(x,y,-z)); //C      
+      v9->AddNode(rrin,1,new TGeoCombiTrans(x,y,z,&rotr)); //A
+      v9->AddNode(rrin,2,new TGeoCombiTrans(x,y,-z,&rotr)); //C     
     } 
     else { 
       gGeoManager->Node("TPC_Rod",i+1,"TPC_Drift",x,y,z,0,kTRUE,upar,3);//shaft
@@ -957,8 +961,8 @@ void AliTPCv1::CreateGeometry()
       gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
     }
     else if(i==11){
-      v9->AddNode(rrov,1,new TGeoTranslation(x,y,z)); //A
-      v9->AddNode(rrov,2,new TGeoTranslation(x,y,-z)); //C
+      v9->AddNode(rrou,1,new TGeoCombiTrans(x,y,z,&rotr)); //A
+      v9->AddNode(rrou,2,new TGeoCombiTrans(x,y,-z,&rotr)); //C
     }
     else{
     //
