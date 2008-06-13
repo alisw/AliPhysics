@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id:$ */
 
 //*************************************************************************
 // SSD geometry, based on ROOT geometrical modeler
@@ -5059,7 +5059,38 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 		ymothervertex[i][j] = ringsupportvertex[i][j]->Y();
 	}
   }
-  char lowerladdersupportname[30];
+////////////////////////////////////////////////////////////////////////////////
+// Start Corrections 13/06/08
+////////////////////////////////////////////////////////////////////////////////
+  char lowerladderpconsupportname[30];
+  TGeoPcon* lowerladderpconsupportshape[fgklayernumber];
+  TGeoVolume* lowerladderpconsupport[fgklayernumber]; 
+  Double_t lowerladderpconezsection[2] = {0.,fgkMountingBlockSupportWidth[1]};
+  Double_t lowerladderpconradiusmax[fgklayernumber];
+  Double_t lowerladderpconradiusmin[fgklayernumber];
+  TGeoRotation* lowerladdersupportrot = new TGeoRotation();
+  lowerladdersupportrot->SetAngles(90.,180.,-90);
+  for(Int_t i=0; i<fgklayernumber; i++){
+	lowerladderpconradiusmax[i] = fgkMountingBlockSupportRadius[i]
+								*			   TMath::Cos(theta[i]);
+    lowerladderpconradiusmin[i] = lowerladderpconradiusmax[i]-fgkLadderSupportHeigth;
+  } 
+  for(Int_t i=0; i<fgklayernumber; i++){
+///////////////////////////  Modified Version ?///////////////////
+    lowerladderpconsupportshape[i] = new TGeoPcon(0.,360.,2);
+	for(Int_t j=0; j<2; j++) lowerladderpconsupportshape[i]->DefineSection(j,
+							 lowerladderpconezsection[j],lowerladderpconradiusmin[i],
+							 lowerladderpconradiusmax[i]);
+	sprintf(lowerladderpconsupportname,"LowerLadderPConSupportNameLay%d",i+5);
+	lowerladderpconsupport[i] = new TGeoVolume(lowerladderpconsupportname,lowerladderpconsupportshape[i],fSSDSupportRingAl);
+    lowerladderpconsupport[i]->SetLineColor(fColorAl);
+	(i==0 ? fLay5LadderSupportRing: fLay6LadderSupportRing)->AddNode(lowerladderpconsupport[i],1);
+	(i==0 ? fLay5LadderSupportRing: fLay6LadderSupportRing)->AddNode(lowerladderpconsupport[i],2,lowerladdersupportrot);
+ }
+////////////////////////////////////////////////////////////////////////////////
+// End Corrections 13/06/08
+////////////////////////////////////////////////////////////////////////////////
+  /*char lowerladdersupportname[30];
   TGeoXtru* lowerladdersupportshape[fgklayernumber];
   TGeoVolume* lowerladdersupport[fgklayernumber];
   TGeoRotation* lowerladdersupportrot = new TGeoRotation();
@@ -5076,7 +5107,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 	lowerladdersupport[i]->SetLineColor(fColorAl);
 	(i==0 ? fLay5LadderSupportRing: fLay6LadderSupportRing)->AddNode(lowerladdersupport[i],1);
 	(i==0 ? fLay5LadderSupportRing: fLay6LadderSupportRing)->AddNode(lowerladdersupport[i],2,lowerladdersupportrot);
-  }
+  }*/
   /////////////////////////////////////////////////////////////
   // Deallocating memory
   /////////////////////////////////////////////////////////////
