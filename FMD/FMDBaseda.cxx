@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 #endif
   
   
-  Char_t* tableSOD[]  = {"SOD","all",NULL};
+  Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
 
 
   monitorDeclareTable(tableSOD);
