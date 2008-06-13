@@ -223,13 +223,16 @@ Bool_t AliEveTRDLoaderRaw::LoadEvent()
 
 
   fRawRootReader->Reset();
-
+  fRawRootReader->SelectEquipment(0, 1024, 1041);
+  fRawRootReader->Select("TRD");
+  
   AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDrealStream);
   AliTRDrawStreamTB::AllowCorruptedData();
   AliTRDrawStreamTB::DisableStackNumberChecker();
   AliTRDrawStreamTB::DisableStackLinkNumberChecker();
 
-  AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(fRawRootReader);
+  AliTRDrawStreamBase *pinput = 
+  AliTRDrawStreamBase::GetRawStream(fRawRootReader);
   AliTRDrawStreamBase &input = *pinput;
 
  // AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
@@ -248,8 +251,6 @@ Bool_t AliEveTRDLoaderRaw::LoadEvent()
     dm->ClearIndexes(det);
   }
 
-  delete dm;
-  dm = NULL;
 
   delete pinput;
   pinput = NULL;
