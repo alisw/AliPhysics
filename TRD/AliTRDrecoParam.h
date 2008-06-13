@@ -34,21 +34,17 @@ public:
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
   Int_t    GetNdEdxSlices() const           { return fkPIDMethod == kNNPID ? kNNslices : kLQslices;}
   AliTRDpidMethod    GetPIDMethod() const   { return fkPIDMethod;}
+  Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
   Double_t GetRoad0y() const                { return fkRoad0y;   }
   Double_t GetRoad0z() const                { return fkRoad0z;   }
-
   Double_t GetRoad1y() const                { return fkRoad1y;   }
   Double_t GetRoad1z() const                { return fkRoad1z;   }
-
   Double_t GetRoad2y() const                { return fkRoad2y;   }
   Double_t GetRoad2z() const                { return fkRoad2z;   }
-
-  Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
-
   Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
   Int_t    GetStreamLevel() const           { return fkStreamLevel;           }
+  inline void GetSysCovMatrix(Double_t *sys);
 
-  Bool_t   SeedingOn() const                { return fSeedingOn; }
   Bool_t   IsVertexConstrained() const      { return fVertexConstrained; }
   
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
@@ -78,6 +74,8 @@ public:
   void     SetTailCancelation(Int_t tcOn = 1)                 { fTCOn            = tcOn;   };
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
   void     SetADCbaseline(Int_t base)                         { fADCbaseline     = base;   };
+  Bool_t   SeedingOn() const                { return fSeedingOn; }
+  inline void SetSysCovMatrix(Double_t *sys);
 
 private:
   enum{
@@ -110,6 +108,7 @@ private:
   
   Bool_t    fSeedingOn;	             // Do stand alone tracking in the TRD
   Bool_t    fVertexConstrained;      // Perform vertex constrained fit
+  Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet
 
         // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
@@ -126,4 +125,21 @@ private:
   ClassDef(AliTRDrecoParam, 4)       // Reconstruction parameters for TRD detector
 
 };
+
+//___________________________________________________
+inline void AliTRDrecoParam::GetSysCovMatrix(Double_t *sys)
+{
+  if(!sys) return;
+  memcpy(sys, fSysCovMatrix, 5*sizeof(Double_t));
+}
+
+//___________________________________________________
+inline void AliTRDrecoParam::SetSysCovMatrix(Double_t *sys)
+{
+  if(!sys) return;
+  memcpy(fSysCovMatrix, sys, 5*sizeof(Double_t));
+}
+
+
+
 #endif

@@ -63,7 +63,11 @@ AliTRDrecoParam::AliTRDrecoParam()
   //
   // Default constructor
   //
-
+  fSysCovMatrix[0] = 1.; // y direction (1 cm)
+  fSysCovMatrix[1] = 1.; // z direction (1 cm)
+  fSysCovMatrix[2] = 0.; // snp
+  fSysCovMatrix[3] = 0.; // tgl
+  fSysCovMatrix[4] = 0.; // 1/pt
 }
 
 //______________________________________________________________
