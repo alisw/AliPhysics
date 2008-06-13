@@ -100,33 +100,37 @@ void AliTPCv2::CreateGeometry()
   // here I define a volume TPC
   // retrive the medium name with "TPC_" as a leading string
   //
-  TGeoPcon *tpc = new TGeoPcon(0.,360.,18); //18 sections
-  tpc->DefineSection(0,-290.,77.,278.);
-  tpc->DefineSection(1,-259.6,70.,278.);
+  TGeoPcon *tpc = new TGeoPcon(0.,360.,20); //20 sections
   //
-  tpc->DefineSection(2,-259.6,68.1,278.);
-  tpc->DefineSection(3,-253.6,68.1,278.);
+  tpc->DefineSection(0,-291.,77.,278.);
+  tpc->DefineSection(1,-270,77.,278.);
   //
-  tpc->DefineSection(4,-253.6,68.,278.);
-  tpc->DefineSection(5,-74.0,60.8,278.);
+  tpc->DefineSection(2,-270.,77.,278.);
+  tpc->DefineSection(3,-259.6,70.,278.);
   //
-  tpc->DefineSection(6,-74.0,60.1,278.);
-  tpc->DefineSection(7,-73.3,60.1,278.);
+  tpc->DefineSection(4,-259.6,68.1,278.);
+  tpc->DefineSection(5,-253.6,68.1,278.);
   //
-  tpc->DefineSection(8,-73.3,56.9,278.); 
-  tpc->DefineSection(9,73.3,56.9,278.);
+  tpc->DefineSection(6,-253.6,68.,278.);
+  tpc->DefineSection(7,-74.0,60.8,278.);
   //
-  tpc->DefineSection(10,73.3,60.1,278.);
-  tpc->DefineSection(11,74.0,60.1,278.);
+  tpc->DefineSection(8,-74.0,60.1,278.);
+  tpc->DefineSection(9,-73.3,60.1,278.);
   //
-  tpc->DefineSection(12,74.0,60.8,278.);
-  tpc->DefineSection(13,253.6,65.5,278.);
+  tpc->DefineSection(10,-73.3,56.9,278.); 
+  tpc->DefineSection(11,73.3,56.9,278.);
   //
-  tpc->DefineSection(14,253.6,65.6,278.);
-  tpc->DefineSection(15,259.6,65.6,278.);
+  tpc->DefineSection(12,73.3,60.1,278.);
+  tpc->DefineSection(13,74.0,60.1,278.);
   //
-  tpc->DefineSection(16,259.6,70.0,278.);
-  tpc->DefineSection(17,290.,77.,278.);
+  tpc->DefineSection(14,74.0,60.8,278.);
+  tpc->DefineSection(15,253.6,65.5,278.);
+  //
+  tpc->DefineSection(16,253.6,65.6,278.);
+  tpc->DefineSection(17,259.6,65.6,278.);
+  //
+  tpc->DefineSection(18,259.6,70.0,278.);
+  tpc->DefineSection(19,291.,77.,278.);
   //
   TGeoMedium *m1 = gGeoManager->GetMedium("TPC_Air");
   TGeoVolume *v1 = new TGeoVolume("TPC_M",tpc,m1);
@@ -843,6 +847,9 @@ void AliTPCv2::CreateGeometry()
   //----------------------------------------------------------
   TGeoMedium *m6=gGeoManager->GetMedium("TPC_Makrolon");
   TGeoMedium *m7=gGeoManager->GetMedium("TPC_Cu");
+  TGeoMedium *m10 =  gGeoManager->GetMedium("TPC_Alumina");
+  TGeoMedium *m11 =  gGeoManager->GetMedium("TPC_Peek");
+  TGeoMedium *m12 =  gGeoManager->GetMedium("TPC_Water");
   // upper and lower rods differ in length!
   delete [] upar;
   upar=NULL;
@@ -859,7 +866,51 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *hvrv = new TGeoVolume("TPC_HV_Rod",hvr,m6);
   TGeoVolume *hvcv = new TGeoVolume("TPC_HV_Cable",hvc,m7);
   hvrv->AddNode(hvcv,1);
-  
+  //
+  // resistor rods
+  //
+  TGeoTube *cri = new TGeoTube(0.,0.45,126.64); //inner 
+  TGeoTube *cro = new TGeoTube(0.,0.45,126.54); //outer 
+  TGeoTube *cwi = new TGeoTube(0.,0.15,126.64); // water inner
+  TGeoTube *cwo = new TGeoTube(0.,0.15,126.54); // water outer
+  //
+  TGeoVolume *criv = new TGeoVolume("TPC_CR_I",cri,m10);
+  TGeoVolume *crov = new TGeoVolume("TPC_CR_O",cro,m10);    
+  TGeoVolume *cwiv = new TGeoVolume("TPC_W_I",cwi,m11);
+  TGeoVolume *cwov = new TGeoVolume("TPC_W_O",cwo,m11);   
+  //
+  // ceramic rod with water
+  //
+  criv->AddNode(cwiv,1); 
+  crov->AddNode(cwov,1);
+  //
+  TGeoTube *pri =new TGeoTube(0.2,0.35,126.64); //inner 
+  TGeoTube *pro = new TGeoTube(0.2,0.35,126.54); //outer    
+  //
+  // peek rod
+  //
+  TGeoVolume *priv = new TGeoVolume("TPC_PR_I",pri,m12);
+  TGeoVolume *prov = new TGeoVolume("TPC_PR_O",pro,m12); 
+  //
+  // resistor rods assembly
+  //
+   TGeoRotation rotr("rotr");
+   rotr.RotateZ(-21.);
+  //
+  TGeoTube *rri = new TGeoTube(1.8,2.2,126.64);//inner
+  TGeoTube *rro = new TGeoTube(1.8,2.2,126.54);//inner
+  //
+  TGeoVolume *rriv = new TGeoVolume("TPC_RR_I",rri,m6);
+  TGeoVolume *rrov = new TGeoVolume("TPC_RR_O",rro,m6);  
+  //
+  //
+  rrov->AddNode(crov,1,new TGeoCombiTrans(0.5,0.866, 0.,&rotr));
+  rrov->AddNode(crov,2,new TGeoCombiTrans(0.5,-0.866,0.,&rotr));
+  rrov->AddNode(prov,1);
+  //
+  rriv->AddNode(criv,1,new TGeoCombiTrans(0.5,0.866,0.,&rotr));
+  rriv->AddNode(criv,2,new TGeoCombiTrans(0.5,-0.866,0.,&rotr));
+  rriv->AddNode(priv,1); 
   for(Int_t i=0;i<18;i++){
     Double_t angle,x,y;
     Double_t z,r; 
@@ -869,21 +920,37 @@ void AliTPCv2::CreateGeometry()
     y=r * TMath::Sin(angle);
     upar[2]=126.64; //lower
     z= 126.96;
-    if(i==15){
-      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z));
-      v9->AddNode(hvrv,2,new TGeoTranslation(x,y,-z));
+    //
+    if(i==3){
+      v9->AddNode(rriv,1,new TGeoTranslation(x,y,z)); //A
+      v9->AddNode(rriv,2,new TGeoTranslation(x,y,-z)); //C      
+    } 
+    else { 
+      gGeoManager->Node("TPC_Rod",i+1,"TPC_Drift",x,y,z,0,kTRUE,upar,3);//shaft
+      gGeoManager->Node("TPC_Rod",i+19,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);//muon
     }
-    else{
-     gGeoManager->Node("TPC_Rod",i+1,"TPC_Drift",x,y,z,0,kTRUE,upar,3);//shaft
-     gGeoManager->Node("TPC_Rod",i+19,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);//muon
-    }
+   
+
+    //
     r=254.25;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
     upar[2]=126.54; //upper
     z=127.06;
-    gGeoManager->Node("TPC_Rod",i+37,"TPC_Drift",x,y,z,0,kTRUE,upar,3);
-    gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
+    //
+    if(i==15){
+      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z));//A-side only
+      gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
+    }
+    else if(i==11){
+      v9->AddNode(rrov,1,new TGeoTranslation(x,y,z)); //A
+      v9->AddNode(rrov,2,new TGeoTranslation(x,y,-z)); //C
+    }
+    else{
+    //
+      gGeoManager->Node("TPC_Rod",i+37,"TPC_Drift",x,y,z,0,kTRUE,upar,3);
+      gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
+    }
   }
 
   delete [] upar;
