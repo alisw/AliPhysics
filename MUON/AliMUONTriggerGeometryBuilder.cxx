@@ -130,7 +130,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 // Position of gas pipe with respect to angular support
     const Float_t kOffsetGasPipe=0.75; 
 // Small cut on some volumes to avoid extrusion from SC1x
-    const Float_t kAvoidExtrusion=2.7;    
+    const Float_t kAvoidExtrusion=2.9;    
    
     Float_t zpos1= AliMUONConstants::DefaultChamberZ(10); 
     Double_t dstation =  ( ( - AliMUONConstants::DefaultChamberZ(11)) - 
