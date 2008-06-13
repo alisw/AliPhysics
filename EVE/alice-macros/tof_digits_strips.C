@@ -7,7 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-void tof_digits_strips()
+void tof_digits_strips(Int_t selectedSector=-1)
 {
   TClonesArray *array = 0x0;
 
@@ -44,7 +44,7 @@ void tof_digits_strips()
   gEve->AddElement(ll);
 
   for(Int_t iSector=0; iSector<g->NSectors(); iSector++) {
-
+    if (selectedSector!=-1 && iSector!=selectedSector) continue;
     sprintf(sectorName,"Sector%2i",iSector);
     TEveElementList* l = new TEveElementList(sectorName);
     l->SetTitle(sectorTitle);
@@ -70,7 +70,8 @@ void tof_digits_strips()
 
 	array = di->GetDigits(iSector,iPlate, iStrip);
 
-	AliEveTOFStrip* m = new AliEveTOFStrip(localGeoManager,iSector,iPlate,iStrip,array);
+	AliEveTOFStrip* m = new AliEveTOFStrip(localGeoManager,
+					       iSector,iPlate,iStrip,array);
 	gEve->AddElement(m, relPlate);
 
       }

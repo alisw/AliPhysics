@@ -38,7 +38,7 @@ void tof_raw(const char *input = "raw.root",
 	di = new AliEveTOFDigitsInfo();
       }
 
-      di->ReadRaw(rawReader, ev, newDecoder);
+      di->ReadRaw(rawReader, newDecoder);
       continue;
     }
 
