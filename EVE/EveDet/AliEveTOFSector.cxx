@@ -184,9 +184,10 @@ void AliEveTOFSector::InitStatics()
 
   //fgTOFsectorPalette  = new TEveRGBAPalette(0, 2048); // TOT
   //fgTOFsectorPalette->SetLimits(0, 2048); 
-  fgTOFsectorPalette  = new TEveRGBAPalette(0, 8192); // TDC
-  //fgTOFsectorPalette->SetLimits(0, 8192); 
-  fgTOFsectorPalette->SetOverflowAction(0);
+  //fgTOFsectorPalette  = new TEveRGBAPalette(0, 8192); // TDC
+  fgTOFsectorPalette  = new TEveRGBAPalette(0, 100000); // TDC
+  fgTOFsectorPalette->SetOverflowAction(2);
+  fgTOFsectorPalette->SetUnderflowAction(2);
 
   fgStaticInitDone = kTRUE;
 }

@@ -31,7 +31,7 @@ class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
     virtual ~AliEveTOFDigitsInfo();
     
     void SetTree(TTree* tree);
-    void ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t newDecoder=kTRUE);
+    void ReadRaw(AliRawReader* rawReader, Bool_t newDecoder=kTRUE);
     void LoadDigits();
 
     void GetDigits(Int_t nSector, Int_t nPlate, Int_t nStrip,
@@ -46,6 +46,8 @@ class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
     //void GetDigits();
 
     TTree* GetTree() {return fTree;};
+
+    AliTOFDigitMap* GetTOFdigitMap() const { return fTOFdigitMap;};
 
   protected:
 

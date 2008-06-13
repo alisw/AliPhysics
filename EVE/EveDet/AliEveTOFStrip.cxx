@@ -110,8 +110,10 @@ void AliEveTOFStrip::InitStatics()
   fgTOFstripFrameBox->SetFrameColor((Color_t) 32);//31);
 
   //fgTOFstripPalette  = new TEveRGBAPalette(0, 2048); // TOT
-  fgTOFstripPalette  = new TEveRGBAPalette(0, 8192); // TDC
-  fgTOFstripPalette->SetOverflowAction(0);
+  //fgTOFstripPalette  = new TEveRGBAPalette(0, 192); // TDC
+  fgTOFstripPalette  = new TEveRGBAPalette(0, 100000); // TDC
+  fgTOFstripPalette->SetOverflowAction(2);
+  fgTOFstripPalette->SetUnderflowAction(2);
 
   fgStaticInitDone = kTRUE;
 }

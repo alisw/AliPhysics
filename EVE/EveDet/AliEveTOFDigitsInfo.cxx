@@ -64,7 +64,7 @@ void AliEveTOFDigitsInfo::SetTree(TTree* tree)
   */
 }
 /* ******************************************************* */
-void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t newDecoder)
+void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
 {
   // Read raw-data. AliTOFdigit is used to
   // store raw-adata for all sub-detectors.
@@ -79,7 +79,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t 
   //ftxt << endl;
   //ftxt << "  " << nEvent << endl;
 
-  if (nEvent<0) printf("%3i\n", nEvent); // only to use nEvent variable
+  //if (nEvent<0) printf("%3i\n", nEvent); // only to use nEvent variable
 
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
 
@@ -109,7 +109,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t 
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 
-      if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+      if (tofRawDatum->GetTOF()==-1) continue;
 
       Int_t cLenInt = Int_t(cableLength->GetCableTimeShift(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),tofRawDatum->GetTDC())*1000./AliTOFGeometry::TdcBinWidth());
       digit[0] = tofRawDatum->GetTOF() - cLenInt;
@@ -127,6 +127,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t 
       else                          ftxt << " " << tofRawDatum->GetTDC();
       ftxt << "  " << tofRawDatum->GetTDCchannel();
       */
+
       stream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
 				  tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
 
@@ -281,6 +282,7 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 	  informations[1] = digs->GetAdc();
 	  informations[2] = digs->GetToT();
 	  informations[3] = digs->GetTdcND();
+	  for(Int_t kk=0; kk<3; kk++) dummy[kk] = digs->GetTrack(kk);
 	  new (ldigits[newCounter++]) AliTOFdigit(dummy, vol, informations);
 	}
 
@@ -349,6 +351,7 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 	      informations[1] = digs->GetAdc();
 	      informations[2] = digs->GetToT();
 	      informations[3] = digs->GetTdcND();
+	      for(Int_t kk=0; kk<3; kk++) dummy[kk] = digs->GetTrack(kk);
 	      new (ldigits[newCounter++]) AliTOFdigit(dummy, vol, informations);
 
 	      AliDebug(2,Form(" %2i -> %2i %2i %2i %2i %2i %7i %7i\n",
