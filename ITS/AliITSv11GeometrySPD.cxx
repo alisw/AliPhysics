@@ -59,7 +59,7 @@
 
 /* $Id$ */
 
-/* $Id$ */
+
 // General Root includes
 #include <Riostream.h>
 #include <TMath.h>
@@ -2604,7 +2604,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     
     Double_t extThickness       = fgkmm * 0.25;
 	Double_t ext1Length         = fgkmm * (26.7 - 10.0);
-	Double_t ext2Length         = fgkmm * (285.0 - ext1Length + extThickness);
+	Double_t ext2Length         = fgkmm * (284.0 - ext1Length + extThickness);
 	Double_t extWidth           = fgkmm * 11.0;
 	Double_t extHeight          = fgkmm * 2.5;
                
