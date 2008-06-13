@@ -118,7 +118,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
     if (!fRecoParam)  fRecoParam = AliTPCRecoParam::GetLowFluxParam();
   }
   fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
-  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
+  //  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
   fRowCl= new AliTPCClustersRow();
   fRowCl->SetClass("AliTPCclusterMI");
   fRowCl->SetArray(1);
@@ -601,6 +601,7 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
     c.SetType(-(c.GetType()+3));  //edge clusters
   }
   if (fLoop==2) c.SetType(100);
+  if (!AcceptCluster(&c)) return;
 
   TClonesArray * arr = fRowCl->GetArray();
   AliTPCclusterMI * cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
@@ -616,6 +617,12 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
 //   }
   if (!fRecoParam->DumpSignal()) {
     cl->SetInfo(0);
+  }
+  
+  if (AliTPCReconstructor::StreamLevel()>1) {
+     (*fDebugStreamer)<<"Clusters"<<
+       "Cl.="<<cl<<
+       "\n";
   }
 
   fNcluster++;
@@ -844,29 +851,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       //signal
       Float_t signal = input.GetSignal();
       if (!calcPedestal && signal <= zeroSup) continue;      
-      if (AliTPCReconstructor::StreamLevel()>3 && signal>3) {
-	Double_t x[]={iRow,iPad,iTimeBin};
-	Int_t i[]={fSector};
-	AliTPCTransform trafo;
-	trafo.Transform(x,i,0,1);
-	Double_t gx[3]={x[0],x[1],x[2]};
-	trafo.RotatedGlobal2Global(fSector,gx);
-	
-	(*fDebugStreamer)<<"Digits"<<
-	  "sec="<<fSector<<
-	  "row="<<iRow<<
-	  "pad="<<iPad<<
-	  "time="<<iTimeBin<<
-	  "sig="<<signal<<
-	  "x="<<x[0]<<
-	  "y="<<x[1]<<
-	  "z="<<x[2]<<	  
-	  "gx="<<gx[0]<<
-	  "gy="<<gx[1]<<
-	  "gz="<<gx[2]<<
-	  "\n";
-      }
-
 
       if (!calcPedestal) {
 	Int_t bin = iPad*fMaxTime+iTimeBin;
@@ -935,6 +919,46 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	}
       }
     }
+
+    if (AliTPCReconstructor::StreamLevel()>3) {
+      for (Int_t iRow = 0; iRow < nRows; iRow++) {
+	Int_t maxPad;
+	if (fSector < kNIS)
+	  maxPad = fParam->GetNPadsLow(iRow);
+	else
+	  maxPad = fParam->GetNPadsUp(iRow);
+	
+	for (Int_t iPad = 3; iPad < maxPad + 3; iPad++) {
+	  for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
+	    Int_t bin = iPad*fMaxTime+iTimeBin;
+	    Float_t signal = allBins[iRow][bin];
+	    if (AliTPCReconstructor::StreamLevel()>3 && signal>3) {
+	      Double_t x[]={iRow,iPad-3,iTimeBin-3};
+	      Int_t i[]={fSector};
+	      AliTPCTransform trafo;
+	      trafo.Transform(x,i,0,1);
+	      Double_t gx[3]={x[0],x[1],x[2]};
+	      trafo.RotatedGlobal2Global(fSector,gx);
+	      
+	      (*fDebugStreamer)<<"Digits"<<
+		"sec="<<fSector<<
+		"row="<<iRow<<
+		"pad="<<iPad<<
+		"time="<<iTimeBin<<
+		"sig="<<signal<<
+		"x="<<x[0]<<
+		"y="<<x[1]<<
+		"z="<<x[2]<<	  
+		"gx="<<gx[0]<<
+		"gy="<<gx[1]<<
+		"gz="<<gx[2]<<
+		"\n";
+	    }
+	  }
+	}
+      }
+    }
+
     // Now loop over rows and find clusters
     for (fRow = 0; fRow < nRows; fRow++) {
       fRowCl->SetID(fParam->GetIndex(fSector, fRow));
@@ -1027,6 +1051,19 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
     
     //}
   }
+}
+
+Bool_t AliTPCclustererMI::AcceptCluster(AliTPCclusterMI *cl){
+  //
+  // Currently hack to filter digital noise (13.06.2008)
+  // To be parameterized in the AliTPCrecoParam
+  // More inteligent way  to be used in future
+  //
+  if (cl->GetMax()<400) return kTRUE;
+  Double_t ratio = cl->GetQ()/cl->GetMax();
+  if ((ratio - int(ratio)<0.95)) return kTRUE;
+  return kFALSE;
+
 }
 
 

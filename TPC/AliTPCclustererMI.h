@@ -54,6 +54,7 @@ private:
   void UnfoldCluster(Float_t * matrix[7], Float_t recmatrix[5][5], 
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
   void FindClusters(AliTPCCalROC * noiseROC);
+  Bool_t AcceptCluster(AliTPCclusterMI*c);
   Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms, Double_t &pedestalCalib);
 
   Float_t * fBins;       //!digits array
