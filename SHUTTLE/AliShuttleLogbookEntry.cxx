@@ -63,7 +63,7 @@ AliShuttleLogbookEntry::~AliShuttleLogbookEntry() {
 	//
 	// destructor
 	//
-
+	fRunParameters.DeleteAll();
 }
 
 //______________________________________________________________________________________________
