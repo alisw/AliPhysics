@@ -2,12 +2,13 @@
 PMD DA for online calibration
 
 contact: basanta@phy.iitb.ac.in
-Link:/afs/cern.ch/user/a/alicepmd/public/pedestaldata/run31270.raw
+Link:
+Reference Run:/afs/cern.ch/user/b/bnandi/public/pedestaldata/run37820.raw
 Run Type: STANDALONE
 DA Type: LDC
 Number of events needed: 1000
-Input Files: data raw
-Output Files: pmd_ped.root, to be exported to the DAQ FXS
+Input Files: 
+Output Files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
 Trigger types used: PHYSICS_EVENT
 
 */
@@ -87,7 +88,7 @@ int main(int argc, char **argv) {
     monitorSetNoWaitNetworkTimeout(1000);
     
     /* log start of process */
-    printf("DA example case2 monitoring program started\n");  
+    printf("DA example case1 monitoring program started\n");  
     
     /* init some counters */
 
