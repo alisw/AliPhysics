@@ -656,6 +656,57 @@ void AliTPC::CreateMaterials()
   density=7.87;
 
   AliMaterial(29,"Fe",amat[0],zmat[0],density,999.,999.);
+  //
+  // Peek - (C6H4-O-OC6H4-O-C6H4-CO)n
+  amat[0]=12.011;
+  amat[1]=1.;
+  amat[2]=15.9994;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+
+  wmat[0]=19.;
+  wmat[1]=12.;
+  wmat[2]=3.;
+  //
+  density=1.3;
+  //
+  AliMixture(30,"Peek",amat,zmat,density,-3,wmat);  
+  //
+  //  Ceramics - Al2O3
+  //
+  amat[0] = 26.98;
+  amat[1]= 15.9994;
+
+  zmat[0] = 13.;
+  zmat[1]=8.;
+ 
+  wmat[0]=2.;
+  wmat[1]=3.;
+ 
+  density = 3.97;
+
+  AliMixture(31,"Alumina",amat,zmat,density,-2,wmat);   
+
+  //
+  // liquids
+  //
+
+  // water
+
+  amat[0]=1.;
+  amat[1]=15.9994;
+
+  zmat[0]=1.;
+  zmat[1]=8.;
+
+  wmat[0]=2.;
+  wmat[1]=1.;
+
+  density=1.;
+
+  AliMixture(32,"Water",amat,zmat,density,-2,wmat);  
  
   //----------------------------------------------------------
   // tracking media for gases
@@ -687,7 +738,9 @@ void AliTPC::CreateMaterials()
   AliMedium(16,"G10",22,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(17,"Plexiglas",27,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(18,"Steel",29,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001); 
-    
+  AliMedium(19,"Peek",30,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
+  AliMedium(21,"Alumina",31,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);    
+  AliMedium(22,"Water",32,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);  
 }
 
 void AliTPC::GenerNoise(Int_t tablesize)
