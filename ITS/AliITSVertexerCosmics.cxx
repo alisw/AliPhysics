@@ -124,7 +124,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsCluster
   }
 
   // try tracklet on SPD2 and point on SPD1
-  if(ilayer==1 && ilayer2>5 && !AliITSReconstructor::GetRecoParam()->GetLayersToSkip(0)) {ilayer=0; ilayer2=1;}
+  if(ilayer==1 && !AliITSReconstructor::GetRecoParam()->GetLayersToSkip(0)) {ilayer=0; ilayer2=1;}
 
   if(ilayer>4 || ilayer2>5) {
     AliWarning("Not enough clusters");

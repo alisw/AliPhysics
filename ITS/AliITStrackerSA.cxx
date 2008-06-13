@@ -468,9 +468,12 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	}
 	
 	if(layOK>=iMinNPoints) {
+	  //printf("-NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]);
 	  AliITStrackV2* tr2 = 0;
 	  tr2 = FitTrack(trs,primaryVertex);
 	  if(!tr2) continue;
+	  //printf("-NPOINTS fit: %d\n",tr2->GetNumberOfClusters());	  
+
 	  
 	  AliESDtrack outtrack;
 	  outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
@@ -487,8 +490,8 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 
   //if 5/6 points are required, second loop starting 
   //from second layer (SPD2), to find tracks with point of 
-  //layer 1 missing   
-  if(!fSixPoints) {
+  //layer 1 missing. Not done for cosmics.   
+  if(!fSixPoints && fOuterStartLayer==0) {
     //printf("looking from SPD2\n");
     //   counter for clusters on each layer  
     for(Int_t nloop=0;nloop<fNloop;nloop++){
@@ -539,10 +542,13 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	for(Int_t nnp=0;nnp<AliITSgeomTGeo::GetNLayers()-1;nnp++){
 	  if(nClusLay[nnp]!=0) layOK+=1;
 	}
-	if(layOK>=minNPoints){  // 5/6       
+	if(layOK>=minNPoints){  // 5/6
+	  //printf("--NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]);
+       
 	  AliITStrackV2* tr2 = 0;
 	  tr2 = FitTrack(trs,primaryVertex);
 	  if(!tr2) continue;
+	  //printf("--NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
 	  
 	  AliESDtrack outtrack;
 	  outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
@@ -559,7 +565,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 
   // search for tracks starting from SPD2, SDD1, SDD2, SSD2
   // for cosmics (A. Dainese 31.07.07)
-  if(fOuterStartLayer>0) {
+  if(fOuterStartLayer>0 && !AliITSReconstructor::GetRecoParam()->GetSAOnePointTracks()) {
     for(Int_t innLay=1; innLay<=fOuterStartLayer; innLay++) {
       //printf("Searching from layer %d outward\n",innLay);
       minNPoints=AliITSgeomTGeo::GetNLayers()-innLay;
@@ -613,10 +619,11 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	    if(nClusLay[nnp]!=0) layOK+=1;
 	  }
 	  if(layOK>=minNPoints){ 
+	    //printf("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]);
 	    AliITStrackV2* tr2 = 0;
 	    tr2 = FitTrack(trs,primaryVertex);
 	    if(!tr2) continue;
-	    
+	    //printf("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
 	    
 	    AliESDtrack outtrack;
 	    outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
@@ -633,11 +640,12 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
   } //end if(fOuterStartLayer>0)
   
 
-  // search for 1-point tracks, only for cosmics
+  // search for 1-point tracks in SPD, only for cosmics
   // (A.Dainese 21.03.08)
   if(AliITSReconstructor::GetRecoParam()->GetSAOnePointTracks() && 
      TMath::Abs(event->GetMagneticField())<0.01) {
-    for(Int_t innLay=0; innLay<=fOuterStartLayer; innLay++) {
+    Int_t outerLayer=1; // only SPD
+    for(Int_t innLay=0; innLay<=TMath::Min(1,fOuterStartLayer); innLay++) {
       //   counter for clusters on each layer  
 
       for(Int_t nloop=0;nloop<fNloop;nloop++){
@@ -665,7 +673,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	  kk=0;
 	  nClusLay[kk] = SearchClusters(innLay,fPhiWin[nloop],fLambdaWin[nloop],
 				  trs,primaryVertex[2],pflag);
-	  for(Int_t nextLay=innLay+1; nextLay<AliITSgeomTGeo::GetNLayers(); nextLay++) {
+	  for(Int_t nextLay=innLay+1; nextLay<=outerLayer; nextLay++) {
 	    kk++;
 	    nClusLay[kk] = SearchClusters(nextLay,fPhiWin[nloop],fLambdaWin[nloop],
 				    trs,primaryVertex[2],pflag);
@@ -685,10 +693,12 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	    if(nClusLay[nnp]!=0) layOK+=1;
 	  }
 	  if(layOK==1) {
+	    //printf("----NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]);
 	    AliITStrackV2* tr2 = 0;
 	    Bool_t onePoint = kTRUE;
 	    tr2 = FitTrack(trs,primaryVertex,onePoint);
 	    if(!tr2) continue;
+	    //printf("----NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
 	    
 	    AliESDtrack outtrack;
 	    outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
