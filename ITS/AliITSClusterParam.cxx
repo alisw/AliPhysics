@@ -117,20 +117,29 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
   //
   // Calculate cluster position error
   //
+  Int_t retval=0;
   switch(AliITSReconstructor::GetRecoParam()->GetClusterErrorsParam()) {
   case 0: 
-    return GetErrorOrigRecPoint(cl,erry,errz);
+    retval = GetErrorOrigRecPoint(cl,erry,errz);
     break;
   case 1: 
-    return GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
+    retval = GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
     break;
   case 2: 
-    return GetErrorParamAngle(layer,cl,tgl,tgphitr,erry,errz);
+    retval = GetErrorParamAngle(layer,cl,tgl,tgphitr,erry,errz);
     break;
   default: 
-    return GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
+    retval = GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
     break;
   }
+
+  // add error due to misalignment (to be improved)
+  Float_t errmisal2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalError()
+                     *AliITSReconstructor::GetRecoParam()->GetClusterMisalError();
+  erry = TMath::Sqrt(erry*erry+errmisal2);
+  errz = TMath::Sqrt(errz*errz+errmisal2);
+
+  return retval;
 
 }
 //--------------------------------------------------------------------------

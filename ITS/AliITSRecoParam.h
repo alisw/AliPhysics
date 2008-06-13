@@ -125,6 +125,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   void   SetClusterErrorsParam(Int_t param=1) { fClusterErrorsParam=param; return; }
   Int_t  GetClusterErrorsParam() const { return fClusterErrorsParam; }
+  void    SetClusterMisalError(Float_t err=0.) { fClusterMisalError=err; return; }
+  Float_t GetClusterMisalError() const { return fClusterMisalError; }
+
+
   void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++) fUseAmplitudeInfo[i]=use; return; }
   void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
   Bool_t GetUseAmplitudeInfo(Int_t ilay) const { return fUseAmplitudeInfo[ilay]; }
@@ -296,6 +300,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
+  Float_t fClusterMisalError; // [cm] additional error on cluster pos. due to misalignment (MI,SA)
+
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
   Bool_t fComputePlaneEff;  // flag to enable computation of PlaneEfficiency
   Bool_t fHistoPlaneEff;  // flag to enable auxiliary PlaneEff histograms (e.g. residual distributions)
@@ -325,7 +331,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,4) // ITS reco parameters
+  ClassDef(AliITSRecoParam,5) // ITS reco parameters
 };
 
 #endif

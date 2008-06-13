@@ -31,9 +31,9 @@ void MakeITSRecoParam(Int_t type=1) {
     return;
     break;
   }
+  itsRecoParam->SetClusterErrorsParam(2);
+  //itsRecoParam->SetClusterMisalError(1.0); // [cm]
   /*
-  itsRecoParam->SetUseTGeoInTracker(3);
-  itsRecoParam->SetClusterErrorsParam(0);
   itsRecoParam->SetFindV0s(kTRUE);
   itsRecoParam->SetAddVirtualClustersInDeadZone(kFALSE);
   itsRecoParam->SetLayerToSkip(0);
