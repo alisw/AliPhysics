@@ -1759,7 +1759,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   for (ilayer = 1; ilayer < kNlayer; ilayer++) { 
 
     // In baby frame
-    xpos      = fCwidth[ilayer]/2.0 + kCOLwid/2.0 - 0.93;
+    xpos      = fCwidth[ilayer]/2.0 + kCOLwid/2.0 - 1.04;
     ypos      = kBBSdz/2.0 - kBBMdz/2.0;
     zpos      = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
               + ilayer * (fgkCH + fgkVspace);
@@ -1826,7 +1826,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gsposp("UTC3",6+5*kNlayer,"UTF2",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
   // In baby frame
-  xpos      = fCwidth[5]/2.0 - kCOLhgt/2.0 - 2.3;
+  xpos      = fCwidth[5]/2.0 - kCOLhgt/2.0 - 3.1;
   ypos      = kBBSdz/2.0 - kBBMdz/2.0;
   zpos      = fgkSheight/2.0 - fgkSMpltT - 0.4 - kCOLwid/2.0; 
   parCOL[0] = kCOLwid/2.0;
