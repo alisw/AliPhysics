@@ -4,7 +4,8 @@
  * tracker embedded into AliRoot simulation.
  * The reconstruction is done from the TPC digits.
  *
- * The output is written to an ESD file.
+ * The output is written to an ESD file either using the TPCEsdWriter (an
+ * AliFileWriter) or the TPCEsdConverter with an attached EsdCollector.
  *
  * Matthias.Richter@ift.uib.no
  */
@@ -43,7 +44,7 @@
   // GlobalMerger component
   AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
 
-  bool esdFile=true;
+  bool esdFile=false;
 
   if (esdFile) {
     // the esd writer configuration
@@ -53,6 +54,6 @@
     AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
     
     // the root file writer configuration
-    AliHLTConfiguration sink("sink1", "ROOTFileWriter"   , "esd-converter", "-datafile AliHLTESDs.root");
+    AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc");
   }
 }

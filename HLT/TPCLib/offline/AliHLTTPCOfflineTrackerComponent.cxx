@@ -31,6 +31,8 @@
 #include "AliTPCClustersRow.h"
 #include "AliESDEvent.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliTracker.h"
+#include "AliMagFMaps.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCOfflineTrackerComponent)
@@ -129,6 +131,18 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
     fESD->CreateStdContent();
   }
 
+  // TODO: set the magnetic field correctly
+  // the tracker needs the field map correctly initialized in AliTracker.
+  // init from HLT/ConfigHLT/SolenoidBz or other appropriate CDB entry.
+  // temporarily set to 5kG
+  if (!AliTracker::GetFieldMap()) {
+    // this instance must never be deleted, the AliRoot framework and the design
+    // of AliTracker just does not support this. That's why we do not keep the
+    // pointer. The memory leak is relativly small.
+    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+    AliTracker::SetFieldMap(field,kTRUE);
+  }
+
   if (!fTracker || !fESD || !fTPCGeomParam) {
     HLTError("failed creating internal objects");
     iResult=-ENOMEM;
@@ -178,6 +192,10 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
       fTracker->LoadClusters(clusterArray);
 #endif //HAVE_NOT_TPC_LOAD_CLUSTERS
     }// end loop over input objects
+
+    // set magnetic field for the ESD, assumes correct initialization of
+    // the field map
+    fESD->SetMagneticField(AliTracker::GetBz());
 
     // run tracker
     fTracker->Clusters2Tracks(fESD);

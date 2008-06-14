@@ -56,6 +56,7 @@ class AliMagFMaps;
  * <h2>Output size:</h2>
  * To be determined.
  *
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCOfflineClustererComponent : public AliHLTProcessor {
 public:

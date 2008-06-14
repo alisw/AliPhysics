@@ -233,11 +233,13 @@ int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData&
 
       AliTPCClustersRow *clrow = 0x0;
       Int_t nbClusters = 0;
-      Int_t lower   = fClusterer->GetOutputArray()->LowerBound();
-      Int_t entries = fClusterer->GetOutputArray()->GetEntriesFast();
+      TObjArray* outClrow=fClusterer->GetOutputArray();
+      if (outClrow) {
+      Int_t lower   = outClrow->LowerBound();
+      Int_t entries = outClrow->GetEntriesFast();
 
       for (Int_t i=lower; i<entries; i++) {
-	clrow = (AliTPCClustersRow*) fClusterer->GetOutputArray()->At(i);
+	clrow = (AliTPCClustersRow*) outClrow->At(i);
 	if(!clrow) continue;
 	if(!clrow->GetArray()) continue;
 
@@ -245,7 +247,11 @@ int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData&
       }
 
       // insert TObjArray of clusters into output stream
-      PushBack(fClusterer->GetOutputArray(), kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/, pBlock->fSpecification);
+      PushBack(outClrow, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/, pBlock->fSpecification);
+
+      // clear array
+      outClrow->Clear();
+      }
       HLTInfo("processing done: DDL %d Number of clusters %d",ddlId, nbClusters);
 
     } else {

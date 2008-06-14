@@ -45,6 +45,8 @@ void rec_hlt_tpc_offline()
   int iMinPart=0;
   int iMaxPart=5;
 
+  int DDLNoFromSlicePatch(int, int);
+
   TString writerInput;
   TString trackerInput;
   for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
@@ -52,9 +54,7 @@ void rec_hlt_tpc_offline()
       TString arg, publisher, cf;
 
       // raw data publisher components
-      int ddlno=768;
-      if (part>1) ddlno+=72+4*slice+(part-2);
-      else ddlno+=2*slice+part;
+      int ddlno=DDLNoFromSlicePatch(slice, part);
       arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", ddlno, slice, slice, part, part);
       publisher.Form("DP_%02d_%d", slice, part);
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
@@ -78,7 +78,7 @@ void rec_hlt_tpc_offline()
   writerInput+=tracker;
 
   // the writer configuration
-  AliHLTConfiguration fwconf("sink1", "ROOTFileWriter"   , writerInput.Data(), "-datafile ESD.root -specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+  AliHLTConfiguration esdwconf("sink1", "EsdCollector"   , writerInput.Data(), "-directory hlt-tpc-offline");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -88,14 +88,23 @@ void rec_hlt_tpc_offline()
   AliReconstruction rec;
   rec.SetInput("./");
   rec.SetRunVertexFinder(kFALSE);
-  rec.SetRunLocalReconstruction("");
+  rec.SetRunLocalReconstruction("HLT");
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
-  rec.SetFillESD("HLT");
+  rec.SetFillESD("");
   rec.SetRunQA(kFALSE);
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field,kTRUE);
   rec.SetFillTriggerESD(kFALSE);
   rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
   rec.Run();
+}
+
+int DDLNoFromSlicePatch(int slice, int part)
+{
+  int ddlno=768;
+  if (part>1) ddlno+=72+4*slice+(part-2);
+  else ddlno+=2*slice+part;
+
+  return ddlno;
 }

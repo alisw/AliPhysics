@@ -1,5 +1,8 @@
 // $Id$
 /*
+ * @file sim-hlt-tpc.C
+ * @brief HLT Conformal mapping tracker embedded into AliRoot simulation.
+ *
  * Example macro to run the HLT Conformal mapping tracker embedded into
  * AliRoot simulation. The reconstruction is done from the TPC digits.
  *
@@ -12,7 +15,8 @@
  * within the initial simulation, comment the corresponding functions
  * below (SetRunGeneration etc.)
  *
- * Matthias.Richter@ift.uib.no
+ * @author Matthias.Richter@ift.uib.no
+ * @ingroup alihlt_tpc
  */
 {
   // this is just a tool to switch the logging systems
