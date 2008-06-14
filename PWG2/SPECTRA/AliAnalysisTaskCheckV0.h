@@ -23,17 +23,14 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckV0(const char *name);
   virtual ~AliAnalysisTaskCheckV0() {}
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   void   SetCollidingSystems(Int_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
   void   SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   
  private:
-  AliESDEvent *fESD;                            //! ESD object
-  AliAODEvent *fAOD;                            //! AOD object
   TString      fAnalysisType;                   //  ESD or AOD
   Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb  
   TList       *fListHist;                       //! List of histograms
@@ -75,7 +72,7 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckV0(const AliAnalysisTaskCheckV0&);            // not implemented
   AliAnalysisTaskCheckV0& operator=(const AliAnalysisTaskCheckV0&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckV0, 0);
+  ClassDef(AliAnalysisTaskCheckV0, 1);
 };
 
 #endif

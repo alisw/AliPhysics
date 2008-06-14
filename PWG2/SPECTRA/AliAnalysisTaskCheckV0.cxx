@@ -41,8 +41,7 @@ ClassImp(AliAnalysisTaskCheckV0)
 
 //________________________________________________________________________
 AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0() 
-  : AliAnalysisTaskSE(), fESD(0), fAOD(0),
-    fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
+  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0), fHistV0OnFlyStatus(0),
     fHistV0MultiplicityOff(0), fHistV0Chi2Off(0),
@@ -60,8 +59,7 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0()
 }
 //________________________________________________________________________
 AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0), fAOD(0),
-    fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
+  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fListHist(), 
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0), fHistV0OnFlyStatus(0),
     fHistV0MultiplicityOff(0), fHistV0Chi2Off(0),
@@ -76,53 +74,13 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name)
     fHistMassK0On(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0)
 {
   // Constructor
-
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
-  // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());
+  // Define output slots only here
+  // Output slot #1 writes into a TList container
+  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskCheckV0::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-    //    tree->Print();
-    if(fAnalysisType == "ESD") {
-      //      tree->SetBranchStatus("*", kFALSE);
-      tree->SetBranchStatus("Tracks.*", kTRUE);
-      tree->SetBranchStatus("V0s.*", kTRUE);
-      
-      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      
-      if (!esdH) {
-	Printf("ERROR: Could not get ESDInputHandler");
-      } else
-	fESD = esdH->GetEvent();
-    }
-    else if(fAnalysisType == "AOD") {
-      AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      
-      if (!aodH) {
-	Printf("ERROR: Could not get AODInputHandler");
-      } else
-	fAOD = aodH->GetEvent();
-    }
-    else 
-      Printf("Wrong analysis type: Only ESD and AOD types are allowed! (actually only ESD types is supported for the moment!)");
-  }
-
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskCheckV0::CreateOutputObjects()
+void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -266,22 +224,33 @@ void AliAnalysisTaskCheckV0::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskCheckV0::Exec(Option_t *) 
+void AliAnalysisTaskCheckV0::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
+  AliVEvent* lEvent = InputEvent();
+  if (!lEvent) {
+    Printf("ERROR: Event not available");
+    return;
+  }
+  fHistTrackMultiplicity->Fill(lEvent->GetNumberOfTracks());
+  
+  Double_t tPrimaryVtxPosition[3];
+  Int_t nv0s = 0;
+  nv0s = lEvent->GetNumberOfV0s();
+  Printf("CheckV0 analysis task: There are %d v0s in this event",nv0s);
+
+  Int_t    lOnFlyStatus = 0, nv0sOn = 0, nv0sOff = 0;
+  Double_t lChi2V0 = 0;
+  Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
+  Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
+  Double_t lV0CosineOfPointingAngle = 0;
+  Double_t lV0Radius = 0;
+  Double_t lInvMassK0 = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
 
   if(fAnalysisType == "ESD") {
 
-    if (!fESD) {
-      Printf("ERROR: fESD not available");
-      return;
-    }
-    //  Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-    fHistTrackMultiplicity->Fill(fESD->GetNumberOfTracks());
-
-    const AliESDVertex *primaryVtx = fESD->GetPrimaryVertex();
-    Double_t tPrimaryVtxPosition[3];
+    const AliESDVertex *primaryVtx = ((AliESDEvent*)lEvent)->GetPrimaryVertex();
     tPrimaryVtxPosition[0] = primaryVtx->GetXv();
     tPrimaryVtxPosition[1] = primaryVtx->GetYv();
     tPrimaryVtxPosition[2] = primaryVtx->GetZv();
@@ -290,20 +259,9 @@ void AliAnalysisTaskCheckV0::Exec(Option_t *)
     fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
     fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
-    Int_t nv0s = 0;
-    nv0s = fESD->GetNumberOfV0s();
-
-    Int_t    lOnFlyStatus = 0, nv0sOn = 0, nv0sOff = 0;
-    Double_t lChi2V0 = 0;
-    Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
-    Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
-    Double_t lV0CosineOfPointingAngle = 0;
-    Double_t lV0Radius = 0;
-    Double_t lInvMassK0 = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
       {// This is the begining of the V0 loop
-	AliESDv0 *v0 = fESD->GetV0(iV0);
+	AliESDv0 *v0 = ((AliESDEvent*)lEvent)->GetV0(iV0);
 	if (!v0) continue;
 
 	Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
@@ -316,8 +274,8 @@ void AliAnalysisTaskCheckV0::Exec(Option_t *)
 	Double_t lMomPos[3]; v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
 	Double_t lMomNeg[3]; v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
 
-	AliESDtrack *pTrack=fESD->GetTrack(lKeyPos);
-	AliESDtrack *nTrack=fESD->GetTrack(lKeyNeg);
+	AliESDtrack *pTrack=((AliESDEvent*)lEvent)->GetTrack(lKeyPos);
+	AliESDtrack *nTrack=((AliESDEvent*)lEvent)->GetTrack(lKeyNeg);
 	if (!pTrack || !nTrack) {
 	  Printf("ERROR: Could not retreive one of the daughter track");
 	  continue;
@@ -382,25 +340,11 @@ void AliAnalysisTaskCheckV0::Exec(Option_t *)
 	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
 	}
       }// This is the end of the V0 loop
-
-    fHistV0Multiplicity->Fill(nv0s);
-    fHistV0MultiplicityOff->Fill(nv0sOff);
-    fHistV0MultiplicityOn->Fill(nv0sOn);
   } // end of "ESD" analysis
 
   else if(fAnalysisType == "AOD") {
 
-    if (!fAOD) {
-      Printf("ERROR: fAOD not available");
-      return;
-    }
-    Printf("Well: not fully implemented yet");
-
-    //  Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
-    fHistTrackMultiplicity->Fill(fAOD->GetNumberOfTracks());
-
-    const AliAODVertex *primaryVtx = fAOD->GetPrimaryVertex();
-    Double_t tPrimaryVtxPosition[3];
+    const AliAODVertex *primaryVtx = ((AliAODEvent*)lEvent)->GetPrimaryVertex();
     tPrimaryVtxPosition[0] = primaryVtx->GetX();
     tPrimaryVtxPosition[1] = primaryVtx->GetY();
     tPrimaryVtxPosition[2] = primaryVtx->GetZ();
@@ -409,20 +353,9 @@ void AliAnalysisTaskCheckV0::Exec(Option_t *)
     fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
     fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
-    Int_t nv0s = 0;
-    nv0s = fAOD->GetNumberOfV0s();
-
-    Int_t    lOnFlyStatus = 0, nv0sOn = 0, nv0sOff = 0;
-    Double_t lChi2V0 = 0;
-    Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
-    Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
-    Double_t lV0CosineOfPointingAngle = 0;
-    Double_t lV0Radius = 0;
-    Double_t lInvMassK0 = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
       {// This is the begining of the V0 loop
-	AliAODv0 *v0 = fAOD->GetV0(iV0);
+	AliAODv0 *v0 = ((AliAODEvent*)lEvent)->GetV0(iV0);
 	if (!v0) continue;
 
 	lV0Radius = v0->RadiusV0();
@@ -474,14 +407,14 @@ void AliAnalysisTaskCheckV0::Exec(Option_t *)
 	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
 	}
       }// This is the end of the V0 loop
-
-    fHistV0Multiplicity->Fill(nv0s);
-    fHistV0MultiplicityOff->Fill(nv0sOff);
-    fHistV0MultiplicityOn->Fill(nv0sOn);
   } // end of "AOD" analysis
 
+  fHistV0Multiplicity->Fill(nv0s);
+  fHistV0MultiplicityOff->Fill(nv0sOff);
+  fHistV0MultiplicityOn->Fill(nv0sOn);
+
   // Post output data.
-  PostData(0, fListHist);
+  PostData(1, fListHist);
 }      
 
 //________________________________________________________________________
@@ -490,22 +423,22 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  fHistTrackMultiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistTrackMultiplicity"));
+  fHistTrackMultiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistTrackMultiplicity"));
   if (!fHistTrackMultiplicity) {
     Printf("ERROR: fHistTrackMultiplicity not available");
     return;
   }
-  fHistV0Multiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistV0Multiplicity"));
+  fHistV0Multiplicity = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0Multiplicity"));
   if (!fHistV0Multiplicity) {
     Printf("ERROR: fHistV0Multiplicity not available");
     return;
   }
-  fHistV0MultiplicityOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistV0MultiplicityOff"));
+  fHistV0MultiplicityOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0MultiplicityOff"));
   if (!fHistV0MultiplicityOff) {
     Printf("ERROR: fHistV0MultiplicityOff not available");
     return;
   }
-  fHistV0MultiplicityOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistV0MultiplicityOn"));
+  fHistV0MultiplicityOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistV0MultiplicityOn"));
   if (!fHistV0MultiplicityOn) {
     Printf("ERROR: fHistV0MultiplicityOn not available");
     return;
@@ -513,7 +446,7 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
    
   TCanvas *canCheckV0 = new TCanvas("AliAnalysisTaskCheckV0","Multiplicity",10,10,510,510);
   canCheckV0->Divide(2,2);
-  canCheckV0->cd(1)->SetLogy();
+  if (fHistTrackMultiplicity->GetMaximum() > 0.) canCheckV0->cd(1)->SetLogy();
   fHistTrackMultiplicity->SetMarkerStyle(26);
   fHistTrackMultiplicity->DrawCopy("E");
   fHistV0Multiplicity->SetMarkerStyle(25);
@@ -530,32 +463,32 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   legendMultiplicity->AddEntry(fHistV0MultiplicityOn,"onthefly V^{0}");
   legendMultiplicity->Draw();
 
-  fHistMassK0Off = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistMassK0Off"));
+  fHistMassK0Off = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0Off"));
   if (!fHistMassK0Off) {
     Printf("ERROR: fHistMassK0Off not available");
     return;
   }
-  fHistMassK0On = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistMassK0On"));
+  fHistMassK0On = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0On"));
   if (!fHistMassK0On) {
     Printf("ERROR: fHistMassK0On not available");
     return;
   }
-  fHistMassLambdaOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistMassLambdaOff"));
+  fHistMassLambdaOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassLambdaOff"));
   if (!fHistMassLambdaOff) {
     Printf("ERROR: fHistMassLambdaOff not available");
     return;
   }
-  fHistMassLambdaOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistMassLambdaOn"));
+  fHistMassLambdaOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassLambdaOn"));
   if (!fHistMassLambdaOn) {
     Printf("ERROR: fHistMassLambdaOn not available");
     return;
   }
-  fHistMassAntiLambdaOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistMassAntiLambdaOff"));
+  fHistMassAntiLambdaOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassAntiLambdaOff"));
   if (!fHistMassAntiLambdaOff) {
     Printf("ERROR: fHistMassAntiLambdaOff not available");
     return;
   }
-  fHistMassAntiLambdaOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(0))->FindObject("fHistMassAntiLambdaOn"));
+  fHistMassAntiLambdaOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassAntiLambdaOn"));
   if (!fHistMassAntiLambdaOn) {
     Printf("ERROR: fHistMassAntiLambdaOn not available");
     return;
@@ -578,4 +511,5 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   fHistMassAntiLambdaOff->DrawCopy("E");
   fHistMassAntiLambdaOn->SetMarkerStyle(20);
   fHistMassAntiLambdaOn->DrawCopy("ESAME");
+
 }
