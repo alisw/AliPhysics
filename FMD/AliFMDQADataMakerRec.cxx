@@ -28,6 +28,7 @@
 #include "AliQAChecker.h"
 #include "AliESDFMD.h"
 #include "AliFMDParameters.h"
+#include "AliFMDRawReader.h"
 
 //_____________________________________________________________________
 // This is the class that collects the QA data for the FMD during
@@ -112,7 +113,7 @@ void AliFMDQADataMakerRec::InitESDs()
 }
 
 //_____________________________________________________________________ 
-void AliFMDQADataMakerRec::InitDigits()
+/*void AliFMDQADataMakerRec::InitDigits()
 {
   // create Digits histograms in Digits subdir
   TH1I* hADCCounts      = new TH1I("hADCCounts","Dist of ADC counts",
@@ -122,7 +123,7 @@ void AliFMDQADataMakerRec::InitDigits()
   Add2DigitsList(hADCCounts, 0);
   
 }
-
+*/
 //_____________________________________________________________________ 
 void AliFMDQADataMakerRec::InitRecPoints()
 {
@@ -136,7 +137,12 @@ void AliFMDQADataMakerRec::InitRecPoints()
 //_____________________________________________________________________ 
 void AliFMDQADataMakerRec::InitRaws()
 {
-  
+  TH1I* hADCCounts      = new TH1I("hADCCounts","Dist of ADC counts",
+				   1024,0,1024);
+  hADCCounts->SetXTitle("ADC counts");
+  hADCCounts->SetYTitle("");
+  Add2RawsList(hADCCounts, 0);
+
 }
 
 //_____________________________________________________________________
@@ -166,6 +172,7 @@ void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
   }
 }
 
+/*
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 {
@@ -196,10 +203,20 @@ void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
   branch->GetEntry(0); 
   MakeDigits(digitsAddress);
 }
-
+*/
 //_____________________________________________________________________
-void AliFMDQADataMakerRec::MakeRaws(AliRawReader* /*rawReader*/)
+void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
+  fDigitsArray.Clear();
+  AliFMDRawReader fmdReader(rawReader,0);
+  TClonesArray* digitsAddress = &fDigitsArray;
+  fmdReader.ReadAdcs(digitsAddress);
+ 
+  for(Int_t i=0;i<fDigitsArray.GetEntriesFast();i++) {
+    //Raw ADC counts
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray.At(i));
+    GetDigitsData(0)->Fill(digit->Counts());
+  }
   
 }
 
