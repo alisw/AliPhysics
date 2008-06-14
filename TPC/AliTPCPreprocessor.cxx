@@ -27,6 +27,7 @@
 #include "AliTPCCalibPedestal.h"
 #include "AliTPCCalibPulser.h"
 #include "AliTPCCalibCE.h"
+#include "AliTPCdataQA.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TGraph.h" 
@@ -108,9 +109,10 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 {
   // Creates AliTestDataDCS object -- start maps half an hour beforre actual run start
 
-  UInt_t startTimeLocal = startTime-1800;
+  UInt_t startTimeLocal = startTime-3600;
+  UInt_t endTimeLocal = endTime+1800;
 
-  AliPreprocessor::Initialize(run, startTimeLocal, endTime);
+  AliPreprocessor::Initialize(run, startTimeLocal, endTimeLocal);
 
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
 		TTimeStamp((time_t)startTime,0).AsString(),
@@ -140,7 +142,7 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	   fConfigOK = kFALSE;
 	   return;
         }
-        fTemp = new AliTPCSensorTempArray(startTimeLocal, fEndTime, confTree, kAmandaTemp);
+        fTemp = new AliTPCSensorTempArray(startTimeLocal, endTimeLocal, confTree, kAmandaTemp);
 	fTemp->SetValCut(kValCutTemp);
 	fTemp->SetDiffCut(kDiffCutTemp);
        }
@@ -159,7 +161,7 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            fConfigOK = kFALSE;
            return;
         }
-        fHighVoltage = new AliDCSSensorArray(startTimeLocal, fEndTime, confTree);
+        fHighVoltage = new AliDCSSensorArray(startTimeLocal, endTimeLocal, confTree);
       }
 
    // High voltage status values
@@ -176,7 +178,7 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            fConfigOK = kFALSE;
            return;
         }
-        fHighVoltageStat = new AliDCSSensorArray(startTimeLocal, fEndTime, confTree);
+        fHighVoltageStat = new AliDCSSensorArray(startTimeLocal, endTimeLocal, confTree);
       }
 }
 
@@ -325,7 +327,31 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
      result += ceResult;
      status = new TParameter<int>("ceResult",ceResult);
      resultArray->Add(status);
+
+    numSources = 1;
+    Int_t qaSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
+    TString source = fConfEnv->GetValue("QA","DAQ");
+    source.ToUpper();
+    if ( source != "OFF" ) { 
+     if ( source == "HLT") qaSource[0] = AliShuttleInterface::kHLT;
+     if (!GetHLTStatus()) qaSource[0] = AliShuttleInterface::kDAQ;
+     if (source == "HLTDAQ" ) {
+        numSources=2;
+	qaSource[0] = AliShuttleInterface::kHLT;
+	qaSource[1] = AliShuttleInterface::kDAQ;
+     }
+     if (source == "DAQHLT" ) numSources=2;
+     UInt_t qaResult=0;
+     for (Int_t i=0; i<numSources; i++ ) {	
+       qaResult = ExtractQA(qaSource[i]);
+       if ( qaResult == 0 ) break;
+     }
+//     result += qaResult;
+     if ( qaResult !=0 ) Log ("ExtractQA failed, no QA entry available.");
+     status = new TParameter<int>("qaResult",qaResult);
+     resultArray->Add(status);
     }
+   }
   }
   
   if (errorHandling == "OFF" ) {
@@ -407,7 +433,8 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
   if (hvStatConf != "OFF" ) { 
     TMap *map2 = fHighVoltageStat->ExtractDCS(dcsAliasMap);
     if (map2) {
-      fHighVoltageStat->StoreGraph(map2);
+      fHighVoltageStat->ClearFit();
+      fHighVoltageStat->SetGraph(map2);
     } else {
        Log("No high voltage status recordings extracted. \n");
       result=9;
@@ -743,3 +770,56 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 
   return result;
 }
+//______________________________________________________________________________________________
+
+UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
+{
+ //
+ //  Read Quality Assurance file from file exchage server
+ //
+ 
+ UInt_t result=0;
+
+ TList* list = GetFileSources(sourceFXS,"QA");
+ 
+ if (list && list->GetEntries()>0) {
+
+//  only one QA objetc should be available!
+
+    AliTPCdataQA *calQA;
+
+    UInt_t nentries = list->GetEntries();  
+    UInt_t index=0;
+    if ( nentries > 1) Log ( "More than one QA entry. First one processed");      
+    TObjString* fileNameEntry = (TObjString*) list->At(index);
+    if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(sourceFXS, "QA",
+	                                 fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        if (!f) {
+	  Log ("Error opening QA file.");
+	  result =2;
+	}
+	f->GetObject("tpcCalibQA",calQA);
+
+        f->Close();
+    }  
+//
+//  Store updated pedestal entry to OCDB
+//
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Haavard Helstrup");
+    metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+    Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kTRUE);
+    if ( !storeOK ) ++result;
+    
+  } else {
+    Log ("Error: no entries!");
+    result = 1;
+  }
+
+  return result;
+}
+
