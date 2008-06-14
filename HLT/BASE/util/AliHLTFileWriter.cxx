@@ -187,6 +187,9 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
   }
   if (iResult>=0) {
     iResult=InitWriter();
+    if (!fDirectory.IsNull()) {
+      gSystem->mkdir(fDirectory);
+    }
   }
 
   return iResult;
