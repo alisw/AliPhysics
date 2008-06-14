@@ -109,6 +109,34 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
       SetDataType(rule.fDataType, argv[i+1], argv[i+2]);
       i+=2;
 
+      // -origin
+    } else if (argument.CompareTo("-origin")==0) {
+      if ((bMissingParam=(i+1>=argc))) break;
+
+      if (!MatchExactly(rule.fDataType,kAliHLTAnyDataType)) {
+	// the data type has already been set, add to list
+	// and reset
+	fFilterRules.push_back(rule);
+	FillBlockData(rule);
+      }
+
+      SetDataType(rule.fDataType, NULL, argv[i+1]);
+      i+=1;
+
+      // -typeid
+    } else if (argument.CompareTo("-typeid")==0) {
+      if ((bMissingParam=(i+1>=argc))) break;
+
+      if (!MatchExactly(rule.fDataType,kAliHLTAnyDataType)) {
+	// the data type has already been set, add to list
+	// and reset
+	fFilterRules.push_back(rule);
+	FillBlockData(rule);
+      }
+
+      SetDataType(rule.fDataType, argv[i+1], NULL);
+      i+=1;
+
       // -dataspec
     } else if (argument.CompareTo("-dataspec")==0) {
       if ((bMissingParam=(++i>=argc))) break;

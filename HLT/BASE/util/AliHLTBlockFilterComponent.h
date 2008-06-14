@@ -3,21 +3,16 @@
 
 #ifndef ALIHLTBLOCKFILTERCOMPONENT_H
 #define ALIHLTBLOCKFILTERCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTBlockFilterComponent.h
     @author Matthias Richter
     @date   
     @brief  A simple data block filter and merger, merges block descriptors
+*/
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
 #include "AliHLTProcessor.h"
 
 /**
@@ -25,6 +20,64 @@
  * A data block merger and filter.
  * It merges data block descriptors fulfilling the filtering rules and
  * forwards the descriptors to the output. The actual data is not touched.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b BlockFilter                                         <br>
+ * Library: \b libAliHLTUtil.so						<br>
+ * Input Data Types: kAliHLTAnyDataType					<br>
+ * Output Data Types: according to parameter and input blocks		<br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *      
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -datatype     <i> id origin      </i>                            <br>
+ *      e.g. <tt> -datatype 'ESD_TREE' 'TPC ' </tt>                     <br>
+ *      \b Note: due to the 4-character data origin it might be necessary to
+ *      append a blank to the detectorname, e.g. <tt>TPC -> 'TPC '</tt>
+ *
+ * \li -origin  <i> origin  </i>                                        <br>
+ *      e.g. -origin 'TPC ', \b Note:  the filter rule has type id 'ANY'
+ *
+ * \li -typeid  <i> id      </i>                                        <br>
+ *      e.g. -typeid ESD_TREE, \b Note: the filter rule has origin 'ANY'
+ *
+ * \li -dataspec     <i> specification </i>                             <br>
+ *      data specification treated as decimal number or hex number if
+ *      prepended by '0x'
+ *
+ * \li -verbose                                                         <br>
+ *      print out some more info messages, mainly for the sake of tutorials
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * Configuration by component arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
+ *
+ * <h2>Performance:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Output size:</h2>
+ * No additional data is produced. Data blocks are just forwarded.
+ *
+ * By default, all blocks will be published. By means of the \em -datatype,
+ * \em -origin, and \em -typeid arguments, the blocks can be selected. A list
+ * of filter rules can be built up by multiple usage of the arguments. Each
+ * time a new filter rule is added.
+ *
+ * No filtering by the data specification is applied unless then \em
+ * -specification argument is used. The specification applies to to the
+ * current filter rule, regardless of the sequence of -datatype/-specification
+ * arguments.
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTBlockFilterComponent : public AliHLTProcessor
 {

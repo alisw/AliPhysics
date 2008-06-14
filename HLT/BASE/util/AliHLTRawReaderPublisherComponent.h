@@ -3,21 +3,15 @@
 
 #ifndef ALIHLTRAWREADERPUBLISHERCOMPONENT_H
 #define ALIHLTRAWREADERPUBLISHERCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTRawReaderPublisherComponent.h
     @author Matthias Richter
     @date   
     @brief  A general data publisher component for the AliRawReader.
 */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTOfflineDataSource.h"
 
@@ -34,11 +28,16 @@
  * give range. If the RawReader does not provide any data, an empty data
  * block consisting of the Common Data Header is produced. 
  * 
- * Component ID: \b AliRawReaderPublisher <br>
- * Library: \b libAliHLTUtil.
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b AliRawReaderPublisher                               <br>
+ * Library: \b libAliHLTUtil.so						<br>
+ * Input Data Types: none						<br>
+ * Output Data Types: according to parameters and available RAW data	<br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * The equipment id(s) must be defined by argument(s) out of:
  * \li -detector     <i> detector name      </i>
  *      e.g. <tt> -detector TPC </tt>
  * \li -equipmentid  <i> id      </i>
@@ -49,6 +48,9 @@
  * \li -maxid  <i> id      </i>
  *      the maximum equipmentid including detector offset (default = minid)<br>
  *      if the -detector option is used, the id is without detector offset
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -verbose<br>
  *      print out some more info messages, mainly for the sake of tutorials
  * \li -skipempty
@@ -60,10 +62,25 @@
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
  *
- * Optional arguments:<br>
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * Configuration by component arguments.
  *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
  *
- * @ingroup alihlt_system
+ * <h2>Performance:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Output size:</h2>
+ * According to the available data. The component is an AliHLTDataSource
+ * and inteded to be used in the AliHLTSystem framework only. The component
+ * implements the standard AliHLTSystem adaptive buffer allocation. 
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
  public:

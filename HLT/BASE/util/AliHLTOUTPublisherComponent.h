@@ -28,38 +28,66 @@
  * a transparent transport layer. Filter rules by data type and
  * specification can be applied.
  * 
- * Component ID: \b AliHLTOUTPublisher <br>
- * Library: \b libAliHLTUtil.
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b AliHLTOUTPublisher                                  <br>
+ * Library: \b libAliHLTUtil.so						<br>
+ * Input Data Types: none						<br>
+ * Output Data Types: according to parameters and content of the HLTOUT	<br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *      
- * Optional arguments:<br>
+ * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -datatype     <i> id origin      </i>
- *      e.g. <tt> -datatype 'ESD_TREE' 'TPC ' </tt> <br>
+ * \li -datatype     <i> id origin      </i>                            <br>
+ *      e.g. <tt> -datatype 'ESD_TREE' 'TPC ' </tt>                     <br>
  *      \b Note: due to the 4-character data origin it might be necessary to
- *      append a blank to the detectorname, e.g. TPC -> 'TPC '
- * \li -origin  <i> origin      </i>
+ *      append a blank to the detectorname, e.g. <tt>TPC -> 'TPC '</tt>
+ *
+ * \li -origin  <i> origin  </i>                                        <br>
  *      e.g. -origin 'TPC ', \b Note:  the filter rule has type id 'ANY'
- * \li -typeid  <i> id      </i>
+ *
+ * \li -typeid  <i> id      </i>                                        <br>
  *      e.g. -typeid ESD_TREE, \b Note: the filter rule has origin 'ANY'
- * \li -dataspec     <i> specification </i> <br>
+ *
+ * \li -dataspec     <i> specification </i>                             <br>
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
- * \li -verbose<br>
+ *
+ * \li -verbose                                                         <br>
  *      print out some more info messages, mainly for the sake of tutorials
  *
- * By default, all blocks will be published. By means of the -datatype,
- * -origin, and -typeid arguments, the blocks can be selected. A list of filter
- * rules can be built up by multiple usage of the arguments. Each time a new
- * filter rule is added.
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * Configuration by component arguments.
  *
- * No filtering by the data specification is applied unless the -specification
- * argument is used. The specification applies to to the current filter rule,
- * regardless of the sequence of -datatype/-specification arguments.
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
  *
- * @ingroup alihlt_system
+ * <h2>Performance:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Output size:</h2>
+ * According to the available and selected data. The component is an
+ * AliHLTDataSource and inteded to be used in the AliHLTSystem framework
+ * only. The component implements the standard AliHLTSystem adaptive
+ * buffer allocation. 
+ *
+ * By default, all blocks will be published. By means of the \em -datatype,
+ * \em -origin, and \em -typeid arguments, the blocks can be selected. A list
+ * of filter rules can be built up by multiple usage of the arguments. Each
+ * time a new filter rule is added.
+ *
+ * No filtering by the data specification is applied unless then \em
+ * -specification argument is used. The specification applies to to the
+ * current filter rule, regardless of the sequence of -datatype/-specification
+ * arguments.
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTOUTPublisherComponent : public AliHLTOfflineDataSource {
  public:

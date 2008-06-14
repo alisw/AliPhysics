@@ -1,40 +1,63 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
-
+// $Id$
 #ifndef ALIHLTROOTFILESTREAMERCOMPONENT_H
 #define ALIHLTROOTFILESTREAMERCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTRootFileStreamerComponent.h
     @author Matthias Richter
     @date   
     @brief  Save objects in a ROOT memory file
+*/
 
-                                                                          */
 #include "AliHLTProcessor.h"
 
 /**
  * @class AliHLTRootFileStreamerComponent
  * The RootFileStreamer provides a stand alone component to write incoming
- * TObject like structures into a ROOT memory file. The memory file is
- * published via the output stream.
+ * TObject like structures into a ROOT memory file. A ROOT memory file is
+ * a ROOT file stored in memory instead on disk (AliHLTMemoryFile) The file
+ * is published via the output stream. On the receiver side the file can
+ * be directly written to disk and appears like a normal root file.
  *
- * Component ID: \b ROOTFileStreamer <br>
- * Library: \b libAliHLTUtil.
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b ROOTFileStreamer                                    <br>
+ * Library: \b libAliHLTUtil.so                                         <br>
+ * Input Data Types: ::kAliHLTAnyDataType                               <br>
+ * Output Data Types: according to component arguments,
+ *                    ::kAliHLTVoidDataType by default                  <br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- *
- * Optional arguments:<br>
+ *      
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datatype     <i> datatype   dataorigin </i> <br>
  *      data type ID and origin, e.g. <tt>-datatype CLUSTERS TPC </tt>
  * \li -dataspec     <i> specification </i> <br>
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
  *
- * @ingroup alihlt_component
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * Configuration by component arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
+ *
+ * <h2>Performance:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Output size:</h2>
+ * No data published (AliHLTDataSink).
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTRootFileStreamerComponent : public AliHLTProcessor
 {

@@ -25,17 +25,37 @@ class AliHLTEsdManager;
  * multiple events into one file. It does not implement merging of ESDs
  * from one event but several origins.
  *
- * Component ID: \b EsdCollector <br>
- * Library: \b libAliHLTUtil.so
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b EsdCollector                                      <br>
+ * Library: \b libAliHLTUtil.so					      <br>
+ * Input Data Types: kAliHLTDataTypeESDObject, kAliHLTDataTypeESDTree <br>
+ * Output Data Types: none					      <br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
- * Optional arguments: <br>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * The only AliHLTFileWriter argument of relevance is the -directory argument.
+ * <h2>Optional arguments:</h2>
+ * The only AliHLTFileWriter argument of relevance is the \em -directory
+ * argument. See AliHLTFileWriter for full list of arguments.
  *
- * See AliHLTFileWriter for full list of arguments.
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * Configuration by component arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
+ *
+ * <h2>Performance:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Output size:</h2>
+ * No data published (AliHLTDataSink).
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTEsdCollectorComponent : public AliHLTFileWriter
 {

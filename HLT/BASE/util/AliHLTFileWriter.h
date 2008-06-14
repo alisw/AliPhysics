@@ -23,10 +23,11 @@
  *
  * Component ID: \b FileWriter      <br>
  * Library: \b libAliHLTUtil.so     <br>
- * Input Data Types: @ref kAliHLTAllDataTypes <br>
+ * Input Data Types: ::kAliHLTAllDataTypes <br>
  * Output Data Types: none <br>
  *
- * kAliHLTAllDataTypes contains both kAliHLTAnyDataType and kAliHLTVoidDataType
+ * \b Note: ::kAliHLTAllDataTypes contains both ::kAliHLTAnyDataType and 
+ * ::kAliHLTVoidDataType
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -63,19 +64,19 @@
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * no configuration
+ * Configuration by component arguments.
  *
  * <h2>Default CDB entries:</h2>
  * The component loads no CDB entries.
  *
  * <h2>Performance:</h2>
- * The component does not any event data processing.
+ * The component does not process any event data.
  *
  * <h2>Memory consumption:</h2>
- * The component does not any event data processing.
+ * The component does not process any event data.
  *
  * <h2>Output size:</h2>
- * The component has no output data.
+ * No data published (AliHLTDataSink).
  *
  *
  * By default, file name is built from the basename, the event number, the
@@ -100,7 +101,8 @@
  * The class can be used as a base class for file writers. Additional
  * argument scan can be implemented in @ref ScanArgument which is called
  * for each unknown argument.
- * @ingroup alihlt_component
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTFileWriter : public AliHLTDataSink  {
  public:

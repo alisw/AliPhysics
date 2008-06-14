@@ -23,10 +23,13 @@ class AliLoader;
  * 
  * <h2>General properties:</h2>
  *
- * Component ID: \b AliLoaderPublisher <br>
- * Library: \b libAliHLTUtil.
- * Input Data Types: none <br>
- * Output Data Types: according to parameter <br>
+ * Component ID: \b AliLoaderPublisher                                  <br>
+ * Library: \b libAliHLTUtil.so						<br>
+ * Input Data Types: none						<br>
+ * Output Data Types: according to parameter, suggested types:		<br>
+ * \li ::kAliHLTDataTypeAliTreeD for the digit tree
+ * \li ::kAliHLTDataTypeAliTreeR for the cluster tree
+ * , see @ref alihlt_component_datatypes                                <br>
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -52,15 +55,18 @@ class AliLoader;
  * The component loads no CDB entries.
  *
  * <h2>Performance:</h2>
- * The component does not any event data processing.
+ * The component does not process any event data.
  *
  * <h2>Memory consumption:</h2>
- * The component does not any event data processing.
+ * The component does not process any event data.
  *
  * <h2>Output size:</h2>
- * 
+ * According to the available data. The component is an AliHLTDataSource
+ * and inteded to be used in the AliHLTSystem framework only. The component
+ * implements the standard AliHLTSystem adaptive buffer allocation. 
  *
- * @ingroup alihlt_system
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTLoaderPublisherComponent : public AliHLTOfflineDataSource {
  public:

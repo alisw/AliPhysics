@@ -118,7 +118,7 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
   Int_t CalcEntropy();
 
   /** function for merge sorting the array data 
-   * @param unsorted array  unsorted array of data from occurrence table
+   * @param unsortedarray   unsorted array of data from occurrence table
    * @param n               number of entries in the unsorted array
    * @return pointer to first element of sorted list
    */
@@ -145,7 +145,7 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
  Int_t EntropyCompression();
 
   /** merge sorting function for translation table
-   * @param unsorted array  Huffman code table which is not sorted for decompression yet
+   * @param unsortedarray   Huffman code table which is not sorted for decompression yet
    * @param n               number of entries in the unsorted array
    * @return pointer to first element of sorted list
    */

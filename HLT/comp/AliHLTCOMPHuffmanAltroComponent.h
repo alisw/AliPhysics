@@ -1,10 +1,11 @@
-// @(#) $Id$
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTCOMPHUFFMANALTROCOMPONENT_H
 #define ALIHLTCOMPHUFFMANALTROCOMPONENT_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTCOMPHuffmanAltroComponent.h
     @author Jenny Wagner
@@ -21,29 +22,40 @@ class AliHLTCOMPHuffmanData;
  * @class AliHLTCOMPHuffmanAltroComponent
  * Implementation of the Huffman compressor component.
  * The component implements the interface methods of the @ref AliHLTProcessor.
- * The actual Huffman compression and decompression algorithms are implemented in @ref AliHLTCOMPHuffmanAltro.
+ * The actual Huffman compression and decompression algorithms are implemented
+ * in AliHLTCOMPHuffmanAltro.
  * The component can handle compressed and decompressed data of different formats.
  * Two components are registered, the HuffmanCompressor and the HuffmanDecompressor.
- * Component ID: \b COMPHuffmanCompressor, COMPHuffmanCompressor <br>
- * Library: \b libAliHLTComp
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b COMPHuffmanCompressor, \b COMPHuffmanDecompressor   <br>
+ * Library: \b libAliHLTComp.so                                         <br>
+ * Input Data Types:                                                    <br>
+ * \li  COMPHuffmanDecompressor: AliHLTCompDefinitions::fgkDDLEncodedHuffmanAltroDataType
+ * \li  COMPHuffmanCompressor: ::kAliHLTDataTypeDDLRaw                  <br>
+ *
+ * Output Data Types:                                                   <br>
+ * \li  COMPHuffmanCompressor: AliHLTCompDefinitions::fgkDDLEncodedHuffmanAltroDataType
+ * \li  COMPHuffmanDecompressor: ::kAliHLTDataTypeDDLRaw                <br>
  * 
- * Mandatory arguments: <br>
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -origin <i> detector <\i> <br>
+ * \li -origin <i> detector </i> <br>
  *  set origin of data to specify Huffman code table to be read in (parameter transient)
- * \li -runnumber <i> decimal number <\i> <br>
+ * \li -runnumber <i> decimal number </i> <br>
  *  set runnumber to specify Huffman code table to be read in (parameter transient)
- * \li -dataspec <i> 0xYYXXaabb <\i> <br>
+ * \li -dataspec <i> 0xYYXXaabb </i> <br>
  *  set usual HLT dataspec (last slice, first slice, last patch, first patch)_Hexadezimal to specify Huffman code table to be read in
- * \li -trailerwords <i> decimal number <\i> <br>
+ * \li -trailerwords <i> decimal number </i> <br>
  *  set number of trailerwords of incoming data (ranging from 1 to 3)
  *
- * Optional arguments: <br>
+ * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -tablepath <i> path to Huffman code table <\i> <br>
+ * \li -tablepath <i> path to Huffman code table </i> <br>
  *  set path to read Huffman code table from root file, if no path is given, path is set to current path (parameter transient)
  *
- * @ingroup alihlt_comp
+ * @ingroup alihlt_comp_components
  */
 class AliHLTCOMPHuffmanAltroComponent : public AliHLTProcessor {
  public:

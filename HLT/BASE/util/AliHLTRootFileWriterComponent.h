@@ -3,18 +3,17 @@
 
 #ifndef ALIHLTROOTFILEWRITERCOMPONENT_H
 #define ALIHLTROOTFILEWRITERCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTRootFileWriterComponent.h
     @author Matthias Richter
     @date   
     @brief  Base class for writer components to store data in a ROOT file
+*/
 
-                                                                          */
 #include "AliHLTFileWriter.h"
-//#include "TObject.h" 
 
 class TFile;
 
@@ -24,16 +23,37 @@ class TFile;
  * TObject like structures into a Root file. Furthermore it functions as
  * base class for customized writers.
  *
- * Component ID: \b ROOTFileWriter <br>
- * Library: \b libAliHLTUtil.so
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b ROOTFileWriter                                      <br>
+ * Library: \b libAliHLTUtil.so						<br>
+ * Input Data Types: ::kAliHLTAnyDataType				<br>
+ * Output Data Types: none						<br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- *
- * Optional arguments: <br>
+ *      
+ * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- *
  * See AliHLTFileWriter for full list of arguments.
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * Configuration by component arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
+ *
+ * <h2>Performance:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Output size:</h2>
+ * No data published (AliHLTDataSink).
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTRootFileWriterComponent : public AliHLTFileWriter
 {

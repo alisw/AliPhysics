@@ -3,8 +3,9 @@
 #ifndef ALIHLTCOMPHUFFMANALTROCALIBCOMPONENT_H
 #define ALIHLTCOMPHUFFMANALTROCALIBCOMPONENT_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTCOMPHuffmanAltroCalibComponent.h
     @author Jochen Thaeder
@@ -20,31 +21,38 @@ class AliHLTCOMPHuffmanData;
 
 /**
  * @class AliHLTCOMPHuffmanAltroCalibComponent
- * Component ID: \b HuffmanAltroCalibComponent <br>
- * Library: \b libAliHLTComp
  * This class is the calibration component for the AliTPCCalibHuffmanAltro class 
  * used for calibration of the Huffman code table (which is created here). 
  *
- * Mandatory arguments: <br>
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b HuffmanAltroCalibComponent                          <br>
+ * Library: \b libAliHLTComp.so                                         <br>
+ * Input Data Types: ::kAliHLTDataTypeDDLRaw                            <br>
+ * Output Data Types: AliHLTCompDefinitions::fgkHuffmanAltroCalDataType <br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -origin <i> detector <\i> <br>
+ * \li -origin <i> detector </i> <br>
  *  set origin of data for code creation to specify output table (parameter transient)
- * \li -runnumber <i> decimal number <\i> <br>
+ * \li -runnumber <i> decimal number </i> <br>
  *  set runnumber to specify output table (parameter transient)
- * \li -dataspec <i> 0xYYXXaabb <\i> <br>
+ * \li -dataspec <i> 0xYYXXaabb </i> <br>
  *  set usual HLT dataspec (last slice, first slice, last patch, first patch)_Hexadezimal to specify output table
- * \li -trailerwords <i> decimal number <\i> <br>
+ * \li -trailerwords <i> decimal number </i> <br>
  *  set number of trailerwords of incoming data (ranging from 1 to 3)
  *
- * Optional arguments: <br>
+ * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -tablepath <i> path to Huffman code table <\i> <br>
- *  set path to out put Huffman code table as root file, if no path is given, output path is set to current path (parameter transient)
+ * \li -tablepath <i> path to Huffman code table </i> <br>
+ *  set path to out put Huffman code table as root file, if no path is given,
+ *  output path is set to current path (parameter transient)
  *
  * It inherits from the @ref AliHLTCalibrationProcessor and uses the high-level 
- * interface. The output is the class @ref HuffmanData as a TObject which is written to the data base
+ * interface. The output is the class AliHLTCOMPHuffmanData as a TObject which
+ * is written to the data base
  *
- * @ingroup alihlt_comp
+ * @ingroup alihlt_comp_components
  */
 class AliHLTCOMPHuffmanAltroCalibComponent : public AliHLTCalibrationProcessor
     {

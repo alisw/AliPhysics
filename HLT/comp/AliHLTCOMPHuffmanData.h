@@ -73,7 +73,7 @@ public:
   void InitHuffmanData(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* codetable);
 
   /** return occurrence table to be used/written somewhere else (intialisation of Huffman Compressor tables)
-   * @param occurrence table  pointer to occurrence table
+   * @param occurrencetable table  pointer to occurrence table
    */
   AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* GetOccurrenceTable(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable);
   

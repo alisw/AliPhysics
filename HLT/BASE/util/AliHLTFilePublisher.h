@@ -3,9 +3,9 @@
 
 #ifndef ALIHLTFILEPUBLISHER_H
 #define ALIHLTFILEPUBLISHER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTFilePublisher.h
     @author Matthias Richter
@@ -13,12 +13,6 @@
     @brief  An HLT file publishing (data source) component.
     @note   The class is used in Offline (AliRoot) context
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #include "AliHLTDataSource.h"
 #include <TList.h>
@@ -29,10 +23,14 @@ class TFile;
  * An HLT data source component which publishes data from one or a sequence
  * of files.<br>
  *
- * Component ID: \b FilePublisher <br>
- * Library: \b libAliHLTUtil.
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b FilePublisher <br>
+ * Library: \b libAliHLTUtil.so     <br>
+ * Input Data Types: none <br>
+ * Output Data Types: according to arguments <br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datafile     <i> filename      </i>
  * \li -datafilelist <i> file pattern  </i> <br>
@@ -45,11 +43,29 @@ class TFile;
  * \li -nextevent
  *      indicate files published by the next event
  *
- * Optional arguments:<br>
+ * <h2>Optional arguments:</h2>
  * \li -open_files_at_start
  *      Opens all files during component initialisation rather than as needed
  *      during event processing. Note: this feature may result in the system
  *      running out of file handles if a large number of files was specified.
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * Configuration by component arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component loads no CDB entries.
+ *
+ * <h2>Performance:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not process any event data.
+ *
+ * <h2>Output size:</h2>
+ * According to the available data. The component is an AliHLTDataSource
+ * and inteded to be used in the AliHLTSystem framework only. The component
+ * implements the standard AliHLTSystem adaptive buffer allocation. 
  *
  * The component needs at least one argument \em -datafile or \em -datafilelist.
  * Both can occur multiple times. The \em -datatype and \em -dataspec
@@ -57,7 +73,8 @@ class TFile;
  * \em -datatype/spec.
  * All files er published within one event, unless the \em -nexevent specifies
  * where to break into multiple events.
- * @ingroup alihlt_component
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTFilePublisher : public AliHLTDataSource  {
  public:
