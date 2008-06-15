@@ -469,6 +469,11 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
       if (!pt) continue; 
       pt->UpdatePoints();
       AddCovariance(pt);
+      if (AliTPCReconstructor::StreamLevel()>1) {
+	(*fDebugStreamer)<<"Track0"<<
+	  "Tr0.="<<pt<<
+	  "\n";       
+      }
       //      pt->PropagateTo(fParam->GetInnerRadiusLow());
       if (pt->GetKinkIndex(0)<=0){  //don't propagate daughter tracks 
 	pt->PropagateTo(fParam->GetInnerRadiusLow());
@@ -2658,11 +2663,12 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
       ntracks++;
       Int_t eventnumber = event->GetEventNumberInFile();// patch 28 fev 06
       // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number      
-      if (AliTPCReconstructor::StreamLevel()>1) {
+      if (AliTPCReconstructor::StreamLevel()>1 && esd) {
 	(*fDebugStreamer)<<"Cback"<<
 	  "Tr0.="<<seed<<
+	  "esd.="<<esd<<
 	  "EventNrInFile="<<eventnumber<<
-	  "\n"; // patch 28 fev 06         
+	  "\n";       
       }
     }
   }
