@@ -1048,7 +1048,7 @@ void AliPIPEv3::CreateGeometry()
     shRB24B1TTF->DefineSection(5, z,  6.30/2.,  6.7/2.);
     // Transition Tube
     z += 3.75;
-    shRB24B1TTF->DefineSection(6, z,  8.2/2.,  8.6/2.);
+    shRB24B1TTF->DefineSection(6, z,  8.05/2.,  8.45/2.);
     TGeoVolume* voRB24B1TTF = new TGeoVolume("RB24B1TTF", shRB24B1TTF, kMedSteel);
     z =  0.;
     voRB24B1BellowM->AddNode(voRB24B1TTF, 1, new TGeoTranslation(0., 0., z));    
@@ -1558,7 +1558,7 @@ void AliPIPEv3::CreateGeometry()
     z += (20.35 - 0.63);
     shRB24VMABCTT->DefineSection(5, z, 6.3/2.,  6.7/2.);
     z += 0.63;
-    shRB24VMABCTT->DefineSection(6, z, 6.5/2.,  6.9/2.);
+    shRB24VMABCTT->DefineSection(6, z, 6.3/2.,  6.7/2.);
     TGeoVolume* voRB24VMABCTT = new TGeoVolume("RB24VMABCTT", shRB24VMABCTT, kMedSteel);
     voRB24VMABCRB->AddNode(voRB24VMABCTT, 1, new TGeoTranslation(0., 0., - kRB24VMABCRBT1L/2.-1.));
 
