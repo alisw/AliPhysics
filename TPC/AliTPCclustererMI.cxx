@@ -1055,15 +1055,18 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
 
 Bool_t AliTPCclustererMI::AcceptCluster(AliTPCclusterMI *cl){
   //
-  // Currently hack to filter digital noise (13.06.2008)
+  // Currently hack to filter digital noise (15.06.2008)
   // To be parameterized in the AliTPCrecoParam
   // More inteligent way  to be used in future
+  // Acces to the proper pedestal file needed
   //
   if (cl->GetMax()<400) return kTRUE;
   Double_t ratio = cl->GetQ()/cl->GetMax();
+  if (cl->GetMax()>700){
+    if ((ratio - int(ratio)>0.8)) return kFALSE;
+  }
   if ((ratio - int(ratio)<0.95)) return kTRUE;
   return kFALSE;
-
 }
 
 
