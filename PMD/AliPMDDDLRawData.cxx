@@ -222,9 +222,6 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       Int_t  iskip[5];
       UInt_t ddlEndWord[2] = {0xDEADFACE, 0xDEADFACE};
 
-      Int_t bknJunk = 0;
-
-
       for (Int_t iblock = 0; iblock < 2; iblock++)
 	{
 	  // DSP Block Header
@@ -317,8 +314,6 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
 
 		  outfile->WriteBuffer((char*)patchBusHeaderWord,4*sizeof(UInt_t));
-
-		  bknJunk += patchbusRDL;
 
 		  for (Int_t iword = 0; iword < patchbusRDL; iword++)
 		    {
