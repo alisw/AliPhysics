@@ -12,8 +12,6 @@
 class TString;
 class TList;
 class TH1F;
-class AliESDEvent;
-class AliAODEvent;
 
 #include "AliAnalysisTaskSE.h"
 
