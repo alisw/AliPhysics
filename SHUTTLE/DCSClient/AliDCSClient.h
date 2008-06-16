@@ -32,8 +32,6 @@ public:
 		fgkUnknownDP = -7	     // unknown alias/DP error
 	};
 	
-////	friend class AliShuttle;
-
 	AliDCSClient(const char* host, Int_t port, UInt_t timeout = 5000,
                         Int_t retries = 5, Int_t multiSplit = 100);
         virtual ~AliDCSClient();

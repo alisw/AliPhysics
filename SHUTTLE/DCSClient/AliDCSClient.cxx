@@ -13,75 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2007/10/17 17:43:02  acolla
-nextMessage removed from client
-
-Revision 1.7  2007/10/16 15:02:20  jgrosseo
-fixed bug if zero values collected
-
-Revision 1.6  2007/10/16 14:37:16  jgrosseo
-changing to AMANDA protocol version 2
-
-Revision 1.5  2007/10/05 12:40:55  acolla
-
-Result error code added to AliDCSClient data members (it was "lost" with the new implementation of TMap* GetAliasValues and GetDPValues).
-
-Revision 1.4  2007/09/14 16:46:14  jgrosseo
-1) Connect and Close are called before and after each query, so one can
-keep the same AliDCSClient object.
-2) The splitting of a query is moved to GetDPValues/GetAliasValues.
-3) Splitting interval can be specified in constructor
-
-Revision 1.3  2007/09/11 16:42:02  jgrosseo
-starting modifying AliDCSClient to transparently switch between single and multi query
-first step: same alidcsclient can be used for several queries
-
-Revision 1.2  2007/06/09 13:01:09  jgrosseo
-Switching to retrieval of several DCS DPs at a time (multiDPrequest)
-
-Revision 1.1  2006/11/06 14:22:47  jgrosseo
-major update (Alberto)
-o) reading of run parameters from the logbook
-o) online offline naming conversion
-o) standalone DCSclient package
-
-Revision 1.6  2006/10/02 16:38:39  jgrosseo
-update (alberto):
-fixed memory leaks
-storing of objects that failed to be stored to the grid before
-interfacing of shuttle status table in daq system
-
-Revision 1.5  2006/08/15 10:50:00  jgrosseo
-effc++ corrections (alberto)
-
-Revision 1.4  2006/07/04 14:59:57  jgrosseo
-revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
-
-Revision 1.3  2006/06/12 09:11:16  jgrosseo
-coding conventions (Alberto)
-
-Revision 1.2  2006/03/07 07:52:34  hristov
-New version (B.Yordanov)
-
-Revision 1.3  2005/11/17 17:47:34  byordano
-TList changed to TObjArray
-
-Revision 1.2  2005/11/17 14:43:23  byordano
-import to local CVS
-
-Revision 1.1.1.1  2005/10/28 07:33:58  hristov
-Initial import as subdirectory in AliRoot
-
-Revision 1.1.1.1  2005/09/12 22:11:40  byordano
-SHUTTLE package
-
-Revision 1.3  2005/08/30 10:53:23  byordano
-some more descriptions added
-
-*/
-
 //
 // This class represents the AliDCSClient.
 // The client used for data retrieval from DCS server.
@@ -278,7 +209,7 @@ Int_t AliDCSClient::SendMessage(AliDCSMessage& message)
 //______________________________________________________________________
 Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message)
 {
-// receive message from the DCS server
+	// receive message from the DCS server
 	
 	char header[HEADER_SIZE];
 
@@ -350,7 +281,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	}
 
 	Close();
-
+	
 	return receivedValues;
 }
 
@@ -454,14 +385,20 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 			}
 
 			TObjString* aRequest = (TObjString*) list->At(ownerIndex + subsetBegin);
-			//AliInfo(Form("Received %d values for entry %d, that is %s", resultSet->GetEntries(),
-			//	ownerIndex + subsetBegin, aRequest->String().Data()));
-
+			
+			for (Int_t i=0; i<resultSet->GetEntries(); i++)
+			{
+				AliDCSValue* value = (AliDCSValue*) resultSet->At(i);
+				if (!value)
+					continue;
+				if (value->GetTimeStamp() < startTime || value->GetTimeStamp() > endTime)
+					AliWarning(Form("Value for %s outside of queried interval (%d to %d): %d", aRequest->String().Data(), startTime, endTime, value->GetTimeStamp()));
+			}
+		
 			TObjArray* target = dynamic_cast<TObjArray*> (result->GetValue(aRequest));
 			if (target)
 			{
 				target->AddAll(resultSet);
-				//AliInfo(Form("Now we have %d entries", target->GetEntries()));
 				resultSet->SetOwner(0);
 				delete resultSet;
 			}
@@ -503,17 +440,6 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray* result, Int_t& ownerIndex)
 			return 0;
 
 		sResult = message.GetValues(result);
-
-// 		AliDCSMessage nextMessage;
-// 		nextMessage.CreateNextMessage();
-// 
-// 		if ((fResultErrorCode = SendMessage(nextMessage)) < 0)
-// 		{
-// 			AliError(Form("Can't send next message! Reason: %s",
-// 				GetErrorString(fResultErrorCode)));
-// 			Close();
-// 			return AliDCSClient::fgkCommError;
-// 	        }
 
 		return sResult;
 	}
