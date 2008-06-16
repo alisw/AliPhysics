@@ -46,7 +46,7 @@ const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 
 const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
-const TString kAmandaTemp = "PT_%d_TEMPERATURE"; // Amanda string for temperature entries
+const TString kAmandaTemp = "PT_%02d_TEMPERATURE"; // Amanda string for temperature entries
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required 
 const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits during commissioning 
 
@@ -126,7 +126,7 @@ void AliEMCALPreprocessor::Initialize(Int_t run, UInt_t startTime,
   AliCDBEntry* entry = GetFromOCDB("Config", "Preprocessor");
   if (entry) fConfEnv = (TEnv*) entry->GetObject();
   if ( fConfEnv==0 ) {
-    Log("AliEMCALPreprocsessor: Preprocessor Config OCDB entry missing.\n");
+    Log("AliEMCALPreprocessor: Preprocessor Config OCDB entry missing.\n");
     fConfigOK = kFALSE;
     return;
   }
@@ -140,7 +140,7 @@ void AliEMCALPreprocessor::Initialize(Int_t run, UInt_t startTime,
     entry = GetFromOCDB("Config", "Temperature");
     if (entry) confTree = (TTree*) entry->GetObject();
     if ( confTree==0 ) {
-      Log("AliEMCALPreprocsessor: Temperature Config OCDB entry missing.\n");
+      Log("AliEMCALPreprocessor: Temperature Config OCDB entry missing.\n");
       fConfigOK = kFALSE;
       return;
     }
@@ -317,7 +317,7 @@ UInt_t AliEMCALPreprocessor::ExtractPedestals(Int_t sourceFXS)
   AliCDBEntry* entry = GetFromOCDB("Calib", "Pedestals");
   if (entry) calibPed = (AliCaloCalibPedestal*)entry->GetObject();
   if ( calibPed==NULL ) {
-    Log("AliEMCALPreprocsessor: No previous EMCAL pedestal entry available.\n");
+    Log("AliEMCALPreprocessor: No previous EMCAL pedestal entry available.\n");
     calibPed = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
   }
   
@@ -393,7 +393,7 @@ UInt_t AliEMCALPreprocessor::ExtractSignal(Int_t sourceFXS)
   AliCDBEntry* entry = GetFromOCDB("Calib", "Signal");
   if (entry) calibSig = (AliCaloCalibSignal*)entry->GetObject();
   if ( calibSig==NULL ) {
-    Log("AliEMCALPreprocsessor: No previous EMCAL signal entry available.\n");
+    Log("AliEMCALPreprocessor: No previous EMCAL signal entry available.\n");
     calibSig = new AliCaloCalibSignal(AliCaloCalibSignal::kEmCal); 
   }
   

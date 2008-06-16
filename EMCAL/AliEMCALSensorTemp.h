@@ -28,7 +28,7 @@ class TTimeStamp;
 //              Class AliEMCALSensorTempSensors
 ////////////////////////////////////////////////////////////////////////
 
-const TString kAmandaString = "PT_%d.Temperature";
+const TString kAmandaString = "PT_%02d.Temperature";
 
 class AliEMCALSensorTemp : public AliDCSSensor {
 
