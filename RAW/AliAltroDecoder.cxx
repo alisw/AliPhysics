@@ -61,7 +61,8 @@ AliAltroDecoder::AliAltroDecoder() : f32DtaPtr(0),
 				     fInComplete(0),
 				     fDecodeIfCorruptedTrailer(kTRUE),
 				     fIsDecoded(kFALSE),
-				     fIsFatalCorruptedTrailer(kTRUE) 
+                                     fIsFatalCorruptedTrailer(kTRUE) 
+//              fRcuFirmwareVersion(2)
 {
  // Default constructor
 }
@@ -149,11 +150,16 @@ Bool_t AliAltroDecoder::Decode()
 // 	  cout << "Size of datablock is  " << fSize   << endl;
 // 	  cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
 // 	  cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
+
+	  printf("\n< ERROR: data integrity check failed, discarding data \n" );
+	  printf( "Size of datablock is  %d\n", fSize);
+	  printf( "fN40AltroWords =  %d\n", fN40AltroWords);
+	  printf( "fN40RcuAltroWords =  %d\n", fN40RcuAltroWords);
 	  return kFALSE;
 	}
-
     }
 }
+
 
 
 Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
@@ -308,13 +314,14 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   // Sets the pointer to the memory block that should be decoded
   // Returns a negative value if an inconsistency in the data is detected
 
+
+
   if(dtaPtr == 0)
     {
       printf("\nAliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size) FATAL ERROR, dtaPtr = ZERO !!!!!!!!!!!!\n");
       printf("\nThis is an user error, please check in your code that you don give a zero pointer to the decoder \n");
       return -99;
     }
-
 
   int iRet = 0;
   Int_t tmpTrailerSize;
@@ -323,7 +330,29 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   fSize = size;
   f8DtaPtr =f8DtaPtr + fSize;
   f32DtaPtr = (UInt_t *)f8DtaPtr;
-  tmpTrailerSize = *(f32DtaPtr - 1);
+  
+  // if(fRcuFirmwareVersion ==1)
+    //   {
+  
+  
+
+  //tmpTrailerSize = *(f32DtaPtr - 1);
+  tmpTrailerSize = (*(f32DtaPtr - 1))&(0x7f);
+  
+  //  printf("\nThe trailersize is %d\n", tmpTrailerSize);
+
+//   for(int i=0; i<tmpTrailerSize+2; i++)
+//     {
+//       printf("trailer %d = %d\n",  i, *(f32DtaPtr - i));
+
+//     }
+
+
+  //   }
+  //  else
+    //   {
+      
+      //   }
 
   if(tmpTrailerSize <=  MAX_TRAILER_WORDS)
     {
@@ -341,14 +370,43 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
 
   if(tmpTrailerSize > 0 && tmpTrailerSize < 5)
     {
+      //if(fRcuFirmwareVersion ==1)
+      //	{
+      //  printf("\nfRcuFirmwareVersion ==1\n");
       f32DtaPtr =  f32DtaPtr -  tmpTrailerSize;
       fN40RcuAltroWords =  *f32DtaPtr;
       f32DtaPtr = (UInt_t *)dtaPtr + fkN32HeaderWords;
+  
+      //    printf("\nthe number of altrowords is %d\n", fN40RcuAltroWords);
+      //   printf("\nthe number of altrowords is %u\n", fN40RcuAltroWords); 
+
       fIsFatalCorruptedTrailer = kFALSE; 
+
+
+     
+	  
+      //	} 
+
+      //      else if(fRcuFirmwareVersion ==2)
+      // 	{
+      // 	  printf("\nfRcuFirmwareVersion ==2\n");	    
+
+      // 	  f32DtaPtr =  f32DtaPtr -  tmpTrailerSize;
+      // 	  fN40RcuAltroWords =  *f32DtaPtr;
+      // 	  f32DtaPtr = (UInt_t *)dtaPtr + fkN32HeaderWords;
+      // 	  fIsFatalCorruptedTrailer = kFALSE; 
+
+      // 	}
+      // }
+  
+      //  else
+      //  {
+      //    printf("ERROR, unknown RCU firmvare version");
+      //  }
     }
   else
     {
-      //     printf("\n AliAltroDecoder::SetMemory, ERROR\n, trailer is corrupted");
+      printf("\n AliAltroDecoder::SetMemory, ERROR\n, trailer is corrupted");
       fIsFatalCorruptedTrailer = kTRUE;
       iRet = -1;
     }
