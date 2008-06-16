@@ -189,7 +189,7 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
       fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
       //fTracker = new AliTRDtrackerHLT(fGeometryFile);
      	AliTRDrecoParam *fPars = AliTRDrecoParam::GetLowFluxParam();
-			fPars->SetSeedingOn(kTRUE);
+			fPars->SetSeeding(kTRUE);
 			fPars->SetStreamLevel(0);
 			AliTRDReconstructor::SetRecoParam(fPars);
       fTracker = new AliTRDtracker(fGeometryFile);

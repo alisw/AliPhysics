@@ -307,7 +307,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
     }
 
   // this is important in case we want to ::PropagateBack - see the TrackerV1.cxx
-  fRecoParam->SetSeedingOn(kTRUE);
+  fRecoParam->SetSeeding(kTRUE);
   // no debug stream -> no debug files! on HLT
   fRecoParam->SetStreamLevel(0);
   
