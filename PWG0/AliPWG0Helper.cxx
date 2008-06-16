@@ -29,6 +29,8 @@
 //____________________________________________________________________
 ClassImp(AliPWG0Helper)
 
+Int_t AliPWG0Helper::fgLastProcessType = -1;
+
 //____________________________________________________________________
 Bool_t AliPWG0Helper::IsEventTriggered(const AliESD* aEsd, Trigger trigger)
 {
@@ -341,6 +343,7 @@ Int_t AliPWG0Helper::GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_
 
 
   Int_t pythiaType = pythiaGenHeader->ProcessType();
+  fgLastProcessType = pythiaType;
   MCProcessType globalType = kInvalidProcess;  
 
 
@@ -377,6 +380,7 @@ Int_t AliPWG0Helper::GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_
   }
 
   Int_t dpmJetType = dpmJetGenHeader->ProcessType();
+  fgLastProcessType = dpmJetType;
   MCProcessType globalType = kInvalidProcess;  
 
 
