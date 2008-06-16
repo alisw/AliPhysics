@@ -266,6 +266,14 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
   //
   // Pedestal running on LDCs at the DAQ
   //
+
+  //
+  // The reference data are stored in:
+  // PadStatus1 for sm-00-01-02-09-10-11
+  // PadStatus2 for sm-03-04-05-12-13-14
+  // PadStatus3 for sm-06-07-08-15-16-17
+  // PadStatus0 if nothing found..means problems
+  //
  
   Bool_t error = kFALSE;
 
@@ -304,7 +312,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 	
 	if(calPed){
 	  
-	  Int_t sm = -1; 
+	  Int_t ldc = 0; 
 
 	  // analyse
 	  //calPed->AnalyseHisto();
@@ -314,7 +322,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 	    AliTRDCalROC *rocMean  = calPed->GetCalRocMean(idet, kFALSE);
 	    if ( rocMean )  {
 	      calPedSum.SetCalRocMean(rocMean,idet);
-	      sm = (Int_t) (idet / 30);
+	      ldc = (Int_t) (idet / 30);
 	    }
 	    AliTRDCalROC *rocRMS = calPed->GetCalRocRMS(idet, kFALSE);
 	    if ( rocRMS )  {
@@ -330,9 +338,13 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 	    }
 	  }// det loop
 
+	  if((ldc==0) || (ldc==1) || (ldc==2) || (ldc==9) || (ldc==10) || (ldc==11)) ldc = 1;
+	  if((ldc==3) || (ldc==4) || (ldc==5) || (ldc==12) || (ldc==13) || (ldc==14)) ldc = 2;
+	  if((ldc==6) || (ldc==7) || (ldc==8) || (ldc==15) || (ldc==16) || (ldc==17)) ldc = 3;
+	
 	  // store as reference data
 	  TString name("PadStatus");
-	  name += sm;
+	  name += ldc;
 	  if(!StoreReferenceData("DAQData",(const char *)name,(TObject *) calPed,&metaData)){
 	    Log(Form("Error storing AliTRDCalibPadStatus object %d as reference data",(Int_t)index));
 	    error = kTRUE;
