@@ -165,12 +165,11 @@ int main(int argc, char **argv) {
     }
 
     /* exit when last event received, no need to wait for TERM signal */
+
+    ic = new TTree("ic","PMD Gain tree");
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
-
-      ic = new TTree("ic","PMD Gain tree");
       calibgain.Analyse(ic);
-      //break;
     }
     
     //write the Run level file   
@@ -188,7 +187,6 @@ int main(int argc, char **argv) {
     TFile * gainRun = new TFile ("PMDGAINS.root","RECREATE"); 
     ic->Write();
     gainRun->Close();
-    
     
     delete ic;
     ic = 0;

@@ -154,10 +154,10 @@ int main(int argc, char **argv) {
 	/* exit when last event received, no need to wait for TERM signal */
 
     }
-    
+
+    ped = new TTree("ped","PMD Pedestal tree");
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
-      ped = new TTree("ped","PMD Pedestal tree");
       calibped.Analyse(ped);
     }
     
@@ -167,5 +167,6 @@ int main(int argc, char **argv) {
 
     delete ped;
     ped = 0;
+
     return status;
 }
