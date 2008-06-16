@@ -8,9 +8,12 @@ AM_CPPFLAGS			= -I$(top_srcdir)/BASE \
 
 EXTRA_DIST			= 
 
-check_PROGRAMS			= testAliHLTEsdManager
+check_PROGRAMS			= testAliHLTEsdManager \
+				  testAliRawReaderFile
 
 testAliHLTEsdManager_SOURCES 	= testAliHLTEsdManager.C
+
+testAliRawReaderFile_SOURCES 	= testAliRawReaderFile.C
 
 
 # linker flags
@@ -24,5 +27,9 @@ LDFLAGS_COMMON			= -L@ROOTLIBDIR@ \
 testAliHLTEsdManager_LDADD 	= $(LDADD_COMMON)
 
 testAliHLTEsdManager_LDFLAGS	= $(LDFLAGS_COMMON)
+
+testAliRawReaderFile_LDADD 	= $(LDADD_COMMON)
+
+testAliRawReaderFile_LDFLAGS	= $(LDFLAGS_COMMON)
 
 TESTS				= $(check_PROGRAMS)
