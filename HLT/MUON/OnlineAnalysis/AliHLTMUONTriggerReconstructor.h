@@ -43,6 +43,7 @@ public:
 	bool Run(
 			const AliHLTUInt8_t* rawData,
 			AliHLTUInt32_t rawDataSize,
+			bool scalarEvent,
 			AliHLTMUONTriggerRecordStruct* trigRecord,
 			AliHLTUInt32_t& nofTrigRec,
 			bool suppressPartialTrigs = false
@@ -56,6 +57,13 @@ public:
 	
 	/// Returns the size of the lookup table.
 	size_t LookupTableSize() const { return fDecoder.GetHandler().LookupTableSize(); }
+	
+	/// Returns true if the decoder is set to enable recovery logic if
+	/// raw data errors are found.
+	bool TryRecover() const { return fDecoder.TryRecover(); };
+	
+	/// Sets if the decoder should enable the error recovery logic.
+	void TryRecover(bool value);
 
 private:
 
@@ -124,6 +132,17 @@ private:
 		 */
 		bool OverflowedOutputBuffer() const { return fOverflowed; }
 		
+		/**
+		 * Returns true if the OnError handler method will only generate warning
+		 * messages and rather than error messages.
+		 */
+		bool WarnOnly() const { return fWarnOnly; }
+		
+		/**
+		 * Sets the flag indicating if the OnError method should only generate
+		 * warnings rather than error messages.
+		 */
+		void WarnOnly(bool value) { fWarnOnly = value; }
 		
 		// Methods inherited from AliMUONTriggerDDLDecoderEventHandler:
 		
@@ -177,6 +196,7 @@ private:
 		AliHLTInt32_t fCurrentLocal;  ///< The current local trigger structure number.
 		bool fSuppressPartialTriggers;  ///< Flag to indicate if we should suppres partial triggers.
 		bool fOverflowed;  ///< Flag to indicate if we overflowed the output buffer.
+		bool fWarnOnly;  ///< Flag indicating if the OnError method should generate warnings rather than error messages.
 	};
 
 	/// Not implemented

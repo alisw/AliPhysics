@@ -167,6 +167,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	const char* cdbPath = NULL;
 	Int_t run = -1;
 	bool useCDB = false;
+	bool tryRecover = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -284,6 +285,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
+		if (strcmp( argv[i], "-tryrecover" ) == 0)
+		{
+			tryRecover = true;
+			continue;
+		}
+		
 		HLTError("Unknown option '%s'.", argv[i] );
 		// Make sure to delete fTrigRec to avoid partial initialisation.
 		delete fTrigRec;
@@ -321,6 +328,8 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		fTrigRec = NULL;
 		return result;
 	}
+	
+	fTrigRec->TryRecover(tryRecover);
 	
 	return 0;
 }
@@ -419,13 +428,16 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			);
 			continue;
 		}
+		AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(blocks[n].fPtr);
 		AliHLTUInt32_t payloadSize = totalDDLSize - sizeof(AliRawDataHeader);
-		AliHLTUInt8_t* buffer =
-			reinterpret_cast<AliHLTUInt8_t*>(blocks[n].fPtr) + sizeof(AliRawDataHeader);
+		AliHLTUInt8_t* buffer = reinterpret_cast<AliHLTUInt8_t*>(header + 1);
 		AliHLTUInt32_t nofTrigRec = block.MaxNumberOfEntries();
-
+		
+		// Decode if this is a scalar event or not.
+		bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
+		
 		bool runOk = fTrigRec->Run(
-				buffer, payloadSize,
+				buffer, payloadSize, scalarEvent,
 				block.GetArray(), nofTrigRec,
 				fSuppressPartialTrigs
 			);

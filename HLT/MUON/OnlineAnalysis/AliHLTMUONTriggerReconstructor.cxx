@@ -67,6 +67,7 @@ AliHLTMUONTriggerReconstructor::~AliHLTMUONTriggerReconstructor()
 bool AliHLTMUONTriggerReconstructor::Run(
 		const AliHLTUInt8_t* rawData,
 		AliHLTUInt32_t rawDataSize,
+		bool scalarEvent,
 		AliHLTMUONTriggerRecordStruct* trigRecord,
 		AliHLTUInt32_t& nofTrigRec,
 		bool suppressPartialTrigs
@@ -79,12 +80,35 @@ bool AliHLTMUONTriggerReconstructor::Run(
 	fDecoder.GetHandler().OutputTrigRecs(trigRecord);
 	fDecoder.GetHandler().SuppressPartialTriggers(suppressPartialTrigs);
 	
-	if (not fDecoder.Decode(rawData, rawDataSize)) return false;
+	if (not fDecoder.Decode(rawData, rawDataSize, scalarEvent))
+	{
+		if (TryRecover())
+		{
+			HLTWarning("There was a problem with the raw data."
+				" Recovered as much data as possible."
+				" Will continue processing next event."
+			);
+		}
+		else
+		{
+			return false;
+		}
+	}
 	
 	// nofTrigRec now becomes the output of how many trigger records were found.
 	nofTrigRec = fDecoder.GetHandler().OutputTrigRecsCount();
 	
 	return not fDecoder.GetHandler().OverflowedOutputBuffer();
+}
+
+
+void AliHLTMUONTriggerReconstructor::TryRecover(bool value)
+{
+	/// Sets if the decoder should enable the error recovery logic.
+	
+	fDecoder.TryRecover(value);
+	fDecoder.ExitOnError(not value);
+	fDecoder.GetHandler().WarnOnly(value);
 }
 
 
@@ -100,7 +124,8 @@ AliHLTMUONTriggerReconstructor::AliDecoderHandler::AliDecoderHandler() :
 	fCurrentRegional(0),
 	fCurrentLocal(0),
 	fSuppressPartialTriggers(false),
-	fOverflowed(false)
+	fOverflowed(false),
+	fWarnOnly(false)
 {
 	/// Default constructor just resets the lookup table to zero.
 	
@@ -288,8 +313,18 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnError(
 	/// Logs an error message if there was a decoding problem with the DDL payload.
 	
 	long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
-	HLTError("There is a problem with decoding the raw data. %s (Error code: %d, at byte %d)",
-		ErrorCodeToMessage(code), code, bytepos
-	);
+	if (fWarnOnly)
+	{
+		HLTWarning("There is a problem with decoding the raw data."
+			" %s (Error code: %d, at byte %d). Trying to recover from corrupt data.",
+			ErrorCodeToMessage(code), code, bytepos
+		);
+	}
+	else
+	{
+		HLTError("There is a problem with decoding the raw data. %s (Error code: %d, at byte %d)",
+			ErrorCodeToMessage(code), code, bytepos
+		);
+	}
 }
 

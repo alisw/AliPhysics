@@ -178,6 +178,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	const char* cdbPath = NULL;
 	Int_t run = -1;
 	bool useCDB = false;
+	bool tryRecover = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -274,6 +275,12 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			fWarnForUnexpecedBlock = true;
 			continue;
 		}
+		
+		if (strcmp( argv[i], "-tryrecover" ) == 0)
+		{
+			tryRecover = true;
+			continue;
+		}
 	
 		HLTError("Unknown option '%s'", argv[i]);
 		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
@@ -309,6 +316,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	}
 	
 	fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+	fHitRec->TryRecover(tryRecover);
 	
 	return 0;
 }

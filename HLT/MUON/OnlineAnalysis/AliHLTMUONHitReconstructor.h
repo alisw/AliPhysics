@@ -66,6 +66,13 @@ public:
 	static AliHLTInt32_t GetkDDLOffSet() { return fgkDDLOffSet; }
 	static AliHLTInt32_t GetkNofDDL() { return fgkNofDDL; }
 	static AliHLTInt32_t GetkDDLHeaderSize() { return fgkDDLHeaderSize; }
+	
+	/// Returns true if the decoder is set to enable recovery logic if
+	/// raw data errors are found.
+	bool TryRecover() const { return fHLTMUONDecoder.TryRecover(); };
+	
+	/// Sets if the decoder should enable the error recovery logic.
+	void TryRecover(bool value);
 
 private:
 
@@ -117,6 +124,18 @@ private:
 		void SetMaxFiredPerDetElem(AliHLTInt32_t* maxFiredPerDetElem) {fMaxFiredPerDetElem = maxFiredPerDetElem;}
 		
 		AliHLTInt32_t GetDataCount() {return fDataCount;}
+		
+		/**
+		 * Returns true if the OnError handler method will only generate warning
+		 * messages and rather than error messages.
+		 */
+		bool WarnOnly() const { return fWarnOnly; }
+		
+		/**
+		 * Sets the flag indicating if the OnError method should only generate
+		 * warnings rather than error messages.
+		 */
+		void WarnOnly(bool value) { fWarnOnly = value; }
 	
 	private:
 		// Do not allow copying of this class.
@@ -140,6 +159,8 @@ private:
 		AliHLTFloat32_t fCharge;            //calibrated pad charge 
 		AliHLTInt32_t fIdManuChannel;       // id manu channel
 		AliHLTInt32_t fLutEntry;            // i-th entry in lookuptable
+		
+		bool fWarnOnly;  ///< Flag indicating if the OnError method should generate warnings rather than error messages.
 	};
 
 	AliMUONTrackerDDLDecoder<AliHLTMUONRawDecoder> fHLTMUONDecoder; // robust HLTMUON Decoder

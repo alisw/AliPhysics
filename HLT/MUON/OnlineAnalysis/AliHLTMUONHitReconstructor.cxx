@@ -131,6 +131,16 @@ void AliHLTMUONHitReconstructor::SetLookUpTable(
 }
 
 
+void AliHLTMUONHitReconstructor::TryRecover(bool value)
+{
+	/// Sets if the decoder should enable the error recovery logic.
+	
+	fHLTMUONDecoder.TryRecover(value);
+	fHLTMUONDecoder.ExitOnError(not value);
+	fHLTMUONDecoder.GetHandler().WarnOnly(value);
+}
+
+
 bool AliHLTMUONHitReconstructor::Run(
 		const AliHLTUInt32_t* rawData,
 		AliHLTUInt32_t rawDataSize,
@@ -181,7 +191,19 @@ bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTU
   handler.SetMaxFiredPerDetElem(fMaxFiredPerDetElem);
  
   if(!fHLTMUONDecoder.Decode(rawData,bufferSize))
-    return false;
+  {
+	if (TryRecover())
+	{
+		HLTWarning("There was a problem with the raw data."
+			" Recovered as much data as possible."
+			" Will continue processing next event."
+		);
+	}
+	else
+	{
+		return false;
+	}
+  }
 
   fDigitPerDDL = handler.GetDataCount();
   fMaxFiredPerDetElem[fNofFiredDetElem-1] = handler.GetDataCount();
@@ -720,7 +742,8 @@ AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::AliHLTMUONRawDecoder() :
 	fPadCharge(0),
 	fCharge(0.0),
 	fIdManuChannel(0x0),
-	fLutEntry(0)
+	fLutEntry(0),
+	fWarnOnly(false)
 {
 	// ctor
 }
