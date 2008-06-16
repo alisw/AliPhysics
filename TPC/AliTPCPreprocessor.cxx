@@ -802,7 +802,6 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
 	}
 	f->GetObject("tpcCalibQA",calQA);
 
-        f->Close();
     }  
 //
 //  Store updated pedestal entry to OCDB
