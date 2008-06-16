@@ -164,7 +164,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     AliAODTrack *aodTrack = 0x0;
     AliAODPid   *detpid   = 0x0;
     Double_t timezero = 0; //TO BE FIXED
- 
+    AliAODv0    *aodV0    = 0x0;
+
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
     if (nTracks>0) {
@@ -434,7 +435,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     
     for (Int_t nV0 = 0; nV0 < nV0s; ++nV0) {
 	
-	if (usedV0[nV0]) continue; // skip if aready added to the AOD
+	if (usedV0[nV0]) continue; // skip if already added to the AOD
 	
 	AliESDv0 *v0 = esd->GetV0(nV0);
 	
@@ -460,7 +461,15 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	
 	Int_t posFromV0 = v0->GetPindex();
 	Int_t negFromV0 = v0->GetNindex();
+
+	Float_t  dcaPosToPrimVertexXYZ[2]   = { 999., 999.}; // ..[0] = in XY plane and ..[1] = in Z
+	Float_t  dcaNegToPrimVertexXYZ[2]   = { 999., 999.}; // ..[0] = in XY plane and ..[1] = in Z
+	Double_t dcaDaughterToPrimVertex[2] = { 999., 999.}; // ..[0] = Pos and ..[1] = Neg
 	
+	Double_t  dcaV0Daughters      = v0->GetDcaV0Daughters();
+	Double_t  dcaV0ToPrimVertex   = v0->GetD();
+
+
 	// Add the positive tracks from the V0
 	
 	if (posFromV0>-1 && !usedTrack[posFromV0]) {
@@ -472,7 +481,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
-	    
+	    esdTrack->GetImpactParameters(dcaPosToPrimVertexXYZ[0],dcaPosToPrimVertexXYZ[1]);
+
 	    vV0->AddDaughter(aodTrack =
 			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 								esdTrack->GetLabel(), 
@@ -510,7 +520,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
-	    
+	    esdTrack->GetImpactParameters(dcaNegToPrimVertexXYZ[0],dcaNegToPrimVertexXYZ[1]);
+
 	    vV0->AddDaughter(aodTrack =
 			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 								esdTrack->GetLabel(),
@@ -536,10 +547,22 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " V0 " << nV0
 //		 << " track " << negFromV0 << " has already been used!" << endl;
 	}
-
+	dcaDaughterToPrimVertex[0] = 
+	    TMath::Sqrt(dcaPosToPrimVertexXYZ[0]*dcaPosToPrimVertexXYZ[0]
+			+dcaPosToPrimVertexXYZ[1]*dcaPosToPrimVertexXYZ[1]);
+	dcaDaughterToPrimVertex[1] = 
+	    TMath::Sqrt(dcaNegToPrimVertexXYZ[0]*dcaNegToPrimVertexXYZ[0]
+			+dcaNegToPrimVertexXYZ[1]*dcaNegToPrimVertexXYZ[1]);
+	
 	// add it to the V0 array as well
-	Double_t d0[2] = { 999., 99.};
-	new(V0s[jV0s++]) AliAODv0(vV0, 999., 99., p_pos, p_neg, d0); // to be refined
+	aodV0 = new(V0s[jV0s++]) 
+	    AliAODv0(vV0, dcaV0Daughters, dcaV0ToPrimVertex, p_pos, p_neg, dcaDaughterToPrimVertex); // to be refined
+	// set the aod v0 on-the-fly status
+	aodV0->SetOnFlyStatus(v0->GetOnFlyStatus());
+	if (fDebug > 0) 
+	    printf("In the v0 loop: onFlyStatus=%d,dcaV0Daughters=%.3f dcaV0ToPrimVertex=%.3f dcaDaughterToPrimVertex=[%.3f,%.3f]\n",
+		   aodV0->GetOnFlyStatus(), aodV0->DcaV0Daughters(), aodV0->DcaV0ToPrimVertex(), 
+		   aodV0->DcaPosToPrimVertex(),aodV0->DcaNegToPrimVertex());
     } 
     V0s.Expand(jV0s);	 
     // end of the loop on V0s
