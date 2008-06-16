@@ -16,22 +16,17 @@
 //            This task is for QAing the V0s from ESD/AOD
 //              Origin: B.H. Nov2007, hippolyt@in2p3.fr
 //-----------------------------------------------------------------
-#include "TChain.h"
-#include "TTree.h"
 #include "TList.h"
 #include "TH1F.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
-#include "AliAODInputHandler.h"
 
 #include "AliESDv0.h"
 
@@ -295,8 +290,8 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	lOnFlyStatus = v0->GetOnFlyStatus();
 	lChi2V0 = v0->GetChi2V0();
 	lDcaV0Daughters = v0->GetDcaV0Daughters();
-	lDcaV0ToPrimVertex = v0->GetD();
-	lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle();
+	lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
+	lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
 
 	// Getting invariant mass infos directly from ESD
 	v0->ChangeMassHypothesis(310);
