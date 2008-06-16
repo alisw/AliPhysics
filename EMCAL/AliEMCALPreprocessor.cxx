@@ -390,7 +390,7 @@ UInt_t AliEMCALPreprocessor::ExtractSignal(Int_t sourceFXS)
   //  Keep original entry from OCDB in case no new signal are available
   //
   AliCaloCalibSignal *calibSig=0;
-  AliCDBEntry* entry = GetFromOCDB("Calib", "Signal");
+  AliCDBEntry* entry = GetFromOCDB("Calib", "LED");
   if (entry) calibSig = (AliCaloCalibSignal*)entry->GetObject();
   if ( calibSig==NULL ) {
     Log("AliEMCALPreprocessor: No previous EMCAL signal entry available.\n");
@@ -445,7 +445,7 @@ UInt_t AliEMCALPreprocessor::ExtractSignal(Int_t sourceFXS)
       metaData.SetResponsible(kMetaResponsible);
       metaData.SetComment(kMetaComment); 
       
-      Bool_t storeOK = Store("Calib", "Signal", calibSig, &metaData, 0, kFALSE);
+      Bool_t storeOK = Store("Calib", "LED", calibSig, &metaData, 0, kFALSE);
       if ( !storeOK ) result++;
     }
   } 
