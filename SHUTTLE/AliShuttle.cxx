@@ -1206,6 +1206,43 @@ void AliShuttle::SendMLRunInfo(const char* status)
 }
 
 //______________________________________________________________________________________________
+Int_t AliShuttle::GetMem(Int_t pid)
+{
+	// invokes ps to get the memory consumption of the process <pid>
+	// returns -1 in case of error
+	
+	TString checkStr;
+	checkStr.Form("ps -o vsize --pid %d | tail -n 1", pid);
+	FILE* pipe = gSystem->OpenPipe(checkStr, "r");
+	if (!pipe)
+	{
+		Log("SHUTTLE", Form("Process - Error: "
+			"Could not open pipe to %s", checkStr.Data()));
+		return -1;
+	}
+		
+	char buffer[100];
+	if (!fgets(buffer, 100, pipe))
+	{
+		Log("SHUTTLE", "Process - Error: ps did not return anything");
+		gSystem->ClosePipe(pipe);
+		return -1;
+	}
+	gSystem->ClosePipe(pipe);
+	
+	//Log("SHUTTLE", Form("ps returned %s", buffer));
+	
+	Int_t mem = 0;
+	if ((sscanf(buffer, "%d\n", &mem) != 1) || !mem)
+	{
+		Log("SHUTTLE", "Process - Error: Could not parse output of ps");
+		return -1;
+	}
+	
+	return mem;
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 {
 	//
@@ -1315,6 +1352,9 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 						GetCurrentRun(), aDetector->GetName()));
 
 		for(Int_t iSys=0;iSys<3;iSys++) fFXSCalled[iSys]=kFALSE;
+		
+		Int_t initialMem = GetMem(getpid());
+		Log("SHUTTLE", Form("Memory consumption before forking is %d", initialMem));
 
 		Log(fCurrentDetector.Data(), "Process - Starting processing");
 
@@ -1357,33 +1397,14 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				{
 					gSystem->Sleep(1000);
 					
-					TString checkStr;
-					checkStr.Form("ps -o vsize --pid %d | tail -n 1", pid);
-					FILE* pipe = gSystem->OpenPipe(checkStr, "r");
-					if (!pipe)
-					{
-						Log("SHUTTLE", Form("Process - Error: "
-							"Could not open pipe to %s", checkStr.Data()));
+					Int_t mem = GetMem(pid);
+
+					if (mem < 0)
 						continue;
-					}
 						
-					char buffer[100];
-					if (!fgets(buffer, 100, pipe))
-					{
-						Log("SHUTTLE", "Process - Error: ps did not return anything");
-						gSystem->ClosePipe(pipe);
-						continue;
-					}
-					gSystem->ClosePipe(pipe);
-					
-					//Log("SHUTTLE", Form("ps returned %s", buffer));
-					
-					Int_t mem = 0;
-					if ((sscanf(buffer, "%d\n", &mem) != 1) || !mem)
-					{
-						Log("SHUTTLE", "Process - Error: Could not parse output of ps");
-						continue;
-					}
+					mem -= initialMem;
+					if (mem < 0)
+						mem = 0;
 					
 					if (expiredTime % 60 == 0)
 					{

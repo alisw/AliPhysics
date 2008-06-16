@@ -124,6 +124,7 @@ private:
 	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
 	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
 	Bool_t SendMail(EMailTarget target, Int_t system = -1);
+	Int_t GetMem(Int_t pid);
 	
 	TString GetLogFileName(const char* detector) const;
 
