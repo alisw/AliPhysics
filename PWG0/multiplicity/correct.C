@@ -1,98 +1,8 @@
 /* $Id$ */
 
 //
-// script to run the AliMultiplicityESDSelector
+// script to correct the multiplicity spectrum + helpers
 //
-
-#include "../CreateESDChain.C"
-
-void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* option = "")
-{
-  if (aProof)
-  {
-    connectProof("lxb6046");
-  }
-
-  TString libraries("libEG;libGeom;libESD;libPWG0base");
-  TString packages("PWG0base");
-
-  if (aMC != kFALSE)
-  {
-    libraries += ";libVMC;libMinuit;libSTEER;libPWG0dep;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6";
-    packages += ";PWG0dep";
-  }
-
-  if (!prepareQuery(libraries, packages, kTRUE))
-    return;
-
-  gROOT->ProcessLine(".L CreateCuts.C");
-  gROOT->ProcessLine(".L drawPlots.C");
-
-  // selection of esd tracks
-  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
-  if (!esdTrackCuts)
-  {
-    printf("ERROR: esdTrackCuts could not be created\n");
-    return;
-  }
-
-  TList inputList;
-  inputList.Add(esdTrackCuts);
-
-  // pt study
-  TString optionStr(option);
-  if (optionStr.Contains("pt-spectrum-func"))
-  {
-    //TF1* func = new TF1("func", "0.7 + x", 0, 0.3);
-    //TF1* func = new TF1("func", "1.3 - x", 0, 0.3);
-    //TF1* func = new TF1("func", "1", 0, 0.3);
-    //new TCanvas; func->Draw();
-    //inputList.Add(func->GetHistogram()->Clone("pt-spectrum"));
-
-    TFile* file = TFile::Open("ptspectrum_fit.root");
-    if (!file)
-    {
-      Printf("Could not open ptspectrum_fit.root");
-      return;
-    }
-
-    TString subStr(optionStr(optionStr.Index("pt-spectrum-func")+17, 3));
-    TString histName(Form("ptspectrum_%s", subStr.Data()));
-    Printf("Pt-Spectrum modification. Using %s.", histName.Data());
-    TH1* hist = (TH1*) file->Get(histName);
-    if (!hist)
-    {
-      Printf("Could not read histogram.");
-      return;
-    }
-
-    new TCanvas; hist->Draw();
-    inputList.Add(hist->Clone("pt-spectrum"));
-  }
-
-  TChain* chain = CreateESDChain(data, nRuns, offset, kFALSE, kFALSE);
-
-  TString selectorName = ((aMC == kFALSE) ? "AliMultiplicityESDSelector" : "AliMultiplicityMCSelector");
-  AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
-
-  selectorName += ".cxx+";
-
-  if (aDebug != kFALSE)
-    selectorName += "g";
-
-  //Int_t result = chain->Process(selectorName, option);
-  Int_t result = executeQuery(chain, &inputList, selectorName, option);
-
-  if (result != 0)
-  {
-    printf("ERROR: Executing process failed with %d.\n", result);
-    return;
-  }
-
-  TFile* file = TFile::Open("last_outputlist.root", "RECREATE");
-  gProof->GetOutputList()->Write();
-  file->Close();
-}
 
 void SetTPC()
 {
@@ -135,7 +45,7 @@ void loadlibs()
   gSystem->Load("libPWG0base");
 }
 
-void fitOther(const char* fileNameMC = "multiplicityMC_3M.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityMC_3M.root", Bool_t chi2 = kTRUE, Int_t histID = 3, Bool_t fullPhaseSpace = kFALSE, Float_t beta  = 1e4)
+void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityESD.root", Bool_t chi2 = kTRUE, Int_t histID = 2, Bool_t fullPhaseSpace = kFALSE, Float_t beta  = 1e4)
 {
   loadlibs();
   
@@ -190,7 +100,7 @@ void fitOther(const char* fileNameMC = "multiplicityMC_3M.root", const char* fol
   //mult->ApplyMinuitFit(histID, kFALSE);
   //mult->DrawComparison("MinuitChi2", histID, kFALSE, kTRUE, hist2->ProjectionY());
 
-  TFile* file = TFile::Open("out.root", "RECREATE");
+  TFile* file = TFile::Open("unfolded.root", "RECREATE");
   mult->SaveHistograms();
   file->Write();
   file->Close();

@@ -672,7 +672,7 @@ void AliMultiplicityTask::Terminate(Option_t *)
     return;
   }
 
-  TFile* file = TFile::Open("multiplicityMC.root", "RECREATE");
+  TFile* file = TFile::Open("multiplicity.root", "RECREATE");
 
   fMultiplicity->SaveHistograms();
   for (Int_t i = 0; i < 4; ++i)
@@ -686,5 +686,5 @@ void AliMultiplicityTask::Terminate(Option_t *)
 
   file->Close();
 
-  Printf("Writting result to multiplicityMC.root");
+  Printf("Writting result to multiplicity.root");
 }
