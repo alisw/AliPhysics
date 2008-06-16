@@ -858,8 +858,8 @@ void AliTPCv3::CreateGeometry()
   //
   // resistor rods assembly
   //
-   TGeoRotation rotr("rotr");
-   rotr.RotateZ(-21.);
+   TGeoRotation *rotr = new TGeoRotation("rotr");
+   rotr->RotateZ(-21.);
   //
   TGeoTube *rri = new TGeoTube(1.8,2.2,126.64);//inner
   TGeoTube *rro = new TGeoTube(1.8,2.2,126.54);//inner
@@ -889,8 +889,8 @@ void AliTPCv3::CreateGeometry()
     z= 126.96;
     //
     if(i==3){
-      v9->AddNode(rrin,1,new TGeoCombiTrans(x,y,z,&rotr)); //A
-      v9->AddNode(rrin,2,new TGeoCombiTrans(x,y,-z,&rotr)); //C 
+      v9->AddNode(rrin,1,new TGeoCombiTrans(x,y,z,rotr)); //A
+      v9->AddNode(rrin,2,new TGeoCombiTrans(x,y,-z,rotr)); //C 
     } 
     else { 
       gGeoManager->Node("TPC_Rod",i+1,"TPC_Drift",x,y,z,0,kTRUE,upar,3);//shaft
@@ -909,8 +909,8 @@ void AliTPCv3::CreateGeometry()
       gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
     }
     else if(i==11){
-      v9->AddNode(rrou,1,new TGeoCombiTrans(x,y,z,&rotr)); //A
-      v9->AddNode(rrou,2,new TGeoCombiTrans(x,y,-z,&rotr)); //C
+      v9->AddNode(rrou,1,new TGeoCombiTrans(x,y,z,rotr)); //A
+      v9->AddNode(rrou,2,new TGeoCombiTrans(x,y,-z,rotr)); //C
     }
     else{
     //
