@@ -1193,6 +1193,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	}
 	//
 	CheckLabels2(milab);
+        if ((neg[j].GetQ()==0)&&(pos[ip].GetQ()==0)) continue; // reject crosses of bad strips!!
 	ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
 	milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
 	Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
