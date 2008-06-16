@@ -1299,7 +1299,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   gMC->Gspos("USD6",1,"USDB", xpos, ypos, zpos,matrix[2],"ONLY");
   xpos       =   0.0;
   ypos       =   fClength[5][2]/2.0;
-  zpos       =   0.0;
+  zpos       =   0.04;
   gMC->Gspos("USDB",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
   gMC->Gspos("USDB",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
   gMC->Gspos("USDB",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
