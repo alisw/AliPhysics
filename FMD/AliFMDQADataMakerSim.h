@@ -33,16 +33,16 @@ class AliFMDQADataMakerSim: public AliQADataMakerSim {
   virtual void   InitHits(); 
   virtual void   InitDigits(); 
   // virtual void   InitRaws() ; 
-  // virtual void   InitSDigits() ; 
+  virtual void   InitSDigits() ; 
   virtual void   MakeHits(TClonesArray* hits) ;
   virtual void   MakeHits(TTree* hitTree) ;
   virtual void   MakeDigits(TClonesArray* digits) ; 
   virtual void   MakeDigits(TTree* digitTree) ; 
   // virtual void   MakeRaws(AliRawReader* rawReader) ; 
-  // virtual void   MakeSDigits(TClonesArray * sigits) ; 
-  // virtual void   MakeSDigits(TTree * sigitTree) ; 
+  virtual void   MakeSDigits(TClonesArray * sigits) ; 
+  virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
-  
+  TClonesArray fSDigitsArray;
   TClonesArray fDigitsArray;
   TClonesArray fHitsArray;
 

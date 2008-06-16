@@ -27,6 +27,7 @@
 #include "AliFMDHit.h"
 #include "AliQAChecker.h"
 #include "AliFMDParameters.h"
+#include "AliFMDSDigit.h"
 
 //_____________________________________________________________________
 // This is the class that collects the QA data for the FMD during simulation.
@@ -47,6 +48,7 @@ ClassImp(AliFMDQADataMakerSim)
 AliFMDQADataMakerSim::AliFMDQADataMakerSim() 
   :  AliQADataMakerSim(AliQA::GetDetName(AliQA::kFMD),
 		       "FMD Quality Assurance Data Maker"),
+     fSDigitsArray("AliFMDSDigit", 1000),
      fDigitsArray("AliFMDDigit", 1000),
      fHitsArray("AliFMDHit", 10)
 {
@@ -57,6 +59,7 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim()
 //_____________________________________________________________________
 AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) 
   : AliQADataMakerSim(),
+    fSDigitsArray(qadm.fSDigitsArray),
     fDigitsArray(qadm.fDigitsArray),
     fHitsArray(qadm.fHitsArray)
 {
@@ -69,6 +72,7 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm)
 //_____________________________________________________________________
 AliFMDQADataMakerSim& AliFMDQADataMakerSim::operator = (const AliFMDQADataMakerSim& qadm ) 
 {
+  fSDigitsArray = qadm.fSDigitsArray;
   fDigitsArray = qadm.fDigitsArray;
   fHitsArray = qadm.fHitsArray;
   
@@ -92,6 +96,14 @@ void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task,
 		  "AliFMDQADataMakerSim.cxx",83);
   AliQAChecker::Instance()->Run(AliQA::kFMD, task, list) ;  
   
+}
+//_____________________________________________________________________
+void AliFMDQADataMakerSim::InitSDigits()
+{
+  // create SDigits histograms in SDigits subdir
+  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
+  hADCCounts->SetXTitle("ADC counts");
+  Add2SDigitsList(hADCCounts, 0);
 }
 
 //____________________________________________________________________ 
@@ -173,6 +185,35 @@ void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
   branch->SetAddress(&digitAddress) ;
   branch->GetEntry(0) ; 
   MakeDigits(digitAddress) ; 
+}
+
+//_____________________________________________________________________
+void AliFMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+{
+  // makes data from Digits
+  if(!sdigits) return;
+  
+  for(Int_t i = 0 ; i < sdigits->GetEntriesFast() ; i++) {
+    //Raw ADC counts
+    AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(sdigits->At(i));
+    GetSDigitsData(0)->Fill(sdigit->Counts());
+  }
+}
+
+//_____________________________________________________________________
+void AliFMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
+{
+  
+  fSDigitsArray.Clear();
+  TBranch * branch = sdigitTree->GetBranch("FMD") ;
+  if (!branch)    {
+    AliWarning("FMD branch in SDigit Tree not found") ; 
+    return;
+  } 
+  TClonesArray* sdigitAddress = &fSDigitsArray;
+  branch->SetAddress(&sdigitAddress) ;
+  branch->GetEntry(0) ; 
+  MakeSDigits(sdigitAddress) ; 
 }
 
 //_____________________________________________________________________ 
