@@ -169,9 +169,8 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	      if (contentsBus[ij] > 0)
 		{
 		  dsp[i] += contentsBus[ij];
-		  dspBus[i]++;
 		}
-	      //ij++;
+	      dspBus[i]++;
 	    }
 	  // Add the patch Bus header to the DSP contents
 	  dsp[i] += 4*dspBus[i];
