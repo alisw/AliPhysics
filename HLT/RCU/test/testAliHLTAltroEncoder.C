@@ -34,6 +34,7 @@
 #include "AliAltroData.h"
 #include "AliAltroBunch.h"
 #include "AliHLTAltroEncoder.h"
+#include "AliHLTSystem.h"
 #include <ostream>
 #endif //__CINT__
 
@@ -275,6 +276,11 @@ void CompareDumpFiles()
 
 int testAliHLTAltroEncoder()
 {
+#ifdef __CINT__
+  gSystem->Load("libAliHLTRCU.so");
+#endif
+  AliHLTSystem gHLT;
+
   int nofChannels=GetRandom(1, maxChannels);
   if (nofChannels==0) nofChannels=1;
   TArrayI simData;

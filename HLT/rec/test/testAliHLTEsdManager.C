@@ -58,7 +58,7 @@ const bool bVerbose=false;
 //
 class AliHLTEsdManager;
 int GetRandom(int min, int max);
-int CreateAndWriteESD(AliHLTEsdManager& manager, int eventno, AliHLTComponentDataType dt, AliESDEvent* pTgt);
+int CreateAndWriteESD(AliHLTEsdManager* manager, int eventno, AliHLTComponentDataType dt, AliESDEvent* pTgt);
 int CheckFields(const char* file, TArrayI* fields);
 int CheckFields(TTree* pTree, TArrayI* fields, const char* file);
 
@@ -78,13 +78,17 @@ int testAliHLTEsdManager()
   int iResult=0;
 #ifdef __CINT__
   if (gSystem->Load("libHLTrec.so")<0) {
-    cerr << "error loading libHLTrec.so library" << endl;
+    cerr << "error: error loading libHLTrec.so library" << endl;
     return -1;
   }
 #endif
 
-  AliHLTEsdManager manager;
-  manager.SetDirectory(gSystem->TempDirectory());
+  AliHLTEsdManager*  pManager=AliHLTEsdManager::New();
+  if (!pManager) {
+    cerr << "error: can not create manager instance" << endl;
+    return -1;
+  }
+  pManager->SetDirectory(gSystem->TempDirectory());
 
   int nofEvents=10;
   AliHLTComponentDataType tpcesd;
@@ -92,9 +96,10 @@ int testAliHLTEsdManager()
   cout << AliHLTComponent::DataType2Text(tpcesd).c_str() << endl;
   for (int event=0; event<nofEvents && iResult>=0; event++) {
     cout << AliHLTComponent::DataType2Text(tpcesd).c_str() << endl;
-    CreateAndWriteESD(manager, event, tpcesd, NULL);
+    CreateAndWriteESD(pManager, event, tpcesd, NULL);
   }
 
+  AliHLTEsdManager::Delete(pManager);
   return iResult;
 }
 
@@ -109,8 +114,12 @@ int main(int /*argc*/, const char** /*argv*/)
   AliHLTSystem gHLT;
   gHLT.SetGlobalLoggingLevel(kHLTLogDefault);
 
-  AliHLTEsdManager manager;
-  manager.SetDirectory(gSystem->TempDirectory());
+  AliHLTEsdManager*  pManager=AliHLTEsdManager::New();
+  if (!pManager) {
+    cerr << "error: can not create manager instance" << endl;
+    return -1;
+  }
+  pManager->SetDirectory(gSystem->TempDirectory());
 
   AliHLTComponentDataType types[] = {
     // first entry is special, ESD is written to the global target ESD
@@ -123,6 +132,7 @@ int main(int /*argc*/, const char** /*argv*/)
   };
 
   TTree* pMasterTree=new TTree("esdTree", "Tree with HLT ESD objects");
+  pMasterTree->SetDirectory(0);
   AliESDEvent* pMasterESD=new AliESDEvent;
   pMasterESD->CreateStdContent();
   pMasterESD->WriteToTree(pMasterTree);
@@ -136,7 +146,7 @@ int main(int /*argc*/, const char** /*argv*/)
       }
       AliESDEvent* pTgt=NULL;
       //if (type==0) pTgt=pMasterESD;
-      int field=CreateAndWriteESD(manager, event, types[type], pTgt);
+      int field=CreateAndWriteESD(pManager, event, types[type], pTgt);
       if (field>=0) {
 	(*randomFields[type])[event]=field;
       } else {
@@ -148,11 +158,11 @@ int main(int /*argc*/, const char** /*argv*/)
   }
 
   if (iResult>=0) {
-    manager.PadESDs(nofEvents);
+    pManager->PadESDs(nofEvents);
   }
 
   for (int type=0; types[type]!=kAliHLTVoidDataType; type++) {
-    TString filename=manager.GetFileNames(types[type]);
+    TString filename=pManager->GetFileNames(types[type]);
     if (iResult>=0) {
       iResult=CheckFields(filename, dynamic_cast<TArrayI*>(randomFields[type]));
     }
@@ -169,6 +179,7 @@ int main(int /*argc*/, const char** /*argv*/)
   }
 
   delete pMasterESD;
+  AliHLTEsdManager::Delete(pManager);
 
   return iResult;
 }
@@ -196,10 +207,14 @@ int GetRandom(int min, int max)
  * @return 0 no ESD created, >0 random number of the magnetic field, 
  *         neg error if failed
  */
-int CreateAndWriteESD(AliHLTEsdManager& manager, int eventno, AliHLTComponentDataType dt, AliESDEvent* pTgt)
+int CreateAndWriteESD(AliHLTEsdManager* pManager, int eventno, AliHLTComponentDataType dt, AliESDEvent* pTgt)
 {
   int iResult=0;
   int magField=0;
+  if (!pManager) {
+    cerr << "error: missing manager instance" << endl;
+    return -1;
+  }
   const char* message="";
   if ((GetRandom(0,10)%3)==0) {
     message=": adding ESD for block ";
@@ -216,7 +231,7 @@ int CreateAndWriteESD(AliHLTEsdManager& manager, int eventno, AliHLTComponentDat
     Int_t iMsgLength=msg.Length();
     if (iMsgLength>0) {
       msg.SetLength(); // sets the length to the first (reserved) word
-      iResult=manager.WriteESD((AliHLTUInt8_t*)msg.Buffer(), iMsgLength, dt, pTgt, eventno);
+      iResult=pManager->WriteESD((AliHLTUInt8_t*)msg.Buffer(), iMsgLength, dt, pTgt, eventno);
     }
     pTree->GetUserInfo()->Clear();
     delete pTree;
@@ -236,7 +251,7 @@ int CreateAndWriteESD(AliHLTEsdManager& manager, int eventno, AliHLTComponentDat
 int CheckFields(const char* file, TArrayI* fields)
 {
   if (!file || !fields) {
-    cerr << "invalid parameters" << endl;
+    cerr << "error: invalid parameters" << endl;
     return 0;
   }
   TFile esdfile(file);
@@ -247,10 +262,10 @@ int CheckFields(const char* file, TArrayI* fields)
       int res=CheckFields(pTree, fields, file);
       if (res<0) return res;
     } else {
-      cerr << "can not find esdTree in file " << file << endl;
+      cerr << "error: can not find esdTree in file " << file << endl;
     }
   } else {
-    cerr << "can not open file " << file << endl;
+    cerr << "error: can not open file " << file << endl;
     return -1;
   }
   cout << "checking: " << file << " ok" << endl;
@@ -264,7 +279,7 @@ int CheckFields(const char* file, TArrayI* fields)
 int CheckFields(TTree* pTree, TArrayI* fields, const char* file)
 {
   if (fields->GetSize()!=pTree->GetEntries()) {
-    cerr << "event number mismatch in file " << file << " : expected " << fields->GetSize() << "  found " << pTree->GetEntries() << endl;
+    cerr << "error: event number mismatch in file " << file << " : expected " << fields->GetSize() << "  found " << pTree->GetEntries() << endl;
     return -1;
   }
   AliESDEvent* pESD=new AliESDEvent;
@@ -272,7 +287,7 @@ int CheckFields(TTree* pTree, TArrayI* fields, const char* file)
   for (int event=0; event<pTree->GetEntries(); event++) {
     pTree->GetEvent(event);
     if (fields->At(event)!=pESD->GetMagneticField()) {
-      cerr << "magnetic field mismatch in file " << file << " event " << event << ": expected " << fields->At(event) << "  found " << pESD->GetMagneticField() << endl;
+      cerr << "error: magnetic field mismatch in file " << file << " event " << event << ": expected " << fields->At(event) << "  found " << pESD->GetMagneticField() << endl;
       return -1;
     }
   }
