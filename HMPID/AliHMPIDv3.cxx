@@ -335,8 +335,8 @@ TGeoVolume * AliHMPIDv3::CreateChamber(Int_t number)
 
 
   TGeoVolume *proxgap1 = gGeoManager->MakeBox("Hproxgap1",ch4,1407*mm/2 , 1366.00*mm/2 ,(9.-7.5)*mm/2.);//methane volume between quartz and fr4
-  TGeoVolume *proxgap2 = gGeoManager->MakeBox("Hproxgap2",ch4,1407*mm/2 , 1366.00*mm/2 ,(81.7-6.2-9.-7.5)*mm/2.);//methane volume between fr4 and Hgap
-
+  TGeoVolume *proxgap2 = gGeoManager->MakeBox("Hproxgap2",ch4,1407*mm/2 , 1366.00*mm/2 ,(81.7-6.2-34.-9.-7.5)*mm/2.);//methane volume between fr4 and Hgap(tot height(81.7) - Hsec (6.2)   - proxygap2 (34) - upper bound of fr4 (9+7.5))
+  
 
 // ^ Y   z=         z=-12mm      z=98.25mm               ALIC->7xHmp (virtual)-->1xHsbo (virtual) --->2xHcov (real) 2072P1
 // |  ____________________________________                                    |                   |-->1xHhon (real) 2072P1
@@ -393,11 +393,10 @@ TGeoVolume * AliHMPIDv3::CreateChamber(Int_t number)
 		fr1->AddNode(fr1perUpBig,1,new TGeoTranslation(0.,-(1385-37-35)*mm/2.,(58.3*mm-20.00*2*mm-10.0*mm)/2.));
 		fr1->AddNode(fr1perUpSma,1,new TGeoTranslation(-(1426-37-35)*mm/2.,0.,(58.3*mm-20.00*2*mm-10.0*mm)/2.));
 		
-	  fr1->AddNode(fr1perDowBig,0,new TGeoTranslation(0.,(1385-37-46)*mm/2.,(-58.3*mm+2.3*mm)/2.));
-		fr1->AddNode(fr1perDowSma,0,new TGeoTranslation((1426-37-46)*mm/2.,0.,(-58.3*mm+2.3*mm)/2.));
-	  fr1->AddNode(fr1perDowBig,1,new TGeoTranslation(0.,-(1385-37-46)*mm/2.,(-58.3*mm+2.3*mm)/2.));
-		fr1->AddNode(fr1perDowSma,1,new TGeoTranslation(-(1426-37-46)*mm/2.,0.,(-58.3*mm+2.3*mm)/2.));
-		
+	  fr1->AddNode(fr1perDowBig,0,new TGeoTranslation(0.,(1385-37)*mm/2.,(-58.3*mm+2.3*mm)/2.));
+		fr1->AddNode(fr1perDowSma,0,new TGeoTranslation((1426-37)*mm/2.,0.,(-58.3*mm+2.3*mm)/2.));
+	  fr1->AddNode(fr1perDowBig,1,new TGeoTranslation(0.,-(1385-37)*mm/2.,(-58.3*mm+2.3*mm)/2.));
+		fr1->AddNode(fr1perDowSma,1,new TGeoTranslation(-(1426-37)*mm/2.,0.,(-58.3*mm+2.3*mm)/2.));		
 			
 	  fr1->AddNode(ppf,4,new TGeoTranslation(-335*mm,433*mm,(-58.3+38.3)*mm/2.));  fr1->AddNode(ppf,5,new TGeoTranslation(335*mm,433*mm,(-58.3+38.3)*mm/2.));	
 	  fr1->AddNode(ppf,2,new TGeoTranslation(-335*mm,0.,(-58.3+38.3)*mm/2.));      fr1->AddNode(ppf,3,new TGeoTranslation(335*mm,0.,(-58.3+38.3)*mm/2.));
@@ -414,10 +413,11 @@ TGeoVolume * AliHMPIDv3::CreateChamber(Int_t number)
 	  TGeoVolume *busext   = gGeoManager->MakeTubs("Hbusext",csi,29*mm,30*mm,40*mm/2.,0.,180); //in Hext
 	  TGeoVolume *ext = new TGeoVolumeAssembly("Hext");
 	  
+	  rect->AddNode(gassipl2,1,new TGeoTranslation(0.,0.,0));
+	  
           for(Int_t hor=0; hor< 10; hor++){
             for(Int_t vert=0; vert < 8; vert++){
              cufoil->AddNode(rect,hor+vert*10,new TGeoTranslation(offsetx+ 48.*mm/2 + hor*interdistx-662.*mm/2,offsety + 19.*mm/2 + vert*interdisty-425.*mm/2.,0.));
-	     cufoil->AddNode(gassipl2,hor+vert*10,new TGeoTranslation(offsetx+ 48.*mm/2 + hor*interdistx-662.*mm/2,offsety + 19.*mm/2 + vert*interdisty-425.*mm/2.,0.));
 	     fr1upcard->AddNode(gassipl3,hor+vert*10,new TGeoTranslation(offsetx+ 48.*mm/2 + hor*interdistx-662.*mm/2,offsety + 19.*mm/2 + vert*interdisty-425.*mm/2.,0.));
 	     ext->AddNode(gassipl4,hor+vert*10,new TGeoTranslation(offsetx+ 48.*mm/2 + hor*interdistx-662.*mm/2,offsety + 19.*mm/2 +
 	     vert*interdisty-425.*mm/2.,0));
@@ -441,7 +441,7 @@ TGeoVolume * AliHMPIDv3::CreateChamber(Int_t number)
 
 	
  hmp->AddNode(proxgap1,0,new TGeoTranslation(0.,0.,(9.-7.5)*mm/2.));//due to the TGeoVolumeAssembly definition the ch4 volume must be inserted around the collecting wires		
- hmp->AddNode(proxgap2,0,new TGeoTranslation(0.,0.,(9+7.5)*mm + (81.7-6.2-9.-7.5)*mm/2.));		
+ hmp->AddNode(proxgap2,0,new TGeoTranslation(0.,0.,(9+7.5 +34)*mm + (81.7-6.2-34.-9.-7.5)*mm/2.));// tot height(81.7) - Hsec - proxygap2 - top edge fr4 at (9+7.5) mm  		
 		
 // ^ Y  single cell                                                5.5mm CH4 = 1*mm CsI + 4.45*mm CsI x cath +0.05*mm safety margin         
 // |      ______________________________           
@@ -492,7 +492,8 @@ TGeoVolume * AliHMPIDv3::CreateChamber(Int_t number)
   ppf->AddNode(smo,7,new TGeoTranslation(+ 65.0*mm,+151.875*mm,  0.*mm)); 
   
 
-hmp->AddNode(fr3,1,new TGeoTranslation(0.,0.,(80.-29.)*mm-34.*mm/2));
+//hmp->AddNode(fr3,1,new TGeoTranslation(0.,0.,(81.7-29.)*mm-34.*mm/2));
+ hmp->AddNode(fr3,1,new TGeoTranslation(0.,0.,(9.+7.5)*mm+34.*mm/2));
          fr3->AddNode( fr3up,1,    new TGeoTranslation(0.,  0.,  7*mm));
 	 fr3->AddNode(fr3down,1,new TGeoTranslation(0.,  0., -10*mm));	
 
@@ -1009,10 +1010,10 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
 
   Double_t params[10]={0.5,10.,24.,-1,5.2,1.5,3.5,8.5,3.8,0.};
   TGeoMedium *med   =gGeoManager->GetMedium("HMPID_Al");  
-  TGeoMedium *air   =gGeoManager->GetMedium("HMPID_Air");  
   TGeoVolume *cradle=new TGeoVolumeAssembly("Hcradle");
   
-  Double_t baselong[7]={6037*mm-2*60*mm, 6037*mm-2*60*mm,60*mm,0.,100*mm,10*mm,10*mm};//2CRE2112P3
+  //Double_t baselong[7]={6037*mm-2*60*mm, 6037*mm-2*60*mm,60*mm,0.,100*mm,10*mm,10*mm};//2CRE2112P3
+  Double_t baselong[7]={6037*mm-2*100*mm, 6037*mm-2*100*mm,60*mm,0.,100*mm,10*mm,10*mm};//2CRE2112P3
   TGeoVolume *lbase = CradleBaseVolume(med,baselong,"cradleLbase");
   lbase->SetLineColor(kGray);
 
@@ -1025,7 +1026,7 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   Double_t height = 30.*mm; //30 = 2*(1488/2-729) (2CRE2112P3)
   Double_t tubeheight = 50.*mm; Double_t heightred = 5.*mm; Double_t zred = 5.*mm;
   Double_t oneshift = tubeheight/TMath::Tan(TMath::DegToRad()*20.)+(1458.-35)*mm/2 - (1607-35)*mm/2;
-  Double_t linclined[7] = {1458.*mm-params[6],1607.*mm-params[6],tubeheight,oneshift, height ,heightred,zred}; //3.5 is for not correct measurements in 2CRE2112P3<=> 597!=inclined*sin(20) 
+  Double_t linclined[7] = {1458.*mm-params[6]-0.5,1607.*mm-params[6]-0.5,tubeheight,oneshift, height ,heightred,zred}; //3.5 is for not correct measurements in 2CRE2112P3<=> 597!=inclined*sin(20) 
   TGeoVolume *inclin = CradleBaseVolume(med,linclined,"inclinedbar");
   inclin->SetLineColor(kGray);
   Double_t lhorizontal[7] = {1641.36*mm+params[7],1659.*mm+params[7],tubeheight,0, height ,heightred,zred};
@@ -1033,18 +1034,18 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   horiz->SetLineColor(kGray);
   
   //inner bars, they are named as the numbering in 2CRE2112P3
-  Double_t fourshift = tubeheight/TMath::Tan(TMath::DegToRad()*55.);
-  Double_t lfour[7] = {594*mm,594*mm,tubeheight,fourshift,height,heightred,zred};  
+  Double_t fourshift = tubeheight/TMath::Tan(TMath::DegToRad()*55.);  
+  Double_t lfour[7] = {592*mm,592*mm,tubeheight,fourshift,height,heightred,zred};  
   TGeoVolume *four = CradleBaseVolume(med,lfour,"bar4");
   four->SetLineColor(kGray);
 
   Double_t fiveshift = tubeheight/TMath::Tan(TMath::DegToRad()*75);
-  Double_t lfive[7] = {503.7*mm,503.7*mm,tubeheight,fiveshift,height,heightred,zred};  
+  Double_t lfive[7] = {500.*mm,500.*mm,tubeheight,fiveshift,height,heightred,zred};  
   TGeoVolume *five = CradleBaseVolume(med,lfive,"bar5");
   five->SetLineColor(kGray);
   
-  Double_t sixshift = tubeheight/TMath::Tan(TMath::DegToRad()*55)+459*mm/2-480*mm/2;
-  Double_t lsix[7] = {459*mm,480*mm,tubeheight,sixshift,height,heightred,zred};  
+  Double_t sixshift = tubeheight/TMath::Tan(TMath::DegToRad()*55)+459*mm/2-480*mm/2;  
+  Double_t lsix[7] = {456*mm,477*mm,tubeheight,sixshift,height,heightred,zred};  
   TGeoVolume *six = CradleBaseVolume(med,lsix,"bar6");
   six->SetLineColor(kGray);
   
@@ -1059,7 +1060,7 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   eight->SetLineColor(kGray);
 
   Double_t nineshift = -tubeheight/TMath::Tan(TMath::DegToRad()*71)+83.*mm/2-66.*mm/2;
-  Double_t lnine[7] = {66.*mm,83.*mm,tubeheight,nineshift,height,heightred,zred};  
+  Double_t lnine[7] = {59.5*mm,76.5*mm,tubeheight,nineshift,height,heightred,zred};  
   TGeoVolume *nine = CradleBaseVolume(med,lnine,"bar9");
   nine->SetLineColor(kGray);
 
@@ -1069,32 +1070,35 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   ten->SetLineColor(kGray);
   
   Double_t elevenshift = (-tubeheight/TMath::Tan(TMath::DegToRad()*70) -338.*mm/2+315.*mm/2);
-  Double_t leleven[7] = {315.*mm,338.*mm,tubeheight,elevenshift,height,heightred,zred};  
+  Double_t leleven[7] = {308.*mm,331.*mm,tubeheight,elevenshift,height,heightred,zred};  
   TGeoVolume *eleven = CradleBaseVolume(med,leleven,"bar11");
   eleven->SetLineColor(kGray);
     
   Double_t twelveshift = (-tubeheight/TMath::Tan(TMath::DegToRad()*60) -538.*mm/2+508.*mm/2);
-  Double_t ltwelve[7] = {508.*mm,538.*mm,tubeheight,twelveshift,height,heightred,zred};  
+  Double_t ltwelve[7] = {507.*mm,537.*mm,tubeheight,twelveshift,height,heightred,zred};  
   TGeoVolume *twelve = CradleBaseVolume(med,ltwelve,"bar12");
   twelve->SetLineColor(kGray);
 
-  Double_t thirteenshift = tubeheight/TMath::Tan(TMath::DegToRad()*43);
-  Double_t lthirteen[7] = {712.5*mm,712.5*mm,tubeheight,thirteenshift,height,heightred,zred};  
+  Double_t thirteenshift = tubeheight/TMath::Tan(TMath::DegToRad()*43); 
+  Double_t lthirteen[7] = {708.*mm,708.*mm,tubeheight,thirteenshift,height,heightred,zred};  
   TGeoVolume *thirteen = CradleBaseVolume(med,lthirteen,"bar13");
   thirteen->SetLineColor(kGray); 
   
   
   //vertical rectangles
-   TGeoVolume *vbox=gGeoManager->MakeBox ("Hvbox",air , 1488*mm/2 , 487.*mm/2 , 50.*mm/2);
+   TGeoVolume *vbox= new TGeoVolumeAssembly("Hvbox");
    vbox->SetLineColor(kViolet);
    Double_t width = 50.*mm;
+   
+   TGeoVolume *vboxlast= new TGeoVolumeAssembly("Hvboxlast");//vertical structure on the short base
+   vboxlast->SetLineColor(kViolet);
   
   Double_t barheight = 100.*mm; 
   Double_t lAfourteen[7] = {1488.*mm,1488.*mm,barheight,0,width,heightred,zred};  
   TGeoVolume *afourteen = CradleBaseVolume(med,lAfourteen,"bar14top");
   afourteen->SetLineColor(kGray); 
  
-  Double_t lBfourteen[7] = {382.*mm,382.*mm,barheight,0,width,heightred,zred};  
+  Double_t lBfourteen[7] = {387*mm,387.*mm,barheight,0,width,heightred,zred};  
   TGeoVolume *bfourteen = CradleBaseVolume(med,lBfourteen,"bar14vert");
   bfourteen->SetLineColor(kGray);
    
@@ -1102,10 +1106,15 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   TGeoVolume *cfourteen = CradleBaseVolume(med,lCfourteen,"bar14bot");
   cfourteen->SetLineColor(kGray);
 
-  Double_t oblshift = 50.*mm/ TMath::Tan(TMath::DegToRad()*35);
-  Double_t lDfourteen[7] = {610.*mm,610.*mm,50.*mm,oblshift,width,heightred,zred};  
+  Double_t oblshift = 50.*mm/ TMath::Tan(TMath::DegToRad()*35); 
+  Double_t lDfourteen[7] = {603.*mm,603.*mm,50.*mm,oblshift,width,heightred,zred}; 
   TGeoVolume *dfourteen = CradleBaseVolume(med,lDfourteen,"bar14incl");
   dfourteen->SetLineColor(kGray);
+  
+  
+  Double_t lDfourteenlast[7] = {667.*mm,667.*mm,50.*mm,oblshift,width,heightred,zred};  
+  TGeoVolume *dfourteenlast = CradleBaseVolume(med,lDfourteenlast,"bar14incllast");
+  dfourteenlast->SetLineColor(kGray);
   
   vbox->AddNode(afourteen,1,new TGeoTranslation(0.,487.*mm/2 -100.*mm/2,0.));
   TGeoRotation *vinrot = new TGeoRotation("vertbar"); vinrot->RotateZ(90);
@@ -1113,16 +1122,22 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   vbox->AddNode(bfourteen,2,new TGeoCombiTrans(-1488*mm/2+100.*mm/2,-100.*mm/2,0.,vinrot)); 
   TGeoRotation *rotboxbar = new TGeoRotation("rotboxbar"); rotboxbar->RotateZ(-35);
   TGeoRotation *arotboxbar = new TGeoRotation("arotboxbar"); arotboxbar->RotateZ(-35); arotboxbar->RotateY(180);
-   vbox->AddNode(dfourteen,1,new TGeoCombiTrans(-1488*mm/4,-1,0.,rotboxbar)); 
-   vbox->AddNode(dfourteen,2,new TGeoCombiTrans(+1488*mm/4,-1,0.,arotboxbar));
+  vbox->AddNode(dfourteen,1,new TGeoCombiTrans(-1488*mm/4,-1,0.4,rotboxbar)); 
+  vbox->AddNode(dfourteen,2,new TGeoCombiTrans(+1488*mm/4,-1,0.4,arotboxbar));
+ //vertical box on the short base of the cradle  
+  vboxlast->AddNode(afourteen,1,new TGeoTranslation(0.,487.*mm/2 -100.*mm/2,0.));
+  vboxlast->AddNode(bfourteen,1,new TGeoCombiTrans(1488*mm/2-100.*mm/2,-100.*mm/2,0.,vinrot));
+  vboxlast->AddNode(bfourteen,2,new TGeoCombiTrans(-1488*mm/2+100.*mm/2,-100.*mm/2,0.,vinrot)); 
+  vboxlast->AddNode(dfourteenlast,1,new TGeoCombiTrans(-1488*mm/4+1.7,-3.,0.,rotboxbar)); 
+  vboxlast->AddNode(dfourteenlast,2,new TGeoCombiTrans(+1488*mm/4-1.7,-3.,0.,arotboxbar));
    
 
   //POSITIONING IN THE VIRTUAL VOLUME "cradle" 
   
   //long base
   TGeoRotation *rotl=new TGeoRotation("Clongbase"); rotl->RotateX(90);  
-  cradle->AddNode(lbase,1,new TGeoCombiTrans (   0*mm,   (1488-100)*mm/2, -(597-60)*mm/2,rotl)); 
-  cradle->AddNode(lbase,2,new TGeoCombiTrans (   0*mm,   -(1488-100)*mm/2, -(597-60)*mm/2,rotl)); 
+  cradle->AddNode(lbase,0,new TGeoCombiTrans (   0*mm,   (1488-100)*mm/2, -(597-60)*mm/2,rotl)); 
+  cradle->AddNode(lbase,1,new TGeoCombiTrans (   0*mm,   -(1488-100)*mm/2, -(597-60)*mm/2,rotl)); 
   //short base
   TGeoRotation *rots=new TGeoRotation("Cshortbase"); rots->RotateX(90); rots->RotateZ(90);
   cradle->AddNode(sbase,1,new TGeoCombiTrans ((6037-100)*mm/2, 0.,-(597-60)*mm/2,rots));
@@ -1136,13 +1151,13 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   Double_t dx =(1607-35)*mm*TMath::Cos(TMath::DegToRad()*20)/2-tubeheight/2*TMath::Sin(TMath::DegToRad()*20)+params[5];
   
   
-  cradle->AddNode(inclin,1,new TGeoCombiTrans(origintrapstructure + (2288+60)*mm -dx,729*mm,params[0],rot1));
+  cradle->AddNode(inclin,1,new TGeoCombiTrans(origintrapstructure + (2288+60)*mm -dx,729*mm,params[0]+0.4,rot1));//+0.7 added
   cradle->AddNode(horiz,1,new TGeoCombiTrans( origintrapstructure,729*mm, 597*mm/2 - tubeheight/2,rot2));//correctly positioned
   TGeoRotation *rot1mirror=new TGeoRotation("inclmirrot"); rot1mirror->RotateX(90); rot1mirror->RotateY(200); rot1mirror->RotateZ(180);
-  cradle->AddNode(inclin,2,new TGeoCombiTrans(origintrapstructure - 2345*mm + dx,729*mm,params[0],rot1mirror));
-  cradle->AddNode(inclin,3,new TGeoCombiTrans(origintrapstructure + (2288+60)*mm -dx,-729*mm,params[0],rot1));
+  cradle->AddNode(inclin,2,new TGeoCombiTrans(origintrapstructure - 2345*mm + dx,729*mm,params[0]+0.4,rot1mirror));//+0.7 added
+  cradle->AddNode(inclin,3,new TGeoCombiTrans(origintrapstructure + (2288+60)*mm -dx,-729*mm,params[0]+0.4,rot1));//0.7 added
   cradle->AddNode(horiz,2,new TGeoCombiTrans( origintrapstructure,-729*mm, 597*mm/2 - tubeheight/2,rot2));//correctly positioned
-  cradle->AddNode(inclin,4,new TGeoCombiTrans(origintrapstructure - 2345*mm + dx,-729*mm,params[0],rot1mirror));
+  cradle->AddNode(inclin,4,new TGeoCombiTrans(origintrapstructure - 2345*mm + dx,-729*mm,params[0]+0.4,rot1mirror));//0.7 added
   
   //inner pieces on one side
   TGeoRotation *rot4=new TGeoRotation("4rot"); rot4->RotateX(-90); rot4->RotateY(-55); rot4->RotateZ(180);
@@ -1175,18 +1190,17 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   TGeoRotation *rot9a=new TGeoRotation("9arot"); rot9a->RotateX(-90); rot9a->RotateY(-90); rot9a->RotateZ(180);
   cradle->AddNode(nine,1,new TGeoCombiTrans(origintrapstructure+1960*mm+2.5+3.,-729.*mm,-20.,rot9));
   cradle->AddNode(nine,2,new TGeoCombiTrans(origintrapstructure-1960*mm-2.5-3.,-729.*mm,-20.,rot9a));
- 
  //inner pieces on the other side  
   TGeoRotation *rot10=new TGeoRotation("10rot"); rot10->RotateX(-90); rot10->RotateY(-120);
   TGeoRotation *rot10a=new TGeoRotation("10arot"); rot10a->RotateX(-90); rot10a->RotateY(-120); rot10a->RotateZ(180);
 
- cradle->AddNode(ten,1,new TGeoCombiTrans(origintrapstructure+1738*mm+tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))-2,+729.*mm,-13.,rot10));
- cradle->AddNode(ten,2,new TGeoCombiTrans(origintrapstructure-1738*mm-tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))+2,+729.*mm,-13.,rot10a));
+  cradle->AddNode(ten,1,new TGeoCombiTrans(origintrapstructure+1738*mm+tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))-2,+729.*mm,-13.,rot10));
+  cradle->AddNode(ten,2,new TGeoCombiTrans(origintrapstructure-1738*mm-tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))+2,+729.*mm,-13.,rot10a));
  
   TGeoRotation *rot11=new TGeoRotation("11rot"); rot11->RotateX(-90); rot11->RotateY(50);
   TGeoRotation *rot11a=new TGeoRotation("11arot"); rot11a->RotateX(-90); rot11a->RotateY(50); rot11a->RotateZ(180);
-  cradle->AddNode(eleven,1,new TGeoCombiTrans(origintrapstructure-1738*mm-tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))+352.*mm,+729.*mm,-12.5,rot11));
-  cradle->AddNode(eleven,2,new TGeoCombiTrans(origintrapstructure+1738*mm+tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))-352.*mm,+729.*mm,-12.5,rot11a));
+  cradle->AddNode(eleven,1,new TGeoCombiTrans(origintrapstructure-1738*mm-tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))+352.*mm,+729.*mm,-12.7,rot11));
+  cradle->AddNode(eleven,2,new TGeoCombiTrans(origintrapstructure+1738*mm+tubeheight/(2*TMath::Sin(TMath::DegToRad()*60))-352.*mm,+729.*mm,-12.7,rot11a));
  
   TGeoRotation *rot12=new TGeoRotation("12rot"); rot12->RotateX(-90); rot12->RotateY(-120);
   TGeoRotation *rot12a=new TGeoRotation("12arot"); rot12a->RotateX(-90); rot12a->RotateY(-120); rot12a->RotateZ(180);
@@ -1201,8 +1215,7 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
 
 //vertical structures
   TGeoRotation *vrot = new TGeoRotation("vertbox"); vrot->RotateX(90); vrot->RotateZ(90);
-  cradle->AddNode(vbox,1,new TGeoCombiTrans(-6037*mm/2+50.*mm/2,0.,0.5,vrot));
-  cradle->AddNode(cfourteen,1,new TGeoCombiTrans(-6037*mm/2+50.*mm/2,0.,-477.*mm/2 -20.*mm/2,vrot));
+  cradle->AddNode(vboxlast,1,new TGeoCombiTrans(-6037*mm/2+50.*mm/2,0.,0.5,vrot));//vertial box on the short cradle base
   
   cradle->AddNode(vbox,2,new TGeoCombiTrans(-6037*mm/2+50.*mm/2+990.*mm,0.,0.5,vrot));
   cradle->AddNode(cfourteen,2,new TGeoCombiTrans(-6037*mm/2+50.*mm/2+990.*mm,0.,-477.*mm/2 -20.*mm/2,vrot));
