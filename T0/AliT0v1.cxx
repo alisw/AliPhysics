@@ -129,7 +129,7 @@ void AliT0v1::CreateGeometry()
 		       6.8 , 5.1, 10.};  //-62.9+0.00+69.7
   
   Float_t pstart[3]={4., 12.5,6.8};
-  Float_t pinstart[3]={0.,1.51,6.5};
+  Float_t pinstart[3]={0.,1.5005,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
   Float_t ptop[3]={0.,1.,1.0};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
@@ -138,12 +138,12 @@ void AliT0v1::CreateGeometry()
   Float_t pglass[3]={1.2,1.3,2.};
   Float_t pcer[3]={0.9,1.1,1.35};
   Float_t psteel[3]={0.9,1.1,0.15};
-  Float_t psupport1[3] = {4.51,4.52,4.0};//C kozhuh vnutri
+  Float_t psupport1[3] = {4.5,4.505,4.0};//C kozhuh vnutri
   Float_t psupport2[3] = {9.4,9.5,4.0};// snaruzhi  C
   Float_t psupport3[3] = {4.51,9.5,0.05};//kryshki  C
-  Float_t psupport5[3] = {1.44,1.49,6.5}; // stakanchik dlai feu  C
+  Float_t psupport5[3] = {1.5,1.51,6.5}; // stakanchik dlai feu  C
   Float_t psupport6[3] = {0,1.4,0.04}; //kryshechka stakanchika  Al
-  Float_t psupport7[3] = {1.5,1.51,0.4}; //kolechko snaruzhu stakanchika Al
+  Float_t psupport7[3] = {1.5004,1.51,0.4}; //kolechko snaruzhu stakanchika Al
    
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
     AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
@@ -286,7 +286,7 @@ void AliT0v1::CreateGeometry()
 
     //T0C 
 // first ring: 12 units of Scintillator+PMT+divider
-  Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetC);
+  Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.6 / zdetC);
   Float_t phi[3];
    for (is=0; is<12; is++)
       {  
@@ -303,13 +303,14 @@ void AliT0v1::CreateGeometry()
 	AliMatrix (idrotm[902 + is], 90.,         phi[0],
 		   90. + theta, phi[1],
 		   theta,       phi[2]);  
-	z=-pstart[2]+pinstart[2]+0.2;
+	z=-pstart[2]+pinstart[2]+0.3;
 	gMC->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
   }	
      
    x=0;
    y=0;
-    z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
+   //   z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
+   z=-pinstart[2]+ppmt[2]; //+psupport6[2];
    gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
    // PMT
    
@@ -342,15 +343,15 @@ void AliT0v1::CreateGeometry()
    gMC->Gspos("0STE",1,"0PMT",0,0,z,0,"ONLY");
     
    //Support absorber (C) side
-   z=-pstart[2]+psupport1[2]+0.1;
+   z=-pstart[2]+psupport1[2]- 0.05; //0.1;
    gMC->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
    gMC->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
-   z=-pstart[2]+psupport3[2]; //+0.01;
+   z=-pstart[2]+psupport3[2] - 0.1;
    gMC->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
    z=-pstart[2]+2.*psupport1[2]-0.05;//+0.1;
    gMC->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
    gMC->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
-   z=-pinstart[2]+psupport6[2];
+   z=-pinstart[2]+psupport6[2]-0.1;
    gMC->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
    
    z=pinstart[2]-psupport7[2];
@@ -405,7 +406,7 @@ void AliT0v1::CreateGeometry()
     par[1]=7.5;
     par[2]=0.01;
     gMC->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
-    gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"ONLY"); 
+    gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"MANY"); 
  
    
 
