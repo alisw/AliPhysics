@@ -24,7 +24,7 @@ ClassImp(AliAnalysisTaskProtons)
 
 //________________________________________________________________________
 AliAnalysisTaskProtons::AliAnalysisTaskProtons() 
-: AliAnalysisTask(name, ""), fESD(0), fAOD(0), fAnalysisType("ESD"), 
+: AliAnalysisTask(), fESD(0), fAOD(0), fAnalysisType("ESD"), 
   fList(0), fAnalysis(0), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
