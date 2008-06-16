@@ -38,6 +38,7 @@ class AliPWG0Helper : public TObject
     static Int_t GetEventProcessType(AliHeader* aHeader, Bool_t adebug = kFALSE);
     static Int_t GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
     static Int_t GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
+    static Int_t GetLastProcessType() { return fgLastProcessType; }
 
     static TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
     static Int_t FindPrimaryMotherLabel(AliStack* stack, Int_t label);
@@ -54,6 +55,8 @@ class AliPWG0Helper : public TObject
     static void PrintConf(AnalysisMode analysisMode, Trigger trigger);
 
   protected:
+    static Int_t fgLastProcessType;    // stores the raw value of the last process type extracnted
+ 
     ClassDef(AliPWG0Helper, 0)
 
   private:

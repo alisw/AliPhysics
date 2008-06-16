@@ -59,7 +59,11 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
     return;
   }
 
+  Int_t nBinsN = 22;
   Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 300.5};
+  //Int_t nBinsN = 52;
+  //Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5, 20.5, 21.5, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, 28.5, 29.5, 30.5, 31.5, 32.5, 33.5, 34.5, 35.5, 36.5, 37.5, 38.5, 39.5, 40.5, 41.5, 42.5, 43.5, 44.5, 45.5, 46.5, 47.5, 48.5, 49.5, 50.5, 100.5, 300.5};
+
   //Float_t binLimitsVtx[] = {-20,-15,-10,-6,-3,0,3,6,10,15,20};
   //Float_t binLimitsVtx[] = {-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
   Float_t binLimitsVtx[] = {-30,-25,-20,-15,-10,-8,-6,-4,-2,0,2,4,6,8,10,15,20,25,30};
@@ -75,7 +79,7 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
 
   TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 30, binLimitsEta , nBinsPt, binLimitsPt);
 
-  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 18, binLimitsVtx, 22, binLimitsN);
+  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 18, binLimitsVtx, nBinsN, binLimitsN);
   fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
 
   delete dummyBinning;
