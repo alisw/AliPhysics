@@ -29,84 +29,76 @@ import sys
 import os
 import commands
 import time
-libs_names = []
-used_symbols = []
-unfound_symbols = []
+definedSymbols = {}
+libraries = {}
+foundLibs = []
+notFound = []
 sys.argv = sys.argv[1: ]
-check = len(sys.argv) - 1
-def libsfind(libname):
-    if libname == "sh": #Could be helpful to catch some unwanted behaviour (This line is subject to change)
-       sys.exit()
-    libs_names.append(libname)
-    command = """nm -C """ + libname  +  """ | grep " U " | grep :: | grep -v for | grep -v operator """
-    list = []
-    for line in os.popen(command).readlines():
-        string = line.strip()
-        string = (string.lstrip('U ')).strip()
-        k = string.find('::')
-        string = string[ : k+2]
-        if not string in list:
-           list.append(string)
-           
-    whi = 0 # Iterator for the while loop
-    for i in range(len(list)):
-        if list[i] == "n":
-           print "Using n"
-        if not list[i] in used_symbols:
-           print "Looking for undefined symbol " + list[i] + " found library " + libname
-           used_symbols.append(list[i])
-           found = 0 #Indicates where the symbol is found or not
-           round = 1 #keep track of how many directories we have searched
-           while whi < check: #Used basically for changing directories
-                 directory = sys.argv[whi]
-                 os.chdir(directory)
-                 files=os.listdir(".")
-                 files=[filename for filename in files if filename[0] != '.']
-                 for f in files:
-                     com1 = "nm -AC " + f
-                     char = "T " + list[i]
-                     char = '"' + char + '"'
-                     com2 = """ | grep -F """ +  char
-                     command = com1 + com2
-                     for line in os.popen(command).readlines():
-                         string = line.strip()
-                         if string[ : 2] != "nm": #Incase nm command returned error
-                            k = string.find(':')
-                            string = string[ : k] #Take only the library file name
-                            if string in libs_names:
-                               found = 1
-                               print "Found in " + string
-                               break
-                            found = 1
-                            print "Found in " + string
-                            libsfind(string)
-                            break
-                     if found == 1:
-                        break
-                 if found == 1:
-                    break
-                 elif round < len(sys.argv):
-                      round = round + 1
-                 else:
-                     unfound_symbols.append(list[i])
-                     whi = 0
-                     print "We can't find it"
-                     break
-                 whi = whi + 1
-                 if whi == check:
-                    whi = 0
-                 
-os.chdir(sys.argv[0])
+def NM(libname):
+        undefinedSymbols = []
+        if libname.endswith('.so') == True:
+                command = """nm -C """ + libname + """ | awk '/ U /{print ;}/ T /{print ; }' """
+                for line in os.popen(command).readlines():
+                        if '::' in line and not 'for' in line and not 'operator' in line and not 'std::' in line and not 'gnu_cxx::' in line and not 'non-virtual' in line: #To avoid looking for what we cannot find
+                                line = line.strip()
+                                if line.startswith('U'):
+                                        line.strip()
+                                        line = (line.lstrip('U')).strip()
+                                        U = line.find('::')
+                                        line = line[:U] #Take only the class name in the symbol 
+                                        if line not in undefinedSymbols:
+                                                undefinedSymbols.append(line)
+                                elif 'T ' in line:
+                                        line.strip()
+                                        k = line.find('T')
+                                        line = (line[k+1 : ]).strip()
+                                        T = line.find('::')
+                                        line = line[:T] #Take only the class name in the symbol
+                                        if definedSymbols.has_key(line) == False:
+                                                definedSymbols[line] = libname
+        libraries[libname] = undefinedSymbols
+
+def findLibs(libname,directory):
+        Usymbols = libraries[libname]
+        foundLibs.append(libname)
+        i = 0
+        while i < len(Usymbols):
+                found = 0
+                symbol = Usymbols[i]	
+		files=os.listdir(".")
+                files=[filename for filename in files if filename[0] != '.']
+                for f in files:
+                        if f.endswith('.so'):
+                                if libraries.has_key(f) == False:
+                                        NM(f)
+                                if definedSymbols.has_key(symbol) and definedSymbols[symbol] in foundLibs:
+                                        found = 1
+                                        break
+                                elif definedSymbols.has_key(symbol) and definedSymbols[symbol] not in foundLibs:
+                                        print definedSymbols[symbol] #Print found library name
+                                        found = 1
+                                        findLibs(definedSymbols[symbol], directory)
+                                        break
+                else:
+                        if directory < len(sys.argv) - 1:
+                                os.chdir(sys.argv[directory])
+                                directory = directory + 1	
+				continue # Avoid incrementing the index we are searching
+                        else:
+				notFound.append("'"+symbol+"'" + " in " + libname)                                
+                i = i + 1
+
 starttime = time.time()
-libsfind(sys.argv[-1])
+os.chdir(sys.argv[0])
+print "Libraries " + sys.argv[-1] + " depends on; Printed in the order which they are called"
+NM(sys.argv[-1])
+findLibs(sys.argv[-1],1)
 stoptime = time.time()
 elapsed = stoptime - starttime
+print "Running findLibDeps.py took %.3f seconds" % (elapsed)
 
-print "Found libraries in the order which they are called"
-for li in libs_names:
-    print li
-if len(unfound_symbols) > 0:
-   print "Symbols not found are "
-   for kk in unfound_symbols:
-        print kk
-print "Running findlibs took %.3f " % (elapsed)
+if len(notFound) > 0:
+        print "Symbols not found"
+        for sim in notFound:
+                print sim
+
