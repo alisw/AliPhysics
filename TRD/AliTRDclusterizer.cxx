@@ -77,8 +77,22 @@ AliTRDclusterizer::AliTRDclusterizer()
   // AliTRDclusterizer default constructor
   //
 
+  AliTRDcalibDB *trd = 0x0;
+  if (!(trd = AliTRDcalibDB::Instance())) {
+    AliFatal("Could not get calibration object");
+  }
+
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
 
+  // retrive reco params
+  AliTRDrecoParam *rec = 0x0;
+  if (!(rec = AliTRDReconstructor::RecoParam())){
+    if(!(rec = trd->GetRecoParam(0))){
+      AliInfo("Using default RecoParams =  LowFluxParam.");
+      rec = AliTRDrecoParam::GetLowFluxParam();    
+    }
+    AliTRDReconstructor::SetRecoParam(rec);
+  }
 }
 
 //_____________________________________________________________________________
@@ -100,12 +114,26 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title)
   // AliTRDclusterizer constructor
   //
 
+  AliTRDcalibDB *trd = 0x0;
+  if (!(trd = AliTRDcalibDB::Instance())) {
+    AliFatal("Could not get calibration object");
+  }
+
+  // retrive reco params
+  AliTRDrecoParam *rec = 0x0;
+  if (!(rec = AliTRDReconstructor::RecoParam())){
+    if(!(rec = trd->GetRecoParam(0))){
+      AliInfo("Using default RecoParams =  LowFluxParam.");
+      rec = AliTRDrecoParam::GetLowFluxParam();    
+    }
+    AliTRDReconstructor::SetRecoParam(rec);
+  }
+
   fDigitsManager->CreateArrays();
 
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
 
   FillLUT();
-
 }
 
 //_____________________________________________________________________________
@@ -862,7 +890,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
         // The position of the cluster in COL direction relative to the center pad (pad units)
         Double_t clusterPosCol = 0.0;
-        if (AliTRDReconstructor::RecoParam()->LUTOn()) {
+        if (AliTRDReconstructor::RecoParam()->IsLUT()) {
           // Calculate the position of the cluster by using the
           // lookup table method
           clusterPosCol = LUTposition(ilayer,clusterSignal[0]
@@ -1172,7 +1200,7 @@ void AliTRDclusterizer::TailCancelation(AliTRDdataArrayDigits *digitsIn
 	{
 	  // Apply the tail cancelation via the digital filter
 	  // (only for non-coorupted pads)
-	  if (AliTRDReconstructor::RecoParam()->TCOn()) 
+	  if (AliTRDReconstructor::RecoParam()->IsTailCancelation()) 
 	    {
 	      DeConvExp(inADC,outADC,nTimeTotal,AliTRDReconstructor::RecoParam()->GetTCnexp());
 	    }

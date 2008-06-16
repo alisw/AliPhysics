@@ -418,7 +418,7 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 	Int_t    nSeed   = event->GetNumberOfTracks();
 	if(!nSeed){
 		// run stand alone tracking
-		if (AliTRDReconstructor::RecoParam()->SeedingOn()) Clusters2Tracks(event);
+		if (AliTRDReconstructor::RecoParam()->IsSeeding()) Clusters2Tracks(event);
 		return 0;
 	}
 	

@@ -24,11 +24,12 @@ public:
   };
   
   AliTRDrecoParam();
+  AliTRDrecoParam(const AliTRDrecoParam &rec);
   ~AliTRDrecoParam() { }
 
+  Int_t    GetADCbaseline() const           { return fADCbaseline;     };
   Double_t GetChi2Y() const                 { return fkChi2Y;    }
   Double_t GetChi2Z() const                 { return fkChi2Z;    }
-  Bool_t   GetClusterSharing() const        { return fkClusterSharing;}
   Double_t GetFindableClusters() const      { return fkFindable; }
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
@@ -43,49 +44,54 @@ public:
   Double_t GetRoad2z() const                { return fkRoad2z;   }
   Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
   Int_t    GetStreamLevel() const           { return fkStreamLevel;           }
-  inline void GetSysCovMatrix(Double_t *sys);
-
-  Bool_t   IsVertexConstrained() const      { return fVertexConstrained; }
-  
+  inline void GetSysCovMatrix(Double_t *sys);  
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
   Double_t GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;  };
   Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
   Double_t GetClusSigThresh() const         { return fClusSigThresh;   };
   Int_t    GetTCnexp() const                { return fTCnexp;          };
-  Bool_t   LUTOn() const                    { return fLUTOn;           };
-  Bool_t   TCOn() const                     { return fTCOn;            };
 
-  Int_t    GetADCbaseline() const           { return fADCbaseline;     };
         
   static   AliTRDrecoParam *GetLowFluxParam();
   static   AliTRDrecoParam *GetHighFluxParam();
   static   AliTRDrecoParam *GetCosmicTestParam();
 
-  void     SetClusterSharing(Bool_t share = kTRUE)            { fkClusterSharing = share;  };
+  Bool_t   IsClusterSharing() const         { return TestBit(kClusterSharing);}
+  Bool_t   IsLUT() const                    { return TestBit(kLUT);}
+  Bool_t   IsSeeding() const                { return TestBit(kSeeding); }
+  Bool_t   IsTailCancelation() const        { return TestBit(kTC);}
+  Bool_t   IsVertexConstrained() const      { return TestBit(kVertexConstrained); }
+
+
+  void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);  };
   void     SetPIDMethod(AliTRDpidMethod pid)                  { fkPIDMethod = pid; };
-  void     SetSeedingOn(Bool_t seedingOn = kTRUE)             { fSeedingOn = seedingOn; }
-  void     SetVertexConstrained(Bool_t vertexConstrained = kTRUE) { fVertexConstrained = vertexConstrained; }
+  void     SetSeeding(Bool_t so = kTRUE)             { SetBit(kSeeding, so); }
+  void     SetVertexConstrained(Bool_t vc = kTRUE) { SetBit(kVertexConstrained, vc); }
   void     SetStreamLevel(Int_t streamLevel= 1)               { fkStreamLevel = streamLevel; }
-  void     SetLUT(Int_t lutOn = 1)                            { fLUTOn           = lutOn;  };
+  void     SetLUT(Bool_t lut = kTRUE)                            { SetBit(kLUT, lut);};
   void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; };
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
-  void     SetTailCancelation(Int_t tcOn = 1)                 { fTCOn            = tcOn;   };
+  void     SetTailCancelation(Bool_t tc = kTRUE)                 { SetBit(kTC, tc);  };
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
   void     SetADCbaseline(Int_t base)                         { fADCbaseline     = base;   };
-  Bool_t   SeedingOn() const                { return fSeedingOn; }
   inline void SetSysCovMatrix(Double_t *sys);
 
 private:
   enum{
-    kNNslices = 8,
-    kLQslices = 3
+    kNNslices = 8
+   ,kLQslices = 3
   };
   
+  enum{
+    kClusterSharing    = 1 // Toggle cluster sharing
+   ,kSeeding           = 2 // Do stand alone tracking in the TRD
+   ,kVertexConstrained = 3 // Perform vertex constrained fit
+   ,kLUT               = 4 // 
+   ,kTC                = 5 // tail cancelation
+  };
 
-  // Tracking parameters
-  Bool_t    fkClusterSharing;        // Toggle cluster sharing
   AliTRDpidMethod fkPIDMethod;       // PID method selector 0(LQ) 1(NN)
   Double_t  fkMaxTheta;              // Maximum theta
   Double_t  fkMaxPhi;                // Maximum phi
@@ -106,17 +112,13 @@ private:
   Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
   Int_t     fkStreamLevel;					 // Streaming Level in TRD Reconstruction
   
-  Bool_t    fSeedingOn;	             // Do stand alone tracking in the TRD
-  Bool_t    fVertexConstrained;      // Perform vertex constrained fit
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet
 
-        // Clusterization parameter
+  // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
   Double_t  fMinLeftRightCutSigma;   // Threshold sigma noise sum pad
   Double_t  fClusMaxThresh;          // Threshold value for cluster maximum
   Double_t  fClusSigThresh;          // Threshold value for cluster signal
-  Int_t     fLUTOn;                  // Switch for the lookup table method  
-  Int_t     fTCOn;                   // Switch for the tail cancelation
   Int_t     fTCnexp;                 // Number of exponentials, digital filter
   
   // ADC parameter

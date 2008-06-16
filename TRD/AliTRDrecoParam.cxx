@@ -33,7 +33,6 @@ ClassImp(AliTRDrecoParam)
 //______________________________________________________________
 AliTRDrecoParam::AliTRDrecoParam()
   :AliDetectorRecoParam()
-  ,fkClusterSharing(0)
   ,fkPIDMethod(kLQPID) // LQ PID
   ,fkMaxTheta(1.0)
   ,fkMaxPhi(2.0)
@@ -49,25 +48,64 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkChi2Y(.25)
   ,fkTrackLikelihood(-15.)
   ,fkStreamLevel(0)
-  ,fSeedingOn(kFALSE)
-  ,fVertexConstrained(kTRUE)
   ,fMinMaxCutSigma(4.)
   ,fMinLeftRightCutSigma(8.)
   ,fClusMaxThresh(4.5)
   ,fClusSigThresh(3.5)
-  ,fLUTOn(kTRUE)
-  ,fTCOn(kTRUE)
   ,fTCnexp(1)
   ,fADCbaseline(0)
 {
   //
   // Default constructor
   //
+  SetClusterSharing(kFALSE);
+  SetSeeding(kFALSE);
+  SetVertexConstrained();
+  SetLUT();
+  SetTailCancelation();
+
   fSysCovMatrix[0] = 1.; // y direction (1 cm)
   fSysCovMatrix[1] = 1.; // z direction (1 cm)
   fSysCovMatrix[2] = 0.; // snp
   fSysCovMatrix[3] = 0.; // tgl
   fSysCovMatrix[4] = 0.; // 1/pt
+}
+
+//______________________________________________________________
+AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
+  :AliDetectorRecoParam(ref)
+  ,fkPIDMethod(ref.fkPIDMethod)
+  ,fkMaxTheta(ref.fkMaxTheta)
+  ,fkMaxPhi(ref.fkMaxPhi)
+  ,fkRoad0y(ref.fkRoad0y)
+  ,fkRoad0z(ref.fkRoad0z) 
+  ,fkRoad1y(ref.fkRoad1y)
+  ,fkRoad1z(ref.fkRoad1z)	
+  ,fkRoad2y(ref.fkRoad2y)
+  ,fkRoad2z(ref.fkRoad2z)
+  ,fkPlaneQualityThreshold(ref.fkPlaneQualityThreshold)
+  ,fkFindable(ref.fkFindable)
+  ,fkChi2Z(ref.fkChi2Z)
+  ,fkChi2Y(ref.fkChi2Y)
+  ,fkTrackLikelihood(ref.fkTrackLikelihood)
+  ,fkStreamLevel(ref.fkStreamLevel)
+  ,fMinMaxCutSigma(ref.fMinMaxCutSigma)
+  ,fMinLeftRightCutSigma(ref.fMinLeftRightCutSigma)
+  ,fClusMaxThresh(ref.fClusMaxThresh)
+  ,fClusSigThresh(ref.fClusSigThresh)
+  ,fTCnexp(ref.fTCnexp)
+  ,fADCbaseline(ref.fADCbaseline)
+{
+  //
+  // Copy constructor
+  //
+  SetClusterSharing(ref.IsClusterSharing());
+  SetSeeding(ref.IsSeeding());
+  SetVertexConstrained(ref.IsVertexConstrained());
+  SetLUT(ref.IsLUT());
+  SetTailCancelation(ref.IsTailCancelation());
+
+  memcpy(fSysCovMatrix, ref.fSysCovMatrix, 5*sizeof(Double_t));
 }
 
 //______________________________________________________________
@@ -102,8 +140,8 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
   par->SetADCbaseline(10);
-  par->SetSeedingOn(kTRUE);
-  par->SetVertexConstrained(kTRUE);
+  par->SetSeeding();
+  par->SetVertexConstrained();
   return par;
 
 }

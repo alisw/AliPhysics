@@ -91,20 +91,27 @@ AliTRDtrackerV1::AliTRDtrackerV1()
   //
   // Default constructor.
   // 
-  if (!AliTRDcalibDB::Instance()) {
+  AliTRDcalibDB *trd = 0x0;
+  if (!(trd = AliTRDcalibDB::Instance())) {
     AliFatal("Could not get calibration object");
   }
-  if(!fgNTimeBins) fgNTimeBins = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+
+  if(!fgNTimeBins) fgNTimeBins = trd->GetNumberOfTimeBins();
 
   for (Int_t isector = 0; isector < AliTRDgeometry::kNsector; isector++) new(&fTrSec[isector]) AliTRDtrackingSector(fGeom, isector);
 
-  if (!AliTRDReconstructor::RecoParam()){
-  	AliWarning("RecoParams not set in AliTRDReconstructor. Setting to default LowFluxParam.");
-    AliTRDReconstructor::SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+  // retrive reco params
+  AliTRDrecoParam *rec = 0x0;
+  if (!(rec = AliTRDReconstructor::RecoParam())){
+    if(!(rec = trd->GetRecoParam(0))){
+      AliInfo("Using default RecoParams =  LowFluxParam.");
+      rec = AliTRDrecoParam::GetLowFluxParam();    
+    }
+    AliTRDReconstructor::SetRecoParam(rec);
   }
   
 
-  if(AliTRDReconstructor::RecoParam()->GetStreamLevel() > 1){
+  if(rec->GetStreamLevel() > 1){
     TDirectory *savedir = gDirectory; 
     fgDebugStreamer    = new TTreeSRedirector("TRD.TrackerDebug.root");
     savedir->cd();
@@ -258,7 +265,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   Int_t    nSeed   = event->GetNumberOfTracks();
   if(!nSeed){
     // run stand alone tracking
-    if (AliTRDReconstructor::RecoParam()->SeedingOn()) Clusters2Tracks(event);
+    if (AliTRDReconstructor::RecoParam()->IsSeeding()) Clusters2Tracks(event);
     return 0;
   }
   

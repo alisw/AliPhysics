@@ -73,6 +73,7 @@ class AliTRDcalibDB : public TObject {
 
   Char_t                              GetPadStatus(Int_t det, Int_t col, Int_t row);
   AliTRDCalSingleChamberStatus       *GetPadStatusROC(Int_t det);
+  AliTRDrecoParam*                    GetRecoParam(Int_t *eventtype);
 
   Char_t                              GetChamberStatus(Int_t det);
 
@@ -95,7 +96,7 @@ class AliTRDcalibDB : public TObject {
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
-  enum { kCDBCacheSize = 18 };   // Number of cached objects
+  enum { kCDBCacheSize = 19 };   // Number of cached objects
   enum { kIDVdriftPad = 0
        , kIDVdriftChamber
        , kIDT0Pad
@@ -111,6 +112,7 @@ class AliTRDcalibDB : public TObject {
        , kIDSuperModulePos
        , kIDPIDNN
        , kIDPIDLQ
+       , kIDRecoParam
        , kIDMonitoringData
        , kIDChamberStatus
        , kIDPadStatus };         // IDs of cached objects
@@ -145,7 +147,7 @@ class AliTRDcalibDB : public TObject {
   AliTRDcalibDB &operator=(const AliTRDcalibDB &c); 
   virtual ~AliTRDcalibDB();
 
-  ClassDef(AliTRDcalibDB,3)                         //  Provides central access to the CDB
+  ClassDef(AliTRDcalibDB, 4)                         //  Provides central access to the CDB
 
 };
 
