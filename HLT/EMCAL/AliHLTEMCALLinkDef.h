@@ -8,5 +8,6 @@
 #pragma link C++ class AliHLTEMCALTrackerComponent;
 #pragma link C++ class AliHLTEMCALDefinitions;
 #pragma link C++ class AliHLTEMCALCalibrationComponent;
+#pragma link C++ class AliHLTEMCALUtils;
 #endif
 

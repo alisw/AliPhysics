@@ -7,7 +7,8 @@ CLASS_HDRS:= \
         AliHLTEMCALClusterizerComponent.h \
         AliHLTEMCALDefinitions.h \
         AliHLTEMCALTrackerComponent.h \
-	AliHLTEMCALCalibrationComponent.h
+	AliHLTEMCALCalibrationComponent.h \
+	AliHLTEMCALUtils.h
 
 # library sources
 MODULE_SRCS= \
