@@ -63,7 +63,7 @@ public:
     return *this ; 
   }
   
-  void   SetRecParam(AliEMCALRecParam * recParam){ fgkRecParam = recParam;}
+  static void   SetRecParam(AliEMCALRecParam * recParam){ fgkRecParam = recParam;}
 
   void   ReadDigitsArrayFromTree(TTree *digitsTree) const;
 
