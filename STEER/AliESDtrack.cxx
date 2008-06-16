@@ -84,6 +84,8 @@ AliESDtrack::AliESDtrack() :
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
   fTrackLength(0),
+  fdTPC(0),fzTPC(0),
+  fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
   fD(0),fZ(0),
   fCdd(0),fCdz(0),fCzz(0),
   fCchi2(0),
@@ -168,6 +170,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fHMPIDtrkPhi(track.fHMPIDtrkPhi),
   fHMPIDsignal(track.fHMPIDsignal),
   fTrackLength(track.fTrackLength),
+  fdTPC(track.fdTPC),fzTPC(track.fzTPC),
+  fCddTPC(track.fCddTPC),fCdzTPC(track.fCdzTPC),fCzzTPC(track.fCzzTPC),
   fD(track.fD),fZ(track.fZ),
   fCdd(track.fCdd),fCdz(track.fCdz),fCzz(track.fCzz),
   fCchi2(track.fCchi2),
@@ -263,6 +267,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
   fTrackLength(0),
+  fdTPC(0),fzTPC(0),
+  fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
   fD(0),fZ(0),
   fCdd(0),fCdz(0),fCzz(0),
   fCchi2(0),
@@ -532,6 +538,11 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
 
   
   fTrackLength   = source. fTrackLength;
+  fdTPC  = source.fdTPC; 
+  fzTPC  = source.fzTPC; 
+  fCddTPC = source.fCddTPC;
+  fCdzTPC = source.fCdzTPC;
+  fCzzTPC = source.fCzzTPC;
   fD  = source.fD; 
   fZ  = source.fZ; 
   fCdd = source.fCdd;
@@ -635,8 +646,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   // fFlags: Reconstruction status flags 
   // fLabel: Track label
   // fID:  Unique ID of the track
-  // fD: Impact parameter in XY-plane
-  // fZ: Impact parameter in Z 
+  // Impact parameter information
   // fR[AliPID::kSPECIES]: combined "detector response probability"
   // Running track parameters in the base class (AliExternalTrackParam)
   
@@ -1372,6 +1382,33 @@ void AliESDtrack::SetESDpid(const Double_t *p) {
 void AliESDtrack::GetESDpid(Double_t *p) const {
   // Gets probability of each particle type for the ESD track
   for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fR[i];
+}
+
+//_______________________________________________________________________
+Bool_t AliESDtrack::RelateToVertexTPC
+(const AliESDVertex *vtx, Double_t b, Double_t maxd) {
+  //
+  // Try to relate the TPC-only track paramters to the vertex "vtx", 
+  // if the (rough) transverse impact parameter is not bigger then "maxd". 
+  //            Magnetic field is "b" (kG).
+  //
+  // a) The TPC-only paramters are extapolated to the DCA to the vertex.
+  // b) The impact parameters and their covariance matrix are calculated.
+  //
+
+  if (!fTPCInner) return kFALSE;
+  if (!vtx) return kFALSE;
+
+  Double_t dz[2],cov[3];
+  if (!fTPCInner->PropagateToDCA(vtx, b, maxd, dz, cov)) return kFALSE;
+
+  fdTPC = dz[0];
+  fzTPC = dz[1];  
+  fCddTPC = cov[0];
+  fCdzTPC = cov[1];
+  fCzzTPC = cov[2];
+  
+  return kTRUE;
 }
 
 //_______________________________________________________________________

@@ -280,6 +280,11 @@ public:
   const AliTrackPointArray *GetTrackPointArray() const {
     return fFriendTrack->GetTrackPointArray(); 
   }
+  Bool_t RelateToVertexTPC(const AliESDVertex *vtx, Double_t b, Double_t maxd);
+  void GetImpactParametersTPC(Float_t &xy,Float_t &z) const {xy=fdTPC; z=fzTPC;}
+  void GetImpactParametersTPC(Float_t p[2], Float_t cov[3]) const {
+    p[0]=fdTPC; p[1]=fzTPC; cov[0]=fCddTPC; cov[1]=fCdzTPC; cov[2]=fCzzTPC;
+  }
   Bool_t RelateToVertex(const AliESDVertex *vtx, Double_t b, Double_t maxd);
   void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
@@ -336,6 +341,9 @@ protected:
 
   Double32_t   fTrackTime[AliPID::kSPECIES]; // TOFs estimated by the tracking
   Double32_t   fTrackLength;   // Track length
+  Double32_t   fdTPC;          // TPC-only impact parameter in XY plane
+  Double32_t   fzTPC;          // TPC-only impact parameter in Z
+  Double32_t   fCddTPC,fCdzTPC,fCzzTPC; // Covariance matrix of the TPC-only impact parameters 
   Double32_t   fD;             // Impact parameter in XY plane
   Double32_t   fZ;             // Impact parameter in Z
   Double32_t   fCdd,fCdz,fCzz; // Covariance matrix of the impact parameters 
@@ -388,7 +396,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & );
 
-  ClassDef(AliESDtrack,44)  //ESDtrack 
+  ClassDef(AliESDtrack,45)  //ESDtrack 
 };
 
 #endif 
