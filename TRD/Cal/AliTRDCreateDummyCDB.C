@@ -158,6 +158,28 @@ AliTRDCalMonitoring *CreateMonitoringObject()
 }
 
 //_____________________________________________________________________________
+TClonesArray* CreateRecoParamObject()
+{
+  TClonesArray *recos = new TClonesArray("AliTRDrecoParam", 3);
+  recos->SetOwner(kTRUE);
+
+  AliTRDrecoParam *rec = 0x0;
+  AliTRDrecoParam *reco = new((*recos)[0]) AliTRDrecoParam(*(rec = AliTRDrecoParam::GetLowFluxParam()));
+  delete rec;
+  // further settings for low flux reco param
+  // reco->SetThisAndThat()
+
+  reco = new((*recos)[1]) AliTRDrecoParam(*(rec = AliTRDrecoParam::GetHighFluxParam()));
+  delete rec;
+
+  reco = new((*recos)[2]) AliTRDrecoParam(*(rec = AliTRDrecoParam::GetCosmicTestParam()));
+  delete rec;
+
+  return recos;
+
+}
+
+//_____________________________________________________________________________
 AliCDBMetaData *CreateMetaObject(const char *objectClassName)
 {
 
@@ -181,6 +203,7 @@ void StoreObject(const char *cdbPath, TObject *object, AliCDBMetaData *metaData)
 
 }
     
+
 //_____________________________________________________________________________
 void AliTRDCreateDummyCDB()
 {
@@ -200,7 +223,20 @@ void AliTRDCreateDummyCDB()
 
   TObject        *obj      = 0;
   AliCDBMetaData *metaData = 0;
-  
+
+  //
+  // Reco Param Object
+  //
+
+  metaData= new AliCDBMetaData(); 
+  metaData->SetObjectClassName("TClonesArray");
+  metaData->SetResponsible("Alexandru Bercuci");
+  metaData->SetBeamPeriod(1);
+  metaData->SetAliRootVersion("05-19-04"); //root version
+  metaData->SetComment("Ideal reconstruction parameters for low, high and cosmic runs");
+  StoreObject("TRD/Calib/RecoParam",CreateRecoParamObject(),metaData);
+  return;
+
   //
   // Pad objects
   //
