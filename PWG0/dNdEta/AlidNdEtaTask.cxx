@@ -60,6 +60,8 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fdNdEtaAnalysisTracks(0),
   fVertex(0),
   fPartPt(0),
+  fPhi(0),
+  fEtaPhi(0),
   fDeltaPhi(0)
 {
   //
@@ -168,6 +170,15 @@ void AlidNdEtaTask::CreateOutputObjects()
   fVertexResolution = new TH1F("dndeta_vertex_resolution_z", "dndeta_vertex_resolution_z", 1000, 0, 10);
   fOutput->Add(fVertexResolution);
 
+  fPhi = new TH1F("fPhi", "fPhi;#phi in rad.;count", 720, 0, 2 * TMath::Pi());
+  fOutput->Add(fPhi);
+
+  fEtaPhi = new TH2F("fEtaPhi", "fEtaPhi;#eta;#phi in rad.;count", 80, -4, 4, 80, 0, 2 * TMath::Pi());
+  fOutput->Add(fEtaPhi);
+
+  if (fAnalysisMode == AliPWG0Helper::kSPD)
+    fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 1000, -3.14, 3.14);
+
   if (fReadMC)
   {
     fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta", fAnalysisMode);
@@ -192,9 +203,6 @@ void AlidNdEtaTask::CreateOutputObjects()
     fPartPt->Sumw2();
     fOutput->Add(fPartPt);
   }
-
-  if (fAnalysisMode == AliPWG0Helper::kSPD)
-    fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 1000, -3.14, 3.14);
 }
 
 void AlidNdEtaTask::Exec(Option_t*)
@@ -319,6 +327,12 @@ void AlidNdEtaTask::Exec(Option_t*)
       if (TMath::Abs(deltaPhi) > 1)
         printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
 
+      Float_t phi = mult->GetPhi(i);
+      if (phi < 0)
+        phi += TMath::Pi() * 2;
+      fPhi->Fill(phi);
+      fEtaPhi->Fill(mult->GetEta(i), phi);
+
       fDeltaPhi->Fill(deltaPhi);
 
       etaArr[inputCount] = mult->GetEta(i);
@@ -354,6 +368,12 @@ void AlidNdEtaTask::Exec(Option_t*)
         AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
         continue;
       }
+
+      Float_t phi = esdTrack->Phi();
+      if (phi < 0)
+        phi += TMath::Pi() * 2;
+      fPhi->Fill(phi);
+      fEtaPhi->Fill(esdTrack->Eta(), phi);
 
       etaArr[inputCount] = esdTrack->Eta();
       labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
@@ -473,7 +493,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       Float_t pt = particle->Pt();
 
        // make a rough eta cut (so that nAcceptedParticles is not too far off the true measured value (NB: this histograms are only gathered for comparison))
-      if (TMath::Abs(eta) < 1.5 && pt > 0.3)
+      if (TMath::Abs(eta) < 1.5) // && pt > 0.3)
         nAcceptedParticles++;
 
       fdNdEtaAnalysis->FillTrack(vtxMC[2], eta, pt);
@@ -494,7 +514,7 @@ void AlidNdEtaTask::Exec(Option_t*)
     }
 
     fdNdEtaAnalysis->FillEvent(vtxMC[2], nAcceptedParticles);
-    if (processType != AliPWG0Helper::kSD )
+    if (processType != AliPWG0Helper::kSD)
       fdNdEtaAnalysisNSD->FillEvent(vtxMC[2], nAcceptedParticles);
 
     if (eventTriggered)
@@ -552,10 +572,14 @@ void AlidNdEtaTask::Terminate(Option_t *)
   fdNdEtaAnalysisESD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("fdNdEtaAnalysisESD"));
   fMult = dynamic_cast<TH1F*> (fOutput->FindObject("fMult"));
   fMultVtx = dynamic_cast<TH1F*> (fOutput->FindObject("fMultVtx"));
-  fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
-  fVertexResolution = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
   for (Int_t i=0; i<3; ++i)
     fPartEta[i] = dynamic_cast<TH1F*> (fOutput->FindObject(Form("dndeta_check_%d", i)));
+  fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
+  fVertexResolution = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
+
+  fPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fPhi"));
+  fEtaPhi = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaPhi"));
+  fDeltaPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaPhi"));
 
   if (!fdNdEtaAnalysisESD)
   {
@@ -629,6 +653,12 @@ void AlidNdEtaTask::Terminate(Option_t *)
   if (fDeltaPhi)
     fDeltaPhi->Write();
 
+  if (fPhi)
+    fPhi->Write();
+
+  if (fEtaPhi)
+    fEtaPhi->Write();
+
   fout->Write();
   fout->Close();
 
@@ -642,6 +672,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
     fdNdEtaAnalysisTracks = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTracks"));
     fPartPt = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_pt"));
+    fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
 
     if (!fdNdEtaAnalysis || !fdNdEtaAnalysisTr || !fdNdEtaAnalysisTrVtx || !fPartPt)
     {
@@ -666,7 +697,12 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fdNdEtaAnalysisTr->SaveHistograms();
     fdNdEtaAnalysisTrVtx->SaveHistograms();
     fdNdEtaAnalysisTracks->SaveHistograms();
-    fPartPt->Write();
+
+    if (fPartPt)
+      fPartPt->Write();
+
+    if (fVertex)
+      fVertex->Write();
 
     fout->Write();
     fout->Close();
