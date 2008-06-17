@@ -45,11 +45,23 @@ if [  $AGENTINPUTTYPE -eq 0 ]; then
     echo XRD COPY $2 ;
     xrdcp -np $2 data.root
 fi;
+
+
 echo GETTING DATA - STOP
 date
 echo LS DATA
 ls -al
  
+if [ -f data.root ]; then
+   ls -al data.root
+   echo "File found"
+else
+   echo "File not Found"
+   exit
+fi
+
+
+
 CISIZE=`ls -l data.root | gawk '{print $5}'`
 if [ $CISIZE -lt 100000 ]; then 
     exit
