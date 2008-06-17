@@ -218,7 +218,7 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 #endif
 	
 	// Check if this is a scalar event.
-	bool scalerEvent = GetReader()->GetDataHeader()->GetL1TriggerMessage() == 0x1;
+	bool scalerEvent = (GetReader()->GetDataHeader()->GetL1TriggerMessage() & 0x1) == 0x1;
 	
 	bool result = false;
 	try
