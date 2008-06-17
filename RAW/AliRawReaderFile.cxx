@@ -32,7 +32,9 @@
 
 #include <cstdlib>
 #include "AliRawReaderFile.h"
+#include "AliDAQ.h"
 #include <TSystem.h>
+#include <TArrayC.h>
 
 
 ClassImp(AliRawReaderFile)
@@ -46,7 +48,9 @@ AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
   fEquipmentId(-1),
   fBuffer(NULL),
   fBufferSize(0),
-  fEquipmentSize(0)
+  fEquipmentSize(0),
+  fDDLIndex(NULL),
+  fDDLCurrent(-1)
 {
 // create an object to read digits from the given event
 // in the current directory
@@ -64,7 +68,9 @@ AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
   fEquipmentId(-1),
   fBuffer(NULL),
   fBufferSize(0),
-  fEquipmentSize(0)
+  fEquipmentSize(0),
+  fDDLIndex(NULL),
+  fDDLCurrent(-1)
 {
 // create an object to read digits from the given directory
 
@@ -88,6 +94,7 @@ AliRawReaderFile::~AliRawReaderFile()
   }
   if (fHeader) delete fHeader;
   if (fBuffer) delete[] fBuffer;
+  if (fDDLIndex) delete fDDLIndex; fDDLIndex=NULL;
 }
 
 void AliRawReaderFile::RequireHeader(Bool_t required)
@@ -131,10 +138,43 @@ void* AliRawReaderFile::OpenDirectory()
   return directory;
 }
 
+Bool_t AliRawReaderFile::CreateFileIndex()
+{
+// scan the files of the directory and create index of all DDL files
+// returns kFALSE if no DDL files available
+  Bool_t result=kFALSE;
+  fDDLCurrent=-1;
+  if (fDDLIndex) return fDDLIndex->GetSize()>0;
+  if (!fDirectory) return kFALSE;
+  fDDLIndex=new TArrayC(0);
+  if (!fDDLIndex) return kFALSE;
+  TString entry;
+  while (entry = gSystem->GetDirEntry(fDirectory)) {
+    const char* filename=entry.Data();
+    if (!filename || entry.IsNull()) break;
+    if (!entry.EndsWith(".ddl")) continue;
+    result=kTRUE;
+    entry.Remove(0, entry.Last('_')+1);
+    entry.Remove(entry.Length()-4);
+    Int_t equipmentId = atoi(entry.Data());
+    if (fDDLIndex->GetSize()<=equipmentId) {
+      fDDLIndex->Set(equipmentId+1);
+    }
+    char* array=(char*)fDDLIndex->GetArray();
+    array[equipmentId]=1;
+  }
+
+  return result;
+}
+
 Bool_t AliRawReaderFile::OpenNextFile()
 {
 // open the next file
 // returns kFALSE if the current file is the last one
+
+  if (!fDDLIndex && !CreateFileIndex()) return kFALSE;
+  if (fSelectMinEquipmentId>=0 && fSelectMinEquipmentId>fEquipmentId)
+    fDDLCurrent=fSelectMinEquipmentId-1;
 
   if (fStream) {
 #if defined(__HP_aCC) || defined(__DECCXX)
@@ -149,23 +189,25 @@ Bool_t AliRawReaderFile::OpenNextFile()
   }
 
   if (!fDirectory) return kFALSE;
-  TString entry;
-  while (entry = gSystem->GetDirEntry(fDirectory)) {
-    if (entry.IsNull()) return kFALSE;
-    if (!entry.EndsWith(".ddl")) continue;
+  while (++fDDLCurrent<(fDDLIndex->GetSize()) && 
+	 (fDDLCurrent<=fSelectMaxEquipmentId || fSelectMaxEquipmentId<0)) {
+    if (fDDLIndex->At(fDDLCurrent)==0) continue;
+    Int_t dummy=0;
+    TString entry;
+    entry.Form("%s_%d.ddl", AliDAQ::DetectorNameFromDdlID(fDDLCurrent, dummy), fDDLCurrent);
     char* fileName = gSystem->ConcatFileName(GetDirName(), entry);
+    if (!fileName) continue;
 #ifndef __DECCXX 
     fStream = new fstream(fileName, ios::binary|ios::in);
 #else
     fStream = new fstream(fileName, ios::in);
 #endif
+    delete [] fileName;
     break;
   }
 
   if (!fStream) return kFALSE;
-  entry.Remove(0, entry.Last('_')+1);
-  entry.Remove(entry.Length()-4);
-  fEquipmentId = atoi(entry.Data());
+  fEquipmentId = fDDLCurrent;
 #if defined(__HP_aCC) || defined(__DECCXX)
   return (fStream->rdbuf()->is_open());
 #else
@@ -179,7 +221,7 @@ Bool_t AliRawReaderFile::ReadHeader()
 // read a data header at the current stream position
 // returns kFALSE if the mini header could not be read
 
-  if (!fStream) return kFALSE;
+  if (!fStream && !OpenNextFile()) return kFALSE;
   do {
     if (fCount > 0) fStream->seekg(Int_t(fStream->tellg()) + fCount);
     if (fHeader) {
@@ -258,7 +300,20 @@ Bool_t AliRawReaderFile::Reset()
   if (fDirectory) gSystem->FreeDirectory(fDirectory);
   fDirectory = directory;
 
+  // Matthias 05.06.2008
+  // do not open the next file. That might collide with a subsequent
+  // SelectEquipment call as the 'file pointer' is already set.
+  // This is important for the indexing of the DDL files.
+  // ---------------------------------------------------------
+  // All ReadNext functions first require the fCount member to be
+  // non zero or call ReadHeader. That allows to postpone the call
+  // to OpenNextFile to the next invocation of ReadHeader.
+  // ReadHeader has been mofified according to that.
+  /*
   OpenNextFile();
+  */
+  fEquipmentId=-1;
+  fDDLCurrent=-1;
   fCount = 0;
   return kTRUE;
 }
@@ -267,6 +322,8 @@ Bool_t AliRawReaderFile::NextEvent()
 {
 // go to the next event directory
 
+  if (fDDLIndex) delete fDDLIndex;
+  fDDLIndex=NULL;
   if (fEventIndex < -1) return kFALSE;
 
   do {

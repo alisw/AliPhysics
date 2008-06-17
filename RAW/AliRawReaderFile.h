@@ -19,6 +19,7 @@ class fstream;
 #endif
 #include <TString.h>
 
+class TArrayC;
 
 class AliRawReaderFile: public AliRawReader {
   public :
@@ -59,6 +60,7 @@ class AliRawReaderFile: public AliRawReader {
     TString          GetDirName() const;
     void*            OpenDirectory();
     Bool_t           OpenNextFile();
+    Bool_t           CreateFileIndex();
 
     Int_t            fEventIndex;  // index of the event
     TString          fDirName;     // name of the input directory
@@ -68,6 +70,8 @@ class AliRawReaderFile: public AliRawReader {
     UChar_t*         fBuffer;      // buffer for payload
     Int_t            fBufferSize;  // size of fBuffer in bytes
     Int_t            fEquipmentSize; // equipment size from raw-data payload
+    TArrayC*         fDDLIndex;    //! the index of DDL files
+    Int_t            fDDLCurrent;  //! the index of DDL files
 
   private :
     AliRawReaderFile(const AliRawReaderFile& rawReader);
