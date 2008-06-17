@@ -41,11 +41,11 @@ ClassImp(AliFlowCommonHistResults)
   fHistChi(0)
   {
   //constructor creating histograms 
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
   TString name;
 
-  Double_t  fPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  fPtMax = AliFlowCommonConstants::GetPtMax();
+  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
   
   //integrated flow
   name = "Flow_Integrated_";
@@ -57,7 +57,7 @@ ClassImp(AliFlowCommonHistResults)
   //differential flow
   name = "Flow_Differential_Pt_";
   name +=input;
-  fHistDiffFlow = new TH1D(name.Data(), name.Data(),fNbinsPt,fPtMin,fPtMax);
+  fHistDiffFlow = new TH1D(name.Data(), name.Data(),iNbinsPt,dPtMin,dPtMax);
   fHistDiffFlow ->SetXTitle("Pt");
   fHistDiffFlow ->SetYTitle("v (%)");
   
@@ -81,32 +81,32 @@ AliFlowCommonHistResults::~AliFlowCommonHistResults()
 
 //----------------------------------------------------------------------- 
 
-Bool_t AliFlowCommonHistResults::FillIntegratedFlow(Double_t fV, Double_t fError)
+Bool_t AliFlowCommonHistResults::FillIntegratedFlow(Double_t aV, Double_t anError)
 {
   //Fill fHistIntFlow
-  fHistIntFlow -> SetBinContent(1,fV);
-  fHistIntFlow -> SetBinError(1,fError);
+  fHistIntFlow -> SetBinContent(1,aV);
+  fHistIntFlow -> SetBinError(1,anError);
 
   return kTRUE; 
 }
 
 //----------------------------------------------------------------------- 
 
-Bool_t AliFlowCommonHistResults::FillDifferentialFlow(Int_t fBin, Double_t fv, Double_t fError)
+Bool_t AliFlowCommonHistResults::FillDifferentialFlow(Int_t aBin, Double_t av, Double_t anError)
 {
   //Fill fHistDiffFlow
-  fHistDiffFlow ->SetBinContent(fBin,fv);
-  fHistDiffFlow ->SetBinError(fBin,fError);
+  fHistDiffFlow ->SetBinContent(aBin,av);
+  fHistDiffFlow ->SetBinError(aBin,anError);
 
   return kTRUE; 
 }
 
 //----------------------------------------------------------------------- 
 
-Bool_t AliFlowCommonHistResults::FillChi(Double_t fChi)
+Bool_t AliFlowCommonHistResults::FillChi(Double_t aChi)
 {
   //Fill fHistChi
-  fHistChi -> SetBinContent(1,fChi);
+  fHistChi -> SetBinContent(1,aChi);
   
   return kTRUE; 
 }
