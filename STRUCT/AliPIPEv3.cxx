@@ -371,8 +371,8 @@ void AliPIPEv3::CreateGeometry()
 //  Central beam pipe support collars
 //  LHCVC2C_0019
 //  Position at z = -46., 40., 150.
-    TGeoVolume* voCpSupC = new TGeoVolume("CpSupC", new TGeoTube(3.051, 4.0, 0.35), kMedAco);
-    voCp1->AddNode(voCpSupC, 1, new TGeoTranslation(0., 0.,  kCP1Length / 2. - 81.5));
+    TGeoVolume* voCpSupC = new TGeoVolume("CpSupC", new TGeoTube(3.051, 4.00, 0.35), kMedAco);
+    voCp1->AddNode(voCpSupC, 1, new TGeoTranslation(0., 0.,  kCP1Length / 2. - 98.2));
     voCp1->AddNode(voCpSupC, 2, new TGeoTranslation(0., 0.,  kCP1Length / 2.- 191.5));
 //  Beam Pipe Protection Tube
 //
