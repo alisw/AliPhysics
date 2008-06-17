@@ -60,7 +60,7 @@ ClassImp(AliGRPPreprocessor)
 
 //_______________________________________________________________
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook
-  const Int_t AliGRPPreprocessor::fgknDCSDP = 11;   // number of dcs dps
+  const Int_t AliGRPPreprocessor::fgknDCSDP = 10;   // number of dcs dps
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
                    "LHCState",              // missing in DCS
                    "L3Polarity",
@@ -71,11 +71,11 @@ ClassImp(AliGRPPreprocessor)
                    "DipoleCurrent",
                    "CavernTemperature",
                    "CavernAtmosPressure",
-                   "gva_cr5AtmosphericPressure",   // missing in DCS
-                   "gva_meyrinAtmosphericPressure" // missing in DCS
+                   "SurfaceAtmosPressure"
                  };
                  
   const Short_t kSensors = 9; // start index position of sensor in DCS DPs
+  const Short_t kNumSensors = 1; // Number of sensors in DCS DPs
 
   const char* AliGRPPreprocessor::fgkLHCState[20] = {
                    "P", "PREPARE",
@@ -124,9 +124,8 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   AliPreprocessor::Initialize(run, startTime, endTime);
 
   AliInfo("Initialization of the GRP preprocessor.");
-
-  TClonesArray * array = new TClonesArray("AliDCSSensor",2);
-  for(Int_t j = 0; j < 2; j++) {
+  TClonesArray * array = new TClonesArray("AliDCSSensor",kNumSensors); 
+  for(Int_t j = 0; j < kNumSensors; j++) {
     AliDCSSensor * sens = new ((*array)[j])AliDCSSensor;
     sens->SetStringID(fgkDCSDataPoints[j+kSensors]);
   }
@@ -178,7 +177,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
   // DCS data points //
   //=================//
   Int_t entries = ProcessDcsDPs( valueMap, grpmap );
-  if( entries < fgknDCSDP-5 ) { // FIXME (!= ) LHState and pressure map are not working yet...
+  if( entries < fgknDCSDP-3 ) { // FIXME (!= ) LHState and pressure map are not working yet...
     Log(Form("Problem with the DCS data points!!!"));
     error |= 8;
   } else  Log(Form("DCS data points, successful!"));
@@ -675,20 +674,23 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, TMap* mapDCS)
 
 
    // NEEDS TO BE REVISED, CONFIRMED
-   AliInfo(Form("==========GenevaPressureMaps==========="));
+   AliInfo(Form("==========P2PressureMap==========="));
    AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap);
    if( fPressure->NumFits()==0 ) {
      Log("Problem with the pressure sensor values!!!");
-   } else {
-      AliDCSSensor* sensorCr5 = dcsSensorArray->GetSensor(fgkDCSDataPoints[9]);
-      if( sensorCr5->GetFit() ) {
-        Log(Form("<GvaCr5Pressure> for run %d: Sensor Fit found",fRun));
-        mapDCS->Add( new TObjString("fCr5Pressure"), sensorCr5 );
+   } 
+   else {
+      AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[9]);
+      if( sensorP2->GetFit() ) {
+        Log(Form("<P2Pressure> for run %d: Sensor Fit found",fRun));
+        mapDCS->Add( new TObjString("fP2Pressure"), sensorP2 );
         ++entries;
-      } else {
+      } 
+      else {
         Log(Form("ERROR Sensor Fit for %s not found: ", fgkDCSDataPoints[9] ));
       }
       
+      /*
       AliDCSSensor* sensorMeyrin = dcsSensorArray->GetSensor(fgkDCSDataPoints[10]);
       if( sensorMeyrin->GetFit() ) {
         Log(Form("<MeyrinPressure> for run %d: Sensor Fit found",fRun));
@@ -697,7 +699,7 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, TMap* mapDCS)
       } else {
         Log(Form("ERROR Sensor Fit for %s not found: ", fgkDCSDataPoints[10] ));
       }
-
+      */
    }
 
   return entries;
