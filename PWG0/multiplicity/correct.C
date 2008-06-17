@@ -45,10 +45,10 @@ void loadlibs()
   gSystem->Load("libPWG0base");
 }
 
-void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityESD.root", Bool_t chi2 = kTRUE, Int_t histID = 2, Bool_t fullPhaseSpace = kFALSE, Float_t beta  = 1e4)
+void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityESD.root", Bool_t chi2 = kTRUE, Int_t histID = 2, Bool_t fullPhaseSpace = kFALSE, Float_t beta  = 1e3, Int_t eventType = 0 /* AliMultiplicityCorrection::kTrVtx */)
 {
   loadlibs();
-  
+
   AliMultiplicityCorrection* mult = new AliMultiplicityCorrection(folder, folder);
 
   TFile::Open(fileNameMC);
@@ -74,10 +74,6 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
       }
   }
 
-  /*mult->SetMultiplicityVtx(histID, hist2);
-  mult->ApplyLaszloMethod(histID, kFALSE, AliMultiplicityCorrection::kTrVtx);
-  return;*/
-
   if (chi2)
   {
     mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol1, beta);
@@ -87,23 +83,77 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e5);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kLog, 1e5);
     //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, hist2->ProjectionY("mymchist"));
-    mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kFALSE); //hist2->ProjectionY("mymchist"));
-    mult->DrawComparison("MinuitChi2", histID, fullPhaseSpace, kTRUE, hist2->ProjectionY("mymchist"));
+    mult->ApplyMinuitFit(histID, fullPhaseSpace, eventType, kFALSE); //hist2->ProjectionY("mymchist"));
   }
   else
   {
-    mult->ApplyBayesianMethod(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, 0.2, 100);
-    mult->DrawComparison("Bayesian", histID, kFALSE, kTRUE, hist2->ProjectionY("mymchist2"));
+    mult->ApplyBayesianMethod(histID, fullPhaseSpace, eventType, 0.2, 100);
   }
-
-  //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e7);
-  //mult->ApplyMinuitFit(histID, kFALSE);
-  //mult->DrawComparison("MinuitChi2", histID, kFALSE, kTRUE, hist2->ProjectionY());
 
   TFile* file = TFile::Open("unfolded.root", "RECREATE");
   mult->SaveHistograms();
   file->Write();
   file->Close();
+
+  mult->DrawComparison((chi2) ? "MinuitChi2" : "Bayesian", histID, fullPhaseSpace, kTRUE, hist2->ProjectionY("mymchist"));
+}
+
+void CompareChi2Bayesian(Int_t histID = 2, Bool_t showMC = kFALSE, const char* chi2File = "chi2.root", const char* bayesianFile = "bayesian.root", const char* mcFile = "chi2.root")
+{
+  const char* folder = "Multiplicity";
+
+  loadlibs();
+
+  AliMultiplicityCorrection* chi2 = new AliMultiplicityCorrection(folder, folder);
+  TFile::Open(chi2File);
+  chi2->LoadHistograms();
+
+  AliMultiplicityCorrection* bayesian = new AliMultiplicityCorrection(folder, folder);
+  TFile::Open(bayesianFile);
+  bayesian->LoadHistograms();
+
+  histC = chi2->GetMultiplicityESDCorrected(histID);
+  histB = bayesian->GetMultiplicityESDCorrected(histID);
+
+  c = new TCanvas("CompareChi2Bayesian", "CompareChi2Bayesian", 800, 600);
+  c->SetRightMargin(0.05);
+  c->SetTopMargin(0.05);
+  c->SetLogy();
+
+  histC->SetTitle(";N;P(N)");
+  histC->SetStats(kFALSE);
+  histC->GetXaxis()->SetRangeUser(0, 100);
+
+  histC->SetLineColor(1);
+  histB->SetLineColor(2);
+
+  histC->Draw();
+  histB->Draw("SAME");
+
+  legend = new TLegend(0.2, 0.2, 0.4, 0.4);
+  legend->SetFillColor(0);
+
+  legend->AddEntry(histC, "Chi2");
+  legend->AddEntry(histB, "Bayesian");
+
+  if (showMC)
+  {
+    AliMultiplicityCorrection* mc = new AliMultiplicityCorrection(folder, folder);
+    TFile::Open(mcFile);
+    mc->LoadHistograms();
+
+    histMC = mc->GetMultiplicityVtx(histID)->ProjectionY("mc", 1, mc->GetMultiplicityVtx(histID)->GetNbinsX());
+    histMC->Scale(1.0 / histMC->Integral());
+
+    histMC->Draw("SAME");
+    histMC->SetLineColor(4);
+    legend->AddEntry(histMC, "MC");
+  }
+
+  legend->Draw();
+
+  c->SaveAs(Form("%s.gif", c->GetName()));
+  c->SaveAs(Form("%s.eps", c->GetName()));
 }
 
 void* fit2Step(const char* fileNameMC = "multiplicityMC_2M.root", const char* fileNameESD = "multiplicityMC_1M_3.root", Int_t histID = 3, Bool_t fullPhaseSpace = kFALSE)

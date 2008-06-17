@@ -30,7 +30,7 @@
 
 #include "AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
-#include "dNdEta/AliMultiplicityCorrection.h"
+#include "multiplicity/AliMultiplicityCorrection.h"
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
 
