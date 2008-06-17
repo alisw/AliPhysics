@@ -1121,9 +1121,7 @@ void AliSHILv3::CreateGeometry()
 //    SAA3 Outer Shape           //
 //    Drawing ALIP2A__0288       //
 ///////////////////////////////////
-      
       TGeoVolumeAssembly* voSaa3  = new TGeoVolumeAssembly("YSAA3");
-      
 ///////////////////////////////////
 //    SAA3 Concrete cone         //
 //    Drawing ALIP2A__0284       //
@@ -1142,7 +1140,7 @@ void AliSHILv3::CreateGeometry()
       TGeoCompositeShape* shSaa3CCBlock = new TGeoCompositeShape("Saa3CCBlock", "Saa3CCBlockO-Saa3InnerRegion");
       TGeoVolume* voSaa3CCBlock         = new TGeoVolume("YSAA3CCBlock", shSaa3CCBlock, kMedConcSh);     
 
-
+      
       voSaa3->AddNode(voSaa3CCBlock, 1, gGeoIdentity);
       
 //    Plate 1: 240 cm x 80 cm x 100 cm (x 2)
