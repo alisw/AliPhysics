@@ -124,30 +124,15 @@ AliPMDClusterFinder::~AliPMDClusterFinder()
   // Destructor
   if (fDigits)
     {
-	/*
-	  fDigits->Delete();
-	  delete fDigits;
-	  fDigits=0;
-	*/
 	fDigits->Clear();
     }
   if (fRecpoints)
     {
       fRecpoints->Clear();
-      /*
-	fRecpoints->Delete();
-	delete fRecpoints;
-	fRecpoints=0;
-      */
     }
   if (fRechits)
     {
       fRechits->Clear();
-      /*
-	fRechits->Delete();
-	delete fRechits;
-	fRechits=0;
-      */
     }
 }
 // ------------------------------------------------------------------------- //
@@ -255,7 +240,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  branch2->Fill();
 	  ResetRechit();
 	}
-      pmdcont->Clear();
+      pmdcont->Delete();
       
       branch1->Fill();
       ResetRecpoint();
@@ -370,7 +355,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  branch2->Fill();
 	  ResetRechit();
 	}
-      pmdcont->Clear();
+      pmdcont->Delete();
       
       branch1->Fill();
       ResetRecpoint();
@@ -516,7 +501,8 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  precpvADC[indexsmn][row][col] = sig;
 	}
       
-      pmdddlcont.Clear();
+      //pmdddlcont.Clear();
+      pmdddlcont.Delete();
 
       Int_t ismn = 0;
       for (indexsmn = 0; indexsmn < iSMN; indexsmn++)
@@ -592,7 +578,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	      ResetRechit();
 
 	    }
-	  pmdcont->Clear();
+	  pmdcont->Delete();
 	  
 	  branch1->Fill();
 	  ResetRecpoint();
@@ -755,7 +741,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
 	}
       
-      pmdddlcont.Clear();
+      pmdddlcont.Delete();
 
       Int_t ismn = 0;
       for (indexsmn = 0; indexsmn < iSMN; indexsmn++)
@@ -832,7 +818,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	      ResetRechit();
 
 	    }
-	  pmdcont->Clear();
+	  pmdcont->Delete();
 	  
 	  branch1->Fill();
 	  ResetRecpoint();
