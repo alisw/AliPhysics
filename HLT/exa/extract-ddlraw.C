@@ -136,7 +136,7 @@ void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
     cout << "event " << event << endl;
     cout << "-------------------------------------------------------" << endl;
     pRawReader->Reset();
-    hltRec.FillESD(pRawReader, NULL, pESD);
+    hltRec.Reconstruct(pRawReader, NULL);
     event++;
   }
 
