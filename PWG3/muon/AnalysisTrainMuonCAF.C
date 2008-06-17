@@ -57,10 +57,11 @@ void AnalysisTrainMuonCAF(char* fileout = "AliAOD.root", char *datasetname = "my
   // ESD input handler
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
   esdHandler->SetInactiveBranches("FMD CaloCluster");
+  
   // AOD output handler
   AliAODHandler* aodHandler   = new AliAODHandler();
-  //aodHandler->SetOutputFileName(fileout);
-  aodHandler->SetOutputFileName("AOD.root");
+  aodHandler->SetOutputFileName(fileout);
+  //aodHandler->SetOutputFileName("AOD.root");
 
   mgr->SetInputEventHandler(esdHandler);
   mgr->SetOutputEventHandler(aodHandler);
@@ -77,7 +78,7 @@ void AnalysisTrainMuonCAF(char* fileout = "AliAOD.root", char *datasetname = "my
   esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
   esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
   //
-  // hard
+  // hard cuts
   AliESDtrackCuts* esdTrackCutsH = new AliESDtrackCuts("AliESDtrackCuts", "Hard");
   esdTrackCutsH->SetMinNClustersTPC(100);
   esdTrackCutsH->SetMaxChi2PerClusterTPC(2.0);
@@ -86,10 +87,20 @@ void AnalysisTrainMuonCAF(char* fileout = "AliAOD.root", char *datasetname = "my
   esdTrackCutsH->SetMinNsigmaToVertex(2);
   esdTrackCutsH->SetRequireSigmaToVertex(kTRUE);
   esdTrackCutsH->SetAcceptKingDaughters(kFALSE);
+  esdTrackCutsH->SetPRange(0.,2.);
   //
+  //  muon cuts
+  AliESDMuonTrackCuts* esdMuonTrackCuts = new AliESDMuonTrackCuts("AliESDMuonTrackCuts", "test");
+  esdMuonTrackCuts->SetPRange(0.,20.);
+  //esdMuonTrackCuts->SetPtRange(0.,0.5);   // example of kinematic cuts that can be applied
+  
+  // track filter (to reject tracks not surviving the cuts - refers to all particles apart from muons)
   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-  trackFilter->AddCuts(esdTrackCutsL);
   trackFilter->AddCuts(esdTrackCutsH);
+  
+  // muon track filter  (to reject muon tracks not surviving the cuts)
+  AliAnalysisFilter* trackMuonFilter = new AliAnalysisFilter("trackMuonFilter");
+  trackMuonFilter->AddCuts(esdMuonTrackCuts);
 
   // ESD filter task putting standard info to output generic AOD 
   AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
@@ -99,6 +110,7 @@ void AnalysisTrainMuonCAF(char* fileout = "AliAOD.root", char *datasetname = "my
   
   // ESD filter task putting muon info to output generic AOD 
   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
+  esdmuonfilter->SetTrackFilter(trackMuonFilter);
   mgr->AddTask(esdmuonfilter);
 
   // Containers for input/output

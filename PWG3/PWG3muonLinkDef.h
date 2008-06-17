@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskLUT+;
 #pragma link C++ class AliAnalysisTaskESDMuonFilter+;
 #pragma link C++ class AliAnalysisTaskTrigChEff+;
+#pragma link C++ class AliESDMuonTrackCuts+;
 #endif
 
 

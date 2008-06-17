@@ -6,6 +6,8 @@ void AnalysisTrainMuonLocal(char* filein = "AliESDs.root", char* fileout = "AliA
 //    all the branches of the AOD are filled apart from the muons. 
 // 2- with the second task (AliAnalysisTaskESDMuonFilter) 
 //    muons tracks are added to the tracks branch 
+// There is the possibility to apply cuts on the muon tracks in order 
+// to reject muons before filling the AOD
 // This macro works locally
 // R. Arnaldi 5/5/08
 
@@ -46,7 +48,7 @@ void AnalysisTrainMuonLocal(char* filein = "AliESDs.root", char* fileout = "AliA
     
     // Set of cuts for the ESD filter
     // 
-    // standard cuts
+    // standard cut
     AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Loose");
     esdTrackCutsL->SetMinNClustersTPC(50);
     esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
@@ -65,10 +67,23 @@ void AnalysisTrainMuonLocal(char* filein = "AliESDs.root", char* fileout = "AliA
     esdTrackCutsH->SetMinNsigmaToVertex(2);
     esdTrackCutsH->SetRequireSigmaToVertex(kTRUE);
     esdTrackCutsH->SetAcceptKingDaughters(kFALSE);
+    esdTrackCutsH->SetPRange(0.,2.);
     //
+    //  muon cuts
+    AliESDMuonTrackCuts* esdMuonTrackCuts = new AliESDMuonTrackCuts("AliESDMuonTrackCuts", "test");
+    esdMuonTrackCuts->SetPRange(0.,20.);
+    //esdMuonTrackCuts->SetPtRange(0.,0.5);   // examples of kinematic cuts that can be applied
+    esdMuonTrackCuts->SetHistogramsOn(kTRUE);  // methods to draw control histos
+    esdMuonTrackCuts->DefineHistograms();
+    esdMuonTrackCuts->DrawHistograms();
+    
+    // track filter (to reject tracks not surviving the cuts - refers to all particles apart from muons)
     AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-    trackFilter->AddCuts(esdTrackCutsL);
     trackFilter->AddCuts(esdTrackCutsH);
+    
+    // muon track filter  (to reject muon tracks not surviving the cuts)
+    AliAnalysisFilter* trackMuonFilter = new AliAnalysisFilter("trackMuonFilter");
+    trackMuonFilter->AddCuts(esdMuonTrackCuts);
 
     // ESD filter task putting standard info in the output generic AOD 
     AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
@@ -78,6 +93,7 @@ void AnalysisTrainMuonLocal(char* filein = "AliESDs.root", char* fileout = "AliA
     
     // ESD filter task putting muon info in the output generic AOD 
     AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
+    esdmuonfilter->SetTrackFilter(trackMuonFilter);
     mgr->AddTask(esdmuonfilter);
 
     // Containers for input/output
