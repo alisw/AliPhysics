@@ -807,14 +807,15 @@ void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullP
   fMultiplicityESDCorrected[correlationID]->Reset();
   fMultiplicityESDCorrected[correlationID]->Sumw2();
 
-  fCurrentESD = fMultiplicityESD[inputRange]->ProjectionY("fCurrentESD"); //"fCurrentESD", -1, -1, "e");
+  // project without under/overflow bins
+  fCurrentESD = fMultiplicityESD[inputRange]->ProjectionY("fCurrentESD", 1, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins());
   fCurrentESD->Sumw2();
 
   // empty under/overflow bins in x, otherwise Project3D takes them into account
   TH3* hist = fCorrelation[correlationID];
-  for (Int_t y=1; y<=hist->GetYaxis()->GetNbins(); ++y)
+  for (Int_t y=0; y<=hist->GetYaxis()->GetNbins()+1; ++y)
   {
-    for (Int_t z=1; z<=hist->GetZaxis()->GetNbins(); ++z)
+    for (Int_t z=0; z<=hist->GetZaxis()->GetNbins()+1; ++z)
     {
       hist->SetBinContent(0, y, z, 0);
       hist->SetBinContent(hist->GetXaxis()->GetNbins()+1, y, z, 0);
@@ -1283,6 +1284,9 @@ void AliMultiplicityCorrection::DrawHistograms()
 //____________________________________________________________________
 void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t /*normalizeESD*/, TH1* mcHist, Bool_t simple)
 {
+  // draw comparison plots
+
+
   //mcHist->Rebin(2);
 
   Int_t esdCorrId = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
@@ -1297,7 +1301,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   }
 
   //regain measured distribution used for unfolding, because the bins at high mult. were modified in SetupCurrentHists
-  fCurrentESD = fMultiplicityESD[esdCorrId]->ProjectionY();
+  fCurrentESD = fMultiplicityESD[esdCorrId]->ProjectionY("fCurrentESD", 1, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins());
   fCurrentESD->Sumw2();
   fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
 
@@ -1401,11 +1405,17 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   canvas1->cd(1);
   TH1* proj = (TH1*) mcHist->Clone("proj");
 
+  // normalize without 0 bin
+  proj->Scale(1.0 / proj->Integral(2, proj->GetNbinsX()));
+  Printf("Normalized without 0 bin!");
   proj->GetXaxis()->SetRangeUser(0, 200);
   proj->SetTitle(";true multiplicity;Entries");
   proj->SetStats(kFALSE);
 
   fMultiplicityESDCorrected[esdCorrId]->SetLineColor(2);
+  // normalize without 0 bin
+  fMultiplicityESDCorrected[esdCorrId]->Scale(1.0 / fMultiplicityESDCorrected[esdCorrId]->Integral(2, fMultiplicityESDCorrected[esdCorrId]->GetNbinsX()));
+  Printf("Normalized without 0 bin!");
 
   if (proj->GetEntries() > 0) {
     proj->DrawCopy("HIST");
@@ -1529,7 +1539,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
     legend->Draw();*/
 
     canvas1->cd(4);
-    //residual->GetYaxis()->SetRangeUser(-0.2, 0.2);
+    residual->GetYaxis()->SetRangeUser(-5, 5);
     residual->GetXaxis()->SetRangeUser(0, 200);
     residual->DrawCopy();
 
@@ -1715,7 +1725,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
     Printf("Chi2 (full range) from (MC - Unfolded) / e(MC) is: %.2f ndf is %d --> chi2 / ndf = %.2f", newChi2, ndf, ((ndf > 0) ? newChi2 / ndf : -1));
 
     diffMCUnfolded2->SetTitle("#chi^{2};Npart;(MC - Unfolded) / e(MC)");
-    //diffMCUnfolded->GetYaxis()->SetRangeUser(-20, 20);
+    diffMCUnfolded2->GetYaxis()->SetRangeUser(-5, 5);
     diffMCUnfolded2->GetXaxis()->SetRangeUser(0, 200);
     diffMCUnfolded2->DrawCopy("HIST");
   }
@@ -2735,9 +2745,9 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
 
   // empty under/overflow bins in x, otherwise Project3D takes them into account
   TH3* hist = fCorrelation[correlationMap];
-  for (Int_t y=1; y<=hist->GetYaxis()->GetNbins(); ++y)
+  for (Int_t y=0; y<=hist->GetYaxis()->GetNbins()+1; ++y)
   {
-    for (Int_t z=1; z<=hist->GetZaxis()->GetNbins(); ++z)
+    for (Int_t z=0; z<=hist->GetZaxis()->GetNbins()+1; ++z)
     {
       hist->SetBinContent(0, y, z, 0);
       hist->SetBinContent(hist->GetXaxis()->GetNbins()+1, y, z, 0);
@@ -2747,6 +2757,7 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
   TH2* corr = (TH2*) hist->Project3D("zy");
   //corr->Rebin2D(2, 1);
   corr->Sumw2();
+  Printf("Correction histogram used for convolution has %f entries", corr->Integral());
 
   // normalize correction for given nPart
   for (Int_t i=1; i<=corr->GetNbinsX(); ++i)
