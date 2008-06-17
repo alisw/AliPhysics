@@ -154,7 +154,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
       if ((TMath::Abs(dz[0])<3.) && (TMath::Abs(dz[1])<3.)) { // beam pipe
         Double_t phi=track->Phi();
 	GetESDsData(kTrk0)->Fill(phi);
-	Double_t y=track->Y();
+	Double_t y=track->Eta();
 	GetESDsData(kTrk1)->Fill(y);
 
         if (TMath::Abs(y)<0.9) {
