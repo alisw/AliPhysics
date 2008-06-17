@@ -16,13 +16,13 @@ class AliFlowCommonHistResults : public TObject {
 
  public:
 
-  AliFlowCommonHistResults(TString input);
-  virtual ~AliFlowCommonHistResults();
+  AliFlowCommonHistResults(TString input);  //constructor
+  virtual ~AliFlowCommonHistResults();      //destructor
 
   //make fill methods here
-  Bool_t FillIntegratedFlow(Double_t fV, Double_t fError);
-  Bool_t FillDifferentialFlow(Int_t fBin, Double_t fv, Double_t fError);
-  Bool_t FillChi(Double_t fChi);
+  Bool_t FillIntegratedFlow(Double_t aV, Double_t anError);                //fill fHistIntFlow
+  Bool_t FillDifferentialFlow(Int_t aBin, Double_t av, Double_t anError);  //fill fHistDiffFlow
+  Bool_t FillChi(Double_t aChi);                                           //fill fHistChi
 
   //make get methods here
   TH1D*    GetfHistDiffFlow()               {return fHistDiffFlow; } ; 
@@ -31,8 +31,8 @@ class AliFlowCommonHistResults : public TObject {
  
  private:
 
-  AliFlowCommonHistResults(const AliFlowCommonHistResults& aSetOfResultHists);
-  AliFlowCommonHistResults& operator=(const AliFlowCommonHistResults& aSetOfResultHists);
+  AliFlowCommonHistResults(const AliFlowCommonHistResults& aSetOfResultHists);            //copy constructor
+  AliFlowCommonHistResults& operator=(const AliFlowCommonHistResults& aSetOfResultHists); //assignment operator
 
   //integrated flow
   TH1D*     fHistIntFlow;      
