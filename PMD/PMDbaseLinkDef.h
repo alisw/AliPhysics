@@ -21,4 +21,5 @@
 #pragma link C++ class  AliPMDRawToSDigits+;
 #pragma link C++ class  AliPMDPedestal+;
 #pragma link C++ class  AliPMDsdigit+;
+#pragma link C++ class  AliPMDQAChecker+;
 #endif

@@ -15,4 +15,5 @@
 #pragma link C++ class  AliPMDcell+;
 #pragma link C++ class  AliPMDDigitizer+;
 #pragma link C++ class  AliPMDDDLRawData+;
+#pragma link C++ class  AliPMDQADataMakerSim+;
 #endif
