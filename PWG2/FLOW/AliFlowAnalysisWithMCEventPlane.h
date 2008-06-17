@@ -40,7 +40,7 @@ class AliFlowAnalysisWithMCEventPlane {
    virtual  ~AliFlowAnalysisWithMCEventPlane();  //destructor
  
    void    Init();                             //defines variables and histograms
-   void    Make(AliFlowEventSimple* anEvent, Double_t fRP);   //calculates variables and fills histograms
+   void    Make(AliFlowEventSimple* anEvent, Double_t aRP);   //calculates variables and fills histograms
    void    Finish();                           //saves histograms
   
    void      SetDebug(Bool_t kt)                 { this->fDebug = kt ; }
@@ -55,34 +55,26 @@ class AliFlowAnalysisWithMCEventPlane {
    
  private:
  
-   AliFlowAnalysisWithMCEventPlane(const AliFlowAnalysisWithMCEventPlane& aAnalysis);
-   AliFlowAnalysisWithMCEventPlane& operator=(const AliFlowAnalysisWithMCEventPlane& aAnalysis);
+   AliFlowAnalysisWithMCEventPlane(const AliFlowAnalysisWithMCEventPlane& aAnalysis);             //copy constructor
+   AliFlowAnalysisWithMCEventPlane& operator=(const AliFlowAnalysisWithMCEventPlane& aAnalysis);  //assignment operator 
 
       
 #ifndef __CINT__
-   //   AliFlowVector  fQ;       // flow vector
-   //   TVector2  fQsum;         // flow vector sum
-   AliFlowVector*  fQ;       // flow vector
-   TVector2*  fQsum;         // flow vector sum
-   Double_t  fQ2sum;        // flow vector sum squared
+   TVector2*    fQsum;              // flow vector sum
+   Double_t     fQ2sum;             // flow vector sum squared
 #endif /*__CINT__*/
 
-   Int_t     fEventNumber;  // event counter
-   Int_t     fMult;         // multiplicity
-   Int_t     fNbins;        // number of bins
-      
-   AliFlowTrackSimple*   fTrack ;     //!
-     
+   Int_t        fEventNumber;       // event counter
    Bool_t       fDebug ;            //! flag for lyz analysis: more print statements
 
    TString      fHistFileName;      //!
    TFile*       fHistFile;          //!
     
-   AliFlowCommonHist* fCommonHists;              //!
-   AliFlowCommonHistResults* fCommonHistsRes;    //!
+   AliFlowCommonHist* fCommonHists;              //
+   AliFlowCommonHistResults* fCommonHistsRes;    //
 
-   TProfile*  fHistProFlow;         //!
-   TH1F*      fHistRP;              //!
+   TProfile*    fHistProFlow;       //
+   TH1F*        fHistRP;            //
 
    ClassDef(AliFlowAnalysisWithMCEventPlane,0)  // macro for rootcint
      };

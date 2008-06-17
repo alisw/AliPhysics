@@ -42,13 +42,9 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
   //-----------------------------------------------------------------------
  
  AliFlowAnalysisWithMCEventPlane::AliFlowAnalysisWithMCEventPlane():
-   fQ(NULL),
    fQsum(NULL),
    fQ2sum(0),
    fEventNumber(0),
-   fMult(0),
-   fNbins(0),
-   fTrack(NULL),
    fDebug(kFALSE),
    fHistFileName(0),
    fHistFile(0),
@@ -60,10 +56,6 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
 {
 
   // Constructor.
-  //  fQ.Set(0.,0.);           // flow vector
-  //  fQsum.Set(0.,0.);        // flow vector sum
-
-  fQ = new AliFlowVector;           // flow vector
   fQsum = new TVector2;        // flow vector sum
 }
 
@@ -74,7 +66,6 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
  AliFlowAnalysisWithMCEventPlane::~AliFlowAnalysisWithMCEventPlane() 
  {
    //destructor
-   delete fQ;
    delete fQsum;
  }
  
@@ -85,9 +76,9 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   //Define all histograms
   cout<<"---Analysis with the real MC Event Plane---"<<endl;
 
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Double_t  fPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  fPtMax = AliFlowCommonConstants::GetPtMax();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
 
   // analysis file (output)
   fHistFile = new TFile(fHistFileName.Data(),"RECREATE") ;
@@ -95,7 +86,7 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fCommonHists = new AliFlowCommonHist("MC");
   fCommonHistsRes = new AliFlowCommonHistResults("MC");
 
-  fHistProFlow = new TProfile("FlowPro_VPt_MC","FlowPro_VPt_MC",fNbinsPt,fPtMin,fPtMax);
+  fHistProFlow = new TProfile("FlowPro_VPt_MC","FlowPro_VPt_MC",iNbinsPt,dPtMin,dPtMax);
   fHistProFlow->SetXTitle("Pt");
   fHistProFlow->SetYTitle("v2 (%)");
 
@@ -110,7 +101,7 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
  
 //-----------------------------------------------------------------------
  
-void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t fRP) {
+void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t aRP) {
 
   //Calculate v2 from the MC reaction plane
   if (anEvent) {
@@ -119,31 +110,31 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent, Double_t
     fCommonHists->FillControlHistograms(anEvent);
 
     //get the Q vector from the FlowEvent
-    *fQ = anEvent->GetQ(); 
-    //cout<<"fQ.Mod() = " << fQ.Mod() << endl;
+    AliFlowVector vQ = anEvent->GetQ(); 
+    //cout<<"vQ.Mod() = " << vQ.Mod() << endl;
     //for chi calculation:
-    *fQsum += *fQ;
+    *fQsum += vQ;
     //cout<<"fQsum.Mod() = "<<fQsum.Mod()<<endl;
-    fQ2sum += fQ->Mod2();
+    fQ2sum += vQ.Mod2();
     cout<<"fQ2sum = "<<fQ2sum<<endl;
         
-    fHistRP->Fill(fRP);   
+    fHistRP->Fill(aRP);   
               
     //calculate flow
     //loop over the tracks of the event
-    Int_t fNumberOfTracks = anEvent->NumberOfTracks(); 
-    for (Int_t i=0;i<fNumberOfTracks;i++) 
+    Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+    for (Int_t i=0;i<iNumberOfTracks;i++) 
       {
-	fTrack = anEvent->GetTrack(i) ; 
-	if (fTrack){
-	  if (fTrack->UseForDifferentialFlow()) {
-	    Double_t fPhi = fTrack->Phi();
-	    //if (fPhi<0.) fPhi+=2*TMath::Pi();
+	AliFlowTrackSimple* pTrack = anEvent->GetTrack(i) ; 
+	if (pTrack){
+	  if (pTrack->UseForDifferentialFlow()) {
+	    Double_t dPhi = pTrack->Phi();
+	    //if (dPhi<0.) dPhi+=2*TMath::Pi();
 	    //calculate flow v2:
-	    Double_t fv2 = TMath::Cos(2*(fPhi-fRP));
-	    Double_t fPt = fTrack->Pt();
+	    Double_t dv2 = TMath::Cos(2*(dPhi-aRP));
+	    Double_t dPt = pTrack->Pt();
 	    //fill histogram
-	    fHistProFlow->Fill(fPt,100*fv2);  
+	    fHistProFlow->Fill(dPt,100*dv2);  
 	  }  
 	}//track selected
       }//loop over tracks
@@ -159,35 +150,35 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   //*************make histograms etc. 
   if (fDebug) cout<<"AliFlowAnalysisWithMCEventPlane::Terminate()"<<endl;
      
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
     
   TH1F* fHistPtDiff = fCommonHists->GetfHistPtDiff();
-  Double_t fV = 0.;
-  Double_t fErrV = 0.;
-  Double_t fSum = 0.;
-  for(Int_t b=0;b<fNbinsPt;b++){
-    Double_t fv2pro = 0.;
-    Double_t fErrdifcomb = 0.; //in case error from profile is correct
+  Double_t dV = 0.;
+  Double_t dErrV = 0.;
+  Double_t dSum = 0.;
+  for(Int_t b=0;b<iNbinsPt;b++){
+    Double_t dv2pro = 0.;
+    Double_t dErrdifcomb = 0.; //in case error from profile is correct
     if(fHistProFlow) {
-      fv2pro = fHistProFlow->GetBinContent(b);
-      fErrdifcomb = fHistProFlow->GetBinError(b);
+      dv2pro = fHistProFlow->GetBinContent(b);
+      dErrdifcomb = fHistProFlow->GetBinError(b);
       //fill TH1D
-      fCommonHistsRes->FillDifferentialFlow(b, fv2pro, fErrdifcomb); 
+      fCommonHistsRes->FillDifferentialFlow(b, dv2pro, dErrdifcomb); 
       if (fHistPtDiff){
 	//integrated flow
-	Double_t fYield = fHistPtDiff->GetBinContent(b);
-	fV += fv2pro/100*fYield ;
-	fSum += fYield;
+	Double_t dYield = fHistPtDiff->GetBinContent(b);
+	dV += dv2pro/100*dYield ;
+	dSum += dYield;
 	//error on integrated flow
-	fErrV += fYield*fYield*(fErrdifcomb/100)*(fErrdifcomb/100);
+	dErrV += dYield*dYield*(dErrdifcomb/100)*(dErrdifcomb/100);
       }
     }
   }
-  fV /= fSum;  //because pt distribution should be normalised
-  fErrV /= fSum*fSum;
-  fErrV = TMath::Sqrt(fErrV);
-  cout<<"fV is "<<fV<<" +- "<<fErrV<<endl;
-  fCommonHistsRes->FillIntegratedFlow(fV,fErrV); 
+  dV /= dSum;  //because pt distribution should be normalised
+  dErrV /= dSum*dSum;
+  dErrV = TMath::Sqrt(dErrV);
+  cout<<"dV is "<<dV<<" +- "<<dErrV<<endl;
+  fCommonHistsRes->FillIntegratedFlow(dV,dErrV); 
 
   // write to file
   fHistFile->Write();
