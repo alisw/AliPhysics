@@ -35,22 +35,8 @@ libAliHLTMUON_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @HLTBASE_LDFLAGS@ \
 				  @ALIROOT_LDFLAGS@ \
-				  @ALIROOT_LIBS@ \
-				  -lRAWDatasim \
-				  -lRAWDatarec \
-				  -lRAWDatabase \
-				  -lMUONcore \
-				  -lMUONraw \
-				  -lMUONbase \
-				  -lMUONgeometry \
-				  -lMUONmapping \
-				  -lMUONcalib \
-				  -lMUONsim \
-				  -lMUONtrigger \
-				  -lMUONevaluation \
-				  -lMUONrec \
-				  -lHLTbase \
-				  -lAliHLTUtil \
+				  @ALIROOT_LIBS@  \
+				  @ALIMUON_LIBS@ \
 				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build

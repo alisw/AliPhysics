@@ -38,6 +38,7 @@ libAliHLTTRD_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
 # version info for the library
 libAliHLTTRD_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
+				  @HLTBASE_LDFLAGS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
 				  @ALITRD_LIBS@ \
