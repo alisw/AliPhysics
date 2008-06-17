@@ -46,7 +46,7 @@ const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 
 const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
-const TString kAmandaTemp = "PT_%02d_TEMPERATURE"; // Amanda string for temperature entries
+const TString kAmandaTemp = "PT_%02d.Temperature"; // Amanda string for temperature entries
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required 
 const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits during commissioning 
 
@@ -399,8 +399,12 @@ UInt_t AliEMCALPreprocessor::ExtractSignal(Int_t sourceFXS)
   
   TList* list = GetFileSources(sourceFXS,"signal");
   if (list && list->GetEntries()>0) {
+
+    /* DS: 17 June 2008 - commented out this reset to avoid crash in shuttle.
+           Not sure why it occurs, in standalone tests a Reset() seemed to work OK..
     
     calibSig->Reset(); // let's make a fresh start before possibly adding stuff below
+    */
     
     //  loop through all files from LDCs
     
