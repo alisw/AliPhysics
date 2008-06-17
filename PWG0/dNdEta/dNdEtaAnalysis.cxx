@@ -390,29 +390,42 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Int_t vertexBinBegin = vertexHist->GetXaxis()->FindBin(vertexRangeBegin[vertexPos]);
       Int_t vertexBinEnd   = vertexHist->GetXaxis()->FindBin(vertexRangeEnd[vertexPos]);
 
+      const Int_t *binBegin = 0;
       // adjust acceptance range for SPD
       if (fAnalysisMode == AliPWG0Helper::kSPD)
       {
         //const Int_t binBegin[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 };
-        const Int_t binBegin[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
+        const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
         //const Int_t binBegin[30] = { -1, -1, -1, 17, 15, 14, 12, 10, 8, 7, 6, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, -1, -1, -1};  // limit in correction map is 10
+        binBegin = binBeginSPD;
 
-        Int_t vtxBegin = binBegin[iEta - 1];
-        Int_t vtxEnd   = 18 + 1 - binBegin[30 - iEta];
-
-        // eta range not accessible
-        if (vtxBegin == -1)
-          continue;
-
-        //Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
-        //Printf("%d %d | %d %d", vtxBegin, vertexHist->GetXaxis()->FindBin(GetVtxMin(eta)), vtxEnd, vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta)));
-        //vtxBegin = vertexHist->GetXaxis()->FindBin(GetVtxMin(eta));
-        //vtxEnd = vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta));
-        //printf("Eta bin: %d (%f) Vertex range: %d; before: %d %d ", iEta, eta, vertexPos, vertexBinBegin, vertexBinEnd);
-        vertexBinBegin = TMath::Max(vertexBinBegin, vtxBegin);
-        vertexBinEnd =   TMath::Min(vertexBinEnd, vtxEnd);
-        //Printf("after:  %d %d", vertexBinBegin, vertexBinEnd);
       }
+      else if (fAnalysisMode == AliPWG0Helper::kTPC)
+      {
+//        const Int_t binBegin[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
+        const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, 9, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, -1, -1, -1, -1, -1, -1, -1, -1};
+        binBegin = binBeginTPC;
+      }
+      else if (fAnalysisMode == AliPWG0Helper::kTPCITS)
+      {
+        // TODO create map
+      }
+
+      Int_t vtxBegin = binBegin[iEta - 1];
+      Int_t vtxEnd   = 18 + 1 - binBegin[30 - iEta];
+      
+      // eta range not accessible
+      if (vtxBegin == -1)
+        continue;
+      
+      //Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
+      //Printf("%d %d | %d %d", vtxBegin, vertexHist->GetXaxis()->FindBin(GetVtxMin(eta)), vtxEnd, vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta)));
+      //vtxBegin = vertexHist->GetXaxis()->FindBin(GetVtxMin(eta));
+      //vtxEnd = vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta));
+      //printf("Eta bin: %d (%f) Vertex range: %d; before: %d %d ", iEta, eta, vertexPos, vertexBinBegin, vertexBinEnd);
+      vertexBinBegin = TMath::Max(vertexBinBegin, vtxBegin);
+      vertexBinEnd =   TMath::Min(vertexBinEnd, vtxEnd);
+      //Printf("after:  %d %d", vertexBinBegin, vertexBinEnd);
 
       // no data for this bin
       if (vertexBinBegin > vertexBinEnd)

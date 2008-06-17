@@ -10,6 +10,7 @@
 class AliESDtrackCuts;
 class dNdEtaAnalysis;
 class TH1F;
+class TH2F;
 class TH3F;
 class AliESDEvent;
 
@@ -62,9 +63,14 @@ class AlidNdEtaTask : public AliAnalysisTask {
     dNdEtaAnalysis* fdNdEtaAnalysisTr;      //! contains the dndeta from the triggered events
     dNdEtaAnalysis* fdNdEtaAnalysisTrVtx;   //! contains the dndeta from the triggered events with vertex
     dNdEtaAnalysis* fdNdEtaAnalysisTracks;  //! contains the dndeta from the triggered events with vertex counted from the mc particles associated to the tracks (comparing this to the raw values from the esd shows the effect of the detector resolution)
-    // the following are control histograms to check the dNdEtaAnalysis class
+
+    // control histograms (MC)
     TH3F* fVertex;                //! vertex of counted particles
     TH1F* fPartPt;                //! counted particles as function of pt
+
+    // control histograms (ESD)
+    TH1F* fPhi;                   //! raw phi distribution
+    TH2F* fEtaPhi;                //! raw eta - phi distribution
     TH1F* fDeltaPhi;              //! histogram of delta_phi values for tracklets (only for SPD analysis)
 
  private:

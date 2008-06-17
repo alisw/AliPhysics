@@ -205,10 +205,12 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
     fOutput->Add(fDeltaPhi[i]);
   }
 
-  fEventStats = new TH2F("fEventStats", "fEventStats;event type;status;count", 2, -0.5, 1.5, 4, -0.5, 3.5);
+  fEventStats = new TH2F("fEventStats", "fEventStats;event type;status;count", 104, -3.5, 100.5, 4, -0.5, 3.5);
   fOutput->Add(fEventStats);
-  fEventStats->GetXaxis()->SetBinLabel(1, "INEL");
-  fEventStats->GetXaxis()->SetBinLabel(2, "NSD");
+  fEventStats->GetXaxis()->SetBinLabel(1, "INEL"); // x = -3
+  fEventStats->GetXaxis()->SetBinLabel(2, "NSD");  // x = -2
+  for (Int_t i=0; i<100; i++)
+    fEventStats->GetXaxis()->SetBinLabel(4+i, Form("%d", i)); 
 
   fEventStats->GetYaxis()->SetBinLabel(1, "nothing");
   fEventStats->GetYaxis()->SetBinLabel(2, "trg");
@@ -271,7 +273,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   AliDebug(AliLog::kDebug+1, Form("Found process type %d", processType));
 
   if (processType == AliPWG0Helper::kInvalidProcess)
-    AliDebug(AliLog::kError, Form("Unknown process type %d.", processType));
+    AliDebug(AliLog::kError, "Unknown process type.");
 
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
@@ -298,10 +300,10 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   // fill process type
   Int_t biny = (Int_t) eventTriggered + 2 * (Int_t) eventVertex;
   // INEL
-  fEventStats->Fill(0.0, biny);
+  fEventStats->Fill(-3, biny);
   // NSD
-  if (processType != AliPWG0Helper::kSD )
-    fEventStats->Fill(1.0, biny);
+  if (processType != AliPWG0Helper::kSD)
+    fEventStats->Fill(-2, biny);
   
   // create list of (label, eta, pt) tuples
   Int_t inputCount = 0;
@@ -446,9 +448,12 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
         fdNdEtaAnalysisMC->FillTrack(vtxMC[2], eta, pt);
 
     // TODO this value might be needed lower for the SPD study (only used for control histograms anyway)
-    if (TMath::Abs(eta) < 1 && pt > 0.2)
+    if (TMath::Abs(eta) < 1.5) // && pt > 0.2)
       nAccepted++;
   }
+
+  if (nAccepted == 0)
+    fEventStats->Fill(AliPWG0Helper::GetLastProcessType(), biny);
 
   fMultAll->Fill(nAccepted);
   if (eventTriggered) {

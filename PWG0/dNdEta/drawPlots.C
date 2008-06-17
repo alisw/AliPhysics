@@ -1729,7 +1729,7 @@ void DrawTrackletOrigin()
   }
 }
 
-void DetermineAcceptance(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction")
+void DetermineAcceptance(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction", Double_t ptmin=0.2)
 {
   loadlibs();
 
@@ -1739,12 +1739,36 @@ void DetermineAcceptance(const char* fileName = "correction_map.root", const cha
   if (!dNdEtaCorrection->LoadHistograms())
     return;
 
-  hist = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram();
+  //  hist = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram();
 
-  proj = hist->Project3D("yx");
+  gener = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetGeneratedHistogram();
+  measu = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetMeasuredHistogram();
+
+  gener->GetZaxis()->SetRange(gener->GetZaxis()->FindBin(ptmin), gener->GetNbinsZ()+1);
+  TH2D *gener_xy = gener->Project3D("yx");
+
+  measu->GetZaxis()->SetRange(measu->GetZaxis()->FindBin(ptmin), measu->GetNbinsZ()+1);
+  TH2D *measu_xy = measu->Project3D("yx");
+
+  cout << measu->GetZaxis()->FindBin(ptmin) << " " << measu->GetNbinsZ()+1 << endl;
+
+  TCanvas *canp = new TCanvas("canp","canp",600,1000);
+  canp->Divide(1,2,0.0001,0.0001);
+  canp->cd(1);
+  gener_xy->Draw("COLZ");
+  canp->cd(2);
+  measu_xy->Draw("COLZ");
+
+
+  TCanvas *canpr = new TCanvas("canpr","canpr",700,500);
+  canpr->cd();
+  TH2D *proj = new TH2D(*gener_xy);
+  proj->Divide(measu_xy);
+
+//   proj = hist->Project3D("yx");
   proj->Draw("COLZ");
 
-  const Float_t limit = 10;
+  const Float_t limit = 5;
 
   TString array = "{";
   TString arrayEnd = "}";
