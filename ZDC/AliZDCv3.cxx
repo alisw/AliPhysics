@@ -873,13 +873,13 @@ void AliZDCv3::CreateBeamLine()
   // skewed transition piece (ID=212 mm) (before TDI)   
   tubpar[0] = 21.2/2.;
   tubpar[1] = 21.8/2.;
-  tubpar[2] = 20.0/2.;
+  tubpar[2] = (20.0-2.41)/2.;
   gMC->Gsvolu("QA15", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA15", 1, "ZDCA", 1.10446, 0., tubpar[2]+zd2, irotpipe2, "ONLY");
+  gMC->Gspos("QA15", 1, "ZDCA", 1.10446, 0., tubpar[2]+2.41/2.+zd2, irotpipe2, "ONLY");
   // Ch.debug
-  //printf("	QA15 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("	QA15 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+2.41+zd2);
 
-  zd2 += 2.*tubpar[2];    
+  zd2 += 2.*tubpar[2]+2.41;    
       
   // Vacuum chamber containing TDI  
   tubpar[0] = 0.;
@@ -936,13 +936,13 @@ void AliZDCv3::CreateBeamLine()
   // skewed transition piece (ID=212 mm) (after TDI)  
   tubpar[0] = 21.2/2.;
   tubpar[1] = 21.8/2.;
-  tubpar[2] = 20.0/2.;
+  tubpar[2] = (20.0-2.41)/2.;
   gMC->Gsvolu("QA16", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QA16", 1, "ZDCA", 1.10446+2.2, 0., tubpar[2]+zd2, irotpipe2, "ONLY");
+  gMC->Gspos("QA16", 1, "ZDCA", 1.10446+2.2, 0., tubpar[2]+2.41/2.+zd2, irotpipe2, "ONLY");
   // Ch.debug
-  //printf("	QA16 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("	QA16 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+2.41+zd2);
 
-  zd2 += 2.*tubpar[2];
+  zd2 += 2.*tubpar[2]+2.41;
   
   // bellow (ID=212 mm) (VMBGA)
   tubpar[0] = 21.2/2.;
@@ -1239,17 +1239,17 @@ void AliZDCv3::CreateBeamLine()
   zd2 += 2.*tubpar[2];
   
   // transition x2zdc to recombination chamber : skewed cone  
-  conpar[0] = 10./2.;
+  conpar[0] = (10.-0.2)/2.;
   conpar[1] = 5.4/2.;
   conpar[2] = 5.8/2.;
   conpar[3] = 6.3/2.;
   conpar[4] = 7.0/2.;
   gMC->Gsvolu("QA37", "CONE", idtmed[7], conpar, 5); 
-  gMC->Gspos("QA37", 1, "ZDCA", -7.9-0.175, 0., conpar[0]+zd2, irotpipe7, "ONLY");
-  gMC->Gspos("QA37", 2, "ZDCA", 7.9+0.175, 0., conpar[0]+zd2, irotpipe8, "ONLY");
-  //printf("	QA37 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  gMC->Gspos("QA37", 1, "ZDCA", -7.9-0.175, 0., conpar[0]+0.1+zd2, irotpipe7, "ONLY");
+  gMC->Gspos("QA37", 2, "ZDCA", 7.9+0.175, 0., conpar[0]+0.1+zd2, irotpipe8, "ONLY");
+  //printf("	QA37 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+0.2+zd2);
 
-  zd2 += 2.*conpar[0];
+  zd2 += 2.*conpar[0]+0.2;
   
   // Flange: second support for the trousers
   boxpar[0] = 25.9/2.;
