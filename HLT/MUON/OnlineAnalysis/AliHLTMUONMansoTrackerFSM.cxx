@@ -389,13 +389,14 @@ bool AliHLTMUONMansoTrackerFSM::FillTrackData(AliHLTMUONMansoTrackStruct& track)
 
 	DebugTrace("FillTrack: st5 = " << fSt5rec->fClusterPoint << ", st4 = " << fFoundPoint->fClusterPoint);
 	
-	track.fId = fTrackId;
-	// Increment track Id and keep it positive.
-	//TODO: handle the wrapparound better.
-	if (fTrackId < 0x7FFFFFFF)
-		fTrackId++;
-	else
-		fTrackId = 0;
+	// Construct the track ID from the running counter fTrackId and the
+	// bottom 8 bits of fTriggerId which will make this unique for an event.
+	track.fId = (fTrackId << 8) | (fTriggerId & 0xFF);
+	
+	// Increment the track ID and warp it around at 0x7FFFFF since the
+	// bottom 8 bits are copied from fTriggerId and the sign bit in
+	// track.fId must be positive.
+	fTrackId = (fTrackId + 1) & 0x007FFFFF;
 	
 	track.fTrigRec = fTriggerId;
 	

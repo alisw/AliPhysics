@@ -64,7 +64,13 @@ public:
 	
 	/// Sets if the decoder should enable the error recovery logic.
 	void TryRecover(bool value);
-
+	
+	/**
+	 * Sets the DDL bit according to the DDL value given.
+	 * It is used to keep the trigger record IDs unique.
+	 */
+	void SetDDL(AliHLTInt32_t ddl) { fDecoder.GetHandler().SetDDL(ddl); }
+	
 private:
 
 	class AliDecoderHandler : public AliMUONTriggerDDLDecoderEventHandler, public AliHLTLogging
@@ -144,6 +150,11 @@ private:
 		 */
 		void WarnOnly(bool value) { fWarnOnly = value; }
 		
+		/**
+		 * Sets the DDL bit according to the DDL value given.
+		 */
+		void SetDDL(AliHLTInt32_t ddl) { fDDLBit = (ddl == 20 ? 0x00 : 0x80); }
+		
 		// Methods inherited from AliMUONTriggerDDLDecoderEventHandler:
 		
 		/// Called for each new buffer.
@@ -192,6 +203,7 @@ private:
 		AliHLTUInt32_t fOutputTrigRecsCount;  ///< The number of reconstructed trigger records actually stored in fOutputTrigRecs.
 		AliHLTMUONTriggerRecordStruct* fOutputTrigRecs;  ///< Pointer to the output buffer of trigger records structures.
 		AliHLTInt32_t fTrigRecId;  ///< A running counter for the trigger record ID.
+		AliHLTInt32_t fDDLBit;  ///< The DDL bit used to generate unique trigger record IDs.
 		AliHLTInt32_t fCurrentRegional;  ///< The current regional trigger structure number.
 		AliHLTInt32_t fCurrentLocal;  ///< The current local trigger structure number.
 		bool fSuppressPartialTriggers;  ///< Flag to indicate if we should suppres partial triggers.

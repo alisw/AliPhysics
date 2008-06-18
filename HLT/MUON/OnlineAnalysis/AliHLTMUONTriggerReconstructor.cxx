@@ -121,6 +121,7 @@ AliHLTMUONTriggerReconstructor::AliDecoderHandler::AliDecoderHandler() :
 	fOutputTrigRecsCount(0),
 	fOutputTrigRecs(NULL),
 	fTrigRecId(0),
+	fDDLBit(0),
 	fCurrentRegional(0),
 	fCurrentLocal(0),
 	fSuppressPartialTriggers(false),
@@ -175,8 +176,8 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnLocalStruct(
 	fCurrentLocal++;
 	AliHLTInt32_t iReg = fCurrentRegional;
 	AliHLTInt32_t iLoc = fCurrentLocal;
-	assert(iReg >= 0);
-	assert(iLoc >= 0);
+	assert(iReg >= 0 and iReg < 8);
+	assert(iLoc >= 0 and iLoc < 16);
 
 	// Check if there is anything in the trigger patterns at all.
 	// If nothing then ignore this local L0 trigger.
@@ -209,7 +210,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnLocalStruct(
 
 	bool setX[4] = {false, false, false, false};
 	bool setY[4] = {false, false, false, false};
-
+	
 	for (int iChamber = 0; iChamber < 4; iChamber++) //4 chambers
 	for (int iPlane = 0; iPlane < 2; iPlane++) // 2 cathode planes
 	{
@@ -253,13 +254,15 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnLocalStruct(
 		}
 	}
 
-	fOutputTrigRecs[fOutputTrigRecsCount].fId = fTrigRecId;
+	// Construct the ID from the running counter fTrigRecId and use the
+	// regional counter, local counter and DDL id for the bottom 8 bits.
+	fOutputTrigRecs[fOutputTrigRecsCount].fId =
+		(fTrigRecId << 8) | fDDLBit | (iReg << 4) | iLoc;
 
-	// Increment trigger record Id and keep it positive.
-	if (fTrigRecId < 0x7FFFFFFF)
-		fTrigRecId++;
-	else
-		fTrigRecId = 0;
+	// Increment the trigger record ID and warp it around at 0x7FFFFF since
+	// the bottom 8 bits are filled with the regional + local counters and the
+	// sign bit in fOutputTrigRecs[fOutputTrigRecsCount].fId must be positive.
+	fTrigRecId = (fTrigRecId + 1) & 0x007FFFFF;
 	
 	AliHLTMUONRecHitStruct* hit1 = NULL;
 	if (hitset[0])

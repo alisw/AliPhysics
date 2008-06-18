@@ -398,9 +398,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			continue;
 		}
 		
+		AliHLTInt32_t receivedDDL = AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification);
 		if (fDDL != -1)
 		{
-			if (AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification) != fDDL)
+			if (receivedDDL != fDDL)
 			{
 				HLTWarning("Received raw data from an unexpected DDL.");
 			}
@@ -435,6 +436,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		
 		// Decode if this is a scalar event or not.
 		bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
+		
+		// Remember: the following does NOT change the mapping!
+		// It is just to generate unique trigger record IDs.
+		fTrigRec->SetDDL(receivedDDL);
 		
 		bool runOk = fTrigRec->Run(
 				buffer, payloadSize, scalarEvent,
