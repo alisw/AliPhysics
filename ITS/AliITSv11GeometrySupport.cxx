@@ -1571,7 +1571,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kWingHalfThick        = (  10.0/2) *fgkmm;
   const Double_t kThetaWing            =       45.0 *fgkDegree;
   // Dimensions of the SSD-SDD Mounting Brackets
-  const Double_t kBracketRmin          = ( 540.0/2) *fgkmm;// See SDD ROutMin
+  const Double_t kBracketRmin          = ( 541.0/2) *fgkmm;// See SDD ROutMin
   const Double_t kBracketRmax          = ( 585.0/2) *fgkmm;
   const Double_t kBracketHalfLength    = (   4.0/2) *fgkmm;
   const Double_t kBracketPhi           = (70.*fgkmm/kBracketRmax)*fgkRadian;
