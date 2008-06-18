@@ -140,7 +140,8 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
   // 2. dQdl calculation
   //
 
-  Double_t cnv   = 1.0 / (GetBz() * kB2C);
+  Double_t cnv = GetBz() < 1.e-5 ? 1.e5 : 1.0 / (GetBz() * kB2C);
+  //  Double_t cnv   = 1.0 / (GetBz() * kB2C);
 
   Double_t pp[5] = { p[0]    
                    , p[1]
