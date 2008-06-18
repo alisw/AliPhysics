@@ -557,6 +557,7 @@ void AliABSOv3::CreateGeometry()
 //    Drawing ALIP2A__00xx       //
 ///////////////////////////////////     
       Float_t dzFaSteelCone25   = 25.;
+      Float_t eps = 0.001;
       Float_t rInFaSteelCone25A = rInFaConcreteCone2;
       Float_t rOuFaSteelCone25A = rOuFaConcreteCone2;      
       Float_t rInFaSteelCone25B = rInFaSteelCone25A + dzFaSteelCone25 * angle02;
@@ -564,8 +565,8 @@ void AliABSOv3::CreateGeometry()
       
       TGeoVolume* voFaSteelCone25 = new TGeoVolume("AFaSteelCone25", 
 						   new TGeoCone(dzFaSteelCone25/2., 
-								rInFaSteelCone25A, rOuFaSteelCone25A, 	    
-								rInFaSteelCone25B, rOuFaSteelCone25B),
+								rInFaSteelCone25A + eps, rOuFaSteelCone25A - eps, 	    
+								rInFaSteelCone25B + eps, rOuFaSteelCone25B - eps),
 						   kMedSteelSh);
 
 // Pos 16
@@ -581,16 +582,16 @@ void AliABSOv3::CreateGeometry()
       
       TGeoVolume* voFaSteelCone31 = new TGeoVolume("AFaSteelCone31", 
 						   new TGeoCone(dzFaSteelCone31/2., 
-								rInFaSteelCone31A, rOuFaSteelCone31A, 	    
-								rInFaSteelCone31B, rOuFaSteelCone31B),
+								rInFaSteelCone31A + eps, rOuFaSteelCone31A - eps, 	    
+								rInFaSteelCone31B + eps, rOuFaSteelCone31B - eps),
 						   kMedSteelSh);
-      // Outer Rregion with higher transport cuts
+      // Outer Region with higher transport cuts
       dz = 5.;
       TGeoVolume* voFaSteelCone31I = new TGeoVolume("AFaSteelCone31I", 
 						    new TGeoCone(dz/2., 
-								 rInFaSteelCone31B - dz * angle03, 
-								 rOuFaSteelCone31B - dz * angle10, 
-								 rInFaSteelCone31B, rOuFaSteelCone31B),
+								 rInFaSteelCone31B - dz * angle03 + eps, 
+								 rOuFaSteelCone31B - dz * angle10 - eps, 
+								 rInFaSteelCone31B + eps, rOuFaSteelCone31B - eps),
 						    kMedSteel);
       
       voFaSteelCone31->AddNode(voFaSteelCone31I, 1,  new TGeoTranslation(0., 0., dzFaSteelCone31/2. - dz/2.));
@@ -733,9 +734,9 @@ void AliABSOv3::CreateGeometry()
       z += dzFaGraphiteCone;
       voFaAccM->AddNode(voFaConcreteCone, 1, new TGeoTranslation(0., 0., z + dzFaConcreteCone / 2.));
       z += dzFaConcreteCone;
-      voFaAccM->AddNode(voFaSteelCone25,  1, new TGeoTranslation(0., 0., z + dzFaSteelCone25 / 2. + 0.001));
+      voFaAccM->AddNode(voFaSteelCone25,  1, new TGeoTranslation(0., 0., z + dzFaSteelCone25 / 2.));
       z += dzFaSteelCone25;
-      voFaAccM->AddNode(voFaSteelCone31,  1, new TGeoTranslation(0., 0., z + dzFaSteelCone31 / 2. + 0.001));
+      voFaAccM->AddNode(voFaSteelCone31,  1, new TGeoTranslation(0., 0., z + dzFaSteelCone31 / 2.));
 
 //
 // Inner shield
