@@ -564,6 +564,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 	for (Int_t n = 0; n < 2; n++)
 	for (Int_t m = 0; m < 16; m++)
 	{
+		lookupTable->fRow[i][j][k][n][m].fIdFlags = 0x0;
 		lookupTable->fRow[i][j][k][n][m].fX = 0;
 		lookupTable->fRow[i][j][k][n][m].fY = 0;
 		lookupTable->fRow[i][j][k][n][m].fZ = 0;
@@ -599,6 +600,8 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 			{
 				Int_t detElemId = ddlStore->GetDEfromLocalBoard(boardId, iChamber);
 				
+				AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(iChamber+10, detElemId);
+				
 				const AliMUONGeometryDetElement* detElemTransform = transformer.GetDetElement(detElemId);
 				if (detElemTransform == NULL)
 				{
@@ -633,6 +636,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 						detElemTransform->Local2Global(lx, ly, 0, gx, gy, gz);
 						
 						// Fill the LUT
+						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fIdFlags = idflags;
 						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fX = gx;
 						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fY = gy;
 						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fZ = gz;

@@ -216,7 +216,6 @@ int DecodeFileType(const char* filename, AliHLTMUONDataBlockType& type)
 	{
 	case kTriggerRecordsDataBlock:
 	case kTrigRecsDebugDataBlock:
-	case kTriggerChannelsDataBlock:
 	case kRecHitsDataBlock:
 	case kClustersDataBlock:
 	case kChannelsDataBlock:
@@ -253,7 +252,6 @@ void PrintUsage(bool asError = true)
 	os << "       Where <typename> can be one of:" << endl;
 	os << "         trigrecs - trigger records data." << endl;
 	os << "         trigrecsdebug - debugging information about trigger records." << endl;
-	os << "         trigchannels - channel debugging in." << endl;
 	os << "         rechits - reconstructed hits data." << endl;
 	os << "         channels - channel debugging information from hit reconstruction." << endl;
 	os << "         clusters - cluster debugging information from hit reconstruction." << endl;

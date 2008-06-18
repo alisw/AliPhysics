@@ -67,6 +67,7 @@ struct AliHLTMUONHitRecoLutRow
  */
 struct AliHLTMUONTriggerRecoLutRow
 {
+	AliHLTUInt32_t fIdFlags;  /// The chamber and detector element identifier packed in AliHLTMUONRecHitStruct::fFlags format.
 	AliHLTFloat32_t fX;  // Global X coordinate of channel.
 	AliHLTFloat32_t fY;  // Global Y coordinate of channel.
 	AliHLTFloat32_t fZ;  // Global Z coordinate of channel.
@@ -126,7 +127,6 @@ enum AliHLTMUONDataBlockType
 	kUnknownDataBlock = 0,
 	kTriggerRecordsDataBlock = 1000,
 	kTrigRecsDebugDataBlock = 1001,
-	kTriggerChannelsDataBlock = 1002,
 	kRecHitsDataBlock = 2000,
 	kClustersDataBlock = 2001,
 	kChannelsDataBlock = 2002,
@@ -192,7 +192,6 @@ inline std::ostream& operator << (std::ostream& stream, AliHLTMUONDataBlockType 
 	case kUnknownDataBlock:         stream << "kUnknownDataBlock";         break;
 	case kTriggerRecordsDataBlock:  stream << "kTriggerRecordsDataBlock";  break;
 	case kTrigRecsDebugDataBlock:   stream << "kTrigRecsDebugDataBlock";   break;
-	case kTriggerChannelsDataBlock: stream << "kTriggerChannelsDataBlock"; break;
 	case kRecHitsDataBlock:         stream << "kRecHitsDataBlock";         break;
 	case kClustersDataBlock:        stream << "kClustersDataBlock";        break;
 	case kChannelsDataBlock:        stream << "kChannelsDataBlock";        break;

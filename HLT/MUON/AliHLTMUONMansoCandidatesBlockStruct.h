@@ -46,6 +46,10 @@ struct AliHLTMUONMansoCandidateStruct
 	// The regions of interest searched on the various chambers.
 	// fRoI[0] is region of interest on chamber 7, fRoI[1] is on 8 etc...
 	AliHLTMUONMansoRoIStruct fRoI[4];
+	
+	// The parameters used for momentum estimation:
+	AliHLTFloat32_t fZmiddle; // Z position in the middle of the magnetic field in centimetres.
+	AliHLTFloat32_t fBl; // The integrated magnetic field in (T.m) tesla metres.
 };
 
 /**
@@ -75,7 +79,7 @@ std::ostream& operator << (
 /**
  * Stream operator for usage with std::ostream classes which prints the track
  * candidate information in the following format:
- *  {fTrack = xx, fRoI[0] = {...}, fRoI[1] = {...}, fRoI[2] = {...}, fRoI[3] = {...}}
+ *  {fTrack = xx, fRoI[0] = {...}, fRoI[1] = {...}, fRoI[2] = {...}, fRoI[3] = {...}, fZmiddle = yy, fBl = zz}
  */
 std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONMansoCandidateStruct& candidate
@@ -108,7 +112,8 @@ inline bool operator == (
 {
 	return a.fTrack == b.fTrack
 		and a.fRoI[0] == b.fRoI[0] and a.fRoI[1] == b.fRoI[1]
-		and a.fRoI[2] == b.fRoI[2] and a.fRoI[3] == b.fRoI[3];
+		and a.fRoI[2] == b.fRoI[2] and a.fRoI[3] == b.fRoI[3]
+		and a.fZmiddle == b.fZmiddle and a.fBl == b.fBl;
 }
 
 inline bool operator != (

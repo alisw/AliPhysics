@@ -38,7 +38,13 @@ std::ostream& operator << (
 		<< ", " << info.fDetElemId[3]
 		<< "], fZmiddle = " << info.fZmiddle
 		<< ", fBl = " << info.fBl
-		<< "}";
+		<< ", fL0Struct = {fX2X1 = " << std::showbase << std::hex
+		<< info.fL0Struct.fX2X1
+		<< ", fX4X3 = " << info.fL0Struct.fX4X3
+		<< ", fY2Y1 = " << info.fL0Struct.fY2Y1
+		<< ", fY4Y3 = " << info.fL0Struct.fY4Y3
+		<< ", fTriggerBits = " << info.fL0Struct.fTriggerBits
+		<< std::dec << "}}";
 	return stream;
 }
 

@@ -35,6 +35,7 @@
 
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
+#include "AliHLTMUONUtils.h"
 #include <cstring>
 #include <strings.h>
 
@@ -685,8 +686,12 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 	      HLTError("Number of RecHit (i.e. %d) exceeds the max number of RecHit limit %d.",(*fRecPointsCount),fMaxRecPointsCount);
 	      return false;
 	    }
-	    
-	    //fRecPoints[(*fRecPointsCount)].fId = idCentralB;
+
+	    AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(
+	         (fPadData[idCentralB].fDetElemId / 100) - 1,
+	         fPadData[idCentralB].fDetElemId
+	      );
+	    fRecPoints[(*fRecPointsCount)].fFlags = idflags;
 	    fRecPoints[(*fRecPointsCount)].fX = fRecX[nb];
 	    fRecPoints[(*fRecPointsCount)].fY = fRecY[b];
 	    fRecPoints[(*fRecPointsCount)].fZ = fPadData[idCentralB].fRealZ;

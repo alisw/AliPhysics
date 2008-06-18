@@ -49,6 +49,8 @@ std::ostream& operator << (
 		<< ", fRoI[1] = " << candidate.fRoI[1]
 		<< ", fRoI[2] = " << candidate.fRoI[2]
 		<< ", fRoI[3] = " << candidate.fRoI[3]
+		<< ", fZmiddle = " << candidate.fZmiddle
+		<< ", fBl = " << candidate.fBl
 		<< "}";
 	return stream;
 }

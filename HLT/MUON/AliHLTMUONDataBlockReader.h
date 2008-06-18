@@ -29,7 +29,6 @@
 
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONTrigRecsDebugBlockStruct.h"
-#include "AliHLTMUONTriggerChannelsBlockStruct.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
@@ -221,11 +220,6 @@ typedef AliHLTMUONDataBlockReader<
 		AliHLTMUONTrigRecsDebugBlockStruct,
 		AliHLTMUONTrigRecInfoStruct
 	> AliHLTMUONTrigRecsDebugBlockReader;
-
-typedef AliHLTMUONDataBlockReader<
-		AliHLTMUONTriggerChannelsBlockStruct,
-		AliHLTMUONTriggerChannelStruct
-	> AliHLTMUONTriggerChannelsBlockReader;
 
 typedef AliHLTMUONDataBlockReader<
 		AliHLTMUONRecHitsBlockStruct,

@@ -135,6 +135,7 @@ AliHLTMUONTriggerReconstructor::AliDecoderHandler::AliDecoderHandler() :
 	for (Int_t n = 0; n < 2; n++)
 	for (Int_t m = 0; m < 16; m++)
 	{
+		fLookupTable.fRow[i][j][k][n][m].fIdFlags = 0x0;
 		fLookupTable.fRow[i][j][k][n][m].fX = 0;
 		fLookupTable.fRow[i][j][k][n][m].fY = 0;
 		fLookupTable.fRow[i][j][k][n][m].fZ = 0;
@@ -221,6 +222,8 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnLocalStruct(
 			{
 				fOutputTrigRecs[fOutputTrigRecsCount].fHit[iChamber].fX =
 					fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fX;
+				fOutputTrigRecs[fOutputTrigRecsCount].fHit[iChamber].fFlags =
+					fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fIdFlags;
 				setX[iChamber] = true;
 			}
 			else

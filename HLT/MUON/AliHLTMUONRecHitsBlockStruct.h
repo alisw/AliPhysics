@@ -29,6 +29,18 @@ extern "C"
  */
 struct AliHLTMUONRecHitStruct
 {
+	// The flags word constains the following bit fields (bit 31 is most
+	// significant):
+	//
+	// bits:  [ 31 -- 16 ][ 15 -- 12 ][ 11 --- 0 ]
+	// field:   reserved    chamber    detElemId
+	//
+	// Where we have,
+	// reserved bits must be set to zero.
+	// chamber - specifies the chamber number in the range [0..13], 0xF for invalid.
+	// detElemId - specifies the detector element ID number.
+	AliHLTUInt32_t fFlags;
+	
 	AliHLTFloat32_t fX; // X coordinate.
 	AliHLTFloat32_t fY; // Y coordinate.
 	AliHLTFloat32_t fZ; // Z coordinate.
@@ -57,8 +69,9 @@ inline std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONRecHitStruct& hit
 	)
 {
-	stream	<< "{fX = " << hit.fX << ", fY = " << hit.fY << ", fZ = "
-		<< hit.fZ << "}";
+	stream	<< "{fFlags = " << std::showbase << std::hex
+		<< hit.fFlags << std::dec << ", fX = " << hit.fX
+		<< ", fY = " << hit.fY << ", fZ = " << hit.fZ << "}";
 	return stream;
 }
 
@@ -76,7 +89,7 @@ inline bool operator == (
 		const AliHLTMUONRecHitStruct& a, const AliHLTMUONRecHitStruct& b
 	)
 {
-	return a.fX == b.fX and a.fY == b.fY and a.fZ == b.fZ;
+	return a.fFlags == b.fFlags and a.fX == b.fX and a.fY == b.fY and a.fZ == b.fZ;
 }
 
 inline bool operator != (

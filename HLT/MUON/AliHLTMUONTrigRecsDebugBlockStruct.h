@@ -17,6 +17,7 @@
  */
 
 #include "AliHLTMUONDataTypes.h"
+#include "AliMUONTriggerDDLDecoderEventHandler.h"
 
 extern "C"
 {
@@ -38,6 +39,8 @@ struct AliHLTMUONTrigRecInfoStruct
 	// The parameters used for momentum estimation:
 	AliHLTFloat32_t fZmiddle; // Z position in the middle of the magnetic field in centimetres.
 	AliHLTFloat32_t fBl; // The integrated magnetic field in (T.m) tesla metres.
+	
+	AliMUONLocalInfoStruct fL0Struct;  // Copy of the L0 local trigger structure bits.
 };
 
 /**
@@ -80,7 +83,12 @@ inline bool operator == (
 	)
 {
 	return a.fTrigRecId == b.fTrigRecId and a.fDetElemId == b.fDetElemId
-		and a.fZmiddle == b.fZmiddle and a.fBl == b.fBl;
+		and a.fZmiddle == b.fZmiddle and a.fBl == b.fBl
+		and a.fL0Struct.fX2X1 == b.fL0Struct.fX2X1
+		and a.fL0Struct.fX4X3 == b.fL0Struct.fX4X3
+		and a.fL0Struct.fY2Y1 == b.fL0Struct.fY2Y1
+		and a.fL0Struct.fY4Y3 == b.fL0Struct.fY4Y3
+		and a.fL0Struct.fTriggerBits == b.fL0Struct.fTriggerBits;
 }
 
 inline bool operator != (

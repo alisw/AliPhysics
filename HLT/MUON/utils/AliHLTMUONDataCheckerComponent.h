@@ -21,6 +21,10 @@
 
 class AliMpDDLStore;
 extern "C" struct AliHLTMUONRecHitStruct;
+extern "C" struct AliHLTMUONClusterStruct;
+extern "C" struct AliHLTMUONTriggerRecordStruct;
+extern "C" struct AliHLTMUONTrigRecInfoStruct;
+extern "C" struct AliHLTMUONMansoTrackStruct;
 
 /**
  * @class AliHLTMUONDataCheckerComponent
@@ -162,6 +166,28 @@ private:
 			AliHLTUInt32_t entryNumber,
 			const AliHLTMUONMansoTrackStruct& track,
 			bool ddl[22]
+		) const;
+	
+	bool CheckDetElemIds(
+			const AliHLTComponentBlockData& infoBlock,
+			AliHLTUInt32_t infoBlockNumber,
+			AliHLTUInt32_t infoEntryNumber,
+			const AliHLTMUONTrigRecInfoStruct& info,
+			const AliHLTComponentBlockData& trBlock,
+			AliHLTUInt32_t trBlockNumber,
+			AliHLTUInt32_t trEntryNumber,
+			const AliHLTMUONTriggerRecordStruct& tr
+		) const;
+	
+	bool CheckDetElemIds(
+			const AliHLTComponentBlockData& clusterBlock,
+			AliHLTUInt32_t clusterBlockNumber,
+			AliHLTUInt32_t clusterEntryNumber,
+			const AliHLTMUONClusterStruct& cluster,
+			const AliHLTComponentBlockData& hitBlock,
+			AliHLTUInt32_t hitBlockNumber,
+			AliHLTUInt32_t hitEntryNumber,
+			const AliHLTMUONRecHitStruct& hit
 		) const;
 	
 	bool CheckRawDataBlock(

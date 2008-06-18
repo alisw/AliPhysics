@@ -188,7 +188,7 @@ public:
 	/**
 	 * Returns the chamber number of this hit in the range [1..14].
 	 * If -1 is returned then the chamber number is not known because the
-	 * extra debugging information such as detector element ID was not set.
+	 * detector element ID was not set or is invalid.
 	 * @param warn  Indicates if any warning should be printed in case of problems.
 	 */
 	Int_t Chamber(bool warn = true) const;

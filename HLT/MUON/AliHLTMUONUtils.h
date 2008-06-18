@@ -21,7 +21,7 @@ struct AliHLTMUONTriggerRecordStruct;
 struct AliHLTMUONTriggerRecordsBlockStruct;
 struct AliHLTMUONTrigRecInfoStruct;
 struct AliHLTMUONTrigRecsDebugBlockStruct;
-struct AliHLTMUONTriggerChannelsBlockStruct;
+struct AliHLTMUONRecHitStruct;
 struct AliHLTMUONRecHitsBlockStruct;
 struct AliHLTMUONClusterStruct;
 struct AliHLTMUONClustersBlockStruct;
@@ -70,6 +70,30 @@ public:
 			AliHLTUInt32_t flags, // [in]
 			AliHLTMUONParticleSign& sign, // [out]
 			bool hitset[4] // [out]
+		);
+	
+	/**
+	 * This packs the given parameters into the bits of a word appropriate
+	 * for AliHLTMUONRecHitStruct::fFlags.
+	 * @param chamber    The chamber number in the range [0..13].
+	 * @param detElemId  Detector element ID number.
+	 * @return  Returns the 32 bit packed word.
+	 */
+	static AliHLTUInt32_t PackRecHitFlags(
+			AliHLTUInt8_t chamber, AliHLTUInt16_t detElemId
+		);
+
+	/**
+	 * This unpacks the AliHLTMUONRecHitStruct::fFlags bits into
+	 * its component fields.
+	 * [in]  @param flags  The flags from an AliHLTMUONRecHitStruct structure.
+	 * [out] @param chamber    Sets the chamber number in the range [0..13].
+	 * [out] @param detElemId  Sets the detector element ID number.
+	 */
+	static void UnpackRecHitFlags(
+			AliHLTUInt32_t flags, // [in]
+			AliHLTUInt8_t& chamber, // [out]
+			AliHLTUInt16_t& detElemId // [out]
 		);
 
 	/**
@@ -334,6 +358,7 @@ public:
 		kParticleSignBitsNotValid,  ///< The particle sign bits are not a valid value.
 		kHitNotMarkedAsNil,  ///< A hit was marked as not found, but the corresponding hit structure was not set to nil.
 		kInvalidDetElementNumber,  ///< An invalid detector element ID was found.
+		kInvalidChamberNumber,  ///< An invalid chamber number was found.
 		kHitIsNil,  ///< The hit cannot be set to a nil value.
 		kInvalidChannelCount,  ///< The number of channels indicated is zero or outside the valid range.
 		kInvalidBusPatchId,  ///< The bus patch ID is outside the valid range.
@@ -401,9 +426,6 @@ public:
 		AliHLTUInt32_t count = 1;
 		return HeaderOk(block, reason, count);
 	}
-	
-	// this method is deprecated.
-	static bool HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
 	
 	/**
 	 * Method used to check if the header information corresponds to the
@@ -665,8 +687,23 @@ public:
 		return IntegrityOk(block, reason, recordNum, count);
 	}
 	
-	// this method is deprecated.
-	static bool IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block, WhyNotValid* reason = NULL);
+	/**
+	 * This method is used to check more extensively if the integrity of the
+	 * reconstructed hit structure is OK and returns true in that case.
+	 * [in] \param hit  The reconstructed hit structure to check.
+	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 *      the reason code describing why the structure is not valid, if and
+	 *      only if a problem is found with the data.
+	 * \returns  true if there is no problem with the data and false otherwise.
+	 */
+	static bool IntegrityOk(
+			const AliHLTMUONRecHitStruct& hit,
+			WhyNotValid* reason = NULL
+		)
+	{
+		AliHLTUInt32_t count = 1;
+		return IntegrityOk(hit, reason, count);
+	}
 	
 	/**
 	 * This method is used to check more extensively if the integrity of the
@@ -675,15 +712,19 @@ public:
 	 * [out] \param reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
+	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 *      the number of the cluster structure that had a problem. This value
+	 *      will only contain a valid value if the method
+	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
 	 * \returns  true if there is no problem with the data and false otherwise.
 	 */
 	static bool IntegrityOk(
 			const AliHLTMUONRecHitsBlockStruct& block,
-			WhyNotValid* reason = NULL
+			WhyNotValid* reason = NULL, AliHLTUInt32_t* recordNum = NULL
 		)
 	{
 		AliHLTUInt32_t count = 1;
-		return IntegrityOk(block, reason, count);
+		return IntegrityOk(block, reason, recordNum, count);
 	}
 	
 	/**
@@ -956,8 +997,14 @@ public:
 		);
 	
 	static bool IntegrityOk(
-			const AliHLTMUONRecHitsBlockStruct& block,
+			const AliHLTMUONRecHitStruct& hit,
 			WhyNotValid* reason, AliHLTUInt32_t& reasonCount
+		);
+	
+	static bool IntegrityOk(
+			const AliHLTMUONRecHitsBlockStruct& block,
+			WhyNotValid* reason, AliHLTUInt32_t* recordNum,
+			AliHLTUInt32_t& reasonCount
 		);
 	
 	static bool IntegrityOk(

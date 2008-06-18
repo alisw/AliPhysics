@@ -104,6 +104,20 @@ void PrintRubbishData(AliHLTUInt32_t offset, const char* padByte, AliHLTUInt32_t
 }
 
 
+void PrintBitPattern(AliHLTUInt32_t value, int bitcount = 32)
+{
+	// Prints a bit pattern to cout.
+	
+	for (int i = bitcount-1; i >= 0; i--)
+	{
+		if ( ((value >> i) & 0x1) == 1 )
+			cout << "1";
+		else
+			cout << "0";
+	}
+}
+
+
 template <typename FieldType>
 int CheckHeaderField(
 		FieldType& field, const char* buffer, unsigned long bufferSize,
@@ -238,67 +252,76 @@ namespace
 		void HandleError(
 				const char* errorMessage, int errorCode,
 				const char* errorCodeString, const void* location
-			)
-		{
-			unsigned long offset = (unsigned long)location - (unsigned long)fBufferStart
-				+ sizeof(AliRawDataHeader);
-			
-			cerr << "ERROR: " << errorMessage
-				<< " [Error code = " << errorCode << " ("
-				<< errorCodeString << "), at byte "
-				<< offset << " (" << noshowbase << hex << "0x"
-				<< offset << dec << ")]" << endl;
-			
-			if (fDumpStart == NULL) fDumpStart = location;
-			fDumpData = true;
-		}
+			);
 	
-		void TryDumpCorruptData(const void* dumpEnd)
-		{
-			if (dumpEnd < fDumpStart) return;
-			if (not fDumpData) return;
-			
-			unsigned long startOffset = (unsigned long)fDumpStart - (unsigned long)fBufferStart
-				+ sizeof(AliRawDataHeader);
-			unsigned long endOffset = (unsigned long)dumpEnd - (unsigned long)fBufferStart
-				+ sizeof(AliRawDataHeader);
-			if (endOffset - startOffset > 264)
-			{
-				endOffset = startOffset + 264;
-				dumpEnd = reinterpret_cast<const char*>(fBufferStart) + endOffset;
-			}
-			cerr << "Dumping corrupt data words from byte " << startOffset
-				<< " (" << noshowbase << hex << "0x" << startOffset
-				<< dec << "), to byte " << endOffset << " (" << noshowbase
-				<< hex << "0x" << endOffset << dec << "):" << endl;
-			const UInt_t* start = reinterpret_cast<const UInt_t*>(fDumpStart);
-			const UInt_t* end = reinterpret_cast<const UInt_t*>(dumpEnd);
-			cerr << "     Start byte     | Data words" << endl;
-			for (const UInt_t* current = start; current < end; current++)
-			{
-				unsigned long currentByte = (unsigned long)current
-					- (unsigned long)fBufferStart + sizeof(AliRawDataHeader);
-				cerr << right << setw(9) << dec << currentByte << setw(0)
-					<< " 0x" << left << setw(7) << noshowbase << hex
-					<< currentByte << setw(0) << right << " | ";
-				char fillChar = cerr.fill();
-				cerr.fill('0');
-				for (int i = 0; i < 4 and current < end; i++, current++)
-				{
-					cerr << noshowbase << hex << "0x" << setw(8)
-						<< (*current) << setw(0) << dec << " ";
-				}
-				cerr.fill(fillChar);
-				cerr << endl;
-			}
-			fDumpStart = NULL;
-			fDumpData = false;
-		}
+		void TryDumpCorruptData(const void* dumpEnd);
 		
 		const void* fBufferStart;  ///< Start location of buffer.
 		const void* fDumpStart;  ///< Start location of corrupt data to dump.
 		bool fDumpData;  ///< Flag indicating if fDumpStart points to corrupt data and should be dumped.
 	};
+	
+	
+	void AliDecoderHandler::HandleError(
+			const char* errorMessage, int errorCode,
+			const char* errorCodeString, const void* location
+		)
+	{
+		unsigned long offset = (unsigned long)location - (unsigned long)fBufferStart
+			+ sizeof(AliRawDataHeader);
+		
+		cerr << "ERROR: " << errorMessage
+			<< " [Error code = " << errorCode << " ("
+			<< errorCodeString << "), at byte "
+			<< offset << " (" << noshowbase << hex << "0x"
+			<< offset << dec << ")]" << endl;
+		
+		if (fDumpStart == NULL) fDumpStart = location;
+		fDumpData = true;
+	}
+	
+	
+	void AliDecoderHandler::TryDumpCorruptData(const void* dumpEnd)
+	{
+		if (dumpEnd < fDumpStart) return;
+		if (not fDumpData) return;
+		
+		unsigned long startOffset = (unsigned long)fDumpStart - (unsigned long)fBufferStart
+			+ sizeof(AliRawDataHeader);
+		unsigned long endOffset = (unsigned long)dumpEnd - (unsigned long)fBufferStart
+			+ sizeof(AliRawDataHeader);
+		if (endOffset - startOffset > 264)
+		{
+			endOffset = startOffset + 264;
+			dumpEnd = reinterpret_cast<const char*>(fBufferStart) + endOffset;
+		}
+		cerr << "Dumping corrupt data words from byte " << startOffset
+			<< " (" << noshowbase << hex << "0x" << startOffset
+			<< dec << "), to byte " << endOffset << " (" << noshowbase
+			<< hex << "0x" << endOffset << dec << "):" << endl;
+		const UInt_t* start = reinterpret_cast<const UInt_t*>(fDumpStart);
+		const UInt_t* end = reinterpret_cast<const UInt_t*>(dumpEnd);
+		cerr << "     Start byte     | Data words" << endl;
+		for (const UInt_t* current = start; current < end; current++)
+		{
+			unsigned long currentByte = (unsigned long)current
+				- (unsigned long)fBufferStart + sizeof(AliRawDataHeader);
+			cerr << right << setw(9) << dec << currentByte << setw(0)
+				<< " 0x" << left << setw(7) << noshowbase << hex
+				<< currentByte << setw(0) << right << " | ";
+			char fillChar = cerr.fill();
+			cerr.fill('0');
+			for (int i = 0; i < 4 and current < end; i++, current++)
+			{
+				cerr << noshowbase << hex << "0x" << setw(8)
+					<< (*current) << setw(0) << dec << " ";
+			}
+			cerr.fill(fillChar);
+			cerr << endl;
+		}
+		fDumpStart = NULL;
+		fDumpData = false;
+	}
 
 	/**
 	 * Event handler for the tracker DDL decoder.
@@ -310,7 +333,10 @@ namespace
 	public:
 		AliTrackerDecoderHandler() :
 			AliMUONTrackerDDLDecoderEventHandler(),
-			AliDecoderHandler()
+			AliDecoderHandler(),
+			fBlockNum(0),
+			fDSPNum(0),
+			fBusPatchNum(0)
 		{}
 		
 		virtual ~AliTrackerDecoderHandler() {}
@@ -318,6 +344,7 @@ namespace
 		void OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/)
 		{
 			fBufferStart = buffer;
+			fBlockNum = fDSPNum = fBusPatchNum = 0;
 		}
 		
 		void OnEndOfBuffer(const void* buffer, UInt_t bufferSize)
@@ -327,53 +354,140 @@ namespace
 			TryDumpCorruptData(bufferEnd);
 		}
 		
-		void OnNewBlock(const AliMUONBlockHeaderStruct* header, const void* /*data*/)
-		{
-			TryDumpCorruptData(header);
-			
-			//TODO print nicely.
-			cout << "block: " << header << endl;
-		}
+		void OnNewBlock(const AliMUONBlockHeaderStruct* header, const void* /*data*/);
 		
-		void OnNewDSP(const AliMUONDSPHeaderStruct* header, const void* /*data*/)
-		{
-			TryDumpCorruptData(header);
-			
-			//TODO print nicely.
-			cout << "DSP: " << header << endl;
-		}
+		void OnNewDSP(const AliMUONDSPHeaderStruct* header, const void* /*data*/);
 		
-		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* /*data*/)
-		{
-			TryDumpCorruptData(header);
-			
-			//TODO print nicely.
-			cout << "buspatch: " << header << endl;
-		}
+		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* /*data*/);
 		
-		void OnData(UInt_t data, bool parityError)
-		{
-			if (parityError)
-			{
-				// TODO complete
-				cerr << "Raw data word with parity error" << data << endl;
-			}
-			else
-			{
-				//TODO print nicely.
-				cout << "data word: 0x" << hex << data << dec << endl;
-			}
-		}
+		void OnData(UInt_t data, bool parityError);
 		
-		void OnError(ErrorCode error, const void* location)
-		{
-			TryDumpCorruptData(location);
-			HandleError(
-				ErrorCodeToMessage(error), error,
-				ErrorCodeToString(error), location
-			);
-		}
+		void OnError(ErrorCode error, const void* location);
+		
+	private:
+	
+		UInt_t fBlockNum;     ///< Number of block being processed [1..maxBlock].
+		UInt_t fDSPNum;       ///< Number of DSP being processed [1..maxDSP].
+		UInt_t fBusPatchNum;  ///< Number of bus patch being processed [1..maxBusPatch].
 	};
+	
+	
+	void AliTrackerDecoderHandler::OnNewBlock(const AliMUONBlockHeaderStruct* header, const void* /*data*/)
+	{
+		TryDumpCorruptData(header);
+		fBlockNum++;
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		cout << "================================ Block header "
+			<< setw(3) << fBlockNum << setw(0)
+			<< " ================================" << endl;
+		cout << "   Data key word for block : 0x" << noshowbase << setw(8) << setfill('0')
+			<< hex << header->fDataKey << dec << setfill(fillChar) << setw(0) << endl;
+		cout << "     Total Length of block : " << header->fTotalLength << endl;
+		cout << "        Length of raw data : " << header->fLength << endl;
+		cout << "                    DSP ID : " << header->fDSPId << endl;
+		cout << "           L0 trigger word : " << header->fL0Trigger << " (0x"
+			<< noshowbase << setw(8) << setfill('0') << hex << header->fL0Trigger
+			<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+		cout << "             Mini event ID : " << header->fMiniEventId << " (0x"
+			<< noshowbase << setw(8) << setfill('0') << hex << header->fMiniEventId
+			<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+		cout << "Event ID In Bunch Crossing : " << header->fEventId1 << " (0x"
+			<< noshowbase << setw(8) << setfill('0') << hex << header->fEventId1
+			<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+		cout << "  Event ID In Orbit Number : " << header->fEventId2 << " (0x"
+			<< noshowbase << setw(8) << setfill('0') << hex << header->fEventId2
+			<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+	}
+	
+	
+	void AliTrackerDecoderHandler::OnNewDSP(const AliMUONDSPHeaderStruct* header, const void* /*data*/)
+	{
+		TryDumpCorruptData(header);
+		fDSPNum++;
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		cout << "================================= DSP header "
+			<< setw(3) << fDSPNum << setw(0)
+			<< " =================================" << endl;
+		cout << "                     Data key word for FRT : 0x" << noshowbase
+			<< setw(8) << setfill('0') << hex << header->fDataKey << dec
+			<< setfill(fillChar) << setw(0) << endl;
+		cout << "                 Total length of structure : " << header->fTotalLength << endl;
+		cout << "                        Length of raw data : " << header->fLength << endl;
+		cout << "                                    DSP ID : " << header->fDSPId << endl;
+		cout << "        L1 accept in block Structure (CRT) : " << header->fBlkL1ATrigger
+			<< " (0x" << noshowbase << setw(8) << setfill('0') << hex
+			<< header->fBlkL1ATrigger << dec << setw(0) << setfill(fillChar) << ")" << endl;
+		cout << "           Mini event ID in bunch crossing : " << header->fMiniEventId
+			<< " (0x" << noshowbase << setw(8) << setfill('0') << hex
+			<< header->fMiniEventId << dec << setw(0) << setfill(fillChar) << ")" << endl;
+		cout << "Number of L1 accept in DSP Structure (FRT) : " << header->fL1ATrigger << endl;
+		cout << "Number of L1 reject in DSP Structure (FRT) : " << header->fL1RTrigger << endl;
+		const char* paddingWordValue = ") (INVALID)";
+		if (header->fPaddingWord == 0) paddingWordValue = ") (false)";
+		if (header->fPaddingWord == 1) paddingWordValue = ") (true)";
+		cout << "     Padding word set for 64 bits transfer : " << header->fPaddingWord
+			<< " (0x" << noshowbase << setw(8) << setfill('0') << hex
+			<< header->fPaddingWord << setw(0) << setfill(fillChar) << dec
+			<< paddingWordValue << endl;
+		cout << "                                Error word : " << header->fErrorWord
+			<< " (" << noshowbase << setw(8) << setfill('0') << hex
+			<< header->fErrorWord << setw(0) << setfill(fillChar)
+			<< dec << ")" << endl;
+	}
+	
+	
+	void AliTrackerDecoderHandler::OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* /*data*/)
+	{
+		TryDumpCorruptData(header);
+		fBusPatchNum++;
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		cout << "============================== Bus patch header "
+			<< setw(3) << fBusPatchNum << setw(0)
+			<< " ==============================" << endl;
+		cout << "Data key word for bus patch : 0x" << noshowbase << setw(8)
+			<< setfill('0') << hex << header->fDataKey << dec
+			<< setfill(fillChar) << setw(0) << endl;
+		cout << "  Total length of structure : " << header->fTotalLength << endl;
+		cout << "         Length of raw data : " << header->fLength << endl;
+		cout << "               Bus patch ID : " << header->fBusPatchId << endl;
+		if (header->fLength > 0)
+		{
+			cout << "    Raw bits |      Manu ID | Manu channel |   ADC Signal" << endl;
+			cout << "----------------------------------------------------------" << endl;
+		}
+	}
+	
+	
+	void AliTrackerDecoderHandler::OnData(UInt_t data, bool parityError)
+	{
+		UShort_t manuId, adc;
+		UChar_t manuChannel;
+		UnpackADC(data, manuId, manuChannel, adc);
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		cout << noshowbase << "  0x" << setfill('0') << hex << setw(8) << data
+			<< setw(0) << dec << setfill(fillChar) << "   "
+			<< setw(12) << manuId << setw(0) << "   "
+			<< setw(12) << (UInt_t)manuChannel << setw(0) << "   "
+			<< setw(12) << adc << setw(0);
+		if (parityError)
+		{
+			cout << " <= WARNING: Raw data word with parity error!" << endl;
+		}
+		else
+		{
+			cout << endl;
+		}
+	}
+	
+	
+	void AliTrackerDecoderHandler::OnError(ErrorCode error, const void* location)
+	{
+		TryDumpCorruptData(location);
+		HandleError(
+			ErrorCodeToMessage(error), error,
+			ErrorCodeToString(error), location
+		);
+	}
 
 	/**
 	 * Event handler for the trigger DDL decoder.
@@ -385,7 +499,9 @@ namespace
 	public:
 		AliTriggerDecoderHandler() :
 			AliMUONTriggerDDLDecoderEventHandler(),
-			AliDecoderHandler()
+			AliDecoderHandler(),
+			fRegNum(0),
+			fLocNum(0)
 		{}
 		
 		virtual ~AliTriggerDecoderHandler() {}
@@ -393,6 +509,7 @@ namespace
 		void OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/)
 		{
 			fBufferStart = buffer;
+			fRegNum = fLocNum = 0;
 		}
 		
 		void OnEndOfBuffer(const void* buffer, UInt_t bufferSize)
@@ -402,67 +519,650 @@ namespace
 			TryDumpCorruptData(bufferEnd);
 		}
 		
+		const char* EventTypeToString(UInt_t type);
+		
+		const char* DarcTypeToString(UInt_t type);
+		
 		void OnDarcHeader(
 				UInt_t header,
 				const AliMUONDarcScalarsStruct* scalars,
 				const void* data
-			)
-		{
-			if (scalars != NULL)
-				TryDumpCorruptData(scalars);
-			else
-				TryDumpCorruptData(data);
-			
-			//TODO print nicely.
-			cout << "DARC header: " << header << endl;
-		}
+			);
 		
 		void OnGlobalHeader(
 				const AliMUONGlobalHeaderStruct* header,
-				const AliMUONGlobalScalarsStruct* /*scalars*/,
+				const AliMUONGlobalScalarsStruct* scalars,
 				const void* /*data*/
-			)
-		{
-			TryDumpCorruptData(header);
-			
-			//TODO print nicely.
-			cout << "global header: " << header << endl;
-		}
+			);
 		
 		void OnNewRegionalStruct(
 				const AliMUONRegionalHeaderStruct* regionalStruct,
-				const AliMUONRegionalScalarsStruct* /*scalars*/,
+				const AliMUONRegionalScalarsStruct* scalars,
 				const void* /*data*/
-			)
-		{
-			TryDumpCorruptData(regionalStruct);
-			
-			//TODO print nicely.
-			cout << "regional struct: " << regionalStruct << endl;
-		}
+			);
 		
 		void OnLocalStruct(
 				const AliMUONLocalInfoStruct* localStruct,
-				const AliMUONLocalScalarsStruct* /*scalars*/
-			)
+				const AliMUONLocalScalarsStruct* scalars
+			);
+		
+		void OnError(ErrorCode error, const void* location);
+	
+	private:
+	
+		UInt_t fRegNum;  ///< Number of block being processed [1..maxReg].
+		UInt_t fLocNum;  ///< Number of DSP being processed [1..maxLoc].
+	};
+	
+	
+	const char* AliTriggerDecoderHandler::EventTypeToString(UInt_t type)
+	{
+		switch (type)
 		{
-			TryDumpCorruptData(localStruct);
-			
-			//TODO print nicely.
-			cout << "local struct: " << localStruct << endl;
+		case 0: return "Other software trigger";
+		case 1: return "Physics";
+		case 2: return "Start of run";
+		case 3: return "End of run";
+		default: return "UNKNOWN";
+		}
+	}
+	
+	
+	const char* AliTriggerDecoderHandler::DarcTypeToString(UInt_t type)
+	{
+		typedef AliMUONTriggerDDLDecoder<AliMUONTriggerDDLDecoderEventHandler> AliDec;
+		if (type == AliDec::DarcDefaultType()) return "Default";
+		if (type == AliDec::DarcVadorhType()) return "Vadorh";
+		return "UNKNOWN";
+	}
+	
+	
+	void AliTriggerDecoderHandler::OnDarcHeader(
+			UInt_t header,
+			const AliMUONDarcScalarsStruct* scalars,
+			const void* data
+		)
+	{
+		if (scalars != NULL)
+			TryDumpCorruptData(scalars);
+		else
+			TryDumpCorruptData(data);
+		
+		cout << "================================ DARC header =====================================" << endl;
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		cout << noshowbase << "         Header bit pattern : 0x" << setfill('0') << hex << setw(8)
+			<< header << setw(0) << dec << setfill(fillChar) << endl;
+		UInt_t eventType = GetDarcEventType(header);
+		cout << "                 Event type : " << eventType << " ("
+			<< EventTypeToString(eventType) << ")" << endl;
+		cout << "           Application type : " << ((header >> 27) & 0x7) << endl;
+		UInt_t darcType = GetDarcType(header);
+		cout << "                  DARC type : " << darcType << " ("
+			<< DarcTypeToString(darcType) << ")" << endl;
+		cout << "              Serial number : " << (UInt_t)GetDarcSerialNb(header) << endl;
+		cout << "                    Version : " << (UInt_t)GetDarcVersion(header) << endl;
+		cout << "           VME trigger used : " << boolalpha << GetDarcVMETrig(header) << endl;
+		cout << "Global card data occurrence : " << boolalpha << GetDarcGlobalFlag(header) << endl;
+		cout << "      CTP or LTU interfaced : " << boolalpha << GetDarcCTPTrig(header) << endl;
+		cout << "             DAQ interfaced : " << boolalpha << GetDarcDAQFlag(header) << endl;
+		cout << "  Regional cards occurrence : 0x" << noshowbase << hex << setw(2) << setfill('0')
+			<< (UInt_t)GetDarcRegPattern(header) << dec << setfill(fillChar) << setw(0)
+			<< " [bits: ";
+		PrintBitPattern(((UInt_t)GetDarcRegPattern(header) >> 4) & 0xF, 4); cout << " ";
+		PrintBitPattern(((UInt_t)GetDarcRegPattern(header) >> 0) & 0xF, 4);
+		cout << "]" << endl;
+		
+		cout << "================================ DARC scalars ====================================" << endl;
+		if (scalars != NULL)
+		{
+			cout << "    Trigger | Received |     Used" << endl;
+			cout << "----------------------------------" << endl;
+			cout << "         L0   " << setw(8) << ((scalars->fL0R >> 16) & 0xFFFF) << setw(0)
+				<< "   " << setw(8) << ((scalars->fL0R >> 0) & 0xFFFF) << setw(0) << endl;
+			cout << " L1 physics   " << setw(8) << ((scalars->fL1P >> 16) & 0xFFFF) << setw(0)
+				<< "   " << setw(8) << ((scalars->fL1P >> 0) & 0xFFFF) << setw(0) << endl;
+			cout << "L1 software   " << setw(8) << ((scalars->fL1S >> 16) & 0xFFFF) << setw(0)
+				<< "   " << setw(8) << ((scalars->fL1S >> 0) & 0xFFFF) << setw(0) << endl;
+			cout << "  L2 accept   " << setw(8) << ((scalars->fL2A >> 16) & 0xFFFF) << setw(0)
+				<< "   " << setw(8) << ((scalars->fL2A >> 0) & 0xFFFF) << setw(0) << endl;
+			cout << "  L2 reject   " << setw(8) << ((scalars->fL2R >> 16) & 0xFFFF) << setw(0)
+				<< "   " << setw(8) << ((scalars->fL2R >> 0) & 0xFFFF) << setw(0) << endl;
+			cout << "           Clock : " << scalars->fClk << endl;
+			cout << "Hold (dead time) : " << scalars->fHold << endl;
+			cout << "      Spare word : " << scalars->fSpare << " (0x"
+				<< setw(8) << setfill('0') << hex << scalars->fSpare <<
+				setw(0) << setfill(fillChar) << dec << ")" << endl;
+		}
+		else
+		{
+			cout << "(None found)" << endl;
+		}
+	}
+	
+	
+	void AliTriggerDecoderHandler::OnGlobalHeader(
+			const AliMUONGlobalHeaderStruct* header,
+			const AliMUONGlobalScalarsStruct* scalars,
+			const void* /*data*/
+		)
+	{
+		TryDumpCorruptData(header);
+		
+		cout << "=============================== Global header ====================================" << endl;
+		cout << "Global input from regional controllers:" << endl;
+		cout << "      |                 |         High pT           |          Low pT          " << endl;
+		cout << "      |    Bit pattern  | Single mu |    mu pair    | Single mu |    mu pair   " << endl;
+		cout << "Input |  Hex |   Binary | -ve | +ve | unlike | like | -ve | +ve | unlike | like" << endl;
+		cout << "--------------------------------------------------------------------------------" << endl;
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		for (int i = 0; i < 4; i++)
+		{
+			union
+			{
+				UInt_t fWord;
+				UChar_t fByte[4];
+			} input;
+			input.fWord = header->fInput[i];
+			for (int j = 0; j < 4; j++)
+			{
+				cout << setw(5) << (i*4+j) << "   0x" << noshowbase << setw(2)
+					<< setfill('0') << hex << (UInt_t)input.fByte[j] << setw(0)
+					<< setfill(fillChar) << dec << "   ";
+				PrintBitPattern(input.fByte[j], 8);
+				cout << ((((input.fByte[j] >> 7) & 0x1) == 1) ? "   yes" : "    no");
+				cout << ((((input.fByte[j] >> 6) & 0x1) == 1) ? "   yes" : "    no");
+				cout << ((((input.fByte[j] >> 5) & 0x1) == 1) ? "     yes " : "      no ");
+				cout << ((((input.fByte[j] >> 4) & 0x1) == 1) ? "    yes" : "     no");
+				cout << ((((input.fByte[j] >> 3) & 0x1) == 1) ? "   yes" : "    no");
+				cout << ((((input.fByte[j] >> 2) & 0x1) == 1) ? "   yes" : "    no");
+				cout << ((((input.fByte[j] >> 1) & 0x1) == 1) ? "     yes " : "      no ");
+				cout << ((((input.fByte[j] >> 0) & 0x1) == 1) ? "    yes" : "     no");
+				cout << endl;
+			}
+		}
+		cout << "        Global ouput : 0x" << noshowbase << setw(2) << setfill('0') << hex
+			<< (UInt_t)GetGlobalOutput(header) << setw(0) << setfill(fillChar) << dec << " [Bits: ";
+		PrintBitPattern(((UInt_t)GetGlobalOutput(header) >> 4) & 0xF, 4); cout << " ";
+		PrintBitPattern(((UInt_t)GetGlobalOutput(header) >> 0) & 0xF, 4);
+		cout << "]" << endl;
+		cout << "          [ unlike sign |  like sign  | single muon ]" << endl;
+		cout << "          [ high |  low | high |  low | high |  low ]" << endl;
+		cout << "          [-----------------------------------------]" << endl;
+		cout << "          [ ";
+		cout << ((((GetGlobalOutput(header) >> 5) & 0x1) == 1) ? " yes" : "  no");
+		cout << ((((GetGlobalOutput(header) >> 4) & 0x1) == 1) ? "    yes" : "     no");
+		cout << ((((GetGlobalOutput(header) >> 3) & 0x1) == 1) ? "    yes" : "     no");
+		cout << ((((GetGlobalOutput(header) >> 2) & 0x1) == 1) ? "    yes" : "     no");
+		cout << ((((GetGlobalOutput(header) >> 1) & 0x1) == 1) ? "    yes" : "     no");
+		cout << ((((GetGlobalOutput(header) >> 0) & 0x1) == 1) ? "    yes" : "     no");
+		cout << " ]" << endl;
+		cout << "Global configuration : 0x" << noshowbase << setw(4) << setfill('0') << hex
+			<< GetGlobalConfig(header) << setw(0) << setfill(fillChar) << dec << " [Bits: ";
+		PrintBitPattern(((UInt_t)GetGlobalConfig(header) >> 12) & 0xF, 4); cout << " ";
+		PrintBitPattern(((UInt_t)GetGlobalConfig(header) >> 8) & 0xF, 4); cout << " ";
+		PrintBitPattern(((UInt_t)GetGlobalConfig(header) >> 4) & 0xF, 4); cout << " ";
+		PrintBitPattern(((UInt_t)GetGlobalConfig(header) >> 0) & 0xF, 4);
+		cout << "]" << endl;
+		
+		cout << "=============================== Global scalars ===================================" << endl;
+		if (scalars != NULL)
+		{
+			cout << "           Number of L0 triggers : " << scalars->fL0 << endl;
+			cout << "          Number of clock cycles : " << scalars->fClk << endl;
+			cout << " Number of unlike mu pair low pT : " << scalars->fScaler[0] << endl;
+			cout << "Number of unlike mu pair high pT : " << scalars->fScaler[1] << endl;
+			cout << "   Number of like mu pair low pT : " << scalars->fScaler[2] << endl;
+			cout << "  Number of like mu pair high pT : " << scalars->fScaler[3] << endl;
+			cout << "      Number of single mu low pT : " << scalars->fScaler[4] << endl;
+			cout << "     Number of single mu high pT : " << scalars->fScaler[5] << endl;
+			cout << "                Hold (dead time) : " << scalars->fHold << endl;
+			cout << "                      Spare word : " << scalars->fSpare << " (0x"
+				<< setw(8) << setfill('0') << hex << scalars->fSpare <<
+				setw(0) << setfill(fillChar) << dec << ")" << endl;
+		}
+		else
+		{
+			cout << "(None found)" << endl;
+		}
+	}
+	
+	
+	void AliTriggerDecoderHandler::OnNewRegionalStruct(
+			const AliMUONRegionalHeaderStruct* regionalStruct,
+			const AliMUONRegionalScalarsStruct* scalars,
+			const void* /*data*/
+		)
+	{
+		TryDumpCorruptData(regionalStruct);
+		
+		fRegNum++;
+		cout << "========================= Regional structure header "
+			<< setw(3) << fRegNum << setw(0)
+			<< " ==========================" << endl;
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		cout << "Darc word bit pattern : 0x" << noshowbase << setw(8) << setfill('0')
+			<< hex << regionalStruct->fDarcWord << setw(0)
+			<< setfill(fillChar) << dec << endl;
+		UShort_t errBits = GetRegionalErrorBits(regionalStruct);
+		cout << "  [           Error type : "
+			<< (((errBits >> 7) & 0x1) == 1 ? "1 (Physics) " : "0 (Software)")
+			<< " ]" << endl;
+		cout << "  [       Regional error : " << ((errBits >> 6) & 0x1) << "            ]" << endl;
+		cout << "  [           Full error : " << ((errBits >> 6) & 0x1) << "            ]" << endl;
+		cout << "  [          Empty error : " << ((errBits >> 6) & 0x1) << "            ]" << endl;
+		cout << "  [ DARC L2 reject error : " << ((errBits >> 6) & 0x1) << "            ]" << endl;
+		cout << "  [        DARC L2 error : " << ((errBits >> 6) & 0x1) << "            ]" << endl;
+		cout << "  [        DARC L1 error : " << ((errBits >> 6) & 0x1) << "            ]" << endl;
+		cout << "  [        DARC L0 error : " << ((errBits >> 6) & 0x1) << "            ]" << endl;
+		
+		cout << "  [  FPGA number in card : "
+			<< (UInt_t)GetRegionalFPGANumber(regionalStruct) << " (";
+		PrintBitPattern((UInt_t)GetRegionalFPGANumber(regionalStruct), 3);
+		cout << "b)     ]" << endl;
+		
+		cout << "  [      Physics trigger : " << setw(13) << boolalpha << left
+			<< GetRegionalDarcPhysFlag(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [     Regional present : " << setw(13) << boolalpha << left
+			<< GetRegionalPresentFlag(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [         RAM not full : " << setw(13) << boolalpha << left
+			<< GetRegionalRamNotFullFlag(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [        RAM not empty : " << setw(13) << boolalpha << left
+			<< GetRegionalRamNotEmptyFlag(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [          L2 rejected : " << setw(13) << boolalpha << left
+			<< GetRegionalL2RejStatus(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [          L2 accepted : " << setw(13) << boolalpha << left
+			<< GetRegionalL2AccStatus(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [             L1 found : " << setw(13) << boolalpha << left
+			<< GetRegionalL1Status(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [             L0 found : " << setw(13) << boolalpha << left
+			<< GetRegionalL0Status(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [ No. of events in RAM : " << setw(13) << left
+			<< (UInt_t)GetRegionalEventInRam(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [            Busy word : 0x"
+			<< (UInt_t)GetRegionalBusy(regionalStruct) << " (";
+		PrintBitPattern((UInt_t)GetRegionalBusy(regionalStruct), 4);
+		cout << "b)  ]" << endl;
+		
+		cout << "Regional word bit pattern : 0x" << noshowbase << setw(8) << setfill('0')
+			<< hex << regionalStruct->fWord << setw(0)
+			<< setfill(fillChar) << dec << endl;
+		cout << "  [ Physics trigger occurred : " << setw(27) << boolalpha << left
+			<< (UInt_t)GetRegionalPhysFlag(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [         Number of resets : " << setw(27) << left
+			<< (UInt_t)GetRegionalResetNb(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [ Controller Serial number : " << setw(27) << left
+			<< (UInt_t)GetRegionalSerialNb(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [        Regional crate ID : " << setw(27) << left
+			<< (UInt_t)GetRegionalId(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		cout << "  [    FPGA software version : " << setw(27) << left
+			<< (UInt_t)GetRegionalVersion(regionalStruct) << setw(0)
+			<< right << "]" << endl;
+		UInt_t output = GetRegionalOutput(regionalStruct);
+		cout << "  [          Regional output : 0x" << setw(2) << setfill('0') << hex
+			<< output << dec << setw(0) << setfill(fillChar) << setw(0) << right << " (";
+		PrintBitPattern(output, 8);
+		cout  << "b)           ]" << endl;
+		
+		cout << "  [         High pT           |          Low pT           ]" << endl;
+		cout << "  [ Single mu |    mu pair    | Single mu |    mu pair    ]" << endl;
+		cout << "  [ -ve | +ve | unlike | like | -ve | +ve | unlike | like ]" << endl;
+		cout << "  [-------------------------------------------------------]" << endl;
+		cout << ((((output >> 7) & 0x1) == 1) ? "  [ yes" : "  [  no");
+		cout << ((((output >> 6) & 0x1) == 1) ? "   yes" : "    no");
+		cout << ((((output >> 5) & 0x1) == 1) ? "     yes " : "      no ");
+		cout << ((((output >> 4) & 0x1) == 1) ? "    yes" : "     no");
+		cout << ((((output >> 3) & 0x1) == 1) ? "   yes" : "    no");
+		cout << ((((output >> 2) & 0x1) == 1) ? "   yes" : "    no");
+		cout << ((((output >> 1) & 0x1) == 1) ? "     yes " : "      no ");
+		cout << ((((output >> 0) & 0x1) == 1) ? "    yes ]" : "     no ]");
+		cout << endl;
+		
+		cout << "Regional input (low pT) bit pattern  : 0x" << noshowbase << setw(8)
+			<< setfill('0') << hex << regionalStruct->fInput[0]
+			<< setw(0) << setfill(fillChar) << dec << endl;
+		cout << "Regional input (high pT) bit pattern : 0x" << noshowbase << setw(8)
+			<< setfill('0') << hex << regionalStruct->fInput[1]
+			<< setw(0) << setfill(fillChar) << dec << endl;
+		cout << "Regional input logical dump: " << endl;
+		cout << "    Local     | Local | low pT mu | high pT mu" << endl;
+		cout << "structure no. | board | -ve | +ve |  -ve | +ve" << endl;
+		cout << "-----------------------------------------------" << endl;
+		for (int i = 15; i >= 0 ; i--)
+		{
+			cout << setw(13) << (fLocNum + 16 - i) << setw(0) << "   ";
+			cout << setw(5) << (15 - i) << setw(0) << "   ";
+			cout << ((((regionalStruct->fInput[0] >> (i*2+1)) & 0x1) == 1) ? "yes" : " no");
+			cout << ((((regionalStruct->fInput[0] >> (i*2+0)) & 0x1) == 1) ? "   yes" : "    no");
+			cout << ((((regionalStruct->fInput[1] >> (i*2+1)) & 0x1) == 1) ? "    yes" : "     no");
+			cout << ((((regionalStruct->fInput[1] >> (i*2+0)) & 0x1) == 1) ? "   yes" : "    no");
+			cout << endl;
 		}
 		
-		void OnError(ErrorCode error, const void* location)
+		UInt_t mask = GetRegionalMask(regionalStruct);
+		cout << "Local mask : 0x" << noshowbase << setw(4) << setfill('0') << hex
+			<< mask << dec << setw(0) << setfill(fillChar) << " [Bits: ";
+		PrintBitPattern(mask >> 12, 4); cout << " ";
+		PrintBitPattern(mask >> 8, 4); cout << " ";
+		PrintBitPattern(mask >> 4, 4); cout << " ";
+		PrintBitPattern(mask >> 0, 4); cout << "]" << endl;
+		
+		cout << "L0 counter : " << GetRegionalL0(regionalStruct) << endl;
+		
+		cout << "========================= Regional structure scalars "
+			<< setw(3) << fRegNum << setw(0)
+			<< " =========================" << endl;
+		if (scalars != NULL)
 		{
-			TryDumpCorruptData(location);
-			HandleError(
-				ErrorCodeToMessage(error), error,
-				ErrorCodeToString(error), location
-			);
+			cout << "            Number of clock cycles : " << scalars->fClk << endl;
+			cout << "   Number of high pT +ve single mu : " << scalars->fScaler[0] << endl;
+			cout << "   Number of high pT -ve single mu : " << scalars->fScaler[1] << endl;
+			cout << "Number of high pT unlike sign pair : " << scalars->fScaler[2] << endl;
+			cout << "  Number of high pT like sign pair : " << scalars->fScaler[3] << endl;
+			cout << "    Number of low pT +ve single mu : " << scalars->fScaler[4] << endl;
+			cout << "    Number of low pT -ve single mu : " << scalars->fScaler[5] << endl;
+			cout << " Number of low pT unlike sign pair : " << scalars->fScaler[6] << endl;
+			cout << "   Number of low pT like sign pair : " << scalars->fScaler[7] << endl;
+			cout << "                  Hold (dead time) : " << scalars->fHold << endl;
 		}
-	};
+		else
+		{
+			cout << "(None found)" << endl;
+		}
+	}
+	
+	
+	void AliTriggerDecoderHandler::OnLocalStruct(
+			const AliMUONLocalInfoStruct* localStruct,
+			const AliMUONLocalScalarsStruct* scalars
+		)
+	{
+		TryDumpCorruptData(localStruct);
+		
+		fLocNum++;
+		cout << "=========================== Local structure header "
+			<< setw(3) << fLocNum << setw(0)
+			<< " ===========================" << endl;
+		char fillChar = cout.fill();  // store current fill char to restore it.
+		cout << "L0 strip patterns:" << endl;
+		cout << "Chamber |        X         |         Y        " << endl;
+		cout << "----------------------------------------------" << endl;
+		cout << "   11     ";
+		PrintBitPattern(GetLocalX1(localStruct), 16);
+		cout << "   ";
+		PrintBitPattern(GetLocalY1(localStruct), 16);
+		cout << endl;
+		cout << "   12     ";
+		PrintBitPattern(GetLocalX2(localStruct), 16);
+		cout << "   ";
+		PrintBitPattern(GetLocalY2(localStruct), 16);
+		cout << endl;
+		cout << "   13     ";
+		PrintBitPattern(GetLocalX3(localStruct), 16);
+		cout << "   ";
+		PrintBitPattern(GetLocalY3(localStruct), 16);
+		cout << endl;
+		cout << "   12     ";
+		PrintBitPattern(GetLocalX4(localStruct), 16);
+		cout << "   ";
+		PrintBitPattern(GetLocalY4(localStruct), 16);
+		cout << endl;
+		
+		cout << "L0 trigger bits: (word = ";
+		cout << showbase << hex << localStruct->fTriggerBits
+			<< noshowbase << dec << ")" << endl;
+		cout << "            ID |  Dec | TrigY | YPos | Sign XDev | XDev |  XPos " << endl;
+		cout << "----------------------------------------------------------------" << endl;
+		cout << "Decimal : " << setw(4) << (UInt_t)GetLocalId(localStruct) << setw(0) << "   ";
+		cout << setw(4) << (UInt_t)GetLocalDec(localStruct) << setw(0) << "   ";
+		cout << setw(3) << (UInt_t)GetLocalTrigY(localStruct) << setw(0) << "     ";
+		cout << setw(4) << (UInt_t)GetLocalYPos(localStruct) << setw(0) << "   ";
+		cout << setw(5) << (UInt_t)GetLocalSXDev(localStruct) << setw(0) << "       ";
+		cout << setw(4) << (UInt_t)GetLocalXDev(localStruct) << setw(0) << "   ";
+		cout << setw(4) << (UInt_t)GetLocalXPos(localStruct) << setw(0) << endl;
+		cout << " Binary : ";
+		PrintBitPattern(AliHLTUInt32_t(GetLocalId(localStruct)), 4);
+		cout << "   ";
+		PrintBitPattern(AliHLTUInt32_t(GetLocalDec(localStruct)), 4);
+		cout << "     ";
+		PrintBitPattern(AliHLTUInt32_t(GetLocalTrigY(localStruct)), 1);
+		cout << "     ";
+		PrintBitPattern(AliHLTUInt32_t(GetLocalYPos(localStruct)), 4);
+		cout << "       ";
+		PrintBitPattern(AliHLTUInt32_t(GetLocalSXDev(localStruct)), 1);
+		cout << "       ";
+		PrintBitPattern(AliHLTUInt32_t(GetLocalXDev(localStruct)), 4);
+		cout << "   ";
+		PrintBitPattern(AliHLTUInt32_t(GetLocalXPos(localStruct)), 5);
+		cout << endl;
+		
+		cout << "L0 decision (Dec): [high pT: ";
+		PrintBitPattern((UInt_t)GetLocalHpt(localStruct), 2);
+		cout << "b (";
+		switch ((UInt_t)GetLocalHpt(localStruct))
+		{
+		case 0: cout << "No trigger"; break;
+		case 1: cout << "-ve particle"; break;
+		case 2: cout << "+ve particle"; break;
+		case 3: cout << "No deviation trigger"; break;
+		default: cout << "UNKNOWN"; break;
+		}
+		cout << "), low pT: ";
+		PrintBitPattern((UInt_t)GetLocalLpt(localStruct), 2);
+		cout << "b (";
+		switch ((UInt_t)GetLocalLpt(localStruct))
+		{
+		case 0: cout << "No trigger"; break;
+		case 1: cout << "-ve particle"; break;
+		case 2: cout << "+ve particle"; break;
+		case 3: cout << "No deviation trigger"; break;
+		default: cout << "UNKNOWN"; break;
+		}
+		cout << ")]" << endl;
+		
+		cout << "=========================== Local structure scalars "
+			<< setw(3) << fLocNum << setw(0)
+			<< " ==========================" << endl;
+		if (scalars != NULL)
+		{
+			cout << "              Number of L0 triggers : " << scalars->fL0 << endl;
+			cout << "                   Hold (dead time) : " << scalars->fHold << endl;
+			cout << "             Number of clock cycles : " << scalars->fClk << endl;
+			cout << "       Number of low pT no triggers : " << scalars->fLPtNTrig << endl;
+			cout << "      Number of high pT no triggers : " << scalars->fHPtNTrig << endl;
+			cout << "    Number of low pT right triggers : " << scalars->fLPtRTrig << endl;
+			cout << "   Number of high pT right triggers : " << scalars->fHPtRTrig << endl;
+			cout << "     Number of low pT left triggers : " << scalars->fLPtLTrig << endl;
+			cout << "    Number of high pT left triggers : " << scalars->fHPtLTrig << endl;
+			cout << " Number of low pT straight triggers : " << scalars->fLPtSTrig << endl;
+			cout << "Number of high pT straight triggers : " << scalars->fHPtSTrig << endl;
+			
+			UInt_t xoryflag = GetLocalComptXY(scalars);
+			if (xoryflag == 1)
+			{
+				cout << "Y strip counts:" << endl;
+			}
+			else
+			{
+				cout << "X strip counts:" << endl;
+			}
+			cout << "      |               Chamber            " << endl;
+			cout << "Strip |     11 |     12 |     13 |     14" << endl;
+			cout << "------------------------------------------" << endl;
+			for (int i = 0; i < 16; i++)
+			{
+				cout << setw(5) << i << setw(0) << "   "
+					<< setw(6) << (UInt_t)GetLocalXY1(scalars, i) << setw(0) << "   "
+					<< setw(6) << (UInt_t)GetLocalXY2(scalars, i) << setw(0) << "   "
+					<< setw(6) << (UInt_t)GetLocalXY3(scalars, i) << setw(0) << "   "
+					<< setw(6) << (UInt_t)GetLocalXY4(scalars, i) << setw(0) << endl;
+			}
+			
+			cout << "    EOS word : 0x" << setw(8) << setfill('0')
+				<< hex << scalars->fEOS << setw(0) << setfill(fillChar) << dec << endl;
+			cout << "    [ Switches : 0x" << setw(3)
+				<< setfill('0') << hex << (UInt_t)GetLocalSwitch(scalars)
+				<< setw(0) << setfill(fillChar) << dec << " (";
+			PrintBitPattern((UInt_t)GetLocalSwitch(scalars) >> 8, 2); cout << " ";
+			PrintBitPattern((UInt_t)GetLocalSwitch(scalars) >> 4, 4); cout << " ";
+			PrintBitPattern((UInt_t)GetLocalSwitch(scalars) >> 0, 4);
+			cout << "b)    ]" << endl;
+			cout << "    [   X or Y : " << xoryflag
+				<< ((xoryflag == 1) ? " (scalars for Y strips) ]" : " (scalars for X strips) ]")
+				<< endl;
+			
+			cout << "Reset signal : " << scalars->fReset << endl;
+		}
+		else
+		{
+			cout << "(None found)" << endl;
+		}
+	}
+	
+	
+	void AliTriggerDecoderHandler::OnError(ErrorCode error, const void* location)
+	{
+		TryDumpCorruptData(location);
+		HandleError(
+			ErrorCodeToMessage(error), error,
+			ErrorCodeToString(error), location
+		);
+	}
 
 } // end of namespace
+
+
+int DumpRawDataHeader(
+		const char* buffer, unsigned long bufferSize, const AliRawDataHeader* header,
+		bool continueParse
+	)
+{
+	cout << "*************************** Common DDL data header *******************************" << endl;
+	char fillChar = cout.fill();  // remember fill char to set back to original later.
+	int result = CheckHeaderField(header->fSize, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Size of the raw data in bytes : ";
+	if (header->fSize != 0xFFFFFFFF)
+		cout << header->fSize;
+	else
+		cout << "0xFFFFFFFF (unknown)";
+	cout << endl;
+	
+	result = CheckHeaderField(header->fWord2, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "               Format version : " << UInt_t(header->GetVersion()) << endl;
+	UInt_t l1msg = header->GetL1TriggerMessage();
+	cout << "           L1 trigger message : 0x"
+		<< noshowbase << hex << setfill('0') << setw(2) << l1msg
+		<< setw(0) << setfill(fillChar) << dec
+		<< " [Spare: " << ((l1msg >> 7) & 0x1)
+		<< ", ClT: " << ((l1msg >> 6) & 0x1)
+		<< ", RoC: 0x" << noshowbase << hex << ((l1msg >> 2) & 0x4) << dec
+		<< ", ESR: " << ((l1msg >> 1) & 0x1)
+		<< ", L1SwC: " << ((l1msg >> 0) & 0x1) << "]" << endl;
+	cout << "   Bunch crossing (Event ID1) : " << header->GetEventID1() << " (0x"
+		<< noshowbase << hex << setfill('0') << setw(3) << header->GetEventID1()
+		<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+	
+	result = CheckHeaderField(header->fEventID2, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "     Orbit number (Event ID2) : " << header->fEventID2 << " (0x"
+		<< noshowbase << hex << setfill('0') << setw(6) << header->fEventID2
+		<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+	
+	result = CheckHeaderField(header->fAttributesSubDetectors, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "             Block attributes : " << UInt_t(header->GetAttributes()) << " (0x"
+		<< noshowbase << hex << setfill('0') << setw(2) << UInt_t(header->GetAttributes())
+		<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+	cout << "  Participating sub-detectors : 0x" << noshowbase << hex
+		<< setfill('0') << setw(6) << header->GetSubDetectors() << dec
+		<< setw(0) << setfill(fillChar) << "    [Bits: ";
+	for (int i = 5; i >= 0; i--)
+	{
+		PrintBitPattern(header->GetSubDetectors() >> (i*4), 4);
+		if (i != 0)
+			cout << " ";
+		else
+			cout << "]" << endl;
+	}
+	
+	result = CheckHeaderField(header->fStatusMiniEventID, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	UInt_t statusBits = header->GetStatus();
+	cout << "          Status & error bits : 0x" << noshowbase << hex
+		<< setfill('0') << setw(4) << statusBits << setw(0) << setfill(fillChar)
+		<< dec << endl;
+	cout << "          [                        Reserved : " << ((statusBits >> 15) & 0x1) << " ]" << endl;
+	cout << "          [        Multi-event buffer error : " << ((statusBits >> 14) & 0x1) << " ]" << endl;
+	cout << "          [        Trigger L1 missing error : " << ((statusBits >> 13) & 0x1) << " ]" << endl;
+	cout << "          [           Trigger error (other) : " << ((statusBits >> 12) & 0x1) << " ]" << endl;
+	cout << "          [                 Pre-pulse error : " << ((statusBits >> 11) & 0x1) << " ]" << endl;
+	cout << "          [       Trigger L2 time violation : " << ((statusBits >> 10) & 0x1) << " ]" << endl;
+	cout << "          [       Trigger L1 time violation : " << ((statusBits >> 9) & 0x1) << " ]" << endl;
+	cout << "          [                DDG payload flag : " << ((statusBits >> 8) & 0x1) << " ]" << endl;
+	cout << "          [                HLT payload flag : " << ((statusBits >> 7) & 0x1) << " ]" << endl;
+	cout << "          [               HLT decision flag : " << ((statusBits >> 6) & 0x1) << " ]" << endl;
+	cout << "          [                       FEE error : " << ((statusBits >> 5) & 0x1) << " ]" << endl;
+	cout << "          [ Trigger information unavailable : " << ((statusBits >> 4) & 0x1) << " ]" << endl;
+	cout << "          [            Control parity error : " << ((statusBits >> 3) & 0x1) << " ]" << endl;
+	cout << "          [               Data parity error : " << ((statusBits >> 2) & 0x1) << " ]" << endl;
+	cout << "          [           Trigger missing error : " << ((statusBits >> 1) & 0x1) << " ]" << endl;
+	cout << "          [           Trigger overlap error : " << ((statusBits >> 0) & 0x1) << " ]" << endl;
+	cout << "                Mini event ID : " << header->GetMiniEventID() << " (0x"
+		<< noshowbase << hex << setfill('0') << setw(3) << header->GetMiniEventID()
+		<< dec << setw(0) << setfill(fillChar) << ")" << endl;
+	
+	result = CheckHeaderField(header->fTriggerClassLow, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	result = CheckHeaderField(header->fROILowTriggerClassHigh, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	ULong64_t triggerClasses = header->GetTriggerClasses();
+	cout << "              Trigger classes : 0x" << noshowbase << hex << setw(13)
+		<< setfill('0') << triggerClasses << setw(0) << setfill(fillChar)
+		<< dec << endl;
+	cout << "                [Bits: ";
+	PrintBitPattern(triggerClasses >> (12*4), 2);
+	cout << " ";
+	for (int i = 11; i >= 0; i--)
+	{
+		PrintBitPattern(triggerClasses >> (i*4), 4);
+		if (i != 0)
+			cout << " ";
+		else
+			cout << "]" << endl;
+	}
+	
+	result = CheckHeaderField(header->fROIHigh, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	ULong64_t roiBits = header->GetROI();
+	cout << "           Region of interest : 0x" << noshowbase << hex << setw(9)
+		<< setfill('0') << roiBits << setw(0) << setfill(fillChar)
+		<< dec << endl;
+	cout << "             [Bits: ";
+	for (int i = 8; i >= 0; i--)
+	{
+		PrintBitPattern(roiBits >> (i*4), 4);
+		if (i != 0)
+			cout << " ";
+		else
+			cout << "]" << endl;
+	}
+	cout << "**********************************************************************************" <<endl;
+	return EXIT_SUCCESS;
+}
 
 
 int DumpTrackerDDLRawStream(
@@ -470,12 +1170,15 @@ int DumpTrackerDDLRawStream(
 		bool continueParse
 	)
 {
-	// TODO dump the CDH header.
+	const AliRawDataHeader* header =
+		reinterpret_cast<const AliRawDataHeader*>(buffer);
+	int result = DumpRawDataHeader(buffer, bufferSize, header, continueParse);
+	if (result != EXIT_SUCCESS) return result;
 
 	// Setup the decoder for the DDL payload.
 	AliMUONTrackerDDLDecoder<AliTrackerDecoderHandler> decoder;
 	decoder.ExitOnError(not continueParse);
-	decoder.SendDataOnParityError(false);
+	decoder.SendDataOnParityError(true);
 	decoder.TryRecover(false);
 	decoder.AutoDetectTrailer(true);
 	decoder.CheckForTrailer(true);
@@ -497,11 +1200,11 @@ int DumpTriggerDDLRawStream(
 		bool continueParse
 	)
 {
-	// TODO dump the CDH header.
-	
 	const AliRawDataHeader* header =
 		reinterpret_cast<const AliRawDataHeader*>(buffer);
-	bool scalarEvent = header->GetL1TriggerMessage() == 0x1;
+	int result = DumpRawDataHeader(buffer, bufferSize, header, continueParse);
+	if(result != EXIT_SUCCESS) return result;
+	bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
 	
 	AliMUONTriggerDDLDecoder<AliTriggerDecoderHandler> decoder;
 	decoder.ExitOnError(not continueParse);
@@ -530,7 +1233,24 @@ int DumpRecHitStruct(
 	// At each step check if we have not overflowed the buffer. If we have
 	// not, then we can print the field, otherwise we print the left over
 	// bytes assumed to be corrupted rubbish.
-	int result = CheckField(hit->fX, buffer, bufferSize, continueParse);
+	
+	int result = CheckField(hit->fFlags, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	AliHLTUInt8_t chamber = 0xFF;
+	AliHLTUInt16_t detElemId = 0xFFFF;
+	AliHLTMUONUtils::UnpackRecHitFlags(hit->fFlags, chamber, detElemId);
+	if (chamber == 0 and detElemId == 0)
+	{
+		cout << setw(10) << left << (int)(chamber) << setw(0);
+		cout << setw(12) << left << (int)detElemId << setw(0);
+	}
+	else
+	{
+		cout << setw(10) << left << (int)(chamber+1) << setw(0);
+		cout << setw(12) << left << (int)detElemId << setw(0);
+	}
+	
+	result = CheckField(hit->fX, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
 	cout << setw(13) << left << hit->fX << setw(0);
 
@@ -560,8 +1280,8 @@ int DumpRecHitsBlock(
 	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
 	
 	// Print the data block record entries.
-	cout << " X (cm)     | Y (cm)     | Z (cm)" << endl;
-	cout << "---------------------------------------" << endl;
+	cout << "Chamber | DetElemID | X (cm)     | Y (cm)     | Z (cm)" << endl;
+	cout << "-----------------------------------------------------------" << endl;
 	const AliHLTMUONRecHitStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
 	{
@@ -619,13 +1339,12 @@ int DumpTriggerRecordStruct(
 	if (result != EXIT_SUCCESS) return result;
 	cout << "pz = " << record->fPz << ") GeV/c"<<endl;
 	
-	cout << "Track hits:" << endl;
-	cout << "Chamber | X (cm)     | Y (cm)     | Z (cm)" << endl;
-	cout << "------------------------------------------------" << endl;
+	cout << "Hits on chambers:" << endl;
+	cout << "Chamber | DetElemID | X (cm)     | Y (cm)     | Z (cm)" << endl;
+	cout << "-----------------------------------------------------------" << endl;
 	const AliHLTMUONRecHitStruct* hit = &record->fHit[0];
 	for(AliHLTUInt32_t ch = 0; ch < 4; ch++)
 	{
-	        cout << setw(10) << left << ch + 11 << setw(0);
 		result = DumpRecHitStruct(buffer, bufferSize, hit++, continueParse);
 		if (result != EXIT_SUCCESS) return result;
 	}
@@ -671,22 +1390,91 @@ int DumpTrigRecInfoStruct(
 	// At each step check if we have not overflowed the buffer. If we have
 	// not, then we can print the field, otherwise we print the left over
 	// bytes assumed to be corrupted rubbish.
+	
 	int result = CheckField(debuginfo->fTrigRecId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << setw(22) << left << debuginfo->fTrigRecId << setw(0);
+	cout << "Trigger Record ID: " << debuginfo->fTrigRecId << endl;
 
-	result = CheckField(debuginfo->fDetElemId, buffer, bufferSize, continueParse);
-	if (result != EXIT_SUCCESS) return result;
-	cout << setw(20) << left << debuginfo->fDetElemId << setw(0);
-        
+	cout << "Detector element IDs:" << endl;
+	cout << "  Chamber :           11 |           12 |           13 |           14" << endl;
+	cout << "       ID : ";
+	for (int i = 0; i < 4; i++)
+	{
+		result = CheckField(debuginfo->fDetElemId[i], buffer, bufferSize, continueParse);
+		if (result != EXIT_SUCCESS) return result;
+		cout << setw(12) << right << debuginfo->fDetElemId[i] << setw(0);
+		if (i != 3) cout << " | ";
+	}
+	cout << endl;
+	
+	cout << "Momentum estimation parameters:" << endl;
+	cout << "  Parameter : Z_middle coordinate (cm) | Integrated magnetic field (T.m)" << endl;
+	cout << "      Value : ";
 	result = CheckField(debuginfo->fZmiddle, buffer, bufferSize, continueParse);
 	if(result != EXIT_SUCCESS) return result;
-	cout << setw(30) << left << debuginfo->fZmiddle << setw(0);
-
+	cout << setw(24) << right << debuginfo->fZmiddle << setw(0) << " | ";
+	
 	result = CheckField(debuginfo->fBl, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout <<debuginfo->fBl << setw(0) << endl;
-
+	cout << setw(31) << right << debuginfo->fBl << setw(0) << endl;
+	
+	typedef AliMUONTriggerDDLDecoderEventHandler AliH;
+	
+	cout << "L0 strip patterns:" << endl;
+	cout << "Chamber |        X         |         Y        " << endl;
+	cout << "----------------------------------------------" << endl;
+	result = CheckField(debuginfo->fL0Struct.fX2X1, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   11     ";
+	PrintBitPattern(AliH::GetLocalX1(&debuginfo->fL0Struct), 16);
+	result = CheckField(debuginfo->fL0Struct.fY2Y1, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY1(&debuginfo->fL0Struct), 16);
+	cout << endl;
+	cout << "   12     ";
+	PrintBitPattern(AliH::GetLocalX2(&debuginfo->fL0Struct), 16);
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY2(&debuginfo->fL0Struct), 16);
+	cout << endl;
+	
+	result = CheckField(debuginfo->fL0Struct.fX4X3, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   13     ";
+	PrintBitPattern(AliH::GetLocalX3(&debuginfo->fL0Struct), 16);
+	result = CheckField(debuginfo->fL0Struct.fY4Y3, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY3(&debuginfo->fL0Struct), 16);
+	cout << endl;
+	cout << "   12     ";
+	PrintBitPattern(AliH::GetLocalX4(&debuginfo->fL0Struct), 16);
+	cout << "   ";
+	PrintBitPattern(AliH::GetLocalY4(&debuginfo->fL0Struct), 16);
+	cout << endl;
+	
+	cout << "L0 trigger bits: (word = ";
+	result = CheckField(debuginfo->fL0Struct.fTriggerBits, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << showbase << hex << debuginfo->fL0Struct.fTriggerBits
+		<< noshowbase << dec << ")" << endl;
+	cout << "  ID |  Dec | TrigY | YPos | Sign XDev | XDev |  XPos " << endl;
+	cout << "------------------------------------------------------" << endl;
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalId(&debuginfo->fL0Struct)), 4);
+	cout << "   ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalDec(&debuginfo->fL0Struct)), 4);
+	cout << "     ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalTrigY(&debuginfo->fL0Struct)), 1);
+	cout << "     ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalYPos(&debuginfo->fL0Struct)), 4);
+	cout << "       ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalSXDev(&debuginfo->fL0Struct)), 1);
+	cout << "       ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalXDev(&debuginfo->fL0Struct)), 4);
+	cout << "   ";
+	PrintBitPattern(AliHLTUInt32_t(AliH::GetLocalXPos(&debuginfo->fL0Struct)), 5);
+	cout << endl;
+	
 	return result;
 }
 
@@ -704,72 +1492,16 @@ int DumpTrigRecsDebugBlock(
 	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
 	
 	// Print the data block record entries.
-	cout << "Trigger Record ID  | Detector ID  | Momentum X Component (Gev/c) | Integrated Magnetic Field (T.m)" << endl;
-	cout << "--------------------------------------------------------------------------------------------------" << endl;
 	const AliHLTMUONTrigRecInfoStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
 	{
+		cout << "============================== Trigger Record debug data " << i+1
+			<< " of " << nentries << " ==============================" << endl;
 		int subResult = DumpTrigRecInfoStruct(buffer, bufferSize, entry++, continueParse);
 		if (subResult != EXIT_SUCCESS) return subResult;
 	}
 	
 	return EXIT_SUCCESS;
-}
-
-
-int DumpTriggerChannelStruct(
-		const char* buffer, unsigned long bufferSize,
-		const AliHLTMUONTriggerChannelStruct* triggerchannel,
-		bool continueParse
-	)
-{
-	// Step through the fields trying to print them.
-	// At each step check if we have not overflowed the buffer. If we have
-	// not, then we can print the field, otherwise we print the left over
-	// bytes assumed to be corrupted rubbish.
-	int result = CheckField(triggerchannel->fTrigRecId, buffer, bufferSize, continueParse);
-	if (result != EXIT_SUCCESS) return result;
-	cout << setw(25) << left << triggerchannel->fTrigRecId << setw(0);
-
-	result = CheckField(triggerchannel->fChamber, buffer, bufferSize, continueParse);
-	if (result != EXIT_SUCCESS) return result;
-	cout << setw(13) << left << triggerchannel->fChamber << setw(0);
-
-	result = CheckField(triggerchannel->fSignal, buffer, bufferSize, continueParse);
-	if (result != EXIT_SUCCESS) return result;
-	cout << setw(10) << left << triggerchannel->fSignal << setw(0);
-
-	result = CheckField(triggerchannel->fRawDataWord, buffer, bufferSize, continueParse);
-	if(result != EXIT_SUCCESS) return result;
-	cout << showbase << hex << triggerchannel->fRawDataWord << dec << setw(0) << endl;
-	return result;
-}
-
-
-int DumpTriggerChannelsBlock(
-		const char* buffer, unsigned long bufferSize,
-		bool continueParse
-	)
-{
-        int result = EXIT_SUCCESS;
-	AliHLTMUONTriggerChannelsBlockReader block(buffer, bufferSize);
-	
-	result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
-	if (result != EXIT_SUCCESS and not continueParse) return result;
-	
-	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
-	
-	// Print the data block record entries.
-	cout << " Trigger Record ID   | Chamber    | Signal   | Raw Data Word " << endl;
-	cout << "--------------------------------------------------------------" << endl;
-	const AliHLTMUONTriggerChannelStruct* entry = block.GetArray();
-	for(AliHLTUInt32_t i = 0; i < nentries; i++)
-	{
-		int subResult = DumpTriggerChannelStruct(buffer, bufferSize, entry++, continueParse);
-		if (subResult != EXIT_SUCCESS) return subResult;
-	}
-
-	return result;
 }
 
 
@@ -785,21 +1517,20 @@ int DumpClusterStruct(
 	// bytes assumed to be corrupted rubbish.
 	int result = CheckField(cluster->fId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << "cluster->fId: " << cluster->fId << "\t";
+	cout << "         Cluster ID: " << cluster->fId << endl;
 
 	result = CheckField(cluster->fDetElemId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << "cluster->fDetElemId: " << cluster->fDetElemId << "\t";
+	cout << "Detector Element ID: " << cluster->fDetElemId << endl;
 
 	result = CheckField(cluster->fNchannels, buffer, bufferSize, continueParse);
 	if(result != EXIT_SUCCESS) return result;
-	cout << "cluster->fNchannels: " << cluster->fNchannels <<endl;
+	cout << " Number of channels: " << cluster->fNchannels << endl;
 
-	cout << " Corresponding Hit: "<< endl;
-	cout << " X (cm)     | Y (cm)     | Z (cm)" << endl;
-	cout << "---------------------------------------" << endl;
-	const AliHLTMUONRecHitStruct * hit = & cluster->fHit;
-	result = DumpRecHitStruct(buffer, bufferSize, hit, continueParse);
+	cout << "Corresponding Hit: "<< endl;
+	cout << "Chamber | DetElemID | X (cm)     | Y (cm)     | Z (cm)" << endl;
+	cout << "-----------------------------------------------------------" << endl;
+	result = DumpRecHitStruct(buffer, bufferSize, &cluster->fHit, continueParse);
 
 	return result;
 }
@@ -884,7 +1615,7 @@ int DumpChannelsBlock(
 	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
 	
 	// Print the data block record entries.
-	cout << "Cluster Id    | Bus Patch     | Manu Address  | Channel Addr  | Signal Value  | Raw Data Word " << endl;
+	cout << "Cluster ID    | Bus Patch     | Manu Address  | Channel Addr  | Signal Value  | Raw Data Word " << endl;
 	cout << "----------------------------------------------------------------------------------------------" << endl;
 	const AliHLTMUONChannelStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
@@ -951,12 +1682,11 @@ int DumpMansoTrackStruct(
 	cout << "Chi squared fit: " << track->fChi2 << endl;
 	
 	cout << "Track hits:" << endl;
-	cout << "Chamber | X (cm)     | Y (cm)     | Z (cm)" << endl;
-	cout << "------------------------------------------------" << endl;
+	cout << "Chamber | DetElemID | X (cm)     | Y (cm)     | Z (cm)" << endl;
+	cout << "-----------------------------------------------------------" << endl;
 	const AliHLTMUONRecHitStruct* hit = &track->fHit[0];
 	for(AliHLTUInt32_t ch = 0; ch < 4; ch++)
 	{
-	        cout << setw(10) << left << ch + 7 << setw(0);
 		result = DumpRecHitStruct(buffer, bufferSize, hit++, continueParse);
 		if (result != EXIT_SUCCESS) return result;
 	}
@@ -1041,6 +1771,18 @@ int DumpMansoCandidateStruct(
 		result = DumpMansoRoIStruct(buffer, bufferSize, roi++, continueParse);
 		if (result != EXIT_SUCCESS) return result;
 	}
+	
+	cout << "Momentum estimation parameters:" << endl;
+	cout << "  Parameter : Z_middle coordinate (cm) | Integrated magnetic field (T.m)" << endl;
+	cout << "      Value : ";
+	result = CheckField(candidate->fZmiddle, buffer, bufferSize, continueParse);
+	if(result != EXIT_SUCCESS) return result;
+	cout << setw(24) << right << candidate->fZmiddle << setw(0) << " | ";
+	
+	result = CheckField(candidate->fBl, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(31) << right << candidate->fBl << setw(0) << endl;
+	
 	return result;
 }
 
@@ -1531,10 +2273,6 @@ int ParseBuffer(
 		subResult = DumpTrigRecsDebugBlock(buffer, bufferSize, continueParse);
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
-	case kTriggerChannelsDataBlock:
-		subResult = DumpTriggerChannelsBlock(buffer, bufferSize, continueParse);
-		if (subResult != EXIT_SUCCESS) result = subResult;
-		break;
 	case kRecHitsDataBlock:
 		subResult = DumpRecHitsBlock(buffer, bufferSize, continueParse);
 		if (subResult != EXIT_SUCCESS) result = subResult;
@@ -1827,7 +2565,6 @@ void PrintUsage(bool asError = true)
 	os << "         rawtrigger - raw DDL stream from trigger chambers." << endl;
 	os << "         trigrecs - trigger records data." << endl;
 	os << "         trigrecsdebug - debugging information about trigger records." << endl;
-	os << "         trigchannels - channel debugging in." << endl;
 	os << "         rechits - reconstructed hits data." << endl;
 	os << "         channels - channel debugging information from hit reconstruction." << endl;
 	os << "         clusters - cluster debugging information from hit reconstruction." << endl;

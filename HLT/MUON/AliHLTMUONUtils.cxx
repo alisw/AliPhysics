@@ -26,7 +26,6 @@
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONTrigRecsDebugBlockStruct.h"
-#include "AliHLTMUONTriggerChannelsBlockStruct.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
@@ -90,6 +89,37 @@ void AliHLTMUONUtils::UnpackTriggerRecordFlags(
 	hitset[1] = (flags & 0x2) == 0x2;
 	hitset[2] = (flags & 0x4) == 0x4;
 	hitset[3] = (flags & 0x8) == 0x8;
+}
+
+
+AliHLTUInt32_t AliHLTMUONUtils::PackRecHitFlags(
+		AliHLTUInt8_t chamber, AliHLTUInt16_t detElemId
+	)
+{
+	/// This packs the given parameters into the bits of a word appropriate
+	/// for AliHLTMUONRecHitStruct::fFlags.
+	/// @param chamber    The chamber number in the range [0..13].
+	/// @param detElemId  Detector element ID number.
+	/// @return  Returns the 32 bit packed word.
+	
+	return ((chamber & 0xF) << 12) | (detElemId & 0xFFF);
+}
+
+
+void AliHLTMUONUtils::UnpackRecHitFlags(
+		AliHLTUInt32_t flags, // [in]
+		AliHLTUInt8_t& chamber, // [out]
+		AliHLTUInt16_t& detElemId // [out]
+	)
+{
+	/// This unpacks the AliHLTMUONRecHitStruct::fFlags bits into
+	/// its component fields.
+	/// [in]  @param flags  The flags from an AliHLTMUONRecHitStruct structure.
+	/// [out] @param chamber    Sets the chamber number in the range [0..13].
+	/// [out] @param detElemId  Sets the detector element ID number.
+	
+	chamber = (flags >> 12) & 0xF;
+	detElemId = flags & 0xFFF;
 }
 
 
@@ -392,10 +422,6 @@ AliHLTMUONDataBlockType AliHLTMUONUtils::ParseCommandLineTypeString(const char* 
 	{
 		return kTrigRecsDebugDataBlock;
 	}
-	else if (strcmp(type, "trigchannels") == 0)
-	{
-		return kTriggerChannelsDataBlock;
-	}
 	else if (strcmp(type, "rechits") == 0)
 	{
 		return kRecHitsDataBlock;
@@ -444,9 +470,6 @@ const char* AliHLTMUONUtils::DataBlockTypeToString(AliHLTMUONDataBlockType type)
 	case kTrigRecsDebugDataBlock:
 		t = AliHLTMUONConstants::TrigRecsDebugBlockDataType();
 		break;
-	case kTriggerChannelsDataBlock:
-		t = AliHLTMUONConstants::TriggerChannelBlockDataType();
-		break;
 	case kRecHitsDataBlock:
 		t = AliHLTMUONConstants::RecHitsBlockDataType();
 		break;
@@ -494,6 +517,7 @@ const char* AliHLTMUONUtils::FailureReasonToString(WhyNotValid reason)
 	case kParticleSignBitsNotValid: return "kParticleSignBitsNotValid";
 	case kHitNotMarkedAsNil: return "kHitNotMarkedAsNil";
 	case kInvalidDetElementNumber: return "kInvalidDetElementNumber";
+	case kInvalidChamberNumber: return "kInvalidChamberNumber";
 	case kHitIsNil: return "kHitIsNil";
 	case kInvalidChannelCount: return "kInvalidChannelCount";
 	case kInvalidBusPatchId: return "kInvalidBusPatchId";
@@ -550,6 +574,8 @@ const char* AliHLTMUONUtils::FailureReasonToMessage(WhyNotValid reason)
 			" structure was not set to nil.";
 	case kInvalidDetElementNumber:
 		return "An invalid detector element ID was found.";
+	case kInvalidChamberNumber:
+		return "An invalid chamber number was found.";
 	case kHitIsNil:
 		return "The hit cannot be set to a nil value.";
 	case kInvalidChannelCount:
@@ -623,6 +649,7 @@ bool AliHLTMUONUtils::RecordNumberWasSet(WhyNotValid reason)
 	case kParticleSignBitsNotValid:
 	case kHitNotMarkedAsNil:
 	case kInvalidDetElementNumber:
+	case kInvalidChamberNumber:
 	case kHitIsNil:
 	case kInvalidChannelCount:
 	case kInvalidBusPatchId:
@@ -735,37 +762,6 @@ bool AliHLTMUONUtils::HeaderOk(
 	}
 	
 	return result;
-}
-
-
-bool AliHLTMUONUtils::HeaderOk(
-		const AliHLTMUONTriggerChannelsBlockStruct& block,
-		WhyNotValid* reason
-	)
-{
-	/// Method used to check if the header information corresponds to the
-	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the header is not valid, if and
-	///      only if a problem is found with the data.
-	/// \returns  true if there is no problem with the header and false otherwise.
-	
-	// The block must have the correct type.
-	if (block.fHeader.fType != kTriggerChannelsDataBlock)
-	{
-		if (reason != NULL) *reason = kHeaderContainsWrongType;
-		return false;
-	}
-	
-	// The block's record width must be the correct size.
-	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTriggerChannelStruct))
-	{
-		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
-		return false;
-	}
-	
-	return true;
 }
 
 
@@ -1179,6 +1175,17 @@ bool AliHLTMUONUtils::IntegrityOk(
 		}
 		result = false;
 	}
+	
+	// Check the individual hits
+	for (int i = 0; i < 4; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(tr.fHit[i], reason + reasonCount, filledCount))
+		{
+			reasonCount += filledCount;
+			result = false;
+		}
+	}
 
 	return result;
 }
@@ -1207,6 +1214,8 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kReservedBitsNotZero
 	///        - kParticleSignBitsNotValid
 	///        - kHitNotMarkedAsNil
+	///        - kInvalidDetElementNumber
+	///        - kInvalidChamberNumber
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
 	/// [in/out] \param reasonCount  This should initially specify the size of
@@ -1296,10 +1305,14 @@ bool AliHLTMUONUtils::IntegrityOk(
 	}
 
 	// Check that the fDetElemId[i] numbers are valid.
-	if ( not (trigInfo.fDetElemId[0] >= 0 or trigInfo.fDetElemId[0] == -1) or
-	     not (trigInfo.fDetElemId[1] >= 0 or trigInfo.fDetElemId[1] == -1) or
-	     not (trigInfo.fDetElemId[2] >= 0 or trigInfo.fDetElemId[2] == -1) or
-	     not (trigInfo.fDetElemId[3] >= 0 or trigInfo.fDetElemId[3] == -1)
+	if ( not ((trigInfo.fDetElemId[0] >= 100 and trigInfo.fDetElemId[0] < 1500)
+	          or trigInfo.fDetElemId[0] == -1)
+	     or not ((trigInfo.fDetElemId[1] >= 100 and trigInfo.fDetElemId[1] < 1500)
+	          or trigInfo.fDetElemId[1] == -1)
+	     or not ((trigInfo.fDetElemId[2] >= 100 and trigInfo.fDetElemId[2] < 1500)
+	          or trigInfo.fDetElemId[2] == -1)
+	     or not ((trigInfo.fDetElemId[3] >= 100 and trigInfo.fDetElemId[3] < 1500)
+	          or trigInfo.fDetElemId[3] == -1)
 	   )
 	{
 		if (reason != NULL and reasonCount < maxCount)
@@ -1392,40 +1405,103 @@ bool AliHLTMUONUtils::IntegrityOk(
 
 
 bool AliHLTMUONUtils::IntegrityOk(
-		const AliHLTMUONTriggerChannelsBlockStruct& block,
-		WhyNotValid* reason
+		const AliHLTMUONRecHitStruct& hit,
+		WhyNotValid* reason,
+		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
-	/// [in] \param block  The trigger channels data block to check.
-	/// [out] \param reason  If this is not NULL, then it will be filled with
-	///      the reason code describing why the data block is not valid, if and
-	///      only if a problem is found with the data.
-	/// \returns  true if there is no problem with the data and false otherwise.
+	/// reconstructed hit structure is OK and returns true in that case.
+	/// [in] \param hit  The reconstructed hit structure to check.
+	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the reason codes describing why the structure is
+	///      not valid.
+	/// [in/out] \param reasonCount  This should initially specify the size of
+	///      the array pointed to by 'reason'. It will be filled with the number
+	///      of items actually filled into the reason array upon exit from this
+	///      method.
+	/// \returns  true if there is no problem with the structure and false otherwise.
 	
-	if (not HeaderOk(block, reason)) return false;
-	return true;
+	AliHLTUInt32_t maxCount = reasonCount;
+	reasonCount = 0;
+	bool result = true;
+	
+	// If this is a NIL hit then skip all other checks.
+	if (hit == AliHLTMUONConstants::NilRecHitStruct())
+	{
+		return true;
+	}
+	
+	// Make sure that the reserved bits in the fFlags field are set
+	// to zero.
+	if ((hit.fFlags & 0x3FFF0000) != 0)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kReservedBitsNotZero;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	AliHLTUInt32_t detElemId = hit.fFlags & 0x00000FFF;
+	AliHLTUInt32_t chamber = (hit.fFlags & 0x0000F000) >> 12;
+	
+	// Make sure the detector element ID number is valid.
+	if (not (detElemId >= 100 and detElemId < 1500))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidDetElementNumber;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// Make sure the chamber number is valid.
+	if (((detElemId / 100) - 1) != chamber or chamber >= 14)
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidChamberNumber;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	return result;
 }
 
 
 bool AliHLTMUONUtils::IntegrityOk(
 		const AliHLTMUONRecHitsBlockStruct& block,
 		WhyNotValid* reason,
+		AliHLTUInt32_t* recordNum,
 		AliHLTUInt32_t& reasonCount
 	)
 {
 	/// This method is used to check more extensively if the integrity of the
-	/// dHLT raw internal data block is OK and returns true in that case.
+	/// dHLT raw internal hits data block is OK and returns true in that case.
 	/// [in] \param block  The reconstructed hits data block to check.
 	/// [out] \param reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
+	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	///      to an array of at least 'reasonCount' number of elements. It will
+	///      be filled with the number of the reconstructed hits that had a problem.
+	///      The value 'recordNum[i]' will only contain a valid value if
+	///      the corresponding 'reason[i]' contains one of:
+	///        - kReservedBitsNotZero
+	///        - kInvalidDetElementNumber
+	///        - kInvalidChamberNumber
+	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
+	///      was set and is valid or not.
 	/// [in/out] \param reasonCount  This should initially specify the size of
-	///      the array pointed to by 'reason'. It will be filled with the number
-	///      of items actually filled into the reason array upon exit from this
-	///      method.
+	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
+	///      with the number of items actually filled into the arrays upon exit
+	///      from this method.
 	/// \returns  true if there is no problem with the data and false otherwise.
 	
 	AliHLTUInt32_t maxCount = reasonCount;
@@ -1449,6 +1525,24 @@ bool AliHLTMUONUtils::IntegrityOk(
 				}
 				result = false;
 			}
+		}
+	}
+
+	// Check integrity of the individual hit structures.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(hit[i], reason+reasonCount, filledCount))
+		{
+			// reasons filled in IntegrityOk, now we just need to adjust
+			// reasonCount and fill the recordNum values.
+			if (recordNum != NULL)
+			{
+				for (AliHLTUInt32_t n = 0; n < filledCount; n++)
+					recordNum[reasonCount + n] = i;
+			}
+			reasonCount += filledCount;
+			result = false;
 		}
 	}
 	
@@ -1502,7 +1596,9 @@ bool AliHLTMUONUtils::IntegrityOk(
 	}
 	
 	// Make sure the detector element is a valid value.
-	if (not (cluster.fDetElemId >= 0 or cluster.fDetElemId == -1))
+	if (not ((cluster.fDetElemId >= 100 and cluster.fDetElemId < 1500)
+	    or cluster.fDetElemId == -1)
+	   )
 	{
 		if (reason != NULL and reasonCount < maxCount)
 		{
@@ -1913,6 +2009,17 @@ bool AliHLTMUONUtils::IntegrityOk(
 		result = false;
 	}
 	
+	// Check the individual hits
+	for (int i = 0; i < 4; i++)
+	{
+		AliHLTUInt32_t filledCount = maxCount - reasonCount;
+		if (not IntegrityOk(track.fHit[i], reason + reasonCount, filledCount))
+		{
+			reasonCount += filledCount;
+			result = false;
+		}
+	}
+	
 	return result;
 }
 
@@ -1943,6 +2050,8 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kHitNotMarkedAsNil
 	///        - kChiSquareInvalid
 	///        - kMomentumVectorNotZero
+	///        - kInvalidDetElementNumber
+	///        - kInvalidChamberNumber
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
 	/// [in/out] \param reasonCount  This should initially specify the size of

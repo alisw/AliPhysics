@@ -27,7 +27,6 @@ MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTMUONConstants.cxx \
 		AliHLTMUONTriggerRecordsBlockStruct.cxx \
 		AliHLTMUONTrigRecsDebugBlockStruct.cxx \
-		AliHLTMUONTriggerChannelsBlockStruct.cxx \
 		AliHLTMUONRecHitsBlockStruct.cxx \
 		AliHLTMUONClustersBlockStruct.cxx \
 		AliHLTMUONChannelsBlockStruct.cxx \

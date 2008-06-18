@@ -72,19 +72,6 @@ Int_t AliHLTMUONRecHit::Chamber(bool warn) const
 /// \param warn  Indicates if any warning should be printed in case of problems.
 /// \returns The chamber number of this hit in the range [1..14] or -1 if not known.
 
-	if (fSourceDDL != -1)
-	{
-		if (fSourceDDL < 1 or fSourceDDL > 20)
-		{
-			return ((fSourceDDL-1) / 2) + 1;
-		}
-		else if (warn)
-		{
-			AliError(Form("The DDL source number: %d is out of range."
-				" Valid values are [1..20]", fSourceDDL
-			));
-		}
-	}
 	if (fDetElemId != -1) return AliMpDEManager::GetChamberId(fDetElemId, warn);
 	
 	if (warn)

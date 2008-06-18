@@ -28,7 +28,6 @@
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONTrigRecsDebugBlockStruct.h"
-#include "AliHLTMUONTriggerChannelsBlockStruct.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
@@ -50,13 +49,10 @@ AliHLTMUONConstants::fgkNilTriggerRecordStruct = {
 };
 
 const AliHLTMUONTrigRecInfoStruct
-AliHLTMUONConstants::fgkNilTrigRecInfoStruct = {0, {0, 0, 0, 0}, 0, 0};
-
-const AliHLTMUONTriggerChannelStruct
-AliHLTMUONConstants::fgkNilTriggerChannelStruct = {0, 0, 0, 0};
+AliHLTMUONConstants::fgkNilTrigRecInfoStruct = {0, {0, 0, 0, 0}, 0, 0, {0, 0, 0, 0, 0}};
 	
 const AliHLTMUONRecHitStruct
-AliHLTMUONConstants::fgkNilRecHitStruct = {0, 0, 0};
+AliHLTMUONConstants::fgkNilRecHitStruct = {0, 0, 0, 0};
 
 const AliHLTMUONClusterStruct
 AliHLTMUONConstants::fgkNilClusterStruct = {
@@ -88,7 +84,8 @@ AliHLTMUONConstants::fgkNilMansoCandidateStruct = {
 	 AliHLTMUONConstants::fgkNilMansoRoIStruct,
 	 AliHLTMUONConstants::fgkNilMansoRoIStruct,
 	 AliHLTMUONConstants::fgkNilMansoRoIStruct
-	}
+	},
+	0, 0
 };
 
 const AliHLTMUONTrackDecisionStruct
@@ -116,13 +113,6 @@ const AliHLTComponentDataType
 AliHLTMUONConstants::fgkTrigRecsDebugBlockDataType = (AliHLTComponentDataType){
 	sizeof(AliHLTComponentDataType),
 	{'T','R','I','G','R','D','B','G'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
-
-const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTriggerChannelBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'T','R','I','G','C','H','N','L'},
 	kAliHLTDataOriginAny
 } | kAliHLTDataOriginMUON;
 

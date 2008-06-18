@@ -29,7 +29,6 @@
 
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONTrigRecsDebugBlockStruct.h"
-#include "AliHLTMUONTriggerChannelsBlockStruct.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
@@ -308,12 +307,6 @@ typedef AliHLTMUONDataBlockWriter<
 		AliHLTMUONTrigRecInfoStruct,
 		kTrigRecsDebugDataBlock
 	> AliHLTMUONTrigRecsDebugBlockWriter;
-
-typedef AliHLTMUONDataBlockWriter<
-		AliHLTMUONTriggerChannelsBlockStruct,
-		AliHLTMUONTriggerChannelStruct,
-		kTriggerChannelsDataBlock
-	> AliHLTMUONTriggerChannelsBlockWriter;
 
 typedef AliHLTMUONDataBlockWriter<
 		AliHLTMUONRecHitsBlockStruct,
