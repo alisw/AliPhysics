@@ -626,7 +626,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   TClonesArray &cl=*clusters;
   //
   Float_t tanp=fTanP, tann=fTanN;
-  if (fModule>fLastSSD1) {tann=fTanP; tanp=fTanN;}
+  //  if (fModule>fLastSSD1) {tann=fTanP; tanp=fTanN;}
   Int_t idet=fNdet[fModule];
   Int_t ncl=0;
   //
@@ -738,7 +738,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
 
 	// charge matching (note that if posQ or negQ is 0 -> ratio=1 and the following condition is met
-	if (TMath::Abs(ratio)>0.33) continue; // note: 0.33=3xsigma_ratio calculated in cosmics tests
+	if (TMath::Abs(ratio)>0.2) continue; // note: 0.2=3xsigma_ratio calculated in cosmics tests
 
 	//
 	Float_t yn=neg[j].GetY()*fYpitchSSD;
@@ -746,6 +746,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	Float_t yt=yn + tann*zt;
 	zt-=fHlSSD; yt-=fHwSSD;
 	ybest=yt; zbest=zt; 
+
+	if (fModule>fLastSSD1) ybest*=-1.;
+	
 	qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
 	if( (pos[ip].GetQ()==0)||(neg[ip].GetQ()==0)) qbest*=2; // in case of bad strips on one side keep all charge from the other one
 	
@@ -829,7 +832,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	if (ip2==ip) ip2 =  positivepair[10*in+1];
 	Float_t pcharge = pos[ip].GetQ()+pos[ip2].GetQ();
 	
-	if ( (TMath::Abs(pcharge-neg[in].GetQ())<10) && (pcharge!=0) ) { // 
+	if ( (TMath::Abs(pcharge-neg[in].GetQ())<30) && (pcharge!=0) ) { // 
 	  
 	  //
 	  // add first pair
@@ -841,6 +844,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    Float_t yt=yn + tann*zt;
 	    zt-=fHlSSD; yt-=fHwSSD;
 	    ybest =yt;  zbest=zt; 
+
+	    if (fModule>fLastSSD1) ybest*=-1.;
+
 	    qbest =pos[ip].GetQ();
 	    
 	    Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
@@ -907,6 +913,8 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    Float_t yt=yn + tann*zt;
 	    zt-=fHlSSD; yt-=fHwSSD;
 	    ybest =yt;  zbest=zt; 
+
+	    if (fModule>fLastSSD1) ybest*=-1.;
 	    qbest =pos[ip2].GetQ();
 	    
 	    Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
@@ -982,7 +990,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	Float_t pcharge = neg[jn].GetQ()+neg[jn2].GetQ();
 	//
 	
-	if ( (TMath::Abs(pcharge-pos[ip].GetQ())<10) &&  // charge matching 
+	if ( (TMath::Abs(pcharge-pos[ip].GetQ())<30) &&  // charge matching 
 	     (pcharge!=0) ) { // reject combinations of bad strips
 	  
 	  //
@@ -996,6 +1004,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    Float_t yt=yn + tann*zt;
 	    zt-=fHlSSD; yt-=fHwSSD;
 	    ybest =yt;  zbest=zt; 
+
+      if (fModule>fLastSSD1) ybest*=-1.;
+
 	    qbest =neg[jn].GetQ();
 	    {
 	      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
@@ -1059,6 +1070,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  Double_t yt=yn + tann*zt;
 	  zt-=fHlSSD; yt-=fHwSSD;
 	  ybest =yt;  zbest=zt; 
+
+      if (fModule>fLastSSD1) ybest*=-1.;
+
 	  qbest =neg[jn2].GetQ();
           {
           Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
