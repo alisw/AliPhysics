@@ -57,6 +57,20 @@ void AliGlobalQADataMaker::InitRecPoints() {
     h=new TH1F(name[i+1],name[i+1],100,-5.,5.);
     Add2RecPointsList(h,i+1);    
   }
+
+  Add2RecPointsList(
+  new TH1F("SSD1 absolute residuals Z for Z<0 (cm)",
+           "SSD1 absolute residuals Z for Z<0 (cm)",100,-2.,2.),40);
+  Add2RecPointsList(
+  new TH1F("SSD1 absolute residuals Z for Z>0 (cm)",
+           "SSD1 absolute residuals Z for Z>0 (cm)",100,-2.,2.),41);
+  Add2RecPointsList(
+  new TH1F("SSD2 absolute residuals Z for Z<0 (cm)",
+           "SSD2 absolute residuals Z for Z<0 (cm)",100,-3.,3.),42);
+  Add2RecPointsList(
+  new TH1F("SSD2 absolute residuals Z for Z>0 (cm)",
+           "SSD2 absolute residuals Z for Z>0 (cm)",100,-3.,3.),43);
+  
 }
 
 void AliGlobalQADataMaker::InitESDs() {
