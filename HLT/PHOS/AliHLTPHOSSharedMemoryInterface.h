@@ -31,6 +31,7 @@ class  AliHLTPHOSSharedMemoryInterface
   virtual ~AliHLTPHOSSharedMemoryInterface();
   AliHLTPHOSValidCellDataStruct*   NextChannel();
   void SetMemory(AliHLTPHOSRcuCellEnergyDataStruct *rcuCeelEnergyPtr);
+  Int_t* GetRawData(Int_t& nSamples); //added by OD
   void Reset();
 
  private:
@@ -41,6 +42,7 @@ class  AliHLTPHOSSharedMemoryInterface
   AliHLTPHOSValidCellDataStruct *fCurrentChannel;
   AliHLTPHOSRcuCellEnergyDataStruct *fCellEnergiesPtr ;
   bool fIsSetMemory;
+  bool fHasRawData;
   int fMaxCnt;
   int fCurrentCnt; 
   int fCurrentX;   //added by OD
@@ -49,6 +51,7 @@ class  AliHLTPHOSSharedMemoryInterface
   Int_t fCharDataOffset;
   char  *fCharPtr;
   Int_t *fIntPtr;
+  Int_t *fRawDataPtr;
   //  Int_t *rawDataBufferPos = (Int_t *)outputPtr; 
 };
 

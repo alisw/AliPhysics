@@ -27,6 +27,7 @@
 AliHLTPHOSSharedMemoryInterface::AliHLTPHOSSharedMemoryInterface(): fCurrentChannel(0),
 								    fCellEnergiesPtr(0),
 								    fIsSetMemory(false),
+								    fHasRawData(false),
 								    fMaxCnt(0),
 								    fCurrentCnt(0),
 								    fCurrentX(0),
@@ -34,7 +35,8 @@ AliHLTPHOSSharedMemoryInterface::AliHLTPHOSSharedMemoryInterface(): fCurrentChan
 								    fCurrentGain(0),
 								    fCharDataOffset(0),
 								    fCharPtr(0),
-								    fIntPtr(0)
+								    fIntPtr(0),
+								    fRawDataPtr(0)
 {
   fCharDataOffset = sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
 }
@@ -65,34 +67,14 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
   // Changed by OD
   if(fCurrentCnt < fMaxCnt)
     {
-      for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+      fCurrentChannel = &(fCellEnergiesPtr->fValidData[fCurrentCnt]);
+      fCurrentCnt++;
+      if(fCellEnergiesPtr->fHasRawData == true)
 	{
-	  for(Int_t z = 0; z < N_ZROWS_MOD; z++)
-	    {
-	      for(Int_t gain = 0; gain < N_GAINS; gain++)
-		{
-		  fCurrentChannel =  &(fCellEnergiesPtr->fValidData[x][z][gain]);
-		  
-		  if(fCurrentChannel->fID == fCurrentCnt)
-		    {
-		      
-
-		      /*
-			commented out by PT, temorary patc
-			the usage of a pointer AliHLTPHOSValidCellDataStruct
-			gives incompability between 64 and 32 bit machines.
-			data written on a 64 bit machine cannot be read on a 32 bit machine
-			since a pointer is 64 bit on a 64 bit machine and 32 bit on a 32 bit machine
-			fCurrentChannel->fData = fIntPtr; 
-			fIntPtr +=  fCurrentChannel->fNSamples;
-		      */
-		      
-		      fCurrentCnt ++;
-		      return fCurrentChannel;
-		    }
-    		}
-	    }
+	  fRawDataPtr = fIntPtr + 1;
+	  fIntPtr = fIntPtr + *fIntPtr + 1;
 	}
+      return fCurrentChannel;
     }
   else
     {
@@ -103,6 +85,21 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
   return 0;
 }
 
+Int_t*
+AliHLTPHOSSharedMemoryInterface::GetRawData(Int_t& nSamples)
+{
+  //Added by OD
+
+  if(fHasRawData == true)
+    {
+      nSamples = *(fRawDataPtr-1);
+      return fRawDataPtr;
+    }
+  else
+    {
+      return 0;
+    }
+}
 
 void
 AliHLTPHOSSharedMemoryInterface::SetMemory(AliHLTPHOSRcuCellEnergyDataStruct *rcuCellEnergyPtr)
@@ -110,7 +107,11 @@ AliHLTPHOSSharedMemoryInterface::SetMemory(AliHLTPHOSRcuCellEnergyDataStruct *rc
   //Shutting up rule checker
   fCellEnergiesPtr =  rcuCellEnergyPtr;
   fMaxCnt =  fCellEnergiesPtr->fCnt;
-  PingPongPointer();
+  if(fCellEnergiesPtr->fHasRawData == true)
+    {
+      PingPongPointer();
+      fHasRawData = true;
+    }
   fIsSetMemory = true;
 }
 
@@ -125,14 +126,16 @@ AliHLTPHOSSharedMemoryInterface::Reset()
   fCurrentZ = 0;
   fCurrentGain = 0;
   fIsSetMemory = false;
+  fHasRawData = false;
 }
-
 
 void 
 AliHLTPHOSSharedMemoryInterface::PingPongPointer()
 {
   // ping pong ping ping pong ping pong
+  
   fCharPtr = (char *)fCellEnergiesPtr ;
   fCharPtr += fCharDataOffset; 
-  fIntPtr = (Int_t *)fCharPtr; 
+  fIntPtr = (Int_t *)fCharPtr;
+
 }

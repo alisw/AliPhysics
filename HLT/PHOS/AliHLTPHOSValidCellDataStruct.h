@@ -29,19 +29,19 @@ struct AliHLTPHOSValidCellDataStruct
 {
   Int_t fX;
   Int_t fZ;
-  Int_t fID;
-
   Int_t fGain;
   Float_t fEnergy;
   Float_t fTime;
   Int_t fCrazyness;
-  Int_t fNSamples;
 
-  //  Int_t *fData;
+  //  Int_t fNSamples;
+
+  // Int_t *fData;
+
   //  unsigned int  fDataOffset;
   //  Int_t *fData2;
   
-  Int_t fData[N_DATA_SAMPLES];
+  //  Int_t fData[N_DATA_SAMPLES];
 
 };
 

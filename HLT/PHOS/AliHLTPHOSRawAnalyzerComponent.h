@@ -60,8 +60,8 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   AliAltroData    *fAltroDataPtr;         // container for altro payload
   AliAltroBunch   *fAltroBunchPtr;        // container for altro bunches
 
-  /** Are we pushing the cell energies (raw data) */
-  Bool_t fDoPushCellEnergies; //Added by OD
+  /** Are we pushing the raw data */
+  Bool_t fDoPushRawData; //Added by OD
 
   /** Are we making digits? */
   Bool_t fDoMakeDigits;  //Added by OD
