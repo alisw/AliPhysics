@@ -1704,10 +1704,14 @@ Int_t AliGeomManager::CheckOverlapsExtrusions(TGeoNode* start, Double_t threshol
   start->CheckOverlaps(threshold,"s");  
 
   TObjArray* ovexArray = (TObjArray*)gGeoManager->GetListOfOverlaps();
-  AliDebugClass(2,Form("Number of overlaps/extrusions: %d", ovexArray->GetEntriesFast()));
-  
+  Int_t nOvEx = ovexArray->GetEntriesFast();
+  AliDebugClass(2,Form("Number of overlaps/extrusions: %d", nOvEx));
+  if(AliLog::GetDebugLevel("","AliGeomManager")>2) gGeoManager->PrintOverlaps();
+  ovexArray->Delete();
+  delete ovexArray;
+
   gGeoManager->SetCheckingOverlaps(kFALSE);
 
- return ovexArray->GetEntriesFast();
+  return nOvEx;
 }
 
