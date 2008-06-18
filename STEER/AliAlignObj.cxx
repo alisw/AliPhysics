@@ -662,7 +662,7 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
     AliError("Can't apply the alignment object! gGeoManager doesn't exist or it is still open!");
     return kFALSE;
   }
-  
+
   if (gGeoManager->IsLocked()){
     AliError("Can't apply the alignment object! Geometry is locked!");
     return kFALSE;
@@ -694,6 +694,17 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
     return kFALSE;
   }
 
+  Int_t nOvlpBefore = 0, nOvlpAfter = 0;
+  Double_t threshold = 0.01;
+  
+  if(ovlpcheck)
+  {
+    gGeoManager->cd(path);
+    gGeoManager->CdUp();
+    TGeoNode* start = gGeoManager->GetCurrentNode();
+    nOvlpBefore = AliGeomManager::CheckOverlapsExtrusions(start, threshold);
+  }
+
   TGeoHMatrix align,gprime;
   gprime = *node->GetMatrix();
   GetMatrix(align);
@@ -706,17 +717,21 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
   Int_t modId; // unique identity for volume inside layer in the alobj
   GetVolUID(layerId, modId);
   AliDebug(2,Form("Aligning volume %s of detector layer %d with local ID %d",symname,layerId,modId));
-  node->Align(ginv,0,ovlpcheck);
+  node->Align(ginv,0);
+
+  
   if(ovlpcheck){
-    Int_t novex=((TObjArray*)gGeoManager->GetListOfOverlaps())->GetEntriesFast();
-    if(novex){
-      TString error(Form("The alignment of volume %s introduced %d new overlap",GetSymName(),novex));
-      if(novex>1) error+="s";
+    TGeoNode* start = node->GetNode();
+    nOvlpAfter = AliGeomManager::CheckOverlapsExtrusions(start, threshold);
+    if(nOvlpBefore < nOvlpAfter){
+      TString error(Form("The alignment of volume %s introduced %d new overlap",GetSymName(), nOvlpAfter-nOvlpBefore));
+      if(nOvlpAfter-nOvlpBefore > 1) error+="s";
       AliError(error.Data());
-      return kFALSE;
+      //return kFALSE;
     }
   }
 
   return kTRUE;
 }
+
 
