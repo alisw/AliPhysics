@@ -37,6 +37,10 @@
 #include "AliQAChecker.h"
 #include "AliITSQAChecker.h"
 #include "AliRawReader.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliESDVertex.h"
+#include "AliMultiplicity.h"
 
 ClassImp(AliITSQADataMakerRec)
 
@@ -189,4 +193,170 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRecPoints(clustersTree);
 }
 
+//____________________________________________________________________________ 
+void AliITSQADataMakerRec::InitESDs()
+{
+  // Create ESDs histograms in ESDs subdir
+
+  TH1F *hESDClustersMI = 
+    new TH1F("hESDClustersMI", "N ITS clusters per track (MI); N clusters; Counts",
+	     7, -0.5, 6.5);
+  hESDClustersMI->Sumw2();
+  hESDClustersMI->SetMinimum(0);
+  Add2ESDsList(hESDClustersMI, 0);
+
+  TH1F *hESDClusterMapMI =
+    new TH1F("hESDClusterMapMI", "N tracks with point Layer (MI); N tracks; Layer",
+	     6, -0.5, 5.5);
+  hESDClusterMapMI->Sumw2();
+  hESDClusterMapMI->SetMinimum(0);
+  Add2ESDsList(hESDClusterMapMI, 1);
+
+  TH1F *hESDClustersSA = 
+    new TH1F("hESDClustersSA", "N ITS clusters per track (SA); N clusters; Counts",
+	     7, -0.5, 6.5);
+  hESDClustersSA->Sumw2();
+  hESDClustersSA->SetMinimum(0);
+  Add2ESDsList(hESDClustersSA, 2);
+
+  TH1F *hESDClusterMapSA =
+    new TH1F("hESDClusterMapSA", "N tracks with point Layer (SA); N tracks; Layer",
+	     6, -0.5, 5.5);
+  hESDClusterMapSA->Sumw2();
+  hESDClusterMapSA->SetMinimum(0);
+  Add2ESDsList(hESDClusterMapSA, 3);
+
+  TH1F *hSPDVertexX = 
+    new TH1F("hSPDVertexX","SPD Vertex x; x [cm]; N events",
+	     10000,-2,2);
+  hSPDVertexX->Sumw2();
+  Add2ESDsList(hSPDVertexX, 4);
+
+  TH1F *hSPDVertexY = 
+    new TH1F("hSPDVertexY","SPD Vertex y; y [cm]; N events",
+	     10000,-2,2);
+  hSPDVertexY->Sumw2();
+  Add2ESDsList(hSPDVertexY, 5);
+
+  TH1F *hSPDVertexZ = 
+    new TH1F("hSPDVertexZ","SPD Vertex z; z [cm]; N events",
+	     10000,-20,20);
+  hSPDVertexZ->Sumw2();
+  Add2ESDsList(hSPDVertexZ, 6);
+
+  TH1F *hSPDVertexContrOverMult =
+    new TH1F("hSPDVertexContrOverMult","SPD Vertex: contributors / multiplicity; N contributors / SPD multiplicity; N events",
+	     100,-4,20);
+  hSPDVertexContrOverMult->Sumw2();
+  Add2ESDsList(hSPDVertexContrOverMult, 7);
+
+  TH1F *hTrkVertexX = 
+    new TH1F("hTrkVertexX","ITS+TPC Trk Vertex x; x [cm]; N events",
+	     10000,-2,2);
+  hTrkVertexX->Sumw2();
+  Add2ESDsList(hTrkVertexX, 8);
+
+  TH1F *hTrkVertexY = 
+    new TH1F("hTrkVertexY","ITS+TPC Trk Vertex y; y [cm]; N events",
+	     10000,-2,2);
+  hTrkVertexY->Sumw2();
+  Add2ESDsList(hTrkVertexY, 9);
+
+  TH1F *hTrkVertexZ = 
+    new TH1F("hTrkVertexZ","ITS+TPC Trk Vertex z; z [cm]; N events",
+	     10000,-20,20);
+  hTrkVertexZ->Sumw2();
+  Add2ESDsList(hTrkVertexZ, 10);
+
+  TH1F *hTrkVertexContrOverITSrefit6 =
+    new TH1F("hTrkVertexContrOverITSrefit6","ITS+TPC Trk Vertex: contributors / tracks; N contributors / N trks kITSrefit with 6 clusters; N events",
+	     100,-4,20);
+  hTrkVertexContrOverITSrefit6->Sumw2();
+  Add2ESDsList(hTrkVertexContrOverITSrefit6, 11);
+
+  TH1F *hSPDTrkVertexDeltaX =
+    new TH1F("hSPDTrkVertexDeltaX","Comparison of SPD and Trk vertices: x; xSPD-xTrk [cm]; N events",
+	     1000,-1,1);
+  hSPDTrkVertexDeltaX->Sumw2();
+  Add2ESDsList(hSPDTrkVertexDeltaX, 12);
+    
+  TH1F *hSPDTrkVertexDeltaY =
+    new TH1F("hSPDTrkVertexDeltaY","Comparison of SPD and Trk vertices: y; ySPD-yTrk [cm]; N events",
+	     1000,-1,1);
+  hSPDTrkVertexDeltaY->Sumw2();
+  Add2ESDsList(hSPDTrkVertexDeltaY, 13);
+    
+  TH1F *hSPDTrkVertexDeltaZ =
+    new TH1F("hSPDTrkVertexDeltaZ","Comparison of SPD and Trk vertices: z; zSPD-zTrk [cm]; N events",
+	     1000,-1,1);
+  hSPDTrkVertexDeltaZ->Sumw2();
+  Add2ESDsList(hSPDTrkVertexDeltaZ, 14);
+    
+  return;
+}
+
+//____________________________________________________________________________
+void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
+{
+  // Make QA data from ESDs
+  
+  const Int_t nESDTracks = esd->GetNumberOfTracks();
+  Int_t nITSrefit6 = 0; 
+
+  // loop on tracks
+  for(Int_t i = 0; i < nESDTracks; i++) {
+    
+    AliESDtrack *track = esd->GetTrack(i);
+    
+    Int_t nclsITS = track->GetNcls(0);
+
+    Bool_t itsrefit=kFALSE,tpcin=kFALSE;
+    if ((track->GetStatus() & AliESDtrack::kITSrefit)) itsrefit=kTRUE;
+    if ((track->GetStatus() & AliESDtrack::kTPCin)) tpcin=kTRUE;     
+    if(nclsITS==6 && itsrefit) nITSrefit6++;
+
+    if(tpcin) {
+      GetESDsData(0)->Fill(nclsITS);
+    } else {
+      GetESDsData(2)->Fill(nclsITS);
+    }
+
+    for(Int_t layer=0; layer<6; layer++) {
+
+      if(TESTBIT(track->GetITSClusterMap(),layer)) {
+	if(tpcin) {
+	  GetESDsData(1)->Fill(layer);
+	} else {
+	  GetESDsData(3)->Fill(layer);
+	}
+      }
+
+    }     
+
+  } // end loop on tracks
+
+  // vertices
+  const AliESDVertex *vtxSPD = esd->GetPrimaryVertexSPD();
+  const AliESDVertex *vtxTrk = esd->GetPrimaryVertex();
+
+  GetESDsData(4)->Fill(vtxSPD->GetXv());
+  GetESDsData(5)->Fill(vtxSPD->GetYv());
+  GetESDsData(6)->Fill(vtxSPD->GetZv());
+  Int_t mult = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetNumberOfTracklets();
+  if(mult>0)
+    GetESDsData(7)->Fill((Float_t)(vtxSPD->GetNContributors())/(Float_t)mult);
+
+  GetESDsData(8)->Fill(vtxTrk->GetXv());
+  GetESDsData(9)->Fill(vtxTrk->GetYv());
+  GetESDsData(10)->Fill(vtxTrk->GetZv());
+  if(nITSrefit6>0)
+    GetESDsData(11)->Fill((Float_t)(vtxTrk->GetNIndices())/(Float_t)nITSrefit6);
+
+  GetESDsData(12)->Fill(vtxSPD->GetXv()-vtxTrk->GetXv());
+  GetESDsData(13)->Fill(vtxSPD->GetYv()-vtxTrk->GetYv());
+  GetESDsData(14)->Fill(vtxSPD->GetZv()-vtxTrk->GetZv());
+
+
+  return;
+}
 

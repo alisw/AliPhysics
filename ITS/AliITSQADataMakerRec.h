@@ -14,6 +14,9 @@
 //
 //
 //  W. Ferrarese + P. Cerello Feb 2008
+//
+//  ESD QA (Tracking and primary vertex)
+//  A. Dainese Jun 2008 
 
 #include "AliQADataMakerRec.h"
 
@@ -37,8 +40,10 @@ public:
   virtual void EndOfDetectorCycle(const char *fgDataName);
   virtual void InitRaws();
   virtual void InitRecPoints();
+  virtual void InitESDs();
   virtual void MakeRaws(AliRawReader *rawReader);
   virtual void MakeRecPoints(TTree *clustersTree);
+  virtual void MakeESDs(AliESDEvent *esd);
   virtual ~AliITSQADataMakerRec(); // dtor
 
 private:
