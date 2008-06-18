@@ -1076,54 +1076,155 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   conefoamshape->Rmin(3) = conefoamshape->GetRmax(3);
 
   // SDD Cone Holes: Pcon's
+  // A single hole volume gives an overlap with coneinsert, so
+  // three contiguous volumes are created: one to be put in the cone foam
+  // and two in the cone carbon fiber envelope
   TGeoPcon *hole1shape = new TGeoPcon(-kHole1Phi/2., kHole1Phi, 4);
 
   hole1shape->Rmin(0) = kHole1RMax;
   hole1shape->Rmax(0) = hole1shape->GetRmin(0);
-  hole1shape->Z(0)    = ZFromRminpCone(coneshape,3,kConeTheta,
+  hole1shape->Z(0)    = ZFromRminpCone(conefoamshape,0,kConeTheta,
 				       hole1shape->GetRmin(0));
 
   hole1shape->Rmax(1) = hole1shape->GetRmax(0);
-  hole1shape->Z(1)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+  hole1shape->Z(1)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
 				       hole1shape->GetRmax(1));
-  hole1shape->Rmin(1) = RminFromZpCone(coneshape,3,kConeTheta,
+  hole1shape->Rmin(1) = RminFromZpCone(conefoamshape,1,kConeTheta,
 				       hole1shape->GetZ(1));
 
   hole1shape->Rmin(2) = kHole1RMin;
-  hole1shape->Z(2)    = ZFromRminpCone(coneshape,3,kConeTheta,
+  hole1shape->Z(2)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
 				       hole1shape->GetRmin(2));
-  hole1shape->Rmax(2) = RmaxFromZpCone(coneshape,4,kConeTheta,
+  hole1shape->Rmax(2) = RmaxFromZpCone(conefoamshape,3,kConeTheta,
 				       hole1shape->GetZ(2));
 
   hole1shape->Rmin(3) = hole1shape->GetRmin(2);
   hole1shape->Rmax(3) = hole1shape->GetRmin(3);
-  hole1shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+  hole1shape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
 				       hole1shape->GetRmax(3));
 
+  TGeoPcon *hole11shape = new TGeoPcon(-kHole1Phi/2., kHole1Phi, 4);
+
+  hole11shape->Rmin(0) = kHole1RMax;
+  hole11shape->Rmax(0) = hole11shape->GetRmin(0);
+  hole11shape->Z(0)    = ZFromRminpCone(coneshape,3,kConeTheta,
+					hole11shape->GetRmin(0));
+
+  hole11shape->Rmax(1) = hole11shape->GetRmax(0);
+  hole11shape->Z(1)    = ZFromRminpCone(coneinsertshape,3,kConeTheta,
+					hole11shape->GetRmax(1));
+  hole11shape->Rmin(1) = RminFromZpCone(coneshape,3,kConeTheta,
+					hole11shape->GetZ(1));
+
+  hole11shape->Rmin(2) = kHole1RMin;
+  hole11shape->Z(2)    = ZFromRminpCone(coneshape,3,kConeTheta,
+					hole11shape->GetRmin(2));
+  hole11shape->Rmax(2) = RminFromZpCone(coneinsertshape,3,kConeTheta,
+					hole11shape->GetZ(2));
+
+  hole11shape->Rmin(3) = hole11shape->GetRmin(2);
+  hole11shape->Rmax(3) = hole11shape->GetRmin(3);
+  hole11shape->Z(3)    = ZFromRminpCone(coneinsertshape,3,kConeTheta,
+					hole11shape->GetRmax(3));
+
+  TGeoPcon *hole12shape = new TGeoPcon(-kHole1Phi/2., kHole1Phi, 4);
+
+  hole12shape->Rmin(0) = kHole1RMax;
+  hole12shape->Rmax(0) = hole12shape->GetRmin(0);
+  hole12shape->Z(0)    = ZFromRmaxpCone(coneinsertshape,4,kConeTheta,
+					hole12shape->GetRmin(0));
+
+  hole12shape->Rmax(1) = hole12shape->GetRmax(0);
+  hole12shape->Z(1)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+					hole12shape->GetRmax(1));
+  hole12shape->Rmin(1) = RmaxFromZpCone(coneinsertshape,4,kConeTheta,
+					hole12shape->GetZ(1));
+
+  hole12shape->Rmin(2) = kHole1RMin;
+  hole12shape->Z(2)    = ZFromRmaxpCone(coneinsertshape,4,kConeTheta,
+					hole12shape->GetRmin(2));
+  hole12shape->Rmax(2) = RmaxFromZpCone(coneshape,4,kConeTheta,
+					hole12shape->GetZ(2));
+
+  hole12shape->Rmin(3) = hole12shape->GetRmin(2);
+  hole12shape->Rmax(3) = hole12shape->GetRmin(3);
+  hole12shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+					hole12shape->GetRmax(3));
+
+  //
   TGeoPcon *hole2shape = new TGeoPcon(-kHole2Phi/2., kHole2Phi, 4);
 
   hole2shape->Rmin(0) = kHole2RMax;
   hole2shape->Rmax(0) = hole2shape->GetRmin(0);
-  hole2shape->Z(0)    = ZFromRminpCone(coneshape,3,kConeTheta,
+  hole2shape->Z(0)    = ZFromRminpCone(conefoamshape,0,kConeTheta,
 				       hole2shape->GetRmin(0));
 
   hole2shape->Rmax(1) = hole2shape->GetRmax(0);
-  hole2shape->Z(1)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+  hole2shape->Z(1)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
 				       hole2shape->GetRmax(1));
-  hole2shape->Rmin(1) = RminFromZpCone(coneshape,3,kConeTheta,
+  hole2shape->Rmin(1) = RminFromZpCone(conefoamshape,1,kConeTheta,
 				       hole2shape->GetZ(1));
 
   hole2shape->Rmin(2) = kHole2RMin;
-  hole2shape->Z(2)    = ZFromRminpCone(coneshape,3,kConeTheta,
+  hole2shape->Z(2)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
 				       hole2shape->GetRmin(2));
-  hole2shape->Rmax(2) = RmaxFromZpCone(coneshape,4,kConeTheta,
+  hole2shape->Rmax(2) = RmaxFromZpCone(conefoamshape,3,kConeTheta,
 				       hole2shape->GetZ(2));
 
   hole2shape->Rmin(3) = hole2shape->GetRmin(2);
   hole2shape->Rmax(3) = hole2shape->GetRmin(3);
-  hole2shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+  hole2shape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
 				       hole2shape->GetRmax(3));
 
+  TGeoPcon *hole21shape = new TGeoPcon(-kHole2Phi/2., kHole2Phi, 4);
+
+  hole21shape->Rmin(0) = kHole2RMax;
+  hole21shape->Rmax(0) = hole21shape->GetRmin(0);
+  hole21shape->Z(0)    = ZFromRminpCone(coneshape,3,kConeTheta,
+					hole21shape->GetRmin(0));
+
+  hole21shape->Rmax(1) = hole21shape->GetRmax(0);
+  hole21shape->Z(1)    = ZFromRminpCone(coneinsertshape,3,kConeTheta,
+					hole21shape->GetRmax(1));
+  hole21shape->Rmin(1) = RminFromZpCone(coneshape,3,kConeTheta,
+					hole21shape->GetZ(1));
+
+  hole21shape->Rmin(2) = kHole2RMin;
+  hole21shape->Z(2)    = ZFromRminpCone(coneshape,3,kConeTheta,
+					hole21shape->GetRmin(2));
+  hole21shape->Rmax(2) = RminFromZpCone(coneinsertshape,3,kConeTheta,
+					hole21shape->GetZ(2));
+
+  hole21shape->Rmin(3) = hole21shape->GetRmin(2);
+  hole21shape->Rmax(3) = hole21shape->GetRmin(3);
+  hole21shape->Z(3)    = ZFromRminpCone(coneinsertshape,3,kConeTheta,
+					hole21shape->GetRmax(3));
+
+  TGeoPcon *hole22shape = new TGeoPcon(-kHole2Phi/2., kHole2Phi, 4);
+
+  hole22shape->Rmin(0) = kHole2RMax;
+  hole22shape->Rmax(0) = hole22shape->GetRmin(0);
+  hole22shape->Z(0)    = ZFromRmaxpCone(coneinsertshape,4,kConeTheta,
+					hole22shape->GetRmin(0));
+
+  hole22shape->Rmax(1) = hole22shape->GetRmax(0);
+  hole22shape->Z(1)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+					hole22shape->GetRmax(1));
+  hole22shape->Rmin(1) = RmaxFromZpCone(coneinsertshape,4,kConeTheta,
+					hole22shape->GetZ(1));
+
+  hole22shape->Rmin(2) = kHole2RMin;
+  hole22shape->Z(2)    = ZFromRmaxpCone(coneinsertshape,4,kConeTheta,
+					hole22shape->GetRmin(2));
+  hole22shape->Rmax(2) = RmaxFromZpCone(coneshape,4,kConeTheta,
+					hole22shape->GetZ(2));
+
+  hole22shape->Rmin(3) = hole22shape->GetRmin(2);
+  hole22shape->Rmax(3) = hole22shape->GetRmin(3);
+  hole22shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+					hole22shape->GetRmax(3));
+
+  //
   Double_t holePhi;
   holePhi = (kHole3Width/kHole3RMin)*TMath::RadToDeg();
 
@@ -1131,26 +1232,75 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
 
   hole3shape->Rmin(0) = kHole3RMin + kHole3DeltaR;
   hole3shape->Rmax(0) = hole3shape->GetRmin(0);
-  hole3shape->Z(0)    = ZFromRminpCone(coneshape,3,kConeTheta,
+  hole3shape->Z(0)    = ZFromRminpCone(conefoamshape,0,kConeTheta,
 				       hole3shape->GetRmin(0));
 
   hole3shape->Rmax(1) = hole3shape->GetRmax(0);
-  hole3shape->Z(1)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+  hole3shape->Z(1)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
 				       hole3shape->GetRmax(1));
-  hole3shape->Rmin(1) = RminFromZpCone(coneshape,3,kConeTheta,
+  hole3shape->Rmin(1) = RminFromZpCone(conefoamshape,1,kConeTheta,
 				       hole3shape->GetZ(1));
 
   hole3shape->Rmin(2) = kHole3RMin;
-  hole3shape->Z(2)    = ZFromRminpCone(coneshape,3,kConeTheta,
+  hole3shape->Z(2)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
 				       hole3shape->GetRmin(2));
-  hole3shape->Rmax(2) = RmaxFromZpCone(coneshape,4,kConeTheta,
+  hole3shape->Rmax(2) = RmaxFromZpCone(conefoamshape,3,kConeTheta,
 				       hole3shape->GetZ(2));
 
   hole3shape->Rmin(3) = hole3shape->GetRmin(2);
   hole3shape->Rmax(3) = hole3shape->GetRmin(3);
-  hole3shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+  hole3shape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
 				       hole3shape->GetRmax(3));
 
+  TGeoPcon *hole31shape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  hole31shape->Rmin(0) = kHole3RMin + kHole3DeltaR;
+  hole31shape->Rmax(0) = hole31shape->GetRmin(0);
+  hole31shape->Z(0)    = ZFromRminpCone(coneshape,3,kConeTheta,
+					hole31shape->GetRmin(0));
+
+  hole31shape->Rmax(1) = hole31shape->GetRmax(0);
+  hole31shape->Z(1)    = ZFromRminpCone(coneinsertshape,3,kConeTheta,
+					hole31shape->GetRmax(1));
+  hole31shape->Rmin(1) = RminFromZpCone(coneshape,3,kConeTheta,
+					hole31shape->GetZ(1));
+
+  hole31shape->Rmin(2) = kHole3RMin;
+  hole31shape->Z(2)    = ZFromRminpCone(coneshape,3,kConeTheta,
+					hole31shape->GetRmin(2));
+  hole31shape->Rmax(2) = RminFromZpCone(coneinsertshape,3,kConeTheta,
+					hole31shape->GetZ(2));
+
+  hole31shape->Rmin(3) = hole31shape->GetRmin(2);
+  hole31shape->Rmax(3) = hole31shape->GetRmin(3);
+  hole31shape->Z(3)    = ZFromRminpCone(coneinsertshape,3,kConeTheta,
+					hole31shape->GetRmax(3));
+
+  TGeoPcon *hole32shape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  hole32shape->Rmin(0) = kHole3RMin + kHole3DeltaR;
+  hole32shape->Rmax(0) = hole32shape->GetRmin(0);
+  hole32shape->Z(0)    = ZFromRmaxpCone(coneinsertshape,4,kConeTheta,
+					hole32shape->GetRmin(0));
+
+  hole32shape->Rmax(1) = hole32shape->GetRmax(0);
+  hole32shape->Z(1)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+					hole32shape->GetRmax(1));
+  hole32shape->Rmin(1) = RmaxFromZpCone(coneinsertshape,4,kConeTheta,
+					hole32shape->GetZ(1));
+
+  hole32shape->Rmin(2) = kHole3RMin;
+  hole32shape->Z(2)    = ZFromRmaxpCone(coneinsertshape,4,kConeTheta,
+					hole32shape->GetRmin(2));
+  hole32shape->Rmax(2) = RmaxFromZpCone(coneshape,4,kConeTheta,
+					hole32shape->GetZ(2));
+
+  hole32shape->Rmin(3) = hole32shape->GetRmin(2);
+  hole32shape->Rmax(3) = hole32shape->GetRmin(3);
+  hole32shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
+					hole32shape->GetRmax(3));
+
+  //
   holePhi = (kHole4Width/kHole4RMin)*TMath::RadToDeg();
 
   TGeoPcon *hole4shape = new TGeoPcon(-holePhi/2., holePhi, 4);
@@ -1184,6 +1334,8 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
     conefoamshape->InspectShape();
     hole1shape->InspectShape();
     hole2shape->InspectShape();
+    hole3shape->InspectShape();
+    hole4shape->InspectShape();
   }
 
 
@@ -1221,6 +1373,22 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   hole1->SetFillColor(hole1->GetLineColor());
   hole1->SetFillStyle(4090); // 90% transparent
 
+  TGeoVolume *hole11 = new TGeoVolume("SDDCableHole11",
+				      hole11shape,medSDDair);
+  hole11->SetVisibility(kTRUE);
+  hole11->SetLineColor(5); // Yellow
+  hole11->SetLineWidth(1);
+  hole11->SetFillColor(hole11->GetLineColor());
+  hole11->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole12 = new TGeoVolume("SDDCableHole12",
+				      hole12shape,medSDDair);
+  hole12->SetVisibility(kTRUE);
+  hole12->SetLineColor(5); // Yellow
+  hole12->SetLineWidth(1);
+  hole12->SetFillColor(hole12->GetLineColor());
+  hole12->SetFillStyle(4090); // 90% transparent
+
   TGeoVolume *hole2 = new TGeoVolume("SDDCableHole2",
 				     hole2shape,medSDDair);
   hole2->SetVisibility(kTRUE);
@@ -1229,6 +1397,22 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   hole2->SetFillColor(hole2->GetLineColor());
   hole2->SetFillStyle(4090); // 90% transparent
 
+  TGeoVolume *hole21 = new TGeoVolume("SDDCableHole21",
+				      hole21shape,medSDDair);
+  hole21->SetVisibility(kTRUE);
+  hole21->SetLineColor(5); // Yellow
+  hole21->SetLineWidth(1);
+  hole21->SetFillColor(hole21->GetLineColor());
+  hole21->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole22 = new TGeoVolume("SDDCableHole22",
+				      hole22shape,medSDDair);
+  hole22->SetVisibility(kTRUE);
+  hole22->SetLineColor(5); // Yellow
+  hole22->SetLineWidth(1);
+  hole22->SetFillColor(hole22->GetLineColor());
+  hole22->SetFillStyle(4090); // 90% transparent
+
   TGeoVolume *hole3 = new TGeoVolume("SDDCableHole3",
 				     hole3shape,medSDDair);
   hole3->SetVisibility(kTRUE);
@@ -1236,6 +1420,22 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   hole3->SetLineWidth(1);
   hole3->SetFillColor(hole3->GetLineColor());
   hole3->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole31 = new TGeoVolume("SDDCableHole31",
+				      hole31shape,medSDDair);
+  hole31->SetVisibility(kTRUE);
+  hole31->SetLineColor(5); // Yellow
+  hole31->SetLineWidth(1);
+  hole31->SetFillColor(hole31->GetLineColor());
+  hole31->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole32 = new TGeoVolume("SDDCableHole32",
+				      hole32shape,medSDDair);
+  hole32->SetVisibility(kTRUE);
+  hole32->SetLineColor(5); // Yellow
+  hole32->SetLineWidth(1);
+  hole32->SetFillColor(hole32->GetLineColor());
+  hole32->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *hole4 = new TGeoVolume("SDDCableHole4",
 				     hole4shape,medSDDair);
@@ -1248,23 +1448,30 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   // Mount up a cone
   cfconeinsert->AddNode(cfconefoam,1,0);
 
-  cfcone->AddNode(cfconeinsert,1,0);
-
   for (Int_t i=0; i<12; i++) {
     Double_t phiH = i*30.0;
-    cfcone->AddNode(hole1, i+1, new TGeoRotation("", 0, 0, phiH));
+    cfconefoam->AddNode(hole1 , i+1, new TGeoRotation("", 0, 0, phiH));
+        cfcone->AddNode(hole11, i+1, new TGeoRotation("", 0, 0, phiH));
+        cfcone->AddNode(hole12, i+1, new TGeoRotation("", 0, 0, phiH));
   }
 
   for (Int_t i=0; i<6; i++) {
     Double_t phiH = i*60.0;
-    cfcone->AddNode(hole2, i+1, new TGeoRotation("", 0, 0, phiH));
+    cfconefoam->AddNode(hole2 , i+1, new TGeoRotation("", 0, 0, phiH));
+        cfcone->AddNode(hole21, i+1, new TGeoRotation("", 0, 0, phiH));
+        cfcone->AddNode(hole22, i+1, new TGeoRotation("", 0, 0, phiH));
   }
 
   for (Int_t i=0; i<kNHole3; i++) {
     Double_t phiH0 = 360./(Double_t)kNHole3;
     Double_t phiH  = i*phiH0 + 0.5*phiH0;
-    cfcone->AddNode(hole3, i+1, new TGeoRotation("", phiH, 0, 0));
+    cfconefoam->AddNode(hole3 , i+1, new TGeoRotation("", phiH, 0, 0));
+        cfcone->AddNode(hole31, i+1, new TGeoRotation("", phiH, 0, 0));
+        cfcone->AddNode(hole32, i+1, new TGeoRotation("", phiH, 0, 0));
   }
+
+  cfcone->AddNode(cfconeinsert,1,0);
+
 /*
   for (Int_t i=0; i<kNHole4; i++) {
     Double_t phiH0 = 360./(Double_t)kNHole4;
@@ -1682,6 +1889,9 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
 					   conefoam2shape->GetZ(1));
 
   // SSD Cone Holes: Pcon's
+  // A single hole volume gives an overlap with coneinsert, so
+  // three contiguous volumes are created: one to be put in coneinsert
+  // and two in the cone carbon fiber envelope
   Double_t holePhi;
   holePhi = (kCoolingHoleWidth/kCoolingHoleRmin)*TMath::RadToDeg();
 
@@ -1689,30 +1899,71 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
 
   coolingholeshape->Rmin(0) = kCoolingHoleRmin + kCoolingHoleHight;
   coolingholeshape->Rmax(0) = coolingholeshape->GetRmin(0);
-  coolingholeshape->Z(0)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+  coolingholeshape->Z(0)    = ZFromRminpCone(coneinsertshape,3,90.-kConeTheta,
 					     coolingholeshape->GetRmin(0));
 
   coolingholeshape->Rmax(1) = coolingholeshape->GetRmax(0);
-  coolingholeshape->Z(1)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+  coolingholeshape->Z(1)    = ZFromRmaxpCone(coneinsertshape,7,90.-kConeTheta,
 					     coolingholeshape->GetRmax(1));
-  coolingholeshape->Rmin(1) = RminFromZpCone(coneshape,3,90.-kConeTheta,
+  coolingholeshape->Rmin(1) = RminFromZpCone(coneinsertshape,3,90.-kConeTheta,
 					     coolingholeshape->GetZ(1));
 
   coolingholeshape->Rmin(2) = kCoolingHoleRmin;
-  coolingholeshape->Z(2)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+  coolingholeshape->Z(2)    = ZFromRminpCone(coneinsertshape,3,90.-kConeTheta,
 					     coolingholeshape->GetRmin(2));
-  coolingholeshape->Rmax(2) = RmaxFromZpCone(coneshape,7,90.-kConeTheta,
+  coolingholeshape->Rmax(2) = RmaxFromZpCone(coneinsertshape,7,90.-kConeTheta,
 					     coolingholeshape->GetZ(2));
 
   coolingholeshape->Rmin(3) = coolingholeshape->GetRmin(2);
   coolingholeshape->Rmax(3) = coolingholeshape->GetRmin(3);
-  coolingholeshape->Z(3)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+  coolingholeshape->Z(3)    = ZFromRmaxpCone(coneinsertshape,7,90.-kConeTheta,
 					     coolingholeshape->GetRmax(3));
 
-  // This is really weird: a single mountinghole volume gives an overlap
-  // with coneinsert (why doesn't coolinghole ?), so three contiguous
-  // volumes are created: one to be put in coneinsert and two in the cone
-  // carbon fiber envelope
+  TGeoPcon *coolinghole2shape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  coolinghole2shape->Rmin(0) = kCoolingHoleRmin + kCoolingHoleHight;
+  coolinghole2shape->Rmax(0) = coolinghole2shape->GetRmin(0);
+  coolinghole2shape->Z(0)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+					      coolinghole2shape->GetRmin(0));
+
+  coolinghole2shape->Rmax(1) = coolinghole2shape->GetRmax(0);
+  coolinghole2shape->Z(1)    = coolingholeshape->GetZ(0);
+  coolinghole2shape->Rmin(1) = RminFromZpCone(coneshape,3,90.-kConeTheta,
+					      coolinghole2shape->GetZ(1));
+
+  coolinghole2shape->Rmin(2) = kCoolingHoleRmin;
+  coolinghole2shape->Z(2)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+					      coolinghole2shape->GetRmin(2));
+  coolinghole2shape->Rmax(2) = RminFromZpCone(coneinsertshape,3,90.-kConeTheta,
+					      coolinghole2shape->GetZ(2));
+
+  coolinghole2shape->Rmin(3) = coolinghole2shape->GetRmin(2);
+  coolinghole2shape->Rmax(3) = coolinghole2shape->GetRmin(3);
+  coolinghole2shape->Z(3)    = coolingholeshape->GetZ(2);
+
+  TGeoPcon *coolinghole3shape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  coolinghole3shape->Rmin(0) = kCoolingHoleRmin + kCoolingHoleHight;
+  coolinghole3shape->Rmax(0) = coolinghole3shape->GetRmin(0);
+  coolinghole3shape->Z(0)    = coolingholeshape->GetZ(1);
+
+  coolinghole3shape->Rmax(1) = coolinghole3shape->GetRmax(0);
+  coolinghole3shape->Z(1)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+					      coolinghole3shape->GetRmax(1));
+  coolinghole3shape->Rmin(1) = RmaxFromZpCone(coneinsertshape,7,90.-kConeTheta,
+					      coolinghole3shape->GetZ(1));
+
+  coolinghole3shape->Rmin(2) = kCoolingHoleRmin;
+  coolinghole3shape->Z(2)    = coolingholeshape->GetZ(3);
+  coolinghole3shape->Rmax(2) = RmaxFromZpCone(coneshape,7,90.-kConeTheta,
+					      coolinghole3shape->GetZ(2));
+
+  coolinghole3shape->Rmin(3) = coolinghole3shape->GetRmin(2);
+  coolinghole3shape->Rmax(3) = coolinghole3shape->GetRmin(3);
+  coolinghole3shape->Z(3)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+					      coolinghole3shape->GetRmax(3));
+
+  //
   holePhi = (kMountingHoleWidth/kMountingHoleRmin)*TMath::RadToDeg();
 
   TGeoPcon *mountingholeshape = new TGeoPcon(-holePhi/2., holePhi, 4);
@@ -1868,6 +2119,22 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
   coolinghole->SetFillColor(coolinghole->GetLineColor());
   coolinghole->SetFillStyle(4090); // 90% transparent
 
+  TGeoVolume *coolinghole2 = new TGeoVolume("SSDCoolingHole2",
+					    coolinghole2shape,medSSDair);
+  coolinghole2->SetVisibility(kTRUE);
+  coolinghole2->SetLineColor(5); // Yellow
+  coolinghole2->SetLineWidth(1);
+  coolinghole2->SetFillColor(coolinghole2->GetLineColor());
+  coolinghole2->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *coolinghole3 = new TGeoVolume("SSDCoolingHole3",
+					    coolinghole3shape,medSSDair);
+  coolinghole3->SetVisibility(kTRUE);
+  coolinghole3->SetLineColor(5); // Yellow
+  coolinghole3->SetLineWidth(1);
+  coolinghole3->SetFillColor(coolinghole3->GetLineColor());
+  coolinghole3->SetFillStyle(4090); // 90% transparent
+
   TGeoVolume *mountinghole = new TGeoVolume("SSDMountingHole",
 					    mountingholeshape,medSSDair);
   mountinghole->SetVisibility(kTRUE);
@@ -1929,6 +2196,11 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
     cfconefoam2->AddNode(mountinghole,i+1, new TGeoRotation("", phiH, 0, 0));
   }
 
+  for (Int_t i=0; i<(Int_t)(360./kCoolingHolePhi); i++) {
+    Double_t phiH = i*kCoolingHolePhi + 0.5*kCoolingHolePhi;
+    cfconeinsert->AddNodeOverlap(coolinghole,i+1, new TGeoRotation("", phiH, 0, 0));
+  }
+
   cfconeinsert->AddNode(cfconefoam1,1,0);
   cfconeinsert->AddNode(cfconefoam2,1,0);
 
@@ -1936,7 +2208,8 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
 
   for (Int_t i=0; i<(Int_t)(360./kCoolingHolePhi); i++) {
     Double_t phiH = i*kCoolingHolePhi + 0.5*kCoolingHolePhi;
-    cfcone->AddNode(coolinghole,i+1, new TGeoRotation("", phiH, 0, 0));
+    cfcone->AddNode(coolinghole2,i+1, new TGeoRotation("", phiH, 0, 0));
+    cfcone->AddNode(coolinghole3,i+1, new TGeoRotation("", phiH, 0, 0));
     cfcone->AddNodeOverlap(cablehole,i+1, new TGeoRotation("", phiH, 0, 0));
   }
 
@@ -1958,7 +2231,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
   }
 
   Double_t zBracket = kConeZPosition - coneshape->GetZ(9) +
-                      bracketshape->GetDz();
+                      2*bracketshape->GetDz();
   for (Int_t i=0; i<3; i++) {
     Double_t thetaB = 60 + 120.*i;
     vC->AddNode(bracket, i+1, new TGeoCombiTrans(0, 0, -zBracket,
