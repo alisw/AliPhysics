@@ -16,20 +16,23 @@ class AliFlowTrackSimple;
 class TH1F;
 class TH1D;
 class TProfile;
+class TCollection;
+class TList;
 
 class AliFlowCommonHist: public TObject {
 
  public:
 
-  AliFlowCommonHist(TString input);
+  AliFlowCommonHist();
+  AliFlowCommonHist(TString anInput);
   virtual ~AliFlowCommonHist();
 
   //make fill methods here
-  Bool_t FillControlHistograms(AliFlowEventSimple* Event);
+  Bool_t FillControlHistograms(AliFlowEventSimple* anEvent);
  
   //make get methods here
-  Double_t GetEntriesInPtBin(Int_t fBin);   //gets entries from fHistPtDiff
-  Double_t GetMeanPt(Int_t fBin);           //gets the mean pt for this bin from fHistProMeanPtperBin   
+  Double_t GetEntriesInPtBin(Int_t iBin);   //gets entries from fHistPtDiff
+  Double_t GetMeanPt(Int_t iBin);           //gets the mean pt for this bin from fHistProMeanPtperBin   
 
   TH1F*     GetfHistMultOrig()               {return fHistMultOrig;  } ;  
   TH1F*     GetfHistMultInt()                {return fHistMultInt; } ;  
@@ -42,8 +45,9 @@ class AliFlowCommonHist: public TObject {
   TH1F*     GetfHistEtaDiff()                {return fHistEtaDiff;  } ;   
   TProfile* GetfHistProMeanPtperBin()        {return fHistProMeanPtperBin; } ;
   TH1F*     GetfHistQ()                      {return fHistQ; } ;            
-   
-  //  virtual Long64_t  Merge(TCollection *list);
+  TList*    GetHistList()                    {return fHistList;} ;  
+
+  virtual Double_t  Merge(TCollection *aList);  //merge function
  
  private:
 
@@ -52,19 +56,21 @@ class AliFlowCommonHist: public TObject {
 
   //define histograms here
   //control histograms
-  TH1F*     fHistMultOrig;        
-  TH1F*     fHistMultInt;        
-  TH1F*     fHistMultDiff;       
-  TH1F*     fHistPtInt;          
-  TH1F*     fHistPtDiff;         
-  TH1F*     fHistPhiInt;          
-  TH1F*     fHistPhiDiff;         
-  TH1F*     fHistEtaInt;          
-  TH1F*     fHistEtaDiff;         
-  TProfile* fHistProMeanPtperBin; 
-  TH1F*     fHistQ;               
-  
-  ClassDef(AliFlowCommonHist,0);                 // macro for rootcint
+  TH1F*     fHistMultOrig;        //multiplicity before selection
+  TH1F*     fHistMultInt;         //multiplicity for integrated flow
+  TH1F*     fHistMultDiff;        //multiplicity for differential flow
+  TH1F*     fHistPtInt;           //pt distribution for integrated flow
+  TH1F*     fHistPtDiff;          //pt distribution for differential flow
+  TH1F*     fHistPhiInt;          //phi distribution for integrated flow
+  TH1F*     fHistPhiDiff;         //phi distribution for differential flow
+  TH1F*     fHistEtaInt;          //eta distribution for integrated flow
+  TH1F*     fHistEtaDiff;         //eta distribution for differential flow
+  TProfile* fHistProMeanPtperBin; //mean pt for each pt bin (for differential flow)
+  TH1F*     fHistQ;               //Qvector distribution
+
+  TList* fHistList;               //list to hold all histograms  
+
+  ClassDef(AliFlowCommonHist,0);  // macro for rootcint
 };
 #endif
 

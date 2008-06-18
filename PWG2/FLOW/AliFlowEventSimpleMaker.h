@@ -6,14 +6,10 @@
 #ifndef AliFlowEventSimpleMaker_H
 #define AliFlowEventSimpleMaker_H
 
-#include "AliFlowTrackSimple.h" //needed as include
 #include "AliFlowEventSimple.h"  //needed as include
-
-//class AliFlowTrackSimple; //does not compile
 //class AliFlowEventSimple; //does not compile
 
 class TTree;
-class TParticle;
 class AliMCEvent;
 class AliESDEvent;
 class AliAODEvent;
@@ -30,23 +26,18 @@ class AliFlowEventSimpleMaker {
   AliFlowEventSimpleMaker();             //constructor
   virtual  ~AliFlowEventSimpleMaker();   //destructor
   
-  AliFlowEventSimple* FillTracks(TTree* fInput);
-  AliFlowEventSimple* FillTracks(AliMCEvent* fInput);
-  AliFlowEventSimple* FillTracks(AliESDEvent* fInput);
-  AliFlowEventSimple* FillTracks(AliESDEvent* fInput, AliMCEvent* fInputMc, Int_t fOption);
-  // fOption = 0 : kine from ESD
-  // fOption = 1 : kine from MC
-  AliFlowEventSimple* FillTracks(AliAODEvent* fInput);
+  AliFlowEventSimple* FillTracks(TTree* anInput);
+  AliFlowEventSimple* FillTracks(AliMCEvent* anInput);
+  AliFlowEventSimple* FillTracks(AliESDEvent* anInput);
+  AliFlowEventSimple* FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, Int_t anOption);
+  // anOption = 0 : kine from ESD
+  // anOption = 1 : kine from MC
+  AliFlowEventSimple* FillTracks(AliAODEvent* anInput);
     
  private:
- 
-  AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& aAnalysis);
-  AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& aAnalysis);
-  
-  AliFlowEventSimple*   fEvent;      //!
-  AliFlowTrackSimple*   fTrack;      //!
-  TParticle*            fParticle;   //!
-  
+  AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
+  AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& anAnalysis); //assignment operator
+          
   ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
 };
  

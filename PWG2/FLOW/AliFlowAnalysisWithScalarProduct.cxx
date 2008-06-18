@@ -44,31 +44,22 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
   //-----------------------------------------------------------------------
  
  AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
-  fQ(NULL),
-  fU(NULL),
-  fEventNumber(0),
-  fDebug(kFALSE),
-  fHistList(NULL),
-  fHistProUQ(NULL),
-  fCommonHists(NULL)
+   fEventNumber(0),
+   fDebug(kFALSE),
+   fHistList(NULL),
+   fHistProUQ(NULL),
+   fCommonHists(NULL)
 {
   // Constructor.
-  fU = new TVector2;
-  fQ = new AliFlowVector;
-  fHistList = new TList(); 
-  //  fQ.Set(0.,0.);           // flow vector
-  //  fU.Set(0.,0.);           // particle unit vector
+  fHistList = new TList();
 }
  //-----------------------------------------------------------------------
 
 
  AliFlowAnalysisWithScalarProduct::~AliFlowAnalysisWithScalarProduct() 
  {
-   delete fU;
-   delete fQ;
-   delete fHistList;
    //destructor
-   
+   delete fHistList;
  }
  
 
@@ -78,21 +69,19 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   //Define all histograms
   cout<<"---Analysis with the Scalar Product Method--- Init"<<endl;
 
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Double_t  fPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  fPtMax = AliFlowCommonConstants::GetPtMax();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
 
-  // analysis file (output)
-
-  fHistProUQ = new TProfile("Flow_UQ_SP","Flow_UQ_SP",fNbinsPt,fPtMin,fPtMax);
+  fHistProUQ = new TProfile("Flow_UQ_SP","Flow_UQ_SP",iNbinsPt,dPtMin,dPtMax);
   fHistProUQ->SetXTitle("p_t (GeV)");
   fHistProUQ->SetYTitle("<uQ>");
   fHistList->Add(fHistProUQ);
 
   fCommonHists = new AliFlowCommonHist("SP");
+  fHistList->Add(fCommonHists->GetHistList()); 
   //fCommonHistsRes = new AliFlowCommonHistResults("SP");
-  //  fHistList->Add(fCommonHists); 
-
+  
   fEventNumber = 0;  //set number of events to zero    
 }
 
@@ -107,45 +96,40 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     fCommonHists->FillControlHistograms(anEvent);
          
     //get the Q vector from the FlowEvent
-    *fQ = anEvent->GetQ();
-    //Double_t fMult =  fQ.GetMult();
-            
+    AliFlowVector vQ = anEvent->GetQ();
+                
     //loop over the tracks of the event
-    AliFlowTrackSimple*   fTrack = NULL; 
-    Int_t fNumberOfTracks = anEvent->NumberOfTracks(); 
-    for (Int_t i=0;i<fNumberOfTracks;i++) 
+    AliFlowTrackSimple*   pTrack = NULL; 
+    Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+    for (Int_t i=0;i<iNumberOfTracks;i++) 
       {
+	pTrack = anEvent->GetTrack(i) ; 
+	if (pTrack){
+	  if (pTrack->UseForDifferentialFlow()) {
+	  Double_t dPhi = pTrack->Phi();
 
-	fTrack = anEvent->GetTrack(i) ; 
-	if (fTrack){
-	  if (fTrack->UseForDifferentialFlow()) {
-	  Double_t fPhi = fTrack->Phi();
+	  //calculate vU
+	  TVector2 vU;
+	  Double_t dUX = TMath::Cos(2*dPhi);
+	  Double_t dUY = TMath::Sin(2*dPhi);
+	  vU.Set(dUX,dUY);
+	  Double_t dModulus = vU.Mod();
+	  if (dModulus!=0.) vU.Set(dUX/dModulus,dUY/dModulus);  // make length 1
+	  else cerr<<"dModulus is zero!"<<endl;
 
-	  //calculate fU
-	  Double_t fUX = TMath::Cos(2*fPhi);
-	  Double_t fUY = TMath::Sin(2*fPhi);
-	  //	  fU.Set(fUX,fUY);
-	  fU->Set(fUX,fUY);
-	  //	  Double_t fModulus = fU.Mod();
-	  Double_t fModulus = fU->Mod();
-	  //	  if (fModulus!=0.) fU.Set(fUX/fModulus,fUY/fModulus);  // make length 1
-	  if (fModulus!=0.) fU->Set(fUX/fModulus,fUY/fModulus);  // make length 1
-	  else cerr<<"fModulus is zero!"<<endl;
-
-	  TVector2 fQm = *fQ;
+	  TVector2 vQm = vQ;
 	  //subtrackt particle from the flowvector if used to define it
-	  if (fTrack->UseForIntegratedFlow()) {
-	    Double_t fQmX = fQm.X() - fUX;
-	    Double_t fQmY = fQm.Y() - fUY;
-	    fQm.Set(fQmX,fQmY);
+	  if (pTrack->UseForIntegratedFlow()) {
+	    Double_t dQmX = vQm.X() - dUX;
+	    Double_t dQmY = vQm.Y() - dUY;
+	    vQm.Set(dQmX,dQmY);
 	  }
 
-	  //Double_t fUQ = scalar product of fU and fQm
-	  //	  Double_t fUQ = fU*fQm;
-	  Double_t fUQ = *fU * fQm;
-	  Double_t fPt = fTrack->Pt();
+	  //dUQ = scalar product of vU and vQm
+	  Double_t dUQ = vU * vQm;
+	  Double_t dPt = pTrack->Pt();
 	  //fill the profile histogram
-	  fHistProUQ->Fill(fPt,fUQ); 
+	  fHistProUQ->Fill(dPt,dUQ); 
 	  }  
 	}//track selected
       }//loop over tracks
@@ -162,10 +146,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   if (fDebug) cout<<"AliFlowAnalysisWithScalarProduct::Terminate()"<<endl;
 
   fHistProUQ->Draw();
-
-  // write to file
-//  fHistFile->Write();
-    	  
+     	  
   cout<<".....finished"<<endl;
  }
 

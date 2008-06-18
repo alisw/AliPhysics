@@ -22,6 +22,7 @@
 #include "TString.h" 
 #include "TProfile.h"
 #include "TMath.h"   //needed as include
+#include "TList.h"
 #include "AliFlowVector.h"
 
 class TH1F;
@@ -38,7 +39,7 @@ ClassImp(AliFlowCommonHist)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHist::AliFlowCommonHist(TString input):TObject(),
+  AliFlowCommonHist::AliFlowCommonHist():TObject(),
    fHistMultOrig(NULL),
    fHistMultInt(NULL),
    fHistMultDiff(NULL),
@@ -49,106 +50,146 @@ ClassImp(AliFlowCommonHist)
    fHistEtaInt(NULL),
    fHistEtaDiff(NULL),
    fHistProMeanPtperBin(NULL),
-   fHistQ(NULL)
+   fHistQ(NULL),
+   fHistList(NULL)
  {
-  //constructor creating histograms 
-  Int_t fNbinsMult = AliFlowCommonConstants::GetNbinsMult();
-  Int_t fNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Int_t fNbinsPhi = AliFlowCommonConstants::GetNbinsPhi();
-  Int_t fNbinsEta = AliFlowCommonConstants::GetNbinsEta();
-  Int_t fNbinsQ = AliFlowCommonConstants::GetNbinsQ();
-  TString name;
 
-  Double_t  fMultMin = AliFlowCommonConstants::GetMultMin();            
-  Double_t  fMultMax = AliFlowCommonConstants::GetMultMax();
-  Double_t  fPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  fPtMax = AliFlowCommonConstants::GetPtMax();
-  Double_t  fPhiMin = AliFlowCommonConstants::GetPhiMin();	     
-  Double_t  fPhiMax = AliFlowCommonConstants::GetPhiMax();
-  Double_t  fEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t  fEtaMax = AliFlowCommonConstants::GetEtaMax();	     
-  Double_t  fQMin = AliFlowCommonConstants::GetQMin();	     
-  Double_t  fQMax = AliFlowCommonConstants::GetQMax();	
+   //default constructor
+
+ }
+
+//-----------------------------------------------------------------------
+
+  AliFlowCommonHist::AliFlowCommonHist(TString anInput):TObject(),
+   fHistMultOrig(NULL),
+   fHistMultInt(NULL),
+   fHistMultDiff(NULL),
+   fHistPtInt(NULL),
+   fHistPtDiff(NULL),
+   fHistPhiInt(NULL),
+   fHistPhiDiff(NULL),
+   fHistEtaInt(NULL),
+   fHistEtaDiff(NULL),
+   fHistProMeanPtperBin(NULL),
+   fHistQ(NULL),
+   fHistList(NULL)
+ {
+
+  //constructor creating histograms 
+  Int_t iNbinsMult = AliFlowCommonConstants::GetNbinsMult();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
+  Int_t iNbinsPhi = AliFlowCommonConstants::GetNbinsPhi();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+  Int_t iNbinsQ = AliFlowCommonConstants::GetNbinsQ();
+  TString sName;
+
+  Double_t  dMultMin = AliFlowCommonConstants::GetMultMin();            
+  Double_t  dMultMax = AliFlowCommonConstants::GetMultMax();
+  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
+  Double_t  dPhiMin = AliFlowCommonConstants::GetPhiMin();	     
+  Double_t  dPhiMax = AliFlowCommonConstants::GetPhiMax();
+  Double_t  dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
+  Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();	     
+  Double_t  dQMin = AliFlowCommonConstants::GetQMin();	     
+  Double_t  dQMax = AliFlowCommonConstants::GetQMax();	
   
   cout<<"The settings for the common histograms are as follows:"<<endl;
-  cout<<"Multiplicity: "<<fNbinsMult<<" bins between "<<fMultMin<<" and "<<fMultMax<<endl;
-  cout<<"Pt: "<<fNbinsPt<<" bins between "<<fPtMin<<" and "<<fPtMax<<endl;
-  cout<<"Phi: "<<fNbinsPhi<<" bins between "<<fPhiMin<<" and "<<fPhiMax<<endl;
-  cout<<"Eta: "<<fNbinsEta<<" bins between "<<fEtaMin<<" and "<<fEtaMax<<endl;
-  cout<<"Q: "<<fNbinsQ<<" bins between "<<fQMin<<" and "<<fQMax<<endl;
+  cout<<"Multiplicity: "<<iNbinsMult<<" bins between "<<dMultMin<<" and "<<dMultMax<<endl;
+  cout<<"Pt: "<<iNbinsPt<<" bins between "<<dPtMin<<" and "<<dPtMax<<endl;
+  cout<<"Phi: "<<iNbinsPhi<<" bins between "<<dPhiMin<<" and "<<dPhiMax<<endl;
+  cout<<"Eta: "<<iNbinsEta<<" bins between "<<dEtaMin<<" and "<<dEtaMax<<endl;
+  cout<<"Q: "<<iNbinsQ<<" bins between "<<dQMin<<" and "<<dQMax<<endl;
 
   //Multiplicity
-  name = "Control_Flow_OrigMult_";
-  name +=input;
-  fHistMultOrig = new TH1F(name.Data(), name.Data(),fNbinsMult, fMultMin, fMultMax);
+  sName = "Control_Flow_OrigMult_";
+  sName +=anInput;
+  fHistMultOrig = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
   fHistMultOrig ->SetXTitle("Original Multiplicity");
   fHistMultOrig ->SetYTitle("Counts");
 
-  name = "Control_Flow_MultInt_";
-  name +=input;
-  fHistMultInt = new TH1F(name.Data(), name.Data(),fNbinsMult, fMultMin, fMultMax);
+  sName = "Control_Flow_MultInt_";
+  sName +=anInput;
+  fHistMultInt = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
   fHistMultInt ->SetXTitle("Multiplicity for integrated flow");
   fHistMultInt ->SetYTitle("Counts");
 
-  name = "Control_Flow_MultDiff_";
-  name +=input;
-  fHistMultDiff = new TH1F(name.Data(), name.Data(),fNbinsMult, fMultMin, fMultMax);
+  sName = "Control_Flow_MultDiff_";
+  sName +=anInput;
+  fHistMultDiff = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
   fHistMultDiff ->SetXTitle("Multiplicity for differential flow");
   fHistMultDiff ->SetYTitle("Counts");
 
   //Pt
-  name = "Control_Flow_PtInt_";
-  name +=input;
-  fHistPtInt = new TH1F(name.Data(), name.Data(),fNbinsPt, fPtMin, fPtMax); 
+  sName = "Control_Flow_PtInt_";
+  sName +=anInput;
+  fHistPtInt = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
   fHistPtInt ->SetXTitle("Pt (GeV/c) for integrated flow");
   fHistPtInt ->SetYTitle("Counts");
 
-  name = "Control_Flow_PtDiff_";
-  name +=input;
-  fHistPtDiff = new TH1F(name.Data(), name.Data(),fNbinsPt, fPtMin, fPtMax); 
+  sName = "Control_Flow_PtDiff_";
+  sName +=anInput;
+  fHistPtDiff = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
   //binning has to be the same as for fHistProVPt! use to get Nprime!
   fHistPtDiff ->SetXTitle("Pt (GeV/c) for differential flow");
   fHistPtDiff ->SetYTitle("Counts");
 
   //Phi
-  name = "Control_Flow_PhiInt_";
-  name +=input;
-  fHistPhiInt = new TH1F(name.Data(), name.Data(),fNbinsPhi, fPhiMin, fPhiMax);
+  sName = "Control_Flow_PhiInt_";
+  sName +=anInput;
+  fHistPhiInt = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
   fHistPhiInt ->SetXTitle("Phi for integrated flow");
   fHistPhiInt ->SetYTitle("Counts");
 
-  name = "Control_Flow_PhiDiff_";
-  name +=input;
-  fHistPhiDiff = new TH1F(name.Data(), name.Data(),fNbinsPhi, fPhiMin, fPhiMax);
+  sName = "Control_Flow_PhiDiff_";
+  sName +=anInput;
+  fHistPhiDiff = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
   fHistPhiDiff ->SetXTitle("Phi for differential flow");
   fHistPhiDiff ->SetYTitle("Counts");
 
   //Eta
-  name = "Control_Flow_EtaInt_";
-  name +=input;
-  fHistEtaInt = new TH1F(name.Data(), name.Data(),fNbinsEta, fEtaMin, fEtaMax);
+  sName = "Control_Flow_EtaInt_";
+  sName +=anInput;
+  fHistEtaInt = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
   fHistEtaInt ->SetXTitle("Eta for integrated flow");
   fHistEtaInt ->SetYTitle("Counts");
 
-  name = "Control_Flow_EtaDiff_";
-  name +=input;
-  fHistEtaDiff = new TH1F(name.Data(), name.Data(),fNbinsEta, fEtaMin, fEtaMax);
+  sName = "Control_Flow_EtaDiff_";
+  sName +=anInput;
+  fHistEtaDiff = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
   fHistEtaDiff ->SetXTitle("Eta for differential flow");
   fHistEtaDiff ->SetYTitle("Counts");
 
   //Mean Pt per pt bin 
-  name = "Control_FlowPro_MeanPtperBin_";
-  name +=input;
-  fHistProMeanPtperBin = new TProfile(name.Data(), name.Data(),fNbinsPt,fPtMin,fPtMax);
+  sName = "Control_FlowPro_MeanPtperBin_";
+  sName +=anInput;
+  fHistProMeanPtperBin = new TProfile(sName.Data(), sName.Data(),iNbinsPt,dPtMin,dPtMax);
   fHistProMeanPtperBin ->SetXTitle("Pt");
   fHistProMeanPtperBin ->SetYTitle("<Pt>");
 
   //Q vector
-  name = "Control_Flow_Q_";
-  name +=input;
-  fHistQ = new TH1F(name.Data(), name.Data(),fNbinsQ, fQMin, fQMax);
+  sName = "Control_Flow_Q_";
+  sName +=anInput;
+  fHistQ = new TH1F(sName.Data(), sName.Data(),iNbinsQ, dQMin, dQMax);
   fHistQ ->SetXTitle("Qvector/Mult");
   fHistQ ->SetYTitle("Counts");  
+
+  //list of histograms
+  fHistList = new TList();
+  fHistList-> Add(fHistMultOrig);        
+  fHistList-> Add(fHistMultInt);        
+  fHistList-> Add(fHistMultDiff);       
+  fHistList-> Add(fHistPtInt);          
+  fHistList-> Add(fHistPtDiff);         
+  fHistList-> Add(fHistPhiInt);          
+  fHistList-> Add(fHistPhiDiff);         
+  fHistList-> Add(fHistEtaInt);          
+  fHistList-> Add(fHistEtaDiff);         
+  fHistList-> Add(fHistProMeanPtperBin); 
+  fHistList-> Add(fHistQ);           
+
+
+
 }
 
 
@@ -168,91 +209,122 @@ AliFlowCommonHist::~AliFlowCommonHist()
   delete fHistEtaDiff;
   delete fHistProMeanPtperBin;
   delete fHistQ;
+  delete fHistList;
 }
 
 
 //----------------------------------------------------------------------- 
 
-Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* Event)
+Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
 {
   //Fills the control histograms
-  if (!Event){
+  if (!anEvent){
     cout<<"##### FillControlHistograms: FlowEvent pointer null"<<endl;
     return kFALSE;
   }
 
-  Double_t fPt, fPhi, fEta;
+  Double_t dPt, dPhi, dEta;
 
 
   //fill the histograms
-  Int_t fNumberOfTracks = Event->NumberOfTracks();
-  fHistMultOrig->Fill(fNumberOfTracks);
+  Int_t iNumberOfTracks = anEvent->NumberOfTracks();
+  fHistMultOrig->Fill(iNumberOfTracks);
 
-  AliFlowVector fQ = Event->GetQ(); 
+  AliFlowVector vQ = anEvent->GetQ(); 
   //weight by the Multiplicity
-  Double_t fQX = fQ.X()/fQ.GetMult();
-  Double_t fQY = fQ.Y()/fQ.GetMult();
-  fQ.Set(fQX,fQY);
-  fHistQ->Fill(fQ.Mod());
+  Double_t dQX = vQ.X()/vQ.GetMult();
+  Double_t dQY = vQ.Y()/vQ.GetMult();
+  vQ.Set(dQX,dQY);
+  fHistQ->Fill(vQ.Mod());
 
-  Int_t fMultInt = 0;
-  Int_t fMultDiff = 0;
+  Int_t iMultInt = 0;
+  Int_t iMultDiff = 0;
   
-  AliFlowTrackSimple* fTrack = NULL;     
+  AliFlowTrackSimple* pTrack = NULL;     
 
-  for (Int_t i=0;i<fNumberOfTracks;i++) {
-    fTrack = Event->GetTrack(i);
-    if (fTrack ) {
-      if (fTrack->UseForIntegratedFlow()){
-	fPt = fTrack->Pt();
-	fHistPtInt->Fill(fPt);
-	fPhi = fTrack->Phi();
-	if (fPhi<0.) fPhi+=2*TMath::Pi();
-	fHistPhiInt->Fill(fPhi);
-	fEta = fTrack->Eta();
-	fHistEtaInt->Fill(fEta);
-	fMultInt++;
+  for (Int_t i=0;i<iNumberOfTracks;i++) {
+    pTrack = anEvent->GetTrack(i);
+    if (pTrack ) {
+      if (pTrack->UseForIntegratedFlow()){
+	dPt = pTrack->Pt();
+	fHistPtInt->Fill(dPt);
+	dPhi = pTrack->Phi();
+	if (dPhi<0.) dPhi+=2*TMath::Pi();
+	fHistPhiInt->Fill(dPhi);
+	dEta = pTrack->Eta();
+	fHistEtaInt->Fill(dEta);
+	iMultInt++;
       }
-      if (fTrack->UseForDifferentialFlow()){
-	fPt = fTrack->Pt();
-	fHistPtDiff->Fill(fPt);
-	fPhi = fTrack->Phi();
-	if (fPhi<0.) fPhi+=2*TMath::Pi();
-	fHistPhiDiff->Fill(fPhi);
-	fEta = fTrack->Eta();
-	fHistEtaDiff->Fill(fEta);
-	fHistProMeanPtperBin->Fill(fPt,fPt);
-	fMultDiff++;
+      if (pTrack->UseForDifferentialFlow()){
+	dPt = pTrack->Pt();
+	fHistPtDiff->Fill(dPt);
+	dPhi = pTrack->Phi();
+	if (dPhi<0.) dPhi+=2*TMath::Pi();
+	fHistPhiDiff->Fill(dPhi);
+	dEta = pTrack->Eta();
+	fHistEtaDiff->Fill(dEta);
+	fHistProMeanPtperBin->Fill(dPt,dPt);
+	iMultDiff++;
       }
     } //track
   } //loop over tracks
   
-  fHistMultInt->Fill(fMultInt);
-  fHistMultDiff->Fill(fMultDiff);
+  fHistMultInt->Fill(iMultInt);
+  fHistMultDiff->Fill(iMultDiff);
 
   return kTRUE; 
 }
 
 //----------------------------------------------------------------------- 
 
-Double_t AliFlowCommonHist::GetEntriesInPtBin(Int_t fBin)
+Double_t AliFlowCommonHist::GetEntriesInPtBin(Int_t aBin)
 {
-  //get entries in bin fBin from fHistPtDiff
-  Double_t fEntries = fHistPtDiff->GetBinContent(fBin);
+  //get entries in bin aBin from fHistPtDiff
+  Double_t dEntries = fHistPtDiff->GetBinContent(aBin);
 
-  return fEntries;
+  return dEntries;
 
 }
 
 //----------------------------------------------------------------------- 
 
-Double_t AliFlowCommonHist::GetMeanPt(Int_t fBin)
+Double_t AliFlowCommonHist::GetMeanPt(Int_t aBin)
 {  
-  //Get entry from bin fBin from fHistProMeanPtperBin
-  Double_t fMeanPt = fHistProMeanPtperBin->GetBinContent(fBin);
+  //Get entry from bin aBin from fHistProMeanPtperBin
+  Double_t dMeanPt = fHistProMeanPtperBin->GetBinContent(aBin);
 
-  return fMeanPt;
+  return dMeanPt;
   
 }
+
+
+//----------------------------------------------------------------------- 
+ Double_t AliFlowCommonHist::Merge(TCollection *aList)
+{
+  //merge fuction
+  cout<<"entering merge function"<<endl;
+  if (!aList) return 0;
+  if (aList->IsEmpty()) return 0; //no merging is needed
+
+  Int_t iCount = 0;
+  TIter next(aList); // list is supposed to contain only objects of the same type as this
+  AliFlowCommonHist *toMerge;
+  // make a temporary list
+  TList *pTemp = new TList();
+  while ((toMerge=(AliFlowCommonHist*)next())) {
+    pTemp->Add(toMerge->GetHistList()); 
+    iCount++;
+  }
+  // Now call merge for fHistList providing temp list
+  fHistList->Merge(pTemp);
+  // Cleanup
+  delete pTemp;
+    
+  cout<<"Merged"<<endl;
+  return (double)iCount;
+    
+}
+
+
 
 
