@@ -57,9 +57,9 @@ struct AliRawDataHeader {
     {return fStatusMiniEventID & 0xFFF;};
 
   ULong64_t GetTriggerClasses() const
-  {return (((ULong64_t) (fROILowTriggerClassHigh & 0x1FFFF)) << 32) + fTriggerClassLow;}
+  {return (((ULong64_t) (fROILowTriggerClassHigh & 0x3FFFF)) << 32) | fTriggerClassLow;}
   ULong64_t GetROI() const
-  {return (((ULong64_t) fROIHigh) << 32) + ((fROILowTriggerClassHigh >> 28) & 0xF);}
+  {return (((ULong64_t) fROIHigh) << 4) | ((fROILowTriggerClassHigh >> 28) & 0xF);}
 
   void      SetTriggerClass(ULong64_t mask)
     {fTriggerClassLow = (UInt_t)(mask & 0xFFFFFFFF);  // low bits of trigger class
