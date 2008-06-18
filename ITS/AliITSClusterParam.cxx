@@ -112,7 +112,8 @@ void AliITSClusterParam::GetNTeor(Int_t layer,const AliITSRecPoint* /*cl*/,
 Int_t AliITSClusterParam::GetError(Int_t layer,
 				   const AliITSRecPoint *cl,
 				   Float_t tgl,Float_t tgphitr,Float_t expQ,
-				   Float_t &erry,Float_t &errz)
+				   Float_t &erry,Float_t &errz,
+				   Bool_t addMisalErr)
 {
   //
   // Calculate cluster position error
@@ -133,11 +134,13 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
     break;
   }
 
-  // add error due to misalignment (to be improved)
-  Float_t errmisal2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalError()
-                     *AliITSReconstructor::GetRecoParam()->GetClusterMisalError();
-  erry = TMath::Sqrt(erry*erry+errmisal2);
-  errz = TMath::Sqrt(errz*errz+errmisal2);
+  if(addMisalErr) {
+    // add error due to misalignment (to be improved)
+    Float_t errmisal2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalError()
+      *AliITSReconstructor::GetRecoParam()->GetClusterMisalError();
+    erry = TMath::Sqrt(erry*erry+errmisal2);
+    errz = TMath::Sqrt(errz*errz+errmisal2);
+  }
 
   return retval;
 

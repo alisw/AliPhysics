@@ -837,7 +837,8 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   Float_t expQ = TMath::Max(0.8*t->GetTPCsignal(),30.);
 
   Float_t errlocalx,errlocalz;
-  AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz);
+  Bool_t addMisalErr=kFALSE;
+  AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz,addMisalErr);
 
   Float_t xyz[3];
   Float_t cov[6];
