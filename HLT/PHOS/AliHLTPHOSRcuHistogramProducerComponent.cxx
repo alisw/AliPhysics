@@ -128,12 +128,24 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
       cellDataPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)( iter->fPtr);
       fShmPtr->SetMemory(cellDataPtr);
       currentChannel = fShmPtr->NextChannel();
-
-      while(currentChannel != 0)
+      
+      Int_t* tmpDataPtr = 0;
+      Int_t nSamples = 0;
+      if(cellDataPtr->fHasRawData == true)
 	{
-	  fRcuHistoProducerPtr->FillEnergy(currentChannel->fX, currentChannel->fZ, currentChannel->fGain, currentChannel->fEnergy);
-	  fRcuHistoProducerPtr->FillLiveChannels(currentChannel->fData, fNTotalSamples, currentChannel->fX, currentChannel->fZ,currentChannel->fGain);
-	  currentChannel = fShmPtr->NextChannel();
+	  while(currentChannel != 0)
+	    {
+	      tmpDataPtr = fShmPtr->GetRawData(nSamples);
+	      fRcuHistoProducerPtr->FillEnergy(currentChannel->fX, currentChannel->fZ, currentChannel->fGain, currentChannel->fEnergy);
+	      fRcuHistoProducerPtr->FillLiveChannels(tmpDataPtr, nSamples, currentChannel->fX, currentChannel->fZ,currentChannel->fGain);
+	      currentChannel = fShmPtr->NextChannel();
+	    }
+	}
+      else
+	{
+	  
+	  Logging(kHLTLogFatal, __FILE__ , IntToChar(  __LINE__ ) , "AliHLTPHOSRcuHistogramProducerComponent::We are not pushing raw data, aborting");
+	  return -1;
 	}
     }
 

@@ -119,6 +119,8 @@ int  AliHLTPHOSRcuAltroPatternTestComponent::DoEvent( const AliHLTComponentEvent
       fShmPtr->SetMemory(cellDataPtr);
       currentChannel = fShmPtr->NextChannel();
       
+      Int_t* tmpRawPtr = 0;
+     
       int tmp =0;      
       while(currentChannel != 0)
 	{
@@ -126,7 +128,8 @@ int  AliHLTPHOSRcuAltroPatternTestComponent::DoEvent( const AliHLTComponentEvent
 	  int tmpZ =  currentChannel->fZ;
 	  int tmpX =  currentChannel->fX;
 	  int tmpGain =  currentChannel->fGain;
-	  int tmpSamples = currentChannel->fNSamples; 
+	  int tmpSamples = 0;
+	  tmpRawPtr = fShmPtr->GetRawData(tmpSamples); 
 	  
 	  
 	  if( (tmpZ > N_ZROWS_RCU) || (tmpX > N_XCOLUMNS_RCU) || (tmpGain > N_GAINS))
@@ -142,13 +145,13 @@ int  AliHLTPHOSRcuAltroPatternTestComponent::DoEvent( const AliHLTComponentEvent
 	  //	  cout << "  z = " << currentChannel->fZ << "  x = "  << currentChannel->fX  << "  gain = " <<  currentChannel->fGain  << "  samples =" << currentChannel->fNSamples  <<endl;
 	  tmp ++;
 
-	  fPatternTestPtr->AddPattern(currentChannel->fData, currentChannel->fZ, currentChannel->fX,  currentChannel->fGain, currentChannel->fNSamples, fNPresamples);
-	  int ret =  fPatternTestPtr->ValidateAltroPattern(currentChannel->fData, currentChannel->fNSamples);
+	  fPatternTestPtr->AddPattern(tmpRawPtr, currentChannel->fZ, currentChannel->fX,  currentChannel->fGain, tmpSamples, fNPresamples);
+	  int ret =  fPatternTestPtr->ValidateAltroPattern(tmpRawPtr, tmpSamples);
 	  
 	  if(ret >= 0)
 	    {
 	      
-	      fNTotalSamples += currentChannel->fNSamples;
+	      fNTotalSamples += tmpSamples;
 	      fNTotalPatterns ++;   
 
 	      if(ret > 0)

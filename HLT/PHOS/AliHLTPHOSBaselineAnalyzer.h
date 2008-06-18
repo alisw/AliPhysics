@@ -106,7 +106,7 @@ public:
    * @param zOff is the offset in the z position given by the RCU number
    * @return the baseline
    */
-  Float_t CalculateChannelBaseline(AliHLTPHOSValidCellDataStruct *cellData, Int_t xOff, Int_t zOff);
+  Float_t CalculateChannelBaseline(AliHLTPHOSValidCellDataStruct *cellData, Int_t* rawDataPtr, Int_t xOff, Int_t zOff);
 
   /** 
    * Calculate the accumulated baseline of a channel

@@ -44,6 +44,7 @@
 
 class TClonesArray;
 class TTree;
+class TH2F;
 class AliHLTPHOSValidCellDataStruct;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSDigitContainerDataStruct;
@@ -66,6 +67,7 @@ public:
   AliHLTPHOSDigitMaker(const AliHLTPHOSDigitMaker &) : 
     AliHLTPHOSBase(),
     fCellDataPtr(0),
+    fShmPtr(0),
     fDigitContainerStructPtr(0),
     fDigitArrayPtr(0),
     fDigitStructPtr(0),
@@ -133,6 +135,14 @@ public:
    */
   Int_t MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuCellEnergies);
 
+  /**
+   * Set the mask for dead channels
+   * @param badChannelHGHist is a pointer to a high gain bad channel histogram
+   * @param badChannelLGHist is a pointer to a low gain bad channel histogram
+   * @param qCut is the cut 
+   */
+  void SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannelLGHist, Float_t qCut);
+
   /** Reset the digit maker */
   void Reset();
 
@@ -140,6 +150,9 @@ private:
 
   /** Pointer to valid cell list */
   AliHLTPHOSValidCellDataStruct *fCellDataPtr;                   //! transient
+
+  /** Pointer to shared memory interface */
+  AliHLTPHOSSharedMemoryInterface* fShmPtr;                      //! transient
 
   /** Pointer to the digit container */
   AliHLTPHOSDigitContainerDataStruct *fDigitContainerStructPtr;  //! transient
@@ -153,6 +166,9 @@ private:
   /** Digit count */
   Int_t fDigitCount;                                             //COMMENT
 
+  /** Array containing the energies of all RCU channels */
+  Float_t fEnergyArray[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    //COMMENT
+
   /** High gain energy conversion factors */
   Float_t fHighGainFactors[N_XCOLUMNS_MOD][N_ZROWS_MOD];         //COMMENT
 
@@ -161,6 +177,9 @@ private:
 
    /** Threshold for making digit ( zero suppression threshold) */
   Float_t fDigitThresholds[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //COMMENT
+
+  /** Bad channel mask */
+  Float_t fBadChannelMask[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //COMMENT
 
   ClassDef(AliHLTPHOSDigitMaker, 1); 
 };

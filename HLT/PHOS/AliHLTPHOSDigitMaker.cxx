@@ -61,11 +61,27 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
 	{
 	  fHighGainFactors[x][z] = 0.005;
 	  fLowGainFactors[x][z] = 0.08;
+	  fDigitThresholds[x][z][HIGH_GAIN] = 2;
+	  fDigitThresholds[x][z][LOW_GAIN] = 2;
+	  fBadChannelMask[x][z][HIGH_GAIN] = 1;
+	  fBadChannelMask[x][z][LOW_GAIN] = 1; 
 	}
     }
+
+    for(int x = 0; x < N_XCOLUMNS_RCU; x++)
+      {
+	for(int z = 0; z < N_ZROWS_RCU; z++)
+	  {
+	    for(int gain = 0; gain < N_GAINS; gain++)
+	      {
+		fEnergyArray[x][z][gain] = 0;
+	      }
+	  }
+      }
+	  
   
 }
-  
+   
 AliHLTPHOSDigitMaker::~AliHLTPHOSDigitMaker() 
 {
   //See header file for documentation
@@ -79,40 +95,49 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
   Int_t j = 0;
   Int_t xMod = -1;
   Int_t zMod = -1;
-  Float_t amplitude = 0;
- 
+
+  AliHLTPHOSValidCellDataStruct* currentchannel = 0;
+
+  Reset();
+
+  fShmPtr->SetMemory(rcuData);
+  currentchannel = fShmPtr->NextChannel();
+      
+  while(currentchannel != 0)
+    {
+      fEnergyArray[currentchannel->fX][currentchannel->fZ][currentchannel->fGain] = currentchannel->fEnergy; 
+      currentchannel = fShmPtr->NextChannel();
+    }
+
   for(int x = 0; x < N_XCOLUMNS_RCU; x++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z++) 
+      for(int z = 0; z < N_ZROWS_RCU; z++)  
 	{
-	  fCellDataPtr = &(rcuData->fValidData[x][z][HIGH_GAIN]);
 	  xMod = x + rcuData->fRcuX * N_XCOLUMNS_RCU;
 	  zMod = z + rcuData->fRcuZ * N_ZROWS_RCU;
-	  amplitude = fCellDataPtr->fEnergy;
-	  if(amplitude > fDigitThresholds[xMod][zMod][HIGH_GAIN] && amplitude < MAX_BIN_VALUE)
+	  
+	  if(fEnergyArray[x][z][HIGH_GAIN] > fDigitThresholds[xMod][zMod][HIGH_GAIN] && fEnergyArray[x][z][HIGH_GAIN] < MAX_BIN_VALUE && fBadChannelMask[xMod][zMod][HIGH_GAIN])
 	    {
 	      fDigitStructPtr = &(fDigitContainerStructPtr->fDigitDataStruct[j+fDigitCount]);
 	      fDigitStructPtr->fX = xMod;
 	      fDigitStructPtr->fZ = zMod;
-	      fDigitStructPtr->fAmplitude = amplitude;
-	      fDigitStructPtr->fEnergy = amplitude * fHighGainFactors[xMod][zMod];
+	      fDigitStructPtr->fAmplitude = fEnergyArray[x][z][HIGH_GAIN];
+	      fDigitStructPtr->fEnergy = fEnergyArray[x][z][HIGH_GAIN] * fHighGainFactors[xMod][zMod];
 	      //TODO: fix time
 	      fDigitStructPtr->fTime = fCellDataPtr->fTime * 0.0000001;
 	      fDigitStructPtr->fCrazyness = fCellDataPtr->fCrazyness;
 	      fDigitStructPtr->fModule = rcuData->fModuleID;
 	      j++;
 	    }
-	  else if(amplitude >= MAX_BIN_VALUE)
+	  else if(fEnergyArray[x][z][LOW_GAIN] >= MAX_BIN_VALUE && fBadChannelMask[xMod][zMod][LOW_GAIN])
 	    {
-	      fCellDataPtr = & (rcuData->fValidData[x][z][LOW_GAIN]);
-	      amplitude = fCellDataPtr->fEnergy;
-	      if(amplitude > fDigitThresholds[xMod][zMod][LOW_GAIN])
+	      if(fEnergyArray[x][z][LOW_GAIN] > fDigitThresholds[xMod][zMod][LOW_GAIN])
 		{	      
 		  fDigitStructPtr = &(fDigitContainerStructPtr->fDigitDataStruct[j+fDigitCount]);
 		  fDigitStructPtr->fX = xMod;
 		  fDigitStructPtr->fZ = zMod;
-		  fDigitStructPtr->fAmplitude = amplitude;
-		  fDigitStructPtr->fEnergy = amplitude * fLowGainFactors[xMod][zMod];
+		  fDigitStructPtr->fAmplitude = fEnergyArray[x][z][LOW_GAIN];
+		  fDigitStructPtr->fEnergy = fEnergyArray[x][z][LOW_GAIN] * fLowGainFactors[xMod][zMod];
 		  //TODO: fix time
 		  fDigitStructPtr->fTime = fCellDataPtr->fTime  * 0.0000001;;
 		  fDigitStructPtr->fCrazyness = fCellDataPtr->fCrazyness;
@@ -133,6 +158,18 @@ void
 AliHLTPHOSDigitMaker::Reset()
 { 
   //See header file for documentation
+
+  for(int x = 0; x < N_XCOLUMNS_RCU; x++)
+    {
+      for(int z = 0; z < N_ZROWS_RCU; z++)  
+	{
+	  for(int gain = 0; gain < N_GAINS; gain++)
+	    {
+	      fEnergyArray[x][z][gain] = 0;
+	    }
+	}
+    }
+
   fDigitCount = 0;
 }
 
@@ -177,6 +214,34 @@ AliHLTPHOSDigitMaker::SetDigitThresholds(const char* filepath, Int_t nSigmas)
 	{
 	  fDigitThresholds[x][z][LOW_GAIN] = lgHist->GetBinContent(x, z) * nSigmas;
 	  fDigitThresholds[x][z][HIGH_GAIN] = hgHist->GetBinContent(x, z) * nSigmas;
+	}
+    }
+}
+
+
+void
+AliHLTPHOSDigitMaker::SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannelLGHist, Float_t qCut)
+{
+ for(int x = 0; x < N_XCOLUMNS_MOD; x++)
+    {
+      for(int z = 0; z < N_ZROWS_MOD; z++)
+	{
+	  if(badChannelHGHist->GetBinContent(x, z) < qCut && badChannelHGHist->GetBinContent(x, z) > 0)
+	    {
+	      fBadChannelMask[x][z][HIGH_GAIN] = 1;
+	    }
+	  else
+	    {
+	      fBadChannelMask[x][z][HIGH_GAIN] = 0;
+	    }
+	  if(badChannelLGHist->GetBinContent(x, z) < qCut && badChannelLGHist->GetBinContent(x, z) > 0)
+	    {
+	      fBadChannelMask[x][z][LOW_GAIN] = 0;
+	    }
+	  else
+	    {
+	      fBadChannelMask[x][z][LOW_GAIN] = 0;
+	    }
 	}
     }
 }

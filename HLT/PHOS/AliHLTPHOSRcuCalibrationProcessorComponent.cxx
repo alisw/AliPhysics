@@ -137,10 +137,14 @@ Int_t AliHLTPHOSRcuCalibrationProcessorComponent::ProcessCalibration(const AliHL
       fShmPtr->SetMemory(cellDataPtr);
       currentChannel = fShmPtr->NextChannel();
       
+      Int_t* tmpDataPtr = 0;
+      Int_t nSamples = 0;
+
        while(currentChannel != 0)
 	{
+	  tmpDataPtr = fShmPtr->GetRawData(nSamples);
 	  fRcuCalibProcessorPtr->FillEnergy(currentChannel->fX, currentChannel->fZ, currentChannel->fGain, currentChannel->fEnergy);
-	  fRcuCalibProcessorPtr->FillLiveChannels(currentChannel->fData, totalSamples, currentChannel->fX, currentChannel->fZ,currentChannel->fGain);
+	  fRcuCalibProcessorPtr->FillLiveChannels(tmpDataPtr, totalSamples, currentChannel->fX, currentChannel->fZ,currentChannel->fGain);
 	  currentChannel = fShmPtr->NextChannel();
 	}
 

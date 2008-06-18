@@ -123,12 +123,12 @@ AliHLTPHOSBaselineAnalyzer::CalculateRcuBaselines(AliHLTPHOSRcuCellEnergyDataStr
 
 
 Float_t
-AliHLTPHOSBaselineAnalyzer::CalculateChannelBaseline(AliHLTPHOSValidCellDataStruct *cellData, Int_t xOff, Int_t zOff) 
+AliHLTPHOSBaselineAnalyzer::CalculateChannelBaseline(AliHLTPHOSValidCellDataStruct *cellData, Int_t* rawDataPtr, Int_t xOff, Int_t zOff) 
 { 
   //see headerfile for documentation
   Int_t crazyness = 0;
   Int_t total = 0;
-  Int_t *data = cellData->fData;
+  Int_t *data = rawDataPtr;
   for(Int_t i = fSampleStart; i < fNSamples; i++)
   { 
     /*

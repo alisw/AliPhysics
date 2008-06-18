@@ -150,6 +150,7 @@ Int_t AliHLTPHOSRcuDAComponent::ProcessCalibration(const AliHLTComponentEventDat
   iter = GetFirstInputBlock( AliHLTPHOSDefinitions::fgkCellEnergyDataType | kAliHLTDataOriginPHOS);
 
   AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr = 0;
+  AliHLTPHOSValidCellDataStruct *currentChannel =0;
   Int_t xOffset = 0;
   Int_t zOffset = 0;
   Int_t module = -1;
@@ -166,17 +167,27 @@ Int_t AliHLTPHOSRcuDAComponent::ProcessCalibration(const AliHLTComponentEventDat
       xOffset = cellDataPtr->fRcuX*N_XCOLUMNS_RCU;
       zOffset = cellDataPtr->fRcuZ*N_ZROWS_RCU;
 
-      for(Int_t x = 0; x < N_XCOLUMNS_RCU; x++)
+      while(currentChannel != 0)
 	{
-	  for(Int_t z = 0; z < N_ZROWS_RCU; z++)
-	    {
-	      for(Int_t gain = 0; gain < N_GAINS; gain++)
-		{
-		  energyArray[x+xOffset][z+zOffset][gain] = cellDataPtr->fValidData[x][z][gain].fEnergy;
-		  timeArray[x+xOffset][z+zOffset][gain] = cellDataPtr->fValidData[x][z][gain].fTime;
-		}
-	    }
+      	  Int_t tmpZ =  currentChannel->fZ;
+	  Int_t tmpX =  currentChannel->fX;
+	  Int_t tmpGain =  currentChannel->fGain;
+	  
+	  energyArray[tmpX+xOffset][tmpZ+zOffset][tmpGain] = currentChannel->fEnergy;
+	  timeArray[tmpX+xOffset][tmpZ+zOffset][tmpGain] = currentChannel->fTime;
 	}
+
+//       for(Int_t x = 0; x < N_XCOLUMNS_RCU; x++)
+// 	{
+// 	  for(Int_t z = 0; z < N_ZROWS_RCU; z++)
+// 	    {
+// 	      for(Int_t gain = 0; gain < N_GAINS; gain++)
+// 		{
+// 		  energyArray[x+xOffset][z+zOffset][gain] = cellDataPtr->fValidData[x][z][gain].fEnergy;
+// 		  timeArray[x+xOffset][z+zOffset][gain] = cellDataPtr->fValidData[x][z][gain].fTime;
+// 		}
+// 	    }
+// 	}
       iter = GetNextInputBlock(); 
     }
   
