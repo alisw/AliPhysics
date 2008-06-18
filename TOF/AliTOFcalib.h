@@ -32,11 +32,14 @@ class TH1F;
 class TObjArray;
 class TTree;
 class TChain;
+class TMap;
 
 //class AliESD;
 
 class AliTOFCal;
 class AliTOFRecoParam;
+class AliTOFChannelOnlineStatusArray;
+class AliTOFChannelOnlineArray;
 
 class AliTOFcalib:public TTask{
 public:
@@ -46,33 +49,54 @@ public:
   virtual ~AliTOFcalib() ; // dtor
   void CreateCalArrays();
   TObjArray * GetTOFCalArrayOnline() const {return fTOFCalOnline;}
+  AliTOFChannelOnlineArray * GetTOFOnlineDelay() const {return fCal;}
+  AliTOFChannelOnlineStatusArray * GetTOFOnlineStatus() const {return fStatus;}
   TObjArray * GetTOFCalArrayOnlinePulser() const {return fTOFCalOnlinePulser;}
   TObjArray * GetTOFCalArrayOnlineNoise() const {return fTOFCalOnlineNoise;}
   TObjArray * GetTOFCalArrayOnlineHW() const {return fTOFCalOnlineHW;}
   TObjArray * GetTOFCalArrayOffline() const {return fTOFCalOffline;}
+  TMap * GetConfigMap() const {return fConfigMap;}
   TH1F * GetTOFSimToT() const {return fTOFSimToT;}
   TTree * GetTOFCalibTree() const {return fTree;}
   TChain * GetTOFCalibChain() const {return fChain;}
   const char * GetOfflineValidity() const {return fkValidity;}
   void SetOfflineValidity(const char* validity) {fkValidity = validity;}
   Int_t NChannels()const{return fNChannels;}
+
   // Methods to retrieve/write parameters from/on CDB
+  // writing
+
   void WriteSimHistoOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TH1F *histo);
+  void WriteConfigMapOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteConfigMapOnCDB(Char_t *sel);
+  // new calib objs
+  void WriteParOnlineDelayOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineStatusOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineDelayOnCDB(Char_t *sel);
+  void WriteParOnlineStatusOnCDB(Char_t *sel);
+  // old calib objs
   void WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteParOnlinePulserOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteParOnlineNoiseOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteParOnlineHWOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun);
   void WriteParOnlineOnCDB(Char_t *sel);
-  void WriteParOnlinePulserOnCDB(Char_t *sel);
-  void WriteParOnlineNoiseOnCDB(Char_t *sel);
-  void WriteParOnlineHWOnCDB(Char_t *sel);
+  void WriteParOnlinePulserOnCDB(Char_t *sel);  // old, before unification of status info
+  void WriteParOnlineNoiseOnCDB(Char_t *sel);   // old, before unification of status info
+  void WriteParOnlineHWOnCDB(Char_t *sel);      // old, before unification of status info
   void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity);
+
+  // reading
   Bool_t ReadSimHistoFromCDB(Char_t *sel, Int_t nrun);
+  Bool_t ReadConfigMapFromCDB(Char_t *sel, Int_t nrun);
+  // new objs
+  Bool_t ReadParOnlineDelayFromCDB(Char_t *sel, Int_t nrun);
+  Bool_t ReadParOnlineStatusFromCDB(Char_t *sel, Int_t nrun);
+  // old objs
   Bool_t ReadParOnlineFromCDB(Char_t *sel, Int_t nrun);
-  Bool_t ReadParOnlinePulserFromCDB(Char_t *sel, Int_t nrun);
-  Bool_t ReadParOnlineNoiseFromCDB(Char_t *sel, Int_t nrun);
-  Bool_t ReadParOnlineHWFromCDB(Char_t *sel, Int_t nrun);
+  Bool_t ReadParOnlinePulserFromCDB(Char_t *sel, Int_t nrun);  // old, before unification of status info
+  Bool_t ReadParOnlineNoiseFromCDB(Char_t *sel, Int_t nrun);   // old, before unification of status info
+  Bool_t ReadParOnlineHWFromCDB(Char_t *sel, Int_t nrun);      // old, before unification of status info
   Bool_t ReadParOfflineFromCDB(Char_t *sel, Int_t nrun);
   void WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
   AliTOFRecoParam * ReadRecParFromCDB(Char_t *sel, Int_t nrun);
@@ -96,11 +120,18 @@ public:
 
 private:
   Int_t fNChannels; // number of TOF channels
+
+  // old calibration objects
   TObjArray *fTOFCalOnline;       // array of AliTOFChannels storing calib parameters
-  TObjArray *fTOFCalOnlinePulser; // array of AliTOFChannels storing calib status from pulser
-  TObjArray *fTOFCalOnlineNoise;  // array of AliTOFChannels storing calib status from noise
-  TObjArray *fTOFCalOnlineHW;  // array of AliTOFChannels storing calib status from hardware
+  TObjArray *fTOFCalOnlinePulser; // array of AliTOFChannels storing calib status from pulser   // old, before unification of status info
+  TObjArray *fTOFCalOnlineNoise;  // array of AliTOFChannels storing calib status from noise    // old, before unification of status info
+  TObjArray *fTOFCalOnlineHW;  // array of AliTOFChannels storing calib status from hardware    // old, before unification of status info
   TObjArray *fTOFCalOffline;       // array of AliTOFChannels storing calib parameters
+
+  // new calibration objects
+  AliTOFChannelOnlineArray *fCal; // object with delay array for TOF channels
+  AliTOFChannelOnlineStatusArray *fStatus; // object with status array for TOF channels
+
   TH1F *fTOFSimToT;        // histo with realistic ToT signal from TB Data
   const char *fkValidity;  // validity for offline calibration object
   TTree *fTree;            // tree for TOF calibration
@@ -108,8 +139,9 @@ private:
   Int_t fNruns;            // number of runs to be processed
   Int_t fFirstRun;            // first run for calibration obj validity
   Int_t fLastRun;            // last run for calib obj validity
+  TMap* fConfigMap;          // map holding configuration obj
 
-  ClassDef(AliTOFcalib,6);
+  ClassDef(AliTOFcalib,7);
 };
 
 #endif // AliTOFcalib_H

@@ -15,13 +15,14 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
 {
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 
-  AliLog::SetClassDebugLevel("AliTOFPreprocessor",1);
+  AliLog::SetClassDebugLevel("AliTOFPreprocessor",2);
   // initialize location of CDB
   AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
   // create AliTestShuttle instance
-  AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1000);
+  Int_t nrun = 6;
+  AliTestShuttle* shuttle = new AliTestShuttle(nrun, 0, 1000);
   //setting run type to physiscs
   shuttle->SetInputRunType(RunType);
 
@@ -34,7 +35,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   // processing files. for the time being, the files are local.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
-  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEE.20080310.164003.4001");
+  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEE.20080310.163032.4000");
   char filename[100];
   char LDCname[5];
 
@@ -57,7 +58,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   gBenchmark->Print("process");
 
   // checking the file which should have been created  
-  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TOF/Calib/ParOnline", 0);
+  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TOF/Calib/ParOnlineDelay", nrun);
   if (!chkEntry)
   {
     printf("The file is not there. Something went wrong.\n");

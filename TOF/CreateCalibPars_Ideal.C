@@ -2,7 +2,7 @@ void CreateCalibPars_Ideal(){
   // Create TOF Calibration Object for Ideal calibration and 
   // write it on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE");
+  man->SetDefaultStorage("local://$ALICE_ROOT");
   AliTOFcalib *tofcalib = new AliTOFcalib();
   tofcalib->CreateCalArrays();
   TObjArray *tofCalOffline = (TObjArray*) tofcalib->GetTOFCalArrayOffline(); 

@@ -12,6 +12,8 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFChannelOffline.cxx  \
 	AliTOFChannelOnline.cxx  \
 	AliTOFChannelOnlineStatus.cxx  \
+	AliTOFChannelOnlineArray.cxx  \
+	AliTOFChannelOnlineStatusArray.cxx  \
 	AliTOFcalib.cxx \
 	AliTOFAlignment.cxx \
 	AliTOFPreprocessor.cxx \

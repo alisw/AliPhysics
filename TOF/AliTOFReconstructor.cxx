@@ -59,7 +59,10 @@ AliTOFReconstructor::AliTOFReconstructor()
   //Retrieving the TOF calibration info  
   fTOFcalib    = new AliTOFcalib();
   fTOFcalib->CreateCalArrays();
-  if(!fTOFcalib->ReadParOnlineFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+
+  if(!fTOFcalib->ReadParOnlineDelayFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+  if(!fTOFcalib->ReadParOnlineStatusFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+
   if(!fTOFcalib->ReadParOfflineFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
 }
 

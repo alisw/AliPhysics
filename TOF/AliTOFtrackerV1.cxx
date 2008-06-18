@@ -388,7 +388,10 @@ void AliTOFtrackerV1::MatchTracks( ){
       if(nc>kncmax)break;
       if(c->GetZ() > z+dz) break;
       if(c->IsUsed()) continue;      
-      if(!c->GetStatus()) continue; // skip bad channels as declared in OCDB  
+      if(!c->GetStatus()) {
+	      AliDebug(1,"Cluster in channel declared bad!");
+	      continue; // skip bad channels as declared in OCDB  
+      }
       Float_t xyz[3]; c->GetGlobalXYZ(xyz);
       Double_t clPhi=TMath::ATan2(xyz[1],xyz[0]);
       Double_t dph=TMath::Abs(clPhi-phi);

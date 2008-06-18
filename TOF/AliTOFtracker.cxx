@@ -443,7 +443,10 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       if (c->GetZ() > z+dz) break;
       if (c->IsUsed()) continue;
 
-      if (!c->GetStatus()) continue; // skip bad channels as declared in OCDB
+      if (!c->GetStatus()) {
+	      AliDebug(1,"Cluster in channel declared bad!");
+	      continue; // skip bad channels as declared in OCDB
+      }
 
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();

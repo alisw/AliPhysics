@@ -117,8 +117,8 @@ Revision 0.01  2005/07/25 A. De Caro
 #include <AliGeomManager.h>
 
 #include "AliTOFcalib.h"
-#include "AliTOFChannelOnline.h"
-#include "AliTOFChannelOnlineStatus.h"
+#include "AliTOFChannelOnlineArray.h"
+#include "AliTOFChannelOnlineStatusArray.h"
 #include "AliTOFChannelOffline.h"
 #include "AliTOFClusterFinder.h"
 #include "AliTOFcluster.h"
@@ -931,10 +931,8 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Int_t   tdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
   
-  TObjArray *calTOFArrayOnline = fTOFcalib->GetTOFCalArrayOnline();  
-  TObjArray *calTOFArrayOnlinePulser = fTOFcalib->GetTOFCalArrayOnlinePulser();  
-  TObjArray *calTOFArrayOnlineNoise = fTOFcalib->GetTOFCalArrayOnlineNoise();  
-  TObjArray *calTOFArrayOnlineHW = fTOFcalib->GetTOFCalArrayOnlineHW();  
+  AliTOFChannelOnlineArray *calDelay = fTOFcalib->GetTOFOnlineDelay();  
+  AliTOFChannelOnlineStatusArray *calStatus = fTOFcalib->GetTOFOnlineStatus();  
   TObjArray *calTOFArrayOffline = fTOFcalib->GetTOFCalArrayOffline();
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   AliInfo(Form(" validity = %s",validity.Data()));
@@ -953,33 +951,23 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
     Int_t index = AliTOFGeometry::GetIndex(detectorIndex);
      
-    AliTOFChannelOnlineStatus * calChannelOnlineStPulser = (AliTOFChannelOnlineStatus* )calTOFArrayOnlinePulser->At(index);
-    AliTOFChannelOnlineStatus * calChannelOnlineStNoise = (AliTOFChannelOnlineStatus* )calTOFArrayOnlineNoise->At(index);
-    AliTOFChannelOnlineStatus * calChannelOnlineStHW = (AliTOFChannelOnlineStatus* )calTOFArrayOnlineHW->At(index);
+    UChar_t statusPulser=calStatus->GetPulserStatus(index);
+    UChar_t statusNoise=calStatus->GetNoiseStatus(index);
+    UChar_t statusHW=calStatus->GetHWStatus(index);
+    UChar_t status=calStatus->GetStatus(index);
 
-    // Get channel status 
-    UChar_t statusPulser=calChannelOnlineStPulser->GetStatus();
-    UChar_t statusNoise=calChannelOnlineStNoise->GetStatus();
-    UChar_t statusHW=calChannelOnlineStHW->GetStatus();
+    //check the status, also unknown is fine!!!!!!!
 
-    //check the status, also unknow is fine!!!!!!!
-
-    UChar_t status = 0x0;
-    status |= statusPulser;
-    status |= statusNoise;
-    status |= statusHW;
-    // set status of the cluster to false if at least one of the three status (Pulser/Noise/HW) is bad
-    if((statusPulser & AliTOFChannelOnlineStatus::kTOFPulserBad)==(AliTOFChannelOnlineStatus::kTOFPulserBad)||(statusNoise & AliTOFChannelOnlineStatus::kTOFNoiseBad)==(AliTOFChannelOnlineStatus::kTOFNoiseBad)||(statusHW & AliTOFChannelOnlineStatus::kTOFHWBad)==(AliTOFChannelOnlineStatus::kTOFHWBad)){
+    AliDebug(2, Form(" Status for channel %i = %i",index, (Int_t)status));
+    if((statusPulser & AliTOFChannelOnlineStatusArray::kTOFPulserBad)==(AliTOFChannelOnlineStatusArray::kTOFPulserBad)||(statusNoise & AliTOFChannelOnlineStatusArray::kTOFNoiseBad)==(AliTOFChannelOnlineStatusArray::kTOFNoiseBad)||(statusHW & AliTOFChannelOnlineStatusArray::kTOFHWBad)==(AliTOFChannelOnlineStatusArray::kTOFHWBad)){
       AliDebug(2, Form(" Bad Status for channel %i",index));
       fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
     }
     else {
       AliDebug(2, Form(" Good Status for channel %i",index));
     }
-    //    if((status & AliTOFChannelOnlineStatus::kTOFOnlineOk)!=(AliTOFChannelOnline::kTOFOnlineOk))fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
     // Get Rough channel online equalization 
-    AliTOFChannelOnline * calChannelOnline = (AliTOFChannelOnline* )calTOFArrayOnline->At(index);
-    Double_t roughDelay=(Double_t)calChannelOnline->GetDelay();  // in ns
+    Double_t roughDelay=(Double_t)calDelay->GetDelay(index);  // in ns
     AliDebug(2,Form(" channel delay (ns) = %f", roughDelay));
     // Get Refined channel offline calibration parameters
     if (calibration ==1){

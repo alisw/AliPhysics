@@ -93,6 +93,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TProfile.h"
 #include "TGrid.h"
 #include "TMath.h"
+#include "TMap.h"
 
 #include "AliCDBEntry.h"
 #include "AliCDBRunRange.h"
@@ -105,8 +106,10 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliLog.h"
 
 #include "AliTOFcalib.h"
+#include "AliTOFChannelOnlineArray.h"
 #include "AliTOFChannelOnline.h"
 #include "AliTOFChannelOnlineStatus.h"
+#include "AliTOFChannelOnlineStatusArray.h"
 #include "AliTOFChannelOffline.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRecoParam.h"
@@ -128,13 +131,16 @@ AliTOFcalib::AliTOFcalib():
   fTOFCalOnlineNoise(0x0),
   fTOFCalOnlineHW(0x0),
   fTOFCalOffline(0x0),
+  fCal(0x0),
+  fStatus(0x0),
   fTOFSimToT(0x0),
   fkValidity(0x0),
   fTree(0x0),
   fChain(0x0),
   fNruns(0),
   fFirstRun(0),
-  fLastRun(AliCDBRunRange::Infinity())
+  fLastRun(AliCDBRunRange::Infinity()),
+  fConfigMap(new TMap)
 { 
   //TOF Calibration Class ctor
   fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
@@ -149,13 +155,16 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fTOFCalOnlineNoise(0x0),
   fTOFCalOnlineHW(0x0),
   fTOFCalOffline(0x0),
+  fCal(calib.fCal),
+  fStatus(calib.fStatus),
   fTOFSimToT(calib.fTOFSimToT),
   fkValidity(calib.fkValidity),
   fTree(calib.fTree),
   fChain(calib.fChain),
   fNruns(calib.fNruns),
   fFirstRun(calib.fFirstRun),
-  fLastRun(calib.fLastRun)
+  fLastRun(calib.fLastRun),
+  fConfigMap(calib.fConfigMap)
 {
   //TOF Calibration Class copy ctor
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
@@ -169,7 +178,6 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
     fTOFCalOnlineNoise->AddAt(calChOnlineStNoise,iarray);
     fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
-
   }
 }
 
@@ -179,6 +187,8 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
 {
   //TOF Calibration Class assignment operator
   this->fNChannels = calib.fNChannels;
+  this->fCal = calib.fCal;
+  this->fStatus = calib.fStatus;
   this->fTOFSimToT = calib.fTOFSimToT;
   this->fkValidity = calib.fkValidity;
   this->fTree = calib.fTree;
@@ -222,6 +232,15 @@ AliTOFcalib::~AliTOFcalib()
     if (fTOFCalOffline){
       delete fTOFCalOffline;
     }
+    if (fCal){
+      delete fCal;
+    }
+    if (fStatus){
+      delete fStatus;
+    }
+    if (fConfigMap){
+      delete fConfigMap;
+    }
   }
   if (fTree!=0x0) delete fTree;
   if (fChain!=0x0) delete fChain;
@@ -253,6 +272,128 @@ void AliTOFcalib::CreateCalArrays(){
     fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
   }
+  fCal = new AliTOFChannelOnlineArray(fNChannels);
+  fStatus = new AliTOFChannelOnlineStatusArray(fNChannels);
+}
+//_____________________________________________________________________________
+void AliTOFcalib::WriteConfigMapOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write calibration parameters to the CDB
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Config" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliDebug(2,Form("Writing TOF configuration map for online calib on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fConfigMap) {
+    // deve uscire!!
+  }
+  man->Put(fConfigMap,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteConfigMapOnCDB(Char_t *sel)
+{
+  //Write calibration parameters to the CDB with infinite validity
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Config" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF config map for online calib on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fConfigMap) {
+    // deve uscire!!
+  }
+  man->Put(fConfigMap,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+void AliTOFcalib::WriteParOnlineDelayOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write calibration parameters to the CDB -------> new calib objs!!!!!
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "ParOnlineDelay" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliDebug(2,Form("Writing TOF online calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fCal) {
+    // deve uscire!!
+  }
+  man->Put(fCal,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+void AliTOFcalib::WriteParOnlineStatusOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write calibration parameters to the CDB -------> new calib objs!!!!!
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Status" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliDebug(2,Form("Writing TOF online status calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fStatus) {
+    // deve uscire!!
+  }
+  man->Put(fStatus,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteParOnlineDelayOnCDB(Char_t *sel)
+{
+  //Write calibration parameters to the CDB with infinite validity -------> new calib objs!!!!!
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "ParOnlineDelay" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF online calib obj on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fCal) {
+    // deve uscire!!
+  }
+  man->Put(fCal,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteParOnlineStatusOnCDB(Char_t *sel)
+{
+  //Write calibration parameters to the CDB with infinite validity -------> new calib objs!!!!!
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Status" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF online status calib obj on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fStatus) {
+    // deve uscire!!
+  }
+  man->Put(fStatus,id,md);
+  delete md;
 }
 //_____________________________________________________________________________
 void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
@@ -450,6 +591,78 @@ void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity)
   md->SetComment(validity);
   man->Put(fTOFCalOffline,id,md);
   delete md;
+}
+//_____________________________________________________________________________
+
+Bool_t AliTOFcalib::ReadConfigMapFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read calibration parameters from the CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Config" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (ConfigMap) found!!!");
+    exit(0);  
+  }
+  if(!entry->GetObject()){
+    AliFatal("Exiting, no CDB object (ConfigMap) found!!!");
+    exit(0);  
+  }  
+  
+  fConfigMap =(TMap*)entry->GetObject();
+
+  return kTRUE; 
+   
+}
+//_____________________________________________________________________________
+
+Bool_t AliTOFcalib::ReadParOnlineDelayFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read calibration parameters from the CDB -------> new calib objs!!!!!
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "ParOnlineDelay" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (ParOnlineDelay) found!!!");
+    exit(0);  
+  }
+  if(!entry->GetObject()){
+    AliFatal("Exiting, no CDB object (ParOnlineDelay) found!!!");
+    exit(0);  
+  }  
+  
+  fCal =(AliTOFChannelOnlineArray*)entry->GetObject();
+
+  return kTRUE; 
+   
+}
+//_____________________________________________________________________________
+
+Bool_t AliTOFcalib::ReadParOnlineStatusFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read calibration parameters from the CDB -------> new calib objs!!!!!
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Status" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (Status) found!!!");
+    exit(0);  
+  }
+  if(!entry->GetObject()){
+    AliFatal("Exiting, no CDB object (Status) found!!!");
+    exit(0);  
+  }  
+  
+  fStatus =(AliTOFChannelOnlineStatusArray*)entry->GetObject();
+
+  return kTRUE; 
+   
 }
 //_____________________________________________________________________________
 

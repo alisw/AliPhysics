@@ -13,6 +13,7 @@
 // and DAQ histograms to compute online calibration constants
 
 class AliTOFDataDCS;
+class AliTOFChannelOnlineStatusArray;
 class TObjArray;
 class TH2S;
 
@@ -40,21 +41,20 @@ class AliTOFPreprocessor : public AliPreprocessor
     UInt_t ProcessNoiseData();
     UInt_t ProcessFEEData(); // dummy, for the time being
 
-    static const Int_t fgkBinRangeAve;    // number of bins where to 
-                                          // calculate the mean
-    static const Double_t fgkIntegralThr; // min number of entries per channel 
-                                          // to perform calculation of delay
-    static const Double_t fgkThrPar;      // parameter used to trigger the 
-                                          // calculation of the delay
-    AliTOFDataDCS *fData;                 // CDB class that stores the data
-    TH2S *fh2;                            // TH2S from DAQ for histograms 
-                                          // for delays  
-    TObjArray *fCal;                      // TOF Calibration object
-    TObjArray *fCalStatus;                // TOF Calibration object from pulser/noise
-    TObjArray *fFEEStatus;                // TOF Calibration object from FEE
-    Int_t fNChannels;                     // number of TOF channels
-    Bool_t fStoreRefData;                 // Flag to decide storage of Ref Data
-    Bool_t fFDRFlag;                      // Flag for FDR runs 
-    ClassDef(AliTOFPreprocessor, 4);
+    static const Int_t fgkBinRangeAve;       // number of bins where to 
+                                             // calculate the mean
+    static const Double_t fgkIntegralThr;    // min number of entries per channel 
+                                             // to perform calculation of delay
+    static const Double_t fgkThrPar;         // parameter used to trigger the 
+                                             // calculation of the delay
+    AliTOFDataDCS *fData;                    // CDB class that stores the data
+    TH2S *fh2;                               // TH2S from DAQ for histograms 
+                                             // for delays  
+    AliTOFChannelOnlineArray *fCal;          // TOF Calibration object
+    Int_t fNChannels;                        // number of TOF channels
+    Bool_t fStoreRefData;                    // Flag to decide storage of Ref Data
+    Bool_t fFDRFlag;                         // Flag for FDR runs 
+    AliTOFChannelOnlineStatusArray *fStatus; // Array with TOF channels' status
+    ClassDef(AliTOFPreprocessor, 5);
 };
 #endif

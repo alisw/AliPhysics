@@ -20,9 +20,6 @@
 //#include <stdlib.h>
 
 #include <TFile.h>
-//#include <TH1.h>
-//#include <TH1F.h>
-//#include <TH1S.h>
 #include <TH2S.h>
 #include <TMath.h>
 #include <TObjArray.h>
@@ -32,24 +29,20 @@
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
 #include "AliLog.h"
-#include "AliTOFChannelOnline.h"
-#include "AliTOFChannelOnlineStatus.h"
+#include "AliTOFChannelOnlineArray.h"
+#include "AliTOFChannelOnlineStatusArray.h"
 #include "AliTOFDataDCS.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFPreprocessor.h"
 #include "AliTOFFEEReader.h"
 
-//class TF1;
-//class AliDCSValue;
-//class AliTOFGeometry;
-
 // TOF preprocessor class.
 // It takes data from DCS and passes them to the class AliTOFDataDCS, which
 // processes them. The result is then written to the CDB.
-// analogously, it takes data form DAQ (both at Run level and inclusive - 
+// Analogously, it takes data form DAQ (both at Run level and inclusive - 
 // of all the runs - level, processes them, and stores both Reference Data
 // and Online Calibration files in the CDB. 
-// Processing of Pulser/Noise Run data and of TOF FEE DCS map
+// Processing of Pulser/Noise Run data and of TOF FEE DCS map included also.
 
 // return codes:
 // return=0 : all ok
@@ -71,6 +64,7 @@
 // return=16: failed to retrieve FEE data from OCDB
 // return=17: failed to store FEE data in OCDB
 // return=18: failed to store FEE reference data in OCDB
+// return=20: failed in retrieving status variable
 
 ClassImp(AliTOFPreprocessor)
 
@@ -85,11 +79,10 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   fData(0),
   fh2(0),
   fCal(0),
-  fCalStatus(0),
-  fFEEStatus(0),
   fNChannels(0),
   fStoreRefData(kTRUE),
-  fFDRFlag(kTRUE)
+  fFDRFlag(kFALSE),
+  fStatus(0)
 {
   // constructor
   AddRunType("PHYSICS");
@@ -116,13 +109,9 @@ AliTOFPreprocessor::~AliTOFPreprocessor()
     delete fCal;
     fCal = 0;
   }
-  if (fCalStatus){
-    delete fCalStatus;
-    fCalStatus = 0;
-  }
-  if (fFEEStatus){
-    delete fFEEStatus;
-    fFEEStatus = 0;
+  if (fStatus){
+    delete fStatus;
+    fStatus = 0;
   }
 }
 
@@ -142,24 +131,6 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	fData->SetFDRFlag(fFDRFlag);
 	fh2 = 0x0;
 	fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
-	fCal = new TObjArray(fNChannels);
-	fCal->SetOwner();
-	for (Int_t ich = 0; ich<fNChannels; ich ++){
-	  AliTOFChannelOnline * calChOnline = new AliTOFChannelOnline();
-	  fCal->AddAt(calChOnline,ich);
-	}
-	fCalStatus = new TObjArray(fNChannels);
-	fCalStatus->SetOwner();
-	for (Int_t ich = 0; ich<fNChannels; ich ++){
-	  AliTOFChannelOnlineStatus * calChOnlineStatus = new AliTOFChannelOnlineStatus();
-	  fCalStatus->AddAt(calChOnlineStatus,ich);
-	}
-	fFEEStatus = new TObjArray(fNChannels);
-	fFEEStatus->SetOwner();
-	for (Int_t ich = 0; ich<fNChannels; ich ++){
-	  AliTOFChannelOnlineStatus * calChOnlineStatus = new AliTOFChannelOnlineStatus();
-	  fFEEStatus->AddAt(calChOnlineStatus,ich);
-	}
 }
 //_____________________________________________________________________________
 Bool_t AliTOFPreprocessor::ProcessDCS(){
@@ -226,6 +197,73 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 
   Log("Processing DAQ delays");
 
+  // reading configuration map 
+  TString compDelays = "kFALSE";
+  Int_t deltaStartingRun = fRun;
+  Int_t startingRun = fRun-deltaStartingRun;
+  Int_t binRangeAve = fgkBinRangeAve;
+  Double_t integralThr = fgkIntegralThr;
+  Double_t thrPar = fgkThrPar;
+
+  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","Config");
+  if (!cdbEntry) {
+	  Log(Form("No Configuration entry found in CDB, using default values: ComputingDelays = %s, StartingRun = %i",compDelays.Data(), startingRun));
+  }
+  else {
+	  TMap *configMap = (TMap*)cdbEntry->GetObject();
+	  if (!configMap){
+		  Log(Form("No map found in Config entry in CDB, using default values: ComputingDelays = %s, StartingRun = %i",compDelays.Data(), startingRun));
+	  }
+	  else{
+		  TObjString *strDelays = (TObjString*)configMap->GetValue("ComputingDelays");
+		  if (strDelays) {
+			  compDelays = (TString) strDelays->GetString();
+		  }
+		  else {
+			  Log(Form("No ComputingDelays value found in Map from Config entry in CDB, using default value: ComputingDelays =  %s",compDelays.Data()));
+		  }
+		  TObjString *strRun = (TObjString*)configMap->GetValue("StartingRun");
+		  if (strRun) {
+			  TString tmpstr = strRun->GetString();
+			  startingRun = tmpstr.Atoi();
+			  deltaStartingRun = fRun - startingRun;
+		  }
+		  else {
+			  Log(Form("No StartingRun value found in Map from Config entry in CDB, using default value: StartingRun = %i",startingRun));
+		  }
+		  TObjString *strBinRangeAve = (TObjString*)configMap->GetValue("BinRangeAve");
+		  if (strBinRangeAve) {
+			  TString tmpstr = strBinRangeAve->GetString();
+			  binRangeAve = tmpstr.Atoi();
+		  }
+		  else {
+			  Log(Form("No BinRangeAve value found in Map from Config entry in CDB, using default value: BinRangeAve = %i",binRangeAve));
+		  }
+		  TObjString *strIntegralThr = (TObjString*)configMap->GetValue("IntegralThr");
+		  if (strIntegralThr) {
+			  TString tmpstr = strIntegralThr->GetString();
+			  integralThr = tmpstr.Atof();
+		  }
+		  else {
+			  Log(Form("No IntegralThr value found in Map from Config entry in CDB, using default value: IntegralThr = %i",integralThr));
+		  }
+		  TObjString *strThrPar = (TObjString*)configMap->GetValue("ThrPar");
+		  if (strThrPar) {
+			  TString tmpstr = strThrPar->GetString();
+			  thrPar = tmpstr.Atof();
+		  }
+		  else {
+			  Log(Form("No ThrPar value found in Map from Config entry in CDB, using default value: ThrPar = %i",thrPar));
+		  }
+	  }
+  }
+  if (compDelays == "kTRUE") fFDRFlag = kFALSE;
+  else fFDRFlag = kTRUE;
+
+  Log(Form("ComputingDelays = %s, StartingRun = %i",compDelays.Data(),startingRun));
+
+  fCal = new AliTOFChannelOnlineArray(fNChannels);
+
   TH1::AddDirectory(0);
 
   Bool_t resultDAQRef=kFALSE;
@@ -236,153 +274,155 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
   
   if(fStoreRefData){
     //retrieving data at Run level
-    TList* list = GetFileSources(kDAQ, "RUNLevel");
-    if (list !=0x0 && list->GetEntries()!=0)
-      {
-	AliInfo("The following sources produced files with the id RUNLevel");
-	list->Print();
-	for (Int_t jj=0;jj<list->GetEntries();jj++){
-	  TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
-	  AliInfo(Form("found source %s", str->String().Data()));
-	  // file to be stored run per run
-	  TString fileNameRun = GetFile(kDAQ, "RUNLevel", str->GetName());
-	  if (fileNameRun.Length()>0){
-	    AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun.Data()));
-	    daqFile = new TFile(fileNameRun.Data(),"READ");
-	    fh2 = (TH2S*) daqFile->Get("htof");
-	    AliCDBMetaData metaDataHisto;
-	    metaDataHisto.SetBeamPeriod(0);
-	    metaDataHisto.SetResponsible("Chiara Zampolli");
-	    metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
-	    AliInfo("Storing Reference Data");
-	    resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
-	    if (!resultDAQRef){
-	      Log("some problems occurred::No Reference Data stored, TOF exiting from Shuttle");
-	      return 5;//return error code for failure in storing Ref Data 
-	    }
-	    daqFile->Close();
-	    delete daqFile;
-	  }
-	  
+	  TList* list = GetFileSources(kDAQ, "RUNLevel");
+	  if (list !=0x0 && list->GetEntries()!=0)
+		  {
+			  AliInfo("The following sources produced files with the id RUNLevel");
+			  list->Print();
+			  for (Int_t jj=0;jj<list->GetEntries();jj++){
+				  TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
+				  AliInfo(Form("found source %s", str->String().Data()));
+				  // file to be stored run per run
+				  TString fileNameRun = GetFile(kDAQ, "RUNLevel", str->GetName());
+				  if (fileNameRun.Length()>0){
+					  AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun.Data()));
+					  daqFile = new TFile(fileNameRun.Data(),"READ");
+					  fh2 = (TH2S*) daqFile->Get("htof");
+					  AliCDBMetaData metaDataHisto;
+					  metaDataHisto.SetBeamPeriod(0);
+					  metaDataHisto.SetResponsible("Chiara Zampolli");
+					  metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
+					  AliInfo("Storing Reference Data");
+					  resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
+					  if (!resultDAQRef){
+						  Log("some problems occurred::No Reference Data stored, TOF exiting from Shuttle");
+						  return 5;//return error code for failure in storing Ref Data 
+					  }
+					  daqFile->Close();
+					  delete daqFile;
+				  }
+				  
+				  else{
+					  Log("The input data file from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
+					  return 4;//return error code for failure in retrieving Ref Data 
+				  }
+			  }
+			  delete list;
+		  }
 	  else{
-	    Log("The input data file from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
-	    return 4;//return error code for failure in retrieving Ref Data 
-	  }
-	}
-	delete list;
-      }
-    else{
-      Log("The input data file list from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
-      return 4;//return error code for failure in retrieving Ref Data 
-    }	
+		  Log("The input data file list from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
+		  return 4;//return error code for failure in retrieving Ref Data 
+	  }	
   }
 
 
-//Total files, with cumulative histos
+  //Total files, with cumulative histos
   
   TList* listTot = GetFileSources(kDAQ, "DELAYS");
   if (listTot !=0x0 && listTot->GetEntries()!=0)
-    {
-      AliInfo("The following sources produced files with the id DELAYS");
-      listTot->Print();
-      for (Int_t jj=0;jj<listTot->GetEntries();jj++){
-	TObjString * str = dynamic_cast<TObjString*> (listTot->At(jj));
-	AliInfo(Form("found source %s", str->String().Data()));
+	  {
+		  AliInfo("The following sources produced files with the id DELAYS");
+		  listTot->Print();
+		  for (Int_t jj=0;jj<listTot->GetEntries();jj++){
+			  TObjString * str = dynamic_cast<TObjString*> (listTot->At(jj));
+			  AliInfo(Form("found source %s", str->String().Data()));
+			  
+			  // file with summed histos, to extract calib params
+			  TString fileName = GetFile(kDAQ, "DELAYS", str->GetName());
+			  if (fileName.Length()>0){
+				  AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+				  
+				  daqFile = new TFile(fileName.Data(),"READ");
+				  if (fh2) delete fh2;
+				  fh2 = (TH2S*) daqFile->Get("htoftot");
+				  if (!fh2){
+					  Log("some problems occurred:: No histo retrieved, TOF exiting from Shuttle");
+					  delete daqFile;
+					  return 7; //return error code for histograms not existing/junky
+				  }
+				  else {
+					  static const Int_t kSize=fh2->GetNbinsX();
+					  static const Int_t kNBins=fh2->GetNbinsY();
+					  static const Double_t kXBinmin=fh2->GetYaxis()->GetBinLowEdge(1);
+					  if (kSize != fNChannels){
+						  Log(" number of bins along x different from number of pads, found only a subset of the histograms, TOF exiting from Shuttle");
+						  delete daqFile;
+						  return 7; //return error code for histograms not existing/junky
+					  }
+					  Int_t nNotStatistics = 0; // number of channel with not enough statistics
+					  if (fFDRFlag) Log(" Not computing delays according to flag set in Config entry in OCDB!");
 
-	// file with summed histos, to extract calib params
-	TString fileName = GetFile(kDAQ, "DELAYS", str->GetName());
-	if (fileName.Length()>0){
-	  AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
-
-	  daqFile = new TFile(fileName.Data(),"READ");
-	  if (fh2) delete fh2;
-	  fh2 = (TH2S*) daqFile->Get("htoftot");
-	  if (!fh2){
-	    Log("some problems occurred:: No histo retrieved, TOF exiting from Shuttle");
-	    delete daqFile;
-	    return 7; //return error code for histograms not existing/junky
-	  }
-	  else {
-	    static const Int_t kSize=fh2->GetNbinsX();
-	    static const Int_t kNBins=fh2->GetNbinsY();
-	    static const Double_t kXBinmin=fh2->GetYaxis()->GetBinLowEdge(1);
-	    if (kSize != fNChannels){
-	      Log(" number of bins along x different from number of pads, found only a subset of the histograms, TOF exiting from Shuttle");
-	      delete daqFile;
-              return 7; //return error code for histograms not existing/junky
-	    }
-	    Int_t nNotStatistics = 0; // number of channel with not enough statistics
-	    for (Int_t ich=0;ich<kSize;ich++){
-	      /* check whether channel has been read out during current run.
-		  * if the status is bad it means it has not been read out.
-	          * in this case skip channel in order to not affect the mean */ 
-	      if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad){
-   	        AliDebug(2,Form(" Channel %i found bad according to FEEmap, skipping from delay computing",ich));
-	        continue;
-              }
-              AliDebug(2,Form(" Channel %i found ok according to FEEmap, starting delay computing",ich));
-	      TH1S *h1 = new TH1S("h1","h1",kNBins,kXBinmin-0.5,kNBins*1.+kXBinmin-0.5);
-	      for (Int_t ibin=0;ibin<kNBins;ibin++){
-		h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
-	      }
-	      if(h1->Integral()<fgkIntegralThr) {
-		nNotStatistics++;
-		if (!fFDRFlag)  Log(Form(" Not enough statistics for bin %i, skipping this channel",ich));  // printing message only if not in FDR runs
-		delete h1;
-		h1=0x0;
-		continue;
-	      }
-	      if (!fFDRFlag) {  // not computing delays if in FDR runs
-		Bool_t found=kFALSE; 
-		Float_t minContent=h1->Integral()*fgkThrPar; 
-		Int_t nbinsX = h1->GetNbinsX();
-		Int_t startBin=1;
-		for (Int_t j=1; j<=nbinsX; j++){
-		  if ((
-		       h1->GetBinContent(j) +     
-		       h1->GetBinContent(j+1)+
-		       h1->GetBinContent(j+2)+ 
-		       h1->GetBinContent(j+3))>minContent){
-		    found=kTRUE;
-		    startBin=j;
-		    break;
+					  else {  // computing delays if not in FDR runs
+						  for (Int_t ich=0;ich<kSize;ich++){
+							  /* check whether channel has been read out during current run.
+							   * if the status is bad it means it has not been read out.
+							   * in this case skip channel in order to not affect the mean */ 
+							  if (fStatus->GetHWStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFHWBad){
+								  AliDebug(2,Form(" Channel %i found bad according to FEEmap, (HW status = %i), skipping from delay computing",ich, (Int_t)fStatus->GetHWStatus(ich)));
+								  continue;
+							  }
+							  AliDebug(2,Form(" Channel %i found ok according to FEEmap, starting delay computing",ich));
+							  TH1S *h1 = new TH1S("h1","h1",kNBins,kXBinmin-0.5,kNBins*1.+kXBinmin-0.5);
+							  for (Int_t ibin=0;ibin<kNBins;ibin++){
+								  h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
+							  }
+							  if(h1->Integral()<integralThr) {
+								  nNotStatistics++;
+								  Log(Form(" Not enough statistics for bin %i, skipping this channel",ich));  // printing message only if not in FDR runs
+								  delete h1;
+								  h1=0x0;
+								  continue;
+							  }
+							  Bool_t found=kFALSE; 
+							  Float_t minContent=h1->Integral()*thrPar; 
+							  Int_t nbinsX = h1->GetNbinsX();
+							  Int_t startBin=1;
+							  for (Int_t j=1; j<=nbinsX; j++){
+								  if ((
+								       h1->GetBinContent(j) +     
+								       h1->GetBinContent(j+1)+
+								       h1->GetBinContent(j+2)+ 
+								       h1->GetBinContent(j+3))>minContent){
+									  found=kTRUE;
+									  startBin=j;
+									  break;
+								  }
+							  }
+							  if(!found) AliInfo(Form("WARNING!!! no start of fit found for histo # %i",ich));
+							  // Now calculate the mean over the interval. 
+							  Double_t mean = 0;
+							  Double_t sumw2 = 0;
+							  Double_t nent = 0;
+							  for(Int_t k=0;k<binRangeAve;k++){
+								  mean=mean+h1->GetBinCenter(startBin+k)*h1->GetBinContent(startBin+k);                 
+								  nent=nent+h1->GetBinContent(startBin+k);                 
+								  sumw2=sumw2+(h1->GetBinCenter(startBin+k))*(h1->GetBinCenter(startBin+k))*(h1->GetBinContent(startBin+k));
+							  }
+							  mean= mean/nent; //<x>
+							  sumw2=sumw2/nent; //<x^2>
+							  Double_t rmsmean= 0;
+							  rmsmean = TMath::Sqrt((sumw2-mean*mean)/nent);
+							  if (ich<fNChannels) {
+								  Float_t delay = mean*AliTOFGeometry::TdcBinWidth()*1.E-3; // delay in ns
+								  fCal->SetDelay(ich,delay);  // delay in ns
+								  AliDebug(2,Form("Setting delay %f (ns) for channel %i",delay,ich));
+							  }
+							  delete h1;
+							  h1=0x0;
+						  }
+					  }
+					  if (nNotStatistics!=0) Log(Form("Too little statistics for %d channels!",nNotStatistics)); 
+				  }
+				  daqFile->Close();
+				  delete daqFile;
+			  }
+			  else{
+				  Log("The Cumulative data file from DAQ does not exist, TOF exiting from Shuttle"); 
+				  return 6;//return error code for problems in retrieving DAQ data 
+			  }
 		  }
-		}
-		if(!found) AliInfo(Form("WARNING!!! no start of fit found for histo # %i",ich));
-		// Now calculate the mean over the interval. 
-		Double_t mean = 0;
-		Double_t sumw2 = 0;
-		Double_t nent = 0;
-		for(Int_t k=0;k<fgkBinRangeAve;k++){
-		  mean=mean+h1->GetBinCenter(startBin+k)*h1->GetBinContent(startBin+k);                 
-		  nent=nent+h1->GetBinContent(startBin+k);                 
-		  sumw2=sumw2+(h1->GetBinCenter(startBin+k))*(h1->GetBinCenter(startBin+k))*(h1->GetBinContent(startBin+k));
-		}
-		mean= mean/nent; //<x>
-		sumw2=sumw2/nent; //<x^2>
-		Double_t rmsmean= 0;
-		rmsmean = TMath::Sqrt((sumw2-mean*mean)/nent);
-		if (ich<fNChannels) {
-		  AliTOFChannelOnline * ch = (AliTOFChannelOnline *)fCal->At(ich);
-		  ch->SetDelay((Double_t)mean*AliTOFGeometry::TdcBinWidth()*1.E-3);  // delay in ns
-		  // ch->SetStatus(1);  // calibrated channel, removed for the time being from AliTOFChannelOnline
-		}
-	      }
-	    delete h1;
-	    h1=0x0;
-	    }
-	    if (nNotStatistics!=0) Log(Form("Too little statistics for %d channels!",nNotStatistics)); 
+		  delete listTot;
 	  }
-	  daqFile->Close();
-	  delete daqFile;
-	}
-	else{
-	  Log("The Cumulative data file from DAQ does not exist, TOF exiting from Shuttle"); 
-          return 6;//return error code for problems in retrieving DAQ data 
-	}
-      }
-      delete listTot;
-    }
   else{
     Log("Problem: no list for Cumulative data file from DAQ was found, TOF exiting from Shuttle");
     return 6; //return error code for problems in retrieving DAQ data 
@@ -392,9 +432,9 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Chiara Zampolli");
-  metaData.SetComment("This preprocessor fills a TObjArray object.");
+  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineArray object for online calibration - delays.");
   AliInfo("Storing Calibration Data");
-  resultTOFPP = Store("Calib","ParOnline",fCal, &metaData,0,kTRUE);
+  resultTOFPP = Store("Calib","ParOnlineDelay",fCal, &metaData,deltaStartingRun,kTRUE);
   if(!resultTOFPP){
     Log("Some problems occurred while storing online object resulting from DAQ data processing");
     return 8;//return error code for problems in storing DAQ data 
@@ -410,28 +450,22 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 
   Log("Processing Pulser");
 
-  TH1::AddDirectory(0);
+  if (fStatus==0x0){
+	  AliError("No valid fStatus found, some errors must have occurred!!");
+	  return 20;
+  }
 
+  TH1::AddDirectory(0);
+  
   Bool_t resultPulserRef=kFALSE;
   Bool_t resultPulser=kFALSE;
-
+  
   static const Int_t kSize = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
   TH1S * htofPulser = new TH1S("hTOFpulser","histo with signals on TOF during pulser", kSize,-0.5,kSize-0.5);
   for (Int_t ibin =1;ibin<=kSize;ibin++){
-    htofPulser->SetBinContent(ibin,-1);
+	  htofPulser->SetBinContent(ibin,-1);
   }
-
-  // retrieving last stored pulser object, and copying
-
-  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","Pulser");
-  if (cdbEntry!=0x0){
-    TObjArray *currentCalStatus = (TObjArray*)cdbEntry->GetObject();
-    for (Int_t ich = 0; ich<fNChannels; ich ++){
-      AliTOFChannelOnlineStatus * calChOnlineSt = (AliTOFChannelOnlineStatus*)fCalStatus->At(ich);
-      calChOnlineSt->SetStatus(((AliTOFChannelOnlineStatus*)currentCalStatus->At(ich))->GetStatus());
-    }
-  }
-
+  
   // processing pulser
   
   TFile * daqFile=0x0;
@@ -443,7 +477,9 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
     {
       AliInfo("The following sources produced files with the id PULSER");
       listPulser->Print();
+      Int_t nPulser = 0;
       for (Int_t jj=0;jj<listPulser->GetEntries();jj++){
+	Int_t nPulserSource = 0;
 	TObjString * str = dynamic_cast<TObjString*> (listPulser->At(jj));
 	AliInfo(Form("found source %s", str->String().Data()));
 	// file to be stored run per run
@@ -470,79 +506,81 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	  Int_t nreadNotEmpty=0;
 	  for (Int_t ientry=1;ientry<=h1->GetNbinsX();ientry++){
 
+		  AliDebug(3,Form(" channel %i pulser status before pulser = %i, with global status = %i",ientry,(Int_t)fStatus->GetPulserStatus(ientry),(Int_t)fStatus->GetStatus(ientry)));
 	    /* check whether channel has been read out during current run.
 	     * if the status is bad it means it has not been read out.
 	     * in this case skip channel in order to not affect the mean */ 
-	    if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ientry-1))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
-		    continue;
-
-	    if (h1->GetBinContent(ientry)==-1) continue;
-	    else {
-	      if (h1->GetBinContent(ientry)>0) {
-		nreadNotEmpty++;
-		AliDebug(1,Form(" channel %i is ok with entry = %f; so far %i channels added ",ientry-1,h1->GetBinContent(ientry),nreadNotEmpty));
-	      }
-	      mean+=h1->GetBinContent(ientry);
-	      nread++;
-	    }
+		  if (fStatus->GetHWStatus(ientry-1) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
+			  continue;
+		  nPulser++;
+		  nPulserSource++;
+		  if (h1->GetBinContent(ientry)==-1) continue;
+		  else {
+			  if (h1->GetBinContent(ientry)>0) {
+				  nreadNotEmpty++;
+				  AliDebug(2,Form(" channel %i is ok with entry = %f; so far %i channels added ",ientry-1,h1->GetBinContent(ientry),nreadNotEmpty));
+			  }
+			  mean+=h1->GetBinContent(ientry);
+			  nread++;
+		  }
 	  }
 	  if (nread!=0) {
 		  mean/=nread;
-		  AliDebug(1,Form(" nread =  %i , mean = %f",nread,mean));
+		  AliDebug(2,Form(" nread =  %i , nreadNotEmpty = %i, mean = %f",nread,nreadNotEmpty,mean));
 		  for (Int_t ich =0;ich<fNChannels;ich++){
-			  AliTOFChannelOnlineStatus * chSt = (AliTOFChannelOnlineStatus *)fCalStatus->At(ich);
 			  if (h1->GetBinContent(ich+1)==-1) continue;
-			  AliDebug(1,Form(" channel %i ",ich));
-			  AliDebug(1,Form(" channel status before pulser = %i",(Int_t)chSt->GetStatus()));
+			  AliDebug(3,Form(" channel %i pulser status before pulser = %i",ich,(Int_t)fStatus->GetPulserStatus(ich)));
 			  
 			  /* check whether channel has been read out during current run.
 			   * if the status is bad it means it has not been read out.
 			   * in this case skip channel in order to leave its status 
 			   * unchanged */
-       			  if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
-			  continue;
+       			  if (fStatus->GetHWStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
+				  continue;
 			  
 			  if (h1->GetBinContent(ich+1)<0.05*mean){
-				  chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFPulserBad);  // bad status for pulser
-				  AliDebug(1,Form(" channel status after pulser = %i",(Int_t)chSt->GetStatus()));
+				  fStatus->SetPulserStatus(ich,AliTOFChannelOnlineStatusArray::kTOFPulserBad);  // bad status for pulser
+				  AliDebug(2,Form( " channel %i pulser status after pulser = %i (bad, content = %f), with global status = %i",ich,(Int_t)fStatus->GetPulserStatus(ich),h1->GetBinContent(ich+1),(Int_t)fStatus->GetStatus(ich)));
 			  }
 			  else {
-				  chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFPulserOk);  // bad status for pulser
-				  AliDebug(1,Form(" channel status after pulser = %i",(Int_t)chSt->GetStatus()));
+				  fStatus->SetPulserStatus(ich,AliTOFChannelOnlineStatusArray::kTOFPulserOk);  // good status for pulser
+				  AliDebug(2,Form( " channel %i pulser status after pulser = %i (good), with global status = %i",ich,(Int_t)fStatus->GetPulserStatus(ich),(Int_t)fStatus->GetStatus(ich)));
 			  }
 		  }
 	  }
 	  else {
 		  Log("No channels read!! No action taken, keeping old status");
 	  }
-
+	  
 	  daqFile->Close();
 	  delete daqFile;
 	  delete h1;
 	}
 	
 	else{
-	  Log("The input data file from DAQ (pulser) was not found, TOF exiting from Shuttle "); 
-	  return 10;//return error code for failure in retrieving Ref Data 
+		Log("The input data file from DAQ (pulser) was not found, TOF exiting from Shuttle "); 
+		return 10;//return error code for failure in retrieving Ref Data 
 	}
+	AliDebug(2,Form(" Number of channels processed during pulser run from source %i = %i",jj, nPulserSource));
 	
       }
+      AliDebug(2,Form(" Number of channels processed during pulser run = %i",nPulser));
       delete listPulser;
     }
   
   else{
-    Log("The input data file list from DAQ (pulser) was not found, TOF exiting from Shuttle "); 
-    return 10;//return error code for failure in retrieving Ref Data 
+	  Log("The input data file list from DAQ (pulser) was not found, TOF exiting from Shuttle "); 
+	  return 10;//return error code for failure in retrieving Ref Data 
   }	
-
+  
   //storing in OCDB  
-
+  
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Chiara Zampolli");
-  metaData.SetComment("This preprocessor fills a TObjArray object for Pulser data.");
+  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object after a Pulser run.");
   AliInfo("Storing Calibration Data from Pulser Run");
-  resultPulser = Store("Calib","Pulser",fCalStatus, &metaData,0,kTRUE);
+  resultPulser = Store("Calib","Status",fStatus, &metaData,0,kTRUE);
   if(!resultPulser){
     Log("Some problems occurred while storing online object resulting from Pulser data processing");
     return 11;//return error code for problems in storing Pulser data 
@@ -554,7 +592,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
     metaDataHisto.SetBeamPeriod(0);
     metaDataHisto.SetResponsible("Chiara Zampolli");
     char comment[200];
-    sprintf(comment,"This preprocessor stores the result of the pulser run");
+    sprintf(comment,"This preprocessor stores the Ref data from a pulser run.");
     metaDataHisto.SetComment(comment);
     AliInfo("Storing Reference Data");
     resultPulserRef = StoreReferenceData("Calib","PulserData",htofPulser, &metaDataHisto);
@@ -577,28 +615,22 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 
   Log("Processing Noise");
 
+  if (fStatus==0x0){
+	  AliError("No valid fStatus found, some errors must have occurred!!");
+	  return 20;
+  }
+
   TH1::AddDirectory(0);
 
   Bool_t resultNoiseRef=kFALSE;
   Bool_t resultNoise=kFALSE;
 
   static const Int_t kSize = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
-  TH1F * htofNoise = new TH1F("hTOFnoise","histo with signals on TOF during pulser", kSize,-0.5,kSize-0.5);
+  TH1F * htofNoise = new TH1F("hTOFnoise","histo with signals on TOF during noise", kSize,-0.5,kSize-0.5);
   for (Int_t ibin =1;ibin<=kSize;ibin++){
-    htofNoise->SetBinContent(ibin,-1);
+	  htofNoise->SetBinContent(ibin,-1);
   }
-
-  // retrieving last stored noise object, and copying
-
-  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","Noise");
-  if (cdbEntry!=0x0){
-    TObjArray *currentCalStatus = (TObjArray*)cdbEntry->GetObject();
-    for (Int_t ich = 0; ich<fNChannels; ich ++){
-      AliTOFChannelOnlineStatus * calChOnlineSt = (AliTOFChannelOnlineStatus*)fCalStatus->At(ich);
-      calChOnlineSt->SetStatus(((AliTOFChannelOnlineStatus*)currentCalStatus->At(ich))->GetStatus());
-    }
-  }
-
+  
   // processing noise
   
   TFile * daqFile=0x0;
@@ -610,13 +642,15 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
     {
       AliInfo("The following sources produced files with the id NOISE");
       listNoise->Print();
+      Int_t nNoise = 0;
       for (Int_t jj=0;jj<listNoise->GetEntries();jj++){
+	Int_t nNoiseSource = 0;
 	TObjString * str = dynamic_cast<TObjString*> (listNoise->At(jj));
 	AliInfo(Form("found source %s", str->String().Data()));
 	// file to be stored run per run
 	TString fileNameNoise = GetFile(kDAQ, "NOISE", str->GetName());
 	if (fileNameNoise.Length()>0){
-	  // storing refernce data
+	  // storing reference data
 	  AliInfo(Form("Got the file %s, now we can process noise data.", fileNameNoise.Data()));
 	  daqFile = new TFile(fileNameNoise.Data(),"READ");
 	  h1 = (TH1F*) daqFile->Get("hTOFnoise");
@@ -632,25 +666,26 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 	  }
 	  // elaborating infos
 	  for (Int_t ich =0;ich<fNChannels;ich++){
-	    AliTOFChannelOnlineStatus * chSt = (AliTOFChannelOnlineStatus *)fCalStatus->At(ich);
 	    if (h1->GetBinContent(ich+1)==-1) continue;
-	    AliDebug(1,Form( " channel %i",ich));
-	    AliDebug(1,Form( " channel status before noise = %i",(Int_t)chSt->GetStatus()));
+	    AliDebug(3,Form(" channel %i noise status before noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+      	    //AliDebug(2,Form( " channel %i status before noise = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich)));
 
 	    /* check whether channel has been read out during current run.
 	     * if the status is bad it means it has not been read out.
 	     * in this case skip channel in order to leave its status 
 	     * unchanged */
-	    if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
+	    if ((fStatus->GetHWStatus(ich)) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
 	      continue;
 
+	    nNoise++;
+	    nNoiseSource++;
 	    if (h1->GetBinContent(ich+1)>=1){  // setting limit for noise to 1 kHz
-	      chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFNoiseBad);  // bad status for noise
-	      AliDebug(1,Form( " channel status after noise = %i",(Int_t)chSt->GetStatus()));
+		    fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseBad); // bad status for noise
+		    AliDebug(2,Form( " channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
 	    }
 	    else {
-	      chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFNoiseOk);  // bad status for noise
-	      AliDebug(1,Form(" channel status after noise = %i",(Int_t)chSt->GetStatus()));
+		    fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseOk); // good status for noise
+		    AliDebug(2,Form(" channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
 	    }
 	  }
  
@@ -665,7 +700,9 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 	  return 13;//return error code for failure in retrieving Ref Data 
 	}
 	
+	AliDebug(2,Form(" Number of channels processed during noise run from source %i = %i",jj, nNoiseSource));
       }
+      AliDebug(2,Form(" Number of channels processed during noise run = %i",nNoise));
       delete listNoise;
     }
   else{
@@ -680,9 +717,9 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Chiara Zampolli");
-  metaData.SetComment("This preprocessor fills a TObjArray object for Noise data.");
+  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object after a Noise run.");
   AliInfo("Storing Calibration Data from Noise Run");
-  resultNoise = Store("Calib","Noise",fCalStatus, &metaData,0,kTRUE);
+  resultNoise = Store("Calib","Status",fStatus, &metaData,0,kTRUE);
   if(!resultNoise){
     Log("Some problems occurred while storing online object resulting from Noise data processing");
     return 14;//return error code for problems in storing Noise data 
@@ -694,7 +731,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
     metaDataHisto.SetBeamPeriod(0);
     metaDataHisto.SetResponsible("Chiara Zampolli");
     char comment[200];
-    sprintf(comment,"This preprocessor stores the result of the noise run, TOF exiting from Shuttle ");
+    sprintf(comment,"This preprocessor stores the Ref data from a noise run. ");
     metaDataHisto.SetComment(comment);
     AliInfo("Storing Reference Data");
     resultNoiseRef = StoreReferenceData("Calib","NoiseData",htofNoise, &metaDataHisto);
@@ -717,9 +754,7 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 
   Bool_t updateOCDB = kFALSE;
   AliTOFFEEReader feeReader;
-  AliTOFChannelOnlineStatus *currentChannel = NULL, *storedChannel = NULL;
-  TObjArray *currentFEE = fFEEStatus;
-  
+
   TH1C hCurrentFEE("hCurrentFEE","histo with current FEE channel status", fNChannels, 0, fNChannels);
   
   /* load current TOF FEE config from DCS FXS, parse, 
@@ -731,46 +766,47 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 	  return 15;
   } 
   feeReader.LoadFEEConfig(nameFile);
-  feeReader.ParseFEEConfig();
-  /* loop over channels */
-  for (Int_t iChannel = 0; iChannel < fNChannels; iChannel++) {
-    currentChannel = (AliTOFChannelOnlineStatus *)currentFEE->At(iChannel);
-    if (!currentChannel)
-      continue;
-    /* channel enabled. set FEE channel status ok */
-    if (feeReader.IsChannelEnabled(iChannel)) {
-      currentChannel->SetStatus(AliTOFChannelOnlineStatus::kTOFHWOk);
-      hCurrentFEE.SetBinContent(iChannel + 1, 1);
-    }
-    /* channel disabled. set FEE channel status bad */
-    else {
-      currentChannel->SetStatus(AliTOFChannelOnlineStatus::kTOFHWBad);
-    }
-  }
-  
+  Int_t parseFee = feeReader.ParseFEEConfig();
+  AliDebug(2,Form("%i enabled channels found in FEE configuration",parseFee));
   /* load stored TOF FEE from OCDB and compare it with current FEE.
    * if stored FEE is different from current FEE set update flag.
    * if there is no stored FEE in OCDB set update flag */
   
-  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","FEE");
-  /* no CDB entry found. set update flag */
-  if (cdbEntry == NULL) {
-    updateOCDB = kTRUE;
+  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","Status");
+  if (!cdbEntry) {
+	  /* no CDB entry found. set update flag */
+	  Log("     ************ WARNING ************");
+	  Log("No CDB Status entry found, creating a new one!");
+	  Log("     *********************************");
+	  fStatus = new AliTOFChannelOnlineStatusArray(fNChannels);
+	  updateOCDB = kTRUE;
   }
-  /* CDB entry OK. loop over channels */
   else {
-    TObjArray *storedFEE = (TObjArray *)cdbEntry->GetObject();
-    for (Int_t iChannel = 0; iChannel < fNChannels; iChannel++){
-      currentChannel = (AliTOFChannelOnlineStatus *)currentFEE->At(iChannel);
-      storedChannel = (AliTOFChannelOnlineStatus *)storedFEE->At(iChannel);
-      /* compare current FEE channel status with stored one 
-       * if different set update flag and break loop */
-      if (currentChannel->GetStatus() != storedChannel->GetStatus()) {
-	updateOCDB = kTRUE;
-	break;
-      }
-    }
+	  /* CDB entry OK. loop over channels */
+	  fStatus = (AliTOFChannelOnlineStatusArray*) cdbEntry->GetObject();
   }
+  for (Int_t iChannel = 0; iChannel < fNChannels; iChannel++){
+	  //AliDebug(2,Form("********** channel %i",iChannel));
+	  /* compare current FEE channel status with stored one 
+	   * if different set update flag and break loop */
+	  //AliDebug(2,Form( " channel %i status before FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
+	  if (feeReader.IsChannelEnabled(iChannel)) {
+		  hCurrentFEE.SetBinContent(iChannel + 1, 1);
+		  if (fStatus->GetHWStatus(iChannel)!=AliTOFChannelOnlineStatusArray::kTOFHWOk){
+			  updateOCDB = kTRUE;
+			  fStatus->SetHWStatus(iChannel,AliTOFChannelOnlineStatusArray::kTOFHWOk);
+			  AliDebug(2,Form( " changed into enabled: channel %i status after FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
+		  }
+	  }
+	  else {
+		  if (fStatus->GetHWStatus(iChannel)!=AliTOFChannelOnlineStatusArray::kTOFHWBad){
+			  updateOCDB = kTRUE;
+			  fStatus->SetHWStatus(iChannel,AliTOFChannelOnlineStatusArray::kTOFHWBad);
+			  AliDebug(2,Form( " changed into disabled: channel %i status after FEE = %i",iChannel,(Int_t)fStatus->GetHWStatus(iChannel)));
+		  }
+	  }
+  }
+
 
   /* check whether we don't have to store reference data.
    * in this case we return without errors. */
@@ -779,7 +815,7 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 	  AliCDBMetaData metaDataHisto;
 	  metaDataHisto.SetBeamPeriod(0);
 	  metaDataHisto.SetResponsible("Roberto Preghenella");
-	  metaDataHisto.SetComment("This preprocessor stores the FEE referece data of the current run.");
+	  metaDataHisto.SetComment("This preprocessor stores the FEE Ref data of the current run.");
 	  AliInfo("Storing FEE reference data");
 	  /* store FEE reference data */
 	  if (!StoreReferenceData("Calib", "FEEData", &hCurrentFEE, &metaDataHisto)) {
@@ -791,9 +827,15 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 
   /* check whether we don't need to update OCDB.
    * in this case we can return without errors and
-   * the current FEE is stored in the fFEEStatus TObjArray. */
+   * the current FEE is stored in the fStatus object. */
   if (!updateOCDB) {
     AliInfo("TOF FEE config has not changed. Do not overwrite stored file.");
+    return 0; /* return ok */
+  }
+
+  TString runType = GetRunType();
+  if (runType != "PHYSICS") {
+	  AliInfo(Form("Run Type = %s, waiting to store status map",GetRunType()));
     return 0; /* return ok */
   }
 
@@ -803,10 +845,10 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Roberto Preghenella");
-  metaData.SetComment("This preprocessor fills a TObjArray object for FEE data.");
-  AliInfo("Storing FEE data from current run");
+  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE data.");
+  AliInfo("Storing Status data from current run after FEE parsing");
   /* store FEE data */
-  if (!Store("Calib", "FEE", fFEEStatus, &metaData, 0, kTRUE)) {
+  if (!Store("Calib", "Status", fStatus, &metaData, 0, kTRUE)) {
     /* failed */
     Log("problems while storing FEE data object");
     return 17; /* return error code for problems  while storing FEE data */
@@ -840,7 +882,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
     Int_t iresultPulser = ProcessPulserData();
     return iresultPulser; 
   }
-  
+
   if (runType == "NOISE") { // for the time being associating noise runs with pedestal runs; proper run type to be defined 
     Int_t iresultNoise = ProcessNoiseData();
     return iresultNoise; 
