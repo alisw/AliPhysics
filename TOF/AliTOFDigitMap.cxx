@@ -283,6 +283,54 @@ Bool_t AliTOFDigitMap::StripDigitCheck(Int_t iSector, Int_t iPlate, Int_t iStrip
 }
 
 ////////////////////////////////////////////////////////////////////////
+Int_t AliTOFDigitMap::DigitInStrip(Int_t iSector, Int_t iPlate, Int_t iStrip) const
+{
+  //
+  // Returns:
+  //
+
+  Int_t volume[5] = {iSector, iPlate, iStrip, -1, -1};
+  Int_t counter = 0;
+
+  for (Int_t iPadX=0; iPadX<fNpx; iPadX++)
+    for (Int_t iPadZ=0; iPadZ<fNpz; iPadZ++)
+      for (Int_t label=0; label<kMaxDigitsPerPad; label++) {
+	volume[3] = iPadX;
+	volume[4] = iPadZ;
+	if (GetDigitIndex(volume, label)<0) continue;
+	counter++;
+      }
+
+  return counter;
+
+}
+
+////////////////////////////////////////////////////////////////////////
+void AliTOFDigitMap::ResetDigitNumber(Int_t *vol, Int_t dig)
+{
+  //
+  // Reset digit into pad vol
+  //
+
+  Int_t dummy = -1;
+
+  for (Int_t slot=0; slot<kMaxDigitsPerPad; slot++) {
+    if (fDigitMap[CheckedIndex(vol)][slot]-1==dig) {
+      fDigitMap[CheckedIndex(vol)][slot] = 0;
+      dummy = slot;
+    }
+  }
+  /*
+  if (dummy<kMaxDigitsPerPad-1) {
+    for (Int_t ii=dummy; ii<kMaxDigitsPerPad-1; ii++) {
+      fDigitMap[CheckedIndex(vol)][ii] =
+	fDigitMap[CheckedIndex(vol)][ii+1];
+    }
+  }
+  */
+}
+
+////////////////////////////////////////////////////////////////////////
 void AliTOFDigitMap::ResetDigit(Int_t *vol, Int_t dig)
 {
   //
@@ -294,8 +342,17 @@ void AliTOFDigitMap::ResetDigit(Int_t *vol, Int_t dig)
   //if (fDigitMap[CheckedIndex(vol)][slot]==dig)
   //fDigitMap[CheckedIndex(vol)][slot] = 0;
   //}
-  fDigitMap[CheckedIndex(vol)][dig] = 0;
 
+
+  fDigitMap[CheckedIndex(vol)][dig] = 0;
+  /*
+  if (dig<kMaxDigitsPerPad-1) {
+    for (Int_t ii=dig; ii<kMaxDigitsPerPad-1; ii++) {
+      fDigitMap[CheckedIndex(vol)][ii] =
+	fDigitMap[CheckedIndex(vol)][ii+1];
+    }
+  }
+  */
 }
 
 void AliTOFDigitMap::ResetDigit(Int_t *vol)
@@ -306,6 +363,24 @@ void AliTOFDigitMap::ResetDigit(Int_t *vol)
   // 0 means empty pad, we need to shift indices by 1
 
   for (Int_t slot=0; slot<kMaxDigitsPerPad; slot++)
-    ResetDigit(vol,slot);
+    fDigitMap[CheckedIndex(vol)][slot] = 0;
+
+}
+
+Int_t AliTOFDigitMap::GetNumberOfDigits(Int_t *vol)
+{
+  //
+  // Returns the number of digit
+  //   into pad volume vol
+  //
+  // 0 means empty pad
+  //
+
+  Int_t counter = 0;
+
+  for (Int_t slot=0; slot<kMaxDigitsPerPad; slot++)
+    if (GetDigitIndex(vol, slot)!=-1) counter++;
+
+  return counter;
 
 }
