@@ -166,6 +166,7 @@ AliHLTPHOSOnlineDisplay::ShowRawData()
       int tmpRcuZ = 0;
       int tmpX = 0;
       int tmpZ = 0;
+      int energy = 0;
       //     int tmpGain = 0;
 
       for(int zrow=0; zrow< nzRows ; zrow++)

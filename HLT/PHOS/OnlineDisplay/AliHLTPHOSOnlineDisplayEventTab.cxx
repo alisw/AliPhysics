@@ -46,7 +46,9 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlin
 		    {
 		      for(int gain = 0; gain < N_GAINS; gain ++ )
 			{
-			  fChannelData[mod][rcu_z_coord][rcu_x_coord][x][z][gain] = new int[fNTotalSamples];
+			  fChannelData[mod][rcu_z_coord][rcu_x_coord][x][z][gain] = new int[ALTRO_MAX_SAMPLES];
+			  fNChannelSamples[mod][rcu_z_coord][rcu_x_coord][x][z][gain] = 0;
+			  fChannelEnergy[mod][rcu_z_coord][rcu_x_coord][x][z][gain] = 0;
 			}
 		    }
 		}	   
@@ -83,17 +85,18 @@ AliHLTPHOSOnlineDisplayEventTab::~AliHLTPHOSOnlineDisplayEventTab()
 }
 
 
-void 
+Int_t
 AliHLTPHOSOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain)
 {
-  for(int i=0;  i < fNTotalSamples ; i++)
+  for(int i=0;  i < fNChannelSamples[mod][rcuX][rcuZ][x][z][gain] ; i++)
     {
        histPtr->SetBinContent(i, fChannelData[mod][rcuX][rcuZ][x][z][gain][i]);
     }
+  return fNChannelSamples[mod][rcuX][rcuZ][x][z][gain];
 }
 
 
-void 
+Int_t
 AliHLTPHOSOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int x, int z, int gain)
 {
   int tmpModID = x/64;
@@ -102,10 +105,11 @@ AliHLTPHOSOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int x, int z, int gai
   int tmpZ = z%28;
   int tmpX = x%32;
 
-  for(int i=0;  i < fNTotalSamples ; i++)
+  for(int i=0;  i < fNChannelSamples[tmpModID][tmpRcuX][tmpRcuZ][tmpX][tmpZ][gain] ; i++)
     {
-      histPtr->SetBinContent(i, fChannelData[tmpModID][tmpRcuX][tmpRcuZ][tmpX][tmpZ][gain][i]);
+      histPtr->SetBinContent(i, fChannelData[tmpModID][tmpRcuX][tmpRcuZ][tmpX][tmpZ][gain][i]);  
     }
+  return fNChannelSamples[tmpModID][tmpRcuX][tmpRcuZ][tmpX][tmpZ][gain];
 }
 
 
@@ -147,16 +151,18 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
   while ( blk != ~(unsigned long)0 ) 
     {
       Int_t moduleID;
+      Int_t rcuX = 0;
+      Int_t rcuZ = 0;
       AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
       
       unsigned int *t = (unsigned int*)cellEnergiesPtr;
       
       for(int i = 0; i < 10000; i++)
 	{
-	  printf("%f\t", (float)*t);
+	  //	  printf("%f\t", (float)*t);
 	  if(i%30 == 0)
 	    {
-	      printf("\ni = %d", i);
+	      //  printf("\ni = %d", i);
 	    }
 	  t ++;
 	}
@@ -165,22 +171,26 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	{
 	  for(int x=0; x <N_XCOLUMNS_RCU; x ++ )
 	    {
-	      printf("\nnewline");
+	      //	      printf("\nnewline");
 	      for(int z=0; z <N_ZROWS_RCU; z ++ ) 
 		{
-		  printf("%f\t",cellEnergiesPtr->fValidData[x][z][gain].fEnergy);
+		  //		  printf("%f\t",cellEnergiesPtr->fValidData[x][z][gain].fEnergy);
 	    
 		}
 	    }
 	}
 
       moduleID = cellEnergiesPtr->fModuleID ;
+      rcuX = cellEnergiesPtr->fRcuX;
+      rcuZ = cellEnergiesPtr->fRcuZ;
+
       cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
 
       Int_t tmpZ;
       Int_t tmpX;
       Int_t tmpGain;
       int cnt = 0;
+      Int_t* tmpPtr = 0;
 
       fShmPtr->SetMemory(cellEnergiesPtr);
       currentChannel = fShmPtr->NextChannel();
@@ -193,10 +203,10 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	  tmpGain =  currentChannel->fGain;
 	  
 	  //	  cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockData gain = " << tmpGain << endl;
-  
+	  
 	  if(cnt < 20)
 	    {
-	      cout << "the addresss of fData is " << (void *)currentChannel->fData  << endl;
+	      //cout << "the addresss of fData is " << (void *)currentChannel->fData  << endl;
 	    }
 	  // We have to unroll the gain for loop because of the hack by MT to display the raw data in AliEve
 	  // This is crap !! but it is the dirty one hour solution (and it works) 
@@ -206,8 +216,8 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	     tmpGain == HIGH_GAIN)
 	    {
 	      fgLegoPlotHGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,  
-				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ, currentChannel->fEnergy);
-	    
+	      		    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ, currentChannel->fEnergy);
+	      
 	      //  cout <<   << endl;
 
 	      // CRAP PTH
@@ -220,18 +230,25 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 				    2.2);
 	      gAliEveBoxSet->DigitValue(TMath::Nint(currentChannel->fEnergy));
 	      
-
-	      for(int j= 0; j< currentChannel->fNSamples; j++)
+	      if(cellEnergiesPtr->fHasRawData == true)
 		{
-		  if(j == fNTotalSamples) 
-		    {
-		      break;
-		    }
-		  
-		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][HIGH_GAIN][j] = currentChannel->fData[j];  
-		  //  prinf("");
+		  Int_t nSamples = 0;
+		  Int_t* rawPtr = 0;
 
-		  
+		  rawPtr = fShmPtr->GetRawData(nSamples);
+
+		  fNChannelSamples[moduleID][rcuX][rcuZ][tmpX][tmpZ][tmpGain] = nSamples;
+		  //fChannelEnergy[moduleID][rcuX][rcuZ][tmpX][tmpZ][tmpGain] = currentChannel->fEnergy;
+
+		  for(int j= 0; j< nSamples; j++)
+		    {
+		     //  if(j == fNTotalSamples) 
+// 			{
+// 			  break;
+// 			}		  
+ 		      
+		      fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][HIGH_GAIN][j] = rawPtr[j];  
+		    }
 		}
 	    }
 	  
@@ -249,20 +266,29 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 
 	      fgLegoPlotLGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,
 				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ,    currentChannel->fEnergy);
-	      for(int j= 0; j< currentChannel->fNSamples; j++)
+	      if(cellEnergiesPtr->fHasRawData == true)
 		{
+		  Int_t nSamples = 0;
+		  Int_t* rawPtr = 0;
+		  rawPtr = fShmPtr->GetRawData(nSamples);
 
-		  if(j == fNTotalSamples) 
+		  fNChannelSamples[moduleID][rcuX][rcuZ][tmpX][tmpZ][tmpGain] = nSamples;
+		  //fChannelEnergy[moduleID][rcuX][rcuZ][tmpX][tmpZ][tmpGain] = currentChannel->fEnergy;
+
+
+		  for(int j= 0; j< nSamples; j++)
 		    {
-		      break;
-		    }		  
-		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][LOW_GAIN][j] = currentChannel->fData[j];   
+// 		      if(j == fNTotalSamples) 
+// 			{
+// 			  break;
+// 			}		  
+		      
+		      fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][LOW_GAIN][j] = rawPtr[j];   
+		    }
 		}
 	    }
-      
 	  currentChannel = fShmPtr->NextChannel();
 	}
-      
 
       blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
     }

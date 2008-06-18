@@ -67,6 +67,7 @@ AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
   int tmpZBin = 0;
   int tmpXBin = 0;
 
+
   //  cout <<"px = "<< px<<" pz ="  <<endl;
 
   if(event == 61)
@@ -86,12 +87,16 @@ AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
 	    {
 	      cnt ++;
 	      sprintf(tmpName, "Z_%d  X_%d_gain%d", tmpZBin + z, tmpXBin + x, fGain);   
-	      fgRawDataPlotsPtr[cnt] = new TH1D(tmpName, tmpName, fNTotalSamples, 0, fNTotalSamples -1);
+	      fgRawDataPlotsPtr[cnt] = new TH1D(tmpName, tmpName, ALTRO_MAX_SAMPLES, 0, ALTRO_MAX_SAMPLES -1);
 	      fgRawDataCanvas->cd(cnt);	 
 	      fgRawDataPlotsPtr[cnt]->SetFillColor(1);
-	      fgRawDataPlotsPtr[cnt]->SetMaximum(1023); 
+	      //fgRawDataPlotsPtr[cnt]->SetMaximum(1023); 
 	      fgRawDataPlotsPtr[cnt]->Reset();   
-	      fOnlineDisplayPtr->fgEventTabPtr->GetRawData( fgRawDataPlotsPtr[cnt], tmpXBin +x, tmpZBin +z, fGain); 
+	      Int_t nSamples = fOnlineDisplayPtr->fgEventTabPtr->GetRawData( fgRawDataPlotsPtr[cnt], tmpXBin +x, tmpZBin +z, fGain); 
+	      
+	      fgRawDataPlotsPtr[cnt]->GetXaxis()->SetRangeUser(0, nSamples - 1);
+	      fgRawDataPlotsPtr[cnt]->GetYaxis()->SetRangeUser(fgRawDataPlotsPtr[cnt]->GetMinimum() - fgRawDataPlotsPtr[cnt]->GetMinimum()*0.1, fgRawDataPlotsPtr[cnt]->GetMaximum() + fgRawDataPlotsPtr[cnt]->GetMaximum()*0.1 + 5); 
+	      //	      fgRawDataPlotsPtr[cnt]->GetYaxis()->SetRangeUser(-30, fgRawDataPlotsPtr[cnt]->GetMaximum() + fgRawDataPlotsPtr[cnt]->GetMaximum()*0.1 + 5); 
 	      fgRawDataPlotsPtr[cnt]->Draw();
 	    }
 	}

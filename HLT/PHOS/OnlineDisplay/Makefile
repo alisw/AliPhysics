@@ -3,22 +3,20 @@ SrcSuf		= cxx
 HeadSuf		= h
 
 
-ROOTLIBS	= `root-config --libs --glibs` -lGed -lFTGL -lRGL -lEve
+ROOTLIBS	= `root-config --libs --glibs` -lGed -lFTGL -lRGL -lEve -lEG -lGeom -lTreePlayer -lProofPlayer -lProof
 
+ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_linux  -lHLTbase -lAliHLTHOMER  -lAliHLTPHOS  -lRAWDatarec -lRAWDatabase -lESD -lSTEER -lSTEERBase -lCDB -lMinuit -lVMC -lPHOSbase -lPHOSshuttle
 
+ALIHLTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib -lHLTbase -lAliHLTHOMER -lAliHLTPHOS
 
-# ROOTLIBS	= -L/home/perthi/root-current/lib -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint \
-# 		 -lPostscript -lMatrix -lPhysics -lMathCore -pthread -lm -ldl -rdynamic -lCore -lCint -lRIO -lNet -lHist \
-# 		  -lGui -pthread -lm -ldl 
+ALIROOTHLTPHOSINCLUDE	=-I$(ALICE_ROOT)/HLT/PHOS
+ALIROOTHLTINCLUDE	= -I$(ALICE_ROOT)/HLT/BASE/HOMER  -I$(ALICE_ROOT)/HLT/BASE
 
-
-
-##ALIROOTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib  -lHLTbase  -lAliHLTHOMER  -lAliHLTPHOS  -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  
-ALIROOTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib  -lHLTbase  -lAliHLTHOMER  -lAliHLTPHOS   
-
+ALIHLTINCLUDE		=-I$(ALIHLT_TOPDIR)/BASE/HOMER  -I$(ALIHLT_TOPDIR)/BASE
 ALIHLTPHOSINCLUDE	=-I$(ALIHLT_TOPDIR)/PHOS
-ALIHLTINCLUDE	= -I$(ALIHLT_TOPDIR)/BASE/HOMER  -I$(ALIHLT_TOPDIR)/BASE
-INCLUDES        = -I$(ROOTSYS)/include $(ALIHLTPHOSINCLUDE) $(ALIHLTINCLUDE)
+
+#INCLUDES        = -I$(ROOTSYS)/include $(ALIROOTHLTPHOSINCLUDE) $(ALIROOTHLTINCLUDE)
+INCLUDES        = -I$(ROOTSYS)/include $(ALIHLTINCLUDE)  $(ALIHLTPHOSINCLUDE)  $(ALIROOTHLTPHOSINCLUDE) $(ALIROOTHLTINCLUDE)
 
 
 MAINO					= main.$(ObjSuf)
@@ -72,6 +70,9 @@ OBJS	= $(MAINO)  $(ALIHLTPHOSONLINEDISPLAYO)  $(ALIHLTPHOSONLINEDISPLAYTH2DO) $(
 
 pftest:$(OBJS)
 	g++ -ggdb -g $(ROOTLIBS) $(ALIROOTLIBS) $(HLTLIBS)  $(OBJS) -o onlinedisplay
+HLT:	$(OBJS)	
+	g++ -ggdb -g $(ROOTLIBS) $(ALIHLTLIBS) $(HLTLIBS)  $(OBJS) -o onlinedisplay	
+	
 
 $(MAINO):$(MAINS)
 	g++ -ggdb -g $(INCLUDES)  -c $(MAINS)

@@ -37,8 +37,11 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
   AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, AliHLTHOMERReader *fgHomerReaderPtr, AliHLTHOMERReader *fgHomerReadersPtr[MAX_HOSTS], int nHosts);
   //  void GetRawData(TH1D *histPtr);
   //AliHLTPHOSOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain)
-  void GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain);
-  void GetRawData(TH1D *histPtr, int x, int z, int gain);
+  //  Int_t GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain, int& energy);
+  //Int_t GetRawData(TH1D *histPtr, int x, int z, int gain, int& energy);
+  
+  Int_t GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain);
+  Int_t GetRawData(TH1D *histPtr, int x, int z, int gain);
 
   void UpdateDisplay();
   int GetNextEvent();
@@ -60,6 +63,8 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 
   //  int *fChannelData[N_MODULES][N_RCUS_PER_MODULE][N_ZROWS_RCU][N_XCOLUMNS_RCU][N_GAINS];
   int *fChannelData[N_MODULES][N_XRCU_COORD][N_ZRCU_COORD][N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
+  Int_t fNChannelSamples[N_MODULES][N_XRCU_COORD][N_ZRCU_COORD][N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
+  Int_t fChannelEnergy[N_MODULES][N_XRCU_COORD][N_ZRCU_COORD][N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
 
  protected:
   Bool_t fgAccumulate;
