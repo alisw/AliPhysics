@@ -28,7 +28,9 @@ Revision 1.28  2007/05/31 16:06:05  arcelli
 move instance of AliRawStream outside loop on DDL
 
 Revision 1.27  2007/05/02 16:31:49  arcelli
-Add methods to handle single event reconstruction. retrieval of Calib info moved to AliTOFReconstructor ctor, and passed via a pointer to AliTOFcalib
+Add methods to handle single event reconstruction.  retrieval of Calib
+info moved to AliTOFReconstructor ctor, and passed via a pointer to
+AliTOFcalib
 
 Revision 1.26  2007/04/30 19:02:24  arcelli
 hopefully the last refinements for correct type conversion in calibration
@@ -40,7 +42,8 @@ Revision 1.24  2007/04/27 11:19:31  arcelli
 updates for the new decoder
 
 Revision 1.23  2007/04/23 16:51:39  decaro
-Digits-to-raw_data conversion: correction for a more real description (A.De Caro, R.Preghenella)
+Digits-to-raw_data conversion: correction for a more real description
+(A.De Caro, R.Preghenella)
 
 Revision 1.22  2007/04/19 17:26:32  arcelli
 Fix a bug (add some debug printout
@@ -58,7 +61,8 @@ Revision 1.18  2007/03/06 16:31:20  arcelli
 Add Uncorrected TOF Time signal
 
 Revision 1.17  2007/02/28 18:09:11  arcelli
-Add protection against failed retrieval of the CDB cal object, now Reconstruction exits with AliFatal
+Add protection against failed retrieval of the CDB cal object,
+now Reconstruction exits with AliFatal
 
 Revision 1.16  2007/02/20 15:57:00  decaro
 Raw data update: to read the TOF raw data defined in UNPACKED mode
@@ -443,7 +447,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 
-      if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+      //if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+      if (tofRawDatum->GetTOF()==-1) continue;
 
       if (fVerbose==2) {
 	if (indexDDL<10) ftxt << "  " << indexDDL;
@@ -573,7 +578,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 
-      if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+      //if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+      if (tofRawDatum->GetTOF()==-1) continue;
 
       if (fVerbose==2) {
 	if (indexDDL<10) ftxt << "  " << indexDDL;
