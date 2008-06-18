@@ -163,10 +163,9 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
   
 
   if (fSP->GetHistList()) {
-	fSP->GetHistList()->Print();
-//	fListHistos = new TList(fSP->GetHistList());
-	fListHistos = fSP->GetHistList();
-	fListHistos->Print();
+    //	fSP->GetHistList()->Print();
+    fListHistos = fSP->GetHistList();
+    //	fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
 }
@@ -229,7 +228,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
     delete fEvent;
   }
 
-  fListHistos->Print();	
+  //  fListHistos->Print();	
   PostData(0,fListHistos);
 } 
 
@@ -237,7 +236,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
 void AliAnalysisTaskScalarProduct::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-//  fSP->Finish();
+  //  fSP->Finish();
   //  PostData(0,fListHistos);
   fListHistos = (TList*)GetOutputData(0);
   cout << "histgram list in Terminate" << endl;
@@ -249,6 +248,6 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
     {
       cout << "histgram list pointer is empty" << endl;
     }
-//  delete fSP;
-//  delete fEventMaker;
+  //  delete fSP;
+  //  delete fEventMaker;
 }

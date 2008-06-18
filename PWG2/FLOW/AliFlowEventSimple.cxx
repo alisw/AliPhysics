@@ -31,41 +31,33 @@ ClassImp(AliFlowEventSimple)
 
 //-----------------------------------------------------------------------
 
-  AliFlowEventSimple::AliFlowEventSimple(Int_t lenght):
+  AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
     fTrackCollection(0),
-    fTrack(0),
     fNumberOfTracks(0),
     fEventNSelTracksIntFlow(0)
 {
   //constructor 
-  fTrackCollection =  new TObjArray(lenght) ;
-
-
+  fTrackCollection =  new TObjArray(aLenght) ;
 }
 
 //-----------------------------------------------------------------------
 
-AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& event):
+AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   TObject(),
-  fTrackCollection(event.fTrackCollection),
-  fTrack(event.fTrack),
-  fNumberOfTracks(event.fNumberOfTracks),
-  fEventNSelTracksIntFlow(event.fEventNSelTracksIntFlow)
+  fTrackCollection(anEvent.fTrackCollection),
+  fNumberOfTracks(anEvent.fNumberOfTracks),
+  fEventNSelTracksIntFlow(anEvent.fEventNSelTracksIntFlow)
 {
   //copy constructor 
-  //  *fTrack = *event.fTrack;
-  //  *fTrackCollection =  *event.fTrackCollection ;
-
 }
 
 //-----------------------------------------------------------------------
 
-AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& event)
+AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEvent)
 {
-  *fTrack = *event.fTrack;
-  *fTrackCollection =  *event.fTrackCollection ;
-  fNumberOfTracks = event.fNumberOfTracks;
-  fEventNSelTracksIntFlow = event.fEventNSelTracksIntFlow;
+  *fTrackCollection =  *anEvent.fTrackCollection ;
+  fNumberOfTracks = anEvent.fNumberOfTracks;
+  fEventNSelTracksIntFlow = anEvent.fEventNSelTracksIntFlow;
 
   return *this;
 
@@ -85,8 +77,8 @@ AliFlowEventSimple::~AliFlowEventSimple()
 AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 {
   //get track i from collection
-  fTrack = (AliFlowTrackSimple*)TrackCollection()->At(i) ;
-  return fTrack;
+  AliFlowTrackSimple* pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i) ;
+  return pTrack;
 }
 
 //-----------------------------------------------------------------------   
@@ -94,30 +86,30 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 {
   //calculate Q. 
   
-  Double_t fQX = 0.;
-  Double_t fQY = 0.;
-  AliFlowVector fQ;
-  fQ.Set(0.,0.);
-  Double_t fOrder = 2.;
-  Int_t fUsedTracks = 0;
+  Double_t dQX = 0.;
+  Double_t dQY = 0.;
+  AliFlowVector vQ;
+  vQ.Set(0.,0.);
+  Double_t dOrder = 2.;
+  Int_t iUsedTracks = 0;
 
   for (Int_t i=0;i<fNumberOfTracks;i++)                  
     {
-      fTrack = (AliFlowTrackSimple*)TrackCollection()->At(i) ; 
-      if (fTrack){
-	if (fTrack->UseForIntegratedFlow()) {
-	  Double_t fPhi = fTrack->Phi();
-	  fQX += TMath::Cos(fOrder*fPhi);
-	  fQY += TMath::Sin(fOrder*fPhi);
-	  fUsedTracks++;
+      AliFlowTrackSimple* pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i) ; 
+      if (pTrack){
+	if (pTrack->UseForIntegratedFlow()) {
+	  Double_t dPhi = pTrack->Phi();
+	  dQX += TMath::Cos(dOrder*dPhi);
+	  dQY += TMath::Sin(dOrder*dPhi);
+	  iUsedTracks++;
 	}
       } //if particle
       else {cerr << "no particle!!!"<<endl;}
     }//loop over particles
 
-  fQ.Set(fQX,fQY);
-  fQ.SetMult(fUsedTracks);
+  vQ.Set(dQX,dQY);
+  vQ.SetMult(iUsedTracks);
    
-  return fQ;
+  return vQ;
   
 }

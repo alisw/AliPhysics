@@ -7,10 +7,7 @@
 #ifndef AliFlowAnalysisWithScalarProduct_H
 #define AliFlowAnalysisWithScalarProduct_H
 
-#include "TVector2.h"          //called explicitly
 #include "TString.h"
-
-#include "AliFlowVector.h"
 
 class AliFlowTrackSimple;
 class AliFlowEventSimple;
@@ -31,40 +28,34 @@ class AliFlowAnalysisWithScalarProduct {
 
  public:
  
-   AliFlowAnalysisWithScalarProduct();   //default constructor
+   AliFlowAnalysisWithScalarProduct();            //default constructor
  
    virtual  ~AliFlowAnalysisWithScalarProduct();  //destructor
  
-   void    Init();                             //defines variables and histograms
-   void    Make(AliFlowEventSimple* anEvent);   //calculates variables and fills histograms
-   void    Finish();                           //saves histograms
+   void    Init();                                //defines variables and histograms
+   void    Make(AliFlowEventSimple* anEvent);     //calculates variables and fills histograms
+   void    Finish();                              //saves histograms
   
    void      SetDebug(Bool_t kt)            { this->fDebug = kt ; }
    Bool_t    GetDebug() const               { return this->fDebug ; }
 
-
    // Output 
-   TList*   GetHistList() const           { return this->fHistList ; }     // Gets output histogram list
+   TList*   GetHistList() const             { return this->fHistList ; }     // Gets output histogram list
   
    
  private:
-  AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& aAnalysis);
-  AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& aAnalysis); 
-   
-  AliFlowVector  *fQ;       // flow vector
-  TVector2       *fU;       // particle unit vector
-   
-  Int_t          fEventNumber;  // event counter
-         
-  Bool_t         fDebug ;            // flag for lyz analysis: more print statements
+   AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& anAnalysis);            //copy constructor
+   AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& anAnalysis); //assignment operator 
+      
+   Int_t              fEventNumber;  // event counter
+   Bool_t             fDebug ;       // flag for analysis: more print statements
 
-  TList*         fHistList;      
-  TProfile*      fHistProUQ; 
+   TList*             fHistList;     //list to hold all output histograms  
+   TProfile*          fHistProUQ;    //uQ(pt)
+   AliFlowCommonHist* fCommonHists;  //control histograms
 
-  AliFlowCommonHist* fCommonHists;  
-
-  ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
-    };
+   ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
+     };
  
 
 #endif
