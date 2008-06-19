@@ -451,7 +451,7 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   fHistV0MultiplicityOn->SetMarkerStyle(20);
   fHistV0MultiplicityOn->DrawCopy("ESAME");
 
-  TLegend *legendMultiplicity = new TLegend(0.4,0.4,0.65,0.6);
+  TLegend *legendMultiplicity = new TLegend(0.5,0.5,0.75,0.75);
   legendMultiplicity->AddEntry(fHistTrackMultiplicity,"tracks");
   legendMultiplicity->AddEntry(fHistV0Multiplicity,"all V^{0}");
   legendMultiplicity->AddEntry(fHistV0MultiplicityOff,"offline V^{0}");
@@ -490,21 +490,21 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   }
 
   canCheckV0->cd(2);
-  fHistMassK0Off->SetMarkerStyle(24);
-  fHistMassK0Off->DrawCopy("E");
   fHistMassK0On->SetMarkerStyle(20);
-  fHistMassK0On->DrawCopy("ESAME");
+  fHistMassK0On->DrawCopy("E");
+  fHistMassK0Off->SetMarkerStyle(24);
+  fHistMassK0Off->DrawCopy("ESAME");
 
   canCheckV0->cd(3);
-  fHistMassLambdaOff->SetMarkerStyle(24);
-  fHistMassLambdaOff->DrawCopy("E");
   fHistMassLambdaOn->SetMarkerStyle(20);
-  fHistMassLambdaOn->DrawCopy("ESAME");
+  fHistMassLambdaOn->DrawCopy("E");
+  fHistMassLambdaOff->SetMarkerStyle(24);
+  fHistMassLambdaOff->DrawCopy("ESAME");
 
   canCheckV0->cd(4);
-  fHistMassAntiLambdaOff->SetMarkerStyle(24);
-  fHistMassAntiLambdaOff->DrawCopy("E");
   fHistMassAntiLambdaOn->SetMarkerStyle(20);
-  fHistMassAntiLambdaOn->DrawCopy("ESAME");
+  fHistMassAntiLambdaOn->DrawCopy("E");
+  fHistMassAntiLambdaOff->SetMarkerStyle(24);
+  fHistMassAntiLambdaOff->DrawCopy("ESAME");
 
 }
