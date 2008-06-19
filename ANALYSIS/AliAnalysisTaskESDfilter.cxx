@@ -101,6 +101,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     Double_t p[3];
     Double_t p_pos[3];
     Double_t p_neg[3];
+    Double_t p_pos_atv0[3];
+    Double_t p_neg_atv0[3];
     Double_t covVtx[6];
     Double_t covTr[21];
     Double_t pid[10];
@@ -113,6 +115,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
   
   // Multiplicity information needed by the header (to be revised!)
     Int_t nTracks    = esd->GetNumberOfTracks();
+    //    if (fDebug > 0) printf("-------------------Bo: Number of ESD tracks %d \n",nTracks);
+
     Int_t nPosTracks = 0;
 //    for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) 
 //	if (esd->GetTrack(iTrack)->GetSign()> 0) nPosTracks++;
@@ -165,6 +169,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     AliAODPid   *detpid   = 0x0;
     Double_t timezero = 0; //TO BE FIXED
     AliAODv0    *aodV0    = 0x0;
+
+    // RefArray to take into account the tracks associated to V0s
+    TRefArray   *v0DaughterTracks = NULL;
+    if (nTracks>0) v0DaughterTracks = new TRefArray(nTracks);
 
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
@@ -469,100 +477,103 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	Double_t  dcaV0Daughters      = v0->GetDcaV0Daughters();
 	Double_t  dcaV0ToPrimVertex   = v0->GetD();
 
+	v0->GetPPxPyPz(p_pos_atv0[0],p_pos_atv0[1],p_pos_atv0[2]); 
+	v0->GetNPxPyPz(p_neg_atv0[0],p_neg_atv0[1],p_neg_atv0[2]); 
 
 	// Add the positive tracks from the V0
 	
-	if (posFromV0>-1 && !usedTrack[posFromV0]) {
-	    
+	if (posFromV0>-1){
+	  AliESDtrack *esdTrack = esd->GetTrack(posFromV0);
+	  esdTrack->GetPxPyPz(p_pos);
+	  esdTrack->GetXYZ(pos);
+	  esdTrack->GetCovarianceXYZPxPyPz(covTr);
+	  esdTrack->GetESDpid(pid);
+	  esdTrack->GetImpactParameters(dcaPosToPrimVertexXYZ[0],dcaPosToPrimVertexXYZ[1]);
+	  if (!usedTrack[posFromV0]) {
 	    usedTrack[posFromV0] = kTRUE;
-	    
-	    AliESDtrack *esdTrack = esd->GetTrack(posFromV0);
-	    esdTrack->GetPxPyPz(p_pos);
-	    esdTrack->GetXYZ(pos);
-	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
-	    esdTrack->GetImpactParameters(dcaPosToPrimVertexXYZ[0],dcaPosToPrimVertexXYZ[1]);
-
-	    vV0->AddDaughter(aodTrack =
-			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-								esdTrack->GetLabel(), 
-								p_pos, 
-								kTRUE,
-								pos,
-								kFALSE,
-								covTr, 
-								(Short_t)esdTrack->GetSign(),
-								esdTrack->GetITSClusterMap(), 
-								pid,
-								vV0,
-								kTRUE,  // check if this is right
-								kFALSE, // check if this is right
-								AliAODTrack::kSecondary)
-		);
-       if (esdTrack->GetSign() > 0) nPosTracks++;
+	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
+							  esdTrack->GetLabel(), 
+							  p_pos, 
+							  kTRUE,
+							  pos,
+							  kFALSE,
+							  covTr, 
+							  (Short_t)esdTrack->GetSign(),
+							  esdTrack->GetITSClusterMap(), 
+							  pid,
+							  vV0,
+							  kTRUE,  // check if this is right
+							  kFALSE, // check if this is right
+							  AliAODTrack::kSecondary);
+	    v0DaughterTracks->AddAt(aodTrack,posFromV0);
+	    //	    if (fDebug > 0) printf("-------------------Bo: pos track from original pt %.3f \n",aodTrack->Pt());
+	    if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
             SetAODPID(esdTrack,aodTrack,detpid,timezero);
-	}
-	else {
-//	    cerr << "Error: event " << esd->GetEventNumberInFile() << " V0 " << nV0
-//		 << " track " << posFromV0 << " has already been used!" << endl;
+	  }
+	  else {
+	    aodTrack = dynamic_cast<AliAODTrack*>(v0DaughterTracks->At(posFromV0));
+	    //	    if (fDebug > 0) printf("-------------------Bo pos track from refArray pt %.3f \n",aodTrack->Pt());
+	  }
+	  vV0->AddDaughter(aodTrack);
 	}
 	
 	// Add the negative tracks from the V0
 	
-	if (negFromV0>-1 && !usedTrack[negFromV0]) {
-	    
-	    usedTrack[negFromV0] = kTRUE;
-	    
-	    AliESDtrack *esdTrack = esd->GetTrack(negFromV0);
-	    esdTrack->GetPxPyPz(p_neg);
-	    esdTrack->GetXYZ(pos);
-	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
-	    esdTrack->GetImpactParameters(dcaNegToPrimVertexXYZ[0],dcaNegToPrimVertexXYZ[1]);
+	if (negFromV0>-1){
+	  AliESDtrack *esdTrack = esd->GetTrack(negFromV0);
+	  esdTrack->GetPxPyPz(p_neg);
+	  esdTrack->GetXYZ(pos);
+	  esdTrack->GetCovarianceXYZPxPyPz(covTr);
+	  esdTrack->GetESDpid(pid);
+	  esdTrack->GetImpactParameters(dcaNegToPrimVertexXYZ[0],dcaNegToPrimVertexXYZ[1]);
 
-	    vV0->AddDaughter(aodTrack =
-			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-								esdTrack->GetLabel(),
-								p_neg,
-								kTRUE,
-								pos,
-								kFALSE,
-								covTr, 
-								(Short_t)esdTrack->GetSign(),
-								esdTrack->GetITSClusterMap(), 
-								pid,
-								vV0,
-								kTRUE,  // check if this is right
-								kFALSE, // check if this is right
-								AliAODTrack::kSecondary)
-		);
-       if (esdTrack->GetSign() > 0) nPosTracks++;
+	  if (!usedTrack[negFromV0]) {
+	    usedTrack[negFromV0] = kTRUE;
+	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
+							  esdTrack->GetLabel(),
+							  p_neg,
+							  kTRUE,
+							  pos,
+							  kFALSE,
+							  covTr, 
+							  (Short_t)esdTrack->GetSign(),
+							  esdTrack->GetITSClusterMap(), 
+							  pid,
+							  vV0,
+							  kTRUE,  // check if this is right
+							  kFALSE, // check if this is right
+							  AliAODTrack::kSecondary);
+
+	    v0DaughterTracks->AddAt(aodTrack,negFromV0);
+	    //	    if (fDebug > 0) printf("-------------------Bo: neg track from original pt %.3f \n",aodTrack->Pt());
+	    if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
             SetAODPID(esdTrack,aodTrack,detpid,timezero);
-	}
-	else {
-//	    cerr << "Error: event " << esd->GetEventNumberInFile() << " V0 " << nV0
-//		 << " track " << negFromV0 << " has already been used!" << endl;
+	  }
+	  else {
+	    aodTrack = dynamic_cast<AliAODTrack*>(v0DaughterTracks->At(negFromV0));
+	    //	    if (fDebug > 0) printf("-------------------Bo neg track from refArray pt %.3f \n",aodTrack->Pt());
+	  }
+	  vV0->AddDaughter(aodTrack);
 	}
 	dcaDaughterToPrimVertex[0] = 
-	    TMath::Sqrt(dcaPosToPrimVertexXYZ[0]*dcaPosToPrimVertexXYZ[0]
-			+dcaPosToPrimVertexXYZ[1]*dcaPosToPrimVertexXYZ[1]);
+	  TMath::Sqrt(dcaPosToPrimVertexXYZ[0]*dcaPosToPrimVertexXYZ[0]
+		      +dcaPosToPrimVertexXYZ[1]*dcaPosToPrimVertexXYZ[1]);
 	dcaDaughterToPrimVertex[1] = 
-	    TMath::Sqrt(dcaNegToPrimVertexXYZ[0]*dcaNegToPrimVertexXYZ[0]
-			+dcaNegToPrimVertexXYZ[1]*dcaNegToPrimVertexXYZ[1]);
-	
+	  TMath::Sqrt(dcaNegToPrimVertexXYZ[0]*dcaNegToPrimVertexXYZ[0]
+		      +dcaNegToPrimVertexXYZ[1]*dcaNegToPrimVertexXYZ[1]);
 	// add it to the V0 array as well
 	aodV0 = new(V0s[jV0s++]) 
-	    AliAODv0(vV0, dcaV0Daughters, dcaV0ToPrimVertex, p_pos, p_neg, dcaDaughterToPrimVertex); // to be refined
+	  AliAODv0(vV0, dcaV0Daughters, dcaV0ToPrimVertex, p_pos_atv0, p_neg_atv0, dcaDaughterToPrimVertex); // to be refined
 	// set the aod v0 on-the-fly status
 	aodV0->SetOnFlyStatus(v0->GetOnFlyStatus());
-	if (fDebug > 0) 
-	    printf("In the v0 loop: onFlyStatus=%d,dcaV0Daughters=%.3f dcaV0ToPrimVertex=%.3f dcaDaughterToPrimVertex=[%.3f,%.3f]\n",
-		   aodV0->GetOnFlyStatus(), aodV0->DcaV0Daughters(), aodV0->DcaV0ToPrimVertex(), 
-		   aodV0->DcaPosToPrimVertex(),aodV0->DcaNegToPrimVertex());
+// 	if (fDebug > 0) 
+// 	  printf("-------------------Bo: In the v0 loop: onFlyStatus=%d,dcaV0Daughters=%.3f dcaV0ToPrimVertex=%.3f dcaDaughterToPrimVertex=[%.3f,%.3f]\n",
+// 		 aodV0->GetOnFlyStatus(), aodV0->DcaV0Daughters(), aodV0->DcaV0ToPrimVertex(), 
+// 		 aodV0->DcaPosToPrimVertex(),aodV0->DcaNegToPrimVertex());
     } 
     V0s.Expand(jV0s);	 
     // end of the loop on V0s
@@ -918,6 +929,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     delete [] usedTrack;
     delete [] usedV0;
     delete [] usedKink;
+    delete    v0DaughterTracks;
 
     return;
 }
