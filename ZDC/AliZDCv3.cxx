@@ -1222,7 +1222,8 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QAL3", "CONE", idtmed[10], conpar, 5);
   gMC->Gsvolu("QAL4", "CONE", idtmed[10], conpar, 5); 
   gMC->Gspos("QAL3", 1, "ZDCA", -3.45-0.52, 0., conpar[0]+0.95+zd2, irotpipe5, "ONLY");
-  gMC->Gspos("QAL4", 1, "ZDCA", 3.45+0.52, 0., conpar[0]+0.95+zd2, irotpipe6, "ONLY");    
+  //gMC->Gspos("QAL4", 1, "ZDCA", 3.45+0.52, 0., conpar[0]+0.95+zd2, irotpipe6, "ONLY");
+  gMC->Gspos("QAL4", 1, "QAL2", 0., 0., 0., 0, "ONLY");      
     
   zd2 += 90.1;
   
@@ -1422,7 +1423,8 @@ void AliZDCv3::CreateBeamLine()
   // COMPENSATOR DIPOLE (MCBWA) (2nd compensator)
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 4.5;
+  //tubpar[1] = 4.5;
+  tubpar[1] = 3.;  
   tubpar[2] = 153./2.;
   gMC->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);  
   gMC->Gspos("MCBW", 1, "ZDCA", 0., 0., tubpar[2]+1972.5, 0, "ONLY");
