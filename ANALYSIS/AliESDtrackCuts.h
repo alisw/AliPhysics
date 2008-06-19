@@ -69,9 +69,19 @@ public:
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
 
   // getters
-  Float_t GetMinNsigmaToVertex()       { return fCutNsigmaToVertex;}
-  Bool_t GetRequireSigmaToVertex( )    { return fCutSigmaToVertexRequired;}
 
+  Int_t   GetMinNClusterTPC()        const   { return fCutMinNClusterTPC;}
+  Int_t   GetMinNClustersITS()       const   { return fCutMinNClusterITS;}
+  Float_t GetMaxChi2PerClusterTPC()  const   { return fCutMaxChi2PerClusterTPC;}
+  Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
+  Bool_t  GetRequireTPCRefit()       const   { return fCutRequireTPCRefit;}
+  Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
+  Bool_t  GetAcceptKingDaughters()   const   { return fCutAcceptKinkDaughters;}
+  void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
+      {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
+  Float_t GetMinNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
+  Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
+  
   // track kinmatic cut setters
   void SetPRange(Float_t r1=0, Float_t r2=1e10)       {fPMin=r1;   fPMax=r2;}
   void SetPtRange(Float_t r1=0, Float_t r2=1e10)      {fPtMin=r1;  fPtMax=r2;}
