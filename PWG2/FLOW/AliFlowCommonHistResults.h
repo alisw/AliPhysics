@@ -7,6 +7,8 @@
 
 class TH1F;
 class TH1D;
+class TCollection;
+class TList;
 
 // AliFlowCommonHistResults:
 // Class to organize the common histograms for Flow Analysis
@@ -15,7 +17,7 @@ class TH1D;
 class AliFlowCommonHistResults : public TObject {
 
  public:
-
+  AliFlowCommonHistResults();               //default constructor
   AliFlowCommonHistResults(TString input);  //constructor
   virtual ~AliFlowCommonHistResults();      //destructor
 
@@ -28,19 +30,20 @@ class AliFlowCommonHistResults : public TObject {
   TH1D*    GetfHistDiffFlow()               {return fHistDiffFlow; } ; 
   TH1D*    GetfHistChi()                    {return fHistChi; } ;
   TH1D*    GetfHistIntFlow()                {return fHistIntFlow; } ;
- 
+  TList*   GetHistList()                    {return fHistList;} ;  
+
+  virtual Double_t  Merge(TCollection *aList);  //merge function
+
  private:
 
   AliFlowCommonHistResults(const AliFlowCommonHistResults& aSetOfResultHists);            //copy constructor
   AliFlowCommonHistResults& operator=(const AliFlowCommonHistResults& aSetOfResultHists); //assignment operator
 
-  //integrated flow
-  TH1D*     fHistIntFlow;      
-  //differential flow
-  TH1D*     fHistDiffFlow; 
-  //resolution
-  TH1D*     fHistChi;
-  
+  TH1D*     fHistIntFlow;      //integrated flow
+  TH1D*     fHistDiffFlow;     //differential flow
+  TH1D*     fHistChi;          //resolution
+  TList*    fHistList;         //list to hold all histograms
+
   ClassDef(AliFlowCommonHistResults,0)                 // macro for rootcint
 };
  

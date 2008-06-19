@@ -20,6 +20,7 @@
 #include "TString.h" 
 #include "TH1D.h"   //needed as include
 #include "TMath.h"  //needed as include
+#include "TList.h"
 
 class TH1F;
 class AliFlowVector;
@@ -35,11 +36,25 @@ ClassImp(AliFlowCommonHistResults)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHistResults::AliFlowCommonHistResults(TString input): TObject(),
-  fHistIntFlow(0),
-  fHistDiffFlow(0),
-  fHistChi(0)
-  {
+  AliFlowCommonHistResults::AliFlowCommonHistResults(): 
+    TObject(),
+    fHistIntFlow(0),
+    fHistDiffFlow(0),
+    fHistChi(0),
+    fHistList(NULL)
+{
+  //default constructor
+} 
+
+//-----------------------------------------------------------------------
+
+  AliFlowCommonHistResults::AliFlowCommonHistResults(TString input): 
+    TObject(),
+    fHistIntFlow(0),
+    fHistDiffFlow(0),
+    fHistChi(0),
+    fHistList(NULL)
+{
   //constructor creating histograms 
   Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
   TString name;
@@ -67,6 +82,13 @@ ClassImp(AliFlowCommonHistResults)
   fHistChi = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
   fHistChi ->SetXTitle("");
   fHistChi ->SetYTitle("Chi");
+
+  //list of histograms
+  fHistList = new TList();
+  fHistList-> Add(fHistIntFlow);
+  fHistList-> Add(fHistDiffFlow);
+  fHistList-> Add(fHistChi);
+
   }
 
 //----------------------------------------------------------------------- 
@@ -77,6 +99,7 @@ AliFlowCommonHistResults::~AliFlowCommonHistResults()
   delete fHistIntFlow;
   delete fHistDiffFlow;
   delete fHistChi;
+  delete fHistList;
 }
 
 //----------------------------------------------------------------------- 
@@ -112,5 +135,30 @@ Bool_t AliFlowCommonHistResults::FillChi(Double_t aChi)
 }
 
 //----------------------------------------------------------------------- 
+ Double_t AliFlowCommonHistResults::Merge(TCollection *aList)
+{
+  //merge fuction
+  cout<<"entering merge function"<<endl;
+  if (!aList) return 0;
+  if (aList->IsEmpty()) return 0; //no merging is needed
+
+  Int_t iCount = 0;
+  TIter next(aList); // list is supposed to contain only objects of the same type as this
+  AliFlowCommonHistResults *toMerge;
+  // make a temporary list
+  TList *pTemp = new TList();
+  while ((toMerge=(AliFlowCommonHistResults*)next())) {
+    pTemp->Add(toMerge->GetHistList()); 
+    iCount++;
+  }
+  // Now call merge for fHistList providing temp list
+  fHistList->Merge(pTemp);
+  // Cleanup
+  delete pTemp;
+    
+  cout<<"Merged"<<endl;
+  return (double)iCount;
+    
+}
 
 

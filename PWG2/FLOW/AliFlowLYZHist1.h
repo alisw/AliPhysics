@@ -10,6 +10,9 @@
 #include "TComplex.h"  //explicitly called in void Fill(Float_t f, TComplex C);
 
 class TH1D;
+class TCollection;
+class TList;
+
 
 // Description: Class to organise histograms for Flow 
 //              by the LeeYangZeros method in the first run.
@@ -17,10 +20,11 @@ class TH1D;
 //              in the generating function.
 
 
-class AliFlowLYZHist1 {
+class AliFlowLYZHist1: public TObject  {
 
  public:
 
+  AliFlowLYZHist1();                          //default constructor
   AliFlowLYZHist1(Int_t theta);               //constructor
   virtual  ~AliFlowLYZHist1();                //destructor
   
@@ -29,18 +33,22 @@ class AliFlowLYZHist1 {
   Double_t GetR0();                           //get R0
   Double_t GetBinCenter(Int_t i);             //Get a bincentre of fHistGtheta
   Int_t GetNBins();                           //Gets Nbins
+  TList*    GetHistList()  {return fHistList;} ;  
+
+  virtual Double_t  Merge(TCollection *aList);  //merge function
    
 private:
 
   AliFlowLYZHist1(const AliFlowLYZHist1& aAnalysis);             //copy constructor
   AliFlowLYZHist1& operator=(const AliFlowLYZHist1& aAnalysis);  //assignment operator
 
-  TH1D* fHistGtheta;                          //holds |Gtheta|^2(r)
-  TProfile* fHistProReGtheta;                 //holds Re of Gtheta(r)
-  TProfile* fHistProImGtheta;                 //holds Im of Gtheta(r)
-  
+  TH1D*     fHistGtheta;             //holds |Gtheta|^2(r)
+  TProfile* fHistProReGtheta;        //holds Re of Gtheta(r)
+  TProfile* fHistProImGtheta;        //holds Im of Gtheta(r)
+  TList*    fHistList;               //list to hold all histograms  
 
-  ClassDef(AliFlowLYZHist1,0)                 // macro for rootcint
+
+  ClassDef(AliFlowLYZHist1,0)        // macro for rootcint
     };
  
      

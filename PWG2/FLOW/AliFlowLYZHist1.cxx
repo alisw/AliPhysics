@@ -13,20 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/ 
 
 //#include "Riostream.h"  //in case one wants to make print statements
 #include "TProfile.h"
 #include "TString.h" 
-#include "TComplex.h"  
+#include "TComplex.h" 
+#include "TList.h"
 #include "AliFlowLYZConstants.h" 
 #include "AliFlowLYZHist1.h"
 
-
 class TH1D; 
-
 
 // Class to organize the histograms in the first run
 // in the Lee Yang Zeros Flow analysis.
@@ -34,17 +30,28 @@ class TH1D;
 // of the generating function.
 // author: N. van der Kolk (kolk@nikhef.nl)
 
-
 ClassImp(AliFlowLYZHist1)
 
-  
+//-----------------------------------------------------------------------
+
+  AliFlowLYZHist1::AliFlowLYZHist1():
+    TObject(),
+    fHistGtheta(0),
+    fHistProReGtheta(0),
+    fHistProImGtheta(0),
+    fHistList(NULL)
+{
+  //default constructor
+} 
 
 //-----------------------------------------------------------------------
 
   AliFlowLYZHist1::AliFlowLYZHist1(Int_t theta):
+    TObject(),
     fHistGtheta(0),
     fHistProReGtheta(0),
-    fHistProImGtheta(0)
+    fHistProImGtheta(0),
+    fHistList(NULL)
 {
 
   //constructor creating histograms 
@@ -86,6 +93,12 @@ ClassImp(AliFlowLYZHist1)
   fHistProImGtheta = new TProfile(name.Data(),title.Data(),iNbins,dMin,dMax);
   fHistProImGtheta->SetXTitle("r");
   fHistProImGtheta->SetYTitle("Im G^{#theta}(ir)");
+
+  //list of histograms
+  fHistList = new TList();
+  fHistList-> Add(fHistGtheta);
+  fHistList-> Add(fHistProReGtheta);
+  fHistList-> Add(fHistProImGtheta);
       
 }
   
@@ -97,6 +110,7 @@ AliFlowLYZHist1::~AliFlowLYZHist1()
   delete fHistGtheta;
   delete fHistProReGtheta;
   delete fHistProImGtheta;
+  delete fHistList;
 }
 
 //----------------------------------------------------------------------- 
@@ -178,5 +192,30 @@ Int_t AliFlowLYZHist1::GetNBins()
   //gets iNbins
   Int_t iNbins = fHistGtheta->GetNbinsX();
   return iNbins;
+}
+
+//----------------------------------------------------------------------- 
+ Double_t AliFlowLYZHist1::Merge(TCollection *aList)
+{
+  //merge fuction
+  if (!aList) return 0;
+  if (aList->IsEmpty()) return 0; //no merging is needed
+
+  Int_t iCount = 0;
+  TIter next(aList); // list is supposed to contain only objects of the same type as this
+  AliFlowLYZHist1 *toMerge;
+  // make a temporary list
+  TList *pTemp = new TList();
+  while ((toMerge=(AliFlowLYZHist1*)next())) {
+    pTemp->Add(toMerge->GetHistList()); 
+    iCount++;
+  }
+  // Now call merge for fHistList providing temp list
+  fHistList->Merge(pTemp);
+  // Cleanup
+  delete pTemp;
+    
+  return (double)iCount;
+    
 }
 
