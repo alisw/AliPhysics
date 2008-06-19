@@ -703,12 +703,12 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 		if (pt > fHighPtCut)
 		{
 			passedHighPtCut = true;
-			singlesHeader.fNlowPt++;
+			singlesHeader.fNhighPt++;
 		}
 		if (pt > fLowPtCut)
 		{
 			passedLowPtCut = true;
-			singlesHeader.fNhighPt++;
+			singlesHeader.fNlowPt++;
 		}
 		
 		decision.fTrackId = track->fId;
