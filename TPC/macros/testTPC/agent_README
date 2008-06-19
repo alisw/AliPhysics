@@ -1,0 +1,117 @@
+########################################################################
+# The steering script: agent.sh
+#
+# A "small" framework for making fast actions (e.g reconstruction) 
+# using the lxbatch facility
+#
+# Author: Marian Ivanov
+#######################################################################
+
+Requirements: 3 components have to be prepeared in order to run the jobs
+  1. WORKING (JOB) DIRECTORY SETUP 
+  2. CREATION AND CONTENT OF THE 'job.list' 
+  3. ENVIRONMENT SETUP AND JOB SUBMITION
+
+
+1. WORKING (JOB) DIRECTORY SETUP 
+(for example /afs/cern.ch/user/m/miranov/public/test2008/cosmic/)
+
+   1.a  The 'job.list' (hardwired) has to be created.
+	see point 2 on how to create and what it contains 
+   1.b  Creation of an empty directory called 'out'
+   1.c  Creation of a directory called 'macros', which contains your 
+	specific macros to handle the data 
+        e.g 'rec.C'  'FindKrClustersRaw.C' etc.
+
+2. CREATION AND CONTENT OF THE 'job.list' 
+(for example /afs/cern.ch/user/m/miranov/public/test2008/cosmic/job.list)
+
+   Creation of the 'job.list':
+     2.a  In a bash shell, setup the root, aliroot and alien version you prefer
+	  for example by doing 
+	  > source ~miranov/public/.bagentsetup
+	  Note: The versions have to be avaiable from everywhere (e.g. afs)
+     2.a  Get a valid alien token with:
+	  > alien-token-init
+     2.b  source the alien environment and set the server list with 
+	  > source /tmp/gclient_env_$UID
+ 	  > export GCLIENT_SERVER_LIST="pcapiserv04.cern.ch:10000|pcapiserv05.cern.ch:10000"
+     2.c  create the 'job.list' by following the short example below
+	(or example in '$ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx')
+	 
+	Short example (within aliroot do ...):
+
+	     gSystem->Load("libXrdClient.so");
+	     gSystem->Load("libNetx.so");
+             .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx++
+	     // 'Run number' and 'search path'
+	     char *mask = "37562";
+             char *datapath = "/alice/data/2008/"
+             AlienToolkit toolkit;
+             toolkit.MakeCollection(datapath,mask);
+	     // specify the your 'macro name' and export the list
+	     char *macroName = "rec";
+ 	     toolkit.MakeJobList("job.list","", "", macroName);
+	
+     2.d  If the first lines of the job.list contains entries like 
+          '/alice/data/2008/LHC08a_TPC/000028164/collection'
+          they need to be deleted manually ...
+        
+   Content of the 'job.list':
+     One line represents one job (one data file) to be handled
+     every line consist of 4 columns
+       [job name] [input file name] [output directory] [macro name]
+    
+3. ENVIRONMENT SETUP AND JOB SUBMITION:
+
+   3.a  Copy the script to setup aliroot, root and the user specific 
+	environment to your afs direcotory (if not already done) ~/.bagentsetup
+        (see /afs/cern.ch/user/m/miranov/public/.bagentsetup for an example)
+   	Note:  The needed environment variables like OCDB_PATH, AGENTINPUTTYPE,		 AGENTSE etc. have to be specified in the .bagentsetup script
+   3.b  login to lxplus (64bit), change to a bash shell, create your 
+	alien token, copy your token to the global accessable location 
+	(~/.agentauth/ ... hardwired)
+		ssh lxplus	
+		bash
+		source ~/.bagentsetup
+		alien-token-init
+		cp /tmp/*$UID* ~/.agentauth/	
+   3.c Submit job localy (important for testing!)
+	cd /tmp/$USER           (recommanded)
+	submit your job with e.g.
+	$ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/cosmic/
+
+   3.d Submit as many batch-jobs as you want to the LXBATCH facility with e.g. 
+	bsub -q 1nd $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/cosmic/
+
+ 	Check the submitted jobs with the command
+		bjobs
+	and check the output of your jobs with 
+		bpeek [jobid] | less
+
+  Remarks:
+    Every submitted bjob will before he starts to handle a new file look into
+    the 'out/' directory in order to check wheter if this file is currently
+    running or is already finished. In this case the agent will go on to the
+    next "not handled" file.
+
+  Note: the 'output directory' in the job.list is hardwired and after the file
+    was finished, the output files of your macro will be stored in this
+    directory within your alien account. Your output files are therefore 
+    accessable via the alienshell 'aliensh'. 
+
+
+--------------------------------------------------------------------------
+REMOTE COPIES (for experts)
+
+Following script generates a bash script stage.sh 
+with the xrdcp commands for selected files 
+(see AlienToolkit.cxx -  AlienToolkit::MakeCollection(dir, mask))
+
+Example:
+gSystem->Load("libXrdClient.so");
+gSystem->Load("libNetx.so");
+.L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
+AlienToolkit toolkit;
+toolkit.MakeCollection("/alice/cern.ch/user/m/miranov/","08000031843019.1*AliESDs*")
+toolkit.RemoteCopy("/lustre_alpha/alice/TPCdata/cosmics_may2008/",10000000000)
