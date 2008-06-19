@@ -151,8 +151,10 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
       TObjArray *tokens1 = strLine1.Tokenize(" \t");
       Int_t ntokens1 = tokens1->GetEntriesFast();
       if( ntokens1 != 6 ) {
-        AliErrorClass( Form( "Error reading scalers from (%s): line (%s)\n", 
-                              filename.Data(), strLine1.Data() )); 
+        AliErrorClass( Form( "Error reading scalers from (%s): line (%s)", 
+			     filename.Data(), strLine1.Data() ));
+	delete rec;
+	return rScaler;
       }
       UInt_t LOCB = ((TObjString*)tokens1->At(0))->String().Atoi();
       UInt_t LOCA = ((TObjString*)tokens1->At(1))->String().Atoi();
