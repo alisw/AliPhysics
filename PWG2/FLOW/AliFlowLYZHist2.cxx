@@ -24,6 +24,7 @@ $Log$
 #include "TProfile2D.h"
 #include "TString.h" 
 #include "TComplex.h"
+#include "TList.h"
 
 class TH1D;
 
@@ -37,18 +38,33 @@ class TH1D;
  
 
 ClassImp(AliFlowLYZHist2)
-
   
-
 //-----------------------------------------------------------------------
 
-  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta):
+  AliFlowLYZHist2::AliFlowLYZHist2():
+    TObject(),
     fHistProReNumer(0),
     fHistProImNumer(0),
     fHistProReNumerPt(0),
     fHistProImNumerPt(0),
     fHistProReNumer2D(0),
-    fHistProImNumer2D(0)
+    fHistProImNumer2D(0),
+    fHistList(NULL)
+{
+  //default constructor
+}
+ 
+//-----------------------------------------------------------------------
+
+  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta):
+    TObject(),
+    fHistProReNumer(0),
+    fHistProImNumer(0),
+    fHistProReNumerPt(0),
+    fHistProImNumerPt(0),
+    fHistProReNumer2D(0),
+    fHistProImNumer2D(0),
+    fHistList(NULL)
 {
 
   //constructor creating histograms 
@@ -126,6 +142,16 @@ ClassImp(AliFlowLYZHist2)
   fHistProImNumer2D = new TProfile2D(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax,iNbinsPt,dPtMin,dPtMax);  
   fHistProImNumer2D->SetXTitle("eta");
   fHistProImNumer2D->SetYTitle("Pt (GeV/c)");
+
+  //list of histograms
+  fHistList = new TList();
+  fHistList-> Add(fHistProReNumer);
+  fHistList-> Add(fHistProImNumer);
+  fHistList-> Add(fHistProReNumerPt);
+  fHistList-> Add(fHistProImNumerPt);
+  fHistList-> Add(fHistProReNumer2D);
+  fHistList-> Add(fHistProImNumer2D);
+
 }
 
 //----------------------------------------------------------------------- 
@@ -139,21 +165,22 @@ AliFlowLYZHist2::~AliFlowLYZHist2()
   delete fHistProImNumerPt;
   delete fHistProReNumer2D;
   delete fHistProImNumer2D;
+  delete fHistList;
 }
 
 //----------------------------------------------------------------------- 
-void AliFlowLYZHist2::Fill(Double_t f1, Double_t f2, TComplex c)
+void AliFlowLYZHist2::Fill(Double_t d1, Double_t d2, TComplex c)
 {
   //fill the real and imaginary part of fNumer
 
-  fHistProReNumer->Fill(f1, c.Re());  
-  fHistProImNumer->Fill(f1, c.Im());
+  fHistProReNumer->Fill(d1, c.Re());  
+  fHistProImNumer->Fill(d1, c.Im());
    
-  fHistProReNumerPt->Fill(f2, c.Re());  
-  fHistProImNumerPt->Fill(f2, c.Im());
+  fHistProReNumerPt->Fill(d2, c.Re());  
+  fHistProImNumerPt->Fill(d2, c.Im());
   
-  fHistProReNumer2D->Fill(f1, f2, c.Re());          
-  fHistProImNumer2D->Fill(f1, f2, c.Im());           
+  fHistProReNumer2D->Fill(d1, d2, c.Re());          
+  fHistProImNumer2D->Fill(d1, d2, c.Im());           
 }
 
 //-----------------------------------------------------------------------
@@ -177,3 +204,27 @@ TComplex AliFlowLYZHist2::GetNumerPt(Int_t i)
   return cNumer;
 }
 
+//----------------------------------------------------------------------- 
+ Double_t AliFlowLYZHist2::Merge(TCollection *aList)
+{
+  //merge fuction
+  if (!aList) return 0;
+  if (aList->IsEmpty()) return 0; //no merging is needed
+
+  Int_t iCount = 0;
+  TIter next(aList); // list is supposed to contain only objects of the same type as this
+  AliFlowLYZHist2 *toMerge;
+  // make a temporary list
+  TList *pTemp = new TList();
+  while ((toMerge=(AliFlowLYZHist2*)next())) {
+    pTemp->Add(toMerge->GetHistList()); 
+    iCount++;
+  }
+  // Now call merge for fHistList providing temp list
+  fHistList->Merge(pTemp);
+  // Cleanup
+  delete pTemp;
+    
+  return (double)iCount;
+    
+}
