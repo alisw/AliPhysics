@@ -300,6 +300,7 @@ void AliHALLv3::CreateGeometry()
 
   //
   // Pit wall ground level
+  dy = yFloor + 1206. / 2. + dyFloor/2.;
   TGeoTube* shHHCPW1 = new TGeoTube(rPit, rPit + 100., 1206./2.);
   shHHCPW1->SetName("shHHCPW1");
   TGeoCombiTrans* trHHCPW1 = new TGeoCombiTrans("trHHCPW1", 0., 0., 0., rot000);
@@ -307,14 +308,21 @@ void AliHALLv3::CreateGeometry()
 
   TGeoBBox* shHHCPW2 = new TGeoBBox(rPit + 100., 1206./ 2. + 20., rPit + 100.);
   shHHCPW2->SetName("shHHCPW2");
+  
+  TGeoTube* shHHCPW3 = new TGeoTube(0., 60., 60.);
+  shHHCPW3->SetName("shHHCPW3");
 
   
   TGeoTranslation* trHHCPW2 = new TGeoTranslation("trHHCPW2", 0., 0., -(rPit + 100.) - oPit);
   trHHCPW2->RegisterYourself();
 
-  TGeoCompositeShape*  shHHCPW = new TGeoCompositeShape("HHCPW", "shHHCPW1:trHHCPW1-shHHCPW2:trHHCPW2");
+  TGeoTranslation* trHHCPW3 = new TGeoTranslation("trHHCPW3", 0., -dy, rPit + 50.);
+  trHHCPW3->RegisterYourself();
+
+  TGeoCompositeShape*  shHHCPW 
+      = new TGeoCompositeShape("HHCPW", "shHHCPW1:trHHCPW1-(shHHCPW2:trHHCPW2+shHHCPW3:trHHCPW3)");
   TGeoVolume* voHHCPW = new TGeoVolume("HHCPW", shHHCPW, kMedCC);
-  dy = yFloor + 1206. / 2. + dyFloor/2.;
+
   asHall->AddNode(voHHCPW, 1, new TGeoTranslation(0., dy, 2300.));
   // 
   // Foundations of the Muon Spectrometer
