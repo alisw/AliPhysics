@@ -61,8 +61,7 @@ AliAltroDecoder::AliAltroDecoder() : f32DtaPtr(0),
 				     fInComplete(0),
 				     fDecodeIfCorruptedTrailer(kTRUE),
 				     fIsDecoded(kFALSE),
-                                     fIsFatalCorruptedTrailer(kTRUE) 
-//              fRcuFirmwareVersion(2)
+				     fIsFatalCorruptedTrailer(kTRUE) 
 {
  // Default constructor
 }
@@ -150,16 +149,11 @@ Bool_t AliAltroDecoder::Decode()
 // 	  cout << "Size of datablock is  " << fSize   << endl;
 // 	  cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
 // 	  cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
-
-	  printf("\n< ERROR: data integrity check failed, discarding data \n" );
-	  printf( "Size of datablock is  %d\n", fSize);
-	  printf( "fN40AltroWords =  %d\n", fN40AltroWords);
-	  printf( "fN40RcuAltroWords =  %d\n", fN40RcuAltroWords);
 	  return kFALSE;
 	}
+
     }
 }
-
 
 
 Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
@@ -219,13 +213,13 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 	    }
 
 	  
-	  if(fOutBufferIndex > 0)
+	  if(fOutBufferIndex >= 0)
 	    {
 	  
 	      //cout << " AliAltroDecoder::NextChannel fOutBufferIndex =" << fOutBufferIndex   << endl;
 	      //	      printf( "AliAltroDecoder::NextChannel fOutBufferIndex = %d", fOutBufferIndex);
 	      altroDataPtr->SetData( &fOutBuffer[fOutBufferIndex] );
-	      fOutBufferIndex --;
+	      if(fOutBufferIndex > 0) fOutBufferIndex --;
 	      altroDataPtr->SetDataSize( fNAltro10bitWords );
 	      return kTRUE;
 	    }
@@ -314,101 +308,72 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   // Sets the pointer to the memory block that should be decoded
   // Returns a negative value if an inconsistency in the data is detected
 
-
-
   if(dtaPtr == 0)
     {
       printf("\nAliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size) FATAL ERROR, dtaPtr = ZERO !!!!!!!!!!!!\n");
-      printf("\nThis is an user error, please check in your code that you don give a zero pointer to the decoder \n");
+      printf("Please check your code that you don't give a zero pointer to the decoder \n");
       return -99;
     }
 
+  if (size<fkN32HeaderWords+4)
+    {
+      printf("\nAliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size) FATAL ERROR, too little data (%d)\n", size);
+      printf("Data buffer must contain the CDH and at least one 32bit RCU trailer word\n");
+      return -99;
+    }
+
+
   int iRet = 0;
-  Int_t tmpTrailerSize;
+  UInt_t tmpTrailerSize;
   fIsDecoded = kFALSE; 
   f8DtaPtr =dtaPtr;
   fSize = size;
   f8DtaPtr =f8DtaPtr + fSize;
   f32DtaPtr = (UInt_t *)f8DtaPtr;
-  
-  // if(fRcuFirmwareVersion ==1)
-    //   {
-  
-  
+  tmpTrailerSize = *(f32DtaPtr - 1);
 
-  //tmpTrailerSize = *(f32DtaPtr - 1);
-  tmpTrailerSize = (*(f32DtaPtr - 1))&(0x7f);
-  
-  //  printf("\nThe trailersize is %d\n", tmpTrailerSize);
-
-//   for(int i=0; i<tmpTrailerSize+2; i++)
-//     {
-//       printf("trailer %d = %d\n",  i, *(f32DtaPtr - i));
-
-//     }
-
-
-  //   }
-  //  else
-    //   {
-      
-      //   }
-
+  // format of the trailer has been fixed in the RCU FW2
+  // Bit 31 to 16: 0xaaaa         (16 bit)
+  // Bit 15 to  7: RCU address    ( 9 bit)
+  // Bit  6 to  0: Trailer length ( 7 bit)
+  //
+  // RCU FW1 has one trailer word containing the number of
+  // 10bit Altro words. According to some early documents,
+  // it should have at least 2 32bit words: trailer length and
+  // the number of 10bit Altro words. This is the format of
+  // the simulation at time of writing (June 2008)
+  bool haveFw2=false;
+  if ((tmpTrailerSize>>16)==0xaaaa) {
+      haveFw2=true;
+      tmpTrailerSize = tmpTrailerSize&0x7f; // 7 LSBs of the last word
+  } else
   if(tmpTrailerSize <=  MAX_TRAILER_WORDS)
     {
       tmpTrailerSize = tmpTrailerSize; //assume that the last word of the buffer gives the number of trailer words 
     }
-  else
+  // nof 10bit AltroWords * 5/4  + bytes in the CDH   + 4 bytes RCU trailer
+  else if (((*(f32DtaPtr-1)*5)/4 + fkN32HeaderWords*4 + 4)<=fSize)
     {
       tmpTrailerSize = 1; //assume that last word is ONE, and that the this word gives the number of 40 bit altro words
     }
-
-  f8PayloadSize = fSize - (fkN32HeaderWords + tmpTrailerSize)*4;
-  fN40AltroWords = f8PayloadSize/5; 
-  fNDDLBlocks =  fN40AltroWords/4;
-  f32LastDDLBlockSize =  ((f8PayloadSize%(4*DDL_32BLOCK_SIZE))+3)/4;
-
-  if(tmpTrailerSize > 0 && tmpTrailerSize < 5)
+  else
     {
-      //if(fRcuFirmwareVersion ==1)
-      //	{
-      //  printf("\nfRcuFirmwareVersion ==1\n");
+      tmpTrailerSize=0;
+      fIsFatalCorruptedTrailer = kTRUE;
+      iRet = -1;
+    }
+
+  if(tmpTrailerSize > 0 && (fkN32HeaderWords + tmpTrailerSize)*4<=fSize)
+    {
+      f8PayloadSize = fSize - (fkN32HeaderWords + tmpTrailerSize)*4;
+      fN40AltroWords = f8PayloadSize/5; 
+      fNDDLBlocks =  fN40AltroWords/4;
+      f32LastDDLBlockSize =  ((f8PayloadSize%(4*DDL_32BLOCK_SIZE))+3)/4;
+
       f32DtaPtr =  f32DtaPtr -  tmpTrailerSize;
       fN40RcuAltroWords =  *f32DtaPtr;
       f32DtaPtr = (UInt_t *)dtaPtr + fkN32HeaderWords;
-  
-      //    printf("\nthe number of altrowords is %d\n", fN40RcuAltroWords);
-      //   printf("\nthe number of altrowords is %u\n", fN40RcuAltroWords); 
-
       fIsFatalCorruptedTrailer = kFALSE; 
-
-
-     
-	  
-      //	} 
-
-      //      else if(fRcuFirmwareVersion ==2)
-      // 	{
-      // 	  printf("\nfRcuFirmwareVersion ==2\n");	    
-
-      // 	  f32DtaPtr =  f32DtaPtr -  tmpTrailerSize;
-      // 	  fN40RcuAltroWords =  *f32DtaPtr;
-      // 	  f32DtaPtr = (UInt_t *)dtaPtr + fkN32HeaderWords;
-      // 	  fIsFatalCorruptedTrailer = kFALSE; 
-
-      // 	}
-      // }
-  
-      //  else
-      //  {
-      //    printf("ERROR, unknown RCU firmvare version");
-      //  }
-    }
-  else
-    {
-      printf("\n AliAltroDecoder::SetMemory, ERROR\n, trailer is corrupted");
-      fIsFatalCorruptedTrailer = kTRUE;
-      iRet = -1;
     }
   
   return iRet;
