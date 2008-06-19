@@ -39,7 +39,6 @@
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"
 
-#include "iostream.h"
 ClassImp(AliT0QADataMakerRec)
            
 //____________________________________________________________________________ 
