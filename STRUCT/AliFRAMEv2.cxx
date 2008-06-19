@@ -564,7 +564,7 @@ void AliFRAMEv2::CreateGeometry()
   theta = TMath::ACos(x);
   Float_t thetaP = (TMath::Pi()-theta)*krad2deg;
   
-  ptrap[0]  = dz/2. - 0.15;
+  ptrap[0]  = dz/2. - 0.25;
   ptrap[1]  = thetaP;
   ptrap[2]  =  0.;
   ptrap[3]  =  dwh;
@@ -596,7 +596,7 @@ void AliFRAMEv2::CreateGeometry()
 
   theta = krad2deg * TMath::ACos(x);
   
-  ptrap[0]  = dz/2.;
+  ptrap[0]  = dz/2. - 0.1;
   ptrap[1]  = theta;
   ptrap[2]  =  0.;
   ptrap[3]  =  dwh;
@@ -620,7 +620,7 @@ void AliFRAMEv2::CreateGeometry()
  
   pbox[0] = dwh;
   pbox[1] = dwl;
-  pbox[2] = 114.5 / 2.;
+  pbox[2] = 114.5 / 2. - 0.275;
   gMC->Gsvolu("B263", "BOX ", kSteel, pbox, 3);
   pbox[0] = dwh-0.2;
   pbox[1] = dwl-0.4;
@@ -702,7 +702,7 @@ void AliFRAMEv2::CreateGeometry()
 
   theta = krad2deg * TMath::ACos(x);
   
-  ptrap[0]  = (dymodL[1]-dymodU[0])/2.;
+  ptrap[0]  = (dymodL[1]-dymodU[0])/2. - 0.2;
   ptrap[1]  = theta;
   ptrap[2]  =  0.;
   ptrap[3]  =  dwh;
@@ -737,10 +737,10 @@ void AliFRAMEv2::CreateGeometry()
 
 // 0-deg web
 	  if (i == 2) {
-	      gMC->Gspos("B263", 4*jmod+1,  module[jmod],  dx0,  dymodU[2], dz0, idrotm[2072], "ONLY");
-	      gMC->Gspos("B263", 4*jmod+2,  module[jmod],  dx0, -dymodU[2], dz0, idrotm[2071], "ONLY");      
-	      gMC->Gspos("B263", 4*jmod+3,  module[jmod], -dx0,  dymodU[2], dz0, idrotm[2074], "ONLY");
-	      gMC->Gspos("B263", 4*jmod+4,  module[jmod], -dx0, -dymodU[2], dz0, idrotm[2073], "ONLY");      
+	      gMC->Gspos("B263", 4*jmod+1,  module[jmod],  dx0,  dymodU[2], dz0 + 0.2, idrotm[2072], "ONLY");
+	      gMC->Gspos("B263", 4*jmod+2,  module[jmod],  dx0, -dymodU[2], dz0 + 0.2, idrotm[2071], "ONLY");      
+	      gMC->Gspos("B263", 4*jmod+3,  module[jmod], -dx0,  dymodU[2], dz0 + 0.2, idrotm[2074], "ONLY");
+	      gMC->Gspos("B263", 4*jmod+4,  module[jmod], -dx0, -dymodU[2], dz0 + 0.2, idrotm[2073], "ONLY");      
 	  }
       }
   }
@@ -751,18 +751,18 @@ void AliFRAMEv2::CreateGeometry()
 
   
   for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B063", 4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
-      gMC->Gspos("B063", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B063", 4*jmod+3, module[jmod], -dx0,   dy, dz0, idrotm[2088], "ONLY");
-      gMC->Gspos("B063", 4*jmod+4, module[jmod], -dx0,  -dy, dz0, idrotm[2089], "ONLY");
+      gMC->Gspos("B063", 4*jmod+1, module[jmod],  dx0,   dy, dz0 + 0.2, idrotm[2086], "ONLY");
+      gMC->Gspos("B063", 4*jmod+2, module[jmod],  dx0,  -dy, dz0 + 0.2, idrotm[2087], "ONLY");
+      gMC->Gspos("B063", 4*jmod+3, module[jmod], -dx0,   dy, dz0 + 0.2, idrotm[2088], "ONLY");
+      gMC->Gspos("B063", 4*jmod+4, module[jmod], -dx0,  -dy, dz0 + 0.2, idrotm[2089], "ONLY");
   }
 
   dy = (dymodU[1]+dymodL[1])/2.;
   for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B163", 4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2080], "ONLY");
-      gMC->Gspos("B163", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2079], "ONLY");
-      gMC->Gspos("B163", 4*jmod+3, module[jmod], -dx0,   dy, dz0, idrotm[2082], "ONLY");
-      gMC->Gspos("B163", 4*jmod+4, module[jmod], -dx0,  -dy, dz0, idrotm[2081], "ONLY");
+      gMC->Gspos("B163", 4*jmod+1, module[jmod],  dx0,   dy, dz0 + 0.14, idrotm[2080], "ONLY");
+      gMC->Gspos("B163", 4*jmod+2, module[jmod],  dx0,  -dy, dz0 + 0.14, idrotm[2079], "ONLY");
+      gMC->Gspos("B163", 4*jmod+3, module[jmod], -dx0,   dy, dz0 + 0.14, idrotm[2082], "ONLY");
+      gMC->Gspos("B163", 4*jmod+4, module[jmod], -dx0,  -dy, dz0 + 0.14, idrotm[2081], "ONLY");
   }
 
 
@@ -778,10 +778,10 @@ void AliFRAMEv2::CreateGeometry()
   dy = (dymodL[1]+dymodU[0])/2.;
 
   for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B067", 4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2076], "ONLY");
-      gMC->Gspos("B067", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2075], "ONLY");
-      gMC->Gspos("B067", 4*jmod+3, module[jmod], -dx0,   dy, dz0, idrotm[2078], "ONLY");
-      gMC->Gspos("B067", 4*jmod+4, module[jmod], -dx0,  -dy, dz0, idrotm[2077], "ONLY");
+      gMC->Gspos("B067", 4*jmod+1, module[jmod],  dx0,   dy, dz0 + 0.19, idrotm[2076], "ONLY");
+      gMC->Gspos("B067", 4*jmod+2, module[jmod],  dx0,  -dy, dz0 + 0.19, idrotm[2075], "ONLY");
+      gMC->Gspos("B067", 4*jmod+3, module[jmod], -dx0,   dy, dz0 + 0.19, idrotm[2078], "ONLY");
+      gMC->Gspos("B067", 4*jmod+4, module[jmod], -dx0,  -dy, dz0 + 0.19, idrotm[2077], "ONLY");
   }
  
 // longitudinal bars (TPC rails attached)
