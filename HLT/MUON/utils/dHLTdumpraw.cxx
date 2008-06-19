@@ -914,7 +914,7 @@ namespace
 		cout << "   ";
 		PrintBitPattern(GetLocalY3(localStruct), 16);
 		cout << endl;
-		cout << "   12     ";
+		cout << "   14     ";
 		PrintBitPattern(GetLocalX4(localStruct), 16);
 		cout << "   ";
 		PrintBitPattern(GetLocalY4(localStruct), 16);
