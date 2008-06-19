@@ -1305,20 +1305,17 @@ void AliZDCv3::CreateBeamLine()
   //		SIDE C - RB26  (dimuon side) 
   // ***************************************************************   
   // --  COMPENSATOR DIPOLE (MBXW)
-  //zc = 1921.6;   
   zc = 1972.5;   
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD)
   tubpar[0] = 0.;
-  tubpar[1] = 4.5;
-  //tubpar[2] = 170./2.;
+  tubpar[1] = 3.14;
   tubpar[2] = 153./2.;
   gMC->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
 
   // --  YOKE 
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
-  //tubpar[2] = 170./2.;
   tubpar[2] = 153./2.;
   gMC->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
 
@@ -1333,7 +1330,7 @@ void AliZDCv3::CreateBeamLine()
   // --  MQXL 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 3.5;
+  tubpar[1] = 3.14;
   tubpar[2] = 637./2.;
   gMC->Gsvolu("MQXL", "TUBE", idtmed[11], tubpar, 3);
     
@@ -1352,7 +1349,7 @@ void AliZDCv3::CreateBeamLine()
   // --  MQX 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 3.5;
+  tubpar[1] = 3.14;
   tubpar[2] = 550./2.;
   gMC->Gsvolu("MQX ", "TUBE", idtmed[11], tubpar, 3);
   
@@ -1388,7 +1385,7 @@ void AliZDCv3::CreateBeamLine()
     
   // --  YOKE 
   tubpar[0] = 0.;
-  tubpar[1] = 110./2;
+  tubpar[1] = 3.46;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
   
@@ -1779,7 +1776,7 @@ void AliZDCv3::CreateZDC()
   gMC->Gspos("ZEMF", 1,"ZES1", 0., 0., 0., irot2, "ONLY");
   
   // --- Positioning the vacuum slice into the tranche
-  Float_t displFib = fDimZEM[1]/fDivZEM[0];
+  //Float_t displFib = fDimZEM[1]/fDivZEM[0];
   gMC->Gspos("ZEV0", 1,"ZETR", -dimVoid[0], 0., 0., 0, "ONLY");
   gMC->Gspos("ZEV1", 1,"ZETR", -dimVoid[0]+zTran, 0., 0., 0, "ONLY");
 
