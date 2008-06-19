@@ -372,7 +372,8 @@ AliESDv0Cuts::AcceptV0(AliESDv0* esdV0, AliESDtrack* trackPos, AliESDtrack* trac
   // fV0s.fOnFlyStatus
 
   Float_t  dcaPosToVertex = 0, dcaNegToVertex = 0;
-  Float_t  tdcaPosToVertex[2], tdcaNegToVertex[2];
+  Float_t  tdcaPosToVertex[2]={999,999};
+  Float_t  tdcaNegToVertex[2]={999,999};
 
   if (trackPos) trackPos->GetImpactParameters(tdcaPosToVertex[0],tdcaPosToVertex[1]);
   if (trackNeg) trackNeg->GetImpactParameters(tdcaNegToVertex[0],tdcaNegToVertex[1]);
