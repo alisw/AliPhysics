@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 // --- Standard library ---
 #include <Riostream.h>
 // --- ROOT system ---
@@ -67,12 +68,13 @@ void AliZDCQADataMakerSim::InitHits()
   //
   TH2F * hZNCh  = new TH2F("hZNCh", "Hits centroid in ZNC", 100, -5.,5.,100,-5.,5.);
   TH2F * hZNAh  = new TH2F("hZNAh", "Hits centroid in ZNA", 100, -5.,5.,100,-5.,5.);
-  TH2F * hZPCh  = new TH2F("hZPCh", "Hits centroid in ZPC", 100,-12.,12.,100,-12.,12.); 
-  TH2F * hZPAh  = new TH2F("hZPAh", "Hits centroid in ZPA", 100,-12.,12.,100,-12.,12.); 
+  // NB -> For the moment no check is performesd on ZP centroids
+//  TH2F * hZPCh  = new TH2F("hZPCh", "Hits centroid in ZPC", 100,-12.,12.,100,-12.,12.); 
+//  TH2F * hZPAh  = new TH2F("hZPAh", "Hits centroid in ZPA", 100,-12.,12.,100,-12.,12.); 
   Add2HitsList(hZNCh, 0);
-  Add2HitsList(hZPCh, 1);
-  Add2HitsList(hZNAh, 2);
-  Add2HitsList(hZPAh, 3);
+  Add2HitsList(hZNAh, 1);
+//  Add2HitsList(hZPCh, 2);
+//  Add2HitsList(hZPAh, 3);
 }
 
 
@@ -81,60 +83,62 @@ void AliZDCQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
   //
-  TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Digit signal in ZNC", 100, 0., 6000.);
-  TH1F * hDigZNATot = new TH1F("hDigZNATot", "Digit signal in ZNA", 100, 0., 6000.);
-  TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Digit signal in ZPC", 100, 0., 10000.);
-  TH1F * hDigZPATot = new TH1F("hDigZPATot", "Digit signal in ZPA", 100, 0., 10000.);
+  // ------------------- HIGH GAIN CHAIN ---------------------------
+  TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Signal in ZNC", 100, 0., 6000.);
+  TH1F * hDigZNATot = new TH1F("hDigZNATot", "Signal in ZNA", 100, 0., 6000.);
+  TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Signal in ZPC", 100, 0., 6000.);
+  TH1F * hDigZPATot = new TH1F("hDigZPATot", "Signal in ZPA", 100, 0., 6000.);
   Add2DigitsList(hDigZNCTot, 0);
-  Add2DigitsList(hDigZPCTot, 1);
-  Add2DigitsList(hDigZNATot, 2);
+  Add2DigitsList(hDigZNATot, 1);
+  Add2DigitsList(hDigZPCTot, 2);
   Add2DigitsList(hDigZPATot, 3);
   //
-  TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ[i]",100, 0., 4000.);
-  TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ[i]",100, 0., 4000.);
-  TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ[i]",100, 0., 4000.);
-  TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ[i]",100, 0., 4000.);
+  TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ",100, 0., 4000.);
+  TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ",100, 0., 4000.);
+  TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ",100, 0., 4000.);
+  TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ",100, 0., 4000.);
   Add2DigitsList(hDigSumQZNC, 4);
-  Add2DigitsList(hDigSumQZPC, 5);
-  Add2DigitsList(hDigSumQZNA, 6);
+  Add2DigitsList(hDigSumQZNA, 5);
+  Add2DigitsList(hDigSumQZPC, 6);
   Add2DigitsList(hDigSumQZPA, 7);
   //
-  TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in 4 ZNC PMQ[i]",100, 0., 4000.);
-  TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in 4 ZPC PMQ[i]",100, 0., 4000.);
-  TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in 4 ZNA PMQ[i]",100, 0., 4000.);
-  TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in 4 ZPA PMQ[i]",100, 0., 4000.);
+  TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC",100, 0., 4000.);
+  TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC",100, 0., 4000.);
+  TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC",100, 0., 4000.);
+  TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC",100, 0., 4000.);
   Add2DigitsList(hDigPMCZNC, 8);
-  Add2DigitsList(hDigPMCZPC, 9);
-  Add2DigitsList(hDigPMCZNA, 10);
+  Add2DigitsList(hDigPMCZNA, 9);
+  Add2DigitsList(hDigPMCZPC, 10);
   Add2DigitsList(hDigPMCZPA, 11);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
-  TH1F * hDigZNCTotlg = new TH1F("hDigZNCTotlg", "Digit lg signal in ZNC", 100, 0., 6000.);
+/*  TH1F * hDigZNCTotlg = new TH1F("hDigZNCTotlg", "Digit lg signal in ZNC", 100, 0., 6000.);
   TH1F * hDigZNATotlg = new TH1F("hDigZNATotlg", "Digit lg signal in ZNA", 100, 0., 6000.);
-  TH1F * hDigZPCTotlg = new TH1F("hDigZPCTotlg", "Digit lg signal in ZPC", 100, 0., 10000.);
-  TH1F * hDigZPATotlg = new TH1F("hDigZPATotlg", "Digit lg signal in ZPA", 100, 0., 10000.);
+  TH1F * hDigZPCTotlg = new TH1F("hDigZPCTotlg", "Digit lg signal in ZPC", 100, 0., 6000.);
+  TH1F * hDigZPATotlg = new TH1F("hDigZPATotlg", "Digit lg signal in ZPA", 100, 0., 6000.);
   Add2DigitsList(hDigZNCTotlg, 12);
-  Add2DigitsList(hDigZPCTotlg, 13);
-  Add2DigitsList(hDigZNATotlg, 14);
+  Add2DigitsList(hDigZNATotlg, 13);
+  Add2DigitsList(hDigZPCTotlg, 14);
   Add2DigitsList(hDigZPATotlg, 15);
   //
-  TH1F * hDigSumQZNClg = new TH1F("hDigSumQZNClg", "Signal in 4 ZNC PMQlg[i]",100, 0., 4000.);
-  TH1F * hDigSumQZPClg = new TH1F("hDigSumQZPClg", "Signal in 4 ZPC PMQlg[i]",100, 0., 4000.);
-  TH1F * hDigSumQZNAlg = new TH1F("hDigSumQZNAlg", "Signal in 4 ZNA PMQlg[i]",100, 0., 4000.);
-  TH1F * hDigSumQZPAlg = new TH1F("hDigSumQZPAlg", "Signal in 4 ZPA PMQlg[i]",100, 0., 4000.);
+  TH1F * hDigSumQZNClg = new TH1F("hDigSumQZNClg", "Signal in 4 ZNC PMQlg",100, 0., 4000.);
+  TH1F * hDigSumQZNAlg = new TH1F("hDigSumQZNAlg", "Signal in 4 ZNA PMQlg",100, 0., 4000.);
+  TH1F * hDigSumQZPClg = new TH1F("hDigSumQZPClg", "Signal in 4 ZPC PMQlg",100, 0., 4000.);
+  TH1F * hDigSumQZPAlg = new TH1F("hDigSumQZPAlg", "Signal in 4 ZPA PMQlg",100, 0., 4000.);
   Add2DigitsList(hDigSumQZNClg, 16);
-  Add2DigitsList(hDigSumQZPClg, 17);
-  Add2DigitsList(hDigSumQZNAlg, 18);
+  Add2DigitsList(hDigSumQZNAlg, 17);
+  Add2DigitsList(hDigSumQZPClg, 18);
   Add2DigitsList(hDigSumQZPAlg, 19);
   //
-  TH1F * hDigPMCZNClg = new TH1F("hDigPMCZNClg", "Signal in 4 ZNC PMQlg[i]",100, 0., 4000.);
-  TH1F * hDigPMCZPClg = new TH1F("hDigPMCZPClg", "Signal in 4 ZPC PMQlg[i]",100, 0., 4000.);
-  TH1F * hDigPMCZNAlg = new TH1F("hDigPMCZNAlg", "Signal in 4 ZNA PMQlg[i]",100, 0., 4000.);
-  TH1F * hDigPMCZPAlg = new TH1F("hDigPMCZPAlg", "Signal in 4 ZPA PMQlg[i]",100, 0., 4000.);
+  TH1F * hDigPMCZNClg = new TH1F("hDigPMCZNClg", "Signal in ZNC PMClg",100, 0., 4000.);
+  TH1F * hDigPMCZNAlg = new TH1F("hDigPMCZNAlg", "Signal in ZNA PMClg",100, 0., 4000.);
+  TH1F * hDigPMCZPClg = new TH1F("hDigPMCZPClg", "Signal in ZPC PMClg",100, 0., 4000.);
+  TH1F * hDigPMCZPAlg = new TH1F("hDigPMCZPAlg", "Signal in ZPA PMClg",100, 0., 4000.);
   Add2DigitsList(hDigPMCZNClg, 20);
-  Add2DigitsList(hDigPMCZPClg, 21);
-  Add2DigitsList(hDigPMCZNAlg, 22);
+  Add2DigitsList(hDigPMCZNAlg, 21);
+  Add2DigitsList(hDigPMCZPClg, 22);
   Add2DigitsList(hDigPMCZPAlg, 23);
+*/
 }
 
 //____________________________________________________________________________
@@ -146,9 +150,9 @@ void AliZDCQADataMakerSim::MakeHits(TClonesArray * /*data*/)
     AliZDCHit * hit; 
     while((hit = dynamic_cast<AliZDCHit *>(next()))){
       if(hit->GetVolume(0)==1) GetHitsData(0)->Fill(hit->GetXImpact(),hit->GetYImpact());
-      else if(hit->GetVolume(0)==2) GetHitsData(1)->Fill(hit->GetXImpact(), hit->GetYImpact());
-      else if(hit->GetVolume(0)==4) GetHitsData(2)->Fill(hit->GetXImpact(), hit->GetYImpact());
-      else if(hit->GetVolume(0)==5) GetHitsData(3)->Fill(hit->GetXImpact(), hit->GetYImpact());
+      else if(hit->GetVolume(0)==4) GetHitsData(1)->Fill(hit->GetXImpact(), hit->GetYImpact());
+//      else if(hit->GetVolume(0)==2) GetHitsData(1)->Fill(hit->GetXImpact(), hit->GetYImpact());
+//      else if(hit->GetVolume(0)==5) GetHitsData(3)->Fill(hit->GetXImpact(), hit->GetYImpact());
     }
 }
 
@@ -168,139 +172,134 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
   if(!branch){
     AliError("ZDC branch in Hit Tree not found!"); 
     return;
-  } else {
-      char** add = (char**) (branch->GetAddress());
-      if (add) {
-	  fHits = (TClonesArray*)(*add);
-      } else {
-	  if (!fHits) fHits = new TClonesArray("AliZDCHit", 1000);
-	  branch->SetAddress(&fHits);
-      }
-      Int_t ntracks = (Int_t) hitTree->GetEntries();
-      //printf("\n\t *** no.track %d\n",ntracks);
-      if (ntracks<=0) return;
-      //
-      for(Int_t itrack=0; itrack<ntracks; itrack++){
-	  
-	  branch->GetEntry(itrack);
-	  //
-	  //printf("\t *** track %d",itrack);
-	  //hits->Print("");
-	  //printf("\n");
-	  //
-	  MakeHits(); 
-	  fHits->Clear();
-      }	  
+  } 
+  else{
+    char** add = (char**) (branch->GetAddress());
+    if(add){
+        fHits = (TClonesArray*)(*add);
+    } 
+    else{
+        if(!fHits) fHits = new TClonesArray("AliZDCHit", 1000);
+        branch->SetAddress(&fHits);
+    }
+    Int_t ntracks = (Int_t) hitTree->GetEntries();
+    //printf("\n\t *** no.track %d\n",ntracks);
+    if (ntracks<=0) return;
+    //
+    for(Int_t itrack=0; itrack<ntracks; itrack++){
+        
+        branch->GetEntry(itrack);
+        //
+        //printf("\t *** track %d",itrack);
+        //hits->Print("");
+        //printf("\n");
+        //
+        MakeHits(); 
+        fHits->Clear();
+    }	
   }
 }
 
-//____________________________________________________________________________
-void AliZDCQADataMakerSim::MakeDigits(TClonesArray * /*digits*/)
-{
-  // makes data from Digits
-  //
-   
-}
 //___________________________________________________________________________
 void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
 {
-   // makes data from Digit Tree
-   TBranch * branch = digitTree->GetBranch("ZDC");
-   if(!branch){
-      AliError("ZDC branch in Digit Tree not found"); 
-      return;
-   } 
-   char** add = (char**) (branch->GetAddress());
-   if (add) {
-       fDigit = (AliZDCDigit*)(*add);
-   } else {
-       if (!fDigit) fDigit = new AliZDCDigit();
-       branch->SetAddress(&fDigit);
-   }
+  // makes data from Digit Tree
+  TBranch * branch = digitTree->GetBranch("ZDC");
+  if(!branch){
+    AliError("ZDC branch in Digit Tree not found"); 
+    return;
+  } 
+  char** add = (char**) (branch->GetAddress());
+  if(add){
+      fDigit = (AliZDCDigit*)(*add);
+  } 
+  else{
+      if(!fDigit) fDigit = new AliZDCDigit();
+      branch->SetAddress(&fDigit);
+  }
+  
+  Int_t ndig = digitTree->GetEntries();
    
-   Int_t ndig = digitTree->GetEntries();
-   
+  Float_t adcSum_ZNC=0., adcSum_ZNA=0., adcSum_ZPC=0., adcSum_ZPA=0.;
+  Float_t adcSumQ_ZNC=0., adcSumQ_ZNA=0., adcSumQ_ZPC=0., adcSumQ_ZPA=0.;
+  //Float_t adcSum_ZNC_lg=0., adcSum_ZNA_lg=0., adcSum_ZPC_lg=0., adcSum_ZPA_lg=0.;
+  //Float_t adcSumQ_ZNC_lg=0., adcSumQ_ZNA_lg=0., adcSumQ_ZPC_lg=0., adcSumQ_ZPA_lg=0.;
   //
-  Float_t ADCSum_ZNC=0., ADCSum_ZNA=0., ADCSum_ZPC=0., ADCSum_ZPA=0.;
-  Float_t ADCSumQ_ZNC=0., ADCSumQ_ZNA=0., ADCSumQ_ZPC=0., ADCSumQ_ZPA=0.;
-  Float_t ADCSum_ZNC_lg=0., ADCSum_ZNA_lg=0., ADCSum_ZPC_lg=0., ADCSum_ZPA_lg=0.;
-  Float_t ADCSumQ_ZNC_lg=0., ADCSumQ_ZNA_lg=0., ADCSumQ_ZPC_lg=0., ADCSumQ_ZPA_lg=0.;
-  //
-  for (Int_t i = 0; i < ndig; i++) {
+  for(Int_t i = 0; i < ndig; i++){
       digitTree->GetEntry(i);
       if(fDigit->GetSector(0)==1){
-	  ADCSum_ZNC += fDigit->GetADCValue(0);
-	  ADCSum_ZNC_lg += fDigit->GetADCValue(1);
+	  adcSum_ZNC += fDigit->GetADCValue(0);
+	  //adcSum_ZNC_lg += fDigit->GetADCValue(1);
 	  //
 	  if(fDigit->GetSector(1)!=0){
-	      ADCSumQ_ZNC += fDigit->GetADCValue(0);
-	      ADCSumQ_ZNC_lg+= fDigit->GetADCValue(1);
+	      adcSumQ_ZNC += fDigit->GetADCValue(0);
+	      //adcSumQ_ZNC_lg+= fDigit->GetADCValue(1);
 	  }
 	  else{
 	      GetDigitsData(8)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(20)->Fill(fDigit->GetADCValue(1));
+	      //GetDigitsData(20)->Fill(fDigit->GetADCValue(1));
 	  }
       }
       else if(fDigit->GetSector(0)==2){
-	  ADCSum_ZPC += fDigit->GetADCValue(0);
-	  ADCSum_ZPC_lg += fDigit->GetADCValue(1);
+	  adcSum_ZPC += fDigit->GetADCValue(0);
+	  //adcSum_ZPC_lg += fDigit->GetADCValue(1);
 	  //
 	  if(fDigit->GetSector(1)!=0){
-	      ADCSumQ_ZPC += fDigit->GetADCValue(0);
-	      ADCSumQ_ZPC_lg+= fDigit->GetADCValue(1);
-	  }
-	  else{
-	      GetDigitsData(9)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(21)->Fill(fDigit->GetADCValue(1));
-	  }
-      }
-      else if(fDigit->GetSector(0)==4){
-	  ADCSum_ZNA += fDigit->GetADCValue(0);
-	  ADCSum_ZNA_lg += fDigit->GetADCValue(1);
-	  //
-	  if(fDigit->GetSector(1)!=0){
-	      ADCSumQ_ZNA += fDigit->GetADCValue(0);
-	      ADCSumQ_ZNA_lg+= fDigit->GetADCValue(1);
+	      adcSumQ_ZPC += fDigit->GetADCValue(0);
+	      //adcSumQ_ZPC_lg+= fDigit->GetADCValue(1);
 	  }
 	  else{
 	      GetDigitsData(10)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(22)->Fill(fDigit->GetADCValue(1));
+	      //GetDigitsData(22)->Fill(fDigit->GetADCValue(1));
+	  }
+      }
+      else if(fDigit->GetSector(0)==4){
+	  adcSum_ZNA += fDigit->GetADCValue(0);
+	  //adcSum_ZNA_lg += fDigit->GetADCValue(1);
+	  //
+	  if(fDigit->GetSector(1)!=0){
+	      adcSumQ_ZNA += fDigit->GetADCValue(0);
+	      //adcSumQ_ZNA_lg+= fDigit->GetADCValue(1);
+	  }
+	  else{
+	      GetDigitsData(9)->Fill(fDigit->GetADCValue(0));
+	      //GetDigitsData(21)->Fill(fDigit->GetADCValue(1));
 	  }
       }
       else if(fDigit->GetSector(0)==5){
-	  ADCSum_ZPA += fDigit->GetADCValue(0);
-	  ADCSum_ZPA_lg += fDigit->GetADCValue(1);
+	  adcSum_ZPA += fDigit->GetADCValue(0);
+	  //adcSum_ZPA_lg += fDigit->GetADCValue(1);
 	  //
 	  if(fDigit->GetSector(1)!=0){
-	      ADCSumQ_ZPA += fDigit->GetADCValue(0);
-	      ADCSumQ_ZPA_lg+= fDigit->GetADCValue(1);
+	      adcSumQ_ZPA += fDigit->GetADCValue(0);
+	      //adcSumQ_ZPA_lg+= fDigit->GetADCValue(1);
 	  }
 	  else{
 	      GetDigitsData(11)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(23)->Fill(fDigit->GetADCValue(1));
+	      //GetDigitsData(23)->Fill(fDigit->GetADCValue(1));
 	  }
       }
   }
   //
-  GetDigitsData(0)->Fill(ADCSum_ZNC);
-  GetDigitsData(1)->Fill(ADCSum_ZPC);
-  GetDigitsData(2)->Fill(ADCSum_ZNA);
-  GetDigitsData(3)->Fill(ADCSum_ZPA);
+  GetDigitsData(0)->Fill(adcSum_ZNC);
+  GetDigitsData(1)->Fill(adcSum_ZNA);
+  GetDigitsData(2)->Fill(adcSum_ZPC);
+  GetDigitsData(3)->Fill(adcSum_ZPA);
   //
-  GetDigitsData(4)->Fill(ADCSumQ_ZNC);
-  GetDigitsData(5)->Fill(ADCSumQ_ZPC);
-  GetDigitsData(6)->Fill(ADCSumQ_ZNA);
-  GetDigitsData(7)->Fill(ADCSumQ_ZPA);
+  GetDigitsData(4)->Fill(adcSumQ_ZNC);
+  GetDigitsData(5)->Fill(adcSumQ_ZNA);
+  GetDigitsData(6)->Fill(adcSumQ_ZPC);
+  GetDigitsData(7)->Fill(adcSumQ_ZPA);
   //
-  GetDigitsData(12)->Fill(ADCSum_ZNC_lg);
-  GetDigitsData(13)->Fill(ADCSum_ZPC_lg);
-  GetDigitsData(14)->Fill(ADCSum_ZNA_lg);
-  GetDigitsData(15)->Fill(ADCSum_ZPA_lg);
+  /*GetDigitsData(12)->Fill(adcSum_ZNC_lg);
+  GetDigitsData(13)->Fill(adcSum_ZNA_lg);
+  GetDigitsData(14)->Fill(adcSum_ZPC_lg);
+  GetDigitsData(15)->Fill(adcSum_ZPA_lg);
   //
-  GetDigitsData(16)->Fill(ADCSumQ_ZNC_lg);
-  GetDigitsData(17)->Fill(ADCSumQ_ZPC_lg);
-  GetDigitsData(18)->Fill(ADCSumQ_ZNA_lg);
-  GetDigitsData(19)->Fill(ADCSumQ_ZPA_lg);
+  GetDigitsData(16)->Fill(adcSumQ_ZNC_lg);
+  GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
+  GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
+  GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);*/
 }
 
 //____________________________________________________________________________
@@ -313,7 +312,7 @@ void AliZDCQADataMakerSim::StartOfDetectorCycle()
 //____________________________________________________________________________ 
 void AliZDCQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
 {
-  //Detector specific actions at end of cycle
+  // Detector specific actions at end of cycle
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQA::kZDC, task, list);  
 }

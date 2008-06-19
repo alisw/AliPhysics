@@ -18,14 +18,13 @@ class AliZDCQAChecker: public AliQACheckerBase {
 public:
   AliZDCQAChecker() : AliQACheckerBase("ZDC","ZDC Quality Assurance Data Maker") {;}          // ctor
   AliZDCQAChecker(const AliZDCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliZDCQAChecker& operator = (const AliZDCQAChecker& qac) ;
+  AliZDCQAChecker& operator = (const AliZDCQAChecker& qac);
   virtual ~AliZDCQAChecker() {;} // dtor
 
  protected:
 
-  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
-  virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.;} ;
-
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
+  virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.5;} 
   
   ClassDef(AliZDCQAChecker,1)  // description 
 

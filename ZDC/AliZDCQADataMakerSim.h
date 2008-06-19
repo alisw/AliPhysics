@@ -27,7 +27,7 @@ private:
   virtual void   InitSDigits() {;} 
   virtual void   MakeHits(TClonesArray * hits = 0);
   virtual void   MakeHits(TTree * hitTree);
-  virtual void   MakeDigits(TClonesArray * digits = 0); 
+  virtual void   MakeDigits(TClonesArray * /*digits*/){;} 
   virtual void   MakeDigits(TTree * digTree);
   virtual void   MakeSDigits(TClonesArray * /*sdigits*/) {;} 
   virtual void   MakeSDigits(TTree * /*sdigTree*/) {;}
