@@ -17,6 +17,7 @@
 //#define ENABLE_PAD_SORTING 1
 
 #include "AliHLTTPCDigitReader.h"
+#include <vector>
 
 class AliRawReaderMemory;
 class AliTPCRawStream;
@@ -53,7 +54,12 @@ public:
   Int_t GetPad();
   Int_t GetSignal();
   Int_t GetTime();
+  bool NextChannel();
+  int NextBunch();
   AliHLTUInt32_t GetAltroBlockHWaddr() const;
+  int GetBunchSize();
+  const UInt_t* GetSignals();
+  Int_t GetTimeOfUnsortedSignal();    
     
 protected:
     
@@ -85,7 +91,10 @@ private:
 
   Bool_t fUnsorted; //!transient
 
-  ClassDef(AliHLTTPCDigitReaderPacked, 2)
+  vector<UInt_t> fDataBunch;
+  Bool_t fNextChannelFlag;
+  Int_t fCurrentPatch;
+  ClassDef(AliHLTTPCDigitReaderPacked, 3)
 	
 };
 

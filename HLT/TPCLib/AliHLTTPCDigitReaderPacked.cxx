@@ -56,7 +56,10 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   fNTimeBins(0),
   fData(NULL),
   //#endif // ENABLE_PAD_SORTING  
-  fUnsorted(kFALSE)
+  fUnsorted(kFALSE),
+  fDataBunch(),
+  fNextChannelFlag(kFALSE),
+  fCurrentPatch(0)
 {
   fRawMemoryReader = new AliRawReaderMemory;
   
@@ -103,6 +106,8 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,ULong_t size, Int_t patch,
 
   fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( ptr ), size );
 
+  fCurrentPatch=patch;
+  
   //get DDL ID in order to tell the memory reader which slice/patch to use
   Int_t DDLid= 0;
   if (patch < 2)
@@ -218,7 +223,12 @@ Int_t AliHLTTPCDigitReaderPacked::GetRow(){
   return (fCurrentRow + fRowOffset);
   }
   else{
-  return (Int_t) fTPCRawStream->GetRow();
+    if(fCurrentPatch>1){
+      return (Int_t) fTPCRawStream->GetRow()-AliHLTTPCTransform::GetFirstRow(fCurrentPatch)+AliHLTTPCTransform::GetFirstRow(2);
+    }
+    else{
+      return (Int_t) fTPCRawStream->GetRow()-AliHLTTPCTransform::GetFirstRow(fCurrentPatch);
+    }
   }
 }
 
@@ -270,6 +280,82 @@ Int_t AliHLTTPCDigitReaderPacked::GetTime(){
     return fCurrentBin;
   }
   else{
-    return fTPCRawStream->GetTime();
+    if((Int_t)(fTPCRawStream->GetTime()-fDataBunch.size()+1)>0 &&(Int_t)(fTPCRawStream->GetTime()-fDataBunch.size()+1)<=AliHLTTPCTransform::GetNTimeBins()){
+      return fTPCRawStream->GetTime()-fDataBunch.size()+1;
+    }
+    else{
+      HLTDebug("Timebin is out of range: %d",fTPCRawStream->GetTime()-fDataBunch.size()+1);
+      return 0;
+    }
   }
+}
+
+Int_t AliHLTTPCDigitReaderPacked::GetTimeOfUnsortedSignal(){
+  return fTPCRawStream->GetTime();
+}
+
+bool AliHLTTPCDigitReaderPacked::NextChannel(){
+  bool iResult=false;
+  if(fNextChannelFlag==kFALSE){
+    if(!NextSignal()){//if there are no more signals
+      iResult=false;
+    }
+    else{
+      iResult=true;
+    }
+  }
+  else{
+    iResult=true;
+  }
+  return iResult;
+}
+
+int AliHLTTPCDigitReaderPacked::NextBunch(){
+  
+  fDataBunch.clear();
+  //adding the first signal (will always be the leftover from either NextChannel call or Previous bunch)
+  fDataBunch.push_back(GetSignal());
+
+  int iResult=1;
+  Bool_t continueLoop=kTRUE;
+  AliHLTUInt32_t prevHWAddress=GetAltroBlockHWaddr();
+  Int_t prevTime=GetTimeOfUnsortedSignal();
+  do{
+    if(NextSignal()){
+      if(GetAltroBlockHWaddr()==prevHWAddress){//check if there is a change in channel(new row and pad)
+	if(prevTime==GetTimeOfUnsortedSignal()+1){//if true means that we have consecutive signals
+	  prevTime=GetTimeOfUnsortedSignal();
+	  fDataBunch.push_back(GetSignal());
+	}
+	else{//end of bunch but not of channel
+	  continueLoop=kFALSE;
+	}
+      }
+      else{
+	iResult=0;//end of bunch
+	continueLoop=kFALSE;
+	fNextChannelFlag=kTRUE;
+      }
+    }
+    else{
+      continueLoop=kFALSE;
+      fNextChannelFlag=kFALSE;
+      if(fDataBunch.size()>0){//we reached end of data in total, but we still have a bunch
+	iResult = 0;
+      }
+    }
+  }while(continueLoop);
+
+  return iResult;
+
+}
+
+int AliHLTTPCDigitReaderPacked::GetBunchSize(){
+  return fDataBunch.size();
+}
+
+const UInt_t* AliHLTTPCDigitReaderPacked::GetSignals()
+{
+  // see header file for class documentation
+  return &fDataBunch[0];
 }
