@@ -28,6 +28,8 @@ class AliAnalysisFilter : public TNamed
     virtual UInt_t IsSelected(TList* obj);
     virtual void AddCuts(AliAnalysisCuts* cuts);
     virtual void Init();
+    TList*  GetCuts() const {return fCuts;}
+	    
  private:
     TList* fCuts;    // List of cuts
     ClassDef(AliAnalysisFilter, 2); // Manager class for filter decisions
