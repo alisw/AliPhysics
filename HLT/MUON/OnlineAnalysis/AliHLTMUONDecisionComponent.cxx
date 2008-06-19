@@ -129,7 +129,7 @@ void AliHLTMUONDecisionComponent::GetOutputDataSize(
 	
 	constBase = sizeof(AliHLTMUONSinglesDecisionBlockStruct);
 	constBase += sizeof(AliHLTMUONPairsDecisionBlockStruct);
-	inputMultiplier = 10;
+	inputMultiplier = 100;
 }
 
 

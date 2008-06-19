@@ -3741,7 +3741,7 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 		const AliHLTComponentBlockData* block = singleDecisionBlocks[bi];
 		if (IsScalarTooLarge(block, bi, "single track", "fNlowPt", hdr.fNlowPt, totalTrackCount) or
 		    IsScalarTooLarge(block, bi, "single track", "fNhighPt", hdr.fNhighPt, totalTrackCount) or
-		    IsScalarALargerThanB(block, bi, "single track", "fNlowPt", hdr.fNlowPt, "fNhighPt", hdr.fNhighPt)
+		    IsScalarALargerThanB(block, bi, "single track", "fNhighPt", hdr.fNhighPt, "fNlowPt", hdr.fNlowPt)
 		   )
 		{
 			MarkBlock(blocks, blockOk, blockCount, block);
@@ -3868,12 +3868,12 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 		    IsScalarTooLarge(block, bi, "track pair", "fNmassAny", hdr.fNmassAny, maxPairs) or
 		    IsScalarTooLarge(block, bi, "track pair", "fNmassLow", hdr.fNmassLow, maxPairs) or
 		    IsScalarTooLarge(block, bi, "track pair", "fNmassHigh", hdr.fNmassHigh, maxPairs) or
-		    IsScalarALargerThanB(block, bi, "track pair", "fNunlikeLowPt", hdr.fNunlikeLowPt, "fNunlikeHighPt", hdr.fNunlikeHighPt) or
-		    IsScalarALargerThanB(block, bi, "track pair", "fNunlikeAnyPt", hdr.fNunlikeAnyPt, "fNunlikeLowPt", hdr.fNunlikeLowPt) or
-		    IsScalarALargerThanB(block, bi, "track pair", "fNlikeLowPt", hdr.fNlikeLowPt, "fNlikeHighPt", hdr.fNlikeHighPt) or
-		    IsScalarALargerThanB(block, bi, "track pair", "fNlikeAnyPt", hdr.fNlikeAnyPt, "fNlikeLowPt", hdr.fNlikeLowPt) or
-		    IsScalarALargerThanB(block, bi, "track pair", "fNmassLow", hdr.fNmassLow, "fNmassHigh", hdr.fNmassHigh) or
-		    IsScalarALargerThanB(block, bi, "track pair", "fNmassAny", hdr.fNmassAny, "fNmassLow", hdr.fNmassLow)
+		    IsScalarALargerThanB(block, bi, "track pair", "fNunlikeHighPt", hdr.fNunlikeHighPt, "fNunlikeLowPt", hdr.fNunlikeLowPt) or
+		    IsScalarALargerThanB(block, bi, "track pair", "fNunlikeLowPt", hdr.fNunlikeLowPt, "fNunlikeAnyPt", hdr.fNunlikeAnyPt) or
+		    IsScalarALargerThanB(block, bi, "track pair", "fNlikeHighPt", hdr.fNlikeHighPt, "fNlikeLowPt", hdr.fNlikeLowPt) or
+		    IsScalarALargerThanB(block, bi, "track pair", "fNlikeLowPt", hdr.fNlikeLowPt, "fNlikeAnyPt", hdr.fNlikeAnyPt) or
+		    IsScalarALargerThanB(block, bi, "track pair", "fNmassHigh", hdr.fNmassHigh, "fNmassLow", hdr.fNmassLow) or
+		    IsScalarALargerThanB(block, bi, "track pair", "fNmassLow", hdr.fNmassLow, "fNmassAny", hdr.fNmassAny)
 		   )
 		{
 			MarkBlock(blocks, blockOk, blockCount, block);
