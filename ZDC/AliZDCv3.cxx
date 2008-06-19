@@ -1000,16 +1000,16 @@ void AliZDCv3::CreateBeamLine()
   zd2 += 2.*tubpar[2];
 
   // skewed transition cone from ID=212 mm to ID=797 mm SS for the moment
-  conpar[0] = 110.0/2.;
+  conpar[0] = (110.0-0.44-1.63)/2.;
   conpar[1] = 21.2/2.;
   conpar[2] = 21.8/2.;
   conpar[3] = 79.7/2.;
   conpar[4] = 81.3/2.;
   gMC->Gsvolu("QA22", "CONE", idtmed[7], conpar, 5);
-  gMC->Gspos("QA22", 1, "ZDCA", 4.4-2.201, 0., conpar[0]+zd2, irotpipe1, "ONLY");
-  //printf("	QA22 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
+  gMC->Gspos("QA22", 1, "ZDCA", 4.4-2.201, 0., conpar[0]+0.44+zd2, irotpipe1, "ONLY");
+  //printf("	QA22 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+0.44+1.63+zd2);
 
-  zd2 += 2.*conpar[0];
+  zd2 += 2.*conpar[0]+0.44+1.63;
   
   // beam pipe (ID=797 mm) SS
   tubpar[0] = 79.7/2.;
@@ -1204,25 +1204,25 @@ void AliZDCv3::CreateBeamLine()
   zd2 += 2.*tubpar[2];
 
   // legs of the trousers
-  conpar[0] = (90.1+0.8)/2.;
+  conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.6/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.8/2.;
   gMC->Gsvolu("QAL1", "CONE", idtmed[7], conpar, 5);
   gMC->Gsvolu("QAL2", "CONE", idtmed[7], conpar, 5); 
-  gMC->Gspos("QAL1", 1, "ZDCA", -3.45-0.52, 0., (90.1/2.)+zd2, irotpipe5, "MANY");
-  gMC->Gspos("QAL2", 1, "ZDCA", 3.45+0.52, 0., (90.1/2.)+zd2, irotpipe6, "MANY");
+  gMC->Gspos("QAL1", 1, "ZDCA", -3.45-0.52, 0., conpar[0]+0.95+zd2, irotpipe5, "MANY");
+  gMC->Gspos("QAL2", 1, "ZDCA", 3.45+0.52, 0., conpar[0]+0.95+zd2, irotpipe6, "MANY");
   
-  conpar[0] = (90.1+0.8)/2.;
+  conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.2/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.4/2.;
   gMC->Gsvolu("QAL3", "CONE", idtmed[10], conpar, 5);
   gMC->Gsvolu("QAL4", "CONE", idtmed[10], conpar, 5); 
-  gMC->Gspos("QAL3", 1, "ZDCA", -3.45-0.52, 0., (90.1/2.)+zd2, irotpipe5, "ONLY");
-  gMC->Gspos("QAL4", 1, "ZDCA", 3.45+0.52, 0., (90.1/2.)+zd2, irotpipe6, "ONLY");    
+  gMC->Gspos("QAL3", 1, "ZDCA", -3.45-0.52, 0., conpar[0]+0.95+zd2, irotpipe5, "ONLY");
+  gMC->Gspos("QAL4", 1, "ZDCA", 3.45+0.52, 0., conpar[0]+0.95+zd2, irotpipe6, "ONLY");    
     
   zd2 += 90.1;
   
