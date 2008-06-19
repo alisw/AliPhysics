@@ -129,7 +129,7 @@ void AliHLTMUONDecisionComponent::GetOutputDataSize(
 	
 	constBase = sizeof(AliHLTMUONSinglesDecisionBlockStruct);
 	constBase += sizeof(AliHLTMUONPairsDecisionBlockStruct);
-	inputMultiplier = 1;
+	inputMultiplier = 10;
 }
 
 
@@ -421,7 +421,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 	if (not pairsBlock.SetNumberOfEntries(numOfPairs))
 	{
 		AliHLTUInt32_t bytesneeded = sizeof(AliHLTMUONPairsDecisionBlockWriter::HeaderType)
-			+ fTrackCount * sizeof(AliHLTMUONPairsDecisionBlockWriter::ElementType)
+			+ numOfPairs * sizeof(AliHLTMUONPairsDecisionBlockWriter::ElementType)
 			+ singlesBlock.BytesUsed();
 		HLTError("The buffer is only %d bytes in size. We need a minimum of"
 			" %d bytes for the pairs output data block.",

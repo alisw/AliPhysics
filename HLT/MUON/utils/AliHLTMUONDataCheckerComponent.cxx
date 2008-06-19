@@ -848,7 +848,7 @@ bool AliHLTMUONDataCheckerComponent::IsHitCoordinateOk(
 			chamber+1
 		);
 		result = false;
-		if (Int_t(chNum) < minChamber or maxChamber < Int_t(chNum))
+		if (minChamber <= Int_t(chNum) and Int_t(chNum) <= maxChamber)
 		{
 			// Rather use the explicit value in the data if it
 			// is in range.
@@ -967,6 +967,7 @@ bool AliHLTMUONDataCheckerComponent::IsHitCoordinateOk(
 				name,
 				entryNumber,
 				hit.fX, hit.fY, hit.fZ,
+				detElemId,
 				chamber+1
 			);
 			result = false;
