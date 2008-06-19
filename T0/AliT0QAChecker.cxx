@@ -61,12 +61,15 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
   cout<<" GetAliTaskName "<<AliQA::GetAliTaskName(index)<<" index "<<index<<endl;
 
 
-  Double_t test = 0.0  ;
+  Double_t test = 10.0  ;
+  
   Int_t count = 0 ;
-  Double_t nent[100];
-  memset(nent,0,100*sizeof(Double_t));
-  Double_t w[100];
-  memset(w,1,100*sizeof(Double_t));
+  Double_t nent[200], nentraw[200];
+  TString hname[200];
+  const char *cname;
+  memset(nent,0,200*sizeof(Double_t));
+  Double_t w[200];
+  memset(w,1,200*sizeof(Double_t));
   TH1 *fhRecLEDAmp[24];  TH1 * fhRecQTC[24];
   TH1 *fhOnlineMean = 0x0;  
   TH1 * fhRecMean = 0x0;
@@ -84,26 +87,31 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
     while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
       if (hdata) {
 	nent[count] = hdata->GetEntries();
-       	AliDebug(10,Form("count %i %s -> %f",count, hdata->GetName(),nent[count])) ;
-
+       cname = hdata->GetName();
+       hname[count] = cname;
+	AliDebug(10,Form("count %i %s -> %f",count, hname[count].Data(),nent[count])) ;
+       		
 	if(index==2){
 	  if(count>23 && count<48)fhRecLEDAmp[count-24] = hdata;
 	  if(count>47 && count<72)fhRecQTC[count-48] = hdata;
 	  if(count == 72)  fhOnlineMean = hdata; 
 	  if(count == 73)  fhRecMean = hdata; 
 	}
+	
 	count++ ;
+	
         Double_t rv = 0.;
         if(hdata->GetEntries()>0) rv = 1;
 	//   AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ;
         test += rv ;
+	
      }
       else{
         AliError("Data type cannot be processed") ;
       }
 
     }
-
+    
     if (count != 0) {
       if (test==0) {
         AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
@@ -119,26 +127,29 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	    meanLED = fhRecLEDAmp[idet]->GetMean();
 	    meanQTC = fhRecQTC[idet]->GetMean();
 	    if (TMath::Abs(meanLED-meanQTC)> 1.) 
-	    AliWarning(Form("Amplitude measurements are different in channel %i : Amp LED %f -> Amp QTC %f",idet,meanLED, meanQTC)) ;
+	      AliWarning(Form("Amplitude measurements are different in channel %i : Amp LED %f -> Amp QTC %f",idet,meanLED, meanQTC)) ;
 	  }
 	}	
-	else
-	  {
-	    AliDebug(10,Form(" MaxElement %f ", TMath::MaxElement(count,nent)));	
-	    if(TMath::MaxElement(count,nent) > 1000) {
-	      Double_t mean = TMath::Mean(count,nent,w);
-	      AliDebug(10,Form(" Mean %f ", mean));	
-	      for (Int_t i=0; i<count; i++) 
-		{
-		  Double_t diff = TMath::Abs(nent[i]-mean);
-		  if (diff > 0.1*mean )
-		    AliWarning(Form("Problem in Number of entried in hist %i  is %f\n", i, nent[i])) ; 
-	  }
+	 
+	
+	if (index == 0) {
+	  Int_t realNumber = Int_t(nent[0]);
+	  for (Int_t i=77; i<count; i++) 
+	    {
+	      Double_t diff = TMath::Abs(nent[i]-realNumber);
+	      if (diff > 0.1*realNumber )
+		AliWarning(Form("Problem in Number of entried in hist %s  is %f\n",hname[i].Data() , nent[i])) ; 
+	    }
 	}
-	  }
       }
+      
     }
+
+
   } //  if (list->GetEntries() != 0
+  
   AliInfo(Form("Test Result = %f", test)) ;
+
   return test ;
 }
+

@@ -62,7 +62,7 @@ class AliT0RawReader : public TTask {
   AliT0Parameters *fParam;       // instanse of  Parameters class
   Bool_t           fIsOnline;     // for case online DA usage
   
-  Int_t            fAllData[110][50]; // container for raw data
+  Int_t            fAllData[110][5]; // container for raw data
   
  ClassDef(AliT0RawReader,2) //class for reading T0 Raw data
 };
