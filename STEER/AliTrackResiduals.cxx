@@ -65,6 +65,7 @@ AliTrackResiduals::AliTrackResiduals(Int_t ntracks):
     for (Int_t itrack = 0; itrack < ntracks; itrack++)
       fVolArray[itrack] = fTrackArray[itrack] = 0x0;
   }
+
   for (Int_t ipar=0; ipar<6; ipar++){
     fBFixed[ipar] = kFALSE;
     fFixed[ipar]  = 0.;
@@ -165,6 +166,9 @@ void AliTrackResiduals::SetNTracks(Int_t ntracks)
     for (Int_t itrack = 0; itrack < ntracks; itrack++)
       fVolArray[itrack] = fTrackArray[itrack] = 0x0;
   }
+  else {
+    fVolArray = fTrackArray = 0x0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -220,13 +224,18 @@ void AliTrackResiduals::DeleteTrackPointArrays()
   // the object is their owner.
   // Called by the destructor and SetNTracks methods.
   if (fIsOwner) {
-    for (Int_t itrack = 0; itrack < fLast; itrack++)
-      {
-	delete fVolArray[itrack];
-	delete fTrackArray[itrack];
+    if (fVolArray) {
+      for (Int_t itrack = 0; itrack < fN; itrack++) {
+	if (fVolArray[itrack]) delete fVolArray[itrack];
       }
-    delete [] fVolArray;
-    delete [] fTrackArray;
+      delete [] fVolArray;
+    }
+    if (fTrackArray) {
+      for (Int_t itrack = 0; itrack < fN; itrack++) {
+	if (fTrackArray[itrack]) delete fTrackArray[itrack];
+      }
+      delete [] fTrackArray;
+    }
   }
 }
 
