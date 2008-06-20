@@ -52,15 +52,11 @@
 #include "AliMUONClusterInfo.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONESDInterface.h"
-#include "AliMUONRefitter.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONVCluster.h"
-#include "AliMUONVClusterStore.h"
 #include "AliMUONTrack.h"
-#include "AliMUONVTrackStore.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONTrackExtrap.h"
 #endif
 
 const Int_t printLevel = 1;
@@ -71,20 +67,17 @@ TTree* GetESDTree(TFile *esdFile);
 //-----------------------------------------------------------------------
 void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root", const char* outFileName = "clusterInfo.root")
 {
-  /// refit ESD tracks from ESD clusters to get track parameters at each attached cluster;
+  /// load ESD event in the ESDInterface to recover MUON objects;
   /// fill AliMUONESDClusterInfo object with ESD cluster + corresponding track parameters;
   /// write results in a new root file.
   
   AliMUONClusterInfo* clusterInfo = new AliMUONClusterInfo();
   AliMUONPadInfo padInfo;
   AliMUONCalibrationData* calibData = 0x0;
-  
-  // prepare the refitting
-  gRandom->SetSeed(0);
-  Prepare();
   AliMUONESDInterface esdInterface;
-  AliMUONRefitter refitter;
-  refitter.Connect(&esdInterface);
+  
+  // prepare the refitting during ESD->MUON conversion
+  Prepare();
   
   // open the ESD file and tree and connect the ESD event
   TFile* esdFile = TFile::Open(esdFileName);
@@ -117,8 +110,7 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
       Error("CheckESD", "no ESD object found for event %d", iEvent);
       return;
     }
-    Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks();
-    if (nTracks < 1) continue;
+    if (esd->GetNumberOfMuonTracks() < 1) continue;
     
     // prepare access to calibration data
     if (!calibData) calibData = new AliMUONCalibrationData(esd->GetESDRun()->GetRunNumber());
@@ -129,19 +121,16 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
     // get digit store
     AliMUONVDigitStore* digitStore = esdInterface.GetDigits();
     
-    // refit the tracks from clusters
-    AliMUONVTrackStore* newTrackStore = refitter.ReconstructFromClusters();
-    
     //----------------------------------------------//
     // ------------- fill cluster info ------------ //
     //----------------------------------------------//
     // loop over the refitted tracks
-    TIter nextTrack(newTrackStore->CreateIterator());
-    AliMUONTrack* newTrack;
-    while ((newTrack = static_cast<AliMUONTrack*>(nextTrack()))) {
+    TIter nextTrack(esdInterface.CreateTrackIterator());
+    AliMUONTrack* track;
+    while ((track = static_cast<AliMUONTrack*>(nextTrack()))) {
       
       // loop over clusters
-      AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>(newTrack->GetTrackParamAtCluster()->First());
+      AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->First());
       while (trackParam) {
 	clusterInfo->Clear("C");
 	
@@ -156,13 +145,13 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	clusterInfo->SetClusterCharge(cluster->GetCharge());
 	
 	// fill track info
-	clusterInfo->SetTrackId(newTrack->GetUniqueID());
+	clusterInfo->SetTrackId(track->GetUniqueID());
 	clusterInfo->SetTrackXY(trackParam->GetNonBendingCoor(), trackParam->GetBendingCoor());
 	clusterInfo->SetTrackThetaXY(TMath::ATan(trackParam->GetBendingSlope()), TMath::ATan(trackParam->GetNonBendingSlope()));
 	clusterInfo->SetTrackP(trackParam->P());
 	const TMatrixD paramCov = trackParam->GetCovariances();
 	clusterInfo->SetTrackXYErr(TMath::Sqrt(paramCov(0,0)), TMath::Sqrt(paramCov(2,2)));
-	clusterInfo->SetTrackChi2(newTrack->GetNormalizedChi2());
+	clusterInfo->SetTrackChi2(track->GetNormalizedChi2());
 	clusterInfo->SetTrackCharge((Short_t)trackParam->GetCharge());
 
 	// fill pad info if available	  
@@ -198,13 +187,11 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	// fill cluster info tree
 	clusterInfoTree->Fill();
 	
-	trackParam = static_cast<AliMUONTrackParam*>(newTrack->GetTrackParamAtCluster()->After(trackParam));
+	trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->After(trackParam));
       }
       
     }
     
-    // free memory
-    delete newTrackStore;
   }
   
   // ...timer stop
@@ -236,7 +223,9 @@ void Prepare()
 {
   /// Set the geometry, the magnetic field, the mapping and the reconstruction parameters
   
-  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
+  gRandom->SetSeed(0);
+  
+  // Import TGeo geometry (needed for track extrapolation)
   if (!gGeoManager) {
     AliGeomManager::LoadGeometry("geometry.root");
     if (!gGeoManager) {
@@ -249,7 +238,6 @@ void Prepare()
   printf("Loading field map...\n");
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kFALSE);
-  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
   
   // Load mapping
   AliCDBManager* man = AliCDBManager::Instance();
@@ -260,11 +248,11 @@ void Prepare()
     exit(-1);
   }
   
-  // set reconstruction parameters
-  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  // eventually set reconstruction parameters for refit (otherwise read from OCDB)
+/*  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
   muonRecoParam->Print("FULL");
   AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
-  
+*/  
 }
 
 //-----------------------------------------------------------------------
