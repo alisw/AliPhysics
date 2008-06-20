@@ -40,6 +40,7 @@ public:
   Float_t ModulePositionY(Int_t i) const;
   Float_t ModulePositionZ(Int_t i) const;
   Float_t ExtraModulePositionZ(Int_t i) const;
+  Int_t ModuleElectronicChannel(Int_t i) const;
   Float_t ExtraModulePositionX() const;
   Float_t ExtraModulePositionY() const;
   Float_t PlasticLength() const;
@@ -71,7 +72,7 @@ protected:
   static const Float_t fgkExtraModulePositionZ[4];
   static const Float_t fgkExtraModulePositionX;
   static const Float_t fgkExtraModulePositionY;
-  
+  static const Int_t fgkModuleElectronicChannel[60];
 
   static const Float_t fgkPlasticLength; // Plastic length
   static const Float_t fgkPlasticWidth;  // Plastic width
