@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -4591,11 +4591,13 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gspos("IPA2", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
   gMC->Gspos("IPA2", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
 
+  } // Move this graph down as you implement services in TGeo - M.S. 28may08
+
 
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
   
-  dgh[0] = (ztpc-97.5)/2.;
+  dgh[0] = (ztpc-97.5-2.3)/2.;
   dgh[1] = 46.2;     
   dgh[2] = 46.2+1.0;  
   dgh[3] = 62.3;     
@@ -4603,12 +4605,13 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[5] = 12.;    
   dgh[6] = 168.;
   gMC->Gsvolu("ICU1", "CONS", idtmed[213], dgh, 7);    
-  gMC->Gspos("ICU1", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");   
+  //  gMC->Gspos("ICU1", 1, "ITSV", 0., 0.,97.5+dgh[0], 0, "ONLY");   
+  gMC->Gspos("ICU1", 1, "ITSV", 0., 0.,-(97.5+dgh[0]+4.6), idrotm[199], "ONLY");   
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     LOWER PART
   
-  dgh[0] = (ztpc-97.5)/2.;
+  dgh[0] = (ztpc-97.5-2.3)/2.;
   dgh[1] = 46.2;      
   dgh[2] = 46.2+1.0;  
   dgh[3] = 62.3;      
@@ -4616,13 +4619,14 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[5] = 192.;    
   dgh[6] = 348.;
   gMC->Gsvolu("ICU2", "CONS", idtmed[213], dgh, 7);    
-  gMC->Gspos("ICU2", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");  
+  //  gMC->Gspos("ICU2", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");  
+  gMC->Gspos("ICU2", 1, "ITSV", 0., 0., -(97.5+dgh[0]+4.6), idrotm[199], "ONLY");  
 
 
    // -- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - CARBON PART
    //     UPPER PART
   
-  dgh[0] = (ztpc-97.5)/2.;
+  dgh[0] = (ztpc-97.5-2.3)/2.;
   dgh[1] = 46.2+1.0;      
   dgh[2] = 46.2+1.0+1.5;  
   dgh[3] = 62.3+1.0;      
@@ -4630,12 +4634,13 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[5] = 12.;    
   dgh[6] = 168.;  
   gMC->Gsvolu("ICC1", "CONS", idtmed[225], dgh, 7);    
-  gMC->Gspos("ICC1", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");   
+  //  gMC->Gspos("ICC1", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");  
+  gMC->Gspos("ICC1", 1, "ITSV", 0., 0., -(97.5+dgh[0]+4.6), idrotm[199], "ONLY");   
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - CARBON PART
   //     LOWER PART
   
-  dgh[0] = (ztpc-97.5)/2.;
+  dgh[0] = (ztpc-97.5-2.3)/2.;
   dgh[1] = 46.2+1.0;    
   dgh[2] = 46.2+1.0+1.5;
   dgh[3] = 62.3+1.0;    
@@ -4643,51 +4648,56 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[5] = 192.;    
   dgh[6] = 348.;  
   gMC->Gsvolu("ICC2", "CONS", idtmed[225], dgh, 7);    
-  gMC->Gspos("ICC2", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");  
+  //  gMC->Gspos("ICC2", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");
+  gMC->Gspos("ICC2", 1, "ITSV", 0., 0., -(97.5+dgh[0]+4.6), idrotm[199], "ONLY");  
    
   // -- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
     
-  dgh[0] = 62.; 
+  dgh[0] = 62.2; 
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 12.;
   dgh[4] = 168.;
   gMC->Gsvolu("ICU3", "TUBS", idtmed[213], dgh, 5);    
-  gMC->Gspos("ICU3", 1, "ITSV", 0., 0., ztpc+1.5+dgh[2], 0, "ONLY");  
+  //  gMC->Gspos("ICU3", 1, "ITSV", 0., 0., ztpc+1.5+dgh[2], 0, "ONLY"); 
+  gMC->Gspos("ICU3", 1, "ITSV", 0., 0., -(ztpc+1.5+dgh[2]+1.), idrotm[199], "ONLY");  
 
   // -- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     LOWER PART
   
-  dgh[0] = 62.;  
+  dgh[0] = 62.2; 
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 192.;
   dgh[4] = 348.;
   gMC->Gsvolu("ICU4", "TUBS", idtmed[213], dgh, 5);    
-  gMC->Gspos("ICU4", 1, "ITSV", 0., 0., ztpc+1.5+dgh[2], 0, "ONLY");
+  //  gMC->Gspos("ICU4", 1, "ITSV", 0., 0., ztpc+1.5+dgh[2], 0, "ONLY");
+  gMC->Gspos("ICU4", 1, "ITSV", 0., 0., -(ztpc+1.5+dgh[2]+1.), idrotm[199], "ONLY");
 
   // -- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - CARBON PART
   //    UPPER PART
 
-  dgh[0] = 62.1;  
+  dgh[0] = 64.8;  
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 12.;
   dgh[4] = 168.;
   gMC->Gsvolu("ICC3", "TUBS", idtmed[225], dgh, 5);    
-  gMC->Gspos("ICC3", 1, "ITSV", 0., 0., ztpc+dgh[2], 0, "ONLY");   
+  //  gMC->Gspos("ICC3", 1, "ITSV", 0., 0., ztpc+dgh[2], 0, "ONLY");  
+  gMC->Gspos("ICC3", 1, "ITSV", 0., 0., -(ztpc+dgh[2]), idrotm[199], "ONLY");   
     
   // -- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - CARBON PART
   //    LOWER PART
 
-  dgh[0] = 62.1;  
+  dgh[0] = 64.8;  
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 192.;
   dgh[4] = 348.;
   gMC->Gsvolu("ICC4", "TUBS", idtmed[225], dgh, 5);    
-  gMC->Gspos("ICC4", 1, "ITSV", 0., 0., ztpc+dgh[2], 0, "ONLY");  
+  //  gMC->Gspos("ICC4", 1, "ITSV", 0., 0., ztpc+dgh[2], 0, "ONLY");  
+  gMC->Gspos("ICC4", 1, "ITSV", 0., 0., -(ztpc+dgh[2]), idrotm[199], "ONLY");  
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - UPPER PART
@@ -4698,7 +4708,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 12.;
   dgh[4] = 168.;
   gMC->Gsvolu("ICU5", "TUBS", idtmed[213], dgh, 5);   
-  gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");  
+  //  gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");  
+  gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");  
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - LOWER PART
@@ -4709,7 +4720,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 192.;
   dgh[4] = 348.;  
   gMC->Gsvolu("ICU6", "TUBS", idtmed[213], dgh, 5);   
-  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");    
+  //  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY"); 
+  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");    
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - CARBON PART - UPPER PART
@@ -4720,7 +4732,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 12.;
   dgh[4] = 168.;  
   gMC->Gsvolu("ICC5", "TUBS", idtmed[225], dgh, 5);   
-  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");   
+  //  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");
+  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");   
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - CARBON PART - LOWER PART
@@ -4731,7 +4744,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 192.;
   dgh[4] = 348.;  
   gMC->Gsvolu("ICC6", "TUBS", idtmed[225], dgh, 5);   
-  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");      
+  //  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY"); 
+  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");      
 
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     COPPER PART - UPPER PART
@@ -4742,7 +4756,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 12.;
   dgh[4] = 168.;  
   gMC->Gsvolu("ICU7", "TUBS", idtmed[213], dgh, 5);   
-  gMC->Gspos("ICU7", 1, "ITSV", 0., 0., -(ztpc+1.5+dgh[2]), 0, "ONLY");  
+  gMC->Gspos("ICU7", 1, "ITSV", 0., 0., (ztpc+1.5+dgh[2]), idrotm[199], "ONLY");  
   
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     COPPER PART - LOWER PART
@@ -4753,7 +4767,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 192.;
   dgh[4] = 348.;   
   gMC->Gsvolu("ICU8", "TUBS", idtmed[213], dgh, 5);   
-  gMC->Gspos("ICU8", 1, "ITSV", 0., 0., -(ztpc+1.5+dgh[2]), 0, "ONLY");      
+  gMC->Gspos("ICU8", 1, "ITSV", 0., 0., (ztpc+1.5+dgh[2]), idrotm[199], "ONLY");      
     
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     CARBON PART - UPPER PART
@@ -4764,7 +4778,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 12.;
   dgh[4] = 168.;   
   gMC->Gsvolu("ICC7", "TUBS", idtmed[225], dgh, 5);   
-  gMC->Gspos("ICC7", 1, "ITSV", 0., 0., -(ztpc+dgh[2]), 0, "ONLY"); 
+  gMC->Gspos("ICC7", 1, "ITSV", 0., 0., (ztpc+dgh[2]), idrotm[199], "ONLY"); 
   
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     CARBON PART - LOWER PART
@@ -4775,29 +4789,29 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[3] = 192.;
   dgh[4] = 348.;     
   gMC->Gsvolu("ICC8", "TUBS", idtmed[225], dgh, 5);   
-  gMC->Gspos("ICC8", 1, "ITSV", 0., 0., -(ztpc+dgh[2]), 0, "ONLY");        
+  gMC->Gspos("ICC8", 1, "ITSV", 0., 0., (ztpc+dgh[2]), idrotm[199], "ONLY");        
 
-  } // Move this graph down as you implement services in TGeo - M.S. 28may08
+
     
   // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER - UPPER PART
   
-  dgh[0] = 70.5;
-  dgh[1] = 75.5;
+  dgh[0] = 74.7;
+  dgh[1] = 75.3;
   dgh[2] = 2.5;
   dgh[3] = 12.;
   dgh[4] = 168.;    
   gMC->Gsvolu("IHK1", "TUBS", idtmed[264], dgh, 5);  
-  gMC->Gspos("IHK1", 1, "ITSV", 0., 0., -ztpc-dgh[2], 0, "ONLY");   
+  gMC->Gspos("IHK1", 1, "ITSV", 0., 0., -(-ztpc-dgh[2]), idrotm[199], "ONLY");   
   
   // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER - LOWER PART
   
-  dgh[0] = 70.5;
-  dgh[1] = 75.5;
+  dgh[0] = 74.7;
+  dgh[1] = 75.3;
   dgh[2] = 2.5;
   dgh[3] = 192.;
   dgh[4] = 348.;    
   gMC->Gsvolu("IHK2", "TUBS", idtmed[264], dgh, 5);  
-  gMC->Gspos("IHK2", 1, "ITSV", 0., 0., -ztpc-dgh[2], 0, "ONLY");      
+  gMC->Gspos("IHK2", 1, "ITSV", 0., 0., -(-ztpc-dgh[2]), idrotm[199], "ONLY");      
   
 //  }
 
@@ -4811,9 +4825,9 @@ void AliITSv11Hybrid::CreateOldGeometry(){
      dgh[1] = 8.;           
      dgh[2] = 190.;         
      gMC->Gsvolu("IRA1", "BOX ", idtmed[268], dgh, 3);
-     gMC->Gspos("IRA1", 1, "ITSV", 53.5, 0., -69.5, 0, "ONLY");   
+     gMC->Gspos("IRA1", 1, "ITSV", 53.5, 0., 69.5, idrotm[199], "ONLY");   
      gMC->Gsvolu("IRA2", "BOX ", idtmed[268], dgh, 3);    
-     gMC->Gspos("IRA2", 1, "ITSV", -53.5, 0., -69.5, 0, "ONLY");    
+     gMC->Gspos("IRA2", 1, "ITSV", -53.5, 0., 69.5, idrotm[199], "ONLY");    
 
      dgh[0] = 2.-0.5;// 0.5 was determined in such a way that the aluminum area is 20.9 cm^2      
      dgh[1] = 8.-0.5;// 0.5 was determined in such a way that the aluminum area is 20.9 cm^2       
@@ -4840,14 +4854,14 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 3.;
   dgh[2] = 5.;// 5. comes from the fact that the volume has to be 567.6/2 cm^3
   gMC->Gsvolu("ISR1", "TUBE", idtmed[284], dgh, 3);   
-  gMC->Gspos("ISR1", 1, "ITSV", 53.4292, 10.7053, 79.75, 0, "ONLY");    
-  gMC->Gspos("ISR1", 2, "ITSV", 53.4292, -10.7053, 79.75, 0, "ONLY");   
-  gMC->Gspos("ISR1", 3, "ITSV", -53.4292, 10.7053, 79.75, 0, "ONLY"); 
-  gMC->Gspos("ISR1", 4, "ITSV", -53.4292, -10.7053, 79.75, 0, "ONLY");  
-  gMC->Gspos("ISR1", 5, "ITSV", 53.4292, 10.7053, -79.75, 0, "ONLY");   
-  gMC->Gspos("ISR1", 6, "ITSV", 53.4292, -10.7053, -79.75, 0, "ONLY");   
-  gMC->Gspos("ISR1", 7, "ITSV", -53.4292, 10.7053, -79.75, 0, "ONLY"); 
-  gMC->Gspos("ISR1", 8, "ITSV", -53.4292, -10.7053, -79.75, 0, "ONLY");
+  gMC->Gspos("ISR1", 1, "ITSV", 53.4292, 10.7053, -79.75,idrotm[199],"ONLY");    
+  gMC->Gspos("ISR1", 2, "ITSV", 53.4292, -10.7053, -79.75,idrotm[199],"ONLY");   
+  gMC->Gspos("ISR1", 3, "ITSV", -53.4292, 10.7053, -79.75,idrotm[199],"ONLY"); 
+  gMC->Gspos("ISR1", 4, "ITSV", -53.4292, -10.7053, -79.75,idrotm[199],"ONLY");  
+  gMC->Gspos("ISR1", 5, "ITSV", 53.4292, 10.7053, 79.75,idrotm[199],"ONLY");   
+  gMC->Gspos("ISR1", 6, "ITSV", 53.4292, -10.7053, 79.75,idrotm[199],"ONLY");   
+  gMC->Gspos("ISR1", 7, "ITSV", -53.4292, 10.7053, 79.75,idrotm[199],"ONLY"); 
+  gMC->Gspos("ISR1", 8, "ITSV", -53.4292, -10.7053, 79.75,idrotm[199],"ONLY");
   
   // --- DEFINE SUPPORTS FOR RAILS ATTACHED TO THE ABSORBER
 
@@ -4855,9 +4869,9 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 12.;         
   dgh[2] = 5.;         
   gMC->Gsvolu("ISR2", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR2", 1, "ITSV", -53.5, 0., -125.5, idrotm[199], "ONLY");
+  gMC->Gspos("ISR2", 1, "ITSV", -53.5, 0., 125.5, 0, "ONLY");
   gMC->Gsvolu("ISR3", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR3", 1, "ITSV", 53.5, 0., -125.5, idrotm[199], "ONLY");  
+  gMC->Gspos("ISR3", 1, "ITSV", 53.5, 0., 125.5, 0, "ONLY");  
   
   dgh[0] = 5.-2.;        
   dgh[1] = 12.-2.;         
@@ -4873,9 +4887,9 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 5.;         
   dgh[2] = 2.;         
   gMC->Gsvolu("ISR6", "TUBE", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR6", 1, "ITSV", 0., 54., -77., idrotm[199], "ONLY"); 
-  gMC->Gspos("ISR6", 2, "ITSV", 0., 54., 77., idrotm[199], "ONLY"); 
-  gMC->Gspos("ISR6", 3, "ITSV", 0., -54., 77., idrotm[199], "ONLY");                   
+  gMC->Gspos("ISR6", 1, "ITSV", 0., 54., 77., 0, "ONLY"); 
+  gMC->Gspos("ISR6", 2, "ITSV", 0., 54., -77., 0, "ONLY"); 
+  gMC->Gspos("ISR6", 3, "ITSV", 0., -54., -77., 0, "ONLY");                   
 
   }
 
