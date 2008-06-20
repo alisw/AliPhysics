@@ -76,7 +76,7 @@ AliHLTMessage::AliHLTMessage(UInt_t what)
 //______________________________________________________________________________
 AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
   :
-# if defined(ROOT_TBufferFile) || defined(HAVE_TBUFFERFILE_H)
+# if defined(ROOT_TBufferFile)
   TBufferFile(kRead, bufsize, buf, 0),
 # else
   TBuffer(kRead, bufsize, buf, 0),

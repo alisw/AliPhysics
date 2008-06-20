@@ -83,11 +83,11 @@ if test "x$have_root" = "x1"; then
 
   # TBuffer.h has been made pure virtual in root v5-15-02 and one
   # has to derive from TBufferFile.h (needed for BASE/AliHLTMessage.h)
-  AC_CHECK_HEADERS([TBufferFile.h])
+  AC_CHECK_HEADER([TBufferFile.h], [], [HAVE_NOT_TBUFFERFILE])
 
   # TView.h has been made pure virtual right after root v5-15-02 and one
   # has to derive from TView3D.h (needed for TPCLib/OnlineDisplay/AliHLTTPCDisplay3D)
-  AC_CHECK_HEADERS([TView3D.h])
+  AC_CHECK_HEADER([TView3D.h], [], [HAVE_NOT_TVIEW3D])
 
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
@@ -313,8 +313,8 @@ if test ! "x$have_aliroot" = "xno" ; then
     AC_MSG_RESULT([$have_tpc_load_clusters])
 
   fi
-  AC_CHECK_HEADERS([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
-  AC_CHECK_HEADERS([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
+  AC_CHECK_HEADER([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
+  AC_CHECK_HEADER([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
 
   have_tpc_mapping=no
   if test ! "x$have_aliroot" = "xno" ; then

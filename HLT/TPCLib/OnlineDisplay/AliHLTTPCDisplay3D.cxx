@@ -32,7 +32,7 @@
 #include "AliHLTTPCDisplayPadRow.h"
 
 #include "AliHLTStdIncludes.h"
-#if defined(HAVE_TVIEW3D_H)
+#ifndef HAVE_NOT_TVIEW3D
 #include <TView3D.h>
 #else
 #include <TView.h>
@@ -114,7 +114,7 @@ void AliHLTTPCDisplay3D::Draw(){
     fDisplay->GetCanvas3D()->cd();
     fDisplay->GetCanvas3D()->Clear();
 
-#if defined(HAVE_TVIEW3D_H)
+#ifndef HAVE_NOT_TVIEW3D
     TView3D *v = new TView3D();
     if (v) v->SetSystem(1);
 #else

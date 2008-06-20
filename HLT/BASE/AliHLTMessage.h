@@ -38,10 +38,6 @@
 // to differentiate between the usage of TBuffer or TBufferFile.
 #include "TMessage.h"
 
-#if defined(HAVE_TBUFFERFILE_H)
-#include "TBufferFile.h"
-#endif
-
 #ifndef ROOT_MessageTypes
 #include "MessageTypes.h"
 #endif
@@ -91,7 +87,7 @@
  */
 class AliHLTMessage 
 :
-# if defined(ROOT_TBufferFile) || defined(HAVE_TBUFFERFILE_H)
+# if defined(ROOT_TBufferFile)
 public TBufferFile,
 #else
 public TBuffer,
