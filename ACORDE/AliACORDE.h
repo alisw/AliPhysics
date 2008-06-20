@@ -30,7 +30,6 @@ public:
 
   virtual void SetTreeAddress();
   virtual void MakeBranch(Option_t* opt = "");
-  virtual void AddAlignableVolumes() const;
 
   virtual AliLoader* MakeLoader(const char* topfoldername);
 
