@@ -32,6 +32,8 @@ public:
   
   Int_t DetElemId2DCS(Int_t detElemId, Int_t& side) const;
     
+  Int_t HVIndexFromDCSAlias(const char* dcsAlias) const;
+  
   Int_t DetElemIdFromDCSAlias(const char* dcsAlias) const;
   
   Int_t ManuId2Index(Int_t detElemId, Int_t manuId) const;

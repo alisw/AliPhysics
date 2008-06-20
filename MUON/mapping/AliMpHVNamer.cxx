@@ -189,7 +189,7 @@ AliMpHVNamer::DCS2DE(Int_t chamberId, Int_t side, Int_t dcsNumber) const
     }
   }
   
-  return chamberId*100 + de;
+  return (chamberId+1)*100 + de;
 }
 
 //_____________________________________________________________________________
@@ -312,6 +312,54 @@ AliMpHVNamer::DCSHVSwitchName(Int_t detElemId, Int_t pcbNumber) const
 
 //_____________________________________________________________________________
 Int_t 
+AliMpHVNamer::HVIndexFromDCSAlias(const char* dcsAlias) const
+{
+  /// Converts the dcs alias to a hv index 
+  ///
+  /// dcsAlias has one of the following 3 forms :
+  ///
+  /// MchHvLv[Left|Right]/Chamber##[Left|Right]/Chamber##[Left|Right]Slat##.actual.vMon
+  ///
+  /// MchHvLv[Left|Right]/Chamber##[Left|Right]/Chamber##[Left|Right]Quad#Sect#.actual.vMon
+  ///
+  /// MchDE####dsw#.inValue
+  
+  TString sDcsAlias(dcsAlias);
+  Int_t de(-1);
+  Int_t sw(-1);
+  
+  int side(-1);
+  
+  if ( sDcsAlias.Contains("Left") )
+  {
+    side = 0;
+  }
+  else if ( sDcsAlias.Contains("Right") )
+  {
+    side = 1;
+  }
+  else
+  {
+    /// it's a switch
+    sscanf(sDcsAlias.Data(),fgHVSwitchSt345Pattern,&de,&sw);
+    return sw;
+  }
+  
+  int n1(-1);
+  int n3(-1);
+  int n4(-1);
+  
+  if ( sDcsAlias.Contains("Quad") )
+  {
+    sscanf(sDcsAlias.Data(),fgHVChannelSt12Pattern[side],&n1,&n3,&n4);    
+    return n4;
+  }
+  
+  return -2;
+}
+
+//_____________________________________________________________________________
+Int_t 
 AliMpHVNamer::DetElemIdFromDCSAlias(const char* dcsAlias) const
 {
   /// Converts the dcs alias to a detection element identifier
@@ -321,6 +369,8 @@ AliMpHVNamer::DetElemIdFromDCSAlias(const char* dcsAlias) const
   /// MchHvLv[Left|Right]/Chamber##[Left|Right]/Chamber##[Left|Right]Slat##.actual.vMon
   ///
   /// MchHvLv[Left|Right]/Chamber##[Left|Right]/Chamber##[Left|Right]Quad#Sect#.actual.vMon
+  
+  AliDebug(1,Form("dcsAlias=%s",dcsAlias));
   
   TString sDcsAlias(dcsAlias);
   
@@ -348,11 +398,13 @@ AliMpHVNamer::DetElemIdFromDCSAlias(const char* dcsAlias) const
   {
     sscanf(sDcsAlias.Data(),fgHVChannelSt345Pattern[side],&n1,&n3);
     detElemId = DCS2DE(n1,side,n3);
+    AliDebug(1,Form("Slat side=%d n1=%d n3=%d de=%d",side,n1,n3,detElemId));
   }
   else if ( sDcsAlias.Contains("Quad") )
   {
     sscanf(sDcsAlias.Data(),fgHVChannelSt12Pattern[side],&n1,&n3,&n4);    
-    detElemId = n3-1;
+    detElemId = 100*(n1+1) + n3;
+    AliDebug(1,Form("Quad side=%d n1=%d n3=%d n4=%d de=%d",side,n1,n3,n4,detElemId));
   }
   else
   {
@@ -476,14 +528,14 @@ AliMpHVNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
 
   TVector2 lowerLeft(motifPos->Position()-motifPos->Dimensions());
   
-  Double_t x = lowerLeft.X();
+  Double_t x = lowerLeft.X()*10.0; // cm -> mm
   Int_t isector(-1);
 
   AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
   
   if ( stationType == AliMp::kStation1 ) 
   {
-    if ( x < -1 ) AliFatal("");
+    if ( x < -10 ) AliFatal("");
     
     if ( x < 291.65 ) isector = 0;
     else if ( x < 585.65 ) isector = 1;
@@ -491,7 +543,7 @@ AliMpHVNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
   }
   else
   {
-    if ( x < -14 ) AliFatal("");
+    if ( x < -140 ) AliFatal("");
     
     if ( x < 283.75 ) isector = 0;
     else if ( x < 603.75 ) isector = 1;
