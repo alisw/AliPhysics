@@ -97,6 +97,28 @@ AliMUONAttPainter::CathodeName() const
 }
 
 //_____________________________________________________________________________
+void
+AliMUONAttPainter::Invert()
+{
+  /// Invert our cathode/plane states
+  
+  if ( IsCathodeDefined() ) 
+  {
+    Bool_t cath0(IsCathode0());
+    Bool_t cath1(IsCathode1());
+    SetCathode(!cath0,!cath1);
+  }
+
+  if ( IsPlaneDefined() ) 
+  {
+    Bool_t b(IsBendingPlane());
+    Bool_t nb(IsNonBendingPlane());
+    
+    SetPlane(!b,!nb);
+  }
+}
+
+//_____________________________________________________________________________
 TString
 AliMUONAttPainter::PlaneName() const
 {

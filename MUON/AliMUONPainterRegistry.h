@@ -36,6 +36,8 @@ public:
   AliMUONVTrackerData* DataSource(Int_t i) const;
   
   AliMUONVTrackerData* DataSource(const char* name) const;
+
+  AliMUONVTrackerData* InteractiveReadOutConfig() const;
   
   void DataSourceWasRegistered(AliMUONVTrackerData* data); // *SIGNAL*
   
@@ -93,6 +95,8 @@ private:
   /// Not implemented
   AliMUONPainterRegistry& operator=(const AliMUONPainterRegistry&);
   
+  void CreateInteractiveReadOutConfig() const;
+  
 private:
   static AliMUONPainterRegistry* fgInstance; ///< unique instance
   TObjArray* fPainterMatrices; ///< painter matrices
@@ -101,8 +105,9 @@ private:
   TGMenuBar* fMenuBar; ///< Menu bar where to put the history menu
   Int_t fHistoryCounter; ///< index to get back history menu items
   TObjArray* fZombies; ///< data readers to be deleted
+  mutable AliMUONVTrackerData* fInteractiveReadOutConfig; ///< clickable readout configuration
   
-  ClassDef(AliMUONPainterRegistry,3) // Registry for AliMUONVPainter related stuff
+  ClassDef(AliMUONPainterRegistry,4) // Registry for AliMUONVPainter related stuff
 };
 
 #endif

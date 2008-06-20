@@ -40,6 +40,15 @@ ClassImp(AliMUONPCBPainter)
 /// \endcond
 
 //_____________________________________________________________________________
+AliMUONPCBPainter::AliMUONPCBPainter(TRootIOCtor* ioCtor)
+: AliMUONVPainter(ioCtor),
+fDetElemId(-1),
+fPCBIndex(-1)
+{
+  /// root streaming ctor
+}
+
+//_____________________________________________________________________________
 AliMUONPCBPainter::AliMUONPCBPainter()
 : AliMUONVPainter(),
 fDetElemId(-1),
@@ -163,6 +172,14 @@ AliMUONPCBPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
   Double_t value = data.PCB(fDetElemId,fPCBIndex,dataIndex);
   
   return AliMUONPainterHelper::Instance()->FormatValue(data.DimensionName(dataIndex).Data(),value);
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONPCBPainter::IsIncluded() const
+{
+  /// Whether this PCB is included in the read out or not
+  return ( InteractiveReadOutConfig()->PCB(fDetElemId,fPCBIndex) > 0 );
 }
 
 //_____________________________________________________________________________

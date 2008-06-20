@@ -19,6 +19,9 @@
 #  include "TString.h"
 #endif
 
+class TMap;
+class AliMUONVStore;
+
 class AliMUONTrackerOCDBDataMaker : public AliMUONVTrackerDataMaker
 {
 public:
@@ -58,12 +61,20 @@ public:
     Int_t NumberOfEvents() const { return 1; }
 
   virtual Long64_t Merge(TCollection* li);
+
+  static AliMUONVStore* CreateHVStore(TMap& hvMap);
+  static AliMUONVStore* SplitQuality(const AliMUONVStore& gains);
+
+  static AliMUONVTrackerData* CreateDataPedestals(Int_t runNumber);
+  static AliMUONVTrackerData* CreateDataGains(Int_t runNumber);
+  static AliMUONVTrackerData* CreateDataCapacitances(Int_t runNumber);
   
 private:
   /// Not implemented
   AliMUONTrackerOCDBDataMaker(const AliMUONTrackerOCDBDataMaker& rhs);
   /// Not implemented
   AliMUONTrackerOCDBDataMaker& operator=(const AliMUONTrackerOCDBDataMaker& rhs);
+  
   
 private:
   Bool_t fIsValid; ///< whether we have valid data

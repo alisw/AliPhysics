@@ -30,7 +30,9 @@ public:
   virtual ~AliMUONTrackerData();
 
   virtual Bool_t Add(const AliMUONVStore& channelValues);
-  
+
+  virtual Bool_t Replace(const AliMUONVStore& channelValues);
+
   virtual Double_t BusPatch(Int_t busPatchId, Int_t dim=0) const;
 
   virtual Double_t Chamber(Int_t chamberId, Int_t dim=0) const;
@@ -167,6 +169,8 @@ private:
     
 private:
     
+    Bool_t InternalAdd(const AliMUONVStore& store, Bool_t replace);
+  
   Bool_t fIsSingleEvent; ///< whether we can deal with more than one event
   AliMUONVStore* fChannelValues; ///< the channel store
   AliMUONVStore* fManuValues; ///< the manu store

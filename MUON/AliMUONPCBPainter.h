@@ -19,6 +19,7 @@
 class AliMUONPCBPainter : public AliMUONVPainter
 {
 public:
+  AliMUONPCBPainter(TRootIOCtor*);
   AliMUONPCBPainter();
   AliMUONPCBPainter(const AliMUONAttPainter& att, 
                     Int_t detElemId, 
@@ -41,6 +42,8 @@ public:
     
   void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                  Double_t min, Double_t max);
+  
+  Bool_t IsIncluded() const;
   
 private:
   Int_t fDetElemId; ///< Detection element this pcb is in

@@ -17,12 +17,23 @@
 
 #include "AliMUONTrackerOCDBDataMaker.h"
 
-#include "AliMUONTrackerData.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
-#include "AliMUONCalibrationData.h"
-#include "AliMUONVStore.h"
+#include "AliDCSValue.h"
 #include "AliLog.h"
+#include "AliMUON2DMap.h"
+#include "AliMUONCalibParamND.h"
+#include "AliMUONCalibrationData.h"
+#include "AliMUONTrackerData.h"
+#include "AliMUONVStore.h"
+#include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDetElement.h"
+#include "AliMpHVNamer.h"
+#include <TClass.h>
+#include <TMap.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 #include <TString.h>
 
 ///\class AliMUONTrackerOCDBDataMaker
@@ -57,27 +68,28 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
     
     if ( stype == "PEDESTALS" )
     {
-      fData = new AliMUONTrackerData(Form("PED%d",runNumber),"Pedestals",2,isSingleEvent);
-      fData->SetDimensionName(0,"Mean");
-      fData->SetDimensionName(1,"Sigma");
+      fData = CreateDataPedestals(runNumber);
       store = AliMUONCalibrationData::CreatePedestals(runNumber);
     }
     else if ( stype == "GAINS" ) 
     {
-      fData = new AliMUONTrackerData(Form("GAIN%d",runNumber),"Gains",5,isSingleEvent);
-      fData->SetDimensionName(0,"a1");
-      fData->SetDimensionName(1,"a2");
-      fData->SetDimensionName(2,"thres");
-      fData->SetDimensionName(3,"qual");
-      fData->SetDimensionName(4,"sat");
-      store = AliMUONCalibrationData::CreateGains(runNumber);
+      fData = CreateDataGains(runNumber);
+      AliMUONVStore* gains = AliMUONCalibrationData::CreateGains(runNumber);
+      store = SplitQuality(*gains);
+      delete gains;
     }
     else if ( stype == "CAPACITANCES" )
     {
-      fData = new AliMUONTrackerData(Form("CAPA%d",runNumber),"Capacitances",2,isSingleEvent);
-      fData->SetDimensionName(0,"Capa");
-      fData->SetDimensionName(1,"Injection gain");
+      fData = CreateDataCapacitances(runNumber);
       store = AliMUONCalibrationData::CreateCapacitances(runNumber);
+    }
+    else if ( stype == "HV" )
+    {
+      fData = new AliMUONTrackerData(Form("HV%d",runNumber),"High Voltages",1,!isSingleEvent);
+      fData->SetDimensionName(0,"HV");
+      TMap* m = AliMUONCalibrationData::CreateHV(runNumber);
+      store = CreateHVStore(*m);
+      delete m;
     }
     
     AliCDBManager::Instance()->SetDefaultStorage(storage);
@@ -92,6 +104,8 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
     }
     
     fData->Add(*store);
+    
+    delete store;
 }
 
 //_____________________________________________________________________________
@@ -99,6 +113,122 @@ AliMUONTrackerOCDBDataMaker::~AliMUONTrackerOCDBDataMaker()
 {
   /// dtor
   delete fData;
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONTrackerOCDBDataMaker::CreateDataCapacitances(Int_t runNumber)
+{
+  /// Create data to hold capa values
+  
+  AliMUONVTrackerData* data = new AliMUONTrackerData(Form("CAPA%d",runNumber),"Capacitances",2,kTRUE);
+  data->SetDimensionName(0,"Capa");
+  data->SetDimensionName(1,"Injection gain");
+  return data;
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONTrackerOCDBDataMaker::CreateDataGains(Int_t runNumber)
+{
+  /// Create data to hold gains values
+  
+  AliMUONVTrackerData* data = new AliMUONTrackerData(Form("GAIN%d",runNumber),"Gains",6,kTRUE);
+  data->SetDimensionName(0,"a1");
+  data->SetDimensionName(1,"a2");
+  data->SetDimensionName(2,"thres");
+  data->SetDimensionName(3,"qual1");
+  data->SetDimensionName(4,"qual2");
+  data->SetDimensionName(5,"sat");
+  return data;
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONTrackerOCDBDataMaker::CreateDataPedestals(Int_t runNumber)
+{
+  /// Create data to hold pedestal values
+  
+  AliMUONVTrackerData* data  = new AliMUONTrackerData(Form("PED%d",runNumber),"Pedestals",2,kTRUE);
+  data->SetDimensionName(0,"Mean");
+  data->SetDimensionName(1,"Sigma");
+  return data;
+}
+
+//_____________________________________________________________________________
+AliMUONVStore*
+AliMUONTrackerOCDBDataMaker::CreateHVStore(TMap& m)
+{
+  /// Create a store from hv values
+  
+  AliMUONVStore* store = new AliMUON2DMap(kTRUE);
+  
+  TIter next(&m);
+  TObjString* s;
+  AliMpHVNamer hvNamer;
+  
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    TString name(s->String());
+
+    Int_t detElemId = hvNamer.DetElemIdFromDCSAlias(name.Data());
+    
+    Int_t nindex = 1;
+    Int_t hvIndex = hvNamer.HVIndexFromDCSAlias(name.Data());
+    
+    if ( hvIndex > 0 && detElemId >= 500 ) 
+    {
+      AliFatalClass("FIXME"); // there's now switch aliases which should be taken into account
+    }
+
+    if ( hvIndex == -2 ) // we should consider switch alias there...
+    {
+      nindex = hvNamer.NumberOfPCBs(detElemId);
+      hvIndex = 0;
+    }
+
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+
+    for ( int i = 0 ; i < nindex; ++i )
+    {
+      Int_t index = hvIndex + i ;
+      
+      const AliMpArrayI* manus = de->ManusForHV(index);
+      
+      TPair* p = static_cast<TPair*>(m.FindObject(name.Data()));
+      TObjArray* a = static_cast<TObjArray*>(p->Value());
+      TIter n2(a);
+      AliDCSValue* v;
+      Float_t hvValue(0);
+      Int_t n(0);
+      while ( ( v = static_cast<AliDCSValue*>(n2()) ) )
+      {
+        hvValue += v->GetFloat();  
+        ++n;
+      }
+      if ( n ) hvValue /= n;
+      
+      Int_t N(AliMpConstants::ManuNofChannels());
+      
+      for ( Int_t k = 0 ; k < manus->GetSize(); ++k )
+      {
+        Int_t manuId = manus->GetValue(k);
+        AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(store->FindObject(detElemId,manuId));
+        if ( ! param ) 
+        {
+          param = new AliMUONCalibParamND(1,N,detElemId,manuId,0);
+          store->Add(param);
+        }
+        for ( Int_t j = 0 ; j < N; ++j )
+        {
+          param->SetValueAsDouble(j,0,hvValue);
+        }
+      }
+    }
+  }
+  
+  return store;
+  
 }
 
 //_____________________________________________________________________________
@@ -110,3 +240,39 @@ AliMUONTrackerOCDBDataMaker::Merge(TCollection*)
   return 0;
 }
 
+//_____________________________________________________________________________
+AliMUONVStore*
+AliMUONTrackerOCDBDataMaker::SplitQuality(const AliMUONVStore& gains)
+{
+  /// Create a new store, identical to source gain store, except that qual 
+  /// dimension is "decompacted" in two separated values
+  
+  AliMUONVStore* store = gains.Create();
+  
+  TIter next(gains.CreateIterator());
+  AliMUONVCalibParam* param;
+  
+  while ( ( param = static_cast<AliMUONVCalibParam*>(next()) ) ) 
+  {
+    AliMUONVCalibParam* nd = new AliMUONCalibParamND(param->Dimension()+1,
+                                                      param->Size(),
+                                                      param->ID0(),
+                                                      param->ID1());
+    for ( Int_t i = 0; i < param->Size(); ++i ) 
+    {
+      for ( Int_t k = 0; k < param->Dimension(); ++k ) 
+      {
+        if ( k == 3 ) continue;
+        Int_t m = ( k < 3 ? k : k+1 ) ;
+        nd->SetValueAsDouble(i,m,param->ValueAsFloat(i,k));
+      }
+      Int_t qual = param->ValueAsInt(i,3);
+      Int_t q1 = ( qual & 0xF );
+      Int_t q2 = ( qual & 0xF0 );
+      nd->SetValueAsInt(i,3,q1);
+      nd->SetValueAsInt(i,4,q2);
+    }
+    store->Add(nd);
+  }
+  return store;
+}

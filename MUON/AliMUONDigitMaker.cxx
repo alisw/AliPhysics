@@ -456,7 +456,7 @@ AliMUONDigitMaker::ReadTriggerDDLFast(AliRawReader* rawReader)
 
 	  if ( !loCircuit ) continue; // empty slot
 
-	  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(loCircuit, false);
+	  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(loCircuit, kTRUE);
 
 	  // skip copy cards
 	  if( !localBoard->IsNotified()) 

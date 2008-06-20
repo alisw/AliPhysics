@@ -20,6 +20,7 @@ class AliMUONManuPainter : public AliMUONVPainter
 {
 public:
 
+  AliMUONManuPainter(TRootIOCtor*);
   AliMUONManuPainter();
   AliMUONManuPainter(const AliMUONAttPainter& att, 
                      Int_t detElemId, 
@@ -46,6 +47,8 @@ public:
     virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;
 
     virtual void FillManuList(TObjArray& manuList) const;
+    
+    virtual Bool_t IsIncluded() const;
     
 private:
   Int_t fDetElemId; ///< our detection element id

@@ -17,8 +17,11 @@
 
 #include "AliMUONPainterRegistry.h"
 
+#include "AliMpManuIterator.h"
+#include "AliMUON2DMap.h"
+#include "AliMUONCalibParamND.h"
 #include "AliMUONPainterMatrix.h"
-#include "AliMUONVTrackerData.h"
+#include "AliMUONTrackerData.h"
 #include "AliMUONVTrackerDataMaker.h"
 #include "AliLog.h"
 #include <TGMenu.h>
@@ -48,7 +51,8 @@ fDataMakers(new TObjArray),
 fHistoryMenu(0x0),
 fMenuBar(0x0),
 fHistoryCounter(0),
-fZombies(new TObjArray)
+fZombies(new TObjArray),
+fInteractiveReadOutConfig(0x0)
 {
   /// ctor
   fPainterMatrices->SetOwner(kTRUE);
@@ -62,6 +66,28 @@ AliMUONPainterRegistry::~AliMUONPainterRegistry()
   /// dtor
   delete fPainterMatrices;
   delete fDataMakers;
+  delete fInteractiveReadOutConfig;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterRegistry::CreateInteractiveReadOutConfig() const
+{
+  fInteractiveReadOutConfig = new AliMUONTrackerData("IROC","IROC",1);
+  fInteractiveReadOutConfig->SetDimensionName(0,"Switch");
+    /// FIXME: should use a version of TrackerData w/ no storage for channels
+    /// (i.e. starting at the manu level, or even bus patch level ?)
+  AliMpManuIterator it;
+  Int_t detElemId;
+  Int_t manuId;
+  AliMUON2DMap store(true);
+
+  while ( it.Next(detElemId,manuId) )
+  {
+    AliMUONVCalibParam* param = new AliMUONCalibParamND(1,64,detElemId,manuId,1);
+    store.Add(param);
+  }
+  fInteractiveReadOutConfig->Add(store);
 }
 
 //_____________________________________________________________________________
@@ -188,6 +214,17 @@ AliMUONPainterRegistry::Instance()
   /// Get unique instance of this class
   if ( !fgInstance ) fgInstance = new AliMUONPainterRegistry;
   return fgInstance;
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONPainterRegistry::InteractiveReadOutConfig() const
+{
+  /// Return an object that contains the parts of the detector selected
+  /// (using the mouse) to be part of the readout.
+
+  if (!fInteractiveReadOutConfig) CreateInteractiveReadOutConfig();
+  return fInteractiveReadOutConfig;
 }
 
 //_____________________________________________________________________________

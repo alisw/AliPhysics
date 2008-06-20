@@ -24,6 +24,7 @@ class AliMUONBusPatchPainter : public AliMUONVPainter
 public:
   
   AliMUONBusPatchPainter();
+  AliMUONBusPatchPainter(TRootIOCtor*);
   AliMUONBusPatchPainter(const AliMUONAttPainter& att, Int_t busPatchId);
   AliMUONBusPatchPainter(const AliMUONBusPatchPainter& rhs);
   AliMUONBusPatchPainter& operator=(const AliMUONBusPatchPainter& rhs);
@@ -45,6 +46,8 @@ public:
 
   virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;
 
+  virtual Bool_t IsIncluded() const;
+  
 private:
   Int_t fBusPatchId; ///< our identifier
   

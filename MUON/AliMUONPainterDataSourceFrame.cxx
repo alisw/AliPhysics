@@ -174,6 +174,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     fOCDBTypes->AddEntry("Pedestals",0);
     fOCDBTypes->AddEntry("Gains",1);
     fOCDBTypes->AddEntry("Capacitances",2);
+    fOCDBTypes->AddEntry("HV",3);
     fOCDBTypes->Select(0);
     fOCDBTypes->Resize(100,20);
     

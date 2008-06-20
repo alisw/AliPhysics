@@ -38,6 +38,9 @@ public:
   /// Add values for one event from one full store
   virtual Bool_t Add(const AliMUONVStore& store) = 0;
 
+  /// Replace values
+  virtual Bool_t Replace(const AliMUONVStore& store) = 0;
+  
   /// Get the value for a given buspatch and given dimension
   virtual Double_t BusPatch(Int_t busPatchId, Int_t dim=0) const = 0;
   

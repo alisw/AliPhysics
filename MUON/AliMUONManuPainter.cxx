@@ -47,6 +47,15 @@ ClassImp(AliMUONManuPainter)
 ///\endcond
 
 //_____________________________________________________________________________
+AliMUONManuPainter::AliMUONManuPainter(TRootIOCtor* ioCtor)
+: AliMUONVPainter(ioCtor),
+fDetElemId(-1),
+fManuId(-1)
+{
+  /// ctor
+}
+
+//_____________________________________________________________________________
 AliMUONManuPainter::AliMUONManuPainter()
 : AliMUONVPainter(),
 fDetElemId(-1),
@@ -189,6 +198,14 @@ AliMUONManuPainter::FillManuList(TObjArray& manuList) const
 {
   /// Append our manu to the list
   manuList.Add(new AliMpManuUID(fDetElemId,fManuId));
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONManuPainter::IsIncluded() const
+{
+  /// whether this manu is included in the readout or not
+  return ( InteractiveReadOutConfig()->Manu(fDetElemId,fManuId) > 0 );
 }
 
 //_____________________________________________________________________________

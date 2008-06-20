@@ -107,18 +107,37 @@ Bool_t
 AliMUONTrackerData::Add(const AliMUONVStore& store)
 {
   /// Add the given external store to our internal store
+  return InternalAdd(store,kFALSE);
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONTrackerData::Replace(const AliMUONVStore& store)
+{
+  /// Replace our values by values from the given external store
+  Bool_t rv = InternalAdd(store,kTRUE);
+  AliMUONVTrackerData::Replace(store);
+  return rv;
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
+{
+  /// Add the given external store to our internal store
   
   AliCodeTimerAuto(GetName());
     
-  if ( IsSingleEvent() && fNevents == 1 ) 
+  if ( !replace)
   {
-    AliError(Form("%s is supposed to be single event only",GetName()));
-    return kFALSE;
+    if ( IsSingleEvent() && fNevents == 1 ) 
+    {
+      AliError(Form("%s is supposed to be single event only",GetName()));
+      return kFALSE;
+    }  
+    ++fNevents;  
+    NumberOfEventsChanged();
   }
-  
-  ++fNevents;
-  
-  NumberOfEventsChanged();
   
   if (!fChannelValues)
   {
@@ -209,24 +228,26 @@ AliMUONTrackerData::Add(const AliMUONVStore& store)
           
           for ( Int_t k = 0; k < nk; ++k ) 
           {
-            channel->SetValueAsDoubleFast(i,ix+k,channel->ValueAsDoubleFast(i,ix+k)+value[k]);
-
-            manu->SetValueAsDoubleFast(0,ix+k,manu->ValueAsDoubleFast(0,ix+k)+value[k]);            
+            Double_t e = replace ? channel->ValueAsDoubleFast(i,ix+k) : 0.0;
             
-            busPatch->SetValueAsDoubleFast(0,ix+k,busPatch->ValueAsDoubleFast(0,ix+k)+value[k]);
-          
-            de->SetValueAsDoubleFast(0,ix+k,de->ValueAsDoubleFast(0,ix+k)+value[k]);
-          
-            chamber->SetValueAsDoubleFast(0,ix+k,chamber->ValueAsDoubleFast(0,ix+k)+value[k]);
-          
+            channel->SetValueAsDoubleFast(i,ix+k,channel->ValueAsDoubleFast(i,ix+k)-e+value[k]);
+              
+            manu->SetValueAsDoubleFast(0,ix+k,manu->ValueAsDoubleFast(0,ix+k)-e+value[k]);            
+            
+            busPatch->SetValueAsDoubleFast(0,ix+k,busPatch->ValueAsDoubleFast(0,ix+k)-e+value[k]);
+            
+            de->SetValueAsDoubleFast(0,ix+k,de->ValueAsDoubleFast(0,ix+k)-e+value[k]);
+            
+            chamber->SetValueAsDoubleFast(0,ix+k,chamber->ValueAsDoubleFast(0,ix+k)-e+value[k]);
+            
             if ( pcb ) 
             {
-              pcb->SetValueAsDoubleFast(0,ix+k,pcb->ValueAsDoubleFast(0,ix+k)+value[k]);
+              pcb->SetValueAsDoubleFast(0,ix+k,pcb->ValueAsDoubleFast(0,ix+k)-e+value[k]);
             }
           }
         }
         
-        if ( validChannel )
+        if ( validChannel && !replace )
         {
           channel->SetValueAsDoubleFast(i,IndexOfOccupancyDimension(),
                                         channel->ValueAsDoubleFast(i,IndexOfOccupancyDimension())+1.0);
@@ -823,7 +844,7 @@ AliMUONTrackerData::PCB(Int_t detElemId, Int_t pcbIndex, Int_t dim) const
 
   AliMUONVCalibParam* param = PCBParam(detElemId,pcbIndex);
   
-  return param ? Value(*param,pcbIndex,dim) : 0.0;
+  return param ? Value(*param,0,dim) : 0.0;
 }
 
 //_____________________________________________________________________________

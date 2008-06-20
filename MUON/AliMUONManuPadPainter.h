@@ -22,6 +22,7 @@
 class AliMUONManuPadPainter : public AliMUONVPainter
 {
 public:
+  AliMUONManuPadPainter(TRootIOCtor* ioCtor);
   AliMUONManuPadPainter();
   AliMUONManuPadPainter(const AliMUONVPainter& mother,
                         Int_t detElemId,
@@ -57,6 +58,8 @@ public:
 
   virtual void DrawHistogramClone(Double_t* values=0x0) const;
 
+  virtual Bool_t IsIncluded() const;
+  
 private:
     
   void BackupStyle();

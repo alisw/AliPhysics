@@ -20,6 +20,7 @@ class AliMUONDEPainter : public AliMUONVPainter
 {
 public:
   AliMUONDEPainter();
+  AliMUONDEPainter(TRootIOCtor*);
   AliMUONDEPainter(const AliMUONAttPainter& att, Int_t detElemId);
   AliMUONDEPainter(const AliMUONDEPainter& rhs);
   AliMUONDEPainter& operator=(const AliMUONDEPainter& rhs);
@@ -45,6 +46,8 @@ public:
   virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;
 
   virtual void FillManuList(TObjArray& manuList) const;
+  
+  virtual Bool_t IsIncluded() const;
   
 private:
   Int_t fDetElemId; ///< our id

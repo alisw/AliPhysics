@@ -23,15 +23,16 @@
 
 
 #include "AliMUONMchViewApplication.h"
-#include "AliMUONPainterHelper.h"
+
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
-#include <TROOT.h>
-#include <TStyle.h>
+#include "AliMUONPainterHelper.h"
+#include <Riostream.h>
 #include <TObjArray.h>
 #include <TObjString.h>
-#include <Riostream.h>
+#include <TROOT.h>
+#include <TStyle.h>
 
 //______________________________________________________________________________
 Int_t Usage()
@@ -40,6 +41,8 @@ Int_t Usage()
   cout << "mchview " << endl;
   cout << "  --version : shows the current version of the program" << endl;
   cout << "  --use filename.root : reuse a previously saved (from this program) root file. Several --use can be used ;-)" << endl;
+  cout << "  --geometry #x#+#+# : manually specify the geometry of the window, ala X11..., e.g. --geometry 1280x900+1600+0 will" << endl;
+  cout << "    get a window of size 1280x900, located at (1600,0) from the top-left of the (multihead) display " << endl;
   return -1;
 }
 
@@ -57,7 +60,10 @@ int main(int argc, char** argv)
   Int_t nok(0);
   
   TObjArray filesToOpen;
-  
+  Bool_t isGeometryFixed(kFALSE);
+  Int_t gix, giy;
+  Int_t gox,goy;
+
   for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
   {
     TString a(static_cast<TObjString*>(args.At(i))->String());
@@ -73,6 +79,15 @@ int main(int argc, char** argv)
       ++i;
       nok += 2;
     }
+    else if ( a == "--geometry" )
+    {
+      isGeometryFixed = kTRUE;
+      TString g(static_cast<TObjString*>(args.At(i+1))->String());
+      sscanf(g.Data(),"%dx%d+%d+%d",&gix,&giy,&gox,&goy);
+      nok += 2;
+      ++i;
+    }
+    
     else
     {
       return Usage();
@@ -84,7 +99,7 @@ int main(int argc, char** argv)
     return Usage();
   }
   
-  AliWarningGeneral("main","Remove default storage and run number from here...");
+  AliWarningGeneral("main","FIXME ? Remove default storage and run number from here...");
   
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBManager::Instance()->SetRun(0);
@@ -101,8 +116,21 @@ int main(int argc, char** argv)
   colors[n+1] = 1;
   gStyle->SetPalette(n+2,colors);
   delete[] colors;
+
+  UInt_t w(0);
+  UInt_t h(0);
+  UInt_t ox(0);
+  UInt_t oy(0);
+
+  if ( isGeometryFixed )
+  {
+    w = gix;
+    h = giy;
+    ox = gox;
+    oy = goy;
+  }
   
-  AliMUONMchViewApplication* theApp = new AliMUONMchViewApplication("mchview", &argc, argv, 0.7, 0.9);
+  AliMUONMchViewApplication* theApp = new AliMUONMchViewApplication("mchview", &argc, argv, w,h,gox,goy);
    
   AliCodeTimer::Instance()->Print();
 

@@ -24,6 +24,7 @@
 #include "AliLog.h"
 #include <TString.h>
 #include <TSystem.h>
+#include "AliMUONTrackerOCDBDataMaker.h"
 
 ///\class AliMUONTrackerACFDataMaker
 ///
@@ -53,34 +54,26 @@ AliMUONTrackerACFDataMaker::AliMUONTrackerACFDataMaker(const char* acfPath,
     
     TString stype(type);
     stype.ToUpper();
-    Bool_t isSingleEvent(kTRUE);
     TString filename(gSystem->ExpandPathName(acfPath));
     
     if ( stype == "PEDESTALS" )
     {
-      fData = new AliMUONTrackerData(Form("PED",number),"Pedestals",2,isSingleEvent);
-      fData->SetDimensionName(0,"Mean");
-      fData->SetDimensionName(1,"Sigma");
+      fData = AliMUONTrackerOCDBDataMaker::CreateDataPedestals(number);
       store = new AliMUON2DMap(kTRUE);
       AliMUONTrackerIO::ReadPedestals(filename.Data(),*store);
     }
     else if ( stype == "GAINS" ) 
     {
-      fData = new AliMUONTrackerData(Form("GAIN%d",number),"Gains",5,isSingleEvent);
-      fData->SetDimensionName(0,"a1");
-      fData->SetDimensionName(1,"a2");
-      fData->SetDimensionName(2,"thres");
-      fData->SetDimensionName(3,"qual");
-      fData->SetDimensionName(4,"sat");
-      store = new AliMUON2DMap(kTRUE);
+      fData = AliMUONTrackerOCDBDataMaker::CreateDataGains(number);
+      AliMUONVStore* gains = new AliMUON2DMap(kTRUE);
       TString comment;
-      AliMUONTrackerIO::ReadGains(filename.Data(),*store,comment);
+      AliMUONTrackerIO::ReadGains(filename.Data(),*gains,comment);
+      store = AliMUONTrackerOCDBDataMaker::SplitQuality(*gains);
+      delete gains;      
     }
     else if ( stype == "CAPACITANCES" )
     {
-      fData = new AliMUONTrackerData(Form("CAPA%d",number),"Capacitances",2,isSingleEvent);
-      fData->SetDimensionName(0,"Capa");
-      fData->SetDimensionName(1,"Injection gain");
+      fData = AliMUONTrackerOCDBDataMaker::CreateDataCapacitances(number);
       store = new AliMUON1DMap(20000);
       AliMUONTrackerIO::ReadCapacitances(filename.Data(),*store);
     }

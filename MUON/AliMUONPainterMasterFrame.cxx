@@ -333,16 +333,8 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
     // create "opposite" attributes
     AliMUONAttPainter a1(a);
     AliMUONAttPainter a2(a);
-    
-    if ( a.IsCathodeDefined() ) 
-    {
-      a2.SetCathode(!a.IsCathode0(),!a.IsCathode1());
-    }
-    
-    if ( a.IsPlaneDefined() ) 
-    {
-      a2.SetPlane(!a.IsBendingPlane(),!a.IsNonBendingPlane());
-    }
+  
+    a2.Invert();
     
     a1.SetCathodeAndPlaneDisabled(kTRUE);
     a2.SetCathodeAndPlaneDisabled(kTRUE);

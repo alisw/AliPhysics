@@ -53,6 +53,14 @@ fBusPatchId(-1)
 }
 
 //_____________________________________________________________________________
+AliMUONBusPatchPainter::AliMUONBusPatchPainter(TRootIOCtor* ioCtor)
+: AliMUONVPainter(ioCtor),
+fBusPatchId(-1)
+{
+  /// default streaming ctor
+}
+
+//_____________________________________________________________________________
 AliMUONBusPatchPainter::AliMUONBusPatchPainter(const AliMUONAttPainter& att, 
                                                Int_t busPatchId)
 : AliMUONVPainter("BUSPATCH"),
@@ -196,6 +204,14 @@ AliMUONBusPatchPainter::Copy(TObject& object) const
   /// Copy this to object
   AliMUONVPainter::Copy((AliMUONVPainter&)(object));
   ((AliMUONBusPatchPainter&)(object)).fBusPatchId = fBusPatchId;
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONBusPatchPainter::IsIncluded() const
+{
+  /// whether this bus patch is included in the readout or not
+  return ( InteractiveReadOutConfig()->BusPatch(fBusPatchId) > 0 );
 }
 
 //_____________________________________________________________________________

@@ -62,6 +62,19 @@ fFillStyleBck(-1)
 }
 
 //_____________________________________________________________________________
+AliMUONManuPadPainter::AliMUONManuPadPainter(TRootIOCtor* ioCtor)
+: AliMUONVPainter(ioCtor), 
+fDetElemId(-1), 
+fManuId(-1),
+fLineColorBck(-1),
+fLineWidthBck(-1),
+fFillColorBck(-1),
+fFillStyleBck(-1)
+{
+  /// ctor
+}
+
+//_____________________________________________________________________________
 AliMUONManuPadPainter::AliMUONManuPadPainter(const AliMUONVPainter& mother,
                                              Int_t detElemId,
                                              Int_t manuId)
@@ -146,6 +159,14 @@ AliMUONManuPadPainter::NameAtPosition(Double_t x, Double_t y) const
   }
   
   return name;
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONManuPadPainter::IsIncluded() const
+{
+  /// whether this manu is included in the readout or not
+  return ( InteractiveReadOutConfig()->Manu(fDetElemId,fManuId) > 0 );
 }
 
 //_____________________________________________________________________________

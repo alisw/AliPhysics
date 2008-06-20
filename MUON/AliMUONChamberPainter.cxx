@@ -56,6 +56,14 @@ fChamberId(-1)
 }
 
 //_____________________________________________________________________________
+AliMUONChamberPainter::AliMUONChamberPainter(TRootIOCtor* ioCtor)
+: AliMUONVPainter(ioCtor),
+fChamberId(-1)
+{
+  /// ctor
+}
+
+//_____________________________________________________________________________
 AliMUONChamberPainter::AliMUONChamberPainter(const AliMUONAttPainter& att, 
                                              Int_t chamberId)
 : AliMUONVPainter("Chamber"),
@@ -194,6 +202,14 @@ AliMUONChamberPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex
   Double_t value = data.Chamber(fChamberId,dataIndex);
   
   return AliMUONPainterHelper::Instance()->FormatValue(data.DimensionName(dataIndex).Data(),value);
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONChamberPainter::IsIncluded() const
+{
+  /// whether this chamber is included in the readout or not
+  return ( InteractiveReadOutConfig()->Chamber(fChamberId) > 0 );
 }
 
 //_____________________________________________________________________________

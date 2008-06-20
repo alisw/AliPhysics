@@ -19,6 +19,10 @@
 
 #include "AliCodeTimer.h"
 #include "AliLog.h"
+#include "AliMUON2DMap.h"
+#include "AliMUONCalibParamND.h"
+#include "AliMUONPainterRegistry.h"
+#include "AliMpManuUID.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONPainterContour.h"
 #include "AliMUONPainterGroup.h"
@@ -91,6 +95,30 @@
 ///\cond CLASSIMP
 ClassImp(AliMUONVPainter)
 ///\endcond
+
+//_____________________________________________________________________________
+AliMUONVPainter::AliMUONVPainter(TRootIOCtor*) : TObject(), 
+TQObject(),
+fHistogram(0x0),
+fName(""),
+fPathName(""),
+fType(""),
+fMother(0x0),
+fGroup(0x0),
+fContour(0x0),
+fPainterGroups(0x0),
+fChildren(0x0),
+fResponderGroup(0x0),
+fPlotterGroup(0x0),
+fBorderFactor(1.1),
+fPad(0x0),
+fAttributes(),
+fLineColor(1),
+fLineWidth(1),
+fIsValid(kTRUE)
+{
+  /// streamer ctor
+}
 
 //_____________________________________________________________________________
 AliMUONVPainter::AliMUONVPainter(const char* type)
@@ -719,6 +747,12 @@ AliMUONVPainter::Paint(Option_t*)
   {
     PaintOutline();
   }
+  
+  if ( IsExcluded() )
+  {
+    fContour->PaintArea(2);
+    fContour->PaintOutline(1,1);
+  }
 }
 
 //_____________________________________________________________________________
@@ -736,6 +770,7 @@ AliMUONVPainter::PaintArea(const AliMUONVTrackerData&, Int_t, Double_t, Double_t
 {
   /// Default implementation (must be overriden)
   AliError(Form("%s : implement me",GetName()));
+  return;
 }
 
 //_____________________________________________________________________________
@@ -901,7 +936,14 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
 //    l->Clear();
     l->Delete();
   
-    if ( group ) 
+    TClassMenuItem* n(0x0);
+    
+    l->Add(new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                              "Include","Include",p,"",-1,kTRUE));
+    l->Add(new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                              "Exclude","Exclude",p,"",-1,kTRUE));    
+    
+    if ( group )  
     {
       Int_t dim = group->Data()->InternalToExternal(group->DataIndex());
       if ( dim < group->Data()->ExternalDimension() )
@@ -909,7 +951,7 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
         if ( data && data->IsHistogrammed(dim) ) 
         {
           // Add histo drawing to the popup menu
-          TClassMenuItem* n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+          n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
                                                  "Draw histogram","DrawHistogram0",p,"",-1,kTRUE);
           l->Add(n);
           
@@ -920,11 +962,13 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
         
       }
       
-      for ( Int_t i = 0; i < data->ExternalDimension()*2; ++i ) 
+      Int_t nd = data->IsSingleEvent() ? data->ExternalDimension() : data->ExternalDimension()*2;
+      
+      for ( Int_t i = 0; i < nd; ++i ) 
       {
-        TClassMenuItem* n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
-                                               Form("Draw %s clone",data->DimensionName(i).Data()),
-                                               Form("DrawInternalHistogramClone%d",i),p,"",-1,kTRUE);
+        n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                               Form("Draw %s clone",data->DimensionName(i).Data()),
+                               Form("DrawInternalHistogramClone%d",i),p,"",-1,kTRUE);
         l->Add(n);
       } 
     }
@@ -1201,6 +1245,86 @@ AliMUONVPainter::UpdateGroupsFrom(const AliMUONVPainter& painter)
     
     SetLine(group->Depth(),group->GetLineColor(),group->GetLineWidth());
   }
+  
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::Include()
+{
+  /// Include this painter
+  AliInfo(GetName());
+  
+  /// Update the global interactive read out configuration  
+  WriteIROC(1);
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::GetIROCManuList(TObjArray& manuList)
+{
+  /// Get the list of manus spanned by this painter AND by its dual
+
+  FillManuList(manuList);
+  
+  // get our dual
+  AliMUONAttPainter att(Attributes());
+  
+  att.Invert();
+  
+  att.SetCathodeAndPlaneDisabled(kTRUE);
+  
+  AliMUONVPainter* p = AliMUONVPainter::CreatePainter(ClassName(),att,ID0(),ID1());
+  
+  if (p)
+  {
+    p->FillManuList(manuList);
+  }
+  
+  delete p;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::WriteIROC(Double_t value)
+{
+  /// Update the interactive readout configuration
+  
+  TObjArray manuList;
+  GetIROCManuList(manuList);
+  
+  AliMpManuUID* muid;
+  TIter nextm(&manuList);
+  AliMUON2DMap store(true);
+  
+  while ((muid=static_cast<AliMpManuUID*>(nextm())))
+  {
+    AliMUONVCalibParam* param = new AliMUONCalibParamND(1,64,
+                                                        muid->DetElemId(),
+                                                        muid->ManuId(),value);
+    store.Add(param);
+  }
+  
+  InteractiveReadOutConfig()->Replace(store);
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::Exclude()
+{
+  /// Exclude this painter
+  AliInfo(GetName());
+  
+  /// Update the global interactive read out configuration
+  WriteIROC(0.0);
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONVPainter::InteractiveReadOutConfig() const
+{
+  /// get the interactive readout config object
+  return AliMUONPainterRegistry::Instance()->InteractiveReadOutConfig();
 }
 
 //_____________________________________________________________________________

@@ -26,6 +26,7 @@ class AliMUONChamberPainter : public AliMUONVPainter
 {
 public:
   AliMUONChamberPainter();
+  AliMUONChamberPainter(TRootIOCtor* ioCtor);
   AliMUONChamberPainter(const AliMUONAttPainter& att, Int_t chamberId);
   AliMUONChamberPainter(const AliMUONChamberPainter& rhs);
   AliMUONChamberPainter& operator=(const AliMUONChamberPainter& rhs);
@@ -48,6 +49,8 @@ public:
     
   AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;
 
+  Bool_t IsIncluded() const;
+  
 private:
   Int_t fChamberId; ///< our identifier (0..n)
   

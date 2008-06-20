@@ -78,6 +78,8 @@ public:
   /// Whether we are valid
   Bool_t IsValid() const { return TestBit(kIsValid); }
   
+  void Invert();
+  
   /// Set our cathode states
   void SetCathode(Bool_t cath0, Bool_t cath1) { SetBit(kIsCathode0,cath0); SetBit(kIsCathode1,cath1); }
   

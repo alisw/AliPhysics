@@ -23,13 +23,13 @@ class AliMUONMchViewApplication : public TRint
 {
 public:
   AliMUONMchViewApplication(const char* name, int* argc, char** argv, 
-                            Float_t wfraction, Float_t hfraction);
+                            UInt_t w=0, UInt_t h=0, UInt_t ox=0, UInt_t oy=0);
   virtual ~AliMUONMchViewApplication();
 
   void HandleMenu(Int_t i);
 
   /// Return the version number of the mchview application
-  static const char* Version() { return "0.94"; }
+  static const char* Version() { return "0.95"; }
   
   /// Return the SVN revision  and version number of the mchview application
   static const char* FullVersion() { return Form("mchview Version %s ($Id$)",Version()); }

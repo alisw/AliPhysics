@@ -45,6 +45,7 @@ class AliMUONVPainter : public TObject, public TQObject
 {
 public:  
 
+  AliMUONVPainter(TRootIOCtor*);
   AliMUONVPainter(const char* type="");
   AliMUONVPainter(const AliMUONVPainter& rhs);
   AliMUONVPainter& operator=(const AliMUONVPainter& rhs);
@@ -254,11 +255,23 @@ public:
   /// SL
   void DrawInternalHistogramClone9() { DrawInternalHistogramClone(9); }
   
+  /// Whether or not the part of the detector represented by this painter should be included in readout.
+  virtual Bool_t IsIncluded() const = 0;
+  
+  /// Whether or not the part of the detector represented by this painter should be excluded from readout.
+  Bool_t IsExcluded() const { return ! IsIncluded(); }
+
+  virtual void Include();
+  
+  virtual void Exclude();
+
 protected:
     
   virtual TCollection* Children() const;
 
   mutable TH1* fHistogram; //!< histogram
+  
+  AliMUONVTrackerData* InteractiveReadOutConfig() const;
   
 private:
   
@@ -273,6 +286,10 @@ private:
   
   AliMUONVPainter* GetPainter(Int_t px, Int_t py, Double_t& x, Double_t& y) const;
   
+  void WriteIROC(Double_t value);
+  
+  void GetIROCManuList(TObjArray& manuList);
+
 private:
   
   TString fName; ///< our (short) name

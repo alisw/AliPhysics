@@ -552,9 +552,12 @@ AliMUONPainterPlotSelector::UpdateSourceButton()
   (AliMUONPainterInterfaceHelper::FindButtonByUserData(*fDataSourceNames,
                                                        fCurrentData));
   
-  AliMUONPainterInterfaceHelper::Select(*fDataSourceNames,button->GetTitle());
+  if ( button ) 
+  {
+    AliMUONPainterInterfaceHelper::Select(*fDataSourceNames,button->GetTitle());
   
-  RestoreDimensionButtons(button->GetTitle(),kFALSE);
+    RestoreDimensionButtons(button->GetTitle(),kFALSE);
+  }
   
   fDataSourceNames->Show();
 }

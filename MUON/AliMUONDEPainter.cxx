@@ -55,6 +55,14 @@ fDetElemId(-1)
 }
 
 //_____________________________________________________________________________
+AliMUONDEPainter::AliMUONDEPainter(TRootIOCtor* ioCtor)
+: AliMUONVPainter(ioCtor),
+fDetElemId(-1)
+{
+  /// default streaming ctor
+}
+
+//_____________________________________________________________________________
 AliMUONDEPainter::AliMUONDEPainter(const AliMUONAttPainter& att, Int_t detElemId)
 : AliMUONVPainter("DE"),
 fDetElemId(detElemId)
@@ -250,7 +258,15 @@ AliMUONDEPainter::FillManuList(TObjArray& manuList) const
     }
   }
 }
-                            
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONDEPainter::IsIncluded() const
+{
+  /// whether this detection element is included in the readout or not
+  return ( InteractiveReadOutConfig()->DetectionElement(fDetElemId) > 0 );
+}
+
 //_____________________________________________________________________________
 void
 AliMUONDEPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,

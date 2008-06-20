@@ -70,22 +70,22 @@ const char* AliMUONMchViewApplication::fgkFileTypes[] = {
 //______________________________________________________________________________
 AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
                                                      int* argc, char** argv,
-                                                     Float_t wfraction,
-                                                     Float_t hfraction) 
+                                                     UInt_t w, UInt_t h,
+                                                     UInt_t ox, UInt_t oy) 
 : TRint(name,argc,argv),
   fMainFrame(0x0),
   fPainterMasterFrame(0x0)
 {
 
   /// ctor
-  /// wfraction,hfraction are the fractions of display width and height
-  /// we want to draw on
-  
-  UInt_t dw = gClient->GetDisplayWidth(); 
-  UInt_t dh = gClient->GetDisplayHeight(); 
-                   
-  UInt_t w = (UInt_t)(wfraction*dw);
-  UInt_t h = (UInt_t)(hfraction*dh);
+  /// (w,h) is the size in pixel (if 0,0 it will be computed as 70%,90% of display size)
+  /// (ox,oy) is the offset from the top-left of the display
+
+  if (!w | !h)
+  {
+    w = (UInt_t)(gClient->GetDisplayWidth()*0.7);
+    h = (UInt_t)(gClient->GetDisplayHeight()*0.9); 
+  }
 
   fMainFrame = new TGMainFrame(gClient->GetRoot(),w,h);
   
@@ -123,13 +123,9 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   fMainFrame->MapWindow();
   
   fMainFrame->Connect("CloseWindow()","AliMUONMchViewApplication",this,"Terminate()");
-  
-  UInt_t x = dw/2 - w/2;
-  UInt_t y = 0;
-  
-  fMainFrame->MoveResize(x, y, w, h); 
-  fMainFrame->SetWMPosition(x, y);
-  
+
+  fMainFrame->MoveResize(ox,oy, w, h); 
+  fMainFrame->SetWMPosition(ox, oy);
   fMainFrame->SetWMSizeHints(w,h,w,h,0,0);
   
   cout << "***************************************************" << endl;
@@ -339,6 +335,20 @@ AliMUONMchViewApplication::ReleaseNotes()
   TGTransientFrame* t = new TGTransientFrame(gClient->GetRoot(),gClient->GetRoot(),width,height);
   
   TGTextView* rn = new TGTextView(t);
+
+  rn->AddLine("0.9%");
+  rn->AddLine("");
+  rn->AddLine("New features");
+  rn->AddLine("");
+  rn->AddLine("- Can now read and display HV values from OCDB");
+  rn->AddLine("- New program option --geometry to force geometry of the window");
+  rn->AddLine("- Added possibility, in painters' context menu, to include or exclude part of the detector");
+  rn->AddLine("  (which will be used later on to communicate with LC2 which parts should be read out or not)");
+  rn->AddLine("");
+  rn->AddLine("Improvement");
+  rn->AddLine("");
+  rn->AddLine("- When displaying Gains, the quality information is now decoded");
+  rn->AddLine("");
   
   rn->AddLine("0.94");
   rn->AddLine("");
