@@ -700,7 +700,7 @@ else
     AC_MSG_CHECKING([for required functions in AliTRDrecoParam])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrecoParam.h>], 
                                        [AliTRDrecoParam p;
-				       p.SetSeedingOn()])],
+				       p.SetSeeding(0)])],
                                        [], 
   				       [enable_trd="no...requires.AliRoot>v4-13-Release"])
     AC_MSG_RESULT([$enable_trd])       
