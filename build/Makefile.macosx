@@ -17,7 +17,7 @@ endif
 # The compilers
 CXX           = g++ 
 CC	      = gcc
-F77	      = $(root-config --f77)
+F77	      = $(shell root-config --f77)
 
 # Global optimisation
 OPT           = -O -g
