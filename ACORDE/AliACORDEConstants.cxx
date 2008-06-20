@@ -71,6 +71,68 @@ const Float_t AliACORDEConstants::fgkModulePositionZ[60] = {
 const Float_t AliACORDEConstants::fgkExtraModulePositionZ[4] = {93.0, 18., -18, -93};
 const Float_t AliACORDEConstants::fgkExtraModulePositionX = 0.0;
 const Float_t AliACORDEConstants::fgkExtraModulePositionY = 850.0;
+const Int_t AliACORDEConstants::fgkModuleElectronicChannel[60] = {
+/* DCS 0_0 ITS-1*/ 10,
+/* DCS 0_1 */ 4,
+/* DCS 0_2 */ 8,
+/* DCS 0_3 */ 7,
+/* DCS 0_4 */ 6,
+/* DCS 0_5 */ 5,
+/* DCS 0_6 */ 9,
+/* DCS 0_7 */ 3,
+/* DCS 0_8 */ 2,
+/* DCS 0_9 ITS-2*/ 42,
+/* DCS 1_0 */ 20,
+/* DCS 1_1 */ 19,
+/* DCS 1_2 */ 18,
+/* DCS 1_3 */ 17,
+/* DCS 1_4 */ 16,
+/* DCS 1_5 */ 15,
+/* DCS 1_6 */ 14,
+/* DCS 1_7 */ 13,
+/* DCS 1_8 */ 12,
+/* DCS 1_9 */ 11,
+/* DCS 2_0 */ 60,
+/* DCS 2_1 */ 59,
+/* DCS 2_2 */ 58,
+/* DCS 2_3 */ 57,
+/* DCS 2_4 */ 56,
+/* DCS 2_5 */ 55,
+/* DCS 2_6 */ 54,
+/* DCS 2_7 */ 53,
+/* DCS 2_8 */ 52,
+/* DCS 2_9 */ 51,
+/* DCS 3_0 */ 40,
+/* DCS 3_1 */ 39,
+/* DCS 3_2 */ 38,
+/* DCS 3_3 */ 37,
+/* DCS 3_4 */ 36,
+/* DCS 3_5 */ 35,
+/* DCS 3_6 */ 34,
+/* DCS 3_7 */ 33,
+/* DCS 3_8 */ 32,
+/* DCS 3_9 */ 31,
+/* DCS 4_0 */ 30,
+/* DCS 4_1 */ 29,
+/* DCS 4_2 */ 28,
+/* DCS 4_3 */ 27,
+/* DCS 4_4 */ 26,
+/* DCS 4_5 */ 25,
+/* DCS 4_6 */ 24,
+/* DCS 4_7 */ 23,
+/* DCS 4_8 */ 22,
+/* DCS 4_9 */ 21,
+/* DCS 5_0 ITS-3*/ 1,
+/* DCS 5_1 */ 49,
+/* DCS 5_2 */ 48,
+/* DCS 5_3 */ 47,
+/* DCS 5_4 */ 46,
+/* DCS 5_5 */ 45,
+/* DCS 5_6 */ 44,
+/* DCS 5_7 */ 43,
+/* DCS 5_8 */ 50,
+/* DCS 5_9 ITS-4*/ 41
+};
 
 ClassImp(AliACORDEConstants)
 
@@ -135,7 +197,13 @@ Float_t AliACORDEConstants::ExtraModulePositionZ(Int_t i) const
   // Module lenght
   return fgkExtraModulePositionZ[i];
 }
-
+//_____________________________________________________________________________
+Int_t AliACORDEConstants::ModuleElectronicChannel(Int_t i) const
+{
+	// return de ID (electronic channel in ACORDE) of each module
+	// acording to the match between DCS and Electronic nomenclature
+	return fgkModuleElectronicChannel[i];
+}
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::ModuleLength() const
 {
