@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 # Makefile to build AliRoot for Linux
 
 # System dependent commands
@@ -9,16 +10,7 @@ CXX           = g++
 CC	      = gcc
 CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
 CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
-
-ifneq (,$(findstring g95,$(ROOTBUILD)))
-F77	  = g95
-else
-ifneq (,$(findstring gfortran,$(ROOTBUILD)))
-F77	  = gfortran
-else
-F77	  = g77
-endif
-endif
+F77	      = $(shell root-config --f77)
 
 # Global optimisation
 OPT           = -O -g
@@ -56,10 +48,10 @@ endif
 CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
 FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
 
-ifneq (,$(findstring g95,$(ROOTBUILD)))
+ifeq (g95,$(F77))
 FFLAGS	      +=-DFORTRAN_G95
 else
-ifneq (,$(findstring gfortran,$(ROOTBUILD)))
+ifeq (gfortran,$(F77))
 FFLAGS	      +=-DFORTRAN_GFORTRAN
 else
 FFLAGS	      +=
@@ -82,10 +74,10 @@ SOEXT 	      = so
 #System libraries
 SYSLIBS      := -ldl -lcrypt -L/usr/X11R6/lib -lX11
 
-ifneq (,$(findstring g95,$(ROOTBUILD)))
+ifeq (g95,$(F77))
 SHLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
-ifneq (,$(findstring gfortran,$(ROOTBUILD)))
+ifeq (gfortran,$(F77))
 SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
 SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
 SYSLIBS += $(SHLIB)

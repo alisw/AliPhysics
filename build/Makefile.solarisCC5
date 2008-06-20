@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 # Makefile to build ALIROOT for SunOS
 
 # System dependent commands

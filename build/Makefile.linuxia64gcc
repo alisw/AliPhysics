@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 # Makefile for AliRoot for Itanium/Linux with gcc
 
 # System dependent commands

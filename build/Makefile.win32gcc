@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 # Makefile to build AliRoot for Linux
 
 # System dependent commands

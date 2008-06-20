@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 # Makefile for AliRoot for MacOS X with gcc
 
 XARGS = xargs
@@ -16,12 +17,7 @@ endif
 # The compilers
 CXX           = g++ 
 CC	      = gcc
-
-ifeq (g95,$(findstring g95,$(ROOTBUILD)))
-F77	      = g95
-else
-F77	      = gfortran
-endif
+F77	      = $(root-config --f77)
 
 # Global optimisation
 OPT           = -O -g
@@ -31,7 +27,7 @@ CXXOPT        = $(OPT)
 CXXNOOPT      = $(NOOPT) 
 COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore 
-ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+ifeq (g95,$(F77))
 FOPT	     += -fbounds-check
 endif
 
@@ -51,7 +47,7 @@ CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF)
 CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
 
 FFLAGS        = $(CLIBFOPT) $(FOPT)
-ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+ifeq (g95,$(F77))
 FFLAGS        += -ftrace=full
 FFLAGS        +=-DFORTRAN_G95
 else
@@ -92,7 +88,7 @@ EXEFLAGS     := -bind_at_load
 
 #System libraries
 
-ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+ifeq (g95,$(F77))
 SYSLIBS += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
 DYLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else

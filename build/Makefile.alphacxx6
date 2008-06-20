@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 # Makefile to build AliRoot for Alpha OSF1
 
 # System dependent commands
