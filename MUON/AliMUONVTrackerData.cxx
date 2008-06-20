@@ -76,7 +76,8 @@ AliMUONVTrackerData::Print(Option_t* wildcard) const
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONVTrackerData::Replace(const AliMUONVStore& store)
+AliMUONVTrackerData::Replace(const AliMUONVStore& /*store*/)
 {
   Emit("Replace(const AliMUONVStore&)");
+  return kTRUE;
 }
