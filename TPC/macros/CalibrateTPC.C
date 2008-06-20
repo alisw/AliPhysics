@@ -24,7 +24,7 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
-  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,1000);
+  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,1200);
   chain->Lookup();
   // memory
   mgr->SetNSysInfo(100); 
@@ -54,6 +54,7 @@ AliAnalysisManager * SetupCalibTask() {
   // set magnetic field form the cosmos - it should be provided by framework
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 2);
   AliTracker::SetFieldMap(field,0);
+  TGeoManager::Import("geometry.root");
   //
   AliAnalysisManager *mgr=new AliAnalysisManager("TestManager");
 
@@ -74,23 +75,32 @@ AliAnalysisManager * SetupCalibTask() {
   AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts); 
   AliTPCcalibTracksGain *calibTracksGain =  new AliTPCcalibTracksGain("calibTracksGain","Gain calibration using tracks",cuts); 
   AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors");
+  AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
+  AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
   calibTracks->SetDebugLevel(0);
   calibTracks->SetStreamLevel(0);
   calibTracksGain->SetDebugLevel(0);
   calibTracksGain->SetStreamLevel(0);
   calibAlign->SetDebugLevel(20);
   calibAlign->SetStreamLevel(2);
+  calibLaser->SetDebugLevel(20);
+  calibLaser->SetStreamLevel(2);
+  calibCosmic->SetDebugLevel(20);
+  calibCosmic->SetStreamLevel(2);
+
   //
  // ---*---*-----*-*-----*----------*---
   // ADD CALIB JOBS HERE!!!!!!!!!!!!!!!!
-  task1->AddJob(calibAlign);
+  //task1->AddJob(calibAlign);
+  //  task1->AddJob(calibLaser);
+  task1->AddJob(calibCosmic);
   //task1->AddJob(calibTracksGain);
   //task1->AddJob(calibTracks);
   //  task1->AddJob(new AliTPCcalibBase);
   // task1->AddJob(new AliTPCcalibV0);
   // -*----*----*---*-*------*-------**--
   // -------*--*---------*-----*-------*-
-
+  task1->SetDebugOuputhPath("/lustre_alpha/alice/TPCdata/cosmics_jun2008");
   mgr->AddTask(task1);
 
   AliAnalysisDataContainer *cinput1
