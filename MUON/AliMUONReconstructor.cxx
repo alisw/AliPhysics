@@ -179,8 +179,10 @@ const AliMUONRecoParam* AliMUONReconstructor::GetRecoParam()
   /// get reconstruction parameters
   
   // initialize reconstruction parameters if not already done
-  cout<<"W-AliMUONReconstructor::GetRecoParam: Reconstruction parameters not initialized - Use default one"<<endl;
-  fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  if (!fgRecoParam) {
+    cout<<"W-AliMUONReconstructor::GetRecoParam: Reconstruction parameters not initialized - Use default one"<<endl;
+    fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  }
   
   return fgRecoParam;
 }

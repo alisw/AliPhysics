@@ -48,6 +48,7 @@ public:
   
   virtual AliTracker* CreateTracker() const;
   
+  static void                    SetRecoParam(AliMUONRecoParam* recoParam) {fgRecoParam = recoParam;}
   static const AliMUONRecoParam* GetRecoParam();
   
   static AliMUONVClusterFinder* CreateClusterFinder(const char* clusterFinderType);
