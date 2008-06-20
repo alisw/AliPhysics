@@ -278,7 +278,13 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* ZN1AD
   }
   // --- Energy calibration factors ------------------------------------
   Float_t calibEne[4];
-  for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fECalibData->GetEnCalib(ij);
+  // *********************************************************************
+  // **** Until the beam type info isn't known @ reconstruction level ****
+  // **** the energy calibration coefficient are manually set to 1    ****
+  // **** as it will be in real life for pp data taking               ****
+  // *********************************************************************
+  //for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fECalibData->GetEnCalib(ij);
+  for(Int_t ij=0; ij<4; ij++) calibEne[ij] = 1.;
   
   // Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
