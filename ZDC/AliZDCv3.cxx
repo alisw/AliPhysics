@@ -1379,14 +1379,14 @@ void AliZDCv3::CreateBeamLine()
   // --   (to simulate the vacuum chamber)
   boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.98+0.2)*(2.98+0.2)) - 0.05;
   boxpar[1] = 0.2/2.;
-  boxpar[2] =945./2.;
+  boxpar[2] = 945./2.;
   gMC->Gsvolu("MD1V", "BOX ", idtmed[6], boxpar, 3);
   gMC->Gspos("MD1V", 1, "MD1 ", 0., 2.98+boxpar[1], 0., 0, "ONLY");
   gMC->Gspos("MD1V", 2, "MD1 ", 0., -2.98-boxpar[1], 0., 0, "ONLY");
     
   // --  YOKE 
-  tubpar[0] = 0.;
-  tubpar[1] = 3.46;
+  tubpar[0] = 3.48;
+  tubpar[1] = 110./2.;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
   
