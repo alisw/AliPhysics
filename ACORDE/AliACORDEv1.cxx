@@ -545,13 +545,11 @@ void AliACORDEv1::CreateAcorde()
   // |	        ACORDE8--> Volume for supports					     |	
   // |          ACORDE9--> Volume for supports					     |		
   // |		ACORDE_SUPPORT--> Volume that contains a full Acorde's support	     |
-  // |		ACORDE_MODULE--> Volume that contains a full Acorde's module	     |	
+  // |		ALL_ACORDE_MODULES--> Volume that contains ALL Acorde's module	     |	
+  // |          ACORDE_MODULE--> Volume that represents ONE Acorde-Module            |
   // |		ACORDE_1--> Volume that contains the bars&supports in-face	     |
   // |		ACORDE_2--> Volume that contains the bars&supports up-face	     | 	
   // |		ACORDE_3--> Volume that contains the bars&supports out-face	     |
-  // |		ACORDE_4--> Volume that contains the modules of ACORDE in-face	     |
-  // |		ACORDE_5--> Volume that contains the modules of ACORDE up-face	     |
-  // |		ACORDE_6--> Volume that contains the modules of ACORDE out-face	     |
   // |										     |	
   // |_______________________________________________________________________________|
 
@@ -581,11 +579,7 @@ void AliACORDEv1::CreateAcorde()
 	TGeoVolume *inFace = new TGeoVolumeAssembly("ACORDE_1");
 	TGeoVolume *upFace = new TGeoVolumeAssembly("ACORDE_2");
 	TGeoVolume *outFace = new TGeoVolumeAssembly("ACORDE_3");
-
-	//TGeoVolume *inFacem = new TGeoVolumeAssembly("ACORDE_4");
-	//TGeoVolume *upFacem = new TGeoVolumeAssembly("ACORDE_5");
-	//TGeoVolume *outFacem = new TGeoVolumeAssembly("ACORDE_6");
-	TGeoVolume *modules = new TGeoVolumeAssembly("ACORDE_MODULES");
+	TGeoVolume *modules = new TGeoVolumeAssembly("ALL_ACORDE_MODULES");
 
 	// Define global variables
 
@@ -640,15 +634,15 @@ void AliACORDEv1::CreateAcorde()
 
 	// Here I define & construct a Master Volume ("ACORDE_MODULE") for one Module in ACORDE
 
-	TGeoVolume *module = new TGeoVolumeAssembly("ACORDE_MODULE");
-	module->AddNode(aCORDE1qa,1,new TGeoTranslation("aco1",0,0,13));
-	module->AddNode(aCORDE1qa,2,new TGeoTranslation("aco10",0,0,-13));
-	module->AddNode(aCORDE10,3,new TGeoTranslation("aco10",293/2+5,0,0));
-	module->AddNode(aCORDE10,4,new TGeoTranslation("aco10",-293/2-5,0,0));
+	TGeoVolume *acomodule = new TGeoVolumeAssembly("ACORDE_MODULE");
+	acomodule->AddNode(aCORDE1qa,1,new TGeoTranslation("aco1",0,0,13));
+	acomodule->AddNode(aCORDE1qa,2,new TGeoTranslation("aco10",0,0,-13));
+	acomodule->AddNode(aCORDE10,3,new TGeoTranslation("aco10",293/2+5,0,0));
+	acomodule->AddNode(aCORDE10,4,new TGeoTranslation("aco10",-293/2-5,0,0));
         placedAt = pbox[1]+constants->ProfileThickness()-constants->ModuleHeight()/2+small;
-	module->AddNode(aCORDE2,5,new TGeoTranslation("aco2",placedAt,0,0));
+	acomodule->AddNode(aCORDE2,5,new TGeoTranslation("aco2",placedAt,0,0));
         placedAt = placedAt + 2.0*pbox[1]+small;
-	module->AddNode(aCORDE2,6,new TGeoTranslation("aco2",placedAt,-1,0));
+	acomodule->AddNode(aCORDE2,6,new TGeoTranslation("aco2",placedAt,-1,0));
 	Float_t w1 = 8;
 
 	
@@ -657,49 +651,53 @@ void AliACORDEv1::CreateAcorde()
 	// Put the Modules of In-Face
 	
 	count=1;
-	for(Int_t i=2;i<10;i++){
+	for(Int_t i=1;i<9;i++){
 
-		Float_t posx = constants->ModulePositionX(i-1);
-		Float_t posy = constants->ModulePositionY(i-1);
-		Float_t posz = constants->ModulePositionZ(i-1);	
-
-		modules->AddNode(module,i-1,
+		Float_t posx = constants->ModulePositionX(i);
+		Float_t posy = constants->ModulePositionY(i);
+		Float_t posz = constants->ModulePositionZ(i);	
+                Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
+		
+		modules->AddNode(acomodule,moduleElectronicID,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm232));
 		count++;
 
 	}
 
 	count=9;
-	for(Int_t i=11;i<21;i++){
-		Float_t posx = constants->ModulePositionX(i-1);
-		Float_t posy = constants->ModulePositionY(i-1);
-		Float_t posz = constants->ModulePositionZ(i-1);	
+	for(Int_t i=10;i<20;i++){
+		Float_t posx = constants->ModulePositionX(i);
+		Float_t posy = constants->ModulePositionY(i);
+		Float_t posz = constants->ModulePositionZ(i);
+		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 	
 
-		modules->AddNode(module,i-1,
+		modules->AddNode(acomodule,moduleElectronicID,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm232));
 	}
 
 	// Put he Modules of Up-Face
 
 	count=1;
-	for(Int_t i=21;i<41;i++){
-		Float_t posx = constants->ModulePositionX(i-1);
-		Float_t posy = constants->ModulePositionY(i-1);
-		Float_t posz = constants->ModulePositionZ(i-1);	
+	for(Int_t i=20;i<40;i++){
+		Float_t posx = constants->ModulePositionX(i);
+		Float_t posy = constants->ModulePositionY(i);
+		Float_t posz = constants->ModulePositionZ(i);	
+		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
 
-		modules->AddNode(module,i-1,new TGeoTranslation("aco01",posx,posy,posz));
+		modules->AddNode(acomodule,moduleElectronicID,new TGeoTranslation("aco01",posx,posy,posz));
 		count++;
 	}
 
 	// Put the Modules of Out-Face
 
 	count=1;
-	for(Int_t i=41;i<51;i++){
-		Float_t posx = constants->ModulePositionX(i-1);
-		Float_t posy = constants->ModulePositionY(i-1);
-		Float_t posz = constants->ModulePositionZ(i-1);	
+	for(Int_t i=40;i<50;i++){
+		Float_t posx = constants->ModulePositionX(i);
+		Float_t posy = constants->ModulePositionY(i);
+		Float_t posz = constants->ModulePositionZ(i);	
+		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
 
-		modules->AddNode(module,i-1,
+		modules->AddNode(acomodule,moduleElectronicID,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm231));
 		count++;
 	}
@@ -707,15 +705,17 @@ void AliACORDEv1::CreateAcorde()
 	// Put the Modules of Out-Face
 
 	count=11;
-	for(Int_t i=52;i<60;i++){
-		Float_t posx = constants->ModulePositionX(i-1);
-		Float_t posy = constants->ModulePositionY(i-1);
-		Float_t posz = constants->ModulePositionZ(i-1);	
+	for(Int_t i=51;i<59;i++){
+		Float_t posx = constants->ModulePositionX(i);
+		Float_t posy = constants->ModulePositionY(i);
+		Float_t posz = constants->ModulePositionZ(i);	
+		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
+
 	if ((i==57) || (i==56))
-		 modules->AddNode(module,i-1,
+		 modules->AddNode(acomodule,moduleElectronicID,
 					new TGeoCombiTrans("aco01",posx,posy-w1,posz-w1,idrotm231));
 	else
-		modules->AddNode(module,i-1,
+		modules->AddNode(acomodule,moduleElectronicID,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm231));
 		count++;
 	}
@@ -725,22 +725,22 @@ void AliACORDEv1::CreateAcorde()
 
 	if (GetITSGeometry()) {
 
-		modules->AddNode(module,9,new TGeoTranslation("its1",
+		modules->AddNode(acomodule,constants->ModuleElectronicChannel(50),new TGeoTranslation("ITS-3",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(0)));
 
-		modules->AddNode(module,50,new TGeoTranslation("its2",
+		modules->AddNode(acomodule,constants->ModuleElectronicChannel(59),new TGeoTranslation("ITS-4",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(1)));
 
-		modules->AddNode(module,59,new TGeoTranslation("its3",
+		modules->AddNode(acomodule,constants->ModuleElectronicChannel(0),new TGeoTranslation("ITS-1",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(2)));
 
-		modules->AddNode(module,60,new TGeoTranslation("its4",
+		modules->AddNode(acomodule,constants->ModuleElectronicChannel(9),new TGeoTranslation("ITS-2",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(3)));
@@ -750,22 +750,22 @@ void AliACORDEv1::CreateAcorde()
 	else {
 
 
-		modules->AddNode(module,61,new TGeoTranslation("its1",
+		modules->AddNode(acomodule,61,new TGeoTranslation("its1",
 				constants->ModulePositionX(0),
 				constants->ModulePositionY(0),
 				constants->ModulePositionZ(0)));
 
-		modules->AddNode(module,62,new TGeoTranslation("its2",
+		modules->AddNode(acomodule,62,new TGeoTranslation("its2",
 				constants->ModulePositionX(9),
 				constants->ModulePositionY(9),
 				constants->ModulePositionZ(9)));
 
-		modules->AddNode(module,63,new TGeoTranslation("its3",
+		modules->AddNode(acomodule,63,new TGeoTranslation("its3",
 				constants->ModulePositionX(50),
 				constants->ModulePositionY(50),
 				constants->ModulePositionZ(50)));
 
-		modules->AddNode(module,64,new TGeoTranslation("its4",
+		modules->AddNode(acomodule,64,new TGeoTranslation("its4",
 				constants->ModulePositionX(59),
 				constants->ModulePositionY(59),
 				constants->ModulePositionZ(59)));
@@ -1714,7 +1714,7 @@ void AliACORDEv1::AddAlignableVolumes() const
 	//
 	//     Send comments to: Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch>
 
-	TString vpstr1 = "ALIC_1/ACORDE_1/ACORDE_MODULES_4/ACORDE_MODULE_";
+	TString vpstr1 = "ALIC_1/ACORDE_1/ALL_ACORDE_MODULES_4/ACORDE_MODULE_";
 	TString snstr1 = "ACORDE/Array";
 	TString volpath, symname;
 	for(Int_t dy=1; dy<61 ; dy++)
