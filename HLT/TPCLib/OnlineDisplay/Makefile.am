@@ -27,7 +27,7 @@ libAliHLTTPCDisplay_la_SOURCES	= AliHLTTPCDisplayMain.cxx \
 DEFAULT_GEOMETRY		= alice.geom
 libAliHLTTPCDisplay_la_DATA	= $(srcdir)/$(DEFAULT_GEOMETRY)
 libAliHLTTPCDisplay_ladir	= $(pkgdatadir)
-AM_CPPFLAGS			+= -DDEFAULT_GEOMETRY=\"$(libAliHLTTPCDisplay_ladir)/$(DEFAULT_GEOMETRY)\" \
+AM_CPPFLAGS			+= -DDEFAULT_GEOMETRY \
 				   -DHOMERREADER_HEADER=\"@HOMERREADER_HEADER@\"
 
 # class header files, the link definition for the root dictionary
@@ -91,3 +91,6 @@ $(COMPILE_INFO): $(libAliHLTTPCDisplay_la_SOURCES) $(pkginclude_HEADERS) $(noins
 	@echo >> $@
 	@echo 'void __init()'>> $@
 	@echo '{std::cout << "lib$(MODULE) build on " << __DATE__ << " - " << __TIME__ << std::endl;}'>> $@
+	@echo >> $@
+	@echo 'const char* gDefaultGeometry="$(libAliHLTTPCDisplay_ladir)/$(DEFAULT_GEOMETRY)"; '>> $@
+	@echo >> $@

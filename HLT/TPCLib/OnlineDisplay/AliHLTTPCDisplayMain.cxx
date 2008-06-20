@@ -217,12 +217,16 @@ AliHLTTPCDisplayMain::~AliHLTTPCDisplayMain() {
     fDisplayCharge = NULL;
 }
 
+#if defined(DEFAULT_GEOMETRY)
+extern const char* gDefaultGeometry;
+#endif
+
 //____________________________________________________________________________________________________
 Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, unsigned short* ports, Char_t *gfile){
 
     Char_t* defaultGeometry=NULL;
 #if defined(DEFAULT_GEOMETRY)
-    defaultGeometry=DEFAULT_GEOMETRY;
+    defaultGeometry=const_cast<Char_t*>(gDefaultGeometry);
 #endif
     if (gfile!=NULL) {
       HLTDebug("probing geometry file %s", gfile);
@@ -233,7 +237,7 @@ Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, u
       }
       test.close();
     } else {
-      HLTDebug("using default geometry file %s", gfile, defaultGeometry);
+      HLTDebug("using default geometry file %s", defaultGeometry);
       gfile=defaultGeometry;
     }
     if (gfile==NULL) {
