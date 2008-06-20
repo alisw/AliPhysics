@@ -77,7 +77,7 @@ int AliHLTTPCTrackDumpComponent::InitWriter()
   return 0;
 }
 
-int AliHLTTPCTrackDumpComponent::ScanArgument(int argc, const char** argv)
+int AliHLTTPCTrackDumpComponent::ScanArgument(int /*argc*/, const char** /*argv*/)
 {
   // see header file for class documentation
   int iResult=0;

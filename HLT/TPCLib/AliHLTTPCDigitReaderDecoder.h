@@ -37,6 +37,7 @@ public:
 
   // interface functions  
   int InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice);
+  void SetUnsorted(bool unsorted);
   bool NextChannel();
   int NextBunch();
   int GetRow();

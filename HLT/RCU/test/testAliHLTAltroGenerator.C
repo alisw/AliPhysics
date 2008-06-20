@@ -221,7 +221,7 @@ int testAliHLTAltroGenerator()
   
   delete decoder;
 
-  return 0;
+  return iResult;
 }
 
 int main(int /*argc*/, const char** /*argv*/)

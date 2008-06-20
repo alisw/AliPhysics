@@ -88,6 +88,15 @@ int AliHLTTPCDigitReaderDecoder::InitBlock(void* ptr,unsigned long size, Int_t p
   return 0;
 }
 
+void AliHLTTPCDigitReaderDecoder::SetUnsorted(bool unsorted)
+{
+  // see header file for class documentation
+
+  // The DigitReaderDecoder does not support sorted data, forward to
+  // default if sorted data requested
+  if (!unsorted) AliHLTTPCDigitReader::SetUnsorted(unsorted);
+}
+
 bool AliHLTTPCDigitReaderDecoder::NextChannel()
 {
   // see header file for class documentation

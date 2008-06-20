@@ -20,8 +20,6 @@
 */
 
 
-#define DEBUG 0
-
 #if defined(HAVE_HOMERREADER) 
 #include HOMERREADER_HEADER
 #endif // defined(HAVE_HOMERREADER) 
