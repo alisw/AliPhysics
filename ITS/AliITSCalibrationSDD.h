@@ -143,14 +143,6 @@ class AliITSCalibrationSDD : public AliITSCalibration {
       else fDrSpeed1=arr;
     }
 
-    virtual void SetElectronics(Int_t p1=1) {((AliITSresponseSDD*)fResponse)->SetElectronics(p1);}
-    virtual Int_t GetElectronics() const {return ((AliITSresponseSDD*)fResponse)->Electronics();}
-    virtual void SetMaxAdc(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetMaxAdc(p1);}
-    virtual Float_t GetMaxAdc() const {return ((AliITSresponseSDD*)fResponse)->MaxAdc();} 
-    virtual void SetChargeLoss(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetChargeLoss(p1);}
-    virtual Float_t GetChargeLoss() const {return ((AliITSresponseSDD*)fResponse)->ChargeLoss();}
-    virtual void SetDynamicRange(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDynamicRange(p1);}
-    virtual Float_t GetDynamicRange() const {return ((AliITSresponseSDD*)fResponse)->DynamicRange();} 
 
     virtual Float_t GetTimeOffset() const {return ((AliITSresponseSDD*)fResponse)->TimeOffset();}
     virtual Float_t GetADC2keV() const {return ((AliITSresponseSDD*)fResponse)->ADC2keV();}
@@ -162,14 +154,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
 
     virtual void SetZeroSupp (const char *opt) {((AliITSresponseSDD*)fResponse)->SetZeroSupp(opt);} 
     virtual const char *GetZeroSuppOption() const {return ((AliITSresponseSDD*)fResponse)->ZeroSuppOption();}
-    virtual void SetNSigmaIntegration(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetNSigmaIntegration(p1);}
-    virtual Float_t GetNSigmaIntegration() const {return ((AliITSresponseSDD*)fResponse)->NSigmaIntegration();}
-    virtual void SetNLookUp(Int_t p1) {((AliITSresponseSDD*)fResponse)->SetNLookUp(p1);}
-    virtual Int_t GetGausNLookUp() const {return ((AliITSresponseSDD*)fResponse)->GausNLookUp();}
-    virtual Float_t GetGausLookUp(Int_t i) const {return ((AliITSresponseSDD*)fResponse)->GausLookUp(i);}
 
-    virtual void  SetJitterError(Double_t jitter=20) {((AliITSresponseSDD*)fResponse)->SetJitterError(jitter);}
-    virtual Float_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
     virtual Float_t GetDriftPath(Float_t time, Float_t xAnode) const {return time*GetDriftSpeedAtAnode(xAnode);}
     void GetCorrections(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg);
     virtual Float_t GetThresholdAnode(Int_t anode,Int_t nsigma=3) const {

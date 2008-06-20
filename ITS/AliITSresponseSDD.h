@@ -20,25 +20,7 @@ class AliITSresponseSDD : public AliITSresponse {
   public:
 
     AliITSresponseSDD();
-    virtual ~AliITSresponseSDD();
-
-    virtual void SetElectronics(Int_t p1=1) 
-      {fElectronics=p1;  /* Electronics: Pascal (1) or OLA (2) */ }
-    virtual Int_t Electronics()  const {// Electronics: 1 = Pascal; 2 = OLA
-	return fElectronics;}
-    virtual void    SetMaxAdc(Double_t p1) {// Adc-count saturation value
-	fMaxAdc=p1;}
-    virtual Float_t MaxAdc() const  {// Get maximum Adc-count value
-	return fMaxAdc;}
-    virtual void    SetChargeLoss(Double_t p1) {
-	// Set Linear Charge Loss Steepness  // 0.01 for 20%
-	fChargeLoss=p1;}
-    virtual Float_t ChargeLoss() const {// Get Charge Loss Coefficient
-	return fChargeLoss;}
-    virtual void    SetDynamicRange(Double_t p1) {// Set Dynamic Range
-	fDynamicRange = p1;}
-    virtual Float_t DynamicRange() const {// Get Dynamic Range
-	return fDynamicRange;}
+    virtual ~AliITSresponseSDD(){};
 
     static Float_t DefaultDriftSpeed() {return fgkDriftSpeedDefault;}
 
@@ -57,52 +39,16 @@ class AliITSresponseSDD : public AliITSresponse {
     const char *ZeroSuppOption() const {// Get zero-suppression option
 	return fOption.Data();}
     // Detector type response methods
-    virtual void    SetNSigmaIntegration(Double_t p1) {
-	// Set number of sigmas over which cluster disintegration is performed
-	fNsigmas=p1;}
-    virtual Float_t NSigmaIntegration() const {
-	// Get number of sigmas over which cluster disintegration is performed
-	return fNsigmas;}
-    virtual void SetNLookUp(Int_t p1);
-    // Get number of intervals in which the gaussian lookup table is divided
-    virtual Int_t GausNLookUp() const {return fNcomps;}
-    virtual Float_t GausLookUp(Int_t i)  {
-      if (!fGaus) SetNLookUp(fgkNcompsDefault);
-      if(i<0 || i>=fNcomps) return 0.;return fGaus->At(i);
-    }
-   
-    void  SetJitterError(Float_t jitter=20) {
-	// set Jitter error (20 um for ALICE from beam test measurements 2001)
-	fJitterError=jitter;}
-    Float_t  JitterError() const {// set Jitter error
-	return fJitterError;}
 
  protected:
 
-    static const Int_t fgkMaxAdcDefault; // default for fMaxAdc
-    static const Float_t fgkDynamicRangeDefault; // default for fDynamicRange
-    static const Float_t fgkfChargeLossDefault; // default for fChargeLoss
-    static const Float_t fgkDiffCoeffDefault; // default for fDiffCoeff
-    static const Float_t fgkDiffCoeff1Default; // default for fDiffCoeff1 
     static const TString fgkOptionDefault; // default for fOption
     static const Float_t fgkDriftSpeedDefault; // default for drift speed
     static const Float_t fgkTimeOffsetDefault; // default for fTimeOffset
     static const Float_t fgkADC2keVDefault; // default for fADC2keV
-    static const Float_t fgkNsigmasDefault; //default for fNsigmas
-    static const Int_t fgkNcompsDefault; //default for fNcomps
-    
 
-    Float_t  fJitterError;    // jitter error
-    Float_t  fDynamicRange;   // Set Dynamic Range 
-    Float_t  fChargeLoss;     // Set Linear Coefficient for Charge Loss 
     Float_t  fTimeOffset;     // Time offset due to electronic delays 
     Float_t  fADC2keV;        // Conversion factor from ADC to keV
-    Int_t    fElectronics;    // Electronics
-    Float_t  fMaxAdc;         // Adc saturation value
-    Float_t  fNsigmas;   // Number of sigmas over which charge disintegration
-                          // is performed
-    TArrayF   *fGaus;          // Gaussian lookup table for signal generation
-    Int_t      fNcomps;        // Number of samplings along the gaussian
     TString    fOption;        // Zero-suppresion option (ZS or non-ZS)
 
  private:
@@ -110,7 +56,7 @@ class AliITSresponseSDD : public AliITSresponse {
    AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
    AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-    ClassDef(AliITSresponseSDD,12) // Base response class 
+    ClassDef(AliITSresponseSDD,13) // Base response class 
     
     };
 #endif

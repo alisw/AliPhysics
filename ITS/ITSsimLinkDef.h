@@ -41,6 +41,7 @@
 #pragma link C++ class  AliITSTableSSD+;
 #pragma link C++ class  AliITSsimulationFastPoints+;
 #pragma link C++ class  AliITSsimulationFastPointsV0+;
+#pragma link C++ class  AliITSSimuParam+;
 #pragma link C++ class  AliITSDetTypeSim+;
 #pragma link C++ class  AliITSstatistics+;
 #pragma link C++ class  AliITSstatistics2+;

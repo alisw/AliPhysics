@@ -152,7 +152,7 @@ void AliITSsimulationSDD::Init(){
 
     AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
     
-    AliITSresponseSDD* res = (AliITSresponseSDD*)fDetType->GetResponse(1);
+    AliITSSimuParam* simpar = fDetType->GetSimuParam();
     fpList = new AliITSpList( seg->Npz(),
                               fScaleSize*seg->Npx() );
     fHitSigMap2 = new AliITSMapA2(seg,fScaleSize,1);
@@ -175,7 +175,7 @@ void AliITSsimulationSDD::Init(){
 
 
     fElectronics = new AliITSetfSDD(timeStep/fScaleSize,
-                                    res->Electronics());
+                                    simpar->GetSDDElectronics());
 
 
     fITS       = (AliITS*)gAlice->GetModule("ITS");
@@ -302,9 +302,9 @@ void AliITSsimulationSDD::SDigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 Bool_t AliITSsimulationSDD::AddSDigitsToModule(TClonesArray *pItemArray,
                                                Int_t mask ) {
     // Add Summable digits to module maps.
-   AliITSresponseSDD* res = (AliITSresponseSDD*)fDetType->GetResponse(1);
+    AliITSSimuParam* simpar = fDetType->GetSimuParam();
     Int_t    nItems = pItemArray->GetEntries();
-    Double_t maxadc = res->MaxAdc();
+    Double_t maxadc = simpar->GetSDDMaxAdc();
     Bool_t sig = kFALSE;
     
     // cout << "Adding "<< nItems <<" SDigits to module " << fModule << endl;
@@ -385,6 +385,8 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     // create maps to build the lists of tracks for each digit
   AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
   AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(fModule);
+  AliITSSimuParam* simpar = fDetType->GetSimuParam();
+
   TObjArray *hits     = mod->GetHits();
     Int_t      nhits    = hits->GetEntriesFast();
 
@@ -395,16 +397,15 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Double_t  anodePitch = seg->Dpz(0);
     Double_t  timeStep   = seg->Dpx(0);
     Double_t  driftSpeed ;  // drift velocity (anode dependent)
-    //Float_t   maxadc     = res->GetMaxAdc();    
-    //Float_t   topValue   = res->GetDynamicRange();
-    Double_t  norm       = res->GetMaxAdc()/res->GetDynamicRange(); //   maxadc/topValue;
-    Double_t  cHloss     = res->GetChargeLoss();
-    Float_t   dfCoeff, s1; res->DiffCoeff(dfCoeff,s1); // Signal 2d Shape
-    Double_t  eVpairs    = res->GetGeVToCharge()*1.0E9; // 3.6 eV by def.
-    Double_t  nsigma     = res->GetNSigmaIntegration(); //
-    Int_t     nlookups   = res->GetGausNLookUp();       //
-    Float_t   jitter     = res->GetJitterError(); // 
-
+    Double_t  norm       = simpar->GetSDDMaxAdc()/simpar->GetSDDDynamicRange(); //   maxadc/topValue;
+    Double_t  cHloss     = simpar->GetSDDChargeLoss();
+    Float_t   dfCoeff, s1; 
+    simpar->GetSDDDiffCoeff(dfCoeff,s1); // Signal 2d Shape
+    Double_t  eVpairs    = simpar->GetGeVToCharge()*1.0E9; // 3.6 eV by def.
+    Double_t  nsigma     = simpar->GetNSigmaIntegration(); //
+    Int_t     nlookups   = simpar->GetGausNLookUp();       //
+    Float_t   jitter     = simpar->GetSDDJitterError(); // 
+    
     // Piergiorgio's part (apart for few variables which I made float
     // when i thought that can be done
     // Fill detector maps with GEANT hits
@@ -587,7 +588,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
 	  if(TMath::Abs(aExpo) > nsigma)  anodeAmplitude = 0.;
 	  else {
 	    Int_t theBin = (Int_t) ((aExpo+nsigma)/width+0.5);
-	    anodeAmplitude = amplitude*res->GetGausLookUp(theBin);
+	    anodeAmplitude = amplitude*simpar->GetGausLookUp(theBin);
 	  } // end if TMath::Abs(aEspo) > nsigma
 	  // index starts from 0
 	  index = iWing*nofAnodes+ia-1;
@@ -604,7 +605,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
 	      if(TMath::Abs(tExpo) > nsigma) timeAmplitude = 0.;
 	      else {
 		Int_t theBin = (Int_t) ((tExpo+nsigma)/width+0.5);
-		timeAmplitude = anodeAmplitude*res->GetGausLookUp(theBin);
+		timeAmplitude = anodeAmplitude*simpar->GetGausLookUp(theBin);
 	      } // end if TMath::Abs(tExpo) > nsigma
 	      // build the list of Sdigits for this module        
 	      //                    arg[0]     = index;
@@ -682,7 +683,8 @@ void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAdd
   Double_t gain=0; 
   Float_t contrib=0;
   Int_t i,k,kk;
-  Float_t maxadc = res->GetMaxAdc();    
+  AliITSSimuParam* simpar = fDetType->GetSimuParam();
+  Float_t maxadc = simpar->GetSDDMaxAdc();    
 
   for (i=0;i<fNofMaps;i++) {
     if( !fAnodeFire[i] ) continue;

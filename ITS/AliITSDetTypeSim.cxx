@@ -81,6 +81,7 @@ fSDigits("AliITSpListItem",1000),
 fNDigits(0),     //! number of Digits
 fRunNumber(0),   //! Run number (to access DB)
 fDigits(),       //! [NMod][NDigits]
+fSimuPar(0),
 fDDLMapSDD(0),
 fHitClassName(), // String with Hit class name.
 fSDigClassName(),// String with SDigit class name.
@@ -101,6 +102,7 @@ fFirstcall(kTRUE){ // flag
   fDigits = new TObjArray(fgkNdettypes);
   fNDigits = new Int_t[fgkNdettypes];
   fDDLMapSDD=new AliITSDDLModuleMapSDD();
+  fSimuPar= new AliITSSimuParam();
   fNMod[0] = fgkDefaultNModulesSPD;
   fNMod[1] = fgkDefaultNModulesSDD;
   fNMod[2] = fgkDefaultNModulesSSD;
@@ -150,6 +152,7 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
 	delete fPostProcess;
     }
     fPostProcess = 0;
+    if(fSimuPar) delete fSimuPar;
     if(fDDLMapSDD) delete fDDLMapSDD;
     if(fNDigits) delete [] fNDigits;
     fNDigits = 0;
@@ -174,6 +177,7 @@ fSDigits(*((TClonesArray*)source.fSDigits.Clone())),
 fNDigits(source.fNDigits),     //! number of Digits
 fRunNumber(source.fRunNumber),   //! Run number (to access DB)
 fDigits(source.fDigits),       //! [NMod][NDigits]
+fSimuPar(source.fSimuPar),
 fDDLMapSDD(source.fDDLMapSDD),
 fHitClassName(source.fHitClassName), // String with Hit class name.
 fSDigClassName(source.fSDigClassName),// String with SDigit class name.

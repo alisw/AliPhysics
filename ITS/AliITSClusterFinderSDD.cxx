@@ -426,7 +426,7 @@ void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Double_t *par,
     //                 par[i+2] = zpos
     //                 par[i+3] = tau
     //                 par[i+4] = sigma.
-    Int_t electronics = GetResp(fModule)->GetElectronics(); // 1 = PASCAL, 2 = OLA
+    Int_t electronics = 1; // 1 = PASCAL, 2 = OLA
     const Int_t knParam = 5;
     Int_t npeak = (Int_t)par[0];
 
@@ -706,7 +706,7 @@ void AliITSClusterFinderSDD::ResolveClusters(){
     Double_t fTimeStep = GetSeg()->Dpx( dummy );
     Double_t fSddLength = GetSeg()->Dx();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
-    Int_t electronics =GetResp(fModule)->GetElectronics(); // 1 = PASCAL, 2 = OLA
+    Int_t electronics =1;//GetResp(fModule)->GetElectronics(); // 1 = PASCAL, 2 = OLA
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
     AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
     const char *option=res->ZeroSuppOption();
