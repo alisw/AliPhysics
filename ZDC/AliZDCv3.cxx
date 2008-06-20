@@ -1385,7 +1385,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("MD1V", 2, "MD1 ", 0., -2.98-boxpar[1], 0., 0, "ONLY");
     
   // --  YOKE 
-  tubpar[0] = 3.48;
+  tubpar[0] = 3.50;
   tubpar[1] = 110./2.;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
