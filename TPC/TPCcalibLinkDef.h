@@ -27,6 +27,8 @@
 #pragma link C++ class  AliTPCAnalysisTaskcalib+;
 #pragma link C++ class AliTPCCalibKr+;
 #pragma link C++ class AliTPCCalibKrTask+;
+#pragma link C++ class AliTPCcalibLaser+;
+#pragma link C++ class AliTPCcalibCosmic+;
 
 #endif
 

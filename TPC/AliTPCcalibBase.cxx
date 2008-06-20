@@ -40,7 +40,11 @@
 //  marian.ivanov@cern.ch
 // 
 #include "AliTPCcalibBase.h"
+#include "TSystem.h"
+#include "TFile.h"
 #include "TTreeStream.h"
+#include "AliLog.h"
+
 
 ClassImp(AliTPCcalibBase)
 
@@ -81,6 +85,7 @@ AliTPCcalibBase::~AliTPCcalibBase() {
   //
   // destructor
   //
+  if (fDebugLevel>0) printf("AliTPCcalibBase::~AliTPCcalibBase\n");
   if (fDebugStreamer) delete fDebugStreamer;
   fDebugStreamer=0;
 }
@@ -89,6 +94,7 @@ void  AliTPCcalibBase::Terminate(){
   //
   //
   //
+  if (fDebugLevel>0) printf("AliTPCcalibBase::Terminate\n");
   if (fDebugStreamer) delete fDebugStreamer;
   fDebugStreamer = 0;
   return;
@@ -107,4 +113,26 @@ TTreeSRedirector *AliTPCcalibBase::GetDebugStreamer(){
   dsName.ReplaceAll(" ",""); 
   fDebugStreamer = new TTreeSRedirector(dsName.Data());
   return fDebugStreamer;
+}
+
+
+void AliTPCcalibBase::RegisterDebugOutput(const char *path){
+  //
+  // store  - copy debug output to the destination position
+  // currently ONLY for local copy
+  if (fDebugLevel>0) printf("AliTPCcalibBase::RegisterDebugOutput(%s)\n",path);
+  if (fStreamLevel==0) return;
+  TString dsName;
+  dsName=GetName();
+  dsName+="Debug.root";
+  dsName.ReplaceAll(" ",""); 
+  TString dsName2=path;
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+=gSystem->HostName();
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+="/";
+  dsName2+=dsName;
+  AliInfo(Form("copy %s\t%s\n",dsName.Data(),dsName2.Data()));
+  printf("copy %s\t%s\n",dsName.Data(),dsName2.Data());
+  TFile::Cp(dsName.Data(),dsName2.Data());
 }

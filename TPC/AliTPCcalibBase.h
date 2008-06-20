@@ -11,6 +11,7 @@
 #include "TNamed.h"
 class AliTPCseed;
 class AliESDEvent;
+class AliESDtrack;
 class TCollection;
 class TTreeSRedirector;
 
@@ -22,6 +23,7 @@ public:
   virtual ~AliTPCcalibBase();
   virtual void     Process(AliESDEvent */*event*/){return;}
   virtual void     Process(AliTPCseed */*track*/){return;}
+  virtual void     Process(AliESDtrack */*track*/){return;}
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
   virtual void     Terminate();
@@ -32,6 +34,7 @@ public:
   void       SetDebugLevel(Int_t level) {fDebugLevel = level;}
   Int_t      GetStreamLevel() const {return fStreamLevel;}
   Int_t      GetDebugLevel() const {return fDebugLevel;}
+  virtual void RegisterDebugOutput(const char *path);
 protected: 
   TTreeSRedirector *fDebugStreamer;     //! debug streamer
   Int_t  fStreamLevel;                  //  debug stream level

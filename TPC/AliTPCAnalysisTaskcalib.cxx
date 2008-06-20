@@ -24,6 +24,7 @@
 #include "AliTPCcalibBase.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
+#include "AliESDtrack.h"
 #include "AliESDfriendTrack.h"
 #include "AliTPCseed.h"
 #include "AliESDInputHandler.h"
@@ -31,25 +32,43 @@
 
 ClassImp(AliTPCAnalysisTaskcalib)
 
+
+AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib()
+  :AliAnalysisTask(),
+   fCalibJobs(0),
+   fESD(0),
+   fESDfriend(0),
+   fDebugOutputPath()
+{
+  //
+  // default constructor
+  // 
+  
+}
+
+
 AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name) 
   :AliAnalysisTask(name,""),
    fCalibJobs(0),
    fESD(0),
-   fESDfriend(0)
+   fESDfriend(0),
+   fDebugOutputPath()
 {
   //
   // Constructor
   //
   DefineInput(0, TChain::Class());
   DefineOutput(0, TObjArray::Class());
-  fCalibJobs.SetOwner(kTRUE);
+  fCalibJobs = new TObjArray(0);
+  fCalibJobs->SetOwner(kFALSE);
 }
 
 AliTPCAnalysisTaskcalib::~AliTPCAnalysisTaskcalib() {
   //
   // destructor
   //
-  fCalibJobs.Delete();
+  printf("AliTPCAnalysisTaskcalib::~AliTPCAnalysisTaskcalib");
+  //fCalibJobs->Delete();
 }
 
 void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
@@ -66,17 +85,20 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     return;
   }
   Int_t n=fESD->GetNumberOfTracks();
+  Process(fESD);
   for (Int_t i=0;i<n;++i) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
+    AliESDtrack *track=fESD->GetTrack(i);
     TObject *calibObject=0;
     AliTPCseed *seed=0;
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
+    if (track) Process(track);
     if (seed)
       Process(seed);
   }
-  PostData(0,&fCalibJobs);
+  PostData(0,fCalibJobs);
 }
 
 void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
@@ -109,21 +131,32 @@ void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
   // Terminate
   //
   AliTPCcalibBase *job=0;
-  Int_t njobs = fCalibJobs.GetEntriesFast();
+  Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
-    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->Terminate();
   }
 }
+
+void AliTPCAnalysisTaskcalib::FinishTaskOutput()
+{
+  //
+  // According description in AliAnalisysTask this method is call 
+  // on the slaves before sending data
+  //
+  Terminate("slave");
+  RegisterDebugOutput();
+}
+
 
 void AliTPCAnalysisTaskcalib::Process(AliESDEvent *event) {
   //
   // Process ESD event
   //
   AliTPCcalibBase *job=0;
-  Int_t njobs = fCalibJobs.GetEntriesFast();
+  Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
-    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->Process(event);
   }
 }
@@ -133,15 +166,27 @@ void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
   // Process TPC track
   //
   AliTPCcalibBase *job=0;
-  Int_t njobs = fCalibJobs.GetEntriesFast();
+  Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
-    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
+    if (job) job->Process(track);
+  }
+}
+
+void AliTPCAnalysisTaskcalib::Process(AliESDtrack *track) {
+  //
+  // Process ESD track
+  //
+  AliTPCcalibBase *job=0;
+  Int_t njobs = fCalibJobs->GetEntriesFast();
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->Process(track);
   }
 }
 
 Long64_t AliTPCAnalysisTaskcalib::Merge(TCollection *li) {
-  TIterator *i=fCalibJobs.MakeIterator();
+  TIterator *i=fCalibJobs->MakeIterator();
   AliTPCcalibBase *job;
   Long64_t n=0;
   while ((job=dynamic_cast<AliTPCcalibBase*>(i->Next())))
@@ -154,9 +199,22 @@ void AliTPCAnalysisTaskcalib::Analyze() {
   // Analyze the content of the task
   //
   AliTPCcalibBase *job=0;
-  Int_t njobs = fCalibJobs.GetEntriesFast();
+  Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
-    job = (AliTPCcalibBase*)fCalibJobs.UncheckedAt(i);
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->Analyze();
+  }
+}
+
+
+void AliTPCAnalysisTaskcalib::RegisterDebugOutput(){
+  //
+  //
+  //
+  AliTPCcalibBase *job=0;
+  Int_t njobs = fCalibJobs->GetEntriesFast();
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
+    if (job) job->RegisterDebugOutput(fDebugOutputPath.Data());
   }
 }
