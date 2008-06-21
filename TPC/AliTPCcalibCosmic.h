@@ -21,8 +21,8 @@ public:
   
   virtual void     Process(AliESDEvent *event);
   virtual Long64_t Merge(TCollection *li);
-  
-  
+  void             FindPairs(AliESDEvent *event);
+  Bool_t           IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
 public:
   static void BinLogX(TH1 * h);   // method for correct histogram binning
 
@@ -32,7 +32,11 @@ public:
   TH1F  *fHistPt;
   TH1F  *fPtResolution;
   TH2F  *fDeDx;
-
+  // cuts
+  //
+  Float_t fCutMaxD;     // maximal distance in rfi ditection
+  Float_t fCutTheta;    // maximal distance in theta ditection
+  Float_t fCutMinDir;   // direction vector products
   AliTPCcalibCosmic(const AliTPCcalibCosmic&); 
   AliTPCcalibCosmic& operator=(const AliTPCcalibCosmic&); 
 
