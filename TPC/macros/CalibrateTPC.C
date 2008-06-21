@@ -23,8 +23,8 @@
   //
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-  AliXRDPROOFtoolkit tool;
-  TChain * chain = tool.MakeChain("chain.txt","esdTree",0,1200);
+  AliXRDPROOFtoolkit tool; 
+  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,1200);
   chain->Lookup();
   // memory
   mgr->SetNSysInfo(100); 
@@ -100,7 +100,7 @@ AliAnalysisManager * SetupCalibTask() {
   // task1->AddJob(new AliTPCcalibV0);
   // -*----*----*---*-*------*-------**--
   // -------*--*---------*-----*-------*-
-  task1->SetDebugOuputhPath("/lustre_alpha/alice/TPCdata/cosmics_jun2008");
+  task1->SetDebugOuputhPath("/lustre_alpha/alice/miranov/rec/cosmic_jun2008/");
   mgr->AddTask(task1);
 
   AliAnalysisDataContainer *cinput1
