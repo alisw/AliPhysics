@@ -43,12 +43,12 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0()
     fHistDcaV0DaughtersOff(0), fHistV0CosineOfPointingAngleOff(0),
     fHistV0RadiusOff(0),fHistDcaV0ToPrimVertexOff(0),
     fHistDcaPosToPrimVertexOff(0),fHistDcaNegToPrimVertexOff(0),
-    fHistMassK0Off(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
+    fHistMassK0sOff(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
     fHistV0MultiplicityOn(0), fHistV0Chi2On(0),
     fHistDcaV0DaughtersOn(0), fHistV0CosineOfPointingAngleOn(0),
     fHistV0RadiusOn(0),fHistDcaV0ToPrimVertexOn(0),
     fHistDcaPosToPrimVertexOn(0),fHistDcaNegToPrimVertexOn(0),
-    fHistMassK0On(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0)
+    fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0)
 {
   // Dummy constructor
 }
@@ -61,12 +61,12 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name)
     fHistDcaV0DaughtersOff(0), fHistV0CosineOfPointingAngleOff(0),
     fHistV0RadiusOff(0),fHistDcaV0ToPrimVertexOff(0),
     fHistDcaPosToPrimVertexOff(0),fHistDcaNegToPrimVertexOff(0),
-    fHistMassK0Off(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
+    fHistMassK0sOff(0),fHistMassLambdaOff(0),fHistMassAntiLambdaOff(0),
     fHistV0MultiplicityOn(0), fHistV0Chi2On(0),
     fHistDcaV0DaughtersOn(0), fHistV0CosineOfPointingAngleOn(0),
     fHistV0RadiusOn(0),fHistDcaV0ToPrimVertexOn(0),
     fHistDcaPosToPrimVertexOn(0),fHistDcaNegToPrimVertexOn(0),
-    fHistMassK0On(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0)
+    fHistMassK0sOn(0),fHistMassLambdaOn(0),fHistMassAntiLambdaOn(0)
 {
   // Constructor
   // Define output slots only here
@@ -153,9 +153,9 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fListHist->Add(fHistDcaNegToPrimVertexOff);
   }
 
-  if (!fHistMassK0Off) {
-    fHistMassK0Off = new TH1F("fHistMassK0Off","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts",100,0.4,0.6);
-    fListHist->Add(fHistMassK0Off);
+  if (!fHistMassK0sOff) {
+    fHistMassK0sOff = new TH1F("fHistMassK0sOff","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts",100,0.4,0.6);
+    fListHist->Add(fHistMassK0sOff);
   }
   if (!fHistMassLambdaOff) {
     fHistMassLambdaOff = new TH1F("fHistMassLambdaOff","#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});Counts",75,1.05,1.2);
@@ -203,9 +203,9 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fListHist->Add(fHistDcaNegToPrimVertexOn);
   }
 
-  if (!fHistMassK0On) {
-    fHistMassK0On = new TH1F("fHistMassK0On","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts",100,0.4,0.6);
-    fListHist->Add(fHistMassK0On);
+  if (!fHistMassK0sOn) {
+    fHistMassK0sOn = new TH1F("fHistMassK0sOn","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts",100,0.4,0.6);
+    fListHist->Add(fHistMassK0sOn);
   }
   if (!fHistMassLambdaOn) {
     fHistMassLambdaOn = new TH1F("fHistMassLambdaOn","#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});Counts",75,1.05,1.2);
@@ -241,7 +241,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
   Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
   Double_t lV0CosineOfPointingAngle = 0;
   Double_t lV0Radius = 0;
-  Double_t lInvMassK0 = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
+  Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
 
   if(fAnalysisType == "ESD") {
 
@@ -295,7 +295,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 
 	// Getting invariant mass infos directly from ESD
 	v0->ChangeMassHypothesis(310);
-	lInvMassK0 = v0->GetEffMass();
+	lInvMassK0s = v0->GetEffMass();
 	v0->ChangeMassHypothesis(3122);
 	lInvMassLambda = v0->GetEffMass();
 	v0->ChangeMassHypothesis(-3122);
@@ -314,7 +314,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistDcaNegToPrimVertexOff->Fill(lDcaNegToPrimVertex);
 
 	  // Filling invariant mass histos for all candidates
-	  fHistMassK0Off->Fill(lInvMassK0);
+	  fHistMassK0sOff->Fill(lInvMassK0s);
 	  fHistMassLambdaOff->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
 	}
@@ -330,7 +330,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistDcaNegToPrimVertexOn->Fill(lDcaNegToPrimVertex);
 
 	  // Filling invariant mass histos for all candidates
-	  fHistMassK0On->Fill(lInvMassK0);
+	  fHistMassK0sOn->Fill(lInvMassK0s);
 	  fHistMassLambdaOn->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
 	}
@@ -364,7 +364,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
 	lV0CosineOfPointingAngle = v0->CosPointingAngle(tPrimaryVtxPosition);
 
-	lInvMassK0 = v0->MassK0Short();
+	lInvMassK0s = v0->MassK0Short();
 	lInvMassLambda = v0->MassLambda();
 	lInvMassAntiLambda = v0->MassAntiLambda();
 
@@ -381,7 +381,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistDcaNegToPrimVertexOff->Fill(lDcaNegToPrimVertex);
 
 	  // Filling invariant mass histos for all candidates
-	  fHistMassK0Off->Fill(lInvMassK0);
+	  fHistMassK0sOff->Fill(lInvMassK0s);
 	  fHistMassLambdaOff->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOff->Fill(lInvMassAntiLambda);
 	}
@@ -397,7 +397,7 @@ void AliAnalysisTaskCheckV0::UserExec(Option_t *)
 	  fHistDcaNegToPrimVertexOn->Fill(lDcaNegToPrimVertex);
 
 	  // Filling invariant mass histos for all candidates
-	  fHistMassK0On->Fill(lInvMassK0);
+	  fHistMassK0sOn->Fill(lInvMassK0s);
 	  fHistMassLambdaOn->Fill(lInvMassLambda);
 	  fHistMassAntiLambdaOn->Fill(lInvMassAntiLambda);
 	}
@@ -458,14 +458,14 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   legendMultiplicity->AddEntry(fHistV0MultiplicityOn,"onthefly V^{0}");
   legendMultiplicity->Draw();
 
-  fHistMassK0Off = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0Off"));
-  if (!fHistMassK0Off) {
-    Printf("ERROR: fHistMassK0Off not available");
+  fHistMassK0sOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0sOff"));
+  if (!fHistMassK0sOff) {
+    Printf("ERROR: fHistMassK0sOff not available");
     return;
   }
-  fHistMassK0On = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0On"));
-  if (!fHistMassK0On) {
-    Printf("ERROR: fHistMassK0On not available");
+  fHistMassK0sOn = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassK0sOn"));
+  if (!fHistMassK0sOn) {
+    Printf("ERROR: fHistMassK0sOn not available");
     return;
   }
   fHistMassLambdaOff = dynamic_cast<TH1F*> (((TList*)GetOutputData(1))->FindObject("fHistMassLambdaOff"));
@@ -490,10 +490,10 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   }
 
   canCheckV0->cd(2);
-  fHistMassK0On->SetMarkerStyle(20);
-  fHistMassK0On->DrawCopy("E");
-  fHistMassK0Off->SetMarkerStyle(24);
-  fHistMassK0Off->DrawCopy("ESAME");
+  fHistMassK0sOn->SetMarkerStyle(20);
+  fHistMassK0sOn->DrawCopy("E");
+  fHistMassK0sOff->SetMarkerStyle(24);
+  fHistMassK0sOff->DrawCopy("ESAME");
 
   canCheckV0->cd(3);
   fHistMassLambdaOn->SetMarkerStyle(20);

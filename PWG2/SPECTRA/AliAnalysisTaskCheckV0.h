@@ -30,7 +30,7 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   
  private:
   TString      fAnalysisType;                   //  ESD or AOD
-  Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb  
+  Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb
   TList       *fListHist;                       //! List of histograms
   TH1F        *fHistPrimaryVertexPosX;          //! Primary vertex position in X
   TH1F        *fHistPrimaryVertexPosY;          //! Primary vertex position in Y
@@ -49,12 +49,12 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   TH1F        *fHistDcaPosToPrimVertexOff;      //! Dca of V0 positive daughter to primary vertex
   TH1F        *fHistDcaNegToPrimVertexOff;      //! Dca of V0 negative daughter to primary vertex
 
-  TH1F        *fHistMassK0Off;                  //! Invariant Mass of K0s
-  TH1F        *fHistMassLambdaOff;              //! Invariant Mass of Lambda
-  TH1F        *fHistMassAntiLambdaOff;          //! Invariant Mass of Anti-Lambda
+  TH1F        *fHistMassK0sOff;                 //! Invariant mass of K0s
+  TH1F        *fHistMassLambdaOff;              //! Invariant mass of Lambda
+  TH1F        *fHistMassAntiLambdaOff;          //! Invariant mass of Anti-Lambda
 
               // V0 on-the-fly distributions
-  TH1F        *fHistV0MultiplicityOn;           //! V0 multiplicity distribution offline
+  TH1F        *fHistV0MultiplicityOn;           //! V0 multiplicity distribution on-the-fly
   TH1F        *fHistV0Chi2On;                   //! V0 chi2 distribution
   TH1F        *fHistDcaV0DaughtersOn;           //! Dca between V0 daughters
   TH1F        *fHistV0CosineOfPointingAngleOn;  //! Cosine of V0 pointing angle
@@ -63,9 +63,9 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
   TH1F        *fHistDcaPosToPrimVertexOn;       //! Dca of V0 positive daughter to primary vertex
   TH1F        *fHistDcaNegToPrimVertexOn;       //! Dca of V0 negative daughter to primary vertex
 
-  TH1F        *fHistMassK0On;                   //! Invariant Mass of K0s
-  TH1F        *fHistMassLambdaOn;               //! Invariant Mass of Lambda
-  TH1F        *fHistMassAntiLambdaOn;           //! Invariant Mass of Anti-Lambda
+  TH1F        *fHistMassK0sOn;                  //! Invariant mass of K0s
+  TH1F        *fHistMassLambdaOn;               //! Invariant mass of Lambda
+  TH1F        *fHistMassAntiLambdaOn;           //! Invariant mass of Anti-Lambda
    
   AliAnalysisTaskCheckV0(const AliAnalysisTaskCheckV0&);            // not implemented
   AliAnalysisTaskCheckV0& operator=(const AliAnalysisTaskCheckV0&); // not implemented
