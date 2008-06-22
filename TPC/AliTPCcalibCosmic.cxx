@@ -218,12 +218,13 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
 void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   //
   // Find cosmic pairs
-  //
+  // 
+  // Track0 is choosen in upper TPC part
+  // Track1 is choosen in lower TPC part
   //
   if (GetDebugLevel()>1) printf("Hallo world: Im here\n");
   AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   Int_t ntracks=event->GetNumberOfTracks(); 
-  fHistNTracks->Fill(ntracks);
   TObjArray  tpcSeeds(ntracks);
   if (ntracks==0) return;
   Double_t vtxx[3]={0,0,0};
@@ -252,12 +253,22 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   //
   for (Int_t i=0;i<ntracks;++i) {
     AliESDtrack *track0 = event->GetTrack(i);     
+    // track0 - choosen upper part
+    if (!track0) continue;
+    if (!track0->GetOuterParam()) continue;
+    if (track0->GetOuterParam()->GetAlpha()<0) continue;
     Double_t d1[3];
     track0->GetDirection(d1);    
-    for (Int_t j=i+1;j<ntracks;++j) {
-     AliESDtrack *track1 = event->GetTrack(j);   
-     Double_t d2[3];
-     track1->GetDirection(d2);
+    for (Int_t j=0;j<ntracks;++j) {
+      if (i==j) continue;
+      AliESDtrack *track1 = event->GetTrack(j);   
+      //track 1 lower part
+      if (!track1) continue;
+      if (!track1->GetOuterParam()) continue;
+      if (track1->GetOuterParam()->GetAlpha()>0) continue;
+      //
+      Double_t d2[3];
+      track1->GetDirection(d2);
       printf("My stream level=%d\n",fStreamLevel);
       AliTPCseed * seed0 = (AliTPCseed*) tpcSeeds.At(i);
       AliTPCseed * seed1 = (AliTPCseed*) tpcSeeds.At(j);
@@ -345,7 +356,17 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   }  
 }    
 
+/*
 
+
+void AliTPCcalibCosmic::dEdxCorrection(){
+  TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03")
+  TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5")
+  TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
+
+}
+
+*/
 
 
 
