@@ -297,7 +297,7 @@ void AliZDCv3::CreateBeamLine()
   tubpar[1] = 10.4/2.;
   tubpar[2] = 3.16/2.;
   gMC->Gsvolu("QT05", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT05", 1, "ZDCC", 0., 0., -tubpar[0]-zd1, 0, "ONLY");
+  gMC->Gspos("QT05", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
   //printf("\n	QT05 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
@@ -1178,19 +1178,7 @@ void AliZDCv3::CreateBeamLine()
   // Ch.debug  
   //printf("	QA34 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+zd2);
 
-  zd2 += 2.*conpar[0];
- 
-  // Flange:  first support for the trousers
-  boxpar[0] = 25.3/2.;
-  boxpar[1] = 25.3/2.;
-  boxpar[2] = 2.5/2.;
-  gMC->Gsvolu("QF03", "BOX ", idtmed[7], boxpar, 3);
-  tubpar[0] = 0.0/2.;
-  tubpar[1] = 22.06/2.;
-  tubpar[2] = 2.5/2.;
-  gMC->Gsvolu("QFV1", "TUBE", idtmed[10], tubpar, 3);
-  gMC->Gspos("QFV1", 1, "QF03", 0., 0., 0., 0, "MANY");
-  gMC->Gspos("QF03", 1, "ZDCA", 0., 0., 14.3+zd2, 0, "MANY");  
+  zd2 += 2.*conpar[0]; 
   
   // tube  
   tubpar[0] = 21.66/2.;
@@ -1251,32 +1239,6 @@ void AliZDCv3::CreateBeamLine()
   //printf("	QA37 CONE from z = %f to z= %f\n",zd2,2*conpar[0]+0.2+zd2);
 
   zd2 += 2.*conpar[0]+0.2;
-  
-  // Flange: second support for the trousers
-  boxpar[0] = 25.9/2.;
-  boxpar[1] = 9.4/2.;
-  boxpar[2] = 1./2.;
-  gMC->Gsvolu("QF04", "BOX ", idtmed[7], boxpar, 3);
-  boxpar[0] = 16.5/2.;
-  boxpar[1] = 7./2.;
-  boxpar[2] = 1./2.;
-  gMC->Gsvolu("QFV2", "BOX ", idtmed[10], boxpar, 3);
-  gMC->Gspos("QFV2", 1, "QF04", 0., 0., 0., 0, "MANY");
-  tubspar[0] = 0.0/2.;
-  tubspar[1] = 7./2.;
-  tubspar[2] = 1./2.;
-  tubspar[3] = 90.;
-  tubspar[4] = 270.;  
-  gMC->Gsvolu("QFV3", "TUBS", idtmed[10], tubspar, 5);
-  gMC->Gspos("QFV3", 1, "QF04", -16.5/2., 0.,  0., 0, "MANY"); 
-  tubspar[0] = 0.0/2.;
-  tubspar[1] = 7./2.;
-  tubspar[2] = 1./2.;
-  tubspar[3] = -90.;
-  tubspar[4] = 90.;  
-  gMC->Gsvolu("QFV4", "TUBS", idtmed[10], tubspar, 5);
-  gMC->Gspos("QFV4", 1, "QF04", 16.5/2., 0.,  0., 0, "MANY");
-  gMC->Gspos("QF04", 1, "ZDCA", 0., 0.,  18.5+zd2, 0, "MANY");
   
   // 2 tubes (ID = 63 mm OD=70 mm)      
   tubpar[0] = 6.3/2.;
@@ -1371,7 +1333,7 @@ void AliZDCv3::CreateBeamLine()
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 3.46;
+  tubpar[1] = 6.94/2.;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("MD1 ", "TUBE", idtmed[11], tubpar, 3);
   
@@ -1379,14 +1341,14 @@ void AliZDCv3::CreateBeamLine()
   // --   (to simulate the vacuum chamber)
   boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.98+0.2)*(2.98+0.2)) - 0.05;
   boxpar[1] = 0.2/2.;
-  boxpar[2] = 945./2.;
+  boxpar[2] =945./2.;
   gMC->Gsvolu("MD1V", "BOX ", idtmed[6], boxpar, 3);
   gMC->Gspos("MD1V", 1, "MD1 ", 0., 2.98+boxpar[1], 0., 0, "ONLY");
   gMC->Gspos("MD1V", 2, "MD1 ", 0., -2.98-boxpar[1], 0., 0, "ONLY");
     
   // --  YOKE 
-  tubpar[0] = 3.68;
-  tubpar[1] = 110./2.;
+  tubpar[0] = 0.;
+  tubpar[1] = 3.46;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
   
@@ -1436,7 +1398,6 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("YMCB", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("YMCB", 1, "ZDCA", 0., 0., tubpar[2]+1972.5, 0, "ONLY");  
   
-  
    // -- INNER TRIPLET 
   zql = 2296.5; 
 
@@ -1444,9 +1405,10 @@ void AliZDCv3::CreateBeamLine()
   // --  MQX1 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 3.5;
+  tubpar[1] = 6.3/2.;
   tubpar[2] = 637./2.;
   gMC->Gsvolu("MQX1", "TUBE", idtmed[11], tubpar, 3);
+  gMC->Gsvolu("MQX4", "TUBE", idtmed[11], tubpar, 3);
     
   // --  YOKE 
   tubpar[0] = 3.5;
@@ -1454,81 +1416,82 @@ void AliZDCv3::CreateBeamLine()
   tubpar[2] = 637./2.;
   gMC->Gsvolu("YMQ1", "TUBE", idtmed[7], tubpar, 3);
 
+  // -- Q1
+  gMC->Gspos("MQX1", 1, "ZDCA", 0., 0., tubpar[2]+zql, 0, "ONLY");
+  gMC->Gspos("YMQ1", 1, "ZDCA", 0., 0., tubpar[2]+zql, 0, "ONLY");
+
    // -- BEAM SCREEN FOR Q1
    tubpar[0] = 4.78/2.;
    tubpar[1] = 5.18/2.;
    tubpar[2] = 637./2.;
-   gMC->Gsvolu("QBS1", "TUBE", idtmed[6], tubpar, 3);
-   gMC->Gspos("QBS1", 1, "ZDCA", 0., 0., tubpar[2]+zql, 0, "ONLY");
+   gMC->Gsvolu("QBS1", "TUBE", idtmed[13], tubpar, 3);
+   gMC->Gspos("QBS1", 1, "MQX1", 0., 0., 0., 0, "ONLY");
    // INSERT VERTICAL PLATE INSIDE Q1
    boxpar[0] = 0.2/2.0;
    boxpar[1] = TMath::Sqrt(tubpar[0]*tubpar[0]-(1.9+0.2)*(1.9+0.2));
    boxpar[2] =637./2.;
-   gMC->Gsvolu("QBS2", "BOX ", idtmed[6], boxpar, 3);
-   gMC->Gspos("QBS2", 1, "ZDCA", 1.9+boxpar[0], 0., boxpar[2]+zql, 0, "ONLY");
-   gMC->Gspos("QBS2", 2, "ZDCA", -1.9-boxpar[0], 0., boxpar[2]+zql, 0, "ONLY");
+   gMC->Gsvolu("QBS2", "BOX ", idtmed[13], boxpar, 3);
+   gMC->Gspos("QBS2", 1, "MQX1", 1.9+boxpar[0], 0., 0., 0, "ONLY");
+   gMC->Gspos("QBS2", 2, "MQX1", -1.9-boxpar[0], 0., 0., 0, "ONLY");
+
+   // -- Q3   
+   gMC->Gspos("MQX4", 1, "ZDCA", 0., 0., tubpar[2]+zql+2400., 0, "ONLY");
+   gMC->Gspos("YMQ1", 2, "ZDCA", 0., 0., tubpar[2]+zql+2400., 0, "ONLY");
 
    // -- BEAM SCREEN FOR Q3
    tubpar[0] = 5.79/2.;
    tubpar[1] = 6.14/2.;
    tubpar[2] = 637./2.;
-   gMC->Gsvolu("QBS3", "TUBE", idtmed[6], tubpar, 3);
-   gMC->Gspos("QBS3", 1, "ZDCA", 0., 0., tubpar[2]+zql+2400., 0, "ONLY");
+   gMC->Gsvolu("QBS3", "TUBE", idtmed[13], tubpar, 3);
+   gMC->Gspos("QBS3", 1, "MQX4", 0., 0., 0., 0, "ONLY");
    // INSERT VERTICAL PLATE INSIDE Q3
    boxpar[0] = 0.2/2.0;
    boxpar[1] = TMath::Sqrt(tubpar[0]*tubpar[0]-(2.405+0.2)*(2.405+0.2));
    boxpar[2] =637./2.;
-   gMC->Gsvolu("QBS4", "BOX ", idtmed[6], boxpar, 3);
-   gMC->Gspos("QBS4", 1, "ZDCA", 2.405+boxpar[0], 0., boxpar[2]+zql+2400., 0, "ONLY");
-   gMC->Gspos("QBS4", 2, "ZDCA", -2.405-boxpar[0], 0., boxpar[2]+zql+2400., 0, "ONLY");
-  
-  // -- Q1
-  gMC->Gspos("MQX1", 1, "ZDCA", 0., 0., tubpar[2]+zql, 0, "MANY");
-  gMC->Gspos("YMQ1", 1, "ZDCA", 0., 0., tubpar[2]+zql, 0, "ONLY");
-  
-  // -- Q3
-  gMC->Gspos("MQX1", 2, "ZDCA", 0., 0., tubpar[2]+zql+2400., 0, "MANY");
-  gMC->Gspos("YMQ1", 2, "ZDCA", 0., 0., tubpar[2]+zql+2400., 0, "ONLY");  
+   gMC->Gsvolu("QBS4", "BOX ", idtmed[13], boxpar, 3);
+   gMC->Gspos("QBS4", 1, "MQX4", 2.405+boxpar[0], 0., 0., 0, "ONLY");
+   gMC->Gspos("QBS4", 2, "MQX4", -2.405-boxpar[0], 0., 0., 0, "ONLY");
+    
   
   
   // --  MQX2
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 3.5;
+  tubpar[1] = 6.3/2.;
   tubpar[2] = 550./2.;
   gMC->Gsvolu("MQX2", "TUBE", idtmed[11], tubpar, 3);
+  gMC->Gsvolu("MQX3", "TUBE", idtmed[11], tubpar, 3);
   
   // --  YOKE 
   tubpar[0] = 3.5;
   tubpar[1] = 22.;
   tubpar[2] = 550./2.;
   gMC->Gsvolu("YMQ2", "TUBE", idtmed[7], tubpar, 3);
-  
 
    // -- BEAM SCREEN FOR Q2
    tubpar[0] = 5.79/2.;
    tubpar[1] = 6.14/2.;
    tubpar[2] = 550./2.;
-   gMC->Gsvolu("QBS5", "TUBE", idtmed[6], tubpar, 3);
+   gMC->Gsvolu("QBS5", "TUBE", idtmed[13], tubpar, 3);
    //    VERTICAL PLATE INSIDE Q2
    boxpar[0] = 0.2/2.0;
    boxpar[1] = TMath::Sqrt(tubpar[0]*tubpar[0]-(2.405+0.2)*(2.405+0.2));
    boxpar[2] =550./2.;
-   gMC->Gsvolu("QBS6", "BOX ", idtmed[6], boxpar, 3);
+   gMC->Gsvolu("QBS6", "BOX ", idtmed[13], boxpar, 3);
 
   // -- Q2A
-  gMC->Gspos("MQX2", 1, "ZDCA", 0., 0., tubpar[2]+zql+908.5,  0, "MANY");
-  gMC->Gspos("QBS5", 1, "ZDCA", 0., 0., tubpar[2]+zql+908.5, 0, "ONLY");  
-  gMC->Gspos("QBS6", 1, "ZDCA", 2.405+boxpar[0], 0., boxpar[2]+zql+908.5, 0, "ONLY");
-  gMC->Gspos("QBS6", 2, "ZDCA", -2.405-boxpar[0], 0., boxpar[2]+zql+908.5, 0, "ONLY");  
+  gMC->Gspos("MQX2", 1, "ZDCA", 0., 0., tubpar[2]+zql+908.5,  0, "ONLY");
+  gMC->Gspos("QBS5", 1, "MQX2", 0., 0., 0., 0, "ONLY");  
+  gMC->Gspos("QBS6", 1, "MQX2", 2.405+boxpar[0], 0., 0., 0, "ONLY");
+  gMC->Gspos("QBS6", 2, "MQX2", -2.405-boxpar[0], 0., 0., 0, "ONLY");  
   gMC->Gspos("YMQ2", 1, "ZDCA", 0., 0., tubpar[2]+zql+908.5,  0, "ONLY");
 
   
   // -- Q2B
-  gMC->Gspos("MQX2", 2, "ZDCA", 0., 0., tubpar[2]+zql+1558.5, 0, "MANY");
-  gMC->Gspos("QBS5", 2, "ZDCA", 0., 0., tubpar[2]+zql+1558.5, 0, "ONLY");  
-  gMC->Gspos("QBS6", 3, "ZDCA", 2.405+boxpar[0], 0., boxpar[2]+zql+1558.5, 0, "ONLY");
-  gMC->Gspos("QBS6", 4, "ZDCA", -2.405-boxpar[0], 0., boxpar[2]+zql+1558.5, 0, "ONLY");
+  gMC->Gspos("MQX3", 1, "ZDCA", 0., 0., tubpar[2]+zql+1558.5, 0, "ONLY");
+  gMC->Gspos("QBS5", 2, "MQX3", 0., 0., 0., 0, "ONLY");  
+  gMC->Gspos("QBS6", 3, "MQX3", 2.405+boxpar[0], 0., 0., 0, "ONLY");
+  gMC->Gspos("QBS6", 4, "MQX3", -2.405-boxpar[0], 0., 0., 0, "ONLY");
   gMC->Gspos("YMQ2", 2, "ZDCA", 0., 0., tubpar[2]+zql+1558.5, 0, "ONLY");
 
     // -- SEPARATOR DIPOLE D1 
@@ -1539,16 +1502,6 @@ void AliZDCv3::CreateBeamLine()
   tubpar[1] = 6.75/2.;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("MD1L", "TUBE", idtmed[11], tubpar, 3);
-  
-  // --  The beam screen tube is provided by the beam pipe in D1 (QA03 volume)
-  // --  Insert the beam screen horizontal Cu plates inside D1  
-  // --   (to simulate the vacuum chamber)
-  boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.885+0.2)*(2.885+0.2));
-  boxpar[1] = 0.2/2.;
-  boxpar[2] =(945.+80.1)/2.;
-  gMC->Gsvolu("QBS7", "BOX ", idtmed[6], boxpar, 3);
-  gMC->Gspos("QBS7", 1, "ZDCA", 0., 2.885+boxpar[1],boxpar[2]+zd2, 0, "ONLY");
-  gMC->Gspos("QBS7", 2, "ZDCA", 0., -2.885-boxpar[1],boxpar[2]+zd2, 0, "ONLY");
     
   // --  YOKE 
   tubpar[0] = 7.34/2.; // to be checked
@@ -1557,8 +1510,19 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("YD1L", "TUBE", idtmed[7], tubpar, 3);
   
   gMC->Gspos("YD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");  
-  gMC->Gspos("MD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "MANY");
-
+  gMC->Gspos("MD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
+  
+  // --  The beam screen tube is provided by the beam pipe in D1 (QA03 volume)
+  // --  Insert the beam screen horizontal Cu plates inside D1  
+  // --   (to simulate the vacuum chamber)
+  boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.885+0.2)*(2.885+0.2));
+  boxpar[1] = 0.2/2.;
+  //boxpar[2] =(945.+80.1)/2.;
+  boxpar[2] =945./2.;  
+  gMC->Gsvolu("QBS7", "BOX ", idtmed[13], boxpar, 3);
+  gMC->Gspos("QBS7", 1, "MD1L", 0., 2.885+boxpar[1],0., 0, "ONLY");
+  gMC->Gspos("QBS7", 2, "MD1L", 0., -2.885-boxpar[1],0., 0, "ONLY");  
+  
   
   // -- DIPOLE D2 
   // --- LHC optics v6.5
