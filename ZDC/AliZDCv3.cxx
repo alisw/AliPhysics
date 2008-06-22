@@ -1333,7 +1333,7 @@ void AliZDCv3::CreateBeamLine()
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 6.94/2.;
+  tubpar[1] = 3.46;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("MD1 ", "TUBE", idtmed[11], tubpar, 3);
   
@@ -1347,8 +1347,8 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("MD1V", 2, "MD1 ", 0., -2.98-boxpar[1], 0., 0, "ONLY");
     
   // --  YOKE 
-  tubpar[0] = 0.;
-  tubpar[1] = 3.46;
+  tubpar[0] = 3.68;
+  tubpar[1] = 110./2.;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
   
@@ -1385,7 +1385,6 @@ void AliZDCv3::CreateBeamLine()
   // COMPENSATOR DIPOLE (MCBWA) (2nd compensator)
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  //tubpar[1] = 4.5;
   tubpar[1] = 3.;  
   tubpar[2] = 153./2.;
   gMC->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);  
@@ -1405,7 +1404,7 @@ void AliZDCv3::CreateBeamLine()
   // --  MQX1 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 6.3/2.;
+  tubpar[1] = 3.14;
   tubpar[2] = 637./2.;
   gMC->Gsvolu("MQX1", "TUBE", idtmed[11], tubpar, 3);
   gMC->Gsvolu("MQX4", "TUBE", idtmed[11], tubpar, 3);
@@ -1457,7 +1456,7 @@ void AliZDCv3::CreateBeamLine()
   // --  MQX2
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 6.3/2.;
+  tubpar[1] = 3.14;
   tubpar[2] = 550./2.;
   gMC->Gsvolu("MQX2", "TUBE", idtmed[11], tubpar, 3);
   gMC->Gsvolu("MQX3", "TUBE", idtmed[11], tubpar, 3);
