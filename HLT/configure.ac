@@ -266,6 +266,20 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_RESULT([$have_esd_copy])
 
   dnl
+  dnl AliRawReaderMemory support for multiple buffers added
+  dnl Jun 2008
+  dnl
+  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/RAW"
+  have_rawreadermemory_multbuffers=no
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRawReaderMemory.h>],
+				  [AliRawReaderMemory rr;
+				   rr.AddBuffer(NULL, 0, 0);])],
+                 [have_rawreadermemory_multbuffers=yes], 
+  		 [AC_DEFINE(HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER)])
+  AC_MSG_CHECKING(for AliRawReaderMemory for support of multiple buffers)
+  AC_MSG_RESULT([$have_rawreadermemory_multbuffers])
+
+  dnl
   dnl required header files and libraries for modules
   dnl
   if test ! "x$have_aliroot" = "xno" ; then
