@@ -1,29 +1,32 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
-#pragma link off all classes;
-#pragma link off all functions;
-
-#pragma link C++ class AliRsnParticle+;
+#pragma link C++ class AliRsnMCInfo+;
 #pragma link C++ class AliRsnDaughter+;
+#pragma link C++ class AliRsnPairParticle+;
+
+#pragma link C++ class AliRsnCut+;
+#pragma link C++ class AliRsnVariableExpression+;
+#pragma link C++ class AliRsnExpression+;
+#pragma link C++ class AliRsnCutSet+;
+#pragma link C++ class AliRsnCutMgr+;
 
 #pragma link C++ class AliRsnPID+;
-
-#pragma link C++ class AliRsnDaughterCut+;
-#pragma link C++ class AliRsnDaughterCutPt+;
-#pragma link C++ class AliRsnDaughterCutVt+;
-
-#pragma link C++ class AliRsnDaughterCutPair+;
-#pragma link C++ class AliRsnDaughterCutPairPt+;
-#pragma link C++ class AliRsnDaughterCutPairAngle+;
-#pragma link C++ class AliRsnDaughterCutPairArmenteros+;
+#pragma link C++ class AliRsnPIDWeightsMgr+;
+#pragma link C++ class AliRsnPIDIndex+;
 
 #pragma link C++ class AliRsnEvent+;
 #pragma link C++ class AliRsnReader+;
-#pragma link C++ class AliRsnReaderTask+;
+#pragma link C++ class AliRsnReaderTaskSE+;
 
-#pragma link C++ class AliRsnPair+;
-#pragma link C++ class AliRsnManager+;
-#pragma link C++ class AliRsnAnalysis+;
+#pragma link C++ class AliRsnPairDef+;
+#pragma link C++ class AliRsnPairSimple+;
 
+#pragma link C++ class AliRsnEventBuffer+;
+#pragma link C++ class AliRsnAnalysisSimple+;
+#pragma link C++ class AliRsnAnalyzerSimple+;
+#pragma link C++ class AliRsnAnalysisSimpleTask+;
+
+//#pragma link C++ class AliRsnPair+;
+//#pragma link C++ class AliRsnBaseAT+;
+//#pragma link C++ class AliRsnAnalysisAT+;
 #endif

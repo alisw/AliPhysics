@@ -6,7 +6,7 @@ void SETUP() {
   gROOT->ProcessLine(".include PWG2resonances");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG2resonances_INCLUDE", "PWG2resonances");
+  gSystem->Setenv("PWG2resonances_INCLUDE", "PWG2resonances/RESONANCES");
 }
 
 Int_t CheckLoadLibrary(const char* library) {
