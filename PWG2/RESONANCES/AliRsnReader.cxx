@@ -33,7 +33,11 @@
 // email : alberto.pulvirenti@ct.infn.it
 //
 
+#include <TString.h>
+
 #include "AliLog.h"
+
+#include "AliVEvent.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -48,53 +52,102 @@
 #include "AliMCParticle.h"
 #include "AliGenEventHeader.h"
 
-#include "AliRsnParticle.h"
+#include "AliRsnMCInfo.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
+#include "AliRsnPIDWeightsMgr.h"
 #include "AliRsnReader.h"
 
 ClassImp(AliRsnReader)
-		
+
 //_____________________________________________________________________________
-AliRsnReader::AliRsnReader(Bool_t checkSplit, Bool_t rejectFakes) :
+AliRsnReader::AliRsnReader(ESource source, AliRsnPIDWeightsMgr *mgr) :
   TObject(),
-  fCheckSplit(checkSplit),
-  fRejectFakes(rejectFakes)
+  fSource(source),
+  fCheckSplit(kFALSE),
+  fRejectFakes(kFALSE),
+  fWeightsMgr(mgr)
 {
-//=========================================================
+//
 // Constructor.
 // Initializes the base-type data members:
 //   - management of fake tracks
-//=========================================================
+//
 }
 
 //_____________________________________________________________________________
 AliRsnReader::AliRsnReader(const AliRsnReader &copy) : 
   TObject(copy),
+  fSource(copy.fSource),
   fCheckSplit(copy.fCheckSplit),
-  fRejectFakes(copy.fRejectFakes)
+  fRejectFakes(copy.fRejectFakes),
+  fWeightsMgr(copy.fWeightsMgr)
 {
-//=========================================================
+//
 // Copy constructor.
-//=========================================================
+//
 }
 
 //_____________________________________________________________________________
 AliRsnReader& AliRsnReader::operator=(const AliRsnReader &copy)
 {
-//=========================================================
+//
 // Assignment operator.
-//=========================================================
-	
-	fCheckSplit = copy.fCheckSplit;
-	fRejectFakes = copy.fRejectFakes;
-	return (*this);
+//
+
+    fSource = copy.fSource;
+    fCheckSplit = copy.fCheckSplit;
+    fRejectFakes = copy.fRejectFakes;
+    fWeightsMgr = copy.fWeightsMgr;
+    return (*this);
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent *mc)
+Bool_t AliRsnReader::Fill(AliRsnEvent *rsn, AliVEvent *event, AliMCEvent *mc)
 {
-//=========================================================
+//
+// According to the class type of event and the selected source
+// recalls one of the private reading methods to fill the RsnEvent
+// passed by reference as first argument.
+//
+
+    TString str(event->ClassName());
+
+    switch (fSource) {
+        case kESD:
+            if (!str.Contains("AliESDEvent")) {
+                AliError("A reader set to 'kESD' or 'kESDTPC' can read only ESD events");
+                return kFALSE;
+            }
+            return FillFromESD(rsn, (AliESDEvent*)event, mc);
+        case kESDTPC:
+            if (!str.Contains("AliESDEvent")) {
+                AliError("A reader set to 'kESD' or 'kESDTPC' can read only ESD events");
+                return kFALSE;
+            }
+            return FillFromESD(rsn, (AliESDEvent*)event, mc, kTRUE);
+        case kAOD:
+            if (!str.Contains("AliAODEvent")) {
+                AliError("A reader set to 'kAOD' can read only AOD events");
+                return kFALSE;
+            }
+            return FillFromAOD(rsn, (AliAODEvent*)event, mc);
+        case kMC:
+            if (!str.Contains("AliMCEvent")) {
+                AliError("A reader set to 'kMC' can read only MC events");
+                return kFALSE;
+            }
+            return FillFromMC(rsn, (AliMCEvent*)event);
+        default:
+            return kFALSE;
+    }
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnReader::FillFromESD
+(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent *mc, Bool_t useTPCOnly)
+{
+//
 // Filler from an ESD event.
 // Stores all tracks (if a filter is defined, it will store
 // only the ones which survive the cuts).
@@ -103,21 +156,20 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
 // GEANT label of mother, PDG code of mother, if any).
 // When this is used, the 'source' flag of the output
 // AliRsnEvent object will be set to 'kESD'.
-//=========================================================
-	
-	// set source flag
-	rsn->SetSource(AliRsnEvent::kESD);
-	
-	// retrieve stack (if possible)
-	AliStack *stack = 0x0;
-	if (mc) stack = mc->Stack();
-	
-	// get number of tracks
-	Int_t ntracks = esd->GetNumberOfTracks();
-	if (!ntracks) {
-	   AliWarning("No tracks in this event");
-	   return kFALSE;
+//
+    
+    // retrieve stack (if possible)
+    AliStack *stack = 0x0;
+    if (mc) stack = mc->Stack();
+    
+    // get number of tracks
+    Int_t ntracks = esd->GetNumberOfTracks();
+    /*
+    if (!ntracks) {
+       AliWarning("No tracks in this event");
+       return kFALSE;
     }
+    */
     
     // if required with the flag, scans the event
     // and searches all split tracks (= 2 tracks with the same label);
@@ -135,7 +187,7 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
                 lab2 = TMath::Abs(trk2->GetLabel());
                 // check if labels are equal
                 if (lab1 == lab2) {
-                    if (trk1->GetConstrainedChi2() > trk2->GetConstrainedChi2()) {
+                    if (trk1->GetConstrainedChi2() < trk2->GetConstrainedChi2()) {
                         accept[i1] = kTRUE;
                         accept[i2] = kFALSE;
                     }
@@ -147,16 +199,23 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
             }
         }
     }
-	
-	// get primary vertex
-	Double_t vertex[3];
-	vertex[0] = esd->GetVertex()->GetXv();
-	vertex[1] = esd->GetVertex()->GetYv();
-	vertex[2] = esd->GetVertex()->GetZv();
-	rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
-	
-	// store tracks from ESD
-    Int_t  index, label, labmum;
+    
+    // get primary vertex
+    Double_t vertex[3];
+    if (!useTPCOnly) {
+        vertex[0] = esd->GetVertex()->GetXv();
+        vertex[1] = esd->GetVertex()->GetYv();
+        vertex[2] = esd->GetVertex()->GetZv();
+    }
+    else {
+        vertex[0] = esd->GetPrimaryVertexTPC()->GetXv();
+        vertex[1] = esd->GetPrimaryVertexTPC()->GetYv();
+        vertex[2] = esd->GetPrimaryVertexTPC()->GetZv();
+    }
+    rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
+    
+    // store tracks from ESD
+    Int_t  i, index, label, labmum;
     Bool_t check;
     AliRsnDaughter temp;
     for (index = 0; index < ntracks; index++) {
@@ -171,17 +230,37 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
         if (fRejectFakes && (label < 0)) continue;
         // copy ESD track data into RsnDaughter
         // if unsuccessful, this track is skipped
-        check = temp.Adopt(esdTrack);
+        check = temp.Adopt(esdTrack, useTPCOnly);
         if (!check) continue;
+        // if the AliRsnWeightsMgr object is initialized
+        // this means that ESD PID weights are not used
+        // and they are computed according to the Weight manager
+        if (fWeightsMgr) {
+            //AliInfo("Using customized weights");
+            //AliInfo(Form("ESD weights = %f %f %f %f %f", temp.PID()[0], temp.PID()[1], temp.PID()[2], temp.PID()[3], temp.PID()[4], temp.PID()[5]));
+            esdTrack->GetITSpid(fWeightsMgr->GetWeightArray(AliRsnPIDWeightsMgr::kITS));
+            esdTrack->GetTPCpid(fWeightsMgr->GetWeightArray(AliRsnPIDWeightsMgr::kTPC));
+            esdTrack->GetTRDpid(fWeightsMgr->GetWeightArray(AliRsnPIDWeightsMgr::kTRD));
+            esdTrack->GetTOFpid(fWeightsMgr->GetWeightArray(AliRsnPIDWeightsMgr::kTOF));
+            esdTrack->GetHMPIDpid(fWeightsMgr->GetWeightArray(AliRsnPIDWeightsMgr::kHMPID));
+            for (i = 0; i < AliRsnPID::kSpecies; i++) {
+                temp.SetPIDWeight(i, fWeightsMgr->GetWeight((AliRsnPID::EType)i, temp.Pt()));
+            }
+            //AliInfo(Form("Used weights = %f %f %f %f %f", temp.PID()[0], temp.PID()[1], temp.PID()[2], temp.PID()[3], temp.PID()[4], temp.PID()[5]));
+        }
+        else {
+            //AliInfo("Using standard ESD weights");
+        }
+        
         // if stack is present, copy MC info
         if (stack) {
             TParticle *part = stack->Particle(TMath::Abs(label));
             if (part) {
-                temp.InitParticle(part);
+                temp.InitMCInfo(part);
                 labmum = part->GetFirstMother();
                 if (labmum >= 0) {
                     TParticle *mum = stack->Particle(labmum);
-                    temp.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+                    temp.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
                 }
             }
         }
@@ -205,7 +284,7 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
 //_____________________________________________________________________________
 Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent *mc)
 {
-//=========================================================
+//
 // Filler from an AOD event.
 // Stores all tracks (if a filter is defined, it will store
 // only the ones which survive the cuts).
@@ -214,30 +293,27 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
 // GEANT label of mother, PDG code of mother, if any).
 // When this is used, the 'source' flag of the output
 // AliRsnEvent object will be set to 'kAOD'.
-//=========================================================
-	
-    // set source flag
-	rsn->SetSource(AliRsnEvent::kAOD);
+//
     
     // retrieve stack (if possible)
-	AliStack *stack = 0x0;
-	if (mc) stack = mc->Stack();
+    AliStack *stack = 0x0;
+    if (mc) stack = mc->Stack();
     
     // get number of tracks
-	Int_t ntracks = aod->GetNTracks();
-	if (!ntracks) {
-	   AliWarning("No tracks in this event");
-	   return kFALSE;
+    Int_t ntracks = aod->GetNTracks();
+    if (!ntracks) {
+       AliWarning("No tracks in this event");
+       return kFALSE;
     }
-	
-	// get primary vertex
-	Double_t vertex[3];
-	vertex[0] = aod->GetPrimaryVertex()->GetX();
-	vertex[1] = aod->GetPrimaryVertex()->GetY();
-	vertex[2] = aod->GetPrimaryVertex()->GetZ();
-	rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
-	
-	// store tracks from ESD
+    
+    // get primary vertex
+    Double_t vertex[3];
+    vertex[0] = aod->GetPrimaryVertex()->GetX();
+    vertex[1] = aod->GetPrimaryVertex()->GetY();
+    vertex[2] = aod->GetPrimaryVertex()->GetZ();
+    rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
+    
+    // store tracks from ESD
     Int_t  index, label, labmum;
     Bool_t check;
     AliAODTrack *aodTrack = 0;
@@ -256,11 +332,11 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
         if (stack) {
             TParticle *part = stack->Particle(TMath::Abs(label));
             if (part) {
-                temp.InitParticle(part);
+                temp.InitMCInfo(part);
                 labmum = part->GetFirstMother();
                 if (labmum >= 0) {
                     TParticle *mum = stack->Particle(labmum);
-                    temp.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+                    temp.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
                 }
             }
         }
@@ -284,7 +360,7 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
 //_____________________________________________________________________________
 Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
 {
-//=========================================================
+//
 // Filler from an ESD event.
 // Stores all tracks which generate at least one 
 // TrackReference (a point in a sensitive volume).
@@ -292,30 +368,27 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
 // perfect particle identification is the unique available.
 // When this is used, the 'source' flag of the output
 // AliRsnEvent object will be set to 'kMC'.
-//=========================================================
-	
-	// set source flag
-	rsn->SetSource(AliRsnEvent::kMC);
-	
-	// get number of tracks
-	Int_t ntracks = mc->GetNumberOfTracks();
-	if (!ntracks) {
-	   AliWarning("No tracks in this event");
-	   return kFALSE;
+//
+    
+    // get number of tracks
+    Int_t ntracks = mc->GetNumberOfTracks();
+    if (!ntracks) {
+       AliWarning("No tracks in this event");
+       return kFALSE;
     }
     
     AliStack *stack = mc->Stack();
-	
-	// get primary vertex
-	TArrayF fvertex(3);
-	Double_t vertex[3];
-	mc->GenEventHeader()->PrimaryVertex(fvertex);
-	vertex[0] = (Double_t)fvertex[0];
-	vertex[1] = (Double_t)fvertex[1];
-	vertex[2] = (Double_t)fvertex[2];
-	rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
-	
-	// store tracks from MC
+    
+    // get primary vertex
+    TArrayF fvertex(3);
+    Double_t vertex[3];
+    mc->GenEventHeader()->PrimaryVertex(fvertex);
+    vertex[0] = (Double_t)fvertex[0];
+    vertex[1] = (Double_t)fvertex[1];
+    vertex[2] = (Double_t)fvertex[2];
+    rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
+    
+    // store tracks from MC
     Int_t  index, labmum;
     Bool_t check;
     AliRsnDaughter temp;
@@ -327,10 +400,10 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
         // try to insert in the RsnDaughter its data
         check = temp.Adopt(mcTrack);
         if (!check) continue;
-        labmum = temp.GetParticle()->Mother();
+        labmum = temp.GetMCInfo()->Mother();
         if (labmum >= 0) {
             TParticle *mum = stack->Particle(labmum);
-            temp.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+            temp.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
         }
         // if successful, set other data and stores it
         temp.SetIndex(index);
