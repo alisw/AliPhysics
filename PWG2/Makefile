@@ -37,6 +37,10 @@ ifneq ($(PWG2femtoscopy_INCLUDE),)
   ALICEINC += -I../$(PWG2femtoscopy_INCLUDE)
 endif
 
+ifneq ($(PWG2resonances_INCLUDE),)
+  ALICEINC += -I../$(PWG2resonances_INCLUDE)
+endif
+
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
