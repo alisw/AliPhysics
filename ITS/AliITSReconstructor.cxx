@@ -186,17 +186,17 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
     Info("CreateVertexer","a AliITSVertexerFast object has been selected\n"); 
     return new AliITSVertexerFast(smear);
   }
-  if(selectedVertexer.Contains("3d") || selectedVertexer.Contains("3D")){
-    Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
-    return new AliITSVertexer3D();
+  if(selectedVertexer.Contains("vertexerz") || selectedVertexer.Contains("VERTEXERZ")){
+    Info("CreateVertexer","a AliITSVertexerZ object has been selected\n");
+    return new AliITSVertexerZ();
   }
   if(selectedVertexer.Contains("cosmics") || selectedVertexer.Contains("COSMICS")){
     Info("CreateVertexer","a AliITSVertexerCosmics object has been selected\n");
     return new AliITSVertexerCosmics();
   }
-  // by default an AliITSVertexerZ object is instatiated
-  Info("CreateVertexer","a AliITSVertexerZ object has been selected\n");
-  return new AliITSVertexerZ();
+  // by default an AliITSVertexer3D object is instatiated
+  Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
+  return new AliITSVertexer3D();
 }
 
 //_____________________________________________________________________________
