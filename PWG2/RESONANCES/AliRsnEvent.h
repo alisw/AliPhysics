@@ -5,89 +5,80 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//                      Class AliRsnEvent
-//  Simple collection of reconstructed tracks, selected from an ESD event
-// 
-// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
-//-------------------------------------------------------------------------
+//
+// *** Class AliRsnEvent ***
+//
+// A container for a collection of AliRsnDaughter objects from an event.
+// Contains also the primary vertex, useful for some cuts.
+// In order to retrieve easily the tracks which have been identified
+// as a specific type and charge, there is an array of indexes which
+// allows to avoid to loop on all tracks and have only the neede ones.
+//
+// authors: A. Pulvirenti (email: alberto.pulvirenti@ct.infn.it)
+//          M. Vala (email: martin.vala@cern.ch)
+//
 
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
 
-class TTree;
-class TParticle;
-class TRefArray;
-class TClonesArray;
-
-class AliESDtrack;
-class AliAODTrack;
 class AliRsnDaughter;
 
+#include <TNamed.h>
+#include <TArrayI.h>
+#include <TClonesArray.h>
 #include "AliRsnPID.h"
+#include "AliRsnPIDIndex.h"
 
-class AliRsnEvent : public TObject
+class AliRsnEvent : public TNamed
 {
-public:
+  public:
 
-    enum ESource {
-        kUnknown = 0,
-        kESD,
-        kAOD,
-        kMC
-    };
-	
     AliRsnEvent();
-    AliRsnEvent(const AliRsnEvent& copy);
-    AliRsnEvent& operator=(const AliRsnEvent& copy);
+    AliRsnEvent (const AliRsnEvent& copy);
+    AliRsnEvent& operator= (const AliRsnEvent& copy);
     virtual ~AliRsnEvent();
 
     // Array management
     void            Init();
-    AliRsnDaughter* AddTrack(AliRsnDaughter track);
-    void            Clear(Option_t *option = "");
-    void            Print(Option_t *option = "") const;
-    TClonesArray*   GetAllTracks() {return fTracks;}
-    TRefArray*      GetTracks(Char_t sign, AliRsnPID::EType type);
-    TRefArray*      GetCharged(Char_t sign) {if (sign=='+') return fPos; else if (sign=='-') return fNeg; else return 0x0;}
+    void            Clear (Option_t *option = "");
+    AliRsnDaughter* AddTrack (AliRsnDaughter track);
+    AliRsnDaughter* GetTrack (Int_t index);
+    TClonesArray*   GetTracks() {return fTracks;}
+    TArrayI*        GetCharged (Char_t sign);
+    TArrayI*        GetTracksArray (AliRsnPID::EMethod pidtype, Char_t sign, AliRsnPID::EType type);
     void            FillPIDArrays();
+    void            Print (Option_t *option = "") const;
 
     // Primary vertex
     Double_t GetPrimaryVertexX() const {return fPVx;}
-	Double_t GetPrimaryVertexY() const {return fPVy;}
-	Double_t GetPrimaryVertexZ() const {return fPVz;}
-    void     GetPrimaryVertex(Double_t &x, Double_t &y, Double_t &z) const {x=fPVx;y=fPVy;z=fPVz;}
-    void     GetPrimaryVertex(Double_t* &v) {GetPrimaryVertex(v[0], v[1], v[2]);}
-    void     SetPrimaryVertexX(Double_t value) {fPVx = value;}
-	void     SetPrimaryVertexY(Double_t value) {fPVy = value;}
-	void     SetPrimaryVertexZ(Double_t value) {fPVz = value;}
-    void     SetPrimaryVertex(Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
-    void     SetPrimaryVertex(Double_t* &v) {SetPrimaryVertex(v[0], v[1], v[2]);}
+    Double_t GetPrimaryVertexY() const {return fPVy;}
+    Double_t GetPrimaryVertexZ() const {return fPVz;}
+    void     GetPrimaryVertex (Double_t &x, Double_t &y, Double_t &z) const {x=fPVx;y=fPVy;z=fPVz;}
+    void     SetPrimaryVertexX (Double_t value) {fPVx = value;}
+    void     SetPrimaryVertexY (Double_t value) {fPVy = value;}
+    void     SetPrimaryVertexZ (Double_t value) {fPVz = value;}
+    void     SetPrimaryVertex (Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
 
     // Multiplicity
     Int_t GetMultiplicity() const;
-    Int_t GetNPos() const;
-    Int_t GetNNeg() const;
-    
-    // Source type
-    void    SetSource(ESource source) {fSource = source;}
-    ESource GetSource() {return fSource;}
-    
-private:
+    Int_t GetNCharged (Char_t sign);
 
-    ESource        fSource;                          // type of source event
+  private:
 
-    Double_t       fPVx;                             // position of
-    Double_t       fPVy;                             // primary
-    Double_t       fPVz;                             // vertex
+    Int_t ChargeIndex (Char_t sign) const;
+    Int_t Fill (TObjArray *array);
 
-    TClonesArray  *fTracks;                          // collection of particles
-    TRefArray     *fPos;                             // ref array to all positive particles
-    TRefArray     *fNeg;                             // ref array to all negative particles
-    TRefArray     *fPosID[AliRsnPID::kSpecies + 1];  // ref array to pos particles of each PID
-    TRefArray     *fNegID[AliRsnPID::kSpecies + 1];  // ref array to pos particles of each PID
+    Double_t        fPVx;                 // position of
+    Double_t        fPVy;                 // primary
+    Double_t        fPVz;                 // vertex
 
-    ClassDef(AliRsnEvent,1);
+    TClonesArray   *fTracks;              // collection of particles
+
+    AliRsnPIDIndex *fNoPID;               // array index only for charged tracks
+    AliRsnPIDIndex *fPerfectPID;          // array index for perfect PID
+    AliRsnPIDIndex *fRealisticPID;        // array index for realistic PID (largest prob)
+
+    ClassDef (AliRsnEvent, 2);
 };
 
 #endif

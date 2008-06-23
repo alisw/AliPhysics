@@ -26,34 +26,50 @@
 #ifndef ALIRSNREADER_H
 #define ALIRSNREADER_H
 
+class AliVEvent;
 class AliESDEvent;
 class AliAODEvent;
 class AliMCEvent;
 class AliRsnEvent;
+class AliRsnPIDWeightsMgr;
 
 class AliRsnReader : public TObject
 {
 public:
+
+    enum ESource {
+        kESD = 0,
+        kESDTPC,
+        kAOD,
+        kMC,
+        kSources
+    };
+
+    AliRsnReader(ESource source = kESD, AliRsnPIDWeightsMgr *mgr = 0x0);
+    AliRsnReader(const AliRsnReader& copy);
+    AliRsnReader& operator=(const AliRsnReader& copy);
+    virtual ~AliRsnReader() {}
     
-	AliRsnReader(Bool_t checkSplit = kTRUE, Bool_t rejectFakes = kFALSE);
-	AliRsnReader(const AliRsnReader& copy);
-	AliRsnReader& operator=(const AliRsnReader& copy);
-	virtual ~AliRsnReader() {}
-	
-	void    SetCheckSplit(Bool_t doit = kTRUE) {fCheckSplit = doit;}
-	void    SetRejectFakes(Bool_t doit = kTRUE) {fRejectFakes = doit;}
-	Bool_t  FillFromESD(AliRsnEvent *rsn, AliESDEvent *event, AliMCEvent *refMC = 0);
-    Bool_t  FillFromAOD(AliRsnEvent *rsn, AliAODEvent *event, AliMCEvent *refMC = 0);
-    Bool_t  FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc);
+    void    SetWeightsMgr(AliRsnPIDWeightsMgr *mgr) {fWeightsMgr = mgr;}
+    void    SetCheckSplit(Bool_t doit = kTRUE) {fCheckSplit = doit;}
+    void    SetRejectFakes(Bool_t doit = kTRUE) {fRejectFakes = doit;}
+    
+    Bool_t  Fill(AliRsnEvent *rsn, AliVEvent *event, AliMCEvent *refMC = 0);
     
 protected:
 
-    Bool_t  fCheckSplit;  // flag to check and remove split tracks
-    Bool_t  fRejectFakes; // flag to reject fake tracks (negative label)
+    Bool_t  FillFromESD(AliRsnEvent *rsn, AliESDEvent *event, AliMCEvent *refMC = 0, Bool_t useTPCOnly = kFALSE);
+    Bool_t  FillFromAOD(AliRsnEvent *rsn, AliAODEvent *event, AliMCEvent *refMC = 0);
+    Bool_t  FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc);
+
+    ESource              fSource;        // flag to choose what kind of data to be read
+    Bool_t               fCheckSplit;    // flag to check and remove split tracks
+    Bool_t               fRejectFakes;   // flag to reject fake tracks (negative label)
+    AliRsnPIDWeightsMgr *fWeightsMgr;    // manager for alternative PID weights
 
 private:
     
-	ClassDef(AliRsnReader, 1);
+    ClassDef(AliRsnReader, 1);
 };
 
 #endif

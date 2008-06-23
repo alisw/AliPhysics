@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //----------------------------------------------------------------------------------
-//  Class AliRsnReaderTask
+//  Class AliRsnReaderTaskSE
 // ------------------------
 // Reader for conversion of ESD output into the internal format
 // used for resonance study.
@@ -37,17 +37,18 @@
 #include "AliAODHandler.h"
 
 #include "AliRsnEvent.h"
-#include "AliRsnReaderTask.h"
+#include "AliRsnReader.h"
+#include "AliRsnPID.h"
+#include "AliRsnReaderTaskSE.h"
 
-ClassImp(AliRsnReaderTask)
+ClassImp(AliRsnReaderTaskSE)
 
 //_____________________________________________________________________________
-AliRsnReaderTask::AliRsnReaderTask(ESource source) :
+AliRsnReaderTaskSE::AliRsnReaderTaskSE() :
   AliAnalysisTaskSE(),
-  fSource(source),
   fReader(0x0),
   fPID(0x0),
-  fRsnEvents(0x0)
+  fRsnEvent(0x0)
 {
 //=========================================================
 // Default constructor (not recommended)
@@ -55,25 +56,27 @@ AliRsnReaderTask::AliRsnReaderTask(ESource source) :
 }
 
 //_____________________________________________________________________________
-AliRsnReaderTask::AliRsnReaderTask(const char *name, ESource source) : 
+AliRsnReaderTaskSE::AliRsnReaderTaskSE(const char *name) :
   AliAnalysisTaskSE(name),
-  fSource(source),
   fReader(0x0),
   fPID(0x0),
-  fRsnEvents(0x0)
+  fRsnEvent(0x0)
 {
 //=========================================================
 // Working constructor (recommended)
+// Initializes the reader and PID objects.
 //=========================================================
+
+    fReader = new AliRsnReader;
+    fPID = new AliRsnPID;
 }
 
 //_____________________________________________________________________________
-AliRsnReaderTask::AliRsnReaderTask(const AliRsnReaderTask& obj) :
+AliRsnReaderTaskSE::AliRsnReaderTaskSE(const AliRsnReaderTaskSE& obj) :
   AliAnalysisTaskSE(obj),
-  fSource(obj.fSource),
   fReader(obj.fReader),
   fPID(obj.fPID),
-  fRsnEvents(0x0)
+  fRsnEvent(0x0)
 {
 //=========================================================
 // Copy constructor (not recommended)
@@ -81,7 +84,7 @@ AliRsnReaderTask::AliRsnReaderTask(const AliRsnReaderTask& obj) :
 }
 
 //_____________________________________________________________________________
-AliRsnReaderTask& AliRsnReaderTask::operator=(const AliRsnReaderTask& /*obj*/) 
+AliRsnReaderTaskSE& AliRsnReaderTaskSE::operator=(const AliRsnReaderTaskSE& /*obj*/)
 {
 //=========================================================
 // Assignment operator (not recommended)
@@ -92,20 +95,37 @@ AliRsnReaderTask& AliRsnReaderTask::operator=(const AliRsnReaderTask& /*obj*/)
 }
 
 //_____________________________________________________________________________
-void AliRsnReaderTask::UserCreateOutputObjects()
+void AliRsnReaderTaskSE::UserCreateOutputObjects()
 {
 //=========================================================
 // Create the output container
 //=========================================================
 
     AliDebug(1, "Creating USER output objects");
-    fRsnEvents = new TClonesArray("AliRsnEvent", 0);
-    fRsnEvents->SetName("AliRsnEvents");
-    AddAODBranch("TClonesArray", fRsnEvents);
+
+    // check for existence of reader, otherwise abort
+    if (!fReader) {
+        AliFatal("Event reader not initialized. Impossible to continue");
+        return;
+    }
+    if (!fPID) {
+        AliFatal("PID manager not initialized. Impossible to continue");
+        return;
+    }
+    else {
+        // the PID object is always used in realistic mode here
+        // to fill the "realistic" index array in AliRsnEvent
+        fPID->SetMethod(AliRsnPID::kRealistic);
+    }
+
+    fRsnEvent = new AliRsnEvent();
+    fRsnEvent->SetName("rsnEvents");
+    fRsnEvent->Init();
+    AddAODBranch("AliRsnEvent", &fRsnEvent);
 }
 
 //_____________________________________________________________________________
-void AliRsnReaderTask::Init()
+void AliRsnReaderTaskSE::Init()
 {
 //=========================================================
 // Initialization
@@ -115,7 +135,7 @@ void AliRsnReaderTask::Init()
 }
 
 //_____________________________________________________________________________
-void AliRsnReaderTask::UserExec(Option_t */*option*/)
+void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
 {
 //=========================================================
 // Loops on input container to store data of all tracks.
@@ -123,96 +143,19 @@ void AliRsnReaderTask::UserExec(Option_t */*option*/)
 //=========================================================
 
     // static counter
-    static Int_t ientry = 0;
-    AliInfo(Form("Reading event %d", ++ientry));
-    
-    // clear previous sample
-    fRsnEvents->Clear();
-    
-    // check for existence of reader, otherwise abort
-    if (!fReader) {
-        AliError("Event reader not initialized. Impossible to continue");
-        return;
-    }
-    if (!fPID) {
-        AliError("PID manager not initialized. Impossible to continue");
-        return;
-    }
-    
+    AliInfo(Form("Reading event %d", ++fEntry));
 
-	// get MC reference event
-	AliMCEventHandler* mcHandler = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-	AliMCEvent *mcEvent = 0x0;
-	if (mcHandler) mcEvent = mcHandler->MCEvent();
-	
-	// work-flow variables
-	Bool_t successRead;
- 	Int_t  nextIndex = fRsnEvents->GetEntries();
-	TClonesArray &array = *fRsnEvents;
-    AliRsnEvent *event = new(array[nextIndex]) AliRsnEvent;
-    if (!event) {
-        AliError("Problem occurred while creating new AliRsnEvent object. Aborting");
-        return;
-    }
-    event->Init();
-    AliESDInputHandler *handlerESD;
-    AliAODInputHandler *handlerAOD;
-    AliESDEvent *esd;
-    AliAODEvent *aod;
-	
-	// read source event according to reader settings
-	switch (fSource) {
-        case kESD:  // read from ESD event
-            handlerESD = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-            if (!handlerESD) {
-                AliError("Source set to 'ESD' but ESD handler not initialized");
-                return;
-            }
-            esd = handlerESD->GetEvent();
-            if (!esd) {
-                AliError("Source set to 'ESD' but ESD event not found in handler");
-                return;
-            }
-            if (!mcEvent) AliWarning("MC info not present");
-            successRead = fReader->FillFromESD(event, esd, mcEvent);
-            break;
-        case kAOD:  // read from AOD event
-            handlerAOD = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-            if (!handlerAOD) {
-                AliError("Source set to 'AOD' but AOD handler not initialized");
-                return;
-            }
-            aod = handlerAOD->GetEvent();
-            if (!aod) {
-                AliError("Source set to 'AOD' but AOD event not found in handler");
-                return;
-            }
-            if (!mcEvent) AliWarning("MC info not present");
-            successRead = fReader->FillFromAOD(event, aod, mcEvent);
-            break;
-        case kMC: // read from MC truth only
-            if (!mcEvent) {
-                AliError("Required usage of MC event for reading. Not possible without MC info. Impossible to continue");
-                return;
-            }
-            successRead = fReader->FillFromMC(event, mcEvent);
-            break;
-        default: // unrecognized option
-            AliError("Source flag not properly set");
-            return;
-    }
-    if (!successRead) {
-        array.RemoveAt(nextIndex);
-        return;
-    }
-    
-    // if the event reading is successful, perform particle identification
-    if (!fPID->Identify(event)) AliWarning(Form("Failed PID for event %d", ientry));
-    AliInfo(Form("Event %d: collected %d tracks", ientry, event->GetMultiplicity()));
+    // clear previous sample
+    fRsnEvent->Clear();
+
+    // read event, identify
+    if (!fReader->Fill(fRsnEvent, fInputEvent, fMCEvent)) AliWarning("Failed reading");
+    if (!fPID->Identify(fRsnEvent)) AliWarning("Failed PID");
+    AliInfo(Form("Collected %d tracks", fRsnEvent->GetMultiplicity()));
 }
 
 //_____________________________________________________________________________
-void AliRsnReaderTask::Terminate(Option_t */*option*/)
+void AliRsnReaderTaskSE::Terminate(Option_t */*option*/)
 {
 //=========================================================
 // Terminate analysis
