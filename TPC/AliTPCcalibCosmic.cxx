@@ -363,7 +363,7 @@ void AliTPCcalibCosmic::dEdxCorrection(){
   TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03")
   TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5")
   TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
-
+  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>70");
 }
 
 */

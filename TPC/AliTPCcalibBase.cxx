@@ -44,6 +44,7 @@
 #include "TFile.h"
 #include "TTreeStream.h"
 #include "AliLog.h"
+#include "TTimeStamp.h"
 
 
 ClassImp(AliTPCcalibBase)
@@ -131,6 +132,10 @@ void AliTPCcalibBase::RegisterDebugOutput(const char *path){
   dsName2+=gSystem->HostName();
   gSystem->MakeDirectory(dsName2.Data());
   dsName2+="/";
+  TTimeStamp s;
+  dsName2+=Int_t(s.GetNanoSec());
+  dsName2+="/";
+  gSystem->MakeDirectory(dsName2.Data());
   dsName2+=dsName;
   AliInfo(Form("copy %s\t%s\n",dsName.Data(),dsName2.Data()));
   printf("copy %s\t%s\n",dsName.Data(),dsName2.Data());
