@@ -23,6 +23,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliVertexerTracks.h"
 #include "AliITSVertexer3D.h"
+#include "AliITSVertexerZ.h"
 /////////////////////////////////////////////////////////////////
 // this class implements a method to determine
 // the 3 coordinates of the primary vertex
@@ -84,38 +85,57 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
 
   Int_t nolines = FindTracklets(itsClusterTree,0);
   fCurrentVertex = 0;
-  if(nolines<2)return fCurrentVertex;
-  Int_t rc=Prepare3DVertex(0);
-  if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
+  if(nolines>=2){
+    Int_t rc=Prepare3DVertex(0);
+    if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
   /*  uncomment to debug
-    printf("Vertex found in first iteration:\n");
-    fVert3D.Print();
-    printf("Start second iteration\n");
+      printf("Vertex found in first iteration:\n");
+      fVert3D.Print();
+      printf("Start second iteration\n");
   end of debug lines  */
-  if(fVert3D.GetNContributors()>0){
-    fLines.Clear("C");
-    nolines = FindTracklets(itsClusterTree,1);
-    if(nolines>=2){
-      rc=Prepare3DVertex(1);
-      if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
+    if(fVert3D.GetNContributors()>0){
+      fLines.Clear("C");
+      nolines = FindTracklets(itsClusterTree,1);
+      if(nolines>=2){
+	rc=Prepare3DVertex(1);
+	if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
+      }
+    }
+  /*  uncomment to debug 
+      printf("Vertex found in second iteration:\n");
+      fVert3D.Print();
+      end of debug lines  */ 
+ 
+    Float_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
+    if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
+      Double_t position[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
+      Double_t covmatrix[6];
+      fVert3D.GetCovMatrix(covmatrix);
+      Double_t chi2=99999.;
+      Int_t    nContr=fVert3D.GetNContributors();
+      fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nContr);    
+      fCurrentVertex->SetTitle("vertexer: 3D");
+      fCurrentVertex->SetName("SPDVertex3D");
+      fCurrentVertex->SetDispersion(fVert3D.GetDispersion());
     }
   }
-  /*  uncomment to debug 
-    printf("Vertex found in second iteration:\n");
-    fVert3D.Print();
-   end of debug lines  */ 
- 
-  Float_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
-  if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
-    Double_t position[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
-    Double_t covmatrix[6];
-    fVert3D.GetCovMatrix(covmatrix);
-    Double_t chi2=99999.;
-    Int_t    nContr=fVert3D.GetNContributors();
-    fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nContr);    
-    fCurrentVertex->SetTitle("vertexer: 3D");
-    fCurrentVertex->SetName("Vertex");
-    fCurrentVertex->SetDispersion(fVert3D.GetDispersion());
+  if(!fCurrentVertex){
+    AliITSVertexerZ vertz(GetNominalPos()[0],GetNominalPos()[1]);
+    AliDebug(1,"Call Vertexer Z\n");
+    AliESDVertex* vtxz = vertz.FindVertexForCurrentEvent(itsClusterTree);
+    if(vtxz){
+      Double_t position[3]={GetNominalPos()[0],GetNominalPos()[1],vtxz->GetZv()};
+      Double_t covmatrix[6];
+      vtxz->GetCovMatrix(covmatrix);
+      Double_t chi2=99999.;
+      Int_t    nContr=vtxz->GetNContributors();
+      fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nContr);    
+      fCurrentVertex->SetTitle("vertexer: Z");
+      fCurrentVertex->SetName("SPDVertexZ");
+      delete vtxz;
+      //      printf("Vertexer Z success\n");
+    }
+
   }
   FindMultiplicity(itsClusterTree);
   return fCurrentVertex;
