@@ -29,22 +29,21 @@ ClassImp(AliRawReaderMemory)
 
 
 AliRawReaderMemory::AliRawReaderMemory() :
-  fBuffer(NULL),
-  fBufferSize(0),
   fPosition(0),
-  fEquipmentId(-1)
+  fBuffers(),
+  fCurrent(0)
 {
 // create an object to read digits from
 // the given memory location
 }
 
 AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
-  fBuffer(memory),
-  fBufferSize(size),
   fPosition(0),
-  fEquipmentId(-1)
+  fBuffers(),
+  fCurrent(0)
 {
 // create an object to read digits from the given memory
+  fBuffers.push_back(AliRRMBuffer(memory, size, -1));
 }
 
 AliRawReaderMemory::~AliRawReaderMemory()
@@ -68,25 +67,31 @@ Bool_t AliRawReaderMemory::ReadHeader()
 // read a data header at the current buffer position
 // returns kFALSE if the mini header could not be read
 
-  if (fEquipmentId == -1)
-  {
-    Warning("ReadHeader", "The equipment ID is not set for the DDL memory buffer.");
-  }
+  Bool_t result=kFALSE;
+  if (fCurrent>=fBuffers.size()) return kFALSE;
 
-  if (!fBuffer) return kFALSE;
   do {
+  result=kFALSE;
+  do {
+    if (fBuffers[fCurrent].GetEquipmentId() == -1)
+      {
+	Warning("ReadHeader", "The equipment ID is not set for the DDL memory buffer.");
+      }
+    if (!fBuffers[fCurrent].GetBuffer()) break;
+
     // Check if we would not read past the end of the buffer.
-    if ( fPosition+fCount+sizeof(AliRawDataHeader) > fBufferSize ) return kFALSE;
+    if ( fPosition+fCount >= fBuffers[fCurrent].GetBufferSize() ) break;
     
-    fHeader = reinterpret_cast<AliRawDataHeader*>(fBuffer+fPosition+fCount);
+    fHeader = reinterpret_cast<AliRawDataHeader*>(fBuffers[fCurrent].GetBuffer()+fPosition+fCount);
     
     // Check that the header is sane, that is the size does not go past the buffer.
     // Otherwise try again at the next word location.
+    while (1) {
     if ( ( (fHeader->fSize == 0) || 
-	   ((Int_t)fPosition + fCount + (Int_t)fHeader->fSize > (Int_t)fBufferSize ) ) 
+	   ((Int_t)fPosition + fCount + (Int_t)fHeader->fSize > (Int_t)fBuffers[fCurrent].GetBufferSize() ) ) 
 	 && fHeader->fSize != 0xFFFFFFFF) {
 
-      if (fPosition + sizeof(UInt_t) <= fBufferSize) {
+      if (fPosition + sizeof(UInt_t) <= fBuffers[fCurrent].GetBufferSize()) {
         fPosition += sizeof(UInt_t);
         continue;
       } else {
@@ -96,14 +101,27 @@ Bool_t AliRawReaderMemory::ReadHeader()
     } else {
       fPosition += fCount + sizeof(AliRawDataHeader);
     }
+    break;
+    }
 
     if (fHeader->fSize != 0xFFFFFFFF) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
     } else {
-      fCount = fBufferSize - sizeof(AliRawDataHeader);
+      fCount = fBuffers[fCurrent].GetBufferSize() - sizeof(AliRawDataHeader);
     }
-  } while (!IsSelected());
+  } while (!(result=IsSelected()) && OpenNextBuffer());
+  } while (!result && OpenNextBuffer());
 
+  return result;
+}
+
+Bool_t AliRawReaderMemory::OpenNextBuffer()
+{
+  // increment to next buffer
+  fPosition=0;
+  fCount=0;
+  if (fCurrent>=fBuffers.size()) return kFALSE;
+  if (++fCurrent>=fBuffers.size()) return kFALSE;
   return kTRUE;
 }
 
@@ -119,18 +137,22 @@ Bool_t AliRawReaderMemory::ReadNextData(UChar_t*& data)
   fPosition += fCount;
   fCount = 0;
 
-  data = fBuffer+currentPosition;
+  data = fBuffers[fCurrent].GetBuffer()+currentPosition;
   return kTRUE;
 }
 
 Bool_t AliRawReaderMemory::ReadNext(UChar_t* data, Int_t size)
 {
 // reads the next block of data at the current buffer position
+// but does not shift to the next equipment. The next equipment
+// must be activated by calling ReadHeader
 // returns kFALSE if the data could not be read
 
-  if ( fBufferSize-fPosition < (UInt_t)size ) return kFALSE;
+  
+  if (fCurrent>=fBuffers.size()) return kFALSE;
+  if ( fBuffers[fCurrent].GetBufferSize()-fPosition < (UInt_t)size ) return kFALSE;
 
-  memcpy( data, fBuffer+fPosition, size );
+  memcpy( data, fBuffers[fCurrent].GetBuffer()+fPosition, size );
   fCount -= size;
   fPosition += size;
   return kTRUE;
@@ -144,6 +166,7 @@ Bool_t AliRawReaderMemory::Reset()
   fHeader = NULL;
   fCount = 0;
   fPosition = 0;
+  fCurrent=0;
   return kTRUE;
 }
 
@@ -168,11 +191,105 @@ Bool_t AliRawReaderMemory::RewindEvents()
 
 Bool_t AliRawReaderMemory::SetMemory( UChar_t* memory, ULong_t size )
 {
-  fBuffer = memory;
-  fBufferSize = size;
+  // SetMemory function kept for backward compatibility, only allowed
+  // if no blocks have been added so far 
+  if (!memory || size<=0) return kFALSE;
+  if (fBuffers.size()>1 || (fBuffers.size()==1 && fPosition==0 && fCurrent==0)) {
+    Error("SetMemory","can not SetMemory for multiple buffers, use AddBuffer(...)");
+    return kFALSE;
+  }
+  if (fBuffers.size()==1) fBuffers.pop_back();
+  fBuffers.push_back(AliRRMBuffer(memory, size, -1));
+  fCurrent=0;
   fHeader = NULL;
   fCount = 0;
   fPosition = 0;
-  return (fBuffer && fBufferSize>0) ? kTRUE : kFALSE;
+  return kTRUE;
 }
 
+void  AliRawReaderMemory::SetEquipmentID(Int_t id)
+{
+  // SetMemory function kept for backward compatibility, only allowed
+  // if no blocks have been added so far, set equipment id of the first
+  // buffer
+  if (fBuffers.size()>1) {
+    Error("SetEquipmentID", "can not SetEquipmentID for multiple buffers, use AddBuffer(...)");
+    return;
+  }
+  if (fBuffers.size()==0 || fCurrent>=fBuffers.size()) {
+    Error("SetEquipmentID", "no block available to set equipment id");
+    return;    
+  }
+  fBuffers[fCurrent].SetEquipmentId(id);
+}
+
+Int_t AliRawReaderMemory::GetEquipmentSize() const
+{
+  // get the size of the equipment, that is payload + CDH
+  if (fCurrent>=fBuffers.size()) return 0;
+  return fBuffers[fCurrent].GetBufferSize();
+}
+
+Int_t AliRawReaderMemory::GetEquipmentId() const
+{
+  // get the current equipment id
+  if (fCurrent>=fBuffers.size()) return -1;
+  return fBuffers[fCurrent].GetEquipmentId();
+}
+
+Bool_t AliRawReaderMemory::AddBuffer(UChar_t* memory, ULong_t size, Int_t equipmentId )
+{
+  // Add a buffer to the list
+  if (!memory || size<=0 || equipmentId<0 ) return kFALSE;
+  fBuffers.push_back(AliRRMBuffer(memory, size, equipmentId));
+  return kTRUE;
+}
+
+void AliRawReaderMemory::ClearBuffers()
+{
+  // Clear the buffer list
+  fBuffers.clear();
+  Reset();
+}
+
+AliRawReaderMemory::AliRRMBuffer::AliRRMBuffer()
+  :
+  fBuffer(NULL),
+  fBufferSize(0),
+  fEquipmentId(-1)
+{
+  // ctor
+}
+
+AliRawReaderMemory::AliRRMBuffer::AliRRMBuffer(UChar_t* pBuffer, UInt_t bufferSize, Int_t equipmentId)
+  :
+  fBuffer(pBuffer),
+  fBufferSize(bufferSize),
+  fEquipmentId(equipmentId)
+{
+  // ctor
+}
+
+AliRawReaderMemory::AliRRMBuffer::~AliRRMBuffer()
+{
+  // dtor
+}
+
+AliRawReaderMemory::AliRRMBuffer::AliRRMBuffer(const AliRRMBuffer& src)
+  :
+  fBuffer(src.fBuffer),
+  fBufferSize(src.fBufferSize),
+  fEquipmentId(src.fEquipmentId)
+{
+  // copy ctor, there are no buffers allocated internally, pointers
+  // are just copied
+}
+
+AliRawReaderMemory::AliRRMBuffer& AliRawReaderMemory::AliRRMBuffer::operator=(const AliRRMBuffer& src)
+{
+  // assignment op
+  fBuffer=src.fBuffer;
+  fBufferSize=src.fBufferSize;
+  fEquipmentId=src.fEquipmentId;
+  return *this;
+}

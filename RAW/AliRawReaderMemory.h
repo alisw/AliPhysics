@@ -17,15 +17,13 @@ class fstream;
 #else
 #include <Riostream.h>
 #endif
-#include <TString.h>
+#include <vector>
 
 
 class AliRawReaderMemory: public AliRawReader {
   public :
     AliRawReaderMemory();
     AliRawReaderMemory(UChar_t* memory, UInt_t size);
-/*     AliRawReaderMemory(const AliRawReaderMemory& rawReader); */
-/*     AliRawReaderMemory& operator = (const AliRawReaderMemory& rawReader); */
     virtual ~AliRawReaderMemory();
 
     virtual void     RequireHeader(Bool_t required);
@@ -41,9 +39,9 @@ class AliRawReaderMemory: public AliRawReader {
     virtual UInt_t   GetGDCId() const {return 0;};
     virtual UInt_t   GetTimestamp() const {return 0;};
 
-    virtual Int_t    GetEquipmentSize() const {return fBufferSize;};
+    virtual Int_t    GetEquipmentSize() const;
     virtual Int_t    GetEquipmentType() const {return 0;};
-    virtual Int_t    GetEquipmentId() const {return fEquipmentId;};
+    virtual Int_t    GetEquipmentId() const;
     virtual const UInt_t* GetEquipmentAttributes() const {return NULL;};
     virtual Int_t    GetEquipmentElementSize() const {return 0;};
     virtual Int_t    GetEquipmentHeaderSize() const {return 0;};
@@ -59,21 +57,42 @@ class AliRawReaderMemory: public AliRawReader {
 
     virtual Bool_t   SetMemory( UChar_t* memory, ULong_t size );
 
-    void             SetEquipmentID(Int_t id) { fEquipmentId = id; }
+    void             SetEquipmentID(Int_t id);
+
+    Bool_t AddBuffer(UChar_t* memory, ULong_t size, Int_t equipmentId );
+    void ClearBuffers();
 
   protected :
 
-    UChar_t*         fBuffer;      // buffer for payload
-    UInt_t           fBufferSize;  // size of fBuffer in bytes
-    UInt_t           fPosition;    // Current position in memory
-    Int_t            fEquipmentId;  // Equipment id provided by the user
-
-    ClassDef(AliRawReaderMemory, 0) // class for reading raw digits from a memory block
-
   private:
+    class AliRRMBuffer {
+    public:
+      AliRRMBuffer();
+      AliRRMBuffer(UChar_t* pBuffer, UInt_t bufferSize, Int_t equipmentId);
+      ~AliRRMBuffer();
+      AliRRMBuffer(const AliRRMBuffer& src);
+      AliRRMBuffer& operator=(const AliRRMBuffer& src);
+
+      UChar_t* GetBuffer() const {return fBuffer;}
+      UInt_t GetBufferSize() const {return fBufferSize;}
+      Int_t GetEquipmentId() const {return fEquipmentId;}
+      void SetEquipmentId(Int_t equipmentId) {fEquipmentId=equipmentId;}
+    private:
+      UChar_t*         fBuffer;       //! buffer for payload
+      UInt_t           fBufferSize;   //! size of fBuffer in bytes
+      Int_t            fEquipmentId;  //! Equipment id
+    };
 
     AliRawReaderMemory(const AliRawReaderMemory& rawReader);
     AliRawReaderMemory& operator = (const AliRawReaderMemory& rawReader);
+
+    Bool_t OpenNextBuffer();
+
+    UInt_t                          fPosition;      //! Current position in current buffer
+    vector<AliRRMBuffer>            fBuffers;       //! Current buffer descriptor
+    UInt_t                          fCurrent;       //! Current buffer index
+
+    ClassDef(AliRawReaderMemory, 0) // class for reading raw digits from a memory block
 };
 
 #endif
