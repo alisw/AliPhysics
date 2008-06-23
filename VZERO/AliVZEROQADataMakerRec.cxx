@@ -165,6 +165,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
            GetRawsData(1)->Fill(i,rawStream->GetADC(i)) ; 
            GetRawsData(i+2+64)->Fill(rawStream->GetADC(i)) ; }  	
       }          
+  delete rawStream;
  }
 
 //____________________________________________________________________________ 
