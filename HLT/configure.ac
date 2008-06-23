@@ -267,7 +267,7 @@ if test ! "x$have_aliroot" = "xno" ; then
 
   dnl
   dnl AliRawReaderMemory support for multiple buffers added
-  dnl Jun 2008
+  dnl revision 26829 Jun 2008
   dnl
   CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/RAW"
   have_rawreadermemory_multbuffers=no
@@ -276,7 +276,7 @@ if test ! "x$have_aliroot" = "xno" ; then
 				   rr.AddBuffer(NULL, 0, 0);])],
                  [have_rawreadermemory_multbuffers=yes], 
   		 [AC_DEFINE(HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER)])
-  AC_MSG_CHECKING(for AliRawReaderMemory for support of multiple buffers)
+  AC_MSG_CHECKING(AliRawReaderMemory support for multiple buffers)
   AC_MSG_RESULT([$have_rawreadermemory_multbuffers])
 
   dnl
@@ -313,18 +313,25 @@ if test ! "x$have_aliroot" = "xno" ; then
     fi
     AC_MSG_RESULT([$have_alitpc])
 
-    have_tpc_load_clusters=no
-    AC_MSG_CHECKING(for on-line features of TPC offline tracker)
+    dnl
+    dnl Check for functionality in the TPC reconstruction required for online
+    dnl processing
+    dnl 
+    have_tpc_hltoffline_rec=no
+    AC_MSG_CHECKING(for on-line features of TPC offline reconstruction)
       ALITPC_LIBS="-lGui -lTPCbase -lTPCrec"
       LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliTPCtrackerMI.h>
+				       #include <AliTPCclustererMI.h>	
 				       #include <TObjArray.h>], 
                                       [AliTPCtrackerMI tracker;
 				       TObjArray* array=NULL;
-				       tracker.LoadClusters(array);])],
-                                      [have_tpc_load_clusters=yes], 
-  				      [AC_DEFINE(HAVE_NOT_TPC_LOAD_CLUSTERS)])
-    AC_MSG_RESULT([$have_tpc_load_clusters])
+				       tracker.LoadClusters(array);
+				       AliTPCclustererMI cl(NULL, NULL);
+				       cl.GetOutputArray();])],
+                                      [have_tpc_hltoffline_rec=yes], 
+ 				      [AC_DEFINE(HAVE_NOT_TPCOFFLINE_REC)])
+    AC_MSG_RESULT([$have_tpc_hltoffline_rec])
 
   fi
   AC_CHECK_HEADER([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])

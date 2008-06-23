@@ -88,6 +88,12 @@ private:
   AliHLTTPCOfflineClustererComponent& operator=(const AliHLTTPCOfflineClustererComponent&);
 
   /**
+   * Run the clusterer and PushBack the clusters with the given specification.
+   * @param outspec    data specification of the output block
+   */
+  int RunClusterer(AliHLTUInt32_t outspec);
+
+  /**
    * Configure the component.
    * Parse a string for the configuration arguments and set the component
    * properties.

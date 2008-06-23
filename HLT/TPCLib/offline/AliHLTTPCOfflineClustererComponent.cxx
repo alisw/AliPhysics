@@ -100,6 +100,11 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
   // Perfom initialisation. Checks arguments (argc,argv)  
   // and make initialisation. Returns 0 if success.  
   //
+#ifdef HAVE_NOT_TPCOFFLINE_REC
+  HLTError("AliRoot version > v4-13-Release required");
+  return -ENOSYS;
+#endif //HAVE_NOT_TPCOFFLINE_REC
+
   int iResult=0;
   HLTInfo("parsing %d arguments", argc);
 
@@ -200,6 +205,11 @@ int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData&
   HLTInfo("processing data");
 
   int iResult=0;
+  int commonMinSlice=-1;
+  int commonMaxSlice=-1;
+  int commonMinPatch=-1;
+  int commonMaxPatch=-1;
+
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC);
        pBlock!=NULL && iResult>=0;
        pBlock=GetNextInputBlock()) {
@@ -216,9 +226,20 @@ int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData&
       break;
     }
 
+    if (commonMinPatch<0) {
+      commonMinSlice=slice;
+      commonMaxSlice=slice;
+      commonMinPatch=patch;
+      commonMaxPatch=patch;
+    } else {
+      if (commonMinSlice<slice) commonMinSlice=slice;
+      if (commonMaxSlice>slice) commonMinSlice=slice;
+      if (commonMinPatch<patch) commonMinPatch=patch;
+      if (commonMaxPatch>patch) commonMinPatch=patch;
+    }
+
     if (fRawReader && fClusterer) {
       // setup raw reader and cluster finder
-      fRawReader->SetMemory( reinterpret_cast<UChar_t*>( pBlock->fPtr ), pBlock->fSize );
       int ddlId=AliDAQ::DdlIDOffset("TPC");
       if (patch<2) {
 	ddlId+=2*slice+patch;
@@ -226,14 +247,46 @@ int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData&
 	ddlId+=72;
 	ddlId+=4*slice+patch-2;	  
       }
-      fRawReader->SetEquipmentID(ddlId);
 
+#ifdef HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER
+      // AliRawReaderMemory does not support mulriple blocks, 
+      // process on block by block basis
+      fRawReader->SetMemory( reinterpret_cast<UChar_t*>( pBlock->fPtr ), pBlock->fSize );
+      fRawReader->SetEquipmentID(ddlId);
+      iResult=RunClusterer(pBlock->fSpecification);
+#else //!HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER
+      // add all raw data blocks to one clusterer
+      fRawReader->AddBuffer( reinterpret_cast<UChar_t*>( pBlock->fPtr ), pBlock->fSize, ddlId );
+#endif //HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER
+    }
+  }
+
+#ifndef HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER
+  iResult=RunClusterer(AliHLTTPCDefinitions::EncodeDataSpecification(commonMinSlice, 
+								     commonMaxSlice,
+								     commonMinPatch,
+								     commonMaxPatch));
+  fRawReader->ClearBuffers();
+#endif //HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER
+
+  return iResult;
+}
+
+int AliHLTTPCOfflineClustererComponent::RunClusterer(AliHLTUInt32_t outspec)
+{
+  // see header file for class documentation
+  int iResult=0;
+  {
+    if (fRawReader && fClusterer) {
       // run the cluster finder
       fClusterer->Digits2Clusters(fRawReader);
 
       AliTPCClustersRow *clrow = 0x0;
       Int_t nbClusters = 0;
-      TObjArray* outClrow=fClusterer->GetOutputArray();
+      TObjArray* outClrow=NULL;
+#ifndef HAVE_NOT_TPCOFFLINE_REC
+      outClrow=fClusterer->GetOutputArray();
+#endif //HAVE_NOT_TPCOFFLINE_REC
       if (outClrow) {
       Int_t lower   = outClrow->LowerBound();
       Int_t entries = outClrow->GetEntriesFast();
@@ -247,19 +300,18 @@ int AliHLTTPCOfflineClustererComponent::DoEvent( const AliHLTComponentEventData&
       }
 
       // insert TObjArray of clusters into output stream
-      PushBack(outClrow, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/, pBlock->fSpecification);
+      PushBack(outClrow, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/, outspec);
 
       // clear array
       outClrow->Clear();
       }
-      HLTInfo("processing done: DDL %d Number of clusters %d",ddlId, nbClusters);
+      HLTInfo("processing done: Number of clusters %d (specification 0x%08x)", nbClusters, outspec);
 
     } else {
       HLTError("component not initialized");
       iResult=-EFAULT;
     }
   }
-
   return iResult;
 }
 

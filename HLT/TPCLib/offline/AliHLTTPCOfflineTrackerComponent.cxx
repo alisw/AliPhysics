@@ -91,9 +91,9 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
   // init configuration 
   //
   int iResult=0;
-#ifdef HAVE_NOT_TPC_LOAD_CLUSTERS
-  HLTError("AliRoot version > v4-13-Release required");
-  return -EFAULT;
+#ifdef HAVE_NOT_TPCOFFLINE_REC
+  HLTFatal("AliRoot version > v4-13-Release required");
+  return -ENOSYS;
 #endif
 
   TString argument="";
@@ -188,9 +188,9 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
 //       if (dynamic_cast<AliTPCClustersRow*>(clusterArray->At(lower))==NULL) continue;
 
       HLTInfo("load %d cluster rows from block %s 0x%08x", clusterArray->GetEntries(), DataType2Text(GetDataType(pObj)).c_str(), GetSpecification(pObj));
-#ifndef HAVE_NOT_TPC_LOAD_CLUSTERS
+#ifndef HAVE_NOT_TPCOFFLINE_REC
       fTracker->LoadClusters(clusterArray);
-#endif //HAVE_NOT_TPC_LOAD_CLUSTERS
+#endif //HAVE_NOT_TPCOFFLINE_REC
     }// end loop over input objects
 
     // set magnetic field for the ESD, assumes correct initialization of

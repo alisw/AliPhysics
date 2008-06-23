@@ -40,8 +40,18 @@ void rec_hlt_tpc_offline()
   //
   // define the analysis chain to be run
   //
+
+  bool sectorClusterer=true; // run clusterer on sector or DDL level
+  // check if the AliRawReaderMemory supports multiple buffers
+  TClass* info=TClass::GetClass("AliRawReaderMemory");
+  TList* methods=info->GetListOfAllPublicMethods();
+  if (sectorClusterer && !methods->FindObject("AddBuffer")) {
+    cerr << "warning: AliRawReaderMemory does not support multiple buffers, falling back to run clusterer on DDL level" << endl;
+    sectorClusterer=false;
+  }
+ 
   int iMinSlice=0;
-  int iMaxSlice=0;
+  int iMaxSlice=17;
   int iMinPart=0;
   int iMaxPart=5;
 
@@ -50,8 +60,9 @@ void rec_hlt_tpc_offline()
   TString writerInput;
   TString trackerInput;
   for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
+    TString arg, clustererInput;
     for (int part=iMinPart; part<=iMaxPart; part++) {
-      TString arg, publisher, cf;
+      TString publisher, cf;
 
       // raw data publisher components
       int ddlno=DDLNoFromSlicePatch(slice, part);
@@ -59,6 +70,7 @@ void rec_hlt_tpc_offline()
       publisher.Form("DP_%02d_%d", slice, part);
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
 
+      if (!sectorClusterer) {
       // cluster finder components
       cf.Form("CF_%02d_%d", slice, part);
       AliHLTConfiguration cfconf(cf.Data(), "TPCOfflineClusterer", publisher.Data(), "");
@@ -67,6 +79,18 @@ void rec_hlt_tpc_offline()
       trackerInput+=cf;
       //if (writerInput.Length()>0) writerInput+=" ";
       //writerInput+=cf;
+      } else {
+	if (clustererInput.Length()>0) clustererInput+=" ";
+	clustererInput+=publisher;
+      }
+    }
+    if (sectorClusterer) {
+      // cluster finder components
+      cf.Form("CF_%02d", slice);
+      AliHLTConfiguration cfconf(cf.Data(), "TPCOfflineClusterer", clustererInput.Data(), "");
+
+      if (trackerInput.Length()>0) trackerInput+=" ";
+      trackerInput+=cf;
     }
   }
 
