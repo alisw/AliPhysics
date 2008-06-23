@@ -123,13 +123,13 @@ void AliT0v1::CreateGeometry()
   //C T0 mother volume
   Float_t pstartR[18]={0., 360., 5., 
 		       -6.8, 4.25, 10., //-76.5+0.00+69.7
-		       -0.75 , 4.5, 10.,  // -76.5+6.05+69.7
-		       1.25   , 4.5, 10.,  //-76.5+8.05+69.7
+		       -0.75 , 4.45, 10.,  // -76.5+6.05+69.7
+		       1.25   , 4.45, 10.,  //-76.5+8.05+69.7
 		       1.25 , 5.1, 10., //-76.5+8.05+69.7 
 		       6.8 , 5.1, 10.};  //-62.9+0.00+69.7
   
   Float_t pstart[3]={4., 12.5,6.8};
-  Float_t pinstart[3]={0.,1.5005,6.5};
+  Float_t pinstart[3]={0.,1.51,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
   Float_t ptop[3]={0.,1.,1.0};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
@@ -138,10 +138,10 @@ void AliT0v1::CreateGeometry()
   Float_t pglass[3]={1.2,1.3,2.};
   Float_t pcer[3]={0.9,1.1,1.35};
   Float_t psteel[3]={0.9,1.1,0.15};
-  Float_t psupport1[3] = {4.5,4.505,4.0};//C kozhuh vnutri
-  Float_t psupport2[3] = {9.4,9.5,4.0};// snaruzhi  C
-  Float_t psupport3[3] = {4.51,9.5,0.05};//kryshki  C
-  Float_t psupport5[3] = {1.5,1.51,6.5}; // stakanchik dlai feu  C
+  Float_t psupport1[3] = {4.49,4.5,4.0};//C kozhuh vnutri
+  Float_t psupport2[3] = {9.5,9.6,4.0};// snaruzhi  C
+  Float_t psupport3[3] = {4.51,9.5, 0.05};//kryshki  C
+  Float_t psupport5[3] = {1.5,1.5004,6.5}; // stakanchik dlai feu  C
   Float_t psupport6[3] = {0,1.4,0.04}; //kryshechka stakanchika  Al
   Float_t psupport7[3] = {1.5004,1.51,0.4}; //kolechko snaruzhu stakanchika Al
    
@@ -246,34 +246,30 @@ void AliT0v1::CreateGeometry()
 
    //non-absorber side support  and T0A !!!!!!!!
     
-    //   TGeoPcon * supPgon = new TGeoPcon("supPgon",0.,360.,360,4);
-    TGeoPcon * supPgon = new TGeoPcon("supPgon",0.,360.,4);
+    TGeoPcon * supPgon = new TGeoPcon("0supPgon",0.,360.,4);
     supPgon->DefineSection(0, 0, 4.1, 5.5);
     supPgon->DefineSection(1, 10.5 , 4.1, 5.5);
     supPgon->DefineSection(2, 10.5 , 4.1, 4.9);
     supPgon->DefineSection(3, 12.5 , 4.1, 4.9);
-    TGeoTranslation *trPgon = new TGeoTranslation("trPgon",0,0,0);
+    TGeoTranslation *trPgon = new TGeoTranslation("0trPgon",0,0,0);
     trPgon->RegisterYourself();
  
     TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("0STL");//empty segment
     TGeoVolume *ins = gGeoManager->GetVolume("0INS");
 
-    //   Double_t phimin = TMath::ACos((16-4.8)/16.) * (180 / TMath::Pi()) ;
-    //  TGeoTubeSeg *hole = new TGeoTubeSeg("hole", 0, 1.6, 0, -phimin+90, phimin+90);
-    //    new TGeoTube("hole", 0, 1.61, 6.5);
-    new TGeoTube("hole", 0, 1.51, 6.5);
+    new TGeoTube("0HOLE", 0, 1.51, 6.5);
     TGeoTranslation *tr [12];
     Double_t angle  = 2 * TMath::Pi() / 12;
     Char_t nameTr[40];
     for (Int_t itr=0; itr<12; itr++) {
-      sprintf (nameTr,"tr%i",itr+1);
+      sprintf (nameTr,"0TR%i",itr+1);
       x = 6.5 * TMath::Sin(itr * angle);
       y = 6.5 * TMath::Cos(itr * angle);
       tr[itr] = new TGeoTranslation(nameTr,x,y,6.5);
       tr[itr]->RegisterYourself();
       stlin->AddNode(ins,itr+13,tr[itr]);
     }
-    TGeoCompositeShape *supsh = new TGeoCompositeShape("supsh","supPgon:trPgon-(hole:tr1+hole:tr2+hole:tr3+hole:tr4+hole:tr5+hole:tr6+hole:tr7+hole:tr8+hole:tr9+hole:tr10+hole:tr11+hole:tr12)");
+    TGeoCompositeShape *supsh = new TGeoCompositeShape("0supsh","0supPgon:0trPgon-(0HOLE:0TR1+0HOLE:0TR2+0HOLE:0TR3+0HOLE:0TR4+0HOLE:0TR5+0HOLE:0TR6+0HOLE:0TR7+0HOLE:0TR8+0HOLE:0TR9+0HOLE:0TR10+0HOLE:0TR11+0HOLE:0TR12)");
   
     TGeoMedium *medal = gGeoManager->GetMedium("T0_Aluminium$");
     TGeoVolume *supA = new TGeoVolume("0SUA",supsh,medal);
@@ -310,7 +306,7 @@ void AliT0v1::CreateGeometry()
    x=0;
    y=0;
    //   z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
-   z=-pinstart[2]+ppmt[2]; //+psupport6[2];
+   z=-pinstart[2]+ppmt[2]+0.08; //+psupport6[2];
    gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
    // PMT
    
@@ -343,15 +339,15 @@ void AliT0v1::CreateGeometry()
    gMC->Gspos("0STE",1,"0PMT",0,0,z,0,"ONLY");
     
    //Support absorber (C) side
-   z=-pstart[2]+psupport1[2]- 0.05; //0.1;
+   z=-pstart[2]+psupport1[2];//  0.05; //0.1;
    gMC->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
    gMC->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
-   z=-pstart[2]+psupport3[2] - 0.1;
+   z=-pstart[2]+psupport3[2];//  - 0.1;
    gMC->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
-   z=-pstart[2]+2.*psupport1[2]-0.05;//+0.1;
+   z=-pstart[2]+2.*psupport1[2];//+0.1;
    gMC->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
    gMC->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
-   z=-pinstart[2]+psupport6[2]-0.1;
+   z=-pinstart[2]+psupport6[2]; //-0.1;
    gMC->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
    
    z=pinstart[2]-psupport7[2];
