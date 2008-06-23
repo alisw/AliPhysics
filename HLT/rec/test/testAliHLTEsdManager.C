@@ -161,13 +161,20 @@ int main(int /*argc*/, const char** /*argv*/)
     pManager->PadESDs(nofEvents);
   }
 
+  vector<TString> filenames;
   for (int type=0; types[type]!=kAliHLTVoidDataType; type++) {
     TString filename=pManager->GetFileNames(types[type]);
+    filenames.push_back(filename);
+  }
+  // delete the manager instance to make sure the files are closed
+  AliHLTEsdManager::Delete(pManager);
+  pManager=NULL;
+  for (int type=0; types[type]!=kAliHLTVoidDataType; type++) {
     if (iResult>=0) {
-      iResult=CheckFields(filename, dynamic_cast<TArrayI*>(randomFields[type]));
+      iResult=CheckFields(filenames[type], dynamic_cast<TArrayI*>(randomFields[type]));
     }
     TString shellcmd="rm -f ";
-    shellcmd+=filename;
+    shellcmd+=filenames[type];
     gSystem->Exec(shellcmd);    
   }
 
@@ -179,7 +186,6 @@ int main(int /*argc*/, const char** /*argv*/)
   }
 
   delete pMasterESD;
-  AliHLTEsdManager::Delete(pManager);
 
   return iResult;
 }

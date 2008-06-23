@@ -231,7 +231,10 @@ AliHLTEsdManagerImplementation::AliHLTEsdListEntry::~AliHLTEsdListEntry()
   if (fpTree) delete fpTree;
   fpTree=NULL;
 
-  if (fpFile) delete fpFile;
+  if (fpFile) {
+    fpFile->Close();
+    delete fpFile;
+  }
   fpFile=NULL;
 }
 
