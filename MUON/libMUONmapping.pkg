@@ -78,7 +78,7 @@ SRCS +=  \
 	 mapping/AliMpTriggerSegmentation.cxx  \
          mapping/AliMpRegionalTrigger.cxx \
          mapping/AliMpTriggerCrate.cxx \
-         mapping/AliMpLocalBoard.cxx \
+         mapping/AliMpLocalBoard.cxx 
 
 # Category management
 #
@@ -96,7 +96,8 @@ SRCS +=  \
          mapping/AliMpBusPatch.cxx \
          mapping/AliMpDDL.cxx \
 	 mapping/AliMpDDLStore.cxx \
-	 mapping/AliMpCDB.cxx
+	 mapping/AliMpCDB.cxx \
+         mapping/AliMpFrtCrocusConstants.cxx
 
 # Category graphics
 #

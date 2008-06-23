@@ -43,6 +43,7 @@ AliMpDDL::AliMpDDL(Int_t id)
   : TObject(),
     fId(id),
     fDEIds(),
+    fFrtIds(false),
     fBusPatchIds(),
     fTriggerCrateIds(false)
 
@@ -55,6 +56,7 @@ AliMpDDL::AliMpDDL(TRootIOCtor* /*ioCtor*/)
   : TObject(),
     fId(0),
     fDEIds(),
+    fFrtIds(false),    
     fBusPatchIds(),
     fTriggerCrateIds()
 {
@@ -129,6 +131,25 @@ Bool_t AliMpDDL::AddTriggerCrate(Int_t crateId)
 }      
 
 //______________________________________________________________________________
+Bool_t AliMpDDL::AddFrt(Int_t frtId)
+{
+/// Add FRT with given frtId.
+/// Return true if the FRT was added
+
+  if ( HasFrtId(frtId) ) {
+    AliWarningStream() 
+	<< "FRT Id = " << frtId << " already present."
+	<< endl;
+    return false;
+  }    
+  
+  fFrtIds.Add(frtId);
+
+  return true;
+}      
+
+
+//______________________________________________________________________________
 Int_t AliMpDDL::GetNofDEs() const
 {  
 /// Return the number of detection elements connected to this DDL
@@ -151,6 +172,31 @@ Bool_t  AliMpDDL::HasDEId(Int_t detElemId) const
 
   return fDEIds.HasValue(detElemId);; 
 }
+
+//______________________________________________________________________________
+Int_t AliMpDDL::GetNofFrts() const
+{  
+/// Return the number of FRT connected to this DDL
+
+  return fFrtIds.GetSize(); 
+}
+
+//______________________________________________________________________________
+Int_t  AliMpDDL::GetFrtId(Int_t index) const
+{  
+/// Return the FRT by index (in loop)
+
+  return fFrtIds.GetValue(index); 
+}
+
+//______________________________________________________________________________
+Bool_t  AliMpDDL::HasFrtId(Int_t frtId) const
+{  
+/// Return true if the FRT Id is present
+
+  return fFrtIds.HasValue(frtId);; 
+}
+
 
 //______________________________________________________________________________
 Int_t AliMpDDL::GetNofBusPatches() const

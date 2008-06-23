@@ -40,7 +40,7 @@ class AliMpFiles : public TObject
     // bus patch
     //
     static TString BusPatchFilePath(); 
-    static TString BusPatchLengthFilePath(); 
+    static TString BusPatchInfoFilePath(); 
     static TString BusPatchSpecialFilePath(); 
 
     // de names
@@ -120,7 +120,7 @@ class AliMpFiles : public TObject
     static const TString fgkTriggerLocalBoards;///<  local board name to id mapping
     static const TString fgkTriggerGlobalBoards;///<  global board name to id mapping
     static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
-    static const TString fgkBusPatchLengthFileName;///< BusPatch length file name
+    static const TString fgkBusPatchInfoFileName;///< BusPatch length file name
     static const TString fgkBusPatchSpecialFileName;///< BusPatch special file name
     static const TString fgkSerialToBinFileName; ///< serial to bin  number file name
     

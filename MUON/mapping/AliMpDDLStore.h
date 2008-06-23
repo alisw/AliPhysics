@@ -30,7 +30,6 @@ class AliMpDetElement;
 class AliMpBusPatch;
 class AliMpLocalBoard;
 class AliMpTriggerCrate;
-
 class TArrayI;
 
 class AliMpDDLStore : public  TObject {
@@ -62,8 +61,12 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetDDLfromBus(Int_t busPatchId) const;
     Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
     
+
     /// Get detection elt and Manu number from serial number
     AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
+    
+    /// Get link port and DSP from busPatch id
+    AliMpIntPair  GetLinkPortId(Int_t busPatchId) const;
 
     /// Print info of all manus
     void PrintAllManu() const;
@@ -89,7 +92,7 @@ class AliMpDDLStore : public  TObject {
     Bool_t SetManus();
     Bool_t ReadBusPatchSpecial();
     Bool_t SetPatchModules();
-    Bool_t SetBusPatchLength();
+    Bool_t ReadBusPatchInfo();
     Int_t  GetLocalBoardId(TString name) const;
 
     // static data members	

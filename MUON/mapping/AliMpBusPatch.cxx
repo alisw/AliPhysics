@@ -70,7 +70,10 @@ AliMpBusPatch::AliMpBusPatch(Int_t id, Int_t detElemId, Int_t ddlId)
     fDdlId(ddlId),
     fManus(false),
     fNofManusPerModule(false),
-    fCableLength(-1)
+    fCableLength(-1),
+    fCableLabel(),
+    fTranslatorLabel(),
+    fFrtId(0)
 {
 /// Standard constructor
 }
@@ -83,7 +86,10 @@ AliMpBusPatch::AliMpBusPatch(TRootIOCtor* /*ioCtor*/)
     fDdlId(),
     fManus(false),
     fNofManusPerModule(false),
-    fCableLength(-1)
+    fCableLength(-1),
+    fCableLabel(),
+    fTranslatorLabel(),
+    fFrtId(0)
 {
 /// Root IO constructor
 }

@@ -66,7 +66,7 @@ const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC";
 const TString AliMpFiles::fgkTriggerLocalBoards = "RegionalCrate";
 const TString AliMpFiles::fgkTriggerGlobalBoards = "GlobalCrate";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
-const TString AliMpFiles::fgkBusPatchLengthFileName = "BusPatchLength";
+const TString AliMpFiles::fgkBusPatchInfoFileName = "BusPatchInfo";
 const TString AliMpFiles::fgkBusPatchSpecialFileName = "BusPatchSpecial";
 const TString AliMpFiles::fgkSerialToBinFileName = "ManuSerialToBin";
 
@@ -172,11 +172,11 @@ TString AliMpFiles::BusPatchFilePath()
 }  
 
 //______________________________________________________________________________
-TString AliMpFiles::BusPatchLengthFilePath()
+TString AliMpFiles::BusPatchInfoFilePath()
 {
 /// Return path to data file with bus patch mapping.
 
-  return GetTop() + fgkDataDir + "/" + fgkBusPatchLengthFileName + fgkDataExt;
+  return GetTop() + fgkDataDir + "/" + fgkBusPatchInfoFileName + fgkDataExt;
 }  
 
 //______________________________________________________________________________

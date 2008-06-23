@@ -32,6 +32,7 @@
 #include "AliMpExMapIterator.h"
 #include "AliMpConstants.h"
 #include "AliMpDEStore.h"
+#include "AliMpFrtCrocusConstants.h"
 #include "AliMpDDL.h"
 #include "AliMpFiles.h"
 #include "AliMpHelper.h"
@@ -117,7 +118,7 @@ AliMpDDLStore::AliMpDDLStore()
     fDDLs.SetOwner(true);
     fBusPatches.SetOwner(true);
     fBusPatches.SetSize(900);
-
+    
     // Load segmentation & DE store data
     if ( ! AliMpSegmentation::Instance(false) )
         AliMpSegmentation::ReadData(true);
@@ -129,7 +130,7 @@ AliMpDDLStore::AliMpDDLStore()
     SetManus();
     ReadBusPatchSpecial();
     SetPatchModules();
-    SetBusPatchLength();
+    ReadBusPatchInfo();
 }
 
 //______________________________________________________________________________
@@ -364,7 +365,8 @@ AliMpDDLStore::SetTriggerDDLs()
 }
 
 //______________________________________________________________________________
-Bool_t AliMpDDLStore::SetManus() {
+Bool_t AliMpDDLStore::SetManus() 
+{
     /// Set manus for each bus patch
 
     Int_t manuMask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane) - 1;
@@ -550,7 +552,8 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
  
 
 //______________________________________________________________________________
-Bool_t AliMpDDLStore::SetPatchModules() {
+Bool_t AliMpDDLStore::SetPatchModules() 
+{
     /// Compute the number of manu per PCB for each buspatch
 
     AliMpDEIterator it;
@@ -576,10 +579,11 @@ Bool_t AliMpDDLStore::SetPatchModules() {
 }
 
 //______________________________________________________________________________
-Bool_t AliMpDDLStore::SetBusPatchLength() {
-    /// read the buspatch length file and set buspatch length
+Bool_t AliMpDDLStore::ReadBusPatchInfo() 
+{
+    /// read the buspatch info file and set buspatch info
 
-    TString infile = AliMpFiles::BusPatchLengthFilePath();
+    TString infile = AliMpFiles::BusPatchInfoFilePath();
     ifstream in(infile, ios::in);
     if (!in) {
         AliErrorStream() << "Data file " << infile << " not found.";
@@ -604,20 +608,44 @@ Bool_t AliMpDDLStore::SetBusPatchLength() {
 
             TObjArray* stringList = tmp.Tokenize(TString(" "));
 
-            TString sLocalBusId = ((TObjString*)stringList->At(0))->GetString();
-            Int_t   localBusId  = sLocalBusId.Atoi();
+            // Crocus label
+            TString crLabel    = ((TObjString*)stringList->At(0))->GetString();
+            Int_t pos          = crLabel.First('-');
+            tmp                = crLabel(pos-2, crLabel.Length()-pos+2);
+            TArrayI list;
+            AliMpHelper::DecodeName(tmp.Data(), '-', list);
+            
+            Int_t localDDLId  = list[0];
+            Int_t frtId       = list[1] - 1; // begin at zero ! 
+            Int_t localBusId  = list[2];
 
-            TString sLength = ((TObjString*)stringList->At(1))->GetString();
-            Float_t length  = sLength.Atof();
+            // Add FRT number for given ddl if not present
+            if ( !ddl->HasFrtId(frtId) )
+              ddl->AddFrt(frtId);
+
+            // BP & translator label
+            TString label      = ((TObjString*)stringList->At(1))->GetString();
+            TString transLabel = ((TObjString*)stringList->At(2))->GetString();
+
+            // BP length
+            TString sLength    = ((TObjString*)stringList->At(3))->GetString();
+            Float_t length     = sLength.Atof();
 
             delete stringList;
-
+                       
             if (localBusId != iBusPatch + 1)
-                AliWarning(Form("Wrong local buspatch id %d instead of %d", iBusPatch+1, localBusId));
+               AliWarning(Form("Wrong local buspatch id %d instead of %d", iBusPatch+1, localBusId));
+               
+            if(localDDLId != ddl->GetId()+1)
+                AliWarning(Form("Wrong local DDL id %d instead of %d", ddl->GetId()+1, localDDLId));
 
             Int_t busPatchId = ddl->GetBusPatchId(iBusPatch);
             AliMpBusPatch* busPatch = GetBusPatch(busPatchId);
             busPatch->SetCableLength(length);
+            busPatch->SetCableLabel(label);
+            busPatch->SetTranslatorLabel(transLabel);
+            busPatch->SetFrtId(frtId);
+
         }
     }
 
@@ -689,6 +717,7 @@ AliMpBusPatch* AliMpDDLStore::GetBusPatch(Int_t busPatchId, Bool_t warn) const {
 
     return busPatch;
 }
+
 
 //______________________________________________________________________________
 AliMpLocalBoard* AliMpDDLStore::GetLocalBoard(Int_t localBoardId, Bool_t warn) const {
@@ -787,6 +816,23 @@ Int_t AliMpDDLStore::GetBusPatchId(Int_t detElemId, Int_t manuId) const {
     }
 
     return detElement->GetBusPatchId(pos);
+}
+
+
+//______________________________________________________________________________
+AliMpIntPair  AliMpDDLStore::GetLinkPortId(Int_t busPatchId) const {
+
+  /// Return link port for a given frtId and global busPatchId
+
+    AliMpBusPatch* busPatch = GetBusPatch(busPatchId);
+    Int_t ddlId = busPatch->GetDdlId();
+        
+    Int_t localBusPatchId = AliMpBusPatch::GetLocalBusID(busPatchId, ddlId) - 1; // begin at zero
+
+    Int_t pos = (localBusPatchId % AliMpFrtCrocusConstants::GetNofBusPatches()); 
+    
+    return AliMpFrtCrocusConstants::GetLinkPortId(pos);
+
 }
 
 //______________________________________________________________________________

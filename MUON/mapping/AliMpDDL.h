@@ -26,6 +26,7 @@ class AliMpDDL : public  TObject {
 
     // methods 
     Bool_t AddDE(Int_t detElemId);
+    Bool_t AddFrt(Int_t frtId);
     Bool_t AddTriggerCrate(Int_t crateId);
 
     void   FillBusPatchIds();
@@ -37,7 +38,12 @@ class AliMpDDL : public  TObject {
     Int_t  GetNofDEs() const;
     Int_t  GetDEId(Int_t index) const;
     Bool_t HasDEId(Int_t detElemId) const;
-    
+  
+     // FRT Crcous
+    Int_t  GetNofFrts() const;
+    Int_t  GetFrtId(Int_t index) const;
+    Bool_t HasFrtId(Int_t frtId) const;
+          
     // Bus patches
     Int_t  GetNofBusPatches() const;
     Int_t  GetBusPatchId(Int_t index) const;
@@ -63,6 +69,7 @@ class AliMpDDL : public  TObject {
     // data members	
     Int_t       fId;            ///< Identifier (unique)
     AliMpArrayI fDEIds;         ///< Detection element Ids connected to this DDL
+    AliMpArrayI fFrtIds;        ///< FRT Crocus Ids connected to this DDL
     AliMpArrayI fBusPatchIds;   ///< Bus patch Ids connected to this DDL
     AliMpArrayI fTriggerCrateIds; ///< Trigger crate Ids connected to this DDL
 
