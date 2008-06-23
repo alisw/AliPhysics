@@ -212,6 +212,9 @@ Bool_t   AliRawReaderHLT::ReadHeader()
       break;
     }
     fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
+    fDataSize=fpParentReader->GetDataSize();
+    fPosition=0;
+    fpData=NULL;
 
     // filter out all equipment ids which should be taken from the HLT stream
     int id=fpParentReader->GetEquipmentId();
@@ -223,6 +226,12 @@ Bool_t   AliRawReaderHLT::ReadHeader()
 Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
 {
   // see header file for class documentation
+  return ReadNextData(data, kTRUE);
+}
+
+Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data, Bool_t readHeader)
+{
+  // see header file for class documentation
 
   // this function is the backbone of the ReadNext functions, it gets the
   // whole data block either from the HLT stream or the parent raw reader.
@@ -230,7 +239,7 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
   Bool_t result=kTRUE;
 
   // read new header if data already read
-  if (fPosition<fDataSize || (result=ReadHeader())) {
+  if (fPosition<fDataSize || (result=(readHeader && ReadHeader()))) {
     if (fbHaveHLTData && fpHLTOUT!=NULL) {
       // all internal data variables set
       result=kTRUE;
@@ -271,7 +280,7 @@ Bool_t   AliRawReaderHLT::ReadNextInt(UInt_t& data)
       fOffset+=iCopy;
       return kTRUE;
     }
-  } while (ReadNextData(dummy));
+  } while (ReadNextData(dummy, kTRUE));
   return kFALSE;
 }
 
@@ -286,7 +295,7 @@ Bool_t   AliRawReaderHLT::ReadNextShort(UShort_t& data)
       fOffset+=iCopy;
       return kTRUE;
     }
-  } while (ReadNextData(dummy));
+  } while (ReadNextData(dummy, kTRUE));
   return kFALSE;
 }
 
@@ -301,7 +310,7 @@ Bool_t   AliRawReaderHLT::ReadNextChar(UChar_t& data)
       fOffset+=iCopy;
       return kTRUE;
     }
-  } while (ReadNextData(dummy));
+  } while (ReadNextData(dummy, kTRUE));
   return kFALSE;
 }
 
@@ -318,7 +327,10 @@ Bool_t   AliRawReaderHLT::ReadNext(UChar_t* data, Int_t size)
       fOffset+=iCopy;
       return kTRUE;
     }
-  } while (ReadNextData(dummy));
+    // By convention, the ReadNextData function stays in the
+    // current block and does not switch to the next one
+    // automatically -> kFALSE
+  } while (ReadNextData(dummy, kFALSE));
   return kFALSE;
 }
 

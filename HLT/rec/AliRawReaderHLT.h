@@ -178,6 +178,16 @@ class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
    */
   int ReleaseHLTData(bool bReleaseHLTOUT=true);
 
+  /**
+   * Backbone of all Read functions.
+   * Reads the next data into the internal buffer and switches to next
+   * block if enabled.
+   *
+   * @param data             target to receive pointer
+   * @param readHeader       kTRUE: switch to next block if no more data
+   */
+  Bool_t   ReadNextData(UChar_t*& data, Bool_t readHeader);
+
   /** the rawreader */
   AliRawReader* fpParentReader; //!transient
 
