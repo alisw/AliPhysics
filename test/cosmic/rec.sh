@@ -13,9 +13,7 @@
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
 YEAR=08
-DIALOG=${DIALOG=dialog}
-GSHELL_ROOT=$ALIEN_ROOT/api
-PATH=$PATH:$GSHELL_ROOT/bin
+DIALOG=/usr/bin/dialog
 # ---------------------------------------
 
 RUNNUM=$1
@@ -38,29 +36,36 @@ PATTERN="/raw/"$YEAR"0000"$RUNNUM"*0.root"
 aliensh -c "gbbox find $BASEDIR $PATTERN" | head --lines=-1 > collection.tmp
 
 [ $(stat -c%s collection.tmp) -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
-list=`cat collection.tmp | awk '{printf("%s %s %s ",$1,"  .","0");}'`   # improve: put basename
-totChunks=`cat collection.tmp | wc -l`; totChunks=`echo \($totChunks / 3\) | bc`
+rm -r collection.tmp2
+for ifile in `cat collection.tmp | head --lines=500` ; do printf $ifile" "\|" "0" " >> collection.tmp2 ; done
+list=`cat collection.tmp2`
+rm -f collection.tmp2 
+totChunks=`cat collection.tmp | wc -l`
 rm -f collection.tmp
 
 tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
 trap "rm -f $tempfile" 0 1 2 5 15
 $DIALOG --clear --no-cancel --title "$TITLE" \
-        --ok-label OK --checklist "$totChunks chunks available. Select chunks for reconstruction" 18 74 10 \
+        --ok-label OK --checklist "$totChunks chunks available for run $RUNNUM (only the first 500 are shown). Select chunks for reconstruction" 18 80 10 \
         $list 2> $tempfile
 
-CHUNKS=`cat $tempfile`" ."
+CHUNKS=`cat $tempfile`
 echo "Selected chunks:"
 echo $CHUNKS
 echo
 
-echo $CHUNKS | while read -d " " filename; do 
+$DIALOG --clear --no-cancel \
+        --ok-label OK --radiolist "Program to run:" 15 20 5 "aliroot -b" \| on alieve \| off 2> $tempfile
+PROGRAM=`cat $tempfile`
+ 
+for filename in $CHUNKS; do
      filename=${filename//\"/} 
-     CHUNK=`echo $filename | cut -d "/" -f 8 | cut -d "." -f 1,2 | cut -c 12-14,16-`
+     CHUNK=`basename $filename | cut -d "." -f 1,2`
 
      echo "Running AliRoot reconstruction for chunk $filename. Outputs will be stored in "$RUNNUM"/"$CHUNK"."
      rm -rf   $RUNNUM"/"$CHUNK
      mkdir -p $RUNNUM"/"$CHUNK
      cd       $RUNNUM"/"$CHUNK
-     aliroot -b -q ../../rec.C\(\"alien://$filename\"\) 2>&1 | tee rec.log
+     $PROGRAM -q $ALICE_ROOT/test/cosmic/rec.C\(\"alien://$filename\"\) 2>&1 | tee rec.log
      cd ../..
 done
