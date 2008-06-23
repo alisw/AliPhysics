@@ -1,101 +1,107 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
+#ifndef ALIRSNMVPAIR_H
+#define ALIRSNMVPAIR_H
 
-//-------------------------------------------------------------------------
-//                      Class AliRsnAnalysis
-//             Reconstruction and analysis of K* Rsn
-// ........................................
-// ........................................
-// ........................................
-// ........................................
-// 
-// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
-//-------------------------------------------------------------------------
+#include <TObject.h>
+#include <TH1.h>
+#include <TClonesArray.h>
+#include <TTree.h>
 
-#ifndef ALIRSNPAIR_H
-#define ALIRSNPAIR_H
-
-#include <TNamed.h>
+#include "AliRsnDaughter.h"
+#include "AliRsnPairParticle.h"
+#include "AliRsnCutSet.h"
+#include "AliRsnCutMgr.h"
+#include "AliRsnPairDef.h"
 #include "AliRsnPID.h"
 
-class TH1D;
-class TRefArray;
-class TObjArray;
+#include "AliRsnEventBuffer.h"
+
 class AliRsnEvent;
-class AliRsnDaughter;
-class AliRsnDaughterCut;
-class AliRsnDaughterCutPair;
+class AliRsnCut;
 
-class AliRsnPair : public TNamed
+
+/**
+  @author Martin Vala <Martin.Vala@cern.ch>
+*/
+class AliRsnPair : public TObject
 {
+  public:
+    enum EPairType
+    {
+      kESDNoPID = 0,kESDNoPIDMix,
+      kESDNormal, kESDMix,
+      kMCNoPID,
+      kMCNormal, kMCMix,
+      kMCSignalOnly, kMCBackgroundOnly,
+      kLastIndex
+    };
 
-public:
-	
-	AliRsnPair();
-	AliRsnPair(const char *name, const char *title, 
-	           Int_t nbins, Double_t min, Double_t max,
-	           Double_t ptmin = 0., Double_t ptmax = 0., Double_t dmax = 0.);
-	AliRsnPair(const AliRsnPair &copy);
-	const AliRsnPair& operator=(const AliRsnPair &copy);
-	virtual ~AliRsnPair() {Clear();}
-	virtual void Clear(Option_t *option = "");
-	
-	/* getters */
-	TH1D*             GetHistogram() {return fHistogram;}
-	Char_t            GetCharge(Int_t i) const {if (i>=0&&i<2) return fCharge[i]; else return 0;}
-	AliRsnPID::EType  GetParticle(Int_t i) const {if (i>=0&&i<2) return fType[i]; else return AliRsnPID::kUnknown;}
-	Double_t          GetMass(Int_t i) const {if (i>=0&&i<2) return fMass[i]; else return 0.0;}
-	Bool_t            StoreOnlyTruePairs() const {return fStoreOnlyTrue;}
-	Bool_t            IsForMixing() const {return fForMixing;}
-	
-	/* setters */
-	void SetMass(Int_t i, Double_t value) {if (i>=0&&i<2) fMass[i] = value;}
-	void SetTrueMotherPDG(Int_t pdg) {fTrueMotherPDG = pdg;}
-	void SetPair(Char_t charge1, AliRsnPID::EType pid1, Char_t charge2, AliRsnPID::EType pid2);
-    void SetPtBin(Double_t min, Double_t max) {fPtMin = min; fPtMax = max;}
-    void SetImpactMax(Double_t max) {fVtMax = max;}
-    void SetStoreOnlyTrue(Bool_t doit = kTRUE) {fStoreOnlyTrue = doit;}
-    void SetForMixing(Bool_t doit = kTRUE) {fForMixing = doit;}
-	
-	/* working parameters */
-	void   AddCutPair(AliRsnDaughterCutPair *cut);
-	void   AddCutSingle(Int_t i, AliRsnDaughterCut *cut);
-	Stat_t Process(AliRsnEvent *event1, AliRsnEvent *event2 = 0, Bool_t usePID = kTRUE);
-	
-private:
+    AliRsnPair();
+    AliRsnPair ( AliRsnPair::EPairType type , AliRsnPairDef *pairDef,Int_t numOfMix = 0 );
+    ~AliRsnPair();
 
-	/* private functions */
-	void   InitHistogram(Int_t nbins, Double_t min, Double_t max);
-	Bool_t SingleCutCheck(Int_t ipart, AliRsnDaughter *track) const;
-	Bool_t PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *track2) const;
-    Stat_t Fill(TRefArray *list1, TRefArray *list2, Bool_t skipSameIndex = kTRUE);
+    TString         GetESDParticleName ( AliRsnPID::EType type );
+    TString         GetPairTypeName ( EPairType type );
 
-	/* flags */
-	Bool_t               fForMixing;       // flag is true for objects created for event mixing
-	Bool_t               fStoreOnlyTrue;   // output = only spectra of true pairs
-	
-	/* parameters */
-	Int_t                fTrueMotherPDG;   // PDG code of true mother (if known)
-	Double_t             fMass[2];         // nominal mass of particles
-	Char_t               fCharge[2];       // charge of particles
-	AliRsnPID::EType     fType[2];         // particles types
-    
-    /* basic cuts */
-    Double_t             fPtMin;           // minimum allowed pt for the pair
-    Double_t             fPtMax;           // maximum allowed pt for the pair
-    Double_t             fVtMax;           // maximum transverse impact parameter for each track
-	
-	/* cuts */
-	TObjArray           *fCutsSingle[2];   // single-particle cuts
-	TObjArray           *fCutsPair;        // pair cuts
-	
-	/* output */
-	TH1D                *fHistogram;       // invariant mass distribution
-	
-	/* ROOT dictionary */
-	ClassDef(AliRsnPair, 1) 
+    TH1F            *GenerateEffMassHist ( Int_t index = 0 );
+
+    void            ProcessPair ( AliRsnEvent *event,TH1F *hist,Int_t index=0 );
+
+    void            DoCleanUpAfterOneEvent();
+
+    void            AddCutMgr ( AliRsnCutMgr* theValue );
+    AliRsnCutMgr* GetCutMgr ( Int_t index ) { return ( AliRsnCutMgr* ) fCutMgrs.At ( index );}
+    TObjArray*      GetCutMgr () { return &fCutMgrs;}
+    Int_t           GetNumOfCutMgr () { return fCutMgrs.GetEntriesFast();}
+
+    void SetMass ( Double_t theValue ) { fMass[0] = theValue; fMass[1] = theValue;}
+    void SetMass ( Double_t theValue , Int_t index ) { fMass[index] = theValue; }
+    Double_t GetMass ( Int_t index=0 ) const { return fMass[index]; }
+
+    TString GetEffMassHistName ( Int_t index = 0 );
+    TString GetEffMassHistTitle ( Int_t index = 0 );
+
+    void SetNumOfMixEvent ( const Int_t& theValue ) { fNumOfMixEvent = theValue; }
+    Int_t GetNumOfMixEvent() const { return fNumOfMixEvent;}
+
+    void SetIsFilledOnlyInHistRange ( const Bool_t& theValue ) { fIsFilledOnlyInHistRange = theValue; }
+
+    void                    PrepareMixForPair ( AliRsnEvent * event,TTree *tree );
+
+    void SetRsnMVEventBuffer ( AliRsnEventBuffer* theValue ) { fRsnMVEventBuffer = theValue; }
+    AliRsnEventBuffer* GetRsnMVEventBuffer() const { return fRsnMVEventBuffer; }
+
+
+  private:
+
+    AliRsnPairDef          fPairDef;                // pair definition
+    AliRsnPair::EPairType  fPairType;               // pair type
+  
+    AliRsnCutMgr          *fCurrentCutMgr;          // cut manager
+    TObjArray               fCutMgrs;               // array of cuts
+
+    Double_t                fMass[2];               // mass for nopid
+
+    AliRsnPairParticle      fEffMassParticle;
+
+    Int_t                   fNumOfMixEvent;         // number of events to be mix with current one
+    AliRsnEventBuffer      *fRsnMVEventBuffer;      // event buffer for event mixing
+
+    Bool_t                  fIsSignSame;            // flag for same sign
+
+    Bool_t                  fIsFilledOnlyInHistRange; // flag filling histogram
+
+    void                    DoLoopPairESD ( AliRsnEvent *event1, TArrayI *array1,AliRsnEvent *event2, TArrayI *array2 ,TH1F *hist,Int_t index=0 );
+    void                    DoLoopPairMC ( AliRsnEvent *event1, TArrayI*array1,AliRsnEvent *event2, TArrayI*array2 ,TH1F *hist,Int_t index=0 );
+
+    void                    DoESDNoPID ( AliRsnEvent *event,TH1F *hist ,Int_t index=0 );
+    void                    DoESDNoPIDMix ( AliRsnEvent *event,TH1F *hist,Int_t index=0 );
+    void                    DoESDNormal ( AliRsnEvent *event,TH1F *hist,Int_t index=0 );
+    void                    DoESDMix ( AliRsnEvent *event,TH1F *hist,Int_t index=0 );
+
+    void                    DoMCNoPID ( AliRsnEvent *event,TH1F *hist,Int_t index=0 );
+    void                    DoMCNormal ( AliRsnEvent *event,TH1F *hist,Int_t index=0 );
+
+    ClassDef ( AliRsnPair, 1 );
 };
 
 #endif
