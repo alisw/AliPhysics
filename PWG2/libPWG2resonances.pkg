@@ -1,26 +1,31 @@
-#-*- Mode: Makefile -*-
-
-SRCS= RESONANCES/AliRsnParticle.cxx \
+SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnDaughter.cxx \
+      RESONANCES/AliRsnPairParticle.cxx \
+      RESONANCES/AliRsnCut.cxx \
+      RESONANCES/AliRsnExpression.cxx \
+      RESONANCES/AliRsnCutSet.cxx \
+      RESONANCES/AliRsnCutMgr.cxx \
       RESONANCES/AliRsnPID.cxx \
-      RESONANCES/AliRsnDaughterCut.cxx RESONANCES/AliRsnDaughterCutPair.cxx \
+      RESONANCES/AliRsnPIDWeightsMgr.cxx \
+      RESONANCES/AliRsnPIDIndex.cxx \
       RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnReader.cxx \
-      RESONANCES/AliRsnReaderTask.cxx \
-      RESONANCES/AliRsnPair.cxx \
-      RESONANCES/AliRsnManager.cxx \
-      RESONANCES/AliRsnAnalysis.cxx \
+      RESONANCES/AliRsnReaderTaskSE.cxx \
+      RESONANCES/AliRsnPairDef.cxx \
+      RESONANCES/AliRsnPairSimple.cxx \
+      RESONANCES/AliRsnEventBuffer.cxx \
+      RESONANCES/AliRsnAnalysisSimple.cxx \
+      RESONANCES/AliRsnAnalyzerSimple.cxx \
+      RESONANCES/AliRsnAnalysisSimpleTask.cxx \
+#     RESONANCES/AliRsnPair.cxx \
+#     RESONANCES/AliRsnBaseAT.cxx \
+#     RESONANCES/AliRsnAnalysisAT.cxx \
 
-HDRS= $(SRCS:.cxx=.h) 
+HDRS= $(SRCS:.cxx=.h)
 
 DHDR:=PWG2resonancesLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PYTHIA6 
+EINCLUDE:= PYTHIA6
 
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
-                         -lESD -lANALYSIS -lANALYSISalice \
-                         -L$(shell root-config --libdir) -lEG
-endif
