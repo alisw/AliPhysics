@@ -533,8 +533,10 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
   delete fHclusterPerPadrowRaw;
   if (fCalPadClusterPerPad)    delete fCalPadClusterPerPad;
   if (fCalPadClusterPerPadRaw) delete fCalPadClusterPerPadRaw;
-  fcalPadRegionChargeVsDriftlength->Delete();
-  delete fcalPadRegionChargeVsDriftlength;
+  if(fcalPadRegionChargeVsDriftlength) {
+     fcalPadRegionChargeVsDriftlength->Delete();
+     delete fcalPadRegionChargeVsDriftlength;
+  }
 }
    
   
