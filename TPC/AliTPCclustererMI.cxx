@@ -222,7 +222,7 @@ void AliTPCclustererMI::FillRow(){
   if (!fOutput){
     //
     if (!fOutputArray) fOutputArray = new TObjArray(fParam->GetNRowsTotal());
-    if (fRowCl) fOutputArray->AddAt(fRowCl->Clone(), fRowCl->GetID());
+    if (fRowCl && fRowCl->GetArray()->GetEntriesFast()>0) fOutputArray->AddAt(fRowCl->Clone(), fRowCl->GetID());
   }
 }
 
@@ -994,11 +994,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   
   if (rawReader->GetEventId() && fOutput ){
     Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
-  }else{
-    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
-    
   }
   
+  if(rawReader->GetEventId()) {
+    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
+  }
 }
 
 void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
