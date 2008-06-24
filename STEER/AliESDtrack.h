@@ -155,6 +155,7 @@ public:
   AliKalmanTrack *GetITStrack(){
      return fFriendTrack->GetITStrack();
   }
+  Bool_t  HasPointOnITSLayer(Int_t i) const {return TESTBIT(fITSClusterMap,i);}
 
   void    SetTPCpid(const Double_t *p);
   void    GetTPCpid(Double_t *p) const;
