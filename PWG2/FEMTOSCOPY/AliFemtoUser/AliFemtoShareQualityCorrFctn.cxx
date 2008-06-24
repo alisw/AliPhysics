@@ -197,54 +197,54 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
     hsfval = ns*1.0/nh;
   }
 
-  if ((tQinv < 0.005) && (hsmval<-0.0)) {
-    cout << "Quality  Sharity " << hsmval << " " << hsfval << " " << pair->Track1()->Track() << " " << pair->Track2()->Track() << endl;
-    cout << "Qinv of the pair is " << tQinv << endl;
-    cout << "Clusters: " << endl;
-    for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
-      cout << imap ;
-      if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
-      else cout << " 0 " ;
-      if (pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
-      else cout << " 0 " ;
-      cout << "     ";
-      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
-      else cout << " X ";
-      if (pair->Track2()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
-      else cout << " X ";
-      cout << endl;
-    }
-    cout << "Momentum1 " 
-	 << pair->Track1()->Track()->P().x() << " " 
-	 << pair->Track1()->Track()->P().y() << " "  
-	 << pair->Track1()->Track()->P().z() << " "  
-	 << pair->Track1()->Track()->Label() << " "  
-	 << pair->Track1()->Track()->TrackId() << " "  
-	 << pair->Track1()->Track()->Flags() << " "
-	 << pair->Track1()->Track()->KinkIndex(0) << " "
-	 << pair->Track1()->Track()->KinkIndex(1) << " "
-	 << pair->Track1()->Track()->KinkIndex(2) << " "
-	 << pair->Track1()->Track()->ITSchi2() << " "
-	 << pair->Track1()->Track()->ITSncls() << " "
-	 << pair->Track1()->Track()->TPCchi2() << " "
-	 << pair->Track1()->Track()->TPCncls() << " "
-	 << endl;
-    cout << "Momentum2 " 
-	 << pair->Track2()->Track()->P().x() << " "  
-	 << pair->Track2()->Track()->P().y() << " "  
-	 << pair->Track2()->Track()->P().z() << " "  
-	 << pair->Track2()->Track()->Label() << " "  
-	 << pair->Track2()->Track()->TrackId() << " "  
-	 << pair->Track2()->Track()->Flags() << " " 
-	 << pair->Track2()->Track()->KinkIndex(0) << " "
-	 << pair->Track2()->Track()->KinkIndex(1) << " "
-	 << pair->Track2()->Track()->KinkIndex(2) << " "
-	 << pair->Track2()->Track()->ITSchi2() << " "
-	 << pair->Track2()->Track()->ITSncls() << " "
-	 << pair->Track2()->Track()->TPCchi2() << " "
-	 << pair->Track2()->Track()->TPCncls() << " "
-	 << endl;
-  }
+//   if ((tQinv < 0.005) && (hsmval<-0.0)) {
+//     cout << "Quality  Sharity " << hsmval << " " << hsfval << " " << pair->Track1()->Track() << " " << pair->Track2()->Track() << endl;
+//     cout << "Qinv of the pair is " << tQinv << endl;
+//     cout << "Clusters: " << endl;
+//     for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
+//       cout << imap ;
+//       if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
+//       else cout << " 0 " ;
+//       if (pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
+//       else cout << " 0 " ;
+//       cout << "     ";
+//       if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
+//       else cout << " X ";
+//       if (pair->Track2()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
+//       else cout << " X ";
+//       cout << endl;
+//     }
+//     cout << "Momentum1 " 
+// 	 << pair->Track1()->Track()->P().x() << " " 
+// 	 << pair->Track1()->Track()->P().y() << " "  
+// 	 << pair->Track1()->Track()->P().z() << " "  
+// 	 << pair->Track1()->Track()->Label() << " "  
+// 	 << pair->Track1()->Track()->TrackId() << " "  
+// 	 << pair->Track1()->Track()->Flags() << " "
+// 	 << pair->Track1()->Track()->KinkIndex(0) << " "
+// 	 << pair->Track1()->Track()->KinkIndex(1) << " "
+// 	 << pair->Track1()->Track()->KinkIndex(2) << " "
+// 	 << pair->Track1()->Track()->ITSchi2() << " "
+// 	 << pair->Track1()->Track()->ITSncls() << " "
+// 	 << pair->Track1()->Track()->TPCchi2() << " "
+// 	 << pair->Track1()->Track()->TPCncls() << " "
+// 	 << endl;
+//     cout << "Momentum2 " 
+// 	 << pair->Track2()->Track()->P().x() << " "  
+// 	 << pair->Track2()->Track()->P().y() << " "  
+// 	 << pair->Track2()->Track()->P().z() << " "  
+// 	 << pair->Track2()->Track()->Label() << " "  
+// 	 << pair->Track2()->Track()->TrackId() << " "  
+// 	 << pair->Track2()->Track()->Flags() << " " 
+// 	 << pair->Track2()->Track()->KinkIndex(0) << " "
+// 	 << pair->Track2()->Track()->KinkIndex(1) << " "
+// 	 << pair->Track2()->Track()->KinkIndex(2) << " "
+// 	 << pair->Track2()->Track()->ITSchi2() << " "
+// 	 << pair->Track2()->Track()->ITSncls() << " "
+// 	 << pair->Track2()->Track()->TPCchi2() << " "
+// 	 << pair->Track2()->Track()->TPCncls() << " "
+// 	 << endl;
+//   }
 
   fShareNumerator->Fill(tQinv, hsfval);
   fQualityNumerator->Fill(tQinv, hsmval);

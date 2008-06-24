@@ -368,7 +368,6 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	    //	    tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
 	    //tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
 	    tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
-	    printf("%.3f %.3fy %.3fz\n", rxyz[0], rxyz[1], rxyz[2]);
 	    trackCopy->SetHiddenInfo(tInfo);
 	  }
 	}
