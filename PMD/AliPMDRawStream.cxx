@@ -111,62 +111,18 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
   fPosition = 0;
 
-  // --- Open the mapping file
 
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
-  if(iddl == 0)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl0.dat";
-    }
-  else if(iddl == 1)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl1.dat";
-    }
-  else if(iddl == 2)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl2.dat";
-    }
-  else if(iddl == 3)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl3.dat";
-    }
-  else if(iddl == 4)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl4.dat";
-    }
-  else if(iddl == 5)
-    {
-      fileName += "/PMD/PMD_Mapping_ddl5.dat";
-    }
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-
-  if(!infile) {
-    AliError(Form("Could not read the mapping file for DDL No = %d",iddl));
-    fRawReader->AddFatalErrorLog(kNoMappingFile,Form("ddl=%d",iddl));
-  }
-  
-  Int_t modulePerDDL = 0;
-  if (iddl < 4)
-    {
-      modulePerDDL = 6;
-    }
-  else if (iddl == 4 || iddl == 5)
-    {
-      modulePerDDL = 12;
-    }
+  Int_t ibus;
 
   const Int_t kNPatchBus = 51;
-  
-  Int_t modno, totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, rowe, cols, cole;
+
   Int_t moduleNo[kNPatchBus], mcmperBus[kNPatchBus];
   Int_t startRowBus[kNPatchBus], endRowBus[kNPatchBus];
   Int_t startColBus[kNPatchBus], endColBus[kNPatchBus];
 
   for (ibus = 0; ibus < kNPatchBus; ibus++)
     {
+      moduleNo[ibus]    = -1;
       mcmperBus[ibus]   = -1;
       startRowBus[ibus] = -1;
       endRowBus[ibus]   = -1;
@@ -174,25 +130,40 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
       endColBus[ibus]   = -1;
     }
 
-  for (Int_t im = 0; im < modulePerDDL; im++)
-    {
-      infile >> modno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-      
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+  // Call the Mapping methods - hard coded
 
-	  moduleNo[ibus]     = modno;
-	  mcmperBus[ibus]    = totmcm;
-	  startRowBus[ibus]  = rows;
-	  endRowBus[ibus]    = rowe;
-	  startColBus[ibus]  = cols;
-	  endColBus[ibus]    = cole;
-	}
-    }
 
-  infile.close();
+  if (iddl == 0)
+  {
+      Ddl0Mapping(moduleNo, mcmperBus, startRowBus, 
+		  endRowBus, startColBus, endColBus);
+  }
+  else if (iddl == 1)
+  {
+      Ddl1Mapping(moduleNo, mcmperBus, startRowBus, 
+		  endRowBus, startColBus, endColBus);
+  }
+  else if (iddl == 2)
+  {
+      Ddl2Mapping(moduleNo, mcmperBus, startRowBus, 
+		  endRowBus, startColBus, endColBus);
+  }
+  else if (iddl == 3)
+  {
+      Ddl3Mapping(moduleNo, mcmperBus, startRowBus, 
+		  endRowBus, startColBus, endColBus);
+  }
+  else if (iddl == 4)
+  {
+      Ddl4Mapping(moduleNo, mcmperBus, startRowBus, 
+		  endRowBus, startColBus, endColBus);
+  }
+  else if (iddl == 5)
+  {
+      Ddl5Mapping(moduleNo, mcmperBus, startRowBus, 
+		  endRowBus, startColBus, endColBus);
+  }
+
 
   AliPMDBlockHeader    blockHeader;
   AliPMDDspHeader      dspHeader;
@@ -346,8 +317,6 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
     } // end of BLOCK
   
-//  delete [] buffer;
-
   return iddl;
 }
 //_____________________________________________________________________________
@@ -599,4 +568,357 @@ UInt_t AliPMDRawStream::GetNextWord()
 
     return word;
 }
+
+//_____________________________________________________________________________
+void AliPMDRawStream::Ddl0Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				  Int_t startRowBus[], Int_t endRowBus[],
+				  Int_t startColBus[], Int_t endColBus[])
+{
+// DDL0 Mapping 
+
+    const Int_t ktotpbus = 36;
+    static const Int_t modno0[ktotpbus] = {0, 0, 0, 0, 0, 0,
+					   1, 1, 1, 1, 1, 1,
+					   2, 2, 2, 2, 2, 2,
+					   3, 3, 3, 3, 3, 3,
+					   4, 4, 4, 4, 4, 4,
+					   5, 5, 5, 5, 5, 5,};
+
+
+
+    static const Int_t srbus0[ktotpbus] = {0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80};
+
+
+	
+    static const Int_t erbus0[ktotpbus] = {15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95};
+    
+	
+    for (Int_t ibus = 1; ibus <= ktotpbus; ibus++)
+    {
+	moduleNo[ibus]      = modno0[ibus-1];
+	mcmperBus[ibus]     = 12;
+	startRowBus[ibus]   = srbus0[ibus-1];
+	endRowBus[ibus]     = erbus0[ibus-1];
+	startColBus[ibus]   = 0;
+	endColBus[ibus]     = 47;
+    }
+	
+}
+
+//_____________________________________________________________________________
+void AliPMDRawStream::Ddl1Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				  Int_t startRowBus[], Int_t endRowBus[],
+				  Int_t startColBus[], Int_t endColBus[])
+{
+// DDL1 Mapping 
+
+    const Int_t ktotpbus = 36;
+    static const Int_t kmodno1[ktotpbus] = {6, 6, 6, 6, 6, 6,
+					   7, 7, 7, 7, 7, 7,
+					   8, 8, 8, 8, 8, 8,
+					   9, 9, 9, 9, 9, 9,
+					   10, 10, 10, 10, 10, 10,
+					   11, 11, 11, 11, 11, 11};
+
+
+    static const Int_t ksrbus1[ktotpbus] = {0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80,
+					   0, 16, 32, 48, 64, 80};
+
+
+	
+    static const Int_t kerbus1[ktotpbus] = {15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95,
+					   15, 31, 47, 63, 79, 95};
+    
+	
+    for (Int_t ibus = 1; ibus <= ktotpbus; ibus++)
+    {
+	moduleNo[ibus]      = kmodno1[ibus-1];
+	mcmperBus[ibus]     = 12;
+	startRowBus[ibus]   = ksrbus1[ibus-1];
+	endRowBus[ibus]     = kerbus1[ibus-1];
+	startColBus[ibus]   = 0;
+	endColBus[ibus]     = 47;
+    }
+	
+}
+
+//_____________________________________________________________________________
+void AliPMDRawStream::Ddl2Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				  Int_t startRowBus[], Int_t endRowBus[],
+				  Int_t startColBus[], Int_t endColBus[])
+{
+// DDL2 Mapping 
+
+    const Int_t ktotpbus = 36;
+    static const Int_t kmodno2[ktotpbus] = {12, 12, 12, 12, 12, 12,
+					    13, 13, 13, 13, 13, 13,
+					    14, 14, 14, 14, 14, 14,
+					    15, 15, 15, 15, 15, 15,
+					    16, 16, 16, 16, 16, 16,
+					    17, 17, 17, 17, 17, 17};
+
+    static const Int_t ksrbus2[ktotpbus] = {32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0};
+
+	
+    static const Int_t kerbus2[ktotpbus] = {47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15};
+
+    static const Int_t kscbus2[ktotpbus] = {48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0};
+
+    static const Int_t kecbus2[ktotpbus] = {95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47};
+
+
+	
+    for (Int_t ibus = 1; ibus <= ktotpbus; ibus++)
+    {
+	moduleNo[ibus]      = kmodno2[ibus-1];
+	mcmperBus[ibus]     = 12;
+	startRowBus[ibus]   = ksrbus2[ibus-1];
+	endRowBus[ibus]     = kerbus2[ibus-1];
+	startColBus[ibus]   = kscbus2[ibus-1];
+	endColBus[ibus]     = kecbus2[ibus-1];
+    }
+	
+}
+
+//_____________________________________________________________________________
+void AliPMDRawStream::Ddl3Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				  Int_t startRowBus[], Int_t endRowBus[],
+				  Int_t startColBus[], Int_t endColBus[])
+{
+// DDL3 Mapping 
+
+    const Int_t ktotpbus = 36;
+    static const Int_t kmodno3[ktotpbus] = {18, 18, 18, 18, 18, 18,
+					    19, 19, 19, 19, 19, 19,
+					    20, 20, 20, 20, 20, 20,
+					    21, 21, 21, 21, 21, 21,
+					    22, 22, 22, 22, 22, 22,
+					    23, 23, 23, 23, 23, 23};
+    
+
+
+    static const Int_t ksrbus3[ktotpbus] = {32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0,
+					    32, 32, 16, 16, 0, 0};
+    
+	
+    static const Int_t kerbus3[ktotpbus] = {47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15,
+					    47, 47, 31, 31, 15, 15};
+    
+    static const Int_t kscbus3[ktotpbus] = {48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0};
+	
+    static const Int_t kecbus3[ktotpbus] = {95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47};
+    
+    for (Int_t ibus = 1; ibus <= ktotpbus; ibus++)
+    {
+	moduleNo[ibus]      = kmodno3[ibus-1];
+	mcmperBus[ibus]     = 12;
+	startRowBus[ibus]   = ksrbus3[ibus-1];
+	endRowBus[ibus]     = kerbus3[ibus-1];
+	startColBus[ibus]   = kscbus3[ibus-1];
+	endColBus[ibus]     = kecbus3[ibus-1];
+    }
+	
+}
+
+//_____________________________________________________________________________
+void AliPMDRawStream::Ddl4Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				  Int_t startRowBus[], Int_t endRowBus[],
+				  Int_t startColBus[], Int_t endColBus[])
+{
+// DDL4 Mapping 
+
+    const Int_t ktotpbus = 42;
+    static const Int_t kmodno4[ktotpbus] = {24, 24, 24, 25, 25, 25,
+					    26, 26, 26, 27, 27, 27,
+					    28, 28, 28, 29, 29, 29,
+					    42, 42, 42, 42, 43, 43, 43, 43,
+					    44, 44, 44, 44, 45, 45, 45, 45,
+					    46, 46, 46, 46, 47, 47, 47, 47};
+    
+
+    static const Int_t kmcbus4[ktotpbus] = {24, 24, 24, 24, 24, 24,
+					    24, 24, 24, 24, 24, 24,
+					    24, 24, 24, 24, 24, 24,
+					    12, 12, 24, 24, 12, 12, 24, 24,
+					    12, 12, 24, 24, 12, 12, 24, 24,
+					    12, 12, 24, 24, 12, 12, 24, 24};
+
+
+    static const Int_t ksrbus4[ktotpbus] = {0, 32, 64, 0, 32, 64,
+					    0, 32, 64, 0, 32, 64,
+					    0, 32, 64, 0, 32, 64,
+					    32, 32, 0, 0, 32, 32, 0, 0,
+					    32, 32, 0, 0, 32, 32, 0, 0,
+					    32, 32, 0, 0, 32, 32, 0, 0};
+
+
+
+	
+    static const Int_t kerbus4[ktotpbus] = {31, 63, 95, 31, 63, 95,
+					    31, 63, 95, 31, 63, 95,
+					    31, 63, 95, 31, 63, 95,
+					    47, 47, 31, 31, 47, 47, 31, 31,
+					    47, 47, 31, 31, 47, 47, 31, 31,
+					    47, 47, 31, 31, 47, 47, 31, 31};
+
+
+	
+    static const Int_t kscbus4[ktotpbus] = {0, 0, 0, 0, 0, 0,
+					    0, 0, 0, 0, 0, 0,
+					    0, 0, 0, 0, 0, 0,
+					    48, 0, 48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0, 48, 0};
+
+
+	
+    static const Int_t kecbus4[ktotpbus] = {47, 47, 47, 47, 47, 47,
+					    47, 47, 47, 47, 47, 47,
+					    47, 47, 47, 47, 47, 47,
+					    95, 47, 95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47, 95, 47};
+
+	
+    for (Int_t ibus = 1; ibus <= ktotpbus; ibus++)
+    {
+	moduleNo[ibus]      = kmodno4[ibus-1];
+	mcmperBus[ibus]     = kmcbus4[ibus-1];
+	startRowBus[ibus]   = ksrbus4[ibus-1];
+	endRowBus[ibus]     = kerbus4[ibus-1];
+	startColBus[ibus]   = kscbus4[ibus-1];
+	endColBus[ibus]     = kecbus4[ibus-1];
+    }
+	
+}
+
+//_____________________________________________________________________________
+void AliPMDRawStream::Ddl5Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				  Int_t startRowBus[], Int_t endRowBus[],
+				  Int_t startColBus[], Int_t endColBus[])
+{
+// DDL5 Mapping 
+
+    const Int_t ktotpbus = 42;
+    static const Int_t kmodno5[ktotpbus] = {30, 30, 30, 31, 31, 31,
+					    32, 32, 32, 33, 33, 33,
+					    34, 34, 34, 35, 35, 35,
+					    36, 36, 36, 36, 37, 37, 37, 37,
+					    38, 38, 38, 38, 39, 39, 39, 39,
+					    40, 40, 40, 40, 41, 41, 41, 41};
+
+
+    static const Int_t kmcbus5[ktotpbus] = {24, 24, 24, 24, 24, 24,
+					    24, 24, 24, 24, 24, 24,
+					    24, 24, 24, 24, 24, 24,
+					    12, 12, 24, 24, 12, 12, 24, 24,
+					    12, 12, 24, 24, 12, 12, 24, 24,
+					    12, 12, 24, 24, 12, 12, 24, 24};
+					    
+
+
+    static const Int_t ksrbus5[ktotpbus] = {0, 32, 64, 0, 32, 64,
+					    0, 32, 64, 0, 32, 64,
+					    0, 32, 64, 0, 32, 64,
+					    32, 32, 0, 0, 32, 32, 0, 0,
+					    32, 32, 0, 0, 32, 32, 0, 0,
+					    32, 32, 0, 0, 32, 32, 0, 0};
+
+
+
+	
+    static const Int_t kerbus5[ktotpbus] = {31, 63, 95, 31, 63, 95,
+					    31, 63, 95, 31, 63, 95,
+					    31, 63, 95, 31, 63, 95,
+					    47, 47, 31, 31, 47, 47, 31, 31,
+					    47, 47, 31, 31, 47, 47, 31, 31,
+					    47, 47, 31, 31, 47, 47, 31, 31};
+
+
+	
+    static const Int_t kscbus5[ktotpbus] = {0, 0, 0, 0, 0, 0,
+					    0, 0, 0, 0, 0, 0,
+					    0, 0, 0, 0, 0, 0,
+					    48, 0, 48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0, 48, 0,
+					    48, 0, 48, 0, 48, 0, 48, 0};
+
+
+	
+    static const Int_t kecbus5[ktotpbus] = {47, 47, 47, 47, 47, 47,
+					    47, 47, 47, 47, 47, 47,
+					    47, 47, 47, 47, 47, 47,
+					    95, 47, 95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47, 95, 47,
+					    95, 47, 95, 47, 95, 47, 95, 47};
+
+	
+    for (Int_t ibus = 1; ibus <= ktotpbus; ibus++)
+    {
+	moduleNo[ibus]      = kmodno5[ibus-1];
+	mcmperBus[ibus]     = kmcbus5[ibus-1];
+	startRowBus[ibus]   = ksrbus5[ibus-1];
+	endRowBus[ibus]     = kerbus5[ibus-1];
+	startColBus[ibus]   = kscbus5[ibus-1];
+	endColBus[ibus]     = kecbus5[ibus-1];
+    }
+	
+}
+
 

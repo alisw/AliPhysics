@@ -277,7 +277,7 @@ void AliPMDUtility::GenerateBoundaryPoints(Int_t ism, Float_t &x1ism,
 
 
     Float_t xism = 0, yism = 0;
-    Float_t dxism, dyism;
+    Float_t dxism = 0., dyism = 0.;
 
     const Float_t kRad     = 0.25;
     const Float_t kSqRoot3 = 1.732050808;

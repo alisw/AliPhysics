@@ -45,12 +45,30 @@ class AliPMDRawStream: public TObject {
     void             TransformH2S(Int_t smn, Int_t &row, Int_t &col) const;
     Int_t            ComputeParity(UInt_t data1);
     UInt_t           GetNextWord();
+    void             Ddl0Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				 Int_t startRowBus[], Int_t endRowBus[],
+				 Int_t startColBus[], Int_t endColBus[]);
+    void             Ddl1Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				 Int_t startRowBus[], Int_t endRowBus[],
+				 Int_t startColBus[], Int_t endColBus[]);
+    void             Ddl2Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				 Int_t startRowBus[], Int_t endRowBus[],
+				 Int_t startColBus[], Int_t endColBus[]);
+    void             Ddl3Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				 Int_t startRowBus[], Int_t endRowBus[],
+				 Int_t startColBus[], Int_t endColBus[]);
+    void             Ddl4Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				 Int_t startRowBus[], Int_t endRowBus[],
+				 Int_t startColBus[], Int_t endColBus[]);
+    void             Ddl5Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+				 Int_t startRowBus[], Int_t endRowBus[],
+				 Int_t startColBus[], Int_t endColBus[]);
 
     AliRawReader*    fRawReader;    // object for reading the raw data
     UChar_t*         fData;         // pointer to the data
     Int_t            fPosition;
 
-    ClassDef(AliPMDRawStream, 5)    // class for reading PMD raw digits
+    ClassDef(AliPMDRawStream, 6)    // class for reading PMD raw digits
 };
 
 #endif
