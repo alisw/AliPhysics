@@ -179,8 +179,6 @@ Double_t AliRsnPairParticle::GetDaughterEnergy(const Int_t &index, const Double_
 // The index argument refers to the used track among the two of the pair.
 //
 
-    Int_t i;
-    Double_t p2Tot = 0.0;
     if (mass > 0 && index >= 0 && index < 2) {
         AliRsnDaughter temp(*fDaughter[index]);
         temp.SetM(mass);

@@ -2,7 +2,7 @@
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               *
  **************************************************************************/
- 
+
 //
 // Class AliRsnEventBuffer
 //
@@ -39,13 +39,13 @@ public:
 
     void SetDeleteBufferWhenReset (const Bool_t& theValue = kTRUE) { fDeleteBufferWhenReset = theValue; }
     Bool_t GetDeleteBufferWhenReset() const { return fDeleteBufferWhenReset; }
-    
+
     Int_t NEmptySlots();
 
   private:
-  
-    AliRsnEventBuffer (const AliRsnEventBuffer& /*buf*/) :
-      fDeleteBufferWhenReset(0),fEventsBufferSize(0),fEventsBufferIndex(0) {}
+
+    AliRsnEventBuffer (const AliRsnEventBuffer& buf) :
+      TObject(buf), fDeleteBufferWhenReset(0),fEventsBufferSize(0),fEventsBufferIndex(0) {}
     const AliRsnEventBuffer& operator=(const AliRsnEventBuffer& /*buf*/) {return (*this);}
 
     Bool_t       fDeleteBufferWhenReset;  // flag if buffer should be deleted when reset is done

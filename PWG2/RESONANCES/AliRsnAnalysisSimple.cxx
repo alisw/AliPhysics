@@ -69,7 +69,7 @@ AliRsnAnalysisSimple::AliRsnAnalysisSimple(AliRsnAnalyzerSimple *ana, AliRsnPID 
 
 
 //_____________________________________________________________________________
-void AliRsnAnalysisSimple::Clear(Option_t *option)
+void AliRsnAnalysisSimple::Clear(Option_t* /*option*/)
 {
 //
 // Clear heap
