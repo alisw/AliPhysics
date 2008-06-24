@@ -34,7 +34,9 @@ void rec() {
 
   TStopwatch timer;
   timer.Start();
+  gSystem->Exec("mv -f galice.root galice0.root");
   reco.Run("raw.root");
+  gSystem->Exec("mv -f galice0.root galice.root")
   timer.Stop();
   timer.Print();
 }
