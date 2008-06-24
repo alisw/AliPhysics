@@ -107,8 +107,6 @@ void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
   double dist = sqrt(distx*distx + disty*disty + distz*distz);
 
   fDTPCNumerator->Fill(tQinv, dist);
-//   cout << "AliFemtoTPCInnerCorrFctn::AddRealPair : " << tQinv << " " << dist << endl;
-//   cout << distx << " " << disty << " " << distz << endl;
 }
 //____________________________
 void AliFemtoTPCInnerCorrFctn::AddMixedPair( AliFemtoPair* pair){
