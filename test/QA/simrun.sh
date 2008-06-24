@@ -15,6 +15,10 @@ root -b -q $ALICE_ROOT/test/QA/simrun.C --run $1
 cd $WORK/QATest/data
 rm -f *.root
 rm -f DB.tgz
+ln -s ../geometry.root
+ln -s ../raw.root
+ln -si $ALICE_ROOT/test/QA/recraw.C recraw.C
+aliroot -b -q recraw.C  >recraw.log 2>&
 cp  $ALICE_ROOT/test/QA/rawqa.C .
 alienaliroot -b > rawqa.log 2>&1 << EOF
 .x  $ALICE_ROOT/test/QA/rootlogon.C
