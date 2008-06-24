@@ -29,6 +29,7 @@
 #include "AliESDFMD.h"
 #include "AliFMDParameters.h"
 #include "AliFMDRawReader.h"
+#include "AliRawReader.h"
 
 //_____________________________________________________________________
 // This is the class that collects the QA data for the FMD during
@@ -211,11 +212,16 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   AliFMDRawReader fmdReader(rawReader,0);
   TClonesArray* digitsAddress = &fDigitsArray;
   fmdReader.ReadAdcs(digitsAddress);
- 
-  for(Int_t i=0;i<fDigitsArray.GetEntriesFast();i++) {
-    //Raw ADC counts
-    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray.At(i));
-    GetDigitsData(0)->Fill(digit->Counts());
+  
+  rawReader->Reset();
+  
+  while(rawReader->NextEvent()) {
+    
+    for(Int_t i=0;i<fDigitsArray.GetEntriesFast();i++) {
+      //Raw ADC counts
+      AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray.At(i));
+      GetRawsData(0)->Fill(digit->Counts());
+    }
   }
   
 }
