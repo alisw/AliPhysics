@@ -87,9 +87,9 @@ public:
     void      PrintAllValues();
 
     Bool_t    IsBetween (const Double_t &theValue);
-    Bool_t    IsEqual (const Int_t &theValue);
-    Bool_t    IsEqual (const UInt_t &theValue);
-    Bool_t    IsEqual (const Double_t &theValue);
+    Bool_t    MatchesValue (const Int_t &theValue);
+    Bool_t    MatchesValue (const UInt_t &theValue);
+    Bool_t    MatchesValue (const Double_t &theValue);
 
 private:
 

@@ -5,7 +5,7 @@
 #include <TObjArray.h>
 
 #include "AliRsnCut.h"
-// class AliRsnCut; 
+// class AliRsnCut;
 class AliRsnCutMgr;
 
 class AliRsnDaughter;
@@ -14,7 +14,7 @@ class AliRsnPairParticle;
 
 class AliRsnCutSet : public TNamed
 {
-  
+
   public:
     AliRsnCutSet();
     AliRsnCutSet ( TString name );
@@ -51,6 +51,9 @@ class AliRsnCutSet : public TNamed
 
 
   private:
+
+    AliRsnCutSet& operator=(const AliRsnCutSet& /*copy*/) {return (*this);}
+
     TObjArray     fCuts;                  // array of cuts
     Int_t         fNumOfCuts;             // number of cuts
     TString       fCutScheme;             // cut scheme

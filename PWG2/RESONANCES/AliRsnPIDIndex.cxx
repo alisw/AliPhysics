@@ -109,6 +109,7 @@ void AliRsnPIDIndex::Print (Option_t * option) const
 // Prints AliRsnPIDIndex info
 //
     Int_t i, j;
+    if (!option) return;
     for (i = 0; i < 2; i++) {
         for (j = 0; j < AliRsnPID::kSpecies + 1; j++) {
             AliInfo (Form (" [%d][%d] %d %d", i, j, fIndex[i][j].GetSize(), fNumOfIndex[i][j]));

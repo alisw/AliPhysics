@@ -8,22 +8,21 @@
 ClassImp ( AliRsnCutSet )
 
 AliRsnCutSet::AliRsnCutSet()
-    : TNamed(),fNumOfCuts ( 0 ),
+    : TNamed(),fCuts(0),fNumOfCuts ( 0 ),
     fCutScheme ( "" ),
     fCutSchemeIndexed ( "" ),
-    fBoolValues ( 0 ),fIsScheme ( kFALSE )
+    fBoolValues ( 0 ),fIsScheme ( kFALSE ),fExpression(0)
 {
   fBoolValues = new Bool_t[1];
 //   fExpression = new AliRsnExpression ( fCutSchemeIndexed );
-  fExpression = 0;
   AliRsnExpression::sCutSet = this;
 }
 
 AliRsnCutSet::AliRsnCutSet ( TString name )
-    : TNamed ( name,name ),fNumOfCuts ( 0 ),
+    : TNamed ( name,name ),fCuts(0),fNumOfCuts ( 0 ),
     fCutScheme ( "" ),
     fCutSchemeIndexed ( "" ),
-    fBoolValues ( 0 ),fIsScheme ( kFALSE )
+    fBoolValues ( 0 ),fIsScheme ( kFALSE ),fExpression(0)
 {
   fBoolValues = new Bool_t[1];
   fExpression = 0;
@@ -34,6 +33,7 @@ AliRsnCutSet::AliRsnCutSet ( const AliRsnCutSet & copy )
     :    TNamed ( ( TNamed ) copy ),fCuts ( copy.fCuts ),fNumOfCuts ( copy.fNumOfCuts ),
     fCutScheme ( copy.fCutScheme ),
     fCutSchemeIndexed ( copy.fCutSchemeIndexed ),
+    fBoolValues(0),
     fIsScheme ( copy.fIsScheme ),
     fExpression ( copy.fExpression )
 {
@@ -127,6 +127,7 @@ void AliRsnCutSet::SetCutScheme ( const TString & theValue )
 void AliRsnCutSet::SetCutSchemeIndexed ( TString theValue )
 {
   AliDebug ( AliLog::kDebug,"<-" );
+  theValue.Append(" ");
 //   fCutSchemeIndexed = theValue;
   fCutSchemeIndexed = GetCutSchemeIndexed();
   AliDebug ( AliLog::kDebug,"->" );
@@ -186,6 +187,7 @@ Int_t AliRsnCutSet::TestExpression ( TString opt )
 //   set->SetCutScheme ( "(aaa&!(ccc))&(bbb&!(ccc))" );
 //
 //   set->ShowCuts ();
+    AliDebug(1, opt.Data());
 
   return 0;
 }

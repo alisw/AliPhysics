@@ -15,7 +15,7 @@ class AliRsnCutSet;
 class AliRsnCutMgr : public TNamed
 {
   public:
-    
+
 //     enum ECutSetType {
 //       kParticle= 0,
 //       kPair,
@@ -23,21 +23,24 @@ class AliRsnCutMgr : public TNamed
 //       kLastCutSetIndex
 //     };
 
-    
+
     AliRsnCutMgr();
     AliRsnCutMgr(const char *name, const char* title);
 
     ~AliRsnCutMgr();
-    
+
     void SetCutSet(AliRsnCut::ECutSetType type,AliRsnCutSet* cutset);
     AliRsnCutSet* GetCutSet(AliRsnCut::ECutSetType type) { return fCutSets[type];}
-    
+
     Bool_t IsSelected(AliRsnCut::ECutSetType type,TObject *obj);
 
   private:
 
+    AliRsnCutMgr(const AliRsnCutMgr &cut):TNamed(cut) {}
+    AliRsnCutMgr& operator=(const AliRsnCutMgr& /*cut*/) {return *this;}
+
     AliRsnCutSet *fCutSets[AliRsnCut::kLastCutSetIndex];
-    
+
     ClassDef ( AliRsnCutMgr,1 );
 };
 

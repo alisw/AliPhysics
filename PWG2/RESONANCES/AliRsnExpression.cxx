@@ -98,7 +98,7 @@ Bool_t AliRsnExpression::Value ( TObjArray &vars )
   }
 
 //   AliDebug(AliLog::kDebug,Form("fOperator %d",fOperator));
-  
+
   switch ( fOperator )
   {
 
@@ -216,8 +216,8 @@ TObjArray* AliRsnExpression::Tokenize ( TString str ) const
 //     TObjString* val3 = ( TObjString* ) tokens->At ( i );
 //     AliInfo ( Form ( "%d %s",i,val3->String().Data() ) );
 //   }
-//   
-//   
+//
+//
   delete valtok;
   delete optok;
 
@@ -365,9 +365,9 @@ AliRsnExpression* AliRsnExpression::Expression ( TObjArray &st,Int_t &i )
 ClassImp ( AliRsnVariableExpression )
 
 //______________________________________________________________________________
-Bool_t AliRsnVariableExpression::Value ( TObjArray& pgm )
+Bool_t AliRsnVariableExpression::Value ( TObjArray& /*pgm*/)
 {
-  
+
 //   Int_t indexx = sCutSet->GetIndexByCutName ( fVname.Data() );
   AliDebug(AliLog::kDebug,Form("Vname %s",fVname.Data()));
 //   return sCutSet->GetBoolValue ( indexx );

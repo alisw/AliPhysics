@@ -18,7 +18,7 @@
 //
 // General implementation of a single cut strategy, which can be:
 // - a value contained in a given interval  [--> IsBetween()]
-// - a value equal to a given reference     [--> IsEqual()  ]
+// - a value equal to a given reference     [--> MatchesValue()  ]
 // In all cases, the reference value(s) is (are) given as data members
 // and each kind of cut requires a given value type (Int, UInt, Double),
 // but the cut check procedure is then automatized and chosen thanks to
@@ -150,7 +150,7 @@ Bool_t AliRsnCut::IsBetween (const Double_t & theValue)
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::IsEqual (const Int_t &theValue)
+Bool_t AliRsnCut::MatchesValue (const Int_t &theValue)
 {
 //
 // Reference check.
@@ -160,7 +160,7 @@ Bool_t AliRsnCut::IsEqual (const Int_t &theValue)
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::IsEqual (const UInt_t &theValue)
+Bool_t AliRsnCut::MatchesValue (const UInt_t &theValue)
 {
 //
 // Reference check.
@@ -170,7 +170,7 @@ Bool_t AliRsnCut::IsEqual (const UInt_t &theValue)
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::IsEqual (const Double_t &theValue)
+Bool_t AliRsnCut::MatchesValue (const Double_t &theValue)
 {
 //
 // Reference check.
@@ -256,7 +256,7 @@ Bool_t AliRsnCut::IsSelected(ECutSetType type, AliRsnDaughter *daughter)
         case kChargeNeg:
             return (daughter->Charge() < 0);
         case kPIDType:
-            return IsEqual((Int_t)daughter->PIDType());
+            return MatchesValue((Int_t)daughter->PIDType());
         /*
         case kEtaMC:
             if (mcinfo) return IsBetween (mcinfo->Eta());
@@ -269,6 +269,9 @@ Bool_t AliRsnCut::IsSelected(ECutSetType type, AliRsnDaughter *daughter)
         case kEsdNSigmaCalculate:
             return IsBetween (daughter->GetESDInfo()->GetNSigmaCalculate());
         */
+        default:
+            AliWarning("Requested a cut which cannot be applied to a single track");
+            return kTRUE;
     }
 
     return kTRUE;
@@ -306,6 +309,9 @@ Bool_t AliRsnCut::IsSelected(ECutSetType type, AliRsnPairParticle * pair)
             return pair->IsLabelEqual();
         case kIsTruePair:
             return pair->IsTruePair(fIMin);
+        default:
+            AliWarning("Requested a cut which cannot be applied to a pair");
+            return kTRUE;
     }
 
     return kTRUE;
