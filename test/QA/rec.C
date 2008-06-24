@@ -14,7 +14,7 @@ void rec() {
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(0);
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC");
-  //reco.SetInput("raw.root") ;
+  //Reco.SetInput("raw.root") ;
   //AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
   //	recEmc->SetSubtractPedestals(kFALSE);
   //	AliPHOSReconstructor::SetRecoParamEmc(recEmc);  
@@ -34,7 +34,7 @@ void rec() {
 
   TStopwatch timer;
   timer.Start();
-  reco.Run();
+  reco.Run("raw.root");
   timer.Stop();
   timer.Print();
 }
