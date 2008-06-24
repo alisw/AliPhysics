@@ -130,22 +130,22 @@ AliQADataMakerSteer & AliQADataMakerSteer::operator = (const AliQADataMakerSteer
 AliQADataMakerSteer::~AliQADataMakerSteer() 
 {
 	// dtor
-  for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-	  if (IsSelected(AliQA::GetDetName(iDet))) {
+	for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+		if (IsSelected(AliQA::GetDetName(iDet))) {
 		  fLoader[iDet] = NULL;
 		  if (fQADataMaker[iDet]) {
 			  (fQADataMaker[iDet])->Finish() ; 
-			  delete fQADataMaker[iDet] ;
+		//	  delete fQADataMaker[iDet] ;
 			  fQADataMaker[iDet] = NULL ;
 		  }
-	  }
-  }
-
-  if (fRawReaderDelete) { 
-	fRunLoader = NULL ;
-	delete fRawReader ;
-	fRawReader = NULL ;
-  }
+		}
+	}
+	delete [] 	fQADataMaker ; 
+	if (fRawReaderDelete) { 
+		fRunLoader = NULL ;
+		delete fRawReader ;
+		fRawReader = NULL ;
+	}
 }
 
 //_____________________________________________________________________________
