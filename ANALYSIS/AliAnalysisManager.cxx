@@ -425,7 +425,13 @@ void AliAnalysisManager::PackOutput(TList *target)
                   coll->SetName(output->GetName());
                   coll->Write(output->GetName(), TObject::kSingleKey);
                } else {
-                  output->GetData()->Write();
+                  if (output->GetData()->InheritsFrom(TTree::Class())) {
+                     TTree *tree = (TTree*)output->GetData();
+                     tree->SetDirectory(file);
+                     tree->AutoSave();
+                  } else {
+                     output->GetData()->Write();
+                  }   
                }      
                if (fDebug > 1) printf("PackOutput %s: memory merge, file resident output\n", output->GetName());
                if (fDebug > 2) {
@@ -445,8 +451,8 @@ void AliAnalysisManager::PackOutput(TList *target)
                wrap->SetName(output->GetName());
             }   
             else                    wrap =output->ExportData();
-            // Output wrappers must delete data after merging (AG 13/11/07)
-            wrap->SetDeleteData(kTRUE);
+            // Output wrappers must NOT delete data after merging - the user owns them
+            wrap->SetDeleteData(kFALSE);
             target->Add(wrap);
          } else {
          // Special outputs
@@ -480,7 +486,13 @@ void AliAnalysisManager::PackOutput(TList *target)
                coll->SetName(output->GetName());
                coll->Write(output->GetName(), TObject::kSingleKey);
             } else {
-               output->GetData()->Write();
+               if (output->GetData()->InheritsFrom(TTree::Class())) {
+                  TTree *tree = (TTree*)output->GetData();
+                  tree->SetDirectory(file);
+                  tree->AutoSave();
+               } else {
+                  output->GetData()->Write();
+               }   
             }      
             file->Clear();
             if (fDebug > 2) {
@@ -653,7 +665,13 @@ void AliAnalysisManager::Terminate()
          coll->SetName(output->GetName());
          coll->Write(output->GetName(), TObject::kSingleKey);
       } else {
-         output->GetData()->Write();
+         if (output->GetData()->InheritsFrom(TTree::Class())) {
+            TTree *tree = (TTree*)output->GetData();
+            tree->SetDirectory(file);
+            tree->AutoSave();
+         } else {
+            output->GetData()->Write();
+         }   
       }      
       if (opwd) opwd->cd();
    }   
