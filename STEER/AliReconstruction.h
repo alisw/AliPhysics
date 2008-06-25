@@ -26,6 +26,7 @@ class AliRunLoader;
 class AliRawReader;
 class AliLoader;
 class AliTracker;
+class AliMagF;
 class AliVertexer;
 class AliESDVertex;
 class AliESDEvent;
@@ -42,8 +43,6 @@ public:
   AliReconstruction(const char* gAliceFilename = "galice.root",
 		    const char* name = "AliReconstruction", 
 		    const char* title = "reconstruction");
-  AliReconstruction(const AliReconstruction& rec);
-  AliReconstruction& operator = (const AliReconstruction& rec);
   virtual ~AliReconstruction();
 
   void           SetGAliceFile(const char* fileName);
@@ -74,8 +73,14 @@ public:
   TNamed *CopyFileToTNamed(TString fPath,TString fName);
   void  TNamedToFile(TTree* fTree, TString fName);
 
-  //*** Global reconstruction flag setters
+  //*** Magnetic field setters
   void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
+  Bool_t 
+  ForceFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
+		Float_t factor=1., 
+                Char_t *path="$(ALICE_ROOT)/data/maps/mfchebKGI_meas.root");
+
+  //*** Global reconstruction flag setters
   void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};
   void SetRunVertexFinderTracks(Bool_t flag=kTRUE) {fRunVertexFinderTracks=flag;};
   void SetRunHLTTracking(Bool_t flag=kTRUE) {fRunHLTTracking=flag;};
@@ -135,7 +140,11 @@ public:
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
 
 private:
+  AliReconstruction(const AliReconstruction& rec);
+  AliReconstruction& operator = (const AliReconstruction& rec);
+
   void 		 InitCDB();
+  Bool_t 	 InitGRP();
   void 		 SetCDBLock();
   Bool_t         SetRunNumberFromData();
   Bool_t         RunLocalReconstruction(const TString& detectors);
@@ -176,8 +185,11 @@ private:
   Bool_t               InitAliEVE();
   void                 RunAliEVE();
 
-  //*** Global reconstruction flags *******************
+  //*** Magnetic field map settings *******************
   Bool_t         fUniformField;       // uniform field tracking flag
+  AliMagF       *fForcedFieldMap;     // independent, not GRP, field map
+
+  //*** Global reconstruction flags *******************
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunVertexFinderTracks;    // run the vertex finder with tracks
   Bool_t         fRunHLTTracking;     // run the HLT tracking
@@ -264,7 +276,7 @@ private:
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
   Bool_t               fRunAliEVE;  // Run AliEVE or not
 
-  ClassDef(AliReconstruction, 23)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 24)      // class for running the reconstruction
 };
 
 #endif
