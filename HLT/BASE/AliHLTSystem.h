@@ -293,6 +293,13 @@ class AliHLTSystem : public AliHLTLogging {
   int ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd);
 
   /**
+   * Process all kChain-type data blocks of the HLTOUT data.
+   * The function is involed from ProcessHLTOUT as the first step in
+   * the processing.
+   */
+  int ProcessHLTOUTkChain(AliHLTOUT* pHLTOUT);
+
+  /**
    * Load component libraries.
    * @param libs          string of blank separated library names
    * @return neg. error code if failed 

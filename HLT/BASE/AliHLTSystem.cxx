@@ -732,8 +732,16 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   // see header file for class documentation
   int iResult=0;
   if (!pHLTOUT) return -EINVAL;
-
   HLTDebug("processing %d HLT data blocks", pHLTOUT->GetNofDataBlocks());
+
+  //
+  // process all kChain handlers first
+  //
+  if ((iResult=ProcessHLTOUTkChain(pHLTOUT))<0) {
+    HLTWarning("Processing of kChain-type data blocks failed with error code %d", iResult);
+    iResult=0;
+  } 
+
   AliHLTOUT::AliHLTOUTHandlerListEntryVector esdHandlers;
 
   // first come first serve: the ESD of the first handler is also filled into
@@ -751,6 +759,8 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
     pHLTOUT->GetDataBlockDescription(dt, spec);
     AliHLTOUTHandler* pHandler=pHLTOUT->GetHandler();
     AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=pHLTOUT->GetDataBlockHandlerType();
+
+    // default handling for ESD data blocks does not require an explicite handler
     if (!pHandler && (dt==kAliHLTDataTypeESDObject || dt==kAliHLTDataTypeESDTree)) {
       handlerType=AliHLTModuleAgent::kEsd;
     }
@@ -759,9 +769,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
     case AliHLTModuleAgent::kEsd:
       {
 	if (pHandler) {
-	  // preprocess and write later
-	  AliHLTOUT::AliHLTOUTLockGuard g(pHLTOUT);
-	  pHandler->ProcessData(pHLTOUT);
+	  // schedule for later processing
 	  pHLTOUT->InsertHandler(esdHandlers, pHLTOUT->GetDataBlockHandlerDesc());
 	} else {
 	  // write directly
@@ -775,6 +783,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 	    }
 	    pHLTOUT->ReleaseDataBuffer(pBuffer);
 	  }
+	  pHLTOUT->MarkDataBlockProcessed();
 	}
       }
       break;
@@ -787,7 +796,8 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
       break;
     case AliHLTModuleAgent::kChain:
-      HLTWarning("HLTOUT handler type 'kChain' not yet implemented: agent %s, data type %s, specification %#x",
+      HLTWarning("HLTOUT handler type 'kChain' has already been processed: agent %s, data type %s, specification %#x\n"
+		 "New block of this type added by the chain? Skipping data block ...",
 		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
 		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
       break;
@@ -821,9 +831,11 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   AliHLTOUT::AliHLTOUTHandlerListEntryVector::iterator esdHandler;
   // write all postponed esd data blocks
   for (esdHandler=esdHandlers.begin(); esdHandler!=esdHandlers.end() && iResult>=0; esdHandler++) {
+    AliHLTOUT::AliHLTOUTSelectionGuard g(pHLTOUT, &(*esdHandler));	    
     AliHLTOUTHandler* pHandler=*esdHandler;
     const AliHLTUInt8_t* pBuffer=NULL;
     AliHLTUInt32_t size=0;
+    pHandler->ProcessData(pHLTOUT);
     if ((size=pHandler->GetProcessedData(pBuffer))>0) {
       AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=*esdHandler;
       AliHLTComponentDataType dt=desc;
@@ -834,6 +846,56 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
       }
       pHandler->ReleaseProcessedData(pBuffer, size);
     }
+    pHLTOUT->MarkDataBlocksProcessed(&(*esdHandler));
+  }
+
+  return iResult;
+}
+
+int AliHLTSystem::ProcessHLTOUTkChain(AliHLTOUT* pHLTOUT)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pHLTOUT) return -EINVAL;
+
+  AliHLTOUT::AliHLTOUTHandlerListEntryVector chainHandlers;
+  for (iResult=pHLTOUT->SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec, AliHLTModuleAgent::kUnknownOutput);
+       iResult>=0;
+       iResult=pHLTOUT->SelectNextDataBlock()) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    pHLTOUT->GetDataBlockDescription(dt, spec);
+    AliHLTOUTHandler* pHandler=pHLTOUT->GetHandler();
+    AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=pHLTOUT->GetDataBlockHandlerType();
+    if (handlerType==AliHLTModuleAgent::kChain) {
+      if (!pHandler) {
+	HLTWarning("missing HLTOUT handler for block of type kChain: agent %s, data type %s, specification %#x, ... skipping data block",
+		   pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		   AliHLTComponent::DataType2Text(dt).c_str(), spec);
+      } else {
+	pHLTOUT->InsertHandler(chainHandlers, pHLTOUT->GetDataBlockHandlerDesc());
+      }
+    }
+  }
+  // TODO: the return value of SelectFirst/NextDataBlock must be
+  // changed in order to avoid this check
+  if (iResult==-ENOENT) iResult=0;
+
+  // process all defined chain handlers
+  AliHLTOUT::AliHLTOUTHandlerListEntryVector::iterator chainHandler;
+  for (chainHandler=chainHandlers.begin(); chainHandler!=chainHandlers.end() && iResult>=0; chainHandler++) {
+    AliHLTOUT::AliHLTOUTSelectionGuard g(pHLTOUT, &(*chainHandler));	    
+    AliHLTOUTHandler* pHandler=*chainHandler;
+    const AliHLTUInt8_t* pBuffer=NULL;
+    AliHLTUInt32_t size=0;
+    pHandler->ProcessData(pHLTOUT);
+    if ((size=pHandler->GetProcessedData(pBuffer))>0) {
+      AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=*chainHandler;
+      AliHLTComponentDataType dt=desc;
+
+      pHandler->ReleaseProcessedData(pBuffer, size);
+    }
+    pHLTOUT->MarkDataBlocksProcessed(&(*chainHandler));
   }
 
   return iResult;

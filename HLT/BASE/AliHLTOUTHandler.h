@@ -40,7 +40,10 @@ class AliHLTOUTHandler : public AliHLTLogging {
 
   /**
    * Process the data.
-   * The data and it's properties can be retrieved by the following member
+   * The data blocks can be selected by AliHLTOUT::SelectFirstDataBlock() and
+   * AliHLTOUT::SelectNextDataBlock()
+   *
+   * Properties of the current data block can be retrieved by the following member
    * functions of AliHLTOUT:
    * - AliHLTOUT::GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32_t& spec)
    * - AliHLTOUT::GetDataBlockIndex()

@@ -138,23 +138,50 @@ class AliHLTOUT : public AliHLTLogging {
    */
   class AliHLTOUTBlockDescriptor {
   public:
-    AliHLTOUTBlockDescriptor(AliHLTComponentDataType dt, AliHLTUInt32_t spec, AliHLTUInt32_t index)
-      : fDataType(dt), fSpecification(spec), fIndex(index) {};
+    AliHLTOUTBlockDescriptor(AliHLTComponentDataType dt, AliHLTUInt32_t spec, AliHLTUInt32_t index, AliHLTOUT* pCollection)
+      : fDataType(dt), fSpecification(spec), fIndex(index), fSelected(false), fProcessed(false), fpCollection(pCollection) {};
+    AliHLTOUTBlockDescriptor(const AliHLTOUTBlockDescriptor& src)
+      : fDataType(src.fDataType), fSpecification(src.fSpecification), fIndex(src.fIndex), fSelected(false), fProcessed(false), fpCollection(src.fpCollection) {}
+    AliHLTOUTBlockDescriptor& operator=(const AliHLTOUTBlockDescriptor& src)
+    { fDataType=src.fDataType; fSpecification=src.fSpecification; fIndex=src.fIndex; fSelected=false; fProcessed=false; fpCollection=src.fpCollection; return *this; }
     ~AliHLTOUTBlockDescriptor() {}
 
     operator AliHLTComponentDataType() const {return fDataType;}
     operator AliHLTUInt32_t() const {return fSpecification;}
     int operator==(AliHLTComponentDataType dt) const {return dt==fDataType;}
     int operator==(AliHLTUInt32_t spec) const {return spec==fSpecification;}
+    int operator==(AliHLTOUT* collection) const {return collection==fpCollection;}
 
     AliHLTUInt32_t GetIndex() const {return fIndex;}
-  private:
+
+    bool IsSelected() const {return fSelected;}
+    void Select(bool selected=true) {fSelected=selected;}
+    bool IsProcessed() const {return fSelected;}
+    void MarkProcessed() {fProcessed=true;}
+
+    /**
+     * Get the data buffer
+     * @param pBuffer [out] buffer of the selected data block
+     * @param size    [out] size of the selected data block
+     */
+    int GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size) {
+      if (fpCollection) return fpCollection->GetDataBuffer(GetIndex(), pBuffer, size);
+      return -ENODEV;
+    }
+
+  private:      
     /** data type of the block */
     AliHLTComponentDataType fDataType; //!transient
     /** data specification of the block */
     AliHLTUInt32_t          fSpecification; //!transient
     /** index in the data stream */
     AliHLTUInt32_t          fIndex; //!transient
+    /** selection flag */
+    bool                    fSelected; //!transient
+    /** processed flag */
+    bool                    fProcessed; //!transient
+    /** the collection */
+    AliHLTOUT*              fpCollection; //!transient
   };
 
   class AliHLTOUTHandlerListEntry {
@@ -211,7 +238,7 @@ class AliHLTOUT : public AliHLTLogging {
      * Check if an index is served by this descriptor.
      * @return true if the index is in the table
      */
-    bool HasIndex(AliHLTUInt32_t index);
+    bool HasIndex(AliHLTUInt32_t index) const;
 
   private:
     /** standard constructor prohibited */
@@ -232,6 +259,35 @@ class AliHLTOUT : public AliHLTLogging {
 
   typedef vector<AliHLTOUTHandlerListEntry> AliHLTOUTHandlerListEntryVector;
   typedef vector<AliHLTOUTBlockDescriptor>  AliHLTOUTBlockDescriptorVector;
+  typedef vector<AliHLTOUT*>                AliHLTOUTPVector;
+
+  /**
+   * Selection guard for the AliHLTOUT object.
+   * If the object is locked, the selection of data blocks can not be changed.
+   */
+  class AliHLTOUTSelectionGuard {
+  public:
+    /** constructor */
+    AliHLTOUTSelectionGuard(AliHLTOUT* pInstance) : fpInstance(pInstance)
+    {if (fpInstance) fpInstance->SelectDataBlock();}
+    /** constructor */
+    AliHLTOUTSelectionGuard(AliHLTOUT* pInstance, const AliHLTOUTHandlerListEntry* pHandlerDesc) : fpInstance(pInstance)
+    {if (fpInstance) fpInstance->SelectDataBlocks(pHandlerDesc);}
+    /** destructor */
+    ~AliHLTOUTSelectionGuard()
+    {if (fpInstance) fpInstance->DisableBlockSelection();}
+
+  private:
+    /** standard constructor prohibited */
+    AliHLTOUTSelectionGuard();
+    /** copy constructor prohibited */
+    AliHLTOUTSelectionGuard(const AliHLTOUTSelectionGuard&);
+    /** assignment operator prohibited */
+    AliHLTOUTSelectionGuard& operator=(const AliHLTOUTSelectionGuard&);
+
+    /** the AliHLTOUT instance the guard is locking */
+    AliHLTOUT* fpInstance; //!transient
+  };
 
   /**
    * Init for processing.
@@ -261,7 +317,8 @@ class AliHLTOUT : public AliHLTLogging {
    */
   int SelectFirstDataBlock(AliHLTComponentDataType dt=kAliHLTAnyDataType,
 			   AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
-			   AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=AliHLTModuleAgent::kUnknownOutput);
+			   AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=AliHLTModuleAgent::kUnknownOutput,
+			   bool skipProcessed=true);
 
   /**
    * Select the next data block of data type and specification of the previous
@@ -308,6 +365,54 @@ class AliHLTOUT : public AliHLTLogging {
    * @param pBuffer [in]  buffer of the selected data block
    */
   int ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer);
+
+  /**
+   * Add the current data block to the selection.
+   * Note: enables also the block selection
+   */
+  int SelectDataBlock();
+
+  /**
+   * Add the all data blocks of a certain handler to the selection.
+   * Note: enables also the block selection
+   */
+  int SelectDataBlocks(const AliHLTOUTHandlerListEntry* pHandlerDesc);
+
+  /**
+   * Enable the selection of data blocks.
+   */
+  int EnableBlockSelection();
+
+  /**
+   * Disable the selection of data blocks.
+   */
+  int DisableBlockSelection();
+
+  /**
+   * Reset the data block selection.
+   * Resets the selection list, none of the blocks is selected.
+   */
+  int ResetBlockSelection();
+
+  /**
+   * Mark the current block as processed.
+   */
+  int MarkDataBlockProcessed();
+
+  /**
+   * Mark all data blocks of a certain handler processed.
+   */
+  int MarkDataBlocksProcessed(const AliHLTOUTHandlerListEntry* pHandlerDesc);
+
+  /**
+   * Add a sub collection to the HLTOUT.
+   */
+  int AddSubCollection(AliHLTOUT* pCollection);
+
+  /**
+   * Release a previously added sub collection.
+   */
+  int ReleaseSubCollection(AliHLTOUT* pCollection);
 
   /**
    * Get module agent for the selected data block.
@@ -415,7 +520,7 @@ class AliHLTOUT : public AliHLTLogging {
    * Internal status flags
    */
   enum {
-    /** the HLTOUT object is locked with the current data block */
+    /** the HLTOUT object is locked with the current data block selection */
     kLocked = 0x1,
     /** childs can add block descriptors */
     kCollecting = 0x2,
@@ -426,7 +531,13 @@ class AliHLTOUT : public AliHLTLogging {
     /** user of the data block has checked the alignment */
     kAlignmentChecked = 0x10,
     /** warning on alignment missmatch has been printed */
-    kAlignmentWarning = 0x20
+    kAlignmentWarning = 0x20,
+    /** enable block selection list */
+    kBlockSelection = 0x40,
+    /** skip processed data blocks */
+    kSkipProcessed = 0x80,
+    /** marked as sub collection */
+    kIsSubCollection = 0x100
   };
 
   /**
@@ -465,7 +576,11 @@ class AliHLTOUT : public AliHLTLogging {
    * Select the data block of data type and specification of the previous
    * call to @ref SelectFirstDataBlock. Core function of @ref SelectFirstDataBlock
    * and @ref SelectNextDataBlock, starts to find a block at the current list
-   * position. 
+   * position.
+   * 
+   * The data block is searched from the conditions of fSearchDataType,
+   * fSearchSpecification, fSearchHandlerType and the selection list.
+   *
    * @return identifier >=0 if success, neg. error code if failed         <br>
    *                        -ENOENT if no block found                     <br>
    *                        -EPERM if access denied (object locked)
@@ -535,7 +650,7 @@ class AliHLTOUT : public AliHLTLogging {
   AliHLTOUTBlockDescriptorVector fBlockDescList; //!transient
 
   /** current position in the list */
-  AliHLTOUTBlockDescriptorVector::iterator fCurrent; //!transient
+  unsigned int fCurrent; //!transient
 
   /** data buffer under processing */
   const AliHLTUInt8_t* fpBuffer; //!transient
@@ -546,6 +661,6 @@ class AliHLTOUT : public AliHLTLogging {
   /** verbose or silent output */
   bool fbVerbose; //!transient
 
-  ClassDef(AliHLTOUT, 2)
+  ClassDef(AliHLTOUT, 3)
 };
 #endif

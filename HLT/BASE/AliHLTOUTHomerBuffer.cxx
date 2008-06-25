@@ -143,7 +143,7 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt
       homer_uint32 spec=pReader->GetBlockDataSpec( i );
       AliHLTComponentDataType dt;
       AliHLTComponent::SetDataType(dt, ByteSwap64(id), ByteSwap32(origin));
-      AliHLTOUTBlockDescriptor desc(dt, spec, offset|i);
+      AliHLTOUTBlockDescriptor desc(dt, spec, offset|i, this);
       HLTDebug("adding block %d: %s %#x", i, AliHLTComponent::DataType2Text(dt).c_str(), spec);
       iResult=AddBlockDescriptor(desc);
     }

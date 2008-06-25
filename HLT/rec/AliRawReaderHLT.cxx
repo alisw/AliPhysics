@@ -486,7 +486,7 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
     AliHLTOUTHandler* pHandler=fpHLTOUT->GetHandler();
     if (pHandler) {
       if (dynamic_cast<AliHLTOUTHandlerEquId*>(pHandler)!=NULL) {
-	AliHLTOUT::AliHLTOUTLockGuard g(fpHLTOUT);
+	AliHLTOUT::AliHLTOUTSelectionGuard g(fpHLTOUT);
 	fEquipmentId=pHandler->ProcessData(fpHLTOUT);
 	fpData=NULL;
 	fDataSize=pHandler->GetProcessedData(fpData);

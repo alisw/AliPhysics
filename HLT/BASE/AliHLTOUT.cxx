@@ -1,31 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTOUT.cxx
     @author Matthias Richter
     @date   
-    @brief  The control class for HLTOUT data.                            */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+    @brief  The control class for HLTOUT data.
+*/
 
 #include <cerrno>
 #include <cassert>
@@ -42,9 +37,9 @@ AliHLTOUT::AliHLTOUT()
   fSearchDataType(kAliHLTVoidDataType),
   fSearchSpecification(kAliHLTVoidDataSpec),
   fSearchHandlerType(AliHLTModuleAgent::kUnknownOutput),
-  fFlags(0),
+  fFlags(kSkipProcessed),
   fBlockDescList(),
-  fCurrent(fBlockDescList.begin()),
+  fCurrent(0),
   fpBuffer(NULL),
   fDataHandlers(),
   fbVerbose(true)
@@ -59,6 +54,9 @@ AliHLTOUT::AliHLTOUT()
 AliHLTOUT::~AliHLTOUT()
 {
   // see header file for class documentation
+  if (CheckStatusFlag(kIsSubCollection)) {
+    HLTWarning("severe internal error: collection has not been released, potential crash due to invalid pointer");
+  }
 }
 
 int AliHLTOUT::Init()
@@ -81,22 +79,23 @@ int AliHLTOUT::GetNofDataBlocks()
 }
 
 int AliHLTOUT::SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t spec,
-				    AliHLTModuleAgent::AliHLTOUTHandlerType handlerType)
+				    AliHLTModuleAgent::AliHLTOUTHandlerType handlerType,
+				    bool skipProcessed)
 {
   // see header file for class documentation
-  if (CheckStatusFlag(kLocked)) return -EPERM;
-  fCurrent=fBlockDescList.begin();
+  fCurrent=0;
   fSearchDataType=dt;
   fSearchSpecification=spec;
   fSearchHandlerType=handlerType;
+  if (skipProcessed) SetStatusFlag(kSkipProcessed);
+  else ClearStatusFlag(kSkipProcessed);
   return FindAndSelectDataBlock();
 }
 
 int AliHLTOUT::SelectNextDataBlock()
 {
   // see header file for class documentation
-  if (CheckStatusFlag(kLocked)) return -EPERM;
-  if (fCurrent==fBlockDescList.end()) return -ENOENT;
+  if (fCurrent>=fBlockDescList.size()) return -ENOENT;
   fCurrent++;
   return FindAndSelectDataBlock();
 }
@@ -106,11 +105,13 @@ int AliHLTOUT::FindAndSelectDataBlock()
   // see header file for class documentation
   if (CheckStatusFlag(kLocked)) return -EPERM;
   int iResult=-ENOENT;
-  while (fCurrent!=fBlockDescList.end() && iResult==-ENOENT) {
-    if ((*fCurrent)==fSearchDataType &&
-	(fSearchSpecification==kAliHLTVoidDataSpec || (*fCurrent)==fSearchSpecification) &&
-	(fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput || FindHandlerDesc(fCurrent->GetIndex())==fSearchHandlerType)) {
-      iResult=fCurrent->GetIndex();
+  while (fCurrent<fBlockDescList.size() && iResult==-ENOENT) {
+    if (fBlockDescList[fCurrent]==fSearchDataType &&
+	(fSearchSpecification==kAliHLTVoidDataSpec || fBlockDescList[fCurrent]==fSearchSpecification) &&
+	(fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput || FindHandlerDesc(fBlockDescList[fCurrent].GetIndex())==fSearchHandlerType) &&
+	(!CheckStatusFlag(kBlockSelection) || fBlockDescList[fCurrent].IsSelected()) &&
+	(!CheckStatusFlag(kSkipProcessed) || !fBlockDescList[fCurrent].IsProcessed())) {
+      iResult=fBlockDescList[fCurrent].GetIndex();
       // TODO: check the byte order on the current system and the byte order of the
       // data block, print warning when mismatch and user did not check
       //AliHLTOUTByteOrder blockBO=CheckByteOrder();
@@ -138,10 +139,10 @@ int AliHLTOUT::GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32
 {
   // see header file for class documentation
   int iResult=-ENOENT;
-  if (fCurrent!=fBlockDescList.end()) {
+  if (fCurrent<fBlockDescList.size()) {
     iResult=0;
-    dt=(*fCurrent);
-    spec=(*fCurrent);
+    dt=fBlockDescList[fCurrent];
+    spec=fBlockDescList[fCurrent];
   }
   return iResult;
 }
@@ -163,8 +164,8 @@ AliHLTModuleAgent::AliHLTOUTHandlerType AliHLTOUT::GetDataBlockHandlerType()
 AliHLTUInt32_t AliHLTOUT::GetDataBlockIndex()
 {
   // see header file for class documentation
-  if (fCurrent==fBlockDescList.end()) return AliHLTOUTInvalidIndex;
-  return fCurrent->GetIndex();
+  if (fCurrent>=fBlockDescList.size()) return AliHLTOUTInvalidIndex;
+  return fBlockDescList[fCurrent].GetIndex();
 }
 
 int AliHLTOUT::GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size)
@@ -173,8 +174,8 @@ int AliHLTOUT::GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size
   int iResult=-ENOENT;
   pBuffer=NULL;
   size=0;
-  if (fCurrent!=fBlockDescList.end()) {
-    if ((iResult=GetDataBuffer(fCurrent->GetIndex(), pBuffer, size))>=0) {
+  if (fCurrent<fBlockDescList.size()) {
+    if ((iResult=fBlockDescList[fCurrent].GetDataBuffer(pBuffer, size))>=0) {
       fpBuffer=pBuffer;
     }
   }
@@ -228,9 +229,9 @@ int AliHLTOUT::AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc)
 AliHLTOUT::AliHLTOUTByteOrder AliHLTOUT::CheckByteOrder()
 {
   // see header file for class documentation
-  if (fCurrent!=fBlockDescList.end()) {
+  if (fCurrent<fBlockDescList.size()) {
     SetStatusFlag(kByteOrderChecked);
-    AliHLTOUT::AliHLTOUTByteOrder order=CheckBlockByteOrder((*fCurrent).GetIndex());
+    AliHLTOUT::AliHLTOUTByteOrder order=CheckBlockByteOrder(fBlockDescList[fCurrent].GetIndex());
     return order;
   }
   return kInvalidByteOrder;
@@ -239,9 +240,9 @@ AliHLTOUT::AliHLTOUTByteOrder AliHLTOUT::CheckByteOrder()
 int AliHLTOUT::CheckAlignment(AliHLTOUT::AliHLTOUTDataType type)
 {
   // see header file for class documentation
-  if (fCurrent!=fBlockDescList.end()) {
+  if (fCurrent<fBlockDescList.size()) {
     SetStatusFlag(kAlignmentChecked);
-    int alignment=CheckBlockAlignment((*fCurrent).GetIndex(), type);
+    int alignment=CheckBlockAlignment(fBlockDescList[fCurrent].GetIndex(), type);
     return alignment;
   }
   return -ENOENT;
@@ -428,12 +429,12 @@ void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index)
   fBlocks.push_back(index);
 }
 
-bool AliHLTOUT::AliHLTOUTHandlerListEntry::HasIndex(AliHLTUInt32_t index)
+bool AliHLTOUT::AliHLTOUTHandlerListEntry::HasIndex(AliHLTUInt32_t index) const
 {
   // see header file for class documentation
   AliHLTOUTIndexList::iterator element;
-  for (element=fBlocks.begin(); element!=fBlocks.end(); element++) {
-    if (*element==index) return true;
+  for (unsigned int i=0; i<fBlocks.size(); i++) {
+    if (fBlocks[i]==index) return true;
   }
   return false;
 }
@@ -551,4 +552,127 @@ void AliHLTOUT::SetParam(TTree* /*pDigitTree*/, int /*event*/)
   // the default implementation there is a class mismatch.
   assert(0);
   HLTFatal("severe internal error: class mismatch");
+}
+
+int AliHLTOUT::SelectDataBlock()
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (fCurrent>=fBlockDescList.size()) return 0;
+  fBlockDescList[fCurrent].Select(true);
+  EnableBlockSelection();
+  return iResult;
+}
+
+int AliHLTOUT::SelectDataBlocks(const AliHLTOUTHandlerListEntry* pHandlerDesc)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pHandlerDesc) return 0;
+
+  AliHLTOUTBlockDescriptorVector::iterator element;
+  for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
+       block!=fBlockDescList.end();
+       block++) {
+    if (pHandlerDesc->HasIndex(block->GetIndex()))
+      block->Select(true);
+    else
+      block->Select(false);
+  }
+  EnableBlockSelection();
+  
+  return iResult;
+}
+
+int AliHLTOUT::EnableBlockSelection()
+{
+  // see header file for class documentation
+  SetStatusFlag(kBlockSelection);
+  return 0;
+}
+
+int AliHLTOUT::DisableBlockSelection()
+{
+  // see header file for class documentation
+  ClearStatusFlag(kBlockSelection);
+  return 0;
+}
+
+int AliHLTOUT::ResetBlockSelection()
+{
+  // see header file for class documentation
+  for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
+       block!=fBlockDescList.end();
+       block++) {
+    block->Select(false);
+  }
+  return 0;
+}
+
+int AliHLTOUT::MarkDataBlockProcessed()
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (fCurrent>=fBlockDescList.size()) return 0;
+  fBlockDescList[fCurrent].MarkProcessed();
+  return iResult;
+}
+
+int AliHLTOUT::MarkDataBlocksProcessed(const AliHLTOUTHandlerListEntry* pHandlerDesc)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pHandlerDesc) return 0;
+
+  AliHLTOUTBlockDescriptorVector::iterator element;
+  for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
+       block!=fBlockDescList.end();
+       block++) {
+    if (pHandlerDesc->HasIndex(block->GetIndex()))
+      block->MarkProcessed();
+  }
+  
+  return iResult;
+}
+
+int AliHLTOUT::AddSubCollection(AliHLTOUT* pCollection)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pCollection) return 0;
+
+  int index=-1;
+  for (index=pCollection->SelectFirstDataBlock();
+       index>=0;
+       index=pCollection->SelectNextDataBlock()) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    pCollection->GetDataBlockDescription(dt, spec);  
+    AliHLTOUTBlockDescriptor desc(dt, spec, index, pCollection);
+    AddBlockDescriptor(desc);
+    iResult++;
+  }
+  if (iResult>0) {
+    pCollection->SetStatusFlag(kIsSubCollection);
+  }
+
+  return iResult;
+}
+
+int AliHLTOUT::ReleaseSubCollection(AliHLTOUT* pCollection)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pCollection) return 0;
+
+  AliHLTOUTBlockDescriptorVector::iterator element;
+  for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
+       block!=fBlockDescList.end();
+       block++) {
+    if ((*block)==pCollection) {
+      element=fBlockDescList.erase(element);
+    }
+  }
+
+  return iResult;
 }
