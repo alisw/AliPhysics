@@ -58,6 +58,8 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
   TRandom r(0);
   //  cout<<ievt<<endl;
   TEveRGBAPalette* rawPalette  = new TEveRGBAPalette(0, 3000);
+  TEveRGBAPalette* vertexPalette  = new TEveRGBAPalette(-100, 100);
+ 
   rawPalette->SetLimits(1, 3000); // Set proper raw time range.
   TEveQuadSet* rawA = new AliEveT0Module("T0_RAW_A", 2, digits, start);
   rawA->SetPalette(rawPalette);
@@ -65,6 +67,11 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
   TEveQuadSet* rawC = new AliEveT0Module("T0_RAW_C", 3, digits, start);
   rawC->SetPalette(rawPalette);
   rawC->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+ 
+  TEveQuadSet* vertexT0 = new AliEveT0Module("T0_Vertex", 5, digits, start);
+  vertexT0->SetPalette(vertexPalette);
+  vertexT0->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+ 
   Float_t angle  = 2 * TMath::Pi() / 12;
   start->Next();
   for (Int_t i=0; i<110; i++)
@@ -78,6 +85,9 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
       }
     }
   }
+  Float_t zvertex= (allData[51][0] - allData[52][0])/2*25*2.99752/100;
+  using namespace std;
+  cout<<"zvertex= "<< zvertex <<endl;
   for (Int_t i=0; i<12; i++)
   {
     Float_t x = 6.5 * TMath::Sin(i * angle);
@@ -87,17 +97,24 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
     rawC->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
     rawC->QuadValue(start->GetData(i+25,0)-start->GetData(0,0));
   }
+    vertexT0->AddHexagon(0.0, 0.0, 0.0, 1.0);
+    vertexT0->QuadValue(zvertex);
 
   rawA->RefitPlex();
   rawC->RefitPlex();
+  vertexT0->RefitPlex();
 
   TEveTrans& taA = rawA->RefMainTrans();
   taA.SetPos(0, 0, 373);
   TEveTrans& tcC = rawC->RefMainTrans();
   tcC.SetPos(0, 0, -69.7);
 
+  TEveTrans& tver = vertexT0->RefMainTrans();
+  tver.SetPos(0, 0, zvertex);
+
   gEve->AddElement(rawA);
   gEve->AddElement(rawC);
+  gEve->AddElement(vertexT0);
   gEve->Redraw3D();
 }
 
@@ -238,5 +255,12 @@ void AliEveT0Module::DigitSelected(Int_t idx)
 
     printf("  idx=%d, time %d\n",  idx, qb->fValue);
   }
+if (fSigType == 5) {
+
+    printf("vertex====================\n");
+    printf("  idx=%d, zvertex pozition %d\n",  idx, qb->fValue);
+
+  }
+
 
 }
