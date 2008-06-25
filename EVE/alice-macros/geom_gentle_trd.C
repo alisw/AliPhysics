@@ -25,7 +25,7 @@ TEveGeoShape* geom_gentle_trd()
     {
       TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
       lvl2->SetRnrSelf(kTRUE);
-      lvl2->SetMainColor((Color_t)3);
+      lvl2->SetMainColor(3);
       lvl2->SetMainTransparency(80);
     }
     

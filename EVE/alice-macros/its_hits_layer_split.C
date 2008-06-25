@@ -24,7 +24,7 @@ void its_hits_layer_split(const char *varexp    = "fX:fY:fZ:GetLayer()",
   TTree* ht = rl->GetTreeH("ITS", false);
 
   TEvePointSetArray* l = new TEvePointSetArray("ITS hits - Layer Slices", "");
-  l->SetMarkerColor((Color_t)2);
+  l->SetMarkerColor(2);
   l->SetMarkerStyle(2); // cross
   l->SetMarkerSize(.2);
 

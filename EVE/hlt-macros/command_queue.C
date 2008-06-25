@@ -126,7 +126,7 @@ void make_crap(void* arg)
 		     rnd.Uniform(-100, 100),
 		     rnd.Uniform(-100, 100));
   }
-  ps->SetMainColor((Color_t)kRed);
+  ps->SetMainColor(kRed);
   printf("make_crap() -> produced TEvePointSet* %p)\n", ps);
 
   ((CommandQueue*)arg)->RegisterCommand

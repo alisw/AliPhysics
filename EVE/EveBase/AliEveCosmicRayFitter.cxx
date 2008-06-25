@@ -67,9 +67,8 @@ AliEveCosmicRayFitter::AliEveCosmicRayFitter(const Text_t* name, Int_t n_points)
 
   fTrackList = new TEveTrackList("Cosmic ray");
   fTrackList->SetTitle("muons");
-  fTrackList->SetMainColor((Color_t)8);
+  fTrackList->SetMainColor(8);
   gEve->AddElement(fTrackList);
-  UpdateItems();
 
   fGraphPicked1 = new TGraph();
   fGraphPicked1->SetName("Selected points");
@@ -262,7 +261,6 @@ void AliEveCosmicRayFitter::DestroyElements()
   TEveElement::DestroyElements();
   gEve->AddElement(fTrackList, this);
   fTrackList->DestroyElements();
-  UpdateItems();
 }
 
 /**************************************************************************/

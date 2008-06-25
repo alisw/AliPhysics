@@ -62,7 +62,7 @@ void tpc_digits(Int_t mode=1)
     {
       TEveElementList* l = new TEveElementList("TPC plate 1");
       l->SetTitle("TPC Plate");
-      l->SetMainColor(Color_t(col));
+      l->SetMainColor(col);
       gEve->AddElement(l);
 
       for (Int_t i = 0; i<18; i++)
@@ -78,7 +78,7 @@ void tpc_digits(Int_t mode=1)
     {
       TEveElementList* l = new TEveElementList("TPC plate 2");
       l->SetTitle("TPC Plate");
-      l->SetMainColor(Color_t(col));
+      l->SetMainColor(col);
 
       gEve->AddElement(l);
       for (Int_t i = 18; i<36; i++)
@@ -110,7 +110,7 @@ void tpc_digits(Int_t mode=1)
     {
       TEveElementList* l = new TEveElementList("TPC plate 1");
       l->SetTitle("TPC Plate");
-      l->SetMainColor(Color_t(col));
+      l->SetMainColor(col);
       gEve->AddElement(l);
 
       for (Int_t i = 0; i<18; i++)
@@ -126,7 +126,7 @@ void tpc_digits(Int_t mode=1)
     {
       TEveElementList* l = new TEveElementList("TPC plate 2");
       l->SetTitle("TPC Plate");
-      l->SetMainColor(Color_t(col));
+      l->SetMainColor(col);
 
       gEve->AddElement(l);
       for (Int_t i = 18; i<36; i++)
@@ -170,7 +170,7 @@ void tpc_digits_2drange(Int_t start, Int_t end)
   gEve->DisableRedraw();
   {
     TEveElementList* l = new TEveElementList("TPC sectors");
-    l->SetMainColor(Color_t(col));
+    l->SetMainColor(col);
     gEve->AddElement(l);
 
     for (Int_t i=start; i<=end; i++)

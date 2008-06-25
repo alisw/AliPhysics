@@ -74,7 +74,7 @@ TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   Double_t ptsq;
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
-  cont->SetMainColor(Color_t(6));
+  cont->SetMainColor(6);
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
@@ -123,7 +123,7 @@ TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
     if (gkMakeTrackParamLines) {
       TEveLine* l = new TEveLine; 
       l->SetName(Form("Track%d", count));
-      l->SetLineColor((Color_t)5);
+      l->SetLineColor(5);
       at->FillPolymarker(l, esd->GetMagneticField(), 0, 250, 5);
       contLines->AddElement(l);
     }
@@ -136,7 +136,6 @@ TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   char tooltip[1000];
   sprintf(tooltip,"pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
-  cont->UpdateItems();
 
   cont->MakeTracks();
 
@@ -157,7 +156,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
   if (esd == 0) esd = AliEveEventManager::AssertESD();
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
-  cont->SetMainColor(Color_t(6));
+  cont->SetMainColor(6);
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
@@ -189,7 +188,6 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
   const tooltip[1000];
   sprintf(tooltip,"N=%d", count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
-  cont->UpdateItems();
 
   cont->MakeTracks();
 
@@ -271,31 +269,31 @@ TEveElementList* esd_tracks_vertex_cut()
   tl[0] = new TEveTrackList("Sigma < 3");
   tc[0] = 0;
   tl[0]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[0]->SetMainColor(Color_t(3));
+  tl[0]->SetMainColor(3);
   gEve->AddElement(tl[0], cont);
 
   tl[1] = new TEveTrackList("3 < Sigma < 5");
   tc[1] = 0;
   tl[1]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[1]->SetMainColor(Color_t(7));
+  tl[1]->SetMainColor(7);
   gEve->AddElement(tl[1], cont);
 
   tl[2] = new TEveTrackList("5 < Sigma");
   tc[2] = 0;
   tl[2]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[2]->SetMainColor(Color_t(46));
+  tl[2]->SetMainColor(46);
   gEve->AddElement(tl[2], cont);
 
   tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
   tc[3] = 0;
   tl[3]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[3]->SetMainColor(Color_t(41));
+  tl[3]->SetMainColor(41);
   gEve->AddElement(tl[3], cont);
 
   tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
   tc[4] = 0;
   tl[4]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[4]->SetMainColor(Color_t(48));
+  tl[4]->SetMainColor(48);
   gEve->AddElement(tl[4], cont);
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
@@ -343,11 +341,10 @@ TEveElementList* esd_tracks_vertex_cut()
     //PH    const Text_t* tooltip = Form("N tracks=%d", tc[ti]);
     //MT Modified somewhat.
     char buff[1000];
-    sprintf(buff, "%s [%d]", tlist->GetName(), tlist->GetNChildren());
+    sprintf(buff, "%s [%d]", tlist->GetName(), tlist->NumChildren());
     tlist->SetName(buff);
     sprintf(buff, "N tracks=%d", tc[ti]);
     tlist->SetTitle(buff); // Not broadcasted automatically ...
-    tlist->UpdateItems();
 
     tlist->MakeTracks();
   }
@@ -358,7 +355,6 @@ TEveElementList* esd_tracks_vertex_cut()
   char form[1000];
   sprintf(form,"N all tracks = %d", count);
   cont->SetTitle(form);
-  cont->UpdateItems();
   gEve->Redraw3D();
 
   return cont;

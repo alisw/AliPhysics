@@ -27,7 +27,7 @@ void pmd_raw(Int_t mode = 0)
 
   TEveElementList* l = new TEveElementList("PMD");
   //  l->SetTitle("PMD");
-  //  l->SetMainColor((Color_t)3);
+  //  l->SetMainColor(3);
   gEve->AddElement(l);
 
   Int_t NSM       = 0;
@@ -81,7 +81,7 @@ void pmd_raw(Int_t mode = 0)
 	}
 
       TEveElementList* lplane = new TEveElementList(spl.Data());
-      //  l->SetMainColor((Color_t)3);
+      //  l->SetMainColor(3);
       gEve->AddElement(lplane, l);
 
       Int_t iddl = -1;
@@ -91,7 +91,7 @@ void pmd_raw(Int_t mode = 0)
 	      sddl = bsddl;
 	      sddl += iddl;
 	      TEveElementList* lddl = new TEveElementList(sddl.Data());
-	      //  l->SetMainColor((Color_t)3);
+	      //  l->SetMainColor(3);
 	      gEve->AddElement(ddl, lplane);
 	      
 	      modnumber = iddl*6;

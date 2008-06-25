@@ -24,6 +24,7 @@
 
 #include <TFile.h>
 #include <TTree.h>
+#include <TGeoManager.h>
 #include <TSystem.h>
 
 //==============================================================================

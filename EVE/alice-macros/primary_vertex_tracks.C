@@ -14,7 +14,7 @@ TEveTrackList* primary_vertex_tracks()
   AliESDVertex *pv  = esd->GetPrimaryVertex();
 
   TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex");
-  cont->SetMainColor(Color_t(7));
+  cont->SetMainColor(7);
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
   rnrStyle->fRnrFV = kTRUE;

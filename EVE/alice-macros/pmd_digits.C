@@ -30,7 +30,7 @@ void pmd_digits(Int_t mode = 0)
 
   TEveElementList* l = new TEveElementList("PMD");
   // l->SetTitle("tooltip");
-  // l->SetMainColor((Color_t)3);
+  // l->SetMainColor(3);
   gEve->AddElement(l);
 
   TEveRGBAPalette* pal = new TEveRGBAPalette(20, 1000);
@@ -87,7 +87,7 @@ void pmd_digits(Int_t mode = 0)
 	}
 
       TEveElementList* lplane = new TEveElementList(spl.Data());
-      //  l->SetMainColor((Color_t)3);
+      //  l->SetMainColor(3);
       gEve->AddElement(lplane, l);
 
       for (Int_t iddl = istartDDL; iddl < iendDDL; iddl++)
@@ -95,7 +95,7 @@ void pmd_digits(Int_t mode = 0)
 	  sddl = bsddl;
 	  sddl += iddl;
 	  TEveElementList* lddl = new TEveElementList(sddl.Data());
-	  //  l->SetMainColor((Color_t)3);
+	  //  l->SetMainColor(3);
 	  gEve->AddElement(lddl, lplane);
 
 	  modnumber = iddl*6;
@@ -120,8 +120,8 @@ void pmd_digits(Int_t mode = 0)
               {
                 TEveFrameBox* b = lmodule->GetFrame();
                 b->SetFrameWidth(1.5);
-                b->SetFrameColor((Color_t) 1);
-                b->SetBackColor ((Color_t) (kTeal - 9));
+                b->SetFrameColor(1);
+                b->SetBackColor (kTeal - 9);
                 b->SetFrameFill (kFALSE);
                 b->SetDrawBack  (kTRUE);
               }

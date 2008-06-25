@@ -33,7 +33,7 @@ void tof_digits_sector(Int_t sector=0)
 
   TEveElementList* ll = new TEveElementList("TOF");
   ll->SetTitle("TOF detector");
-  ll->SetMainColor((Color_t)2);
+  ll->SetMainColor(2);
   gEve->AddElement(ll);
 
   AliEveTOFSector* m = new AliEveTOFSector(localGeoManager, sector, dt);

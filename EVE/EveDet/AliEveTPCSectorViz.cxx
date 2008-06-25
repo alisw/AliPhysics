@@ -46,7 +46,7 @@ AliEveTPCSectorViz::AliEveTPCSectorViz(const Text_t* n, const Text_t* t) :
   fRnrOut1  (kTRUE),
   fRnrOut2  (kTRUE),
 
-  fFrameColor ((Color_t) 4),
+  fFrameColor (4),
   fRnrFrame   (kTRUE),
   fAutoTrans  (kFALSE),
   fRTS        (1),

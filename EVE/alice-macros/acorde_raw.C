@@ -61,9 +61,9 @@ void acorde_raw()
     //printf("Module %2d: word_idx = %d, bit_idx = %2d => val = %d\n",
     //       module, word_idx, bit_idx, val);
     if (val)
-      eg_shape->SetMainColor((Color_t) 2);
+      eg_shape->SetMainColor(2);
     else
-      eg_shape->SetMainColor((Color_t) 4);
+      eg_shape->SetMainColor(4);
     eg_shape->StampColorSelection();
 
     acorde->AddElement(eg_shape);

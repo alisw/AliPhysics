@@ -76,7 +76,7 @@ public:
   void SetSource(const SourceId* id, SourceState* st) { fSrcId = id; fSrcState = st; TEveElement::SetRnrState(st->fState); }
 
   virtual Bool_t SingleRnrState() const { return kTRUE; }
-  virtual void   SetRnrState(Bool_t rnr);
+  virtual Bool_t SetRnrState(Bool_t rnr);
 
 protected:
   const SourceId    *fSrcId;

@@ -1217,11 +1217,7 @@ void SplitGLView::ItemClicked(TGListTreeItem *item, Int_t, Int_t, Int_t)
       //v->Activated();
       if (v->InheritsFrom("TGLEmbeddedViewer")) {
          TGLEmbeddedViewer *ev = (TGLEmbeddedViewer *)v;
-#if ROOT_VERSION_CODE >= 332547
-	 gVirtualX->SetInputFocus(ev->GetGLWidget()->GetContainer()->GetId());
-#else
-         gVirtualX->SetInputFocus(ev->GetGLWindow()->GetContainer()->GetId());
-#endif
+	 gVirtualX->SetInputFocus(ev->GetGLWidget()->GetId());
       }
    }
 }
@@ -1366,7 +1362,7 @@ void SplitGLView::UpdateSummary()
             TString ename  = tracks->GetElementName();
             // ename.Remove(ename.First('\''));
             table = fgHtmlSummary->AddTable(ename.Data(), 5, 
-                                            tracks->GetNChildren(), kTRUE, "first");
+                                            tracks->NumChildren(), kTRUE, "first");
             table->SetLabel(0, "Momentum");
             table->SetLabel(1, "P_t");
             table->SetLabel(2, "Phi");

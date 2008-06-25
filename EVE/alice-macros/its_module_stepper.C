@@ -21,7 +21,7 @@ void its_module_stepper(Int_t det = 0)
 
   gEve->DisableRedraw();
   AliEveITSModuleStepper* ms = new AliEveITSModuleStepper(di);
-  ms->SetMainColor(Color_t(8));
+  ms->SetMainColor(8);
   gStyle->SetPalette(1, 0);
   ms->DisplayDet(det, -1);
   gEve->AddElement(ms);

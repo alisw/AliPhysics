@@ -35,7 +35,7 @@ TEvePointSet* esd_V0_points_offline()
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerStyle(4);
   points->SetMarkerSize(1.5);
-  points->SetMarkerColor((Color_t)(kOrange+8));
+  points->SetMarkerColor(kOrange+8);
 
   gEve->AddElement(points);
   gEve->Redraw3D();
@@ -52,7 +52,7 @@ TEvePointSet* esd_V0_points_onfly()
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerStyle(4);
   points->SetMarkerSize(1.5);
-  points->SetMarkerColor((Color_t)(kPink+10));
+  points->SetMarkerColor(kPink+10);
 
   gEve->AddElement(points);
   gEve->Redraw3D();

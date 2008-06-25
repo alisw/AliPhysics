@@ -171,7 +171,7 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
 	er->AddElement(em);
 	em->SetTransMatrix(*(detector->FindTransform(ring->GetId(), 2*m)));
 	em->SetShape(ring->GetId() == 'I' ? inner : outer);
-	em->SetMainColor(Color_t(kRed));
+	em->SetMainColor(kRed);
 	em->SetMainTransparency(32);
 	em->IncDenyDestroy();
 

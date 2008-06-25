@@ -25,7 +25,7 @@ AliEveHOMERSource::AliEveHOMERSource(const Text_t* n, const Text_t* t) :
 /******************************************************************************/
 
 //______________________________________________________________________________
-void AliEveHOMERSource::SetRnrState(Bool_t rnr)
+Bool_t AliEveHOMERSource::SetRnrState(Bool_t rnr)
 {
    // Set render state of this element and of its children to the same
    // value.
@@ -33,5 +33,5 @@ void AliEveHOMERSource::SetRnrState(Bool_t rnr)
   if (fSrcState)
     fSrcState->fState = rnr;
 
-  TEveElement::SetRnrState(rnr);
+  return TEveElement::SetRnrState(rnr);
 }

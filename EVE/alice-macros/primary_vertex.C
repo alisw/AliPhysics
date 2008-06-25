@@ -34,13 +34,13 @@ TEveBoxSet* make_vertex_boxes(AliESDVertex* v)
   bs = new TEveBoxSet("+- 10 x 10 x 20mm");
   bs->SetRenderMode(TEveBoxSet::RM_TEveLine);
   bs->AddBox(Box(-1, x[0], x[1], x[2], 1, 1, 2));
-  bs->SetMainColor((Color_t) 2);
+  bs->SetMainColor(2);
   gEve->AddElement(bs);
 
   bs = new TEveBoxSet("+- 30 sigma_r x 10 sigma_z");
   bs->SetRenderMode(TEveBoxSet::RM_TEveLine);
   bs->AddBox(Box(-1, x[0], x[1], x[2], 30*e[0], 30*e[1], 10*e[2]));
-  bs->SetMainColor((Color_t) 3);
+  bs->SetMainColor(3);
   gEve->AddElement(bs);
 
   gEve->Redraw3D();

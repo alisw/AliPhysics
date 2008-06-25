@@ -99,7 +99,7 @@ void AliEveITSModuleStepper::Capacity()
   // configuration.
 
   Int_t n = fStepper->GetNx()*fStepper->GetNy();
-  if (n != GetNChildren())
+  if (n != NumChildren())
   {
     DestroyElements();
     for (Int_t m=0; m<n; ++m)
@@ -248,7 +248,6 @@ void  AliEveITSModuleStepper::Apply()
       else
 	mod->SetName(Form("SPD %d", idx));
       mod->SetRnrSelf(kTRUE);
-      mod->UpdateItems();
 
       fStepper->Step();
       idx++;

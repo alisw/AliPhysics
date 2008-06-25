@@ -39,7 +39,7 @@ acorde_hits(const char  *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
   sprintf(form,"N=%d", points->Size());
   points->SetTitle(form);
   points->SetMarkerSize(.5);
-  points->SetMarkerColor((Color_t)2);
+  points->SetMarkerColor(2);
 
   gEve->AddElement(points, cont);
   gEve->Redraw3D();

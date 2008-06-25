@@ -272,7 +272,7 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
     Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);    
     fRecPoints->SetPointId(id, new AliTRDcluster(*c));
   }
-  fRecPoints->SetStamp(TEveElement::kCBObjProps);
+  fRecPoints->StampObjProps();
   fLoadRecPoints = kTRUE;
 }
 
@@ -291,7 +291,7 @@ void AliEveTRDChamber::LoadDigits(AliTRDdigitsManager *digits)
 
   fDigits->Reset();
   fDigits->SetData(digits);
-  fDigits->SetStamp(TEveElement::kCBObjProps);
+  fDigits->StampObjProps();
   fDigitsNeedRecompute = kTRUE;  
   fLoadDigits = kTRUE;
 }
@@ -317,7 +317,7 @@ void AliEveTRDChamber::LoadHits(TClonesArray *hits, Int_t &idx)
 
     Int_t id = fHits->SetNextPoint(hit->X(), hit->Y(), hit->Z());
     fHits->SetPointId(id, new AliTRDhit(*hit));
-    fHits->SetStamp(TEveElement::kCBObjProps);
+    fHits->StampObjProps();
     idx++;
   }
   return;

@@ -29,7 +29,7 @@ AliEveMUONChamber::AliEveMUONChamber(Int_t id, const Text_t* n, const Text_t* t)
   TEveElement(fFrameColor),
   TNamed(n,t),
   fMUONData(0),
-  fFrameColor((Color_t)2),
+  fFrameColor(2),
   fRTS(1),
   fChamberID(0),
   fQuadSet1(n,t),

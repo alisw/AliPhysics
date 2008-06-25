@@ -42,7 +42,7 @@ tpc_hits(const char  *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ
   sprintf(form,"N=%d", points->Size());
   points->SetTitle(form);
   points->SetMarkerSize(.5);
-  points->SetMarkerColor((Color_t)3);
+  points->SetMarkerColor(3);
 
   gEve->AddElement(points, cont);
   gEve->Redraw3D();

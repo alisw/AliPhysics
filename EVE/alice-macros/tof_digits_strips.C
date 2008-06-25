@@ -40,7 +40,7 @@ void tof_digits_strips(Int_t selectedSector=-1)
 
   TEveElementList* ll = new TEveElementList("TOF");
   ll->SetTitle("TOF detector");
-  ll->SetMainColor((Color_t)2);
+  ll->SetMainColor(2);
   gEve->AddElement(ll);
 
   for(Int_t iSector=0; iSector<g->NSectors(); iSector++) {
@@ -48,7 +48,7 @@ void tof_digits_strips(Int_t selectedSector=-1)
     sprintf(sectorName,"Sector%2i",iSector);
     TEveElementList* l = new TEveElementList(sectorName);
     l->SetTitle(sectorTitle);
-    l->SetMainColor((Color_t)2);
+    l->SetMainColor(2);
     gEve->AddElement(l, ll);
 
 
@@ -62,7 +62,7 @@ void tof_digits_strips(Int_t selectedSector=-1)
       sPlate=bsPlate;
       sPlate+=iPlate;
       TEveElementList* relPlate = new TEveElementList(sPlate.Data());
-      relPlate->SetMainColor((Color_t)2);
+      relPlate->SetMainColor(2);
       gEve->AddElement(relPlate, l);
 
 

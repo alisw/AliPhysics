@@ -38,7 +38,7 @@ emcal_hits(const char *varexp    = "fX:fY:fZ",
   sprintf(form,"N=%d", points->Size());
   points->SetTitle(form);
   points->SetMarkerSize(.5);
-  points->SetMarkerColor((Color_t)2);
+  points->SetMarkerColor(2);
 
   gEve->AddElement(points, cont);
   gEve->Redraw3D();

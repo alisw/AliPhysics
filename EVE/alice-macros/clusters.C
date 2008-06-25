@@ -90,19 +90,19 @@ void clusters()
   gEve->AddElement(list);
 
   TEvePointSet* shared = new TEvePointSet("Shared Clusters");
-  shared->SetMainColor((Color_t)2);
+  shared->SetMainColor(2);
   shared->SetMarkerSize(0.4);
   shared->SetMarkerStyle(2);
   list->AddElement(shared);
 
   TEvePointSet* used = new TEvePointSet("Single-used Clusters");
-  used->SetMainColor((Color_t)3);
+  used->SetMainColor(3);
   used->SetMarkerSize(0.4);
   used->SetMarkerStyle(2);
   list->AddElement(used);
 
   TEvePointSet* nonused = new TEvePointSet("Not-used Clusters");
-  nonused->SetMainColor((Color_t)4);
+  nonused->SetMainColor(4);
   nonused->SetMarkerSize(0.4);
   nonused->SetMarkerStyle(2);
   list->AddElement(nonused);

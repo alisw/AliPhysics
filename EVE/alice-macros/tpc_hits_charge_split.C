@@ -22,7 +22,7 @@ void tpc_hits_charge_split(const char *varexp    =
 
   TEvePointSetArray* l = new TEvePointSetArray("TPC hits - Log-Charge Slices", "");
   l->SetSourceCS(TEvePointSelectorConsumer::kTVT_RPhiZ);
-  l->SetMarkerColor((Color_t)3);
+  l->SetMarkerColor(3);
   l->SetMarkerStyle(20); // full circle
   l->SetMarkerSize(.5);
 

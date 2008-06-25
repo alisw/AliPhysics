@@ -63,7 +63,6 @@ AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t nPoints) :
   fTrackList->SetLineColor(8);
   fTrackList->GetPropagator()->SetEditPathMarks(kTRUE);
   AddElement(fTrackList);
-  UpdateItems();
 
   fGraphPicked = new TGraph();
   fGraphPicked->SetName("Selected points");
@@ -97,8 +96,6 @@ void AliEveTrackFitter::DestroyElements()
   // fTrackList is destroyed because DenyDestroy is set.
   gEve->AddElement(fTrackList, this);
   fTrackList->DestroyElements();
-
-  UpdateItems();
 }
 
 /******************************************************************************/

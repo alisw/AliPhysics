@@ -246,7 +246,7 @@ Int_t nextEvent(Int_t ADCCut) {
       // ** Initialize TPC Clusters
       if ( !gTPCClusters ) {
 	gTPCClusters = new TEvePointSet("TPC Clusters");
-	gTPCClusters->SetMainColor((Color_t)kRed);
+	gTPCClusters->SetMainColor(kRed);
 	gTPCClusters->SetMarkerStyle((Style_t)kFullDotSmall);
 	gEve->AddElement(gTPCClusters);
       }
@@ -263,7 +263,7 @@ Int_t nextEvent(Int_t ADCCut) {
       // ** Initialize TPC Tracks
       if ( !gTPCTrack ) {
 	gTPCTrack = new TEveTrackList("TPC Tracks");
-	gTPCTrack->SetMainColor((Color_t)kBlue);
+	gTPCTrack->SetMainColor(kBlue);
 
 	gEve->AddElement(gTPCTrack);
 	
@@ -370,7 +370,7 @@ Int_t drawSPDRawData() {
 
   TEveElementList* layer1 = new TEveElementList( "SPD0" );
   layer1->SetTitle( "SPDs' first layer" );
-  layer1->SetMainColor( (Color_t) 2 );
+  layer1->SetMainColor(2);
   gEve->AddElement( layer1 );
   
   for ( sector=0; sector<10; sector++ ) {
@@ -378,7 +378,7 @@ Int_t drawSPDRawData() {
     sSector += sector;
 
     TEveElementList* relSector = new TEveElementList( sSector.Data() );
-    relSector->SetMainColor( (Color_t) 2 );
+    relSector->SetMainColor(2);
     gEve->AddElement( relSector, layer1 );
 
     for ( stave=0; stave<2; stave++ ) {
@@ -386,7 +386,7 @@ Int_t drawSPDRawData() {
       sStave += stave;
       
       TEveElementList* relStave = new TEveElementList( sStave.Data() );
-      relStave->SetMainColor( (Color_t) 2 );
+      relStave->SetMainColor(2);
       gEve->AddElement( relStave, relSector );
 
       for ( module=0; module<4; module++ ) {
@@ -408,7 +408,7 @@ Int_t drawSPDRawData() {
 
   TEveElementList* layer2 = new TEveElementList( "SPD1" );
   layer2->SetTitle( "SPDs' second layer" );
-  layer2->SetMainColor( (Color_t) 2 );
+  layer2->SetMainColor(2);
   gEve->AddElement(layer2);
   
   for ( sector=0; sector<10; sector++ ) {
@@ -416,7 +416,7 @@ Int_t drawSPDRawData() {
     sSector += sector;
     
     TEveElementList* relSector = new TEveElementList( sSector.Data() );
-    relSector->SetMainColor( (Color_t) 2 );
+    relSector->SetMainColor(2);
     gEve->AddElement(relSector, layer2 );
     
     for ( stave=0; stave<4; stave++ ) {
@@ -424,7 +424,7 @@ Int_t drawSPDRawData() {
       sStave += stave;
 
       TEveElementList* relStave = new TEveElementList( sStave.Data() );
-      relStave->SetMainColor( (Color_t) 2 );
+      relStave->SetMainColor(2);
       gEve->AddElement( relStave, relSector );
 
       for ( module=0; module<4; module++) {

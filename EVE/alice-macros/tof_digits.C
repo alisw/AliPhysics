@@ -33,7 +33,7 @@ void tof_digits()
 
   TEveElementList* ll = new TEveElementList("TOF");
   ll->SetTitle("TOF detector");
-  ll->SetMainColor((Color_t)2);
+  ll->SetMainColor(2);
   gEve->AddElement(ll);
 
   for(Int_t iSector=0; iSector<g->NSectors(); iSector++) {

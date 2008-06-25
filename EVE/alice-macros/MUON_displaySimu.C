@@ -109,7 +109,7 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
 
   TEveElementList* l = new TEveElementList("MUONChambers");
   l->SetTitle("MUON chambers");
-  l->SetMainColor(Color_t(2));
+  l->SetMainColor(2);
   gEve->AddElement(l);
 
   for (Int_t ic = 0; ic < 14; ic++)
@@ -140,7 +140,7 @@ void MUON_ESD_tracks()
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
-  lt->SetMainColor(Color_t(6));
+  lt->SetMainColor(6);
   //lt->SetMUON();
 
   gEve->AddElement(lt);
@@ -181,7 +181,7 @@ void MUON_Ref_tracks()
   AliMUONTrack* trackRef;
 
   TEveTrackList* lt = new TEveTrackList("Ref-Tracks");
-  lt->SetMainColor(Color_t(6));
+  lt->SetMainColor(6);
 
   gEve->AddElement(lt);
 
@@ -213,7 +213,7 @@ void MUON_MC_tracks()
   Int_t nTracks  = stack->GetNtrack();
 
   TEveTrackList* lt = new TEveTrackList("MC-Tracks");
-  lt->SetMainColor(Color_t(6));
+  lt->SetMainColor(6);
   //lt->SetMUON();
 
   gEve->AddElement(lt);

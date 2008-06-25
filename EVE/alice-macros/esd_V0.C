@@ -72,7 +72,7 @@ AliEveV0List* esd_V0(Bool_t onFly=kFALSE)
   AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();
 
   AliEveV0List* cont = new AliEveV0List("ESD v0");
-  cont->SetMainColor(Color_t(3)); // green
+  cont->SetMainColor(3); // green
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
@@ -99,7 +99,6 @@ AliEveV0List* esd_V0(Bool_t onFly=kFALSE)
   }
 
   cont->SetTitle("test");
-  cont->UpdateItems();
 
   cont->MakeV0s();
   gEve->Redraw3D();

@@ -102,7 +102,7 @@ void AliEveTRDDigits::ComputeRepresentation()
     
         AddQuad(x[1]-.45*dy, x[2]-.5*dz*scale, x[0], .9*dy, dz*scale);
         QuadValue(q);
-        QuadColor(Color_t(color));
+        QuadColor(color);
         QuadId(new TNamed(Form("Charge%d", q), "dummy title"));
       }  // end time loop
     }  // end col loop

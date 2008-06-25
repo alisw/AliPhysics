@@ -38,7 +38,7 @@ trd_hits(const char *varexp    = "fX:fY:fZ",
   sprintf(form,"N=%d", points->Size());
   points->SetTitle(form);
   points->SetMarkerSize(.5);
-  points->SetMarkerColor((Color_t)7);
+  points->SetMarkerColor(7);
 
   gEve->AddElement(points, cont);
   gEve->Redraw3D();

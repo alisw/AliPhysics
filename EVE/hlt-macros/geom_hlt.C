@@ -57,7 +57,7 @@ Int_t MUON_geom()
   TEveElementList* mul = new TEveElementList("MUONChambers");
   TEveElementList* muChData = new TEveElementList("MUONChamberData");
   mul->SetTitle("MUON chambers");
-  mul->SetMainColor(Color_t(3));
+  mul->SetMainColor(3);
   gEve->AddGlobalElement(mul);
   gEve->AddElement(muChData);
   
