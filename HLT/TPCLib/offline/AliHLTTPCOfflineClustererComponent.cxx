@@ -49,8 +49,7 @@ fGeometryFileName(""),
 fTPCRecoParam(0),
 fTPCGeomParam(0),
 fRawReader(0),
-fClusterer(0),
-fMagField(0)
+fClusterer(0)
 {
   // Default constructor
   fGeometryFileName = getenv("ALICE_ROOT");
@@ -146,7 +145,6 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
   // initialisation
   //
 
-  /*
    
   // Load geometry
   HLTInfo("Geometry file %s",fGeometryFileName.c_str());
@@ -156,12 +154,6 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
     iResult=-EINVAL;
   }
  
-  // Magnetic field
-  fMagField = new AliMagFMaps("Maps","Maps", 2, 1.0, 10., 2);
-  AliTracker::SetFieldMap(fMagField,kFALSE);
-
-  */
-
   // Raw Reader
   fRawReader = new AliRawReaderMemory;
 
@@ -194,7 +186,6 @@ int AliHLTTPCOfflineClustererComponent::DoDeinit()
   if (fTPCGeomParam) delete fTPCGeomParam; fTPCGeomParam=0;
   if (fRawReader) delete fRawReader; fRawReader=0;
   if (fClusterer) delete fClusterer; fClusterer=0;
-  if (fMagField) delete fMagField; fMagField=0;
 
   return 0;
 }

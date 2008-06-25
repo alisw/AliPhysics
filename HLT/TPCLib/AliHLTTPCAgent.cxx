@@ -55,6 +55,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCEsdWriterComponent.h"
 #include "AliHLTTPCOfflineClustererComponent.h"
 #include "AliHLTTPCOfflineTrackerComponent.h"
+#include "AliHLTTPCOfflineCalibrationComponent.h"
 #include "AliHLTTPCClusterHistoComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -186,6 +187,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);
   pHandler->AddComponent(new AliHLTTPCOfflineClustererComponent);
   pHandler->AddComponent(new AliHLTTPCOfflineTrackerComponent);
+  pHandler->AddComponent(new AliHLTTPCOfflineCalibrationComponent);
   pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
 
   return 0;

@@ -1,14 +1,15 @@
 // $Id$
 /**
- * @file rec-hlt-tpc-offline.C
- * @brief Test macro for the HLT TPC offline reco wrappers.
+ * @file cal-hlt-tpc-offline.C
+ * @brief Test macro for the HLT TPC offline calibration.
  *
  * The macro runs an HLT chain of TPC analysis, using the offline
- * algorithms ans appropriate wrappers.
+ * algorithms and appropriate wrappers. The final output is
+ * processed by the TPCOfflineCalibration component.
  *
  * Usage:
  * <pre>
- *   aliroot -b -q rec-hlt-tpc-offline.C | tee rec-hlt-tpc-offline.log
+ *   aliroot -b -q cal-hlt-tpc-offline.C | tee cal-hlt-tpc-offline.log
  * </pre>
  *
  * The chain to be run is defined by the macro given to the parameter
@@ -27,14 +28,15 @@
  * usual way.
  *
  * @ingroup alihlt_tpc
- * @author Matthias.Richter@ift.uib.no
+ * @author Jacek Otwinowski <J.Otwinowski@gsi.de>, Matthias.Richter@ift.uib.no
  */
-void rec_hlt_tpc_offline(const char* input="./")
+void cal_hlt_tpc_offline(const char* input="./")
 {
   if (!input) {
     cerr << "please specify input or run without arguments" << endl;
     return;
   }
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // init the HLT system in order to define the analysis chain below
@@ -67,6 +69,8 @@ void rec_hlt_tpc_offline(const char* input="./")
 
   TString writerInput;
   TString trackerInput;
+  TString calibratorInput;
+
   for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
     TString arg, clustererInput;
     for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -107,10 +111,18 @@ void rec_hlt_tpc_offline(const char* input="./")
   tracker.Form("Global_TR");
   AliHLTConfiguration trackerconf(tracker.Data(), "TPCOfflineTracker", trackerInput.Data(), "");
   if (writerInput.Length()>0) writerInput+=" ";
-  writerInput+=tracker;
+  calibratorInput+=tracker;
+
+  // one global calibration component
+  TString calibrator;
+  calibrator.Form("Global_Calib");
+  AliHLTConfiguration calibconf(calibrator.Data(), "TPCOfflineCalibration", calibratorInput.Data(), "");
+  if (writerInput.Length()>0) writerInput+=" ";
+  writerInput+=calibrator;
 
   // the writer configuration
-  AliHLTConfiguration esdwconf("sink1", "EsdCollector"   , writerInput.Data(), "-directory hlt-tpc-offline");
+  AliHLTConfiguration rootfwconf("sink1", "ROOTFileWriter", writerInput.Data(), "-specfmt=_%d -subdir=out_%d -idfmt=_0x%08x");
+  //AliHLTConfiguration esdwconf("sink1", "EsdCollector"   , writerInput.Data(), "-directory hlt-tpc-offline");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //

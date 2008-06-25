@@ -25,29 +25,32 @@
 #include "TString.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "AliVParticle.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliGeomManager.h"
+#include "AliMagFMaps.h"
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
 #include "AliTPCtrackerMI.h"
 #include "AliTPCClustersRow.h"
 #include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliTracker.h"
-#include "AliMagFMaps.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCOfflineTrackerComponent)
 
 AliHLTTPCOfflineTrackerComponent::AliHLTTPCOfflineTrackerComponent() : AliHLTProcessor(),
-fOutputPercentage(100),
+fGeometryFileName(""),
 fTPCGeomParam(0),
 fTracker(0),
-fESD(0)
+fESD(0),
+fESDfriend(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // Default constructor
+  fGeometryFileName = getenv("ALICE_ROOT");
+  fGeometryFileName += "/HLT/TPCLib/offline/geometry.root";
 }
 
 AliHLTTPCOfflineTrackerComponent::~AliHLTTPCOfflineTrackerComponent()
@@ -77,7 +80,7 @@ void AliHLTTPCOfflineTrackerComponent::GetOutputDataSize(unsigned long& constBas
 {
   // get output data size
   constBase = 2000000;
-  inputMultiplier = ((double)fOutputPercentage)/100.0;
+  inputMultiplier = 1;
 }
 
 AliHLTComponent* AliHLTTPCOfflineTrackerComponent::Spawn()
@@ -99,11 +102,26 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
   TString argument="";
   TString configuration=""; 
   int bMissingParam=0;
+
+  // loop over input parameters
   for (int i=0; i<argc && iResult>=0; i++) {
     argument=argv[i];
     if (argument.IsNull()) continue;
 
-  }
+    if (argument.CompareTo("-geometry")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+
+      HLTInfo("got \'-geometry\' argument: %s", argv[i]);
+      fGeometryFileName = argv[i];
+      HLTInfo("Geometry file is: %s", fGeometryFileName.c_str());
+
+      // the remaining arguments are treated as configuration
+    } else {
+      if (!configuration.IsNull()) configuration+=" ";
+      configuration+=argument;
+    }
+  } // end loop
+
   if (bMissingParam) {
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
@@ -115,13 +133,25 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
     iResult=Reconfigure(NULL, NULL);
   }
 
+  //
+  // initialisation
+  //
+   
+  // Load geometry
+  HLTInfo("Geometry file %s",fGeometryFileName.c_str());
+  AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
+  if((AliGeomManager::GetGeometry()) == 0) {
+    HLTError("Cannot load geometry from file %s",fGeometryFileName.c_str());
+    iResult=-EINVAL;
+  }
+ 
   // TPC geometry parameters
   fTPCGeomParam = new AliTPCParamSR;
   if (fTPCGeomParam) {
     fTPCGeomParam->ReadGeoMatrices();
   }
 
-  // Init clusterer
+  // Init tracker
   fTracker = new AliTPCtrackerMI(fTPCGeomParam);
 
   // AliESDEvent event needed by AliTPCtrackerMI
@@ -129,23 +159,20 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
   fESD = new AliESDEvent();
   if (fESD) {
     fESD->CreateStdContent();
-  }
 
-  // TODO: set the magnetic field correctly
-  // the tracker needs the field map correctly initialized in AliTracker.
-  // init from HLT/ConfigHLT/SolenoidBz or other appropriate CDB entry.
-  // temporarily set to 5kG
-  if (!AliTracker::GetFieldMap()) {
-    // this instance must never be deleted, the AliRoot framework and the design
-    // of AliTracker just does not support this. That's why we do not keep the
-    // pointer. The memory leak is relativly small.
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-    AliTracker::SetFieldMap(field,kTRUE);
+    // add ESD friend
+    fESDfriend = new AliESDfriend();
+    if(fESDfriend) fESD->AddObject(fESDfriend);
   }
 
   if (!fTracker || !fESD || !fTPCGeomParam) {
     HLTError("failed creating internal objects");
     iResult=-ENOMEM;
+  }
+
+  if (iResult>=0) {
+    // read the default CDB entries
+    iResult=Reconfigure(NULL, NULL);
   }
 
   return iResult;
@@ -158,6 +185,7 @@ int AliHLTTPCOfflineTrackerComponent::DoDeinit()
   if(fTPCGeomParam) delete fTPCGeomParam; fTPCGeomParam = 0; 
   if(fTracker) delete fTracker; fTracker = 0; 
   if(fESD) delete fESD; fESD = 0;
+  //Note: fESD is owner of fESDfriends
 
   return 0;
 }
@@ -167,27 +195,36 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
   // tracker function
   HLTInfo("DoEvent processing data");
 
-//   Logging(kHLTLogDebug, "AliHLTTPCOfflineTrackerComponent::DoEvent", "Trigger data received",
-//          "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
-
-  TObjArray *clusterArray = 0;
-
   int iResult=0;
+  TObjArray *clusterArray=0;
+  int slice, patch;
+
+  const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC); 
+  if(!pBlock) {
+     HLTError("Cannot get first data block 0x%08x ",pBlock);
+     iResult=-ENOMEM; return iResult;
+  }
+  int minSlice=AliHLTTPCDefinitions::GetMinSliceNr(pBlock->fSpecification);
+  int maxSlice=AliHLTTPCDefinitions::GetMaxSliceNr(pBlock->fSpecification);
+  int minPatch=AliHLTTPCDefinitions::GetMinPatchNr(pBlock->fSpecification);
+  int maxPatch=AliHLTTPCDefinitions::GetMaxPatchNr(pBlock->fSpecification);  
 
   if (fTracker && fESD) {
-    // loop over input data blocks: TObjArrays of clusters
-    for (TObject *pObj = (TObject *)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/,"TObjArray",0);
+      // loop over input data blocks: TObjArrays of clusters
+      for (TObject *pObj = (TObject *)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/,"TObjArray",0);
 	 pObj !=0 && iResult>=0;
 	 pObj = (TObject *)GetNextInputObject(0)) {
       clusterArray = dynamic_cast<TObjArray*>(pObj);
       if (!clusterArray) continue;
-//       int lower=clusterArray->LowerBound();
-//       int entries=clusterArray->GetEntries();
-//       if (entries<=lower) continue;
-//       if (clusterArray->At(lower)==NULL) continue; 
-//       if (dynamic_cast<AliTPCClustersRow*>(clusterArray->At(lower))==NULL) continue;
 
       HLTInfo("load %d cluster rows from block %s 0x%08x", clusterArray->GetEntries(), DataType2Text(GetDataType(pObj)).c_str(), GetSpecification(pObj));
+      slice=AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(pObj));
+      patch=AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(pObj));
+
+      if(slice < minSlice) minSlice=slice;
+      if(slice > maxSlice) maxSlice=slice;
+      if(patch < minPatch) minPatch=patch;
+      if(patch > maxPatch) maxPatch=patch;
 #ifndef HAVE_NOT_TPCOFFLINE_REC
       fTracker->LoadClusters(clusterArray);
 #endif //HAVE_NOT_TPCOFFLINE_REC
@@ -204,23 +241,16 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
     Int_t nTracks = fESD->GetNumberOfTracks();
     HLTInfo("Number of tracks %d", nTracks);
 
-    // TODO: calculate specification from the specification of input data blocks
-    PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, 0);
+    // calculate specification from the specification of input data blocks
+    AliHLTUInt32_t iSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( minSlice, maxSlice, minPatch, maxPatch );
+    HLTInfo("minSlice %d, maxSlice %d, minPatch %d, maxPatch %d", minSlice, maxSlice, minPatch, maxPatch);
 
-    // Alternatively: Push back tracks
-//     for (Int_t it = 0; it < nTracks; it++) {
-//       AliESDtrack* track = fESD->GetTrack(it);
-//       PushBack(track, AliHLTTPCDefinitions::fgkOfflineTrackSegmentsDataType, 0);
-//     }
-
-    // is this necessary? If yes, we have to keep all the created TObjArrays
-    // from the loop above
-    // clear clusters
-    //clusterArray->Clear();
-    //clusterArray->Delete();
+    // send data
+    PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, iSpecification);
 
     // reset ESDs
     fESD->Reset();
+
   } else {
     HLTError("component not initialized");
     iResult=-ENOMEM;
@@ -245,9 +275,35 @@ int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
       argument=((TObjString*)pTokens->At(i))->GetString();
       if (argument.IsNull()) continue;
 
-      if (argument.CompareTo("-something")==0) {
+      if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-
+	// TODO: check if there is common functionality in the AliMagF* classes
+	float SolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
+	if (SolenoidBz<kAlmost0Field) SolenoidBz=kAlmost0Field;
+	float factor=1.;
+	int map=AliMagFMaps::k2kG;
+	if (SolenoidBz<3.) {
+	  map=AliMagFMaps::k2kG;
+	  factor=SolenoidBz/2;
+	} else if (SolenoidBz>=3. && SolenoidBz<4.5) {
+	  map=AliMagFMaps::k4kG;
+	  factor=SolenoidBz/4;
+	} else {
+	  map=AliMagFMaps::k5kG;
+	  factor=SolenoidBz/5;
+	}
+	// the magnetic field map is not supposed to change
+	// field initialization should be done once in the beginning
+	// TODO: does the factor need adjustment?
+	const AliMagF* currentMap=AliTracker::GetFieldMap();
+	if (!currentMap) {
+	  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., map);
+	  AliTracker::SetFieldMap(field,kTRUE);
+	  HLTInfo("Solenoid Field set to: %f map %d", SolenoidBz, map);
+	} else if (currentMap->Map()!=map) {
+	  HLTWarning("omitting request to override field map %s with %s", currentMap->Map(), map);
+	}
+	continue;
       } else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
@@ -263,9 +319,31 @@ int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
   return iResult;
 }
 
-int AliHLTTPCOfflineTrackerComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/)
+int AliHLTTPCOfflineTrackerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
   int iResult=0;
+  const char* path=kAliHLTCDBSolenoidBz;
+  const char* defaultNotify="";
+  if (cdbEntry) {
+    path=cdbEntry;
+    defaultNotify=" (default)";
+  }
+  if (path) {
+    HLTDebug("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTDebug("received configuration object string: \'%s\'", pString->GetString().Data());
+	iResult=Configure(pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("can not fetch object \"%s\" from CDB", path);
+    }
+  }
+  
   return iResult;
 }

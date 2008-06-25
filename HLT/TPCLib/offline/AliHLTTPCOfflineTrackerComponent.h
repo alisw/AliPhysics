@@ -57,6 +57,7 @@
 class AliTPCParam;
 class AliTPCtrackerMI;
 class AliESDEvent;
+class AliESDfriend;
 
 class AliHLTTPCOfflineTrackerComponent : public AliHLTProcessor {
 public:
@@ -87,10 +88,12 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCOfflineTrackerComponent& operator=(const AliHLTTPCOfflineTrackerComponent&);
   
-  Double_t fOutputPercentage; // percentage of output data  
-  AliTPCParam *fTPCGeomParam; // TPC geometry params
-  AliTPCtrackerMI *fTracker;  // TPC tracker
-  AliESDEvent *fESD;          // AliESDEvent needed by TPC tracker
+  string fGeometryFileName;   //! Geometry file with full path
+  AliTPCParam *fTPCGeomParam; //! TPC geometry params
+
+  AliTPCtrackerMI *fTracker;  //! TPC tracker
+  AliESDEvent *fESD;          //! AliESDEvent needed by TPC tracker
+  AliESDfriend *fESDfriend;   //! AliESDEvent needed by TPC calibration component
 
   /**
    * Configure the component.
@@ -99,6 +102,6 @@ private:
    */
   int Configure(const char* arguments);
 
-  ClassDef(AliHLTTPCOfflineTrackerComponent, 0)
+  ClassDef(AliHLTTPCOfflineTrackerComponent, 1)
 };
 #endif

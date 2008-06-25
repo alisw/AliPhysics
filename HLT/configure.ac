@@ -282,77 +282,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   dnl
   dnl required header files and libraries for modules
   dnl
-  if test ! "x$have_aliroot" = "xno" ; then
-    # the HLTTPCLib needs to link agains TPCbase and TPCrec
-    # TPC library for AliTPCParam and AliSimDigits used in 
-    # AliHLTTPCFileHandler.h and AliHLTTPCDisplay.cxx
-    # from May 07 TPCbase depends on libGui.so
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
-    have_alitpc=yes
-    AC_MSG_CHECKING(for required classes in TPC libraries)
-    if test ! "x$have_alitpc" = "xno" ; then
-      ALITPC_LIBS="-lGui -lTPCbase -lTPCrec"
-      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliSimDigits.h>
-  				       #include <AliTPCParam.h>
-				       #include <AliTPCParamSR.h>
-				       #include <AliTPCDigitsArray.h>
-				       #include <AliTPCClustersArray.h>
-				       #include <AliTPCcluster.h>     
-				       #include <AliTPCClustersRow.h>], 
-                                      [AliSimDigits dig;
-  				       AliTPCParam param;
-				       AliTPCParamSR paramsr;
-				       AliTPCDigitsArray digarray;
-				       AliTPCClustersArray clustarray;
-				       AliTPCcluster clust;
-				       AliTPCClustersRow row])],
-                                      [AC_DEFINE(HAVE_ALITPC)], 
-  				      [have_alitpc=no
-				       ALITPC_LIBS= ])
-    fi
-    AC_MSG_RESULT([$have_alitpc])
-
-    dnl
-    dnl Check for functionality in the TPC reconstruction required for online
-    dnl processing
-    dnl 
-    have_tpc_hltoffline_rec=no
-    AC_MSG_CHECKING(for on-line features of TPC offline reconstruction)
-      ALITPC_LIBS="-lGui -lTPCbase -lTPCrec"
-      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliTPCtrackerMI.h>
-				       #include <AliTPCclustererMI.h>	
-				       #include <TObjArray.h>], 
-                                      [AliTPCtrackerMI tracker;
-				       TObjArray* array=NULL;
-				       tracker.LoadClusters(array);
-				       AliTPCclustererMI cl(NULL, NULL);
-				       cl.GetOutputArray();])],
-                                      [have_tpc_hltoffline_rec=yes], 
- 				      [AC_DEFINE(HAVE_NOT_TPCOFFLINE_REC)])
-    AC_MSG_RESULT([$have_tpc_hltoffline_rec])
-
-  fi
-  AC_CHECK_HEADER([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
-  AC_CHECK_HEADER([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
-
-  have_tpc_mapping=no
-  if test ! "x$have_aliroot" = "xno" ; then
-    # the TPCLib/AliHLTTPCRawReader needs the actual Pad layout of the TPC 
-    # which is stored in the TPC/mapping/Patchx.data files from
-    # AliRoot version v4-04-Release (May 2006)
-    AH_TEMPLATE([HAVE_TPC_MAPPING],[TPC pad mapping available])
-    TPC_PAD_MAPPING_PATH=$have_aliroot/TPC/mapping
-    AC_CHECK_FILE( [$TPC_PAD_MAPPING_PATH/Patch0.data], 
-		   [have_tpc_mapping=yes
-		    AC_SUBST(TPC_PAD_MAPPING_PATH)
-		    AC_DEFINE(HAVE_TPC_MAPPING)],
-		   [])
-    
-  fi
-  AC_MSG_CHECKING([for TPC mapping layout])
-  AC_MSG_RESULT([$have_tpc_mapping])
 
   dnl
   dnl Check for the interface of AliExternalTrackParam which has been changed
@@ -566,19 +495,17 @@ AC_MSG_RESULT([$enable_util])
 dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_TPC],[hlt tpc library])
 
+ALITPC_LIBS=
 CHECK_HLTMODULE([tpc],
 		[AliTPCRawStream.h], 
 		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/TPC],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[Gui ANALYSIS], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
+		[TPCbase TPCrec TPCcalib], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
   enable_tpc="no...missing.headers"
-elif test "x$have_alitpc" = "xno" ; then
-  enable_module="no...requires.AliRoot.TPC.libraries"
-  enable_tpc="no...requires.AliRoot.TPC.libraries"
 elif test "x$enable_module" = "xforce"; then
   enable_tpc="yes"
 else
@@ -586,7 +513,52 @@ else
 fi
 
 if test "x$enable_tpc" = "xyes" ; then 
+  AC_LANG_PUSH(C++)
   AC_DEFINE(HLT_TPC)
+  echo $ALIHLTMODULE_LIBS
+  ALITPC_LIBS=$ALIHLTMODULE_LIBS
+  dnl
+  dnl Check for functionality in the TPC reconstruction required for online
+  dnl processing
+  dnl 
+  have_tpc_hltoffline_rec=no
+  AC_MSG_CHECKING(for on-line features of TPC offline reconstruction)
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
+    LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
+    LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliTPCtrackerMI.h>
+  				       #include <AliTPCclustererMI.h>	
+  				       #include <TObjArray.h>], 
+                                    [AliTPCtrackerMI tracker;
+  				       TObjArray* array=NULL;
+  				       tracker.LoadClusters(array);
+  				       AliTPCclustererMI cl(NULL, NULL);
+  				       cl.GetOutputArray();])],
+                                    [have_tpc_hltoffline_rec=yes], 
+  				      [AC_DEFINE(HAVE_NOT_TPCOFFLINE_REC)])
+  AC_MSG_RESULT([$have_tpc_hltoffline_rec])
+
+  AC_CHECK_HEADER([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
+  AC_CHECK_HEADER([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
+
+  have_tpc_mapping=no
+  if test ! "x$have_aliroot" = "xno" ; then
+    # the TPCLib/AliHLTTPCRawReader needs the actual Pad layout of the TPC 
+    # which is stored in the TPC/mapping/Patchx.data files from
+    # AliRoot version v4-04-Release (May 2006)
+    AH_TEMPLATE([HAVE_TPC_MAPPING],[TPC pad mapping available])
+    TPC_PAD_MAPPING_PATH=$have_aliroot/TPC/mapping
+    AC_CHECK_FILE( [$TPC_PAD_MAPPING_PATH/Patch0.data], 
+		   [have_tpc_mapping=yes
+		    AC_SUBST(TPC_PAD_MAPPING_PATH)
+		    AC_DEFINE(HAVE_TPC_MAPPING)],
+		   [])
+    
+  fi
+  AC_MSG_CHECKING([for TPC mapping layout])
+  AC_MSG_RESULT([$have_tpc_mapping])
+  AC_LANG_POP(C++)
+
 else
   enable_module=$enable_tpc
 fi
@@ -608,9 +580,6 @@ CHECK_HLTMODULE([rcu],
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
   enable_rcu="no...missing.headers"
-elif test "x$have_alircu" = "xno" ; then
-  enable_module="no...requires.AliRoot.RAW.libraries"
-  enable_rcu="no...requires.AliRoot.RAW.libraries"
 elif test "x$enable_module" = "xforce"; then
   enable_rcu="yes"
 else

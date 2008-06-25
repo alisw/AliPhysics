@@ -63,6 +63,17 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPulserDataType =
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibCEDataType =	      								  	      
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','C','E',' ',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType =	      								  	      
+
+  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','A','L','I','G','N'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType =	      								  	      
+  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','T','R','A','C','K'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType =	      								  	      
+  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','G','A','I','N',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+
+
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
 {
   // see header file for class documentation

@@ -98,6 +98,15 @@ public:
   /** central electrode calibration data */
   static const AliHLTComponentDataType fgkCalibCEDataType;         // see above
 
+  // offline calbration components
+
+  /** alignment calibration data */
+  static const AliHLTComponentDataType fgkOfflineCalibAlignDataType;         // see above
+  /** track calibration data */
+  static const AliHLTComponentDataType fgkOfflineCalibTracksDataType;        // see above
+  /** gain calibration data */
+  static const AliHLTComponentDataType fgkOfflineCalibTracksGainDataType;    // see above
+
   ClassDef(AliHLTTPCDefinitions, 2)
 };
 

@@ -18,7 +18,6 @@ class AliTPCRecoParam;
 class AliTPCParam;
 class AliTPCclustererMI;
 class AliRawReaderMemory;
-class AliMagFMaps;
 
 /**
  * @class AliHLTTPCOfflineClustererComponent
@@ -108,7 +107,6 @@ private:
 
   AliRawReaderMemory *fRawReader; //! Memory reader
   AliTPCclustererMI *fClusterer;  //! TPC clusterer
-  AliMagFMaps *fMagField; //! Magnetic field map
 
   ClassDef(AliHLTTPCOfflineClustererComponent, 1)
 };
