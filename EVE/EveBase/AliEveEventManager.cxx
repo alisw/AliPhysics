@@ -206,6 +206,7 @@ void AliEveEventManager::Open()
     if (fESDTree != 0)
     {
       fESD->ReadFromTree(fESDTree);
+      fESDTree->GetEntry(0);
       runNo = fESD->GetESDRun()->GetRunNumber();
 
       // Check if ESDfriends exists and attach the branch
