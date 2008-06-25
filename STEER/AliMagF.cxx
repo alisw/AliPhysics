@@ -64,6 +64,9 @@ AliMagF::AliMagF(const char *name, const char *title, Int_t integ,
     } else {
       fInteg = integ;
     }
+   
+    if (fInteg == 0) fPrecInteg = 0;
+    
     fType = kUndef;
     //
 }
@@ -126,4 +129,16 @@ AliMagF& AliMagF::operator=(const AliMagF& rhs)
     fMax       = rhs.fMax;
     fReadField = rhs.fReadField;
     return *this;
+}
+
+void AliMagF::SetPrecInteg(Int_t integ)
+{
+    if (fInteg > 0) {
+	fPrecInteg = integ;
+    }
+    else if (integ != 0)
+    {
+	AliWarning("Precision integration flag set to 0 \n");
+	fPrecInteg = 0;
+    }
 }

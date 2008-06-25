@@ -35,7 +35,7 @@ public:
   virtual Float_t Factor() const {return fFactor;}
   virtual void    ReadField() {}
   virtual Float_t SolenoidField() const {return 2.;}
-  virtual void    SetPrecInteg(Int_t integ) {fPrecInteg = integ;}
+  virtual void    SetPrecInteg(Int_t integ);
   virtual void    SetReadField(Bool_t flag = kTRUE) {fReadField = flag;}
  protected:
   Int_t     fMap;       // Field Map identifier
