@@ -30,6 +30,7 @@ AliFemtoEvent::AliFemtoEvent():
   fNumberOfTracks(0),
   fMagneticField(0),
   fPrimVertPos(0,0,0),
+  fPrimVertCov(),
   fTrackCollection(0),
   fV0Collection(0),
   fXiCollection(0),
@@ -47,6 +48,12 @@ AliFemtoEvent::AliFemtoEvent():
   fPrimVertPos[0]=-999.0;
   fPrimVertPos[1]=-999.0;
   fPrimVertPos[2]=-999.0;
+  fPrimVertCov[0]=0.000000000001;
+  fPrimVertCov[1]=0.000000000001;
+  fPrimVertCov[2]=0.000000000001;
+  fPrimVertCov[3]=0.000000000001;
+  fPrimVertCov[4]=0.000000000001;
+  fPrimVertCov[5]=0.000000000001;
   fTrackCollection = new AliFemtoTrackCollection;
   fV0Collection = new AliFemtoV0Collection;
   fXiCollection = new AliFemtoXiCollection;
@@ -60,6 +67,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fNumberOfTracks(0),
   fMagneticField(0),
   fPrimVertPos(0,0,0),
+  fPrimVertCov(),
   fTrackCollection(0),
   fV0Collection(0),
   fXiCollection(0),
@@ -77,6 +85,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fEventNumber = ev.fEventNumber;
   fRunNumber = ev.fRunNumber;
   
+  SetPrimVertCov(ev.PrimVertCov());
+
   fZDCN1Energy=ev.fZDCN1Energy;     
   fZDCP1Energy=ev.fZDCP1Energy;      
   fZDCN2Energy=ev.fZDCN2Energy;      
@@ -130,6 +140,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fNumberOfTracks(0),
   fMagneticField(0),
   fPrimVertPos(0,0,0),
+  fPrimVertCov(),
   fTrackCollection(0),
   fV0Collection(0),
   fXiCollection(0),
@@ -147,6 +158,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fEventNumber = ev.fEventNumber;
   fRunNumber = ev.fRunNumber;
   
+  SetPrimVertCov(ev.PrimVertCov());
+
   fZDCN1Energy=ev.fZDCN1Energy;     
   fZDCP1Energy=ev.fZDCP1Energy;      
   fZDCN2Energy=ev.fZDCN2Energy;      
@@ -286,6 +299,14 @@ void AliFemtoEvent::SetNumberOfTracks(const unsigned short& tracks){fNumberOfTra
 
 
 void AliFemtoEvent::SetPrimVertPos(const AliFemtoThreeVector& vp){fPrimVertPos = vp;}
+void AliFemtoEvent::SetPrimVertCov(const double* v){
+  fPrimVertCov[0] = v[0];
+  fPrimVertCov[1] = v[1];
+  fPrimVertCov[2] = v[2];
+  fPrimVertCov[3] = v[3];
+  fPrimVertCov[4] = v[4];
+  fPrimVertCov[5] = v[5];
+}
 void AliFemtoEvent::SetMagneticField(const double& magF){fMagneticField = magF;}
 
 void AliFemtoEvent::SetTriggerMask(const unsigned long int& aTriggerMask) {fTriggerMask=aTriggerMask;}
@@ -304,6 +325,7 @@ AliFemtoXiCollection* AliFemtoEvent::XiCollection() const {return fXiCollection;
 AliFemtoKinkCollection* AliFemtoEvent::KinkCollection() const {return fKinkCollection;}
 AliFemtoTrackCollection* AliFemtoEvent::TrackCollection() const {return fTrackCollection;}
 AliFemtoThreeVector AliFemtoEvent::PrimVertPos() const {return fPrimVertPos;}
+const double* AliFemtoEvent::PrimVertCov() const {return fPrimVertCov;}
 double AliFemtoEvent::MagneticField() const {return fMagneticField;}
 unsigned long int AliFemtoEvent::TriggerMask() const {return fTriggerMask;}
 unsigned char AliFemtoEvent::TriggerCluster() const {return fTriggerCluster;}

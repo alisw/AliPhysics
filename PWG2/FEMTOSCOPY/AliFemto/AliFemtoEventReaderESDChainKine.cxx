@@ -145,15 +145,24 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	
   //Vertex
   double fV1[3];
+  double fVCov[6];
   if (fUseTPCOnly) {
     fEvent->GetPrimaryVertexTPC()->GetXYZ(fV1);
+    fEvent->GetPrimaryVertexTPC()->GetCovMatrix(fVCov);
+    if (!fEvent->GetPrimaryVertexTPC()->GetStatus())
+      fVCov[4] = -1001.0;
   }
   else {
     fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+    fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
+    if (!fEvent->GetPrimaryVertex()->GetStatus())
+      fVCov[4] = -1001.0;
   }
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
+  
   hbtEvent->SetPrimVertPos(vertex);
+  hbtEvent->SetPrimVertCov(fVCov);
 
   AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
 	
