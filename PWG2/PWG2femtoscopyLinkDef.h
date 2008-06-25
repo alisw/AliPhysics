@@ -48,6 +48,7 @@
 #pragma link C++ class AliFemtoCutMonitorParticleYPt+;
 #pragma link C++ class AliFemtoCutMonitorParticleVertPos+;
 #pragma link C++ class AliFemtoCutMonitorEventMult+;
+#pragma link C++ class AliFemtoCutMonitorEventVertex+;
 #pragma link C++ class AliFemtoEventReaderAOD+;
 #pragma link C++ class AliFemtoEventReaderAODChain+;
 #pragma link C++ class AliFemtoAODTrackCut+;
