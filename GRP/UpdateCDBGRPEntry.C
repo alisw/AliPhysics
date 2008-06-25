@@ -62,9 +62,9 @@ TMap *GetGRPList(const char* system) {
   map->Add(new TObjString("fLHCCondition"),new TObjString("test"));
   map->Add(new TObjString("fLHCLuminosity"),new TObjString("0"));
   map->Add(new TObjString("fBeamIntensity"),new TObjString("0"));
-  map->Add(new TObjString("fL3Current"),new TObjString("0"));
+  map->Add(new TObjString("fL3Current"),new TObjString("30000"));
   map->Add(new TObjString("fL3Polarity"),new TObjString("0"));
-  map->Add(new TObjString("fDipoleCurrent"),new TObjString("0"));
+  map->Add(new TObjString("fDipoleCurrent"),new TObjString("6000"));
   map->Add(new TObjString("fDipolePolarity"),new TObjString("0"));
   map->Add(new TObjString("fCavernTemperature"),new TObjString("0"));
   map->Add(new TObjString("fCavernPressure"),new TObjString("0"));
