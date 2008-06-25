@@ -15,7 +15,7 @@
 // Origin: Giuseppe.Bruno@ba.infn.it     //
 ///////////////////////////////////////////
 
-/* $Id:$ */
+/* $Id$ */
   
 class AliITSPlaneEffSSD :  public AliITSPlaneEff {
  public:
@@ -97,8 +97,12 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     TH1F **fHisResZ; //! histos with residual distribution (track-cluster) along local Z
     TH2F **fHisResXZ; //! 2-d histos with residual distribution (track-cluster) along local X and Z
     TH2I **fHisClusterSize; //! histos with cluster-size distribution
+    TH1F **fHisTrackErrX; //! histos with track prediction error on Local X
+    TH1F **fHisTrackErrZ; //! histos with track prediction error on Local Z
+    TH1F **fHisClusErrX; //! histos with Local_X cluster error
+    TH1F **fHisClusErrZ; //! histos with Local_Z cluster error
 //
-    ClassDef(AliITSPlaneEffSSD,2) // SSD Plane Efficiency class
+    ClassDef(AliITSPlaneEffSSD,3) // SSD Plane Efficiency class
 };
 //
 inline UInt_t AliITSPlaneEffSSD::Nblock() const {return kNModule;}
@@ -127,4 +131,3 @@ inline Int_t AliITSPlaneEffSSD::GetTried(const UInt_t key) const {
 }
 //
 #endif
-
