@@ -5814,17 +5814,19 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
   // cables that are grouped at the end of SSD cones
   //==================================
 
-  Double_t fgkSDDCableR6 = fgkSDDCableR5+9;
-  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+8.8;
+//  Double_t fgkSDDCableR6 = fgkSDDCableR5+9;
+//  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+8.8;
+  Double_t fgkSDDCableR6 = fgkSDDCableR5+8;
+  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+8;
 
   TGeoVolumeAssembly *endConeSDDCable = new TGeoVolumeAssembly("endConeSDDCable");
 
   // Add some hardcoded shifts to avoid overlaps with SSD pathc panels
-  CreateAndInsetConeCablePart(endConeSDDCable, 40, 1*3,2*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6+0.7,fgkSDDCableZ6);
+  CreateAndInsetConeCablePart(endConeSDDCable, 20, 1*3,2*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6-2.6,fgkSDDCableZ6-2.6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 60, 1*3,1*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6+0.6,fgkSDDCableZ6);
+  CreateAndInsetConeCablePart(endConeSDDCable, 50, 1*3,1*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 85, 2*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
@@ -5832,29 +5834,29 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
   CreateAndInsetConeCablePart(endConeSDDCable, 95, 0*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 110, 2*3,3*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6+0.9,fgkSDDCableZ6);
+  CreateAndInsetConeCablePart(endConeSDDCable, 105, 2*3,3*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6-2.6,fgkSDDCableZ6-2.6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 146, 0*3,3*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6+0.7,fgkSDDCableZ6);
+  CreateAndInsetConeCablePart(endConeSDDCable, 129, 0*3,3*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 176.1, 0*3,1*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 176, 0*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 190, 2*3,0*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 220, 1*3,2*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 210, 1*3,2*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6-2.6,fgkSDDCableZ6-2.6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 230, 1*3,2*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 240, 1*3,2*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 277, 2*3,2*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 290.1, 2*3,2*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 306, 1*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
-
-  CreateAndInsetConeCablePart(endConeSDDCable, 315, 1*3,1*4, fgkSDDCableR5,
-			      fgkSDDCableZ5,fgkSDDCableR6+0.6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 353, 1*3,3*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
