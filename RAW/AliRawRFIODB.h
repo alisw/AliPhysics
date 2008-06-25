@@ -21,7 +21,8 @@ public:
    AliRawRFIODB(AliRawEvent *event,
 		AliESDEvent *esd,
 		Int_t compress,
-		const char* fileName = NULL);
+		const char* fileName = NULL,
+		Int_t basketsize = 32000);
    ~AliRawRFIODB() { Close(); }
 
    Long64_t Close();

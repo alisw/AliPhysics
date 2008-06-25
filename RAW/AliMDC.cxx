@@ -190,15 +190,15 @@ Int_t AliMDC::Open(EWriteMode mode, const char* fileName,
 // open a new raw DB file
 
   if (mode == kRFIO)
-    fRawDB = new AliRawRFIODB(fEvent, fESD, fCompress, fileName);
+    fRawDB = new AliRawRFIODB(fEvent, fESD, fCompress, fileName, fBasketSize);
   else if (mode == kROOTD)
-    fRawDB = new AliRawRootdDB(fEvent, fESD, fCompress, fileName);
+    fRawDB = new AliRawRootdDB(fEvent, fESD, fCompress, fileName, fBasketSize);
   else if (mode == kCASTOR)
-    fRawDB = new AliRawCastorDB(fEvent, fESD, fCompress, fileName);
+    fRawDB = new AliRawCastorDB(fEvent, fESD, fCompress, fileName, fBasketSize);
   else if (mode == kDEVNULL)
-    fRawDB = new AliRawNullDB(fEvent, fESD, fCompress, fileName);
+    fRawDB = new AliRawNullDB(fEvent, fESD, fCompress, fileName, fBasketSize);
   else
-    fRawDB = new AliRawDB(fEvent, fESD, fCompress, fileName);
+    fRawDB = new AliRawDB(fEvent, fESD, fCompress, fileName, fBasketSize);
   fRawDB->SetDeleteFiles(fDeleteFiles);
 
   if (fRawDB->IsZombie()) {

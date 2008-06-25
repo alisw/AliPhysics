@@ -21,7 +21,8 @@ public:
    AliRawCastorDB(AliRawEvent *event,
 		  AliESDEvent *esd,
 		  Int_t compress,
-		  const char* fileName = NULL);
+		  const char* fileName = NULL,
+		  Int_t basketsize = 32000);
    ~AliRawCastorDB() { Close(); }
 
    const char *GetOpenOption() const { return "-RECREATE"; }

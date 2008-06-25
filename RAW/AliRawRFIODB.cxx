@@ -35,8 +35,8 @@ ClassImp(AliRawRFIODB)
 AliRawRFIODB::AliRawRFIODB(AliRawEvent *event,
 			   AliESDEvent *esd,
 			   Int_t compress,
-			   const char* fileName)
-   : AliRawDB(event, esd, compress, fileName)
+			   const char* fileName,Int_t basketsize)
+   : AliRawDB(event, esd, compress, fileName, basketsize)
 {
    // Create a new raw DB that will be accessed via RFIO.
 

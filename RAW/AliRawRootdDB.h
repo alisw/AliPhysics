@@ -21,7 +21,8 @@ public:
    AliRawRootdDB(AliRawEvent *event,
 		 AliESDEvent *esd,
 		 Int_t compress,
-		 const char* fileName = NULL);
+		 const char* fileName = NULL,
+		 Int_t basketsize = 32000);
    ~AliRawRootdDB() { Close(); }
 
    Long64_t Close();
