@@ -294,7 +294,8 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input,
   delete [] binsSPDInit;
   delete [] binsSPD;
   
-  AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
+  // AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
+  Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
 }
 
 
@@ -325,7 +326,8 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(TClonesArray *digits) {
   Int_t nClustersSPD = ClustersSPD(bins,digits,0,kMAXBIN,kNzBins,fModule,kFALSE); 
   delete [] bins;
 
-  AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
+  // AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
+  Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
 }
 
 
