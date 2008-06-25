@@ -39,6 +39,7 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitorParticleYPt.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitorParticleVertPos.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitorEventMult.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCutMonitorEventVertex.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoKTPairCut.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCorrFctnNonIdDR.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCorrFctn3DSpherical.cxx \
