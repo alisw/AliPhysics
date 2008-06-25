@@ -162,6 +162,11 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
 
 if(trackleterSPDEff->GetMC()) trackleterSPDEff->SavePredictionMC();
 if(!trackleterSPDEff->WriteHistosToFile()) printf("cannot write histos to file \n");
-trackleterSPDEff->GetPlaneEff()->WriteIntoCDB();
+//trackleterSPDEff->GetPlaneEff()->WriteIntoCDB();
+const char* name="AliITSPlaneEffSPDtracklet.root";
+TFile* pefile = TFile::Open(name, "RECREATE");
+Int_t nb=trackleterSPDEff->GetPlaneEff()->Write();
+if(nb>0) printf("Writing PlaneEfficiency to file %s\n",name);
+pefile->Close();
 return;
 }
