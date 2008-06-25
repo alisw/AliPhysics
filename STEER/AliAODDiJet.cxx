@@ -22,7 +22,9 @@
 //-------------------------------------------------------------------------
 
 #include <TLorentzVector.h>
+#include <TProcessID.h>
 #include "AliAODDiJet.h"
+#include "AliAODJet.h"
 
 ClassImp(AliAODDiJet)
 
@@ -39,7 +41,7 @@ AliAODDiJet::AliAODDiJet() :
 
 AliAODDiJet::AliAODDiJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     AliAODJet(px, py, pz, e), 
-    fJetR(new TRefArray(2)),
+    fJetR(0),
     fJet1(0),
     fJet2(0)
 {
@@ -48,7 +50,7 @@ AliAODDiJet::AliAODDiJet(Double_t px, Double_t py, Double_t pz, Double_t e):
 
 AliAODDiJet::AliAODDiJet(TLorentzVector & p):
     AliAODJet(p),
-    fJetR(new TRefArray(2)),
+    fJetR(0),
     fJet1(0),
     fJet2(0)
 {
@@ -61,3 +63,14 @@ AliAODDiJet::~AliAODDiJet()
 {
   // destructor
 }
+
+void AliAODDiJet::SetJetRefs(AliAODJet* jet1, AliAODJet* jet2) 
+{
+// Set references to the two jets
+    fJetR = new TRefArray(TProcessID::GetProcessWithUID( jet1 ));
+    fJetR->Add(jet1);
+    fJetR->Add(jet2);
+    fJet1 = jet1;
+    fJet2 = jet2;
+}
+

@@ -23,13 +23,7 @@ class AliAODDiJet : public AliAODJet {
     AliAODDiJet();
     AliAODDiJet(Double_t px, Double_t py, Double_t pz, Double_t e);
     AliAODDiJet(TLorentzVector & p);
-    void SetJetRefs(AliAODJet* jet1, AliAODJet* jet2) 
-	{
-	    fJetR->AddAt(jet1, 0);
-	    fJetR->AddAt(jet2, 1);
-	    fJet1 = jet1;
-	    fJet2 = jet2;
-	}
+    void SetJetRefs(AliAODJet* jet1, AliAODJet* jet2);
     AliAODJet* Jet(Int_t i) {return ((AliAODJet*) (fJetR->At(i)));}
     virtual ~AliAODDiJet();
  private:
