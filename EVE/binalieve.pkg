@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS  := alieve_main/alieve_main.cxx
 CSRCS :=
 
@@ -43,7 +45,7 @@ ifeq (5,$(MACOSX_MINOR))
 PACKLDFLAGS+=-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib
 endif
 # On Mac OS X gcc we need f2c and GLU
-ELIBS+=f2c GLU
+ELIBS+=GLU
 ELIBSDIR+=$(FINK_ROOT)/lib
 
 endif

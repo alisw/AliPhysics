@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 SRCS  := Aliengui/aliengui_main/aliengui_main.cxx
 CSRCS :=
 
@@ -31,7 +32,8 @@ ELIBSCPP:=$(filter-out microcern,$(ELIBS))
 ELIBSCPP:=$(filter-out lhapdf,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
 PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
-# On Mac OS X gcc we need f2c
+
+# On Mac OS X gcc we add the fink library
 ELIBS+=f2c
 ELIBSDIR+=$(FINK_ROOT)/lib
 endif
