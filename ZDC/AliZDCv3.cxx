@@ -1423,13 +1423,13 @@ void AliZDCv3::CreateBeamLine()
    tubpar[0] = 4.78/2.;
    tubpar[1] = 5.18/2.;
    tubpar[2] = 637./2.;
-   gMC->Gsvolu("QBS1", "TUBE", idtmed[13], tubpar, 3);
+   gMC->Gsvolu("QBS1", "TUBE", idtmed[6], tubpar, 3);
    gMC->Gspos("QBS1", 1, "MQX1", 0., 0., 0., 0, "ONLY");
    // INSERT VERTICAL PLATE INSIDE Q1
    boxpar[0] = 0.2/2.0;
    boxpar[1] = TMath::Sqrt(tubpar[0]*tubpar[0]-(1.9+0.2)*(1.9+0.2));
    boxpar[2] =637./2.;
-   gMC->Gsvolu("QBS2", "BOX ", idtmed[13], boxpar, 3);
+   gMC->Gsvolu("QBS2", "BOX ", idtmed[6], boxpar, 3);
    gMC->Gspos("QBS2", 1, "MQX1", 1.9+boxpar[0], 0., 0., 0, "ONLY");
    gMC->Gspos("QBS2", 2, "MQX1", -1.9-boxpar[0], 0., 0., 0, "ONLY");
 
@@ -1441,13 +1441,13 @@ void AliZDCv3::CreateBeamLine()
    tubpar[0] = 5.79/2.;
    tubpar[1] = 6.14/2.;
    tubpar[2] = 637./2.;
-   gMC->Gsvolu("QBS3", "TUBE", idtmed[13], tubpar, 3);
+   gMC->Gsvolu("QBS3", "TUBE", idtmed[6], tubpar, 3);
    gMC->Gspos("QBS3", 1, "MQX4", 0., 0., 0., 0, "ONLY");
    // INSERT VERTICAL PLATE INSIDE Q3
    boxpar[0] = 0.2/2.0;
    boxpar[1] = TMath::Sqrt(tubpar[0]*tubpar[0]-(2.405+0.2)*(2.405+0.2));
    boxpar[2] =637./2.;
-   gMC->Gsvolu("QBS4", "BOX ", idtmed[13], boxpar, 3);
+   gMC->Gsvolu("QBS4", "BOX ", idtmed[6], boxpar, 3);
    gMC->Gspos("QBS4", 1, "MQX4", 2.405+boxpar[0], 0., 0., 0, "ONLY");
    gMC->Gspos("QBS4", 2, "MQX4", -2.405-boxpar[0], 0., 0., 0, "ONLY");
     
@@ -1471,12 +1471,12 @@ void AliZDCv3::CreateBeamLine()
    tubpar[0] = 5.79/2.;
    tubpar[1] = 6.14/2.;
    tubpar[2] = 550./2.;
-   gMC->Gsvolu("QBS5", "TUBE", idtmed[13], tubpar, 3);
+   gMC->Gsvolu("QBS5", "TUBE", idtmed[6], tubpar, 3);
    //    VERTICAL PLATE INSIDE Q2
    boxpar[0] = 0.2/2.0;
    boxpar[1] = TMath::Sqrt(tubpar[0]*tubpar[0]-(2.405+0.2)*(2.405+0.2));
    boxpar[2] =550./2.;
-   gMC->Gsvolu("QBS6", "BOX ", idtmed[13], boxpar, 3);
+   gMC->Gsvolu("QBS6", "BOX ", idtmed[6], boxpar, 3);
 
   // -- Q2A
   gMC->Gspos("MQX2", 1, "ZDCA", 0., 0., tubpar[2]+zql+908.5,  0, "ONLY");
@@ -1498,12 +1498,12 @@ void AliZDCv3::CreateBeamLine()
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 6.75/2.;
+  tubpar[1] = 6.75/2.;//3.375
   tubpar[2] = 945./2.;
   gMC->Gsvolu("MD1L", "TUBE", idtmed[11], tubpar, 3);
     
   // --  YOKE 
-  tubpar[0] = 7.34/2.; // to be checked
+  tubpar[0] = 7.34/2.; // 3.67 -- to be checked
   tubpar[1] = 110./2;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("YD1L", "TUBE", idtmed[7], tubpar, 3);
@@ -1518,7 +1518,7 @@ void AliZDCv3::CreateBeamLine()
   boxpar[1] = 0.2/2.;
   //boxpar[2] =(945.+80.1)/2.;
   boxpar[2] =945./2.;  
-  gMC->Gsvolu("QBS7", "BOX ", idtmed[13], boxpar, 3);
+  gMC->Gsvolu("QBS7", "BOX ", idtmed[6], boxpar, 3);
   gMC->Gspos("QBS7", 1, "MD1L", 0., 2.885+boxpar[1],0., 0, "ONLY");
   gMC->Gspos("QBS7", 2, "MD1L", 0., -2.885-boxpar[1],0., 0, "ONLY");  
   
@@ -1870,15 +1870,21 @@ void AliZDCv3::CreateMaterials()
   //
   // Create Materials for the Zero Degree Calorimeter
   //
-  
-  Float_t dens, ubuf[1], wmat[2], a[2], z[2];
+  Float_t dens, ubuf[1], wmat[3], a[3], z[3];
 
-  // --- Store in UBUF r0 for nuclear radius calculation R=r0*A**1/3 
+  // --- W alloy -> ZN passive material
+  dens = 17.6;
+  a[0] = 183.85;
+  a[1] = 55.85;
+  a[2] = 58.71;
+  z[0] = 74.;
+  z[1] = 26.;
+  z[2] = 28.;
+  wmat[0] = .93;
+  wmat[1] = .03;
+  wmat[2] = .04;
+  AliMixture(1, "WALL", a, z, dens, 2, wmat);
 
-  // --- Tantalum -> ZN passive material
-  ubuf[0] = 1.1;
-  AliMaterial(1, "TANT", 180.95, 73., 16.65, .4, 11.9, ubuf, 1);
-  
   // --- Brass (CuZn)  -> ZP passive material
   dens = 8.48;
   a[0] = 63.546;
@@ -1914,7 +1920,6 @@ void AliZDCv3::CreateMaterials()
   // --- Iron (no energy loss)
   ubuf[0] = 1.1;
   AliMaterial(8,  "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
-  AliMaterial(13, "IRON2", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
     
   // ---------------------------------------------------------  
   Float_t aResGas[3]={1.008,12.0107,15.9994};
@@ -1979,7 +1984,7 @@ void AliZDCv3::CreateMaterials()
   AliMedium(12,"ZAIR", 12, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   //
   AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(13,"ZIRONE",13, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);  
+
 
 } 
 
