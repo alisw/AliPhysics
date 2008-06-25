@@ -44,11 +44,10 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   //
   Double_t test=0.;
   Int_t count=0, ntests=0; 
-  //
   const char* taskName = AliQA::GetAliTaskName(index);
   
   // -------------------------------------------------------------------
-  if(!(strncmp(taskName,"SIM",3))){
+  if(index == AliQA::kSIM){
   
     if(list->GetEntries()==0){  
       AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
@@ -200,7 +199,7 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   }
   
   // -------------------------------------------------------------------
-  else if(!(strncmp(taskName,"RAW",3))){
+  else if(index == AliQA::kRAW){
   
     if(list->GetEntries()==0){  
       AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
@@ -322,7 +321,7 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   }
 
   // -------------------------------------------------------------------
-  else if(!(strncmp(taskName,"ESD",3))){
+  else if(index == AliQA::kESD){
   
     if(list->GetEntries()==0){  
       AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
