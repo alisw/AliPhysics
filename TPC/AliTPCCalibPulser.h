@@ -10,7 +10,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <TVectorT.h>
-class TObjArray;
+#include <TObject.h>
+#include <TObjArray.h>
 class TH2S;
 class TTreeSRedirector;
 class AliTPCCalPad;
