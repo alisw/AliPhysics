@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$ */
+/* $Id$ */
 
 //*************************************************************************
 // SSD geometry, based on ROOT geometrical modeler
@@ -7973,7 +7973,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 												ssdcableitsring3BB26pconshape[3],fSSDCopper);
   for(Int_t i=0;i<4;i++){
 	ssdcableitsring3BB26pcon[i]->SetLineColor(9);
-	ssdcablesmother->AddNode(ssdcableitsring3BB26pcon[i],i+1);
+	ssdcablesmother->AddNode(ssdcableitsring3BB26pcon[i],1);
 }
   ////////////////////////////////////
   //cablescapacity[11] = ssdcableitsring3BB26pconshape[0]->Capacity()
@@ -8041,7 +8041,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   ssdcableitsring3BB24pconshape[2] = new TGeoPcon(180.0+fgkSSDCableAngle-0.5*ssdcableangle,ssdcableangle
 								   -			  fgkSSDCableAngle
 								   +			  90.0-fgkSSDCablesPatchPanel2RB24Angle[1],2);
-  ssdcableitsring3BB24pconshape[3] = new TGeoPcon(fgkSSDCableAngle-0.5*ssdcableangle,
+  ssdcableitsring3BB24pconshape[3] = new TGeoPcon(270.0+fgkSSDCableAngle-0.5*ssdcableangle,
 												  ssdcableangle-fgkSSDCableAngle
 								   +			  fgkSSDCablesPatchPanel2RB24Angle[0],2);
   for(Int_t i=0;i<4;i++)
@@ -8059,7 +8059,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 												ssdcableitsring3BB24pconshape[3],fSSDCopper);
   for(Int_t i=0;i<4;i++){
 	ssdcableitsring3BB24pcon[i]->SetLineColor(9);
-	ssdcablesmother->AddNode(ssdcableitsring3BB24pcon[i],i+1);
+	ssdcablesmother->AddNode(ssdcableitsring3BB24pcon[i],1);
 }
   ////////////////////////////////////
   //cablescapacity[13] = ssdcableitsring3BB24pconshape[0]->Capacity()
