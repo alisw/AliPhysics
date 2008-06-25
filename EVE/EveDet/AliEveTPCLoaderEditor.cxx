@@ -89,7 +89,7 @@ AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
   fEvent->SetLabelWidth(labelW);
   fEvent->SetNELength(6);
   fEvent->Build();
-  fEvent->SetLimits(0, 1000);
+  fEvent->SetLimits(0, 999999);
   fEvent->SetToolTip("Current event number");
   fEvent->Connect("ValueSet(Double_t)",
 		  "AliEveTPCLoaderEditor", this, "DoEvent()");
