@@ -80,7 +80,6 @@ void loadlibs ()
   gSystem->Load("libVZEROsim");
   gSystem->Load("libEMCALbase");
   gSystem->Load("libEMCALsim");
-  gSystem->Load("libEMCALjet");
   gSystem->Load("libEMCALrec");
 
   // The following lines have to be commented on Darwin
