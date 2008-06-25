@@ -65,7 +65,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
+#include "ACORDE/AliACORDEv0.h"
 #include "VZERO/AliVZEROv7.h"
 #endif
 
@@ -410,7 +410,7 @@ void Config()
 
 
   Int_t iABSO  = 1;
-  Int_t iACORDE= 0;
+  Int_t iACORDE= 1;
   Int_t iDIPO  = 1;
   Int_t iEMCAL = 1;
   Int_t iFMD   = 1;
@@ -577,7 +577,7 @@ void Config()
      if (iACORDE)
     {
         //=================== CRT parameters ============================
-        AliACORDE *ACORDE = new AliACORDEv1("CRT", "normal ACORDE");
+        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)
