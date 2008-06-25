@@ -34,7 +34,6 @@ ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
 PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
 
 # On Mac OS X gcc we add the fink library
-ELIBS+=f2c
 ELIBSDIR+=$(FINK_ROOT)/lib
 endif
 
