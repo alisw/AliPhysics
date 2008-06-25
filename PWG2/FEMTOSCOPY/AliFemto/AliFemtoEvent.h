@@ -49,6 +49,7 @@ public:
   int RunNumber() const;
   unsigned short NumberOfTracks() const;
   AliFemtoThreeVector PrimVertPos() const;
+  const double* PrimVertCov() const;
   AliFemtoV0Collection* V0Collection() const;
   AliFemtoXiCollection* XiCollection() const;
   AliFemtoKinkCollection* KinkCollection() const;
@@ -70,6 +71,7 @@ public:
   void SetRunNumber(const int& i);
   void SetNumberOfTracks(const unsigned short& s);
   void SetPrimVertPos(const AliFemtoThreeVector& v);
+  void SetPrimVertCov(const double* v);
   void SetMagneticField(const double& x);
   
    //functions for alice variables
@@ -93,6 +95,7 @@ private:
   double fMagneticField;                 // magnetic field in Z direction
 
   AliFemtoThreeVector fPrimVertPos;      // primary vertex position
+  double fPrimVertCov[6];                // primary vertex covariances
   AliFemtoTrackCollection* fTrackCollection; // collection of tracks
   AliFemtoV0Collection* fV0Collection;   // collection of V0s
   AliFemtoXiCollection* fXiCollection;   // collection of Xis

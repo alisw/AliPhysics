@@ -13,9 +13,18 @@ ClassImp(AliFemtoBasicEventCut)
 #endif
 
 AliFemtoBasicEventCut::AliFemtoBasicEventCut() :
-  fNEventsPassed(0), fNEventsFailed(0)
+  AliFemtoEventCut(),
+  fEventMult(),
+  fVertZPos(),
+  fAcceptBadVertex(false), 
+  fNEventsPassed(0), 
+  fNEventsFailed(0)
 {
   // Default constructor
+  fEventMult[0] = 0;
+  fEventMult[1] = 100000;
+  fVertZPos[0] = -100.0;
+  fVertZPos[1] = 100.0;
 } 
 //------------------------------
 AliFemtoBasicEventCut::~AliFemtoBasicEventCut(){
@@ -33,7 +42,8 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
     ((mult > fEventMult[0]) && 
      (mult < fEventMult[1]) && 
      (vertexZPos > fVertZPos[0]) &&
-     (vertexZPos < fVertZPos[1]));
+     (vertexZPos < fVertZPos[1]) &&
+     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)));
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
   cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
   return (goodEvent);
@@ -51,4 +61,12 @@ AliFemtoString AliFemtoBasicEventCut::Report(){
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;
+}
+void AliFemtoBasicEventCut::SetAcceptBadVertex(bool b)
+{
+  fAcceptBadVertex = b;
+}
+bool AliFemtoBasicEventCut::GetAcceptBadVertex()
+{
+  return fAcceptBadVertex;
 }
