@@ -1,79 +1,177 @@
+#include <Riostream.h>
 #include "AliESDVZERO.h"
 
 ClassImp(AliESDVZERO)
 
-AliESDVZERO::AliESDVZERO():TObject(),
-   fMTotV0A(0),
-   fMTotV0C(0),
-   fNbPMV0A(0),
-   fNbPMV0C(0)
-
+AliESDVZERO::AliESDVZERO()
+  :TObject(),
+   fBBtriggerV0A(0),
+   fBGtriggerV0A(0),
+   fBBtriggerV0C(0),
+   fBGtriggerV0C(0)
 {   
    // Default constructor 
-   for(Int_t j=0; j<4; j++){ 
-       fMRingV0A[j] = fMRingV0C[j] = 0;   
+   for(Int_t j=0; j<64; j++){ 
+      fMultiplicity[j] = 0;   
    }
 }
 
 AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
   :TObject(o),
-   fMTotV0A(o.fMTotV0A),
-   fMTotV0C(o.fMTotV0C),
-   fNbPMV0A(o.fNbPMV0A),
-   fNbPMV0C(o.fNbPMV0C)
+   fBBtriggerV0A(o.fBBtriggerV0A),
+   fBGtriggerV0A(o.fBGtriggerV0A),
+   fBBtriggerV0C(o.fBBtriggerV0C),
+   fBGtriggerV0C(o.fBGtriggerV0C)
 {   
    // Default constructor 
-   for(Int_t j=0; j<4; j++){ 
-       fMRingV0A[j] = o.fMRingV0A[j];
-       fMRingV0C[j] = o.fMRingV0C[j];   
-   }
+   for(Int_t j=0; j<64; j++)
+       fMultiplicity[j] = o.fMultiplicity[j];
 }
 
-AliESDVZERO::AliESDVZERO(Int_t NbPMV0A, Int_t NbPMV0C, Int_t MTotV0A ,
-             Int_t MTotV0C, Int_t* MRingV0A, Int_t* MRingV0C) 
+AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
+	      UInt_t BBtriggerV0C, UInt_t BGtriggerV0C,
+	      Short_t *Multiplicity)
   :TObject(),
-   fMTotV0A(MTotV0A),
-   fMTotV0C(MTotV0C),
-   fNbPMV0A(NbPMV0A),
-   fNbPMV0C(NbPMV0C)
+   fBBtriggerV0A(BBtriggerV0A),
+   fBGtriggerV0A(BGtriggerV0A),
+   fBBtriggerV0C(BBtriggerV0C),
+   fBGtriggerV0C(BGtriggerV0C)
+
 {
    // Constructor
-   for(Int_t j=0; j<4; j++){ 
-       fMRingV0A[j] = MRingV0A[j];
-       fMRingV0C[j] = MRingV0C[j]; }   
+   for(Int_t j=0; j<64; j++)
+       fMultiplicity[j] = Multiplicity[j];
 }
+
 
 AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
 {
 
-  if(this==&o)return *this;
+  if(this==&o) return *this;
   TObject::operator=(o);
   // Assignment operator
-  fMTotV0A=o.fMTotV0A;
-  fMTotV0C=o.fMTotV0C;
-  fNbPMV0A=o.fNbPMV0A;
-  fNbPMV0C=o.fNbPMV0C;
-
-
-  for(Int_t j=0; j<4; j++){ 
-      fMRingV0A[j] = o.fMRingV0A[j];
-      fMRingV0C[j] = o.fMRingV0C[j];   }
-
+  fBBtriggerV0A=o.fBBtriggerV0A;
+  fBGtriggerV0A=o.fBGtriggerV0A;
+  fBBtriggerV0C=o.fBBtriggerV0C;
+  fBGtriggerV0C=o.fBGtriggerV0C;
+   for(Int_t j=0; j<64; j++)
+       fMultiplicity[j] = o.fMultiplicity[j];
   return *this;
 }
 
-
-void AliESDVZERO::Copy(TObject &obj) const {
-  
-  // this overwrites the virtual TOBject::Copy()
-  // to allow run time copying without casting
-  // in AliESDEvent
-
-  if(this==&obj)return;
-  AliESDVZERO *robj = dynamic_cast<AliESDVZERO*>(&obj);
-  if(!robj)return; // not an AliESDVZERO
-  *robj = *this;
-
+Short_t AliESDVZERO::GetNbPMV0A()
+{
+  Short_t n=0;
+  for(Int_t i=32;i<64;i++) 
+    if (fMultiplicity[i]>0) n++;
+  return n;
 }
 
+Short_t AliESDVZERO::GetNbPMV0C()
+{
+  Short_t n=0;
+  for(Int_t i=0;i<32;i++) 
+    if (fMultiplicity[i]>0) n++;
+  return n;
+}
+
+Int_t AliESDVZERO::GetMTotV0A()
+{
+  Int_t n=0;
+  for(Int_t i=32;i<64;i++) 
+    n+= (Int_t) fMultiplicity[i];
+  return n;
+}
+
+Int_t AliESDVZERO::GetMTotV0C()
+{
+  Int_t n=0;
+  for(Int_t i=0;i<32;i++) 
+    n+= (Int_t) fMultiplicity[i];
+  return n;
+}
+
+
+Int_t* AliESDVZERO::GetMRingV0A()
+{
+  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
+  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
+  return 0x0;
+}
+
+Int_t* AliESDVZERO::GetMRingV0C()
+{
+  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
+  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
+  return 0x0;
+}
+
+Int_t AliESDVZERO::GetMRingV0A(Int_t ring)
+{ 
+  if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0A",4)) return -1;
+  Int_t n=0;
+
+  if (ring == 0) for(Int_t i=32;i<40;i++) n += (Int_t) fMultiplicity[i];
+  if (ring == 1) for(Int_t i=40;i<48;i++) n += (Int_t) fMultiplicity[i];
+  if (ring == 2) for(Int_t i=48;i<56;i++) n += (Int_t) fMultiplicity[i];
+  if (ring == 3) for(Int_t i=56;i<64;i++) n += (Int_t) fMultiplicity[i];
+  return n ;
+}
+
+Int_t AliESDVZERO::GetMRingV0C(Int_t ring)
+{ 
+  if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0C",4)) return -1;
+  Int_t n=0;
+
+  if (ring == 0) for(Int_t i=0;i<8;i++) n += (Int_t) fMultiplicity[i];
+  if (ring == 1) for(Int_t i=8;i<16;i++) n += (Int_t) fMultiplicity[i];
+  if (ring == 2) for(Int_t i=16;i<24;i++) n += (Int_t) fMultiplicity[i];
+  if (ring == 3) for(Int_t i=24;i<32;i++) n += (Int_t) fMultiplicity[i];
+  return n ;
+}
+
+Int_t AliESDVZERO::GetMultiplicity(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetMultiplicity:",64)) return -1;
+  return fMultiplicity[i];
+}
+
+Bool_t AliESDVZERO::BBTriggerV0A(Int_t i)
+{
+  if (OutOfRange(i, "AliESDVZERO:::BBTriggerV0A",32)) return kFALSE;
+  UInt_t test = 1;
+  return ( fBBtriggerV0A & (test << i) ? kTRUE : kFALSE );
+}
+
+Bool_t AliESDVZERO::BGTriggerV0A(Int_t i)
+{
+  if (OutOfRange(i, "AliESDVZERO:::BGTriggerV0A",32)) return kFALSE;
+  UInt_t test = 1;
+  return ( fBGtriggerV0A & (test << i) ? kTRUE : kFALSE );
+}
+
+Bool_t AliESDVZERO::BBTriggerV0C(Int_t i)
+{
+  if (OutOfRange(i, "AliESDVZERO:::BBTriggerV0C",32)) return kFALSE;
+  UInt_t test = 1;
+  return ( fBBtriggerV0C & (test << i) ? kTRUE : kFALSE );
+}
+
+Bool_t AliESDVZERO::BGTriggerV0C(Int_t i)
+{
+  if (OutOfRange(i, "AliESDVZERO:::BGTriggerV0C",32)) return kFALSE;
+  UInt_t test = 1;
+  return ( fBGtriggerV0C & (test << i) ? kTRUE : kFALSE );
+}
+
+Bool_t AliESDVZERO::OutOfRange(Int_t i, const char *s, Int_t upper) const
+{
+  // checks if i is a valid index. s = name of calling method
+  if (i > upper || i < 0) {
+    cout << s << " Index " << i << " out of range" << endl;
+    return kTRUE;
+  }
+  return kFALSE;
+}
 

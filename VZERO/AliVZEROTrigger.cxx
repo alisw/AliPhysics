@@ -21,6 +21,7 @@
 #include "AliRunLoader.h"
 
 #include "AliVZEROTrigger.h"
+#include "AliVZEROTriggerMask.h"
 
 //______________________________________________________________________
 ClassImp(AliVZEROTrigger)
@@ -33,19 +34,21 @@ ClassImp(AliVZEROTrigger)
 ////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
+
 AliVZEROTrigger::AliVZEROTrigger()
   :AliTriggerDetector(),
    fAdcThresHold(0.0),
-   fTimeWindowWidth(50.0)
+   fTimeWindowWidthBBA(50.0),
+   fTimeWindowWidthBGA(20.0),
+   fTimeWindowWidthBBC(50.0),
+   fTimeWindowWidthBGC(20.0)
    
 {
    SetName("VZERO");
    CreateInputs();
 
    SetAdcThreshold();
-   SetTimeWindowWidth();
 }
-
 //______________________________________________________________________
 void AliVZEROTrigger::CreateInputs()
 {
@@ -58,7 +61,6 @@ void AliVZEROTrigger::CreateInputs()
    fInputs.AddLast( new AliTriggerInput( "VZERO_RIGHT","VZERO", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "VZERO_AND",  "VZERO", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "VZERO_OR",   "VZERO", 0 ) );
-
    fInputs.AddLast( new AliTriggerInput( "VZERO_BEAMGAS", "VZERO", 0 ) );
 }
 
@@ -69,7 +71,8 @@ void AliVZEROTrigger::Trigger()
   //  ********** Get run loader for the current event **********
   AliRunLoader* runLoader = gAlice->GetRunLoader();
 
-  AliVZEROLoader* loader = (AliVZEROLoader* )runLoader->GetLoader( "VZEROLoader" );
+  AliVZEROLoader* loader = 
+    (AliVZEROLoader* )runLoader->GetLoader( "VZEROLoader" );
 
   loader->LoadDigits("READ");
   TTree* vzeroDigitsTree = loader->TreeD();
@@ -79,68 +82,23 @@ void AliVZEROTrigger::Trigger()
   TBranch* digitBranch = vzeroDigitsTree->GetBranch("VZERODigit");
   digitBranch->SetAddress(&vzeroDigits);
 
-  // number of hits in left/right
-  Int_t nLeftDig  = 0;
-  Int_t nRightDig = 0;
-  
-  // first time 
-  Float_t firstTimeLeft  = 9999.0;
-  Float_t firstTimeRight = 9999.0;
-  Float_t TimeHalfWidth  = fTimeWindowWidth/2.0;
- 
-  // loop over vzero entries
-  Int_t nEntries = (Int_t)vzeroDigitsTree->GetEntries();
-  for (Int_t e=0; e<nEntries; e++) {
-    vzeroDigitsTree->GetEvent(e);
+  AliVZEROTriggerMask *TriggerMask = new AliVZEROTriggerMask();
+  TriggerMask->SetAdcThreshold(fAdcThresHold);
+  TriggerMask->SetTimeWindowWidthBBA(fTimeWindowWidthBBA);
+  TriggerMask->SetTimeWindowWidthBGA(fTimeWindowWidthBGA);
+  TriggerMask->SetTimeWindowWidthBBC(fTimeWindowWidthBBC);
+  TriggerMask->SetTimeWindowWidthBGC(fTimeWindowWidthBGC);
+  TriggerMask->FillMasks(vzeroDigitsTree,vzeroDigits);
 
-    Int_t nDigits = vzeroDigits->GetEntriesFast();
-    
-    for (Int_t d=0; d<nDigits; d++) {
-      //      vzeroDigitsTree->GetEvent(d);
-      AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(d);
-      
-      Int_t   PMNumber   = digit->PMNumber();
-      Float_t adc        = digit->ADC();
-      Float_t tdc        = digit->Time(); // in 100 of picoseconds
-      
-      if (PMNumber<=31 && adc>fAdcThresHold) {
-	if (tdc>(29.0-TimeHalfWidth) && tdc<(29.0+TimeHalfWidth)) nRightDig++;
-	if (tdc<firstTimeRight) firstTimeRight = tdc;
-      }      
-      if (PMNumber>=32 && adc>fAdcThresHold) {
- 	if (tdc>(112.0-TimeHalfWidth) && tdc<(112.0+TimeHalfWidth)) nLeftDig++;
-	if (tdc<firstTimeLeft) firstTimeLeft = tdc;
-      }	
-      
-    } // end of loop over digits
-  } // end of loop over events in digits tree
-  
-  // Beam gas trigger set from the time difference. The time it takes
-  // to travel between the two counters is ~14.3 ns = 143 * 100 ps.
-  //  NB: this should be defined
-  // from time windows relative to the time of the bunch crossing!
-  // beam gas comming from the left ...
+  if ( (TriggerMask->GetBGtriggerV0A()>0) ||
+       (TriggerMask->GetBGtriggerV0C()>0)) SetInput( "VZERO_BEAMGAS" );
+  if (TriggerMask->GetBBtriggerV0A()>0)  SetInput( "VZERO_LEFT" );
+  if (TriggerMask->GetBBtriggerV0C()>0)  SetInput( "VZERO_RIGHT" );
+  if ( (TriggerMask->GetBBtriggerV0A()>0) ||
+       (TriggerMask->GetBBtriggerV0C()>0)) SetInput( "VZERO_OR" );
+  if ( (TriggerMask->GetBBtriggerV0A()>0) &&
+       (TriggerMask->GetBBtriggerV0C()>0)) SetInput( "VZERO_AND" );
 
-  if (TMath::Abs(TMath::Abs(firstTimeLeft - firstTimeRight)-143) < 20) // time window of 2 ns
-    SetInput( "VZERO_BEAMGAS" );
-
-  if (nLeftDig > 0)
-      SetInput( "VZERO_LEFT" );
-
-  if (nRightDig > 0)
-      SetInput( "VZERO_RIGHT" );
-  
-  if (nLeftDig>0 || nRightDig>0) {
-      SetInput( "VZERO_OR" );
-
-    if (nLeftDig>0 && nRightDig>0) {
-        SetInput( "VZERO_AND" );   
-    }
-  }
-  
-  AliDebug(1,Form("VZERO PMs fired: %d (left) %d (right)", nLeftDig, nRightDig));
- 
   return;
 }
-
 

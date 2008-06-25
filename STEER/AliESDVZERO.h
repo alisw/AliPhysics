@@ -8,43 +8,48 @@ class AliESDVZERO : public TObject
 public:
   AliESDVZERO();
   AliESDVZERO(const AliESDVZERO&);
-  AliESDVZERO(Int_t NbPMV0A, Int_t NbPMV0C, Int_t MTotV0A, Int_t MTotV0C, 
-              Int_t *MRingV0A, Int_t *MRingV0C);
+  AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
+	      UInt_t BBtriggerV0C, UInt_t BGtriggerV0C,
+	      Short_t *Multiplicity);
+
   virtual ~AliESDVZERO() {};
+  
+  virtual void SetBBtriggerV0A(UInt_t BBtrigger) {fBBtriggerV0A=BBtrigger;}
+  virtual void SetBGtriggerV0A(UInt_t BGtrigger) {fBGtriggerV0A=BGtrigger;}
+  virtual void SetBBtriggerV0C(UInt_t BBtrigger) {fBBtriggerV0C=BBtrigger;}
+  virtual void SetBGtriggerV0C(UInt_t BGtrigger) {fBGtriggerV0C=BGtrigger;}
+  virtual void SetMultiplicity(Short_t Multiplicity[64])
+    {for(Int_t i=0;i<64;i++) fMultiplicity[i]=Multiplicity[i];}
+
+  // Getters  
+  Short_t GetNbPMV0A();
+  Short_t GetNbPMV0C();
+  Int_t   GetMTotV0A();
+  Int_t   GetMTotV0C(); 
+  Int_t*  GetMRingV0A();
+  Int_t*  GetMRingV0C();
+  Int_t   GetMRingV0A(Int_t ring);
+  Int_t   GetMRingV0C(Int_t ring);
+
+  Int_t   GetMultiplicity(Int_t i);
+  Bool_t  BBTriggerV0A(Int_t i);
+  Bool_t  BGTriggerV0A(Int_t i);
+  Bool_t  BBTriggerV0C(Int_t i);
+  Bool_t  BGTriggerV0C(Int_t i);
+
+  Bool_t  OutOfRange(Int_t i, const char *s, Int_t upper) const;
   AliESDVZERO &operator=(const AliESDVZERO& source);
-  virtual void Copy(TObject &obj) const;
-
-  
-// Setters
-  virtual void  SetNbPMV0A(Int_t NbPMV0A)  {fNbPMV0A = NbPMV0A;}
-  virtual void  SetNbPMV0C(Int_t NbPMV0C)  {fNbPMV0C = NbPMV0C;}
-  virtual void  SetMTotV0A(Int_t MTotV0A)  {fMTotV0A = MTotV0A;}
-  virtual void  SetMTotV0C(Int_t MTotV0C)  {fMTotV0C = MTotV0C;}					      
-  virtual void  SetMRingV0A(Int_t MRingV0A[4]){for(Int_t j=0; j<4; j++){  
-                                                fMRingV0A[j] = MRingV0A[j];} }
-  virtual void  SetMRingV0C(Int_t MRingV0C[4]){for(Int_t j=0; j<4; j++){  
-                                                fMRingV0C[j] = MRingV0C[j];} }
-  
-// Getters  
-  Short_t GetNbPMV0A()  const {return fNbPMV0A;}
-  Short_t GetNbPMV0C()  const {return fNbPMV0C;}
-  Int_t GetMTotV0A()  const {return fMTotV0A;}
-  Int_t GetMTotV0C()  const {return fMTotV0C;}
-  Int_t* GetMRingV0A() const {return (int*) fMRingV0A;}
-  Int_t* GetMRingV0C() const {return (int*) fMRingV0C;}
-
-  
     
 protected:
-  Int_t fMTotV0A;     // Total multiplicity in V0A
-  Int_t fMTotV0C;     // Total multiplicity in V0C
-  Int_t fMRingV0A[4]; // Multiplicity per ring in V0A - 4 rings
-  Int_t fMRingV0C[4]; // Multiplicity per ring in V0C - 4 rings
-  Short_t fNbPMV0A;     // Number of PMs fired in V0A - out of 32
-  Short_t fNbPMV0C;     // Number of PMs fired in V0C - out of 32
 
+  UInt_t  fBBtriggerV0A; // bit mask for Beam-Beam trigger in V0A
+  UInt_t  fBGtriggerV0A; // bit mask for Beam-Gas trigger in V0A
+  UInt_t  fBBtriggerV0C; // bit mask for Beam-Beam trigger in V0C
+  UInt_t  fBGtriggerV0C; // bit mask for Beam-Gas trigger in V0C
 
-  ClassDef(AliESDVZERO,2)
+  UShort_t fMultiplicity[64]; // multiplicity per PMT
+
+  ClassDef(AliESDVZERO,3)
 };
 
 #endif

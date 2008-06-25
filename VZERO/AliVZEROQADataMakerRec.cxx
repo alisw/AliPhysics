@@ -76,7 +76,7 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
 //____________________________________________________________________________ 
 void AliVZEROQADataMakerRec::InitESDs()
 {
-  //Create histograms to controll ESD
+  //Create histograms to control ESD
  
   TH1I * h1 = new TH1I("hVZERONbPMA", "Number of PMs fired in V0A", 80, 0, 79); 
   h1->Sumw2() ;
@@ -93,6 +93,25 @@ void AliVZEROQADataMakerRec::InitESDs()
   TH1I * h4 = new TH1I("hVZEROMultC", "Multiplicity in V0C", 50, 0, 49) ; 
   h4->Sumw2() ;
   Add2ESDsList(h4, 3) ;
+
+  TH2F * h5 = new TH2F("fVzeroMult", "Vzero multiplicity",
+			 64, -0.5, 63.5,100, -0.5, 99.5);
+  h5->GetXaxis()->SetTitle("Vzero PMT");
+  h5->GetYaxis()->SetTitle("Multiplicity");
+  h5->Sumw2() ;
+  Add2ESDsList(h5, 4) ;
+  TH1F * h6 = new TH1F("fBBA","BB Vzero A", 32, -0.5,31.5);
+  h6->Sumw2();
+  Add2ESDsList(h6, 5) ;
+  TH1F * h7 = new TH1F("fBGA","BG Vzero A", 32, -0.5,31.5);
+  h7->Sumw2();
+  Add2ESDsList(h7, 6) ;
+  TH1F * h8 = new TH1F("fBBC","BB Vzero C", 32, -0.5,31.5);
+  h8->Sumw2();
+  Add2ESDsList(h8, 7) ;
+  TH1F * h9 = new TH1F("fBGC","BG Vzero C", 32, -0.5,31.5);
+  h9->Sumw2();
+  Add2ESDsList(h9, 8) ;
 	
 }
 
@@ -128,6 +147,7 @@ void AliVZEROQADataMakerRec::InitESDs()
      }  
  }
 
+
 //____________________________________________________________________________
 void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
@@ -140,6 +160,18 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
       GetESDsData(1)->Fill(esdVZERO->GetNbPMV0C());  
       GetESDsData(2)->Fill(esdVZERO->GetMTotV0A());
       GetESDsData(3)->Fill(esdVZERO->GetMTotV0C());  
+      for(Int_t i=0;i<64;i++) 
+	GetESDsData(4)->Fill((Float_t) i,(Float_t) esdVZERO->GetMultiplicity(i));
+      for(Int_t i=0;i<32;i++) { 
+	if (esdVZERO->BBTriggerV0A(i)) 
+	  GetESDsData(5)->Fill((Float_t) i);
+	if (esdVZERO->BGTriggerV0A(i)) 
+	  GetESDsData(6)->Fill((Float_t) i);
+	if (esdVZERO->BBTriggerV0C(i)) 
+	  GetESDsData(7)->Fill((Float_t) i);
+	if (esdVZERO->BGTriggerV0C(i)) 
+	  GetESDsData(8)->Fill((Float_t) i);
+      }
   }
 
 }

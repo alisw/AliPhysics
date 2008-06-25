@@ -26,6 +26,7 @@
 #include "AliVZEROReconstructor.h"
 #include "AliVZERORawStream.h"
 #include "AliESDEvent.h"
+#include "AliVZEROTriggerMask.h"
 
 ClassImp(AliVZEROReconstructor)
 
@@ -73,13 +74,6 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 {
 // converts to digits
 
-//  retrieval of calibration information 
-//  Float_t     adc_pedestal[128],adc_sigma[128];
-//  for(Int_t  i=0; i<128; i++){ adc_pedestal[i] = fCalibData->GetPedestal(i); 
-//                               adc_sigma[i]    = fCalibData->GetSigma(i);                            
-//                               printf(" i = %d pedestal = %f sigma = %f \n\n", 
-//                                        i, adc_pedestal[i], adc_sigma[i] );} 
-              
   if (!digitsTree) {
     AliError("No digits tree!");
     return;
@@ -92,14 +86,10 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   AliVZERORawStream rawStream(rawReader);
   if (rawStream.Next()) {
     for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
-        Int_t adc;
-        if(!rawStream.GetIntegratorFlag(iChannel,10))
-           {adc = rawStream.GetADC(iChannel) - Int_t(fCalibData->GetPedestal(iChannel));} //even integrator
-	else 
-	   {adc = rawStream.GetADC(iChannel) - Int_t(fCalibData->GetPedestal(iChannel+64));} // odd
-        Int_t time = rawStream.GetTime(iChannel);
-        if (adc >=0) new ((*digitsArray)[digitsArray->GetEntriesFast()])
-                     AliVZEROdigit(iChannel,adc,time);
+    Int_t adc = rawStream.GetADC(iChannel);  
+    Int_t time = rawStream.GetTime(iChannel);
+    new ((*digitsArray)[digitsArray->GetEntriesFast()])
+      AliVZEROdigit(iChannel,adc,time);
     }
   }
 
@@ -116,34 +106,23 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     AliError("No digits tree!");
     return;
   }
-  
+
   TClonesArray* digitsArray = NULL;
   TBranch* digitBranch = digitsTree->GetBranch("VZERODigit");
   digitBranch->SetAddress(&digitsArray);
 
-  Int_t   nbPMV0A = 0;
-  Int_t   nbPMV0C = 0;
-  Int_t   mTotV0A = 0;
-  Int_t   mTotV0C = 0;
-  Float_t adcV0A  = 0.0;
-  Float_t adcV0C  = 0.0;
-  Float_t multV0A[4];
-  Float_t multV0C[4];
-  Int_t   mRingV0A[4];
-  Int_t   mRingV0C[4];
-  
+  const Float_t mip0=110.0;
+  Short_t Multiplicity[64];
+  Float_t mult[64];  
   Int_t   adc[64]; 
   Float_t mip[64];
   for (Int_t i=0; i<64; i++){
        adc[i] = 0;
-       mip[i] = 110.0;}
-  for (Int_t j=0; j<4; j++){
-       multV0A[j]  = 0.0;
-       multV0C[j]  = 0.0;
-       mRingV0A[j] = 0;
-       mRingV0C[j] = 0;}
+       mip[i] = mip0;
+       mult[i]= 0.0;
+  }
      
-  // loop over VZERO entries
+  // loop over VZERO entries to get multiplicity
   Int_t nEntries = (Int_t)digitsTree->GetEntries();
   for (Int_t e=0; e<nEntries; e++) {
     digitsTree->GetEvent(e);
@@ -155,47 +134,32 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
       Int_t  pmNumber      = digit->PMNumber();  
       adc[pmNumber] = digit->ADC(); 
       // cut of ADC at MIP/2
-      if  (adc[pmNumber] > (mip[pmNumber]/2)) { 
-        if (pmNumber<=31) {
-          if (pmNumber<=7) multV0C[0]=multV0C[0]+ float(adc[pmNumber])/mip[pmNumber];
-	  if (pmNumber>=8  && pmNumber<=15) multV0C[1]=multV0C[1]+ float(adc[pmNumber])/mip[pmNumber];
-	  if (pmNumber>=16 && pmNumber<=23) multV0C[2]=multV0C[2]+ float(adc[pmNumber])/mip[pmNumber];
-	  if (pmNumber>=24 && pmNumber<=31) multV0C[3]=multV0C[3]+ float(adc[pmNumber])/mip[pmNumber];
-          adcV0C = adcV0C + float(adc[pmNumber])/mip[pmNumber];
-	  nbPMV0C++;
-        }	
-        if (pmNumber>=32 ) {
-          if (pmNumber>=32 && pmNumber<=39) multV0A[0]=multV0A[0]+ float(adc[pmNumber])/mip[pmNumber];
-	  if (pmNumber>=40 && pmNumber<=47) multV0A[1]=multV0A[1]+ float(adc[pmNumber])/mip[pmNumber];
-	  if (pmNumber>=48 && pmNumber<=55) multV0A[2]=multV0A[2]+ float(adc[pmNumber])/mip[pmNumber];
-	  if (pmNumber>=56 && pmNumber<=63) multV0A[3]=multV0A[3]+ float(adc[pmNumber])/mip[pmNumber];
-          adcV0A = adcV0A + float(adc[pmNumber])/mip[pmNumber];
-	  nbPMV0A++;
-        }
-      }
+      if  (adc[pmNumber] > (mip[pmNumber]/2)) 
+	mult[pmNumber] += float(adc[pmNumber])/mip[pmNumber];
     } // end of loop over digits
-    
   } // end of loop over events in digits tree
   
-  mTotV0A = int(adcV0A + 0.5);
-  mTotV0C = int(adcV0C + 0.5);
-  for (Int_t j=0; j<4; j++){       
-       mRingV0A[j] = int(multV0A[j] + 0.5);
-       mRingV0C[j] = int(multV0C[j] + 0.5);}
-     
-  AliDebug(1,Form("VZERO multiplicities : %d (V0A) %d (V0C)", mTotV0A, mTotV0C));
-  AliDebug(1,Form("Number of PMs fired  : %d (V0A) %d (V0C)", nbPMV0A, nbPMV0C));
+  for (Int_t j=0; j<64; j++) Multiplicity[j] = short(mult[j]+0.5);       
+  fESDVZERO->SetMultiplicity(Multiplicity);
 
-  fESDVZERO->SetNbPMV0A(nbPMV0A);
-  fESDVZERO->SetNbPMV0C(nbPMV0C);
-  fESDVZERO->SetMTotV0A(mTotV0A);
-  fESDVZERO->SetMTotV0C(mTotV0C);
-  fESDVZERO->SetMRingV0A(mRingV0A);
-  fESDVZERO->SetMRingV0C(mRingV0C);
+  // now get the trigger mask
+
+  AliVZEROTriggerMask *TriggerMask = new AliVZEROTriggerMask();
+  TriggerMask->SetAdcThreshold(mip0/2.0);
+  TriggerMask->SetTimeWindowWidthBBA(50);
+  TriggerMask->SetTimeWindowWidthBGA(20);
+  TriggerMask->SetTimeWindowWidthBBC(50);
+  TriggerMask->SetTimeWindowWidthBGC(20);
+  TriggerMask->FillMasks(digitsTree,digitsArray);
+
+  fESDVZERO->SetBBtriggerV0A(TriggerMask->GetBBtriggerV0A());
+  fESDVZERO->SetBGtriggerV0A(TriggerMask->GetBGtriggerV0A());
+  fESDVZERO->SetBBtriggerV0C(TriggerMask->GetBBtriggerV0C());
+  fESDVZERO->SetBGtriggerV0C(TriggerMask->GetBGtriggerV0C());
   
   if (esd) { 
-      AliDebug(1, Form("Writing VZERO data to ESD tree"));
-      esd->SetVZEROData(fESDVZERO);
+    AliDebug(1, Form("Writing VZERO data to ESD tree"));
+    esd->SetVZEROData(fESDVZERO);
   }
 }
 

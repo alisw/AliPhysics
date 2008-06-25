@@ -25,15 +25,28 @@ class AliVZEROTrigger : public AliTriggerDetector
    virtual void    Trigger();
 
    void            SetAdcThreshold(Float_t t=55.0) 
-     {fAdcThresHold=t; AliDebug(1,Form("ADC threshold set to %0.2f", fAdcThresHold));}
+     {fAdcThresHold=t; 
+     AliDebug(1,Form("ADC threshold set to %0.2f", fAdcThresHold));}
    
-   void            SetTimeWindowWidth(Float_t w=50.0) {fTimeWindowWidth=w;}
-
+   void            SetTimeWindowWidth(Float_t w=50.0) 
+     {fTimeWindowWidthBBA=fTimeWindowWidthBGA
+	=fTimeWindowWidthBBC=fTimeWindowWidthBGC=w;}
+   void            SetTimeWindowWidthBBA(Float_t w=50.0)
+     {fTimeWindowWidthBBA=w;}
+   void            SetTimeWindowWidthBBC(Float_t w=50.0)
+     {fTimeWindowWidthBBC=w;}
+   void            SetTimeWindowWidthBGA(Float_t w=20.0) 
+     {fTimeWindowWidthBGA=w;}
+   void            SetTimeWindowWidthBGC(Float_t w=20.0) 
+     {fTimeWindowWidthBGC=w;}
 
 private:
 
    Float_t fAdcThresHold;
-   Float_t fTimeWindowWidth; // 
+   Float_t fTimeWindowWidthBBA; // 
+   Float_t fTimeWindowWidthBGA; // 
+   Float_t fTimeWindowWidthBBC; // 
+   Float_t fTimeWindowWidthBGC; // 
 
    ClassDef( AliVZEROTrigger, 1 )  // VZERO Trigger Detector class
 };
