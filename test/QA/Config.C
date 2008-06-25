@@ -571,7 +571,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "ESHISH_77_TRD1_2X2_FINAL_110DEG scTh=0.176 pbTh=0.144");
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE scTh=0.176 pbTh=0.144");
     }
 
      if (iACORDE)

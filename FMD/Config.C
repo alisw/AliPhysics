@@ -57,7 +57,7 @@
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv1.h"
+#include "EMCAL/AliEMCALv2.h"
 #include "ACORDE/AliACORDEv0.h"
 #include "VZERO/AliVZEROv2.h"
 #endif
@@ -695,7 +695,7 @@ Config()
 
   if (useEMCAL) {
     // =================== EMCAL parameters ==========================
-    AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
+    AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
   }
 
   if (useACORDE) {
