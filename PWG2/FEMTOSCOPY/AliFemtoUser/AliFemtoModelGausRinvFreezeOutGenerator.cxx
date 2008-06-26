@@ -12,6 +12,7 @@
 #include "math.h"
 #include "AliFemtoModelGausRinvFreezeOutGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoModelGlobalHiddenInfo.h"
 #include "AliFemtoLorentzVector.h"
 
 //_______________________
@@ -47,27 +48,32 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   if ((!inf1) || (!inf2)) { cout << "Hidden info not created! "  << endl; exit(kFALSE); }
 
   if (fSelectPrimary) {
-    // assume the emission point is in [cm] and try to judge if
-    // both particles are primary
-    Double_t dist1 = inf1->GetEmissionPoint()->perp();
-    Double_t dist2 = inf2->GetEmissionPoint()->perp();
+    const AliFemtoModelGlobalHiddenInfo *infg1 = dynamic_cast<const AliFemtoModelGlobalHiddenInfo *>(aPair->Track1()->HiddenInfo());
+    const AliFemtoModelGlobalHiddenInfo *infg2 = dynamic_cast<const AliFemtoModelGlobalHiddenInfo *>(aPair->Track2()->HiddenInfo());
+    
+    if ((infg1) && (infg2)) {
+      // assume the emission point is in [cm] and try to judge if
+      // both particles are primary
+      Double_t dist1 = infg1->GetGlobalEmissionPoint()->perp();
+      Double_t dist2 = infg2->GetGlobalEmissionPoint()->perp();
 
-    if ((dist1 > 0.005) && (dist2 > 0.005)) {
-      // At least one particle is non primary
-      if (!(inf1->GetEmissionPoint())) {
-	AliFemtoLorentzVector tPos(-1000,1000,-500,0);
-	inf1->SetEmissionPoint(&tPos);
+      if ((dist1 > 0.05) && (dist2 > 0.05)) {
+	// At least one particle is non primary
+	if (!(inf1->GetEmissionPoint())) {
+	  AliFemtoLorentzVector tPos(-1000,1000,-500,0);
+	  inf1->SetEmissionPoint(&tPos);
+	}
+	else
+	  inf1->SetEmissionPoint(-1000,1000,-500,0);
+	if (!(inf2->GetEmissionPoint())) {
+	  AliFemtoLorentzVector tPos(fRandom->Gaus(0,1000.0),fRandom->Gaus(0,1000),fRandom->Gaus(0,1000),0.0);
+	  inf2->SetEmissionPoint(&tPos);
+	}
+	else
+	  inf2->SetEmissionPoint(fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), 0.0);
+	
+	return;
       }
-      else
-	inf1->SetEmissionPoint(-1000,1000,-500,0);
-      if (!(inf2->GetEmissionPoint())) {
-	AliFemtoLorentzVector tPos(fRandom->Gaus(0,1000.0),fRandom->Gaus(0,1000),fRandom->Gaus(0,1000),0.0);
-	inf2->SetEmissionPoint(&tPos);
-      }
-      else
-	inf2->SetEmissionPoint(fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), 0.0);
-      
-      return;
     }
   }
 

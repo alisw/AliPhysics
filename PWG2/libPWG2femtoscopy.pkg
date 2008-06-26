@@ -29,6 +29,7 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderESDChain.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderESDChainKine.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelHiddenInfo.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelGlobalHiddenInfo.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelGausLCMSFreezeOutGenerator.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelWeightGenerator.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelWeightGeneratorBasic.cxx\
