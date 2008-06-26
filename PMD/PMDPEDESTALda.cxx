@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     monitorSetNoWaitNetworkTimeout(1000);
     
     /* log start of process */
-    printf("DA example case1 monitoring program started\n");  
+    printf("PMD PED DA - started generating mean and rms of each channel\n");  
     
     /* init some counters */
 
@@ -136,8 +136,8 @@ int main(int argc, char **argv) {
 		break;
 		
 	    case PHYSICS_EVENT:
-		printf(" event number = %i \n",iev);
-		//if (iev == 10) break;
+	      //if(iev%100 == 0)printf(" event number = %i \n",iev);
+
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 		TObjArray *pmdddlcont = new TObjArray();
 		calibped.ProcessEvent(rawReader,pmdddlcont);
@@ -155,7 +155,10 @@ int main(int argc, char **argv) {
 
     }
 
+    printf(" Total number of events processed = %i \n",iev);
+
     ped = new TTree("ped","PMD Pedestal tree");
+    
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
       calibped.Analyse(ped);
@@ -167,6 +170,14 @@ int main(int argc, char **argv) {
 
     delete ped;
     ped = 0;
+
+
+/* store the result file on FES */
+ 
+    status = daqDA_FES_storeFile("PMD_PED.root","pedestal");
+    if (status) {
+	status = -2;
+    }
 
     return status;
 }
