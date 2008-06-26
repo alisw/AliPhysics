@@ -42,10 +42,6 @@ fNstrips(0),
 fStereoP(0),
 fStereoN(0),
 fPitch(0),
-fStereoPl5(0),
-fStereoNl5(0),
-fStereoPl6(0),
-fStereoNl6(0),
 fLayer(0){
     // default constructor
   SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
@@ -77,10 +73,6 @@ void AliITSsegmentationSSD::Copy(TObject &obj) const {
   ((AliITSsegmentationSSD& ) obj).fNstrips = fNstrips;
   ((AliITSsegmentationSSD& ) obj).fStereoP = fStereoP;
   ((AliITSsegmentationSSD& ) obj).fStereoN = fStereoN;
-  ((AliITSsegmentationSSD& ) obj).fStereoPl5 = fStereoPl5;
-  ((AliITSsegmentationSSD& ) obj).fStereoNl5 = fStereoNl5;
-  ((AliITSsegmentationSSD& ) obj).fStereoPl6 = fStereoPl6;
-  ((AliITSsegmentationSSD& ) obj).fStereoNl6 = fStereoNl6;
   ((AliITSsegmentationSSD& ) obj).fLayer   = fLayer;
   ((AliITSsegmentationSSD& ) obj).fPitch   = fPitch;
   ((AliITSsegmentationSSD& ) obj).fLayer   = fLayer;
@@ -103,10 +95,6 @@ fNstrips(0),
 fStereoP(0),
 fStereoN(0),
 fPitch(0),
-fStereoPl5(0),
-fStereoNl5(0),
-fStereoPl6(0),
-fStereoNl6(0),
 fLayer(0){
     // copy constructor
   source.Copy(*this);
@@ -122,26 +110,15 @@ void AliITSsegmentationSSD::Init(){
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::Angles(Float_t &aP,Float_t &aN) const{
   // P and N side stereo angles
-    if (fLayer == 5){
-	aP = fStereoPl5;
-	aN = fStereoNl5;
-    } // end if
-    else if (fLayer == 6){
-	aP = fStereoPl6;
-	aN = fStereoNl6;
-    } // end if
-    else {
-      AliWarning("SSD layer not set in segmentation. Setting angles for layer 5");
-      aP = fStereoPl5;
-      aN = fStereoNl5;
-    }
+  aP = fStereoP;
+  aN = fStereoN;
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::SetLayer(Int_t l){
   //set fLayer data member (only 5 or 6 are allowed)
     if (l==5) fLayer =5;
-    if (l==6) fLayer =6;
-    if((l!=5) && (l!=6))AliError(Form("Layer can be 5 or 6, not %d",l));
+    else if (l==6) fLayer =6;
+    else AliError(Form("Layer can be 5 or 6, not %d",l));
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{
@@ -168,6 +145,8 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{
                      |0/
     // expects x, z in microns
     */
+
+  /*
     Float_t stereoP, stereoN;
     Angles(stereoP,stereoN);
     Float_t tanP = TMath::Tan(stereoP);
@@ -178,6 +157,23 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{
     z1 += fDz/2;
     x   = (x1 - z1*tanP)/fPitch;
     z   = (x1 - tanN*(z1 - fDz))/fPitch;
+  */
+
+  Float_t P=0;
+  Float_t N=0;
+  if(fLayer==5) {
+    P = 105.26*x - 0.79*z + 381.89;
+    N = P + 3.68*z - 4; 
+  }
+  else if(fLayer==6) {
+    P = -105.26*x - 0.79*z + 384.66;
+    N = P + 3.68*z + 4;
+  }
+  else AliError("Layer can be 5 or 6");
+
+  x=P;
+  z=N;
+
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::GetPadIxz(Float_t x,Float_t z,Int_t &iP,Int_t &iN) const {
@@ -287,8 +283,8 @@ Bool_t AliITSsegmentationSSD::LocalToDet(Float_t x,Float_t z,
     return kFALSE; // outside of defined volume.
   }
   
-  x /= kconst;  // convert to microns
-  z /= kconst;  // convert to microns
+  //x /= kconst;  // convert to microns
+  //z /= kconst;  // convert to microns
   this->GetPadTxz(x,z);
   
   // first for P side

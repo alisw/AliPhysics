@@ -29,14 +29,7 @@ public AliITSsegmentation {
 
     // Set stereo angles Pside-Nside 
     virtual void    SetAngles(Float_t pa=0.0075, Float_t na=0.0275) 
-                         {fStereoPl5=pa; fStereoNl5=na;
-			 fStereoPl6=na; fStereoNl6=pa;}
-
-    virtual void    SetAnglesLay5(Float_t pa=0.0075, Float_t na=0.0275) 
-                         {fStereoPl5=pa; fStereoNl5=na;}
-
-    virtual void    SetAnglesLay6(Float_t pa=0.0275, Float_t na=0.0075) 
-                         {fStereoPl6=pa; fStereoNl6=na;}
+                         {fStereoP=pa; fStereoN=na;}
 
     // Set stereo angles Pside-Nside 
     // Transform from real coordinates to strips
@@ -92,10 +85,6 @@ public AliITSsegmentation {
   Float_t    fStereoN;       // Stereo angle for Nside (rad)
   Float_t    fPitch;         // Pitch of the strips
   
-  Float_t    fStereoPl5;       // Stereo angle for Pside
-  Float_t    fStereoNl5;       // Stereo angle for Nside
-  Float_t    fStereoPl6;       // Stereo angle for Pside
-  Float_t    fStereoNl6;       // Stereo angle for Nside
   Int_t      fLayer;           //! layer number (5 or 6)
   static const Float_t fgkDxDefault;  // Default value for fDx
   static const Float_t fgkDzDefault;  // Default value for fDz
@@ -105,7 +94,7 @@ public AliITSsegmentation {
   static const Int_t fgkNchipsPerSide;    //number of chips per side
   static const Int_t fgkNstripsPerChip;    //number of strips per chip
 
-  ClassDef(AliITSsegmentationSSD,3) //Segmentation class for SSD 
+  ClassDef(AliITSsegmentationSSD,4) //Segmentation class for SSD 
 };
 
 #endif

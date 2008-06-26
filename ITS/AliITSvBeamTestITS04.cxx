@@ -431,8 +431,6 @@ void AliITSvBeamTestITS04::SetDefaults()
       seg2->SetPadSize(95.,0.); // strip x pitch in microns
       seg2->SetNPads(768,0); // number of strips on each side.
       seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
-      seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
-      seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.
       SetSegmentationModel(kSSD,seg2); 
     }
     

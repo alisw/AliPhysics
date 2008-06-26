@@ -41,7 +41,7 @@ ClassImp(AliITSsimulationSSD)
 //                                                                    //
 // Author: Enrico Fragiacomo                                          //
 //         enrico.fragiacomo@ts.infn.it                               //
-// Last revised: march 2006                                           // 
+// Last revised: june 2008                                            // 
 //                                                                    //
 // AliITSsimulationSSD is the simulation of SSD.                     //
 ////////////////////////////////////////////////////////////////////////
@@ -222,33 +222,33 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
   
   AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
   
-    TObjArray *hits = mod->GetHits();
-    Int_t nhits     = hits->GetEntriesFast();
-    if (nhits<=0) return;
-    AliITSTableSSD * tav = new AliITSTableSSD(GetNStrips());
-    module = mod->GetIndex();
-    if ( mod->GetLayer() == 6 ) seg->SetLayer(6);
-    if ( mod->GetLayer() == 5 ) seg->SetLayer(5);
-    for(Int_t i=0; i<nhits; i++) {    
-      // LineSegmentL returns 0 if the hit is entering
-      // If hits is exiting returns positions of entering and exiting hits
-      // Returns also energy loss
-      if(GetDebug(4)){
-	cout << i << " ";
-	cout << mod->GetHit(i)->GetXL() << " "<<mod->GetHit(i)->GetYL();
-	cout << " " << mod->GetHit(i)->GetZL();
-	cout << endl;
+  TObjArray *hits = mod->GetHits();
+  Int_t nhits     = hits->GetEntriesFast();
+  if (nhits<=0) return;
+  AliITSTableSSD * tav = new AliITSTableSSD(GetNStrips());
+  module = mod->GetIndex();
+  if ( mod->GetLayer() == 6 ) seg->SetLayer(6);
+  if ( mod->GetLayer() == 5 ) seg->SetLayer(5);
+  for(Int_t i=0; i<nhits; i++) {    
+    // LineSegmentL returns 0 if the hit is entering
+    // If hits is exiting returns positions of entering and exiting hits
+    // Returns also energy loss
+    if(GetDebug(4)){
+      cout << i << " ";
+      cout << mod->GetHit(i)->GetXL() << " "<<mod->GetHit(i)->GetYL();
+      cout << " " << mod->GetHit(i)->GetZL();
+      cout << endl;
+    } // end if
+    if (mod->LineSegmentL(i, x0, x1, y0, y1, z0, z1, de, idtrack)) {
+      HitToDigit(module, x0, y0, z0, x1, y1, z1, de,tav);
+      if (lasttrack != idtrack || i==(nhits-1)) {
+	GetList(idtrack,i,module,pList,tav);
       } // end if
-      if (mod->LineSegmentL(i, x0, x1, y0, y1, z0, z1, de, idtrack)) {
-	HitToDigit(module, x0, y0, z0, x1, y1, z1, de,tav);
-	if (lasttrack != idtrack || i==(nhits-1)) {
-	  GetList(idtrack,i,module,pList,tav);
-	} // end if
-	lasttrack=idtrack;
-      } // end if
-    }  // end loop over hits
-    delete tav; tav=0;
-    return;
+      lasttrack=idtrack;
+    } // end if
+  }  // end loop over hits
+  delete tav; tav=0;
+  return;
 }
 //----------------------------------------------------------------------
 void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0, 
@@ -260,8 +260,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
   
   AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
   // Turns hits in SSD module into one or more digits.
-  Float_t tang[2] = {0.0,0.0};
-  seg->Angles(tang[0], tang[1]);//stereo<<->tan(stereo)~=stereo
+  //Float_t tang[2] = {0.0,0.0};
+  //seg->Angles(tang[0], tang[1]);//stereo<<->tan(stereo)~=stereo
   Double_t x, y, z;
   Double_t dex=0.0, dey=0.0, dez=0.0; 
   Double_t pairs; // pair generation energy per step.
@@ -276,7 +276,12 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
   // Enery loss is equally distributed among steps
   de    = de/numOfSteps;
   pairs = de/GetIonizeE(); // e-h pairs generated
+
+  //-----------------------------------------------------
+  // stepping
+  //-----------------------------------------------------
   for(Int_t j=0; j<numOfSteps; j++) {     // stepping
+
     x = x0 + (j+0.5)*dex;
     y = y0 + (j+0.5)*dey;
     if ( y > (seg->Dy()/2+10)*1.0E-4 ) {
@@ -287,48 +292,102 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
       return;
     } // end if
     z = z0 + (j+0.5)*dez;
+
     if(GetDebug(4)) cout <<"HitToDigit "<<x<<" "<<y<<" "<<z<< " "
 			 <<dex<<" "<<dey<<" "<<dez<<endl;
+
+    if(seg->GetLayer()==6) {
+      y=-y; // Lay6 module has sensor up-side-down!!!
+    }
+    
+    // w is the coord. perpendicular to the strips
+    //    Float_t xp=x*1.e+4,zp=z*1.e+4; // microns    
+    Float_t xp=x,zp=z; 
+    seg->GetPadTxz(xp,zp);
+
+    Int_t k;
+    //---------------------------------------------------------
+    // Pside
+    //------------------------------------------------------------
+    k=0;
+    
     // calculate drift time
     // y is the minimum path
     tdrift[0] = (y+(seg->Dy()*1.0E-4)/2)/GetDriftVelocity(0);
+    
+    w = xp; // P side strip number
+    
+    if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
+      // this check rejects hits in regions not covered by strips
+      // 0.5 takes into account boundaries 
+      if(GetDebug(4)) cout << "Dead SSD region, x,z="<<x<<","<<z<<endl;
+      return; // There are dead region on the SSD sensitive volume!!!
+    } // end if
+    
+      // sigma is the standard deviation of the diffusion gaussian
+    if(tdrift[k]<0) return;
+    
+    sigma[k] = TMath::Sqrt(2*GetDiffConst(k)*tdrift[k]);
+    sigma[k] /= (GetStripPitch()*1.0E-4);  //units of Pitch
+    
+    if(sigma[k]==0.0) { 	
+      Error("HitToDigit"," sigma[%d]=0",k);
+      exit(0);
+    } // end if
+    
+    par0[k] = pairs;
+    // we integrate the diffusion gaussian from -3sigma to 3sigma 
+    inf[k] = w - 3*sigma[k]; // 3 sigma from the gaussian average  
+    sup[k] = w + 3*sigma[k]; // 3 sigma from the gaussian average
+    // IntegrateGaussian does the actual
+    // integration of diffusion gaussian
+    IntegrateGaussian(k, par0[k], w, sigma[k], inf[k], sup[k],tav);
+    
+    //------------------------------------------------------
+    // end Pside
+    //-------------------------------------------------------
+    
+    //------------------------------------------------------
+    // Nside
+    //-------------------------------------------------------
+    k=1;
     tdrift[1] = ((seg->Dy()*1.0E-4)/2-y)/GetDriftVelocity(1);
     
-    for(Int_t k=0; k<2; k++) {   // both sides    remember: 0=Pside 1=Nside
-      
-      tang[k]=TMath::Tan(tang[k]);
-      
-      // w is the coord. perpendicular to the strips
-      Float_t xp=x*1.e+4,zp=z*1.e+4; // microns
-      seg->GetPadTxz(xp,zp);
-      if(k==0) w = xp; // P side strip number
-      else w = zp; // N side strip number
-      
-      if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
-	// this check rejects hits in regions not covered by strips
-	// 0.5 takes into account boundaries 
-	if(GetDebug(4)) cout << "x,z="<<x<<","<<z<<" w="<<w
-			     <<" Nstrips="<<GetNStrips()<<endl;
-	return; // There are dead region on the SSD sensitive volume.
-      } // end if
-      
+    //tang[k]=TMath::Tan(tang[k]);
+    
+    w = zp; // N side strip number
+    
+    if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
+      // this check rejects hits in regions not covered by strips
+      // 0.5 takes into account boundaries 
+      if(GetDebug(4)) cout << "Dead SSD region, x,z="<<x<<","<<z<<endl;
+      return; // There are dead region on the SSD sensitive volume.
+    } // end if
+    
       // sigma is the standard deviation of the diffusion gaussian
-      if(tdrift[k]<0) return;
-      sigma[k] = TMath::Sqrt(2*GetDiffConst(k)*tdrift[k]);
-      sigma[k] /= (GetStripPitch()*1.0E-4);  //units of Pitch
-      if(sigma[k]==0.0) { 	
-	Error("HitToDigit"," sigma[%d]=0",k);
-	exit(0);
-      } // end if
-      
-      par0[k] = pairs;
-      // we integrate the diffusion gaussian from -3sigma to 3sigma 
-      inf[k] = w - 3*sigma[k]; // 3 sigma from the gaussian average  
-      sup[k] = w + 3*sigma[k]; // 3 sigma from the gaussian average
-      // IntegrateGaussian does the actual
-      // integration of diffusion gaussian
-      IntegrateGaussian(k, par0[k], w, sigma[k], inf[k], sup[k],tav);
-    }  // end for loop over side (0=Pside, 1=Nside)      
+    if(tdrift[k]<0) return;
+    
+    sigma[k] = TMath::Sqrt(2*GetDiffConst(k)*tdrift[k]);
+    sigma[k] /= (GetStripPitch()*1.0E-4);  //units of Pitch
+    
+    if(sigma[k]==0.0) { 	
+      Error("HitToDigit"," sigma[%d]=0",k);
+      exit(0);
+    } // end if
+    
+    par0[k] = pairs;
+    // we integrate the diffusion gaussian from -3sigma to 3sigma 
+    inf[k] = w - 3*sigma[k]; // 3 sigma from the gaussian average  
+    sup[k] = w + 3*sigma[k]; // 3 sigma from the gaussian average
+    // IntegrateGaussian does the actual
+    // integration of diffusion gaussian
+    IntegrateGaussian(k, par0[k], w, sigma[k], inf[k], sup[k],tav);
+    
+    //-------------------------------------------------
+    // end Nside
+    //-------------------------------------------------
+    
+    
   } // end stepping
 }
 

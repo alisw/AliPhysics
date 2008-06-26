@@ -1096,8 +1096,6 @@ Bool_t AliITSInitGeometry::InitSegmentationPPRasymmFMD(AliITSDetector idet,
 	segSSD->SetPadSize(95.,0.); // strip x pitch in microns
 	segSSD->SetNPads(768,2); // number of strips on each side, sides.
 	segSSD->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
-	segSSD->SetAnglesLay5(0.0075,0.0275);//strip angels rad P and N
-	segSSD->SetAnglesLay6(0.0275,0.0075);//strip angels rad P and N
 	geom->ReSetShape(idet,segSSD);
     }break;
     default:{// Others, Note no kSDDp or kSSDp in this geometry.
