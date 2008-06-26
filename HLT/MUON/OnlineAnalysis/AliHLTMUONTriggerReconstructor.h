@@ -30,6 +30,7 @@
 #include "AliMUONTriggerDDLDecoder.h"
 #include "AliMUONTriggerDDLDecoderEventHandler.h"
 
+extern "C" struct AliHLTMUONRecHitStruct;
 extern "C" struct AliHLTMUONTriggerRecordStruct;
 
 
@@ -45,8 +46,7 @@ public:
 			AliHLTUInt32_t rawDataSize,
 			bool scalarEvent,
 			AliHLTMUONTriggerRecordStruct* trigRecord,
-			AliHLTUInt32_t& nofTrigRec,
-			bool suppressPartialTrigs = false
+			AliHLTUInt32_t& nofTrigRec
 		);
 
 	/**
@@ -70,6 +70,37 @@ public:
 	 * It is used to keep the trigger record IDs unique.
 	 */
 	void SetDDL(AliHLTInt32_t ddl) { fDecoder.GetHandler().SetDDL(ddl); }
+	
+	/**
+	 * Returns true if the output buffer was overflowed in the last call to Run.
+	 */
+	bool OverflowedOutputBuffer() const { return fDecoder.GetHandler().OverflowedOutputBuffer(); }
+	
+	/**
+	 * Returns the flag specifying if we should suppress partial trigger records.
+	 * Partial triggers do not pass the 3/4'ths coincidence requirement.
+	 */
+	bool SuppressPartialTriggers() const { return fDecoder.GetHandler().SuppressPartialTriggers(); }
+	
+	/**
+	 * Sets the flag specifying if we should suppress partial trigger records.
+	 * Partial triggers do not pass the 3/4'ths coincidence requirement.
+	 */
+	void SuppressPartialTriggers(bool s) { fDecoder.GetHandler().SuppressPartialTriggers(s); }
+	
+	/**
+	 * Returns true if the crate ID as found in the regional header
+	 * will be used for lookups in the LUT, rather than the sequencial
+	 * index number of the header.
+	 */
+	bool UseCrateId() const { return fDecoder.GetHandler().UseCrateId(); }
+	
+	/**
+	 * Sets the flag indicating if the crate ID as found in the regional
+	 * header should be used for lookups in the LUT, rather than the
+	 * sequencial index number of the header.
+	 */
+	void UseCrateId(bool value) { fDecoder.GetHandler().UseCrateId(value); }
 	
 private:
 
@@ -151,38 +182,60 @@ private:
 		void WarnOnly(bool value) { fWarnOnly = value; }
 		
 		/**
+		 * Returns true if the crate ID as found in the regional header
+		 * will be used for lookups in the LUT, rather than the sequencial
+		 * index number of the header.
+		 */
+		bool UseCrateId() const { return fUseCrateId; }
+		
+		/**
+		 * Sets the flag indicating if the crate ID as found in the regional
+		 * header should be used for lookups in the LUT, rather than the
+		 * sequencial index number of the header.
+		 */
+		void UseCrateId(bool value) { fUseCrateId = value; }
+		
+		/**
 		 * Sets the DDL bit according to the DDL value given.
 		 */
 		void SetDDL(AliHLTInt32_t ddl) { fDDLBit = (ddl == 20 ? 0x00 : 0x80); }
 		
+		/**
+		 * Generates reconstructed hits from strip information.
+		 */
+		bool GenerateHits(
+				AliHLTMUONRecHitStruct* outputBuffer,
+				AliHLTUInt32_t& maxEntries
+			);
+		
 		// Methods inherited from AliMUONTriggerDDLDecoderEventHandler:
 		
-		/// Called for each new buffer.
-		void OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/);
-		
-		/// Increments a counter for every new regional structure.
-		void OnNewRegionalStruct(
-				const AliMUONRegionalHeaderStruct* /*regionalStruct*/,
-				const AliMUONRegionalScalarsStruct* /*scalars*/,
-				const void* /*data*/
-			)
+		/// Called for each new buffer. Just remember the start location of the buffer.
+		void OnNewBuffer(const void* buffer, UInt_t /*bufferSize*/)
 		{
-			fCurrentRegional++;
+			assert( buffer != NULL );
+			fBufferStart = buffer;
 		}
 		
-		/// Reset the counter for every new regional structure.
-		void OnEndOfRegionalStruct(
-				const AliMUONRegionalHeaderStruct* /*regionalStruct*/,
+		/**
+		 * Sets the regional structure sequencial number and decodes the crate ID.
+		 * if fUseCrateId is false then we use the sequencial number instead. This
+		 * might be necessary for for incorrectly generated or buggy raw data.
+		 */
+		void OnNewRegionalStructV2(
+				UInt_t num,
+				const AliMUONRegionalHeaderStruct* regionalStruct,
 				const AliMUONRegionalScalarsStruct* /*scalars*/,
 				const void* /*data*/
 			)
 		{
-			// Start from -1 since we increment immediately in OnLocalStruct.
-			fCurrentLocal = -1;
+			fCurrentRegional = num;
+			fCurrentCrateId = (fUseCrateId ? GetRegionalId(regionalStruct) : num);
 		}
 		
 		/// Converts a local trigger structure from the L0 into a trigger record.
-		void OnLocalStruct(
+		void OnLocalStructV2(
+				UInt_t num,
 				const AliMUONLocalInfoStruct* localStruct,
 				const AliMUONLocalScalarsStruct* scalars
 			);
@@ -197,6 +250,42 @@ private:
 		/// Not implemented
 		AliDecoderHandler& operator = (const AliDecoderHandler& rhs); // assignment operator
 		
+		/**
+		 * Finds the strip bits / positions on MT1 that were fired given
+		 * the local trigger structure decision.
+		 */
+		bool FindStripsOnMT1(
+				const AliMUONLocalInfoStruct* localStruct,
+				AliHLTInt32_t& xPos, AliHLTInt32_t& yPos
+			);
+		
+		/**
+		 * Tries to find the fired X strips for chambers 11 to 14.
+		 */
+		void FindXStrips(
+				const AliMUONLocalInfoStruct* localStruct,
+				AliHLTInt32_t startPos, AliHLTInt32_t pos[4]
+			);
+		
+		/**
+		 * Tries to find the fired Y strips for chambers 11 to 14.
+		 */
+		void FindYStrips(
+				const AliMUONLocalInfoStruct* localStruct,
+				AliHLTInt32_t startPos, AliHLTInt32_t pos[4]
+			);
+		
+		/**
+		 * Reconstructs a hit with global position coordinates from strip
+		 * information on a given chamber.
+		 */
+		void ReconstructHit(
+				AliHLTUInt32_t xStrips, AliHLTUInt32_t yStrips,
+				AliHLTInt32_t xPos, AliHLTInt32_t yPos,
+				AliHLTUInt8_t crateId, AliHLTUInt8_t locId,
+				AliHLTUInt8_t chamber, AliHLTMUONRecHitStruct& hit
+			);
+		
 		AliHLTMUONTriggerRecoLookupTable fLookupTable;  ///< The lookup table used for mapping between channel addresses and geometrical information.
 		const void* fBufferStart; ///< Pointer to the start of the current DDL payload buffer.
 		AliHLTUInt32_t fMaxOutputTrigRecs;  ///< Maximum number of reconstructed trigger records that can be stored in fOutputTrigRecs.
@@ -204,11 +293,12 @@ private:
 		AliHLTMUONTriggerRecordStruct* fOutputTrigRecs;  ///< Pointer to the output buffer of trigger records structures.
 		AliHLTInt32_t fTrigRecId;  ///< A running counter for the trigger record ID.
 		AliHLTInt32_t fDDLBit;  ///< The DDL bit used to generate unique trigger record IDs.
-		AliHLTInt32_t fCurrentRegional;  ///< The current regional trigger structure number.
-		AliHLTInt32_t fCurrentLocal;  ///< The current local trigger structure number.
 		bool fSuppressPartialTriggers;  ///< Flag to indicate if we should suppres partial triggers.
 		bool fOverflowed;  ///< Flag to indicate if we overflowed the output buffer.
 		bool fWarnOnly;  ///< Flag indicating if the OnError method should generate warnings rather than error messages.
+		bool fUseCrateId;  ///< Flag to indicate if the crate ID as found in the regional header structures should be used or not.
+		AliHLTInt8_t fCurrentCrateId;  ///< The current trigger crate ID number from the regional header.
+		UInt_t fCurrentRegional;  ///< Index number of current regional structure being decoded.
 	};
 
 	/// Not implemented

@@ -90,7 +90,8 @@ private:
 	AliHLTMUONTriggerReconstructor* fTrigRec; ///< The trigger reconstructor class implementing the algorithm.
 	AliHLTInt32_t fDDL;   ///< The DDL number in the range 20..21 from which to expect input. Set to -1 for invalid/unspecified value.
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
-	bool fSuppressPartialTrigs;   ///< Flag indicating if we should suppress triggers that did not trigger the L0
+	bool fStopOnOverflow;  ///< Flag indicating if we should fail in the DoEvent method if the output buffer was overflowed.
+	bool fUseCrateId;  ///< Flag to indicate if the crate ID as found in the regional header structures should be used or not.
 
 	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0) // Trigger reconstructor component for dHLT trigger DDL raw data.
 

@@ -80,8 +80,18 @@ struct AliHLTMUONTriggerRecoLutRow
  */
 struct AliHLTMUONTriggerRecoLookupTable
 {
-	// [regional header index][local board ID][chamber][cathode - X/Y][bit set in bit pattern]
-	AliHLTMUONTriggerRecoLutRow fRow[8][16][4][2][16];
+	// The dimentions of the LUT are as follows:
+	// [trigger crate ID][local board ID][chamber][cathode - X/Y][bit set in bit pattern]
+	// - The trigger crate ID comes form the regional headers in the DDL payload.
+	// - Local board ID numbers come from the local trigger structures in the
+	//   DDL payload.
+	// - The chamber is for chambers 11 to 14 coded as [0..3], 0 for chamber 11,
+	//   1 for chamber 12 etc.
+	// - The cathode 0 is for the X trigger strips (bending plane) and 1 is
+	//   for the Y strips (non-bending plane).
+	// - The "bit set in pattern" indicates the bit number that was set in
+	//   the strip patterns found in the local structures of the DDL payload.
+	AliHLTMUONTriggerRecoLutRow fRow[16][16][4][2][16];
 };
 
 } // extern "C"

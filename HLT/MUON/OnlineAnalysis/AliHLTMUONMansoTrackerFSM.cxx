@@ -16,12 +16,15 @@
 
 /* $Id$ */
 
-///**
-// *  @file   AliHLTMUONMansoTrackerFSM.cxx
-// *  @author Artur Szostak <artursz@iafrica.com>
-// *  @date   
-// *  @brief  Implementation of AliHLTMUONMansoTrackerFSM class.
-// */
+///
+/// @file   AliHLTMUONMansoTrackerFSM.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   29 May 2007
+/// @brief  Implementation of AliHLTMUONMansoTrackerFSM class.
+///
+/// Implementation of AliHLTMUONMansoTrackerFSM class which implements the Manso
+/// tracking algorithm as a finite state machine, which partially reconstructs
+/// tracks in the muon spectrometer.
 
 #include "AliHLTMUONMansoTrackerFSM.h"
 #include "AliHLTMUONCalculations.h"
@@ -223,72 +226,6 @@ AliHLTMUONMansoTrackerFSM::AliHLTMUONMansoTrackerFSM() :
 }
 
 
-bool AliHLTMUONMansoTrackerFSM::LineFit(
-		const AliHLTMUONTriggerRecordStruct& trigger,
-		AliHLTMUONRecHitStruct& pa, AliHLTMUONRecHitStruct& pb
-	)
-{
-	// Apply least squares fit to the hits on the trigger record.
-	// http://mathworld.wolfram.com/LeastSquaresFitting.html
-	
-	AliHLTMUONParticleSign sign;
-	bool hitset[4];
-	AliHLTMUONUtils::UnpackTriggerRecordFlags(trigger.fFlags, sign, hitset);
-	DebugTrace("hitset = {" << hitset[0] << ", " << hitset[1] << ", "
-		<< hitset[2] << ", " << hitset[3] << "}"
-	);
-	
-	AliHLTFloat32_t sumX = 0;
-	AliHLTFloat32_t sumY = 0;
-	AliHLTFloat32_t sumZ = 0;
-	int n = 0;
-	for (int i = 0; i < 4; i++)
-	{
-		if (hitset[i])
-		{
-			sumX += trigger.fHit[i].fX;
-			sumY += trigger.fHit[i].fY;
-			sumZ += trigger.fHit[i].fZ;
-			n++;
-		}
-	}
-	if (n < 2) return false;
-	AliHLTFloat32_t meanX = sumX / AliHLTFloat32_t(n);
-	AliHLTFloat32_t meanY = sumY / AliHLTFloat32_t(n);
-	AliHLTFloat32_t meanZ = sumZ / AliHLTFloat32_t(n);
-	
-	AliHLTFloat32_t vSSzz = 0;
-	AliHLTFloat32_t vSSzx = 0;
-	AliHLTFloat32_t vSSzy = 0;
-	for (int i = 0; i < 4; i++)
-	{
-		if (hitset[i])
-		{
-			vSSzz += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fZ - meanZ);
-			vSSzx += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fX - meanX);
-			vSSzy += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fY - meanY);
-		}
-	}
-	
-	// Calculate params for lines x = Mzx * z + Czx and y = Mzy * z + Czy.
-	if (vSSzz == 0) return false;
-	AliHLTFloat32_t vMzx = vSSzx / vSSzz;
-	AliHLTFloat32_t vMzy = vSSzy / vSSzz;
-	AliHLTFloat32_t vCzx = meanX - vMzx * meanZ;
-	AliHLTFloat32_t vCzy = meanY - vMzy * meanZ;
-	
-	// Calculate ideal points on chambers 11 and 13:
-	pa.fZ = fgZ11;
-	pa.fX = vMzx * pa.fZ + vCzx;
-	pa.fY = vMzy * pa.fZ + vCzy;
-	pb.fZ = fgZ13;
-	pb.fX = vMzx * pb.fZ + vCzx;
-	pb.fY = vMzy * pb.fZ + vCzy;
-	
-	return true;
-}
-
-
 void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONTriggerRecordStruct& trigger)
 {
 // Tries to find the track from the trigger seed.
@@ -298,15 +235,26 @@ void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONTriggerRecordStruct& t
 	
 	fTriggerId = trigger.fId;
 	
-	AliHLTMUONRecHitStruct pa, pb;
-	if (not LineFit(trigger, pa, pb))
+	// Set Z coordinates of ideal point on trigger track to be nominal
+	// chamber 11 and 13 positions.
+	AliHLTMUONCalculations::IdealZ1(fgZ11);
+	AliHLTMUONCalculations::IdealZ2(fgZ13);
+	
+	if (not AliHLTMUONCalculations::FitLineToTriggerRecord(trigger))
 	{
 		NoTrackFound();
 		return;
 	}
-	
-	fV1 = AliVertex(pa.fX, pa.fY, pa.fZ);
-	AliVertex v2 = AliVertex(pb.fX, pb.fY, pb.fZ);
+	fV1 = AliVertex(
+			AliHLTMUONCalculations::IdealX1(),
+			AliHLTMUONCalculations::IdealY1(),
+			AliHLTMUONCalculations::IdealZ1()
+		);
+	AliVertex v2 = AliVertex(
+			AliHLTMUONCalculations::IdealX2(),
+			AliHLTMUONCalculations::IdealY2(),
+			AliHLTMUONCalculations::IdealZ2()
+		);
 	
 	DebugTrace("Using fV1 = {x = " << fV1.X() << ", y = " << fV1.Y() << ", " << fV1.Z() << "}");
 	DebugTrace("Using v2 = {x = " << v2.X() << ", y = " << v2.Y() << ", " << v2.Z() << "}");

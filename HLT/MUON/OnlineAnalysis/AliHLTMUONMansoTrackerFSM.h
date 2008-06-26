@@ -18,14 +18,12 @@
 
 /* $Id$ */
 
-///**
-// *  @file   AliHLTMUONMansoTrackerFSM.h
-// *  @author Artur Szostak <artursz@iafrica.com>
-// *  @date   
-// *  @brief  The AliHLTMUONMansoTrackerFSM implements the Manso tracking
-// *          algorithm as a finite state machine, which partially reconstructs
-// *          tracks in the muon spectrometer.
-// */
+///
+///  @file   AliHLTMUONMansoTrackerFSM.h
+///  @author Artur Szostak <artursz@iafrica.com>
+///  @date   29 May 2007
+///  @brief  Declaration of the AliHLTMUONMansoTrackerFSM class which implements the Manso tracking algorithm.
+///
 
 #include "AliHLTMUONDataTypes.h"
 #include "AliHLTMUONList.h"
@@ -36,7 +34,11 @@
 #include "AliHLTMUONMansoTrackerFSMCallback.h"
 #include <cassert>
 
-
+/**
+ * The AliHLTMUONMansoTrackerFSM implements the Manso tracking
+ * algorithm as a finite state machine, which partially reconstructs
+ * tracks in the muon spectrometer.
+ */
 class AliHLTMUONMansoTrackerFSM
 {
 public:
@@ -382,12 +384,6 @@ protected:
 	};
 
 private:
-
-	bool LineFit(
-			const AliHLTMUONTriggerRecordStruct& trigger,
-			AliHLTMUONRecHitStruct& pa,
-			AliHLTMUONRecHitStruct& pb
-		);
 
 	// Not allowed to copy this object.
 	AliHLTMUONMansoTrackerFSM(const AliHLTMUONMansoTrackerFSM& tracker);

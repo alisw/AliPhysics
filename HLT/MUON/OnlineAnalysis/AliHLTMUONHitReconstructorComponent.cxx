@@ -213,6 +213,35 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		} // -ddl argument
 		
+		if (strcmp( argv[i], "-ddlid" ) == 0)
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("DDL equipment ID number not specified. It must be in the range [2572..2579]" );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+		
+			char* cpErr = NULL;
+			unsigned long num = strtoul(argv[i+1], &cpErr, 0);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a DDL equipment ID Number.", argv[i+1]);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			fDDL = AliHLTMUONUtils::EquipIdToDDLNumber(num); // Convert to DDL number in the range 0..21
+			if (fDDL < 12 or 19 < fDDL)
+			{
+				HLTError("The DDL equipment ID number must be in the range [2572..2579].");
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			i++;
+			continue;
+		}
+		
 		if (strcmp( argv[i], "-lut" ) == 0)
 		{
 			if (argc <= i+1)
@@ -298,7 +327,9 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	int result = 0;
 	if (useCDB)
 	{
-		HLTInfo("Loading lookup table information from CDB for DDL %d.", fDDL+1);
+		HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
+			fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+		);
 		if (fDDL == -1)
 			HLTWarning("DDL number not specified. The lookup table loaded from CDB will be empty!");
 		result = ReadCDB(cdbPath, run);
@@ -381,9 +412,14 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		
 		if (fDDL != -1)
 		{
-			if (AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification) != fDDL)
+			AliHLTInt32_t receivedDDL = AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification);
+			if (receivedDDL != fDDL)
 			{
-				HLTWarning("Received raw data from an unexpected DDL.");
+				HLTWarning("Received raw data from DDL %d (ID = %d),"
+					" but expect data only from DDL %d (ID = %d).",
+					receivedDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(receivedDDL),
+					fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+				);
 			}
 		}
 		
@@ -582,6 +618,12 @@ int AliHLTMUONHitReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
 	assert( fLut == NULL );
 	assert( fLutSize == 0 );
 	assert( fIdToEntry.empty() );
+	
+	if (fDDL == -1)
+	{
+		HLTError("No DDL number specified for which to load LUT data from CDB.");
+		return -EINVAL;
+	}
 	
 	std::vector<AliHLTMUONHitRecoLutRow> lutList;
 	AliHLTMUONHitRecoLutRow lut;

@@ -2776,13 +2776,16 @@ bool AliHLTMUONDataCheckerComponent::AreMomentaCompatible(
 	/// The vectors should not have an angle more than 10 degrees between
 	/// them and their magnitudes should not be more different than 50%.
 	
-	double p1 = sqrt(px1*px1 + py1*py1 + pz1*pz1);
-	double p2 = sqrt(px2*px2 + py2*py2 + pz2*pz2);
+	double p1 = sqrt(double(px1)*double(px1) + double(py1)*double(py1) + double(pz1)*double(pz1));
+	double p2 = sqrt(double(px2)*double(px2) + double(py2)*double(py2) + double(pz2)*double(pz2));
 	if (p1 == 0 and p2 == 0) return true;
 	if (fabs(p1 - p2) / ((p1 + p2)*0.5) > 0.5) return false;
 	double denom = p1 * p2;
 	if (denom == 0) return false;
-	double angle = acos( (px1*px2 + py1*py2 + pz1*pz2) / denom );
+	double ratio = (double(px1)*double(px2) + double(py1)*double(py2) + double(pz1)*double(pz2)) / denom;
+	if (ratio < -1) return true;
+	if (ratio > 1) return true;
+	double angle = acos(ratio);
 	if (angle > 3.14159265358979323846 * 10. / 180.) return false;
 	return true;
 }

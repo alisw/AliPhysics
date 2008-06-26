@@ -59,7 +59,8 @@ AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent
 	fTrigRec(NULL),
 	fDDL(-1),
 	fWarnForUnexpecedBlock(false),
-	fSuppressPartialTrigs(false)
+	fStopOnOverflow(false),
+	fUseCrateId(true)
 {
 	///
 	/// Default constructor.
@@ -161,12 +162,14 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	fDDL = -1;
 	fWarnForUnexpecedBlock = false;
-	fSuppressPartialTrigs = false;
+	fStopOnOverflow = false;
+	fUseCrateId = true;
 	
 	const char* lutFileName = NULL;
 	const char* cdbPath = NULL;
 	Int_t run = -1;
 	bool useCDB = false;
+	bool suppressPartialTrigs = true;
 	bool tryRecover = false;
 	
 	for (int i = 0; i < argc; i++)
@@ -211,13 +214,48 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			}
 			if (num < 21 or 22 < num)
 			{
-				HLTError("The DDL ID number must be in the range [21..22].");
+				HLTError("The DDL number must be in the range [21..22].");
 				// Make sure to delete fTrigRec to avoid partial initialisation.
 				delete fTrigRec;
 				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			fDDL = num - 1; // Convert to DDL number in the range 0..21
+			
+			i++;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-ddlid" ) == 0)
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("DDL equipment ID number not specified. It must be in the range [2816..2817]" );
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+		
+			char* cpErr = NULL;
+			unsigned long num = strtoul(argv[i+1], &cpErr, 0);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a DDL equipment ID Number.", argv[i+1]);
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+			fDDL = AliHLTMUONUtils::EquipIdToDDLNumber(num); // Convert to DDL number in the range 0..21
+			if (fDDL < 20 or 21 < fDDL)
+			{
+				HLTError("The DDL equipment ID number must be in the range [2816..2817].");
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
 			
 			i++;
 			continue;
@@ -281,13 +319,31 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-suppress_partial_triggers" ) == 0)
 		{
-			fSuppressPartialTrigs = true;
+			suppressPartialTrigs = true;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-generate_partial_triggers" ) == 0)
+		{
+			suppressPartialTrigs = false;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-stop_on_buffer_overflow" ) == 0)
+		{
+			fStopOnOverflow = true;
 			continue;
 		}
 		
 		if (strcmp( argv[i], "-tryrecover" ) == 0)
 		{
 			tryRecover = true;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-dont_use_crateid" ) == 0)
+		{
+			fUseCrateId = false;
 			continue;
 		}
 		
@@ -309,7 +365,9 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	int result = 0;
 	if (useCDB)
 	{
-		HLTInfo("Loading lookup table information from CDB for DDL %d.", fDDL+1);
+		HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
+			fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+		);
 		if (fDDL == -1)
 			HLTWarning("DDL number not specified. The lookup table loaded from CDB will be empty!");
 		result = ReadCDB(cdbPath, run);
@@ -329,7 +387,9 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		return result;
 	}
 	
+	fTrigRec->SuppressPartialTriggers(suppressPartialTrigs);
 	fTrigRec->TryRecover(tryRecover);
+	fTrigRec->UseCrateId(fUseCrateId);
 	
 	return 0;
 }
@@ -403,7 +463,11 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		{
 			if (receivedDDL != fDDL)
 			{
-				HLTWarning("Received raw data from an unexpected DDL.");
+				HLTWarning("Received raw data from DDL %d (ID = %d),"
+					" but expect data only from DDL %d (ID = %d).",
+					receivedDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(receivedDDL),
+					fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+				);
 			}
 		}
 		
@@ -443,14 +507,18 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		
 		bool runOk = fTrigRec->Run(
 				buffer, payloadSize, scalarEvent,
-				block.GetArray(), nofTrigRec,
-				fSuppressPartialTrigs
+				block.GetArray(), nofTrigRec
 			);
 		if (not runOk)
 		{
 			HLTError("Error while processing the trigger DDL reconstruction algorithm.");
-			size = totalSize; // Must tell the framework how much buffer space was used.
-			return -EIO;
+			if (not fTrigRec->OverflowedOutputBuffer()
+			    or (fTrigRec->OverflowedOutputBuffer() and fStopOnOverflow)
+			   )
+			{
+				size = totalSize; // Must tell the framework how much buffer space was used.
+				return -EIO;
+			}
 		}
 		
 		// nofTrigRec should now contain the number of triggers actually found
@@ -563,7 +631,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 	
 	AliHLTMUONTriggerRecoLookupTable* lookupTable = fTrigRec->LookupTableBuffer();
 	
-	for (Int_t i = 0; i < 8; i++)
+	for (Int_t i = 0; i < 16; i++)
 	for (Int_t j = 0; j < 16; j++)
 	for (Int_t k = 0; k < 4; k++)
 	for (Int_t n = 0; n < 2; n++)
@@ -581,8 +649,22 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 		AliMpTriggerCrate* crate = ddlStore->GetTriggerCrate(fDDL, iReg);
 		if (crate == NULL)
 		{
-			cerr << "ERROR: Could not get crate for regional header = " << iReg
-				<< ", and DDL ID = " << fDDL << endl;
+			HLTError("Could not get crate mapping for regional header = %d"
+				" and DDL %d (ID = %d).",
+				iReg, fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			continue;
+		}
+		// Depending on the value of fUseCrateId, use either the crate ID as would
+		// be found in the regional header structures or the sequencial index number
+		// of the structure.
+		UInt_t crateId = (fUseCrateId ? crate->GetId() : iReg);
+		if (crateId >= 16)
+		{
+			HLTError("The crate ID number (%d) for regional header = %d and"
+				" DDL %d (ID = %d) is too big. It should be in the range [0..15]",
+				crateId, iReg, fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
 			continue;
 		}
 		
@@ -594,7 +676,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 			AliMpLocalBoard* localBoard = ddlStore->GetLocalBoard(boardId);
 			if (localBoard == NULL)
 			{
-				cerr << "ERROR: Could not get loacl board: " << boardId << endl;
+				HLTError("Could not get local board: %d.", boardId);
 				continue;
 			}
 
@@ -610,8 +692,10 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 				const AliMUONGeometryDetElement* detElemTransform = transformer.GetDetElement(detElemId);
 				if (detElemTransform == NULL)
 				{
-					cerr << "ERROR: Got NULL pointer for geometry transformer for detection element ID = "
-						<< detElemId << endl;
+					HLTError("Got NULL pointer for geometry transformer"
+						" for detection element ID = %d.",
+						detElemId
+					);
 					continue;
 				}
 				
@@ -641,10 +725,10 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 						detElemTransform->Local2Global(lx, ly, 0, gx, gy, gz);
 						
 						// Fill the LUT
-						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fIdFlags = idflags;
-						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fX = gx;
-						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fY = gy;
-						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fZ = gz;
+						lookupTable->fRow[crateId][iLocBoard][iChamber][iCathode][bitxy].fIdFlags = idflags;
+						lookupTable->fRow[crateId][iLocBoard][iChamber][iCathode][bitxy].fX = gx;
+						lookupTable->fRow[crateId][iLocBoard][iChamber][iCathode][bitxy].fY = gy;
+						lookupTable->fRow[crateId][iLocBoard][iChamber][iCathode][bitxy].fZ = gz;
 					}
 				}
 			}
@@ -658,6 +742,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 		AliHLTInt32_t ddl, const char* filename,
 		const char* cdbPath, Int_t run
+		//TODO add option fCrateId
 	)
 {
 	/// Generates a binary file containing the lookup table (LUT) from the
@@ -702,7 +787,7 @@ bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 		);
 	if (not file)
 	{
-		cerr << "ERROR: There was a problem writing to the file: " << filename << endl;
+		std::cerr << "ERROR: There was a problem writing to the file: " << filename << std::endl;
 		return false;
 	}
 	file.close();
