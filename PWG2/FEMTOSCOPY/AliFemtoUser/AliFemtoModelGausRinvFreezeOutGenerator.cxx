@@ -16,7 +16,8 @@
 
 //_______________________
 AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator() :
-  fSizeInv(0)
+  fSizeInv(0),
+  fSelectPrimary(false)
 {
   // Default constructor
   fRandom = new TRandom2();
@@ -25,7 +26,8 @@ AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator
 //_______________________
 AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator(const AliFemtoModelGausRinvFreezeOutGenerator &aModel):
   AliFemtoModelFreezeOutGenerator(),
-  fSizeInv(0)
+  fSizeInv(0),
+  fSelectPrimary(false)
 {
   // Copy constructor
   fRandom = new TRandom2();
@@ -39,13 +41,39 @@ AliFemtoModelGausRinvFreezeOutGenerator::~AliFemtoModelGausRinvFreezeOutGenerato
 //_______________________
 void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aPair)
 {
-  // Generate two particle emission points with respect
-  // to their pair momentum 
-  // The source is the 3D Gaussian ellipsoid in the LCMS frame
   AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
   AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
 
   if ((!inf1) || (!inf2)) { cout << "Hidden info not created! "  << endl; exit(kFALSE); }
+
+  if (fSelectPrimary) {
+    // assume the emission point is in [cm] and try to judge if
+    // both particles are primary
+    Double_t dist1 = inf1->GetEmissionPoint()->perp();
+    Double_t dist2 = inf2->GetEmissionPoint()->perp();
+
+    if ((dist1 > 0.005) && (dist2 > 0.005)) {
+      // At least one particle is non primary
+      if (!(inf1->GetEmissionPoint())) {
+	AliFemtoLorentzVector tPos(-1000,1000,-500,0);
+	inf1->SetEmissionPoint(&tPos);
+      }
+      else
+	inf1->SetEmissionPoint(-1000,1000,-500,0);
+      if (!(inf2->GetEmissionPoint())) {
+	AliFemtoLorentzVector tPos(fRandom->Gaus(0,1000.0),fRandom->Gaus(0,1000),fRandom->Gaus(0,1000),0.0);
+	inf2->SetEmissionPoint(&tPos);
+      }
+      else
+	inf2->SetEmissionPoint(fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), 0.0);
+      
+      return;
+    }
+  }
+
+  // Generate two particle emission points with respect
+  // to their pair momentum 
+  // The source is the 3D Gaussian ellipsoid in the LCMS frame
 
   // Calculate sum momenta
   Double_t tPx = inf1->GetTrueMomentum()->x() + inf2->GetTrueMomentum()->x();
@@ -122,3 +150,13 @@ inline AliFemtoModelFreezeOutGenerator* AliFemtoModelGausRinvFreezeOutGenerator:
   AliFemtoModelFreezeOutGenerator* tModel = new AliFemtoModelGausRinvFreezeOutGenerator(*this); 
   return tModel; 
 }
+//_______________________
+void AliFemtoModelGausRinvFreezeOutGenerator::SetSelectPrimaryFromHidden(bool aUse)
+{
+  fSelectPrimary = aUse;
+}
+Bool_t AliFemtoModelGausRinvFreezeOutGenerator::GetSelectPrimaryFromHidden()
+{
+  return fSelectPrimary;
+}
+

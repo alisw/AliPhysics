@@ -347,9 +347,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	
       // Freeze-out coordinates
       double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
-      fpx = tPart->Vx();
-      fpy = tPart->Vy();
-      fpz = tPart->Vz();
+      fpx = tPart->Vx() - fV1[0];
+      fpy = tPart->Vy() - fV1[1];
+      fpz = tPart->Vz() - fV1[2];
       fpt = tPart->T();
 
       if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {

@@ -20,6 +20,9 @@ class AliFemtoModelGausRinvFreezeOutGenerator : public AliFemtoModelFreezeOutGen
   virtual ~AliFemtoModelGausRinvFreezeOutGenerator();
   virtual void GenerateFreezeOut(AliFemtoPair *aPair);
 
+  void SetSelectPrimaryFromHidden(bool aUse);
+  Bool_t GetSelectPrimaryFromHidden();
+
   void SetSizeInv(Double_t aSizeInv);
   
   Double_t GetSizeInv() const;
@@ -27,7 +30,12 @@ class AliFemtoModelGausRinvFreezeOutGenerator : public AliFemtoModelFreezeOutGen
   virtual AliFemtoModelFreezeOutGenerator* Clone() const;
 
  protected:
-  Double_t fSizeInv;
+  Double_t fSizeInv;        // Size of the source
+  Bool_t fSelectPrimary;    // If set to true, the existing hidden info is assumed
+                            // to contain the particle creation point (in cm)
+                            // and the model will try to guess whether the particle
+                            // is primary based on that and assign creation point
+                            // only for primary particles
 
  private:
   AliFemtoModelFreezeOutGenerator* GetGenerator() const;
