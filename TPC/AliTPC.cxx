@@ -1698,7 +1698,10 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
     Float_t *weight = & (fTPCParam->GetResWeight(0));
 
     if (n>0) for (Int_t i =0; i<n; i++){       
-      Int_t pad=index[1]+centralPad;  //in digit coordinates central pad has coordinate 0
+      //Int_t pad=index[1]+centralPad;  //in digit coordinates central pad has coordinate 0
+      Int_t pad = (xyz[1]>0.) ? index[1]+centralPad : index[1]+centralPad -1; //corr M.K.
+      pad = (xyz[2]>0.) ? pad : 2*centralPad-pad-1; // corr M.K.
+
 
       if (pad>=0){
 	Int_t time=index[2];	 

@@ -53,8 +53,6 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
-  Bool_t   GetBYMirror() const { return fBYMirror;}
-  void     SetBYMirror(Bool_t mirror)  { fBYMirror = mirror;} //
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
@@ -70,7 +68,6 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fCtgRange;        // +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
   Double_t fMaxSnpTracker;   // max sin of local angle  - for TPC tracker
   Double_t fMaxSnpTrack;     // max sin of local angle  - for track 
-  Bool_t   fBYMirror;        // mirror of the y - pad coordinate 
   //
   //   clusterer parameters
   //
@@ -97,7 +94,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //  misscalibration
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix    
-  ClassDef(AliTPCRecoParam, 3)
+  ClassDef(AliTPCRecoParam, 4)
 };
 
 

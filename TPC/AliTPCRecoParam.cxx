@@ -62,7 +62,6 @@ AliTPCRecoParam::AliTPCRecoParam():
   fCtgRange(1.05),       
   fMaxSnpTracker(0.95),
   fMaxSnpTrack(0.999),
-  fBYMirror(kTRUE),
   fDumpSignal(kFALSE),
   fFirstBin(0),
   fLastBin(-1),
@@ -136,7 +135,6 @@ AliTPCRecoParam *AliTPCRecoParam::GetHLTParam(){
   param->fLastBin  = 1000;  
   param->fMaxSnpTracker = 0.9; 
   param->fMaxC          = 0.06; 
-  param->fBYMirror      = kFALSE;
   //
   param->SetName("Hlt Param");
   param->SetTitle("Hlt Param"); 
@@ -160,7 +158,6 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   param->fMaxSnpTracker = 0.98;
   param->fMaxC          = 0.02;
   param->fBSpecialSeeding = kTRUE;
-  param->fBYMirror      = kFALSE;
   //
   //
   param->SetName("Laser Flux");
@@ -182,7 +179,6 @@ AliTPCRecoParam *AliTPCRecoParam::GetCosmicTestParam(Bool_t bPedestal){
   param->fBSpecialSeeding = kTRUE;
   param->fMaxC          = 0.07;
   param->fBKinkFinder   = kFALSE;
-  param->fBYMirror      = kFALSE;
   param->SetName("Cosmic Flux");
   param->SetTitle("Cosmic Flux");
 

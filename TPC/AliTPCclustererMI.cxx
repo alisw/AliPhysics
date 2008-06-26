@@ -591,10 +591,8 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
   c.SetZ(x[2]);
   //
   //
-  if (!fRecoParam->GetBYMirror()){
-    if (fSector%36>17){
-      c.SetY(-c.GetY());
-    }
+  if (fSector%36>17){
+    c.SetY(-c.GetY());
   }
 
   if (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2) {
