@@ -135,12 +135,10 @@ AliQADataMakerSteer::~AliQADataMakerSteer()
 		  fLoader[iDet] = NULL;
 		  if (fQADataMaker[iDet]) {
 			  (fQADataMaker[iDet])->Finish() ; 
-		//	  delete fQADataMaker[iDet] ;
 			  fQADataMaker[iDet] = NULL ;
 		  }
 		}
 	}
-	delete [] 	fQADataMaker ; 
 	if (fRawReaderDelete) { 
 		fRunLoader = NULL ;
 		delete fRawReader ;
