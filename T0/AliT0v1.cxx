@@ -125,7 +125,7 @@ void AliT0v1::CreateGeometry()
 		       -6.8, 4.25, 10., //-76.5+0.00+69.7
 		       -0.75 , 4.45, 10.,  // -76.5+6.05+69.7
 		       1.25   , 4.45, 10.,  //-76.5+8.05+69.7
-		       1.25 , 5.1, 10., //-76.5+8.05+69.7 
+		       1.25 , 5.1, 10, //-76.5+8.05+69.7 
 		       6.8 , 5.1, 10.};  //-62.9+0.00+69.7
   
   Float_t pstart[3]={4., 12.5,6.8};
@@ -211,7 +211,7 @@ void AliT0v1::CreateGeometry()
         
    //  14
 
-    ppcon[39] =  19.91;
+    ppcon[39] =  19.99;
     ppcon[40] =  3.15;
     ppcon[41] =  7.6;
 
@@ -379,10 +379,12 @@ void AliT0v1::CreateGeometry()
    
     par[0]=3.15;
     par[1]=4.9;
-    par[2]=0.1/2;
+    par[2]=0.01/2;
+
     gMC->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
     
-    z += par[2];
+     z += par[2];
+     //  z -= par[2];
     gMC->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
     par[0]=3.15;
@@ -393,13 +395,14 @@ void AliT0v1::CreateGeometry()
     gMC->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
     par[0]=3.16; // eta chast' prikruchena k absorberu
-    par[1]=7.5;
-    par[2]=0.1;
+    par[1]=7.4;
+    par[2]=0.01;
     gMC->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
-    z += par[2];
+    //   z += par[2];
+   z = ppcon[39] - par[2];
     gMC->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
     par[0]=3.16; // gvozdi eta chast' prikruchena k absorberu
-    par[1]=7.5;
+    par[1]=7.4;
     par[2]=0.01;
     gMC->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
     gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"MANY"); 
