@@ -45,7 +45,7 @@ AliFemtoModelGlobalHiddenInfo& AliFemtoModelGlobalHiddenInfo::operator=(const Al
     SetEmissionPoint(aInfo.GetEmissionPoint());
   if (aInfo.GetGlobalEmissionPoint())
     SetGlobalEmissionPoint(*aInfo.GetGlobalEmissionPoint());
-  else SetEmissionPoint(0);
+  else fGlobalEmissionPoint = 0;
   fPDGPid = aInfo.GetPDGPid();
   fMass = aInfo.GetMass();
 
