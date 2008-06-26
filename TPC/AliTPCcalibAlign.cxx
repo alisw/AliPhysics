@@ -248,34 +248,29 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   /*
     // Cuts to be justified with the debug streamer
     //
-    TCut c1pt("abs((tp1.fP[4]+tp2.fP[4])*0.5)<5"); // pt cut
-    TCut cd1pt("abs(tp1.fP[4]-tp2.fP[4])<0.5");
-    TCut c1ptpull("abs((tp1.fP[4]-tp2.fP[4])/sqrt(tp1.fC[14]+tp2.fC[14]))<5");
-    TCut csy("sqrt(tp1.fC[0]+tp2.fC[0])<0.5");
-    TCut csz("sqrt(tp1.fC[2]+tp2.fC[2])<0.3");
-    TCut cphi("abs(v1.fElements[3])<1")
-    TCut ctheta("abs(v1.fElements[4])<1")
+    TCut c1pt("abs((tp1.fP[4]+tp2.fP[4])*0.5)<3"); // pt cut  - OK
+    TCut cdy("abs(tp1.fP[0]-tp2.fP[0])<2");
+    TCut cdz("abs(tp1.fP[1]-tp2.fP[1])<2");
+    TCut cdphi("abs(tp1.fP[2]-tp2.fP[2])<0.02");
+    TCut cdt("abs(tp1.fP[3]-tp2.fP[3])<0.02");
+    TCut cd1pt("abs(tp1.fP[4]-tp2.fP[4])<0.3");    // delta 1/pt cut  -OK   
     //
     //
-    TCut acut =  c1ptpull+c1pt+cd1pt+csy+csz+cphi+ctheta;
+    TCut acut =  c1pt+cdy+cdz+cdphi+cdt+cd1pt;
   */
   //   1. pt cut
-  //   2. delta in curvature
-  //   3. pull in 1pt
-  //   4. sigma y
-  //   5. sigma z
-  //   6. angle phi
-  //   7. angle theta
-  Double_t sigma1pt  = TMath::Sqrt(tp1.GetSigma1Pt2()+tp1.GetSigma1Pt2());
-  Double_t delta1pt = (tp1.GetParameter()[4]-tp2.GetParameter()[4]);
-  Double_t pull1pt  = delta1pt/sigma1pt;
-  if (0.5*TMath::Abs(tp1.GetParameter()[4]+tp2.GetParameter()[4])>5) return;
-  if (TMath::Abs(delta1pt)>0.5) return;
-  if (TMath::Abs(pull1pt)>5)    return;
-  if (TMath::Sqrt(tp1.GetSigmaY2()+tp2.GetSigmaY2())>0.5)    return;
-  if (TMath::Sqrt(tp1.GetSigmaZ2()+tp2.GetSigmaZ2())>0.3)    return;
-  if (TMath::Abs(dydx1)>1.)    return;
-  if (TMath::Abs(dzdx1)>1.)    return;  
+  //   2. dy
+  //   3. dz
+  //   4. dphi
+  //   5. dtheta
+  //   6. d1pt
+
+  if (TMath::Abs(tp1.GetParameter()[0]-tp2.GetParameter()[0])>2)    return;
+  if (TMath::Abs(tp1.GetParameter()[1]-tp2.GetParameter()[1])>2)    return;
+  if (TMath::Abs(tp1.GetParameter()[2]-tp2.GetParameter()[2])>0.02) return;
+  if (TMath::Abs(tp1.GetParameter()[3]-tp2.GetParameter()[3])>0.02) return;
+  if (TMath::Abs(tp1.GetParameter()[4]-tp2.GetParameter()[4])>0.3)  return;
+  if (TMath::Abs((tp1.GetParameter()[4]+tp2.GetParameter()[4])*0.5)<3)  return;
   //
   // fill resolution histograms - previous cut included
   FillHisto(tp1,tp2,s1,s2);  

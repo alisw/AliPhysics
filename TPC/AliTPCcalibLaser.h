@@ -23,9 +23,8 @@ public:
   AliTPCcalibLaser();
   AliTPCcalibLaser(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibLaser();
-  virtual void Process(AliESDtrack *track);
+  virtual void Process(AliESDtrack *track, Int_t run);
   virtual void Analyze();
-  virtual void Terminate();  
   //
 
 private:

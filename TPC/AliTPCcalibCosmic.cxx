@@ -356,19 +356,6 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   }  
 }    
 
-/*
-
-
-void AliTPCcalibCosmic::dEdxCorrection(){
-  TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03")
-  TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5")
-  TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
-  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>70");
-}
-
-*/
-
-
 
 Long64_t AliTPCcalibCosmic::Merge(TCollection */*li*/) {
   
@@ -426,4 +413,50 @@ void AliTPCcalibCosmic::BinLogX(TH1 *h) {
   delete new_bins;
   
 }
+
+
+
+/*
+
+
+void AliTPCcalibCosmic::dEdxCorrection(){
+  TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");
+  TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5");
+  TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.2&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
+  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>70");
+  TCut cutA=cutT+cutD+cutPt+cutN;
+
+
+  .x ~/rootlogon.C
+   gSystem->Load("libSTAT.so");
+
+  Double_t chi2=0;
+  Int_t    npoints=0;
+  TVectorD fitParam;
+  TMatrixD covMatrix;
+  
+  chain->Draw("Tr0.fP[4]+Tr1.fP[4]","OK"+cutA);
+  
+  TString strFit;
+  strFit+="(Tr0.fP[1]/250)++";
+  strFit+="(Tr0.fP[1]/250)^2++";
+  strFit+="(Tr0.fP[3])++";
+  strFit+="(Tr0.fP[3])^2++";
+
+  TString * ptParam = TStatToolkit::FitPlane(chain,"Tr0.fP[4]+Tr1.fP[4]", strFit.Data(),cutA, chi2,npoints,fitParam,covMatrix) 
+
+strFit+="(Tr0.fP[1]/250)++";
+strFit+="(Tr0.fP[1]/250)^2++";
+strFit+="(Tr0.fP[3])++";
+strFit+="(Tr0.fP[3])^2++";
+strFit+="(Tr0.fP[1]/250)^2*Tr0.fP[3]++";
+strFit+="(Tr0.fP[1]/250)^2*Tr0.fP[3]^2++";
+//
+
+strFit+="sign(Tr0.fP[1])++"
+strFit+="sign(Tr0.fP[1])*(1-abs(Tr0.fP[1]/250))"
+					    
+TString * thetaParam = TStatToolkit::FitPlane(chain,"Tr0.fP[3]+Tr1.fP[3]", strFit.Data(),cutA, chi2,npoints,fitParam,covMatrix)
+*/
+
 
