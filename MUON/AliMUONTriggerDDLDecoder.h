@@ -635,10 +635,14 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeRegionalStructs(
 		
 		// Tell the handler that we have a new regional block and decode it.
 		// When done, tell the handler again.
+		// We call both versions of OnNewRegionalStruct so that user event
+		// handlers can implement the one they prefer to use.
 		const UChar_t* startOfLocals = current;
 		fHandler.OnNewRegionalStruct(regionalHeader, regionalScalars, startOfLocals);
+		fHandler.OnNewRegionalStructV2(iReg, regionalHeader, regionalScalars, startOfLocals);
 		current = DecodeLocalStructs(current, end, scalarEvent);
 		fHandler.OnEndOfRegionalStruct(regionalHeader, regionalScalars, startOfLocals);
+		fHandler.OnEndOfRegionalStructV2(iReg, regionalHeader, regionalScalars, startOfLocals);
 	}
 	
 	// Now just check that there is no extra rubbish at the end of the DDL.
@@ -785,7 +789,10 @@ const UChar_t* AliMUONTriggerDDLDecoder<EventHandler>::DecodeLocalStructs(
 			}
 		}
 		
+		// Call both handlers for local structures so that the user decoder event
+		// handler class can implement the one it prefers to use.
 		fHandler.OnLocalStruct(localStruct, localScalars);
+		fHandler.OnLocalStructV2(iLocal, localStruct, localScalars);
 	}
 	
 	return current;

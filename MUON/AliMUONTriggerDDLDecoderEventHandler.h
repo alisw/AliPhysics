@@ -242,6 +242,28 @@ public:
 	{
 	}
 	
+	/// The OnNewRegionalStructV2 method will be called for each regional header
+	/// found in the DDL payload.
+	/// The default behaviour of this method is to do nothing.
+	/// This method is an alternate version to OnNewRegionalStruct and an
+	/// inheriting class needs only implement one or the other version.
+	/// - param UInt_t  The structure index number of the regional structure.
+	/// - param const AliMUONRegionalHeaderStruct*  A pointer to the regional
+	///       structure header.
+	/// - param const AliMUONRegionalScalarsStruct*  The regional scalars found
+	///       in the raw data. If there are no scalars in the data then this
+	///       pointer is set to NULL.
+	/// - param const void*  A pointer to the start of the local trigger
+	///       structures data for this regional block.
+	void OnNewRegionalStructV2(
+			UInt_t /*num*/,
+			const AliMUONRegionalHeaderStruct* /*regionalStruct*/,
+			const AliMUONRegionalScalarsStruct* /*scalars*/,
+			const void* /*data*/
+		)
+	{
+	}
+	
 	/// The OnEndOfRegionalStruct method will be called whenever a regional
 	/// structure has been processed. For each OnNewRegionalStruct method
 	/// call a symmetric call to OnEndOfRegionalStruct is made after processing
@@ -262,6 +284,30 @@ public:
 	{
 	}
 	
+	/// The OnEndOfRegionalStructV2 method will be called whenever a regional
+	/// structure has been processed. For each OnNewRegionalStruct method
+	/// call a symmetric call to OnEndOfRegionalStruct is made after processing
+	/// of the regional structure is done (after the last call to OnLocalStruct
+	/// for that regional structure).
+	/// This method is an alternate version to OnEndOfRegionalStruct and an
+	/// inheriting class needs only implement one or the other version.
+	/// - param UInt_t  The structure index number of the regional structure.
+	/// - param const AliMUONRegionalHeaderStruct*  A pointer to the regional
+	///       structure header.
+	/// - param const AliMUONRegionalScalarsStruct*  The regional scalars found
+	///       in the raw data. If there are no scalars in the data then this
+	///       pointer is set to NULL.
+	/// - param const void*  A pointer to the start of the local trigger
+	///       structures data for this regional block.
+	void OnEndOfRegionalStructV2(
+			UInt_t /*num*/,
+			const AliMUONRegionalHeaderStruct* /*regionalStruct*/,
+			const AliMUONRegionalScalarsStruct* /*scalars*/,
+			const void* /*data*/
+		)
+	{
+	}
+	
 	/// The OnLocalStruct method will be called for each local trigger
 	/// structure found in the DDL payload. The user must overload this
 	/// method to process the local structures as needed.
@@ -272,6 +318,26 @@ public:
 	///       in the raw data. If there are no scalars in the data then this
 	///       pointer is set to NULL.
 	void OnLocalStruct(
+			const AliMUONLocalInfoStruct* /*localStruct*/,
+			const AliMUONLocalScalarsStruct* /*scalars*/
+		)
+	{
+	}
+	
+	/// The OnLocalStructV2 method will be called for each local trigger
+	/// structure found in the DDL payload. The user must overload this
+	/// method to process the local structures as needed.
+	/// The default behaviour of this method is to do nothing.
+	/// This method is an alternate version to OnLocalStruct and an
+	/// inheriting class needs only implement one or the other version.
+	/// - param UInt_t  The structure index number of the local structure.
+	/// - param const AliMUONRegionalHeaderStruct*  A pointer to the local
+	///       trigger structure found.
+	/// - param const AliMUONRegionalScalarsStruct*  The local scalars found
+	///       in the raw data. If there are no scalars in the data then this
+	///       pointer is set to NULL.
+	void OnLocalStructV2(
+			UInt_t /*num*/,
 			const AliMUONLocalInfoStruct* /*localStruct*/,
 			const AliMUONLocalScalarsStruct* /*scalars*/
 		)
@@ -345,7 +411,7 @@ public:
 	static UChar_t GetRegionalResetNb(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (UChar_t)(header->fWord >> 25) &  0x20;
+		return (UChar_t)(header->fWord >> 25) &  0x3F;
 	}
 	
 	/// Return SerialNb
@@ -380,70 +446,70 @@ public:
 	static UShort_t GetRegionalErrorBits(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (UShort_t)(header->fDarcWord >> 21) &  0x3FF;
+		return (UShort_t)(header->fDarcWord >> 22) &  0x3FF;
 	}
 	
 	/// Return FPGANumber
 	static UChar_t GetRegionalFPGANumber(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (UChar_t)  (header->fDarcWord >> 18) &  0x7;
+		return (UChar_t)  (header->fDarcWord >> 19) &  0x7;
 	}
 	
 	/// Return DarcPhysFlag
 	static bool GetRegionalDarcPhysFlag(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x1000) != 0;
+		return (header->fDarcWord  &  0x8000) != 0;
 	}
 	
 	/// Return PresentFlag
 	static bool GetRegionalPresentFlag(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x800) != 0;
+		return (header->fDarcWord  &  0x4000) != 0;
 	}
 	
 	/// Return RamNotFullFlag
 	static bool GetRegionalRamNotFullFlag(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x400) != 0;
+		return (header->fDarcWord  &  0x2000) != 0;
 	}
 	
 	/// Return RamNotEmptyFlag
 	static bool GetRegionalRamNotEmptyFlag(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x200) != 0;
+		return (header->fDarcWord  &  0x1000) != 0;
 	}
 	
 	/// Return L2RejStatus
 	static bool GetRegionalL2RejStatus(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x100) != 0;
+		return (header->fDarcWord  &  0x800) != 0;
 	}
 	
 	/// Return L2AccStatus
 	static bool GetRegionalL2AccStatus(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x80) != 0;
+		return (header->fDarcWord  &  0x400) != 0;
 	}
 	
 	/// Return L1Status
 	static bool GetRegionalL1Status(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x40) != 0;
+		return (header->fDarcWord  &  0x200) != 0;
 	}
 	
 	/// Return L0Status
 	static bool GetRegionalL0Status(const AliMUONRegionalHeaderStruct* header)
 	{
 		assert( header != NULL );
-		return (header->fDarcWord  &  0x20) != 0;
+		return (header->fDarcWord  &  0x100) != 0;
 	}
 	
 	/// Return EventInRam
