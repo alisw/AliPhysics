@@ -23,7 +23,7 @@ public:
   virtual ~AliTPCcalibBase();
   virtual void     Process(AliESDEvent */*event*/){return;}
   virtual void     Process(AliTPCseed */*track*/){return;}
-  virtual void     Process(AliESDtrack */*track*/){return;}
+  virtual void     Process(AliESDtrack */*track*/, Int_t /*runNo=-1*/){return;}
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
   virtual void     Terminate();

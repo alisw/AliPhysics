@@ -33,7 +33,7 @@ public:
 protected:
   virtual void     Process(AliESDEvent *event);
   virtual void     Process(AliTPCseed *track);
-  virtual void     Process(AliESDtrack *track);
+  virtual void     Process(AliESDtrack *track, Int_t run);
   virtual Long64_t Merge(TCollection *li);
   virtual void     Analyze();
   void             RegisterDebugOutput();

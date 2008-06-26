@@ -86,6 +86,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   }
   Int_t n=fESD->GetNumberOfTracks();
   Process(fESD);
+  Int_t run = fESD->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
     AliESDtrack *track=fESD->GetTrack(i);
@@ -94,7 +95,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
-    if (track) Process(track);
+    if (track) Process(track, run);
     if (seed)
       Process(seed);
   }
@@ -173,7 +174,7 @@ void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
   }
 }
 
-void AliTPCAnalysisTaskcalib::Process(AliESDtrack *track) {
+void AliTPCAnalysisTaskcalib::Process(AliESDtrack *track, Int_t run) {
   //
   // Process ESD track
   //
@@ -181,7 +182,7 @@ void AliTPCAnalysisTaskcalib::Process(AliESDtrack *track) {
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
-    if (job) job->Process(track);
+    if (job) job->Process(track,run);
   }
 }
 
