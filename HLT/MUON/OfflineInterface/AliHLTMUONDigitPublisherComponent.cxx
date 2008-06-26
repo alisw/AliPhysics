@@ -999,10 +999,10 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
       // fill darc word, not darc status for the moment (empty)
       //see  AliMUONRegHeader.h for details
       AliBitPacking::PackWord((UInt_t)eventPhys,word,31,31); 
-      AliBitPacking::PackWord((UInt_t)serialNb,word,19,24); 
-      AliBitPacking::PackWord((UInt_t)version,word,7,14);
-      AliBitPacking::PackWord((UInt_t)iReg,word,15,18);
-      AliBitPacking::PackWord((UInt_t)regOut,word,0,7); 
+      AliBitPacking::PackWord((UInt_t)serialNb,word,20,25); 
+      AliBitPacking::PackWord((UInt_t)version,word,8,15);
+      AliBitPacking::PackWord((UInt_t)crate->GetId(),word,16,19);
+      AliBitPacking::PackWord((UInt_t)regOut,word,0,7);
       regHeader.SetWord(word);
 
 
