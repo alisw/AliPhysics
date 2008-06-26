@@ -23,6 +23,7 @@
 
 #include "TParticle.h"
 #include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoModelGlobalHiddenInfo.h"
 #include "AliGenHijingEventHeader.h"
 
 ClassImp(AliFemtoEventReaderESDChainKine)
@@ -352,6 +353,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       fpz = tPart->Vz() - fV1[2];
       fpt = tPart->T();
 
+      AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
+      tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+
       if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
  	TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
  	// Check if this is the same particle stored twice on the stack
@@ -367,7 +371,6 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	}
       }
 
-      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
       tInfo->SetPDGPid(tPart->GetPdgCode());
       tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
       Double_t mass2 = (tPart->Energy() *tPart->Energy() -

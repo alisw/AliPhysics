@@ -47,6 +47,7 @@ public:
 private:
   TH2D *fVertPos;    // Vertex position x vs. y monitor
   TH2D *fEtaZ;       // Vertex z position vs. eta monitor
+  TH1D *fRadPos;     // Radial position close to vertex
 };
 
 #endif
