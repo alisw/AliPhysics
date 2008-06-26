@@ -19,9 +19,9 @@ ln -s ../geometry.root
 ln -s ../raw.root
 ln -s ../DB 
 ln -si $ALICE_ROOT/test/QA/recraw.C recraw.C
-aliroot -b -q recraw.C  > recraw.log 2>&1
+aliroot -b -q recraw.C  > recraw.log 
 cp  $ALICE_ROOT/test/QA/rawqa.C .
-alienaliroot -b > rawqa.log 2>&1 << EOF
+alienaliroot -b > rawqa.log << EOF
 .x  $ALICE_ROOT/test/QA/rootlogon.C
 .L rawqa.C++
 rawqa(21950, 10)
