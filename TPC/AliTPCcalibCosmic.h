@@ -37,6 +37,7 @@ public:
   Float_t fCutMaxD;     // maximal distance in rfi ditection
   Float_t fCutTheta;    // maximal distance in theta ditection
   Float_t fCutMinDir;   // direction vector products
+private:
   AliTPCcalibCosmic(const AliTPCcalibCosmic&); 
   AliTPCcalibCosmic& operator=(const AliTPCcalibCosmic&); 
 
