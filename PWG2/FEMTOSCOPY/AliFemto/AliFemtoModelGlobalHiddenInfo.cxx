@@ -27,8 +27,8 @@ AliFemtoModelGlobalHiddenInfo::AliFemtoModelGlobalHiddenInfo(const AliFemtoModel
 AliFemtoModelGlobalHiddenInfo::~AliFemtoModelGlobalHiddenInfo()
 {
   // Destructor
-  if (fTrueMomentum) delete fTrueMomentum;
-  if (fEmissionPoint) delete fEmissionPoint;
+//   if (fTrueMomentum) delete fTrueMomentum;
+//   if (fEmissionPoint) delete fEmissionPoint;
   if (fGlobalEmissionPoint) delete fGlobalEmissionPoint;
 }
 //_____________________________________________
@@ -43,6 +43,7 @@ AliFemtoModelGlobalHiddenInfo& AliFemtoModelGlobalHiddenInfo::operator=(const Al
   else SetTrueMomentum(0);
   if (aInfo.GetEmissionPoint())
     SetEmissionPoint(aInfo.GetEmissionPoint());
+  else SetEmissionPoint(0);
   if (aInfo.GetGlobalEmissionPoint())
     SetGlobalEmissionPoint(*aInfo.GetGlobalEmissionPoint());
   else fGlobalEmissionPoint = 0;
