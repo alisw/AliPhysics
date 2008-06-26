@@ -25,6 +25,10 @@
 #include "AliTPCseed.h"
 #include "AliTPCReconstructor.h"
 #include "AliTPCClusterParam.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
+
+
 
 ClassImp(AliTPCseed)
 
@@ -1029,7 +1033,7 @@ Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 
 
 
-Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2){
+Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, AliTPCCalPad * gainMap){
  
   //
   // calculates dedx using the cluster
@@ -1050,11 +1054,19 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
   const Float_t kedgey =4.;
   //
+  Float_t globalMeanGain = 0;
+  if (gainMap) globalMeanGain = gainMap->GetMean(0);
+  //
   for (Int_t irow=i1; irow<i2; irow++){
     AliTPCclusterMI* cluster = GetClusterPointer(irow);
     if (!cluster) continue;
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
     Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
+    if (gainMap) {
+     AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
+     Float_t factor = roc->GetValue(irow, TMath::Nint(cluster->GetPad()));
+     if (globalMeanGain != 0) charge *= factor/globalMeanGain;
+    }
     //do normalization
     Float_t corr=1;
     Int_t  ipad= 0;

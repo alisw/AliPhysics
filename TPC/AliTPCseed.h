@@ -25,7 +25,8 @@ class AliTPCParam;
 class AliTPCseed;
 class AliTPCclusterMI;
 class AliTPCTrackerPoint;
-class AliESD;   
+class AliESD;
+class AliTPCCalPad;
 class TClonesArray;
 
 class AliTPCseed : public AliTPCtrack {
@@ -136,7 +137,7 @@ class AliTPCseed : public AliTPCtrack {
      const TBits& GetClusterMap() const { return fClusterMap; };
      const TBits& GetSharedMap() const { return fSharedMap; };
 
-     Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159);
+     Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, AliTPCCalPad * gainMap = 0);
 
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
