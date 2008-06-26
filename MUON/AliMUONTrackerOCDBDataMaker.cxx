@@ -267,8 +267,10 @@ AliMUONTrackerOCDBDataMaker::SplitQuality(const AliMUONVStore& gains)
         nd->SetValueAsDouble(i,m,param->ValueAsFloat(i,k));
       }
       Int_t qual = param->ValueAsInt(i,3);
-      Int_t q1 = ( qual & 0xF );
-      Int_t q2 = ( qual & 0xF0 );
+			
+			Int_t q1 = (qual & 0xF0) >> 4;  // linear fit quality
+			Int_t q2 = qual & 0xF;		// parabolic fit quality
+			
       nd->SetValueAsInt(i,3,q1);
       nd->SetValueAsInt(i,4,q2);
     }
