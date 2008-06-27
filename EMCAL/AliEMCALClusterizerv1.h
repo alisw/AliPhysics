@@ -67,33 +67,12 @@ public:
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
   virtual const char * Version() const { return "clu-v1" ; }  
- 
-  //JLK
-  //TList* BookHists();
-  //void   SaveHists(const char *fn="reco.root");  //*MENU*
-  //void   DrawLambdasHists();                     //*MENU*
 
   void   PrintRecoInfo();                        //*MENU*
 
 protected:
 
   virtual void   MakeClusters();            
-
-  //JLK
-///////////////////// 
-  // TList  *fHists;   //!
-  // TH1F* fPointE;    //histogram of point energy
-  // TH1F* fPointL1;   //histogram of point L1
-  // TH1F* fPointL2;   //histogram of point L2
-  // TH1F* fPointDis;  //histogram of point dispersion
-  // TH1F* fPointMult; //histogram of point multiplicity
-  // TH1F* fDigitAmp;  //histogram of digit ADC Amplitude
-  // TH1F* fMaxE;      //histogram of maximum point energy
-  // TH1F* fMaxL1;     //histogram of largest (first) of eigenvalue of covariance matrix
-  // TH1F* fMaxL2;     //histogram of smalest (second) of eigenvalue of covariace matrix
-  // TH1F* fMaxDis;    //histogram of point dispersion
-///////////////////////
-
 
 private:
   AliEMCALClusterizerv1(const AliEMCALClusterizerv1 &); //copy ctor
@@ -131,8 +110,6 @@ private:
   Float_t fTimeCut ;                // Maximum time difference between the digits in ont EMC cluster
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
 
-  //JLK
-  //ClassDef(AliEMCALClusterizerv1,6)   // Clusterizer implementation version 1
   ClassDef(AliEMCALClusterizerv1,7)   // Clusterizer implementation version 1
 
 };

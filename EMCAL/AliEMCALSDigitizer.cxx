@@ -20,6 +20,13 @@
 // A Summable Digits is the sum of all hits originating 
 // from one in one tower of the EMCAL 
 // A threshold for assignment of the primary to SDigit is applied 
+//
+// JLK 26-Jun-2008 Added explanation:
+// SDigits need to hold the energy sum of the hits, but AliEMCALDigit
+// can (should) only store amplitude.  Therefore, the SDigit energy is
+// "digitized" before being stored and must be "calibrated" back to an
+// energy before SDigits are summed to form true Digits
+//
 // SDigits are written to TreeS, branch "EMCAL"
 // AliEMCALSDigitizer with all current parameters is written 
 // to TreeS branch "AliEMCALSDigitizer".
@@ -50,7 +57,6 @@
 
 // --- ROOT system ---
 #include <TBenchmark.h>
-#include <TH1.h>
 #include <TBrowser.h>
 #include <Riostream.h>
 #include <TMath.h>
@@ -68,8 +74,6 @@
 #include "AliEMCALHit.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
-//JLK
-//#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -84,9 +88,6 @@ AliEMCALSDigitizer::AliEMCALSDigitizer()
     fFirstEvent(0),
     fLastEvent(0),
     fSampling(0.)
-    //JLK 
-    //fControlHists(0),
-    //fHists(0)
 {
   // ctor
   InitParameters();
@@ -104,16 +105,11 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
     fFirstEvent(0),
     fLastEvent(0),
     fSampling(0.)
-    //JLK
-    //fControlHists(1),
-    //fHists(0)
 {
   // ctor
   Init();
   InitParameters() ; 
 
-  //JLK
-  //if(fControlHists) BookControlHists(1);
 }
 
 
@@ -130,9 +126,6 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd)
     fFirstEvent(sd.fFirstEvent),
     fLastEvent(sd.fLastEvent),
     fSampling(sd.fSampling)
-    //JLK
-    //fControlHists(sd.fControlHists),
-    //fHists(sd.fHists)
 {
   //cpy ctor 
 }
@@ -178,6 +171,16 @@ void AliEMCALSDigitizer::InitParameters()
   if (geom->GetSampling() == 0.) {
     Fatal("InitParameters", "Sampling factor not set !") ; 
   }
+
+  //
+  //JLK 26-Jun-2008 THIS SHOULD HAVE BEEN EXPLAINED AGES AGO:
+  //
+  //In order to be able to store SDigit Energy info into
+  //AliEMCALDigit, we need to convert it temporarily to an ADC amplitude
+  //and later when summing SDigits to form digits, convert it back to
+  //energy.  These fA and fB parameters accomplish this through the
+  //Digitize() and Calibrate() methods
+  //
   // Initializes parameters
   fA         = 0;
   fB         = 1.e+6;  // Changed 24 Apr 2007. Dynamic range now 2 TeV
@@ -197,7 +200,6 @@ void AliEMCALSDigitizer::InitParameters()
   AliDebug(2,Form("   Sampling                             = %f\n", fSampling));
   AliDebug(2,Form("---------------------------------------------------\n"));
 
-  //  Print("");
 
 }
 
@@ -219,7 +221,6 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     AliDebug(2,Form("   Sampling                             = %f\n", fSampling));
     AliDebug(2,Form("---------------------------------------------------\n"));
 
-    //    Print();
     return ; 
   }
   
@@ -308,23 +309,11 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     
     nSdigits = sdigits->GetEntriesFast() ;
     fSDigitsInRun += nSdigits ;  
-    
-    //JLK
-    //Double_t e=0.,esum=0.;
-    //AliEMCALHistoUtilities::FillH1(fHists, 0, double(sdigits->GetEntriesFast()));
+
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
       AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
       sdigit->SetIndexInList(i) ;
-      
-      //JLK
-      //AliEMCALHistoUtilities::FillH1(fHists, 2, double(sdigit->GetAmp()));
-      //e = double(Calibrate(sdigit->GetAmp()));
-      //esum += e;
-      //AliEMCALHistoUtilities::FillH1(fHists, 3, e);
-      //AliEMCALHistoUtilities::FillH1(fHists, 4, double(sdigit->GetId()));
     }
-    //JLK
-    //if(esum>0.) AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
     
     // Now write SDigits    
     
@@ -360,19 +349,45 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 //__________________________________________________________________
 Int_t AliEMCALSDigitizer::Digitize(Float_t energy)const {
   // Digitize the energy
-    Double_t aSignal = fA + energy*fB;
-    if (TMath::Abs(aSignal)>2147483647.0) { 
-      //PH 2147483647 is the max. integer
-      //PH This apparently is a problem which needs investigation
-      AliWarning(Form("Too big or too small energy %f",aSignal));
-      aSignal = TMath::Sign((Double_t)2147483647,aSignal);
-    }
-    return (Int_t ) aSignal;
+  //
+  //JLK 26-Jun-2008 EXPLANATION LONG OVERDUE:
+  //
+  //We have to digitize the SDigit energy so that it can be stored in
+  //AliEMCALDigit, which has only an ADC amplitude member and
+  //(rightly) no energy member.  This method converts the energy to an
+  //integer which can be re-converted back to an energy with the
+  //Calibrate(energy) method when it is time to create Digits from SDigits 
+  //
+  Double_t aSignal = fA + energy*fB;
+  if (TMath::Abs(aSignal)>2147483647.0) { 
+    //PH 2147483647 is the max. integer
+    //PH This apparently is a problem which needs investigation
+    AliWarning(Form("Too big or too small energy %f",aSignal));
+    aSignal = TMath::Sign((Double_t)2147483647,aSignal);
   }
+  return (Int_t ) aSignal;
+}
+
+//__________________________________________________________________
+Float_t AliEMCALSDigitizer::Calibrate(Int_t amp)const {
+  //
+  // Convert the amplitude back to energy in GeV
+  //
+  //JLK 26-Jun-2008 EXPLANATION LONG OVERDUE:
+  //
+  //We have to digitize the SDigit energy with the method Digitize() 
+  //so that it can be stored in AliEMCALDigit, which has only an ADC 
+  //amplitude member and (rightly) no energy member.  This method is
+  //just the reverse of Digitize(): it converts the stored amplitude 
+  //back to an energy value in GeV so that the SDigit energies can be 
+  //summed before adding noise and creating digits out of them
+  //
+  return (Float_t)(amp - fA)/fB;
+
+}
  
 
 //__________________________________________________________________
-
 void AliEMCALSDigitizer::Print1(Option_t * option)
 {
   Print(); 
@@ -439,7 +454,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
       }  	 
     }
     delete tempo ;
-    printf("\n** Sum %i : %10.3f GeV/c **\n ", isum, double(isum)*1.e-6);
+    printf("\n** Sum %i : %10.3f GeV/c **\n ", isum, Calibrate(isum));
   } else printf("\n");
 }
 
@@ -455,38 +470,5 @@ void AliEMCALSDigitizer::Unload() const
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::Browse(TBrowser* b)
 {
-  //JLK
-  //if(fHists) b->Add(fHists);
   TTask::Browse(b);
 }
-
-/*
-//____________________________________________________________________________ 
-TList *AliEMCALSDigitizer::BookControlHists(int var)
-{ 
-  //book histograms for monitoring sdigitization
-  // 22-nov-04
-  gROOT->cd();
-  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance() ;
-  if(var>=1){
-    AliDebug(1, " BookControlHists() in action ");
-    new TH1F("HSDigiN",  "#EMCAL  sdigits ", 1001, -0.5, 1000.5);
-    new TH1F("HSDigiSumEnergy","Sum.EMCAL energy", 1000, 0.0, 100.);
-    new TH1F("HSDigiAmp",  "EMCAL sdigits amplitude", 1000, 0., 2.e+9);
-    new TH1F("HSDigiEnergy","EMCAL cell energy", 1000, 0.0, 100.);
-    new TH1F("HSDigiAbsId","EMCAL absID for sdigits",
-    geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
-  }
-
-  fHists = AliEMCALHistoUtilities::MoveHistsToList("EmcalSDigiControlHists", kFALSE);
-  //  fHists = 0; ??
-
-  return fHists;
-}
-
-//____________________________________________________________________________ 
-void AliEMCALSDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
-{
-  AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 
-}
-*/

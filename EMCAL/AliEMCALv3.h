@@ -11,11 +11,6 @@
 //*--                  
 //*-- Author:  Aleksei Pavlinov
 
-class TClonesArray;
-class TLorentzVector;
-class TFile;
-class TH1F;
-
 class AliEMCALGeometry;
 
 // --- AliRoot header files ---
@@ -36,7 +31,6 @@ public:
 			Int_t id, Float_t *hits, Float_t *p);
 
   virtual void StepManager(void) ;
-  virtual void FinishEvent();
 
   // Gives the version number 
   virtual Int_t  IsVersion(void) const {return 3;}
@@ -45,15 +39,11 @@ public:
     Fatal("operator =", "not implemented") ;  
     return *this;}
 
-  virtual Double_t GetDepositEnergy(int print=1); // *MENU*
   virtual void Browse(TBrowser* b);
 
   AliEMCALGeometry* fGeometry; //!
-  TH1F*             fHDe;      //!
-  TH1F*             fHNhits;   //!
-  TH1F*             fHDeDz;     //!
 
-  ClassDef(AliEMCALv3,0)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
+  ClassDef(AliEMCALv3,1)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
     
 };
 

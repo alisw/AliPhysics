@@ -73,8 +73,6 @@ class TSystem;
 #include "AliEMCALDigitizer.h"
 #include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
-//JLK
-//#include "AliEMCALHistoUtilities.h"
 #include "AliEMCALRecParam.h"
 #include "AliEMCALReconstructor.h"
 #include "AliCDBManager.h"
@@ -87,10 +85,6 @@ ClassImp(AliEMCALClusterizerv1)
 //____________________________________________________________________________
 AliEMCALClusterizerv1::AliEMCALClusterizerv1()
   : AliEMCALClusterizer(),
-    //JLK
-    //fHists(0),fPointE(0),fPointL1(0),fPointL2(0),
-    //fPointDis(0),fPointMult(0),fDigitAmp(0),fMaxE(0),
-    //fMaxL1(0),fMaxL2(0),fMaxDis(0),
     fGeom(0),
     fDefaultInit(kFALSE),
     fToUnfold(kFALSE),
@@ -333,8 +327,6 @@ void AliEMCALClusterizerv1::Init()
   if(!gMinuit) 
     gMinuit = new TMinuit(100) ;
 
-  //JLK
-  //fHists = BookHists();
 }
 
 //____________________________________________________________________________
@@ -424,9 +416,6 @@ void AliEMCALClusterizerv1::MakeClusters()
 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // clean up digits
     e = Calibrate(digit->GetAmp(), digit->GetId());
-    //JLK
-    //AliEMCALHistoUtilities::FillH1(fHists, 10, digit->GetAmp());
-    //AliEMCALHistoUtilities::FillH1(fHists, 11, e);
     if ( e < fMinECut || digit->GetTimeR() > fTimeCut ) 
       digitsC->Remove(digit);
     else    
@@ -443,6 +432,7 @@ void AliEMCALClusterizerv1::MakeClusters()
     if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp(), digit->GetId()) > fECAClusteringThreshold  ) ){
       // start a new Tower RecPoint
       if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
+
       AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
       fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
       recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
@@ -477,7 +467,7 @@ void AliEMCALClusterizerv1::MakeClusters()
   } // while digit 
 
   delete digitsC ;
-
+  
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
 }
 
@@ -775,13 +765,6 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
       printf("Index    Ene(GeV) Multi Module     GX    GY   GZ  lX    lY   lZ   Dispersion Lambda 1   Lambda 2  # of prim  Primaries list\n") ;
     }
    Int_t index =0;
-   Float_t maxE=0; 
-   Float_t maxL1=0; 
-   Float_t maxL2=0; 
-   Float_t maxDis=0; 
-
-   //JLK
-   //AliEMCALHistoUtilities::FillH1(fHists, 12, double(fRecPoints->GetEntries()));
 
     for (index = 0 ; index < fRecPoints->GetEntries() ; index++) {
       AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint * >(fRecPoints->At(index)) ; 
@@ -799,20 +782,6 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 	     rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(),
 	     globalpos.X(), globalpos.Y(), globalpos.Z(), localpos.X(), localpos.Y(), localpos.Z(), 
 	     rp->GetDispersion(), lambda[0], lambda[1], nprimaries) ; 
-  /////////////
-      if(rp->GetEnergy()>maxE){
-	      maxE=rp->GetEnergy();
-	      maxL1=lambda[0];
-	      maxL2=lambda[1];
-	      maxDis=rp->GetDispersion();
-      }
-      //JLK
-      //fPointE->Fill(rp->GetEnergy());
-      //fPointL1->Fill(lambda[0]);
-      //fPointL2->Fill(lambda[1]);
-      //fPointDis->Fill(rp->GetDispersion());
-      //fPointMult->Fill(rp->GetMultiplicity());
-      ///////////// 
       if(strstr(option,"deb")){ 
         for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
 	  printf("%d ", primaries[iprimary] ) ; 
@@ -820,75 +789,14 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
       }
     }
 
-    //JLK
-    //      fMaxE->Fill(maxE);
-    //  fMaxL1->Fill(maxL1);
-    //  fMaxL2->Fill(maxL2);
-    //  fMaxDis->Fill(maxDis);
-
     if(strstr(option,"deb"))
     printf("\n-----------------------------------------------------------------------\n");
   }
 }
 
-/*
-TList* AliEMCALClusterizerv1::BookHists()
-{
-  //set up histograms for monitoring clusterizer performance
-
-  gROOT->cd();
-
-	fPointE = new TH1F("00_pointE","point energy", 2000, 0.0, 150.);
-	fPointL1 = new TH1F("01_pointL1","point L1", 1000, 0.0, 3.);
-	fPointL2 = new TH1F("02_pointL2","point L2", 1000, 0.0, 3.);
-	fPointDis = new TH1F("03_pointDisp","point dispersion", 1000, 0.0, 10.);
-	fPointMult = new TH1F("04_pointMult","#cell in point(cluster)", 101, -0.5, 100.5);
-	fDigitAmp = new TH1F("05_digitAmp","Digit Amplitude", 2000, 0.0, 5000.);
-	fMaxE = new TH1F("06_maxE","Max point energy", 2000, 0.0, 150.);
-	fMaxL1 = new TH1F("07_maxL1","Largest (first) of eigenvalue of covariance matrix", 1000, 0.0, 3.);
-	fMaxL2 = new TH1F("08_maxL2","Smalest (second) of eigenvalue of covariace matrix", 1000, 0.0, 3.);
-	fMaxDis = new TH1F("09_maxDis","Point dispersion", 1000, 0.0, 10.); // 9
-	//
-        new TH1F("10_adcOfDigits","adc of digits(threshold control)", 1001, -0.5, 1000.5);   // 10
-        new TH1F("11_energyOfDigits","energy of digits(threshold control)", 1000, 0.0, 1.);  // 11
-        new TH1F("12_numberOfPoints","number of points(clusters)", 101, -0.5, 100.5);        // 12
-
-  return AliEMCALHistoUtilities::MoveHistsToList("EmcalClusterizerv1ControlHists", kFALSE);
-}
-
-void AliEMCALClusterizerv1::SaveHists(const char *fn)
-{
-  AliEMCALHistoUtilities::SaveListOfHists(fHists, fn, kTRUE);
-}
-*/
-
 //___________________________________________________________________
 void  AliEMCALClusterizerv1::PrintRecoInfo()
 {
   printf(" AliEMCALClusterizerv1::PrintRecoInfo() : version %s \n", Version() );
-  //JLK
-  //TH1F *h = (TH1F*)fHists->At(12);
-  //if(h) {
-  //  printf(" ## Multiplicity of RecPoints ## \n");
-  //  for(int i=1; i<=h->GetNbinsX(); i++) {
-  //    int nbin = int((*h)[i]);
-  //    int mult = int(h->GetBinCenter(i));
-  //    if(nbin > 0) printf(" %i : %5.5i %6.3f %% \n", mult, nbin, 100.*nbin/h->GetEntries()); 
-  //  }    
-  // }
 
 }
-
-/*
-//___________________________________________________________________
-void AliEMCALClusterizerv1::DrawLambdasHists()
-{
-  if(fMaxL1) {
-    fMaxL1->Draw();
-    if(fMaxL2) fMaxL2->Draw("same");
-    if(fMaxDis) {
-      fMaxDis->Draw("same");
-    }
-  }
-}
-*/

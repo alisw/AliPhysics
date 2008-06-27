@@ -16,10 +16,7 @@
  
 // --- ROOT system ---
 #include "TTask.h"
-class TFile ;
-class TList;
 class TBrowser;
-//class TBrowser;
 
 // --- Standard library ---
 
@@ -34,8 +31,9 @@ public:
   AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) ;
   virtual ~AliEMCALSDigitizer(); // dtor
 
-  Float_t       Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
-  Int_t         Digitize(Float_t energy)const;
+  Int_t         Digitize(Float_t energy)const; //convert energy in GeV to int amplitude
+  Float_t       Calibrate(Int_t amp)const;  //opposite of Digitize()
+
   virtual void  Exec(Option_t *option); 
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void  Print(Option_t *option="") const;
@@ -47,14 +45,6 @@ public:
   const AliEMCALSDigitizer & operator = (const AliEMCALSDigitizer & /*sd*/) {return *this ;}
 
   virtual void Browse(TBrowser* b);
-  //JLK
-  // hists
-  //void   SetControlHists(Int_t var=0) {fControlHists=var;}
-  //Int_t  GetControlHist() const {return fControlHists;}
-  //TList *GetListOfHists() {return fHists;}
-  //TList* BookControlHists(int var=0);
-  //void   SaveHists(const char* name="RF/TRD1/Digitizations/SDigiVar?", 
-  //Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
 
 private:
   void     Init() ;
@@ -73,13 +63,7 @@ private:
   Int_t   fFirstEvent;             // first event to process
   Int_t   fLastEvent;              // last  event to process
   Float_t fSampling;               // See AliEMCALGeometry
-  //JLK
-  // Control hists
-  //Int_t   fControlHists;          //!
-  //TList  *fHists;                 //!
 
-  //JLK
-  //ClassDef(AliEMCALSDigitizer,5)  // description 
   ClassDef(AliEMCALSDigitizer,6)  // description 
 };
 

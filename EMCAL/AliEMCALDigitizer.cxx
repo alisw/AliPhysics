@@ -18,7 +18,7 @@
 //_________________________________________________________________________
 // 
 //////////////////////////////////////////////////////////////////////////////
-// Class performs digitization of Summable digits 
+// Class performs digitization of Summable digits from simulated data
 //  
 // In addition it performs mixing of summable digits from different events.
 //
@@ -63,8 +63,6 @@
 #include <TTree.h>
 #include <TSystem.h>
 #include <TBenchmark.h>
-#include <TList.h>
-#include <TH1.h>
 #include <TBrowser.h>
 #include <TObjectTable.h>
 #include <TRandom.h>
@@ -84,8 +82,6 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTick.h"
-//JLK
-//#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALDigitizer)
 
@@ -113,14 +109,11 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fEventFolderName(""),
     fFirstEvent(0),
     fLastEvent(0),
-    //JLK
-    //fControlHists(0),
-    //fHists(0),
     fCalibData(0x0)
 {
   // ctor
   InitParameters() ; 
-  fManager = 0 ;                     // We work in the standalong mode
+  fManager = 0 ;                     // We work in the standalone mode
 }
 
 //____________________________________________________________________________ 
@@ -146,15 +139,12 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fEventFolderName(eventFolderName),
     fFirstEvent(0),
     fLastEvent(0),
-    //JLK
-    //fControlHists(0),
-    //fHists(0),
     fCalibData(0x0)
 {
   // ctor
   InitParameters() ; 
   Init() ;
-  fManager = 0 ;                     // We work in the standalong mode
+  fManager = 0 ;                     // We work in the standalone mode
 }
 
 //____________________________________________________________________________ 
@@ -180,9 +170,6 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fEventFolderName(d.fEventFolderName),
     fFirstEvent(d.fFirstEvent),
     fLastEvent(d.fLastEvent),
-    //JLK
-    //fControlHists(d.fControlHists),
-    //fHists(d.fHists),
     fCalibData(d.fCalibData)
 {
   // copyy ctor 
@@ -211,9 +198,6 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
     fEventFolderName(0),
     fFirstEvent(0),
     fLastEvent(0),
-    //JLK
-    //fControlHists(0),
-    //fHists(0),
     fCalibData(0x0)
 {
   // ctor Init() is called by RunDigitizer
@@ -237,8 +221,6 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
 
-  //JLK
-  //if(fHists) delete fHists;
 }
 
 //____________________________________________________________________________
@@ -247,10 +229,15 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
   // Makes the digitization of the collected summable digits
   // for this it first creates the array of all EMCAL modules
-  // filled with noise (different for EMC, CPV and PPSD) and
-  // after that adds contributions from SDigits. This design 
-  // helps to avoid scanning over the list of digits to add 
-  // contribution of any new SDigit.
+  // filled with noise and after that adds contributions from 
+  // SDigits. This design helps to avoid scanning over the 
+  // list of digits to add  contribution of any new SDigit.
+  //
+  // JLK 26-Jun-2008
+  // Note that SDigit energy info is stored as an amplitude, so we
+  // must call the Calibrate() method of the SDigitizer to convert it
+  // back to an energy in GeV before adding it to the Digit
+  //
   static int nEMC=0; //max number of digits possible
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
@@ -264,7 +251,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   rl->GetEvent(readEvent);
 
   TClonesArray * digits = emcalLoader->Digits() ; 
-  digits->Delete() ;  //JLK why is this created then deleted?
+  digits->Delete() ;  //correct way to clear array when memory is
+		      //allocated by objects stored in array
 
   // Load Geometry
   AliEMCALGeometry *geom = 0;
@@ -338,7 +326,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
   //Put Noise contribution
   for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
-    Float_t amp = 0 ;
+    Float_t energy = 0 ;
     // amplitude set to zero, noise will be added later
     new((*digits)[absID]) AliEMCALDigit( -1, -1, absID, 0, TimeOfNoise() ); // absID-1->absID
     //look if we have to add signal?
@@ -361,7 +349,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
       // Calculate time as time of the largest digit
       Float_t time = digit->GetTime() ;
-      Float_t eTime= digit->GetAmp() ;
+      Float_t aTime= digit->GetAmp() ;
       
       // loop over input
       for(i = 0; i< fInput ; i++){  //loop over (possible) merge sources
@@ -384,12 +372,12 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 	  //b = a /fTimeSignalLength ;
 	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime(),0, b);  
 	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
-	  if(curSDigit->GetAmp()>eTime) {
-	    eTime = curSDigit->GetAmp();
+	  if(curSDigit->GetAmp()>aTime) {
+	    aTime = curSDigit->GetAmp();
 	    time = curSDigit->GetTime();
 	  }
 
-	  *digit = *digit + *curSDigit ;  //add energies
+	  *digit = *digit + *curSDigit ;  //adds amplitudes of each digit
 
 	  index[i]++ ;
 	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
@@ -398,9 +386,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 	    curSDigit = 0 ;
 	}
       }
+      //Here we convert the summed amplitude to an energy in GeV
+      energy = sDigitizer->Calibrate(digit->GetAmp()) ; // GeV
       // add fluctuations for photo-electron creation
-      amp = sDigitizer->Calibrate(digit->GetAmp()) ; // GeV
-      amp *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
+      energy *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
   
       //calculate and set time
       //New timing model needed - JLK 28-April-2008
@@ -419,21 +408,27 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       }
     }
     // add the noise now
-    amp += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
-    digit->SetAmp(sDigitizer->Digitize(amp)) ;  
-    AliDebug(10,Form(" absID %5i amp %f nextSig %5i\n",
-		     absID, amp, nextSig));
-  } // for(absID = 1; absID <= nEMC; absID++)
+    energy += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
+    // JLK 26-June-2008
+    //Now digitize the energy according to the sDigitizer method,
+    //which merely converts the energy to an integer.  Later we will
+    //check that the stored value matches our allowed dynamic ranges
+    digit->SetAmp(sDigitizer->Digitize(energy)) ;  
+    AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
+		     absID, energy, nextSig));
+  } // for(absID = 0; absID < nEMC; absID++)
   
   //ticks->Delete() ;
   //delete ticks ;
 
+  //JLK is it better to call Clear() here?
   delete sdigArray ; //We should not delete its contents
 
   //remove digits below thresholds
   for(i = 0 ; i < nEMC ; i++){
     digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
-    Float_t threshold = fDigitThreshold ; 
+    Float_t threshold = fDigitThreshold ; //this is in GeV
+    //need to calibrate digit amplitude to energy in GeV for comparison
     if(sDigitizer->Calibrate( digit->GetAmp() ) < threshold)
       digits->RemoveAt(i) ;
     else 
@@ -444,35 +439,30 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   
   Int_t ndigits = digits->GetEntriesFast() ; 
 
-  //JLK
-  //Set indexes in list of digits and fill hists.
-  //AliEMCALHistoUtilities::FillH1(fHists, 0, Double_t(ndigits));
-  Float_t energy=0., esum=0.;
+  //JLK 26-June-2008
+  //After we have done the summing and digitizing to create the
+  //digits, now we want to calibrate the resulting amplitude to match
+  //the dynamic range of our real data.  
+  Float_t energy=0;
   for (i = 0 ; i < ndigits ; i++) { 
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ; 
     energy = sDigitizer->Calibrate(digit->GetAmp()) ;
-    esum += energy;
-    digit->SetAmp(DigitizeEnergy(energy, digit->GetId()) ) ; // for what ??
-    //JLK
-    //AliEMCALHistoUtilities::FillH1(fHists, 2, double(digit->GetAmp()));
-    //AliEMCALHistoUtilities::FillH1(fHists, 3, double(energy));
-    //AliEMCALHistoUtilities::FillH1(fHists, 4, double(digit->GetId()));
-    //    if(digit->GetId() == nEMC) {
-    //  printf(" i %i \n", i );
-    //  digit->Dump();
-    //  assert(0);
-    //}
+    digit->SetAmp(DigitizeEnergy(energy, digit->GetId()) ) ;
   }
-  //JLK
-  //AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
+
 }
 
 // //_____________________________________________________________________
 Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
 { 
+  // JLK 26-June-2008
   // Returns digitized value of the energy in a cell absId
-
+  // using the calibration constants stored in the OCDB
+  // or default values if no CalibData object is found.
+  // This effectively converts everything to match the dynamic range
+  // of the real data we will collect
+  //
   // Load Geometry
   const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
 
@@ -625,7 +615,6 @@ Bool_t AliEMCALDigitizer::Init()
   //to prevent cleaning of this object while GetEvent is called
   emcalLoader->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
 
-  //PH  Print();
   //Calibration instance
   fCalibData = emcalLoader->CalibData();
   return fInit ;    
@@ -653,10 +642,7 @@ void AliEMCALDigitizer::InitParameters()
   fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
 
   fTimeThreshold      = 0.001*10000000 ; // Means 1 MeV in terms of SDigits amplitude ??
-  //JLK
-  // hists. for control; no hists on default
-  //fControlHists = 0;
-  //fHists        = 0;
+
 }
 
 //__________________________________________________________________
@@ -862,39 +848,5 @@ void AliEMCALDigitizer::WriteDigits()
 //__________________________________________________________________
 void AliEMCALDigitizer::Browse(TBrowser* b)
 {
-  //JLK
-  //if(fHists) b->Add(fHists);
   TTask::Browse(b);
 }
-
-/*
-//__________________________________________________________________
-TList *AliEMCALDigitizer::BookControlHists(int var)
-{ 
-  // 22-nov-04
-  // histograms for monitoring digitizer performance
-
-  Info("BookControlHists"," started ");
-  gROOT->cd();
-  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
-  if(var>=1){
-    new TH1F("hDigiN",  "#EMCAL digits with fAmp > fDigitThreshold", 
-    fNADCEC+1, -0.5, Double_t(fNADCEC));
-    new TH1F("HDigiSumEnergy","Sum.EMCAL energy from digi", 1000, 0.0, 200.);
-    new TH1F("hDigiAmp",  "EMCAL digital amplitude", fNADCEC+1, -0.5, Double_t(fNADCEC));
-    new TH1F("hDigiEnergy","EMCAL cell energy", 2000, 0.0, 200.);
-    new TH1F("hDigiAbsId","EMCAL absId cells with fAmp > fDigitThreshold ",
-    geom->GetNCells(), 0.5, Double_t(geom->GetNCells())+0.5);
-  }
-
-  fHists = AliEMCALHistoUtilities::MoveHistsToList("EmcalDigiControlHists", kFALSE);
-  fHists = 0; //huh? JLK 03-Mar-2006
-  return fHists;
-}
-
-//__________________________________________________________________
-void AliEMCALDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
-{
-  AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 
-}
-*/

@@ -6,7 +6,7 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Task Class for making Digits in EMCAL      
+//  Task Class for making Digits in EMCAL from SIMULATED DATA      
 //                  
 //*-- Author: Sahal Yacoob (LBL)
 // based on : AliPHOSDigit
@@ -17,9 +17,7 @@
 
 // --- ROOT system ---
 #include "TObjString.h"
-class TArrayI ;
 class TClonesArray ; 
-class TList;
 class TBrowser;
 
 // --- Standard library ---
@@ -28,6 +26,7 @@ class TBrowser;
 #include "AliDigitizer.h"
 #include "AliConfig.h"
 #include "AliEMCALCalibData.h"
+
 class AliEMCALSDigitizer ;
 class AliRunDigitizer ;
 
@@ -68,14 +67,6 @@ public:
   }
 
   virtual void Browse(TBrowser* b);
-  //JLK
-  // hists
-  //void   SetControlHists(Int_t var=0) {fControlHists=var;}
-  //Int_t  GetControlHist() const {return fControlHists;}
-  //TList *GetListOfHists() {return fHists;}
-  //TList* BookControlHists(int var=0);
-  //void   SaveHists(const char* name="RF/TRD1/Digitizations/DigiVar?",
-  //Bool_t kSingleKey=kTRUE, const char* opt="RECREATE"); // *MENU*
 
 private:
 
@@ -115,14 +106,9 @@ private:
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
-  //JLK
-  // Control hists
-  //Int_t   fControlHists;          //!
-  //TList  *fHists;                 //!
+
   AliEMCALCalibData * fCalibData; //Calibration data pointer
 
-  //JLK
-  //ClassDef(AliEMCALDigitizer,6)  // description 
   ClassDef(AliEMCALDigitizer,7)  // description 
 };
 

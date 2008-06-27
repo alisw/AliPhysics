@@ -32,7 +32,6 @@
 #include "TParticle.h"
 #include "TVirtualMC.h"
 #include "TBrowser.h"
-#include "TH1.h"
 #include "TH2.h"
 #include <cassert>
 
@@ -70,30 +69,12 @@ AliEMCALv3::AliEMCALv3(const char *name, const char *title): AliEMCALv1(name,tit
     fTimeCut  = 30e-09;
 
     fGeometry = GetGeometry(); 
-    fHDe = fHNhits = 0;
-    //    if (gDebug>0){
-    if (1){
-      TH1::AddDirectory(0);
-      fHDe = new TH1F("fHDe","De in EMCAL", 1000, 0., 1.);
-      fHNhits = new TH1F("fHNhits","#hits in EMCAL", 1001, -0.5, 1000.5);
-      int nbin = 77*2;
-      fHDeDz = new TH1F("fHDeDz","Longitudinal shower profile", 6*nbin, 0.0, 0.16*nbin);
-      
-      fHistograms->Add(fHDe);
-      fHistograms->Add(fHNhits);
-      fHistograms->Add(fHDeDz);
-      TH1::AddDirectory(1);
-    }
 }
 
 //______________________________________________________________________
 AliEMCALv3::AliEMCALv3(const AliEMCALv3 & emcal):AliEMCALv1(emcal)
 {
   fGeometry = emcal.fGeometry;
-  fHDe = emcal.fHDe;
-  fHNhits = emcal.fHNhits;
-  fHDeDz = emcal.fHDeDz;
-
 }
 
 //______________________________________________________________________
@@ -276,37 +257,7 @@ void AliEMCALv3::StepManager(void){
   }
 }
 
-void AliEMCALv3::FinishEvent()
-{ // 26-may-05
-  static double de=0.;
-  fHNhits->Fill(double(fHits->GetEntries()));
-  de = GetDepositEnergy(0);
-  if(fHDe) fHDe->Fill(de);
-}
-
-Double_t AliEMCALv3::GetDepositEnergy(int print)
-{ // 23-mar-05 - for testing
-  //  cout<<"AliEMCALv3::GetDepositEnergy() : fHits "<<fHits<<endl; 
-  if(fHits == 0) return 0.;
-  static AliEMCALHitv1  *hit=0;
-  static Double_t de=0., deHit=0., zhl=0.0, zShift = 0.16*77;
-  for(int ih=0; ih<fHits->GetEntries(); ih++) {
-    hit = (AliEMCALHitv1*)fHits->UncheckedAt(ih);
-    deHit  = (double)hit->GetEnergy();
-    zhl    = (double)hit->Z() + zShift;
-    if(zhl>2.*zShift) zhl = 2*zShift - 0.002;
-    de    += deHit;
-    if(fHDeDz) fHDeDz->Fill(zhl, deHit);
-  }
-  if(print>0) {
-    printf(" #hits %i de %f \n", fHits->GetEntries(), de);
-    if(print>1) {
-      printf(" #primary particles %i\n", gAlice->GetHeader()->GetNprimary()); 
-    }
-  }
-  return de;
-}
-
+//_____________________________________________
 void AliEMCALv3::Browse(TBrowser* b)
 {
   TObject::Browse(b);

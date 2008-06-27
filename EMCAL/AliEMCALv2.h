@@ -11,11 +11,6 @@
 //*-- Author:  Aleksei Pavlinov
 
 // --- ROOT system ---
-class TClonesArray;
-class TLorentzVector;
-class TFile;
-class TH1F;
-
 class TBrowser;
 
 // --- AliRoot header files ---
@@ -34,13 +29,11 @@ public:
 			Int_t id, Float_t *hits, Float_t *p);
 
   virtual void StepManager(void) ;
-  virtual void FinishEvent();
 
   // Gives the version number 
   virtual Int_t  IsVersion(void) const {return 2;}
   virtual const TString Version(void)const {return TString("v2");}
-  // 23-mar-05
-  virtual Double_t GetDepositEnergy(int print=1); // *MENU*
+
   // 30-aug-04
   virtual void Browse(TBrowser* b);
   // drawing
@@ -52,14 +45,12 @@ public:
   void TestIndexTransition(int pri=0, int idmax=0); // *MENU*
 
  protected:
-  TH1F*             fHDe;      //!
-  TH1F*             fHNhits;      //!
 
  private:
   AliEMCALv2(const AliEMCALv2 & emcal);
   AliEMCALv2 & operator = (const AliEMCALv2  & /*rvalue*/);
  
-  ClassDef(AliEMCALv2,1)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
+  ClassDef(AliEMCALv2,2)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
     
 };
 

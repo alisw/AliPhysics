@@ -29,7 +29,6 @@
 // --- ROOT system ---
 #include <TBrowser.h>
 #include <TClonesArray.h>
-#include <TH1.h>
 #include <TH2.h>
 #include <TParticle.h>
 #include <TROOT.h>
@@ -52,18 +51,14 @@ ClassImp(AliEMCALv2)
 
 //______________________________________________________________________
 AliEMCALv2::AliEMCALv2()
-  : AliEMCALv1(), 
-    fHDe(0),
-    fHNhits(0)
+  : AliEMCALv1()
 {
   // ctor
 }
 
 //______________________________________________________________________
 AliEMCALv2::AliEMCALv2(const char *name, const char *title)
-  : AliEMCALv1(name,title),
-    fHDe(0),
-    fHNhits(0)
+  : AliEMCALv1(name,title)
 {
     // Standard Creator.
 
@@ -75,16 +70,6 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title)
     fTimeCut  = 30e-09;
 
     fGeometry = GetGeometry(); 
-    fHDe = fHNhits = 0;
-    //    if (gDebug>0){
-    if (1){
-      TH1::AddDirectory(0);
-      fHDe    = new TH1F("fHDe","De in EMCAL", 1000, 0., 10.);
-      fHNhits = new TH1F("fHNhits","#hits in EMCAL", 2001, -0.5, 2000.5);
-      fHistograms->Add(fHDe);
-      fHistograms->Add(fHNhits);
-      TH1::AddDirectory(1);
-    }
 }
 
 //______________________________________________________________________
@@ -280,37 +265,6 @@ void AliEMCALv2::StepManager(void){
       AddHit(fIshunt, fCurPrimary,tracknumber, fCurParent, ienergy, absid,  xyzte, pmom);
     } // there is deposited energy
   }
-}
-
-//_________________________________________________________________
-void AliEMCALv2::FinishEvent()
-{ 
-  // Calculate deposit energy and fill control histogram; 26-may-05
-  static double de=0.;
-  fHNhits->Fill(double(fHits->GetEntries()));
-  de = GetDepositEnergy(0);
-  if(fHDe) fHDe->Fill(de);
-}
-
-//_________________________________________________________________
-Double_t AliEMCALv2::GetDepositEnergy(int print)
-{ 
-  // 23-mar-05 - for testing
-  if(fHits == 0) return 0.;
-  AliEMCALHit  *hit=0;
-  Double_t de=0.;
-  for(int ih=0; ih<fHits->GetEntries(); ih++) {
-    hit = (AliEMCALHit*)fHits->UncheckedAt(ih);
-    de += hit->GetEnergy();
-  }
-  if(print>0) {
-    cout<<"AliEMCALv2::GetDepositEnergy() : fHits "<<fHits<<endl; 
-    printf(" #hits %i de %f \n", fHits->GetEntries(), de);
-    if(print>1) {
-      printf(" #primary particles %i\n", gAlice->GetHeader()->GetNprimary()); 
-    }
-  }
-  return de;
 }
 
 //___________________________________________________________
