@@ -1959,7 +1959,7 @@ void AliTOFv6T0::MakeReadoutCrates(Float_t ytof) const
   }
 
   zcoor = (90. - 223.)*0.5;
-  gMC->Gspos("FTOS", 1, "BBCE", ra, 0., zcoor, 0, "ONLY");
+  gMC->Gspos("FTOS", 1, "BBCE", ra, -3., zcoor, 0, "ONLY");
 
 }
 
