@@ -681,6 +681,7 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Floa
     map=AliMagWrapCheb::k2kG;
     s+="0.0 T;  ";
     factor=0.;                  // in fact, this is a global factor...
+    fUniformField=kTRUE;        // track with the uniform (zero) B field
   } else {
     AliError("Wrong L3 current !");
     return kFALSE;
