@@ -33,6 +33,10 @@
 #include <TTree.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoCone.h>
+#include <TGeoShape.h>
+#include <TGeoCompositeShape.h>
 #include <TParticle.h>
 
 // --- AliRoot classes
@@ -499,14 +503,16 @@ void AliZDCv3::CreateBeamLine()
   ///////////////////////////////////////////////////////////////
 
   // Rotation Matrices definition
-  Int_t irotpipe2, irotpipe1,irotpipe5, irotpipe6, irotpipe7, irotpipe8;
+  Int_t irotpipe2, irotpipe1;
+  //Int_t irotpipe5, irotpipe6
+  Int_t irotpipe7, irotpipe8;
   //-- rotation matrices for the tilted tube before and after the TDI 
   gMC->Matrix(irotpipe2,90.+6.3025,0.,90.,90.,6.3025,0.);       
   //-- rotation matrices for the tilted cone after the TDI to recenter vacuum chamber      
   gMC->Matrix(irotpipe1,90.-2.2918,0.,90.,90.,2.2918,180.);    
   //-- rotation matrices for the legs
-  gMC->Matrix(irotpipe5,90.-5.0109,0.,90.,90.,5.0109,180.);      
-  gMC->Matrix(irotpipe6,90.+5.0109,0.,90.,90.,5.0109,0.);	   
+  /*gMC->Matrix(irotpipe5,90.-5.0109,0.,90.,90.,5.0109,180.);      
+  gMC->Matrix(irotpipe6,90.+5.0109,0.,90.,90.,5.0109,0.);*/	   
   gMC->Matrix(irotpipe7,90.-1.0027,0.,90.,90.,1.0027,180.);      
   gMC->Matrix(irotpipe8,90.+1.0027,0.,90.,90.,1.0027,0.);
 
@@ -1191,27 +1197,77 @@ void AliZDCv3::CreateBeamLine()
 
   zd2 += 2.*tubpar[2];
 
-  // legs of the trousers
+  // --------------------------------------------------------
+  // RECOMBINATION CHAMBER IMPLEMENTED USING TGeo CLASSES!!!!
+  // author: Chiara (June 2008)
+  // --------------------------------------------------------
+  // TRANSFORMATION MATRICES
+  // Combi transformation: 
+  Double_t dx = -3.970000;
+  Double_t dy = 0.000000;
+  Double_t dz = 0.0;
+  // Rotation: 
+  Double_t thx = 84.989100;   Double_t phx = 0.000000;
+  Double_t thy = 90.000000;   Double_t phy = 90.000000;
+  Double_t thz = 5.010900;    Double_t phz = 180.000000;
+  TGeoRotation *rotMatrix1 = new TGeoRotation("",thx,phx,thy,phy,thz,phz);
+  // Combi transformation: 
+  dx = -3.970000;
+  dy = 0.000000;
+  dz = 0.0;
+  TGeoCombiTrans *rotMatrix2 = new TGeoCombiTrans("ZDC_c1", dx,dy,dz,rotMatrix1);
+  rotMatrix2->RegisterYourself();
+  // Combi transformation: 
+  dx = 3.970000;
+  dy = 0.000000;
+  dz = 0.0;
+  // Rotation: 
+  thx = 95.010900;    phx = 0.000000;
+  thy = 90.000000;    phy = 90.000000;
+  thz = 5.010900;    phz = 0.000000;
+  TGeoRotation *rotMatrix3 = new TGeoRotation("",thx,phx,thy,phy,thz,phz);
+  TGeoCombiTrans *rotMatrix4 = new TGeoCombiTrans("ZDC_c2", dx,dy,dz,rotMatrix3);
+  rotMatrix4->RegisterYourself();
+
+  // VOLUMES DEFINITION
+  // Volume: ZDCA
+  TGeoVolume *pZDCA = gGeoManager->GetVolume("ZDCA");
+  gGeoManager->SetTopVolume(pZDCA);
+  //pZDCA->PrintNodes();
+  
   conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.6/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.8/2.;
-  gMC->Gsvolu("QAL1", "CONE", idtmed[7], conpar, 5);
-  gMC->Gsvolu("QAL2", "CONE", idtmed[7], conpar, 5); 
-  gMC->Gspos("QAL1", 1, "ZDCA", -3.45-0.52, 0., conpar[0]+0.95+zd2, irotpipe5, "MANY");
-  gMC->Gspos("QAL2", 1, "ZDCA", 3.45+0.52, 0., conpar[0]+0.95+zd2, irotpipe6, "MANY");
+  TGeoShape *pConeExt = new TGeoCone("QALext", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
   
   conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.2/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.4/2.;
-  gMC->Gsvolu("QAL3", "CONE", idtmed[10], conpar, 5);
-  gMC->Gsvolu("QAL4", "CONE", idtmed[10], conpar, 5); 
-  gMC->Gspos("QAL3", 1, "ZDCA", -3.45-0.52, 0., conpar[0]+0.95+zd2, irotpipe5, "ONLY");
-  //gMC->Gspos("QAL4", 1, "ZDCA", 3.45+0.52, 0., conpar[0]+0.95+zd2, irotpipe6, "ONLY");
-  gMC->Gspos("QAL4", 1, "QAL2", 0., 0., 0., 0, "ONLY");      
+  TGeoShape *pConeInt = new TGeoCone("QALint", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
+
+  // Outer trousers
+  TGeoCompositeShape *pOutTrousers = new TGeoCompositeShape("outTrousers", "QALext:ZDC_c1+QALext:ZDC_c2");
+  
+  // Volume: QALext
+  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
+  TGeoVolume *pQALext = new TGeoVolume("QALext",pOutTrousers, medZDCFe);
+  pQALext->SetLineColor(5);
+  pQALext->SetVisLeaves(kTRUE);
+  //
+  TGeoTranslation *tr1 = new TGeoTranslation(0., 0., (Double_t) conpar[0]+0.95+zd2);
+  pZDCA->AddNode(pQALext, 1, tr1);
+  // Inner trousers
+  TGeoCompositeShape *pIntTrousers = new TGeoCompositeShape("intTrousers", "QALint:ZDC_c1+QALint:ZDC_c2");
+  // Volume: QALint
+  TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
+  TGeoVolume *pQALint = new TGeoVolume("QALint",pIntTrousers, medZDCvoid);
+  pQALint->SetLineColor(7);
+  pQALint->SetVisLeaves(kTRUE);
+  pQALext->AddNode(pQALint, 1);
     
   zd2 += 90.1;
   
@@ -1919,7 +1975,7 @@ void AliZDCv3::CreateMaterials()
   
   // --- Iron (no energy loss)
   ubuf[0] = 1.1;
-  AliMaterial(8,  "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
+  AliMaterial(8, "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
     
   // ---------------------------------------------------------  
   Float_t aResGas[3]={1.008,12.0107,15.9994};
