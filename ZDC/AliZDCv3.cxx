@@ -1232,7 +1232,6 @@ void AliZDCv3::CreateBeamLine()
   // VOLUMES DEFINITION
   // Volume: ZDCA
   TGeoVolume *pZDCA = gGeoManager->GetVolume("ZDCA");
-  gGeoManager->SetTopVolume(pZDCA);
   //pZDCA->PrintNodes();
   
   conpar[0] = (90.1-0.95-0.26)/2.;
@@ -1397,7 +1396,7 @@ void AliZDCv3::CreateBeamLine()
   // --   (to simulate the vacuum chamber)
   boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.98+0.2)*(2.98+0.2)) - 0.05;
   boxpar[1] = 0.2/2.;
-  boxpar[2] =945./2.;
+  boxpar[2] = 945./2.;
   gMC->Gsvolu("MD1V", "BOX ", idtmed[6], boxpar, 3);
   gMC->Gspos("MD1V", 1, "MD1 ", 0., 2.98+boxpar[1], 0., 0, "ONLY");
   gMC->Gspos("MD1V", 2, "MD1 ", 0., -2.98-boxpar[1], 0., 0, "ONLY");
@@ -1409,7 +1408,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("YD1 ", "TUBE", idtmed[7], tubpar, 3);
   
   gMC->Gspos("YD1 ", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
-  gMC->Gspos("MD1 ", 1, "YD1 ", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("MD1 ", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch debug
   //printf("\t **** D1 positioned! It goes from z = %1.2f to z = %1.2f cm\n",-zd1, -zd1-2*tubpar[2]); 
   
@@ -1557,27 +1556,25 @@ void AliZDCv3::CreateBeamLine()
   tubpar[1] = 6.75/2.;//3.375
   tubpar[2] = 945./2.;
   gMC->Gsvolu("MD1L", "TUBE", idtmed[11], tubpar, 3);
-    
-  // --  YOKE 
-  tubpar[0] = 7.34/2.; // 3.67 -- to be checked
-  tubpar[1] = 110./2;
-  tubpar[2] = 945./2.;
-  gMC->Gsvolu("YD1L", "TUBE", idtmed[7], tubpar, 3);
-  
-  gMC->Gspos("YD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");  
-  gMC->Gspos("MD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
-  
+
   // --  The beam screen tube is provided by the beam pipe in D1 (QA03 volume)
   // --  Insert the beam screen horizontal Cu plates inside D1  
   // --   (to simulate the vacuum chamber)
   boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.885+0.2)*(2.885+0.2));
   boxpar[1] = 0.2/2.;
-  //boxpar[2] =(945.+80.1)/2.;
   boxpar[2] =945./2.;  
   gMC->Gsvolu("QBS7", "BOX ", idtmed[6], boxpar, 3);
   gMC->Gspos("QBS7", 1, "MD1L", 0., 2.885+boxpar[1],0., 0, "ONLY");
   gMC->Gspos("QBS7", 2, "MD1L", 0., -2.885-boxpar[1],0., 0, "ONLY");  
+    
+  // --  YOKE 
+  tubpar[0] = 3.68;
+  tubpar[1] = 110./2;
+  tubpar[2] = 945./2.;
+  gMC->Gsvolu("YD1L", "TUBE", idtmed[7], tubpar, 3);
   
+  gMC->Gspos("YD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");  
+  gMC->Gspos("MD1L", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");  
   
   // -- DIPOLE D2 
   // --- LHC optics v6.5
