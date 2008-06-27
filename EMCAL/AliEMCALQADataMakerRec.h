@@ -26,19 +26,15 @@ class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
 public:
   //Histograms for Raw data control
-  enum HRawType_t {kHGsmod1,kHGsmod2,kHGsmod3,kHGsmod4,kHGsmod5,kHGsmod6,
-		   kHGsmod7,kHGsmod8,kHGsmod9,kHGsmod10,kHGsmod11,kHGsmod12,
-		   kLGsmod1,kLGsmod2,kLGsmod3,kLGsmod4,kLGsmod5,kLGsmod6,
-		   kLGsmod7,kLGsmod8,kLGsmod9,kLGsmod10,kLGsmod11,kLGsmod12,
-		   kNsmodLG,kNsmodHG,
-		   kNtotLG,kNtotHG,kEtotLG,kEtotHG,
-		   kLGtime,kHGtime,kSpecLG,kSpecHG} ;
+  enum HRawType_t {kNsmodLG,kNsmodHG,kLGtime,kHGtime,
+		   kSpecLG,kSpecHG,kNtotLG,kNtotHG,
+		   kEtotLG,kEtotHG} ;
+
   //Histograms for RecPoints  control
-  enum HRPType_t {kRPsmod1,kRPsmod2,kRPsmod3,kRPsmod4,kRPsmod5,kRPsmod6,
-		  kRPsmod7,kRPsmod8,kRPsmod9,kRPsmod10,kRPsmod11,kRPsmod12,
-		  kRPNtot,kRPEtot,kRPSpec,kRPTime} ;
+  enum HRPType_t {kRecPE,kRecPM,kRecPDigM};
+
   //Histograms for ESDs  control
-  enum HESDType_t {kESDNtot,kESDEtot,kESDSpec,kESDpid} ;
+  enum HESDType_t {kESDCaloClusE,kESDCaloClusM,kESDCaloCellA,kESDCaloCellM} ;
                  
 
 public:

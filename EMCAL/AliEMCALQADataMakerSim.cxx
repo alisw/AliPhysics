@@ -38,6 +38,7 @@
 #include "AliEMCALHit.h"
 #include "AliEMCALQADataMakerSim.h"
 #include "AliQAChecker.h"
+#include "AliEMCALSDigitizer.h"
 
 ClassImp(AliEMCALQADataMakerSim)
            
@@ -78,10 +79,10 @@ void AliEMCALQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
 void AliEMCALQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
-  TH1F * h0 = new TH1F("hEmcalHits",    "Hits energy distribution in EMCAL",       100, 0., 100.) ; 
+  TH1F * h0 = new TH1F("hEmcalHits",    "Hits energy distribution in EMCAL",       200, 0., 2.) ; //GeV
   h0->Sumw2() ;
   Add2HitsList(h0, 0) ;
-  TH1I * h1  = new TH1I("hEmcalHitsMul", "Hits multiplicity distribution in EMCAL", 500, 0., 10000) ; 
+  TH1I * h1  = new TH1I("hEmcalHitsMul", "Hits multiplicity distribution in EMCAL", 1000, 0, 10000) ; 
   h1->Sumw2() ;
   Add2HitsList(h1, 1) ;
 }
@@ -90,10 +91,10 @@ void AliEMCALQADataMakerSim::InitHits()
 void AliEMCALQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
-  TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL",    500, 0, 5000) ; 
+  TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL",    500, 0, 500) ; 
   h0->Sumw2() ;
   Add2DigitsList(h0, 0) ;
-  TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL", 500, 0, 1000) ; 
+  TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL", 200, 0, 2000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1) ;
 }
@@ -102,10 +103,10 @@ void AliEMCALQADataMakerSim::InitDigits()
 void AliEMCALQADataMakerSim::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
-  TH1F * h0 = new TH1F("hEmcalSDigits",    "SDigits energy distribution in EMCAL",       100, 0., 100.) ; 
+  TH1F * h0 = new TH1F("hEmcalSDigits",    "SDigits energy distribution in EMCAL",       200, 0., 20.) ; 
   h0->Sumw2() ;
   Add2SDigitsList(h0, 0) ;
-  TH1I * h1 = new TH1I("hEmcalSDigitsMul", "SDigits multiplicity distribution in EMCAL", 500, 0,  10000) ; 
+  TH1I * h1 = new TH1I("hEmcalSDigitsMul", "SDigits multiplicity distribution in EMCAL", 500, 0,  5000) ; 
   h1->Sumw2() ;
   Add2SDigitsList(h1, 1) ;
 }
@@ -187,14 +188,18 @@ void AliEMCALQADataMakerSim::MakeDigits(TTree * digitTree)
 void AliEMCALQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 {
   // makes data from SDigits
-  
+  //Need a copy of the SDigitizer to calibrate the sdigit amplitude to
+  //energy in GeV
+  AliEMCALSDigitizer* sDigitizer = new AliEMCALSDigitizer();
+
   GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
   TIter next(sdigits) ; 
   AliEMCALDigit * sdigit ; 
   while ( (sdigit = dynamic_cast<AliEMCALDigit *>(next())) ) {
-    GetSDigitsData(0)->Fill( sdigit->GetAmp()) ;
+    GetSDigitsData(0)->Fill( sDigitizer->Calibrate(sdigit->GetAmp())) ;
   } 
 
+  delete sDigitizer;
 }
 
 //____________________________________________________________________________
