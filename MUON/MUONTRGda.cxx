@@ -1,4 +1,23 @@
 /*
+Contact: Franck Manso <manso@clermont.in2p3.fr>
+Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mtrda.html
+Run Type:  ELECTRONICS_CALIBRATION_RUN (calib), DETECTOR_CALIBRATION_RUN (ped)
+DA Type: LDC
+Number of events needed: 100 events for ped and calib
+Input Files: Rawdata file (DATE format)
+Input Files from DB:
+MtgGlobalCrate-<version>.dat
+MtgRegionalCrate-<version>.dat
+MtgLocalMask-<version>.dat
+MtgLocalLut-<version>.dat
+MtgCurrent.dat
+
+Output Files: local dir (not persistent) 
+ExportedFiles.dat
+*/
+
+
+/*
 
 Version 2 for MUONTRGda MUON trigger
 Working version for: 
@@ -18,12 +37,12 @@ Working version for:
 November 2007
 Ch. Finck
 
-To be done:
+To be checked:
  Writing into the online database (need update of daqDAlib)
+To be done:
  Looking at scalers outputs
-
-
 */
+
 extern "C" {
 #include <daqDA.h>
 }
