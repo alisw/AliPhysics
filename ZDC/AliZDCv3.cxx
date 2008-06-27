@@ -1883,7 +1883,7 @@ void AliZDCv3::CreateMaterials()
   wmat[0] = .93;
   wmat[1] = .03;
   wmat[2] = .04;
-  AliMixture(1, "WALL", a, z, dens, 2, wmat);
+  AliMixture(1, "WALL", a, z, dens, 3, wmat);
 
   // --- Brass (CuZn)  -> ZP passive material
   dens = 8.48;
