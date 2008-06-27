@@ -649,7 +649,7 @@ void AliReconstruction::SetOption(const char* detector, const char* option)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::ForceFieldMap(Float_t l3Current, Float_t diCurrent, Float_t factor, Char_t *path) {
+Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Float_t factor, const char *path) {
   //------------------------------------------------
   // The magnetic field map, defined externally...
   // L3 current 30000 A  -> 0.5 T
@@ -667,7 +667,7 @@ Bool_t AliReconstruction::ForceFieldMap(Float_t l3Current, Float_t diCurrent, Fl
   Int_t map=0;
   Bool_t dipoleON=kFALSE;
 
-  TString s=(l3Current < 0) ? "L3: -" : "L3: +";
+  TString s=(factor < 0) ? "L3: -" : "L3: +";
 
   if (TMath::Abs(l3Current-l3NominalCurrent1)/l3NominalCurrent1 < tolerance) {
     map=AliMagWrapCheb::k5kG;
@@ -731,18 +731,20 @@ Bool_t AliReconstruction::InitGRP() {
   } else {
     // Construct the field map out of the information retrieved from GRP.
 
+    Bool_t ok = kTRUE;
+
     // L3
     TObjString *l3Current=
        dynamic_cast<TObjString*>(fGRPData->GetValue("fL3Current"));
     if (!l3Current) {
       AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
-      return kFALSE;
+      ok = kFALSE;
     }
     TObjString *l3Polarity=
        dynamic_cast<TObjString*>(fGRPData->GetValue("fL3Polarity"));
     if (!l3Polarity) {
       AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
-      return kFALSE;
+      ok = kFALSE;
     }
 
     // Dipole
@@ -750,23 +752,32 @@ Bool_t AliReconstruction::InitGRP() {
        dynamic_cast<TObjString*>(fGRPData->GetValue("fDipoleCurrent"));
     if (!diCurrent) {
       AliError("GRP/GRP/Data entry:  missing value for the dipole current !");
-      return kFALSE;
+      ok = kFALSE;
     }
     TObjString *diPolarity=
        dynamic_cast<TObjString*>(fGRPData->GetValue("fDipolePolarity"));
     if (!diPolarity) {
       AliError("GRP/GRP/Data entry:  missing value for the dipole polarity !");
-      return kFALSE;
+      ok = kFALSE;
     }
 
-    Float_t l3Cur=atof(l3Current->GetName());
-    Float_t diCur=atof(diCurrent->GetName());
+    if (ok) { 
+       Float_t l3Cur=TMath::Abs(atof(l3Current->GetName()));
+       Float_t diCur=TMath::Abs(atof(diCurrent->GetName()));
+       Float_t l3Pol=atof(l3Polarity->GetName());
+       Float_t factor=1.;
+       if (l3Pol != 0.) factor=-1.;
+    
 
-    if (!ForceFieldMap(l3Cur, diCur)) {
-       AliFatal("Failed to creat a B field map ! Crashing...");
+      if (!SetFieldMap(l3Cur, diCur, factor)) {
+         AliFatal("Failed to creat a B field map ! Exiting...");
+      }
+      AliInfo("Running with the B field constructed out of GRP !");
+    }
+    else {
+      AliFatal("B field is neither set nor constructed from GRP ! Exitig...");
     }
 
-    AliInfo("Running with the B field constructed out of GRP !");
   }
 
 

@@ -76,9 +76,9 @@ public:
   //*** Magnetic field setters
   void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
   Bool_t 
-  ForceFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
-		Float_t factor=1., 
-                Char_t *path="$(ALICE_ROOT)/data/maps/mfchebKGI_meas.root");
+  SetFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
+	      Float_t factor=1., 
+              const char *path="$(ALICE_ROOT)/data/maps/mfchebKGI_meas.root");
 
   //*** Global reconstruction flag setters
   void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};
