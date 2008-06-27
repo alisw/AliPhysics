@@ -13,6 +13,7 @@
 #pragma link C++ class  AliESDv0Cuts+;
 
 #pragma link C++ class  AliEventPoolOTF+;
+#pragma link C++ class  AliEventPoolLoop+;
 
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
