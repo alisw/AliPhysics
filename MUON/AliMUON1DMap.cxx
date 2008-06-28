@@ -50,8 +50,6 @@ AliMUON1DMap::AliMUON1DMap(Int_t theSize)
 {
 /// Default ctor
 
-    AliInfo("");
-    
   if ( theSize > 0) 
   {
     fMap->SetSize(theSize);
