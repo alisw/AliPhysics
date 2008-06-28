@@ -188,6 +188,8 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
   Int_t dspRawDataLength = 0;
   Int_t iwordddl         = 2;
 
+
+
   for (Int_t iblock = 0; iblock < 2; iblock++)
     {
       ilowLimit = iuppLimit;
@@ -244,6 +246,8 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 	      Int_t rawdatalength = pbusHeader.GetRawDataLength();
 	      Int_t pbusid = pbusHeader.GetPatchBusId();
 
+	      if (pbusid < 0 || pbusid > 50) return -1;
+
 	      ilowLimit = iuppLimit;
 	      iuppLimit = ilowLimit + rawdatalength;
 
@@ -268,6 +272,7 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 		    {
 		      AliWarning("ComputeParity:: Parity Error");
 		      fRawReader->AddMajorErrorLog(kParityError);
+		      return -1;
 		    }
 
 		  ConvertDDL2SMN(iddl, imodule, ismn, idet);
@@ -314,6 +319,8 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 	  if (iwordblk == blRawDataLength) break; // for raw data
 
 	} // end of DSP
+
+
 
     } // end of BLOCK
   

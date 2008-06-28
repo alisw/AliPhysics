@@ -205,6 +205,9 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	    }
 	}
 
+      dspBlockARDL += 50;
+      dspBlockBRDL += 50;
+
       // Start writing the DDL file
 
       AliPMDBlockHeader blHeader;
@@ -221,6 +224,9 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       UInt_t patchBusHeaderWord[4];
       Int_t  iskip[5];
       UInt_t ddlEndWord[2] = {0xDEADFACE, 0xDEADFACE};
+
+      Int_t bknJunk = 0;
+
 
       for (Int_t iblock = 0; iblock < 2; iblock++)
 	{
@@ -314,6 +320,8 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
 
 		  outfile->WriteBuffer((char*)patchBusHeaderWord,4*sizeof(UInt_t));
+
+		  bknJunk += patchbusRDL;
 
 		  for (Int_t iword = 0; iword < patchbusRDL; iword++)
 		    {

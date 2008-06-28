@@ -154,19 +154,16 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	  i = id+(ndimYr/2-1)-(jd/2);
 
 	  Int_t ij = i + j*kNDIMX;
-	  // BKN Int_t ij = i + j*ndimXr;
 	  
 	  if (ismn < 12)
 	    {
-	      //edepcell[ij]    = celladc[jd][id];
 	      cellenergy[ij]    = celladc[jd][id];//Ajay
-	      fCellTrNo[i][j] = jd*10000+id;  // for association 
+	      fCellTrNo[i][j]   = jd*10000+id;    // for association 
 	    }
 	  else if (ismn >= 12 && ismn <= 23)
 	    {
-	      //edepcell[ij]    = celladc[id][jd];
 	      cellenergy[ij]    = celladc[id][jd];//Ajay
-	      fCellTrNo[i][j] = id*10000+jd;  // for association 
+	      fCellTrNo[i][j] = id*10000+jd;      // for association 
 	    }
 	}
     }
@@ -261,7 +258,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
       pmdcont->Add(pmdcl);
     }
   
-  fPMDclucont->Clear();
+  fPMDclucont->Delete();
   
 }
 // ------------------------------------------------------------------------ //
@@ -402,10 +399,12 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 
   Int_t *cellCount = 0x0;
   Int_t **cellXY = 0x0;
-  const Int_t kdim = 4500;
+  const Int_t kdim = 4609;
 
   Int_t    i12;
-  Int_t    i, j, k, i1, i2, id, icl,  itest,ihld, ig, nsupcl,clno;
+  Int_t    i, j, k, i1, i2, id, icl,  itest;
+//  Int_t    ihld;
+  Int_t    ig, nsupcl,clno;
   Int_t    t[kdim];
   Int_t    ncl[kdim], iord[kdim], lev1[kdim], lev2[kdim];
   Int_t    clxy[15];
@@ -561,7 +560,8 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	    }
 	  
 	  // arranging cells within supercluster in decreasing order
-	  
+
+/*	  
 	  for(j = 1;j <= ncl[i]; j++)
 	    {
 	      itest = 0;
@@ -579,6 +579,12 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		    }
 		}
 	    }
+*/
+
+	  Int_t imaxdim = ncl[i] + 1;
+	  TMath::Sort(imaxdim,z,iord);// order the data
+
+
 	  // compute the number of Gaussians and their centers ( first
 	  // guess )
 	  // centers must be separated by cells having smaller ener. dep.
@@ -754,7 +760,7 @@ void AliPMDClusteringV1::GaussFit(Int_t ncell, Int_t nclust, Double_t &x,
   // Does gaussian fitting
   //
 
-  const Int_t kdim = 4500;
+  const Int_t kdim = 4609;
   Int_t i, j, i1, i2, novar, idd, jj;
   Int_t neib[kdim][50];
 
