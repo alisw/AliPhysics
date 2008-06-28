@@ -669,6 +669,7 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Floa
 
   TString s=(factor < 0) ? "L3: -" : "L3: +";
 
+  l3Current = TMath::Abs(l3Current);
   if (TMath::Abs(l3Current-l3NominalCurrent1)/l3NominalCurrent1 < tolerance) {
     map=AliMagWrapCheb::k5kG;
     s+="0.5 T;  ";
@@ -677,26 +678,27 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Floa
     map=AliMagWrapCheb::k2kG;
     s+="0.2 T;  ";
   } else
-  if (TMath::Abs(l3Current) < zero) {
+  if (l3Current < zero) {
     map=AliMagWrapCheb::k2kG;
     s+="0.0 T;  ";
     factor=0.;                  // in fact, this is a global factor...
     fUniformField=kTRUE;        // track with the uniform (zero) B field
   } else {
-    AliError("Wrong L3 current !");
+    AliError(Form("Wrong L3 current (%f A)!",l3Current));
     return kFALSE;
   }
 
+  diCurrent = TMath::Abs(diCurrent);
   if (TMath::Abs(diCurrent-diNominalCurrent)/diNominalCurrent < tolerance) {
     // 3% current tolerance...
     dipoleON=kTRUE;
     s+="Dipole ON";
   } else
-  if (TMath::Abs(diCurrent) < zero) { // some small current..
+  if (diCurrent < zero) { // some small current..
     dipoleON=kFALSE;
     s+="Dipole OFF";
   } else {
-    AliError("Wrong dipole current !");
+    AliError(Form("Wrong dipole current (%f A)!",diCurrent));
     return kFALSE;
   }
 
