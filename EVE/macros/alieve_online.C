@@ -21,7 +21,11 @@ void alieve_online_init()
   gROOT->LoadMacro("its_raw.C");
   gROOT->LoadMacro("tpc_raw.C");
 
+  // Temp fix !!!
+  TGeoManager *man = gGeoManager;
   gGeomGentle = geom_gentle();
+  // Temp fix !!!
+  gGeoManager = man;
 
   gROOT->ProcessLine(".L SplitGLView.C++g"); // !!!! debug-mode
   TEveBrowser* browser = gEve->GetBrowser();
