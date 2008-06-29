@@ -198,7 +198,12 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  xpos   = pmddigit->GetRow();
 	  ypos   = pmddigit->GetColumn();
 	  adc    = pmddigit->GetADC();
-	  
+	  if(xpos < 0 || xpos > 48 || ypos < 0 || ypos > 96)
+	    {
+	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
+			      xpos, ypos));
+	      continue; 
+	    }
 	  // CALIBRATION
 	  Float_t gain = fCalibGain->GetGainFact(det,smn,xpos,ypos);
 	  // printf("adc = %d gain = %f\n",adc,gain);
@@ -264,7 +269,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 {
   // Converts digits to recpoints after running clustering
   // algorithm on CPV plane and PREshower plane
-  //
+  // This algorithm is called during the reconstruction from digits
 
   Int_t    det = 0,smn = 0;
   Int_t    xpos,ypos;
@@ -308,7 +313,13 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  xpos   = pmddigit->GetRow();
 	  ypos   = pmddigit->GetColumn();
 	  adc    = pmddigit->GetADC();
-
+	  if(xpos < 0 || xpos > 48 || ypos < 0 || ypos > 96)
+	    {
+	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
+			    xpos, ypos));
+	      continue; 
+	    }
+	  
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,xpos,ypos);
 	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
@@ -462,7 +473,12 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t row = pmdddl->GetRow();
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
-
+	  if(row < 0 || row > 48 || col < 0 || col > 96)
+	    {
+	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
+			    row, col));
+	      continue; 
+	    }
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
 	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
@@ -703,7 +719,12 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  Int_t row = pmdddl->GetRow();
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
-
+	  if(row < 0 || row > 48 || col < 0 || col > 96)
+	    {
+	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
+			      row, col));
+	      continue; 
+	    }
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
 	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
