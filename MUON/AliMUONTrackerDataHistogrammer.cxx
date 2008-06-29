@@ -32,6 +32,7 @@
 #include <TH1.h>
 #include <TObjArray.h>
 #include <TROOT.h>
+#include <TMath.h>
 
 ///\class AliMUONTrackerDataHistogrammer
 ///
@@ -197,14 +198,18 @@ AliMUONTrackerDataHistogrammer::CreateHisto(const char* name,
     h = new TH1F(name,name,nbins,xmin,xmax);
     h->SetDirectory(gROOT);
   }
+	else
+	{
+		AliError(Form("Cannot create histo for name=%s nbins=%d xmin=%e xmax=%e",name,nbins,xmin,xmax));
+	}
   return h;
 }
 
 //_____________________________________________________________________________
 TH1* 
 AliMUONTrackerDataHistogrammer::CreateHisto(const AliMUONVPainter& painter, 
-                                                    Int_t externalDim,
-                                                    Int_t internalDim)
+																						Int_t externalDim,
+																						Int_t internalDim)
 {
   /// Create an histogram, from given dim of given data, 
   /// for all the channels handled by painter
@@ -344,8 +349,16 @@ AliMUONTrackerDataHistogrammer::GetDataRange(const TObjArray& manuArray,
       if ( fData.HasChannel(detElemId,manuId,i) ) 
       {
         Double_t value = fData.Channel(detElemId,manuId,i,fInternalDim);
-        xmin = TMath::Min(xmin,value);
-        xmax = TMath::Max(xmax,value);
+				
+				if ( ! TMath::Finite(value) )
+				{
+					AliError(Form("Got a NaN for DE %d manu %d ch %d",detElemId,manuId,i));
+				}
+				else
+				{
+					xmin = TMath::Min(xmin,value);
+					xmax = TMath::Max(xmax,value);
+				}
       }
     }
   }

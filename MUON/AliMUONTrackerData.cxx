@@ -1059,7 +1059,9 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) c
   
   if ( TMath::Even(dim) || IsSingleEvent() ) 
   {
-    return value/occ;
+		Double_t x = value/occ;
+		
+		return ( TMath::Finite(x) ? x : 0.0 ) ;
   }
   else
   {
