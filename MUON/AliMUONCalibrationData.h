@@ -40,34 +40,33 @@ public:
   AliMUONVStore* Capacitances() const;
 
   /// Create a capa store (which must be deleted) from OCDB for the given run
-  static AliMUONVStore* CreateCapacitances(Int_t runNumber);
+  static AliMUONVStore* CreateCapacitances(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a gain store (which must be deleted) from OCDB for the given run
-  static AliMUONVStore* CreateGains(Int_t runNumber);
+  static AliMUONVStore* CreateGains(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a global trigger mask (which must be deleted) from OCDB for the given run
-  static AliMUONGlobalCrateConfig* CreateGlobalTriggerCrateConfig(Int_t runNumber);
+  static AliMUONGlobalCrateConfig* CreateGlobalTriggerCrateConfig(Int_t runNumber, Int_t* startOfValidity=0);
   
   /// Create a hv map (which must be deleted) from OCDB for the given run
-  static TMap* CreateHV(Int_t runNumber);
+  static TMap* CreateHV(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a neighbours store (which must be deleted) from OCDB for the given run
-  static AliMUONVStore* CreateNeighbours(Int_t runNumber);
+  static AliMUONVStore* CreateNeighbours(Int_t runNumber, Int_t* startOfValidity=0);
   
   /// Create a local trigger mask store (which must be deleted) for a given run
-  static AliMUONVStore* CreateLocalTriggerBoardMasks(Int_t runNumber);
+  static AliMUONVStore* CreateLocalTriggerBoardMasks(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a pedestal store (which must be deleted) from OCDB for the given run
-  static AliMUONVStore* CreatePedestals(Int_t runNumber);
+  static AliMUONVStore* CreatePedestals(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a regional trigger mask store (which must be deleted) for a given run
-  static AliMUONRegionalTriggerConfig* CreateRegionalTriggerConfig(Int_t runNumber);
+  static AliMUONRegionalTriggerConfig* CreateRegionalTriggerConfig(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a trigger Look Up Table (which must be deleted) for a given run
-  static AliMUONTriggerLut* CreateTriggerLut(Int_t runNumber);
-  
+  static AliMUONTriggerLut* CreateTriggerLut(Int_t runNumber, Int_t* startOfValidity=0);
   /// Create a trigger efficiency map (which must be deleted) for a given run
-  static AliMUONTriggerEfficiencyCells* CreateTriggerEfficiency(Int_t runNumber);
+  static AliMUONTriggerEfficiencyCells* CreateTriggerEfficiency(Int_t runNumber, Int_t* startOfValidity=0);
   
   /// Get all the gains
   AliMUONVStore* Gains() const;
@@ -114,7 +113,7 @@ public:
   
   void Reset();
 
-  static TObject* CreateObject(Int_t runNumber, const char* path);
+  static TObject* CreateObject(Int_t runNumber, const char* path, Int_t* startOfValidity=0x0);
   
   static void Check(Int_t runNumber);
   

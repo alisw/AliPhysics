@@ -55,57 +55,58 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
   fData(0x0),
   fSource(Form("%s-%010d-%s",ocdbPath,runNumber,type))
 {
-    /// Ctor
-    AliCDBStorage* storage = AliCDBManager::Instance()->GetDefaultStorage();
-    
-    AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
-    
-    AliMUONVStore* store(0x0);
-    
-    TString stype(type);
-    stype.ToUpper();
-    Bool_t isSingleEvent(kTRUE);
-    
-    if ( stype == "PEDESTALS" )
-    {
-      fData = CreateDataPedestals(runNumber);
-      store = AliMUONCalibrationData::CreatePedestals(runNumber);
-    }
-    else if ( stype == "GAINS" ) 
-    {
-      fData = CreateDataGains(runNumber);
-      AliMUONVStore* gains = AliMUONCalibrationData::CreateGains(runNumber);
-      store = SplitQuality(*gains);
-      delete gains;
-    }
-    else if ( stype == "CAPACITANCES" )
-    {
-      fData = CreateDataCapacitances(runNumber);
-      store = AliMUONCalibrationData::CreateCapacitances(runNumber);
-    }
-    else if ( stype == "HV" )
-    {
-      fData = new AliMUONTrackerData(Form("HV%d",runNumber),"High Voltages",1,!isSingleEvent);
-      fData->SetDimensionName(0,"HV");
-      TMap* m = AliMUONCalibrationData::CreateHV(runNumber);
-      store = CreateHVStore(*m);
-      delete m;
-    }
-    
-    AliCDBManager::Instance()->SetDefaultStorage(storage);
-
-    if (!store)
-    {
-      fIsValid = kFALSE;
-      delete fData;
-      fData = 0x0;
-      AliError("Could not create store");
-      return;
-    }
-    
-    fData->Add(*store);
-    
-    delete store;
+	/// Ctor
+	AliCDBStorage* storage = AliCDBManager::Instance()->GetDefaultStorage();
+	
+	AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+	
+	AliMUONVStore* store(0x0);
+	
+	TString stype(type);
+	stype.ToUpper();
+	Bool_t isSingleEvent(kTRUE);
+	Int_t startOfValidity(0);
+	
+	if ( stype == "PEDESTALS" )
+	{
+		store = AliMUONCalibrationData::CreatePedestals(runNumber,&startOfValidity);
+		fData = CreateDataPedestals(startOfValidity);
+	}
+	else if ( stype == "GAINS" ) 
+	{
+		AliMUONVStore* gains = AliMUONCalibrationData::CreateGains(runNumber,&startOfValidity);
+		fData = CreateDataGains(startOfValidity);
+		store = SplitQuality(*gains);
+		delete gains;
+	}
+	else if ( stype == "CAPACITANCES" )
+	{
+		store = AliMUONCalibrationData::CreateCapacitances(runNumber,&startOfValidity);
+		fData = CreateDataCapacitances(startOfValidity);
+	}
+	else if ( stype == "HV" )
+	{
+		TMap* m = AliMUONCalibrationData::CreateHV(runNumber,&startOfValidity);
+		fData = new AliMUONTrackerData(Form("HV%d",startOfValidity),"High Voltages",1,!isSingleEvent);
+		fData->SetDimensionName(0,"HV");
+		store = CreateHVStore(*m);
+		delete m;
+	}
+	
+	AliCDBManager::Instance()->SetDefaultStorage(storage);
+	
+	if (!store)
+	{
+		fIsValid = kFALSE;
+		delete fData;
+		fData = 0x0;
+		AliError("Could not create store");
+		return;
+	}
+	
+	fData->Add(*store);
+	
+	delete store;
 }
 
 //_____________________________________________________________________________

@@ -115,60 +115,60 @@ AliMUONCalibrationData::Capacitances() const
 
 //_____________________________________________________________________________
 AliMUONVStore*
-AliMUONCalibrationData::CreateCapacitances(Int_t runNumber)
+AliMUONCalibrationData::CreateCapacitances(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create capa store from OCDB for a given run
   
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Capacitances"));
+  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Capacitances",startOfValidity));
 }
 
 //_____________________________________________________________________________
 AliMUONVStore*
-AliMUONCalibrationData::CreateGains(Int_t runNumber)
+AliMUONCalibrationData::CreateGains(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create a new gain store from the OCDB for a given run
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Gains"));
+  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Gains",startOfValidity));
 }
 
 //_____________________________________________________________________________
 AliMUONGlobalCrateConfig*
-AliMUONCalibrationData::CreateGlobalTriggerCrateConfig(Int_t runNumber)
+AliMUONCalibrationData::CreateGlobalTriggerCrateConfig(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create the internal store for GlobalTriggerCrateConfig from OCDB
   
-  return dynamic_cast<AliMUONGlobalCrateConfig*>(CreateObject(runNumber,"MUON/Calib/GlobalTriggerCrateConfig"));
+  return dynamic_cast<AliMUONGlobalCrateConfig*>(CreateObject(runNumber,"MUON/Calib/GlobalTriggerCrateConfig",startOfValidity));
 }
 
 
 
 //_____________________________________________________________________________
 TMap*
-AliMUONCalibrationData::CreateHV(Int_t runNumber)
+AliMUONCalibrationData::CreateHV(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create a new HV map from the OCDB for a given run
-  return dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV"));
+  return dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
 }
 
 //_____________________________________________________________________________
 AliMUONVStore*
-AliMUONCalibrationData::CreateLocalTriggerBoardMasks(Int_t runNumber)
+AliMUONCalibrationData::CreateLocalTriggerBoardMasks(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Get the internal store for LocalTriggerBoardMasks from OCDB
   
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/LocalTriggerBoardMasks"));
+  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/LocalTriggerBoardMasks",startOfValidity));
 }
 
 //_____________________________________________________________________________
 AliMUONVStore*
-AliMUONCalibrationData::CreateNeighbours(Int_t runNumber)
+AliMUONCalibrationData::CreateNeighbours(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create a neighbour store from the OCDB for a given run
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Neighbours"));
+  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Neighbours",startOfValidity));
 }
 
 //_____________________________________________________________________________
 TObject*
-AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path)
+AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* startOfValidity)
 {
   /// Access the CDB for a given path (e.g. MUON/Calib/Pedestals),
   /// and return the corresponding TObject.
@@ -190,52 +190,59 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path)
   AliCDBEntry* entry =  AliCDBManager::Instance()->Get(path,runNumber);
   
   man->SetCacheFlag(cacheStatus);
-  
+
+	
   if (entry)
   {
+		if ( startOfValidity ) *startOfValidity = entry->GetId().GetFirstRun();
+		
     TObject* object = entry->GetObject();
     entry->SetOwner(kFALSE);
     delete entry;
     return object;
   }
-  
+	else
+	{
+		if ( startOfValidity )  *startOfValidity = AliCDBRunRange::Infinity();
+  }
+	
   return 0x0;
 }
 
 //_____________________________________________________________________________
 AliMUONVStore*
-AliMUONCalibrationData::CreatePedestals(Int_t runNumber)
+AliMUONCalibrationData::CreatePedestals(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create a new pedestal store from the OCDB for a given run
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Pedestals"));
+  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Pedestals",startOfValidity));
 }
 
 
 //_____________________________________________________________________________
 AliMUONRegionalTriggerConfig*
-AliMUONCalibrationData::CreateRegionalTriggerConfig(Int_t runNumber)
+AliMUONCalibrationData::CreateRegionalTriggerConfig(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create the internal store for RegionalTriggerConfig from OCDB
   
-  return dynamic_cast<AliMUONRegionalTriggerConfig*>(CreateObject(runNumber,"MUON/Calib/RegionalTriggerConfig"));
+  return dynamic_cast<AliMUONRegionalTriggerConfig*>(CreateObject(runNumber,"MUON/Calib/RegionalTriggerConfig",startOfValidity));
 }
 
 //_____________________________________________________________________________
 AliMUONTriggerEfficiencyCells* 
-AliMUONCalibrationData::CreateTriggerEfficiency(Int_t runNumber)
+AliMUONCalibrationData::CreateTriggerEfficiency(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create trigger efficiency object from OCBD
   
-  return dynamic_cast<AliMUONTriggerEfficiencyCells*>(CreateObject(runNumber,"MUON/Calib/TriggerEfficiency"));
+  return dynamic_cast<AliMUONTriggerEfficiencyCells*>(CreateObject(runNumber,"MUON/Calib/TriggerEfficiency",startOfValidity));
 }
 
 //_____________________________________________________________________________
 AliMUONTriggerLut* 
-AliMUONCalibrationData::CreateTriggerLut(Int_t runNumber)
+AliMUONCalibrationData::CreateTriggerLut(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create trigger LUT from OCDB
   
-  return dynamic_cast<AliMUONTriggerLut*>(CreateObject(runNumber,"MUON/Calib/TriggerLut"));
+  return dynamic_cast<AliMUONTriggerLut*>(CreateObject(runNumber,"MUON/Calib/TriggerLut",startOfValidity));
 }
 
 //_____________________________________________________________________________
