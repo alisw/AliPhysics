@@ -1,30 +1,28 @@
 /*********************************************************************************
 - Contact:    Brigitte Cheynis     b.cheynis@ipnl.in2p3.fr
 - Link:       http
-- Raw data test file : 
-              /afs/cern.ch/user/c/cheynis/public/run546.dat
-- Reference run number : 6360	      
+- Raw data test file :          
+- Reference run number : 	      
 - Run Type:   PHYSICS
-- DA Type:    LDC
-- Number of events needed: >=100
+- DA Type:    MON
+- Number of events needed: >=500
 - Input Files:  argument list
-- Output Files: local files  V00Log.txt, VZERO_Histos.root, V0_Ped_Width_Gain.dat
+- Output Files: local files  VZERO_Histos.root, V0_Ped_Width_Gain.dat
                 FXS file     V0_Ped_Width_Gain.dat
 - Trigger types used: PHYSICS_EVENT
 **********************************************************************************/
-
 
 /**********************************************************************************
 *                                                                                 *
 * VZERO Detector Algorithm used for extracting calibration parameters             *
 *                                                                                 *
-* This program reads the DDL data file passed as argument using the monitoring    *
-* library.                                                                        *
+* This program connects to the DAQ data source passed as argument.                *
 * It computes calibration parameters, populates local "./V0_Ped_Width_Gain.dat"   *            
 * file and exports it to the FES.                                                 *
+* The program exits when being asked to shut down (daqDA_checkshutdown)           *
+* or End of Run event.                                                            *
 * We have 128 channels instead of 64 as expected for V0 due to the two sets of    *
 * charge integrators which are used by the FEE ...                                *
-* The program reports about its processing progress.                              *
 *                                                                                 *
 ***********************************************************************************/
 
@@ -50,8 +48,7 @@
 #include <TH1F.h>
 #include <TMath.h>
 
-
-/* Main routine --- Arguments: list of DATE raw data files */
+/* Main routine --- Arguments: monitoring data source */
       
 int main(int argc, char **argv) {
 
@@ -62,12 +59,17 @@ int main(int argc, char **argv) {
                     "RIO",
                     "TStreamerInfo()");
   int status;
+  if (argc!=2) {
+     printf("Wrong number of arguments\n");
+     return -1;
+  }
 
 //  printf(" argc = %d, argv = %s \n",argc, &(**argv));
 
   Int_t    kHighCut = 50; // high cut on pedestal distribution - to be tuned
   Int_t    kLowCut  = 30; // low cut on signal distribution - to be tuned
   Double_t ADCmean[128];
+  Double_t ADCsigma[128];
   Double_t PEDmean[128];
   Double_t PEDsigma[128];
   
@@ -86,18 +88,11 @@ int main(int argc, char **argv) {
        hADCname[i]  = new TH1F(ADCname,texte,1024,0,1023);
        sprintf(PEDname,"hPED%d",i);
        sprintf(texte,"PED cell%d",i);
-       hPEDname[i]  = new TH1F(PEDname,texte,1024,0,1023);}
+       hPEDname[i]  = new TH1F(PEDname,texte,1024,0,1023);
+  }
 //___________________________________________________ 
   
-  
-  /* log start of process */
-  printf("VZERO DA program started\n");  
-
-  /* check that we got some arguments = list of files */
-  if (argc<2)   {
-      printf("Wrong number of arguments\n");
-      return -1;}
-
+ 
   /* open result file to be exported to FES */
   FILE *fp=NULL;
   fp=fopen("./V0_Ped_Width_Gain.dat","a");
@@ -105,102 +100,108 @@ int main(int argc, char **argv) {
       printf("Failed to open result file\n");
       return -1;}
 
-  /* open log file to inform user */
-  FILE *flog=NULL;
-  flog=fopen("./V00log.txt","a");
-  if (flog==NULL) {
-      printf("Failed to open log file\n");
-      return -1;  }
-    
-  /* report progress */
-  daqDA_progressReport(10);
+  /* define data source : this is argument 1 */  
+  status=monitorSetDataSource( argv[1] );
+  if (status!=0) {
+     printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+     return -1;
+  }
 
+  /* declare monitoring program */
+  status=monitorDeclareMp( __FILE__ );
+  if (status!=0) {
+    printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
+    return -1;
+  }
 
+  /* define wait event timeout - 1s max */
+  monitorSetNowait();
+  monitorSetNoWaitNetworkTimeout(1000);
+  
   /* init counters on events */
   int nevents_physics=0;
   int nevents_total=0;
 
-  /* read the data files, considering n files */
-  
-  int n;
-  
-  for (n=1;n<argc;n++) {
-   
-    status=monitorSetDataSource( argv[n] );
-    if (status!=0) {
-        printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
-        return -1; }
+  /* loop on events (infinite) */
+  for(;;) {
+      struct eventHeaderStruct *event;
+      eventTypeType eventT;
 
-    /* report progress - here indexed on the number of files */
-    daqDA_progressReport(10+80*n/argc);
+      /* check shutdown condition */
+      if (daqDA_checkShutdown()) {break;}   
 
-    /* read the data file */
-    for(;;) {
-        struct eventHeaderStruct *event;
-        eventTypeType eventT;
-
-        /* get next event */
-        status=monitorGetEventDynamic((void **)&event);
-        if (status==MON_ERR_EOF) break; /* end of monitoring file has been reached */
-        if (status!=0) {
-            printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-            return -1; }
-
-        /* retry if got no event */
-        if (event==NULL) break;
-        
-        /* decode event */
-        eventT=event->eventType;
-	
-        switch (event->eventType){
-      
-        case START_OF_RUN:
-             break;
-      
-        case END_OF_RUN:
-	     printf("End Of Run detected\n");
-             break;
-      
-        case PHYSICS_EVENT:
-             nevents_physics++;
- 	     
-             fprintf(flog,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
-                 (unsigned long)event->eventRunNb,
-                 (unsigned long)event->eventSize,
-                 EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
-                 EVENT_ID_GET_ORBIT(event->eventId),
-                 EVENT_ID_GET_PERIOD(event->eventId) );
-		 
-	     AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-  
-	     AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
-	     rawStream->Next();	
-	     for(Int_t i=0; i<64; i++) {
-	        if(!rawStream->GetIntegratorFlag(i,10))
-                   hADCname[i]->Fill(float(rawStream->GetADC(i)));       // even integrator - fills 0 to 63
-		else 
-		   hADCname[i+64]->Fill(float(rawStream->GetADC(i)));    // odd integrator  - fills 64 to 123
-		for(Int_t j=0; j<21; j++) {
-		    if(j==10) continue;
-		    if(!rawStream->GetIntegratorFlag(i,j))
-                       { hPEDname[i]->Fill(float(rawStream->GetPedestal(i,j))); }     // even integrator
-		    else 
-		       { hPEDname[i+64]->Fill(float(rawStream->GetPedestal(i,j))); }  // odd integrator 
-		}
-             }    
-             delete rawStream;
-             rawStream = 0x0;      
-             delete rawReader;
-             rawReader = 0x0;	     	 						         
-        } // end of switch on event type 
-	
-        nevents_total++;
-        /* free resources */
-        free(event);
-
-    }  // loop over events
+      /* get next event (blocking call until timeout) */
+      status=monitorGetEventDynamic((void **)&event);
+      if (status==MON_ERR_EOF) {
+          printf ("End of File detected\n");
+      break; /* end of monitoring file has been reached */
+      }
     
-   }  // loop over data files
+      if (status!=0) {
+           printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+      break;
+      }
+
+      /* retry if got no event */
+      if (event==NULL) continue;
+               
+      /* decode event */
+      eventT=event->eventType;
+	
+      switch (event->eventType){
+      
+      case START_OF_RUN:
+           break;
+      
+      case END_OF_RUN:
+           printf("End Of Run detected\n");
+           break;
+      
+      case PHYSICS_EVENT:
+           nevents_physics++;
+ 	     
+//            fprintf(flog,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
+//                  (unsigned long)event->eventRunNb,
+//                  (unsigned long)event->eventSize,
+//                  EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
+//                  EVENT_ID_GET_ORBIT(event->eventId),
+//                  EVENT_ID_GET_PERIOD(event->eventId) );
+		 
+	   AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+  
+	   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
+	   rawStream->Next();	
+           for(Int_t i=0; i<64; i++) {
+	       if(!rawStream->GetIntegratorFlag(i,10))
+                   hADCname[i]->Fill(float(rawStream->GetADC(i)));       // even integrator - fills 0 to 63
+	       else 
+		   hADCname[i+64]->Fill(float(rawStream->GetADC(i)));    // odd integrator  - fills 64 to 123
+	       for(Int_t j=0; j<21; j++) {
+		   if(j==10) continue;
+		   if(!rawStream->GetIntegratorFlag(i,j))
+                       { hPEDname[i]->Fill(float(rawStream->GetPedestal(i,j))); }     // even integrator
+		   else 
+		       { hPEDname[i+64]->Fill(float(rawStream->GetPedestal(i,j))); }  // odd integrator 
+	       }
+           }    
+           delete rawStream;
+           rawStream = 0x0;      
+           delete rawReader;
+           rawReader = 0x0;	     	 						         
+      } // end of switch on event type 
+	
+      nevents_total++;
+      /* free resources */
+      free(event);
+	
+      /* exit when last event received, no need to wait for TERM signal */
+      if (eventT==END_OF_RUN) {
+           printf("End Of Run event detected\n");
+      break;
+    }
+
+  }  // loop over events
+    
 //________________________________________________________________________
 //  Computes mean values, dumps them into the output text file
 	
@@ -209,8 +210,9 @@ int main(int argc, char **argv) {
       PEDmean[i]  = hPEDname[i]->GetMean(); 
       PEDsigma[i] = hPEDname[i]->GetRMS(); 
       hADCname[i]->GetXaxis()->SetRange(kLowCut,1023);
-      ADCmean[i] = hADCname[i]->GetMean() ; 
-      fprintf(fp," %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],ADCmean[i]);
+      ADCmean[i]  = hADCname[i]->GetMean();
+      ADCsigma[i] = hADCname[i]->GetRMS(); 
+      fprintf(fp," %.3f %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],ADCmean[i],ADCsigma[i]);
   } 
 
 //________________________________________________________________________
@@ -228,26 +230,15 @@ int main(int argc, char **argv) {
   
 //________________________________________________________________________
    
-  /* write report */
-  fprintf(flog,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
-  printf("Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
-  
-  /* close result and log files */
+
+  /* close result file */
   fclose(fp);
-  fclose(flog); 
-  
-  /* report progress */
-  daqDA_progressReport(90);
-
-
+ 
   /* export result file to FES */
   status=daqDA_FES_storeFile("./V0_Ped_Width_Gain.dat","V00da_results");
   if (status)    {
       printf("Failed to export file : %d\n",status);
       return -1; }
 
-  /* report progress */
-  daqDA_progressReport(100);
-  
   return status;
 }
