@@ -68,9 +68,15 @@ void runLocal(const char *chainlistfile, int dataFromAlien=0) {
   TChain *chain = 0x0;
   //  chain = analysis->GetChainFromCollection(collectionfile,"esdTree");
 
-  gROOT->LoadMacro("CreateESDChain.C");
-  chain = CreateESDChain(chainlistfile,500);
-   
+  if (dataFromAlien) {
+    AliTagAnalysis *analysis = new AliTagAnalysis();
+    chain = analysis->GetChainFromCollection(chainlistfile,"esdTree");
+  }
+  else {
+    gROOT->LoadMacro("CreateESDChain.C");
+    chain = CreateESDChain(chainlistfile,500);
+  }
+
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
