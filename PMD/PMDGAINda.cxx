@@ -7,8 +7,8 @@ Reference run:
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 1 million for PB+PB, 200 milion for p+p
-Input Files: 
-Output Files: pmd_calib.root, to be exported to the DAQ FXS
+Input Files: PMD_PED.root, Configfile
+Output Files: PMDGAINS.root, to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
 
 */
@@ -52,13 +52,43 @@ int main(int argc, char **argv) {
 					  "RIO",
 					  "TStreamerInfo()");
 
+    Int_t filestatus = -1, totevt = -1;
+    Int_t maxevt = -1;
+
+    // Reads the pedestal file and keep the values in memory for subtraction
+
     AliPMDCalibGain calibgain;
+    Int_t pstatus = calibgain.ExtractPedestal();
+
+    if(pstatus == -3) return -3;
 
     TTree *ic = NULL;
 
-    //TH1F::AddDirectory(0);
-  
+    FILE *fp1 = NULL;
+
+    fp1 = fopen("Configfile","r");
+
+    if (fp1 == NULL)
+      {
+	printf("**** Configfile doesn't exist, creating the file ****\n");
+	fp1 = fopen("Configfile","w");
+	filestatus = 0;
+	totevt     = 0;
+	maxevt     = 2000;
+	fprintf(fp1,"%d %d %d\n",filestatus, totevt,maxevt);
+      }
+    else
+      {
+	fscanf(fp1,"%d %d %d\n",&filestatus, &totevt,&maxevt);
+	//printf("%d %d %d\n",filestatus, totevt, maxevt);
+      }
+    fclose(fp1);
     
+    if (filestatus == 1)
+      {
+	calibgain.ReadIntermediateFile();
+      }
+
     // decoding the events
     
     int status;
@@ -68,13 +98,6 @@ int main(int argc, char **argv) {
 	return -1;
     }
     
-    /* open result file */
-    FILE *fp=NULL;
-    fp=fopen("./result.txt","a");
-    if (fp==NULL) {
-	printf("Failed to open file\n");
-	return -1;
-    }
     
     /* define data source : this is argument 1 */  
     status=monitorSetDataSource( argv[1] );
@@ -95,7 +118,7 @@ int main(int argc, char **argv) {
     monitorSetNoWaitNetworkTimeout(1000);
     
     /* log start of process */
-    printf("DA example case2 monitoring program started\n");  
+    printf("PMD GAIN DA - strted generating the gain of a cell\n");  
     
     /* init some counters */
     int nevents_physics=0;
@@ -147,7 +170,7 @@ int main(int argc, char **argv) {
 		
 	    case PHYSICS_EVENT:
 		nevents_physics++;
-		if(nevents_physics%100 == 0)printf("Physis Events = %d\n",nevents_physics);
+		//if(nevents_physics%100 == 0)printf("Physis Events = %d\n",nevents_physics);
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 		TObjArray *pmdddlcont = new TObjArray();
 		calibgain.ProcessEvent(rawReader, pmdddlcont);
@@ -167,32 +190,52 @@ int main(int argc, char **argv) {
     /* exit when last event received, no need to wait for TERM signal */
 
     ic = new TTree("ic","PMD Gain tree");
-    if (eventT==END_OF_RUN) {
-      printf("EOR event detected\n");
-      calibgain.Analyse(ic);
-    }
-    
-    //write the Run level file   
-    TFile * fileRun = new TFile ("outPMDdaRun.root","RECREATE"); 
-    TBenchmark *bench = new TBenchmark();
-    bench->Start("PMD");
-    bench->Stop("PMD");
-    bench->Print("PMD");
-    fileRun->Close();
-    
-    /* write report */
-    fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
-    
 
-    TFile * gainRun = new TFile ("PMDGAINS.root","RECREATE"); 
-    ic->Write();
-    gainRun->Close();
+    totevt += nevents_physics++;
+
+    fp1 = fopen("Configfile","w+");
+
+    if (totevt < maxevt)
+      {
+	printf("Required Number of Events not reached\n");
+	printf("Number of Events processed = %d\n",totevt);
+	printf("Writing the intermediate ASCII file\n");
+	calibgain.WriteIntermediateFile();
+
+	filestatus = 1;
+	fprintf(fp1,"%d %d %d\n",filestatus,totevt,maxevt);
+      }
+    else if (totevt >= maxevt)
+      {
+	printf("Required Number of Events reached = %d\n",totevt);
+	calibgain.Analyse(ic);
+
+	TFile * gainRun = new TFile ("PMDGAINS.root","RECREATE"); 
+	ic->Write();
+	gainRun->Close();
+
+	filestatus = 0;
+	totevt     = 0;
+	fprintf(fp1,"%d %d %d\n",filestatus,totevt,maxevt);
+      }
+    fclose(fp1);
     
     delete ic;
     ic = 0;
+    
 
-    /* close result file */
-    fclose(fp);
+    /* store the result file on FES */
+ 
+    if (filestatus == 0)
+      {
+	printf("root file is created and getting exported\n");
+	status = daqDA_FES_storeFile("PMDGAINS.root","gaincalib");
+      }
+
+    if (status) {
+      status = -2;
+    }
+
 
     return status;
 }

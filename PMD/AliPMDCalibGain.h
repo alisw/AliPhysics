@@ -15,7 +15,11 @@ class AliPMDCalibGain : public TObject
   AliPMDCalibGain(const AliPMDCalibGain &pmdcalibgain);  // copy constructor
   AliPMDCalibGain &operator=(const AliPMDCalibGain &pmdcalibgain); // assignment op
 
-  virtual ~AliPMDCalibGain() ;     // dtor
+  virtual ~AliPMDCalibGain() ;           // dtor
+
+  Int_t ExtractPedestal();               // Assign the pedestal values
+  void  ReadIntermediateFile();          // reads the intermediate file
+  void  WriteIntermediateFile();         // writes the intermediate file
 
   Bool_t ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlcont);  //Looks for iso cells
 
@@ -31,11 +35,16 @@ class AliPMDCalibGain : public TObject
 	  kMaxCol = 96   // Number of Columns
       };
 
+  Float_t fDetCount[kDet];                             //counter detector wise
+  Float_t fDetIso[kDet];
   Float_t fSMIso[kDet][kMaxSMN];
-  Float_t fSMCount[kDet][kMaxSMN]; // counter
-  Float_t fCellIso[kDet][kMaxSMN][kMaxRow][kMaxCol]; // adc of iso cells
+  Float_t fSMCount[kDet][kMaxSMN];                     // counter
+  Float_t fCellIso[kDet][kMaxSMN][kMaxRow][kMaxCol];   // adc of iso cells
   Float_t fCellCount[kDet][kMaxSMN][kMaxRow][kMaxCol]; // counter
 
-ClassDef(AliPMDCalibGain,3)        // description 
+  Float_t fPedMeanRMS[kDet][kMaxSMN][kMaxRow][kMaxCol];// Pedestal Mean
+  FILE    *fpw;         // write the intermediate file
+
+ClassDef(AliPMDCalibGain,4)        // description 
 };
 #endif // ALIPMDCALIBGAIN_H
