@@ -65,11 +65,8 @@ void runBatch(const char *chainlistfile) {
   //Usage of event tags
   AliTagAnalysis *analysis = new AliTagAnalysis();
   TChain *chain = 0x0;
-  //  chain = analysis->GetChainFromCollection(collectionfile,"esdTree");
+  chain = analysis->GetChainFromCollection(chainlistfile,"esdTree");
 
-  gROOT->LoadMacro("CreateESDChain.C");
-  chain = CreateESDChain(chainlistfile,16);
-   
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
