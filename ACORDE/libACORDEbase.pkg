@@ -1,7 +1,7 @@
 #-*-Mode: Makefile-*-
 
-SRCS = AliACORDEConstants.cxx AliACORDECalibData.cxx \
-       AliGenACORDE.cxx  AliACORDELoader.cxx AliACORDEPreprocessor.cxx AliACORDEdigit.cxx AliACORDEDataDCS.cxx AliACORDERawStream.cxx 
+SRCS = AliACORDEConstants.cxx AliACORDECalibData.cxx AliACORDERawReader.cxx \
+       AliGenACORDE.cxx AliACORDEQAChecker.cxx  AliACORDELoader.cxx AliACORDEPreprocessor.cxx AliACORDEdigit.cxx AliACORDEDataDCS.cxx AliACORDERawStream.cxx 
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -11,6 +11,6 @@ EINCLUDE := RAW
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lSTEER -lCDB -lSTEERBase  -lRAWDatarec -lRAWDatabase \
-#                         -L$(shell root-config --libdir) -lGeom
+                         -lSTEER -lCDB -lSTEERBase  -lRAWDatarec  -lRAWDatabase \
+#                         -L$(shell root-config --libdir) -lGeom 
 endif

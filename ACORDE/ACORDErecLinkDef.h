@@ -9,7 +9,7 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliACORDEReconstructor+;
-
+#pragma link C++ class  AliACORDEQADataMakerRec+;
  
 #endif
 

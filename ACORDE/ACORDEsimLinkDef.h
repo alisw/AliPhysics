@@ -14,6 +14,6 @@
 #pragma link C++ class AliACORDEDigitizer+;
 #pragma link C++ class AliACORDETrigger+;
 #pragma link C++ class AliACORDERawData+;
-
+#pragma link C++ class AliACORDEQADataMakerSim+;
 
 #endif

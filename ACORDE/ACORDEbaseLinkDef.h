@@ -16,5 +16,6 @@
 #pragma link C++ class  AliACORDEDataDCS+;
 #pragma link C++ class  AliACORDEdigit+;
 #pragma link C++ class  AliACORDERawStream+;
-
+#pragma link C++ class  AliACORDERawReader+;
+#pragma link C++ class  AliACORDEQAChecker+;
 #endif
