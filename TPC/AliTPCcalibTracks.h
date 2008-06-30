@@ -59,7 +59,7 @@ public :
    void            FillResolutionHistoLocal(AliTPCseed * track);  // the MAIN-FUNCTION, called for each track to fill the histograms, called by Process(...)
    static  TH2D*   MakeDiff(TH2D * hfit, TF2 * func);
 
-   Long64_t Merge(TCollection *li);
+   virtual Long64_t Merge(TCollection *li);
    static AliTPCcalibTracks* TestMerge(AliTPCcalibTracks *ct, AliTPCClusterParam *clusterParam, Int_t nCalTracks = 50);
    
    void     SetStyle() const;
