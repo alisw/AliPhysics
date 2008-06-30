@@ -705,7 +705,7 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 			rl->CdGAFile() ; 
 			rl->LoadgAlice() ;
 			if ( ! rl->GetAliRun() ) {
-				AliFatal("AliRun not found in galice.root") ;
+				AliInfo("AliRun not found in galice.root") ;
 			} else {
 				rl->LoadHeader() ;
 				man->SetRun(rl->GetHeader()->GetRun()) ;
