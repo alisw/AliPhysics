@@ -24,7 +24,8 @@ void recraw() {
 	}
 	reco.SetInLoopQA() ; 
 	  
-  AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
+  //AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
+  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
   AliQA::SetQARefDataDirName("Sim") ; //Data, Pedestals, BlackEvent, .....
   
 // **** The field map settings must be the same as in Config.C !
