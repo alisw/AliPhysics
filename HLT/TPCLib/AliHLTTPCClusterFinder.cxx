@@ -803,6 +803,7 @@ void AliHLTTPCClusterFinder::FindClusters()
 	  fClusters.push_back(*tmpCandidate);
 	}
       }
+      tmpPad->ClearCandidates();
     }
   }
 
