@@ -104,7 +104,7 @@ public:
   Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
   Double_t GetConstrainedChi2() const {return fCchi2;}
   //
-    
+  
 
 
   Bool_t GetInnerPxPyPz(Double_t *p) const {
@@ -113,6 +113,7 @@ public:
   }
   const AliExternalTrackParam * GetInnerParam() const { return fIp;}
   const AliExternalTrackParam * GetTPCInnerParam() const {return fTPCInner;}
+  const Bool_t FillTPCOnlyTrack(AliESDtrack &track);
   Bool_t GetInnerXYZ(Double_t *r) const {
     if (!fIp) return kFALSE;
     return fIp->GetXYZ(r);

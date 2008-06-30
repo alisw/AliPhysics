@@ -640,6 +640,68 @@ TObject *  AliESDtrack::GetCalibObject(Int_t index){
 }
 
 
+const Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
+  
+  // Fills the information of the TPC-only first reconstruction pass
+  // into the passed ESDtrack object. For consistency fTPCInner is also filled
+  // again
+
+  if(!fTPCInner)return kFALSE;
+
+  // fill the TPC track params to the global track parameters
+  track.Set(fTPCInner->GetX(),fTPCInner->GetAlpha(),fTPCInner->GetParameter(),fTPCInner->GetCovariance());
+  track.fD = fdTPC;
+  track.fZ = fzTPC;
+  track.fCdd = fCddTPC;
+  track.fCdz = fCdzTPC;
+  track.fCzz = fCzzTPC;
+
+  // copy the TPCinner parameters
+  if(track.fTPCInner) *track.fTPCInner = *fTPCInner;
+  else track.fTPCInner = new AliExternalTrackParam(*fTPCInner);
+  track.fdTPC   = fdTPC;
+  track.fzTPC   = fzTPC;
+  track.fCddTPC = fCddTPC;
+  track.fCdzTPC = fCdzTPC;
+  track.fCzzTPC = fCzzTPC;
+
+
+  // copy all other TPC specific parameters
+
+  // replace label by TPC label
+  track.fLabel    = fTPCLabel;
+  track.fTPCLabel = fTPCLabel;
+
+  track.fTPCchi2 = fTPCchi2; 
+  track.fTPCsignal = fTPCsignal;
+  track.fTPCsignalS = fTPCsignalS;
+  for(int i = 0;i<4;++i)track.fTPCPoints[i] = fTPCPoints[i];
+
+  track.fTPCncls    = fTPCncls;     
+  track.fTPCnclsF   = fTPCnclsF;     
+  track.fTPCsignalN =  fTPCsignalN;
+
+  // PID 
+  for(int i=0;i<AliPID::kSPECIES;++i){
+    track.fTPCr[i] = fTPCr[i];
+    // combined PID is TPC only!
+    track.fR[i] = fTPCr[i];
+  }
+  track.fTPCClusterMap = fTPCClusterMap;
+  track.fTPCSharedMap = fTPCSharedMap;
+
+
+  // reset the flags
+  track.fFlags = kTPCin;
+  track.fID    = fID;
+
+ 
+  for (Int_t i=0;i<3;i++) track.fKinkIndexes[i] = fKinkIndexes[i];
+  
+  return kTRUE;
+    
+}
+
 //_______________________________________________________________________
 void AliESDtrack::MakeMiniESDtrack(){
   // Resets everything except
@@ -1457,7 +1519,7 @@ Bool_t AliESDtrack::RelateToVertex
 //_______________________________________________________________________
 void AliESDtrack::Print(Option_t *) const {
   // Prints info on the track
-  
+  AliExternalTrackParam::Print();
   printf("ESD track info\n") ; 
   Double_t p[AliPID::kSPECIESN] ; 
   Int_t index = 0 ; 
