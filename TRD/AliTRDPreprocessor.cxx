@@ -51,8 +51,12 @@
 #include "AliTRDCalibPadStatus.h"
 #include "AliTRDSaxHandler.h"
 #include "Cal/AliTRDCalDet.h"
+#include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "Cal/AliTRDCalDCS.h"
+#include "Cal/AliTRDCalSingleChamberStatus.h"
+#include "Cal/AliTRDCalROC.h"
+
 
 ClassImp(AliTRDPreprocessor)
 
@@ -274,7 +278,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
   // PadStatus3 for sm-06-07-08-15-16-17
   // PadStatus0 if nothing found..means problems
   //
- 
+
   Bool_t error = kFALSE;
 
   // Init a AliTRDCalibPadStatus
@@ -362,11 +366,83 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
   }
 
   //
-  // Store pedestal entry to OCDB
+  // Create pedestal 
   //
     
   // Create Pad Status
   AliTRDCalPadStatus *calPadStatus = calPedSum.CreateCalPadStatus();
+  // Create Noise 
+  //Make the AliTRDCalPad
+  AliTRDCalPad *calPad2 = calPedSum.CreateCalPad();
+  //Make the AliTRDCalDet correspondant
+  AliTRDCalDet *calDet = calPedSum.CreateCalDet();
+ 
+  //
+  // Take the noise and Pad status from the previous OCDB
+  //
+
+  AliTRDCalPad *calPadPrevious=0;
+  AliCDBEntry* entry = GetFromOCDB("Calib", "PadNoise");
+  if (entry) calPadPrevious = (AliTRDCalPad*)entry->GetObject();
+  if ( calPadPrevious==NULL ) {
+     Log("AliTRDPreprocsessor: No previous TRD pad noise entry available.\n");
+     calPadPrevious = new AliTRDCalPad("PadNoise", "PadNoise");
+  }
+
+  AliTRDCalPadStatus *calPadStatusPrevious=0;
+  entry = GetFromOCDB("Calib", "PadStatus");
+  if (entry) calPadStatusPrevious = (AliTRDCalPadStatus*)entry->GetObject();
+  if ( calPadStatusPrevious==NULL ) {
+    Log("AliTRDPreprocsessor: No previous TRD pad status entry available.\n");
+    calPadStatusPrevious = new AliTRDCalPadStatus("padstatus", "padstatus");
+    for (Int_t idet=0; idet<540; ++idet)
+      {
+	AliTRDCalSingleChamberStatus *calROC = calPadStatusPrevious->GetCalROC(idet);
+	for(Int_t k = 0; k < calROC->GetNchannels(); k++){
+	  calROC->SetStatus(k,AliTRDCalPadStatus::kMasked);
+	}
+      }
+  }
+
+  
+  // Loop over detectors for check
+  for (Int_t det=0; det<AliTRDgeometry::kNdet; ++det)  {
+    
+    // noise
+    AliTRDCalROC *calROCPreviousNoise = calPadPrevious->GetCalROC(det);
+    AliTRDCalROC *calROCNoise         = calPad2->GetCalROC(det);
+
+    // padstatus
+    AliTRDCalSingleChamberStatus *calROCPreviousStatus = calPadStatusPrevious->GetCalROC(det);
+    AliTRDCalSingleChamberStatus *calROCStatus         = calPadStatus->GetCalROC(det);
+    
+    
+    // loop over first half and second half chamber
+    for(Int_t half = 0; half < 2; half++){
+
+      Bool_t data         = AreThereDataPedestal(calROCStatus,(Bool_t)half);
+      printf("There are data for the detector %d the half %d: %d\n",det,half,data);
+      if(!data){
+	// look if data in the OCDB
+	Bool_t dataPrevious = AreThereDataPedestal(calROCPreviousStatus,(Bool_t)half);
+	// if no data at all, set to default value
+	if(!dataPrevious){
+	  SetDefaultStatus(*calROCStatus,(Bool_t)half);
+	  SetDefaultNoise(*calROCNoise,(Bool_t)half);
+	}
+	else{
+	  // if data, set to previous value
+	  SetStatus(*calROCStatus,calROCPreviousStatus,(Bool_t)half);
+	  SetNoise(*calROCNoise,calROCPreviousNoise,(Bool_t)half);
+	}
+      }
+    }
+  }
+  
+  //
+  // Store  
+  //  
+
   AliCDBMetaData md3; 
   md3.SetObjectClassName("AliTRDCalPadStatus");
   md3.SetResponsible("Raphaelle Bailhache");
@@ -378,9 +454,6 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
     return kTRUE;
   }
 
-  // Create Noise 
-  //Make the AliTRDCalPad
-  AliTRDCalPad *calPad2 = calPedSum.CreateCalPad();
   AliCDBMetaData md4; 
   md4.SetObjectClassName("AliTRDCalPad");
   md4.SetResponsible("Raphaelle Bailhache");
@@ -391,8 +464,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
     delete listpad;
     return kTRUE;
   }
-  //Make the AliTRDCalDet correspondant
-  AliTRDCalDet *calDet = calPedSum.CreateCalDet();
+  
   AliCDBMetaData md5; 
   md5.SetObjectClassName("AliTRDCalDet");
   md5.SetResponsible("Raphaelle Bailhache");
@@ -406,9 +478,117 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 
   delete listpad;
   return error; 
-
+  
 }
+//__________________________________________________________________
+Bool_t AliTRDPreprocessor::AreThereDataPedestal(AliTRDCalSingleChamberStatus *calROCStatus, Bool_t second){
 
+  //
+  // Data for this half chamber
+  //
+
+  Bool_t data         = kFALSE;
+  Int_t nCols         = calROCStatus->GetNcols();
+  Int_t nCol0         = 0;
+  Int_t nColE         = (Int_t) nCols/2 - 2;
+  if(second) {
+    nCol0 = nColE + 4;
+    nColE = nCols;
+  }
+  for(Int_t col = nCol0; col < nColE; col++){
+    for(Int_t row = 0; row < calROCStatus->GetNrows(); row++){
+      //printf("ismasked %d\n",(Int_t)calROCStatus->IsMasked(col,row));
+      if(!calROCStatus->IsMasked(col,row)) {
+	data = kTRUE;
+	continue;
+      }
+    }
+    if(data) continue;
+  }
+
+  return data;
+  
+}
+//__________________________________________________________________
+void AliTRDPreprocessor::SetDefaultStatus(AliTRDCalSingleChamberStatus &calROCStatus, Bool_t second){
+
+  //
+  // default status for this half chamber
+  //
+
+  Int_t nCols         = calROCStatus.GetNcols();
+  Int_t nCol0         = 0;
+  Int_t nColE         = (Int_t) nCols/2;
+  if(second) {
+    nCol0 = nColE;
+    nColE = nCols;
+  }
+  for(Int_t col = nCol0; col < nColE; col++){
+    for(Int_t row = 0; row < calROCStatus.GetNrows(); row++){
+      calROCStatus.SetStatus(col,row,0);
+    }
+  }
+}
+//__________________________________________________________________
+void AliTRDPreprocessor::SetStatus(AliTRDCalSingleChamberStatus &calROCStatus, AliTRDCalSingleChamberStatus *calROCStatusPrevious,Bool_t second){
+
+  //
+  // previous status for this half chamber
+  //
+
+  Int_t nCols         = calROCStatus.GetNcols();
+  Int_t nCol0         = 0;
+  Int_t nColE         = (Int_t) nCols/2;
+  if(second) {
+    nCol0 = nColE;
+    nColE = nCols;
+  }
+  for(Int_t col = nCol0; col < nColE; col++){
+    for(Int_t row = 0; row < calROCStatus.GetNrows(); row++){
+      calROCStatus.SetStatus(col,row,calROCStatusPrevious->GetStatus(col,row));
+    }
+  }
+}
+//__________________________________________________________________
+void AliTRDPreprocessor::SetDefaultNoise(AliTRDCalROC &calROCNoise, Bool_t second){
+
+  //
+  // default noise for this half chamber
+  //
+
+  Int_t nCols         = calROCNoise.GetNcols();
+  Int_t nCol0         = 0;
+  Int_t nColE         = (Int_t) nCols/2;
+  if(second) {
+    nCol0 = nColE;
+    nColE = nCols;
+  }
+  for(Int_t col = nCol0; col < nColE; col++){
+    for(Int_t row = 0; row < calROCNoise.GetNrows(); row++){
+      calROCNoise.SetValue(col,row,0.12);
+    }
+  }
+}
+//__________________________________________________________________
+void AliTRDPreprocessor::SetNoise(AliTRDCalROC &calROCNoise, AliTRDCalROC *calROCNoisePrevious, Bool_t second){
+
+  //
+  // previous noise for this half chamber
+  //
+
+  Int_t nCols         = calROCNoise.GetNcols();
+  Int_t nCol0         = 0;
+  Int_t nColE         = (Int_t) nCols/2;
+  if(second) {
+    nCol0 = nColE;
+    nColE = nCols;
+  }
+  for(Int_t col = nCol0; col < nColE; col++){
+    for(Int_t row = 0; row < calROCNoise.GetNrows(); row++){
+      calROCNoise.SetValue(col,row,calROCNoisePrevious->GetValue(col,row));
+    }
+  }
+}
 //______________________________________________________________________________________________
 Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
 {

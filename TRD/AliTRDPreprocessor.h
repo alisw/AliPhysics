@@ -15,6 +15,8 @@
 #include "AliPreprocessor.h"
 
 class TMap;
+class AliTRDCalROC;
+class AliTRDCalSingleChamberStatus;
 
 class AliTRDPreprocessor : public AliPreprocessor
 {
@@ -41,7 +43,14 @@ class AliTRDPreprocessor : public AliPreprocessor
           Bool_t  fVdriftHLT;             // HLT Vdrift
 	  UInt_t  ProcessDCSConfigData(); // process DCS configuration
 
-  ClassDef(AliTRDPreprocessor,1)          // The SHUTTLE preprocessor for TRD
+
+	  Bool_t AreThereDataPedestal(AliTRDCalSingleChamberStatus *calROCStatus, Bool_t second);
+	  void   SetDefaultStatus(AliTRDCalSingleChamberStatus &calROCStatus, Bool_t second);
+	  void   SetStatus(AliTRDCalSingleChamberStatus &calROCStatus, AliTRDCalSingleChamberStatus *calROCStatusPrevious,Bool_t second);
+	  void   SetDefaultNoise(AliTRDCalROC &calROCNoise, Bool_t second);
+	  void   SetNoise(AliTRDCalROC &calROCNoise, AliTRDCalROC *calROCNoisePrevious, Bool_t second);
+
+	  ClassDef(AliTRDPreprocessor,1)          // The SHUTTLE preprocessor for TRD
 
 };
 #endif
