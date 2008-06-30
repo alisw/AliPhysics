@@ -246,6 +246,9 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //
   // Aplly cut selection 
   /*
+    TChain * chainalign = tool.MakeChain("align.txt","Tracklet",0,1000000)
+    chainalign->Lookup();
+
     // Cuts to be justified with the debug streamer
     //
     TCut c1pt("abs((tp1.fP[4]+tp2.fP[4])*0.5)<3"); // pt cut  - OK
@@ -257,6 +260,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
     //
     //
     TCut acut =  c1pt+cdy+cdz+cdphi+cdt+cd1pt;
+
   */
   //   1. pt cut
   //   2. dy
@@ -264,13 +268,15 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //   4. dphi
   //   5. dtheta
   //   6. d1pt
-
+  printf("Process track\n");
   if (TMath::Abs(tp1.GetParameter()[0]-tp2.GetParameter()[0])>2)    return;
   if (TMath::Abs(tp1.GetParameter()[1]-tp2.GetParameter()[1])>2)    return;
   if (TMath::Abs(tp1.GetParameter()[2]-tp2.GetParameter()[2])>0.02) return;
   if (TMath::Abs(tp1.GetParameter()[3]-tp2.GetParameter()[3])>0.02) return;
   if (TMath::Abs(tp1.GetParameter()[4]-tp2.GetParameter()[4])>0.3)  return;
-  if (TMath::Abs((tp1.GetParameter()[4]+tp2.GetParameter()[4])*0.5)<3)  return;
+  if (TMath::Abs((tp1.GetParameter()[4]+tp2.GetParameter()[4])*0.5)>3)  return;
+  if (TMath::Abs((tp1.GetParameter()[0]-tp2.GetParameter()[0]))<0.000000001)  return;
+  printf("Filling track\n");
   //
   // fill resolution histograms - previous cut included
   FillHisto(tp1,tp2,s1,s2);  
@@ -890,6 +896,14 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
   // make tree with alignment cosntant  -
   // For  QA visualization
   //
+  /*
+   TFile f("CalibObjects.root");
+   TObjArray *array  = (TObjArray*)f.Get("TPCCalib");
+   AliTPCcalibAlign   *alignTPC = (AliTPCcalibAlign   *)array->At(0);
+   alignTPC->MakeTree("alignTree.root");
+   TFile falign("alignTree.root");
+   Align->Draw("dy")
+   */
   const Int_t kMinPoints=50;
   TTreeSRedirector cstream(fname);
   for (Int_t s1=0;s1<72;++s1)
@@ -936,4 +950,125 @@ void  AliTPCcalibAlign::MakeTree(const char *fname){
 	"\n";
     }
 
+}
+
+
+//_____________________________________________________________________
+Long64_t AliTPCcalibAlign::Merge(TCollection* list) {
+  //
+  // merge function 
+  //
+  if (GetDebugLevel()>0) Info("AliTPCcalibAlign","Merge");
+  if (!list)
+    return 0;  
+  if (list->IsEmpty())
+    return 1;
+  
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;  
+  iter->Reset();
+  Int_t count=0;
+  while((obj = iter->Next()) != 0)
+    {
+      AliTPCcalibAlign* entry = dynamic_cast<AliTPCcalibAlign*>(obj);
+      if (entry == 0) continue; 
+      Add(entry);
+      count++;
+    } 
+  return count;
+}
+
+
+void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
+  //
+  // Add entry
+  //
+
+  for (Int_t i=0; i<72;i++){
+    for (Int_t j=0; j<72;j++){
+      fPoints[GetIndex(i,j)]+=align->fPoints[GetIndex(i,j)];
+
+      //
+      // dy
+      TH1* hdy0 = GetHisto(kY,i,j);
+      TH1* hdy1 = align->GetHisto(kY,i,j);
+      if (hdy1){
+	if (hdy0) hdy0->Add(hdy1);
+	else {
+	  hdy0 = GetHisto(kY,i,j,kTRUE);
+	  hdy0->Add(hdy1);
+	}
+      }      
+      //
+      // dz
+      TH1* hdz0 = GetHisto(kZ,i,j);
+      TH1* hdz1 = align->GetHisto(kZ,i,j);
+      if (hdz1){
+	if (hdz0) hdz0->Add(hdz1);
+	else {
+	  hdz0 = GetHisto(kZ,i,j,kTRUE);
+	  hdz0->Add(hdz1);
+	}
+      }
+      //
+      // dphi
+      TH1* hdphi0 = GetHisto(kPhi,i,j);
+      TH1* hdphi1 = align->GetHisto(kPhi,i,j);
+      if (hdphi1){
+	if (hdphi0) hdphi0->Add(hdphi1);
+	else {
+	  hdphi0 = GetHisto(kPhi,i,j,kTRUE);
+	  hdphi0->Add(hdphi1);
+	}
+      }      
+      //
+      // dtheta
+      TH1* hdTheta0 = GetHisto(kTheta,i,j);
+      TH1* hdTheta1 = align->GetHisto(kTheta,i,j);
+      if (hdTheta1){
+	if (hdTheta0) hdTheta0->Add(hdTheta1);
+	else {
+	  hdTheta0 = GetHisto(kTheta,i,j,kTRUE);
+	  hdTheta0->Add(hdTheta1);
+	}
+      }           
+    }
+  }
+  TLinearFitter *f0=0;
+  TLinearFitter *f1=0;
+  for (Int_t i=0; i<72;i++){
+    for (Int_t j=0; j<72;j++){
+      //
+      // fitter12
+      f0 =  GetFitter12(i,j);
+      f1 =  GetFitter12(i,j);
+      if (f1){
+	if (f0) f0->Add(f1);
+	else {
+	  f0 = GetOrMakeFitter12(i,j);
+	  f0->Add(f1);
+	}
+      }      
+      //
+      // fitter9
+      f0 =  GetFitter9(i,j);
+      f1 =  GetFitter9(i,j);
+      if (f1){
+	if (f0) f0->Add(f1);
+	else {
+	  f0 = GetOrMakeFitter9(i,j);
+	  f0->Add(f1);
+	}
+      }      
+      f0 =  GetFitter6(i,j);
+      f1 =  GetFitter6(i,j);
+      if (f1){
+	if (f0) f0->Add(f1);
+	else {
+	  f0 = GetOrMakeFitter6(i,j);
+	  f0->Add(f1);
+	}
+      }   
+    }
+  }
 }

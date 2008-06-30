@@ -28,6 +28,7 @@ public:
   virtual void Process(AliTPCseed *track);
   virtual void Analyze();
   virtual void Terminate();  
+  virtual Long64_t Merge(TCollection* list);
   //
   virtual void EvalFitters();
   TH1 * GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t force=kFALSE);
@@ -56,7 +57,8 @@ public:
 //   Bool_t GetTransformationCovar12(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar9(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
-
+  void Add(AliTPCcalibAlign * align);
+  //  Int_t *GetPoints() {return fPoints;}
 private:
   void FillHisto(const AliExternalTrackParam &t1,
 			const AliExternalTrackParam &t2,
