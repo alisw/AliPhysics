@@ -33,6 +33,8 @@ public:
     Int_t GetBundle() const {return fBundle; }
     Int_t GetBeam()   const {return fBeam;   }
 
+    
+
     static Int_t GetNLaserTracks() { return fgkNLaserTracks; }
     static Int_t GetNLaserRodsPerSide() { return fgkNRodsPerSide; }
     static Int_t GetNMirrorBundlesPerRod() { return fgkNBundlePerRod; }

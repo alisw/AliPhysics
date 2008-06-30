@@ -106,73 +106,57 @@ void AliTPCLaserTrack::LoadTracks()
     delete f;
 }
 
+
 Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track)
 {
+  //
+  // Find the laser track which is corresponding closest to 'track'
+  // return its id
+  //
+  // 
+  const  Float_t   kMaxdphi=0.1;
+  const  Float_t   kMaxdphiP=0.06;
+  const  Float_t   kMaxdz=50;
+
+  if ( !fgArrLaserTracks ) LoadTracks();
+  TObjArray *arrTracks = GetTracks();
+  
+
+  Double_t lxyz0[3];
+  Double_t lxyz1[3];
+  Double_t pxyz0[3];
+  Double_t pxyz1[3];
+  track->GetXYZ(lxyz0);
+  track->GetPxPyPz(pxyz0);
+  
+  Int_t id = -1;
+  for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){
+    AliExternalTrackParam *ltr = (AliExternalTrackParam*)arrTracks->UncheckedAt(itrack);
+    Double_t * kokot = (Double_t*)ltr->GetParameter();
+    kokot[4]=-0.0000000001;
     //
-    // Find the laser track which is corresponding closest to 'track'
-    // return its id
+    ltr->GetXYZ(lxyz1);
+    if ( (lxyz1[2]>0) && lxyz0[2]<0) continue;
+    if ( (lxyz1[2]<0) && lxyz0[2]>0) continue;
+    if (TMath::Abs(lxyz1[2]-lxyz0[2])>kMaxdz) continue;
+    // phi position
+    Double_t phi0 = TMath::ATan2(lxyz0[1],lxyz0[0]);
+    Double_t phi1 = TMath::ATan2(lxyz1[1],lxyz1[0]);
+    if (TMath::Abs(phi0-phi1)>kMaxdphi) continue;
+    // phi direction
+    ltr->GetPxPyPz(pxyz1);
+    Double_t pphi0 = TMath::ATan2(pxyz0[1],pxyz0[0]);
+    Double_t pphi1 = TMath::ATan2(pxyz1[1],pxyz1[0]);
+    Bool_t phimatch = kFALSE;
+    if (TMath::Abs(ltr->GetParameter()[2]-track->GetParameter()[2])>kMaxdphiP)
+      continue;
+  //   if (TMath::Abs(pphi0-pphi1)<kMaxdphiP) phimatch=kTRUE;
+//     if (TMath::Abs(pphi0-pphi1-TMath::Pi())<kMaxdphiP) phimatch=kTRUE;
+//     if (TMath::Abs(pphi0-pphi1+TMath::Pi())<kMaxdphiP) phimatch=kTRUE;
+//     if (!phimatch) continue;
     //
-
-    LoadTracks();
-    TObjArray *arrTracks = GetTracks();
-
-    Double_t phitr=0;
-    Double_t philtr=0;
-    Double_t xltr[3];
-    Double_t xtr[3];
-    Double_t vtr[3];
-
-    track->GetXYZ(xtr);
-    track->GetDirection(vtr);
-    phitr=track->Phi();
-
-    Int_t id = -1;
-    Double_t dcaMin=3;  // 3 sigma is the minimum weighted dca accepted
-    for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){
-	AliExternalTrackParam *ltr = (AliExternalTrackParam*)arrTracks->UncheckedAt(itrack);
-	philtr=ltr->Phi();
-	Double_t phiadd=0;
-        Double_t dphi=TMath::Abs(phitr-philtr);
-	if (dphi>TMath::Pi()) phiadd=TMath::Pi();
-        dphi-=phiadd;
-	if (dphi>2*TMath::DegToRad()) continue;  //only 2 degree in phi
-
-	//printf("itrack: %d; dphi: %f\n",itrack,dphi/TMath::DegToRad());
-
-	ltr->GetXYZ(xltr);
-
-	Double_t l=0;
-	Double_t d2=0;
-	Double_t d=0;
-        for (Int_t i=0; i<2; i++)
-	    l+=(xltr[i]-xtr[i])*vtr[i];
-        for (Int_t i=0; i<2; i++)
-	    d2+=(xltr[i]-xtr[i]-l*vtr[i])*(xltr[i]-xtr[i]-l*vtr[i]);
-	d=TMath::Sqrt(d2);
-
-	//printf("itrack: %d; d-xy: %f\n",itrack,d);
-
-
-        //only 3mm in x-y
-        if ( d>.3 ) continue;
-
-
-	Double_t dz=TMath::Abs(xltr[2] - xtr[2]);
-	//printf("itrack: %d; d-z: %f\n",itrack,dz);
-        //30 cm in z
-	if ( dz > 30. ) continue;
-
-	//if ( id!=-1 ) printf("Warnig: Track (%d) already identified before (%d)\n", itrack, id);
-        id=itrack;
-//        Double_t relDistX
-//        Double_t xtr=0;
-//        Double_t xltr=0;
-//	Double_t dca=track->GetDCA(ltr,0,xtr,xltr);
-//	if ( dca<dcaMin ){
-//	    id=itrack;
-//	    dcaMin=dca;
-//        }
-    }
-    return id;
+    id =itrack;
+  }
+  return id;
 }
 
