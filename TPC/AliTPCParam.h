@@ -667,6 +667,13 @@ inline void AliTPCParam::Transform4to8(Float_t *xyz, Int_t *index) const
   //transform xyz coordinates to 'digit' coordinates
   //
 
+  if (index[1]<fNInnerSector) {
+    if ( index[1]>=(fNInnerSector>>1)) xyz[1]*=-1.;
+  }
+  else {
+    if ( (index[1]-fNInnerSector) >= (fNOuterSector>>1) ) xyz[1]*=-1;      
+  }
+
   xyz[2]/=fZWidth;  
   if  (index[1]<fNInnerSector) {    
     xyz[0]/=fInnerPadPitchLength;
@@ -686,6 +693,13 @@ inline void AliTPCParam::Transform8to4(Float_t *xyz, Int_t *index) const
   //
   //transforms 'digit' coordinates to xyz coordinates
   //
+  if (index[1]<fNInnerSector) {
+    if ( index[1]>=(fNInnerSector>>1)) xyz[1]*=-1.;
+  }
+  else {
+    if ( (index[1]-fNInnerSector) >= (fNOuterSector>>1) ) xyz[1]*=-1;      
+  }
+
   xyz[2]*=fZWidth;
   if  (index[1]<fNInnerSector) {    
     xyz[0]*=fInnerPadPitchLength;

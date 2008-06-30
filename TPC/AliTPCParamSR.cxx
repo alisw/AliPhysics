@@ -520,7 +520,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   // calculate central padrow, pad, time
   Int_t npads = GetNPads(index[1],index[3]-1);
   Int_t cpadrow = index[2]; // electrons are here
-  Int_t cpad    = (Int_t)xyz[1]; // correction MK
+  Int_t cpad    = TMath::Nint(xyz[1]);
   Int_t ctime   = TMath::Nint(xyz[2]+zoffset2+xyz[3]-GetNTBinsL1());
   //calulate deviation
   Float_t dpadrow = xyz[0];
@@ -541,8 +541,8 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
     lpadrow = (index[2]<GetNRow(index[1])-1) ? 1:0;
   }
 
-  Int_t fpad =  (cpad > -npads/2+2) ? -2: -npads/2-cpad+1; // correction MK
-  Int_t lpad =  (cpad < npads/2-2)  ?  2: npads/2-1-cpad; // correction MK
+  Int_t fpad =  (cpad > -npads/2+1) ? -2: -npads/2-cpad;
+  Int_t lpad =  (cpad < npads/2-2)  ?  2: npads/2-1-cpad;
   Int_t ftime =  (ctime>1) ? -2: -ctime;
   Int_t ltime =  (ctime<maxt-2) ? 2: maxt-ctime-1;
 
@@ -603,7 +603,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
 	  Float_t cweight2 = cweight*rftime[atime];
 	  if (cweight2>fResponseThreshold) {
 	    fResponseBin[cindex3++]=cpadrow+ipadrow;
-	    fResponseBin[cindex3++]=cpad+ipad; //correction MK
+	    fResponseBin[cindex3++]=cpad+ipad;
 	    fResponseBin[cindex3++]=ctime+itime;
 	    fResponseWeight[cindex++]=cweight2;	  	    
 	  }
