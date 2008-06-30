@@ -150,18 +150,22 @@ void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
     Float_t c = Cos((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
     Float_t s = Sin((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
     Float_t z = AliEveTPCSectorData::GetZLength();
-    Float_t d = -1;
-    if (fSectorID >= 18) {
-      z = -z;
-      d = -d;
-    }
 
-    // column major
     InitMainTrans();
     TEveTrans& t = RefMainTrans();
-    t[0]  = -c;  t[1]  = -s;
-    t[4]  = -s;  t[5]  =  c;
-    t[10] =  d;  t[14] =  z;
+
+    if (fSectorID < 18) {
+      // column major
+      t[0]  = -c;  t[1]  = -s;
+      t[4]  = -s;  t[5]  =  c;
+      t[10] = -1;
+      t[14] =  z;
+    } else {
+      t[0]  =  c;  t[1]  =  s;
+      t[4]  = -s;  t[5]  =  c;
+      t[10] =  1;
+      t[14] = -z;
+    }
   }
 }
 void AliEveTPCSectorViz::SetUseTrans(Bool_t t)
