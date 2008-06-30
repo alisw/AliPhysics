@@ -2118,13 +2118,6 @@ void AliZDCv3::Init()
   gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
   gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
   
-  // Avoid too detailed showering along the beam line 
-  i = 13; //iron with energy loss (ZIRONN)
-  gMC->Gstpar(idtmed[i], "CUTGAM", 1.);
-  gMC->Gstpar(idtmed[i], "CUTELE", 1.);
-  gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
-  gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
-  
   // Avoid interaction in fibers (only energy loss allowed) 
   i = 3; //fibers (ZSI02)
   gMC->Gstpar(idtmed[i], "DCAY", 0.);
