@@ -49,7 +49,7 @@
 #include <TMath.h>
 
 
-/* Main routine --- Arguments: data file */
+/* Main routine --- Arguments: iteration number, data file */
       
 int main(int argc, char **argv) {
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
   /* log start of process */
   printf("VZERO DA program started - Tuning FEE parameters\n");  
 
-  /* check that we got some arguments = list of files */
+  /* check that we got some arguments  */
   if (argc<2)   {
       printf("Wrong number of arguments\n");
       return -1;}
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
       return -1; }
 
   /* report progress */
-  daqDA_progressReport(10+80/argc);
+  daqDA_progressReport(50);
 
   /* read the data file */
   for(;;) {
@@ -178,8 +178,8 @@ int main(int argc, char **argv) {
   for(Int_t i=0; i<128; i++) {
       BBFlag[i] = BBFlag[i]/nevents_physics;
       BGFlag[i] = BGFlag[i]/nevents_physics;
-      fprintf(fp," %d %f %f\n",i,BBFlag[i],BGFlag[i]);
-      fprintf(flog," %d %f %f\n",i,BBFlag[i],BGFlag[i]);
+      fprintf(fp," %d %d %f %f\n",argc,i,BBFlag[i],BGFlag[i]);
+      fprintf(flog," %d %d %f %f\n",argc,i,BBFlag[i],BGFlag[i]);
   } 
   
 //________________________________________________________________________
