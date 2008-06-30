@@ -304,25 +304,6 @@ Bool_t ExportFiles()
     // setenv DATE_ROLE_NAME
     // setenv DATE_DETECTOR_CODE
 
-     // Export files into the database
-     // setenv DATE_DETECTOR_CODE MTR
-     // setenv DAQDALIB_PATH      $ALICE/daqDAlib
-     // setenv DATE_DB_MYSQL_USER det_MTR
-     // setenv DATE_DB_MYSQL_PWD  MTR123
-     // setenv DATE_DB_MYSQL_HOST aldaqdb.cern.ch
-     // setenv DATE_DB_MYSQL_DB   $DATE_CONFIG
-     // set PATH=$PATH:${DAQDALIB_PATH}
-  
-  
-    // to be sure that env variable is set
-    // gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-    gSystem->Setenv("DAQDALIB_PATH", "$ALICE/daqDAlib");
-    gSystem->Setenv("DATE_DETECTOR_CODE", "MTR");
-    gSystem->Setenv("DATE_DB_MYSQL_USER", "det_MTR");
-    gSystem->Setenv("DATE_DB_MYSQL_PWD", "MTR123");
-    gSystem->Setenv("DATE_DB_MYSQL_HOST", "aldaqdb.cern.ch");
-    gSystem->Setenv("DATE_DB_MYSQL_DB", "$DATE_CONFIG");
-    
     // update files
     Int_t status = 0;
 
@@ -415,11 +396,7 @@ Bool_t ImportFiles()
     // If environment variable DAQDA_TEST_DIR is defined, files are copied from DAQDA_TEST_DIR
     // instead of the database. The usual environment variables are not needed.
 
-    // to be sure that env variable is set
-   // gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
-  gSystem->Setenv("DAQDALIB_PATH", "$ALICE/daqDAlib");
-    
-    Int_t status = 0;
+      Int_t status = 0;
 
     status = daqDA_DB_getFile(gCurrentFileName.Data(), gCurrentFileName.Data());
     if (status) {
