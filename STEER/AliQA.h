@@ -79,7 +79,8 @@ private:
 	const ULong_t        GetStatus(DETECTORINDEX_t det) const  { return fQA[det] ;}
 	void                 Finish() const ;  
 	const ULong_t        Offset(ALITASK_t tsk) const ;
-	virtual void         ShowStatus(DETECTORINDEX_t det) const ;
+	void                 ShowStatus(DETECTORINDEX_t det) const ;
+	void                 ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
 	void                 ResetStatus(DETECTORINDEX_t det) { fQA[det] = 0 ; }
 	void                 Set(DETECTORINDEX_t det) { fDet = det ;}
 	void                 Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(1, Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }

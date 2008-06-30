@@ -208,31 +208,57 @@ const Bool_t AliQA::CheckRange(QABIT_t bit) const
 //_______________________________________________________________
 const char * AliQA::GetAliTaskName(ALITASK_t tsk)
 {
-  // returns the char name corresponding to module index
-  TString tskName ;
-  switch (tsk) {
-  case kNULLTASK:
-    break ; 
-  case kRAW:
-    tskName = "RAW" ;
-    break ;  
-  case kSIM:
-    tskName = "SIM" ;
-    break ;
-  case kREC:
-    tskName = "REC" ;
-    break ;
-  case kESD:
-    tskName = "ESD" ;
-    break ;
-  case kANA:
-    tskName = "ANA" ;
-    break ;
-  default:
-    tsk = kNULLTASK ; 
-    break ;
-  }
-  return tskName.Data() ;
+	// returns the char name corresponding to module index
+	TString tskName ;
+	switch (tsk) {
+		case kNULLTASK:
+			break ; 
+		case kRAW:
+			tskName = "RAW" ;
+			break ;  
+		case kSIM:
+			tskName = "SIM" ;
+			break ;
+		case kREC:
+			tskName = "REC" ;
+			break ;
+		case kESD:
+			tskName = "ESD" ;
+			break ;
+		case kANA:
+			tskName = "ANA" ;
+			break ;
+		default:
+			tsk = kNULLTASK ; 
+			break ;
+	}
+	return tskName.Data() ;
+}
+//_______________________________________________________________
+const char * AliQA::GetBitName(QABIT_t bit) const
+{
+	// returns the char name corresponding to bit 
+	TString bitName ;
+	switch (bit) {
+		case kNULLBit:
+			break ; 
+		case kINFO:
+			bitName = "INFO" ;
+			break ;  
+		case kWARNING:
+			bitName = "WARNING" ;
+			break ;
+		case kERROR:
+			bitName = "ERROR" ;
+			break ;
+		case kFATAL:
+			bitName = "FATAL" ;
+			break ;
+		default:
+			bit = kNULLBit ; 
+			break ;
+	}
+	return bitName.Data() ;
 }
 
 //_______________________________________________________________
@@ -525,16 +551,36 @@ void AliQA::ShowAll() const
 //_______________________________________________________________
 void AliQA::ShowStatus(DETECTORINDEX_t det) const
 {
-  // Prints the full QA status of a given detector
-  CheckRange(det) ;
-  ULong_t status = GetStatus(det) ;
-  ULong_t rawStatus = status & 0x0000f ;
-  ULong_t simStatus = status & 0x000f0 ;
-  ULong_t recStatus = status & 0x00f00 ;
-  ULong_t esdStatus = status & 0x0f000 ;
-  ULong_t anaStatus = status & 0xf0000 ;
+	// Prints the full QA status of a given detector
+	CheckRange(det) ;
+	ULong_t status = GetStatus(det) ;
+	ULong_t tskStatus[kNTASK] ; 
+	tskStatus[kRAW] = status & 0x0000f ;
+	tskStatus[kSIM] = status & 0x000f0 ;
+	tskStatus[kREC] = status & 0x00f00 ;
+	tskStatus[kESD] = status & 0x0f000 ;
+	tskStatus[kANA] = status & 0xf0000 ;
 
-  AliInfo(Form("QA Status for %8s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x\n", GetDetName(det).Data(), rawStatus, simStatus, recStatus, esdStatus, anaStatus )) ;
+	AliInfo(Form("====> QA Status for %8s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x", GetDetName(det).Data(), 
+				 tskStatus[kRAW], tskStatus[kSIM], tskStatus[kREC], tskStatus[kESD], tskStatus[kANA] )) ;
+	for (Int_t tsk = kRAW ; tsk < kNTASK ; tsk++) {
+		ShowASCIIStatus(det, ALITASK_t(tsk), tskStatus[tsk]) ; 
+	}
+}
+
+//_______________________________________________________________
+void AliQA::ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, const ULong_t status) const 
+{
+	// print the QA status in human readable format
+	TString text; 
+	for (Int_t bit = kINFO ; bit < kNBIT ; bit++) {
+		if (IsSet(det, tsk, QABIT_t(bit))) {
+			text = GetBitName(QABIT_t(bit)) ; 
+			text += " " ; 
+		}
+	}
+	if (! text.IsNull())
+		printf("           %8s %4s 0x%4x, Problem signalled: %8s \n", GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data()) ; 
 }
 
 //_______________________________________________________________
