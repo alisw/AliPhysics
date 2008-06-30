@@ -66,7 +66,7 @@ const Float_t AliACORDEConstants::fgkModulePositionZ[60] = {
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
-  450, 350, 250, 104, 50, -76, -176, -250, -350, -450};
+  450, 350, 250, 104, 50, -85, -176, -250, -350, -450};
 
 const Float_t AliACORDEConstants::fgkExtraModulePositionZ[4] = {93.0, 18., -18, -93};
 const Float_t AliACORDEConstants::fgkExtraModulePositionX = 0.0;
