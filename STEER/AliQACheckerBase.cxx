@@ -199,26 +199,19 @@ void AliQACheckerBase::Init(const AliQA::DETECTORINDEX_t det)
 //____________________________________________________________________________
 void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObjArray * list) 
 { 
-  AliDebug(1, Form("Processing %s", AliQA::GetAliTaskName(index))) ; 
+	AliDebug(1, Form("Processing %s", AliQA::GetAliTaskName(index))) ; 
 
-  AliQA * qa = AliQA::Instance(index) ; 
+	Double_t rv = -1 ;	
+	if (list)
+		rv = Check(index, list) ;
+	else 
+		rv = Check(index) ;   
 
-  Double_t rv = -1 ;	
-  if (list)
-    rv = Check(index, list) ;
-  else 
-    rv = Check(index) ;   
-
-  if ( rv <= 0.) 
-    qa->Set(AliQA::kFATAL) ; 
-  else if ( rv > 0 && rv <= 0.0002 )
-    qa->Set(AliQA::kERROR) ; 
-  else if ( rv > 0.0002 && rv <= 0.5 )
-    qa->Set(AliQA::kWARNING) ;
-  else if ( rv > 0.5 && rv < 1 ) 
-    qa->Set(AliQA::kINFO) ; 
-  AliDebug(1, Form("Test result of %s", AliQA::GetAliTaskName(index))) ;
-  Finish() ; 
+	SetQA(index, rv) ; 
+	
+	AliDebug(1, Form("Test result of %s", AliQA::GetAliTaskName(index))) ;
+	
+	Finish() ; 
 }
 
 //____________________________________________________________________________
@@ -230,4 +223,21 @@ void AliQACheckerBase::Finish() const
 	AliQA::GetQAResultFile()->cd() ; 
 	qa->Write(qa->GetName(), kWriteDelete) ;   
 	AliQA::GetQAResultFile()->Close() ; 
+}
+
+//____________________________________________________________________________
+void AliQACheckerBase::SetQA(AliQA::ALITASK_t index, const Double_t value) const
+{
+	// sets the QA according the return value of the Check
+
+	AliQA * qa = AliQA::Instance(index) ; 
+
+	if ( value <= 0.) 
+		qa->Set(AliQA::kFATAL) ; 
+	else if ( value > 0 && value <= 0.0002 )
+		qa->Set(AliQA::kERROR) ; 
+	else if ( value > 0.0002 && value <= 0.5 )
+		qa->Set(AliQA::kWARNING) ;
+	else if ( value > 0.5 && value < 1 ) 
+		qa->Set(AliQA::kINFO) ; 		
 }
