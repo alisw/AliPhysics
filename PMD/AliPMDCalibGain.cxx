@@ -134,7 +134,7 @@ AliPMDCalibGain::~AliPMDCalibGain()
 
 // ------------------------------------------------------------------------ //
 
-Int_t AliPMDCalibGain::ExtractPedestal()
+Int_t AliPMDCalibGain::ExtractPedestal(const Char_t *rootFile)
 {
   // Pedestal extraction from the PMD_PED.root file
   // To be called once at the beginning
@@ -142,7 +142,7 @@ Int_t AliPMDCalibGain::ExtractPedestal()
   Int_t   det, sm, row, col;
   Float_t mean, rms;
 
-  TFile *pedfile = new TFile("PMD_PED1.root");
+  TFile *pedfile = new TFile(rootFile);
 
   if(!pedfile)
     {
@@ -178,11 +178,11 @@ Int_t AliPMDCalibGain::ExtractPedestal()
 }
 // ------------------------------------------------------------------------ //
 
-void AliPMDCalibGain::ReadIntermediateFile()
+void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
 {
   // Read the variables from the file
   
-  fpw = fopen("interfile.dat","r");
+  fpw = fopen(tempFile,"r");
 
   Float_t detcount, detiso;
   Float_t smcount, smiso;
@@ -228,12 +228,13 @@ void AliPMDCalibGain::ReadIntermediateFile()
 
 }
 // ------------------------------------------------------------------------ //
-void AliPMDCalibGain::WriteIntermediateFile()
+void AliPMDCalibGain::WriteTempFile(const Char_t *tempFile)
 {
+  // Write the Temporary file if the required statics is not achieved
 
- //Following variables to be written
 
   /*
+    Following variables to be written to a file
     fDetIso[idet] ;
     fSMIso[idet][ismn]; 
     fCellIso[idet][ismn][irow][icol]; 
@@ -243,7 +244,8 @@ void AliPMDCalibGain::WriteIntermediateFile()
     fCellCount[idet][ismn][irow][icol];
   */				  
 
-  fpw = fopen("interfile.dat","w+");
+
+  fpw = fopen(tempFile,"w+");
 
   for (Int_t idet = 0; idet < kDet; idet++)
     {
@@ -325,12 +327,16 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlc
 	  
 	  Int_t idet = pmdddl->GetDetector();
 	  Int_t ismn = pmdddl->GetSMN();
-	  //Int_t mcm = pmdddl->GetMCM();
+	  Int_t mcm = pmdddl->GetMCM();
 	  //Int_t ichno = pmdddl->GetChannel();
 	  Int_t irow = pmdddl->GetRow();
 	  Int_t icol = pmdddl->GetColumn();
 	  Int_t isig = pmdddl->GetSignal();
 
+	  // This is the protection not to crash the code 
+
+	  if(mcm == 0) continue;
+	  if (irow < 0 || icol < 0 || irow > 47 || icol > 95) continue;
 
 	  // Pedestal subtraction
 
@@ -413,7 +419,6 @@ void AliPMDCalibGain::Analyse(TTree *gaintree)
 	      {
 		for(Int_t icol = 0; icol < kMaxCol; icol++)
 		  {
-		    
 		    if (fCellCount[idet][ism][irow][icol] > 0.)
                       {
 			cellmean = fCellIso[idet][ism][irow][icol]/fCellCount[idet][ism][irow][icol];

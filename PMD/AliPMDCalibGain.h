@@ -17,9 +17,9 @@ class AliPMDCalibGain : public TObject
 
   virtual ~AliPMDCalibGain() ;           // dtor
 
-  Int_t ExtractPedestal();               // Assign the pedestal values
-  void  ReadIntermediateFile();          // reads the intermediate file
-  void  WriteIntermediateFile();         // writes the intermediate file
+  Int_t ExtractPedestal(const Char_t *rootFile);       // pedestal 
+  void  ReadTempFile(const Char_t *tempFile); // read inter file
+  void  WriteTempFile(const Char_t *tempFile);// write inter file
 
   Bool_t ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlcont);  //Looks for iso cells
 
@@ -43,8 +43,8 @@ class AliPMDCalibGain : public TObject
   Float_t fCellCount[kDet][kMaxSMN][kMaxRow][kMaxCol]; // counter
 
   Float_t fPedMeanRMS[kDet][kMaxSMN][kMaxRow][kMaxCol];// Pedestal Mean
-  FILE    *fpw;         // write the intermediate file
+  FILE    *fpw;                            // write the temp file
 
-ClassDef(AliPMDCalibGain,4)        // description 
+ClassDef(AliPMDCalibGain,5)        // description 
 };
 #endif // ALIPMDCALIBGAIN_H

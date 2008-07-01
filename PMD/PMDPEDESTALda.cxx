@@ -36,8 +36,6 @@ extern "C" {
 #include "TROOT.h"
 #include "TPluginManager.h"
 
-
-
 /* Main routine
       Arguments: 
       1- monitoring data source
@@ -171,13 +169,28 @@ int main(int argc, char **argv) {
     delete ped;
     ped = 0;
 
+/* store the pedestal file in database */
 
-/* store the result file on FES */
+    status = daqDA_DB_storeFile("PMD_PED.root","PMD_PED.root");
+
+    if (!status)
+      {
+	printf("--- PEDESTAL root FILE IS IN THE DAQ DATABASE\n");
+      }
+    else
+      {
+	printf("--- Storing the root file into the database failed\n");
+      }
+
+/* store the pedestal file on FES */
  
     status = daqDA_FES_storeFile("PMD_PED.root","pedestal");
     if (status) {
 	status = -2;
     }
+
+
+
 
     return status;
 }

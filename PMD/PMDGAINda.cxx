@@ -2,13 +2,13 @@
 PMD DA for online calibration
 
 contact: basanta@phy.iitb.ac.in
-Link:http://www.veccal.ernet.in/~pmd/
-Reference run:
+Link:
+Reference run:/afs/cern.ch/user/b/bnandi/public/gaindata/pythia100evts.date
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 1 million for PB+PB, 200 milion for p+p
-Input Files: PMD_PED.root, Configfile
-Output Files: PMDGAINS.root, to be exported to the DAQ FXS
+Input Files: PMD_PED.root, PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
+Output Files: PMDGAINS.root, to be exported to the DAQ FES
 Trigger types used: PHYSICS_EVENT
 
 */
@@ -52,30 +52,47 @@ int main(int argc, char **argv) {
 					  "RIO",
 					  "TStreamerInfo()");
 
+
+    int status = 0;
+
+
     Int_t filestatus = -1, totevt = -1;
     Int_t maxevt = -1;
 
     // Reads the pedestal file and keep the values in memory for subtraction
 
     AliPMDCalibGain calibgain;
-    Int_t pstatus = calibgain.ExtractPedestal();
+
+    // Fetch the pedestal file - PMD_PED.root 
+    status = daqDA_DB_getFile("PMD_PED.root","PMD_PED.root");
+
+    if(!status)
+      {
+	printf("*** Pedestal file retrieved from DB *** \n");
+      }
+    else
+      {
+	printf("*** Pedestal file NOT retrieved from DB *** \n");
+	return -1;
+      }
+
+    Int_t pstatus = calibgain.ExtractPedestal("PMD_PED.root");
 
     if(pstatus == -3) return -3;
 
     TTree *ic = NULL;
 
+    // Retrieve the PMD_GAIN_CONFIGFILE
+    status = daqDA_DB_getFile("PMD_GAIN_CONFIGFILE","PMD_GAIN_CONFIGFILE");
+
     FILE *fp1 = NULL;
 
-    fp1 = fopen("Configfile","r");
+    fp1 = fopen("PMD_GAIN_CONFIGFILE","r");
 
     if (fp1 == NULL)
       {
-	printf("**** Configfile doesn't exist, creating the file ****\n");
-	fp1 = fopen("Configfile","w");
-	filestatus = 0;
-	totevt     = 0;
-	maxevt     = 2000;
-	fprintf(fp1,"%d %d %d\n",filestatus, totevt,maxevt);
+	printf("*** PMD GAIN Configfile doesn't exist,Provide one ***\n");
+	return -1;
       }
     else
       {
@@ -86,12 +103,20 @@ int main(int argc, char **argv) {
     
     if (filestatus == 1)
       {
-	calibgain.ReadIntermediateFile();
+	// Retrieve the Temporray ascii file from DB
+	status = daqDA_DB_getFile("pmd_gain_tempfile.dat","pmd_gain_tempfile.dat");
+	if(!status)
+	  {
+	    calibgain.ReadTempFile("pmd_gain_tempfile.dat");
+	  }
+	else
+	  {
+	    printf("--- pmd_gain_tempfile.dat: not retrieved from DB ---\n");
+	  }
       }
 
     // decoding the events
     
-    int status;
 
     if (argc!=2) {
 	printf("Wrong number of arguments\n");
@@ -193,21 +218,35 @@ int main(int argc, char **argv) {
 
     totevt += nevents_physics++;
 
-    fp1 = fopen("Configfile","w+");
+    fp1 = fopen("PMD_GAIN_CONFIGFILE","w+");
 
     if (totevt < maxevt)
       {
-	printf("Required Number of Events not reached\n");
-	printf("Number of Events processed = %d\n",totevt);
-	printf("Writing the intermediate ASCII file\n");
-	calibgain.WriteIntermediateFile();
+	printf("-----------------------------------------------\n");
+	printf("***  Required Number of Events not reached  ***\n");
+	printf("***  Number of Events processed = %d        ***\n",totevt);
+	printf("***  Writing the intermediate ASCII file    ***\n");
+	printf("-----------------------------------------------\n");
+
+	calibgain.WriteTempFile("pmd_gain_tempfile.dat");
+
+	// Store the Intermediate ascii file in the DB
+	status = daqDA_DB_storeFile("pmd_gain_tempfile.dat","pmd_gain_tempfile.dat");
 
 	filestatus = 1;
 	fprintf(fp1,"%d %d %d\n",filestatus,totevt,maxevt);
+
+	// Store the configfile in the DB
+	status = daqDA_DB_storeFile("PMD_GAIN_CONFIGFILE","PMD_GAIN_CONFIGFILE");
+
       }
     else if (totevt >= maxevt)
       {
-	printf("Required Number of Events reached = %d\n",totevt);
+	printf("-----------------------------------------------\n");
+	printf("***  Required Number of Events reached = %d ***\n",totevt);
+	printf("***  Writing the PMDGAINS.root file           ***\n");
+	printf("-----------------------------------------------\n");
+
 	calibgain.Analyse(ic);
 
 	TFile * gainRun = new TFile ("PMDGAINS.root","RECREATE"); 
@@ -217,6 +256,10 @@ int main(int argc, char **argv) {
 	filestatus = 0;
 	totevt     = 0;
 	fprintf(fp1,"%d %d %d\n",filestatus,totevt,maxevt);
+
+	// Store the configfile in the DB
+	status = daqDA_DB_storeFile("PMD_GAIN_CONFIGFILE","PMD_GAIN_CONFIGFILE");
+
       }
     fclose(fp1);
     
