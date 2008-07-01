@@ -338,16 +338,6 @@ public:
    */
   void PrintRawData();
 
-   /**
-   * Set the Signal Threshold
-   */
-  void SetSignalThreshold(Int_t i){fSignalThreshold=i;}
-
-  /**
-   * Set the nSigma threshold
-   */
-  void SetNSigmaThreshold(Double_t i){fNSigmaThreshold=i;}
-
   /**
    * Vector of cluster candidates
    */
@@ -426,12 +416,6 @@ public:
   /** Number of good signals sent (good signals is signals surviving ZeroSuppression) */
   Int_t fNGoodSignalsSent;
   
-  /** Number of sigma threshold for the ZeroSuppression */
-  Double_t fNSigmaThreshold;                                       //! transient
-
-  /** Signal threshold for the ZeroSuppression */
-  Double_t fSignalThreshold;                                       //! transient
-
-  ClassDef(AliHLTTPCPad, 5)
+  ClassDef(AliHLTTPCPad, 6)
 };
 #endif // ALIHLTTPCPAD_H

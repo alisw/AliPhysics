@@ -52,13 +52,17 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   :
   fClusterFinder(NULL),
   fReader(NULL),
-  fClusterDeconv(true),
+  fDeconvTime(kFALSE),
+  fDeconvPad(kFALSE),
+  fClusterDeconv(false),
   fXYClusterError(-1),
   fZClusterError(-1),
   fModeSwitch(mode),
-  fUnsorted(0),
+  fUnsorted(1),
   fPatch(0),
-  fGetActivePads(0)
+  fGetActivePads(0),
+  fFirstTimeBin(-1),
+  fLastTimeBin(-1)
 {
   // see header file for class documentation
   // or
@@ -158,10 +162,10 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   fClusterFinder = new AliHLTTPCClusterFinder();
 
-  Int_t sigthresh = -1;
-  Double_t sigmathresh= -1;
+  //  Int_t sigthresh = -1;
+  //  Double_t sigmathresh= -1;
   Float_t occulimit = 1.0;
-  Int_t oldRCUFormat=0;
+  //  Int_t oldRCUFormat=0;
   // Data Format version numbers:
   // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
   // 1: As 0, but pads/padrows are delivered "as is", without sorting
@@ -174,87 +178,86 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   while ( i < argc ) {      
 
-    // -- raw reader mode option
-    if ( !strcmp( argv[i], "rawreadermode" ) ) {
-      if ( argc <= i+1 ) {
-	Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Raw Reader Mode not specified" );
-	return ENOTSUP;
-      }
 
-      Logging( kHLTLogWarning, "HLT::TPCClusterFinder::DoInit", "parameter rawreadermode is deprecated", "argument scan" );      
 
-      i += 2;
-      continue;
-    }
-
-    // -- pp run option
-    if ( !strcmp( argv[i], "pp-run" ) ) {
-      fClusterDeconv = false;
+    // -- deconvolute-time option
+    if ( !strcmp( argv[i], "-deconvolute-time" ) ) {
+      fDeconvTime = kTRUE;
       i++;
       continue;
     }
 
-    // -- zero suppression threshold
-    if ( !strcmp( argv[i], "adc-threshold" ) ) {
-      sigthresh = strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ) {
-	HLTError("Cannot convert threshold specifier '%s'.", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
-      continue;
-    }
-
-    // -- pad occupancy limit
-    if ( !strcmp( argv[i], "occupancy-limit" ) ) {
-      occulimit = strtod( argv[i+1], &cpErr);
-      if ( *cpErr ) {
-	HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
+    // -- deconvolute-pad option
+    if ( !strcmp( argv[i], "-deconvolute-pad" ) ) {
+      fDeconvPad = kTRUE;
+      i++;
       continue;
     }
 
     // -- number of timebins (default 1024)
-    if ( !strcmp( argv[i], "timebins" ) ) {
+    if (!strcmp( argv[i], "-timebins") || !strcmp( argv[i], "timebins" )){
       TString parameter(argv[i+1]);
       parameter.Remove(TString::kLeading, ' '); // remove all blanks
       if (parameter.IsDigit()) {
 	AliHLTTPCTransform::SetNTimeBins(parameter.Atoi());
 	HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
+	fClusterFinder->UpdateLastTimeBin();
       } else {
 	HLTError("Cannot timebin specifier '%s'.", argv[i+1]);
+	return EINVAL;
+      }
+      if(!strcmp( argv[i], "timebins")){
+	HLTWarning("Argument 'timebins' is old, please switch to new argument naming convention (-timebins). The timebins argument will still work, but please change anyway.");
+      }
+      i+=2;
+      continue;
+    }
+
+    // -first-timebin (default 0)
+    if ( !strcmp( argv[i], "-first-timebin" ) ) {
+      TString parameter(argv[i+1]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      if (parameter.IsDigit()){
+	fFirstTimeBin=parameter.Atoi();
+	HLTDebug("fFirstTimeBin set to %d",fFirstTimeBin);
+      } 
+      else {
+	HLTError("Cannot -first-timebin specifier '%s'. Not a number.", argv[i+1]);
 	return EINVAL;
       }
       i+=2;
       continue;
     }
 
-    // -- checking for rcu format
-    if ( !strcmp( argv[i], "oldrcuformat" ) ) {
-      oldRCUFormat = strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ){
-	HLTError("Cannot convert oldrcuformat specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
+    // -last-timebin (default 1024)
+    if ( !strcmp( argv[i], "-last-timebin" ) ) {
+      TString parameter(argv[i+1]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      if (parameter.IsDigit()){
+	fLastTimeBin=parameter.Atoi();
+	HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
+      } 
+      else {
+	HLTError("Cannot -last-timebin specifier '%s'. Not a number.", argv[i+1]);
 	return EINVAL;
       }
       i+=2;
       continue;
     }
-      
-    // -- checking for unsorted clusterfinding
-    if ( !strcmp( argv[i], "unsorted" ) ) {
-      fUnsorted = strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ){
-	HLTError("Cannot convert unsorted specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
+
+    // --  unsorted option
+    if ( !strcmp( argv[i], "-sorted" ) ) {
+      fUnsorted=0;
+      i++;
       continue;
     }
+
       
     // -- checking for active pads, used in 2007 December run
-    if ( !strcmp( argv[i], "activepads" ) ) {
+    if ( !strcmp( argv[i], "-active-pads" ) || !strcmp( argv[i], "activepads" ) ) {
+      if(!strcmp( argv[i], "activepads" )){
+	HLTWarning("Please change to new component argument naming scheme and use '-active-pads' instead of 'active-pads'");
+      }
       fGetActivePads = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ){
 	HLTError("Cannot convert activepads specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
@@ -264,14 +267,92 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       continue;
     }
 
+    // -- pad occupancy limit
+    if ( !strcmp( argv[i], "-occupancy-limit" ) || !strcmp( argv[i], "occupancy-limit" ) ) {
+      if(!strcmp( argv[i], "occupancy-limit" )){
+	HLTWarning("Please switch to new component argument naming convention, use '-occupancy-limit' instead of 'occupancy-limit'");
+      }
+      occulimit = strtod( argv[i+1], &cpErr);
+      if ( *cpErr ) {
+	HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
+	return EINVAL;
+      }
+      if(fModeSwitch!=kClusterFinderPacked){
+	HLTWarning("Argument '-occupancy-limit' is only used with -sorted set and with the TPCClusterFinderPacked , argument is deprecated");
+      }
+      i+=2;
+      continue;
+    }
+
+
+    // -- raw reader mode option
+    if ( !strcmp( argv[i], "rawreadermode" ) ) {
+      if ( argc <= i+1 ) {
+	Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Raw Reader Mode not specified. rawreadermode is no longer a valid argument and will be deprecated even if rawreadermode is specified." );
+	return ENOTSUP;
+      }
+
+      HLTWarning("Argument 'rawreadermode' is deprecated");      
+
+      i += 2;
+      continue;
+    }
+
+
+    // -- pp-run option
+    if ( !strcmp( argv[i], "pp-run") ) {
+      HLTWarning("Argument 'pp-run' is obsolete, deconvolution is swiched off in both time and pad directions by default.");
+      fClusterDeconv = false;
+      i++;
+      continue;
+    }
+
+    // -- zero suppression threshold
+    if ( !strcmp( argv[i], "adc-threshold" ) ) {
+      strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ) {
+	HLTError("Cannot convert threshold specifier '%s'.", argv[i+1]);
+	return EINVAL;
+      }
+      HLTWarning("'adc-threshold' is no longer a valid argument, please use TPCZeroSuppression component if you want to zerosuppress data.");
+      i+=2;
+      continue;
+    }
+
+
+    // -- checking for rcu format
+    if ( !strcmp( argv[i], "oldrcuformat" ) ) {
+      strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ){
+	HLTError("Cannot convert oldrcuformat specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
+	return EINVAL;
+      }
+      HLTWarning("Argument 'oldrcuformat' is deprecated.");
+      i+=2;
+      continue;
+    }
+      
+    // -- checking for unsorted clusterfinding (default 1)
+    if ( !strcmp( argv[i], "unsorted" ) ) {
+      fUnsorted = strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ){
+	HLTError("Cannot convert unsorted specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
+	return EINVAL;
+      }
+      HLTWarning("Argument 'unsorted' is old and does not follow the new argument naming convention. A change has been made, and the clusterfinder will read the data unsorted by default. For sorted reading, please use '-sorted' as argument. (unsorted 0 will do the same job, but please change anyway.)");
+      i+=2;
+      continue;
+    }
+
     // -- checking for nsigma-threshold, used in 2007 December run in ZeroSuppression
     if ( !strcmp( argv[i], "nsigma-threshold" ) ) {
-       sigmathresh = strtoul( argv[i+1], &cpErr ,0);
+      strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ){
 	HLTError("Cannot convert nsigma-threshold specifier '%s'. Must be integer", argv[i+1]);
 	return EINVAL;
       }
       i+=2;
+      HLTWarning("Argument 'nsigma-threshold' argument is obsolete.");
       continue;
     }
 
@@ -280,16 +361,32 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   }
 
+  //Checking for conflicting arguments
+  if(fClusterDeconv){
+    if(fDeconvPad==kTRUE || fDeconvTime==kTRUE){
+      HLTWarning("Conflicting arguments: argument 'pp-run' will be ignored.");
+    }
+  }
+  if(occulimit!=1.0 && fUnsorted){
+    HLTWarning("Argument 'occupancy-limit' is deprecated when doing unsorted data reading.");
+  }
+  if(fGetActivePads==kTRUE && fUnsorted==kFALSE){
+    HLTWarning("Argument '-active-pads' only work with unsorted data reading. Active pads list will not be produced.");
+  }
+  
+
   // Choose reader
   if (fModeSwitch==kClusterFinderPacked) {
       HLTDebug("using AliHLTTPCDigitReaderPacked");
       fReader = new AliHLTTPCDigitReaderPacked();
-      if(oldRCUFormat==1){
+      /*
+	if(oldRCUFormat==1){
 	fReader->SetOldRCUFormat(kTRUE);
-      }
-      else if(oldRCUFormat!=0){
+	}
+	else if(oldRCUFormat!=0){
 	HLTWarning("Wrong oldrcuformat specifier %d; oldrcuformat set to default(kFALSE)",oldRCUFormat);
-      }
+	}
+      */
       if(fUnsorted==1){
 	fReader->SetUnsorted(kTRUE);
       }
@@ -314,21 +411,24 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   else 
     fClusterFinder->SetOccupancyLimit(1.0);
       
-  // Variables to setup the Clusterfinder
-  // TODO: this sounds strange and has to be verified; is the cluster finder not working when
-  // fClusterDeconv = false ?
-  fClusterDeconv = true;
-  fXYClusterError = -1;
-  fZClusterError = -1;
-
- 
-  fClusterFinder->SetDeconv( fClusterDeconv );
+  
+  fClusterFinder->SetDeconv(fClusterDeconv);
+  fClusterFinder->SetDeconvPad(fDeconvPad);
+  fClusterFinder->SetDeconvTime(fDeconvPad);
   fClusterFinder->SetXYError( fXYClusterError );
   fClusterFinder->SetZError( fZClusterError );
-  if ( (fXYClusterError>0) && (fZClusterError>0) )
+  if ( (fXYClusterError>0) && (fZClusterError>0) ){
     fClusterFinder->SetCalcErr( false );
-  fClusterFinder->SetSignalThreshold(sigthresh);
-  fClusterFinder->SetNSigmaThreshold(sigmathresh);
+  }
+  //  fClusterFinder->SetSignalThreshold(sigthresh);
+  //  fClusterFinder->SetNSigmaThreshold(sigmathresh);
+
+  if(fFirstTimeBin>0){
+    fClusterFinder->SetFirstTimeBin(fFirstTimeBin);
+  }
+  if(fLastTimeBin>0 && fLastTimeBin>fFirstTimeBin && fLastTimeBin<=AliHLTTPCTransform::GetNTimeBins()){
+    fClusterFinder->SetLastTimeBin(fLastTimeBin);
+  }
 
   return 0;
 }
@@ -433,8 +533,13 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       	if(fGetActivePads){
 	  fClusterFinder->SetDoPadSelection(kTRUE);
 	}
-
-	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
+	
+	if(fDeconvTime){
+	  fClusterFinder->ReadDataUnsortedDeconvoluteTime(iter->fPtr, iter->fSize);
+	}
+	else{
+	  fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
+	}
 
 	fClusterFinder->FindClusters();
       }

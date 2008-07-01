@@ -27,7 +27,7 @@
 
       // cluster finder components
       cf.Form("CF_%02d_%d", slice, part);
-      AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "pp-run timebins 446");
+      AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "-timebins 446 -sorted");
       if (trackerInput.Length()>0) trackerInput+=" ";
       trackerInput+=cf;
     }

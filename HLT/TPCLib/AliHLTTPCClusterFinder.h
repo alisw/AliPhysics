@@ -15,6 +15,7 @@
 
 #include "AliHLTLogging.h"
 #include <vector>
+#include "AliHLTTPCTransform.h"
 
 class AliHLTTPCPad;
 class AliHLTTPCSpacePointData;
@@ -115,6 +116,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
     UInt_t fLastCharge;    //for deconvolution
     UInt_t fLastMergedPad; //dont merge twice per pad
     Int_t fRow;             //row value
+    UInt_t fQMax;           //qmax
   };
   typedef struct AliClusterData AliClusterData; //!
 
@@ -135,10 +137,10 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetXYError(Float_t f) {fXYErr=f;}
   void SetZError(Float_t f) {fZErr=f;}
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
+  void SetDeconvPad(Bool_t f) {fDeconvPad=f;}
+  void SetDeconvTime(Bool_t f) {fDeconvTime=f;}
   void SetThreshold(UInt_t i) {fThreshold=i;}
   void SetOccupancyLimit(Float_t f) {fOccupancyLimit=f;}
-  void SetSignalThreshold(Int_t i) {fSignalThreshold=i;}
-  void SetNSigmaThreshold(Double_t d) {fNSigmaThreshold=d;}
   void SetMatchWidth(UInt_t i) {fMatch=i;}
   void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
   void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
@@ -148,6 +150,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   //----------------------------------Methods for the new unsorted way of reading data ----------
   void ReadDataUnsorted(void* ptr,unsigned long size);
+  void ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned long size);
   void FindClusters();
   void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
   void SetUnsorted(Int_t unsorted){fUnsorted=unsorted;}
@@ -159,6 +162,12 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetDoPadSelection(Bool_t input){fDoPadSelection=input;}
   
   Int_t FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t maxHWAddress);
+
+  void UpdateLastTimeBin(){fLastTimeBin=AliHLTTPCTransform::GetNTimeBins();}
+
+  void SetLastTimeBin(Int_t ltb){fLastTimeBin=ltb;}
+
+  void SetFirstTimeBin(Int_t ftb){fFirstTimeBin=ftb;}
   
   vector<AliHLTUInt16_t> fClustersHWAddressVector;  //! transient
   
@@ -177,7 +186,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   UChar_t* fPtr;   //! pointer to packed block
   unsigned long fSize; //packed block size
-  Bool_t fDeconvTime; //deconv in time direction
+  Bool_t fDeconvTime;  //deconv in time direction
   Bool_t fDeconvPad;  //deconv in pad direction
   Bool_t fStdout;     //have print out in write clusters
   Bool_t fCalcerr;    //calculate centroid sigmas
@@ -191,10 +200,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t fCurrentPatch;   //current patch
   Int_t fMatch;          //size of match
   UInt_t fThreshold;     //threshold for clusters
-  /** threshold for zero suppression (applied per bin) */
-  Int_t fSignalThreshold;// see above
-  /** threshold for zero suppression 2007 December run */
-  Double_t fNSigmaThreshold; // see above
   Int_t fNClusters;      //number of found clusters
   Int_t fMaxNClusters;   //max. number of clusters
   Float_t fXYErr;        //fixed error in XY
@@ -204,10 +209,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   Int_t fUnsorted;       // enable for processing of unsorted digit data
   Bool_t fVectorInitialized;
-
-  //typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
-
-  //vector<AliHLTTPCPadVector> fRowPadVector;                        //! transient
 
   vector<AliHLTTPCClusters> fClusters;                             //! transient
   
@@ -219,11 +220,19 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   Bool_t fDoPadSelection;					   //! transient
 
+  Int_t fFirstTimeBin;					           //! transient
+  
+  Int_t fLastTimeBin;					           //! transient
+
+  UInt_t fTotalChargeOfPreviousClusterCandidate;                   //! transient
+
+  Bool_t fChargeOfCandidatesFalling;                               //! transient
+
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,5) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,6) //Fast cluster finder
 };
 #endif

@@ -109,7 +109,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
 	// cluster finder components
 	cf.Form("TPC-CF_%02d_%d", slice, part);
-	handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "pp-run timebins 446");
+	handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "-timebins 446 -sorted");
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
       }

@@ -30,7 +30,6 @@
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCDigitData.h"
-#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCPad.h"
@@ -50,8 +49,8 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fDigitReader(NULL),
   fPtr(NULL),
   fSize(0),
-  fDeconvTime(kTRUE),
-  fDeconvPad(kTRUE),
+  fDeconvTime(kFALSE),
+  fDeconvPad(kFALSE),
   fStdout(kFALSE),
   fCalcerr(kTRUE),
   fRawSP(kFALSE),
@@ -62,8 +61,6 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fCurrentPatch(0),
   fMatch(1),
   fThreshold(10),
-  fSignalThreshold(-1),
-  fNSigmaThreshold(0),
   fNClusters(0),
   fMaxNClusters(0),
   fXYErr(0.2),
@@ -75,7 +72,11 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fNumberOfPadsInRow(NULL),
   fNumberOfRows(0),
   fRowOfFirstCandidate(0),
-  fDoPadSelection(kFALSE)
+  fDoPadSelection(kFALSE),
+  fFirstTimeBin(0),
+  fLastTimeBin(AliHLTTPCTransform::GetNTimeBins()),
+  fTotalChargeOfPreviousClusterCandidate(0),
+  fChargeOfCandidatesFalling(kFALSE)
 {
   //constructor  
 }
@@ -225,14 +226,18 @@ void AliHLTTPCClusterFinder::ProcessDigits()
      bins.
    */
   Int_t gatingGridOffset=50;
+  if(fFirstTimeBin>0){
+    gatingGridOffset=fFirstTimeBin;
+  }
   AliHLTTPCPad baseline(gatingGridOffset, AliHLTTPCTransform::GetNTimeBins());
   // just to make later conversion to a list of objects easier
   AliHLTTPCPad* pCurrentPad=NULL;
-  if (fSignalThreshold>=0) {
+  /*
+    if (fSignalThreshold>=0) {
     pCurrentPad=&baseline;
     baseline.SetThreshold(fSignalThreshold);
   }
-
+  */
   while ( readValue!=0 && iResult>=0){   // Reads through all digits in block
     iResult=0;
 
@@ -599,9 +604,15 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	  }  
 	
 	fSpacePointData[counter].fX = xyz[0];
-	fSpacePointData[counter].fY = xyz[1];
+	//	fSpacePointData[counter].fY = xyz[1];
+	if(fCurrentSlice<18){
+	  fSpacePointData[counter].fY = xyz[1];
+	}
+	else{
+	  fSpacePointData[counter].fY = -1*xyz[1];
+	}
 	fSpacePointData[counter].fZ = xyz[2];
-	
+
       } else {
 	fSpacePointData[counter].fX = fCurrentRow;
 	fSpacePointData[counter].fY = fpad;
@@ -612,6 +623,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       fSpacePointData[counter].fPadRow = fCurrentRow;
       fSpacePointData[counter].fSigmaY2 = fpad2;
       fSpacePointData[counter].fSigmaZ2  = ftime2;
+
+      fSpacePointData[counter].fMaxQ = list[j].fQMax;
 
       fSpacePointData[counter].fUsed = kFALSE;         // only used / set in AliHLTTPCDisplay
       fSpacePointData[counter].fTrackN = -1;           // only used / set in AliHLTTPCDisplay
@@ -686,26 +699,106 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
     UInt_t row=fDigitReader->GetRow();
     UInt_t pad=fDigitReader->GetPad();
 
-    fRowPadVector[row][pad]->ClearCandidates();
     while(fDigitReader->NextBunch()){
       if(fDigitReader->GetBunchSize()>1){//to remove single timebin values, this will have to change at some point
-	const UInt_t *bunchData= fDigitReader->GetSignals();
 	UInt_t time = fDigitReader->GetTime();
-	AliHLTTPCClusters candidate;
-	for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
-	  candidate.fTotalCharge+=bunchData[i];	
-	  candidate.fTime += time*bunchData[i];
-	  candidate.fTime2 += time*time*bunchData[i];
-	  time++;
+	if((Int_t)time>=fFirstTimeBin && (Int_t)time+fDigitReader->GetBunchSize()<=fLastTimeBin){
+	  const UInt_t *bunchData= fDigitReader->GetSignals();
+	  AliHLTTPCClusters candidate;
+	  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+	    candidate.fTotalCharge+=bunchData[i];	
+	    candidate.fTime += time*bunchData[i];
+	    candidate.fTime2 += time*time*bunchData[i];
+	    if(bunchData[i]>candidate.fQMax){
+	      candidate.fQMax=bunchData[i];
+	    }
+	    time++;
+	  }
+	  if(candidate.fTotalCharge>0){
+	    candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	    candidate.fPad=candidate.fTotalCharge*pad;
+	    candidate.fPad2=candidate.fPad*pad;
+	    candidate.fLastMergedPad=pad;
+	    candidate.fRowNumber=row+fDigitReader->GetRowOffset();
+	  }
+	  fRowPadVector[row][pad]->AddClusterCandidate(candidate);
 	}
-	if(candidate.fTotalCharge>0){
-	  candidate.fMean=candidate.fTime/candidate.fTotalCharge;
-	  candidate.fPad=candidate.fTotalCharge*pad;
-	  candidate.fPad2=candidate.fPad*pad;
-	  candidate.fLastMergedPad=pad;
-	  candidate.fRowNumber=row+fDigitReader->GetRowOffset();
+      }
+    }
+  }
+}
+
+void AliHLTTPCClusterFinder::ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned long size)
+{
+  //set input pointer
+  fPtr = (UChar_t*)ptr;
+  fSize = size;
+
+  if(!fVectorInitialized){
+    InitializePadArray();
+  }
+
+  fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
+  
+  while(fDigitReader->NextChannel()){
+    UInt_t row=fDigitReader->GetRow();
+    UInt_t pad=fDigitReader->GetPad();
+
+    while(fDigitReader->NextBunch()){
+      if(fDigitReader->GetBunchSize()>1){//to remove single timebin values, this will have to change at some point
+	UInt_t time = fDigitReader->GetTime();
+	if((Int_t)time>=fFirstTimeBin && (Int_t)time+fDigitReader->GetBunchSize()<=fLastTimeBin){
+	  Int_t indexInBunchData=0;
+	  Bool_t moreDataInBunch=kFALSE;
+	  UInt_t prevSignal=0;
+	  Bool_t signalFalling=kFALSE;
+	  const UInt_t *bunchData= fDigitReader->GetSignals();
+	  do{
+	    AliHLTTPCClusters candidate;
+	    for(Int_t i=indexInBunchData;i<fDigitReader->GetBunchSize();i++){
+	      // Checks if one need to deconvolute the signals
+	      if(bunchData[i]>prevSignal && signalFalling==kTRUE){
+		if(i<fDigitReader->GetBunchSize()-1){ // means there are more than one signal left in the bunch
+		  moreDataInBunch=kTRUE;
+		  prevSignal=0;
+		}
+		break;
+	      }
+	      
+	      // Checks if the signal is 0, then quit processing the data.
+	      if(bunchData[i]==0 && i<fDigitReader->GetBunchSize()-1){//means we have 0 data fom the rcu, might happen depending on the configuration settings
+		moreDataInBunch=kTRUE;
+		prevSignal=0;
+		break;
+	      }
+
+	      if(prevSignal>bunchData[i]){//means the peak of the signal has been reached and deconvolution will happen if the signal rise again.
+		signalFalling=kTRUE;
+	      }
+	      candidate.fTotalCharge+=bunchData[i];	
+	      candidate.fTime += time*bunchData[i];
+	      candidate.fTime2 += time*time*bunchData[i];
+	      if(bunchData[i]>candidate.fQMax){
+		candidate.fQMax=bunchData[i];
+	      }
+
+	      prevSignal=bunchData[i];
+	      time++;
+	      indexInBunchData++;
+	    }
+	    if(candidate.fTotalCharge>0){
+	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	      candidate.fPad=candidate.fTotalCharge*pad;
+	      candidate.fPad2=candidate.fPad*pad;
+	      candidate.fLastMergedPad=pad;
+	      candidate.fRowNumber=row+fDigitReader->GetRowOffset();
+	    }
+	    fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	    if(indexInBunchData<fDigitReader->GetBunchSize()-1){
+	      moreDataInBunch=kFALSE;
+	    }
+	  }while(moreDataInBunch);
 	}
-	fRowPadVector[row][pad]->AddClusterCandidate(candidate);
       }
     }
   }
@@ -716,6 +809,14 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
   for(UInt_t candidateNumber=0;candidateNumber<nextPad->fClusterCandidates.size();candidateNumber++){
     AliHLTTPCClusters *candidate =&nextPad->fClusterCandidates[candidateNumber]; 
     if(cluster->fMean-candidate->fMean==1 || candidate->fMean-cluster->fMean==1 || cluster->fMean-candidate->fMean==0){
+      if(fDeconvPad){
+	if(candidate->fTotalCharge<fTotalChargeOfPreviousClusterCandidate){//peak is reached
+	  fChargeOfCandidatesFalling=kTRUE;
+	}
+	if(candidate->fTotalCharge>fTotalChargeOfPreviousClusterCandidate && fChargeOfCandidatesFalling==kTRUE){//we have deconvolution
+	  return kFALSE;
+	}
+      }
       cluster->fMean=candidate->fMean;
       cluster->fTotalCharge+=candidate->fTotalCharge;
       cluster->fTime += candidate->fTime;
@@ -723,25 +824,21 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
       cluster->fPad+=candidate->fPad;
       cluster->fPad2=candidate->fPad2;
       cluster->fLastMergedPad=candidate->fPad;
-            
-      //cout<<"Adding "<<candidate->fTotalCharge<<"   to the pad "<<nextPad->GetPadNumber()<<"  row: "<<nextPad->GetRowNumber()<<"   HWAddress: "<<(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(nextPad->GetRowNumber(),nextPad->GetPadNumber())<<endl;
-
+      if(candidate->fQMax>cluster->fQMax){
+	cluster->fQMax=candidate->fQMax;
+      }
+      
       if(fDoPadSelection){
-       UInt_t rowNo = nextPad->GetRowNumber();
-       UInt_t padNo = nextPad->GetPadNumber();
-       if(padNo-1>0){
-	 fRowPadVector[rowNo][padNo-2]->fSelectedPad=kTRUE;
-	 fRowPadVector[rowNo][padNo-2]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo-2);
-       }
-       fRowPadVector[rowNo][padNo-1]->fSelectedPad=kTRUE;// quick solution to set the first pad to selected
-       fRowPadVector[rowNo][padNo-1]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo-1);
-       fRowPadVector[rowNo][padNo]->fSelectedPad=kTRUE;
-       fRowPadVector[rowNo][padNo]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo);
-       /*      if(padNo+1<(Int_t)fNumberOfPadsInRow[fRowOfFirstCandidate]){
-	 fRowPadVector[rowNo][padNo]->fSelectedPad=kTRUE;
-	 fRowPadVector[rowNo][padNo]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo);
-	 }*/
-       //      cout<<"We have an active pad in row: "<<rowNo<<"  pad: "<<padNo<<"   hwadd: "<<(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo)<<endl;
+	UInt_t rowNo = nextPad->GetRowNumber();
+	UInt_t padNo = nextPad->GetPadNumber();
+	if(padNo-1>0){
+	  fRowPadVector[rowNo][padNo-2]->fSelectedPad=kTRUE;
+	  fRowPadVector[rowNo][padNo-2]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo-2);
+	}
+	fRowPadVector[rowNo][padNo-1]->fSelectedPad=kTRUE;// quick solution to set the first pad to selected
+	fRowPadVector[rowNo][padNo-1]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo-1);
+	fRowPadVector[rowNo][padNo]->fSelectedPad=kTRUE;
+	fRowPadVector[rowNo][padNo]->fHWAddress=(AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr(rowNo,padNo);
       }
 
       //setting the matched pad to used
@@ -769,7 +866,6 @@ Int_t AliHLTTPCClusterFinder::FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t
       if(fRowPadVector[row][pad]->fSelectedPad){
        if(counter<maxHWadd){
 	 hwaddlist[counter]=(AliHLTUInt16_t)fRowPadVector[row][pad]->fHWAddress;
-	 //cout<<"Filling the f.. hardwareaddress: "<<fRowPadVector[row][pad]->fHWAddress<<endl;
 	 counter++;
        }
        else{
@@ -797,6 +893,7 @@ void AliHLTTPCClusterFinder::FindClusters()
 	}
 	tmpCandidate=&tmpPad->fClusterCandidates[candidate];
 	UInt_t tmpTotalCharge=tmpCandidate->fTotalCharge;
+
 	ComparePads(fRowPadVector[row][pad+1],tmpCandidate,pad+1);
 	if(tmpCandidate->fTotalCharge>tmpTotalCharge){
 	  //we have a cluster
@@ -836,11 +933,11 @@ void AliHLTTPCClusterFinder::PrintClusters()
   // see header file for class documentation
   for(size_t i=0;i<fClusters.size();i++){
     HLTInfo("Cluster number: %d",i);
-    HLTInfo("Row: %d \t Pad: %d",fClusters[i].fRowNumber,fClusters[i].fFirstPad);
+    HLTInfo("Row: %d \t Pad: %d",fClusters[i].fRowNumber,fClusters[i].fPad/fClusters[i].fTotalCharge);
     HLTInfo("Total Charge:   %d",fClusters[i].fTotalCharge);
     HLTInfo("fPad:           %d",fClusters[i].fPad);
     HLTInfo("PadError:       %d",fClusters[i].fPad2);
-    HLTInfo("TimeMean:       %d",fClusters[i].fTime);
+    HLTInfo("TimeMean:       %d",fClusters[i].fTime/fClusters[i].fTotalCharge);
     HLTInfo("TimeError:      %d",fClusters[i].fTime2);
     HLTInfo("EndOfCluster:");
   }
@@ -917,7 +1014,13 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 	  }  
 	
 	fSpacePointData[counter].fX = xyz[0];
-	fSpacePointData[counter].fY = xyz[1];
+	//	fSpacePointData[counter].fY = xyz[1];
+	if(fCurrentSlice<18){
+	  fSpacePointData[counter].fY = xyz[1];
+	}
+	else{
+	  fSpacePointData[counter].fY = -1*xyz[1];
+	}
 	fSpacePointData[counter].fZ = xyz[2];
 	
       } else {
@@ -930,6 +1033,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
       fSpacePointData[counter].fPadRow = fCurrentRow;
       fSpacePointData[counter].fSigmaY2 = fpad2;
       fSpacePointData[counter].fSigmaZ2  = ftime2;
+
+      fSpacePointData[counter].fMaxQ = list[j].fQMax;
 
       fSpacePointData[counter].fUsed = kFALSE;         // only used / set in AliHLTTPCDisplay
       fSpacePointData[counter].fTrackN = -1;           // only used / set in AliHLTTPCDisplay

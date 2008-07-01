@@ -18,6 +18,10 @@
  *   aliroot -b -q rec-hlt-tpc.C'("input.root")'
  * </pre>
  *
+ * By the second parameter the digit reader can be chosen, default is
+ * AliHLTTPCDigitReaderPacked (=false). Set to true to use
+ * AliHLTTPCDigitReaderDecoder
+ *
  * In the first section, an analysis chain is defined. The scale of the
  * chain can be defined by choosing the range of sectors and partitions.
  *
@@ -27,7 +31,7 @@
  * @ingroup alihlt_tpc
  * @author Matthias.Richter@ift.uib.no
  */
-void rec_hlt_tpc(const char* input="./")
+void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=false)
 {
   if (!input) {
     cerr << "please specify input or run without arguments" << endl;
@@ -41,9 +45,6 @@ void rec_hlt_tpc(const char* input="./")
   gSystem->Load("libHLTrec.so");
   AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
 
-  // choose between ClusterFinderDecoder (true) and ClusterFinderPacked (false)
-  bool bUseClusterFinderDecoder=false;
-
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // define the analysis chain to be run
@@ -53,6 +54,7 @@ void rec_hlt_tpc(const char* input="./")
   int iMinPart=0;
   int iMaxPart=5;
   TString writerInput;
+  TString mergerInput;
   for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
     TString trackerInput;
     for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -69,9 +71,9 @@ void rec_hlt_tpc(const char* input="./")
       // cluster finder components
       cf.Form("CF_%02d_%d", slice, part);
       if (bUseClusterFinderDecoder) {
-	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "pp-run timebins 446 unsorted 1");
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "-timebins 446");
       } else {
-	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderPacked", publisher.Data(), "pp-run timebins 446 rawreadermode 4");
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderPacked", publisher.Data(), "-timebins 446 -sorted");
       }
       if (trackerInput.Length()>0) trackerInput+=" ";
       trackerInput+=cf;
@@ -84,10 +86,27 @@ void rec_hlt_tpc(const char* input="./")
     AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run -bfield 0.5");
     if (writerInput.Length()>0) writerInput+=" ";
     writerInput+=tracker;
+    if (mergerInput.Length()>0) mergerInput+=" ";
+    mergerInput+=tracker;
   }
 
-  // the writer configuration
-  AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+  // specify whether to write all blocks separately or merge the tracks
+  // and convert to ESD
+  bool writeBlocks=false;
+
+  if (writeBlocks) {
+    // the writer configuration
+    AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+  } else {
+    // GlobalMerger component
+    AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+
+    // the esd converter configuration
+    AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
+    
+    // the root file writer configuration
+    AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc");
+  }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //

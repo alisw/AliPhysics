@@ -5,7 +5,7 @@
  * The reconstruction is done from the TPC digits.
  *
  * The output is written to an ESD file either using the TPCEsdWriter (an
- * AliFileWriter) or the TPCEsdConverter with an attached EsdCollector.
+ * AliHLTFileWriter) or the TPCEsdConverter with an attached EsdCollector.
  *
  * Matthias.Richter@ift.uib.no
  */
@@ -27,7 +27,7 @@
 
       // cluster finder components
       cf.Form("CF_%02d_%d", slice, part);
-      AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "pp-run timebins 446");
+      AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "-timebins 446 -sorted");
       if (trackerInput.Length()>0) trackerInput+=" ";
       trackerInput+=cf;
     }

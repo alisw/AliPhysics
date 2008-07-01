@@ -23,19 +23,49 @@ class AliHLTTPCDigitReader;
  * Implementation of the cluster finder component.
  * The component implements the interface methods of the @ref AliHLTProcessor.
  * The actual cluster finding algorithm is implemented in @ref AliHLTTPCClusterFinder.
- * The component can handle unpacked and packed data of different formats via the
- * AliHLTTPCDigitReader implementations. Two components are registered, the
- * TPCClusterFinderUnpacked and the TPCClusterFinderPacked. The latter one can
- * instantiate different digit readers depending on the arguments.
+ * Two components are registered, TPCClusterFinderPacked and TPCClusterFinderDecoder.
+ * TPCClusterFinderDecoder use the AliTPCRawStream class for decoding of the data, while TPCClusterFinderDecoder 
+ * use the AliAltroDecoder for decoding the data.
+ *
+ * TPCClusterFinderDecoder is the fastest of the two, this is due to that the AliAltroDecoder
+ * returns data in a bunch format. A bunch consist of consecutive signals.
+ * TPCClusterFinderPacked first have to read the data one by one, which means that row, pad and
+ * time signals have to be compared between each new digit, which leads to a slower alorithm. 
  * 
- * The component has the following component arguments:
- * - adc-threshold   ADC count threshold for zero suppression, if <0 the base line
- *                   calculation and subtraction is switched off
- * - pp-run          set parameters specific to a pp run; currently this switches
- *                   cluster deconvolution off for pp runs (not true for unsorted reading)
- * - unsorted        if 1 the data will be read unsorted in to a PadArray object. This should
- *                   only be done on patch level since it use a lot of memory
- * - patch           specify on which patch to resd the data unsorted
+ * Component ID: \b TPCClusterFinderDecoder and TPCClusterFinderPacked <br>
+ * Library: \b libAliHLTTPC
+ *
+ * Mandatory arguments: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * Optional arguments: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -deconvolute-time <br>  
+ *      Turns on deconvolution in the time direction.
+ * \li -deconvolute-pad <br>  
+ *      Turns on deconvolution in the pad direction.
+ * \li -timebins <br>  
+ *      Sets the number of timebins (446 for simulated data, and 1024 for real data) Default:1024
+ * \li -first-timebin <br>  
+ *      First timebin taken into consideration when reading the data. 
+ * \li -last-timebin <br>  
+ *      Last timebin taken into consideration when reading the data. 
+ * \li -sorted <br>  
+ *      Switch off unsorted reading of data. Equivalent to the old argument unsorted 0.
+ * \li -active-pads <br>  
+ *      Switch off unsorted reading of data. Equivalent to the old argument unsorted 0.
+ * \li -occupancy-limit <br>  
+ *      Set the occupancy limit for the sorted clusterfinding.
+ *
+ *
+ * Obsolete arguments: <br>
+ * \li occupancy-limit <br>  
+ * \li rawreadermode   <br>  
+ * \li pp-run          <br>  
+ * \li adc-threshold   <br>  
+ * \li oldrcuformat    <br>  
+ * \li unsorted        <br>  
+ * \li nsigma-threshold <br>  
  *
  * @ingroup alihlt_tpc_components
  */
@@ -108,8 +138,16 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	/** the reader object for data decoding */
 	AliHLTTPCDigitReader* fReader;                                               //!transient
 
-	bool fClusterDeconv; //!transient
-	float fXYClusterError; //!transient
+	/** flag to deconvolute in time direction */
+	Bool_t fDeconvTime;                                                          //!transient
+
+	/** flag to deconvolute in pad direction */
+	Bool_t fDeconvPad;                                                           //!transient
+	/** flag to switch on/off deconvolution in pad and time directions (used by sorted clusterfinding method) */
+	bool fClusterDeconv;                                                         //!transient
+	/** Error in xy of cluster */
+	float fXYClusterError;                                                       //!transient
+	/** Error in Z direction of cluster */
 	float fZClusterError; //!transient
 	/**
 	 * switch to indicated the reader
@@ -117,7 +155,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	 * use fModeSwitch = 1 for unpacked inputtype "gkUnpackedRawDataType"
 	 * use fModeSwitch = 2 for packed inputtype "gkDDLPackedRawDataType" with new digit reader
 	 */
-	Int_t fModeSwitch;                                                           // see above
+	Int_t fModeSwitch;                                                            // see above
       
 	/*
 	 * Reads the data the new unsorted way if true
@@ -132,12 +170,17 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	Int_t fPatch;                                                                  //!transient
 
 	/*
-	 * Switch to specify if one ship out a list of active pads.
-	 * Used for the 2007 December run. 
+	 * Switch to specify if one ship out a list of active pads (pads conected to a cluster).
 	 */
 	Int_t fGetActivePads;                                                          //!transient
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 4)
+	/** First timebin taken into account when reading the data */
+	Int_t fFirstTimeBin;                                                           //!transient
+
+	/** Last timebin taken in to account when reading the data */
+	Int_t fLastTimeBin;                                                            //!transient
+
+	ClassDef(AliHLTTPCClusterFinderComponent, 5)
 
 };
 #endif
