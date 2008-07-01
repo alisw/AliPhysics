@@ -65,8 +65,7 @@ private:
   static Double_t fgHighLowGainFactor ; // high to low gain factor
   static Int_t    fgOrder ;             // order of the gamma function
 
-  //  static const Int_t fkTimeBins = 64 ;  // number of sampling bins
-  static const Int_t fkTimeBins = 1008 ;  // number of sampling bins
+  static const Int_t fkTimeBins = 100 ; // number of sampling bins
 
   static Double_t fgTimeMax ;           // maximum sampled time
   static Double_t fgTimePeak ;          // peaking time
