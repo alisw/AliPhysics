@@ -24,7 +24,7 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool; 
-  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,1200);
+  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,10200);
   chain->Lookup();
   // memory
   mgr->SetNSysInfo(100); 
@@ -54,7 +54,7 @@ AliAnalysisManager * SetupCalibTask() {
   // set magnetic field form the cosmos - it should be provided by framework
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 2);
   AliTracker::SetFieldMap(field,0);
-  TGeoManager::Import("geometry.root");
+  TGeoManager::Import("/u/miranov/proof/geometry.root");
   //
   AliAnalysisManager *mgr=new AliAnalysisManager("TestManager");
 
@@ -91,23 +91,23 @@ AliAnalysisManager * SetupCalibTask() {
   //
  // ---*---*-----*-*-----*----------*---
   // ADD CALIB JOBS HERE!!!!!!!!!!!!!!!!
-  //task1->AddJob(calibAlign);
-  //  task1->AddJob(calibLaser);
-  task1->AddJob(calibCosmic);
+  task1->AddJob(calibAlign);
+  task1->AddJob(calibLaser);
+  //task1->AddJob(calibCosmic);
   //task1->AddJob(calibTracksGain);
   //task1->AddJob(calibTracks);
   //  task1->AddJob(new AliTPCcalibBase);
   // task1->AddJob(new AliTPCcalibV0);
   // -*----*----*---*-*------*-------**--
   // -------*--*---------*-----*-------*-
-  task1->SetDebugOuputhPath("/lustre_alpha/alice/miranov/rec/cosmic_jun2008/");
+  task1->SetDebugOuputhPath("/lustre_alpha/alice/miranov/rec/laser_Rec5T/V4T/");
   mgr->AddTask(task1);
 
   AliAnalysisDataContainer *cinput1
     =mgr->CreateContainer("cchain1",TChain::Class(),
 			  AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1
-    =mgr->CreateContainer("asdofhaw",TObjArray::Class(),
+    =mgr->CreateContainer("TPCCalib",TObjArray::Class(),
 			  AliAnalysisManager::kOutputContainer,
 			  "CalibObjects.root");
 
