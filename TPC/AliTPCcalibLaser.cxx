@@ -31,6 +31,8 @@
 #include "TLinearFitter.h"
 #include "AliTPCcalibLaser.h"
 #include "AliExternalTrackParam.h"
+#include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliESDtrack.h"
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
@@ -55,22 +57,37 @@ using namespace std;
 ClassImp(AliTPCcalibLaser)
 
 AliTPCcalibLaser::AliTPCcalibLaser():
-  AliTPCcalibBase()
+  AliTPCcalibBase(),
+  fESD(0),
+  fESDfriend(),
+  fTracksMirror(1000),
+  fTracksEsd(1000),
+  fTracksEsdParam(1000),
+  fTracksTPC(1000),
+  fRun(0)
 {
   //
   // Constructor
   //
+  fTracksEsdParam.SetOwner(kTRUE);
 }
 
 AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
-  AliTPCcalibBase()  
+  AliTPCcalibBase(),
+  fESD(0),
+  fESDfriend(0),
+  fTracksMirror(1000),
+  fTracksEsd(1000),
+  fTracksEsdParam(1000),
+  fTracksTPC(1000),
+  fRun(0)
 {
   SetName(name);
   SetTitle(title);
   //
   // Constructor
   //
-  
+  fTracksEsdParam.SetOwner(kTRUE);  
 }
 
 AliTPCcalibLaser::~AliTPCcalibLaser() {
@@ -79,14 +96,60 @@ AliTPCcalibLaser::~AliTPCcalibLaser() {
   //
 }
 
-void AliTPCcalibLaser::Process(AliESDtrack *track, Int_t run) {
+
+
+void AliTPCcalibLaser::Process(AliESDEvent * event) {
   //
   // 
+  // Loop over tracks and call  Process function
   //
-  // 1. Propagate track to the mirror radius
+  fESD = event;
+  if (!fESD) {
+    return;
+  }
+  fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+  if (!fESDfriend) {
+    return;
+  }
+  fTracksTPC.Clear();
+  fTracksEsd.Clear();
+  fTracksEsdParam.Delete();
+  //
+  Int_t n=fESD->GetNumberOfTracks();
+  Int_t run = fESD->GetRunNumber();
+  fRun = run;
+  for (Int_t i=0;i<n;++i) {
+    AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
+    AliESDtrack *track=fESD->GetTrack(i);
+    TObject *calibObject=0;
+    AliTPCseed *seed=0;
+    for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
+      if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
+	break;
+    if (track&&seed) FindMirror(track,seed);
+    //
+  }
+  
+  FitDriftV();
+  
+  //
+  for (Int_t id=0; id<1000; id++){
+    //
+    //
+    if (!fTracksEsdParam.At(id)) continue;
+    DumpLaser(id);
+    RefitLaser(id);    
+  }
+}
+
+Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
+  //
+  // Find corresponding mirror
+  // add the corresponding tracks
+  //
   Float_t kRadius0 = 252;
   Float_t kRadius  = 254.25;
-  if (!track->GetOuterParam()) return;
+  if (!track->GetOuterParam()) return -1;
   AliExternalTrackParam param(*(track->GetOuterParam()));
   AliTracker::PropagateTrackTo(&param,kRadius0,0.10566,3,kTRUE);
   AliTracker::PropagateTrackTo(&param,kRadius,0.10566,0.1,kTRUE);
@@ -98,47 +161,42 @@ void AliTPCcalibLaser::Process(AliESDtrack *track, Int_t run) {
     ltrp=(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
   else 
     ltrp=&ltr;
+  
+  if (id>=0){
+    if (!fTracksMirror.At(id)) fTracksMirror.AddAt(ltrp,id);
+    fTracksEsdParam.AddAt(param.Clone(),id);
+    fTracksEsd.AddAt(track,id);
+    fTracksTPC.AddAt(seed,id);
+  }
+  return id;
+}
+
+
+
+void AliTPCcalibLaser::DumpLaser(Int_t id) {
+  //
+  //  Dump Laser info to the tree
+  //
+  AliESDtrack   *track    = (AliESDtrack*)fTracksEsd.At(id);
+  AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+  AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
   //
   // Fast laser ID
   //
   Double_t xyz[3];
   Double_t pxyz[3];
-  param.GetXYZ(xyz);
-  param.GetPxPyPz(pxyz);
-  Int_t side = (param.GetZ()>0) ? 0:1;
-  //
-  Int_t beam   = 0;
-  Int_t beamphi = 0;
-  if (side==0) {
-    beam    = TMath::Nint((180*param.GetAlpha()/TMath::Pi()+20)/60.);
-    beamphi = TMath::Pi()*(60.*Double_t(beam)-20.)/180.;
-    if (beam<0) beam+=6;
-  }
-  //
-  if (side==1) {
-    beam = TMath::Nint((180*param.GetAlpha()/TMath::Pi()-20)/60.);
-    beamphi = TMath::Pi()*(60.*Double_t(beam)+20.)/180.;
-    if (beam<0) beam+=6;
-  }
-
-  //Int_t id(180*atan2(x1,x0)/pi+20)/60.;
-  Int_t bundle=TMath::Nint(param.GetZ()/80.);
-  //
-  //
+  param->GetXYZ(xyz);
+  param->GetPxPyPz(pxyz);
   if (fStreamLevel>0){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       (*cstream)<<"Track"<<
-	"run="<<run<<
+	"run="<<fRun<<
 	"id="<<id<<
-	"fSide="<<side<<        // side A-C
-	"fBeam="<<beam<<        // phi id
-	"fBundle="<<bundle<<    // laser Z
-	"bphi="<<beamphi<<      //reference beamphi
 	//
         "LTr.="<<ltrp<<
 	"Esd.="<<track<<
-	"Tr.="<<&param<<
+	"Tr.="<<param<<
 	"x0="<<xyz[0]<<
 	"x1="<<xyz[1]<<
 	"x2="<<xyz[2]<<
@@ -149,6 +207,100 @@ void AliTPCcalibLaser::Process(AliESDtrack *track, Int_t run) {
     }
   }
 }
+
+
+void AliTPCcalibLaser::RefitLaser(Int_t id){
+  //
+  // Refit the track store residuals
+  //
+
+  AliTPCseed *track    = (AliTPCseed*)fTracksTPC.At(id);
+  AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+  AliTPCLaserTrack *ltrp = (AliTPCLaserTrack*)fTracksMirror.At(id);
+			     
+  //
+  static TLinearFitter fy2(3,"hyp2");
+  static TLinearFitter fz2(3,"hyp2");
+  static TLinearFitter fy1(2,"hyp1");
+  static TLinearFitter fz1(2,"hyp1");
+  static TVectorD vecy2,vecz2,vecy1,vecz1;
+
+  const Int_t kMinClusters=20;
+  Int_t nclusters[72]; 
+  //
+  for (Int_t i=0;i<72;++i) nclusters[i]=0;
+
+  for (Int_t i=0;i<160;++i) {    
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (c) nclusters[c->GetDetector()]++;
+  }
+   
+  for (Int_t isec=0; isec<72;isec++){
+    if (nclusters[isec]<kMinClusters) continue;
+    fy2.ClearPoints();
+    fz2.ClearPoints();
+    fy1.ClearPoints();
+    fz1.ClearPoints();
+    //
+    for (Int_t irow=0;irow<160;++irow) {      
+      AliTPCclusterMI *c=track->GetClusterPointer(irow);
+      //if (c && RejectCluster(c)) continue;
+      if (c&&c->GetDetector()==isec) {
+	Double_t xd = c->GetX()-120;;
+	Double_t x[2]={xd,xd*xd};
+	fy2.AddPoint(x,c->GetY());
+	fz2.AddPoint(x,c->GetZ());
+	//
+	fy1.AddPoint(x,c->GetY());
+	fz1.AddPoint(x,c->GetZ());
+      }
+    }
+    fy2.Eval();
+    fz2.Eval();
+    fy1.Eval();
+    fz1.Eval();
+    fy1.GetParameters(vecy1);
+    fy2.GetParameters(vecy2);
+    fz1.GetParameters(vecz1);
+    fz2.GetParameters(vecz2);
+    
+    if (fStreamLevel>0){
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      if (cstream){
+	Float_t dedx = track->GetdEdx();
+	(*cstream)<<"Tracklet"<<
+	  "LTr.="<<ltrp<<
+	  "Tr.="<<param<<
+	  "sec="<<isec<<
+	  "ncl="<<nclusters[isec]<<
+	  "dedx="<<dedx<<
+	  "dedx="<<dedx<<
+	  "vy1.="<<&vecy1<<
+	  "vy2.="<<&vecy2<<
+	  "vz1.="<<&vecz1<<
+	  "vz2.="<<&vecz2<<
+	  "\n";
+      }
+    }
+  }
+  //
+  //
+  //
+  //   for (Int_t irow=0;irow<160;++irow) {      
+  //       AliTPCclusterMI *c=track->GetClusterPointer(irow);
+  //       if (c && RejectCluster(c)) continue;
+  //       if (c&&c->GetDetector()==isec) {
+  // 	Double_t x[2]={c->GetX(),c->GetX()*c->GetX()};
+  // 	fy2.AddPoint(&x,c->GetY());
+  // 	fz2.AddPoint(&x,c->GetZ());
+  // 	//
+  // 	fy1.AddPoint(&x,c->GetY());
+  // 	fz1.AddPoint(&x,c->GetZ());
+  //       }
+  //     }    
+  
+}
+
 
 void AliTPCcalibLaser::Analyze(){
   //
