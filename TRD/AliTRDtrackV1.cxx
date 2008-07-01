@@ -361,6 +361,7 @@ void AliTRDtrackV1::MakeBackupTrack()
   if(fBackupTrack) {
     fBackupTrack->~AliTRDtrackV1();
     new(fBackupTrack) AliTRDtrackV1((AliTRDtrackV1&)(*this));
+    return;
   }
   fBackupTrack = new AliTRDtrackV1((AliTRDtrackV1&)(*this));
 }
