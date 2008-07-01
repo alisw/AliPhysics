@@ -73,21 +73,7 @@ int main(int argc, char **argv) {
   if (argc<2)   {
       printf("Wrong number of arguments\n");
       return -1;}
-      
-  /* open pedestal data file to read pedestal values for zero suppression */
-  FILE *file=NULL;
-  file=fopen("./V0_Ped_Width_Gain.dat","read");
-  if (file==NULL) {
-      printf("Failed to open pedestal data file\n");
-      return -1;}      
-  float Pedestal[128], Sigma[128];
-  for(Int_t j=0; j<128; j++){
-      fscanf(file,"%f %f ", &Pedestal[j], &Sigma[j]);
-//      printf("Pedestals = %f %f\n",Pedestal[j], Sigma[j]);
-  }
-  fclose(file); 
-  /* end of pedestal data retrieval */
-         
+               
   /* open result file to be exported to FES */
   FILE *fp=NULL;
   fp=fopen("./V0_Tuning2.dat","a");
@@ -148,14 +134,7 @@ int main(int argc, char **argv) {
       
         case PHYSICS_EVENT:
              nevents_physics++;
- 	     
-//              fprintf(flog,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
-//                  (unsigned long)event->eventRunNb,
-//                  (unsigned long)event->eventSize,
-//                  EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
-//                  EVENT_ID_GET_ORBIT(event->eventId),
-//                  EVENT_ID_GET_PERIOD(event->eventId) );
-		 
+ 	     		 
 	     AliRawReader *rawReader = new AliRawReaderDate((void*)event);
   
 	     AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
@@ -163,13 +142,11 @@ int main(int argc, char **argv) {
 	     for(Int_t i=0; i<64; i++) {
 	        if(!rawStream->GetIntegratorFlag(i,10))
 		{
-                    if((rawStream->GetADC(i)-Pedestal[i]) > (Pedestal[i]+3*Sigma[i]) )
-		    ADC_Mean[i]=ADC_Mean[i]+(rawStream->GetADC(i)-Pedestal[i]);  // even integrator 
+		    ADC_Mean[i]=ADC_Mean[i]+rawStream->GetADC(i);       // even integrator 
 		}
 		else 
 		{ 		   
-		    if((rawStream->GetADC(i)-Pedestal[i+64]) > (Pedestal[i+64]+3*Sigma[i+64]) )
-		    ADC_Mean[i+64]=ADC_Mean[i+64]+(rawStream->GetADC(i)-Pedestal[i+64]); // odd integrator
+		    ADC_Mean[i+64]=ADC_Mean[i+64]+rawStream->GetADC(i); // odd integrator
 		}
              }    
              delete rawStream;
