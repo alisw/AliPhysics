@@ -162,6 +162,17 @@ AliTRDchamberTimeBin &AliTRDchamberTimeBin::operator=(const AliTRDchamberTimeBin
 }
 
 //_____________________________________________________________________________
+void AliTRDchamberTimeBin::Clear(const Option_t *) 
+{ 
+	for (Int_t i = 0; i < fN; i++){ 
+    if(!fClusters[i]) continue;
+    if(fOwner) delete fClusters[i];
+    fClusters[i] = NULL;
+  }
+	fN = 0; 
+}
+
+//_____________________________________________________________________________
 void AliTRDchamberTimeBin::Copy(TObject &o) const
 {
 // Copy method. Performs a deep copy of all data from this object to object o.

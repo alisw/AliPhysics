@@ -37,7 +37,7 @@ public:
 	Int_t    GetDetector() const {return fDetector;}
 	Int_t    GetNClusters() const;
 	Double_t GetQuality();
-	AliTRDchamberTimeBin *GetSeedingLayer(AliTRDgeometry *geo);
+	Bool_t   GetSeedingLayer(AliTRDchamberTimeBin *&layer, AliTRDgeometry *geo);
 	Float_t  GetX()        const {return fX0;}
 	AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < kNTimeBins ? &fTB[tb] : 0x0;}
 	void     InsertCluster(AliTRDcluster *c, Int_t index);

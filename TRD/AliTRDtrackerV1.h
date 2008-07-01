@@ -140,7 +140,7 @@ private:
 	Double_t       	CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Double_t *chi2);
 	Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
 	static Float_t	CalculateReferenceX(AliTRDseedV1 *tracklets);
-	
+	void        ResetSeedTB();
 	Float_t     GetChi2Y(AliTRDseedV1 *tracklets) const;
 	Float_t     GetChi2Z(AliTRDseedV1 *tracklets) const;
 
@@ -163,6 +163,7 @@ private:
 	static Double_t      fgTopologicQA[kNConfigs];        //  Topologic quality
 	Double_t             fTrackQuality[kMaxTracksStack];  //  Track quality 
 	Int_t                fSeedLayer[kMaxTracksStack];     //  Seed layer
+  AliTRDchamberTimeBin *fSeedTB[kNSeedPlanes]; // seeding time bin planes
 	Int_t                fSieveSeeding;                   //! Seeding iterator
 	
   static Int_t         fgNTimeBins;                     // Timebins per plane in track prolongation 

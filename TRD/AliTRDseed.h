@@ -22,7 +22,7 @@ class AliTRDseed : public TObject {
 
   AliTRDseed(); 
   AliTRDseed(const AliTRDseed &s);
-  ~AliTRDseed() {};
+  virtual ~AliTRDseed() {};
 
   AliTRDseed      &operator=(const AliTRDseed &s)           { *(new(this) AliTRDseed(s)); 
                                                               return *this;          }

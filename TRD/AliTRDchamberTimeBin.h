@@ -42,7 +42,7 @@ public:
 
 	void           BuildIndices(Int_t iter = 0);
 	void           BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t Layer, Double_t theta=0., Double_t phi=0.);
-  inline void    Clear(const Option_t *opt = 0x0);
+  void           Clear(const Option_t *opt = 0x0);
   AliTRDcluster* GetCluster(Int_t index) const {return index < fN && index >= 0 ? fClusters[index] : 0x0;}
 	Int_t          GetGlobalIndex(const Int_t index) const {return ((index < fN) && (index >= 0)) ? fIndex[index] : 0; }
 	void           GetClusters(Double_t *cond, Int_t *index, Int_t& ncl, Int_t BufferSize = kMaxClustersLayer);
@@ -95,12 +95,6 @@ private:
 
 };
 
-inline 
-void AliTRDchamberTimeBin::Clear(const Option_t *) 
-{ 
-	for (Int_t i = 0; i < fN; i++) fClusters[i] = NULL;
-	fN = 0; 
-}
 
 #endif	// ALITRDCHAMBERTIMEBIN_H
 

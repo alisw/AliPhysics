@@ -156,7 +156,7 @@ Double_t AliTRDtrackingChamber::GetQuality()
 
 
 //_______________________________________________________
-AliTRDchamberTimeBin *AliTRDtrackingChamber::GetSeedingLayer(AliTRDgeometry *geo)
+Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, AliTRDgeometry *geo)
 {
   //
   // Creates a seeding layer
@@ -289,11 +289,12 @@ AliTRDchamberTimeBin *AliTRDtrackingChamber::GetSeedingLayer(AliTRDgeometry *geo
 		// Analysis output
 		nCandidates++;
 	}
-	if(!nCandidates) return 0x0;
+	if(!nCandidates) return kFALSE;
 	
 	Float_t pos[3], sig[2];
 	Short_t signal[7]; memset(&signal[0], 0, 7*sizeof(Short_t));
-	AliTRDchamberTimeBin *fakeLayer = new AliTRDchamberTimeBin(layer, stack, sector, z0, zl);
+	
+  new(fakeLayer) AliTRDchamberTimeBin(layer, stack, sector, z0, zl);
 	AliTRDcluster *cluster = 0x0;
 	if(nCandidates){
 		UInt_t fakeIndex = 0;
@@ -345,6 +346,6 @@ AliTRDchamberTimeBin *AliTRDtrackingChamber::GetSeedingLayer(AliTRDgeometry *geo
 		<< "\n";
 	}
 	
-	return fakeLayer;
+	return kTRUE;
 }
 
