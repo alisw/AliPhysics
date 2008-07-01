@@ -576,7 +576,7 @@ void AliPHOSv0::CreateGeometryforEMC()
 	gMC->Gspos("PBE1", isup, "PCA1", x, 0.0, 0.0, 0, "ONLY") ;
       }
 
-      z = -warmthermo[2] + cbox[2] - 0.1 ;
+      z = -warmthermo[2] + cbox[2];
       gMC->Gspos("PCA1", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
 
       gMC->Gsvolu("PCA2", "BOX ", idtmed[718], emcg->GetTCables2HalfSize(), 3) ; 
@@ -588,7 +588,7 @@ void AliPHOSv0::CreateGeometryforEMC()
 	gMC->Gspos("PBE2", isup, "PCA2", x, 0.0, 0.0, 0, "ONLY") ;
       }
 
-      z = -warmthermo[2] + 2*cbox[2] + cbox2[2] - 0.1 ;
+      z = -warmthermo[2] + 2*cbox[2] + cbox2[2];
       gMC->Gspos("PCA2", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
 
 
@@ -610,7 +610,7 @@ void AliPHOSv0::CreateGeometryforEMC()
       gMC->Gspos("PFG1", 2, "PWTI", posit[0], -posit[1], posit[2], 0, "ONLY") ;
 
       gMC->Gsvolu("PFG2", "BOX ", idtmed[717], emcg->GetFGupZHalfSize(), 3) ; 
-      posit = emcg->GetFGupZPosition() ;
+      posit = emcg->GetFGupZPosition();
       gMC->Gspos("PFG2", 1, "PWTI",  posit[0], posit[1], posit[2], 0, "ONLY") ;
       gMC->Gspos("PFG2", 2, "PWTI", -posit[0], posit[1], posit[2], 0, "ONLY") ;
 

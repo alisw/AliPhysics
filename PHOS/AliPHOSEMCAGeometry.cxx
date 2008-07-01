@@ -257,7 +257,7 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
 
   //Fiberglass support
   fFiberGlassSup1X = 6.0 ;
-  fFiberGlassSup1Y = 4.0 + fWarmUpperThickness ; 
+  fFiberGlassSup1Y = 3.9 + fWarmUpperThickness ; 
 
   fFiberGlassSup2X = 3.0 ;
   fFiberGlassSup2Y = fFrameHeight ;
