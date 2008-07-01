@@ -134,7 +134,6 @@ int main(int argc, char **argv) {
 		break;
 		
 	    case PHYSICS_EVENT:
-	      //if(iev%100 == 0)printf(" event number = %i \n",iev);
 
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 		TObjArray *pmdddlcont = new TObjArray();
@@ -150,6 +149,16 @@ int main(int argc, char **argv) {
 	free(event);
 	
 	/* exit when last event received, no need to wait for TERM signal */
+
+	// either END_OF_RUN or 1000 events
+
+	if (iev == 1000)
+	  {
+	    printf("-- 1000 pedestal events processed : terminating --\n");
+	    printf("-- eventT is set to END_OF_RUN --\n");
+	    eventT = END_OF_RUN;
+	    break;
+	  }
 
     }
 
