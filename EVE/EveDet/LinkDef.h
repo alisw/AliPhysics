@@ -11,6 +11,11 @@
 #pragma link off all globals;
 #pragma link off all classes;
 
+// EMCAL
+#pragma link C++ class AliEveEMCALData+;
+#pragma link C++ class AliEveEMCALSModuleData+;
+#pragma link C++ class AliEveEMCALSModule+;
+
 // FMD
 #pragma link C++ class AliEveFMDLoader+;
 
