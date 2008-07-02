@@ -14,7 +14,7 @@ class TEveUtil;
 TEveProjectionManager  *proj = 0;
 TEveGeoShape *geom = 0;
 
-void NLT_trackcount_init()
+void trackcount_init()
 {
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
@@ -26,8 +26,8 @@ void NLT_trackcount_init()
   TEveUtil::LoadMacro("its_clusters.C+");
   TEveUtil::LoadMacro("tpc_clusters.C+");
 
-  TEveViewer* nv = gEve->SpawnNewViewer("NLT Projected");
-  TEveScene*  ns = gEve->SpawnNewScene("NLT");
+  TEveViewer* nv = gEve->SpawnNewViewer("Projected View");
+  TEveScene*  ns = gEve->SpawnNewScene("Projected Scene");
   nv->AddScene(ns);
   TGLViewer* v = nv->GetGLViewer();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
