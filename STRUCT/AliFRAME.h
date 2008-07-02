@@ -21,7 +21,8 @@ public:
   virtual void   Init() {}
   virtual Int_t IsVersion() const =0;
  protected:
-  Int_t fRefVolumeId;    // Id of the reference volume
+  Int_t fRefVolumeId1;    // Id of the reference volume
+  Int_t fRefVolumeId2;    // Id of the reference volume
    ClassDef(AliFRAME,2)  //Class for Space Frame
 };
 

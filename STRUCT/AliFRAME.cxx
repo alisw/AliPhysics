@@ -43,7 +43,8 @@ ClassImp(AliFRAME)
  
 //_____________________________________________________________________________
 AliFRAME::AliFRAME():
-    fRefVolumeId(0)
+  fRefVolumeId1(0),
+  fRefVolumeId2(0)
 {
   //
   // Default constructor
@@ -53,7 +54,8 @@ AliFRAME::AliFRAME():
 //_____________________________________________________________________________
 AliFRAME::AliFRAME(const char *name, const char *title)
     : AliModule(name,title),
-      fRefVolumeId(0)
+      fRefVolumeId1(0),
+      fRefVolumeId2(0)
 {
   //
   // Standard constructor
