@@ -1,4 +1,4 @@
-# _*_ Mode: Makefile _*_
+# -*- Mode: Makefile -*-
 
 SRCS= TIsajet.cxx AliGenIsajet.cxx
 
