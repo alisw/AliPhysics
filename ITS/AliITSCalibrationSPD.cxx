@@ -132,3 +132,46 @@ Int_t  AliITSCalibrationSPD::GetNrBadInChip(Int_t chip) const {
  for (Int_t col=32*chip; col<32*(chip+1); col++) bad+=GetNrBadInColumn(col);
  return bad;
 }
+//______________________________________________________________________
+void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
+  // Stream an object of class AliITSCalibrationSPD.
+  UInt_t R__s, R__c;
+  if (R__b.IsReading()) {
+    Version_t R__v = R__b.ReadVersion(&R__s, &R__c); if (R__v) { }
+    AliITSCalibration::Streamer(R__b);
+    R__b >> fBaseline;
+    R__b >> fNoise;
+    R__b >> fThresh;
+    R__b >> fSigma;
+    R__b >> fCouplCol;
+    R__b >> fCouplRow;
+    R__b >> fBiasVoltage;
+    R__b >> fNrBad;
+    if (R__v > 5) {
+      fBadChannels.Streamer(R__b);
+    }
+    else {
+      TArrayI fBadChannelsV1;
+      fBadChannelsV1.Streamer(R__b);
+      fBadChannels.Set(fNrBad*2);
+      for (UInt_t i=0; i<fNrBad*2; i++) {
+	fBadChannels[i] = fBadChannelsV1[i];
+      }
+    }
+    R__b.CheckByteCount(R__s, R__c, AliITSCalibrationSPD::IsA());
+  }
+  else {
+    R__c = R__b.WriteVersion(AliITSCalibrationSPD::IsA(), kTRUE);
+    AliITSCalibration::Streamer(R__b);
+    R__b << fBaseline;
+    R__b << fNoise;
+    R__b << fThresh;
+    R__b << fSigma;
+    R__b << fCouplCol;
+    R__b << fCouplRow;
+    R__b << fBiasVoltage;
+    R__b << fNrBad;
+    fBadChannels.Streamer(R__b);
+    R__b.SetByteCount(R__c, kTRUE);
+  }
+}
