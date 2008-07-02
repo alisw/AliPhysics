@@ -24,6 +24,7 @@ class AliITSDriftSpeedSDD : public TObject {
   AliITSDriftSpeedSDD(const AliITSDriftSpeedSDD& drSpeed);
   virtual ~AliITSDriftSpeedSDD(){};
 
+  static Float_t DefaultDriftSpeed() {return fgkDriftSpeedDefault;}
   virtual Bool_t IsEqual(const TObject *obj) const 
     {return fEvNum == ((AliITSDriftSpeedSDD*)obj)->fEvNum;}
   virtual Bool_t      IsSortable() const { return kTRUE; }
@@ -44,12 +45,14 @@ class AliITSDriftSpeedSDD : public TObject {
   }
 
  protected:
+  static const Float_t fgkDriftSpeedDefault; // default for drift speed
   static const UShort_t fgkMaxPolDeg=5; // max. degree of the poly fit
+
   Int_t fEvNum;  // event number of injector event
   UInt_t fTimestamp; // event timestamp
   Char_t fPolDeg;    // degree of the ploy fit to drift speed vs. anode
                      // saved as char since 1 byte is enough
   Float_t fDriftSpeedParam[fgkMaxPolDeg+1];  // coefficients of the poly fit
-  ClassDef(AliITSDriftSpeedSDD,3);
+  ClassDef(AliITSDriftSpeedSDD,4);
 };
 #endif

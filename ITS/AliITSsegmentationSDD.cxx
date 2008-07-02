@@ -18,7 +18,7 @@
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
 #include "AliITSsegmentationSDD.h"
-#include "AliITSresponseSDD.h"
+#include "AliITSDriftSpeedSDD.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Segmentation class for drift detectors                                  //
@@ -123,7 +123,7 @@ fSetDriftSpeed(0){
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::Init(){
 // Standard initilisation routine
-   fDriftSpeed=AliITSresponseSDD::DefaultDriftSpeed();
+   fDriftSpeed=AliITSDriftSpeedSDD::DefaultDriftSpeed();
    fCorr=0;
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
    SetPadSize(fgkPitchDefault,fgkClockDefault);

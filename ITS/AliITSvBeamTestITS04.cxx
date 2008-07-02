@@ -412,7 +412,7 @@ void AliITSvBeamTestITS04::SetDefaults()
       seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
 		       s1->GetDz()*4.*kconv, // for now.
 		       s1->GetDy()*4.*kconv); // x,z,y full width in microns.
-      seg1->SetDriftSpeed(AliITSresponseSDD::DefaultDriftSpeed());
+      seg1->SetDriftSpeed(AliITSDriftSpeedSDD::DefaultDriftSpeed());
       seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
       SetSegmentationModel(kSDD,seg1);
     }

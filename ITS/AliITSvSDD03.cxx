@@ -808,14 +808,10 @@ void AliITSvSDD03::SetDefaults(){
 
     AliITSsegmentationSDD *seg1 = (AliITSsegmentationSDD*)
 			 (GetITSgeom()->GetShape(kSDD));
-    seg1->SetDriftSpeed(AliITSresponseSDD::DefaultDriftSpeed());
+    seg1->SetDriftSpeed(AliITSDriftSpeedSDD::DefaultDriftSpeed());
     seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
     SetSegmentationModel(kSDD,seg1);
     const char *kData1=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD()))->DataType();
-    const char *kopt=resp1->GetZeroSuppOption();
-    if((!strstr(kopt,"ZS"))  || strstr(kData1,"real") ){
-	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
-    } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
 
     // SSD  Layer 5
 

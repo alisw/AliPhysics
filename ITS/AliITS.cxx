@@ -91,7 +91,6 @@ the AliITS class.
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliITSRawStreamSDD.h"
-#include "AliITSresponseSDD.h" 
 #include "AliRawReader.h"
 #include "AliRun.h"
 #include "AliLog.h"
@@ -1199,11 +1198,6 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 	Int_t index  = npx * anode + time;
 
 	if (module >= size) continue;
-	/* 8->10 bit expansion is done in AliITSRawStreamSDD
-	// 8bit -> 10 bit
-	AliITSresponseSDD *resSDD = (AliITSresponseSDD*) fDetTypeSim->GetResponse(1);
-	Int_t signal10 = resSDD->Convert8to10(signal);  // signal is a 8 bit value (if the compression is active)
-	*/
 	last = modA[module]->GetEntries();
 	TClonesArray& dum = *modA[module];
 	new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));

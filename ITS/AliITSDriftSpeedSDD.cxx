@@ -23,8 +23,9 @@
 ///////////////////////////////////////////////////////////////////
 
 #include "AliITSDriftSpeedSDD.h"
-#include "AliITSresponseSDD.h"
 #include "AliLog.h"
+
+const Float_t AliITSDriftSpeedSDD::fgkDriftSpeedDefault = 7.3;
 
 ClassImp(AliITSDriftSpeedSDD)
 //______________________________________________________________________
@@ -34,7 +35,7 @@ fEvNum(0),
 fTimestamp(0),
 fPolDeg(0){
   // default constructor
-  fDriftSpeedParam[0]=AliITSresponseSDD::DefaultDriftSpeed();
+  fDriftSpeedParam[0]=fgkDriftSpeedDefault;
   for(Int_t i=1; i<fgkMaxPolDeg+1; i++) fDriftSpeedParam[i]=0;
 }
 //______________________________________________________________________

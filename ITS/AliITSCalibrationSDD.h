@@ -7,13 +7,12 @@
 /* $Id$ */
 
 #include "AliITSCalibration.h"
-#include "AliITSresponseSDD.h"
 #include "AliITSsegmentationSDD.h"
 #include "TArrayI.h"
 
 class AliITSMapSDD;
 class AliITSDriftSpeedArraySDD;
-class AliITSresponseSDD;
+
 ///////////////////////////////////////////////////////
 //  Response for SDD                                 //
 ///////////////////////////////////////////////////////
@@ -144,16 +143,14 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     }
 
 
-    virtual Float_t GetTimeOffset() const {return ((AliITSresponseSDD*)fResponse)->TimeOffset();}
-    virtual Float_t GetADC2keV() const {return ((AliITSresponseSDD*)fResponse)->ADC2keV();}
     virtual Float_t GetDriftSpeedAtAnode(Float_t nAnode) const{
       if(fDrSpeed0==0 || fDrSpeed1==0) AliFatal("Drift speed not set\n");
       if(nAnode<256) return fDrSpeed0->GetDriftSpeed(0,nAnode);
       else return fDrSpeed1->GetDriftSpeed(0,nAnode-256);
     }
 
-    virtual void SetZeroSupp (const char *opt) {((AliITSresponseSDD*)fResponse)->SetZeroSupp(opt);} 
-    virtual const char *GetZeroSuppOption() const {return ((AliITSresponseSDD*)fResponse)->ZeroSuppOption();}
+    virtual void SetZeroSupp(Bool_t opt=kTRUE) {fZeroSupp=opt;}
+    virtual Bool_t GetZeroSupp() const {return fZeroSupp;}
 
     virtual Float_t GetDriftPath(Float_t time, Float_t xAnode) const {return time*GetDriftSpeedAtAnode(xAnode);}
     void GetCorrections(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg);
@@ -173,6 +170,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     static const Float_t fgkBaselineDefault; // default for fBaseline
     static const Float_t fgkGainDefault; //default for gain
 
+    Bool_t fZeroSupp;    // zero suppression
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
     Float_t fGain[fgkWings*fgkChips*fgkChannels];           //Array for channel gains
@@ -203,7 +201,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,11) // SDD response 
+    ClassDef(AliITSCalibrationSDD,12) 
     
     };
 #endif

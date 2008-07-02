@@ -79,6 +79,7 @@ fPreProcess(0),
 fPostProcess(0),
 fDigits(0),
 fDDLMapSDD(0),
+fRespSDD(0),
 fNdtype(0),
 fCtype(0),
 fNctype(0),
@@ -101,7 +102,6 @@ fFirstcall(kTRUE){
     fDigClassName[i]=0;
     fRecPointClassName[i]=0;
   }
-  fDDLMapSDD=new AliITSDDLModuleMapSDD();
   fNdtype = new Int_t[fgkNdettypes];
   fCtype = new TObjArray(fgkNdettypes);
   fNctype = new Int_t[fgkNdettypes];
@@ -132,6 +132,7 @@ fPreProcess(rec.fPreProcess),
 fPostProcess(rec.fPostProcess),
 fDigits(rec.fDigits),
 fDDLMapSDD(rec.fDDLMapSDD),
+fRespSDD(rec.fRespSDD),
 fNdtype(rec.fNdtype),
 fCtype(rec.fCtype),
 fNctype(rec.fNctype),
@@ -170,15 +171,15 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
   if(fCalibration){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSPD()))->GetResponse();    
-      AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSDD()))->GetResponse();
       AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSSD()))->GetResponse();
       if(rspd) delete rspd;
-      if(rsdd) delete rsdd;
       if(rssd) delete rssd;
       fCalibration->Delete();
       delete fCalibration;
       fCalibration = 0;
-    }
+      if(fRespSDD) delete fRespSDD;
+      if(fDDLMapSDD) delete fDDLMapSDD;
+   }
   }
   if(fSPDDead){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
@@ -189,7 +190,6 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
   }  
   if(fPreProcess) delete fPreProcess;
   if(fPostProcess) delete fPostProcess;
-  if(fDDLMapSDD) delete fDDLMapSDD;
   if(fDigits){
     fDigits->Delete();
     delete fDigits;
@@ -558,14 +558,14 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     SetSPDDeadModel(i, cal);
   }
 
-  fDDLMapSDD->SetDDLMap(ddlsdd);
+  fDDLMapSDD=ddlsdd;
+  fRespSDD=pSDD;
   for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
     for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
       Int_t iMod=fDDLMapSDD->GetModuleNumber(iddl,icar);
       if(iMod==-1) continue;
       Int_t i=iMod - fgkDefaultNModulesSPD;
       cal = (AliITSCalibration*) calSDD->At(i);
-      cal->SetResponse((AliITSresponse*)pSDD);
       Int_t i0=2*i;
       Int_t i1=1+2*i;
       AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);

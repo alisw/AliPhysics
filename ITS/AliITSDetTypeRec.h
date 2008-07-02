@@ -15,6 +15,7 @@ $Id$
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include "AliITSDDLModuleMapSDD.h"
+#include "AliITSresponseSDD.h"
 #include "AliITSgeom.h"
 
 class TTree;
@@ -25,6 +26,7 @@ class TBranch;
 
 class AliITSsegmentation;
 class AliITSCalibration;
+class AliITSresponseSDD;
 class AliITSClusterFinder;
 class AliITSRawCluster;
 class AliITSRecPoint;
@@ -55,6 +57,7 @@ class AliITSDetTypeRec : public TObject {
     virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod);
     virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype);
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD() const { return fDDLMapSDD;}
+    virtual AliITSresponseSDD* GetResponseSDD() const { return fRespSDD;}
 
     virtual void SetDigitClassName(Int_t i,Char_t *digit) 
       {fDigClassName[i]=digit;}
@@ -115,6 +118,7 @@ class AliITSDetTypeRec : public TObject {
     TObjArray    *fPostProcess;   //! [] e.g. find primary vertex
     TObjArray    *fDigits;        //! [NMod][NDigits]
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
+    AliITSresponseSDD *fRespSDD;  //! SDD response parameters 
     Int_t        *fNdtype;        //! detector types  
     Char_t*       fClusterClassName[3]; //! String with Cluster class name
     Char_t*       fDigClassName[3];     //! String with digit class name.
@@ -129,7 +133,7 @@ class AliITSDetTypeRec : public TObject {
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
     Bool_t fFirstcall;         //! flag
 
-    ClassDef(AliITSDetTypeRec,9) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,10) // ITS Reconstruction structure
 };
 
 #endif

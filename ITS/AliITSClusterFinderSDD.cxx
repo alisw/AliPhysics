@@ -82,13 +82,12 @@ void AliITSClusterFinderSDD::SetCutAmplitude(Int_t mod,Double_t nsigma){
     // set the signal threshold for cluster finder
     Double_t baseline,noiseAfterEl;
 
-    AliITSresponseSDD* res  = (AliITSresponseSDD*)((AliITSCalibrationSDD*)GetResp(mod))->GetResponse();
-    const char *option=res->ZeroSuppOption();
+    Bool_t isZeroSupp=GetResp(mod)->GetZeroSupp();
     Int_t nanodes = GetResp(mod)->Wings()*GetResp(mod)->Channels()*GetResp(mod)->Chips();
     fCutAmplitude.Set(nanodes);
     for(Int_t ian=0;ian<nanodes;ian++){
       noiseAfterEl = ((AliITSCalibrationSDD*)GetResp(mod))->GetNoiseAfterElectronics(ian);
-      if(strstr(option,"ZS")){ 
+      if(isZeroSupp){
 	fCutAmplitude[ian] = (Int_t)(nsigma*noiseAfterEl);
       }
       else{
@@ -109,8 +108,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
     Double_t fTimeStep    = GetSeg()->Dpx(dummy);
     Double_t fSddLength   = GetSeg()->Dx();
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
-    AliITSresponseSDD* res  = (AliITSresponseSDD*)((AliITSCalibrationSDD*)GetResp(fModule))->GetResponse();
-    const char *option=res->ZeroSuppOption();
+    Bool_t isZeroSupp=cal->GetZeroSupp();
 
     // map the signal
     Map()->ClearMap();
@@ -196,7 +194,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 		    		   
 		    for(its=tstart; its<=tstop; its++) {
                         fadc=(float)Map()->GetSignal(idx,its);
-			if(!(strstr(option,"ZS"))){
+			if(!isZeroSupp){
 			  Double_t baseline=GetResp(fModule)->GetBaseline(idx);
 			  if(fadc>baseline) fadc -= baseline;
 			  else fadc = 0.;
@@ -263,9 +261,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
     Map()->ClearMap();
     Map()->SetThresholdArr( fCutAmplitude );
     Map()->FillMap2();
-
-    AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
-    const char *option=res->ZeroSuppOption();
+    Bool_t isZeroSupp=cal->GetZeroSupp();
 
     Int_t nClu = 0;
     //        cout << "Search  cluster... "<< endl;
@@ -297,7 +293,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                         nTsteps = 0;
                     } // end if on...
                     nTsteps++ ;
-		    if(!(strstr(option,"ZS"))){
+		    if(!isZeroSupp){
 		      Double_t baseline=GetResp(fModule)->GetBaseline(idx);
 		      if( fadc > baseline ) fadc -= baseline;
 		      else fadc=0.;
@@ -708,8 +704,8 @@ void AliITSClusterFinderSDD::ResolveClusters(){
     Double_t anodePitch = GetSeg()->Dpz( dummy );
     Int_t electronics =1;//GetResp(fModule)->GetElectronics(); // 1 = PASCAL, 2 = OLA
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
-    AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
-    const char *option=res->ZeroSuppOption();
+    Bool_t isZeroSupp=cal->GetZeroSupp();
+
     
 
     for( Int_t j=0; j<nofClusters; j++ ){ 
@@ -737,7 +733,7 @@ void AliITSClusterFinderSDD::ResolveClusters(){
         for( Int_t ianode=astart; ianode<=astop; ianode++ ){
             for( Int_t itime=tstart; itime<=tstop; itime++ ){
                 Double_t fadc = Map()->GetSignal( ianode, itime );	       
-		if(!(strstr(option,"ZS"))){
+		if(!isZeroSupp){
 		  Double_t baseline=GetResp(fModule)->GetBaseline(ianode);
 		  if( fadc > baseline ) fadc -= (Double_t)baseline;
 		  else fadc = 0.;

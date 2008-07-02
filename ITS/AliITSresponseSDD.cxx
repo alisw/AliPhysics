@@ -28,8 +28,6 @@
 
 #include "AliITSresponseSDD.h"
 
-const TString AliITSresponseSDD::fgkOptionDefault = "ZS";
-const Float_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
 const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 54.30;
 const Float_t AliITSresponseSDD::fgkADC2keVDefault = 5.243;
 
@@ -37,12 +35,10 @@ ClassImp(AliITSresponseSDD)
 
 //_________________________________________________________________________
 AliITSresponseSDD::AliITSresponseSDD():
-AliITSresponse(),
+TObject(),
 fTimeOffset(fgkTimeOffsetDefault),
-fADC2keV(fgkADC2keVDefault),
-fOption(){
+fADC2keV(fgkADC2keVDefault){
   // default constructor
-  SetZeroSupp(fgkOptionDefault);
 }
 
 

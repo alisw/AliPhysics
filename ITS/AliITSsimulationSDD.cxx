@@ -33,7 +33,6 @@
 #include "AliITSetfSDD.h"
 #include "AliITSmodule.h"
 #include "AliITSpList.h"
-#include "AliITSresponseSDD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsimulationSDD.h"
@@ -376,8 +375,8 @@ void AliITSsimulationSDD::FinishDigits() {
     if( fCrosstalkFlag ) ApplyCrosstalk(fModule);
 
     AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(fModule);
-    const char *kopt = res->GetZeroSuppOption();
-    if (strstr(kopt,"ZS")) Compress2D();
+    Bool_t isZeroSupp = res->GetZeroSupp();
+    if (isZeroSupp) Compress2D();
     else StoreAllDigits();
 }
 //______________________________________________________________________

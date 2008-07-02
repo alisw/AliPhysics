@@ -37,6 +37,7 @@ ClassImp(AliITSCalibrationSDD)
 
 AliITSCalibrationSDD::AliITSCalibrationSDD():
 AliITSCalibration(),
+fZeroSupp(kTRUE),
 fDeadChips(0),
 fDeadChannels(0),
 fIsBad(kFALSE),
@@ -74,6 +75,7 @@ fDrSpeed1(0)
 //______________________________________________________________________
 AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType):
 AliITSCalibration(),
+fZeroSupp(kTRUE),
 fDeadChips(0),
 fDeadChannels(0),
 fIsBad(kFALSE),

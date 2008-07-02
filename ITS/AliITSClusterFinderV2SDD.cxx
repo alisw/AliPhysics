@@ -31,6 +31,7 @@
 #include "AliRawReader.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSresponseSDD.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSReconstructor.h"
 #include "AliITSsegmentationSDD.h"
@@ -217,13 +218,14 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	}
 
 
-	Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();	 
+	AliITSresponseSDD* rsdd = fDetTypeRec->GetResponseSDD();
+	Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();
 	y/=q; z/=q;
 	Float_t zAnode=z-0.5;  // to have anode in range 0.-255. and centered on the mid of the pitch
 	Float_t timebin=y-0.5;  // to have time bin in range 0.-255. amd centered on the mid of the bin
 	if(s==1) zAnode += GetSeg()->NpzHalf();  // right side has anodes from 256. to 511.
 	Float_t zdet = GetSeg()->GetLocalZFromAnode(zAnode);
-	Float_t driftTime = GetSeg()->GetDriftTimeFromTb(timebin) - cal->GetTimeOffset();
+	Float_t driftTime = GetSeg()->GetDriftTimeFromTb(timebin) - rsdd->GetTimeOffset();
 	Float_t driftPathMicron = cal->GetDriftPath(driftTime,zAnode);
 	const Double_t kMicronTocm = 1.0e-4; 
 	Float_t xdet=(driftPathMicron-GetSeg()->Dx())*kMicronTocm; // xdet is negative
@@ -239,7 +241,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	y=trk[1];
 	z=trk[2]; 
 
-	q/=cal->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
+	q/=rsdd->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
 	Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
 	Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
 	if (digits) {	  
@@ -285,9 +287,8 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
 	AliError(Form("Calibration object not present for SDD module %d\n",iMod));
 	continue;
       }
-      AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
-      const char *option=res->ZeroSuppOption();
-      if(strstr(option,"ZS")){ 
+      Bool_t isZeroSupp=cal->GetZeroSupp();
+      if(isZeroSupp){ 
 	for(Int_t iSid=0; iSid<2; iSid++) inputSDD.SetZeroSuppLowThreshold(iMod-240,iSid,cal->GetZSLowThreshold(iSid));
       }else{
 	for(Int_t iSid=0; iSid<2; iSid++) inputSDD.SetZeroSuppLowThreshold(iMod-240,iSid,0);
