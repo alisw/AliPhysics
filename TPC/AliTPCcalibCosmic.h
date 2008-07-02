@@ -5,6 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliTPCcalibBase.h"
+#include "AliTPCCalPad.h"
 class TH1F;
 class TH2F;
 class TList;
@@ -23,9 +24,10 @@ public:
   virtual Long64_t Merge(TCollection *li);
   void             FindPairs(AliESDEvent *event);
   Bool_t           IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
+  void             SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
 public:
   static void BinLogX(TH1 * h);   // method for correct histogram binning
-
+  AliTPCCalPad *fGainMap;         //! gain map from Krypton calibration
   TH1F  *fHistNTracks;
   TH1F  *fClusters;
   TH2F  *fModules;

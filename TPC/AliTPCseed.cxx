@@ -1054,19 +1054,23 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
   const Float_t kedgey =4.;
   //
-  Float_t globalMeanGain = 0;
-  if (gainMap) globalMeanGain = gainMap->GetMean(0);
   //
   for (Int_t irow=i1; irow<i2; irow++){
     AliTPCclusterMI* cluster = GetClusterPointer(irow);
     if (!cluster) continue;
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
     Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
-    if (gainMap) {
-     AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
-     Float_t factor = roc->GetValue(irow, TMath::Nint(cluster->GetPad()));
-     if (globalMeanGain != 0) charge *= factor/globalMeanGain;
+    if (gainMap) {      
+      Float_t factor = 1;      
+      AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
+      if (irow < 63) { // IROC
+	factor = roc->GetValue(irow, TMath::Nint(cluster->GetPad()))*1.55;
+      } else {         // OROC
+	factor = roc->GetValue(irow - 63, TMath::Nint(cluster->GetPad()));
+      }
+      if (factor>0.5) charge/=factor;
     }
+    
     //do normalization
     Float_t corr=1;
     Int_t  ipad= 0;
