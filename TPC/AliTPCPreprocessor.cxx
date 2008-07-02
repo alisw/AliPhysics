@@ -798,27 +798,29 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
         TFile *f = TFile::Open(fileName);
         if (!f) {
 	  Log ("Error opening QA file.");
-	  result =2;
-	}
-	f->GetObject("tpcCalibQA",calQA);
-
-    }  
+	  result =2;          
+	} else {
+   	  f->GetObject("tpcCalibQA",calQA);
+      
 //
 //  Store updated pedestal entry to OCDB
 //
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0);
-    metaData.SetResponsible("Haavard Helstrup");
-    metaData.SetComment("Preprocessor AliTPC data base entries.");
+         AliCDBMetaData metaData;
+         metaData.SetBeamPeriod(0);
+         metaData.SetResponsible("Haavard Helstrup");
+         metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-    Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kTRUE);
-    if ( !storeOK ) ++result;
-    
+         Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kTRUE);
+         if ( !storeOK ) ++result;
+        }
+    } else {
+    Log ("Error: no QA files on FXS!");
+    result = 2;
+    }
   } else {
-    Log ("Error: no entries!");
+    Log ("Error: no QA entries in FXS list!");
     result = 1;
   }
-
   return result;
 }
 
