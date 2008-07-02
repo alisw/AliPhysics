@@ -857,7 +857,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 											nLabel,
 											label,
 											energy,
-											pos,
+											posF,
 											NULL,
 											ttype);
       
