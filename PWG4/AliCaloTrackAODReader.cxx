@@ -138,8 +138,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
       if(fDebug > 2 && momentum.E() > 0.1)printf("FillInputEMCAL():: Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						 momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 
-      //AliAODCaloCluster *caloCluster = 
-      new((*fAODPHOS)[naod++]) AliAODCaloCluster(*clus);
+      new((*fAODEMCAL)[naod++]) AliAODCaloCluster(*clus);
 
     }//Pt and Fidutial cut passed.
   }//esd cluster loop
@@ -173,7 +172,6 @@ void AliCaloTrackAODReader::FillInputPHOS() {
       if(fDebug > 2 && momentum.E() > 0.1)printf("FillInputPHOS():: Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						 momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 
-      //      AliAODCaloCluster *caloCluster = 
       new((*fAODPHOS)[naod++])  AliAODCaloCluster(*clus);
       
     }//Pt and Fidutial cut passed.
@@ -211,7 +209,7 @@ void AliCaloTrackAODReader::GetVertex(Double_t  v[3]) {
 
 
 //____________________________________________________________________________
-void AliCaloTrackAODReader::SetInputEvent(TObject* aod, TObject* /*aod*/, TObject* mc) {
+void AliCaloTrackAODReader::SetInputEvent(TObject* /*esd*/, TObject* aod, TObject* mc) {
   // Connect the data pointers
   SetAOD((AliAODEvent*) aod);
   SetMC((AliMCEvent*) mc);
