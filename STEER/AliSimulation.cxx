@@ -1105,8 +1105,15 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
 // accoring to the trigger cluster.
 
   AliCodeTimerAuto("")
+  
+  TString detStr = detectors;
+  if (IsSelected("HLT", detStr))
+  {
+  	// Do nothing. "HLT" will be removed from detStr because the HLT raw
+  	// data files are generated in RunHLT.
+  }
 
-  if (!WriteRawFiles(detectors)) {
+  if (!WriteRawFiles(detStr.Data())) {
     if (fStopOnError) return kFALSE;
   }
 
