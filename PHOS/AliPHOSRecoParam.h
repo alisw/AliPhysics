@@ -8,10 +8,9 @@
 // Base class for the PHOS reconstruction parameters.
 // Do not use in the reconstruction; use derivative classes instead.
 
-#include "TNamed.h"
+#include "AliDetectorRecoParam.h"
 
-
-class AliPHOSRecoParam : public TNamed {
+class AliPHOSRecoParam : public AliDetectorRecoParam {
 
 public:
 
@@ -55,7 +54,7 @@ protected:
   Bool_t  fUnfold;              // true if overlapped clusters should be unfolded
   TString fDecoderVersion ;     // AliPHOSRawDecoder version
 
-  ClassDef(AliPHOSRecoParam,4)
+  ClassDef(AliPHOSRecoParam,5)
 };
 
 #endif

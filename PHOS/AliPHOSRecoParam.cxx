@@ -26,7 +26,7 @@ ClassImp(AliPHOSRecoParam)
 
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam() :
-  TNamed(),
+  AliDetectorRecoParam(),
   fClusteringThreshold(9999),
   fLocMaxCut(9999),
   fMinE(9999),
@@ -43,7 +43,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
 
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
-  TNamed(),
+  AliDetectorRecoParam(),
   fClusteringThreshold(9999),
   fLocMaxCut(9999),
   fMinE(9999),
