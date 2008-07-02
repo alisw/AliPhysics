@@ -44,6 +44,7 @@ ClassImp(AliTPCcalibCosmic)
 
 AliTPCcalibCosmic::AliTPCcalibCosmic() 
   :AliTPCcalibBase(),
+   fGainMap(0),
    fHistNTracks(0),
    fClusters(0),
    fModules(0),
@@ -55,11 +56,16 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
    fCutMinDir(-0.99)   // direction vector products
 {  
   AliInfo("Defualt Constructor");  
+  TFile f("/u/miranov/calibKr.root");
+  AliTPCCalPad *gainMap =  (AliTPCCalPad *)f.Get("spectrMean");
+  gainMap->Multiply(1/gainMap->GetMedian());
+  fGainMap =gainMap; 
 }
 
 
 AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title) 
   :AliTPCcalibBase(),
+   fGainMap(0),
    fHistNTracks(0),
    fClusters(0),
    fModules(0),
@@ -82,6 +88,11 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
   fDeDx = new TH2F("DeDx","dEdx",500,0.01,20.,500,0.,500);
   BinLogX(fDeDx);
   AliInfo("Non Default Constructor");  
+  //
+  TFile f("/u/miranov/calibKr.root");
+  AliTPCCalPad *gainMap = (AliTPCCalPad *)f.Get("spectrMean");
+  gainMap->Multiply(1/gainMap->GetMedian());
+  fGainMap =gainMap; 
 }
 
 AliTPCcalibCosmic::~AliTPCcalibCosmic(){
@@ -129,7 +140,7 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
    }
    if (seed) tpcSeeds.AddAt(seed,i);
-   if (seed && track->GetTPCNcls() > 80) fDeDx->Fill(trackIn->GetP(), seed->CookdEdxNorm(0.05,0.45,0)); 
+   if (seed && track->GetTPCNcls() > 80) fDeDx->Fill(trackIn->GetP(), seed->CookdEdxNorm(0.05,0.45,0,0,159,fGainMap)); 
   }
   if (ntracks<2) return;
 
@@ -236,6 +247,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   for (Int_t i=0;i<ntracks;++i) { 
    AliESDtrack *track = event->GetTrack(i); 
    fClusters->Fill(track->GetTPCNcls());   
+   if (!track->GetInnerParam()) continue;
    AliExternalTrackParam * trackIn = new AliExternalTrackParam(*track->GetInnerParam());
    
    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
@@ -245,7 +257,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
    }
    if (seed) tpcSeeds.AddAt(seed,i);
-   if (seed && track->GetTPCNcls() > 80) fDeDx->Fill(trackIn->GetP(), seed->CookdEdxNorm(0.05,0.45,0)); 
+   if (seed && track->GetTPCNcls() > 80) fDeDx->Fill(trackIn->GetP(), seed->CookdEdxNorm(0.05,0.45,0,0,159,fGainMap)); 
   }
   if (ntracks<2) return;
   //
@@ -274,8 +286,15 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       AliTPCseed * seed1 = (AliTPCseed*) tpcSeeds.At(j);
       if (! seed0) continue;
       if (! seed1) continue;
-      Float_t dedx0 = seed0->CookdEdxNorm(0.05,0.55,0);
-      Float_t dedx1 = seed1->CookdEdxNorm(0.05,0.55,0);
+      Float_t dedx0 = seed0->CookdEdxNorm(0.05,0.55,0,0,159,fGainMap);
+      Float_t dedx1 = seed1->CookdEdxNorm(0.05,0.55,0,0,159,fGainMap);
+      //
+      Float_t dedx0I = seed0->CookdEdxNorm(0.05,0.55,0,0,63,fGainMap);
+      Float_t dedx1I = seed1->CookdEdxNorm(0.05,0.55,0,0,63,fGainMap);
+      //
+      Float_t dedx0O = seed0->CookdEdxNorm(0.05,0.55,0,64,159,fGainMap);
+      Float_t dedx1O = seed1->CookdEdxNorm(0.05,0.55,0,64,159,fGainMap);
+      //
       Float_t dir = (d1[0]*d2[0] + d1[1]*d2[1] + d1[2]*d2[2]);
       Float_t d0  = track0->GetLinearD(0,0);
       Float_t d1  = track1->GetLinearD(0,0);
@@ -347,8 +366,15 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	    //
 	    "Seed0.=" << track0 <<      //  original seed 0
 	    "Seed1.=" << track1 <<      //  original seed 1
-	    "dedx0="<<dedx0<<           //  dedx0
-	    "dedx1="<<dedx1<<           //  dedx1
+	    //
+	    "dedx0="<<dedx0<<           //  dedx0 - all
+	    "dedx1="<<dedx1<<           //  dedx1 - all
+	    //
+	    "dedx0I="<<dedx0I<<           //  dedx0 - inner
+	    "dedx1I="<<dedx1I<<           //  dedx1 - inner
+	    //
+	    "dedx0O="<<dedx0O<<           //  dedx0 - outer
+	    "dedx1O="<<dedx1O<<           //  dedx1 -outer
 	    "\n";
 	}
       }      
@@ -357,7 +383,29 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 }    
 
 
-Long64_t AliTPCcalibCosmic::Merge(TCollection */*li*/) {
+
+
+Long64_t AliTPCcalibCosmic::Merge(TCollection *li) {
+
+  TIterator* iter = li->MakeIterator();
+  AliTPCcalibCosmic* cal = 0;
+
+  while ((cal = (AliTPCcalibCosmic*)iter->Next())) {
+    if (!cal->InheritsFrom(AliTPCcalibCosmic::Class())) {
+      Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
+      return -1;
+    }
+    
+    fHistNTracks->Add(cal->fHistNTracks);
+    fClusters->Add(cal->fClusters);
+    fModules->Add(cal->fModules);
+    fHistPt->Add(cal->fHistPt);
+    fPtResolution->Add(cal->fPtResolution);
+    fDeDx->Add(cal->fDeDx);
+  
+  }
+  
+  return 0;
   
 }
 
@@ -419,13 +467,17 @@ void AliTPCcalibCosmic::BinLogX(TH1 *h) {
 /*
 
 
+
+
 void AliTPCcalibCosmic::dEdxCorrection(){
   TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");
   TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5");
   TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.2&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
-  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>70");
+  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>110");
   TCut cutA=cutT+cutD+cutPt+cutN;
 
+  TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
+  chain->Lookup();
 
   .x ~/rootlogon.C
    gSystem->Load("libSTAT.so");
@@ -457,6 +509,11 @@ strFit+="sign(Tr0.fP[1])++"
 strFit+="sign(Tr0.fP[1])*(1-abs(Tr0.fP[1]/250))"
 					    
 TString * thetaParam = TStatToolkit::FitPlane(chain,"Tr0.fP[3]+Tr1.fP[3]", strFit.Data(),cutA, chi2,npoints,fitParam,covMatrix)
+
+
+
+(-0.009263+(Tr0.fP[1]/250)*(-0.009693)+(Tr0.fP[1]/250)^2*(0.009062)+(Tr0.fP[3])*(0.002256)+(Tr0.fP[3])^2*(-0.052775)+(Tr0.fP[1]/250)^2*Tr0.fP[3]*(-0.020627)+(Tr0.fP[1]/250)^2*Tr0.fP[3]^2*(0.049030))
+
 */
 
 
