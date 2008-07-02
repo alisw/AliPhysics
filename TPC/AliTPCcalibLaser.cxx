@@ -17,13 +17,23 @@
   laser track clasification;
   TCut cutT("cutT","abs(Tr.fP[3])<0.06");
   TCut cutPt("cutPt","abs(Tr.fP[4])<0.1");
-  TCut cutN("cutN","fTPCncls>100");
-  
-  TCut cutA = cutT+cutPt+cutN;
+  TCut cutN("cutN","fTPCncls>70");
+  TCut cutP("cutP","abs(atan2(x1,x0)-atan2(lx1,lx0))<0.03")
+  TCut cutA = cutT+cutPt+cutP;
+  TFile f("laserTPCDebug.root");
+  TTree * treeT = (TTree*)f.Get("Track");
 
-  TCut cutFi("cutZB","");
-  TCut cutFi("cutFi","abs((180*atan2(x1,x0)/pi-20)%40)<5");
-  TChain * chain = tool.MakeChain("chain.txt","Track",0,1000000)
+
+  treeT->Draw("(atan2(x1,x0)-atan2(lx1,lx0))*250.:fBundle","fSide==1&&fRod==0"+cutA,"prof") 
+
+  gSystem->Load("libSTAT.so")
+  TStatToolkit toolkit;
+  Double_t chi2;
+  TVectorD fitParam;
+  TMatrixD covMatrix;
+  Int_t npoints;
+  TString *strq0 = toolkit.FitPlane(treeT,"Tr.fP[1]-LTr.fP[1]","lx1++lx2", "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
+
 */
 
 
@@ -60,10 +70,15 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   AliTPCcalibBase(),
   fESD(0),
   fESDfriend(),
-  fTracksMirror(1000),
-  fTracksEsd(1000),
-  fTracksEsdParam(1000),
-  fTracksTPC(1000),
+  fTracksMirror(336),
+  fTracksEsd(336),
+  fTracksEsdParam(336),
+  fTracksTPC(336),
+  fDeltaZ(336),          // array of histograms of delta z for each track
+  fDeltaPhi(336),          // array of histograms of delta z for each track
+  fDeltaPhiP(336),          // array of histograms of delta z for each track
+  fFitAside(new TVectorD(3)),        // drift fit - A side
+  fFitCside(new TVectorD(3)),        // drift fit - C- side
   fRun(0)
 {
   //
@@ -76,10 +91,15 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
   AliTPCcalibBase(),
   fESD(0),
   fESDfriend(0),
-  fTracksMirror(1000),
-  fTracksEsd(1000),
-  fTracksEsdParam(1000),
-  fTracksTPC(1000),
+  fTracksMirror(336),
+  fTracksEsd(336),
+  fTracksEsdParam(336),
+  fTracksTPC(336),
+  fDeltaZ(336),          // array of histograms of delta z for each track
+  fDeltaPhi(336),          // array of histograms of delta z for each track
+  fDeltaPhiP(336),          // array of histograms of delta z for each track
+  fFitAside(new TVectorD(3)),        // drift fit - A side
+  fFitCside(new TVectorD(3)),        // drift fit - C- side
   fRun(0)
 {
   SetName(name);
@@ -131,15 +151,157 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   }
   
   FitDriftV();
-  
+  MakeDistHisto();
   //
-  for (Int_t id=0; id<1000; id++){
+  for (Int_t id=0; id<336; id++){
     //
     //
     if (!fTracksEsdParam.At(id)) continue;
     DumpLaser(id);
     RefitLaser(id);    
+    
   }
+}
+
+void AliTPCcalibLaser::MakeDistHisto(){
+  //
+  //
+  //
+  for (Int_t id=0; id<336; id++){
+    //
+    //
+    if (!fTracksEsdParam.At(id)) continue;  
+    if (!AcceptLaser(id)) continue;
+    //
+    //
+    TH1F * hisdz = (TH1F*)fDeltaZ.At(id);
+    TH1F * hisdphi = (TH1F*)fDeltaPhi.At(id);
+    TH1F * hisdphiP = (TH1F*)fDeltaPhiP.At(id);
+    if (!hisdz){      
+      hisdz = new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),500,-10,10);
+      fDeltaZ.AddAt(hisdz,id);
+      //
+      hisdphi = new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),500,-2,2);
+      fDeltaPhi.AddAt(hisdphi,id);
+      //
+      hisdphiP = new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),500,-0.02,0.02);
+      fDeltaPhiP.AddAt(hisdphiP,id);
+    }
+
+    AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+    AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+    Double_t xyz[3];
+    Double_t pxyz[3];
+    Double_t lxyz[3];
+    Double_t lpxyz[3];
+    param->GetXYZ(xyz);
+    param->GetPxPyPz(pxyz);
+    ltrp->GetXYZ(lxyz);
+    ltrp->GetPxPyPz(lpxyz);
+    //
+    Float_t dz   = param->GetZ()-ltrp->GetZ();
+    Float_t dphi = (TMath::ATan2(xyz[1],xyz[0])- TMath::ATan2(lxyz[1],lxyz[0]))*254.;
+    Float_t dphiP = param->GetParameter()[2]-ltrp->GetParameter()[2];
+    hisdz->Fill(dz);
+    hisdphi->Fill(dphi);
+    hisdphiP->Fill(dphiP); 
+  }
+}
+
+void AliTPCcalibLaser::FitDriftV(){
+  //
+  // Fit drift velocity - linear approximation in the z and global y
+  //
+  static TLinearFitter fdriftA(3,"hyp2");
+  static TLinearFitter fdriftC(3,"hyp2");
+  fdriftA.ClearPoints();
+  fdriftC.ClearPoints();
+  //
+  for (Int_t id=0; id<336; id++){
+    if (!fTracksEsdParam.At(id)) continue;  
+    if (!AcceptLaser(id)) continue;
+    AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+    AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+    Double_t xyz[3];
+    Double_t pxyz[3];
+    Double_t lxyz[3];
+    Double_t lpxyz[3];
+    param->GetXYZ(xyz);
+    param->GetPxPyPz(pxyz);
+    ltrp->GetXYZ(lxyz);
+    ltrp->GetPxPyPz(lpxyz);
+    Double_t xxx[2] = {lxyz[2],lxyz[1]};
+    if (ltrp->GetSide()==0){
+      fdriftA.AddPoint(xxx,xyz[2],1);
+    }else{
+      fdriftC.AddPoint(xxx,xyz[2],1);
+    }
+  }
+  Float_t chi2A = 0;
+  Float_t chi2C = 0;
+  Int_t npointsA=0;
+  Int_t npointsC=0;
+  //
+  if (fdriftA.GetNpoints()>10){
+    fdriftA.Eval();
+    fdriftA.EvalRobust(0.8);
+    fdriftA.GetParameters(*fFitAside);
+    npointsA= fdriftA.GetNpoints();
+    chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
+  }
+  if (fdriftC.GetNpoints()>10){
+    fdriftC.Eval();
+    fdriftC.EvalRobust(0.8);
+    fdriftC.GetParameters(*fFitCside);
+    npointsC= fdriftC.GetNpoints();
+    chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
+  }
+  
+  if (fStreamLevel>0){
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    Int_t time = fESD->GetTimeStamp();
+    if (cstream){
+      (*cstream)<<"driftv"<<
+	"driftA.="<<fFitAside<<
+	"driftC.="<<fFitCside<<
+	"chi2A="<<chi2A<<
+	"chi2C="<<chi2C<<
+	"nA="<<npointsA<<
+	"nC="<<npointsC<<
+	"time="<<time<<
+	"\n";
+    }
+  }
+  //
+}
+
+
+Bool_t  AliTPCcalibLaser::AcceptLaser(Int_t id){
+  //
+  //
+  //
+  /*
+  TCut cutT("cutT","abs(Tr.fP[3])<0.06");
+  TCut cutPt("cutPt","abs(Tr.fP[4])<0.1");
+  TCut cutN("cutN","fTPCncls>70");
+  TCut cutP("cutP","abs(atan2(x1,x0)-atan2(lx1,lx0))<0.03")
+  TCut cutA = cutT+cutPt+cutP;
+  */
+  AliExternalTrackParam *param =(AliExternalTrackParam*)fTracksEsdParam.At(id);
+  AliTPCLaserTrack *ltrp  = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+  AliESDtrack   *track    = (AliESDtrack*)fTracksEsd.At(id);
+
+  if (TMath::Abs(param->GetParameter()[4])>0.03) return kFALSE;
+  if (TMath::Abs(param->GetParameter()[3])>0.06) return kFALSE;  
+  if (TMath::Abs(param->GetParameter()[2]-ltrp->GetParameter()[2])>0.06) return kFALSE;
+  if (TMath::Abs(param->GetParameter()[1]-ltrp->GetParameter()[1])>10) return kFALSE;
+  //
+  // dedx cut
+  //
+  if (TMath::Abs(track->GetTPCsignal())<20) return kFALSE;
+  if (TMath::Abs(track->GetTPCsignal())>800) return kFALSE;
+  //
+  return kTRUE;  
 }
 
 Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
@@ -148,7 +310,7 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
   // add the corresponding tracks
   //
   Float_t kRadius0 = 252;
-  Float_t kRadius  = 254.25;
+  Float_t kRadius  = 253.4;
   if (!track->GetOuterParam()) return -1;
   AliExternalTrackParam param(*(track->GetOuterParam()));
   AliTracker::PropagateTrackTo(&param,kRadius0,0.10566,3,kTRUE);
@@ -163,11 +325,18 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
     ltrp=&ltr;
   
   if (id>=0){
+    //
+    //
+    Float_t radius=TMath::Abs(ltrp->GetX());
+    AliTracker::PropagateTrackTo(&param,radius,0.10566,0.01,kTRUE);
+    //
     if (!fTracksMirror.At(id)) fTracksMirror.AddAt(ltrp,id);
     fTracksEsdParam.AddAt(param.Clone(),id);
     fTracksEsd.AddAt(track,id);
     fTracksTPC.AddAt(seed,id);
+    //
   }
+
   return id;
 }
 
@@ -185,14 +354,25 @@ void AliTPCcalibLaser::DumpLaser(Int_t id) {
   //
   Double_t xyz[3];
   Double_t pxyz[3];
+  Double_t lxyz[3];
+  Double_t lpxyz[3];
   param->GetXYZ(xyz);
   param->GetPxPyPz(pxyz);
+  ltrp->GetXYZ(lxyz);
+  ltrp->GetPxPyPz(lpxyz);
+
   if (fStreamLevel>0){
     TTreeSRedirector *cstream = GetDebugStreamer();
+    Int_t time = fESD->GetTimeStamp();
+    Bool_t accept = AcceptLaser(id);
     if (cstream){
       (*cstream)<<"Track"<<
 	"run="<<fRun<<
 	"id="<<id<<
+	"accept="<<accept<<
+	"driftA.="<<fFitAside<<
+	"driftC.="<<fFitCside<<
+	"time="<<time<<
 	//
         "LTr.="<<ltrp<<
 	"Esd.="<<track<<
@@ -203,6 +383,13 @@ void AliTPCcalibLaser::DumpLaser(Int_t id) {
 	"px0="<<pxyz[0]<<
 	"px1="<<pxyz[1]<<
 	"px2="<<pxyz[2]<<
+	//
+	"lx0="<<lxyz[0]<<
+	"lx1="<<lxyz[1]<<
+	"lx2="<<lxyz[2]<<
+	"lpx0="<<lpxyz[0]<<
+	"lpx1="<<lpxyz[1]<<
+	"lpx2="<<lpxyz[2]<<
 	"\n";
     }
   }
