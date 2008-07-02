@@ -9,7 +9,7 @@
 
 void geom_pmd()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
 
   for(Int_t i=1; i<=4; ++i) {
     //PH The line below is replaced waiting for a fix in Root

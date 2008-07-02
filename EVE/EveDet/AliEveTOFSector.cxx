@@ -46,7 +46,7 @@ AliEveTOFSector::AliEveTOFSector(const Text_t* n, const Text_t* t) :
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
 
 
-  //fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  //fGeoManager = AliEveEventManager::AssertGeometry();
   if (!fGeoManager) {
     printf("ERROR: no TGeo\n");
   }

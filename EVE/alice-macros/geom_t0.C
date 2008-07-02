@@ -9,7 +9,7 @@
 
 void geom_t0()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
 
   TEveElementList* list = new TEveElementList("T0");
   gEve->AddGlobalElement(list);

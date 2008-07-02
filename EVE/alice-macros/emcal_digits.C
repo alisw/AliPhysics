@@ -18,7 +18,7 @@ void emcal_digits()
   rl->LoadDigits("EMCAL");
   TTree* dt = rl->GetTreeD("EMCAL", kFALSE);
 
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
 
   TGeoBBox* bbbox = (TGeoBBox*) node->GetDaughter(0) ->GetVolume()->GetShape();

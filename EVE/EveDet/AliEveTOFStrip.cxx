@@ -35,7 +35,7 @@ AliEveTOFStrip::AliEveTOFStrip(const Text_t* n, const Text_t* t) :
   fGeoManager(0)
 {
 
-  //fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  //fGeoManager = AliEveEventManager::AssertGeometry();
   if (!fGeoManager) printf("ERROR: no TGeo\n");
 
 }

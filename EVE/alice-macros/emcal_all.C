@@ -51,7 +51,7 @@ void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0,
   TTree* dt = rl->GetTreeD("EMCAL",false);
   TTree *rt = rl->GetTreeR("EMCAL",false);
 
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
   TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
   emcal_data = new AliEveEMCALData(rl,node,m);

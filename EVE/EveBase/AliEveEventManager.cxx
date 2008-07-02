@@ -513,13 +513,7 @@ TGeoManager* AliEveEventManager::AssertGeometry()
       ::Warning(kEH, "mismatch of alignable volumes. Proceeding.");
       // throw (kEH + "could not apply align objs.");
     }
-
-    // @@NEWROOT@@ Temporary fix.
-    // In AliEve several simplified geometries can be loaded at a later stage.
-    // Locking/unlocking is now handled properly in
-    // TEveManager::GetGeometry() but we're waiting for next root
-    // version due on 14.5.2008.
-    TGeoManager::UnlockGeometry();
+    AliGeomManager::GetGeometry()->DefaultColors();
   }
 
   gGeoManager = AliGeomManager::GetGeometry();

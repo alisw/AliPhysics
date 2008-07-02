@@ -9,7 +9,7 @@
 
 void geom_phos()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
 
   TEveElementList* list = new TEveElementList("PHOS");
   gEve->AddGlobalElement(list);

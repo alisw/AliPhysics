@@ -9,7 +9,8 @@
 
 void geom_emcal()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
+
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
 
   TEveGeoTopNode* emcal_re = new TEveGeoTopNode(gGeoManager, node);

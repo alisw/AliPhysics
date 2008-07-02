@@ -1,50 +1,16 @@
-void tof_raw(const char *input = "raw.root",
-	     const char *geometry = "geometry.root",
-	     Int_t  event = 0,
-	     Bool_t newDecoder = kFALSE)
+void tof_raw(Bool_t newDecoder = kFALSE)
 {
+  AliRawReader *rawReader = AliEveEventManager::AssertRawReader();
 
   TClonesArray *array = 0x0;
 
-  if (gSystem->AccessPathName(input, kReadPermission))
-  {
-    Error("tof_raw", "file '%s' not found.", input);
-    return;
-  }
-
-  TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry(geometry);
+  TGeoManager *localGeoManager = gEve->GetDefaultGeometry();
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }
 
-  AliRawReader *rawReader = NULL;
-  TString fileName(input);
-  if (fileName.EndsWith("/")) {
-    rawReader = new AliRawReaderFile(fileName);
-  } else if (fileName.EndsWith(".root")) {
-    rawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    rawReader = new AliRawReaderDate(fileName);
-    rawReader->SelectEvents(7);
-  }
-
   AliEveTOFDigitsInfo* di = new AliEveTOFDigitsInfo();
-
-  for (Int_t ev=0; rawReader->NextEvent(); ev++) {
-    if (ev==event) {
-
-      if (di) {
-	di->Delete();
-	di = new AliEveTOFDigitsInfo();
-      }
-
-      di->ReadRaw(rawReader, newDecoder);
-      continue;
-    }
-
-    else continue;
-
-  }
+  di->ReadRaw(rawReader, newDecoder);
 
   AliTOFGeometry* g = new AliTOFGeometry();
  
@@ -67,5 +33,4 @@ void tof_raw(const char *input = "raw.root",
   }
 
   gEve->EnableRedraw();
-
 }

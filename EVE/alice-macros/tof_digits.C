@@ -12,7 +12,7 @@ void tof_digits()
 {  
   TClonesArray *array = 0x0;
 
-  TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
+  TGeoManager *localGeoManager = gEve->GetGeometry("./geometry.root");//  gGeoManager = gEve->GetDefaultGeometry();
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }

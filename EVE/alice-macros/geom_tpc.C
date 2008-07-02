@@ -9,7 +9,8 @@
 
 void geom_tpc()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
+
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("TPC_M_1");
 
   TEveGeoTopNode* tpc_re = new TEveGeoTopNode(gGeoManager, node);

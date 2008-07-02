@@ -22,7 +22,7 @@
 
 TEveGeoShape* geom_hlt()
 {
-  TFile f("$REVESYS/alice-data/gentle_geo.root");
+  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse, 0);
   f.Close();

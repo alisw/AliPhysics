@@ -9,7 +9,8 @@
 
 void geom_ddip()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
+
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("DDIP_1");
 
   TEveGeoTopNode* re = new TEveGeoTopNode(gGeoManager, node);

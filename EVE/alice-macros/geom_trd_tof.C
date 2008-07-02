@@ -9,7 +9,8 @@
 
 void geom_trd_tof()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
+
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("B077_1");
 
   TEveGeoTopNode* its_re = new TEveGeoTopNode(gGeoManager, node);

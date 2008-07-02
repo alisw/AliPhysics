@@ -13,7 +13,8 @@ void tof_digits_strips(Int_t selectedSector=-1)
 
   Int_t nDigitsInVolume[3] = {-1, -1, -1};
   Int_t nStrips=19;
-  TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
+  TGeoManager *localGeoManager = gEve->GetGeometry("./geometry.root");//  gGeoManager = gEve->GetDefaultGeometry();
+
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }

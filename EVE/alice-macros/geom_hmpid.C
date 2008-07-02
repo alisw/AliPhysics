@@ -9,7 +9,7 @@
 
 void geom_hmpid()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
 
   TEveElementList* list = new TEveElementList("HMPID");
   gEve->AddGlobalElement(list);

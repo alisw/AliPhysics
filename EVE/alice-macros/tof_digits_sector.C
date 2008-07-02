@@ -10,7 +10,7 @@
 void tof_digits_sector(Int_t sector=0)
 {
   
-  TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
+  TGeoManager *localGeoManager = gEve->GetGeometry("./geometry.root");//  gGeoManager = gEve->GetDefaultGeometry();
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }

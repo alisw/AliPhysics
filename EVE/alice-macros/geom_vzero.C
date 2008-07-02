@@ -11,7 +11,7 @@ void geom_vzero()
 {
   static const TEveException kEH("geom_vzero() ");
 
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetDefaultGeometry();
 
   TEveElementList* list = new TEveElementList("VZero");
   gEve->AddGlobalElement(list);
