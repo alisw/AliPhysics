@@ -2733,11 +2733,11 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     
     // extender
 	if (isRight) {
-		y = 0.5 * (-fullWidth + extWidth);
+		y = 0.5 * (fullWidth - extWidth) - 0.1;
 		z = 0.5 * (-fullLength + fgkmm * 10.0);
 	}
 	else {
-		y = 0.5 * (fullWidth - extWidth);
+		y = 0.5 * (fullWidth - extWidth) - 0.1;
 		z = 0.5 * ( fullLength - fgkmm * 10.0);
 	}
 	x = 0.5 * (extThickness - fullThickness) + busThickness;
