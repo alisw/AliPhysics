@@ -79,7 +79,7 @@ class AliHLTTPCTrackArray {
    * If the current size is smaller, the array is grown to the new size.
    * @return kTRUE if the array was grown, kFALSE otherwise
    */
-  Bool_t SetSize(Int_t newsize=2000);
+  Bool_t SetSize(Int_t newsize=0);
 
   Int_t GetNPresent() const {return (fNTracks- fNAbsent);}
   Int_t GetNTracks() const {return fNTracks;}
