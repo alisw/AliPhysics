@@ -136,7 +136,7 @@ AliHLTComponent* AliHLTMUONDigitPublisherComponent::Spawn()
 int AliHLTMUONDigitPublisherComponent::ParseChamberString(const char* str)
 {
 	/// Parses a string with the following format:
-	///   <number>|<number>-<number>[,<number>|<number>-<number>]...
+	///   <number>|<number>-<number>[,<number>|<number>-<number>,...]
 	/// For example: 1  1,2,3  1-2   1,2-4,5  etc...
 	/// Chamber numbers must be in the range [1..10] for tracking chambers.
 	/// All valid tracking chamber numbers will added to fChamberExclusionList.
@@ -235,7 +235,7 @@ int AliHLTMUONDigitPublisherComponent::ParseChamberString(const char* str)
 int AliHLTMUONDigitPublisherComponent::ParseDetElemString(const char* str)
 {
 	/// Parses a string with the following format:
-	///   <number>|<number>-<number>[,<number>|<number>-<number>]...
+	///   <number>|<number>-<number>[,<number>|<number>-<number>,...]
 	/// For example: 100  100,201,208  100-104   105,202-204,503  etc...
 	/// Detector element numbers must be in the range [100..1099] for tracking stations.
 	/// All valid detector element numbers will added to fDetElemExclusionList.

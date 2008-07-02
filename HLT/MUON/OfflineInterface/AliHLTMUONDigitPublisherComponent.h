@@ -64,6 +64,13 @@ class AliMUONDataInterface;
  *      This flag indicates to use the event numbers as literal indices into the
  *      AliRoot trees. This option will cause the component to ignore the -firstevent
  *      flag. <br>
+ * \li -exclude_chamber <number>|<number>-<number>[,<number>|<number>-<number>,...] <br>
+ *      Allows one to exclude (mask out) digits from certain chambers in the generated
+ *      raw DDL stream. The chamber numbers <number> should be in the range [1..10]. <br>
+ * \li -exclude_detelem <number>|<number>-<number>[,<number>|<number>-<number>,...] <br>
+ *      Allows one to exclude (mask out) digits from certain detector elements in
+ *      the generated raw DDL stream. The detector element ID numbers <number> should
+ *      be in the range [100..1099]. <br>
  *
  * @ingroup alihlt_dimuon_component
  */
