@@ -47,16 +47,25 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCEsdWriterComponent.h \
 		AliHLTTPCHistogramHandlerComponent.h \
 		AliHLTTPCClusterConverterComponent.h \
-		tracking-ca/AliHLTTPCCACell.h \
-		tracking-ca/AliHLTTPCCADisplay.h \
-		tracking-ca/AliHLTTPCCAHit.h \
-		tracking-ca/AliHLTTPCCAOutTrack.h \
-		tracking-ca/AliHLTTPCCAParam.h \
-		tracking-ca/AliHLTTPCCARow.h \
-		tracking-ca/AliHLTTPCCATrackerComponent.h \
-		tracking-ca/AliHLTTPCCATracker.h \
+		tracking-ca/AliHLT3DTrackParam.h \
 		tracking-ca/AliHLTTPCCATrack.h \
-		tracking-ca/AliHLTTPCCATrackPar.h \
+		tracking-ca/AliHLTTPCCACell.h     \
+		tracking-ca/AliHLTTPCCAEndPoint.h     \
+		tracking-ca/AliHLTTPCCADisplay.h  \
+		tracking-ca/AliHLTTPCCATracker.h \
+		tracking-ca/AliHLTTPCCAHit.h      \
+		tracking-ca/AliHLTTPCCAOutTrack.h  \
+		tracking-ca/AliHLTTPCCATrackParam.h \
+		tracking-ca/AliHLTTPCCAParam.h     \
+		tracking-ca/AliHLTTPCCARow.h \
+		tracking-ca/AliHLTTPCCAGrid.h \
+		tracking-ca/AliHLTTPCCAGBHit.h  \
+		tracking-ca/AliHLTTPCCAMCTrack.h  \
+		tracking-ca/AliHLTTPCCAGBTrack.h  \
+		tracking-ca/AliHLTTPCCAGBTracker.h \
+		tracking-ca/AliHLTTPCCAPerformance.h \
+		tracking-ca/AliTPCtrackerCA.h \
+		tracking-ca/AliHLTTPCCATrackerComponent.h \
 		comp/AliHLTTPCCompDataCompressorHelper.h \
 		comp/AliHLTTPCCompDumpComponent.h \
 		comp/AliHLTTPCCompModelAnalysis.h \
