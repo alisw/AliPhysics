@@ -8,11 +8,12 @@
 // through reading and writing to TFile.                                //
 //////////////////////////////////////////////////////////////////////////
 
-/* $Id$   */
+/* $Id$  */
 
 #include "AliITSRawStreamSPD.h"
 #include <TString.h>
 
+class TArrayI;
 class TArrayS;
 class AliITSIntMap;
 class AliITSCalibrationSPD;
@@ -72,8 +73,8 @@ class AliITSOnlineCalibrationSPDhandler {
 
   TArrayS GetDeadArray(UInt_t module, Bool_t treeSerial=kFALSE);
   TArrayS GetNoisyArray(UInt_t module, Bool_t treeSerial=kFALSE);
-  TArrayS GetDeadArrayOnline(UInt_t eq);
-  TArrayS GetNoisyArrayOnline(UInt_t eq);
+  TArrayI GetDeadArrayOnline(UInt_t eq);
+  TArrayI GetNoisyArrayOnline(UInt_t eq);
 
   void    PrintEqSummary();
   void    PrintDead() const;

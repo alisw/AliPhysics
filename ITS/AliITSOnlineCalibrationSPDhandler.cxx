@@ -11,6 +11,7 @@
 #include "AliITSOnlineCalibrationSPD.h"
 #include "AliITSIntMap.h"
 #include <TObjArray.h>
+#include <TArrayI.h>
 #include <TArrayS.h>
 #include <TFile.h>
 #include <TError.h>
@@ -714,9 +715,9 @@ TArrayS AliITSOnlineCalibrationSPDhandler::GetNoisyArray(UInt_t module, Bool_t t
   }
   return returnArray;
 }
-TArrayS AliITSOnlineCalibrationSPDhandler::GetDeadArrayOnline(UInt_t eq) {
-  // get a TArrayS of the dead pixels (format for the AliITSOnlineCalibrationSPD object)
-  TArrayS returnArray;
+TArrayI AliITSOnlineCalibrationSPDhandler::GetDeadArrayOnline(UInt_t eq) {
+  // get a TArrayI of the dead pixels (format for the AliITSOnlineCalibrationSPD object)
+  TArrayI returnArray;
   // fix size of array
   UInt_t size=0;
   for (UInt_t hs=0; hs<6; hs++) {
@@ -741,9 +742,9 @@ TArrayS AliITSOnlineCalibrationSPDhandler::GetDeadArrayOnline(UInt_t eq) {
   }
   return returnArray;
 }
-TArrayS AliITSOnlineCalibrationSPDhandler::GetNoisyArrayOnline(UInt_t eq) {
-  // get a TArrayS of the noisy pixels (format for the AliITSOnlineCalibrationSPD object)
-  TArrayS returnArray;
+TArrayI AliITSOnlineCalibrationSPDhandler::GetNoisyArrayOnline(UInt_t eq) {
+  // get a TArrayI of the noisy pixels (format for the AliITSOnlineCalibrationSPD object)
+  TArrayI returnArray;
   // fix size of array
   UInt_t size=0;
   for (UInt_t hs=0; hs<6; hs++) {

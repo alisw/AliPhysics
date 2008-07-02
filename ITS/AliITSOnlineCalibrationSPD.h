@@ -12,7 +12,7 @@
 /* $Id$  */
 
 #include <TObject.h>
-#include <TArrayS.h>
+#include <TArrayI.h>
 
 class AliITSOnlineCalibrationSPD : public TObject {
 
@@ -22,7 +22,7 @@ class AliITSOnlineCalibrationSPD : public TObject {
 
     void   SetEqNr(UInt_t mod) {fEqNr=mod;}
     UInt_t GetEqNr() const {return fEqNr;}
-    void   SetBadList(TArrayS badlist) {fBadChannels=badlist;}
+    void   SetBadList(TArrayI badlist) {fBadChannels=badlist;}
     void   SetNrBad(UInt_t nr) {fNrBad=nr;}
 
     UInt_t GetNrBad() const {return fNrBad;}
@@ -33,9 +33,9 @@ class AliITSOnlineCalibrationSPD : public TObject {
  private:
     UInt_t   fEqNr;         // eq nr
     UInt_t   fNrBad;        // nr of bad pixels
-    TArrayS  fBadChannels;  // array of keys for the bad
+    TArrayI  fBadChannels;  // array of keys for the bad
 
-    ClassDef(AliITSOnlineCalibrationSPD,2)
+    ClassDef(AliITSOnlineCalibrationSPD,1)
 };
 
 #endif
