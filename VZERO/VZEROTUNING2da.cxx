@@ -18,8 +18,8 @@
 * VZERO Detector Algorithm used for tuning FEE parameters                         *
 *                                                                                 *
 * This program reads data on the LDC                                              *
-* It cumulates mean ADC responses (above pedestals),  populates local             * 
-* "./V0_Tuning2.dat"  file and exports it to the FES.                             *                                             *
+* It cumulates mean ADC responses ,  populates local  "./V0_Tuning2.dat"  file    * 
+* and exports it to the FES.                             *                        *                    *
 * We have 128 channels instead of 64 as expected for V0 due to the two sets of    *
 * charge integrators which are used by the FEE ...                                *
 * The program reports about its processing progress.                              *
@@ -49,7 +49,7 @@
 #include <TMath.h>
 
 
-/* Main routine --- Arguments: iteration number, data file */
+/* Main routine --- Arguments: list of DATE raw data files */
       
 int main(int argc, char **argv) {
 
@@ -94,19 +94,21 @@ int main(int argc, char **argv) {
   /* init counters on events */
   int nevents_physics=0;
   int nevents_total=0;
-
-  /* read the data  */
   
-  status=monitorSetDataSource( argv[1] );
+  /* read the n data files */
+  for (int n=1; n<argc; n++) {
+  
+  /* read the data  */
+    status=monitorSetDataSource( argv[n] );
   if (status!=0) {
       printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
       return -1; }
 
   /* report progress */
-  daqDA_progressReport(50);
-
+  daqDA_progressReport(10+50*n/argc);
+   
   /* read the data file */
-  for(;;) {
+    for(;;) {
         struct eventHeaderStruct *event;
         eventTypeType eventT;
 
@@ -159,17 +161,18 @@ int main(int argc, char **argv) {
         /* free resources */
         free(event);
 
-  }  // loop over events
-    
+    }    // end of loop over events
+  }      // end of loop over data files 
+
 //________________________________________________________________________
 //  Computes mean values, dumps them into the output text file
 	
   for(Int_t i=0; i<128; i++) {
       ADC_Mean[i]=ADC_Mean[i]/nevents_physics;
-      fprintf(fp," %d %d %f\n",argc,i,ADC_Mean[i]);
-      fprintf(flog," %d %d %f\n",argc,i,ADC_Mean[i]);
+      fprintf(fp," %d %f\n",i,ADC_Mean[i]);
+      fprintf(flog," %d %f\n",i,ADC_Mean[i]);
   } 
-  
+  fprintf(fp," End of current iteration \n");
 //________________________________________________________________________
    
   /* write report */
