@@ -20,7 +20,7 @@
 * It computes calibration parameters, populates local "./V0_Ped_Width_Gain.dat"   *            
 * file and exports it to the FES.                                                 *
 * The program exits when being asked to shut down (daqDA_checkshutdown)           *
-* or End of Run event.                                                            *
+* or on End of Run event.                                                         *
 * We have 128 channels instead of 64 as expected for V0 due to the two sets of    *
 * charge integrators which are used by the FEE ...                                *
 *                                                                                 *
@@ -63,16 +63,30 @@ int main(int argc, char **argv) {
      printf("Wrong number of arguments\n");
      return -1;
   }
-
-//  printf(" argc = %d, argv = %s \n",argc, &(**argv));
-
-  Int_t    kHighCut = 50; // high cut on pedestal distribution - to be tuned
-  Int_t    kLowCut  = 30; // low cut on signal distribution - to be tuned
+  
   Double_t ADCmean[128];
   Double_t ADCsigma[128];
   Double_t PEDmean[128];
   Double_t PEDsigma[128];
+     
+//___________________________________________________
+// Get cuts from V00DA.config file
+
+  Int_t    kHighCut;    // = 50; high cut on pedestal distribution - to be tuned
+  Int_t    kLowCut;     // = 30; low cut on signal distribution - to be tuned
+
+  status = daqDA_DB_getFile("V00DA.config","./V00DA.config");
+  if (status) {
+      printf("Failed to get config file (V00DA.config) from DAQdetDB, status=%d\n", status);
+      return -1;   
+  }
+  /* open the config file and retrieve cuts */
+  FILE *fpConfig = fopen("V00DA.config","r");
+  fscanf(fpConfig,"%d %d",&kLowCut,&kHighCut);
+  fclose(fpConfig);
   
+  printf("LowCut on signal = %d ; HighCut on pedestal = %d\n",kLowCut,kHighCut);
+
 //___________________________________________________
 // Book HISTOGRAMS - dynamics of p-p collisions -
       
@@ -159,14 +173,7 @@ int main(int argc, char **argv) {
       
       case PHYSICS_EVENT:
            nevents_physics++;
- 	     
-//            fprintf(flog,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
-//                  (unsigned long)event->eventRunNb,
-//                  (unsigned long)event->eventSize,
-//                  EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
-//                  EVENT_ID_GET_ORBIT(event->eventId),
-//                  EVENT_ID_GET_PERIOD(event->eventId) );
-		 
+ 	     		 
 	   AliRawReader *rawReader = new AliRawReaderDate((void*)event);
   
 	   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
@@ -201,6 +208,8 @@ int main(int argc, char **argv) {
     }
 
   }  // loop over events
+  
+  printf("%d physics events processed\n",nevents_physics);
     
 //________________________________________________________________________
 //  Computes mean values, dumps them into the output text file
@@ -213,8 +222,8 @@ int main(int argc, char **argv) {
       ADCmean[i]  = hADCname[i]->GetMean();
       ADCsigma[i] = hADCname[i]->GetRMS(); 
       fprintf(fp," %.3f %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],ADCmean[i],ADCsigma[i]);
-  } 
-
+  }
+   
 //________________________________________________________________________
 // Write root file with histos for users further check - just in case - 
 
