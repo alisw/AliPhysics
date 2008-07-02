@@ -9,8 +9,8 @@
 
 void geom_acorde()
 {
-  // AliEveEventManager::AssertGeometry();
-  gEve->GetGeometry("geometry.root");
+  AliEveEventManager::AssertGeometry();
+  //gEve->GetDefaultGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ACORDE_1");
   if (!node) {
