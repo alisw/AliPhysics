@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDtrackingDebug.cxx 23810 2008-02-08 09:00:27Z hristov $ */
+/* $Id: AliTRDtrackingChamber.cxx 23810 2008-02-08 09:00:27Z hristov $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -166,7 +166,9 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
 	const Int_t kMaxRows = 16;
 	const Int_t kMaxCols = 144;
 	const Int_t kMaxPads = 2304;
-		
+	Int_t timeBinMin = AliTRDReconstructor::RecoParam()->GetNumberOfPresamples();
+	Int_t timeBinMax = AliTRDReconstructor::RecoParam()->GetNumberOfPostsamples();
+
 	// Get the geometrical data of the chamber
 	Int_t layer = geo->GetLayer(fDetector);
 	Int_t stack = geo->GetStack(fDetector);
@@ -193,8 +195,8 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
 		histogram[irs] = &hvals[irs*kMaxCols];
 		sigmas[irs] = &svals[irs*kMaxCols];
 	}
-	for(Int_t iTime = 0; iTime < kNTimeBins; iTime++){
-		if(!(nClusters = fTB[iTime].GetNClusters())) continue;
+	for(Int_t iTime = timeBinMin; iTime < kNTimeBins-timeBinMax; iTime++){
+    if(!(nClusters = fTB[iTime].GetNClusters())) continue;
 		z0 = fTB[iTime].GetZ0();
 		zl = fTB[iTime].GetDZ0();
 		for(Int_t incl = 0; incl < nClusters; incl++){

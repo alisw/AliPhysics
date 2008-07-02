@@ -54,6 +54,8 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fClusSigThresh(3.5)
   ,fTCnexp(1)
   ,fADCbaseline(0)
+  ,fNumberOfPresamples(0)
+  ,fNumberOfPostsamples(0)
 {
   //
   // Default constructor
@@ -95,6 +97,8 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fClusSigThresh(ref.fClusSigThresh)
   ,fTCnexp(ref.fTCnexp)
   ,fADCbaseline(ref.fADCbaseline)
+  ,fNumberOfPresamples(ref.fNumberOfPresamples)
+  ,fNumberOfPostsamples(ref.fNumberOfPostsamples)
 {
   //
   // Copy constructor

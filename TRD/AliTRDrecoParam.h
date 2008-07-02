@@ -50,6 +50,8 @@ public:
   Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
   Double_t GetClusSigThresh() const         { return fClusSigThresh;   };
   Int_t    GetTCnexp() const                { return fTCnexp;          };
+  Int_t     GetNumberOfPresamples()  const {return fNumberOfPresamples;}
+  Int_t    GetNumberOfPostsamples() const {return fNumberOfPostsamples;}
 
         
   static   AliTRDrecoParam *GetLowFluxParam();
@@ -63,6 +65,7 @@ public:
   Bool_t   IsVertexConstrained() const      { return TestBit(kVertexConstrained); }
 
 
+  void     SetFindableClusters(Double_t r) {fkFindable = r;}
   void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);  };
   void     SetPIDMethod(AliTRDpidMethod pid)                  { fkPIDMethod = pid; };
   void     SetSeeding(Bool_t so = kTRUE)             { SetBit(kSeeding, so); }
@@ -77,6 +80,8 @@ public:
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
   void     SetADCbaseline(Int_t base)                         { fADCbaseline     = base;   };
   inline void SetSysCovMatrix(Double_t *sys);
+  void     SetNumberOfPresamples(Int_t n) {fNumberOfPresamples = n;}
+  void     SetNumberOfPostsamples(Int_t n) {fNumberOfPostsamples = n;}
 
 private:
   enum{
@@ -123,6 +128,8 @@ private:
   
   // ADC parameter
   Int_t     fADCbaseline;            // ADC baseline to be subtracted
+  Int_t     fNumberOfPresamples;     // number of presamples 
+  Int_t     fNumberOfPostsamples;     // number of postsamples 
 
   ClassDef(AliTRDrecoParam, 4)       // Reconstruction parameters for TRD detector
 
