@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
 
-  status=daqDA_FES_storeFile("./SDDinj_LDC.tar","SDD_Calib");
+  status=daqDA_FES_storeFile("./SDDinj_LDC.tar","SDD_Injec");
 
   /* report progress */
   daqDA_progressReport(100);
