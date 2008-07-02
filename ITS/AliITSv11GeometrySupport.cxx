@@ -1544,7 +1544,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kConeZLength          =      168.0 *fgkmm;
   const Double_t kConeZPosition        = kConeZLength + kCylinderHalfLength;
   const Double_t kConeThickness        =       13.0 *fgkmm; // Cone thickness
-  const Double_t kConeTheta            =       39.0 *fgkDegree; // Cone angle
+  const Double_t kConeTheta            =       39.1 *fgkDegree; // Cone angle
   const Double_t kSinConeTheta         =
                                       TMath::Sin(kConeTheta*TMath::DegToRad());
   const Double_t kCosConeTheta         =
