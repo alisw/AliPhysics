@@ -8,6 +8,7 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OfflineInterface/AliHLTMUONRecHitsSource.h \
 		OfflineInterface/AliHLTMUONDigitPublisherComponent.h \
 		OfflineInterface/AliHLTMUONRootifierComponent.h \
+		OfflineInterface/AliHLTMUONESDMaker.h \
 		OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h \

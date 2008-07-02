@@ -44,6 +44,7 @@
 #include "AliMpCDB.h"
 #include "AliMpDDL.h"
 #include "AliMpDDLStore.h"
+#include "AliMpDEManager.h"
 #include "AliMpTriggerCrate.h"
 #include "AliMpConstants.h"
 #include "AliBitPacking.h"
@@ -77,7 +78,9 @@ AliHLTMUONDigitPublisherComponent::AliHLTMUONDigitPublisherComponent() :
 	fCurrentEventIndex(0),
 	fMakeScalars(false),
 	fMCDataInterface(NULL),
-	fDataInterface(NULL)
+	fDataInterface(NULL),
+	fChamberExclusionList(0),
+	fDetElemExclusionList(0)
 {
 	/// Default constructor.
 }
@@ -130,6 +133,205 @@ AliHLTComponent* AliHLTMUONDigitPublisherComponent::Spawn()
 }
 
 
+int AliHLTMUONDigitPublisherComponent::ParseChamberString(const char* str)
+{
+	/// Parses a string with the following format:
+	///   <number>|<number>-<number>[,<number>|<number>-<number>]...
+	/// For example: 1  1,2,3  1-2   1,2-4,5  etc...
+	/// Chamber numbers must be in the range [1..10] for tracking chambers.
+	/// All valid tracking chamber numbers will added to fChamberExclusionList.
+	/// @param str  The string to parse.
+	/// @return  Zero on success and EINVAL if there is a parse error.
+	
+	char* end = const_cast<char*>(str);
+	long lastChamber = -1;
+	do
+	{
+		// Parse the next number.
+		char* current = end;
+		long chamber = strtol(current, &end, 0);
+		
+		// Check for parse errors of the number.
+		if (current == end)
+		{
+			HLTError("Expected a number in the range [1..%d] but got '%s'.",
+				AliMUONConstants::NTrackingCh(), current
+			);
+			return -EINVAL;
+		}
+		if (chamber < 1 or AliMUONConstants::NTrackingCh() < chamber)
+		{
+			HLTError("Received the chamber number %d, which is outside the valid range of [1..%d].",
+				chamber, AliMUONConstants::NTrackingCh()
+			);
+			return -EINVAL;
+		}
+		
+		// Skip any whitespace after the number
+		while (*end != '\0' and (*end == ' ' or *end == '\t' or *end == '\r' or *end == '\n')) end++;
+		
+		// Check if we are dealing with a list or range, or if we are at
+		// the end of the string.
+		if (*end == '-')
+		{
+			lastChamber = chamber;
+			end++;
+			continue;
+		}
+		else if (*end == ',')
+		{
+			assert( 1 <= chamber and chamber <= AliMUONConstants::NTrackingCh() );
+			Int_t size = fChamberExclusionList.GetSize();
+			fChamberExclusionList.Set(size+1);
+			fChamberExclusionList[size] = chamber-1;
+			end++;
+		}
+		else if (*end == '\0')
+		{
+			assert( 1 <= chamber and chamber <= AliMUONConstants::NTrackingCh() );
+			Int_t size = fChamberExclusionList.GetSize();
+			fChamberExclusionList.Set(size+1);
+			fChamberExclusionList[size] = chamber-1;
+		}
+		else
+		{
+			HLTError("Could not understand parameter list '%s'. Expected '-', ','"
+				  " or end of line, but received '%c' at character %d.",
+				str, *end, (int)(end - str) +1
+			);
+			return -EINVAL;
+		}
+		
+		// Set the range of chambers to publish for.
+		if (lastChamber > 0)
+		{
+			Int_t min, max;
+			if (lastChamber < chamber)
+			{
+				min = lastChamber;
+				max = chamber;
+			}
+			else
+			{
+				min = chamber;
+				max = lastChamber;
+			}
+			assert( min >= 1 );
+			assert( max <= AliMUONConstants::NTrackingCh() );
+			for (Int_t i = min; i <= max; i++)
+			{
+				Int_t size = fChamberExclusionList.GetSize();
+				fChamberExclusionList.Set(size+1);
+				fChamberExclusionList[size] = i-1;
+			}
+		}
+		lastChamber = -1;
+	}
+	while (*end != '\0');
+	return 0;
+}
+
+
+int AliHLTMUONDigitPublisherComponent::ParseDetElemString(const char* str)
+{
+	/// Parses a string with the following format:
+	///   <number>|<number>-<number>[,<number>|<number>-<number>]...
+	/// For example: 100  100,201,208  100-104   105,202-204,503  etc...
+	/// Detector element numbers must be in the range [100..1099] for tracking stations.
+	/// All valid detector element numbers will added to fDetElemExclusionList.
+	/// @param str  The string to parse.
+	/// @return  Zero on success and EINVAL if there is a parse error.
+	
+	char* end = const_cast<char*>(str);
+	long lastDetElem = -1;
+	do
+	{
+		// Parse the next number.
+		char* current = end;
+		long detElem = strtol(current, &end, 0);
+		
+		// Check for parse errors of the number.
+		if (current == end)
+		{
+			HLTError("Expected a number in the range [100..1099] but got '%s'.",
+				current
+			);
+			return -EINVAL;
+		}
+		if (detElem < 100 or 1099 < detElem)
+		{
+			HLTError("Received the detector element ID number of %d,"
+				" which is outside the valid range of [100..1099].",
+				detElem
+			);
+			return -EINVAL;
+		}
+		
+		// Skip any whitespace after the number
+		while (*end != '\0' and (*end == ' ' or *end == '\t' or *end == '\r' or *end == '\n')) end++;
+		
+		// Check if we are dealing with a list or range, or if we are at
+		// the end of the string.
+		if (*end == '-')
+		{
+			lastDetElem = detElem;
+			end++;
+			continue;
+		}
+		else if (*end == ',')
+		{
+			assert( 100 <= detElem and detElem <= 1099 );
+			Int_t size = fDetElemExclusionList.GetSize();
+			fDetElemExclusionList.Set(size+1);
+			fDetElemExclusionList[size] = detElem-1;
+			end++;
+		}
+		else if (*end == '\0')
+		{
+			assert( 100 <= detElem and detElem <= 1099 );
+			Int_t size = fDetElemExclusionList.GetSize();
+			fDetElemExclusionList.Set(size+1);
+			fDetElemExclusionList[size] = detElem-1;
+		}
+		else
+		{
+			HLTError("Could not understand parameter list '%s'. Expected '-', ','"
+				  " or end of line, but received '%c' at character %d.",
+				str, *end, (int)(end - str) +1
+			);
+			return -EINVAL;
+		}
+		
+		// Set the range of detector elements to publish for.
+		if (lastDetElem > 0)
+		{
+			Int_t min, max;
+			if (lastDetElem < detElem)
+			{
+				min = lastDetElem;
+				max = detElem;
+			}
+			else
+			{
+				min = detElem;
+				max = lastDetElem;
+			}
+			assert( min >= 100 );
+			assert( max <= 1099 );
+			for (Int_t i = min; i <= max; i++)
+			{
+				Int_t size = fDetElemExclusionList.GetSize();
+				fDetElemExclusionList.Set(size+1);
+				fDetElemExclusionList[size] = i-1;
+			}
+		}
+		lastDetElem = -1;
+	}
+	while (*end != '\0');
+	return 0;
+}
+
+
 int AliHLTMUONDigitPublisherComponent::DoInit(int argc, const char** argv)
 {
 	/// Inherited from AliHLTComponent.
@@ -152,6 +354,8 @@ int AliHLTMUONDigitPublisherComponent::DoInit(int argc, const char** argv)
 	fDDL = -1;
 	fCurrentEventIndex = 0;
 	fMakeScalars = false;
+	fChamberExclusionList.Set(0);
+	fDetElemExclusionList.Set(0);
 	bool simdata = false;
 	bool recdata = false;
 	bool firstEventSet = false;
@@ -178,7 +382,7 @@ int AliHLTMUONDigitPublisherComponent::DoInit(int argc, const char** argv)
 		{
 			if (argc <= i+1)
 			{
-				HLTError("DDL number not specified. It must be in the range [21..22]" );
+				HLTError("DDL number not specified. It must be in the range [1..22]" );
 				return -EINVAL;
 			}
 		
@@ -186,15 +390,44 @@ int AliHLTMUONDigitPublisherComponent::DoInit(int argc, const char** argv)
 			unsigned long num = strtoul(argv[i+1], &cpErr, 0);
 			if (cpErr == NULL or *cpErr != '\0')
 			{
-				HLTError("Cannot convert '%s' to a DDL Number.", argv[i+1]);
+				HLTError("Cannot convert '%s' to a DDL number.", argv[i+1]);
 				return -EINVAL;
 			}
 			if (num < 1 or 22 < num)
 			{
-				HLTError("The DDL ID number must be in the range [1..22].");
+				HLTError("The DDL number must be in the range [1..22].");
 				return -EINVAL;
 			}
 			fDDL = num - 1; // Convert to DDL number in the range 0..21
+			
+			i++;
+			continue;
+		}
+		if (strcmp(argv[i], "-ddlid") == 0)
+		{
+			if (argc <= i+1)
+			{
+				HLTError("DDL equipment ID number not specified."
+					" It must be in the range [2560..2579] or [2816..2817]."
+				);
+				return -EINVAL;
+			}
+		
+			char* cpErr = NULL;
+			unsigned long num = strtoul(argv[i+1], &cpErr, 0);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a DDL equipment ID number.", argv[i+1]);
+				return -EINVAL;
+			}
+			fDDL = AliHLTMUONUtils::EquipIdToDDLNumber(num); // Convert to DDL number in the range 0..21
+			if (fDDL < 0 or 21 < fDDL)
+			{
+				HLTError("The DDL equipment ID number must be in the range"
+					" [2560..2579] or [2816..2817]."
+				);
+				return -EINVAL;
+			}
 			
 			i++;
 			continue;
@@ -235,6 +468,36 @@ int AliHLTMUONDigitPublisherComponent::DoInit(int argc, const char** argv)
 			}
 			fCurrentEventIndex = -1;
 			eventNumLitSet = true;
+			continue;
+		}
+		if (strcmp(argv[i], "-exclude_chamber") == 0)
+		{
+			if (argc <= i+1)
+			{
+				HLTError("Expected a chamber number, a range eg. '1-10', or a list eg."
+					" '1,2,3' after '-exclude_chamber'."
+				);
+				return -EINVAL;
+			}
+			
+			int result = ParseChamberString(argv[i+1]);
+			if (result != 0) return result;
+			i++;
+			continue;
+		}
+		if (strcmp(argv[i], "-exclude_detelem") == 0)
+		{
+			if (argc <= i+1)
+			{
+				HLTError("Expected a detector element ID number, a range eg. '100-108',"
+					" or a list eg. '100,102,301' after '-exclude_detelem'."
+				);
+				return -EINVAL;
+			}
+			
+			int result = ParseDetElemString(argv[i+1]);
+			if (result != 0) return result;
+			i++;
 			continue;
 		}
 		
@@ -530,6 +793,26 @@ AliHLTMUONDigitPublisherComponent::Digits2BusPatchMap(
   
   while ( ( digit = static_cast<AliMUONVDigit*>(next()) ) )
   {
+    // Check if we should exclude digits from a particular chamber or detector element.
+    bool excludeDigit = false;
+    for (Int_t i = 0; i < fDetElemExclusionList.GetSize(); i++)
+    {
+      if (digit->DetElemId() == fDetElemExclusionList[i])
+      {
+        excludeDigit = true;
+        break;
+      }
+    }
+    for (Int_t i = 0; i < fChamberExclusionList.GetSize(); i++)
+    {
+      if (AliMpDEManager::GetChamberId(digit->DetElemId()) == fChamberExclusionList[i])
+      {
+        excludeDigit = true;
+        break;
+      }
+    }
+    if (excludeDigit) continue;
+  
     charge = digit->ADC();
     if ( charge > kMAXADC )
     {

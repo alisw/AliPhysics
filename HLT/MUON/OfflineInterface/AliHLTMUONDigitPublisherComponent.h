@@ -14,6 +14,7 @@
 ///
 
 #include "AliHLTOfflineDataSource.h"
+#include "TArrayI.h"
 
 #if __GNUC__ && __GNUC__ < 3
 #define std
@@ -43,6 +44,9 @@ class AliMUONDataInterface;
  *       dimuon trigger.<br>
  *
  * Optional arguments:<br>
+ * \li -ddlid <br>
+ *       This is an alternative to using -ddl which allows specifying a DDL in
+ *       terms of the DDL equipment IDs.<br>
  * \li -makescalars <br>
  *       If set then the scalar events will be generated for the trigger DDLs.
  *       (default is not to generate the scalars)<br>
@@ -102,6 +106,9 @@ private:
 	AliHLTMUONDigitPublisherComponent(const AliHLTMUONDigitPublisherComponent& /*obj*/);
 	AliHLTMUONDigitPublisherComponent& operator = (const AliHLTMUONDigitPublisherComponent& /*obj*/);
 	
+	int ParseChamberString(const char* str);
+	int ParseDetElemString(const char* str);
+	
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// Methods copied from AliMUONRawWriter.
 	//TODO: This is not ideal. We should have AliMUONRawWriter re-factored so that
@@ -140,6 +147,9 @@ private:
 	
 	AliMUONMCDataInterface* fMCDataInterface; ///< Access to MUON MC-related data.
 	AliMUONDataInterface* fDataInterface; ///< Access to MUON data.
+	
+	TArrayI fChamberExclusionList;  //! Exclusion list for tracking chambers.
+	TArrayI fDetElemExclusionList;  //! Exclusion list for tracking detector elements.
 	
 	ClassDef(AliHLTMUONDigitPublisherComponent, 0)  // dHLT component for publishing DDL streams from digits on the fly.
 };

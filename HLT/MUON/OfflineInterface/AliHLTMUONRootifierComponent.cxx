@@ -167,6 +167,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	
 	AliHLTMUONEvent event(evtData.fEventID);
 	const AliHLTComponentBlockData* block = NULL;
+	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
 
 	// First process the blocks of reconstructed hits and trigger records.
 	for (int i = 0; i < GetNumberOfInputBlocks(); i++)
@@ -180,6 +181,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		
 		if (block->fDataType == AliHLTMUONConstants::RecHitsBlockDataType())
 		{
+			specification |= block->fSpecification;
 			AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 			ptr += block->fOffset;
 			AliHLTMUONRecHitsBlockReader inblock(ptr, block->fSize);
@@ -221,6 +223,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		}
 		else if (block->fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
 		{
+			specification |= block->fSpecification;
 			AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 			ptr += block->fOffset;
 			AliHLTMUONTriggerRecordsBlockReader inblock(ptr, block->fSize);
@@ -300,6 +303,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	     block = GetNextInputBlock()
 	    )
 	{
+		specification |= block->fSpecification;
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
 		AliHLTMUONMansoTracksBlockReader inblock(ptr, block->fSize);
@@ -409,6 +413,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	     block = GetNextInputBlock()
 	    )
 	{
+		specification |= block->fSpecification;
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
 		AliHLTMUONSinglesDecisionBlockReader inblock(ptr, block->fSize);
@@ -470,6 +475,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	     block = GetNextInputBlock()
 	    )
 	{
+		specification |= block->fSpecification;
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
 		AliHLTMUONPairsDecisionBlockReader inblock(ptr, block->fSize);
@@ -551,7 +557,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	}
 	event.Add(triggerDecision);
 	
-	PushBack(&event, "ROOTEVNT", "MUON");
+	PushBack(&event, "ROOTEVNT", "MUON", specification);
 	
 	return 0;
 }

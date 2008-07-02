@@ -165,6 +165,10 @@ AliHLTMUONConstants::fgkPairsDecisionBlockDataType = (AliHLTComponentDataType){
 	kAliHLTDataOriginAny
 } | kAliHLTDataOriginMUON;
 
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkESDDataType = kAliHLTDataTypeESDObject | kAliHLTDataOriginMUON;
+
+
 const char* AliHLTMUONConstants::fgkRecHitsSourceId = "MUONRecHitsSource";
 const char* AliHLTMUONConstants::fgkTriggerRecordsSourceId = "MUONTriggerRecordsSource";
 const char* AliHLTMUONConstants::fgkTracksSourceId = "MUONTracksSource";
@@ -173,6 +177,7 @@ const char* AliHLTMUONConstants::fgkTriggerReconstructorId = "MUONTriggerReconst
 const char* AliHLTMUONConstants::fgkHitReconstructorId = "MUONHitReconstructor";
 const char* AliHLTMUONConstants::fgkMansoTrackerFSMId = "MUONMansoTrackerFSM";
 const char* AliHLTMUONConstants::fgkDecisionComponentId = "MUONDecisionComponent";
+const char* AliHLTMUONConstants::fgkESDMakerId = "MUONESDMaker";
 const char* AliHLTMUONConstants::fgkRootifierComponentId = "MUONRootifier";
 const char* AliHLTMUONConstants::fgkEmptyEventFilterComponentId = "MUONEmptyEventFilter";
 const char* AliHLTMUONConstants::fgkDataCheckerComponentId = "MUONDataChecker";

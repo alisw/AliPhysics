@@ -32,6 +32,7 @@
 #include "AliHLTMUONTriggerReconstructorComponent.h"
 #include "AliHLTMUONMansoTrackerFSMComponent.h"
 #include "AliHLTMUONDecisionComponent.h"
+#include "AliHLTMUONESDMaker.h"
 #include "AliHLTMUONEmptyEventFilterComponent.h"
 #include "AliHLTMUONDataCheckerComponent.h"
 #include "AliRawReader.h"
@@ -328,6 +329,7 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 	pHandler->AddComponent(new AliHLTMUONTriggerReconstructorComponent);
 	pHandler->AddComponent(new AliHLTMUONMansoTrackerFSMComponent);
 	pHandler->AddComponent(new AliHLTMUONDecisionComponent);
+	pHandler->AddComponent(new AliHLTMUONESDMaker);
 	pHandler->AddComponent(new AliHLTMUONEmptyEventFilterComponent);
 	pHandler->AddComponent(new AliHLTMUONDataCheckerComponent);
 	return 0;

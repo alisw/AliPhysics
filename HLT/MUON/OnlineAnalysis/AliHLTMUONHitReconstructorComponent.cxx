@@ -437,8 +437,9 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		
 		AliHLTUInt32_t totalDDLSize = blocks[n].fSize / sizeof(AliHLTUInt32_t);
 		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - fHitRec->GetkDDLHeaderSize();
-		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(blocks[n].fPtr)
-			+ fHitRec->GetkDDLHeaderSize();
+		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(
+				reinterpret_cast<char*>(blocks[n].fPtr) + blocks[n].fOffset
+			) + fHitRec->GetkDDLHeaderSize();
 		AliHLTUInt32_t nofHit = block.MaxNumberOfEntries();
 
 #ifdef DEBUG

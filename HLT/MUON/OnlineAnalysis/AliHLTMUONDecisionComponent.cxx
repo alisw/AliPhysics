@@ -341,7 +341,10 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			// contributed to the output data.
 			specification |= blocks[n].fSpecification;
 			
-			AliHLTMUONMansoTracksBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
+			AliHLTMUONMansoTracksBlockReader inblock(
+					reinterpret_cast<char*>(blocks[n].fPtr) + blocks[n].fOffset,
+					blocks[n].fSize
+				);
 			if (not BlockStructureOk(inblock)) continue;
 			
 			for (AliHLTUInt32_t i = 0; i < inblock.Nentries(); i++)
