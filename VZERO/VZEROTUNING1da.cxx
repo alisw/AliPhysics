@@ -49,7 +49,7 @@
 #include <TMath.h>
 
 
-/* Main routine --- Arguments: iteration number, data file */
+/* Main routine --- Arguments: list of DATE raw data files */
       
 int main(int argc, char **argv) {
 
@@ -96,19 +96,21 @@ int main(int argc, char **argv) {
   /* init counters on events */
   int nevents_physics=0;
   int nevents_total=0;
-
-  /* read the data  */
   
-  status=monitorSetDataSource( argv[1] );
-  if (status!=0) {
-      printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
-      return -1; }
+  /* read the n data files */
+  for (int n=1; n<argc; n++) {
+  
+  /* read the data  */
+    status=monitorSetDataSource( argv[n] );
+    if (status!=0) {
+       printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+       return -1; }
 
   /* report progress */
-  daqDA_progressReport(50);
+    daqDA_progressReport(10+50*n/argc);
 
   /* read the data file */
-  for(;;) {
+    for(;;) {
         struct eventHeaderStruct *event;
         eventTypeType eventT;
 
@@ -136,14 +138,7 @@ int main(int argc, char **argv) {
       
         case PHYSICS_EVENT:
              nevents_physics++;
- 	     
-//              fprintf(flog,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
-//                  (unsigned long)event->eventRunNb,
-//                  (unsigned long)event->eventSize,
-//                  EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
-//                  EVENT_ID_GET_ORBIT(event->eventId),
-//                  EVENT_ID_GET_PERIOD(event->eventId) );
-		 
+
 	     AliRawReader *rawReader = new AliRawReaderDate((void*)event);
   
 	     AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
@@ -170,18 +165,19 @@ int main(int argc, char **argv) {
         /* free resources */
         free(event);
 
-  }  // loop over events
-    
+    }    // end of loop over events
+  }      // end of loop over data files 
+   
 //________________________________________________________________________
 //  Computes mean values, dumps them into the output text file
 	
   for(Int_t i=0; i<128; i++) {
       BBFlag[i] = BBFlag[i]/nevents_physics;
       BGFlag[i] = BGFlag[i]/nevents_physics;
-      fprintf(fp," %d %d %f %f\n",argc,i,BBFlag[i],BGFlag[i]);
-      fprintf(flog," %d %d %f %f\n",argc,i,BBFlag[i],BGFlag[i]);
+      fprintf(fp," %d %f %f\n",i,BBFlag[i],BGFlag[i]);
+      fprintf(flog," %d %f %f\n",i,BBFlag[i],BGFlag[i]);
   } 
-  
+  fprintf(fp," End of current iteration \n");
 //________________________________________________________________________
    
   /* write report */
