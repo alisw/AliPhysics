@@ -1,3 +1,5 @@
+# _*_ Mode: Makefile _*_
+
 SRCS= TIsajet.cxx AliGenIsajet.cxx
 
 HDRS= $(SRCS:.cxx=.h)
