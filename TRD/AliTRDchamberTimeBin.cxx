@@ -598,18 +598,17 @@ void AliTRDchamberTimeBin::GetClusters(Double_t *cond, Int_t *index, Int_t& ncl,
 		
 	//Boundary checks
 	Double_t zvals[2];
-	if(cond[1] - cond[3] > fZ0 + fZLength || cond[1] + cond[3] < fZ0) return; // We are outside of the chamvber
+	if(((cond[1] - cond[3]) >= (fZ0 + fZLength)) || (cond[1] + cond[3]) <= fZ0) return; // We are outside of the chamvber
 	zvals[0] = ((cond[1] - cond[3]) < fZ0) ? fZ0 : (cond[1] - cond[3]);
 	zvals[1] = ((cond[1] + cond[3]) < fZ0 + fZLength) ? (cond[1] + cond[3]) : fZ0 + fZLength - 1.E-3;
 
 	UChar_t zhi = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - zvals[0])/fZLength * fNRows);
 	UChar_t zlo = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - zvals[1])/fZLength * fNRows);
-	
-	
-// 	AliInfo(Form("yc[%f] zc[%f] dy[%f] dz[%f]", cond[0], cond[1], cond[2], cond[3]));
-// 	PrintClusters();
-// 	AliInfo(Form("zlo[%f] zhi[%f]", zvals[0], zvals[1]));
-// 	AliInfo(Form("zlo[%d] zhi[%d]", zlo, zhi));
+
+/*	AliInfo(Form("yc[%f] zc[%f] dy[%f] dz[%f]", cond[0], cond[1], cond[2], cond[3]));
+	PrintClusters();
+	AliInfo(Form("zlo[%f] zhi[%f]", zvals[0], zvals[1]));
+	AliInfo(Form("zlo[%d] zhi[%d]", zlo, zhi));*/
 	
 	//Preordering in Direction z saves a lot of loops (boundary checked)
 	for(UChar_t z = zlo; z <= zhi; z++){
