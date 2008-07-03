@@ -150,6 +150,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 {
   //comment
 
+
+  cout << "AliHLTPHOSRawAnalyzerComponent::DoEven. fPhosEventCount = " <<  fPhosEventCount <<endl;
+
+  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP0" << endl;
+
   UInt_t offset            = 0; 
   UInt_t mysize            = 0;
   UInt_t tSize             = 0;
@@ -163,10 +168,13 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   Int_t nSamples = 0;
   UInt_t nSelected = 0;
   UInt_t specification = 0;
- 
+
+  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP1" << endl;
+
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      
+      cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP2" << endl;     
+
       Int_t tmpChannelCnt     = 0;
       iter = blocks+ndx;
       mysize = 0;
@@ -174,11 +182,16 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       Int_t crazyness = 0;
       UInt_t tmpSize = 0;
       mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
-
+      cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP3" << endl;     
+  
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
+	  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP4" << endl;     
 	  continue; 
 	}
+
+      cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP5" << endl;     
+      
       specification = specification|iter->fSpecification;
 
       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
@@ -206,6 +219,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 		  fNCorruptedBlocks ++;	  
 		  continue;  
 		}
+	      else
+		{
+		  cout <<"The number of samples is " << fNTotalSamples << endl;
+		}
+
 	    }
 
 	  fNOKBlocks ++;
@@ -240,11 +258,13 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	      tmpSize += nSamples + 1;
 	      *rawDataBufferPos = nSamples;
 	      cout << "# samples: " << *rawDataBufferPos << endl;
+
 	      for(int sample = 0; sample < nSamples; sample++)
 		{
 		  rawDataBufferPos++;
 		  *(rawDataBufferPos) = tmpData[sample] - (Int_t)baseline;
 		}
+
 	      rawDataBufferPos++;
 	    }
 	  if(fDoSelectiveReadOut)
@@ -286,6 +306,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       bdCellEnergy.fSize = mysize;
       bdCellEnergy.fDataType = AliHLTPHOSDefinitions::fgkCellEnergyDataType;
       bdCellEnergy.fSpecification = specification;
+      cout << "Pushing cell energies" << endl;
       outputBlocks.push_back( bdCellEnergy );
       
       tSize += mysize;

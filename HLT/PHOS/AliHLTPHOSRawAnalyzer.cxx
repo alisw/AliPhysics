@@ -82,6 +82,8 @@ AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t *data, const 
 {
   //  cout << "AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples" << endl;
 
+  //CRAP PTH
+  /*
   
   unsigned int sumOfFirstFiveSamples = 0;
 
@@ -103,7 +105,7 @@ AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t *data, const 
 	  data[j] = 0;
 	}
     }
-  
+  */
 }
 
 
