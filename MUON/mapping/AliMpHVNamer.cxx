@@ -507,6 +507,8 @@ AliMpHVNamer::ManuId2PCBIndex(Int_t detElemId, Int_t manuId) const
   
   const AliMpSlatSegmentation* seg = static_cast<const AliMpSlatSegmentation*>
     (AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId));
+	if (!seg) return -1;
+	
   const AliMpSlat* slat = seg->Slat();
   
   return slat->FindPCBIndexByMotifPositionID(manuId);
@@ -522,6 +524,8 @@ AliMpHVNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
   
   const AliMpSectorSegmentation* seg = static_cast<const AliMpSectorSegmentation*>
   (AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId));
+	if (!seg) return -1;
+	
   const AliMpSector* sector = seg->GetSector();
   const AliMpMotifMap* motifMap = sector->GetMotifMap();
   const AliMpMotifPosition* motifPos = motifMap->FindMotifPosition(manuId);
