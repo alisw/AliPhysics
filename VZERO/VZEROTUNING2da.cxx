@@ -94,9 +94,11 @@ int main(int argc, char **argv) {
   /* init counters on events */
   int nevents_physics=0;
   int nevents_total=0;
+  int iteration;
+  sscanf(argv[1],"%d",&iteration);
   
   /* read the n data files */
-  for (int n=1; n<argc; n++) {
+  for (int n=2; n<argc; n++) {
   
   /* read the data  */
     status=monitorSetDataSource( argv[n] );
@@ -169,10 +171,10 @@ int main(int argc, char **argv) {
 	
   for(Int_t i=0; i<128; i++) {
       ADC_Mean[i]=ADC_Mean[i]/nevents_physics;
-      fprintf(fp," %d %f\n",i,ADC_Mean[i]);
-      fprintf(flog," %d %f\n",i,ADC_Mean[i]);
+      fprintf(fp," %d %d %f\n",iteration,i,ADC_Mean[i]);
+      fprintf(flog,"%d %d %f\n",iteration,i,ADC_Mean[i]);
   } 
-  fprintf(fp," End of current iteration \n");
+  
 //________________________________________________________________________
    
   /* write report */
