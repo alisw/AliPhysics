@@ -208,6 +208,8 @@ AliMUONPainterPlotSelector::DataSourceWasChanged(const char* type,
                   ( ( data && dataIndex >= 0 ) ? data->DimensionName(dataIndex).Data() :
                     "")));
   
+	UpdateTypeButton();
+	
   Long_t param[] = { (Long_t)type, (Long_t)data,
     (Long_t)dataIndex };
   
@@ -567,9 +569,24 @@ void
 AliMUONPainterPlotSelector::UpdateTypeButton()
 {
   /// Update the type buttons
-  
+	
   AliDebug(1,Form("fCurrentType=%s",fCurrentType.Data()));
   
+	if (!fCurrentData)
+  {
+    AliMUONPainterInterfaceHelper::SetState(*fTypes,kFALSE);
+  }
+	else
+	{
+		// disable levels that cannot be handled by this data
+		TGTextButton* padButton = static_cast<TGTextButton*>
+		(AliMUONPainterInterfaceHelper::FindButtonByName(*fTypes,"PAD"));
+		if (padButton) 
+		{ 
+			padButton->SetEnabled(fCurrentData->IsChannelLevelEnabled());
+		}
+	}
+	
   TGTextButton* button = static_cast<TGTextButton*>
   (AliMUONPainterInterfaceHelper::FindButtonByName(*fTypes,fCurrentType));
 
@@ -582,11 +599,7 @@ AliMUONPainterPlotSelector::UpdateTypeButton()
     AliMUONPainterInterfaceHelper::Unselect(*fTypes,"*");
   }
 
-  if (!fCurrentData)
-  {
-    AliMUONPainterInterfaceHelper::SetState(*fTypes,kFALSE);
-  }
-  
+	
   fTypes->Show();
 }
 
