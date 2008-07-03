@@ -16,15 +16,11 @@
 #include <TRootEmbeddedCanvas.h>
 #include <TCanvas.h>
 #include "TGFrame.h"
-
-//#include "AliHLTPHOSRcuChannelDataStruct.h"
-//#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
 #include "AliHLTPHOSOnlineDisplayCalibTab.h"
-#include "AliHLTPHOSOnlineDisplayRawTab.h"
-#include "AliHLTPHOSOnlineDisplayRawDataMenu.h"
+
 #include "AliHLTPHOSConstants.h"
+
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
 #include "AliHLTPHOSBase.h"
 
@@ -37,37 +33,24 @@ using namespace PhosHLTConst;
 
 class TCanvas;
 
-//class AliHLTPHOSRcuCellEnergyDataStruct;
-
-
 class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
 {
  public:
   ~AliHLTPHOSOnlineDisplay();
   int GetNextEvent();
-  int GetNextEventRaw();
   int GetHistogram();
   void InitDisplay();
   void EvaluateAverage();
   int ScanArguments(int argc, char** argv);
-
-  //  static void ShowRawData();
-
-
-  void ShowRawData();
-  void GetRawData(TH1D *histogramPtr, int x, int y, int gain);
-
   static AliHLTPHOSOnlineDisplay* Instance(int argc, char** argv);  
-
   static AliHLTPHOSOnlineDisplayEventTab  *fgEventTabPtr;
+  void Gain2Text(const int gain,  char *txt) const;
+
 
  private:
   AliHLTPHOSOnlineDisplay();
   AliHLTPHOSOnlineDisplay(int argc, char** argv);
-  static AliHLTPHOSOnlineDisplayRawDataMenu *fgRawMenuPtr;
-  //  static AliHLTPHOSOnlineDisplayEventTab  *fgEventTabPtr;
   static AliHLTPHOSOnlineDisplayCalibTab  *fgCalibTabPtr;
-  static AliHLTPHOSOnlineDisplayRawTab    *fgRawTabPtr;
   static TGTab               *fTab;
   static AliHLTPHOSOnlineDisplay* fgInstancePtr;
   static unsigned int fgNHosts;
@@ -78,15 +61,8 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
   static short unsigned    *fgPorts;
   static Bool_t fgAccumulate;
   static Bool_t fgSyncronize;
-
   TCanvas  *fgRawDataCanvas;
   TH1D     *fgRawDataPlotsPtr[MAX_HISTOGRAMS];
-
-  //  static TCanvas  *fgRawDataCanvas;
-  //  static TH1D     *fgRawDataPlotsPtr[MAX_HISTOGRAMS];
-
-  //  static TH1D     *fgRawDataPlotsPtr[25];
-
 };
 
 

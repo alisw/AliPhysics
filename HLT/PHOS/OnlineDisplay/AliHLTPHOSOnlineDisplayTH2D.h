@@ -25,34 +25,31 @@
 
 #include <TH2D.h>
 #include <TCanvas.h>
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
+
+#include "AliHLTPHOSConstants.h" 
+
+using namespace PhosHLTConst;
+
 
 class AliHLTPHOSOnlineDisplay;
 
-class  AliHLTPHOSOnlineDisplayTH2D : public TH2D, public AliHLTPHOSBase
+//class  AliHLTPHOSOnlineDisplayTH2D : public TH2D, public AliHLTPHOSBase
+class  AliHLTPHOSOnlineDisplayTH2D : public TH2D
 {
 public:
   AliHLTPHOSOnlineDisplayTH2D(AliHLTPHOSOnlineDisplay  *onlineDisplayPtr, const char* name, const char* title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup);
   virtual ~AliHLTPHOSOnlineDisplayTH2D();
- 
   virtual void ExecuteEvent(Int_t event, Int_t pz, Int_t px);
-
-
   int GetZBin(Int_t pz);
   int GetXBin(Int_t px);
-
-  void SetGain(int gain);
-
 private:
   AliHLTPHOSOnlineDisplayTH2D(); 
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
-
-  //  TH1D *fHistPtr;
-  TCanvas  *fgRawDataCanvas;
-  TH1D     *fgRawDataPlotsPtr[N_HISTOGRAMS]; 
-
-  int fGain;
-
+  TCanvas  *fgRawDataCanvasPtr[N_GAINS];
+  TH1D     *fgRawDataPlotsPtr[N_HISTOGRAMS][N_GAINS]; 
+  TCanvas  *fgRawDataCanvasSinglePtr[N_GAINS];
+  TH1D     *fgRawDataPlotsSinglePtr[N_GAINS]; 
 };
 
 #endif

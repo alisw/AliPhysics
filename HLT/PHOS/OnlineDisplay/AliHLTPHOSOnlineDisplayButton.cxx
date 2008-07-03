@@ -45,6 +45,7 @@ AliHLTPHOSOnlineDisplayButton::~AliHLTPHOSOnlineDisplayButton()
 }
 
 
+
 Bool_t
 AliHLTPHOSOnlineDisplayButton::HandleButton(Event_t* event)
 {
@@ -58,7 +59,7 @@ AliHLTPHOSOnlineDisplayButton::HandleButton(Event_t* event)
 	{
 	case 'r': //First get configuration comment
 	  cout << "AliHLTPHOSOnlineDisplayButton::HandleButton,   getting rawdata"<< endl;  
-	  fOnlineDisplayPtr->ShowRawData();
+	  //	  fOnlineDisplayPtr->ShowRawData();
 	  break;
 	default:
 	  //	  MainGui::DisplayMessage("illegal command");
