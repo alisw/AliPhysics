@@ -28,6 +28,7 @@
 #include "AliMUONRecoParam.h"
 
 #include "AliLog.h"
+#include "AliMUONPadStatusMaker.h"
 
 #include <Riostream.h>
 
@@ -65,11 +66,14 @@ AliMUONRecoParam::AliMUONRecoParam()
   fUseSmoother(kFALSE),
   fSaveFullClusterInESD(kTRUE),
   fCalibrationMode("NOGAIN"),
-  fBypassSt45(kFALSE)
+  fBypassSt45(0),
+  fPadGoodnessMask(0)
 {
   /// Constructor
   SetNameTitle("MUON","MUON");
   
+	SetDefaultLimits();
+	
   // use the default parameters for low flux environment
   SetLowFluxParam();
 }
@@ -78,6 +82,18 @@ AliMUONRecoParam::AliMUONRecoParam()
 AliMUONRecoParam::~AliMUONRecoParam() 
 {
   /// Destructor
+}
+
+//_____________________________________________________________________________
+void
+AliMUONRecoParam::BypassSt45(Bool_t st4, Bool_t st5)
+{
+	/// Set the bypass status
+	
+	if ( st4 && st5 ) fBypassSt45 = 45;
+	else if ( st4 ) fBypassSt45 = 4;
+	else if ( st5 ) fBypassSt45 = 5;
+	else fBypassSt45 = 0;
 }
 
 //_____________________________________________________________________________
@@ -156,7 +172,7 @@ void AliMUONRecoParam::SetLowFluxParam()
   fUseSmoother = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
-  fBypassSt45 = kFALSE;
+  fBypassSt45 = 0;
   
 }
 
@@ -190,7 +206,7 @@ void AliMUONRecoParam::SetHighFluxParam()
   fUseSmoother = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
-  fBypassSt45 = kFALSE;
+  fBypassSt45 = 0;
   
 }
 
@@ -224,7 +240,7 @@ void AliMUONRecoParam::SetCosmicParam()
   fSaveFullClusterInESD = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
-  fBypassSt45 = kFALSE;
+  fBypassSt45 = 0;
   
 }
 
@@ -240,7 +256,22 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout<<Form("Clustering mode = %s",fClusteringMode.Data())<<endl;
   cout<<Form("Tracking mode = %s",fTrackingMode.Data())<<endl;
 
-  if (BypassSt45()) cout << "Will bypass St45 (replacing their clusters by generated ones from trigger tracks)" << endl;
+	TString bypass;
+	
+	if ( BypassSt45() )
+	{
+		bypass = "stations 4 and 5";
+	}
+	else if ( BypassSt4() ) 
+	{
+		bypass = "station 4";
+	}
+	else if ( BypassSt5() ) 
+	{
+		bypass = "station 5";
+	}
+	
+  if (bypass.Length()) cout << "Will bypass " << bypass.Data() << " (replacing real clusters by generated ones from trigger tracks)" << endl;
   
   if (fCombinedClusterTrackReco) cout<<"Combined cluster/track reconstruction: ON"<<endl;
   else cout<<"Combined cluster/track reconstruction: OFF"<<endl;
@@ -344,7 +375,51 @@ void AliMUONRecoParam::Print(Option_t *option) const
   } while (++st < 5);
   if (discardedSt) cout<<endl;
   
+	cout << Form("Pad goodness policy mask is 0x%x",PadGoodnessMask()) << endl;
+	cout << "Which means we reject pads having the condition = " <<
+	AliMUONPadStatusMaker::AsCondition(PadGoodnessMask()).Data() << endl;
+	
+	cout << "The pad limits we are using are :" << endl;
+	
+	cout << Form("%5.0f <= HVSt12 <= %5.0f Volts",HVSt12LowLimit(),HVSt12HighLimit()) << endl;
+	cout << Form("%5.0f <= HVSt345 <= %5.0f Volts",HVSt345LowLimit(),HVSt345HighLimit()) << endl;
+	cout << Form("%7.2f <= Pedestal mean <= %7.2f",PedMeanLowLimit(),PedMeanHighLimit()) << endl;
+	cout << Form("%7.2f <= Pedestal sigma <= %7.2f",PedSigmaLowLimit(),PedSigmaHighLimit()) << endl;
+	cout << Form("%e <= Gain linear term <= %e",GainA1LowLimit(),GainA1HighLimit()) << endl;
+	cout << Form("%e <= Gain quadratic term <= %e",GainA2LowLimit(),GainA2HighLimit()) << endl;
+	cout << Form("%5.0f <= Gain threshold term <= %5.0f",GainThresLowLimit(),GainThresHighLimit()) << endl;
+	
   cout<<"\t-------------------------------------"<<endl<<endl;
   
+}
+
+//_____________________________________________________________________________
+void
+AliMUONRecoParam::SetDefaultLimits()
+{
+	/// Set the default limits and pad goodness policy
+
+	fHVSt12Limits[0]=1500;
+	fHVSt12Limits[1]=2000;
+
+	fHVSt345Limits[0]=1500;
+	fHVSt345Limits[1]=2000;
+
+	fPedMeanLimits[0] = 50;
+	fPedMeanLimits[1] = 1024;
+	
+	fPedSigmaLimits[0] = 0.1;
+	fPedSigmaLimits[1] = 100;
+
+	fGainA1Limits[0] = 0.1;
+	fGainA1Limits[1] = 10;
+
+	fGainA2Limits[0] = -1E30;
+	fGainA2Limits[1] = 1E30;
+	
+	fGainThresLimits[0] = 0;
+	fGainThresLimits[1] = 4095;
+	
+	fPadGoodnessMask = 0x8080;
 }
 

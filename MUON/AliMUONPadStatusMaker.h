@@ -22,6 +22,7 @@
 class TExMap;
 class AliMUONCalibrationData;
 class AliMUONVCalibParam;
+class AliMUONVTrackerData;
 class AliMUONVStore;
 
 class AliMUONPadStatusMaker : public TObject
@@ -45,11 +46,13 @@ public:
   AliMUONVCalibParam* Neighbours(Int_t detElemId, Int_t manuId) const;
   
   static TString AsString(Int_t status);
-  
+
+  static TString AsCondition(Int_t status);
+
   /// Return Low and High limits for a0 parameter of gain (linear slope)
-  TVector2 GainA0Limits() const { return fGainA0Limits; }
-  /// Return Low and High limits for a1 parameter of gain (parabolic term)
   TVector2 GainA1Limits() const { return fGainA1Limits; }
+  /// Return Low and High limits for a1 parameter of gain (parabolic term)
+  TVector2 GainA2Limits() const { return fGainA2Limits; }
   /// Return Low and High limits for thres parameter of gain
   TVector2 GainThresLimits() const { return fGainThresLimits; }
   
@@ -64,9 +67,9 @@ public:
   TVector2 PedSigmaLimits() const { return fPedSigmaLimits; }
   
   /// Set Low and High limits for a0 parameter of gain (linear slope)
-  void GainA0Limits(float low, float high) { fGainA0Limits.Set(low,high); }
-  /// Set Low and High limits for a1 parameter of gain (parabolic term)
   void GainA1Limits(float low, float high) { fGainA1Limits.Set(low,high); }
+  /// Set Low and High limits for a1 parameter of gain (parabolic term)
+  void GainA2Limits(float low, float high) { fGainA2Limits.Set(low,high); }
   /// Set Low and High limits for thres parameter of gain
   void GainThresLimits(float low, float high) { fGainThresLimits.Set(low,high); }
   
@@ -80,14 +83,28 @@ public:
   /// Set Low and High threshold for pedestal sigma 
   void SetPedSigmaLimits(float low, float high) { fPedSigmaLimits.Set(low,high); }
   
+	/// Set Low and High threshold for gain a0 term
+	void SetGainA1Limits(float low, float high) { fGainA1Limits.Set(low,high); }
+	/// Set Low and High threshold for gain a1 term
+	void SetGainA2Limits(float low, float high) { fGainA2Limits.Set(low,high); }
+	/// Set Low and High threshold for gain threshold term
+	void SetGainThresLimits(float low, float high) { fGainThresLimits.Set(low,high); }
+	
+  /// Set Low and High manu occupancy limits
+  void SetManuOccupancyLimits(float low, float high) { fManuOccupancyLimits.Set(low,high); }
+  /// Get manu occupancy limits
+  TVector2 ManuOccupancyLimits() const { return fManuOccupancyLimits; }
+  
 private:
   /// Not implemented
   AliMUONPadStatusMaker(const AliMUONPadStatusMaker&);
   /// Not implemented
   AliMUONPadStatusMaker& operator=(const AliMUONPadStatusMaker&);
 
-  static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus, Int_t&  gainStatus);
-  static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus, Int_t gainStatus);
+  static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus, 
+                           Int_t&  gainStatus, Int_t& otherStatus);
+  static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus, 
+                           Int_t gainStatus, Int_t otherStatus);
   
   AliMUONVCalibParam* ComputeStatus(Int_t detElemId, Int_t manuId) const;
 
@@ -105,6 +122,8 @@ private:
 
   Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
 
+  Int_t OtherStatus(Int_t detElemId, Int_t manuId) const;
+  
   void SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const;
 
 private:
@@ -118,10 +137,10 @@ private:
   enum EGainStatus
   {
     kGainOK = 0,
-    kGainA0TooLow = (1<<1),
-    kGainA0TooHigh = (1<<2),
-    kGainA1TooLow = (1<<3),
-    kGainA1TooHigh = (1<<4),
+    kGainA1TooLow = (1<<1),
+    kGainA1TooHigh = (1<<2),
+    kGainA2TooLow = (1<<3),
+    kGainA2TooHigh = (1<<4),
     kGainThresTooLow = (1<<5),
     kGainThresTooHigh = (1<<6),
     
@@ -154,10 +173,17 @@ private:
     kHVMissing = kMissing // please always use last bit for meaning "missing"
   };
   
+  /// Other
+  enum EOtherStatus
+  {
+    kManuOccupancyTooLow = (1<<1),
+    kManuOccupancyTooHigh = (1<<2),
+  };
+  
   const AliMUONCalibrationData& fCalibrationData; //!< helper class to get data access (not owner)
   
-  TVector2 fGainA0Limits; //!< Low and High threshold for gain a0 parameter
-  TVector2 fGainA1Limits; //!< Low and High threshold for gain a1 parameter
+  TVector2 fGainA1Limits; //!< Low and High threshold for gain a0 parameter
+  TVector2 fGainA2Limits; //!< Low and High threshold for gain a1 parameter
   TVector2 fGainThresLimits; //!< Low and High threshold for gain threshold parameter
 
   TVector2 fHVSt12Limits; //!< Low and High threshold for St12 HV
@@ -165,13 +191,17 @@ private:
 
   TVector2 fPedMeanLimits; //!< Low and High threshold for pedestal mean
   TVector2 fPedSigmaLimits; //!< Low and High threshold for pedestal sigma
-    
+  
+  TVector2 fManuOccupancyLimits; //!< Low and High manu occupancy limits
+  
   AliMUONVStore* fStatus; //!< statuses of the pads
   
   mutable TExMap* fHV; //!< cache of hv statuses
 
   AliMUONVStore* fPedestals; //!< pedestal values
   AliMUONVStore* fGains; //!< gain values
+  
+  AliMUONVTrackerData* fTrackerData; //!< to get occupancies...
   
   ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,gain,hv
 };

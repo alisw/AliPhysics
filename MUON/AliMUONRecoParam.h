@@ -166,13 +166,76 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Bool_t   RequestStation(Int_t iSt) const {return (iSt >= 0 && iSt < 5) ? fRequestStation[iSt] : kFALSE;}
   
   /// set the bypassSt45 value
-  void BypassSt45(Bool_t value) { fBypassSt45 = value; }
+  void BypassSt45(Bool_t st4, Bool_t st5);
+	
   /// return kTRUE if we should replace clusters in St 4 and 5 by generated clusters from trigger tracks
-  Bool_t BypassSt45() const { return fBypassSt45; }
+  Bool_t BypassSt45() const { return fBypassSt45==45; }
   
+	/// return kTRUE if we should replace clusters in St 4 by generated clusters from trigger tracks
+  Bool_t BypassSt4() const { return BypassSt45() || fBypassSt45==4 ; }
+
+	/// return kTRUE if we should replace clusters in St 5 by generated clusters from trigger tracks
+  Bool_t BypassSt5() const { return BypassSt45() || fBypassSt45==5 ; }
   
+	/// Set Low and High threshold for St12 HV
+  void SetHVSt12Limits(float low, float high) { fHVSt12Limits[0]=low; fHVSt12Limits[1]=high; }
+	/// Retrieve low limit for St12's HV
+	Float_t HVSt12LowLimit() const { return fHVSt12Limits[0]; }
+	/// Retrieve high limit for St12's HV
+	Float_t HVSt12HighLimit() const { return fHVSt12Limits[1]; }
+	
+  /// Set Low and High threshold for St345 HV
+  void SetHVSt345Limits(float low, float high) { fHVSt345Limits[0]=low; fHVSt345Limits[1]=high; } 
+	/// Retrieve low limit for St345's HV
+	Float_t HVSt345LowLimit() const { return fHVSt345Limits[0]; }
+	/// Retrieve high limit for St345's HV
+	Float_t HVSt345HighLimit() const { return fHVSt345Limits[1]; }
+	
+  /// Set Low and High threshold for pedestal mean
+  void SetPedMeanLimits(float low, float high) { fPedMeanLimits[0]=low; fPedMeanLimits[1]=high; }
+	/// Retrieve low limit of ped mean
+	Float_t PedMeanLowLimit() const { return fPedMeanLimits[0]; }
+	/// Retrieve high limit of ped mean
+	Float_t PedMeanHighLimit() const { return fPedMeanLimits[1]; }
+	
+  /// Set Low and High threshold for pedestal sigma 
+  void SetPedSigmaLimits(float low, float high) { fPedSigmaLimits[0]=low; fPedSigmaLimits[1]=high; }
+	/// Retrieve low limit of ped sigma
+	Float_t PedSigmaLowLimit() const { return fPedSigmaLimits[0]; }
+	/// Retrieve high limit of ped sigma
+	Float_t PedSigmaHighLimit() const { return fPedSigmaLimits[1]; }
+  
+	/// Set Low and High threshold for gain a0 term
+	void SetGainA1Limits(float low, float high) { fGainA1Limits[0]=low; fGainA1Limits[1]=high; }
+	/// Retrieve low limit of a1 (linear term) gain parameter
+	Float_t GainA1LowLimit() const { return fGainA1Limits[0]; }
+	/// Retrieve high limit of a1 (linear term) gain parameter
+	Float_t GainA1HighLimit() const { return fGainA1Limits[1]; }
+	
+	/// Set Low and High threshold for gain a1 term
+	void SetGainA2Limits(float low, float high) { fGainA2Limits[0]=low; fGainA2Limits[1]=high; }
+	/// Retrieve low limit of a2 (quadratic term) gain parameter
+	Float_t GainA2LowLimit() const { return fGainA2Limits[0]; }
+	/// Retrieve high limit of a2 (quadratic term) gain parameter
+	Float_t GainA2HighLimit() const { return fGainA2Limits[1]; }
+	
+	/// Set Low and High threshold for gain threshold term
+	void SetGainThresLimits(float low, float high) { fGainThresLimits[0]=low; fGainThresLimits[1]=high; }
+	/// Retrieve low limit on threshold gain parameter
+	Float_t GainThresLowLimit() const { return fGainThresLimits[0]; }
+	/// Retrieve high limit on threshold gain parameter
+	Float_t GainThresHighLimit() const { return fGainThresLimits[1]; }
+	
+	/// Set the goodness mask (see AliMUONPadStatusMapMaker)
+	void SetPadGoodnessMask(UInt_t mask) { fPadGoodnessMask=mask; }
+	/// Get the goodness mask
+	UInt_t PadGoodnessMask() const { return fPadGoodnessMask; }
+	
   virtual void Print(Option_t *option = "") const;
   
+private:
+	void SetDefaultLimits();
+	
  private:
   
   /// clustering mode:  NOCLUSTERING, PRECLUSTER, PRECLUSTERV2, PRECLUSTERV3, COG, <pre>
@@ -230,19 +293,28 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// calibration mode:  GAIN, NOGAIN, GAINCONSTANTCAPA
   TString fCalibrationMode; ///<\brief calibration mode
   
-  Bool_t fBypassSt45; ///< kTRUE to use trigger tracks to generate "fake" clusters in St 4 and 5
+  Int_t fBypassSt45; ///< non-zero to use trigger tracks to generate "fake" clusters in St 4 and 5. Can be 0, 4, 5 or 45 only
   
   Bool_t     fUseChamber[10]; ///< kTRUE to use the chamber i in the tracking algorithm
   
   Bool_t     fRequestStation[5]; ///< kTRUE to request at least one cluster in station i to validate the track
   
+	Double32_t fGainA1Limits[2]; //< Low and High threshold for gain a0 parameter
+  Double32_t fGainA2Limits[2]; //< Low and High threshold for gain a1 parameter
+  Double32_t fGainThresLimits[2]; //< Low and High threshold for gain threshold parameter
+  Double32_t fHVSt12Limits[2]; //< Low and High threshold for St12 HV
+  Double32_t fHVSt345Limits[2]; //< Low and High threshold for St345 HV
+  Double32_t fPedMeanLimits[2]; //< Low and High threshold for pedestal mean
+  Double32_t fPedSigmaLimits[2]; //< Low and High threshold for pedestal sigma
+	
+	UInt_t fPadGoodnessMask; //< goodness mask (see AliMUONPadStatusMaker)
+	
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
-  
-  
-  ClassDef(AliMUONRecoParam,6) // MUON reco parameters
+    
+  ClassDef(AliMUONRecoParam,7) // MUON reco parameters
 };
 
 #endif

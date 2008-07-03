@@ -26,12 +26,15 @@
 
 #include "AliMUONPadStatusMaker.h"
 
+#include "AliQA.h"
+
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONStringIntMap.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONVTrackerData.h"
 
 #include "AliMpArea.h"
 #include "AliMpArrayI.h"
@@ -51,8 +54,12 @@
 #include <Riostream.h>
 #include <TArrayI.h>
 #include <TExMap.h>
+#include <TFile.h>
+#include <TKey.h>
 #include <TMap.h>
+#include <TROOT.h>
 #include <TString.h>
+#include <TSystem.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMaker)
@@ -61,22 +68,83 @@ ClassImp(AliMUONPadStatusMaker)
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData)
 : fCalibrationData(calibData),
-  fGainA0Limits(0,1E30),
-  fGainA1Limits(-1E-30,1E30),
-  fGainThresLimits(0,4095),
-  fHVSt12Limits(0,5000),
-  fHVSt345Limits(0,5000),
-  fPedMeanLimits(0,4095),
-  fPedSigmaLimits(0,4095),
-  fStatus(new AliMUON2DMap(true)),
-  fHV(new TExMap),
-  fPedestals(calibData.Pedestals()),
-  fGains(calibData.Gains())
+fGainA1Limits(0,1E30),
+fGainA2Limits(-1E-30,1E30),
+fGainThresLimits(0,4095),
+fHVSt12Limits(0,5000),
+fHVSt345Limits(0,5000),
+fPedMeanLimits(0,4095),
+fPedSigmaLimits(0,4095),
+fManuOccupancyLimits(0,0.1),
+fStatus(new AliMUON2DMap(true)),
+fHV(new TExMap),
+fPedestals(calibData.Pedestals()),
+fGains(calibData.Gains()),
+fTrackerData(0x0)
 {
-   /// ctor
-    AliInfo(Form("ped store %s gain store %s",
-                 fPedestals->ClassName(),
-                 fGains->ClassName()));
+  /// ctor
+  AliDebug(1,Form("ped store %s gain store %s",
+                  fPedestals->ClassName(),
+                  fGains->ClassName()));
+  
+  TString qaFileName(AliQA::GetQADataFileName("MUON",calibData.RunNumber(),0));
+  
+  // search the QA file in memory first.
+  TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(qaFileName.Data()));
+
+  if (!f)
+  {
+    // then tries to open it
+    if ( gSystem->AccessPathName(qaFileName.Data()) == kFALSE ) 
+    {
+      f = TFile::Open(qaFileName.Data());
+      if ( f )
+      {
+        AliDebug(1,Form("Got %s from disk",qaFileName.Data()));
+      }
+    }
+  }
+  else
+  {
+    AliDebug(1,Form("Got %s from memory",qaFileName.Data()));
+  }
+  
+  if (f)
+  {
+    TDirectory* d = gDirectory;
+    
+    f->cd("MUON/Raws");
+    
+    TIter next(gDirectory->GetListOfKeys());
+    TKey* key;
+    
+    while ( ( key = static_cast<TKey*>(next()) ) && !fTrackerData )
+    {
+      TString name(key->GetName());
+      
+      if ( name.Contains("CALZ") )
+      {
+        fTrackerData = dynamic_cast<AliMUONVTrackerData*>(key->ReadObj());
+      }
+      
+    }
+    
+    gDirectory = d;
+    
+    if ( fTrackerData ) 
+    {
+      AliInfo(Form("Will make a cut on MANU occupancy from TrackerData=%s",fTrackerData->GetName()));
+    }
+    else
+    {
+      AliWarning(Form("Found a QA file = %s, but could not get the expected TrackerData in there... (probably not a serious problem though)",
+                      f->GetName()));
+    }
+  }
+  else
+  {
+    AliWarning("Did not find QA file, so will not use manu occupancy as a criteria");
+  }
 }
 
 //_____________________________________________________________________________
@@ -92,62 +160,56 @@ TString
 AliMUONPadStatusMaker::AsString(Int_t status)
 {
   /// return a human readable version of the integer status
+  
   Int_t pedStatus;
   Int_t gainStatus;
   Int_t hvStatus;
+  Int_t otherStatus;
   
-  DecodeStatus(status,pedStatus,hvStatus,gainStatus);
+  DecodeStatus(status,pedStatus,hvStatus,gainStatus,otherStatus);
   
-//  /// Gain status
-//  enum EGainStatus
-//  {
-//    kGainOK = 0,
-//    kGainA0TooLow = (1<<1),
-//    kGainA0TooHigh = (1<<2),
-//    kGainA1TooLow = (1<<3),
-//    kGainA1TooHigh = (1<<4),
-//    kGainThresTooLow = (1<<5),
-//    kGainThresTooHigh = (1<<6),
-//    
-//    kGainMissing = kMissing // please always use last bit for meaning "missing"
-//  };
-//  
-//  /// Pedestal status
-//  enum EPedestalStatus
-//  {
-//    kPedOK = 0,
-//    kPedMeanZero = (1<<1),
-//    kPedMeanTooLow = (1<<2),
-//    kPedMeanTooHigh = (1<<3),
-//    kPedSigmaTooLow = (1<<4),
-//    kPedSigmaTooHigh = (1<<5),
-//    
-//    kPedMissing = kMissing // please always use last bit for meaning "missing"
-//  };
-//  
-  TString s("PED ");
+  TString s;
   
-  if ( pedStatus == 0 ) s+= " OK";
-  if ( pedStatus & kPedMeanZero ) s += " Mean is Zero. ";
-  if ( pedStatus & kPedMeanTooLow ) s += " Mean Too Low. ";
-  if ( pedStatus & kPedMeanTooHigh ) s += " Mean Too High. ";
-  if ( pedStatus & kPedSigmaTooLow ) s += " Sigma Too Low. ";
-  if ( pedStatus & kPedSigmaTooHigh ) s += " Sigma Too High. ";
-  if ( pedStatus & kPedMissing ) s += " is missing.";
+  if ( pedStatus & kPedMeanZero ) s += "& Ped Mean is Zero ";
+  if ( pedStatus & kPedMeanTooLow ) s += "& Ped Mean Too Low ";
+  if ( pedStatus & kPedMeanTooHigh ) s += "& Ped Mean Too High ";
+  if ( pedStatus & kPedSigmaTooLow ) s += "& Ped Sigma Too Low ";
+  if ( pedStatus & kPedSigmaTooHigh ) s += "& Ped Sigma Too High ";
+  if ( pedStatus & kPedMissing ) s += "& Ped is missing ";
   
-//  /// HV Error
-//  enum EHVError 
-//  {
-//    kHVOK = 0,
-//    kHVError = (1<<0),
-//    kHVTooLow = (1<<1),
-//    kHVTooHigh = (1<<2),
-//    kHVChannelOFF = (1<<3),
-//    kHVSwitchOFF = (1<<4),
-//    
-//    kHVMissing = kMissing // please always use last bit for meaning "missing"
-//  };
+	if ( gainStatus & kGainA1TooLow ) s+="& Gain A1 is Too Low ";
+	if ( gainStatus & kGainA1TooHigh ) s+="& Gain A1 is Too High ";
+	if ( gainStatus & kGainA2TooLow ) s+="& Gain A2 is Too Low ";
+	if ( gainStatus & kGainA2TooHigh ) s+="& Gain A2 is Too High ";
+	if ( gainStatus & kGainThresTooLow ) s+="& Gain Thres is Too Low ";
+	if ( gainStatus & kGainThresTooHigh ) s+="& Gain Thres is Too High ";
+	if ( gainStatus & kGainMissing ) s+="& Gain is missing ";
+	
+	if ( hvStatus & kHVError ) s+="& HV is on error ";
+	if ( hvStatus & kHVTooLow ) s+="& HV is Too Low ";
+	if ( hvStatus & kHVTooHigh ) s+="& HV is Too High ";
+	if ( hvStatus & kHVChannelOFF ) s+="& HV has channel OFF ";
+	if ( hvStatus & kHVSwitchOFF ) s+="& HV has switch OFF ";
+	if ( hvStatus & kHVMissing ) s+="& HV is missing ";
 
+  if ( otherStatus & kManuOccupancyTooHigh ) s+="& manu occupancy too high ";
+  if ( otherStatus & kManuOccupancyTooLow ) s+="& manu occupancy too low ";
+  
+  if ( s[0] == '&' ) s[0] = ' ';
+  
+  return s;
+}
+
+//_____________________________________________________________________________
+TString
+AliMUONPadStatusMaker::AsCondition(Int_t mask)
+{
+  /// return a human readable version of the mask's equivalent condition
+  
+  TString s(AsString(mask));
+  
+  s.ReplaceAll("&","|");
+  
   return s;
 }
 
@@ -155,12 +217,14 @@ AliMUONPadStatusMaker::AsString(Int_t status)
 Int_t
 AliMUONPadStatusMaker::BuildStatus(Int_t pedStatus, 
                                    Int_t hvStatus, 
-                                   Int_t gainStatus)
+                                   Int_t gainStatus,
+                                   Int_t otherStatus)
 {
   /// Build a complete status from specific parts (ped,hv,gain)
   
   return ( hvStatus & 0xFF ) | ( ( pedStatus & 0xFF ) << 8 ) | 
-  ( ( gainStatus & 0xFF ) << 16 );
+  ( ( gainStatus & 0xFF ) << 16 ) |
+  ( ( otherStatus & 0xFF ) << 24 ) ;
 }
 
 //_____________________________________________________________________________
@@ -168,10 +232,12 @@ void
 AliMUONPadStatusMaker::DecodeStatus(Int_t status, 
                                     Int_t& pedStatus, 
                                     Int_t& hvStatus, 
-                                    Int_t& gainStatus)
+                                    Int_t& gainStatus,
+                                    Int_t& otherStatus)
 {
   /// Decode complete status into specific parts (ped,hv,gain)
   
+  otherStatus = ( status & 0xFF000000 ) >> 24;
   gainStatus = ( status & 0xFF0000 ) >> 16;
   pedStatus = ( status & 0xFF00 ) >> 8;
   hvStatus = (status & 0xFF);
@@ -454,22 +520,16 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
   /// Compute the status of a given manu, using all available information,
   /// i.e. pedestals, gains, and HV
   
-//  AliCodeTimerAuto("")
-  
-//  AliCodeTimerStart("Param creation");
   AliMUONVCalibParam* param = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,-1);
   fStatus->Add(param);
-//  AliCodeTimerStop("Param creation");
-  
-//  AliCodeTimerStart("FindObject");
+
   AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemId,manuId));
 
   AliMUONVCalibParam* gains = static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemId,manuId));
-//  AliCodeTimerStop("FindObject");
   
   Int_t hvStatus = HVStatus(detElemId,manuId);
 
-//  AliCodeTimerStart("Loop");
+  Int_t otherStatus = OtherStatus(detElemId,manuId);
   
   for ( Int_t manuChannel = 0; manuChannel < param->Size(); ++manuChannel )
   {
@@ -498,10 +558,10 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
       Float_t a1 = gains->ValueAsFloatFast(manuChannel,1);
       Float_t thres = gains->ValueAsFloatFast(manuChannel,2);
   
-      if ( a0 < fGainA0Limits.X() ) gainStatus |= kGainA0TooLow;
-      else if ( a0 > fGainA0Limits.Y() ) gainStatus |= kGainA0TooHigh;
-      if ( a1 < fGainA1Limits.X() ) gainStatus |= kGainA1TooLow;
-      else if ( a1 > fGainA1Limits.Y() ) gainStatus |= kGainA1TooHigh;
+      if ( a0 < fGainA1Limits.X() ) gainStatus |= kGainA1TooLow;
+      else if ( a0 > fGainA1Limits.Y() ) gainStatus |= kGainA1TooHigh;
+      if ( a1 < fGainA2Limits.X() ) gainStatus |= kGainA2TooLow;
+      else if ( a1 > fGainA2Limits.Y() ) gainStatus |= kGainA2TooHigh;
       if ( thres < fGainThresLimits.X() ) gainStatus |= kGainThresTooLow;
       else if ( thres > fGainThresLimits.Y() ) gainStatus |= kGainThresTooHigh;
     }
@@ -510,21 +570,39 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
       gainStatus = kGainMissing;
     }
         
-    Int_t status = BuildStatus(pedStatus,hvStatus,gainStatus);
+    Int_t status = BuildStatus(pedStatus,hvStatus,gainStatus,otherStatus);
       
     param->SetValueAsIntFast(manuChannel,0,status);
   }
   
-//  AliCodeTimerStop("Loop");
-  
   return param;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONPadStatusMaker::OtherStatus(Int_t detElemId, Int_t manuId) const
+{
+  /// Get the "other" status for a given manu
+  if ( fTrackerData ) 
+  {
+    Double_t occ = fTrackerData->Manu(detElemId,manuId,2);
+    if ( occ < fManuOccupancyLimits.X() )
+    {
+      return kManuOccupancyTooLow;
+    }
+    if ( occ > fManuOccupancyLimits.Y() )
+    {
+      return kManuOccupancyTooHigh;
+    }
+  }
+  return 0;
 }
 
 //_____________________________________________________________________________
 AliMUONVCalibParam* 
 AliMUONPadStatusMaker::PadStatus(Int_t detElemId, Int_t manuId) const
 {
-  /// Get the status for a given channel
+  /// Get the status container for a given manu
   
   AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fStatus->FindObject(detElemId,manuId));
   if (!param)
