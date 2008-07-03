@@ -177,7 +177,7 @@ private:
   enum EOtherStatus
   {
     kManuOccupancyTooLow = (1<<1),
-    kManuOccupancyTooHigh = (1<<2),
+    kManuOccupancyTooHigh = (1<<2)
   };
   
   const AliMUONCalibrationData& fCalibrationData; //!< helper class to get data access (not owner)
