@@ -60,8 +60,6 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-
 #include "AliRelAlignerKalman.h"
 
 ClassImp(AliRelAlignerKalman)
@@ -79,7 +77,31 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fPVolIDArray1(new TArrayI(1)),
     fPVolIDArray2(new TArrayI(1)),
     fPVolIDArray2b(new TArrayI(1)),
+    fPDir1(new TVector3), //Direction
+    fPDir2(new TVector3),
+    fPDir2b(new TVector3),
+    fPDir1Cov(new TMatrixDSym(3)),
+    fPDir2Cov(new TMatrixDSym(3)),
+    fPDir2bCov(new TMatrixDSym(3)),
+    fPDir1ThetaPhiCov(new TMatrixDSym(2)), //Direction vectors are unit vectors, therefore 2 independent components!
+    fPDir2ThetaPhiCov(new TMatrixDSym(2)),
+    fPDir2bThetaPhiCov(new TMatrixDSym(2)),
+    fPPoint1(new TVector3),
+    fPPoint2(new TVector3),
+    fPPoint2b(new TVector3),
+    fPPoint1Cov(new TMatrixDSym(3)),
+    fPPoint2Cov(new TMatrixDSym(3)),
+    fPPoint2bCov(new TMatrixDSym(3)),
+    fPRefPoint(new TVector3(0.,0.,0.)),
+    fPRefPointDir(new TVector3(0.,1.,0.)),
+    fPRefAliTrackPoint(new AliTrackPoint()),
+    fPRotMat(new TMatrixD(3,3)),
+    fPX(new TVectorD( fgkNSystemParams )),
+    fPXcov(new TMatrixDSym( fgkNSystemParams )),
+    fPH(new TMatrixD( fgkNMeasurementParams2TrackMode, fgkNSystemParams )),
     fQ(1e-10),
+    fPMeasurement(new TVectorD( fgkNMeasurementParams2TrackMode )),
+    fPMeasurementCov(new TMatrixDSym( fgkNMeasurementParams2TrackMode )),
     fNMeasurementParams(fgkNMeasurementParams2TrackMode),
     fNSystemParams(fgkNSystemParams),
     fOutRejSigmas(2.),
@@ -108,51 +130,37 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fFirstLayerVol1(1),
     fLastLayerVol1(6),
     fFirstLayerVol2(7),
-    fLastLayerVol2(8)
+    fLastLayerVol2(8),
+    fPVec010(new TVector3(0,1,0)),
+    fPXMesHist(new TH1D("x","x", 50, 0, 0)),
+    fPZMesHist(new TH1D("z","z", 50, 0, 0)),
+    fPPhiMesHist(new TH1D("phi","phi", 50, 0, 0)),
+    fPThetaMesHist(new TH1D("theta","theta", 50, 0, 0)),
+    fPXMesHist2(new TH1D("x_","x_", 50, 0, 0)),
+    fPZMesHist2(new TH1D("z_","z_", 50, 0, 0)),
+    fPPhiMesHist2(new TH1D("phi_","phi_", 50, 0, 0)),
+    fPThetaMesHist2(new TH1D("theta_","theta_", 50, 0, 0)),
+    fPMesCov11Hist(new TH1D("mescov11","mescov11", 50, 0, 0)),
+    fPMesCov22Hist(new TH1D("mescov22","mescov22", 50, 0, 0)),
+    fPMesCov33Hist(new TH1D("mescov33","mescov33", 50, 0, 0)),
+    fPMesCov44Hist(new TH1D("mescov44","mescov44", 50, 0, 0)),
+    fPMesCov55Hist(new TH1D("mescov55","mescov55", 50, 0, 0)),
+    fPMesCov66Hist(new TH1D("mescov66","mescov66", 50, 0, 0)),
+    fPMesCov77Hist(new TH1D("mescov77","mescov77", 50, 0, 0)),
+    fPMesCov88Hist(new TH1D("mescov88","mescov88", 50, 0, 0)),
+    fPMeasurementCovCorr(new TMatrixDSym(fgkNMeasurementParams2TrackMode))
 {
     //Default constructor
     
-    fPDir1 = new TVector3; //Direction
-    fPDir2 = new TVector3;
-    fPDir2b = new TVector3;
-    fPDir1Cov = new TMatrixDSym(3);
-    fPDir2Cov = new TMatrixDSym(3);
-    fPDir2bCov = new TMatrixDSym(3);
-    fPDir1ThetaPhiCov = new TMatrixDSym(2); //Direction vectors are unit vectors, therefore 2 independent components!
-    fPDir2ThetaPhiCov = new TMatrixDSym(2);
-    fPDir2bThetaPhiCov = new TMatrixDSym(2);
-    fPPoint1 = new TVector3;
-    fPPoint2 = new TVector3;
-    fPPoint2b = new TVector3;
-    fPPoint1Cov = new TMatrixDSym(3);
-    fPPoint2Cov = new TMatrixDSym(3);
-    fPPoint2bCov = new TMatrixDSym(3);
-    fPRefPoint = new TVector3(0.,0.,0.);
-    fPRefPointDir = new TVector3(0.,1.,0.);
     Float_t refpointcov[6] = { 1., 0., 0., 
                                    0., 0.,
                                        1.  };
-    fPRefAliTrackPoint = new AliTrackPoint( 0.,0.,0.,refpointcov,0 );
-    fPMeasurement = new TVectorD( fNMeasurementParams );
-    fPMeasurementCov = new TMatrixDSym( fNMeasurementParams );
-    fPX = new TVectorD( fNSystemParams );
-    fPXcov = new TMatrixDSym( fNSystemParams );
-    fPH = new TMatrixD( fNMeasurementParams, fNSystemParams );
-    fPRotMat = new TMatrixD(3,3);
-    fPVec010 = new TVector3(0,1,0);
+    fPRefAliTrackPoint->SetXYZ( 0., 0., 0., refpointcov );
 
     //default seed: zero, unit(large) errors
     fPXcov->UnitMatrix();
     (*fPXcov) *= 1.;
 
-    fPPhiMesHist = new TH1D("phi","phi", 50, 0, 0);
-    fPThetaMesHist = new TH1D("theta","theta", 50, 0, 0);
-    fPXMesHist = new TH1D("x","x", 50, 0, 0);
-    fPZMesHist = new TH1D("z","z", 50, 0, 0);
-    fPPhiMesHist2 = new TH1D("phi_","phi_", 50, 0, 0);
-    fPThetaMesHist2 = new TH1D("theta_","theta_", 50, 0, 0);
-    fPXMesHist2 = new TH1D("x_","x_", 50, 0, 0);
-    fPZMesHist2 = new TH1D("z_","z_", 50, 0, 0);
 }
 
 Bool_t AliRelAlignerKalman::AddESDTrack( AliESDtrack* pTrack )
@@ -674,7 +682,7 @@ Bool_t AliRelAlignerKalman::FindCosmicInEvent( AliESDEvent* pEvent )
     for (Int_t itrack=0; itrack < ntracks; itrack++)
     {
         pTrack = pEvent->GetTrack(itrack);
-        if (!pTrack) {cout<<"no track!"<<endl;continue;}
+        if (!pTrack) {std::cout<<"no track!"<<std::endl;continue;}
         if(pTrack->GetNcls(0)+pTrack->GetNcls(1) < fMinPointsVol1) continue;
         Float_t phi = pTrack->GetAlpha()+TMath::ASin(pTrack->GetSnp());
         Float_t theta = 0.5*TMath::Pi()-TMath::ATan(pTrack->GetTgl());
@@ -826,7 +834,7 @@ Bool_t AliRelAlignerKalman::FindCosmicInEvent( AliESDEvent* pEvent )
     AliTrackPointArray* pfullITStrackArray = new AliTrackPointArray(1);
     JoinTrackArrays( pfullITStrackArray, pITSArray1, pITSArray2 );
 
-    //cout<<"selected tracks: TPC: "<<TPCgood1<<" "<<TPCgood2<<" ITS: "<<ITSgood1<<" "<<ITSgood2<<endl;
+    //std::cout<<"selected tracks: TPC: "<<TPCgood1<<" "<<TPCgood2<<" ITS: "<<ITSgood1<<" "<<ITSgood2<<std::endl;
 
     //Fill the final trackpointarrays
     if (!ExtractSubTrackPointArray( fPTrackPointArray1,  fPVolIDArray1,  pfullITStrackArray, 1, 6 )) return kFALSE;
@@ -951,6 +959,16 @@ Bool_t AliRelAlignerKalman::FitTrackPointArrayRieman( TVector3* pPoint, TMatrixD
     //printf("FitTrackPointArrayRieman\n");
     //Use AliTrackFitterRieman to fit a track through given point array
     
+    ///////////////////////////////////////
+    //this is just to shut up the compiler!!
+        TMatrixDSym* a = pDirCov;
+        AliTrackPoint* b = pRefPoint;
+        TArrayI* c = pVolIDs;
+        a = a;
+        b = b;
+        c = c;
+    ////////////////////////////////////
+
     AliTrackFitterRieman fitter;
     AliTrackPoint trackPoint;
     const Float_t* pointcov;
@@ -981,6 +999,14 @@ Bool_t AliRelAlignerKalman::FitTrackPointArrayKalman( TVector3* pPoint, TMatrixD
     //Use AliTrackFitterKalman to fit a track through given point array
     //still needs work
     
+    ///////////////////////////////////////
+    //this is just to shut up the compiler!!
+        AliTrackPoint* b = pRefPoint;
+        TArrayI* c = pVolIDs;
+        b = b;
+        c = c;
+    ////////////////////////////////////
+
     AliTrackFitterKalman fitter;
     AliTrackPoint trackPoint, trackPoint2;
 
@@ -1213,7 +1239,7 @@ Bool_t AliRelAlignerKalman::SetCalibrationPass( Bool_t cp )
 void AliRelAlignerKalman::PrintDebugInfo()
 {
     //prints debug info
-    cout<<"AliRelAlignerKalman debug info"<<endl;
+    std::cout<<"AliRelAlignerKalman debug info"<<std::endl;
     printf("fPTrackPointArray1 y: ");
     for (Int_t i=0; i<fPTrackPointArray1->GetNPoints();i++)
     {

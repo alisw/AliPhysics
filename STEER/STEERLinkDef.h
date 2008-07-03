@@ -148,4 +148,6 @@
 
 #pragma link C++ class AliEventInfo+;
 
+#pragma link C++ class AliRelAlignerKalman+;
+
 #endif

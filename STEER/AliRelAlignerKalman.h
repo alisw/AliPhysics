@@ -14,14 +14,14 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
-#include "TMath.h"
-#include "TMatrixD.h"
-#include "TMatrixDSym.h"
-#include "TVectorD.h"
-#include "TVectorD.h"
-#include "TDecompLU.h"
-#include "TVector3.h"
-#include "TArrayI.h"
+#include <TMath.h>
+#include <TMatrix.h>
+#include <TVector.h>
+#include <TVector3.h>
+#include <TDecompLU.h>
+#include <TArrayI.h>
+#include <TH1D.h>
+#include <TF1.h>
 
 #include "AliESDtrack.h"
 #include "AliTrackPointArray.h"
@@ -31,13 +31,12 @@
 #include "AliESDfriendTrack.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "TH1D.h"
-#include "TF1.h"
 
 class AliRelAlignerKalman {
 
 public:
     AliRelAlignerKalman();
+    virtual ~AliRelAlignerKalman() {}
 
     //User methods:
     Bool_t AddESDTrack( AliESDtrack* pTrack );
@@ -81,9 +80,6 @@ public:
     void PrintDebugInfo();
     
 protected:
-    AliRelAlignerKalman& operator= (const AliRelAlignerKalman& aligner );
-    AliRelAlignerKalman(const AliRelAlignerKalman&);
-
     Bool_t UpdateEstimateKalman();
     Bool_t FillMeasurement();
     Bool_t FillMeasurementMatrix();
@@ -151,25 +147,6 @@ private:
     //
     //
 
-    //Control and calibration histograms
-    TH1D* fPXMesHist;  //histo of x measurement
-    TH1D* fPZMesHist;  //histo of y measurement
-    TH1D* fPPhiMesHist; //histo of phi measurement
-    TH1D* fPThetaMesHist; //histo of theta measurement
-    TH1D* fPXMesHist2;  //histo of x measurement (3tracks mode)
-    TH1D* fPZMesHist2;  //histo of y measurement (3tracks mode)
-    TH1D* fPPhiMesHist2; //histo of phi measurement (3tracks mode)
-    TH1D* fPThetaMesHist2; //histo of theta measurement (3tracks mode)
-    TH1D* fPMesCov11Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TH1D* fPMesCov22Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TH1D* fPMesCov33Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TH1D* fPMesCov44Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TH1D* fPMesCov55Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TH1D* fPMesCov66Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TH1D* fPMesCov77Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TH1D* fPMesCov88Hist;  //histogram of the covariance of a fit parameter, used in calibration
-    TMatrixDSym* fPMeasurementCovCorr; //correction to be applied to the measurement covariance
-    
     Bool_t f3TracksMode; //are we using 3 tracklets?
     Bool_t fSortTrackPointsWithY; //whether to sort the points after processing
     Bool_t fFixedMeasurementCovariance; //don't fiddle with measurement cov - supply it externally
@@ -202,10 +179,32 @@ private:
 
     TVector3 * fPVec010; //vector pointing up
 
+    //Control and calibration histograms
+    TH1D* fPXMesHist;  //histo of x measurement
+    TH1D* fPZMesHist;  //histo of y measurement
+    TH1D* fPPhiMesHist; //histo of phi measurement
+    TH1D* fPThetaMesHist; //histo of theta measurement
+    TH1D* fPXMesHist2;  //histo of x measurement (3tracks mode)
+    TH1D* fPZMesHist2;  //histo of y measurement (3tracks mode)
+    TH1D* fPPhiMesHist2; //histo of phi measurement (3tracks mode)
+    TH1D* fPThetaMesHist2; //histo of theta measurement (3tracks mode)
+    TH1D* fPMesCov11Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TH1D* fPMesCov22Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TH1D* fPMesCov33Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TH1D* fPMesCov44Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TH1D* fPMesCov55Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TH1D* fPMesCov66Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TH1D* fPMesCov77Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TH1D* fPMesCov88Hist;  //histogram of the covariance of a fit parameter, used in calibration
+    TMatrixDSym* fPMeasurementCovCorr; //correction to be applied to the measurement covariance
+    
     static const Int_t fgkNMeasurementParams2TrackMode = 4; //how many measurables in 2 track mode
     static const Int_t fgkNMeasurementParams3TrackMode = 8; //how many measurables in 3 track mode
     static const Int_t fgkNSystemParams = 8;                //how many fit parameters
     
+    AliRelAlignerKalman& operator= (const AliRelAlignerKalman& aligner );
+    AliRelAlignerKalman(const AliRelAlignerKalman&);
+
     ClassDef(AliRelAlignerKalman,1)     //AliRelAlignerKalman class
 };
 
