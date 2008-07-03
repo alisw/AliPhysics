@@ -17,6 +17,7 @@
 #endif
 
 class AliMUONPainterMasterFrame;
+class TDirectory;
 class TGMainFrame;
 
 class AliMUONMchViewApplication : public TRint
@@ -49,7 +50,8 @@ private:
   void Open();
   void PrintAs();
   void ReleaseNotes();
-  
+  void ReadDir(TDirectory& dir);
+	
 private:
   TGMainFrame* fMainFrame; ///< pointer to our mainframe
   AliMUONPainterMasterFrame* fPainterMasterFrame; ///< pointer to our main object

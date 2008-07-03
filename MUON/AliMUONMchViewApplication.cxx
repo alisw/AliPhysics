@@ -273,7 +273,16 @@ AliMUONMchViewApplication::Open(const char* filename)
   
   TFile* f = TFile::Open(filename);
   
-  TList* keys = f->GetListOfKeys();
+	ReadDir(*f);
+	
+	delete f;
+}
+
+//______________________________________________________________________________
+void
+AliMUONMchViewApplication::ReadDir(TDirectory& dir)
+{
+  TList* keys = dir.GetListOfKeys();
   TIter next(keys);
   
   TKey* k;
@@ -282,6 +291,13 @@ AliMUONMchViewApplication::Open(const char* filename)
   {
     TObject* object = k->ReadObj();
 
+		if ( object->InheritsFrom("TDirectory") )
+		{
+			TDirectory* d = static_cast<TDirectory*>(object);
+			ReadDir(*d);
+			continue;
+		}
+		
     if ( object->InheritsFrom("AliMUONVTrackerDataMaker") )
     {
       AliMUONVTrackerDataMaker* maker = dynamic_cast<AliMUONVTrackerDataMaker*>(object);
@@ -305,9 +321,7 @@ AliMUONMchViewApplication::Open(const char* filename)
     }
   }
   
-  delete f;
 } 
-
 
 //______________________________________________________________________________
 void
