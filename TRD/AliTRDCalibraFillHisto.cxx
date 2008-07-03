@@ -601,7 +601,8 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
 
   
   const AliTRDseedV1 *tracklet = 0x0;          // tracklet per plane
-  AliTRDcluster *cl      = 0x0;          // cluster attached now to the tracklet
+  AliTRDcluster *cl      = 0x0;                // cluster attached now to the tracklet
+  Bool_t         newtr   = kTRUE;              // new track
   
   
   ///////////////////////////
@@ -622,9 +623,13 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
     while(!(cl = tracklet->GetClusters(ic++))) continue;
     Int_t detector = cl->GetDetector();
     if (detector != fDetectorPreviousTrack) {
-      // don't use the rest of this track if in the same plane
-      if ((layer == GetLayer(fDetectorPreviousTrack))) {
-	break;
+      // if not a new track
+      if(!newtr){
+	// don't use the rest of this track if in the same plane
+	if (layer == GetLayer(fDetectorPreviousTrack)) {
+	  //printf("bad tracklet, same layer for detector %d\n",detector);
+	  break;
+	}
       }
       //Localise the detector bin
       LocalisationDetectorXbins(detector);
@@ -640,7 +645,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
       // reset
       fDetectorPreviousTrack = detector;
     }
-
+    newtr = kFALSE;
 
     ////////////////////////////
     // loop over the clusters
@@ -681,10 +686,8 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
       if(pass && fPRF2dOn) HandlePRFtrackletV1(tracklet,nbclusters);
 		
     } // if a good tracklet
- 
   }
-
-
+  
   return kTRUE;
   
 }
@@ -1285,6 +1288,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   //
   //
 
+  //printf("begin\n");
   ///////////////////////////////////////////
   // Take the parameters of the track
   //////////////////////////////////////////
@@ -1322,6 +1326,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     }
   }
   // do nothing if out of tnp range
+  //printf("echec %d\n",(Int_t)echec);
   if(echec) return kFALSE;
 
   ///////////////////////
@@ -1338,6 +1343,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   fitter.StoreData(kFALSE);
   fitter.ClearPoints();
 
+  //printf("loop clusters \n");
   ////////////////////////////
   // loop over the clusters
   ////////////////////////////
@@ -1385,7 +1391,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
 
   }//clusters loop
 
-
+  //printf("Fin loop clusters \n");
   //////////////////////////////
   // fit with a straight line
   /////////////////////////////
@@ -1394,8 +1400,11 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   TVectorD line(2);
   fitter.GetParameters(line);
   Float_t  pointError  = -1.0;
+  if(fitter.GetChisquare()>=0.0) {
   pointError  =  TMath::Sqrt(fitter.GetChisquare()/nb3pc);
-  
+  }
+
+  //printf("PRF second loop \n");
   ////////////////////////////////////////////////
   // Fill the PRF: Second loop over clusters
   //////////////////////////////////////////////
@@ -1990,6 +1999,8 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
       }
     }
   }
+
+  //printf("nbclusters %d, low limit %d, high limit %d\n",nbclusters,fNumberClusters,fNumberClustersf);
 
   if(nbclusters < fNumberClusters) return;
   if(nbclusters > fNumberClustersf) return;

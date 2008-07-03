@@ -2560,7 +2560,7 @@ void AliTRDCalibraFit::FillFillCH(Int_t idect)
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;
-      fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+      fDebugStreamer = new TTreeSRedirector("TRDDebugFitCH.root");
       if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
     } 
     
@@ -2611,7 +2611,7 @@ void AliTRDCalibraFit::FillFillPH(Int_t idect)
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
-	fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	fDebugStreamer = new TTreeSRedirector("TRDDebugFitPH.root");
 	if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
       } 
       
@@ -2670,7 +2670,7 @@ void AliTRDCalibraFit::FillFillPRF(Int_t idect)
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
-	fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	fDebugStreamer = new TTreeSRedirector("TRDDebugFitPRF.root");
 	if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
       } 
       
@@ -2724,7 +2724,7 @@ void AliTRDCalibraFit::FillFillLinearFitter()
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;
-      fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+      fDebugStreamer = new TTreeSRedirector("TRDDebugFitLinearFitter.root");
       if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
     } 
     
@@ -3868,7 +3868,7 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
-	fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	fDebugStreamer = new TTreeSRedirector("TRDDebugFitPRF.root");
 	if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
       } 
       
@@ -3921,7 +3921,7 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
-	fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	fDebugStreamer = new TTreeSRedirector("TRDDebugFitPRF.root");
 	if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
       } 
       
@@ -4050,7 +4050,7 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
-	fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	fDebugStreamer = new TTreeSRedirector("TRDDebugFitPRF.root");
 	if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
       } 
       
@@ -4131,7 +4131,7 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
-	fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+	fDebugStreamer = new TTreeSRedirector("TRDDebugFitPRF.root");
 	if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
       } 
       
@@ -4562,7 +4562,7 @@ void AliTRDCalibraFit::NormierungCharge()
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;
-      fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
+      fDebugStreamer = new TTreeSRedirector("TRDDebugFitCH.root");
       if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
     } 
     (* fDebugStreamer) << "NormierungCharge"<<
