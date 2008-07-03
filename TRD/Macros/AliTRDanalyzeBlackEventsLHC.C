@@ -13,7 +13,6 @@ void AliTRDanalyzeBlackEventsLHC(const char *filename) {
   AliTRDrawStreamTB::DisableStackNumberChecker();
   AliTRDrawStreamTB::DisableStackLinkNumberChecker();
   AliTRDrawStreamTB::DisableSkipData();
-  
 
   AliTRDrawStreamTB *raw = new AliTRDrawStreamTB(reader); 
   //raw->Init();
