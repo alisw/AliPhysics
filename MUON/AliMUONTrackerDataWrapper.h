@@ -42,7 +42,7 @@ public:
   virtual void SetRunning(Bool_t /*flag*/) {}
   
   /// Advance to next event (no effect if not runnable)
-  virtual Bool_t NextEvent() { return kFALSE; }
+  virtual Bool_t ProcessEvent() { return kFALSE; }
   
   /// Rewind events (no effect if not runnable)
   virtual void Rewind() { }

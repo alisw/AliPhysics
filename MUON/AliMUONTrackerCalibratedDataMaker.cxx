@@ -17,22 +17,22 @@
 
 #include "AliMUONTrackerCalibratedDataMaker.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCodeTimer.h"
+#include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONDigitCalibrator.h"
-#include "AliMUONDigitMaker.h"
-#include "AliMUONDigitStoreV2R.h"
+#include "AliMUONRawStreamTracker.h"
+#include "AliMUONRawStreamTrackerHP.h"
+#include "AliMUONRecoParam.h"
+#include "AliMUONReconstructor.h"
 #include "AliMUONTrackerData.h"
-#include "AliMUONVDigit.h"
-#include "AliMUONVDigitStore.h"
 #include "AliMpDDLStore.h"
-#include "AliCodeTimer.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawReader.h"
-#include "AliLog.h"
 #include <Riostream.h>
 
 ///\class AliMUONTrackerCalibratedDataMaker
@@ -48,35 +48,94 @@ ClassImp(AliMUONTrackerCalibratedDataMaker)
 Int_t AliMUONTrackerCalibratedDataMaker::fgkCounter(0);
 
 //_____________________________________________________________________________
+AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(TRootIOCtor*)
+: AliMUONVTrackerDataMaker(),
+fRawReader(0x0),
+fIsOwnerOfRawReader(kFALSE),
+fAccumulatedData(0x0),
+fOneEventData(0x0),
+fSource(""),
+fIsRunning(kFALSE),
+fDigitCalibrator(0x0),
+fCalibrationData(0x0),
+fCDBPath(""),
+fNumberOfEvents(0),
+fUseHPDecoder(kTRUE)
+{
+  /// Root IO ctor
+}
+
+//_____________________________________________________________________________
+AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(Int_t runNumber,
+                                                                     AliRawReader* reader, 
+                                                                     const char* cdbpath,
+                                                                     const char* calibMode,
+                                                                     Bool_t histogram,
+                                                                     Double_t xmin,
+                                                                     Double_t xmax,                                                                     
+                                                                     Bool_t useHPdecoder)
+: AliMUONVTrackerDataMaker(),
+fRawReader(reader),
+fIsOwnerOfRawReader(kFALSE),
+fAccumulatedData(0x0),
+fOneEventData(new AliMUON2DMap(true)),
+fSource("unspecified"),
+fIsRunning(kFALSE),
+fDigitCalibrator(0x0),
+fCalibrationData(0x0),
+fCDBPath(cdbpath),
+fNumberOfEvents(0),
+fUseHPDecoder(useHPdecoder)
+{
+  /// Ctor in which this object will NOT be owner of the reader,
+  /// and can NOT apply rewind to it, nor use Next on it
+  
+  Ctor(runNumber,calibMode,histogram,xmin,xmax);
+}
+
+//_____________________________________________________________________________
 AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReader* reader,
                                                                      const char* cdbpath,
                                                                      const char* calibMode,
                                                                      Bool_t histogram,
                                                                      Double_t xmin,
-                                                                     Double_t xmax)
+                                                                     Double_t xmax,
+                                                                     Bool_t useHPDecoder)
 : AliMUONVTrackerDataMaker(),
-  fRawReader(reader),
-  fAccumulatedData(0x0),
-  fOneEventData(new AliMUON2DMap(true)),
-  fSource("unspecified"),
-  fIsRunning(kFALSE),
-  fDigitMaker(0x0),
-  fDigitCalibrator(0x0),
-  fCalibrationData(0x0),
-  fDigitStore(0x0), 
-  fCDBPath(cdbpath),
-  fNumberOfEvents(0)
+fRawReader(reader),
+fIsOwnerOfRawReader(kTRUE),
+fAccumulatedData(0x0),
+fOneEventData(new AliMUON2DMap(true)),
+fSource("unspecified"),
+fIsRunning(kFALSE),
+fDigitCalibrator(0x0),
+fCalibrationData(0x0),
+fCDBPath(cdbpath),
+fNumberOfEvents(0),
+fUseHPDecoder(useHPDecoder)
 {
-  /// Ctor
+  /// Ctor, in which we are the owner of the reader, so we can rewind and advance it
+  /// as we wish
 
-    Int_t runNumber(0);
-    
+  Int_t runNumber(0);
+  
   if ( fRawReader ) 
   {
-    reader->NextEvent(); // to be sure to get run number available
+    fRawReader->NextEvent(); // to be sure to get run number available
     runNumber = reader->GetRunNumber();
+    fRawReader->RewindEvents();
   }
-    
+  
+  Ctor(runNumber,calibMode,histogram,xmin,xmax);
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTrackerCalibratedDataMaker::Ctor(Int_t runNumber, const char* calibMode,
+                                        Bool_t histogram, Double_t xmin, Double_t xmax)
+{
+  /// "designated" constructor.
+
   ++fgkCounter;
   
   Bool_t calibrate = ( fCDBPath.Length() > 0 );
@@ -94,7 +153,7 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
   
   if (!runNumber)
   {
-    name = Form("%s%s(%d)",
+    name = Form("%s%s_%d",
                 (histogram ? "H" : ""),
                 basename.Data(),
                 fgkCounter);
@@ -115,12 +174,6 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
     AliInfo(Form("Will histogram between %e and %e",xmin,xmax));
   }
   
-  if  (fRawReader) fRawReader->RewindEvents();
-
-  fDigitMaker = new AliMUONDigitMaker;
-  fDigitMaker->SetMakeTriggerDigits(kFALSE);
-  fDigitStore = new AliMUONDigitStoreV2R;
-
   if ( calibrate ) 
   {
     fCalibrationData = new AliMUONCalibrationData(runNumber);
@@ -150,7 +203,9 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
       AliCDBManager::Instance()->SetDefaultStorage(storage);
     }
     
-    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,calibMode);
+		const AliMUONRecoParam* recoParams = AliMUONReconstructor::GetRecoParam();
+    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParams,calibMode);
+		//FIXME: get the reco param from GUI and/or from OCDB if not used from the QA code ?
   }
 }
 
@@ -160,10 +215,8 @@ AliMUONTrackerCalibratedDataMaker::~AliMUONTrackerCalibratedDataMaker()
   /// dtor
   delete fOneEventData;
   delete fAccumulatedData;
-  delete fRawReader;
-  delete fDigitStore;
+  if ( fIsOwnerOfRawReader ) delete fRawReader;
   delete fCalibrationData;
-  delete fDigitMaker;
   delete fDigitCalibrator;
 }
 
@@ -180,8 +233,14 @@ AliMUONTrackerCalibratedDataMaker::Merge(TCollection*)
 Bool_t 
 AliMUONTrackerCalibratedDataMaker::NextEvent()
 {
-  /// Read next event
+  /// Read and process next event
  
+  if ( !fIsOwnerOfRawReader ) 
+  {
+    AliError("I'm not the owner of the raw reader. Cannot use NextEvent");
+    return kFALSE;
+  }
+  
   AliCodeTimerAuto("");
   
   static Int_t nphysics(0);
@@ -193,7 +252,6 @@ AliMUONTrackerCalibratedDataMaker::NextEvent()
 
   if (!ok) 
   {
-    fDigitMaker->Print();
     return kFALSE;
   }
   
@@ -208,63 +266,86 @@ AliMUONTrackerCalibratedDataMaker::NextEvent()
 
   ++nphysics;
 
-  Int_t rv = fDigitMaker->Raw2Digits(fRawReader,fDigitStore);
-  
-  if ( ( rv & AliMUONDigitMaker::kTrackerBAD ) != 0 ) return kTRUE;
-
-  if ( fDigitCalibrator ) 
-  {
-    fDigitCalibrator->Calibrate(*fDigitStore);
-  }
-  
-  Bool_t dok = ConvertDigits();
-  
-  if ( dok )
-    {
-      ++ngood;
-      fAccumulatedData->Add(*fOneEventData);
-    }
-
-  AliDebug(1,Form("n %10d nphysics %10d ngood %10d",fNumberOfEvents,nphysics,ngood));
-
-  return kTRUE;
+	Bool_t pok = ProcessEvent();
+	
+	if ( pok ) ++ngood;
+	
+	AliDebug(1,Form("n %10d nphysics %10d ngood %10d",fNumberOfEvents,nphysics,ngood));
+	
+	return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t 
-AliMUONTrackerCalibratedDataMaker::ConvertDigits()
+Bool_t
+AliMUONTrackerCalibratedDataMaker::ProcessEvent()
 {
-  /// Convert digitstore into fOneEventData
+	/// Process current event 
+  /// Note that we do not simply reuse the AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore&)
+  /// method, as this would require filling first a digitStore, and then calibrate it, and
+  /// then convert it into a VStore, all this taking too much time.
+  ///
+  /// But we *do* reuse the AliMUONDigitCalibrator::CalibrateDigit in order not to 
+  /// duplicate this critical piece of calibration code !
+  ///
   
   AliCodeTimerAuto("");
-  
-  TIter next(fDigitStore->CreateIterator());
-  AliMUONVDigit* digit;
 
+  AliMUONVRawStreamTracker* stream = 0x0;
+  
+  if ( fUseHPDecoder ) 
+  {
+    stream = new AliMUONRawStreamTrackerHP(fRawReader);
+  }
+  else
+  {
+    stream = new AliMUONRawStreamTracker(fRawReader);
+  }
+  
+  stream->First();
+  
+  Int_t buspatchId;
+  UShort_t manuId;
+  UChar_t manuChannel;
+	UShort_t adc;
+  
   fOneEventData->Clear();
   
-  while ( ( digit = static_cast<AliMUONVDigit*>(next())) )
-  {
-    Double_t value = ( digit->IsCalibrated() ? digit->Charge() : digit->ADC() );
-
-    if ( value > 0 ) 
+  while ( stream->Next(buspatchId,manuId,manuChannel,adc) )
+  {    
+    Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(buspatchId);
+    
+    AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fOneEventData->FindObject(detElemId,manuId));
+    if (!param)
     {
-      Int_t detElemId = digit->DetElemId();
-      Int_t manuId = digit->ManuId();
-    
-      AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fOneEventData->FindObject(detElemId,manuId));
-      if (!param)
-      {
-        param = new AliMUONCalibParamND(1,64,detElemId,manuId,
+      param = new AliMUONCalibParamND(1,64,detElemId,manuId,
                                       AliMUONVCalibParam::InvalidFloatValue());
-        fOneEventData->Add(param);
-      }
-    
-      param->SetValueAsDouble(digit->ManuChannel(),0,value);
+      fOneEventData->Add(param);
     }
-  }
 
-  return kTRUE;
+    Bool_t ok = fDigitCalibrator->IsValidDigit(detElemId, manuId, manuChannel);
+
+    if ( ok ) 
+    {
+      Float_t charge = fDigitCalibrator->CalibrateDigit(detElemId, manuId, manuChannel,adc,3.0);
+    
+      if (charge > 0.0 ) 
+      {
+        param->SetValueAsDouble(manuChannel,0,charge);
+      }
+    }
+  }    
+  
+	Bool_t good(kFALSE);
+	
+  if ( !stream->IsErrorMessage() )
+  {
+    good = kTRUE;
+    fAccumulatedData->Add(*fOneEventData);
+  }
+  
+  delete stream;
+  
+  return good;  
 }
 
 //_____________________________________________________________________________
@@ -285,4 +366,17 @@ AliMUONTrackerCalibratedDataMaker::Rewind()
   /// Rewind events
   fRawReader->RewindEvents();
   fNumberOfEvents=0;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONTrackerCalibratedDataMaker::SetRawReader(AliRawReader* rawReader)
+{
+  /// Points to another raw reader
+	
+	if ( fIsOwnerOfRawReader ) 
+	{
+    AliFatal("Improper use of this class ! Cannot change raw reader in this case");
+	}
+	fRawReader = rawReader;
 }

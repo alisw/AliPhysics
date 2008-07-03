@@ -26,9 +26,17 @@ class AliMUONVTrackerData;
 class AliMUONTrackerRawDataMaker : public AliMUONVTrackerDataMaker
 {
 public:
+  AliMUONTrackerRawDataMaker(TRootIOCtor* ioCtor);
+
+  AliMUONTrackerRawDataMaker(Int_t runNumber,
+                             AliRawReader* reader,
+                             Bool_t histogram=kFALSE,
+                             Bool_t useHPdecoder=kFALSE);
+
   AliMUONTrackerRawDataMaker(AliRawReader* reader = 0x0,
                              Bool_t histogram=kFALSE,
                              Bool_t useHPdecoder=kFALSE);
+  
   virtual ~AliMUONTrackerRawDataMaker();
   
   /// Whether we have a valid raw reader
@@ -52,6 +60,8 @@ public:
   /// Set the running status
   virtual void SetRunning(Bool_t flag) { fIsRunning = flag; }
   
+	Bool_t ProcessEvent();
+	
   Bool_t NextEvent();
   
   void Print(Option_t* opt="") const;
@@ -69,14 +79,19 @@ public:
 
   Long64_t Merge(TCollection* li);
   
+	void SetRawReader(AliRawReader* rawReader);
+	
 private:
   /// Not implemented
   AliMUONTrackerRawDataMaker(const AliMUONTrackerRawDataMaker& rhs);
   /// Not implemented
   AliMUONTrackerRawDataMaker& operator=(const AliMUONTrackerRawDataMaker& rhs);
   
+  void Ctor(Bool_t histogram);
+  
 private:
-  AliRawReader* fRawReader; //!< reader of the data (owner)
+  AliRawReader* fRawReader; //!< reader of the data (owner or not)
+	Bool_t fIsOwnerOfRawReader; //!< whether we must delete rawReader or not
   AliMUONVTrackerData* fAccumulatedData; ///< data (owner)
   AliMUONVStore* fOneEventData; ///< data for one event (owner)
   TString fSource; ///< where the data comes from
@@ -84,10 +99,10 @@ private:
   Int_t fNumberOfEvents; ///< number of events seen
   Int_t fRunNumber; ///< run number of the data
   Bool_t fIsEventByEvent; ///< we only keep one event's data (no accumulation)
-  Bool_t fUseHPDecoder; ///< whether to use high performance decoder or not (false by default)
+  Bool_t fUseHPDecoder; ///< whether to use high performance decoder or not
   static Int_t fgkCounter; ///< to count the number of instances
   
-  ClassDef(AliMUONTrackerRawDataMaker,3) // Producer of AliMUONVTrackerData from raw data
+  ClassDef(AliMUONTrackerRawDataMaker,4) // Producer of AliMUONVTrackerData from raw data
 };
 
 #endif

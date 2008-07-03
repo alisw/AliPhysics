@@ -46,8 +46,11 @@ public:
   /// Set the running state (no effect if not runnable)
   virtual void SetRunning(Bool_t flag) = 0;
   
-  /// Advance to next event (no effect if not runnable)
-  virtual Bool_t NextEvent() = 0;
+	/// Process current event
+	virtual Bool_t ProcessEvent() = 0;
+	
+  /// Advance to next event and process it (no effect if not runnable)
+  virtual Bool_t NextEvent() { return ProcessEvent(); }
   
   /// Rewind events (no effect if not runnable)
   virtual void Rewind() = 0;

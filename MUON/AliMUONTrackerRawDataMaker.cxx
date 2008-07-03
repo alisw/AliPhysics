@@ -25,14 +25,9 @@
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONDigitCalibrator.h"
-#include "AliMUONDigitMaker.h"
-#include "AliMUONDigitStoreV2R.h"
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONTrackerData.h"
-#include "AliMUONVDigit.h"
-#include "AliMUONVDigitStore.h"
 #include "AliMpDDLStore.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawReader.h"
@@ -51,22 +46,41 @@ ClassImp(AliMUONTrackerRawDataMaker)
 Int_t AliMUONTrackerRawDataMaker::fgkCounter(0);
 
 //_____________________________________________________________________________
+AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(TRootIOCtor*)
+: AliMUONVTrackerDataMaker(),
+fRawReader(0x0),
+fIsOwnerOfRawReader(kFALSE),
+fAccumulatedData(0x0),
+fOneEventData(0x0),
+fSource(""),
+fIsRunning(kFALSE),
+fNumberOfEvents(0),
+fRunNumber(0),
+fIsEventByEvent(kFALSE),
+fUseHPDecoder(kTRUE)
+{
+  /// Ctor
+  ++fgkCounter;
+}
+
+//_____________________________________________________________________________
 AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader, 
                                                        Bool_t histogram,
                                                        Bool_t useHPdecoder)
 : AliMUONVTrackerDataMaker(),
-  fRawReader(reader),
-  fAccumulatedData(0x0),
-  fOneEventData(new AliMUON2DMap(true)),
-  fSource("unspecified"),
-  fIsRunning(kFALSE),
-  fNumberOfEvents(0),
-  fRunNumber(0),
-  fIsEventByEvent(kFALSE),
-  fUseHPDecoder(useHPdecoder)
+fRawReader(reader),
+fIsOwnerOfRawReader(kTRUE),
+fAccumulatedData(0x0),
+fOneEventData(new AliMUON2DMap(true)),
+fSource("unspecified"),
+fIsRunning(kFALSE),
+fNumberOfEvents(0),
+fRunNumber(0),
+fIsEventByEvent(kFALSE),
+fUseHPDecoder(useHPdecoder)
 {
   /// Ctor
-    
+  
   if (fRawReader)
   {
     fRawReader->NextEvent(); // to be sure to get run number available
@@ -74,12 +88,43 @@ AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader,
     fRawReader->RewindEvents();
   }
     
+  Ctor(histogram);
+}
+
+//_____________________________________________________________________________
+AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(Int_t runNumber,
+                                                       AliRawReader* reader, 
+                                                       Bool_t histogram,
+                                                       Bool_t useHPdecoder)
+: AliMUONVTrackerDataMaker(),
+fRawReader(reader),
+fIsOwnerOfRawReader(kTRUE),
+fAccumulatedData(0x0),
+fOneEventData(new AliMUON2DMap(true)),
+fSource("unspecified"),
+fIsRunning(kFALSE),
+fNumberOfEvents(0),
+fRunNumber(runNumber),
+fIsEventByEvent(kFALSE),
+fUseHPDecoder(useHPdecoder)
+{
+  /// Ctor
+    
+  Ctor(histogram);
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTrackerRawDataMaker::Ctor(Bool_t histogram)
+{
+  /// Designated ctor
+  
   TString name;
   
   if (!fRunNumber)
   {
     ++fgkCounter;    
-    name = Form("%sRAW(%d)",(histogram?"H":""),fgkCounter);
+    name = Form("%sRAW_%d",(histogram?"H":""),fgkCounter);
   }
   else
   {
@@ -100,7 +145,7 @@ AliMUONTrackerRawDataMaker::~AliMUONTrackerRawDataMaker()
   /// dtor
   delete fOneEventData;
   delete fAccumulatedData;
-  delete fRawReader;
+	if (fIsOwnerOfRawReader) delete fRawReader;
 }
 
 //_____________________________________________________________________________
@@ -127,7 +172,7 @@ AliMUONTrackerRawDataMaker::Merge(TCollection*)
 Bool_t 
 AliMUONTrackerRawDataMaker::NextEvent()
 {
-  /// Read next event
+  /// Read and process next event
  
   AliCodeTimerAuto("");
   
@@ -156,6 +201,22 @@ AliMUONTrackerRawDataMaker::NextEvent()
 
   ++nphysics;
 
+	if ( ProcessEvent() )
+	{
+		++ngood;
+	}
+	
+	AliDebug(1,Form("n %10d nphysics %10d ngood %10d",fNumberOfEvents,nphysics,ngood));
+	
+	return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONTrackerRawDataMaker::ProcessEvent()
+{
+	/// Process current event
+	
   AliMUONVRawStreamTracker* stream = 0x0;
   
   if ( fUseHPDecoder ) 
@@ -189,17 +250,17 @@ AliMUONTrackerRawDataMaker::NextEvent()
     param->SetValueAsDouble(manuChannel,0,adc);    
   }    
   
+	Bool_t good(kFALSE);
+	
   if ( !stream->IsErrorMessage() )
   {
-    ++ngood;
+    good = kTRUE;
     fAccumulatedData->Add(*fOneEventData);
   }
 
-  AliDebug(1,Form("n %10d nphysics %10d ngood %10d",fNumberOfEvents,nphysics,ngood));
-
   delete stream;
   
-  return kTRUE;
+  return good;
 }
 
 //_____________________________________________________________________________
@@ -220,4 +281,17 @@ AliMUONTrackerRawDataMaker::Rewind()
   /// Rewind events
   fRawReader->RewindEvents();
   fNumberOfEvents=0;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONTrackerRawDataMaker::SetRawReader(AliRawReader* rawReader)
+{
+  /// Points to another raw reader
+	
+	if ( fIsOwnerOfRawReader ) 
+	{
+    AliFatal("Improper use of this class ! Cannot change raw reader in this case");
+	}
+	fRawReader = rawReader;
 }

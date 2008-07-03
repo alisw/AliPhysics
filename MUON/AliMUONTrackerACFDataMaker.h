@@ -42,7 +42,7 @@ public:
   virtual void SetRunning(Bool_t /*flag*/) {}
   
   /// N/A
-  virtual Bool_t NextEvent() { return kTRUE; }
+  virtual Bool_t ProcessEvent() { return kTRUE; }
   
   /// N/A
   virtual void Rewind() { }
