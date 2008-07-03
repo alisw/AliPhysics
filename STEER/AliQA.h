@@ -49,9 +49,11 @@ public:
 	static const DETECTORINDEX_t GetDetIndex(const char * name) ; 
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
 	static const char *    GetDetName(Int_t det) ;
-	static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
 	static TFile *         GetQADataFile(const char * name, const Int_t run, const Int_t cycle) ; 
 	static TFile *		   GetQADataFile(const char * fileName) ;
+	static const char *    GetQADataFileName(const char * name, const Int_t run, const Int_t cycle) 
+								{return Form("%s.%s.%d.%d.root", name, fgQADataFileName.Data(), run, cycle)  ; }
+	static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
 	static const char *    GetQAName() { return fkgQAName ; } 
 	static TFile *         GetQAResultFile() ; 
 	static const char  *   GetQAResultFileName() { return (fgQAResultDirName + fgQAResultFileName).Data() ; }
