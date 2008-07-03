@@ -2726,27 +2726,30 @@ Int_t AliReconstruction::GetDetIndex(const char* detector)
 Bool_t AliReconstruction::FinishPlaneEff() {
  //
  // Here execute all the necessary operationis, at the end of the tracking phase,
- // in case that evaluation of PlaneEfficiencies was required for some detector. 
- // E.g., write into a DataBase file the PlaneEfficiency which have been evaluated. 
+ // in case that evaluation of PlaneEfficiencies was required for some detector.
+ // E.g., write into a DataBase file the PlaneEfficiency which have been evaluated.
  //
  // This Preliminary version works only FOR ITS !!!!!
  // other detectors (TOF,TRD, etc. have to develop their specific codes)
  //
  //  Input: none
- //  Return: kTRUE if all operations have been done properly, kFALSE otherwise 
+ //  Return: kTRUE if all operations have been done properly, kFALSE otherwise
  //
  Bool_t ret=kFALSE;
  //for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
- for (Int_t iDet = 0; iDet < 1; iDet++) { // for the time being only ITS  
+ for (Int_t iDet = 0; iDet < 1; iDet++) { // for the time being only ITS
    //if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
    if(fTracker[iDet]) {
-      AliPlaneEff *planeeff=fTracker[iDet]->GetPlaneEff(); 
-      ret=planeeff->WriteIntoCDB();
+      AliPlaneEff *planeeff=fTracker[iDet]->GetPlaneEff();
+      TString name=planeeff->GetName();
+      name+=".root";
+      TFile* pefile = TFile::Open(name, "RECREATE");
+      ret=(Bool_t)planeeff->Write();
+      pefile->Close();
       if(planeeff->GetCreateHistos()) {
-        TString name="PlaneEffHisto";
-        name+=fgkDetectorName[iDet];
-        name+=".root";
-        ret*=planeeff->WriteHistosToFile(name,"RECREATE");
+        TString hname=planeeff->GetName();
+        hname+="Histo.root";
+        ret*=planeeff->WriteHistosToFile(hname,"RECREATE");
       }
    }
  }
