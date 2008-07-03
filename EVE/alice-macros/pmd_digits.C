@@ -121,7 +121,7 @@ void pmd_digits(Int_t mode = 0)
                 TEveFrameBox* b = lmodule->GetFrame();
                 b->SetFrameWidth(1.5);
                 b->SetFrameColor(1);
-                b->SetBackColor (kTeal - 9);
+                b->SetBackColor ((Color_t) (kTeal - 9));
                 b->SetFrameFill (kFALSE);
                 b->SetDrawBack  (kTRUE);
               }
