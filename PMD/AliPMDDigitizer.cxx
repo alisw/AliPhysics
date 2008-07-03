@@ -325,6 +325,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  statusOld   = -1;
 		}
 	      Int_t igstatus = 0;
+	      Int_t trnotemp = trackno;
 	      //------------------modified by Mriganka ----------------------
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
 		vx = mparticle->Vx();
@@ -338,24 +339,31 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      
 	      while(((imo = mparticle->GetFirstMother()) >= 0)&& 
 		    (ks = mparticle->GetStatusCode() <1) )
-		{
+	      {
 		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  trackpid = mparticle->GetPdgCode();
 		  ks = mparticle->GetStatusCode();
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
+		  trnotemp = trackno;
+                  if(trackpid == 111)
+		  {
+		      trackno = trnotemp;
+		  }
+                  if(trackpid != 111)
+		  {
+		      trackno = imo;
+		  }
 		  
-		  trackno=imo;
-		  		
-		    }
+	      }
 	 
-	      if(trackpid==kGamma||trackpid==11||trackpid==-11||
-		 trackpid==kPi0)igstatus=1;
-	      mtrackpid=trackpid;
-	      mtrackno=trackno;
-	      trackpid=trackpidOld;
-	      trackno=tracknoOld;
+	      if(trackpid == kGamma || trackpid == 11 ||
+		 trackpid == -11 || trackpid == kPi0) igstatus = 1;
+	      mtrackpid = trackpid;
+	      mtrackno  = trackno;
+	      trackpid  = trackpidOld;
+	      trackno   = tracknoOld;
 	      
 	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
@@ -393,7 +401,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		}
 
 	      AliDebug(2,Form("Zposition = %f Edeposition = %f",zPos,edep));
-	      //Float_t zposition = TMath::Abs(zPos);
+
 	      if (zPos < fZPos)
 		{
 		  // CPV
