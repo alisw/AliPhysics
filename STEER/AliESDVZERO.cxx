@@ -1,5 +1,5 @@
-#include <Riostream.h>
 #include "AliESDVZERO.h"
+#include "AliLog.h"
 
 ClassImp(AliESDVZERO)
 
@@ -13,6 +13,8 @@ AliESDVZERO::AliESDVZERO()
    // Default constructor 
    for(Int_t j=0; j<64; j++){ 
       fMultiplicity[j] = 0;   
+      fAdc[j] = 0;   
+      fTime[j] = 0;   
    }
 }
 
@@ -24,13 +26,16 @@ AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
    fBGtriggerV0C(o.fBGtriggerV0C)
 {   
    // Default constructor 
-   for(Int_t j=0; j<64; j++)
+   for(Int_t j=0; j<64; j++) {
        fMultiplicity[j] = o.fMultiplicity[j];
+       fAdc[j] = o.fAdc[j];
+       fTime[j] = o.fTime[j];
+   }
 }
 
 AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
 	      UInt_t BBtriggerV0C, UInt_t BGtriggerV0C,
-	      Short_t *Multiplicity)
+	      Short_t *Multiplicity, Short_t *Adc, Short_t *Time)
   :TObject(),
    fBBtriggerV0A(BBtriggerV0A),
    fBGtriggerV0A(BGtriggerV0A),
@@ -39,8 +44,11 @@ AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
 
 {
    // Constructor
-   for(Int_t j=0; j<64; j++)
+   for(Int_t j=0; j<64; j++) {
        fMultiplicity[j] = Multiplicity[j];
+       fAdc[j] = Adc[j];
+       fTime[j] = Time[j];
+   }
 }
 
 
@@ -54,8 +62,11 @@ AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
   fBGtriggerV0A=o.fBGtriggerV0A;
   fBBtriggerV0C=o.fBBtriggerV0C;
   fBGtriggerV0C=o.fBGtriggerV0C;
-   for(Int_t j=0; j<64; j++)
+   for(Int_t j=0; j<64; j++) {
        fMultiplicity[j] = o.fMultiplicity[j];
+       fAdc[j] = o.fAdc[j];
+       fTime[j] = o.fTime[j];
+   }
   return *this;
 }
 
@@ -94,15 +105,19 @@ Int_t AliESDVZERO::GetMTotV0C()
 
 Int_t* AliESDVZERO::GetMRingV0A()
 {
-  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
-  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
+//  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
+//  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
+  AliInfo("AliESDVZERO::GetMRingV0C() not supported any more");
+  AliInfo("use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)");
   return 0x0;
 }
 
 Int_t* AliESDVZERO::GetMRingV0C()
 {
-  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
-  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
+//  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
+//  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
+  AliInfo("AliESDVZERO::GetMRingV0C() not supported any more");
+  AliInfo("use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)"); 
   return 0x0;
 }
 
@@ -137,6 +152,62 @@ Int_t AliESDVZERO::GetMultiplicity(Int_t i)
   return fMultiplicity[i];
 }
 
+Int_t AliESDVZERO::GetMultiplicityV0A(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetMultiplicityV0A:",32)) return -1;
+  return fMultiplicity[32+i];
+}
+
+Int_t AliESDVZERO::GetMultiplicityV0C(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetMultiplicityV0C:",32)) return -1;
+  return fMultiplicity[i];
+}
+
+Int_t AliESDVZERO::GetAdc(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetAdc:",64)) return -1;
+  return fAdc[i];
+}
+
+Int_t AliESDVZERO::GetAdcV0C(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetAdcV0C:",32)) return -1;
+  return fAdc[i];
+}
+
+Int_t AliESDVZERO::GetAdcV0A(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetAdcV0A:",32)) return -1;
+  return fAdc[32+i];
+}
+
+Int_t AliESDVZERO::GetTime(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetTime:",64)) return -1;
+  return fTime[i];
+}
+
+Int_t AliESDVZERO::GetTimeV0C(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetTimeV0C:",32)) return -1;
+  return fTime[i];
+}
+
+Int_t AliESDVZERO::GetTimeV0A(Int_t i)
+
+{
+  if (OutOfRange(i, "AliESDVZERO::GetTimeV0A:",32)) return -1;
+  return fTime[32+i];
+}
+
 Bool_t AliESDVZERO::BBTriggerV0A(Int_t i)
 {
   if (OutOfRange(i, "AliESDVZERO:::BBTriggerV0A",32)) return kFALSE;
@@ -169,8 +240,9 @@ Bool_t AliESDVZERO::OutOfRange(Int_t i, const char *s, Int_t upper) const
 {
   // checks if i is a valid index. s = name of calling method
   if (i > upper || i < 0) {
-    cout << s << " Index " << i << " out of range" << endl;
-    return kTRUE;
+//    cout << s << " Index " << i << " out of range" << endl;
+     AliInfo(Form("Index %d out of range",i));
+     return kTRUE;
   }
   return kFALSE;
 }

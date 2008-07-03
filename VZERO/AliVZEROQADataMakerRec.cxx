@@ -76,7 +76,7 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
 //____________________________________________________________________________ 
 void AliVZEROQADataMakerRec::InitESDs()
 {
-  //Create histograms to control ESD
+  //Create histograms to controll ESD
  
   TH1I * h1 = new TH1I("hVZERONbPMA", "Number of PMs fired in V0A", 80, 0, 79); 
   h1->Sumw2() ;
@@ -95,7 +95,7 @@ void AliVZEROQADataMakerRec::InitESDs()
   Add2ESDsList(h4, 3) ;
 
   TH2F * h5 = new TH2F("fVzeroMult", "Vzero multiplicity",
-			 64, -0.5, 63.5,100, -0.5, 99.5);
+			 64, -0.5, 63.5,1000, -0.5, 99.5);
   h5->GetXaxis()->SetTitle("Vzero PMT");
   h5->GetYaxis()->SetTitle("Multiplicity");
   h5->Sumw2() ;
@@ -112,9 +112,22 @@ void AliVZEROQADataMakerRec::InitESDs()
   TH1F * h9 = new TH1F("fBGC","BG Vzero C", 32, -0.5,31.5);
   h9->Sumw2();
   Add2ESDsList(h9, 8) ;
-	
-}
 
+  TH2F *h10 = new TH2F("fVzeroAdc", "Vzero Adc",
+			 64, -0.5, 63.5,1024, -0.5, 1023.5);
+  h10->GetXaxis()->SetTitle("Vzero PMT");
+  h10->GetYaxis()->SetTitle("Adc counts");
+  h10->Sumw2() ;
+  Add2ESDsList(h10, 9);
+
+  TH2F *h11 = new TH2F("fVzeroTime", "Vzero Time",
+			 64, -0.5, 63.5,300, -0.5, 149.5);
+  h11->GetXaxis()->SetTitle("Vzero PMT");
+  h11->GetYaxis()->SetTitle("Time [100 ps]");
+  h11->Sumw2() ;
+  Add2ESDsList(h11,10);
+
+}
 
 //____________________________________________________________________________ 
  void AliVZEROQADataMakerRec::InitRaws()
@@ -147,7 +160,6 @@ void AliVZEROQADataMakerRec::InitESDs()
      }  
  }
 
-
 //____________________________________________________________________________
 void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
@@ -160,8 +172,11 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
       GetESDsData(1)->Fill(esdVZERO->GetNbPMV0C());  
       GetESDsData(2)->Fill(esdVZERO->GetMTotV0A());
       GetESDsData(3)->Fill(esdVZERO->GetMTotV0C());  
-      for(Int_t i=0;i<64;i++) 
+      for(Int_t i=0;i<64;i++) {
 	GetESDsData(4)->Fill((Float_t) i,(Float_t) esdVZERO->GetMultiplicity(i));
+	GetESDsData(9)->Fill((Float_t) i,(Float_t) esdVZERO->GetAdc(i));
+	GetESDsData(10)->Fill((Float_t) i,(Float_t) esdVZERO->GetTime(i));
+      }
       for(Int_t i=0;i<32;i++) { 
 	if (esdVZERO->BBTriggerV0A(i)) 
 	  GetESDsData(5)->Fill((Float_t) i);
@@ -173,7 +188,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	  GetESDsData(8)->Fill((Float_t) i);
       }
   }
-
+  
 }
 
 //____________________________________________________________________________
@@ -197,7 +212,6 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
            GetRawsData(1)->Fill(i,rawStream->GetADC(i)) ; 
            GetRawsData(i+2+64)->Fill(rawStream->GetADC(i)) ; }  	
       }          
-  delete rawStream;
  }
 
 //____________________________________________________________________________ 

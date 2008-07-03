@@ -114,7 +114,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   const Float_t mip0=110.0;
   Short_t Multiplicity[64];
   Float_t mult[64];  
-  Int_t   adc[64]; 
+  Short_t   adc[64]; 
+  Short_t   time[64]; 
   Float_t mip[64];
   for (Int_t i=0; i<64; i++){
        adc[i] = 0;
@@ -132,7 +133,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     for (Int_t d=0; d<nDigits; d++) {    
       AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
       Int_t  pmNumber      = digit->PMNumber();  
-      adc[pmNumber] = digit->ADC(); 
+      adc[pmNumber] = (Short_t) digit->ADC(); 
+      time[pmNumber] = (Short_t) digit->Time();
       // cut of ADC at MIP/2
       if  (adc[pmNumber] > (mip[pmNumber]/2)) 
 	mult[pmNumber] += float(adc[pmNumber])/mip[pmNumber];
@@ -141,6 +143,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   
   for (Int_t j=0; j<64; j++) Multiplicity[j] = short(mult[j]+0.5);       
   fESDVZERO->SetMultiplicity(Multiplicity);
+  fESDVZERO->SetADC(adc);
+  fESDVZERO->SetTime(time);
 
   // now get the trigger mask
 
