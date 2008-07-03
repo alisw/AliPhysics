@@ -25,13 +25,18 @@ class TH1F;
  * Component for ploting proparties of Tracks. 
  * There has to be uesd one argument, or the component will not plot anything.
  * 
+ * <h2>General properties:</h2> 
+ *
  * Component ID: \b TPCTrackHisto <br>
  * Library: \b libAliHLTTPC.
+ * Input Data Types: @ref fgkClustersDataType <br>
+ *                   @ref fgkTrackSegmentsDataType or fgkTracksDataType <br>
+ * Output Data Types: @ref kAliHLTDataTypeHistogram <br> 
  *
- * Mandatory arguments: <br>
+ * <h2> Mandatory arguments: </h2>
+ * \li One of the Optional arguments.
  * 
- * 
- * Optional arguments: <br>
+ * <h2> Optional arguments: </h2>
  * 
  * \li -plot-All <br>
  *      Plots all the Histograms (default kFALSE) 
@@ -47,6 +52,35 @@ class TH1F;
  *      Plots Residual of Tracks (default kFALSE)
  * \li -plot-Tgl <br>
  *      Plots Tgl for tracks (default kFALSE)
+ * \li -plot-NClusters <br>
+ *      Plots the number of clusters in the event (default kFALSE)
+ * \li -plot-NUsedClusters <br>
+ *      Plots th number of Used clusters in the event (default kFALSE)
+ * \li -plot-NTracks <br>
+ *      Plots the number of Tracks in the event (default kFALSE)
+ * \li -plot-QMaxAll <br>
+ *      Plots the Q Max for all clusters in the event (default kFALSE)
+ * \li -plot-QMaxUsed <br>
+ *      Plots the Q Max for clusters used on tracks (default kFALSE)
+ *
+ *
+ * <h2>Configuration:</h2>
+ * 
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component has for now no CDB entry
+ *
+ * <h2>Performance:</h2>
+ * Not Tested 
+ *
+ * <h2>Memory consumption:</h2>
+ * Not Tested
+ *
+ * <h2>Output size:</h2>
+ * The size of an histogram (588 bit) * the number of histograms you plot
+ *
+ * 
+ *
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCTrackHistoComponent : public AliHLTProcessor
@@ -103,11 +137,16 @@ private:
   void PushHisto();
  
   TH1F * fHistoNClustersOnTracks;                                  //! transient
-  TH1F * fHistoAllClusters;                                        //! transient
-  TH1F * fHistoUsedClusters;                                       //! transient
+  TH1F * fHistoChargeAllClusters;                                  //! transient
+  TH1F * fHistoChargeUsedClusters;                                 //! transient
   TH1F * fHistoPT;                                                 //! transient
   TH1F * fHistoResidual;                                           //! transient
   TH1F * fHistoTgl;                                                //! transient
+  TH1F * fHistoNClusters;                                          //! transient
+  TH1F * fHistoNUsedClusters;                                      //! transient
+  TH1F * fHistoNTracks;                                            //! transient 
+  TH1F * fHistoQMaxAllClusters;                                    //! transient
+  TH1F * fHistoQMaxUsedClusters;                                   //! transient
   
   Bool_t fPlotAll;                                                 //! transient 
   Bool_t fPlotNClustersOnTracks;                                   //! transient 
@@ -116,7 +155,12 @@ private:
   Bool_t fPlotPT;                                                  //! transient 
   Bool_t fPlotResidual;                                            //! transient 
   Bool_t fPlotTgl;                                                 //! transient 
-  
+  Bool_t fPlotNClusters;                                           //! transient
+  Bool_t fPlotNUsedClusters;                                       //! transient
+  Bool_t fPlotNTracks;                                             //! transient
+  Bool_t fPlotQMaxClusters;                                        //! transient
+  Bool_t fPlotQMaxUsedClusters;                                    //! transient
+
   vector<AliHLTTPCSpacePointData> fClusters;                       //! transient
   vector<AliHLTTPCTrackSegmentData> fTracks;                       //! transient
   

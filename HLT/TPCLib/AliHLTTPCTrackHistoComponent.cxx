@@ -52,11 +52,16 @@ ClassImp(AliHLTTPCTrackHistoComponent)
 AliHLTTPCTrackHistoComponent::AliHLTTPCTrackHistoComponent()
 :
 fHistoNClustersOnTracks(NULL),                                  
-  fHistoAllClusters(NULL),                                                                         
-  fHistoUsedClusters(NULL),                                                                        
+  fHistoChargeAllClusters(NULL),                                                                         
+  fHistoChargeUsedClusters(NULL),                                                                        
   fHistoPT(NULL),                                                                                  
   fHistoResidual(NULL),                                                                            
   fHistoTgl(NULL),                                                                                 
+  fHistoNClusters(NULL),
+  fHistoNUsedClusters(NULL),
+  fHistoNTracks(NULL),
+  fHistoQMaxAllClusters(NULL),
+  fHistoQMaxUsedClusters(NULL),
   fPlotAll(kFALSE),                                                
   fPlotNClustersOnTracks(kFALSE),                                                
   fPlotChargeClusters(kFALSE),                                                                                     
@@ -64,6 +69,11 @@ fHistoNClustersOnTracks(NULL),
   fPlotPT(kFALSE),                                                                                                 
   fPlotResidual(kFALSE),                                                                                           
   fPlotTgl(kFALSE),
+  fPlotNClusters(kFALSE),  
+  fPlotNUsedClusters(kFALSE), 
+  fPlotNTracks(kFALSE),
+  fPlotQMaxClusters(kFALSE),
+  fPlotQMaxUsedClusters(kFALSE),
   fClusters(),
   fTracks()
 {
@@ -124,12 +134,16 @@ AliHLTComponent* AliHLTTPCTrackHistoComponent::Spawn()
 int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv )
 {
   fHistoNClustersOnTracks = new TH1F("fHistoNClustersOnTracks","Number of Clusters on Tracks",160,0,160);                                   
-  fHistoAllClusters = new TH1F("fHistoAllClusters","Charge of All Clusters",4000,0,4000);                                                                    
-  fHistoUsedClusters = new TH1F("fHistoUsedClusters","Charge of Clusters used on Tracks",4000,0,4000);                                                              
+  fHistoChargeAllClusters = new TH1F("fHistoChargeAllClusters","Charge of All Clusters",4000,0,4000);                                                  
+  fHistoChargeUsedClusters = new TH1F("fHistoChargeUsedClusters","Charge of Clusters used on Tracks",4000,0,4000);                                 
   fHistoPT = new TH1F("fHistoPT","pT of Tracks",100,0,10);                                                                    
-  fHistoResidual = new TH1F("fHistoResidual","Resuduals",360,0,360);    //change. Testing                                                                       
+  fHistoResidual = new TH1F("fHistoResidual","Residuals",360,0,360);    //change. Testing                                                               
   fHistoTgl = new TH1F("fHistoTgl","Tgl of Tracks",900,0,90);  
-
+  fHistoNClusters = new TH1F("fHistoNClusters","Total number of Clusters in Event",3000,0,3000);  
+  fHistoNUsedClusters = new TH1F("fHistoNUsedClusters","Number of Used Cluster in event",3000,0,3000);  
+  fHistoNTracks = new TH1F("fHistoNTracks","Number of Tracks in Event",10,0,10);  
+  fHistoQMaxAllClusters = new TH1F("fHistoQMaxAllClusters","Charge of All Clusters",4000,0,4000);
+  fHistoQMaxUsedClusters = new TH1F("fHistoQMaxUsedClusters","Charge of Clusters used on Tracks",4000,0,4000);
   fPlotAll=kFALSE;                                                
   fPlotNClustersOnTracks=kFALSE;                                                
   fPlotChargeClusters=kFALSE;                                                                                     
@@ -137,6 +151,11 @@ int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv )
   fPlotPT=kFALSE;                                                                                                 
   fPlotResidual=kFALSE;                                                                                           
   fPlotTgl=kFALSE;                 
+  fPlotNClusters=kFALSE;    
+  fPlotNUsedClusters=kFALSE;
+  fPlotNTracks=kFALSE;        
+  fPlotQMaxClusters=kFALSE;
+  fPlotQMaxUsedClusters=kFALSE;
 
   int iResult=0;
   TString configuration="";
@@ -158,11 +177,16 @@ int AliHLTTPCTrackHistoComponent::DoDeinit()
   // see header file for class documentation
   
   delete fHistoNClustersOnTracks;                                 
-  delete fHistoAllClusters;                                                                         
-  delete fHistoUsedClusters;                                                                        
+  delete fHistoChargeAllClusters;                                                                         
+  delete fHistoChargeUsedClusters;                                                                        
   delete fHistoPT;                                                                                
   delete fHistoResidual;                                                                            
   delete fHistoTgl;        
+  delete fHistoNClusters;
+  delete fHistoNUsedClusters;
+  delete fHistoNTracks;
+  delete fHistoQMaxAllClusters;
+  delete fHistoQMaxUsedClusters;
   
   return 0;
 }
@@ -210,17 +234,23 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
       Int_t sliceCl = (idCluster>>25) & 0x7f;
       Int_t patchCl = (idCluster>>22) & 0x7;
       UInt_t pos = idCluster&0x3fffff;
-      if(fPlotChargeClusters || fPlotAll){fHistoAllClusters->Fill(clusters[i].fCharge);}
+      if(fPlotChargeClusters || fPlotAll){fHistoChargeAllClusters->Fill(clusters[i].fCharge);}
+      if(fPlotQMaxClusters || fPlotAll){fHistoQMaxAllClusters->Fill(clusters[i].fMaxQ);}
       for(UInt_t id=0;id<fTrackClusterID[sliceCl][patchCl].size();id++){
 	if(fTrackClusterID[sliceCl][patchCl][id]==pos){
 	  clusters[i].fUsed=kTRUE;
 	  nClustersUsed++;
-	  if(fPlotChargeUsedClusters || fPlotAll){fHistoUsedClusters->Fill(clusters[i].fCharge);}
+	  if(fPlotChargeUsedClusters || fPlotAll){fHistoChargeUsedClusters->Fill(clusters[i].fCharge);}
+	  if(fPlotQMaxUsedClusters || fPlotAll){fHistoQMaxUsedClusters->Fill(clusters[i].fMaxQ);}
 	}
       } 
       fClusters.push_back(clusters[i]);
     }
   } 
+  
+  fHistoNClusters->Fill(TotalSpacePoint);
+  if(TotalTrack>0){fHistoNUsedClusters->Fill(nClustersUsed);}
+  fHistoNTracks->Fill(TotalTrack);
 
   HLTInfo("TrackHisto found %d Spacepoints",TotalSpacePoint);
   HLTInfo("TrackHisto found %d Tracks",TotalTrack);
@@ -229,6 +259,11 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
 
   fClusters.clear();
   fTracks.clear();
+  for(UInt_t i=0;i<36;i++){
+    for(UInt_t j=0;j<6;j++){ 
+      fTrackClusterID[i][j].clear();
+    }
+  }
 
   return 0;
 }
@@ -243,7 +278,6 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
    TString argument;
    
    TObjArray* pTokens=allArgs.Tokenize(" ");
-
    if (pTokens) {
      for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
        argument=((TObjString*)pTokens->At(i))->GetString();
@@ -257,10 +291,16 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
 	fPlotChargeUsedClusters=kTRUE;                                                                                 
 	fPlotPT=kTRUE;                                                                                                 
 	fPlotResidual=kTRUE;                                                                                           
-	fPlotTgl=kTRUE;            
+	fPlotTgl=kTRUE;
+	fPlotNClusters=kTRUE;
+	fPlotNUsedClusters=kTRUE;
+	fPlotNTracks=kTRUE;
+	fPlotQMaxClusters=kTRUE;
+	fPlotQMaxUsedClusters=kTRUE;
+            
 	continue;
        }
-       else if (argument.CompareTo("-plot-nClusters")==0) {
+       else if (argument.CompareTo("-plot-nClusters")==0) {	
 	 HLTInfo("Ploting Number of clusters Used on Tracks");
 	 fPlotNClustersOnTracks = kTRUE;
 	 continue;
@@ -290,6 +330,32 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
 	 fPlotTgl=kTRUE;  
 	 continue;
        }
+       else if (argument.CompareTo("-plot-NClusters")==0) {
+	 HLTInfo("Ploting Number of Clusters");
+	 fPlotNClusters=kTRUE;  
+	 continue;
+       }
+       else if (argument.CompareTo("-plot-NUsedClusters")==0) {
+	 HLTInfo("Ploting Number Of Used Clusters");
+	 fPlotNUsedClusters=kTRUE;  
+	 continue;
+       }
+       else if (argument.CompareTo("-plot-NTracks")==0) {
+	 HLTInfo("Ploting Number Of Tracks");
+	 fPlotNTracks=kTRUE;  
+	 continue;
+       }
+       else if (argument.CompareTo("-plot-QMaxAll")==0) {
+	 HLTInfo("Ploting QMax for All Clusters");
+	 fPlotQMaxClusters=kTRUE;  
+	 continue;
+       }
+       else if (argument.CompareTo("-plot-QMaxUsed")==0) {
+	 HLTInfo("Ploting QMax for Used Clusters");
+	 fPlotQMaxUsedClusters=kTRUE;  
+	 continue;
+       }
+
        else {
 	 HLTError("unknown argument %s", argument.Data());
 	 iResult=-EINVAL;
@@ -342,11 +408,11 @@ void AliHLTTPCTrackHistoComponent::PushHisto(){
   }
   if(fPlotChargeClusters || fPlotAll){
     AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoAllClusters,kAliHLTDataTypeHistogram, fSpecification);   
+    PushBack( (TObject*) fHistoChargeAllClusters,kAliHLTDataTypeHistogram, fSpecification);   
   }
   if(fPlotChargeUsedClusters || fPlotAll){
     AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fHistoUsedClusters,kAliHLTDataTypeHistogram, fSpecification);   
+    PushBack( (TObject*) fHistoChargeUsedClusters,kAliHLTDataTypeHistogram, fSpecification);   
   }
   if(fPlotPT || fPlotAll){
     AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
@@ -363,11 +429,36 @@ void AliHLTTPCTrackHistoComponent::PushHisto(){
     AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
     PushBack( (TObject*) fHistoTgl,kAliHLTDataTypeHistogram, fSpecification);   
   }
+  if(fPlotNClusters || fPlotAll){
+    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
+    PushBack( (TObject*) fHistoNClusters,kAliHLTDataTypeHistogram, fSpecification);
+  }
+  if(fPlotNUsedClusters || fPlotAll){
+    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
+    PushBack( (TObject*) fHistoNUsedClusters,kAliHLTDataTypeHistogram, fSpecification);
+  }
+  if(fPlotNTracks || fPlotAll){
+    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
+    PushBack( (TObject*) fHistoNTracks,kAliHLTDataTypeHistogram, fSpecification);
+  }
+  if(fPlotQMaxUsedClusters || fPlotAll){
+    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
+    PushBack( (TObject*) fHistoQMaxAllClusters,kAliHLTDataTypeHistogram, fSpecification);
+  }
+  if(fPlotQMaxUsedClusters || fPlotAll){
+    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
+    PushBack( (TObject*) fHistoQMaxUsedClusters,kAliHLTDataTypeHistogram, fSpecification);
+  }
   
   fHistoNClustersOnTracks->Reset();                                 
-  fHistoAllClusters->Reset();                                                                         
-  fHistoUsedClusters->Reset();                                                                        
+  fHistoChargeAllClusters->Reset();                                                                         
+  fHistoChargeUsedClusters->Reset();                                                                        
   fHistoPT->Reset();                                                                                
   fHistoResidual->Reset();                                                                            
   fHistoTgl->Reset();        
+  fHistoNClusters->Reset();     
+  fHistoNUsedClusters->Reset();
+  fHistoNTracks->Reset();
+  fHistoQMaxAllClusters->Reset();
+  fHistoQMaxUsedClusters->Reset();
 }
