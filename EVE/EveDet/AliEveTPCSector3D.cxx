@@ -81,8 +81,7 @@ void AliEveTPCSector3D::ComputeBBox()
   fBBox[4] =  0;
   fBBox[5] =  AliEveTPCSectorData::GetZLength();
   Float_t* b = fBoxSet.AssertBBox();
-  for(Int_t i=0; i<6; ++i) { b[i] = fBBox[i]; }
-
+  for (Int_t i=0; i<6; ++i) { b[i] = fBBox[i]; }
 }
 
 void AliEveTPCSector3D::Paint(Option_t* /*option*/)
@@ -113,7 +112,8 @@ void AliEveTPCSector3D::Paint(Option_t* /*option*/)
 /******************************************************************************/
 
 void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
-                             Float_t xs, Float_t ys, Float_t pw, Float_t ph)
+                                   Float_t xs, Float_t ys,
+                                   Float_t pw, Float_t ph)
 {
   // Load data of one padrow. Fill internal boxset and pointset objects.
 
@@ -130,10 +130,10 @@ void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
       time = iter.Time();
       val  = iter.Signal();
 
-      if(val <= fThreshold || time < fMinTime || time > fMaxTime)
+      if (val <= fThreshold || time < fMinTime || time > fMaxTime)
 	continue;
 
-      if(fPointSetOn && val <= fPointSetMaxVal)
+      if (fPointSetOn && val <= fPointSetMaxVal)
       {
 	fPointSetArray.Fill(xs + (pad+0.5)*pw, ym, (time+0.5)*zs, val);
       }
@@ -155,7 +155,11 @@ void AliEveTPCSector3D::UpdateBoxesAndPoints()
   // printf("AliEveTPCSector3D update boxes\n");
 
   fBoxSet.Reset(TEveBoxSet::kBT_AABox, kTRUE, 16384);
-  fPointSetArray.RemoveElements();
+  // Brutally delete sub-pointsets so that destruction via TEveManager is
+  // avoided. This only works because fPointSetArray is never published.
+  for (Int_t i = 0; i < fPointSetArray.GetNBins(); ++i)
+    delete fPointSetArray.GetBin(i);
+  fPointSetArray.RemoveElementsLocal();
 
   AliEveTPCSectorData* data = GetSectorData();
   if (data != 0) {
@@ -168,12 +172,14 @@ void AliEveTPCSector3D::UpdateBoxesAndPoints()
     SetupPointSetArray();
 
     // Loop over 3 main segments
-    for (Int_t sId = 0; sId <= 2; ++sId) {
-      if(isOn[sId] == kFALSE)
+    for (Int_t sId = 0; sId <= 2; ++sId)
+    {
+      if (isOn[sId] == kFALSE)
         continue;
       const AliEveTPCSectorData::SegmentInfo& sInfo = AliEveTPCSectorData::GetSeg(sId);
       Float_t sy = sInfo.GetRLow();
-      for (Int_t row=sInfo.GetFirstRow(); row<=sInfo.GetLastRow(); ++row) {
+      for (Int_t row=sInfo.GetFirstRow(); row<=sInfo.GetLastRow(); ++row)
+      {
         AliEveTPCSectorData::RowIterator i = data->MakeRowIterator(row);
         Float_t sx = -0.5*AliEveTPCSectorData::GetNPadsInRow(row)*sInfo.GetPadWidth();
         LoadPadrow(i, sx, sy, sInfo.GetPadWidth(), sInfo.GetPadHeight());
