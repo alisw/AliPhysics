@@ -37,7 +37,7 @@ typedef vector<AliHLTUInt32_t> AliHLTOUTIndexList;
  * abstracts access to the complete HLTOUT data.
  * 
  */
-class AliHLTOUT : public AliHLTLogging {
+class AliHLTOUT {
  public:
   /** standard constructor */
   AliHLTOUT();
@@ -57,6 +57,14 @@ class AliHLTOUT : public AliHLTLogging {
    * libHLTrec library.
    */
   static AliHLTOUT* New(TTree* pDigitTree, int event=-1);
+
+  /**
+   * Get the global instance.
+   * The global instance is set temporarily by the AliHLTOUTGlobalInstanceGuard
+   * mainly for the sake of data input to an analysis chain. The
+   * AliHLTOUTPublisherComponent objects can access the global instance.
+   */
+  static AliHLTOUT* GetGlobalInstance() {return fgGlobalInstance;}
 
   /**
    * Delete an instance of the HLTOUT.
@@ -89,6 +97,35 @@ class AliHLTOUT : public AliHLTLogging {
 
     /** the AliHLTOUT instance the guard is locking */
     AliHLTOUT* fpInstance; //!transient
+  };
+
+  /**
+   * Guard for handling of global AliHLTOUT instance.
+   * The global HLTOUT instance can be set for certain steps of the
+   * processing. The initial objective is to support input to the
+   * AliHLTOUTPublisherComponent running in a kChain handler.
+   *
+   * The Guard restores the original instance when closed.
+   */
+  class AliHLTOUTGlobalInstanceGuard {
+  public:
+    /** constructor */
+    AliHLTOUTGlobalInstanceGuard(AliHLTOUT* pInstance) : fpLastInstance(AliHLTOUT::fgGlobalInstance)
+    {AliHLTOUT::fgGlobalInstance=pInstance;}
+    /** destructor */
+    ~AliHLTOUTGlobalInstanceGuard()
+    {AliHLTOUT::fgGlobalInstance=fpLastInstance;}
+
+  private:
+    /** standard constructor prohibited */
+    AliHLTOUTGlobalInstanceGuard();
+    /** copy constructor prohibited */
+    AliHLTOUTGlobalInstanceGuard(const AliHLTOUTGlobalInstanceGuard&);
+    /** assignment operator prohibited */
+    AliHLTOUTGlobalInstanceGuard& operator=(const AliHLTOUTGlobalInstanceGuard&);
+
+    /** the AliHLTOUT instance the guard is locking */
+    AliHLTOUT* fpLastInstance; //!transient
   };
 
   /**
@@ -153,6 +190,7 @@ class AliHLTOUT : public AliHLTLogging {
     int operator==(AliHLTOUT* collection) const {return collection==fpCollection;}
 
     AliHLTUInt32_t GetIndex() const {return fIndex;}
+    AliHLTOUT* GetCollection() const {return fpCollection;}
 
     bool IsSelected() const {return fSelected;}
     void Select(bool selected=true) {fSelected=selected;}
@@ -219,6 +257,12 @@ class AliHLTOUT : public AliHLTLogging {
 
     bool operator==(const AliHLTModuleAgent::AliHLTOUTHandlerType handlerType) const;
 
+    /**
+     * Compare the handler descriptor of this list entry with another
+     * descriptor.
+     */
+    bool operator==(const AliHLTModuleAgent::AliHLTOUTHandlerDesc desc) const; 
+
     AliHLTUInt32_t operator[](int i) const;
 
     /**
@@ -230,7 +274,7 @@ class AliHLTOUT : public AliHLTLogging {
     void AddIndex(AliHLTUInt32_t index);
 
     /**
-     * Add all indexes of the descriptor.
+     * Add all indices of the descriptor.
      */
     void AddIndex(AliHLTOUTHandlerListEntry &desc);
 
@@ -239,6 +283,16 @@ class AliHLTOUT : public AliHLTLogging {
      * @return true if the index is in the table
      */
     bool HasIndex(AliHLTUInt32_t index) const;
+
+    /**
+     * Invalidate all block indices
+     */
+    void InvalidateBlocks() {fBlocks.clear();}
+
+    /**
+     * Check whether the entry has valid blocks.
+     */
+    bool IsEmpty() {return fBlocks.size()==0;}
 
   private:
     /** standard constructor prohibited */
@@ -253,7 +307,7 @@ class AliHLTOUT : public AliHLTLogging {
     /** pointer to module agent */
     AliHLTModuleAgent* fpAgent; //! transient
 
-    /** list of block indexes */
+    /** list of block indices */
     AliHLTOUTIndexList fBlocks; //!transient
   };
 
@@ -298,6 +352,15 @@ class AliHLTOUT : public AliHLTLogging {
   int Init();
 
   /**
+   * Reset and clear all data block descriptors.
+   * @note Since sub-collections are only referred via the block
+   * descriptors, all information on sub-collections is also lost.
+   * Child classes should implement ResetInput in order to cleanup
+   * the input devices.
+   */
+  int Reset();
+
+  /**
    * Get number of data blocks in the HLTOUT data
    */
   int GetNofDataBlocks();
@@ -311,6 +374,7 @@ class AliHLTOUT : public AliHLTLogging {
    * @param dt    [in]  data type to match                                <br>
    * @param spec  [in]  data specification to match                       <br>
    * @param handlerType [in]  type of the handler
+   * @param skipProcessed [in] skip all block marked processed
    * @return block index: >= 0 if success, -ENOENT if no block found      <br>
    *         neg. error code if failed                                    <br>
    *                        -EPERM if access denied (object locked)
@@ -490,6 +554,27 @@ class AliHLTOUT : public AliHLTLogging {
    */
   static int InsertHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTOUTHandlerListEntry &entry);
   
+  /**
+   * Insert all handlers of the specified type to the list.
+   */
+  int FillHandlerList(AliHLTOUTHandlerListEntryVector& list, AliHLTModuleAgent::AliHLTOUTHandlerType handlerType);
+
+  /**
+   * Remove empty items which have a duplicate in the list.
+   */
+  static int RemoveEmptyDuplicateHandlers(AliHLTOUTHandlerListEntryVector& list);
+
+  /**
+   * Find an entry of a certain description in the list.
+   * @return index of the entry if found, -ENOENT if not found
+   */
+  static int FindHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTModuleAgent::AliHLTOUTHandlerDesc desc);
+
+  /**
+   * Invalidate all blocks of the handlers in the list
+   */
+  static int InvalidateBlocks(AliHLTOUTHandlerListEntryVector& list);
+
  protected:
   /**
    * Add a block descriptor.
@@ -552,6 +637,11 @@ class AliHLTOUT : public AliHLTLogging {
    * handlers for data processing.
    */
   int InitHandlers();
+
+  /**
+   * Cleanup and reset the data input.
+   */
+  virtual int ResetInput();
 
   /**
    * Get the data buffer
@@ -661,6 +751,12 @@ class AliHLTOUT : public AliHLTLogging {
   /** verbose or silent output */
   bool fbVerbose; //!transient
 
-  ClassDef(AliHLTOUT, 3)
+  /** gobal instance set for certain steps of the analysis */
+  static AliHLTOUT* fgGlobalInstance; //! transient
+
+  /** logging methods */
+  AliHLTLogging fLog; //! transient
+
+  ClassDef(AliHLTOUT, 4)
 };
 #endif

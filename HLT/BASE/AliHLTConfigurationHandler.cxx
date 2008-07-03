@@ -65,6 +65,29 @@ AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
   }
 }
 
+AliHLTConfigurationHandler* AliHLTConfigurationHandler::fgpInstance=NULL;
+int AliHLTConfigurationHandler::fgNofInstances=0;
+
+AliHLTConfigurationHandler* AliHLTConfigurationHandler::CreateHandler()
+{
+  // see header file for class documentation
+  if (!fgpInstance) fgpInstance=new AliHLTConfigurationHandler;
+  fgNofInstances++;
+  return fgpInstance;
+}
+
+int AliHLTConfigurationHandler::Destroy()
+{
+  // see header file for class documentation
+  int nofInstances=0;
+  if (fgpInstance==this) {
+    nofInstances=fgNofInstances--;
+  }
+  if (nofInstances==0) delete this;
+  return nofInstances;
+}
+
+
 int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf)
 {
   // see header file for function documentation

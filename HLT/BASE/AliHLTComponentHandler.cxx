@@ -105,6 +105,28 @@ AliHLTComponentHandler::~AliHLTComponentHandler()
   UnloadLibraries();
 }
 
+AliHLTComponentHandler* AliHLTComponentHandler::fgpInstance=NULL;
+int AliHLTComponentHandler::fgNofInstances=0;
+
+AliHLTComponentHandler* AliHLTComponentHandler::CreateHandler()
+{
+  // see header file for class documentation
+  if (!fgpInstance) fgpInstance=new AliHLTComponentHandler;
+  fgNofInstances++;
+  return fgpInstance;
+}
+
+int AliHLTComponentHandler::Destroy()
+{
+  // see header file for class documentation
+  int nofInstances=0;
+  if (fgpInstance==this) {
+    nofInstances=fgNofInstances--;
+  }
+  if (nofInstances==0) delete this;
+  return nofInstances;
+}
+
 int AliHLTComponentHandler::AnnounceVersion()
 {
   // see header file for class documentation

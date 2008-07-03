@@ -236,7 +236,7 @@ public:
    * processed and may add additional data to the HLTOUT object. This data is then
    * treated in the same way.
    */
-  void ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) const;
+  void ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bool bVerbose=false) const;
 
   /**
    * Process HLTOUT data.

@@ -336,8 +336,9 @@ class AliHLTSystem : public AliHLTLogging {
   int Configure(AliRunLoader* runloader=NULL);
 
   /**
-   * Scan options.
-   * Known options
+   * Scan options and load component libraries.
+   * The options consist of blank separated tokens. Libraries can be just
+   * specified by their name. Further options
    * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
    * \li loglevel=<i>level</i> <br>
    *     logging level for this processing
@@ -461,7 +462,16 @@ class AliHLTSystem : public AliHLTLogging {
   /** array of default libraries */
   static const char* fgkHLTDefaultLibs[];                          //!transient
 
-  ClassDef(AliHLTSystem, 7);
+  /** active kChain handlers (AliHLTOUT::AliHLTOUTHandlerListEntryVector*) */
+  void* fpChainHandlers;                                           //!transient
+
+  /** active kEsd handlers (AliHLTOUT::AliHLTOUTHandlerListEntryVector*) */
+  void* fpEsdHandlers;                                             //!transient
+
+  /** active kProprietary handlers (AliHLTOUT::AliHLTOUTHandlerListEntryVector*) */
+  void* fpProprietaryHandlers;                                     //!transient
+
+  ClassDef(AliHLTSystem, 8);
 };
 
 #endif

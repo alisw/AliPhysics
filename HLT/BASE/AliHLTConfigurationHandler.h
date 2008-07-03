@@ -48,6 +48,22 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
   virtual ~AliHLTConfigurationHandler();
 
   /*****************************************************************************
+   * singleton handling
+   */
+
+  /**
+   * Create an instance from the global sigleton.
+   * Instance has to be destroyed by the Destroy function
+   */
+  static AliHLTConfigurationHandler* CreateHandler();
+
+  /**
+   * Destroy an instance of the global singleton retrieved by
+   * AliHLTConfigurationHandler::CreateHandler()
+   */
+  int Destroy();
+
+  /*****************************************************************************
    * registration
    */
 
@@ -94,7 +110,12 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
   /** the list of registered configurations */
   TList fgListConfigurations;                              // see above
 
-  ClassDef(AliHLTConfigurationHandler, 1);
+  /** the global singleton */
+  static AliHLTConfigurationHandler* fgpInstance;                      //!transient
+  /** number of used instances of the global singleton */
+  static int fgNofInstances;                                       //!transient 
+
+  ClassDef(AliHLTConfigurationHandler, 2);
 };
 
 #endif

@@ -274,6 +274,13 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
     bool operator==(const AliHLTOUTHandlerType handlerType) const {
       return fHType==handlerType;
     }
+    /**
+     * Two descriptors are equal if all members match.
+     */
+    bool operator==(const AliHLTOUTHandlerDesc& desc) const {
+      return fDt==desc.fDt && fHType==desc.fHType && fModule==desc.fModule;
+    }
+
     operator AliHLTOUTHandlerType() {return fHType;}
     operator AliHLTComponentDataType() {return fDt;}
 

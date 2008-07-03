@@ -268,7 +268,7 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
   }
 }
 
-void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) const
+void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bool bVerbose) const
 {
   // treatment of simulated or real HLTOUT data
   if (!pHLTOUT) return;
@@ -283,6 +283,9 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) co
     return;
   }
 
+  if (bVerbose)
+    PrintHLTOUTContent(pHLTOUT);
+
   if (fFctProcessHLTOUT) {
     typedef int (*AliHLTSystemProcessHLTOUT)(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd);
     AliHLTSystemProcessHLTOUT pFunc=(AliHLTSystemProcessHLTOUT)fFctProcessHLTOUT;
@@ -290,6 +293,7 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) co
       AliError("error processing HLTOUT");
     }
   }
+  pHLTOUT->Reset();
 }
 
 void AliHLTReconstructor::ProcessHLTOUT(const char* digitFile, AliESDEvent* pEsd) const
@@ -315,8 +319,7 @@ void AliHLTReconstructor::ProcessHLTOUT(const char* digitFile, AliESDEvent* pEsd
     AliHLTOUTDigitReader* pHLTOUT=new AliHLTOUTDigitReader(event, fpEsdManager, digitFile);
     if (pHLTOUT) {
       AliInfo(Form("event %d", event));
-      ProcessHLTOUT(pHLTOUT, pEsd);
-      PrintHLTOUTContent(pHLTOUT);
+      ProcessHLTOUT(pHLTOUT, pEsd, true);
       delete pHLTOUT;
     } else {
       AliError("error creating HLTOUT handler");
@@ -334,8 +337,7 @@ void AliHLTReconstructor::ProcessHLTOUT(AliRawReader* pRawReader, AliESDEvent* p
     AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(pRawReader, event, fpEsdManager);
     if (pHLTOUT) {
       AliInfo(Form("event %d", event));
-      ProcessHLTOUT(pHLTOUT, pEsd);
-      PrintHLTOUTContent(pHLTOUT);
+      ProcessHLTOUT(pHLTOUT, pEsd, true);
       delete pHLTOUT;
     } else {
       AliError("error creating HLTOUT handler");

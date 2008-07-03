@@ -46,6 +46,18 @@ class AliHLTComponentHandler : public AliHLTLogging {
   virtual ~AliHLTComponentHandler();
 
   /**
+   * Create an instance from the global sigleton.
+   * Instance has to be destroyed by the Destroy function
+   */
+  static AliHLTComponentHandler* CreateHandler();
+
+  /**
+   * Destroy an instance of the global singleton retrieved by
+   * AliHLTComponentHandler::CreateHandler()
+   */
+  int Destroy();
+
+  /**
    * Library mode.
    * - kDynamic: library can be unloaded (unload forced at termination of the
    *             handler
@@ -308,7 +320,12 @@ class AliHLTComponentHandler : public AliHLTLogging {
   /** library mode effects all loaded libraries until a new mode is set */
   TLibraryMode fLibraryMode;                                       // see above 
 
-  ClassDef(AliHLTComponentHandler, 0);
+  /** the global singleton */
+  static AliHLTComponentHandler* fgpInstance;                      //!transient
+  /** number of used instances of the global singleton */
+  static int fgNofInstances;                                       //!transient 
+
+  ClassDef(AliHLTComponentHandler, 1);
 
 };
 #endif

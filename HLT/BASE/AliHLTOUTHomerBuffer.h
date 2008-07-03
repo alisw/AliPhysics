@@ -3,22 +3,18 @@
 
 #ifndef ALIHLTOUTHOMERBUFFER_H
 #define ALIHLTOUTHOMERBUFFER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTOUTHomerBuffer.h
     @author Matthias Richter
     @date   
     @brief  HLTOUT data wrapper for a data buffer.
+*/
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
 #include "AliHLTOUT.h"
+#include "AliHLTLogging.h"
 
 class AliHLTHOMERReader;
 class AliHLTMonitoringReader;
@@ -28,7 +24,7 @@ class AliHLTHOMERLibManager;
  * @class AliHLTOUTHomerBuffer
  * Handler of HLTOUT data for buffer input.
  */
-class AliHLTOUTHomerBuffer : public AliHLTOUT {
+class AliHLTOUTHomerBuffer : public AliHLTOUT, public AliHLTLogging {
  public:
   /** constructor */
   AliHLTOUTHomerBuffer(const AliHLTUInt8_t* pBuffer, int size);

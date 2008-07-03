@@ -42,7 +42,8 @@ AliHLTOUT::AliHLTOUT()
   fCurrent(0),
   fpBuffer(NULL),
   fDataHandlers(),
-  fbVerbose(true)
+  fbVerbose(true),
+  fLog()
 {
   // see header file for class documentation
   // or
@@ -55,9 +56,10 @@ AliHLTOUT::~AliHLTOUT()
 {
   // see header file for class documentation
   if (CheckStatusFlag(kIsSubCollection)) {
-    HLTWarning("severe internal error: collection has not been released, potential crash due to invalid pointer");
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "~AliHLTOUT" , __FILE__ , __LINE__ , "severe internal error: collection has not been released, potential crash due to invalid pointer");
   }
 }
+AliHLTOUT* AliHLTOUT::fgGlobalInstance=NULL;
 
 int AliHLTOUT::Init()
 {
@@ -189,7 +191,7 @@ int AliHLTOUT::ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer)
   if (pBuffer==fpBuffer) {
     fpBuffer=NULL;
   } else {
-    HLTWarning("buffer %p does not match the provided one %p", pBuffer, fpBuffer);
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "ReleaseDataBuffer" , __FILE__ , __LINE__ , "buffer %p does not match the provided one %p", pBuffer, fpBuffer);
   }
   return iResult;  
 }
@@ -213,7 +215,7 @@ AliHLTOUTHandler* AliHLTOUT::GetHandler()
 int AliHLTOUT::WriteESD(const AliHLTUInt8_t* /*pBuffer*/, AliHLTUInt32_t /*size*/, AliHLTComponentDataType /*dt*/, AliESDEvent* /*tgtesd*/) const
 {
   // see header file for class documentation
-  HLTWarning("method not implemented in base class");
+  fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "WriteESD" , __FILE__ , __LINE__ , "method not implemented in base class");
   return -ENOSYS;
 }
 
@@ -280,12 +282,12 @@ int AliHLTOUT::InitHandlers()
   // warning if some of the data blocks are not selected by the kAliHLTAnyDataType
   // criterion
   if (GetNofDataBlocks()>iCount) {
-    HLTWarning("incomplete data type in %d out of %d data block(s)", GetNofDataBlocks()-iCount, iCount);
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "InitHandlers" , __FILE__ , __LINE__ , "incomplete data type in %d out of %d data block(s)", GetNofDataBlocks()-iCount, GetNofDataBlocks());
   }
 
   // warning if handler not found
   if (remnants.size()>0) {
-    HLTWarning("no handlers found for %d data blocks out of %d", remnants.size(), iCount);
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "InitHandlers" , __FILE__ , __LINE__ , "no handlers found for %d data blocks out of %d", remnants.size(), iCount);
     AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
     for (AliHLTOUTIndexList::iterator element=remnants.begin(); element!=remnants.end(); element++) {
       for (int trials=0; trials<2; trials++) {
@@ -300,7 +302,7 @@ int AliHLTOUT::InitHandlers()
       }
       assert(block!=fBlockDescList.end());
       if (block!=fBlockDescList.end()) {
-	HLTDebug("   %s", AliHLTComponent::DataType2Text((AliHLTComponentDataType)*block).c_str());
+	//HLTDebug("   %s", AliHLTComponent::DataType2Text((AliHLTComponentDataType)*block).c_str());
       }
     }
   }
@@ -312,9 +314,9 @@ int AliHLTOUT::InsertHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLT
   // see header file for class documentation
   int iResult=0;
   AliHLTOUTHandlerListEntryVector::iterator element=list.begin();
-  while (element!=list.end()) {
+  for (; element!=list.end();
+	 element++) {
     if (entry==(*element)) break;
-    element++;
   }
   if (element==list.end()) {
     list.push_back(entry);
@@ -322,6 +324,77 @@ int AliHLTOUT::InsertHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLT
     element->AddIndex(const_cast<AliHLTOUTHandlerListEntry&>(entry));
   }
   return iResult;
+}
+
+int AliHLTOUT::FillHandlerList(AliHLTOUTHandlerListEntryVector& list, AliHLTModuleAgent::AliHLTOUTHandlerType handlerType)
+{
+  // see header file for class documentation
+  int iResult=0;
+  for (iResult=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec, handlerType);
+       iResult>=0;
+       iResult=SelectNextDataBlock()) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    GetDataBlockDescription(dt, spec);
+    AliHLTOUTHandler* pHandler=GetHandler();
+    if (!pHandler) {
+      fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "FillHandlerList" , __FILE__ , __LINE__ , 
+			 "missing HLTOUT handler for block of type kChain: agent %s, data type %s, specification %#x, ... skipping data block",
+			 GetAgent()?GetAgent()->GetModuleId():"invalid",
+			 AliHLTComponent::DataType2Text(dt).c_str(), spec);
+    } else {
+      InsertHandler(list, GetDataBlockHandlerDesc());
+    }
+  }
+  // TODO: the return value of SelectFirst/NextDataBlock must be
+  // changed in order to avoid this check
+  if (iResult==-ENOENT) iResult=0;
+
+  return iResult;
+}
+
+int AliHLTOUT::RemoveEmptyDuplicateHandlers(AliHLTOUTHandlerListEntryVector& list)
+{
+  // see header file for class documentation
+  int iResult=0;
+  AliHLTOUTHandlerListEntryVector::iterator element=list.begin();
+  while (element!=list.end()) {
+    if (element->IsEmpty()) {
+      AliHLTOUTHandler* pHandler=*element;
+      AliHLTModuleAgent* pAgent=*element;
+      AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=*element;
+      if (FindHandler(list, desc)>=0) {
+	element=list.erase(element);
+	if (pAgent) {
+	  pAgent->DeleteOutputHandler(pHandler);
+	}
+	// we are already at the next element
+	continue;
+      }
+    }
+    element++;
+  }
+  return iResult;
+}
+
+int AliHLTOUT::FindHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTModuleAgent::AliHLTOUTHandlerDesc desc)
+{
+  // see header file for class documentation
+  for (int i=0; i<(int)list.size(); i++) {
+    if (list[i]==desc) return i;
+  }
+  return -ENOENT;
+}
+
+int AliHLTOUT::InvalidateBlocks(AliHLTOUTHandlerListEntryVector& list)
+{
+  // see header file for class documentation
+  for (AliHLTOUTHandlerListEntryVector::iterator element=list.begin();
+	 element!=list.end();
+	 element++) {
+    element->InvalidateBlocks();
+  }
+  return 0;
 }
 
 const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
@@ -412,6 +485,13 @@ bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTModuleAgent::A
   // see header file for class documentation
   if (!fpHandlerDesc) return false;
   return *fpHandlerDesc==handlerType;
+}
+
+bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTModuleAgent::AliHLTOUTHandlerDesc desc) const
+{
+  // see header file for class documentation
+  if (!fpHandlerDesc) return false;
+  return *fpHandlerDesc==desc;
 }
 
 void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTOUT::AliHLTOUTHandlerListEntry &desc)
@@ -518,6 +598,7 @@ void AliHLTOUT::Delete(AliHLTOUT* pInstance)
 {
   // see header file for class documentation
   if (!pInstance) return;
+  if (pInstance==fgGlobalInstance) return;
 
   // check if the library is still there in order to have the
   // destructor available
@@ -540,7 +621,7 @@ void AliHLTOUT::SetParam(AliRawReader* /*pRawReader*/)
   // is intended to be used with the New functions. If we get into
   // the default implementation there is a class mismatch.
   assert(0);
-  HLTFatal("severe internal error: class mismatch");
+  fLog.LoggingVarargs(kHLTLogFatal, "AliHLTOUT", "SetParam" , __FILE__ , __LINE__ , "severe internal error: class mismatch");
 }
 
 void AliHLTOUT::SetParam(TTree* /*pDigitTree*/, int /*event*/)
@@ -551,7 +632,7 @@ void AliHLTOUT::SetParam(TTree* /*pDigitTree*/, int /*event*/)
   // is intended to be used with the New functions. If we get into
   // the default implementation there is a class mismatch.
   assert(0);
-  HLTFatal("severe internal error: class mismatch");
+  fLog.LoggingVarargs(kHLTLogFatal, "AliHLTOUT", "SetParam" , __FILE__ , __LINE__ , "severe internal error: class mismatch");
 }
 
 int AliHLTOUT::SelectDataBlock()
@@ -665,14 +746,46 @@ int AliHLTOUT::ReleaseSubCollection(AliHLTOUT* pCollection)
   int iResult=0;
   if (!pCollection) return 0;
 
-  AliHLTOUTBlockDescriptorVector::iterator element;
-  for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
-       block!=fBlockDescList.end();
-       block++) {
+  AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
+  while (block!=fBlockDescList.end()) {
     if ((*block)==pCollection) {
-      element=fBlockDescList.erase(element);
+      block=fBlockDescList.erase(block);
+      continue;
     }
+    block++;
   }
 
   return iResult;
+}
+
+int AliHLTOUT::Reset()
+{
+  // see header file for class documentation
+  int iResult=0;
+  AliHLTOUTPVector subCollections;
+  AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
+  while (block!=fBlockDescList.end()) {
+    if ((*block)==this) {
+      AliHLTOUTPVector::iterator collection=subCollections.begin();
+      for (; collection!=subCollections.end(); collection++)
+	if((*block)==*collection) break;
+      if (collection==subCollections.end())
+	subCollections.push_back(block->GetCollection());
+    }
+    block=fBlockDescList.erase(block);
+  }
+
+  for (AliHLTOUTPVector::iterator collection=subCollections.begin(); 
+       collection!=subCollections.end(); collection++)
+    (*collection)->Reset();
+
+  ResetInput();
+
+  return iResult;
+}
+
+int AliHLTOUT::ResetInput()
+{
+  // default implementation, nothing to do
+  return 0;
 }
