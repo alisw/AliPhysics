@@ -108,12 +108,12 @@ AliTRDqaGuiClustersStack::AliTRDqaGuiClustersStack(TGWindow *parent)
 
   fGSelectSM = new TGComboBox(fGPanel);
   for(int i=0; i<fgknSM; i++) fGSelectSM->AddEntry(Form("SM %d", i), i);
-  fGSelectSM->Resize(100, fGPrevSM->GetHeight());
+  fGSelectSM->Resize(100, (Int_t)(fGPrevSM->GetHeight()*1.4));
   fGSelectSM->Select(fIdxSM);
 
   fGSelectStack = new TGComboBox(fGPanel);
   for(int i=0; i<fgknStack; i++) fGSelectStack->AddEntry(Form("Stack %d", i), i);
-  fGSelectStack->Resize(100, fGPrevSM->GetHeight());
+  fGSelectStack->Resize(100, (Int_t)(fGPrevSM->GetHeight()*1.4));
   fGSelectStack->Select(fIdxStack);
 
   fGPlay = new TGTextButton(fGPanel, "PLAY");
@@ -123,7 +123,7 @@ AliTRDqaGuiClustersStack::AliTRDqaGuiClustersStack(TGWindow *parent)
   fGSelectView->AddEntry("time -- signal MPV", 1);
   fGSelectView->AddEntry("time -- total charge", 2);
   fGSelectView->AddEntry("time -- nClusters", 3);
-  fGSelectView->Resize(150, fGPrevSM->GetHeight());
+  fGSelectView->Resize(150, (Int_t)(fGPrevSM->GetHeight()*1.4));
   fGSelectView->Select(0);
 
   TGLayoutHints *hint = new TGLayoutHints(kLHintsNormal, 5, 5, 5, 5);

@@ -25,6 +25,8 @@ class TGTab;
 
 class AliTRDqaGuiBlackSM;
 class AliTRDqaGuiBlackChamber;  
+class AliTRDqaGuiBlackError;
+class AliTRDqaGuiBlackGlobal;
 
 class AliTRDqaGuiMainBlack : public TGMainFrame {
 
@@ -41,6 +43,8 @@ class AliTRDqaGuiMainBlack : public TGMainFrame {
    
   AliTRDqaGuiBlackSM       *fGSM;      // Something else
   AliTRDqaGuiBlackChamber  *fGChamber; // Something 
+  AliTRDqaGuiBlackError    *fGError;  // somethig
+  AliTRDqaGuiBlackGlobal   *fGGlobal;  // global view
 
  private:  
   AliTRDqaGuiMainBlack& operator = (const AliTRDqaGuiMainBlack& /*g*/) { return *this; };

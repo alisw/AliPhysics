@@ -51,7 +51,7 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM()
     fIdxType(0),
     fSetRangePed(0),
     fSetRangeNoise(0),
-    fFileName(0),
+    //fFileName(0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
@@ -69,7 +69,7 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM(TGWindow *parent)
     fIdxType(0),
     fSetRangePed(0),
     fSetRangeNoise(0),
-    fFileName(0),
+    //fFileName(0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
@@ -96,16 +96,17 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM(TGWindow *parent)
 
   fGSelect = new TGComboBox(fGPanel);
   for(int i=0; i<18; i++) fGSelect->AddEntry(Form("SM %d", i), i);
-  fGSelect->Resize(100, fGPrev->GetHeight());
+  fGSelect->Resize(100, (Int_t)(fGPrev->GetHeight()*1.4));
   fGSelect->Select(fIdx,0);
 
-  const char *textTypes[8] = {
-    "pedestals", "noise", "pedestalDist", "noiseDist", "signal", "entries", "entriesDist", "entriesRM"
+  const char *textTypes[11] = {
+    "pedestals", "noise", "peak-peak", "pedestalDist", "noiseDist", "signal", 
+    "entries", "entriesDist", "entriesRM", "errorLocMCM", "errorLocADC"
   };
   
   fGSelectType = new TGComboBox(fGPanel);
-  for(int i=0; i<8; i++) fGSelectType->AddEntry(textTypes[i], i);
-  fGSelectType->Resize(100, fGPrev->GetHeight());
+  for(int i=0; i<11; i++) fGSelectType->AddEntry(textTypes[i], i);
+  fGSelectType->Resize(100, (Int_t)(fGPrev->GetHeight()*1.4));
   fGSelectType->Select(fIdxType, 0);
 
   //fGPlay = new TGTextButton(fGPanel, "PLAY");
@@ -155,11 +156,12 @@ void AliTRDqaGuiBlackSM::SetQAFile(const char *filename) {
   // Set the file with histograms
   //
  
-  const char *names[8] = {"ped", "noise", "pedDist", "noiseDist", "signal", "entries", "entriesDist", "entriesRM"};
-  const char *opt[8] = {"col", "col", "", "", "", "colz", "", "col"};
-  const Int_t kLogy[8] = {0, 0, 1, 1, 1, 0, 1, 0};
+  const char *names[11] = {"ped", "noise", "pp","pedDist", "noiseDist", "signal", 
+			  "entries", "entriesDist", "entriesRM", "errorLocMCM", "errorLocADC" };
+  const char *opt[11] = {"col", "col", "", "", "", "", "col", "", "col", "col", "col"};
+  const Int_t kLogy[11] = {0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0};
 
-  fFileName = filename;
+  strcpy(fFileName,filename);
  
   for(int i=0; i<30; i++) {
     if (fHistList[i]) delete fHistList[i];
@@ -182,7 +184,7 @@ void AliTRDqaGuiBlackSM::SetQAFile(const char *filename) {
 
     if (fHistList[i]) fHistList[i]->Draw(opt[fIdxType]);
 
-    if (fHistList[i] && (fIdxType == 5)) {
+    if (fHistList[i] && (fIdxType == 6)) {
       fHistList[i]->SetMinimum(0);
       fHistList[i]->SetMaximum(2);
     }
@@ -210,7 +212,7 @@ void AliTRDqaGuiBlackSM::SetSM(Int_t idx) {
   
   fIdx = idx; 
   fGSelect->Select(fIdx, 0); 
-  SetQAFile(fFileName.Data());
+  SetQAFile(fFileName);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -222,7 +224,7 @@ void AliTRDqaGuiBlackSM::SelectType(Int_t idx) {
 
   fIdxType = idx;
   fGSelectType->Select(fIdxType, 0);
-  SetQAFile(fFileName.Data());
+  SetQAFile(fFileName);
 }
 
 //////////////////////////////////////////////////////////////////////////////////

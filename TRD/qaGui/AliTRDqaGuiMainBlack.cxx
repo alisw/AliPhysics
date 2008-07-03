@@ -30,6 +30,8 @@
 #include "AliTRDqaGuiMainBlack.h"
 #include "AliTRDqaGuiBlackSM.h"
 #include "AliTRDqaGuiBlackChamber.h"
+#include "AliTRDqaGuiBlackError.h"
+#include "AliTRDqaGuiBlackGlobal.h"
 
 #include "TGTab.h"
 
@@ -41,7 +43,9 @@ AliTRDqaGuiMainBlack::AliTRDqaGuiMainBlack(TGWindow *parent)
 : TGMainFrame(parent, 400, 400),
   fGTabPanel(0),
   fGSM(0),
-  fGChamber(0)
+  fGChamber(0),
+  fGError(0),
+  fGGlobal(0)
 {
   //
   // Main constructor
@@ -50,16 +54,21 @@ AliTRDqaGuiMainBlack::AliTRDqaGuiMainBlack(TGWindow *parent)
   fGTabPanel = new TGTab(this);
   fGSM       = new AliTRDqaGuiBlackSM(fGTabPanel);
   fGChamber  = new AliTRDqaGuiBlackChamber(fGTabPanel);
-  
+  fGError    = new AliTRDqaGuiBlackError(fGTabPanel);
+  fGGlobal   = new AliTRDqaGuiBlackGlobal(fGTabPanel);
+
   fGChamber->SetRangePed(8, 11);
   fGChamber->SetRangeNoise(0.5, 2);
 
   fGSM->SetRangePed(8, 11);
   fGSM->SetRangeNoise(0.5, 3);
 
+  fGTabPanel->AddTab("Global View", fGGlobal);
   fGTabPanel->AddTab("Super Module", fGSM);
   fGTabPanel->AddTab("Chamber", fGChamber);
-   
+  fGTabPanel->AddTab("Reader Error", fGError);
+
+
   AddFrame(fGTabPanel);
   
   SetWindowName("TRD QA -- Black Events");
@@ -78,6 +87,8 @@ void AliTRDqaGuiMainBlack::SetQAFile(const char *file)
  
   fGChamber->SetQAFile(file);
   fGSM->SetQAFile(file);
+  fGError->SetQAFile(file);
+  fGGlobal->SetQAFile(file);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

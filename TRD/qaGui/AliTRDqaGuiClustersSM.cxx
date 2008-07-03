@@ -88,7 +88,7 @@ AliTRDqaGuiClustersSM::AliTRDqaGuiClustersSM(TGWindow *parent)
 
   fGSelect = new TGComboBox(fGPanel);
   for(int i=0; i<18; i++) fGSelect->AddEntry(Form("SM %d", i), i);
-  fGSelect->Resize(100, fGPrev->GetHeight());
+  fGSelect->Resize(100, (Int_t)(1.4*fGPrev->GetHeight()));
   fGSelect->Select(fIdx);
 
   fGPlay = new TGTextButton(fGPanel, "PLAY");

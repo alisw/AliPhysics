@@ -22,6 +22,7 @@
 #include "TGFrame.h"  
 
 class TH1D;
+class TH2D;
 class TRootEmbeddedCanvas;
 
 class AliTRDqaGuiClusters : public TGCompositeFrame {
@@ -41,6 +42,10 @@ class AliTRDqaGuiClusters : public TGCompositeFrame {
  
   TRootEmbeddedCanvas *fCanvasList[4]; // list of canvases
   TH1D *fHistList[4];                  // and histograms
+  TH1D *fHistRefs[4][3];               // histograms with colors
+
+  // TH2D *BuildHisto(TH1D *ref, TH1D *data);
+  void BuildColor(Int_t i, TH1D *ref);
 
  private:
   AliTRDqaGuiClusters& operator = (const AliTRDqaGuiClusters& /*g*/) { return *this; };

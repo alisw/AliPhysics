@@ -71,7 +71,7 @@ class AliTRDqaGuiBlackSM : public TGCompositeFrame {
   Double_t fRangeNoise[2];      // range for noise
 
 
-  TString fFileName;            // file with histograms
+  char fFileName[265];            // file with histograms
   
   TRootEmbeddedCanvas *fCanvasList[30];  // list of canvases
   TH1 *fHistList[30];                    // and histograms

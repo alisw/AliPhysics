@@ -39,6 +39,7 @@
 #include "TString.h"
 #include "TSystem.h"
 
+#include "TLine.h"
 #include "TPaveText.h"
 #include "TGLabel.h"
 #include "TGComboBox.h"
@@ -112,19 +113,19 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
 
   fGSelectSM = new TGComboBox(fGPanel);
   for(int i=0; i<fgknSM; i++) fGSelectSM->AddEntry(Form("SM %d", i), i);
-  fGSelectSM->Resize(100, fGPrevSM->GetHeight());
+  fGSelectSM->Resize(100, (Int_t)(fGPrevSM->GetHeight()*1.4));
   fGSelectSM->Select(fIdxSM);
 
   fGSelectChamber = new TGComboBox(fGPanel);
   for(int i=0; i<fgknChamber; i++) fGSelectChamber->AddEntry(Form("Chamber %d", i), i);
-  fGSelectChamber->Resize(100, fGPrevSM->GetHeight());
+  fGSelectChamber->Resize(100, (Int_t)(fGPrevSM->GetHeight()*1.4));
   fGSelectChamber->Select(fIdxChamber);
 
   // vew
   fGSelectView = new TGComboBox(fGPanel);
   fGSelectView->AddEntry("pedestals",0);
   fGSelectView->AddEntry("entiries", 1);
-  fGSelectView->Resize(150, fGPrevSM->GetHeight());
+  fGSelectView->Resize(150, (Int_t)(fGPrevSM->GetHeight()*1.4));
   fGSelectView->Select(0);
 
 
@@ -209,8 +210,6 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
   // sets a file with histograms
   //
 
-
-
   //const char *names[5] = {"ped", "noise", "pedDist", "noiseDist", "signal"};
   const char *names[10] = {
     "ped", "noise", "pedDist", "noiseDist", "signal",
@@ -253,12 +252,45 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
       fHistList[i]->SetMaximum(fRangeNoise[1]);
     }
 
-
     fCanvasList[i]->GetCanvas()->cd();
     fCanvasList[i]->GetCanvas()->SetLogy(kLogy[i+5*fView]);
     if (fHistList[i]) fHistList[i]->Draw(opt[i+5*fView]);
     //fCanvasList[i]->GetCanvas()->Update();
   }
+  
+  // mcm lines
+  TLine *line;
+  for(Int_t i=1; i<8; i++) {
+
+    fCanvasList[0]->GetCanvas()->cd();
+    line = new TLine(0, i*18-0.5, 15, i*18-0.5);
+    line->SetLineStyle(2);
+    if (i!=4) line->SetLineStyle(3);
+    line->Draw();
+
+    fCanvasList[1]->GetCanvas()->cd();
+    line = new TLine(0, i*18-0.5, 15, i*18-0.5);
+    line->SetLineStyle(2);
+    if (i!=4) line->SetLineStyle(3);
+    line->Draw();    
+  }
+  
+  for(Int_t i=1; i<4; i++) {
+    
+    fCanvasList[0]->GetCanvas()->cd();
+    line = new TLine(i*4-0.5, 0, i*4-0.5, 143);
+    line->SetLineStyle(2);
+    line->Draw();
+
+    fCanvasList[1]->GetCanvas()->cd();
+    line = new TLine(i*4-0.5, 0, i*4-0.5, 143);
+    line->SetLineStyle(2);
+    line->Draw();  
+  }
+
+  
+
+
   
   for(Int_t i=0; i<5; i++)
     fCanvasList[i]->GetCanvas()->Update();
