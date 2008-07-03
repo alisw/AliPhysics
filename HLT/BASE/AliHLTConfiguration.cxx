@@ -159,7 +159,7 @@ int AliHLTConfiguration::GlobalInit(AliHLTConfigurationHandler* pHandler)
 {
   // see header file for function documentation
   int iResult=0;
-  if (fgConfigurationHandler!=NULL) {
+  if (fgConfigurationHandler!=NULL && fgConfigurationHandler!=pHandler) {
     fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalInit", HLT_DEFAULT_LOG_KEYWORD, "configuration handler already initialized, overriding object %p with %p", fgConfigurationHandler, pHandler);
   }
   fgConfigurationHandler=pHandler;
@@ -212,7 +212,7 @@ AliHLTConfiguration* AliHLTConfiguration::GetFirstSource()
 {
   // see header file for function documentation
   AliHLTConfiguration* pSrc=NULL;
-  if (fNofSources>=0 || ExtractSources()) {
+  if (fNofSources>=0 || ExtractSources()>=0) {
     fListSrcElement=fListSources.begin();
     if (fListSrcElement!=fListSources.end()) pSrc=*fListSrcElement;
   } 
