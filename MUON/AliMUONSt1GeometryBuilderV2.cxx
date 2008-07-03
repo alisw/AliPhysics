@@ -541,7 +541,7 @@ void AliMUONSt1GeometryBuilderV2::CreateSpacer()
   par[2] = 1.1515;
   gMC->Gsvolu("Spacer5A","BOX",idFrameEpoxy,par,3);
 
-  par[0] = 0.516;
+  par[0] = 0.510;
   par[1] = 1.500;
   par[2] = 0.100;
   gMC->Gsvolu("Spacer6","BOX",idFrameEpoxy,par,3);
@@ -1836,6 +1836,8 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = 18.534+fgkDeltaQuadLHC;
     posY = 99.482+fgkDeltaQuadLHC; 
     posZ = -1.*kHzAnodeFR4;    
+    // shift up to solve overlap with SQ14
+    posY += 0.1;
     gMC->Gspos("SQ10",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
     posZ = kHzTopAnodeSteel2;    
     gMC->Gspos("SQ11",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");       
@@ -2486,14 +2488,20 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
           posY = where.Y() + motifPos->Position().Y() + spMot.GetDelta().Y();
           posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
           // Shift the hole for special motif 46 to avoid debording into S047
-          if ( copyNo == 2070 ) posX -= 0.1;
+          if ( copyNo == 2070 ) {
+            posX -= 0.1;
+            posY -= 0.1;
+          }  
           gMC->Gspos(fgkHoleName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
           // then place the daughter board for the motif, wrt the requested rotation angle
           posX = posX+fgkDeltaFilleEtamX;
           posY = posY+fgkDeltaFilleEtamY;
           // Do not shift the daughter board
-          if ( copyNo == 2070 ) posX += 0.1;
+          if ( copyNo == 2070 ) {
+            posX += 0.1;
+            posY += 0.1;
+          }  
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
           gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
