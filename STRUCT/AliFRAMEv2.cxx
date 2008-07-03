@@ -181,7 +181,7 @@ void AliFRAMEv2::CreateGeometry()
   shBREFA->SetName("shBREFA");
   TGeoCompositeShape* shBREF1 = new TGeoCompositeShape("shBREF1", "shBREFA-(shB77B:trB77A+shB77B:trB77B)");
   TGeoVolume* voBREF = new TGeoVolume("BREF1", shBREF1, gGeoManager->GetMedium("FRAME_Air"));
-  voBREF->SetVisibility(1);
+  voBREF->SetVisibility(0);
   gMC->Gspos("BREF1", 1, "B077", 0., 0., 0., 0, "ONLY");
 //
 //  The outer Frame
