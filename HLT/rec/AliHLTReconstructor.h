@@ -156,6 +156,16 @@ class AliHLTEsdManager;
  * stored to files.
  *
  * @section sec_alihltreconstructor_helper Tools and helper functions
+ * Some helper functions of the AliHLTReconstruction can be used in stand-alone
+ * mode. Remember to Init() the reconstructor.
+ * <pre>
+ * {
+ * gSystem->Load("libHLTrec.so");
+ * AliHLTReconstructor rec;
+ * rec.Init();
+ * // do something
+ * }
+ * </pre>
  * @subsection sec_alihltreconstructor_hltout_standalone Stand-alone HLTOUT processing
  * - HLTOUT processing from a digit file:
  * <pre>

@@ -10,8 +10,8 @@
 /** @file   AliHLTOUTHomerCollection.h
     @author Matthias Richter
     @date   
-    @brief  General HLTOUT data collection.
-                                                                          */
+    @brief  General collection for HLTOUT data in DDL format.
+*/
 #include "AliHLTOUTHomerBuffer.h"
 
 class AliHLTHOMERReader;
@@ -20,8 +20,16 @@ class AliHLTEsdManager;
 
 /**
  * @class AliHLTOUTHomerCollection
- * Handler of HLTOUT data, base class for specific handlers for
- * RawReader or Digit data.
+ * Handler of HLTOUT data in DDL format, base class for specific
+ * handlers for RawReader or Digit data.
+ *
+ * The class expects the data to be in the DDL data format.
+ * In contrast to the AliHLTOUTHomerBuffer, it also takes the
+ * additional CDH and HLT headers and optional HLT decision into
+ * account when opening the HOMER reader (see OpenReader()).
+ *
+ * The data access must be provided by the child class, the
+ * interface is pretty much like the AliRawReader interface.
  */
 class AliHLTOUTHomerCollection : public AliHLTOUTHomerBuffer {
  public:

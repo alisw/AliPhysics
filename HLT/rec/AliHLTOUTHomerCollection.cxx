@@ -19,7 +19,7 @@
 /** @file   AliHLTOUTHomerCollection.cxx
     @author Matthias Richter
     @date   
-    @brief  General HLTOUT data collection.
+    @brief  General collection for HLTOUT data in DDL format.
 */
 
 #include "AliHLTOUTHomerCollection.h"

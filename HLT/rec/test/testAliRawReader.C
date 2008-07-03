@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   testAliRawReaderMemory.C
+/** @file   testAliRawReader.C
     @author Matthias Richter
     @date   
     @brief  Test macro/program for the AliRawReaderMemory
