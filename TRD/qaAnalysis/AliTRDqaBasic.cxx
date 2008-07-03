@@ -13,19 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDqaESDFriends.cxx $ */
+/* $Id: AliTRDqaBasic.cxx 23387 2008-01-17 17:25:16Z cblume $ */
 
 //
 // This class is a part of a package of high level QA monitoring for TRD.
-// The residuals of cluster with respect to tracklets are analyzed 
-// in this class. This class needs ESDfriends.root
 //
 // S. Radomski
 // radomski@physi.uni-heidelberg.de
 // March 2008
 //
 
-#include "AliTRDqaESDFriends.h"
+#include "AliTRDqaBasic.h"
+#include "AliTRDqaAT.h"
 
 #include "TMath.h"
 #include "TH1D.h"
@@ -36,45 +35,67 @@
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliKalmanTrack.h"
-#include "AliESDfriend.h"
+#include "AliESDtrackCuts.h"
 
 //______________________________________________________________________________
 
-AliTRDqaESDFriends::AliTRDqaESDFriends() 
+AliTRDqaBasic::AliTRDqaBasic() 
   : AliAnalysisTask("",""),  
     fChain(0),
     fESD(0),
     fOutputContainer(0),
-    fResiduals(0),
-    fResidualsAngle(0) 
+    fTrackCuts(0),
+    fStatus(0),
+    fnTracks(0),
+    fPtIn(0),
+    fPtOut(0),
+    fPtVtx(0),
+    fPtVtxSec(0),
+    fPtPt(0)
 {
-  // Dummy default constructor
+  //
+  // default dummy constructor
+  //
+ 
 }
 //______________________________________________________________________________
 
-AliTRDqaESDFriends:: AliTRDqaESDFriends(AliTRDqaESDFriends& /*trd*/)
+AliTRDqaBasic:: AliTRDqaBasic(AliTRDqaBasic& /*trd*/)
   : AliAnalysisTask("",""),  
     fChain(0),
     fESD(0),
     fOutputContainer(0),
-    fResiduals(0),
-    fResidualsAngle(0) 
+    fTrackCuts(0),
+    fStatus(0),
+    fnTracks(0),
+    fPtIn(0),
+    fPtOut(0),
+    fPtVtx(0),
+    fPtVtxSec(0),
+    fPtPt(0)
 {
-  // dummy copy constructor
+  //
+  // Dummy copy constructor
+  //
 
   //return *this;
 }
 
 
 //______________________________________________________________________________
-AliTRDqaESDFriends::AliTRDqaESDFriends(const char *name) 
+AliTRDqaBasic::AliTRDqaBasic(const char *name) 
   : AliAnalysisTask(name,""),  
     fChain(0),
     fESD(0),
     fOutputContainer(0),
-    fResiduals(0),
-    fResidualsAngle(0) 
+    fTrackCuts(0),
+    fStatus(0),
+    fnTracks(0),
+    fPtIn(0),
+    fPtOut(0),
+    fPtVtx(0),
+    fPtVtxSec(0),
+    fPtPt(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -84,7 +105,7 @@ AliTRDqaESDFriends::AliTRDqaESDFriends(const char *name)
 }
 
 //______________________________________________________________________________
-void AliTRDqaESDFriends::ConnectInputData(const Option_t *)
+void AliTRDqaBasic::ConnectInputData(const Option_t *)
 {
   // Initialisation of branch container and histograms 
 
@@ -96,26 +117,62 @@ void AliTRDqaESDFriends::ConnectInputData(const Option_t *)
 }
 
 //________________________________________________________________________
-void AliTRDqaESDFriends::CreateOutputObjects()
+void AliTRDqaBasic::CreateOutputObjects()
 {
   // build histograms
  
-  fResiduals = new TH1D("residuals", ";residuals (cm)", 1000, -1, 1);
-  fResidualsAngle = new TH2D("residualsAngle", ";angle (rad);residuals (cm)", 100, -1, 1, 100, -1, 1);
+  fStatus   = new TH1D("status", ";status bit", 32, -0.5, 31.5);
+  fPtIn     = new TH1D("ptIn", ";p_{T}, GeV/c", 100, 0, 15);
+  fPtOut    = new TH1D("ptOut", ";p_{T}, GeV/c", 100, 0, 15);
+  fPtVtx    = new TH1D("ptVtx", ";p_{T}, GeV/c", 100, 0, 15);
+  fPtVtxSec = new TH1D("ptVtxSec", ";p_{T}, GeV/c", 100, 0, 15);
+  fnTracks  = new TH1D("nTracks", "", 200, -0.5, 199.5);
+  
+  fPtPt     = new TH2D("ptpt", ";p_{T} from inner plane, GeV/c;p_{T} at vertex, GeV/c", 
+		       100, 0, 10, 100, 0, 10);
 
   Int_t c = 0;
   fOutputContainer = new TObjArray(50);
 
-  fOutputContainer->AddAt(fResiduals, c++);
-  fOutputContainer->AddAt(fResidualsAngle, c++);
+  fOutputContainer->AddAt(fStatus, c++);
+  fOutputContainer->AddAt(fPtIn, c++);
+  fOutputContainer->AddAt(fPtOut, c++);
+  fOutputContainer->AddAt(fPtVtx, c++);
+  fOutputContainer->AddAt(fPtVtxSec, c++);
+  fOutputContainer->AddAt(fnTracks, c++);
+  fOutputContainer->AddAt(fPtPt, c++);  
 
   printf("n hist = %d\n", c);
+  
+  // initialize cuts
+  fTrackCuts =  new AliESDtrackCuts("AliESDtrackCuts");
+  fTrackCuts->DefineHistograms(0);
+
+  // default cuts for ITS+TPC
+  Double_t cov1 = 2;
+  Double_t cov2 = 2;
+  Double_t cov3 = 0.5;
+  Double_t cov4 = 0.5;
+  Double_t cov5 = 2;
+  Double_t nSigma = 3;
+
+  TString tag("Global tracking");
+
+  fTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
+
+  fTrackCuts->SetMinNsigmaToVertex(nSigma);
+  fTrackCuts->SetRequireSigmaToVertex(kTRUE);
+
+  fTrackCuts->SetRequireTPCRefit(kTRUE);
+  fTrackCuts->SetAcceptKingDaughters(kFALSE);
+
+  fTrackCuts->SetMinNClustersTPC(50);
+  fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
 }
 //______________________________________________________________________________
-void AliTRDqaESDFriends::Exec(Option_t *) 
+void AliTRDqaBasic::Exec(Option_t *) 
 {
   // Process one event
-  
   Long64_t entry = fChain->GetReadEntry() ;
   if (!(entry%100)) Info("Exec", "Entry = %ld", entry);
 
@@ -127,7 +184,7 @@ void AliTRDqaESDFriends::Exec(Option_t *)
   }
   
   Int_t nTracks = fESD->GetNumberOfTracks();
-  //fNTracks->Fill(nTracks); 
+  fnTracks->Fill(nTracks); 
 
   // track loop
   for(Int_t i=0; i<nTracks; i++) {
@@ -148,46 +205,31 @@ void AliTRDqaESDFriends::Exec(Option_t *)
     if (!paramOut) continue;
     
     UInt_t status = track->GetStatus();
-    if (!(status & AliESDtrack::kTRDrefit)) continue;
-    if (!(status & AliESDtrack::kTRDpid)) continue;
-    if (track->GetTRDpidQuality() < 6) continue;
+    if (!(status & AliESDtrack::kTPCrefit)) continue;
 
-    // standard selection
-    AliESDfriend *fr = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
-    if (fr) fESD->SetESDfriend(fr);
-
-    AliESDfriendTrack *f = (AliESDfriendTrack*)track->GetFriendTrack();
+    //if (!fTrackCuts->AcceptTrack(track)) continue;
     
-    if (!f) continue;
+    AliTRDqaAT::FillStatus(fStatus, status);
 
-    //AliKalmanTrack *trdTrack = 0;
-    //if (f) trdTrack = f->GetTRDtrack();
-    //if (trdTrack) trdTrack->Print();
-
-    //if (f) f->Dump();
-    //if (f) f->Print();
-      
-    //  fESD->GetList()->Print();
-    //AliESDfriend *f = (AliESDfriend*)fESD->FindListObject("ESDfriend");
-    //if (f) f->Print();
-    // AliKalmanTrack *trdTrack = track->GetTRDtrack();
-    //if (trdTrack) trdTrack->Print();
+    fPtIn->Fill(paramIn->Pt());
+    fPtOut->Fill(paramOut->Pt());
+    fPtVtx->Fill(track->Pt());
+    if (track->GetConstrainedParam())
+      fPtVtxSec->Fill(track->GetConstrainedParam()->Pt());
+    
+    fPtPt->Fill(paramIn->Pt(), track->Pt());
   }
 
   PostData(0, fOutputContainer);
 }
 
 //______________________________________________________________________________
-void AliTRDqaESDFriends::Terminate(Option_t *)
+void AliTRDqaBasic::Terminate(Option_t *)
 {
-  // retrieve histograms
+  // save histograms
   fOutputContainer = (TObjArray*)GetOutputData(0);
   
-  // post processing
-
-
-  // save the results
-  TFile *file = new TFile("outESDFriends.root", "RECREATE");
+  TFile *file = new TFile("outBasic.root", "RECREATE");
   fOutputContainer->Write();
  
   file->Flush();
