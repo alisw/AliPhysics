@@ -140,6 +140,12 @@ public:
   /// To allow merging of different objects
   virtual Long64_t Merge(TCollection* list) = 0;
 
+	/// Disable recording of information at the channel level
+	virtual void DisableChannelLevel() = 0;
+	
+	/// Whether we store values at the channel level
+	virtual Bool_t IsChannelLevelEnabled() const = 0;
+	
 private:
   /// not implemented
   AliMUONVTrackerData(const AliMUONVTrackerData& rhs);

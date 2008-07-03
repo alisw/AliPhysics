@@ -98,6 +98,12 @@ public:
   virtual AliMUONSparseHisto* GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
                                                     Int_t manuChannel, Int_t dim=0) const;
 
+	/// Disable storing values at the channel level
+	virtual void DisableChannelLevel();
+	
+	/// Whether we store values at the channel level or not
+	virtual Bool_t IsChannelLevelEnabled() const { return fIsChannelLevelEnabled; }
+
 private:
     
   void FillChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel,
@@ -190,8 +196,9 @@ private:
   Double_t fXmax; ///< max x value for histograms
   static const Int_t fgkExtraDimension; ///< to hold extra information
   static const Int_t fgkVirtualExtraDimension; ///< to give access to information not stored, but computed on the fly
-  
-  ClassDef(AliMUONTrackerData,4) // Implementation of AliMUONVTrackerData
+  Bool_t fIsChannelLevelEnabled; //< whether we allow storing of channel (fChannelValues) values
+	
+  ClassDef(AliMUONTrackerData,5) // Implementation of AliMUONVTrackerData
 };
 
 #endif

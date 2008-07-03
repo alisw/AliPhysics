@@ -74,7 +74,8 @@ fExternalDimension(dimension),
 fHistogramming(new Int_t[fExternalDimension]),
 fChannelHistos(0x0),
 fXmin(0.0),
-fXmax(0.0)
+fXmax(0.0),
+fIsChannelLevelEnabled(kTRUE)
 {  
   /// ctor
   memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
@@ -139,7 +140,7 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
     NumberOfEventsChanged();
   }
   
-  if (!fChannelValues)
+  if (!fChamberValues)
   {
     Int_t numberOfBusPatches(0);
     Int_t numberOfDEs(0);
@@ -157,7 +158,10 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
       deIt.Next();
     }
     
-    fChannelValues = new AliMUON2DMap(kTRUE);
+		if ( fIsChannelLevelEnabled ) 
+		{
+			fChannelValues = new AliMUON2DMap(kTRUE);
+		}
     fManuValues = new AliMUON2DMap(kTRUE);
     fPCBValues = new AliMUON2DMap(kFALSE);
     fBusPatchValues = new AliMUON1DMap(numberOfBusPatches);
@@ -228,10 +232,13 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
           
           for ( Int_t k = 0; k < nk; ++k ) 
           {
-            Double_t e = replace ? channel->ValueAsDoubleFast(i,ix+k) : 0.0;
+            Double_t e = ( replace && channel ) ? channel->ValueAsDoubleFast(i,ix+k) : 0.0;
             
-            channel->SetValueAsDoubleFast(i,ix+k,channel->ValueAsDoubleFast(i,ix+k)-e+value[k]);
-              
+						if ( channel ) 
+						{
+							channel->SetValueAsDoubleFast(i,ix+k,channel->ValueAsDoubleFast(i,ix+k)-e+value[k]);
+						}
+						
             manu->SetValueAsDoubleFast(0,ix+k,manu->ValueAsDoubleFast(0,ix+k)-e+value[k]);            
             
             busPatch->SetValueAsDoubleFast(0,ix+k,busPatch->ValueAsDoubleFast(0,ix+k)-e+value[k]);
@@ -249,8 +256,12 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
         
         if ( validChannel && !replace )
         {
-          channel->SetValueAsDoubleFast(i,IndexOfOccupancyDimension(),
-                                        channel->ValueAsDoubleFast(i,IndexOfOccupancyDimension())+1.0);
+					if ( channel ) 
+					{
+						channel->SetValueAsDoubleFast(i,IndexOfOccupancyDimension(),
+																					channel->ValueAsDoubleFast(i,IndexOfOccupancyDimension())+1.0);
+					}
+					
           manu->SetValueAsDoubleFast(0,IndexOfOccupancyDimension(),
                                                  manu->ValueAsDoubleFast(0,IndexOfOccupancyDimension())+1.0);        
           busPatch->SetValueAsDoubleFast(0,IndexOfOccupancyDimension(),
@@ -567,6 +578,17 @@ AliMUONTrackerData::DimensionName(Int_t dim) const
 }
 
 //_____________________________________________________________________________
+void 
+AliMUONTrackerData::DisableChannelLevel()
+{ 
+  /// Disable the storing of data at channel level
+  
+  delete fChannelValues;
+  fChannelValues = 0x0;
+  fIsChannelLevelEnabled = kFALSE; 
+}
+
+//_____________________________________________________________________________
 Int_t 
 AliMUONTrackerData::External2Internal(Int_t index) const 
 {
@@ -598,9 +620,11 @@ AliMUONTrackerData::FillChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel
 {
   /// Fill histogram of a given channel
   
-  AliMUONSparseHisto* h = GetChannelSparseHisto(detElemId, manuId, manuChannel,dim);
- 
-  h->Fill(static_cast<Int_t>(TMath::Nint(value)));
+	if ( fIsChannelLevelEnabled ) 
+	{
+		AliMUONSparseHisto* h = GetChannelSparseHisto(detElemId, manuId, manuChannel,dim);
+		h->Fill(static_cast<Int_t>(TMath::Nint(value)));
+	}
 }
 
 //_____________________________________________________________________________
@@ -896,6 +920,11 @@ AliMUONTrackerData::Print(Option_t* wildcard, Option_t* opt) const
     cout << " Nevents=" << fNevents << endl;
   }
 
+	if ( fIsChannelLevelEnabled ) 
+	{
+		cout << "Is storing (accumulated) data at the channel level" << endl;
+	}
+	
   for ( Int_t i = 0; i <= fExternalDimensionNames->GetLast(); ++i ) 
   {
     TObjString* name = static_cast<TObjString*>(fExternalDimensionNames->At(i));
