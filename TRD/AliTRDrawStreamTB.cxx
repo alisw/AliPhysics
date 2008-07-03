@@ -1802,12 +1802,30 @@ const char *AliTRDrawStreamTB::DumpStackInfo(const struct AliTRDrawStack *st)
   //
   // format the string with the stack info
   //
+
+  return "Dupa Blada";
+
+  static char text[1000];
+  sprintf(text,
+	  "[ Stack Info 0x%08x ] : Hsize %d Links Active %d %d %d %d %d %d %d %d %d %d %d %d",
+	  *st->fPos,
+	  st->fHeaderSize,
+	  st->fLinksActive[0], st->fLinksActive[1], st->fLinksActive[2], st->fLinksActive[3],
+	  st->fLinksActive[4], st->fLinksActive[5], st->fLinksActive[6], st->fLinksActive[7],
+	  st->fLinksActive[8], st->fLinksActive[9], st->fLinksActive[10], st->fLinksActive[11]
+	  );
+
+  printf(text);
+  return text;
+  /*
   return Form("[ Stack Info 0x%08x ] : Hsize %d Links Active %d %d %d %d %d %d %d %d %d %d %d %d",
 	      *st->fPos,
 	      st->fHeaderSize,
 	      st->fLinksActive[0], st->fLinksActive[1], st->fLinksActive[2], st->fLinksActive[3],
 	      st->fLinksActive[4], st->fLinksActive[5], st->fLinksActive[6], st->fLinksActive[7],
 	      st->fLinksActive[8], st->fLinksActive[9], st->fLinksActive[10], st->fLinksActive[11]);
+
+  */
 }
 
 //--------------------------------------------------------
