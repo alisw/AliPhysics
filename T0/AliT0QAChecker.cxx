@@ -73,6 +73,8 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
   TH1 *fhRecLEDAmp[24];  TH1 * fhRecQTC[24];
   TH1 *fhOnlineMean = 0x0;  
   TH1 * fhRecMean = 0x0;
+  TH1 *fhESDMean = 0x0;
+  TH1 *fhESDVertex = 0x0;
   TString dataType = AliQA::GetAliTaskName(index);
 
   if (list->GetEntries() == 0){
@@ -98,6 +100,11 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	  if(count == 73)  fhRecMean = hdata; 
 	}
 	
+
+	if(index==3){
+	  if(count=0) fhESDMean = hdata;
+	  if(count=1) fhESDVertex = hdata;
+	}
 	count++ ;
 	
         Double_t rv = 0.;
@@ -141,6 +148,15 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 		AliWarning(Form("Problem in Number of entried in hist %s  is %f\n",hname[i].Data() , nent[i])) ; 
 	    }
 	}
+ 	if (index == 3) {
+	  Double_t rmsMeanTime = fhESDMean->GetRMS();
+	  if (rmsMeanTime>3) 		
+	    AliWarning(Form("Mean time with bad resolution, RMS= %f",rmsMeanTime)) ; 
+	  Double_t rmsVertex = fhESDVertex->GetRMS();
+	  if (rmsVertex>3) 		
+	    AliWarning(Form("Vertex with bad resolution, RMS= %f",rmsVertex)) ; 
+	}
+ 
       }
       
     }
