@@ -68,6 +68,7 @@ AliTRD::AliTRD()
   ,fGeometry(0)
   ,fGasDensity(0)
   ,fFoilDensity(0)
+  ,fGasNobleFraction(0)
   ,fDrawTR(0)
   ,fDisplayType(0)
 {
@@ -459,19 +460,13 @@ void AliTRD::CreateMaterials()
   Float_t aco[2]    = { 12.011 , 15.9994 };
   Float_t zco[2]    = {  6.0   ,  8.0    };
   Float_t wco[2]    = {  1.0   ,  2.0    };
-  Float_t dco       = 0.00186;
+  Float_t dco       = 0.00186; // at 20C
 
   // For water
   Float_t awa[2]    = {  1.0079, 15.9994 };
   Float_t zwa[2]    = {  1.0   ,  8.0    };
   Float_t wwa[2]    = {  2.0   ,  1.0    };
   Float_t dwa       = 1.0;
-
-  // For isobutane (C4H10)
-  Float_t ais[2]    = { 12.011 ,  1.0079 };
-  Float_t zis[2]    = {  6.0   ,  1.0    };
-  Float_t wis[2]    = {  4.0   , 10.0    };
-  Float_t dis       = 0.00267;
 
   // For plexiglas (C5H8O2)
   Float_t apg[3]    = { 12.011 ,  1.0079, 15.9994 };
@@ -509,8 +504,17 @@ void AliTRD::CreateMaterials()
   Float_t wXeCO2[3] = {   8.5    ,   1.5    ,   3.0     }; 
   // Xe-content of the Xe/CO2-mixture (85% / 15%) 
   Float_t fxc       = 0.85;
-  Float_t dxe       = 0.00549;
-  Float_t dgm       = fxc * dxe + (1.0 - fxc) * dco;
+  Float_t dxe       = 0.00549; // at 20C
+  Float_t dgmXe     = fxc * dxe + (1.0 - fxc) * dco;
+
+  // For Ar/CO2-gas-mixture
+  Float_t aArCO2[3] = {  39.948  ,  12.0107 ,  15.9994  };
+  Float_t zArCO2[3] = {  18.0    ,   6.0    ,   8.0     };
+  Float_t wArCO2[3] = {   8.2    ,   1.8    ,   3.6     }; 
+  // Ar-content of the Ar/CO2-mixture (82% / 18%) 
+  Float_t fac       = 0.82;
+  Float_t dar       = 0.00166; // at 20C
+  Float_t dgmAr     = fac * dar + (1.0 - fac) * dco;
   
   // General tracking parameter
   Float_t tmaxfd    = -10.0;
@@ -535,8 +539,17 @@ void AliTRD::CreateMaterials()
   AliMixture(2, "Air"         , aAir,   zAir,   dAir,    4, wAir  );
   AliMixture(3, "Polyethilene", ape,    zpe,    dpe,    -2, wpe   );
   AliMixture(8, "CO2",          aco,    zco,    dco,    -2, wco   );
-  AliMixture(9, "Isobutane",    ais,    zis,    dis,    -2, wis   );
-  AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,    -3, wXeCO2);
+  if      (AliTRDSimParam::Instance()->IsXenon()) {
+    AliMixture(10,"XeCO2",        aXeCO2, zXeCO2, dgmXe,  -3, wXeCO2);
+  }
+  else if (AliTRDSimParam::Instance()->IsArgon()) {
+    AliInfo("Gas mixture: Ar C02 (80/20)");
+    AliMixture(10,"ArCO2",        aArCO2, zArCO2, dgmAr,  -3, wArCO2);
+  }
+  else {
+    AliFatal("Wrong gas mixture");
+    exit(1);
+  }
   AliMixture(12,"G10",          aG10,   zG10,   dG10,    4, wG10  );
   AliMixture(13,"Water",        awa,    zwa,    dwa,    -2, wwa   );
   AliMixture(14,"Plexiglas",    apg,    zpg,    dpg,    -3, wpg   );
@@ -623,7 +636,14 @@ void AliTRD::CreateMaterials()
   // Save the density values for the TRD absorbtion
   Float_t dmy  = 1.39;
   fFoilDensity = dmy;
-  fGasDensity  = dgm;
+  if      (AliTRDSimParam::Instance()->IsXenon()) {
+    fGasDensity       = dgmXe;
+    fGasNobleFraction = fxc;
+  }
+  else if (AliTRDSimParam::Instance()->IsArgon()) {
+    fGasDensity       = dgmAr;
+    fGasNobleFraction = fac;
+  }
 
 }
 

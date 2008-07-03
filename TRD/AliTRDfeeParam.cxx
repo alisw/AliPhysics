@@ -84,6 +84,7 @@ void AliTRDfeeParam::Terminate()
 AliTRDfeeParam::AliTRDfeeParam()
   :TObject()
   ,fCP(0)
+  ,fTFnExp(1)
   ,fTFr1(0)
   ,fTFr2(0)
   ,fTFc1(0)
@@ -100,13 +101,13 @@ AliTRDfeeParam::AliTRDfeeParam()
   //
   
   // PASA V.4
-  if      (fgkTFnExp == 1) {
+  if      (fTFnExp == 1) {
     fTFr1 = 1.1563;
     fTFr2 = 0.1299;
     fTFc1 = 0.0657;
     fTFc2 = 0.0000;
   }
-  else if (fgkTFnExp == 2) {
+  else if (fTFnExp == 2) {
     fTFr1 = 1.1563;
     fTFr2 = 0.1299;
     fTFc1 = 0.1141;
@@ -121,6 +122,7 @@ AliTRDfeeParam::AliTRDfeeParam()
 AliTRDfeeParam::AliTRDfeeParam(TRootIoCtor *)
   :TObject()
   ,fCP(0)
+  ,fTFnExp(1)
   ,fTFr1(0)
   ,fTFr2(0)
   ,fTFc1(0)
@@ -142,6 +144,7 @@ AliTRDfeeParam::AliTRDfeeParam(TRootIoCtor *)
 AliTRDfeeParam::AliTRDfeeParam(const AliTRDfeeParam &p)
   :TObject(p)
   ,fCP(p.fCP)
+  ,fTFnExp(p.fTFnExp)
   ,fTFr1(p.fTFr1)
   ,fTFr2(p.fTFr2)
   ,fTFc1(p.fTFc1)
@@ -191,6 +194,7 @@ void AliTRDfeeParam::Copy(TObject &p) const
   //
 
   ((AliTRDfeeParam &) p).fCP          = fCP;
+  ((AliTRDfeeParam &) p).fTFnExp      = fTFnExp;
   ((AliTRDfeeParam &) p).fTFr1        = fTFr1;
   ((AliTRDfeeParam &) p).fTFr2        = fTFr2;
   ((AliTRDfeeParam &) p).fTFc1        = fTFc1;
@@ -392,5 +396,35 @@ void AliTRDfeeParam::SetRAWversion( Int_t rawver )
   else {
     AliError(Form("Raw version is out of range: %d",rawver));
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDfeeParam::SetXenon()
+{
+  //
+  // Sets the filter parameters for the Xenon gas mixture
+  //
+
+  fTFnExp = 1;
+  fTFr1   = 1.1563;
+  fTFr2   = 0.1299;
+  fTFc1   = 0.0657;
+  fTFc2   = 0.0000;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDfeeParam::SetArgon()
+{
+  //
+  // Sets the filter parameters for the Argon gas mixture
+  //
+
+  fTFnExp = 2;
+  fTFr1   = 6.0;
+  fTFr2   = 0.62;
+  fTFc1   = 0.0087;
+  fTFc2   = 0.07;
 
 }

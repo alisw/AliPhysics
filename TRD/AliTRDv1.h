@@ -63,19 +63,22 @@ class AliTRDv1 : public AliTRD {
           Double_t fStepSize;           //  Used for the fixed step size
 
  private:
+
   AliTRDv1(const AliTRDv1 &trd);
   AliTRDv1 &operator=(const AliTRDv1 &trd);
 
           Double_t BetheBloch(Double_t bg);
           Double_t BetheBlochGeant(Double_t bg);
   
+          Float_t  fWion;               //  Ionization potential
+
           TF1     *fDeltaE;             //  Energy distribution of the delta-electrons (Ermilova)
           TF1     *fDeltaG;             //  Energy distribution of the
 
           Float_t  fTrackLength0;       //  Save the track length at chamber entrance  
           Int_t	   fPrimaryTrackPid;    //  Save the id of the primary track  
 
-  ClassDef(AliTRDv1,6)                  //  Transition Radiation Detector version 1 (slow simulator)
+  ClassDef(AliTRDv1,7)                  //  Transition Radiation Detector version 1 (slow simulator)
 
 };
 

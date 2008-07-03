@@ -84,6 +84,7 @@ class AliTRD : public AliDetector {
 
           Float_t  fGasDensity;         //  The density of the drift gas
           Float_t  fFoilDensity;        //  The density of the entrance window foil
+          Float_t  fGasNobleFraction;   //  The fraction of noble gas in the mixture
 
           Int_t    fDrawTR;             //  Switches marking the TR photons in the display
           Int_t    fDisplayType;        //  Display type (0: normal, 1: detailed) 
@@ -93,7 +94,7 @@ class AliTRD : public AliDetector {
   AliTRD(const AliTRD &trd);
   AliTRD  &operator=(const AliTRD &trd);
 
-  ClassDef(AliTRD,9)                    //  Transition Radiation Detector base class
+  ClassDef(AliTRD,10)                   //  Transition Radiation Detector base class
 
 };
 

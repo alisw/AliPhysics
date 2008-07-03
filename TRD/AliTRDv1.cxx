@@ -41,6 +41,7 @@
 #include "AliGeomManager.h"
 
 #include "AliTRDgeometry.h"
+#include "AliTRDSimParam.h"
 #include "AliTRDhit.h"
 #include "AliTRDsimTR.h"
 #include "AliTRDv1.h"
@@ -54,6 +55,7 @@ AliTRDv1::AliTRDv1()
   ,fTR(NULL)
   ,fTypeOfStepManager(0)
   ,fStepSize(0)
+  ,fWion(0)
   ,fDeltaE(NULL)
   ,fDeltaG(NULL)
   ,fTrackLength0(0)
@@ -72,6 +74,7 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   ,fTR(NULL)
   ,fTypeOfStepManager(2)
   ,fStepSize(0.1)
+  ,fWion(0)
   ,fDeltaE(NULL)
   ,fDeltaG(NULL)
   ,fTrackLength0(0)
@@ -82,6 +85,17 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   //
 
   SetBufferSize(128000);
+
+  if      (AliTRDSimParam::Instance()->IsXenon()) {
+    fWion = 23.53; // Ionization energy XeCO2 (85/15)
+  }
+  else if (AliTRDSimParam::Instance()->IsArgon()) {
+    fWion = 27.21; // Ionization energy ArCO2 (82/18)
+  }
+  else {
+    AliFatal("Wrong gas mixture");
+    exit(1);
+  }
 
 }
 
@@ -270,9 +284,6 @@ void AliTRDv1::CreateTRhit(Int_t det)
   // volume.
   //
 
-  // Ionization energy
-  const Float_t kWion        = 23.53;
-
   // Maximum number of TR photons per track
   const Int_t   kNTR         = 50;
 
@@ -313,9 +324,17 @@ void AliTRDv1::CreateTRhit(Int_t det)
 
     // The absorbtion cross sections in the drift gas
     // Gas-mixture (Xe/CO2)
-    Double_t muXe = fTR->GetMuXe(energyMeV);
+    Double_t muNo = 0.0;
+    if      (AliTRDSimParam::Instance()->IsXenon()) {
+      muNo = fTR->GetMuXe(energyMeV);
+    }
+    else if (AliTRDSimParam::Instance()->IsArgon()) {
+      muNo = fTR->GetMuAr(energyMeV);
+    }
     Double_t muCO = fTR->GetMuCO(energyMeV);
-    sigma = (0.85 * muXe + 0.15 * muCO) * fGasDensity * fTR->GetTemp();
+    sigma = (fGasNobleFraction * muNo + (1.0 - fGasNobleFraction) * muCO) 
+          * fGasDensity 
+          * fTR->GetTemp();
 
     // The distance after which the energy of the TR photon
     // is deposited.
@@ -338,7 +357,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
     posHit[2] = pos[2] + mom[2] / pTot * absLength;
 
     // Create the charge 
-    Int_t q = ((Int_t) (energyeV / kWion));
+    Int_t q = ((Int_t) (energyeV / fWion));
 
     // Add the hit to the array. TR photon hits are marked 
     // by negative charge
@@ -372,7 +391,7 @@ void AliTRDv1::Init()
     fTR = new AliTRDsimTR();
   }
 
-  // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
+  // First ionization potential (eV) for the gas mixture
   const Float_t kPoti = 12.1;
   // Maximum energy (50 keV);
   const Float_t kEend = 50000.0;
@@ -438,6 +457,8 @@ void AliTRDv1::StepManagerGeant()
   // to Bethe-Bloch. The energy distribution of the delta electrons follows
   // a spectrum taken from Geant3.
   //
+  // Works only for Xe/CO2!!
+  //
   // Version by A. Bercuci
   //
 
@@ -481,7 +502,6 @@ void AliTRDv1::StepManagerGeant()
   const Int_t    kNdetsec     = kNlayer * kNstack;
 
   const Double_t kBig         = 1.0e+12; // Infinitely big
-  const Float_t  kWion        = 23.53;   // Ionization energy
   const Float_t  kPTotMaxEl   = 0.002;   // Maximum momentum for e+ e- g
 
   // Minimum energy for the step size adjustment
@@ -561,7 +581,7 @@ void AliTRDv1::StepManagerGeant()
         // entering the drift volume
         if ((fTR) && 
             (TMath::Abs(gMC->TrackPid()) == kPdgElectron)) {
-          CreateTRhit(det);    
+          CreateTRhit(det);
         }
 
       }
@@ -636,7 +656,7 @@ void AliTRDv1::StepManagerGeant()
       // Generate the electron cluster size
       if (eDelta > 0.0) {
 
-        qTot = ((Int_t) (eDelta / kWion) + 1);
+        qTot = ((Int_t) (eDelta / fWion) + 1);
 
         // Create a new dEdx hit
         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
@@ -697,6 +717,8 @@ void AliTRDv1::StepManagerErmilova()
   // to Bethe-Bloch. The energy distribution of the delta electrons follows
   // a spectrum taken from Ermilova et al.
   //
+  // Works only for Xe/CO2!!
+  //
 
   Int_t    layer  = 0;
   Int_t    stack  = 0;
@@ -737,7 +759,6 @@ void AliTRDv1::StepManagerErmilova()
   const Int_t    kNdetsec     = kNlayer * kNstack;
 
   const Double_t kBig         = 1.0e+12; // Infinitely big
-  const Float_t  kWion        = 23.53;   // Ionization energy
   const Float_t  kPTotMaxEl   = 0.002;   // Maximum momentum for e+ e- g 
 
   // Minimum energy for the step size adjustment
@@ -808,7 +829,7 @@ void AliTRDv1::StepManagerErmilova()
         // entering the drift volume
         if ((fTR) && 
             (TMath::Abs(gMC->TrackPid()) == kPdgElectron)) {
-          CreateTRhit(det);    
+          CreateTRhit(det);
         }
 
       }
@@ -829,7 +850,7 @@ void AliTRDv1::StepManagerErmilova()
       // Generate the electron cluster size
       if (eDelta > 0.0) {
 
-        qTot = ((Int_t) (eDelta / kWion) + 1);
+        qTot = ((Int_t) (eDelta / fWion) + 1);
 
 	// Create a new dEdx hit
         if (drRegion) {
@@ -902,6 +923,8 @@ void AliTRDv1::StepManagerFixedStep()
   // along its path across the drift volume. The step size is fixed in
   // this version of the step manager.
   //
+  // Works for Xe/CO2 as well as Ar/CO2
+  //
 
   // PDG code electron
   const Int_t   kPdgElectron = 11;
@@ -936,8 +959,6 @@ void AliTRDv1::StepManagerFixedStep()
   const Int_t    kNdetsec     = kNlayer * kNstack;
 
   const Double_t kBig         = 1.0e+12;
-
-  const Float_t  kWion        = 23.53;   // Ionization energy
   const Float_t  kEkinMinStep = 1.0e-5;  // Minimum energy for the step size adjustment
 
   // Set the maximum step size to a very large number for all 
@@ -1004,7 +1025,7 @@ void AliTRDv1::StepManagerFixedStep()
     // entering the drift volume
     if ((fTR) && 
         (TMath::Abs(gMC->TrackPid()) == kPdgElectron)) {
-      CreateTRhit(det);    
+      CreateTRhit(det);
     }
 
   }
@@ -1022,7 +1043,7 @@ void AliTRDv1::StepManagerFixedStep()
   // Calculate the charge according to GEANT Edep
   // Create a new dEdx hit
   eDep = TMath::Max(gMC->Edep(),0.0) * 1.0e+09;
-  qTot = (Int_t) (eDep / kWion);
+  qTot = (Int_t) (eDep / fWion);
   if ((qTot) ||
       (trkStat)) {
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()

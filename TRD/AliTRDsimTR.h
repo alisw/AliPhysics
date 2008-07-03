@@ -67,7 +67,7 @@ class AliTRDsimTR : public TObject {
   virtual Double_t GetMuPo(Double_t energyMeV);
   virtual Double_t GetMuCO(Double_t energyMeV);
   virtual Double_t GetMuXe(Double_t energyMeV);
-  virtual Double_t GetMuBu(Double_t energyMeV);
+  virtual Double_t GetMuAr(Double_t energyMeV);
   virtual Double_t GetMuMy(Double_t energyMeV);
   virtual Double_t GetMuN2(Double_t energyMeV);
   virtual Double_t GetMuO2(Double_t energyMeV);

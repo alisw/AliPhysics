@@ -90,7 +90,8 @@ class AliTRDfeeParam : public TObject
   //        Int_t    GetFilterType() const { return fFilterType; };
 
   static  Int_t    GetTFtype()            { return fgkTFtype;       }
-  static  Int_t    GetTFnExp()            { return fgkTFnExp;       }
+  //static  Int_t    GetTFnExp()            { return fgkTFnExp;       }
+          Int_t    GetTFnExp()            { return fTFnExp;         }
           Float_t  GetTFr1()        const { return fTFr1;           }
           Float_t  GetTFr2()        const { return fTFr2;           }
           Float_t  GetTFc1()        const { return fTFc1;           }
@@ -120,6 +121,9 @@ class AliTRDfeeParam : public TObject
           void     SetRAWversion( Int_t rawver );
           Bool_t   GetRAWstoreRaw() const                   { return fRAWstoreRaw;       }
           void     SetRAWstoreRaw( Bool_t storeraw )        { fRAWstoreRaw = storeraw;   }
+
+          void     SetXenon();
+          void     SetArgon();
 
  protected:
 
@@ -163,7 +167,8 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkTFtype            = 1;         // TC type (0=analog, 1=digital, 2=MI, 3=close to electronics) (old name fFilterType)
 
   // OLD TF setup (calculated from above)  (valid only for fgkTFsimType = 0 or 1)
-  static const Int_t    fgkTFnExp          = 1;           // Number of exponential for simType 0 and 1
+  //static const Int_t    fgkTFnExp          = 1;           // Number of exponential for simType 0 and 1
+               Int_t    fTFnExp;                      // Number of exponential for simType 0 and 1
 
  // Tracklet  processing on/off 
   static const Bool_t   fgkTracklet         = kFALSE; // default should be kFALSE
@@ -217,7 +222,7 @@ class AliTRDfeeParam : public TObject
 
   AliTRDfeeParam();
 
-  ClassDef(AliTRDfeeParam,2)                              // The TRD front end electronics parameter
+  ClassDef(AliTRDfeeParam,3)                              // The TRD front end electronics parameter
 
 };
 #endif
