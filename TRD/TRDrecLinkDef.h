@@ -32,7 +32,10 @@
 
 #pragma link C++ class  AliTRDqaBlackEvents+;
 #pragma link C++ class  AliTRDQADataMakerRec+;
+#pragma link C++ class  AliTRDqaBuildReference+;
 #pragma link C++ class  AliTRDtrackingAnalysis+;
+
+#pragma link C++ class  AliTRDqaRecPoints+;
 
 #pragma link C++ class  AliTRDCalibraFillHisto+;
 #endif

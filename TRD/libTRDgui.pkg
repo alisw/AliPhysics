@@ -8,6 +8,8 @@ SRCS= qaGui/AliTRDqaGuiMain.cxx \
       qaGui/AliTRDqaGuiMainBlack.cxx \
       qaGui/AliTRDqaGuiBlackSM.cxx \
       qaGui/AliTRDqaGuiBlackChamber.cxx \
+      qaGui/AliTRDqaGuiBlackError.cxx \
+      qaGui/AliTRDqaGuiBlackGlobal.cxx \
       qaGui/AliTRDqaGuiJPsi.cxx \
       qaGui/AliTRDqaGuiEnergyDeposit.cxx \
       qaGui/AliTRDqaGuiMainAnalysis.cxx 

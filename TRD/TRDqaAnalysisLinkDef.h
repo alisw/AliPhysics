@@ -12,6 +12,7 @@
 #pragma link C++ class  AliTRDqaESDFriends+;
 #pragma link C++ class  AliTRDqaEnergyDeposit+;
 #pragma link C++ class  AliTRDqaJPsi+;
+#pragma link C++ class  AliTRDqaBasic+;
 #pragma link C++ class  AliTRDqaAT+;
 
 #endif
