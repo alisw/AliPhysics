@@ -1607,7 +1607,8 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
 
     // In-loop QA for local reconstrucion 
-    if (fRunQA && fInLoopQA) {
+	TString detQAStr(fQADetectors) ; 
+    if (fRunQA && fInLoopQA && IsSelected(fgkDetectorName[iDet], detQAStr) ) {
        AliQADataMakerRec * qadm = GetQADataMaker(iDet);
        if (qadm) {
 	  //AliCodeTimerStart
