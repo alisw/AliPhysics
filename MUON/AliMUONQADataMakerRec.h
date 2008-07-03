@@ -9,19 +9,16 @@
 /// \class AliMUONQADataMakerRec
 /// \brief MUON Quality assurance data maker
 ///
-//  Author Christian Finck
 
 // --- AliRoot header files ---
-class AliMUONVTrackStore;
 class AliMUONDigitMaker;
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
-
-// --- ROOT system ---
-class TObjArray;
-class TArrayF;
+class AliMUONVClusterStore;
 
 #include "AliQADataMakerRec.h"
+
+class AliMUONVTrackerDataMaker;
 
 class AliMUONQADataMakerRec: public AliQADataMakerRec {
 
@@ -34,9 +31,7 @@ public:
 private:
   /// Raw histograms indices
   enum ERaw { 
-    kRawBusPatch           = 0,   ///< Raw bus patch histogram index
-    kRawCharge             = 1,   ///< Raw charge histogram index
-    kRawBuspatchDDL        = 2,   ///< Raw buspatch hit map histogram per DDL index
+		kTrackerData           = 3,   ///< Accumulated data
     kTriggerScalersBP      = 22,  ///< Trigger scalers on BP histogram per chamber index
     kTriggerScalersNBP     = 23,  ///< Trigger scalers on NBP histogram per chamber index
     kTriggerScalersDisplay = 24   ///< Trigger scalers display histogram per chamber index
@@ -44,11 +39,21 @@ private:
          
   /// Rec points histograms indices
   enum ERecPoints { 
-    kTriggerDigitsBendPlane    = 0,  ///< Trigger digits on BP histogram index
+    
+		kTriggerDigitsBendPlane    = 0,  ///< Trigger digits on BP histogram index
     kTriggerDigitsNonBendPlane = 1,  ///< Trigger digits on NBP histogram index
     kTriggeredBoards           = 2,  ///< Triggered boards histogram index
     kTriggerDigitsDisplay      = 3,  ///< Trigger digits display histogram per plane index
-    kTriggerBoardsDisplay      = 11  ///< Triggered boards display histogram index
+    kTriggerBoardsDisplay      = 11,  ///< Triggered boards display histogram index
+
+		kTrackerNumberOfClustersPerChamber = 100, ///< Tracker: # of clusters per chamber
+		kTrackerClusterMultiplicityPerChamber = 200, ///< Tracker: cluster multiplicity per chamber
+		kTrackerClusterChargePerChamber = 300, ///< Tracker: cluster charge per chamber
+				
+		kTrackerNumberOfClustersPerDE    = 1000, ///< Tracker : number of clusters per DE		
+		kTrackerClusterMultiplicityPerDE = 3000, ///< Tracker : cluster multiplicity per DE		
+		kTrackerClusterChargePerDE       = 5000 ///< Tracker : cluster charge per DE
+		
   };
           
   /// ESD histograms indices
@@ -60,28 +65,46 @@ private:
     kESDClusterHitMap = 4   ///< ESD Cluster hit map histogram index
   };
 
-  virtual void   StartOfDetectorCycle(); 
+protected:
+	
+  virtual void StartOfDetectorCycle(); 
 
-  virtual void   InitRaws(); 
-  virtual void   InitRecPoints(); 
-  virtual void   InitESDs(); 
+  virtual void InitRaws(); 
+  virtual void InitRecPoints(); 
+  virtual void InitESDs(); 
   
-  virtual void   MakeRaws(AliRawReader* rawReader); 
-  virtual void   MakeRecPoints(TTree* recpo); 
-  virtual void   MakeESDs(AliESDEvent* esd) ;
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
+  virtual void MakeRaws(AliRawReader* rawReader); 
+  virtual void MakeRecPoints(TTree* recpo); 
+  virtual void MakeESDs(AliESDEvent* esd) ;
+  
+  virtual void DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t) {}
 
+	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
+
+private:
+	
+	void Ctor();
   void DisplayTriggerInfo(AliQA::TASKINDEX_t task);
-  
+	void InitRecPointsTracker();
+	void InitRecPointsTrigger();
+	void MakeRawsTracker(AliRawReader* rawReader);
+	void MakeRawsTrigger(AliRawReader* rawReader);
+  void MakeRecPointsTracker(TTree* treeR);
+  void MakeRecPointsTrigger(TTree* treeR);
+	
   Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
-  Bool_t  fIsInitRecPoints;  //!<  info if InitRecPoints() went ok
+  Bool_t  fIsInitRecPointsTracker;  //!<  info if InitRecPoints() went ok
+  Bool_t  fIsInitRecPointsTrigger;  //!<  info if InitRecPoints() went ok
   Bool_t  fIsInitESDs;       //!<  info if InitESDs() went ok
   
   AliMUONVDigitStore*   fDigitStore; //!< pointer to digits store
   AliMUONVTriggerStore* fTriggerStore; //!< pointer to trigger store
   AliMUONDigitMaker*    fDigitMaker;  //!< pointer to digit maker
-
-  ClassDef(AliMUONQADataMakerRec,2)  // MUON Quality assurance data maker
+  AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
+	
+	AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
+	
+  ClassDef(AliMUONQADataMakerRec,3)  // MUON Quality assurance data maker
 
 };
 #endif

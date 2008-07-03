@@ -7,11 +7,9 @@
 
 /// \ingroup rec 
 /// \class AliMUONQAChecker
-/// \brief MUON quality assurance checker
+/// \brief Implementation of AliQACheckerBase for MCH and MTR
 ///
-//  Author: Christian Finck
-
-
+//  Author: Laurent Aphecetche
 
 // --- AliRoot header files ---
 #include "AliQACheckerBase.h"
@@ -24,6 +22,14 @@ public:
   AliMUONQAChecker& operator=(const AliMUONQAChecker& qac);
   virtual ~AliMUONQAChecker();
 
+protected:
+
+	virtual const Double_t Check(AliQA::ALITASK_t index) ;
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
+  virtual void SetQA(AliQA::ALITASK_t index, const Double_t value) const ;	
+	
+  const Double_t CheckRaws(TObjArray* list);
+  
 private:
   
   ClassDef(AliMUONQAChecker,1)  // MUON quality assurance checker

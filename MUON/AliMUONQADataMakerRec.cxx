@@ -18,40 +18,45 @@
 // --- MUON header files ---
 #include "AliMUONQADataMakerRec.h"
 
+#include "AliMUON2DMap.h"
 #include "AliMUONCluster.h"  
+#include "AliMUONConstants.h"  
+#include "AliMUONDDLTrigger.h"
+#include "AliMUONDarcHeader.h"
+#include "AliMUONDigitMaker.h"
+#include "AliMUONLocalStruct.h"
+#include "AliMUONLocalTrigger.h"
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrigger.h"
-#include "AliMUONConstants.h"  
-#include "AliMUONVClusterStore.h"
-#include "AliMUONVCluster.h"
-
-#include "AliMUONDigitMaker.h"
-#include "AliMUONVDigitStore.h"
-#include "AliMUONVTriggerStore.h"
-#include "AliMUONVDigit.h"
-#include "AliMUONLocalTrigger.h"
-
-#include "AliMUONDDLTrigger.h"
 #include "AliMUONRegHeader.h"
-#include "AliMUONDarcHeader.h"
-#include "AliMUONLocalStruct.h"
-
+#include "AliMUONTrackerCalibratedDataMaker.h"
 #include "AliMUONTriggerDisplay.h"
-
-#include "AliMpDDLStore.h"
-#include "AliMpConstants.h"
-#include "AliMpBusPatch.h"
-#include "AliMpTriggerCrate.h"
-#include "AliMpLocalBoard.h"
+#include "AliMUONVCluster.h"
+#include "AliMUONVClusterStore.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMUONVTrackerData.h"
+#include "AliMUONVTriggerStore.h"
 #include "AliMpCDB.h"
+#include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDEIterator.h"
+#include "AliMpDEManager.h"
+#include "AliMpLocalBoard.h"
+#include "AliMpStationType.h"
+#include "AliMpTriggerCrate.h"
+#include "AliRawEventHeaderBase.h"
 
 // --- AliRoot header files ---
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDMuonCluster.h"
 #include "AliLog.h"
 #include "AliRawReader.h"
 #include "AliQAChecker.h"
+#include "AliCodeTimer.h"
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -68,7 +73,7 @@
 ///
 /// MUON base class for quality assurance data (histo) maker
 ///
-/// \author C. Finck
+/// \author C. Finck, D. Stocco, L. Aphecetche
 
 /// \cond CLASSIMP
 ClassImp(AliMUONQADataMakerRec)
@@ -76,36 +81,52 @@ ClassImp(AliMUONQADataMakerRec)
            
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
-    AliQADataMakerRec(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
-    fIsInitRaws(kFALSE),
-    fIsInitRecPoints(kFALSE),
-    fIsInitESDs(kFALSE),
-    fDigitStore(0x0),
-    fTriggerStore(0x0),
-    fDigitMaker(0x0)
+AliQADataMakerRec(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
+fIsInitRaws(kFALSE),
+fIsInitRecPointsTracker(kFALSE),
+fIsInitRecPointsTrigger(kFALSE),
+fIsInitESDs(kFALSE),
+fDigitStore(0x0),
+fTriggerStore(0x0),
+fDigitMaker(0x0),
+fClusterStore(0x0),
+fTrackerDataMaker(0x0)
 {
     /// ctor
-  fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
-  fDigitMaker = new AliMUONDigitMaker(kTRUE);
+	
+	Ctor();
+}
+
+//____________________________________________________________________________ 
+void
+AliMUONQADataMakerRec::Ctor()
+{
+	/// Init some members
+	fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
+	fDigitMaker = new AliMUONDigitMaker(kTRUE);
 }
 
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm) :
-    AliQADataMakerRec(qadm),
-    fIsInitRaws(kFALSE),
-    fIsInitRecPoints(kFALSE),
-    fIsInitESDs(kFALSE),
-    fDigitStore(0x0),
-    fTriggerStore(0x0),
-    fDigitMaker(0x0)
+AliQADataMakerRec(qadm),
+fIsInitRaws(kFALSE),
+fIsInitRecPointsTracker(kFALSE),
+fIsInitRecPointsTrigger(kFALSE),
+fIsInitESDs(kFALSE),
+fDigitStore(0x0),
+fTriggerStore(0x0),
+fDigitMaker(0x0),
+fClusterStore(0x0),
+fTrackerDataMaker(0x0)
 {
     ///copy ctor 
     SetName((const char*)qadm.GetName()) ; 
     SetTitle((const char*)qadm.GetTitle()); 
 
-    // Do not copy the digit store and digit maker, but create its own ones
-    fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
-    fDigitMaker = new AliMUONDigitMaker(kTRUE);
+	// Do not copy the digit store and digit maker, but create its own ones
+	
+	Ctor();
+	
 }
 
 //__________________________________________________________________
@@ -125,77 +146,166 @@ AliMUONQADataMakerRec& AliMUONQADataMakerRec::operator = (const AliMUONQADataMak
 AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 {
     /// dtor
-    delete fDigitStore;
-    delete fTriggerStore;
-    delete fDigitMaker;
+  
+  AliCodeTimerAuto("");
+  
+  delete fDigitStore;
+  delete fTriggerStore;
+  delete fDigitMaker;
+	delete fClusterStore;
+	delete fTrackerDataMaker;
 }
 
 //____________________________________________________________________________ 
 void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list)
 {
-    ///Detector specific actions at end of cycle
-
-    // Display trigger histos in a more user friendly way
-    DisplayTriggerInfo(task);
-
-    // do the QA checking
-    AliQAChecker::Instance()->Run(AliQA::kMUON, task, list) ;
+	///Detector specific actions at end of cycle
+	
+	// Display trigger histos in a more user friendly way
+	DisplayTriggerInfo(task);
+	
+	if ( task == AliQA::kRAWS ) 
+	{
+		TIter next(list);
+		TObject* o;
+		Bool_t alreadyThere(kFALSE);
+		while ( ( o = next() ) && !alreadyThere )
+		{
+			TString classname(o->ClassName());
+			if ( classname.Contains("TrackerData") ) alreadyThere = kTRUE;
+		}
+		if (!alreadyThere) list->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
+	}
+	
+	// do the QA checking
+	AliQAChecker::Instance()->Run(AliQA::kMUON, task, list) ;
 }
 
 //____________________________________________________________________________ 
 void AliMUONQADataMakerRec::InitRaws()
 {
     /// create Raws histograms in Raws subdir
-    TH1I* h0 = new TH1I("hRawBusPatch", "buspatch distribution",  1932, 1, 1932); 
-    Add2RawsList(h0, kRawBusPatch);
-
-    TH1I* h1 = new TH1I("hRawCharge", "Charge distribution in rawdata", 4096, 0, 4095); 
-    Add2RawsList(h1, kRawCharge);
-		
-    for (Int_t iDDL = 0; iDDL < 20; ++iDDL) 
-    {
-      TH1F* h2 = new TH1F(Form("%s%d", "hRawBusPatchDDL", iDDL), Form("%s %d","RAW Buspatch distribution for DDL", iDDL), 50, 0, 49); 
-      Add2RawsList(h2, kRawBuspatchDDL+iDDL);
-    }
-
-    TH3F* h3 = new TH3F("hTriggerScalersBendPlane", "Trigger scalers in bending plane",
-			4, 10.5, 14.5,
-			234, 0.5, 234.5,
-			16, -0.5, 15.5);
-    h3->GetXaxis()->SetTitle("Chamber");
-    h3->GetYaxis()->SetTitle("Board");
-    h3->GetZaxis()->SetTitle("Strip");
-    Add2RawsList(h3, kTriggerScalersBP);
-
-    TH3F* h4 = new TH3F("hTriggerScalersNonBendPlane", "Trigger scalers in non-bending plane",
-			4, 10.5, 14.5,
-			234, 0.5, 234.5,
-			16, -0.5, 15.5);
-    h4->GetXaxis()->SetTitle("Chamber");
-    h4->GetYaxis()->SetTitle("Board");
-    h4->GetZaxis()->SetTitle("Strip");
-    Add2RawsList(h4, kTriggerScalersNBP);
-
-    AliMUONTriggerDisplay triggerDisplay;
-    TString histoName, histoTitle;
-    for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
-      TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
-      for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
-	histoName = Form("hScalers%sChamber%i", cathName.Data(), 11+iChamber);
-	histoTitle = Form("Chamber %i: Scalers %s", 11+iChamber, cathName.Data());
-	TH2F* h5 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
-							      iCath, iChamber, histoTitle);
-	Add2RawsList(h5, kTriggerScalersDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
-      }
-    }
-    
-    fIsInitRaws = kTRUE;
+	
+	if ( ! AliCDBManager::Instance()->GetDefaultStorage() )
+	{
+		AliError("CDB default storage not set. Cannot work.");
+		fIsInitRaws=kFALSE;
+	}
+	
+	TH3F* h3 = new TH3F("hTriggerScalersBendPlane", "Trigger scalers in bending plane",
+											4, 10.5, 14.5,
+											234, 0.5, 234.5,
+											16, -0.5, 15.5);
+	h3->GetXaxis()->SetTitle("Chamber");
+	h3->GetYaxis()->SetTitle("Board");
+	h3->GetZaxis()->SetTitle("Strip");
+	Add2RawsList(h3, kTriggerScalersBP);
+	
+	TH3F* h4 = new TH3F("hTriggerScalersNonBendPlane", "Trigger scalers in non-bending plane",
+											4, 10.5, 14.5,
+											234, 0.5, 234.5,
+											16, -0.5, 15.5);
+	h4->GetXaxis()->SetTitle("Chamber");
+	h4->GetYaxis()->SetTitle("Board");
+	h4->GetZaxis()->SetTitle("Strip");
+	Add2RawsList(h4, kTriggerScalersNBP);
+	
+	AliMUONTriggerDisplay triggerDisplay;
+	TString histoName, histoTitle;
+	for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
+		TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
+		for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
+			histoName = Form("hScalers%sChamber%i", cathName.Data(), 11+iChamber);
+			histoTitle = Form("Chamber %i: Scalers %s", 11+iChamber, cathName.Data());
+			TH2F* h5 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
+																														iCath, iChamber, histoTitle);
+			Add2RawsList(h5, kTriggerScalersDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
+		}
+	}
+	
+	fIsInitRaws = kTRUE;
 }
 
 //____________________________________________________________________________ 
 void AliMUONQADataMakerRec::InitRecPoints()
 {
-    /// create Reconstructed Points histograms in RecPoints subdir
+	/// create Reconstructed Points histograms in RecPoints subdir
+	InitRecPointsTrigger();
+	InitRecPointsTracker();
+}
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::InitRecPointsTracker()
+{
+	/// create Reconstructed Points histograms in RecPoints subdir for the
+	/// MUON tracker subsystem.
+
+	AliMpDEIterator it;
+	
+	it.First();
+	
+	Int_t ndes(0);
+	
+	while ( !it.IsDone())
+	{
+		Int_t detElemId = it.CurrentDEId();
+		
+		it.Next();
+
+		if ( AliMpDEManager::GetStationType(detElemId) != AliMp::kStationTrigger )
+		{
+			ndes = TMath::Max(ndes,detElemId);
+
+			TH1* h = new TH1I(Form("hTrackerClusterMultiplicityForDE%04d",detElemId),
+												Form("Multiplicity of the clusters in detection element %d",detElemId),
+												100,0,100);
+			
+			h->GetXaxis()->SetTitle("Detection Element Id");
+			
+			Add2RecPointsList(h,kTrackerClusterMultiplicityPerDE+detElemId);
+			
+			h =  new TH1I(Form("hTrackerClusterChargeForDE%04d",detElemId),
+										Form("Charge of the clusters in detection element %d",detElemId),
+										100,0,1000);
+
+			h->GetXaxis()->SetTitle("Detection Element Id");
+
+			Add2RecPointsList(h,kTrackerClusterChargePerDE+detElemId);
+
+		}
+
+	}
+
+	TH1* h = new TH1I("hTrackerNumberOfClustersPerDE","Number of clusters per detection element",
+										ndes, -0.5, ndes - 0.5);
+
+	h->GetXaxis()->SetTitle("Detection Element Id");
+
+	Add2RecPointsList(h, kTrackerNumberOfClustersPerDE);
+
+	for ( Int_t i = 0; i < AliMpConstants::NofTrackingChambers(); ++i ) 
+	{
+		TH1* h1 = new TH1I("hTrackerNumberOfClustersPerChamber","Number of clusters per chamber",AliMpConstants::NofTrackingChambers(),-0.5,AliMpConstants::NofTrackingChambers()-0.5);
+		Add2RecPointsList(h1,kTrackerNumberOfClustersPerChamber);
+		h1 = new TH1I(Form("hTrackerClusterMultiplicityForChamber%d",i),
+								 Form("Cluster multiplicity for chamber %d",i),
+								 100,0,100);
+		Add2RecPointsList(h1,kTrackerClusterMultiplicityPerChamber+i);
+		h1 = new TH1I(Form("hTrackerClusterChargeForChamber%d",i),
+								 Form("Cluster charge for chamber %d",i),
+								 100,0,1000);
+		Add2RecPointsList(h1,kTrackerClusterChargePerChamber+i);
+	}
+	
+	fIsInitRecPointsTracker=kTRUE;
+}
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::InitRecPointsTrigger()
+{
+	/// create Reconstructed Points histograms in RecPoints subdir for the
+	/// MUON Trigger subsystem.
+	
     TH3F* h0 = new TH3F("hTriggerDigitsBendPlane", "Trigger digits in bending plane",
 			4, 10.5, 14.5,
 			234, 0.5, 234.5,
@@ -233,8 +343,8 @@ void AliMUONQADataMakerRec::InitRecPoints()
     TH2F* h4 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto("hFiredBoardsDisplay", AliMUONTriggerDisplay::kDisplayBoards,
 							  0, 0, "Fired boards");
     Add2RecPointsList(h4, kTriggerBoardsDisplay);
-
-    fIsInitRecPoints = kTRUE;
+	
+	fIsInitRecPointsTrigger = kTRUE;
 }
 
 
@@ -277,25 +387,51 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       return;
     }    
 
-    Int_t busPatchId;
-    UShort_t manuId;  
-    UChar_t channelId;
-    UShort_t charge;
-
+  if ( rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent ) 
+  {
     rawReader->Reset();
-    AliMUONRawStreamTracker rawStreamTrack(rawReader);
-    rawStreamTrack.First();
-    while( rawStreamTrack.Next(busPatchId, manuId, channelId, charge) ) {
+    MakeRawsTracker(rawReader);
+  }
   
-      GetRawsData(kRawBusPatch)->Fill(busPatchId);
-      GetRawsData(kRawCharge)->Fill(charge);
-      Int_t iDDL = rawStreamTrack.GetCurentDDL();
-      GetRawsData(kRawBuspatchDDL + iDDL)->Fill(AliMpBusPatch::GetLocalBusID(busPatchId, iDDL));
+  rawReader->Reset();    
+  MakeRawsTrigger(rawReader);
+}
+
+//____________________________________________________________________________
+void AliMUONQADataMakerRec::MakeRawsTracker(AliRawReader* rawReader)
+{
+	/// make QA for rawdata tracker
+  
+	if (!fTrackerDataMaker) 
+	{
+		const Bool_t histogram(kFALSE);
+		const Bool_t fastDecoder(kTRUE);
+    
+//    fTrackerDataMaker = new AliMUONTrackerRawDataMaker(rawReader,histogram,fastDecoder,takeRawReaderOwnership);
+
+		fTrackerDataMaker = new AliMUONTrackerCalibratedDataMaker(AliCDBManager::Instance()->GetRun(),
+                                                              rawReader,
+																															AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
+																															"NOGAIN",
+																															histogram,
+																															0.0,0.0,
+                                                              fastDecoder);
 		
-		  
-    } // Next digit
+		fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
+		
+		fTrackerDataMaker->SetRunning(kTRUE);
+	}
+	
+	((AliMUONTrackerCalibratedDataMaker*)fTrackerDataMaker)->SetRawReader(rawReader);
+	
+	fTrackerDataMaker->ProcessEvent();
+}
 
-
+//____________________________________________________________________________
+void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
+{
+	/// make QA for rawdata trigger
+	
     // Get trigger scalers
 
     Int_t loCircuit=0;
@@ -364,15 +500,66 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 //____________________________________________________________________________
 void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
-  
-    /// makes data from trigger response
-      
-    if ( ! fIsInitRecPoints ) {
-      AliWarningStream() 
-        << "Skipping function due to a failure in Init" << endl;
-      return;
-    }    
+	/// Fill histograms from treeR
+	
+	if (fIsInitRecPointsTracker) MakeRecPointsTracker(clustersTree);
+	if (fIsInitRecPointsTrigger) MakeRecPointsTrigger(clustersTree);
+}
 
+//____________________________________________________________________________
+void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
+{
+	/// Fill histograms related to tracker clusters 
+	
+	// First things first : do we have clusters in the TreeR ?
+	// In "normal" production mode, it should be perfectly normal
+	// *not* to have them.
+	// But if for some reason we de-activated the combined tracking,
+	// then we have clusters in TreeR, so let's take that opportunity
+	// to QA them...
+	
+	if (!fClusterStore)
+	{
+		AliCodeTimerAuto("ClusterStore creation");
+		fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
+		if (!fClusterStore) 
+		{
+			fIsInitRecPointsTracker = kFALSE;
+			return;
+		}
+	}
+	
+	AliCodeTimerAuto("");
+	
+	fClusterStore->Connect(*clustersTree,kFALSE);
+	clustersTree->GetEvent(0);
+
+	TIter next(fClusterStore->CreateIterator());
+	AliMUONVCluster* cluster;
+	
+	while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) )
+	{
+		Int_t detElemId = cluster->GetDetElemId();
+		Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+		
+		GetRecPointsData(kTrackerNumberOfClustersPerDE)->Fill(detElemId);
+		GetRecPointsData(kTrackerClusterChargePerDE+detElemId)->Fill(cluster->GetCharge());
+		GetRecPointsData(kTrackerClusterMultiplicityPerDE+detElemId)->Fill(cluster->GetNDigits());
+
+		GetRecPointsData(kTrackerNumberOfClustersPerChamber)->Fill(chamberId);
+		GetRecPointsData(kTrackerClusterChargePerChamber+chamberId)->Fill(cluster->GetCharge());
+		GetRecPointsData(kTrackerClusterMultiplicityPerChamber+chamberId)->Fill(cluster->GetNDigits());
+		
+	}
+	
+	fClusterStore->Clear();
+}
+
+//____________________________________________________________________________
+void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
+{
+	/// makes data from trigger response
+      
     // Fired pads info
     fDigitStore->Clear();
 
