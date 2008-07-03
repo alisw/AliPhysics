@@ -387,16 +387,12 @@ void AliESDtrackCuts::Copy(TObject &c) const
 Long64_t AliESDtrackCuts::Merge(TCollection* list) {
   // Merge a list of AliESDtrackCuts objects with this (needed for PROOF)
   // Returns the number of merged objects (including this)
-
   if (!list)
     return 0;
-  
   if (list->IsEmpty())
     return 1;
-
   if (!fHistogramsOn)
     return 0;
-
   TIterator* iter = list->MakeIterator();
   TObject* obj;
 
@@ -444,7 +440,6 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
 
     count++;
   }
-
   return count+1;
 }
 
@@ -458,6 +453,7 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
   Float_t bRes[2];
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
+  
   if (bCov[0]<=0 || bCov[2]<=0) {
     AliDebug(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
@@ -537,6 +533,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // fTracks.fP   //GetMass
   // fTracks.fKinkIndexes
 
+
   UInt_t status = esdTrack->GetStatus();
 
   // dummy array
@@ -546,15 +543,12 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   Int_t nClustersITS = esdTrack->GetITSclusters(fIdxInt);
   Int_t nClustersTPC = esdTrack->GetTPCclusters(fIdxInt);
   
-
-
   Float_t chi2PerClusterITS = -1;
   Float_t chi2PerClusterTPC = -1;
   if (nClustersITS!=0)
     chi2PerClusterITS = esdTrack->GetITSchi2()/Float_t(nClustersITS);
   if (nClustersTPC!=0)
     chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);
-
   Double_t extCov[15];
   esdTrack->GetExternalCovariance(extCov);
 
@@ -565,6 +559,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // (assuming the mass is known)
   Double_t p[3];
   esdTrack->GetPxPyPz(p);
+
   Float_t momentum = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2) + TMath::Power(p[2],2));
   Float_t pt       = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2));
   Float_t energy   = TMath::Sqrt(TMath::Power(esdTrack->GetMass(),2) + TMath::Power(momentum,2));
@@ -639,7 +634,6 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // filling histograms
   if (fHistogramsOn) {
     fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n tracks")));
-    
     if (cut)
       fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n cut tracks")));
     
@@ -674,6 +668,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     Float_t bRes[2];
     Float_t bCov[3];
     esdTrack->GetImpactParameters(b,bCov);
+
     if (bCov[0]<=0 || bCov[2]<=0) {
       AliDebug(1, "Estimated b resolution lower or equal zero!");
       bCov[0]=0; bCov[2]=0;
@@ -750,16 +745,16 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
 
   TObjArray* acceptedTracks = new TObjArray();
 
+
   // loop over esd tracks
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack* track = esd->GetTrack(iTrack);
-
     if (AcceptTrack(track))
-      acceptedTracks->Add(track);
+	acceptedTracks->Add(track);
   }
-
   return acceptedTracks;
 }
+
 
 //____________________________________________________________________
 Int_t AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
@@ -782,11 +777,12 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
 }
 
 //____________________________________________________________________
-TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd)
+TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
 {
   //
   // returns an array of all tracks that pass the cuts
-  //
+  // or an array of TPC only tracks (propagated to the TPC vertex during reco)
+  // tracks that pass the cut
 
   TObjArray* acceptedTracks = new TObjArray();
 
@@ -794,10 +790,39 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd)
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack* track = esd->GetTrack(iTrack);
 
-    if (AcceptTrack(track))
-      acceptedTracks->Add(track);
-  }
+    if(bTPC){
+      if(!esd->GetPrimaryVertexTPC())return acceptedTracks; // No TPC vertex no TPC tracks
 
+      AliESDtrack *tpcTrack = new AliESDtrack();
+      bool bAdd = false;
+      Double_t pTPC[2],covTPC[3];
+      // This should have been done during the reconstruction
+      // fixed by Juri in r26675
+      // but recalculate for older data CKB 
+      Float_t p[2],cov[3];
+      track->GetImpactParametersTPC(p,cov);
+      if(p[0]==0&&p[1]==0){
+	track->RelateToVertexTPC(esd->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
+      }
+      // BKC
+
+      if(track->FillTPCOnlyTrack(*tpcTrack)){ // only true if we have a tpc track
+	// propagate to Vertex
+	// not needed for normal reconstructed ESDs...
+	//	if(tpcTrack->PropagateToDCA(esd->GetPrimaryVertexTPC(), esd->GetMagneticField(), 10000,  pTPC, covTPC))
+	if(AcceptTrack(tpcTrack)){
+	  acceptedTracks->Add(tpcTrack);
+	  bAdd = true;
+	}      
+      }
+      if(!bAdd)delete tpcTrack;
+    }
+    else if(AcceptTrack(track)){// we cut by passing the original track
+      // default case
+      acceptedTracks->Add(track);
+    } 
+  } 
+  if(bTPC)acceptedTracks->SetOwner(kTRUE);
   return acceptedTracks;
 }
 
@@ -813,7 +838,6 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
   // loop over esd tracks
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack* track = esd->GetTrack(iTrack);
-
     if (AcceptTrack(track))
       count++;
   }

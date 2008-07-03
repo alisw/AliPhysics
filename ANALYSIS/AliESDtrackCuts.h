@@ -38,13 +38,15 @@ class AliESDtrackCuts : public AliAnalysisCuts
 public:
   AliESDtrackCuts(const Char_t* name = "AliESDtrackCuts", const Char_t* title = "");
   virtual ~AliESDtrackCuts();
+
   Bool_t IsSelected(TObject* obj)
        {return AcceptTrack((AliESDtrack*)obj);}
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESD* esd);
   Int_t CountAcceptedTracks(AliESD* esd);
-  TObjArray* GetAcceptedTracks(AliESDEvent* esd);
+  TObjArray* GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC = kFALSE);
   Int_t CountAcceptedTracks(AliESDEvent* esd);
 
   virtual Long64_t Merge(TCollection* list);
