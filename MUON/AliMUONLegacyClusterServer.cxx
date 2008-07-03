@@ -45,9 +45,13 @@ ClassImp(AliMUONLegacyClusterServer)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONLegacyClusterServer::AliMUONLegacyClusterServer(const AliMUONGeometryTransformer& transformer, AliMUONVClusterStore* store)
+AliMUONLegacyClusterServer::AliMUONLegacyClusterServer(const AliMUONGeometryTransformer& transformer, 
+																											 AliMUONVClusterStore* store,
+																											 Bool_t bypassSt4, Bool_t bypassSt5)
 : AliMUONVClusterServer(), fTransformer(transformer), fClusterStore(store), fTriggerTrackStore(0x0),
-fBypass(0x0)
+fBypass(0x0),
+fBypassSt4(bypassSt4),
+fBypassSt5(bypassSt5)
 {
   /// ctor. Mode Read : we'll only server clusters from existing store
 }
@@ -71,11 +75,16 @@ AliMUONLegacyClusterServer::Clusterize(Int_t chamberId,
   
   AliCodeTimerAuto(Form("Chamber %d",chamberId));
 
-  if ( fBypass && chamberId >= 6 ) 
+  if ( fBypassSt4 && ( chamberId == 6 || chamberId == 7 ) ) 
   {
     return fBypass->GenerateClusters(chamberId,clusterStore);
   }
-  
+
+	if ( fBypassSt5 && ( chamberId == 8 || chamberId == 9 ) ) 
+  {
+    return fBypass->GenerateClusters(chamberId,clusterStore);
+  }
+	
   AliDebug(1,Form("chamberId=%d fClusterStore(%p).GetSize()=%d clusterStore(%p).GetSize()=%d",
                   chamberId,
                   fClusterStore,fClusterStore->GetSize(),
@@ -108,7 +117,7 @@ AliMUONLegacyClusterServer::Clusterize(Int_t chamberId,
 Bool_t 
 AliMUONLegacyClusterServer::UseTriggerTrackStore(AliMUONVTriggerTrackStore* trackStore)
 {
-  /// Tells us to use trigger track store, and thus to bypass St45 clusters
+  /// Tells us to use trigger track store, and thus to bypass St4 and/or 5 clusters
   fTriggerTrackStore = trackStore; // not owner
   delete fBypass;
   fBypass = new AliMUONTriggerTrackToTrackerClusters(fTransformer,fTriggerTrackStore);

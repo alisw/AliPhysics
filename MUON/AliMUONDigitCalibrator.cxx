@@ -22,6 +22,7 @@
 #include "AliMUONLogger.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
@@ -62,6 +63,7 @@ const Int_t AliMUONDigitCalibrator::fgkGain(2);
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
+																							 const AliMUONRecoParam* recoParams,
                                                const char* calibMode)
 : TObject(),
 fLogger(new AliMUONLogger(20000)),
@@ -70,9 +72,41 @@ fStatusMapMaker(0x0),
 fPedestals(0x0),
 fGains(0x0),
 fApplyGains(0),
-fCapacitances(0x0)
+fCapacitances(0x0),
+fNumberOfBadPads(0),
+fNumberOfPads(0)
 {
   /// ctor
+  
+  Ctor(calibMode,calib,recoParams);
+}
+
+//_____________________________________________________________________________
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
+                                               const char* calibMode)
+: TObject(),
+fLogger(new AliMUONLogger(20000)),
+fStatusMaker(0x0),
+fStatusMapMaker(0x0),
+fPedestals(0x0),
+fGains(0x0),
+fApplyGains(0),
+fCapacitances(0x0),
+fNumberOfBadPads(0),
+fNumberOfPads(0)
+{
+  /// ctor
+  
+  Ctor(calibMode,calib,0x0);
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigitCalibrator::Ctor(const char* calibMode,
+                             const AliMUONCalibrationData& calib,
+                             const AliMUONRecoParam* recoParams)
+{
+  /// designated ctor
   
   TString cMode(calibMode);
   cMode.ToUpper();
@@ -100,21 +134,24 @@ fCapacitances(0x0)
        
   fStatusMaker = new AliMUONPadStatusMaker(calib);
   
+	Int_t mask(0x8080);
+	
   // this is here that we decide on our "goodness" policy, i.e.
   // what do we call an invalid pad (a pad maybe bad because its HV
   // was too low, or its pedestals too high, etc..)
-  // FIXME: find a way not to hard-code the goodness policy (i.e. the limits)
-  // here...
-  fStatusMaker->SetHVSt12Limits(1300,1600);
-  fStatusMaker->SetHVSt345Limits(1500,2000);
-  fStatusMaker->SetPedMeanLimits(50,200);
-  fStatusMaker->SetPedSigmaLimits(0.1,3);
-  
-  Int_t mask(0x8080); 
-  //FIXME: kind of fake one for the moment, we consider dead only 
-  // if ped and/or hv value missing.
-  //WARNING : getting this mask wrong is a very effective way of getting
-  //no digits at all out of this class ;-)
+	if ( recoParams )
+	{
+		fStatusMaker->SetHVSt12Limits(recoParams->HVSt12LowLimit(),recoParams->HVSt12HighLimit());
+		fStatusMaker->SetHVSt345Limits(recoParams->HVSt345LowLimit(),recoParams->HVSt345HighLimit());
+		fStatusMaker->SetPedMeanLimits(recoParams->PedMeanLowLimit(),recoParams->PedMeanHighLimit());
+		fStatusMaker->SetPedSigmaLimits(recoParams->PedSigmaLowLimit(),recoParams->PedSigmaHighLimit());
+		fStatusMaker->SetGainA1Limits(recoParams->GainA1LowLimit(),recoParams->GainA1HighLimit());
+		fStatusMaker->SetGainA2Limits(recoParams->GainA2LowLimit(),recoParams->GainA2HighLimit());
+		fStatusMaker->SetGainThresLimits(recoParams->GainThresLowLimit(),recoParams->GainThresHighLimit());
+		mask = recoParams->PadGoodnessMask();
+		//WARNING : getting this mask wrong is a very effective way of getting
+		//no digits at all out of this class ;-)
+	}
   
   Bool_t deferredInitialization = kTRUE;
   
@@ -141,6 +178,10 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
   AliInfo("Summary of messages:");
   fLogger->Print();
 
+	AliInfo(Form("We have seen %g pads, and rejected %g (%7.2f %%)",
+							 fNumberOfPads,fNumberOfBadPads,
+							 ( fNumberOfPads > 0 ) ? fNumberOfBadPads*100.0/fNumberOfPads : 0 ));
+	
   delete fLogger;
 }
 
@@ -158,6 +199,14 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
   
   while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
   {
+    if ( digit->IsCalibrated() ) 
+    {
+      fLogger->Log("ERROR : trying to calibrate a digit twice");
+      return;
+    }
+    
+    digit->Calibrated(kTRUE);
+    
     if ( digit->DetElemId() != detElemId ) 
     {
       // Find out occupancy of that DE
@@ -178,136 +227,191 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
       }
     }
 
-     CalibrateDigit(*digit,nsigmas);
+    Float_t charge(0.0);
+    Int_t statusMap;
+    Bool_t isSaturated(kFALSE);
+    
+    Bool_t ok = IsValidDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),&statusMap);
+
+    digit->SetStatusMap(statusMap);
+    
+    if (ok)
+    {
+      ++fNumberOfPads;
+      charge = CalibrateDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),
+                              digit->ADC(),nsigmas,&isSaturated);
+    }
+    else
+    {
+      ++fNumberOfBadPads;
+    }
+    
+    digit->SetCharge(charge);
+    digit->Saturated(isSaturated);
   }
 }
 
 //_____________________________________________________________________________
-void
-AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit, Double_t nsigmas)
+Float_t
+AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manuChannel,
+                                       Float_t adc, Float_t nsigmas, 
+                                       Bool_t* isSaturated) const
+
 {
   /// Calibrate one digit
   
-  if ( digit.IsCalibrated() ) 
+  
+  AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
+  (fPedestals->FindObject(detElemId,manuId));
+  
+  if (!pedestal)
   {
-    fLogger->Log("ERROR : trying to calibrate a digit twice");
-    return;
+    // no pedestal -> no charge    
+    fLogger->Log(Form("Got a null pedestal object for DE,manu=%d,%d",detElemId,manuId));        
+    return 0.0;
   }
   
-  Int_t statusMap = fStatusMapMaker->StatusMap(digit.DetElemId(),
-                                               digit.ManuId(),
-                                               digit.ManuChannel());
-
-  digit.SetStatusMap(statusMap);
-  digit.Calibrated(kTRUE);
   
-  if ( ( statusMap & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0 ) 
+  AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
+  (fGains->FindObject(detElemId,manuId));
+  
+  if (!gain)
   {
-    // pad itself is bad (not testing its neighbours at this stage)
-    digit.SetCharge(0);
-    fLogger->Log(Form("%s:%d:Channel detElemId %d manuId %d "
-                    "manuChannel %d is bad %x",__FILE__,__LINE__,
-                    digit.DetElemId(),digit.ManuId(),
-                    digit.ManuChannel(),digit.StatusMap()));
+    if ( fApplyGains != fgkNoGain )
+    {
+      // no gain -> no charge
+      fLogger->Log(Form("Got a null gain object for DE,manu=%d,%d",
+                        detElemId,manuId)); 
+      return 0.0;
+    }
   }
-  else
+  
+  Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
+  Float_t charge(0);
+  Float_t capa(1.0);
+  
+  if ( fApplyGains == fgkGainConstantCapa ) 
   {
-    // If the channel is good, go on with the calibration itself.
-
-    AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
-    (fPedestals->FindObject(digit.DetElemId(),digit.ManuId()));
-
-    if (!pedestal)
+    capa = 0.2; // pF
+  }
+  else if ( fApplyGains == fgkGain ) 
+  {
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    
+    Int_t serialNumber = de->GetManuSerialFromId(manuId);
+    
+    AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fCapacitances->FindObject(serialNumber));
+    
+    if ( param )
     {
-      // no pedestal -> no charge
-      digit.SetCharge(0);
-      
-      fLogger->Log(Form("Got a null pedestal object for DE,manu=%d,%d",
-                        digit.DetElemId(),digit.ManuId()));        
-      return;
+      capa = param->ValueAsFloat(manuChannel);
     }
-    
-    
-    AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
-        (fGains->FindObject(digit.DetElemId(),digit.ManuId()));
-
-    if (!gain)
+    else
     {
-      if ( fApplyGains != fgkNoGain )
+      fLogger->Log(Form("No capa found for serialNumber=%d",serialNumber));
+      capa = 0.0;
+    }
+  }
+  
+  if ( padc > nsigmas*pedestal->ValueAsFloat(manuChannel,1) ) 
+  {
+    if ( fApplyGains != fgkNoGain ) 
+    {
+      Float_t a0 = gain->ValueAsFloat(manuChannel,0);
+      Float_t a1 = gain->ValueAsFloat(manuChannel,1);
+      Int_t thres = gain->ValueAsInt(manuChannel,2);
+      if ( padc < thres ) 
       {
-        // no gain -> no charge
-        digit.SetCharge(0);
-
-        fLogger->Log(Form("Got a null gain object for DE,manu=%d,%d",
-                          digit.DetElemId(),digit.ManuId())); 
-        return;
-      }
-    }
-
-    Int_t manuChannel = digit.ManuChannel();
-    Float_t adc = digit.ADC();
-    Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
-    Float_t charge(0);
-    Float_t capa(1.0);
-    
-    if ( fApplyGains == fgkGainConstantCapa ) 
-    {
-      capa = 0.2; // pF
-    }
-    else if ( fApplyGains == fgkGain ) 
-    {
-      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(digit.DetElemId());
-      
-      Int_t serialNumber = de->GetManuSerialFromId(digit.ManuId());
-
-      AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fCapacitances->FindObject(serialNumber));
-      
-      if ( param )
-      {
-        capa = param->ValueAsFloat(digit.ManuChannel());
+        charge = a0*padc;
       }
       else
       {
-        fLogger->Log(Form("No capa found for serialNumber=%d",serialNumber));
-        capa = 0.0;
+        charge = a0*thres + a0*(padc-thres) + a1*(padc-thres)*(padc-thres);
       }
     }
-    
-    if ( padc > nsigmas*pedestal->ValueAsFloat(manuChannel,1) ) 
+    else
     {
-      if ( fApplyGains != fgkNoGain ) 
-      {
-        Float_t a0 = gain->ValueAsFloat(manuChannel,0);
-        Float_t a1 = gain->ValueAsFloat(manuChannel,1);
-        Int_t thres = gain->ValueAsInt(manuChannel,2);
-        if ( padc < thres ) 
-        {
-          charge = a0*padc;
-        }
-        else
-        {
-          charge = a0*thres + a0*(padc-thres) + a1*(padc-thres)*(padc-thres);
-        }
-      }
-      else
-      {
-        charge = padc;
-      }
+      charge = padc;
     }
-    
-    charge *= capa;
-    digit.SetCharge(charge);
-    
+  }
+  
+  charge *= capa;
+  
+  if ( isSaturated ) 
+  {
     Int_t saturation(3000);
-    
+  
     if ( gain )
     {
       saturation = gain->ValueAsInt(manuChannel,4);
     }
-    
+  
     if ( padc >= saturation )
     {
-      digit.Saturated(kTRUE);
+      *isSaturated = kTRUE;
+    }
+    else
+    {
+      isSaturated = kFALSE;
     }
   }
+  
+  return charge;
 }
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONDigitCalibrator::IsValidDigit(Int_t detElemId, Int_t manuId, Int_t manuChannel,
+                                     Int_t* statusMap) const
+
+{
+  /// Check if a given pad is ok or not.
+  
+  // First a protection against bad input parameters
+  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+  if (!de) return kFALSE; // not existing DE
+  if (!de->IsExistingChannel(manuId,manuChannel))
+  {
+    // non-existing (might happen when we get parity errors in read-out
+    // that spoils the manuId
+    return kFALSE;
+  }
+  if (!de->IsConnectedChannel(manuId,manuChannel))
+  {
+    // existing (in read-out), but not connected channel
+    return kFALSE;
+  }
+  
+  // ok, now we have a valid channel number, so let's see if that pad
+  // behaves or not ;-)
+  
+  Int_t sm = fStatusMapMaker->StatusMap(detElemId,manuId,manuChannel);
+  
+  if (statusMap) *statusMap = sm;
+  
+  if ( ( sm & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0 ) 
+  {
+    // pad itself is bad (not testing its neighbours at this stage)
+    return kFALSE;
+  }
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONDigitCalibrator::PadStatus(Int_t detElemId, Int_t manuId, Int_t manuChannel) const
+{
+  /// Return the status of the given pad
+  return fStatusMaker->PadStatus(detElemId,manuId,manuChannel);
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONDigitCalibrator::StatusMap(Int_t detElemId, Int_t manuId, Int_t manuChannel) const
+{
+  /// Return the status map of the given pad
+  return fStatusMapMaker->StatusMap(detElemId,manuId,manuChannel);
+  
+}
+

@@ -159,7 +159,7 @@ Every option/parameter can also be set one by one. Here is the complete list of 
   (used for Kalman tracking only)
 - <code>UseChamber(Int_t iCh, Bool_t flag)</code>: set the chambers to be used (disable the clustering if the chamber is not used).
 - <code>RequestStation(Int_t iSt, Bool_t flag)</code>: impose/release the condition "at least 1 cluster per station" for that station.
-- <code>BypassSt45(Bool_t value)</code>: make the primary track candidate from the trigger track instead of using station 4 and 5.
+- <code>BypassSt45(Bool_t st4, Bool_t st5)</code>: make the primary track candidate from the trigger track instead of using stations 4 and/or 5.
 
 We can use the method Print("FULL") to printout all the parameters and options set in the class AliMUONRecoParam.
 

@@ -37,9 +37,8 @@
 #endif
 
 // Data file, OCDB on Grid
-TString input="alien:///alice/data/2008/LHC08a/000024841/raw/08000024841010.10.root";
-//TString input="alien:///alice/data/2008/LHC08a/000021931/raw/08000021931001.50.root";
-TString ocdbPath = "alien://folder=/alice/data/2008/LHC08a/OCDB";
+TString input="alien:///alice/data/2008/LHC08b/000037057/raw/08000037057021.10.root";
+TString ocdbPath = "alien://folder=/alice/data/2008/LHC08b/OCDB";
 
 // Data file, OCDB locally
 //TString input="$ALICE_ROOT/MUON/test_out.100/raw.root";
@@ -56,9 +55,9 @@ void runDataReconstruction(Int_t calib = 1)
   
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath.Data());
-  //man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
-  //man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
-  //man->SetSpecificStorage("MUON/Calib/Gains","local://$ALICE_ROOT");
+
+  man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
+  man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
   
   gRandom->SetSeed(seed);
   
@@ -67,29 +66,27 @@ void runDataReconstruction(Int_t calib = 1)
   AliTracker::SetFieldMap(field, kFALSE);
   AliReconstruction *MuonRec = new AliReconstruction();
   
-  
   MuonRec->SetInput(input.Data());
   MuonRec->SetRunVertexFinder(kFALSE);
   MuonRec->SetRunLocalReconstruction("MUON");
   MuonRec->SetRunTracking("MUON");
   MuonRec->SetFillESD(" ");
   MuonRec->SetLoadAlignData("MUON");
-  MuonRec->SetNumberOfEventsPerFile(1000);
+  MuonRec->SetNumberOfEventsPerFile(0);
   MuonRec->SetOption("MUON",recoptions.Data());
-  //  MuonRec->SetEventRange(319,319);
-  MuonRec->SetWriteAOD();
-  //MuonRec.SetEventRange(0,100); 
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetCosmicParam();
-  muonRecoParam->BypassSt45(kTRUE);
+  muonRecoParam->BypassSt45(kTRUE,kFALSE);
   muonRecoParam->RequestStation(2,kFALSE);
+	muonRecoParam->SetPadGoodnessMask(0x400BE80);
   TString caliboption = caliboption1;
   if ( calib == 2 ) caliboption = caliboption2;
   muonRecoParam->SetCalibrationMode(caliboption.Data());
-  //muonRecoParam->SetClusteringMode("PEAKFIT");
-  //muonRecoParam->SetClusteringMode("PEAKCOG");
   muonRecoParam->Print("FULL");
-  AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
-  
+	
+	AliMUONReconstructor::SetRecoParam(muonRecoParam);
+
+	MuonRec->SetRunQA("MUON:ALL");
+
   MuonRec->Run();
   
   delete MuonRec;

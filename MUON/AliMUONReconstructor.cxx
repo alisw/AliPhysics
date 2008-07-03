@@ -456,7 +456,7 @@ AliMUONReconstructor::CreateCalibrator() const
 
   TString calibMode = GetRecoParam()->GetCalibrationMode();
 
-  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,calibMode.Data());
+  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,GetRecoParam(),calibMode.Data());
 }
 
 //_____________________________________________________________________________
@@ -539,7 +539,8 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
     {
       if (AliMUONReconstructor::GetRecoParam()->UseChamber(i))
       {
-        if ( i >= 6 && AliMUONReconstructor::GetRecoParam()->BypassSt45() ) continue;
+        if ( ( i == 6 || i == 7 )  && AliMUONReconstructor::GetRecoParam()->BypassSt4() ) continue;
+        if ( ( i == 8 || i == 9 )  && AliMUONReconstructor::GetRecoParam()->BypassSt5() ) continue;
         
         fClusterServer->Clusterize(i,*fClusterStore,area);
       }

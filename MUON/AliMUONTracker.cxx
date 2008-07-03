@@ -173,7 +173,9 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
       fInputClusterStore->Connect(*clustersTree,kFALSE);
     }
     delete fClusterServer;
-    fClusterServer = new AliMUONLegacyClusterServer(*fTransformer,fInputClusterStore);
+    fClusterServer = new AliMUONLegacyClusterServer(*fTransformer,fInputClusterStore,
+																										AliMUONReconstructor::GetRecoParam()->BypassSt4(),
+																										AliMUONReconstructor::GetRecoParam()->BypassSt5());
     SetupClusterServer(*fClusterServer);
   }
   
@@ -217,7 +219,9 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
     fTrackReco->EventReconstructTrigger(*fTriggerCircuit,*fTriggerStore,*(TriggerTrackStore()));
   }
   
-  if ( AliMUONReconstructor::GetRecoParam()->BypassSt45() && TriggerTrackStore()->GetSize() > 5 ) 
+  if ( ( AliMUONReconstructor::GetRecoParam()->BypassSt4() || 
+				 AliMUONReconstructor::GetRecoParam()->BypassSt5() ) && 
+			TriggerTrackStore()->GetSize() > 5 ) 
   {
     // Hard cut to reject shower events
     
@@ -365,18 +369,38 @@ AliMUONTracker::SetupClusterServer(AliMUONVClusterServer& clusterServer)
 {
   /// Setup the cluster server
   
-  if ( AliMUONReconstructor::GetRecoParam()->BypassSt45() )
+  if ( AliMUONReconstructor::GetRecoParam()->BypassSt4() ||
+			 AliMUONReconstructor::GetRecoParam()->BypassSt5() )
   {
     Bool_t ok = clusterServer.UseTriggerTrackStore(TriggerTrackStore());
   
+		TString msg1;
+		TString msg2;
+		
+		if ( AliMUONReconstructor::GetRecoParam()->BypassSt45() )
+		{
+			msg1 = "STATIONS 4 AND 5";
+			msg2 = "THOSE TWO STATIONS";
+		}
+		else if ( AliMUONReconstructor::GetRecoParam()->BypassSt4() )
+		{
+			msg1 = "STATION 4";
+			msg2 = "THAT STATION";
+		}
+		else if ( AliMUONReconstructor::GetRecoParam()->BypassSt5() )
+		{
+			msg1 = "STATION 5";
+			msg2 = "THAT STATION";
+		}
+		
     if ( ok ) 
-    
     {
-      AliWarning("WILL USE TRIGGER TRACKS TO GENERATE CLUSTERS IN STATIONS 4 AND 5, THUS BYPASSING REAL CLUSTERS IN THOSE TWO STATIONS !!!");    
+      AliWarning(Form("WILL USE TRIGGER TRACKS TO GENERATE CLUSTERS IN %s, "
+											"THUS BYPASSING REAL CLUSTERS IN %s!!!",msg1.Data(),msg2.Data()));    
     }
     else
     {
-      AliWarning("BYPASSING OF ST45 REQUESTED, BUT CLUSTERSERVER DOES NOT SEEM TO SUPPORT IT !!!");    
+      AliWarning("BYPASSING OF ST4 AND/OR 5 REQUESTED, BUT CLUSTERSERVER DOES NOT SEEM TO SUPPORT IT !!!");    
     }
   }
 }
