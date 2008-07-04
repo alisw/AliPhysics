@@ -16,6 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "AliHLTPHOSUtilities.h"
+#include <cstdlib>
 
 
 AliHLTPHOSUtilities::AliHLTPHOSUtilities()
