@@ -29,6 +29,7 @@ public:
   virtual ~AliTPCcalibLaser();
   virtual void     Process(AliESDEvent *event);
   virtual void Analyze();
+  virtual Long64_t Merge(TCollection *li);
   virtual void DumpMeanInfo(Float_t bfield);
   //
   //

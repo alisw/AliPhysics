@@ -214,21 +214,28 @@ void AliTPCcalibLaser::MakeDistHisto(){
     TH1F * hisSignal = (TH1F*)fSignals.At(id);
 
     if (!hisdz){      
-      hisdz = new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),500,-10,10);
+      hisdz = new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),1000,-10,10);
+      hisdz->SetDirectory(0);
       fDeltaZ.AddAt(hisdz,id);
       //
-      hisdphi = new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),500,-1,1);
+      hisdphi = new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),1000,-1,1);
+      hisdphi->SetDirectory(0);
       fDeltaPhi.AddAt(hisdphi,id);
       //
-      hisdphiP = new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),500,-0.01,0.01);
+      hisdphiP = new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),1000,-0.01,0.01);
+      hisdphiP->SetDirectory(0);
       fDeltaPhiP.AddAt(hisdphiP,id);
-      hisSignal = new TH1F(Form("hisSignal%d",id),Form("hisSignal%d",id),500,0,1000);
+      hisSignal = new TH1F(Form("hisSignal%d",id),Form("hisSignal%d",id),1000,0,1000);
+      hisSignal->SetDirectory(0);
       fSignals.AddAt(hisSignal,id);
     }
 
     AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
     AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
     AliESDtrack   *track    = (AliESDtrack*)fTracksEsd.At(id);
+    if (!param) return;
+    if (!ltrp) return;
+    if (!track) return;
     Double_t xyz[3];
     Double_t pxyz[3];
     Double_t lxyz[3];
@@ -241,10 +248,10 @@ void AliTPCcalibLaser::MakeDistHisto(){
     Float_t dz   = param->GetZ()-ltrp->GetZ();
     Float_t dphi = (TMath::ATan2(xyz[1],xyz[0])- TMath::ATan2(lxyz[1],lxyz[0]))*254.;
     Float_t dphiP = param->GetParameter()[2]-ltrp->GetParameter()[2];
-    hisdz->Fill(dz);
-    hisdphi->Fill(dphi);
-    hisdphiP->Fill(dphiP); 
-    hisSignal->Fill(track->GetTPCsignal());
+    if (hisdz) hisdz->Fill(dz);
+    if (hisdphi) hisdphi->Fill(dphi);
+    if (hisdphiP) hisdphiP->Fill(dphiP); 
+    if (hisSignal) hisSignal->Fill(track->GetTPCsignal());
   }
 }
 
@@ -609,5 +616,100 @@ void AliTPCcalibLaser::Analyze(){
 }
 
 
+Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
+
+  TIterator* iter = li->MakeIterator();
+  AliTPCcalibLaser* cal = 0;
+
+  while ((cal = (AliTPCcalibLaser*)iter->Next())) {
+    if (!cal->InheritsFrom(AliTPCcalibLaser::Class())) {
+      Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
+      return -1;
+    }
+    //
+   //  fHistNTracks->Add(cal->fHistNTracks);
+//     fClusters->Add(cal->fClusters);
+//     fModules->Add(cal->fModules);
+//     fHistPt->Add(cal->fHistPt);
+//     fPtResolution->Add(cal->fPtResolution);
+//     fDeDx->Add(cal->fDeDx);
+    
+
+    TH1F *h=0x0;
+    TH1F *hm=0x0;
+
+    for (Int_t id=0; id<336; id++){
+      // merge fDeltaZ histograms
+      hm = (TH1F*)cal->fDeltaZ.At(id); 
+      h  = (TH1F*)fDeltaZ.At(id);
+      if (!h) {
+	h=new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),1000,-10,10);
+	fDeltaZ.AddAt(h,id);
+      }
+      if (hm) h->Add(hm);
+      // merge fDeltaPhi histograms
+      hm = (TH1F*)cal->fDeltaPhi.At(id); 
+      h  = (TH1F*)fDeltaPhi.At(id);
+      if (!h) {
+	h= new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),1000,-1,1);
+	fDeltaPhi.AddAt(h,id);
+      }
+      if (hm) h->Add(hm);
+      // merge fDeltaPhiP histograms
+      hm = (TH1F*)cal->fDeltaPhiP.At(id); 
+      h  = (TH1F*)fDeltaPhiP.At(id);
+      if (!h) {
+	h=new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),1000,-0.01,0.01);
+	fDeltaPhiP.AddAt(h,id);
+      }
+      if (hm) h->Add(hm);
+      // merge fSignals histograms
+      hm = (TH1F*)cal->fSignals.At(id); 
+      h  = (TH1F*)fSignals.At(id);
+      if (!h) {
+	h=new TH1F(Form("hisSignal%d",id),Form("hisSignal%d",id),1000,0,1000);
+	fSignals.AddAt(h,id);
+      }
+      if (hm) h->Add(hm);      
+    }
+  }
+  return 0;
+}
 
 
+
+/*
+ gSystem->Load("libSTAT.so")
+ TStatToolkit toolkit;
+ Double_t chi2;
+ TVectorD fitParam;
+ TMatrixD covMatrix;
+ Int_t npoints;
+ TCut cutA("gphi2<0.2&&abs(mphi-gphi1)<0.1")
+
+//  TString *strq0 = toolkit.FitPlane(treeT,"Tr.fP[1]-LTr.fP[1]","lx1++lx2", "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
+
+
+TString fstring="";
+fstring+="LTr.fP[2]++"                        // 1
+fstring+="LTr.fP[2]*cos(atan2(lx1,lx0))++"    // 2
+fstring+="LTr.fP[2]*sin(atan2(lx1,lx0))++"    // 3
+fstring+="cos(atan2(lx1,lx0))++"              // 4
+fstring+="sin(atan2(lx1,lx0))++"              // 5
+fstring+="gphiP1++"                           // 6
+
+fstring+="bz++";                              // 7 
+fstring+="bz*cos(atan2(lx1,lx0))++"           // 8
+fstring+="bz*sin(atan2(lx1,lx0))++"           // 9
+fstring+="bz*sin(atan2(lx1,lx0))*LTr.fP[2]++" // 10
+fstring+="bz*cos(atan2(lx1,lx0))*LTr.fP[2]++" // 11
+
+
+  TString *strq0 = toolkit.FitPlane(chain,"gphi1",fstring->Data(), "fSide==1&&fBundle==3"+cutA, chi2,npoints,fitParam,covMatrix);
+
+  chain->SetAlias("fit",strq0->Data());
+
+
+
+
+ */
