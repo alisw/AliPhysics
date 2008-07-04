@@ -59,6 +59,7 @@
 #include "AliEMCALTrigger.h" 
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRawUtils.h"
+#include "AliLog.h"
 
 ClassImp(AliEMCALTrigger)
 
@@ -174,6 +175,7 @@ AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig)
   // cpy ctor
 }
 
+//____________________________________________________________________________
 AliEMCALTrigger::~AliEMCALTrigger() {
   if(GetTimeKey()) {
     delete [] fADCValuesHighnxn; 
@@ -243,7 +245,7 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
   Int_t colborder = 0;
   Int_t rowborder = 0;
   static int keyPrint = 0;
-  if(keyPrint) printf(" IsPatchIsolated : iSM %i mtru %i itru %i maxphi %i maxeta %i \n", iSM, mtru, itru, maxphi, maxeta);
+  if(keyPrint) AliDebug(2,Form(" IsPatchIsolated : iSM %i mtru %i itru %i maxphi %i maxeta %i \n", iSM, mtru, itru, maxphi, maxeta));
   
   if(fIsolateInSuperModule){ // ?
     ampmatrix = dynamic_cast<TMatrixD *>(ampmatrixes->At(iSM)) ;
@@ -304,7 +306,7 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
     if(amp < fnxnAmpOutOfPatchThres) b=kTRUE;
   }
 
-  if(keyPrint) printf(" IsPatchIsolated - OUT \n");
+  if(keyPrint) AliDebug(2,Form(" IsPatchIsolated - OUT \n"));
 
   return b;
 
@@ -435,8 +437,8 @@ const Int_t isupermod,TMatrixD &ampmax2, TMatrixD &ampmaxn){
   Int_t nModulesEta  = fGeom->GetNModulesInTRUEta(); // now 24 modules (no division in eta)
   Int_t nTRU         = fGeom->GetNTRU();
   static int keyPrint = 0;
-  if(keyPrint) printf("MakeSlidingTowers : nTRU %i nModulesPhi %i nModulesEta %i ", 
-  nTRU, nModulesPhi, nModulesEta );
+  if(keyPrint) AliDebug(2,Form("MakeSlidingTowers : nTRU %i nModulesPhi %i nModulesEta %i ", 
+  nTRU, nModulesPhi, nModulesEta ));
 
   Float_t amp2 = 0 ;
   Float_t ampn = 0 ; 
@@ -530,7 +532,7 @@ const Int_t isupermod,TMatrixD &ampmax2, TMatrixD &ampmaxn){
 	ampmaxn(3,mtru) =  ampmax2(3,mtru);
     }
   }
-  if(keyPrint) printf(" : MakeSlidingTowers -OUt \n");
+  if(keyPrint) AliDebug(2,Form(" : MakeSlidingTowers -OUt \n"));
 }
 
 //____________________________________________________________________________
@@ -542,50 +544,42 @@ void AliEMCALTrigger::Print(const Option_t * opt) const
   if(! opt)
     return;
   AliTriggerInput* in = 0x0 ;
-  printf( " fSimulation %i (input option) : #digits %i\n", fSimulation, fDigitsList->GetEntries());
-  printf( " fTimeKey    %i  \n ", fTimeKey);
+  AliInfo(Form(" fSimulation %i (input option) : #digits %i\n", fSimulation, fDigitsList->GetEntries()));
+  AliInfo(Form(" fTimeKey    %i  \n ", fTimeKey));
 
-  printf( "             Maximum Amplitude after Sliding Cell, \n") ; 
-  printf( "               -2x2 cells sum (not overlapped): %10.2f, in Super Module %d\n",
-	  f2x2MaxAmp,f2x2SM) ; 
-  printf( "               -2x2 from row %d to row %d and from column %d to column %d\n", f2x2ModulePhi, f2x2ModulePhi+2, f2x2ModuleEta, f2x2ModuleEta+2) ; 
-  printf( "               -2x2 Isolation Patch %d x %d, Amplitude out of 2x2 patch is %f, threshold %f, Isolated? %d \n", 
-  	  2*fIsolPatchSize+2, 2*fIsolPatchSize+2,  f2x2AmpOutOfPatch,  f2x2AmpOutOfPatchThres,static_cast<Int_t> (fIs2x2Isol)) ; 
+  AliInfo(Form("\t Maximum Amplitude after Sliding Cell, \n")) ; 
+  AliInfo(Form("\t -2x2 cells sum (not overlapped): %10.2f, in Super Module %d\n",
+	  f2x2MaxAmp,f2x2SM)) ; 
+  AliInfo(Form("\t -2x2 from row %d to row %d and from column %d to column %d\n", f2x2ModulePhi, f2x2ModulePhi+2, f2x2ModuleEta, f2x2ModuleEta+2)); 
+  AliInfo(Form("\t -2x2 Isolation Patch %d x %d, Amplitude out of 2x2 patch is %f, threshold %f, Isolated? %d \n", 2*fIsolPatchSize+2, 2*fIsolPatchSize+2,  f2x2AmpOutOfPatch,  f2x2AmpOutOfPatchThres,static_cast<Int_t> (fIs2x2Isol))); 
   if(fPatchSize > 0){
-    printf( "             Patch Size, n x n: %d x %d cells\n",2*(fPatchSize+1), 2*(fPatchSize+1));
-    printf( "               -nxn cells sum (overlapped)    : %10.2f, in Super Module %d\n",
-	    fnxnMaxAmp,fnxnSM) ; 
-    printf( "               -nxn from row %d to row %d and from column %d to column %d\n", fnxnModulePhi, fnxnModulePhi+4*fPatchSize, fnxnModuleEta, fnxnModuleEta+4*fPatchSize) ; 
-    printf( "               -nxn Isolation Patch %d x %d, Amplitude out of nxn patch is %f, threshold %f, Isolated? %d \n", 
-	    4*fIsolPatchSize+2*(fPatchSize+1),4*fIsolPatchSize+2*(fPatchSize+1) ,  fnxnAmpOutOfPatch,  fnxnAmpOutOfPatchThres,static_cast<Int_t> (fIsnxnIsol) ) ; 
+    AliInfo(Form("\t Patch Size, n x n: %d x %d cells\n",2*(fPatchSize+1), 2*(fPatchSize+1)));
+    AliInfo(Form("\t -nxn cells sum (overlapped)    : %10.2f, in Super Module %d\n", fnxnMaxAmp,fnxnSM)); 
+    AliInfo(Form("\t -nxn from row %d to row %d and from column %d to column %d\n", fnxnModulePhi, fnxnModulePhi+4*fPatchSize, fnxnModuleEta, fnxnModuleEta+4*fPatchSize)) ; 
+    AliInfo(Form("\t -nxn Isolation Patch %d x %d, Amplitude out of nxn patch is %f, threshold %f, Isolated? %d \n", 4*fIsolPatchSize+2*(fPatchSize+1),4*fIsolPatchSize+2*(fPatchSize+1) ,  fnxnAmpOutOfPatch,  fnxnAmpOutOfPatchThres,static_cast<Int_t> (fIsnxnIsol) )); 
   }
   
-  printf( "             Isolate in SuperModule? %d\n",  
-          fIsolateInSuperModule) ;  
+  AliInfo(Form("\t Isolate in SuperModule? %d\n", fIsolateInSuperModule)) ;  
+  AliInfo(Form("\t Threshold for LO %10.2f\n", fL0Threshold));  
 
-  printf( "             Threshold for LO %10.2f\n", 
-	  fL0Threshold) ;  
   in = (AliTriggerInput*)fInputs.FindObject( "EMCAL_L0" );
   if(in->GetValue())
-    printf( "             *** EMCAL LO is set ***\n") ; 
+    AliInfo(Form("\t *** EMCAL LO is set ***\n")); 
   
-  printf( "             Gamma Low Pt Threshold for L1 %10.2f\n", 
-	  fL1GammaLowPtThreshold) ;
+  AliInfo(Form("\t Gamma Low Pt Threshold for L1 %10.2f\n", fL1GammaLowPtThreshold));
   in = (AliTriggerInput*)fInputs.FindObject( "EMCAL_GammaLPt_L1" );
   if(in->GetValue())
-    printf( "             *** EMCAL Gamma Low Pt for L1 is set ***\n") ;
+    AliInfo(Form("\t *** EMCAL Gamma Low Pt for L1 is set ***\n"));
 
-  printf( "             Gamma Medium Pt Threshold for L1 %10.2f\n", 
-	  fL1GammaMediumPtThreshold) ;  
+  AliInfo(Form("\t Gamma Medium Pt Threshold for L1 %10.2f\n", fL1GammaMediumPtThreshold));  
   in = (AliTriggerInput*) fInputs.FindObject( "EMCAL_GammaMPt_L1" );
   if(in->GetValue())
-    printf( "             *** EMCAL Gamma Medium Pt for L1 is set ***\n") ;
+    AliInfo(Form("\t *** EMCAL Gamma Medium Pt for L1 is set ***\n"));
 
-  printf( "             Gamma High Pt Threshold for L1 %10.2f\n", 
-	  fL1GammaHighPtThreshold) ;  
+  AliInfo(Form("\t Gamma High Pt Threshold for L1 %10.2f\n", fL1GammaHighPtThreshold));  
   in = (AliTriggerInput*) fInputs.FindObject( "EMCAL_GammaHPt_L1" );
   if(in->GetValue())
-    printf( "             *** EMCAL Gamma High Pt for L1 is set ***\n") ;
+    AliInfo(Form("\t *** EMCAL Gamma High Pt for L1 is set ***\n")) ;
 
 }
 
@@ -815,12 +809,12 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
     amp    = Float_t(dig->GetAmp()); // Energy of the digit (arbitrary units)
     id     = dig->GetId() ;          // Id label of the cell
     timeR  = dig->GetTimeR() ;       // Earliest time of the digit
-    if(amp<=0.0) printf("<I> AliEMCALTrigger::FillTRU : id %i amp %f \n", id, amp);
+    if(amp<=0.0) AliInfo(Form(" id %i amp %f \n", id, amp));
     // printf(" FILLTRU : timeR %10.5e time %10.5e : amp %10.5e \n", timeR, dig->GetTime(), amp);
     // Get eta and phi cell position in supermodule
     Bool_t bCell = fGeom->GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
     if(!bCell)
-      Error("FillTRU","%i Wrong cell id number %i ", idig, id) ;
+      AliError(Form("FillTRU","%i Wrong cell id number %i ", idig, id)) ;
     
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
     // iphim, ietam - module indexes in SM
@@ -866,6 +860,7 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
   //assert(0);
   //printf("<I> AliEMCALTrigger::FillTRU() is ended \n");
 }
+
 //____________________________________________________________________________
 void AliEMCALTrigger::Trigger() 
 {
@@ -921,7 +916,7 @@ void AliEMCALTrigger::Trigger()
   
   FillTRU(fDigitsList, fAmpTrus, fAmpSMods, fTimeRtrus);
 
-  // Jet staff - only one case, no fredom here
+  // Jet stuff - only one case, no freedom here
   if(fGeom->GetNEtaSubOfTRU() == 6) {
     if(fAmpJetMatrix) {delete fAmpJetMatrix; fAmpJetMatrix=0;}
     if(fJetMatrixE)   {delete fJetMatrixE; fJetMatrixE=0;}
@@ -966,6 +961,7 @@ void AliEMCALTrigger::Trigger()
   // fDigitsList = 0;
 }
 
+//____________________________________________________________________________
 void AliEMCALTrigger::GetTriggerInfo(TArrayF &triggerPosition, TArrayF &triggerAmplitudes)
 {
   // Template - should be defined; Nov 5, 2007
@@ -973,6 +969,7 @@ void AliEMCALTrigger::GetTriggerInfo(TArrayF &triggerPosition, TArrayF &triggerA
   triggerAmplitudes[0] = 0.;
 }
 
+//____________________________________________________________________________
 void AliEMCALTrigger::FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD* jetMat, AliEMCALGeometry *g)
 {
   // Nov 5, 2007
@@ -986,8 +983,7 @@ void AliEMCALTrigger::FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD
   Int_t nEtaModSum = g->GetNZ()   / g->GetNEtaSubOfTRU(); // should be 4 
   Int_t nPhiModSum = g->GetNPhi() / g->GetNTRUPhi();      // should be 4 
 
-  if(keyPrint) printf("%s",Form(" AliEMCALTrigger::FillJetMatrixFromSMs | nEtaModSum %i : nPhiModSum %i \n", 
-  		  nEtaModSum, nPhiModSum));
+  if(keyPrint) AliDebug(2,Form("%s",Form(" AliEMCALTrigger::FillJetMatrixFromSMs | nEtaModSum %i : nPhiModSum %i \n", nEtaModSum, nPhiModSum)));
   Int_t jrow=0, jcol=0;  // indexes of jet matrix
   Int_t nEtaSM=0, nPhiSM=0;
   for(Int_t iSM=0; iSM<ampmatrixsmod->GetEntries(); iSM++) {
@@ -1001,8 +997,7 @@ void AliEMCALTrigger::FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD
         nPhiSM = iSM / 2; 
         nEtaSM = iSM % 2;
         if       (amp>0.0) {
-           if(keyPrint) printf("%s",Form(" ** nPhiSm %i : nEtaSM %i : row %2.2i : col %2.2i -> ", 
-	  		  nPhiSM, nEtaSM, row, col)); 
+           if(keyPrint) AliDebug(2,Form("%s",Form(" ** nPhiSm %i : nEtaSM %i : row %2.2i : col %2.2i -> ", nPhiSM, nEtaSM, row, col))); 
           if(nEtaSM == 0) { // positive Z
             jrow = 3*nPhiSM + row/nPhiModSum;
             jcol = 6 + col / nEtaModSum;
@@ -1011,25 +1006,26 @@ void AliEMCALTrigger::FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD
             else       jrow = 3*nPhiSM + 1 - row/nPhiModSum; // half size 
             jcol = 5 - col / nEtaModSum;
 	  }
-	  if(keyPrint) printf("%s",Form(" jrow %2.2i : jcol %2.2i : amp %f (jetMat) \n", jrow, jcol, amp)); 
+	  if(keyPrint) AliDebug(2,Form("%s",Form(" jrow %2.2i : jcol %2.2i : amp %f (jetMat) \n", jrow, jcol, amp))); 
 
           (*jetMat)(jrow,jcol) += amp;
           ampSum += amp; // For controling
         } else if(amp<0.0) {
-          printf("%s",Form(" jrow %2.2i : jcol %2.2i : amp %f (jetMat: amp<0) \n", jrow, jcol, amp)); 
+          AliInfo(Form(" jrow %2.2i : jcol %2.2i : amp %f (jetMat: amp<0) \n", jrow, jcol, amp)); 
 	  assert(0);
         }
       }
     }
   } // cycle on SM
-  if(ampSum <= 0.0) Warning("FillJetMatrixFromSMs","ampSum %f (<=0.0) ", ampSum);
+  if(ampSum <= 0.0) AliWarning(Form("FillJetMatrixFromSMs","ampSum %f (<=0.0) ", ampSum));
 }
 
+//____________________________________________________________________________
 void AliEMCALTrigger::MakeSlidingPatch(const TMatrixD &jm, const Int_t nPatchSize, TMatrixD &ampJetMax)
 {
   // Sliding patch : nPatchSize x nPatchSize (OVERLAP)
   static int keyPrint = 0;
-  if(keyPrint) printf(" AliEMCALTrigger::MakeSlidingPatch() was started \n");
+  if(keyPrint) AliDebug(2,Form(" AliEMCALTrigger::MakeSlidingPatch() was started \n"));
   Double_t ampCur = 0.0, e=0.0;
   ampJetMax(0,0)  = 0.0;
   ampJetMax(3,0)  = 0.0; // unused now
@@ -1052,9 +1048,7 @@ void AliEMCALTrigger::MakeSlidingPatch(const TMatrixD &jm, const Int_t nPatchSiz
       } // check on patch size
     }
   }
-  if(keyPrint) printf(" ampJetMax %i row %2i->%2i col %2i->%2i \n", 
-  Int_t(ampJetMax(0,0)), Int_t(ampJetMax(1,0)), Int_t(ampJetMax(1,0))+nPatchSize-1, 
-  Int_t(ampJetMax(2,0)), Int_t(ampJetMax(2,0))+nPatchSize-1);
+  if(keyPrint) AliDebug(2,Form(" ampJetMax %i row %2i->%2i col %2i->%2i \n", Int_t(ampJetMax(0,0)), Int_t(ampJetMax(1,0)), Int_t(ampJetMax(1,0))+nPatchSize-1, Int_t(ampJetMax(2,0)), Int_t(ampJetMax(2,0))+nPatchSize-1));
 
   Double_t eCorrJetMatrix=0.0;
   if(fVZER0Mult > 0.0) {
@@ -1064,8 +1058,8 @@ void AliEMCALTrigger::MakeSlidingPatch(const TMatrixD &jm, const Int_t nPatchSiz
     ampJetMax(5,0) = meanAmpBG;
 
     Double_t eCorr     = ampJetMax(0,0) - meanAmpBG; 
-    printf(" ampJetMax(0,0) %f meanAmpBG %f  eCorr %f : ampJetMax(4,0) %f \n",
-	   ampJetMax(0,0), meanAmpBG, eCorr, ampJetMax(5,0));
+    AliDebug(2,Form(" ampJetMax(0,0) %f meanAmpBG %f  eCorr %f : ampJetMax(4,0) %f \n",
+	   ampJetMax(0,0), meanAmpBG, eCorr, ampJetMax(5,0)));
     ampJetMax(0,0)     = eCorr;
     // --
     eCorrJetMatrix = GetMeanEmcalEnergy(Int_t(fVZER0Mult)) / 208.;
@@ -1091,6 +1085,7 @@ void AliEMCALTrigger::MakeSlidingPatch(const TMatrixD &jm, const Int_t nPatchSiz
   }
 }
 
+//____________________________________________________________________________
 Double_t AliEMCALTrigger::GetEmcalSumAmp() const 
 { 
   // Return sum of amplidutes from EMCal
@@ -1098,48 +1093,52 @@ Double_t AliEMCALTrigger::GetEmcalSumAmp() const
   return fAmpJetMatrix >0 ?fAmpJetMatrix->Sum() :0.0;
 }
 
-
+//____________________________________________________________________________
 void AliEMCALTrigger::PrintJetMatrix() const
 {
   //  fAmpJetMatrix : (17,12); // 17-phi(row), 12-eta(col)
   if(fAmpJetMatrix == 0) return;
 
-  printf("\n ####  jetMatrix : (%i,%i) ##### \n        ", 
-  fAmpJetMatrix->GetNrows(), fAmpJetMatrix->GetNcols());
+  AliInfo(Form("\n ####  jetMatrix : (%i,%i) ##### \n ", 
+	       fAmpJetMatrix->GetNrows(), fAmpJetMatrix->GetNcols()));
   PrintMatrix(*fAmpJetMatrix);
 }
 
+//____________________________________________________________________________
 void AliEMCALTrigger::PrintAmpTruMatrix(Int_t ind) const
 {
   TMatrixD * tru = dynamic_cast<TMatrixD *>(fAmpTrus->At(ind));
   if(tru == 0) return;
-  printf("\n ####  Amp TRU matrix(%i) : (%i,%i) ##### \n        ", 
-	 ind, tru->GetNrows(), tru->GetNcols());
+  AliInfo(Form("\n ####  Amp TRU matrix(%i) : (%i,%i) ##### \n ", 
+	 ind, tru->GetNrows(), tru->GetNcols()));
   PrintMatrix(*tru);
 }
 
+//____________________________________________________________________________
 void AliEMCALTrigger::PrintAmpSmMatrix(Int_t ind) const
 {
   TMatrixD * sm = dynamic_cast<TMatrixD *>(fAmpSMods->At(ind));
   if(sm == 0) return;
-  printf("\n ####  Amp SM matrix(%i) : (%i,%i) ##### \n        ", 
-	 ind, sm->GetNrows(), sm->GetNcols());
+  AliInfo(Form("\n ####  Amp SM matrix(%i) : (%i,%i) ##### \n ", 
+	 ind, sm->GetNrows(), sm->GetNcols()));
   PrintMatrix(*sm);
 }
 
+//____________________________________________________________________________
 void AliEMCALTrigger::PrintMatrix(const TMatrixD &mat) const
 {
-  for(Int_t col=0; col<mat.GetNcols(); col++) printf(" %3i ", col);
-  printf("\n -- \n");
+  for(Int_t col=0; col<mat.GetNcols(); col++) AliInfo(Form(" %3i ", col));
+  AliInfo(Form("\n -- \n"));
   for(Int_t row=0; row<mat.GetNrows(); row++) {
-    printf(" row:%2i ", row);
+    AliInfo(Form(" row:%2i ", row));
     for(Int_t col=0; col<mat.GetNcols(); col++) {
-      printf(" %4i", (Int_t)mat(row,col));
+      AliInfo(Form(" %4i", (Int_t)mat(row,col)));
     }
-    printf("\n");
+    AliInfo("\n");
   }
 }
 
+//____________________________________________________________________________
 Bool_t AliEMCALTrigger::CheckConsistentOfMatrixes(const Int_t pri)
 {
   Double_t sumSM = 0.0, smCur=0.0;
@@ -1164,19 +1163,19 @@ Bool_t AliEMCALTrigger::CheckConsistentOfMatrixes(const Int_t pri)
       sumTru += sumTruInSM;
 
       if(sumTruInSM != smCur) {
-        printf(" sm %i : smCur %f -> sumTruInSM %f \n", i, smCur, sumTruInSM);
+        AliInfo(Form(" sm %i : smCur %f -> sumTruInSM %f \n", i, smCur, sumTruInSM));
         return kFALSE;
       }
     }
   }
   Double_t sumJetMat = fAmpJetMatrix->Sum();
   if(pri || sumSM != sumTru || sumSM !=  sumJetMat) 
-  printf(" sumSM %f : sumTru %f : sumJetMat %f \n", sumSM, sumTru, sumJetMat); 
+  AliInfo(Form(" sumSM %f : sumTru %f : sumJetMat %f \n", sumSM, sumTru, sumJetMat)); 
   if(sumSM != sumTru || sumSM !=  sumJetMat) return kFALSE; 
   else                                       return kTRUE; 
 }
 
-
+//____________________________________________________________________________
 void AliEMCALTrigger::Browse(TBrowser* b)
 {
   if(&fInputs)      b->Add(&fInputs);
