@@ -102,8 +102,13 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	
 
 	if(index==3){
+	  printf(" check ESD count %i \n",count);
 	  if(count=0) fhESDMean = hdata;
 	  if(count=1) fhESDVertex = hdata;
+	  if(count>1){
+	    AliWarning("Unknowm ESD QA histograms");
+	    return 0;
+	  }
 	}
 	count++ ;
 	
