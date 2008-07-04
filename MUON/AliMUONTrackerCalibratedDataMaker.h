@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup graphics
+/// \ingroup rec
 /// \class AliMUONTrackerCalibratedDataMaker
 /// \brief Creator of calibrated AliMUONVTrackerData from AliRawReader
 /// 
