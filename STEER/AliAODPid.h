@@ -11,7 +11,6 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
-class AliESDtrack;
 
 class AliAODPid : public TObject {
 
@@ -23,7 +22,14 @@ class AliAODPid : public TObject {
   
   enum{kSPECIES=5, kTRDnPlanes=6};
 
-  void SetDetectorRawSignals(AliESDtrack *track, Double_t timezero); 
+ //setters
+  void      SetITSsignal(Double_t its)                         {fITSsignal=its;}
+  void      SetTPCsignal(Double_t tpc)                         {fTPCsignal=tpc;}
+  void      SetTRDsignal(Int_t nslices, Double_t* trdslices)   {fTRDnSlices = nslices; fTRDslices=trdslices;}
+  void      SetTOFsignal(Double_t tof)                         {fTOFesdsignal=tof;}
+  void      SetIntegratedTimes(Double_t timeint[5]);
+  void      SetHMPIDsignal(Double_t hmpid)                     {fHMPIDsignal=hmpid;}
+
 
   Double_t  GetITSsignal()       {return  fITSsignal;}
   Double_t  GetTPCsignal()       {return  fTPCsignal;}

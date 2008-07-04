@@ -942,7 +942,7 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
 
   if(esdtrack->Pt()>fHighPthreshold) {
     detpid = new AliAODPid();
-    detpid->SetDetectorRawSignals(esdtrack,timezero);
+    SetDetectorRawSignals(detpid,esdtrack,timezero);
     aodtrack->SetDetPID(detpid);
   } else {
     if(fPtshape){
@@ -950,7 +950,7 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
 	Double_t y = fPtshape->Eval(esdtrack->Pt())/fPtshape->Eval(fHighPthreshold);
 	if(gRandom->Rndm(0)<1./y){
 	  detpid = new AliAODPid();
-	  detpid->SetDetectorRawSignals(esdtrack,timezero);
+	  SetDetectorRawSignals(detpid,esdtrack,timezero);
 	  aodtrack->SetDetPID(detpid);
 	}//end rndm
       }//end if p < pmin
@@ -958,7 +958,35 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
   }// end else
 }
 
+void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero)
+{
+//
+//assignment of the detector signals (AliXXXesdPID inspired)
+//
+ if(!track){
+ AliInfo("no ESD track found. .....exiting");
+ return;
+ }
 
+ aodpid->SetITSsignal(track->GetITSsignal());
+ aodpid->SetTPCsignal(track->GetTPCsignal());
+ //n TRD planes = 6
+
+ Int_t nslices = track->GetNumberOfTRDslices()*6;
+ Double_t *trdslices = new Double_t[nslices];
+ for(Int_t iSl =0; iSl < track->GetNumberOfTRDslices(); iSl++) {
+     for(Int_t iPl =0; iPl<6; iPl++) trdslices[iPl*track->GetNumberOfTRDslices()+iSl] = track->GetTRDslice(iPl,iSl);
+    }
+
+
+ aodpid->SetTRDsignal(track->GetNumberOfTRDslices()*6,trdslices);
+ Double_t times[AliAODPid::kSPECIES]; track->GetIntegratedTimes(times);
+ aodpid->SetIntegratedTimes(times);
+
+ aodpid->SetTOFsignal(track->GetTOFsignal()-timezero); // to be fixed
+ aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
+
+}
 void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
 {
 // Terminate analysis

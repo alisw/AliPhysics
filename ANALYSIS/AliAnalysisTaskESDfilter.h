@@ -37,7 +37,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void SetPshape     (TF1 *func)             {fPtshape         =    func;}
 
     virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero);
-
+    void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero);
 
  private:
     AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);

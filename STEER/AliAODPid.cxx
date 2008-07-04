@@ -38,6 +38,7 @@ AliAODPid::AliAODPid():
 {
   // default constructor
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=0; 
+  
 }
 
 //______________________________________________________________________________
@@ -81,31 +82,14 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
   return *this;
 }
 //_______________________________________________________________________________
-void AliAODPid::SetDetectorRawSignals(AliESDtrack *track, Double_t timezero)
-{
-//
-//assignment of the detector signals (AliXXXesdPID inspired)
-//
- if(!track){
- AliInfo("no ESD track found. .....exiting");
- return;
- }
-
- fITSsignal=track->GetITSsignal();
- fTPCsignal=track->GetTPCsignal();
- fTRDnSlices=track->GetNumberOfTRDslices()*kTRDnPlanes;
- track->GetIntegratedTimes(fIntTime);
- fTOFesdsignal=track->GetTOFsignal()-timezero; //TO BE FIXED 
- fHMPIDsignal=track->GetHMPIDsignal();
-
- fTRDslices=new Double32_t[fTRDnSlices];  
- for(Int_t iSl =0; iSl < track->GetNumberOfTRDslices(); iSl++) {
-     for(Int_t iPl =0; iPl<kTRDnPlanes; iPl++) fTRDslices[iPl*track->GetNumberOfTRDslices()+iSl] = track->GetTRDslice(iPl,iSl);
-    } 
-}
-//________________________________________________________________________________
-void AliAODPid::GetIntegratedTimes(Double_t timeint[5])
+void AliAODPid::GetIntegratedTimes(Double_t timeint[kSPECIES])
 {
  // Returns the array with integrated times for each particle hypothesis
 for(Int_t i=0; i<kSPECIES; i++) timeint[i]=fIntTime[i];
+}
+//_______________________________________________________________________________
+void AliAODPid::SetIntegratedTimes(Double_t timeint[kSPECIES])
+{
+ // Returns the array with integrated times for each particle hypothesis
+for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=timeint[i];
 }
