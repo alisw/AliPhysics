@@ -98,7 +98,7 @@ if [ "$SIMULATION" -eq 1 ]; then
 
   echo "Running simulation  ..."
 
-  aliroot -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\) >& $OUTDIR/testSim.out 
+  aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\) >& $OUTDIR/testSim.out 
   
   echo "Moving generated files to $SIMDIR"
   mkdir $OUTDIR/$SIMDIR
@@ -115,13 +115,13 @@ fi
 
 if [ "$RECONSTRUCTION" -eq 1 ]; then
 
-  rm -f galice.root AliESD*.root
+  rm -f galice.root AliESD*.root *QA*.root
 
   echo "Running reconstruction  ..."
 
   cd $OUTDIR
   
-  aliroot -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\"\) >& $OUTDIR/testReco.out
+  aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\"\) >& $OUTDIR/testReco.out
 
 fi
 
@@ -169,7 +169,7 @@ EOF
   echo "Running dumps for selected event ($DUMPEVENT) ..."
 
   if [ -f "$OUTDIR/$SIMDIR/galice.root" ]; then
-    aliroot -b  << EOF
+    aliroot -l -b  << EOF
     AliCDBManager* man = AliCDBManager::Instance();
     man->SetDefaultStorage("local://$ALICE_ROOT");
     AliMUONMCDataInterface mcdSim("$OUTDIR/$SIMDIR/galice.root");
@@ -185,7 +185,7 @@ EOF
   fi
 
   if [ -f "$OUTDIR/galice.root" ]; then
-    aliroot -b << EOF
+    aliroot -l -b << EOF
     AliCDBManager* man = AliCDBManager::Instance();
     man->SetDefaultStorage("local://$ALICE_ROOT");
     AliMUONDataInterface dRec("$OUTDIR/galice.root");
