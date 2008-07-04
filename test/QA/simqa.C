@@ -8,8 +8,9 @@ void simqa()
 	man->SetDefaultStorage("local://$ALICE_ROOT");
 	TString detectors("ITS TPC TRD TOF PHOS HMPID EMCAL MUON FMD PMD ZDC T0 VZERO"); 
 	
-	AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
-	AliQA::SetQARefDataDirName("Sim") ; //Data, Pedestals, BlackEvent, .....
+	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
+	AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
   
 
 	AliQADataMakerSteer qas ; 

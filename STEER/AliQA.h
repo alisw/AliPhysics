@@ -24,7 +24,14 @@ public:
     kNULLTASK=-1, kRAW, kSIM, kREC, kESD, kANA, kNTASK };
 	enum QABIT_t {
     kNULLBit=-1, kINFO, kWARNING, kERROR, kFATAL, kNBIT };
-  
+    enum RUNTYPE_t {
+		kNULLTYPE=-1, kAUTO_TEST, kCALIBRATION, kCALIBRATION_PULSER, kCHANNEL_DELAY_TUNING, kCOSMIC, kCOSMICS, kDAQ_FO_UNIF_SCAN, 
+		kDAQ_GEN_DAC_SCAN, kDAQ_MEAN_TH_SCAN, kDAQ_MIN_TH_SCAN, kDAQ_NOISY_PIX_SCAN, kDAQ_PIX_DELAY_SCAN, kDAQ_UNIFORMITY_SCAN, 
+		kDCS_FO_UNIF_SCAN, kDCS_MEAN_TH_SCAN, kDCS_MIN_TH_SCAN, kDCS_PIX_DELAY_SCAN, kDCS_UNIFORMITY_SCAN, kDDL_TEST, kGAIN, 
+		kPEDESTAL, kINJECTOR,  kLASER, kMONTECARLO, kNOISE, kNOISY_PIX_SCAN,  kPHYSICS, kPULSER, kSTANDALONE, kSTANDALONE_BC, 
+		kSTANDALONE_CENTRAL, kSTANDALONE_COSMIC, kSTANDALONE_EMD, kSTANDALONE_LASER, kSTANDALONE_MB, kSTANDALONE_PEDESTAL, 
+		kSTANDALONE_SEMICENTRAL, kSTANDALONE_PULSER, kNTYPE};
+	
 	enum TASKINDEX_t {
     kRAWS, kHITS, kSDIGITS, kDIGITS, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
   
@@ -62,12 +69,13 @@ public:
 	static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }
 	static const char  *   GetRefOCDBDirName() { return fkgRefOCDBDirName.Data() ; }
 	static const char  *   GetRefDataDirName() { return fkgRefDataDirName.Data() ; }
+	static const TString   GetRunTypeName(RUNTYPE_t rt = kNULLTYPE) ;
 	static const TString   GetTaskName(TASKINDEX_t tsk) { return fgTaskNames[tsk] ; }
 	const Bool_t           IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
 	void                   Set(QABIT_t bit) ;
 	static void			   SetQAResultDirName(const char * name) ; 
 	static void            SetQARefStorage(const char * name) ; 
-	static void            SetQARefDataDirName( const char * name) { fkgRefDataDirName = name ; }
+	static void            SetQARefDataDirName(RUNTYPE_t rt) { fkgRefDataDirName = GetRunTypeName(rt) ; }
     void                   Show() const { ShowStatus(fDet) ; }
 	void                   ShowAll() const ;
 	void                   UnSet(QABIT_t bit) ;
@@ -104,6 +112,7 @@ private:
 	static TFile *       fgQAResultFile     ; //! File where to find the QA result
 	static TString       fgQAResultDirName  ; //! the location of the output file where the QA results are stored  
 	static TString       fgQAResultFileName ; //! the output file where the QA results are stored  
+	static TString       fgRTNames[]	    ; //! list of Run Type names   
 	static TString       fgTaskNames[]	    ; //! list of tasks names   
 	static const TString fkgLabLocalFile    ; //! label to identify a file as local 
 	static const TString fkgLabLocalOCDB    ; //! label to identify a file as local OCDB 

@@ -27,8 +27,9 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 {	
 	char kDefaultOCDBStorage[120] ; 
 	sprintf(kDefaultOCDBStorage, "alien://folder=/alice/data/20%s/LHC%sa/OCDB/", year, year) ; 
-	AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
-	AliQA::SetQARefDataDirName("Data") ; //Data, Pedestals, BlackEvent, ..... 
+	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
+	AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
 	
 	UInt_t maxEvents = 99999 ;
 	if ( maxFiles < 0 ) {

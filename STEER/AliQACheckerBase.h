@@ -43,7 +43,7 @@ protected:
   const Double_t DiffC(const TH1 * href, const TH1 * hin) const ;   
   const Double_t DiffK(const TH1 * href, const TH1 * hin) const ;   
   void           Finish() const ; 
-  virtual void   SetQA(AliQA::ALITASK_t index, const Double_t value) const ;	
+  virtual void   SetQA(AliQA::ALITASK_t index, Double_t value) const ;	
 
   TDirectory  * fDataSubDir    ; //! directory for the current task directory in the current detector directory in the data file
   TDirectory  * fRefSubDir     ; //! directory for the current task directory in the current detector directory in the reference file

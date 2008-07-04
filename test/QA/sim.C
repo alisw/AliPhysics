@@ -10,8 +10,9 @@ void sim(Int_t nev=1) {
   simu.SetSpecificStorage("EMCAL/*","local://DB");
 
   simu.SetRunQA("ALL:ALL") ; 
-  AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
-  AliQA::SetQARefDataDirName("Sim") ; //Data, Pedestals, BlackEvent, .....
+ // AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
+  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
 
   TStopwatch timer;
   timer.Start();

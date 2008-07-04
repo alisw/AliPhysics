@@ -158,8 +158,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
 			man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
 			man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
 		}
-		char detOCDBDir[20] ; 
-		sprintf(detOCDBDir, "%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+		char * detOCDBDir = Form("%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
 		AliCDBEntry * entry = man->Get(detOCDBDir, man->GetRun()) ;
 		if (entry) {
 			TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
