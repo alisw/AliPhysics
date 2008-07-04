@@ -961,12 +961,12 @@ Bool_t AliReconstruction::InitRun(const char* input)
   //QA
   if (fRunQA && fRawReader && fQATasks.Contains(Form("%d", AliQA::kRAWS))) { 
 		AliQADataMakerSteer qas ; 
-		qas.Run(fRunLocalReconstruction, fRawReader) ; 
+		qas.Run(fQADetectors, fRawReader) ; 
 		fSameQACycle = kTRUE ; 
   }
   //Initialize the QA and start of cycle for out-of-cycle QA
   if (fRunQA) {
-	  TString detStr(fQADetectors) ; 
+			TString detStr(fQADetectors) ; 
       for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
          if (!IsSelected(fgkDetectorName[iDet], detStr)) 
 			 continue;
