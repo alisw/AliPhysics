@@ -51,9 +51,9 @@ public:
   
   void OpenRecentSource();
 
-  void StartRunning(AliMUONPainterDataSourceItem* item);
+  void StartRunning();
 
-  void StopRunning(AliMUONPainterDataSourceItem* item);
+  void StopRunning();
 
 private:
   /// Not implemented

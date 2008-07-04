@@ -594,12 +594,12 @@ AliMUONPainterDataSourceFrame::DataMakerWasRegistered(AliMUONVTrackerDataMaker* 
   item->Connect("StartRunning()",
                 "AliMUONPainterDataSourceFrame",
                 this,
-                Form("StartRunning(=(AliMUONPainterDataSourceItem*)(0x%x))",item));
+                "StartRunning()");
 
   item->Connect("StopRunning()",
                 "AliMUONPainterDataSourceFrame",
                 this,
-                Form("StopRunning(=(AliMUONPainterDataSourceItem*)(0x%x))",item));
+                "StopRunning()");
   
   fDataReaders->AddFrame(item);
   
@@ -729,9 +729,14 @@ AliMUONPainterDataSourceFrame::OpenRecentSource()
 
 //_____________________________________________________________________________
 void
-AliMUONPainterDataSourceFrame::StartRunning(AliMUONPainterDataSourceItem* item)
+AliMUONPainterDataSourceFrame::StartRunning()
 {
   /// One data source starts running. Disable the Run button of the other ones
+  
+  AliMUONPainterDataSourceItem* item = reinterpret_cast<AliMUONPainterDataSourceItem*> (gTQSender);
+  
+  AliInfo("");
+  
   TIter next(fItems);
   AliMUONPainterDataSourceItem* o;
   while ( ( o = static_cast<AliMUONPainterDataSourceItem*>(next()) ) )
@@ -745,9 +750,10 @@ AliMUONPainterDataSourceFrame::StartRunning(AliMUONPainterDataSourceItem* item)
 
 //_____________________________________________________________________________
 void
-AliMUONPainterDataSourceFrame::StopRunning(AliMUONPainterDataSourceItem* /*item*/)
+AliMUONPainterDataSourceFrame::StopRunning()
 {
   /// One data source stops running. Enable the Run button of all items
+  
   TIter next(fItems);
   AliMUONPainterDataSourceItem* o;
   while ( ( o = static_cast<AliMUONPainterDataSourceItem*>(next()) ) )
