@@ -112,6 +112,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
     fRadioTPC(0),
     fRadioSideA(0),
     fRadioSideC(0),
+    fRadioROC(0),
     fRadioSector(0),
     fComboAddDrawOpt(0),
     fChkAuto(0),
@@ -635,11 +636,17 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
          fRadioSideC->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts()");
          fRadioSideC->SetToolTipText("Use only side C.");
       
-         // sector radio button
-         fRadioSector = new TGRadioButton(fContCuts, "ROC", 23);
+         // roc radio button
+         fRadioROC = new TGRadioButton(fContCuts, "ROC", 23);
+         fContCuts->AddFrame(fRadioROC, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+         fRadioROC->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts()");
+         fRadioROC->SetToolTipText("Use only one ROC (readout chamber).");
+
+	 // sector radio button
+         fRadioSector = new TGRadioButton(fContCuts, "Sector", 24);
          fContCuts->AddFrame(fRadioSector, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          fRadioSector->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts()");
-         fRadioSector->SetToolTipText("Use only one ROC (readout chamber).");
+         fRadioSector->SetToolTipText("Use only one Sector (0-17 A-Side, 18-35 C-Side).");
       
          // sector options container
          fContSector = new TGCompositeFrame(fContCuts, 200, 200, kHorizontalFrame | kFitWidth | kFitHeight);
@@ -1095,6 +1102,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
     fRadioTPC(0),
     fRadioSideA(0),
     fRadioSideC(0),
+    fRadioROC(0),
     fRadioSector(0),
     fComboAddDrawOpt(0),
     fChkAuto(0),
@@ -1435,22 +1443,32 @@ void AliTPCCalibViewerGUI::HandleButtonsCuts(Int_t id) {
       case 20:             // fRadioTPC
          fRadioSideA->SetState(kButtonUp);
          fRadioSideC->SetState(kButtonUp);
+         fRadioROC->SetState(kButtonUp);
          fRadioSector->SetState(kButtonUp);
          break;
       case 21:             // fRadioSideA
          fRadioTPC->SetState(kButtonUp);
          fRadioSideC->SetState(kButtonUp);
+         fRadioROC->SetState(kButtonUp);
          fRadioSector->SetState(kButtonUp);
          break;
       case 22:             // fRadioSideC
          fRadioTPC->SetState(kButtonUp);
          fRadioSideA->SetState(kButtonUp);
+         fRadioROC->SetState(kButtonUp);
          fRadioSector->SetState(kButtonUp);
          break;
-      case 23:             // fRadioSector
+      case 23:             // fRadioROC
          fRadioTPC->SetState(kButtonUp);
          fRadioSideA->SetState(kButtonUp);
          fRadioSideC->SetState(kButtonUp);
+         fRadioSector->SetState(kButtonUp);
+         break;
+      case 24:             // fRadioSector
+         fRadioTPC->SetState(kButtonUp);
+         fRadioSideA->SetState(kButtonUp);
+         fRadioSideC->SetState(kButtonUp);
+         fRadioROC->SetState(kButtonUp);
          break;
       case 31:            // fComboAddCuts
          fChkAddCuts->SetState(kButtonDown);
@@ -1535,9 +1553,14 @@ TString* AliTPCCalibViewerGUI::GetDrawString() {
             cutStr += "(sector/18)%2==0"; // side A
          if (fRadioSideC->GetState() == kButtonDown)
             cutStr+= "(sector/18)%2==1"; // side C
-         if (fRadioSector->GetState() == kButtonDown) {
+         if (fRadioROC->GetState() == kButtonDown) {
             Int_t sector = (Int_t)(fNmbSector->GetNumber());
             cutStr += "sector==";
+            cutStr += sector; 
+         }
+         if (fRadioSector->GetState() == kButtonDown) {
+            Int_t sector = ((Int_t)(fNmbSector->GetNumber()))%36;
+            cutStr += "sector%36==";
             cutStr += sector; 
          }
          if (fChkAddCuts->GetState() == kButtonDown && strcmp(fComboAddCuts->GetTextEntry()->GetText(), "") != 0){
@@ -1589,9 +1612,14 @@ TString* AliTPCCalibViewerGUI::GetSectorString() {
       sectorStr += "A"; //cuts += "(sector/18)%2==0";
    if (fRadioSideC->GetState() == kButtonDown)
       sectorStr+= "C"; //cuts += "(sector/18)%2==1";
-   if (fRadioSector->GetState() == kButtonDown) {
+   if (fRadioROC->GetState() == kButtonDown) {
       Int_t sector = (Int_t)(fNmbSector->GetNumber());
       sectorStr += sector; //cuts += "sector==";
+   }
+   if (fRadioSector->GetState() == kButtonDown) {
+      Int_t sector = ((Int_t)(fNmbSector->GetNumber()))%36;
+      sectorStr += "S";
+      sectorStr += sector; //cuts += "sector%36==";
    }
    return new TString(sectorStr.Data());
 }   
@@ -1706,9 +1734,14 @@ void AliTPCCalibViewerGUI::DoFit() {
       cutStr += "(sector/18)%2==0"; // side A
    if (fRadioSideC->GetState() == kButtonDown)
       cutStr+= "(sector/18)%2==1"; // side C
-   if (fRadioSector->GetState() == kButtonDown) {
+   if (fRadioROC->GetState() == kButtonDown) {
       Int_t sector = (Int_t)(fNmbSector->GetNumber());
       cutStr += "sector==";
+      cutStr += sector; 
+   }
+   if (fRadioSector->GetState() == kButtonDown) {
+      Int_t sector = (Int_t)(fNmbSector->GetNumber())%36;
+      cutStr += "sector%36==";
       cutStr += sector; 
    }
    if (fChkAddCuts->GetState() == kButtonDown && strcmp(fComboAddCuts->GetTextEntry()->GetText(), "") != 0){
@@ -1894,15 +1927,22 @@ void AliTPCCalibViewerGUI::ChangeSector(){
    // to change the sector label
    // 
    Int_t sector = (Int_t)(fNmbSector->GetNumber());
-   char* secLabel = "";
-   if (sector >= 0 && sector <= 17) // IROC, Side A
-      secLabel = "IROC, A";
-   if (sector >= 18 && sector <= 35) // IROC, Side C
-      secLabel = "IROC, C";
-   if (sector >= 36 && sector <= 53) // OROC, Side A
-      secLabel = "OROC, A";
-   if (sector >= 54 && sector <= 71) // OROC, Side C
-      secLabel = "OROC, C";
+   TString secLabel = "";
+   if ( sector < 36 )
+       secLabel = "IROC";
+   else
+       secLabel = "OROC";
+
+   if (fRadioSector->GetState()==kButtonDown)
+       secLabel="Sector";
+
+   if ( sector%36<18 ) //A-Side
+       secLabel += ", A";
+   else
+       secLabel += ", C";
+
+   secLabel += Form("%02d",sector%18);
+
    fLblSector->SetText(secLabel);
    DoNewSelection();
 }
@@ -1949,7 +1989,7 @@ void AliTPCCalibViewerGUI::MouseMove(Int_t event, Int_t x, Int_t y, TObject *sel
    if (!selectedObject->InheritsFrom("TH2")) return;
    // zoom to sector works ONLY in 2D mode, if one side is specified
    if (fRadio2D->GetState() == kButtonUp) return;
-   if (fRadioSector->GetState() == kButtonDown) { // return to full side view
+   if (fRadioROC->GetState() == kButtonDown) { // return to full side view
       // return to full side view
       Int_t sector = (Int_t)(fNmbSector->GetNumber());
       if ( (sector >= 0 && sector <= 17) || (sector >= 36 &&  sector <= 53) ) {
@@ -2001,8 +2041,8 @@ void AliTPCCalibViewerGUI::MouseMove(Int_t event, Int_t x, Int_t y, TObject *sel
    }
    // printf("r: %f, phi: %f, phiGrad: %f, gy/gx: %f, quadrant: %i, sector: %i \n", r, phi, phiGrad, gy/gx, quadrant, sector);
    fNmbSector->SetNumber(sector);
-   fRadioSector->Clicked();
-   fRadioSector->SetState(kButtonDown);
+   fRadioROC->Clicked();
+   fRadioROC->SetState(kButtonDown);
    ChangeSector();   
 }
 

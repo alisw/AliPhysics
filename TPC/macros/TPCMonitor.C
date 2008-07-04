@@ -6,6 +6,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "iostream"
+
+#include "TGFrame.h"
+#include "TGButton.h"
+#include "TGTextEntry.h"
+#include "TGLabel.h"
+#include "TGFileDialog.h"
+#include "TGClient.h"
+#include "TGApplication.h"
+#include "TSystem.h"
+#include "TStyle.h"
+#include "TDirectory.h"
+#include "TFileMerger.h"
+
+#include "AliTPCMonitor.h"
+#include "AliTPCMonitorMappingHandler.h"
+//#include "AliTPCMonitorEditor.h"
+#include "AliTPCMonitorDialog.h"
+
+using namespace std;
+
 
 static    AliTPCMonitor*               fMon               = 0;
 static    AliTPCMonitorMappingHandler* fMapHand           = 0;
@@ -25,22 +46,23 @@ void      WriteChannel();
 void      WriteHistos();  
 void      SetConfig();
 void      DisableFit();
-void      ProcessSector(char* fdata,char* ffil, Int_t side, Int_t sector);
-Int_t     DrawFit();
-Int_t     DrawRMS();
+//void      ProcessSector(char* fdata,char* ffil, Int_t side, Int_t sector);
+void      ProcessSector(Int_t sid, Int_t sector);
+//Int_t     DrawFit();
+Int_t     DrawRMSMap();
 void      ShowSelected();
-void      SetSize() ;
+//void      SetSize() ;
 void      ResizeCanv();
 void      ReadMe();
 void      OpenDir();
 void      SetWrite10Bit();
 void      SetCheckVerb();
 void      SetProcOne();
-void      SetPedstalRun(Int_t val);
+void      SetPedestalRun(Int_t val);
 void      InitDialog(Int_t id);
-void      Resize(Int_t update,Int_t doit , Int_t side);
+//void      Resize(Int_t update,Int_t doit , Int_t side);
 void      MonitorGui(AliTPCMonitor* fMon);
- 
+void      SetStyle();
  
 
 //_________________________________________________________________________
@@ -73,7 +95,7 @@ void TPCMonitor()
 }
 
 //_________________________________________________________________________
-void MonitorGui(fMon)
+void MonitorGui(AliTPCMonitor *fMon)
 {
   // Display the main Window 
 
@@ -143,24 +165,24 @@ void MonitorGui(fMon)
   fFrameMain->AddFrame(fFrameSelFil    , fLayout);
   fFrameMain->AddFrame(fFrameSelForm   , fLayout);
   fFrameMain->AddFrame(fFrameFFT       , fLayout);
-  Int_t step = ysize/2;
+//  Int_t step = (Int_t)(ysize/2.);
   Int_t start = 5; 
   
-  fFrameSelForm->MoveResize(     10, start+ 1.0*ysize        ,mainx-20  ,ysize);
-  fFrameSelFil->MoveResize(      10, start+ 2.0*ysize        ,mainx-20  ,ysize);
+  fFrameSelForm->MoveResize(     10, (Int_t)(start+ 1.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameSelFil->MoveResize(      10, (Int_t)(start+ 2.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
  
-  fFrameSetConf->MoveResize(     10, start+ 4.5*ysize        ,mainx-20  ,ysize);
+  fFrameSetConf->MoveResize(     10, (Int_t)(start+ 4.5*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
  
-  fFrameCalcBSL->MoveResize(     10, start+   6*ysize        ,mainx-20  ,ysize);
-  fFrameCheckPed->MoveResize(    10, start+   7*ysize        ,mainx-20  ,ysize);
-  fFrameChDisFit->MoveResize(    10, start+   8*ysize        ,mainx-20  ,ysize);
-  fFrameCh10bit->MoveResize(     10, start+   9*ysize        ,mainx-20  ,ysize);
-  fFrameCheckVerb->MoveResize(   10, start+  10*ysize        ,mainx-20  ,ysize);
+  fFrameCalcBSL->MoveResize(     10, (Int_t)(start+   6*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameCheckPed->MoveResize(    10, (Int_t)(start+   7*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameChDisFit->MoveResize(    10, (Int_t)(start+   8*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameCh10bit->MoveResize(     10, (Int_t)(start+   9*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameCheckVerb->MoveResize(   10, (Int_t)(start+  10*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
   
   
   yfirst = start+ 14*ysize;
-  fFrameSideA->MoveResize(  xfirst1, yfirst-30               ,xsize     ,ysize);
-  fFrameSideB->MoveResize(  xfirst2, yfirst-30               ,xsize     ,ysize);
+  fFrameSideA->MoveResize(  (Int_t)xfirst1, (Int_t)yfirst-30               ,(UInt_t)xsize     ,(UInt_t)ysize);
+  fFrameSideB->MoveResize(  (Int_t)xfirst2, (Int_t)yfirst-30               ,(UInt_t)xsize     ,(UInt_t)ysize);
   
   // sector buttons 
   TObjArray     * fFrameArr   = new TObjArray();
@@ -174,8 +196,8 @@ void MonitorGui(fMon)
       else    sprintf(nameb,"Sector %i",i-18);
       fTextButton = new TGTextButton(fFrameMain,nameb);
       fFrameMain->AddFrame(fTextButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,5,5,5,5));
-      if(i<18)fTextButton->MoveResize(xfirst1,yfirst     +i*ysize,xsize,ysize);
-      else    fTextButton->MoveResize(xfirst2,yfirst+(i-18)*ysize,xsize,ysize);
+      if(i<18)fTextButton->MoveResize((Int_t)xfirst1,(Int_t)(yfirst     +i*ysize),(UInt_t)xsize,(UInt_t)ysize);
+      else    fTextButton->MoveResize((Int_t)xfirst2,(Int_t)(yfirst+(i-18)*ysize),(UInt_t)xsize,(UInt_t)ysize);
       if(i<18){ side = 0; sector = i;   }
       else    { side = 1; sector = i-18;}
       char bef[50]; sprintf(bef,"ProcessSector(%i,%i)",side,sector);
@@ -188,29 +210,29 @@ void MonitorGui(fMon)
   fTextEvId = new TGTextEntry(fFrameMain, ftbuf);
   fTextEvId->SetTextColor(200);
   
-  fFramesel->MoveResize(         10         , mainy- 15.0*ysize   ,mainx-20  ,ysize); 
-  fFrameRMS->MoveResize(         10         , mainy- 14.0*ysize   ,mainx-20  ,ysize);
+  fFramesel->MoveResize(         10         , (Int_t)(mainy- 15.0*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
+  fFrameRMS->MoveResize(         10         , (Int_t)(mainy- 14.0*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
 
-  fFrameFFT->MoveResize(         10         , mainy- 12.0*ysize   ,mainx-20  ,ysize);
-  fFramewrite->MoveResize(       10         , mainy- 11.0*ysize   ,mainx-20  ,ysize);
+  fFrameFFT->MoveResize(         10         , (Int_t)(mainy- 12.0*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
+  fFramewrite->MoveResize(       10         , (Int_t)(mainy- 11.0*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
  
-  fFrameWRITE->MoveResize(       10         , mainy-  9.0*ysize   ,mainx-20  ,ysize);
-  fFrameres->MoveResize(         10         , mainy-  8.0*ysize   ,mainx-20  ,ysize); 
+  fFrameWRITE->MoveResize(       10         , (Int_t)(mainy-  9.0*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
+  fFrameres->MoveResize(         10         , (Int_t)(mainy-  8.0*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
   
 
-  fFrameCheckProcOne->MoveResize(10         , mainy-  6.5*ysize   ,mainx-20  ,ysize);
+  fFrameCheckProcOne->MoveResize(10         , (Int_t)(mainy-  6.5*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
   
-  flab->MoveResize(             10          , mainy-  5.0*ysize   ,xsize+5   ,ysize);
-  fTextEvId->MoveResize(      mainx/2 +10   , mainy-  5.0*ysize   ,xsize-10  ,ysize);
+  flab->MoveResize(             10          , (Int_t)(mainy-  5.0*ysize)   ,(UInt_t)xsize+5   ,(UInt_t)ysize);
+  fTextEvId->MoveResize(      (Int_t)(mainx/2 +10)   , (Int_t)(mainy-  5.0*ysize)   ,(UInt_t)xsize-10  ,(UInt_t)ysize);
   
-  fFrameNextEvent->MoveResize(   10         , mainy-  3.5*ysize   ,mainx-20  ,ysize);
+  fFrameNextEvent->MoveResize(   10         , (Int_t)(mainy-  3.5*ysize)   ,(UInt_t)mainx-20  ,(UInt_t)ysize);
 
-  fFrameQuit->MoveResize(        30         , mainy-  1.5*ysize   ,mainx-60  ,ysize);
+  fFrameQuit->MoveResize(        30         , (Int_t)(mainy-  1.5*ysize)   ,(UInt_t)mainx-60  ,(UInt_t)ysize);
   
   fFrameMain->MapSubwindows();
   fFrameMain->MapWindow();
   fFrameMain->SetWindowName("OM");
-  fFrameMain->MoveResize(0,0,mainx,mainy);
+  fFrameMain->MoveResize(0,0,(UInt_t)mainx,(UInt_t)mainy);
 }  
 
 //_________________________________________________________________________
@@ -299,6 +321,7 @@ Int_t DrawRMSMap()
   // Draw RMS map for IROC and OROC
   if(fMon->GetLastSector()==-1) cout << " no sector written yet " << endl;
   else fMon->DrawRMSMap();
+  return 0;
 }
 
 //_________________________________________________________________________
@@ -329,7 +352,7 @@ void OpenDir()
   if(fVerb) printf("fIniDir = %s\n", fi->fIniDir);
   
   new TGFileDialog(gClient->GetRoot(), fFrameMain, kFDOpen, fi);
-  if(!fi->fFilename)            break;
+  if(!fi->fFilename)            return;
   if(!strcmp(fi->fFilename,"")) return;
   string fname(fi->fFilename);
   Int_t    ffirst   = fname.find_first_not_of("/",0);
@@ -343,7 +366,7 @@ void OpenDir()
   if(fstart <0){ cout << " return : missing slash at beginning of file " << endl ; return ;}
   
   string fsubname =  fname.substr(fstart,fname.length()-fstart);
-  fMon->SetFile(fsubname.data());
+  fMon->SetFile((Char_t *)fsubname.data());
 
   if(fVerb) 
     {
@@ -356,7 +379,7 @@ void OpenDir()
 //_________________________________________________________________________
 void InitDialog(Int_t id)
 {
-  if(id>0&&id<4)  new AliTPCMonitorDialog(gClient->GetRoot(), fFrameMain, 400, 400,0,id,fMon);
+  if(id>0&&id<4)  new AliTPCMonitorDialog((TGWindow*)gClient->GetRoot(), fFrameMain, 400, 400,0,id,fMon);
   else cout << "Error : Invalid Id " << endl;
   return;
 }
@@ -411,10 +434,10 @@ void SetStyle()
 //_________________________________________________________________________
 void ReadMe()
 {
-  AliTPCMonitorEditor *ed = new AliTPCMonitorEditor(fFrameMain, 700, 400);
-  char nameread[256]; sprintf(nameread,"%s/TPC/AliTPCMonitorReadMe.txt",gSystem->Getenv("ALICE_ROOT"));
-  ed->LoadFile(nameread);
-  ed->Popup();
+//  AliTPCMonitorEditor *ed = new AliTPCMonitorEditor(fFrameMain, 700, 400);
+//  char nameread[256]; sprintf(nameread,"%s/TPC/AliTPCMonitorReadMe.txt",gSystem->Getenv("ALICE_ROOT"));
+//  ed->LoadFile(nameread);
+//  ed->Popup();
 }
 
 //_________________________________________________________________________

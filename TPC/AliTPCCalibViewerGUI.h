@@ -134,6 +134,7 @@ protected:
    TGRadioButton       *fRadioTPC;           // TPC radio button
    TGRadioButton       *fRadioSideA;         // side A radio button
    TGRadioButton       *fRadioSideC;         // side C radio button
+   TGRadioButton       *fRadioROC;           // ROC radio button
    TGRadioButton       *fRadioSector;        // sector radio button
    TGComboBox          *fComboAddDrawOpt;    // additional draw options combo box
    TGCheckButton       *fChkAuto;            // automatic redraw checkbox

@@ -332,9 +332,12 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
    //TString drawOptionsStr("profcolz ");
    Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
    if (dangerousToDraw) {
-      Warning("EasyDraw", "The draw string must not contain ':' or '>>'.");
-      return -1;
+      Warning("EasyDraw", "The draw string must not contain ':' or '>>'. Using only first variable for drawing!");
+//      return -1;
+//      drawStr.Resize(drawStr.First(">"));
+      drawStr.Resize(drawStr.First(":"));
    }
+
    TString drawOptionsStr("");
    TRandom rnd(0);
    Int_t rndNumber = rnd.Integer(10000);
@@ -360,6 +363,14 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
       drawStr += Form(":gy%s:gx%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
       drawStr += "(330,-250,250,330,-250,250)";
+   }
+   else if  (sectorStr.Contains("S")) {
+      drawStr += Form(":rpad%s:row%s+(sector>35)*63>>prof", fAppendString.Data(), fAppendString.Data());
+      drawStr += rndNumber;
+      drawStr += "(159,0,159,140,-70,70)";
+      TString sec=sectorStr;
+      sec.Remove(0,1);
+      cutStr += "sector%36=="+sec+" ";
    }
    else if (sectorStr.IsDigit()) {
       Int_t isec = sectorStr.Atoi();
@@ -447,6 +458,11 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector,
       cutStr += "(sector==";
       cutStr += isec;
       cutStr += ") ";
+   }
+   else if  (sectorStr.Contains("S")) {
+      TString sec=sectorStr;
+      sec.Remove(0,1);
+      cutStr += "sector%36=="+sec+" ";
    }
 
    if (cuts && cuts[0] != 0) {

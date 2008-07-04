@@ -927,11 +927,11 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
       
       if(fPadMapHw[nextHwAddress]!=-1 ) 
       {
-          return;
 	  //Int_t hw_before1 = fPad[fChannelIter-2][0];
 	  //Int_t hw_before2 = fPad[fChannelIter-3][0];
 	  
 	  if(fVerb){ cout  <<"\n //// Ambiguous hwaddress "   << nextHwAddress << "  write 10bit files and check file for eqid : "  << fEqId << " /////// " << endl;}
+          return;
 	  
 	  if( TMath::Abs(fPadMapRCU[nextHwAddress][4] - fChannelIter)==1) 
 	    {
@@ -1253,6 +1253,8 @@ void AliTPCMonitor::FillGlobal(Int_t sector)
 	  pad    = fMapHand->GetPad(   hw);
 	  row    = fMapHand->GetPadRow(hw);
 	  padmax = fMapHand->GetNumofPads(row);
+	  if (sector%36>17) fMirror=-1;
+          else fMirror=1;
 	  GetXY(xval ,yval , padmax,row ,pad);
 	  xdr    =  xval*m11 +yval*m12;
 	  ydr    =  xval*m21 +yval*m22;
