@@ -253,6 +253,7 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk)
 				Double_t eta1 = (*fY)(0,iClust1); Double_t phi1 = (*fY)(1,iClust1);
 				Double_t distCl=(TMath::CosH(eta-eta1)-TMath::Cos(phi-phi1))/(2*TMath::CosH(eta)*TMath::CosH(eta1));
 				if (distCl < fAvDist) iSame[iClust][iClust1]=iSame[iClust1][iClust]=1;
+				else iSame[iClust][iClust1]=iSame[iClust1][iClust]=0;
 			}
 		}
 		ReduceClusters(iSame,nk,nc,cont,nSame);
@@ -270,6 +271,10 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk)
 			}
 			for (Int_t i=0; i<2; i++) (*y1)(i,iClust)/=nSame[iClust];
 		}
+		for (Int_t iClust=0; iClust<nk; iClust++) delete [] cont[iClust], delete [] iSame[iClust];
+		delete [] iSame;
+		delete [] cont;
+		delete [] nSame;
 		if (nc > nk/2){
 			for (Int_t iClust=0; iClust<nc; iClust++){
 				for (Int_t iIn=0; iIn<fNin; iIn++) (*fPyx)(iIn,iClust)=(*pyx)(iIn,iClust);
@@ -279,9 +284,6 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk)
 			nk=nc;
 			if (growcl) DoubleClusters(nc,nk);
 		}
-		delete [] nSame;
-		delete [] iSame;
-		delete [] cont;
 		delete pyx;
 		delete py;
 		delete y1;
@@ -297,7 +299,7 @@ void AliDAJetFinder::ReduceClusters(Int_t **iSame,Int_t nc,Int_t &ncout,Int_t **
 	Int_t *go = new Int_t[nc];
 	for (Int_t iCl=0; iCl<nc; iCl++){
 		nSame[iCl]=0;
-		for (Int_t jCl=0; jCl<nc; jCl++) nSame[iCl]+=iSame[iCl][jCl];
+		for (Int_t jCl=0; jCl<nc; jCl++) nSame[iCl]+=iSame[iCl][jCl], cont[iCl][jCl]=0;
 		iperm[iCl]=iCl;
 		go[iCl]=1;
 	}
