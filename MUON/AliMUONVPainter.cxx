@@ -933,7 +933,6 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
   {
     TList* l = p->IsA()->GetMenuList();
   
-//    l->Clear();
     l->Delete();
   
     TClassMenuItem* n(0x0);
@@ -945,21 +944,22 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
     
     if ( group )  
     {
-      Int_t dim = group->Data()->InternalToExternal(group->DataIndex());
-      if ( dim < group->Data()->ExternalDimension() )
-      {      
-        if ( data && data->IsHistogrammed(dim) ) 
-        {
-          // Add histo drawing to the popup menu
-          n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
-                                                 "Draw histogram","DrawHistogram0",p,"",-1,kTRUE);
-          l->Add(n);
-          
-          n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
-                                 "Draw histogram clone","DrawHistogramClone0",p,"",-1,kTRUE);
-          l->Add(n);
-        }
+      if ( data && data->IsHistogrammed(0) ) 
+      {
+        // Add histo drawing to the popup menu
+        TString name("Draw histogram of ");
         
+        name += data->ExternalDimensionName(0);
+        
+        n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                               name.Data(),"DrawHistogram0",p,"",-1,kTRUE);
+        l->Add(n);
+        
+        name += " clone";
+        
+        n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                               name.Data(),"DrawHistogramClone0",p,"",-1,kTRUE);
+        l->Add(n);
       }
       
       Int_t nd = data->IsSingleEvent() ? data->ExternalDimension() : data->ExternalDimension()*2;

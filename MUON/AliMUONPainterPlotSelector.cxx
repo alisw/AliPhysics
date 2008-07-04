@@ -585,6 +585,13 @@ AliMUONPainterPlotSelector::UpdateTypeButton()
 		{ 
 			padButton->SetEnabled(fCurrentData->IsChannelLevelEnabled());
 		}
+		TGTextButton* manuButton = static_cast<TGTextButton*>
+		(AliMUONPainterInterfaceHelper::FindButtonByName(*fTypes,"MANU"));
+		if (manuButton) 
+		{ 
+			manuButton->SetEnabled(fCurrentData->IsManuLevelEnabled());
+		}
+    
 	}
 	
   TGTextButton* button = static_cast<TGTextButton*>

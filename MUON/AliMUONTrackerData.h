@@ -92,6 +92,12 @@ public:
   
   virtual void HistogramRange(Double_t& xmin, Double_t& xmax) const { xmin = fXmin; xmax = fXmax; }
 
+  AliMUONSparseHisto* GetManuSparseHisto(Int_t detElemId, Int_t manuId, 
+                                         Int_t dim=0);
+
+  AliMUONSparseHisto* GetManuSparseHisto(Int_t detElemId, Int_t manuId, 
+                                         Int_t dim=0) const;
+  
   AliMUONSparseHisto* GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
                                             Int_t manuChannel, Int_t dim=0);
   
@@ -104,10 +110,16 @@ public:
 	/// Whether we store values at the channel level or not
 	virtual Bool_t IsChannelLevelEnabled() const { return fIsChannelLevelEnabled; }
 
+  /// Disable storing values at the manu level
+	virtual void DisableManuLevel();
+	
+	/// Whether we store values at the manu level or not
+	virtual Bool_t IsManuLevelEnabled() const { return fIsManuLevelEnabled; }
+  
 private:
     
-  void FillChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel,
-                   Int_t dim, Double_t value);
+  void FillHisto(Int_t detElemId, Int_t manuId, Int_t manuChannel,
+                 Int_t dim, Double_t value);
 
   AliMUONVCalibParam* BusPatchParam(Int_t busPatch, Bool_t create=kFALSE) const;
 
@@ -191,14 +203,15 @@ private:
   Int_t fExternalDimension; ///< number of interface values per item 
   /// whether we should histogram the dimension(s)
   Int_t* fHistogramming; //[fExternalDimension] whether we should histogram the dimension(s)
-  AliMUONVStore* fChannelHistos; ///< the channel histograms
+  AliMUONVStore* fHistos; ///< the lowest histograms we have
   Double_t fXmin; ///< min x value for histograms
   Double_t fXmax; ///< max x value for histograms
   static const Int_t fgkExtraDimension; ///< to hold extra information
   static const Int_t fgkVirtualExtraDimension; ///< to give access to information not stored, but computed on the fly
   Bool_t fIsChannelLevelEnabled; //< whether we allow storing of channel (fChannelValues) values
+  Bool_t fIsManuLevelEnabled; //< whether we allow storing of manu (fManuValues) values
 	
-  ClassDef(AliMUONTrackerData,5) // Implementation of AliMUONVTrackerData
+  ClassDef(AliMUONTrackerData,6) // Implementation of AliMUONVTrackerData
 };
 
 #endif

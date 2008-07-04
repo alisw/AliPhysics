@@ -128,22 +128,40 @@ AliMUONTrackerDataHistogrammer::AddManuHisto(TH1& h, Int_t detElemId, Int_t manu
   
   if ( fData.HasManu(detElemId,manuId) )
   {
-    for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
+    if ( fData.IsChannelLevelEnabled() )
     {
-      if ( fData.HasChannel(detElemId,manuId,i) )
+      for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
       {
-        if ( IsInternalMode() ) 
+        if ( fData.HasChannel(detElemId,manuId,i) )
         {
-          h.Fill(fData.Channel(detElemId,manuId,i,fInternalDim));
-        }
-        else
-        {
-          AliMUONSparseHisto* sh = fData.GetChannelSparseHisto(detElemId,manuId,i);
-        
-          if ( sh ) 
-          {       
-            Add(h,*sh);
+          if ( IsInternalMode() ) 
+          {
+            h.Fill(fData.Channel(detElemId,manuId,i,fInternalDim));
           }
+          else
+          {
+            AliMUONSparseHisto* sh = fData.GetChannelSparseHisto(detElemId,manuId,i,fExternalDim);
+            
+            if ( sh ) 
+            {       
+              Add(h,*sh);
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      if ( IsInternalMode() ) 
+      {
+        h.Fill(fData.Manu(detElemId,manuId,fInternalDim));
+      }
+      else
+      {
+        AliMUONSparseHisto* sh = fData.GetManuSparseHisto(detElemId,manuId,fExternalDim);
+        if (sh)
+        {
+          Add(h,*sh);
         }
       }
     }
@@ -287,9 +305,12 @@ AliMUONTrackerDataHistogrammer::CreateHisto(const AliMUONVPainter& painter,
   }
   else
   {
-    AliErrorClass(Form("Could not create histo for painter %s external dim %d internal dim %d",
-                       painter.PathName().Data(),externalDim,internalDim));
+    AliErrorClass(Form("Could not create histo for painter %s (%p) data %s (%p) external dim %d internal dim %d",
+                       painter.PathName().Data(),&painter,
+                       data->GetName(),data,externalDim,internalDim));
   }
+  
+  if (histo) histo->SetDirectory(gROOT);
   
   return histo;
 }

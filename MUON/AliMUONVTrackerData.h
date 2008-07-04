@@ -137,6 +137,10 @@ public:
   virtual AliMUONSparseHisto* GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
                                                     Int_t manuChannel, Int_t dim=0) const = 0;
 
+  /// Get sparse histogram for a given manu (valid only if IsChannelLevelEnabled()==kFALSE and IsManuLevelEnabled()==kTRUE)
+  virtual AliMUONSparseHisto* GetManuSparseHisto(Int_t detElemId, Int_t manuId, 
+                                                 Int_t dim=0) const = 0;
+  
   /// To allow merging of different objects
   virtual Long64_t Merge(TCollection* list) = 0;
 
@@ -145,7 +149,13 @@ public:
 	
 	/// Whether we store values at the channel level
 	virtual Bool_t IsChannelLevelEnabled() const = 0;
+
+  /// Disable recording of information at the manu level (and below)
+	virtual void DisableManuLevel() = 0;
 	
+	/// Whether we store values at the channel level
+	virtual Bool_t IsManuLevelEnabled() const = 0;
+  
 private:
   /// not implemented
   AliMUONVTrackerData(const AliMUONVTrackerData& rhs);

@@ -72,10 +72,11 @@ fDimensionNames(new TObjArray(fDimension+fgkVirtualExtraDimension)),
 fExternalDimensionNames(new TObjArray(dimension)),
 fExternalDimension(dimension),
 fHistogramming(new Int_t[fExternalDimension]),
-fChannelHistos(0x0),
+fHistos(0x0),
 fXmin(0.0),
 fXmax(0.0),
-fIsChannelLevelEnabled(kTRUE)
+fIsChannelLevelEnabled(kTRUE),
+fIsManuLevelEnabled(kTRUE)
 {  
   /// ctor
   memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
@@ -100,7 +101,7 @@ AliMUONTrackerData::~AliMUONTrackerData()
   delete fDimensionNames;
   delete fExternalDimensionNames;
   delete[] fHistogramming;
-  delete fChannelHistos;
+  delete fHistos;
 }
 
 //_____________________________________________________________________________
@@ -162,7 +163,10 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
 		{
 			fChannelValues = new AliMUON2DMap(kTRUE);
 		}
-    fManuValues = new AliMUON2DMap(kTRUE);
+    if  ( fIsManuLevelEnabled ) 
+    {
+      fManuValues = new AliMUON2DMap(kTRUE);
+    }
     fPCBValues = new AliMUON2DMap(kFALSE);
     fBusPatchValues = new AliMUON1DMap(numberOfBusPatches);
     fDEValues = new AliMUON1DMap(numberOfDEs);
@@ -227,7 +231,7 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
           
           if ( IsHistogrammed(j) )
           {
-            FillChannel(detElemId,manuId,i,j,vext);
+            FillHisto(detElemId,manuId,i,j,vext);
           }
           
           for ( Int_t k = 0; k < nk; ++k ) 
@@ -239,7 +243,10 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
 							channel->SetValueAsDoubleFast(i,ix+k,channel->ValueAsDoubleFast(i,ix+k)-e+value[k]);
 						}
 						
-            manu->SetValueAsDoubleFast(0,ix+k,manu->ValueAsDoubleFast(0,ix+k)-e+value[k]);            
+            if (manu)
+            {
+              manu->SetValueAsDoubleFast(0,ix+k,manu->ValueAsDoubleFast(0,ix+k)-e+value[k]);            
+            }
             
             busPatch->SetValueAsDoubleFast(0,ix+k,busPatch->ValueAsDoubleFast(0,ix+k)-e+value[k]);
             
@@ -262,8 +269,12 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
 																					channel->ValueAsDoubleFast(i,IndexOfOccupancyDimension())+1.0);
 					}
 					
-          manu->SetValueAsDoubleFast(0,IndexOfOccupancyDimension(),
-                                                 manu->ValueAsDoubleFast(0,IndexOfOccupancyDimension())+1.0);        
+          if (manu)
+          {
+            manu->SetValueAsDoubleFast(0,IndexOfOccupancyDimension(),
+                                       manu->ValueAsDoubleFast(0,IndexOfOccupancyDimension())+1.0);        
+          }
+          
           busPatch->SetValueAsDoubleFast(0,IndexOfOccupancyDimension(),
                                                          busPatch->ValueAsDoubleFast(0,IndexOfOccupancyDimension())+1.0);        
           de->SetValueAsDoubleFast(0,IndexOfOccupancyDimension(),
@@ -459,7 +470,7 @@ AliMUONTrackerData::Clear(Option_t*)
   if ( fPCBValues ) fPCBValues->Clear();
   if ( fDEValues) fDEValues->Clear();
   if ( fChamberValues ) fChamberValues->Clear();
-  if ( fChannelHistos ) fChannelHistos->Clear();
+  if ( fHistos ) fHistos->Clear();
   fNevents = 0;
   NumberOfEventsChanged();
 }
@@ -589,6 +600,18 @@ AliMUONTrackerData::DisableChannelLevel()
 }
 
 //_____________________________________________________________________________
+void 
+AliMUONTrackerData::DisableManuLevel()
+{ 
+  /// Disable the storing of data at manu level (and below)
+  
+  DisableChannelLevel();
+  delete fManuValues;
+  fManuValues = 0x0;
+  fIsManuLevelEnabled = kFALSE; 
+}
+
+//_____________________________________________________________________________
 Int_t 
 AliMUONTrackerData::External2Internal(Int_t index) const 
 {
@@ -615,16 +638,74 @@ AliMUONTrackerData::ExternalDimensionName(Int_t dim) const
 
 //_____________________________________________________________________________
 void
-AliMUONTrackerData::FillChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel,
-                                Int_t dim, Double_t value)
+AliMUONTrackerData::FillHisto(Int_t detElemId, Int_t manuId, Int_t manuChannel,
+                              Int_t dim, Double_t value)
 {
   /// Fill histogram of a given channel
   
+  AliMUONSparseHisto* h(0x0);
+  
 	if ( fIsChannelLevelEnabled ) 
 	{
-		AliMUONSparseHisto* h = GetChannelSparseHisto(detElemId, manuId, manuChannel,dim);
+		h = GetChannelSparseHisto(detElemId, manuId, manuChannel,dim);
+  }
+  else if ( fIsManuLevelEnabled ) 
+  {
+    h = GetManuSparseHisto(detElemId,manuId,dim);
+  }
+  
+  AliDebug(1,Form("DE %04d MANU %04d CH %02d dim %d value %e h %p",detElemId,manuId,manuChannel,dim,value,h));
+  
+  if (h)
+  {
 		h->Fill(static_cast<Int_t>(TMath::Nint(value)));
 	}
+}
+
+//_____________________________________________________________________________
+AliMUONSparseHisto*
+AliMUONTrackerData::GetManuSparseHisto(Int_t detElemId, Int_t manuId, 
+                                       Int_t dim) const
+{
+  /// Get histogram of a given manu
+  
+  if (!fHistos) return 0x0;
+  
+  AliMUON1DArray* m = static_cast<AliMUON1DArray*>(fHistos->FindObject(detElemId,manuId));
+  if (!m) return 0x0;
+  
+  AliMUONSparseHisto* h = static_cast<AliMUONSparseHisto*>(m->FindObject(dim));
+  
+  return h;
+}
+
+//_____________________________________________________________________________
+AliMUONSparseHisto*
+AliMUONTrackerData::GetManuSparseHisto(Int_t detElemId, Int_t manuId, Int_t dim)
+{
+  /// Get histogram of a given manu. Create it if necessary
+  
+  if (!fHistos) fHistos = new AliMUON2DMap(kTRUE);
+  
+  AliMUON1DArray* m = static_cast<AliMUON1DArray*>(fHistos->FindObject(detElemId,manuId));
+  if (!m)
+  {
+    m = new AliMUON1DArray(NumberOfDimensions());
+    m->SetUniqueID( ( manuId << 16 ) | detElemId );
+    fHistos->Add(m);
+  }
+    
+  AliMUONSparseHisto* h = static_cast<AliMUONSparseHisto*>(m->FindObject(dim));
+  if (!h)
+  {
+    h = new AliMUONSparseHisto(fXmin,fXmax);
+    
+    h->SetUniqueID(dim);
+    
+    m->Add(h);
+  }
+  
+   return h;
 }
 
 //_____________________________________________________________________________
@@ -634,9 +715,9 @@ AliMUONTrackerData::GetChannelSparseHisto(Int_t detElemId, Int_t manuId,
 {
   /// Get histogram of a given channel
   
-  if (!fChannelHistos) return 0x0;
+  if (!fHistos) return 0x0;
   
-  AliMUON1DMap* m = static_cast<AliMUON1DMap*>(fChannelHistos->FindObject(detElemId,manuId));
+  AliMUON1DMap* m = static_cast<AliMUON1DMap*>(fHistos->FindObject(detElemId,manuId));
   if (!m) return 0x0;
   
   UInt_t uid = ( manuChannel << 16 ) | dim;
@@ -653,14 +734,14 @@ AliMUONTrackerData::GetChannelSparseHisto(Int_t detElemId, Int_t manuId,
 {
   /// Get histogram of a given channel. Create it if necessary
   
-  if (!fChannelHistos) fChannelHistos = new AliMUON2DMap(kTRUE);
+  if (!fHistos) fHistos = new AliMUON2DMap(kTRUE);
   
-  AliMUON1DMap* m = static_cast<AliMUON1DMap*>(fChannelHistos->FindObject(detElemId,manuId));
+  AliMUON1DMap* m = static_cast<AliMUON1DMap*>(fHistos->FindObject(detElemId,manuId));
   if (!m)
   {
     m = new AliMUON1DMap(AliMpConstants::ManuNofChannels()); // start with only 1 dim
     m->SetUniqueID( ( manuId << 16 ) | detElemId );
-    fChannelHistos->Add(m);
+    fHistos->Add(m);
   }
   
   UInt_t uid = ( manuChannel << 16 ) | dim;
@@ -920,11 +1001,16 @@ AliMUONTrackerData::Print(Option_t* wildcard, Option_t* opt) const
     cout << " Nevents=" << fNevents << endl;
   }
 
-	if ( fIsChannelLevelEnabled ) 
+	if ( !fIsChannelLevelEnabled ) 
 	{
-		cout << "Is storing (accumulated) data at the channel level" << endl;
+		cout << "Is not storing data at the channel level" << endl;
 	}
-	
+
+  if ( !fIsManuLevelEnabled ) 
+	{
+		cout << "Is not storing data at the manu level" << endl;
+	}
+  
   for ( Int_t i = 0; i <= fExternalDimensionNames->GetLast(); ++i ) 
   {
     TObjString* name = static_cast<TObjString*>(fExternalDimensionNames->At(i));
@@ -943,14 +1029,28 @@ AliMUONTrackerData::Print(Option_t* wildcard, Option_t* opt) const
   TString sopt(opt);
   sopt.ToUpper();
   
-  if ( sopt.Contains("CHANNEL") && fChannelValues ) 
+  if ( sopt.Contains("CHANNEL") )
   {
-    fChannelValues->Print(wildcard,opt);
+    if ( fIsChannelLevelEnabled ) 
+    {      
+      if ( fChannelValues ) fChannelValues->Print(wildcard,opt);
+    }
+    else
+    {
+      AliWarning("You requested channel values, but they were not stored !");
+    }
   }
 
-  if ( sopt.Contains("MANU") && fManuValues ) 
+  if ( sopt.Contains("MANU") )
   {
-    fManuValues->Print(wildcard,opt);
+    if ( fIsManuLevelEnabled ) 
+    {
+      if ( fManuValues ) fManuValues->Print(wildcard,opt);
+    }
+    else
+    {
+      AliWarning("You requested manu values, but they were not stored !");
+    }
   }
 
   if ( sopt.Contains("BUSPATCH") && fBusPatchValues ) 
