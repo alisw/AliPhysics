@@ -24,6 +24,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include <Riostream.h>
 #include <TList.h>
 #include <TXMLAttr.h>
