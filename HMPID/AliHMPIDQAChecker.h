@@ -28,7 +28,6 @@ class AliHMPIDQAChecker: public AliQACheckerBase {
 public:
   AliHMPIDQAChecker() : AliQACheckerBase("HMPID","HMPID Quality Assurance Data Checker") {;}          // ctor
   AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliHMPIDQAChecker& operator = (const AliHMPIDQAChecker& qac) ;
   virtual ~AliHMPIDQAChecker() {;} // dtor
 
   virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;

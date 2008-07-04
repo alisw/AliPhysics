@@ -35,15 +35,6 @@
 
 ClassImp(AliTOFQAChecker)
 
-//__________________________________________________________________
-AliTOFQAChecker& AliTOFQAChecker::operator = (const AliTOFQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliTOFQAChecker();
-  new(this) AliTOFQAChecker(qac);
-  return *this;
-}
-
 //____________________________________________________________________________
 const Double_t AliTOFQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) 
 {

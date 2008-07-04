@@ -27,11 +27,4 @@
 ClassImp(AliTPCQAChecker)
 
 //__________________________________________________________________
-AliTPCQAChecker& AliTPCQAChecker::operator = (const AliTPCQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliTPCQAChecker();
-  new(this) AliTPCQAChecker(qac);
-  return *this;
-}
 

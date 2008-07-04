@@ -36,7 +36,6 @@ friend class AliITSQASSDChecker;
 public:
   AliITSQAChecker(Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0) ;         // ctor
   AliITSQAChecker(const AliITSQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fkOnline(kFALSE), fDet(0), fLDC(0), fSPDOffset(0), fSDDOffset(0), fSSDOffset(0), fSPDChecker(0), fSDDChecker(0), fSSDChecker(0) {;} // cpy ctor   
-  AliITSQAChecker& operator = (const AliITSQAChecker& qac) ; //operator =
   virtual ~AliITSQAChecker() {;} // dtor
   void SetMode(Bool_t kMode) { fkOnline = kMode; }
   void SetSubDet(Short_t subdet) { fDet = subdet; }

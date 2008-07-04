@@ -43,14 +43,6 @@
 
 ClassImp(AliHMPIDQAChecker)
 
-//__________________________________________________________________
-AliHMPIDQAChecker& AliHMPIDQAChecker::operator = (const AliHMPIDQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliHMPIDQAChecker();
-  new(this) AliHMPIDQAChecker(qac);
-  return *this;
-}
 //_________________________________________________________________
 const Double_t AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
 {

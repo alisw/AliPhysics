@@ -40,10 +40,3 @@
 ClassImp(AliACORDEQAChecker)
 
 //__________________________________________________________________
-AliACORDEQAChecker& AliACORDEQAChecker::operator = (const AliACORDEQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliACORDEQAChecker();
-  new(this) AliACORDEQAChecker(qac);
-  return *this;
-}

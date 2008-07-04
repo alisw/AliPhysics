@@ -27,16 +27,6 @@
 
 ClassImp(AliZDCQAChecker)
 
-//__________________________________________________________________
-AliZDCQAChecker& AliZDCQAChecker::operator = (const AliZDCQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliZDCQAChecker();
-  new(this) AliZDCQAChecker(qac);
-  return *this;
-}
-
-
 //____________________________________________________________________________
 const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
 {

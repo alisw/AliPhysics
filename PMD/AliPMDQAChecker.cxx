@@ -38,11 +38,4 @@
 ClassImp(AliPMDQAChecker)
 
 //__________________________________________________________________
-AliPMDQAChecker& AliPMDQAChecker::operator = (const AliPMDQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliPMDQAChecker();
-  new(this) AliPMDQAChecker(qac);
-  return *this;
-}
 

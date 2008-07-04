@@ -23,7 +23,6 @@ class AliTOFQAChecker: public AliQACheckerBase {
 public:
   AliTOFQAChecker() : AliQACheckerBase("TOF","TOF Quality Assurance Data Maker") {;}          // ctor
   AliTOFQAChecker(const AliTOFQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliTOFQAChecker& operator = (const AliTOFQAChecker& qac) ;
   virtual ~AliTOFQAChecker() {;} // dtor
 
  protected:

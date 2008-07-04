@@ -59,15 +59,6 @@ fSSDChecker(0)  // SSD Checker
 
 }
 
-//__________________________________________________________________
-AliITSQAChecker& AliITSQAChecker::operator = (const AliITSQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliITSQAChecker();
-  new(this) AliITSQAChecker(qac);
-  return *this;
-}
-
 //____________________________________________________________________________
 const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 {

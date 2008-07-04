@@ -58,13 +58,6 @@ AliMUONQAChecker::AliMUONQAChecker(const AliMUONQAChecker& qac) :
 	/// copy ctor 
 }   
 
-//__________________________________________________________________
-AliMUONQAChecker& AliMUONQAChecker::operator = (const AliMUONQAChecker& /*qac*/ )
-{
-    /// Equal operator.
-    return *this;
-}
-
 //______________________________________________________________________________
 const Double_t 
 AliMUONQAChecker::Check(AliQA::ALITASK_t /*index*/)

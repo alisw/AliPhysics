@@ -27,7 +27,6 @@ class AliVZEROQAChecker: public AliQACheckerBase {
 public:
   AliVZEROQAChecker() : AliQACheckerBase("VZERO","VZERO Quality Assurance Data Maker") {;}          // ctor
   AliVZEROQAChecker(const AliVZEROQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliVZEROQAChecker& operator = (const AliVZEROQAChecker& qac) ;
   virtual ~AliVZEROQAChecker() {;} // dtor
 
 private:

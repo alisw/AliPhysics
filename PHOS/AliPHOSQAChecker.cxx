@@ -41,11 +41,4 @@
 ClassImp(AliPHOSQAChecker)
 
 //__________________________________________________________________
-AliPHOSQAChecker& AliPHOSQAChecker::operator = (const AliPHOSQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliPHOSQAChecker();
-  new(this) AliPHOSQAChecker(qac);
-  return *this;
-}
 

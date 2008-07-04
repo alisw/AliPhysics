@@ -39,11 +39,3 @@
 ClassImp(AliVZEROQAChecker)
 
 //__________________________________________________________________
-AliVZEROQAChecker& AliVZEROQAChecker::operator = (const AliVZEROQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliVZEROQAChecker();
-  new(this) AliVZEROQAChecker(qac);
-  return *this;
-}
-

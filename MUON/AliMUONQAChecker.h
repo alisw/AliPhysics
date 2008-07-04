@@ -19,7 +19,6 @@ class AliMUONQAChecker: public AliQACheckerBase {
 public:
   AliMUONQAChecker();
   AliMUONQAChecker(const AliMUONQAChecker& qac);
-  AliMUONQAChecker& operator=(const AliMUONQAChecker& qac);
   virtual ~AliMUONQAChecker();
 
 protected:

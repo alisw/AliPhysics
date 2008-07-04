@@ -20,7 +20,6 @@ class AliTPCQAChecker: public AliQACheckerBase {
 public:
   AliTPCQAChecker() : AliQACheckerBase("TPC","TPC Quality Assurance Checker") {;}          // ctor
   AliTPCQAChecker(const AliTPCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliTPCQAChecker& operator = (const AliTPCQAChecker& qac) ;
   virtual ~AliTPCQAChecker() {;} // dtor
 
 private:

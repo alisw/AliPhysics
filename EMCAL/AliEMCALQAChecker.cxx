@@ -39,12 +39,4 @@
 
 ClassImp(AliEMCALQAChecker)
 
-//__________________________________________________________________
-AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliEMCALQAChecker();
-  new(this) AliEMCALQAChecker(qac);
-  return *this;
-}
 

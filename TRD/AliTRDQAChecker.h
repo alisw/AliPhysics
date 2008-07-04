@@ -31,7 +31,6 @@ class AliTRDQAChecker: public AliQACheckerBase {
 public:
   AliTRDQAChecker() : AliQACheckerBase("TRD","TRD Quality Assurance Data Maker") {;}          // ctor
   AliTRDQAChecker(const AliTRDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliTRDQAChecker& operator = (const AliTRDQAChecker& qac) ;
   virtual ~AliTRDQAChecker() {;} // dtor
 
   virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 1.0;}

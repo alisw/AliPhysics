@@ -29,7 +29,6 @@ class AliPHOSQAChecker: public AliQACheckerBase {
 public:
   AliPHOSQAChecker() : AliQACheckerBase("PHOS","PHOS Quality Assurance Data Maker") {;}          // ctor
   AliPHOSQAChecker(const AliPHOSQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliPHOSQAChecker& operator = (const AliPHOSQAChecker& qac) ;
   virtual ~AliPHOSQAChecker() {;} // dtor
 
 private:

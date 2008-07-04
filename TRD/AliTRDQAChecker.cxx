@@ -38,12 +38,3 @@
 ClassImp(AliTRDQAChecker)
 
 //__________________________________________________________________
-AliTRDQAChecker& AliTRDQAChecker::operator = (const AliTRDQAChecker& qac )
-{
-  // Equal operator.
-  this->~AliTRDQAChecker();
-  new(this) AliTRDQAChecker(qac);
-  return *this;
-}
-
-//__________________________________________________________________
