@@ -577,14 +577,16 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 
   // Some local variables declarations and initializations
   const Int_t kFieldCheck = 10;
-  Bool_t check[kFieldCheck];
+  Bool_t check[kFieldCheck]; // used to check that mandatory column names are not missing
+  for (Int_t i = 0; i < kFieldCheck; ++i) check[i] = kFALSE;
   TString tmpname = "";
   Float_t tmpx = 0.0, tmpy = 0.0, tmpz = 0.0;
-  Float_t tmpprecX = 0.0, tmpprecY = 0.0, tmpprecZ = 0.0;
+  Float_t tmpprecX = -1., tmpprecY = -1., tmpprecZ = -1.;
   Char_t tmptype = '\0';
   Bool_t tmptarg = kTRUE;
   AliSurveyPoint *dp = 0;
-  for (Int_t i = 0; i < kFieldCheck; ++i) check[i] = kFALSE;
+  TString *orderedValues[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+  TString value[9];
 
   Int_t nrLines = lines->GetEntries();
   Printf("Lines in file: %d\n", nrLines); 
@@ -609,7 +611,8 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
       currLine.Remove(TString::kTrailing, ':');
       currLine.Remove(TString::kBoth, ' ');
       nextLine.Remove(TString::kBoth, ' ');
-      // Printf(" -> Field: \"%s\"\n", currLine.Data());
+      AliDebug(2, Form(" -> field line: \"%s\"\n", currLine.Data()));
+      AliDebug(2, Form(" -> value line: \"%s\"\n", nextLine.Data()));
       
       if (currLine.BeginsWith("Title", TString::kIgnoreCase)) {
 	// Report Title
@@ -692,6 +695,117 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  return kFALSE;
 	}
 	++i;
+	
+	// booleans to track if precision for 1 axis is defined in more than one column
+	Bool_t prX = kFALSE;
+	Bool_t prY = kFALSE;
+	Bool_t prZ = kFALSE;
+	
+	for (Int_t j = 0; j < fNrColumns; ++j) {
+	  TString cn = ((TObjString *)(colLine->At(j)))->GetString();
+	  if (cn.BeginsWith("Point Name", TString::kIgnoreCase)) {
+	    orderedValues[0] = &value[j];
+	    check[0] = kTRUE;
+	  } else if (cn.BeginsWith("X", TString::kIgnoreCase)) {
+	    orderedValues[1] = &value[j];
+	    check[1] = kTRUE;
+	  } else if (cn.BeginsWith("Y", TString::kIgnoreCase)) {
+	    orderedValues[2] = &value[j];
+	    check[2] = kTRUE;
+	  } else if (cn.BeginsWith("Z", TString::kIgnoreCase)) {
+	    orderedValues[3] = &value[j];
+	    check[3] = kTRUE;
+	  } else if (cn.BeginsWith("Precision", TString::kIgnoreCase)) {
+	    TString tmpCN = cn(0, cn.First('('));
+	    Int_t precLength = TString("Precision").Length();
+	    if (precLength == tmpCN.Length()) {
+	      if(!orderedValues[6]){
+		orderedValues[6] = &value[j];
+	        check[6] = kTRUE;
+	      }else{
+		AliWarning("Global precision will not be used for X axis");
+	      }
+	      if(!orderedValues[7]){
+		orderedValues[7] = &value[j];
+	        check[7] = kTRUE;
+	      }else{
+		AliWarning("Global precision will not be used for Y axis");
+	      }
+	      if(!orderedValues[8]){
+		orderedValues[8] = &value[j];
+		check[8] = kTRUE;
+	      }else{
+		AliWarning("Global precision will not be used for Z axis");
+	      }
+	    } else {
+	      Bool_t orXYZ = kFALSE;
+	      TString axis = cn(precLength, tmpCN.Length() - precLength);
+	      if (axis.Contains('X', TString::kIgnoreCase)) {
+		if(!prX){
+		  orderedValues[6] = &value[j];
+		  check[6] = kTRUE;
+		  orXYZ = kTRUE;
+		  prX = kTRUE;
+		}else{
+		  AliError("Precision for X axis was already set!");
+		  return kFALSE;
+		}
+	      }
+	      if (axis.Contains('Y', TString::kIgnoreCase)) {
+		if(!prY){
+		  orderedValues[7] = &value[j];
+		  check[7] = kTRUE;
+		  orXYZ = kTRUE;
+		  prY = kTRUE;
+		}else{
+		  AliError("Precision for Y axis was already set!");
+		  return kFALSE;
+		}
+	      }
+	      if (axis.Contains('Z', TString::kIgnoreCase)) {
+		if(!prZ){
+		  orderedValues[8] = &value[j];
+		  check[8] = kTRUE;
+		  orXYZ = kTRUE;
+		  prZ = kTRUE;
+		}else{
+		  AliError("Precision for Z axis was already set!");
+		  return kFALSE;
+		}
+	      }
+	      if(!orXYZ)
+	      {
+		AliError("Survey text file sintax error: precision column name does not refer to any axis!");
+		return kFALSE;
+	      }
+	    }
+	  } else if (cn.BeginsWith("Point Type", TString::kIgnoreCase)) {
+	    orderedValues[4] = &value[j];
+	    check[4] = kTRUE;
+	  } else if (cn.BeginsWith("Target Used", TString::kIgnoreCase)) {
+	    orderedValues[5] = &value[j];
+	    check[5] = kTRUE;
+	  }
+	}
+
+	// Check if all the mandatory fields exist in the line with column names
+	if(!check[0]){
+	  Printf("Missing mandatory column \"Point Name\"!");
+	  return kFALSE;
+	}
+	if(!(check[1]&&check[2]&&check[3])){
+	  Printf("Missing one or more mandatory columns for coordinates \"X\",\"Y\",\"Z\"");
+	  return kFALSE;
+	}
+	if(!check[4]){
+	  Printf("Missing mandatory column \"Point Type\"!");
+	  return kFALSE;
+	}
+	if(!(check[6]&&check[7]&&check[8])){
+	  Printf("Missing one or more mandatory columns for precision along \"X\",\"Y\",\"Z\" axes");
+	  return kFALSE;
+	}
+
       } else if (currLine.BeginsWith("Data", TString::kIgnoreCase)) {
 	// Data section!
 	while ((nextLine.Length() > 0) && ('>' != nextLine[0])) {
@@ -700,108 +814,42 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 
 	  // What is the separator used between fields?
 	  // The allowed are: comma (','), tab ('\t'), and space (' ')
-          if (fNrColumns == nextLine.CountChar(',') + 1) dataLine = nextLine.Tokenize(',');
-          else if (fNrColumns == nextLine.CountChar('\t') + 1) dataLine = nextLine.Tokenize('\t');
-          else if (fNrColumns == nextLine.CountChar(' ') + 1) dataLine = nextLine.Tokenize(' ');
-          else {
-            // Error (No separator was found!)
-            AliError("Survey text file syntax error! Error processing data line!");
-            lines->Delete();
-            return kFALSE;
-          }
-	  
-	  if (dataLine->GetEntries() != fNrColumns) {
-	    // The number of columns doesn't match the number specified in the header
-	    AliError("Survey text file sintax error! (Number of entries in line is different from declared Number of Columns)");
-	    dataLine->Delete();
+	  if (fNrColumns == nextLine.CountChar(',') + 1) dataLine = nextLine.Tokenize(',');
+	  else if (fNrColumns == nextLine.CountChar('\t') + 1) dataLine = nextLine.Tokenize('\t');
+	  else if (fNrColumns == nextLine.CountChar(' ') + 1) dataLine = nextLine.Tokenize(' ');
+	  else {
+	    // Error (No separator was found!)
+	    AliError("Survey text file syntax error! Error processing data line!");
 	    lines->Delete();
 	    return kFALSE;
 	  }
 
-	  // Reset the bits used to check if all the required fields are present
-	  for (Int_t t = 0; t < kFieldCheck; ++t) check[t] = 0;
+	  if (dataLine->GetEntries() != fNrColumns) {
+	    // The number of columns doesn't match the number specified in the header
+	    AliError("Survey text file sintax error! (Number of entries in line is different from number of Columns)");
+	    dataLine->Delete();
+	    lines->Delete();
+	    return kFALSE;
+	  }
 
 	  // Process the data line using the column names as index
 	  for (Int_t j = 0; j < dataLine->GetEntries(); ++j) {
-	    TString cn = ((TObjString *)(colLine->At(j)))->GetString();
-	    TString value = ((TObjString *)(dataLine->At(j)))->GetString();
-	    if (cn.BeginsWith("Point Name", TString::kIgnoreCase)) {
-	      tmpname = value;
-	      check[0] = kTRUE;
-	    } else if (cn.BeginsWith("X", TString::kIgnoreCase)) {
-	      tmpx = value.Atof();
-	      check[1] = kTRUE;
-	    } else if (cn.BeginsWith("Y", TString::kIgnoreCase)) {
-	      tmpy = value.Atof();
-	      check[2] = kTRUE;
-	    } else if (cn.BeginsWith("Z", TString::kIgnoreCase)) {
-	      tmpz = value.Atof();
-	      check[3] = kTRUE;
-	    } else if (cn.BeginsWith("Precision", TString::kIgnoreCase)) {
-	      TString tmpCN = cn(0, cn.First('('));
-	      Int_t precLength = TString("Precision").Length();
-	      //Printf(" ====== %d ======= %d ====== \n", precLength, tmpCN.Length());
-	      //Printf(" ====== %s ======= \n", tmpCN.Data());
-	      if (precLength == tmpCN.Length()) {
-		tmpprecX = tmpprecY = tmpprecZ = value.Atof();
-		check[6] = kTRUE;
-	      } else {
-		TString axis = cn(precLength, tmpCN.Length() - precLength);
-		if (axis.Contains('X', TString::kIgnoreCase)) {
-		  tmpprecX = value.Atof();
-		  check[7] = kTRUE;
-		} else if (axis.Contains('Y', TString::kIgnoreCase)) {
-		  tmpprecY = value.Atof();
-		  check[8] = kTRUE;
-		} else if (axis.Contains('Z', TString::kIgnoreCase)) {
-		  tmpprecZ = value.Atof();
-		  check[9] = kTRUE;
-		} else {
-		  AliError("Survey text file sintax error! (Precision column name invalid)");
-		  dataLine->Delete();
-		  lines->Delete();
-		  return kFALSE;
-		}
-	      }
-	    } else if (cn.BeginsWith("Point Type", TString::kIgnoreCase)) {
-	      tmptype = value.Data()[0];
-	      check[4] = kTRUE;
-	    } else if (cn.BeginsWith("Target Used", TString::kIgnoreCase)) {
-	      tmptarg = (value.Data()[0] == 'Y') ? kTRUE : kFALSE;
-	      check[5] = kTRUE;
-	    }
-
-	    //Printf("--> %s\n", ((TObjString *)(dataLine->At(j)))->GetString().Data());
+	    value[j] = ((TObjString *)(dataLine->At(j)))->GetString();
 	  }
+	  tmpname = *orderedValues[0];
+	  tmpx = orderedValues[1]->Atof();
+	  tmpy = orderedValues[2]->Atof();
+	  tmpz = orderedValues[3]->Atof();
+	  tmpprecX = orderedValues[6]->Atof();
+	  tmpprecY = orderedValues[7]->Atof();
+	  tmpprecZ = orderedValues[8]->Atof();
+	  tmptype = orderedValues[4]->Data()[0];
+	  if(orderedValues[5]) tmptarg = (orderedValues[5]->Data()[0] == 'Y') ? kTRUE : kFALSE;
 
-	  // Check if all the mandatory fields exist
-	  Bool_t res = kTRUE, precInd = kTRUE;
+	  dp = new AliSurveyPoint(tmpname, tmpx, tmpy, tmpz, tmpprecX, tmpprecY, tmpprecZ, tmptype, tmptarg);
+	  dp->PrintPoint();
+	  AddPoint(dp);
 
-	  // Target
-	  if (kFALSE == check[5]) {
-	    tmptarg = kTRUE;
-	    check[5] = kTRUE;
-	  }
-	  
-	  // Individual axis precisions
-	  for (Int_t t = 7; t < 10; ++t) precInd &= check[t];
-	  if ((kFALSE == check[6]) && (kTRUE == precInd)) check[6] = kTRUE;
-
-	  for (Int_t t = 0; t < kFieldCheck - 3; ++t) {
-	    //Printf("RES(%d): %d\n", t, check[t]);
-	    res &= check[t];
-	  }
-	  if (kTRUE == res) {
-	    dp = new AliSurveyPoint(tmpname, tmpx, tmpy, tmpz, tmpprecX, tmpprecY, tmpprecZ, tmptype, tmptarg);
-	    dp->PrintPoint();
-	    AddPoint(dp);
-	  } else {
-	    AliError("Parsing error processing data line!");
-	    dataLine->Delete();
-	    lines->Delete();
-	    return kFALSE;
-	  }
-	  
 	  dataLine->Delete();
 	  dataLine = NULL;
 	  ++i;
