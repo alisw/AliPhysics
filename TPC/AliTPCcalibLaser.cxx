@@ -14,14 +14,46 @@
  **************************************************************************/
 
 /*
-  laser track clasification;
+  //
+  // FUNCTIONALITY:
+  //
+  // 1. The laser track is associated with the mirror
+  //    see function FindMirror
+  //
+  // 2. The laser track is accepted for the analysis under certain condition
+  //    (see function Accpet laser)
+  // 
+  // 3. The drift velocity and jitter is calculated event by event
+  //    (see function drift velocity) 
+  //
+  //
+  //
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
+  TFile fcalib("CalibObjects.root");
+  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+  AliTPCcalibLaser * laser = ( AliTPCcalibLaser *)array->FindObject("laserTPC");
+  laser->DumpMeanInfo(-0.4)
+  TFile fmean("laserMean.root")
+
+  //  laser track clasification;
+
   TCut cutT("cutT","abs(Tr.fP[3])<0.06");
   TCut cutPt("cutPt","abs(Tr.fP[4])<0.1");
   TCut cutN("cutN","fTPCncls>70");
   TCut cutP("cutP","abs(atan2(x1,x0)-atan2(lx1,lx0))<0.03")
   TCut cutA = cutT+cutPt+cutP;
+
   TFile f("laserTPCDebug.root");
   TTree * treeT = (TTree*)f.Get("Track");
+
+
+  // LASER scan 
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool; 
+  TChain * chain = tool.MakeChain("laserScan.txt","Mean",0,10200);
+  chain->Lookup();
 
 
   treeT->Draw("(atan2(x1,x0)-atan2(lx1,lx0))*250.:fBundle","fSide==1&&fRod==0"+cutA,"prof") 
@@ -77,6 +109,7 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fDeltaZ(336),          // array of histograms of delta z for each track
   fDeltaPhi(336),          // array of histograms of delta z for each track
   fDeltaPhiP(336),          // array of histograms of delta z for each track
+  fSignals(336),           // array of dedx signals
   fFitAside(new TVectorD(3)),        // drift fit - A side
   fFitCside(new TVectorD(3)),        // drift fit - C- side
   fRun(0)
@@ -98,6 +131,7 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
   fDeltaZ(336),          // array of histograms of delta z for each track
   fDeltaPhi(336),          // array of histograms of delta z for each track
   fDeltaPhiP(336),          // array of histograms of delta z for each track
+  fSignals(336),           // array of dedx signals
   fFitAside(new TVectorD(3)),        // drift fit - A side
   fFitCside(new TVectorD(3)),        // drift fit - C- side
   fRun(0)
@@ -177,19 +211,24 @@ void AliTPCcalibLaser::MakeDistHisto(){
     TH1F * hisdz = (TH1F*)fDeltaZ.At(id);
     TH1F * hisdphi = (TH1F*)fDeltaPhi.At(id);
     TH1F * hisdphiP = (TH1F*)fDeltaPhiP.At(id);
+    TH1F * hisSignal = (TH1F*)fSignals.At(id);
+
     if (!hisdz){      
       hisdz = new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),500,-10,10);
       fDeltaZ.AddAt(hisdz,id);
       //
-      hisdphi = new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),500,-2,2);
+      hisdphi = new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),500,-1,1);
       fDeltaPhi.AddAt(hisdphi,id);
       //
-      hisdphiP = new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),500,-0.02,0.02);
+      hisdphiP = new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),500,-0.01,0.01);
       fDeltaPhiP.AddAt(hisdphiP,id);
+      hisSignal = new TH1F(Form("hisSignal%d",id),Form("hisSignal%d",id),500,0,1000);
+      fSignals.AddAt(hisSignal,id);
     }
 
     AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
     AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+    AliESDtrack   *track    = (AliESDtrack*)fTracksEsd.At(id);
     Double_t xyz[3];
     Double_t pxyz[3];
     Double_t lxyz[3];
@@ -205,6 +244,7 @@ void AliTPCcalibLaser::MakeDistHisto(){
     hisdz->Fill(dz);
     hisdphi->Fill(dphi);
     hisdphiP->Fill(dphiP); 
+    hisSignal->Fill(track->GetTPCsignal());
   }
 }
 
@@ -488,6 +528,79 @@ void AliTPCcalibLaser::RefitLaser(Int_t id){
   
 }
 
+
+void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield){
+  //
+  //
+  //
+  AliTPCcalibLaser *laser = this;
+  TTreeSRedirector *pcstream = new TTreeSRedirector("laserMean.root");
+  TF1 fg("fg","gaus");
+  //
+  //
+  for (Int_t id=0; id<336; id++){
+    TH1F * hisphi  = (TH1F*)laser->fDeltaPhi.At(id);
+    TH1F * hisphiP = (TH1F*)laser->fDeltaPhiP.At(id);
+    TH1F * hisZ    = (TH1F*)laser->fDeltaZ.At(id);
+    //    TH1F * hisS    = laser->fDeltaZ->At(id);
+    if (!hisphi) continue;;
+    Double_t entries = hisphi->GetEntries();
+    if (entries<30) continue;
+    //
+    AliTPCLaserTrack *ltrp = (AliTPCLaserTrack*)fTracksMirror.At(id);
+    if (!ltrp) {
+     AliTPCLaserTrack::LoadTracks();
+      ltrp =(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
+    }
+    Float_t meanphi = hisphi->GetMean();
+    Float_t rmsphi = hisphi->GetRMS();
+    Float_t meanphiP = hisphiP->GetMean();
+    Float_t rmsphiP = hisphiP->GetRMS();
+    Float_t meanZ = hisZ->GetMean();
+    Float_t rmsZ = hisZ->GetRMS();
+    hisphi->Fit(&fg,"","",hisphi->GetMean()-4*hisphi->GetRMS(),hisphi->GetMean()+4*hisphi->GetRMS());
+    Double_t gphi1 = fg.GetParameter(1); 
+    Double_t gphi2 = fg.GetParameter(2); 
+    hisphiP->Fit(&fg,"","",hisphiP->GetMean()-4*hisphiP->GetRMS(),hisphiP->GetMean()+4*hisphiP->GetRMS());
+    Double_t gphiP1 = fg.GetParameter(1); 
+    Double_t gphiP2 = fg.GetParameter(2); 
+    hisZ->Fit(&fg,"","",hisZ->GetMean()-4*hisZ->GetRMS(),hisZ->GetMean()+4*hisZ->GetRMS());
+    Double_t gz1 = fg.GetParameter(1); 
+    Double_t gz2 = fg.GetParameter(2); 
+
+    //
+    Double_t lxyz[3];
+    Double_t lpxyz[3];
+    ltrp->GetXYZ(lxyz);
+    ltrp->GetPxPyPz(lpxyz);
+    //
+    (*pcstream)<<"Mean"<<
+      "entries="<<entries<<      // number of entries
+      "bz="<<bfield<<            // bfield
+      "LTr.="<<ltrp<<             // refernece track
+      "lx0="<<lxyz[0]<<          // reference x
+      "lx1="<<lxyz[1]<<          // reference y
+      "lx2="<<lxyz[2]<<          // refernece z      
+      "lpx0="<<lpxyz[0]<<          // reference x
+      "lpx1="<<lpxyz[1]<<          // reference y
+      "lpx2="<<lpxyz[2]<<          // refernece z            
+      "mphi="<<meanphi<<         //
+      "rmsphi="<<rmsphi<<        //
+      "gphi1="<<gphi1<<
+      "gphi2="<<gphi2<<
+      "mphiP="<<meanphiP<<       //
+      "rmsphiP="<<rmsphiP<<      //
+      "gphiP1="<<gphiP1<<
+      "gphiP2="<<gphiP2<<
+      "meanZ="<<meanZ<<
+      "rmsZ="<<rmsZ<<
+      "gz1="<<gz1<<
+      "gz2="<<gz2<<
+
+      "\n";
+  }
+  delete pcstream;
+}
 
 void AliTPCcalibLaser::Analyze(){
   //

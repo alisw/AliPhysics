@@ -29,7 +29,7 @@ public:
   virtual ~AliTPCcalibLaser();
   virtual void     Process(AliESDEvent *event);
   virtual void Analyze();
-  //
+  virtual void DumpMeanInfo(Float_t bfield);
   //
   //
   virtual void DumpLaser(Int_t id);
@@ -48,9 +48,10 @@ public:
   //                               is owner ESD at mirror
   TObjArray      fTracksTPC;       //! tracks with reconstructed information - TPC
   //
-  TObjArray      fDeltaZ;          // array of histograms of delta z for each track
-  TObjArray      fDeltaPhi;        // array of histograms of delta z for each track
-  TObjArray      fDeltaPhiP;       // array of histograms of delta z for each track
+  TObjArray      fDeltaZ;          //-> array of histograms of delta z for each track
+  TObjArray      fDeltaPhi;        //-> array of histograms of delta z for each track
+  TObjArray      fDeltaPhiP;       //-> array of histograms of delta z for each track
+  TObjArray      fSignals;         //->Array of dedx signals
   TVectorD*      fFitAside;        //! drift fit - A side
   TVectorD*      fFitCside;        //! drift fit - C- side
   //
