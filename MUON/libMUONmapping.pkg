@@ -19,7 +19,10 @@ SRCS +=  \
 	 mapping/AliMpPadPair.cxx  \
 	 mapping/AliMpVIndexed.cxx  \
 	 mapping/AliMpVPadIterator.cxx  \
-	 mapping/AliMpVSegmentation.cxx
+	 mapping/AliMpVSegmentation.cxx \
+         mapping/AliMpDataProcessor.cxx \
+         mapping/AliMpDataStreams.cxx \
+         mapping/AliMpDataMap.cxx
 
 # Category motif
 #

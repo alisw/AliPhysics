@@ -28,6 +28,7 @@
 #include "AliMpSectorReader.h"
 #include "AliMpSector.h"
 #include "AliMpFiles.h"
+#include "AliMpDataStreams.h"
 #include "AliMpZone.h"
 #include "AliMpSubZone.h"
 #include "AliMpRow.h"
@@ -80,6 +81,7 @@ AliMpSectorReader::AliMpSectorReader(AliMp::StationType station,
     fPlaneType(plane),
     fSector(0),
     fMotifReader(new AliMpMotifReader(station, plane))
+ 
 {
 /// Standard constructor
 }
@@ -108,7 +110,7 @@ AliMpSectorReader::~AliMpSectorReader()
 //
 
 //_____________________________________________________________________________
-void  AliMpSectorReader::ReadSectorData(ifstream& in)
+void  AliMpSectorReader::ReadSectorData(istream& in)
 {
 /// Read sector input data;
 /// prepare zones and rows vectors to be filled in.
@@ -152,7 +154,7 @@ void  AliMpSectorReader::ReadSectorData(ifstream& in)
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadZoneData(ifstream& in)
+void AliMpSectorReader::ReadZoneData(istream& in)
 {
 /// Read zone input data;
 /// create zone and adds it to zones vector.
@@ -181,7 +183,7 @@ void AliMpSectorReader::ReadZoneData(ifstream& in)
 }
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadSubZoneData(ifstream& in, AliMpZone* zone)
+void AliMpSectorReader::ReadSubZoneData(istream& in, AliMpZone* zone)
 {
 /// Read subzone input data;
 /// create subzone and its to the specified zone.
@@ -204,7 +206,7 @@ void AliMpSectorReader::ReadSubZoneData(ifstream& in, AliMpZone* zone)
 }   
 
 //_____________________________________________________________________________
-AliMpVMotif*  AliMpSectorReader::ReadMotifData(ifstream& in, AliMpZone* zone)
+AliMpVMotif*  AliMpSectorReader::ReadMotifData(istream& in, AliMpZone* zone)
 {
 /// Read the motif input data.
 
@@ -241,7 +243,7 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(ifstream& in, AliMpZone* zone)
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadRowSegmentsData(ifstream& in, 
+void AliMpSectorReader::ReadRowSegmentsData(istream& in, 
                                       AliMpZone* zone, AliMpSubZone* subZone)
 {
 /// Read row segments input data of a specified zone and subzone;
@@ -301,7 +303,7 @@ void AliMpSectorReader::ReadRowSegmentsData(ifstream& in,
 }   
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMp::XDirection direction)
+void AliMpSectorReader::ReadSectorSpecialData(istream& in, AliMp::XDirection direction)
 {
 /// Read sector input data
 /// with a special (irregular) motifs.
@@ -331,7 +333,7 @@ void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMp::XDirection di
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
+void AliMpSectorReader::ReadMotifsSpecialData(istream& in)
 {
 /// Read the special (irregular) motifs input data.
 
@@ -358,7 +360,7 @@ void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMp::XDirection direction)
+void AliMpSectorReader::ReadRowSpecialData(istream& in, AliMp::XDirection direction)
 {
 /// Read row input data
 /// with a special (irregular) motifs.
@@ -419,7 +421,7 @@ void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMp::XDirection direc
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in, 
+void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in, 
                                             AliMpVRowSegmentSpecial* segment,
 					    AliMp::XDirection direction)
 {
@@ -530,50 +532,47 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in,
 //_____________________________________________________________________________
 AliMpSector* AliMpSectorReader::BuildSector()
 {
-/// Read the mapping data from ascii data file
-/// and create the basic objects:                                            \n
+/// Read the mapping data from stream and create the basic objects:         \n
 /// zones, subzones, rows, row segments, motifs.
 
-  // Open input file
-  ifstream in(AliMpFiles::SectorFilePath(fStationType, fPlaneType).Data(), ios::in);
-  if (!in) {
-     AliErrorStream()
-       << "File " << AliMpFiles::SectorFilePath(fStationType, fPlaneType) 
-       << " not found." << endl;
-     return 0;
-  }
-  
+  // Open input stream
+  //
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::SectorFilePath(fStationType,fPlaneType));
+
   ReadSectorData(in);
+  delete &in;
+  
   fSector->SetRowSegmentOffsets();
 
-  // Open input file for special inner zone
+  // Open input stream for special inner zone
+  
+  // add is data function
+  
   TString sectorSpecialFileName 
     = AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType);
-  if (!gSystem->AccessPathName(sectorSpecialFileName.Data())) {
-    ifstream in2(sectorSpecialFileName.Data(), ios::in);
-    if (!in2) {	
-       AliErrorStream()
-         << "File " << AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType) 
-	 << " not found." << endl;
-       return 0;
-    }
-    
+  if ( AliMpDataStreams::Instance()-> IsDataStream(sectorSpecialFileName) ) {
+    istream& in2 
+      = AliMpDataStreams::Instance()
+         ->CreateDataStream(sectorSpecialFileName);
+  
     ReadSectorSpecialData(in2, AliMp::kLeft);
-  }   
+    
+    delete &in2;
+  }  
 
   // Open input file for special outer zone
   TString sectorSpecialFileName2 
     = AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType);
-  if (!gSystem->AccessPathName(sectorSpecialFileName2.Data())) {
-    ifstream in3(sectorSpecialFileName2.Data(), ios::in);
-    if (!in3) {	
-       AliErrorStream()
-         << "File " << AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType) 
-	 << " not found."<< endl;	
-       return 0;
-    }
+  if ( AliMpDataStreams::Instance()-> IsDataStream(sectorSpecialFileName2) ) {
+    istream& in3
+      = AliMpDataStreams::Instance()
+         ->CreateDataStream(sectorSpecialFileName2);
     
     ReadSectorSpecialData(in3, AliMp::kRight);
+    
+    delete &in3;
   }   
 
   fSector->Initialize();

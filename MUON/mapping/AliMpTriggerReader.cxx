@@ -20,6 +20,7 @@
 #include "AliMpTriggerReader.h"
 #include "AliMpMotifReader.h"
 #include "AliMpFiles.h"
+#include "AliMpDataStreams.h"
 #include "AliMpMotifType.h"
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
@@ -465,13 +466,10 @@ AliMpTriggerReader::ReadLines(const char* slatType,
                        " destLine %d\n",slatType,scale,flipX,flipY,
                        srcLine,destLine));
   
-  TString filename(AliMpFiles::SlatFilePath(AliMp::kStationTrigger,slatType,
-                                            planeType).Data());
-  std::ifstream in(filename.Data());
-  if (!in.good()) 
-  {
-    AliErrorClass(Form("Cannot read slat from %s",filename.Data()));
-  }
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::SlatFilePath(
+                             AliMp::kStationTrigger,slatType, planeType));
   
   char line[80];
   
@@ -533,7 +531,7 @@ AliMpTriggerReader::ReadLines(const char* slatType,
     }
   }
   
-  in.close();
+  delete &in;
 }
                                         
 //_____________________________________________________________________________
@@ -542,55 +540,47 @@ AliMpTriggerReader::ReadLocalBoardMapping()
 {
   /// Reads the file that contains the mapping local board name <-> number
 
-  TString filename(AliMpFiles::LocalTriggerBoardMapping());
-  
-  AliDebugClass(2,Form("Reading from %s\n",filename.Data()));
-
   fLocalBoardMap.DeleteAll();
   
   UShort_t mask;
   
-  ifstream in(filename.Data());
-  if (!in.good())
-  {
-    AliErrorClass(Form("Cannot read file %s\n",filename.Data()));    
-  }
-  else
-  {
-    char line[80];
-    Char_t localBoardName[20];
-    Int_t j,localBoardId;
-    UInt_t switches;
-    
-    while (!in.eof())
-    {
-      for (Int_t i = 0; i < 4; ++i)
-        if (!in.getline(line,80)) continue; //skip 4 first lines
- 
-      // read mask
-      if (!in.getline(line,80)) break;
-      sscanf(line,"%hx",&mask);
-      
-      for ( Int_t i = 0; i < 16; ++i ) 
-      {      
-        if ( (mask >> i ) & 0x1 )
-        {
-          if (!in.getline(line,80)) break; 
-          sscanf(line,"%02d %s %03d %03x", &j, localBoardName, &localBoardId, &switches);
-          if (localBoardId <= AliMpConstants::NofLocalBoards()) 
-          {
-            fLocalBoardMap.Add(new TObjString(localBoardName), new TObjString(Form("%d",localBoardId)));
-            AliDebugClass(10,Form("Board %s has number %d\n", localBoardName, localBoardId));
-          }
-          // skip 2 following lines
-          if (!in.getline(line,80)) break; 
-          if (!in.getline(line,80)) break; 
-         }
-      }
-    }      
-  }
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::LocalTriggerBoardMapping());
 
-  in.close();
+  char line[80];
+  Char_t localBoardName[20];
+  Int_t j,localBoardId;
+  UInt_t switches;
+  
+  while (!in.eof())
+  {
+    for (Int_t i = 0; i < 4; ++i)
+      if (!in.getline(line,80)) continue; //skip 4 first lines
+ 
+    // read mask
+    if (!in.getline(line,80)) break;
+    sscanf(line,"%hx",&mask);
+    
+    for ( Int_t i = 0; i < 16; ++i ) 
+    {      
+      if ( (mask >> i ) & 0x1 )
+      {
+        if (!in.getline(line,80)) break; 
+        sscanf(line,"%02d %s %03d %03x", &j, localBoardName, &localBoardId, &switches);
+        if (localBoardId <= AliMpConstants::NofLocalBoards()) 
+        {
+          fLocalBoardMap.Add(new TObjString(localBoardName), new TObjString(Form("%d",localBoardId)));
+          AliDebugClass(10,Form("Board %s has number %d\n", localBoardName, localBoardId));
+        }
+        // skip 2 following lines
+        if (!in.getline(line,80)) break; 
+        if (!in.getline(line,80)) break; 
+       }
+    }
+  }
+  
+  delete &in;      
 }
 
 //_____________________________________________________________________________
@@ -615,12 +605,10 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
     pcbName = pcbName(0,pos);
   }
   
-  std::ifstream in(AliMpFiles::SlatPCBFilePath(AliMp::kStationTrigger,pcbName).Data());
-  if (!in.good()) 
-  {
-    AliErrorClass(Form("Cannot open file for PCB %s",pcbName.Data()));
-    return 0;
-  }
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::SlatPCBFilePath(
+                             AliMp::kStationTrigger,pcbName));
  
   AliMpMotifReader reader(AliMp::kStationTrigger,AliMp::kNonBendingPlane); 
   // note that the nonbending
@@ -727,7 +715,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
     }
   }
   
-  in.close();
+  delete &in;
   
   return pcb;
 }

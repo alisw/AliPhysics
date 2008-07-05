@@ -87,6 +87,7 @@ class AliMpFiles : public TObject
 
     // set methods
     static void SetTopPath(const TString& topPath);
+    static TString GetTop();
   
   private: 
     /// Not implemented
@@ -97,7 +98,6 @@ class AliMpFiles : public TObject
     AliMpFiles& operator=(const AliMpFiles& right);    
 
     // methods
-    static TString GetTop();
     static TString PlaneDataDir(AliMp::StationType station, AliMp::PlaneType plane); 
     static TString StationDataDir(AliMp::StationType station); 
   

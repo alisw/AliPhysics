@@ -26,6 +26,7 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpFiles.h"
+#include "AliMpDataStreams.h"
 #include "AliMpMotifReader.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotif.h"
@@ -81,24 +82,34 @@ AliMpMotifReader::~AliMpMotifReader()
 //_____________________________________________________________________________
 AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 {
-/// Read the files describing a motif in the "$MINSTALL/data" directory
+/// Read the streams describing a motif in the "$MINSTALL/data" directory
 /// and fill the AliMpMotifType structure with.
-/// The files mentioned are are named padPos<maskName>.dat
+/// The streams mentioned are named padPos<maskName>.dat
 /// and connect<maskName>.dat
 
-  AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
+  // Open streams
+  //
+  istream& padPosStream 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::PadPosFilePath(
+                            fStationType,fPlaneType, motifTypeId));
+  istream& bergToGCStream 
+    = AliMpDataStreams::Instance()
+      ->CreateDataStream(AliMpFiles::BergToGCFilePath(fStationType));
+      
+  istream& motifTypeStream 
+    = AliMpDataStreams::Instance()
+      ->CreateDataStream(AliMpFiles::MotifFilePath(
+                            fStationType, fPlaneType, motifTypeId));
 
-  TString padPosFileName(AliMpFiles::PadPosFilePath(fStationType, 
-                                                    fPlaneType, motifTypeId));
-  ifstream padPos(padPosFileName);
-  AliDebugStream(2) << "Opening file " << padPosFileName << endl;
+  AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
 
   PadMapType positions;
 
   char line[256];
   do {
-    padPos.getline(line,255);
-    if (!padPos) break;
+    padPosStream.getline(line,255);
+    if (!padPosStream) break;
 
 #if defined (__HP_aCC) || (__alpha)
     strstream strline;
@@ -121,15 +132,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     positions.Add( AliMpExMap::GetIndex(key), 
                    AliMpExMap::GetIndex(AliMpIntPair(i,j)) ); 
 #endif
-  } while (!padPos.eof());
+  } while (!padPosStream.eof());
 
-  padPos.close();
-
-  TString bergToGCFileName
-    = AliMpFiles::BergToGCFilePath(fStationType);
-  AliDebugStream(2) << "Opening file " << bergToGCFileName << endl;
-
-  ifstream bergToGCFile(bergToGCFileName);
   const Int_t knbergpins = 
     (fStationType == AliMp::kStation1 || fStationType == AliMp::kStation2 ) ? 80 : 100;
   // Station1 & 2 Bergstak connectors have 80 pins, while for stations
@@ -138,8 +142,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   while(1) {
     Int_t bergNum;
     TString gcStr;
-    bergToGCFile>>bergNum>>gcStr;
-    if (!bergToGCFile.good()) break;
+    bergToGCStream>>bergNum>>gcStr;
+    if (!bergToGCStream.good()) break;
     if (gcStr=="GND") continue;
     if (bergNum>knbergpins) {
         Fatal("BuildMotifType","Berg number > 80 ...");
@@ -147,13 +151,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     }
     gassiChannel[bergNum-1]= atoi(gcStr);
   }
-  bergToGCFile.close();
   
-  TString motifTypeFileName(AliMpFiles::MotifFilePath(fStationType, 
-                                                      fPlaneType, motifTypeId));
-  ifstream motif(motifTypeFileName);
-  AliDebugStream(2) << "Opening file " << motifTypeFileName << endl;
-
   Int_t nofPadsX=0;
   Int_t nofPadsY=0;
 
@@ -162,8 +160,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     Int_t ix,iy,numBerg,numKapton,padNum,gassiNum;
 
     TString lineStr,token;
-    lineStr.ReadLine(motif);
-    if (!motif.good()) break;
+    lineStr.ReadLine(motifTypeStream);
+    if (!motifTypeStream.good()) break;
 #if defined (__HP_aCC) || (__alpha)
     strstream tokenList;
     tokenList << lineStr.Data();
@@ -213,8 +211,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     if (iter==positions.end()) {
       AliWarningStream()
         << "Problem: Pad number " << padNum
-	<< " found in the file " << motifTypeFileName
-	<< " but not in the file " << padPosFileName << endl;
+        << " for motif type " << motifTypeId.Data() 
+	<< " found in the motifType stream, but not in the padPos stream" << endl;
       continue;
     }
 
@@ -227,8 +225,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     if (!value) {
       AliWarningStream()
         << "Problem: Pad number " << padNum
-	<< " found in the file " << motifTypeFileName
-	<< " but not in the file " << padPosFileName << endl;
+        << " for motif type " << motifTypeId.Data() 
+	<< " found in the motifType stream, but not in the padPos stream" << endl;
       continue;
     }
 
@@ -245,14 +243,50 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
     if (ix>=nofPadsX) nofPadsX=ix+1;
     if (iy>=nofPadsY) nofPadsY=iy+1;
 
-  } while (!motif.eof());    
+  } while (!motifTypeStream.eof());    
 
 
   motifType->SetNofPads(nofPadsX, nofPadsY);
-
-  motif.close();
+  
+  delete &padPosStream;
+  delete &bergToGCStream;
+  delete &motifTypeStream;
 
   return motifType;
+}
+
+//_____________________________________________________________________________
+AliMpMotifSpecial*  
+AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
+                                    AliMpMotifType* motifType,
+                                    Double_t scale)
+{
+/// Build a special motif by reading the file motifSpecial<motifId>.dat
+/// in the data directory
+
+  // Open streams
+  //
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::MotifSpecialFilePath(
+                             fStationType,fPlaneType, motifID));
+
+  TString id = MotifSpecialName(motifID,scale);
+  
+  AliMpMotifSpecial* res = new AliMpMotifSpecial(id,motifType);
+  Int_t i,j;
+  Double_t x,y;
+  in >> i;
+  while (!in.eof()){
+    in >>j >>x >> y;
+    res->SetPadDimensions(AliMpIntPair(i,j),TVector2(x*scale/2.,y*scale/2.));
+    in >> i;
+  }
+  res->CalculateDimensions();
+  
+  delete &in;
+  
+  return res;
 }
 
 //_____________________________________________________________________________
@@ -271,41 +305,5 @@ AliMpMotifReader::MotifSpecialName(const TString& motifID, Double_t scale)
     id = motifID;
   }
   return id;
-}
-
-//_____________________________________________________________________________
-AliMpMotifSpecial*  
-AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
-                                    AliMpMotifType* motifType,
-                                    Double_t scale)
-{
-/// Build a special motif by reading the file motifSpecial<motifId>.dat
-/// in the data directory
-
-  // Open the input file
-  TString motifSpecialFileName(AliMpFiles::MotifSpecialFilePath(fStationType, 
-                                                                fPlaneType, motifID));
-  ifstream in(motifSpecialFileName);
-  if (!in) {	
-     AliErrorStream() 
-       << "File " << motifSpecialFileName.Data() << " not found." << endl;
-     return 0;
-  }
-
-  TString id = MotifSpecialName(motifID,scale);
-  
-  AliMpMotifSpecial* res = new AliMpMotifSpecial(id,motifType);
-  Int_t i,j;
-  Double_t x,y;
-  in >> i;
-  while (!in.eof()){
-    in >>j >>x >> y;
-    res->SetPadDimensions(AliMpIntPair(i,j),TVector2(x*scale/2.,y*scale/2.));
-    in >> i;
-  }
-  res->CalculateDimensions();
-  
-  in.close();
-  return res;
 }
 

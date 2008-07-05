@@ -29,6 +29,7 @@
 #include "AliMpLocalBoard.h"
 #include "AliMpConstants.h"
 #include "AliMpFiles.h"
+#include "AliMpDataStreams.h"
 #include "AliMpHelper.h"
 
 #include "AliLog.h"
@@ -101,29 +102,17 @@ AliMpRegionalTrigger::~AliMpRegionalTrigger()
 /// Destructor
 }
 
+
 //
-// public methods
+// private methods
 //
 
 //______________________________________________________________________________
-Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
+Bool_t AliMpRegionalTrigger::ReadData(istream& in)
 {
 /// Load the Regional trigger from ASCII data files
 /// and return its instance
     
-    TString inFileName(fileName);
-    if ( inFileName == "" )
-      inFileName = AliMpFiles::LocalTriggerBoardMapping();
-    
-    inFileName = gSystem->ExpandPathName(inFileName.Data());
-
-    ifstream in(inFileName.Data(), ios::in);
-
-    if (!in) {
-      AliErrorStream()
-         << "Local Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
-      return kFALSE;
-    }
 
     AliMpLocalBoard* board = 0x0;
     AliMpTriggerCrate* crate = 0x0;
@@ -210,7 +199,45 @@ Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
         }
       }
     }
+    
     return kTRUE;
+}
+
+//
+// public methods
+//
+
+//______________________________________________________________________________
+Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
+{
+/// Load the Regional trigger from ASCII data files
+/// and return its instance
+    
+    if ( fileName != "" ) {
+      AliDebugStream(2) << "Read data from file " << fileName.Data() << endl;
+    
+      TString inFileName(fileName);
+      inFileName = gSystem->ExpandPathName(inFileName.Data());
+      ifstream inFile(inFileName.Data(), ios::in);
+      if ( ! inFile.good() ) {
+        AliErrorStream()
+           << "Local Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
+        return kFALSE;
+      }
+      
+      return ReadData(inFile);  
+    } 
+    else {
+      AliDebugStream(2) << "Read data from stream " << fileName.Data() << endl;
+      istream& in
+         = AliMpDataStreams::Instance()
+             ->CreateDataStream(AliMpFiles::LocalTriggerBoardMapping());
+             
+      Bool_t result = ReadData(in);
+      
+      delete &in;
+      return result;        
+    }
 }
 
 //______________________________________________________________________________

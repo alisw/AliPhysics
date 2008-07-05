@@ -31,6 +31,7 @@
 #include "AliMpDetElement.h"
 #include "AliMpConstants.h"
 #include "AliMpFiles.h"
+#include "AliMpDataStreams.h"
 #include "AliMpHelper.h"
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
@@ -81,7 +82,8 @@ AliMpDEStore* AliMpDEStore::ReadData(Bool_t warn)
     return fgInstance;
   }  
   
-  AliInfoClass("Reading DE Store from ASCII files.");
+  if ( AliMpDataStreams::Instance()->GetReadFromFiles() )
+    AliInfoClass("Reading DE Store from ASCII files.");
 
   fgInstance = new AliMpDEStore();
   return fgInstance;
@@ -189,16 +191,21 @@ AliMp::StationType AliMpDEStore::StationType(const TString& stationTypeName)
 
 //______________________________________________________________________________
 Bool_t AliMpDEStore::ReadManuToSerialNbs(AliMpDetElement* detElement, 
-                                       AliMp::StationType stationType)
+                                         AliMp::StationType stationType)
 {
 /// Read manu serial numbers for the given detection element
+
+  // Nothing to be done for trigger
+  if ( stationType == AliMp::kStationTrigger ) return true;
+
   static Int_t manuMask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
 
   TString deName = detElement->GetDEName();
 
-  TString infile = AliMpFiles::ManuToSerialPath(deName, stationType);
-  ifstream in(infile, ios::in);
-  
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::ManuToSerialPath(deName, stationType));
+
   // Change to Error when all files available
   //if ( !in.is_open() && stationType == AliMp::kStation345 ) {
   //   AliWarningStream() << "File " << infile << " not found." << endl;
@@ -229,7 +236,8 @@ Bool_t AliMpDEStore::ReadManuToSerialNbs(AliMpDetElement* detElement,
     delete stringList;
   }
    
-  in.close();
+  delete &in; 
+   
   return true;
 }
 
@@ -240,13 +248,10 @@ AliMpDEStore::ReadDENames(AliMp::StationType station)
 /// Read det element names for cath = 0 from the file specified by name
 /// and fill the map 
 
-  // Open file
-  TString filePath = AliMpFiles::DENamesFilePath(station);
-  std::ifstream in(filePath);
-  if (!in.good()) {
-    AliErrorClassStream() << "Cannot open file " << filePath << endl;;
-    return false;
-  }
+  // Open stream
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::DENamesFilePath(station));
   
   // Read plane types per cathods
   //
@@ -345,10 +350,9 @@ AliMpDEStore::ReadDENames(AliMp::StationType station)
     } 
     in >> word;
   }
-
-  // Close file
-  in.close();
   
+  delete &in;
+
   return true;
 }
 

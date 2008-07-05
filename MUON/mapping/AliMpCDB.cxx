@@ -28,6 +28,9 @@
 
 #include "AliMpSegmentation.h"
 #include "AliMpDDLStore.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataStreams.h"
+#include "AliMpDataMap.h"
 
 #include "AliLog.h"
 #include "AliCDBManager.h"
@@ -41,17 +44,81 @@
 ClassImp(AliMpCDB)
 /// \endcond
 
+Bool_t AliMpCDB::fgLoadFromData = kTRUE;                                       
+
 //
-// static methods
+// private static methods
 //
 
 //______________________________________________________________________________
+TObject*  AliMpCDB::GetCDBEntryObject(const char* dataPath)
+{
+/// Load CDB entry object with checks
+
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  if ( ! cdbManager->GetDefaultStorage() ) {
+    AliErrorClassStream() << "CDB default storage has not been set." << endl; 
+    return 0;
+  }  
+
+  Int_t run = cdbManager->GetRun();
+  if ( run < 0 ) {
+    AliErrorClassStream() << "Cannot get run number from CDB manager." << endl; 
+    return 0;
+  }  
+
+  AliCDBEntry* cdbEntry = cdbManager->Get(dataPath, run);
+  if ( ! cdbEntry ) {
+    AliErrorClassStream() << "Cannot get cdbEntry." << endl; 
+    return 0;
+  }
+  
+  TObject* object = cdbEntry->GetObject();
+  if ( ! object ) {
+    AliErrorClassStream() << "Cannot get object from cdbEntry." << endl; 
+    return 0;
+  }  
+
+  return object;
+}    
+  
+
+//______________________________________________________________________________
+TObject*  AliMpCDB::GetCDBEntryObject(const char* dataPath, 
+                                      const char* cdbpath,
+                                      Int_t runNumber )
+{
+/// Load CDB entry from CDB and run specified in arguments
+
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage(cdbpath);
+
+  AliCDBEntry* cdbEntry = cdbManager->Get(dataPath, runNumber);
+  if ( ! cdbEntry ) {
+    AliErrorClassStream() << "Cannot get cdbEntry." << endl; 
+    return 0;
+  }  
+    
+  TObject* object = cdbEntry->GetObject();
+  if ( ! object ) {
+    AliErrorClassStream() << "Cannot get object from cdbEntry." << endl; 
+    return 0;
+  }  
+
+  return object;
+}    
+                                      
+//
+// public static methods
+//
+
+   
+//______________________________________________________________________________
 Bool_t AliMpCDB::LoadMpSegmentation(Bool_t warn)
 {
-/// Load the sementation from the CDB if it does not yet exist;
+/// Load the sementation from the mapping data from OCDB,
+///  if it does not yet exist;
 /// return false only in case loading from CDB failed
-
-  AliDebugClass(1,"");
 
   if ( AliMpSegmentation::Instance(false) ) {
     if ( warn )  
@@ -59,37 +126,35 @@ Bool_t AliMpCDB::LoadMpSegmentation(Bool_t warn)
     return true;
   }  
   
-  AliCDBManager* cdbManager = AliCDBManager::Instance();
-  if ( ! cdbManager->GetDefaultStorage() ) {
-    AliErrorClassStream() << "CDB default storage has not been set." << endl; 
-    return kFALSE;
-  }  
-
-  Int_t run = cdbManager->GetRun();
-  if ( run < 0 ) {
-    AliErrorClassStream() << "Cannot get run number from CDB manager." << endl; 
-    return kFALSE;
-  }  
-
-  AliCDBEntry* cdbEntry = cdbManager->Get("MUON/Calib/Mapping", run);
+  if ( fgLoadFromData ) {
+    AliDebugClassStream(1)
+      << "Loading segmentation from MUON/Calib/MappingData" << endl;
   
-  if ( cdbEntry ) 
-  {
-    return (AliMpSegmentation*)cdbEntry->GetObject() != 0x0;
+    TObject* cdbEntryObject = GetCDBEntryObject("MUON/Calib/MappingData");
+    if ( ! cdbEntryObject ) return kFALSE;
+  
+    // Pass the map to the streams and then read segmentation
+    // from data map
+    AliMpDataMap* dataMap = (AliMpDataMap*)cdbEntryObject;
+    AliMpDataStreams::Instance()->SetDataMap(dataMap);  
+    AliMpSegmentation::ReadData();
+    return kTRUE;
   }
-  else
-  {
-    return kFALSE;
-  }
+  else {
+    AliDebugClassStream(1)
+      << "Loading segmentation from MUON/Calib/Mapping" << endl;
+  
+    TObject* cdbEntryObject = GetCDBEntryObject("MUON/Calib/Mapping");
+    return cdbEntryObject != 0x0;
+  }  
 }    
 
 //______________________________________________________________________________
 Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
 {
-/// Load the DDL store from the CDB if it does not yet exist
+/// Load the DDL store from the mapping data from OCDB,
+///  if it does not yet exist;
 /// return false only in case loading from CDB failed
-
-  AliDebugClass(1,"");
 
   if ( AliMpDDLStore::Instance(false) ) {
     if ( warn )  
@@ -97,34 +162,29 @@ Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
     return true;
   }  
   
-  // Load segmentation
-  //
-  LoadMpSegmentation(warn); 
+  if ( fgLoadFromData ) {
+    AliDebugClassStream(1)
+      << "Loading DDL store from MUON/Calib/MappingData" << endl;
   
-  // Load DDL store
-  //
-  AliCDBManager* cdbManager = AliCDBManager::Instance();
-  if ( ! cdbManager->GetDefaultStorage() ) {
-    AliErrorClassStream() << "CDB default storage has not been set." << endl; 
-    return kFALSE;
-  }  
-
-  Int_t run = cdbManager->GetRun();
-  if ( run < 0 ) {
-    AliErrorClassStream() << "Cannot get run number from CDB manager." << endl; 
-    return kFALSE;
-  }  
-
-  AliCDBEntry* cdbEntry =  cdbManager->Get("MUON/Calib/DDLStore", run);
+    TObject* cdbEntryObject = GetCDBEntryObject("MUON/Calib/MappingData");
+    if ( ! cdbEntryObject ) return kFALSE;
   
-  if ( cdbEntry ) 
-  {
-    return (AliMpDDLStore*)cdbEntry->GetObject() != 0x0;
+    AliMpDataMap* dataMap = (AliMpDataMap*)cdbEntryObject;
+    AliMpDataStreams::Instance()->SetDataMap(dataMap);  
+    AliMpDDLStore::ReadData();
+    return kTRUE;
   }
-  else
-  {
-    return kFALSE;
-  }
+  else {
+    AliDebugClassStream(1)
+      << "Loading DDL store from MUON/Calib/DDLStore" << endl;
+  
+    // Load segmentation
+    LoadMpSegmentation(warn); 
+  
+    // Load DDL store
+    TObject* cdbEntryObject =  GetCDBEntryObject("MUON/Calib/DDLStore");
+    return cdbEntryObject != 0x0;
+  }     
 }    
 
 //______________________________________________________________________________
@@ -137,27 +197,35 @@ Bool_t AliMpCDB::LoadMpSegmentation2(const char* cdbpath, Int_t runNumber,
 /// and run is set directly via arguments.
 
 
-  AliDebugClass(1,"");
-
   if ( AliMpSegmentation::Instance(false) ) {
     if ( warn )  
       AliWarningClass("Segmentation has been already loaded."); 
     return true;
   }  
   
-  AliCDBManager* cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage(cdbpath);
-
-  AliCDBEntry* cdbEntry = cdbManager->Get("MUON/Calib/Mapping", runNumber);
+  if ( fgLoadFromData ) {
+    AliDebugClassStream(1)
+      << "Loading segmentation from MUON/Calib/MappingData" << endl;
   
-  if ( cdbEntry ) 
-  {
-    return (AliMpSegmentation*)cdbEntry->GetObject() != 0x0;
+    TObject* cdbEntryObject 
+      = GetCDBEntryObject("MUON/Calib/MappingData", cdbpath, runNumber);
+    if ( ! cdbEntryObject ) return kFALSE;
+  
+    // Pass the map to the streams and then read segmentation
+    // from data map
+    AliMpDataMap* dataMap = (AliMpDataMap*)cdbEntryObject;
+    AliMpDataStreams::Instance()->SetDataMap(dataMap);  
+    AliMpSegmentation::ReadData();
+    return kTRUE;
   }
-  else
-  {
-    return kFALSE;
-  }
+  else {
+    AliDebugClassStream(1)
+      << "Loading segmentation from MUON/Calib/Mapping" << endl;
+  
+    TObject* cdbEntryObject 
+      = GetCDBEntryObject("MUON/Calib/Mapping", cdbpath, runNumber);
+    return cdbEntryObject != 0x0;
+  }  
 }    
 
 //______________________________________________________________________________
@@ -169,34 +237,57 @@ Bool_t AliMpCDB::LoadDDLStore2(const char* cdbpath, Int_t runNumber,
 /// In difference from LoadDDLStore(), in this method the CDB path
 /// and run is set directly via arguments.
 
-  AliDebugClass(1,"");
-
   if ( AliMpDDLStore::Instance(false) ) {
     if ( warn )  
       AliWarningClass("DDL Store has been already loaded."); 
     return true;
   }  
   
-  // Load segmentation
-  //
-  LoadMpSegmentation2(cdbpath, runNumber, warn); 
+  if ( fgLoadFromData ) {
+    AliDebugClassStream(1)
+      << "Loading DDL store from MUON/Calib/MappingData" << endl;
   
-  // Load DDL store
-  //
-  AliCDBManager* cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage(cdbpath);
-
-  AliCDBEntry* cdbEntry =  cdbManager->Get("MUON/Calib/DDLStore", runNumber);
+    TObject* cdbEntryObject 
+      = GetCDBEntryObject("MUON/Calib/MappingData", cdbpath, runNumber);
+    if ( ! cdbEntryObject ) return kFALSE;
   
-  if ( cdbEntry ) 
-  {
-    return (AliMpDDLStore*)cdbEntry->GetObject() != 0x0;
+    AliMpDataMap* dataMap = (AliMpDataMap*)cdbEntryObject;
+    AliMpDataStreams::Instance()->SetDataMap(dataMap);  
+    AliMpDDLStore::ReadData();
+    return kTRUE;
   }
-  else
-  {
-    return kFALSE;
-  }
+  else {
+    AliDebugClassStream(1)
+      << "Loading DDL store from MUON/Calib/DDLStore" << endl;
+  
+    // Load segmentation
+    LoadMpSegmentation2(cdbpath, runNumber, warn); 
+  
+    // Load DDL store
+    TObject* cdbEntryObject =  GetCDBEntryObject("MUON/Calib/DDLStore");
+    return cdbEntryObject != 0x0;
+  }  
 }    
+
+//______________________________________________________________________________
+Bool_t AliMpCDB::WriteMpData()
+{
+/// Write mapping data in OCDB
+
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  if ( ! cdbManager->GetDefaultStorage() )
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  
+  AliCDBMetaData* cdbData = new AliCDBMetaData();
+  cdbData->SetResponsible("Dimuon Offline project");
+  cdbData->SetComment("MUON mapping");
+  cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
+  AliCDBId id("MUON/Calib/MappingData", 0, AliCDBRunRange::Infinity()); 
+
+  AliMpDataProcessor mp;
+  AliMpDataMap* map = mp.CreateDataMap();
+  return cdbManager->Put(map, id, cdbData);
+}
 
 //______________________________________________________________________________
 Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData)
@@ -246,3 +337,19 @@ Bool_t AliMpCDB::WriteDDLStore(Bool_t readData)
   }
   return cdbManager->Put(AliMpDDLStore::Instance(), id, cdbData);
 }   
+
+//______________________________________________________________________________
+Bool_t  AliMpCDB::GenerateMpData(const char* cdbpath, Int_t runNumber)
+{
+/// Generate mapping data ASCII files from OCDB
+
+  TObject* cdbEntryObject 
+    = GetCDBEntryObject("MUON/Calib/MappingData", cdbpath, runNumber);
+  if ( ! cdbEntryObject ) return kFALSE;
+  
+  AliMpDataMap* dataMap = (AliMpDataMap*)cdbEntryObject;
+  AliMpDataProcessor mp;
+  return mp.GenerateData(dataMap);
+} 
+
+

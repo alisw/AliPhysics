@@ -17,7 +17,11 @@
 #pragma link C++ class  AliMpVSegmentation+;
 #pragma link C++ class  AliMpVPadIterator+;
 #pragma link C++ class  AliMpPadIteratorPtr+;
+#pragma link C++ class  AliMpDataProcessor+;
+#pragma link C++ class  AliMpDataStreams+;
+#pragma link C++ class  AliMpDataMap+;
 #pragma link C++ class  AliMpFiles!;
+//#pragma link C++ class  std::pair<std::string, std::string>+;
 
 #pragma link C++ namespace AliMp;
 #pragma link C++ enum   AliMp::Direction;

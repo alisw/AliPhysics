@@ -27,6 +27,7 @@
 
 #include "AliMpSegmentation.h"
 
+#include "AliMpDataStreams.h"
 #include "AliMpDetElement.h"
 #include "AliMpDEStore.h"
 #include "AliMpDEManager.h"
@@ -89,7 +90,8 @@ AliMpSegmentation* AliMpSegmentation::ReadData(Bool_t warn)
     return fgInstance;
   }  
   
-  AliInfoClass("Reading segmentation from ASCII files.");
+  if ( AliMpDataStreams::Instance()->GetReadFromFiles() )
+    AliInfoClass("Reading segmentation from ASCII files.");
 
   fgInstance = new AliMpSegmentation();
   return fgInstance;

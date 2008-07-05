@@ -52,6 +52,8 @@ class AliMpRegionalTrigger : public  TObject{
     Int_t GetNofLocalBoards() const;
 
   private:
+    Bool_t ReadData(istream& in);
+
     // data members  
     AliMpExMap  fTriggerCrates; ///< map for trigger crates
     AliMpExMap fLocalBoardMap; ///< map of local boards (owner of boards)

@@ -50,8 +50,8 @@ ClassImp(AliMpFiles)
 
 const TString AliMpFiles::fgkDataDir = "/data";
 const TString AliMpFiles::fgkStationDir = "/station";
-const TString AliMpFiles::fgkBendingDir = "/bending_plane/";
-const TString AliMpFiles::fgkNonBendingDir = "/non-bending_plane/";
+const TString AliMpFiles::fgkBendingDir = "bending_plane/";
+const TString AliMpFiles::fgkNonBendingDir = "non-bending_plane/";
 const TString AliMpFiles::fgkDENames = "denames"; 
 const TString AliMpFiles::fgkSector  = "zones"; 
 const TString AliMpFiles::fgkSectorSpecial = "zones_special";
@@ -62,7 +62,7 @@ const TString AliMpFiles::fgkManuToSerialDir ="manu_serial/";
 const TString AliMpFiles::fgkManuToSerial ="_manu";
 const TString AliMpFiles::fgkPadPosPrefix  = "padPos"; 
 const TString AliMpFiles::fgkDataExt = ".dat";      
-const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
+const TString AliMpFiles::fgkBergToGCFileName = "bergToGC"; 
 const TString AliMpFiles::fgkTriggerLocalBoards = "RegionalCrate";
 const TString AliMpFiles::fgkTriggerGlobalBoards = "GlobalCrate";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
@@ -79,25 +79,6 @@ AliMpFiles::~AliMpFiles()
 //
 // private methods
 //
-
-//______________________________________________________________________________
-TString AliMpFiles::GetTop()
-{
-/// Return top path to mapping data defined either via MINSTALL
-/// or ALICE_ROOT environment variable.                                      \n
-/// If both variables are defined, MINSTALL is used.
-
-  TString top = getenv("MINSTALL");    
-  if ( ! top.IsNull() ) return top;
-
-  TString ntop = getenv("ALICE_ROOT");
-  if ( ntop.IsNull() ) {
-    AliErrorClassStream() << "Cannot find path to mapping data." << endl;
-    return ntop;
-  }  
-  ntop += "/MUON/mapping";
-  return ntop;
-}
 
 //______________________________________________________________________________
 TString AliMpFiles::PlaneDataDir(AliMp::StationType station, 
@@ -120,7 +101,7 @@ TString AliMpFiles::PlaneDataDir(AliMp::StationType station,
     break;
   case AliMp::kStation345:
   case AliMp::kStationTrigger:  
-    return GetTop() + fgkDataDir + StationDataDir(station) + "/";
+    return GetTop() + fgkDataDir + StationDataDir(station);
     break;
   default:  
     AliFatalClass("Incomplete switch on AliMp::PlaneType");
@@ -354,5 +335,24 @@ AliMpFiles::SetTopPath(const TString& topPath)
 /// Set top file path
 
   GetTop() = topPath; 
+}
+
+//______________________________________________________________________________
+TString AliMpFiles::GetTop()
+{
+/// Return top path to mapping data defined either via MINSTALL
+/// or ALICE_ROOT environment variable.                                      \n
+/// If both variables are defined, MINSTALL is used.
+
+  TString top = getenv("MINSTALL");    
+  if ( ! top.IsNull() ) return top;
+
+  TString ntop = getenv("ALICE_ROOT");
+  if ( ntop.IsNull() ) {
+    AliErrorClassStream() << "Cannot find path to mapping data." << endl;
+    return ntop;
+  }  
+  ntop += "/MUON/mapping";
+  return ntop;
 }
 

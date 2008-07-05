@@ -75,7 +75,7 @@ class AliMpMotifReader : public TObject
     AliMp::StationType  fStationType; ///< station type 
     AliMp::PlaneType    fPlaneType;   ///< plane type 
 
-  ClassDef(AliMpMotifReader,1)  // Data reader
+  ClassDef(AliMpMotifReader,0)  // Data reader
 };
 
 #endif //ALI_MP_MOTIF_READER_H

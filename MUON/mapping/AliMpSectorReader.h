@@ -51,16 +51,16 @@ class AliMpSectorReader : public TObject
     AliMpSectorReader& operator = (const AliMpSectorReader& right);
 
     // methods
-    void  ReadSectorData(ifstream& in);
-    void  ReadZoneData(ifstream& in);
-    void  ReadSubZoneData(ifstream& in, AliMpZone* zone);
-    void  ReadRowSegmentsData(ifstream& in,
+    void  ReadSectorData(istream& in);
+    void  ReadZoneData(istream& in);
+    void  ReadSubZoneData(istream& in, AliMpZone* zone);
+    void  ReadRowSegmentsData(istream& in,
                           AliMpZone* zone, AliMpSubZone* subZone);
-    AliMpVMotif*  ReadMotifData(ifstream& in, AliMpZone* zone);
-    void  ReadSectorSpecialData(ifstream& in, AliMp::XDirection direction);
-    void  ReadMotifsSpecialData(ifstream& in);
-    void  ReadRowSpecialData(ifstream& in, AliMp::XDirection direction);
-    void  ReadRowSegmentSpecialData(ifstream& in,
+    AliMpVMotif*  ReadMotifData(istream& in, AliMpZone* zone);
+    void  ReadSectorSpecialData(istream& in, AliMp::XDirection direction);
+    void  ReadMotifsSpecialData(istream& in);
+    void  ReadRowSpecialData(istream& in, AliMp::XDirection direction);
+    void  ReadRowSegmentSpecialData(istream& in,
                           AliMpVRowSegmentSpecial* segment,
 			  AliMp::XDirection direction);
     
@@ -82,7 +82,7 @@ class AliMpSectorReader : public TObject
     AliMpSector*        fSector;      ///< sector
     AliMpMotifReader*   fMotifReader; ///< motif reader
 
-  ClassDef(AliMpSectorReader,1)  // Data reader
+  ClassDef(AliMpSectorReader,0)  // Data reader
 };
 
 #endif //ALI_MP_READER_H

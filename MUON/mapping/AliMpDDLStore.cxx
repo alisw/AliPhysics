@@ -35,6 +35,7 @@
 #include "AliMpFrtCrocusConstants.h"
 #include "AliMpDDL.h"
 #include "AliMpFiles.h"
+#include "AliMpDataStreams.h"
 #include "AliMpHelper.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
@@ -93,7 +94,8 @@ AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn)
         return fgInstance;
     }
 
-    AliInfoClass("Reading DDL Store from ASCII files.");
+    if ( AliMpDataStreams::Instance()->GetReadFromFiles() )
+      AliInfoClass("Reading DDL Store from ASCII files.");
 
     fgInstance = new AliMpDDLStore();
     return fgInstance;
@@ -202,13 +204,9 @@ Bool_t AliMpDDLStore::ReadDDLs()
 {
     /// Read ddl <-> bus patch file
 
-    TString infile = AliMpFiles::BusPatchFilePath();
-
-    ifstream in(infile, ios::in);
-    if (!in) {
-        AliErrorStream() << "Data file " << infile << " not found.";
-        return false;
-    }
+    istream& in 
+      = AliMpDataStreams::Instance()
+        ->CreateDataStream(AliMpFiles::BusPatchFilePath());
 
     char line[255];
 
@@ -287,7 +285,7 @@ Bool_t AliMpDDLStore::ReadDDLs()
         ddl->FillBusPatchIds();
     }
 
-    in.close();
+    delete &in;
     return true;
 }
 
@@ -474,13 +472,9 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
 /// Read file with bus patches with a special order of manus
 /// and reset the manus arrays filled via SetManu function
 
-  TString infile = AliMpFiles::BusPatchSpecialFilePath();
-
-  ifstream in(infile, ios::in);
-  if (!in) {
-    AliErrorStream() << "Data file " << infile << " not found.";
-    return false;
-  }
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::BusPatchSpecialFilePath());
 
   char line[255];
 
@@ -547,6 +541,8 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
     }
   }
   
+  delete &in;
+  
   return kTRUE;
 }    
  
@@ -583,12 +579,10 @@ Bool_t AliMpDDLStore::ReadBusPatchInfo()
 {
     /// read the buspatch info file and set buspatch info
 
-    TString infile = AliMpFiles::BusPatchInfoFilePath();
-    ifstream in(infile, ios::in);
-    if (!in) {
-        AliErrorStream() << "Data file " << infile << " not found.";
-        return false;
-    }
+    istream& in 
+      = AliMpDataStreams::Instance()
+        ->CreateDataStream(AliMpFiles::BusPatchInfoFilePath());
+
     char line[255];
 
     for (Int_t iDDL = 0; iDDL < fgkNofDDLs; ++iDDL ) {
@@ -648,6 +642,8 @@ Bool_t AliMpDDLStore::ReadBusPatchInfo()
 
         }
     }
+    
+    delete &in;
 
     return true;
 }

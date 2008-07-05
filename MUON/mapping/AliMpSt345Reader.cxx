@@ -22,6 +22,7 @@
 #include "AliMpSlatMotifMap.h"
 #include "AliMpMotifReader.h"
 #include "AliMpFiles.h"
+#include "AliMpDataStreams.h"
 #include "AliMpMotifType.h"
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
@@ -81,12 +82,10 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
   /// Create a new AliMpPCB object, by reading it from file.
   /// The returned object must be deleted by the client
   
-  std::ifstream in(AliMpFiles::SlatPCBFilePath(AliMp::kStation345,pcbType).Data());
-  if (!in.good()) 
-  {
-    AliErrorClass(Form("Cannot open file for PCB %s",pcbType));
-    return 0;
-  }
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::SlatPCBFilePath(
+                             AliMp::kStation345, pcbType));
  
   AliMpMotifReader reader(AliMp::kStation345,AliMp::kNonBendingPlane); 
   // note that the nonbending
@@ -148,7 +147,7 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
     }
   }
   
-  in.close();
+  delete &in;
   
   return pcb;
 }
@@ -161,15 +160,11 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
   /// Create a new AliMpSlat object, by reading it from file.
   /// The returned object must be deleted by the client.
   
-  std::ifstream in(AliMpFiles::SlatFilePath(AliMp::kStation345,slatType,
-                                            planeType).Data());
-  if (!in.good()) 
-  {
-    AliErrorClass(Form("Cannot read slat from %s",
-                       AliMpFiles::SlatFilePath(AliMp::kStation345,slatType,planeType).Data()));
-    return 0;
-  }
-  
+  istream& in 
+    = AliMpDataStreams::Instance()
+       ->CreateDataStream(AliMpFiles::SlatFilePath(
+                             AliMp::kStation345, slatType, planeType));
+
   char line[80];
   
   const TString kpcbKeyword("PCB");
@@ -226,8 +221,9 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
     }
   }
   
-  in.close();
+  delete &in;
   
   return slat;
-}
+}  
+                              
 

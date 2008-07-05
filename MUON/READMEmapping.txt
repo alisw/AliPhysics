@@ -19,12 +19,9 @@ in OCDB has to be regenerated in this way:
 
 <pre>
 $> cd $ALICE_ROOT/MUON
-$> rm Calib/Mapping/Run0_999999999_v0_s0.root
-$> rm Calib/DDLStore/Run0_999999999_v0_s0.root
+$> rm Calib/MappingData/Run0_999999999_v0_s0.root
 $> aliroot
-root [0] AliMpDDLStore::ReadData(); 
-root [1] AliMpCDB::WriteMpSegmentation(); 
-root [2] AliMpCDB::WriteDDLStore(); 
+root [0] AliMpCDB::WriteMpData(); 
 </pre>
 
 Note that mapping has to be loaded from OCDB almost each time
