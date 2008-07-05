@@ -378,7 +378,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
           efit*=80.33109+128.6433*bfit ;
 
         if(efit<0. || efit > 10000.){                                                                          
-//leave energy as previously found max
+//set energy to previously found max
 //          fEnergy=0 ; //bad sample                                                    
           fTime=-999.;                                                                
           fQuality=999 ;                                                              
@@ -400,35 +400,40 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 
 //Debug================
 //        Double_t n,alpha,beta ;
-//        if(fLowGainFlag){
+//        Double_t en ;
+//       if(fLowGainFlag){
 //          n=fSampleParamsLow->At(0) ;
 //          alpha=fSampleParamsLow->At(1) ;
 //          beta=fSampleParamsLow->At(3) ;
+//          en=efit/(99.54910 + 78.65038*bfit) ;
 //        }
 //        else{
 //          n=fSampleParamsHigh->At(0) ;
 //          alpha=fSampleParamsHigh->At(1) ;
 //          beta=fSampleParamsHigh->At(3) ;
+//          en=efit/(80.33109+128.6433*bfit) ;
 //        }
 //
-//    if( fQuality > 1 && fEnergy > 20. && !fOverflow){
-//    if(!fLowGainFlag && fRow==32 && fColumn==18){
+////    if( fQuality > 1 && fEnergy > 20. && !fOverflow){
+////    if(!fLowGainFlag && fRow==32 && fColumn==18){
+//{
 //    printf("Col=%d, row=%d, qual=%f, E=%f, t0=%f, b=%f\n",fColumn,fRow,fQuality,efit,t0,bfit) ;
+//    printf("    Energy = %f \n",fEnergy) ;
 //    TCanvas * c = new TCanvas("samp") ;
 //    c->cd() ;
 //    h->Draw() ;
 //    if(fLowGainFlag){
-//      fff->SetParameters(pedestal,efit/sampleMaxLG,t0,n,alpha,bfit,beta) ;
+//      fff->SetParameters(pedestal,en,t0,n,alpha,bfit,beta) ;
 //    }
 //    else{
-//     fff->SetParameters(pedestal,efit/sampleMaxHG,t0,n,alpha,bfit,beta) ;
+//     fff->SetParameters(pedestal,en,t0,n,alpha,bfit,beta) ;
 //    }
-////    for(Int_t i=1;i<=h->GetNbinsX(); i++){
-//       Double_t x=h->GetBinCenter(i) ;
-//       h->SetBinContent(i,h->GetBinContent(i)-fff->Eval(x)) ;
-//    }
-//    h->SetMinimum(-15.) ;
-//    h->SetMaximum(15.) ;
+//////    for(Int_t i=1;i<=h->GetNbinsX(); i++){
+////       Double_t x=h->GetBinCenter(i) ;
+////       h->SetBinContent(i,h->GetBinContent(i)-fff->Eval(x)) ;
+////    }
+////    h->SetMinimum(-15.) ;
+////    h->SetMaximum(15.) ;
 //    h->Draw() ;
 //    fff->Draw("same") ;
 //    c->Update();
@@ -473,7 +478,8 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
     fTimes->AddAt(in->GetTime(),iBin);
  
 //Debug==============
-//    h->SetBinContent(iBin,in->GetSignal()) ;
+//    h->SetBinContent(in->GetTime(),in->GetSignal()) ;
+//EndDebug==============
     
   } // in.Next()
   
@@ -505,26 +511,25 @@ void AliPHOSRawDecoderv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, 
   Double_t overflow=params->At(5) ;
   Int_t iBin = (Int_t) params->At(6) ;
   Int_t nSamples=TMath::Min(iBin+70,samples->GetSize()) ; //Here we set number of points to fit (70)
-  
+
+  // iBin - first non-zero sample 
   Int_t tStep=times->At(iBin+1)-times->At(iBin) ;
-  Double_t ddt=TMath::Ceil(t0)-t0-tStep ;
+  Double_t ddt=times->At(iBin)-t0-tStep ;
   Double_t exp1=TMath::Exp(-alpha*ddt) ;
   Double_t exp2=TMath::Exp(-beta*ddt) ;
   Double_t dexp1=TMath::Exp(-alpha*tStep) ;
   Double_t dexp2=TMath::Exp(-beta*tStep) ;
   for(Int_t i = iBin; i<nSamples ; i++) {
-    Double_t fsample = double(samples->At(i)) ;
-//    if(fsample>=overflow)
-//      continue ;
     Double_t dt=double(times->At(i))-t0 ;
+    Double_t fsample = double(samples->At(i)) ;
     Double_t diff ;
-    if(dt<=0.){
+    exp1*=dexp1 ;
+    exp2*=dexp2 ;
+    if(dt<0.){
       diff=fsample - ped ; 
       fret += diff*diff ;
       continue ;
     }
-    exp1*=dexp1 ;
-    exp2*=dexp2 ;
     Double_t dtn=TMath::Power(dt,n) ;
     Double_t dtnE=dtn*exp1 ;
     Double_t dt2E=dt*dt*exp2 ;
