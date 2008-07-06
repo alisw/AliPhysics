@@ -323,7 +323,7 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    TProfile * prof1=0;
    TH1F     * his1 =0;
    fHclus = new TH1I("hclus","Number of clusters per track",160, 0, 160);     // valgrind 3
-   fRejectedTracksHisto    = new TH1I("RejectedTracksHisto", "Rejected tracks, sorted by failed cut", 10, 1, 10);
+   fRejectedTracksHisto    = new TH1I("RejectedTracksHisto", "Rejected tracks, sorted by failed cut", 100, -1, 10);
    fHclusterPerPadrow      = new TH1I("fHclusterPerPadrow", " clusters per padRow, used for the resolution tree", 160, 0, 160);
    fHclusterPerPadrowRaw   = new TH1I("fHclusterPerPadrowRaw", " clusters per padRow, before cutting clusters", 160, 0, 160);
    fCalPadClusterPerPad    = new AliTPCCalPad("fCalPadClusterPerPad", "clusters per pad");
@@ -847,10 +847,10 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
          TMatrixD chi2Z(difZT, TMatrixD::kMult, mulZ);
          chi2 += chi2Z(0, 0);      
          
-         // REMOVE KINK
-         if (chi2 * 0.25 > kCutChi2) fRejectedTracksHisto->Fill(8);
-         if (chi2 * 0.25 > kCutChi2) fClusterCutHisto->Fill(3, irow);
-         if (chi2 * 0.25 > kCutChi2) continue;   // if chi2 is too big goto next padrow
+         // REMOVE KINK - TO be fixed - proper chi2 calculation for curved track to be implemented
+         //if (chi2 * 0.25 > kCutChi2) fRejectedTracksHisto->Fill(8);
+         //if (chi2 * 0.25 > kCutChi2) fClusterCutHisto->Fill(3, irow);
+         //if (chi2 * 0.25 > kCutChi2) continue;   // if chi2 is too big goto next padrow
          // fit tracklet with polynom of 2nd order and two polynoms of 1st order
          // take both polynoms of 1st order, calculate difference of their parameters
          // add covariance matrixes and calculate chi2 of this difference
