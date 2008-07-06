@@ -65,16 +65,14 @@ AliGenHydjet::AliGenHydjet(Int_t npart) :
 //
   fName = "Hydjet";
   fTitle = "Particle Generator using Hydjet";
-  fParticles = new TClonesArray("TParticle",10000);
-   // Set random number generator 
-    if (!AliPythiaRndm::GetPythiaRandom()) 
-      AliPythiaRndm::SetPythiaRandom(GetRandom());
+  // Set random number generator 
+  if (!AliPythiaRndm::GetPythiaRandom()) 
+    AliPythiaRndm::SetPythiaRandom(GetRandom());
 }
 
 AliGenHydjet::~AliGenHydjet()
 {
 // Destructor
-    delete fParticles;
 }
 
 void AliGenHydjet::Init()
@@ -133,9 +131,9 @@ void AliGenHydjet::Generate()
   {
 //    Generate one event
       fHydjet->GenerateEvent();
-      fHydjet->ImportParticles(fParticles,"All");
+      fHydjet->ImportParticles(&fParticles,"All");
 
-      Int_t np = fParticles->GetEntriesFast();
+      Int_t np = fParticles.GetEntriesFast();
       printf("\n **************************************************%d\n",np);
       Int_t nc = 0;
       if (np == 0 ) continue;
@@ -156,7 +154,7 @@ void AliGenHydjet::Generate()
 //
 
       for(i = 0; i<np; i++){
-         TParticle *  iparticle = (TParticle *) fParticles->At(i);
+         TParticle *  iparticle = (TParticle *) fParticles.At(i);
          // Is this a final state particle ?
          if (!Stable(iparticle)) continue;
          Bool_t selected = kTRUE;
@@ -176,7 +174,7 @@ void AliGenHydjet::Generate()
 //
 
       for(i = 0; i<np; i++) {
-         TParticle *  iparticle = (TParticle *) fParticles->At(i);
+         TParticle *  iparticle = (TParticle *) fParticles.At(i);
          Bool_t  hasDaughter = (iparticle->GetFirstDaughter() > 0);
          if(pSelected[i]){
            kf = iparticle->GetPdgCode();
