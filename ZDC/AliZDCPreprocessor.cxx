@@ -410,7 +410,7 @@ else if(runType=="STANDALONE_EMD"){
          Log(Form("File %s not found", emdFileName));
          return 1;
        }
-       //eCalib->Print("");
+       eCalib->Print("");
       // 
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);

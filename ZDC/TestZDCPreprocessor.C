@@ -8,14 +8,14 @@
 //   ReadDCSAliasMap() reads from a file
 //   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
 
-void TestZDCPreprocessor()
+void TestZDCPreprocessor(Int_t obj=0)
 {
   // load library
   gSystem->Load("libTestShuttle.so");
 
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
-  AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);
+  AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
@@ -72,9 +72,9 @@ void TestZDCPreprocessor()
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
-  //shuttle->SetInputRunType("STANDALONE_PEDESTAL");
-  shuttle->SetInputRunType("STANDALONE_LASER");
-  //shuttle->SetInputRunType("STANDALONE_EMD");
+  if(obj==1)      shuttle->SetInputRunType("STANDALONE_PEDESTAL");
+  else if(obj==2) shuttle->SetInputRunType("STANDALONE_LASER");
+  else if(obj==3) shuttle->SetInputRunType("STANDALONE_EMD");
 
   // TODO(4)
   //
@@ -125,27 +125,32 @@ void TestZDCPreprocessor()
   //
   // Check the file which should have been created
   AliCDBEntry* chkEntry0 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/ChMap", 7);
-  /*AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/Pedestals", 7);
-  */
-  /*AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/EMDCalib", 7);
-  */
-  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/LaserCalib", 7);
+  			->Get("ZDC/Calib/ChMap", 0);
+  AliCDBEntry* chkEntry1;
+  if(obj==1) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/Pedestals", 0);
+  else if(obj==2) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/LaserCalib", 0);
+  else if(obj==3) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/EMDCalib", 0);
   
   
-  if (!chkEntry)
-  {
-    printf("The file is not there. Something went wrong.\n");
+  if(!chkEntry0){
+    printf("No file in \n ZDC/Calib/ChMap\n");
     return;
   }
+  if(!chkEntry1){
+    if(obj==1) printf("No file in \n ZDC/Calib/Pedestal\n");
+    else if(obj==2) printf("No file in \n ZDC/Calib/LaserCalib\n");
+    else if(obj==3) printf("No file in \n ZDC/Calib/EMDCalib\n");
+    return;
+  }
+  
 
-  AliTestDataDCS* output = dynamic_cast<AliTestDataDCS*> (chkEntry->GetObject());
+  /*AliTestDataDCS* output = dynamic_cast<AliTestDataDCS*> (chkEntry1->GetObject());
   // If everything went fine, draw the result
   if (output)
-    output->Draw();
+    output->Draw();*/
 }
 
 TMap* CreateDCSAliasMap()
