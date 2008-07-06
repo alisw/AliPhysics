@@ -28,6 +28,9 @@
   //
   //
   //
+  // To make laser scan the user interaction neccessary
+  //
+  .x ~/UliStyle.C
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
   TFile fcalib("CalibObjects.root");
@@ -35,37 +38,29 @@
   AliTPCcalibLaser * laser = ( AliTPCcalibLaser *)array->FindObject("laserTPC");
   laser->DumpMeanInfo(-0.4)
   TFile fmean("laserMean.root")
-
+  //
   //  laser track clasification;
-
+  //
   TCut cutT("cutT","abs(Tr.fP[3])<0.06");
   TCut cutPt("cutPt","abs(Tr.fP[4])<0.1");
   TCut cutN("cutN","fTPCncls>70");
   TCut cutP("cutP","abs(atan2(x1,x0)-atan2(lx1,lx0))<0.03")
   TCut cutA = cutT+cutPt+cutP;
-
   TFile f("laserTPCDebug.root");
   TTree * treeT = (TTree*)f.Get("Track");
-
-
-  // LASER scan 
+  //
+  //
+  // Analyze  LASER scan 
+  //
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool; 
   TChain * chain = tool.MakeChain("laserScan.txt","Mean",0,10200);
   chain->Lookup();
-
-
-  treeT->Draw("(atan2(x1,x0)-atan2(lx1,lx0))*250.:fBundle","fSide==1&&fRod==0"+cutA,"prof") 
-
-  gSystem->Load("libSTAT.so")
-  TStatToolkit toolkit;
-  Double_t chi2;
-  TVectorD fitParam;
-  TMatrixD covMatrix;
-  Int_t npoints;
-  TString *strq0 = toolkit.FitPlane(treeT,"Tr.fP[1]-LTr.fP[1]","lx1++lx2", "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
-
+  AliTPCcalibLaser::DumpScanInfo(chain)
+  TFile fscan("laserScan.root")
+  TTree * treeT = (TTree*)fscan.Get("Mean")
+ 
 */
 
 
@@ -87,6 +82,7 @@
 #include "AliTPCseed.h"
 #include "AliTracker.h"
 #include "TClonesArray.h"
+#include "TPad.h"
 
 
 #include "TTreeStream.h"
@@ -536,9 +532,21 @@ void AliTPCcalibLaser::RefitLaser(Int_t id){
 }
 
 
-void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield){
+void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield,Int_t minEntries){
   //
-  //
+  //  Dump information about laser beams
+  //  isOK variable indicates usability of the beam  
+  //  Beam is not usable if:
+  //     a.  No entries in range (krmsCut0)
+  //     b.  Big sperad          (krmscut1)
+  //     c.  RMSto fit sigma bigger then (kmultiCut)
+  //     d.  Too big angular spread 
+  //  
+
+  const Float_t krmsCut0=0.001;
+  const Float_t krmsCut1=0.16;
+  const Float_t kmultiCut=2;
+  const Float_t kcutP0=0.002;
   //
   AliTPCcalibLaser *laser = this;
   TTreeSRedirector *pcstream = new TTreeSRedirector("laserMean.root");
@@ -546,13 +554,14 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield){
   //
   //
   for (Int_t id=0; id<336; id++){
+    Bool_t isOK=kTRUE;
     TH1F * hisphi  = (TH1F*)laser->fDeltaPhi.At(id);
     TH1F * hisphiP = (TH1F*)laser->fDeltaPhiP.At(id);
     TH1F * hisZ    = (TH1F*)laser->fDeltaZ.At(id);
-    //    TH1F * hisS    = laser->fDeltaZ->At(id);
+    TH1F * hisS    = (TH1F*)laser->fSignals.At(id);
     if (!hisphi) continue;;
     Double_t entries = hisphi->GetEntries();
-    if (entries<30) continue;
+    if (entries<minEntries) continue;
     //
     AliTPCLaserTrack *ltrp = (AliTPCLaserTrack*)fTracksMirror.At(id);
     if (!ltrp) {
@@ -561,6 +570,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield){
     }
     Float_t meanphi = hisphi->GetMean();
     Float_t rmsphi = hisphi->GetRMS();
+    //
     Float_t meanphiP = hisphiP->GetMean();
     Float_t rmsphiP = hisphiP->GetRMS();
     Float_t meanZ = hisZ->GetMean();
@@ -574,31 +584,44 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield){
     hisZ->Fit(&fg,"","",hisZ->GetMean()-4*hisZ->GetRMS(),hisZ->GetMean()+4*hisZ->GetRMS());
     Double_t gz1 = fg.GetParameter(1); 
     Double_t gz2 = fg.GetParameter(2); 
-
+    //
+    Float_t meanS=hisS->GetMean();
     //
     Double_t lxyz[3];
     Double_t lpxyz[3];
     ltrp->GetXYZ(lxyz);
     ltrp->GetPxPyPz(lpxyz);
+
+    if (rmsphi<krmsCut0) isOK=kFALSE; // empty in range - not entries inside
+    if (rmsphi>krmsCut1) isOK=kFALSE; // empty in range - not entries inside
+    if (rmsphi>krmsCut0) if (gphi2/rmsphi>kmultiCut) isOK=kFALSE;   // multi peak structure
+    if (gphiP2>kcutP0) isOK=kFALSE;
     //
     (*pcstream)<<"Mean"<<
+      "isOK="<<isOK<<
       "entries="<<entries<<      // number of entries
       "bz="<<bfield<<            // bfield
       "LTr.="<<ltrp<<             // refernece track
+      //
       "lx0="<<lxyz[0]<<          // reference x
       "lx1="<<lxyz[1]<<          // reference y
       "lx2="<<lxyz[2]<<          // refernece z      
       "lpx0="<<lpxyz[0]<<          // reference x
       "lpx1="<<lpxyz[1]<<          // reference y
       "lpx2="<<lpxyz[2]<<          // refernece z            
+      //
+      "msig="<<meanS<<
+      //
       "mphi="<<meanphi<<         //
       "rmsphi="<<rmsphi<<        //
       "gphi1="<<gphi1<<
       "gphi2="<<gphi2<<
+      //
       "mphiP="<<meanphiP<<       //
       "rmsphiP="<<rmsphiP<<      //
       "gphiP1="<<gphiP1<<
       "gphiP2="<<gphiP2<<
+      //
       "meanZ="<<meanZ<<
       "rmsZ="<<rmsZ<<
       "gz1="<<gz1<<
@@ -608,6 +631,159 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield){
   }
   delete pcstream;
 }
+
+
+
+void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
+  //
+  //
+  //
+  TTreeSRedirector *pcstream = new TTreeSRedirector("laserScan.root");
+  TFile * f = pcstream->GetFile();
+  f->mkdir("dirphi");
+  f->mkdir("dirphiP");
+  f->mkdir("dirZ");
+  TF1 fp("p1","pol1");
+  //
+  //
+  char    cut[1000];
+  char grname[1000];
+  char grnamefull[1000];
+
+  Double_t mphi[100];
+  Double_t mphiP[100];
+  Double_t smphi[100];
+  Double_t smphiP[100];
+  Double_t mZ[100];
+  Double_t smZ[100];
+  Double_t bz[100];
+  Double_t sbz[100];
+  // fit parameters
+  Double_t pphi[3];
+  Double_t pphiP[3];
+  Double_t pmZ[3];
+  //
+  for (Int_t id=0; id<336; id++){
+    // id =205;
+    sprintf(cut,"isOK&&fId==%d",id);
+    Int_t entries = chain->Draw("bz",cut,"goff");
+    if (entries<3) continue;
+    AliTPCLaserTrack *ltrp = 0;;
+    if (!AliTPCLaserTrack::GetTracks()) AliTPCLaserTrack::LoadTracks();
+    ltrp =(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
+    Double_t lxyz[3];
+    Double_t lpxyz[3];
+    ltrp->GetXYZ(lxyz);
+    ltrp->GetPxPyPz(lpxyz);
+
+    chain->Draw("bz",cut,"goff");
+    memcpy(bz, chain->GetV1(), entries*sizeof(Double_t));
+    chain->Draw("0.01*abs(bz)+0.02",cut,"goff");
+    memcpy(sbz, chain->GetV1(), entries*sizeof(Double_t));
+    //
+    chain->Draw("gphi1",cut,"goff");
+    memcpy(mphi, chain->GetV1(), entries*sizeof(Double_t));
+    chain->Draw("0.05*abs(mphi)+gphi2",cut,"goff");
+    memcpy(smphi, chain->GetV1(), entries*sizeof(Double_t));
+    //
+    chain->Draw("gphiP1",cut,"goff");
+    memcpy(mphiP, chain->GetV1(), entries*sizeof(Double_t));
+    chain->Draw("0.05*abs(mphiP)+gphiP2",cut,"goff");
+    memcpy(smphiP, chain->GetV1(), entries*sizeof(Double_t));
+    //
+    chain->Draw("gz1",cut,"goff");
+    memcpy(mZ, chain->GetV1(), entries*sizeof(Double_t));
+    chain->Draw("0.01*abs(meanZ)+gz2",cut,"goff");
+    memcpy(smZ, chain->GetV1(), entries*sizeof(Double_t));
+    //
+    //
+    sprintf(grnamefull,"Side_%d_Bundle_%d_Rod_%d_Beam_%d",
+	    ltrp->GetSide(),  ltrp->GetBundle(), ltrp->GetRod(), ltrp->GetBeam());
+    // store data  
+    // phi
+    f->cd("dirphi");
+    TGraphErrors *grphi = new TGraphErrors(entries,bz,mphi,sbz,smphi);
+    grphi->Draw("a*");
+    grphi->Fit(&fp);
+    pphi[0] = fp.GetParameter(0);                          // offset
+    pphi[1] = fp.GetParameter(1);                          // slope
+    pphi[2] = TMath::Sqrt(fp.GetChisquare()/(entries-2.));  // normalized chi2
+    sprintf(grname,"phi_id%d",id);
+    grphi->SetName(grname);  grphi->SetTitle(grnamefull);
+    grphi->GetXaxis()->SetTitle("b_{z} (T)");
+    grphi->GetYaxis()->SetTitle("#Delta r#phi (cm)");
+    grphi->Draw("a*");
+
+    grphi->Write();
+    gPad->SaveAs(Form("pic/phi/phi_%s.gif",grnamefull));
+    // phiP
+    f->cd("dirphiP)");
+    TGraphErrors *grphiP = new TGraphErrors(entries,bz,mphiP,sbz,smphiP);
+    grphiP->Draw("a*");
+    grphiP->Fit(&fp);
+    pphiP[0] = fp.GetParameter(0);                          // offset
+    pphiP[1] = fp.GetParameter(1);                          // slope
+    pphiP[2] = TMath::Sqrt(fp.GetChisquare()/(entries-2.));  // normalized chi2
+    sprintf(grname,"phiP_id%d",id);
+    grphiP->SetName(grname);  grphiP->SetTitle(grnamefull);
+    grphiP->GetXaxis()->SetTitle("b_{z} (T)");
+    grphiP->GetYaxis()->SetTitle("#Delta #phi (rad)");
+
+    gPad->SaveAs(Form("pic/phiP/phiP_%s.gif",grnamefull));
+    grphiP->Write();
+    //
+    //Z
+    f->cd("dirZ");
+    TGraphErrors *grmZ = new TGraphErrors(entries,bz,mZ,sbz,smZ);
+    grmZ->Draw("a*");
+    grmZ->Fit(&fp);
+    pmZ[0] = fp.GetParameter(0);                          // offset
+    pmZ[1] = fp.GetParameter(1);                          // slope
+    pmZ[2] = TMath::Sqrt(fp.GetChisquare()/(entries-2.));  // normalized chi2
+    sprintf(grname,"mZ_id%d",id);
+    grmZ->SetName(grname);  grmZ->SetTitle(grnamefull);
+    grmZ->GetXaxis()->SetTitle("b_{z} (T)");
+    grmZ->GetYaxis()->SetTitle("#Delta z (cm)");
+
+    gPad->SaveAs(Form("pic/z/z_%s.gif",grnamefull));
+    grmZ->Write();
+    
+
+    for (Int_t ientry=0; ientry<entries; ientry++){
+      (*pcstream)<<"Mean"<<
+	"id="<<id<<
+	"LTr.="<<ltrp<<
+	"entries="<<entries<<
+	"bz="<<bz[ientry]<<
+	"lx0="<<lxyz[0]<<          // reference x
+	"lx1="<<lxyz[1]<<          // reference y
+	"lx2="<<lxyz[2]<<          // refernece z      
+	"lpx0="<<lpxyz[0]<<          // reference x
+	"lpx1="<<lpxyz[1]<<          // reference y
+	"lpx2="<<lpxyz[2]<<          // refernece z            
+	//values
+	"gphi1="<<mphi[ientry]<< // mean - from gaus fit
+	"pphi0="<<pphi[0]<<   // offset
+	"pphi1="<<pphi[1]<<   // mean
+	"pphi2="<<pphi[2]<<   // norm chi2
+	//
+	"gphiP1="<<mphiP[ientry]<< // mean - from gaus fit
+	"pphiP0="<<pphiP[0]<< // offset
+	"pphiP1="<<pphiP[1]<< // mean
+	"pphiP2="<<pphiP[2]<< // norm chi2
+	//
+	"gz1="<<mZ[ientry]<<
+	"pmZ0="<<pmZ[0]<<     // offset
+	"pmZ1="<<pmZ[1]<<     // mean
+	"pmZ2="<<pmZ[2]<<     // norm chi2
+	"\n";
+    }
+  }
+  
+  delete pcstream;
+  
+}
+
 
 void AliTPCcalibLaser::Analyze(){
   //
@@ -685,92 +861,43 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
  TVectorD fitParam;
  TMatrixD covMatrix;
  Int_t npoints;
- TCut cutA("gphi2<0.2&&abs(mphi-gphi1)<0.1&&entries>60")
-
-//  TString *strq0 = toolkit.FitPlane(treeT,"Tr.fP[1]-LTr.fP[1]","lx1++lx2", "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
+ TCut cutA("entries>2&&pphi2<3&&abs(gphiP1-pphiP0)<0.003");
 
 
 TString fstring="";
-fstring+="LTr.fP[2]++"                        // 1
-fstring+="LTr.fP[2]*cos(atan2(lx1,lx0))++"    // 2
-fstring+="LTr.fP[2]*sin(atan2(lx1,lx0))++"    // 3
-fstring+="cos(atan2(lx1,lx0))++"              // 4
-fstring+="sin(atan2(lx1,lx0))++"              // 5
-fstring+="gphiP1++"   
-
-fstring+="bz++";         
-fstring+="bz*LTr.fP[2]++";                      // 7 
-fstring+="bz*cos(atan2(lx1,lx0))++"           // 8
-fstring+="bz*sin(atan2(lx1,lx0))++"           // 9
-fstring+="bz*sin(atan2(lx1,lx0))*LTr.fP[2]++" // 10
-fstring+="bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"   // 11
-
-Int_t entries = chain->Draw("fId","fSide==1&&fBundle==3&&bz==0"+cutA)
-{
-for (Int_t i=2;i<entries;i++){
-fstring+=Form("(abs(fId-%f)<0.1)++",chain->GetV1()[i]);
-}
-}
-
-
-TString *strq0 = toolkit.FitPlane(chain,"gphi1",fstring->Data(), "fSide==1&&fBundle==3"+cutA, chi2,npoints,fitParam,covMatrix);
-
-chain->SetAlias("fit",strq0->Data());
-
-gSystem->Load("libSTAT.so")
-TStatToolkit toolkit;
-Double_t chi2;
- TVectorD fitParam;
- TMatrixD covMatrix;
- Int_t npoints;
- TCut cutA("gphi2<0.2&&abs(mphi-gphi1)<0.1&&entries>60")
-
-//  TString *strq0 = toolkit.FitPlane(treeT,"Tr.fP[1]-LTr.fP[1]","lx1++lx2", "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
-
-
-TString fstring="";
-
-fstring+="LTr.fP[2]++"                        // 1
-fstring+="LTr.fP[2]*cos(atan2(lx1,lx0))++"    // 2
-fstring+="LTr.fP[2]*sin(atan2(lx1,lx0))++"    // 3
-fstring+="cos(atan2(lx1,lx0))++"              // 4
-fstring+="sin(atan2(lx1,lx0))++"              // 5
-fstring+="gphiP1++"
 //
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz++";                               //1
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*LTr.fP[2]++";                     //2
+fstring+="(abs(LTr.fP[1]/250)^1-1)*bz++";                               //3
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*LTr.fP[2]++";                       //4 
+//
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))++"            //5
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  //6
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))++"              //7
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"    //8
 //   
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz++";         
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*LTr.fP[2]++";                     // 7 
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))++"            // 8
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))++"            // 9
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  // 10
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  // 11
-//
-fstring+="(abs(LTr.fP[1]/250)^2-1)*bz++";         
-fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*LTr.fP[2]++";                     // 7 
-fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*cos(atan2(lx1,lx0))++"            // 8
-fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*sin(atan2(lx1,lx0))++"            // 9
-fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  // 10
-fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  // 11
-//
-fstring+="(abs(LTr.fP[1]/250)-1)*bz++";         
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*LTr.fP[2]++";                     // 7 
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))++"            // 8
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))++"            // 9
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  // 10
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  // 11
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))++"            //9
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  //10
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))++"              //11
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"    //12
 
 
-Int_t entries = chain->Draw("fId","fSide==1&&bz==0"+cutA)
-{
-for (Int_t i=2;i<entries;i++){
-fstring+=Form("(abs(fId-%f)<0.1)++",chain->GetV1()[i]);
-}
-}
 
 
- TString *strq0 = toolkit.FitPlane(chain,"gphi1",fstring->Data(), "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
+ TString *strq0 = toolkit.FitPlane(treeT,"gphi1-pphi0",fstring->Data(), "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
 
- chain->SetAlias("fit",strq0->Data());
+ treeT->SetAlias("fit",strq0->Data());
+ 
+
+ TString *strqP = toolkit.FitPlane(treeT,"1000*(gphiP1-pphiP0)",fstring->Data(), "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
+
+ treeT->SetAlias("fitP",strqP->Data());
 
 
+
+
+
+
+
+ 
  */

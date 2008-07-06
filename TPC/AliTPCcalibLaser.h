@@ -20,7 +20,7 @@ class AliESDtrack;
 class AliESDEvent;
 class AliESDfriend;
 class TGraphErrors;
-
+class TTree;
 
 class AliTPCcalibLaser:public AliTPCcalibBase {
 public:
@@ -30,7 +30,8 @@ public:
   virtual void     Process(AliESDEvent *event);
   virtual void Analyze();
   virtual Long64_t Merge(TCollection *li);
-  virtual void DumpMeanInfo(Float_t bfield);
+  virtual void DumpMeanInfo(Float_t bfield, Int_t minEntries=100);
+  static  void DumpScanInfo(TTree * tree);
   //
   //
   virtual void DumpLaser(Int_t id);
