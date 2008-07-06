@@ -330,7 +330,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
   memset(AmpValHighGain, 0, sizeof(AmpValHighGain));
   memset(AmpValLowGain, 0, sizeof(AmpValLowGain));
 
-  int sample, i = 0; //The sample temp, and the sample number in current event.
+  int sample, isample = 0; //The sample temp, and the sample number in current event.
   int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the signal
   int gain = 0;
   
@@ -345,8 +345,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
     sample = in->GetSignal(); //Get the adc signal
     if (sample < min) min = sample;
     if (sample > max) max = sample;
-    i++;
-    if ( i >= in->GetTimeLength()) {
+    isample++;
+    if ( isample >= in->GetTimeLength()) {
       //If we're here then we're done with this tower
       gain = 1 - in->IsLowGain();
       
@@ -377,7 +377,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
 
       
       max = fgkSampleMin; min = fgkSampleMax;
-      i = 0;
+      isample = 0;
       
     }//End if end of tower
    
