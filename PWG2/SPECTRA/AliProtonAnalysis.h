@@ -14,11 +14,14 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include "TH1I.h"
+
 #include "AliPID.h"
 
 class TF1;
 class TH2F;
 class TH1D;
+
 class AliAODEvent;
 class AliAODtrack;
 class AliESDEvent;
@@ -52,7 +55,11 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetPtRatioHistogram();
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
-  
+
+  Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEvents->GetEntries();} 
+  Bool_t  PrintMean(TH1 *hist, Double_t edge);
+  Bool_t  PrintYields(TH1 *hist, Double_t edge); 
+
   //Cut functions
   void    SetMinTPCClusters(Int_t minTPCClusters) {
     fMinTPCClusters = minTPCClusters;
@@ -130,6 +137,7 @@ class AliProtonAnalysis : public TObject {
   //Detectors
   Bool_t fUseTPCOnly; //kTRUE if TPC only information is used
 
+  TH1I *fHistEvents; //event counter
   TH2F *fHistYPtProtons; //Y-Pt of Protons
   TH2F *fHistYPtAntiProtons; // Y-Pt of Antiprotons
   

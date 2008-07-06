@@ -24,6 +24,7 @@
 #include <TF1.h>
 #include <TH2F.h>
 #include <TH1D.h>
+#include <TH1I.h>
 #include <TParticle.h>
 
 #include "AliProtonAnalysis.h"
@@ -55,7 +56,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
+  fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
 }
@@ -77,8 +78,10 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
+  fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
   //Default constructor
+
+  fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
 
   fHistYPtProtons = new TH2F("fHistYPtProtons","y-Pt Protons",fNBinsY,fMinY,fMaxY,fNBinsPt,fMinPt,fMaxPt);
   fHistYPtProtons->SetStats(kTRUE);
@@ -108,6 +111,8 @@ void AliProtonAnalysis::InitHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHig
   fMinPt = fLowPt;
   fMaxPt = fHighPt;
 
+  fHistEvents = new TH1I("fHistEvents","Anallyzed events",1,0,1);
+
   fHistYPtProtons = new TH2F("fHistYPtProtons","y-Pt Protons",fNBinsY,fMinY,fMaxY,fNBinsPt,fMinPt,fMaxPt);
   fHistYPtProtons->SetStats(kTRUE);
   fHistYPtProtons->GetYaxis()->SetTitle("P_{T} [GeV]");
@@ -136,13 +141,15 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
     cout<<"Retrieving objects from the list "<<list->GetName()<<"..."<<endl; 
     fHistYPtProtons = (TH2F *)list->At(0);
     fHistYPtAntiProtons = (TH2F *)list->At(1);
+    fHistEvents = (TH1I *)list->At(2);
   }
   else if(!list) {
     cout<<"Retrieving objects from the file... "<<endl;
     fHistYPtProtons = (TH2F *)file->Get("fHistYPtProtons");
     fHistYPtAntiProtons = (TH2F *)file->Get("fHistYPtAntiProtons");
+    fHistEvents = (TH1I *)file->Get("fHistEvents");
   }
-  if((!fHistYPtProtons)||(!fHistYPtAntiProtons)) {
+  if((!fHistYPtProtons)||(!fHistYPtAntiProtons)||(!fHistEvents)) {
     cout<<"Input containers were not found!!!"<<endl;
     status = kFALSE;
   }
@@ -156,48 +163,60 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
 
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetProtonYHistogram() {
+  Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   TH1D *fYProtons = (TH1D *)fHistYPtProtons->ProjectionX("fYProtons",0,fHistYPtProtons->GetYaxis()->GetNbins(),"e"); 
   fYProtons->SetStats(kFALSE);
-  fYProtons->GetYaxis()->SetTitle("dN/dy");
+  fYProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
   fYProtons->SetTitle("dN/dy protons");
   fYProtons->SetMarkerStyle(kFullCircle);
   fYProtons->SetMarkerColor(4);
+  if(nAnalyzedEvents > 0)
+    fYProtons->Scale(1./nAnalyzedEvents);
 
   return fYProtons;
 }
 
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetAntiProtonYHistogram() {
+  Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   TH1D *fYAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionX("fYAntiProtons",0,fHistYPtAntiProtons->GetYaxis()->GetNbins(),"e"); 
   fYAntiProtons->SetStats(kFALSE);
-  fYAntiProtons->GetYaxis()->SetTitle("dN/dy");
+  fYAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dy)");
   fYAntiProtons->SetTitle("dN/dy antiprotons");
   fYAntiProtons->SetMarkerStyle(kFullCircle);
   fYAntiProtons->SetMarkerColor(4);
+  if(nAnalyzedEvents > 0)
+    fYAntiProtons->Scale(1./nAnalyzedEvents);
 
   return fYAntiProtons;
 }
 
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetProtonPtHistogram() {
+  Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   TH1D *fPtProtons = (TH1D *)fHistYPtProtons->ProjectionY("fPtProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),"e"); 
   fPtProtons->SetStats(kFALSE);
-  fPtProtons->GetYaxis()->SetTitle("dN/dP_{T}");
+  fPtProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
   fPtProtons->SetTitle("dN/dPt protons");
   fPtProtons->SetMarkerStyle(kFullCircle);
   fPtProtons->SetMarkerColor(4);
+  if(nAnalyzedEvents > 0)
+    fPtProtons->Scale(1./nAnalyzedEvents);
 
   return fPtProtons;
 }
 
 //____________________________________________________________________//
 TH1D *AliProtonAnalysis::GetAntiProtonPtHistogram() {
+  Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
   TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtons->ProjectionY("fPtAntiProtons",0,fHistYPtProtons->GetXaxis()->GetNbins(),"e"); 
   fPtAntiProtons->SetStats(kFALSE);
-  fPtAntiProtons->GetYaxis()->SetTitle("dN/dP_{T}");
+  fPtAntiProtons->GetYaxis()->SetTitle("(1/N_{events})(dN/dP_{T})");
   fPtAntiProtons->SetTitle("dN/dPt antiprotons");
   fPtAntiProtons->SetMarkerStyle(kFullCircle);
   fPtAntiProtons->SetMarkerColor(4);
+  if(nAnalyzedEvents > 0)
+    fPtAntiProtons->Scale(1./nAnalyzedEvents);
 
   return fPtAntiProtons;
 }
@@ -304,6 +323,7 @@ Double_t AliProtonAnalysis::GetParticleFraction(Int_t i, Double_t p) {
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
   //Main analysis part - ESD
+  fHistEvents->Fill(0); //number of analyzed events
   Double_t Pt = 0.0, P = 0.0;
   Int_t nGoodTracks = fESD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
@@ -363,6 +383,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
   //Main analysis part - AOD
+  fHistEvents->Fill(0); //number of analyzed events
   Int_t nGoodTracks = fAOD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
@@ -388,6 +409,7 @@ void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliStack* stack) {
   //Main analysis part - MC
+  fHistEvents->Fill(0); //number of analyzed events
   for(Int_t i = 0; i < stack->GetNprimary(); i++) {
     TParticle *particle = stack->Particle(i);
     if(particle->Pt() < 0.1) continue;
@@ -496,7 +518,9 @@ Float_t AliProtonAnalysis::GetSigmaToVertex(AliESDtrack* esdTrack) {
   return d;
 }
 
+//____________________________________________________________________//
 Double_t AliProtonAnalysis::Rapidity(Double_t Px, Double_t Py, Double_t Pz) {
+  //returns the rapidity of the proton - to be removed
   Double_t fMass = 9.38270000000000048e-01;
   
   Double_t P = TMath::Sqrt(TMath::Power(Px,2) + 
@@ -509,3 +533,74 @@ Double_t AliProtonAnalysis::Rapidity(Double_t Px, Double_t Py, Double_t Pz) {
 
   return y;
 }
+
+//____________________________________________________________________//
+Bool_t AliProtonAnalysis::PrintMean(TH1 *hist, Double_t edge) {
+  //calculates the mean value of the ratio/asymmetry within \pm edge
+  Double_t sum = 0.0;
+  Int_t nentries = 0;
+  //calculate the mean
+  for(Int_t i = 0; i < hist->GetXaxis()->GetNbins(); i++) {
+    Double_t x = hist->GetBinCenter(i+1);
+    Double_t y = hist->GetBinContent(i+1);
+    if(TMath::Abs(x) < edge) {
+      sum += y;
+      nentries += 1;
+    }
+  }
+  Double_t mean = 0.0;
+  if(nentries != 0)
+    mean = sum/nentries;
+
+  //calculate the error
+  for(Int_t i = 0; i < hist->GetXaxis()->GetNbins(); i++) {
+    Double_t x = hist->GetBinCenter(i+1);
+    Double_t y = hist->GetBinContent(i+1);
+    if(TMath::Abs(x) < edge) {
+      sum += TMath::Power((mean - y),2);
+      nentries += 1;
+    }
+  }
+
+  Double_t error = 0.0;
+  if(nentries != 0)
+    error =  TMath::Sqrt(sum)/nentries;
+
+  cout<<"========================================="<<endl;
+  cout<<"Input distribution: "<<hist->GetName()<<endl;
+  cout<<"Interval used: -"<<edge<<" -> "<<edge<<endl;
+  cout<<"Mean value :"<<mean<<endl;
+  cout<<"Error: "<<error<<endl;
+  cout<<"========================================="<<endl;
+
+  return 0;
+}
+
+//____________________________________________________________________//
+Bool_t AliProtonAnalysis::PrintYields(TH1 *hist, Double_t edge) {
+  //calculates the (anti)proton yields within the \pm edge
+  Double_t sum = 0.0, sumerror = 0.0;
+  Double_t error = 0.0;
+  for(Int_t i = 0; i < hist->GetXaxis()->GetNbins(); i++) {
+    Double_t x = hist->GetBinCenter(i+1);
+    Double_t y = hist->GetBinContent(i+1);
+    if(TMath::Abs(x) < edge) {
+      sum += y;
+      sumerror += TMath::Power(hist->GetBinError(i+1),2); 
+    }
+  }
+
+  error = TMath::Sqrt(sumerror);
+
+  cout<<"========================================="<<endl;
+  cout<<"Input distribution: "<<hist->GetName()<<endl;
+  cout<<"Interval used: -"<<edge<<" -> "<<edge<<endl;
+  cout<<"Yields :"<<sum<<endl;
+  cout<<"Error: "<<error<<endl;
+  cout<<"========================================="<<endl;
+
+  return 0;
+}
+
+
+
