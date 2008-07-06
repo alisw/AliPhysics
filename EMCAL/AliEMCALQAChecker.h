@@ -28,11 +28,11 @@ class AliEMCALQAChecker: public AliQACheckerBase {
 
 public:
   AliEMCALQAChecker() : AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker") {;}          // ctor
-  AliEMCALQAChecker(const AliEMCALQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliEMCALQAChecker& operator = (const AliEMCALQAChecker& qac) ;
   virtual ~AliEMCALQAChecker() {;} // dtor
 
 private:
+  AliEMCALQAChecker(const AliEMCALQAChecker& qac);
+  AliEMCALQAChecker& operator = (const AliEMCALQAChecker& qac) ;
   
   ClassDef(AliEMCALQAChecker,1)  // description 
 
