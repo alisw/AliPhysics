@@ -8,6 +8,7 @@ class TString;
 class TList;
 class AliESDEvent;
 class AliAODEvent;
+class AliMCEvent;
 class AliProtonAnalysis;
 class TF1;
 
@@ -41,9 +42,13 @@ class AliAnalysisTaskProtons : public AliAnalysisTask {
  private:
   AliESDEvent *fESD;    //ESD object
   AliAODEvent *fAOD;    //AOD object
-  TString fAnalysisType;//"ESD" or "AOD"
+  AliMCEvent  *fMC;     //MC object
+  TString fAnalysisType;//"ESD", "AOD" or "MC"
+
   TList  *fList; //TList output object
+
   AliProtonAnalysis *fAnalysis; //analysis object
+
   TF1 *fElectronFunction; //TF1 for e
   TF1 *fMuonFunction; //TF1 for mu
   TF1 *fPionFunction; //TF1 for pi

@@ -24,6 +24,7 @@
 #include <TF1.h>
 #include <TH2F.h>
 #include <TH1D.h>
+#include <TParticle.h>
 
 #include "AliProtonAnalysis.h"
 
@@ -32,6 +33,8 @@
 #include <AliESDEvent.h>
 #include <AliLog.h>
 #include <AliPID.h>
+
+#include <AliStack.h>
 
 ClassImp(AliProtonAnalysis)
 
@@ -128,7 +131,7 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
     status = kFALSE;
   }
 
-  TList *list = (TList *)file->Get("clist1");
+  TList *list = (TList *)file->Get("outputList1");
   if(list) {
     cout<<"Retrieving objects from the list "<<list->GetName()<<"..."<<endl; 
     fHistYPtProtons = (TH2F *)list->At(0);
@@ -300,7 +303,7 @@ Double_t AliProtonAnalysis::GetParticleFraction(Int_t i, Double_t p) {
 
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
-  //Main analysis part
+  //Main analysis part - ESD
   Double_t Pt = 0.0, P = 0.0;
   Int_t nGoodTracks = fESD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
@@ -359,7 +362,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
 
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
-  //Main analysis part
+  //Main analysis part - AOD
   Int_t nGoodTracks = fAOD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
@@ -380,6 +383,25 @@ void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
       else if(track->Charge() < 0) fHistYPtAntiProtons->Fill(track->Y(fParticleType),Pt);
     }//proton check
   }//track loop 
+}
+
+//____________________________________________________________________//
+void AliProtonAnalysis::Analyze(AliStack* stack) {
+  //Main analysis part - MC
+  for(Int_t i = 0; i < stack->GetNprimary(); i++) {
+    TParticle *particle = stack->Particle(i);
+    if(particle->Pt() < 0.1) continue;
+    if(TMath::Abs(particle->Eta()) > 1.0) continue;
+    Int_t pdgcode = particle->GetPdgCode();
+    if(pdgcode == 2212) fHistYPtProtons->Fill(Rapidity(particle->Px(),
+						       particle->Py(),
+						       particle->Pz()),
+					      particle->Pt());
+    if(pdgcode == -2212) fHistYPtAntiProtons->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
+  }//particle loop                                                                  
 }
 
 //____________________________________________________________________//

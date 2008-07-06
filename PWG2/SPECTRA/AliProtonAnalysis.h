@@ -24,6 +24,7 @@ class AliAODtrack;
 class AliESDEvent;
 class AliESDtrack;
 class AliExternalTrackParam;
+class AliStack;
 
 class AliProtonAnalysis : public TObject {
  public:
@@ -39,6 +40,7 @@ class AliProtonAnalysis : public TObject {
   Bool_t ReadFromFile(const char* filename);
   void Analyze(AliESDEvent* fESD);
   void Analyze(AliAODEvent* fAOD);
+  void Analyze(AliStack* stack);
   
   TH2F *GetProtonYPtHistogram() {return fHistYPtProtons;}
   TH2F *GetAntiProtonYPtHistogram() {return fHistYPtAntiProtons;}

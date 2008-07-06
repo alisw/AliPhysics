@@ -5,7 +5,7 @@ void runProtonAnalysis() {
   //runLocal();
   //runInteractive();
   //runBatch();
-  runProof();
+  runProof("/PWG0/COMMON/run30000X_10TeV_0.5T",200000);
 
   timer.Stop();
   timer.Print();
@@ -34,12 +34,18 @@ void runLocal() {
   //____________________________________________________//
   setupPar("AOD");
   gSystem->Load("libAOD.so");
-                                                                
+  
   //_________________________________________________________//
   //_____________Setting up ANALYSIS.par_____________________//
   //_________________________________________________________//
   setupPar("ANALYSIS");
   gSystem->Load("libANALYSIS.so");
+
+  //_________________________________________________________//
+  //___________Setting up ANALYSISalice.par__________________//
+  //_________________________________________________________//
+  setupPar("ANALYSISalice");
+  gSystem->Load("libANALYSISalice.so");
 
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
@@ -50,8 +56,8 @@ void runLocal() {
   gROOT->LoadMacro("AliAnalysisTaskProtons.cxx++");
 
   //____________________________________________//
-  AliTagAnalysis *TagAna = new AliTagAnalysis("ESD"); 
-  TagAna->ChainLocalTags("/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags");
+  AliTagAnalysis *tagAnalysis = new AliTagAnalysis("ESD"); 
+  tagAnalysis->ChainLocalTags("/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags");
 
   AliRunTagCuts *runCuts = new AliRunTagCuts();
   AliLHCTagCuts *lhcCuts = new AliLHCTagCuts();
@@ -59,7 +65,7 @@ void runLocal() {
   AliEventTagCuts *evCuts = new AliEventTagCuts();
   
   TChain* chain = 0x0;
-  chain = TagAna->QueryTags(runCuts,lhcCuts,detCuts,evCuts);
+  chain = tagAnalysis->QueryTags(runCuts,lhcCuts,detCuts,evCuts);
   chain->SetBranchStatus("*Calo*",0);
 
   //____________________________________________//
@@ -69,27 +75,30 @@ void runLocal() {
   mgr->SetInputEventHandler(esdH);  
   //____________________________________________//
   // 1st Proton task
-  AliAnalysisTaskProtons *task1 = new AliAnalysisTaskProtons("TaskProtons");
-  TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
+  AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
   TF1 *fitPions = (TF1 *)f->Get("fitPions");
   TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
   TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  task1->SetPriorProbabilityFunctions(fitElectrons,
-				      fitMuons,
-				      fitPions,
-				      fitKaons,
-				      fitProtons);
-  mgr->AddTask(task1);
+  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
+					    fitMuons,
+					    fitPions,
+					    fitKaons,
+					    fitProtons);*/
+  mgr->AddTask(taskProtons);
 
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Protons.ESD.root");
-  
+  // Create containers for input/output                                                                              
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+                                                           TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
+                                                            TList::Class(),AliAnalysisManager::kOutputCont
+                                                            "Protons.ESD.root");
+
   //____________________________________________//
-  mgr->ConnectInput(task1,0,cinput1);
-  mgr->ConnectOutput(task1,0,coutput1);
+  mgr->ConnectInput(taskProtons,0,cinput1);
+  mgr->ConnectOutput(taskProtons,0,coutput1);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -132,6 +141,12 @@ void runInteractive() {
   setupPar("ANALYSIS");
   gSystem->Load("libANALYSIS.so");
 
+  //_________________________________________________________//
+  //___________Setting up ANALYSISalice.par__________________//
+  //_________________________________________________________//
+  setupPar("ANALYSISalice");
+  gSystem->Load("libANALYSISalice.so");
+
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
   //____________________________________________________________//
@@ -141,7 +156,7 @@ void runInteractive() {
   gROOT->LoadMacro("AliAnalysisTaskProtons.cxx++");
   
   //____________________________________________//
-  AliTagAnalysis *TagAna = new AliTagAnalysis("ESD");
+  AliTagAnalysis *tagAnalysis = new AliTagAnalysis("ESD");
  
   AliRunTagCuts *runCuts = new AliRunTagCuts();
   AliLHCTagCuts *lhcCuts = new AliLHCTagCuts();
@@ -151,9 +166,9 @@ void runInteractive() {
   //grid tags
   TAlienCollection* coll = TAlienCollection::Open("tag.xml");
   TGridResult* TagResult = coll->GetGridResult("",0,0);
-  TagAna->ChainGridTags(TagResult);
+  tagAnalysis->ChainGridTags(TagResult);
   TChain* chain = 0x0;
-  chain = TagAna->QueryTags(runCuts,lhcCuts,detCuts,evCuts);
+  chain = tagAnalysis->QueryTags(runCuts,lhcCuts,detCuts,evCuts);
   chain->SetBranchStatus("*Calo*",0);
 
   //____________________________________________//
@@ -163,27 +178,30 @@ void runInteractive() {
   mgr->SetInputEventHandler(esdH);  
   //____________________________________________//
   // 1st Proton task
-  AliAnalysisTaskProtons *task1 = new AliAnalysisTaskProtons("TaskProtons");
-  TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
+  AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
   TF1 *fitPions = (TF1 *)f->Get("fitPions");
   TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
   TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  task1->SetPriorProbabilityFunctions(fitElectrons,
-				      fitMuons,
-				      fitPions,
-				      fitKaons,
-				      fitProtons);
-  mgr->AddTask(task1);
+  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
+					    fitMuons,
+					    fitPions,
+					    fitKaons,
+					    fitProtons);*/
+  mgr->AddTask(taskProtons);
 
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Protons.ESD.root");
+  // Create containers for input/output                                                                               
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+                                                           TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
+                                                            TList::Class(),AliAnalysisManager::kOutputCont
+                                                            "Protons.ESD.root");
   
   //____________________________________________//
-  mgr->ConnectInput(task1,0,cinput1);
-  mgr->ConnectOutput(task1,0,coutput1);
+  mgr->ConnectInput(taskProtons,0,cinput1);
+  mgr->ConnectOutput(taskProtons,0,coutput1);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -226,6 +244,12 @@ void runBatch() {
   setupPar("ANALYSIS");
   gSystem->Load("libANALYSIS.so");
 
+  //_________________________________________________________//
+  //___________Setting up ANALYSISalice.par__________________//
+  //_________________________________________________________//
+  setupPar("ANALYSISalice");
+  gSystem->Load("libANALYSISalice.so");
+
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
   //____________________________________________________________//
@@ -238,9 +262,9 @@ void runBatch() {
 
   //____________________________________________//
   //Usage of event tags
-  AliTagAnalysis *analysis = new AliTagAnalysis();
+  AliTagAnalysis *tagAnalysis = new AliTagAnalysis();
   TChain *chain = 0x0;
-  chain = analysis->GetChainFromCollection(collectionfile,"esdTree");
+  chain = tagAnalysis->GetChainFromCollection(collectionfile,"esdTree");
   chain->SetBranchStatus("*Calo*",0);
 
   //____________________________________________//
@@ -250,27 +274,30 @@ void runBatch() {
   mgr->SetInputEventHandler(esdH);  
   //____________________________________________//
   // 1st Proton task
-  AliAnalysisTaskProtons *task1 = new AliAnalysisTaskProtons("TaskProtons");
-  TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
+  AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
   TF1 *fitPions = (TF1 *)f->Get("fitPions");
   TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
   TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  task1->SetPriorProbabilityFunctions(fitElectrons,
-				      fitMuons,
-				      fitPions,
-				      fitKaons,
-				      fitProtons);
-  mgr->AddTask(task1);
+  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
+					    fitMuons,
+					    fitPions,
+					    fitKaons,
+					    fitProtons);*/
+  mgr->AddTask(taskProtons);
 
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Protons.ESD.root");
-  
+  // Create containers for input/output                                                                               
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+                                                           TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
+                                                            TList::Class(),AliAnalysisManager::kOutputCont
+                                                            "Protons.ESD.root");
+
   //____________________________________________//
-  mgr->ConnectInput(task1,0,cinput1);
-  mgr->ConnectOutput(task1,0,coutput1);
+  mgr->ConnectInput(taskProtons,0,cinput1);
+  mgr->ConnectOutput(taskProtons,0,coutput1);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("grid",chain);
@@ -280,7 +307,7 @@ void runBatch() {
 }
 
 //_________________________________________________//
-void runProof() {
+void runProof(const char* dataset = 0x0, Int_t stats = 0) {
   TStopwatch timer;
   timer.Start();
   printf("****** Connect to PROOF *******\n");
@@ -296,49 +323,59 @@ void runProof() {
   gProof->EnablePackage("AOD");
   gProof->UploadPackage("ANALYSIS.par");
   gProof->EnablePackage("ANALYSIS");
+  gProof->UploadPackage("ANALYSISalice.par");
+  gProof->EnablePackage("ANALYSISalice");
   gProof->UploadPackage("PWG2spectra.par");
   gProof->EnablePackage("PWG2spectra");
   
-  // You should get this macro and the txt file from:
-  // http://aliceinfo.cern.ch/Offline/Analysis/CAF/
-  gROOT->LoadMacro("CreateESDChain.C");
-  TChain* chain = 0x0;
-  chain = CreateESDChain("ESD82XX_30K.txt",10);
-  chain->SetBranchStatus("*Calo*",0);
-
   gProof->Load("AliAnalysisTaskProtons.cxx++");
 
-    //____________________________________________//
+  //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
   //____________________________________________//
   // 1st Proton task
-  AliAnalysisTaskProtons *task1 = new AliAnalysisTaskProtons("TaskProtons");
-  TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
+  AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
   TF1 *fitPions = (TF1 *)f->Get("fitPions");
   TF1 *fitKaons = (TF1 *)f->Get("fitKaons");
   TF1 *fitProtons = (TF1 *)f->Get("fitProtons");
-  task1->SetPriorProbabilityFunctions(fitElectrons,
-				      fitMuons,
-				      fitPions,
-				      fitKaons,
-				      fitProtons);
-  mgr->AddTask(task1);
+  taskProtons->SetPriorProbabilityFunctions(fitElectrons,
+					    fitMuons,
+					    fitPions,
+					    fitKaons,
+					    fitProtons);*/
+  mgr->AddTask(taskProtons);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Protons.ESD.root");
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+							   TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1", 
+							    TList::Class(),AliAnalysisManager::kOutputCont
+							    "Protons.ESD.root");
   
   //____________________________________________//
-  mgr->ConnectInput(task1,0,cinput1);
-  mgr->ConnectOutput(task1,0,coutput1);
+  mgr->ConnectInput(taskProtons,0,cinput1);
+  mgr->ConnectOutput(taskProtons,0,coutput1);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  mgr->StartAnalysis("proof",chain);
+
+  if(dataset)
+    mgr->StartAnalysis("proof",dataset,stats);
+  else {
+    // You should get this macro and the txt file from:
+    // http://aliceinfo.cern.ch/Offline/Analysis/CAF/
+    gROOT->LoadMacro("CreateESDChain.C");
+    TChain* chain = 0x0;
+    chain = CreateESDChain("ESD82XX_30K.txt",stats);
+    chain->SetBranchStatus("*Calo*",0);
+
+    mgr->StartAnalysis("proof",chain);
+  }
 
   timer.Stop();
   timer.Print();
