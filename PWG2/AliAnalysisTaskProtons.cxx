@@ -13,6 +13,9 @@
 #include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
 
 #include "AliProtonAnalysis.h"
 #include "AliAnalysisTaskProtons.h"
@@ -24,7 +27,7 @@ ClassImp(AliAnalysisTaskProtons)
 
 //________________________________________________________________________
 AliAnalysisTaskProtons::AliAnalysisTaskProtons() 
-: AliAnalysisTask(), fESD(0), fAOD(0), fAnalysisType("ESD"), 
+: AliAnalysisTask(), fESD(0), fAOD(0), fMC(0),fAnalysisType("ESD"), 
   fList(0), fAnalysis(0), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
@@ -34,7 +37,7 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons()
 
 //________________________________________________________________________
 AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name) 
-: AliAnalysisTask(name, ""), fESD(0), fAOD(0), fAnalysisType("ESD"), 
+: AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0), fAnalysisType("ESD"), 
   fList(0), fAnalysis(0), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
@@ -60,8 +63,8 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
     // Disable all branches and enable only the needed ones
     // The next two lines are different when data produced as AliESDEvent is read
     if(fAnalysisType == "ESD") {
-// In train mode branches can be disabled at the level of ESD handler (M.G.)
-//      tree->SetBranchStatus("*", kFALSE);
+      // In train mode branches can be disabled at the level of ESD handler (M.G.)
+      // tree->SetBranchStatus("*", kFALSE);
       tree->SetBranchStatus("*Tracks.*", kTRUE);
 
       AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -79,8 +82,16 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
       } else
 	fAOD = aodH->GetEvent();
     }
+    else if(fAnalysisType == "MC") {
+      AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if (!mcH) {
+	Printf("ERROR: Could not retrieve MC event handler");
+      }
+      else
+	fMC = mcH->MCEvent();
+    }
     else 
-      Printf("Wrong analysis type: Only ESD and AOD types are allowed!");
+      Printf("Wrong analysis type: Only ESD, AOD and MC types are allowed!");
   }
 }
 
@@ -93,17 +104,23 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   fAnalysis = new AliProtonAnalysis();
   fAnalysis->InitHistograms(10,-1.0,1.0,30,0.1,3.1);
   if(fAnalysisType == "ESD") {
+    //Use of TPConly tracks
+    fAnalysis->UseTPCOnly();
+
+    //TPC related cuts
     fAnalysis->SetMinTPCClusters(50);
-    fAnalysis->SetMinITSClusters(1);
     fAnalysis->SetMaxChi2PerTPCCluster(3.5);
     fAnalysis->SetMaxCov11(2.0);
     fAnalysis->SetMaxCov22(2.0);
     fAnalysis->SetMaxCov33(0.5);
     fAnalysis->SetMaxCov44(0.5);
     fAnalysis->SetMaxCov55(2.0);
-    fAnalysis->SetMaxSigmaToVertex(3.);
-    fAnalysis->SetITSRefit();
+    fAnalysis->SetMaxSigmaToVertex(2.5);
     fAnalysis->SetTPCRefit();
+    
+    //ITS related cuts - to be used in the case of the analysis of global tracks
+    //fAnalysis->SetMinITSClusters(5);
+    //fAnalysis->SetITSRefit();
   }
   if(fFunctionUsed)
     fAnalysis->SetPriorProbabilityFunctions(fElectronFunction,
@@ -130,18 +147,34 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
       return;
     }
   
-    Printf("Proton analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
+    Printf("Proton ESD analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
     fAnalysis->Analyze(fESD);
-  }
+  }//ESD analysis
+
   else if(fAnalysisType == "AOD") {
     if (!fAOD) {
       Printf("ERROR: fAOD not available");
       return;
     }
     
-    Printf("Proton analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks());
+    Printf("Proton AOD analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks());
     fAnalysis->Analyze(fAOD);
-  }
+  }//AOD analysis
+
+  else if(fAnalysisType == "MC") {
+    if (!fMC) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+    
+    AliStack* stack = fMC->Stack();
+    if (!stack) {
+      Printf("ERROR: Could not retrieve the stack");
+      return;
+    }
+    Printf("Proton MC analysis task: There are %d primaries in this event", stack->GetNprimary());
+    fAnalysis->Analyze(stack);
+  }//MC analysis
 
   // Post output data.
   PostData(0, fList);
