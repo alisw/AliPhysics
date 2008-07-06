@@ -123,14 +123,16 @@ void AliT0v1::CreateGeometry()
   //C T0 mother volume
   Float_t pstartR[18]={0., 360., 5., 
 		       -6.8, 4.25, 10., //-76.5+0.00+69.7
-		       -0.75 , 4.45, 10.,  // -76.5+6.05+69.7
-		       1.25   , 4.45, 10.,  //-76.5+8.05+69.7
+		       //  -0.75 , 4.45, 10.,  // -76.5+6.05+69.7
+		       //  1.25   , 4.45, 10.,  //-76.5+8.05+69.7
+		       -0.75 , 4.5, 10.,  // -76.5+6.05+69.7
+		       1.25   , 4.5, 10.,  //-76.5+8.05+69.7
 		       1.25 , 5.1, 10, //-76.5+8.05+69.7 
 		       6.8 , 5.1, 10.};  //-62.9+0.00+69.7
   
   Float_t pstart[3]={4., 12.5,6.8};
-  Float_t pinstart[3]={0.,1.51,6.5};
-  Float_t ppmt[3]={0.,1.5,3.5};
+  Float_t pinstart[3]={0.,1.45,6.5};
+  Float_t ppmt[3]={0.,1.4,3.5};
   Float_t ptop[3]={0.,1.,1.0};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
   Float_t ptopout[3]={1.,1.01, 1.};  //metal air around raiator for photos reflection 
@@ -138,12 +140,12 @@ void AliT0v1::CreateGeometry()
   Float_t pglass[3]={1.2,1.3,2.};
   Float_t pcer[3]={0.9,1.1,1.35};
   Float_t psteel[3]={0.9,1.1,0.15};
-  Float_t psupport1[3] = {4.49,4.5,4.0};//C kozhuh vnutri
+  Float_t psupport1[3] = {4.51,4.52,4.0};//C kozhuh vnutri
   Float_t psupport2[3] = {9.5,9.6,4.0};// snaruzhi  C
   Float_t psupport3[3] = {4.51,9.5, 0.05};//kryshki  C
-  Float_t psupport5[3] = {1.5,1.5004,6.5}; // stakanchik dlai feu  C
+  Float_t psupport5[3] = {1.44,1.45,6.5}; // stakanchik dlai feu  C
   Float_t psupport6[3] = {0,1.4,0.04}; //kryshechka stakanchika  Al
-  Float_t psupport7[3] = {1.5004,1.51,0.4}; //kolechko snaruzhu stakanchika Al
+  Float_t psupport7[3] = {1.44,1.45,0.4}; //kolechko snaruzhu stakanchika Al
    
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
     AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
