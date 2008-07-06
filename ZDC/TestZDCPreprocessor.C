@@ -61,18 +61,20 @@ void TestZDCPreprocessor()
   // Three files originating from different LDCs but with the same id are also added
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "ALL", "LDC0", "ZDCChMapping.dat");
+  //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCPedestal.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASER",     "LDC0", "ZDCLaserCalib.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDCalib.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS",   "LDC0", "ZDCRecParam.dat");
 
   // TODO(3)
   //
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
-  shuttle->SetInputRunType("STANDALONE_PEDESTAL");
+  //shuttle->SetInputRunType("STANDALONE_PEDESTAL");
+  shuttle->SetInputRunType("STANDALONE_LASER");
   //shuttle->SetInputRunType("STANDALONE_EMD");
-  //shuttle->SetInputRunType("PHYSICS");
 
   // TODO(4)
   //
@@ -80,8 +82,8 @@ void TestZDCPreprocessor()
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-  //shuttle->AddInputRunParameter("beamType", "Pb-Pb");
-  shuttle->AddInputRunParameter("beamType", "p-p");
+  shuttle->AddInputRunParameter("beamType", "Pb-Pb");
+  //shuttle->AddInputRunParameter("beamType", "p-p");
   shuttle->AddInputRunParameter("totalEvents", "1000");
   shuttle->AddInputRunParameter("NumberOfGDCs", "1");
 
@@ -100,14 +102,15 @@ void TestZDCPreprocessor()
   // The shuttle can query condition parameters valid from the current run from the OCDB
   // To test it, we must first store the object into the OCDB. It will be retrieved in the preprocessor
   // using GetFromOCDB function.
-/*
-  TObjString obj("This is a condition parameter stored in OCDB");
+
+  /*TObjString obj("This is a condition parameter stored in OCDB");
   AliCDBId id("ZDC/Calib/Data", 0, AliCDBRunRange::Infinity());
   AliCDBMetaData md;
   AliCDBEntry entry(&obj, id, &md);
 
   shuttle->AddInputCDBEntry(&entry);
-*/
+  */
+  
   // TODO(6)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   AliPreprocessor* test = new AliZDCPreprocessor(shuttle);
@@ -121,15 +124,17 @@ void TestZDCPreprocessor()
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
+  AliCDBEntry* chkEntry0 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/ChMap", 7);
   /*AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("ZDC/Calib/Pedestals", 7);
   */
-  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/Calib", 7);
-  
   /*AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/RecParam", 7);
+  			->Get("ZDC/Calib/EMDCalib", 7);
   */
+  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/LaserCalib", 7);
+  
   
   if (!chkEntry)
   {

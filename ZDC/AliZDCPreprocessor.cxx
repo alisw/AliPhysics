@@ -14,7 +14,9 @@
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
 #include "AliZDCDataDCS.h"
+#include "AliZDCChMap.h"
 #include "AliZDCPedestals.h"
+#include "AliZDCLaserCalib.h"
 #include "AliZDCCalib.h"
 
 /////////////////////////////////////////////////////////////////////
@@ -34,8 +36,9 @@ AliZDCPreprocessor::AliZDCPreprocessor(AliShuttleInterface* shuttle) :
 {
   // constructor
   AddRunType("STANDALONE_PEDESTAL");
+  AddRunType("STANDALONE_LASER");
   AddRunType("STANDALONE_EMD");
-  AddRunType("PHYSICS");
+  AddRunType("ALL");
 }
 
 
@@ -114,15 +117,74 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
 // *************** From DAQ ******************
-Bool_t resPedCal = kTRUE, resECal = kTRUE, resRecPar = kTRUE;
+Bool_t resChMap=kTRUE, resPedCal=kTRUE, resLaserCal=kTRUE, resECal=kTRUE;
 // 
 const char* beamType = GetRunParameter("beamType");
 TString runType = GetRunType();
 printf("\n\t AliZDCPreprocessor -> beamType %s\n",beamType);
 printf("\t AliZDCPreprocessor -> runType  %s\n\n",runType.Data());
+
+// ******************************************
+//   ZDC ADC channel mapping
+// ******************************************
+TList* daqAllSources = GetFileSources(kDAQ, "ALL");
+if(!daqAllSources){
+  AliError(Form("No sources run %d !", fRun));
+  return 1;
+}
+Log("\t List of sources "); daqAllSources->Print();
 //
+TIter iterAll(daqAllSources);
+TObjString* sourceAll = 0;
+Int_t iAll=0;
+while((sourceAll = dynamic_cast<TObjString*> (iterAll.Next()))){
+     Log(Form("\n\t Getting file #%d\n",++iAll));
+     TString fileName = GetFile(kDAQ, "ALL", sourceAll->GetName());
+     if(fileName.Length() <= 0){
+       Log(Form("No file from source %s!", sourceAll->GetName()));
+       return 1;
+     }
+     // --- Initializing pedestal calibration object
+     AliZDCChMap *mapCalib = new AliZDCChMap("ZDC");
+     // --- Reading file with pedestal calibration data
+     const char* fname = fileName.Data();
+     if(fname){
+       FILE *fileAll;
+       if((fileAll = fopen(fname,"r")) == NULL){
+	 printf("Cannot open file %s \n",fname);
+         return 1;
+       }
+       Log(Form("File %s connected to process data for ADC mapping", fname));
+       //
+       Int_t chMap[48][6]; 
+       for(Int_t j=0; j<48; j++){	  
+           for(Int_t k=0; k<6; k++){
+             fscanf(fileAll,"%d",&chMap[j][k]);
+           }
+	   mapCalib->SetADCModule(j,chMap[j][1]);
+	   mapCalib->SetADCChannel(j,chMap[j][2]);
+	   mapCalib->SetDetector(j,chMap[j][4]);
+	   mapCalib->SetSector(j,chMap[j][5]);
+       }
+       fclose(fileAll);
+     }
+     else{
+       Log(Form("File %s not found", fname));
+       return 1;
+     }
+     //mapCalib->Print("");
+    // 
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Chiara Oppedisano");
+    metaData.SetComment("Filling AliZDCChMap object");  
+    //
+    resChMap = Store("Calib","ChMap",mapCalib, &metaData, 0, 1);
+}
+
 // 
 if(strcmp(beamType,"p-p")==0){
+
    // --- Initializing pedestal calibration object
    AliZDCCalib *eCalib = new AliZDCCalib("ZDC");
    //
@@ -137,10 +199,10 @@ if(strcmp(beamType,"p-p")==0){
    // 
    AliCDBMetaData metaData;
    metaData.SetBeamPeriod(0);
-   metaData.SetResponsible("Chiara");
+   metaData.SetResponsible("Chiara Oppedisano");
    metaData.SetComment("AliZDCCalib object");  
    //
-   resECal = Store("Calib","Calib",eCalib, &metaData, 0, 1);
+   resECal = Store("Calib","EMDCalib",eCalib, &metaData, 0, 1);
 }
 // 
 // *****************************************************
@@ -197,6 +259,7 @@ if(runType=="STANDALONE_PEDESTAL"){
               pedCalib->SetPedCorrCoeff(k-(2*knZDCch),pedVal[k][1],pedVal[k][2]);
             }
          }
+	 fclose(file);
        }
        else{
           Log(Form("File %s not found", pedFileName));
@@ -207,7 +270,7 @@ if(runType=="STANDALONE_PEDESTAL"){
       // 
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);
-      metaData.SetResponsible("Chiara");
+      metaData.SetResponsible("Chiara Oppedisano");
       metaData.SetComment("Filling AliZDCPedestals object");  
       //
       resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, 1);
@@ -215,7 +278,79 @@ if(runType=="STANDALONE_PEDESTAL"){
   delete daqSources; daqSources = 0;
 }
 // *****************************************************
-// [b] EMD EVENTS -> Energy calibration and equalization
+// [b] STANDALONE_LASER EVENTS -> Signal stability
+// *****************************************************
+else if(runType=="STANDALONE_LASER"){
+  TList* daqSources = GetFileSources(kDAQ, "LASER");
+  if(!daqSources){
+    AliError(Form("No sources for STANDALONE_LASER run %d !", fRun));
+    return 1;
+  }
+  Log("\t List of sources for STANDALONE_LASER");
+  daqSources->Print();
+  //
+  TIter iter2(daqSources);
+  TObjString* source = 0;
+  Int_t i=0;
+  while((source = dynamic_cast<TObjString*> (iter2.Next()))){
+       Log(Form("\n\t Getting file #%d\n",++i));
+       TString stringLASERFileName = GetFile(kDAQ, "LASER", source->GetName());
+       if(stringLASERFileName.Length() <= 0){
+         Log(Form("No LASER file from source %s!", source->GetName()));
+	 return 1;
+       }
+       // --- Initializing pedestal calibration object
+       AliZDCLaserCalib *lCalib = new AliZDCLaserCalib("ZDC");
+       // --- Reading file with pedestal calibration data
+       const char* laserFileName = stringLASERFileName.Data();
+       if(laserFileName){
+    	 FILE *file;
+    	 if((file = fopen(laserFileName,"r")) == NULL){
+    	   printf("Cannot open file %s \n",laserFileName);
+	   return 1;
+    	 }
+    	 Log(Form("File %s connected to process data from LASER events", laserFileName));
+    	 //
+	 Float_t ivalRef[2], ivalRead[2][4]; 
+    	 for(Int_t j=0; j<3; j++){
+	   if(j==0){
+             for(Int_t k=0; k<2; k++){
+               fscanf(file,"%f",&ivalRef[k]);
+    	       printf(" %1.0f  ",ivalRef[k]);
+	       lCalib->SetReferenceValue(k,ivalRef[k]);	    
+	     }
+           }
+	   else{
+             for(Int_t k=0; k<4; k++){
+               fscanf(file,"%f",&ivalRead[j-1][k]);
+    	       printf(" %d %1.0f  ",k, ivalRead[j-1][k]);
+    	     }
+	     lCalib->SetSector(j-1, ivalRead[j-1][0]);
+	     lCalib->SetGain(j-1, ivalRead[j-1][1]);
+	     lCalib->SetfPMRefValue(j-1, ivalRead[j-1][2]);
+	     lCalib->SetfPMRefWidth(j-1, ivalRead[j-1][3]);
+	   }
+	   printf("\n");
+	 }
+	 fclose(file);
+       }
+       else{
+         Log(Form("File %s not found", laserFileName));
+         return 1;
+       }
+       //lCalib->Print("");
+       // 
+       AliCDBMetaData metaData;
+       metaData.SetBeamPeriod(0);
+       metaData.SetResponsible("Chiara Oppedisano");
+       metaData.SetComment("Filling AliZDCLaserCalib object");  
+       //
+       resLaserCal = Store("Calib","LaserCalib",lCalib, &metaData, 0, 1);
+  }
+  
+}
+// *****************************************************
+// [c] EMD EVENTS -> Energy calibration and equalization
 // *****************************************************
 else if(runType=="STANDALONE_EMD"){
   TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
@@ -269,6 +404,7 @@ else if(runType=="STANDALONE_EMD"){
              }
 	   }
          }
+	 fclose(file);
        }
        else{
          Log(Form("File %s not found", emdFileName));
@@ -278,10 +414,10 @@ else if(runType=="STANDALONE_EMD"){
       // 
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);
-      metaData.SetResponsible("Chiara");
+      metaData.SetResponsible("Chiara Oppedisano");
       metaData.SetComment("Filling AliZDCCalib object");  
       //
-      resECal = Store("Calib","Calib",eCalib, &metaData, 0, 1);
+      resECal = Store("Calib","EMDCalib",eCalib, &metaData, 0, 1);
   }
 }
 else {
@@ -295,13 +431,14 @@ else {
   else Log(Form("Number of events not put in logbook!"));
  
   UInt_t result = 0;
-  if(resDCSRef==kFALSE || resultAl==kFALSE || 
-     resPedCal==kFALSE || resECal==kFALSE || resRecPar==kFALSE){
-    if(resDCSRef == kFALSE) result = 1;
-    else if(resultAl == kFALSE)  result = 2;
-    else if(resPedCal == kFALSE) result = 3;
-    else if(resECal == kFALSE)   result = 4;
-    else if(resRecPar == kFALSE) result = 5;
+  if(resDCSRef==kFALSE || resultAl==kFALSE || resPedCal==kFALSE ||
+     resLaserCal==kFALSE || resECal==kFALSE || resChMap==kFALSE){
+    if(resDCSRef == kFALSE)        result = 1;
+    else if(resultAl == kFALSE)    result = 2;
+    else if(resChMap == kFALSE)    result = 3;
+    else if(resPedCal == kFALSE)   result = 4;
+    else if(resLaserCal == kFALSE) result = 5;
+    else if(resECal == kFALSE)     result = 6;
   }
   
   return result;

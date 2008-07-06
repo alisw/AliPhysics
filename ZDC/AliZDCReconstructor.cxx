@@ -625,7 +625,7 @@ AliZDCCalib* AliZDCReconstructor::GetECalibData() const
 
   // Getting energy and equalization calibration object for ZDC set
 
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Calib");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EMDCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
 
   AliZDCCalib *calibdata = dynamic_cast<AliZDCCalib*>  (entry->GetObject());
