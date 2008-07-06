@@ -27,6 +27,7 @@
 
 #include "AliProtonAnalysis.h"
 
+#include <AliExternalTrackParam.h>
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
 #include <AliLog.h>
@@ -51,7 +52,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fHistYPtProtons(0), fHistYPtAntiProtons(0) {
+  fUseTPCOnly(kFALSE), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
 }
@@ -73,7 +74,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fHistYPtProtons(0), fHistYPtAntiProtons(0) {
+  fUseTPCOnly(kFALSE), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
   //Default constructor
 
   fHistYPtProtons = new TH2F("fHistYPtProtons","y-Pt Protons",fNBinsY,fMinY,fMaxY,fNBinsPt,fMinPt,fMaxPt);
@@ -118,12 +119,36 @@ void AliProtonAnalysis::InitHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHig
 }
 
 //____________________________________________________________________//
-void AliProtonAnalysis::ReadFromFile(const char* filename) {
+Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
+  Bool_t status = kTRUE;
+
   TFile *file = TFile::Open(filename);
-  fHistYPtProtons = (TH2F *)file->Get("fHistYPtProtons");
-  fHistYPtAntiProtons = (TH2F *)file->Get("fHistYPtAntiProtons");
-  fHistYPtProtons->Sumw2();
-  fHistYPtAntiProtons->Sumw2();
+  if(!file) {
+    cout<<"Could not find the input file "<<filename<<endl;
+    status = kFALSE;
+  }
+
+  TList *list = (TList *)file->Get("clist1");
+  if(list) {
+    cout<<"Retrieving objects from the list "<<list->GetName()<<"..."<<endl; 
+    fHistYPtProtons = (TH2F *)list->At(0);
+    fHistYPtAntiProtons = (TH2F *)list->At(1);
+  }
+  else if(!list) {
+    cout<<"Retrieving objects from the file... "<<endl;
+    fHistYPtProtons = (TH2F *)file->Get("fHistYPtProtons");
+    fHistYPtAntiProtons = (TH2F *)file->Get("fHistYPtAntiProtons");
+  }
+  if((!fHistYPtProtons)||(!fHistYPtAntiProtons)) {
+    cout<<"Input containers were not found!!!"<<endl;
+    status = kFALSE;
+  }
+  else {
+    fHistYPtProtons->Sumw2();
+    fHistYPtAntiProtons->Sumw2();
+  }
+
+  return status;
 }
 
 //____________________________________________________________________//
@@ -276,26 +301,58 @@ Double_t AliProtonAnalysis::GetParticleFraction(Int_t i, Double_t p) {
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
   //Main analysis part
+  Double_t Pt = 0.0, P = 0.0;
   Int_t nGoodTracks = fESD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
-    if(IsAccepted(track)) {
-      Double_t Pt = track->Pt();
-      Double_t P = track->P();
+    Double_t probability[5];
+
+    if(IsAccepted(track)) {	
+      if(fUseTPCOnly) {
+	AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+	if(!tpcTrack) continue;
+	Pt = tpcTrack->Pt();
+	P = tpcTrack->P();
 	
-      //pid
-      Double_t probability[5];
-	  track->GetESDpid(probability);
-      Double_t rcc = 0.0;
-      for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += probability[i]*GetParticleFraction(i,P);
-      if(rcc == 0.0) continue;
-      Double_t w[5];
-      for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
-      Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
-      if(fParticleType == 4) {
-        if(track->Charge() > 0) fHistYPtProtons->Fill(Rapidity(track),Pt);
-        else if(track->Charge() < 0) fHistYPtAntiProtons->Fill(Rapidity(track),Pt);
-      }//proton check
+	//pid
+	track->GetTPCpid(probability);
+	Double_t rcc = 0.0;
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++) 
+	  rcc += probability[i]*GetParticleFraction(i,P);
+	if(rcc == 0.0) continue;
+	Double_t w[5];
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++) 
+	  w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+	Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+	if(fParticleType == 4) {
+	  if(tpcTrack->Charge() > 0) 
+	    fHistYPtProtons->Fill(Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),Pt);
+	  else if(tpcTrack->Charge() < 0) 
+	    fHistYPtAntiProtons->Fill(Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),Pt);
+	}//proton check
+      }//TPC only tracks
+      else if(!fUseTPCOnly) {
+	Pt = track->Pt();
+	P = track->P();
+	
+	//pid
+	track->GetESDpid(probability);
+	Double_t rcc = 0.0;
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++) 
+	  rcc += probability[i]*GetParticleFraction(i,P);
+	if(rcc == 0.0) continue;
+	Double_t w[5];
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++) 
+	  w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+	Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+	if(fParticleType == 4) {
+	  //cout<<"(Anti)protons found..."<<endl;
+	  if(track->Charge() > 0) 
+	    fHistYPtProtons->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+	  else if(track->Charge() < 0) 
+	    fHistYPtAntiProtons->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+	}//proton check 
+      }//combined tracking
     }//cuts
   }//track loop 
 }
@@ -328,6 +385,26 @@ void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
 //____________________________________________________________________//
 Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   // Checks if the track is excluded from the cuts
+  Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
+  if(fUseTPCOnly) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+    }
+  }
+  else{
+    Pt = track->Pt();
+    Px = track->Px();
+    Py = track->Py();
+    Pz = track->Pz();
+  }
+     
   Int_t  fIdxInt[200];
   Int_t nClustersITS = track->GetITSclusters(fIdxInt);
   Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
@@ -339,8 +416,6 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
 
   Double_t extCov[15];
   track->GetExternalCovariance(extCov);
-
-  Double_t Pt = track->Pt();
 
   if(fMinITSClustersFlag)
     if(nClustersITS < fMinITSClusters) return kFALSE;
@@ -368,6 +443,7 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
     if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
 
   if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
+  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) return kFALSE;
 
   return kTRUE;
 }
@@ -398,16 +474,16 @@ Float_t AliProtonAnalysis::GetSigmaToVertex(AliESDtrack* esdTrack) {
   return d;
 }
 
-Double_t AliProtonAnalysis::Rapidity(AliESDtrack *track) {
+Double_t AliProtonAnalysis::Rapidity(Double_t Px, Double_t Py, Double_t Pz) {
   Double_t fMass = 9.38270000000000048e-01;
   
-  Double_t P = TMath::Sqrt(TMath::Power(track->Px(),2) + 
-                           TMath::Power(track->Py(),2) + 
-						   TMath::Power(track->Pz(),2));
+  Double_t P = TMath::Sqrt(TMath::Power(Px,2) + 
+                           TMath::Power(Py,2) + 
+			   TMath::Power(Pz,2));
   Double_t energy = TMath::Sqrt(P*P + fMass*fMass);
   Double_t y = -999;
-  if(energy != track->Pz()) 
-    y = 0.5*TMath::Log((energy + track->Pz())/(energy - track->Pz()));
+  if(energy != Pz) 
+    y = 0.5*TMath::Log((energy + Pz)/(energy - Pz));
 
   return y;
 }

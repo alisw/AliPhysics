@@ -23,6 +23,7 @@ class AliAODEvent;
 class AliAODtrack;
 class AliESDEvent;
 class AliESDtrack;
+class AliExternalTrackParam;
 
 class AliProtonAnalysis : public TObject {
  public:
@@ -30,10 +31,12 @@ class AliProtonAnalysis : public TObject {
   AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 		    Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
   virtual ~AliProtonAnalysis();
+
+  void UseTPCOnly() {fUseTPCOnly = kTRUE;}
   
   void InitHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 		      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
-  void ReadFromFile(const char* filename);
+  Bool_t ReadFromFile(const char* filename);
   void Analyze(AliESDEvent* fESD);
   void Analyze(AliAODEvent* fAOD);
   
@@ -95,7 +98,7 @@ class AliProtonAnalysis : public TObject {
 
   Bool_t IsAccepted(AliESDtrack *track);
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack); 
-  Double_t Rapidity(AliESDtrack *track);
+  Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   
   Int_t fNBinsY; //number of bins in y
   Float_t fMinY, fMaxY; //min & max value of y
@@ -121,6 +124,9 @@ class AliProtonAnalysis : public TObject {
   TF1  *fPionFunction; //momentum dependence of the prior probs
   TF1  *fKaonFunction; //momentum dependence of the prior probs
   TF1  *fProtonFunction; //momentum dependence of the prior probs
+
+  //Detectors
+  Bool_t fUseTPCOnly; //kTRUE if TPC only information is used
 
   TH2F *fHistYPtProtons; //Y-Pt of Protons
   TH2F *fHistYPtAntiProtons; // Y-Pt of Antiprotons
