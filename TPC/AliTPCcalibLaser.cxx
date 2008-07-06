@@ -685,7 +685,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
  TVectorD fitParam;
  TMatrixD covMatrix;
  Int_t npoints;
- TCut cutA("gphi2<0.2&&abs(mphi-gphi1)<0.1")
+ TCut cutA("gphi2<0.2&&abs(mphi-gphi1)<0.1&&entries>60")
 
 //  TString *strq0 = toolkit.FitPlane(treeT,"Tr.fP[1]-LTr.fP[1]","lx1++lx2", "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
 
@@ -696,20 +696,81 @@ fstring+="LTr.fP[2]*cos(atan2(lx1,lx0))++"    // 2
 fstring+="LTr.fP[2]*sin(atan2(lx1,lx0))++"    // 3
 fstring+="cos(atan2(lx1,lx0))++"              // 4
 fstring+="sin(atan2(lx1,lx0))++"              // 5
-fstring+="gphiP1++"                           // 6
+fstring+="gphiP1++"   
 
-fstring+="bz++";                              // 7 
+fstring+="bz++";         
+fstring+="bz*LTr.fP[2]++";                      // 7 
 fstring+="bz*cos(atan2(lx1,lx0))++"           // 8
 fstring+="bz*sin(atan2(lx1,lx0))++"           // 9
 fstring+="bz*sin(atan2(lx1,lx0))*LTr.fP[2]++" // 10
-fstring+="bz*cos(atan2(lx1,lx0))*LTr.fP[2]++" // 11
+fstring+="bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"   // 11
+
+Int_t entries = chain->Draw("fId","fSide==1&&fBundle==3&&bz==0"+cutA)
+{
+for (Int_t i=2;i<entries;i++){
+fstring+=Form("(abs(fId-%f)<0.1)++",chain->GetV1()[i]);
+}
+}
 
 
-  TString *strq0 = toolkit.FitPlane(chain,"gphi1",fstring->Data(), "fSide==1&&fBundle==3"+cutA, chi2,npoints,fitParam,covMatrix);
+TString *strq0 = toolkit.FitPlane(chain,"gphi1",fstring->Data(), "fSide==1&&fBundle==3"+cutA, chi2,npoints,fitParam,covMatrix);
 
-  chain->SetAlias("fit",strq0->Data());
+chain->SetAlias("fit",strq0->Data());
+
+gSystem->Load("libSTAT.so")
+TStatToolkit toolkit;
+Double_t chi2;
+ TVectorD fitParam;
+ TMatrixD covMatrix;
+ Int_t npoints;
+ TCut cutA("gphi2<0.2&&abs(mphi-gphi1)<0.1&&entries>60")
+
+//  TString *strq0 = toolkit.FitPlane(treeT,"Tr.fP[1]-LTr.fP[1]","lx1++lx2", "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
 
 
+TString fstring="";
+
+fstring+="LTr.fP[2]++"                        // 1
+fstring+="LTr.fP[2]*cos(atan2(lx1,lx0))++"    // 2
+fstring+="LTr.fP[2]*sin(atan2(lx1,lx0))++"    // 3
+fstring+="cos(atan2(lx1,lx0))++"              // 4
+fstring+="sin(atan2(lx1,lx0))++"              // 5
+fstring+="gphiP1++"
+//
+//   
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz++";         
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*LTr.fP[2]++";                     // 7 
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))++"            // 8
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))++"            // 9
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  // 10
+fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  // 11
+//
+fstring+="(abs(LTr.fP[1]/250)^2-1)*bz++";         
+fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*LTr.fP[2]++";                     // 7 
+fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*cos(atan2(lx1,lx0))++"            // 8
+fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*sin(atan2(lx1,lx0))++"            // 9
+fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  // 10
+fstring+="(abs(LTr.fP[1]/250)^2-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  // 11
+//
+fstring+="(abs(LTr.fP[1]/250)-1)*bz++";         
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*LTr.fP[2]++";                     // 7 
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))++"            // 8
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))++"            // 9
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  // 10
+fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  // 11
+
+
+Int_t entries = chain->Draw("fId","fSide==1&&bz==0"+cutA)
+{
+for (Int_t i=2;i<entries;i++){
+fstring+=Form("(abs(fId-%f)<0.1)++",chain->GetV1()[i]);
+}
+}
+
+
+ TString *strq0 = toolkit.FitPlane(chain,"gphi1",fstring->Data(), "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
+
+ chain->SetAlias("fit",strq0->Data());
 
 
  */
