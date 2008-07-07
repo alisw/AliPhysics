@@ -49,6 +49,8 @@
 
 // --- ROOT system ---
 #include <TClonesArray.h>
+#include <TString.h>
+#include <TSystem.h>
 
 // --- Standard library ---
 
@@ -76,6 +78,8 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec() :
   fHistRecPointsRow(0)
 {
   // ctor
+  for(Int_t i = 0; i < 6; i++)
+    fMapping[i] = 0;
 }
 
 //____________________________________________________________________________ 
@@ -101,6 +105,9 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
   // called again
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
+
+  for(Int_t i = 0; i < 6; i++)
+    fMapping[i] = 0;
 
   //
   // Associate class histogram objects to the copies in the list
@@ -135,6 +142,16 @@ AliTPCQADataMakerRec& AliTPCQADataMakerRec::operator = (const AliTPCQADataMakerR
   this->~AliTPCQADataMakerRec();
   new(this) AliTPCQADataMakerRec(qadm);
   return *this;
+}
+
+//__________________________________________________________________
+AliTPCQADataMakerRec::~AliTPCQADataMakerRec()
+{
+  // Destructor
+  delete fTPCdataQA; 
+
+  for(Int_t i = 0; i < 6; i++) 
+    delete fMapping[i];
 }
  
 //____________________________________________________________________________ 
@@ -188,9 +205,17 @@ void AliTPCQADataMakerRec::InitRaws()
 {
   //
   // Adding the raw 
-  //
+  //  
+
+  // Modified: 7/7 - 2008
+  // Laurent Aphecetche pointed out that the mapping was read from file
+  // for each event, so now we read in the map here and set if for 
+  // the raw data qa
   fTPCdataQA = new AliTPCdataQA();
-  fTPCdataQA->SetRangeTime(100, 920); // take all 1000 time bins 
+  LoadMaps(); // Load Altro maps
+  fTPCdataQA->SetAltroMapping(fMapping); // set Altro mapping
+  fTPCdataQA->SetRangeTime(100, 920); // set time bin interval 
+
   Add2RawsList(fTPCdataQA, 0);
 }
 
@@ -324,3 +349,18 @@ void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
 
   delete clrow;
 }
+
+//____________________________________________________________________________
+void AliTPCQADataMakerRec::LoadMaps()
+{
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/TPC/mapping/Patch";
+
+  for(Int_t i = 0; i < 6; i++) {
+    TString path2 = path;
+    path2 += i;
+    path2 += ".data";
+    fMapping[i] = new AliTPCAltroMapping(path2.Data());
+  }
+}
+

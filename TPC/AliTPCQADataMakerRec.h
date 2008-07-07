@@ -22,6 +22,7 @@
 // --- AliRoot header files ---
 #include <AliQADataMakerRec.h>
 #include <AliRawReader.h>
+#include <AliTPCAltroMapping.h>
 
 #include <AliTPCdataQA.h>
 
@@ -31,7 +32,7 @@ public:
   AliTPCQADataMakerRec() ;          // ctor
   AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) ;   
   AliTPCQADataMakerRec& operator = (const AliTPCQADataMakerRec& qadm) ;
-  virtual ~AliTPCQADataMakerRec() { delete fTPCdataQA; } // dtor
+  virtual ~AliTPCQADataMakerRec(); 
   
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
@@ -49,6 +50,10 @@ private:
   virtual void   InitRecPoints();
   virtual void   MakeRecPoints(TTree *recTree);
 
+  virtual void LoadMaps();
+
+  
+  AliTPCAltroMapping *fMapping[6]; //! Pointers to ALTRO mapping
   AliTPCdataQA* fTPCdataQA;//! TPC calibration object for making raw data QA
 
   TH1F* fHistESDclusters;  //! Clusters per ESD track
