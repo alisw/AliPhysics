@@ -113,7 +113,7 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 	// TODO: we have to think about the optional environment parameter,
 	// currently just set to NULL. 
 	iResult=pCH->CreateComponent(fpConfiguration->GetComponentID(), NULL, argc, argv, fpComponent);
-	if (fpComponent || iResult<=0) {
+	if (fpComponent && iResult>=0) {
 	  //HLTDebug("component %s (%p) created", fpComponent->GetComponentID(), fpComponent); 
 	} else {
 	  //HLTError("can not find component \"%s\" (%d)", fpConfiguration->GetComponentID(), iResult);
@@ -130,6 +130,9 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
     HLTError("configuration object instance needed for task initialization");
     iResult=-EINVAL;
   }
+  if (iResult>=0) {
+    iResult=CustomInit(pCH);
+  }
   return iResult;
 }
 
@@ -137,6 +140,7 @@ int AliHLTTask::Deinit()
 {
   // see header file for function documentation
   int iResult=0;
+  CustomCleanup();
   AliHLTComponent* pComponent=GetComponent();
   fpComponent=NULL;
   if (pComponent) {
@@ -713,4 +717,16 @@ void AliHLTTask::PrintStatus()
   } else {
     HLTMessage("     task \"%s\" not initialized", GetName());
   }
+}
+
+int AliHLTTask::CustomInit(AliHLTComponentHandler* /*pCH*/)
+{
+  // default implementation nothing to do
+  return 0;
+}
+
+int AliHLTTask::CustomCleanup()
+{
+  // default implementation nothing to do
+  return 0;
 }

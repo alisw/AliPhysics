@@ -280,12 +280,25 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   /** prohibited assignment operator */
   AliHLTTask& operator=(const AliHLTTask&);
 
+  /**
+   * Custom initialization for child tasks.
+   */
+  virtual int CustomInit(AliHLTComponentHandler* pCH);
+
+  /**
+   * Custom clean up for child tasks.
+   */
+  virtual int CustomCleanup();
+
+ protected:
   /** the configuration descriptor (external pointer) */
   AliHLTConfiguration* fpConfiguration;                           //! transient
   /** the component described by this task (created and deleted internally) */
   AliHLTComponent* fpComponent;                                   //! transient
   /** the data buffer for the component processing */
   AliHLTDataBuffer* fpDataBuffer;                                 //! transient
+
+ private:
   /** the list of targets (tasks which depend upon the current one) */
   TList fListTargets;                                             // see above
   /** the list of sources (tasks upon which the current one depends) */ 

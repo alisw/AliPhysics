@@ -198,9 +198,14 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
   unsigned int offset=0;
   AliHLTOUT* pHLTOUT=NULL;
   AliRawReader* pRawReader=GetRawReader();
+  if ((pHLTOUT=AliHLTOUT::GetGlobalInstance())!=NULL) {
+    // this is the HLTOUT instance set globally by the AliHLTOUT::AliHLTOUTGlobalInstanceGuard
+    // used for data input from the HLTOUT to the publishers of a kChain handler
+  } else
   if (pRawReader) {
     pRawReader->Reset();
     pHLTOUT=AliHLTOUT::New(pRawReader);
+    if (pHLTOUT) iResult=pHLTOUT->Init();
 //   } else {
     // this is just a hack and work-around for the missing HLT AliLoader.
     // Because of that the AliRoot framework does not provide the digit tree.
@@ -221,7 +226,7 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
     iResult=-ENODEV;
   }
   if (iResult>=0 && pHLTOUT) {
-    if ((iResult=pHLTOUT->Init())>=0) {
+    if (true) { // condition was deprecated but keep for the sake of diff
       for (iResult=pHLTOUT->SelectFirstDataBlock();
 	   iResult>=0;
 	   iResult=pHLTOUT->SelectNextDataBlock()) {
@@ -281,7 +286,10 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
   }
 
   // finally set the output size
-  size=offset;
+  if (iResult>=0)
+    size=offset;
+  else
+    size=0;
 
   return iResult;
 }
