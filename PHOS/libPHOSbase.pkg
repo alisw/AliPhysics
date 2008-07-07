@@ -33,7 +33,8 @@ SRCS          =  \
 		 AliPHOSRecoParamCpv.cxx \
                  AliPHOSImpact.cxx \
                  AliPHOSTrigger.cxx \
-                 AliPHOSSimParam.cxx
+                 AliPHOSSimParam.cxx \
+                 AliPHOSCpvRawWrite.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

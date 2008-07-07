@@ -49,5 +49,6 @@
 
 #pragma link C++ class AliPHOSImpact+;
 #pragma link C++ class AliPHOSTrigger+;
+#pragma link C++ class AliPHOSCpvRawWrite+;
 
 #endif
