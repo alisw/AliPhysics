@@ -276,6 +276,20 @@ void AliTOFcalib::CreateCalArrays(){
   fStatus = new AliTOFChannelOnlineStatusArray(fNChannels);
 }
 //_____________________________________________________________________________
+void AliTOFcalib::CreateCalObjects(){
+
+  // creating arrays for online/offline calibration objs
+
+  fTOFCalOffline = new TObjArray(fNChannels);
+  fTOFCalOffline->SetOwner();
+  for (Int_t iarray = 0; iarray<fNChannels; iarray++){
+    AliTOFChannelOffline * calChOffline = new AliTOFChannelOffline();
+    fTOFCalOffline->AddAt(calChOffline,iarray);
+  }
+  fCal = new AliTOFChannelOnlineArray(fNChannels);
+  fStatus = new AliTOFChannelOnlineStatusArray(fNChannels);
+}
+//_____________________________________________________________________________
 void AliTOFcalib::WriteConfigMapOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB

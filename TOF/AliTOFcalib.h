@@ -48,6 +48,7 @@ public:
   AliTOFcalib& operator=(const AliTOFcalib & calib); // assignment operator
   virtual ~AliTOFcalib() ; // dtor
   void CreateCalArrays();
+  void CreateCalObjects();
   TObjArray * GetTOFCalArrayOnline() const {return fTOFCalOnline;}
   AliTOFChannelOnlineArray * GetTOFOnlineDelay() const {return fCal;}
   AliTOFChannelOnlineStatusArray * GetTOFOnlineStatus() const {return fStatus;}
