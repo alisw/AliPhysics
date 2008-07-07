@@ -41,7 +41,7 @@ public:
    /// Return RegPhysFlag
    Bool_t    GetRegPhysFlag() const {return (fWord & 0x80000000);} 
    /// Return ResetNb
-   UChar_t   GetResetNb()    const {return (UChar_t)(fWord >> 25) &  0x20;}
+   UChar_t   GetResetNb()    const {return (UChar_t)(fWord >> 25) &  0x3F;}
    /// Return SerialNb
    UChar_t   GetSerialNb()   const {return (UChar_t)(fWord >> 20) &  0x1F;}
    /// Return Id
@@ -54,25 +54,25 @@ public:
    //Darc Status: error:10, #fpag:3, MBZ:3, phys type:1, present:1, not_full:1
    // not_empty:1, L2Rej:1, L2Acc:1, L1:1, L0:1, #evt:4, busy:4
    /// Return ErrorBits
-   UShort_t GetErrorBits()       const {return (UShort_t)(fDarcWord >> 21) &  0x3FF;}
+   UShort_t GetErrorBits()       const {return (UShort_t)(fDarcWord >> 22) &  0x3FF;}
    /// Return FPGANumber
-   UChar_t  GetFPGANumber()      const {return (UChar_t)  (fDarcWord >> 18) &  0x7;}
+   UChar_t  GetFPGANumber()      const {return (UChar_t)  (fDarcWord >> 19) &  0x7;}
    /// Return DarcPhysFlag
-   Bool_t   GetDarcPhysFlag()    const {return (fDarcWord  &  0x1000);}
+   Bool_t   GetDarcPhysFlag()    const {return (fDarcWord  &  0x8000);}
    /// Return PresentFlag
-   Bool_t   GetPresentFlag()     const {return (fDarcWord  &  0x800);}
+   Bool_t   GetPresentFlag()     const {return (fDarcWord  &  0x4000);}
    /// Return RamNotFullFlag
-   Bool_t   GetRamNotFullFlag()  const {return (fDarcWord  &  0x400);}
+   Bool_t   GetRamNotFullFlag()  const {return (fDarcWord  &  0x2000);}
    /// Return RamNotEmptyFlag
-   Bool_t   GetRamNotEmptyFlag() const {return (fDarcWord  &  0x200);}
+   Bool_t   GetRamNotEmptyFlag() const {return (fDarcWord  &  0x1000);}
    /// Return L2RejStatus
-   Bool_t   GetL2RejStatus()     const {return (fDarcWord  &  0x100);}
+   Bool_t   GetL2RejStatus()     const {return (fDarcWord  &  0x800);}
    /// Return L2AccStatus
-   Bool_t   GetL2AccStatus()     const {return (fDarcWord  &  0x80);}
+   Bool_t   GetL2AccStatus()     const {return (fDarcWord  &  0x400);}
    /// Return L1Status
-   Bool_t   GetL1Status()        const {return (fDarcWord  &  0x40);}
+   Bool_t   GetL1Status()        const {return (fDarcWord  &  0x200);}
    /// Return L0Status
-   Bool_t   GetL0Status()        const {return (fDarcWord  &  0x20);}
+   Bool_t   GetL0Status()        const {return (fDarcWord  &  0x100);}
    /// Return EventInRam
    UChar_t  GetEventInRam()      const {return (UChar_t)  (fDarcWord >> 4)  &  0x4;}
    /// Return Busy
