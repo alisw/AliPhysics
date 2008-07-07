@@ -15,6 +15,8 @@
 #pragma link C++ class  AliEventPoolOTF+;
 #pragma link C++ class  AliEventPoolLoop+;
 
+#pragma link C++ class AliEventPoolSparse+;
+
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliXMLCollection+;
