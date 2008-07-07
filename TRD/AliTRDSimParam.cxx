@@ -403,14 +403,14 @@ void AliTRDSimParam::SampleTRF()
                                ,  1.56,  1.49,  1.50,  1.49,  1.29
 			       ,  1.19,  1.21,  1.21,  1.20,  1.10 };
   // Normalization to maximum
-  for (ipasa = 0; ipasa < kNpasa; ipasa++) {
+  for (ipasa = 0; ipasa < kNpasaAr; ipasa++) {
     signalAr[ipasa] /= 68.52;
   }
   signalAr[0] = 0.0;
   signalAr[1] = 0.0;
   signalAr[2] = 0.0;
   // With undershoot, positive peak corresponds to ~3% of the main signal:
-  for (ipasa = 3; ipasa < kNpasa; ipasa++) {
+  for (ipasa = 3; ipasa < kNpasaAr; ipasa++) {
     xtalkAr[ipasa] = 0.2 * (signalAr[ipasa-2] - signalAr[ipasa-3]);
   }
   xtalkAr[0]  = 0.0;   
