@@ -23,8 +23,6 @@ class AliPHOSPreprocessor : public AliPreprocessor {
   AliPHOSPreprocessor();
   AliPHOSPreprocessor(AliShuttleInterface* shuttle);
 
-  Bool_t ProcessDCS() { return kFALSE; }
-
  protected:
 
   virtual UInt_t Process(TMap* valueSet);
