@@ -555,7 +555,6 @@ void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorLevel level,
   // Add a raw data error message to the list
   // of raw-data decoding errors
   if (fEventNumber < 0) {
-    AliError("No events have read so far! Impossible to add a raw data error log!");
     return;
   }
   Int_t ddlId = GetEquipmentId();
