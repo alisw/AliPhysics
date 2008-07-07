@@ -68,15 +68,15 @@ void clusters()
       Int_t det = detIds[i];
       AliTracker* tracker = reco->GetTracker(det);
       Int_t nclusters = at->GetClusters(det, idx);
-      for (Int_t c = 0; c < nclusters; ++c)
+      Int_t p=0;
+      for (Int_t c = 0; c < nclusters; )
       {
-        Int_t index = idx[c];
-        if (index >= 0) // Needed for TRD storing negative values.
-        {
-          AliCluster* cluster = tracker->GetCluster(index);
-          if (cluster) // Needed for TPC returning 0 sometimes.
-            cluster->IncreaseClusterUsage();
-        }
+        Int_t index = idx[p++];
+        if (index < 0) continue;
+        c++;
+        AliCluster* cluster = tracker->GetCluster(index);
+        if (cluster) cluster->IncreaseClusterUsage();
+        //else printf("Zero cluster pointer for detector: %s\n",detNames[i]);
       }
     }
   }
