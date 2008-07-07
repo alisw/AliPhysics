@@ -196,7 +196,7 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   //make walk corerction for preprocessor
   
   gFile = TFile::Open(laserFile);
-  //  gFile->ls();
+  gFile->ls();
   Float_t x1[10], y1[10]; 
   Float_t x2[10], y2[10];
  
@@ -212,8 +212,15 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  
 	  TString qtc = Form("QTCvsCFD%i_%i",i+1,im+1);
 	  TString led = Form("LEDvsCFD%i_%i",i+1,im+1);
+
 	  hCFDvsQTC[i][im] = (TH2F*) gFile->Get(qtc.Data()) ;
 	  hCFDvsLED[i][im] = (TH2F*) gFile->Get(led.Data());
+
+	  if(!hCFDvsQTC[i][im] && !hCFDvsLED[i][im]) 
+	    {
+	   AliWarning(" no walk correction data in LASER DA");
+	      break;
+	    }
 	  
 	  x1[im] = hCFDvsQTC[i][im]->GetMean(1);
 	  y1[im] = hCFDvsQTC[i][im]->GetMean(2);

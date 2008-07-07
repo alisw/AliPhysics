@@ -23,7 +23,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliT0CalibTimeEq.h"
-
+#include "AliLog.h"
 #include <TFile.h>
 #include <TMath.h>
 #include <TF1.h>
@@ -101,33 +101,26 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
-  // Int_t npeaks = 20;
-  // Double_t sigma = 4.;
-  //  Bool_t down=false;
-  // Int_t index[20];
-
+  Double_t mean=0;
   gFile = TFile::Open(filePhys);
-  gFile->ls();
+  //  gFile->ls();
   Char_t buf1[30];
  for (Int_t i=0; i<24; i++)
   {
+    //    sprintf(buf1,"CFD1-CFD%d",i+1);
     sprintf(buf1,"CFD1-CFD%d",i+1);
     TH1F *cfd = (TH1F*) gFile->Get(buf1);
     //    printf(" i = %d buf1 = %s\n", i, buf1);
-    Double_t mean=cfd->GetMean();
+    if(cfd) mean=cfd->GetMean();
     SetTimeEq(i,mean);
-    delete cfd;
+    if(!cfd) AliWarning(Form("no histograms collected by PHYS DA for channel %i", i));
+    if (cfd) delete cfd;
   }
 
   
    gFile->Close();
    delete gFile;
-   printf("\n\n");
-   for(int j=0;j<24;j++)
-   {
-                printf("fTimeEq[%d]=%f\n",j,fTimeEq[j]);
-   }
-
+ 
 }
 
 
