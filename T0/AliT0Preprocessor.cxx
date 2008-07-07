@@ -301,14 +301,16 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 		return iresultLaser;
 	}
        else if(runType == "PHYSICS"){
-	        Int_t iresultPhysics = ProcessPhysics();
-		//	Int_t iresultCosmic = ProcessCosmic();
+	 // Int_t iresultPhysics = ProcessPhysics();
+	       	Int_t iresultCosmic = ProcessCosmic();
 		if(dcsDP==1){
 			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
 			return iresultDCS;
 		}
-		Log(Form("iresultPhysics = %d",iresultPhysics));
-	        return iresultPhysics; 
+		//		Log(Form("iresultPhysics = %d",iresultPhysics));
+		//	        return iresultPhysics; 
+		Log(Form("iresultCosmic = %d",iresultCosmic));
+	        return iresultCosmic; 
        }	
 
   return 0;
