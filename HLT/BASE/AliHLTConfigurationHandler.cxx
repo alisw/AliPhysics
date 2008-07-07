@@ -93,7 +93,8 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
   // see header file for function documentation
   int iResult=0;
   if (pConf) {
-    if (FindConfiguration(pConf->GetName()) == NULL) {
+    AliHLTConfiguration* pExisting=NULL;
+    if ((pExisting=FindConfiguration(pConf->GetName())) == NULL) {
       AliHLTConfiguration* pClone=new AliHLTConfiguration(*pConf);
       fgListConfigurations.Add(pClone);
       HLTDebug("configuration \"%s\" (%p) registered from %p", pClone->GetName(), pClone, pConf);
@@ -108,8 +109,10 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
 	lnk=lnk->Next();
       }
     } else {
+      if ((*pExisting)!=(*pConf)) {
       iResult=-EEXIST;
-      HLTWarning("configuration \"%s\" already registered", pConf->GetName());
+      HLTWarning("configuration \"%s\" already registered with different properties", pConf->GetName());
+      }
     }
   } else {
     iResult=-EINVAL;

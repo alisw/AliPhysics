@@ -220,7 +220,11 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	  iResult=-EBADF;
 	}
       } else {
-	HLTError("component %p is not a data consumer of data buffer %s", pConsumer, this);
+	if (!FindConsumer(pConsumer)) {
+	  HLTError("component %p is not a data consumer of data buffer %p", pConsumer, this);
+	} else {
+	  HLTError("component %p is a valid data consumer of data buffer %p, but did not release it's buffer subscription", pConsumer, this);
+	}
 	iResult=-ENOENT;
       }
     } else {
@@ -255,6 +259,39 @@ int AliHLTDataBuffer::Release(AliHLTComponentBlockData* pBlockDesc,
       }
       if (GetNofPendingConsumers()==0 && fForwardedSegments.size()>0) {
 	// last consumer, release forwarded segments
+	ReleaseForwardedBlock(pBlockDesc, pOwnerTask);
+      }
+      pBlockDesc->fOffset=0;
+      pBlockDesc->fPtr=NULL;
+      pBlockDesc->fSize=0;
+      if (pDesc->GetNofActiveSegments()==0) {
+	if ((iResult=ChangeConsumerState(pDesc, fActiveConsumers, fReleasedConsumers))>=0) {
+	  if (GetNofActiveConsumers()==0 && GetNofPendingConsumers()==0) {
+	    // this is the last consumer, reset the consumer list and release the raw buffer
+	    ResetDataBuffer();
+	  }
+	} else {
+	  HLTError("can not deactivate consumer %p for data buffer %p", pConsumer, this);
+	  iResult=-EACCES;
+	}
+      }
+    } else {
+      HLTWarning("component %p has currently not subscribed to the data buffer %p", pConsumer, this);
+      iResult=-ENOENT;
+    }
+  } else {
+    HLTError("inavalid parameter: pBlockDesc=%p pConsumer=%p", pBlockDesc, pConsumer);
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTDataBuffer::ReleaseForwardedBlock(AliHLTComponentBlockData* pBlockDesc,
+					    const AliHLTTask* pOwnerTask)
+{
+  // see header file for function documentation
+  int iResult=0;
+  if (pBlockDesc && pOwnerTask) {
 	assert(fForwardedSegments.size()==fForwardedSegmentSources.size());
 	AliHLTDataSegmentList::iterator segment=fForwardedSegments.begin();
 	AliHLTTaskPList::iterator src=fForwardedSegmentSources.begin();
@@ -281,27 +318,8 @@ int AliHLTDataBuffer::Release(AliHLTComponentBlockData* pBlockDesc,
 	    break;
 	  }
 	}
-      }
-      pBlockDesc->fOffset=0;
-      pBlockDesc->fPtr=NULL;
-      pBlockDesc->fSize=0;
-      if (pDesc->GetNofActiveSegments()==0) {
-	if ((iResult=ChangeConsumerState(pDesc, fActiveConsumers, fReleasedConsumers))>=0) {
-	  if (GetNofActiveConsumers()==0 && GetNofPendingConsumers()==0) {
-	    // this is the last consumer, reset the consumer list and release the raw buffer
-	    ResetDataBuffer();
-	  }
-	} else {
-	  HLTError("can not deactivate consumer %p for data buffer %p", pConsumer, this);
-	  iResult=-EACCES;
-	}
-      }
-    } else {
-      HLTWarning("component %p has currently not subscribed to the data buffer %p", pConsumer, this);
-      iResult=-ENOENT;
-    }
   } else {
-    HLTError("inavalid parameter: pBlockDesc=%p pConsumer=%p", pBlockDesc, pConsumer);
+    HLTError("inavalid parameter: pBlockDesc=%p pOwnerTask=%p", pBlockDesc, pOwnerTask);
     iResult=-EINVAL;
   }
   return iResult;
@@ -389,14 +407,14 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 int AliHLTDataBuffer::IsEmpty()
 {
   // see header file for function documentation
-  int iResult=fpBuffer==NULL || GetNofSegments()==0;
+  int iResult=(fpBuffer==NULL && fForwardedSegments.size()==0) || GetNofSegments()==0;
   return iResult;
 }
 
 int AliHLTDataBuffer::GetNofSegments()
 {
   // see header file for function documentation
-  int iResult=fSegments.size();
+  int iResult=fSegments.size() + fForwardedSegments.size();
   return iResult;
 }
 
@@ -660,7 +678,7 @@ int AliHLTDataBuffer::CleanupConsumerList()
   return iResult;
 }
 
-int AliHLTDataBuffer::FindConsumer(AliHLTComponent* pConsumer, int bAllLists)
+int AliHLTDataBuffer::FindConsumer(const AliHLTComponent* pConsumer, int bAllLists)
 {
   // see header file for function documentation
   AliHLTConsumerDescriptorPList::iterator desc=fConsumers.begin();

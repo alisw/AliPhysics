@@ -80,13 +80,49 @@ class AliHLTOUTHandler : public AliHLTLogging {
    */
   virtual int ReleaseProcessedData(const AliHLTUInt8_t* pData, int size);
 
+  /**
+   * Cleanup the current event processing.
+   */
+  virtual int FinishEvent();
+
+  enum {
+    kHandlerUndefined = 0,
+    kHandlerOK    = 0,
+    kHandlerError = 0x1000
+  };
+
+  /**
+   * Check state flag of the handler.
+   * @return true if flag matches
+   */
+  bool CheckStatus(unsigned int flag) {
+    return (fState&flag)!=0;
+  }
+
+  /**
+   * Reset the state flag.
+   */
+  void ResetState() {
+    fState=kHandlerOK;
+  }
+
  protected:
+  void SetStatusFlag(unsigned int flag) {
+    fState|=flag;
+  }
+
+  void ClearStatusFlag(unsigned int flag) {
+    fState&=~flag;
+  }
 
  private:
   /** copy constructor prohibited */
   AliHLTOUTHandler(const AliHLTOUTHandler&);
   /** assignment operator prohibited */
   AliHLTOUTHandler& operator=(const AliHLTOUTHandler&);
+
+  /** internal state of the handler */
+  int fState; //!transient
 
   ClassDef(AliHLTOUTHandler, 0)
 };

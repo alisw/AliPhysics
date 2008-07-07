@@ -28,6 +28,8 @@
 ClassImp(AliHLTOUTHandler)
 
 AliHLTOUTHandler::AliHLTOUTHandler()
+  :
+  fState(kHandlerOK)
 { 
   // see header file for class documentation
   // or
@@ -49,6 +51,12 @@ int AliHLTOUTHandler::GetProcessedData(const AliHLTUInt8_t* &pData)
 }
 
 int AliHLTOUTHandler::ReleaseProcessedData(const AliHLTUInt8_t* /*pData*/, int /*size*/)
+{
+  // see header file for class documentation
+  return 0;
+}
+
+int AliHLTOUTHandler::FinishEvent()
 {
   // see header file for class documentation
   return 0;

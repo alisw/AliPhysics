@@ -126,6 +126,12 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
 	      const AliHLTTask* pOwnerTask);
 
   /**
+   * Release a forwarded data block.
+   */
+  int ReleaseForwardedBlock(AliHLTComponentBlockData* pBlockDesc,
+			     const AliHLTTask* pOwnerTask);
+
+  /**
    * Register an input data block for forwarding.
    * Consumer of this data buffer subscribe to forwarded data blocks in te same way.
    * Forwarded data blocks are released when the last consumer has released the
@@ -171,7 +177,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   //int GetTotalSize();
 
   /**
-   * Get the number of segments
+   * Get the number of segments including the forwarded data blocks.
    * @return number of segments
    */
   int GetNofSegments();
@@ -203,7 +209,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    *                    search only in fConsumer list if 0
    * @return 1 if found, 0 if not
    */
-  int FindConsumer(AliHLTComponent* pConsumer, int bAllLists=1);
+  int FindConsumer(const AliHLTComponent* pConsumer, int bAllLists=1);
 
   /**
    * Public method to reset the buffer.

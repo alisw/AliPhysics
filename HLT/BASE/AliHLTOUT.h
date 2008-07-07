@@ -194,7 +194,7 @@ class AliHLTOUT {
 
     bool IsSelected() const {return fSelected;}
     void Select(bool selected=true) {fSelected=selected;}
-    bool IsProcessed() const {return fSelected;}
+    bool IsProcessed() const {return fProcessed;}
     void MarkProcessed() {fProcessed=true;}
 
     /**

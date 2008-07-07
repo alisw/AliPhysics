@@ -336,6 +336,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
     AliHLTComponent::SetGlobalComponentHandler(this);
 
     AliHLTLibHandle hLib;
+    AliHLTLibHandle* phSearch=FindLibrary(libraryPath);
     const char* loadtype="";
 #ifdef HAVE_DLFCN_H
     // use interface to the dynamic linking loader
@@ -358,9 +359,8 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
     // check if the library was already loaded, as Load returns
     // 'failure' if the library was already loaded
     /*try*/ {
-    AliHLTLibHandle* pLib=FindLibrary(libraryPath);
-    if (pLib) {
-	int* pRootHandle=reinterpret_cast<int*>(pLib->fHandle);
+    if (phSearch) {
+	int* pRootHandle=reinterpret_cast<int*>(phSearch->fHandle);
 	(*pRootHandle)++;
 	HLTDebug("instance %d of library %s loaded", (*pRootHandle), libraryPath);
 	hLib.fHandle=pRootHandle;
@@ -385,8 +385,9 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
       // create TString object to store library path and use pointer as handle 
       hLib.fName=new TString(libraryPath);
       hLib.fMode=fLibraryMode;
-      HLTImportant("library %s loaded (%s%s)", libraryPath, hLib.fMode==kStatic?"persistent, ":"", loadtype);
       fLibraryList.insert(fLibraryList.begin(), hLib);
+      if (!phSearch) {
+      HLTImportant("library %s loaded (%s%s)", libraryPath, hLib.fMode==kStatic?"persistent, ":"", loadtype);
       typedef void (*CompileInfo)( char*& date, char*& time);
       CompileInfo fctInfo=(CompileInfo)FindSymbol(libraryPath, "CompileInfo");
       if (fctInfo) {
@@ -398,6 +399,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
 	HLTImportant("build on %s (%s)", date, time);
       } else {
 	HLTImportant("no build info available (possible AliRoot embedded build)");
+      }
       }
 
       // static registration of components when library is loaded

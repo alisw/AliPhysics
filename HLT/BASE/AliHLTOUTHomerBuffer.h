@@ -5,7 +5,7 @@
 #define ALIHLTOUTHOMERBUFFER_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
-//* See cxx source for full Copyright notice                               */
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTOUTHomerBuffer.h
     @author Matthias Richter
@@ -23,6 +23,16 @@ class AliHLTHOMERLibManager;
 /**
  * @class AliHLTOUTHomerBuffer
  * Handler of HLTOUT data for buffer input.
+ *
+ * The class supports the AliHLTOUT interface in order to access the
+ * individual data blocks of a HOMER data collection. An AliHOMERReader
+ * is created to interpret the data. The class can serve as base for
+ * other HLTOUT implementations supporting different kinds of input like
+ * the AliHLTOUTHomerCollection and its childs AliHLTOUTRawReader and
+ * AliHLTOUTDigitReader.
+ *
+ * @note The buffer is expected to contain the HOMER data block only, no
+ * CDH and HLT headers.
  */
 class AliHLTOUTHomerBuffer : public AliHLTOUT, public AliHLTLogging {
  public:

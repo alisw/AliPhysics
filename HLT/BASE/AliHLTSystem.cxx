@@ -97,7 +97,9 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel)
     env.fLoggingFunc=NULL;
     fpComponentHandler->SetEnvironment(&env);
     InitAliLogFunc(fpComponentHandler);
+    if (fgNofInstances==1) {
     fpComponentHandler->AnnounceVersion();
+    }
   } else {
     HLTFatal("can not create Component Handler");
   }
@@ -768,6 +770,9 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   // by the framework
   AliESDEvent* pMasterESD=NULL;
   pMasterESD=esd;
+
+  AliHLTComponentDataTypeList esdBlocks;
+
   for (iResult=pHLTOUT->SelectFirstDataBlock();
        iResult>=0;
        iResult=pHLTOUT->SelectNextDataBlock()) {
@@ -789,6 +794,15 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 	  // schedule for later processing
 	  pHLTOUT->InsertHandler(*pEsdHandlers, pHLTOUT->GetDataBlockHandlerDesc());
 	} else {
+	  AliHLTComponentDataTypeList::iterator element=esdBlocks.begin();
+	  for (; element!=esdBlocks.end(); element++) {
+	    if (*element==dt) {
+	      HLTWarning("multiple ESDs of identical data type %s, please add appropriate handler to merge ESDs", AliHLTComponent::DataType2Text(dt).c_str());
+	      break;
+	    }
+	  }
+	  if (element==esdBlocks.end()) esdBlocks.push_back(dt);
+
 	  // write directly
 	  const AliHLTUInt8_t* pBuffer=NULL;
 	  AliHLTUInt32_t size=0;
@@ -868,7 +882,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   }
 
   // process all kProprietary data blocks
-  for (handler=pEsdHandlers->begin(); handler!=pEsdHandlers->end() && iResult>=0; handler++) {
+  for (handler=pProprietaryHandlers->begin(); handler!=pProprietaryHandlers->end() && iResult>=0; handler++) {
     AliHLTOUT::AliHLTOUTSelectionGuard g(pHLTOUT, &(*handler));	    
     AliHLTOUTHandler* pHandler=*handler;
     const AliHLTUInt8_t* pBuffer=NULL;
@@ -909,6 +923,7 @@ int AliHLTSystem::ProcessHLTOUTkChain(AliHLTOUT* pHLTOUT)
   // process all defined chain handlers
   AliHLTOUT::AliHLTOUTHandlerListEntryVector::iterator chainHandler;
   for (chainHandler=pChainHandlers->begin(); chainHandler!=pChainHandlers->end() && iResult>=0; chainHandler++) {
+    if (chainHandler->IsEmpty()) continue;
     AliHLTOUT::AliHLTOUTSelectionGuard g(pHLTOUT, &(*chainHandler));	    
     AliHLTOUTHandler* pHandler=*chainHandler;
     const AliHLTUInt8_t* pBuffer=NULL;

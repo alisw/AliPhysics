@@ -185,6 +185,17 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * @return size in byte or -1 if not specified
    */
   int GetOutputBufferSize() const {return fBufferSize;}
+
+  /**
+   * Two configurations are considered equal if all properties match
+   */
+  bool operator==(const AliHLTConfiguration& c) const {
+    return (fID==c.fID) && (fComponent==c.fComponent) && (fStringSources==c.fStringSources) && (fArguments==c.fArguments);
+  }
+  bool operator!=(const AliHLTConfiguration& c) const {
+    return !(*this==c);
+  }
+
  protected:
   
 

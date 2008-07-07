@@ -330,10 +330,10 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 
   /**
    * Delete an HLTOUT handler.
-   * Even if the agent returned the handler several times, this is the
-   * final cleanup. The framwork makes sure that the handler is not
-   * used any further outside the agent. The default implementation just
-   * deltetes the object.
+   * This is the final cleanup. The framwork makes sure that the handler is
+   * not used any further outside the agent. Even if the agent returned the
+   * same handler several times, cleanup is invoked only once. The default
+   * implementation just deletes the object.
    * @param pInstance      pointer to handler
    */
   virtual int DeleteOutputHandler(AliHLTOUTHandler* pInstance);

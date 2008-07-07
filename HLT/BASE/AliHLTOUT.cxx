@@ -722,6 +722,7 @@ int AliHLTOUT::AddSubCollection(AliHLTOUT* pCollection)
   int iResult=0;
   if (!pCollection) return 0;
 
+  SetStatusFlag(kCollecting);  
   int index=-1;
   for (index=pCollection->SelectFirstDataBlock();
        index>=0;
@@ -736,6 +737,7 @@ int AliHLTOUT::AddSubCollection(AliHLTOUT* pCollection)
   if (iResult>0) {
     pCollection->SetStatusFlag(kIsSubCollection);
   }
+  ClearStatusFlag(kCollecting);  
 
   return iResult;
 }
@@ -765,7 +767,7 @@ int AliHLTOUT::Reset()
   AliHLTOUTPVector subCollections;
   AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
   while (block!=fBlockDescList.end()) {
-    if ((*block)==this) {
+    if (!((*block)==this)) {
       AliHLTOUTPVector::iterator collection=subCollections.begin();
       for (; collection!=subCollections.end(); collection++)
 	if((*block)==*collection) break;
