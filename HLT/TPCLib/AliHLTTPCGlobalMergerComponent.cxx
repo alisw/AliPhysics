@@ -139,6 +139,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation
+  int iResult=0;
   const AliHLTComponentBlockData* iter = NULL;
   const AliHLTComponentBlockData* lastVertexBlock = NULL;
   unsigned long ndx;
@@ -265,7 +266,11 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
   fGlobalMerger->Merge();
   fGlobalMerger->AddAllTracks();
 
-  UInt_t ntracks0=0;
+  // check if there was enough space in the output buffer
+  UInt_t ntracks0=fGlobalMerger->GetOutTracks()->GetNTracks();
+  if (outputPtr==NULL || (sizeof(AliHLTTPCTrackletData)+ntracks0*sizeof(AliHLTTPCTrackSegmentData)>size)) {
+    iResult=-ENOSPC;
+  } else {
   outPtr = (AliHLTTPCTrackletData*)(outputPtr);
 
   tSize = fGlobalMerger->GetOutTracks()->WriteTracks( ntracks0, outPtr->fTracklets );
@@ -279,9 +284,10 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
   bd.fSize = tSize;
   bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( minSlice, maxSlice, 0, 5 );
   outputBlocks.push_back( bd );
+  }
 
   size = tSize;
-  return 0;
+  return iResult;
 }
 
 	
