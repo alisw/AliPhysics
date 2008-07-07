@@ -7,7 +7,8 @@
  * The output is written to an ESD file either using the TPCEsdWriter (an
  * AliHLTFileWriter) or the TPCEsdConverter with an attached EsdCollector.
  *
- * Matthias.Richter@ift.uib.no
+ * @author Matthias.Richter@ift.uib.no
+ * @ingroup alihlt_tpc
  */
 {
   int iMinSlice=0; 

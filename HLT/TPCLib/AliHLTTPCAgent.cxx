@@ -26,6 +26,7 @@
 #include "AliHLTConfiguration.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTOUT.h"
+#include "AliHLTOUTHandlerChain.h"
 #include "AliRunLoader.h"
 
 /** global instance for agent registration */
@@ -65,7 +66,7 @@ AliHLTTPCAgent::AliHLTTPCAgent()
   :
   AliHLTModuleAgent("TPC"),
   fRawDataHandler(NULL),
-  fNofRawDataHandler(0)
+  fTracksegsDataHandler(NULL)
 {
   // see header file for class documentation
   // or
@@ -128,6 +129,31 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // the esd converter configuration
     handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , "TPC-globalmerger", "-tree");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //
+    // a kChain HLTOUT configuration for processing of {'TRAKSEGS':'TPC '} data blocks
+    // collects the data blocks, merges the tracks and produces an ESD object
+
+    // publisher component
+    handler->CreateConfiguration("TPC-hltout-tracksegs-publisher", "AliHLTOUTPublisher"   , NULL, "");
+
+    // GlobalMerger component
+    handler->CreateConfiguration("TPC-hltout-tracksegs-merger", "TPCGlobalMerger", "TPC-hltout-tracksegs-publisher", "");
+
+    // the esd converter configuration
+    handler->CreateConfiguration("TPC-hltout-tracksegs-esd-converter", "TPCEsdConverter", "TPC-hltout-tracksegs-merger", "");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //
+    // a kChain HLTOUT configuration for processing of {'TRACKS  ':'TPC '} data blocks
+    // produces an ESD object from the track structure
+
+    // publisher component
+    handler->CreateConfiguration("TPC-hltout-tracks-publisher", "AliHLTOUTPublisher"   , NULL, "");
+
+    // the esd converter configuration
+    handler->CreateConfiguration("TPC-hltout-tracks-esd-converter", "TPCEsdConverter", "TPC-hltout-tracks-publisher", "");
   }
   return 0;
 }
@@ -198,6 +224,8 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
 					  AliHLTOUTHandlerDesc& desc) const
 {
   // see header file for class documentation
+
+  // raw data blocks to be fed into offline reconstruction
   if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC)) {
     int slice=AliHLTTPCDefinitions::GetMinSliceNr(spec);
     int part=AliHLTTPCDefinitions::GetMinPatchNr(spec);
@@ -213,6 +241,19 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
       return 0;
     }
   }
+
+  // afterburner for {'TRAKSEGS':'TPC '} blocks to be converted to ESD format
+  if (dt==AliHLTTPCDefinitions::fgkTrackSegmentsDataType) {
+      desc=AliHLTOUTHandlerDesc(kChain, dt, GetModuleId());
+      return 1;
+  }
+
+  // afterburner for {'TRACKS  ':'TPC '} block to be converted to ESD format
+  // there is only one data block
+  if (dt==AliHLTTPCDefinitions::fgkTracksDataType) {
+      desc=AliHLTOUTHandlerDesc(kChain, dt, GetModuleId());
+      return 1;
+  }
   return 0;
 }
 
@@ -220,13 +261,29 @@ AliHLTOUTHandler* AliHLTTPCAgent::GetOutputHandler(AliHLTComponentDataType dt,
 						   AliHLTUInt32_t /*spec*/)
 {
   // see header file for class documentation
+
+  // raw data blocks to be fed into offline reconstruction
   if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC)) {
     if (!fRawDataHandler) {
       fRawDataHandler=new AliHLTTPCAgent::AliHLTTPCRawDataHandler;
     }
-    fNofRawDataHandler++;
     return fRawDataHandler;
   }
+
+  // afterburner for {'TRAKSEGS':'TPC '} blocks to be converted to ESD format
+  // in a kChain HLTOUT handler
+  if (dt==AliHLTTPCDefinitions::fgkTrackSegmentsDataType) {
+    if (fTracksegsDataHandler==NULL)
+      fTracksegsDataHandler=new AliHLTOUTHandlerChain("chains=TPC-hltout-tracksegs-esd-converter");
+    return fTracksegsDataHandler;
+  }
+
+  // afterburner for {'TRACKS  ':'TPC '} block to be converted to ESD format
+  // there is only one data block
+  if (dt==AliHLTTPCDefinitions::fgkTracksDataType) {
+    return new AliHLTOUTHandlerChain("chains=TPC-hltout-tracks-esd-converter");
+  }
+
   return NULL;
 }
 
@@ -236,10 +293,13 @@ int AliHLTTPCAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
   if (pInstance==NULL) return -EINVAL;
 
   if (pInstance==fRawDataHandler) {
-    if (--fNofRawDataHandler<=0) {
-      delete fRawDataHandler;
-      fRawDataHandler=NULL;
-    }
+    delete fRawDataHandler;
+    fRawDataHandler=NULL;
+  }
+
+  if (pInstance==fTracksegsDataHandler) {
+    delete fTracksegsDataHandler;
+    fTracksegsDataHandler=NULL;
   }
   return 0;
 }

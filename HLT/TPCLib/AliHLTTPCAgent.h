@@ -14,6 +14,8 @@
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOUTHandlerEquId.h"
 
+class AliHLTOUTHandlerChain;
+
 /**
  * @class AliHLTTPCAgent
  * This is the agent for the AliHLTTPC library.
@@ -127,10 +129,11 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
 
   /** handler for TPC raw data in the HLTOUT stream */
   AliHLTTPCRawDataHandler* fRawDataHandler; //!transient
-  /** nof requests for TPC raw data handler */
-  int fNofRawDataHandler; //!transient
 
-  ClassDef(AliHLTTPCAgent, 1);
+  /** afterburner for {'TRAKSEGS':'TPC '} in the HLTOUT stream */
+  AliHLTOUTHandlerChain* fTracksegsDataHandler; //! transient
+
+  ClassDef(AliHLTTPCAgent, 2);
 };
 
 #endif

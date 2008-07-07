@@ -330,6 +330,7 @@ int AliHLTTPCOfflineTrackerComponent::Reconfigure(const char* cdbEntry, const ch
     defaultNotify=" (default)";
   }
   if (path) {
+    if (chainId) {} // just to get rid of warning, can not comment argument due to debug message
     HLTDebug("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
     AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
     if (pEntry) {

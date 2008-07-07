@@ -7,7 +7,8 @@
  * The output is written to files for cluster structures and track structures
  * on a sector basis.
  *
- * Matthias.Richter@ift.uib.no
+ * @author Matthias.Richter@ift.uib.no
+ * @ingroup alihlt_tpc
  */
 {
   int iMinSlice=0; 
