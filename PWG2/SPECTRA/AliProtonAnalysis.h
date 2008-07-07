@@ -56,6 +56,8 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
 
+  TH1I *GetEventHistogram() {return fHistEvents;}
+
   Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEvents->GetEntries();} 
   Bool_t  PrintMean(TH1 *hist, Double_t edge);
   Bool_t  PrintYields(TH1 *hist, Double_t edge); 

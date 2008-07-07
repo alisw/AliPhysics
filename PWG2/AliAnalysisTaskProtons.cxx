@@ -134,6 +134,7 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   fList = new TList();
   fList->Add(fAnalysis->GetProtonYPtHistogram()); 
   fList->Add(fAnalysis->GetAntiProtonYPtHistogram()); 
+  fList->Add(fAnalysis->GetEventHistogram()); 
 }
 
 //________________________________________________________________________
