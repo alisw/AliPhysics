@@ -14,7 +14,11 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gROOT->LoadMacro(macro);
     html.Convert(macro,"Example Macro");
   } else {
-    gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libRALICE");
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libEGPythia6.so");   // TGenerator interface
+    gSystem->Load("libpythia6.so");     // Pythia
+    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+    gSystem->Load("libRALICE.so");
     html.MakeAll(force,"[A-Z]*");
   }
   timer.Stop();
