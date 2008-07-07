@@ -2501,21 +2501,23 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	  Int_t isp = 0;
 	  Int_t isp2 = 0;
 	  while (isp2 < nspdet) {
-	    Bool_t isvalid;
+	    Bool_t isvalid=kTRUE;
+
+            Int_t index=idx[isp++];
+            if (index < 0) continue;
+
             TString dets = fgkDetectorName[iDet];
             if ((fUseTrackingErrorsForAlignment.CompareTo(dets) == 0) ||
             fUseTrackingErrorsForAlignment.BeginsWith(dets+" ") ||
             fUseTrackingErrorsForAlignment.EndsWith(" "+dets) ||
             fUseTrackingErrorsForAlignment.Contains(" "+dets+" ")) {
-              isvalid = tracker->GetTrackPointTrackingError(idx[isp2],p,track);
+              isvalid = tracker->GetTrackPointTrackingError(index,p,track);
 	    } else {
-	      isvalid = tracker->GetTrackPoint(idx[isp2],p); 
+	      isvalid = tracker->GetTrackPoint(index,p); 
 	    } 
 	    isp2++;
-	    const Int_t kNTPCmax = 159;
-	    if (iDet==1 && isp2>kNTPCmax) break;   // to be fixed
 	    if (!isvalid) continue;
-	    sp->AddPoint(isptrack,&p); isptrack++; isp++;
+	    sp->AddPoint(isptrack,&p); isptrack++;
 	  }
 	}	
       }
