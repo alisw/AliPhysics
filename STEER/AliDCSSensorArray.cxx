@@ -234,24 +234,55 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
   }
 }
 //_____________________________________________________________________________
-void AliDCSSensorArray::StoreGraph(TMap *map)
+void AliDCSSensorArray::MakeSplineFitAddPoints(TMap *map)
 {
   //
-  // Store graphs extracted from DCS
+  // Make spline fits from DCS maps
   //
   Int_t nsensors = fSensors->GetEntries();
   for ( Int_t isensor=0; isensor<nsensors; isensor++) {
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
+
+  // fetch old points from existing graph
+
+    TGraph *gr = entry->GetGraph();
+    if (!gr) {
+      gr = new TGraph();
+      entry->SetGraph(gr);
+    } 
     TString stringID = entry->GetStringID();
-    TGraph *gr = (TGraph*)map->GetValue(stringID.Data())->Clone();
-    if (!gr ) {
-      entry->SetFit(0);
-      entry->SetGraph(0);
-      AliWarning(Form("sensor %s: no input graph",stringID.Data()));
-      continue;
+
+  // fetch new points from DCS map
+  
+    TGraph *grAdd = (TGraph*)map->GetValue(stringID.Data());
+    if (!grAdd ) return;
+
+  // add new points to end of graph
+  
+    Int_t nPointsOld=gr->GetN();
+    Int_t nPointsAdd=grAdd->GetN();
+    gr->Expand(nPointsOld+nPointsAdd);
+    gr->Set(nPointsOld+nPointsAdd);
+    Double_t *addX=grAdd->GetX();
+    Double_t *addY=grAdd->GetY();
+    for (Int_t i=0;i<nPointsAdd;i++) {
+      gr->SetPoint(nPointsOld+i,addX[i],addY[i]);
     }
-    entry->SetFit(0);
-    entry->SetGraph(gr);
+ 
+   // make fit to complete graph
+   
+    AliSplineFit *fit = new AliSplineFit();
+    fit->SetMinPoints(fMinGraph);
+    fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
+    fit->SplineFit(fFitReq);
+    fit->Cleanup();
+    if (fit) {
+      AliSplineFit *oldFit = entry->GetFit();
+      if (oldFit) delete oldFit;
+      entry->SetFit(fit);
+    } else {
+      AliWarning(Form("sensor %s: no new fit performed. If available, old fit kept.",stringID.Data()));
+    }
   }
 }
 
@@ -270,19 +301,19 @@ Int_t AliDCSSensorArray::NumFits() const
   return nfit;
 }
 //_____________________________________________________________________________
-Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor) const
+Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor)
 {
   //
   // Return sensor value at time timeSec (obtained from fitted function)
   //  timeSec = time in seconds from start of run
   //
   AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(sensor);
-  return entry->GetValue(TTimeStamp((time_t)fStartTime.GetSec()+timeSec,0));
+  return entry->GetValue(timeSec);
 }
 
 
 //_____________________________________________________________________________
-TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap)
+TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap, Bool_t keepStart)
 {
  //
  // Extract temperature graphs from DCS maps
@@ -306,7 +337,7 @@ TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap)
    if ( pair ) {                            // only try to read values
                                             // if DCS object available
      valueSet = (TObjArray*)pair->Value();
-     TGraph *graph = MakeGraph(valueSet);   // MakeGraph sets start/end time
+     TGraph *graph = MakeGraph(valueSet,keepStart);   // MakeGraph sets start/end time
                                             // per sensor
      values->Add(new TObjString(stringID.Data()),graph);
      entry->SetStartTime(fStartTime);
@@ -322,7 +353,7 @@ TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap)
 }
 
 //_____________________________________________________________________________
-TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
+TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet, Bool_t keepStart){
   //
   // Make graph of temperature values read from DCS map
   //   (spline fit parameters will subsequently be obtained from this graph) 
@@ -335,6 +366,10 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
   Int_t time0=0;
   TTimeStamp firstTime(0);
   TTimeStamp lastTime(0);
+  if (keepStart) { 
+     firstTime = fStartTime;
+     time0 = firstTime.GetSec();
+  }
   Int_t out=0;
   Int_t skipped=0;
   AliDCSValue *val = (AliDCSValue *)valueSet->At(0);
@@ -348,7 +383,7 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
       time0=val->GetTimeStamp();
       firstTime= TTimeStamp((time_t)val->GetTimeStamp(),0);
       lastTime=TTimeStamp((time_t)val->GetTimeStamp(),0);
-    }
+     }
     switch ( type )
     { 
       case AliDCSValue::kFloat:
@@ -380,7 +415,7 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
     y[out] = val->GetFloat();
     out++;    
   }
-  fStartTime=firstTime;
+  if (!keepStart) fStartTime=firstTime;
   fEndTime=lastTime;
   TGraph * graph = new TGraph(out,x,y);
   delete [] x;
@@ -491,7 +526,7 @@ TArrayI AliDCSSensorArray::OutsideThreshold(Double_t threshold, UInt_t timeSec, 
   Int_t outside=0;
   for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over sensors
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
-    Double_t val=GetValue(timeSec,isensor);
+    Double_t val=entry->GetValue(timeSec);
     if (below) {
       if (val<threshold) array[outside++] = entry->GetIdDCS();
     } else {

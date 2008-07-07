@@ -53,12 +53,12 @@ class AliDCSSensorArray : public TNamed {
 
   void SetGraph     (TMap *map);
   void MakeSplineFit(TMap *map, Bool_t keepMap=kFALSE);
-  void StoreGraph   (TMap *map);
-  TMap* ExtractDCS  (TMap *dcsMap);
-  TGraph* MakeGraph (TObjArray *valueSet);
+  void MakeSplineFitAddPoints(TMap *map);
+  TMap* ExtractDCS  (TMap *dcsMap, Bool_t keepStart=kFALSE);
+  TGraph* MakeGraph (TObjArray *valueSet, Bool_t keepStart=kFALSE);
   void ClearGraph();
   void ClearFit();
-  Double_t GetValue (UInt_t timeSec, Int_t sensor) const;
+  Double_t GetValue  (UInt_t timeSec, Int_t sensor);
   AliDCSSensor* GetSensor (Int_t IdDCS);
   AliDCSSensor* GetSensor (Double_t x, Double_t y, Double_t z);
   AliDCSSensor* GetSensor (const TString& stringID);
