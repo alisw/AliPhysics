@@ -257,7 +257,7 @@ void AliFRAMEv2::CreateGeometry()
   //
   // TPC support
   //
-  pbox[0] =   3.38;
+  pbox[0] =   3.37;
   pbox[1] =   2.0;
   pbox[2] = 375.5;
   gMC->Gsvolu("B080", "BOX", kSteel, pbox, 3);
