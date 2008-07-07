@@ -18,6 +18,7 @@ class AliLHCTagCuts;
 class AliDetectorTagCuts;
 class AliEventTagCuts;
 class AliTagAnalysis;
+class TChain;
 
 class AliEventPoolLoop : public AliVEventPool
 {
@@ -38,6 +39,7 @@ class AliEventPoolLoop : public AliVEventPool
  protected:
     Int_t fMaxIterations;
     Int_t fNIteration;
+    TChain* fChainClone; // Clone of the original 
     ClassDef(AliEventPoolLoop, 0); 
 };
  

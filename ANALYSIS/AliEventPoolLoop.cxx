@@ -24,6 +24,9 @@
 
 
 #include "AliEventPoolLoop.h"
+#include <TChain.h>
+#include <TFile.h>
+#include <TObjArray.h>
 
 ClassImp(AliEventPoolLoop)
 
@@ -33,7 +36,8 @@ ClassImp(AliEventPoolLoop)
 AliEventPoolLoop::AliEventPoolLoop():
     AliVEventPool(),
     fMaxIterations(0),
-    fNIteration(0)
+    fNIteration(0),
+    fChainClone(0)
 {
   // Default constructor
 }
@@ -41,7 +45,8 @@ AliEventPoolLoop::AliEventPoolLoop():
 AliEventPoolLoop::AliEventPoolLoop(Int_t nit):
     AliVEventPool(),
     fMaxIterations(nit),
-    fNIteration(0)
+    fNIteration(0),
+    fChainClone(0)
 {
   // Default constructor
 }
@@ -49,7 +54,8 @@ AliEventPoolLoop::AliEventPoolLoop(Int_t nit):
 AliEventPoolLoop::AliEventPoolLoop(const char* name, const char* title):
     AliVEventPool(name, title),
     fMaxIterations(0),
-    fNIteration(0)
+    fNIteration(0),
+    fChainClone(0)
 {
   // Constructor
 }
@@ -88,7 +94,24 @@ TChain* AliEventPoolLoop::GetNextChain()
 	return (0);
     } else {
 	fNIteration++;
-	return fChain;
+	/*
+	if (fChainClone) {
+	  fChainClone->Reset();
+	  new (fChainClone) TChain(fChain->GetName());
+	} else {
+	  fChainClone = new TChain(fChain->GetName());
+	}
+	TObjArray* files = fChain->GetListOfFiles();
+	Int_t n = files->GetEntriesFast();
+	for (Int_t i = 0; i < n; i++) {
+	  TFile* file = (TFile*) (files->At(i));
+	  fChainClone->AddFile(file->GetTitle());
+	  printf("Adding %s %s %s\n", fChainClone->GetName(), file->GetName(), file->GetTitle());
+
+	}
+	*/
+	fChainClone = (TChain*) (fChain->Clone());
+	return fChainClone;
     }
 }
 
