@@ -142,7 +142,7 @@ void AliT0v1::CreateGeometry()
   Float_t psteel[3]={0.9,1.1,0.15};
   Float_t psupport1[3] = {4.51,4.52,4.0};//C kozhuh vnutri
   Float_t psupport2[3] = {9.5,9.6,4.0};// snaruzhi  C
-  Float_t psupport3[3] = {4.51,9.5, 0.05};//kryshki  C
+  Float_t psupport3[3] = {4.52,9.5, 0.05};//kryshki  C
   Float_t psupport5[3] = {1.44,1.45,6.5}; // stakanchik dlai feu  C
   Float_t psupport6[3] = {0,1.4,0.04}; //kryshechka stakanchika  Al
   Float_t psupport7[3] = {1.44,1.45,0.4}; //kolechko snaruzhu stakanchika Al
@@ -353,7 +353,7 @@ void AliT0v1::CreateGeometry()
    gMC->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
    
    z=pinstart[2]-psupport7[2];
-   gMC->Gspos("0SU8",1,"0INS",0,0,z,0,"ONLY"); //Al kolechko
+   gMC->Gspos("0SU8",1,"0SU6",0,0,z,0,"ONLY"); //Al kolechko
    
    
    Float_t par[3];
