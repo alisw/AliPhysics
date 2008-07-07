@@ -177,9 +177,8 @@ Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t index, AliTrackPoint &p) const
 {
   //AliInfo(Form("Asking for tracklet %d", index));
   
-  if(index<0 || index == 0xffff) return kFALSE;
-  AliTRDseedV1 *tracklet = 0x0; 
-  if(!(tracklet = (AliTRDseedV1*)fTracklets->UncheckedAt(index))) return kFALSE;
+  AliTRDseedV1 *tracklet = GetTracklet(index); 
+  if (!tracklet) return kFALSE;
   
   // get detector for this tracklet
   AliTRDcluster *cl = 0x0;
@@ -2874,21 +2873,21 @@ void AliTRDtrackerV1::GetExtrapolationConfig(Int_t iconfig, Int_t planes[2])
 AliCluster* AliTRDtrackerV1::GetCluster(Int_t idx) const
 {
   Int_t ncls = fClusters->GetEntriesFast();
-  return idx >= 0 || idx < ncls ? (AliCluster*)fClusters->UncheckedAt(idx) : 0x0;
+  return idx >= 0 && idx < ncls ? (AliCluster*)fClusters->UncheckedAt(idx) : 0x0;
 }
 
 //____________________________________________________________________
 AliTRDseedV1* AliTRDtrackerV1::GetTracklet(Int_t idx) const
 {
   Int_t ntrklt = fTracklets->GetEntriesFast();
-  return idx >= 0 || idx < ntrklt ? (AliTRDseedV1*)fTracklets->UncheckedAt(idx) : 0x0;
+  return idx >= 0 && idx < ntrklt ? (AliTRDseedV1*)fTracklets->UncheckedAt(idx) : 0x0;
 }
 
 //____________________________________________________________________
 AliKalmanTrack* AliTRDtrackerV1::GetTrack(Int_t idx) const
 {
   Int_t ntrk = fTracks->GetEntriesFast();
-  return idx >= 0 || idx < ntrk ? (AliKalmanTrack*)fTracks->UncheckedAt(idx) : 0x0;
+  return idx >= 0 && idx < ntrk ? (AliKalmanTrack*)fTracks->UncheckedAt(idx) : 0x0;
 }
 
 //____________________________________________________________________
