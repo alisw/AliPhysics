@@ -74,7 +74,8 @@ fGains(0x0),
 fApplyGains(0),
 fCapacitances(0x0),
 fNumberOfBadPads(0),
-fNumberOfPads(0)
+fNumberOfPads(0),
+fChargeSigmaCut(0)
 {
   /// ctor
   
@@ -93,7 +94,8 @@ fGains(0x0),
 fApplyGains(0),
 fCapacitances(0x0),
 fNumberOfBadPads(0),
-fNumberOfPads(0)
+fNumberOfPads(0),
+fChargeSigmaCut(0)
 {
   /// ctor
   
@@ -134,13 +136,16 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
        
   fStatusMaker = new AliMUONPadStatusMaker(calib);
   
-	Int_t mask(0x8080);
+  // Set default values, as loose as reasonable
+
+  fChargeSigmaCut = 3.0;
+  
+	Int_t mask(0x8080); // reject pads where ped *or* hv are missing
 	
-  // this is here that we decide on our "goodness" policy, i.e.
-  // what do we call an invalid pad (a pad maybe bad because its HV
-  // was too low, or its pedestals too high, etc..)
 	if ( recoParams )
 	{
+    // if we have reco params, we use limits and cuts from there :
+    
 		fStatusMaker->SetHVSt12Limits(recoParams->HVSt12LowLimit(),recoParams->HVSt12HighLimit());
 		fStatusMaker->SetHVSt345Limits(recoParams->HVSt345LowLimit(),recoParams->HVSt345HighLimit());
 		fStatusMaker->SetPedMeanLimits(recoParams->PedMeanLowLimit(),recoParams->PedMeanHighLimit());
@@ -148,9 +153,12 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
 		fStatusMaker->SetGainA1Limits(recoParams->GainA1LowLimit(),recoParams->GainA1HighLimit());
 		fStatusMaker->SetGainA2Limits(recoParams->GainA2LowLimit(),recoParams->GainA2HighLimit());
 		fStatusMaker->SetGainThresLimits(recoParams->GainThresLowLimit(),recoParams->GainThresHighLimit());
-		mask = recoParams->PadGoodnessMask();
+		
+    mask = recoParams->PadGoodnessMask();
 		//WARNING : getting this mask wrong is a very effective way of getting
 		//no digits at all out of this class ;-)
+    
+    fChargeSigmaCut = recoParams->ChargeSigmaCut();
 	}
   
   Bool_t deferredInitialization = kTRUE;
@@ -193,7 +201,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
   TIter next(digitStore.CreateTrackerIterator());
   AliMUONVDigit* digit;
   Int_t detElemId(-1);
-  Double_t nsigmas(3.0);
+  Double_t nsigmas = fChargeSigmaCut;
   
   AliDebug(1,Form("# of digits = %d",digitStore.GetSize()));
   
@@ -223,7 +231,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
       }
       else
       {
-        nsigmas = 3.0;
+        nsigmas = fChargeSigmaCut;
       }
     }
 

@@ -233,6 +233,12 @@ class AliMUONRecoParam : public AliDetectorRecoParam
 	
   virtual void Print(Option_t *option = "") const;
   
+  /// Number of sigma cut we must apply when cutting on adc-ped
+  Double_t ChargeSigmaCut() const { return fChargeSigmaCut; }
+
+  /// Number of sigma cut we must apply when cutting on adc-ped
+  void ChargeSigmaCut(Double_t value) { fChargeSigmaCut=value; }
+
 private:
 	void SetDefaultLimits();
 	
@@ -309,12 +315,14 @@ private:
 	
 	UInt_t fPadGoodnessMask; ///< goodness mask (see AliMUONPadStatusMaker)
 	
+  Double_t fChargeSigmaCut; //< number of sigma to cut on adc-ped 
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
     
-  ClassDef(AliMUONRecoParam,7) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,8) // MUON reco parameters
 };
 
 #endif

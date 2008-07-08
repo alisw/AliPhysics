@@ -73,12 +73,13 @@ private:
 	AliMUONVStore* fCapacitances; //!< capa values
 	Double_t fNumberOfBadPads; //!< # of times we've rejected a bad pad
 	Double_t fNumberOfPads; //!< # of pads we've seen
-	
+	Double_t fChargeSigmaCut; //!< number of sigmas to cut on
+  
 	static const Int_t fgkNoGain; //!< do not apply gain calib at all
 	static const Int_t fgkGainConstantCapa; //!< apply gain (from OCDB) with constant capa
 	static const Int_t fgkGain; //!< apply gain and capa (from OCDB)
 	
-  ClassDef(AliMUONDigitCalibrator,8) // Calibrate raw digit
+  ClassDef(AliMUONDigitCalibrator,9) // Calibrate raw digit
 };
 
 #endif

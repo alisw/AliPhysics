@@ -67,7 +67,8 @@ AliMUONRecoParam::AliMUONRecoParam()
   fSaveFullClusterInESD(kTRUE),
   fCalibrationMode("NOGAIN"),
   fBypassSt45(0),
-  fPadGoodnessMask(0)
+  fPadGoodnessMask(0),
+  fChargeSigmaCut(4.0)
 {
   /// Constructor
   SetNameTitle("MUON","MUON");
@@ -388,7 +389,9 @@ void AliMUONRecoParam::Print(Option_t *option) const
 	cout << Form("%e <= Gain linear term <= %e",GainA1LowLimit(),GainA1HighLimit()) << endl;
 	cout << Form("%e <= Gain quadratic term <= %e",GainA2LowLimit(),GainA2HighLimit()) << endl;
 	cout << Form("%5.0f <= Gain threshold term <= %5.0f",GainThresLowLimit(),GainThresHighLimit()) << endl;
-	
+  
+  cout << Form("And we cut on charge >= %7.2f x ( pedestal sigma ) ",ChargeSigmaCut()) << endl;
+  
   cout<<"\t-------------------------------------"<<endl<<endl;
   
 }
@@ -421,5 +424,7 @@ AliMUONRecoParam::SetDefaultLimits()
 	fGainThresLimits[1] = 4095;
 	
 	fPadGoodnessMask = 0x8080;
+  
+  fChargeSigmaCut = 4.0;
 }
 
