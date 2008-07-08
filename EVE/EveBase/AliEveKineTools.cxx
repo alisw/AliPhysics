@@ -71,6 +71,17 @@ void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, B
         // printf("Daughter path-mark for %d, %d, t=%e, r=%f,%f,%f\n",
         //        track->GetLabel(), d, dp->T(), dp->Vx(), dp->Vy(), dp->Vz());
       }
+
+      // Check last process, set decay if needed.
+      Int_t lp = stack->Particle(d1)->GetUniqueID();
+      if (lp != kPBrem && lp != kPDeltaRay && lp < kPCerenkov)
+      {
+        TParticle* dp = stack->Particle(d1);
+        track->AddPathMark(TEvePathMark(TEvePathMark::kDecay,
+                                        TEveVector(dp->Vx(), dp->Vy(), dp->Vz()),
+                                        TEveVector(0, 0,0),  dp->T()));
+      }
+
       if (recurse)
 	SetDaughterPathMarks(track, stack, recurse);
     }
