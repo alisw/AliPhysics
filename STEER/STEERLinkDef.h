@@ -41,7 +41,6 @@
 #pragma link C++ class  AliDigitNew+;
 #pragma link C++ class  AliGeometry+;
 #pragma link C++ class  AliRecPoint+;
-#pragma link C++ class  AliSegmentation+;
 #pragma link C++ class  AliHitMap+;
 #pragma link C++ class  AliRndm+;
 #pragma link C++ class  AliMCQA+;

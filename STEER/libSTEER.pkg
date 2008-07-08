@@ -6,7 +6,7 @@ AliDetector.cxx	\
 AliDigit.cxx	AliHit.cxx	AliPoints.cxx \
 AliDisplay.cxx	AliRun.cxx AliGenerator.cxx AliVertexGenerator.cxx \
 AliLego.cxx	AliModule.cxx	AliDigitNew.cxx \
-AliGeometry.cxx	AliRecPoint.cxx	AliSegmentation.cxx \
+AliGeometry.cxx	AliRecPoint.cxx \
 AliHitMap.cxx	AliMagFC.cxx	AliMagFCM.cxx \
 AliMagFDM.cxx	AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx\
 AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx AliLegoGeneratorEtaR.cxx \
