@@ -4621,8 +4621,8 @@ void AliITStrackerMI::BuildMaterialLUT(TString material) {
   Double_t point1[3],point2[3];
   Double_t phi,cosphi,sinphi,z;
   // 0-5 layers, 6 pipe, 7-8 shields 
-  Double_t rmin[9]={ 3.5, 5.5,13.0,22.0,35.0,41.0, 2.0, 7.5,25.0};
-  Double_t rmax[9]={ 5.5, 7.3,17.0,26.0,41.0,47.0, 3.0,10.5,30.0};
+  Double_t rmin[9]={ 3.5, 5.5,13.0,22.0,35.0,41.0, 2.0, 8.0,25.0};
+  Double_t rmax[9]={ 5.5, 8.0,17.0,26.0,41.0,47.0, 3.0,10.5,30.0};
 
   Int_t ifirst=0,ilast=0;  
   if(material.Contains("Pipe")) {
@@ -5404,4 +5404,3 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   }
 return;
 }
-
