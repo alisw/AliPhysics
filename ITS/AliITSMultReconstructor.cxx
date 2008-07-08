@@ -46,8 +46,9 @@
 //     - multiple association forbidden (fOnlyOneTrackletPerC2 = kTRUE) 
 //     - phi definition changed to ALICE convention (0,2*TMath::pi()) 
 //     - cluster coordinates taken with GetGlobalXYZ()
+//     - fGeometry removed
+//     - number of fired chips on the two layers
 //
-//  fGeometry removed
 //____________________________________________________________________
 
 #include <TClonesArray.h>
@@ -56,6 +57,7 @@
 #include <TTree.h>
 
 #include "AliITSMultReconstructor.h"
+#include "AliITSsegmentationSPD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
 #include "AliLog.h"
@@ -93,6 +95,10 @@ fhetaTracklets(0),
 fhphiTracklets(0),
 fhetaClustersLay1(0),
 fhphiClustersLay1(0){
+
+  fNFiredChips[0] = 0;
+  fNFiredChips[1] = 0;
+
   // Method to reconstruct the charged particles multiplicity with the 
   // SPD (tracklets).
 
@@ -439,12 +445,17 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
   // - gets the clusters from the cluster tree 
   // - convert them into global coordinates 
   // - store them in the internal arrays
+  // - count the number of cluster-fired chips
   
-  AliDebug(1,"Loading clusters ...");
+  AliDebug(1,"Loading clusters and cluster-fired chips ...");
   
   fNClustersLay1 = 0;
   fNClustersLay2 = 0;
+  fNFiredChips[0] = 0;
+  fNFiredChips[1] = 0;
   
+  AliITSsegmentationSPD *seg = new AliITSsegmentationSPD();
+
   TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
   TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
 
@@ -460,20 +471,29 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
       continue;
     
     Int_t nClusters = itsClusters->GetEntriesFast();
+
+    // number of clusters in each chip of the current module
+    Int_t nClustersInChip[5] = {0,0,0,0,0};
+    Int_t layer = 0;
     
     // loop over clusters
     while(nClusters--) {
       AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
       
-      if (cluster->GetLayer()>1) 
-	continue;            
+      layer = cluster->GetLayer();
+      if (layer>1) continue;            
       
       cluster->GetGlobalXYZ(cluGlo);
       Float_t x = cluGlo[0];
       Float_t y = cluGlo[1];
       Float_t z = cluGlo[2];      
+
+      // find the chip for the current cluster
+      Float_t locz = cluster->GetDetLocalZ();
+      Int_t iChip = seg->GetChipFromLocal(0,locz);
+      nClustersInChip[iChip]++; 
       
-      if (cluster->GetLayer()==0) {
+      if (layer==0) {
 	fClustersLay1[fNClustersLay1][0] = x;
 	fClustersLay1[fNClustersLay1][1] = y;
 	fClustersLay1[fNClustersLay1][2] = z;
@@ -481,7 +501,7 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
 		fClustersLay1[fNClustersLay1][3+i] = cluster->GetLabel(i);
 	fNClustersLay1++;
       }
-      if (cluster->GetLayer()==1) {
+      if (layer==1) {
 	fClustersLay2[fNClustersLay2][0] = x;
 	fClustersLay2[fNClustersLay2][1] = y;
 	fClustersLay2[fNClustersLay2][2] = z;
@@ -491,14 +511,86 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
       }
       
     }// end of cluster loop
+
+    // get number of fired chips in the current module
+    if(layer<2)
+    for(Int_t ifChip=0; ifChip<5; ifChip++) {
+      if(nClustersInChip[ifChip] >= 1)  fNFiredChips[layer]++;
+    }
+
+  } // end of its "subdetector" loop  
+
+  if (itsClusters) {
+    itsClusters->Delete();
+    delete itsClusters;
+    delete seg;
+    itsClusters = 0;
+  }
+  AliDebug(1,Form("(clusters in layer 1 : %d,  layer 2: %d)",fNClustersLay1,fNClustersLay2));
+  AliDebug(1,Form("(cluster-fired chips in layer 1 : %d,  layer 2: %d)",fNFiredChips[0],fNFiredChips[1]));
+}
+//____________________________________________________________________
+void
+AliITSMultReconstructor::LoadClusterFiredChips(TTree* itsClusterTree) {
+  // This method
+  // - gets the clusters from the cluster tree 
+  // - counts the number of (cluster)fired chips
+  
+  AliDebug(1,"Loading cluster-fired chips ...");
+  
+  fNFiredChips[0] = 0;
+  fNFiredChips[1] = 0;
+  
+  AliITSsegmentationSPD *seg = new AliITSsegmentationSPD();
+
+  TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
+  TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
+
+  itsClusterBranch->SetAddress(&itsClusters);
+
+  Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();  
+ 
+  // loop over the its subdetectors
+  for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
+    
+    if (!itsClusterTree->GetEvent(iIts)) 
+      continue;
+    
+    Int_t nClusters = itsClusters->GetEntriesFast();
+
+    // number of clusters in each chip of the current module
+    Int_t nClustersInChip[5] = {0,0,0,0,0};
+    Int_t layer = 0;
+    
+    // loop over clusters
+    while(nClusters--) {
+      AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
+      
+      layer = cluster->GetLayer();
+      if (layer>1) continue;            
+
+      // find the chip for the current cluster
+      Float_t locz = cluster->GetDetLocalZ();
+      Int_t iChip = seg->GetChipFromLocal(0,locz);
+      nClustersInChip[iChip]++; 
+      
+    }// end of cluster loop
+
+    // get number of fired chips in the current module
+    if(layer<2)
+    for(Int_t ifChip=0; ifChip<5; ifChip++) {
+      if(nClustersInChip[ifChip] >= 1)  fNFiredChips[layer]++;
+    }
+
   } // end of its "subdetector" loop  
   
   if (itsClusters) {
     itsClusters->Delete();
     delete itsClusters;
+    delete seg;
     itsClusters = 0;
   }
-  AliDebug(1,Form("(clusters in layer 1 : %d,  layer 2: %d)",fNClustersLay1,fNClustersLay2));
+  AliDebug(1,Form("(cluster-fired chips in layer 1 : %d,  layer 2: %d)",fNFiredChips[0],fNFiredChips[1]));
 }
 //____________________________________________________________________
 void
@@ -526,5 +618,3 @@ AliITSMultReconstructor::SaveHists() {
   fhetaClustersLay1->Write();
   fhphiClustersLay1->Write();
 }
-
-

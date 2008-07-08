@@ -22,7 +22,7 @@ AliMultiplicity::AliMultiplicity():
 }
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps):
+AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2):
   TObject(),
   fNtracks(ntr),
   fNsingle(ns),
@@ -57,8 +57,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
       fPhisingle[i]=ps[i];
     }
   }
-  fFiredChips[0] = 0;
-  fFiredChips[1] = 0;
+  fFiredChips[0] = nfcL1;
+  fFiredChips[1] = nfcL2;
 }
 
 //______________________________________________________________________
@@ -161,5 +161,3 @@ AliMultiplicity::~AliMultiplicity(){
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
 
 }
-
-

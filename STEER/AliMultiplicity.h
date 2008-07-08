@@ -16,7 +16,7 @@ class AliMultiplicity : public TObject {
   AliMultiplicity();               // default constructor
   // standard constructor
   AliMultiplicity(Int_t ntr,Float_t *t, Float_t *ph, Float_t *df, Int_t *labels,
-                  Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps);
+                  Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
   virtual void Copy(TObject &obj) const;
@@ -41,7 +41,7 @@ class AliMultiplicity : public TObject {
   Double_t GetPhiSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fPhisingle[i];}
   else {Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;}}
 
-  Short_t GetFiredChips(Int_t layer) { return fFiredChips[layer]; }
+  Short_t GetNumberOfFiredChips(Int_t layer) { return fFiredChips[layer]; }
   void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
 
   protected:
@@ -57,7 +57,7 @@ class AliMultiplicity : public TObject {
   Double32_t *fDeltPhi;      //[fNtracks] array with delta phi values
   Double32_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
   Double32_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
-  Short_t fFiredChips[2]; // number of fired chips in the two SPD layers
+  Short_t fFiredChips[2];    // Number of fired chips in the two SPD layers
 
   ClassDef(AliMultiplicity,7);
 };
