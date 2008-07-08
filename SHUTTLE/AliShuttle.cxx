@@ -375,6 +375,8 @@ Int_t AliShuttle::StoreOCDB(const TString& gridURI)
 		AliCDBId aLocId = aLocEntry->GetId();
 		aLocEntry->SetVersion(-1);
 		aLocEntry->SetSubVersion(-1);
+		                                
+		Log(fCurrentDetector.Data(), Form("Attempting to store %s", aLocId.ToString().Data()));
 
 		// If local object is valid up to infinity we store it only if it is
 		// the first unprocessed run!
@@ -395,47 +397,51 @@ Int_t AliShuttle::StoreOCDB(const TString& gridURI)
 		Bool_t store = kTRUE;
 		TIter gridIter(gridIds);
 		AliCDBId* aGridId = 0;
-		while((aGridId = dynamic_cast<AliCDBId*> (gridIter.Next()))){
-			if(aGridId->GetPath() != aLocId.GetPath()) continue;
+		while ((aGridId = dynamic_cast<AliCDBId*> (gridIter.Next()))) {
+			if (aGridId->GetPath() != aLocId.GetPath()) 
+				continue;
 			// skip all objects valid up to infinity
-			if(aGridId->GetLastRun() == AliCDBRunRange::Infinity()) continue;
+			if (aGridId->GetLastRun() == AliCDBRunRange::Infinity()) 
+				continue;
+			
 			// if we get here, it means there's already some more recent object stored on Grid!
+			Log(fCurrentDetector.Data(),
+				Form("StoreOCDB - A more recent object already exists in %s storage: <%s>",
+				type, aGridId->ToString().Data()));
+			
 			store = kFALSE;
 			break;
 		}
 
-		// If we get here, the file can be stored!
-		Bool_t storeOk = gridSto->Put(aLocEntry);
-		if(!store || storeOk){
-
-			if (!store)
-			{
-				Log(fCurrentDetector.Data(),
-					Form("StoreOCDB - A more recent object already exists in %s storage: <%s>",
-						type, aGridId->ToString().Data()));
-			} else {
+		Bool_t storeOk = kFALSE;
+		if (store)
+		{
+			Log(fCurrentDetector.Data(), Form("Prechecks succeeded. Ready to store %s", aLocId.ToString().Data()));
+			storeOk = gridSto->Put(aLocEntry);
+			if (storeOk) {
 				Log("SHUTTLE",
-					Form("StoreOCDB - Object <%s> successfully put into %s storage",
-						aLocId.ToString().Data(), type));
+				Form("StoreOCDB - Object <%s> successfully put into %s storage",
+					aLocId.ToString().Data(), type));
 				Log(fCurrentDetector.Data(),
 					Form("StoreOCDB - Object <%s> successfully put into %s storage",
-						aLocId.ToString().Data(), type));
+					aLocId.ToString().Data(), type));
+			} else	{
+				Log("SHUTTLE",
+					Form("StoreOCDB - Grid %s storage of object <%s> failed",
+					type, aLocId.ToString().Data()));
+				Log(fCurrentDetector.Data(),
+					Form("StoreOCDB - Grid %s storage of object <%s> failed",
+					type, aLocId.ToString().Data()));
+				result = kFALSE;
 			}
-
-			// removing local filename...
+		}
+		
+		if (!store || storeOk) {
+			// removing local file...
 			TString filename;
 			localSto->IdToFilename(aLocId, filename);
 			Log("SHUTTLE", Form("StoreOCDB - Removing local file %s", filename.Data()));
 			RemoveFile(filename.Data());
-			continue;
-		} else	{
-			Log("SHUTTLE",
-				Form("StoreOCDB - Grid %s storage of object <%s> failed",
-					type, aLocId.ToString().Data()));
-			Log(fCurrentDetector.Data(),
-				Form("StoreOCDB - Grid %s storage of object <%s> failed",
-					type, aLocId.ToString().Data()));
-			result = kFALSE;
 		}
 	}
 	localEntries->Clear();
