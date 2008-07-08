@@ -1255,9 +1255,9 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
         sB3->GetDX()*TMath::Cos(t*TMath::DegToRad());
     y0 = 0.5*(sB0->GetY(0)+sB0->GetY(sB0->GetNvert()-1))-3.5*
         sB3->GetDX()*TMath::Sin(t*TMath::DegToRad());
-    rotrans = new TGeoCombiTrans("",x0,y0,z0,rot);
+    rotrans = new TGeoCombiTrans("",1.01*x0,y0,z0,rot);
     vM0->AddNode(vB3,3,rotrans); // Put Mounting bracket on sector
-    rotrans = new TGeoCombiTrans("",x0,y0,-z0,rot);
+    rotrans = new TGeoCombiTrans("",1.01*x0,y0,-z0,rot);
     vM0->AddNode(vB3,4,rotrans); // Put Mounting bracket on sector
     if(GetDebug(3)){
         vM0->PrintNodes();
@@ -1426,6 +1426,7 @@ void AliITSv11GeometrySPD::SPDsectorShape(Int_t n,const Double_t *xc,
     if(GetDebug(4)) cout << ","  << ths[0];
     if(GetDebug(3)) cout << "}}" << endl;
 }
+
 //______________________________________________________________________
 TGeoVolume* AliITSv11GeometrySPD::CreateLadder(Int_t layer,TArrayD &sizes,
                                                TGeoManager *mgr) const
@@ -1570,6 +1571,159 @@ TGeoVolume* AliITSv11GeometrySPD::CreateLadder(Int_t layer,TArrayD &sizes,
     // return the container
     return container;
 }
+
+/*
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateLadder
+        (Int_t layer, TArrayD &sizes, TGeoManager *mgr) const
+{
+    //
+    // Creates the "ladder" = silicon sensor + 5 chips.
+    // Returns a TGeoVolume containing the following components:
+    //  - the sensor (TGeoBBox), whose name depends on the layer
+    //  - 5 identical chips (TGeoBBox)
+    //  - a guard ring around the sensor (subtraction of TGeoBBoxes),
+    //    which is separated from the rest of sensor because it is not
+    //    a sensitive part
+    //  - bump bondings (TGeoBBox stripes for the whole width of the
+    //    sensor, one per column).
+    // ---
+    // Arguments:
+    //  1 - the owner layer (MUST be 1 or 2 or a fatal error is raised)
+    //  2 - a TArrayD passed by reference, which will contain relevant
+    //      dimensions related to this object:
+    //      size[0] = 'thickness' (the smallest dimension)
+    //      size[1] = 'length' (the direction along the ALICE Z axis)
+    //      size[2] = 'width' (extension in the direction perp. to the 
+    //                         above ones)
+    //  3 - the used TGeoManager
+
+    // ** CRITICAL CHECK ******************************************************
+    // layer number can be ONLY 1 or 2
+    if (layer != 1 && layer != 2) AliFatal("Layer number MUST be 1 or 2");
+
+    // ** MEDIA ***************************************************************
+    
+    TGeoMedium *medAir       = GetMedium("AIR$",mgr);
+    TGeoMedium *medSPDSiChip = GetMedium("SPD SI CHIP$",mgr); // SPD SI CHIP
+    TGeoMedium *medSi        = GetMedium("SI$",mgr);
+    TGeoMedium *medBumpBond  = GetMedium("COPPER$",mgr);  // ??? BumpBond
+
+    // ** SIZES ***************************************************************
+    	
+    Double_t chipThickness  = fgkmm *  0.150;
+    Double_t chipWidth      = fgkmm * 15.950;
+    Double_t chipLength     = fgkmm * 13.600;
+    Double_t chipSpacing    = fgkmm *  0.400; // separation of chips along Z
+    Double_t sensThickness  = fgkmm *  0.200;
+    Double_t sensLength     = fgkmm * 69.600;
+    Double_t sensWidth      = fgkmm * 12.800;
+    Double_t guardRingWidth = fgkmm *  0.560; // guard ring around sensor
+    Double_t bbLength       = fgkmm * 0.042;
+    Double_t bbWidth        = sensWidth;
+    Double_t bbThickness    = fgkmm * 0.012;
+    Double_t bbPos          = 0.080;          // Z position w.r. to left pixel edge
+    
+    // the three dimensions of the box which contains the ladder
+    // are returned in the 'sizes' argument, and are used for volumes positionement
+    // for readability purpose, they are linked by reference to a more meaningful name
+    sizes.Set(3);
+    Double_t &thickness = sizes[0];
+    Double_t &length = sizes[1];
+    Double_t &width = sizes[2];
+    // the container is a box which exactly enclose all the stuff
+    width = chipWidth;
+    length = sensLength + 2.0*guardRingWidth;
+    thickness = sensThickness + chipThickness + bbThickness;
+
+    // ** VOLUMES *************************************************************
+    
+    // This is a sensitive volume.
+    // Local X must correspond to x coordinate of the sensitive volume:
+    // to respect this, the origin of the local reference system 
+    // must be shifted from the middle of the box, using 
+    // an additional option ('originShift') when creating the container shape:
+    Double_t xSens = 0.5 * (width - sensWidth - 2.0*guardRingWidth);
+    Double_t originShift[3] = {-xSens, 0., 0.};
+    
+    // now the container is a TGeoBBox with this shift,
+    // and the volume is made of air (it does not exist in reality)
+    TGeoBBox *shLadder = new TGeoBBox(0.5*width, 0.5*thickness, 0.5*length, originShift);
+    TGeoVolume *vLadder = new TGeoVolume(Form("ITSSPDlay%d-Ladder", layer), shLadder, medAir);
+    
+    // the chip is a common box
+    TGeoVolume *vChip = mgr->MakeBox("ITSSPDchip", medSPDSiChip, 
+                                     0.5*chipWidth, 0.5*chipThickness, 0.5*chipLength);
+    
+    // to build the sensor with its guard ring, we create a TGeoBBox with the size
+    // of the sensor + guard ring, and we insert the true sensor into it as an 
+    // internal node: this simplifies the implementation with the same result
+    TGeoVolume *vSensGuard = mgr->MakeBox(Form("%s-guardRing", GetSenstiveVolumeName(layer)),
+                                          medSi, 
+                                          0.5*sensWidth + guardRingWidth,
+                                          0.5*sensThickness,
+                                          0.5*sensLength + guardRingWidth);
+    TGeoVolume *vSens = mgr->MakeBox(GetSenstiveVolumeName(layer), medSi,
+                                     0.5*sensWidth,0.5*sensThickness,0.5*sensLength);
+    vSensGuard->AddNode(vSens, 0);
+    vSensGuard->SetTransparency(50);
+    
+    // bump bond is a common box for one whole column
+    TGeoVolume *vBB = mgr->MakeBox("ITSSPDbb", medBumpBond,
+                                   0.5*bbWidth, 0.5*bbThickness, 0.5*bbLength);
+    
+    // set colors of all objects for visualization
+    vLadder->SetLineColor(kRed);
+    vSens->SetLineColor(kYellow + 1);
+    vChip->SetLineColor(kGreen);
+    vSensGuard->SetLineColor(kYellow + 3);
+    vBB->SetLineColor(kGray);
+
+    // ** MOVEMENTS **
+    // sensor is translated along thickness (Y) and width (X)
+    Double_t ySens = 0.5 * (thickness - sensThickness);
+    Double_t zSens = 0.0;
+    // we want that the x of the ladder is the same as the one of 
+    // its sensitive volume
+    TGeoTranslation *trSens = new TGeoTranslation(0.0, ySens, zSens);
+    // bump bonds are translated along all axes:
+    // keep same Y used for sensors, but change the Z
+    TGeoTranslation *trBB[160];
+    Double_t x =  0.0;
+    Double_t y =  0.5 * (thickness - bbThickness) - sensThickness;
+    Double_t z = -0.5 * sensLength + guardRingWidth + fgkmm*0.425 - bbPos;
+    Int_t i;
+    for (i = 0; i < 160; i++) {
+        trBB[i] = new TGeoTranslation(x, y, z);
+        switch(i) {
+            case  31:case  63:case  95:case 127:
+                z += fgkmm * 0.625 + fgkmm * 0.2;
+                break;
+            default:
+                z += fgkmm * 0.425;
+        } // end switch
+    } // end for i
+    // the chips are translated along the length (Z) and thickness (X)
+    TGeoTranslation *trChip[5] = {0, 0, 0, 0, 0};
+    x = -xSens;
+    y = 0.5 * (chipThickness - thickness);
+    z = 0.0;
+    for (i = 0; i < 5; i++) {
+        z = -0.5*length + guardRingWidth 
+                + (Double_t)i*chipSpacing + ((Double_t)(i) + 0.5)*chipLength;
+        trChip[i] = new TGeoTranslation(x, y, z);
+    } // end ofr i
+    
+    // add nodes to container
+    vLadder->AddNode(vSensGuard, 1, trSens);
+    //vLadderAddNode(volBorder, 1, trSens);
+    for (i = 0; i < 160; i++) vLadder->AddNode(vBB,i+1,trBB[i]);
+    for (i = 0; i < 5; i++) vLadder->AddNode(vChip,i+3,trChip[i]);
+    // return the container
+    return vLadder;
+}
+*/
+
 //______________________________________________________________________
 TGeoVolume* AliITSv11GeometrySPD::CreateClip(TArrayD &sizes,Bool_t isDummy,
                                              TGeoManager *mgr) const
@@ -1596,7 +1750,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateClip(TArrayD &sizes,Bool_t isDummy,
     Double_t fullHeight      = fgkmm *  2.8;    // = y6 - y3
     Double_t thickness       = fgkmm *  0.2;    // thickness
     Double_t totalLength     = fgkmm * 52.0;    // total length in Z
-    Double_t holeSize        = fgkmm *  4.0;    // dimension of cubic 
+    Double_t holeSize        = fgkmm *  5.0;    // dimension of cubic 
                                                 // hole inserted for pt1000
     Double_t angle1          = 27.0;            // supplementary of angle DCB
     Double_t angle2;                            // angle DCB
@@ -2014,6 +2168,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
     TGeoCombiTrans *glTrans1 = new TGeoCombiTrans(x, 0.0, z, rotCorr);
 
     // add to container
+    container->SetLineColor(kMagenta-10);
     container->AddNode(kpVol, 1, kpTrans);
     container->AddNode(alVol, 1, alTrans);
     container->AddNode(glVol, 1, glTrans0);
@@ -2561,7 +2716,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 
 //______________________________________________________________________
 TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
-(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr) const
+(Bool_t isRight, Int_t ilayer, TArrayD &sizes, TGeoManager *mgr) const
 {
     //
     // The pixel bus is implemented as a TGeoBBox with some objects on it, 
@@ -2573,6 +2728,10 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     // Y --> width direction
     // Z --> length direction
     //
+    
+    // ** CRITICAL CHECK ******************************************************
+    // layer number can be ONLY 1 or 2
+    if (ilayer != 1 && ilayer != 2) AliFatal("Layer number MUST be 1 or 2");
 
     // ** MEDIA **
     //PIXEL BUS
@@ -2683,8 +2842,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
                                    0.5*capWidth, 0.5*capLength);
                                    
     TGeoVolume *ext1 = mgr->MakeBox("Extender1", medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
-	TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - extThickness, 0.5*extWidth, 0.5*extThickness);
-	TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, extThickness, 0.5*(extWidth-0.8*fgkmm), 0.5*ext2Length); // Hardcode fix of a small overlap
+	TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - 2.*extThickness, 0.5*extWidth, 0.5*extThickness);
+	TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, 0.5*extThickness, 0.5*(extWidth-0.8*fgkmm), 0.5*ext2Length + extThickness); // Hardcode fix of a small overlap
     bus->SetLineColor(kYellow + 2);
     pt1000->SetLineColor(kGreen + 3);
     res->SetLineColor(kRed + 1);
@@ -2732,14 +2891,26 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     } // end for i
     
     // extender
-	if (isRight) {
-		y = 0.5 * (fullWidth - extWidth) - 0.1;
-		z = 0.5 * (-fullLength + fgkmm * 10.0);
-	}
-	else {
-		y = 0.5 * (fullWidth - extWidth) - 0.1;
-		z = 0.5 * ( fullLength - fgkmm * 10.0);
-	}
+        if (ilayer == 2) {
+	   if (isRight) {
+		  y = 0.5 * (fullWidth - extWidth) - 0.1;
+		  z = 0.5 * (-fullLength + fgkmm * 10.0);
+	   }
+	   else {
+		  y = 0.5 * (fullWidth - extWidth) - 0.1;
+		  z = 0.5 * ( fullLength - fgkmm * 10.0);
+	   }
+        }
+        else {
+            if (isRight) {
+                y = -0.5 * (fullWidth - extWidth);
+                z = 0.5 * (-fullLength + fgkmm * 10.0);
+            }
+            else {
+                y = -0.5 * (fullWidth - extWidth);
+                z = 0.5 * ( fullLength - fgkmm * 10.0);
+            }
+        }
 	x = 0.5 * (extThickness - fullThickness) + busThickness;
 	//y = 0.5 * (fullWidth - extWidth);
 	TGeoTranslation *trExt1 = new TGeoTranslation(x, y, z);
@@ -2749,15 +2920,15 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 	else {
 		z += 0.5 * (ext1Length - extThickness);
 	}
-	x += 0.5*(extHeight - extThickness);
+	x += 0.5*(extHeight - 3.*extThickness);
 	TGeoTranslation *trExt2 = new TGeoTranslation(x, y, z);
 	if (isRight) {
-		z -= 0.5 * (ext2Length - extThickness);
+		z -= 0.5 * (ext2Length - extThickness) + 2.5*extThickness;
 	}
 	else {
-		z += 0.5 * (ext2Length - extThickness);
+		z += 0.5 * (ext2Length - extThickness) + 2.5*extThickness;
 	}
-	x += 0.5*(extHeight - extThickness) + extThickness;
+	x += 0.5*(extHeight - extThickness) - 2.*extThickness;
 	TGeoTranslation *trExt3 = new TGeoTranslation(x, y, z);
 	container->AddNode(ext1, 0, trExt1);
 	container->AddNode(ext2, 0, trExt2);
@@ -3235,7 +3406,7 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
 	
     // bus
     TArrayD busSize(6);
-    TGeoVolumeAssembly *bus = CreatePixelBus(isRight, busSize, mgr);
+    TGeoVolumeAssembly *bus = CreatePixelBus(isRight, layer, busSize, mgr);
     Double_t busThickness = busSize[0];
     Double_t busLength = busSize[1];
     Double_t busWidth = busSize[2];
@@ -3952,3 +4123,4 @@ Bool_t AliITSv11GeometrySPD::Make2DCrossSections(TPolyLine &a0,TPolyLine &a1,
     } // end for i
     return kTRUE;
 }
+

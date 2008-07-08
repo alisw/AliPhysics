@@ -104,7 +104,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     virtual TGeoVolumeAssembly* CreateMCM(Bool_t isRight, TArrayD &sizes,
                                        TGeoManager *mgr = gGeoManager) const;
     // the pixel bus (flat part + pt1000s + large capacitors/resistors)
-    virtual TGeoVolumeAssembly* CreatePixelBus(Bool_t isRight, TArrayD &sizes,
+    virtual TGeoVolumeAssembly* CreatePixelBus(Bool_t isRight, Int_t ilayer, TArrayD &sizes,
                                         TGeoManager *mgr = gGeoManager) const;
     // the extender complicated geometry
     virtual TGeoVolume* CreateExtender(const Double_t *params,
