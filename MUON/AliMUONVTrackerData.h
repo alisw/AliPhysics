@@ -26,6 +26,7 @@
 class AliMUONSparseHisto;
 class AliMUONVStore;
 class TCollection;
+class TArrayI;
 
 class AliMUONVTrackerData : public TNamed, public TQObject
 {
@@ -36,7 +37,7 @@ public:
   virtual ~AliMUONVTrackerData();
   
   /// Add values for one event from one full store
-  virtual Bool_t Add(const AliMUONVStore& store) = 0;
+  virtual Bool_t Add(const AliMUONVStore& store, TArrayI* arrayOfNofEventsPerDDL=0x0) = 0;
 
   /// Replace values
   virtual Bool_t Replace(const AliMUONVStore& store) = 0;
@@ -99,8 +100,10 @@ public:
   /// The number of dimensions we are inputting
   virtual Int_t ExternalDimension() const = 0;
 
-  /// The number of events we've seen so far
-  virtual Int_t NumberOfEvents() const = 0;
+  /** The number of events we've seen so far in a given DDL (or any DDL if param<0)
+   ddlNumber is 0..19
+   */
+  virtual Int_t NumberOfEvents(Int_t ddlNumber) const = 0;
 
   /// Signal to indicate that the number of events changed
   virtual void NumberOfEventsChanged(); // *SIGNAL*

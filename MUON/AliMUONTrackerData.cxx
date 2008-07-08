@@ -18,6 +18,7 @@
 #include "AliMUONTrackerData.h"
 
 #include "AliCodeTimer.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUON1DArray.h"
 #include "AliMUON1DMap.h"
@@ -34,6 +35,7 @@
 #include "AliMpHVNamer.h"
 #include "AliMpManuIterator.h"
 #include <Riostream.h>
+#include <TClass.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -67,7 +69,7 @@ fDEValues(0x0),
 fChamberValues(0x0),
 fPCBValues(0x0),
 fDimension(External2Internal(dimension)+fgkExtraDimension),
-fNevents(0x0),
+fNevents(0),
 fDimensionNames(new TObjArray(fDimension+fgkVirtualExtraDimension)),
 fExternalDimensionNames(new TObjArray(dimension)),
 fExternalDimension(dimension),
@@ -76,7 +78,9 @@ fHistos(0x0),
 fXmin(0.0),
 fXmax(0.0),
 fIsChannelLevelEnabled(kTRUE),
-fIsManuLevelEnabled(kTRUE)
+fIsManuLevelEnabled(kTRUE),
+fNofDDLs(0),
+fNofEventsPerDDL(0x0)
 {  
   /// ctor
   memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
@@ -102,14 +106,213 @@ AliMUONTrackerData::~AliMUONTrackerData()
   delete fExternalDimensionNames;
   delete[] fHistogramming;
   delete fHistos;
+  delete[] fNofEventsPerDDL;
 }
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONTrackerData::Add(const AliMUONVStore& store)
+AliMUONTrackerData::Add(const AliMUONVStore& store, TArrayI* nevents)
 {
   /// Add the given external store to our internal store
-  return InternalAdd(store,kFALSE);
+  return InternalAdd(store,nevents,kFALSE);
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONTrackerData::Add(const AliMUONTrackerData& data)
+{
+  /// Add data to *this
+  // We do this by looping on all VCalibParam stored in the various containers,
+  // and simply adding the values there.
+  // Same thing for the number of events per DDL.
+  // Same thing for sparsehistograms, if we have some.
+
+  // First cross check we have compatible objects.
+  
+  if ( fIsChannelLevelEnabled != data.fIsChannelLevelEnabled ) 
+  {
+    AliError("Incompatible IsChannelLevelEnabled status");
+    return kFALSE;
+  }
+  
+  if ( fIsManuLevelEnabled != data.fIsManuLevelEnabled ) 
+  {
+    AliError("Incompatible IsManuLevelEnabled status");
+    return kFALSE;
+  }
+  
+  if ( fIsSingleEvent != data.fIsSingleEvent ) 
+  {
+    AliError("Incompatible IsSingleEvent status");
+    return kFALSE;
+  }
+  
+  if ( fDimension != data.fDimension || fExternalDimension != data.fExternalDimension ) 
+  {
+    AliError("Incompatible dimensions");
+    return kFALSE;
+  }
+
+  if ( fNofDDLs != data.fNofDDLs ) 
+  {
+    AliError("Incompatible number of Ddls");
+    return kFALSE;
+  }
+  
+  if ( ( !fHistogramming && data.fHistogramming ) || ( fHistogramming && !data.fHistogramming ) 
+      || fXmin != data.fXmin || fXmax != data.fXmax ) 
+  {
+    AliError(Form("Incompatible histogramming (%x vs %x) (xmax = %e vs %e ; xmin = %e vs %e)",
+             fHistogramming,data.fHistogramming,fXmax,data.fXmax,fXmin,data.fXmin));
+    return kFALSE;
+  }
+
+  if ( fHistogramming )
+  {
+    for ( Int_t i = 0; i < fExternalDimension; ++i ) 
+    {
+      if ( fHistogramming[i] != data.fHistogramming[i] )
+      {
+        AliError(Form("Incompatible histogramming for external dimension %d",i));
+        return kFALSE;
+      }
+    }
+  }
+  
+  // OK. Seems we have compatible objects, so we can proceed with the actual
+  // merging...
+  
+  if ( data.fChannelValues ) 
+  {
+    Add2D(*(data.fChannelValues),*fChannelValues);
+  }
+  
+  if ( data.fManuValues ) 
+  {
+    Add2D(*(data.fManuValues),*fManuValues);
+  }
+  
+  if ( data.fPCBValues ) 
+  {
+    Add2D(*(data.fPCBValues),*fPCBValues);
+  }
+  
+  if ( data.fBusPatchValues ) 
+  {
+    Add1D(*(data.fBusPatchValues),*fBusPatchValues);
+  }
+  
+  if ( data.fDEValues ) 
+  {
+    Add1D(*(data.fDEValues),*fDEValues);
+  }
+  
+  if ( data.fChamberValues ) 
+  {
+    Add1D(*(data.fChamberValues),*fChamberValues);
+  }
+
+  for ( Int_t i = 0; i < fNofDDLs; ++i ) 
+  {
+    fNofEventsPerDDL[i] += data.fNofEventsPerDDL[i];
+  }
+  
+  if ( data.fHistos ) 
+  {
+    TIter nexthisto(data.fHistos->CreateIterator());
+    AliMUONVStore* store;
+    while ( ( store = static_cast<AliMUONVStore*>(nexthisto()) ) )
+    {
+      TIter ns(store->CreateIterator());
+      AliMUONSparseHisto* h;
+      while ( ( h = static_cast<AliMUONSparseHisto*>(ns()) ) )
+      {
+        AliMUONVStore* thisStore = static_cast<AliMUONVStore*>(fHistos->FindObject(store->GetUniqueID()));
+        
+        if (!thisStore)
+        {
+          thisStore = store->Create();
+          thisStore->SetUniqueID(store->GetUniqueID());
+          fHistos->Add(thisStore);
+        }
+        
+        AliMUONSparseHisto* mine = static_cast<AliMUONSparseHisto*>(thisStore->FindObject(h->GetUniqueID()));
+        
+        if (!mine) 
+        {
+          thisStore->Add(h);
+        }
+        else
+        {
+          mine->Add(*h);
+        }
+      }
+    }
+  }
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONTrackerData::Add2D(const AliMUONVStore& src, AliMUONVStore& dest) const
+{
+  /// Add one 2d store to another
+  
+  TIter next(src.CreateIterator());
+  AliMUONVCalibParam* p;
+  
+  while ( ( p = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    AliMUONVCalibParam* a = static_cast<AliMUONVCalibParam*>(dest.FindObject(p->ID0(),p->ID1()));
+    
+    if (!a)
+    {
+      dest.Add(static_cast<AliMUONVCalibParam*>(p->Clone()));
+    }
+    else
+    {
+      AddCalibParams(*p,*a);
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONTrackerData::Add1D(const AliMUONVStore& src, AliMUONVStore& dest) const
+{
+  /// Add one 1d store to another
+  
+  TIter next(src.CreateIterator());
+  AliMUONVCalibParam* p;
+  
+  while ( ( p = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    AliMUONVCalibParam* a = static_cast<AliMUONVCalibParam*>(dest.FindObject(p->GetUniqueID()));
+    
+    if (!a)
+    {
+      dest.Add(static_cast<AliMUONVCalibParam*>(p->Clone()));
+    }
+    else
+    {
+      AddCalibParams(*p,*a);
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTrackerData::AddCalibParams(const AliMUONVCalibParam& src, AliMUONVCalibParam& dest) const
+{
+  /// Add src to dest
+  for ( Int_t i = 0; i < src.Size(); ++i ) 
+  {
+    for ( Int_t j = 0; j < src.Dimension(); ++j )
+    {
+      dest.SetValueAsFloat(i,j,src.ValueAsFloat(i,j));
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -117,14 +320,14 @@ Bool_t
 AliMUONTrackerData::Replace(const AliMUONVStore& store)
 {
   /// Replace our values by values from the given external store
-  Bool_t rv = InternalAdd(store,kTRUE);
+  Bool_t rv = InternalAdd(store,0x0,kTRUE);
   AliMUONVTrackerData::Replace(store);
   return rv;
 }
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
+AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bool_t replace)
 {
   /// Add the given external store to our internal store
   
@@ -132,13 +335,46 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, Bool_t replace)
     
   if ( !replace)
   {
-    if ( IsSingleEvent() && fNevents == 1 ) 
+    if ( IsSingleEvent() && NumberOfEvents(-1) == 1 ) 
     {
       AliError(Form("%s is supposed to be single event only",GetName()));
       return kFALSE;
     }  
-    ++fNevents;  
     NumberOfEventsChanged();
+  }
+
+  if (!fNofDDLs)
+  {
+    fNofDDLs = AliDAQ::NumberOfDdls("MUONTRK");
+    fNofEventsPerDDL = new Int_t[fNofDDLs];
+    for ( Int_t i = 0; i < fNofDDLs; ++i ) 
+    {
+      fNofEventsPerDDL[i] = 0;
+    }
+  }
+    
+  if (nevents)
+  {
+    if (nevents->GetSize() != fNofDDLs ) 
+    {
+      AliError(Form("nof of ddl per event array size is incorrect : got %d, expecting %d",
+                    nevents->GetSize(),fNofDDLs));
+      return kFALSE;
+    }
+    
+    for ( Int_t i = 0 ; i < fNofDDLs; ++i ) 
+    {
+      fNofEventsPerDDL[i] += nevents->At(i);
+      fNevents = TMath::Max(fNevents,fNofEventsPerDDL[i]);
+    }
+  }
+  else
+  {
+    for ( Int_t i = 0 ; i < fNofDDLs; ++i ) 
+    {
+      ++fNofEventsPerDDL[i];
+      fNevents = TMath::Max(fNevents,fNofEventsPerDDL[i]);
+    }
   }
   
   if (!fChamberValues)
@@ -301,7 +537,7 @@ AliMUONTrackerData::BusPatch(Int_t busPatchId, Int_t dim) const
   /// Return the value of a given buspatch for a given dimension
   /// or 0 if not existing
   AliMUONVCalibParam* param = BusPatchParam(busPatchId);
-  return param ? Value(*param,0,dim) : 0.0;
+  return param ? Value(*param,0,dim,DdlIdFromBusPatchId(busPatchId)) : 0.0;
 }
 
 //_____________________________________________________________________________
@@ -365,8 +601,13 @@ AliMUONTrackerData::Chamber(Int_t chamberId, Int_t dim) const
 {
   /// Return the value fo a given chamber for a given dimension,
   /// or zero if not existing
+  
+  // FIXME: is the Value() correct wrt to number of events in the case of
+  // chamber ? Or should we do something custom at the chamber level 
+  // (as it spans several ddls) ?
+  
   AliMUONVCalibParam* param = ChamberParam(chamberId);
-  return param ? Value(*param,0,dim) : 0.0;
+  return param ? Value(*param,0,dim,DdlIdFromChamberId(chamberId)) : 0.0;
 }
 
 //_____________________________________________________________________________
@@ -437,7 +678,7 @@ AliMUONTrackerData::Channel(Int_t detElemId, Int_t manuId,
   
   AliMUONVCalibParam* param = ChannelParam(detElemId,manuId);
   
-  return param ? Value(*param,manuChannel,dim) : 0.0;
+  return param ? Value(*param,manuChannel,dim,DdlIdFromDetElemId(detElemId)) : 0.0;
 }
 
 //_____________________________________________________________________________
@@ -471,7 +712,10 @@ AliMUONTrackerData::Clear(Option_t*)
   if ( fDEValues) fDEValues->Clear();
   if ( fChamberValues ) fChamberValues->Clear();
   if ( fHistos ) fHistos->Clear();
-  fNevents = 0;
+  for ( Int_t i = 0; i < fNofDDLs; ++i ) 
+  {
+    fNofEventsPerDDL[i] = 0;
+  }
   NumberOfEventsChanged();
 }
 
@@ -520,7 +764,7 @@ AliMUONTrackerData::DetectionElement(Int_t detElemId, Int_t dim) const
 {
   /// Return the value for a given detection element for a given dimension
   AliMUONVCalibParam* param = DetectionElementParam(detElemId);
-  return param ? Value(*param,0,dim) : 0.0;
+  return param ? Value(*param,0,dim,DdlIdFromDetElemId(detElemId)) : 0.0;
 
 }
 
@@ -570,6 +814,61 @@ AliMUONTrackerData::CreateDetectionElementParam(Int_t detElemId) const
   de->SetValueAsDouble(0,IndexOfNumberDimension(),nchannels);
   
   return de;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerData::DdlIdFromBusPatchId(Int_t buspatchid) const
+{
+  /// Get the "local" ddlid (0..19) of a given buspatch
+  AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(buspatchid);
+  if (bp)
+  {
+    return bp->GetDdlId();
+  }
+  return -1;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerData::DdlIdFromDetElemId(Int_t detelemid) const
+{
+  /// Get the "local" ddlid (0..19) of a given detection element
+  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detelemid);
+  if (de)
+  {
+    return de->GetDdlId();
+  }
+  return -1;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerData::DdlIdFromChamberId(Int_t chamberid) const
+{
+  /// Get the "local" ddlid (0..19) of a given chamber
+  /// This has no real meaning (as there are several ddls per chamber),
+  /// so we take the ddlid where we got the max number of events
+  
+  AliMpDEIterator it;
+  
+  it.First(chamberid);
+  Int_t n(0);
+  Int_t d(-1);
+  
+  while (!it.IsDone())
+  {
+    Int_t detElemId = it.CurrentDEId();
+    Int_t ddlId = DdlIdFromDetElemId(detElemId);
+    if ( NumberOfEvents(ddlId) > n ) 
+    {
+      n = NumberOfEvents(ddlId);
+      d = ddlId;
+    }
+    it.Next();
+  }
+  
+  return d;
 }
 
 //_____________________________________________________________________________
@@ -760,6 +1059,35 @@ AliMUONTrackerData::GetChannelSparseHisto(Int_t detElemId, Int_t manuId,
 }
 
 //_____________________________________________________________________________
+void
+AliMUONTrackerData::GetDEManu(const AliMUONVCalibParam& param,
+                              Int_t& detElemId, Int_t& manuId) const
+{
+  /// Tries to get (detElemId,manuId) of param
+  
+  if ( param.ID1() <= 0 ) 
+  {
+    // we (probably) get a manu serial number
+    Int_t serial = param.ID0();
+    AliMpIntPair pair = AliMpDDLStore::Instance()->GetDetElemIdManu(serial);
+    detElemId = pair.GetFirst();
+    manuId = pair.GetSecond();
+    if ( !detElemId ) 
+    {
+      AliError(Form("DE %d manuId %d from serial %d is not correct !",
+                    detElemId,manuId,serial));
+    }
+  }
+  else
+  {
+    // we get a (de,manu) pair
+    detElemId = param.ID0();
+    manuId = param.ID1();
+  }
+}
+
+
+//_____________________________________________________________________________
 Int_t
 AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
                              AliMUONVCalibParam*& chamber,
@@ -777,27 +1105,8 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
   Int_t detElemId;
   Int_t manuId;
   
-  if ( external->ID1() <= 0 ) 
-  {
-    // we get a manu serial number
-    Int_t serial = external->ID0();
-    AliMpIntPair pair = ddlStore->GetDetElemIdManu(serial);
-    detElemId = pair.GetFirst();
-    manuId = pair.GetSecond();
-    if ( !detElemId ) 
-    {
-      AliError(Form("DE %d manuId %d from serial %d is not correct !",
-                    detElemId,manuId,serial));
-      return -1;
-    }
-  }
-  else
-  {
-    // we get a (de,manu) pair
-    detElemId = external->ID0();
-    manuId = external->ID1();
-  }
-
+  GetDEManu(*external,detElemId,manuId);
+  
   mpde = ddlStore->GetDetElement(detElemId);
 
   Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
@@ -881,7 +1190,7 @@ AliMUONTrackerData::Manu(Int_t detElemId, Int_t manuId, Int_t dim) const
   /// Return the value for a given manu and a given dimension
   
   AliMUONVCalibParam* param = ManuParam(detElemId,manuId);
-  return param ? Value(*param,0,dim) : 0.0;
+  return param ? Value(*param,0,dim,DdlIdFromDetElemId(detElemId)) : 0.0;
 }
 
 //_____________________________________________________________________________
@@ -923,13 +1232,36 @@ AliMUONTrackerData::CreateManuParam(Int_t detElemId, Int_t manuId) const
 
 //_____________________________________________________________________________
 Long64_t
-AliMUONTrackerData::Merge(TCollection*)
+AliMUONTrackerData::Merge(TCollection* list)
 {
-  /// Merge all tracker data objects from li into a single one.
+  /// Merge this with a list of AliMUONVTrackerData
+
+  if (!list) return 0;
   
-  AliError("Not implemented yet");
+  if ( list->IsEmpty() ) return NumberOfEvents(-1);
   
-  return 0;
+  TIter next(list);
+  const TObject* o(0x0);
+  
+  while ( ( o = next() ) )
+  {
+    const AliMUONTrackerData* data = dynamic_cast<const AliMUONTrackerData*>(o);
+    if (!o)
+    {
+      AliError(Form("Object named %s is not an AliMUONTrackerData ! Skipping it",
+                    o->GetName()));
+    }
+    else
+    {
+      Bool_t ok = Add(*data);
+      if (!ok)
+      {
+        AliError("Got incompatible objects");
+      }
+    }
+  }
+  
+  return NumberOfEvents(-1);
 }
 
 //_____________________________________________________________________________
@@ -942,6 +1274,28 @@ AliMUONTrackerData::NumberOfDimensions() const
 }
 
 //_____________________________________________________________________________
+Int_t
+AliMUONTrackerData::NumberOfEvents(Int_t ddlNumber) const
+{
+  /// Get the number of events we've seen for a given DDL, or the max
+  /// in case ddlNumber<0
+
+  Int_t n(0);
+  
+  if ( fNofEventsPerDDL && ddlNumber >= 0 && ddlNumber < fNofDDLs )
+  {
+    n = fNofEventsPerDDL[ddlNumber];
+  }
+  else
+  {
+    // get the max number of events
+    return fNevents;
+  }
+  
+  return n;
+}
+
+//_____________________________________________________________________________
 Double_t 
 AliMUONTrackerData::PCB(Int_t detElemId, Int_t pcbIndex, Int_t dim) const
 {
@@ -949,7 +1303,7 @@ AliMUONTrackerData::PCB(Int_t detElemId, Int_t pcbIndex, Int_t dim) const
 
   AliMUONVCalibParam* param = PCBParam(detElemId,pcbIndex);
   
-  return param ? Value(*param,0,dim) : 0.0;
+  return param ? Value(*param,0,dim,DdlIdFromDetElemId(detElemId)) : 0.0;
 }
 
 //_____________________________________________________________________________
@@ -998,7 +1352,10 @@ AliMUONTrackerData::Print(Option_t* wildcard, Option_t* opt) const
   
   if ( !fIsSingleEvent ) 
   {
-    cout << " Nevents=" << fNevents << endl;
+    for ( Int_t i = 0; i < fNofDDLs; ++i ) 
+    {
+      cout << Form("DDL %04d Nevents=%10d",AliDAQ::DdlID("MUONTRK",i),fNofEventsPerDDL[i]) << endl;
+    }
   }
 
 	if ( !fIsChannelLevelEnabled ) 
@@ -1163,7 +1520,8 @@ AliMUONTrackerData::SetExternalDimensionName(Int_t index, const char* value)
 
 //_____________________________________________________________________________
 Double_t 
-AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) const
+AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, 
+                          Int_t dim, Int_t ddlId) const
 {
   /// Compute the value for a given dim, using the internal information we have
   /// Basically we're converting sum of weights and sum of squares of weights
@@ -1180,7 +1538,11 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) c
     return occ;
   }
   
-  if ( dim == IndexOfOccupancyDimension() ) return occ/n/NumberOfEvents();
+  if ( dim == IndexOfOccupancyDimension() ) 
+  {
+    if ( ddlId < 0 ) AliError("Got a negative ddl id !");
+    return occ/n/NumberOfEvents(ddlId);
+  }
   
   Double_t value = param.ValueAsDouble(i,dim);
   
@@ -1211,4 +1573,32 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) c
   AliError("Why am I here ?");
   return 0.0;
 }
+
+//_____________________________________________________________________________
+void 
+AliMUONTrackerData::Streamer(TBuffer &R__b)
+{
+  /// Customized streamer                                                    
+  
+  if (R__b.IsReading()) {
+    AliMUONTrackerData::Class()->ReadBuffer(R__b, this);
+    if ( !fNofDDLs )
+    {
+      // backward compatible mode : we set number of events
+      // per DDL to the total number of events (the only information
+      // we had before version 7 of that class)
+      delete[] fNofEventsPerDDL;
+      fNofDDLs=20;
+      fNofEventsPerDDL = new Int_t[fNofDDLs];
+      for ( Int_t i = 0; i < fNofDDLs; ++i ) 
+      {
+        fNofEventsPerDDL[i] = fNevents;
+      }
+    }
+  } 
+  else {
+    AliMUONTrackerData::Class()->WriteBuffer(R__b, this);
+  }
+}
+
 

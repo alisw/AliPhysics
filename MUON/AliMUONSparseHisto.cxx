@@ -17,6 +17,7 @@
 
 #include "AliMUONSparseHisto.h"
 
+#include "AliLog.h"
 #include <Riostream.h>
 #include <TH1.h>
 #include <TMath.h>
@@ -79,6 +80,26 @@ AliMUONSparseHisto::~AliMUONSparseHisto()
 {
   /// dtor
   delete[] fArray;
+}
+
+//______________________________________________________________________________
+Bool_t 
+AliMUONSparseHisto::Add(const AliMUONSparseHisto& h)
+{
+  /// Add h to this
+
+  if ( fXmin != h.Xmin() || fXmax != h.Xmax() ) 
+  {
+    AliError("Cannot add sparse histograms with different limits !");
+    return kFALSE;
+  }
+  
+  for ( Int_t i = 0; i < h.GetNbins(); ++i ) 
+  {
+    Fill(h.GetBinContent(i));
+  }  
+  
+  return kTRUE;
 }
 
 //______________________________________________________________________________

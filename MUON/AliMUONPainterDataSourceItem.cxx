@@ -349,7 +349,7 @@ AliMUONPainterDataSourceItem::Update()
 {
   /// Update ourselves
   
-  fNumberOfEvents->SetText(Form("%10d",fDataMaker->Data()->NumberOfEvents()));
+  fNumberOfEvents->SetText(Form("%10d",fDataMaker->Data()->NumberOfEvents(-1)));
 }
 
 //_____________________________________________________________________________

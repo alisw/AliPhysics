@@ -29,6 +29,7 @@
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDetElement.h"
+#include "AliMpDEManager.h"
 #include "AliMpHVNamer.h"
 #include <TClass.h>
 #include <TMap.h>
@@ -173,6 +174,13 @@ AliMUONTrackerOCDBDataMaker::CreateHVStore(TMap& m)
     TString name(s->String());
 
     Int_t detElemId = hvNamer.DetElemIdFromDCSAlias(name.Data());
+    
+    if ( !AliMpDEManager::IsValidDetElemId(detElemId) )
+    {
+      AliErrorClass(Form("Got an invalid DE = %d from alias = %s",
+                         detElemId,name.Data()));
+      continue;
+    }
     
     Int_t nindex = 1;
     Int_t hvIndex = hvNamer.HVIndexFromDCSAlias(name.Data());

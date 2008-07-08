@@ -29,7 +29,9 @@ public:
                      Bool_t issingleevent=kFALSE);
   virtual ~AliMUONTrackerData();
 
-  virtual Bool_t Add(const AliMUONVStore& channelValues);
+  Bool_t Add(const AliMUONTrackerData& data);
+  
+  virtual Bool_t Add(const AliMUONVStore& channelValues, TArrayI* nofEventsPerDDL=0x0);
 
   virtual Bool_t Replace(const AliMUONVStore& channelValues);
 
@@ -75,7 +77,7 @@ public:
   virtual Int_t InternalToExternal(Int_t dim) const { return dim/2; }
 
   /// Returns the number of events we have seen so far
-  virtual Int_t NumberOfEvents() const { return fNevents; }
+  virtual Int_t NumberOfEvents(Int_t ddlNumber) const;
   
   virtual Double_t PCB(Int_t detElemId, Int_t pcbIndex, Int_t dim=0) const;
 
@@ -156,7 +158,10 @@ private:
   /// To allow merging of different objects
   virtual Long64_t Merge(TCollection* list);
 
-private:
+  Int_t DdlIdFromBusPatchId(Int_t buspatchid) const;
+  Int_t DdlIdFromDetElemId(Int_t detelemid) const;
+  Int_t DdlIdFromChamberId(Int_t chamberid) const;
+  
   /// Not implemented
   AliMUONTrackerData(const AliMUONTrackerData& rhs);
   /// Not implemented
@@ -180,14 +185,23 @@ private:
 
   void SetExternalDimensionName(Int_t index, const char* value);  
 
-  Double_t Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) const;
+  Double_t Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim, Int_t ddlId) const;
   
   /// The number of values we actually *store* for each item
   Int_t Dimension() const { return fDimension; }
     
+  Bool_t InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bool_t replace);
+
+  void GetDEManu(const AliMUONVCalibParam& param,
+                  Int_t& detElemId, Int_t& manuId) const;
+  
+  void AddCalibParams(const AliMUONVCalibParam& src, AliMUONVCalibParam& dest) const;
+
+  void Add2D(const AliMUONVStore& src, AliMUONVStore& dest) const;
+  
+  void Add1D(const AliMUONVStore& src, AliMUONVStore& dest) const;
+  
 private:
-    
-    Bool_t InternalAdd(const AliMUONVStore& store, Bool_t replace);
   
   Bool_t fIsSingleEvent; ///< whether we can deal with more than one event
   AliMUONVStore* fChannelValues; ///< the channel store
@@ -210,8 +224,10 @@ private:
   static const Int_t fgkVirtualExtraDimension; ///< to give access to information not stored, but computed on the fly
   Bool_t fIsChannelLevelEnabled; ///< whether we allow storing of channel (fChannelValues) values
   Bool_t fIsManuLevelEnabled; ///< whether we allow storing of manu (fManuValues) values
-	
-  ClassDef(AliMUONTrackerData,6) // Implementation of AliMUONVTrackerData
+  Int_t fNofDDLs; ///< nof of DDLs we're dealing with
+  Int_t* fNofEventsPerDDL; //[fNofDDLs] the number of events treated (per DDL)
+
+  ClassDef(AliMUONTrackerData,7) // Implementation of AliMUONVTrackerData
 };
 
 #endif

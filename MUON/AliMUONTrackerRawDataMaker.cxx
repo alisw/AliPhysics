@@ -149,12 +149,13 @@ AliMUONTrackerRawDataMaker::~AliMUONTrackerRawDataMaker()
 }
 
 //_____________________________________________________________________________
-Long64_t
-AliMUONTrackerRawDataMaker::Merge(TCollection*)
+Bool_t
+AliMUONTrackerRawDataMaker::Add(const AliMUONTrackerRawDataMaker& other) 
 {
-  /// Merge objects in collection
+  /// Adds other to this
   
-//  AliRawReader* fRawReader; //!< reader of the data (owner)
+//  AliRawReader* fRawReader; //!< reader of the data (owner or not)
+//  Bool_t fIsOwnerOfRawReader; //!< whether we must delete rawReader or not
 //  AliMUONVTrackerData* fAccumulatedData; ///< data (owner)
 //  AliMUONVStore* fOneEventData; ///< data for one event (owner)
 //  TString fSource; ///< where the data comes from
@@ -162,10 +163,64 @@ AliMUONTrackerRawDataMaker::Merge(TCollection*)
 //  Int_t fNumberOfEvents; ///< number of events seen
 //  Int_t fRunNumber; ///< run number of the data
 //  Bool_t fIsEventByEvent; ///< we only keep one event's data (no accumulation)
-//  Bool_t fUseHPDecoder; ///< whether to use high performance decoder or not (false by default)
+//  Bool_t fUseHPDecoder; ///< whether to use high performance decoder or not
+//  static Int_t fgkCounter; ///< to count the number of instances
+  
+  if (!fAccumulatedData) return kFALSE;
+  
+  if ( fIsEventByEvent )
+  {
+    AliError("Cannot add event by event objects !");
+    return kFALSE;
+  }
+  
+  if ( fRunNumber != other.fRunNumber ) fRunNumber = -1;
+  
+  fSource += "\n";
+  fSource += other.fSource;
+  
+  fNumberOfEvents += other.fNumberOfEvents;
+  
+  TList list;
+  list.Add(other.fAccumulatedData);
+  
+  fAccumulatedData->Merge(&list);
+  
+  return kTRUE;
+}
 
-  AliError("Not implemented yet");
-  return 0;
+//_____________________________________________________________________________
+Long64_t
+AliMUONTrackerRawDataMaker::Merge(TCollection* list)
+{
+  /// Merge objects in collection
+  
+  if (!list) return 0;
+  
+  if ( list->IsEmpty() ) return NumberOfEvents();
+  
+  TIter next(list);
+  const TObject* o(0x0);
+  
+  while ( ( o = next() ) )
+  {
+    const AliMUONTrackerRawDataMaker* data = dynamic_cast<const AliMUONTrackerRawDataMaker*>(o);
+    if (!o)
+    {
+      AliError(Form("Object named %s is not an AliMUONTrackerRawDataMaker ! Skipping it",
+                    o->GetName()));
+    }
+    else
+    {
+      Bool_t ok = Add(*data);
+      if (!ok)
+      {
+        AliError("Got incompatible objects");
+      }
+    }
+  }
+  
+  return NumberOfEvents();
 }
 
 //_____________________________________________________________________________

@@ -29,7 +29,7 @@
 #pragma link C++ class AliMUONTrackerIO+;
 #pragma link C++ class AliMUONVTrackerData+;
 #pragma link C++ class AliMUONSparseHisto+;
-#pragma link C++ class AliMUONTrackerData+;
+#pragma link C++ class AliMUONTrackerData-;
 
 #endif
 

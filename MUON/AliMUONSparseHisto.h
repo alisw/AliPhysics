@@ -32,6 +32,8 @@ public:
   
   virtual ~AliMUONSparseHisto();
   
+  Bool_t Add(const AliMUONSparseHisto& h);
+  
   /// Whether this histogram has underflow values 
   /// (no way to know the number of underflow, though)
   Bool_t HasUnderflow() const { return TestBit(kUnderflow); }

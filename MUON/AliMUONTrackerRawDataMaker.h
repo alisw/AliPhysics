@@ -39,6 +39,8 @@ public:
   
   virtual ~AliMUONTrackerRawDataMaker();
   
+  Bool_t Add(const AliMUONTrackerRawDataMaker& other);
+  
   /// Whether we have a valid raw reader
   Bool_t IsValid() const { return fRawReader != 0x0; }
   

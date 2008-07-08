@@ -66,7 +66,7 @@ AliMUONTrackerDataWrapper::NumberOfEvents() const
   /// Get the number of events the data has seen
   if ( Data() ) 
   {
-    return Data()->NumberOfEvents();
+    return Data()->NumberOfEvents(-1);
   }
   return 0;
 }
