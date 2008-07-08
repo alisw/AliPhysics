@@ -498,6 +498,11 @@ void AliCDBStorage::LoadTreeFromFile(AliCDBEntry *entry) const {
 // Checks whether entry contains a TTree and in case loads it into memory
 
 	TObject *obj = (TObject*) entry->GetObject();
+	if (!obj) {
+	  AliError("Cannot retrieve the object:");
+	  entry->PrintMetaData();
+	  return;
+	}
 
 	if (!strcmp(obj->ClassName(),TTree::Class_Name())) {
 
