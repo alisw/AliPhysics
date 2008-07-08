@@ -29,9 +29,9 @@
 
 #include "AliLog.h"
 
-#include "AliTRDReconstructor.h"
+//#include "AliTRDReconstructor.h"
+//#include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDcalibDB.h"
 #include "AliTRDltuTracklet.h"
 #include "AliTRDgtuTrack.h"
 #include "Cal/AliTRDCalPID.h"
@@ -386,20 +386,20 @@ void AliTRDgtuTrack::MakePID()
 
   Int_t i = 0;
 
-  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
-  if (!calibration) {
-    AliError("No instance of AliTRDcalibDB.");
-    return;  
-  }
+  // Avoid dependency on libTRDrec.pkg (CBL)
+  //AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  //if (!calibration) {
+  //  AliError("No instance of AliTRDcalibDB.");
+  //  return;  
+  //}
+  //
+  //AliTRDrecoParam *rec = AliTRDReconstructor::RecoParam();
+  //if (!rec) {
+  //  AliError("No TRD reco param.");
+  //  return;
+  //}
+  //const AliTRDCalPID *pd = calibration->GetPIDObject(rec->GetPIDMethod());
 
-  AliTRDrecoParam *rec = AliTRDReconstructor::RecoParam();
-  if (!rec) {
-    AliError("No TRD reco param.");
-    return;
-  }
-
-  const AliTRDCalPID *pd = calibration->GetPIDObject(rec->GetPIDMethod());
-  
   AliTRDltuTracklet *trk;
   Int_t   nTracklets = GetNtracklets();
   Int_t   det;
@@ -463,8 +463,8 @@ void AliTRDgtuTrack::MakePID()
                 dedx[0] = dedx[1] = q*3.; dedx[2] = 0.;
                 Float_t length = 3.7;
 
-    probEle *= pd->GetProbability(0, TMath::Abs(fPt), dedx, length, 0);
-    probPio *= pd->GetProbability(2, TMath::Abs(fPt), dedx, length, 0);
+    //probEle *= pd->GetProbability(0, TMath::Abs(fPt), dedx, length, 0);
+    //probPio *= pd->GetProbability(2, TMath::Abs(fPt), dedx, length, 0);
 
   }
 
