@@ -39,6 +39,7 @@ public:
   TGeoVolumeAssembly* GetLadderSegment(Int_t i){return fladdersegment[i];}; // Get Ladder Segment
   TGeoVolumeAssembly* GetEndLadderSegment(Int_t i){return fendladdersegment[i];}; // Get End Ladder Segment 
   TGeoVolume* GetLadder(Int_t i) {return fladder[i];}; // Get Ladder
+//  TGeoVolumeAssembly* GetLadder(Int_t i) {return fladder[i];}; // Get Ladder
   TGeoVolumeAssembly* GetLayer(Int_t i)const {return i==5? fSSDLayer5 : fSSDLayer6;}; // Get Layer
   TGeoVolume** GetEndCapAssembly();     // End Cap Assembly
   void SetLadderSegment();				// Set Ladder Elementary Segment 
@@ -65,6 +66,8 @@ private:
   // Variable for Vertical Disalignement of Modules
   /////////////////////////////////////////////////////////////////////////////////
   static const Double_t fgkSSDModuleVerticalDisalignment;  // Vertical Disalignement of Volume
+  static const Double_t fgkSSDModuleVerticalDisalignment2;  // Vertical Disalignement of Volume
+  static const Double_t fgkSSDTolerance;  // SSD Tolerance
   /////////////////////////////////////////////////////////////////////////
   // Layer5 (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////
@@ -608,6 +611,7 @@ private:
   static const Int_t fgkladdernumber = 2;		      // Ladder Number 
   TGeoVolume* fladder[fgkladdernumber];			      //fladder[0]: ladder of Layer 5
 												      //fladder[1]: ladder of Layer 6
+//  TGeoVolumeAssembly* fladder[fgkladdernumber];
   TGeoHMatrix** fladdermatrix[fgkladdernumber];       // Ladder Matrix
   ///////////////////////////////////
   // SSD Sensor

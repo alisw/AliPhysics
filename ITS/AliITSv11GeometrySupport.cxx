@@ -97,8 +97,10 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kInnerRadiusRing = 37.3*fgkcm;
   const Double_t kOuterRadiusRing = 42.0*fgkcm;
   const Double_t kOuterRadiusWing = 49.25*fgkcm;
-  const Double_t kWideWing  = 6.0*fgkcm;
-  const Double_t kThetaWing = 45.0;
+  const Double_t kWideWing      = 6.0*fgkcm;
+  const Double_t kThetaWing0    = 47.0;  // Between SSDCableITSRing3RB24
+  const Double_t kThetaWing1    = 125.0; // and SSDCableITSRing3RB26
+  const Double_t kThetaWingStep = 180.0;
   // Common data
   const Double_t kTheta = 36.0*TMath::DegToRad();
   const Double_t kThicknessOmega = 0.3*fgkmm;
@@ -477,12 +479,19 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
 	     -kHalfLengthCentral-2*kHalfLengthEndCap-2*kHalfLengthCone
              -kHalfLengthRing));
 
-  for (Int_t i=0; i<4; i++) {
-    Double_t thetaW = kThetaWing*(2*i+1);
-    vM->AddNode(wing,2*i+1,new TGeoCombiTrans(0, 0,
+  for (Int_t i=0; i<2; i++) {
+    Double_t thetaW = kThetaWing0 + kThetaWingStep*i;
+    vM->AddNode(wing,4*i+1,new TGeoCombiTrans(0, 0,
 	      kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
              +kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
-    vM->AddNode(wing,2*i+2,new TGeoCombiTrans(0, 0,
+    vM->AddNode(wing,4*i+2,new TGeoCombiTrans(0, 0,
+	     -kHalfLengthCentral-2*kHalfLengthEndCap-2*kHalfLengthCone
+             -kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
+    thetaW = kThetaWing1 + kThetaWingStep*i;
+    vM->AddNode(wing,4*i+3,new TGeoCombiTrans(0, 0,
+	      kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
+             +kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
+    vM->AddNode(wing,4*i+4,new TGeoCombiTrans(0, 0,
 	     -kHalfLengthCentral-2*kHalfLengthEndCap-2*kHalfLengthCone
              -kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
   }
