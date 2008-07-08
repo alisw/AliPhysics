@@ -552,7 +552,8 @@ AliMpTriggerReader::ReadLocalBoardMapping()
   Char_t localBoardName[20];
   Int_t j,localBoardId;
   UInt_t switches;
-  
+  Int_t nofBoards;
+
   while (!in.eof())
   {
     for (Int_t i = 0; i < 4; ++i)
@@ -561,22 +562,25 @@ AliMpTriggerReader::ReadLocalBoardMapping()
     // read mask
     if (!in.getline(line,80)) break;
     sscanf(line,"%hx",&mask);
-    
-    for ( Int_t i = 0; i < 16; ++i ) 
+ 
+   // read # boards
+    if (!in.getline(line,80)) break;
+    sscanf(line,"%d",&nofBoards);
+   
+    for ( Int_t i = 0; i < nofBoards; ++i ) 
     {      
-      if ( (mask >> i ) & 0x1 )
+  
+      if (!in.getline(line,80)) break; 
+      sscanf(line,"%02d %s %03d %03x", &j, localBoardName, &localBoardId, &switches);
+      if (localBoardId <= AliMpConstants::NofLocalBoards()) 
       {
-        if (!in.getline(line,80)) break; 
-        sscanf(line,"%02d %s %03d %03x", &j, localBoardName, &localBoardId, &switches);
-        if (localBoardId <= AliMpConstants::NofLocalBoards()) 
-        {
-          fLocalBoardMap.Add(new TObjString(localBoardName), new TObjString(Form("%d",localBoardId)));
-          AliDebugClass(10,Form("Board %s has number %d\n", localBoardName, localBoardId));
-        }
-        // skip 2 following lines
-        if (!in.getline(line,80)) break; 
-        if (!in.getline(line,80)) break; 
-       }
+	fLocalBoardMap.Add(new TObjString(localBoardName), new TObjString(Form("%d",localBoardId)));
+	AliDebugClass(10,Form("Board %s has number %d\n", localBoardName, localBoardId));
+      }
+      // skip 2 following lines
+      if (!in.getline(line,80)) break; 
+      if (!in.getline(line,80)) break; 
+       
     }
   }
   

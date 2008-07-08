@@ -299,15 +299,15 @@ private:
   
   Bool_t     fRequestStation[5]; ///< kTRUE to request at least one cluster in station i to validate the track
   
-	Double32_t fGainA1Limits[2]; //< Low and High threshold for gain a0 parameter
-  Double32_t fGainA2Limits[2]; //< Low and High threshold for gain a1 parameter
-  Double32_t fGainThresLimits[2]; //< Low and High threshold for gain threshold parameter
-  Double32_t fHVSt12Limits[2]; //< Low and High threshold for St12 HV
-  Double32_t fHVSt345Limits[2]; //< Low and High threshold for St345 HV
-  Double32_t fPedMeanLimits[2]; //< Low and High threshold for pedestal mean
-  Double32_t fPedSigmaLimits[2]; //< Low and High threshold for pedestal sigma
+	Double32_t fGainA1Limits[2]; ///< Low and High threshold for gain a0 parameter
+  Double32_t fGainA2Limits[2]; ///< Low and High threshold for gain a1 parameter
+  Double32_t fGainThresLimits[2]; ///< Low and High threshold for gain threshold parameter
+  Double32_t fHVSt12Limits[2]; ///< Low and High threshold for St12 HV
+  Double32_t fHVSt345Limits[2]; ///< Low and High threshold for St345 HV
+  Double32_t fPedMeanLimits[2]; ///< Low and High threshold for pedestal mean
+  Double32_t fPedSigmaLimits[2]; ///< Low and High threshold for pedestal sigma
 	
-	UInt_t fPadGoodnessMask; //< goodness mask (see AliMUONPadStatusMaker)
+	UInt_t fPadGoodnessMask; ///< goodness mask (see AliMUONPadStatusMaker)
 	
   // functions
   void SetLowFluxParam();

@@ -81,6 +81,7 @@ public:
                        FILE* flut);
                    
   Int_t LocalBoardId(Int_t index) const;
+  Int_t LocalBoardId(Int_t ddlId, Int_t crateId, Int_t localId) const;
 
 
 private:

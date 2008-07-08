@@ -208,8 +208,8 @@ private:
   Double_t fXmax; ///< max x value for histograms
   static const Int_t fgkExtraDimension; ///< to hold extra information
   static const Int_t fgkVirtualExtraDimension; ///< to give access to information not stored, but computed on the fly
-  Bool_t fIsChannelLevelEnabled; //< whether we allow storing of channel (fChannelValues) values
-  Bool_t fIsManuLevelEnabled; //< whether we allow storing of manu (fManuValues) values
+  Bool_t fIsChannelLevelEnabled; ///< whether we allow storing of channel (fChannelValues) values
+  Bool_t fIsManuLevelEnabled; ///< whether we allow storing of manu (fManuValues) values
 	
   ClassDef(AliMUONTrackerData,6) // Implementation of AliMUONVTrackerData
 };

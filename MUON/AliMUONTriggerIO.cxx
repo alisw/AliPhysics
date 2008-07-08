@@ -209,7 +209,7 @@ AliMUONTriggerIO::ReadLocalMasks(const char* localFile, AliMUONVStore& localMask
   
   UShort_t maskBuffer[8];
   
-  Int_t nLocalBoards(0);
+  Int_t nLocalBoards(1);
     
   while ( fread ( maskBuffer, 2, 8, fp ) )
   {
@@ -395,7 +395,7 @@ AliMUONTriggerIO::ReadConfig(const char* localFile,
   }
   
   Int_t nCrates = ReadRegionalConfig(regionalFile, regionalConfig);
-  
+
   if (!nCrates) return kFALSE;
   
   if (localMasks && localFile)
@@ -788,4 +788,18 @@ AliMUONTriggerIO::LocalBoardId(Int_t index) const
   /// Return the i-th localBoardId, or -1 if index is out of bounds
 
   return fRegionalTrigger.LocalBoardId(index);
+}
+
+
+//______________________________________________________________________________
+
+Int_t AliMUONTriggerIO::LocalBoardId(Int_t ddlId, Int_t crateId, Int_t localId) const
+{
+    /// Return local board id from crate and local indexes.
+    
+    Int_t nofDDLs = 0;
+    TString name = AliMpTriggerCrate::GenerateName(crateId, ddlId, nofDDLs);
+
+    AliMpTriggerCrate* crate = fRegionalTrigger.FindTriggerCrate(name, false);
+    return crate->GetLocalBoardId(localId);
 }

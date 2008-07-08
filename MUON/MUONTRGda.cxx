@@ -1,4 +1,6 @@
 /*
+MTR DA for online
+
 Contact: Franck Manso <manso@clermont.in2p3.fr>
 Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mtrda.html
 Run Type:  ELECTRONICS_CALIBRATION_RUN (calib), DETECTOR_CALIBRATION_RUN (ped)
@@ -87,9 +89,9 @@ extern "C" {
 #include "TArrayS.h"
 
 // global variables
-const Int_t gkNLocalBoard = AliMpConstants::TotalNofLocalBoards();
+const Int_t gkNLocalBoard = AliMpConstants::TotalNofLocalBoards()+1;
 
-TString gCommand("");
+TString gCommand("ped");
 
 TString gCurrentFileName("MtgCurrent.dat");
 TString gLastCurrentFileName("MtgLastCurrent.dat");
@@ -285,7 +287,6 @@ void ReadFileNames()
     if (!ReadCurrentFile(gLastCurrentFileName, true)) 
     {
       ReadCurrentFile(gCurrentFileName, true);
-      WriteLastCurrentFile();
     } 
 
     // any case read current file
@@ -304,6 +305,9 @@ Bool_t ExportFiles()
     // setenv DATE_ROLE_NAME
     // setenv DATE_DETECTOR_CODE
 
+    // for offline purposes
+    // gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
+
     // update files
     Int_t status = 0;
 
@@ -317,10 +321,10 @@ Bool_t ExportFiles()
     if (!out.good()) {
 	printf("Failed to create file: %s\n",file.Data());
 	return false;
-    }      file = gGlobalFileName.Data();
+    }      
 
+    file = gGlobalFileName.Data();
     if (gGlobalFileLastVersion != gGlobalFileVersion) {
-
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
 	printf("Failed to export file: %s\n",gGlobalFileName.Data());
@@ -330,9 +334,9 @@ Bool_t ExportFiles()
       if(gPrintLevel) printf("Export file: %s\n",gGlobalFileName.Data());
     }
 
+    file = gLocalMaskFileName;  
     if (gLocalMaskFileLastVersion != gLocalMaskFileVersion) {
       modified = true;
-      file = gLocalMaskFileName;
       // export to FES
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
@@ -350,8 +354,8 @@ Bool_t ExportFiles()
       out << gLocalMaskFileName.Data() << endl;
     }
 
+    file = gLocalLutFileName;
     if (gLocalLutFileLastVersion != gLocalLutFileVersion) {
-      file = gLocalLutFileName;
       modified = true;
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
@@ -364,8 +368,8 @@ Bool_t ExportFiles()
     }
 
     // exported regional file whenever mask or/and Lut are modified
+    file = gRegionalFileName;
     if ( (gRegionalFileLastVersion != gRegionalFileVersion) || modified) {
-      file = gRegionalFileName;
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
 	printf("Failed to export file: %s\n",gRegionalFileName.Data());
@@ -385,6 +389,9 @@ Bool_t ExportFiles()
     }
     if(gPrintLevel) printf("Export file: %s\n",fileExp.Data());
 
+    // write last current file
+    WriteLastCurrentFile();
+
     return true;
 }
 //__________________
@@ -397,6 +404,10 @@ Bool_t ImportFiles()
     // instead of the database. The usual environment variables are not needed.
 
       Int_t status = 0;
+
+    // for offline test
+    //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+    //gSystem->Setenv("DAQDA_TEST_DIR", "v3r3data");
 
     status = daqDA_DB_getFile(gCurrentFileName.Data(), gCurrentFileName.Data());
     if (status) {
@@ -437,7 +448,7 @@ Bool_t ImportFiles()
 void ReadMaskFiles()
 {
     // read mask files
-    gLocalMasks    = new AliMUON1DArray(gkNLocalBoard+9);
+    gLocalMasks    = new AliMUON1DArray(gkNLocalBoard);
     gRegionalMasks = new AliMUONRegionalTriggerConfig();
     gGlobalMasks   = new AliMUONGlobalCrateConfig();
 
@@ -597,12 +608,27 @@ void MakePatternStore(Bool_t pedestal = true)
 
       TString tmp(gLocalMaskFileName);
       Int_t pos = tmp.First("-");
-      gLocalMaskFileName = tmp(0,pos+1) + Form("%d",gLocalMaskFileVersion) + ".dat"; 
+      TString sNumber = tmp(pos+1,1);
+      Int_t currentFileNumber =  sNumber.Atoi()+1;
 
-      // write last current file
-      WriteLastCurrentFile();
-
+      gLocalMaskFileName = tmp(0,pos+1) + Form("%d",currentFileNumber) + ".dat"; 
       gTriggerIO.WriteConfig(gLocalMaskFileName, gRegionalFileName, gGlobalFileName, gLocalMasks, gRegionalMasks, gGlobalMasks);
+
+      WriteLastCurrentFile(gCurrentFileName);
+
+
+      Int_t status = daqDA_DB_storeFile(gLocalMaskFileName.Data(), gLocalMaskFileName.Data());
+      if (status) {
+        printf("Failed to export file to DB: %s\n",gLocalMaskFileName.Data());
+        return;
+      }
+
+      status = daqDA_DB_storeFile(gCurrentFileName.Data(), gCurrentFileName.Data());
+      if (status) {
+        printf("Failed to export file to DB: %s\n",gCurrentFileName.Data());
+        return;
+      }
+
     }
 }
 
@@ -619,7 +645,14 @@ int main(Int_t argc, Char_t **argv)
     Int_t skipEvents = 0;
     Int_t maxEvents  = 1000000;
     Char_t inputFile[256];
-    strcpy(inputFile, "");
+    inputFile[0] = 0;
+    if (argc > 1)
+      if (argv[1] != NULL)
+        strncpy(inputFile, argv[1], 256);
+      else {
+        printf("MUONTRGda : No input File !\n");
+        return -1;
+      }
     TString flatOutputFile;
 
 // option handler
@@ -715,13 +748,12 @@ int main(Int_t argc, Char_t **argv)
       return -1;
     }
 
-    if (!gDAFlag) {
-      if(!ExportFiles()) return -1;
-      return 0;
-    }
-
     ReadMaskFiles();
 
+    if(!ExportFiles())
+	return -1;
+
+  
     status = monitorSetDataSource(inputFile);
     if (status) {
       cerr << "ERROR : monitorSetDataSource status (hex) = " << hex << status
@@ -735,7 +767,12 @@ int main(Int_t argc, Char_t **argv)
       return -1;
     }
 
-    cout << "MUONTRKda : Reading data from file " << inputFile <<endl;
+    /* define wait event timeout - 1s max */
+    monitorSetNowait();
+    monitorSetNoWaitNetworkTimeout(1000);
+
+
+    cout << "MUONTRGda : Reading data from file " << inputFile <<endl;
 
     while(1) 
     {
@@ -756,7 +793,7 @@ int main(Int_t argc, Char_t **argv)
       // starts reading
       status = monitorGetEventDynamic(&event);
       if (status < 0)  {
-	cout<<"EOF found"<<endl;
+	cout << "MUONTRGda : EOF found" << endl;
 	break;
       }
 
@@ -768,7 +805,10 @@ int main(Int_t argc, Char_t **argv)
       Int_t eventType = rawReader->GetType();
       gRunNumber = rawReader->GetRunNumber();
     
-
+      // L1Swc1
+      // CALIBRATION_EVENT 
+      // SYSTEM_SOFTWARE_TRIGGER_EVENT
+      // DETECTOR_SOFTWARE_TRIGGER_EVENT
       if (eventType != PHYSICS_EVENT) 
 	  continue; // for the moment
 
@@ -779,7 +819,6 @@ int main(Int_t argc, Char_t **argv)
       AliMUONRawStreamTrigger* rawStream  = new AliMUONRawStreamTrigger(rawReader);
       //rawStream->SetMaxReg(1);
 
-      Int_t index = 0;
       // loops over DDL 
       while((status = rawStream->NextDDL())) {
 
@@ -804,7 +843,8 @@ int main(Int_t argc, Char_t **argv)
 
 	    localStruct = regHeader->GetLocalEntry(iLocal);
 
-	    Int_t localBoardId = gTriggerIO.LocalBoardId(index++);
+	    Int_t localBoardId = gTriggerIO.LocalBoardId(rawStream->GetDDL(), iReg, iLocal);
+            if (localBoardId == 0) continue;
 	    if (gPrintLevel) printf("local %d\n",  localBoardId );
 
 	    TArrayS xPattern(4);
@@ -826,14 +866,12 @@ int main(Int_t argc, Char_t **argv)
 
     } // while (1)
 
-    if (gCommand.Contains("ped")) 
+    if (gCommand.Contains("ped") && gDAFlag) 
 	MakePatternStore();
 
-    if (gCommand.Contains("cal"))
+    if (gCommand.Contains("cal") && gDAFlag)
     	MakePatternStore(false);
 
-    if (!ExportFiles())
-	return -1;
 
     timers.Stop();
 
@@ -846,7 +884,7 @@ int main(Int_t argc, Char_t **argv)
 
     delete gLocalMasks;
     delete gRegionalMasks;
-    delete gGlobalMasks; // in case
+    delete gGlobalMasks; 
     delete gPatternStore;
 
     return status;

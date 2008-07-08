@@ -12,11 +12,11 @@ The main code is located in MUONTRGda.cxx and it runs in the MUON Trigger LDC.
 The main goal of the DA is the transfert of the modified configuration files to the FES.
 The configuration files stored in the online DB are the following:
 
-MtgGlobalCrate-<version>.dat:   contains the global crate information
-MtgRegionalCrate-<version>.dat: contains the regional crate information
-MtgLocalMask-<version>.dat:     contains the local mask
-MtgLocalLut-<version>.dat:      contains the local LUT 
-MtgCurrent.dat:                 contains the name list of the above files with their version 
+- MtgGlobalCrate-<version>.dat:   contains the global crate information
+- MtgRegionalCrate-<version>.dat: contains the regional crate information
+- MtgLocalMask-<version>.dat:     contains the local mask
+- MtgLocalLut-<version>.dat:      contains the local LUT 
+- MtgCurrent.dat:                 contains the name list of the above files with their version 
                                 and the flag for master/slave status on the DA
 
 The copy onto the FES for the modified local masks is only done when the flag is set to master for the DA.

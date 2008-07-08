@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpRegionalTrigger.h"
+#include "AliMpRegionalTriggerReader.h"
 #include "AliMpExMapIterator.h"
 #include "AliMpTriggerCrate.h"
 #include "AliMpLocalBoard.h"
@@ -113,92 +114,22 @@ Bool_t AliMpRegionalTrigger::ReadData(istream& in)
 /// Load the Regional trigger from ASCII data files
 /// and return its instance
     
+    TList list;
+    list.AddAt(&fTriggerCrates, 0);
+    list.AddAt(&fLocalBoardMap, 1);
+    list.AddAt(&fLocalBoardArray, 2);
 
-    AliMpLocalBoard* board = 0x0;
-    AliMpTriggerCrate* crate = 0x0;
-
-
-    Int_t localBoardId = 0;
-    TArrayI list;
-    UShort_t crateId, mask;
+    Int_t status = AliMpRegionalTriggerReader::ReadData(list, in);
     
-    char line[80];
-   
-    while (!in.eof())
-    {
-      in.getline(line,80);
-      if (!strlen(line)) break;
-      TString crateName(AliMpHelper::Normalize(line));
-      
-      in.getline(line,80);    
-      sscanf(line,"%hx",&crateId);
-  
-      // skip mode
-      in.getline(line,80);
-      
-      // skip coincidence
-      in.getline(line,80);
-      
-      // skip mask
-      in.getline(line,80);
-      sscanf(line,"%hx",&mask);
-      
-      crate = (AliMpTriggerCrate*)(fTriggerCrates.GetValue(crateName.Data()));
-      if (!crate) 
-      {
-        // cout << "Creating crate: " << crateName.Data() << endl;
-        crate = new AliMpTriggerCrate(crateName.Data(), crateId);
-        fTriggerCrates.Add(crateName.Data(), crate);
-      }
-      
-      Char_t localBoardName[20];
-      Int_t slot;
-      UInt_t switches;
-      
-      for ( Int_t i = 0; i < AliMpConstants::LocalBoardNofChannels(); ++i ) 
-      {
-        if ( (mask >> i ) & 0x1 )
-        {
-          in.getline(line,80);
-          sscanf(line,"%02d %s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
-          // cout << "  Creating local board: " << localBoardId << endl;
-          board = new AliMpLocalBoard(localBoardId, localBoardName, slot); 
-          board->SetSwitch(switches);
-          board->SetCrate(crateName);
-          
-          if (localBoardId > AliMpConstants::NofLocalBoards())
-            board->SetNotified(false); // copy cards
-          
-          crate->AddLocalBoard(localBoardId);
-
-          // add  list of DEs for local board
-          list.Reset();
-          in.getline(line,80);
-          TString tmp(AliMpHelper::Normalize(line));
-          AliMpHelper::DecodeName(tmp,' ',list);
-          for (Int_t ii = 0; ii < list.GetSize(); ++ii) { 
-            if ( list[ii] ) board->AddDE(list[ii]);
-          }  
-
-          // set copy number and transverse connector
-          in.getline(line,80);
-          tmp = AliMpHelper::Normalize(line);
-          AliMpHelper::DecodeName(tmp,' ',list);
+    if (status == -1) {
+        AliErrorStream()
+        << "Regional Trigger Mapping File not found" << endl;
+        return kFALSE;
+    } 
     
-          board->SetInputXfrom(list[0]);
-          board->SetInputXto(list[1]);
-          
-          board->SetInputYfrom(list[2]);
-          board->SetInputYto(list[3]);
-          
-          board->SetTC(list[4]);
-          
-          // add local board into array
-          fLocalBoardArray.AddAt(board,board->GetId());
-          fLocalBoardMap.Add(board->GetId(),board);
-        }
-      }
-    }
+    if (!status)
+      return kFALSE;
+      
     
     return kTRUE;
 }
