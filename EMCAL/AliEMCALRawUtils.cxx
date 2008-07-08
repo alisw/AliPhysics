@@ -119,6 +119,38 @@ AliEMCALRawUtils::AliEMCALRawUtils()
 }
 
 //____________________________________________________________________________
+AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry)
+  : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
+    fNPedSamples(0), fGeom(pGeometry), fOption("")
+{
+  //
+  // Initialize with the given geometry - constructor required by HLT
+  // HLT does not use/support AliRunLoader(s) instances
+  // This is a minimum intervention solution
+  // Comment by MPloskon@lbl.gov
+  //
+
+  //These are default parameters. 
+  //Can be re-set from without with setter functions 
+  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits)
+  fOrder = 2;                         // order of gamma fn
+  fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
+  fNoiseThreshold = 3;
+  fNPedSamples = 5;
+
+  //Get Mapping RCU files from the AliEMCALRecParam
+  const TObjArray* maps = AliEMCALRecParam::GetMappings();
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
+  for(Int_t i = 0; i < 2; i++) {
+    fMapping[i] = (AliAltroMapping*)maps->At(i);
+  }
+
+  if(!fGeom) AliFatal(Form("Could not get geometry!"));
+
+}
+
+//____________________________________________________________________________
 AliEMCALRawUtils::AliEMCALRawUtils(const AliEMCALRawUtils& rawU)
   : TObject(),
     fHighLowGainFactor(rawU.fHighLowGainFactor), 

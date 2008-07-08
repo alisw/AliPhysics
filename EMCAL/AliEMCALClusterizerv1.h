@@ -36,6 +36,7 @@ class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
 public:
   
   AliEMCALClusterizerv1() ;         
+  AliEMCALClusterizerv1(AliEMCALGeometry* geometry);
 
   virtual ~AliEMCALClusterizerv1()  ;
 

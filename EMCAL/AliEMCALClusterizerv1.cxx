@@ -99,6 +99,37 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1()
 }
 
 //____________________________________________________________________________
+AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
+  : AliEMCALClusterizer(),
+    fGeom(geometry),
+    fDefaultInit(kFALSE),
+    fToUnfold(kFALSE),
+    fNumberOfECAClusters(0),fCalibData(0),
+    fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
+    fECAW0(0.),fTimeCut(0.),fMinECut(0.)
+{
+  // ctor with the indication of the file where header Tree and digits Tree are stored
+  // use this contructor to avoid usage of Init() which uses runloader
+  // change needed by HLT - MP
+
+  InitParameters() ;
+
+  // Note for the future: the use on runloader should be avoided or optional at least
+  // another way is to make Init virtual and protected at least such that the deriving classes can overload
+  // Init() ;
+  //
+
+  if (!fGeom)
+    {
+      AliFatal("Geometry not initialized.");
+    }
+
+  if(!gMinuit)
+    gMinuit = new TMinuit(100) ;
+
+}
+
+//____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
 {
   // dtor

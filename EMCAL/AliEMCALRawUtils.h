@@ -42,6 +42,7 @@ class AliEMCALGeometry;
 class AliEMCALRawUtils : public TObject {
  public:
   AliEMCALRawUtils();
+  AliEMCALRawUtils(AliEMCALGeometry *pGeometry);
   virtual ~AliEMCALRawUtils();
 
   AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor
