@@ -3,7 +3,6 @@
 
 // Analysis task creating a the 2d y-p_t spectrum of p and antip
 // Author: Panos Cristakoglou
-
 class TString;
 class TList;
 class AliESDEvent;
@@ -26,11 +25,11 @@ class AliAnalysisTaskProtons : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
 
   void SetType(const char* type) {fAnalysisType = type;}
-  void SetPriorProbabilityFunctions(TF1 *felectrons, 
-				    TF1 *fmuons,
-				    TF1 *fpions,
-				    TF1 *fkaons,
-				    TF1 *fprotons) {
+  void SetPriorProbabilityFunctions(TF1 *felectrons,
+                                    TF1 *fmuons,
+                                    TF1 *fpions,
+                                    TF1 *fkaons,
+                                    TF1 *fprotons) {
     fFunctionUsed = kTRUE;
     fElectronFunction = felectrons;
     fMuonFunction = fmuons;
@@ -40,25 +39,26 @@ class AliAnalysisTaskProtons : public AliAnalysisTask {
   }
   
  private:
-  AliESDEvent *fESD;    //ESD object
-  AliAODEvent *fAOD;    //AOD object
-  AliMCEvent  *fMC;     //MC object
-  TString fAnalysisType;//"ESD", "AOD" or "MC"
+  AliESDEvent *fESD;    //ESD object                                                                                 
+  AliAODEvent *fAOD;    //AOD object                                                                                  
+  AliMCEvent  *fMC;     //MC object                                                                                   
+  
+  TString fAnalysisType;//"ESD", "AOD" or "MC"                                                                        
 
-  TList  *fList; //TList output object
-
-  AliProtonAnalysis *fAnalysis; //analysis object
-
-  TF1 *fElectronFunction; //TF1 for e
-  TF1 *fMuonFunction; //TF1 for mu
-  TF1 *fPionFunction; //TF1 for pi
-  TF1 *fKaonFunction; //TF1 for K
-  TF1 *fProtonFunction; //TF1 for p
-
-  Bool_t fFunctionUsed; //kTRUE if Functions are used
-
-  AliAnalysisTaskProtons(const AliAnalysisTaskProtons&); // not implemented
-  AliAnalysisTaskProtons& operator=(const AliAnalysisTaskProtons&); // not implemented
+  TList  *fList; //TList output object                                                                                
+  
+  AliProtonAnalysis *fAnalysis; //analysis object                                                                     
+  
+  TF1 *fElectronFunction; //TF1 for e                                                                                 
+  TF1 *fMuonFunction; //TF1 for mu                                                                                    
+  TF1 *fPionFunction; //TF1 for pi                                                                                    
+  TF1 *fKaonFunction; //TF1 for K                                                                                     
+  TF1 *fProtonFunction; //TF1 for p                                                                                   
+  
+  Bool_t fFunctionUsed; //kTRUE if Functions are used                                                                 
+  
+  AliAnalysisTaskProtons(const AliAnalysisTaskProtons&); // not implemented                                           
+  AliAnalysisTaskProtons& operator=(const AliAnalysisTaskProtons&); // not implemented                                 
   
   ClassDef(AliAnalysisTaskProtons, 1); // example of analysis
 };

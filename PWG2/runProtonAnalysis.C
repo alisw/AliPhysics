@@ -5,8 +5,10 @@ void runProtonAnalysis() {
   //runLocal();
   //runInteractive();
   //runBatch();
-  runProof("/PWG0/COMMON/run30000X_10TeV_0.5T",200000);
-
+  
+  runProof("ESD",200000,"/PWG0/COMMON/run30000X_10TeV_0.5T"); //use data sets
+  //runProof("ESD",200); //use ascii files
+  
   timer.Stop();
   timer.Print();
 }
@@ -307,9 +309,14 @@ void runBatch() {
 }
 
 //_________________________________________________//
-void runProof(const char* dataset = 0x0, Int_t stats = 0) {
+void runProof(const char* mode = "ESD", Int_t stats = 0, const char* dataset = 0x0) {
   TStopwatch timer;
   timer.Start();
+  
+  TString smode = mode;
+  TString outputFilename = "Protons."; outputFilename += mode;
+  outputFilename += ".root";
+
   printf("****** Connect to PROOF *******\n");
   TProof::Open("proof://lxb6046.cern.ch"); 
   gProof->SetParallel();
@@ -334,10 +341,15 @@ void runProof(const char* dataset = 0x0, Int_t stats = 0) {
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
   AliVEventHandler* esdH = new AliESDInputHandler;
-  mgr->SetInputEventHandler(esdH);  
+  mgr->SetInputEventHandler(esdH);
+  if(smode == "MC") {
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc);
+  }
   //____________________________________________//
   // 1st Proton task
   AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
+  taskProtons->SetType(mode);
   /*TFile *f = TFile::Open("PriorProb/PriorProbabilities.root ");
   TF1 *fitElectrons = (TF1 *)f->Get("fitElectrons");
   TF1 *fitMuons = (TF1 *)f->Get("fitMuons");
@@ -355,9 +367,9 @@ void runProof(const char* dataset = 0x0, Int_t stats = 0) {
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
 							   TChain::Class(),AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1", 
-							    TList::Class(),AliAnalysisManager::kOutputCont
-							    "Protons.ESD.root");
-  
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    outputFilename.Data());
+
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
