@@ -57,6 +57,7 @@ AliHLTTPCTrack::AliHLTTPCTrack()
   fPterr(0),
   fPsierr(0),
   fZ0err(0),
+  fY0err(0),
   fTanlerr(0),
 
   fPhi0(0),
@@ -657,11 +658,11 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   
   //covariance matrix
   Double_t cov[15]={
-    0.,
-    0.,  0.,
-    0.,  0.,  0.,
-    0.,  0.,  0.,  0.,
-    0.,  0.,  0.,  0.,  0.
+    GetY0err(),                         //Error in Y (Y and X are the same)
+    0.,  GetZ0err(),                    //Error in Z
+    0.,  0.,  GetPsierr(),              //Error for Psi
+    0.,  0.,  0.,  GetTglerr(),         //Error for Tgl
+    0.,  0.,  0.,  0.,  GetPterr()      //Error for Pt
   };
 
   Int_t nCluster = GetNHits();

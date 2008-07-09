@@ -414,6 +414,8 @@ Int_t AliHLTTPCConfMapFit::FitCircle()
   fTrack->SetCenterX(acent);
   fTrack->SetCenterY(bcent);
 
+  //set error for pT and Y. psi, Z and Tgl are set.
+
   //
 //    Get errors from fast fit
 //

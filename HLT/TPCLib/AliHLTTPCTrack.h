@@ -97,7 +97,9 @@ class AliHLTTPCTrack : public AliTPCtrack {
   Double_t GetPterr() const {return fPterr;}
   Double_t GetPsierr() const {return fPsierr;}
   Double_t GetTglerr() const {return fTanlerr;}
-  
+  Double_t GetZ0err() const {return fZ0err;}
+  Double_t GetY0err() const {return fY0err;}
+
   Double_t GetKappa() const {return fKappa;}
   Double_t GetRadius() const {return fRadius;}
   Double_t GetCenterX() const {return fCenterX;}
@@ -141,6 +143,7 @@ class AliHLTTPCTrack : public AliTPCtrack {
   void SetPterr(Double_t f) {fPterr = f;}
   void SetPsierr(Double_t f) {fPsierr = f;}
   void SetZ0err(Double_t f) {fZ0err = f;}
+  void SetY0err(Double_t f) {fY0err = f;}  
   void SetTglerr(Double_t f) {fTanlerr = f;}
   void SetKappa(Double_t f) {fKappa = f;}
   void SetNHits(Int_t f) {fNHits = f;}
@@ -187,6 +190,7 @@ class AliHLTTPCTrack : public AliTPCtrack {
   Double_t fPterr;   //error in pt
   Double_t fPsierr;  //error in psi
   Double_t fZ0err;   //error in first point
+  Double_t fY0err;   //error in first point
   Double_t fTanlerr; //error in tanl
 
   Double_t fPhi0; //azimuthal angle of the first point

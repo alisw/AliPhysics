@@ -232,6 +232,7 @@ void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
       //fPt = (Double_t)(AliHLTTPCTransform::GetBFieldValue() * fRadius);
       Double_t pt = (Double_t)(AliHLTTPCTransform::GetBFieldValue() * GetRadius());
       SetPt(pt);
+      //Set Error here?????
       
       if(GetPt() > max_Dca) //go for fit of helix in real space
 	{
