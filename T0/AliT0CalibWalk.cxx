@@ -196,12 +196,19 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   //make walk corerction for preprocessor
   
   gFile = TFile::Open(laserFile);
-  gFile->ls();
+  if(!gFile) {
+    AliError("No input laser data found ");
+  }
+  else
+    {
+  //  gFile->ls();
   Float_t x1[10], y1[10]; 
   Float_t x2[10], y2[10];
  
   Float_t xx1[10],yy1[10], xx[10];
-
+  for (Int_t ii=0; ii<10; ii++)
+    {      x1[ii]=0; y1[ii]=0; x2[ii]=0; y2[ii]=0; }
+     
   
   TH2F*  hCFDvsQTC[24][10]; TH2F*  hCFDvsLED[24][10];
 
@@ -216,16 +223,16 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  hCFDvsQTC[i][im] = (TH2F*) gFile->Get(qtc.Data()) ;
 	  hCFDvsLED[i][im] = (TH2F*) gFile->Get(led.Data());
 
-	  if(!hCFDvsQTC[i][im] && !hCFDvsLED[i][im]) 
-	    {
-	   AliWarning(" no walk correction data in LASER DA");
-	      break;
+	  if(!hCFDvsQTC[i][im] || !hCFDvsLED[i][im]) 
+	    AliWarning(Form(" no walk correction data in LASER DA for channel %i for amplitude %i MIPs",i,im));
+	     
+	  if(hCFDvsQTC[i][im] && hCFDvsLED[i][im])
+	    {	  
+	    x1[im] = hCFDvsQTC[i][im]->GetMean(1);
+	    y1[im] = hCFDvsQTC[i][im]->GetMean(2);
+	    x2[im] = hCFDvsLED[i][im]->GetMean(1);
+	    y2[im] = hCFDvsLED[i][im]->GetMean(2);
 	    }
-	  
-	  x1[im] = hCFDvsQTC[i][im]->GetMean(1);
-	  y1[im] = hCFDvsQTC[i][im]->GetMean(2);
-	  x2[im] = hCFDvsLED[i][im]->GetMean(1);
-	  y2[im] = hCFDvsLED[i][im]->GetMean(2);
 	  xx[im]=im+1;
 	}
       for (Int_t imi=0; imi<10; imi++)
@@ -252,6 +259,7 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	 cout<<"Graphs created..."<<endl;
 	}
     }
+    } //if gFile exits
 }
 
 

@@ -103,24 +103,28 @@ void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   // compute online equalized time
   Double_t mean=0;
   gFile = TFile::Open(filePhys);
-  //  gFile->ls();
-  Char_t buf1[30];
- for (Int_t i=0; i<24; i++)
-  {
-    //    sprintf(buf1,"CFD1-CFD%d",i+1);
-    sprintf(buf1,"CFD1-CFD%d",i+1);
-    TH1F *cfd = (TH1F*) gFile->Get(buf1);
-    //    printf(" i = %d buf1 = %s\n", i, buf1);
-    if(cfd) mean=cfd->GetMean();
-    SetTimeEq(i,mean);
-    if(!cfd) AliWarning(Form("no histograms collected by PHYS DA for channel %i", i));
-    if (cfd) delete cfd;
-  }
 
-  
-   gFile->Close();
-   delete gFile;
- 
-}
+  if(!gFile) {
+    AliError("No input PHYS data found ");
+  }
+  else
+    {
+      Char_t buf1[30];
+      for (Int_t i=0; i<24; i++)
+	{
+	  sprintf(buf1,"CFD1-CFD%d",i+1);
+	  TH1F *cfd = (TH1F*) gFile->Get(buf1);
+	  //      printf(" i = %d buf1 = %s\n", i, buf1);
+	  if(cfd) mean=cfd->GetMean();
+	  SetTimeEq(i,mean);
+	  if(!cfd) AliWarning(Form("no histograms collected by PHYS DA for channel %i", i));
+    if (cfd) delete cfd;
+	}
+      
+      
+      gFile->Close();
+      delete gFile;
+    } 
+    }
 
 
