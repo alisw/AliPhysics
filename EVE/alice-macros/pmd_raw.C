@@ -9,8 +9,6 @@
 // ---------------------------------------------------------------------- //
 void pmd_raw(Int_t mode = 0)
 {
-  AliRawReader *reader = AliEveEventManager::AssertRawReader();
-
   gStyle->SetPalette(1, 0);
 
 
@@ -21,7 +19,12 @@ void pmd_raw(Int_t mode = 0)
   TString sddl;
   TString bsddl="DDL";
 
-  AliPMDRawStream stream(reader);
+  // Use this to get data consistent with current event:
+  // AliRawReader *reader = AliEveEventManager::AssertRawReader();
+
+  Int_t ievt = 159;
+  AliRawReaderRoot reader("raw.root",ievt);
+  AliPMDRawStream stream(&reader);
 
   gEve->DisableRedraw();
 
@@ -86,13 +89,13 @@ void pmd_raw(Int_t mode = 0)
 
       Int_t iddl = -1;
 
-      while ((iddl = stream.DdlData(pmdddlcont)) >=0) {
+      while ((iddl = stream.DdlData(&pmdddlcont)) >=0) {
 	  if (iddl >= istartDDL && iddl < iendDDL){
 	      sddl = bsddl;
 	      sddl += iddl;
 	      TEveElementList* lddl = new TEveElementList(sddl.Data());
 	      //  l->SetMainColor(3);
-	      lplane->AddElement(lddl);
+	      gEve->AddElement(ddl, lplane);
 	      
 	      modnumber = iddl*6;
 	      
@@ -110,16 +113,18 @@ void pmd_raw(Int_t mode = 0)
 		  AliEvePMDModule *lmodule = new AliEvePMDModule();
 		  lmodule->SetPosition(0.,0.,zpos);
 		  lmodule->DisplayRawData(modnumber,pmdddlcont);
-		  lddl->AddElement(lmodule);
+		  gEve->AddElement(lmodule, lddl);
 		  modnumber++;
 		  if (iddl == 4 && modnumber == 30) modnumber = 42;
 	      }
 	      
-	      pmdddlcont->Clear();
+	      pmdddlcont->Delete();
 	  }
       }
+      
+      gEve->EnableRedraw();
     }
-  gEve->EnableRedraw();
+  
 }
 // ---------------------------------------------------------------------- //
   
