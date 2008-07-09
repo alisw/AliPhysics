@@ -57,19 +57,19 @@ void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0,
   emcal_data = new AliEveEMCALData(rl,node,m);
   emcal_data->SetESD(esd);
   // RunLoader information
-  emcal_data->LoadHits(ht); // Does not work per sm but ok for all emcal
-  emcal_data->LoadDigits(dt);
-  emcal_data->LoadRecPoints(rt);
+//  emcal_data->LoadHits(ht); // Does not work with my aliroot version ?
+//  emcal_data->LoadDigits(dt);
+//  emcal_data->LoadRecPoints(rt);
 
   // To be uncommented if use of emcalLoader
-  //    rl->GetEvent(evtNum);
-  //    emcal_data->LoadHitsFromEMCALLoader(emcl);       // Does not work
-  //    emcal_data->LoadDigitsFromEMCALLoader(emcl);     
-  //    emcal_data->LoadRecPointsFromEMCALLoader(emcl); 
+  rl->GetEvent(evtNum);
+  emcal_data->LoadHitsFromEMCALLoader(emcl);       
+//  emcal_data->LoadDigitsFromEMCALLoader(emcl);     
+//  emcal_data->LoadRecPointsFromEMCALLoader(emcl); 
 
   // To be uncommented to read esds
-  //    emcal_data->LoadDigitsFromESD();
-  //    emcal_data->LoadRecPointsFromESD();
+  emcal_data->LoadDigitsFromESD();
+  emcal_data->LoadRecPointsFromESD();
 
   gStyle->SetPalette(1, 0);
 
@@ -94,4 +94,6 @@ void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0,
   gEve->Redraw3D(kTRUE);
 
   gEve->EnableRedraw();
+
+
 }

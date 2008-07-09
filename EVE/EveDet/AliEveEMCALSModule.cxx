@@ -32,6 +32,8 @@
 
 ClassImp(AliEveEMCALSModule)
 
+Bool_t AliEveEMCALSModule::fStaticInit = kFALSE;
+
 TEveFrameBox*    AliEveEMCALSModule::fFrameBigBox = 0;
 TEveFrameBox*    AliEveEMCALSModule::fFrameSmallBox = 0;
 TEveRGBAPalette* AliEveEMCALSModule::fFrameDigPalette = 0;
@@ -40,6 +42,8 @@ TEveRGBAPalette* AliEveEMCALSModule::fFrameCluPalette = 0;
 AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t* t) :
   TEveElement(fFrameColor),
   TNamed(n,t),
+  TAtt3D(),
+  TAttBBox(),
   fEMCALData(0),
   fEMCALSModuleData(0),
   fFrameColor((Color_t)10),
@@ -83,6 +87,8 @@ AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t
 AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
   TEveElement(fFrameColor),
   TNamed(),
+  TAtt3D(),
+  TAttBBox(),
   fEMCALData(esm.fEMCALData),
   fEMCALSModuleData(esm.fEMCALSModuleData),
   fFrameColor(esm.fFrameColor),
@@ -98,7 +104,7 @@ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
   fColorArray(esm.fColorArray),
   fDebug(esm.fDebug)
 {
-  // Constructor.
+  // Copy constructor.
   Char_t name[256];
   if (fSModuleID < 10) {
     sprintf(name,"Full Super Module %02d",fSModuleID);
@@ -159,14 +165,14 @@ void AliEveEMCALSModule::DropData()
 void AliEveEMCALSModule::ComputeBBox()
 {
   //
-  // bounding box
+  // Bounding box, Framebox and Palette
   //
 
   fEMCALSModuleData->GetSModuleBigBox(fSMBigBBox[0],fSMBigBBox[1], fSMBigBBox[2]);
   fEMCALSModuleData->GetSModuleSmallBox(fSMSmallBBox[0],fSMSmallBBox[1], fSMSmallBBox[2]);
 
-//           if (fgStaticInitDone) return;
-//           fgStaticInitDone = kTRUE;
+  if (fStaticInit) return;
+  fStaticInit = kTRUE;
 
   fFrameBigBox = new TEveFrameBox();
   fFrameBigBox->SetAABoxCenterHalfSize(0, 0, 0, fSMBigBBox[0], fSMBigBBox[1], fSMBigBBox[2]);
@@ -197,7 +203,7 @@ void AliEveEMCALSModule::ComputeBBox()
 void AliEveEMCALSModule::SetThreshold(Short_t t)
 {
   //
-  // digits amplitude threshold
+  // Digit amplitude threshold
   //
 
   fThreshold = TMath::Min(t, (Short_t)(fMaxVal - 1));
@@ -210,7 +216,7 @@ void AliEveEMCALSModule::SetThreshold(Short_t t)
 void AliEveEMCALSModule::SetMaxVal(Int_t mv)
 {
   //
-  // digits amplitude maximum value
+  // Digit amplitude maximum value
   //
 
   fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
@@ -223,7 +229,7 @@ void AliEveEMCALSModule::SetMaxVal(Int_t mv)
 void AliEveEMCALSModule::SetClusterSize(Int_t size)
 {
   //
-  // cluster point size
+  // Cluster point size
   //
 
   fClusterSize = TMath::Max(1, size);
@@ -262,7 +268,7 @@ void AliEveEMCALSModule::SetupColor(Int_t val, UChar_t* pixel) const
 Int_t AliEveEMCALSModule::ColorIndex(Int_t val) const
 {
   //
-  // index color
+  // Index color
   //
 
   if(val < fThreshold) val = fThreshold;
@@ -280,7 +286,7 @@ Int_t AliEveEMCALSModule::ColorIndex(Int_t val) const
 void AliEveEMCALSModule::SetupColorArray() const
 {
   //
-  // build array of colors
+  // Build array of colors
   //
 
   if(fColorArray)
@@ -297,7 +303,7 @@ void AliEveEMCALSModule::SetupColorArray() const
 void AliEveEMCALSModule::ClearColorArray()
 {
   //
-  // delete array of colors
+  // Delete array of colors
   //
 
   if(fColorArray) {
@@ -309,13 +315,16 @@ void AliEveEMCALSModule::ClearColorArray()
 //______________________________________________________________________________
 void AliEveEMCALSModule::SetDataSource(AliEveEMCALData* data)
 {
+  //
   // Set source of data.
+  //
 
   if (data == fEMCALData) return;
   if(fEMCALData) fEMCALData->DecRefCount();
   fEMCALData = data;
   if(fEMCALData) fEMCALData->IncRefCount();
 
+  // Get pointer on SM data
   fEMCALSModuleData = GetSModuleData();
 
   IncRTS();
@@ -324,7 +333,9 @@ void AliEveEMCALSModule::SetDataSource(AliEveEMCALData* data)
 //______________________________________________________________________________
 AliEveEMCALSModuleData* AliEveEMCALSModule::GetSModuleData() const
 {
+  //
   // Return source of data.
+  //
 
   return fEMCALData ? fEMCALData->GetSModuleData(fSModuleID) : 0;
 }
@@ -332,14 +343,14 @@ AliEveEMCALSModuleData* AliEveEMCALSModule::GetSModuleData() const
 //______________________________________________________________________________
 void AliEveEMCALSModule::UpdateQuads()
 {
+  //
   // Update hit/digit/cluster representation.
+  //
 
-  vector< vector<Float_t> > bufferDigit;
-  vector< vector<Float_t> > bufferCluster;
+  vector< vector<Double_t> > bufferDigit;
+  vector< vector<Double_t> > bufferCluster;
   vector< vector<Float_t> > bufferHit;
-  Float_t x0, y0, z, w, h, clsq;
-  Int_t charge, cathode, nDigits, nClusters, nHits, oldSize, ic1, ic2;
-  Double_t clsX, clsY, clsZ;
+  Int_t nDigits, nClusters, nHits, oldSize;
   Float_t hitX, hitY, hitZ;
   Int_t smId = fEMCALSModuleData->GetSmId();
 
@@ -348,6 +359,7 @@ void AliEveEMCALSModule::UpdateQuads()
   //--------------------------
   fPointSet->Reset();
 
+  /*
   TEvePointSet* points = fEMCALData->GetPointSetData();
   char form[1000];
   if(points){
@@ -359,9 +371,13 @@ void AliEveEMCALSModule::UpdateQuads()
   }
   else {printf("There is no hits in Runloader \n"); }
   
+  */
+
   if (fEMCALSModuleData != 0) {
     
     // digits ------------------------
+
+    // Define TEveQuadSet for digits
     fQuadSet->SetOwnIds(kTRUE);
     fQuadSet->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
     fQuadSet->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
@@ -372,6 +388,7 @@ void AliEveEMCALSModule::UpdateQuads()
       fQuadSet->SetFrame(fFrameBigBox);
     else fQuadSet->SetFrame(fFrameSmallBox);
 
+    // Get the digit information from the buffer
     bufferDigit = fEMCALSModuleData->GetDigitBuffer();
     if(!bufferDigit.empty())
       {
@@ -379,46 +396,46 @@ void AliEveEMCALSModule::UpdateQuads()
 	if(fDebug>1) cout << "nDigits: " << nDigits << endl;
 	// loop over digits
 	for (Int_t id = 0; id < nDigits; id++) {
-	  if(fDebug>1) {
-	    cout << "bufferDigit[" << id << "][0]: " << bufferDigit[id][0] << endl;
-	    cout << "bufferDigit[" << id << "][1]: " << bufferDigit[id][1] << endl;
-	    cout << "bufferDigit[" << id << "][2]: " << bufferDigit[id][2] << endl;
-	    cout << "bufferDigit[" << id << "][3]: " << bufferDigit[id][3] << endl;
-	    cout << "bufferDigit[" << id << "][4]: " << bufferDigit[id][4] << endl;
-	  }
-	  Int_t iid = bufferDigit[id][0];
-	  Int_t isupMod = bufferDigit[id][1];
-	  Float_t iamp = bufferDigit[id][2];
-	  Float_t ix = bufferDigit[id][3];
-	  Float_t iy = bufferDigit[id][4];
-	  Float_t iz = bufferDigit[id][5];
+	  //	  Int_t iid = (Int_t)bufferDigit[id][0];
+	  //	  Int_t isupMod = (Int_t)bufferDigit[id][1];
+	  Double_t iamp = bufferDigit[id][2];
+	  Int_t amp = (Int_t)(iamp+0.5);
+	  //	  Double_t ix = bufferDigit[id][3];
+	  Double_t iy = bufferDigit[id][4];
+	  Double_t iz = bufferDigit[id][5];
 	  
+	  // Add digit information to the TEveQuadSet
 	  fQuadSet->AddQuad(iy, iz);
-	  fQuadSet->QuadValue(iamp);
-      //      fQuadSet->QuadId(iid);
-
+	  fQuadSet->QuadValue(amp);
 	} // end digits loop
       }
     else { printf("There is no digits in SM %d \n", smId); }
 
     // hits --------------------------
-    bufferHit = fEMCALSModuleData->GetDigitBuffer();
+    bufferHit = fEMCALSModuleData->GetHitBuffer();
     if(!bufferHit.empty())
       {
+	char form[1000];
 	nHits = fEMCALSModuleData->GetNHits();
 	if(fDebug>1) cout << "nHits: " << nHits << endl;
 	oldSize = fPointSet->GrowFor(nHits);
 	// Loop over hits
 	for (Int_t ih = 0; ih < nHits; ih++) {
-	  hitX = bufferHit[ih][2];
-	  hitY = bufferHit[ih][3];
-	  hitZ = bufferHit[ih][4];
+	  hitX = bufferHit[ih][3];
+	  hitY = bufferHit[ih][4];
+	  hitZ = bufferHit[ih][5];
 	  fPointSet->SetPoint(ih,hitX,hitY,hitZ);
+	  sprintf(form,"N=%d", fPointSet->Size());
+	  fPointSet->SetTitle(form);
+	  fPointSet->SetMarkerSize(.5);
+	  fPointSet->SetMarkerColor((Color_t)2);
 	}
       }
     else {printf("There is no hits in SM %d \n", smId); }
 
     // clusters ------------------------
+
+    // Define TEveQuadSet for clusters
     fQuadSet2->SetOwnIds(kTRUE);
     fQuadSet2->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
     fQuadSet2->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
@@ -429,6 +446,7 @@ void AliEveEMCALSModule::UpdateQuads()
       fQuadSet2->SetFrame(fFrameBigBox);
     else fQuadSet2->SetFrame(fFrameSmallBox);
 
+    // Get the cluster information from the buffer
     bufferCluster = fEMCALSModuleData->GetClusterBuffer();
     if(!bufferCluster.empty())
       {
@@ -443,14 +461,16 @@ void AliEveEMCALSModule::UpdateQuads()
 	    cout << "bufferCluster[" << id << "][3]: " << bufferCluster[id][3] << endl;
 	    cout << "bufferCluster[" << id << "][4]: " << bufferCluster[id][4] << endl;
 	  }
-	  Int_t isupMod = bufferCluster[id][0];
-	  Float_t iamp = bufferCluster[id][1];
-	  Float_t ix = bufferCluster[id][2];
-	  Float_t iy = bufferCluster[id][3];
-	  Float_t iz = bufferCluster[id][4];
+	  //	  Int_t isupMod = (Int_t)bufferCluster[id][0];
+	  Double_t iamp = bufferCluster[id][1];
+	  Int_t amp = (Int_t)(iamp+0.5);
+	  //	  Double_t ix = bufferCluster[id][2];
+	  Double_t iy = bufferCluster[id][3];
+	  Double_t iz = bufferCluster[id][4];
 	  
+	  // Add cluster information to the TEveQuadSet
 	  fQuadSet2->AddQuad(iy, iz);
-	  fQuadSet2->QuadValue(iamp);
+	  fQuadSet2->QuadValue(amp);
 	  //      fQuadSet2->QuadId(iid);
 
 	} // end clusters loop
@@ -464,7 +484,9 @@ void AliEveEMCALSModule::UpdateQuads()
 //______________________________________________________________________________
 void AliEveEMCALSModule::SetSModuleID(Int_t id)
 {
-  // Set id of chamber to display.
+  //
+  // Set id of the SM to display.
+  //
 
   if (id <  0) id = 0;
   if (id > 12) id = 12;

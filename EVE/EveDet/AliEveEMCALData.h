@@ -68,10 +68,10 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
  protected:
   AliEMCAL*         fEmcal;     // EMCal data member
   AliEMCALGeometry* fGeom;      // Data member to set/call EMCAL geometry
-  TGeoNode*         fNode;      // node
+  TGeoNode*         fNode;      // Node for bbox definition
   TGeoHMatrix*      fHMatrix;   // matrix for local to global transformation
-  TTree*            fTree;      // tree
-  AliESDEvent*      fESD;       // esd
+  TTree*            fTree;      // Tree
+  AliESDEvent*      fESD;       // Esd
   Int_t             fNsm;       // Total number of Super Modules
   Int_t             fNsmfull;   // Number of full size Super Modules
   Int_t             fNsmhalf;   // Number of half size Super Modules
@@ -80,7 +80,7 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
   std::vector<AliEveEMCALSModuleData*>   fSMhalf;   // vector of fNhalf SModules
   AliRunLoader*     fRunLoader; // Run Loader
   Int_t             fDebug;     // Debug option
-  TEvePointSet*     fPoint;    // TEvePointSet for hits 
+  TEvePointSet*     fPoint;     // TEvePointSet for hits 
 
  private:
   AliEveEMCALData(const AliEveEMCALData &edata);            

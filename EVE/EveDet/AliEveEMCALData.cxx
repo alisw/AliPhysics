@@ -89,7 +89,7 @@ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix* 
   fSMfull(10),
   fSMhalf(2),
   fRunLoader(rl),
-  fDebug(0),
+  fDebug(2),
   fPoint(0)
 {
   
@@ -174,9 +174,10 @@ AliEveEMCALData& AliEveEMCALData::operator=(const AliEveEMCALData &edata)
 //______________________________________________________________________________
 void AliEveEMCALData::SetTree(TTree* tree)
 {
-
-  // Set digit-tree to be used for digit retrieval. Data is loaded on
-  // demand.
+  //
+  // Set digit-tree to be used for digit retrieval. 
+  // Data is loaded on demand.
+  // 
 
   fTree = tree;
 
@@ -185,21 +186,30 @@ void AliEveEMCALData::SetTree(TTree* tree)
 //______________________________________________________________________________
 void AliEveEMCALData::SetESD(AliESDEvent* esd)
 {
+  //
+  // Set esd
+  //
+
   fESD = esd;
 }
 
 //______________________________________________________________________________
 void AliEveEMCALData::SetNode(TGeoNode* node)
 {
+  //
+  // Set node
+  //
+
   fNode = node;
 }
 
 //______________________________________________________________________________
 void AliEveEMCALData::InitEMCALGeom(AliRunLoader* rl)
 {
-//   // Handle an individual point selection from GL.
+  //
+  // Set data members for EMCAL geometry
+  //
 
-//   fParent->SpawnEditor();
   fEmcal = (AliEMCAL*) rl->GetAliRun()->GetDetector("EMCAL");
   fGeom  = (AliEMCALGeometry*) fEmcal->GetGeometry();
 
@@ -208,13 +218,13 @@ void AliEveEMCALData::InitEMCALGeom(AliRunLoader* rl)
 //______________________________________________________________________________
 void AliEveEMCALData::GetGeomInfo(Int_t id, Int_t &iSupMod, Double_t& x, Double_t& y, Double_t& z)
 {
+  //
   // Get geometrical information from hit/digit/cluster absolute id
+  //
 
   Int_t iTower  =  0 ;
   Int_t iIphi   =  0 ;
   Int_t iIeta   =  0 ;
-  Int_t iphi    =  0 ;
-  Int_t ieta    =  0 ;
 
   //Geometry methods
   fGeom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
@@ -226,8 +236,10 @@ void AliEveEMCALData::GetGeomInfo(Int_t id, Int_t &iSupMod, Double_t& x, Double_
 //______________________________________________________________________________
 void  AliEveEMCALData::CreateAllSModules()
 {
-
+  //
   // Create all fNsm super modules
+  //
+
   for(Int_t sm = 0; sm < fNsm; sm++)
     CreateSModule(sm);
 
@@ -236,7 +248,10 @@ void  AliEveEMCALData::CreateAllSModules()
 //______________________________________________________________________________
 void  AliEveEMCALData::CreateSModule(Int_t sm)
 {
-  // Create super-module-data for sm if it does not exist already.
+  //
+  // Create super-module-data for SM if it does not exist already.
+  //
+
   if(fSM[sm] == 0) fSM[sm] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
   if(fSMfull[sm] == 0 && sm < 10) fSMfull[sm] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
   if(fSMhalf[sm-10] == 0 && sm > 10) fSMhalf[sm-10] = new AliEveEMCALSModuleData(sm,fGeom,fNode,fHMatrix);
@@ -245,7 +260,9 @@ void  AliEveEMCALData::CreateSModule(Int_t sm)
 //______________________________________________________________________________
 void AliEveEMCALData::DropAllSModules()
 {
+  //
   // Drop data of all existing sectors.
+  //
 
   for (Int_t sm = 0; sm < fNsm; sm++) {
     if (fSM[sm] != 0)
@@ -257,7 +274,7 @@ void AliEveEMCALData::DropAllSModules()
 void AliEveEMCALData::DeleteSuperModules()
 {
   //
-  // delete all super module data
+  // Delete all super module data
   //
 
   for (Int_t sm = 0; sm < fNsm; sm++)
@@ -283,9 +300,11 @@ void AliEveEMCALData::DeleteSuperModules()
 //______________________________________________________________________________
 void AliEveEMCALData::LoadHits(TTree* t)
 {
+  //
+  // Get hit information from RunLoader
+  //
 
-  // With TTreeH
-
+  /*
   // These are global coordinates !
   char form[1000];
   const char *selection = "";
@@ -301,34 +320,41 @@ void AliEveEMCALData::LoadHits(TTree* t)
     delete fPoint;
     //    return 0;
   }
+  */
 
-
-//   TObjArray *harr=NULL;
-//   TBranch *hbranch=t->GetBranch("EMCAL");
-//   hbranch->SetAddress(&harr);
+  TObjArray *harr=NULL;
+  TBranch *hbranch=t->GetBranch("EMCAL");
+  hbranch->SetAddress(&harr);
   
-//   if(hbranch->GetEvent(0)) {
-//     for(Int_t ih = 0; ih < harr->GetEntriesFast(); ih++) {
-//       AliEMCALHit* hit =(AliEMCALHit*)harr->UncheckedAt(ih);
-//       if(hit != 0){
-// 	cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
-// 	fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
-//       }
-//     }
-//   }
-//   //********************************
-//   // To be completed !!!
-//   //********************************
-
+  if(hbranch->GetEvent(0)) {
+    for(Int_t ih = 0; ih < harr->GetEntriesFast(); ih++) {
+      AliEMCALHit* hit =(AliEMCALHit*)harr->UncheckedAt(ih);
+      if(hit != 0){
+	if(fDebug>1) cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
+	Int_t id = hit->GetId();
+	// These are local coordinates
+	Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
+	// Get global coordinates
+	Double_t x = hit->X();
+	Double_t y = hit->Y();
+	Double_t z = hit->Z();
+	Double_t amp = hit->GetEnergy();
+	Int_t iSupMod = 0;
+	// Get SM Id
+	GetGeomInfo(id,iSupMod,xl,yl,zl);
+	fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
+      }
+    }
+  }
 }
 
 //______________________________________________________________________________
 void AliEveEMCALData::LoadHitsFromEMCALLoader(AliEMCALLoader* emcl)
 {
+  //
+  // Get hit information from EMCAL Loader
+  //
 
-  // Need to know the local position in each sm
-
-  // With EMCALLoader
   AliEMCALHit* hit;
   
   //Fill array of hits                                                                        
@@ -336,27 +362,34 @@ void AliEveEMCALData::LoadHitsFromEMCALLoader(AliEMCALLoader* emcl)
 
   //Get hits from the list                                                                    
   for(Int_t ihit = 0; ihit< hits->GetEntries();ihit++){
-    //cout<<">> idig "<<idig<<endl;                                                             
+
     hit = static_cast<AliEMCALHit *>(hits->At(ihit)) ;
     
     if(hit != 0){
-      cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
+      if(fDebug>1) cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
+
+      Int_t id = hit->GetId();
+      // These are local coordinates
+      Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
+      // Get global coordinates
+      Double_t x = hit->X();
+      Double_t y = hit->Y();
+      Double_t z = hit->Z();
+      Double_t amp = hit->GetEnergy();
+      Int_t iSupMod = 0;
+      // Get SM Id
+      GetGeomInfo(id,iSupMod,xl,yl,zl);
+      fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
     }
   }
   
-  //********************************
-  // To be completed !!!
-  //********************************
-
-
-
 }
 
 //______________________________________________________________________________
 void AliEveEMCALData::LoadDigits(TTree *t)
 {
   //
-  // load digits from the TreeD
+  // Get digit information from RunLoader
   //
 
   TClonesArray *digits = 0;
@@ -367,7 +400,8 @@ void AliEveEMCALData::LoadDigits(TTree *t)
   cout << "nEnt: " << nEnt << endl;
   AliEMCALDigit * dig;
 
-  Float_t amp   = -1 ;
+  //  Double_t amp   = -1 ;
+  Double_t ampInt   = -1 ;
   Int_t id      = -1 ;
   Int_t iSupMod =  0 ;
   Double_t x, y, z;
@@ -378,11 +412,19 @@ void AliEveEMCALData::LoadDigits(TTree *t)
       
       if(dig != 0) {
 	id   = dig->GetId() ; //cell (digit) label
-	amp  = dig->GetAmp(); //amplitude in cell (digit)
-	
+	// adc
+	ampInt  = dig->GetAmp(); //amplitude in cell (digit)
+	// GeV
+	// 	amp = ampInt*0.0153; // To be modified with correct OCDB conversion	
+
 	GetGeomInfo(id,iSupMod,x,y,z);
 
-	fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+// 	// GeV
+// 	fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+// //	fSM[iSupMod]->SaveDigit(dig);
+// // 	if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+// // 	if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,amp,x,y,z);
+	fSM[iSupMod]->RegisterDigit(id,iSupMod,ampInt,x,y,z);
 //	fSM[iSupMod]->SaveDigit(dig);
 // 	if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
 // 	if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,amp,x,y,z);
@@ -400,7 +442,7 @@ void AliEveEMCALData::LoadDigitsFromEMCALLoader(AliEMCALLoader* emcl)
 {
 
   //
-  // load digits from EMCAL Loader
+  // Get digit information from EMCAL Loader
   //
 
   AliEMCALDigit* dig;
@@ -410,7 +452,8 @@ void AliEveEMCALData::LoadDigitsFromEMCALLoader(AliEMCALLoader* emcl)
   
   //Get digits from the list  
   
-  Float_t amp   = -1 ;
+  //  Double_t amp   = -1 ;
+  Double_t ampInt   = -1 ;
   Int_t id      = -1 ;
   Int_t iSupMod =  0 ;
   Double_t x, y, z;
@@ -422,11 +465,17 @@ void AliEveEMCALData::LoadDigitsFromEMCALLoader(AliEMCALLoader* emcl)
      if(dig != 0){
        if(fDebug>1) cout << "Digit info " << dig->GetId() << " " << dig->GetAmp() << endl;
        id   = dig->GetId() ; //cell (digit) label
-       amp  = dig->GetAmp(); //amplitude in cell (digit)
-       
+       // adc
+       ampInt  = dig->GetAmp(); //amplitude in cell (digit)
+       // GeV
+       //       amp = ampInt*0.0153.; // To be modified with correct OCDB conversion
+
        GetGeomInfo(id,iSupMod,x,y,z);
        
-       fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+       //       // GeV
+       //       fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+       // adc
+       fSM[iSupMod]->RegisterDigit(id,iSupMod,ampInt,x,y,z);
      }
       else {
 	cout << "Digit object empty" << endl;
@@ -445,8 +494,6 @@ void AliEveEMCALData::LoadDigitsFromESD()
   
   AliESDCaloCells &cells= *(fESD->GetEMCALCells());
   Int_t ncell = cells.GetNumberOfCells() ;  
-  Int_t type = cells.GetType();
-  Float_t pos[3] ; 
   Int_t iSupMod =  0 ;
   Double_t x, y, z;
 
@@ -454,13 +501,21 @@ void AliEveEMCALData::LoadDigitsFromESD()
   for (Int_t icell=  0; icell <  ncell; icell++) 
     {
       Int_t id   = cells.GetCellNumber(icell);
-      Float_t amp  = cells.GetAmplitude(icell);
+      // adc
+      Double_t ampInt  = cells.GetAmplitude(icell);
+      // GeV
+      //      Double_t amp = ampInt*0.0153; // To be modified with correct OCDB conversion
 
       GetGeomInfo(id,iSupMod,x,y,z);
 
-      fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
-      if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
-      if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,amp,x,y,z);
+//       // GeV
+//       fSM[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+//       if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,amp,x,y,z);
+//       if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,amp,x,y,z);
+      // adc
+      fSM[iSupMod]->RegisterDigit(id,iSupMod,ampInt,x,y,z);
+      if(iSupMod<fNsmfull) fSMfull[iSupMod]->RegisterDigit(id,iSupMod,ampInt,x,y,z);
+      if(iSupMod>fNsmfull) fSMhalf[iSupMod-10]->RegisterDigit(id,iSupMod,ampInt,x,y,z);
 
     } // end loop cells
 }
@@ -468,6 +523,10 @@ void AliEveEMCALData::LoadDigitsFromESD()
 //______________________________________________________________________________
 void AliEveEMCALData::LoadRecPoints(TTree* t)
 {
+  //
+  // Get rec point information from RunLoader
+  //
+
   //*************************************************
   // To be improved !!!!!
   // Size and shape of cluster to be implemented
@@ -483,13 +542,19 @@ void AliEveEMCALData::LoadRecPoints(TTree* t)
     for(Int_t ic = 0; ic < carr->GetEntriesFast(); ic++) {
       AliEMCALRecPoint* rp =(AliEMCALRecPoint*)carr->UncheckedAt(ic);
       if(rp){
-	cout << "RecPoint info " << rp->GetAbsId() << " " << rp->GetEnergy() << endl;
+	if(fDebug>1) cout << "RecPoint info " << rp->GetAbsId() << " " << rp->GetEnergy() << endl;
 	Int_t iSupMod = rp->GetSuperModuleNumber();
-	Float_t amp = rp->GetEnergy();
+	// GeV
+	Double_t amp = (Double_t)rp->GetEnergy();
+	// adc
+	Double_t ampInt = amp/0.0153; // To be modified with correct OCDB conversion
 	TVector3 lpos;
 	rp->GetLocalPosition(lpos);
 
-	fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
+// 	// GeV
+// 	fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
+        // adc
+	fSM[iSupMod]->RegisterCluster(iSupMod,ampInt,lpos[0],lpos[1],lpos[2]);
       }
     }
   }
@@ -499,6 +564,10 @@ void AliEveEMCALData::LoadRecPoints(TTree* t)
 //______________________________________________________________________________
 void AliEveEMCALData::LoadRecPointsFromEMCALLoader(AliEMCALLoader* emcl)
 {
+  //
+  // Get rec point information from EMCAL Loader
+  //
+
   //*************************************************
   // To be improved !!!!!
   // Size and shape of cluster to be implemented
@@ -517,13 +586,17 @@ void AliEveEMCALData::LoadRecPointsFromEMCALLoader(AliEMCALLoader* emcl)
     rp = static_cast<AliEMCALRecPoint *>(clusters->At(iclu)) ;
     
     if(rp){
-       cout << "RecPoint info " << rp->GetAbsId() << " " << rp->GetEnergy() << endl;
+       if(fDebug>1) cout << "RecPoint info " << rp->GetAbsId() << " " << rp->GetEnergy() << endl;
        Int_t iSupMod = rp->GetSuperModuleNumber();
-       Float_t amp = rp->GetEnergy();
+       Double_t amp = (Double_t)rp->GetEnergy();
+       Double_t ampInt = amp/0.0153; // To be modified with correct OCDB conversion
        TVector3 lpos;
        rp->GetLocalPosition(lpos);
        
-       fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
+//        // GeV
+//        fSM[iSupMod]->RegisterCluster(iSupMod,amp,lpos[0],lpos[1],lpos[2]);
+       // adc
+       fSM[iSupMod]->RegisterCluster(iSupMod,ampInt,lpos[0],lpos[1],lpos[2]);
     }
   }
   
@@ -532,14 +605,16 @@ void AliEveEMCALData::LoadRecPointsFromEMCALLoader(AliEMCALLoader* emcl)
 //______________________________________________________________________________
 void AliEveEMCALData::LoadRecPointsFromESD()
 {
-  Int_t iSupMod =  0 ;
+  //
+  // Get cluster information from esd
+  //
+
+ Int_t iSupMod =  0 ;
   Double_t x, y, z;
   Int_t iSM =  0 ;
   Int_t iT  =  0 ;
   Int_t iIp   =  0 ;
   Int_t iIe   =  0 ;
-  Int_t ip    =  0 ;
-  Int_t ie    =  0 ;
   Double_t xd, yd, zd;
   Float_t pos[3] ; 
   
@@ -562,10 +637,11 @@ void AliEveEMCALData::LoadRecPointsFromESD()
       AliESDCaloCluster *clus = (AliESDCaloCluster *) caloClusters->At(iclus) ; 
       //Get the cluster info
       
-      Float_t energy = clus->E() ;
-      Int_t   eneInt = (Int_t) energy*500+0.5;
-      Float_t disp   = clus->GetClusterDisp() ;
-      Int_t   iprim  = clus->GetLabel();
+      Double_t energy = clus->E() ;
+      // adc
+      //      Int_t   eneInt = (Int_t)energy*500+0.5;
+      Double_t eneInt = energy/0.0153; // To be modified with correct OCDB conversion
+      Double_t disp   = clus->GetClusterDisp() ;
       
       clus->GetPosition(pos) ; // Global position
       TVector3 vpos(pos[0],pos[1],pos[2]) ;
@@ -573,19 +649,19 @@ void AliEveEMCALData::LoadRecPointsFromESD()
       TVector3 p3;
       clus->GetMomentum(p4,vertex_position);
       p3.SetXYZ(p4[0],p4[1],p4[2]);
-      Float_t eta = p3.Eta();
-      Float_t phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
+      Double_t eta = p3.Eta();
+      Double_t phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
       
       Int_t mult = clus->GetNCells() ;
-      if(fDebug>1) {
-	cout << "In cluster: " << iclus << ", ncells: " << mult << ", energy: " << 
-	  eneInt << ", disp: " << disp << endl;
+      if(fDebug>2) {
+	cout << "In cluster: " << iclus << ", ncells: " << mult << ", energy : " << energy << 
+	  ", disp: " << disp << endl;
 	cout << "Cluster " << iclus << ", eta: " << eta << ", phi: " << phi << endl;
       }
 
       Int_t clusId = 0;
       fGeom->GetAbsCellIdFromEtaPhi(eta,phi,clusId);
-      if(fDebug>1) {
+      if(fDebug>2) {
 	cout << "Abs Cluster Id: " << clusId << ", xc: " << pos[0] << 
 	  ", yc: " << pos[1] << ", zc: " << pos[2] << endl;
       }
@@ -593,9 +669,11 @@ void AliEveEMCALData::LoadRecPointsFromESD()
       GetGeomInfo(clusId,iSupMod,x,y,z);
       
       //******** Not used yet but will come  ********
+      // AliESDCaloCells &cells= *(fESD->GetEMCALCells());
       Int_t     digMult = clus->GetNCells() ;
       UShort_t *digID   = clus->GetCellsAbsId() ;
       for(Int_t i=0; i<digMult; i++){
+	// Float_t  digitAmp     = cells.GetCellAmplitude(digID[i]) ;
 	fGeom->RelPosCellInSModule(digID[i], xd, yd, zd);
 	//Geometry methods
 	fGeom->GetCellIndex(digID[i],iSM,iT,iIp,iIe);
@@ -603,8 +681,10 @@ void AliEveEMCALData::LoadRecPointsFromESD()
 
       } // end digit loop
       //*********************************************
-
-      fSM[iSupMod]->RegisterCluster(iSM,energy,x,y,z);
+      //      // GeV
+      //      fSM[iSupMod]->RegisterCluster(iSM,energy,x,y,z);
+      // adc
+      fSM[iSupMod]->RegisterCluster(iSM,eneInt,x,y,z);
 
     } // end cluster loop
 }
@@ -613,7 +693,7 @@ void AliEveEMCALData::LoadRecPointsFromESD()
 AliEveEMCALSModuleData* AliEveEMCALData::GetSModuleData(Int_t sm)
 {
   //
-  // return super module data
+  // Return super module data
   //
 
   if (sm < 0 || sm > fNsm) 
@@ -628,6 +708,10 @@ AliEveEMCALSModuleData* AliEveEMCALData::GetSModuleData(Int_t sm)
 //______________________________________________________________________________
 void AliEveEMCALData::LoadRaw()
 {
+  //
+  // Get raw information
+  //
 
+  // To be implemented !
 }
 

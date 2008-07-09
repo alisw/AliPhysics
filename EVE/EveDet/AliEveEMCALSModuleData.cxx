@@ -23,13 +23,6 @@
 
 #include <EveBase/AliEveEventManager.h>
 
-///////////////////////////////////////////////////////////////////////////////
-///
-/// AliEveEMCALSModuleData: geometry and digits
-///
-///////////////////////////////////////////////////////////////////////////////
-
-
 ClassImp(AliEveEMCALSModuleData)
 
 Float_t AliEveEMCALSModuleData::fSModuleBigBox0 = 0.;
@@ -61,7 +54,7 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, 
   fHMatrix(m)
 {
   //
-  // constructor
+  // Constructor
   //
 
   Init(sm);
@@ -87,7 +80,7 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, 
   fHMatrix(esmdata.fHMatrix)
 {
   //
-  // constructor
+  // Copy constructor
   //
 
   Init(esmdata.fNsm);
@@ -98,7 +91,7 @@ AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, 
 AliEveEMCALSModuleData::~AliEveEMCALSModuleData()
 {
   //
-  // destructor
+  // Destructor
   //
 
   if(!fHitArray.empty()){
@@ -117,7 +110,7 @@ AliEveEMCALSModuleData::~AliEveEMCALSModuleData()
 void AliEveEMCALSModuleData::DropData()
 {
   //
-  // release the sm data
+  // Release the SM data
   //
 
   fNDigits   = 0;
@@ -140,6 +133,11 @@ void AliEveEMCALSModuleData::DropData()
 // ______________________________________________________________________________
 void AliEveEMCALSModuleData::Init(Int_t sm)
 {
+
+  //
+  // Initialize parameters
+  //
+
   fNsm = 12;
   fNsmfull = 10;
   fNsmhalf = 2;
@@ -170,22 +168,19 @@ void AliEveEMCALSModuleData::Init(Int_t sm)
 
 
 // ______________________________________________________________________________
-void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Float_t iamp, Float_t ix, Float_t iy, Float_t iz)
+void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
 {
   //
-  // add a digit to this sm
+  // Add a digit to this SM
   //
 
-  vector<Float_t> bufDig(6);
+  vector<Double_t> bufDig(6);
   bufDig[0] = AbsId;
   bufDig[1] = isupMod;
   bufDig[2] = iamp;
   bufDig[3] = ix;
   bufDig[4] = iy;
   bufDig[5] = iz;
-
-  cout << "bufDig[0]: " <<  bufDig[0] << ", bufDig[1]: " <<  bufDig[1] << ", bufDig[2]: " <<  bufDig[2] <<
-    ", bufDig[3]: " <<  bufDig[3] << ", bufDig[4]: " <<  bufDig[4] << ", bufDig[5]: " <<  bufDig[5] << endl;
 
   fDigitArray.push_back(bufDig);
 
@@ -194,10 +189,10 @@ void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Float_t i
 }
 
 // ______________________________________________________________________________
-void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Float_t iamp, Float_t ix, Float_t iy, Float_t iz)
+void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
 {
   //
-  // add a hit to this sm
+  // Add a hit to this SM
   //
 
   vector<Float_t> bufHit(6);
@@ -215,13 +210,13 @@ void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Float_t iam
 }
 
 // ______________________________________________________________________________
-void AliEveEMCALSModuleData::RegisterCluster(Int_t isupMod, Float_t iamp, Float_t ix, Float_t iy, Float_t iz)
+void AliEveEMCALSModuleData::RegisterCluster(Int_t isupMod, Double_t iamp, Double_t ix, Double_t iy, Double_t iz)
 {
   //
-  // add a cluster to this sm
+  // Add a cluster to this SM
   //
 
-  vector<Float_t> bufClu(5);
+  vector<Double_t> bufClu(5);
   bufClu[0] = isupMod;
   bufClu[1] = iamp;
   bufClu[2] = ix;

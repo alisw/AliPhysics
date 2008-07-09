@@ -53,29 +53,30 @@ class AliEveEMCALSModule : public TEveElement,
   void UpdateQuads();
 
  protected:
-  AliEveEMCALData         *fEMCALData;      // data for the current event
-  AliEveEMCALSModuleData  *fEMCALSModuleData; // data of super module
-  Color_t                 fFrameColor;    // main coloring
-  UInt_t                  fRTS;           //! Rendering Time Stamp
-  Int_t                   fSModuleID;     // Id of super module, 0 to 11
-  TEveQuadSet             *fQuadSet;      // 1st cathode plane digits
-  TEveQuadSet             *fQuadSet2;      // 2nd cathode plane digits
-  TEvePointSet            *fPointSet;     // reconstructed points (1st cathode)
-  Short_t                 fThreshold;     // digit amplitude threshold
-  Int_t                   fMaxVal;        // digit amplitude maximum value
-  Int_t                   fClusterSize;   // cluster point size
-  Int_t                   fHitSize;       // hit point size
-  mutable UChar_t         *fColorArray;    // color-cache
-  Int_t                   fDebug;         // Debug option
+  AliEveEMCALData         *fEMCALData;        //  Data for the current event
+  AliEveEMCALSModuleData  *fEMCALSModuleData; //  Data of Super Module (SM)
+  Color_t                 fFrameColor;        //  Main coloring
+  UInt_t                  fRTS;               //! Rendering Time Stamp
+  Int_t                   fSModuleID;         //  Id of super module, 0 to 11
+  TEveQuadSet             *fQuadSet;          //  Digit container
+  TEveQuadSet             *fQuadSet2;         //  Cluster container
+  TEvePointSet            *fPointSet;         //  Hit container
+  Short_t                 fThreshold;         //  Digit amplitude threshold
+  Int_t                   fMaxVal;            //  Digit amplitude maximum value
+  Int_t                   fClusterSize;       //  Cluster point size
+  Int_t                   fHitSize;           //  Hit point size
+  mutable UChar_t         *fColorArray;       //  Color-cache
+  Int_t                   fDebug;             //  Debug option
 
-  Float_t                 fSMBigBBox[3];
-  Float_t                 fSMSmallBBox[3];
-  Float_t                 fSMBBoxCenter[3];
+  Float_t                 fSMBigBBox[3];      //  Bounding Box of full SM
+  Float_t                 fSMSmallBBox[3];    //  Bounding Box of half SM
+  Float_t                 fSMBBoxCenter[3];   //  Bounding Box Center of full SM
 
-  static   TEveFrameBox    *fFrameBigBox;      // Frame box per super module
-  static   TEveFrameBox    *fFrameSmallBox;    // Frame box per super module
-  static   TEveRGBAPalette *fFrameDigPalette;  // Signal to color mapping for EMCAL
-  static   TEveRGBAPalette *fFrameCluPalette;  // Signal to color mapping for EMCAL
+  static   Bool_t          fStaticInit;        // Flag for static variable initialization.
+  static   TEveFrameBox    *fFrameBigBox;      // Frame box per full SM
+  static   TEveFrameBox    *fFrameSmallBox;    // Frame box per half SM
+  static   TEveRGBAPalette *fFrameDigPalette;  // Signal to color mapping for EMCAL digits
+  static   TEveRGBAPalette *fFrameCluPalette;  // Signal to color mapping for EMCAL clusters
 
   void SetupColor(Int_t val, UChar_t* pix) const;
 
@@ -88,7 +89,7 @@ class AliEveEMCALSModule : public TEveElement,
   //**********************************
 
  private:
-  AliEveEMCALSModule(const AliEveEMCALSModule&);            // Not implemented
+  AliEveEMCALSModule(const AliEveEMCALSModule&);            
   AliEveEMCALSModule& operator=(const AliEveEMCALSModule&); // Not implemented
 
   ClassDef(AliEveEMCALSModule, 0); // Base class for TRD hits visualisation
