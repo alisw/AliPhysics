@@ -30,7 +30,7 @@ TEveElementList* trd_friend_tracks(TEveElement *cont = 0)
   }
 	
   tracks->SetTitle(Form("Tracks %d", tracks->NumChildren()));
-  tracks->SetStamp(TEveElement::kCBObjProps);
+  tracks->StampObjProps();
 
   gEve->AddElement(tracks, cont);
 
