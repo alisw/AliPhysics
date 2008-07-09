@@ -57,6 +57,9 @@ class AliHLTTPCInterMerger;
  *     the minimum number of clusters to be on a tracklet.
  * \li -tracklength <i> number of clusters   </i> <br>
  *     the minimum number of clusters to be on a track.
+ * \li -clusterZ <i> cutoff in z-direction (cm)   </i> <br>
+ *     makes the tracker to not read in Clusters with a higher value then the
+ *     one given in both directions
  *
  * @ingroup alihlt_tpc_components
  */

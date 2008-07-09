@@ -75,8 +75,8 @@ AliHLTTPCConfMapper::AliHLTTPCConfMapper()
   fMaxPhi(0.0),
   fMaxEta(0.0),
   fMainVertexTracks(0),
-  fClustersUnused(0)
-
+  fClustersUnused(0),
+  fClusterCutZ(-1)
 {
   //Default constructor
   fParamSet[0]=0;
@@ -174,14 +174,34 @@ void AliHLTTPCConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etara
 Bool_t AliHLTTPCConfMapper::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits )
 {
   //read hits
-  if (fHit.size()<fClustersUnused+count) fHit.resize(fClustersUnused+count);
-  assert(fHit.size()>=fClustersUnused+count);
-  for (Int_t i=0;(UInt_t)i<count;i++)
-    {	
-      fHit[i+fClustersUnused].Reset();
-      fHit[i+fClustersUnused].Read(hits[i]);
-    }
-  fClustersUnused += count;
+  if(fClusterCutZ == -1){
+    if (fHit.size()<fClustersUnused+count) fHit.resize(fClustersUnused+count);
+    assert(fHit.size()>=fClustersUnused+count);
+    for (Int_t i=0;(UInt_t)i<count;i++)
+      {	
+	fHit[i+fClustersUnused].Reset();
+	fHit[i+fClustersUnused].Read(hits[i]);
+      }
+    fClustersUnused += count;
+  }
+  else{
+    //Skipping clusters with high Z. 
+    UInt_t skipped=0;
+    
+    if (fHit.size()<fClustersUnused+count) fHit.resize(fClustersUnused+count);
+    assert(fHit.size()>=fClustersUnused+count);
+    for (Int_t i=0;(UInt_t)i<count;i++)
+      {   
+	if(hits[i].fZ > fClusterCutZ || hits[i].fZ < -1*fClusterCutZ){
+	  ++skipped;
+	  continue;
+	}
+	fHit[i+fClustersUnused-skipped].Reset();
+	fHit[i+fClustersUnused-skipped].Read(hits[i]);
+      }
+    fClustersUnused += count - skipped;
+    fHit.resize(fClustersUnused);
+  }
 
   LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::ReadHits","#hits")
     <<AliHLTTPCLog::kDec<<"#hits: "<<count<<" total: "<<fClustersUnused<<ENDLOG;

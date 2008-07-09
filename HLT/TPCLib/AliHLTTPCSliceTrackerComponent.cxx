@@ -757,6 +757,12 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
 	fTracklength=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       }
+      else if (argument.CompareTo("-clusterZ")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Minimum number of clusters on a Track: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fTracker->SetClusterCutZ(((TObjString*)pTokens->At(i))->GetString().Atoi());
+	continue;
+      }
       else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;

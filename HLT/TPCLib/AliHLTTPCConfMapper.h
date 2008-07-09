@@ -104,6 +104,8 @@ class AliHLTTPCConfMapper {
   void SetPointers();
   void SetParamDone(Bool_t vconstraint) {fParamSet[(Int_t)vconstraint] = kTRUE;}
 
+  void SetClusterCutZ(Int_t c){fClusterCutZ=c;}
+
  private:
   /** copy constructor prohibited */
   AliHLTTPCConfMapper(const AliHLTTPCConfMapper&);
@@ -172,7 +174,9 @@ class AliHLTTPCConfMapper {
   Int_t fMainVertexTracks; //number of tracks coming from the main vertex
   Int_t fClustersUnused;   //number of unused clusters
 
-  ClassDef(AliHLTTPCConfMapper,1) //Base class for conformal mapping tracking
+  Int_t fClusterCutZ;      //Cut for taking out clusters with large Z
+
+  ClassDef(AliHLTTPCConfMapper,2) //Base class for conformal mapping tracking
 };
 
 #endif
