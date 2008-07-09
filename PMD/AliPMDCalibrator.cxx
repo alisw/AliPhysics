@@ -149,7 +149,7 @@ void AliPMDCalibrator::Init()
   char htitle1[120];
   
   for(Int_t d = 0; d < kDet; d++) {
-    sprintf(hname2,"Isolated cell adc for Det Plane %d",d);//sid
+    sprintf(hname2,"Isolated cell adc for Det Plane %d",d);
     fHdetIso[d]= new TH1F(hname2,htitle2,100,0,1000);
     for(Int_t i1 = 0; i1 < kMaxSMN; i1++) {
       sprintf(hname,"det_%d_iso_sm_%2d",d,i1);
@@ -263,7 +263,7 @@ void AliPMDCalibrator::CalculateIsoCell()
 	      if (isig>0)
 		{
 		  d1[idet][ismn][irow][icol] = (Int_t)isig;
-		  nhitcell[idet][ismn][irow][icol] += 1; //sid
+		  nhitcell[idet][ismn][irow][icol] += 1; 
 		}
 	    }//ient loop
 	  pmdddlcont.Clear();
@@ -362,8 +362,9 @@ void AliPMDCalibrator::CalculateIsoCell()
 	    {
 	      for(Int_t k1 = 0; k1 < kMaxCol; k1++)
 		{
-		  if(nhitcell[det1][i1][j1][k1]< nhitcut[det1][i1])//sid
-		    {
+		 if(nhitcell[det1][i1][j1][k1]> nhitcut[det1][i1]) fGainFact[det1][i1][j1][k1]=-99.0;
+		   if(nhitcell[det1][i1][j1][k1]< nhitcut[det1][i1])
+		     {
 		      isoMean[det1][i1][j1][k1]=fHadcIso[det1][i1][j1][k1]->
 			GetMean();
 		      if(isoMean[det1][i1][j1][k1]>0.0 && histMean[det1][i1]>0.0)
@@ -371,9 +372,14 @@ void AliPMDCalibrator::CalculateIsoCell()
 			  fGainFact[det1][i1][j1][k1]=
 			    isoMean[det1][i1][j1][k1]/(histMean[det1][i1]*
 						     smNormFactor[det1][i1]);
+
 			}
-		    }                              
+		    }   
+ 		   Float_t gain = fGainFact[det1][i1][j1][k1];
+ 		   fCalibGain->SetGainFact(det1,i1,j1,k1,gain);
 		}
+                          
+ 			
 	    }
 	}
     }
@@ -386,7 +392,7 @@ Bool_t AliPMDCalibrator::Store()
   AliCDBManager *man = AliCDBManager::Instance();
   //man->SetDefaultStorage("local://$ALICE_ROOT");
   if(!man->IsDefaultStorageSet()) return kFALSE;
-  AliCDBId id("PMD/Calib/Gain",0,0);
+  AliCDBId id("PMD/Calib/Gain",0,999999999);
   AliCDBMetaData md;
   md.SetBeamPeriod(0);
   md.SetComment("Test");
