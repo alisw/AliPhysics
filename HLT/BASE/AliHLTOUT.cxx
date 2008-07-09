@@ -65,6 +65,13 @@ int AliHLTOUT::Init()
 {
   // see header file for class documentation
   int iResult=0;
+
+  // ignore if already initialized
+  if (fBlockDescList.size()>0) {
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "Init" , __FILE__ , __LINE__ , "instance %p already initialized, skipping ...", this);
+    return 0;
+  }
+
   SetStatusFlag(kCollecting);
   if ((iResult=GenerateIndex())>=0) {
     if ((iResult=InitHandlers())>=0) {
@@ -400,12 +407,8 @@ int AliHLTOUT::InvalidateBlocks(AliHLTOUTHandlerListEntryVector& list)
 const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
 {
   // see header file for class documentation
-  AliHLTOUTHandlerListEntryVector::iterator element=fDataHandlers.begin();
-  while (element!=fDataHandlers.end()) {
-    if (element->HasIndex(blockIndex)) {
-      return *element;
-    }
-    element++;
+  if (blockIndex<fBlockDescList.size()) {
+    return fBlockDescList[blockIndex].GetHandlerDesc();
   }
   return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry);
 }
@@ -655,7 +658,7 @@ int AliHLTOUT::SelectDataBlocks(const AliHLTOUTHandlerListEntry* pHandlerDesc)
   for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
        block!=fBlockDescList.end();
        block++) {
-    if (pHandlerDesc->HasIndex(block->GetIndex()))
+    if (block->GetHandlerDesc()==*pHandlerDesc && pHandlerDesc->HasIndex(block->GetIndex()))
       block->Select(true);
     else
       block->Select(false);
@@ -709,7 +712,7 @@ int AliHLTOUT::MarkDataBlocksProcessed(const AliHLTOUTHandlerListEntry* pHandler
   for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
        block!=fBlockDescList.end();
        block++) {
-    if (pHandlerDesc->HasIndex(block->GetIndex()))
+    if (block->GetHandlerDesc()==*pHandlerDesc && pHandlerDesc->HasIndex(block->GetIndex()))
       block->MarkProcessed();
   }
   
@@ -790,4 +793,19 @@ int AliHLTOUT::ResetInput()
 {
   // default implementation, nothing to do
   return 0;
+}
+
+const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTBlockDescriptor::GetHandlerDesc()
+{
+  // see header file for class documentation
+  if (fpCollection) {
+    AliHLTOUTHandlerListEntryVector::iterator element=fpCollection->fDataHandlers.begin();
+    while (element!=fpCollection->fDataHandlers.end()) {
+      if (element->HasIndex(GetIndex())) {
+	return *element;
+      }
+      element++;
+    }
+  }
+  return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry);
 }

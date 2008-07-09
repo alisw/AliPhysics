@@ -170,6 +170,7 @@ class AliHLTOUT {
     kCDHFlagsHLTPayload=7 //! see above
   };
 
+  class AliHLTOUTHandlerListEntry;
   /**
    * Block descriptor.
    */
@@ -206,6 +207,11 @@ class AliHLTOUT {
       if (fpCollection) return fpCollection->GetDataBuffer(GetIndex(), pBuffer, size);
       return -ENODEV;
     }
+
+    /**
+     * Get the handler descriptor
+     */
+    const AliHLTOUTHandlerListEntry& GetHandlerDesc();
 
   private:      
     /** data type of the block */
@@ -260,6 +266,7 @@ class AliHLTOUT {
     /**
      * Compare the handler descriptor of this list entry with another
      * descriptor.
+     * @return true if both handler and agent match
      */
     bool operator==(const AliHLTModuleAgent::AliHLTOUTHandlerDesc desc) const; 
 

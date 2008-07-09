@@ -148,6 +148,13 @@ int AliHLTOUTTask::ResetInput()
 {
   // see header file for class documentation
   int iResult=0;
+  if (!fpDataBuffer) return 0;
+
+  if (fBlockDescList.size()==0 && fpDataBuffer->GetNofPendingConsumers()>0) {
+    // not yet subscribed
+    fpDataBuffer->Subscribe(fpDummyTask->GetComponent(), fBlockDescList);
+  }
+
   for (unsigned int i=0; i<fBlockDescList.size(); i++) {
     fpDataBuffer->Release(&(fBlockDescList[i]), fpDummyTask->GetComponent(), this);
   }

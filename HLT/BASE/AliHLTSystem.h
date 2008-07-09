@@ -28,6 +28,7 @@ class AliHLTConfiguration;
 class AliHLTConfigurationHandler;
 class AliHLTTask;
 class AliHLTOUT;
+class AliHLTOUTTask;
 class AliRunLoader;
 class AliRawReader;
 class AliESDEvent;
@@ -471,7 +472,10 @@ class AliHLTSystem : public AliHLTLogging {
   /** active kProprietary handlers (AliHLTOUT::AliHLTOUTHandlerListEntryVector*) */
   void* fpProprietaryHandlers;                                     //!transient
 
-  ClassDef(AliHLTSystem, 8);
+  /** active HLTOUT task for the reconstruction */
+  AliHLTOUTTask* fpHLTOUTTask;                                     //!transient
+
+  ClassDef(AliHLTSystem, 10);
 };
 
 #endif

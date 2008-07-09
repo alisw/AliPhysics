@@ -39,6 +39,7 @@ using namespace std;
 #include "AliHLTDataSource.h"
 #include "AliHLTOUT.h"
 #include "AliHLTOUTHandler.h"
+#include "AliHLTOUTTask.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -74,7 +75,8 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel)
   fGoodEvents(-1),
   fpChainHandlers(NULL),
   fpEsdHandlers(NULL),
-  fpProprietaryHandlers(NULL)
+  fpProprietaryHandlers(NULL),
+  fpHLTOUTTask(NULL)
 {
   // see header file for class documentation
   // or
@@ -361,6 +363,13 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
 	ResumeBenchmarking(fStopwatches);    
       }
       for (int i=fEventCount; i<fEventCount+iNofEvents && iResult>=0; i++) {
+	if (fpHLTOUTTask) {
+	  if (iNofEvents>1 && i==fEventCount) {
+	    HLTWarning("can not add more than one event to the HLTOUT, skipping all but last block");
+	  }
+	  // reset and prepare for new data
+	  fpHLTOUTTask->Reset();
+	}
 	if ((iResult=ProcessTasks(i))>=0) {
 	  fGoodEvents++;
 	  iCount++;
@@ -742,6 +751,20 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   if (!pHLTOUT) return -EINVAL;
   HLTDebug("processing %d HLT data blocks", pHLTOUT->GetNofDataBlocks());
 
+  // add the current HLTOUT task to the collection
+  if (fpHLTOUTTask) {
+    AliHLTOUT* pTask=dynamic_cast<AliHLTOUT*>(fpHLTOUTTask);
+    if (pTask && (iResult=pTask->Init())>=0) {
+      if (pTask->GetNofDataBlocks()>0) {
+	pHLTOUT->AddSubCollection(pTask);
+      }
+    } else {
+      HLTWarning("can not initialize HLTOUT sub collection %s for reconstruction chain (%d), data blocks are lost", pTask?fpHLTOUTTask->GetName():"nil", iResult);
+      iResult=0;
+    }
+  }
+
+  
   //
   // process all kChain handlers first
   //
@@ -1192,10 +1215,12 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
       AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(pCID);
       if (pConf) {
 	iResult=BuildTaskList(pConf);
-	if (runloader) {
+	if (true) { // condition was deprecated but kept for sake of svn diff
+	  // bHaveOutput variable has to be set for both running modes
+	  // AliHLTSimulation and AliHLTReconstruction
 	  assert(fpComponentHandler!=NULL);
 	  TString cid=pConf->GetComponentID();
-	  if (cid.CompareTo("HLTOUT")==0) {
+	  if (runloader!=NULL && cid.CompareTo("HLTOUT")==0) {
 	    // remove from the input of a global HLTOUT configuration
 	    chains.ReplaceAll(pCID, "");
 	  } else if (bHaveOutput==0) {
@@ -1225,6 +1250,33 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
       } else {
 	HLTError("can not load libHLTsim.so and HLTOUT component");
 	iResult=-EFAULT;
+      }
+    }
+  }
+
+  // build HLTOUT task for reconstruction
+  // Matthias 08.07.2008 the rawReader is never set when running embedded into
+  // AliReconstruction. The system is configured during AliHLTReconstructor::Init
+  // where the RawReader is not available. It is available in the first invocation
+  // of Reconstruct.
+  // 
+  // That means that policy is slightly changed:
+  // - if the run loader is available -> AliSimulation
+  // - no run loader available -> AliReconstruction
+  if (iResult>=0 && !runloader) {
+    if (bHaveOutput) {
+      // there are components in the chain which produce data which need to be
+      // piped to an HLTOUT sub-collection
+      if (!fpHLTOUTTask) {
+	fpHLTOUTTask=new AliHLTOUTTask(chains.Data());
+	if (fpHLTOUTTask) {
+	  if (fpHLTOUTTask->GetConf() && fpHLTOUTTask->GetConf()->SourcesResolved()>=0) {
+	    iResult=InsertTask(fpHLTOUTTask);
+	  } else {
+	    HLTError("HLTOUT task (%s) sources not resolved", fpHLTOUTTask->GetName());
+	    iResult=-ENOENT;
+	  }
+	}
       }
     }
   }

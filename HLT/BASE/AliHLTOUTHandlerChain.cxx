@@ -88,12 +88,13 @@ int AliHLTOUTHandlerChain::ProcessData(AliHLTOUT* pData)
     return iResult;
   }
 
-  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+  if (fpSystem->CheckStatus(AliHLTSystem::kError) || !fpTask) {
     HLTWarning("kChain handler '%s': system in error state, skipping processing of associated HLTOUT blocks", fChains.Data());
     return -EACCES;
   }
 
   // run one event and do not stop the chain
+  fpTask->Reset();
   {
     AliHLTOUT::AliHLTOUTGlobalInstanceGuard g(pData);
     if ((iResult=fpSystem->Run(1,0))>=0) {

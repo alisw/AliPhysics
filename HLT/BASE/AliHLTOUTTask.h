@@ -21,6 +21,7 @@
  * order to be run at the end of a reconstruction chain and generation of
  * an HLTOUT sub-collection.
  * 
+ * The constructor takes the chains as a blank separated list of chain ids.
  */
 class AliHLTOUTTask : public AliHLTOUT, public AliHLTTask {
  public:
