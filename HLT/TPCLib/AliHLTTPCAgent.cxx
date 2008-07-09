@@ -58,6 +58,10 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCOfflineTrackerComponent.h"
 #include "AliHLTTPCOfflineCalibrationComponent.h"
 #include "AliHLTTPCClusterHistoComponent.h"
+#include "AliHLTTPCNoiseMapComponent.h"
+#include "AliHLTTPCHistogramHandlerComponent.h"
+#include "AliHLTTPCCalibTracksComponent.h"
+
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -215,7 +219,10 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCOfflineTrackerComponent);
   pHandler->AddComponent(new AliHLTTPCOfflineCalibrationComponent);
   pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
-
+  pHandler->AddComponent(new AliHLTTPCNoiseMapComponent);
+  pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);
+  pHandler->AddComponent(new AliHLTTPCCalibTracksComponent);
+  
   return 0;
 }
 

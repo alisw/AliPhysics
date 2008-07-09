@@ -43,9 +43,6 @@ using namespace std;
 #include "TLine.h"
 #include "TMath.h"
 
-
-AliHLTTPCHistogramHandlerComponent gAliHLTTPCHistogramHandlerComponent;
-
 ClassImp(AliHLTTPCHistogramHandlerComponent) //ROOT macro for the implementation of ROOT specific class methods
 
 AliHLTTPCHistogramHandlerComponent::AliHLTTPCHistogramHandlerComponent()
@@ -292,19 +289,9 @@ void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
     PushBack((TObject*)fHistTPCSideA,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 0,17,0,5));
     PushBack((TObject*)fHistTPCSideC,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(18,35,0,5));
 
-    if(fHistTH2Tmp){
-      delete fHistTH2Tmp;
-    }
-    if(fHistTPCSideA){
-      delete fHistTPCSideA;
-    }
-    if(fHistTPCSideC){
-      delete fHistTPCSideC;
-    }
-    
-    fHistTH2Tmp=NULL;
-    fHistTPCSideA=NULL;
-    fHistTPCSideC=NULL;
+    if(fHistTH2Tmp)  { delete fHistTH2Tmp;   fHistTH2Tmp=NULL;   }
+    if(fHistTPCSideA){ delete fHistTPCSideA; fHistTPCSideA=NULL; }
+    if(fHistTPCSideC){ delete fHistTPCSideC; fHistTPCSideC=NULL; }
   }  
   
   if(fKryptonHistograms){
@@ -314,30 +301,12 @@ void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
      PushBack((TObject*)fPlotQmaxROCAll,	   kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5));
      PushBack((TObject*)fNumberOfClusters,	   kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5));
           
-     if(fTotalClusterChargeIROCAll){
-       delete fTotalClusterChargeIROCAll;
-       fTotalClusterChargeIROCAll=NULL;
-     }
-     if(fTotalClusterChargeOROCAll){
-       delete fTotalClusterChargeOROCAll;
-       fTotalClusterChargeOROCAll=NULL;
-     }
-     if(fQMaxPartitionAll){
-       delete fQMaxPartitionAll;
-       fQMaxPartitionAll=NULL;
-     }
-     if(fPlotQmaxROCAll){
-       delete fPlotQmaxROCAll;
-       fPlotQmaxROCAll=NULL;
-     }
-     if(fNumberOfClusters){
-       delete fNumberOfClusters;
-       fNumberOfClusters=NULL;
-     }
-     if(fHistTH1Tmp){
-       delete fHistTH1Tmp;
-       fHistTH1Tmp=NULL;
-     }
+     if(fTotalClusterChargeIROCAll){ delete fTotalClusterChargeIROCAll; fTotalClusterChargeIROCAll=NULL; }
+     if(fTotalClusterChargeOROCAll){ delete fTotalClusterChargeOROCAll; fTotalClusterChargeOROCAll=NULL; }
+     if(fQMaxPartitionAll)         { delete fQMaxPartitionAll;          fQMaxPartitionAll=NULL;          }
+     if(fPlotQmaxROCAll)           { delete fPlotQmaxROCAll;            fPlotQmaxROCAll=NULL;            }
+     if(fNumberOfClusters)         { delete fNumberOfClusters;          fNumberOfClusters=NULL;          }
+     if(fHistTH1Tmp)               { delete fHistTH1Tmp;                fHistTH1Tmp=NULL;                }
   }
  
 //  TObjArray histos;

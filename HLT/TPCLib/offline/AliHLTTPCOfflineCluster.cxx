@@ -65,14 +65,12 @@ AliTPCclusterMI* AliHLTTPCOfflineCluster::ConvertHLTToOffline(AliHLTTPCSpacePoin
    offCluster->SetTimeBin(spacePoint.fZ);         // time bin
    offCluster->SetQ(spacePoint.fCharge);     	  // charge
    offCluster->SetMax(spacePoint.fMaxQ);     	  // max Q (amplitude)
-   offCluster->SetDetector(0);	     	          // detector/slice
-   offCluster->SetType(0);		     	  // default from constructor
-   offCluster->IsUsed(0);		     	  // default from constructor
-   offCluster->SetInfo(NULL);		     	  // default from constructor
+   //offCluster->SetDetector(0);	     	  // detector/slice
+   //offCluster->SetType(0);		     	  // default from constructor
+   //offCluster->IsUsed(0);		     	  // default from constructor
+   //offCluster->SetInfo(NULL);		     	  // default from constructor
      
    return offCluster;
-   delete offCluster;
-
 }
 
 

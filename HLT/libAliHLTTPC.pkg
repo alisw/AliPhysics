@@ -89,7 +89,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCClusterHistoComponent.h \
 		AliHLTTPCTrackHistoComponent.h \
 		AliHLTTPCTrackDumpComponent.h \
-		AliHLTTPCClusterDumpComponent.h
+		AliHLTTPCClusterDumpComponent.h \
+		AliHLTTPCCalibTracksComponent.h
 
 
 

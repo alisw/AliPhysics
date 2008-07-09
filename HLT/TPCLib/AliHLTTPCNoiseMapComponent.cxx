@@ -28,12 +28,13 @@ using namespace std;
 
 #include "AliHLTTPCNoiseMapComponent.h"
 #include "AliHLTTPCDigitReaderDecoder.h"
-#include "AliHLTTPCDigitReaderPacked.h"
+//#include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCDefinitions.h"
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliHLTTPCNoiseMap.h"
 
 #include "AliTPCCalPad.h"
 #include "AliTPCROC.h"
@@ -48,16 +49,11 @@ using namespace std;
 #include <sys/time.h>
 #include "TH2.h"
 
-
-AliHLTTPCNoiseMapComponent gAliHLTTPCNoiseMapComponent;
-
 ClassImp(AliHLTTPCNoiseMapComponent) //ROOT macro for the implementation of ROOT specific class methods
 
 AliHLTTPCNoiseMapComponent::AliHLTTPCNoiseMapComponent()
     :    
     fSpecification(0),
-    noisePad(NULL),
-    //pDigitReader(0),
     fPlotSideA(0),
     fPlotSideC(0),    
     fApplyNoiseMap(0),
@@ -67,10 +63,13 @@ AliHLTTPCNoiseMapComponent::AliHLTTPCNoiseMapComponent()
     fCurrentSlice(-99),
     fCurrentPartition(-99),
     fCurrentRow(-99),
-    fHistPartition(NULL),
+    fHistSignal(NULL),
+    fHistMaxSignal(NULL),
+    fHistTotSignal(NULL),
+    fHistPadRMS(NULL),
+    fHistCDBMap(NULL),    
     fHistSideA(NULL),  
-    fHistSideC(NULL),
-    fHistCDBMap(NULL)    
+    fHistSideC(NULL)
 {
   // see header file for class documentation
   // or
@@ -201,6 +200,11 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
 
   } // end while
   
+  if(fApplyNoiseMap){
+     AliHLTTPCNoiseMap *nm = AliHLTTPCNoiseMap::Instance();
+     AliTPCCalPad *noisePad = nm->ReadNoiseMap();
+     fHistCDBMap = noisePad->MakeHisto2D(1);
+  }
 
 //   if(fApplyNoiseMap){
 //     //TFile *f = TFile::Open("/scratch/noiseComp/Run3398_4000_v0_s72.root");
@@ -220,8 +224,7 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
 } // end DoInit()
 
 int AliHLTTPCNoiseMapComponent::DoDeinit() { 
-// see header file for class documentation 
-      
+// see header file for class documentation       
     return 0;
 }
 
@@ -246,9 +249,11 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
   Float_t xyz[3]; 
   Int_t thissector, thisrow;
- 
-  fHistPartition = new TH2F("fHistPartition","fHistPartition",250,-250,250,250,-250,250);
- 
+
+  fHistMaxSignal = new TH2F("fHistMaxSignal","maximum signal",   250,-250,250,250,-250,250);
+  fHistTotSignal = new TH2F("fHistTotSignal","total signal",     250,-250,250,250,-250,250);
+  fHistPadRMS    = new TH2F("fHistPadRMS",   "RMS",              250,-250,250,250,-250,250);
+  
   for(iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
       
      HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
@@ -275,60 +280,68 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
      if(!pDigitReader) break;
        
      //sprintf(name,"hMaxSignal_slice%d_partition%d", slice, partition);
-     //fHistPartition = new TH2F(name,name,250,-250,250,250,-250,250);
+     //fHistMaxSignal = new TH2F(name,name,250,-250,250,250,-250,250);
             
-     while( pDigitReader->Next() ){ 
+     while(pDigitReader->Next()){ 
      //while( pDigitReader->NextChannel()) { // pad loop 
       
       fCurrentRow  = pDigitReader->GetRow();  
       fCurrentRow += pDigitReader->GetRowOffset();
 
       AliHLTTPCTransform::Slice2Sector(slice,fCurrentRow,thissector,thisrow);
+      AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,pDigitReader->GetPad(),0);
+      
+      if(slice>17) xyz[1] = (-1.0)*xyz[1];
+      else continue;
+      
+      AliHLTTPCTransform::Local2Global(xyz,slice);
+      // temporarily the transformation Raw2Global will be broken down to 2 steps,
+      // as there is a correction necessary at the y coordinate of the local xyz.
+      
       //AliHLTTPCTransform::Raw2Global(xyz,thissector,thisrow,pDigitReader->GetPad(),0);
+      // transformation from pad-row coordinates to global ones
+      // time info is not taken into account
       
 //       AliTPCCalROC *calRoc = noisePad->GetCalROC(thissector);
 //       calRoc->GetValue(thisrow,pDigitReader->GetPad());
       
-      Float_t maxSignal = 0.;
       //while( pDigitReader->NextBunch()) {
     
       const UInt_t *bunchData = pDigitReader->GetSignals();
-      for(Int_t i=0;i<pDigitReader->GetBunchSize();i++) {
+      Float_t maxSignal   = 0.;
+      Float_t totalSignal = 0.;
+      
+      fHistSignal = new TH1F("fHistSignal", "signal distribution per pad",1024,0,1024);
+
+      for(Int_t i=0;i<pDigitReader->GetBunchSize();i++){
           
-	  if((Float_t)(bunchData[i])>maxSignal){
-	      maxSignal = (Float_t)(bunchData[i]);
-	  }
-	  
-// 	  if((Float_t)(bunchData[i])>maxSignal){	  
-//              if(fApplyNoiseMap) { //still in local coordinates
-// 
-//  	         if(calRoc->GetValue(thisrow,pDigitReader->GetPad())>0.) maxSignal = 0.;
-// 		 else maxSignal = bunchData[i];
-//  	         
-//              } else maxSignal = bunchData[i];
-//  	  } // end if
-      } // end for loop
+	  if((Float_t)(bunchData[i])>maxSignal){ maxSignal = (Float_t)(bunchData[i]); }
+	  totalSignal += bunchData[i];	  
+	  fHistSignal->Fill(bunchData[i]);
+      } // end for loop over bunches
+      
       //} // end of inner while loop
-            
-      AliHLTTPCTransform::Raw2Global(xyz,thissector,thisrow,pDigitReader->GetPad(),0); 
-      // transformation from pad-row coordinates to global ones
-      // time info is not taken into account
            
-      fHistPartition->Fill(xyz[0],xyz[1],maxSignal);
+      fHistMaxSignal->Fill(xyz[0],xyz[1],maxSignal);
+      fHistTotSignal->Fill(xyz[0],xyz[1],totalSignal);
+      fHistPadRMS->Fill(xyz[0],xyz[1],fHistSignal->GetRMS());
+      delete fHistSignal;
+      
       
       if(fPlotSideA || fPlotSideC){
          if(slice<18) fHistSideA->Fill(xyz[0],xyz[1],maxSignal);
          else	      fHistSideC->Fill(xyz[0],xyz[1],maxSignal);			     
       } // end if plotting sides	    
-     } // end of while loop  
+     } // end of while loop over pads
      delete pDigitReader;
   } // end of for loop over data blocks
  
   if(fResetHistograms) ResetHistograms();
   MakeHistosPublic();
-  
+
   return 0;
 } // end DoEvent()
+
 
 void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
 // see header file for class documentation
@@ -339,30 +352,37 @@ void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
 //   fHistCDBMap->Write();
 //   outputfile->Save();
 //   outputfile->Close();
-  
+
   TObjArray histos;
-  histos.Add(fHistPartition);
+  histos.Add(fHistMaxSignal);
+  histos.Add(fHistTotSignal);
+  histos.Add(fHistPadRMS);
+  histos.Add(fHistCDBMap);
   if(fPlotSideA) histos.Add(fHistSideA);
   if(fPlotSideC) histos.Add(fHistSideC);
-  //histos.Add(fHistCDBMap);
   
   TIter iterator(&histos);
-  while(TObject *pObj=iterator.Next()){
-  
-        PushBack(pObj, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification);
-  }
+  while(TObject *pObj=iterator.Next()){ PushBack(pObj, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification); }
     
   //PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram, fSpecification);    
  
-  delete fHistPartition;
-  if(fHistSideA) delete fHistSideA; fHistSideA=NULL;
-  if(fHistSideC) delete fHistSideC; fHistSideC=NULL;
+  if(fHistSignal)    delete fHistSignal;    fHistSignal    = NULL;
+  if(fHistMaxSignal) delete fHistMaxSignal; fHistMaxSignal = NULL;
+  if(fHistTotSignal) delete fHistTotSignal; fHistTotSignal = NULL;
+  if(fHistPadRMS)    delete fHistPadRMS;    fHistPadRMS    = NULL;
+  if(fHistSideA)     delete fHistSideA;     fHistSideA     = NULL;
+  if(fHistSideC)     delete fHistSideC;     fHistSideC     = NULL;
+  
 }
 
 void AliHLTTPCNoiseMapComponent::ResetHistograms(){
 // see header file for class documentation
 
-  fHistPartition->Reset();
+  //if(fHistPartition) fHistPartition->Reset();  
+  if(fHistMaxSignal) fHistMaxSignal->Reset();
+  if(fHistTotSignal) fHistTotSignal->Reset();
+  if(fHistPadRMS)    fHistPadRMS->Reset();
+
   if(fHistSideA) fHistSideA->Reset();
   if(fHistSideC) fHistSideC->Reset();
 }
@@ -397,6 +417,11 @@ int AliHLTTPCNoiseMapComponent::Configure(const char* arguments) {
       else if (argument.CompareTo("-plot-side-a")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("got \'-plot-side-a\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      }       
+      else if(argument.CompareTo("-reset-histograms")==0){
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("got \'-reset-histograms\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	
       } 
       else {
@@ -443,23 +468,5 @@ int AliHLTTPCNoiseMapComponent::Reconfigure(const char* cdbEntry, const char* ch
     }
   }
   
-  const char* pathNoiseMap="TPC/Config/NoiseMap";
-
-  if (pathNoiseMap) {
-    HLTInfo("reconfigure noise map from entry %s, chain id %s", path,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathNoiseMap/*,GetRunNo()*/);
-    if (pEntry) {
-      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-      if (pString) {
-	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	iResult=Configure(pString->GetString().Data());
-      } else {
-	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
-      }
-    } else {
-      HLTError("cannot fetch object \"%s\" from CDB", path);
-    }
-  }
-
   return iResult;
 }

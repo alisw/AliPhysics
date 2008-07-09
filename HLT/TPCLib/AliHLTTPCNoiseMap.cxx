@@ -17,7 +17,7 @@
 
 /** @file   AliHLTTPCNoiseMap.cxx
     @author Kalliopi Kanaki
-    @date   06.06.2008
+    @date   
     @brief  Class for reading the noise map from HCDB.
 */
 

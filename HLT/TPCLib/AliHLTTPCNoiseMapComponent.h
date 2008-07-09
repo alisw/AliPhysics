@@ -18,30 +18,37 @@
 
 //forward declarations
 class AliHLTTPCDigitReader;
+class TH1;
 class TH2;
 class AliTPCCalPad;
+
 /**
  * @class AliHLTTPCNoiseMapComponent
- * Implementation of the component to fill histograms with TPC noise and read
- * the noise map from OCDB by request.
+ * 
+ * Implementation of the component to fill histograms with TPC output and read
+ * the noise map from HCDB by request.
+ * 
  * The component implements the interface methods of the @ref AliHLTProcessor.
- * It reads the data pad by pad and fills histograms. The output is unpacked and 
- * sent to the clulsterfinder.
+ * It reads the data pad by pad and fills histograms.
  * 
  * The component has the following component arguments:
  * 
  * The histograms are filled on partition level and no argument is foreseen for this.
  * 
+ * In the rare case we want to fill them per TPC side, the following 2 arguments can be used.
+ * 
  * -plot-side-a   Histograms the TPC side A
  *          
  * -plot-side-c   Histograms the TPC side C
  *
- * -apply-noisemap  Reads a noise map from a file and subtracts the value contained in every pad from the data
- * The above option is going to be removed, it makes no sense to read the noise map as 
- * many times as the partitions.
+ * -apply-noisemap  Reads the noise map from the HCDB (and plots it in a histogram)
  *
- * -resetHistograms Resets histograms
- * 
+ * It returns an AliTPCCalPad object that can be used 
+ * for other plots (e.g. noise subtraction in histograms) 
+ *
+ * It makes use of the class AliHLTTPCNoise (see header for usage).
+ *
+ * -reset-histograms Resets histograms
  *
  * @ingroup alihlt_tpc
  */
@@ -96,11 +103,8 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
       AliHLTTPCNoiseMapComponent& operator=(const AliHLTTPCNoiseMapComponent&);
 
       void ResetHistograms();
-
-      /** the reader object for data decoding */
+      
       AliHLTUInt32_t fSpecification;  //!transient
-      AliTPCCalPad *noisePad;         //!transient
-      //AliHLTTPCDigitReader *pDigitReader;
 
       Bool_t fPlotSideA;      //!transient
       Bool_t fPlotSideC;      //!transient
@@ -113,12 +117,15 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
       Int_t fCurrentPartition; //!transient
       Int_t fCurrentRow;       //!transient
       
-      TH2 *fHistPartition;  //!transient 
+      TH1 *fHistSignal;     //!transient 
+      TH2 *fHistMaxSignal;  //!transient 
+      TH2 *fHistTotSignal;  //!transient 
+      TH2 *fHistPadRMS;     //!transient 
+      TH2 *fHistCDBMap;     //!transient 
       TH2 *fHistSideA;      //!transient    
       TH2 *fHistSideC;      //!transient  
-      TH2 *fHistCDBMap;     //!transient 
-            
-      ClassDef(AliHLTTPCNoiseMapComponent, 2)
+           
+      ClassDef(AliHLTTPCNoiseMapComponent, 3)
     };
 
 #endif
