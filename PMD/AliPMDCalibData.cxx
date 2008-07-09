@@ -103,7 +103,7 @@ void AliPMDCalibData::Reset()
 	  {
 	      for(Int_t col = 0; col < kCol; col++)
 	      {
-		  fGainFact[det][smn][row][col] = 1.0;
+		  fGainFact[det][smn][row][col] = -1.;
 	      }
 	  }
       }
