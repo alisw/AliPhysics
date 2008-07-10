@@ -26,7 +26,7 @@
 #include <TFriendElement.h>
 #include <TProcessID.h>
 #include <TCollection.h>
-
+#include "Riostream.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODTrack.h"
@@ -348,12 +348,16 @@ Int_t AliAODEvent::GetPHOSClusters(TRefArray *clusters) const
   clusters->Clear();
   
   AliAODCaloCluster *cl = 0;
+  Bool_t first = kTRUE;
   for (Int_t i = 0; i < GetNCaloClusters() ; i++) {
-    
     if ( (cl = GetCaloCluster(i)) ) {
       if (cl->IsPHOSCluster()){
+	if(first) {
+	  new (clusters) TRefArray(TProcessID::GetProcessWithUID(cl)); 
+	  first=kFALSE;
+	}
 	clusters->Add(cl);
-	//AliDebug(1,Form("IsPHOS cluster %d Size: %d \n",i,clusters->GetEntriesFast()));
+	//printf("IsPHOS cluster %d, E %2.3f Size: %d \n",i,cl->E(),clusters->GetEntriesFast());
       }
     }
   }
@@ -366,14 +370,18 @@ Int_t AliAODEvent::GetEMCALClusters(TRefArray *clusters) const
   // fills the provided TRefArray with all found emcal clusters
 
   clusters->Clear();
-
+  cout<<"AOD event 1: nclus "<<GetNCaloClusters()<<endl;
   AliAODCaloCluster *cl = 0;
+  Bool_t first = kTRUE;
   for (Int_t i = 0; i < GetNCaloClusters(); i++) {
-
     if ( (cl = GetCaloCluster(i)) ) {
       if (cl->IsEMCALCluster()){
+	if(first) {
+	  new (clusters) TRefArray(TProcessID::GetProcessWithUID(cl)); 
+	  first=kFALSE;
+	}
 	clusters->Add(cl);
-	//AliDebug(1,Form("IsEMCAL cluster %d Size: %d \n",i,clusters->GetEntriesFast()));
+	//printf("IsEMCal cluster %d, E %2.3f Size: %d \n",i,cl->E(),clusters->GetEntriesFast());
       }
     }
   }
