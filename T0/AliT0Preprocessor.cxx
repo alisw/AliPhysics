@@ -63,6 +63,7 @@ AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) :
   //constructor
   AddRunType("PHYSICS");
   AddRunType("STANDALONE");
+  AddRunType("LASER");
 }
 //____________________________________________________
 
@@ -292,26 +293,28 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	Log(Form("RunType: %s",runType.Data()));
 	//processing
  	if(runType == "STANDALONE"){
-		Int_t iresultLaser = ProcessLaser();
-	 		if(dcsDP==1){
-			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-			return iresultDCS;
-		}
-		Log(Form("iresultLaser = %d",iresultLaser));
-		return iresultLaser;
+	  if(dcsDP==1){
+	    Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+	    return iresultDCS;
+	  }
 	}
-       else if(runType == "PHYSICS"){
-	 Int_t iresultPhysics = ProcessPhysics();
+ 	if(runType == "LASER"){
+	  Int_t iresultLaser = ProcessLaser();
+	  Log(Form("iresultLaser = %d",iresultLaser));
+	  return iresultLaser;
+	}
+	else if(runType == "PHYSICS"){
+	  Int_t iresultPhysics = ProcessPhysics();
 	 //	 Int_t iresultCosmic = ProcessCosmic();
-		if(dcsDP==1){
-			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-			return iresultDCS;
-		}
-		Log(Form("iresultPhysics = %d",iresultPhysics));
-		return iresultPhysics; 
-		//		Log(Form("iresultPhysics =iresultCosmic %d",iresultCosmic));
-		//	return iresultCosmic; 
-      }	
-
-  return 0;
+	  if(dcsDP==1){
+	    Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+	    return iresultDCS;
+	  }
+	  Log(Form("iresultPhysics = %d",iresultPhysics));
+	  return iresultPhysics; 
+	  //		Log(Form("iresultPhysics =iresultCosmic %d",iresultCosmic));
+	  //	return iresultCosmic; 
+	}	
+	
+	return 0;
 }
