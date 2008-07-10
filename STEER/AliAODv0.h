@@ -87,7 +87,8 @@ public:
   Double_t PseudoRapV0()    const;
   Double_t PseudoRapPos()   const;
   Double_t PseudoRapNeg()   const;
-
+  
+  Int_t    GetLabel() const {return -1;} // Dummy
 
 protected:
   Double32_t fDcaV0ToPrimVertex;    // dca of V0 to primary vertex 

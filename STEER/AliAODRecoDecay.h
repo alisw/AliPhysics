@@ -151,7 +151,7 @@ class AliAODRecoDecay : public AliVParticle {
     {printf("Dummy function; use AliAODRecoDecay::Y(UInt_t pdg) instead"); return (Double_t)-999.;}
   Double_t M() const 
     {printf("Dummy function"); return (Double_t)-999.;}
-
+  Int_t GetLabel() const {return -1;}
  protected:
 
   TRef     fSecondaryVtx;  // decay vertex

@@ -52,7 +52,7 @@ public:
   virtual Double_t Y() const = 0;
   
   virtual Short_t Charge() const = 0;
-
+  virtual Int_t   GetLabel() const = 0;
   // PID
   virtual const Double_t *PID() const = 0; // return PID object (to be defined, still)
 

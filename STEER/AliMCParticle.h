@@ -51,7 +51,8 @@ public:
     
     virtual Short_t Charge()      const;
 
-    virtual Int_t      Label()    const;
+    virtual Int_t      Label()       const;
+    virtual Int_t      GetLabel() const {return Label();} 
     virtual TParticle* Particle() const  {return fParticle;}
 	    
     // PID

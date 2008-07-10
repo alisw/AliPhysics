@@ -49,6 +49,7 @@ class AliAODPhoton : public AliVParticle {
 // Dummy  
     virtual Short_t Charge()      const { return 0;}
     virtual const Double_t* PID() const { return NULL;}
+    virtual Int_t   GetLabel()    const { return -1;}
 //
     
     

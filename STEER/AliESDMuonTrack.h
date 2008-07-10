@@ -173,7 +173,7 @@ public:
   Double_t Y() const { return (Pz()/E() != 1.) ? TMath::ATanH(Pz()/E()) : FLT_MAX; }
   Short_t  Charge() const { return (Short_t)TMath::Sign(1., GetInverseBendingMomentum()); }
   const Double_t *PID() const { return (Double_t*)0x0; }
-  
+  Int_t GetLabel() const {return -1;} // Dummy
   
 protected:
   // parameters at vertex
