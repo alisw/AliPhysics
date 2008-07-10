@@ -104,7 +104,6 @@ void AliCaloTrackAODReader::FillInputCTS() {
       if(fDebug > 2 && momentum.Pt() > 0.1)printf("FillInputCTS():: Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						  momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
       
-      //      AliAODTrack *newtrack =
       new((*fAODCTS)[naod++])  AliAODTrack(*track);
       
     }//Pt and Fidutial cut passed. 
@@ -116,18 +115,17 @@ void AliCaloTrackAODReader::FillInputCTS() {
 //____________________________________________________________________________
 void AliCaloTrackAODReader::FillInputEMCAL() {
   //Return array with EMCAL clusters in aod format
-   fAODEMCAL = new TClonesArray("AliAODCaloCluster",0);
 
-  TRefArray * caloClusters = new TRefArray();
-  fAOD->GetEMCALClusters(caloClusters);
-  
+   fAODEMCAL = new TClonesArray("AliAODCaloCluster",0);
+   TRefArray * caloClusters = new TRefArray();
+   fAOD->GetEMCALClusters(caloClusters);
+
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
   GetVertex(v);
 
   //Loop to select clusters in fidutial cut and fill container with aodClusters
   Int_t naod = 0;
-
   for (Int_t iclus =  0; iclus <  caloClusters->GetEntries(); iclus++) {
     AliAODCaloCluster * clus = (AliAODCaloCluster *) caloClusters->At(iclus) ;
     TLorentzVector momentum ;
@@ -150,8 +148,8 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 //____________________________________________________________________________
 void AliCaloTrackAODReader::FillInputPHOS() {
   //Return array with PHOS clusters in aod format
-  fAODPHOS = new TClonesArray("AliAODCaloCluster",0);
 
+  fAODPHOS = new TClonesArray("AliAODCaloCluster",0);
   TRefArray * caloClusters = new TRefArray();
   fAOD->GetPHOSClusters(caloClusters);
 
@@ -209,8 +207,14 @@ void AliCaloTrackAODReader::GetVertex(Double_t  v[3]) {
 
 
 //____________________________________________________________________________
-void AliCaloTrackAODReader::SetInputEvent(TObject* /*esd*/, TObject* aod, TObject* mc) {
+void AliCaloTrackAODReader::SetInputEvent(TObject* input, TObject* aod, TObject* mc) {
   // Connect the data pointers
-  SetAOD((AliAODEvent*) aod);
+
+  //If input is AOD, do analysis with input, if not, do analysis with the output aod.
+  if(!strcmp(input->GetName(),"AliESDEvent"))   SetAOD((AliAODEvent*) aod);
+  else if(!strcmp(input->GetName(),"AliAODEvent")) SetAOD((AliAODEvent*) input);
+  else AliFatal(Form("Unknown data format: %s",input->GetName()));
+  
   SetMC((AliMCEvent*) mc);
+
 }

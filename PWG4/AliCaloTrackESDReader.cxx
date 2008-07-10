@@ -302,7 +302,12 @@ void AliCaloTrackESDReader::GetVertex(Double_t  v[3]) {
 //____________________________________________________________________________
 void AliCaloTrackESDReader::SetInputEvent(TObject* esd, TObject* aod, TObject* mc) {
   // Connect the data pointers
+
+  if(strcmp(esd->GetName(),"AliESDEvent"))
+    AliFatal(Form("Wrong reader, here only ESDs. Input name: %s != AliESDEvent \n",esd->GetName()));
+  
   SetESD((AliESDEvent*) esd);
   SetAOD ((AliAODEvent*) aod);
   SetMC((AliMCEvent*) mc);
+
 }
