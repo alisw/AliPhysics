@@ -277,7 +277,7 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // apply ExB correction to the Y-position
     // and move to the Z-position relative to the middle of the chamber
     posLocal[0] = -xLocal;
-    posLocal[1] =  (fPadPlane->GetColPos(col) - (x[0] + 0.5) * colSize) - driftLength * exbCorr;
+    posLocal[1] =  (fPadPlane->GetColPos(col) + (0.5 - x[0]) * colSize) - driftLength * exbCorr;
     posLocal[2] =  (fPadPlane->GetRowPos(row) -         0.5  * rowSize) - fZShiftIdeal;
 
     // Go to tracking coordinates
@@ -303,8 +303,8 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     x[5] = rowSize*rowSize / 12.0;                                       
     i[2] = TMath::Nint(timeT0Cal);
 		
-		// A.Bercuci for TRD tracking calibration awareness
-		out = (i[2] < 0 || i[2] > Int_t(3.5*fSamplingFrequency/vdrift)) ? kTRUE : kFALSE; 
+    // For TRD tracking calibration awareness
+    out  = ((i[2] < 0) || (i[2] > Int_t(3.5 * fSamplingFrequency/vdrift))) ? kTRUE : kFALSE; 
 
     return kTRUE;
 
@@ -349,5 +349,6 @@ void AliTRDtransform::Recalibrate(AliTRDcluster *c, Bool_t setDet)
   c->SetY(clusterXYZ[1]);
   c->SetZ(clusterXYZ[2]);
   c->SetLocalTimeBin(((Char_t) clusterRCT[2]));
-	c->SetInChamber(!out);
+  c->SetInChamber(!out);
+
 }

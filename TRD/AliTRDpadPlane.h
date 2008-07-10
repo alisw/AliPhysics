@@ -5,19 +5,18 @@
 
 /* $Id$ */
 
-//////////////////////////////////////////////////
-//                                              //
-//  TRD pad plane class                         //
-//                                              //
-//  Contains the information on pad postions,   //
-//  pad dimensions, tilting angle, etc.         //
-//  It also provides methods to identify the    //
-//  current pad number from global coordinates. //
-//                                              //
-//////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRD pad plane class                                                   //
+//                                                                        //
+//  Contains the information on ideal pad positions, pad dimensions,      //
+//  tilting angle, etc.                                                   //
+//  It also provides methods to identify the current pad number from      //
+//  local tracking coordinates.                                           //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-
 
 //_____________________________________________________________________________
 class AliTRDpadPlane : public TObject {
@@ -64,7 +63,7 @@ class AliTRDpadPlane : public TObject {
   Double_t GetPadRowOffset(Int_t row, Double_t z) const
                                              { if ((row < 0) || (row >= fNrows))
                                                  return -1.0;
-                                               else 
+                                                else 
                                                  return fPadRow[row] + fPadRowSMOffset - z;        };
   Double_t GetPadRowOffsetROC(Int_t row, Double_t z) const
                                              { if ((row < 0) || (row >= fNrows))
@@ -76,7 +75,7 @@ class AliTRDpadPlane : public TObject {
                                              { if ((col < 0) || (col >= fNcols))
                                                  return -1.0;
                                                else
-                                                 return fPadCol[col] - rphi; };
+                                                 return rphi - fPadCol[col]; };
 
   Double_t GetTiltingAngle() const           { return fTiltingAngle; };
 
@@ -89,7 +88,7 @@ class AliTRDpadPlane : public TObject {
 
   Double_t GetRowEnd() const                 { return fPadRow[fNrows-1] - fLengthOPad + fPadRowSMOffset; };
   Double_t GetRowEndROC() const              { return fPadRow[fNrows-1] - fLengthOPad; };
-  Double_t GetColEnd() const                 { return fPadCol[fNcols-1] - fWidthOPad;  };
+  Double_t GetColEnd() const                 { return fPadCol[fNcols-1] + fWidthOPad;  };
 
   Double_t GetRowPos(Int_t row) const        { return fPadRow[row] + fPadRowSMOffset;  };
   Double_t GetRowPosROC(Int_t row) const     { return fPadRow[row];  };

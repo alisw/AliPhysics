@@ -326,7 +326,7 @@ Int_t AliTRDpadPlane::GetPadRowNumberROC(Double_t z) const
 Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi) const
 {
   //
-  // Finds the pad column number for a given global rphi-position
+  // Finds the pad column number for a given rphi-position
   //
 
   Int_t col    = 0;
@@ -334,29 +334,29 @@ Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi) const
   Int_t nbelow = 0;
   Int_t middle = 0;
 
-  if ((rphi > GetCol0()  ) || 
-      (rphi < GetColEnd())) {
+  if ((rphi < GetCol0()  ) || 
+      (rphi > GetColEnd())) {
 
     col = -1;
 
   }
   else {
 
-    nabove = fNcols + 1;
+    nabove = fNcols;
     nbelow = 0;
     while (nabove - nbelow > 1) {
       middle = (nabove + nbelow) / 2;
-      if (rphi == fPadCol[middle-1]) {
+      if (rphi == fPadCol[middle]) {
         col    = middle;
       }
-      if (rphi  > fPadCol[middle-1]) {
-        nabove = middle;
-      }
-      else {
+      if (rphi  > fPadCol[middle]) {
         nbelow = middle;
       }
+      else {
+        nabove = middle;
+      }
     }
-    col = nbelow - 1;
+    col = nbelow;
 
   }
 

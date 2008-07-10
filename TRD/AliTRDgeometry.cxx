@@ -21,7 +21,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoMatrix.h>
@@ -36,6 +35,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
+#include "AliTRDSimParam.h"
 
 ClassImp(AliTRDgeometry)
 
@@ -336,7 +336,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.515);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.635);
-      padPlane->SetTiltingAngle(-2.0);
+      padPlane->SetTiltingAngle(2.0);
     }
     else {
       // L0C1 type
@@ -347,7 +347,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.515);
       padPlane->SetLengthIPad(7.5);
       padPlane->SetWidthIPad(0.635);
-      padPlane->SetTiltingAngle(-2.0);
+      padPlane->SetTiltingAngle(2.0);
     }
     break;
   case 1:
@@ -360,7 +360,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.585);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.665);
-      padPlane->SetTiltingAngle(2.0);
+      padPlane->SetTiltingAngle(-2.0);
     }
     else {
       // L1C1 type
@@ -371,7 +371,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.585);
       padPlane->SetLengthIPad(7.5);
       padPlane->SetWidthIPad(0.665);
-      padPlane->SetTiltingAngle(2.0);
+      padPlane->SetTiltingAngle(-2.0);
     }
     break;
   case 2:
@@ -384,7 +384,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.705);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.695);
-      padPlane->SetTiltingAngle(-2.0);
+      padPlane->SetTiltingAngle(2.0);
     }
     else {
       // L2C1 type
@@ -395,7 +395,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.705);
       padPlane->SetLengthIPad(8.0);
       padPlane->SetWidthIPad(0.695);
-      padPlane->SetTiltingAngle(-2.0);
+      padPlane->SetTiltingAngle(2.0);
     }
     break;
   case 3:
@@ -408,7 +408,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.775);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.725);
-      padPlane->SetTiltingAngle(2.0);
+      padPlane->SetTiltingAngle(-2.0);
     }
     else {
       // L3C1 type
@@ -419,7 +419,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.775);
       padPlane->SetLengthIPad(8.5);
       padPlane->SetWidthIPad(0.725);
-      padPlane->SetTiltingAngle(2.0);
+      padPlane->SetTiltingAngle(-2.0);
     }
     break;
   case 4:
@@ -432,7 +432,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.845);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.755);
-      padPlane->SetTiltingAngle(-2.0);
+      padPlane->SetTiltingAngle(2.0);
     }
     else {
       // L4C1 type
@@ -443,7 +443,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.845);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.755);
-      padPlane->SetTiltingAngle(-2.0);
+      padPlane->SetTiltingAngle(2.0);
     }
     break;
   case 5:
@@ -456,7 +456,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.965);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.785);
-      padPlane->SetTiltingAngle(2.0);
+      padPlane->SetTiltingAngle(-2.0);
     }
     else {
       // L5C1 type
@@ -467,7 +467,7 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
       padPlane->SetWidthOPad(0.965);
       padPlane->SetLengthIPad(9.0);
       padPlane->SetWidthIPad(0.785);
-      padPlane->SetTiltingAngle(2.0);
+      padPlane->SetTiltingAngle(-2.0);
     }
     break;
   };
@@ -493,17 +493,17 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
   //
   // Column direction
   //
-  Double_t col = fCwidth[ilayer] / 2.0
-               + fgkCroW
-               - padPlane->GetWidthRim();
+  Double_t col = - fCwidth[ilayer] / 2.0
+                 - fgkCroW
+                 + padPlane->GetWidthRim();
   for (Int_t ic = 0; ic < padPlane->GetNcols(); ic++) {
     padPlane->SetPadCol(ic,col);
-    col -= padPlane->GetColSpacing();
+    col += padPlane->GetColSpacing();
     if (ic == 0) {
-      col -= padPlane->GetWidthOPad();
+      col += padPlane->GetWidthOPad();
     }
     else {
-      col -= padPlane->GetWidthIPad();
+      col += padPlane->GetWidthIPad();
     }
   }
   // Calculate the offset to translate from the local ROC system into
@@ -577,6 +577,8 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 
   Char_t  cTagV[6];
   Char_t  cTagM[5];
+
+  AliTRDSimParam *simParam = AliTRDSimParam::Instance();
 
   // There are three TRD volumes for the supermodules in order to accomodate
   // the different arrangements in front of PHOS
@@ -2198,22 +2200,23 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       Int_t   iDet    = GetDetectorSec(ilayer,istack);
       Int_t   iCopy   = GetDetector(ilayer,istack,0) * 1000;
       Int_t   nMCMrow = GetRowMax(ilayer,istack,0);
-      Float_t ySize   = (GetChamberLength(ilayer,istack) - 2.0*fgkRpadW) 
+      Float_t ySize   = (GetChamberLength(ilayer,istack) - 2.0*fgkRpadW)
                       / ((Float_t) nMCMrow);
       Int_t   nMCMcol = 8;
       Float_t xSize   = (GetChamberWidth(ilayer)         - 2.0*fgkCpadW)
-	              / ((Float_t) nMCMcol);
+                      / ((Float_t) nMCMcol + 6);             // Introduce 6 gaps
+      Int_t   iMCM[8] = {  1,  2,  3,  5,  8,  9, 10, 12 };  // 0..7 MCM + 6 gap structure
       sprintf(cTagV,"UU%02d",iDet);
       for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
         for (Int_t iMCMcol = 0; iMCMcol < nMCMcol; iMCMcol++) {
-          xpos      = (0.5 + iMCMcol) * xSize + 1.0 
+          xpos      = (0.5 + iMCM[iMCMcol]) * xSize + 1.0
                     - fCwidth[ilayer]/2.0;
-          ypos      = (0.5 + iMCMrow) * ySize + 1.0 
+          ypos      = (0.5 + iMCMrow) * ySize + 1.0
                     - fClength[ilayer][istack]/2.0 + fgkHspace/2.0;
           zpos      = -0.4 + 0.742/2.0;
           gMC->Gspos("UMCM",iCopy+iMCMrow*10+iMCMcol,cTagV
                            ,xpos,ypos,zpos,0,"ONLY");
-	}
+        }
       }
 
     }
