@@ -135,8 +135,8 @@ void AliZDCQADataMakerRec::InitESDs()
   //
   TH2F * hZNC  = new TH2F("hZNC", "Centroid in ZNC", 100, -5.,5.,100,-5.,5.);
   TH2F * hZNA  = new TH2F("hZNA", "Centroid in ZNA", 100, -5.,5.,100,-5.,5.);
-  Add2DigitsList(hZNC, 0);
-  Add2DigitsList(hZNA, 1);
+  Add2ESDsList(hZNC, 0);
+  Add2ESDsList(hZNA, 1);
   //
   // ------------------- HIGH GAIN CHAIN ---------------------------
   TH1F * hESDZNCTot = new TH1F("hESDZNCTot", "Energy in ZNC", 100, 0., 6000.);
