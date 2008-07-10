@@ -2,12 +2,12 @@
 contact: Boris.Polishchuk@cern.ch
 link: see comments in the $ALICE_ROOT/PHOS/AliPHOSRcuDA1.cxx
 reference run: /castor/cern.ch/alice/phos/2007/10/04/18/07000008249001.1000.root
-run type: PHYSICS, STANDALONE
+run type: PHYSICS
 DA type: MON 
 number of events needed: 1000
 input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data
 Output files: PHOS_Module2_Calib.root
-trigger types used: L0
+Trigger types used: PHYSICS
 */
 
 
