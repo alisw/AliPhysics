@@ -12,7 +12,7 @@ void rec() {
   
   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
-  AliTPCReconstructor::SetStreamLevel(0);
+  AliTPCReconstructor::SetStreamLevel(1);
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC");
   //AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
   //	recEmc->SetSubtractPedestals(kFALSE);
