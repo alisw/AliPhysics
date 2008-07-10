@@ -45,7 +45,6 @@ TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
     if (!cTree->GetEvent(i)) continue;
 
     Int_t ncl=cl->GetEntriesFast();
-    cout<<" ncl = "<<ncl<<endl;
     while (ncl--) {
       AliCluster *c=(AliCluster*)cl->UncheckedAt(ncl);
       Float_t g[3]; //global coordinates
@@ -83,8 +82,8 @@ TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
   return clusters;
 }
 
-TEvePointSet* tof_clusters(Int_t selectedSector=-1,
-			   TEveElement* cont=0, Float_t maxR=390)
+TEvePointSet* tof_clusters_sec(Int_t selectedSector,
+                               TEveElement* cont=0, Float_t maxR=390)
 {
   AliEveEventManager::AssertGeometry();
 
@@ -109,7 +108,6 @@ TEvePointSet* tof_clusters(Int_t selectedSector=-1,
     if (!cTree->GetEvent(i)) continue;
 
     Int_t ncl=cl->GetEntriesFast();
-    cout<<" ncl = "<<ncl<<endl;
     while (ncl--) {
       AliCluster *c=(AliCluster*)cl->UncheckedAt(ncl);
       Float_t g[3]; //global coordinates

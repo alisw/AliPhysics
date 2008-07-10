@@ -13,7 +13,7 @@
 #include "TParticlePDG.h"
 
 TEveTrackList*
-kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
+kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
 	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE,
 	    Bool_t   use_track_refs = kTRUE)
 {
@@ -38,7 +38,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   Int_t N = stack->GetNtrack();
   for (Int_t i=0; i<N; ++i)
   {
-    if(stack->IsPhysicalPrimary(i))
+    if (stack->IsPhysicalPrimary(i))
     {
       TParticle* p = stack->Particle(i);
       if (p->Pt() < min_pt && p->P() < min_p) continue;

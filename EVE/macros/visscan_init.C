@@ -34,6 +34,7 @@ void visscan_init()
   TEveUtil::LoadMacro("its_clusters.C+");
   TEveUtil::LoadMacro("tpc_clusters.C+");
   TEveUtil::LoadMacro("trd_clusters.C+");
+  TEveUtil::LoadMacro("tof_clusters.C+");
 
   TEveLine::SetDefaultSmooth(1);
 
@@ -60,7 +61,7 @@ void visscan_init()
   if (gShowTRD) gGeomGentleTRD = geom_gentle_trd();
 
 
-  gROOT->ProcessLine(".L SplitGLView.C+g"); // !!!! debug-mode
+  gROOT->ProcessLine(".L SplitGLView.C+");
   TEveBrowser* browser = gEve->GetBrowser();
   browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
 
@@ -108,6 +109,13 @@ void on_new_event()
       trdc->SetMarkerColor(7);
       trdc->SetMarkerStyle(4);
       trdc->SetMarkerSize(0.5);
+    }
+
+    TEvePointSet* tofc = tof_clusters();
+    if (tofc) {
+      tofc->SetMarkerColor(kOrange);
+      tofc->SetMarkerStyle(4);
+      tofc->SetMarkerSize(0.5);
     }
   }
   catch(TEveException& exc) {

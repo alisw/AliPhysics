@@ -7,6 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include <vector> // bypass a cint problem in root-5.20
+
 // Load ITS raw-data.
 // Argument mode is a bitwise or determining which layers to import:
 //    1,  2 : SPD

@@ -7,6 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include <vector> // bypass a cint problem in root-5.20
+
 class AliEveITSModuleStepper;
 
 void its_module_stepper(Int_t det = 0)
