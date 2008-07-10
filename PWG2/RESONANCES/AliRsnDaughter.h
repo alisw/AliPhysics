@@ -108,6 +108,8 @@ class AliRsnDaughter : public AliVParticle
     Bool_t  InitMCInfo (TParticle *particle);
     Bool_t  InitMCInfo (AliMCParticle *mcParticle);
 
+    // Dummy
+    Int_t GetLabel() const {return -1;}
     AliRsnMCInfo* GetMCInfo() const { return fMCInfo; }
 
   private:
