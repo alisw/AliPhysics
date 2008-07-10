@@ -26,10 +26,9 @@
 #include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONTriggerCrateConfig.h"
 #include "AliMpConstants.h"
-#include "AliMpFiles.h"
 #include "AliMpHelper.h"
 #include "AliMpExMapIterator.h"
-#include "AliMpRegionalTriggerReader.h"
+#include "AliMpRegionalTrigger.h"
 #include "AliLog.h"
 
 #include <TArrayI.h>
@@ -93,27 +92,91 @@ AliMUONRegionalTriggerConfig::~AliMUONRegionalTriggerConfig()
 //______________________________________________________________________________
 Int_t AliMUONRegionalTriggerConfig::ReadData(const TString& fileName)
 {
-    /// Load the Regional trigger from ASCII data files
+    /// Load the Regional trigger from ASCII data file
 
-    ifstream inFile(fileName.Data(), ios::in);
-    if ( ! inFile.good() ) {
+    // Read first data contained in mapping object
+    //
+    AliMpRegionalTrigger mpRegionalTrigger;
+    mpRegionalTrigger.SetTriggerCratesOwner(kFALSE); 
+    if ( ! mpRegionalTrigger.ReadData(fileName) ) {
+        AliErrorStream()
+           << "Reading mapping regional trigger from file " << fileName.Data() << " failed." 
+           << endl;
+        return 0;
+    }
+
+    // Fill calibration object from mapping object
+    //
+    TIterator* it = mpRegionalTrigger.CreateCrateIterator();
+    AliMpTriggerCrate* mpTriggerCrate;
+    while ( ( mpTriggerCrate = (AliMpTriggerCrate*)it->Next() ) ) {
+      fTriggerCrates.Add(
+        mpTriggerCrate->GetName(), new AliMUONTriggerCrateConfig(mpTriggerCrate));
+    }    
+    delete it;     
+        
+    // 
+
+    // Read remaining calibration data from file
+    //
+    ifstream in(fileName.Data(), ios::in);
+    if ( ! in.good() ) {
         AliErrorStream()
            << "Local Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
         return 0;
     }
 
-    TList list;
-    list.AddAt(&fTriggerCrates,0);
-    
-    Int_t status = AliMpRegionalTriggerReader::ReadData(list, inFile);
-    
-    if (status == -1) {
+    UShort_t mask;
+    Int_t mode, coincidence;
+    Int_t nofBoards;
+    char line[80];
+
+    // decode file and store in objects
+    while (!in.eof())
+    {
+      // Get name
+      in.getline(line,80);
+      if (!strlen(line)) break;
+      TString crateName(AliMpHelper::Normalize(line));
+
+      in.getline(line,80);    
+  
+      // read mode
+      in.getline(line,80);
+      sscanf(line,"%d",&mode);
+
+      // read coincidence
+      in.getline(line,80);
+      sscanf(line,"%d",&coincidence);
+
+      // read mask
+      in.getline(line,80);
+      sscanf(line,"%hx",&mask);
+      
+      // read # local board
+      in.getline(line,80);
+      sscanf(line,"%d",&nofBoards);
+
+      AliMUONTriggerCrateConfig*  crateConfig 
+        = (AliMUONTriggerCrateConfig*)(fTriggerCrates.GetValue(crateName.Data()));
+        
+      // This should never happen, but let's test it anyway  
+      if ( ! crateConfig ) {
         AliErrorStream()
-        << "Regional Trigger configuration File " << fileName.Data() << " not found" << endl;
+           << "Cannot find AliMUONTriggerCrateConfig " << crateName.Data() << endl;
         return 0;
-    } 
-    
-    return status;
+      }
+       
+      crateConfig->SetMode(mode);
+      crateConfig->SetCoinc(coincidence);
+      crateConfig->SetMask(mask);
+      
+      // Skipp local board data
+      for ( Int_t i = 0; i < 3*nofBoards; ++i ) 
+          in.getline(line,80);
+    }
+
+    return fTriggerCrates.GetSize();
 }
 
 //______________________________________________________________________________

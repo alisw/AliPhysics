@@ -24,7 +24,6 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpRegionalTrigger.h"
-#include "AliMpRegionalTriggerReader.h"
 #include "AliMpExMapIterator.h"
 #include "AliMpTriggerCrate.h"
 #include "AliMpLocalBoard.h"
@@ -112,27 +111,89 @@ AliMpRegionalTrigger::~AliMpRegionalTrigger()
 Bool_t AliMpRegionalTrigger::ReadData(istream& in)
 {
 /// Load the Regional trigger from ASCII data files
-/// and return its instance
+/// and fill objects. Return false if reading fails
+  
+  if ( !in.good() ) return kFALSE;
+   
+  Int_t localBoardId = 0;
+  TArrayI listInt;
+  UShort_t crateId;
+  Int_t nofBoards;
+  char line[80];
+ 
+  // decode file and store in objects
+  while (!in.eof())
+  {
+    in.getline(line,80);
+    if (!strlen(line)) break;
+    TString crateName(AliMpHelper::Normalize(line));
     
-    TList list;
-    list.AddAt(&fTriggerCrates, 0);
-    list.AddAt(&fLocalBoardMap, 1);
-    list.AddAt(&fLocalBoardArray, 2);
+    in.getline(line,80);    
+    sscanf(line,"%hx",&crateId);
 
-    Int_t status = AliMpRegionalTriggerReader::ReadData(list, in);
+    // skip data which are not stored in mapping object
+    // (mode, coincidence, mask)
+    in.getline(line,80);
+    in.getline(line,80);
+    in.getline(line,80);
     
-    if (status == -1) {
-        AliErrorStream()
-        << "Regional Trigger Mapping File not found" << endl;
-        return kFALSE;
-    } 
+    // read # local board
+    in.getline(line,80);
+    sscanf(line,"%d",&nofBoards);
     
-    if (!status)
-      return kFALSE;
-      
+    AliMpTriggerCrate* crate 
+      = (AliMpTriggerCrate*)(fTriggerCrates.GetValue(crateName.Data()));
+    if (!crate)  {
+      crate = new AliMpTriggerCrate(crateName.Data(), crateId);
+      fTriggerCrates.Add(crateName.Data(), crate);
+    }
+
+    Char_t localBoardName[20];
+    Int_t slot;
+    UInt_t switches;
     
-    return kTRUE;
-}
+    for ( Int_t i = 0; i < nofBoards; ++i ) 
+    {
+        in.getline(line,80);
+        sscanf(line,"%02d %s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
+        AliMpLocalBoard* board = new AliMpLocalBoard(localBoardId, localBoardName, slot); 
+        board->SetSwitch(switches);
+        board->SetCrate(crateName);
+        
+        if (localBoardId > AliMpConstants::NofLocalBoards())
+          board->SetNotified(false); // copy cards
+        
+        crate->AddLocalBoard(localBoardId);
+        
+        // add  list of DEs for local board
+        listInt.Reset();
+        in.getline(line,80);
+        TString tmp(AliMpHelper::Normalize(line));
+        AliMpHelper::DecodeName(tmp,' ',listInt);
+        for (Int_t ii = 0; ii < listInt.GetSize(); ++ii) { 
+          if ( listInt[ii] ) board->AddDE(listInt[ii]);
+        }  
+         
+        // set copy number and transverse connector
+        in.getline(line,80);
+        TString tmp1 = AliMpHelper::Normalize(line);
+        AliMpHelper::DecodeName(tmp1,' ',listInt);
+        
+        board->SetInputXfrom(listInt[0]);
+        board->SetInputXto(listInt[1]);
+        
+        board->SetInputYfrom(listInt[2]);
+        board->SetInputYto(listInt[3]);
+        
+        board->SetTC(listInt[4]);
+        
+        // add local board into array
+        fLocalBoardArray.AddAt(board,board->GetId());
+        fLocalBoardMap.Add(board->GetId(),board);
+    }
+  }
+  return kTRUE;
+}  
 
 //
 // public methods
@@ -252,4 +313,10 @@ AliMpRegionalTrigger::LocalBoardId(Int_t index) const
   return -1;
 }
 
+//______________________________________________________________________________
+void AliMpRegionalTrigger::SetTriggerCratesOwner(Bool_t owner)
+{
+  /// Set ownership to trigger crates
 
+  fTriggerCrates.SetOwner(owner);
+}  

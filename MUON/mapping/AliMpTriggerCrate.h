@@ -20,7 +20,6 @@
 class AliMpTriggerCrate : public  TNamed {
 
   public:
-    AliMpTriggerCrate(const Char_t* name, Int_t ddlId);
     AliMpTriggerCrate(const Char_t* name, UShort_t Id);
     AliMpTriggerCrate(TRootIOCtor* /*ioCtor*/);
     virtual ~AliMpTriggerCrate();

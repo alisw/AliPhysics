@@ -50,14 +50,17 @@ class AliMpRegionalTrigger : public  TObject{
     Int_t GetNofTriggerCrates() const;
 
     Int_t GetNofLocalBoards() const;
+    
+    // ownership
+    void SetTriggerCratesOwner(Bool_t owner);
 
   private:
     Bool_t ReadData(istream& in);
 
     // data members  
     AliMpExMap  fTriggerCrates; ///< map for trigger crates
-    AliMpExMap fLocalBoardMap; ///< map of local boards (owner of boards)
-    TObjArray  fLocalBoardArray; ///< array of local boards (not owner of boards, the map is the owner)
+    AliMpExMap  fLocalBoardMap; ///< map of local boards (owner of boards)
+    TObjArray   fLocalBoardArray; ///< array of local boards (not owner of boards, the map is the owner)
  
   ClassDef(AliMpRegionalTrigger,2) // Regional trigger crate
 };

@@ -61,27 +61,15 @@ TString AliMpTriggerCrate::GenerateName(Int_t crateId, Int_t ddlId, Int_t nofDDL
   return name;
 }  
  
-
-//______________________________________________________________________________
-AliMpTriggerCrate::AliMpTriggerCrate(const Char_t* name, Int_t ddlId)
-  : TNamed(name, "mapping trigger crate"),
-    fId(0),
-    fDdlId(ddlId),
-    fLocalBoard(false)
- 
-{
-/// Standard constructor
-}
-
 //______________________________________________________________________________
 AliMpTriggerCrate::AliMpTriggerCrate(const Char_t* name, UShort_t id)
   : TNamed(name, "mapping trigger crate"),
     fId(id),
-    fDdlId(0),
+    fDdlId(-1),
     fLocalBoard(false)
  
 {
-/// Standard constructor for Shuttle + DA
+/// Standard constructor 
 }
 
 //______________________________________________________________________________
@@ -107,8 +95,8 @@ AliMpTriggerCrate::~AliMpTriggerCrate()
 //______________________________________________________________________________
 Bool_t AliMpTriggerCrate::AddLocalBoard(Int_t localBoardId)
 {
-/// Add detection element with given detElemId.
-/// Return true if the detection element was added
+/// Add local boards with given detElemId.
+/// Return true if the local board was added
 
   if ( HasLocalBoard(localBoardId) ) {
     AliWarningStream() 

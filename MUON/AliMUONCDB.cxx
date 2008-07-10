@@ -658,8 +658,12 @@ AliMUONCDB::MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) co
   
   AliCodeTimerAuto("");
   
-    return rtm.ReadData(AliMpFiles::LocalTriggerBoardMapping());
-      
+  if ( ! rtm.ReadData(AliMpFiles::LocalTriggerBoardMapping()) ) {
+    AliErrorStream() << "Error when reading from mapping file" << endl;
+    return 0;
+  }
+    
+  return rtm.GetNofTriggerCrates();  
 }
 
 

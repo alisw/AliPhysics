@@ -100,7 +100,6 @@
 #pragma link C++ class  AliMpRegionalTrigger+;
 #pragma link C++ class  AliMpTriggerCrate+;
 #pragma link C++ class  AliMpLocalBoard+;
-#pragma link C++ class  AliMpRegionalTriggerReader+;
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */

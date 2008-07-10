@@ -33,28 +33,25 @@
 ClassImp(AliMUONTriggerCrateConfig)
 /// \endcond
 
-
  //______________________________________________________________________________
-AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig()
-  : TNamed("Trigger Crate","configuration trigger crate"),
-    fId(0),
+AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig(AliMpTriggerCrate* mpTriggerCrate)
+  : TObject(),
+    fMpCrate(mpTriggerCrate),
     fMask(0),
     fMode(0),
-    fCoinc(0),
-    fLocalBoard(false)
+    fCoinc(0)
 {
 /// Standard constructor for Shuttle + DA
 }
 
 
  //______________________________________________________________________________
-AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig(const Char_t* name, UShort_t id, UShort_t mask, UShort_t mode, UShort_t coinc)
-  : TNamed(name, "configuration trigger crate"),
-    fId(id),
-    fMask(mask),
-    fMode(mode),
-    fCoinc(coinc),
-    fLocalBoard(false)
+AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig(TRootIOCtor* ioCtor)
+  : TObject(),
+    fMpCrate(0x0),
+    fMask(0),
+    fMode(0),
+    fCoinc(0)
 {
 /// Standard constructor for Shuttle + DA
 }
@@ -73,18 +70,10 @@ AliMUONTriggerCrateConfig::~AliMUONTriggerCrateConfig()
 //______________________________________________________________________________
 Bool_t AliMUONTriggerCrateConfig::AddLocalBoard(Int_t localBoardId)
 {
-/// Add detection element with given detElemId.
-/// Return true if the detection element was added
+/// Add local boards with given detElemId.
+/// Return true if the local board was added
 
-  if ( HasLocalBoard(localBoardId) ) {
-    AliWarningStream() 
-      << "Local board with Id=" << localBoardId << " already present."
-      << endl;
-    return false;
-  }    
-
-  fLocalBoard.Add(localBoardId);
-  return true;
+  return fMpCrate->AddLocalBoard(localBoardId);
 }   
 
 
@@ -93,7 +82,7 @@ Int_t AliMUONTriggerCrateConfig::GetNofLocalBoards() const
 {  
 /// Return the number of local board in this crate
 
-  return fLocalBoard.GetSize(); 
+  return fMpCrate->GetNofLocalBoards(); 
 }
 
 //______________________________________________________________________________
@@ -101,10 +90,7 @@ Int_t  AliMUONTriggerCrateConfig::GetLocalBoardId(Int_t index) const
 {  
 /// Return the local board by index (in loop)
 
-  if (index >= 0 && index < fLocalBoard.GetSize())
-      return fLocalBoard.GetValue(index); 
-  else 
-      return 0; // begin at 1
+  return fMpCrate->GetLocalBoardId(index);
 }
 
 //______________________________________________________________________________
@@ -112,6 +98,6 @@ Bool_t  AliMUONTriggerCrateConfig::HasLocalBoard(Int_t localBoardId) const
 {  
 /// Return true if crate has local boardwith given localBoardId
 
-  return fLocalBoard.HasValue(localBoardId); 
+  return fMpCrate->HasLocalBoard(localBoardId); 
 }
 

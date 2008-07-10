@@ -13,21 +13,26 @@
 #define ALIMUON_TRIGGER_CRATE_CONFIG_H
 
 #include "AliMpArrayI.h"
+#include "AliMpTriggerCrate.h"
 
-#include <TNamed.h>
+#include <TObject.h>
 #include <TString.h>
 #include "AliMpArrayI.h"
 
-class AliMUONTriggerCrateConfig : public  TNamed {
+class AliMUONTriggerCrateConfig : public  TObject {
 
   public:
-  
-    AliMUONTriggerCrateConfig();
-    AliMUONTriggerCrateConfig(const Char_t* name, UShort_t Id, UShort_t mask, 
-                              UShort_t mode, UShort_t coinc);
+    AliMUONTriggerCrateConfig(AliMpTriggerCrate* mpTriggerCrate);
+    AliMUONTriggerCrateConfig(TRootIOCtor* /*ioCtor*/);
     virtual ~AliMUONTriggerCrateConfig();
     
-      /// get methods
+      // set methods
+    void SetMask(UShort_t mask);
+    void SetMode(UShort_t mode);
+    void SetCoinc(UShort_t coinc);
+
+      // get methods
+    const Char_t* GetName() const;
     UShort_t GetId()  const;
     UShort_t GetMask() const;
     UShort_t GetMode() const;
@@ -38,27 +43,43 @@ class AliMUONTriggerCrateConfig : public  TNamed {
     Bool_t AddLocalBoard(Int_t localBoardId);
     
   private:
-
+    /// Not implemented
+    AliMUONTriggerCrateConfig();
     /// Not implemented
     AliMUONTriggerCrateConfig(const AliMUONTriggerCrateConfig& rhs);
     /// Not implemented
     AliMUONTriggerCrateConfig& operator=(const AliMUONTriggerCrateConfig& rhs);
 
     // data members
-    UShort_t     fId;         ///< crate number
-    UShort_t     fMask;       ///< regional mask
-    UShort_t     fMode;       ///< mode operating for crate
-    UShort_t     fCoinc;      ///< coincidence mode for crate
-    AliMpArrayI  fLocalBoard; ///< local board connected to this crate
+    AliMpTriggerCrate* fMpCrate; ///< mapping crate
+    UShort_t           fMask;    ///< regional mask
+    UShort_t           fMode;    ///< mode operating for crate
+    UShort_t           fCoinc;   ///< coincidence mode for crate
 
-  ClassDef(AliMUONTriggerCrateConfig,1)  // The class collectiong electronics properties of DDL
+  ClassDef(AliMUONTriggerCrateConfig,2)  // The class collectiong electronics properties of DDL
 };
 
 // inline functions
 
+/// Set regional mask
+inline void AliMUONTriggerCrateConfig::SetMask(UShort_t mask)   
+{ fMask = mask; }
+
+/// Set mode operating for crate
+inline void AliMUONTriggerCrateConfig::SetMode(UShort_t mode)   
+{ fMode = mode; }
+
+/// Set coincidence mode for crate
+inline void AliMUONTriggerCrateConfig::SetCoinc(UShort_t coinc) 
+{ fCoinc = coinc; }
+
+/// Return  name
+inline const Char_t* AliMUONTriggerCrateConfig::GetName() const
+{  return fMpCrate->GetName(); }
+
 /// Return  Id
 inline UShort_t AliMUONTriggerCrateConfig::GetId() const
-{  return fId; }
+{  return fMpCrate->GetId(); }
 
 /// Return mask
 inline UShort_t AliMUONTriggerCrateConfig::GetMask() const
