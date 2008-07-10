@@ -9,6 +9,7 @@
 //  Manager and hits classes for set :   VZERO     //
 //                                     version 7   //
 //                                     April 2006  //
+//                           revised in July 2008  // 
 //                                                 //
 /////////////////////////////////////////////////////
 
@@ -58,7 +59,7 @@ private:
   Float_t fV0CFibToPhot;         // Loss in Fibers - Photocathode Connection 
 
 // V0A Parameters related to geometry:
-  Double_t fV0AR0, fV0AR1, fV0AR2, fV0AR3, fV0AR4, fV0AR5, fV0AR6;	// Radius of V0A
+  Double_t fV0AR0, fV0AR1, fV0AR2, fV0AR3, fV0AR4, fV0AR5, fV0AR6, fV0AR7;   // Radius of V0A
   Double_t fV0ASciWd, fV0APlaWd, fV0APlaAl, fV0AOctWd, fV0AFraWd; 	// Thickness of elements
   Double_t fV0AOctH1, fV0AOctH2, fV0ABasHt;				// Height of elements
   Double_t fV0AFibRd;							// Radius of Fiber
