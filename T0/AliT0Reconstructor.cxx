@@ -169,12 +169,18 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(qt1) , timeCFD->At(ipmt), "pdc" ) ;
      
       //LED
+      Float_t ampLED;    //LED
       Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
-      Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
-      Float_t ampLED = qt/Float_t(mv2MIP);
-      AliDebug(1,Form(" ipmt %i QTC %f ch QTC in MIP %f, time in chann %f (led-cfd) %f in MIPs %f",
-		      ipmt, adc[ipmt], adc[ipmt]/Float_t(mv2MIP), time[ipmt],sl,ampLED ));
-
+      if( adc[ipmt]/Float_t(mv2MIP) < 20) 
+	{
+	  Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
+	  ampLED = qt/Float_t(mv2MIP);
+	  AliDebug(1,Form(" ipmt %i QTC %f ch QTC in MIP %f, time in chann %f (led-cfd) %f in MIPs %f",
+			  ipmt, adc[ipmt], adc[ipmt]/Float_t(mv2MIP), time[ipmt],sl,ampLED ));
+	}
+      else
+	{ AliDebug(1,Form(" amplitude %f MIPs on PMT %i, write QTC in both ", (adc[ipmt]/Float_t(mv2MIP)), ipmt));
+	  ampLED=adc[ipmt]/Float_t(mv2MIP);}
       frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]/Float_t(mv2MIP));
       frecpoints->SetAmpLED(ipmt,ampLED);
@@ -292,7 +298,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     timeLED[in] = allData[in+1][0] ;
 	     timeCFD[in] = allData[in+25][0] ;
 	     chargeQT1[in] = allData[in+57][0] ;
-	     chargeQT0[in] = allData[in+80][0] ;
+	     chargeQT0[in] = allData[in+81][0] ;
 	   }
        }
        
@@ -333,8 +339,17 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     if((qt1-qt0)>0)  adc[ipmt] = Int_t(TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000.)));
 	     time[ipmt] = fCalib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD[ipmt], "pdc" ) ;
 	     Double_t sl = (timeLED[ipmt] - time[ipmt])*channelWidth;
-	     if(fAmpLEDrec.At(ipmt)) 
-	       qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
+	     printf(" amplitude %f %f\n",adc[ipmt]/Float_t(mv2MIP), sl);
+	     //pp collison
+	     if( adc[ipmt]/Float_t(mv2MIP) < 20) 
+	       {
+		 if(fAmpLEDrec.At(ipmt)) 
+		   qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
+	       }
+	     else //PbPb
+	       { AliDebug(1,Form(" amplitude %f MIPs on PMT %i, write QTC in both ", (adc[ipmt]/Float_t(mv2MIP)), ipmt));
+		 qt=adc[ipmt]/Float_t(mv2MIP);}
+	     
 	     frecpoints->SetTime(ipmt,time[ipmt]);
 	     frecpoints->SetAmp(ipmt,adc[ipmt]/Float_t(mv2MIP));
 	     frecpoints->SetAmpLED(ipmt,qt/Float_t(mv2MIP));
@@ -342,7 +357,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f \n ", adc[ipmt]/Float_t(mv2MIP),qt/Float_t(mv2MIP)));
 	   }
 	   if(option == "cosmic") {
-	     //	     if(ipmt == 15) continue; //skip crashed PMT
 	     if(( chargeQT1[ipmt] - chargeQT0[ipmt])>0)  
 	       adc[ipmt] = chargeQT1[ipmt] - chargeQT0[ipmt];
 	     else
@@ -351,8 +365,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
 	     Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
 	     time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
-	     //  if(fAmpLEDrec.At(ipmt)) 
-	     // qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl);
 	     time[ipmt] = time[ipmt] - allData[0][0] + 5000;
 	     AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
 			      ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
