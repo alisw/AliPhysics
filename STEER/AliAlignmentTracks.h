@@ -75,9 +75,9 @@ class AliAlignmentTracks : public TObject {
     return fAlignObjs[iLayer-AliGeomManager::kFirstLayer][iModule];
   }
   void    SetUpdate(Bool_t update){fDoUpdate = update;}
+  void SetCovIsUsed(Bool_t covisused){fCovIsUsed=covisused;}
   Bool_t  GetUpdate() const { return fDoUpdate;}
   void WriteRealignObjArray(TString outfilename,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMax);
-
   Int_t GetLastIndex(Int_t iLayer,Int_t iModule) const { return fLastIndex[iLayer][iModule]; }  
 
  protected:
@@ -110,6 +110,7 @@ class AliAlignmentTracks : public TObject {
   AliTrackFitter   *fTrackFitter;    //  Pointer to the track fitter
   AliTrackResiduals*fMinimizer;      //  Pointer to track residuals minimizer
   Bool_t            fDoUpdate;       //  Indicator - update Alignment object after minimization
+  Bool_t            fCovIsUsed;      //  Indicator - use AlignObjs' Cov matrices
 
  private:
   AliAlignmentTracks(const AliAlignmentTracks & alignment);

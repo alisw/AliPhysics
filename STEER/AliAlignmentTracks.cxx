@@ -49,7 +49,8 @@ AliAlignmentTracks::AliAlignmentTracks():
   fMisalignObjs(0),
   fTrackFitter(0),
   fMinimizer(0),
-  fDoUpdate(kTRUE)
+  fDoUpdate(kTRUE),
+  fCovIsUsed(kFALSE)
 {
   // Default constructor
   InitIndex();
@@ -69,7 +70,8 @@ AliAlignmentTracks::AliAlignmentTracks(TChain *esdchain):
   fMisalignObjs(0),
   fTrackFitter(0),
   fMinimizer(0),
-  fDoUpdate(kTRUE)
+  fDoUpdate(kTRUE),
+  fCovIsUsed(kFALSE)
 {
   // Constructor in the case
   // the user provides an already
@@ -92,7 +94,8 @@ AliAlignmentTracks::AliAlignmentTracks(const char *esdfilename, const char *esdt
   fMisalignObjs(0),
   fTrackFitter(0),
   fMinimizer(0),
-  fDoUpdate(kTRUE)
+  fDoUpdate(kTRUE),
+  fCovIsUsed(kFALSE)
 {
   // Constructor in the case
   // the user provides a single ESD file
@@ -804,7 +807,7 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
 
   if (nArrays == 0) {
     AliError("There are no space-points belonging to all of the volumes which are to be aligned!");
-    points = 0;
+    points = 0x0;
     return 0;
   }
 
@@ -877,8 +880,21 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
 	}
 	// End of misalignment
 
+
 	AliAlignObj *alignObj = fAlignObjs[layer-AliGeomManager::kFirstLayer][modnum];
-	alignObj->Transform(p);
+	UShort_t volp=p.GetVolumeID();
+	Bool_t found=kFALSE;
+	if(fCovIsUsed){
+	  for (Int_t iVol = 0; iVol < nVolIds; iVol++) {
+	    UShort_t vol = (*volids)[iVol];
+	    if(volp==vol){
+	      alignObj->Transform(p,kFALSE);
+	      found=kTRUE;
+	      break;
+	    }
+	  }
+	}
+	if(!found)alignObj->Transform(p,fCovIsUsed);
 	points[iArray]->AddPoint(iPoint,&p);
       }
       iArray++;
@@ -968,6 +984,10 @@ Bool_t AliAlignmentTracks::Misalign(const char *misalignObjFileName, const char*
     {
       AliAlignObj* alObj = (AliAlignObj*)array->UncheckedAt(i);
       alObj->GetVolUID(layerId,modId);
+      if(layerId<AliGeomManager::kFirstLayer) {
+	AliWarning(Form("Alignment object is ignored: %s",alObj->GetSymName()));
+	continue;
+      }
       fMisalignObjs[layerId-AliGeomManager::kFirstLayer][modId] = alObj;
     }
   return kTRUE;
