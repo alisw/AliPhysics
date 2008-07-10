@@ -26,12 +26,7 @@ ClassImp(AliDAJetHeader)
 
 //---------------------------------------------------------------------
 AliDAJetHeader::AliDAJetHeader():
-	fDirectory("/home/perrino/events"),
-	fFileOut("jets.root"),
-	fPytOnly(kTRUE),
-	fPtCut(0.),
-	fEtaCut(.9),
-	fChgOnly(kTRUE),
+	AliJetHeader("AliDAJetHeader"),
 	fSelectJets(kTRUE),
 	fNclustMax(16),
 	fFixedCl(kFALSE),

@@ -22,13 +22,13 @@ public:
     
     void FindJets      ();
  private:
-    void InitDetAnn    (Double_t &dEtSum);
-    void Annealing     (Int_t nk);
-    void NumCl         (Int_t &nc,Int_t &nk);
+    void InitDetAnn    (Double_t &dEtSum,Double_t **xData,TVectorD *px,TVectorD *py,TMatrixD *pyx,TMatrixD *y);
+    void Annealing     (Int_t nk,Double_t **xData,TVectorD *vPx,TVectorD *vPy,TMatrixD *mPyx,TMatrixD *mY);
+    void NumCl         (Int_t &nc,Int_t &nk,TVectorD *vPy,TMatrixD *mPyx,TMatrixD *mY);
     void ReduceClusters(Int_t **iSame,Int_t nc,Int_t &ncout,Int_t **cont,Int_t *nSameOut);
-    void DoubleClusters(Int_t nc,Int_t &nk);
-    void EndDetAnn     (Int_t &nk,Int_t *xx,Double_t etx);
-    void StoreJets     (Int_t nk,Int_t *xx);
+    void DoubleClusters(Int_t nc,Int_t &nk,TVectorD *vPy,TMatrixD *mY);
+    void EndDetAnn     (Int_t &nk,Double_t **xData,Int_t *xx,Double_t etx,TVectorD *px,TVectorD *py,TMatrixD *pyx,TMatrixD *y);
+    void StoreJets     (Int_t nk,Double_t **xData,Int_t *xx,TMatrixD *mY);
 
 protected:
     AliDAJetFinder(const AliDAJetFinder &jf);
@@ -41,13 +41,8 @@ protected:
     Int_t      fNloopMax;				// maximum number of loops at a fixed beta
     Double_t   fBeta;					// increasing multiplier of entropy
     Int_t      fNclustMax;				// maximum number of clusters to find
-    TMatrixD  *fPyx;					// conditional probability matrix
-    TMatrixD  *fY;                                      // clusters matrix
-    TVectorD  *fPx;                                     // input data weights
-    TVectorD  *fPy;                                     // clusters' probability
-    Double_t  *fXEta;					// input data eta coordinate
-    Double_t  *fXPhi;					// input data phi coordinate
     Int_t      fNin;					// number of input data
-    ClassDef(AliDAJetFinder,1)
-};// 
+
+    ClassDef(AliDAJetFinder,2)
+};
 #endif
