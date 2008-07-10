@@ -137,7 +137,11 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fInsideTRM(kFALSE),
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
-  fInsideTRMchain1(kFALSE)
+  fInsideTRMchain1(kFALSE),
+  fLocalEventCounterDRM(-1),
+  fLocalEventCounterLTM(-1),
+  fLocalEventCounterTRM(0x0),
+  fLocalEventCounterChain(0x0)
 {
   //
   // create an object to read TOF raw digits
@@ -153,6 +157,17 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
 
   fRawReader->Reset();
   fRawReader->Select("TOF");
+
+  fLocalEventCounterTRM = new Int_t[13];//adc
+  fLocalEventCounterChain = new Int_t*[13];//adc
+  for (Int_t j=0;j<13;j++){//adc
+    fLocalEventCounterTRM[j] = -1;//adc
+    fLocalEventCounterChain[j] = new Int_t[2];//adc
+    for (Int_t k=0;k<2;k++){//adc
+      fLocalEventCounterChain[j][k] = -1;//adc
+    }//adc
+  }//adc
+
 }
 
 //_____________________________________________________________________________
@@ -185,7 +200,11 @@ AliTOFRawStream::AliTOFRawStream():
   fInsideTRM(kFALSE),
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
-  fInsideTRMchain1(kFALSE)
+  fInsideTRMchain1(kFALSE),
+  fLocalEventCounterDRM(-1),
+  fLocalEventCounterLTM(-1),
+  fLocalEventCounterTRM(0x0),
+  fLocalEventCounterChain(0x0)
 {
   //
   // default ctr
@@ -197,6 +216,17 @@ AliTOFRawStream::AliTOFRawStream():
 
   fTOFrawData = new TClonesArray("AliTOFrawData",1000);
   fTOFrawData->SetOwner();
+
+  fLocalEventCounterTRM = new Int_t[13];//adc
+  fLocalEventCounterChain = new Int_t*[13];//adc
+  for (Int_t j=0;j<13;j++){//adc
+    fLocalEventCounterTRM[j] = -1;//adc
+    fLocalEventCounterChain[j] = new Int_t[2];//adc
+    for (Int_t k=0;k<2;k++){//adc
+      fLocalEventCounterChain[j][k] = -1;//adc
+    }//adc
+  }//adc
+
 }
 
 //_____________________________________________________________________________
@@ -230,7 +260,11 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fInsideTRM(kFALSE),
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
-  fInsideTRMchain1(kFALSE)
+  fInsideTRMchain1(kFALSE),
+  fLocalEventCounterDRM(-1),
+  fLocalEventCounterLTM(-1),
+  fLocalEventCounterTRM(0x0),
+  fLocalEventCounterChain(0x0)
 {
   //
   // copy constructor
@@ -277,7 +311,16 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   }
 
   fTOFrawData = new TClonesArray(*stream.fTOFrawData);
-  
+
+  fLocalEventCounterDRM = stream.fLocalEventCounterDRM;//adc
+  fLocalEventCounterLTM = stream.fLocalEventCounterLTM;//adc
+  for (Int_t j=0;j<13;j++){//adc
+    fLocalEventCounterTRM[j] = stream.fLocalEventCounterTRM[j];//adc
+    for (Int_t k=0;k<2;k++){//adc
+      fLocalEventCounterChain[j][k] = stream.fLocalEventCounterChain[j][k];//adc
+    }//adc
+  }//adc
+
 }
 
 //_____________________________________________________________________________
@@ -327,7 +370,16 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
   }
   
   fTOFrawData = stream.fTOFrawData;
-  
+
+  fLocalEventCounterDRM = stream.fLocalEventCounterDRM;//adc
+  fLocalEventCounterLTM = stream.fLocalEventCounterLTM;//adc
+  for (Int_t j=0;j<13;j++){//adc
+    fLocalEventCounterTRM[j] = stream.fLocalEventCounterTRM[j];//adc
+    for (Int_t k=0;k<2;k++){//adc
+      fLocalEventCounterChain[j][k] = stream.fLocalEventCounterChain[j][k];//adc
+    }//adc
+  }//adc
+
   return *this;
 
 }
@@ -348,6 +400,11 @@ AliTOFRawStream::~AliTOFRawStream()
 
   fTOFrawData->Clear();
   delete fTOFrawData;
+
+  //delete [] fLocalEventCounterTRM;
+  //for (Int_t ii=0; ii<2; ii++) 
+  //delete [] fLocalEventCounterChain[ii];
+
 }
 
 
@@ -382,7 +439,7 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 
     signal = (fSector!=-1 && fPlate!=-1 && fStrip!=-1 && fPadZ!=-1 && fPadX!=-1);
     if (signal) {
-      AliDebug(2,Form("  %2i  %1i  %2i  %1i  %2i  \n", fSector, fPlate, fStrip, fPadZ, fPadX));
+      AliDebug(2,Form("  %2i  %1i  %2i  %1i  %2i", fSector, fPlate, fStrip, fPadZ, fPadX));
 
       slot[0] = fTRM;
       slot[1] = fTRMchain;
@@ -437,6 +494,8 @@ Bool_t AliTOFRawStream::Next()
   //
 
   UInt_t data;
+
+  Int_t dummy = 0;
 
   if (!fRawReader->ReadNextInt(data)) return kFALSE;
 
@@ -506,7 +565,6 @@ Bool_t AliTOFRawStream::Next()
 
   case GLOBAL_TRAILER_TYPE: // global trailer
     fSlotID = GetField(data,HEADER_SLOT_ID_MASK,HEADER_SLOT_ID_POSITION);
-    
 
     switch (fSlotID) { // switch global trailer slot ID
 
@@ -514,6 +572,9 @@ Bool_t AliTOFRawStream::Next()
       if (!fInsideDRM) { // unexpected DRM global trailers -> exit
 	break;
       }
+      dummy = 0x0000fff0;
+      //AliInfo(Form("  DRM local event counter = %i", GetField(data,dummy,4)));
+      fLocalEventCounterDRM = GetField(data,dummy,4);//adc
       fInsideDRM = kFALSE; // DRM global trailer accepted
       fInsideTRM = kFALSE;
       fInsideLTM = kFALSE;
@@ -542,12 +603,18 @@ Bool_t AliTOFRawStream::Next()
       if (!fInsideLTM) { // unexpected LTM global trailer -> exit
 	break;
       }
+      dummy = 0x0fff0000;
+      //AliInfo(Form("  LTM local event counter = %i", GetField(data,dummy,16)));
+      fLocalEventCounterLTM = GetField(data,dummy,16);//adc
       fInsideLTM = kFALSE; // LTM global trailer accepted
       break;
     case 15: //TRM global trailer
       if (!fInsideTRM) { // unexpected TRM global trailers -> exit
 	break;
       }
+      dummy = 0x0fff0000;
+      //AliInfo(Form("  TRM local event counter = %i", GetField(data,dummy,16)));
+      fLocalEventCounterTRM[fTRM] = GetField(data,dummy,16);//adc
       fInsideTRM = kFALSE; // TRM global trailer accepted
       break;
     default: // unexpected global trailer slot ID
@@ -584,6 +651,9 @@ Bool_t AliTOFRawStream::Next()
 	if (!fInsideTRMchain0) { // unexpected TRM chain0 trailer
 	  break;
 	}
+        dummy = 0x0fff0000;
+        //AliInfo(Form("  chain local event counter = %i", GetField(data,dummy,16)));
+        fLocalEventCounterChain[fTRM][fTRMchain] = GetField(data,dummy,16);//adc
 	fInsideTRMchain0 = kFALSE;
 	fTRMchain = -1;
 	break;
@@ -598,6 +668,9 @@ Bool_t AliTOFRawStream::Next()
 	if (!fInsideTRMchain1) { // unexpected TRM chain1 trailer
 	  break;
 	}
+        dummy = 0x0fff0000;
+        //AliInfo(Form("  chain local event counter = %i", GetField(data,dummy,16)));
+        fLocalEventCounterChain[fTRM][fTRMchain] = GetField(data,dummy,16);//adc
 	fInsideTRMchain1 = kFALSE;
 	fTRMchain = -1;
 	break;
@@ -749,6 +822,9 @@ void AliTOFRawStream::SetPadZ()
 	iPadZ  = iPadAlongTheStrip%AliTOFGeometry::NpadZ();
     }
 
+  //iPadZ = Equip2VolNpad(GetDDLnumberPerSector(fDDL), fTRMchain, fTDC, fTDCchannel)%AliTOFGeometry::NpadZ();
+  //iPadZ = Equip2VolNpadZ(GetDDLnumberPerSector(fDDL), fTRMchain, fTDC, fTDCchannel);
+
   fPadZ = iPadZ;
 
 }
@@ -775,6 +851,9 @@ void AliTOFRawStream::SetPadX()
       if (iPadAlongTheStrip!=-1)
 	iPadX  = (Int_t)(iPadAlongTheStrip/(Float_t(AliTOFGeometry::NpadZ())));
     }
+
+  //iPadX = (Int_t)(Equip2VolNpad(GetDDLnumberPerSector(fDDL), fTRMchain, fTDC, fTDCchannel)/(Float_t(AliTOFGeometry::NpadZ())));
+  //iPadX = Equip2VolNpadX(GetDDLnumberPerSector(fDDL), fTRMchain, fTDC, fTDCchannel);
 
   fPadX = iPadX;
 
@@ -986,10 +1065,17 @@ Int_t AliTOFRawStream::Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC,
 
   Int_t iPadAlongTheStrip = -1;
 
-  Int_t iTDClocal = nTDC%3 + (1-iChain)*3;
+  // wrong
+  //Int_t iTDClocal = nTDC%3 + (1-iChain)*3;
+  //if (iDDL==0 || iDDL==3) iTDClocal = 5 - iTDClocal;
+  //else if (iDDL==1 || iDDL==2) iTDClocal = 6 + (5 - iTDClocal);
 
-  if (iDDL==0 || iDDL==3) iTDClocal = 5 - iTDClocal;
-  else if (iDDL==1 || iDDL==2) iTDClocal = 6 + (5 - iTDClocal);
+  // right
+  Int_t iTDClocal = -1;
+  Int_t iTDClocal03 = nTDC%3 + (1-iChain)*3;
+  Int_t iTDClocal12 = 2-nTDC%3 + iChain*3;
+  if (iDDL==0 || iDDL==3) iTDClocal = 5 - iTDClocal03;
+  else if (iDDL==1 || iDDL==2) iTDClocal = 6 + (5 - iTDClocal12);
 
   Int_t iCHlocal = iCH;
   if (iDDL==0 || iDDL==3) iCHlocal = 7 - iCH;
@@ -1002,6 +1088,45 @@ Int_t AliTOFRawStream::Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC,
     //AliWarning("Problems with the padX number!");
   }
   return iPadAlongTheStrip;
+
+}
+
+//----------------------------------------------------------------------------
+Int_t AliTOFRawStream::Equip2VolNpadX(Int_t iDDL, Int_t iChain, Int_t nTDC,
+				      Int_t iCH)
+{
+  //
+  // Returns the TOF padX number [0;47]
+  // corresponding to the TOF equipment ID numbers:
+  //                          iDDL -> DDL number per sector [0;3]
+  //                        iChain -> TRM chain number [0;1]
+  //                          nTDC -> TDC number [0;14]
+  //                           iCH -> TDC channel number [0;7]
+  //
+
+  Int_t iPadX = (Int_t)(AliTOFRawStream::Equip2VolNpad(iDDL, iChain, nTDC, iCH)/
+			(Float_t(AliTOFGeometry::NpadZ())));
+
+  return iPadX;
+
+}
+
+//----------------------------------------------------------------------------
+Int_t AliTOFRawStream::Equip2VolNpadZ(Int_t iDDL, Int_t iChain, Int_t nTDC,
+				      Int_t iCH)
+{
+  //
+  // Returns the TOF padZ number [0;1]
+  // corresponding to the TOF equipment ID numbers:
+  //                          iDDL -> DDL number per sector [0;3]
+  //                        iChain -> TRM chain number [0;1]
+  //                          nTDC -> TDC number [0;14]
+  //                           iCH -> TDC channel number [0;7]
+  //
+
+  Int_t iPadZ  = AliTOFRawStream::Equip2VolNpad(iDDL, iChain, nTDC, iCH)%AliTOFGeometry::NpadZ();
+
+  return iPadZ;
 
 }
 
@@ -1085,7 +1210,13 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
   
   Int_t iPadX  = (Int_t)(iPadAlongTheStrip/(Float_t(AliTOFGeometry::NpadZ())));
   Int_t iPadZ  = iPadAlongTheStrip%AliTOFGeometry::NpadZ();
-  
+
+  //Int_t iPadX  = (Int_t)(Equip2VolNpad(iDDL, iChain, nTDC, iCH)/(Float_t(AliTOFGeometry::NpadZ())));
+  //Int_t iPadZ  = Equip2VolNpad(iDDL, iChain, nTDC, iCH)%AliTOFGeometry::NpadZ();
+
+  //Int_t iPadX  = Equip2VolNpadX(iDDL, iChain, nTDC, iCH);
+  //Int_t iPadZ  = Equip2VolNpadZ(iDDL, iChain, nTDC, iCH);
+
   volume[0] = iSector;
   volume[1] = iPlate;
   volume[2] = iStrip;

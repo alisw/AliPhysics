@@ -434,12 +434,19 @@ class AliTOFRawStream: public TObject {
   void SetPadZ();
   void SetPadX();
 
+  Int_t GetLocalEventCounterDRM() {return fLocalEventCounterDRM;};//adc
+  Int_t GetLocalEventCounterLTM() {return fLocalEventCounterLTM;};//adc
+  Int_t GetLocalEventCounterTRM(Int_t trm) {return fLocalEventCounterTRM[trm];};//adc
+  Int_t GetLocalEventCounterChain(Int_t trm, Int_t chain) {return fLocalEventCounterChain[trm][chain];};//adc
+
   void  EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 			     Int_t iTDC, Int_t iCH, Int_t *volume) const;
   void  EquipmentId2VolumeId(AliTOFHitData *hitData, Int_t *volume) const;
   static Int_t Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC);
   static Int_t Equip2VolNstrip(Int_t iDDL, Int_t nTRM, Int_t nTDC);
   static Int_t Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH);
+  static Int_t Equip2VolNpadX(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH);
+  static Int_t Equip2VolNpadZ(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH);
   Int_t GetDDLnumberPerSector(Int_t nDDL) const;
   Int_t GetSectorNumber(Int_t nDDL) const;
 
@@ -516,6 +523,11 @@ class AliTOFRawStream: public TObject {
 
   AliTOFHitDataBuffer *fDataBuffer[72]; // pointer to AliTOFHitDataBuffer
   AliTOFHitDataBuffer *fPackedDataBuffer[72]; // pointer to AliTOFHitDataBuffer
+
+  Int_t   fLocalEventCounterDRM;//adc
+  Int_t   fLocalEventCounterLTM;//adc
+  Int_t  *fLocalEventCounterTRM;//adc
+  Int_t **fLocalEventCounterChain;//adc
 
   ClassDef(AliTOFRawStream, 3)  // class for reading TOF raw digits
 };
