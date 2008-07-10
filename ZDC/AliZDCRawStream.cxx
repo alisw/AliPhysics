@@ -158,7 +158,7 @@ void AliZDCRawStream::ReadCDHHeader()
       fIsCalib = kTRUE;
     }
     //printf("\t AliZDCRawStream::ReadCDHHeader -> L1TriggerMessage %x\n",header->GetL1TriggerMessage());
-    printf("\t AliZDCRawStream::ReadCDHHeader -> fIsCalib = %d\n",fIsCalib);
+    printf("\t AliZDCRawStream::ReadCDHHeader -> Calibration bit = %d\n",fIsCalib);
     
     
     UInt_t status = header->GetStatus();
@@ -238,7 +238,7 @@ Bool_t AliZDCRawStream::Next()
   // --- DARC header
   // -------------------------------------------
   if(fIsDARCHeader){
-    printf("\t ---- DARC header ----\n");
+    //printf("\t ---- DARC header ----\n");
     if(fIsCalib){
       fDeadfaceOffset = 9;
       fDeadbeefOffset = 25;
@@ -264,7 +264,7 @@ Bool_t AliZDCRawStream::Next()
 	   fNConnCh=0;	
         }
 	else{
-	  printf("\n\t End of StartOfData event\n\n");
+	  //printf("\n\t End of StartOfData event\n\n");
 	  return kTRUE;
 	}
       }
@@ -348,7 +348,7 @@ Bool_t AliZDCRawStream::Next()
     // Not valid datum before the event 
     // there MUST be a NOT valid datum before the event!!!
     if(fPosition==fDataOffset){
-      printf("\t **** ZDC data begin ****\n");
+      //printf("\t **** ZDC data begin ****\n");
       if((fBuffer & 0x07000000) == 0x06000000){
         //printf("    AliZDCRawStream -> Not valid datum in ADC %d,"
         //       "position %d in word data buffer\n",fADCModule,fPosition);
@@ -376,13 +376,13 @@ Bool_t AliZDCRawStream::Next()
     else{//ADC module
       // *** End of event
       if(fBuffer == 0xcafefade){
-        printf("  AliZDCRawStream ->  End of ZDC event!\n");
+        //printf("  AliZDCRawStream ->  End of ZDC event!\n");
       }
       // *** ADC header
       else if((fBuffer & 0x07000000) == 0x02000000){
         fIsADCHeader = kTRUE;
     	fADCNChannels = ((fBuffer & 0x00003f00)>>8);
-    	printf("  AliZDCRawStream -> HEADER: ADC mod.%d has %d ch. \n",fADCModule,fADCNChannels);
+    	//printf("  AliZDCRawStream -> HEADER: ADC mod.%d has %d ch. \n",fADCModule,fADCNChannels);
       }
       // *** ADC data word
       else if((fBuffer & 0x07000000) == 0x00000000){
@@ -391,8 +391,8 @@ Bool_t AliZDCRawStream::Next()
         fADCGain = ((fBuffer & 0x10000) >> 16);       
         fADCValue = (fBuffer & 0xfff);  
     	
-	printf("  AliZDCRawStream -> DATA: ADC mod. %d ch. %d gain %d value %d\n",
-	  fADCModule,fADCChannel,fADCGain,fADCValue);
+	//printf("  AliZDCRawStream -> DATA: ADC mod. %d ch. %d gain %d value %d\n",
+	//  fADCModule,fADCChannel,fADCGain,fADCValue);
 
 	// Valid ADC data (not underflow nor overflow)
         if(!(fBuffer & 0x1000) && !(fBuffer & 0x2000)){ 
@@ -401,8 +401,8 @@ Bool_t AliZDCRawStream::Next()
 	     if(fMapADC[k][0]==fADCModule && fMapADC[k][1]==fADCChannel){
 	       //
 	       for(Int_t ci=0; ci<48; ci++)
-        	printf("  %d mod. %d ch. %d signal %d\n",ci,fMapADC[ci][0],
-          	fMapADC[ci][1], fMapADC[ci][2]);
+        	//printf("  %d mod. %d ch. %d signal %d\n",ci,fMapADC[ci][0],
+          	//fMapADC[ci][1], fMapADC[ci][2]);
 
 	       indSig=k;
 	       break;
@@ -461,7 +461,7 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fMapADC[indSig][2]==23 || fMapADC[indSig][2]==49) fSector[1]=2;
 	  }
 	  //
-	  printf("\t Signal %d -> fSector[0] %d, fSector[1] %d\n", fMapADC[indSig][2], fSector[0], fSector[1]);
+	  //printf("\t Signal %d -> fSector[0] %d, fSector[1] %d\n", fMapADC[indSig][2], fSector[0], fSector[1]);
 	  
 	  if(fADCModule<0 || fADCModule>3){
             AliWarning(Form("	 AliZDCRawStream -> No valid ADC module: %d\n",fADCModule));
