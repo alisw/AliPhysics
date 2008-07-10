@@ -105,9 +105,9 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 
 Bool_t AliPHOSPreprocessor::ProcessLEDRun()
 {
-  //Process LED run, fill bad channels map.
+  //Process LED run, update High Gain/Low Gain ratios.
 
-  AliPHOSEmcBadChannelsMap badMap;
+  AliPHOSEmcCalibData calibData;
 
   TList* list = GetFileSources(kDAQ, "LED");
   if(!list) {
@@ -115,13 +115,25 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
     return kFALSE;
   }
 
+  if(!list->GetEntries()) {
+    Log("Sources list for LED run is empty, exit.");
+    return kFALSE;
+  }
+
+  //Retrieve the last EMC calibration object
+  const AliPHOSEmcCalibData* clb=0;
+  AliCDBEntry* entryCalib = GetFromOCDB("Calib", "EmcGainPedestals");
+
+  if(!entryCalib)
+    Log(Form("Cannot find any AliCDBEntry for [Calib, EmcGainPedestals]!"));
+  else
+    clb = (AliPHOSEmcCalibData*)entryCalib->GetObject();
+  
   TIter iter(list);
   TObjString *source;
-  char hnam[80];
-  TH1F* histo=0;
   
   while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-
+    
     AliInfo(Form("found source %s", source->String().Data()));
 
     TString fileName = GetFile(kDAQ, "LED", source->GetName());
@@ -137,31 +149,35 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
     const Int_t nMod=5; // 1:5 modules
     const Int_t nCol=56; //1:56 columns in each module
     const Int_t nRow=64; //1:64 rows in each module
-
-    // Check for dead channels    
-    Log(Form("Begin check for dead channels."));
-
+    
     for(Int_t mod=0; mod<nMod; mod++) {
       for(Int_t col=0; col<nCol; col++) {
 	for(Int_t row=0; row<nRow; row++) {
-	  sprintf(hnam,"mod%dcol%drow%d",mod,col,row);
-	  histo = (TH1F*)f.Get(hnam);
-	  if(histo)
-	    if (histo->GetMean()<1) {
-	      Log(Form("Channel: [%d,%d,%d] seems dead, <E>=%.1f.",mod,col,row,histo->GetMean()));
-	      badMap.SetBadChannel(mod,col,row);
-	    }
+
+	  //High Gain to Low Gain ratio 
+          Float_t ratio = HG2LG(mod,row,col,&f);
+          calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,ratio);
+	  if(ratio != 16.)
+	    AliInfo(Form("mod %d iX %d iZ %d  ratio %.3f\n",mod,row,col,ratio));
+	  
+	  if(clb) {
+	    Double_t coeff = clb->GetADCchannelEmc(mod+1,col+1,row+1);
+	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,coeff);
+	  }
+	  else
+	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.);
+
 	}
       }
     }
 
-  }
+  } // end of loop over files
 
   //Store bad channels map
-  AliCDBMetaData badMapMetaData;
+  AliCDBMetaData emcMetaData;
 
-  //Bad channels data valid from current run fRun until updated (validityInfinite=kTRUE)
-  Bool_t result = Store("Calib", "EmcBadChannels", &badMap, &badMapMetaData, fRun, kTRUE);
+  //Data valid from current run fRun until updated (validityInfinite=kTRUE)
+  Bool_t result = Store("Calib","EmcGainPedestals",&calibData,&emcMetaData,fRun,kTRUE);
   return result;
 
 }
