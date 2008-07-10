@@ -712,6 +712,8 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
     grphi->SetName(grname);  grphi->SetTitle(grnamefull);
     grphi->GetXaxis()->SetTitle("b_{z} (T)");
     grphi->GetYaxis()->SetTitle("#Delta r#phi (cm)");
+    grphi->SetMaximum(1.2);
+    grphi->SetMinimum(-1.2);
     grphi->Draw("a*");
 
     grphi->Write();
@@ -728,6 +730,8 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
     grphiP->SetName(grname);  grphiP->SetTitle(grnamefull);
     grphiP->GetXaxis()->SetTitle("b_{z} (T)");
     grphiP->GetYaxis()->SetTitle("#Delta #phi (rad)");
+    grphiP->SetMaximum(pphiP[0]+0.005);
+    grphiP->SetMinimum(pphiP[0]-0.005);
 
     gPad->SaveAs(Form("pic/phiP/phiP_%s.gif",grnamefull));
     grphiP->Write();
@@ -861,7 +865,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
  TVectorD fitParam;
  TMatrixD covMatrix;
  Int_t npoints;
- TCut cutA("entries>2&&pphi2<3&&abs(gphiP1-pphiP0)<0.003");
+ TCut cutA("entries>2&&pphi2<3&&abs(gphiP1-pphiP0)<0.003&&abs(gz1)<6");
 
 
 TString fstring="";
@@ -894,10 +898,19 @@ fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"    //12
  treeT->SetAlias("fitP",strqP->Data());
 
 
+ TString *strqDrift = toolkit.FitPlane(treeT,"gz1","LTr.fP[1]++(1-2*(fSide==1))++lx1", cutA, chi2,npoints,fitParam,covMatrix);
+ treeT->SetAlias("fitD",strqDrift->Data());
 
 
+treeT->Draw("fit:LTr.fP[1]","abs(bz+0.4)<0.05"+cutA,""); 
+{
+for (Int_t i=0; i<6;i++){
+treeT->SetLineColor(i+2);
+treeT->SetMarkerSize(1);
+treeT->SetMarkerStyle(22+i);
+treeT->SetMarkerColor(i+2);
 
-
-
- 
+treeT->Draw("fit:LTr.fP[1]",Form("abs(bz+0.4)<0.05&fRod==%d",i)+cutA,"same"); 
+}
+} 
  */
