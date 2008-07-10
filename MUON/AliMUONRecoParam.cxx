@@ -40,7 +40,6 @@ AliMUONRecoParam::AliMUONRecoParam()
 : AliDetectorRecoParam(),
   fClusteringMode("MLEM"),
   fTrackingMode("KALMAN"),
-  fMostProbBendingMomentum(0.),
   fMinBendingMomentum(0.),
   fMaxBendingMomentum(0.),
   fMaxNonBendingSlope(0.),
@@ -148,7 +147,6 @@ void AliMUONRecoParam::SetLowFluxParam()
 {
   /// Set reconstruction parameters for low flux environment
   
-  fMostProbBendingMomentum = 2.;
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
@@ -182,7 +180,6 @@ void AliMUONRecoParam::SetHighFluxParam()
 {
   /// Set reconstruction parameters for high flux environment
   
-  fMostProbBendingMomentum = 2.;
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
@@ -212,11 +209,26 @@ void AliMUONRecoParam::SetHighFluxParam()
 }
 
 //_____________________________________________________________________________
+UInt_t
+AliMUONRecoParam::RequestedStationMask() const
+{
+  /// Get the mask of the requested station, i.e. an integer where 
+  /// bit n is set to one if the station n was requested
+
+  UInt_t m(0);
+  
+  for ( Int_t i = 0; i < 5; ++i ) 
+  {
+    if ( RequestStation(i) ) m |= ( 1 << i );
+  }
+  return m;
+}
+
+//_____________________________________________________________________________
 void AliMUONRecoParam::SetCosmicParam() 
 {
   /// Set reconstruction parameters for high flux environment
   
-  fMostProbBendingMomentum = 2.;
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 10000000.;
   fMaxNonBendingSlope = 0.3;
@@ -279,9 +291,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   if (fSaveFullClusterInESD) cout<<Form("Save all cluster info in ESD for %5.2f %% of events",fPercentOfFullClusterInESD)<<endl;
   else cout<<"Save partial cluster info in ESD"<<endl;
-  
-  cout<<Form("Most probable bending momentum (used only if B=0) = %5.2f",fMostProbBendingMomentum)<<endl;
-  
+    
   cout<<Form("Bending momentum range = [%5.2f,%5.2f]",fMinBendingMomentum,fMaxBendingMomentum)<<endl;
   
   cout<<Form("Maximum non bending slope = %5.2f",fMaxNonBendingSlope)<<endl;

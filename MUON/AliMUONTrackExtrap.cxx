@@ -94,7 +94,8 @@ Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingM
 }
 
 //__________________________________________________________________________
-Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactParam)
+Double_t 
+AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactParam)
 {
   /// Returns signed bending momentum in bending plane (GeV/c),
   /// the sign being the sign of the charge for particles moving forward in Z,
@@ -110,8 +111,14 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
   
   const Double_t kCorrectionFactor = 1.1; // bending momentum is 10% underestimated
   
-  if (fgFieldON) return kCorrectionFactor * (-0.0003 * fgSimpleBValue * fgkSimpleBLength * fgkSimpleBPosition / impactParam);
-  else return AliMUONReconstructor::GetRecoParam()->GetMostProbBendingMomentum();
+  if (fgFieldON) 
+  {
+    return kCorrectionFactor * (-0.0003 * fgSimpleBValue * fgkSimpleBLength * fgkSimpleBPosition / impactParam);
+  }
+  else 
+  {
+    return AliMUONConstants::GetMostProbBendingMomentum();
+  }
 }
 
 //__________________________________________________________________________

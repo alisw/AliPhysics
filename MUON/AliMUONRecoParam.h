@@ -52,12 +52,6 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return the percentage of events for which all cluster info are stored in ESD
   Double_t  GetPercentOfFullClusterInESD() const {return fPercentOfFullClusterInESD;}
   
-  /// set the most probable value (GeV/c) of momentum in bending plane
-  /// needed to get some "reasonable" corrections for MCS and E loss even if B = 0
-  void     SetMostProbBendingMomentum(Double_t val) {fMostProbBendingMomentum = val;}
-  /// return the most probable value (GeV/c) of momentum in bending plane
-  Double_t GetMostProbBendingMomentum() const {return fMostProbBendingMomentum;}
-  
   /// set the minimum value (GeV/c) of momentum in bending plane
   void     SetMinBendingMomentum(Double_t val) {fMinBendingMomentum = val;}
   /// return the minimum value (GeV/c) of momentum in bending plane
@@ -164,6 +158,8 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void     RequestStation(Int_t iSt, Bool_t flag) {if (iSt >= 0 && iSt < 5) fRequestStation[iSt] = flag;}
   /// return kTRUE/kFALSE whether at least one cluster is requested in the station to validate the track
   Bool_t   RequestStation(Int_t iSt) const {return (iSt >= 0 && iSt < 5) ? fRequestStation[iSt] : kFALSE;}
+  /// return an integer where first 5 bits are set to 1 if the corresponding station is requested
+  UInt_t   RequestedStationMask() const;
   
   /// set the bypassSt45 value
   void BypassSt45(Bool_t st4, Bool_t st5);
@@ -251,8 +247,6 @@ private:
   /// tracking mode: ORIGINAL, KALMAN
   TString fTrackingMode; ///< \brief name of the tracking mode
   
-  Double32_t fMostProbBendingMomentum; ///< most probable value (GeV/c) of muon momentum in bending plane (used when B = 0)
-  
   Double32_t fMinBendingMomentum; ///< minimum value (GeV/c) of momentum in bending plane
   Double32_t fMaxBendingMomentum; ///< maximum value (GeV/c) of momentum in bending plane
   Double32_t fMaxNonBendingSlope; ///< maximum value of the non bending slope
@@ -322,7 +316,7 @@ private:
   void SetHighFluxParam();
   void SetCosmicParam();
     
-  ClassDef(AliMUONRecoParam,8) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,9) // MUON reco parameters
 };
 
 #endif
