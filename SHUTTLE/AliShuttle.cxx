@@ -2633,7 +2633,10 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 		if (detName == "shuttle_done")
 		{
 			if (TouchFile() != kTRUE)
+			{
+				SendMLRunInfo("Pending");
 				return kFALSE;
+			}
 			
 			SendMLRunInfo("Done");
 		}
