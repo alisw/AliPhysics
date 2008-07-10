@@ -25,6 +25,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TVector3.h>
+#include <TSystem.h>
 
 #include "AliAlignmentTracks.h"
 #include "AliTrackPointArray.h"
@@ -169,7 +170,7 @@ void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
   fESDChain->SetBranchAddress("ESDfriend.",&esdf);
 
   // Open the output file
-  if (fPointsFilename.Data() == "") {
+  if (fPointsFilename.IsNull()) {
     AliWarning("Incorrect output filename!");
     return;
   }
@@ -287,7 +288,7 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
   fESDChain->SetBranchAddress("ESDfriend.",&esdf);
 
   // Open the output file
-  if (fPointsFilename.Data() == "") {
+  if (fPointsFilename.IsNull()) {
     AliWarning("Incorrect output filename!");
     return;
   }
@@ -592,11 +593,37 @@ void AliAlignmentTracks::DeleteIndex()
 //______________________________________________________________________________
 Bool_t AliAlignmentTracks::ReadAlignObjs(const char *alignObjFileName, const char* arrayName)
 {
-  // Read alignment object from a file
+  // Read alignment object from a file: update the alignobj already present with the one in the file
   // To be replaced by a call to CDB
-  AliWarning(Form("Method not yet implemented (%s in %s) !",arrayName,alignObjFileName));
+  
+  if(gSystem->AccessPathName(alignObjFileName,kFileExists)){
+    printf("Wrong AlignObjs File Name \n");
+    return kFALSE;
+  } 
 
-  return kFALSE;
+  TFile *fRealign=TFile::Open(alignObjFileName);
+  if (!fRealign || !fRealign->IsOpen()) {
+    AliError(Form("Could not open Align Obj File file %s !",alignObjFileName));
+    return kFALSE;
+  }  
+  printf("Getting TClonesArray \n");
+  TClonesArray *clnarray=(TClonesArray*)fRealign->Get(arrayName);
+  Int_t size=clnarray->GetSize();
+  UShort_t volid;
+
+  for(Int_t ivol=0;ivol<size;ivol++){
+    AliAlignObjParams *a=(AliAlignObjParams*)clnarray->At(ivol);
+    volid=a->GetVolUID();
+    Int_t iModule;
+    AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
+    if(iLayer<AliGeomManager::kFirstLayer||iLayer>AliGeomManager::kSSD2)continue;
+    printf("Updating volume: %d ,layer: %d module: %d \n",volid,iLayer,iModule);
+    *fAlignObjs[iLayer-AliGeomManager::kFirstLayer][iModule] *= *a;
+  }
+ 
+  delete clnarray;
+  fRealign->Close();
+  return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -638,11 +665,11 @@ void AliAlignmentTracks::DeleteAlignObjs()
   fAlignObjs = 0;
 }
 
-void AliAlignmentTracks::AlignDetector(AliGeomManager::ELayerID firstLayer,
-				       AliGeomManager::ELayerID lastLayer,
-				       AliGeomManager::ELayerID layerRangeMin,
-				       AliGeomManager::ELayerID layerRangeMax,
-				       Int_t iterations)
+Bool_t AliAlignmentTracks::AlignDetector(AliGeomManager::ELayerID firstLayer,
+					 AliGeomManager::ELayerID lastLayer,
+					 AliGeomManager::ELayerID layerRangeMin,
+					 AliGeomManager::ELayerID layerRangeMax,
+					 Int_t iterations)
 {
   // Align detector volumes within
   // a given layer range
@@ -663,17 +690,19 @@ void AliAlignmentTracks::AlignDetector(AliGeomManager::ELayerID firstLayer,
     }
   }
 
+  Bool_t result = kFALSE;
   while (iterations > 0) {
-    AlignVolumes(&volIds,0x0,layerRangeMin,layerRangeMax);
+    if (!(result = AlignVolumes(&volIds,0x0,layerRangeMin,layerRangeMax))) break;
     iterations--;
   }
+  return result;
 }
 
 //______________________________________________________________________________
-void AliAlignmentTracks::AlignLayer(AliGeomManager::ELayerID layer,
-				    AliGeomManager::ELayerID layerRangeMin,
-				    AliGeomManager::ELayerID layerRangeMax,
-				    Int_t iterations)
+Bool_t AliAlignmentTracks::AlignLayer(AliGeomManager::ELayerID layer,
+				      AliGeomManager::ELayerID layerRangeMin,
+				      AliGeomManager::ELayerID layerRangeMax,
+				      Int_t iterations)
 {
   // Align detector volumes within
   // a given layer.
@@ -686,14 +715,16 @@ void AliAlignmentTracks::AlignLayer(AliGeomManager::ELayerID layer,
     volIds.AddAt(volId,iModule);
   }
 
+  Bool_t result = kFALSE;
   while (iterations > 0) {
-    AlignVolumes(&volIds,0x0,layerRangeMin,layerRangeMax);
+    if (!(result = AlignVolumes(&volIds,0x0,layerRangeMin,layerRangeMax))) break;
     iterations--;
   }
+  return result;
 }
 
 //______________________________________________________________________________
-void AliAlignmentTracks::AlignVolume(UShort_t volId, UShort_t volIdFit,
+Bool_t AliAlignmentTracks::AlignVolume(UShort_t volId, UShort_t volIdFit,
 				     Int_t iterations)
 {
   // Align single detector volume to
@@ -705,14 +736,16 @@ void AliAlignmentTracks::AlignVolume(UShort_t volId, UShort_t volIdFit,
   TArrayI volIdsFit(1);
   volIdsFit.AddAt(volIdFit,0);
 
+  Bool_t result = kFALSE;
   while (iterations > 0) {
-    AlignVolumes(&volIds,&volIdsFit);
+    if (!(result = AlignVolumes(&volIds,&volIdsFit))) break;
     iterations--;
   }
+  return result;
 }
 
 //______________________________________________________________________________
-void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit,
+Bool_t AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit,
 				     AliGeomManager::ELayerID layerRangeMin,
 				     AliGeomManager::ELayerID layerRangeMax,
 				     Int_t iterations)
@@ -727,7 +760,7 @@ void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *voli
   Int_t nVolIds = volids->GetSize();
   if (nVolIds == 0) {
     AliError("Volume IDs array is empty!");
-    return;
+    return kFALSE;
   }
 
   // Load only the tracks with at least one
@@ -735,9 +768,10 @@ void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *voli
   BuildIndex();
   AliTrackPointArray **points;
   // Start the iterations
+  Bool_t result = kFALSE;
   while (iterations > 0) {
     Int_t nArrays = LoadPoints(volids, points);
-    if (nArrays == 0) return;
+    if (nArrays == 0) return kFALSE;
 
     AliTrackResiduals *minimizer = CreateMinimizer();
     minimizer->SetNTracks(nArrays);
@@ -751,7 +785,7 @@ void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *voli
       fitter->GetTrackResiduals(pVolId,pTrack);
       minimizer->AddTrackPointArrays(pVolId,pTrack);
     }
-    minimizer->Minimize();
+    if (!(result = minimizer->Minimize())) break;
 
     // Update the alignment object(s)
     if (fDoUpdate) for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
@@ -767,6 +801,7 @@ void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *voli
     
     iterations--;
   }
+  return result;
 }
   
 //______________________________________________________________________________

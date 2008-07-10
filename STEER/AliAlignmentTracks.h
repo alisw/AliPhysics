@@ -54,20 +54,20 @@ class AliAlignmentTracks : public TObject {
   void SetTrackFitter(AliTrackFitter *fitter) { fTrackFitter = fitter; }
   void SetMinimizer(AliTrackResiduals *minimizer) { fMinimizer = minimizer; }
 
-  void AlignDetector(AliGeomManager::ELayerID firstLayer,
-		     AliGeomManager::ELayerID lastLayer,
-		     AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
-		     AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,Int_t iterations = 1);
-  void AlignLayer(AliGeomManager::ELayerID layer,
-		  AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
-		  AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,
-		  Int_t iterations = 1);
-  void AlignVolume(UShort_t volId, UShort_t volIdFit,
-		   Int_t iterations);
-  void AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit = 0x0,
-		   AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
-		   AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,
-		   Int_t iterations = 1);
+  Bool_t AlignDetector(AliGeomManager::ELayerID firstLayer,
+		       AliGeomManager::ELayerID lastLayer,
+		       AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+		       AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,Int_t iterations = 1);
+  Bool_t AlignLayer(AliGeomManager::ELayerID layer,
+		    AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+		    AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,
+		    Int_t iterations = 1);
+  Bool_t AlignVolume(UShort_t volId, UShort_t volIdFit,
+		     Int_t iterations);
+  Bool_t AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit = 0x0,
+		      AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+		      AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,
+		      Int_t iterations = 1);
 
   AliAlignObj* GetAlignObj(UShort_t volid) const {
     Int_t iModule;
