@@ -180,9 +180,7 @@ static TString comment;
 
 void Config()
 {
-
-
-  // Get settings from environment variables
+	// Get settings from environment variables
   ProcessEnvironmentVars();
 
   // libraries required by geant321
@@ -353,14 +351,14 @@ void Config()
     //       pythia->SetThetaRange(45,135);
 
    if(proc == kPyJetJetPHOSv2)
-	 pythia->SetForceDecay(kNeutralPion);
-   else
-	 pythia->SetForceDecay(kAll);
-
-    pythia->SetPycellParameters(2., 274, 432, 0., 4., 5., 1.0);
+		 pythia->SetForceDecay(kNeutralPion);
+	 else
+		 pythia->SetForceDecay(kAll);
+		
+		pythia->SetPycellParameters(2., 274, 432, 0., 4., 5., 1.0);
     pythia->SetPtKick(5); // set the intrinsic kt to 5 GeV/c
     gener = pythia;
-  }
+	}
 
 
   // PRIMARY VERTEX
@@ -390,7 +388,7 @@ void Config()
     Float_t k = 6e5*(qhat/1.7) ; //qhat=1.7, k = 6e5, default  value
     AliPythia::Instance()->InitQuenching(0.,0.1,k,0,0.95,6);
 
-  }
+ }
   // FIELD
 
   if (mag == k2kG) {
@@ -443,8 +441,8 @@ void Config()
         // --- on the selected Magnet dimensions ---
         AliMAG *MAG = new AliMAG("MAG", "Magnet");
     }
-
-
+//
+//
     if (iABSO)
     {
         //=================== ABSO parameters ============================
@@ -528,12 +526,12 @@ void Config()
         AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
     }
 
-    if (iTRD)
+   if (iTRD)
     {
         //=================== TRD parameters ============================
-
+ 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-        AliTRDgeometry *geoTRD = TRD->GetGeometry();
+	AliTRDgeometry *geoTRD = TRD->GetGeometry();
     }
 
     if (iFMD)
@@ -577,7 +575,7 @@ void Config()
      if (iACORDE)
     {
         //=================== CRT parameters ============================
-        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
+        AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)
