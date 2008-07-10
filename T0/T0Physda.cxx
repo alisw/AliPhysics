@@ -9,7 +9,11 @@ Number of events needed: 500000
 Input Files: inPhys.dat, external parameters
 Output Files: daPhys.root, to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
-
+------------------------------Alla
+Now trigger type changed to CALICRATION_EVENT
+to have data during test.
+SOULD BE CHANGED BACK BEFORE BEAM
+------------------------------- Alla
 */
 
 #define FILE_OUT "daPhys.root"
@@ -163,8 +167,8 @@ int main(int argc, char **argv) {
       case END_OF_RUN:
 	break;
 
-      case PHYSICS_EVENT:
-//      case CALIBRATION_EVENT:
+	//      case PHYSICS_EVENT:
+      case CALIBRATION_EVENT:
       iev++;
 
       if(iev==1){
