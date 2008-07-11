@@ -102,7 +102,12 @@ Bool_t AliAltroDecoder::Decode()
       //     printf("\n AliAltroDecoder::Decode(). Please check on the return value (-1 if fataly corrupted) of the SetMemory() function\n");    
       return kFALSE;
     }
-
+  else if (!f8DtaPtr || !f32DtaPtr ||
+	   (UChar_t*)f32DtaPtr < f8DtaPtr-fSize ||
+	   (UChar_t*)f32DtaPtr > f8DtaPtr)
+    {
+      return kFALSE;
+    }
   else
     {
       // see header file for class documentation
@@ -375,7 +380,10 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
       f32DtaPtr = (UInt_t *)dtaPtr + fkN32HeaderWords;
       fIsFatalCorruptedTrailer = kFALSE; 
     }
-  
+
+  // all subsequent consistency checks depend on the correct initialization
+  // of the pointer and size variables
+  assert(f8DtaPtr == dtaPtr + fSize);  
   return iRet;
 
 }
