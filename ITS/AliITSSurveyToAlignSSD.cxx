@@ -180,9 +180,9 @@ void AliITSSurveyToAlignSSD::CreateAlignObj(){
   for(Int_t imod = 0; imod < fSurveyPoints->GetEntries(); imod++) {
     pt = (AliSurveyPoint*) fSurveyPoints->At(imod);
     if(!pt) continue;
-    sx = pt->GetX()*100.;
-    sy = pt->GetY()*100.;
-    sz = pt->GetZ()*100.;
+    sx = pt->GetX();
+    sy = pt->GetY();
+    sz = pt->GetZ();
 
     ilayer = (imod < 748) ? AliGeomManager::kSSD1 : AliGeomManager::kSSD2;
     imodule = (imod < 748) ? imod : imod - 748;
