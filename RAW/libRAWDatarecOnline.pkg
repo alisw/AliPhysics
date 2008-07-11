@@ -6,7 +6,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 HDRS +=
 
-DHDR:= RAWrecOnlineLinkDef.h 
+DHDR:= RAWDatarecOnlineLinkDef.h 
 
 ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
