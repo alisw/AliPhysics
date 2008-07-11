@@ -17,6 +17,7 @@
 
 #include <TEveUtil.h>
 #include <TEveManager.h>
+#include <TEveSelection.h>
 
 #include <Getline.h>
 
@@ -56,6 +57,8 @@ int main(int argc, char **argv)
   TRint app("App", &argc, argv);
 
   TEveManager::Create();
+  gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_Projectable);
+  gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_Projectable);
 
   gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/alice_fullgeo.root", evedir.Data()));
 
