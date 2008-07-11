@@ -881,6 +881,12 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fITSchi2=t->GetChi2();
     fITSsignal=t->GetPIDsignal();
     fITSLabel = t->GetLabel();
+    // keep in fOp the parameters outside ITS for ITS stand-alone tracks 
+    if (flags==kITSout) { 
+      if (!fOp) fOp=new AliExternalTrackParam(*t);
+      else 
+        fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+    }      
     break;
     
   case kTPCin: case kTPCrefit:
