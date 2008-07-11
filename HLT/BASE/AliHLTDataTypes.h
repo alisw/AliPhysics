@@ -32,6 +32,7 @@
  *   5       Data types for Run and Event summary, and for monitoring added
  *   6       Common data types for TreeD and TreeR defined
  *           kAliHLTAllDataTypes and kAliHLTDataOriginSample added
+ *           kAliHLTDataOriginEMCAL added
  */
 #define ALIHLT_DATA_TYPES_VERSION 6
 
@@ -106,6 +107,11 @@ extern const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize];
  * @ingroup alihlt_component_datatypes
  */
 extern const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin EMCAL 
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize];
 
 //////////////////////////////////////////////////////////////////////////
 //

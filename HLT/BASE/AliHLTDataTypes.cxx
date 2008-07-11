@@ -221,3 +221,6 @@ const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize]    = {'I','
 
 /** Sample */
 const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize] = {'S','M','P','L'};
+
+/** EMCAL */
+const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize]  = {'E','M','C','L'};
