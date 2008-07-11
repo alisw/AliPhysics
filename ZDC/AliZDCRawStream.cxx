@@ -26,6 +26,7 @@
 //									     //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TSystem.h>
 #include "AliZDCRawStream.h"
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
@@ -457,8 +458,29 @@ Bool_t AliZDCRawStream::Next()
 	
 	  // Checking if the channel map for the ADCs has been provided/read
 	  if(fMapADC[0][0]==-1){
-	    printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
-	    return kFALSE;
+	    // Temporary solution (to be changed!!!!)
+	    //printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
+	    //return kFALSE;
+	    char * mapFileName=gSystem->ExpandPathName("$ALICE_ROOT/ZDC/ShuttleInput/ZDCChMapping.dat");
+	    FILE *file; 
+	    Int_t ival[48][6];
+	    if((file = fopen(mapFileName,"r")) != NULL){
+	      for(Int_t j=0; j<48; j++){
+	        for(Int_t k=0; k<6; k++){
+	          fscanf(file,"%d",&ival[j][k]);
+		}
+		fMapADC[j][0] = ival[j][1];
+		fMapADC[j][1] = ival[j][2];
+		fMapADC[j][2] = ival[j][3];
+		fMapADC[j][3] = ival[j][4];
+		fMapADC[j][4] = ival[j][5];
+              }
+  	    }
+	    else{
+     		printf("File %s not found\n",mapFileName);
+     		return kFALSE;
+	    }
+
 	  }
 	  //
 	  //printf("\n Reading map!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");

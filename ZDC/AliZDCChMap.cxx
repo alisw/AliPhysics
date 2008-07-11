@@ -104,9 +104,10 @@ void AliZDCChMap::Reset()
 void  AliZDCChMap::Print(Option_t *) const
 {
    // Printing of calibration object
-   printf("\n\n\t ******************* AliZDCChMap object *******************\n");
+   printf("\n\n\t ******************* AliZDCChMap object *******************\n\n");
    for(Int_t i=0; i<48; i++) 
-     printf("\n ADCmod. %d ch. %d -> detector %d sector %d\n",
+     printf(" ADCmod. %d ch. %d -> detector %d sector %d\n",
      fADCModule[i], fADCChannel[i],fDetector[i], fSector[i]);
+   printf("\n\n\t **********************************************************\n\n");
  
 } 
