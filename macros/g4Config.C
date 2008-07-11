@@ -12,13 +12,17 @@
 //
 // You can also start from a mini GUI - g4menu.C.
 // See description in this macro.
+//
+// By I. Hrivnacova, IPN Orsay
  	
 
 void Config()
 {
+  cout << "Running g4Config.C ... " << endl;
+
   // AliRoot setup
   //
-  gROOT->LoadMacro("g4ConfigCommon.C");
+  gROOT->LoadMacro("$ALICE_ROOT/macros/g4ConfigCommon.C");
   ConfigCommon();
 
   // Load Geant4 + Geant4 VMC libraries
@@ -28,8 +32,6 @@ void Config()
     if (!gInterpreter->IsLoaded("$ALICE/geant4_vmc/examples/macro/g4libs.C")) {
       gROOT->LoadMacro("$ALICE/geant4_vmc/examples/macro/g4libs.C");
       gInterpreter->ProcessLine("g4libs()");
-      // Load G4root library (for G4 navigation with TGeo)
-      gSystem->Load("libG4root");
     }
   }    
 
@@ -38,18 +40,14 @@ void Config()
   TGeant4 *geant4 = 0;
   if (!gMC) {
     TG4RunConfiguration* runConfiguration 
-      = new TG4RunConfiguration("geomVMCtoRoot", true);
-//      = new TG4RunConfiguration("geomRootToGeant4");
+      = new TG4RunConfiguration("geomRoot", 
+                                "emStandard+optical", 
+                                "specialCuts+specialControls+stackPopper");
+//      = new TG4RunConfiguration("geomRootToGeant4",
+//                                "emStandard+optical", 
+//                                "specialCuts+specialControls+stackPopper",
+//                                 true);
       
-    // Switch on hadron & optical physics, + special cuts
-    // Switch on optical physics (not activated by default)
-    TG4PhysicsListOptions options;
-    options.SetStackPopperPhysics(true);
-    options.SetHadronPhysics(true);
-    options.SetOpticalPhysics(true);
-    options.SetSpecialCutsPhysics(true);
-    options.SetSpecialControlsPhysics(true);
-    runConfiguration->SetPhysicsListOptions(options);
 
     geant4 = new TGeant4("TGeant4", "The Geant4 Monte Carlo", runConfiguration);
     cout << "Geant4 has been created." << endl;
@@ -102,9 +100,12 @@ void Config()
 
   // Set apply cuts 
   geant4->ProcessGeantCommand("/run/particle/applyCuts");  
-  geant4->ProcessGeantCommand("/mcVerbose/geometryManager 2");  
+  // geant4->ProcessGeantCommand("/mcVerbose/geometryManager 2");  
+  geant4->ProcessGeantCommand("/mcVerbose/composedPhysicsList 2");  
   geant4->ProcessGeantCommand("/mcDet/volNameSeparator !");
   geant4->ProcessGeantCommand("/mcControl/g3Defaults");
   geant4->ProcessGeantCommand("/mcPhysics/setStackPopperSelection e+ e- pi+ pi- kaon+ kaon- gamma");
-//  geant4->ProcessGeantCommand("/tracking/verbose 1");  
+  // geant4->ProcessGeantCommand("/tracking/verbose 1");  
+
+  cout << "Running g4Config.C finished ... " << endl;
 }
