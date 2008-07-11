@@ -24,6 +24,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "AliEventInfo.h"
 #include "AliLog.h"
 #include "AliModule.h" 
 #include "AliQA.h"
@@ -32,6 +33,7 @@
 
 #include <TKey.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TPluginManager.h> 
 #include <TROOT.h>
 #include <TStopwatch.h> 
@@ -46,6 +48,8 @@ ClassImp(AliQAChecker)
 AliQAChecker::AliQAChecker(const char* name, const char* title) :
   TNamed(name, title),
   fDataFile(0x0), 
+  fEventInfo(0x0), 
+  fEventInfoOwner(kFALSE), 
   fRefFile(0x0), 
   fFoundDetectors(".")
 {
@@ -58,6 +62,8 @@ AliQAChecker::AliQAChecker(const char* name, const char* title) :
 AliQAChecker::AliQAChecker(const AliQAChecker& qac) :
   TNamed(qac),
   fDataFile(qac.fDataFile), 
+  fEventInfo(qac.fEventInfo), 
+  fEventInfoOwner(kFALSE),   
   fRefFile(qac.fRefFile), 
   fFoundDetectors(qac.fFoundDetectors)
 {
@@ -81,6 +87,8 @@ AliQAChecker& AliQAChecker::operator = (const AliQAChecker& qac)
 AliQAChecker::~AliQAChecker()
 {
 // clean up
+  if (fEventInfo)
+    delete fEventInfo ; 
   delete [] fCheckers ; 
   AliQA::Close() ; 
 }
@@ -123,49 +131,56 @@ AliQAChecker::~AliQAChecker()
 
  return qac ; 
 }
-
-
+ 
 //_____________________________________________________________________________
 void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray *& dirOCDB)     
 { 
   // Opens and returns the file with the reference data 
 	
-	dirFile = NULL ; 
-	dirOCDB = NULL ; 
-	TString refStorage(AliQA::GetQARefStorage()) ; 
-	//refStorage += AliQA::GetQARefFileName() ;
-	if (refStorage.Contains(AliQA::GetLabLocalFile())) {	
-		refStorage.ReplaceAll(AliQA::GetLabLocalFile(), "") ; 
-		if ( fRefFile ) 
-			if ( fRefFile->IsOpen() ) 
-				fRefFile->Close() ; 
-		fRefFile = TFile::Open(refStorage.Data()) ; 
-		if (!fRefFile) { 
-			AliError(Form("Cannot find reference file %s", refStorage.Data())) ; 
-			dirFile = NULL ; 
-		}
-		dirFile = fRefFile->GetDirectory(det) ; 
-		if (!dirFile) {
-			AliWarning(Form("Directory %s not found in %d", det, refStorage.Data())) ; 
-		} else {
-			dirFile = dirFile->GetDirectory(task) ; 
-			if (!dirFile) 
-				AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
-		}  
-	} else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
-		AliCDBManager* man = AliCDBManager::Instance() ; 
-		if ( ! man->GetLock() ) { 
-			man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
-			man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
-		}
-		char * detOCDBDir = Form("%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
-		AliCDBEntry * entry = man->Get(detOCDBDir, man->GetRun()) ;
-		if (entry) {
-			TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
-			if ( listDetQAD ) 
-				dirOCDB = dynamic_cast<TObjArray *>(listDetQAD->FindObject(task)) ; 
-		}
-	}
+  dirFile = NULL ; 
+  dirOCDB = NULL ; 
+  TString refStorage(AliQA::GetQARefStorage()) ; 
+  //refStorage += AliQA::GetQARefFileName() ;
+  if (refStorage.Contains(AliQA::GetLabLocalFile())) {	
+    refStorage.ReplaceAll(AliQA::GetLabLocalFile(), "") ; 
+    if ( fRefFile ) 
+      if ( fRefFile->IsOpen() ) 
+	fRefFile->Close() ; 
+    fRefFile = TFile::Open(refStorage.Data()) ; 
+    if (!fRefFile) { 
+      AliError(Form("Cannot find reference file %s", refStorage.Data())) ; 
+      dirFile = NULL ; 
+    }
+    dirFile = fRefFile->GetDirectory(det) ; 
+    if (!dirFile) {
+      AliWarning(Form("Directory %s not found in %d", det, refStorage.Data())) ; 
+    } else {
+      dirFile = dirFile->GetDirectory(task) ; 
+      if (!dirFile) 
+	AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
+    }  
+  } else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
+    AliCDBManager* man = AliCDBManager::Instance() ;
+    if ( strcmp(AliQA::GetRefDataDirName(), "") == 0 ) { // the name of the last level of the directory is not set (RUNTYPE)
+      // Get it from EventInfo
+      if (!fEventInfo)  // not yet set, get the info from GRP
+	LoadEventInfoFromGRP() ; 
+
+      AliQA::SetQARefDataDirName(fEventInfo->GetRunType()) ;
+    }
+    if ( ! man->GetLock() ) { 
+      man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+      man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+    }
+    char * detOCDBDir = Form("%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+    AliInfo(Form("Reference QA data are taken from %s", detOCDBDir)) ;
+    AliCDBEntry * entry = man->Get(detOCDBDir, man->GetRun()) ;
+    if (entry) {
+      TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
+      if ( listDetQAD ) 
+	dirOCDB = dynamic_cast<TObjArray *>(listDetQAD->FindObject(task)) ; 
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -175,6 +190,43 @@ AliQAChecker * AliQAChecker::Instance()
   if ( ! fgQAChecker ) 
    fgQAChecker = new AliQAChecker() ; 
   return fgQAChecker ;  
+}
+
+//_____________________________________________________________________________
+void AliQAChecker::LoadEventInfoFromGRP() 
+{
+  AliCDBManager* man = AliCDBManager::Instance() ;
+  AliCDBEntry* entry = man->Get(AliQA::GetGRPPath().Data());
+  TMap * data = 0x0 ; 
+  if (entry) 
+    data = dynamic_cast<TMap*>(entry->GetObject());  
+  if (!data) {
+    AliFatal("No GRP entry found in OCDB!");      
+  }
+  TObjString *lhcState=  
+    dynamic_cast<TObjString*>(data->GetValue("fLHCState"));
+  if (!lhcState) {
+    AliWarning(Form("%s entry:  missing value for the LHC state ! Using UNKNOWN", AliQA::GetGRPPath().Data()));
+  }
+  TObjString *beamType=
+    dynamic_cast<TObjString*>(data->GetValue("fAliceBeamType"));
+  if (!beamType) {
+    AliWarning(Form("%s entry:  missing value for the LHC state ! Using UNKNOWN", AliQA::GetGRPPath().Data()));
+  }
+  TObjString *runType=
+    dynamic_cast<TObjString*>(data->GetValue("fRunType"));
+  if (!runType) {
+    AliWarning(Form("%s entry:  missing value for the run type ! Using UNKNOWN", AliQA::GetGRPPath().Data()));  }
+  TObjString *activeDetectors=
+    dynamic_cast<TObjString*>(data->GetValue("fDetectorMask"));
+  if (!activeDetectors) {
+    AliWarning(Form("%s entry:  missing value for the detector mask ! Using ALL", AliQA::GetGRPPath().Data()));  
+  }
+  fEventInfo = new AliEventInfo(lhcState ? lhcState->GetString().Data() : "UNKNOWN",
+				beamType ? beamType->GetString().Data() : "UNKNOWN",
+				runType  ? runType->GetString().Data()  : "UNKNOWN",
+				activeDetectors ? activeDetectors->GetString().Data() : "ALL");
+  fEventInfoOwner = kTRUE ; 
 }
 
 //_____________________________________________________________________________

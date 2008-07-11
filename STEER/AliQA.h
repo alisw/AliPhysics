@@ -25,7 +25,7 @@ public:
 	enum QABIT_t {
     kNULLBit=-1, kINFO, kWARNING, kERROR, kFATAL, kNBIT };
     enum RUNTYPE_t {
-		kNULLTYPE=-1, kAUTO_TEST, kCALIBRATION, kCALIBRATION_PULSER, kCHANNEL_DELAY_TUNING, kCOSMIC, kCOSMICS, kDAQ_FO_UNIF_SCAN, 
+      kNULLTYPE=-1, kUNKOWN, kAUTO_TEST, kCALIBRATION, kCALIBRATION_PULSER, kCHANNEL_DELAY_TUNING, kCOSMIC, kCOSMICS, kDAQ_FO_UNIF_SCAN, 
 		kDAQ_GEN_DAC_SCAN, kDAQ_MEAN_TH_SCAN, kDAQ_MIN_TH_SCAN, kDAQ_NOISY_PIX_SCAN, kDAQ_PIX_DELAY_SCAN, kDAQ_UNIFORMITY_SCAN, 
 		kDCS_FO_UNIF_SCAN, kDCS_MEAN_TH_SCAN, kDCS_MIN_TH_SCAN, kDCS_PIX_DELAY_SCAN, kDCS_UNIFORMITY_SCAN, kDDL_TEST, kGAIN, 
 		kPEDESTAL, kINJECTOR,  kLASER, kMONTECARLO, kNOISE, kNOISY_PIX_SCAN,  kPHYSICS, kPULSER, kSTANDALONE, kSTANDALONE_BC, 
@@ -43,21 +43,22 @@ public:
 	AliQA& operator = (const AliQA& qa) ;
 	virtual ~AliQA();
  
-	static  AliQA *   Instance() ;
-	static  AliQA *   Instance(const DETECTORINDEX_t det) ;
-	static  AliQA *   Instance(const ALITASK_t tsk) ;
-	static  AliQA *   Instance(const TASKINDEX_t tsk) ;
+	static  AliQA *        Instance() ;
+	static  AliQA *        Instance(const DETECTORINDEX_t det) ;
+	static  AliQA *        Instance(const ALITASK_t tsk) ;
+	static  AliQA *        Instance(const TASKINDEX_t tsk) ;
 	const Bool_t           CheckFatal() const ;
 	static void            Close() ; 
 	static const char *    GetAliTaskName(ALITASK_t tsk) ;
-    static const TString   GetLabLocalFile() { return fkgLabLocalFile ; } 
-    static const TString   GetLabLocalOCDB() { return fkgLabLocalOCDB ; } 
-    static const TString   GetLabAliEnOCDB() { return fkgLabAliEnOCDB ; } 
+        static const TString   GetLabLocalFile() { return fkgLabLocalFile ; } 
+        static const TString   GetLabLocalOCDB() { return fkgLabLocalOCDB ; } 
+        static const TString   GetLabAliEnOCDB() { return fkgLabAliEnOCDB ; } 
 	static const DETECTORINDEX_t GetDetIndex(const char * name) ; 
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
 	static const char *    GetDetName(Int_t det) ;
+        static const TString   GetGRPPath() { return fgGRPPath ; }  
 	static TFile *         GetQADataFile(const char * name, const Int_t run, const Int_t cycle) ; 
-	static TFile *		   GetQADataFile(const char * fileName) ;
+	static TFile *	       GetQADataFile(const char * fileName) ;
 	static const char *    GetQADataFileName(const char * name, const Int_t run, const Int_t cycle) 
 								{return Form("%s.%s.%d.%d.root", name, fgQADataFileName.Data(), run, cycle)  ; }
 	static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
@@ -76,7 +77,8 @@ public:
 	static void			   SetQAResultDirName(const char * name) ; 
 	static void            SetQARefStorage(const char * name) ; 
 	static void            SetQARefDataDirName(RUNTYPE_t rt) { fkgRefDataDirName = GetRunTypeName(rt) ; }
-    void                   Show() const { ShowStatus(fDet) ; }
+	static void            SetQARefDataDirName(const char * name) ;
+        void                   Show() const { ShowStatus(fDet) ; }
 	void                   ShowAll() const ;
 	void                   UnSet(QABIT_t bit) ;
 
@@ -98,30 +100,31 @@ private:
 	void                 SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) ;
 	void                 UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) ;
 
-	static AliQA *fgQA					    ; // pointer to the instance of the singleton
-	Int_t                fNdet			    ; // number of detectors
-	ULong_t    *         fQA			    ; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
-	DETECTORINDEX_t      fDet			    ; //!  the current detector (ITS, TPC, ....)
-	ALITASK_t            fTask		        ; //!  the current environment (SIM, REC, ESD, ANA)
+	static AliQA *       fgQA		    ; // pointer to the instance of the singleton
+        Int_t                fNdet     	            ; // number of detectors
+	ULong_t    *         fQA		    ; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
+	DETECTORINDEX_t      fDet		    ; //!  the current detector (ITS, TPC, ....)
+	ALITASK_t            fTask	            ; //!  the current environment (SIM, REC, ESD, ANA)
 	static TString       fgDetNames[]	    ; //! list of detector names   
+        static TString       fgGRPPath              ; //! path of the GRP object in OCDB
 	static TFile *       fgQADataFile	    ; //! the output file where the quality assurance maker store their results
-	static TString       fgQADataFileName   ; //! the name of the file where the quality assurance maker store their results
+	static TString       fgQADataFileName       ; //! the name of the file where the quality assurance maker store their results
 	static TFile *       fgQARefFile	    ; //! the output file where the quality assurance maker store their results
 	static TString       fgQARefDirName	    ; //! name of directory where to find the reference data file
-	static TString       fgQARefFileName    ; //! file name where to find the reference data
-	static TFile *       fgQAResultFile     ; //! File where to find the QA result
-	static TString       fgQAResultDirName  ; //! the location of the output file where the QA results are stored  
-	static TString       fgQAResultFileName ; //! the output file where the QA results are stored  
+	static TString       fgQARefFileName        ; //! file name where to find the reference data
+	static TFile *       fgQAResultFile         ; //! File where to find the QA result
+	static TString       fgQAResultDirName      ; //! the location of the output file where the QA results are stored  
+	static TString       fgQAResultFileName     ; //! the output file where the QA results are stored  
 	static TString       fgRTNames[]	    ; //! list of Run Type names   
 	static TString       fgTaskNames[]	    ; //! list of tasks names   
-	static const TString fkgLabLocalFile    ; //! label to identify a file as local 
-	static const TString fkgLabLocalOCDB    ; //! label to identify a file as local OCDB 
-	static const TString fkgLabAliEnOCDB    ; //! label to identify a file as AliEn OCDB 
-	static const TString fkgRefFileName     ; //! name of Reference File Name 
-	static const TString fkgQAName          ; //! name of QA object 
-	static const TString fkgRefOCDBDirName  ; //! name of Reference directory name in OCDB  	
-	static       TString fkgRefDataDirName  ; //! name of Reference directory name in OCDB for data  	
-	static const TString fkgQARefOCDBDefault; //! default storage for QA in OCDB 
+	static const TString fkgLabLocalFile        ; //! label to identify a file as local 
+	static const TString fkgLabLocalOCDB        ; //! label to identify a file as local OCDB 
+	static const TString fkgLabAliEnOCDB        ; //! label to identify a file as AliEn OCDB 
+	static const TString fkgRefFileName         ; //! name of Reference File Name 
+	static const TString fkgQAName              ; //! name of QA object 
+	static const TString fkgRefOCDBDirName      ; //! name of Reference directory name in OCDB  	
+	static       TString fkgRefDataDirName      ; //! name of Reference directory name in OCDB for data  	
+	static const TString fkgQARefOCDBDefault    ; //! default storage for QA in OCDB 
 
  ClassDef(AliQA,1)  //ALICE Quality Assurance Object
 };

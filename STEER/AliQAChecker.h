@@ -19,6 +19,7 @@
 
 #include "AliQA.h"
 class AliCDBEntry ; 
+class AliEventInfo ;
 class AliQACheckerBase ; 
 
 class AliQAChecker: public TNamed {
@@ -39,14 +40,19 @@ public:
 
   virtual Bool_t Run(const char * fileName = NULL) ;
   virtual Bool_t Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObjArray * list);
+  void SetEventInfo(AliEventInfo * ei) {fEventInfo = ei;}
 
 private:
 
-  static AliQAChecker *fgQAChecker ; // pointer to the instance of the singleton
-  TFile * fDataFile ;                     //! Data file to check
-  TFile * fRefFile ;                      //! Reference Data file 
-  TString fFoundDetectors ;               //! detectors for which the Quality assurance could be done
-  AliQACheckerBase * fCheckers[AliQA::kNDET] ; //! list of detectors checkers
+  void LoadEventInfoFromGRP() ; 
+
+  static AliQAChecker *fgQAChecker ;             // pointer to the instance of the singleton
+  TFile *              fDataFile ;               //! Data file to check
+  AliEventInfo *       fEventInfo ;              //! Event info object 
+  Bool_t               fEventInfoOwner;          //! owns fEventInfo or not
+  TFile *              fRefFile ;                //! Reference Data file 
+  TString              fFoundDetectors ;         //! detectors for which the Quality assurance could be done
+  AliQACheckerBase *   fCheckers[AliQA::kNDET] ; //! list of detectors checkers
   ClassDef(AliQAChecker, 1)  // class for running generation, simulation and digitization
 };
 #endif
