@@ -110,15 +110,22 @@ const char* AliGRPDCS::ProcessDCS(Int_t iType)
 const char* AliGRPDCS::ProcessBoolean()
 {
   Bool_t fDCSBool = kTRUE;
+  Bool_t previousBool = kTRUE;
 
   AliDCSValue *v = 0x0;
 
   for(Int_t iCount = 0; iCount < fDCSArray->GetEntries(); iCount++) {
     v = (AliDCSValue *)fDCSArray->At(iCount);
-    if ((v->GetTimeStamp() >= fStartTime) && (v->GetTimeStamp() <= fStopTime)) 
-      AliError(Form("DCS values for the parameter changed within the queried interval"));
-    if (v->GetTimeStamp() > fStopTime) continue;
+    if ((v->GetTimeStamp() < fStartTime) || (v->GetTimeStamp() > fStopTime)) {
+      AliError(Form("DCS values for the parameter outside the queried interval"));
+      continue;
+    }
     fDCSBool = v->GetBool();
+    if (iCount > 0) {
+      if (fDCSBool != previousBool)
+	AliError(Form("DCS values for the parameter changed from %d to %d within the queried interval", (Int_t)previousBool, (Int_t)fDCSBool));
+    }
+    previousBool = fDCSBool;
   }
 
   TString fDCSDataPointValue = (fDCSBool)? "1" : "0";
