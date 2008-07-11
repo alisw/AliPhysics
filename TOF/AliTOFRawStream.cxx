@@ -401,9 +401,9 @@ AliTOFRawStream::~AliTOFRawStream()
   fTOFrawData->Clear();
   delete fTOFrawData;
 
-  //delete [] fLocalEventCounterTRM;
-  //for (Int_t ii=0; ii<2; ii++) 
-  //delete [] fLocalEventCounterChain[ii];
+  delete [] fLocalEventCounterTRM;
+  for (Int_t ii=0; ii<2; ii++) 
+    delete [] fLocalEventCounterChain[ii];
 
 }
 
@@ -427,6 +427,14 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
   rawMap->Clear();
 
   Int_t slot[4] = {-1, -1, -1, -1};
+
+  fLocalEventCounterDRM = -1;
+  fLocalEventCounterLTM = -1;
+  for (Int_t ii=0; ii<13; ii++)
+    fLocalEventCounterTRM[ii] = -1;
+  for (Int_t ii=0; ii<13; ii++)
+    for (Int_t jj=0; jj<2; jj++)
+      fLocalEventCounterChain[ii][jj] = -1;
 
   fRawReader->Reset();
   fRawReader->Select("TOF", indexDDL, indexDDL);
