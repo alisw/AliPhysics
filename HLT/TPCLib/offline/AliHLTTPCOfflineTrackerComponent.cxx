@@ -16,7 +16,7 @@
 //**************************************************************************
 
 /** @file   AliHLTTPCOfflineTrackerComponent.cxx
-    @author Matthias Richter
+    @author Jacek Otwinowski & Matthias Richter
     @date   
     @brief  Wrapper component to the TPC offline tracker
 */
@@ -197,6 +197,7 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
 
   int iResult=0;
   TObjArray *clusterArray=0;
+  TObjArray *seedArray=0;
   int slice, patch;
 
   const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC); 
@@ -236,6 +237,30 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
 
     // run tracker
     fTracker->Clusters2Tracks(fESD);
+
+    // add TPC seed to the AliESDtrack
+    seedArray = fTracker->GetSeeds();
+    if(seedArray) {
+       Int_t nseed = seedArray->GetEntriesFast();
+       HLTInfo("Number TPC seeds %d",nseed);
+
+       for(Int_t i=0; i<nseed; ++i) {
+          AliTPCseed *seed = (AliTPCseed*)seedArray->UncheckedAt(i);
+          if(!seed) continue; 
+
+          AliESDtrack *esdtrack=fESD->GetTrack(i);
+          if(esdtrack) esdtrack->AddCalibObject((TObject*)seed);
+	  else 
+	     HLTInfo("Cannot add TPC seed to AliESDtrack");
+       }
+    }
+
+    // add ESDfriend to AliESDEvent
+    fESDfriend->~AliESDfriend();
+    new (fESDfriend) AliESDfriend(); // Reset ...
+    fESD->GetESDfriend(fESDfriend);
+
+    // unload clusters
     fTracker->UnloadClusters();
 
     Int_t nTracks = fESD->GetNumberOfTracks();
@@ -247,6 +272,10 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
 
     // send data
     PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, iSpecification);
+
+    // reset ESDs friends (no Reset function!)
+    fESDfriend->~AliESDfriend();
+    new (fESDfriend) AliESDfriend(); // Reset ...
 
     // reset ESDs
     fESD->Reset();

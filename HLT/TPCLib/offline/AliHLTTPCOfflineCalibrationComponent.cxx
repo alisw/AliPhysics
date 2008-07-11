@@ -202,9 +202,11 @@ int AliHLTTPCOfflineCalibrationComponent::ProcessCalibration(const AliHLTCompone
 	 pObj = (TObject *)GetNextInputObject(0)) {
       pESD = dynamic_cast<AliESDEvent*>(pObj);
       if (!pESD) continue;
+
+      // get standard ESD content
       pESD->GetStdContent();
 
-      //HLTInfo("load %d esd tracks from block %s 0x%08x", pESD->GetNumberOfTracks(), DataType2Text(GetDataType(pObj)).c_str(), GetSpecification(pObj));
+      HLTInfo("load %d esd tracks from block %s 0x%08x", pESD->GetNumberOfTracks(), DataType2Text(GetDataType(pObj)).c_str(), GetSpecification(pObj));
 
       slice=AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(pObj));
       patch=AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(pObj));
@@ -221,24 +223,28 @@ int AliHLTTPCOfflineCalibrationComponent::ProcessCalibration(const AliHLTCompone
          iResult=-ENOMEM; 
 	 return iResult;
       }
-    
+      HLTInfo("load %d esd friend tracks from 0x%08x", pESDfriend->GetNumberOfTracks(), pESDfriend);
+
       // get TPC seeds 
       Int_t n=pESD->GetNumberOfTracks();
       for (Int_t i=0;i<n;++i) {
          AliESDfriendTrack *friendTrack=pESDfriend->GetTrack(i);
+
 	 if(!friendTrack) continue;
+         HLTInfo("Process calibration on friend track 0x%08x", friendTrack);
 
          TObject *calibObject=0;
          AliTPCseed *seed=0;
-       for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
-          if ((seed=dynamic_cast<AliTPCseed*>(calibObject)) !=0) break;
-          if (seed) {
-              fTPCcalibAlign->Process(seed);
-              fTPCcalibTracksGain->Process(seed);
-              fTPCcalibTracks->Process(seed);
-	  }
-       }
-    
+         for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j) {
+            if ((seed=dynamic_cast<AliTPCseed*>(calibObject))!=0) break;
+	 }
+         if (seed) {
+            HLTInfo("Process calibration on seed 0x%08x", seed);
+            fTPCcalibAlign->Process(seed);
+            fTPCcalibTracksGain->Process(seed);
+            fTPCcalibTracks->Process(seed);
+	 }
+      }
       // calculate specification from the specification of input data blocks
         AliHLTUInt32_t iSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
 
