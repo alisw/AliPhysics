@@ -1,9 +1,5 @@
 /*
 
-DAcase2.c
-
-DAcase1.c
-
 This program reads the DAQ data files passed as argument using the monitoring library.
 
 It computes the average event size and populates local "./result.txt" file with the 
@@ -16,12 +12,12 @@ Messages on stdout are exported to DAQ log system.
 DA for ZDC standalone pedestal runs
 
 Contact: Chiara.Oppedisano@to.infn.it
-Link: /afs/cern.ch/user/c/chiarao/public/RawPed.date
+Link: 
 Run Type: STANDALONE_PEDESTAL_RUN
-DA Type: MON
+DA Type: LDC
 Number of events needed: no constraint (tipically ~10^3)
-Input Files: 
-Output Files: ZDCPedestal.dat
+Input Files:  
+Output Files: ZDCPedestal.dat, ZDCChMapping.dat
 Trigger Types Used: Standalone Trigger
 
 */
@@ -42,9 +38,11 @@ Trigger Types Used: Standalone Trigger
 #include <TProfile.h>
 #include <TF1.h>
 #include <TFile.h>
+#include <TFitter.h>
 
 //AliRoot
 #include <AliRawReaderDate.h>
+#include <AliRawEventHeaderBase.h>
 #include <AliZDCRawStream.h>
 
 
@@ -52,11 +50,14 @@ Trigger Types Used: Standalone Trigger
       Arguments: list of DATE raw data files
 */
 int main(int argc, char **argv) {
+  
+  TFitter *minuitFit = new TFitter(4);
+  TVirtualFitter::SetFitter(minuitFit);
 
   int status = 0;
 
   /* log start of process */
-  printf("ZDC PEDESTAL monitoring program started\n");  
+  printf("ZDC PEDESTAL program started\n");  
 
   /* check that we got some arguments = list of files */
   if (argc<2) {
@@ -132,8 +133,8 @@ int main(int argc, char **argv) {
        sprintf(namhist3lg,"PedCorrReflg_%d",j-22);
      }
      // --- High gain chain histos
-     hPedhg[j] = new TH1F(namhist1hg, namhist1hg, 100,0., 200.);
-     hPedOutOfTimehg[j] = new TH1F(namhist2hg, namhist2hg, 100,0., 200.);
+     hPedhg[j] = new TH1F(namhist1hg, namhist1hg, 200,0., 200.);
+     hPedOutOfTimehg[j] = new TH1F(namhist2hg, namhist2hg, 200,0., 200.);
      hPedCorrhg[j] = new TH2F(namhist3hg,namhist3hg,100,0.,200.,100,0.,200.);
      // --- Low gain chain histos
      hPedlg[j] = new TH1F(namhist1lg, namhist1lg, 100,0., 600.);
@@ -150,6 +151,9 @@ int main(int argc, char **argv) {
     return -1;
   }
   
+  FILE *mapFile4Shuttle;
+  const char *mapfName = "ZDCChMapping.dat";
+  
 
   /* report progress */
   daqDA_progressReport(10);
@@ -161,7 +165,7 @@ int main(int argc, char **argv) {
 
   /* read the data files */
   int n;
-  for (n=1;n<argc;n++) {
+  for(n=1;n<argc;n++){
    
     status=monitorSetDataSource( argv[n] );
     if (status!=0) {
@@ -180,21 +184,60 @@ int main(int argc, char **argv) {
 
       /* get next event */
       status=monitorGetEventDynamic((void **)&event);
-      if (status==MON_ERR_EOF) break; /* end of monitoring file has been reached */
-      if (status!=0) {
+      if(status==MON_ERR_EOF) break; /* end of monitoring file has been reached */
+      if(status!=0) {
         printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
         return -1;
       }
 
       /* retry if got no event */
-      if (event==NULL) {
+      if(event==NULL) {
         break;
       }
-
+      
+      // Initalize raw-data reading and decoding
+      AliRawReader *reader = new AliRawReaderDate((void*)event);
+      reader->Select("ZDC");
+      // --- Reading event header
+      //UInt_t evtype = reader->GetType();
+      //printf("\n\t ZDCPEDESTALda -> ev. type %d\n",evtype);
+      //printf("\t ZDCPEDESTALda -> run # %d\n",reader->GetRunNumber());
+      //
+      AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
+        
 
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
-    
+      
+      Int_t ich=0, adcMod[48], adcCh[48], sigCode[48], det[48], sec[48];
+      if(eventT==START_OF_DATA){
+	  	
+	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
+        else{
+	  while(rawStreamZDC->Next()){
+            if(rawStreamZDC->IsChMapping()){
+	      adcMod[ich] = rawStreamZDC->GetADCModFromMap(ich);
+	      adcCh[ich] = rawStreamZDC->GetADCChFromMap(ich);
+	      sigCode[ich] = rawStreamZDC->GetADCSignFromMap(ich);
+	      det[ich] = rawStreamZDC->GetDetectorFromMap(ich);
+	      sec[ich] = rawStreamZDC->GetTowerFromMap(ich);
+	      ich++;
+	    }
+	  }
+	}
+	// --------------------------------------------------------
+	// --- Writing ascii data file for the Shuttle preprocessor
+        mapFile4Shuttle = fopen(mapfName,"w");
+        for(Int_t i=0; i<ich; i++){
+	   fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",i,
+	     adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
+	   //
+	   //printf("ZDCPEDESTALDA.cxx ->  ch.%d mod %d, ch %d, code %d det %d, sec %d\n",
+	   //	   i,adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
+        }
+        fclose(mapFile4Shuttle);
+      }
+      
       if(eventT==PHYSICS_EVENT){
         fprintf(fp,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
           (unsigned long)event->eventRunNb,
@@ -202,40 +245,47 @@ int main(int argc, char **argv) {
           EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
           EVENT_ID_GET_ORBIT(event->eventId),
           EVENT_ID_GET_PERIOD(event->eventId));
-        //
-        // Initalize raw-data reading and decoding
-        AliRawReader *reader = new AliRawReaderDate((void*)event);
+
+	// --- Reading data header
+        reader->ReadHeader();
         const AliRawDataHeader* header = reader->GetDataHeader();
-        if(header) {
+        if(header){
          UChar_t message = header->GetAttributes();
-	 if(message & 0x20){ // DEDICATED PEDESTAL RUN
-	    printf("\t STANDALONE_PEDESTAL_RUN raw data found\n");
-	    continue;
-	 }
-	 else{
-	    printf("\t NO STANDALONE_PEDESTAL_RUN raw data found\n");
-	    return -1;
-	 }
-  	}
-  	//Commented until we won't have true Raw Data Header...
-  	//else{
-  	//   printf("\t ATTENTION! No Raw Data Header found!!!\n");
-  	  // return -1;
-  	//}
-  	//
-  	AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
-  	//
-  	if (!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
-  	Int_t counter=0;
+         if(message & 0x20){ // PEDESTAL RUN
+            //printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
+         }
+         else{
+            printf("\t NO STANDALONE_PEDESTAL RUN raw data found\n");
+            return -1;
+         }
+        }
+        else{
+           printf("\t ATTENTION! No Raw Data Header found!!!\n");
+           return -1;
+        }
+
+  	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");	
+	//
+	// ----- Setting ch. mapping -----
+	for(Int_t jk=0; jk<48; jk++){
+	  rawStreamZDC->SetMapADCMod(jk, adcMod[jk]);
+	  rawStreamZDC->SetMapADCCh(jk, adcCh[jk]);
+	  rawStreamZDC->SetMapADCSig(jk, sigCode[jk]);
+	  rawStreamZDC->SetMapDet(jk, det[jk]);
+	  rawStreamZDC->SetMapTow(jk, sec[jk]);
+	}
+	//
+  	Int_t iraw=0;
   	Int_t RawADChg[kNChannels], RawADCoothg[kNChannels];
   	Int_t RawADClg[kNChannels], RawADCootlg[kNChannels];
   	for(Int_t j=0; j<kNChannels; j++){
   	   RawADChg[j]=0; RawADCoothg[j]=0;
   	   RawADClg[j]=0; RawADCootlg[j]=0;
   	}
+	//
   	while(rawStreamZDC->Next()){
-  	  Int_t index=-1;
-  	  if(rawStreamZDC->IsADCDataWord()){
+  	 Int_t index=-1;
+  	 if(rawStreamZDC->IsADCDataWord()){
 	  if(rawStreamZDC->GetSector(1)!=5){ // Physics signals
     	    if(rawStreamZDC->GetSector(0)==1) index = rawStreamZDC->GetSector(1); // *** ZNC
 	    else if(rawStreamZDC->GetSector(0)==2) index = rawStreamZDC->GetSector(1)+5; // *** ZPC
@@ -247,40 +297,48 @@ int main(int argc, char **argv) {
 	    index = (rawStreamZDC->GetSector(0)-1)/3+22;
 	  }
 	  //
-	  /*printf("\t counter %d index %d det %d quad %d res %d ADC %d\n", counter, index,
+	  /*printf("\t iraw %d index %d det %d quad %d res %d ADC %d\n", iraw, index,
 	  	rawStreamZDC->GetSector(0), rawStreamZDC->GetSector(1), 
 		rawStreamZDC->GetADCGain(), rawStreamZDC->GetADCValue());
 	  */
-	  //
-	  if(counter<2*kNChannels){ // --- In-time pedestals (1st 48 raw data)
+	   //
+	   if(iraw<2*kNChannels){ // --- In-time pedestals (1st 48 raw data)
 	    if(rawStreamZDC->GetADCGain()==0){ 
 	      hPedhg[index]->Fill(rawStreamZDC->GetADCValue()); 
 	      RawADChg[index] = rawStreamZDC->GetADCValue();
+	      //
+	      //printf("\t filling histo hPedhg[%d]\n",index);
 	    }
 	    else{
 	      hPedlg[index]->Fill(rawStreamZDC->GetADCValue()); 
 	      RawADClg[index] = rawStreamZDC->GetADCValue();
+	      //
+	      //printf("\t filling histo hPedlg[%d]\n",index);
 	    }
+  	   }
+  	   else{  // --- Out-of-time pedestals
+  	    if(rawStreamZDC->GetADCGain()==0){
+  	      hPedOutOfTimehg[index]->Fill(rawStreamZDC->GetADCValue());
+  	      RawADCoothg[index] = rawStreamZDC->GetADCValue();
+	      //
+	      //printf("\t filling histo hPedOutOfTimehg[%d]\n",index);
   	    }
-  	    else{  // --- Out-of-time pedestals
-  	      if(rawStreamZDC->GetADCGain()==0){
-  		hPedOutOfTimehg[index]->Fill(rawStreamZDC->GetADCValue());
-  		RawADCoothg[index] = rawStreamZDC->GetADCValue();
-  	      }
-  	      else{
-  		hPedOutOfTimelg[index]->Fill(rawStreamZDC->GetADCValue());
-  		RawADCootlg[index] = rawStreamZDC->GetADCValue();
-  	      }
+  	    else{
+  	      hPedOutOfTimelg[index]->Fill(rawStreamZDC->GetADCValue());
+  	      RawADCootlg[index] = rawStreamZDC->GetADCValue();
+	      //
+	      //printf("\t filling histo hPedOutOfTimelg[%d]\n",index);
   	    }
-  	    counter++;
-  	   }//IsADCDataWord()
-  	   //
-  	   if(counter == 4*kNChannels){ // Last ADC channel -> Filling correlation histos
-  	     for(Int_t k=0; k<kNChannels; k++){
+  	   }
+  	    iraw++;
+  	  }//IsADCDataWord()
+  	  //
+  	  if(iraw == 4*kNChannels){ // Last ADC channel -> Filling correlation histos
+  	    for(Int_t k=0; k<kNChannels; k++){
   	      hPedCorrhg[k]->Fill(RawADCoothg[k], RawADChg[k]);
   	      hPedCorrlg[k]->Fill(RawADCootlg[k], RawADClg[k]);
-  	     }
-  	   }
+  	    }
+  	  }
          }
          //
          nevents_physics++;
@@ -311,8 +369,8 @@ int main(int argc, char **argv) {
   for(Int_t i=0; i<kNChannels; i++){
      hPedhg[i]->Fit("gaus","Q");
      ADCfunchg[i] = hPedhg[i]->GetFunction("gaus");
-     MeanPed[i] = ADCfunchg[i]->GetParameter(1);
-     MeanPedWidth[i] = ADCfunchg[i]->GetParameter(2);
+     MeanPed[i] = (Double_t) ADCfunchg[i]->GetParameter(1);
+     MeanPedWidth[i] = (Double_t)  ADCfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,MeanPed[i],MeanPedWidth[i]);
      //printf("\t MeanPed[%d] = %f\n",i, MeanPed[i]);
   }
@@ -320,8 +378,8 @@ int main(int argc, char **argv) {
   for(Int_t i=0; i<kNChannels; i++){
      hPedlg[i]->Fit("gaus","Q");
      ADCfunclg[i] = hPedlg[i]->GetFunction("gaus");
-     MeanPed[i+kNChannels] = ADCfunclg[i]->GetParameter(1);
-     MeanPedWidth[i+kNChannels] = ADCfunclg[i]->GetParameter(2);
+     MeanPed[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(1);
+     MeanPedWidth[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
      //printf("\t MeanPed[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
   }
@@ -330,8 +388,8 @@ int main(int argc, char **argv) {
   for(Int_t i=0; i<kNChannels; i++){
      hPedOutOfTimehg[i]->Fit("gaus","Q");
      ADCootfunchg[i] = hPedOutOfTimehg[i]->GetFunction("gaus");
-     MeanPedOOT[i] = ADCootfunchg[i]->GetParameter(1);
-     MeanPedWidthOOT[i] = ADCootfunchg[i]->GetParameter(2);
+     MeanPedOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(1);
+     MeanPedWidthOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,MeanPedOOT[i],MeanPedWidthOOT[i]);
      //printf("\t MeanPedOOT[%d] = %f\n",i, MeanPedOOT[i]);
   }
@@ -339,8 +397,8 @@ int main(int argc, char **argv) {
   for(Int_t i=0; i<kNChannels; i++){
      hPedOutOfTimelg[i]->Fit("gaus","Q");
      ADCootfunclg[i] = hPedOutOfTimelg[i]->GetFunction("gaus");
-     MeanPedOOT[i+kNChannels] = ADCootfunclg[i]->GetParameter(1);
-     MeanPedWidthOOT[i+kNChannels] = ADCootfunclg[i]->GetParameter(2);
+     MeanPedOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(1);
+     MeanPedWidthOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
      //printf("\t MeanPedOOT[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
   }
@@ -355,8 +413,8 @@ int main(int argc, char **argv) {
      hPedCorrProfhg[i]->SetName(namhist4);
      hPedCorrProfhg[i]->Fit("pol1","Q");
      ffunchg[i] = hPedCorrProfhg[i]->GetFunction("pol1");
-     CorrCoeff0[i] = ffunchg[i]->GetParameter(0);
-     CorrCoeff1[i] = ffunchg[i]->GetParameter(1);
+     CorrCoeff0[i] = (Double_t)  ffunchg[i]->GetParameter(0);
+     CorrCoeff1[i] = (Double_t) ffunchg[i]->GetParameter(1);
      fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,CorrCoeff0[i],CorrCoeff1[i]);
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",i, CorrCoeff0[i], i, CorrCoeff1[i]);
   }    
@@ -366,8 +424,8 @@ int main(int argc, char **argv) {
      hPedCorrProflg[i]->SetName(namhist4);
      hPedCorrProflg[i]->Fit("pol1","Q");
      ffunclg[i] = hPedCorrProflg[i]->GetFunction("pol1");
-     CorrCoeff0[i+kNChannels] = ffunclg[i]->GetParameter(0);
-     CorrCoeff1[i+kNChannels] = ffunclg[i]->GetParameter(1);
+     CorrCoeff0[i+kNChannels] =  (Double_t) ffunclg[i]->GetParameter(0);
+     CorrCoeff1[i+kNChannels] =  (Double_t) ffunclg[i]->GetParameter(1);
      fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,CorrCoeff0[i+kNChannels],CorrCoeff1[i+kNChannels]);
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
      //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
@@ -384,6 +442,9 @@ int main(int argc, char **argv) {
      delete hPedCorrlg[j];
   }
 
+  //delete minuitFit;
+  TVirtualFitter::SetFitter(0);
+
   /* write report */
   fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
 
@@ -393,7 +454,13 @@ int main(int argc, char **argv) {
   /* report progress */
   daqDA_progressReport(90);
 
-  /* store the result file on FES */
+  /* store the result files on FES */
+  status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
+  if(status){
+    printf("Failed to export file : %d\n",status);
+    return -1;
+  }
+  //
   status = daqDA_FES_storeFile(fName,"ZDCPEDESTAL_data");
   if(status){
     printf("Failed to export file : %d\n",status);
@@ -402,7 +469,6 @@ int main(int argc, char **argv) {
 
   /* report progress */
   daqDA_progressReport(100);
-
 
   return status;
 }

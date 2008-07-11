@@ -14,7 +14,7 @@ DA for ZDC standalone pedestal runs
 Contact: Chiara.Oppedisano@to.infn.it
 Link: 
 Run Type: STANDALONE_LASER_RUN
-DA Type: 
+DA Type: LDC
 Number of events needed: no constraint (tipically ~10^3)
 Input Files: 
 Output Files: ZDCLaser.dat
@@ -36,9 +36,11 @@ Trigger Types Used: Standalone Trigger
 #include <TH1F.h>
 #include <TF1.h>
 #include <TFile.h>
+#include <TFitter.h>
 
 //AliRoot
 #include <AliRawReaderDate.h>
+#include <AliRawEventHeaderBase.h>
 #include <AliZDCRawStream.h>
 
 
@@ -46,6 +48,9 @@ Trigger Types Used: Standalone Trigger
       Arguments: list of DATE raw data files
 */
 int main(int argc, char **argv) {
+  
+  TFitter *minuitFit = new TFitter(4);
+  TVirtualFitter::SetFitter(minuitFit);
 
   int status = 0;
 
@@ -88,6 +93,8 @@ int main(int argc, char **argv) {
     return -1;
   }
   
+  FILE *mapFile4Shuttle;
+  const char *mapfName = "ZDCChMapping.dat";  
 
   /* report progress */
   daqDA_progressReport(10);
@@ -129,13 +136,55 @@ int main(int argc, char **argv) {
         break;
       }
 
+      // Initalize raw-data reading and decoding
+      AliRawReader *reader = new AliRawReaderDate((void*)event);
+      reader->Select("ZDC");
+      // --- Reading event header
+      UInt_t evtype = reader->GetType();
+      //printf("\n\t ZDCPEDESTALda -> ev. type %d\n",evtype);
+      //printf("\t ZDCPEDESTALda -> run # %d\n",reader->GetRunNumber());
+      //
+      AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
+        
+
+      /* use event - here, just write event id to result file */
+      eventT=event->eventType;
+      
+      Int_t ich=0, adcMod[48], adcCh[48], sigCode[48], det[48], sec[48];
+      if(eventT==START_OF_DATA){
+	  	
+	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
+        else{
+	  while(rawStreamZDC->Next()){
+            if(rawStreamZDC->IsChMapping()){
+	      adcMod[ich] = rawStreamZDC->GetADCModFromMap(ich);
+	      adcCh[ich] = rawStreamZDC->GetADCChFromMap(ich);
+	      sigCode[ich] = rawStreamZDC->GetADCSignFromMap(ich);
+	      det[ich] = rawStreamZDC->GetDetectorFromMap(ich);
+	      sec[ich] = rawStreamZDC->GetTowerFromMap(ich);
+	      ich++;
+	    }
+	  }
+	}
+	// --------------------------------------------------------
+	// --- Writing ascii data file for the Shuttle preprocessor
+        mapFile4Shuttle = fopen(mapfName,"w");
+        for(Int_t i=0; i<ich; i++){
+	   fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",i,
+	     adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
+	   //
+	   //printf("ZDCPEDESTALDA.cxx ->  ch.%d mod %d, ch %d, code %d det %d, sec %d\n",
+	   //	   i,adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
+        }
+        fclose(mapFile4Shuttle);
+      }
 
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
     
       if(eventT==PHYSICS_EVENT){
         //
-        // *** To analyze EMD events you MUST have a pedestal data file!!!
+        // *** To analyze LASER events you MUST have a pedestal data file!!!
         // *** -> check if a pedestal run has been analyzied
         FILE *filePed=NULL;
         filePed=fopen("./ZDCPedestal.dat","r");
@@ -166,13 +215,13 @@ int main(int argc, char **argv) {
 	  }
         }
         //
-        // Initalize raw-data reading and decoding
-        AliRawReader *reader = new AliRawReaderDate((void*)event);
+	// --- Reading data header
+        reader->ReadHeader();
         const AliRawDataHeader* header = reader->GetDataHeader();
         if(header) {
          UChar_t message = header->GetAttributes();
 	 if(message & 0x20){ // DEDICATED LASER RUN
-	    printf("\t STANDALONE_LASER_RUN raw data found\n");
+	    //printf("\t STANDALONE_LASER_RUN raw data found\n");
 	    continue;
 	 }
 	 else{
@@ -180,15 +229,21 @@ int main(int argc, char **argv) {
 	    return -1;
 	 }
   	}
-  	//Commented until we won't have true Raw Data Header...
-  	//else{
-  	//   printf("\t ATTENTION! No Raw Data Header found!!!\n");
-  	  // return -1;
-  	//}
-  	//
-  	AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
-  	//
+  	else{
+  	   printf("\t ATTENTION! No Raw Data Header found!!!\n");
+  	   return -1;
+  	}
+
   	if (!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
+	//
+	// ----- Setting ch. mapping -----
+	for(Int_t jk=0; jk<48; jk++){
+	  rawStreamZDC->SetMapADCMod(jk, adcMod[jk]);
+	  rawStreamZDC->SetMapADCCh(jk, adcCh[jk]);
+	  rawStreamZDC->SetMapADCSig(jk, sigCode[jk]);
+	  rawStreamZDC->SetMapDet(jk, det[jk]);
+	  rawStreamZDC->SetMapTow(jk, sec[jk]);
+	}
   	//
 	while(rawStreamZDC->Next()){
   	  Int_t index=-1;
@@ -307,6 +362,9 @@ int main(int argc, char **argv) {
      delete hPMRefsideA;
   }
 
+  //delete minuitFit;
+  TVirtualFitter::SetFitter(0);
+
   /* write report */
   fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
 
@@ -317,6 +375,12 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
   /* store the result file on FES */
+  status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
+  if(status){
+    printf("Failed to export file : %d\n",status);
+    return -1;
+  }
+  //
   status = daqDA_FES_storeFile(fName,"ZDCLASER_data");
   if(status){
     printf("Failed to export file : %d\n",status);

@@ -1,28 +1,29 @@
 /*
 
-DAcase2.c
+This program reads the DAQ data files passed as argument using the monitoring library.
 
-This program connects to the DAQ data source passed as argument
-and populates local "./result.txt" file with the ids of events received
-during the run.
+It computes the average event size and populates local "./result.txt" file with the 
+result.
 
-The program exits when being asked to shut down (daqDA_checkshutdown)
-or End of Run event.
+The program reports about its processing progress.
 
 Messages on stdout are exported to DAQ log system.
 
+DA for ZDC standalone pedestal runs
+
 Contact: Chiara.Oppedisano@to.infn.it
-Link: /afs/cern.ch/user/c/chiarao/public/RawEMD.date
+Link: 
 Run Type: STANDALONE_EMD_RUN
-DA Type: MON
-Number of events needed: at least ~10^3
+DA Type: LDC
+Number of events needed: at least ~5*10^3
 Input Files: ZDCPedestal.dat
-Output Files: ZDCEMDCalib.dat
+Output Files: ZDCEMDCalib.dat, ZDCChMapping.dat
 Trigger Types Used: Standalone Trigger
 
 */
 
 #include <stdio.h>
+#include <Riostream.h>
 #include <Riostream.h>
 
 // DATE
@@ -37,9 +38,11 @@ Trigger Types Used: Standalone Trigger
 #include <TProfile.h>
 #include <TF1.h>
 #include <TFile.h>
+#include <TFitter.h>
 
 //AliRoot
 #include <AliRawReaderDate.h>
+#include <AliRawEventHeaderBase.h>
 #include <AliZDCRawStream.h>
 
 
@@ -48,6 +51,20 @@ Trigger Types Used: Standalone Trigger
       1- monitoring data source
 */
 int main(int argc, char **argv) {
+  
+  TFitter *minuitFit = new TFitter(4);
+  TVirtualFitter::SetFitter(minuitFit);
+
+  int status = 0;
+
+  /* log start of process */
+  printf("ZDC EMD program started\n");  
+
+  /* check that we got some arguments = list of files */
+  if (argc<2) {
+    printf("Wrong number of arguments\n");
+    return -1;
+  }
   
   //
   // --- Preparing histos for EM dissociation spectra
@@ -77,14 +94,6 @@ int main(int argc, char **argv) {
      histoEMDCorr[i] = new TH1F(namhistc,namhistc,100,0.,4000.);
   }
 
-  int status;
-  
-  if (argc!=2) {
-    printf("Wrong number of arguments\n");
-    return -1;
-  }
-
-
   /* open result file */
   FILE *fp=NULL;
   fp=fopen("./result.txt","a");
@@ -93,6 +102,8 @@ int main(int argc, char **argv) {
     return -1;
   }
   
+  FILE *mapFile4Shuttle;
+  const char *mapfName = "ZDCChMapping.dat";
 
   /* define data source : this is argument 1 */  
   status = monitorSetDataSource( argv[1] );
@@ -116,49 +127,90 @@ int main(int argc, char **argv) {
   
 
   /* log start of process */
-  printf("ZDC PEDESTAL monitoring program started\n");  
+  printf("ZDC EMD monitoring program started\n");  
   
+  /* report progress */
+  daqDA_progressReport(10);
+
+
   /* init some counters */
   int nevents_physics=0;
   int nevents_total=0;
 
-  struct equipmentStruct *equipment;
-  int *eventEnd;
-  int *eventData;
-  int *equipmentEnd;
-  int *equipmentData;
-  int *equipmentID;
-  struct eventHeaderStruct *event;
-  eventTypeType eventT;
-  Int_t iev=0;
-  
-  /* main loop (infinite) */
-  for(;;) {
-  
-    /* check shutdown condition */
-    if (daqDA_checkShutdown()) {break;}
-    
-    /* get next event (blocking call until timeout) */
-    status=monitorGetEventDynamic((void **)&event);
-    if (status==MON_ERR_EOF) {
-      printf ("End of File detected\n");
-      break; /* end of monitoring file has been reached */
-    }
-    
+  /* read the data files */
+  int n;
+  for(n=1;n<argc;n++){
+   
+    status=monitorSetDataSource( argv[n] );
     if (status!=0) {
-      printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-      break;
+      printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+      return -1;
     }
 
-    /* retry if got no event */
-    if (event==NULL) {
-      continue;
-    }
+    /* report progress */
+    /* in this example, indexed on the number of files */
+    daqDA_progressReport(10+80*n/argc);
 
-    iev++; 
+    /* read the file */
+    for(;;){
+      struct eventHeaderStruct *event;
+      eventTypeType eventT;
 
-    /* use event - here, just write event id to result file */
-    eventT=event->eventType;
+      /* get next event */
+      status=monitorGetEventDynamic((void **)&event);
+      if(status==MON_ERR_EOF) break; /* end of monitoring file has been reached */
+      if(status!=0) {
+        printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+        return -1;
+      }
+
+      /* retry if got no event */
+      if(event==NULL) {
+        break;
+      }
+      
+      // Initalize raw-data reading and decoding
+      AliRawReader *reader = new AliRawReaderDate((void*)event);
+      reader->Select("ZDC");
+      // --- Reading event header
+      //UInt_t evtype = reader->GetType();
+      //printf("\n\t ZDCEMDda -> ev. type %d\n",evtype);
+      //printf("\t ZDCEMDda -> run # %d\n",reader->GetRunNumber());
+      //
+      AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
+        
+
+      /* use event - here, just write event id to result file */
+      eventT=event->eventType;
+      
+      Int_t ich=0, adcMod[48], adcCh[48], sigCode[48], det[48], sec[48];
+      if(eventT==START_OF_DATA){
+	  	
+	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
+        else{
+	  while(rawStreamZDC->Next()){
+            if(rawStreamZDC->IsChMapping()){
+	      adcMod[ich] = rawStreamZDC->GetADCModFromMap(ich);
+	      adcCh[ich] = rawStreamZDC->GetADCChFromMap(ich);
+	      sigCode[ich] = rawStreamZDC->GetADCSignFromMap(ich);
+	      det[ich] = rawStreamZDC->GetDetectorFromMap(ich);
+	      sec[ich] = rawStreamZDC->GetTowerFromMap(ich);
+	      ich++;
+	    }
+	  }
+	}
+	// --------------------------------------------------------
+	// --- Writing ascii data file for the Shuttle preprocessor
+        mapFile4Shuttle = fopen(mapfName,"w");
+        for(Int_t i=0; i<ich; i++){
+	   fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",i,
+	     adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
+	   //
+	   //printf("ZDCPEDESTALDA.cxx ->  ch.%d mod %d, ch %d, code %d det %d, sec %d\n",
+	   //	   i,adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
+        }
+        fclose(mapFile4Shuttle);
+      }
     
     if(eventT==PHYSICS_EVENT){
       //
@@ -193,14 +245,14 @@ int main(int argc, char **argv) {
 	}
       }
       //
-      //
-      // Initalize raw-data reading and decoding
-      AliRawReader *reader = new AliRawReaderDate((void*)event);
+
+	// --- Reading data header
+        reader->ReadHeader();
       const AliRawDataHeader* header = reader->GetDataHeader();
       if(header){
          UChar_t message = header->GetAttributes();
 	 if(message & 0x70){ // DEDICATED EMD RUN
-	    printf("\t STANDALONE_EMD_RUN raw data found\n");
+	    //printf("\t STANDALONE_EMD_RUN raw data found\n");
 	    continue;
 	 }
 	 else{
@@ -208,15 +260,21 @@ int main(int argc, char **argv) {
 	    return -1;
 	 }
       }
-      //Commented until we won't have true Raw Data Header...
-      //else{
-      //   printf("\t ATTENTION! No Raw Data Header found!!!\n");
-      //   return -1;
-      //}
-      //
-      AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
-      //
+      else{
+         printf("\t ATTENTION! No Raw Data Header found!!!\n");
+         return -1;
+      }
+
       if (!rawStreamZDC->Next()) printf(" \t No raw data found!! ");
+      //
+      // ----- Setting ch. mapping -----
+      for(Int_t jk=0; jk<48; jk++){
+        rawStreamZDC->SetMapADCMod(jk, adcMod[jk]);
+        rawStreamZDC->SetMapADCCh(jk, adcCh[jk]);
+        rawStreamZDC->SetMapADCSig(jk, sigCode[jk]);
+        rawStreamZDC->SetMapDet(jk, det[jk]);
+        rawStreamZDC->SetMapTow(jk, sec[jk]);
+      }
       //
       Float_t ZDCRawADC[4], ZDCCorrADC[4], ZDCCorrADCSum[4];
       for(Int_t g=0; g<4; g++){
@@ -268,7 +326,6 @@ int main(int argc, char **argv) {
     
     nevents_total++;
 
-
     /* free resources */
     free(event);
     
@@ -277,12 +334,15 @@ int main(int argc, char **argv) {
       printf("EOR event detected\n");
       break;
     }
+
+   }
   }
-  
+    
   /* Analysis of the histograms */
   //
   FILE *fileShuttle;
-  fileShuttle = fopen("ZDCEMDCalib.dat","w");
+  const char *fName = "ZDCPedestal.dat";
+  fileShuttle = fopen(fName,"w");
   //
   Int_t BinMax[4];
   Float_t YMax[4];
@@ -317,13 +377,38 @@ int main(int argc, char **argv) {
   //						       
   fclose(fileShuttle);
   
+  for(Int_t ij=0; ij<4; ij++){
+    delete histoEMDRaw[ij];
+    delete histoEMDCorr[ij];
+  }
+  
+  //delete minuitFit;
+  TVirtualFitter::SetFitter(0);
 
   /* write report */
   fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
 
   /* close result file */
   fclose(fp);
+  
+  /* report progress */
+  daqDA_progressReport(90);
 
+  /* store the result file on FES */
+  status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
+  if(status){
+    printf("Failed to export file : %d\n",status);
+    return -1;
+  }
+  //
+  status = daqDA_FES_storeFile(fName,"ZDCEMD_data");
+  if(status){
+    printf("Failed to export file : %d\n",status);
+    return -1;
+  }
+
+  /* report progress */
+  daqDA_progressReport(100);
 
   return status;
 }
