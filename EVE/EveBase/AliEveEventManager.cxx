@@ -151,8 +151,19 @@ void AliEveEventManager::Open()
   static const TEveException kEH("AliEveEventManager::Open ");
 
   gSystem->ExpandPathName(fPath);
-  if (fPath[0] != '/')
-    fPath = Form("%s/%s", gSystem->WorkingDirectory(), fPath.Data());
+  // The following magick is required for ESDriends to be loaded properly
+  // from non-current directory.
+  if (fPath.IsNull() || fPath == ".")
+  {
+    fPath = gSystem->WorkingDirectory();
+  }
+  else if ( ! fPath.BeginsWith("file:/"))
+  {
+    TUrl    url(fPath, kTRUE);
+    TString protocol(url.GetProtocol());
+    if (protocol == "file" && fPath[0] != '/')
+      fPath = Form("%s/%s", gSystem->WorkingDirectory(), fPath.Data());
+  }
 
   Int_t runNo = -1;
 
@@ -211,7 +222,7 @@ void AliEveEventManager::Open()
       runNo = fESD->GetESDRun()->GetRunNumber();
 
       // Check if ESDfriends exists and attach the branch
-      TString p = Form("%s/AliESDfriends.root", fPath.Data());
+      TString p(Form("%s/AliESDfriends.root", fPath.Data()));
       if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
       {
         fESDfriendExists = kTRUE;
