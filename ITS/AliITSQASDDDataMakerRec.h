@@ -57,12 +57,13 @@ private:
   Int_t   fLDC;                            //LDC number (0 for offline, 1 to 4 for online) 
   Int_t   fSDDhTask;                       // number of histo booked for each Task SDD
   Int_t   fGenOffset;                         // qachecking offset       
+  Int_t   fTimeBinSize;						// time bin width in number of clocks
   AliITSDDLModuleMapSDD  *fDDLModuleMap;// SDD Detector configuration for the decoding
 /*
   TProfile2D *fModuleChargeMap[2*fgknSDDmodules];//module map
   TProfile2D *fModuleChargeMapFSE[2*fgknSDDmodules];//module map for one event 
 */ 
-  ClassDef(AliITSQASDDDataMakerRec,3)      // description 
+  ClassDef(AliITSQASDDDataMakerRec,4)      // description 
 
 };
 

@@ -57,7 +57,8 @@ fkOnline(kMode),
 fLDC(ldc),
 fSDDhTask(0),
 fGenOffset(0),
-fDDLModuleMap(0)
+fDDLModuleMap(0),
+fTimeBinSize(1)
 {
   //ctor used to discriminate OnLine-Offline analysis
   if(fLDC < 0 || fLDC > 4) {
@@ -73,7 +74,8 @@ fkOnline(qadm.fkOnline),
 fLDC(qadm.fLDC),
 fSDDhTask(qadm.fSDDhTask),
 fGenOffset(qadm.fGenOffset),
-fDDLModuleMap(0)
+fDDLModuleMap(0),
+fTimeBinSize(1)
 {
   //copy ctor 
   fAliITSQADataMakerRec->SetName((const char*)qadm.fAliITSQADataMakerRec->GetName()) ; 
@@ -191,6 +193,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
   Int_t indexlast2 = 0;
 
   if(fkOnline) {
+	fTimeBinSize = 4;
     indexlast = 0;
     index1 = 0;
 	indexlast1 = fSDDhTask;
@@ -203,7 +206,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
 			sprintf(hname[0],"chargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside);
 			sprintf(hname[1],"ChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside);
 			sprintf(hname[2],"hmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],128,-0.5,255.5,256,-0.5,255.5);
+			TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
 			fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
 			fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
 			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMapFSE)),indexlast1 + index1 + fGenOffset);
@@ -220,7 +223,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
 			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
 			sprintf(hname[0],"chargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
 			sprintf(hname[1],"ChargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
-			TProfile2D *fModuleChargeMap = new TProfile2D(hname[0],hname[1],128,-0.5,255.5,256,-0.5,255.5);
+			TProfile2D *fModuleChargeMap = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
 			fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
 			fModuleChargeMap->GetYaxis()->SetTitle("Anode");
 			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMap)),indexlast1 + index1 + fGenOffset);
