@@ -66,7 +66,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fRawReader->Select("ZDC");
   //
   for(Int_t i=0; i<48; i++){
-    for(Int_t j=0; j<3; j++) fMapADC[i][j]=-1;
+    for(Int_t j=0; j<5; j++) fMapADC[i][j]=-1;
   }
 
 }
@@ -101,7 +101,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   // Copy constructor
   for(Int_t j=0; j<2; j++) fSector[j] = stream.GetSector(j);	 
   for(Int_t i=0; i<48; i++){
-    for(Int_t j=0; j<3; j++) fMapADC[i][j] = stream.fMapADC[i][j];
+    for(Int_t j=0; j<5; j++) fMapADC[i][j] = stream.fMapADC[i][j];
   }
 }
 
@@ -119,6 +119,12 @@ AliZDCRawStream::~AliZDCRawStream()
 {
 // Destructor
 
+}
+
+//_____________________________________________________________________________
+void AliZDCRawStream::ReadChMap()
+{
+  // Reading channel map
 }
 
 //_____________________________________________________________________________
@@ -158,8 +164,7 @@ void AliZDCRawStream::ReadCDHHeader()
       fIsCalib = kTRUE;
     }
     //printf("\t AliZDCRawStream::ReadCDHHeader -> L1TriggerMessage %x\n",header->GetL1TriggerMessage());
-    printf("\t AliZDCRawStream::ReadCDHHeader -> Calibration bit = %d\n",fIsCalib);
-    
+    //printf("\t AliZDCRawStream::ReadCDHHeader -> Calibration bit = %d\n",fIsCalib);    
     
     UInt_t status = header->GetStatus();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> status = %d\n",status);
@@ -285,8 +290,61 @@ Bool_t AliZDCRawStream::Next()
 	  fMapADC[fNConnCh][0] = fADCModule;
 	  fMapADC[fNConnCh][1] = fADCChannel;
 	  fMapADC[fNConnCh][2] = fCabledSignal;
-	  //printf("  RawData%d mod. %d ch. %d signal %d\n",fNConnCh,fADCModule,
-	   // fADCChannel, fBuffer&0xffff);
+	  //
+	  // Determining detector and sector
+	  // -----------------------------------------
+	  //  For the decoding of the following lines 
+	  //  look the enum in AliZDCRawStream.h file
+	  // -----------------------------------------
+	  if((fCabledSignal>=2 && fCabledSignal<=6) || (fCabledSignal>=26 && fCabledSignal<=30)
+	     || fCabledSignal==24 || fCabledSignal==48){
+	    fMapADC[fNConnCh][3] = 4;
+	    //
+	    if(fCabledSignal==2 || fCabledSignal==26) fMapADC[fNConnCh][4]=0;
+	    else if(fCabledSignal==3 || fCabledSignal==27) fMapADC[fNConnCh][4]=1;
+	    else if(fCabledSignal==4 || fCabledSignal==28) fMapADC[fNConnCh][4]=2;
+	    else if(fCabledSignal==5 || fCabledSignal==29) fMapADC[fNConnCh][4]=3;
+	    else if(fCabledSignal==6 || fCabledSignal==30) fMapADC[fNConnCh][4]=4;
+	    else if(fCabledSignal==24 || fCabledSignal==48) fMapADC[fNConnCh][4]=5;
+	  }
+	  else if((fCabledSignal>=7 && fCabledSignal<=11) || (fCabledSignal>=31 && fCabledSignal<=35)){
+	    fMapADC[fNConnCh][3] = 5;
+	    //
+	    if(fCabledSignal==7 || fCabledSignal==31) fMapADC[fNConnCh][4]=0;
+	    else if(fCabledSignal==8 || fCabledSignal==32) fMapADC[fNConnCh][4]=1;
+	    else if(fCabledSignal==9 || fCabledSignal==33) fMapADC[fNConnCh][4]=2;
+	    else if(fCabledSignal==10 || fCabledSignal==34) fMapADC[fNConnCh][4]=3;
+	    else if(fCabledSignal==11 || fCabledSignal==35) fMapADC[fNConnCh][4]=4;
+	  }
+	  else if((fCabledSignal>=12 && fCabledSignal<=16) || (fCabledSignal>=36 && fCabledSignal<=40)
+	     || fCabledSignal==25 || fCabledSignal==49){
+	    fMapADC[fNConnCh][3] = 3;
+	    //
+	    if(fCabledSignal==12 || fCabledSignal==36) fMapADC[fNConnCh][4]=0;
+	    else if(fCabledSignal==13 || fCabledSignal==37) fMapADC[fNConnCh][4]=1;
+	    else if(fCabledSignal==14 || fCabledSignal==38) fMapADC[fNConnCh][4]=2;
+	    else if(fCabledSignal==15 || fCabledSignal==39) fMapADC[fNConnCh][4]=3;
+	    else if(fCabledSignal==16 || fCabledSignal==40) fMapADC[fNConnCh][4]=4;
+	    else if(fCabledSignal==25 || fCabledSignal==49) fMapADC[fNConnCh][4]=5;
+	  }
+	  else if((fCabledSignal>=17 && fCabledSignal<=21) || (fCabledSignal>=41 && fCabledSignal<=45)){
+	    fMapADC[fNConnCh][3] = 1;
+	    //
+	    if(fCabledSignal==17 || fCabledSignal==41) fMapADC[fNConnCh][4]=0;
+	    else if(fCabledSignal==18 || fCabledSignal==42) fMapADC[fNConnCh][4]=1;
+	    else if(fCabledSignal==19 || fCabledSignal==43) fMapADC[fNConnCh][4]=2;
+	    else if(fCabledSignal==20 || fCabledSignal==44) fMapADC[fNConnCh][4]=3;
+	    else if(fCabledSignal==21 || fCabledSignal==45) fMapADC[fNConnCh][4]=4;
+	  }
+	  else if(fCabledSignal==22 || fCabledSignal==23 || fCabledSignal==46 || fCabledSignal==47){
+	    fMapADC[fNConnCh][3] = 2;
+	    //
+	    if(fCabledSignal==22 || fCabledSignal==46) fMapADC[fNConnCh][4]=1;
+	    else if(fCabledSignal==23 || fCabledSignal==47) fMapADC[fNConnCh][4]=2;
+	  }
+	  //
+	  //printf("AliZDCRawStream -> datum %d mod. %d ch. %d signal %d, det %d, tow %d\n",
+	  //   fNConnCh,fADCModule,fADCChannel,fBuffer&0xffff,fMapADC[fNConnCh][3],fMapADC[fNConnCh][4]);
 	  //
 	  fNConnCh++;
 	  if(fNConnCh>48){
@@ -396,72 +454,29 @@ Bool_t AliZDCRawStream::Next()
 
 	// Valid ADC data (not underflow nor overflow)
         if(!(fBuffer & 0x1000) && !(fBuffer & 0x2000)){ 
-	  Int_t indSig = -1;
+	
+	  // Checking if the channel map for the ADCs has been provided/read
+	  if(fMapADC[0][0]==-1){
+	    printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
+	    return kFALSE;
+	  }
+	  //
+	  //printf("\n Reading map!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+	  /*for(Int_t ci=0; ci<48; ci++){
+	    printf("  %d mod. %d ch. %d signal %d\n",ci,fMapADC[ci][0],
+            fMapADC[ci][1], fMapADC[ci][2]);
+	  }
+	  */
 	  for(Int_t k=0; k<48; k++){
-	     if(fMapADC[k][0]==fADCModule && fMapADC[k][1]==fADCChannel){
-	       //
-	       for(Int_t ci=0; ci<48; ci++)
-        	//printf("  %d mod. %d ch. %d signal %d\n",ci,fMapADC[ci][0],
-          	//fMapADC[ci][1], fMapADC[ci][2]);
-
-	       indSig=k;
+	     if(fADCModule==fMapADC[k][0] && fADCChannel==fMapADC[k][1]){
+	       fSector[0] = fMapADC[k][3];
+	       fSector[1] = fMapADC[k][4];
 	       break;
 	     } 
 	  }
-	  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	  //    To understand the assignment of fSector[i]
-	  //   have a look at the enum in AliZDCRawStream.h
-	  //   fSector[0] = 1(ZNC+PMRefC), 2(ZPC), 3(ZEM), 
-	  //   		    4(ZNA+PMRefA), 5(ZPA)
-	  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	  if((fMapADC[indSig][2]>=2 && fMapADC[indSig][2]<=6) || (fMapADC[indSig][2]>=26 && fMapADC[indSig][2]<=30) 
-	    || fMapADC[indSig][2]==24 || fMapADC[indSig][2]==48){
-	    fSector[0] = 4; 
-	    //
-	    if(fMapADC[indSig][2]==2 || fMapADC[indSig][2]==26) fSector[1]=0;
-	    else if(fMapADC[indSig][2]==3 || fMapADC[indSig][2]==27) fSector[1]=1;
-	    else if(fMapADC[indSig][2]==4 || fMapADC[indSig][2]==28) fSector[1]=2;
-	    else if(fMapADC[indSig][2]==5 || fMapADC[indSig][2]==29) fSector[1]=3;
-	    else if(fMapADC[indSig][2]==6 || fMapADC[indSig][2]==30) fSector[1]=4;
-	    else if(fMapADC[indSig][2]==24 || fMapADC[indSig][2]==48) fSector[1]=5;
-	  }
-	  else if((fMapADC[indSig][2]>=7 && fMapADC[indSig][2]<=11) || (fMapADC[indSig][2]>=31 && fMapADC[indSig][2]<=35)){
-	    fSector[0] = 5; 
-	    //
-	    if(fMapADC[indSig][2]==7 || fMapADC[indSig][2]==31) fSector[1]=0;
-	    else if(fMapADC[indSig][2]==8 || fMapADC[indSig][2]==32) fSector[1]=1;
-	    else if(fMapADC[indSig][2]==9 || fMapADC[indSig][2]==33) fSector[1]=2;
-	    else if(fMapADC[indSig][2]==10 || fMapADC[indSig][2]==34) fSector[1]=3;
-	    else if(fMapADC[indSig][2]==11 || fMapADC[indSig][2]==35) fSector[1]=4;
-	  }
-	  else if((fMapADC[indSig][2]>=12 && fMapADC[indSig][2]<=16) || (fMapADC[indSig][2]>=36 && fMapADC[indSig][2]<=40) 
-	    || fMapADC[indSig][2]==25 || fMapADC[indSig][2]==49){
-	    fSector[0] = 1; 
-	    //
-	    if(fMapADC[indSig][2]==12 || fMapADC[indSig][2]==36) fSector[1]=0;
-	    else if(fMapADC[indSig][2]==13 || fMapADC[indSig][2]==37) fSector[1]=1;
-	    else if(fMapADC[indSig][2]==14 || fMapADC[indSig][2]==38) fSector[1]=2;
-	    else if(fMapADC[indSig][2]==15 || fMapADC[indSig][2]==39) fSector[1]=3;
-	    else if(fMapADC[indSig][2]==16 || fMapADC[indSig][2]==40) fSector[1]=4;
-	    else if(fMapADC[indSig][2]==25 || fMapADC[indSig][2]==49) fSector[1]=5;
-	  }
-	  else if((fMapADC[indSig][2]>=17 && fMapADC[indSig][2]<=21) || (fMapADC[indSig][2]>=41 && fMapADC[indSig][2]<=45)){
-	    fSector[0] = 2; 
-	    //
-	    if(fMapADC[indSig][2]==17 || fMapADC[indSig][2]==41) fSector[1]=0;
-	    else if(fMapADC[indSig][2]==18 || fMapADC[indSig][2]==42) fSector[1]=1;
-	    else if(fMapADC[indSig][2]==19 || fMapADC[indSig][2]==43) fSector[1]=2;
-	    else if(fMapADC[indSig][2]==20 || fMapADC[indSig][2]==44) fSector[1]=3;
-	    else if(fMapADC[indSig][2]==21 || fMapADC[indSig][2]==45) fSector[1]=4;
-	  }
-	  else if(fMapADC[indSig][2]==22 || fMapADC[indSig][2]==23 || fMapADC[indSig][2]==46 || fMapADC[indSig][2]==47){
-	    fSector[0] = 3; 
-	    //
-	    if(fMapADC[indSig][2]==22 || fMapADC[indSig][2]==46) fSector[1]=1;
-	    else if(fMapADC[indSig][2]==23 || fMapADC[indSig][2]==49) fSector[1]=2;
-	  }
 	  //
-	  //printf("\t Signal %d -> fSector[0] %d, fSector[1] %d\n", fMapADC[indSig][2], fSector[0], fSector[1]);
+	  //printf("AliZDCRawStream -> ADCmod. %d ADCch %d det %d, sec %d\n",
+	  //  fADCModule,fADCChannel,fSector[0],fSector[1]);
 	  
 	  if(fADCModule<0 || fADCModule>3){
             AliWarning(Form("	 AliZDCRawStream -> No valid ADC module: %d\n",fADCModule));

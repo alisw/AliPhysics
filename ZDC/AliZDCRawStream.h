@@ -23,43 +23,51 @@ class AliZDCRawStream: public TObject {
     AliZDCRawStream(AliRawReader* rawReader); 
     virtual ~AliZDCRawStream();
     virtual Bool_t   Next();
+    
+    virtual void ReadChMap();
 
     virtual void ReadCDHHeader();
     virtual void DecodeScaler() {;}
 
-    UInt_t    GetRawBuffer()	const {return fBuffer;}
+    UInt_t GetRawBuffer()	const {return fBuffer;}
     
-    Int_t GetDeadfaceOffset() const {return fDeadfaceOffset;}
-    Int_t GetDeadbeefOffset() const {return fDeadbeefOffset;}
-    Int_t GetDataOffset()     const {return fDataOffset;}
+    Int_t  GetDeadfaceOffset() const {return fDeadfaceOffset;}
+    Int_t  GetDeadbeefOffset() const {return fDeadbeefOffset;}
+    Int_t  GetDataOffset()     const {return fDataOffset;}
 
-    Int_t GetSector(Int_t i) const {return fSector[i];}
-    Int_t GetModType()       const {return fModType;}
-    Int_t GetADCModule()     const {return fADCModule;}
-    Int_t GetADCNChannels()  const {return fADCNChannels;}
-    Int_t GetADCChannel()    const {return fADCChannel;}
-    Int_t GetADCValue()      const {return fADCValue;}
-    Int_t GetADCGain()       const {return fADCGain;}
+    Int_t  GetSector(Int_t i) const {return fSector[i];}
+    Int_t  GetModType()       const {return fModType;}
+    Int_t  GetADCModule()     const {return fADCModule;}
+    Int_t  GetADCNChannels()  const {return fADCNChannels;}
+    Int_t  GetADCChannel()    const {return fADCChannel;}
+    Int_t  GetADCValue()      const {return fADCValue;}
+    Int_t  GetADCGain()       const {return fADCGain;}
 
-    Int_t GetCabledSignal()  const {return fCabledSignal;}
+    Int_t  GetCabledSignal()  const {return fCabledSignal;}
+    Int_t  GetADCModFromMap(Int_t i)   const {return fMapADC[i][0];}
+    Int_t  GetADCChFromMap(Int_t i)    const {return fMapADC[i][1];}
+    Int_t  GetADCSignFromMap(Int_t i)  const {return fMapADC[i][2];}
+    Int_t  GetDetectorFromMap(Int_t i) const {return fMapADC[i][3];}
+    Int_t  GetTowerFromMap(Int_t i)    const {return fMapADC[i][4];}
 
-    Bool_t  IsDARCHeader()  const {return fIsDARCHeader;}
-    Bool_t  IsChMapping()   const {return fIsChMapping;}
-    Bool_t  IsADCDataWord() const {return fIsADCDataWord;}
-    Bool_t  IsADCHeader()   const {return fIsADCHeader;}
-    Bool_t  IsADCEOB()      const {return fIsADCEOB;}
+    Bool_t IsDARCHeader()  const {return fIsDARCHeader;}
+    Bool_t IsChMapping()   const {return fIsChMapping;}
+    Bool_t IsADCDataWord() const {return fIsADCDataWord;}
+    Bool_t IsADCHeader()   const {return fIsADCHeader;}
+    Bool_t IsADCEOB()	   const {return fIsADCEOB;}
 
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
     void SetMapADCMod(Int_t iraw, Int_t imod) {fMapADC[iraw][0]=imod;}
     void SetMapADCCh(Int_t iraw, Int_t ich) {fMapADC[iraw][1]=ich;}
     void SetMapADCSig(Int_t iraw, Int_t isig) {fMapADC[iraw][2]=isig;}
+    void SetMapDet(Int_t iraw, Int_t idet) {fMapADC[iraw][3]=idet;}
+    void SetMapTow(Int_t iraw, Int_t itow) {fMapADC[iraw][4]=itow;}
     
     enum EZDCRawStreamError{
        kCDHError = 1,
        kDARCError = 2,
        kZDCDataError = 3,
-       kInvalidADCModule = 4
-    };
+       kInvalidADCModule = 4};
 
     enum ZDCSignal{kNotConnected=0, kVoid=1,
 	 kZNAC=2, kZNA1=3, kZNA2=4, kZNA3=5, kZNA4=6,
@@ -112,9 +120,9 @@ class AliZDCRawStream: public TObject {
     // Channel mapping 
     Int_t  fNConnCh;       // current mapped ch.
     Int_t  fCabledSignal;  // physics signal (from enum)
-    Int_t  fMapADC[48][3]; // ADC map for the current run
+    Int_t  fMapADC[48][5]; // ADC map for the current run
         
-    ClassDef(AliZDCRawStream, 4)    // class for reading ZDC raw digits
+    ClassDef(AliZDCRawStream, 5)    // class for reading ZDC raw digits
 };
 
 #endif
