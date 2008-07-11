@@ -250,7 +250,11 @@ int AliHLTMUONAgent::CreateConfigurations(
 			" RecoRawDDL18 RecoRawDDL19 RecoRawDDL20 RecoRawDDL21 RecoRawDDL22";
 		handler->CreateConfiguration("MansoTrackerForRaw", trackerId, recoSrcs, "");
 		
-		handler->CreateConfiguration("dHLT-sim-fromRaw", decCompId, "MansoTrackerForRaw", "");
+		handler->CreateConfiguration("DecisionForRaw", decCompId, "MansoTrackerForRaw", "");
+		
+		TString outputSrcs = "DecisionForRaw MansoTrackerForRaw ";
+		outputSrcs += recoSrcs;
+		handler->CreateConfiguration("dHLT-sim-fromRaw", "BlockFilter", outputSrcs, "");
 	}
 	
 	if (runloader != NULL)
@@ -285,7 +289,11 @@ int AliHLTMUONAgent::CreateConfigurations(
 			" RecoDDL18 RecoDDL19 RecoDDL20 RecoDDL21 RecoDDL22";
 		handler->CreateConfiguration("MansoTracker", trackerId, recoSrcs, "");
 		
-		handler->CreateConfiguration("dHLT-sim", decCompId, "MansoTracker", "");
+		handler->CreateConfiguration("Decision", decCompId, "MansoTracker", "");
+		
+		TString outputSrcs = "Decision MansoTracker ";
+		outputSrcs += recoSrcs;
+		handler->CreateConfiguration("dHLT-sim", "BlockFilter", outputSrcs.Data(), "");
 	
 		// Implement the dHLT-sim-fromMC dHLT simulation chain reading
 		// Monte Carlo geant hits and putting those into a tracker component.
@@ -306,7 +314,11 @@ int AliHLTMUONAgent::CreateConfigurations(
 			" HitsDDL18 HitsDDL19 HitsDDL20 TrigRecsDDL21 TrigRecsDDL22";
 		handler->CreateConfiguration("MansoTrackerForMC", trackerId, dataSrcs, "");
 		
-		handler->CreateConfiguration("dHLT-sim-fromMC", decCompId, "MansoTrackerForMC", "");
+		handler->CreateConfiguration("DecisionForMC", decCompId, "MansoTrackerForMC", "");
+		
+		outputSrcs = "DecisionForMC MansoTrackerForMC ";
+		outputSrcs += dataSrcs;
+		handler->CreateConfiguration("dHLT-sim-fromMC", "BlockFilter", outputSrcs.Data(), "");
 	}
 	
 	return 0;
