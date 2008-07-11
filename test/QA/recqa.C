@@ -4,17 +4,15 @@ void recqa()
  	gEnv->SetValue("Root.Stacktrace","no");
 	gEnv->SetValue("Root.Stacktrace","no");
 	AliCDBManager * man = AliCDBManager::Instance();
-	//man->SetDefaultStorage("alien://Folder=/alice/simulation/2007/PDC07_v4-09-Rev-00/Ideal/CDB/");
-	man->SetDefaultStorage("local://$ALICE_ROOT");
-	TString detectors("ITS TPC TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
+	man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-13-Release/Ideal/");
+	//man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08b/OCDB/") ; 
+	//man->SetDefaultStorage("local://$ALICE_ROOT");
+	TString detectors("ITS TPC TRD TOF PHOS HMPID EMCAL/*MUON*/ FMD ZDC PMD T0 VZERO");
 	
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
 	AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
-	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
+	//AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
    
   AliQADataMakerSteer qas ; 
   qas.Run(detectors.Data(), AliQA::kRECPOINTS);
-  //qas.Reset() ;
-  qas.Run(detectors.Data(), AliQA::kESDS, kTRUE);
-  
 }
