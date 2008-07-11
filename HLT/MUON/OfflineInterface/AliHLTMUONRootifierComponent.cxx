@@ -402,6 +402,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		}
 	}
 	
+	bool decisionBlockFound = false;
 	UInt_t numLowPt = 0;
 	UInt_t numHighPt = 0;
 	TClonesArray singlesDecisions("AliHLTMUONDecision::AliTrackDecision");
@@ -413,6 +414,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	     block = GetNextInputBlock()
 	    )
 	{
+		decisionBlockFound = true;
 		specification |= block->fSpecification;
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
@@ -475,6 +477,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	     block = GetNextInputBlock()
 	    )
 	{
+		decisionBlockFound = true;
 		specification |= block->fSpecification;
 		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
 		ptr += block->fOffset;
@@ -538,24 +541,30 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		}
 	}
 	
-	AliHLTMUONDecision* triggerDecision = new AliHLTMUONDecision(
-			numLowPt, numHighPt, numUnlikeAnyPt, numUnlikeLowPt,
-			numUnlikeHighPt, numLikeAnyPt, numLikeLowPt,
-			numLikeHighPt, numAnyMass, numLowMass, numHighMass
-		);
-	for (Int_t i = 0; i < singlesDecisions.GetEntriesFast(); i++)
+	
+	// Do not add the decision if no decision blocks were found.
+	if (decisionBlockFound)
 	{
-		AliHLTMUONDecision::AliTrackDecision* decision =
-			static_cast<AliHLTMUONDecision::AliTrackDecision*>( singlesDecisions[i] );
-		triggerDecision->AddDecision(decision);
+		AliHLTMUONDecision* triggerDecision = new AliHLTMUONDecision(
+				numLowPt, numHighPt, numUnlikeAnyPt, numUnlikeLowPt,
+				numUnlikeHighPt, numLikeAnyPt, numLikeLowPt,
+				numLikeHighPt, numAnyMass, numLowMass, numHighMass
+			);
+		for (Int_t i = 0; i < singlesDecisions.GetEntriesFast(); i++)
+		{
+			AliHLTMUONDecision::AliTrackDecision* decision =
+				static_cast<AliHLTMUONDecision::AliTrackDecision*>( singlesDecisions[i] );
+			triggerDecision->AddDecision(decision);
+		}
+		for (Int_t j = 0; j < pairsDecisions.GetEntriesFast(); j++)
+		{
+			AliHLTMUONDecision::AliPairDecision* decision =
+				static_cast<AliHLTMUONDecision::AliPairDecision*>( pairsDecisions[j] );
+			triggerDecision->AddDecision(decision);
+		}
+		
+		event.Add(triggerDecision);
 	}
-	for (Int_t j = 0; j < pairsDecisions.GetEntriesFast(); j++)
-	{
-		AliHLTMUONDecision::AliPairDecision* decision =
-			static_cast<AliHLTMUONDecision::AliPairDecision*>( pairsDecisions[j] );
-		triggerDecision->AddDecision(decision);
-	}
-	event.Add(triggerDecision);
 	
 	PushBack(&event, "ROOTEVNT", "MUON", specification);
 	
