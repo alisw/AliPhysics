@@ -18,7 +18,7 @@ EHDRS:=$(shell root-config --incdir)/TH1F.h
 
 EINCLUDE+= HLT/rec
 
-DHDR:= RAWrecLinkDef.h 
+DHDR:= RAWDatarecLinkDef.h 
 
 ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
