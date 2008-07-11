@@ -296,6 +296,8 @@ void AliPMDQADataMakerRec::InitRecPoints()
 
     //  Ncell distribution in a cluster
   
+    // PRE plane
+
   TH1F * h0 = new TH1F("hPreDdl0Ncell","PRE: Ddl0 Ncell in a cluster",50,0.,50.);
   h0->Sumw2();
   Add2RecPointsList(h0, 0);
@@ -315,11 +317,13 @@ void AliPMDQADataMakerRec::InitRecPoints()
   h3->Sumw2();
   Add2RecPointsList(h3, 3);
 
-  TH1F * h4 = new TH1F("hPreDdl4Ncell","CPV: Ddl4 Ncell in a cluster",50,0.,50.);
+  // CPV plane
+
+  TH1F * h4 = new TH1F("hCpvDdl4Ncell","CPV: Ddl4 Ncell in a cluster",50,0.,50.);
   h4->Sumw2();
   Add2RecPointsList(h4, 4);
 
-  TH1F * h5 = new TH1F("hPreDdl5Ncell","CPV: Ddl5 Ncell in a cluster",50,0.,50.);
+  TH1F * h5 = new TH1F("hCpvDdl5Ncell","CPV: Ddl5 Ncell in a cluster",50,0.,50.);
   h5->Sumw2();
   Add2RecPointsList(h5, 5);
 
@@ -451,8 +455,8 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
     // makes data from RecPoints
 
-    Int_t MultDdl0 = 0, MultDdl1 = 0, MultDdl2 = 0;
-    Int_t MultDdl3 = 0, MultDdl4 = 0, MultDdl5 = 0;
+    Int_t multDdl0 = 0, multDdl1 = 0, multDdl2 = 0;
+    Int_t multDdl3 = 0, multDdl4 = 0, multDdl5 = 0;
 
     AliPMDrecpoint1 * recpoint; 
 
@@ -464,7 +468,7 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 
     if ( ! branch )
     {
-	AliWarning("PMD branch in SDigit Tree not found") ; 
+	AliWarning("PMD branch in Recpoints Tree not found") ; 
     }
     else
     {
@@ -485,22 +489,22 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 		    if(recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6)
 		      {
 			GetRecPointsData(0)->Fill(recpoint->GetClusCells());
-			MultDdl0++;
+			multDdl0++;
 		      }
 		    if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 12)
 		      {
 			GetRecPointsData(1)->Fill(recpoint->GetClusCells());
-			MultDdl1++;
+			multDdl1++;
 		      }
 		    if(recpoint->GetSMNumber() >= 12 && recpoint->GetSMNumber() < 18)
 		      {
 			GetRecPointsData(2)->Fill(recpoint->GetClusCells());
-			MultDdl2++;
+			multDdl2++;
 		      }
 		    if(recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24)
 		      {
-			GetRecPointsData(3)->Fill(recpoint->GetClusADC());
-			MultDdl3++;
+			GetRecPointsData(3)->Fill(recpoint->GetClusCells());
+			multDdl3++;
 		      }
 		  }
 
@@ -510,21 +514,21 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 		       recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24)
 		      {
 			GetRecPointsData(4)->Fill(recpoint->GetClusCells());
-			MultDdl4++;
+			multDdl4++;
 		      }
 		    if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 18 )
 		      {
 			GetRecPointsData(5)->Fill(recpoint->GetClusCells());
-			MultDdl5++;
+			multDdl5++;
 		      }
 		  }
 	      } 
 	}
     }
     
-    GetRecPointsData(6)->Fill(MultDdl0,MultDdl1);
-    GetRecPointsData(7)->Fill(MultDdl2,MultDdl3);
-    GetRecPointsData(8)->Fill(MultDdl4,MultDdl5);
+    GetRecPointsData(6)->Fill(multDdl0,multDdl1);
+    GetRecPointsData(7)->Fill(multDdl2,multDdl3);
+    GetRecPointsData(8)->Fill(multDdl4,multDdl5);
 
     delete recpoints;
 
