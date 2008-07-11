@@ -10,7 +10,7 @@ EHDRS:=$(shell root-config --incdir)/TH1F.h
 
 EINCLUDE+=
 
-DHDR:= RAWsimLinkDef.h 
+DHDR:= RAWDatasimLinkDef.h 
 
 ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
