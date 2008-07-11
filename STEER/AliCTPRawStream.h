@@ -11,25 +11,34 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TClonesArray.h>
 
 class AliRawReader;
+class AliTriggerIR;
 
 class AliCTPRawStream: public TObject {
   public :
     AliCTPRawStream(AliRawReader* rawReader);
     virtual ~AliCTPRawStream();
 
+
     virtual void             Reset();
     virtual Bool_t           Next();
 
-    inline ULong64_t GetClassMask()   const { return fClassMask; }  // Provide the trigger class mask
-    inline UChar_t   GetClusterMask() const { return fClusterMask; }// Provide the trigger cluster mask
+    ULong64_t GetClassMask()   const { return fClassMask; }  // Provide the trigger class mask
+    UChar_t   GetClusterMask() const { return fClusterMask; }// Provide the trigger cluster mask
+
+    Int_t     GetNIRs() const { return fIRArray.GetEntriesFast(); }
+    const TClonesArray &GetAllIRs() const { return fIRArray; }
+    const AliTriggerIR *GetIR(Int_t index) const { return (const AliTriggerIR*)fIRArray.UncheckedAt(index); }
+
 
   protected:
     AliCTPRawStream(const AliCTPRawStream& stream);
     AliCTPRawStream& operator = (const AliCTPRawStream& stream);
 
   private:
+    TClonesArray     fIRArray;     // array with trigger interaction records
 
     ULong64_t        fClassMask;   // trigger class mask
     UChar_t          fClusterMask; // trigger cluster mask

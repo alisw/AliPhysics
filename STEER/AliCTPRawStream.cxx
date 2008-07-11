@@ -28,11 +28,13 @@
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliDAQ.h"
+#include "AliTriggerIR.h"
 
 ClassImp(AliCTPRawStream)
 
 //_____________________________________________________________________________
 AliCTPRawStream::AliCTPRawStream(AliRawReader* rawReader) :
+  fIRArray("AliTriggerIR",3),
   fClassMask(0),
   fClusterMask(0),
   fRawReader(rawReader)
@@ -49,6 +51,7 @@ AliCTPRawStream::AliCTPRawStream(AliRawReader* rawReader) :
 //_____________________________________________________________________________
 AliCTPRawStream::AliCTPRawStream(const AliCTPRawStream& stream) :
   TObject(stream),
+  fIRArray("AliTriggerIR",3),
   fClassMask(0),
   fClusterMask(0),
   fRawReader(NULL)
@@ -69,12 +72,14 @@ AliCTPRawStream& AliCTPRawStream::operator = (const AliCTPRawStream&
 AliCTPRawStream::~AliCTPRawStream()
 {
   // destructor
+  fIRArray.Delete();
 }
 
 //_____________________________________________________________________________
 void AliCTPRawStream::Reset()
 {
   // reset raw stream params
+  fIRArray.Clear();
 
   fClassMask = fClusterMask = 0;
 
@@ -97,7 +102,8 @@ Bool_t AliCTPRawStream::Next()
     return kFALSE;
   }
 
-  if (fRawReader->GetDataSize() != 32) {
+  if ((fRawReader->GetDataSize()) < 32 ||
+      ((fRawReader->GetDataSize() % 4) != 0)) {
     AliError(Form("Wrong CTP raw data size: %d",fRawReader->GetDataSize()));
     fRawReader->RequireHeader(kTRUE);
     return kFALSE;
@@ -118,6 +124,72 @@ Bool_t AliCTPRawStream::Next()
 
   fClassMask |= (ULong64_t)data[28];
   fClassMask |= ((ULong64_t)data[29] & 0xF) << 8;
+
+  if (fRawReader->GetDataSize() == 32) {
+    AliDebug(1,"No interaction records found");
+    fRawReader->RequireHeader(kTRUE);
+    return kTRUE;
+  }
+
+  // Read IRs
+  Int_t iword = 32;
+  UChar_t level = 0;
+  UInt_t *irdata = NULL;
+  UInt_t irsize = 0;
+  UShort_t orbit = 0;
+  Bool_t incomplete = kFALSE, transerr = kFALSE;
+  while (iword < fRawReader->GetDataSize()) {
+    if (data[iword+1] & 0x80) {
+      UChar_t flag = ((data[iword+1] >> 4) & 0x3);
+      if (flag == 0) {
+	if (irdata) {
+	  new (fIRArray[fIRArray.GetEntriesFast()])
+	    AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
+	  irdata = NULL; irsize = 0;
+	}
+	level = 1;
+	orbit = data[iword] << 12;
+	orbit |= (data[iword+1] & 0xF) << 20;
+	transerr = ((data[iword+1] >> 6) & 0x1);
+	iword += 4;
+	continue;
+      }
+      else if (flag == 3) {
+	if (level == 1) {
+	  level = 2;
+	  orbit |= data[iword];
+	  orbit |= ((data[iword+1] & 0xF) << 8);
+	  iword += 4;
+	  continue;
+	}
+      }
+      UShort_t bc = data[iword];
+      bc |= ((data[iword] & 0xF) << 8);
+      if (bc == 0xFFF) {
+	incomplete = kTRUE;
+      }
+      else {
+	if (level == 2) {
+	  level = 3;
+	  irdata = (UInt_t *)&data[iword];
+	  irsize = 0;
+	}
+	if (level == 3) {
+	  irsize++;
+	}
+      }
+    }
+    else
+      AliWarning(Form("Invalid interaction record (%d %d)",iword,fRawReader->GetDataSize()));
+
+    iword += 4;
+  }
+
+  if (irdata) {
+    new (fIRArray[fIRArray.GetEntriesFast()])
+      AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
+    irdata = NULL; irsize = 0;
+  }
 
   // Restore the raw-reader state!!
   fRawReader->RequireHeader(kTRUE);
