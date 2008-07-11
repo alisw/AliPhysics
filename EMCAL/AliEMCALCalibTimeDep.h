@@ -21,7 +21,7 @@ class AliEMCALCalibTimeDep : public TObject {
   AliEMCALCalibTimeDep(const AliEMCALCalibTimeDep &calibt); //! copy ctor
   AliEMCALCalibTimeDep& operator= (const AliEMCALCalibTimeDep &calibt); //! 
   virtual ~AliEMCALCalibTimeDep(); //! dtor
-  virtual void Print() const; 
+  virtual void PrintInfo() const; 
 
   void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);//!
 
@@ -47,9 +47,9 @@ class AliEMCALCalibTimeDep : public TObject {
   void SetRefTemp(double refTemp) { fRefTemp = refTemp; } //
 
   // basic calibration info
-  double GetTemperature(int secSinceStart) const; // for all sensors, all SuperModules
-  double GetTemperatureSM(int imod, int secSinceStart) const; // for all sensors, in a SuperModule
-  double GetTemperatureSMSensor(int imod, int isens, int secSinceStart) const; // for a sensor, in a SuperModule
+  double GetTemperature(UInt_t timeStamp) const; // for all sensors, all SuperModules
+  double GetTemperatureSM(int imod, UInt_t timeStamp) const; // for all sensors, in a SuperModule
+  double GetTemperatureSMSensor(int imod, int isens, UInt_t timeStamp) const; // for a sensor, in a SuperModule
   double GetCorrection(double temperature) const; //
 
  private:

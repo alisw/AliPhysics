@@ -38,6 +38,8 @@ const double fkSecToHour = 1.0/3600.0; // conversion factor from seconds to hour
 const double fkTempSlope = 0.017; // 1.7% per deg. C, seems about right for all APDs, from studies at Catania, and by Rachid
 const double fkNormTemp = 20; // let's say that 20 degrees C is normal as default
 
+const double fkErrorCode = -999; // to indicate that something went wrong
+
 using namespace std;
 
 ClassImp(AliEMCALCalibTimeDep)
@@ -59,6 +61,7 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep() :
 
 //________________________________________________________________
 AliEMCALCalibTimeDep::AliEMCALCalibTimeDep(const AliEMCALCalibTimeDep& calibt) :
+  TObject(calibt),
   fRun(calibt.GetRunNumber()),
   fStartTime(calibt.GetStartTime()),
   fEndTime(calibt.GetEndTime()),
@@ -106,7 +109,7 @@ void  AliEMCALCalibTimeDep::Reset()
 }
 
 //________________________________________________________________
-void  AliEMCALCalibTimeDep::Print() const
+void  AliEMCALCalibTimeDep::PrintInfo() const
 {
   // print some info
   cout << endl << " AliEMCALCalibTimeDep::Print() " << endl;
@@ -168,35 +171,111 @@ void AliEMCALCalibTimeDep::Initialize(Int_t run,
 }
 
 //________________________________________________________________
-double AliEMCALCalibTimeDep::GetTemperature(int secSinceRunStart) const
+double AliEMCALCalibTimeDep::GetTemperature(UInt_t timeStamp) const
 {// return estimate for all SuperModules and sensors, that had data 
 
   // first convert from seconds to hours..
-  double timeHour = secSinceRunStart * fkSecToHour;
+  double timeHour = (timeStamp - fStartTime) * fkSecToHour;
 
-  //  return fTempSpline->Eval(timeHour);
-  return timeHour; // DStmp - FIXME - just return time for now
+  double average = 0;
+  int n = 0;
+
+  for (int i=0; i<fTempArray->NumSensors(); i++) {
+    
+    AliEMCALSensorTemp *st = fTempArray->GetSensor(i);
+
+    // check if we had valid data for the time that is being asked for
+    if ( timeStamp>=st->GetStartTime() && timeStamp<=st->GetEndTime() ) {
+      AliSplineFit *f = st->GetFit();
+      if (f) { // ok, looks like we have valid data/info
+	// let's check what the expected value at the time appears to be
+	double val = f->Eval(timeHour);
+	average += val;
+	n++;
+      }
+    } // time
+  } // loop over fTempArray
+  
+  if (n>0) { // some valid data was found
+    average /= n;
+    return average;
+  }
+  else { // no good data
+    return fkErrorCode;
+  }
+
 }
 
 //________________________________________________________________
-double AliEMCALCalibTimeDep::GetTemperatureSM(int imod, int secSinceRunStart) const
+double AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) const
 {// return estimate for this one SuperModule, if it had data 
 
   // first convert from seconds to hours..
-  double timeHour = secSinceRunStart * fkSecToHour;
+  double timeHour = (timeStamp - fStartTime) * fkSecToHour;
 
-  //  return fTempSpline->Eval(timeHour);
-  return timeHour; // DStmp - FIXME - just return time for now
+  double average = 0;
+  int n = 0;
+
+  for (int i=0; i<fTempArray->NumSensors(); i++) {
+    
+    AliEMCALSensorTemp *st = fTempArray->GetSensor(i);
+    int module = st->GetSector()*2 + st->GetSide();
+    if ( module == imod ) { // right module
+      // check if we had valid data for the time that is being asked for
+      if ( timeStamp>=st->GetStartTime() && timeStamp<=st->GetEndTime() ) {
+	AliSplineFit *f = st->GetFit();
+	if (f) { // ok, looks like we have valid data/info
+	  // let's check what the expected value at the time appears to be
+	  double val = f->Eval(timeHour);
+	  cout << " i " << i << " val " << val << endl;
+	  average += val;
+	  n++;
+	}
+      } // time
+    }
+    
+  } // loop over fTempArray
+  
+  if (n>0) { // some valid data was found
+    average /= n;
+    return average;
+  }
+  else { // no good data
+    return fkErrorCode;
+  }
+
 }
 
 //________________________________________________________________
-double AliEMCALCalibTimeDep::GetTemperatureSMSensor(int imod, int isens, int secSinceRunStart) const
+double AliEMCALCalibTimeDep::GetTemperatureSMSensor(int imod, int isens, UInt_t timeStamp) const
 {// return estimate for this one SuperModule and sensor, if it had data 
+
   // first convert from seconds to hours..
-  double timeHour = secSinceRunStart * fkSecToHour;
+  double timeHour = (timeStamp - fStartTime) * fkSecToHour;
+
+  for (int i=0; i<fTempArray->NumSensors(); i++) {
+    
+    AliEMCALSensorTemp *st = fTempArray->GetSensor(i);
+    int module = st->GetSector()*2 + st->GetSide();
+    if ( module == imod && st->GetNum()==isens ) { // right module, and sensor
+      // check if we had valid data for the time that is being asked for
+      if ( timeStamp>=st->GetStartTime() && timeStamp<=st->GetEndTime() ) {
+	AliSplineFit *f = st->GetFit();
+	if (f) { // ok, looks like we have valid data/info
+	  // let's check what the expected value at the time appears to be
+	  double val = f->Eval(timeHour);
+
+	  return val; // no point to move further in for loop, we have found the sensor we were looking for
+	}
+      } // time
+    }
+    
+  } // loop over fTempArray
   
-  //  return fTempSpline->Eval(timeHour);
-  return timeHour; // DStmp - FIXME - just return time for now
+  // if we made it all here, it means that we didn't find the sensor we were looking for
+  // i.e. no good data
+  return fkErrorCode;
+
 }
 
 //________________________________________________________________
@@ -217,60 +296,13 @@ void AliEMCALCalibTimeDep::GetTemperatureInfo()
     fTempArray = (AliEMCALSensorTempArray *) entry->GetObject();
   }
 
-  if (fTempArray) { // DStmp - FIXME - not implemented what should be done here yet
+  if (fTempArray) { 
     AliInfo( Form("NumSensors %d - IdDCS: first %d last %d",
 		  fTempArray->NumSensors(),
 		  fTempArray->GetFirstIdDCS(), fTempArray->GetLastIdDCS() ) );
-
-    /* // below is just examples on what could be done to access the data..
- 
-  AliEMCALSensorTemp *o = arr->GetSensor(0);
-  o->Print();
-  cout << " side " << o->GetSide()
-       << " sector " << o->GetSector()
-       << " num " << o->GetNum()
-       << " startTime " << o->GetStartTime()
-       << " endTime " << o->GetEndTime()
-       << endl;
-
-  AliSplineFit *f = o->GetFit();
-  int np = 0;
-
-  if (f) {
-    f->SplineFit(0);
-
-    np = f->GetKnots();
-    cout << " np " << np << endl;
-    Double_t *x = f->GetX();
-    Double_t *y0 = f->GetY0();
-    Double_t *y1 = f->GetY1();
-    for (int i=0; i<np; i++) {
-      cout << " i " << i
-           << " x " << x[i]
-           << " y0 " << y0[i]
-           << " y1 " << y1[i]
-           << endl;
-      //      g->SetPoint(i, x[i], y0[i]);
-    }
-    double start = x[0];
-    double stop = x[np-1];
-
-    TGraph *g = f->MakeGraph(start, stop, np);
-    f->MakeSmooth(g, ratio, "normal");
-    np = f->GetKnots();
-    cout << " np " << np << endl;
-    TGraph *gSmooth = f->MakeGraph(start, stop, np);
-
-  // compare the raw and smoothed versions and select one..
-    // plot in 2 canvases/pads - CONTINUE HERE
-
-    g->Draw("ALP");
-    gSmooth->Draw("ALP");
-    f->Draw();
-    }
-
-     */
-
+  }
+  else {
+    AliWarning( Form("AliEMCALSensorTempArray not found!") );
   }
   
   return;
