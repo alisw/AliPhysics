@@ -132,13 +132,25 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++) fUseAmplitudeInfo[i]=use; return; }
   void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
   Bool_t GetUseAmplitudeInfo(Int_t ilay) const { return fUseAmplitudeInfo[ilay]; }
-  //
-  void   SetComputePlaneEff(Bool_t eff=kTRUE, Bool_t his=kTRUE) 
+// Option for Plane Efficiency evaluation
+  void   SetComputePlaneEff(Bool_t eff=kTRUE, Bool_t his=kTRUE)
       { fComputePlaneEff=eff; fHistoPlaneEff=his; return; }
   Bool_t GetComputePlaneEff() const { return fComputePlaneEff; }
   Bool_t GetHistoPlaneEff() const { return fHistoPlaneEff; }
+  void   SetIPlanePlaneEff(Int_t i=0) {if(i<0 || i>=AliITSgeomTGeo::kNLayers) return; fIPlanePlaneEff=i; }
+  Int_t  GetIPlanePlaneEff() const {return fIPlanePlaneEff;}
   void   SetReadPlaneEffFrom0CDB(Bool_t read=kTRUE) { fReadPlaneEffFromOCDB=read; }
   Bool_t GetReadPlaneEffFromOCDB() const { return fReadPlaneEffFromOCDB; }
+  void   SetMinPtPlaneEff(Bool_t ptmin=0.) { fMinPtPlaneEff=ptmin; }
+  Double_t GetMinPtPlaneEff() const { return fMinPtPlaneEff; }
+  void   SetMaxMissingClustersPlaneEff(Int_t max=0) { fMaxMissingClustersPlaneEff=max;}
+  Int_t  GetMaxMissingClustersPlaneEff() const {return fMaxMissingClustersPlaneEff;}
+  void   SetRequireClusterInOuterLayerPlaneEff(Bool_t out=kTRUE) { fRequireClusterInOuterLayerPlaneEff=out;}
+  Bool_t GetRequireClusterInOuterLayerPlaneEff() const {return fRequireClusterInOuterLayerPlaneEff;}
+  void   SetRequireClusterInInnerLayerPlaneEff(Bool_t in=kTRUE) { fRequireClusterInInnerLayerPlaneEff=in;}
+  Bool_t GetRequireClusterInInnerLayerPlaneEff() const {return fRequireClusterInInnerLayerPlaneEff;}
+  void   SetOnlyConstraintPlaneEff(Bool_t con=kFALSE) { fOnlyConstraintPlaneEff=con; }
+  Bool_t GetOnlyConstraintPlaneEff() const { return fOnlyConstraintPlaneEff; }
   //
   void   SetExtendedEtaAcceptance(Bool_t ext=kTRUE) { fExtendedEtaAcceptance=ext; return; }
   Bool_t GetExtendedEtaAcceptance() const { return fExtendedEtaAcceptance; }
@@ -303,10 +315,18 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fClusterMisalError; // [cm] additional error on cluster pos. due to misalignment (MI,SA)
 
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
+  // Plane Efficiency evaluation
   Bool_t fComputePlaneEff;  // flag to enable computation of PlaneEfficiency
   Bool_t fHistoPlaneEff;  // flag to enable auxiliary PlaneEff histograms (e.g. residual distributions)
+  Int_t  fIPlanePlaneEff; // index of the plane (in the range [0,5])  to study the efficiency
   Bool_t fReadPlaneEffFromOCDB; // enable initial reading of Plane Eff statistics from OCDB
                                // The analized events would be used to increase the statistics
+  Double_t fMinPtPlaneEff;  // minimum p_t of the track to be used for Plane Efficiency evaluation
+  Int_t  fMaxMissingClustersPlaneEff;  // max n. of (other) layers without a cluster associated to the track
+  Bool_t fRequireClusterInOuterLayerPlaneEff; // if kTRUE, then only tracks with an associated cluster on the closest
+  Bool_t fRequireClusterInInnerLayerPlaneEff; // outer/inner layer are used. It has no effect for outermost/innermost layer
+  Bool_t fOnlyConstraintPlaneEff;  // if kTRUE, use only constrained tracks at primary vertex for Plane Eff.
+
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
   Bool_t fUseBadZonesFromOCDB; // enable using OCDB info on dead modules and chips (MI)
   Bool_t fUseSingleBadChannelsFromOCDB; // enable using OCDB info on bad single SPD pixels and SDD anodes (MI)
@@ -331,7 +351,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,5) // ITS reco parameters
+  ClassDef(AliITSRecoParam,6) // ITS reco parameters
 };
 
 #endif

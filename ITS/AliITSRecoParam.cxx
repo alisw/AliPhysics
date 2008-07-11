@@ -101,7 +101,13 @@ fClusterErrorsParam(1),
 fClusterMisalError(0.0),
 fComputePlaneEff(kFALSE),
 fHistoPlaneEff(kFALSE),
+fIPlanePlaneEff(0),
 fReadPlaneEffFromOCDB(kFALSE),
+fMinPtPlaneEff(0),
+fMaxMissingClustersPlaneEff(0),
+fRequireClusterInOuterLayerPlaneEff(kFALSE),
+fRequireClusterInInnerLayerPlaneEff(kFALSE),
+fOnlyConstraintPlaneEff(kFALSE),
 fExtendedEtaAcceptance(kFALSE),
 fUseBadZonesFromOCDB(kFALSE),
 fUseSingleBadChannelsFromOCDB(kFALSE),
@@ -424,10 +430,39 @@ AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
   //
   // make special reconstruction parameters for Plane Efficiency study on layer i
   //
+  if (i<0 || i>=AliITSgeomTGeo::kNLayers) {
+    printf("AliITSRecoParam::GetPlaneEffParam: index of ITS Plane not in the range [0,5]\n");
+    printf("returning null pointer");
+    return NULL;
+  }
   AliITSRecoParam *param;
   param = GetHighFluxParam();
   param->SetComputePlaneEff();
   param->SetLayerToSkip(i);
+  param->SetIPlanePlaneEff(i);
+  // optimized setting for SPD0 (i==0)
+  if (i==0 || i==1) {
+    param->fMinPtPlaneEff = 0.200; // high pt particles
+    param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
+    param->fRequireClusterInOuterLayerPlaneEff = kTRUE; // cluster on SPD1 must be
+    //param->fOnlyConstraintPlaneEff = kTRUE;
+  }
+  if (i==2 || i==3) {
+    param->fMinPtPlaneEff = 0.200; // high pt particles
+    param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
+    param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
+    //param->fOnlyConstraintPlaneEff = kTRUE;
+  }
+  if (i==4) {
+    param->fMinPtPlaneEff = 0.200; // high pt particles
+    param->fMaxMissingClustersPlaneEff = 0; // at most 1 layer out of 5 without cluster
+    param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
+    //param->fOnlyConstraintPlaneEff = kTRUE;
+  }
+  if (i==5) {
+    param->fMinPtPlaneEff = 0.200; // high pt particles
+  }
+  //
   return param;
 }
 //_____________________________________________________________________________

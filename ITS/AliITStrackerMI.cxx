@@ -227,21 +227,15 @@ fPlaneEff(0) {
 
   // only for plane efficiency evaluation
   if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff()) {
-    for(Int_t ilay=0;ilay<6;ilay++) { 
-      if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilay)) {
-        if (ilay<2) fPlaneEff = new AliITSPlaneEffSPD();
-        else if (ilay<4) fPlaneEff = new AliITSPlaneEffSDD();
-        else fPlaneEff = new AliITSPlaneEffSSD();
-        break; // only one layer type to skip at once
-      }
-    }
+    Int_t iplane=AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff();
+    if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane))
+      AliWarning(Form("Evaluation of Plane Eff for layer %d will be attempted without removing it from tracker",iplane));
+    if (iplane<2) fPlaneEff = new AliITSPlaneEffSPD();
+    else if (iplane<4) fPlaneEff = new AliITSPlaneEffSDD();
+    else fPlaneEff = new AliITSPlaneEffSSD();
     if(AliITSReconstructor::GetRecoParam()->GetReadPlaneEffFromOCDB())
-      if(!fPlaneEff->ReadFromCDB()) 
-	{AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
-    if(AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) {
-      fPlaneEff->SetCreateHistos(kTRUE); 
-      //fPlaneEff->ReadHistosFromFile();
-    }
+       if(!fPlaneEff->ReadFromCDB()) {AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
+    if(AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) fPlaneEff->SetCreateHistos(kTRUE);
   }
 }
 //------------------------------------------------------------------------
@@ -2260,10 +2254,10 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      } else { // no cluster in this layer
        if (skip==1) {
 	 modstatus = 3; // skipped
-         // Plane Eff determination: 
-         if (planeeff && AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilayer)) { 
-           if (IsOKForPlaneEff(track,ilayer))  // only adequate track for plane eff. evaluation
-              UseTrackForPlaneEff(track,ilayer); 
+         // Plane Eff determination:
+         if (planeeff && ilayer==AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff()) {
+           if (IsOKForPlaneEff(track,clusters,ilayer))  // only adequate track for plane eff. evaluation
+              UseTrackForPlaneEff(track,ilayer);
          }
        } else {
 	 modstatus = 5; // no cls in road
@@ -5171,7 +5165,7 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
   return kTRUE;
 }
 //------------------------------------------------------------------------
-Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) const {
+Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, const Int_t *clusters, Int_t ilayer) const {
 //
 // Method to be optimized further: 
 // Aim: decide whether a track can be used for PlaneEff evaluation
@@ -5191,11 +5185,40 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
 //
 // input: AliITStrackMI* track, ilayer= layer number [0,5]
 // return: Bool_t   -> kTRUE if usable track, kFALSE if not usable. 
+//
+  Int_t index[AliITSgeomTGeo::kNLayers];
+  Int_t k;
+  for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
+  //
+  for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) {
+    index[k]=clusters[k];
+  }
+
   if(!fPlaneEff)
     {AliWarning("IsOKForPlaneEff: null pointer to AliITSPlaneEff"); return kFALSE;}
   AliITSlayer &layer=fgLayers[ilayer];
   Double_t r=layer.GetR();
   AliITStrackMI tmp(*track);
+
+// require a minimal number of cluster in other layers and eventually clusters in closest layers 
+  Int_t ncl=0; 
+  for(Int_t lay=AliITSgeomTGeo::kNLayers-1;lay>ilayer;lay--) {
+    AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
+                    tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
+    if (tmp.GetClIndex(lay)>0) ncl++;
+  }
+  Bool_t nextout = kFALSE;
+  if(ilayer==AliITSgeomTGeo::kNLayers-1) nextout=kTRUE; // you are already on the outermost layer
+  else nextout = ((tmp.GetClIndex(ilayer+1)>0)? kTRUE : kFALSE );
+  Bool_t nextin = kFALSE;
+  if(ilayer==0) nextin=kTRUE; // you are already on the innermost layer
+  else nextin = ((index[ilayer-1]>=0)? kTRUE : kFALSE );
+  if(ncl<AliITSgeomTGeo::kNLayers-(ilayer+1)-AliITSReconstructor::GetRecoParam()->GetMaxMissingClustersPlaneEff()) 
+     return kFALSE; 
+  if(AliITSReconstructor::GetRecoParam()->GetRequireClusterInOuterLayerPlaneEff() && !nextout)  return kFALSE;
+  if(AliITSReconstructor::GetRecoParam()->GetRequireClusterInInnerLayerPlaneEff() && !nextin)   return kFALSE;
+  if(tmp.Pt() < AliITSReconstructor::GetRecoParam()->GetMinPtPlaneEff()) return kFALSE;
+ //  if(AliITSReconstructor::GetRecoParam()->GetOnlyConstraintPlaneEff()  && !tmp.GetConstrain()) return kFALSE;
 
 // detector number
   Double_t phi,z;
