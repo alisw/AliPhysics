@@ -299,7 +299,7 @@ Bool_t AliZDCRawStream::Next()
 	  // -----------------------------------------
 	  if((fCabledSignal>=2 && fCabledSignal<=6) || (fCabledSignal>=26 && fCabledSignal<=30)
 	     || fCabledSignal==24 || fCabledSignal==48){
-	    fMapADC[fNConnCh][3] = 4;
+	    fMapADC[fNConnCh][3] = 4; //ZNA
 	    //
 	    if(fCabledSignal==2 || fCabledSignal==26) fMapADC[fNConnCh][4]=0;
 	    else if(fCabledSignal==3 || fCabledSignal==27) fMapADC[fNConnCh][4]=1;
@@ -309,7 +309,7 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==24 || fCabledSignal==48) fMapADC[fNConnCh][4]=5;
 	  }
 	  else if((fCabledSignal>=7 && fCabledSignal<=11) || (fCabledSignal>=31 && fCabledSignal<=35)){
-	    fMapADC[fNConnCh][3] = 5;
+	    fMapADC[fNConnCh][3] = 5; //ZPA
 	    //
 	    if(fCabledSignal==7 || fCabledSignal==31) fMapADC[fNConnCh][4]=0;
 	    else if(fCabledSignal==8 || fCabledSignal==32) fMapADC[fNConnCh][4]=1;
@@ -319,7 +319,7 @@ Bool_t AliZDCRawStream::Next()
 	  }
 	  else if((fCabledSignal>=12 && fCabledSignal<=16) || (fCabledSignal>=36 && fCabledSignal<=40)
 	     || fCabledSignal==25 || fCabledSignal==49){
-	    fMapADC[fNConnCh][3] = 3;
+	    fMapADC[fNConnCh][3] = 1; //ZNC
 	    //
 	    if(fCabledSignal==12 || fCabledSignal==36) fMapADC[fNConnCh][4]=0;
 	    else if(fCabledSignal==13 || fCabledSignal==37) fMapADC[fNConnCh][4]=1;
@@ -329,7 +329,7 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==25 || fCabledSignal==49) fMapADC[fNConnCh][4]=5;
 	  }
 	  else if((fCabledSignal>=17 && fCabledSignal<=21) || (fCabledSignal>=41 && fCabledSignal<=45)){
-	    fMapADC[fNConnCh][3] = 1;
+	    fMapADC[fNConnCh][3] = 2; //ZPC
 	    //
 	    if(fCabledSignal==17 || fCabledSignal==41) fMapADC[fNConnCh][4]=0;
 	    else if(fCabledSignal==18 || fCabledSignal==42) fMapADC[fNConnCh][4]=1;
@@ -338,7 +338,7 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==21 || fCabledSignal==45) fMapADC[fNConnCh][4]=4;
 	  }
 	  else if(fCabledSignal==22 || fCabledSignal==23 || fCabledSignal==46 || fCabledSignal==47){
-	    fMapADC[fNConnCh][3] = 2;
+	    fMapADC[fNConnCh][3] = 3;
 	    //
 	    if(fCabledSignal==22 || fCabledSignal==46) fMapADC[fNConnCh][4]=1;
 	    else if(fCabledSignal==23 || fCabledSignal==47) fMapADC[fNConnCh][4]=2;
