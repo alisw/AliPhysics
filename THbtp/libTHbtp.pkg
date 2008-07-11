@@ -4,7 +4,7 @@ SRCS= THBTprocessor.cxx AliGenHBTprocessor.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
-DHDR= THbtLinkDef.h 
+DHDR= THbtpLinkDef.h 
 
 EXPORT:=HBTprocCOMMON.h THBTprocessor.h
 
