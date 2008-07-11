@@ -12,8 +12,6 @@ AliVZEROv7.cxx \
 AliVZEROhit.cxx \
 AliVZERODigitizer.cxx \
 AliVZEROBuffer.cxx \
-AliVZEROTrigger.cxx \
-AliVZEROTriggerMask.cxx \
 AliVZEROQADataMakerSim.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

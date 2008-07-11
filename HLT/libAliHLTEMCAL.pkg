@@ -34,7 +34,8 @@ MODULE_DHDR:=
 EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD EMCAL TPC TRD STEER RAW
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lESD -lCDB \
-		-lEMCALrec -lEMCALbase -lTPCrec -lTPCbase -lTRDrec -lTRDbase \
+	       -lEMCALrec -lEMCALsim -lEMCALbase \
+               -lTPCrec -lTPCbase -lTRDrec -lTRDbase \
                -lSTEER -lSTEERBase -lRAWDatarec
 
 ###############################################################################

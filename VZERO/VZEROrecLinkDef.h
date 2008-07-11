@@ -9,5 +9,7 @@
 #pragma link C++ class  AliVZEROReconstructor+;
 #pragma link C++ class  AliVZERORawStream+;
 #pragma link C++ class  AliVZEROQADataMakerRec+;
+#pragma link C++ class  AliVZEROTrigger+;
+#pragma link C++ class  AliVZEROTriggerMask+;
 
 #endif

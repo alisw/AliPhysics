@@ -16,8 +16,6 @@
 #pragma link C++ class  AliVZEROhit+;
 #pragma link C++ class  AliVZERODigitizer+;
 #pragma link C++ class  AliVZEROBuffer+;
-#pragma link C++ class  AliVZEROTrigger+;
-#pragma link C++ class  AliVZEROTriggerMask+;
 #pragma link C++ class  AliVZEROQADataMakerSim+;
 
 #endif

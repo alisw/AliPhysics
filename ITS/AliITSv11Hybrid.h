@@ -42,6 +42,8 @@ class  AliITSv11GeometrySPD;
 class  AliITSv11GeometrySDD;
 class  AliITSv11GeometrySSD;
 class  AliITSv11GeometrySupport;
+class  TGeoVolume;
+class TGeoVolumeAssembly;
 
 class AliITSv11Hybrid : public AliITS {
 

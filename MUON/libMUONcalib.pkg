@@ -18,7 +18,7 @@ SRCS:=  AliMUONTriggerLut.cxx \
         AliMUONVTrackerData.cxx \
         AliMUONSparseHisto.cxx \
         AliMUONTrackerData.cxx
-        
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONcalibLinkDef.h
@@ -27,5 +27,5 @@ EINCLUDE:= MUON/mapping
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lMUONmapping -lMUONgeometry -lMUONcore -lCDB -lSTEERBase
+                         -lMUONmapping -lMUONgeometry -lMUONcore -lCDB -lSTEERBase -lRAWDatabase
 endif
