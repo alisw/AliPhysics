@@ -125,7 +125,7 @@ void AliHLTTPCClusterFinder::InitializePadArray(){
   for(UInt_t i=0;i<fNumberOfRows;i++){
     fNumberOfPadsInRow[i]=AliHLTTPCTransform::GetNPads(i+fFirstRow);
     AliHLTTPCPadVector tmpRow;
-    for(UInt_t j=0;j<fNumberOfPadsInRow[i];j++){
+    for(UInt_t j=0;j<=fNumberOfPadsInRow[i];j++){
       AliHLTTPCPad *tmpPad = new AliHLTTPCPad(2);
       tmpPad->SetID(i,j);
       tmpRow.push_back(tmpPad);
@@ -139,7 +139,7 @@ Int_t AliHLTTPCClusterFinder::DeInitializePadArray()
 {
   // see header file for class documentation
   for(UInt_t i=0;i<fNumberOfRows;i++){
-    for(UInt_t j=0;j<fNumberOfPadsInRow[i];j++){
+    for(UInt_t j=0;j<=fNumberOfPadsInRow[i];j++){
       delete fRowPadVector[i][j];
       fRowPadVector[i][j]=NULL;
     }
@@ -885,7 +885,7 @@ void AliHLTTPCClusterFinder::FindClusters()
   AliHLTTPCClusters* tmpCandidate=NULL;
   for(UInt_t row=0;row<fNumberOfRows;row++){
     fRowOfFirstCandidate=row;
-    for(UInt_t pad=0;pad<fNumberOfPadsInRow[row]-1;pad++){
+    for(UInt_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
       AliHLTTPCPad *tmpPad=fRowPadVector[row][pad];
       for(size_t candidate=0;candidate<tmpPad->fClusterCandidates.size();candidate++){
 	if(tmpPad->fUsedClusterCandidates[candidate]){
@@ -902,6 +902,7 @@ void AliHLTTPCClusterFinder::FindClusters()
       }
       tmpPad->ClearCandidates();
     }
+    fRowPadVector[row][fNumberOfPadsInRow[row]]->ClearCandidates();
   }
 
   HLTInfo("Found %d clusters.",fClusters.size());
