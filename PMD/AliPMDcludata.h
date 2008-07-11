@@ -39,8 +39,8 @@ class AliPMDcludata : public TObject
 
 
   Float_t fClusData[6];       // Array containing cluster information
-  Int_t   fClXY[15];          // Array containing cell information 
+  Int_t   fClXY[19];          // Array containing cell information 
   
-  ClassDef(AliPMDcludata,2) // Keep Cluster information
+  ClassDef(AliPMDcludata,3) // Keep Cluster information
 };
 #endif

@@ -22,7 +22,7 @@ ClassImp(AliPMDcludata)
 AliPMDcludata::AliPMDcludata()
 {
   // Default constructor
-  for (Int_t i = 0; i < 15; i++)
+  for (Int_t i = 0; i < 19; i++)
     {
       if(i < 6) fClusData[i] = 0.;
       fClXY[i] = 0;
@@ -33,12 +33,9 @@ AliPMDcludata::AliPMDcludata()
 AliPMDcludata::AliPMDcludata(Float_t *clusdata, Int_t *clxy)
 {
   // Constructor
-  for (Int_t i = 0; i < 6; i++)
+  for (Int_t i = 0; i < 19; i++)
     {
-      fClusData[i] = clusdata[i];
-    }
-  for (Int_t i = 0; i < 15; i++)
-    {
+      if (i < 6) fClusData[i] = clusdata[i];
       fClXY[i] = clxy[i];
     }
   
@@ -48,7 +45,7 @@ AliPMDcludata::AliPMDcludata(const AliPMDcludata &pmdcludata):
   TObject(pmdcludata)
 {
   //Copy Constructor 
-  for(Int_t i=0; i<15; i++)
+  for(Int_t i=0; i<19; i++)
     {
       if (i < 6) this->fClusData[i] = pmdcludata.fClusData[i];
       this->fClXY[i] = pmdcludata.fClXY[i];
@@ -61,7 +58,7 @@ AliPMDcludata & AliPMDcludata::operator=(const AliPMDcludata &pmdcludata)
   // Assignment operator 
   if(this != &pmdcludata)
     {
-      for(Int_t i=0; i<15; i++)
+      for(Int_t i=0; i<19; i++)
 	{
 	  if (i < 6) this->fClusData[i] = pmdcludata.fClusData[i];
 	  this->fClXY[i] = pmdcludata.fClXY[i];

@@ -71,19 +71,19 @@ void AliPMDQADataMakerSim::InitHits()
 {
     // create Hits histograms in Hits subdir
 
-    TH1F *h0 = new TH1F("hPreHitsEdep","Hits energy distribution in PRE(PMD)", 100, 0., 2000.); 
+    TH1F *h0 = new TH1F("hPreHitsEdep","Hits energy distribution in (keV)PRE(PMD)", 500, 0., 500.); 
     h0->Sumw2() ;
     Add2HitsList(h0, 0) ;
 
-    TH1F *h1 = new TH1F("hCpvHitsEdep","Hits energy distribution in CPV(PMD)", 100, 0., 2000.); 
+    TH1F *h1 = new TH1F("hCpvHitsEdep","Hits energy distribution in (keV)CPV(PMD)", 500, 0., 500.); 
     h1->Sumw2() ;
     Add2HitsList(h1, 1) ;
 
-    TH1I *h2 = new TH1I("hPreHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 10000) ; 
+    TH1I *h2 = new TH1I("hPreHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 3000) ; 
     h2->Sumw2() ;
     Add2HitsList(h2, 2) ;
 
-    TH1I *h3 = new TH1I("hCpvHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 10000) ; 
+    TH1I *h3 = new TH1I("hCpvHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 3000) ; 
     h2->Sumw2() ;
     Add2HitsList(h3, 3) ;
 }
@@ -93,19 +93,19 @@ void AliPMDQADataMakerSim::InitSDigits()
 {
     // create SDigits histograms in SDigits subdir
 
-    TH1F *h0 = new TH1F("hPreSDigitsEdep","SDigits energy distribution in PRE(PMD)", 100, 0., 2000.);
+    TH1F *h0 = new TH1F("hPreSDigitsEdep","SDigits energy distribution in(keV) PRE(PMD)", 500, 0., 500.);
     h0->Sumw2();
     Add2SDigitsList(h0, 0);
 
-    TH1F *h1 = new TH1F("hCpvSDigitsEdep","SDigits energy distribution in CPV(PMD)", 100, 0., 2000.);
+    TH1F *h1 = new TH1F("hCpvSDigitsEdep","SDigits energy distribution in (keV)CPV(PMD)", 500, 0., 500.);
     h1->Sumw2();
     Add2SDigitsList(h1, 1);
 
-    TH1I *h2 = new TH1I("hPreSDigitsMult","SDigits multiplicity distribution in PRE(PMD)", 500, 0., 5000.);
+    TH1I *h2 = new TH1I("hPreSDigitsMult","SDigits multiplicity distribution in PRE(PMD)", 500, 0., 1000.);
     h2->Sumw2();
     Add2SDigitsList(h2, 2);
 
-    TH1I *h3 = new TH1I("hCpvSDigitsMult","SDigits multiplicity distribution in CPV(PMD)", 500, 0., 5000.);
+    TH1I *h3 = new TH1I("hCpvSDigitsMult","SDigits multiplicity distribution in CPV(PMD)", 500, 0., 1000.);
     h3->Sumw2();
     Add2SDigitsList(h3, 3);
 
@@ -124,11 +124,11 @@ void AliPMDQADataMakerSim::InitDigits()
     h1->Sumw2();
     Add2DigitsList(h1, 1);
 
-    TH1I *h2 = new TH1I("hPreDigitsMult","Digits multiplicity distribution in PRE(PMD)", 500, 0, 5000) ; 
+    TH1I *h2 = new TH1I("hPreDigitsMult","Digits multiplicity distribution in PRE(PMD)", 500, 0, 1000) ; 
     h2->Sumw2();
     Add2DigitsList(h2, 2);
 
-    TH1I *h3 = new TH1I("hCpvDigitsMult","Digits multiplicity distribution in CPV(PMD)", 500, 0, 5000);
+    TH1I *h3 = new TH1I("hCpvDigitsMult","Digits multiplicity distribution in CPV(PMD)", 500, 0, 1000);
     h3->Sumw2();
     Add2DigitsList(h3, 3);
 
@@ -140,22 +140,24 @@ void AliPMDQADataMakerSim::MakeHits(TClonesArray *hits)
     //make QA data from Hits
 
     Int_t premul = 0, cpvmul = 0;
-  
+    Float_t edepkev = 0.;
     TIter next(hits); 
     AliPMDhit * hit; 
-
+    
     while ( (hit = dynamic_cast<AliPMDhit *>(next())) )
-    {
+      {
 	if (hit->Z() > 361.5)
-	{
-	    GetHitsData(0)->Fill(hit->GetEnergy());
+	  {
+	    edepkev = (hit->GetEnergy())/1000.;
+	    GetHitsData(0)->Fill(edepkev);
 	    premul++;
-	}
+	  }
 	else if (hit->Z() < 361.5)
-	{
-	    GetHitsData(1)->Fill(hit->GetEnergy());
+	  {
+	    edepkev = (hit->GetEnergy())/1000.;
+	    GetHitsData(1)->Fill(edepkev);
 	    cpvmul++;
-	}
+	  }
     }
 
     if(premul <= 0)
@@ -218,6 +220,7 @@ void AliPMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
     // makes data from SDigits
 
     Int_t cpvmul = 0, premul = 0;
+    Float_t edepkev = 0.;
 
     TIter next(sdigits) ; 
     AliPMDsdigit * sdigit ; 
@@ -225,13 +228,15 @@ void AliPMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
     {
 	if(sdigit->GetDetector() == 0)
 	{
-	    GetSDigitsData(0)->Fill( sdigit->GetCellEdep());
-	    premul++;
+	  edepkev = (sdigit->GetCellEdep())/1000.;
+	  GetSDigitsData(0)->Fill(edepkev);
+	  premul++;
 	}
 	if(sdigit->GetDetector() == 1)
 	{
-	    GetSDigitsData(1)->Fill( sdigit->GetCellEdep());
-	    cpvmul++;
+	  edepkev = (sdigit->GetCellEdep())/1000.;
+	  GetSDigitsData(1)->Fill(edepkev);
+	  cpvmul++;
 	}
 	
     } 
@@ -311,7 +316,6 @@ void AliPMDQADataMakerSim::MakeDigits(TTree * digitTree)
     {
 	for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
 	{
-	    
 	    branch->GetEntry(ient) ; 
 	    MakeDigits(digits) ; 
 	}

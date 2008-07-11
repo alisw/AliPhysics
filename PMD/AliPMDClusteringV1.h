@@ -13,7 +13,7 @@
 //-----------------------------------------------------//
 // -- Author   : S.C. Phatak
 // -- Modified : B.K. Nandi, Ajay Dash
-//               S. Chattopadhyay
+//               T. Nayak, N. Sharma
 //
 #include "Rtypes.h"
 #include "AliPMDClustering.h"
@@ -35,9 +35,6 @@ class AliPMDClusteringV1: public AliPMDClustering
   Int_t    CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 		   Int_t iord1[], Double_t edepcell[]);
   void     RefClust(Int_t incr, Double_t edepcell[]);
-  void     GaussFit(Int_t ncell, Int_t nclust, Double_t &x,
-		    Double_t &y, Double_t &z, Double_t &xc,
-		    Double_t &yc, Double_t &zc, Double_t &rc);
   Double_t Distance(Double_t x1, Double_t y1,
 		    Double_t x2, Double_t y2);
   void     SetEdepCut(Float_t decut);
@@ -55,15 +52,14 @@ class AliPMDClusteringV1: public AliPMDClustering
   };
 
   //Variables for association
-  Int_t    fCellTrNo[kNDIMX][kNDIMY];  // id x-y value of cells
   Int_t    fInfocl[2][kNDIMX][kNDIMY]; // cellwise information on the 
                                        // cluster to which the cell
   Int_t    fInfcl[3][kNMX];            // cluster information [0][i]
                                        // -- cluster number
   Double_t fCoord[2][kNDIMX][kNDIMY];
 
-  Float_t fCutoff; // Energy(ADC) cutoff per cell before clustering
+  Float_t  fCutoff; // Energy(ADC) cutoff per cell before clustering
 
-  ClassDef(AliPMDClusteringV1,4) // Does clustering for PMD
+  ClassDef(AliPMDClusteringV1,5) // Does clustering for PMD
 };
 #endif

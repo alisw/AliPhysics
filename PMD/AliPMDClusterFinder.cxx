@@ -269,6 +269,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 {
   // Converts digits to recpoints after running clustering
   // algorithm on CPV plane and PREshower plane
+  //
   // This algorithm is called during the reconstruction from digits
 
   Int_t    det = 0,smn = 0;
@@ -399,7 +400,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   // Converts RAW data to recpoints after running clustering
   // algorithm on CPV and PREshower plane
   //
-  // This method is called at the time of reconstruction
+  // This method is called at the time of reconstruction from RAW data
 
 
     AliPMDddldata *pmdddl = 0x0;
@@ -473,12 +474,19 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t row = pmdddl->GetRow();
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
+
+	  if(smn == -1)
+	    {
+	      AliError(Form("*MODULE NUMBER WRONG %d *",smn));
+	      continue; 
+	    }
 	  if(row < 0 || row > 48 || col < 0 || col > 96)
 	    {
 	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
 			    row, col));
 	      continue; 
 	    }
+
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
 	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;

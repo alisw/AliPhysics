@@ -248,6 +248,7 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
 	      if (pbusid < 0 || pbusid > 50) return -1;
 
+
 	      ilowLimit = iuppLimit;
 	      iuppLimit = ilowLimit + rawdatalength;
 
@@ -270,7 +271,7 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 		  parity = ComputeParity(data);
 		  if (ibit != parity)
 		    {
-		      AliWarning("ComputeParity:: Parity Error");
+		      AliWarning(Form("Parity Error:: Patch Bus %d Module %d",pbusid,imodule));
 		      fRawReader->AddMajorErrorLog(kParityError);
 		      return -1;
 		    }
