@@ -240,6 +240,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   TStopwatch stopwatch;
   stopwatch.Start();
 
+  Int_t inholes = 0;
+
   fRunLoader->GetEvent(iEvent);
 
   fTreeD = fTOFLoader->TreeD();
@@ -287,6 +289,14 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
+    // Do not reconstruct anything in the holes
+    if (dig[0]==13 || dig[0]==14 || dig[0]==15 ) { // sectors with holes
+      if (dig[1]==2) { // plate with holes
+	inholes++;
+	continue;
+      }
+    }
+
     //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
 
     parTOF[0] = d->GetTdc(); //the TDC signal
@@ -316,6 +326,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
 
   AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
+  if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
 
 }
 
@@ -329,6 +340,8 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
 
   TStopwatch stopwatch;
   stopwatch.Start();
+
+  Int_t inholes = 0;
 
   ///  fRunLoader->GetEvent(iEvent);
 
@@ -370,6 +383,14 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
+    // Do not reconstruct anything in the holes
+    if (dig[0]==13 || dig[0]==14 || dig[0]==15 ) { // sectors with holes
+      if (dig[1]==2) { // plate with holes
+	inholes++;
+	continue;
+      }
+    }
+
     //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
 
     parTOF[0] = d->GetTdc(); //the TDC signal
@@ -397,6 +418,7 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
 
   AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
+  if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
 
 }
 //______________________________________________________________________________
@@ -410,6 +432,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   TStopwatch stopwatch;
   stopwatch.Start();
+
+  Int_t inholes = 0;
 
   //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
@@ -478,6 +502,14 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	else              ftxt << " " << detectorIndex[4];
       }
 
+      // Do not reconstruct anything in the holes
+      if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
+	if (detectorIndex[1]==2) { // plate with holes
+	  inholes++;
+	  continue;
+	}
+      }
+
       parTOF[0] = tofRawDatum->GetTOF(); //TDC
       parTOF[1] = tofRawDatum->GetTOT(); // TOT
       parTOF[2] = tofRawDatum->GetTOT(); //ADC==TOF
@@ -521,6 +553,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.4fs C:%.4fs",
 		   stopwatch.RealTime(),stopwatch.CpuTime()));
+  if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
 
 }
 //______________________________________________________________________________
@@ -533,6 +566,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
   TStopwatch stopwatch;
   stopwatch.Start();
+
+  Int_t inholes = 0;
 
   //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
@@ -609,6 +644,14 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 	else              ftxt << " " << detectorIndex[4];
       }
 
+      // Do not reconstruct anything in the holes
+      if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
+	if (detectorIndex[1]==2) { // plate with holes
+	  inholes++;
+	  continue;
+	}
+      }
+
       parTOF[0] = tofRawDatum->GetTOF(); // TDC
       parTOF[1] = tofRawDatum->GetTOT(); // TOT
       parTOF[2] = tofRawDatum->GetTOT(); // raw data have ADC=TOT
@@ -654,6 +697,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   
   AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.4fs C:%.4fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
+  if (inholes) AliWarning(Form("Clusters in the TOF holes: %d",inholes));
 
 }
 //______________________________________________________________________________
