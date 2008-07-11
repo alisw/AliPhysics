@@ -151,7 +151,7 @@ void AliT0QADataMakerRec::InitRaws()
       timeCalname += i;
       ampCalname += i;
       qtcCalname += i;
-      fhRawCFDcal[i] = new TH1F(timeCalname.Data(), timeCalname.Data(),1000,4000,6000);
+      fhRawCFDcal[i] = new TH1F(timeCalname.Data(), timeCalname.Data(),10000,0,10000);
       Add2RawsList( fhRawCFDcal[i],76+i+1);
       fhRawLEDampcal[i] = new TH1F(ampCalname.Data(), ampCalname.Data(),100,300,600);
       Add2RawsList( fhRawLEDampcal[i],76+i+24+1);
@@ -159,19 +159,19 @@ void AliT0QADataMakerRec::InitRaws()
       Add2RawsList( fhRawQTCcal[i],76+i+48+1);
     }
   TH1F* fhRawMeanCal = new TH1F("hRawMeanCal","online mean signal, calibration event",
-				1000,7000,8000);
+				10000,0,10000);
   Add2RawsList( fhRawMeanCal,149);
   TH1F* fhRawVertexCal = new TH1F("hRawVertexCal","online vertex signal, calibration even ",
-				  1000,7000,8000);
+				  10000,0,10000);
   Add2RawsList( fhRawVertexCal,150);
-  TH1F* fhRawORAcal = new TH1F("hRawORAcal","online OR A", 200,5000,7000);
+  TH1F* fhRawORAcal = new TH1F("hRawORAcal","online OR A", 10000,0,10000);
   Add2RawsList( fhRawORAcal,151);
-  TH1F* fhRawORCcal = new TH1F("hRawORCcal","online OR C", 200,5000,7000);
+  TH1F* fhRawORCcal = new TH1F("hRawORCcal","online OR C", 10000,0,10000);
   Add2RawsList( fhRawORCcal,152);
-  TH1F* fhMultcal = new TH1F("hMultcal","full mulltiplicity", 1000,0,10000);
+  TH1F* fhMultcal = new TH1F("hMultcal","full mulltiplicity", 10000,0,10000);
   Add2RawsList( fhMultcal,153);
   TH1F* fhMultScal = new TH1F("hMultScal","full multiplicity with semi-central trigger",
-			      1000,0,10000);
+			      10000,0,10000);
   Add2RawsList( fhMultScal,154);
   TH1F* fhMultCcal = new TH1F("hMultCcal","full multiplicity with central trigger", 
 			      1000,0,10000);
@@ -259,7 +259,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  allData[i][iHit]= start->GetData(i,iHit);
       
       GetRawsData(0) -> Fill( allData[0][0]);
-      allData[0][0] = allData[0][0] - 5000; 
+      allData[0][0] = allData[0][0] - 7000; 
       if (type == 8) shift=76;
       if (type == 10) shift=0;
 	    
