@@ -41,7 +41,7 @@ AliPMDPreprocessor::AliPMDPreprocessor(AliShuttleInterface* shuttle) :
 {
   // constructor
   AddRunType("PHYSICS");
-  AddRunType("PEDESTAL_RUN");
+  AddRunType("PEDESTAL");
 }
 
 //______________________________________________________________________________________________
@@ -73,7 +73,7 @@ Bool_t AliPMDPreprocessor::ProcessDAQ()
 {
     TString RunType = GetRunType();
     Log(Form("RunType %s",RunType.Data()));
-    if (RunType !="PHYSICS" || RunType != "PEDESTAL_RUN") {
+    if (RunType !="PHYSICS" || RunType != "PEDESTAL") {
         return kFALSE;
     }
 
@@ -87,7 +87,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
     
     if(!pdaqAliasMap) return 1;
     TString runType = GetRunType();
-    if(runType == "PEDESTAL_RUN"){
+    if(runType == "PEDESTAL"){
 	AliPMDPedestal *pedestal = new AliPMDPedestal();
 	
         TList* filesources = GetFileSources(kDAQ, "PMD_PED");
