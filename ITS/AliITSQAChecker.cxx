@@ -46,6 +46,7 @@ fSPDChecker(0),  // SPD Checker
 fSDDChecker(0),  // SDD Checker
 fSSDChecker(0)  // SSD Checker
 {
+  // Standard constructor
   fkOnline = kMode; fDet = subDet; fLDC = ldc;
   if(fDet == 0 || fDet == 1) {
     AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
@@ -57,6 +58,29 @@ fSSDChecker(0)  // SSD Checker
     AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
   }
 
+}
+
+//____________________________________________________________________________
+AliITSQAChecker::AliITSQAChecker(const AliITSQAChecker& qac):
+AliQACheckerBase(qac.GetName(), qac.GetTitle()), 
+fkOnline(qac.fkOnline), 
+fDet(qac.fDet), 
+fLDC(qac.fLDC), 
+fSPDOffset(qac.fSPDOffset), 
+fSDDOffset(qac.fSDDOffset), 
+fSSDOffset(qac.fSSDOffset), 
+fSPDChecker(0), 
+fSDDChecker(0), 
+fSSDChecker(0) {
+  // copy constructor
+  AliError("Copy should not be used with this class\n");
+}
+//____________________________________________________________________________
+AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
+  // assignment operator
+  this->~AliITSQAChecker();
+  new(this)AliITSQAChecker(qac);
+  return *this;
 }
 
 //____________________________________________________________________________
