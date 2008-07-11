@@ -24,6 +24,7 @@ class AliZDCPreprocessor : public AliPreprocessor
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* dcsAliasMap);
+    virtual UInt_t ProcessChMap(TString runType);
     AliZDCPreprocessor(const AliZDCPreprocessor&);
     AliZDCPreprocessor& operator=(const AliZDCPreprocessor&);
 

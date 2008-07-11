@@ -61,11 +61,20 @@ void TestZDCPreprocessor(Int_t obj=0)
   // Three files originating from different LDCs but with the same id are also added
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "ALL", "LDC0", "ZDCChMapping.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCPedestal.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASER",     "LDC0", "ZDCLaserCalib.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCChMapping.dat");
+  //
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASER", "LDC0", "ZDCLaserCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASER", "LDC0", "ZDCChMapping.dat");
+  //
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCEMDCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCChMapping.dat");
+  //
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS", "LDC0", "ZDCChMapping.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "COSMICS", "LDC0", "ZDCChMapping.dat");
+  //
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "BC", "LDC0", "ZDCChMapping.dat");
 
   // TODO(3)
   //
@@ -75,6 +84,9 @@ void TestZDCPreprocessor(Int_t obj=0)
   if(obj==1)      shuttle->SetInputRunType("STANDALONE_PEDESTAL");
   else if(obj==2) shuttle->SetInputRunType("STANDALONE_LASER");
   else if(obj==3) shuttle->SetInputRunType("STANDALONE_EMD");
+  else if(obj==4) shuttle->SetInputRunType("STANDALONE_COSMIC");
+  else if(obj==5) shuttle->SetInputRunType("STANDALONE_BC");
+  else if(obj==6) shuttle->SetInputRunType("PHYSICS");
 
   // TODO(4)
   //
@@ -82,8 +94,8 @@ void TestZDCPreprocessor(Int_t obj=0)
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-  shuttle->AddInputRunParameter("beamType", "Pb-Pb");
-  //shuttle->AddInputRunParameter("beamType", "p-p");
+  //shuttle->AddInputRunParameter("beamType", "Pb-Pb");
+  shuttle->AddInputRunParameter("beamType", "p-p");
   shuttle->AddInputRunParameter("totalEvents", "1000");
   shuttle->AddInputRunParameter("NumberOfGDCs", "1");
 

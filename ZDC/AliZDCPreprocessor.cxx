@@ -38,7 +38,9 @@ AliZDCPreprocessor::AliZDCPreprocessor(AliShuttleInterface* shuttle) :
   AddRunType("STANDALONE_PEDESTAL");
   AddRunType("STANDALONE_LASER");
   AddRunType("STANDALONE_EMD");
-  AddRunType("ALL");
+  AddRunType("STANDALONE_COSMIC");
+  AddRunType("STANDALONE_BC");
+  AddRunType("PHYSICS");
 }
 
 
@@ -66,6 +68,95 @@ void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime,
         fEndTime = endTime;
 
 	fData = new AliZDCDataDCS(fRun, fStartTime, fEndTime);
+}
+
+//______________________________________________________________________________________________
+UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
+{ 
+  // Writing channel map in the OCDB
+  TList* daqSource;
+  if(runType.CompareTo("STANDALONE_PEDESTAL"))
+    daqSource = GetFileSources(kDAQ, "PEDESTALS");
+  else if(runType.CompareTo("STANDALONE_LASER"))
+    daqSource = GetFileSources(kDAQ, "LASER");
+  else if(runType.CompareTo("STANDALONE_EMD"))
+    daqSource = GetFileSources(kDAQ, "EMDCALIB");
+  else if(runType.CompareTo("STANDALONE_COSMIC"))
+    daqSource = GetFileSources(kDAQ, "COSMICS");
+  else if(runType.CompareTo("STANDALONE_BC"))
+    daqSource = GetFileSources(kDAQ, "BC");
+  else if(runType.CompareTo("PHYSICS"))
+    daqSource = GetFileSources(kDAQ, "PHYSICS");
+  
+  if(!daqSource){
+    AliError(Form("No sources run %d for run type %s!", fRun, runType));
+    return 1;
+  }
+  Log("\t List of sources "); daqSource->Print();
+  //
+  TIter iter(daqSource);
+  TObjString* source = 0;
+  Int_t isou=0;
+  while((source = dynamic_cast<TObjString*> (iter.Next()))){
+     Log(Form("\n\t Getting file #%d\n",++isou));
+     TString fileName;
+     if(runType.CompareTo("STANDALONE_PEDESTAL"))
+      fileName = GetFile(kDAQ, "PEDESTALS", source->GetName());
+     else if(runType.CompareTo("STANDALONE_LASER"))
+      fileName = GetFile(kDAQ, "LASER", source->GetName());
+     else if(runType.CompareTo("STANDALONE_EMD"))
+      fileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
+     else if(runType.CompareTo("STANDALONE_COSMIC"))
+      fileName = GetFile(kDAQ, "COSMICS", source->GetName());
+     else if(runType.CompareTo("STANDALONE_BC"))
+      fileName = GetFile(kDAQ, "BC", source->GetName());
+     else if(runType.CompareTo("PHYSICS"))
+      fileName = GetFile(kDAQ, "PHYSICS", source->GetName());
+
+     if(fileName.Length() <= 0){
+       Log(Form("No file from source %s!", source->GetName()));
+       return 1;
+     }
+     // --- Initializing pedestal calibration object
+     AliZDCChMap *mapCalib = new AliZDCChMap("ZDC");
+     // --- Reading file with pedestal calibration data
+     const char* fname = fileName.Data();
+     if(fname){
+       FILE *file;
+       if((file = fopen(fname,"r")) == NULL){
+	 printf("Cannot open file %s \n",fname);
+         return 1;
+       }
+       Log(Form("File %s connected to process data for ADC mapping", fname));
+       //
+       Int_t chMap[48][6]; 
+       for(Int_t j=0; j<48; j++){	  
+           for(Int_t k=0; k<6; k++){
+             fscanf(file,"%d",&chMap[j][k]);
+           }
+	   mapCalib->SetADCModule(j,chMap[j][1]);
+	   mapCalib->SetADCChannel(j,chMap[j][2]);
+	   mapCalib->SetDetector(j,chMap[j][4]);
+	   mapCalib->SetSector(j,chMap[j][5]);
+       }
+       fclose(file);
+     }
+     else{
+       Log(Form("File %s not found", fname));
+       return 1;
+     }
+     //mapCalib->Print("");
+    // 
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Chiara Oppedisano");
+    metaData.SetComment("Filling AliZDCChMap object");  
+    //
+    Int_t res = Store("Calib","ChMap",mapCalib, &metaData, 0, 1);
+    return res;
+  }
+  delete daqSource; daqSource=0;
+
 }
 
 //______________________________________________________________________________________________
@@ -124,65 +215,6 @@ TString runType = GetRunType();
 printf("\n\t AliZDCPreprocessor -> beamType %s\n",beamType);
 printf("\t AliZDCPreprocessor -> runType  %s\n\n",runType.Data());
 
-// ******************************************
-//   ZDC ADC channel mapping
-// ******************************************
-TList* daqAllSources = GetFileSources(kDAQ, "ALL");
-if(!daqAllSources){
-  AliError(Form("No sources run %d !", fRun));
-  return 1;
-}
-Log("\t List of sources "); daqAllSources->Print();
-//
-TIter iterAll(daqAllSources);
-TObjString* sourceAll = 0;
-Int_t iAll=0;
-while((sourceAll = dynamic_cast<TObjString*> (iterAll.Next()))){
-     Log(Form("\n\t Getting file #%d\n",++iAll));
-     TString fileName = GetFile(kDAQ, "ALL", sourceAll->GetName());
-     if(fileName.Length() <= 0){
-       Log(Form("No file from source %s!", sourceAll->GetName()));
-       return 1;
-     }
-     // --- Initializing pedestal calibration object
-     AliZDCChMap *mapCalib = new AliZDCChMap("ZDC");
-     // --- Reading file with pedestal calibration data
-     const char* fname = fileName.Data();
-     if(fname){
-       FILE *fileAll;
-       if((fileAll = fopen(fname,"r")) == NULL){
-	 printf("Cannot open file %s \n",fname);
-         return 1;
-       }
-       Log(Form("File %s connected to process data for ADC mapping", fname));
-       //
-       Int_t chMap[48][6]; 
-       for(Int_t j=0; j<48; j++){	  
-           for(Int_t k=0; k<6; k++){
-             fscanf(fileAll,"%d",&chMap[j][k]);
-           }
-	   mapCalib->SetADCModule(j,chMap[j][1]);
-	   mapCalib->SetADCChannel(j,chMap[j][2]);
-	   mapCalib->SetDetector(j,chMap[j][4]);
-	   mapCalib->SetSector(j,chMap[j][5]);
-       }
-       fclose(fileAll);
-     }
-     else{
-       Log(Form("File %s not found", fname));
-       return 1;
-     }
-     //mapCalib->Print("");
-    // 
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0);
-    metaData.SetResponsible("Chiara Oppedisano");
-    metaData.SetComment("Filling AliZDCChMap object");  
-    //
-    resChMap = Store("Calib","ChMap",mapCalib, &metaData, 0, 1);
-}
-
-// 
 if(strcmp(beamType,"p-p")==0){
 
    // --- Initializing pedestal calibration object
@@ -204,6 +236,10 @@ if(strcmp(beamType,"p-p")==0){
    //
    resECal = Store("Calib","EMDCalib",eCalib, &metaData, 0, 1);
 }
+// ******************************************
+//   ZDC ADC channel mapping
+// ******************************************
+resChMap = ProcessChMap(runType);
 // 
 // *****************************************************
 // [a] PEDESTALS -> Pedestal subtraction
@@ -420,10 +456,7 @@ else if(runType=="STANDALONE_EMD"){
       resECal = Store("Calib","EMDCalib",eCalib, &metaData, 0, 1);
   }
 }
-else {
-  Log(Form("Nothing to do: run type is %s", runType.Data()));
-  return 0;
-} 
+
 
   // note that the parameters are returned as character strings!
   const char* nEvents = GetRunParameter("totalEvents");
