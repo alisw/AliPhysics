@@ -32,27 +32,31 @@ ClassImp(AliEventInfo)
 AliEventInfo::AliEventInfo():
   TObject(),
   fLHCState("UNKNOWN"),
+  fBeamType("UNKNOWN"),
   fRunType("UNKNOWN"),
   fActiveDetectors(""),
   fEventType(0),
   fTriggerClasses(""),
   fTriggerMask(0),
-  fTriggerCluster("")
+  fTriggerCluster(""),
+  fHLTDecision("")
 {
   // default constructor
   // ...
 }
 
 //______________________________________________________________________________
-AliEventInfo::AliEventInfo(const char *lhcState, const char *runType, const char *activeDetectors):
+AliEventInfo::AliEventInfo(const char *lhcState, const char *beamType, const char *runType, const char *activeDetectors):
   TObject(),
   fLHCState(lhcState),
+  fBeamType(beamType),
   fRunType(runType),
   fActiveDetectors(activeDetectors),  
   fEventType(0),
   fTriggerClasses(""),
   fTriggerMask(0),
-  fTriggerCluster("")
+  fTriggerCluster(""),
+  fHLTDecision("")
 {
   // constructor
   // ...
@@ -62,12 +66,14 @@ AliEventInfo::AliEventInfo(const char *lhcState, const char *runType, const char
 AliEventInfo::AliEventInfo(const AliEventInfo &evInfo):
   TObject(evInfo),
   fLHCState(evInfo.fLHCState),
+  fBeamType(evInfo.fBeamType),
   fRunType(evInfo.fRunType),
   fActiveDetectors(evInfo.fActiveDetectors),
   fEventType(evInfo.fEventType),
   fTriggerClasses(evInfo.fTriggerClasses),
   fTriggerMask(evInfo.fTriggerMask),
-  fTriggerCluster(evInfo.fTriggerCluster)
+  fTriggerCluster(evInfo.fTriggerCluster),
+  fHLTDecision(evInfo.fHLTDecision)
 {
   // Copy constructor
   // ...
@@ -82,12 +88,14 @@ AliEventInfo &AliEventInfo::operator =(const AliEventInfo& evInfo)
   ((TObject *)this)->operator=(evInfo);
 
   fLHCState = evInfo.fLHCState;
+  fBeamType = evInfo.fBeamType;
   fRunType = evInfo.fRunType;
   fActiveDetectors = evInfo.fActiveDetectors;
   fEventType = evInfo.fEventType;
   fTriggerClasses = evInfo.fTriggerClasses;
   fTriggerMask = evInfo.fTriggerMask; 
   fTriggerCluster = evInfo.fTriggerCluster;
+  fHLTDecision = evInfo.fHLTDecision;
 
   return *this;
 }
@@ -97,11 +105,13 @@ void AliEventInfo::Reset()
 {
   // Reset the contents
   // ...
-  fLHCState = "UNKNOWN";
-  fRunType = "UNKNOWN";
-  fActiveDetectors = "";
+//   fLHCState = "UNKNOWN";
+//   fRunType = "UNKNOWN";
+//   fBeamType = "UNKNOWN";
+//   fActiveDetectors = "";
   fEventType = 0;
   fTriggerClasses = "";
   fTriggerMask = 0;
   fTriggerCluster = "";
+  fHLTDecision = "";
 }
