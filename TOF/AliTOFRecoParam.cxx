@@ -28,7 +28,7 @@ ClassImp(AliTOFRecoParam)
 
 //_____________________________________________________________________________
 AliTOFRecoParam::AliTOFRecoParam():
-  TObject(),       
+  AliDetectorRecoParam(),       
   fTimeZero(kFALSE),       
   fTimeZerofromT0(kFALSE),       
   fTimeZerofromTOF(kFALSE),       
@@ -48,10 +48,11 @@ AliTOFRecoParam::AliTOFRecoParam():
   //
   // constructor
   //
+  SetNameTitle("TOF","TOF");
 }
 //_____________________________________________________________________________
 AliTOFRecoParam::AliTOFRecoParam(const AliTOFRecoParam &p):
-  TObject(),       
+  AliDetectorRecoParam(),       
   fTimeZero(kFALSE),       
   fTimeZerofromT0(kFALSE),       
   fTimeZerofromTOF(kFALSE),       
@@ -70,6 +71,8 @@ AliTOFRecoParam::AliTOFRecoParam(const AliTOFRecoParam &p):
  { 
   //copy Ctor
 
+   fName = p.fName;
+   fTitle = p.fTitle;
    fTimeZero=p.fTimeZero;       
    fTimeZerofromT0=p.fTimeZerofromT0;
    fTimeZerofromTOF=p.fTimeZerofromTOF;       
@@ -85,6 +88,7 @@ AliTOFRecoParam::AliTOFRecoParam(const AliTOFRecoParam &p):
    fMaxChi2TRD=p.fMaxChi2TRD;
    fTimeResolution=p.fTimeResolution;
    fTimeNSigma=p.fTimeNSigma;   
+
 }
 //_____________________________________________________________________________
 AliTOFRecoParam& AliTOFRecoParam::operator=(const AliTOFRecoParam &p)

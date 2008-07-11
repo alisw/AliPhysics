@@ -10,9 +10,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "TObject.h"
+#include "AliDetectorRecoParam.h"
 
-class AliTOFRecoParam : public TObject
+class AliTOFRecoParam : public AliDetectorRecoParam
 {
  public: 
   AliTOFRecoParam();
@@ -77,7 +77,7 @@ class AliTOFRecoParam : public TObject
   Double_t fTimeResolution;  // Time resolution for resp. function in PID (ps)
   Double_t fTimeNSigma;  // N-Sigma Range used for resp. function in PID 
 
-  ClassDef(AliTOFRecoParam, 1)
+  ClassDef(AliTOFRecoParam, 2)
 };
 
 #endif
