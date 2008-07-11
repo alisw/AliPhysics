@@ -55,15 +55,16 @@ TFile    * AliQA::fgQAResultFile         = 0x0 ;
 TString    AliQA::fgQAResultDirName      = "" ;  
 TString    AliQA::fgQAResultFileName     = "QA.root" ; 
 TString    AliQA::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
-										    "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global"} ;   
-TString    AliQA::fgRTNames[]            = {"AUTO_TEST", "CALIBRATION", "CALIBRATION_PULSER", "CHANNEL_DELAY_TUNING", "COSMIC", 
-											"COSMICS", "DAQ_FO_UNIF_SCAN", "DAQ_GEN_DAC_SCAN", "DAQ_MEAN_TH_SCAN", "DAQ_MIN_TH_SCAN", 
-											"DAQ_NOISY_PIX_SCAN", "DAQ_PIX_DELAY_SCAN", "DAQ_UNIFORMITY_SCAN", "DCS_FO_UNIF_SCAN", 
-											"DCS_MEAN_TH_SCAN", "DCS_MIN_TH_SCAN", "DCS_PIX_DELAY_SCAN", "DCS_UNIFORMITY_SCAN", 
-											"DDL_TEST", "GAIN", "PEDESTAL", "INJECTOR",  "LASER", "MONTECARLO", "NOISE", "NOISY_PIX_SCAN", 
-											"PHYSICS", "PULSER", "STANDALONE", "STANDALONE_BC", "STANDALONE_CENTRAL", "STANDALONE_COSMIC", 
-											"STANDALONE_EMD", "STANDALONE_LASER", "STANDALONE_MB", "STANDALONE_PEDESTAL", 
-											"STANDALONE_SEMICENTRAL", "STANDALONE_PULSER" } ;   
+					    "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global"} ;   
+TString    AliQA::fgGRPPath              = "GRP/GRP/Data" ; 
+TString    AliQA::fgRTNames[]            = {"UNKNOWN", "AUTO_TEST", "CALIBRATION", "CALIBRATION_PULSER", "CHANNEL_DELAY_TUNING", "COSMIC", 
+					    "COSMICS", "DAQ_FO_UNIF_SCAN", "DAQ_GEN_DAC_SCAN", "DAQ_MEAN_TH_SCAN", "DAQ_MIN_TH_SCAN", 
+         				    "DAQ_NOISY_PIX_SCAN", "DAQ_PIX_DELAY_SCAN", "DAQ_UNIFORMITY_SCAN", "DCS_FO_UNIF_SCAN", 
+       					    "DCS_MEAN_TH_SCAN", "DCS_MIN_TH_SCAN", "DCS_PIX_DELAY_SCAN", "DCS_UNIFORMITY_SCAN", 
+					    "DDL_TEST", "GAIN", "PEDESTAL", "INJECTOR",  "LASER", "MONTECARLO", "NOISE", "NOISY_PIX_SCAN", 
+					    "PHYSICS", "PULSER", "STANDALONE", "STANDALONE_BC", "STANDALONE_CENTRAL", "STANDALONE_COSMIC", 
+					    "STANDALONE_EMD", "STANDALONE_LASER", "STANDALONE_MB", "STANDALONE_PEDESTAL", 
+					    "STANDALONE_SEMICENTRAL", "STANDALONE_PULSER" } ;   
 TString       AliQA::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 const TString AliQA::fkgLabLocalFile     = "file://"  ; 
 const TString AliQA::fkgLabLocalOCDB     = "local://" ;  
@@ -71,7 +72,7 @@ const TString AliQA::fkgLabAliEnOCDB     = "alien://" ;
 const TString AliQA::fkgRefFileName      = "QA.root" ; 
 const TString AliQA::fkgQAName           = "QA"  ; 
 const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
-TString AliQA::fkgRefDataDirName		 = ""  ; 
+TString AliQA::fkgRefDataDirName	 = ""  ; 
 const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
 //____________________________________________________________________________
 AliQA::AliQA() : 
@@ -536,6 +537,24 @@ void AliQA::SetQARefStorage(const char * name)
   }	
 	TString tmp(fgQARefDirName) ; // + fgQARefFileName) ;
 	printf("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
+}
+
+//_____________________________________________________________________________
+void AliQA::SetQARefDataDirName(const char * name) 
+{
+  // Set the lower level directory name where reference data are found
+  TString test(name) ; 
+  RUNTYPE_t rt ; 
+  for (Int_t index = 0; index < AliQA::kNTYPE; index++) {
+    if (test == fgRTNames[index]) {
+      rt = (RUNTYPE_t) index ; 
+      break ; 
+    } else {
+      printf("AliQA::SetQARefDataDirName: %s is an unknown RUN TYPE name\n", name) ; 
+      return ; 
+    }
+  } 
+  SetQARefDataDirName(rt) ; 
 }
 
 //_____________________________________________________________________________
