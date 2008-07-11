@@ -1,4 +1,27 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Interface to the Isajet MonteCarlo                                       //
+
+
 #include "TParticle.h"
+#include "TClonesArray.h"
 #include "TSystem.h"
 #include "TIsajet.h"
 #include "Icommon.h"
@@ -3197,7 +3220,7 @@ void TIsajet::SetAMIJMN(Float_t val, Int_t index1, Int_t index2)
 
 /**************************************************************************/
 
-void TIsajet::SetAllAMIJMN(const Float_t val[MGLIMS.mxlim][MGLIMS.mxlim]) 
+void TIsajet::SetAllAMIJMN(const Float_t val[8][8]) 
 {
     for (Int_t i = 0; i < 2; i++) {
 	for (Int_t j = 0; j < 3; j++) {
@@ -3276,7 +3299,7 @@ void TIsajet::SetAMIJMX(Float_t val, Int_t index1, Int_t index2)
 
 /**************************************************************************/
 
-void TIsajet::SetAllAMIJMX(const Float_t val[MGLIMS.mxlim][MGLIMS.mxlim]) 
+void TIsajet::SetAllAMIJMX(const Float_t val[8][8]) 
 {
     for (Int_t i = 0; i < 2; i++) {
 	for (Int_t j = 0; j < 3; j++) {

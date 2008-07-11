@@ -4,7 +4,7 @@ SRCS= TIsajet.cxx AliGenIsajet.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
-DHDR:=TIsajetLinkDef.h
+DHDR:=TIsajetLinkDef.h $(ROOTSYS)/include/TClonesArray.h
 
 EXPORT:=TIsajet.h Icommon.h
 

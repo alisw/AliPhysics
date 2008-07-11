@@ -57,14 +57,6 @@ AliGenIsajet::AliGenIsajet(Int_t npart)
   
 }
 
-AliGenIsajet::AliGenIsajet(const AliGenIsajet &  Isajet) 
-  :AliGenMC(Isajet),
-   fKineBias(1),
-   fTrials(0)
-{
-  Isajet.Copy(*this);
-  
-}
 //____________________________________________________________________________
 AliGenIsajet::~AliGenIsajet() 
 { 
@@ -177,13 +169,6 @@ void AliGenIsajet::Generate()
   }
  SetHighWaterMark(nt);
 }
-AliGenIsajet& AliGenIsajet::operator=(const  AliGenIsajet& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return (*this);
-}
 
-//____________________________________________________________________________
 //____________________________________________________________________________
 

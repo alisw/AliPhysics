@@ -28,7 +28,6 @@ class AliGenIsajet : public AliGenMC {
  public:
   AliGenIsajet();
   AliGenIsajet(Int_t npart);
-  AliGenIsajet(const AliGenIsajet &Isajet);
   virtual ~AliGenIsajet();
 
   // 
@@ -36,14 +35,15 @@ class AliGenIsajet : public AliGenMC {
   
   virtual void Init();
   virtual void Generate();
-  AliGenIsajet &  operator=(const AliGenIsajet & rhs);
 
  protected:
   TIsajet * fIsajet;
   Float_t     fKineBias;       // Bias from kinematic selection
   Int_t       fTrials;         // Number of trials
  private:
-
+  
+  AliGenIsajet(const AliGenIsajet &Isajet); // Not Implemented
+  AliGenIsajet &  operator=(const AliGenIsajet & rhs); // Not Implemented
       
   ClassDef(AliGenIsajet,1) // Interface class for AliIsajet
     
