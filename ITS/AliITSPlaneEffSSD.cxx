@@ -330,13 +330,13 @@ if(cdbSSD) {
   return;
 }
 //
-UInt_t mod=GetModFromKey(key);
+//UInt_t mod=GetModFromKey(key);
 //
-AliITSBadChannelsSSD* badchannels=(AliITSBadChannelsSSD*) ssdEntry->At(mod);
+//AliITSBadChannelsSSD* badchannels=(AliITSBadChannelsSSD*) ssdEntry->At(mod);
 // count the  number of bad channels on the p side
-nrBadInMod += (badchannels->GetBadPChannelsList()).GetSize();
+//nrBadInMod += (badchannels->GetBadPChannelsList()).GetSize();
 // add the  number of bad channels on the s side
-nrBadInMod += (badchannels->GetBadNChannelsList()).GetSize();
+//nrBadInMod += (badchannels->GetBadNChannelsList()).GetSize();
 return;
 }
 //_____________________________________________________________________________

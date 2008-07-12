@@ -364,7 +364,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	noise = cal->GetNoiseP(istrip); if(noise<1.) signal = 65535;
 	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
 
-	//        if(cal->IsPChannelB ad(istrip)) signal=0;
+	//        if(cal->IsPChannelBad(istrip)) signal=0;
 
 	if (signal!=65535) {
 	  gain = cal->GetGainP(istrip);

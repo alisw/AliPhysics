@@ -402,7 +402,7 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
   for(ix=0;ix<GetNStrips();ix++){      // loop over strips
     
     // noise is gaussian
-    noise  = (Double_t) gRandom->Gaus(0,res->GetNoiseP().At(ix));
+    noise  = (Double_t) gRandom->Gaus(0,res->GetNoiseP(ix));
     
     // need to calibrate noise 
     // NOTE. noise from the calibration database comes uncalibrated, 
@@ -422,7 +422,7 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
   
     // Nside
   for(ix=0;ix<GetNStrips();ix++){      // loop over strips
-    noise  = (Double_t) gRandom->Gaus(0,res->GetNoiseN().At(ix));// give noise to signal
+    noise  = (Double_t) gRandom->Gaus(0,res->GetNoiseN(ix));// give noise to signal
     noise *= (Double_t) res->GetGainN(ix); 
     noise /= res->GetDEvToADC(1.);
     signal = noise + fMapA2->GetSignal(1,ix);//get signal from map
@@ -484,8 +484,8 @@ void AliITSsimulationSSD::ApplyDeadChannels(Int_t module) {
 
   for(Int_t i=0;i<GetNStrips();i++){
 
-    if(res->IsPChannelBad(i)) res->AddGainP(i,0.0);
-    if(res->IsNChannelBad(i)) res->AddGainN(i,0.0);
+    if(res->IsPChannelBad(i)) res->SetGainP(i,0.0);
+    if(res->IsNChannelBad(i)) res->SetGainN(i,0.0);
 
   } // loop over strips 
 
@@ -661,10 +661,13 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
 
 	// threshold for zero suppression is set on the basis of the noise
 	// A good value is 3*sigma_noise
-	if(k==0) threshold = res->GetNoiseP().At(ix);
-	else threshold = res->GetNoiseN().At(ix);
+	if(k==0) threshold = res->GetNoiseP(ix);
+	else threshold = res->GetNoiseN(ix);
+
 	threshold *= res->GetZSThreshold(); // threshold at 3 sigma noise
+
 	if(signal < threshold) continue;
+	//cout<<signal<<" "<<threshold<<endl;
 
 	digits[0] = k;
 	digits[1] = ix;

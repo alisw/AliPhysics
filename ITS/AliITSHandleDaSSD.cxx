@@ -1107,11 +1107,14 @@ Bool_t AliITSHandleDaSSD::SaveEqSlotCalibrationData(const Int_t ddl, const Int_t
 Int_t AliITSHandleDaSSD::ChannelIsBad(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const
 {
 // Check if the channel is bad
-  AliITSBadChannelsSSD  *badch = NULL;
-  TArrayI                bcharray;
-  Int_t                  strsiden, modn = -1;
+//  AliITSBadChannelsSSD  *badch = NULL;
+  //  TArrayI                bcharray;
+  //  Int_t                  strsiden;
+  Int_t modn = -1;
   if (fStaticBadChannelsMap && fDDLModuleMap) {
     modn = RetrieveModuleId(ddl, ad, adc);
+
+    /*
     if (modn < 0) return -1;
     Int_t modind = 0;
     while ((modind < fStaticBadChannelsMap->GetEntriesFast() && (!badch))) {
@@ -1137,8 +1140,11 @@ Int_t AliITSHandleDaSSD::ChannelIsBad(const UChar_t ddl, const UChar_t ad, const
     }  
   } else {
     AliError("Error ether bad channels list or DDLMap is not initialized or both, return 0!");
+
+    */
 	return 0;
   }
+  return 0;
 }
         
         
@@ -1173,8 +1179,8 @@ ULong_t AliITSHandleDaSSD::OffsetValue(const UChar_t ddl, const UChar_t ad, cons
 // Calculate the offset value to be upload to FEROM	
   AliITSChannelDaSSD    *strip = NULL;
   AliITSModuleDaSSD     *module = NULL;
-  if (module = GetModule(ddl, ad, adc)) {
-    if (strip = module->GetStrip(strn)) return OffsetValue(strip, ddl, ad, adc, strn);
+  if ((module = GetModule(ddl, ad, adc))) {
+    if ((strip = module->GetStrip(strn))) return OffsetValue(strip, ddl, ad, adc, strn);
     else {
       AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
       return 0ul;
@@ -1204,9 +1210,9 @@ ULong_t AliITSHandleDaSSD::ZsThreshold(const UChar_t ddl, const UChar_t ad, cons
 // Calculate the value of zero suppression threshold to be upload to FEROM, account bad channels list
   AliITSChannelDaSSD    *strip = NULL;
   AliITSModuleDaSSD     *module = NULL;
-  if (ChannelIsBad(ddl, ad, adc, strn)) return fgkZsBitMask;
-  if (module = GetModule(ddl, ad, adc)) {
-    if (strip = module->GetStrip(strn))  return ZsThreshold(strip);
+  if ((ChannelIsBad(ddl, ad, adc, strn))) return fgkZsBitMask;
+  if ((module = GetModule(ddl, ad, adc))) {
+    if ((strip = module->GetStrip(strn)))  return ZsThreshold(strip);
     else {
       AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
       return 0ul;

@@ -496,9 +496,11 @@ AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationNoise() const
 {
 // Creates the AliITSNoiseSSD objects with callibration data
   AliITSNoiseSSD  *mc;
-  Float_t          noise;
+  //  Float_t          noise;
   if (!fStrips) return NULL;
   mc = new AliITSNoiseSSD();
+
+  /*
   mc->SetMod(fModuleId);
   mc->SetNNoiseP(fgkPNStripsPerModule);
   mc->SetNNoiseN(fgkPNStripsPerModule);
@@ -509,6 +511,8 @@ AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationNoise() const
           mc->AddNoiseP(i, noise);
     else  mc->AddNoiseN((AliITSChannelDaSSD::GetMaxStripIdConst() - i), noise);                     
   }
+  */
+
   return mc;
 }
 
@@ -519,9 +523,11 @@ AliITSPedestalSSD* AliITSModuleDaSSD::GetCalibrationPedestal() const
 {
 // Creates the AliITSPedestalSSD objects with callibration data
   AliITSPedestalSSD  *mc;
-  Float_t             ped;
+  //  Float_t             ped;
   if (!fStrips) return NULL;
   mc = new AliITSPedestalSSD();
+
+  /*
   mc->SetMod(fModuleId);
   mc->SetNPedestalP(fgkPNStripsPerModule);
   mc->SetNPedestalN(fgkPNStripsPerModule);
@@ -532,6 +538,8 @@ AliITSPedestalSSD* AliITSModuleDaSSD::GetCalibrationPedestal() const
           mc->AddPedestalP(i, ped);
     else  mc->AddPedestalN((AliITSChannelDaSSD::GetMaxStripIdConst() - i), ped);                     
   }
+  */
+
   return mc;
 }
 
@@ -551,6 +559,8 @@ AliITSBadChannelsSSD* AliITSModuleDaSSD::GetCalibrationBadChannels() const
        { chlist[nch++] = i; if (i < fgkPNStripsPerModule) nchp++; else nchn++; }
   }
   mc = new AliITSBadChannelsSSD();
+
+  /*
   mc->SetMod(fModuleId);
   if (!nch) return mc;
   mc->SetNBadPChannelsList(nchp);
@@ -559,5 +569,7 @@ AliITSBadChannelsSSD* AliITSModuleDaSSD::GetCalibrationBadChannels() const
     if (chlist[i] < fgkPNStripsPerModule) mc->AddBadPChannel(chlist[i], i);
     else mc->AddBadNChannel((AliITSChannelDaSSD::GetMaxStripIdConst() - chlist[i]), (i-nchp));
   }
+  */
+
   return mc;
 }

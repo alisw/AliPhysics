@@ -58,10 +58,16 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
   // Note. To be modified: dcsAliasMap is not needed but I can not get rid
   // of it unless the base class AliPreprocessor is modified accordingly.
 
-  TObjArray calib_array(fgkNumberOfSSD); 
-  TObjArray badch_array(fgkNumberOfSSD); 
-  TObjArray ped_array(fgkNumberOfSSD); 
+  //  TObjArray calib_array(fgkNumberOfSSD); 
+  //TObjArray badch_array(fgkNumberOfSSD); 
+  //TObjArray ped_array(fgkNumberOfSSD); 
   //Float_t noise=0, gain=0;
+  
+  //---------------------------------------
+  // initialize the calibration objects
+  AliITSNoiseSSD *calib = new AliITSNoiseSSD();
+  AliITSBadChannelsSSD *badch = new AliITSBadChannelsSSD();
+  AliITSPedestalSSD *pedel = new AliITSPedestalSSD();
   
   TString runType = GetRunType();
   if(runType == "ELECTRONICS_CALIBRATION_RUN") {
@@ -78,49 +84,6 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	// create iterator over list of LDCs (provides list of TObjString)
 	TIter next(list);
 	TObjString *ok;
-	
-	//---------------------------------------
-	// in case some module was not calibrated!
-	for(Int_t i=0; i<fgkNumberOfSSD; i++) {
-	  AliITSNoiseSSD *calib = new AliITSNoiseSSD();
-	  calib->SetMod((UShort_t) i+500);
-	  calib->SetNNoiseP(768);
-	  calib->SetNNoiseN(768);
-	  // take a reasonable averaged value for the noise on P- and N-side strips
-	  for(Int_t j=0; j<768; j++) {
-	    calib->AddNoiseP(j,1000.);
-	    calib->AddNoiseN(j,1000.);
-	  }
-	  calib_array.AddAt(calib,i);
-	}
-	//-----------------------------------------
-	//---------------------------------------
-	// in case some module was not calibrated!
-	for(Int_t i=0; i<fgkNumberOfSSD; i++) {
-	  AliITSBadChannelsSSD *badch = new AliITSBadChannelsSSD();
-	  badch->SetMod((UShort_t) i+500);
-	  badch->SetNBadPChannelsList(768);
-	  badch->SetNBadNChannelsList(768);
-	  badch_array.AddAt(badch,i);
-	}
-	//-----------------------------------------
-	
-	//---------------------------------------
-	// in case some module was not calibrated!
-	for(Int_t i=0; i<fgkNumberOfSSD; i++) {
-	  AliITSPedestalSSD *pedel = new AliITSPedestalSSD();
-	  pedel->SetMod((UShort_t) i+500);
-	  pedel->SetNPedestalP(768);
-	  pedel->SetNPedestalN(768);
-	  for(Int_t j=0; j<768; j++) {
-	    pedel->AddPedestalP(j,0.);
-	    pedel->AddPedestalN(j,0.);
-	  }
-	  ped_array.AddAt(pedel,i);
-	}
-	//-----------------------------------------
-	
-	
 	
 	// expect to iterate 3 times (LDC0, LDC1, LDC2)
 	while ( (ok = (TObjString*) next()) ) {                               
@@ -139,49 +102,47 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 		return 2;
 	    }
 	    
-	    TObjArray *cal; 
+	    AliITSNoiseSSD *cal; 
 	    f->GetObject("Noise;1", cal); 
 	    if(!cal) {
 	    	Log("File does not contain expected data for the noise!");
 		delete list;
 		return 3;
 	    }	    
-
-	    Int_t nmod = cal->GetEntries();
-	    Log(Form("\n#Mod %d", nmod ));
-	    for(Int_t mod=0; mod<nmod; mod++) {
-	      AliITSNoiseSSD *calib = (AliITSNoiseSSD*) cal->At(mod);
-	      Log(Form("\nModId %d", calib->GetMod() ));
-	      if((calib->GetMod()<500)||(calib->GetMod()>2198)) continue;
-	      calib_array.AddAt(calib,calib->GetMod()-500);
-	    }
-
-	    TObjArray *bad; 
-	    f->GetObject("BadChannels;1", bad); 
-	    if(!bad) {
-	    	Log("File does not contain expected data for bad channels  !");
-		delete list;
-		return 4;
-	    }	    
-	    nmod = bad->GetEntries();
-	    for(Int_t mod=0; mod<nmod; mod++) {
-	      AliITSBadChannelsSSD *badch = (AliITSBadChannelsSSD*) bad->At(mod);
-	      if((badch->GetMod()<500)||(badch->GetMod()>2198)) continue;
-	      badch_array.AddAt(badch,badch->GetMod()-500);
-	    }
-
-	    TObjArray *ped; 
+	    AliITSPedestalSSD *ped;
 	    f->GetObject("Pedestal;1", ped); 
 	    if(!ped) {
 	    	Log("File does not contain expected data for the pedestals!");
 		delete list;
 		return 5;
 	    }	    
-	    nmod = ped->GetEntries();
-	    for(Int_t mod=0; mod<nmod; mod++) {
-	      AliITSPedestalSSD *pedel = (AliITSPedestalSSD*) ped->At(mod);
-	      if((pedel->GetMod()<500)||(pedel->GetMod()>2198)) continue;
-	      ped_array.AddAt(pedel,pedel->GetMod()-500);
+	    AliITSBadChannelsSSD *bad;
+	    f->GetObject("BadChannels;1", bad); 
+	    if(!bad) {
+	    	Log("File does not contain expected data for bad channels  !");
+		delete list;
+		return 4;
+	    }	    
+
+	    for(Int_t module=0; module<fgkNumberOfSSD; module++) {
+	      for(Int_t strip=0; strip<768; strip++) {
+		if(cal->GetNoiseP(module,strip)) 
+		  calib->AddNoiseP(module,strip,cal->GetNoiseP(module,strip));
+		if(cal->GetNoiseN(module,strip)) 
+		  calib->AddNoiseN(module,strip,cal->GetNoiseN(module,strip));
+		if(ped->GetPedestalP(module,strip)) 
+		  pedel->AddPedestalP(module,strip,
+				      ped->GetPedestalP(module,strip));
+		if(ped->GetPedestalN(module,strip)) 
+		  pedel->AddPedestalN(module,strip,
+				      ped->GetPedestalN(module,strip));
+		if(bad->GetBadChannelP(module,strip)) 
+		  badch->AddBadChannelP(module,strip,
+					 bad->GetBadChannelP(module,strip));
+		if(bad->GetBadChannelN(module,strip)) 
+		  badch->AddBadChannelN(module,strip,
+					 bad->GetBadChannelN(module,strip));
+	      }
 	    }
 
 	    f->Close(); delete f;	    
@@ -206,17 +167,17 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
       metaData.SetResponsible("Enrico Fragiacomo");
       metaData.SetComment("Fills noise, pedestal and bad channels TObjArray");
   
-      if(!Store("Calib", "NoiseSSD", &calib_array, &metaData, 0, 1)) {
+      if(!Store("Calib", "NoiseSSD", (TObject*) &calib, &metaData, 0, 1)) {
 	Log("no store");
         return 1;
       }  
       
-      if(!Store("Calib", "BadChannelsSSD", &badch_array, &metaData, 0, 1)) {
+      if(!Store("Calib", "BadChannelsSSD", (TObject*) &badch, &metaData, 0, 1)) {
 	Log("no store");
         return 1;
       }  
       
-      if(!StoreReferenceData("Calib","PedestalSSD", &ped_array, &metaData)) {
+      if(!StoreReferenceData("Calib","PedestalSSD",  (TObject*) &pedel, &metaData)) {
 	Log("no store");
 	return 1;
       }

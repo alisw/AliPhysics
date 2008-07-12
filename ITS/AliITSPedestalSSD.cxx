@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2007-9, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                         *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,33 +13,40 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 #include "AliITSPedestalSSD.h"
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo
-// Date: 12/12/2007
+// Date: 23/08/2007
+// Modified: 08/07/2008
 //                                                  //
 //////////////////////////////////////////////////////
 
+//const Int_t AliITSPedestalSSD::fgkDefaultNModulesSSD = 1698;
+//const Int_t AliITSPedestalSSD::fgkDefaultNStripsSSD = 768;
+
 ClassImp(AliITSPedestalSSD)
-
+  
 //______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD():
-fMod(0),
-fPedP(0),
-fPedN(0) {
+  AliITSPedestalSSD::AliITSPedestalSSD()
     // Default Constructor
-}
+      //: fPedestal(new Float_t[2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD]) 
+{ 
+    for(Int_t i=0; i<2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD; i++) 
+      fPedestal[i]=0;    
+  }
 
 //______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD(const AliITSPedestalSSD &source): TObject(source),
-fMod(source.fMod),
-fPedP(source.fPedP),
-fPedN(source.fPedN) {
+AliITSPedestalSSD::AliITSPedestalSSD(const AliITSPedestalSSD &source): 
+  TObject(source)  
+				    //,  fPedestal(new Float_t[2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD])
+{
     // copy Constructor
+  memcpy(fPedestal,source.fPedestal,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Float_t));
 }
+
 //______________________________________________________________________
 AliITSPedestalSSD::~AliITSPedestalSSD(){
     // destructor
@@ -49,10 +56,10 @@ AliITSPedestalSSD::~AliITSPedestalSSD(){
 //______________________________________________________________________
 AliITSPedestalSSD& AliITSPedestalSSD::operator=(const AliITSPedestalSSD &source) {
  // ass. op.
-    if (this == &source)
-      return *this;
-    fMod = source.fMod;
-    fPedP =  source.fMod;
-    fPedN =  source.fMod;
+    if (this == &source)return *this;
+
+    memcpy(fPedestal,source.fPedestal,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Float_t));
+    
     return *this;
 }

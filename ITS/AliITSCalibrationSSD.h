@@ -23,38 +23,24 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     AliITSCalibrationSSD(const char *dataType);
     virtual ~AliITSCalibrationSSD();
 
-    virtual  void   SetNoiseParam(Double_t np, Double_t nn) {
-    	// set noise par
-    	fNoiseP=np; fNoiseN=nn;
-    }
+    virtual  void   SetNoiseParam(Double_t , Double_t ) {
+      NotImplemented("SetNoiseParam");}
+    
+    virtual void    GetNoiseParam(Double_t &, Double_t &) const {
+      NotImplemented("SetNoiseParam");}
 
-    virtual void    GetNoiseParam(Double_t &np, Double_t &nn) const {
-    	// get noise par
-    	np=fNoiseP; nn=fNoiseN;
-    }
-
-    void AddNoiseP(Int_t c, Float_t n) { fNoise->AddNoiseP(c,n);}       
-    TArrayF GetNoiseP() {return fNoise->GetNoiseP(); }
-    Float_t GetNoiseP(Int_t n) {return fNoise->GetNoiseP(n); }
-    void AddNoiseN(Int_t c, Float_t n) { fNoise->AddNoiseN(c,n);}
-    TArrayF GetNoiseN() {return fNoise->GetNoiseN(); }
-    Float_t GetNoiseN(Int_t n) {return fNoise->GetNoiseN(n); }
+    Float_t GetNoiseP(Int_t n) {return fNoise->GetNoiseP(fModule,n); }
+    Float_t GetNoiseN(Int_t n) {return fNoise->GetNoiseN(fModule,n); }
     void SetNoise( AliITSNoiseSSD* noise) {fNoise=noise;}
 
-    void AddPedestalP(Int_t c, Float_t n) { fPedestal->AddPedestalP(c,n);}       
-    TArrayF GetPedestalP() {return fPedestal->GetPedestalP(); }
-    Float_t GetPedestalP(Int_t n) {return fPedestal->GetPedestalP(n); }
-    void AddPedestalN(Int_t c, Float_t n) { fPedestal->AddPedestalN(c,n);}
-    TArrayF GetPedestalN() {return fPedestal->GetPedestalN(); }
-    Float_t GetPedestalN(Int_t n) {return fPedestal->GetPedestalN(n); }
+    Float_t GetPedestalP(Int_t n) {return fPedestal->GetPedestalP(fModule,n); }
+    Float_t GetPedestalN(Int_t n) {return fPedestal->GetPedestalN(fModule,n); }
     void SetPedestal( AliITSPedestalSSD* pedestal) {fPedestal=pedestal;}
 
-    void AddGainP(Int_t c, Float_t n) { fGain->AddGainP(c,n);}       
-    TArrayF GetGainP() {return fGain->GetGainP(); }
-    Float_t GetGainP(Int_t n) {return fGain->GetGainP(n); }
-    void AddGainN(Int_t c, Float_t n) { fGain->AddGainN(c,n);}
-    TArrayF GetGainN() {return fGain->GetGainN(); }
-    Float_t GetGainN(Int_t n) {return fGain->GetGainN(n); }
+    Float_t GetGainP(Int_t n) {return fGain->GetGainP(fModule,n); }
+    Float_t GetGainN(Int_t n) {return fGain->GetGainN(fModule,n); }
+    void SetGainP(Int_t n, Float_t value) {fGain->AddGainP(fModule,n,value);}
+    void SetGainN(Int_t n, Float_t value) {fGain->AddGainN(fModule,n,value);}
     void SetGain( AliITSGainSSD* gain) {fGain=gain;}
 
     void   SetBad() {
@@ -69,33 +55,21 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     virtual Bool_t IsChipBad(Int_t nChip) const {
       return fIsChipBad[nChip];
     }
-    Int_t ChipsPerModule() const{return fgkChipsPerModule;} // Number of chips/module
-    Int_t ChannelsPerChip() const{ return fgkChannelsPerChip;}//Number of channels/chip
+    Int_t ChipsPerModule() const{return fgkChipsPerModule;} // # chips/module
+    Int_t ChannelsPerChip() const{ return fgkChannelsPerChip;}// #channels/chip
 
-    TArrayI GetBadPChannelsList() { return fBadChannels->GetBadPChannelsList(); } const
-    TArrayI GetBadNChannelsList() { return fBadChannels->GetBadNChannelsList(); } const
-    void SetBadChannels( AliITSBadChannelsSSD* badchannels) {fBadChannels=badchannels;}
-    Int_t GetBadPChannel(Int_t n) {return fBadChannels->GetBadPChannel(n); }
-    Int_t GetBadNChannel(Int_t n) {return fBadChannels->GetBadNChannel(n); }
-    Bool_t IsPChannelBad(Int_t n) {return fBadChannels->GetBadPChannel(n)&1; }
-    Bool_t IsNChannelBad(Int_t n) {return fBadChannels->GetBadNChannel(n)&1; }
+    void SetBadChannels( AliITSBadChannelsSSD* badchannels) {
+      fBadChannels=badchannels;}
+    Char_t GetBadPChannel(Int_t n) {
+      return fBadChannels->GetBadChannelP(fModule,n); }
+    Char_t GetBadNChannel(Int_t n) {
+      return fBadChannels->GetBadChannelN(fModule,n); }
+    Bool_t IsPChannelBad(Int_t n) {
+      return fBadChannels->GetBadChannelP(fModule,n)&1; }
+    Bool_t IsNChannelBad(Int_t n) {
+      return fBadChannels->GetBadChannelN(fModule,n)&1; }
 
-    void SetNoisePThreshold(Int_t threshold) { fNoisePThreshold = threshold;}
-    void AddNoisyPChannel(Int_t c, Int_t n) { fNoisyPChannelsList.AddAt(n,c);}
-    TArrayI GetNoisyPChannelsList() const {return fNoisyPChannelsList; }
-    void SetNoiseNThreshold(Int_t threshold) { fNoiseNThreshold = threshold;}
-    void AddNoisyNChannel(Int_t c, Int_t n) { fNoisyNChannelsList.AddAt(n,c);}
-    TArrayI GetNoisyNChannelsList() const {return fNoisyNChannelsList; }
-
-    void SetNDeadPChannelsList(Int_t n) { fDeadPChannelsList.Set(n); }
-    void AddDeadPChannel(Int_t c, Int_t n) { fDeadPChannelsList.AddAt(n,c);}
-    TArrayI GetDeadPChannelsList() const {return fDeadPChannelsList; }
-    void SetNDeadNChannelsList(Int_t n) { fDeadNChannelsList.Set(n); }
-    void AddDeadNChannel(Int_t c, Int_t n) { fDeadNChannelsList.AddAt(n,c);}
-    TArrayI GetDeadNChannelsList() const {return fDeadNChannelsList; }
     //
-
-
     virtual  void   SetNDetParam(Int_t npar) {
 	// set number of param
 	fNPar=npar;
@@ -109,17 +83,13 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     }
     virtual void    GetDetParam(Double_t *dpar) const; 
 
-    virtual void    SetSigmaSpread(Double_t p1, Double_t p2) {
-    	// Set sigmas of the charge spread function: Pside-Nside
-    	// square of (microns)
-    	fSigmaP=p1; fSigmaN=p2;
-    }
-
-    virtual void    SigmaSpread(Double_t &sP, Double_t &sN) const {
-      // Get sigmas for the charge spread 
-      sP=fSigmaP; sN=fSigmaN;
-    }
-
+    virtual void    SetSigmaSpread(Double_t, Double_t) {
+      NotImplemented("SetSigmaSpread");}
+    
+    virtual void    SigmaSpread(Double_t &, Double_t &) const {
+      NotImplemented("SetSigmaSpread");}
+    
+    
     virtual void   SetThresholds(Double_t /* a */, Double_t /* b */)
       {NotImplemented("SetThresholds");}
     virtual void   Thresholds(Double_t & /* a */, Double_t & /* b */) const 
@@ -143,25 +113,20 @@ class AliITSCalibrationSSD : public AliITSCalibration {
   virtual void SetZSThreshold(Int_t zsth) 
     { ((AliITSresponseSSD*)fResponse)->SetZSThreshold(zsth);}
 
+ void SetModule(Int_t mod){fModule = mod;}
+
 protected:
 
     static const Int_t fgkChipsPerModule  = 12;    // Number of chips/module
     static const Int_t fgkChannelsPerChip = 128;   // Number of channels/chip
 
-    static const Double_t fgkNoiseNDefault; // default for fNoiseN
-    static const Double_t fgkNoisePDefault; // default for fNoiseP
     static const Int_t fgkNParDefault; // default for fNPar
-    static const Double_t fgkSigmaPDefault; //default for fSigmaP
-    static const Double_t fgkSigmaNDefault; //default for fSigmaP
 
+    Int_t fModule;          //! module number (range 0 -> 1697)
+    
     Int_t   fNPar;            // Number of detector param 
     Double_t *fDetPar;         //[fNPar] Array of parameters
 
-    Double_t fNoiseP;          // Noise on Pside
-    Double_t fNoiseN;          // Noise on Nside
-    Double_t fSigmaP;          // Sigma charge spread on Pside
-    Double_t fSigmaN;          // Sigma charge spread on Nside
-    
     AliITSNoiseSSD *fNoise;
     AliITSPedestalSSD *fPedestal;
     AliITSGainSSD *fGain;
@@ -170,27 +135,10 @@ protected:
     Bool_t   fIsBad;                         // module is dead or alive ?
     Bool_t   fIsChipBad[fgkChipsPerModule];  // chip is dead or alive ?
 
-    TArrayF fGainP;           // Gain for P side channels
-    TArrayF fGainN;           // Gain for N side channels
-
-    TArrayF fNoisP;           // Noise for P side channels
-    TArrayF fNoisN;           // Noise for N side channels
-
-    TArrayF fPedP;
-    TArrayF fPedN;
-
-    Float_t fNoisePThreshold;     // need to decide if channel is noisy  
-    TArrayI  fNoisyPChannelsList; // list of P side noisy channels
-    Float_t fNoiseNThreshold;     // need to decide if channel is noisy  
-    TArrayI  fNoisyNChannelsList; // list of N side noisy channels
-
-    TArrayI  fDeadNChannelsList;  // list of P side dead channels
-    TArrayI  fDeadPChannelsList;  // list of N side dead channels
-
  private:
     AliITSCalibrationSSD(const AliITSCalibrationSSD &source); // copy constructor
     AliITSCalibrationSSD& operator=(const AliITSCalibrationSSD &source); // ass. op.
 
     ClassDef(AliITSCalibrationSSD,3) //Response class for SSD
-};
+      };
 #endif

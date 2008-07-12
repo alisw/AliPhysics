@@ -17,7 +17,6 @@ $Id$
 #include "AliITSDDLModuleMapSDD.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSgeom.h"
-
 class TTree;
 class TBranch;
 
@@ -26,6 +25,7 @@ class TBranch;
 
 class AliITSsegmentation;
 class AliITSCalibration;
+class AliITSCalibrationSSD;
 class AliITSresponseSDD;
 class AliITSClusterFinder;
 class AliITSRawCluster;
@@ -113,6 +113,7 @@ class AliITSDetTypeRec : public TObject {
     TObjArray    *fReconstruction;//! [NDet]
     TObjArray    *fSegmentation;  //! [NDet]
     TObjArray    *fCalibration;   //! [NMod]
+    AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
     TObjArray    *fSPDDead;       //! [fgkDefaultNModulesSPD]
     TObjArray    *fPreProcess;    //! [] e.g. Find Calibration values
     TObjArray    *fPostProcess;   //! [] e.g. find primary vertex

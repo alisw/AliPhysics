@@ -74,6 +74,7 @@ fITSgeom(0),
 fReconstruction(0),
 fSegmentation(0),
 fCalibration(0),
+fSSDCalibration(0),
 fSPDDead(0),
 fPreProcess(0),
 fPostProcess(0),
@@ -102,6 +103,7 @@ fFirstcall(kTRUE){
     fDigClassName[i]=0;
     fRecPointClassName[i]=0;
   }
+  fSSDCalibration=new AliITSCalibrationSSD();
   fNdtype = new Int_t[fgkNdettypes];
   fCtype = new TObjArray(fgkNdettypes);
   fNctype = new Int_t[fgkNdettypes];
@@ -127,6 +129,7 @@ fITSgeom(rec.fITSgeom),
 fReconstruction(rec.fReconstruction),
 fSegmentation(rec.fSegmentation),
 fCalibration(rec.fCalibration),
+fSSDCalibration(rec.fSSDCalibration),
 fSPDDead(rec.fSPDDead),
 fPreProcess(rec.fPreProcess),
 fPostProcess(rec.fPostProcess),
@@ -181,7 +184,8 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
       if(fDDLMapSDD) delete fDDLMapSDD;
    }
   }
-  if(fSPDDead){
+  if(fSSDCalibration) delete fSSDCalibration;
+   if(fSPDDead){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       fSPDDead->Delete();
       delete fSPDDead;
@@ -294,7 +298,14 @@ AliITSCalibration* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod){
     return 0; 
   }  
 
-  return (AliITSCalibration*)fCalibration->At(iMod);
+  if(iMod<fgkDefaultNModulesSPD+fgkDefaultNModulesSDD){
+    return (AliITSCalibration*)fCalibration->At(iMod);
+  }else{
+    Int_t i=iMod-(fgkDefaultNModulesSPD+fgkDefaultNModulesSDD);
+    fSSDCalibration->SetModule(i);
+    return (AliITSCalibration*)fSSDCalibration;
+  }
+
 }
 //_______________________________________________________________________
 AliITSCalibration* AliITSDetTypeRec::GetSPDDeadModel(Int_t iMod){
@@ -488,19 +499,21 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   if(!cacheStatus)mapTSDD->SetObject(NULL);
   mapTSDD->SetOwner(kTRUE);
 
-  TObjArray *noiseSSD = (TObjArray *)entryNoiseSSD->GetObject();
+  AliITSNoiseSSD *noiseSSD = (AliITSNoiseSSD *)entryNoiseSSD->GetObject();
   if(!cacheStatus)entryNoiseSSD->SetObject(NULL);
   entryNoiseSSD->SetOwner(kTRUE);
 
-  TObjArray *pedestalSSD = (TObjArray *)entryPedestalSSD->GetObject();
+  AliITSPedestalSSD *pedestalSSD = 
+    (AliITSPedestalSSD*)entryPedestalSSD->GetObject();
   if(!cacheStatus)entryPedestalSSD->SetObject(NULL);
   entryPedestalSSD->SetOwner(kTRUE);
 
-  TObjArray *gainSSD = (TObjArray *)entryGainSSD->GetObject();
+  AliITSGainSSD *gainSSD = (AliITSGainSSD *)entryGainSSD->GetObject();
   if(!cacheStatus)entryGainSSD->SetObject(NULL);
   entryGainSSD->SetOwner(kTRUE);
 
-  TObjArray *badchannelsSSD = (TObjArray *)entryBadChannelsSSD->GetObject();
+  AliITSBadChannelsSSD *badchannelsSSD = 
+    (AliITSBadChannelsSSD*)entryBadChannelsSSD->GetObject();
   if(!cacheStatus)entryBadChannelsSSD->SetObject(NULL);
   entryBadChannelsSSD->SetOwner(kTRUE);
 
@@ -546,7 +559,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
 
   fNMod[0] = calSPD->GetEntries();
   fNMod[1] = calSDD->GetEntries();
-  fNMod[2] = noiseSSD->GetEntries();
+  //fNMod[2] = noiseSSD->GetEntries();
   AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
 	       fNMod[0], fNMod[1], fNMod[2]));
   AliITSCalibration* cal;
@@ -583,6 +596,16 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
       SetCalibrationModel(iMod, cal);
     }
   }
+
+  fSSDCalibration->SetResponse((AliITSresponse*)pSSD);
+  fSSDCalibration->SetNoise(noiseSSD);
+  fSSDCalibration->SetPedestal(pedestalSSD);
+  fSSDCalibration->SetGain(gainSSD);
+  fSSDCalibration->SetBadChannels(badchannelsSSD);
+  //fSSDCalibration->FillBadChipMap();
+
+
+  /*
   for (Int_t i=0; i<fNMod[2]; i++) {
 
     AliITSCalibrationSSD *calibSSD = new AliITSCalibrationSSD();
@@ -601,6 +624,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     Int_t iMod = i + fgkDefaultNModulesSPD + fgkDefaultNModulesSDD;
     SetCalibrationModel(iMod, calibSSD);
  }
+  */
 
   return kTRUE;
 }

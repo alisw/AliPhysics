@@ -23,76 +23,39 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
-const Double_t AliITSCalibrationSSD::fgkNoiseNDefault = 625.;
-const Double_t AliITSCalibrationSSD::fgkNoisePDefault = 420.;
 const Int_t AliITSCalibrationSSD::fgkNParDefault = 6;
-const Double_t AliITSCalibrationSSD::fgkSigmaPDefault = 3.;
-const Double_t AliITSCalibrationSSD::fgkSigmaNDefault = 2.;
 
 ClassImp(AliITSCalibrationSSD)
 
 //______________________________________________________________________
 AliITSCalibrationSSD::AliITSCalibrationSSD():
+  fModule(0),
 fNPar(0),
 fDetPar(0),
-fNoiseP(0),
-fNoiseN(0),
-fSigmaP(0),
-fSigmaN(0),
 fNoise(0),
 fPedestal(),
 fGain(0),
 fBadChannels(0),
-fIsBad(kFALSE),
-fGainP(0),
-fGainN(0),
-fNoisP(0),
-fNoisN(0),
-fPedP(),
-fPedN(),
-fNoisePThreshold(0),
-fNoisyPChannelsList(0),
-fNoiseNThreshold(0),
-fNoisyNChannelsList(0),
-fDeadNChannelsList(0),
-fDeadPChannelsList(0){
+fIsBad(kFALSE){
     // Default Constructor
 
-    SetNoiseParam(fgkNoisePDefault,fgkNoiseNDefault);
     for(Int_t i=0;i<fgkChipsPerModule;i++){
       fIsChipBad[i]=kFALSE;
     }
 }
 //______________________________________________________________________
 AliITSCalibrationSSD::AliITSCalibrationSSD(const char *dataType):
+  fModule(0),
 fNPar(0),
 fDetPar(0),
-fNoiseP(0),
-fNoiseN(0),
-fSigmaP(0),
-fSigmaN(0),
 fNoise(0),
 fPedestal(0),
 fGain(0),
 fBadChannels(0),
-fIsBad(kFALSE),
-fGainP(0),
-fGainN(0),
-fNoisP(0),
-fNoisN(0),
-fPedP(0),
-fPedN(0),
-fNoisePThreshold(0),
-fNoisyPChannelsList(0),
-fNoiseNThreshold(0),
-fNoisyNChannelsList(0),
-fDeadNChannelsList(0),
-fDeadPChannelsList(0){
+fIsBad(kFALSE){
     // constructor
 
-    SetNoiseParam(fgkNoisePDefault,fgkNoiseNDefault);
     SetDataType(dataType);
-    SetSigmaSpread(fgkSigmaPDefault,fgkSigmaNDefault);
     SetNDetParam(fgkNParDefault);   // Sets fNPar=6 by default.
     fDetPar = new Double_t[fNPar];
     if (fNPar==6) {

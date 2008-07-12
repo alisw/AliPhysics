@@ -73,6 +73,7 @@ TObject(),
 fSimulation(),   // [NDet]
 fSegmentation(), // [NDet]
 fCalibration(),     // [NMod]
+fSSDCalibration(0),
 fPreProcess(),   // [] e.g. Fill fHitModule with hits
 fPostProcess(),  // [] e.g. Wright Raw data
 fNSDigits(0),    //! number of SDigits
@@ -102,6 +103,7 @@ fFirstcall(kTRUE){ // flag
   fNDigits = new Int_t[fgkNdettypes];
   fDDLMapSDD=new AliITSDDLModuleMapSDD();
   fSimuPar= new AliITSSimuParam();
+  fSSDCalibration=new AliITSCalibrationSSD();
   fNMod[0] = fgkDefaultNModulesSPD;
   fNMod[1] = fgkDefaultNModulesSDD;
   fNMod[2] = fgkDefaultNModulesSSD;
@@ -138,7 +140,8 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
 	delete fCalibration;
     }
     fCalibration = 0;
-    if(fPreProcess){
+    if(fSSDCalibration) delete fSSDCalibration;
+     if(fPreProcess){
 	fPreProcess->Delete();
 	delete fPreProcess;
     }
@@ -166,6 +169,7 @@ AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &source) : TObject(sou
 fSimulation(source.fSimulation),   // [NDet]
 fSegmentation(source.fSegmentation), // [NDet]
 fCalibration(source.fCalibration),     // [NMod]
+fSSDCalibration(source.fSSDCalibration),
 fPreProcess(source.fPreProcess),   // [] e.g. Fill fHitModule with hits
 fPostProcess(source.fPostProcess),  // [] e.g. Wright Raw data
 fNSDigits(source.fNSDigits),    //! number of SDigits
@@ -364,7 +368,14 @@ AliITSCalibration* AliITSDetTypeSim::GetCalibrationModel(Int_t iMod){
 	AliError("fCalibration is 0!");
 	return 0; 
     }
-  return (AliITSCalibration*)(fCalibration->At(iMod));
+  if(iMod<fgkDefaultNModulesSPD+fgkDefaultNModulesSDD){
+    return (AliITSCalibration*)fCalibration->At(iMod);
+  }else{
+    Int_t i=iMod-(fgkDefaultNModulesSPD+fgkDefaultNModulesSDD);
+    fSSDCalibration->SetModule(i);
+    return (AliITSCalibration*)fSSDCalibration;
+  }
+
 }
 //_______________________________________________________________________
 void AliITSDetTypeSim::SetDefaults(){
@@ -476,15 +487,16 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   entrySSD->SetOwner(kTRUE);
   */
 
-  TObjArray *noiseSSD = (TObjArray *)entryNoiseSSD->GetObject();
+  AliITSNoiseSSD *noiseSSD = (AliITSNoiseSSD *)entryNoiseSSD->GetObject();
   if(!isCacheActive)entryNoiseSSD->SetObject(NULL);
   entryNoiseSSD->SetOwner(kTRUE);
 
-  TObjArray *gainSSD = (TObjArray *)entryGainSSD->GetObject();
+  AliITSGainSSD *gainSSD = (AliITSGainSSD *)entryGainSSD->GetObject();
   if(!isCacheActive)entryGainSSD->SetObject(NULL);
   entryGainSSD->SetOwner(kTRUE);
 
-  TObjArray *badchannelsSSD = (TObjArray *)entryBadChannelsSSD->GetObject();
+  AliITSBadChannelsSSD *badchannelsSSD = 
+    (AliITSBadChannelsSSD *)entryBadChannelsSSD->GetObject();
   if(!isCacheActive)entryBadChannelsSSD->SetObject(NULL);
   entryBadChannelsSSD->SetOwner(kTRUE);
 
@@ -517,7 +529,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
 
   fNMod[0] = calSPD->GetEntries();
   fNMod[1] = calSDD->GetEntries();
-  fNMod[2] = noiseSSD->GetEntries();
+  //  fNMod[2] = noiseSSD->GetEntries();
   AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
 	       fNMod[0], fNMod[1], fNMod[2]));
   AliITSCalibration* cal;
@@ -563,6 +575,14 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     }
   }
 
+  fSSDCalibration->SetResponse((AliITSresponse*)pSSD);
+  fSSDCalibration->SetNoise(noiseSSD);
+  fSSDCalibration->SetGain(gainSSD);
+  fSSDCalibration->SetBadChannels(badchannelsSSD);
+  //fSSDCalibration->FillBadChipMap();
+
+
+  /*
   for (Int_t i=0; i<fNMod[2]; i++) {
     AliITSCalibrationSSD *calibSSD = new AliITSCalibrationSSD();
     calibSSD->SetResponse((AliITSresponse*)pSSD);
@@ -577,7 +597,10 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     Int_t iMod = i + fgkDefaultNModulesSPD + fgkDefaultNModulesSDD;
     SetCalibrationModel(iMod, calibSSD);
 
- }
+    }
+  */
+
+
   return kTRUE;
 }
 //_______________________________________________________________________
