@@ -377,7 +377,7 @@ void AliVZEROv7::CreateGeometry()
 
   ///////////////////////////////////////////////////////////////////////////
   // Construct the geometry of V0A Detector. Carlos PEREZ, PUCP
-  // Revision by Lizardo VALENCIA in July 2008
+  // Revision by Lizardo VALENCIA, UNAM Mexico in July 2008
 
     const int kV0AColorSci   = 5;
     const int kV0AColorPlaIn = 3;
@@ -1901,7 +1901,7 @@ void AliVZEROv7::Init()
 //_____________________________________________________________________________
 void AliVZEROv7::StepManager()
 {
-  // Step Manager, called at each step 
+// Step Manager, called at each step  
 
   Int_t     copy;
   static    Int_t   vol[4];
@@ -1914,7 +1914,7 @@ void AliVZEROv7::StepManager()
   Float_t   destep, step;
   numStep += 1; 
 
-  //   We keep only charged tracks :
+  //   We keep only charged tracks : 
   if ( !gMC->TrackCharge() || !gMC->IsTrackAlive() ) return;
 
   vol[0]    = gMC->CurrentVolOffID(1, vol[1]);
@@ -1922,31 +1922,46 @@ void AliVZEROv7::StepManager()
   vol[3]    = copy;
   static Int_t idV0R1 = gMC->VolId("V0R1");
   static Int_t idV0L1 = gMC->VolId("V0L1");
+  static Int_t idV0L15 = gMC->VolId("V0L15");
+  static Int_t idV0L16 = gMC->VolId("V0L16");
+  static Int_t idV0L17 = gMC->VolId("V0L17");
+  static Int_t idV0L18 = gMC->VolId("V0L18");  
   static Int_t idV0R2 = gMC->VolId("V0R2");
   static Int_t idV0L2 = gMC->VolId("V0L2");
+  static Int_t idV0L25 = gMC->VolId("V0L25");
+  static Int_t idV0L26 = gMC->VolId("V0L26");
+  static Int_t idV0L27 = gMC->VolId("V0L27");
+  static Int_t idV0L28 = gMC->VolId("V0L28");
   static Int_t idV0R3 = gMC->VolId("V0R3");
   static Int_t idV0L3 = gMC->VolId("V0L3");
+  static Int_t idV0L35 = gMC->VolId("V0L35");
+  static Int_t idV0L36 = gMC->VolId("V0L36");
+  static Int_t idV0L37 = gMC->VolId("V0L37");
+  static Int_t idV0L38 = gMC->VolId("V0L38");
   static Int_t idV0R4 = gMC->VolId("V0R4");
   static Int_t idV0L4 = gMC->VolId("V0L4");
+  static Int_t idV0L45 = gMC->VolId("V0L45");
+  static Int_t idV0L46 = gMC->VolId("V0L46");
+  static Int_t idV0L47 = gMC->VolId("V0L47");
+  static Int_t idV0L48 = gMC->VolId("V0L48");
   static Int_t idV0R5 = gMC->VolId("V0R5");
   static Int_t idV0R6 = gMC->VolId("V0R6");
   bool   hitOnV0C = true;
   double lightYield;
   double lightAttenuation;
-  double nMeters;
+  double nMeters; 
   double fibToPhot;
-  if      ( gMC->CurrentVolID(copy) == idV0R1 || gMC->CurrentVolID(copy) == idV0L1 )
+  if      ( gMC->CurrentVolID(copy) == idV0R1 || gMC->CurrentVolID(copy) == idV0L1 || gMC->CurrentVolID(copy) == idV0L15 ||  gMC->CurrentVolID(copy) == idV0L16  || gMC->CurrentVolID(copy) == idV0L17  || gMC->CurrentVolID(copy) == idV0L18  )
     ringNumber = 1;
-  else if ( gMC->CurrentVolID(copy) == idV0R2 || gMC->CurrentVolID(copy) == idV0L2 )
+  else if ( gMC->CurrentVolID(copy) == idV0R2 || gMC->CurrentVolID(copy) == idV0L2 || gMC->CurrentVolID(copy) == idV0L25 || gMC->CurrentVolID(copy) == idV0L26 || gMC->CurrentVolID(copy) == idV0L27 || gMC->CurrentVolID(copy) == idV0L28 )
     ringNumber = 2;  
   else if ( gMC->CurrentVolID(copy) == idV0R3 || gMC->CurrentVolID(copy) == idV0R4
-	    || gMC->CurrentVolID(copy) == idV0L3 ) ringNumber = 3;
+	    || gMC->CurrentVolID(copy) == idV0L3 || gMC->CurrentVolID(copy) == idV0L35 || gMC->CurrentVolID(copy) == idV0L36 || gMC->CurrentVolID(copy) == idV0L37 || gMC->CurrentVolID(copy) == idV0L38 ) ringNumber = 3;
   else if ( gMC->CurrentVolID(copy) == idV0R5 || gMC->CurrentVolID(copy) == idV0R6
-	    || gMC->CurrentVolID(copy) == idV0L4 ) ringNumber = 4;	       
+	    || gMC->CurrentVolID(copy) == idV0L4 || gMC->CurrentVolID(copy) == idV0L45 || gMC->CurrentVolID(copy) == idV0L46 || gMC->CurrentVolID(copy) == idV0L47 || gMC->CurrentVolID(copy) == idV0L48 ) ringNumber = 4;	       
   else ringNumber = 0;
   if  (ringNumber) {
-    if (gMC->CurrentVolID(copy) == idV0L1 || gMC->CurrentVolID(copy) == idV0L2 ||
-	gMC->CurrentVolID(copy) == idV0L3 || gMC->CurrentVolID(copy) == idV0L4)
+    if (gMC->CurrentVolID(copy) == idV0L1 || gMC->CurrentVolID(copy) == idV0L15  || gMC->CurrentVolID(copy) == idV0L16  || gMC->CurrentVolID(copy) == idV0L17 || gMC->CurrentVolID(copy) == idV0L18 || gMC->CurrentVolID(copy) == idV0L2 || gMC->CurrentVolID(copy) == idV0L25 || gMC->CurrentVolID(copy) == idV0L26  || gMC->CurrentVolID(copy) == idV0L27  || gMC->CurrentVolID(copy) == idV0L28 || gMC->CurrentVolID(copy) == idV0L3 || gMC->CurrentVolID(copy) == idV0L35 || gMC->CurrentVolID(copy) == idV0L36 || gMC->CurrentVolID(copy) == idV0L37 || gMC->CurrentVolID(copy) == idV0L38 || gMC->CurrentVolID(copy) == idV0L4 || gMC->CurrentVolID(copy) == idV0L45 || gMC->CurrentVolID(copy) == idV0L46 || gMC->CurrentVolID(copy) == idV0L47 || gMC->CurrentVolID(copy) == idV0L48)
       hitOnV0C = false;
     destep = gMC->Edep();
     step   = gMC->TrackStep();
