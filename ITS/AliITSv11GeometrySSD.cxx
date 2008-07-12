@@ -2460,7 +2460,7 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
   const Int_t knapacitor0603number = 5;
   TGeoBBox* capacitor0603shape =  new TGeoBBox("Capacitor0603Shape",
 											 0.5*fgkSSDCapacitor0603Length,
-											 0.5*(fgkSSDCapacitor0603Width-fgkSSDTolerance),
+											 0.5*(fgkSSDCapacitor0603Width),
 											 0.5*fgkSSDCapacitor0603Height);
   TGeoVolume* capacitor0603 = new TGeoVolume("Capacitor0603",capacitor0603shape,
                                              fSSDStiffener0603CapacitorMedium); 
@@ -2469,12 +2469,12 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
       for(Int_t j=0; j<kssdstiffenernumber; j++){
             ssdhybridmother[i]->AddNode(ssdstiffener,j+1,ssdstiffenertrans[j]);
             for(Int_t k=1; k<knapacitor0603number+1; k++){
-//                  ssdhybridmother[i]->AddNode(capacitor0603,knapacitor0603number*j+k,
-  //                      new TGeoTranslation((k-3.)/6*fgkSSDStiffenerLength,
- //                                          j*ssdstiffenerseparation
- //                       +                    0.5*((j==0? 1:-1)*fgkSSDStiffenerWidth
- //                       +                    (j==0? -1:+1)*fgkSSDCapacitor0603Width),
- //                       -                    0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor0603Height)));
+                  ssdhybridmother[i]->AddNode(capacitor0603,knapacitor0603number*j+k,
+                        new TGeoTranslation((k-3.)/6*fgkSSDStiffenerLength,
+                                           j*ssdstiffenerseparation
+                        +                    0.5*((j==0? 1:-1)*fgkSSDStiffenerWidth
+                        +                    (j==0? -1:+1)*fgkSSDCapacitor0603Width),
+                        -                    0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor0603Height)));
             }
       } 
       ssdhybridmother[i]->AddNode((TGeoVolume*)ssdchipsystemlist->At(i),i+1,ssdchipsystemtrans);
@@ -2730,7 +2730,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   // Adding Cooling block to mother volume
   /////////////////////////////////////////////////////////////
    for(Int_t i=0; i<kcoolingblocknumber; i++){ 
-//	coolingsystemother->AddNode(ssdcoolingblock,i+1,coolingblockmatrix[i]);
+	coolingsystemother->AddNode(ssdcoolingblock,i+1,coolingblockmatrix[i]);
 	coolingsystemother->AddNode(coolingtube[0],i+1,coolingtubematrix[i]);
 	coolingsystemother->AddNode(coolingtube[1],i+1,coolingtubematrix[i]);
   }
@@ -3933,8 +3933,9 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChips() const{
 									xmothervertex,ymothervertex);
   ssdchipmothershape->DefineSection(0,-0.5*fgkSSDChipHeight);
   ssdchipmothershape->DefineSection(1, 0.5*fgkSSDChipHeight);
-  TGeoVolume* ssdchipmother = new TGeoVolume("SSDChipContainer",
-							  ssdchipmothershape,fSSDAir);
+//  TGeoVolume* ssdchipmother = new TGeoVolume("SSDChipContainer",
+//							  ssdchipmothershape,fSSDAir);
+  TGeoVolumeAssembly* ssdchipmother = new TGeoVolumeAssembly("SSDChipContainer");
    /////////////////////////////////////////////////////////////
   for(Int_t i=0; i<kssdchiprownumber; i++)
     for(Int_t j=0; j<fgkSSDChipNumber; j++) 
@@ -4820,7 +4821,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   TGeoXtru* downmotherladdersupportshape[fgklayernumber];
   TGeoVolume* downmotherladdersupport[fgklayernumber]; 
   TGeoXtru* upmotherladdersupportshape[fgklayernumber];
-  TGeoVolume* upmotherladdersupport[fgklayernumber]; 
+//  TGeoVolume* upmotherladdersupport[fgklayernumber]; 
+  TGeoVolumeAssembly* upmotherladdersupport[fgklayernumber];   
   char upmotheladdersupportname[30];
   char downmotheladdersupportname[30];
   for(Int_t i=0; i<fgklayernumber; i++){
@@ -4864,8 +4866,9 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 								   -			   0.5*fgkCoolingTubeSupportHeight
 								   -			   fgkSSDModuleCoolingBlockToSensor
 								   -               2.*fgkSSDModuleVerticalDisalignment);
-    upmotherladdersupport[i] = new TGeoVolume(upmotheladdersupportname,
-											  upmotherladdersupportshape[i],fSSDAir);
+	upmotherladdersupport[i] = new TGeoVolumeAssembly(upmotheladdersupportname);
+//    upmotherladdersupport[i] = new TGeoVolume(upmotheladdersupportname,
+//											  upmotherladdersupportshape[i],fSSDAir);
   }
   for(Int_t i=0; i<fgklayernumber; i++){
 	/////////////////////////
@@ -4935,7 +4938,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 		mountingblocksupportboxup[i][j]->SetLineColor(9);
 		for(Int_t k=0; k<2; k++){
 			downmotherladdersupport[i]->AddNode(mountingblocksupportboxdown[i][j],k+1,laddersupportmatrix[k]);
-			upmotherladdersupport[i]->AddNode(mountingblocksupportboxup[i][j],k+1,laddersupportmatrix[k]);
+//			upmotherladdersupport[i]->AddNode(mountingblocksupportboxup[i][j],k+1,laddersupportmatrix[k]);
 		}
 	}
 	for(Int_t k=0; k<2; k++){
@@ -4946,11 +4949,11 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	    downmotherladdersupport[i]->AddNode(mountingblockpiecedown[i],k+1,laddersupportmatrix[k]);
 		downmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidown[i],k+1,laddersupportmatrix[k]);
 		upmotherladdersupport[i]->AddNode(centermountingblocksupport[i],k+1,laddersupportmatrix[k]);
-		upmotherladdersupport[i]->AddNode(sidemountingblocksupport[i],k+1,laddersupportmatrix[k]);
-		upmotherladdersupport[i]->AddNode(sideladdersupportpiece[i],k+1,laddersupportmatrix[k]);
-		upmotherladdersupport[i]->AddNode(centerladdersupportpiece[i],k+1,laddersupportmatrix[k]);
-		upmotherladdersupport[i]->AddNode(mountingblockpieceup[i],k+1,laddersupportmatrix[k]);
-		upmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidup[i],k+1,laddersupportmatrix[k]);
+//		upmotherladdersupport[i]->AddNode(sidemountingblocksupport[i],k+1,laddersupportmatrix[k]);
+//		upmotherladdersupport[i]->AddNode(sideladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+//		upmotherladdersupport[i]->AddNode(centerladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+//		upmotherladdersupport[i]->AddNode(mountingblockpieceup[i],k+1,laddersupportmatrix[k]);
+//		upmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidup[i],k+1,laddersupportmatrix[k]);
 	}
   }
   TList* laddersupportlist = new TList();
@@ -8398,3 +8401,4 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   fCreateMaterials = kTRUE;
 }
 /////////////////////////////////////////////////////////////////////
+
