@@ -22,7 +22,7 @@ class AliITSSurveyToAlignSSD : public TObject {
 
  public:
   AliITSSurveyToAlignSSD();
-  AliITSSurveyToAlignSSD(Int_t run, Int_t reportloc, Int_t reportglob);
+  AliITSSurveyToAlignSSD(Int_t /* run */, Int_t reportloc, Int_t reportglob);
   AliITSSurveyToAlignSSD(const AliITSSurveyToAlignSSD &align); // copy constructor
   AliITSSurveyToAlignSSD &operator = (const AliITSSurveyToAlignSSD &align); //assignment operator
   Bool_t LoadSurveyData();

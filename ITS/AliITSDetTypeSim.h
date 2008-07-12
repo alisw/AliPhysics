@@ -29,6 +29,7 @@ class AliITSpListItem;
 class AliITSsimulation;
 class AliITSsegmentation;
 class AliITSresponse;
+class AliITSCalibrationSSD;
 
 class AliITSDetTypeSim : public TObject {
  public:
@@ -114,6 +115,7 @@ class AliITSDetTypeSim : public TObject {
     TObjArray    *fSimulation;   //! [NDet]
     TObjArray    *fSegmentation; //! [NDet]
     TObjArray    *fCalibration;  //! [NMod]
+    AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
     TObjArray    *fPreProcess;   //! [] e.g. Fill fHitModule with hits
     TObjArray    *fPostProcess;  //! [] e.g. Wright Raw data
     Int_t         fNSDigits;     //! number of SDigits

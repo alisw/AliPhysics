@@ -61,7 +61,7 @@ AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD() :
 }   
 
 //________________________________________________________________________
-AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(Int_t run, Int_t reportloc, Int_t reportglob) :
+AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(Int_t /* run */, Int_t reportloc, Int_t reportglob) :
   TObject(),
   fRun(0),
   fFileLoc(0x0),
@@ -86,6 +86,7 @@ AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(Int_t run, Int_t reportloc, Int_t
 //_________________________________________________________________________
 AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(const AliITSSurveyToAlignSSD &align) :
   TObject(),
+  fRun(0),
   fFileLoc(0x0),
   fFileGlob(0x0),
   fSurveyPoints(0),
