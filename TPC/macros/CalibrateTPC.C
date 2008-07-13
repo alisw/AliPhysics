@@ -24,13 +24,14 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool; 
-  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,10200);
+  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,50000);
   chain->Lookup();
   // memory
   mgr->SetNSysInfo(100); 
   //
   mgr->SetDebugLevel(1);
-  mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis("proof",chain);
+  //mgr->StartAnalysis("local",chain);
   // delete manager
   //
   delete mgr;
@@ -56,6 +57,14 @@ AliAnalysisManager * SetupCalibTask() {
   AliTracker::SetFieldMap(field,0);
   TGeoManager::Import("/u/miranov/proof/geometry.root");
   //
+  TFile f("/u/miranov/calibKr.root");
+  AliTPCCalPad *gainMap = f.Get("spectrMean");
+  gainMap->Multiply(1/gainMap->GetMedian());
+  //
+
+
+
+  //
   AliAnalysisManager *mgr=new AliAnalysisManager("TestManager");
 
   AliESDInputHandler* esdH=new AliESDInputHandler;
@@ -77,14 +86,16 @@ AliAnalysisManager * SetupCalibTask() {
   AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors");
   AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
   AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
-  calibTracks->SetDebugLevel(0);
-  calibTracks->SetStreamLevel(0);
-  calibTracksGain->SetDebugLevel(0);
-  calibTracksGain->SetStreamLevel(0);
+  calibCosmic->SetGainMap(gainMap);
+  //
+  calibTracks->SetDebugLevel(20);
+  calibTracks->SetStreamLevel(20);
+  calibTracksGain->SetDebugLevel(2);
+  calibTracksGain->SetStreamLevel(20);
   calibAlign->SetDebugLevel(20);
-  calibAlign->SetStreamLevel(2);
+  calibAlign->SetStreamLevel(10);
   calibLaser->SetDebugLevel(20);
-  calibLaser->SetStreamLevel(2);
+  calibLaser->SetStreamLevel(0);
   calibCosmic->SetDebugLevel(20);
   calibCosmic->SetStreamLevel(2);
 
@@ -92,15 +103,15 @@ AliAnalysisManager * SetupCalibTask() {
  // ---*---*-----*-*-----*----------*---
   // ADD CALIB JOBS HERE!!!!!!!!!!!!!!!!
   task1->AddJob(calibAlign);
-  task1->AddJob(calibLaser);
-  //task1->AddJob(calibCosmic);
-  //task1->AddJob(calibTracksGain);
-  //task1->AddJob(calibTracks);
+  //task1->AddJob(calibLaser);
+  task1->AddJob(calibCosmic);
+  task1->AddJob(calibTracksGain);
+  task1->AddJob(calibTracks);
   //  task1->AddJob(new AliTPCcalibBase);
   // task1->AddJob(new AliTPCcalibV0);
   // -*----*----*---*-*------*-------**--
   // -------*--*---------*-----*-------*-
-  task1->SetDebugOuputhPath("/lustre_alpha/alice/miranov/rec/laser_Rec5T/V4T/");
+  task1->SetDebugOuputhPath("/lustre_alpha/alice/miranov/rec/production/test2/V0/");
   mgr->AddTask(task1);
 
   AliAnalysisDataContainer *cinput1
