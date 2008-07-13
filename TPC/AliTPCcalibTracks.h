@@ -110,7 +110,7 @@ private:
    static Float_t GetQ(Int_t bin);
    static Float_t GetPad(Int_t bin);
    void FillResolutionHistoLocalDebugPart(AliTPCseed *track, AliTPCclusterMI *cluster0, Int_t irow, Float_t  angley, Float_t  anglez, Int_t nclFound, Int_t kDelta);
-   AliTPCClusterParam *fClusterParam; //! pointer to cluster parameterization
+   AliTPCClusterParam *fClusterParam; // pointer to cluster parameterization
    AliTPCROC *fROC;          //!
    TObjArray *fArrayAmpRow; // array with amplitudes versus row for given sector 
    TObjArray *fArrayAmp;    // array with amplitude for sectors
@@ -134,12 +134,6 @@ private:
    TH2I      *fClusterCutHisto;     // histogram showing in which padRow the clusters were cutted by which criterium
    AliTPCCalPad *fCalPadClusterPerPad;    // AliTPCCalPad showing the number of clusters per Pad
    AliTPCCalPad *fCalPadClusterPerPadRaw; // AliTPCCalPad showing the number of clusters per Pad before cuts on clusters are applied
-   TLinearFitter *fFitterLinY1;   //!
-   TLinearFitter *fFitterLinZ1;   //! 
-   TLinearFitter *fFitterLinY2;   //! 
-   TLinearFitter *fFitterLinZ2;   //!
-   TLinearFitter *fFitterParY;    //! 
-   TLinearFitter *fFitterParZ;    //!
    
 };
 

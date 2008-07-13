@@ -34,6 +34,19 @@
                Offline/HLT             Offline/HLT                    OCDB entries (AliTPCClusterParam) 
 */            
 
+/*
+
+How to retrive it from file (created using calibration task):
+
+gSystem->Load("libANALYSIS");
+gSystem->Load("libTPCcalib");
+TFile fcalib("CalibObjects.root");
+TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+AliTPCcalibTracks * calibTracks = ( AliTPCcalibTracks *)array->FindObject("calibTracks");
+
+*/
+
+
                                                                //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -94,10 +107,6 @@ using namespace std;
 #include "TPaveText.h"
 #include "TSystem.h"
 
-// Thread-stuff
-//#include "TThread.h"
-//#include "TMutex.h"
-//#include "TLockFile.h"
 
 
 ClassImp(AliTPCcalibTracks)
@@ -128,13 +137,7 @@ AliTPCcalibTracks::AliTPCcalibTracks():
   fHclusterPerPadrowRaw(0),
   fClusterCutHisto(0),
   fCalPadClusterPerPad(0),
-  fCalPadClusterPerPadRaw(0),
-  fFitterLinY1(0),   //!
-  fFitterLinZ1(0),   //! 
-  fFitterLinY2(0),   //! 
-  fFitterLinZ2(0),   //!
-  fFitterParY(0),    //! 
-  fFitterParZ(0)    //!  
+  fCalPadClusterPerPadRaw(0)
 { 
    // 
    // AliTPCcalibTracks default constructor
@@ -170,13 +173,7 @@ AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
   fHclusterPerPadrowRaw(0),
   fClusterCutHisto(0),
   fCalPadClusterPerPad(0),
-  fCalPadClusterPerPadRaw(0),
-  fFitterLinY1(0),   //!
-  fFitterLinZ1(0),   //! 
-  fFitterLinY2(0),   //! 
-  fFitterLinZ2(0),   //!
-  fFitterParY(0),    //! 
-  fFitterParZ(0)    //!  
+  fCalPadClusterPerPadRaw(0)
 {
    // 
    // AliTPCcalibTracks copy constructor
@@ -282,13 +279,7 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
   fHclusterPerPadrowRaw(0),
   fClusterCutHisto(0),
   fCalPadClusterPerPad(0),
-  fCalPadClusterPerPadRaw(0),
-  fFitterLinY1(0),   //!
-  fFitterLinZ1(0),   //! 
-  fFitterLinY2(0),   //! 
-  fFitterLinZ2(0),   //!
-  fFitterParY(0),    //! 
-  fFitterParZ(0)    //!  
+  fCalPadClusterPerPadRaw(0)
  {
    // 
    // AliTPCcalibTracks constructor
@@ -450,20 +441,6 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
       }
    }
    
-   fFitterLinY1 = new TLinearFitter (2,"pol1");
-   fFitterLinZ1 = new TLinearFitter (2,"pol1");
-   fFitterLinY2 = new TLinearFitter (2,"pol1");
-   fFitterLinZ2 = new TLinearFitter (2,"pol1");  
-   fFitterParY  = new TLinearFitter (3,"pol2");
-   fFitterParZ  = new TLinearFitter (3,"pol2");
-   //
-   fFitterLinY1->StoreData(kFALSE);
-   fFitterLinZ1->StoreData(kFALSE);
-   fFitterLinY2->StoreData(kFALSE);
-   fFitterLinZ2->StoreData(kFALSE);
-   fFitterParY->StoreData(kFALSE);
-   fFitterParZ->StoreData(kFALSE);
-
 
    if (GetDebugLevel() > 1) cout << "AliTPCcalibTracks object sucessfully constructed: " << GetName() << endl; 
    cout << "end of main constructor" << endl; // TO BE REMOVED
@@ -513,13 +490,7 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
       delete fArrayChargeVsDriftlength->At(i);
    }
    
-   delete fFitterLinY1;
-   delete fFitterLinZ1;
-   delete fFitterLinY2;
-   delete fFitterLinZ2;
-   delete fFitterParY;
-   delete fFitterParZ;
-   
+    
    delete fArrayQDY;
    delete fArrayQDZ;
    delete fArrayQRMSY;
@@ -671,6 +642,21 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
    // and to avoid redundant data
    // 
 
+  static TLinearFitter fFitterLinY1(2,"pol1");   //
+  static TLinearFitter fFitterLinZ1(2,"pol1");   // 
+  static TLinearFitter fFitterLinY2(2,"pol1");   // 
+  static TLinearFitter fFitterLinZ2(2,"pol1");   //
+  static TLinearFitter fFitterParY(3,"pol2");    // 
+  static TLinearFitter fFitterParZ(3,"pol2");    //
+
+  fFitterLinY1.StoreData(kFALSE);
+  fFitterLinZ1.StoreData(kFALSE);
+  fFitterLinY2.StoreData(kFALSE);
+  fFitterLinZ2.StoreData(kFALSE);
+  fFitterParY.StoreData(kFALSE);
+  fFitterParZ.StoreData(kFALSE);
+
+
   if (GetDebugLevel() > 5) Info("FillResolutionHistoLocal"," ***** Start of FillResolutionHistoLocal *****");
    const Int_t   kDelta    = 10;          // delta rows to fit
    const Float_t kMinRatio = 0.75;        // minimal ratio
@@ -715,27 +701,27 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       if (sector != sectorG){
          // track leaves sector before it crossed enough rows to fit / initialization
          nClusters = 0;
-         fFitterParY->ClearPoints();
-         fFitterParZ->ClearPoints();
+         fFitterParY.ClearPoints();
+         fFitterParZ.ClearPoints();
          sectorG = sector;
       }
       else {
          nClusters++;
          Double_t x = cluster0->GetX();
-         fFitterParY->AddPoint(&x, cluster0->GetY(), 1);
-         fFitterParZ->AddPoint(&x, cluster0->GetZ(), 1);
+         fFitterParY.AddPoint(&x, cluster0->GetY(), 1);
+         fFitterParZ.AddPoint(&x, cluster0->GetZ(), 1);
          //
          if ( nClusters >= kDelta + 3 ){  
          // if more than 13 (kDelta+3) clusters were added to the fitters
          // fit the tracklet, increase trackletCounter
-         fFitterParY->Eval();
-         fFitterParZ->Eval();
+         fFitterParY.Eval();
+         fFitterParZ.Eval();
          nTrackletsAll++;
-         csigmaY += fFitterParY->GetChisquare() / (nClusters - 3.);
-         csigmaZ += fFitterParZ->GetChisquare() / (nClusters - 3.);
+         csigmaY += fFitterParY.GetChisquare() / (nClusters - 3.);
+         csigmaZ += fFitterParZ.GetChisquare() / (nClusters - 3.);
          nClusters = -1;
-         fFitterParY->ClearPoints();
-         fFitterParZ->ClearPoints();
+         fFitterParY.ClearPoints();
+         fFitterParZ.ClearPoints();
          }
       }
    }      // for (Int_t irow = 0; irow < 159; irow++)
@@ -757,12 +743,12 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       Float_t xref = cluster0->GetX();
          
       // Make Fit
-      fFitterParY->ClearPoints();
-      fFitterParZ->ClearPoints();
-      fFitterLinY1->ClearPoints();
-      fFitterLinZ1->ClearPoints();
-      fFitterLinY2->ClearPoints();
-      fFitterLinZ2->ClearPoints();
+      fFitterParY.ClearPoints();
+      fFitterParZ.ClearPoints();
+      fFitterLinY1.ClearPoints();
+      fFitterLinZ1.ClearPoints();
+      fFitterLinY2.ClearPoints();
+      fFitterLinZ2.ClearPoints();
       
       // fit tracklet (clusters in given padrow +- kDelta padrows) 
       // with polynom of 2nd order and two polynoms of 1st order
@@ -785,48 +771,55 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
          nclFound++;
          if (idelta < 0){
          ncl0++;
-         fFitterLinY1->AddPoint(&x, currentCluster->GetY(), csigmaY);
-         fFitterLinZ1->AddPoint(&x, currentCluster->GetZ(), csigmaZ);
+         fFitterLinY1.AddPoint(&x, currentCluster->GetY(), csigmaY);
+         fFitterLinZ1.AddPoint(&x, currentCluster->GetZ(), csigmaZ);
          }
          if (idelta > 0){
          ncl1++;
-         fFitterLinY2->AddPoint(&x, currentCluster->GetY(), csigmaY);
-         fFitterLinZ2->AddPoint(&x, currentCluster->GetZ(), csigmaZ);
+         fFitterLinY2.AddPoint(&x, currentCluster->GetY(), csigmaY);
+         fFitterLinZ2.AddPoint(&x, currentCluster->GetZ(), csigmaZ);
          }
-         fFitterParY->AddPoint(&x, currentCluster->GetY(), csigmaY);  
-         fFitterParZ->AddPoint(&x, currentCluster->GetZ(), csigmaZ);  
+         fFitterParY.AddPoint(&x, currentCluster->GetY(), csigmaY);  
+         fFitterParZ.AddPoint(&x, currentCluster->GetZ(), csigmaZ);  
       }  // loop over neighbourhood for fitter filling 
+
+
       
       if (nclFound < kDelta * kMinRatio) fRejectedTracksHisto->Fill(10);
       if (nclFound < kDelta * kMinRatio) fClusterCutHisto->Fill(1, irow);
       if (nclFound < kDelta * kMinRatio) continue;    // if not enough clusters (7.5) found in neighbourhood goto next padrow
-      fFitterParY->Eval();
-      fFitterParZ->Eval();
-      Double_t chi2 = (fFitterParY->GetChisquare() + fFitterParZ->GetChisquare()) / (2. * nclFound - 6.);
-      if (chi2 > kCutChi2) fRejectedTracksHisto->Fill(9);
-      if (chi2 > kCutChi2) fClusterCutHisto->Fill(2, irow);
-      if (chi2 > kCutChi2) continue;   // if chi^2 is too big goto next padrow
-      
+      fFitterParY.Eval();
+      fFitterParZ.Eval();
+      Double_t chi2 = (fFitterParY.GetChisquare() + fFitterParZ.GetChisquare()) / (2. * nclFound - 6.);
+      //if (chi2 > kCutChi2) fRejectedTracksHisto->Fill(9);
+      //if (chi2 > kCutChi2) fClusterCutHisto->Fill(2, irow);
+      //if (chi2 > kCutChi2) continue;   // if chi^2 is too big goto next padrow
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      if (cstream){
+	(*cstream)<<"Cut9"<<
+	  "chi2="<<chi2<<
+	  "\n";
+      }
       // REMOVE KINK
       // only when there are enough clusters (4) in each direction
       if (ncl0 > 4){
-         fFitterLinY1->Eval();
-         fFitterLinZ1->Eval();
+         fFitterLinY1.Eval();
+         fFitterLinZ1.Eval();
       }
       if (ncl1 > 4){
-         fFitterLinY2->Eval();
-         fFitterLinZ2->Eval();
+         fFitterLinY2.Eval();
+         fFitterLinZ2.Eval();
       }
       
       if (ncl0 > 4 && ncl1 > 4){
-         fFitterLinY1->GetCovarianceMatrix(matrixY0);
-         fFitterLinY2->GetCovarianceMatrix(matrixY1);
-         fFitterLinZ1->GetCovarianceMatrix(matrixZ0);
-         fFitterLinZ2->GetCovarianceMatrix(matrixZ1);
-         fFitterLinY2->GetParameters(paramY1);
-         fFitterLinZ2->GetParameters(paramZ1);
-         fFitterLinY1->GetParameters(paramY0);
-         fFitterLinZ1->GetParameters(paramZ0);
+         fFitterLinY1.GetCovarianceMatrix(matrixY0);
+         fFitterLinY2.GetCovarianceMatrix(matrixY1);
+         fFitterLinZ1.GetCovarianceMatrix(matrixZ0);
+         fFitterLinZ2.GetCovarianceMatrix(matrixZ1);
+         fFitterLinY2.GetParameters(paramY1);
+         fFitterLinZ2.GetParameters(paramZ1);
+         fFitterLinY1.GetParameters(paramY0);
+         fFitterLinZ1.GetParameters(paramZ0);
          paramY0 -= paramY1;
          paramZ0 -= paramZ1;
          matrixY0 += matrixY1;
@@ -856,18 +849,25 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
          // add covariance matrixes and calculate chi2 of this difference
          // if this chi2 is bigger than a given threshold, assume that the current cluster is
          // a kink an goto next padrow
+
+	 TTreeSRedirector *cstream = GetDebugStreamer();
+	 if (cstream){
+	   (*cstream)<<"Cut8"<<
+	     "chi2="<<chi2<<
+	     "\n";
+	 }	 
       }
       
       // current padrow has no kink
       
       // get fit parameters from pol2 fit: 
       Double_t paramY[4], paramZ[4];
-      paramY[0] = fFitterParY->GetParameter(0);
-      paramY[1] = fFitterParY->GetParameter(1);
-      paramY[2] = fFitterParY->GetParameter(2);
-      paramZ[0] = fFitterParZ->GetParameter(0);
-      paramZ[1] = fFitterParZ->GetParameter(1);
-      paramZ[2] = fFitterParZ->GetParameter(2);    
+      paramY[0] = fFitterParY.GetParameter(0);
+      paramY[1] = fFitterParY.GetParameter(1);
+      paramY[2] = fFitterParY.GetParameter(2);
+      paramZ[0] = fFitterParZ.GetParameter(0);
+      paramZ[1] = fFitterParZ.GetParameter(1);
+      paramZ[2] = fFitterParZ.GetParameter(2);    
       
       Double_t tracky = paramY[0];
       Double_t trackz = paramZ[0];
@@ -921,8 +921,24 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       
       // Fill resolution histograms
       Bool_t useForResol = kTRUE;
-      if (fFitterParY->GetParError(0) > kErrorFraction * csigmaY) useForResol = kFALSE;
+      if (fFitterParY.GetParError(0) > kErrorFraction * csigmaY) useForResol = kFALSE;
    
+      if (cstream){
+	Float_t zdrift = 250 - TMath::Abs(cluster0->GetZ());
+	Float_t sy = cluster0->GetSigmaY2();
+	Float_t sz = cluster0->GetSigmaZ2();
+	(*cstream)<<"Resol0"<<
+	  "padSize="<<padSize<<
+	  "angley="<<angley<<
+	  "anglez="<<anglez<<
+	  "zdr="<<zdrift<<
+	  "dy="<<deltay<<
+	  "dz="<<deltaz<<
+	  "sy="<<sy<<
+	  "sz="<<sz<<
+	  "\n";
+      }
+
       if (useForResol){
          fDeltaY->Fill(deltay);
          fDeltaZ->Fill(deltaz);
@@ -965,267 +981,266 @@ void AliTPCcalibTracks::FillResolutionHistoLocalDebugPart(AliTPCseed *track, Ali
       if (cluster0->GetRow() > 63) padSize = 2; // long pads
    }
       
-      static TLinearFitter fitY0(3, "pol2");
-      static TLinearFitter fitZ0(3, "pol2");
-      static TLinearFitter fitY2(5, "hyp4");
-      static TLinearFitter fitZ2(5, "hyp4");
-      static TLinearFitter fitY2Q(5, "hyp4");
-      static TLinearFitter fitZ2Q(5, "hyp4");
-      static TLinearFitter fitY2S(5, "hyp4");
-      static TLinearFitter fitZ2S(5, "hyp4");
-      fitY0.ClearPoints();
-      fitZ0.ClearPoints();
-      fitY2.ClearPoints();
-      fitZ2.ClearPoints();
-      fitY2Q.ClearPoints();
-      fitZ2Q.ClearPoints();
-      fitY2S.ClearPoints();
-      fitZ2S.ClearPoints();
-      
-      for (Int_t idelta = -kDelta; idelta <= kDelta; idelta++){
-         // loop over irow +- kDelta rows (neighboured rows)
-         // 
-         // 
-	if (idelta == 0) continue;
-	if (idelta + irow < 0 || idelta + irow > 159) continue;   // don't go out of ROC
-	AliTPCclusterMI * cluster = track->GetClusterPointer(irow + idelta);
-	if (!cluster) continue;
-	if (cluster->GetType() < 0) continue;
-	if (cluster->GetDetector() != sector) continue;
-	Double_t x = cluster->GetX() - xref;
-	Double_t sigmaY0 = fClusterParam->GetError0Par( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(angley) );
-	Double_t sigmaZ0 = fClusterParam->GetError0Par( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(anglez) );
-	//
-	Double_t sigmaYQ = fClusterParam->GetErrorQPar( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(angley), TMath::Abs(cluster->GetMax()) );
-	Double_t sigmaZQ = fClusterParam->GetErrorQPar( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(anglez), TMath::Abs(cluster->GetMax()) );
-	Double_t sigmaYS = fClusterParam->GetErrorQParScaled( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), 
+   static TLinearFitter fitY0(3, "pol2");
+   static TLinearFitter fitZ0(3, "pol2");
+   static TLinearFitter fitY2(5, "hyp4");
+   static TLinearFitter fitZ2(5, "hyp4");
+   static TLinearFitter fitY2Q(5, "hyp4");
+   static TLinearFitter fitZ2Q(5, "hyp4");
+   static TLinearFitter fitY2S(5, "hyp4");
+   static TLinearFitter fitZ2S(5, "hyp4");
+   fitY0.ClearPoints();
+   fitZ0.ClearPoints();
+   fitY2.ClearPoints();
+   fitZ2.ClearPoints();
+   fitY2Q.ClearPoints();
+   fitZ2Q.ClearPoints();
+   fitY2S.ClearPoints();
+   fitZ2S.ClearPoints();
+   
+   for (Int_t idelta = -kDelta; idelta <= kDelta; idelta++){
+     // loop over irow +- kDelta rows (neighboured rows)
+     // 
+     // 
+     if (idelta == 0) continue;
+     if (idelta + irow < 0 || idelta + irow > 159) continue;   // don't go out of ROC
+     AliTPCclusterMI * cluster = track->GetClusterPointer(irow + idelta);
+     if (!cluster) continue;
+     if (cluster->GetType() < 0) continue;
+     if (cluster->GetDetector() != sector) continue;
+     Double_t x = cluster->GetX() - xref;
+     Double_t sigmaY0 = fClusterParam->GetError0Par( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(angley) );
+     Double_t sigmaZ0 = fClusterParam->GetError0Par( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(anglez) );
+     //
+     Double_t sigmaYQ = fClusterParam->GetErrorQPar( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(angley), TMath::Abs(cluster->GetMax()) );
+     Double_t sigmaZQ = fClusterParam->GetErrorQPar( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(anglez), TMath::Abs(cluster->GetMax()) );
+     Double_t sigmaYS = fClusterParam->GetErrorQParScaled( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), 
                                                            TMath::Abs(angley), TMath::Abs(cluster->GetMax()) );
-	Double_t sigmaZS = fClusterParam->GetErrorQParScaled( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), 
+     Double_t sigmaZS = fClusterParam->GetErrorQParScaled( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), 
                                                            TMath::Abs(anglez), TMath::Abs(cluster->GetMax()) );
-	Float_t rmsYFactor = fClusterParam->GetShapeFactor( 0, padSize,(250.0 - TMath::Abs(cluster->GetZ())),
-							   TMath::Abs(anglez), TMath::Abs(cluster->GetMax()),
-							   TMath::Sqrt(cluster0->GetSigmaY2()), 0 );
-	Float_t rmsZFactor = fClusterParam->GetShapeFactor(0, padSize,(250.0 - TMath::Abs(cluster->GetZ())),
-							   TMath::Abs(anglez), TMath::Abs(cluster->GetMax()),
-							   TMath::Sqrt(cluster0->GetSigmaZ2()),0 );
-	sigmaYS  = TMath::Sqrt(sigmaYS * sigmaYS + rmsYFactor * rmsYFactor / 12.);
-	sigmaZS  = TMath::Sqrt(sigmaZS * sigmaZS + rmsZFactor * rmsZFactor / 12. + rmsYFactor * rmsYFactor / 24.);
-	//
-	if (kDelta != 0){
-	  fitY0.AddPoint(&x, cluster->GetY(), sigmaY0);
-	  fitZ0.AddPoint(&x, cluster->GetZ(), sigmaZ0);
-	}
-	Double_t xxx[4];
-	xxx[0] = ( (idelta+irow) % 2 == 0 ) ? 1 : 0;
-	xxx[1] = x;
-	xxx[2] = ( (idelta+irow) % 2 == 0 ) ? x : 0;
-	xxx[3] = x * x;	
-	fitY2.AddPoint(xxx, cluster->GetY(), sigmaY0);
-	fitY2Q.AddPoint(xxx, cluster->GetY(), sigmaYQ);
-	fitY2S.AddPoint(xxx, cluster->GetY(), sigmaYS);
-	fitZ2.AddPoint(xxx, cluster->GetZ(), sigmaZ0);
-	fitZ2Q.AddPoint(xxx, cluster->GetZ(), sigmaZQ);
-	fitZ2S.AddPoint(xxx, cluster->GetZ(), sigmaZS);
-	//
-      }  // neigbouhood-loop
+     Float_t rmsYFactor = fClusterParam->GetShapeFactor( 0, padSize,(250.0 - TMath::Abs(cluster->GetZ())),
+							 TMath::Abs(anglez), TMath::Abs(cluster->GetMax()),
+							 TMath::Sqrt(cluster0->GetSigmaY2()), 0 );
+     Float_t rmsZFactor = fClusterParam->GetShapeFactor(0, padSize,(250.0 - TMath::Abs(cluster->GetZ())),
+							TMath::Abs(anglez), TMath::Abs(cluster->GetMax()),
+							TMath::Sqrt(cluster0->GetSigmaZ2()),0 );
+     sigmaYS  = TMath::Sqrt(sigmaYS * sigmaYS + rmsYFactor * rmsYFactor / 12.);
+     sigmaZS  = TMath::Sqrt(sigmaZS * sigmaZS + rmsZFactor * rmsZFactor / 12. + rmsYFactor * rmsYFactor / 24.);
+     //
+     if (kDelta != 0){
+       fitY0.AddPoint(&x, cluster->GetY(), sigmaY0);
+       fitZ0.AddPoint(&x, cluster->GetZ(), sigmaZ0);
+     }
+     Double_t xxx[4];
+     xxx[0] = ( (idelta+irow) % 2 == 0 ) ? 1 : 0;
+     xxx[1] = x;
+     xxx[2] = ( (idelta+irow) % 2 == 0 ) ? x : 0;
+     xxx[3] = x * x;	
+     fitY2.AddPoint(xxx, cluster->GetY(), sigmaY0);
+     fitY2Q.AddPoint(xxx, cluster->GetY(), sigmaYQ);
+     fitY2S.AddPoint(xxx, cluster->GetY(), sigmaYS);
+     fitZ2.AddPoint(xxx, cluster->GetZ(), sigmaZ0);
+     fitZ2Q.AddPoint(xxx, cluster->GetZ(), sigmaZQ);
+     fitZ2S.AddPoint(xxx, cluster->GetZ(), sigmaZS);
+     //
+   }  // neigbouhood-loop
       //
-      fitY0.Eval();
-      fitZ0.Eval();
-      fitY2.Eval();
-      fitZ2.Eval();
-      fitY2Q.Eval();
-      fitZ2Q.Eval();
-      fitY2S.Eval();
-      fitZ2S.Eval();
-      Float_t chi2Y0 = fitY0.GetChisquare() / (nclFound-3.);
-      Float_t chi2Z0 = fitZ0.GetChisquare() / (nclFound-3.);
-      Float_t chi2Y2 = fitY2.GetChisquare() / (nclFound-5.);
-      Float_t chi2Z2 = fitZ2.GetChisquare() / (nclFound-5.);
-      Float_t chi2Y2Q = fitY2Q.GetChisquare() / (nclFound-5.);
-      Float_t chi2Z2Q = fitZ2Q.GetChisquare() / (nclFound-5.);
-      Float_t chi2Y2S = fitY2S.GetChisquare() / (nclFound-5.);
-      Float_t chi2Z2S = fitZ2S.GetChisquare() / (nclFound-5.);
-      //
-      static  TVectorD    parY0(3);
-      static  TMatrixD    matY0(3, 3);
-      static  TVectorD    parZ0(3);
-      static  TMatrixD    matZ0(3, 3);
-      fitY0.GetParameters(parY0);
-      fitY0.GetCovarianceMatrix(matY0);
-      fitZ0.GetParameters(parZ0);
-      fitZ0.GetCovarianceMatrix(matZ0);
-      //
-      static  TVectorD    parY2(5);
-      static  TMatrixD    matY2(5,5);
-      static  TVectorD    parZ2(5);
-      static  TMatrixD    matZ2(5,5);
-      fitY2.GetParameters(parY2);
-      fitY2.GetCovarianceMatrix(matY2);
-      fitZ2.GetParameters(parZ2);
-      fitZ2.GetCovarianceMatrix(matZ2);
-      //
-      static  TVectorD    parY2Q(5);
-      static  TMatrixD    matY2Q(5,5);
-      static  TVectorD    parZ2Q(5);
-      static  TMatrixD    matZ2Q(5,5);
-      fitY2Q.GetParameters(parY2Q);
-      fitY2Q.GetCovarianceMatrix(matY2Q);
-      fitZ2Q.GetParameters(parZ2Q);
-      fitZ2Q.GetCovarianceMatrix(matZ2Q);
-      static  TVectorD    parY2S(5);
-      static  TMatrixD    matY2S(5,5);
-      static  TVectorD    parZ2S(5);
-      static  TMatrixD    matZ2S(5,5);
-      fitY2S.GetParameters(parY2S);
-      fitY2S.GetCovarianceMatrix(matY2S);
-      fitZ2S.GetParameters(parZ2S);
-      fitZ2S.GetCovarianceMatrix(matZ2S);
-      Float_t sigmaY0   = TMath::Sqrt(matY0(0,0));
-      Float_t sigmaZ0   = TMath::Sqrt(matZ0(0,0));
-      Float_t sigmaDY0  = TMath::Sqrt(matY0(1,1));
-      Float_t sigmaDZ0  = TMath::Sqrt(matZ0(1,1));
-      Float_t sigmaY2   = TMath::Sqrt(matY2(1,1));
-      Float_t sigmaZ2   = TMath::Sqrt(matZ2(1,1));
-      Float_t sigmaDY2  = TMath::Sqrt(matY2(3,3));
-      Float_t sigmaDZ2  = TMath::Sqrt(matZ2(3,3));
-      Float_t sigmaY2Q  = TMath::Sqrt(matY2Q(1,1));
-      Float_t sigmaZ2Q  = TMath::Sqrt(matZ2Q(1,1));
-      Float_t sigmaDY2Q = TMath::Sqrt(matY2Q(3,3));
-      Float_t sigmaDZ2Q = TMath::Sqrt(matZ2Q(3,3));
-      Float_t sigmaY2S  = TMath::Sqrt(matY2S(1,1));
-      Float_t sigmaZ2S  = TMath::Sqrt(matZ2S(1,1));
-      Float_t sigmaDY2S = TMath::Sqrt(matY2S(3,3));
-      Float_t sigmaDZ2S = TMath::Sqrt(matZ2S(3,3));
-      
-      // Error parameters
-      Float_t csigmaY0 = fClusterParam->GetError0Par(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),TMath::Abs(angley));
-      Float_t csigmaZ0 = fClusterParam->GetError0Par(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),TMath::Abs(anglez));
-      //
-      Float_t csigmaYQ = fClusterParam->GetErrorQPar(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						     TMath::Abs(angley), TMath::Abs(cluster0->GetMax()));
-      Float_t csigmaZQ = fClusterParam->GetErrorQPar(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						       TMath::Abs(anglez),TMath::Abs(cluster0->GetMax()));
-      Float_t csigmaYS = fClusterParam->GetErrorQParScaled(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						     TMath::Abs(angley), TMath::Abs(cluster0->GetMax()));
-      Float_t csigmaZS = fClusterParam->GetErrorQParScaled(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						       TMath::Abs(anglez),TMath::Abs(cluster0->GetMax()));
-
-
-      // RMS parameters
-      Float_t meanRMSY = 0;
-      Float_t meanRMSZ = 0;
-      Int_t   nclRMS = 0;
-      for (Int_t idelta = -2; idelta <= 2; idelta++){
-        // loop over neighbourhood
-	if (idelta+irow < 0 || idelta+irow > 159) continue;
-// 	if (idelta+irow>159) continue;
-	AliTPCclusterMI * cluster = track->GetClusterPointer(irow+idelta);
-	if (!cluster) continue;
-	meanRMSY += TMath::Sqrt(cluster->GetSigmaY2());
-	meanRMSZ += TMath::Sqrt(cluster->GetSigmaZ2());
-	nclRMS++;
-      }
-      meanRMSY /= nclRMS; 
-      meanRMSZ /= nclRMS; 
-
-      Float_t rmsY      = TMath::Sqrt(cluster0->GetSigmaY2());  
-      Float_t rmsZ      = TMath::Sqrt(cluster0->GetSigmaZ2());
-      Float_t rmsYT     = fClusterParam->GetRMSQ(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						TMath::Abs(angley), TMath::Abs(cluster0->GetMax()));
-      Float_t rmsZT     = fClusterParam->GetRMSQ(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()));
-      Float_t rmsYT0    = fClusterParam->GetRMS0(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						 TMath::Abs(angley));
-      Float_t rmsZT0    = fClusterParam->GetRMS0(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+   fitY0.Eval();
+   fitZ0.Eval();
+   fitY2.Eval();
+   fitZ2.Eval();
+   fitY2Q.Eval();
+   fitZ2Q.Eval();
+   fitY2S.Eval();
+   fitZ2S.Eval();
+   Float_t chi2Y0 = fitY0.GetChisquare() / (nclFound-3.);
+   Float_t chi2Z0 = fitZ0.GetChisquare() / (nclFound-3.);
+   Float_t chi2Y2 = fitY2.GetChisquare() / (nclFound-5.);
+   Float_t chi2Z2 = fitZ2.GetChisquare() / (nclFound-5.);
+   Float_t chi2Y2Q = fitY2Q.GetChisquare() / (nclFound-5.);
+   Float_t chi2Z2Q = fitZ2Q.GetChisquare() / (nclFound-5.);
+   Float_t chi2Y2S = fitY2S.GetChisquare() / (nclFound-5.);
+   Float_t chi2Z2S = fitZ2S.GetChisquare() / (nclFound-5.);
+   //
+   static  TVectorD    parY0(3);
+   static  TMatrixD    matY0(3, 3);
+   static  TVectorD    parZ0(3);
+   static  TMatrixD    matZ0(3, 3);
+   fitY0.GetParameters(parY0);
+   fitY0.GetCovarianceMatrix(matY0);
+   fitZ0.GetParameters(parZ0);
+   fitZ0.GetCovarianceMatrix(matZ0);
+   //
+   static  TVectorD    parY2(5);
+   static  TMatrixD    matY2(5,5);
+   static  TVectorD    parZ2(5);
+   static  TMatrixD    matZ2(5,5);
+   fitY2.GetParameters(parY2);
+   fitY2.GetCovarianceMatrix(matY2);
+   fitZ2.GetParameters(parZ2);
+   fitZ2.GetCovarianceMatrix(matZ2);
+   //
+   static  TVectorD    parY2Q(5);
+   static  TMatrixD    matY2Q(5,5);
+   static  TVectorD    parZ2Q(5);
+   static  TMatrixD    matZ2Q(5,5);
+   fitY2Q.GetParameters(parY2Q);
+   fitY2Q.GetCovarianceMatrix(matY2Q);
+   fitZ2Q.GetParameters(parZ2Q);
+   fitZ2Q.GetCovarianceMatrix(matZ2Q);
+   static  TVectorD    parY2S(5);
+   static  TMatrixD    matY2S(5,5);
+   static  TVectorD    parZ2S(5);
+   static  TMatrixD    matZ2S(5,5);
+   fitY2S.GetParameters(parY2S);
+   fitY2S.GetCovarianceMatrix(matY2S);
+   fitZ2S.GetParameters(parZ2S);
+   fitZ2S.GetCovarianceMatrix(matZ2S);
+   Float_t sigmaY0   = TMath::Sqrt(matY0(0,0));
+   Float_t sigmaZ0   = TMath::Sqrt(matZ0(0,0));
+   Float_t sigmaDY0  = TMath::Sqrt(matY0(1,1));
+   Float_t sigmaDZ0  = TMath::Sqrt(matZ0(1,1));
+   Float_t sigmaY2   = TMath::Sqrt(matY2(1,1));
+   Float_t sigmaZ2   = TMath::Sqrt(matZ2(1,1));
+   Float_t sigmaDY2  = TMath::Sqrt(matY2(3,3));
+   Float_t sigmaDZ2  = TMath::Sqrt(matZ2(3,3));
+   Float_t sigmaY2Q  = TMath::Sqrt(matY2Q(1,1));
+   Float_t sigmaZ2Q  = TMath::Sqrt(matZ2Q(1,1));
+   Float_t sigmaDY2Q = TMath::Sqrt(matY2Q(3,3));
+   Float_t sigmaDZ2Q = TMath::Sqrt(matZ2Q(3,3));
+   Float_t sigmaY2S  = TMath::Sqrt(matY2S(1,1));
+   Float_t sigmaZ2S  = TMath::Sqrt(matZ2S(1,1));
+   Float_t sigmaDY2S = TMath::Sqrt(matY2S(3,3));
+   Float_t sigmaDZ2S = TMath::Sqrt(matZ2S(3,3));
+   
+   // Error parameters
+   Float_t csigmaY0 = fClusterParam->GetError0Par(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),TMath::Abs(angley));
+   Float_t csigmaZ0 = fClusterParam->GetError0Par(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),TMath::Abs(anglez));
+   //
+   Float_t csigmaYQ = fClusterParam->GetErrorQPar(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+						  TMath::Abs(angley), TMath::Abs(cluster0->GetMax()));
+   Float_t csigmaZQ = fClusterParam->GetErrorQPar(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+						  TMath::Abs(anglez),TMath::Abs(cluster0->GetMax()));
+   Float_t csigmaYS = fClusterParam->GetErrorQParScaled(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+							TMath::Abs(angley), TMath::Abs(cluster0->GetMax()));
+   Float_t csigmaZS = fClusterParam->GetErrorQParScaled(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+							TMath::Abs(anglez),TMath::Abs(cluster0->GetMax()));
+   
+   
+   // RMS parameters
+   Float_t meanRMSY = 0;
+   Float_t meanRMSZ = 0;
+   Int_t   nclRMS = 0;
+   for (Int_t idelta = -2; idelta <= 2; idelta++){
+     // loop over neighbourhood
+     if (idelta+irow < 0 || idelta+irow > 159) continue;
+     // 	if (idelta+irow>159) continue;
+     AliTPCclusterMI * cluster = track->GetClusterPointer(irow+idelta);
+     if (!cluster) continue;
+     meanRMSY += TMath::Sqrt(cluster->GetSigmaY2());
+     meanRMSZ += TMath::Sqrt(cluster->GetSigmaZ2());
+     nclRMS++;
+   }
+   meanRMSY /= nclRMS; 
+   meanRMSZ /= nclRMS; 
+   
+   Float_t rmsY      = TMath::Sqrt(cluster0->GetSigmaY2());  
+   Float_t rmsZ      = TMath::Sqrt(cluster0->GetSigmaZ2());
+   Float_t rmsYT     = fClusterParam->GetRMSQ(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+					      TMath::Abs(angley), TMath::Abs(cluster0->GetMax()));
+   Float_t rmsZT     = fClusterParam->GetRMSQ(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+					      TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()));
+   Float_t rmsYT0    = fClusterParam->GetRMS0(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+					      TMath::Abs(angley));
+   Float_t rmsZT0    = fClusterParam->GetRMS0(1,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
 						 TMath::Abs(anglez));
-      Float_t rmsYSigma = fClusterParam->GetRMSSigma(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						     TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()));
-      Float_t rmsZSigma = fClusterParam->GetRMSSigma(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-						     TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()));
-      Float_t rmsYFactor = fClusterParam->GetShapeFactor(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-							 TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()),
-							 rmsY,meanRMSY);
-      Float_t rmsZFactor = fClusterParam->GetShapeFactor(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
-							 TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()),
-							 rmsZ,meanRMSZ);
-      //
-      // cluster debug
-      TTreeSRedirector *cstream = GetDebugStreamer();
-      if (cstream){
-	(*cstream)<<"ResolCl"<<	// valgrind 3   40,000 bytes in 1 blocks are possibly 
-	  "Sector="<<sector<<
-	  "Cl.="<<cluster0<<
-	  "CSigmaY0="<<csigmaY0<<   // cluster errorY
-	  "CSigmaYQ="<<csigmaYQ<<   // cluster errorY - q scaled
-	  "CSigmaYS="<<csigmaYS<<   // cluster errorY - q scaled
-	  "CSigmaZ0="<<csigmaZ0<<   // 
-	  "CSigmaZQ="<<csigmaZQ<<
-	  "CSigmaZS="<<csigmaZS<<
-	  "shapeYF="<<rmsYFactor<<
-	  "shapeZF="<<rmsZFactor<<
-	  "rmsY="<<rmsY<<
-	  "rmsZ="<<rmsZ<<
-	  "rmsYM="<<meanRMSY<<
-	  "rmsZM="<<meanRMSZ<<
-	  "rmsYT="<<rmsYT<<
-	  "rmsZT="<<rmsZT<<
-	  "rmsYT0="<<rmsYT0<<
-	  "rmsZT0="<<rmsZT0<<
-	  "rmsYS="<<rmsYSigma<<  
-	  "rmsZS="<<rmsZSigma<<
-	  "padSize="<<padSize<<
-	  "Ncl="<<nclFound<<	
-	  "PY0.="<<&parY0<<
-	  "PZ0.="<<&parZ0<<
-	  "SigmaY0="<<sigmaY0<< 
-	  "SigmaZ0="<<sigmaZ0<< 
-	  "angley="<<angley<<
-	  "anglez="<<anglez<<
-	  "\n";
-	
-	//       tracklet dubug
-	(*cstream)<<"ResolTr"<<	
-	  "padSize="<<padSize<<
-	  "IPad="<<padSize<<
-	  "Sector="<<sector<<
-	  "Ncl="<<nclFound<<	
-	  "chi2Y0="<<chi2Y0<<
-	  "chi2Z0="<<chi2Z0<<
-	  "chi2Y2="<<chi2Y2<<
-	  "chi2Z2="<<chi2Z2<<
-	  "chi2Y2Q="<<chi2Y2Q<<
-	  "chi2Z2Q="<<chi2Z2Q<<
-	  "chi2Y2S="<<chi2Y2S<<
-	  "chi2Z2S="<<chi2Z2S<<
-	  "PY0.="<<&parY0<<
-	  "PZ0.="<<&parZ0<<
-	  "PY2.="<<&parY2<<
-	  "PZ2.="<<&parZ2<<
-	  "PY2Q.="<<&parY2Q<<
-	  "PZ2Q.="<<&parZ2Q<<
-	  "PY2S.="<<&parY2S<<
-	  "PZ2S.="<<&parZ2S<<
-	  "SigmaY0="<<sigmaY0<< 
-	  "SigmaZ0="<<sigmaZ0<< 
-	  "SigmaDY0="<<sigmaDY0<< 
-	  "SigmaDZ0="<<sigmaDZ0<< 
-	  "SigmaY2="<<sigmaY2<< 
-	  "SigmaZ2="<<sigmaZ2<< 
-	  "SigmaDY2="<<sigmaDY2<< 
-	  "SigmaDZ2="<<sigmaDZ2<< 
-	  "SigmaY2Q="<<sigmaY2Q<< 
-	  "SigmaZ2Q="<<sigmaZ2Q<< 
-	  "SigmaDY2Q="<<sigmaDY2Q<< 
-	  "SigmaDZ2Q="<<sigmaDZ2Q<< 
-	  "SigmaY2S="<<sigmaY2S<< 
-	  "SigmaZ2S="<<sigmaZ2S<< 
-	  "SigmaDY2S="<<sigmaDY2S<< 
-	  "SigmaDZ2S="<<sigmaDZ2S<< 
-	  "angley="<<angley<<
-	  "anglez="<<anglez<<
-	  "\n";
-      }
-
+   Float_t rmsYSigma = fClusterParam->GetRMSSigma(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+						  TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()));
+   Float_t rmsZSigma = fClusterParam->GetRMSSigma(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+						  TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()));
+   Float_t rmsYFactor = fClusterParam->GetShapeFactor(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+						      TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()),
+						      rmsY,meanRMSY);
+   Float_t rmsZFactor = fClusterParam->GetShapeFactor(0,padSize,(250.0-TMath::Abs(cluster0->GetZ())),
+						      TMath::Abs(anglez), TMath::Abs(cluster0->GetMax()),
+						      rmsZ,meanRMSZ);
+   //
+   // cluster debug
+   TTreeSRedirector *cstream = GetDebugStreamer();
+   if (cstream){
+     (*cstream)<<"ResolCl"<<	// valgrind 3   40,000 bytes in 1 blocks are possibly 
+       "Sector="<<sector<<
+       "Cl.="<<cluster0<<
+       "CSigmaY0="<<csigmaY0<<   // cluster errorY
+       "CSigmaYQ="<<csigmaYQ<<   // cluster errorY - q scaled
+       "CSigmaYS="<<csigmaYS<<   // cluster errorY - q scaled
+       "CSigmaZ0="<<csigmaZ0<<   // 
+       "CSigmaZQ="<<csigmaZQ<<
+       "CSigmaZS="<<csigmaZS<<
+       "shapeYF="<<rmsYFactor<<
+       "shapeZF="<<rmsZFactor<<
+       "rmsY="<<rmsY<<
+       "rmsZ="<<rmsZ<<
+       "rmsYM="<<meanRMSY<<
+       "rmsZM="<<meanRMSZ<<
+       "rmsYT="<<rmsYT<<
+       "rmsZT="<<rmsZT<<
+       "rmsYT0="<<rmsYT0<<
+       "rmsZT0="<<rmsZT0<<
+       "rmsYS="<<rmsYSigma<<  
+       "rmsZS="<<rmsZSigma<<
+       "padSize="<<padSize<<
+       "Ncl="<<nclFound<<	
+       "PY0.="<<&parY0<<
+       "PZ0.="<<&parZ0<<
+       "SigmaY0="<<sigmaY0<< 
+       "SigmaZ0="<<sigmaZ0<< 
+       "angley="<<angley<<
+       "anglez="<<anglez<<
+       "\n";
+     
+     //       tracklet dubug
+     (*cstream)<<"ResolTr"<<	
+       "padSize="<<padSize<<
+       "IPad="<<padSize<<
+       "Sector="<<sector<<
+       "Ncl="<<nclFound<<	
+       "chi2Y0="<<chi2Y0<<
+       "chi2Z0="<<chi2Z0<<
+       "chi2Y2="<<chi2Y2<<
+       "chi2Z2="<<chi2Z2<<
+       "chi2Y2Q="<<chi2Y2Q<<
+       "chi2Z2Q="<<chi2Z2Q<<
+       "chi2Y2S="<<chi2Y2S<<
+       "chi2Z2S="<<chi2Z2S<<
+       "PY0.="<<&parY0<<
+       "PZ0.="<<&parZ0<<
+       "PY2.="<<&parY2<<
+       "PZ2.="<<&parZ2<<
+       "PY2Q.="<<&parY2Q<<
+       "PZ2Q.="<<&parZ2Q<<
+       "PY2S.="<<&parY2S<<
+       "PZ2S.="<<&parZ2S<<
+       "SigmaY0="<<sigmaY0<< 
+       "SigmaZ0="<<sigmaZ0<< 
+       "SigmaDY0="<<sigmaDY0<< 
+       "SigmaDZ0="<<sigmaDZ0<< 
+       "SigmaY2="<<sigmaY2<< 
+       "SigmaZ2="<<sigmaZ2<< 
+       "SigmaDY2="<<sigmaDY2<< 
+       "SigmaDZ2="<<sigmaDZ2<< 
+       "SigmaY2Q="<<sigmaY2Q<< 
+       "SigmaZ2Q="<<sigmaZ2Q<< 
+       "SigmaDY2Q="<<sigmaDY2Q<< 
+       "SigmaDZ2Q="<<sigmaDZ2Q<< 
+       "SigmaY2S="<<sigmaY2S<< 
+       "SigmaZ2S="<<sigmaZ2S<< 
+       "SigmaDY2S="<<sigmaDY2S<< 
+       "SigmaDZ2S="<<sigmaDZ2S<< 
+       "angley="<<angley<<
+       "anglez="<<anglez<<
+       "\n";
+   }  
 }
 
 
