@@ -118,6 +118,7 @@
 #include <TIterator.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
+#include <TProof.h>
 
 //
 // AliRoot includes
@@ -407,8 +408,29 @@ void AliTPCcalibTracksGain::Process(AliTPCseed* seed) {
    // is added.
    //
    
+
    fTotalTracks++;
    if (!fCuts->AcceptTrack(seed)) return;
+   //
+   // reinint on proof
+   //   if (gProof){
+     static Bool_t doinit= kTRUE;
+     if (doinit){
+       fSimpleFitter = new AliTPCFitPad(8, "hyp7", "");
+       fSqrtFitter   = new AliTPCFitPad(8, "hyp7", "");
+       fLogFitter    = new AliTPCFitPad(8, "hyp7", "");
+       fSingleSectorFitter = new AliTPCFitPad(8, "hyp7", "");
+       // 
+       fFitter0M      = new TLinearFitter(45,"hyp44");
+       fFitter1M      = new TLinearFitter(45,"hyp44");
+       fFitter2M      = new TLinearFitter(45,"hyp44");
+       fFitter0T      = new TLinearFitter(45,"hyp44");
+       fFitter1T      = new TLinearFitter(45,"hyp44");
+       fFitter2T      = new TLinearFitter(45,"hyp44");
+       doinit=kTRUE;
+     }
+     //}
+
    fAcceptedTracks++;
    AddTrack(seed);
 }
