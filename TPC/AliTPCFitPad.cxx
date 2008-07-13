@@ -111,16 +111,17 @@ TLinearFitter* AliTPCFitPad::GetFitter(UInt_t segment, UInt_t padType, Bool_t wo
    //
 
    TLinearFitter* fitter = GetFitterSimple(segment, padType);
-   if (fitter == 0) {
-      SetObject(new TLinearFitter(fNdim, fFormula, fOpt), segment, padType);
-      fitter = (TLinearFitter*)(GetObject(segment, padType));
-      if (workaround) {
-         Double_t x[1000];
-         for (Int_t i = 0; i < fNdim; i++) x[i] = 3.141592;
-         fitter->AddPoint(x, 31.41592);
-         fitter->ClearPoints();
-         //cout << "workaround called for " << segment << ", " << padType << endl;
-      }
+   if (fitter == 0 || fitter->GetNumberTotalParameters() !=fNdim) {
+     fitter = new TLinearFitter(fNdim, fFormula, fOpt);
+     SetObject(fitter, segment, padType);
+     fitter = (TLinearFitter*)(GetObject(segment, padType));
+     if (workaround) {
+       Double_t x[1000];
+       for (Int_t i = 0; i < fNdim; i++) x[i] = 3.141592;
+       fitter->AddPoint(x, 31.41592);
+       fitter->ClearPoints();
+       //cout << "workaround called for " << segment << ", " << padType << endl;
+     }
    }
    return fitter;
 }

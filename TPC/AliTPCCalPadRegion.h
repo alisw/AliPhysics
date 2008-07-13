@@ -20,8 +20,7 @@ public:
    
    virtual TObject*   GetObject(UInt_t segment, UInt_t padType)
       { return BoundsOk("GetObject", segment, padType) ? fObjects->At(segment+fgkNSegments*padType) : 0x0; }
-   virtual void       SetObject(TObject* obj, UInt_t segment, UInt_t padType)
-      { if (BoundsOk("SetObject", segment, padType)) fObjects->AddAt(obj, segment+fgkNSegments*padType); }
+  virtual void       SetObject(TObject* obj, UInt_t segment, UInt_t padType);
   virtual void       Delete(Option_t* option = "") { if (fObjects) fObjects->Delete(option); }
    virtual TIterator* MakeIterator(Bool_t direction = kIterForward) const { return fObjects->MakeIterator(direction); }
    static  UInt_t     GetNSegments() { return fgkNSegments; }

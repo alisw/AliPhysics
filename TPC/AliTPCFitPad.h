@@ -16,7 +16,7 @@ class TString;
 class AliTPCFitPad: public AliTPCCalPadRegion {
 public:
   AliTPCFitPad() : AliTPCCalPadRegion(), fNdim(0), fFormula(0), fOpt(0) {}   
-   AliTPCFitPad(const AliTPCFitPad& obj) : AliTPCCalPadRegion(obj), fNdim(obj.fNdim), fFormula(obj.fFormula), fOpt(obj.fOpt) { }
+  AliTPCFitPad(const AliTPCFitPad& obj);
    AliTPCFitPad(Int_t ndim, const char* formula, Option_t* opt = "D");
    AliTPCFitPad& operator=(const AliTPCFitPad& rhs);
    virtual ~AliTPCFitPad();
@@ -26,7 +26,7 @@ public:
    TLinearFitter* GetFitterSimple(UInt_t segment, UInt_t padType);
    Int_t          Evaluate(Bool_t robust = kFALSE, Double_t frac = -1.);
 
-protected:
+public:
    Int_t   fNdim;         // used for generating new TLinearFitter objects
    TString fFormula;      // used for generating new TLinearFitter objects
    TString fOpt;          // used for generating new TLinearFitter objects

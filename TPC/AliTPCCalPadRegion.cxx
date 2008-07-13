@@ -55,6 +55,7 @@ AliTPCCalPadRegion::AliTPCCalPadRegion(const char *name, const char *title) :
    //
 
    fObjects = new TObjArray(fgkNSegments * fgkNPadTypes);
+   fObjects->SetOwner(kTRUE);
 }
 
 AliTPCCalPadRegion::AliTPCCalPadRegion(const AliTPCCalPadRegion& obj) :
@@ -66,6 +67,7 @@ AliTPCCalPadRegion::AliTPCCalPadRegion(const AliTPCCalPadRegion& obj) :
    //
 
    fObjects = new TObjArray(*(obj.fObjects));
+   fObjects->SetOwner(kTRUE);
 }
 
 AliTPCCalPadRegion& AliTPCCalPadRegion::operator=(const AliTPCCalPadRegion& rhs) {
@@ -79,6 +81,17 @@ AliTPCCalPadRegion& AliTPCCalPadRegion::operator=(const AliTPCCalPadRegion& rhs)
    }
    return *this;
 }
+
+
+void       AliTPCCalPadRegion::SetObject(TObject* obj, UInt_t segment, UInt_t padType)
+{ 
+  if (BoundsOk("SetObject", segment, padType)){ 
+    if (segment+fgkNSegments*padType>fObjects->GetEntriesFast()) fObjects->Expand(2*(segment+fgkNSegments*padType));
+    fObjects->AddAt(obj, segment+fgkNSegments*padType); 
+  }
+}
+
+
 
 void AliTPCCalPadRegion::GetPadRegionCenterLocal(UInt_t padType, Double_t* xy) {
    //
