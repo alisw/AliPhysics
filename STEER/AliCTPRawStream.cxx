@@ -35,6 +35,11 @@ ClassImp(AliCTPRawStream)
 //_____________________________________________________________________________
 AliCTPRawStream::AliCTPRawStream(AliRawReader* rawReader) :
   fIRArray("AliTriggerIR",3),
+  fOrbit(0),
+  fBC(0),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0),
   fClassMask(0),
   fClusterMask(0),
   fRawReader(rawReader)
@@ -52,6 +57,11 @@ AliCTPRawStream::AliCTPRawStream(AliRawReader* rawReader) :
 AliCTPRawStream::AliCTPRawStream(const AliCTPRawStream& stream) :
   TObject(stream),
   fIRArray("AliTriggerIR",3),
+  fOrbit(0),
+  fBC(0),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0),
   fClassMask(0),
   fClusterMask(0),
   fRawReader(NULL)
@@ -109,6 +119,14 @@ Bool_t AliCTPRawStream::Next()
     return kFALSE;
   }
 
+  fBC = data[0];
+  fBC |= (data[1] & 0xF) << 8;
+
+  fOrbit = data[4] << 12;
+  fOrbit |= (data[5] & 0xF) << 20;
+  fOrbit |= data[8];
+  fOrbit |= (data[9] & 0xF) << 8;
+
   fClusterMask = data[12] >> 2;
 
   fClassMask =  ((ULong64_t)data[12] & 0x3) << 48;
@@ -126,17 +144,43 @@ Bool_t AliCTPRawStream::Next()
   fClassMask |= ((ULong64_t)data[29] & 0xF) << 8;
 
   if (fRawReader->GetDataSize() == 32) {
-    AliDebug(1,"No interaction records found");
+    AliDebug(1,"No trigger input and interaction records found");
     fRawReader->RequireHeader(kTRUE);
     return kTRUE;
   }
 
+  // Read detector trigger inputs
+  if (fRawReader->GetDataSize() < 52) {
+    AliError(Form("Wrong CTP raw data size: %d",fRawReader->GetDataSize()));
+    fRawReader->RequireHeader(kTRUE);
+    return kFALSE;
+  }
+
+  fL0TriggerInputs = data[32] << 12;
+  fL0TriggerInputs |= (data[33] & 0xF) << 20;
+  fL0TriggerInputs |= data[36];
+  fL0TriggerInputs |= (data[37] & 0xF) << 8;
+
+  fL1TriggerInputs = data[40] << 12;
+  fL1TriggerInputs |= (data[41] & 0xF) << 20;
+  fL1TriggerInputs |= data[44];
+  fL1TriggerInputs |= (data[45] & 0xF) << 8;
+
+  fL2TriggerInputs = data[48] << 12;
+  fL2TriggerInputs |= (data[49] & 0xF) << 20;
+
+  if (fRawReader->GetDataSize() == 52) {
+    AliDebug(1,"No interaction records found");
+    fRawReader->RequireHeader(kTRUE);
+    return kFALSE;
+  }
+
   // Read IRs
-  Int_t iword = 32;
+  Int_t iword = 52;
   UChar_t level = 0;
   UInt_t *irdata = NULL;
   UInt_t irsize = 0;
-  UShort_t orbit = 0;
+  UInt_t orbit = 0;
   Bool_t incomplete = kFALSE, transerr = kFALSE;
   while (iword < fRawReader->GetDataSize()) {
     if (data[iword+1] & 0x80) {

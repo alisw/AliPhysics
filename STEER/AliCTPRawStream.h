@@ -25,6 +25,13 @@ class AliCTPRawStream: public TObject {
     virtual void             Reset();
     virtual Bool_t           Next();
 
+    UInt_t    GetOrbitID() const { return fOrbit; }
+    UShort_t  GetBCID()    const { return fBC; }
+
+    UInt_t    GetL0Inputs() const { return fL0TriggerInputs; }
+    UInt_t    GetL1Inputs() const { return fL1TriggerInputs; }
+    UShort_t  GetL2Inputs() const { return fL2TriggerInputs; }
+
     ULong64_t GetClassMask()   const { return fClassMask; }  // Provide the trigger class mask
     UChar_t   GetClusterMask() const { return fClusterMask; }// Provide the trigger cluster mask
 
@@ -39,6 +46,13 @@ class AliCTPRawStream: public TObject {
 
   private:
     TClonesArray     fIRArray;     // array with trigger interaction records
+
+    UInt_t           fOrbit;       // orbit ID as sent by CTP
+    UShort_t         fBC;          // bunch-crossing number as sent by CTP
+
+    UInt_t           fL0TriggerInputs; // L0 trigger inputs (24 bits)
+    UInt_t           fL1TriggerInputs; // L1 trigger inputs (24 bits)
+    UShort_t         fL2TriggerInputs; // L2 trigger inputs (12 bits)
 
     ULong64_t        fClassMask;   // trigger class mask
     UChar_t          fClusterMask; // trigger cluster mask
