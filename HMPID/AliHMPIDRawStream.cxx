@@ -377,6 +377,7 @@ Bool_t AliHMPIDRawStream::ReadDilogic(Int_t &cntDilogic)
     UInt_t pad = (fWord >> kbit12) & 0x3f;                                          //pad info in raw word is between bits: 12...17
     if(!CheckPad(pad)) continue;
     Int_t charge = fWord & 0xfff;
+    if(GetPad(fDDLNumber,row,dilogic,pad)<0) continue;
     fPad[fNPads] = GetPad(fDDLNumber,row,dilogic,pad);
     fCharge[fNPads] = charge; 
     fNPads++;

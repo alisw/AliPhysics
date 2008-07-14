@@ -197,16 +197,14 @@ Int_t AliHMPIDRawStream::GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad)
   // in case the charge from the channels
   // has not been read or invalid arguments
  
-  assert(0<=ddl&&ddl<=13);  
-  assert(1<=row&&row<=24); 
-  assert(1<=dil&&dil<=10);   
-  assert(0<=pad&&pad<=47);  
-  
+  //assert(0<=ddl&&ddl<=13);  assert(1<=row&&row<=24);   assert(1<=dil&&dil<=10);     assert(0<=pad&&pad<=47);  
+  /* clm */ //corrupted data from ddl aborts the pedestal run at the assert
+  if(ddl<0 || ddl >13 || row<1 || row >25 || dil<1 || dil >10 || pad<0 || pad >47 ) return -1;
+  /* clm */
   Int_t a2y[6]={3,2,4,1,5,0};     //pady for a given padress (for single DILOGIC chip)
   Int_t ch=ddl/2;
   Int_t tmp=(24-row)/8;
   Int_t pc=(ddl%2)?5-2*tmp:2*tmp;
-//  Int_t px=(dil-1)*8+pad/6;
   Int_t px=dil*8-pad/6-1;  //flip according to Paolo (26-3-2008)
 
   tmp=(ddl%2)?row-1:(24-row);

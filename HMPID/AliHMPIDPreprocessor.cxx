@@ -193,9 +193,11 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
     infile>>tName>>nSigCut; pM->SetUniqueID(nSigCut); //n. of pedestal distribution sigmas used to create zero suppresion table
     while(!infile.eof()){
       infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;
+      if(rs.GetPad(iddl,r,d,a)>=0){			//the GetPad returns meaningful abs pad number								
       dig.SetPad(rs.GetPad(iddl,r,d,a));
       dig.SetQ((Int_t)mean);
       (*pM)(dig.PadChX(),dig.PadChY()) = sigma;
+      }
     }
     infile.close();
     Log(Form("Pedestal file for DDL %i read successfully",iddl));
