@@ -392,7 +392,13 @@ Double_t AliVertexerTracks::GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t 
   Double_t x10=p0[0]-x0[0];
   Double_t y10=p0[1]-x0[1];
   Double_t z10=p0[2]-x0[2];
-  return ((x10*x10+y10*y10+z10*z10)*(x12*x12+y12*y12+z12*z12)-(x10*x12+y10*y12+z10*z12)*(x10*x12+y10*y12+z10*z12))/(x12*x12+y12*y12+z12*z12);
+  //  return ((x10*x10+y10*y10+z10*z10)*(x12*x12+y12*y12+z12*z12)-(x10*x12+y10*y12+z10*z12)*(x10*x12+y10*y12+z10*z12))/(x12*x12+y12*y12+z12*z12);
+
+  return ((y10*z12-z10*y12)*(y10*z12-z10*y12)+
+	  (z10*x12-x10*z12)*(z10*x12-x10*z12)+
+	  (x10*y12-y10*x12)*(x10*y12-y10*x12))
+    /(x12*x12+y12*y12+z12*z12);
+
 }
 //---------------------------------------------------------------------------
 void AliVertexerTracks::OneTrackVertFinder() 
