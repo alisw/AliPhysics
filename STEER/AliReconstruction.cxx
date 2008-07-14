@@ -1891,7 +1891,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     }
 
     // unload clusters
-    if (iDet > 2) {     // all except ITS, TPC, TRD
+    if (iDet > 3) {     // all except ITS, TPC, TRD and TOF
       fTracker[iDet]->UnloadClusters();
       fLoader[iDet]->UnloadRecPoints();
     }
@@ -1904,11 +1904,6 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
   }
   //stop filling residuals for the "outer" detectors
   if (fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
-
-  // write space-points to the ESD in case alignment data output
-  // is switched on
-  if (fWriteAlignmentData)
-    WriteAlignmentData(esd);
 
   // pass 3: TRD + TPC + ITS refit inwards
 
@@ -1933,6 +1928,15 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       WriteESD(esd, Form("%s.refit", fgkDetectorName[iDet]));
     }
     AliSysInfo::AddStamp(Form("Tracking2%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
+  }
+
+  // write space-points to the ESD in case alignment data output
+  // is switched on
+  if (fWriteAlignmentData)
+    WriteAlignmentData(esd);
+
+  for (Int_t iDet = 3; iDet >= 0; iDet--) {
+    if (!fTracker[iDet]) continue;
     // unload clusters
     fTracker[iDet]->UnloadClusters();
     AliSysInfo::AddStamp(Form("TUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,4, eventNr);
@@ -2467,26 +2471,23 @@ void AliReconstruction::WriteESD(AliESDEvent* esd, const char* recStep) const
 void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 {
   // Write space-points which are then used in the alignment procedures
-  // For the moment only ITS, TRD and TPC
+  // For the moment only ITS, TPC, TRD and TOF
 
-  // Load TOF clusters
-  if (fTracker[3]){
-    fLoader[3]->LoadRecPoints("read");
-    TTree* tree = fLoader[3]->TreeR();
-    if (!tree) {
-      AliError(Form("Can't get the %s cluster tree", fgkDetectorName[3]));
-      return;
-    }
-    fTracker[3]->LoadClusters(tree);
-  }
   Int_t ntracks = esd->GetNumberOfTracks();
   for (Int_t itrack = 0; itrack < ntracks; itrack++)
     {
       AliESDtrack *track = esd->GetTrack(itrack);
       Int_t nsp = 0;
       Int_t idx[200];
-      for (Int_t iDet = 3; iDet >= 0; iDet--)
-	nsp += track->GetNcls(iDet);
+      for (Int_t iDet = 3; iDet >= 0; iDet--) {// TOF, TRD, TPC, ITS clusters
+          nsp += track->GetNcls(iDet);
+
+          if (iDet==0) { // ITS "extra" clusters
+             track->GetClusters(iDet,idx);
+             for (Int_t i=6; i<12; i++) if(idx[i] >= 0) nsp++;
+          }  
+      }
+
       if (nsp) {
 	AliTrackPointArray *sp = new AliTrackPointArray(nsp);
 	track->SetTrackPointArray(sp);
@@ -2494,9 +2495,12 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	for (Int_t iDet = 3; iDet >= 0; iDet--) {
 	  AliTracker *tracker = fTracker[iDet];
 	  if (!tracker) continue;
-	  Int_t nspdet = track->GetNcls(iDet);
+	  Int_t nspdet = track->GetClusters(iDet,idx);
+
+	  if (iDet==0) // ITS "extra" clusters             
+             for (Int_t i=6; i<12; i++) if(idx[i] >= 0) nspdet++;
+
 	  if (nspdet <= 0) continue;
-	  track->GetClusters(iDet,idx);
 	  AliTrackPoint p;
 	  Int_t isp = 0;
 	  Int_t isp2 = 0;
@@ -2522,10 +2526,6 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	}	
       }
     }
-  if (fTracker[3]){
-    fTracker[3]->UnloadClusters();
-    fLoader[3]->UnloadRecPoints();
-  }
 }
 
 //_____________________________________________________________________________
