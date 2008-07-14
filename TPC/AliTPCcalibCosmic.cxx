@@ -476,6 +476,13 @@ void AliTPCcalibCosmic::dEdxCorrection(){
   TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>110");
   TCut cutA=cutT+cutD+cutPt+cutN;
 
+
+ .x ~/UliStyle.C
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+ AliXRDPROOFtoolkit tool; 
   TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
   chain->Lookup();
 
