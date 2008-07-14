@@ -93,7 +93,7 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
     
 
-    Int_t iddl = -1;
+  Int_t iddl = -1;
 
   AliPMDddldata *pmdddldata;
 
@@ -103,7 +103,7 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
   Int_t dataSize = fRawReader->GetDataSize();
   Int_t totaldataword = dataSize/4;
 
-  if (dataSize <= 0) return -1;
+  if (dataSize <= 0) return iddl;
 
   UInt_t data;
 
@@ -246,7 +246,7 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 	      Int_t rawdatalength = pbusHeader.GetRawDataLength();
 	      Int_t pbusid = pbusHeader.GetPatchBusId();
 
-	      if (pbusid < 0 || pbusid > 50) return -1;
+	      if (pbusid < 0 || pbusid > 50) return iddl;
 
 
 	      ilowLimit = iuppLimit;
@@ -273,7 +273,7 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 		    {
 		      AliWarning(Form("Parity Error:: Patch Bus %d Module %d",pbusid,imodule));
 		      fRawReader->AddMajorErrorLog(kParityError);
-		      return -1;
+		      return iddl;
 		    }
 
 		  ConvertDDL2SMN(iddl, imodule, ismn, idet);

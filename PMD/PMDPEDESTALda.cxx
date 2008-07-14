@@ -4,7 +4,7 @@ PMD DA for online calibration
 contact: basanta@phy.iitb.ac.in
 Link:
 Reference Run:/afs/cern.ch/user/b/bnandi/public/pedestaldata/run37820.raw
-Run Type: STANDALONE
+Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 1000
 Input Files: 
