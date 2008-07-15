@@ -360,7 +360,7 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
     }
     else
     {
-      isSaturated = kFALSE;
+      *isSaturated = kFALSE;
     }
   }
   
