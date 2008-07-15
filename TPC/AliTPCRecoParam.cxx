@@ -40,7 +40,7 @@
   [4] - systematic RMSCuravture -  systematic error in 1/cm not in 1/pt
   //
   //  How to add it example - 3 mm systematic error y, 3 cm systematic error z (drift)
-  Double_t sysError[5]={0.3,3, 0.3/150., 3./150.,1/(0.3*150*150.)}
+  Double_t sysError[5]={0.3,3, 0.3/150., 3./150.,0.3/(150*150.)}
   param->SetSystematicError(sysError);
 
 */
