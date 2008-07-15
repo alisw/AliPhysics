@@ -58,8 +58,10 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
   AliInfo("Defualt Constructor");  
   TFile f("/u/miranov/calibKr.root");
   AliTPCCalPad *gainMap =  (AliTPCCalPad *)f.Get("spectrMean");
-  gainMap->Multiply(1/gainMap->GetMedian());
-  fGainMap =gainMap; 
+  if (gainMap) {
+    gainMap->Multiply(1/gainMap->GetMedian());
+    fGainMap =gainMap; 
+  }
 }
 
 
