@@ -14,6 +14,8 @@
 #include <AliRun.h>
 #include <AliESDEvent.h>
 #include <AliESDfriend.h>
+#include <AliDAQ.h>
+#include <AliRawEventHeaderBase.h>
 #include <AliRawReaderRoot.h>
 #include <AliRawReaderFile.h>
 #include <AliRawReaderDate.h>
@@ -596,17 +598,34 @@ const char* AliEveEventManager::GetEventInfo() const
 
   static TString eventInfo;
 
-  if (!fRawReader) return "No event information is available";
-
-  const UInt_t* id = fRawReader->GetEventId();
-  const UInt_t* pattern = fRawReader->GetTriggerPattern();
-  const UInt_t* attr = fRawReader->GetAttributes();
-  eventInfo.Form("Run#: %d\nEvent type: %d\nPeriod: %x\nOrbit: %x\nBC: %x\nTrigger: %x-%x\nDetectors: %x\nAttributes:%x-%x-%x",
-		 fRawReader->GetRunNumber(),fRawReader->GetType(),
-		 (((id)[0]>>4)&0x0fffffff),((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)),((id)[1]&0x00000fff),
-		 pattern[0],pattern[1],
-		 *fRawReader->GetDetectorPattern(),
-		 attr[0],attr[1],attr[2]);
+  if (!fRawReader) {
+    eventInfo.Form("No raw-data event info is available!\n");
+  }
+  else {
+    const UInt_t* attr = fRawReader->GetAttributes();
+    eventInfo.Form("Raw-data event info:\nRun#: %d\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x\nTimestamp: %x\n",
+		   fRawReader->GetRunNumber(),fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fRawReader->GetType()),
+		   fRawReader->GetPeriod(),fRawReader->GetOrbitID(),fRawReader->GetBCID(),
+		   fRawReader->GetClassMask(),
+		   *fRawReader->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*fRawReader->GetDetectorPattern()),
+		   attr[0],attr[1],attr[2],
+		   fRawReader->GetTimestamp());
+  }
+  if (!fESD) {
+    eventInfo.Append(Form("\nNo ESD event info is available!\n"));
+  }
+  else {
+    TString acttrclasses = fESD->GetESDRun()->GetActiveTriggerClasses();
+    TString firedtrclasses = fESD->GetFiredTriggerClasses();
+    eventInfo.Append(Form("\nESD event info:\nRun#: %d\nActive trigger classes: %s\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx (%s)\nEvent# in file:%d\nTimestamp: %x\n",
+			  fESD->GetRunNumber(),
+ 			  acttrclasses.Data(),
+			  fESD->GetEventType(),AliRawEventHeaderBase::GetTypeName(fESD->GetEventType()),
+			  fESD->GetPeriodNumber(),fESD->GetOrbitNumber(),fESD->GetBunchCrossNumber(),
+			  fESD->GetTriggerMask(),firedtrclasses.Data(),
+			  fESD->GetEventNumberInFile(),
+			  fESD->GetTimeStamp()));
+  }
 
   return eventInfo.Data();
 }

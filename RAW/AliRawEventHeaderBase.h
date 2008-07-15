@@ -44,6 +44,7 @@ public:
    char*         GetExtendedData() const { return fExtendedData; }
 
    const char *  GetTypeName() const;
+   static const char *  GetTypeName(UInt_t eventType);
    static AliRawEventHeaderBase* Create(char*& data);
    void          AllocateExtendedData(Int_t extsize);
    Int_t         ReadHeader(char*& data);

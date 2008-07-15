@@ -58,7 +58,7 @@ class AliDAQ: public TObject {
 
   static void        PrintConfig();
 
-  const  char       *ListOfTriggeredDetectors(Int_t detectorPattern);
+  static const char *ListOfTriggeredDetectors(Int_t detectorPattern);
 
   enum {
     kNDetectors = 21,    // Number of detectors

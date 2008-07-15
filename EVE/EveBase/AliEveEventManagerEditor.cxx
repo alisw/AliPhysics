@@ -76,7 +76,7 @@ AliEveEventManagerEditor::AliEveEventManagerEditor(const TGWindow *p, Int_t widt
     TGLabel *eventInfoLabel = new TGLabel(f, "Event Information:");
     f->AddFrame(eventInfoLabel, new TGLayoutHints(kLHintsNormal, 0,0,6,2));
 
-    fEventInfo = new TGTextView(f, 200, 200);
+    fEventInfo = new TGTextView(f, 200, 300);
     f->AddFrame(fEventInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
 
     AddFrame(f, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));

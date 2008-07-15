@@ -125,7 +125,17 @@ const char *AliRawEventHeaderBase::GetTypeName() const
    // Get event type as a string.
    // Will fail in case data header
    // does not contain eventType field
-   Int_t eventType = Get("Type");
+   UInt_t eventType = Get("Type");
+
+   return GetTypeName(eventType);
+}
+
+//______________________________________________________________________________
+const char *AliRawEventHeaderBase::GetTypeName(UInt_t eventType)
+{
+  // Get event type as a string.
+  // Static method that could be used
+  // from everywhere inside aliroot
 
    switch (eventType) {
       case kStartOfRun:
