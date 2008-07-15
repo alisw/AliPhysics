@@ -54,7 +54,10 @@ class AliMpBusPatch : public  TObject {
     Float_t  GetCableLength() const;
     TString  GetCableLabel() const;
     TString  GetTranslatorLabel() const;
-
+  TString GetFRTPosition() const;
+  
+  virtual void Print(Option_t* opt="") const;
+  
   private:
     /// Not implemented
     AliMpBusPatch();

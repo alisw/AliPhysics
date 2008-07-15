@@ -24,6 +24,8 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpBusPatch.h"
+
+#include "AliDAQ.h"
 #include "AliMpConstants.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
@@ -265,6 +267,15 @@ Int_t  AliMpBusPatch::GetNofPatchModules() const
 }  
   
 //______________________________________________________________________________
+TString
+AliMpBusPatch::GetFRTPosition() const
+{
+  /// Return CRXX-Y-Z where XX is the Crocus number, Y the FRT number
+  /// and Z the local bus patch number.
+  return Form("CR%2d-%d-%d",fDdlId,fFrtId+1,GetLocalBusID(fId,fDdlId));
+}
+
+//______________________________________________________________________________
 Int_t  AliMpBusPatch::GetNofManusPerModule(Int_t patchModule) const
 {
 /// Return the number of manus per patch module (PCB)
@@ -276,3 +287,52 @@ Int_t  AliMpBusPatch::GetNofManusPerModule(Int_t patchModule) const
   
   return fNofManusPerModule.GetValue(patchModule);
 }     
+
+//______________________________________________________________________________
+void 
+AliMpBusPatch::Print(Option_t* opt) const
+{
+  /// Printout
+  
+  cout << Form("BusPatch %04d DDL %d : %s <> %s / %s",
+               fId,
+               AliDAQ::DdlID("MUONTRK",fDdlId),
+               GetFRTPosition().Data(),
+               fCableLabel.Data(),
+               fTranslatorLabel.Data()) << endl;
+
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("FULL") ) 
+  {
+    cout << Form("Nof of PCBs (i.e. patch modules) = %d",fNofManusPerModule.GetSize()) << endl;
+    
+    for ( Int_t i = 0; i < fNofManusPerModule.GetSize(); ++i ) 
+    {
+      cout << Form("\t\t %d manus in patch module %d",fNofManusPerModule.GetValue(i),i) << endl;
+    }
+    
+    if ( sopt.Contains("MANU") )
+    {
+      cout << "Manus of that buspatch=" << endl;
+      
+      for ( Int_t i = 0; i < fManus.GetSize(); ++i ) 
+      {
+        cout << Form("%4d,",fManus.GetValue(i));
+      }
+      cout << endl;
+    }
+  }
+  
+//  Int_t        fId;     ///< Identifier (unique)
+//  Int_t        fDEId;   ///< Detection element to which this bus patch is connected
+//  Int_t        fDdlId;  ///< DDL to which this bus patch is connected
+//  AliMpArrayI  fManus;  ///< Manu Ids connected to this bus patch
+//  AliMpArrayI  fNofManusPerModule; ///< Nof Manus per patch modules (PCBs)
+//  Float_t      fCableLength;       ///< length of the buspatch cable
+//  TString      fCableLabel;        ///< label of the buspatch cable
+//  TString      fTranslatorLabel;   ///< label of the translator board
+//  Int_t        fFrtId;               ///< FRT Ids connected to this bus patch
+  
+}
