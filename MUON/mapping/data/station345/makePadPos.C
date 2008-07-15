@@ -24,7 +24,7 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
       cols.push_back(std::make_pair<int,int>(0,8));
     }
   else if ( what == "O9" || what == "O10" || what == "O11" || what == "O12" 
-	    || what == "O17" || what == "O18" || what == "O19" )
+	    || what == "O17" || what == "O18" || what == "O19" || what == "O20" )
     {
       add(cols,0,32);
       add(cols,0,32);
@@ -486,10 +486,37 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
   else if ( what == "D1" ) // dummy big motif of 16x80 to test
     {
       for ( int i = 0; i < 16; ++i )
-	{
-	  add(cols,0,80);
-	}
+      {
+        add(cols,0,80);
+      }
     }
+  else if ( what == "R43" ) 
+  {
+    add(cols,0,7);
+    add(cols,0,21);
+    add(cols,0,36);
+  }
+  else if ( what == "L24")
+  {
+    add(cols,32,16);
+    add(cols,0,48);
+  }
+  else if ( what == "R44" )
+  {
+    add(cols,16,32);
+    add(cols,0,32);
+  }
+  else if ( what == "L25" )
+  {
+    add(cols,0,48);
+    add(cols,0,16);
+  }
+  else if ( what == "R45" ) 
+  {
+    add(cols,29,7);
+    add(cols,15,21);
+    add(cols,0,36);
+  }
   return cols;
 }
 
