@@ -44,6 +44,7 @@ public:
   virtual Int_t RefitInward (AliESDEvent *esd);
   virtual Int_t LoadClusters (TTree * tree);
   virtual Int_t LoadClusters (TObjArray * arr); // another input
+  virtual Int_t LoadClusters (TClonesArray * arr); // another input
   Int_t  LoadClusters();
   void   UnloadClusters();
   virtual void FillClusterArray(TObjArray* array) const;

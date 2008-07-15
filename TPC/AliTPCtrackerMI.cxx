@@ -1140,6 +1140,52 @@ Int_t  AliTPCtrackerMI::LoadClusters(TObjArray *arr)
   return 0;
 }
 
+Int_t  AliTPCtrackerMI::LoadClusters(TClonesArray *arr)
+{
+  //
+  // load clusters to the memory from one 
+  // TClonesArray
+  //
+  AliTPCclusterMI *clust=0;
+  Int_t count[72][96] = { {0} , {0}}; 
+
+  // loop over clusters
+  for (Int_t icl=0; icl<arr->GetEntriesFast(); icl++) {
+    clust = (AliTPCclusterMI*)arr->At(icl);
+    if(!clust) continue;
+    //printf("cluster: det %d, row %d \n", clust->GetDetector(),clust->GetRow());
+
+    // transform clusters
+    Transform(clust);
+
+    // count clusters per pad row
+    count[clust->GetDetector()][clust->GetRow()]++;
+  }
+
+  // insert clusters to sectors
+  for (Int_t icl=0; icl<arr->GetEntriesFast(); icl++) {
+    clust = (AliTPCclusterMI*)arr->At(icl);
+    if(!clust) continue;
+
+    Int_t sec = clust->GetDetector();
+    Int_t row = clust->GetRow();
+    Int_t left=0;
+    if (sec<fkNIS*2){
+      left = sec/fkNIS;
+      fInnerSec[sec%fkNIS].InsertCluster(clust, count[sec][row], fParam);    
+    }
+    else{
+      left = (sec-fkNIS*2)/fkNOS;
+      fOuterSec[(sec-fkNIS*2)%fkNOS].InsertCluster(clust, count[sec][row], fParam);
+    }
+  }
+
+  LoadOuterSectors();
+  LoadInnerSectors();
+
+  return 0;
+}
+
 
 Int_t  AliTPCtrackerMI::LoadClusters()
 {

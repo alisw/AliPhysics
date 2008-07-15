@@ -258,8 +258,51 @@ void AliTPCtrackerSector::Setup(const AliTPCParam *par, Int_t f) {
   } 
 }
 
+//_________________________________________________________________________
+void AliTPCtrackerSector::InsertCluster(AliTPCclusterMI *cl, Int_t size, const AliTPCParam *par) {
+  //-----------------------------------------------------------------------
+  // Insert cluster to the sector
+  //-----------------------------------------------------------------------
 
+  if(!cl) return; 
 
+  const Int_t fkNIS = par->GetNInnerSector()/2;
+  const Int_t fkNOS = par->GetNOuterSector()/2;
+  Int_t row = cl->GetRow();
+  Int_t sec = cl->GetDetector();
+
+  // add cluster to the corresponding pad row
+  AliTPCtrackerRow *tpcrow = 0x0;
+
+  Int_t left=0;
+  if (sec<fkNIS*2){
+    left = sec/fkNIS;
+  }
+  else{
+    left = (sec-fkNIS*2)/fkNOS;
+  }
+  //
+  if (left ==0){
+    tpcrow = fRow+row;
+    if(!tpcrow->GetClusters1()) tpcrow->SetClusters1(new AliTPCclusterMI[size]); 
+    if(size < kMaxClusterPerRow) {
+      tpcrow->SetCluster1(tpcrow->GetN1(), *cl);
+      //printf("inner: size %d, tpcrow->GetN1() %d  sec %d row %d tpcrow %p \n", size, tpcrow->GetN1(), sec, row, tpcrow);
+
+      tpcrow->IncrementN1();
+    }
+  }
+  if (left ==1){
+    tpcrow = fRow+row;
+    if(!tpcrow->GetClusters2()) tpcrow->SetClusters2(new AliTPCclusterMI[size]); 
+    if(size < kMaxClusterPerRow)  { 
+      tpcrow->SetCluster2(tpcrow->GetN2(), *cl);
+      //printf("outer: size %d, tpcrow->GetN2() %d  sec %d row %d tpcrow %p \n", size, tpcrow->GetN2(), sec, row, tpcrow);
+
+      tpcrow->IncrementN2();
+    }
+  }
+}
 
 
 

@@ -53,6 +53,8 @@ public:
   AliTPCclusterMI* GetCluster2(Int_t i) const {return &fClusters2[i];}
   Short_t GetFastCluster(Int_t i) const {return fFastCluster[i];}
   void SetFastCluster(Int_t i, Short_t cl);
+  Int_t IncrementN1() { return ++fN1;}
+  Int_t IncrementN2() { return ++fN2;}
   
 private:  
   AliTPCtrackerRow & operator=(const AliTPCtrackerRow & );
@@ -84,7 +86,7 @@ class AliTPCtrackerSector: public TObject {
     fPadPitchWidth(0.),
     fPadPitchLength(0.),
     f1PadPitchLength(0.),
-    f2PadPitchLength(0.){}
+    f2PadPitchLength(0.) {}
     ~AliTPCtrackerSector() { delete[] fRow; }
     AliTPCtrackerRow& operator[](Int_t i) const { return *(fRow+i); }
     Int_t GetNRows() const { return fN; }
@@ -101,6 +103,8 @@ class AliTPCtrackerSector: public TObject {
     Double_t GetPadPitchLength() const {return fPadPitchLength;}
     Double_t GetPadPitchLength(Float_t x) const {return (x<200) ? fPadPitchLength:f2PadPitchLength ;}
     
+    void InsertCluster(AliTPCclusterMI *cl, Int_t size, const AliTPCParam *par);
+
  private:
     AliTPCtrackerSector & operator=(const AliTPCtrackerSector & );
     AliTPCtrackerSector(const AliTPCtrackerSector &/*s*/);           //dummy copy contructor 
