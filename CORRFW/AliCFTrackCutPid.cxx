@@ -73,6 +73,7 @@ AliCFTrackCutPid::AliCFTrackCutPid() :
   fMinDiffProbability(0.001),
   fgParticleType(10),
   fgIsComb(kTRUE),
+  fgIsAOD(kFALSE),
   fCheckResponse(kFALSE),
   fCheckSelection(kTRUE),
   fIsPpriors(kFALSE),
@@ -107,6 +108,7 @@ AliCFTrackCutPid::AliCFTrackCutPid(const Char_t* name, const Char_t* title) :
   fMinDiffProbability(0.001),
   fgParticleType(10),
   fgIsComb(kTRUE),
+  fgIsAOD(kFALSE),
   fCheckResponse(kFALSE),
   fCheckSelection(kTRUE),
   fIsPpriors(kFALSE),
@@ -141,6 +143,7 @@ AliCFTrackCutPid::AliCFTrackCutPid(const AliCFTrackCutPid& c) :
   fMinDiffProbability(c.fMinDiffProbability),
   fgParticleType(c.fgParticleType),
   fgIsComb(c.fgIsComb),
+  fgIsAOD(c.fgIsAOD),
   fCheckResponse(c.fCheckResponse),
   fCheckSelection(c.fCheckSelection),
   fIsPpriors(c.fIsPpriors),
@@ -180,9 +183,10 @@ AliCFTrackCutPid& AliCFTrackCutPid::operator=(const AliCFTrackCutPid& c)
     AliCFCutBase::operator=(c) ;
     this->fCut=c.fCut;
     this->fMinDiffResponse=c.fMinDiffResponse;
-   this->fMinDiffProbability=c.fMinDiffProbability;
+    this->fMinDiffProbability=c.fMinDiffProbability;
     this->fgParticleType=c.fgParticleType;  
     this->fgIsComb=c.fgIsComb;
+    this->fgIsAOD=c.fgIsAOD;
     this->fCheckResponse=c.fCheckResponse;
     this->fCheckSelection=c.fCheckSelection;
     this->fIsPpriors=c.fIsPpriors;
@@ -415,6 +419,17 @@ Int_t AliCFTrackCutPid::GetID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][Al
   
   return iPart;
 }
+//_________________________________________________________________________________
+Int_t AliCFTrackCutPid::GetAODID(AliAODTrack *aodtrack) const
+{
+//
+// Identifies the AOD Track using the combined pid responses
+//
+
+  Double_t combpid[AliPID::kSPECIES];
+  for(Int_t i=0; i< AliPID::kSPECIES; i++) combpid[i]= aodtrack->PID()[i];
+  return Identify(combpid);
+}
 //__________________________________
 Bool_t AliCFTrackCutPid::Check(const Double_t *p, Int_t iPsel, Double_t minDiff) const
 {
@@ -443,22 +458,30 @@ Int_t AliCFTrackCutPid::Identify(Double_t pid[AliPID::kSPECIES]) const
   // The identification is actually performed here with possible
   // checks on the det responses and/or probabilities
   //
+
   Int_t iPart = -1;
-  
+ 
+  AliDebug(2,Form("calc response bef: %f  %f  %f  %f  %f",pid[0],pid[1],pid[2],pid[3],pid[4]));
+ 
   AliPID getpid(pid,kTRUE);
-  
-  if(fgIsComb) {
+  getpid.SetPriors(fPriors); 
+  if(fgIsComb && !fgIsAOD) {
     Double_t priors[5]={0.2,0.2,0.2,0.2,0.2};
     getpid.SetPriors(priors);
   }
-  else getpid.SetPriors(fPriors);
+
   
+  Double_t probability[AliPID::kSPECIES]={0.,0.,0.,0.,0.};
+  for(Int_t iP=0; iP<AliPID::kSPECIES; iP++) {
+    probability[iP] = getpid.GetProbability((AliPID::EParticleType)iP);
+    AliDebug(2,Form("prob %i %f",iP, probability[iP]));
+     if(fgIsAOD && fIsQAOn) {
+     fhCombResp[iP]->Fill(pid[iP]); 
+     fhCombProb[iP]->Fill(probability[iP]);
+    } 
+  }
   
   AliPID::EParticleType sel = getpid.GetMostProbable();
-  Double_t probability[AliPID::kSPECIES];
-  for(Int_t iP=0; iP<AliPID::kSPECIES; iP++) probability[iP] = getpid.GetProbability((AliPID::EParticleType)iP);
-  
-  
   if(getpid.GetProbability(sel,fPriors)>fCut) iPart= (Int_t)sel;
   AliDebug(2,Form("calc response   : %f  %f  %f  %f  %f",pid[0],pid[1],pid[2],pid[3],pid[4]));
   AliDebug(2,Form("probabilities   : %f  %f  %f  %f  %f",probability[0],probability[1],probability[2],probability[3],probability[4]));
@@ -510,21 +533,26 @@ Bool_t AliCFTrackCutPid::IsSelected(TObject *track){
   //
   //  method for the pid-cut selction
   //
+  Bool_t sel = kFALSE;
   
   if (!track) return kFALSE ;
   TString className(track->ClassName());
-  if (className.CompareTo("AliESDtrack") != 0) {
-    AliError("obj must point to a AliESDtrack ");
-    return kFALSE ;
-  }
-  
+  if (className.CompareTo("AliESDtrack") == 0) {
   AliESDtrack *esdTrack = (AliESDtrack *)track;
   ULong_t status[kNdets+1]={0,0,0,0,0,0};
   Double_t pid[kNdets+1][AliPID::kSPECIES];
   TrackInfo(esdTrack,status,pid);
   if(fIsPpriors) SetPPriors(esdTrack);
-  if(GetID(status,pid)==fgParticleType) return kTRUE;
-  else return kFALSE;
+  if(GetID(status,pid)==fgParticleType) sel = kTRUE;
+  }
+
+  if (className.CompareTo("AliAODTrack") == 0) {
+  AliAODTrack *aodtrack = (AliAODTrack *)track;
+  if(GetAODID(aodtrack) == fgParticleType) sel = kTRUE;
+  }
+
+ return sel;
+
 }
 //__________________________________
 void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][AliPID::kSPECIES],Double_t *combpid) const
@@ -538,7 +566,6 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
   Double_t sum=0.;
   Double_t prod[AliPID::kSPECIES]={1.,1.,1.,1.,1.};
   Double_t comb[AliPID::kSPECIES]={0.,0.,0.,0.,0.};
-  Double_t priors[AliPID::kSPECIES]={0.2,0.2,0.2,0.2,0.2};
   
   ULong_t andstatus =0;
   if(fIsDetAND) {
@@ -571,12 +598,15 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
   if(fIsQAOn) {
     for(Int_t iqa =0; iqa < kNdets; iqa++){   
       if(!fDets[iqa]) continue;              
+        if(status[kNdets]&status[iqa]) {
       AliPID normresp(pid[iqa]);
-      normresp.SetPriors(priors);
+      Double_t tmppriors[AliPID::kSPECIES]={0.2,0.2,0.2,0.2,0.2};
+      normresp.SetPriors(tmppriors);
       for(Int_t ip =0; ip< AliPID::kSPECIES; ip++){
 	if(!fhResp[iqa][ip]) {AliDebug(1,Form("no pointer to the histo fhResp%i%i, check if pidcut->Init() was called",iqa,ip));}
 	else fhResp[iqa][ip]->Fill(normresp.GetProbability((AliPID::EParticleType)ip));
       }//loop on part
+     }//if status ok
     }//loop on dets
   }//if qa 
   
@@ -652,29 +682,47 @@ void AliCFTrackCutPid::DefineHistograms()
   //
   //QA histo booking
   //
-  char *detect[kNdets]={"ITS","TPC","TRD","TOF","HMPID"};
-  char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"};
-  
-   for(Int_t iDet =0; iDet< kNdets; iDet++)
-    {
-      if(!fDets[iDet]) continue;
-      for(Int_t iP =0; iP < AliPID::kSPECIES; iP++){
-	fhResp[iDet][iP] = new TH1F(Form("rDet%iPart%i",iDet,iP),Form("%s %s response    ",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
-	fhProb[iDet][iP] = new TH1F(Form("pDet%iPart%i",iDet,iP),Form("%s %s probability ",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
-      }
-    }
-  
 
-if(fgIsComb)
-   { 
-    for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
+  if(fgIsAOD){
+
+     char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"}; 
+
+     for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
       {
-	fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response    ",partic[iPart]),fNbins,fXmin,fXmax);
-        AliDebug(1,Form(  "rCombPart%i is booked!!",iPart));
-	fhCombProb[iPart] = new TH1F(Form("pCombPart%i",iPart),Form("%s combined probability ",partic[iPart]),fNbins,fXmin,fXmax);
-        AliDebug(1,Form(  "rCombProb%i is booked!!",iPart));
-      }
-  }
+       fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response  (AODTrack)  ",partic[iPart]),fNbins,fXmin,fXmax);
+       AliDebug(1,Form(  "rCombPart%i is booked!!",iPart));
+       fhCombProb[iPart] = new TH1F(Form("pCombPart%i",iPart),Form("%s combined probability (AODTrack) ",partic[iPart]),fNbins,fXmin,fXmax);
+       AliDebug(1,Form(  "rCombProb%i is booked!!",iPart));
+     }
+   }
+
+
+  else {
+   char *detect[kNdets]={"ITS","TPC","TRD","TOF","HMPID"};
+   char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"};
+  
+    for(Int_t iDet =0; iDet< kNdets; iDet++)
+     {
+       if(!fDets[iDet]) continue;
+       for(Int_t iP =0; iP < AliPID::kSPECIES; iP++){
+ 	fhResp[iDet][iP] = new TH1F(Form("rDet%iPart%i",iDet,iP),Form("%s %s response    ",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
+ 	fhProb[iDet][iP] = new TH1F(Form("pDet%iPart%i",iDet,iP),Form("%s %s probability ",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
+       }
+     }
+    
+
+  if(fgIsComb)
+     { 
+      for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
+        {
+	  fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response    ",partic[iPart]),fNbins,fXmin,fXmax);
+          AliDebug(1,Form(  "rCombPart%i is booked!!",iPart));
+	  fhCombProb[iPart] = new TH1F(Form("pCombPart%i",iPart),Form("%s combined probability ",partic[iPart]),fNbins,fXmin,fXmax);
+          AliDebug(1,Form(  "rCombProb%i is booked!!",iPart));
+        }
+     }
+   }
+
 }
 //___________________________________________________
 

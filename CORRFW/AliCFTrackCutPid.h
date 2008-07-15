@@ -23,6 +23,7 @@
 #include "AliCFCutBase.h"
 #include "AliPID.h"
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
 #include <TString.h>
 #include <TObject.h>
 #include <TH1F.h>
@@ -58,7 +59,8 @@ class AliCFTrackCutPid : public AliCFCutBase
   void SetANDstatus(TString dets);
   void SetDetectorProbabilityRestriction(TString det, Int_t iPart, Double_t upperprob); 
   void SetHistogramAxis(Int_t nbins, Double_t xmin, Double_t xmax) {fNbins=nbins; fXmin = xmin; fXmax = xmax;}
-  
+  void SetAODmode(Bool_t isaod = kFALSE) {fgIsAOD=isaod;}  
+ 
   //loads the track detector responses and the track status
   void TrackInfo(const AliESDtrack *pTrk,ULong_t status[kNdets+1], Double_t pid[kNdets+1][AliPID::kSPECIES]) const;  
   
@@ -70,7 +72,10 @@ class AliCFTrackCutPid : public AliCFCutBase
   
   //returns the track identification number  
   Int_t GetID(ULong_t status[kNdets+1], Double_t pid[kNdets+1][AliPID::kSPECIES]) const;  
+  //returns the track identification number in caso of an AliAODTrack
+  Int_t GetAODID(AliAODTrack *aodtrack) const;
   
+ 
   //main 
   virtual Bool_t IsSelected(TObject *track); 
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}  
@@ -91,6 +96,7 @@ class AliCFTrackCutPid : public AliCFCutBase
   Double_t fMinDiffProbability;                             // minimum difference between probability values
   Int_t fgParticleType;                                     // requested particle type
   Bool_t fgIsComb;                                          // flag for the combined pid
+  Bool_t fgIsAOD;                                            // flag for the AOD QA histograms
   Bool_t fCheckResponse;                                    // flag to check the minimum difference of det responsess
   Bool_t fCheckSelection;                                   // flag to check the minimum difference of probabilities
   Bool_t fIsPpriors;                                        //flag for momentum dependent priors
