@@ -62,6 +62,6 @@ class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
     AliTOFDigitMap*       fTOFdigitMap;
 
     ClassDef(AliEveTOFDigitsInfo, 1);
-  }; // endclass AliEveTOFDigitsInfo
+}; // endclass AliEveTOFDigitsInfo
 
 #endif

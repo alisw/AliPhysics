@@ -178,9 +178,9 @@ void AliEveTOFSector::InitStatics()
   Float_t dz =  29.;
   Float_t dy = 370.6*2.;
   fgTOFsectorFrameBox = new TEveFrameBox();
-
   fgTOFsectorFrameBox->SetAABox(-dx*0.5, -dy*0.5, -dz*0.5, dx, dy, dz);
-  fgTOFsectorFrameBox->SetFrameColor(32);//31);
+  fgTOFsectorFrameBox->SetFrameColor(32);
+  fgTOFsectorFrameBox->IncRefCount();
 
   //fgTOFsectorPalette  = new TEveRGBAPalette(0, 2048); // TOT
   //fgTOFsectorPalette->SetLimits(0, 2048); 
@@ -188,6 +188,7 @@ void AliEveTOFSector::InitStatics()
   fgTOFsectorPalette  = new TEveRGBAPalette(0, 100000); // TDC
   fgTOFsectorPalette->SetOverflowAction(2);
   fgTOFsectorPalette->SetUnderflowAction(2);
+  fgTOFsectorPalette->IncRefCount();
 
   fgStaticInitDone = kTRUE;
 }
