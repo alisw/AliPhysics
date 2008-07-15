@@ -59,6 +59,18 @@ AliTPCFitPad& AliTPCFitPad::operator=(const AliTPCFitPad& rhs)
   return *this;
 }
 
+AliTPCFitPad::AliTPCFitPad(const AliTPCFitPad& rhs):
+  AliTPCCalPadRegion(rhs),
+  fNdim(rhs.fNdim),
+  fFormula(rhs.fFormula),
+  fOpt(rhs.fOpt)
+
+{
+  //
+  // Copy constructor
+  //
+}
+
 AliTPCFitPad::~AliTPCFitPad() {
    //
    // Destructor.
