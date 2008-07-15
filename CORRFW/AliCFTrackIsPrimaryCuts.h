@@ -61,8 +61,8 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   void GetSigmaToVertex(AliESDtrack* esdTrack);
 
   // cut value setter
-  void SetMaxNSigmaToVertex(Double_t sigma=3)	{fNSigmaToVertexMax = sigma;}
-  void SetRequireSigmaToVertex(Bool_t b=kTRUE)	{fRequireSigmaToVertex=b;}
+  void SetMaxNSigmaToVertex(Double_t sigma=1.e+03)	{fNSigmaToVertexMax = sigma;}
+  void SetRequireSigmaToVertex(Bool_t b=kFALSE)	{fRequireSigmaToVertex=b;}
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)	{fAcceptKinkDaughters=b;}
 
   // QA histograms

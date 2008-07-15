@@ -215,6 +215,7 @@ void AliCFTrackIsPrimaryCuts::Initialise()
 
   SetMaxNSigmaToVertex();
   SetRequireSigmaToVertex();
+  SetAcceptKinkDaughters();
 
   for (Int_t j=0; j<kNStepQA; j++)  {
     fhDcaXYvsDcaZ[j] = 0x0;
