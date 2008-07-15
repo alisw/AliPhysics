@@ -367,8 +367,10 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
         ncontr++;
       }
     }
-    zm/=ezm;
-    ezm=TMath::Sqrt(1./ezm);
+    if(ezm>0) {
+      zm/=ezm;
+      ezm=TMath::Sqrt(1./ezm);
+    }
     niter++;
   } while(niter<10 && TMath::Abs((zm-lim1)-(lim2-zm))>fTolerance);
   fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
