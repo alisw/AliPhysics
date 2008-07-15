@@ -20,6 +20,7 @@
 
 class AliMpTriggerCrate;
 class AliMpLocalBoard;
+class AliMpDataStreams;
 class TIterator;
 
 class AliMpRegionalTrigger : public  TObject{
@@ -34,7 +35,8 @@ class AliMpRegionalTrigger : public  TObject{
     AliMpRegionalTrigger& operator=(const AliMpRegionalTrigger& rhs);
 
     // methods
-    Bool_t ReadData(const TString& fileName = "");
+    Bool_t ReadData(const TString& fileName);
+    Bool_t ReadData(const AliMpDataStreams& dataStreams);
     
     AliMpTriggerCrate* FindTriggerCrate(TString crateName, Bool_t warn = true) const;
     AliMpLocalBoard*   FindLocalBoard(Int_t localBoardId, Bool_t warn = true) const;

@@ -74,27 +74,18 @@ const TString  AliMpSectorReader::fgkPadRowsKeyword        = "PAD_ROWS";
 const TString  AliMpSectorReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
 
 //_____________________________________________________________________________
-AliMpSectorReader::AliMpSectorReader(AliMp::StationType station, 
+AliMpSectorReader::AliMpSectorReader(const AliMpDataStreams& dataStreams,
+                                     AliMp::StationType station, 
                                      AliMp::PlaneType plane) 
   : TObject(),
+    fDataStreams(dataStreams),
     fStationType(station),
     fPlaneType(plane),
     fSector(0),
-    fMotifReader(new AliMpMotifReader(station, plane))
+    fMotifReader(new AliMpMotifReader(dataStreams, station, plane))
  
 {
 /// Standard constructor
-}
-
-//_____________________________________________________________________________
-AliMpSectorReader::AliMpSectorReader() 
-  : TObject(),
-    fStationType(AliMp::kStation1),
-    fPlaneType(AliMp::kBendingPlane),
-    fSector(0),
-    fMotifReader(0)
-{
-/// Default constructor
 }
 
 //_____________________________________________________________________________
@@ -538,8 +529,8 @@ AliMpSector* AliMpSectorReader::BuildSector()
   // Open input stream
   //
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::SectorFilePath(fStationType,fPlaneType));
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::SectorFilePath(fStationType,fPlaneType));
 
   ReadSectorData(in);
   delete &in;
@@ -552,10 +543,10 @@ AliMpSector* AliMpSectorReader::BuildSector()
   
   TString sectorSpecialFileName 
     = AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType);
-  if ( AliMpDataStreams::Instance()-> IsDataStream(sectorSpecialFileName) ) {
+  if ( fDataStreams.IsDataStream(sectorSpecialFileName) ) {
     istream& in2 
-      = AliMpDataStreams::Instance()
-         ->CreateDataStream(sectorSpecialFileName);
+      = fDataStreams.
+          CreateDataStream(sectorSpecialFileName);
   
     ReadSectorSpecialData(in2, AliMp::kLeft);
     
@@ -565,10 +556,10 @@ AliMpSector* AliMpSectorReader::BuildSector()
   // Open input file for special outer zone
   TString sectorSpecialFileName2 
     = AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType);
-  if ( AliMpDataStreams::Instance()-> IsDataStream(sectorSpecialFileName2) ) {
+  if ( fDataStreams.IsDataStream(sectorSpecialFileName2) ) {
     istream& in3
-      = AliMpDataStreams::Instance()
-         ->CreateDataStream(sectorSpecialFileName2);
+      = fDataStreams.
+          CreateDataStream(sectorSpecialFileName2);
     
     ReadSectorSpecialData(in3, AliMp::kRight);
     

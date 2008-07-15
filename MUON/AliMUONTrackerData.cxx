@@ -28,7 +28,9 @@
 #include "AliMUONVStore.h"
 #include "AliMpBusPatch.h"
 #include "AliMpConstants.h"
+#include "AliMpCDB.h"
 #include "AliMpDDLStore.h"
+#include "AliMpManuStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
@@ -1065,11 +1067,17 @@ AliMUONTrackerData::GetDEManu(const AliMUONVCalibParam& param,
 {
   /// Tries to get (detElemId,manuId) of param
   
+  // Load mapping manu store
+  if ( ! AliMpCDB::LoadManuStore() ) {
+    AliError("Could not access manu store from OCDB !");
+    return;
+  }
+
   if ( param.ID1() <= 0 ) 
   {
     // we (probably) get a manu serial number
     Int_t serial = param.ID0();
-    AliMpIntPair pair = AliMpDDLStore::Instance()->GetDetElemIdManu(serial);
+    AliMpIntPair pair = AliMpManuStore::Instance()->GetDetElemIdManu(serial);
     detElemId = pair.GetFirst();
     manuId = pair.GetSecond();
     if ( !detElemId ) 

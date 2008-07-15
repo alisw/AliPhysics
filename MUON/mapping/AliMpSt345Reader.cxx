@@ -56,9 +56,10 @@ ClassImp(AliMpSt345Reader)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpSt345Reader::AliMpSt345Reader() 
+AliMpSt345Reader::AliMpSt345Reader(const AliMpDataStreams& dataStreams) 
 : 
 TObject(),
+fDataStreams(dataStreams),
 fMotifMap(AliMpSlatMotifMap::Instance())
 {
   ///
@@ -83,11 +84,12 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
   /// The returned object must be deleted by the client
   
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::SlatPCBFilePath(
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::SlatPCBFilePath(
                              AliMp::kStation345, pcbType));
  
-  AliMpMotifReader reader(AliMp::kStation345,AliMp::kNonBendingPlane); 
+  AliMpMotifReader reader(fDataStreams, 
+                          AliMp::kStation345,AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for station345, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory
@@ -161,8 +163,8 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
   /// The returned object must be deleted by the client.
   
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::SlatFilePath(
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::SlatFilePath(
                              AliMp::kStation345, slatType, planeType));
 
   char line[80];

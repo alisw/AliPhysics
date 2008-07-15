@@ -21,7 +21,7 @@
 // Class AliMpDataStreams
 // ----------------------
 // Class for providing mapping data streams
-// Se detailed description in the header file.
+// See detailed description in the header file.
 // Author: Ivana Hrivnacova; IPN Orsay
 //-----------------------------------------------------------------------------
 
@@ -43,36 +43,25 @@
 ClassImp(AliMpDataStreams)
 /// \endcond
 
-AliMpDataStreams* AliMpDataStreams::fgInstance = 0;
-
-//
-// static methods
-//
 
 //______________________________________________________________________________
-AliMpDataStreams* AliMpDataStreams::Instance()
-{
-/// Return its instance
-
-  if ( ! fgInstance ) {
-    fgInstance = new AliMpDataStreams();
-  }  
-    
-  return fgInstance;
-}    
-
-//
-// ctor, dtor
-//
-
-
-//______________________________________________________________________________
-AliMpDataStreams::AliMpDataStreams() 
+AliMpDataStreams::AliMpDataStreams(AliMpDataMap* map) 
   : TObject(),
-    fMap(0),
+    fMap(map),
     fReadFromFiles(kTRUE)
 {
 /// Standard and default constructor
+
+  if ( map ) fReadFromFiles = kFALSE;
+}
+
+//______________________________________________________________________________
+AliMpDataStreams::AliMpDataStreams(TRootIOCtor* /*ioCtor*/) 
+  : TObject(),
+    fMap(0),
+    fReadFromFiles()
+{
+/// Root IO constructor
 
 }
 
@@ -81,41 +70,30 @@ AliMpDataStreams::~AliMpDataStreams()
 {
 /// Destructor
 
-  delete fMap;
-
-  fgInstance = 0;
+  // delete fMap;
+       // Do not delete data map as it is a CDB object 
+       // which is cached
 }
+
+//
+// private methods
+//
+
+//______________________________________________________________________________
+void AliMpDataStreams::CutDataPath(string& dataPath) const
+{ 
+/// Cut the path defined in AliMpFiles as Top() + one more directory
+
+  string top = AliMpFiles::GetTop().Data();
+  if ( dataPath.find(top) != string::npos ) dataPath.erase(0, top.size()+1);
+  dataPath.erase(0,dataPath.find('/')+1); 
+}
+  
+
 
 //
 // public methods
 //
-
-/*
-//______________________________________________________________________________
-TString AliMpDataStreams::GetDataStream(const TString& path) const
-{
-/// Return the string with data in the mapping file spcified with path
-
-  // Cut top from the path 
-  string top = AliMpFiles::GetTop().Data();
-  string fullDataPath = path.Data();
-  string dataPath = string(fullDataPath, top.size()+1);
-
-  cout << "Go to get value for " << dataPath.c_str() << endl;
-  
-  // Find string object in the map
-  TObject* object = fMap->GetValue(dataPath.c_str());
-  if ( ! object ) {
-    AliErrorStream() 
-      << "Cannot find data for mapping file " << dataPath << endl;
-    return "";
-  }   
-  
-  cout << "Got: " << object << endl;   
-  
-  return ((TObjString*)object)->String();
-}
-*/
 
 //______________________________________________________________________________
 istream& AliMpDataStreams::CreateDataStream(const TString& path) const
@@ -139,11 +117,8 @@ istream& AliMpDataStreams::CreateDataStream(const TString& path) const
     AliDebugStream(2) << "Opening stream " << path.Data() << endl;
 
     // Cut top from the path 
-    string top = AliMpFiles::GetTop().Data();
-    string fullDataPath = path.Data();
-    string dataPath = fullDataPath;
-    if ( dataPath.find(top) != string::npos )
-      dataPath.erase(0, top.size()+6);
+    string dataPath = path.Data();
+    CutDataPath(dataPath);
 
     istringstream* stringBuffer 
       = new istringstream(fMap->Get(dataPath).Data());
@@ -162,45 +137,19 @@ Bool_t  AliMpDataStreams::IsDataStream(const TString& path) const
   }
   else {
     // Cut top from the path 
-    string top = AliMpFiles::GetTop().Data();
-    string fullDataPath = path.Data();
-    string dataPath = fullDataPath;
-    if ( dataPath.find(top) != string::npos )
-      dataPath.erase(0, top.size()+6);
+    string dataPath = path.Data();
+    CutDataPath(dataPath);
 
-    // std::map implementation
-    // return fMap->GetMap().find(dataPath) != fMap->GetMap().end();
     return ( fMap->Get(dataPath, kFALSE) != "" );
   }
 }      
 
-
 //______________________________________________________________________________
-void  AliMpDataStreams::SetDataMap(AliMpDataMap* map)
-{
-/// Set the data map and switch off readFromFiles
-
-  if ( fMap && fMap != map ) delete fMap;
-
-  fMap = map;
-  fReadFromFiles = kFALSE;
-}  
-
-//______________________________________________________________________________
-void  AliMpDataStreams::SetReadFromFiles(Bool_t readFromFiles)
+void  AliMpDataStreams::SetReadFromFiles()
 {
 /// Set option to read data from files
 
-  if ( ! fMap && ! readFromFiles ) {
-    AliWarningStream()
-      << "Setting ignored: " << endl
-      << "Selected reading from streams, but data map has not been yet defined"
-      << endl;
-      
-    return;  
-  }     
-
-  fReadFromFiles = readFromFiles;
+  fReadFromFiles = kTRUE;
 }  
 
 //______________________________________________________________________________

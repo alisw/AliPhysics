@@ -32,6 +32,7 @@ class AliMpSlat;
 class AliMpSector;
 class AliMpVSegmentation;
 class AliMpDDLStore;
+class AliMpManuStore;
 class TGTextEntry;
 class AliMpMotifPosition;
 
@@ -103,6 +104,7 @@ private:
 
     const AliMpVSegmentation* fSegmentation; //!< segmentation instance
     AliMpDDLStore*            fDDLStore;     //!< DDL Store
+    AliMpManuStore*           fManuStore;    //!< Manu Store
 
     Bool_t           fZoomMode;        //!< flag for zoom mode on canvas instead of click mode
 

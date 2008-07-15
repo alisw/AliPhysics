@@ -71,7 +71,8 @@ AliMpDEStore* AliMpDEStore::Instance(Bool_t warn)
 }    
 
 //______________________________________________________________________________
-AliMpDEStore* AliMpDEStore::ReadData(Bool_t warn)
+AliMpDEStore* AliMpDEStore::ReadData(const AliMpDataStreams& dataStreams, 
+                                     Bool_t warn)
 {
 /// Load the DE store data from ASCII data files
 /// and return its instance
@@ -82,10 +83,10 @@ AliMpDEStore* AliMpDEStore::ReadData(Bool_t warn)
     return fgInstance;
   }  
   
-  if ( AliMpDataStreams::Instance()->GetReadFromFiles() )
+  if ( dataStreams.GetReadFromFiles() )
     AliInfoClass("Reading DE Store from ASCII files.");
 
-  fgInstance = new AliMpDEStore();
+  fgInstance = new AliMpDEStore(dataStreams);
   return fgInstance;
 }    
 
@@ -94,8 +95,9 @@ AliMpDEStore* AliMpDEStore::ReadData(Bool_t warn)
 //
 
 //______________________________________________________________________________
-AliMpDEStore::AliMpDEStore()
+AliMpDEStore::AliMpDEStore(const AliMpDataStreams& dataStreams)
 : TObject(),
+  fDataStreams(dataStreams),
   fDetElements()
 {  
 /// Standard constructor
@@ -110,6 +112,7 @@ AliMpDEStore::AliMpDEStore()
 //______________________________________________________________________________
 AliMpDEStore::AliMpDEStore(TRootIOCtor* ioCtor)
 : TObject(),
+  fDataStreams(ioCtor),
   fDetElements(ioCtor)
 {  
 /// Constructor for IO
@@ -190,58 +193,6 @@ AliMp::StationType AliMpDEStore::StationType(const TString& stationTypeName)
 }
 
 //______________________________________________________________________________
-Bool_t AliMpDEStore::ReadManuToSerialNbs(AliMpDetElement* detElement, 
-                                         AliMp::StationType stationType)
-{
-/// Read manu serial numbers for the given detection element
-
-  // Nothing to be done for trigger
-  if ( stationType == AliMp::kStationTrigger ) return true;
-
-  static Int_t manuMask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
-
-  TString deName = detElement->GetDEName();
-
-  istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::ManuToSerialPath(deName, stationType));
-
-  // Change to Error when all files available
-  //if ( !in.is_open() && stationType == AliMp::kStation345 ) {
-  //   AliWarningStream() << "File " << infile << " not found." << endl;
-  //  return false;
-  //}   
-       
-  char line[80];
-
-  while ( in.getline(line,80) ) {
-
-    if ( line[0] == '#' ) continue;
-
-    TString tmp(AliMpHelper::Normalize(line));
-
-    TObjArray* stringList = tmp.Tokenize(TString(" "));
-
-    Int_t manuId     = atoi( ((TObjString*)stringList->At(0))->GetName());
-    Int_t manuSerial = atoi( ((TObjString*)stringList->At(2))->GetName());
-      
-    TString sPlane = ((TObjString*)stringList->At(1))->GetString();
-
-    // filling manuId <> manuSerial
-    if (!sPlane.CompareTo(PlaneTypeName(AliMp::kBendingPlane)))
-	detElement->AddManuSerial(manuId, manuSerial);
-    else 
-	detElement->AddManuSerial(manuId + manuMask, manuSerial);
-
-    delete stringList;
-  }
-   
-  delete &in; 
-   
-  return true;
-}
-
-//______________________________________________________________________________
 Bool_t
 AliMpDEStore::ReadDENames(AliMp::StationType station)
 { 
@@ -250,8 +201,8 @@ AliMpDEStore::ReadDENames(AliMp::StationType station)
 
   // Open stream
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::DENamesFilePath(station));
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::DENamesFilePath(station));
   
   // Read plane types per cathods
   //
@@ -338,9 +289,6 @@ AliMpDEStore::ReadDENames(AliMp::StationType station)
         AliDebugClassStream(3)  
           << "Adding DE name "  << detElemId << "  " << name << endl;
         fDetElements.Add(detElemId, detElement); 
-        
-        // Read manu serial numbers for this det element
-        ReadManuToSerialNbs(detElement, station);
       } 
       else 
       {
@@ -417,21 +365,3 @@ AliMpDetElement* AliMpDEStore::GetDetElement(const TString& deName, Bool_t warn)
   return 0x0;   
 
 }
-//______________________________________________________________________________
-AliMpIntPair  AliMpDEStore::GetDetElemIdManu(Int_t manuSerial) const
-{
-/// Return the detElemId and manuId for given serial manu number
-
-  TIter next(fDetElements.CreateIterator());
-  AliMpDetElement* detElement;
-  
-  while ( ( detElement = static_cast<AliMpDetElement*>(next()) ) )
-  {
-    Int_t manuId = detElement->GetManuIdFromSerial(manuSerial);
-    if ( manuId ) return AliMpIntPair(detElement->GetId(), manuId);
-  }    
-
-  // manu with this serial number does not exist
-  return AliMpIntPair::Invalid();
-}  
-

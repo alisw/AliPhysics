@@ -37,8 +37,10 @@
 #include "AliMpSegmentation.h"
 #include "AliMpPad.h"
 #include "AliMpDDLStore.h"
+#include "AliMpManuStore.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpCDB.h"
+#include "AliMpDataStreams.h"
 
 #include "AliLog.h"
 
@@ -92,6 +94,7 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fCurrentDEName(),
   fSegmentation(),
   fDDLStore(0x0),
+  fManuStore(0x0),
   fZoomMode(false)
 {
 /// Standard constructor
@@ -101,8 +104,12 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
     AliFatal("Could not access mapping from OCDB !");
   }
 
-  fDDLStore = AliMpDDLStore::Instance();
+  if ( ! AliMpCDB::LoadManuStore() ) {
+    AliFatal("Could not access run-dependent mapping from OCDB !");
+  }
 
+  fDDLStore = AliMpDDLStore::Instance();
+  fManuStore = AliMpManuStore::Instance();
 
   fTrashList.SetOwner(kFALSE);
   
@@ -434,8 +441,10 @@ void AliMpDEVisu::DrawSlat(Option_t* option, Bool_t popup)
   
   AliMpDetElement* detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
   TString nameType =  detElem->GetSegType();
-  
-  AliMpSt345Reader reader;  
+
+  AliMpDataStreams dataStreams;
+
+  AliMpSt345Reader reader(dataStreams);  
   AliMpSlat* slatCurrent = reader.ReadSlat(nameType.Data(), fCurrentPlane);
   AliMpSlat* slatOther   = reader.ReadSlat(nameType.Data(), AliMp::OtherPlaneType(fCurrentPlane));
   
@@ -467,10 +476,12 @@ void AliMpDEVisu::DrawQuadrant(Option_t* option, Bool_t popup)
   AliMpDetElement* detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
   AliMp::StationType  station = detElem->GetStationType();
 
-  AliMpSectorReader readerCurrent(station, fCurrentPlane);
+  AliMpDataStreams dataStreams;
+  
+  AliMpSectorReader readerCurrent(dataStreams, station, fCurrentPlane);
   AliMpSector* sectorCurrent = readerCurrent.BuildSector();
     
-  AliMpSectorReader readerOther(station, AliMp::OtherPlaneType(fCurrentPlane));
+  AliMpSectorReader readerOther(dataStreams, station, AliMp::OtherPlaneType(fCurrentPlane));
   AliMpSector* sectorOther = readerOther.BuildSector();
   
   AliMpVPainter *painter = AliMpVPainter::CreatePainter(sectorCurrent);
@@ -583,8 +594,7 @@ void AliMpDEVisu::InfoDE()
   Int_t firstBus     = TMath::MinElement(detElem->GetNofBusPatches(), vec);
   Int_t lastBus      = TMath::MaxElement(detElem->GetNofBusPatches(), vec);
   
-  detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
-  Int_t numberOfSerialManu = detElem->NofManusWithSerialNumber(); // number of manu with an identified serial number
+  Int_t numberOfSerialManu = fManuStore->NofManus(detElem->GetId()); // number of manu with an identified serial number
   
   fLogMessage->AddLine(Form("DrawDE: detection element: %d, name: %s", 
 		       fCurrentDetElem, fCurrentDEName.Data()));
@@ -895,9 +905,9 @@ void AliMpDEVisu::InfoManuMotif(AliMpMotifPosition* motifPos)
 			       motifPos->GetMotif()->GetPadDimensions(0).Y()*2. ));
 
     fLogMessage->AddLine( Form("PopupManuMotif: manu: %d, serial number: %d, buspatch: %d",
-			       manuId, 
-			       fDDLStore->GetDetElement(fCurrentDetElem)->GetManuSerialFromId(manuId),
-			       fDDLStore->GetBusPatchId(fCurrentDetElem, manuId)) );
+                             manuId, 
+                             fManuStore->GetManuSerial(fCurrentDetElem, manuId),
+                             fDDLStore->GetBusPatchId(fCurrentDetElem, manuId)) );
 
     fLogMessage->ShowBottom();
 

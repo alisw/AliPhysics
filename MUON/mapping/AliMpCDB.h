@@ -40,6 +40,7 @@ class AliMpCDB : public  TObject {
 
     static Bool_t LoadMpSegmentation(Bool_t warn = false);
     static Bool_t LoadDDLStore(Bool_t warn = false);
+    static Bool_t LoadManuStore(Bool_t warn = false);
     
     static Bool_t LoadMpSegmentation2(
                     const char* cdbpath = "local://$ALICE_ROOT",
@@ -49,12 +50,21 @@ class AliMpCDB : public  TObject {
                     const char* cdbpath = "local://$ALICE_ROOT",
                     Int_t runNumber = 0,
                     Bool_t warn = false);
+    static Bool_t LoadManuStore2(
+                    const char* cdbpath = "local://$ALICE_ROOT",
+                    Int_t runNumber = 0,
+                    Bool_t warn = false);
 
     static Bool_t WriteMpData();
+    static Bool_t WriteMpRunData();
     static Bool_t WriteMpSegmentation(Bool_t readData = true);
     static Bool_t WriteDDLStore(Bool_t readData= true);
+    static Bool_t WriteManuStore(Bool_t readData= true);
     
     static Bool_t GenerateMpData(
+                    const char* cdbpath = "local://$ALICE_ROOT",
+                    Int_t runNumber = 0);
+    static Bool_t GenerateMpRunData(
                     const char* cdbpath = "local://$ALICE_ROOT",
                     Int_t runNumber = 0);
 
@@ -85,7 +95,7 @@ class AliMpCDB : public  TObject {
 
 inline void AliMpCDB::SetLoadFromData(Bool_t loadFromData)
 {
-/// Set option for loading from objects
+/// Set option for loading from CDB mapping data or from CDB mapping objects
 
   fgLoadFromData = loadFromData;
 }  

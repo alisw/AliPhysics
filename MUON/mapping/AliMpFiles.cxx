@@ -49,6 +49,7 @@ ClassImp(AliMpFiles)
 // static data members
 
 const TString AliMpFiles::fgkDataDir = "/data";
+const TString AliMpFiles::fgkDataRunDir = "/data_run";
 const TString AliMpFiles::fgkStationDir = "/station";
 const TString AliMpFiles::fgkBendingDir = "bending_plane/";
 const TString AliMpFiles::fgkNonBendingDir = "non-bending_plane/";
@@ -58,7 +59,6 @@ const TString AliMpFiles::fgkSectorSpecial = "zones_special";
 const TString AliMpFiles::fgkSectorSpecial2 = "zones_special_outer";
 const TString AliMpFiles::fgkMotifPrefix   = "motif";  
 const TString AliMpFiles::fgkMotifSpecialPrefix ="motifSpecial";
-const TString AliMpFiles::fgkManuToSerialDir ="manu_serial/";
 const TString AliMpFiles::fgkManuToSerial ="_manu";
 const TString AliMpFiles::fgkPadPosPrefix  = "padPos"; 
 const TString AliMpFiles::fgkDataExt = ".dat";      
@@ -323,8 +323,8 @@ TString AliMpFiles::ManuToSerialPath(const TString& deName, AliMp::StationType s
 {
 /// Returns the path of the file for the manu id to their serial number
 
-  return  GetTop() + fgkDataDir + StationDataDir(station)
-              + fgkManuToSerialDir + deName + fgkManuToSerial + fgkDataExt; 
+  return  GetTop() + fgkDataRunDir + StationDataDir(station)
+              + deName + fgkManuToSerial + fgkDataExt; 
 }
 
 

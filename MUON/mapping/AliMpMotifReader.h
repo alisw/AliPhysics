@@ -38,6 +38,7 @@ class AliMpMotifMap;
 class AliMpVMotif;
 class AliMpMotifSpecial;
 class AliMpMotifType;
+class AliMpDataStreams;
 
 class AliMpMotifReader : public TObject
 {
@@ -54,8 +55,8 @@ class AliMpMotifReader : public TObject
 #endif    
 
   public:
-    AliMpMotifReader(AliMp::StationType station, AliMp::PlaneType plane);
-    AliMpMotifReader();
+    AliMpMotifReader(const AliMpDataStreams& dataStreams,
+                     AliMp::StationType station, AliMp::PlaneType plane);
     virtual ~AliMpMotifReader();
   
     // methods   
@@ -67,11 +68,14 @@ class AliMpMotifReader : public TObject
     
   private:
     /// Not implemented
+    AliMpMotifReader();
+    /// Not implemented
     AliMpMotifReader(const AliMpMotifReader& right);
     /// Not implemented
     AliMpMotifReader&  operator = (const AliMpMotifReader& right);
 
     // data members  
+    const AliMpDataStreams& fDataStreams; ///< data streams
     AliMp::StationType  fStationType; ///< station type 
     AliMp::PlaneType    fPlaneType;   ///< plane type 
 

@@ -49,6 +49,7 @@
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
+#include "AliMpManuStore.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
 #include "AliMpFiles.h"
@@ -170,6 +171,10 @@ AliMUONCDB::AliMUONCDB(const char* cdbpath)
     // Load mapping
     if ( ! AliMpCDB::LoadDDLStore() ) {
       AliFatal("Could not access mapping from OCDB !");
+    }
+
+    if ( ! AliMpCDB::LoadManuStore() ) {
+      AliFatal("Could not access run-dependent mapping from OCDB !");
     }
 }
 
@@ -488,7 +493,7 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
     ++nmanus;
     
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId); 
-    Int_t serialNumber = de->GetManuSerialFromId(manuId);
+    Int_t serialNumber = AliMpManuStore::Instance()->GetManuSerial(detElemId, manuId);
       
     if ( serialNumber <= 0 ) continue;
     

@@ -30,6 +30,7 @@ class AliMpDetElement;
 class AliMpBusPatch;
 class AliMpLocalBoard;
 class AliMpTriggerCrate;
+class AliMpDataStreams;
 class TArrayI;
 
 class AliMpDDLStore : public  TObject {
@@ -40,7 +41,8 @@ class AliMpDDLStore : public  TObject {
     
     // static access method
     static AliMpDDLStore* Instance(Bool_t warn = true); 
-    static AliMpDDLStore* ReadData(Bool_t warn = true);
+    static AliMpDDLStore* ReadData(const AliMpDataStreams& dataStreams,
+                                   Bool_t warn = true);
     
     // methods
     AliMpDDL*          GetDDL(Int_t ddlId, Bool_t warn = true) const;
@@ -62,9 +64,6 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
     
 
-    /// Get detection elt and Manu number from serial number
-    AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
-    
     /// Get link port and DSP from busPatch id
     AliMpIntPair  GetLinkPortId(Int_t busPatchId) const;
 
@@ -77,6 +76,8 @@ class AliMpDDLStore : public  TObject {
     TIterator* CreateBusPatchIterator() const; 
     
   private:
+    AliMpDDLStore(const AliMpDataStreams& dataStreams);
+    /// Not implemented
     AliMpDDLStore();
     /// Not implemented
     AliMpDDLStore(const AliMpDDLStore& rhs);
@@ -103,6 +104,7 @@ class AliMpDDLStore : public  TObject {
     static const TString  fgkExplicitKeyword; ///< A keyword for ReadBusPatchSpecial()
 
     // data members	
+    const AliMpDataStreams&  fDataStreams;  //!< Data streams
     TObjArray     fDDLs;           ///< Array of DDL objects
     AliMpExMap    fBusPatches;     ///< The map of bus patches per their IDs
     TArrayI       fManuList12[16]; ///< Arrays of 1st manu in bus

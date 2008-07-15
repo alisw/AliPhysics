@@ -32,11 +32,12 @@
 class AliMpSlatMotifMap;
 class AliMpSlat;
 class AliMpPCB;
+class AliMpDataStreams;
 
 class AliMpSt345Reader : public TObject
 {
  public:
-  AliMpSt345Reader();
+  AliMpSt345Reader(const AliMpDataStreams& dataStreams);
   virtual ~AliMpSt345Reader();
 
   AliMpSlat* ReadSlat(const char* slatType, AliMp::PlaneType planeType);
@@ -45,10 +46,13 @@ class AliMpSt345Reader : public TObject
 
 private:
   /// Not implemented
+  AliMpSt345Reader();
+  /// Not implemented
   AliMpSt345Reader(const AliMpSt345Reader& rhs);
   /// Not implemented
   AliMpSt345Reader& operator=(const AliMpSt345Reader& rhs);
 
+  const AliMpDataStreams&  fDataStreams; ///< data streams
   AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
   
   ClassDef(AliMpSt345Reader,0) // Reader for slat stations mapping files 

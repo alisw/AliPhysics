@@ -58,8 +58,6 @@ AliMpDetElement::AliMpDetElement(Int_t id, const TString& name,
     fSegType(segType),
     fPlaneType(planeType),
     fBusPatchIds(false),
-    fManuToSerialNbs(),
-    fSerialNbToManus(),
     fManuList(),
     fTrackerChannels(),
     fHVmanus(),
@@ -77,8 +75,6 @@ AliMpDetElement::AliMpDetElement(TRootIOCtor* ioCtor)
     fSegType(),
     fPlaneType(),
     fBusPatchIds(),
-    fManuToSerialNbs(),
-    fSerialNbToManus(),
     fManuList(),
     fTrackerChannels(),
     fHVmanus(ioCtor),
@@ -115,21 +111,6 @@ Bool_t AliMpDetElement::AddBusPatch(Int_t busPatchId)
   return true;
 }  
  
-//______________________________________________________________________________
-void AliMpDetElement::AddManuSerial(Int_t manuId, Int_t serialNb)
-{
-/// Map the serial manu number 
-/// (Eventually add check if the given pair already present)
-
-  AliCodeTimerAuto("");
-  
-  AliDebug(1,Form("DE %4d ManuId %4d SerialNB %d",
-               fId,manuId,serialNb));
-  
-  fManuToSerialNbs.Add(Long_t(manuId), Long_t(serialNb)); 
-  fSerialNbToManus.Add(Long_t(serialNb), Long_t(manuId));
-}      
-
 //______________________________________________________________________________
 TString AliMpDetElement::GetSegName(AliMp::CathodType cathType) const
 {
@@ -221,22 +202,6 @@ Bool_t  AliMpDetElement::HasBusPatchId(Int_t busPatchId) const
 /// Return true if the bus patch Id is present
 
   return fBusPatchIds.HasValue(busPatchId);; 
-}
-
-//______________________________________________________________________________
-Int_t  AliMpDetElement::GetManuSerialFromId(Int_t manuId) const
-{
-/// Return manu serial number from manuId
-
-  return (Int_t)fManuToSerialNbs.GetValue(Long_t(manuId));
-}
-
-//______________________________________________________________________________
-Int_t  AliMpDetElement::GetManuIdFromSerial(Int_t serialNb) const
-{
-/// Return manuId from manu serial number
-  
-  return (Int_t)fSerialNbToManus.GetValue(Long_t(serialNb));
 }
 
 //______________________________________________________________________________
@@ -362,14 +327,6 @@ AliMpDetElement::ManusForHV(Int_t hvIndex) const
 {
   /// Return the list of manus sharing a hv channel
   return static_cast<AliMpArrayI*>(fHVmanus.GetValue(AliMpHVUID::BuildUniqueID(fId,hvIndex)));
-}
-
-//______________________________________________________________________________
-Int_t 
-AliMpDetElement::NofManusWithSerialNumber() const
-{
-  /// Return the number of manus which have a serial number in this detection element  
-  return fManuToSerialNbs.GetSize();
 }
 
 //______________________________________________________________________________

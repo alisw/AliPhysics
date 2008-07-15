@@ -43,7 +43,6 @@ class AliMpDetElement : public  TObject {
     
     // methods
     Bool_t AddBusPatch(Int_t busPatchId); 
-    void   AddManuSerial(Int_t manuId, Int_t serialNb); 
     void   AddManu(Int_t manuId);
     void   SetDdlId(Int_t ddlId);
 
@@ -62,10 +61,6 @@ class AliMpDetElement : public  TObject {
     Int_t  GetNofBusPatches() const;
     Int_t  GetBusPatchId(Int_t index) const;
     Bool_t HasBusPatchId(Int_t busPatchId) const;
-    
-    Int_t  NofManusWithSerialNumber() const;
-    Int_t  GetManuSerialFromId(Int_t manuId) const;
-    Int_t  GetManuIdFromSerial(Int_t serialNb) const;
 
     Int_t  NofManus() const;
     Int_t  NofChannelsInManu(Int_t manuId) const;
@@ -96,8 +91,6 @@ class AliMpDetElement : public  TObject {
     AliMp::PlaneType fPlaneType;  ///< Plane type on cathod0
     //AliMpExMap     fBusPatches; ///< Bus patches connected to this detection element
     AliMpArrayI    fBusPatchIds;  ///< Bus patches connected to this detection element
-    mutable TExMap fManuToSerialNbs; ///< Map from manuId to serial #   
-    mutable TExMap fSerialNbToManus; ///< Map manu serial # to manuId
     
     mutable TExMap fManuList;  ///< map of manus
     mutable TExMap fTrackerChannels; ///< list of connected pads (tracker only)
@@ -106,7 +99,7 @@ class AliMpDetElement : public  TObject {
     
     Int_t fNofChannels; ///< number of channels in this detection element
     
-  ClassDef(AliMpDetElement,3)  // The manager class for definition of detection element types
+  ClassDef(AliMpDetElement,4)  // The manager class for definition of detection element types
 };
 
 // inline function

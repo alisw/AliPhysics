@@ -17,11 +17,20 @@ The mapping is everywhere in the MUON code loaded from
 OCDB. In case the mapping data files are changed, the mapping
 in OCDB has to be regenerated in this way:
 
+For changes in mapping/data:
 <pre>
 $> cd $ALICE_ROOT/MUON
 $> rm Calib/MappingData/Run0_999999999_v0_s0.root
 $> aliroot
 root [0] AliMpCDB::WriteMpData(); 
+</pre>
+
+For changes in mapping/data_run:
+<pre>
+$> cd $ALICE_ROOT/MUON
+$> rm Calib/MappingRunData/Run0_999999999_v0_s0.root
+$> aliroot
+root [0] AliMpCDB::WriteMpRunData(); 
 </pre>
 
 Note that mapping has to be loaded from OCDB almost each time
@@ -30,20 +39,25 @@ the CBD manager state (the current run number, storage ...).
 The standard way of loading mapping expects the CDB manager
 in a state well defined beforehand; this way is used in
 the MUON code:
-
 <pre>
 if ( ! AliMpCDB::LoadDDLStore() ) {
   AliFatal("Could not access mapping from OCDB !");
 }
 </pre>
-
+In the same way, you can load AliMpManuStore, when manu serial 
+numbers are needed:
+<pre>
+if ( ! AliMpCDB::LoadManuStore() ) {
+  AliFatal("Could not access run-dependent mapping from OCDB !");
+}
+</pre>
 In the interactive Root session, in case the CDB manager state is 
 not defined, you can load mapping from the local OCDB files in this 
 way:
 <pre>
 root [0] AliMpCDB::LoadDDLStore2();
+root [2] AliMpCDB::LoadManuStore2();
 </pre>
-
 
 \section mapping_s1  Graphical User Interface
   
@@ -51,6 +65,7 @@ To use the GUI to plot DE segmentation run:
 
 <pre> 
 AliMpCDB::LoadDDLStore2();
+AliMpCDB::LoadManuStore2();
 new AliMpDEVisu();
 </pre>
 
@@ -58,6 +73,7 @@ or
 
 <pre>
 AliMpCDB::LoadDDLStore2();
+AliMpCDB::LoadManuStore2();
 new AliMpDEVisu(w, h);
 </pre>
 
@@ -89,7 +105,10 @@ of the mapping classes. To run these macros:
 </pre>
                    
 
-\section mapping_s3  Data files format
+\section mapping_s3  Data files in mapping/data
+
+The directory data in $ALICE_ROOT/MUON/mapping contains files
+with data which are not supposed to be changed in a long period.
 
 \subsection mapping_s3_sub1  zones.dat
 
@@ -314,7 +333,24 @@ Two files a generated: one with the list of manu per detection element with thei
 value, the other with the bad, strange or unidentified serial number.
 
 
-\section mapping_s4  Units used
+\section mapping_s4  Data files in mapping/data_run
+
+The directory data_run in $ALICE_ROOT/MUON/mapping contains files
+with data which are expected to change during experiment.
+At present time, there are only files with manu serial numbers:
+
+\subsection mapping_s4_sub1  deName_manu_dat.dat
+
+Contains the list of manuIds and their serial numbers.
+
+<pre> 
+# Id bp/nbp serial
+1 bp 4615
+2 bp 4616
+...
+</pre> 
+
+\section mapping_s5  Units used
  
 Lengths are in centimeters.
  

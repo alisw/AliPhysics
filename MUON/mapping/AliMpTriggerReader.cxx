@@ -64,8 +64,9 @@ const TString AliMpTriggerReader::fgkKeywordFlipX("FLIP_X");
 const TString AliMpTriggerReader::fgkKeywordFlipY("FLIP_Y");
 
 //_____________________________________________________________________________
-AliMpTriggerReader::AliMpTriggerReader() 
+AliMpTriggerReader::AliMpTriggerReader(const AliMpDataStreams& dataStreams) 
 : TObject(),
+  fDataStreams(dataStreams),
   fMotifMap(AliMpSlatMotifMap::Instance()),
   fLocalBoardMap()
 {
@@ -467,8 +468,8 @@ AliMpTriggerReader::ReadLines(const char* slatType,
                        srcLine,destLine));
   
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::SlatFilePath(
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::SlatFilePath(
                              AliMp::kStationTrigger,slatType, planeType));
   
   char line[80];
@@ -545,8 +546,8 @@ AliMpTriggerReader::ReadLocalBoardMapping()
   UShort_t mask;
   
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::LocalTriggerBoardMapping());
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::LocalTriggerBoardMapping());
 
   char line[80];
   Char_t localBoardName[20];
@@ -610,11 +611,12 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
   }
   
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::SlatPCBFilePath(
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::SlatPCBFilePath(
                              AliMp::kStationTrigger,pcbName));
  
-  AliMpMotifReader reader(AliMp::kStationTrigger,AliMp::kNonBendingPlane); 
+  AliMpMotifReader reader(fDataStreams,
+                          AliMp::kStationTrigger,AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for trigger, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory

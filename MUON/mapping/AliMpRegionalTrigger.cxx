@@ -205,31 +205,35 @@ Bool_t AliMpRegionalTrigger::ReadData(const TString& fileName)
 /// Load the Regional trigger from ASCII data files
 /// and return its instance
     
-    if ( fileName != "" ) {
-      AliDebugStream(2) << "Read data from file " << fileName.Data() << endl;
+    AliDebugStream(2) << "Read data from file " << fileName.Data() << endl;
     
-      TString inFileName(fileName);
-      inFileName = gSystem->ExpandPathName(inFileName.Data());
-      ifstream inFile(inFileName.Data(), ios::in);
-      if ( ! inFile.good() ) {
-        AliErrorStream()
-           << "Local Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
-        return kFALSE;
-      }
-      
-      return ReadData(inFile);  
-    } 
-    else {
-      AliDebugStream(2) << "Read data from stream " << fileName.Data() << endl;
-      istream& in
-         = AliMpDataStreams::Instance()
-             ->CreateDataStream(AliMpFiles::LocalTriggerBoardMapping());
-             
-      Bool_t result = ReadData(in);
-      
-      delete &in;
-      return result;        
+    TString inFileName(fileName);
+    inFileName = gSystem->ExpandPathName(inFileName.Data());
+    ifstream inFile(inFileName.Data(), ios::in);
+    if ( ! inFile.good() ) {
+      AliErrorStream()
+         << "Local Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
+      return kFALSE;
     }
+    
+    return ReadData(inFile);  
+}
+
+//______________________________________________________________________________
+Bool_t AliMpRegionalTrigger::ReadData(const AliMpDataStreams& dataStreams)
+{
+/// Load the Regional trigger from ASCII data files
+/// and return its instance
+    
+    AliDebugStream(2) << "Read data from stream " << endl;
+    istream& in
+       = dataStreams.
+           CreateDataStream(AliMpFiles::LocalTriggerBoardMapping());
+           
+    Bool_t result = ReadData(in);
+    
+    delete &in;
+    return result;        
 }
 
 //______________________________________________________________________________

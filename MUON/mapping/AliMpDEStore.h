@@ -23,6 +23,7 @@
 #include "AliMpIntPair.h"
 
 class AliMpDetElement;
+class AliMpDataStreams;
 class TString;
 
 class AliMpDEStore : public  TObject {
@@ -35,15 +36,16 @@ class AliMpDEStore : public  TObject {
     
     // static access method
     static AliMpDEStore* Instance(Bool_t warn = true); 
-    static AliMpDEStore* ReadData(Bool_t warn = true);
+    static AliMpDEStore* ReadData(const AliMpDataStreams& dataStreams,
+                                  Bool_t warn = true);
     
     // methods
     AliMpDetElement* GetDetElement(Int_t detElemId, Bool_t warn = true) const;
     AliMpDetElement* GetDetElement(const TString& detName, Bool_t warn = true) const;
-
-    AliMpIntPair     GetDetElemIdManu(Int_t manuSerial) const;
     
   private:
+    AliMpDEStore(const AliMpDataStreams& dataStreams);
+    /// Not implemented
     AliMpDEStore();
     /// Not implemented
     AliMpDEStore(const AliMpDEStore& rhs);
@@ -55,8 +57,6 @@ class AliMpDEStore : public  TObject {
     AliMp::PlaneType   PlaneType(const TString& planeTypeName);
     AliMp::StationType StationType(const TString& stationTypeName);
 
-    Bool_t ReadManuToSerialNbs(AliMpDetElement* detElement, 
-                       AliMp::StationType stationType);
     Bool_t ReadDENames(AliMp::StationType stationType);
     void   FillDEs();
 
@@ -65,7 +65,8 @@ class AliMpDEStore : public  TObject {
     static const char    fgkCommentPrefix; ///< Comment prefix in DE names file
 
     // data members	
-    AliMpExMap fDetElements; ///< Map between DE Ids and DE objects
+    const AliMpDataStreams&  fDataStreams; //!< Data streams
+    AliMpExMap  fDetElements; ///< Map between DE Ids and DE objects
       
   ClassDef(AliMpDEStore,1)  // The manager class for definition of detection element types
 };

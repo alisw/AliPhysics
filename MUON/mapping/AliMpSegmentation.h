@@ -40,6 +40,7 @@ class AliMpDEStore;
 class AliMpVSegmentation;
 class AliMpSegmentation;
 class AliMpSlatMotifMap;
+class AliMpDataStreams;
 class TRootIOCtor;
 
 class AliMpSegmentation : public  TObject {
@@ -50,7 +51,8 @@ class AliMpSegmentation : public  TObject {
     
     // static methods
     static AliMpSegmentation* Instance(Bool_t warn = true);
-    static AliMpSegmentation* ReadData(Bool_t warn = true);
+    static AliMpSegmentation* ReadData(const AliMpDataStreams& dataStreams, 
+                                       Bool_t warn = true);
 
     // methods
     const AliMpVSegmentation* GetMpSegmentation(
@@ -62,8 +64,7 @@ class AliMpSegmentation : public  TObject {
 			         Bool_t warn = true) const;
     
   private:
-    /// Not implemented
-    AliMpSegmentation();
+    AliMpSegmentation(const AliMpDataStreams& dataStreams);
     /// Not implemented
     AliMpSegmentation(const AliMpSegmentation& rhs);
     /// Not implemented
@@ -78,10 +79,11 @@ class AliMpSegmentation : public  TObject {
     static AliMpSegmentation* fgInstance; ///< Singleton instance
 
     // data members
+    const AliMpDataStreams&  fDataStreams;  //!< Data streams
     AliMpDEStore*      fDetElements;    ///< Detection element store
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE seg names
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations
-    AliMpSlatMotifMap* fSlatMotifMap; ///< Map of motif, motifTypes to avoid duplications and allow proper deletion
+    AliMpSlatMotifMap* fSlatMotifMap;   ///< Map of motif, motifTypes to avoid duplications and allow proper deletion
     
   ClassDef(AliMpSegmentation,2)  // The factory for building mapping segmentations
 };

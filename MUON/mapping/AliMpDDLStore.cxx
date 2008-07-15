@@ -38,6 +38,7 @@
 #include "AliMpDataStreams.h"
 #include "AliMpHelper.h"
 #include "AliMpDEManager.h"
+#include "AliMpManuStore.h"
 #include "AliMpDetElement.h"
 #include "AliMpBusPatch.h"
 #include "AliMpTriggerCrate.h"
@@ -83,7 +84,8 @@ AliMpDDLStore* AliMpDDLStore::Instance(Bool_t warn)
 }
 
 //______________________________________________________________________________
-AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn) 
+AliMpDDLStore* AliMpDDLStore::ReadData(const AliMpDataStreams& dataStreams,
+                                       Bool_t warn) 
 {
     /// Load the DDL store from ASCII data files
     /// and return its instance
@@ -94,10 +96,10 @@ AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn)
         return fgInstance;
     }
 
-    if ( AliMpDataStreams::Instance()->GetReadFromFiles() )
-      AliInfoClass("Reading DDL Store from ASCII files.");
+    if ( dataStreams.GetReadFromFiles() )
+      AliInfoClass("Reading Manu Store from ASCII files.");
 
-    fgInstance = new AliMpDDLStore();
+    fgInstance = new AliMpDDLStore(dataStreams);
     return fgInstance;
 }
 
@@ -106,8 +108,9 @@ AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn)
 //
 
 //______________________________________________________________________________
-AliMpDDLStore::AliMpDDLStore()
+AliMpDDLStore::AliMpDDLStore(const AliMpDataStreams& dataStreams)
         : TObject(),
+        fDataStreams(dataStreams),
         fDDLs(fgkNofDDLs+fgkNofTriggerDDLs), // FIXEME
         fBusPatches(),
         fManuList12(),
@@ -123,7 +126,7 @@ AliMpDDLStore::AliMpDDLStore()
     
     // Load segmentation & DE store data
     if ( ! AliMpSegmentation::Instance(false) )
-        AliMpSegmentation::ReadData(true);
+        AliMpSegmentation::ReadData(dataStreams, true);
 
     // Create all detection elements
     ReadDDLs();
@@ -138,6 +141,7 @@ AliMpDDLStore::AliMpDDLStore()
 //______________________________________________________________________________
 AliMpDDLStore::AliMpDDLStore(TRootIOCtor* ioCtor)
         : TObject(),
+        fDataStreams(ioCtor),
         fDDLs(),
         fBusPatches(ioCtor),
         fRegionalTrigger(ioCtor)
@@ -205,8 +209,8 @@ Bool_t AliMpDDLStore::ReadDDLs()
     /// Read ddl <-> bus patch file
 
     istream& in 
-      = AliMpDataStreams::Instance()
-        ->CreateDataStream(AliMpFiles::BusPatchFilePath());
+      = fDataStreams.
+          CreateDataStream(AliMpFiles::BusPatchFilePath());
 
     char line[255];
 
@@ -294,7 +298,7 @@ Bool_t  AliMpDDLStore::ReadTrigger()
 {
     /// create trigger DDL object and Global crate object
   
-  if ( ! fRegionalTrigger.ReadData() ) return false;
+  if ( ! fRegionalTrigger.ReadData(fDataStreams) ) return false;
 
   return true;
 }
@@ -473,8 +477,8 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
 /// and reset the manus arrays filled via SetManu function
 
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::BusPatchSpecialFilePath());
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::BusPatchSpecialFilePath());
 
   char line[255];
 
@@ -580,8 +584,8 @@ Bool_t AliMpDDLStore::ReadBusPatchInfo()
     /// read the buspatch info file and set buspatch info
 
     istream& in 
-      = AliMpDataStreams::Instance()
-        ->CreateDataStream(AliMpFiles::BusPatchInfoFilePath());
+      = fDataStreams.
+          CreateDataStream(AliMpFiles::BusPatchInfoFilePath());
 
     char line[255];
 
@@ -832,18 +836,6 @@ AliMpIntPair  AliMpDDLStore::GetLinkPortId(Int_t busPatchId) const {
 }
 
 //______________________________________________________________________________
-AliMpIntPair  AliMpDDLStore::GetDetElemIdManu(Int_t manuSerial) const {
-    /// Return the detElemId and manuId for given serial manu number
-
-    if ( ! AliMpDEStore::Instance() ) {
-        AliFatal("DE Store has not been loaded.");
-        return AliMpIntPair::Invalid();
-    }
-
-    return AliMpDEStore::Instance()->GetDetElemIdManu(manuSerial);
-}
-
-//______________________________________________________________________________
 void AliMpDDLStore::PrintAllManu() const {
     /// Print all manu Ids and their serial numbers sorted by detection element
     /// and bus patch.                                                            \n
@@ -868,11 +860,15 @@ void AliMpDDLStore::PrintAllManu() const {
             }
             cout << endl;
 
-            cout << "    Manu serial: ";
-            for ( Int_t k=0; k<busPatch->GetNofManus(); ++k ) {
-                cout << std::setw(6) << de->GetManuSerialFromId(busPatch->GetManuId(k)) << " ";
-            }
-            cout << endl;
+            if ( AliMpManuStore::Instance(kFALSE) ) {
+              cout << "    Manu serial: ";
+              for ( Int_t k=0; k<busPatch->GetNofManus(); ++k ) {
+                cout << std::setw(6) 
+                     << AliMpManuStore::Instance()
+                        ->GetManuSerial(de->GetId(), busPatch->GetManuId(k)) << " ";
+              }
+              cout << endl;
+            }  
         }
     }
 }

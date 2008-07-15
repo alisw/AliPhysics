@@ -79,7 +79,8 @@ AliMpSegmentation* AliMpSegmentation::Instance(Bool_t warn)
 }    
 
 //______________________________________________________________________________
-AliMpSegmentation* AliMpSegmentation::ReadData(Bool_t warn)
+AliMpSegmentation* AliMpSegmentation::ReadData(const AliMpDataStreams& dataStreams,
+                                               Bool_t warn)
 {
 /// Load the sementation from ASCII data files
 /// and return its instance
@@ -90,10 +91,10 @@ AliMpSegmentation* AliMpSegmentation::ReadData(Bool_t warn)
     return fgInstance;
   }  
   
-  if ( AliMpDataStreams::Instance()->GetReadFromFiles() )
+  if ( dataStreams.GetReadFromFiles() )
     AliInfoClass("Reading segmentation from ASCII files.");
 
-  fgInstance = new AliMpSegmentation();
+  fgInstance = new AliMpSegmentation(dataStreams);
   return fgInstance;
 }    
 
@@ -102,8 +103,9 @@ AliMpSegmentation* AliMpSegmentation::ReadData(Bool_t warn)
 //
 
 //______________________________________________________________________________
-AliMpSegmentation::AliMpSegmentation()
+AliMpSegmentation::AliMpSegmentation(const AliMpDataStreams& dataStreams)
 : TObject(),
+  fDataStreams(dataStreams),
   fDetElements(0),
   fMpSegmentations(),
   fElCardsMap(),
@@ -115,7 +117,7 @@ AliMpSegmentation::AliMpSegmentation()
   
   // Load DE data
   if ( ! AliMpDEStore::Instance(false) )  
-    AliMpDEStore::ReadData();
+    AliMpDEStore::ReadData(dataStreams);
   fDetElements = AliMpDEStore::Instance();  
 
   // Create mapping segmentations for all detection elements
@@ -142,6 +144,7 @@ AliMpSegmentation::AliMpSegmentation()
 //______________________________________________________________________________
 AliMpSegmentation::AliMpSegmentation(TRootIOCtor* ioCtor)
 : TObject(),
+  fDataStreams(ioCtor),
   fDetElements(0),
   fMpSegmentations(),
   fElCardsMap(ioCtor),
@@ -203,17 +206,17 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
   AliMpVSegmentation* mpSegmentation = 0;
 
   if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) {
-    AliMpSectorReader reader(stationType, planeType);
+    AliMpSectorReader reader(fDataStreams, stationType, planeType);
     AliMpSector* sector = reader.BuildSector();
     mpSegmentation = new AliMpSectorSegmentation(sector, true);
   }
   else if ( stationType == AliMp::kStation345 ) { 
-    AliMpSt345Reader reader;
+    AliMpSt345Reader reader(fDataStreams);
     AliMpSlat* slat = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation =  new AliMpSlatSegmentation(slat, true);
   }
   else if ( stationType == AliMp::kStationTrigger ) {
-    AliMpTriggerReader reader;
+    AliMpTriggerReader reader(fDataStreams);
     AliMpTrigger* trigger = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation = new AliMpTriggerSegmentation(trigger, true);
   }

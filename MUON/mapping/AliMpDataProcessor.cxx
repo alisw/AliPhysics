@@ -115,7 +115,9 @@ void AliMpDataProcessor::ProcessFile(const TString& path, AliMpDataMap* dataMap)
   // cut top path
   string top = AliMpFiles::GetTop().Data();
   string fullDataPath = path.Data();
-  string dataPath = string(fullDataPath, top.size()+6);
+  string dataPath = fullDataPath;
+  if ( dataPath.find(top) != string::npos ) dataPath.erase(0, top.size()+1);
+  dataPath.erase(0,dataPath.find('/')+1); 
   
   AliDebugStream(2) << "Processing file " << dataPath << endl;
 
@@ -242,7 +244,7 @@ AliMpDataMap* AliMpDataProcessor::CreateDataMap(const TString& dataDir)
 /// the file path.
 
   TString curDir = gSystem->pwd();
-
+  
   AliMpDataMap* dataMap = new AliMpDataMap();
 
   TString dataPath = AliMpFiles::GetTop() + "/" + dataDir;

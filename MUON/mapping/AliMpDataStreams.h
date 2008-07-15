@@ -10,13 +10,19 @@
 ///
 /// The class provides input streams for mapping data;
 /// the input streams can be represented either by the
-/// data files or by string streams filled from AliMpDataMap.
-/// The string map is set from outside (AliMpCDB).
-/// The data stream must be deleted by client code.
+/// data files or by string streams filled from string map (AliMpDataMap).
+/// The string map is set from outside (AliMpCDB) and is not
+/// deleted in this class.
+/// The data streams returned by CreateDataStream() function
+/// must be deleted by the client code.
 ///
-/// The selection between files and string streams can
-/// be done via function:                                  \n 
-/// void   SetReadFromFiles(Bool_t readFromFiles);
+/// The selection between files and string streams is 
+/// done in the constructor:
+/// if data map is provided, reading is performed from streams,
+/// otherwise reading is performed from file.
+/// User can also use the set function to select reading
+/// from files also when the data map is provided: \n
+/// void SetReadFromFiles();
 ///
 /// \author Ivana Hrivnacova; IPN Orsay
 
@@ -37,19 +43,16 @@ class AliMpDataMap;
 class AliMpDataStreams : public TObject
 {
   public:
-    AliMpDataStreams();
+    AliMpDataStreams(AliMpDataMap* map = 0x0);
+    AliMpDataStreams(TRootIOCtor* ioCtor);
     virtual ~AliMpDataStreams();
   
-    // static methods
-    static AliMpDataStreams* Instance();
-
     // methods
     istream& CreateDataStream(const TString& path) const; 
     Bool_t   IsDataStream(const TString& path) const; 
   
     // set methods
-    void   SetDataMap(AliMpDataMap* map);
-    void   SetReadFromFiles(Bool_t readFromFiles);
+    void   SetReadFromFiles();
     Bool_t GetReadFromFiles() const;
 
   private: 
@@ -58,11 +61,10 @@ class AliMpDataStreams : public TObject
     /// Not implemented
     AliMpDataStreams& operator=(const AliMpDataStreams& right);    
 
-    // static data members
-    static AliMpDataStreams* fgInstance; ///< Singleton instance
+    // methods
+    void CutDataPath(string& dataPath) const;
 
     // data members
-    // TMap* fMap;
     AliMpDataMap*  fMap;           ///< data map
     Bool_t         fReadFromFiles; ///< option for reading data from files
     

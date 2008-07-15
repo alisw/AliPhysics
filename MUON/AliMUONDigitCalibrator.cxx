@@ -29,9 +29,11 @@
 #include "AliMUONVStore.h"
 #include "AliMpBusPatch.h"
 #include "AliMpConstants.h"
+#include "AliMpCDB.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDetElement.h"
+#include "AliMpManuStore.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONDigitCalibrator
@@ -63,7 +65,7 @@ const Int_t AliMUONDigitCalibrator::fgkGain(2);
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
-																							 const AliMUONRecoParam* recoParams,
+                                               const AliMUONRecoParam* recoParams,
                                                const char* calibMode)
 : TObject(),
 fLogger(new AliMUONLogger(20000)),
@@ -134,6 +136,11 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
     fApplyGains = fgkNoGain;
   }
        
+  // Load mapping manu store
+  if ( ! AliMpCDB::LoadManuStore() ) {
+    AliFatal("Could not access manu store from OCDB !");
+  }
+
   fStatusMaker = new AliMUONPadStatusMaker(calib);
   
   // Set default values, as loose as reasonable
@@ -304,9 +311,10 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
   }
   else if ( fApplyGains == fgkGain ) 
   {
-    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
     
-    Int_t serialNumber = de->GetManuSerialFromId(manuId);
+
+    Int_t serialNumber 
+      = AliMpManuStore::Instance()->GetManuSerial(detElemId, manuId);
     
     AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fCapacitances->FindObject(serialNumber));
     

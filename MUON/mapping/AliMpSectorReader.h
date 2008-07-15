@@ -33,18 +33,21 @@ class AliMpMotifReader;
 class AliMpVMotif;
 class AliMpMotifSpecial;
 class AliMpMotifType;
+class AliMpDataStreams;
 
 class AliMpSectorReader : public TObject
 {
   public:
-    AliMpSectorReader(AliMp::StationType station, AliMp::PlaneType plane);
-    AliMpSectorReader();
+    AliMpSectorReader(const AliMpDataStreams& dataStreams,
+                      AliMp::StationType station, AliMp::PlaneType plane);
     virtual ~AliMpSectorReader();
   
     // methods   
     AliMpSector*  BuildSector();
     
   private:  
+    /// Not implemented
+    AliMpSectorReader();
     /// Not implemented
     AliMpSectorReader(const AliMpSectorReader& right);
     /// Not implemented
@@ -77,6 +80,7 @@ class AliMpSectorReader : public TObject
     static const TString  fgkPadRowSegmentKeyword; ///< pad row segment keyword
   
     // data members  
+    const AliMpDataStreams&  fDataStreams; ///< data streams
     AliMp::StationType  fStationType; ///< station type 
     AliMp::PlaneType    fPlaneType;   ///< plane type 
     AliMpSector*        fSector;      ///< sector

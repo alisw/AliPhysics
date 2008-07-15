@@ -85,6 +85,9 @@ class AliMpFiles : public TObject
 
     static TString SerialToBinFilePath();
 
+    static TString PlaneDataDir(AliMp::StationType station, AliMp::PlaneType plane); 
+    static TString StationDataDir(AliMp::StationType station); 
+  
     // set methods
     static void SetTopPath(const TString& topPath);
     static TString GetTop();
@@ -97,12 +100,9 @@ class AliMpFiles : public TObject
     /// Not implemented
     AliMpFiles& operator=(const AliMpFiles& right);    
 
-    // methods
-    static TString PlaneDataDir(AliMp::StationType station, AliMp::PlaneType plane); 
-    static TString StationDataDir(AliMp::StationType station); 
-  
     // static data members  
     static const TString fgkDataDir;       ///< data directory
+    static const TString fgkDataRunDir;    ///< directory for run dependent data
     static const TString fgkStationDir;    ///< station directory
     static const TString fgkBendingDir;    ///< bending plane directory
     static const TString fgkNonBendingDir; ///< non-bending plane directory
@@ -112,7 +112,6 @@ class AliMpFiles : public TObject
     static const TString fgkSectorSpecial2;///< sector special data file name
     static const TString fgkMotifPrefix;   ///< motif data file name
     static const TString fgkMotifSpecialPrefix; ///< special motif data file name 
-    static const TString fgkManuToSerialDir;///< manu to serial file directory
     static const TString fgkManuToSerial;  ///< manu to serial file name suffix
     static const TString fgkPadPosPrefix;  ///< pad position data file name
     static const TString fgkDataExt;       ///< file extension

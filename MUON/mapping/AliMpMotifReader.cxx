@@ -51,22 +51,15 @@ ClassImp(AliMpMotifReader)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpMotifReader::AliMpMotifReader(AliMp::StationType station, 
+AliMpMotifReader::AliMpMotifReader(const AliMpDataStreams& dataStreams,
+                                   AliMp::StationType station, 
                                    AliMp::PlaneType plane) 
   : TObject(),
+    fDataStreams(dataStreams),
     fStationType(station),
     fPlaneType(plane)
 {
 /// Standard constructor
-}
-
-//_____________________________________________________________________________
-AliMpMotifReader::AliMpMotifReader() 
-  : TObject(),
-    fStationType(AliMp::kStation1),
-    fPlaneType(AliMp::kBendingPlane)
-{
-/// Default constructor
 }
 
 //_____________________________________________________________________________
@@ -90,16 +83,16 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   // Open streams
   //
   istream& padPosStream 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::PadPosFilePath(
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::PadPosFilePath(
                             fStationType,fPlaneType, motifTypeId));
   istream& bergToGCStream 
-    = AliMpDataStreams::Instance()
-      ->CreateDataStream(AliMpFiles::BergToGCFilePath(fStationType));
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::BergToGCFilePath(fStationType));
       
   istream& motifTypeStream 
-    = AliMpDataStreams::Instance()
-      ->CreateDataStream(AliMpFiles::MotifFilePath(
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::MotifFilePath(
                             fStationType, fPlaneType, motifTypeId));
 
   AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
@@ -267,8 +260,8 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   // Open streams
   //
   istream& in 
-    = AliMpDataStreams::Instance()
-       ->CreateDataStream(AliMpFiles::MotifSpecialFilePath(
+    = fDataStreams.
+        CreateDataStream(AliMpFiles::MotifSpecialFilePath(
                              fStationType,fPlaneType, motifID));
 
   TString id = MotifSpecialName(motifID,scale);
