@@ -103,7 +103,7 @@ void AliRawReaderFile::RequireHeader(Bool_t required)
   // raw data header is not implemented for
   // this class
   if (!required) {
-    Warning("AliRawReaderFile","Reading of raw data without raw data header is not implemented !");
+    Warning("AliRawReaderFile","Reading of raw data without raw data header!");
     if (fHeader) delete fHeader;
     fHeader = NULL;
   }
