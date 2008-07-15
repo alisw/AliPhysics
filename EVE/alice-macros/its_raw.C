@@ -16,7 +16,9 @@
 //   16, 32 : SSD
 // By default import all layers.
 
-void its_raw(Int_t mode = 63)
+void its_raw(Int_t mode            = 63,
+             Bool_t check_empty    = kTRUE,
+             Bool_t scaled_modules = kFALSE)
 {
   AliRawReader *rawReader = AliEveEventManager::AssertRawReader();
 
@@ -28,5 +30,5 @@ void its_raw(Int_t mode = 63)
 
   gStyle->SetPalette(1, 0);
 
-  its_display_raw_digits(di, mode);
+  its_display_raw_digits(di, mode, check_empty, scaled_modules);
 }

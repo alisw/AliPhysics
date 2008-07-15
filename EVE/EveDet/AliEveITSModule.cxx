@@ -280,6 +280,8 @@ void AliEveITSModule::LoadQuads()
   // visualization - called quads.
 
   TClonesArray *digits  = fInfo->GetDigits(fID, fDetID);
+  if (!digits) return;
+
   Int_t         ndigits = digits ? digits->GetEntriesFast() : 0;
 
   Float_t       x, z, dpx, dpz;

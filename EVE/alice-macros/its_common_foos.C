@@ -10,7 +10,33 @@
 void its_common_foos()
 {}
 
-void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
+AliEveITSModule* its_make_module(Int_t i, TEveElement* parent,
+                                 AliEveITSDigitsInfo*  di,
+                                 AliEveDigitScaleInfo* si,
+                                 Bool_t check_empty, Bool_t scaled_modules)
+{
+  AliEveITSModule* m = 0;
+
+  Int_t det_id = 0;
+  if (i > 239 && i < 500) det_id = 1;
+  else if (i >= 500)      det_id = 2;
+
+  if (!check_empty || (di->GetDigits(i, det_id) && di->GetDigits(i, det_id)->GetEntriesFast() > 0))
+  {
+    if (scaled_modules)
+      m = new AliEveITSScaledModule(i, di, si);
+    else
+      m = new AliEveITSModule(i, di);
+    if (parent)
+      parent->AddElement(m);
+  }
+
+  return m;
+}
+
+void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
+                            Bool_t check_empty    = kTRUE,
+                            Bool_t scaled_modules = kFALSE)
 {
   TString sSector;
   TString bsSector="Sector";
@@ -23,6 +49,10 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
   Int_t nsec, nstave, nlad, nMod;
 
   gEve->DisableRedraw();
+
+  AliEveDigitScaleInfo* si = 0;
+  if (scaled_modules)
+    si = new AliEveDigitScaleInfo;
 
   if (mode & 1) {
     TEveElementList* l = new TEveElementList("SPD0");
@@ -41,14 +71,9 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
 	TEveElementList* relStave = new TEveElementList(sStave.Data());
 	relStave->SetMainColor(2);
 	gEve->AddElement(relStave, relSector);
-	for (nMod=0; nMod<4; nMod++)
+	for (nMod=0; nMod<4; ++nMod, ++i)
 	{
-	  if (di->GetDigits(i, 0) && di->GetDigits(i, 0)->GetEntriesFast() > 0)
-	  {
-	    AliEveITSModule* m = new AliEveITSModule(i, di);
-	    gEve->AddElement(m, relStave);
-	  }
-	  ++i;
+          its_make_module(i, relStave, di, si, check_empty, scaled_modules);
 	}
       }
     }
@@ -74,14 +99,9 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
 	TEveElementList* relStave = new TEveElementList(sStave.Data());
 	relStave->SetMainColor(2);
 	gEve->AddElement(relStave, relSector);
-	for (nMod=0; nMod<4; nMod++)
+	for (nMod=0; nMod<4;  ++nMod, ++i)
 	{
-	  if (di->GetDigits(i, 0) && di->GetDigits(i, 0)->GetEntriesFast() > 0)
-	  {
-	    AliEveITSModule* m = new AliEveITSModule(i, di);
-	    gEve->AddElement(m, relStave);
-	  }
-	  ++i;
+          its_make_module(i, relStave, di, si, check_empty, scaled_modules);
 	}
       }
     }
@@ -101,9 +121,9 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
       relLadder->SetMainColor(3);
       gEve->AddElement(relLadder, l);
-      for (nMod=0; nMod<6; nMod++) {
-	AliEveITSModule* m = new AliEveITSModule(i++, di);
-	gEve->AddElement(m, relLadder);
+      for (nMod=0; nMod<6; ++nMod, ++i)
+      {
+        its_make_module(i, relLadder, di, si, check_empty, scaled_modules);
       }
     }
   } else {
@@ -121,9 +141,9 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
       relLadder->SetMainColor(3);
       gEve->AddElement(relLadder, l);
-      for (nMod=0; nMod<8; nMod++) {
-	AliEveITSModule* m = new AliEveITSModule(i++, di);
-	gEve->AddElement(m, relLadder);
+      for (nMod=0; nMod<8;  ++nMod, ++i)
+      {
+        its_make_module(i, relLadder, di, si, check_empty, scaled_modules);
       }
     }
   } else {
@@ -141,9 +161,9 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
       relLadder->SetMainColor(4);
       gEve->AddElement(relLadder, l);
-      for (nMod=0; nMod<22; nMod++) {
-	AliEveITSModule* m = new AliEveITSModule(i++, di);
-	gEve->AddElement(m, relLadder);
+      for (nMod=0; nMod<22; ++nMod, ++i)
+      {
+        its_make_module(i, relLadder, di, si, check_empty, scaled_modules);
       }
     }
   } else {
@@ -161,9 +181,9 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode)
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
       relLadder->SetMainColor(4);
       gEve->AddElement(relLadder, l);
-      for (nMod=0; nMod<25; nMod++) {
-	AliEveITSModule* m = new AliEveITSModule(i++, di);
-	gEve->AddElement(m, relLadder);
+      for (nMod=0; nMod<25; ++nMod, ++i)
+      {
+        its_make_module(i, relLadder, di, si, check_empty, scaled_modules);
       }
     }
   } else {

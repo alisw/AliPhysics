@@ -135,16 +135,18 @@ void AliEveITSScaledModule::LoadQuads()
   // We need this as TEveQuadSet offers optimized treatment for
   // quads in the x-y plane.
 
-  TClonesArray *digits;
+  TClonesArray *digits = fInfo->GetDigits(fID, fDetID);
+  if (!digits) return;
+
+  Int_t ndigits = digits->GetEntriesFast();
+
   Float_t       x, z, zo, dpx, dpz; // orig cells size, pos
-  Int_t         i, j, ndigits;   // orig cells idx
-  Int_t         c1, c2;          // original coordinates
+  Int_t         i, j;               // orig cells idx
+  Int_t         c1, c2;             // original coordinates
 
   Int_t id;
   std::map<Int_t, Int_t> dmap;
   std::map<Int_t, Int_t>::iterator miter;
-  digits  = fInfo->GetDigits(fID, fDetID);
-  ndigits = digits->GetEntriesFast();
 
   Int_t scale = fScaleInfo->GetScale() -1;
   switch(fDetID)
