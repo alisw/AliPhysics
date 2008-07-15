@@ -99,17 +99,17 @@ int main(int argc, char **argv) {
   for (Int_t i=0; i<128; i++) {
        sprintf(ADCname,"hADC%d",i);
        sprintf(texte,"ADC cell%d",i);
-       hADCname[i]  = new TH1F(ADCname,texte,1024,0,1023);
+       hADCname[i]  = new TH1F(ADCname,texte,1024,-0.5, 1023.5);
        sprintf(PEDname,"hPED%d",i);
        sprintf(texte,"PED cell%d",i);
-       hPEDname[i]  = new TH1F(PEDname,texte,1024,0,1023);
+       hPEDname[i]  = new TH1F(PEDname,texte,1024,-0.5, 1023.5);
   }
 //___________________________________________________ 
   
  
   /* open result file to be exported to FES */
   FILE *fp=NULL;
-  fp=fopen("./V0_Ped_Width_Gain.dat","a");
+  fp=fopen("./V0_Ped_Width_Gain.dat","w");
   if (fp==NULL) {
       printf("Failed to open result file\n");
       return -1;}
