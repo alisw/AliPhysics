@@ -49,17 +49,21 @@ class AliRawReader: public TObject {
     virtual const UInt_t* GetEventId() const = 0;
     UInt_t                GetPeriod() const {
       const UInt_t *id = GetEventId();
-      return (((id)[0]>>4)&0x0fffffff);
+      return id ? (((id)[0]>>4)&0x0fffffff): 0;
     }
     UInt_t                GetOrbitID() const {
       const UInt_t *id = GetEventId();
-      return ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff));
+      return id ? ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) : 0;
     }
     UShort_t              GetBCID() const {
       const UInt_t *id = GetEventId();
-      return ((id)[1]&0x00000fff);
+      return id ? ((id)[1]&0x00000fff) : 0;
     }
     virtual const UInt_t* GetTriggerPattern() const = 0;
+    ULong64_t             GetClassMask() const {
+      const UInt_t *pattern = GetTriggerPattern();
+      return pattern ? (((ULong64_t)pattern[1] & 0x3ffff) << 32)|(pattern[0]) : 0;
+    }
     virtual const UInt_t* GetDetectorPattern() const = 0;
     virtual const UInt_t* GetAttributes() const = 0;
     virtual const UInt_t* GetSubEventAttributes() const = 0;
