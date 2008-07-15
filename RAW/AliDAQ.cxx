@@ -354,3 +354,26 @@ void AliDAQ::PrintConfig()
   printf("====================================================================\n");
 
 }
+
+const char *AliDAQ::ListOfTriggeredDetectors(Int_t detectorPattern)
+{
+  // Returns a string with the list of
+  // active detectors. The input is the
+  // trigger pattern word contained in
+  // the raw-data event header.
+
+  static TString detList;
+  detList = "";
+  for(Int_t iDet = 0; iDet < (kNDetectors-1); iDet++) {
+    if ((detectorPattern >> iDet) & 0x1) {
+      detList += fgkDetectorName[iDet];
+      detList += " ";
+    }
+  }
+
+  // Always remember HLT
+  if ((detectorPattern >> kHLTId) & 0x1) detList += fgkDetectorName[kNDetectors-1];
+
+  return detList.Data();
+}
+
