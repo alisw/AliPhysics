@@ -1,6 +1,9 @@
 
 #include "flipPCB.h"
 
+#include "AliMpDataMap.h"
+#include "AliMpDataProcessor.h"
+#include "AliMpDataStreams.h"
 #include "AliMpMotif.h"
 #include "AliMpMotifType.h"
 #include "AliMpMotifPosition.h"
@@ -96,15 +99,21 @@ void flipPCB(const char* srcName)
 {
   // flip PCB in X-direction
 
-  AliMpSlatMotifMap* srcMotifs = new AliMpSlatMotifMap;
-  AliMpSlatMotifMap* destMotifs = new AliMpSlatMotifMap;
+//  AliMpSlatMotifMap* srcMotifs = new AliMpSlatMotifMap;
+//  AliMpSlatMotifMap* destMotifs = new AliMpSlatMotifMap;
+
+  AliMpDataProcessor mp;
+  AliMpDataMap* dataMap = mp.CreateDataMap("data");
+  AliMpDataStreams dataStream(dataMap);
   
-  AliMpSt345Reader reader(*srcMotifs);
+  AliMpSt345Reader reader(dataStream);
 
   AliMpPCB* src = reader.ReadPCB(srcName);
   
   if (!src) return;
 
+  AliMpSlatMotifMap* destMotifs = reader.MotifMap();
+  
   AliMpPCB* dest = flipX(*src,*destMotifs);
     
   if (!dest)

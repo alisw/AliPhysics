@@ -12,12 +12,12 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
 {
   std::vector<std::pair<int,int> > cols;
 
-  if ( what == "L5" )
+  if ( what == "L5" || what == "L23" )
     {
       cols.push_back(std::make_pair<int,int>(0,40)); // starting at zero, length = 40
       cols.push_back(std::make_pair<int,int>(0,24));
     }
-  else if ( what == "Z1" || what == "Z5" )
+  else if ( what == "Z1" || what == "Z5" || what == "Z8" )
     {
       cols.push_back(std::make_pair<int,int>(24,16));
       cols.push_back(std::make_pair<int,int>(0,40));
@@ -29,7 +29,7 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
       add(cols,0,32);
       add(cols,0,32);
     }
-  else if ( what == "Z2" )
+  else if ( what == "Z2" || what == "Z7" )
     {
       cols.push_back(std::make_pair<int,int>(0,8));
       cols.push_back(std::make_pair<int,int>(0,40));
@@ -40,12 +40,12 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
       cols.push_back(std::make_pair<int,int>(0,24));
       cols.push_back(std::make_pair<int,int>(0,40));
     }
-  else if ( what == "L7" )
+  else if ( what == "L7" || what == "L21" )
     {
       cols.push_back(std::make_pair<int,int>(0,40));
       cols.push_back(std::make_pair<int,int>(16,24));
     }
-  else if ( what == "Z3" )
+  else if ( what == "Z3" || what == "Z6" )
     {
       cols.push_back(std::make_pair<int,int>(0,16));
       cols.push_back(std::make_pair<int,int>(0,40));
@@ -468,6 +468,11 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
       add(cols,0,40);
       add(cols,32,8);
     }
+  else if ( what == "L22" )
+  {
+    add(cols,32,8);
+    add(cols,0,40);
+  }
   else if ( what == "L19" )
     {
       add(cols,0,48);

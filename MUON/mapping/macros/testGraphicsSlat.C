@@ -24,6 +24,7 @@
 
 // MUON includes
 #include "AliMpSt345Reader.h"
+#include "AliMpPCB.h"
 #include "AliMpSlat.h"
 #include "AliMpVPainter.h"
 #include "AliMpMotifReader.h"
@@ -33,20 +34,23 @@
 #include "AliMpSlatMotifMap.h"
 #include "TVector2.h"
 #include "TCanvas.h"
+#include "AliMpDataStreams.h"
 #endif
 
-void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = TVector2(2.5,0.5))
+void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = TVector2(5,0.5))
 {
   // Warning : this function leaks memory. But should be fine as only used 
   // interactively to check a few motifs at once...
   //
-  AliMpMotifReader reader(AliMp::kStation345,AliMp::kBendingPlane);
+  AliMpDataStreams ds;
+  AliMpMotifReader reader(ds,AliMp::kStation345,AliMp::kBendingPlane);
   AliMpMotifType* type = reader.BuildMotifType(motifType);
   if (!type)
   {
     cerr << "Motif not found" << endl;
     return;
   }
+  type->Print("G");
   AliMpMotif* motif = new AliMpMotif(motifType,type,padSizes);
   AliMpMotifPosition* pos = new AliMpMotifPosition(0,motif,TVector2(0,0));
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(pos);
@@ -55,8 +59,8 @@ void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = T
     cerr << "Could not get a painter !" << endl;
     return;
   }
-  TCanvas* c = new TCanvas();
-  painter->Draw("MP");
+  new TCanvas(motifType,motifType);
+  painter->Draw("PT");
 }
 
 //112230N
@@ -73,6 +77,8 @@ void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane,
   // P pad
   // I indices
 
+  // PMPT to get manu channels numbering
+  
   Char_t *slatName[19] = {"122000SR1", "112200SR2", "122200S", "222000N", "220000N",
 			  "122000NR1", "112200NR2", "122200N",
 			  "122330N", "112233NR3", "112230N", "222330N", "223300N", "333000N", "330000N",
@@ -82,13 +88,13 @@ void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane,
   Char_t c1Name[255];
   Char_t c1NameJpg[255];
   
-  for (Int_t i = 0; i < 19; i++) {
+  for (Int_t i = 0; i < 2; i++) {
     sprintf(c1Name, "%s%d", "c1", i);
     c1[i]= new TCanvas(c1Name,slatName[i],10,10,1200,800);     
 
     Char_t* slatType = slatName[i];
-    AliMpSlatMotifMap* smm = new AliMpSlatMotifMap;
-    AliMpSt345Reader* reader = new AliMpSt345Reader(*smm);
+    AliMpDataStreams ds;
+    AliMpSt345Reader* reader = new AliMpSt345Reader(ds);
     AliMpSlat* slat = reader->ReadSlat(slatType, planeType);
     AliMpVPainter* painter = AliMpVPainter::CreatePainter(slat);
     painter->Draw(option);
@@ -101,4 +107,27 @@ void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane,
     if (saveJPG) c1[i]->Print(c1NameJpg);
   }
  
+}
+
+void testGraphicsPCB(const char* pcbName="S2B",
+                      Option_t* option = "MZT",
+                      Bool_t savePNG = false)
+{
+  
+  TCanvas* c = new TCanvas(pcbName,pcbName,10,10,1200,800);     
+    
+  AliMpDataStreams ds;
+  AliMpSt345Reader* reader = new AliMpSt345Reader(ds);
+  AliMpPCB* pcb = reader->ReadPCB(pcbName);
+  if (!pcb) 
+  {
+    cerr << "PCB " << pcbName << " does not exist" << endl;
+    return;
+  }
+  
+  AliMpVPainter* painter = AliMpVPainter::CreatePainter(pcb);
+  painter->Draw(option);
+    
+  if (savePNG) c->Print(Form("%s-%s.png",pcbName,option));
+  
 }
