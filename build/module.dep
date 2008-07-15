@@ -73,7 +73,7 @@ $(LIBPATH)/libTHijing.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libS
 $(LIBPATH)/libTHerwig.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libherwig.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT)
 $(LIBPATH)/libSTRUCT.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT)
 $(LIBPATH)/libMUONcore.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
-$(LIBPATH)/libMUONmapping.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libMUONcore.$(SOEXT)
+$(LIBPATH)/libMUONmapping.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libMUONcore.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libMUONgeometry.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libMUONmapping.$(SOEXT) $(LIBPATH)/libMUONcore.$(SOEXT)
 $(LIBPATH)/libMUONcalib.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libMUONmapping.$(SOEXT) $(LIBPATH)/libMUONgeometry.$(SOEXT) $(LIBPATH)/libMUONcore.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libMUONraw.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libMUONcore.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
