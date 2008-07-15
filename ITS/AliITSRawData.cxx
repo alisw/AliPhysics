@@ -2,7 +2,7 @@
 //  RawData classes for set:ITS               //
 ////////////////////////////////////////////////
 
-#include <string.h>
+#include <cstring>
 #include "AliITSRawData.h"
 
 ClassImp(AliITSRawData)

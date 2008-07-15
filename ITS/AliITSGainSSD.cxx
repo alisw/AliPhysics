@@ -15,6 +15,7 @@
 
 
 #include "AliITSGainSSD.h"
+#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo

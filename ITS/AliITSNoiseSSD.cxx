@@ -15,6 +15,7 @@
 
 
 #include "AliITSNoiseSSD.h"
+#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo

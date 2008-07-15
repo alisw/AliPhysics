@@ -15,6 +15,7 @@
 
 
 #include "AliITSPedestalSSD.h"
+#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo

@@ -15,6 +15,7 @@
 
 
 #include "AliITSBadChannelsSSD.h"
+#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo

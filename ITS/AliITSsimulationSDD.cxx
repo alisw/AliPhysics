@@ -18,7 +18,7 @@
 #include <Riostream.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 
 #include <TCanvas.h>
 #include <TF1.h>
