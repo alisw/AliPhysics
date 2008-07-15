@@ -2732,10 +2732,10 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   rotm[3] = TGeoRotation("reflYZ", 90., 0., 90.,-90., 180., 0.);
   
   TVector3 scale[4];  
-  scale[0] = TVector3( 1,  1,  1);  // quadrant I
-  scale[1] = TVector3(-1,  1, -1);  // quadrant II
-  scale[2] = TVector3(-1, -1,  1);  // quadrant III
-  scale[3] = TVector3( 1, -1, -1);  // quadrant IV
+  scale[0] = TVector3( 1,  1, -1);  // quadrant I
+  scale[1] = TVector3(-1,  1,  1);  // quadrant II
+  scale[2] = TVector3(-1, -1, -1);  // quadrant III
+  scale[3] = TVector3( 1, -1,  1);  // quadrant IV
   
   Int_t  detElemId[4];  
   detElemId[0] =  1;  // quadrant I
