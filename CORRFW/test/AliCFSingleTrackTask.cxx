@@ -35,17 +35,21 @@
 #include "AliMCEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliCFManager.h"
 #include "AliCFCutBase.h"
 #include "AliCFContainer.h"
 #include "TChain.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
+#include "AliTPCtrack.h"
 
 ClassImp(AliCFSingleTrackTask)
 
 //__________________________________________________________________________
 AliCFSingleTrackTask::AliCFSingleTrackTask() :
+  fReadTPCTracks(0),
+  fReadAODData(0),
   fCFManager(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0)
@@ -57,6 +61,8 @@ AliCFSingleTrackTask::AliCFSingleTrackTask() :
 //___________________________________________________________________________
 AliCFSingleTrackTask::AliCFSingleTrackTask(const Char_t* name) :
   AliAnalysisTaskSE(name),
+  fReadTPCTracks(0),
+  fReadAODData(0),
   fCFManager(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0)
@@ -83,6 +89,8 @@ AliCFSingleTrackTask& AliCFSingleTrackTask::operator=(const AliCFSingleTrackTask
   //
   if (this!=&c) {
     AliAnalysisTaskSE::operator=(c) ;
+    fReadTPCTracks = c.fReadTPCTracks ;
+    fReadAODData = c.fReadAODData ;
     fCFManager  = c.fCFManager;
     fQAHistList = c.fQAHistList ;
     fHistEventsProcessed = c.fHistEventsProcessed;
@@ -93,6 +101,8 @@ AliCFSingleTrackTask& AliCFSingleTrackTask::operator=(const AliCFSingleTrackTask
 //___________________________________________________________________________
 AliCFSingleTrackTask::AliCFSingleTrackTask(const AliCFSingleTrackTask& c) :
   AliAnalysisTaskSE(c),
+  fReadTPCTracks(c.fReadTPCTracks),
+  fReadAODData(c.fReadAODData),
   fCFManager(c.fCFManager),
   fQAHistList(c.fQAHistList),
   fHistEventsProcessed(c.fHistEventsProcessed)
@@ -121,14 +131,16 @@ void AliCFSingleTrackTask::UserExec(Option_t *)
   //
   Info("UserExec","") ;
 
-  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
-  if (!fESD) {
-    Error("UserExec","NO ESD FOUND!");
+  AliVEvent*    fEvent = fInputEvent ;
+  AliVParticle* track ;
+  
+  if (!fEvent) {
+    Error("UserExec","NO EVENT FOUND!");
     return;
   }
 
   if (!fMCEvent) Error("UserExec","NO MC INFO FOUND");
-
+  
   //pass the MC evt handler to the cuts that need it 
   fCFManager->SetEventInfo(fMCEvent);
 
@@ -154,22 +166,39 @@ void AliCFSingleTrackTask::UserExec(Option_t *)
   }    
 
   //Now go to rec level
-  for (Int_t iTrack = 0; iTrack<fESD->GetNumberOfTracks(); iTrack++) {
-
-    AliESDtrack* track = fESD->GetTrack(iTrack);
+  for (Int_t iTrack = 0; iTrack<fEvent->GetNumberOfTracks(); iTrack++) {
     
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,track)) continue;
+    track = fEvent->GetTrack(iTrack);
+    
+    if (fReadTPCTracks) {
+      if (fReadAODData) {
+	Error("UserExec","TPC-only tracks are not supported with AOD");
+	return ;
+      }
+      AliESDtrack* esdTrack    = (AliESDtrack*) track;
+      AliESDtrack* esdTrackTPC = new AliESDtrack();
+      if (!esdTrack->FillTPCOnlyTrack(*esdTrackTPC)) {
+	Error("UserExec","Could not retrieve TPC info");
+	continue;
+      }
+      track = esdTrackTPC ;
+    }
 
+    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,track)) continue;
+    
     // is track associated to particle ?
-    if (track->GetLabel()<0) continue;
-    AliMCParticle *mcPart  = fMCEvent->GetTrack(track->GetLabel());
+
+    Int_t label = track->GetLabel();
+
+    if (label<0) continue;
+    AliMCParticle *mcPart  = fMCEvent->GetTrack(label);
     
     // check if this track was part of the signal
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue; 
     
     //fill the container
     Double_t mom[3];
-    track->GetPxPyPz(mom);
+    track->PxPyPz(mom);
     Double_t pt=TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]);
     containerInput[0] = pt ;
     containerInput[1] = track->Eta();
@@ -177,6 +206,8 @@ void AliCFSingleTrackTask::UserExec(Option_t *)
 
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,track)) continue ;
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepSelected);
+
+    if (fReadTPCTracks) delete track;
   }
   
   fHistEventsProcessed->Fill(0);

@@ -28,6 +28,7 @@ class TFile ;
 class AliStack ;
 class AliCFManager;
 class AliESDtrack;
+class AliVParticle;
 
 class AliCFSingleTrackTask : public AliAnalysisTaskSE {
   public:
@@ -52,12 +53,21 @@ class AliCFSingleTrackTask : public AliAnalysisTaskSE {
   
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
-  AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
+  AliCFManager * GetCFManager() const {return fCFManager;}           // get corr manager
   void           SetQAList(TList* list) {fQAHistList = list;}
 
+  // Data types
+  Bool_t IsReadTPCTracks() const {return fReadTPCTracks;}
+  Bool_t IsReadAODData()   const {return fReadAODData;}
+  void   SetReadTPCTracks (Bool_t flag=kTRUE) {fReadTPCTracks=flag;}
+  void   SetReadAODData   (Bool_t flag=kTRUE) {fReadAODData=flag;}
+
  protected:
-  AliCFManager   *fCFManager  ;  // pointer to the CF manager
-  TList          *fQAHistList ;  // list of QA histograms
+  
+  Bool_t          fReadTPCTracks ; // flag to loop on TPC tracks only
+  Bool_t          fReadAODData ;   // flag for AOD/ESD input files
+  AliCFManager   *fCFManager    ;  // pointer to the CF manager
+  TList          *fQAHistList   ;  // list of QA histograms
 
   // Histograms
   //Number of events

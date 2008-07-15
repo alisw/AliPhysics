@@ -12,6 +12,8 @@ const Int_t    minclustersTPC = 50 ;
 
 Bool_t AliCFSingleTrackTask(
 			    const Bool_t useGrid = 1,
+			    const Bool_t readAOD = 0,
+			    const Bool_t readTPCTracks = 0,
 			    const char * kTagXMLFile="wn.xml" // XML file containing tags
 			    )
 {
@@ -36,7 +38,8 @@ Bool_t AliCFSingleTrackTask(
 
     //  Create an AliTagAnalysis Object and chain the tags
     AliTagAnalysis   *tagAna = new AliTagAnalysis(); 
-    tagAna->SetType("ESD");  //for aliroot > v4-05
+    if (readAOD) tagAna->SetType("AOD");  //for aliroot > v4-05
+    else         tagAna->SetType("ESD");  //for aliroot > v4-05
     TAlienCollection *coll   = TAlienCollection::Open(kTagXMLFile); 
     TGridResult      *tagResult = coll->GetGridResult("",0,0);
     tagResult->Print();
@@ -47,10 +50,17 @@ Bool_t AliCFSingleTrackTask(
   }
 
   else {// local data
-    analysisChain = new TChain("esdTree");
     //here put your input data path
     printf("\n\nRunning on local file, please check the path\n\n");
-    analysisChain->Add("AliESDs.root");
+
+    if (readAOD) {
+      analysisChain = new TChain("aodTree");
+      analysisChain->Add("AliAOD.root");
+    }
+    else {
+      analysisChain = new TChain("esdTree");
+      analysisChain->Add("AliESDs.root");
+    }
   }
   
 
@@ -121,7 +131,7 @@ Bool_t AliCFSingleTrackTask(
   recQualityCuts->SetMinNClusterTPC(minclustersTPC);
   recQualityCuts->SetRequireITSRefit(kTRUE);
   recQualityCuts->SetQAOn(qaList);
-
+  
   AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
   recIsPrimaryCuts->SetMaxNSigmaToVertex(3);
   recIsPrimaryCuts->SetQAOn(qaList);
@@ -138,7 +148,10 @@ Bool_t AliCFSingleTrackTask(
   
   cutPID->SetPriors(prior);
   cutPID->SetProbabilityCut(0.0);
-  cutPID->SetDetectors("TPC TOF");
+  if (readTPCTracks) cutPID->SetDetectors("TPC");
+  else               cutPID->SetDetectors("ALL");
+  if (readAOD) cutPID->SetAODmode(kTRUE );
+  else         cutPID->SetAODmode(kFALSE);
   switch(TMath::Abs(PDG)) {
   case 11   : cutPID->SetParticleType(AliPID::kElectron, kTRUE); break;
   case 13   : cutPID->SetParticleType(AliPID::kMuon    , kTRUE); break;
@@ -184,6 +197,8 @@ Bool_t AliCFSingleTrackTask(
   AliCFSingleTrackTask *task = new AliCFSingleTrackTask("AliSingleTrackTask");
   task->SetCFManager(man); //here is set the CF manager
   task->SetQAList(qaList);
+  if (readAOD)       task->SetReadAODData() ;
+  if (readTPCTracks) task->SetReadTPCTracks();
 
   //SETUP THE ANALYSIS MANAGER TO READ INPUT CHAIN AND WRITE DESIRED OUTPUTS
   printf("CREATE ANALYSIS MANAGER\n");
@@ -193,10 +208,15 @@ Bool_t AliCFSingleTrackTask(
   if (useGrid) mgr->SetAnalysisType(AliAnalysisManager::kGridAnalysis);
   else mgr->SetAnalysisType(AliAnalysisManager::kLocalAnalysis);
 
+
   AliMCEventHandler*  mcHandler = new AliMCEventHandler();
-  AliESDInputHandler* esdHandler = new AliESDInputHandler();
   mgr->SetMCtruthEventHandler(mcHandler);
-  mgr->SetInputEventHandler(esdHandler);
+ 
+  AliInputEventHandler* dataHandler ;
+  
+  if   (readAOD) dataHandler = new AliAODInputHandler();
+  else           dataHandler = new AliESDInputHandler();
+  mgr->SetInputEventHandler(dataHandler);
 
   // Create and connect containers for input/output
 
@@ -247,6 +267,6 @@ void Load() {
   gSystem->Load("libCORRFW.so") ;
 
   //compile online the task class
-  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");
+  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_ROOT/TPC -I$ROOTSYS/include");
   gROOT->LoadMacro("./AliCFSingleTrackTask.cxx+");
 }
