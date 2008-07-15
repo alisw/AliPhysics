@@ -11,7 +11,7 @@ Calib/AliEMCALCell.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
-DHDR:=EMCALLinkDefcalib.h
+DHDR:=EMCALcalibLinkDef.h
 
 # have to tune
 EINCLUDE:=EMCAL RAW ANALYSIS

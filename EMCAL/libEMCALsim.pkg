@@ -15,7 +15,7 @@ AliEMCALQADataMakerSim.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
-DHDR:=EMCALLinkDefsim.h
+DHDR:=EMCALsimLinkDef.h
 # have to tune
 EINCLUDE:=PYTHIA6 RAW EVGEN THijing
 

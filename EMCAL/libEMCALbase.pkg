@@ -26,7 +26,7 @@ AliEMCALQAChecker.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
-DHDR:=EMCALLinkDefbase.h
+DHDR:=EMCALbaseLinkDef.h
 # have to tune
 EINCLUDE:=PYTHIA6 RAW EVGEN THijing
 

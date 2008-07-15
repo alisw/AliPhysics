@@ -13,7 +13,7 @@ HDRS= $(SRCS:.cxx=.h)
 
 CINTHDRS:= $(HDRS) AliEMCALGeometry.h 
 
-DHDR:=EMCALLinkDefrec.h
+DHDR:=EMCALrecLinkDef.h
 # have to tune
 EINCLUDE:=PYTHIA6 RAW EVGEN THijing
 
