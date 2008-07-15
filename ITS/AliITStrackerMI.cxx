@@ -4715,7 +4715,8 @@ Int_t AliITStrackerMI::CorrectForPipeMaterial(AliITStrackMI *t,
 
   Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
   Double_t rToGo=(dir>0 ? AliITSRecoParam::GetrInsidePipe() : AliITSRecoParam::GetrOutsidePipe());
-  Double_t xToGo; t->GetLocalXat(rToGo,xToGo);
+  Double_t xToGo;
+  if (!t->GetLocalXat(rToGo,xToGo)) return 0;
 
   Double_t xOverX0,x0,lengthTimesMeanDensity;
   Bool_t anglecorr=kTRUE;
@@ -4809,7 +4810,8 @@ Int_t AliITStrackerMI::CorrectForShieldMaterial(AliITStrackMI *t,
     Error("CorrectForShieldMaterial"," Wrong shield name\n");
     return 0;
   }
-  Double_t xToGo; t->GetLocalXat(rToGo,xToGo);
+  Double_t xToGo;
+  if (!t->GetLocalXat(rToGo,xToGo)) return 0;
 
   Int_t index=2*fCurrentEsdTrack+shieldindex;
 
@@ -4899,7 +4901,8 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
   Double_t deltar=(layerindex<2 ? 0.10*r : 0.05*r);
 
   Double_t rToGo=TMath::Sqrt(t->GetX()*t->GetX()+t->GetY()*t->GetY())-deltar*dir;
-  Double_t xToGo; t->GetLocalXat(rToGo,xToGo);
+  Double_t xToGo;
+  if (!t->GetLocalXat(rToGo,xToGo)) return 0;
 
   Int_t index=6*fCurrentEsdTrack+layerindex;
 
