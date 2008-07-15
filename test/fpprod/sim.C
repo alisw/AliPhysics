@@ -6,7 +6,6 @@ void sim(Int_t nev=50) {
     new AliRun("gAlice","The ALICE Off-line Simulation Framework");
   }
 
-  AliLog::SetClassDebugLevel("AliGeomManager",3);
   AliSimulation simulator;
   simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
@@ -14,7 +13,7 @@ void sim(Int_t nev=50) {
     simulator.SetWriteRawData("ALL","raw.root",kTRUE);
   }
   simulator.SetRunHLT("");
-  simulator.SetRunQA("");
+  simulator.SetRunQA(":");
  
   TStopwatch timer;
   timer.Start();
