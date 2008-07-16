@@ -20,6 +20,17 @@
 //  Checks the quality assurance. 
 //  By comparing with reference data
 //  Skeleton for T0
+//---------------------------------------------
+//checkig without reference data:
+//for RAW QA all histograms should have approximatly the same 
+//number of entries as RefPoint
+//for Rec Points checks 
+//  - amplitude measured by 2 methos
+//  - online and offline T0 measurements
+// for ESD quality of reconstruction ( and measurements):
+// RMS of vertex and T0 less than 75ps
+//
+// Alla.Maevskaya@cern.ch   
 //...
 
 // --- ROOT system ---
@@ -50,11 +61,9 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
 
-  cout<<" GetAliTaskName "<<AliQA::GetAliTaskName(index)<<" index "<<index<<endl;
-
 
   Double_t test = 10.0  ;
-  
+   
   Int_t count = 0 ;
   Double_t nent[200], nentraw[200];
   TString hname[200];
@@ -81,10 +90,9 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
     while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
       if (hdata) {
 	nent[count] = hdata->GetEntries();
-       cname = hdata->GetName();
-       hname[count] = cname;
+	cname = hdata->GetName();
+	hname[count] = cname;
 	AliDebug(10,Form("count %i %s -> %f",count, hname[count].Data(),nent[count])) ;
-       		
 	if(index==2){
 	  if(count>23 && count<48)fhRecLEDAmp[count-24] = hdata;
 	  if(count>47 && count<72)fhRecQTC[count-48] = hdata;
@@ -94,7 +102,6 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	
 
 	if(index==3){
-	  printf(" check ESD count %i \n",count);
 	  if(count==0) fhESDMean = hdata;
 	  if(count==1) fhESDVertex = hdata;
 	  if(count>1){
@@ -122,8 +129,8 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
         test = 0.5;  //upper limit value to set kWARNING flag for a task
       }
       else {
-
 	if(index == 2){
+	  //rec points
 	  if ( TMath::Abs(fhRecMean->GetMean() - fhOnlineMean->GetMean()) > 5) 
 	    AliWarning(Form("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean())) ;
 	  Double_t meanLED, meanQTC;
@@ -137,15 +144,17 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	 
 	
 	if (index == 0) {
-	  Int_t realNumber = Int_t(nent[0]);
+	  //raw data
+	  Float_t realNumber = Float_t(nent[0]);
 	  for (Int_t i=77; i<count; i++) 
 	    {
 	      Double_t diff = TMath::Abs(nent[i]-realNumber);
 	      if (diff > 0.1*realNumber )
-		AliWarning(Form("Problem in Number of entried in hist %s  is %f\n",hname[i].Data() , nent[i])) ; 
+		AliWarning(Form("Problem in Number of entried in hist %s  is %f number of RefPoints %f\n",hname[i].Data() , nent[i],realNumber )) ; 
 	    }
 	}
  	if (index == 3) {
+	  //ESD
 	  Double_t rmsMeanTime = fhESDMean->GetRMS();
 	  if (rmsMeanTime>3) 		
 	    AliWarning(Form("Mean time with bad resolution, RMS= %f",rmsMeanTime)) ; 

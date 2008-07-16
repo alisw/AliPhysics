@@ -225,13 +225,12 @@ void AliT0QADataMakerRec::InitRecPoints()
 void AliT0QADataMakerRec::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
-  printf(" !!!!!  AliT0QADataMakerESD::InitESD() started\n");
+
   TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,2400,2500);
   Add2ESDsList(fhESDMean, 0) ;
   TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
   Add2ESDsList(fhESDVertex, 1) ;
   
-  printf(" !!!!!!  AliT0QADataMakerRec::InitESD() ended\n");
 
 }
 
@@ -261,7 +260,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       GetRawsData(0) -> Fill( allData[0][0]);
       allData[0][0] = allData[0][0] - 7000; 
       if (type == 8) shift=76;
-      if (type == 10) shift=0;
+      if (type == 7) shift=0;
 	    
       for (Int_t ik = 0; ik<12; ik++){
 	for (Int_t iHt=0; iHt<5; iHt++){
@@ -293,28 +292,31 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       }
       
 
-      if(type == 10)
+      if(type == 7)
 	{
-	  GetRawsData(73)->Fill(allData[49][0]-allData[0][0]);
-	  GetRawsData(74)->Fill(allData[50][0]-allData[0][0]);
-	  GetRawsData(75)->Fill(allData[51][0]-allData[0][0]);
-	  GetRawsData(76)->Fill(allData[52][0]-allData[0][0]);
+	  for (Int_t iHt=0; iHt<5; iHt++) {
+	    GetRawsData(73)->Fill(allData[49][iHt]-allData[0][0]);
+	    GetRawsData(74)->Fill(allData[50][iHt]-allData[0][0]);
+	    GetRawsData(75)->Fill(allData[51][iHt]-allData[0][0]);
+	    GetRawsData(76)->Fill(allData[52][iHt]-allData[0][0]);
+	  }
 	}
       if(type == 8)
 	{
-	  GetRawsData(149)->Fill(allData[49][0]-allData[0][0]);
-	  GetRawsData(150)->Fill(allData[50][0]-allData[0][0]);
-	  GetRawsData(151)->Fill(allData[51][0]-allData[0][0]);
-	  GetRawsData(152)->Fill(allData[52][0]-allData[0][0]);
-	  /*	  cout<<" and "<<allData[49][0]-allData[0][0]<<
+	  for (Int_t iHt=0; iHt<5; iHt++) {
+	    GetRawsData(149)->Fill(allData[49][iHt]-allData[0][0]);
+	    GetRawsData(150)->Fill(allData[50][iHt]-allData[0][0]);
+	    GetRawsData(151)->Fill(allData[51][iHt]-allData[0][0]);
+	    GetRawsData(152)->Fill(allData[52][iHt]-allData[0][0]);
+	    /*	  cout<<" and "<<allData[49][0]-allData[0][0]<<
 	    " vertex "<<allData[50][0]-allData[0][0]<<
 	    " ORA "<<allData[51][0]-allData[0][0]<<
 	    " ORC "<<allData[52][0]-allData[0][0]<<endl;*/
-
-	  GetRawsData(153)->Fill(allData[53][0]-allData[54][0]);
-	  if(allData[55][0])  GetRawsData(154)->Fill(allData[53][0]-allData[54][0]);
-	  if(allData[55][0])  GetRawsData(155)->Fill(allData[53][0]-allData[54][0]);
-
+	    
+	    GetRawsData(153)->Fill(allData[53][iHt]-allData[54][iHt]);
+	    if(allData[55][iHt])  GetRawsData(154)->Fill(allData[53][iHt]-allData[54][iHt]);
+	    if(allData[55][iHt])  GetRawsData(155)->Fill(allData[53][iHt]-allData[54][iHt]);
+	  }
 	}  
       delete start;
     }
@@ -326,7 +328,6 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
   //fills QA histos for clusters
 
-  //   printf(" !!!!!  AliT0QADataMakerRec::MakeRecPoints() started\n");
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
     if (!frecpoints) {
     AliError("Reconstruct Fill ESD >> no recpoints found");
@@ -352,7 +353,6 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
   }
      GetRecPointsData(72) ->Fill(frecpoints->GetOnlineMean());
      GetRecPointsData(73) ->Fill(frecpoints->GetMeanTime());
-     //  printf(" !!!!!  AliT0QADataMakerRec::MakeRecPoints() end\n");
   
 }
 
@@ -360,7 +360,6 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
 void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
-  printf(" !!!!!  AliT0QADataMakerRec::MakeESD() started\n");
 
   GetESDsData(0) -> Fill(esd->GetT0());
   GetESDsData(1)-> Fill(esd->GetT0zVertex());
