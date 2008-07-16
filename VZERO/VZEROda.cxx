@@ -72,9 +72,9 @@ int main(int argc, char **argv) {
 //___________________________________________________
 // Get cuts from V00DA.config file
 
-  Int_t    kHighCut;    // = 50; high cut on pedestal distribution - to be tuned
-  Int_t    kLowCut;     // = 30; low cut on signal distribution - to be tuned
-
+  Int_t    kLowCut;     // = 60;   low cut on signal distribution - to be tuned
+  Int_t    kHighCut;    // = 50;   high cut on pedestal distribution - to be tuned
+  
   status = daqDA_DB_getFile("V00DA.config","./V00DA.config");
   if (status) {
       printf("Failed to get config file (V00DA.config) from DAQdetDB, status=%d\n", status);
@@ -179,17 +179,22 @@ int main(int argc, char **argv) {
 	   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
 	   rawStream->Next();	
            for(Int_t i=0; i<64; i++) {
-	       if(!rawStream->GetIntegratorFlag(i,10))
-                   hADCname[i]->Fill(float(rawStream->GetADC(i)));       // even integrator - fills 0 to 63
-	       else 
-		   hADCname[i+64]->Fill(float(rawStream->GetADC(i)));    // odd integrator  - fills 64 to 123
-	       for(Int_t j=0; j<21; j++) {
-		   if(j==10) continue;
-		   if(!rawStream->GetIntegratorFlag(i,j))
-                       { hPEDname[i]->Fill(float(rawStream->GetPedestal(i,j))); }     // even integrator
-		   else 
-		       { hPEDname[i+64]->Fill(float(rawStream->GetPedestal(i,j))); }  // odd integrator 
-	       }
+	   	Int_t nFlag = 0;
+		for(Int_t j=0; j<21; j++) {
+		   if((rawStream->GetBBFlag(i,j)) || (rawStream->GetBGFlag(i,j))) nFlag++; 
+		}
+		if(nFlag == 0){       // Pedestal
+		   for(Int_t j=5;j<16;j++){
+		       Int_t Integrator = rawStream->GetIntegratorFlag(i,j);
+		       Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
+		       hPEDname[i + 64 * Integrator]->Fill(pedestal);
+		   }	
+		} 
+		if((rawStream->GetBBFlag(i,10)) || (rawStream->GetBGFlag(i,10))){ // Charge
+		    Int_t Integrator = rawStream->GetIntegratorFlag(i,10);
+		    Float_t charge = (float)(rawStream->GetADC(i));
+		    hADCname[i + 64 * Integrator]->Fill(charge);
+		}   			   
            }    
            delete rawStream;
            rawStream = 0x0;      
@@ -218,7 +223,7 @@ int main(int argc, char **argv) {
       hPEDname[i]->GetXaxis()->SetRange(0,kHighCut);
       PEDmean[i]  = hPEDname[i]->GetMean(); 
       PEDsigma[i] = hPEDname[i]->GetRMS(); 
-      hADCname[i]->GetXaxis()->SetRange(kLowCut,1023);
+      hADCname[i]->GetXaxis()->SetRange(kLowCut,1024);
       ADCmean[i]  = hADCname[i]->GetMean();
       ADCsigma[i] = hADCname[i]->GetRMS(); 
       fprintf(fp," %.3f %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],ADCmean[i],ADCsigma[i]);
@@ -230,7 +235,7 @@ int main(int argc, char **argv) {
   TFile *histoFile = new TFile("VZERO_histos.root","RECREATE");
     
   for (Int_t i=0; i<128; i++) {
-       hADCname[i]->GetXaxis()->SetRange(0,1023);
+       hADCname[i]->GetXaxis()->SetRange(0,1024);
        hADCname[i]->Write(); 
        hPEDname[i]->Write(); }
 
