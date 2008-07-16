@@ -255,75 +255,79 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
   TString option = GetOption(); 
-   AliDebug(10,Form("Option: %s\n", option.Data()));
-   
-   for (Int_t i0=0; i0<105; i0++)
-     {
-       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 	
-     }
-   
-   Float_t besttimeA=9999999;
-   Float_t besttimeC=9999999;
-   Int_t pmtBestA=99999;
-   Int_t pmtBestC=99999;
-   Float_t timeDiff=9999999, meanTime=0;
-   Double_t qt=0;
-    Int_t mv2MIP = fParam-> GetmV2Mip();     
- 
-   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
-   
-   recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
+  AliDebug(10,Form("Option: %s\n", option.Data()));
    
    
-   AliDebug(10," before read data ");
-   AliT0RawReader myrawreader(rawReader);
-   if (!myrawreader.Next())
-     AliDebug(1,Form(" no raw data found!!"));
-   else
-     {  
-       for (Int_t i=0; i<105; i++) {
-	 for (Int_t iHit=0; iHit<5; iHit++) 
-	   {
-	     allData[i][iHit] = myrawreader.GetData(i,iHit);
-	   }
-       }
-       
-       Float_t channelWidth = fParam->GetChannelWidth() ;  
-       
-       //       Int_t meanT0 = fParam->GetMeanT0();
-       if(option == "pdc"){
-	 for (Int_t in=0; in<24; in++)  
-	   {
-	     
-	     timeLED[in] = allData[in+1][0] ;
-	     timeCFD[in] = allData[in+25][0] ;
-	     chargeQT1[in] = allData[in+57][0] ;
+  for (Int_t i0=0; i0<105; i0++)
+    {
+      for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 	
+    }
+   
+  Float_t besttimeA=9999999;
+  Float_t besttimeC=9999999;
+  Int_t pmtBestA=99999;
+  Int_t pmtBestC=99999;
+  Float_t timeDiff=9999999, meanTime=0;
+  Double_t qt=0;
+  Int_t mv2MIP = fParam-> GetmV2Mip();     
+  UInt_t type =rawReader->GetType();	 
+  
+  AliT0RecPoint* frecpoints= new AliT0RecPoint ();
+  
+  recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
+   
+   
+  AliDebug(10," before read data ");
+  AliT0RawReader myrawreader(rawReader);
+  if (!myrawreader.Next())
+    AliDebug(1,Form(" no raw data found!!"));
+  else
+    {  
+      for (Int_t i=0; i<105; i++) {
+	for (Int_t iHit=0; iHit<5; iHit++) 
+	  {
+	    allData[i][iHit] = myrawreader.GetData(i,iHit);
+	  }
+      }
+    
+      Float_t channelWidth = fParam->GetChannelWidth() ;  
+      
+      //       Int_t meanT0 = fParam->GetMeanT0();
+      if(option == "pdc"){
+	for (Int_t in=0; in<24; in++)  
+	  {
+	    
+	    timeLED[in] = allData[in+1][0] ;
+	    timeCFD[in] = allData[in+25][0] ;
+	    chargeQT1[in] = allData[in+57][0] ;
 	     chargeQT0[in] = allData[in+81][0] ;
-	   }
+	  }
        }
-       
-       if(option == "cosmic") {
-	 for (Int_t in=0; in<12; in++)  
-	   {
-	     timeCFD[in] = allData[in+1][0] ;
-	     timeCFD[in+12] = allData[in+56+1][0] ;
-	     timeLED[in] = allData[in+12+1][0] ;
-	     timeLED[in+12] = allData[in+68+1][0] ;
-	   }
-	 
-	 for (Int_t in=0; in<12;  in++)
-	   {
-	     chargeQT1[in]=allData[2*in+25][0];
-	     chargeQT0[in]=allData[2*in+26][0];
-	   }
-
-	 for (Int_t in=12; in<24;  in++)
-	   {
-	     chargeQT1[in]=allData[2*in+57][0];
-	     chargeQT0[in]=allData[2*in+58][0];
-	   }
-	 
-       }
+      
+      if(option == "cosmic" && type == 7 )
+	{
+	  
+	  for (Int_t in=0; in<12; in++)  
+	    {
+	      timeCFD[in] = allData[in+1][0] ;
+	      timeCFD[in+12] = allData[in+56+1][0] ;
+	      timeLED[in] = allData[in+12+1][0] ;
+	      timeLED[in+12] = allData[in+68+1][0] ;
+	    }
+	  
+	  for (Int_t in=0; in<12;  in++)
+	    {
+	      chargeQT1[in]=allData[2*in+25][0];
+	      chargeQT0[in]=allData[2*in+26][0];
+	    }
+	  
+	   for (Int_t in=12; in<24;  in++)
+	     {
+	       chargeQT1[in]=allData[2*in+57][0];
+	       chargeQT0[in]=allData[2*in+58][0];
+	     }
+	   
+	 } //cosmic with physics event
        for (Int_t in=0; in<24; in++)  
 	 AliDebug(10, Form(" readed Raw %i %i %i %i %i",
 			   in, timeLED[in],timeCFD[in],chargeQT0[in],chargeQT1[in]));
@@ -332,14 +336,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        Float_t time[24], adc[24];
        for (Int_t ipmt=0; ipmt<24; ipmt++) {
 	 if(timeCFD[ipmt]>0 && timeLED[ipmt]>0){
-	   
+	   //for simulated data
 	   if(option == "pdc"){
 	     Double_t qt0 = Double_t(chargeQT0[ipmt]);
 	     Double_t qt1 = Double_t(chargeQT1[ipmt]);
 	     if((qt1-qt0)>0)  adc[ipmt] = Int_t(TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000.)));
 	     time[ipmt] = fCalib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD[ipmt], "pdc" ) ;
 	     Double_t sl = (timeLED[ipmt] - time[ipmt])*channelWidth;
-	     printf(" amplitude %f %f\n",adc[ipmt]/Float_t(mv2MIP), sl);
 	     //pp collison
 	     if( adc[ipmt]/Float_t(mv2MIP) < 20) 
 	       {
@@ -356,13 +359,16 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     AliDebug(10,Form(" QTC %f mv,  time in chann %f ampLED %f",adc[ipmt] ,time[ipmt], qt));
 	     AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f \n ", adc[ipmt]/Float_t(mv2MIP),qt/Float_t(mv2MIP)));
 	   }
-	   if(option == "cosmic") {
+	   
+	   
+	     //for physics  data
+	   if(option == "cosmic" && type == 7) {
 	     if(( chargeQT1[ipmt] - chargeQT0[ipmt])>0)  
 	       adc[ipmt] = chargeQT1[ipmt] - chargeQT0[ipmt];
 	     else
 	       adc[ipmt] = 0;
 	     //      time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], timeCFD[ipmt],"cosmic" ) ;
-
+	     
 	     Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
 	     time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
 	     time[ipmt] = time[ipmt] - allData[0][0] + 5000;
@@ -371,13 +377,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
 	     Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
 	     AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f \n ",ampMip,qtMip));
-
+	     
 	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
 	     frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
 	     frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
-
-
-	   }
+	   } //if physic data end
 	   
 	 }
 	 else {
@@ -423,10 +427,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ",timeDiff, meanTime,vertex, onlineMean));
 	 
        }
-     } // if (else )raw data
-   recTree->Fill();
-   if(frecpoints) delete frecpoints;
+    } // if (else )raw data
+	 recTree->Fill();
+	 if(frecpoints) delete frecpoints;
 }
+       
+       
 //____________________________________________________________
 
 void AliT0Reconstructor::FillESD(TTree */*digitsTree*/, TTree *clustersTree, AliESDEvent *pESD) const
