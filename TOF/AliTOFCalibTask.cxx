@@ -193,6 +193,9 @@ AliTOFCalibTask:: ~AliTOFCalibTask()
   // destructor
 
   AliInfo("TOF Calib Task: Deleting");
+  for (Int_t i =0;i<TOFCHANNELS;i++){
+	  delete [] fbigarray[i];
+  }
   delete[] fbigarray;
   delete[] findexarray;
   delete fOutputContainer;

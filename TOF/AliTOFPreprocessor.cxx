@@ -77,7 +77,6 @@ const Double_t AliTOFPreprocessor::fgkThrPar      = 0.013; // parameter used to 
 AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TOF", shuttle),
   fData(0),
-  fh2(0),
   fCal(0),
   fNChannels(0),
   fStoreRefData(kTRUE),
@@ -96,23 +95,6 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
 AliTOFPreprocessor::~AliTOFPreprocessor()
 {
   // destructor
-  if (fData){
-    delete fData;
-    fData = 0;
-  }
-  if (fh2){
-    delete fh2;
-    fh2 = 0;
-  }
-  if (fCal){
-    //    fCal->Clear();
-    delete fCal;
-    fCal = 0;
-  }
-  if (fStatus){
-    delete fStatus;
-    fStatus = 0;
-  }
 }
 
 //______________________________________________________________________________
@@ -129,7 +111,6 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
 	fData = new AliTOFDataDCS(fRun, fStartTime, fEndTime);
 	fData->SetFDRFlag(fFDRFlag);
-	fh2 = 0x0;
 	fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
 }
 //_____________________________________________________________________________
@@ -163,6 +144,10 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap)
 
   if (!dcsAliasMap){
     Log("No DCS map found: TOF exiting from Shuttle");
+    if (fData){
+	    delete fData;
+	    fData = 0;
+    }
     return 1;// return error Code for DCS input data not found 
   }
   else {
@@ -170,6 +155,10 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap)
     resultDCSMap=fData->ProcessData(*dcsAliasMap);
     if(!resultDCSMap){
       Log("Some problems occurred while processing DCS data, TOF exiting from Shuttle");
+      if (fData){
+	      delete fData;
+	      fData = 0;
+      }
       return 2;// return error Code for processed DCS data not stored 
     }
     else{
@@ -181,12 +170,21 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap)
       resultDCSStore = StoreReferenceData("Calib","DCSData",fData, &metaDataDCS);
       if (!resultDCSStore){
 	Log("Some problems occurred while storing DCS data results in Reference Data, TOF exiting from Shuttle");
+	if (fData){
+		delete fData;
+		fData = 0;
+	}
 	return 3;// return error Code for processed DCS data not stored 
 	         // in reference data
 	
       }
     }
   }
+  if (fData){
+	  delete fData;
+	  fData = 0;
+  }
+  
   return 0;
 }
 //_____________________________________________________________________________
@@ -260,6 +258,9 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
   if (compDelays == "kTRUE") fFDRFlag = kFALSE;
   else fFDRFlag = kTRUE;
 
+  delete cdbEntry;
+  cdbEntry = 0x0;
+
   Log(Form("ComputingDelays = %s, StartingRun = %i",compDelays.Data(),startingRun));
 
   fCal = new AliTOFChannelOnlineArray(fNChannels);
@@ -268,6 +269,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 
   Bool_t resultDAQRef=kFALSE;
   Bool_t resultTOFPP=kFALSE;
+  TH2S *h2 = 0x0;
   // processing DAQ
   
   TFile * daqFile=0x0;
@@ -287,15 +289,19 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 				  if (fileNameRun.Length()>0){
 					  AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun.Data()));
 					  daqFile = new TFile(fileNameRun.Data(),"READ");
-					  fh2 = (TH2S*) daqFile->Get("htof");
+					  h2 = (TH2S*) daqFile->Get("htof");
 					  AliCDBMetaData metaDataHisto;
 					  metaDataHisto.SetBeamPeriod(0);
 					  metaDataHisto.SetResponsible("Chiara Zampolli");
 					  metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
 					  AliInfo("Storing Reference Data");
-					  resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
+					  resultDAQRef = StoreReferenceData("Calib","DAQData",h2, &metaDataHisto);
 					  if (!resultDAQRef){
 						  Log("some problems occurred::No Reference Data stored, TOF exiting from Shuttle");
+						  delete h2;
+						  delete list;
+						  delete fCal;
+						  fCal=0x0;
 						  return 5;//return error code for failure in storing Ref Data 
 					  }
 					  daqFile->Close();
@@ -304,6 +310,9 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 				  
 				  else{
 					  Log("The input data file from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
+					  delete list;
+					  delete fCal;
+					  fCal=0x0;
 					  return 4;//return error code for failure in retrieving Ref Data 
 				  }
 			  }
@@ -311,6 +320,8 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 		  }
 	  else{
 		  Log("The input data file list from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
+		  delete fCal;
+		  fCal=0x0;
 		  return 4;//return error code for failure in retrieving Ref Data 
 	  }	
   }
@@ -333,20 +344,27 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 				  AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
 				  
 				  daqFile = new TFile(fileName.Data(),"READ");
-				  if (fh2) delete fh2;
-				  fh2 = (TH2S*) daqFile->Get("htoftot");
-				  if (!fh2){
+				  if (h2) delete h2;
+				  h2 = (TH2S*) daqFile->Get("htoftot");
+				  if (!h2){
 					  Log("some problems occurred:: No histo retrieved, TOF exiting from Shuttle");
+					  delete listTot;
 					  delete daqFile;
+					  delete fCal;
+					  fCal=0x0;
 					  return 7; //return error code for histograms not existing/junky
 				  }
 				  else {
-					  static const Int_t kSize=fh2->GetNbinsX();
-					  static const Int_t kNBins=fh2->GetNbinsY();
-					  static const Double_t kXBinmin=fh2->GetYaxis()->GetBinLowEdge(1);
+					  static const Int_t kSize=h2->GetNbinsX();
+					  static const Int_t kNBins=h2->GetNbinsY();
+					  static const Double_t kXBinmin=h2->GetYaxis()->GetBinLowEdge(1);
 					  if (kSize != fNChannels){
 						  Log(" number of bins along x different from number of pads, found only a subset of the histograms, TOF exiting from Shuttle");
+						  delete listTot;
+						  delete h2;
 						  delete daqFile;
+						  delete fCal;
+						  fCal=0x0;
 						  return 7; //return error code for histograms not existing/junky
 					  }
 					  Int_t nNotStatistics = 0; // number of channel with not enough statistics
@@ -364,7 +382,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 							  AliDebug(2,Form(" Channel %i found ok according to FEEmap, starting delay computing",ich));
 							  TH1S *h1 = new TH1S("h1","h1",kNBins,kXBinmin-0.5,kNBins*1.+kXBinmin-0.5);
 							  for (Int_t ibin=0;ibin<kNBins;ibin++){
-								  h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
+								  h1->SetBinContent(ibin+1,h2->GetBinContent(ich+1,ibin+1));
 							  }
 							  if(h1->Integral()<integralThr) {
 								  nNotStatistics++;
@@ -413,11 +431,15 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 					  }
 					  if (nNotStatistics!=0) Log(Form("Too little statistics for %d channels!",nNotStatistics)); 
 				  }
+				  delete h2;
 				  daqFile->Close();
 				  delete daqFile;
 			  }
 			  else{
 				  Log("The Cumulative data file from DAQ does not exist, TOF exiting from Shuttle"); 
+				  delete listTot;
+				  delete fCal;
+				  fCal=0x0;
 				  return 6;//return error code for problems in retrieving DAQ data 
 			  }
 		  }
@@ -425,6 +447,8 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 	  }
   else{
     Log("Problem: no list for Cumulative data file from DAQ was found, TOF exiting from Shuttle");
+    delete fCal;
+    fCal=0x0;
     return 6; //return error code for problems in retrieving DAQ data 
   }
 
@@ -437,7 +461,14 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
   resultTOFPP = Store("Calib","ParOnlineDelay",fCal, &metaData,deltaStartingRun,kTRUE);
   if(!resultTOFPP){
     Log("Some problems occurred while storing online object resulting from DAQ data processing");
+    delete fCal;
+    fCal=0x0;
     return 8;//return error code for problems in storing DAQ data 
+  }
+
+  if (fCal){
+    delete fCal;
+    fCal = 0;
   }
 
   return 0;
@@ -474,102 +505,114 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
   //retrieving Pulser data 
   TList* listPulser = GetFileSources(kDAQ, "PULSER");
   if (listPulser !=0x0 && listPulser->GetEntries()!=0)
-    {
-      AliInfo("The following sources produced files with the id PULSER");
-      listPulser->Print();
-      Int_t nPulser = 0;
-      for (Int_t jj=0;jj<listPulser->GetEntries();jj++){
-	Int_t nPulserSource = 0;
-	TObjString * str = dynamic_cast<TObjString*> (listPulser->At(jj));
-	AliInfo(Form("found source %s", str->String().Data()));
-	// file to be stored run per run
-	TString fileNamePulser = GetFile(kDAQ, "PULSER", str->GetName());
-	if (fileNamePulser.Length()>0){
-	  // storing refernce data
-	  AliInfo(Form("Got the file %s, now we can process pulser data.", fileNamePulser.Data()));
-	  daqFile = new TFile(fileNamePulser.Data(),"READ");
-	  h1 = (TH1S*) daqFile->Get("hTOFpulser");
-	  for (Int_t ibin=0;ibin<kSize;ibin++){
-	    if ((h1->GetBinContent(ibin+1))!=-1){
-	      if ((htofPulser->GetBinContent(ibin+1))==-1){
-		htofPulser->SetBinContent(ibin+1,h1->GetBinContent(ibin+1));
-	      }
-	      else {
-		Log(Form("Something strange occurred during Pulser run, channel %i already read by another LDC, please check!",ibin));
-	      }
-	    }
-	  }
-	  
-	  // elaborating infos
-	  Double_t mean =0;
-	  Int_t nread=0;
-	  Int_t nreadNotEmpty=0;
-	  for (Int_t ientry=1;ientry<=h1->GetNbinsX();ientry++){
-
-		  AliDebug(3,Form(" channel %i pulser status before pulser = %i, with global status = %i",ientry,(Int_t)fStatus->GetPulserStatus(ientry),(Int_t)fStatus->GetStatus(ientry)));
-	    /* check whether channel has been read out during current run.
-	     * if the status is bad it means it has not been read out.
-	     * in this case skip channel in order to not affect the mean */ 
-		  if (fStatus->GetHWStatus(ientry-1) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
-			  continue;
-		  nPulser++;
-		  nPulserSource++;
-		  if (h1->GetBinContent(ientry)==-1) continue;
-		  else {
-			  if (h1->GetBinContent(ientry)>0) {
-				  nreadNotEmpty++;
-				  AliDebug(2,Form(" channel %i is ok with entry = %f; so far %i channels added ",ientry-1,h1->GetBinContent(ientry),nreadNotEmpty));
+	  {
+		  AliInfo("The following sources produced files with the id PULSER");
+		  listPulser->Print();
+		  Int_t nPulser = 0;
+		  for (Int_t jj=0;jj<listPulser->GetEntries();jj++){
+			  Int_t nPulserSource = 0;
+			  TObjString * str = dynamic_cast<TObjString*> (listPulser->At(jj));
+			  AliInfo(Form("found source %s", str->String().Data()));
+			  // file to be stored run per run
+			  TString fileNamePulser = GetFile(kDAQ, "PULSER", str->GetName());
+			  if (fileNamePulser.Length()>0){
+				  // storing refernce data
+				  AliInfo(Form("Got the file %s, now we can process pulser data.", fileNamePulser.Data()));
+				  daqFile = new TFile(fileNamePulser.Data(),"READ");
+				  h1 = (TH1S*) daqFile->Get("hTOFpulser");
+				  for (Int_t ibin=0;ibin<kSize;ibin++){
+					  if ((h1->GetBinContent(ibin+1))!=-1){
+						  if ((htofPulser->GetBinContent(ibin+1))==-1){
+							  htofPulser->SetBinContent(ibin+1,h1->GetBinContent(ibin+1));
+						  }
+						  else {
+							  Log(Form("Something strange occurred during Pulser run, channel %i already read by another LDC, please check!",ibin));
+						  }
+					  }
+				  }
+				  
+				  // elaborating infos
+				  Double_t mean =0;
+				  Int_t nread=0;
+				  Int_t nreadNotEmpty=0;
+				  for (Int_t ientry=1;ientry<=h1->GetNbinsX();ientry++){
+					  
+					  AliDebug(3,Form(" channel %i pulser status before pulser = %i, with global status = %i",ientry,(Int_t)fStatus->GetPulserStatus(ientry),(Int_t)fStatus->GetStatus(ientry)));
+					  /* check whether channel has been read out during current run.
+					   * if the status is bad it means it has not been read out.
+					   * in this case skip channel in order to not affect the mean */ 
+					  if (fStatus->GetHWStatus(ientry-1) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
+						  continue;
+					  nPulser++;
+					  nPulserSource++;
+					  if (h1->GetBinContent(ientry)==-1) continue;
+					  else {
+						  if (h1->GetBinContent(ientry)>0) {
+							  nreadNotEmpty++;
+							  AliDebug(2,Form(" channel %i is ok with entry = %f; so far %i channels added ",ientry-1,h1->GetBinContent(ientry),nreadNotEmpty));
+						  }
+						  mean+=h1->GetBinContent(ientry);
+						  nread++;
+					  }
+				  }
+				  if (nread!=0) {
+					  mean/=nread;
+					  AliDebug(2,Form(" nread =  %i , nreadNotEmpty = %i, mean = %f",nread,nreadNotEmpty,mean));
+					  for (Int_t ich =0;ich<fNChannels;ich++){
+						  if (h1->GetBinContent(ich+1)==-1) continue;
+						  AliDebug(3,Form(" channel %i pulser status before pulser = %i",ich,(Int_t)fStatus->GetPulserStatus(ich)));
+						  
+						  /* check whether channel has been read out during current run.
+						   * if the status is bad it means it has not been read out.
+						   * in this case skip channel in order to leave its status 
+						   * unchanged */
+						  if (fStatus->GetHWStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
+							  continue;
+						  
+						  if (h1->GetBinContent(ich+1)<0.05*mean){
+							  fStatus->SetPulserStatus(ich,AliTOFChannelOnlineStatusArray::kTOFPulserBad);  // bad status for pulser
+							  AliDebug(2,Form( " channel %i pulser status after pulser = %i (bad, content = %f), with global status = %i",ich,(Int_t)fStatus->GetPulserStatus(ich),h1->GetBinContent(ich+1),(Int_t)fStatus->GetStatus(ich)));
+						  }
+						  else {
+							  fStatus->SetPulserStatus(ich,AliTOFChannelOnlineStatusArray::kTOFPulserOk);  // good status for pulser
+							  AliDebug(2,Form( " channel %i pulser status after pulser = %i (good), with global status = %i",ich,(Int_t)fStatus->GetPulserStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+						  }
+					  }
+				  }
+				  else {
+					  Log("No channels read!! No action taken, keeping old status");
+				  }
+				  
+				  daqFile->Close();
+				  delete daqFile;
+				  delete h1;
 			  }
-			  mean+=h1->GetBinContent(ientry);
-			  nread++;
-		  }
-	  }
-	  if (nread!=0) {
-		  mean/=nread;
-		  AliDebug(2,Form(" nread =  %i , nreadNotEmpty = %i, mean = %f",nread,nreadNotEmpty,mean));
-		  for (Int_t ich =0;ich<fNChannels;ich++){
-			  if (h1->GetBinContent(ich+1)==-1) continue;
-			  AliDebug(3,Form(" channel %i pulser status before pulser = %i",ich,(Int_t)fStatus->GetPulserStatus(ich)));
 			  
-			  /* check whether channel has been read out during current run.
-			   * if the status is bad it means it has not been read out.
-			   * in this case skip channel in order to leave its status 
-			   * unchanged */
-       			  if (fStatus->GetHWStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
-				  continue;
-			  
-			  if (h1->GetBinContent(ich+1)<0.05*mean){
-				  fStatus->SetPulserStatus(ich,AliTOFChannelOnlineStatusArray::kTOFPulserBad);  // bad status for pulser
-				  AliDebug(2,Form( " channel %i pulser status after pulser = %i (bad, content = %f), with global status = %i",ich,(Int_t)fStatus->GetPulserStatus(ich),h1->GetBinContent(ich+1),(Int_t)fStatus->GetStatus(ich)));
+			  else{
+				  Log("The input data file from DAQ (pulser) was not found, TOF exiting from Shuttle "); 
+				  delete listPulser;
+				  delete htofPulser;
+				  htofPulser = 0x0;
+				  if (fStatus){
+					  delete fStatus;
+					  fStatus = 0;
+				  }
+				  return 10;//return error code for failure in retrieving Ref Data 
 			  }
-			  else {
-				  fStatus->SetPulserStatus(ich,AliTOFChannelOnlineStatusArray::kTOFPulserOk);  // good status for pulser
-				  AliDebug(2,Form( " channel %i pulser status after pulser = %i (good), with global status = %i",ich,(Int_t)fStatus->GetPulserStatus(ich),(Int_t)fStatus->GetStatus(ich)));
-			  }
+			  AliDebug(2,Form(" Number of channels processed during pulser run from source %i = %i",jj, nPulserSource));		 
 		  }
+		  AliDebug(2,Form(" Number of channels processed during pulser run = %i",nPulser));
+		  delete listPulser;
 	  }
-	  else {
-		  Log("No channels read!! No action taken, keeping old status");
-	  }
-	  
-	  daqFile->Close();
-	  delete daqFile;
-	  delete h1;
-	}
-	
-	else{
-		Log("The input data file from DAQ (pulser) was not found, TOF exiting from Shuttle "); 
-		return 10;//return error code for failure in retrieving Ref Data 
-	}
-	AliDebug(2,Form(" Number of channels processed during pulser run from source %i = %i",jj, nPulserSource));
-	
-      }
-      AliDebug(2,Form(" Number of channels processed during pulser run = %i",nPulser));
-      delete listPulser;
-    }
   
   else{
 	  Log("The input data file list from DAQ (pulser) was not found, TOF exiting from Shuttle "); 
+	  delete htofPulser;
+	  htofPulser = 0x0;
+	  if (fStatus){
+		  delete fStatus;
+		  fStatus = 0;
+	  }
 	  return 10;//return error code for failure in retrieving Ref Data 
   }	
   
@@ -583,6 +626,12 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
   resultPulser = Store("Calib","Status",fStatus, &metaData,0,kTRUE);
   if(!resultPulser){
     Log("Some problems occurred while storing online object resulting from Pulser data processing");
+    delete htofPulser;
+    htofPulser = 0x0;
+    if (fStatus){
+	    delete fStatus;
+	    fStatus = 0;
+    }
     return 11;//return error code for problems in storing Pulser data 
   }
 
@@ -598,11 +647,25 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
     resultPulserRef = StoreReferenceData("Calib","PulserData",htofPulser, &metaDataHisto);
     if (!resultPulserRef){
       Log("some problems occurred::No Reference Data for pulser stored, TOF exiting from Shuttle");
+      delete htofPulser;
+      htofPulser = 0x0;
+      if (fStatus){
+	      delete fStatus;
+	      fStatus = 0;
+      }
       return 9;//return error code for failure in storing Ref Data 
     }
   }
   
   daqFile=0;
+
+  delete htofPulser;
+  htofPulser = 0x0;
+
+  if (fStatus){
+    delete fStatus;
+    fStatus = 0;
+  }
 
   return 0;
 }
@@ -639,81 +702,94 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   //retrieving Noise data 
   TList* listNoise = GetFileSources(kDAQ, "NOISE");
   if (listNoise !=0x0 && listNoise->GetEntries()!=0)
-    {
-      AliInfo("The following sources produced files with the id NOISE");
-      listNoise->Print();
-      Int_t nNoise = 0;
-      for (Int_t jj=0;jj<listNoise->GetEntries();jj++){
-	Int_t nNoiseSource = 0;
-	TObjString * str = dynamic_cast<TObjString*> (listNoise->At(jj));
-	AliInfo(Form("found source %s", str->String().Data()));
-	// file to be stored run per run
-	TString fileNameNoise = GetFile(kDAQ, "NOISE", str->GetName());
-	if (fileNameNoise.Length()>0){
-	  // storing reference data
-	  AliInfo(Form("Got the file %s, now we can process noise data.", fileNameNoise.Data()));
-	  daqFile = new TFile(fileNameNoise.Data(),"READ");
-	  h1 = (TH1F*) daqFile->Get("hTOFnoise");
-	  for (Int_t ibin=0;ibin<kSize;ibin++){
-	    if ((h1->GetBinContent(ibin+1))!=-1){
-	      if ((htofNoise->GetBinContent(ibin+1))==-1){
-		htofNoise->SetBinContent(ibin+1,h1->GetBinContent(ibin+1));
-	      }
-	      else {
-		Log(Form("Something strange occurred during Noise run, channel %i already read by another LDC, please check!",ibin));
-	      }
-	    }
+	  {
+		  AliInfo("The following sources produced files with the id NOISE");
+		  listNoise->Print();
+		  Int_t nNoise = 0;
+		  for (Int_t jj=0;jj<listNoise->GetEntries();jj++){
+			  Int_t nNoiseSource = 0;
+			  TObjString * str = dynamic_cast<TObjString*> (listNoise->At(jj));
+			  AliInfo(Form("found source %s", str->String().Data()));
+			  // file to be stored run per run
+			  TString fileNameNoise = GetFile(kDAQ, "NOISE", str->GetName());
+			  if (fileNameNoise.Length()>0){
+				  // storing reference data
+				  AliInfo(Form("Got the file %s, now we can process noise data.", fileNameNoise.Data()));
+				  daqFile = new TFile(fileNameNoise.Data(),"READ");
+				  h1 = (TH1F*) daqFile->Get("hTOFnoise");
+				  for (Int_t ibin=0;ibin<kSize;ibin++){
+					  if ((h1->GetBinContent(ibin+1))!=-1){
+						  if ((htofNoise->GetBinContent(ibin+1))==-1){
+							  htofNoise->SetBinContent(ibin+1,h1->GetBinContent(ibin+1));
+						  }
+						  else {
+							  Log(Form("Something strange occurred during Noise run, channel %i already read by another LDC, please check!",ibin));
+						  }
+					  }
+				  }
+				  // elaborating infos
+				  for (Int_t ich =0;ich<fNChannels;ich++){
+					  if (h1->GetBinContent(ich+1)==-1) continue;
+					  AliDebug(3,Form(" channel %i noise status before noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+					  //AliDebug(2,Form( " channel %i status before noise = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich)));
+					  
+					  /* check whether channel has been read out during current run.
+					   * if the status is bad it means it has not been read out.
+					   * in this case skip channel in order to leave its status 
+					   * unchanged */
+					  if ((fStatus->GetHWStatus(ich)) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
+						  continue;
+					  
+					  nNoise++;
+					  nNoiseSource++;
+					  if (h1->GetBinContent(ich+1)>=1){  // setting limit for noise to 1 kHz
+						  fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseBad); // bad status for noise
+						  AliDebug(2,Form( " channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+					  }
+					  else {
+						  fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseOk); // good status for noise
+						  AliDebug(2,Form(" channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
+					  }
+				  }
+				  
+				  daqFile->Close();
+				  delete daqFile;
+				  delete h1;
+				  
+			  }
+			  
+			  else{
+				  Log("The input data file from DAQ (noise) was not found, TOF exiting from Shuttle "); 
+				  delete listNoise;
+				  delete htofNoise;
+				  htofNoise = 0x0;
+				  if (fStatus){
+					  delete fStatus;
+					  fStatus = 0;
+				  }
+				  return 13;//return error code for failure in retrieving Ref Data 
+			  }
+			  
+			  AliDebug(2,Form(" Number of channels processed during noise run from source %i = %i",jj, nNoiseSource));
+		  }
+		  AliDebug(2,Form(" Number of channels processed during noise run = %i",nNoise));
+		  delete listNoise;
 	  }
-	  // elaborating infos
-	  for (Int_t ich =0;ich<fNChannels;ich++){
-	    if (h1->GetBinContent(ich+1)==-1) continue;
-	    AliDebug(3,Form(" channel %i noise status before noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
-      	    //AliDebug(2,Form( " channel %i status before noise = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich)));
-
-	    /* check whether channel has been read out during current run.
-	     * if the status is bad it means it has not been read out.
-	     * in this case skip channel in order to leave its status 
-	     * unchanged */
-	    if ((fStatus->GetHWStatus(ich)) == AliTOFChannelOnlineStatusArray::kTOFHWBad)
-	      continue;
-
-	    nNoise++;
-	    nNoiseSource++;
-	    if (h1->GetBinContent(ich+1)>=1){  // setting limit for noise to 1 kHz
-		    fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseBad); // bad status for noise
-		    AliDebug(2,Form( " channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
-	    }
-	    else {
-		    fStatus->SetNoiseStatus(ich,AliTOFChannelOnlineStatusArray::kTOFNoiseOk); // good status for noise
-		    AliDebug(2,Form(" channel %i noise status after noise = %i, with global status = %i",ich,(Int_t)fStatus->GetNoiseStatus(ich),(Int_t)fStatus->GetStatus(ich)));
-	    }
-	  }
- 
-	  daqFile->Close();
-	  delete daqFile;
-	  delete h1;
-
-	}
-	
-	else{
-	  Log("The input data file from DAQ (noise) was not found, TOF exiting from Shuttle "); 
-	  return 13;//return error code for failure in retrieving Ref Data 
-	}
-	
-	AliDebug(2,Form(" Number of channels processed during noise run from source %i = %i",jj, nNoiseSource));
-      }
-      AliDebug(2,Form(" Number of channels processed during noise run = %i",nNoise));
-      delete listNoise;
-    }
   else{
-    Log("The input data file list from DAQ (noise) was not found, TOF exiting from Shuttle "); 
-    return 13;//return error code for failure in retrieving Ref Data 
+	  Log("The input data file list from DAQ (noise) was not found, TOF exiting from Shuttle "); 
+	  delete htofNoise;
+	  htofNoise = 0x0;
+	  if (fStatus){
+		  delete fStatus;
+		  fStatus = 0;
+	  }
+	  return 13;//return error code for failure in retrieving Ref Data 
   }	
   
   daqFile=0;
-
+  
   //storing in OCDB
-
+  
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Chiara Zampolli");
@@ -722,6 +798,12 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   resultNoise = Store("Calib","Status",fStatus, &metaData,0,kTRUE);
   if(!resultNoise){
     Log("Some problems occurred while storing online object resulting from Noise data processing");
+    delete htofNoise;
+    htofNoise = 0x0;
+    if (fStatus){
+	    delete fStatus;
+	    fStatus = 0;
+    }
     return 14;//return error code for problems in storing Noise data 
   }
 
@@ -737,8 +819,22 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
     resultNoiseRef = StoreReferenceData("Calib","NoiseData",htofNoise, &metaDataHisto);
     if (!resultNoiseRef){
       Log("some problems occurred::No Reference Data for noise stored");
+      delete htofNoise;
+      htofNoise = 0x0;
+      if (fStatus){
+	      delete fStatus;
+	      fStatus = 0;
+      }
       return 12;//return error code for failure in storing Ref Data 
     }
+  }
+
+  delete htofNoise;
+  htofNoise = 0x0;
+
+  if (fStatus){
+    delete fStatus;
+    fStatus = 0;
   }
 
   return 0;
@@ -782,8 +878,11 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 	  updateOCDB = kTRUE;
   }
   else {
+	  if (cdbEntry) cdbEntry->SetOwner(kFALSE);
 	  /* CDB entry OK. loop over channels */
 	  fStatus = (AliTOFChannelOnlineStatusArray*) cdbEntry->GetObject();
+	  delete cdbEntry;
+	  cdbEntry = 0x0;
   }
   for (Int_t iChannel = 0; iChannel < fNChannels; iChannel++){
 	  //AliDebug(2,Form("********** channel %i",iChannel));
@@ -821,6 +920,10 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
 	  if (!StoreReferenceData("Calib", "FEEData", &hCurrentFEE, &metaDataHisto)) {
 		  /* failed */
 		  Log("problems while storing FEE reference data");
+		  if (fStatus){
+			  delete fStatus;
+			  fStatus = 0;
+		  }
 		  return 18; /* error return code for problems while storing FEE reference data */
 	  }
   }
@@ -851,10 +954,19 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
   if (!Store("Calib", "Status", fStatus, &metaData, 0, kTRUE)) {
     /* failed */
     Log("problems while storing FEE data object");
+    if (fStatus){
+	    delete fStatus;
+	    fStatus = 0;
+    }
     return 17; /* return error code for problems  while storing FEE data */
   }
 
   /* everything fine. return */
+
+  if (fStatus){
+    delete fStatus;
+    fStatus = 0;
+  }
 
   return 0;
 

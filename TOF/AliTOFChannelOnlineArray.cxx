@@ -34,6 +34,12 @@ AliTOFChannelOnlineArray::AliTOFChannelOnlineArray():
 	//default constructor
 }
 //________________________________________________________________
+AliTOFChannelOnlineArray::~AliTOFChannelOnlineArray()
+{
+	//distructor
+	delete [] fArray;
+}
+//________________________________________________________________
 AliTOFChannelOnlineArray::AliTOFChannelOnlineArray(Int_t size):
 	TObject(),
 	fSize(size),

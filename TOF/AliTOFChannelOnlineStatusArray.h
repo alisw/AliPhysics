@@ -32,7 +32,7 @@ public:
   AliTOFChannelOnlineStatusArray(Int_t size);
   AliTOFChannelOnlineStatusArray(const AliTOFChannelOnlineStatusArray &source);
   AliTOFChannelOnlineStatusArray& operator= (const AliTOFChannelOnlineStatusArray &source);
-  virtual ~AliTOFChannelOnlineStatusArray(){};
+  ~AliTOFChannelOnlineStatusArray();
   Int_t GetSize() const {return fSize;}
   void  SetStatus(Int_t pos, UChar_t parr);
   void  SetHWStatus(Int_t pos, UChar_t parr);

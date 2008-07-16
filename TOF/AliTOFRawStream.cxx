@@ -402,8 +402,9 @@ AliTOFRawStream::~AliTOFRawStream()
   delete fTOFrawData;
 
   delete [] fLocalEventCounterTRM;
-  for (Int_t ii=0; ii<2; ii++) 
-    delete [] fLocalEventCounterChain[ii];
+  for (Int_t ii=0; ii<13; ii++) 
+	  delete [] fLocalEventCounterChain[ii];
+  delete [] fLocalEventCounterChain;
 
 }
 

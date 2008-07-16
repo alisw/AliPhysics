@@ -48,13 +48,11 @@ class AliTOFPreprocessor : public AliPreprocessor
     static const Double_t fgkThrPar;         // parameter used to trigger the 
                                              // calculation of the delay
     AliTOFDataDCS *fData;                    // CDB class that stores the data
-    TH2S *fh2;                               // TH2S from DAQ for histograms 
-                                             // for delays  
     AliTOFChannelOnlineArray *fCal;          // TOF Calibration object
     Int_t fNChannels;                        // number of TOF channels
     Bool_t fStoreRefData;                    // Flag to decide storage of Ref Data
     Bool_t fFDRFlag;                         // Flag for FDR runs 
     AliTOFChannelOnlineStatusArray *fStatus; // Array with TOF channels' status
-    ClassDef(AliTOFPreprocessor, 5);
+    ClassDef(AliTOFPreprocessor, 0);
 };
 #endif

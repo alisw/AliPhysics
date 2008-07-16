@@ -29,7 +29,7 @@ public:
   AliTOFChannelOnlineArray(Int_t size);
   AliTOFChannelOnlineArray(const AliTOFChannelOnlineArray &source);
   AliTOFChannelOnlineArray& operator= (const AliTOFChannelOnlineArray &source);
-  virtual ~AliTOFChannelOnlineArray(){};
+  ~AliTOFChannelOnlineArray();
   Int_t GetSize() const {return fSize;}
   void  SetDelay(Int_t pos, Float_t parr);
   Float_t  GetDelay(Int_t pos) const;
