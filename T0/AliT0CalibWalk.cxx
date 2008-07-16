@@ -201,64 +201,64 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   }
   else
     {
-  //  gFile->ls();
-  Float_t x1[10], y1[10]; 
-  Float_t x2[10], y2[10];
- 
-  Float_t xx1[10],yy1[10], xx[10];
-  for (Int_t ii=0; ii<10; ii++)
-    {      x1[ii]=0; y1[ii]=0; x2[ii]=0; y2[ii]=0; }
-     
-  
-  TH2F*  hCFDvsQTC[24][10]; TH2F*  hCFDvsLED[24][10];
-
-  for (Int_t i=0; i<24; i++)
-    {
-      for (Int_t im=0; im<10; im++)
-	{
-	  
-	  TString qtc = Form("QTCvsCFD%i_%i",i+1,im+1);
-	  TString led = Form("LEDvsCFD%i_%i",i+1,im+1);
-
-	  hCFDvsQTC[i][im] = (TH2F*) gFile->Get(qtc.Data()) ;
-	  hCFDvsLED[i][im] = (TH2F*) gFile->Get(led.Data());
-
-	  if(!hCFDvsQTC[i][im] || !hCFDvsLED[i][im]) 
-	    AliWarning(Form(" no walk correction data in LASER DA for channel %i for amplitude %i MIPs",i,im));
-	     
-	  if(hCFDvsQTC[i][im] && hCFDvsLED[i][im])
-	    {	  
-	    x1[im] = hCFDvsQTC[i][im]->GetMean(1);
-	    y1[im] = hCFDvsQTC[i][im]->GetMean(2);
-	    x2[im] = hCFDvsLED[i][im]->GetMean(1);
-	    y2[im] = hCFDvsLED[i][im]->GetMean(2);
-	    }
-	  xx[im]=im+1;
-	}
-      for (Int_t imi=0; imi<10; imi++)
-	{
-	  yy1[imi] = Float_t (10-imi);
-	  xx1[imi]=x2[10-imi-1]; 
-	}
-	if(i==0){	
-	 cout<<"Making graphs..."<<endl;
-	}
-      TGraph *gr1 = new TGraph (10,x1,y1);
-      TGraph *gr2 = new TGraph (10,x2,y2);
-      fWalk.AddAtAndExpand(gr1,i);
-      fAmpLEDRec.AddAtAndExpand(gr2,i);
+      gFile->ls();
+      Float_t x1[10], y1[10]; 
+      Float_t x2[10], y2[10];
       
-
- 
-      TGraph *gr4 = new TGraph (10,xx1,yy1);
-      TGraph *gr3 = new TGraph (10,x1,xx);
-      fQTC.AddAtAndExpand(gr3,i);	 
-      fAmpLED.AddAtAndExpand(gr4,i);
-      //      for (Int_t im=0; im<10; im++) { x2[im]=0;  y2[im]=0;  xx1[im]=0; xx[im]=0;}
-	if(i==23){
-	 cout<<"Graphs created..."<<endl;
+      Float_t xx1[10],yy1[10], xx[10];
+      for (Int_t ii=0; ii<10; ii++)
+	{      x1[ii]=0; y1[ii]=0; x2[ii]=0; y2[ii]=0; }
+      
+      
+      TH2F*  hCFDvsQTC[24][10]; TH2F*  hCFDvsLED[24][10];
+      
+      for (Int_t i=0; i<24; i++)
+	{
+	  for (Int_t im=0; im<10; im++)
+	    {
+	      
+	      TString qtc = Form("CFDvsQTC%i_%i",i+1,im+1);
+	      TString led = Form("CFDvsLED%i_%i",i+1,im+1);
+	      cout<<qtc<<" "<<led<<endl;
+	      hCFDvsQTC[i][im] = (TH2F*) gFile->Get(qtc.Data()) ;
+	      hCFDvsLED[i][im] = (TH2F*) gFile->Get(led.Data());
+	      
+	      //	      if(!hCFDvsQTC[i][im] || !hCFDvsLED[i][im]) 
+	      //		AliWarning(Form(" no walk correction data in LASER DA for channel %i for amplitude %i MIPs",i,im));
+	      
+	      if(hCFDvsQTC[i][im] && hCFDvsLED[i][im])
+		{	  
+		  x1[im] = hCFDvsQTC[i][im]->GetMean(1);
+		  y1[im] = hCFDvsQTC[i][im]->GetMean(2);
+		  x2[im] = hCFDvsLED[i][im]->GetMean(1);
+		  y2[im] = hCFDvsLED[i][im]->GetMean(2);
+		}
+	      xx[im]=im+1;
+	    }
+	  for (Int_t imi=0; imi<10; imi++)
+	    {
+	      yy1[imi] = Float_t (10-imi);
+	      xx1[imi]=x2[10-imi-1]; 
+	    }
+	  if(i==0){	
+	 cout<<"Making graphs..."<<endl;
+	  }
+	  TGraph *gr1 = new TGraph (10,x1,y1);
+	  TGraph *gr2 = new TGraph (10,x2,y2);
+	  fWalk.AddAtAndExpand(gr1,i);
+	  fAmpLEDRec.AddAtAndExpand(gr2,i);
+	  
+	  
+	  
+	  TGraph *gr4 = new TGraph (10,xx1,yy1);
+	  TGraph *gr3 = new TGraph (10,x1,xx);
+	  fQTC.AddAtAndExpand(gr3,i);	 
+	  fAmpLED.AddAtAndExpand(gr4,i);
+	  //      for (Int_t im=0; im<10; im++) { x2[im]=0;  y2[im]=0;  xx1[im]=0; xx[im]=0;}
+	  if(i==23){
+	    cout<<"Graphs created..."<<endl;
+	  }
 	}
-    }
     } //if gFile exits
 }
 
