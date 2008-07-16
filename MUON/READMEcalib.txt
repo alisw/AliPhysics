@@ -69,11 +69,12 @@ list of libraries loaded by the loadlibs.C macro)
 
 <pre>
 root[0] AliMpCDB::LoadDDLStore2(); 
-root[1] AliMUONCDB cdb;
-root[2] Int_t startRun = 0;
-root[3] Bool_t defaultValues = kTRUE;
-root[4] cdb.WriteTrigger(startRun);
-root[5] cdb.WriteTracker(defaultValues,startRun);
+root[1] AliMpCDB::LoadManuStore2(); 
+root[2] AliMUONCDB cdb;
+root[3] Int_t startRun = 0;
+root[4] Bool_t defaultValues = kTRUE;
+root[5] cdb.WriteTrigger(startRun);
+root[6] cdb.WriteTracker(defaultValues,startRun);
 </pre>
 
 
