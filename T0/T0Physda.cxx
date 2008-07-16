@@ -167,8 +167,8 @@ int main(int argc, char **argv) {
       case END_OF_RUN:
 	break;
 
-	//      case PHYSICS_EVENT:
-      case CALIBRATION_EVENT:
+    case PHYSICS_EVENT:
+      //  case CALIBRATION_EVENT:
       iev++;
 
       if(iev==1){
