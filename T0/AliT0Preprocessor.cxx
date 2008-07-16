@@ -89,7 +89,9 @@ Bool_t AliT0Preprocessor::ProcessDCS(){
 	TString runType = GetRunType();
 	Log(Form("ProcessDCS - RunType: %s",runType.Data()));
 
-	if((runType == "STANDALONE")||(runType == "PHYSICS")){
+	if((runType == "STANDALONE")||
+	   (runType == "PHYSICS")||
+	   (runType == "LASER")){
 	  //		return kFALSE;
 		return kTRUE;
 	}else{
@@ -300,6 +302,10 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	}
  	if(runType == "LASER"){
 	  Int_t iresultLaser = ProcessLaser();
+	  if(dcsDP==1){
+            Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+            return iresultDCS;
+          }
 	  Log(Form("iresultLaser = %d",iresultLaser));
 	  return iresultLaser;
 	}
