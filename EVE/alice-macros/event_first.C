@@ -1,0 +1,17 @@
+// $Id: event_goto.C 24485 2008-03-13 15:27:38Z mtadel $
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
+void event_first()
+{
+  if (gAliEveEvent == 0) {
+    printf("AliEveEventManager is not initialized!\n");
+    return;
+  }
+  gAliEveEvent->GotoEvent(0);
+}

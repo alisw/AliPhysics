@@ -322,6 +322,37 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
   AfterNewEventLoaded();
 }
 
+Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
+{
+  // Returns maximum available event id.
+  // If raw-data is the only data-source this can not be known
+  // and 10,000,000 is returned.
+  // If neither data-source is initialised an exception is thrown.
+  // If refresh_esd is true and ESD is the primary event-data source
+  // its header is re-read from disk.
+
+  static const TEveException kEH("AliEveEventManager::GetMaxEventId ");
+
+  if (fRunLoader)
+  {
+    return fRunLoader->GetNumberOfEvents() - 1;
+  }
+  else if (fESDTree)
+  {
+    if (refreshESD)
+      fESDTree->Refresh();
+    return fESDTree->GetEntries() - 1;
+  }
+  else if (fRawReader)
+  {
+    return 10000000;
+  }
+  else
+  {
+    throw (kEH + "neither RunLoader, ESD nor Raw loaded.");
+  }
+}
+
 void AliEveEventManager::GotoEvent(Int_t event)
 {
   // Load data for specified event.
@@ -330,28 +361,46 @@ void AliEveEventManager::GotoEvent(Int_t event)
   // After successful loading of event, the virtual function
   // AfterNewEventLoaded() is called. This executes commands that
   // were registered via TEveEventManager::AddNewEventCommand().
+  //
+  // If event is negative, it is subtracted from the number of
+  // available events, thus passing -1 will load the last event.
+  // This is not supported when raw-data is the only data-source
+  // as the number of events is not known.
 
   static const TEveException kEH("AliEveEventManager::GotoEvent ");
 
-  if (event < 0) {
-    Error(kEH, "event must be non-negative.");
-    return;
-  }
-
   Int_t maxEvent = 0;
-  if (fRunLoader) {
+  if (fRunLoader)
+  {
     maxEvent = fRunLoader->GetNumberOfEvents() - 1;
-  } else if (fESDTree) {
+    if (event < 0)
+      event = fRunLoader->GetNumberOfEvents() + event;
+  }
+  else if (fESDTree)
+  {
+    fESDTree->Refresh();
     maxEvent = fESDTree->GetEntries() - 1;
-  } else if (fRawReader) {
+    if (event < 0)
+      event = fESDTree->GetEntries() + event;
+  }
+  else if (fRawReader)
+  {
     maxEvent = 10000000;
+    if (event < 0) {
+      Error(kEH, "negative event id passed for raw-data as source. Operation not supported.");
+      return;
+    }
     Info(kEH, "number of events unknown for raw-data, setting max-event id to 10M.");
-  } else {
+  }
+  else
+  {
     throw (kEH + "neither RunLoader, ESD nor Raw loaded.");
   }
   if (event < 0 || event > maxEvent)
+  {
     throw (kEH + Form("event %d not present, available range [%d, %d].",
                       event, 0, maxEvent));
+  }
 
   TEveManager::TRedrawDisabler rd(gEve);
   gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
@@ -402,6 +451,38 @@ void AliEveEventManager::GotoEvent(Int_t event)
   ElementChanged();
 
   AfterNewEventLoaded();
+}
+
+void AliEveEventManager::NextEvent()
+{
+  // Loads next event
+  // either in automatic (online) or
+  // manual mode
+  
+  if (fIsOnline) {
+    if (fAutoLoadTimer) fAutoLoadTimer->Stop();
+
+    DestroyElements();
+
+    gSystem->ExitLoop();
+  }
+  else {
+    if (fEventId < GetMaxEventId(kTRUE))
+      GotoEvent(fEventId + 1);
+    else
+      GotoEvent(0);
+    StartStopAutoLoadTimer();
+  }
+}
+
+void AliEveEventManager::PrevEvent()
+{
+  // Loads previous event
+  // only in case of manual mode
+  if (!fIsOnline) {
+    GotoEvent(fEventId - 1);
+    StartStopAutoLoadTimer();
+  }
 }
 
 void AliEveEventManager::Close()
@@ -560,35 +641,6 @@ void AliEveEventManager::StartStopAutoLoadTimer()
   }
   else {
     if (fAutoLoadTimer) fAutoLoadTimer->Stop();
-  }
-}
-
-void AliEveEventManager::PrevEvent()
-{
-  // Loads previous event
-  // only in case of manual mode
-  if (!fIsOnline) {
-    GotoEvent(fEventId - 1);
-    StartStopAutoLoadTimer();
-  }
-}
-
-void AliEveEventManager::NextEvent()
-{
-  // Loads next event
-  // either in automatic (online) or
-  // manual mode
-  
-  if (fIsOnline) {
-    if (fAutoLoadTimer) fAutoLoadTimer->Stop();
-
-    DestroyElements();
-
-    gSystem->ExitLoop();
-  }
-  else {
-    GotoEvent(fEventId + 1);
-    StartStopAutoLoadTimer();
   }
 }
 

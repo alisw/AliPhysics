@@ -45,13 +45,14 @@ public:
   virtual ~AliEveEventManager();
 
 
-  virtual void Open();
-  void         SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd);
-	    
-  virtual void GotoEvent(Int_t event);
-  virtual void NextEvent();
-  virtual void PrevEvent();
-  virtual void Close();
+  virtual void  Open();
+  void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd);
+  virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;	    
+  virtual void  GotoEvent(Int_t event);
+  virtual void  NextEvent();
+  virtual void  PrevEvent();
+  virtual void  Close();
+
 
   Int_t         GetEventId()   const { return fEventId; }
   AliRunLoader* GetRunLoader() const { return fRunLoader; }
