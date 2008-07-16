@@ -10,7 +10,7 @@ void simqa()
 	
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
 	AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
-	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
+//	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
   
 
 	AliQADataMakerSteer qas ; 
