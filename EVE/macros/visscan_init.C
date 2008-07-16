@@ -147,6 +147,14 @@ void on_new_event()
   }
 
   AliESDEvent* esd = AliEveEventManager::AssertESD();
+  {
+    TTimeStamp ts(esd->GetTimeStamp());
+    TString win_title("Eve Main Window -- Timestamp: ");
+    win_title += ts.AsString("s");
+    win_title += "; Event: ";
+    win_title += esd->GetEventNumberInFile();
+    gEve->GetBrowser()->SetWindowName(win_title);
+  }
   Double_t x[3];
   esd->GetPrimaryVertex()->GetXYZ(x);
 
