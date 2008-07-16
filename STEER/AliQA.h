@@ -79,6 +79,7 @@ public:
 	static void            SetQARefDataDirName(RUNTYPE_t rt) { fkgRefDataDirName = GetRunTypeName(rt) ; }
 	static void            SetQARefDataDirName(const char * name) ;
 	void                   Show() const { ShowStatus(fDet) ; }
+	void                   Show(DETECTORINDEX_t det) const { ShowStatus(det) ; }
 	void                   ShowAll() const ;
 	void                   UnSet(QABIT_t bit) ;
 
