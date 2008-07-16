@@ -96,12 +96,12 @@ AliQAChecker::~AliQAChecker()
 //_____________________________________________________________________________
   AliQACheckerBase * AliQAChecker::GetDetQAChecker(Int_t det)
 {
-  // Gets the Quality Assurance checker for the detector specified by its name
-  
-  if (fCheckers[det]) 
+	// Gets the Quality Assurance checker for the detector specified by its name
+	
+	if (fCheckers[det]) 
     return fCheckers[det];
 
- TString detName(AliQA::GetDetName(det)) ; 
+	TString detName(AliQA::GetDetName(det)) ; 
 
   AliDebug(1, Form("Retrieving QA checker for %s", detName.Data())) ; 
   TPluginManager* pluginManager = gROOT->GetPluginManager() ;
@@ -114,20 +114,20 @@ AliQAChecker::~AliQAChecker()
   if (!pluginHandler) {
     //AliInfo(Form("defining plugin for %s", qacName.Data()));
     TString libs = gSystem->GetLibraries();
- 
-   if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
+		
+		if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
       pluginManager->AddHandler("AliQAChecker", detName, qacName, detName + "qac", qacName + "()");
-    else 
+		else 
       pluginManager->AddHandler("AliQAChecker", detName, qacName, detName, qacName + "()");
 
-   pluginHandler = pluginManager->FindHandler("AliQAChecker", detName);
+		pluginHandler = pluginManager->FindHandler("AliQAChecker", detName);
 
-  if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) 
-    qac = (AliQACheckerBase *) pluginHandler->ExecPlugin(0);
+		if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) 
+			qac = (AliQACheckerBase *) pluginHandler->ExecPlugin(0);
   
-  if (qac) 
-    fCheckers[det] = qac ; 
-  }
+		if (qac) 
+			fCheckers[det] = qac ;
+	}
 
  return qac ; 
 }
@@ -145,7 +145,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
     refStorage.ReplaceAll(AliQA::GetLabLocalFile(), "") ; 
     if ( fRefFile ) 
       if ( fRefFile->IsOpen() ) 
-	fRefFile->Close() ; 
+					fRefFile->Close() ; 
     fRefFile = TFile::Open(refStorage.Data()) ; 
     if (!fRefFile) { 
       AliError(Form("Cannot find reference file %s", refStorage.Data())) ; 
@@ -155,17 +155,16 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
     if (!dirFile) {
       AliWarning(Form("Directory %s not found in %d", det, refStorage.Data())) ; 
     } else {
-      dirFile = dirFile->GetDirectory(task) ; 
+			dirFile = dirFile->GetDirectory(task) ; 
       if (!dirFile) 
-	AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
+				AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
     }  
   } else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
     AliCDBManager* man = AliCDBManager::Instance() ;
     if ( strcmp(AliQA::GetRefDataDirName(), "") == 0 ) { // the name of the last level of the directory is not set (RUNTYPE)
       // Get it from EventInfo
       if (!fEventInfo)  // not yet set, get the info from GRP
-	LoadEventInfoFromGRP() ; 
-
+				LoadEventInfoFromGRP() ; 
       AliQA::SetQARefDataDirName(fEventInfo->GetRunType()) ;
     }
     if ( ! man->GetLock() ) { 
@@ -178,7 +177,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
     if (entry) {
       TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
       if ( listDetQAD ) 
-	dirOCDB = dynamic_cast<TObjArray *>(listDetQAD->FindObject(task)) ; 
+				dirOCDB = dynamic_cast<TObjArray *>(listDetQAD->FindObject(task)) ; 
     }
   }
 }
