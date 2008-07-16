@@ -50,7 +50,7 @@ void AliAnalysisTaskDiJets::UserCreateOutputObjects()
     if (fDebug > 1) printf("AnalysisTaskDiJets::CreateOutPutData() \n");
     fDiJets = new TClonesArray("AliAODDiJet", 0);
     fDiJets->SetName("Dijets");
-    AddAODBranch("TClonesArray", fDiJets);
+    AddAODBranch("TClonesArray", &fDiJets);
 }
 
 void AliAnalysisTaskDiJets::Init()
