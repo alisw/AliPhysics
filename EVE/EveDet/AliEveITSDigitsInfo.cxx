@@ -175,7 +175,8 @@ void AliEveITSDigitsInfo::InitInternals()
 AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
 {
   // Destructor.
-  // Deletes the data-maps and the tree.
+  // Deletes the data-maps.
+  // The tree, if it was passed into the object, is not touched.
 
   std::map<Int_t, TClonesArray*>::iterator j;
   for (j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
@@ -186,7 +187,6 @@ AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
     delete j->second;
   delete fDDLMapSDD;
   delete fSegSPD; delete fSegSDD; delete fSegSSD;
-  delete fTree;
 }
 
 /******************************************************************************/
