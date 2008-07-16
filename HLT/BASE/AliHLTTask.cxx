@@ -534,6 +534,9 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       evtData.fEventID=(AliHLTEventID_t)eventNo;
       evtData.fBlockCnt=iSourceDataBlock;
       AliHLTComponentTriggerData trigData;
+      trigData.fStructSize=sizeof(trigData);
+      trigData.fDataSize=0;
+      trigData.fData=NULL;
       size=iOutputDataSize;
       AliHLTUInt32_t outputBlockCnt=0;
       AliHLTComponentBlockData* outputBlocks=NULL;
