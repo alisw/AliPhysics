@@ -61,15 +61,6 @@ class AliCFTrackCutPid : public AliCFCutBase
   void SetHistogramAxis(Int_t nbins, Double_t xmin, Double_t xmax) {fNbins=nbins; fXmin = xmin; fXmax = xmax;}
   void SetAODmode(Bool_t isaod = kFALSE) {fgIsAOD=isaod;}  
  
-  //loads the track detector responses and the track status
-  void TrackInfo(const AliESDtrack *pTrk,ULong_t status[kNdets+1], Double_t pid[kNdets+1][AliPID::kSPECIES]) const;  
-  
-  //identifies the track
-  Int_t Identify(Double_t pid[AliPID::kSPECIES]) const;
-  
-  //identifies the track filling the QA histograms                                                          
-  Int_t IdentifyQA(const Double_t pid[AliPID::kSPECIES],Int_t idets) const;
-  
   //returns the track identification number  
   Int_t GetID(ULong_t status[kNdets+1], Double_t pid[kNdets+1][AliPID::kSPECIES]) const;  
   //returns the track identification number in caso of an AliAODTrack
@@ -84,38 +75,48 @@ class AliCFTrackCutPid : public AliCFCutBase
   
   
  private:
+
+  //loads the track detector responses and the track status
+  void TrackInfo(const AliESDtrack *pTrk,ULong_t status[kNdets+1], Double_t pid[kNdets+1][AliPID::kSPECIES]) const;
+
+  //identifies the track
+  Int_t Identify(Double_t pid[AliPID::kSPECIES]) const;
+
+  //identifies the track filling the QA histograms
+  Int_t IdentifyQA(const Double_t pid[AliPID::kSPECIES],Int_t idets) const;
+
   void SetPPriors(AliESDtrack *pTrk);                          
-  ULong_t StatusForAND(ULong_t status[kNdets+1]) const; //
+  ULong_t StatusForAND(ULong_t status[kNdets+1]) const; 
   void InitialiseHisto();
-  void DefineHistograms();   //histo booking  
+  void DefineHistograms();                                 // histo booking  
   Bool_t Check(const Double_t *p, Int_t iPsel, Double_t minDiff) const;
   void CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][AliPID::kSPECIES],Double_t *combpid) const;
   
-  Double_t fCut;                                            //probability cut
+  Double_t fCut;                                            // probability cut
   Double_t fMinDiffResponse;                                // minimum difference between detector resposes
   Double_t fMinDiffProbability;                             // minimum difference between probability values
   Int_t fgParticleType;                                     // requested particle type
   Bool_t fgIsComb;                                          // flag for the combined pid
-  Bool_t fgIsAOD;                                            // flag for the AOD QA histograms
+  Bool_t fgIsAOD;                                           // flag for AOD QA histograms
   Bool_t fCheckResponse;                                    // flag to check the minimum difference of det responsess
   Bool_t fCheckSelection;                                   // flag to check the minimum difference of probabilities
-  Bool_t fIsPpriors;                                        //flag for momentum dependent priors
-  Bool_t fIsDetAND;                                         //flag for AND with multiple detectors
-  Double_t fXmin;                                           //x min QA histo
-  Double_t fXmax;                                           //x max QA histo
-  Int_t fNbins;                                             //n bins QA histo 
-  Int_t fDetRestr;                                          //id of the detector for the restriction
-  Int_t fiPartRestr;                                        //id of the particle for the restriction
-  Double_t fDetProbRestr;                                   //probability restriction value
+  Bool_t fIsPpriors;                                        // flag for momentum dependent priors
+  Bool_t fIsDetAND;                                         // flag for AND with multiple detectors
+  Double_t fXmin;                                           // x min QA histo
+  Double_t fXmax;                                           // x max QA histo
+  Int_t fNbins;                                             // n bins QA histo 
+  Int_t fDetRestr;                                          // id of the detector for the restriction
+  Int_t fiPartRestr;                                        // id of the particle for the restriction
+  Double_t fDetProbRestr;                                   // probability restriction value
 
-  Double_t fPriors[AliPID::kSPECIES];                       //a priori concentrations
-  TF1 *fPriorsFunc[AliPID::kSPECIES];                       //momentum dependent priors
-  Bool_t fDets[kNdets];                                     //boolean(s) corresponding to the chosen detector(s) 
-  Bool_t fDetsInAnd[kNdets];                                //detector to be in AND for the combined PID
-  TH1F *fhResp[kNdets][AliPID::kSPECIES];                   //QA histo
-  TH1F *fhProb[kNdets][AliPID::kSPECIES];                   //QA histo
-  TH1F *fhCombResp[AliPID::kSPECIES];                       //QA histo
-  TH1F *fhCombProb[AliPID::kSPECIES];                       //QA histo
+  Double_t fPriors[AliPID::kSPECIES];                       // a priori concentrations
+  TF1 *fPriorsFunc[AliPID::kSPECIES];                       // momentum dependent priors
+  Bool_t fDets[kNdets];                                     // boolean(s) corresponding to the chosen detector(s) 
+  Bool_t fDetsInAnd[kNdets];                                // detector to be in AND for the combined PID
+  TH1F *fhResp[kNdets][AliPID::kSPECIES];                   // QA histo
+  TH1F *fhProb[kNdets][AliPID::kSPECIES];                   // QA histo
+  TH1F *fhCombResp[AliPID::kSPECIES];                       // QA histo
+  TH1F *fhCombProb[AliPID::kSPECIES];                       // QA histo
   
   ClassDef(AliCFTrackCutPid,1);
 };
