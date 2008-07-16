@@ -46,6 +46,7 @@
 #include <TMap.h>
 
 #include <fstream>
+#include <cstdlib>
 
 /// \cond CLASSIMP
 ClassImp(AliMpManuStore)
