@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AlidNdEtaSystematicsSelector+;
 #pragma link C++ class AliROCESDAnalysisSelector+;
 #pragma link C++ class AliROCRawAnalysisSelector+;
 #pragma link C++ class AliROCClusterAnalysisSelector+;
