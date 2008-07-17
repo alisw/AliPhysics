@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
       // Fill the histograms
 	
       for (Int_t ik = 0; ik<24; ik++)
-         for (Int_t iHt=0; iHt<5; iHt++){
+         for (Int_t iHt=0; iHt<1; iHt++){
                 if(allData[ik+1][iHt]!=0 ){
 		  if(ik<12){
 			 hCFD1minCFD[ik]->Fill(allData[ik+1][iHt]-allData[1][iHt]);

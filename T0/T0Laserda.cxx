@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
       
 
       for (Int_t ik = 0; ik<24; ik+=2)
-         for (Int_t iHt=0; iHt<5; iHt++){
+         for (Int_t iHt=0; iHt<1; iHt++){
 		 Int_t cc = ik/2;
 		if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0 && allData[cc+1][iHt]!=0){
                  hCFDvsQTC[cc][mip]->Fill((allData[ik+25][iHt]-allData[ik+26][iHt]) , (allData[cc+1][iHt]-allData[0][0]+5000));
@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
 	}
 
       for (Int_t ik = 24; ik<48; ik+=2)
-         for (Int_t iHt=0; iHt<5; iHt++){
+         for (Int_t iHt=0; iHt<1; iHt++){
 		 Int_t cc = ik/2;
                 if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0 && allData[cc+45][iHt]!=0){
                  hCFDvsQTC[cc][mip]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
