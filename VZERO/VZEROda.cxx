@@ -18,7 +18,7 @@
 *                                                                                 *
 * This program connects to the DAQ data source passed as argument.                *
 * It computes calibration parameters, populates local "./V0_Ped_Width_Gain.dat"   *            
-* file and exports it to the FES.                                                 *
+* file, exports it to the FES, and stores it into DAQ DB                          *
 * The program exits when being asked to shut down (daqDA_checkshutdown)           *
 * or on End of Run event.                                                         *
 * We have 128 channels instead of 64 as expected for V0 due to the two sets of    *
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
   
   status = daqDA_DB_getFile("V00DA.config","./V00DA.config");
   if (status) {
-      printf("Failed to get config file (V00DA.config) from DAQdetDB, status=%d\n", status);
+      printf("Failed to get config file (V00DA.config) from DAQ DB, status=%d\n", status);
       return -1;   
   }
   /* open the config file and retrieve cuts */
@@ -105,8 +105,7 @@ int main(int argc, char **argv) {
        hPEDname[i]  = new TH1F(PEDname,texte,1024,-0.5, 1023.5);
   }
 //___________________________________________________ 
-  
- 
+   
   /* open result file to be exported to FES */
   FILE *fp=NULL;
   fp=fopen("./V0_Ped_Width_Gain.dat","w");
@@ -244,7 +243,6 @@ int main(int argc, char **argv) {
   
 //________________________________________________________________________
    
-
   /* close result file */
   fclose(fp);
  
@@ -254,5 +252,11 @@ int main(int argc, char **argv) {
       printf("Failed to export file : %d\n",status);
       return -1; }
 
+  /* store result file into Online DB */
+  status=daqDA_DB_storeFile("./V0_Ped_Width_Gain.dat","V00da_results");
+  if (status)    {
+      printf("Failed to store file into Online DB: %d\n",status);
+      return -1; }
+      
   return status;
 }
