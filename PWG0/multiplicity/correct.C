@@ -20,18 +20,17 @@ void draw(const char* fileName = "multiplicity.root", const char* folder = "Mult
   mult->LoadHistograms();
   mult->DrawHistograms();
 
-  return;
-
-  TH2* hist = (TH2*) gROOT->FindObject("fCorrelation3_zy");
+  TH2* hist = (TH2*) gROOT->FindObject("fCorrelation2_zy");
   canvas = new TCanvas("c1", "c1", 600, 500);
+  canvas->SetTopMargin(0.05);
   hist->SetStats(kFALSE);
   hist->Draw("COLZ");
-  hist->SetTitle(";true multiplicity in |#eta| < 2;measured multiplicity in |#eta| < 2");
+  hist->SetTitle(";true multiplicity in |#eta| < 1.5;measured multiplicity in |#eta| < 1.5");
   hist->GetYaxis()->SetTitleOffset(1.1);
-  gPad->SetRightMargin(0.15);
+  gPad->SetRightMargin(0.12);
   gPad->SetLogz();
 
-  canvas->SaveAs("Plot_Correlation.pdf");
+  canvas->SaveAs("responsematrix.eps");
 }
 
 void loadlibs()
@@ -50,14 +49,15 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
   loadlibs();
 
   AliMultiplicityCorrection* mult = new AliMultiplicityCorrection(folder, folder);
-
   TFile::Open(fileNameMC);
   mult->LoadHistograms();
 
+  AliMultiplicityCorrection* esd = new AliMultiplicityCorrection(folder, folder);
   TFile::Open(fileNameESD);
-  TH2F* hist = (TH2F*) gFile->Get(Form("Multiplicity/fMultiplicityESD%d", histID));
-  TH2F* hist2 = (TH2F*) gFile->Get(Form("Multiplicity/fMultiplicityVtx%d", ((fullPhaseSpace) ? 4 : histID)));
-  //hist2 = (TH2F*) gFile->Get(Form("Multiplicity/fMultiplicityINEL%d", histID));
+  esd->LoadHistograms();
+
+  TH2F* hist = esd->GetMultiplicityESD(histID);
+  TH2F* hist2 = esd->GetMultiplicityMC(histID, eventType);
 
   mult->SetMultiplicityESD(histID, hist);
 
@@ -98,7 +98,7 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
   mult->DrawComparison((chi2) ? "MinuitChi2" : "Bayesian", histID, fullPhaseSpace, kTRUE, hist2->ProjectionY("mymchist"));
 }
 
-void CompareChi2Bayesian(Int_t histID = 2, Bool_t showMC = kFALSE, const char* chi2File = "chi2.root", const char* bayesianFile = "bayesian.root", const char* mcFile = "chi2.root")
+void CompareChi2Bayesian(Int_t histID = 2, const char* chi2File = "chi2.root", const char* bayesianFile = "bayesian.root", const char* label1 = "Chi2", const char* label2 = "Bayesian", const char* mcFile = 0, Float_t simpleCorrect = 0)
 {
   const char* folder = "Multiplicity";
 
@@ -112,6 +112,9 @@ void CompareChi2Bayesian(Int_t histID = 2, Bool_t showMC = kFALSE, const char* c
   TFile::Open(bayesianFile);
   bayesian->LoadHistograms();
 
+  histRAW = chi2->GetMultiplicityESD(histID)->ProjectionY("raw", 1, chi2->GetMultiplicityESD(histID)->GetNbinsX());
+  histRAW->Scale(1.0 / histRAW->Integral());
+
   histC = chi2->GetMultiplicityESDCorrected(histID);
   histB = bayesian->GetMultiplicityESDCorrected(histID);
 
@@ -119,6 +122,8 @@ void CompareChi2Bayesian(Int_t histID = 2, Bool_t showMC = kFALSE, const char* c
   c->SetRightMargin(0.05);
   c->SetTopMargin(0.05);
   c->SetLogy();
+  c->SetGridx();
+  c->SetGridy();
 
   histC->SetTitle(";N;P(N)");
   histC->SetStats(kFALSE);
@@ -126,29 +131,167 @@ void CompareChi2Bayesian(Int_t histID = 2, Bool_t showMC = kFALSE, const char* c
 
   histC->SetLineColor(1);
   histB->SetLineColor(2);
+  histRAW->SetLineColor(3);
 
-  histC->Draw();
-  histB->Draw("SAME");
+  histC->DrawCopy();
+  histB->DrawCopy("SAME");
+  histRAW->DrawCopy("SAME");
 
   legend = new TLegend(0.2, 0.2, 0.4, 0.4);
   legend->SetFillColor(0);
 
-  legend->AddEntry(histC, "Chi2");
-  legend->AddEntry(histB, "Bayesian");
+  legend->AddEntry(histC, label1);
+  legend->AddEntry(histB, label2);
+  legend->AddEntry(histRAW, "raw ESD");
 
-  if (showMC)
+  if (simpleCorrect > 0)
+  {
+    graph = new TGraph;
+    graph->SetMarkerStyle(25);
+    graph->SetFillColor(0);
+    for (Int_t bin=1; bin<=histRAW->GetNbinsX(); bin++)
+      graph->SetPoint(graph->GetN(), histRAW->GetXaxis()->GetBinCenter(bin) * simpleCorrect, histRAW->GetBinContent(bin));
+
+    graph->Draw("PSAME");
+    legend->AddEntry(graph, "weighting");
+
+    // now create histogram from graph and normalize
+    histGraph = (TH1*) histRAW->Clone();
+    histGraph->Reset();
+    for (Int_t bin=1; bin<=histGraph->GetNbinsX(); bin++)
+    {
+      Int_t j=1;
+      for (j=1; j<graph->GetN(); j++)
+        if (graph->GetX()[j] > histGraph->GetXaxis()->GetBinCenter(bin))
+	  break;
+      if (j == graph->GetN())
+        continue;
+      if (histGraph->GetXaxis()->GetBinCenter(bin) - graph->GetX()[j] < graph->GetX()[j-1] - histGraph->GetXaxis()->GetBinCenter(bin))
+        j--;
+      histGraph->SetBinContent(bin, graph->GetY()[j]);
+    }
+
+    Printf("Integral = %f", histGraph->Integral());
+    histGraph->Scale(1.0 / histGraph->Integral());
+
+    histGraph->SetLineColor(6);
+    histGraph->DrawCopy("SAME");
+    legend->AddEntry(histGraph, "weighting normalized");
+  }
+
+  if (mcFile)
   {
     AliMultiplicityCorrection* mc = new AliMultiplicityCorrection(folder, folder);
     TFile::Open(mcFile);
     mc->LoadHistograms();
 
     histMC = mc->GetMultiplicityVtx(histID)->ProjectionY("mc", 1, mc->GetMultiplicityVtx(histID)->GetNbinsX());
+    histMC->Sumw2();
     histMC->Scale(1.0 / histMC->Integral());
 
     histMC->Draw("SAME");
     histMC->SetLineColor(4);
     legend->AddEntry(histMC, "MC");
   }
+
+  legend->Draw();
+
+  c->SaveAs(Form("%s.png", c->GetName()));
+  c->SaveAs(Form("%s.eps", c->GetName()));
+
+  if (!mcFile)
+    return;
+
+  // build ratios
+
+  c = new TCanvas("CompareChi2BayesianRatio", "CompareChi2BayesianRatio", 800, 600);
+  c->SetRightMargin(0.05);
+  c->SetTopMargin(0.05);
+  c->SetGridx();
+  c->SetGridy();
+
+  for (Int_t bin=1; bin<=histC->GetNbinsX(); bin++)
+  {
+    if (histMC->GetBinContent(bin) > 0)
+    {
+      histC->SetBinContent(bin, histC->GetBinContent(bin) / histMC->GetBinContent(bin));
+      histB->SetBinContent(bin, histB->GetBinContent(bin) / histMC->GetBinContent(bin));
+      histGraph->SetBinContent(bin, histGraph->GetBinContent(bin) / histMC->GetBinContent(bin));
+
+      // TODO errors?
+      histC->SetBinError(bin, 0);
+      histB->SetBinError(bin, 0);
+      histGraph->SetBinError(bin, 0);
+    }
+  }
+
+  histC->GetYaxis()->SetRangeUser(0.5, 2);
+  histC->GetYaxis()->SetTitle("Unfolded / MC");
+
+  histC->Draw("HIST");
+  histB->Draw("HIST SAME");
+  histGraph->Draw("HIST SAME");
+
+  /*
+  if (simpleCorrect > 0)
+  {
+    graph2 = new TGraph;
+    graph2->SetMarkerStyle(25);
+    graph2->SetFillColor(0);
+    for (Int_t i=0; i<graph->GetN(); i++)
+    {
+      Float_t mcValue = histMC->GetBinContent(histMC->FindBin(graph->GetX()[i]));
+      Float_t mcError = histMC->GetBinError(histMC->FindBin(graph->GetX()[i]));
+      if (mcValue > 0)
+        graph2->SetPoint(graph2->GetN(), graph->GetX()[i], graph->GetY()[i] / mcValue);
+    }
+    graph2->Draw("PSAME");
+  }
+  */
+  
+  c->SaveAs(Form("%s.png", c->GetName()));
+  c->SaveAs(Form("%s.eps", c->GetName()));
+}
+
+
+void CompareMC(Int_t histID, Int_t eventType, const char* file1, const char* file2, const char* label1, const char* label2)
+{
+  const char* folder = "Multiplicity";
+
+  loadlibs();
+
+  AliMultiplicityCorrection* mc1 = new AliMultiplicityCorrection(folder, folder);
+  TFile::Open(file1);
+  mc1->LoadHistograms();
+  histMC1 = mc1->GetMultiplicityMC(histID, eventType)->ProjectionY("mc1", 1, mc1->GetMultiplicityMC(histID, eventType)->GetNbinsX());
+  histMC1->Scale(1.0 / histMC1->Integral());
+
+  AliMultiplicityCorrection* mc2 = new AliMultiplicityCorrection(folder, folder);
+  TFile::Open(file2);
+  mc2->LoadHistograms();
+  histMC2 = mc2->GetMultiplicityMC(histID, eventType)->ProjectionY("mc2", 1, mc2->GetMultiplicityMC(histID, eventType)->GetNbinsX());
+  histMC2->Scale(1.0 / histMC2->Integral());
+
+  c = new TCanvas("CompareMC", "CompareMC", 800, 600);
+  c->SetRightMargin(0.05);
+  c->SetTopMargin(0.05);
+  c->SetLogy();
+
+  histMC1->SetTitle(";N;P(N)");
+  histMC1->SetStats(kFALSE);
+  histMC1->GetXaxis()->SetRangeUser(0, 100);
+
+  histMC1->SetLineColor(1);
+  histMC2->SetLineColor(2);
+
+  histMC1->Draw();
+  histMC2->Draw("SAME");
+
+  legend = new TLegend(0.2, 0.2, 0.4, 0.4);
+  legend->SetFillColor(0);
+
+  legend->AddEntry(histMC1, label1);
+  legend->AddEntry(histMC2, label2);
 
   legend->Draw();
 

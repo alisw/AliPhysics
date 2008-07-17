@@ -42,6 +42,7 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   fOption(opt),
   fAnalysisMode(AliPWG0Helper::kSPD),
   fReadMC(kFALSE),
+  fUseMCVertex(kFALSE),
   fMultiplicity(0),
   fEsdTrackCuts(0),
   fSystSkipParticles(kFALSE),
@@ -90,17 +91,18 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read tree from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
-    //tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("*", 0);
 
-    tree->SetBranchStatus("fTriggerMask", 1);
-    tree->SetBranchStatus("fSPDVertex*", 1);
+    tree->SetBranchStatus("AliESDHeader*", 1);
+    tree->SetBranchStatus("*Vertex*", 1);
 
-    if (fAnalysisMode == AliPWG0Helper::kSPD)
-      tree->SetBranchStatus("fSPDMult*", 1);
+    if (fAnalysisMode == AliPWG0Helper::kSPD) {
+      tree->SetBranchStatus("AliMultiplicity*", 1);
+    }
 
     if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
-      AliESDtrackCuts::EnableNeededBranches(tree);
-      tree->SetBranchStatus("fTracks.fLabel", 1);
+      //AliESDtrackCuts::EnableNeededBranches(tree);
+      tree->SetBranchStatus("Tracks*", 1);
     }
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -110,6 +112,9 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
     } else
       fESD = esdH->GetEvent();
   }
+
+  // disable info messages of AliMCEvent (per event)
+  AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);
 }
 
 void AliMultiplicityTask::CreateOutputObjects()
@@ -206,12 +211,12 @@ void AliMultiplicityTask::Exec(Option_t*)
   // only FASTOR
   //Bool_t eventTriggered = fESD->GetTriggerMask() & 32;
 
-  Bool_t eventVertex = AliPWG0Helper::IsVertexReconstructed(fESD->GetVertex());
+  const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
+  Bool_t eventVertex = (vtxESD != 0);
 
-  // get the ESD vertex
-  const AliESDVertex* vtxESD = fESD->GetVertex();
   Double_t vtx[3];
-  vtxESD->GetXYZ(vtx);
+  if (vtxESD)
+    vtxESD->GetXYZ(vtx);
 
   // post the data already here
   PostData(0, fOutput);
@@ -348,6 +353,17 @@ void AliMultiplicityTask::Exec(Option_t*)
     {
       AliDebug(AliLog::kError, "Header not available");
       return;
+    }
+
+    if (fUseMCVertex)
+    {
+      Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
+      // get the MC vertex
+      AliGenEventHeader* genHeader = header->GenEventHeader();
+      TArrayF vtxMC(3);
+      genHeader->PrimaryVertex(vtxMC);
+
+      vtx[2] = vtxMC[2];
     }
 
     Bool_t processEvent = kTRUE;
@@ -631,8 +647,11 @@ void AliMultiplicityTask::Exec(Option_t*)
         delete[] foundTracks;
         delete[] foundPrimaries;
 
-        if ((Int_t) nMCTracks20 == 0 && nESDTracks20 > 3)
-            printf("WARNING: Event has %d generated and %d reconstructed...\n", nMCTracks20, nESDTracks20);
+        if ((Int_t) nMCTracks15 > 15 && nESDTracks15 <= 3)
+        {
+            TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
+            printf("WARNING: Event %lld %s (vtx-z = %f) has %d generated and %d reconstructed...\n", tree->GetReadEntry(), tree->GetCurrentFile()->GetName(), vtxMC[2], nMCTracks15, nESDTracks15);
+        }
 
         // fill response matrix using vtxMC (best guess)
         fMultiplicity->FillCorrection(vtxMC[2],  nMCTracks05,  nMCTracks09,  nMCTracks15,  nMCTracks20,  nMCTracksAll,  nESDTracks05,  nESDTracks09,  nESDTracks15,  nESDTracks20);

@@ -30,6 +30,7 @@ class AliMultiplicityTask : public AliAnalysisTask {
 
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
+    void SetUseMCVertex(Bool_t flag = kTRUE) { fUseMCVertex = flag; }
 
  protected:
     AliESDEvent *fESD;    //! ESD object
@@ -37,6 +38,7 @@ class AliMultiplicityTask : public AliAnalysisTask {
     TString fOption;      // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
+    Bool_t  fUseMCVertex;  // the MC vtx is used instead of the ESD vertex (for syst. check)
 
     AliMultiplicityCorrection* fMultiplicity; //! object containing the extracted data
     AliESDtrackCuts* fEsdTrackCuts;           // Object containing the parameters of the esd track cuts
