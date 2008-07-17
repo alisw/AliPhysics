@@ -44,11 +44,6 @@ AliEveMUONChamberData::AliEveMUONChamberData(Int_t chamber) :
   // constructor
   //
 
-  AliEveEventManager *event = gAliEveEvent;
-
-  TString dataPath = TString(event->GetTitle());
-  dataPath.Append("/geometry.root");
-
   fChamberID = chamber;
   fNDetElem  = 0;
   fNDigits   = 0;
@@ -76,12 +71,12 @@ AliEveMUONChamberData::AliEveMUONChamberData(Int_t chamber) :
   }
 
   if (fgTransformer == 0) {
+    AliEveEventManager::AssertGeometry();
     fgTransformer = new AliMUONGeometryTransformer();
-    fgTransformer->LoadGeometryData(dataPath.Data());
+    fgTransformer->LoadGeometryData();
   }
 
   Init(chamber);
-
 }
 
 //______________________________________________________________________________

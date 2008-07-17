@@ -59,13 +59,7 @@ AliEveTRDLoader::AliEveTRDLoader(const Text_t* n, const Text_t* t) : TEveElement
 {
   // Constructor.
 
-  AliCDBManager *fCDBManager=AliCDBManager::Instance();
-  fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
-  fCDBManager->SetRun(0);
-
-  if(!AliEveEventManager::AssertGeometry()){
-    TGeoManager::Import("geometry.root");
-  }
+  AliEveEventManager::AssertGeometry();
 
   fGeo = new AliTRDgeometry();
   //fGeo->CreateClusterMatrixArray();
