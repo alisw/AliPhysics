@@ -18,7 +18,6 @@
 #include "AliESDtrackCuts.h"
 
 #include <AliESDtrack.h>
-#include <AliESD.h>
 #include <AliESDEvent.h>
 #include <AliLog.h>
 
@@ -51,7 +50,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "p_{y}",
  "p_{z}",
  "y",
- "eta"
+ "eta",
+ "trk-to-vtx dca absolute"
 };
 
 //____________________________________________________________________
@@ -70,6 +70,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutRequireITSRefit(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
+  fCutDCAToVertex(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -107,6 +108,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetAcceptKingDaughters();
   SetMinNsigmaToVertex();
   SetRequireSigmaToVertex();
+  SetDCAToVertex();
   SetPRange();
   SetPtRange();
   SetPxRange();
@@ -134,6 +136,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutRequireITSRefit(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
+  fCutDCAToVertex(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -190,16 +193,18 @@ AliESDtrackCuts::~AliESDtrackCuts()
     if (fhDXY[i])
       delete fhDXY[i];                     
     if (fhDZ[i])
-      delete fhDZ[i];                      
+      delete fhDZ[i];
+    if (fhDXYDZ[i])
+      delete fhDXYDZ[i];
     if (fhDXYvsDZ[i])
-      delete fhDXYvsDZ[i];                 
-    
+      delete fhDXYvsDZ[i];
+
     if (fhDXYNormalized[i])
       delete fhDXYNormalized[i];           
     if (fhDZNormalized[i])
       delete fhDZNormalized[i];
     if (fhDXYvsDZNormalized[i])
-      delete fhDXYvsDZNormalized[i];       
+      delete fhDXYvsDZNormalized[i];
     if (fhNSigmaToVertex[i])
       delete fhNSigmaToVertex[i];
     if (fhPt[i])
@@ -241,6 +246,7 @@ void AliESDtrackCuts::Init()
 
   fCutNsigmaToVertex = 0;
   fCutSigmaToVertexRequired = 0;
+  fCutDCAToVertex = 0;
 
   fPMin = 0;
   fPMax = 0;
@@ -275,6 +281,7 @@ void AliESDtrackCuts::Init()
 
     fhDXY[i] = 0;
     fhDZ[i] = 0;
+    fhDXYDZ[i] = 0;
     fhDXYvsDZ[i] = 0;
 
     fhDXYNormalized[i] = 0;
@@ -331,6 +338,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.fCutNsigmaToVertex = fCutNsigmaToVertex;
   target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
+  target.fCutDCAToVertex = fCutDCAToVertex;
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
@@ -365,6 +373,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
     if (fhDXY[i]) target.fhDXY[i] = (TH1F*) fhDXY[i]->Clone();
     if (fhDZ[i]) target.fhDZ[i] = (TH1F*) fhDZ[i]->Clone();
+    if (fhDXYDZ[i]) target.fhDXYDZ[i] = (TH1F*) fhDXYDZ[i]->Clone();
     if (fhDXYvsDZ[i]) target.fhDXYvsDZ[i] = (TH2F*) fhDXYvsDZ[i]->Clone();
 
     if (fhDXYNormalized[i]) target.fhDXYNormalized[i] = (TH1F*) fhDXYNormalized[i]->Clone();
@@ -396,7 +405,6 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
   TIterator* iter = list->MakeIterator();
   TObject* obj;
 
-
   // collection of measured and generated histograms
   Int_t count = 0;
   while ((obj = iter->Next())) {
@@ -407,7 +415,7 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
 
     if (!entry->fHistogramsOn)
       continue;
-    
+
     for (Int_t i=0; i<2; i++) {
       
       fhNClustersITS[i]      ->Add(entry->fhNClustersITS[i]     );      
@@ -424,11 +432,12 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       					  			    
       fhDXY[i]               ->Add(entry->fhDXY[i]              ); 
       fhDZ[i]                ->Add(entry->fhDZ[i]               ); 
-      fhDXYvsDZ[i]           ->Add(entry->fhDXYvsDZ[i]          ); 
-      					  			    
-      fhDXYNormalized[i]     ->Add(entry->fhDXYNormalized[i]    ); 
+      fhDXYDZ[i]             ->Add(entry->fhDXYDZ[i]          );
+      fhDXYvsDZ[i]           ->Add(entry->fhDXYvsDZ[i]          );
+
+      fhDXYNormalized[i]     ->Add(entry->fhDXYNormalized[i]    );
       fhDZNormalized[i]      ->Add(entry->fhDZNormalized[i]     );
-      fhDXYvsDZNormalized[i] ->Add(entry->fhDXYvsDZNormalized[i]); 
+      fhDXYvsDZNormalized[i] ->Add(entry->fhDXYvsDZNormalized[i]);
       fhNSigmaToVertex[i]    ->Add(entry->fhNSigmaToVertex[i]); 
 
       fhPt[i]                ->Add(entry->fhPt[i]); 
@@ -536,13 +545,10 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
 
   UInt_t status = esdTrack->GetStatus();
 
-  // dummy array
-  Int_t  fIdxInt[200];
-
   // getting quality parameters from the ESD track
-  Int_t nClustersITS = esdTrack->GetITSclusters(fIdxInt);
-  Int_t nClustersTPC = esdTrack->GetTPCclusters(fIdxInt);
-  
+  Int_t nClustersITS = esdTrack->GetITSclusters(0);
+  Int_t nClustersTPC = esdTrack->GetTPCclusters(0);
+
   Float_t chi2PerClusterITS = -1;
   Float_t chi2PerClusterTPC = -1;
   if (nClustersITS!=0)
@@ -554,7 +560,16 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
 
   // getting the track to vertex parameters
   Float_t nSigmaToVertex = GetSigmaToVertex(esdTrack);
-
+      
+  Float_t b[2];
+  Float_t bCov[3];
+  esdTrack->GetImpactParameters(b,bCov);
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+  }
+  Float_t dcaToVertex = TMath::Sqrt(b[0]*b[0] + b[1]*b[1]);
+ 
   // getting the kinematic variables of the track
   // (assuming the mass is known)
   Double_t p[3];
@@ -625,11 +640,15 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[19] = kTRUE;
   if((y < fRapMin) || (y > fRapMax)) 
     cuts[20] = kTRUE;
+  if (dcaToVertex > fCutDCAToVertex)
+    cuts[21] = kTRUE;
 
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) cut = kTRUE;
-  
+
+
+
   //########################################################################
   // filling histograms
   if (fHistogramsOn) {
@@ -639,141 +658,110 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     
     for (Int_t i=0; i<kNCuts; i++) {
       if (cuts[i])
- 	fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i])));
-      
+        fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i])));
+
       for (Int_t j=i; j<kNCuts; j++) {
- 	if (cuts[i] && cuts[j]) {
- 	  Float_t xC = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fgkCutNames[i]));
- 	  Float_t yC = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fgkCutNames[j]));
- 	  fhCutCorrelation->Fill(xC, yC);
- 	}
+        if (cuts[i] && cuts[j]) {
+          Float_t xC = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fgkCutNames[i]));
+          Float_t yC = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fgkCutNames[j]));
+          fhCutCorrelation->Fill(xC, yC);
+        }
       }
-    }
-    
-    fhNClustersITS[0]->Fill(nClustersITS);
-    fhNClustersTPC[0]->Fill(nClustersTPC);
-    fhChi2PerClusterITS[0]->Fill(chi2PerClusterITS);
-    fhChi2PerClusterTPC[0]->Fill(chi2PerClusterTPC);
-
-    fhC11[0]->Fill(extCov[0]);
-    fhC22[0]->Fill(extCov[2]);
-    fhC33[0]->Fill(extCov[5]);
-    fhC44[0]->Fill(extCov[9]);
-    fhC55[0]->Fill(extCov[14]);
-    
-    fhPt[0]->Fill(pt);
-    fhEta[0]->Fill(eta);
-
-    Float_t b[2];
-    Float_t bRes[2];
-    Float_t bCov[3];
-    esdTrack->GetImpactParameters(b,bCov);
-
-    if (bCov[0]<=0 || bCov[2]<=0) {
-      AliDebug(1, "Estimated b resolution lower or equal zero!");
-      bCov[0]=0; bCov[2]=0;
-    }
-    bRes[0] = TMath::Sqrt(bCov[0]);
-    bRes[1] = TMath::Sqrt(bCov[2]);
-
-    fhDZ[0]->Fill(b[1]);
-    fhDXY[0]->Fill(b[0]);
-    fhDXYvsDZ[0]->Fill(b[1],b[0]);
-
-    if (bRes[0]!=0 && bRes[1]!=0) {
-      fhDZNormalized[0]->Fill(b[1]/bRes[1]);
-      fhDXYNormalized[0]->Fill(b[0]/bRes[0]);
-      fhDXYvsDZNormalized[0]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
-      fhNSigmaToVertex[0]->Fill(nSigmaToVertex);
     }
   }
 
-  //########################################################################
-  // cut the track!
-  if (cut) return kFALSE;
+  // now we loop over the filling of the histograms twice: once "before" the cut, once "after"
+  // the code is not in a function due to too many local variables that would need to be passed
 
-  //########################################################################
-  // filling histograms after cut
-  if (fHistogramsOn) {
-    fhNClustersITS[1]->Fill(nClustersITS);
-    fhNClustersTPC[1]->Fill(nClustersTPC);
-    fhChi2PerClusterITS[1]->Fill(chi2PerClusterITS);
-    fhChi2PerClusterTPC[1]->Fill(chi2PerClusterTPC);
+  for (Int_t id = 0; id < 2; id++)
+  {
+    // id = 0 --> before cut
+    // id = 1 --> after cut
 
-    fhC11[1]->Fill(extCov[0]);
-    fhC22[1]->Fill(extCov[2]);
-    fhC33[1]->Fill(extCov[5]);
-    fhC44[1]->Fill(extCov[9]);
-    fhC55[1]->Fill(extCov[14]);
-
-    fhPt[1]->Fill(pt);
-    fhEta[1]->Fill(eta);
-    
-    Float_t b[2];
-    Float_t bRes[2];
-    Float_t bCov[3];
-    esdTrack->GetImpactParameters(b,bCov);
-    if (bCov[0]<=0 || bCov[2]<=0) {
-      AliDebug(1, "Estimated b resolution lower or equal zero!");
-      bCov[0]=0; bCov[2]=0;
-    }
-    bRes[0] = TMath::Sqrt(bCov[0]);
-    bRes[1] = TMath::Sqrt(bCov[2]);
-
-    fhDZ[1]->Fill(b[1]);
-    fhDXY[1]->Fill(b[0]);
-    fhDXYvsDZ[1]->Fill(b[1],b[0]);
-
-    if (bRes[0]!=0 && bRes[1]!=0)
+    if (fHistogramsOn)
     {
-      fhDZNormalized[1]->Fill(b[1]/bRes[1]);
-      fhDXYNormalized[1]->Fill(b[0]/bRes[0]);
-      fhDXYvsDZNormalized[1]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
-      fhNSigmaToVertex[1]->Fill(nSigmaToVertex);
+      fhNClustersITS[id]->Fill(nClustersITS);
+      fhNClustersTPC[id]->Fill(nClustersTPC);
+      fhChi2PerClusterITS[id]->Fill(chi2PerClusterITS);
+      fhChi2PerClusterTPC[id]->Fill(chi2PerClusterTPC);
+
+      fhC11[id]->Fill(extCov[0]);
+      fhC22[id]->Fill(extCov[2]);
+      fhC33[id]->Fill(extCov[5]);
+      fhC44[id]->Fill(extCov[9]);
+      fhC55[id]->Fill(extCov[14]);
+
+      fhPt[id]->Fill(pt);
+      fhEta[id]->Fill(eta);
+
+      Float_t bRes[2];
+      bRes[0] = TMath::Sqrt(bCov[0]);
+      bRes[1] = TMath::Sqrt(bCov[2]);
+
+      fhDZ[id]->Fill(b[1]);
+      fhDXY[id]->Fill(b[0]);
+      fhDXYDZ[id]->Fill(dcaToVertex);
+      fhDXYvsDZ[id]->Fill(b[1],b[0]);
+
+      if (bRes[0]!=0 && bRes[1]!=0) {
+        fhDZNormalized[id]->Fill(b[1]/bRes[1]);
+        fhDXYNormalized[id]->Fill(b[0]/bRes[0]);
+        fhDXYvsDZNormalized[id]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+        fhNSigmaToVertex[id]->Fill(nSigmaToVertex);
+      }
     }
+
+    // cut the track
+    if (cut)
+      return kFALSE;
   }
 
   return kTRUE;
 }
 
 //____________________________________________________________________
-TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
+AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack)
 {
+  // creates a TPC only track from the given esd track
+  // the track has to be deleted by the user
   //
-  // returns an array of all tracks that pass the cuts
+  // NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
+  // there are only missing propagations here that are needed for old data
+  // this function will therefore become obsolete
   //
+  // adapted from code provided by CKB
 
-  TObjArray* acceptedTracks = new TObjArray();
+  if (!esd->GetPrimaryVertexTPC())
+    return 0; // No TPC vertex no TPC tracks
 
+  AliESDtrack* track = esd->GetTrack(iTrack);
+  if (!track)
+    return 0;
 
-  // loop over esd tracks
-  for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
-    AliESDtrack* track = esd->GetTrack(iTrack);
-    if (AcceptTrack(track))
-	acceptedTracks->Add(track);
+  AliESDtrack *tpcTrack = new AliESDtrack();
+
+  // This should have been done during the reconstruction
+  // fixed by Juri in r26675
+  // but recalculate for older data CKB
+  Float_t p[2],cov[3];
+  track->GetImpactParametersTPC(p,cov);
+  if(p[0]==0&&p[1]==0)
+    track->RelateToVertexTPC(esd->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
+  // BKC
+
+  // only true if we have a tpc track
+  if (!track->FillTPCOnlyTrack(*tpcTrack))
+  {
+    delete tpcTrack;
+    return 0;
   }
-  return acceptedTracks;
-}
 
+  // propagate to Vertex
+  // not needed for normal reconstructed ESDs...
+  // Double_t pTPC[2],covTPC[3];
+  // tpcTrack->PropagateToDCA(esd->GetPrimaryVertexTPC(), esd->GetMagneticField(), 10000,  pTPC, covTPC);
 
-//____________________________________________________________________
-Int_t AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
-{
-  //
-  // returns an the number of tracks that pass the cuts
-  //
-
-  Int_t count = 0;
-
-  // loop over esd tracks
-  for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
-    AliESDtrack* track = esd->GetTrack(iTrack);
-
-    if (AcceptTrack(track))
-      count++;
-  }
-
-  return count;
+  return tpcTrack;
 }
 
 //____________________________________________________________________
@@ -788,39 +776,25 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
 
   // loop over esd tracks
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
-    AliESDtrack* track = esd->GetTrack(iTrack);
-
     if(bTPC){
       if(!esd->GetPrimaryVertexTPC())return acceptedTracks; // No TPC vertex no TPC tracks
 
-      AliESDtrack *tpcTrack = new AliESDtrack();
-      bool bAdd = false;
-      Double_t pTPC[2],covTPC[3];
-      // This should have been done during the reconstruction
-      // fixed by Juri in r26675
-      // but recalculate for older data CKB 
-      Float_t p[2],cov[3];
-      track->GetImpactParametersTPC(p,cov);
-      if(p[0]==0&&p[1]==0){
-	track->RelateToVertexTPC(esd->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
-      }
-      // BKC
+      AliESDtrack *tpcTrack = GetTPCOnlyTrack(esd, iTrack);
+      if (!tpcTrack)
+        continue;
 
-      if(track->FillTPCOnlyTrack(*tpcTrack)){ // only true if we have a tpc track
-	// propagate to Vertex
-	// not needed for normal reconstructed ESDs...
-	//	if(tpcTrack->PropagateToDCA(esd->GetPrimaryVertexTPC(), esd->GetMagneticField(), 10000,  pTPC, covTPC))
-	if(AcceptTrack(tpcTrack)){
-	  acceptedTracks->Add(tpcTrack);
-	  bAdd = true;
-	}      
+      if (AcceptTrack(tpcTrack)) {
+        acceptedTracks->Add(tpcTrack);
       }
-      if(!bAdd)delete tpcTrack;
+      else
+        delete tpcTrack;
     }
-    else if(AcceptTrack(track)){// we cut by passing the original track
-      // default case
-      acceptedTracks->Add(track);
-    } 
+    else
+    {
+      AliESDtrack* track = esd->GetTrack(iTrack);
+      if(AcceptTrack(track))
+        acceptedTracks->Add(track);
+    }
   } 
   if(bTPC)acceptedTracks->SetOwner(kTRUE);
   return acceptedTracks;
@@ -877,34 +851,31 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
   fhCutStatistics  ->SetLineWidth(2);
   fhCutCorrelation ->SetLineWidth(2);
 
-  Char_t str[256];
   for (Int_t i=0; i<2; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    fhNClustersITS[i]        = new TH1F("nClustersITS"    ,"",8,-0.5,7.5);
+    fhNClustersTPC[i]        = new TH1F("nClustersTPC"     ,"",165,-0.5,164.5);
+    fhChi2PerClusterITS[i]   = new TH1F("chi2PerClusterITS","",500,0,10);
+    fhChi2PerClusterTPC[i]   = new TH1F("chi2PerClusterTPC","",500,0,10);
 
-    fhNClustersITS[i]        = new TH1F(Form("nClustersITS%s",str)     ,"",8,-0.5,7.5);
-    fhNClustersTPC[i]        = new TH1F(Form("nClustersTPC%s",str)     ,"",165,-0.5,164.5);
-    fhChi2PerClusterITS[i]   = new TH1F(Form("chi2PerClusterITS%s",str),"",500,0,10);
-    fhChi2PerClusterTPC[i]   = new TH1F(Form("chi2PerClusterTPC%s",str),"",500,0,10);
+    fhC11[i]                 = new TH1F("covMatrixDiagonal11","",2000,0,20);
+    fhC22[i]                 = new TH1F("covMatrixDiagonal22","",2000,0,20);
+    fhC33[i]                 = new TH1F("covMatrixDiagonal33","",1000,0,1);
+    fhC44[i]                 = new TH1F("covMatrixDiagonal44","",1000,0,5);
+    fhC55[i]                 = new TH1F("covMatrixDiagonal55","",1000,0,5);
 
-    fhC11[i]                 = new  TH1F(Form("covMatrixDiagonal11%s",str),"",2000,0,20);
-    fhC22[i]                 = new  TH1F(Form("covMatrixDiagonal22%s",str),"",2000,0,20);
-    fhC33[i]                 = new  TH1F(Form("covMatrixDiagonal33%s",str),"",1000,0,1);
-    fhC44[i]                 = new  TH1F(Form("covMatrixDiagonal44%s",str),"",1000,0,5);
-    fhC55[i]                 = new  TH1F(Form("covMatrixDiagonal55%s",str),"",1000,0,5);
+    fhDXY[i]                 = new TH1F("dXY"    ,"",500,-10,10);
+    fhDZ[i]                  = new TH1F("dZ"     ,"",500,-10,10);
+    fhDXYDZ[i]               = new TH1F("dXYDZ"  ,"",500,0,10);
+    fhDXYvsDZ[i]             = new TH2F("dXYvsDZ","",200,-10,10,200,-10,10);
 
-    fhDXY[i]                 = new  TH1F(Form("dXY%s",str)    ,"",500,-10,10);
-    fhDZ[i]                  = new  TH1F(Form("dZ%s",str)     ,"",500,-10,10);
-    fhDXYvsDZ[i]             = new  TH2F(Form("dXYvsDZ%s",str),"",200,-10,10,200,-10,10);
+    fhDXYNormalized[i]       = new TH1F("dXYNormalized"    ,"",500,-10,10);
+    fhDZNormalized[i]        = new TH1F("dZNormalized"     ,"",500,-10,10);
+    fhDXYvsDZNormalized[i]   = new TH2F("dXYvsDZNormalized","",200,-10,10,200,-10,10);
 
-    fhDXYNormalized[i]       = new  TH1F(Form("dXYNormalized%s",str)    ,"",500,-10,10);
-    fhDZNormalized[i]        = new  TH1F(Form("dZNormalized%s",str)     ,"",500,-10,10);
-    fhDXYvsDZNormalized[i]   = new  TH2F(Form("dXYvsDZNormalized%s",str),"",200,-10,10,200,-10,10);
+    fhNSigmaToVertex[i]      = new TH1F("nSigmaToVertex","",500,0,10);
 
-    fhNSigmaToVertex[i]      = new  TH1F(Form("nSigmaToVertex%s",str),"",500,0,50);
-
-    fhPt[i]                  = new TH1F(Form("pt%s",str)     ,"p_{T} distribution;p_{T} (GeV/c)",500,0.0,100.0);
-    fhEta[i]                 = new TH1F(Form("eta%s",str)     ,"#eta distribution;#eta",40,-2.0,2.0);
+    fhPt[i]                  = new TH1F("pt"     ,"p_{T} distribution;p_{T} (GeV/c)",500,0.0,100.0);
+    fhEta[i]                 = new TH1F("eta"     ,"#eta distribution;#eta",40,-2.0,2.0);
     
     fhNClustersITS[i]->SetTitle("n ITS clusters");
     fhNClustersTPC[i]->SetTitle("n TPC clusters");
@@ -919,7 +890,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
 
     fhDXY[i]->SetTitle("transverse impact parameter");
     fhDZ[i]->SetTitle("longitudinal impact parameter");
-    fhDXYvsDZ[i]->SetTitle("longitudinal impact parameter");
+    fhDXYDZ[i]->SetTitle("absolute impact parameter;sqrt(dXY**2 + dZ**2) in cm");
+    fhDXYvsDZ[i]->SetXTitle("longitudinal impact parameter");
     fhDXYvsDZ[i]->SetYTitle("transverse impact parameter");
 
     fhDXYNormalized[i]->SetTitle("normalized trans impact par");
@@ -940,7 +912,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
     fhC55[i]->SetLineColor(color);   fhC55[i]->SetLineWidth(2);
 
     fhDXY[i]->SetLineColor(color);   fhDXY[i]->SetLineWidth(2);
-    fhDZ[i]->SetLineColor(color);   fhDZ[i]->SetLineWidth(2);
+    fhDZ[i]->SetLineColor(color);    fhDZ[i]->SetLineWidth(2);
+    fhDXYDZ[i]->SetLineColor(color); fhDXYDZ[i]->SetLineWidth(2);
 
     fhDXYNormalized[i]->SetLineColor(color);   fhDXYNormalized[i]->SetLineWidth(2);
     fhDZNormalized[i]->SetLineColor(color);    fhDZNormalized[i]->SetLineWidth(2);
@@ -950,7 +923,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
   // The number of sigmas to the vertex is per definition gaussian
   ffDTheoretical = new TF1("nSigmaToVertexTheoretical","([0]/2.506628274)*exp(-(x**2)/2)",0,50);
   ffDTheoretical->SetParameter(0,1);
-  
+
   TH1::AddDirectory(oldStatus);
 }
 
@@ -973,41 +946,37 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
   fhCutStatistics = dynamic_cast<TH1F*> (gDirectory->Get("cut_statistics"));
   fhCutCorrelation = dynamic_cast<TH2F*> (gDirectory->Get("cut_correlation"));
 
-  Char_t str[5];
   for (Int_t i=0; i<2; i++) {
     if (i==0)
     {
       gDirectory->cd("before_cuts");
-      str[0] = 0;
     }
     else
-    {
       gDirectory->cd("after_cuts");
-      sprintf(str,"_cut");
-    }
 
-    fhNClustersITS[i]      = dynamic_cast<TH1F*> (gDirectory->Get(Form("nClustersITS%s",str)     ));
-    fhNClustersTPC[i]      = dynamic_cast<TH1F*> (gDirectory->Get(Form("nClustersTPC%s",str)     ));
-    fhChi2PerClusterITS[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("chi2PerClusterITS%s",str)));
-    fhChi2PerClusterTPC[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("chi2PerClusterTPC%s",str)));
+    fhNClustersITS[i]      = dynamic_cast<TH1F*> (gDirectory->Get("nClustersITS"     ));
+    fhNClustersTPC[i]      = dynamic_cast<TH1F*> (gDirectory->Get("nClustersTPC"     ));
+    fhChi2PerClusterITS[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterITS"));
+    fhChi2PerClusterTPC[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterTPC"));
 
-    fhC11[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal11%s",str)));
-    fhC22[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal22%s",str)));
-    fhC33[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal33%s",str)));
-    fhC44[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal44%s",str)));
-    fhC55[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal55%s",str)));
+    fhC11[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal11"));
+    fhC22[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal22"));
+    fhC33[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal33"));
+    fhC44[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal44"));
+    fhC55[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal55"));
 
-    fhDXY[i] =     dynamic_cast<TH1F*> (gDirectory->Get(Form("dXY%s",str)    ));
-    fhDZ[i] =      dynamic_cast<TH1F*> (gDirectory->Get(Form("dZ%s",str)     ));
-    fhDXYvsDZ[i] = dynamic_cast<TH2F*> (gDirectory->Get(Form("dXYvsDZ%s",str)));
+    fhDXY[i] =     dynamic_cast<TH1F*> (gDirectory->Get("dXY"    ));
+    fhDZ[i] =      dynamic_cast<TH1F*> (gDirectory->Get("dZ"     ));
+    fhDXYDZ[i] =   dynamic_cast<TH1F*> (gDirectory->Get("dXYDZ"));
+    fhDXYvsDZ[i] = dynamic_cast<TH2F*> (gDirectory->Get("dXYvsDZ"));
 
-    fhDXYNormalized[i] =     dynamic_cast<TH1F*> (gDirectory->Get(Form("dXYNormalized%s",str)    ));
-    fhDZNormalized[i] =      dynamic_cast<TH1F*> (gDirectory->Get(Form("dZNormalized%s",str)     ));
-    fhDXYvsDZNormalized[i] = dynamic_cast<TH2F*> (gDirectory->Get(Form("dXYvsDZNormalized%s",str)));
-    fhNSigmaToVertex[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("nSigmaToVertex%s",str)));
+    fhDXYNormalized[i] =     dynamic_cast<TH1F*> (gDirectory->Get("dXYNormalized"    ));
+    fhDZNormalized[i] =      dynamic_cast<TH1F*> (gDirectory->Get("dZNormalized"     ));
+    fhDXYvsDZNormalized[i] = dynamic_cast<TH2F*> (gDirectory->Get("dXYvsDZNormalized"));
+    fhNSigmaToVertex[i] = dynamic_cast<TH1F*> (gDirectory->Get("nSigmaToVertex"));
 
-    fhPt[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("pt%s",str)));
-    fhEta[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("eta%s",str)));
+    fhPt[i] = dynamic_cast<TH1F*> (gDirectory->Get("pt"));
+    fhEta[i] = dynamic_cast<TH1F*> (gDirectory->Get("eta"));
 
     gDirectory->cd("../");
   }
@@ -1063,6 +1032,7 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
 
     fhDXY[i]                 ->Write();
     fhDZ[i]                  ->Write();
+    fhDXYDZ[i]               ->Write();
     fhDXYvsDZ[i]             ->Write();
 
     fhDXYNormalized[i]       ->Write();

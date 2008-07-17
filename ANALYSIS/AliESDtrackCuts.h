@@ -5,18 +5,16 @@
 //  track-to-vertex cut and a number of kinematic cuts. Two methods
 //  can be used to figure out if an ESD track survives the cuts:
 //  AcceptTrack which takes a single AliESDtrack as argument and
-//  returns kTRUE/kFALSE or GetAcceptedTracks which takes an AliESD
+//  returns kTRUE/kFALSE or GetAcceptedTracks which takes an AliESDEvent
 //  object and returns an TObjArray (of AliESDtracks) with the tracks
 //  in the ESD that survived the cuts.
 //
 //
-//  TODO: 
+//  TODO:
 //  - add functionality to save and load cuts
-//  - add different ways to make track to vertex cut
 //  - add histograms for kinematic cut variables?
 //  - upper and lower cuts for all (non-boolean) cuts
 //  - update print method
-//  - is there a smarter way to manage the cuts?
 //  - put comments to each variable
 //
 
@@ -27,7 +25,6 @@
 #include <TH2.h>
 #include "AliAnalysisCuts.h"
 
-class AliESD;
 class AliESDEvent;
 class AliESDtrack;
 class AliLog;
@@ -44,10 +41,10 @@ public:
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
-  TObjArray* GetAcceptedTracks(AliESD* esd);
-  Int_t CountAcceptedTracks(AliESD* esd);
   TObjArray* GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC = kFALSE);
   Int_t CountAcceptedTracks(AliESDEvent* esd);
+
+  static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack);
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
@@ -69,6 +66,7 @@ public:
   // track to vertex cut setters
   void SetMinNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma;}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
+  void SetDCAToVertex(Float_t dist=1e10)              {fCutDCAToVertex = dist;}
 
   // getters
 
@@ -112,7 +110,7 @@ public:
 protected:
   void Init(); // sets everything to 0
 
-  enum { kNCuts = 21 };
+  enum { kNCuts = 22 };
 
   //######################################################
   // esd track quality cuts
@@ -137,6 +135,7 @@ protected:
   // track to vertex cut
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
   Bool_t  fCutSigmaToVertexRequired;  // cut track if sigma from track-to-vertex could not be calculated
+  Float_t fCutDCAToVertex;            // track-to-vertex cut in absolute distance
 
   // esd kinematics cuts
   Float_t fPMin,   fPMax;             // definition of the range of the P
@@ -165,13 +164,14 @@ protected:
 
   TH1F* fhDXY[2];                     //->
   TH1F* fhDZ[2];                      //->
+  TH1F* fhDXYDZ[2];                   //-> absolute distance sqrt(dxy**2 + dz**2) to vertex
   TH2F* fhDXYvsDZ[2];                 //->
 
   TH1F* fhDXYNormalized[2];           //->
   TH1F* fhDZNormalized[2];            //->
   TH2F* fhDXYvsDZNormalized[2];       //->
   TH1F* fhNSigmaToVertex[2];          //->
-  
+
   TH1F* fhPt[2];                      //-> pt of esd tracks
   TH1F* fhEta[2];                     //-> eta of esd tracks
 
