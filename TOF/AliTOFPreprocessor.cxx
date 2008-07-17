@@ -110,7 +110,6 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(endTime).AsString()));
 
 	fData = new AliTOFDataDCS(fRun, fStartTime, fEndTime);
-	fData->SetFDRFlag(fFDRFlag);
 	fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
 }
 //_____________________________________________________________________________
@@ -257,6 +256,8 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
   }
   if (compDelays == "kTRUE") fFDRFlag = kFALSE;
   else fFDRFlag = kTRUE;
+
+  fData->SetFDRFlag(fFDRFlag);
 
   delete cdbEntry;
   cdbEntry = 0x0;
