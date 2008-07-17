@@ -260,6 +260,8 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
      fP4*=(1.- e/p2*dE);
+     if (TMath::Abs(fP4)>100.) return kFALSE; // Do not track below 10 MeV/c
+
 
      // Approximate energy loss fluctuation (M.Ivanov)
      const Double_t knst=0.07; // To be tuned.  
