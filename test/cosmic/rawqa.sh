@@ -14,10 +14,9 @@
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
 export YEAR=08
-DIALOG=´which dialog´
 # ---------------------------------------
 
-RUNNUM=$1
+export RUNNUM=$1
 
 [ -z $RUNNUM ] && { echo "Please provide a run number..."; exit 1; }
 
@@ -61,13 +60,33 @@ echo
 #        --ok-label OK --radiolist "Program to run:" 15 20 5 "aliroot -b" \| on alieve \| off 2> $tempfile
 PROGRAM=aliroot #`cat $tempfile`
 # 
+rm -rf $RUNNUM"/"*QA.$RUNNUM*.root
 for filename in $CHUNKS; do
      filename=${filename//\"/} 
      CHUNK=`basename $filename | cut -d "." -f 1,2`
-     echo "Running QA for chunk $filename. Outputs will be stored in "$RUNNUM"/"$CHUNK"."
+     SUBCHUNK=${CHUNK#*.}
+     echo "Running QA for chunk $filename. Outputs will be stored in "$RUNNUM"/"$CHUNK".   $SUBCHUNK"
      rm -rf   $RUNNUM"/"$CHUNK
      mkdir -p $RUNNUM"/"$CHUNK
      cd       $RUNNUM"/"$CHUNK
      $PROGRAM -q $ALICE_ROOT/test/cosmic/rawqa.C\(\"$filename\"\) 2>&1 | tee rawqa.log
-     cd ../..
+     ls *.QA.$RUNNUM.0.root > $tempfile
+     cd ../
+     QAFILES=`cat $tempfile`
+     for qafile in $QAFILES; do
+        in=$CHUNK/$qafile
+        ou=${qafile/.0./.$SUBCHUNK.}
+        ln -si $in $ou
+     done
+     ln -si $CHUNK/QA.root QA.$SUBCHUNK.root
+     cd ../
 done
+cd $RUNNUM
+$PROGRAM -b <<EOF
+ AliQADataMakerSteer qas ; 
+ qas.Merge(atoi(gSystem->Getenv("RUNNUM"))) ;
+EOF
+rm -f tempo.txt
+
+$PROGRAM -b $ALICE_ROOT/test/cosmic/qasummary.C
+cd ..
