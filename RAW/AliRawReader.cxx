@@ -62,6 +62,7 @@ AliRawReader::AliRawReader() :
   fSelectMaxEquipmentId(-1),
   fSkipInvalid(kFALSE),
   fSelectEventType(-1),
+  fSelectTriggerMask(0),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -118,6 +119,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectMaxEquipmentId(rawReader.fSelectMaxEquipmentId),
   fSkipInvalid(rawReader.fSkipInvalid),
   fSelectEventType(rawReader.fSelectEventType),
+  fSelectTriggerMask(rawReader.fSelectTriggerMask),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -144,6 +146,7 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSelectMaxEquipmentId = rawReader.fSelectMaxEquipmentId;
   fSkipInvalid = rawReader.fSkipInvalid;
   fSelectEventType = rawReader.fSelectEventType;
+  fSelectTriggerMask = rawReader.fSelectTriggerMask;
 
   fErrorCode = rawReader.fErrorCode;
 
@@ -312,12 +315,14 @@ void AliRawReader::SelectEquipment(Int_t equipmentType,
   fSelectMaxEquipmentId = maxEquipmentId;
 }
 
-void AliRawReader::SelectEvents(Int_t type)
+void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask)
 {
-// read only events with the given type.
+// read only events with the given type and optionally
+// trigger mask.
 // no selection is applied if a value < 0 is used.
 
   fSelectEventType = type;
+  fSelectTriggerMask = triggerMask;
 }
 
 Bool_t AliRawReader::IsSelected() const
@@ -347,10 +352,17 @@ Bool_t AliRawReader::IsSelected() const
 
 Bool_t AliRawReader::IsEventSelected() const
 {
-// apply the event selection (if any)
+  // apply the event selection (if any)
 
+  // First check the event type
   if (fSelectEventType >= 0) {
     if (GetType() != (UInt_t) fSelectEventType) return kFALSE;
+  }
+
+  // Then check the trigger pattern and compared it
+  // to the required trigger mask
+  if (fSelectTriggerMask != 0) {
+    if ((GetClassMask() & fSelectTriggerMask) != fSelectTriggerMask) return kFALSE;
   }
 
   return kTRUE;

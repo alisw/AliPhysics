@@ -38,7 +38,7 @@ class AliRawReader: public TObject {
 				     Int_t maxEquipmentId = -1);
     virtual void     SkipInvalid(Bool_t skip = kTRUE)
       {fSkipInvalid = skip;};
-    virtual void     SelectEvents(Int_t type);
+    virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0);
     virtual void     RequireHeader(Bool_t required)
       {fRequireHeader = required;};
 
@@ -171,6 +171,7 @@ class AliRawReader: public TObject {
     Int_t            fSelectMaxEquipmentId; // maximal index of selected equipment (<0 = no selection)
     Bool_t           fSkipInvalid;          // skip invalid data
     Int_t            fSelectEventType;      // type of selected events (<0 = no selection)
+    ULong64_t        fSelectTriggerMask;    // trigger mask for selecting events (0 = no selection)
 
     Int_t            fErrorCode;            // code of last error
 

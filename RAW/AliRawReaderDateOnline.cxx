@@ -52,6 +52,8 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
 
 #ifdef ALI_DATE
 
+  fSelectEventType = PHYSICS_EVENT;
+
   int status;
 
   /* define data source : this is argument 1 */  
@@ -92,7 +94,7 @@ Bool_t AliRawReaderDateOnline::NextEvent()
     /* get next event (blocking call until timeout) */
     int status=monitorGetEventDynamic((void**)&fEvent);
 
-    if ((unsigned int)status==MON_ERR_EOF) {
+    if (status==MON_ERR_EOF) {
       AliInfo("End of File detected");
       Reset();
       fEvent = NULL;
@@ -120,11 +122,11 @@ Bool_t AliRawReaderDateOnline::NextEvent()
       return kFALSE;
     }
     
-    if (eventT!=PHYSICS_EVENT) {
+    if (!IsEventSelected()) {
       continue;
     }
 
-    AliInfo(Form("Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u",
+    AliInfo(Form("Run #%lu, event size: %lu, BC:0x%x, Orbit:0x%x, Period:0x%x",
 		 (unsigned long)fEvent->eventRunNb,
 		 (unsigned long)fEvent->eventSize,
 		 EVENT_ID_GET_BUNCH_CROSSING(fEvent->eventId),
