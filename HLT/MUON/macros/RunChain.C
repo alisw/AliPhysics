@@ -88,6 +88,8 @@ using std::endl;
  * @param logLevel  Specifies the amount of logging messages produced by the HLT
  *     system. The possible options are:
  *       "normal" - Shows warnings, errors and information.
+ *       "debug" - Shows all messages up to the debug level only for HLT and the
+ *                 same as normal for all other modules.
  *       "max" - Shows everything including debug messages if they were compiled in.
  *       "min" - Shows only error messages.
  * @param lutDir  This is the directory in which the LUTs can be found.
@@ -134,6 +136,7 @@ void RunChain(
 	bool buildRecDataPubs = false;
 	bool buildTrackerComp = false;
 	bool maxLogging = false;
+	bool debugLogging = false;
 	bool minLogging = false;
 	bool useRootWriter = false;
 	bool makeTracksOnly = false;
@@ -208,6 +211,10 @@ void RunChain(
 	{
 		// nothing to do.
 	}
+	else if (logOpt.CompareTo("debug", TString::kIgnoreCase) == 0)
+	{
+		debugLogging = true;
+	}
 	else if (logOpt.CompareTo("max", TString::kIgnoreCase) == 0)
 	{
 		maxLogging = true;
@@ -236,6 +243,11 @@ void RunChain(
 	if (maxLogging)
 	{
 		AliLog::SetGlobalLogLevel(AliLog::kMaxType);
+		sys.SetGlobalLoggingLevel(kHLTLogAll);
+	}
+	if (debugLogging)
+	{
+		AliLog::SetModuleDebugLevel("HLT", AliLog::kMaxType);
 		sys.SetGlobalLoggingLevel(kHLTLogAll);
 	}
 	if (minLogging)
