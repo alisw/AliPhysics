@@ -55,7 +55,9 @@ AliHLTComponentHandler::AliHLTComponentHandler()
   fLibraryList(),
   fEnvironment(),
   fOwnedComponents(),
-  fLibraryMode(kDynamic)
+  fLibraryMode(kDynamic),
+  fRunDesc(kAliHLTVoidRunDesc),
+  fRunType(NULL)
 {
   // see header file for class documentation
   // or
@@ -74,7 +76,9 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
   fLibraryList(),
   fEnvironment(),
   fOwnedComponents(),
-  fLibraryMode(kDynamic)
+  fLibraryMode(kDynamic),
+  fRunDesc(kAliHLTVoidRunDesc),
+  fRunType(NULL)
 {
   // see header file for class documentation
   if (pEnv) {
@@ -103,6 +107,8 @@ AliHLTComponentHandler::~AliHLTComponentHandler()
   // see header file for class documentation
   DeleteOwnedComponents();
   UnloadLibraries();
+  if (fRunType) delete [] fRunType;
+  fRunType=NULL;
 }
 
 AliHLTComponentHandler* AliHLTComponentHandler::fgpInstance=NULL;
@@ -213,7 +219,10 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvP
       component=pSample->Spawn();
       if (component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
-	component->InitCDB(cdbPath, this);
+	if (cdbPath && cdbPath[0]!=0) {
+	  component->InitCDB(cdbPath, this);
+	  component->SetRunDescription(&fRunDesc, fRunType);
+	}
 	if ((iResult=component->Init(&fEnvironment, pEnvParam, argc, argv))!=0) {
 	  HLTError("Initialization of component \"%s\" failed with error %d", componentID, iResult);
 	  delete component;
@@ -630,4 +639,24 @@ int AliHLTComponentHandler::DeleteOwnedComponents()
     element=fOwnedComponents.begin();
   }
   return iResult;
+}
+
+int AliHLTComponentHandler::SetRunDescription(const AliHLTRunDesc* desc, const char* runType)
+{
+  // see header file for class documentation
+  if (!desc) return -EINVAL;
+  if (desc->fStructSize!=sizeof(AliHLTRunDesc)) {
+    HLTError("invalid size of RunDesc struct (%ul)", desc->fStructSize);
+    return -EINVAL;
+  }
+
+  memcpy(&fRunDesc, desc, sizeof(AliHLTRunDesc));
+  if (runType) {
+    if (fRunType) delete [] fRunType;
+    fRunType=new char[sizeof(runType)+1];
+    if (fRunType) {
+      strcpy(fRunType, runType);
+    }
+  }
+  return 0;
 }

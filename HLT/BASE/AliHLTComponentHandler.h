@@ -213,6 +213,18 @@ class AliHLTComponentHandler : public AliHLTLogging {
     }
 
   /**
+   * Set the run description.
+   * The run description is set globally for all components. Each component
+   * is initialized from the global run description after creation and before
+   * call of AliHLTComponent::Init().
+   *
+   * @param desc    run descriptor, currently only the run no member is used
+   * @param runType originally, run type was supposed to be a number and part
+   *                of the run descriptor. But it was defined as string later
+   */
+  int SetRunDescription(const AliHLTRunDesc* desc, const char* runType);
+
+  /**
    * Check if a registered component has output data, e.g. is of type
    * kSource or kProcessor (see @ref AliHLTComponent::TComponentType).
    * @param componentID  ID of the component to create
@@ -320,12 +332,17 @@ class AliHLTComponentHandler : public AliHLTLogging {
   /** library mode effects all loaded libraries until a new mode is set */
   TLibraryMode fLibraryMode;                                       // see above 
 
+  /** run descriptor */
+  AliHLTRunDesc fRunDesc;                                          //!transient 
+  /** run type string */
+  char* fRunType;                                                  //!transient 
+
   /** the global singleton */
   static AliHLTComponentHandler* fgpInstance;                      //!transient
   /** number of used instances of the global singleton */
   static int fgNofInstances;                                       //!transient 
 
-  ClassDef(AliHLTComponentHandler, 1);
+  ClassDef(AliHLTComponentHandler, 2);
 
 };
 #endif

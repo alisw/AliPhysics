@@ -97,6 +97,12 @@ void AliHLT_C_DestroyComponent( AliHLTComponentHandle );
  * 
  * @ingroup alihlt_wrapper_interface
  */
+int AliHLT_C_SetRunDescription(const AliHLTRunDesc* desc, const char* runType);
+
+/**
+ * 
+ * @ingroup alihlt_wrapper_interface
+ */
 int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
                            AliHLTComponent_TriggerData* trigData, AliHLTUInt8_t* outputPtr,
                            AliHLTUInt32_t* size, AliHLTUInt32_t* outputBlockCnt, 

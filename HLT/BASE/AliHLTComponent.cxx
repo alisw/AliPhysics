@@ -105,6 +105,10 @@ AliHLTComponent::~AliHLTComponent()
     }
     element++;
   }
+  if (fpRunDesc) {
+    delete fpRunDesc;
+    fpRunDesc=NULL;
+  }
 }
 
 AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
@@ -244,6 +248,30 @@ int AliHLTComponent::SetCDBRunNo(int runNo)
   return (*((AliHLTMiscSetCDBRunNo_t)fCDBSetRunNoFunc))(runNo);
 }
 
+int AliHLTComponent::SetRunDescription(const AliHLTRunDesc* desc, const char* /*runType*/)
+{
+  // see header file for function documentation
+  if (!desc) return -EINVAL;
+  if (desc->fStructSize!=sizeof(AliHLTRunDesc)) {
+    HLTError("invalid size of RunDesc struct (%ul)", desc->fStructSize);
+    return -EINVAL;
+  }
+
+  if (!fpRunDesc) {
+    fpRunDesc=new AliHLTRunDesc;
+    if (!fpRunDesc) return -ENOMEM;
+    *fpRunDesc=kAliHLTVoidRunDesc;
+  }
+
+  if (fpRunDesc->fRunNo!=kAliHLTVoidRunNo && fpRunDesc->fRunNo!=desc->fRunNo) {
+    HLTWarning("Run description has already been set");
+  }
+  *fpRunDesc=*desc;
+  SetCDBRunNo(fpRunDesc->fRunNo);
+  // TODO: we have to decide about the runType
+  return 0;
+}
+
 int AliHLTComponent::DoInit( int /*argc*/, const char** /*argv*/)
 {
   // default implementation, childs can overload
@@ -271,6 +299,21 @@ int AliHLTComponent::ReadPreprocessorValues(const char* /*modules*/)
   HLTLogKeyword("dummy");
   return 0;
 }
+
+int AliHLTComponent::StartOfRun()
+{
+  // default implementation, childs can overload
+  HLTLogKeyword("dummy");
+  return 0;
+}
+
+int AliHLTComponent::EndOfRun()
+{
+  // default implementation, childs can overload
+  HLTLogKeyword("dummy");
+  return 0;
+}
+
 
 int AliHLTComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& /*tgtList*/)
 {
@@ -1141,9 +1184,18 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   outputBlockCnt=0;
   outputBlocks=NULL;
 
-  bool bSkipDataProcessing=false;
+  // data processing is skipped if there are only steering events
+  // in the block list. It is not skipped if there is no block list
+  // at all for the sake of data source components. Data processing
+  // is always skipped if the event is of type
+  // - gkAliEventTypeConfiguration
+  // - gkAliEventTypeReadPreprocessor
+  const unsigned int skipModeDefault=0x1;
+  const unsigned int skipModeForce=0x2;
+  unsigned int bSkipDataProcessing=skipModeDefault;
+
   // find special events
-  if (fpInputBlocks) {
+  if (fpInputBlocks && evtData.fBlockCnt>0) {
     // first look for all special events and execute in the appropriate
     // sequence afterwords
     AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
@@ -1154,8 +1206,18 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     for (unsigned int i=0; i<evtData.fBlockCnt && iResult>=0; i++) {
       if (fpInputBlocks[i].fDataType==kAliHLTDataTypeSOR) {
 	indexSOREvent=i;
+	// the AliHLTCalibrationProcessor relies on the SOR and EOR events
+	bSkipDataProcessing&=~skipModeDefault;
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeRunType) {
+	// run type string
+	// handling is not clear yet
+	if (fpInputBlocks[i].fPtr) {
+	  HLTDebug("got run type \"%s\"\n", fpInputBlocks[i].fPtr);
+	}
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEOR) {
 	indexEOREvent=i;
+	// the calibration processor relies on the SOR and EOR events
+	bSkipDataProcessing&=~skipModeDefault;
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeDDL) {
 	// DDL list
 	// this event is most likely deprecated
@@ -1165,24 +1227,34 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	indexUpdtDCSEvent=i;
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEvent) {
 	eventType=fpInputBlocks[i].fSpecification;
-	bSkipDataProcessing|=(fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration);
-	bSkipDataProcessing|=(fpInputBlocks[i].fSpecification==gkAliEventTypeReadPreprocessor);
+	if (fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration) bSkipDataProcessing|=skipModeForce;
+	if (fpInputBlocks[i].fSpecification==gkAliEventTypeReadPreprocessor) bSkipDataProcessing|=skipModeForce;
+      } else {
+	// the processing function is called if there is at least one
+	// non-steering data block. Steering blocks are not filtered out
+	// for sake of performance 
+	bSkipDataProcessing&=~skipModeDefault;
       }
     }
+
     if (indexSOREvent>=0) {
       // start of run
       if (fpRunDesc==NULL) {
 	fpRunDesc=new AliHLTRunDesc;
-	if (fpRunDesc) {
-	  if ((iResult=CopyStruct(fpRunDesc, sizeof(AliHLTRunDesc), indexSOREvent, "AliHLTRunDesc", "SOR"))>0) {
+      }
+      if (fpRunDesc) {
+	AliHLTRunDesc rundesc;
+	if ((iResult=CopyStruct(&rundesc, sizeof(AliHLTRunDesc), indexSOREvent, "AliHLTRunDesc", "SOR"))>0) {
+	  if (fpRunDesc->fRunNo==kAliHLTVoidRunNo) {
+	    *fpRunDesc=rundesc;
 	    HLTDebug("set run decriptor, run no %d", fpRunDesc->fRunNo);
 	    SetCDBRunNo(fpRunDesc->fRunNo);
+	  } else if (fpRunDesc->fRunNo!=rundesc.fRunNo) {
+	    HLTWarning("already set run properties run no %d, ignoring SOR with run no %d", fpRunDesc->fRunNo, rundesc.fRunNo);
 	  }
-	} else {
-	  iResult=-ENOMEM;
 	}
       } else {
-	HLTWarning("already received SOR event run no %d, ignoring SOR", fpRunDesc->fRunNo);
+	iResult=-ENOMEM;
       }
     }
     if (indexEOREvent>=0) {
@@ -1226,9 +1298,14 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	HLTWarning("preprocessor update of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
       }
     }
+  } else {
+    // processing function needs to be called if there are no input data
+    // blocks in order to make data source components working.
+    bSkipDataProcessing&=~skipModeDefault;
   }
   
   AliHLTComponentBlockDataList blockData;
+  if (iResult>=0 && !bSkipDataProcessing)
   { // dont delete, sets the scope for the stopwatch guard
     // do not use ALIHLTCOMPONENT_DA_STOPWATCH(); macro
     // in order to avoid 'shadowed variable' warning
@@ -1399,14 +1476,14 @@ int AliHLTComponent::SetStopwatches(TObjArray* pStopwatches)
 AliHLTUInt32_t AliHLTComponent::GetRunNo() const
 {
   // see header file for function documentation
-  if (fpRunDesc==NULL) return 0;
+  if (fpRunDesc==NULL) return kAliHLTVoidRunNo;
   return fpRunDesc->fRunNo;
 }
 
 AliHLTUInt32_t AliHLTComponent::GetRunType() const
 {
   // see header file for function documentation
-  if (fpRunDesc==NULL) return 0;
+  if (fpRunDesc==NULL) return kAliHLTVoidRunType;
   return fpRunDesc->fRunType;
 }
 

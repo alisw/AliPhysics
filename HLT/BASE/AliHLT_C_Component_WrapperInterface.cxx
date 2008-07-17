@@ -34,7 +34,6 @@ using namespace std;
 
 static AliHLTComponentHandler *gComponentHandler_C = NULL;
 
-
 int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
 {
   if ( gComponentHandler_C )
@@ -105,6 +104,17 @@ void AliHLT_C_DestroyComponent( AliHLTComponentHandle handle )
   AliHLTComponent* pComp=reinterpret_cast<AliHLTComponent*>( handle );
   pComp->Deinit();
   delete pComp;
+}
+
+int AliHLT_C_SetRunDescription(const AliHLTRunDesc* desc, const char* runType)
+{
+  if (!desc) return -EINVAL;
+  if (desc->fStructSize<sizeof(AliHLTUInt32_t)) return -EINVAL;
+  if (!gComponentHandler_C) return ENXIO;
+
+  AliHLTRunDesc internalDesc=kAliHLTVoidRunDesc;
+  memcpy(&internalDesc, desc, desc->fStructSize<sizeof(internalDesc)?desc->fStructSize:sizeof(internalDesc));
+  return gComponentHandler_C->SetRunDescription(&internalDesc, runType);
 }
 
 int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponentEventData* evtData, const AliHLTComponentBlockData* blocks, 

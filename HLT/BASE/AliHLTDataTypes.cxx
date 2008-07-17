@@ -63,6 +63,13 @@ const AliHLTComponentDataType kAliHLTDataTypeEOR  =  (AliHLTComponentDataType) {
   kAliHLTDataOriginAny
 }|kAliHLTDataOriginPrivate;
 
+/** run type data block */
+const AliHLTComponentDataType kAliHLTDataTypeRunType  =  (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTRunTypeDataTypeID,
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
+
 /** Event type specification */
 const AliHLTComponentDataType kAliHLTDataTypeEvent  =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),

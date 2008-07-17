@@ -33,6 +33,7 @@
  *   6       Common data types for TreeD and TreeR defined
  *           kAliHLTAllDataTypes and kAliHLTDataOriginSample added
  *           kAliHLTDataOriginEMCAL added
+ *           kAliHLTDataTypeRunType added
  */
 #define ALIHLT_DATA_TYPES_VERSION 6
 
@@ -161,6 +162,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTEORDataTypeID      {'E','N','D','O','F','R','U','N'}
+
+/** run type data block
+ * string with run type as payload
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTRunTypeDataTypeID  {'R','U','N','T','Y','P','E',' '}
 
 /** DDL list event 
  * @ref AliHLTEventDDL
@@ -448,7 +455,13 @@ extern "C" {
   /**
    * @struct AliHLTRunDesc
    * Event descriptor.
-   * The struct is send with the SOR and EOR events.
+   * The struct is sent with the SOR and EOR events.
+   *
+   * @note
+   * Originally, run type was supposed to be a number and part
+   * of the run descriptor. But it was defined as string later.
+   * The string is passed as argument of the AliHLT_C_SetRunDescription
+   * interface function.
    */
   struct AliHLTRunDesc
   {
@@ -557,6 +570,21 @@ extern "C" {
    */
   const AliHLTUInt32_t kAliHLTVoidDataSpec = ~(AliHLTUInt32_t)0;
 
+  /** invalid run no
+   * @ingroup alihlt_component_datatypes
+   */
+  const AliHLTUInt32_t kAliHLTVoidRunNo = ~(AliHLTUInt32_t)0;
+
+  /** invalid run type
+   * @ingroup alihlt_component_datatypes
+   */
+  const AliHLTUInt32_t kAliHLTVoidRunType = ~(AliHLTUInt32_t)0;
+
+  /** invalid run descriptor
+   * @ingroup alihlt_component_datatypes
+   */
+  const AliHLTRunDesc kAliHLTVoidRunDesc={sizeof(AliHLTRunDesc), kAliHLTVoidRunNo, kAliHLTVoidRunType};
+
   /** invalid shared memory type */
   const AliHLTUInt32_t gkAliHLTComponentInvalidShmType = 0;
 
@@ -618,6 +646,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeEOR;
+
+  /** Run type data block 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeRunType;
 
   /** Event type specification 
    * @ingroup alihlt_component_datatypes
