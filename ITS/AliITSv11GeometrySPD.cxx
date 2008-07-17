@@ -520,16 +520,17 @@ void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth, TGeoManager *mgr)
     // staveThicknessAA are taken from 
     // http://physics.mps.ohio-state.edu/~nilsen/ITSfigures/Sezione_layerAA.pdf
     //
-    const Double_t kSPDclossesStaveAA  =   7.25*fgkmm;//7.22 * fgkmm;
+    const Double_t kSPDclossesStaveAA   =   7.25* fgkmm;
     const Double_t kSectorStartingAngle = -72.0 * fgkDegree;
-    const Double_t kNSectorsTotal       =  10.0;
-    const Double_t kSectorRelativeAngle = 360.0 / kNSectorsTotal * fgkDegree;
-    const Double_t kBeamPipeRadius        =   0.5*59.6*fgkmm;//0.5*60.0*fgkmm;
-     
-    Int_t i,j,k;
+    const Int_t    kNSectorsTotal       =  10;
+    const Double_t kSectorRelativeAngle =  36.0 * fgkDegree;    // = 360.0 / 10
+    const Double_t kBeamPipeRadius      =   0.5 * 59.6 * fgkmm; // diam. = 59.6 mm
+  //const Double_t staveThicknessAA     =   0.9 *fgkmm;         // nominal thickness
+    const Double_t staveThicknessAA     =   1.02 * fgkmm;       // get from stave geometry.
+    
+    Int_t i, j, k;
     Double_t angle, radiusSector, xAAtubeCenter0, yAAtubeCenter0;
-    Double_t staveThicknessAA = 0.9*fgkmm;//1.03*fgkmm;// get from stave geometry.
-    TGeoCombiTrans *secRot = new TGeoCombiTrans(),*comrot;
+    TGeoCombiTrans *secRot = new TGeoCombiTrans(), *comrot;
     TGeoVolume *vCarbonFiberSector;
     TGeoMedium *medSPDcf;
 
@@ -538,35 +539,40 @@ void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth, TGeoManager *mgr)
     medSPDcf = GetMedium("SPD C (M55J)$", mgr);
     vCarbonFiberSector = new TGeoVolumeAssembly("ITSSPDCarbonFiberSectorV");
     vCarbonFiberSector->SetMedium(medSPDcf);
-    CarbonFiberSector(vCarbonFiberSector,xAAtubeCenter0,yAAtubeCenter0,mgr);
+    CarbonFiberSector(vCarbonFiberSector, xAAtubeCenter0, yAAtubeCenter0, mgr);
 
     // Compute the radial shift out of the sectors
-    radiusSector  = kBeamPipeRadius + kSPDclossesStaveAA + staveThicknessAA;
-    if(GetDebug(1))printf("SPDSector: radiusSector=%f\n",radiusSector); i=1;
-    //for(i=0;i<fSPDsectorX0.GetSize();i++)
-        if(GetDebug(1))printf( "i= %d x0=%f y0=%f x1=%f y1=%f\n",i,
-                fSPDsectorX0.At(i),fSPDsectorY0.At(i),
-                fSPDsectorX1.At(i),fSPDsectorY1.At(i));
-    radiusSector  = GetSPDSectorTranslation(fSPDsectorX0.At(1),
-                     fSPDsectorY0.At(1),fSPDsectorX1.At(1),fSPDsectorY1.At(1),
-                                            radiusSector);
-    if(GetDebug(1))printf(" q=%f\n",radiusSector);
-    //radiusSector *= radiusSector; // squaring;
-    //radiusSector -= xAAtubeCenter0 * xAAtubeCenter0;
-    //radiusSector  = -yAAtubeCenter0 + TMath::Sqrt(radiusSector);
-
+    radiusSector = kBeamPipeRadius + kSPDclossesStaveAA + staveThicknessAA;
+    radiusSector  = GetSPDSectorTranslation(fSPDsectorX0.At(1), fSPDsectorY0.At(1),
+                                            fSPDsectorX1.At(1), fSPDsectorY1.At(1), radiusSector);
+  //radiusSector *= radiusSector; // squaring;
+  //radiusSector -= xAAtubeCenter0 * xAAtubeCenter0;
+  //radiusSector  = -yAAtubeCenter0 + TMath::Sqrt(radiusSector);
+    
+    AliDebug(1, Form("SPDSector : radiusSector=%f\n",radiusSector));
+    i = 1;
+    AliDebug(1, Form("i= %d x0=%f y0=%f x1=%f y1=%f\n", i,
+                     fSPDsectorX0.At(i), fSPDsectorY0.At(i),
+                     fSPDsectorX1.At(i),fSPDsectorY1.At(i)));
+    
     // add 10 single sectors, by replicating the virtual sector defined above
     // and placing at different angles
     Double_t shiftX, shiftY, tub[2][6][3];
-    for(i=0;i<2;i++)for(j=0;j<6;j++)for(k=0;k<3;k++)
-        tub[i][j][k] = fTubeEndSector[0][i][j][k];
+    for(i=0;i<2;i++)for(j=0;j<6;j++)for(k=0;k<3;k++) tub[i][j][k] = fTubeEndSector[0][i][j][k];
     angle = kSectorStartingAngle;
     secRot->RotateZ(angle);
     TGeoVolumeAssembly *vcenteral = new TGeoVolumeAssembly("ITSSPD");
-    moth->AddNode(vcenteral,1,0);
-    for(i = 0; i < (Int_t)kNSectorsTotal; i++) {
+    moth->AddNode(vcenteral, 1, 0);
+    for(i = 0; i < kNSectorsTotal; i++) {
         shiftX = -radiusSector * TMath::Sin(angle/fgkRadian);
         shiftY =  radiusSector * TMath::Cos(angle/fgkRadian);
+        cout << "ANGLE = " << angle << endl; 
+        shiftX += 0.1094 * TMath::Cos((angle + 196.)/fgkRadian);
+        shiftY += 0.1094 * TMath::Sin((angle + 196.)/fgkRadian);
+        //shiftX -= 0.105;
+        //shiftY -= 0.031;
+        //shiftX -= 0.11 * TMath::Cos(angle/fgkRadian); // add by Alberto
+        //shiftY -= 0.11 * TMath::Sin(angle/fgkRadian); // don't ask me where that 0.11 comes from!
         secRot->SetDx(shiftX);
         secRot->SetDy(shiftY);
         comrot  = new TGeoCombiTrans(*secRot);
@@ -654,12 +660,15 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     const Double_t ksecR0   =  -0.8   * fgkmm; // external
     const Double_t ksecX1   = -13.187 * fgkmm;
     const Double_t ksecY1   = -19.964 * fgkmm;
-    const Double_t ksecR1   =  +0.6   * fgkmm; // internal
+    const Double_t ksecR1   =  +0.6   * fgkmm; // internal  // (modif. by Alberto)
+    //const Double_t ksecR1   =  +0.8   * fgkmm; // internal  // (modif. by Alberto)
+
     // const Double_t ksecDip0 = 5.9 * fgkmm;
     //
-    const Double_t ksecX2   =  -3.883 * fgkmm;
+    //const Double_t ksecX2   =  -3.883 * fgkmm;
+    const Double_t ksecX2   =  -3.833 * fgkmm; // (corr. by Alberto)
     const Double_t ksecY2   = -17.805 * fgkmm;
-    const Double_t ksecR2   =  +0.80  * fgkmm; // internal (guess)
+    const Double_t ksecR2   =  +0.6  * fgkmm; // internal (guess)
     const Double_t ksecX3   =  -3.123 * fgkmm;
     const Double_t ksecY3   = -14.618 * fgkmm;
     const Double_t ksecR3   =  -0.6   * fgkmm; // external
@@ -1452,7 +1461,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateLadder(Int_t layer,TArrayD &sizes,
     //                         above ones)
     //  3 - the used TGeoManager
 
-    // ** CRITICAL CHECK **	
+    // ** CRITICAL CHECK **    
     // layer number can be ONLY 1 or 2
     if (layer != 1 && layer != 2) AliFatal("Layer number MUST be 1 or 2");
 
@@ -1462,7 +1471,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateLadder(Int_t layer,TArrayD &sizes,
     TGeoMedium *medSi        = GetMedium("SI$",mgr);
     TGeoMedium *medBumpBond  = GetMedium("COPPER$",mgr);  // ??? BumpBond
     
-    // ** SIZES **	
+    // ** SIZES **    
     Double_t chipThickness  = fgkmm *  0.150;
     Double_t chipWidth      = fgkmm * 15.950;
     Double_t chipLength     = fgkmm * 13.600;
@@ -1610,7 +1619,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateLadder
     TGeoMedium *medBumpBond  = GetMedium("COPPER$",mgr);  // ??? BumpBond
 
     // ** SIZES ***************************************************************
-    	
+        
     Double_t chipThickness  = fgkmm *  0.150;
     Double_t chipWidth      = fgkmm * 15.950;
     Double_t chipLength     = fgkmm * 13.600;
@@ -1748,7 +1757,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateClip(TArrayD &sizes,Bool_t isDummy,
     Double_t inclLongLength  = fgkmm *  5.0;    // = 5-6
     Double_t inclShortLength = fgkmm *  2.0;    // = 6-7
     Double_t fullHeight      = fgkmm *  2.8;    // = y6 - y3
-    Double_t thickness       = fgkmm *  0.2;    // thickness
+    Double_t thickness       = fgkmm *  0.18;    // thickness
     Double_t totalLength     = fgkmm * 52.0;    // total length in Z
     Double_t holeSize        = fgkmm *  5.0;    // dimension of cubic 
                                                 // hole inserted for pt1000
@@ -1876,7 +1885,7 @@ TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
     // the "long" dimension is Z and the "short" is X, while Y goes in 
     // the direction of thickness. This will imply some rotations when 
     // using the volumes created with this shape.
-	
+    
     // suffix to differentiate names
     Char_t type[10];
     
@@ -1914,7 +1923,7 @@ TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
         sliceLength[5] += fgkmm * 0.4;
         sliceLength[6] -= fgkmm * 0.4;
     } // end if itype ==1
-	
+    
     // as shown in the drawing, we have four different widths 
     // (along local Y) in this shape:
     Double_t widthMax  = fgkmm * 15.95;
@@ -2106,14 +2115,17 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
     Double_t kpLength, kpWidth, alLength, alWidth;
     TArrayD  kpSize, alSize, glSize;
     Double_t kpThickness = fgkmm * 0.05;
-    Double_t alThickness = fgkmm * 0.025;
-    Double_t glThickness = fgkmm * 0.1175 - fgkGapLadder;
+    Double_t alThickness = fgkmm * 0.02;
+    Double_t g0Thickness = fgkmm * 0.1175 - fgkGapHalfStave;
+    Double_t g1Thickness = fgkmm * 0.1175 - fgkGapLadder;
     TGeoCompositeShape *kpShape = CreateGroundingFoilShape(0,kpLength,kpWidth,
                                                           kpThickness, kpSize);
     TGeoCompositeShape *alShape = CreateGroundingFoilShape(1,alLength,alWidth,
                                                           alThickness, alSize);
-    TGeoCompositeShape *glShape = CreateGroundingFoilShape(2,kpLength,kpWidth,
-                                                          glThickness, glSize);
+    TGeoCompositeShape *g0Shape = CreateGroundingFoilShape(2,kpLength,kpWidth,
+                                                          g0Thickness, glSize);
+    TGeoCompositeShape *g1Shape = CreateGroundingFoilShape(3,kpLength,kpWidth,
+                                                          g1Thickness, glSize);
     // create the component volumes and register their sizes in the 
     // passed arrays for readability reasons, some reference variables 
     // explicit the meaning of the array slots
@@ -2121,12 +2133,15 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
                                        kpShape, medKap);
     TGeoVolume *alVol = new TGeoVolume(Form("ITSSPDgFoilAlu%s",suf),
                                        alShape, medAlu);
-    TGeoVolume *glVol = new TGeoVolume(Form("ITSSPDgFoilGlue%s",suf),
-                                       glShape, medGlue);
+    TGeoVolume *g0Vol = new TGeoVolume(Form("ITSSPDgFoilGlue%s",suf),
+                                       g0Shape, medGlue);
+    TGeoVolume *g1Vol = new TGeoVolume(Form("ITSSPDgFoilGlue%s",suf),
+                                       g1Shape, medGlue);
     // set colors for the volumes
     kpVol->SetLineColor(kRed);
     alVol->SetLineColor(kGray);
-    glVol->SetLineColor(kYellow);
+    g0Vol->SetLineColor(kYellow);
+    g1Vol->SetLineColor(kYellow);
     // create references for the final size object
     if (sizes.GetSize() != 3) sizes.Set(3);
     Double_t &fullThickness = sizes[0];
@@ -2137,7 +2152,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
     // the thickness is the sum of the ones of all components
     fullLength    = kpLength + dist;
     fullWidth     = kpWidth;
-    fullThickness = kpThickness + alThickness + 2.0 * glThickness;
+    fullThickness = kpThickness + alThickness + g0Thickness + g1Thickness;
     // create the container
     TGeoMedium *air = GetMedium("AIR$", mgr);
     TGeoVolume *container = mgr->MakeBox(Form("ITSSPDgFOIL-%s",suf),
@@ -2146,33 +2161,39 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
     // we are building)
     TGeoRotation *rotCorr = new TGeoRotation(*gGeoIdentity);
     if (isRight) rotCorr->RotateY(90.0);
-    else rotCorr->RotateY(-90.0);		
+    else rotCorr->RotateY(-90.0);        
     // compute the translations, which are in the length and 
     // thickness directions
     Double_t x, y, z, shift = 0.0;
     if (isRight) shift = dist;
     // glue (bottom)
-    x = -0.5*(fullThickness - glThickness);
+    x = -0.5*(fullThickness - g0Thickness);
     z =  0.5*(fullLength - kpLength) - shift;
     TGeoCombiTrans *glTrans0 = new TGeoCombiTrans(x, 0.0, z, rotCorr);
     // kapton
-    x += 0.5*(glThickness + kpThickness);
+    x += 0.5*(g0Thickness + kpThickness);
     TGeoCombiTrans *kpTrans  = new TGeoCombiTrans(x, 0.0, z, rotCorr);
     // aluminum
     x += 0.5*(kpThickness + alThickness);
     z  = 0.5*(fullLength - alLength) - shift - 0.5*(kpLength - alLength);
     TGeoCombiTrans *alTrans  = new TGeoCombiTrans(x, 0.0, z, rotCorr);
     // glue (top)
-    x += 0.5*(alThickness + glThickness);
+    x += 0.5*(alThickness + g1Thickness);
     z  = 0.5*(fullLength - kpLength) - shift;
     TGeoCombiTrans *glTrans1 = new TGeoCombiTrans(x, 0.0, z, rotCorr);
+    
+    cout << fgkGapHalfStave << endl;
+    cout << g0Thickness << endl;
+    cout << kpThickness << endl;
+    cout << alThickness << endl;
+    cout << g1Thickness << endl;
 
     // add to container
     container->SetLineColor(kMagenta-10);
     container->AddNode(kpVol, 1, kpTrans);
     container->AddNode(alVol, 1, alTrans);
-    container->AddNode(glVol, 1, glTrans0);
-    container->AddNode(glVol, 2, glTrans1);	
+    container->AddNode(g0Vol, 1, glTrans0);
+    container->AddNode(g1Vol, 2, glTrans1);    
     // to add the grease we remember the sizes of the holes, stored as 
     // additional parameters in the kapton layer size:
     //   - sizes[3] = hole length
@@ -2335,7 +2356,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateMCM(Bool_t isRight,
     // stave from above) in order to change to the "left" one, we must 
     // change the sign to all X values:
     if (isRight) for (i = 0; i < 9; i++) xRef[i] = -xRef[i];
-	
+    
     // the shape of the MCM and glue layer are done excluding point 1, 
     // which is not necessary and cause the geometry builder to get confused
     j = 0;
@@ -2499,7 +2520,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateMCM(Bool_t isRight,
     // add cap border
     mcmAssembly->AddNode(volCapBorder, 1, gGeoIdentity);
     // add cap top
-    mcmAssembly->AddNode(volCapTop, 1, gGeoIdentity);	
+    mcmAssembly->AddNode(volCapTop, 1, gGeoIdentity);    
 
     return mcmAssembly;
 }
@@ -2509,208 +2530,208 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateMCM(Bool_t isRight,
 TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 (Bool_t isRight, TArrayD &sizes, TGeoManager *mgr) const
 {
-	//
-	// The pixel bus is implemented as a TGeoBBox with some objects on it, 
-	// which could affect the particle energy loss.
-	// ---
-	// In order to avoid confusion, the bus is directly displaced 
-	// according to the axis orientations which are used in the final stave:
-	// X --> thickness direction
-	// Y --> width direction
-	// Z --> length direction
-	//
+    //
+    // The pixel bus is implemented as a TGeoBBox with some objects on it, 
+    // which could affect the particle energy loss.
+    // ---
+    // In order to avoid confusion, the bus is directly displaced 
+    // according to the axis orientations which are used in the final stave:
+    // X --> thickness direction
+    // Y --> width direction
+    // Z --> length direction
+    //
   
-	
-	// ** MEDIA **
-	
-	//PIXEL BUS
-	TGeoMedium *medBus     = GetMedium("SPDBUS(AL+KPT+EPOX)$",mgr);
-	TGeoMedium *medPt1000  = GetMedium("CERAMICS$",mgr); // ??? PT1000
-	// Capacity
-	TGeoMedium *medCap     = GetMedium("SDD X7R capacitors$",mgr);
-	// ??? Resistance
-	// TGeoMedium *medRes     = GetMedium("SDD X7R capacitors$",mgr);
-	TGeoMedium *medRes     = GetMedium("ALUMINUM$",mgr);
-	TGeoMedium *medExt     = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
-	// ** SIZES & POSITIONS **
-	Double_t busLength          = 170.501 * fgkmm; // length of plane part
-	Double_t busWidth           =  13.800 * fgkmm; // width
-	Double_t busThickness       =   0.280 * fgkmm; // thickness
-	Double_t pt1000Length       = fgkmm * 1.50;
-	Double_t pt1000Width        = fgkmm * 3.10;
-	Double_t pt1000Thickness    = fgkmm * 0.60;
-	Double_t pt1000Y, pt1000Z[10];// position of the pt1000's along the bus
-	Double_t capLength          = fgkmm * 2.55;
-	Double_t capWidth           = fgkmm * 1.50;
-	Double_t capThickness       = fgkmm * 1.35;
-	Double_t capY[2], capZ[2];
-	
-	Double_t resLength          = fgkmm * 2.20;
-	Double_t resWidth           = fgkmm * 0.80;
-	Double_t resThickness       = fgkmm * 0.35;
-	Double_t resY[2], resZ[2];
-	
-	Double_t extThickness       = fgkmm * 0.25;
-	Double_t ext1Length         = fgkmm * (26.7 - 10.0);
-	Double_t ext2Length         = fgkmm * (285.0 - ext1Length + extThickness);
-	Double_t extWidth           = fgkmm * 11.0;
-	Double_t extHeight          = fgkmm * 2.5;
-	
-			
-	// position of pt1000, resistors and capacitors depends on the 
-	// bus if it's left or right one
-	if (!isRight) {
-		pt1000Y    =   64400.;
-		pt1000Z[0] =   66160.;
-		pt1000Z[1] =  206200.;
-		pt1000Z[2] =  346200.;
-		pt1000Z[3] =  486200.;
-		pt1000Z[4] =  626200.;
-		pt1000Z[5] =  776200.;
-		pt1000Z[6] =  916200.;
-		pt1000Z[7] = 1056200.;
-		pt1000Z[8] = 1196200.;
-		pt1000Z[9] = 1336200.;	
-		resZ[0]    = 1397500.;
-		resY[0]    =   26900.;
-		resZ[1]    =  682500.;
-		resY[1]    =   27800.;
-		capZ[0]    = 1395700.;
-		capY[0]    =   45700.;
-		capZ[1]    =  692600.;
-		capY[1]    =   45400.;
-	} else {
-		pt1000Y    =   66100.;
-		pt1000Z[0] =  319700.;
-		pt1000Z[1] =  459700.;
-		pt1000Z[2] =  599700.;
-		pt1000Z[3] =  739700.;
-		pt1000Z[4] =  879700.;
-		pt1000Z[5] = 1029700.;
-		pt1000Z[6] = 1169700.;
-		pt1000Z[7] = 1309700.;
-		pt1000Z[8] = 1449700.;
-		pt1000Z[9] = 1589700.;	
-		capY[0]    =   44500.;
-		capZ[0]    =  266700.;
-		capY[1]    =   44300.;
-		capZ[1]    =  974700.;
-		resZ[0]    =  266500.;
-		resY[0]    =   29200.;
-		resZ[1]    =  974600.;
-		resY[1]    =   29900.;
-	} // end if isRight
-	Int_t i;
-	pt1000Y *= 1E-4 * fgkmm;
-	for (i = 0; i < 10; i++) {
-		pt1000Z[i] *= 1E-4 * fgkmm;
-		if (i < 2) {
-			capZ[i] *= 1E-4 * fgkmm;
-			capY[i] *= 1E-4 * fgkmm;
-			resZ[i] *= 1E-4 * fgkmm;
-			resY[i] *= 1E-4 * fgkmm;
-		}  // end if iM2
-	} // end for i
-	
-	Double_t &fullLength = sizes[1];
-	Double_t &fullWidth = sizes[2];
-	Double_t &fullThickness = sizes[0];
-	fullLength = busLength;
-	fullWidth = busWidth;
-	// add the thickness of the thickest component on bus (capacity)
-	fullThickness = busThickness + capThickness; 
-	// ** VOLUMES **
-	TGeoVolumeAssembly *container = new TGeoVolumeAssembly("PixelBus");
-	TGeoVolume *bus = mgr->MakeBox("Bus", medBus, 0.5*busThickness, 0.5*busWidth, 0.5*busLength);
-	TGeoVolume *pt1000 = mgr->MakeBox("PT1000", medPt1000, 0.5*pt1000Thickness, 0.5*pt1000Width, 0.5*pt1000Length);
-	TGeoVolume *res = mgr->MakeBox("Resistor", medRes, 0.5*resThickness, 0.5*resWidth, 0.5*resLength);
-	TGeoVolume *cap = mgr->MakeBox("Capacitor", medCap, 0.5*capThickness, 0.5*capWidth, 0.5*capLength);
-	TGeoVolume *ext1 = mgr->MakeBox("Extender1", medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
-	TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - extThickness, 0.5*extWidth, 0.5*extThickness);
-	TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, extThickness, 0.5*extWidth, 0.5*ext2Length);
-	bus->SetLineColor(kYellow + 2);
-	pt1000->SetLineColor(kGreen + 3);
-	res->SetLineColor(kRed + 1);
-	cap->SetLineColor(kBlue - 7);
-	ext1->SetLineColor(kGray);
-	ext2->SetLineColor(kGray);
-	ext3->SetLineColor(kGray);
-	
-	// ** MOVEMENTS AND POSITIONEMENT **
-	// bus
-	TGeoTranslation *trBus = new TGeoTranslation(0.5 * (busThickness - 
-														fullThickness), 0.0, 0.0);
-	container->AddNode(bus, 0, trBus);
-	Double_t zRef, yRef, x, y, z;
-	if (isRight) {
-		zRef = -0.5*fullLength;
-		yRef = -0.5*fullWidth;
-	} else {
-		zRef = -0.5*fullLength;
-		yRef = -0.5*fullWidth;
-	} // end if isRight
-	// pt1000
-	x = 0.5*(pt1000Thickness - fullThickness) + busThickness;
-	for (i = 0; i < 10; i++) {
-		y = yRef + pt1000Y;
-		z = zRef + pt1000Z[i];
-		TGeoTranslation *tr = new TGeoTranslation(x, y, z);
-		container->AddNode(pt1000, i, tr);
-	} // end for i
-	// capacitors
-	x = 0.5*(capThickness - fullThickness) + busThickness;
-	for (i = 0; i < 2; i++) {
-		y = yRef + capY[i];
-		z = zRef + capZ[i];
-		TGeoTranslation *tr = new TGeoTranslation(x, y, z);
-		container->AddNode(cap, i, tr);
-	} // end for i
-	// resistors
-	x = 0.5*(resThickness - fullThickness) + busThickness;
-	for (i = 0; i < 2; i++) {
-		y = yRef + resY[i];
-		z = zRef + resZ[i];
-		TGeoTranslation *tr = new TGeoTranslation(x, y, z);
-		container->AddNode(res, i, tr);
-	} // end for i
-	// extender
-	if (isRight) {
-		y = 0.5 * (-fullWidth + extWidth);
-		z = 0.5 * (-fullLength + fgkmm * 10.0);
-	}
-	else {
-		y = 0.5 * (fullWidth - extWidth);
-		z = 0.5 * ( fullLength - fgkmm * 10.0);
-	}
-	x = 0.5 * (extThickness - fullThickness) + busThickness;
-	//y = 0.5 * (fullWidth - extWidth);
-	TGeoTranslation *trExt1 = new TGeoTranslation(x, y, z);
-	if (isRight) {
-		z -= 0.5 * (ext1Length - extThickness);
-	}
-	else {
-		z += 0.5 * (ext1Length - extThickness);
-	}
-	x += 0.5*(extHeight - extThickness);
-	TGeoTranslation *trExt2 = new TGeoTranslation(x, y, z);
-	if (isRight) {
-		z -= 0.5 * (ext2Length - extThickness);
-	}
-	else {
-		z += 0.5 * (ext2Length - extThickness);
-	}
-	x += 0.5*(extHeight - extThickness) + extThickness;
-	TGeoTranslation *trExt3 = new TGeoTranslation(x, y, z);
-	container->AddNode(ext1, 0, trExt1);
-	container->AddNode(ext2, 0, trExt2);
-	container->AddNode(ext3, 0, trExt3);
-	
-	
-	sizes[3] = yRef + pt1000Y;
-	sizes[4] = zRef + pt1000Z[2];
-	sizes[5] = zRef + pt1000Z[7];
-	
-	return container;
+    
+    // ** MEDIA **
+    
+    //PIXEL BUS
+    TGeoMedium *medBus     = GetMedium("SPDBUS(AL+KPT+EPOX)$",mgr);
+    TGeoMedium *medPt1000  = GetMedium("CERAMICS$",mgr); // ??? PT1000
+    // Capacity
+    TGeoMedium *medCap     = GetMedium("SDD X7R capacitors$",mgr);
+    // ??? Resistance
+    // TGeoMedium *medRes     = GetMedium("SDD X7R capacitors$",mgr);
+    TGeoMedium *medRes     = GetMedium("ALUMINUM$",mgr);
+    TGeoMedium *medExt     = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
+    // ** SIZES & POSITIONS **
+    Double_t busLength          = 170.501 * fgkmm; // length of plane part
+    Double_t busWidth           =  13.800 * fgkmm; // width
+    Double_t busThickness       =   0.280 * fgkmm; // thickness
+    Double_t pt1000Length       = fgkmm * 1.50;
+    Double_t pt1000Width        = fgkmm * 3.10;
+    Double_t pt1000Thickness    = fgkmm * 0.60;
+    Double_t pt1000Y, pt1000Z[10];// position of the pt1000's along the bus
+    Double_t capLength          = fgkmm * 2.55;
+    Double_t capWidth           = fgkmm * 1.50;
+    Double_t capThickness       = fgkmm * 1.35;
+    Double_t capY[2], capZ[2];
+    
+    Double_t resLength          = fgkmm * 2.20;
+    Double_t resWidth           = fgkmm * 0.80;
+    Double_t resThickness       = fgkmm * 0.35;
+    Double_t resY[2], resZ[2];
+    
+    Double_t extThickness       = fgkmm * 0.25;
+    Double_t ext1Length         = fgkmm * (26.7 - 10.0);
+    Double_t ext2Length         = fgkmm * (285.0 - ext1Length + extThickness);
+    Double_t extWidth           = fgkmm * 11.0;
+    Double_t extHeight          = fgkmm * 2.5;
+    
+            
+    // position of pt1000, resistors and capacitors depends on the 
+    // bus if it's left or right one
+    if (!isRight) {
+        pt1000Y    =   64400.;
+        pt1000Z[0] =   66160.;
+        pt1000Z[1] =  206200.;
+        pt1000Z[2] =  346200.;
+        pt1000Z[3] =  486200.;
+        pt1000Z[4] =  626200.;
+        pt1000Z[5] =  776200.;
+        pt1000Z[6] =  916200.;
+        pt1000Z[7] = 1056200.;
+        pt1000Z[8] = 1196200.;
+        pt1000Z[9] = 1336200.;    
+        resZ[0]    = 1397500.;
+        resY[0]    =   26900.;
+        resZ[1]    =  682500.;
+        resY[1]    =   27800.;
+        capZ[0]    = 1395700.;
+        capY[0]    =   45700.;
+        capZ[1]    =  692600.;
+        capY[1]    =   45400.;
+    } else {
+        pt1000Y    =   66100.;
+        pt1000Z[0] =  319700.;
+        pt1000Z[1] =  459700.;
+        pt1000Z[2] =  599700.;
+        pt1000Z[3] =  739700.;
+        pt1000Z[4] =  879700.;
+        pt1000Z[5] = 1029700.;
+        pt1000Z[6] = 1169700.;
+        pt1000Z[7] = 1309700.;
+        pt1000Z[8] = 1449700.;
+        pt1000Z[9] = 1589700.;    
+        capY[0]    =   44500.;
+        capZ[0]    =  266700.;
+        capY[1]    =   44300.;
+        capZ[1]    =  974700.;
+        resZ[0]    =  266500.;
+        resY[0]    =   29200.;
+        resZ[1]    =  974600.;
+        resY[1]    =   29900.;
+    } // end if isRight
+    Int_t i;
+    pt1000Y *= 1E-4 * fgkmm;
+    for (i = 0; i < 10; i++) {
+        pt1000Z[i] *= 1E-4 * fgkmm;
+        if (i < 2) {
+            capZ[i] *= 1E-4 * fgkmm;
+            capY[i] *= 1E-4 * fgkmm;
+            resZ[i] *= 1E-4 * fgkmm;
+            resY[i] *= 1E-4 * fgkmm;
+        }  // end if iM2
+    } // end for i
+    
+    Double_t &fullLength = sizes[1];
+    Double_t &fullWidth = sizes[2];
+    Double_t &fullThickness = sizes[0];
+    fullLength = busLength;
+    fullWidth = busWidth;
+    // add the thickness of the thickest component on bus (capacity)
+    fullThickness = busThickness + capThickness; 
+    // ** VOLUMES **
+    TGeoVolumeAssembly *container = new TGeoVolumeAssembly("PixelBus");
+    TGeoVolume *bus = mgr->MakeBox("Bus", medBus, 0.5*busThickness, 0.5*busWidth, 0.5*busLength);
+    TGeoVolume *pt1000 = mgr->MakeBox("PT1000", medPt1000, 0.5*pt1000Thickness, 0.5*pt1000Width, 0.5*pt1000Length);
+    TGeoVolume *res = mgr->MakeBox("Resistor", medRes, 0.5*resThickness, 0.5*resWidth, 0.5*resLength);
+    TGeoVolume *cap = mgr->MakeBox("Capacitor", medCap, 0.5*capThickness, 0.5*capWidth, 0.5*capLength);
+    TGeoVolume *ext1 = mgr->MakeBox("Extender1", medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
+    TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - extThickness, 0.5*extWidth, 0.5*extThickness);
+    TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, extThickness, 0.5*extWidth, 0.5*ext2Length);
+    bus->SetLineColor(kYellow + 2);
+    pt1000->SetLineColor(kGreen + 3);
+    res->SetLineColor(kRed + 1);
+    cap->SetLineColor(kBlue - 7);
+    ext1->SetLineColor(kGray);
+    ext2->SetLineColor(kGray);
+    ext3->SetLineColor(kGray);
+    
+    // ** MOVEMENTS AND POSITIONEMENT **
+    // bus
+    TGeoTranslation *trBus = new TGeoTranslation(0.5 * (busThickness - 
+                                                        fullThickness), 0.0, 0.0);
+    container->AddNode(bus, 0, trBus);
+    Double_t zRef, yRef, x, y, z;
+    if (isRight) {
+        zRef = -0.5*fullLength;
+        yRef = -0.5*fullWidth;
+    } else {
+        zRef = -0.5*fullLength;
+        yRef = -0.5*fullWidth;
+    } // end if isRight
+    // pt1000
+    x = 0.5*(pt1000Thickness - fullThickness) + busThickness;
+    for (i = 0; i < 10; i++) {
+        y = yRef + pt1000Y;
+        z = zRef + pt1000Z[i];
+        TGeoTranslation *tr = new TGeoTranslation(x, y, z);
+        container->AddNode(pt1000, i, tr);
+    } // end for i
+    // capacitors
+    x = 0.5*(capThickness - fullThickness) + busThickness;
+    for (i = 0; i < 2; i++) {
+        y = yRef + capY[i];
+        z = zRef + capZ[i];
+        TGeoTranslation *tr = new TGeoTranslation(x, y, z);
+        container->AddNode(cap, i, tr);
+    } // end for i
+    // resistors
+    x = 0.5*(resThickness - fullThickness) + busThickness;
+    for (i = 0; i < 2; i++) {
+        y = yRef + resY[i];
+        z = zRef + resZ[i];
+        TGeoTranslation *tr = new TGeoTranslation(x, y, z);
+        container->AddNode(res, i, tr);
+    } // end for i
+    // extender
+    if (isRight) {
+        y = 0.5 * (-fullWidth + extWidth);
+        z = 0.5 * (-fullLength + fgkmm * 10.0);
+    }
+    else {
+        y = 0.5 * (fullWidth - extWidth);
+        z = 0.5 * ( fullLength - fgkmm * 10.0);
+    }
+    x = 0.5 * (extThickness - fullThickness) + busThickness;
+    //y = 0.5 * (fullWidth - extWidth);
+    TGeoTranslation *trExt1 = new TGeoTranslation(x, y, z);
+    if (isRight) {
+        z -= 0.5 * (ext1Length - extThickness);
+    }
+    else {
+        z += 0.5 * (ext1Length - extThickness);
+    }
+    x += 0.5*(extHeight - extThickness);
+    TGeoTranslation *trExt2 = new TGeoTranslation(x, y, z);
+    if (isRight) {
+        z -= 0.5 * (ext2Length - extThickness);
+    }
+    else {
+        z += 0.5 * (ext2Length - extThickness);
+    }
+    x += 0.5*(extHeight - extThickness) + extThickness;
+    TGeoTranslation *trExt3 = new TGeoTranslation(x, y, z);
+    container->AddNode(ext1, 0, trExt1);
+    container->AddNode(ext2, 0, trExt2);
+    container->AddNode(ext3, 0, trExt3);
+    
+    
+    sizes[3] = yRef + pt1000Y;
+    sizes[4] = zRef + pt1000Z[2];
+    sizes[5] = zRef + pt1000Z[7];
+    
+    return container;
 }
 */
 
@@ -2742,7 +2763,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     // ??? Resistance
     //TGeoMedium *medRes     = GetMedium("SDD X7R capacitors$",mgr); 
     TGeoMedium *medRes     = GetMedium("ALUMINUM$",mgr);
-	TGeoMedium *medExt     = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
+    TGeoMedium *medExt     = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
     // ** SIZES & POSITIONS **
     Double_t busLength          = 170.501 * fgkmm; // length of plane part
     Double_t busWidth           =  13.800 * fgkmm; // width
@@ -2762,10 +2783,10 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     Double_t resY[2], resZ[2];
     
     Double_t extThickness       = fgkmm * 0.25;
-	Double_t ext1Length         = fgkmm * (26.7 - 10.0);
-	Double_t ext2Length         = fgkmm * (284.0 - ext1Length + extThickness);
-	Double_t extWidth           = fgkmm * 11.0;
-	Double_t extHeight          = fgkmm * 2.5;
+    Double_t ext1Length         = fgkmm * (26.7 - 10.0);
+    Double_t ext2Length         = fgkmm * (284.0 - ext1Length + extThickness);
+    Double_t extWidth           = fgkmm * 11.0;
+    Double_t extHeight          = fgkmm * 2.5;
                
     // position of pt1000, resistors and capacitors depends on the 
     // bus if it's left or right one
@@ -2842,15 +2863,15 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
                                    0.5*capWidth, 0.5*capLength);
                                    
     TGeoVolume *ext1 = mgr->MakeBox("Extender1", medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
-	TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - 2.*extThickness, 0.5*extWidth, 0.5*extThickness);
-	TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, 0.5*extThickness, 0.5*(extWidth-0.8*fgkmm), 0.5*ext2Length + extThickness); // Hardcode fix of a small overlap
+    TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - 2.*extThickness, 0.5*extWidth, 0.5*extThickness);
+    TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, 0.5*extThickness, 0.5*(extWidth-0.8*fgkmm), 0.5*ext2Length + extThickness); // Hardcode fix of a small overlap
     bus->SetLineColor(kYellow + 2);
     pt1000->SetLineColor(kGreen + 3);
     res->SetLineColor(kRed + 1);
     cap->SetLineColor(kBlue - 7);
     ext1->SetLineColor(kGray);
-	ext2->SetLineColor(kGray);
-	ext3->SetLineColor(kGray);
+    ext2->SetLineColor(kGray);
+    ext3->SetLineColor(kGray);
 
     // ** MOVEMENTS AND POSITIONEMENT **
     // bus
@@ -2892,14 +2913,14 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     
     // extender
         if (ilayer == 2) {
-	   if (isRight) {
-		  y = 0.5 * (fullWidth - extWidth) - 0.1;
-		  z = 0.5 * (-fullLength + fgkmm * 10.0);
-	   }
-	   else {
-		  y = 0.5 * (fullWidth - extWidth) - 0.1;
-		  z = 0.5 * ( fullLength - fgkmm * 10.0);
-	   }
+       if (isRight) {
+          y = 0.5 * (fullWidth - extWidth) - 0.1;
+          z = 0.5 * (-fullLength + fgkmm * 10.0);
+       }
+       else {
+          y = 0.5 * (fullWidth - extWidth) - 0.1;
+          z = 0.5 * ( fullLength - fgkmm * 10.0);
+       }
         }
         else {
             if (isRight) {
@@ -2911,28 +2932,28 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
                 z = 0.5 * ( fullLength - fgkmm * 10.0);
             }
         }
-	x = 0.5 * (extThickness - fullThickness) + busThickness;
-	//y = 0.5 * (fullWidth - extWidth);
-	TGeoTranslation *trExt1 = new TGeoTranslation(x, y, z);
-	if (isRight) {
-		z -= 0.5 * (ext1Length - extThickness);
-	}
-	else {
-		z += 0.5 * (ext1Length - extThickness);
-	}
-	x += 0.5*(extHeight - 3.*extThickness);
-	TGeoTranslation *trExt2 = new TGeoTranslation(x, y, z);
-	if (isRight) {
-		z -= 0.5 * (ext2Length - extThickness) + 2.5*extThickness;
-	}
-	else {
-		z += 0.5 * (ext2Length - extThickness) + 2.5*extThickness;
-	}
-	x += 0.5*(extHeight - extThickness) - 2.*extThickness;
-	TGeoTranslation *trExt3 = new TGeoTranslation(x, y, z);
-	container->AddNode(ext1, 0, trExt1);
-	container->AddNode(ext2, 0, trExt2);
-	container->AddNode(ext3, 0, trExt3);
+    x = 0.5 * (extThickness - fullThickness) + busThickness;
+    //y = 0.5 * (fullWidth - extWidth);
+    TGeoTranslation *trExt1 = new TGeoTranslation(x, y, z);
+    if (isRight) {
+        z -= 0.5 * (ext1Length - extThickness);
+    }
+    else {
+        z += 0.5 * (ext1Length - extThickness);
+    }
+    x += 0.5*(extHeight - 3.*extThickness);
+    TGeoTranslation *trExt2 = new TGeoTranslation(x, y, z);
+    if (isRight) {
+        z -= 0.5 * (ext2Length - extThickness) + 2.5*extThickness;
+    }
+    else {
+        z += 0.5 * (ext2Length - extThickness) + 2.5*extThickness;
+    }
+    x += 0.5*(extHeight - extThickness) - 2.*extThickness;
+    TGeoTranslation *trExt3 = new TGeoTranslation(x, y, z);
+    container->AddNode(ext1, 0, trExt1);
+    container->AddNode(ext2, 0, trExt2);
+    container->AddNode(ext3, 0, trExt3);
     
     sizes[3] = yRef + pt1000Y;
     sizes[4] = zRef + pt1000Z[2];
@@ -2945,12 +2966,12 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) const
 {
     TGeoMedium *medInox  = GetMedium("INOX$",mgr);
-	TGeoMedium *medExt   = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
-	TGeoMedium *medPlate = GetMedium("SPD C (M55J)$", mgr);
-	
-	Double_t extThickness = fgkmm * 0.25;
-	Double_t ext1Length   = fgkmm * (26.7 - 10.0);
-	Double_t ext2Length   = fgkmm * (285.0 - ext1Length + extThickness);
+    TGeoMedium *medExt   = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
+    TGeoMedium *medPlate = GetMedium("SPD C (M55J)$", mgr);
+    
+    Double_t extThickness = fgkmm * 0.25;
+    Double_t ext1Length   = fgkmm * (26.7 - 10.0);
+    Double_t ext2Length   = fgkmm * (285.0 - ext1Length + extThickness);
     
     Double_t cableThickness = 1.5 * fgkmm;
     Double_t cableL1 = 350.0 * fgkmm - extThickness - ext1Length - ext2Length;
@@ -3043,7 +3064,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 {
     
     TGeoVolumeAssembly *module = CreateConeModule(gGeoManager);
-    	 
+         
     //Double_t angle[10] = {18., 54., 90., 126., 162., -18., -54., -90., -126., -162.};
     Double_t angle[10] = {18., 54., 90., 126., 162., 198.0, 234.0, 270.0, 306.0, 342.0};
     for (Int_t i = 0; i < 10; i++) {
@@ -3403,7 +3424,7 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
     Double_t mcmThickness = mcmSize[0];
     Double_t mcmLength = mcmSize[1];
     Double_t mcmWidth = mcmSize[2];
-	
+    
     // bus
     TArrayD busSize(6);
     TGeoVolumeAssembly *bus = CreatePixelBus(isRight, layer, busSize, mgr);
@@ -3423,12 +3444,13 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
     Double_t &fullThickness = sizes[0];
     Double_t &fullLength = sizes[1];
     Double_t &fullWidth = sizes[2];
-	
+    
     // compute the full size of the container
     fullLength    = sepLadderCenter+2.0*ladderLength+sepLadderMCM+
                        sepLadderLadder+mcmLength;
     fullWidth     = ladderWidth;
     fullThickness = grndThickness + fgkGapLadder + mcmThickness + busThickness;
+    cout << "HSTAVE FULL THICKNESS = " << fullThickness << endl;
 
     // ** MOVEMENTS **
 
@@ -3521,7 +3543,7 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
     // anyway, to recovery some size informations on the clip, it must be
     // created
     TArrayD clipSize;
-    //	TGeoVolume *clipDummy = CreateClip(clipSize, kTRUE, mgr);
+    //    TGeoVolume *clipDummy = CreateClip(clipSize, kTRUE, mgr);
     CreateClip(clipSize, kTRUE, mgr);
     // define clip movements (width direction)
     sizes[3] = xBus + 0.5*busThickness;
@@ -3658,7 +3680,37 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr)
     shift[3] = fgkmm * -0.610;
     shift[4] = fgkmm * -0.610;
     shift[5] = fgkmm * -0.610;
-
+    
+    // corrections after interaction with Andrea and CAD
+    Double_t corrX[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    Double_t corrY[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    
+    corrX[0] =  0.0046;
+    corrX[1] = -0.0041;
+    corrX[2] = corrX[3] = corrX[4] = corrX[5] = -0.0016;
+    
+    corrY[0] = -0.0007;
+    corrY[1] = -0.0009;
+    corrY[2] = corrY[3] = corrY[4] = corrY[5] = -0.0003;
+    
+    corrX[0] +=  0.00026;
+    corrY[0] += -0.00080;
+    
+    corrX[1] +=  0.00018;
+    corrY[1] += -0.00086;
+    
+    corrX[2] +=  0.00020;
+    corrY[2] += -0.00062;
+    
+    corrX[3] +=  0.00017;
+    corrY[3] += -0.00076;
+    
+    corrX[4] +=  0.00016;
+    corrY[4] += -0.00096;
+    
+    corrX[5] +=  0.00018;
+    corrY[5] += -0.00107;
+    
     // create stave volumes (different for layer 1 and 2)
     TArrayD staveSizes1(9), staveSizes2(9), clipSize(5);
     Double_t &staveHeight = staveSizes1[2], &staveThickness = staveSizes1[0];
@@ -3676,9 +3728,9 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr)
                           // stave width (smaller)
     Double_t xPos, yPos;  // final translation of the stave
     Double_t parMovement; // translation in the LR plane direction
-	
+    
     staveThickness += fgkGapHalfStave;
-	
+    
     // loop on staves
     Int_t i, iclip = 1;
     for (i = 0; i < 6; i++) {
@@ -3716,6 +3768,8 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr)
         // then we go into the true reference frame
         xPos += xM;
         yPos += yM;
+        xPos += corrX[i];
+        yPos += corrY[i];
         // using the parameters found here, compute the 
         // translation and rotation of this stave:
         TGeoRotation *rot = new TGeoRotation(*gGeoIdentity);
@@ -4123,4 +4177,3 @@ Bool_t AliITSv11GeometrySPD::Make2DCrossSections(TPolyLine &a0,TPolyLine &a1,
     } // end for i
     return kTRUE;
 }
-
