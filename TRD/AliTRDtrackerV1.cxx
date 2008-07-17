@@ -299,7 +299,11 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     //track.SetSeedLabel(lbl);
     seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup); // Make backup
     Float_t p4          = track.GetC();
-    if((expectedClr = FollowBackProlongation(track))){
+    expectedClr = FollowBackProlongation(track);
+
+    if (expectedClr<0) continue; // Back prolongation failed
+
+    if(expectedClr){
       found++;  
       // computes PID for track
       track.CookPID();
@@ -375,7 +379,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       Double_t c2    = track.GetSnp() + track.GetC() * (xtof - track.GetX());
       if (TMath::Abs(c2) >= 0.99) continue;
       
-      PropagateToX(track, xTOF0, fgkMaxStep);
+      if (!PropagateToX(track, xTOF0, fgkMaxStep)) continue;
   
       // Energy losses taken to the account - check one more time
       c2 = track.GetSnp() + track.GetC() * (xtof - track.GetX());
@@ -623,7 +627,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       
       if((x = fTrSec[sector].GetX(ilayer)) < 1.) continue;
     
-      if (!t.GetProlongation(x, y, z)) break;
+      if (!t.GetProlongation(x, y, z)) return -1;
       Int_t stack = fGeom->GetStack(z, ilayer);
       Int_t nCandidates = stack >= 0 ? 1 : 2;
       z -= stack >= 0 ? 0. : 4.; 
@@ -656,17 +660,17 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     }
     if(!ptrTracklet->IsOK()){
       if(x < 1.) continue; //temporary
-      if(!PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) break;
-      if(!AdjustSector(&t)) break;
-      if(TMath::Abs(t.GetSnp()) > fgkMaxSnp) break;
+      if(!PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -1;
+      if(!AdjustSector(&t)) return -1;
+      if(TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -1;
       continue;
     }
     
     // Propagate closer to the current chamber if neccessary 
     x -= clength;
-    if (x > (fgkMaxStep + t.GetX()) && !PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) break;
-    if (!AdjustSector(&t)) break;
-    if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) break;
+    if (x > (fgkMaxStep + t.GetX()) && !PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -1;
+    if (!AdjustSector(&t)) return -1;
+    if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -1;
     
     // load tracklet to the tracker and the track
     ptrTracklet = SetTracklet(ptrTracklet);
@@ -679,7 +683,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     t.GetXYZ(xyz0);
     alpha = t.GetAlpha();
     x = ptrTracklet->GetX0();
-    if (!t.GetProlongation(x, y, z)) break;
+    if (!t.GetProlongation(x, y, z)) return -1;
     Double_t xyz1[3]; // exit point
     xyz1[0] =  x * TMath::Cos(alpha) - y * TMath::Sin(alpha); 
     xyz1[1] = +x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
@@ -691,10 +695,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     Double_t xx0  = param[1]; // radiation length
     
     // Propagate and update track
-    t.PropagateTo(x, xx0, xrho);
-    if (!AdjustSector(&t)) break;
+    if (!t.PropagateTo(x, xx0, xrho)) return -1;
+    if (!AdjustSector(&t)) return -1;
     Double_t maxChi2 = t.GetPredictedChi2(ptrTracklet);
-    if (maxChi2<1e+10 && t.Update(ptrTracklet, maxChi2)){ 
+    if (!t.Update(ptrTracklet, maxChi2)) return -1;
+    if (maxChi2<1e+10) { 
       nClustersExpected += ptrTracklet->GetN();
       //t.SetTracklet(&tracklet, index);
     }

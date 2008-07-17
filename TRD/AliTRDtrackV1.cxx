@@ -160,7 +160,13 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
                     , c20,         c21,         c22
                     , cov[ 6],     cov[ 7],     c32,     cov[ 9]
                     , cov[10]*cnv, cov[11]*cnv, c42*cnv, cov[13]*cnv, cov[14]*cnv*cnv };
-  
+
+  Double_t mostProbablePt=AliExternalTrackParam::GetMostProbablePt();
+  Double_t p0=TMath::Sign(1/mostProbablePt,pp[4]);
+  Double_t w0=cc[14]/(cc[14] + p0*p0), w1=p0*p0/(cc[14] + p0*p0);
+  pp[4] = w0*p0 + w1*pp[4];
+  cc[10]*=w1; cc[11]*=w1; cc[12]*=w1; cc[13]*=w1; cc[14]*=w1;
+
 	Set(x,alpha,pp,cc);
   Int_t ncls = 0;
 	for(int iplane=0; iplane<kNplane; iplane++){
