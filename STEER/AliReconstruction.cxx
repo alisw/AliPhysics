@@ -1324,6 +1324,10 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     }
     ftree->Fill();
 
+    // Auto-save the ESD tree in case of prompt reco @P2
+    if (fRawReader && fRawReader->UseAutoSaveESD())
+      ftree->AutoSave("SaveSelf");
+
     // write HLT ESD
     fhlttree->Fill();
 

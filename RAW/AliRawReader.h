@@ -149,6 +149,11 @@ class AliRawReader: public TObject {
       return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);
     }
 
+    // Method which can be used in order to force the auto-save on
+    // ESD tree inside AliReconstruction. For the moment it will be
+    // activated only for AliRawReaderDateOnline.
+    virtual Bool_t   UseAutoSaveESD() const { return kFALSE; }
+
   protected :
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;

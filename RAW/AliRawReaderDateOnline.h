@@ -28,6 +28,11 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
     virtual Bool_t   NextEvent();
     //    virtual Bool_t   RewindEvents();
 
+    // Method which can be used in order to force the auto-save on
+    // ESD tree inside AliReconstruction. For the moment it will be
+    // activated only for AliRawReaderDateOnline.
+    virtual Bool_t   UseAutoSaveESD() const { return kTRUE; }
+
   private:
     AliRawReaderDateOnline(const AliRawReaderDateOnline& rawReader);
     AliRawReaderDateOnline& operator = (const AliRawReaderDateOnline& rawReader);
