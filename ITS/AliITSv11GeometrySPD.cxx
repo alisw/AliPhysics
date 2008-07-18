@@ -566,7 +566,7 @@ void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth, TGeoManager *mgr)
     for(i = 0; i < kNSectorsTotal; i++) {
         shiftX = -radiusSector * TMath::Sin(angle/fgkRadian);
         shiftY =  radiusSector * TMath::Cos(angle/fgkRadian);
-        cout << "ANGLE = " << angle << endl; 
+        //cout << "ANGLE = " << angle << endl; 
         shiftX += 0.1094 * TMath::Cos((angle + 196.)/fgkRadian);
         shiftY += 0.1094 * TMath::Sin((angle + 196.)/fgkRadian);
         //shiftX -= 0.105;
@@ -2114,10 +2114,13 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
     // compute the volume shapes (thicknesses change from one to the other)
     Double_t kpLength, kpWidth, alLength, alWidth;
     TArrayD  kpSize, alSize, glSize;
-    Double_t kpThickness = fgkmm * 0.05;
-    Double_t alThickness = fgkmm * 0.02;
-    Double_t g0Thickness = fgkmm * 0.1175 - fgkGapHalfStave;
-    Double_t g1Thickness = fgkmm * 0.1175 - fgkGapLadder;
+    Double_t kpThickness = fgkmm * 0.04;
+    Double_t alThickness = fgkmm * 0.01;
+//cout << "AL THICKNESS" << alThickness << endl;
+    //Double_t g0Thickness = fgkmm * 0.1175 - fgkGapHalfStave;
+    //Double_t g1Thickness = fgkmm * 0.1175 - fgkGapLadder;
+    Double_t g0Thickness = fgkmm * 0.1275 - fgkGapHalfStave;
+    Double_t g1Thickness = fgkmm * 0.1275 - fgkGapLadder;
     TGeoCompositeShape *kpShape = CreateGroundingFoilShape(0,kpLength,kpWidth,
                                                           kpThickness, kpSize);
     TGeoCompositeShape *alShape = CreateGroundingFoilShape(1,alLength,alWidth,
@@ -2182,11 +2185,11 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Bool_t isRight,
     z  = 0.5*(fullLength - kpLength) - shift;
     TGeoCombiTrans *glTrans1 = new TGeoCombiTrans(x, 0.0, z, rotCorr);
     
-    cout << fgkGapHalfStave << endl;
-    cout << g0Thickness << endl;
-    cout << kpThickness << endl;
-    cout << alThickness << endl;
-    cout << g1Thickness << endl;
+    //cout << fgkGapHalfStave << endl;
+    //cout << g0Thickness << endl;
+    //cout << kpThickness << endl;
+    //cout << alThickness << endl;
+    //cout << g1Thickness << endl;
 
     // add to container
     container->SetLineColor(kMagenta-10);
@@ -3450,7 +3453,7 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
                        sepLadderLadder+mcmLength;
     fullWidth     = ladderWidth;
     fullThickness = grndThickness + fgkGapLadder + mcmThickness + busThickness;
-    cout << "HSTAVE FULL THICKNESS = " << fullThickness << endl;
+    //cout << "HSTAVE FULL THICKNESS = " << fullThickness << endl;
 
     // ** MOVEMENTS **
 
