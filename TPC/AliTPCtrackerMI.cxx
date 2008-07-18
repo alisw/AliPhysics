@@ -1147,7 +1147,7 @@ Int_t  AliTPCtrackerMI::LoadClusters(TClonesArray *arr)
   // TClonesArray
   //
   AliTPCclusterMI *clust=0;
-  Int_t count[72][96] = { {0} , {0}}; 
+  Int_t count[72][96] = { {0} , {0} }; 
 
   // loop over clusters
   for (Int_t icl=0; icl<arr->GetEntriesFast(); icl++) {
@@ -1169,6 +1169,15 @@ Int_t  AliTPCtrackerMI::LoadClusters(TClonesArray *arr)
 
     Int_t sec = clust->GetDetector();
     Int_t row = clust->GetRow();
+
+    // filter overlapping pad rows needed by HLT
+    if(sec<fkNIS*2) { //IROCs
+     if(row == 30) continue;
+    }
+    else { // OROCs
+      if(row == 27 || row == 76) continue;
+    }
+
     Int_t left=0;
     if (sec<fkNIS*2){
       left = sec/fkNIS;
@@ -1180,8 +1189,10 @@ Int_t  AliTPCtrackerMI::LoadClusters(TClonesArray *arr)
     }
   }
 
-  LoadOuterSectors();
-  LoadInnerSectors();
+  // Load functions must be called behind LoadCluster(TClonesArray*)
+  // needed by HLT
+  //LoadOuterSectors();
+  //LoadInnerSectors();
 
   return 0;
 }

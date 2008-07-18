@@ -47,6 +47,8 @@ public:
   virtual Int_t LoadClusters (TClonesArray * arr); // another input
   Int_t  LoadClusters();
   void   UnloadClusters();
+  Int_t LoadInnerSectors();
+  Int_t LoadOuterSectors();
   virtual void FillClusterArray(TObjArray* array) const;
   void   Transform(AliTPCclusterMI * cluster);
   //
@@ -150,8 +152,8 @@ private:
 
   
    AliTPCseed * ReSeed(AliTPCseed *t);
-   Int_t LoadInnerSectors();
-   Int_t LoadOuterSectors();
+   //Int_t LoadInnerSectors();
+   //Int_t LoadOuterSectors();
    void UnsignClusters();
    void SignClusters(TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
 

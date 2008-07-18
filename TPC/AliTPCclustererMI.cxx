@@ -25,6 +25,7 @@
 //  2. The Output data
 //      2.a TTree with clusters - if  SetOutput(TTree * tree) invoked
 //      2.b TObjArray           - Faster option for HLT
+//      2.c TClonesArray        - Faster option for HLT (smaller memory consumption), activate with fBClonesArray flag
 //
 //  3. Reconstruction setup
 //     see AliTPCRecoParam for list of parameters 
@@ -43,6 +44,7 @@
 #include <TGraph.h>
 #include <TH1F.h>
 #include <TObjArray.h>
+#include <TClonesArray.h>
 #include <TRandom.h>
 #include <TTree.h>
 #include <TTreeStream.h>
@@ -95,13 +97,16 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fInput(0),
   fOutput(0),
   fOutputArray(0),
+  fOutputClonesArray(0),
   fRowCl(0),
   fRowDig(0),
   fParam(0),
   fNcluster(0),
+  fNclusters(0),
   fDebugStreamer(0),
   fRecoParam(0),
-  fBDumpSignal(kFALSE)
+  fBDumpSignal(kFALSE),
+  fBClonesArray(kFALSE)
 {
   //
   // COSNTRUCTOR
@@ -148,13 +153,16 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fInput(0),
   fOutput(0),
   fOutputArray(0),
+  fOutputClonesArray(0),
   fRowCl(0),
   fRowDig(0),
   fParam(0),
   fNcluster(0),
+  fNclusters(0),
   fDebugStreamer(0),
   fRecoParam(0),
-  fBDumpSignal(kFALSE)
+  fBDumpSignal(kFALSE),
+  fBClonesArray(kFALSE)
 {
   //
   // dummy
@@ -179,6 +187,10 @@ AliTPCclustererMI::~AliTPCclustererMI(){
   if (fOutputArray){
     //fOutputArray->Delete();
     delete fOutputArray;
+  }
+  if (fOutputClonesArray){
+    fOutputClonesArray->Delete();
+    delete fOutputClonesArray;
   }
 }
 
@@ -219,7 +231,7 @@ void AliTPCclustererMI::FillRow(){
   //          TObjArray
   //
   if (fOutput) fOutput->Fill();
-  if (!fOutput){
+  if (!fOutput && !fBClonesArray){
     //
     if (!fOutputArray) fOutputArray = new TObjArray(fParam->GetNRowsTotal());
     if (fRowCl && fRowCl->GetArray()->GetEntriesFast()>0) fOutputArray->AddAt(fRowCl->Clone(), fRowCl->GetID());
@@ -393,8 +405,6 @@ AliTPCclusterMI &c)
   //unfolding 2
   meani-=i0;
   meanj-=j0;
-  if (gDebug>4)
-    printf("%f\t%f\n", vmatrix2[2][2], vmatrix[2][2]);
 }
 
 
@@ -522,8 +532,6 @@ void AliTPCclustererMI::UnfoldCluster(Float_t * matrix2[7], Float_t recmatrix[5]
 	  }
       }
   }
-  if (gDebug>4) 
-    printf("%f\n", recmatrix[2][2]);
   
 }
 
@@ -601,8 +609,17 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
   if (fLoop==2) c.SetType(100);
   if (!AcceptCluster(&c)) return;
 
-  TClonesArray * arr = fRowCl->GetArray();
-  AliTPCclusterMI * cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
+  // select output 
+  TClonesArray * arr = 0;
+  AliTPCclusterMI * cl = 0;
+
+  if(fBClonesArray==kFALSE) {
+     arr = fRowCl->GetArray();
+     cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
+  } else {
+     cl = new ((*fOutputClonesArray)[fNclusters+fNcluster]) AliTPCclusterMI(c);
+  }
+
   // if (fRecoParam->DumpSignal() &&matrix ) {
 //     Int_t nbins=0;
 //     Float_t *graph =0;
@@ -703,6 +720,7 @@ void AliTPCclustererMI::Digits2Clusters()
     FillRow();
     fRowCl->GetArray()->Clear();    
     nclusters+=fNcluster;    
+
     delete[] fBins;
     delete[] fSigBins;
   }  
@@ -734,8 +752,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     fEventType = fEventHeader->Get("Type");  
   }
 
+  // creaate one TClonesArray for all clusters
+  if(fBClonesArray) fOutputClonesArray = new TClonesArray("AliTPCclusterMI",1000);
 
-  Int_t nclusters  = 0;
+  // reset counter
+  fNclusters  = 0;
   
   fMaxTime = fRecoParam->GetLastBin() + 6; // add 3 virtual time bins before and 3 after
   const Int_t kNIS = fParam->GetNInnerSector();
@@ -767,14 +788,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   //
   for(fSector = 0; fSector < kNS; fSector++) {
 
-    AliTPCCalROC * gainROC    = gainTPC->GetCalROC(fSector);  // pad gains per given sector
-    AliTPCCalROC * pedestalROC = pedestalTPC->GetCalROC(fSector);  // pedestal per given sector
-    AliTPCCalROC * noiseROC   = noiseTPC->GetCalROC(fSector);  // noise per given sector
-    //check the presence of the calibration
-    if (!noiseROC ||!pedestalROC ) {
-      AliError(Form("Missing calibration per sector\t%d\n",fSector));
-      continue;
-    }
     Int_t nRows = 0;
     Int_t nDDLs = 0, indexDDL = 0;
     if (fSector < kNIS) {
@@ -790,6 +803,23 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       indexDDL = (fSector-kNIS) * 4 + kNIS * 2;
     }
 
+    // load the raw data for corresponding DDLs
+    rawReader->Reset();
+    rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
+
+    // select only good sector 
+    input.Next();
+    if(input.GetSector() != fSector) continue;
+
+    AliTPCCalROC * gainROC    = gainTPC->GetCalROC(fSector);  // pad gains per given sector
+    AliTPCCalROC * pedestalROC = pedestalTPC->GetCalROC(fSector);  // pedestal per given sector
+    AliTPCCalROC * noiseROC   = noiseTPC->GetCalROC(fSector);  // noise per given sector
+    //check the presence of the calibration
+    if (!noiseROC ||!pedestalROC ) {
+      AliError(Form("Missing calibration per sector\t%d\n",fSector));
+      continue;
+    }
+    
     for (Int_t iRow = 0; iRow < nRows; iRow++) {
       Int_t maxPad;
       if (fSector < kNIS)
@@ -802,14 +832,13 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       allNSigBins[iRow] = 0;
     }
     
-    // Loas the raw data for corresponding DDLs
-    rawReader->Reset();
-    rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
     Int_t digCounter=0;
     // Begin loop over altro data
     Bool_t calcPedestal = fRecoParam->GetCalcPedestal();
     Float_t gain =1;
     Int_t lastPad=-1;
+
+    input.Reset();
     while (input.Next()) {
       if (input.GetSector() != fSector)
 	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
@@ -976,12 +1005,14 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       fNSigBins = allNSigBins[fRow];
 
       FindClusters(noiseROC);
+
       FillRow();
-      fRowCl->GetArray()->Clear();    
-      nclusters += fNcluster;    
+      if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear();    
+      fNclusters += fNcluster;    
+
     } // End of loop to find clusters
   } // End of loop over sectors
-  
+
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     delete [] allBins[iRow];
     delete [] allSigBins[iRow];
@@ -991,11 +1022,15 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   delete [] allNSigBins;
   
   if (rawReader->GetEventId() && fOutput ){
-    Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
+    Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), fNclusters);
   }
   
   if(rawReader->GetEventId()) {
-    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), nclusters);
+    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), fNclusters);
+  }
+
+  if(fBClonesArray) {
+    //Info("Digits2Clusters", "Number of found clusters : %d\n",fOutputClonesArray->GetEntriesFast());
   }
 }
 

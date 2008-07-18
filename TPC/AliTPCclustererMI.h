@@ -18,6 +18,7 @@
 #define kMAXCLUSTER 2500
 
 class TFile;
+class TClonesArray;
 class AliTPCParam;
 class AliTPCRecoParam;
 class AliTPCclusterMI;
@@ -41,6 +42,10 @@ public:
   virtual void SetOutput(TTree * tree); // set output tree with 
   virtual void FillRow();               // fill the output container - Tree or TObjArray
   TObjArray * GetOutputArray(){return fOutputArray;}
+  TClonesArray * GetOutputClonesArray(){return fOutputClonesArray;}
+
+  void StoreInClonesArray(Bool_t bOutput = kTRUE) {fBClonesArray = bOutput;} // store output clusters in TClonesArray
+
 private:
   Bool_t IsMaximum(Float_t k, Int_t max, const Float_t *bins) const; 
   void MakeCluster2(Int_t k,Int_t max,Float_t *bins,UInt_t m,
@@ -78,13 +83,17 @@ private:
   TTree * fInput;   //!input  tree with digits - object not owner
   TTree * fOutput;   //!output tree with digits - object not owner
   TObjArray *fOutputArray;     //! output TObjArray with pointers arrays of cluster
+  TClonesArray *fOutputClonesArray; //! output TClonesArray with clusters
   AliTPCClustersRow * fRowCl;  //! current cluster row
   AliSimDigits * fRowDig;      //! current digits row
   const AliTPCParam * fParam;        //! tpc parameters
   Int_t fNcluster;             // number of clusters - for given row
+  Int_t fNclusters;            // tot number of clusters
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
   Bool_t  fBDumpSignal; // dump signal flag
+  Bool_t  fBClonesArray; // output clusters stored in TClonesArray 
+
   ClassDef(AliTPCclustererMI,2)  // Time Projection Chamber digits
 };
 
