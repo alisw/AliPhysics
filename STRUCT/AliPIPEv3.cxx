@@ -579,7 +579,7 @@ void AliPIPEv3::CreateGeometry()
     voCp3Mo->SetVisibility(0);
     TGeoVolumeAssembly* voCp3 = new TGeoVolumeAssembly("Cp3");
     voCp3->AddNode(voCp3Mo,  1, gGeoIdentity);
-    voCp3->AddNode(voCpSupC, 3, new TGeoTranslation(0., 0., - kCP3Length / 2. + 4.5));
+    voCp3->AddNode(voCpSupC, 3, new TGeoTranslation(0., 0., - kCP3Length / 2. + 4.6));
     dz = kCP3pos;
 
 //////////////////////////////////////////////
