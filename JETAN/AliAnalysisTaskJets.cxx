@@ -42,15 +42,19 @@ ClassImp(AliAnalysisTaskJets)
 
 AliAnalysisTaskJets::AliAnalysisTaskJets():
     AliAnalysisTaskSE(),
-    fJetFinder(0x0),
-    fHistos(0x0),
-    fListOfHistos(0x0)
+  fConfigFile("ConfigJetAnalysis.C"),  
+  fNonStdBranch(""),  
+  fJetFinder(0x0),
+  fHistos(0x0),
+  fListOfHistos(0x0)
 {
   // Default constructor
 }
 
 AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     AliAnalysisTaskSE(name),
+    fConfigFile("ConfigJetAnalysis.C"),  
+    fNonStdBranch(""),  
     fJetFinder(0x0),
     fHistos(0x0),
     fListOfHistos(0x0)
@@ -64,15 +68,27 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
 // Create the output container
 //
     if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
-//  Connec default AOD to jet finder
 
-    fJetFinder->ConnectAOD(AODEvent());
-//
-//  Histograms
+
+    if(fNonStdBranch.Length()==0){
+      //  Connec default AOD to jet finder
+      fJetFinder->ConnectAOD(AODEvent());
+    }
+    else{
+      // Create a new branch for jets...
+      // how is this is reset cleared in the UserExec....
+      // Can this be handled by the framework?
+      TClonesArray *tca = new TClonesArray("AliAODJet", 0);
+      tca->SetName(fNonStdBranch);
+      AddAODBranch("TClonesArray",&tca);
+      fJetFinder->ConnectAODNonStd(AODEvent(),fNonStdBranch.Data());
+    }
+    //  Histograms
     OpenFile(1);
     fListOfHistos = new TList();
     fHistos       = new AliJetHistos();
     fHistos->AddHistosToList(fListOfHistos);
+    
 }
 
 void AliAnalysisTaskJets::Init()
@@ -81,7 +97,7 @@ void AliAnalysisTaskJets::Init()
     if (fDebug > 1) printf("AnalysisTaskJets::Init() \n");
 
     // Call configuration file
-    gROOT->LoadMacro("ConfigJetAnalysis.C");
+    gROOT->LoadMacro(fConfigFile);
     fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
     // Initialise Jet Analysis
     fJetFinder->Init();
@@ -95,16 +111,26 @@ void AliAnalysisTaskJets::Init()
 
 void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
 {
-// Execute analysis for current event
-//
-    
-    fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
-    fJetFinder->ProcessEvent();
+  // Execute analysis for current event
+  //
 
-    // Fill control histos
-    fHistos->FillHistos(AODEvent()->GetJets());
-    // Post the data
-    PostData(1, fListOfHistos);
+
+  // Fill control histos
+  TClonesArray* jarray = 0;
+  if(fNonStdBranch.Length()==0){
+    jarray = AODEvent()->GetJets();
+  }
+  else{
+    jarray =  dynamic_cast<TClonesArray*>(AODEvent()->FindListObject(fNonStdBranch.Data()));
+    jarray->Delete();    // this is our responsibility, clear before filling again
+  }
+
+  fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
+  fJetFinder->ProcessEvent();
+
+  fHistos->FillHistos(jarray);
+  // Post the data
+  PostData(1, fListOfHistos);
 }
 
 void AliAnalysisTaskJets::Terminate(Option_t */*option*/)

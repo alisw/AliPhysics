@@ -243,7 +243,7 @@ void AliJetFinder::FinishRun()
 
 void AliJetFinder::AddJet(AliAODJet p)
 {
-// Add new jet to the list
+  // Add new jet to the list
   new ((*fAODjets)[fNAODjets++]) AliAODJet(p);
 }
 
@@ -251,4 +251,11 @@ void AliJetFinder::ConnectAOD(AliAODEvent* aod)
 {
 // Connect to the AOD
     fAODjets = aod->GetJets();
+}
+
+void AliJetFinder::ConnectAODNonStd(AliAODEvent* aod,const char *bname)
+{
+
+  fAODjets = dynamic_cast<TClonesArray*>(aod->FindListObject(bname));
+  // how is this is reset? Cleared?
 }

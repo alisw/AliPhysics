@@ -17,7 +17,7 @@ void JetAnalysisManagerLoc()
     //
     gROOT->LoadMacro("CreateESDChain.C");
     TChain* chain = new TChain("esdTree");
-    chain->Add("/afs/cern.ch/user/k/kleinb/public/tutorial/local/data/AliESDs.root");
+    chain->Add("~/alice/data/highpt/kPythia6Jets125_150/030/AliESDs.root");
 
     /////////////////////////////////////////////////////////////////////////////////// 
     // Create the analysis manager
@@ -73,6 +73,14 @@ void JetAnalysisManagerLoc()
 
     AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
     jetana->SetDebugLevel(10);
+
+
+
+    AliAnalysisTaskJets *jetanaMC = new AliAnalysisTaskJets("JetAnalysisMC");
+    jetanaMC->SetDebugLevel(10);
+    jetanaMC->SetConfigFile("ConfigJetAnalysisMC.C");
+    jetanaMC->SetNonStdBranch("jetsMC");
+    mgr->AddTask(jetanaMC);
     mgr->AddTask(jetana);
 
     //
@@ -85,12 +93,19 @@ void JetAnalysisManagerLoc()
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos", TList::Class(),
 							      AliAnalysisManager::kOutputContainer, "histos.root");
 
+    AliAnalysisDataContainer *coutputMC2 = mgr->CreateContainer("histosMC", TList::Class(),
+							      AliAnalysisManager::kOutputContainer, "histosMC.root");
+
     mgr->ConnectInput  (esdfilter,  0, cinput1  );
     mgr->ConnectOutput (esdfilter,  0, coutput1 );
 
     mgr->ConnectInput  (jetana,     0, cinput1  );
     mgr->ConnectOutput (jetana,     0, coutput1 );
     mgr->ConnectOutput (jetana,     1, coutput2 );
+
+    mgr->ConnectInput  (jetanaMC,     0, cinput1  );
+    mgr->ConnectOutput (jetanaMC,     0, coutput1 );
+    mgr->ConnectOutput (jetanaMC,     1, coutputMC2 );
 
 
     //

@@ -24,16 +24,20 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void Init();
     virtual void LocalInit() {Init();}
     virtual void UserExec(Option_t *option);
+    virtual void SetConfigFile(const char *c){fConfigFile = c;}
+    virtual void SetNonStdBranch(const char *c){fNonStdBranch = c;}
     virtual void Terminate(Option_t *option);
  private:
   AliAnalysisTaskJets(const AliAnalysisTaskJets &det);
   AliAnalysisTaskJets &operator=(const AliAnalysisTaskJets &det);
     
  private:
-    AliJetFinder* fJetFinder;    //  Pointer to the jet finder 
-    AliJetHistos* fHistos;       //  Histogram manager class
-    TList*        fListOfHistos; //  Output list of histograms
-    ClassDef(AliAnalysisTaskJets, 2); // Analysis task for standard jet analysis
+  TString       fConfigFile;      // the name of the ConfigFile
+  TString       fNonStdBranch;    // the name of the non-std branch name
+  AliJetFinder* fJetFinder;    //  Pointer to the jet finder 
+  AliJetHistos* fHistos;       //  Histogram manager class
+  TList*        fListOfHistos; //  Output list of histograms
+  ClassDef(AliAnalysisTaskJets, 3); // Analysis task for standard jet analysis
 };
  
 #endif

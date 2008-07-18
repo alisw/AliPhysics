@@ -57,6 +57,7 @@ class AliJetFinder : public TObject
   virtual void   FinishRun();
   virtual void   ConnectTree(TTree* tree, TObject* data);
   virtual void   ConnectAOD(AliAODEvent* aod);
+  virtual void   ConnectAODNonStd(AliAODEvent* aod,const char* bname);
   virtual TTree* MakeTreeJ(char* name);
   virtual void   WriteHeaders();
   virtual void   WriteJetsToFile() {;}
