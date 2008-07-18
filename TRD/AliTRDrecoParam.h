@@ -17,8 +17,10 @@
 
 class AliTRDrecoParam : public AliDetectorRecoParam
 {
-public:
-  enum AliTRDpidMethod{
+
+ public:
+
+  enum AliTRDpidMethod {
     kLQPID = 0,
     kNNPID = 1
   };
@@ -50,10 +52,9 @@ public:
   Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
   Double_t GetClusSigThresh() const         { return fClusSigThresh;   };
   Int_t    GetTCnexp() const                { return fTCnexp;          };
-  Int_t     GetNumberOfPresamples()  const {return fNumberOfPresamples;}
-  Int_t    GetNumberOfPostsamples() const {return fNumberOfPostsamples;}
+  Int_t    GetNumberOfPresamples() const    { return fNumberOfPresamples;}
+  Int_t    GetNumberOfPostsamples() const   { return fNumberOfPostsamples;}
 
-        
   static   AliTRDrecoParam *GetLowFluxParam();
   static   AliTRDrecoParam *GetHighFluxParam();
   static   AliTRDrecoParam *GetCosmicTestParam();
@@ -63,22 +64,20 @@ public:
   Bool_t   IsSeeding() const                { return TestBit(kSeeding); }
   Bool_t   IsTailCancelation() const        { return TestBit(kTC);}
   Bool_t   IsVertexConstrained() const      { return TestBit(kVertexConstrained); }
-  Bool_t   IsTrackletWriteEnabled() const   { return fTrackletWriteEnabled ; };
-
-
+  Bool_t   IsTrackletWriteEnabled() const   { return fTrackletWriteEnabled; }
 
   void     SetFindableClusters(Double_t r) {fkFindable = r;}
   void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);  };
   void     SetPIDMethod(AliTRDpidMethod pid)                  { fkPIDMethod = pid; };
-  void     SetSeeding(Bool_t so = kTRUE)             { SetBit(kSeeding, so); }
-  void     SetVertexConstrained(Bool_t vc = kTRUE) { SetBit(kVertexConstrained, vc); }
+  void     SetSeeding(Bool_t so = kTRUE)                      { SetBit(kSeeding, so); }
+  void     SetVertexConstrained(Bool_t vc = kTRUE)            { SetBit(kVertexConstrained, vc); }
   void     SetStreamLevel(Int_t streamLevel= 1)               { fkStreamLevel = streamLevel; }
-  void     SetLUT(Bool_t lut = kTRUE)                            { SetBit(kLUT, lut);};
+  void     SetLUT(Bool_t lut = kTRUE)                         { SetBit(kLUT, lut);};
   void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; };
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
-  void     SetTailCancelation(Bool_t tc = kTRUE)                 { SetBit(kTC, tc);  };
+  void     SetTailCancelation(Bool_t tc = kTRUE)              { SetBit(kTC, tc);  };
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
   void     SetADCbaseline(Int_t base)                         { fADCbaseline     = base;   };
   inline void SetSysCovMatrix(Double_t *sys);
@@ -86,8 +85,8 @@ public:
   void     SetNumberOfPostsamples(Int_t n) {fNumberOfPostsamples = n;}
   void     SetTrackletWriteEnabled(Bool_t enablewritetracklet = kFALSE) { fTrackletWriteEnabled = enablewritetracklet; };
 
+ private:
 
-private:
   enum{
     kNNslices = 8
    ,kLQslices = 3
@@ -138,7 +137,7 @@ private:
   // Tracklet writing Switch
   Bool_t    fTrackletWriteEnabled;   // Switch for writing tracklets
 
-  ClassDef(AliTRDrecoParam, 4)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 5)       // Reconstruction parameters for TRD detector
 
 };
 
@@ -155,7 +154,5 @@ inline void AliTRDrecoParam::SetSysCovMatrix(Double_t *sys)
   if(!sys) return;
   memcpy(fSysCovMatrix, sys, 5*sizeof(Double_t));
 }
-
-
 
 #endif
