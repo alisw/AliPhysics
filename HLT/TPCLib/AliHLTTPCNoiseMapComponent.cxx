@@ -320,19 +320,22 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  fHistSignal->Fill(bunchData[i]);
       } // end for loop over bunches
       
+      //cout << "total signal: " << totalSignal << endl;
+      //cout << " integral:    " << fHistSignal->Integral() << endl;
+      
       //} // end of inner while loop
            
       fHistMaxSignal->Fill(xyz[0],xyz[1],maxSignal);
       fHistTotSignal->Fill(xyz[0],xyz[1],totalSignal);
       fHistPadRMS->Fill(xyz[0],xyz[1],fHistSignal->GetRMS());
-      delete fHistSignal;
-      
-      
+      delete fHistSignal; fHistSignal = NULL;
+            
       if(fPlotSideA || fPlotSideC){
          if(slice<18) fHistSideA->Fill(xyz[0],xyz[1],maxSignal);
          else	      fHistSideC->Fill(xyz[0],xyz[1],maxSignal);			     
-      } // end if plotting sides	    
+      } // end if plotting sides    
      } // end of while loop over pads
+   
      delete pDigitReader;
   } // end of for loop over data blocks
  
@@ -347,9 +350,7 @@ void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
 // see header file for class documentation
   
 //   TFile *outputfile = new TFile("test.root","RECREATE");
-//   fHistSideC->Write();
-//   fHistPartition->Write();
-//   fHistCDBMap->Write();
+//   fHistSignal->Write();
 //   outputfile->Save();
 //   outputfile->Close();
 
@@ -366,7 +367,6 @@ void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
     
   //PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram, fSpecification);    
  
-  if(fHistSignal)    delete fHistSignal;    fHistSignal    = NULL;
   if(fHistMaxSignal) delete fHistMaxSignal; fHistMaxSignal = NULL;
   if(fHistTotSignal) delete fHistTotSignal; fHistTotSignal = NULL;
   if(fHistPadRMS)    delete fHistPadRMS;    fHistPadRMS    = NULL;

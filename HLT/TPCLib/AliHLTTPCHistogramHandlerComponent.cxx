@@ -60,8 +60,12 @@ AliHLTTPCHistogramHandlerComponent::AliHLTTPCHistogramHandlerComponent()
     fNumberOfClusters(NULL),
     
     fHistTH2Tmp(NULL),
-    fHistTPCSideA(NULL),  
-    fHistTPCSideC(NULL)    
+    fHistTPCSideAmax(NULL),  
+    fHistTPCSideCmax(NULL),   
+    fHistTPCSideAtot(NULL),  
+    fHistTPCSideCtot(NULL),   
+    fHistTPCSideArms(NULL),  
+    fHistTPCSideCrms(NULL)   
 {
   // see header file for class documentation
   // or
@@ -170,12 +174,37 @@ int AliHLTTPCHistogramHandlerComponent::DoInit( int argc, const char** argv ) {
 
   } // end while
   
+ 
+  fHistTPCSideAmax = new TH2F("fHistTPCSideAmax","TPC side A (max signal)",250,-250,250,250,-250,250);
+  fHistTPCSideAmax->SetXTitle("global X (cm)"); fHistTPCSideAmax->SetYTitle("global Y (cm)");
+  fHistTPCSideCmax = new TH2F("fHistTPCSideCmax","TPC side C (max signal)",250,-250,250,250,-250,250);
+  fHistTPCSideCmax->SetXTitle("global X (cm)"); fHistTPCSideCmax->SetYTitle("global Y (cm)");
+ 
+  fHistTPCSideAtot = new TH2F("fHistTPCSideAtot","TPC side A (total signal)",250,-250,250,250,-250,250);
+  fHistTPCSideAtot->SetXTitle("global X (cm)"); fHistTPCSideAtot->SetYTitle("global Y (cm)");
+  fHistTPCSideCtot = new TH2F("fHistTPCSideCtot","TPC side C (total signal)",250,-250,250,250,-250,250);
+  fHistTPCSideCtot->SetXTitle("global X (cm)"); fHistTPCSideCtot->SetYTitle("global Y (cm)");
+ 
+  fHistTPCSideArms = new TH2F("fHistTPCSideArms","TPC side A (baseline RMS)",250,-250,250,250,-250,250);
+  fHistTPCSideArms->SetXTitle("global X (cm)"); fHistTPCSideArms->SetYTitle("global Y (cm)");
+  fHistTPCSideCrms = new TH2F("fHistTPCSideCrms","TPC side C (baseline RMS)",250,-250,250,250,-250,250);
+  fHistTPCSideCrms->SetXTitle("global X (cm)"); fHistTPCSideCrms->SetYTitle("global Y (cm)");
+
   return 0;
 } // end DoInit()
 
 int AliHLTTPCHistogramHandlerComponent::DoDeinit() { 
 // see header file for class documentation 
+    
+    if(fHistTPCSideAmax){ delete fHistTPCSideAmax; fHistTPCSideAmax=NULL; }
+    if(fHistTPCSideCmax){ delete fHistTPCSideCmax; fHistTPCSideCmax=NULL; }
    
+    if(fHistTPCSideAtot){ delete fHistTPCSideAtot; fHistTPCSideAtot=NULL; }
+    if(fHistTPCSideCtot){ delete fHistTPCSideCtot; fHistTPCSideCtot=NULL; }
+   
+    if(fHistTPCSideArms){ delete fHistTPCSideArms; fHistTPCSideArms=NULL; }
+    if(fHistTPCSideCrms){ delete fHistTPCSideCrms; fHistTPCSideCrms=NULL; }
+
    return 0;
 }
 
@@ -192,16 +221,17 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
   fPlotQmaxROCAll            = new TH1F("fQMaxROCAll",               "QMax for All ROC",                    72,0,72);
   fNumberOfClusters          = new TH1F("fNumberOfClusters",         "Total Number of Clusters",            1,0,1);
     
-  fHistTH2Tmp = new TH2F("fHistTH2Tmp","fHistTH2Tmp",250,-250,250,250,-250,250);    
-  fHistTPCSideA = new TH2F("fHistTPCSideA","TPC side A (max signal)",250,-250,250,250,-250,250);
-  fHistTPCSideA->SetXTitle("global X (cm)"); fHistTPCSideA->SetYTitle("global Y (cm)");
-  fHistTPCSideC = new TH2F("fHistTPCSideC","TPC side C (max signal)",250,-250,250,250,-250,250);
-  fHistTPCSideC->SetXTitle("global X (cm)"); fHistTPCSideC->SetYTitle("global Y (cm)");
+//   fHistTH2Tmp = new TH2F("fHistTH2Tmp","fHistTH2Tmp",250,-250,250,250,-250,250);    
+//   fHistTPCSideA = new TH2F("fHistTPCSideA","TPC side A (max signal)",250,-250,250,250,-250,250);
+//   fHistTPCSideA->SetXTitle("global X (cm)"); fHistTPCSideA->SetYTitle("global Y (cm)");
+//   fHistTPCSideC = new TH2F("fHistTPCSideC","TPC side C (max signal)",250,-250,250,250,-250,250);
+//   fHistTPCSideC->SetXTitle("global X (cm)"); fHistTPCSideC->SetYTitle("global Y (cm)");
   
   const TObject *iter = NULL;  
         
   for(iter = GetFirstInputObject(kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputObject()){
-   
+  
+
 //      HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
 //               evtData.fEventID, evtData.fEventID,
 //               DataType2Text(GetDataType(iter)).c_str(), 
@@ -217,9 +247,12 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
          
      // Summing the output histograms of the AliHLTTPCNoiseMapComponent (from partition to TPC sides)
      if(fNoiseHistograms){  
-       
+        
+	//fHistTH2Tmp = new TH2F("fHistTH2Tmp","fHistTH2Tmp",250,-250,250,250,-250,250);        
         fHistTH2Tmp = (TH2F*)iter;
-        UInt_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter)); 
+        TString histName = fHistTH2Tmp->GetName();
+        
+	UInt_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter)); 
         UInt_t maxSlice     = AliHLTTPCDefinitions::GetMaxSliceNr(GetSpecification(iter)); 
         UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iter)); 
         UInt_t maxPartition = AliHLTTPCDefinitions::GetMaxPatchNr(GetSpecification(iter)); 
@@ -229,8 +262,19 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
         }
 
         // minSlice=maxSlice, when the Noise Map component runs on partition level (as it should)
-        if(minSlice<18) fHistTPCSideA->Add(fHistTPCSideA,fHistTH2Tmp,1,1);
-        else		fHistTPCSideC->Add(fHistTPCSideC,fHistTH2Tmp,1,1);
+        
+	if(minSlice<18){ 
+	   if     (histName=="fHistMaxSignal") fHistTPCSideAmax->Add(fHistTPCSideAmax,fHistTH2Tmp,1,1); 
+	   else if(histName=="fHistTotSignal") fHistTPCSideAtot->Add(fHistTPCSideAtot,fHistTH2Tmp,1,1);
+	   else if(histName=="fHistPadRMS")    fHistTPCSideArms->Add(fHistTPCSideArms,fHistTH2Tmp,1,1);
+	   else continue;
+	}
+	else{ 
+	   if     (histName=="fHistMaxSignal") fHistTPCSideCmax->Add(fHistTPCSideCmax,fHistTH2Tmp,1,1);
+	   else if(histName=="fHistTotSignal") fHistTPCSideCtot->Add(fHistTPCSideCtot,fHistTH2Tmp,1,1);
+	   else if(histName=="fHistPadRMS")    fHistTPCSideCrms->Add(fHistTPCSideCrms,fHistTH2Tmp,1,1);
+	   else continue;
+	}
      } // endif fNoiseHistograms==kTRUE   
      
      
@@ -275,7 +319,8 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 	  HLTWarning("No histogram names match. %s",name.Data());
 	  continue;
 	}     
-     } //endif fKryptonHistograms==kTRUE	   	         
+     } //endif fKryptonHistograms==kTRUE
+     	         
   } // end for loop over histogram blocks
   
   MakeHistosPublic();
@@ -284,14 +329,20 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 
 void AliHLTTPCHistogramHandlerComponent::MakeHistosPublic() {
 // see header file for class documentation
- 
-  if(fNoiseHistograms){ 
-    PushBack((TObject*)fHistTPCSideA,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 0,17,0,5));
-    PushBack((TObject*)fHistTPCSideC,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(18,35,0,5));
 
-    if(fHistTH2Tmp)  { delete fHistTH2Tmp;   fHistTH2Tmp=NULL;   }
-    if(fHistTPCSideA){ delete fHistTPCSideA; fHistTPCSideA=NULL; }
-    if(fHistTPCSideC){ delete fHistTPCSideC; fHistTPCSideC=NULL; }
+  if(fNoiseHistograms){ 
+    PushBack((TObject*)fHistTPCSideAmax,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 0,17,0,5));
+    PushBack((TObject*)fHistTPCSideCmax,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(18,35,0,5));
+  
+    PushBack((TObject*)fHistTPCSideAtot,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 0,17,0,5));
+    PushBack((TObject*)fHistTPCSideCtot,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(18,35,0,5));
+    
+    PushBack((TObject*)fHistTPCSideArms,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification( 0,17,0,5));
+    PushBack((TObject*)fHistTPCSideCrms,kAliHLTDataTypeHistogram,AliHLTTPCDefinitions::EncodeDataSpecification(18,35,0,5));
+
+    //if(fHistTH2Tmp)  { delete fHistTH2Tmp;   fHistTH2Tmp=NULL;   }
+//     if(fHistTPCSideA){ delete fHistTPCSideA; fHistTPCSideA=NULL; }
+//     if(fHistTPCSideC){ delete fHistTPCSideC; fHistTPCSideC=NULL; }
   }  
   
   if(fKryptonHistograms){

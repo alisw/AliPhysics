@@ -105,11 +105,15 @@ class AliHLTTPCHistogramHandlerComponent : public AliHLTProcessor {
       TH1 *fNumberOfClusters;          //!transient
             
       TH2 *fHistTH2Tmp;    //!transient
-      TH2 *fHistTPCSideA;  //!transient	
-      TH2 *fHistTPCSideC;  //!transient  
+      TH2 *fHistTPCSideAmax;  //!transient	
+      TH2 *fHistTPCSideCmax;  //!transient  
+      TH2 *fHistTPCSideAtot;  //!transient	
+      TH2 *fHistTPCSideCtot;  //!transient  
+      TH2 *fHistTPCSideArms;  //!transient	
+      TH2 *fHistTPCSideCrms;  //!transient  
 
             
-      ClassDef(AliHLTTPCHistogramHandlerComponent, 1)
+      ClassDef(AliHLTTPCHistogramHandlerComponent, 2)
     };
 
 #endif
