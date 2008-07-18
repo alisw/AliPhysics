@@ -56,7 +56,6 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fADCbaseline(0)
   ,fNumberOfPresamples(0)
   ,fNumberOfPostsamples(0)
-  ,fTrackletWriteEnabled(kTRUE)
 {
   //
   // Default constructor
@@ -66,7 +65,8 @@ AliTRDrecoParam::AliTRDrecoParam()
   SetVertexConstrained();
   SetLUT();
   SetTailCancelation();
-
+  SetTrackletWriteEnabled();
+  
   fSysCovMatrix[0] = 1.; // y direction (1 cm)
   fSysCovMatrix[1] = 1.; // z direction (1 cm)
   fSysCovMatrix[2] = 0.; // snp
@@ -100,7 +100,6 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fADCbaseline(ref.fADCbaseline)
   ,fNumberOfPresamples(ref.fNumberOfPresamples)
   ,fNumberOfPostsamples(ref.fNumberOfPostsamples)
-  ,fTrackletWriteEnabled(ref.fTrackletWriteEnabled)
 {
   //
   // Copy constructor
@@ -110,6 +109,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   SetVertexConstrained(ref.IsVertexConstrained());
   SetLUT(ref.IsLUT());
   SetTailCancelation(ref.IsTailCancelation());
+  SetTrackletWriteEnabled(ref.IsTrackletWriteEnabled());
 
   memcpy(fSysCovMatrix, ref.fSysCovMatrix, 5*sizeof(Double_t));
 }
