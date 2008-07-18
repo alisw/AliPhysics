@@ -30,6 +30,7 @@
 #include <TRandom.h>
 // From AliRoot ...
 #include "AliAODJet.h"
+#include "AliPDG.h"
 #include "AliJetKineReaderHeader.h"
 #include "AliJetKineReader.h"
 #include "AliMCEventHandler.h"
@@ -140,7 +141,23 @@ Bool_t AliJetKineReader::FillMomentumArray()
 	Float_t px = r * part->Px(); 
 	Float_t py = r * part->Py(); 
 	Float_t pz = r * part->Pz();
-	Float_t m  = part->GetMass();
+	TParticlePDG *pPDG = part->GetPDG();
+	Float_t m = 0;
+	if(!pPDG){
+	  // this is very rare...
+	  // Is avoided by AliPDG::AddParticlesToPdgDataBase();
+	  // but this should be called only once... (how in proof?)
+	  // Calucluate mass with unsmeared momentum values
+	  m  = part->Energy()*part->Energy() - 
+	    (px * px + py * py + pz * pz)/r/r; 
+	  if(m>0)m = TMath::Sqrt(m);
+	  else m = 0;
+	  AliInfo(Form("Unknown Particle using %d calculated mass m = %3.3f",part->GetPdgCode(),m));
+
+	}
+	else{
+	  m  = pPDG->Mass();
+	}
 	Float_t e  = TMath::Sqrt(px * px + py * py + pz * pz + m * m);
 	p4 = TLorentzVector(px, py, pz, e);
 	if ( (p4.Eta()>etaMax) || (p4.Eta()<etaMin)) continue;
