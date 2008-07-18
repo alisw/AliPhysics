@@ -242,25 +242,25 @@ void AliSHILv3::CreateGeometry()
       dz = 0.;
       
       dz +=  kFaWring2HWidth;
-      asFaExtraShield->AddNode(voFaWring2,    1, new TGeoCombiTrans(0., 0., dz, rot090));
-      asFaExtraShield->AddNode(voFaWring2,    2, new TGeoCombiTrans(0., 0., dz, rot270));
+      asFaExtraShield->AddNode(voFaWring2,    1, new TGeoCombiTrans(0., 0., dz, rot180));
+      asFaExtraShield->AddNode(voFaWring2,    2, new TGeoCombiTrans(0., 0., dz, rot000));
       dz +=   kFaWring2HWidth;
       dz +=   kFaDWrings;
       dz +=   kFaWring3HWidth;
-      asFaExtraShield->AddNode(voFaWring3,    1, new TGeoCombiTrans(0., 0., dz, rot000));
-      asFaExtraShield->AddNode(voFaWring3,    2, new TGeoCombiTrans(0., 0., dz, rot180));
+      asFaExtraShield->AddNode(voFaWring3,    1, new TGeoCombiTrans(0., 0., dz, rot090));
+      asFaExtraShield->AddNode(voFaWring3,    2, new TGeoCombiTrans(0., 0., dz, rot270));
       dz +=   kFaWring3HWidth;   
       dz +=   kFaWring5HWidth;   
       asFaExtraShield->AddNode(voFaWring5,    1, new TGeoTranslation(0., 0., dz));
       dz +=   kFaWring5HWidth;   
       dz +=   kFaWring3HWidth;   
-      asFaExtraShield->AddNode(voFaWring3,    3, new TGeoCombiTrans(0., 0., dz, rot090));
-      asFaExtraShield->AddNode(voFaWring3,    4, new TGeoCombiTrans(0., 0., dz, rot270));
+      asFaExtraShield->AddNode(voFaWring3,    3, new TGeoCombiTrans(0., 0., dz, rot180));
+      asFaExtraShield->AddNode(voFaWring3,    4, new TGeoCombiTrans(0., 0., dz, rot000));
       dz +=   kFaWring3HWidth;   
       dz +=   kFaDWrings;
       dz +=   kFaWring2HWidth;
-      asFaExtraShield->AddNode(voFaWring2,    3, new TGeoCombiTrans(0., 0., dz, rot000));
-      asFaExtraShield->AddNode(voFaWring2,    4, new TGeoCombiTrans(0., 0., dz, rot180));
+      asFaExtraShield->AddNode(voFaWring2,    3, new TGeoCombiTrans(0., 0., dz, rot090));
+      asFaExtraShield->AddNode(voFaWring2,    4, new TGeoCombiTrans(0., 0., dz, rot270));
       dz +=   kFaWring2HWidth;
 
       
