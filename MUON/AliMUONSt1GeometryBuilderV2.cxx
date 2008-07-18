@@ -58,6 +58,7 @@
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoTube.h>
+#include <TGeoXtru.h>
 #include <TGeoCompositeShape.h>
 
 #ifdef WITH_STL
@@ -258,217 +259,52 @@ void AliMUONSt1GeometryBuilderV2::CreateInnerLayers()
 {
 /// Create the layer of sensitive volumes with gas
 /// and the copper layer.
+/// The shape of the sensitive area is defined as an extruded
+/// solid substracted with tube (to get inner circular shape). 
 
-// Gas Medium
-  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099; 
-  Int_t idArCO2  = idtmed[1108];  // medium 9 (ArCO2 80%) 
-  //Int_t idCopper  = idtmed[1109]; // medium 10 = copper
-  //Int_t idArCO2   = idtmed[1124]; // medium 25 (ArCO2 80%) 
-  Int_t idCopper  = idtmed[1121]; // medium 22 = copper
+  TGeoMedium* kMedArCO2  = gGeoManager->GetMedium("MUON_ARG_CO2");
+  TGeoMedium* kMedCopper = gGeoManager->GetMedium("MUON_COPPER_II");
 
-  Float_t par[11];
+  Double_t rmin = 0.0;
+  Double_t rmax = fgkMotherIR1;
+  Double_t hz   = fgkHzPadPlane + fgkHzGas;
+  new TGeoTube("cutTube",rmin, rmax, hz); 
 
-//Make gas volume - composed of 11 trapezoids
-// section 1 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 71.33/2.;
-    par[4] = 9.76/2.;
-    par[5] = 48.77/2.;
-    par[6] = 15.3;
-    par[7] = 71.33/2.;
-    par[8] = 9.76/2.;
-    par[9] = 48.77/2.;
-    par[10] = 15.3;        
+  Double_t maxXY = 89.0; 
+  Double_t xy1   = 77.33;
+  Double_t xy2   = 48.77;
+  Double_t dxy1  = maxXY - xy1;
+    
+  Int_t nz = 2;
+  Int_t nv = 6;
+  Double_t vx[6] = {  0.0,   0.0,   xy2, maxXY, maxXY, dxy1 };
+  Double_t vy[6] = { dxy1, maxXY, maxXY,   xy2,   0.0,  0.0 };
 
-  gMC->Gsvolu("SA1G", "TRAP", idArCO2, par, 11);
-  gMC->Gsvolu("SA2G", "TRAP", idArCO2, par, 11);
+  TGeoXtru* xtruS1 = new TGeoXtru(nz);
+  xtruS1->SetName("xtruS1");
+  xtruS1->DefinePolygon(nv, vx, vy);
+  xtruS1->DefineSection(0, -fgkHzGas,  0.0, 0.0, 1.0); 
+  xtruS1->DefineSection(1,  fgkHzGas,  0.0, 0.0, 1.0); 
+  TGeoCompositeShape* layerS1 = new TGeoCompositeShape("layerS1", "xtruS1-cutTube");
+  new TGeoVolume("SA1G", layerS1, kMedArCO2 );
   
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SA1C", "TRAP", idCopper,par, 11);
+  TGeoXtru* xtruS2 = new TGeoXtru(nz);
+  xtruS2->SetName("xtruS2");
+  xtruS2->DefinePolygon(nv, vx, vy);
+  xtruS2->DefineSection(0, -fgkHzGas,  0.0, 0.0, 1.0); 
+  xtruS2->DefineSection(1,  fgkHzGas,  0.0, 0.0, 1.0); 
+  TGeoCompositeShape* layerS2 = new TGeoCompositeShape("layerS2", "xtruS2-cutTube");
+  new TGeoVolume("SA2G", layerS2, kMedArCO2 );
 
-// section 2 of 11  
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 79.68/2.;
-    par[4] = 10.4/2.;
-    par[5] = 57.0/2.;
-    par[6] = 0.;  
-    par[7] = 79.68/2.; 
-    par[8] = 10.4/2.;
-    par[9] = 57.0/2.;
-    par[10] = 0.;  
-  gMC->Gsvolu("SB1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SB2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SB1C", "TRAP", idCopper,par, 11);
-
-// section 3 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 71.33/2.;
-    par[4] = 48.77/2.;
-    par[5] = 9.73/2.;
-    par[6] = -15.3;
-    par[7] = 71.33/2.;
-    par[8] = 48.77/2.;
-    par[9] = 9.73/2.;
-    par[10] = -15.3;   
- 
-  gMC->Gsvolu("SC1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SC2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SC1C", "TRAP", idCopper,par, 11);
-
-// section 4 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 6.00/2.;
-    par[4] = 0.;
-    par[5] = 1.56/2.;
-    par[6] = 7.41; 
-    par[7] = 6.00/2.; 
-    par[8] = 0.;
-    par[9] = 1.56/2.;
-    par[10] = 7.41;    
-  gMC->Gsvolu("SD1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SD2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SD1C", "TRAP", idCopper,par, 11);
-
-// section 5 of 11  
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 1.516/2.;
-    par[4] = 0.;
-    par[5] = 0.829/2.;
-    par[6] = 15.3;
-    par[7] = 1.516/2.;
-    par[8] = 0.;
-    par[9] = 0.829/2.;
-    par[10] = 15.3;   
-  gMC->Gsvolu("SE1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SE2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SE1C", "TRAP", idCopper,par, 11);
-
-// section 6 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 3.92/2.;
-    par[4] = 0.;
-    par[5] = 0.562/2.;
-    par[6] = -4.1;
-    par[7] = 3.92/2.;
-    par[8] = 0.;
-    par[9] = 0.562/2.;
-    par[10] = -4.1;   
-  gMC->Gsvolu("SF1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SF2G", "TRAP", idArCO2, par, 11);
-    
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SF1C", "TRAP", idCopper,par, 11);
-
-// section 7 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 0.941/2.;
-    par[4] = 0.562/2.;
-    par[5] = 0.;
-    par[6] = -16.6; 
-    par[7] = 0.941/2.;
-    par[8] = 0.562/2.;
-    par[9] = 0.;
-    par[10] =-16.6;    
-  gMC->Gsvolu("SG1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SG2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SG1C", "TRAP", idCopper,par, 11);
-
-// section 8 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 3.94/2.;
-    par[4] = 0.57/2.;
-    par[5] = 0.;
-    par[6] = 4.14; 
-    par[7] = 3.94/2.; 
-    par[8] = 0.57/2.;
-    par[9] = 0.;
-    par[10] = 4.14;    
-  gMC->Gsvolu("SH1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SH2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SH1C", "TRAP", idCopper,par, 11);
-
-// section 9 of 11  
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 0.95/2.;
-    par[4] = 0.;
-    par[5] = 0.57/2;
-    par[6] = 16.7;
-    par[7] = 0.95/2.;
-    par[8] = 0.;
-    par[9] = 0.57/2;
-    par[10] = 16.7;   
-  gMC->Gsvolu("SI1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SI2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SI1C", "TRAP", idCopper,par, 11);
-
-// section 10 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 1.49/2.;
-    par[4] = 0.;
-    par[5] = 0.817/2.;
-    par[6] = -15.4;
-    par[7] = 1.49/2.;
-    par[8] = 0.;
-    par[9] = 0.817/2.;
-    par[10] = -15.4;   
-  gMC->Gsvolu("SJ1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SJ2G", "TRAP", idArCO2, par, 11);
-    
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SJ1C", "TRAP", idCopper,par, 11);
-
-// section 11 of 11
-    par[0] = fgkHzGas;
-    par[1] = 0.;
-    par[2] = 0.;
-    par[3] = 5.93/2.;
-    par[4] = 0.;
-    par[5] = 1.49/2.;
-    par[6] = -7.16; 
-    par[7] = 5.93/2.;
-    par[8] = 0.;
-    par[9] = 1.49/2.;
-    par[10] = -7.16;    
-  gMC->Gsvolu("SK1G", "TRAP", idArCO2, par, 11);  
-  gMC->Gsvolu("SK2G", "TRAP", idArCO2, par, 11);
-
-  par[0] = fgkHzPadPlane;
-  gMC->Gsvolu("SK1C", "TRAP", idCopper,par, 11);
-}
+  TGeoXtru* xtruS3 = new TGeoXtru(nz);
+  xtruS3->SetName("xtruS3");
+  xtruS3->DefinePolygon(nv, vx, vy);
+  xtruS3->DefineSection(0, -fgkHzPadPlane,  0.0, 0.0, 1.0); 
+  xtruS3->DefineSection(1,  fgkHzPadPlane,  0.0, 0.0, 1.0); 
+  TGeoCompositeShape* layerS3 = new TGeoCompositeShape("layerS3", "xtruS3-cutTube");
+  new TGeoVolume("SA1C", layerS3, kMedCopper );
+}  
+  
 
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateSpacer0()
@@ -916,21 +752,21 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   Int_t idAlu = idtmed[1120];        // medium 21 Aluminium
   
   
+    TGeoMedium* kMedEpoxy = gGeoManager->GetMedium("MUON_FrameCH$");
+    TGeoMedium* kMedInox  = gGeoManager->GetMedium("MUON_Kapton");
+    TGeoMedium* kMedAlu   = gGeoManager->GetMedium("MUON_ALU_II$");
+
+
 // Rotation Matrices  
-      Int_t rot1, rot2, rot3;    
+      Int_t rot1, rot2, rot3, rot4;    
       
 //   Rotation matrices  
      fMUON->AliMatrix(rot1,  90.,  90., 90., 180.,  0., 0.); // +90 deg in x-y plane
      fMUON->AliMatrix(rot2,  90.,  45., 90., 135.,  0., 0.); // +45 deg in x-y plane 
      fMUON->AliMatrix(rot3,  90.,  45., 90., 315.,180., 0.); // +45 deg in x-y + rotation 180° around y
+     fMUON->AliMatrix(rot4,  90., 315., 90.,  45.,  0., 0.); // -45 deg in x-y plane 
 
-//   Translation matrices ... NOT USED  
-//     fMUON->AliMatrix(trans1, 90.,   0., 90.,  90.,   0., 0.); // X-> X; Y -> Y; Z -> Z
-//     fMUON->AliMatrix(trans2, 90., 180., 90.,  90., 180., 0.); // X->-X; Y -> Y; Z ->-Z
-//     fMUON->AliMatrix(trans3, 90., 180., 90., 270.,   0., 0.); // X->-X; Y ->-Y; Z -> Z
-//     fMUON->AliMatrix(trans4, 90.,   0., 90., 270., 180., 0.); // X-> X; Y ->-Y; Z ->-Z
-//  
-      // ___________________Volume thicknesses________________________
+// ___________________Volume thicknesses________________________
 
   const Float_t kHzFrameThickness = 1.59/2.;     //equivalent thickness
   const Float_t kHzOuterFrameEpoxy = 1.19/2.;    //equivalent thickness
@@ -958,7 +794,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   const Float_t kHzVertBarSteel = 0.198/2.;       //equivalent thickness
   const Float_t kHzVertEarthProfCu = 1.1/2.;      //equivalent thickness
 
-      //_______________Parameter definitions in sequence _________
+//_______________Parameter definitions in sequence _________
 
 // InVFrame parameters
   const Float_t kHxInVFrame  = 1.85/2.;
@@ -1001,34 +837,12 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   const Float_t kHzTFAE = kHzOuterFrameEpoxy;     // layer 1 thickness
   const Float_t kHzTFAI = kHzOuterFrameInox;      // layer 3 thickness
   
-// TopFrameAnodeA parameters - trapezoid, 2 layers
-  const Float_t kHzFAAE = kHzOuterFrameEpoxy;     // layer 1 thickness
-  const Float_t kHzFAAI = kHzOuterFrameInox;      // layer 3 thickness
-  const Float_t kTetFAA = 0.;
-  const Float_t kPhiFAA = 0.;
+// TopFrameAnode parameters - 2 trapezoids, 2 layers
+// (redefined with TGeoXtru shape)
   const Float_t kH1FAA = 8.7/2.;
-  const Float_t kBl1FAA = 4.35/2.;
-  const Float_t kTl1FAA =  7.75/2.;
-  const Float_t kAlp1FAA = 11.06; 
-  const Float_t kH2FAA = 8.7/2.;
-  const Float_t kBl2FAA = 4.35/2.;
-  const Float_t kTl2FAA = 7.75/2.;
-  const Float_t kAlp2FAA = 11.06;  
-  
-// TopFrameAnodeB parameters - trapezoid, 2 layers
-  const Float_t kHzFABE = kHzOuterFrameEpoxy;     // layer 1 thickness
-  const Float_t kHzFABI = kHzOuterFrameInox;      // layer 3 thickness
-  const Float_t kTetFAB = 0.;
-  const Float_t kPhiFAB = 0.;
-  const Float_t kH1FAB = 8.70/2.;
-  const Float_t kBl1FAB = 0.;
   const Float_t kTl1FAB = 4.35/2.;
-  const Float_t kAlp1FAB = 14.03; 
-  const Float_t kH2FAB = 8.70/2.;
-  const Float_t kBl2FAB = 0.;
-  const Float_t kTl2FAB = 4.35/2.;
-  const Float_t kAlp2FAB = 14.03;  
-  
+  const Float_t kTl1FAA = 7.75/2.;
+
 // TopAnode parameters - cuboid (part 1 of 3 parts)
   const Float_t kHxTA1 = 16.2/2.;
   const Float_t kHyTA1 = 3.5/2.;
@@ -1107,60 +921,15 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   const Float_t kHzTGS  = kHzTopGasSupportAl;
     
 // OutEdgeFrame parameters - 4 trapezoidal sections, 2 layers of material
+// (redefined with TGeoXtru shape)
 //
-//---
-
-// Trapezoid 1
-  const Float_t kHzOETFE = kHzOuterFrameEpoxy;    // layer 1 
-  const Float_t kHzOETFI = kHzOuterFrameInox;     // layer 3
-   
-  const Float_t kTetOETF = 0.;            // common to all 4 trapezoids
-  const Float_t kPhiOETF = 0.;            // common to all 4 trapezoids
-
   const Float_t kH1OETF = 7.196/2.;       // common to all 4 trapezoids
-  const Float_t kH2OETF = 7.196/2.;       // common to all 4 trapezoids   
-  
-  const Float_t kBl1OETF1 = 3.75/2; 
-  const Float_t kTl1OETF1 = 3.996/2.;
-  const Float_t kAlp1OETF1 = 0.98;
+  const Float_t kTl1OETF1 = 3.996/2.;     // Trapezoid 1
+  const Float_t kTl1OETF2 = 3.75/2;       // Trapezoid 2
+  const Float_t kTl1OETF3 = 3.01/2.;      // Trapezoid 3
+  const Float_t kTl1OETF4 = 1.77/2.;      // Trapezoid 4
 
-  const Float_t kBl2OETF1 = 3.75/2;
-  const Float_t kTl2OETF1 = 3.996/2.;
-  const Float_t kAlp2OETF1 = 0.98;
-  
-// Trapezoid 2
-  const Float_t kBl1OETF2 = 3.01/2.;
-  const Float_t kTl1OETF2 = 3.75/2;
-  const Float_t kAlp1OETF2 = 2.94;
-      
-  const Float_t kBl2OETF2 = 3.01/2.;
-  const Float_t kTl2OETF2 = 3.75/2;
-  const Float_t kAlp2OETF2 = 2.94; 
- 
-// Trapezoid 3
-  //const Float_t kBl1OETF3 = 1.767/2.;
-  //const Float_t kTl1OETF3 = 3.01/2.;
-  const Float_t kBl1OETF3 = 1.117/2.;
-  const Float_t kTl1OETF3 = 2.36/2.;
-  const Float_t kAlp1OETF3 = 4.94;
-        // Fix (5) - overlap of SQ21 with 041M and 125M
-      
-  //const Float_t kBl2OETF3 = 1.767/2.;
-  //const Float_t kTl2OETF3 = 3.01/2.; 
-  const Float_t kBl2OETF3 = 1.117/2.;
-  const Float_t kTl2OETF3 = 2.36/2.;
-  const Float_t kAlp2OETF3 = 4.94; 
-        // Fix (5) - overlap of SQ21 with 041M and 125M
-  
-// Trapezoid 4
-  const Float_t kBl1OETF4 = 0.;
-  const Float_t kTl1OETF4 = 1.77/2.;
-  const Float_t kAlp1OETF4 = 7.01;
-      
-  const Float_t kBl2OETF4 = 0.;
-  const Float_t kTl2OETF4 = 1.77/2.;
-  const Float_t kAlp2OETF4 =  7.01;   
-  
+
 // Frame Structure (OutVFrame):
 //
 // OutVFrame and corner (OutVFrame cuboid, OutVFrame trapezoid)
@@ -1245,44 +1014,12 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   const Float_t kHzLPNF  = kHzLatPosInoxProfNF; // near and far layers
            
 // VertCradle, 3 layers (copies), each composed of 4 trapezoids
-// VertCradleA
-  const Float_t kHzVC1 = kHzVerticalCradleAl;
-  const Float_t kTetVC1 = 0.;
-  const Float_t kPhiVC1 = 0.;
-  const Float_t kH1VC1 = 10.25/2.;
-  const Float_t kBl1VC1 = 3.70/2.;
-  const Float_t kTl1VC1 = 0.;
-  const Float_t kAlp1VC1 = -10.23; 
-  const Float_t kH2VC1 = 10.25/2.;
-  const Float_t kBl2VC1 = 3.70/2.;
-  const Float_t kTl2VC1 = 0.;
-  const Float_t kAlp2VC1 = -10.23;
-        
-// VertCradleB
-  const Float_t kHzVC2 = kHzVerticalCradleAl;
-  const Float_t kTetVC2 = 0.;
-  const Float_t kPhiVC2 = 0.;
-  const Float_t kH1VC2 = 10.25/2.;
-  const Float_t kBl1VC2 = 6.266/2.;
-  const Float_t kTl1VC2 = 3.70/2.;
-  const Float_t kAlp1VC2 = -7.13; 
-  const Float_t kH2VC2 = 10.25/2.;
-  const Float_t kBl2VC2 = 6.266/2.;
-  const Float_t kTl2VC2 = 3.70/2.;
-  const Float_t kAlp2VC2 = -7.13;
-  
-// VertCradleC
-  const Float_t kHzVC3 = kHzVerticalCradleAl;
-  const Float_t kTetVC3 = 0.;
-  const Float_t kPhiVC3 = 0.;
-  const Float_t kH1VC3 = 10.25/2.;
-  const Float_t kBl1VC3 = 7.75/2.;
-  const Float_t kTl1VC3 = 6.266/2.;
-  const Float_t kAlp1VC3 = -4.14; 
-  const Float_t kH2VC3 = 10.25/2.;
-  const Float_t kBl2VC3 = 7.75/2.;
-  const Float_t kTl2VC3 = 6.266/2.;
-  const Float_t kAlp2VC3 = -4.14;
+// (redefined with TGeoXtru shape)
+//
+  const Float_t kH1VC1 = 10.25/2.;  // all cradles
+  const Float_t kBl1VC1 = 3.70/2.;  // VertCradleA
+  const Float_t kBl1VC2 = 6.266/2.; // VertCradleB
+  const Float_t kBl1VC3 = 7.75/2.;  // VertCradleC
 
 // VertCradleD
   const Float_t kHzVC4 = kHzVerticalCradleAl;
@@ -1296,7 +1033,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
   const Float_t kBl2VC4 = 8.273/2.;
   const Float_t kTl2VC4 = 7.75/2.;
   const Float_t kAlp2VC4 = -1.46;
-  
+ 
 // LateralSightSupport - single trapezoid
   const Float_t kHzVSS = kHzLateralSightAl;
   const Float_t kTetVSS = 0.;
@@ -1385,41 +1122,47 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     par[2] = kHzTFAI;
     gMC->Gsvolu("SQ03","BOX",idInox,par,3);
             
-    // TopFrameAnodeA - layer 1 of 2  
-    par[0] = kHzFAAE;
-    par[1] = kTetFAA;
-    par[2] = kPhiFAA;
-    par[3] = kH1FAA;
-    par[4] = kBl1FAA;
-    par[5] = kTl1FAA;
-    par[6] = kAlp1FAA;
-    par[7] = kH2FAA;
-    par[8] = kBl2FAA;
-    par[9] = kTl2FAA;
-    par[10] = kAlp2FAA;    
-    gMC->Gsvolu("SQ04","TRAP",idFrameEpoxy,par,11);    
 
-    // TopFrameAnodeA - layer 2 of 2
-    par[0] = kHzFAAI;    
-    gMC->Gsvolu("SQ05","TRAP",idInox,par,11); 
-      
-    // TopFrameAnodeB - layer 1 of 2
-    par[0] = kHzFABE;
-    par[1] = kTetFAB;
-    par[2] = kPhiFAB;
-    par[3] = kH1FAB;
-    par[4] = kBl1FAB;
-    par[5] = kTl1FAB;
-    par[6] = kAlp1FAB;
-    par[7] = kH2FAB;
-    par[8] = kBl2FAB;
-    par[9] = kTl2FAB;
-    par[10] = kAlp2FAB;
-    gMC->Gsvolu("SQ06","TRAP",idFrameEpoxy,par,11);     
+    // Common declarations for TGeoXtru parameters
+    Double_t dx, dx0, dx1, dx2, dx3; 
+    Double_t dy, dy1, dy2, dy3, dy4;
+    Double_t vx[16];
+    Double_t vy[16];
+    Int_t nz;
+    Int_t nv;
 
-    // OutTopTrapFrameB - layer 2 of 2
-    par[0] = kHzFABI;   
-    gMC->Gsvolu("SQ07","TRAP",idInox,par,11);
+    // SQ04to06 and SQ05to07
+
+    dx  =  2.*kH1FAA; 
+    dy1 =  2.*kTl1FAA;
+    dy2 =  2.*kTl1FAB;
+    
+    nz =  2;
+    nv = 5;
+    vx[0]  =   0.0;  vy[0]  =  0.0;
+    vx[1]  =   0.0;  vy[1]  =  dy1;
+    vx[2]  =    dx;  vy[2]  =  dy2;
+    vx[3]  =  2*dx;  vy[3]  =  0.0;
+    vx[4]  =    dx;  vy[4]  =  0.0;
+
+    // Shift center in the middle
+    for ( Int_t i=0; i<nv; i++ ) { 
+      vx[i] -= dx;
+      vy[i] -= 0.5*dy1;
+    }  
+  
+    TGeoXtru* xtruS5 = new TGeoXtru(nz);
+    xtruS5->DefinePolygon(nv, vx, vy);
+    xtruS5->DefineSection(0, -kHzOuterFrameEpoxy,  0.0, 0.0, 1.0); 
+    xtruS5->DefineSection(1,  kHzOuterFrameEpoxy,  0.0, 0.0, 1.0); 
+    new TGeoVolume("SQ04toSQ06", xtruS5, kMedEpoxy);
+
+    TGeoXtru* xtruS6 = new TGeoXtru(nz);
+    xtruS6->DefinePolygon(nv, vx, vy);
+    xtruS6->DefineSection(0, -kHzOuterFrameInox,  0.0, 0.0, 1.0); 
+    xtruS6->DefineSection(1,  kHzOuterFrameInox,  0.0, 0.0, 1.0); 
+    new TGeoVolume("SQ05toSQ07", xtruS6, kMedInox);
+
 
     // TopAnode1 -  layer 1 of 2
     par[0] = kHxTA1;
@@ -1513,68 +1256,51 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
 
 //
 // OutEdgeTrapFrame Epoxy = (4 trapezes)*2 copies*2 layers (Epoxy/Inox)
-//
+// (redefined with TGeoXtru shape )
 //---
-    // Trapezoid 1 - 2 layers
-    par[1] = kTetOETF;
-    par[2] = kPhiOETF;
-    par[3] = kH1OETF;
-    par[4] = kBl1OETF1;
-    par[5] = kTl1OETF1;
-    par[6] = kAlp1OETF1;
-    par[7] = kH2OETF;
-    par[8] = kBl2OETF1;
-    par[9] = kTl2OETF1;
-    par[10] = kAlp2OETF1; 
-           
-    par[0] = kHzOETFE;             
-    gMC->Gsvolu("SQ17","TRAP",idFrameEpoxy,par,11); 
-    par[0] = kHzOETFI;
-    gMC->Gsvolu("SQ18","TRAP",idInox,par,11);
-    
-    // Trapezoid 2 - 2 layers
-    par[4] = kBl1OETF2;
-    par[5] = kTl1OETF2;
-    par[6] = kAlp1OETF2;
 
-    par[8] = kBl2OETF2;
-    par[9] = kTl2OETF2;
-    par[10] = kAlp2OETF2; 
+    dx  = 2.*kH1OETF;
+    dy1 = 2.*kTl1OETF4;
+    dy2 = 2.*kTl1OETF3; 
+    dy3 = 2.*kTl1OETF2;
+    dy4 = 2.*kTl1OETF1;
     
-    par[0] = kHzOETFE;    
-    gMC->Gsvolu("SQ19","TRAP",idFrameEpoxy,par,11);    
-    par[0] = kHzOETFI;    
-    gMC->Gsvolu("SQ20","TRAP",idInox,par,11);     
-    
-    // Trapezoid 3 - 2 layers
-    par[4] = kBl1OETF3;
-    par[5] = kTl1OETF3;
-    par[6] = kAlp1OETF3;
+    nz =  2;
+    nv = 16;
+    vx[0]  = -4*dx;  vy[0]  = 0.0;
+    vx[1]  = -3*dx;  vy[1]  = dy1;
+    vx[2]  = -2*dx;  vy[2]  = dy2;
+    vx[3]  = -1*dx;  vy[3]  = dy3;
+    vx[4]  =   0.0;  vy[4]  = dy4;
+    vx[5]  =    dx;  vy[5]  = dy3; 
+    vx[6]  =  2*dx;  vy[6]  = dy2;
+    vx[7]  =  3*dx;  vy[7]  = dy1;
+    vx[8]  =  4*dx;  vy[8]  = 0.0;
+    vx[9]  =  3*dx;  vy[9]  = 0.0;
+    vx[10] =  2*dx;  vy[10] = 0.0;
+    vx[11] =    dx;  vy[11] = 0.0;
+    vx[12] =   0.0;  vy[12] = 0.0;
+    vx[13] = -1*dx;  vy[13] = 0.0;
+    vx[14] = -2*dx;  vy[14] = 0.0;
+    vx[15] = -3*dx;  vy[15] = 0.0;
 
-    par[8] = kBl2OETF3;
-    par[9] = kTl2OETF3;
-    par[10] = kAlp2OETF3; 
- 
-    par[0] = kHzOETFE;    
-    gMC->Gsvolu("SQ21","TRAP",idFrameEpoxy,par,11);   
-    par[0] = kHzOETFI;    
-    gMC->Gsvolu("SQ22","TRAP",idInox,par,11);     
-    
-    // Trapezoid 4 - 2 layers
+    // Shift center in the middle
+    for ( Int_t i=0; i<nv; i++ ) vy[i] += dy4/2.0;
+  
+    TGeoXtru* xtruS1 = new TGeoXtru(nz);
+    xtruS1->DefinePolygon(nv, vx, vy);
+    xtruS1->DefineSection(0, -kHzOuterFrameEpoxy,  0.0, 0.0, 1.0); 
+    xtruS1->DefineSection(1,  kHzOuterFrameEpoxy,  0.0, 0.0, 1.0); 
+    new TGeoVolume("SQ17to23", xtruS1, kMedEpoxy );
 
-    par[4] = kBl1OETF4;
-    par[5] = kTl1OETF4;
-    par[6] = kAlp1OETF4;
+    TGeoXtru* xtruS2 = new TGeoXtru(nz);
+    xtruS2->DefinePolygon(nv, vx, vy);
+    xtruS2->DefineSection(0, -kHzOuterFrameInox,  0.0, 0.0, 1.0); 
+    xtruS2->DefineSection(1,  kHzOuterFrameInox,  0.0, 0.0, 1.0); 
+    new TGeoVolume("SQ18to24", xtruS2, kMedInox );
 
-    par[8] = kBl2OETF4;
-    par[9] = kTl2OETF4;
-    par[10] = kAlp2OETF4;  
-   
-    par[0] = kHzOETFE;    
-    gMC->Gsvolu("SQ23","TRAP",idFrameEpoxy,par,11);    
-    par[0] = kHzOETFI;    
-    gMC->Gsvolu("SQ24","TRAP",idInox,par,11);     
-             
+//
+// OutEdgeTrapFrame Epoxy = (4 trapezes)*2 copies*2 layers (Epoxy/Inox)
 //---
     // OutVFrame    
     par[0] = kHxOutVFrame;
@@ -1661,47 +1387,63 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     par[2] = kHzLPNF;
     gMC->Gsvolu("SQ33","BOX",idInox,par,3); // near and far layers
 
-    // VertCradleA - 1st trapezoid
-    par[0] = kHzVC1;
-    par[1] = kTetVC1;
-    par[2] = kPhiVC1;
-    par[3] = kH1VC1;
-    par[4] = kBl1VC1;
-    par[5] = kTl1VC1;
-    par[6] = kAlp1VC1;
-    par[7] = kH2VC1;
-    par[8] = kBl2VC1;
-    par[9] = kTl2VC1;
-    par[10] = kAlp2VC1;
-    gMC->Gsvolu("SQ34","TRAP",idAlu,par,11); 
+    dy  = 2.*kH1VC1;
+    dx0 = 2.*kBl1VC4;
+    dx1 = 2.*kBl1VC3;
+    dx2 = 2.*kBl1VC2; 
+    dx3 = 2.*kBl1VC1;   
     
-    // VertCradleB - 2nd trapezoid
-    par[0] = kHzVC2;
-    par[1] = kTetVC2;
-    par[2] = kPhiVC2;
-    par[3] = kH1VC2;
-    par[4] = kBl1VC2;
-    par[5] = kTl1VC2;
-    par[6] = kAlp1VC2;
-    par[7] = kH2VC2;
-    par[8] = kBl2VC2;
-    par[9] = kTl2VC2;
-    par[10] = kAlp2VC2;
-    gMC->Gsvolu("SQ35","TRAP",idAlu,par,11);  
-       
-    // VertCradleC - 3rd trapezoid
-    par[0] = kHzVC3;
-    par[1] = kTetVC3;
-    par[2] = kPhiVC3;
-    par[3] = kH1VC3;
-    par[4] = kBl1VC3;
-    par[5] = kTl1VC3;
-    par[6] = kAlp1VC3;
-    par[7] = kH2VC3;
-    par[8] = kBl2VC3;
-    par[9] = kTl2VC3;
-    par[10] = kAlp2VC3;    
-    gMC->Gsvolu("SQ36","TRAP",idAlu,par,11);  
+    // VertCradle
+    // (Trapezoids SQ34 to SQ36 or SQ37 redefined with TGeoXtru shape)
+
+    nz =  2;
+    nv = 7;
+    vx[0]  =   0.0;  vy[0]  =  0.0;
+    vx[1]  =   0.0;  vy[1]  =   dy;
+    vx[2]  =   0.0;  vy[2]  = 2*dy;
+    vx[3]  =   0.0;  vy[3]  = 3*dy;
+    vx[4]  =   dx3;  vy[4]  = 2*dy;
+    vx[5]  =   dx2;  vy[5]  =   dy; 
+    vx[6]  =   dx1;  vy[6]  =  0.0;
+
+    // Shift center in the middle
+    for ( Int_t i=0; i<nv; i++ ) { 
+      vx[i] -= dx1/2.0;
+      vy[i] -= 1.5*dy;
+    }  
+  
+    TGeoXtru* xtruS3 = new TGeoXtru(nz);
+    xtruS3->DefinePolygon(nv, vx, vy);
+    xtruS3->DefineSection(0, -kHzVerticalCradleAl,  0.0, 0.0, 1.0); 
+    xtruS3->DefineSection(1,  kHzVerticalCradleAl,  0.0, 0.0, 1.0); 
+    new TGeoVolume("SQ34to36", xtruS3, kMedAlu);
+
+    // Trapezoids SQ34 to SQ37;
+    // (keeping the same coordinate system as for SQ34to36)
+
+    nz =  2;
+    nv = 9;
+    vx[0]  =   0.0;  vy[0]  =-1.0*dy;
+    vx[1]  =   0.0;  vy[1]  =  0.0;
+    vx[2]  =   0.0;  vy[2]  =   dy;
+    vx[3]  =   0.0;  vy[3]  = 2*dy;
+    vx[4]  =   0.0;  vy[4]  = 3*dy;
+    vx[5]  =   dx3;  vy[5]  = 2*dy;
+    vx[6]  =   dx2;  vy[6]  =   dy; 
+    vx[7]  =   dx1;  vy[7]  =  0.0;
+    vx[8]  =   dx0;  vy[8]  =-1.0*dy;
+
+    // Shift center in the middle (of SQ34to36!!)
+    for ( Int_t i=0; i<nv; i++ ) { 
+      vx[i] -= dx1/2.0;
+      vy[i] -= 1.5*dy;
+    }  
+  
+    TGeoXtru* xtruS4 = new TGeoXtru(nz);
+    xtruS4->DefinePolygon(nv, vx, vy);
+    xtruS4->DefineSection(0, -kHzVerticalCradleAl,  0.0, 0.0, 1.0); 
+    xtruS4->DefineSection(1,  kHzVerticalCradleAl,  0.0, 0.0, 1.0); 
+    new TGeoVolume("SQ34to37", xtruS4, kMedAlu);
 
     // VertCradleD - 4th trapezoid
     par[0] = kHzVC4;
@@ -1808,21 +1550,13 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posZ = kHzOuterFrameEpoxy;
     gMC->Gspos("SQ03",1,quadrantMLayerName,posX, posY, posZ,0,"ONLY");
     
-    // place 2 layers of TopFrameAnodeA trapezoids 
-    posX = 35.8932+fgkDeltaQuadLHC;
-    posY = 92.6745+fgkDeltaQuadLHC;
+    // TopFrameAnode - place 2 layers of 2 trapezoids 
+    // (SQ04 - SQ07)
+    posX += kHxTFA + 2.*kH1FAA;
     posZ = -kHzOuterFrameInox; 
-    gMC->Gspos("SQ04",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
+    gMC->Gspos("SQ04toSQ06",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
     posZ = kHzOuterFrameEpoxy;
-    gMC->Gspos("SQ05",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
-    
-    // place 2 layers of TopFrameAnodeB trapezoids 
-    posX = 44.593+fgkDeltaQuadLHC;
-    posY = 90.737+fgkDeltaQuadLHC;
-    posZ = -kHzOuterFrameInox; 
-    gMC->Gspos("SQ06",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");
-    posZ = kHzOuterFrameEpoxy;
-    gMC->Gspos("SQ07",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY");    
+    gMC->Gspos("SQ05toSQ07",1,quadrantMLayerName,posX, posY, posZ, 0,"ONLY");
 
     // TopAnode1 place 2 layers  
     posX = 6.8+fgkDeltaQuadLHC;
@@ -1881,60 +1615,16 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     gMC->Gspos("SQ16",2,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY"); 
 
     // OutEdgeFrame 
-    Float_t xCenter[8]; 
-    Float_t yCenter[8];
-    
-    xCenter[0] = 73.201 + fgkDeltaQuadLHC;
-    xCenter[1] = 78.124 + fgkDeltaQuadLHC; 
-    //xCenter[2] = 82.862 + fgkDeltaQuadLHC;
-    xCenter[2] = 83.102 + fgkDeltaQuadLHC;
-    xCenter[3] = 87.418 + fgkDeltaQuadLHC; 
-        // Fix (5) - overlap of SQ21 with 041M and 125M
-    
-    yCenter[0] = 68.122 + fgkDeltaQuadLHC;
-    yCenter[1] = 62.860 + fgkDeltaQuadLHC;   
-    //yCenter[2] = 57.420 + fgkDeltaQuadLHC;
-    yCenter[2] = 57.660 + fgkDeltaQuadLHC;
-    yCenter[3] = 51.800 + fgkDeltaQuadLHC; 
-        // Fix (5) - overlap of SQ21 with 041M and 125M
-      
-    xCenter[4] = 68.122 + fgkDeltaQuadLHC;
-    xCenter[5] = 62.860 + fgkDeltaQuadLHC; 
-    xCenter[6] = 57.420 + fgkDeltaQuadLHC;
-    xCenter[7] = 51.800 + fgkDeltaQuadLHC; 
-    
-    yCenter[4] = 73.210 + fgkDeltaQuadLHC;
-    yCenter[5] = 78.124 + fgkDeltaQuadLHC; 
-    yCenter[6] = 82.862 + fgkDeltaQuadLHC;
-    yCenter[7] = 87.418 + fgkDeltaQuadLHC; 
-      
+
     posZ = -1.0*kHzOuterFrameInox;     
-    gMC->Gspos("SQ17",1,quadrantMLayerName, xCenter[0], yCenter[0], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ17",2,quadrantMLayerName, xCenter[4], yCenter[4], posZ, rot3,"ONLY");
-
-    gMC->Gspos("SQ19",1,quadrantMLayerName, xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
-    gMC->Gspos("SQ19",2,quadrantMLayerName, xCenter[5], yCenter[5], posZ, rot3,"ONLY");
-
-    gMC->Gspos("SQ21",1,quadrantMLayerName, xCenter[2], yCenter[2], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ21",2,quadrantMLayerName, xCenter[6], yCenter[6], posZ, rot3,"ONLY");
-    
-    gMC->Gspos("SQ23",1,quadrantMLayerName, xCenter[3], yCenter[3], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ23",2,quadrantMLayerName, xCenter[7], yCenter[7], posZ, rot3,"ONLY");
+    //Double_t xCenterAll = 70.6615;
+    Double_t xCenterAll = 70.500;
+    Double_t yCenterAll = 70.350;
+    gMC->Gspos("SQ17to23",1,quadrantMLayerName, xCenterAll, yCenterAll, posZ, rot4,"ONLY");
      
     posZ = kHzOuterFrameEpoxy;
-   
-    gMC->Gspos("SQ18",1,quadrantMLayerName, xCenter[0], yCenter[0], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ18",2,quadrantMLayerName, xCenter[4], yCenter[4], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ18to24",1,quadrantMLayerName, xCenterAll, yCenterAll, posZ, rot4,"ONLY");
     
-    gMC->Gspos("SQ20",1,quadrantMLayerName, xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
-    gMC->Gspos("SQ20",2,quadrantMLayerName, xCenter[5], yCenter[5], posZ, rot3,"ONLY");
-
-    gMC->Gspos("SQ22",1,quadrantMLayerName, xCenter[2], yCenter[2], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ22",2,quadrantMLayerName, xCenter[6], yCenter[6], posZ, rot3,"ONLY");
-       
-    gMC->Gspos("SQ24",1,quadrantMLayerName, xCenter[3], yCenter[3], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ24",2,quadrantMLayerName, xCenter[7], yCenter[7], posZ, rot3,"ONLY");  
-
 //---    
         
 // OutVFrame
@@ -2010,53 +1700,29 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posZ = -1.*posZ;
     gMC->Gspos("SQ33",2,quadrantFLayerName,posX, posY, posZ, 0, "ONLY"); // far layer
       
-// VertCradleA  1st Trapezoid - 3 copies
-    posX = 95.73+fgkDeltaQuadLHC;
-    posY = 33.26+fgkDeltaQuadLHC; 
-    posZ = 0.;              
-    gMC->Gspos("SQ34",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");  
 
-    posX = 95.73-kNearFarLHC;
-    posY = 33.26-kNearFarLHC;
-    posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;               
-    gMC->Gspos("SQ34",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY");
-    posZ = -1.0*posZ;              
-    gMC->Gspos("SQ34",3,quadrantFLayerName,posX, posY, posZ, 0, "ONLY");
+// VertCradle - 3 (or 4 ) trapezoids redefined with TGeoXtru shape
 
-// VertCradleB  2nd Trapezoid - 3 copies
     posX = 97.29+fgkDeltaQuadLHC;
     posY = 23.02+fgkDeltaQuadLHC;    
-    posZ = 0.;              
-    gMC->Gspos("SQ35",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
+    posZ = 0.;          
+    posX += 1.39311;
+    gMC->Gspos("SQ34to37",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");  
 
     posX = 97.29-kNearFarLHC;
     posY = 23.02-kNearFarLHC;   
     posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;          
-    gMC->Gspos("SQ35",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY");    
-    posZ = -1.0*posZ;          
-    gMC->Gspos("SQ35",3,quadrantFLayerName,posX, posY, posZ, 0, "ONLY");
+    posX += 1.39311;
+    gMC->Gspos("SQ34to36",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY");
 
-// OutVertCradleC  3rd Trapeze - 3 copies
-    posX = 98.31+fgkDeltaQuadLHC;
-    posY = 12.77+fgkDeltaQuadLHC;  
-    posZ = 0.;              
-    gMC->Gspos("SQ36",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
+    posZ = -1.0*posZ;              
+    gMC->Gspos("SQ34to36",3,quadrantFLayerName,posX, posY, posZ, 0, "ONLY");
 
-    posX = 98.05-kNearFarLHC;
-    posY = 12.77-kNearFarLHC;        
-    posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;         
-           // Fix (2) of extrusion SQ36 from SQN1, SQN2, SQF1, SQF2 
-	   // (was posX = 98.31 ...)
-    gMC->Gspos("SQ36",1,quadrantNLayerName,posX, posY, posZ, 0, "ONLY");       
-    posZ = -1.0*posZ;
-    gMC->Gspos("SQ36",3,quadrantFLayerName,posX, posY, posZ, 0, "ONLY");  
 
 // OutVertCradleD  4th Trapeze - 3 copies
+
     posX = 98.81+fgkDeltaQuadLHC;
     posY = 2.52+fgkDeltaQuadLHC;    
-    posZ = 0.;              
-    gMC->Gspos("SQ37",2,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
-   
     posZ = fgkMotherThick1-kHzVerticalCradleAl;                
     gMC->Gspos("SQ37",1,quadrantMLayerName,posX, posY, posZ, 0, "ONLY");
     posZ = -1.0*posZ;          
@@ -2227,105 +1893,22 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     gMC->Gspos("SQ45",i+58+1,quadrantMLayerName,posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");
     }
 }
-
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::PlaceInnerLayers(Int_t chamber)
 {
 /// Place the gas and copper layers for the specified chamber.
 
-// Rotation Matrices 
-  Int_t rot1, rot2, rot3, rot4;   
-
-  fMUON->AliMatrix(rot1,  90., 315., 90.,  45., 0., 0.); // -45 deg
-  fMUON->AliMatrix(rot2,  90.,  90., 90., 180., 0., 0.); //  90 deg
-  fMUON->AliMatrix(rot3,  90., 270., 90.,   0., 0., 0.); // -90 deg 
-  fMUON->AliMatrix(rot4,  90.,  45., 90., 135., 0., 0.); //  deg 
-
-  GReal_t x;
-  GReal_t y;
-  GReal_t zg = 0.;
-  GReal_t zc = fgkHzGas + fgkHzPadPlane;
-  Int_t dpos = (chamber-1)*2;
-  TString name;
-  
-  x = 14.53 + fgkDeltaQuadLHC;
-  y = 53.34 + fgkDeltaQuadLHC;
-  name = GasVolumeName("SAG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,0,"ONLY");
-  gMC->Gspos("SA1C", 1+dpos, QuadrantMLayerName(chamber),x,y, zc,0,"ONLY");
-  gMC->Gspos("SA1C", 2+dpos, QuadrantMLayerName(chamber),x,y,-zc,0,"ONLY");
-
-  x = 40.67 + fgkDeltaQuadLHC;
-  y = 40.66 + fgkDeltaQuadLHC;    
-  name = GasVolumeName("SBG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot1,"ONLY"); 
-  gMC->Gspos("SB1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot1,"ONLY");
-  gMC->Gspos("SB1C", 2+dpos, QuadrantMLayerName(chamber),x,y,-zc,rot1,"ONLY");
-
-  x = 53.34 + fgkDeltaQuadLHC;
-  y = 14.52 + fgkDeltaQuadLHC; 
-  name = GasVolumeName("SCG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot2,"ONLY");
-  gMC->Gspos("SC1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot2,"ONLY");
-  gMC->Gspos("SC1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,rot2,"ONLY");
-
-  x = 5.83 + fgkDeltaQuadLHC;
-  y = 17.29 + fgkDeltaQuadLHC;
-  name = GasVolumeName("SDG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot3,"ONLY");
-  gMC->Gspos("SD1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot3,"ONLY");
-  gMC->Gspos("SD1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,rot3,"ONLY");
-
-  x = 9.04 + fgkDeltaQuadLHC;
-  y = 16.91 + fgkDeltaQuadLHC; 
-  name = GasVolumeName("SEG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,0,"ONLY");
-  gMC->Gspos("SE1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,0,"ONLY");
-  gMC->Gspos("SE1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,0,"ONLY");
-
-  x = 10.12 + fgkDeltaQuadLHC;
-  y = 14.67 + fgkDeltaQuadLHC;  
-  name = GasVolumeName("SFG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot4,"ONLY");   
-  gMC->Gspos("SF1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot4,"ONLY");
-  gMC->Gspos("SF1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,rot4,"ONLY");
-
-  x = 8.2042 + fgkDeltaQuadLHC;
-  y = 16.19 + fgkDeltaQuadLHC;
-  name = GasVolumeName("SGG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot4,"ONLY");
-  gMC->Gspos("SG1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot4,"ONLY");
-  gMC->Gspos("SG1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,rot4,"ONLY");
-
-  x = 14.68 + fgkDeltaQuadLHC;
-  y = 10.10 + fgkDeltaQuadLHC;
-  name = GasVolumeName("SHG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot4,"ONLY");
-  gMC->Gspos("SH1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot4,"ONLY");
-  gMC->Gspos("SH1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,rot4,"ONLY");
-
-  x = 16.21 + fgkDeltaQuadLHC;
-  y = 8.17 + fgkDeltaQuadLHC;
-  name = GasVolumeName("SIG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot4,"ONLY");
-  gMC->Gspos("SI1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot4,"ONLY");
-  gMC->Gspos("SI1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,rot4,"ONLY");
-
-  x = 16.92 + fgkDeltaQuadLHC;
-  y = 9.02 + fgkDeltaQuadLHC;
-  name = GasVolumeName("SJG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,rot3,"ONLY");
-  gMC->Gspos("SJ1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,rot3,"ONLY");
-  gMC->Gspos("SJ1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,rot3,"ONLY");
-
-  x =  17.30 + fgkDeltaQuadLHC;
-  y =  5.85 + fgkDeltaQuadLHC;
-  name = GasVolumeName("SKG", chamber);
-  gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,0,"ONLY");
-  gMC->Gspos("SK1C", 1+dpos ,QuadrantMLayerName(chamber),x,y, zc,0,"ONLY");
-  gMC->Gspos("SK1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,0,"ONLY");
+   GReal_t x  = fgkDeltaQuadLHC;
+   GReal_t y  = fgkDeltaQuadLHC;
+   GReal_t zg = 0.0;
+   GReal_t zc = fgkHzGas + fgkHzPadPlane;
+   Int_t dpos = (chamber-1)*2;
+ 
+   TString name = GasVolumeName("SAG", chamber);
+   gMC->Gspos(name,1,QuadrantMLayerName(chamber),x,y,zg,0,"ONLY");
+   gMC->Gspos("SA1C", 1+dpos, QuadrantMLayerName(chamber),x,y, zc,0,"ONLY");
+   gMC->Gspos("SA1C", 2+dpos, QuadrantMLayerName(chamber),x,y,-zc,0,"ONLY");
 }
-
 
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::PlaceSpacer0(Int_t chamber)
@@ -2756,6 +2339,7 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   // Build two chambers
   //
   for (Int_t ich=1; ich<3; ich++) {
+  //for (Int_t ich=1; ich<2; ich++) {
 
     // Create quadrant volume
     CreateQuadrant(ich);
@@ -2765,6 +2349,7 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
     
     // Place the quadrant
     for (Int_t i=0; i<4; i++) {
+    //for (Int_t i=1; i<2; i++) {
       // DE envelope
       GReal_t posx0, posy0, posz0;
       posx0 = fgkPadXOffsetBP * scale[i].X();
@@ -2843,27 +2428,6 @@ void AliMUONSt1GeometryBuilderV2::SetSensitiveVolumes()
 /// Define the sensitive volumes for station2 chambers.
 
   GetGeometry(0)->SetSensitiveVolume("SA1G");
-  GetGeometry(0)->SetSensitiveVolume("SB1G");
-  GetGeometry(0)->SetSensitiveVolume("SC1G");
-  GetGeometry(0)->SetSensitiveVolume("SD1G");
-  GetGeometry(0)->SetSensitiveVolume("SE1G");
-  GetGeometry(0)->SetSensitiveVolume("SF1G");
-  GetGeometry(0)->SetSensitiveVolume("SG1G");
-  GetGeometry(0)->SetSensitiveVolume("SH1G");
-  GetGeometry(0)->SetSensitiveVolume("SI1G");
-  GetGeometry(0)->SetSensitiveVolume("SJ1G");
-  GetGeometry(0)->SetSensitiveVolume("SK1G");
-    
   GetGeometry(1)->SetSensitiveVolume("SA2G");
-  GetGeometry(1)->SetSensitiveVolume("SB2G");
-  GetGeometry(1)->SetSensitiveVolume("SC2G");
-  GetGeometry(1)->SetSensitiveVolume("SD2G");
-  GetGeometry(1)->SetSensitiveVolume("SE2G");
-  GetGeometry(1)->SetSensitiveVolume("SF2G");
-  GetGeometry(1)->SetSensitiveVolume("SG2G");
-  GetGeometry(1)->SetSensitiveVolume("SH2G");
-  GetGeometry(1)->SetSensitiveVolume("SI2G");
-  GetGeometry(1)->SetSensitiveVolume("SJ2G");
-  GetGeometry(1)->SetSensitiveVolume("SK2G");
 }
 
