@@ -99,7 +99,7 @@ void AliMAG::CreateGeometry()
     const Float_t kStartAngle          =   22.5; // deg
     const Float_t kFullAngle           =  360.0; // deg
 //  Mother volume 
-    const Float_t kRBMotherInner       = 560.00; // cm
+    const Float_t kRBMotherInner       = 600.00; // cm
     const Float_t kRBMotherOuter       = 790.50; // cm
     const Float_t kLBMother            = 706.00; // cm
 // Yoke     
@@ -117,13 +117,13 @@ void AliMAG::CreateGeometry()
     const Float_t kRThermalShieldInner = 566.00; // cm
     const Float_t kRThermalShieldOuter = 571.00; // cm
 // Crown    
-    const Float_t kRCrownInner         = 560.00; // cm    
+    const Float_t kRCrownInner         = 600.00; // cm    
     const Float_t kRCrownOuter         = 785.50; // cm
     const Float_t kLCrown1             = 605.00; // cm
     const Float_t kLCrown2             = 620.00; // cm
     const Float_t kLCrown3             = 706.00; // cm
 // Door
-    const Float_t kRDoorOuter          = 560.00; // cm
+    const Float_t kRDoorOuter          = 600.00; // cm
     const Float_t kRPlugInner          = 183.50; // cm
     const Float_t kLDoor1              = 615.50; // cm
     const Float_t kLDoor2              = 714.60; // cm
@@ -151,7 +151,7 @@ void AliMAG::CreateGeometry()
   shBMother->DefineSection(0, -kLBMother, kRBMotherInner, kRBMotherOuter);
   shBMother->DefineSection(1,  kLBMother, kRBMotherInner, kRBMotherOuter);  
   // 
-  TGeoVolume* voBMother = new TGeoVolume("L3BM", shBMother, medAir);
+  TGeoVolumeAssembly* voBMother = new TGeoVolumeAssembly("L3BM");
   //
   // Define Thermal Shield
   //
