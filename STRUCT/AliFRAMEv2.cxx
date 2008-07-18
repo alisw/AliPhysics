@@ -272,7 +272,7 @@ void AliFRAMEv2::CreateGeometry()
    pbox[1] =   2.0;
    pbox[2] = 375.5;
    gMC->Gsvolu("BREF2", "BOX", kAir, pbox, 3);
-   gMC->Gspos("BREF2", 1, "B080",  3.38 - 0.05, 0., 0., 0, "ONLY");
+   gMC->Gspos("BREF2", 1, "B080",  3.37 - 0.05, 0., 0., 0, "ONLY");
 
   gMC->Gspos("B080", 1, "B077",  283.4, 0., 0., 0, "ONLY");
   gMC->Gspos("B080", 2, "B077", -283.4, 0., 0., idrotm[2087], "ONLY");
@@ -521,7 +521,7 @@ void AliFRAMEv2::CreateGeometry()
   
   Float_t r      = 342.0;
   Float_t rout1  = 405.5;
-  Float_t rout2  = 411.5;
+  Float_t rout2  = 411.55;
   TString module[18];
   
   for (i = 0; i < 18; i++) {
