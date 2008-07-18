@@ -635,9 +635,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			continue;
 		    }
 		    
-		    // Add the mother track
+		    // Add the mother track if it passed primary track selection cuts
 		    
 		    AliAODTrack * mother = NULL;
+		    
+		    UInt_t selectInfo = fTrackFilter->IsSelected(esd->GetTrack(imother));
+		    if (!selectInfo) continue;
 		    
 		    if (!usedTrack[imother]) {
 			
@@ -648,7 +651,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackM->GetXYZ(pos);
 			esdTrackM->GetCovarianceXYZPxPyPz(covTr);
 			esdTrackM->GetESDpid(pid);
-			UInt_t selectInfo = fTrackFilter->IsSelected(esdTrackM);
+			
 			mother = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackM->GetID(),
 							       esdTrackM->GetLabel(),
