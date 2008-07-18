@@ -35,6 +35,7 @@
 //                                                                           //
 
 #include <TVirtualMC.h>
+#include <TGeoVolume.h>
 
 #include "AliConst.h"
 #include "AliDIPOv2.h"
@@ -647,12 +648,8 @@ void AliDIPOv2::CreateCompensatorDipole()
     Int_t idrotm[1899];
 //
     Float_t pbox[3];
-    Float_t ptube[3];
-    ptube[0] = 4.;
-    ptube[1] = 65. * TMath::Sqrt(2.);
-    ptube[2] = (kLCoilH + 2. * kRCoilC) / 2.;
 //  Mother volumes
-    gMC->Gsvolu("DCM0", "TUBE", idtmed[1814 + 40], ptube, 3);
+    TGeoVolumeAssembly* asDCM0 = new TGeoVolumeAssembly("DCM0");
     gMC->Gsatt ("DCM0", "SEEN", 0);
     
 //
