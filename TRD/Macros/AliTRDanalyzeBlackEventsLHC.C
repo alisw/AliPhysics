@@ -2,10 +2,11 @@
 void AliTRDanalyzeBlackEventsLHC(const char *filename) {
 
 
-  AliRawReaderRoot *reader = new AliRawReaderRoot(filename, 0);
+  TString strFile = filename;
+  strFile += "?EventType=7";
+  AliRawReaderRoot *reader = new AliRawReaderRoot(strFile.Data(), 0);
   reader->SelectEquipment(0, 1024, 1041);
   reader->Select("TRD");
-  reader->SelectEvents(7);
 
   //AliTRDRawStreamTB::SupressWarnings(kTRUE);
   //AliTRDrawStreamTB::SetForceCleanDataOnly();

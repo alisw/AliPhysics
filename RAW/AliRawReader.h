@@ -38,7 +38,6 @@ class AliRawReader: public TObject {
 				     Int_t maxEquipmentId = -1);
     virtual void     SkipInvalid(Bool_t skip = kTRUE)
       {fSkipInvalid = skip;};
-    virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0);
     virtual void     RequireHeader(Bool_t required)
       {fRequireHeader = required;};
 
@@ -155,6 +154,7 @@ class AliRawReader: public TObject {
     virtual Bool_t   UseAutoSaveESD() const { return kFALSE; }
 
   protected :
+    virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0);
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;
 

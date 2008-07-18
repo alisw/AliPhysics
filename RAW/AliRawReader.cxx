@@ -184,20 +184,23 @@ AliRawReader* AliRawReader::Create(const char *uri)
     return NULL;
   }
 
+  TObjArray *fields = strURI.Tokenize("?");
+  TString &fileURI = ((TObjString*)fields->At(0))->String();
+
   AliRawReader *rawReader = NULL;
-  if (!strURI.BeginsWith("mem://")) {
-    AliInfoClass(Form("Creating raw-reader in order to read raw-data file: %s",strURI.Data()));
-    if (strURI.EndsWith("/")) {
-      rawReader = new AliRawReaderFile(strURI);
-    } else if (strURI.EndsWith(".root")) {
-      rawReader = new AliRawReaderRoot(strURI);
+  if (!fileURI.BeginsWith("mem://")) {
+    AliInfoClass(Form("Creating raw-reader in order to read raw-data file: %s",fileURI.Data()));
+    if (fileURI.EndsWith("/")) {
+      rawReader = new AliRawReaderFile(fileURI);
+    } else if (fileURI.EndsWith(".root")) {
+      rawReader = new AliRawReaderRoot(fileURI);
     } else {
-      rawReader = new AliRawReaderDate(strURI);
+      rawReader = new AliRawReaderDate(fileURI);
     }
   }
   else {
-    strURI.ReplaceAll("mem://","");
-    AliInfoClass(Form("Creating raw-reader in order to read events in shared memory (option=%s)",strURI.Data()));
+    fileURI.ReplaceAll("mem://","");
+    AliInfoClass(Form("Creating raw-reader in order to read events in shared memory (option=%s)",fileURI.Data()));
 
     TPluginManager* pluginManager = gROOT->GetPluginManager();
     TString rawReaderName = "AliRawReaderDateOnline";
@@ -209,12 +212,39 @@ AliRawReader* AliRawReader::Create(const char *uri)
       pluginHandler = pluginManager->FindHandler("AliRawReader", "online");
     }
     if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
-      rawReader = (AliRawReader*)pluginHandler->ExecPlugin(1,strURI.Data());
+      rawReader = (AliRawReader*)pluginHandler->ExecPlugin(1,fileURI.Data());
     }
     else {
       return NULL;
     }
   }
+
+  // Now apply event selection criteria (if specified)
+  if (fields->GetEntries() > 1) {
+    Int_t eventType = -1;
+    ULong64_t triggerMask = 0;
+    for(Int_t i = 1; i < fields->GetEntries(); i++) {
+      if (!fields->At(i)) continue;
+      TString &option = ((TObjString*)fields->At(i))->String();
+      if (option.BeginsWith("EventType=",TString::kIgnoreCase)) {
+	option.ReplaceAll("EventType=","");
+	eventType = option.Atoi();
+	continue;
+      }
+      if (option.BeginsWith("Trigger=",TString::kIgnoreCase)) {
+	option.ReplaceAll("Trigger=","");
+	triggerMask = option.Atoll();
+	continue;
+      }
+      AliWarningClass(Form("Ignoring invalid event selection option: %s",option.Data()));
+    }
+    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx",
+		 eventType,triggerMask));
+    rawReader->SelectEvents(eventType,triggerMask);
+  }
+
+  fields->Delete();
+  delete fields;
 
   return rawReader;
 }

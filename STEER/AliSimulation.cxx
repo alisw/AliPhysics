@@ -1579,7 +1579,6 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
       rawReader = new AliRawReaderRoot(fileName);
     } else if (!fileName.IsNull()) {
       rawReader = new AliRawReaderDate(fileName);
-      rawReader->SelectEvents(7);
     }
 //     if (!fEquipIdMap.IsNull() && fRawReader)
 //       fRawReader->LoadEquipmentIdsMap(fEquipIdMap);

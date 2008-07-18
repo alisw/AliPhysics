@@ -123,7 +123,6 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 	} else if (!param.IsNull()) {
 	  AliInfo(Form("creating AliRawReaderDate (%s)", param.Data()));
 	  fpRawReader = new AliRawReaderDate(param);
-	  fpRawReader->SelectEvents(7);
 	}
 	if (fpRawReader) {
 	    fpRawReader->RewindEvents();

@@ -57,7 +57,9 @@ for(Int_t imod=0; imod<nSDDmodules;imod++){
 }
 delete [] cindex;
 
-  AliRawReader *rd = new AliRawReaderDate(iFile,FirstEvt);  // open run
+  TString strFile = iFile;
+  strFile += "?EventType=7";
+  AliRawReader *rd = new AliRawReaderDate(strFile.Data(),FirstEvt);  // open run
   Int_t evCounter = 0;
 
   //AliITS *itsRun = new AliITS();
@@ -75,7 +77,6 @@ delete [] cindex;
      cout << "Read Event: " << evCounter+FirstEvt-1 << endl;
 
     rd->RequireHeader(kFALSE);             
-    rd->SelectEvents(7);                   // read only events with the given type. no selection is applied if a value < 0 is used. 
 
     rd->SelectEquipment(17,eqOffset+1,eqOffset+DDLid_range);
 

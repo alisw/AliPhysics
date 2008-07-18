@@ -78,7 +78,6 @@ Int_t AliITSFindClustersV2(char *inputRawData = NULL,TString filename="galice.ro
     else {
       cout<<"Raw data format - DATE file \n";
       rawreader = new AliRawReaderDate(fileRaw);  // DATE format
-      rawreader->SelectEvents(7);
     }
     //    if (!fEquipIdMap.IsNull() && fRawReader)fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
     Reconstruct(rl,rawreader,opt);

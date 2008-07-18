@@ -50,7 +50,9 @@ Char_t *hisnam3 = new Char_t[50];
    }
  }
 
-  AliRawReader *rd = new AliRawReaderDate(iFile,FirstEvt);  // open run
+  TString strFile = iFile;
+  strFile += "?EventType=7";
+  AliRawReader *rd = new AliRawReaderDate(strFile.Data(),FirstEvt);  // open run
   Int_t evCounter = 0;
   Int_t eqOffset = 256;
   Int_t DDLid_range = 24;
@@ -59,7 +61,6 @@ Char_t *hisnam3 = new Char_t[50];
     cout << "Read Event: " << evCounter+FirstEvt-1 << endl;
 
     rd->RequireHeader(kFALSE);             
-    rd->SelectEvents(7);                  
     rd->SelectEquipment(17,eqOffset+1,eqOffset+DDLid_range);  //17 states for "DRorc acquisition"
     rd->Reset();                           // reset the current position to the beginning of the event
  

@@ -407,6 +407,7 @@ void AliRawReaderHLT::SkipInvalid(Bool_t skip)
   fpParentReader->SkipInvalid(skip);
 }
 
+/*
 void AliRawReaderHLT::SelectEvents(Int_t type)
 {
   // see header file for class documentation
@@ -415,6 +416,7 @@ void AliRawReaderHLT::SelectEvents(Int_t type)
   AliRawReader::SelectEvents(type);
   fpParentReader->SelectEvents(type);
 }
+*/
 
 int AliRawReaderHLT::ScanOptions(const char* options)
 {

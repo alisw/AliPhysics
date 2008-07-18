@@ -198,8 +198,11 @@ void AliITSBeamTestDigitizer::ExecDigitization(){
  
   AliRawReader* rd;
 
-  if(GetOptDate()) rd = new AliRawReaderDate(fRawdataFileName,fEvIn);
-  else rd = new AliRawReaderRoot(fRawdataFileName,fEvIn);
+
+  TString strFile = fRawdataFileName;
+  strFile += Form("?EventType=%d",fDATEEvType);
+  if(GetOptDate()) rd = new AliRawReaderDate(strFile.Data(),fEvIn);
+  else rd = new AliRawReaderRoot(strFile.Data(),fEvIn);
 
   AliHeader* header = fRunLoader->GetHeader();
   Int_t iev=fEvIn-1;
@@ -219,7 +222,6 @@ void AliITSBeamTestDigitizer::ExecDigitization(){
     fRunLoader->SetEventNumber(iev);
    
     rd->RequireHeader(fFlagHeader);
-    rd->SelectEvents(fDATEEvType);
  
     digSDD->SetRawReader(rd);
     digSPD->SetRawReader(rd);

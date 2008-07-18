@@ -256,7 +256,6 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
     rawreaderdate->RewindEvents();
   } else { MakeZombie(); return kFALSE; }
   if (fModules) Reset();
-  rawreaderdate->SelectEvents(-1);
   rawreaderdate->Select("ITSSSD");  
   nofstrips = 0;
   while (rawreaderdate->NextEvent()) {
@@ -508,7 +507,6 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
   if (!fDDLModuleMap) if (!ReadDDLModuleMap()) AliWarning("DDL map is not defined, ModuleID will be set to 0!");
   stream = new AliITSRawStreamSSD(rawreaderdate);
   stream->Setv11HybridDDLMapping();
-  rawreaderdate->SelectEvents(-1);
   modind = 0;
   while (rawreaderdate->NextEvent()) {
     if ((rawreaderdate->GetType() != PHYSICS_EVENT) && (rawreaderdate->GetType() != CALIBRATION_EVENT)) continue;

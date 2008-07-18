@@ -99,7 +99,7 @@ class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
 			   Int_t minEquipmentId = -1, 
 			   Int_t maxEquipmentId = -1);
   void     SkipInvalid(Bool_t skip = kTRUE);
-  void     SelectEvents(Int_t type);
+  //  void     SelectEvents(Int_t type);
 
   UInt_t   GetType() const;
   UInt_t   GetRunNumber() const;
