@@ -14,12 +14,6 @@
  **************************************************************************/
 /* $Id: $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- */
-
 //_________________________________________________________________________
 // Example class on how to read AODCaloClusters, ESDCaloCells and AODTracks and how 
 // fill AODs with PWG4PartCorr analysis frame
@@ -50,7 +44,7 @@ ClassImp(AliAnaExample)
   
 //____________________________________________________________________________
   AliAnaExample::AliAnaExample() : 
-    AliAnaBaseClass(),fPdg(0),  fDetector(""), fhPt(0),fhPhi(0),fhEta(0),  fh2Pt(0),fh2Phi(0),fh2Eta(0),
+    AliAnaPartCorrBaseClass(),fPdg(0),  fDetector(""), fhPt(0),fhPhi(0),fhEta(0),  fh2Pt(0),fh2Phi(0),fh2Eta(0),
     fhNCells(0), fhAmplitude(0)
 {
   //Default Ctor
@@ -61,7 +55,7 @@ ClassImp(AliAnaExample)
 
 //____________________________________________________________________________
 AliAnaExample::AliAnaExample(const AliAnaExample & ex) :   
-  AliAnaBaseClass(ex), fPdg(ex.fPdg), fDetector(ex.fDetector), fhPt(ex.fhPt),  fhPhi(ex.fhPhi),fhEta(ex.fhEta), 
+  AliAnaPartCorrBaseClass(ex), fPdg(ex.fPdg), fDetector(ex.fDetector), fhPt(ex.fhPt),  fhPhi(ex.fhPhi),fhEta(ex.fhEta), 
   fh2Pt(ex.fh2Pt),  fh2Phi(ex.fh2Phi),fh2Eta(ex.fh2Eta), fhNCells(ex.fhNCells), fhAmplitude(ex.fhAmplitude)
 {
   // cpy ctor
@@ -74,7 +68,7 @@ AliAnaExample & AliAnaExample::operator = (const AliAnaExample & ex)
   // assignment operator
 
   if(this == &ex)return *this;
-  ((AliAnaBaseClass *)this)->operator=(ex);
+  ((AliAnaPartCorrBaseClass *)this)->operator=(ex);
  
   fPdg = ex.fPdg;
   fDetector = ex.fDetector;
@@ -123,32 +117,35 @@ TList *  AliAnaExample::GetCreateOutputObjects()
   fhEta->SetXTitle("#eta ");
   outputContainer->Add(fhEta);
 
-  //Calo cells
-  fhNCells  = new TH1F ("hNCells","# cells per event", 100,0,1000); 
-  fhNCells->SetXTitle("n cells");
-  outputContainer->Add(fhNCells);
-
-  fhAmplitude  = new TH1F ("hAmplitude","#eta distribution", 100,0,1000); 
-  fhAmplitude->SetXTitle("Amplitude ");
-  outputContainer->Add(fhAmplitude);
- 
- if(IsDataMC()){
-   fh2Pt  = new TH2F ("h2Pt","p_T distribution, reconstructed vs generated", 100,0,100,100,0,100); 
-   fh2Pt->SetXTitle("p_{T,rec} (GeV/c)");
-   fh2Pt->SetYTitle("p_{T,gen} (GeV/c)");
-   outputContainer->Add(fh2Pt);
-   
-   fh2Phi  = new TH2F ("h2Phi","#phi distribution, reconstructed vs generated", 100,0,TMath::TwoPi(), 100,0,TMath::TwoPi()); 
-   fh2Phi->SetXTitle("#phi_{rec} (rad)");
-   fh2Phi->SetYTitle("#phi_{gen} (rad)");
-   outputContainer->Add(fh2Phi);
-   
-   fh2Eta  = new TH2F ("h2Eta","#eta distribution, reconstructed vs generated", 100,-1,1,100,-1,1); 
-   fh2Eta->SetXTitle("#eta_{rec} ");
-   fh2Eta->SetYTitle("#eta_{gen} ");
-   outputContainer->Add(fh2Eta);
- }
- return outputContainer;
+  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) {
+    //Calo cells
+    fhNCells  = new TH1F ("hNCells","# cells per event", 100,0,1000); 
+    fhNCells->SetXTitle("n cells");
+    outputContainer->Add(fhNCells);
+    
+    fhAmplitude  = new TH1F ("hAmplitude","#eta distribution", 100,0,1000); 
+    fhAmplitude->SetXTitle("Amplitude ");
+    outputContainer->Add(fhAmplitude);
+  } 
+  
+  if(IsDataMC()){
+    fh2Pt  = new TH2F ("h2Pt","p_T distribution, reconstructed vs generated", 100,0,100,100,0,100); 
+    fh2Pt->SetXTitle("p_{T,rec} (GeV/c)");
+    fh2Pt->SetYTitle("p_{T,gen} (GeV/c)");
+    outputContainer->Add(fh2Pt);
+    
+    fh2Phi  = new TH2F ("h2Phi","#phi distribution, reconstructed vs generated", 100,0,TMath::TwoPi(), 100,0,TMath::TwoPi()); 
+    fh2Phi->SetXTitle("#phi_{rec} (rad)");
+    fh2Phi->SetYTitle("#phi_{gen} (rad)");
+    outputContainer->Add(fh2Phi);
+    
+    fh2Eta  = new TH2F ("h2Eta","#eta distribution, reconstructed vs generated", 100,-1,1,100,-1,1); 
+    fh2Eta->SetXTitle("#eta_{rec} ");
+    fh2Eta->SetYTitle("#eta_{gen} ");
+    outputContainer->Add(fh2Eta);
+    
+  }
+  return outputContainer;
 }
 
  //__________________________________________________
@@ -199,6 +196,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   if(fDetector == "EMCAL" || fDetector == "PHOS"){
     
     //WORK WITH CALOCLUSTERS
+    if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
     ConnectAODCaloClusters(); //Do Only when filling AODCaloClusters 
     if(GetDebug() > 0) printf("Example: in calo clusters aod entries %d\n", GetAODCaloClusters()->GetEntries());
     
@@ -211,16 +209,19 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       
       AliAODCaloCluster * calo =  dynamic_cast<AliAODCaloCluster*> (partList->At(i));
       
-      //Fill AODCaloClusters    
-      AddAODCaloCluster(AliAODCaloCluster(*(calo)));
+      //Fill AODCaloClusters  
+      if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
+	AddAODCaloCluster(AliAODCaloCluster(*(calo)));
       
       //Fill AODParticleCorrelation after some selection
       calo->GetMomentum(mom,v);
-      Int_t pdg = 0;
+      Int_t pdg = fPdg;
+
       if(IsCaloPIDOn()){
 	Double_t pid[13];
 	calo->GetPID(pid);
 	pdg = GetCaloPID()->GetPdg(fDetector,pid,mom.E());
+	cout<<"PDG "<<pdg<<endl;
 	//pdg = GetCaloPID()->GetPdg(fDetector,mom,
 	//		  calo->GetM02(), calo->GetM02(),
 	//		  calo->GetDispersion(), 0, 0); 
@@ -244,8 +245,10 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       }//selection
     }//loop
     
+    if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) {
     //WORK WITH ESDCALOCELLS
     //Don't connect in the same analysis PHOS and EMCAL cells.
+
     AliESDCaloCells * esdCell = new AliESDCaloCells ;
     if(fDetector == "PHOS") {
       ConnectAODPHOSCells(); //Do Only when filling AODCaloCells
@@ -271,7 +274,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       GetAODCaloCells()->SetCell(iCell,esdCell->GetCellNumber(iCell),esdCell->GetAmplitude(iCell));
     }
     GetAODCaloCells()->Sort();
-    
+    } 
   }//cluster-cell analysis
   else if(fDetector == "CTS"){ //Track analysis
     //Fill AODParticleCorrelation with CTS aods
@@ -342,14 +345,16 @@ void  AliAnaExample::MakeAnalysisFillHistograms()
   }// aod branch loop
 
   // CaloCells histograms
-  if(GetAODCaloCells()){
-
-    Int_t ncells = GetAODCaloCells()->GetNumberOfCells();
-    fhNCells->Fill(ncells) ;
-
-    for (Int_t iCell = 0; iCell < ncells; iCell++) {      
-      if(GetDebug() > 2)  printf("cell : amp %f, absId %d \n", GetAODCaloCells()->GetAmplitude(iCell), GetAODCaloCells()->GetCellNumber(iCell));
-      fhAmplitude->Fill(GetAODCaloCells()->GetAmplitude(iCell));
-    }
-  }//calo cells container exist
+  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) {
+    if(GetAODCaloCells()){
+      
+      Int_t ncells = GetAODCaloCells()->GetNumberOfCells();
+      fhNCells->Fill(ncells) ;
+      
+      for (Int_t iCell = 0; iCell < ncells; iCell++) {      
+	if(GetDebug() > 2)  printf("cell : amp %f, absId %d \n", GetAODCaloCells()->GetAmplitude(iCell), GetAODCaloCells()->GetCellNumber(iCell));
+	fhAmplitude->Fill(GetAODCaloCells()->GetAmplitude(iCell));
+      }
+    }//calo cells container exist
+  }
 }

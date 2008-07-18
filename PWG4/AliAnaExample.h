@@ -4,13 +4,6 @@
  * See cxx source for full Copyright notice     */
 /* $Id: $ */
 
-/* History of cvs commits:
- *
- * $Log$
- 
- *
- */
-
 //_________________________________________________________________________
 // Example class on how to read AODCaloClusters, ESDCaloCells and AODTracks and how 
 // fill AODs with PWG4PartCorr analysis frame
@@ -23,9 +16,9 @@
 
 class TH1F ;
 
-#include "AliAnaBaseClass.h"
+#include "AliAnaPartCorrBaseClass.h"
  
-class AliAnaExample : public AliAnaBaseClass {
+class AliAnaExample : public AliAnaPartCorrBaseClass {
        
   public: 
        

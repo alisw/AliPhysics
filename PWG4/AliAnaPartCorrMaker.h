@@ -1,5 +1,5 @@
-#ifndef ALIANAMAKER_H
-#define ALIANAMAKER_H
+#ifndef AliAnaPartCorrMaker_H
+#define AliAnaPartCorrMaker_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -9,7 +9,7 @@
 // It is called by the task class AliAnalysisTaskParticleCorrelation and it connects the input 
 // (ESD/AOD/MonteCarlo) got with AliCaloTrackReader (produces TClonesArrays of AODs 
 // (TParticles in MC case if requested)), with the 
-// analysis classes that derive from AliAnaBaseClass
+// analysis classes that derive from AliAnaPartCorrBaseClass
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
@@ -23,14 +23,14 @@ class TString;
 #include "AliLog.h"
 class AliCaloTrackReader ;
 
-class AliAnaMaker : public TObject {
+class AliAnaPartCorrMaker : public TObject {
 
 public: 
   
-  AliAnaMaker() ; // default ctor
-  AliAnaMaker(const AliAnaMaker & g) ; // cpy ctor
-  AliAnaMaker & operator = (const AliAnaMaker & g) ;//cpy assignment
-  virtual ~AliAnaMaker() ; //virtual dtor
+  AliAnaPartCorrMaker() ; // default ctor
+  AliAnaPartCorrMaker(const AliAnaPartCorrMaker & g) ; // cpy ctor
+  AliAnaPartCorrMaker & operator = (const AliAnaPartCorrMaker & g) ;//cpy assignment
+  virtual ~AliAnaPartCorrMaker() ; //virtual dtor
 
   //Setter and getters
   TList * GetOutputContainer()      const {return fOutputContainer ; }
@@ -79,11 +79,11 @@ public:
   TClonesArray* fAODBranch ;        //! selected particles branch
   TString fAODBranchName; // New AOD branch name
 
-  ClassDef(AliAnaMaker,1)
+  ClassDef(AliAnaPartCorrMaker,1)
 } ;
  
 
-#endif //ALIANAMAKER_H
+#endif //AliAnaPartCorrMaker_H
 
 
 

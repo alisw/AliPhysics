@@ -14,13 +14,6 @@
  **************************************************************************/
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 // Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
 // Central Barrel Tracking detectors (CTS).

@@ -4,12 +4,6 @@
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- */
-
 //_________________________________________________________________________
 // Class for reading data (Kinematics) in order to do prompt gamma or other particle  correlations
 //

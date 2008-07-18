@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
  
 #include "AliAnalysisTaskSE.h"
-class AliAnaMaker;
+class AliAnaPartCorrMaker;
 class AliESDEvent;
 class AliAODEvent;
 class TList;
@@ -31,7 +31,7 @@ class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
     AliAnalysisTaskParticleCorrelation(const AliAnalysisTaskParticleCorrelation&); // Not implemented
     AliAnalysisTaskParticleCorrelation& operator=(const AliAnalysisTaskParticleCorrelation&); // Not implemented
 
-    AliAnaMaker* fAna; //  Pointer to the jet finder 
+    AliAnaPartCorrMaker* fAna; //  Pointer to the jet finder 
     TList * fOutputContainer ; //! Histogram container
     TClonesArray * fAODBranch; //! AOD branch
     TString fConfigName ; //Configuration file name

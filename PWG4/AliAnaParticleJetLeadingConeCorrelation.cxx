@@ -45,7 +45,7 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
 
 //____________________________________________________________________________
   AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation() : 
-    AliAnaBaseClass(), fJetsOnlyInCTS(kFALSE), fPbPb(kFALSE),     
+    AliAnaPartCorrBaseClass(), fJetsOnlyInCTS(kFALSE), fPbPb(kFALSE),     
     fSeveralConeAndPtCuts(0),  fReMakeJet(0),
     fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), 
     fLeadingRatioMaxCut(0.),  fLeadingRatioMinCut(0.), 
@@ -133,7 +133,7 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
 
 //____________________________________________________________________________
 AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & jetlc) :   
-  AliAnaBaseClass(jetlc), fJetsOnlyInCTS(jetlc.fJetsOnlyInCTS), fPbPb(jetlc.fPbPb), 
+  AliAnaPartCorrBaseClass(jetlc), fJetsOnlyInCTS(jetlc.fJetsOnlyInCTS), fPbPb(jetlc.fPbPb), 
   fSeveralConeAndPtCuts(jetlc.fSeveralConeAndPtCuts),  fReMakeJet(jetlc. fReMakeJet),
   fDeltaPhiMaxCut(jetlc. fDeltaPhiMaxCut), fDeltaPhiMinCut(jetlc.fDeltaPhiMinCut), 
   fLeadingRatioMaxCut(jetlc.fLeadingRatioMaxCut),  fLeadingRatioMinCut(jetlc.fLeadingRatioMinCut), 
@@ -227,7 +227,7 @@ AliAnaParticleJetLeadingConeCorrelation & AliAnaParticleJetLeadingConeCorrelatio
   // assignment operator
 
   if(this == &jetlc)return *this;
-  ((AliAnaBaseClass *)this)->operator=(jetlc);
+  ((AliAnaPartCorrBaseClass *)this)->operator=(jetlc);
 
   fSeveralConeAndPtCuts = jetlc.fSeveralConeAndPtCuts ; 
   fPbPb = jetlc.fPbPb ;

@@ -4,18 +4,6 @@
  * See cxx source for full Copyright notice     */
 /* $Id$ */
 
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.5  2007/08/17 12:40:04  schutz
- * New analysis classes by Gustavo Conesa
- *
- * Revision 1.4.4.3  2007/07/26 10:32:09  schutz
- * new analysis classes in the the new analysis framework
- *
- *
- */
-
 //_________________________________________________________________________
 
 // Class for the analysis of prompt gamma, isolation cut. 
@@ -32,12 +20,12 @@
 #include <TString.h>
 
 // --- ANALYSIS system ---
-#include "AliAnaBaseClass.h"
+#include "AliAnaPartCorrBaseClass.h"
 class AliAODParticleCorrelations ;
 
 class TList ;
 
-class AliAnaGammaDirect : public AliAnaBaseClass {
+class AliAnaGammaDirect : public AliAnaPartCorrBaseClass {
 
 public: 
 

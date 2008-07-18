@@ -14,11 +14,6 @@
  **************************************************************************/
 /* $Id: $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- */
 //_________________________________________________________________________
 // Base class for analysis algorithms
 //-- Author: Gustavo Conesa (LNF-INFN) 
@@ -34,7 +29,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODCaloCells.h"
 #include "AliAODTrack.h"
-#include "AliAnaBaseClass.h"
+#include "AliAnaPartCorrBaseClass.h"
 #include "AliCaloTrackReader.h"
 #include "AliFidutialCut.h"
 #include "AliIsolationCut.h"
@@ -44,11 +39,11 @@
 // #include "AliHeader.h"
 // #include "AliGenEventHeader.h"
 
-ClassImp(AliAnaBaseClass)
+ClassImp(AliAnaPartCorrBaseClass)
   
   
 //_______________________________________________
-  AliAnaBaseClass::AliAnaBaseClass() : 
+  AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
     fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0),
     fReader(0x0), fAODBranch(0x0),  fAODCaloClusters(0x0), fAODCaloCells(0x0), 
@@ -66,7 +61,7 @@ ClassImp(AliAnaBaseClass)
 }
 
 //___________________________________________________________
-AliAnaBaseClass::AliAnaBaseClass(const AliAnaBaseClass & abc) :   
+AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass & abc) :   
   TObject(), fDataMC(abc.fDataMC), fDebug(abc.fDebug),
   fCheckFidCut(abc.fCheckFidCut),  fCheckCaloPID(abc. fCheckCaloPID),
   fRecalculateCaloPID(abc.fRecalculateCaloPID),
@@ -81,7 +76,7 @@ AliAnaBaseClass::AliAnaBaseClass(const AliAnaBaseClass & abc) :
 }
 
 //_________________________________________________________________________
-AliAnaBaseClass & AliAnaBaseClass::operator = (const AliAnaBaseClass & abc)
+AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartCorrBaseClass & abc)
 {
   // assignment operator
   
@@ -113,7 +108,7 @@ AliAnaBaseClass & AliAnaBaseClass::operator = (const AliAnaBaseClass & abc)
 }
 
 //____________________________________________________________________________
-AliAnaBaseClass::~AliAnaBaseClass() 
+AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass() 
 {
   // Remove all pointers except analysis output pointers.
   
@@ -141,7 +136,7 @@ AliAnaBaseClass::~AliAnaBaseClass()
 }
 
 //____________________________________________________________________________
-void AliAnaBaseClass::AddAODCaloCluster(AliAODCaloCluster calo) {
+void AliAnaPartCorrBaseClass::AddAODCaloCluster(AliAODCaloCluster calo) {
   //Put AOD calo cluster in the CaloClusters array
 
   Int_t i = fAODCaloClusters->GetEntries();
@@ -150,7 +145,7 @@ void AliAnaBaseClass::AddAODCaloCluster(AliAODCaloCluster calo) {
 }
 
 //____________________________________________________________________________
-void AliAnaBaseClass::AddAODParticleCorrelation(AliAODParticleCorrelation pc) {
+void AliAnaPartCorrBaseClass::AddAODParticleCorrelation(AliAODParticleCorrelation pc) {
   //Put AOD calo cluster in the AODParticleCorrelation array
 
   Int_t i = fAODBranch->GetEntries();
@@ -159,7 +154,7 @@ void AliAnaBaseClass::AddAODParticleCorrelation(AliAODParticleCorrelation pc) {
 }
 
 //___________________________________________________
-void AliAnaBaseClass::ConnectAODCaloClusters() {
+void AliAnaPartCorrBaseClass::ConnectAODCaloClusters() {
   //Recover the list of AODCaloClusters
 
   fAODCaloClusters = fReader->GetAOD()->GetCaloClusters();
@@ -167,7 +162,7 @@ void AliAnaBaseClass::ConnectAODCaloClusters() {
 }
 
 //___________________________________________________
-void AliAnaBaseClass::ConnectAODPHOSCells() {
+void AliAnaPartCorrBaseClass::ConnectAODPHOSCells() {
   //Recover the list of PHOS AODCaloCells 
 
   fAODCaloCells = fReader->GetAOD()->GetPHOSCells();
@@ -175,7 +170,7 @@ void AliAnaBaseClass::ConnectAODPHOSCells() {
 }
 
 //___________________________________________________
-void AliAnaBaseClass::ConnectAODEMCALCells() {
+void AliAnaPartCorrBaseClass::ConnectAODEMCALCells() {
   //Recover the list of EMCAL AODCaloCells 
 
   fAODCaloCells = fReader->GetAOD()->GetEMCALCells();
@@ -183,7 +178,7 @@ void AliAnaBaseClass::ConnectAODEMCALCells() {
 }
 
 //__________________________________________________
-TClonesArray *  AliAnaBaseClass::GetAODCTS() const {
+TClonesArray *  AliAnaPartCorrBaseClass::GetAODCTS() const {
   //Get list of tracks from reader
 
   return fReader->GetAODCTS(); 
@@ -191,7 +186,7 @@ TClonesArray *  AliAnaBaseClass::GetAODCTS() const {
 }
 
 //__________________________________________________
-TClonesArray *  AliAnaBaseClass::GetAODPHOS() const {
+TClonesArray *  AliAnaPartCorrBaseClass::GetAODPHOS() const {
   //Get list of PHOS calo clusters from reader
 
   return fReader->GetAODPHOS(); 
@@ -200,7 +195,7 @@ TClonesArray *  AliAnaBaseClass::GetAODPHOS() const {
 
 
 //__________________________________________________
-TClonesArray *  AliAnaBaseClass::GetAODEMCAL() const {
+TClonesArray *  AliAnaPartCorrBaseClass::GetAODEMCAL() const {
   //Get list of emcal caloclusters from reader
 
   return fReader->GetAODEMCAL(); 
@@ -208,7 +203,7 @@ TClonesArray *  AliAnaBaseClass::GetAODEMCAL() const {
 }
 
 //__________________________________________________
-TNamed *  AliAnaBaseClass::GetPHOSCells() const {
+TNamed *  AliAnaPartCorrBaseClass::GetPHOSCells() const {
   //Get list of PHOS calo cells (ESD or AOD) from reader
   
   return fReader->GetPHOSCells(); 
@@ -217,7 +212,7 @@ TNamed *  AliAnaBaseClass::GetPHOSCells() const {
 
 
 //__________________________________________________
-TNamed *  AliAnaBaseClass::GetEMCALCells() const {
+TNamed *  AliAnaPartCorrBaseClass::GetEMCALCells() const {
   //Get list of emcal calo cells (ESD or AOD) from reader
   
   return fReader->GetEMCALCells(); 
@@ -225,14 +220,14 @@ TNamed *  AliAnaBaseClass::GetEMCALCells() const {
 }
 
 //__________________________________________________
-AliStack *  AliAnaBaseClass::GetMCStack() const {
+AliStack *  AliAnaPartCorrBaseClass::GetMCStack() const {
   //Get stack pointer from reader
 
   return fReader->GetStack(); 
 
 }
 //__________________________________________________
-AliHeader *  AliAnaBaseClass::GetMCHeader() const {
+AliHeader *  AliAnaPartCorrBaseClass::GetMCHeader() const {
   //Get header pointer from reader
 
   return fReader->GetHeader(); 
@@ -240,7 +235,7 @@ AliHeader *  AliAnaBaseClass::GetMCHeader() const {
 }
 
 //__________________________________________________
-AliGenEventHeader *  AliAnaBaseClass::GetMCGenEventHeader() const {
+AliGenEventHeader *  AliAnaPartCorrBaseClass::GetMCGenEventHeader() const {
   //Get GenEventHeader pointer from reader
 
   return fReader->GetGenEventHeader(); 
@@ -248,7 +243,7 @@ AliGenEventHeader *  AliAnaBaseClass::GetMCGenEventHeader() const {
 }
 
 
-void AliAnaBaseClass::InitParameters()
+void AliAnaPartCorrBaseClass::InitParameters()
 { 
   //Initialize the parameters of the analysis.
   fDataMC = kFALSE;
@@ -256,7 +251,7 @@ void AliAnaBaseClass::InitParameters()
   fCheckCaloPID = kTRUE ;
   fCheckFidCut = kFALSE ;
   fRecalculateCaloPID = kFALSE ;
-  fMinPt = 2. ; //Min pt in particle analysis
+  fMinPt = 0.2 ; //Min pt in particle analysis
   fMaxPt = 300. ; //Max pt in particle analysis
 
   fCaloPID = new AliCaloPID ;  

@@ -19,7 +19,7 @@
 // It is called by the task class AliAnalysisTaskParticleCorrelation and it connects the input 
 // (ESD/AOD/MonteCarlo) got with AliCaloTrackReader (produces TClonesArrays of AODs 
 // (TParticles in MC case if requested)), with the 
-// analysis classes that derive from AliAnaBaseClass
+// analysis classes that derive from AliAnaPartCorrBaseClass
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
@@ -28,17 +28,17 @@
 #include <TString.h>
 
 //---- AliRoot system ---- 
-#include "AliAnaBaseClass.h" 
-#include "AliAnaMaker.h" 
+#include "AliAnaPartCorrBaseClass.h" 
+#include "AliAnaPartCorrMaker.h" 
 #include "AliCaloTrackReader.h" 
 #include "AliLog.h"
 
 
-ClassImp(AliAnaMaker)
+ClassImp(AliAnaPartCorrMaker)
 
 
 //____________________________________________________________________________
-  AliAnaMaker::AliAnaMaker() : 
+  AliAnaPartCorrMaker::AliAnaPartCorrMaker() : 
     TObject(),
     fOutputContainer(new TList ), fAnalysisContainer(new TList ),
     fMakeHisto(0), fMakeAOD(0), fAnaDebug(0), 
@@ -55,7 +55,7 @@ ClassImp(AliAnaMaker)
 }
 
 //____________________________________________________________________________
-AliAnaMaker::AliAnaMaker(const AliAnaMaker & g) :   
+AliAnaPartCorrMaker::AliAnaPartCorrMaker(const AliAnaPartCorrMaker & g) :   
   TObject(),
   fOutputContainer(g. fOutputContainer), fAnalysisContainer(g.fAnalysisContainer), 
   fMakeHisto(g.fMakeHisto), fMakeAOD(fMakeAOD), fAnaDebug(g. fAnaDebug),
@@ -67,7 +67,7 @@ AliAnaMaker::AliAnaMaker(const AliAnaMaker & g) :
 }
 
 //_________________________________________________________________________
-AliAnaMaker & AliAnaMaker::operator = (const AliAnaMaker & source)
+AliAnaPartCorrMaker & AliAnaPartCorrMaker::operator = (const AliAnaPartCorrMaker & source)
 {
   // assignment operator
 
@@ -90,7 +90,7 @@ AliAnaMaker & AliAnaMaker::operator = (const AliAnaMaker & source)
 }
 
 //____________________________________________________________________________
-AliAnaMaker::~AliAnaMaker() 
+AliAnaPartCorrMaker::~AliAnaPartCorrMaker() 
 {
   // Remove all pointers.
 
@@ -115,7 +115,7 @@ AliAnaMaker::~AliAnaMaker()
 }
 
 //________________________________________________________________________
-void AliAnaMaker::Init()
+void AliAnaPartCorrMaker::Init()
 {  
   //Init container histograms and other common variables
 
@@ -127,7 +127,7 @@ void AliAnaMaker::Init()
       AliFatal("Analysis job list not initailized");
 
     for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
-      TList * templist =  ((AliAnaBaseClass *) fAnalysisContainer->At(iana)) -> GetCreateOutputObjects(); 
+      TList * templist =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) -> GetCreateOutputObjects(); 
 
       for(Int_t i = 0; i < templist->GetEntries(); i++)
 	fOutputContainer->Add(templist->At(i)) ;
@@ -137,7 +137,7 @@ void AliAnaMaker::Init()
 }
 
 //____________________________________________________________________________
-void AliAnaMaker::InitParameters()
+void AliAnaPartCorrMaker::InitParameters()
 {
 
   //Init data members
@@ -149,7 +149,7 @@ void AliAnaMaker::InitParameters()
 }
 
 //__________________________________________________________________
-void AliAnaMaker::Print(const Option_t * opt) const
+void AliAnaPartCorrMaker::Print(const Option_t * opt) const
 {
 
   //Print some relevant parameters set for the analysis
@@ -166,7 +166,7 @@ void AliAnaMaker::Print(const Option_t * opt) const
 
 
 //____________________________________________________________________________
-Bool_t AliAnaMaker::ProcessEvent(Int_t iEntry){
+Bool_t AliAnaPartCorrMaker::ProcessEvent(Int_t iEntry){
   //Process analysis for this event
   
   if(fMakeHisto && !fOutputContainer)
@@ -185,7 +185,7 @@ Bool_t AliAnaMaker::ProcessEvent(Int_t iEntry){
   Int_t nana = fAnalysisContainer->GetEntries() ;
   for(Int_t iana = 0; iana <  nana; iana++){
     
-    AliAnaBaseClass * ana =  ((AliAnaBaseClass *) fAnalysisContainer->At(iana)) ; 
+    AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ; 
     
     //Set reader and aod branch for each analysis
     ana->SetReader(fReader);

@@ -4,13 +4,6 @@
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 // Class for track/cluster acceptance selection
 // Selection in Central barrel, EMCAL and PHOS

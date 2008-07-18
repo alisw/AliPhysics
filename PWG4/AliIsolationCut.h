@@ -4,13 +4,6 @@
  * See cxx source for full Copyright notice     */
 /* $Id:  */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 
 // Class containing methods for the isolation cut. 

@@ -14,13 +14,6 @@
  **************************************************************************/
 /* $Id: AliCaloPID.cxx 21839 2007-10-29 13:49:42Z gustavo $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 // Class for track/cluster acceptance selection
 // Selection in Central barrel, EMCAL and PHOS

@@ -14,13 +14,6 @@
  **************************************************************************/
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 // Class for reading data (Kinematics) in order to do prompt gamma 
 // or other particle identification and correlations
@@ -138,7 +131,7 @@ void AliCaloTrackMCReader::InitParameters()
   fStatusArray = new TArrayI(1);
   fStatusArray->SetAt(1,0); 
  
-  fKeepAllStatus = kFALSE;
+  fKeepAllStatus = kTRUE;
   fClonesArrayType = kAliAOD ;
 
 }
