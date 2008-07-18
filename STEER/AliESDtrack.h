@@ -21,6 +21,11 @@
  *      external param2:   local sine of the track momentum azimuthal angle  *
  *      external param3:   tangent of the track momentum dip angle           *
  *      external param4:   1/pt (1/(GeV/c))                                  *
+ *                                                                           *
+ * The Get*Label() getters return the label of the associated MC particle.   *
+ * The absolute value of this label is the index of the particle within the  *
+ * MC stack. If the label is negative, this track was assigned a certain     *
+ * number of clusters that did not in fact belong to this track.             *
  *****************************************************************************/
 
 #include <TBits.h>
