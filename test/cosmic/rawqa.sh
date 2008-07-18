@@ -81,7 +81,7 @@ for filename in $CHUNKS; do
         ln -si $in $ou
      done
      ln -si $CHUNK/QA.root QA.$SUBCHUNK.root
-     cd ../
+     cd ..
 done
 cd $RUNNUM
 $PROGRAM -b <<EOF
@@ -90,5 +90,5 @@ $PROGRAM -b <<EOF
 EOF
 rm -f tempo.txt
 
-$PROGRAM -b -q $ALICE_ROOT/test/cosmic/qasummary.C 2>&1 | tee rawqasummary.log
+$PROGRAM -b -q $ALICE_ROOT/test/cosmic/qasummary.C 
 cd ..
