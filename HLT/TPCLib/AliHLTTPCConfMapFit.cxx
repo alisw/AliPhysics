@@ -572,7 +572,9 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
   //Double_t Kms = (0.016/d)*TMath::Sqrt(lengthTot/24.0);
   Double_t Kms = 0.0;
 
-  Double_t Pterr = (Kres * Kres) + (Kms * Kms);
+  Double_t KTot = TMath::Sqrt((Kres * Kres) + (Kms * Kms));
+  
+  Double_t Pterr = (1/(0.3*AliHLTTPCTransform::GetBField()))*KTot;
 
   fTrack->SetPterr(Pterr);
 
