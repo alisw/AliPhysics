@@ -325,6 +325,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
+	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -340,8 +341,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
-									   AliAODTrack::kSecondary)
-		);
+									   AliAODTrack::kSecondary,
+									   selectInfo)
+					);
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
@@ -363,7 +365,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
-	    
+	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);	    
+
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 									   esdTrack->GetLabel(),
@@ -378,8 +381,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
-									   AliAODTrack::kSecondary)
-		);
+									   AliAODTrack::kSecondary,
+									   selectInfo)
+					);
+
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());	    
@@ -408,6 +413,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
+	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    
 	    vcascade->AddDaughter(aodTrack =
 				  new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -423,8 +429,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								     vcascade,
 								     kTRUE,  // check if this is right
 								     kFALSE, // check if this is right
-								     AliAODTrack::kSecondary)
-		);
+								     AliAODTrack::kSecondary,
+								     selectInfo)
+				  );
        if (esdTrack->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdTrack->GetStatus());
@@ -491,6 +498,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	  esdTrack->GetImpactParameters(dcaPosToPrimVertexXYZ[0],dcaPosToPrimVertexXYZ[1]);
 	  if (!usedTrack[posFromV0]) {
 	    usedTrack[posFromV0] = kTRUE;
+	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 							  esdTrack->GetLabel(), 
 							  p_pos, 
@@ -504,7 +512,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  vV0,
 							  kTRUE,  // check if this is right
 							  kFALSE, // check if this is right
-							  AliAODTrack::kSecondary);
+							  AliAODTrack::kSecondary,
+							  selectInfo);
 	    v0DaughterTracks->AddAt(aodTrack,posFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: pos track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdTrack->GetSign() > 0) nPosTracks++;
@@ -531,6 +540,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
 	  if (!usedTrack[negFromV0]) {
 	    usedTrack[negFromV0] = kTRUE;
+	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 							  esdTrack->GetLabel(),
 							  p_neg,
@@ -544,7 +554,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  vV0,
 							  kTRUE,  // check if this is right
 							  kFALSE, // check if this is right
-							  AliAODTrack::kSecondary);
+							  AliAODTrack::kSecondary,
+							  selectInfo);
 
 	    v0DaughterTracks->AddAt(aodTrack,negFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: neg track from original pt %.3f \n",aodTrack->Pt());
@@ -637,7 +648,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackM->GetXYZ(pos);
 			esdTrackM->GetCovarianceXYZPxPyPz(covTr);
 			esdTrackM->GetESDpid(pid);
-			
+			UInt_t selectInfo = fTrackFilter->IsSelected(esdTrackM);
 			mother = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackM->GetID(),
 							       esdTrackM->GetLabel(),
@@ -652,7 +663,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       primary,
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
-							       AliAODTrack::kPrimary);
+							       AliAODTrack::kPrimary,
+							       selectInfo);
 			if (esdTrackM->GetSign() > 0) nPosTracks++;
 			mother->SetFlags(esdTrackM->GetStatus());
 			mother->ConvertAliPIDtoAODPID();
@@ -688,7 +700,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackD->GetXYZ(pos);
 			esdTrackD->GetCovarianceXYZPxPyPz(covTr);
 			esdTrackD->GetESDpid(pid);
-			
+			UInt_t selectInfo = fTrackFilter->IsSelected(esdTrackD);
 			daughter = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackD->GetID(),
 							       esdTrackD->GetLabel(),
@@ -703,7 +715,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       vkink,
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
-							       AliAODTrack::kSecondary);
+							       AliAODTrack::kSecondary,
+							       selectInfo);
+
 			if (esdTrackD->GetSign() > 0) nPosTracks++;
 			daughter->SetFlags(esdTrackD->GetStatus());
 			daughter->ConvertAliPIDtoAODPID();
