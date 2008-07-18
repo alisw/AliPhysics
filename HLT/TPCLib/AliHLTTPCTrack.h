@@ -120,7 +120,9 @@ class AliHLTTPCTrack : public AliTPCtrack {
   Int_t GetCharge() const {return fQ;}
   Int_t GetMCid() const {return fMCid;}
   Double_t GetLength() const {return fLength;}
-
+  Double_t GetLengthXY() const ;
+  Double_t GetLengthTot() const;
+  
   Int_t GetFirstRow() const {return fRowRange[0];}
   Int_t GetLastRow()  const {return fRowRange[1];}
   Int_t GetSector()   const {return fSector;}

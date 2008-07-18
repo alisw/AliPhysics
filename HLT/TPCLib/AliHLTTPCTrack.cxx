@@ -100,6 +100,8 @@ void AliHLTTPCTrack::Copy(AliHLTTPCTrack *tpt)
   SetPterr(tpt->GetPterr());
   SetPsierr(tpt->GetPsierr());
   SetTglerr(tpt->GetTglerr());
+  SetZ0err(tpt->GetZ0err());
+  SetY0err(tpt->GetY0err());
   SetCharge(tpt->GetCharge());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
 #ifdef do_mc
@@ -694,4 +696,33 @@ void AliHLTTPCTrack::SetHits(Int_t nhits,UInt_t *hits)
       << "too many hits (" << nhits << ") for hit array of size " << fgkHitArraySize << ENDLOG; 
   }
   memcpy(fHitNumbers,hits,(nhits<=fgkHitArraySize?nhits:fgkHitArraySize)*sizeof(UInt_t));
+}
+
+Double_t AliHLTTPCTrack::GetLengthXY() const
+{
+  //calculates the length of the arc in XY-plane. This is the length of the track in XY-plane.
+  //Using a^2 = b^2 + c^2 - 2bc * cosA for finding the angle between first and last point.
+  //Length of arc is arc = r*A. Where A is the angle between first and last point.
+
+  Double_t dx = GetLastPointX()-GetFirstPointX();
+  Double_t dy = GetLastPointY()-GetFirstPointY();
+  Double_t a = TMath::Sqrt((dx*dx)+(dy*dy)); 
+  Double_t r = GetRadius();
+  Double_t r2 = r*r;
+
+  Double_t A = TMath::ACos((r2+r2-(a*a))/(2*r2));
+
+  return r*A;
+}
+
+Double_t AliHLTTPCTrack::GetLengthTot() const
+{
+  //Calculates the length of the track in 3D
+
+
+
+
+
+  return 100.0;
+
 }

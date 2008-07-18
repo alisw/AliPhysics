@@ -414,6 +414,7 @@ Int_t AliHLTTPCConfMapFit::FitCircle()
   fTrack->SetCenterX(acent);
   fTrack->SetCenterY(bcent);
 
+  fTrack->SetY0err(0.03);
   //set error for pT and Y. psi, Z and Tgl are set.
 
   //
@@ -549,7 +550,32 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
   
   fTrack->SetTglerr(dtanl);
   fTrack->SetZ0err(dz0);
-  
+
+    //The calculation of pT comes from "Perticle Physics Booklet": 
+  //24.11 Measurement of particle momenta in a uniform magnetic field.
+  //(dk)^2=(dk_res)^2 + (dk_ms)^2
+  //for now k_ms is 0. Need to find length of track in 3D. 
+
+  Double_t lengthXY = fTrack->GetLengthXY();
+  //Double_t lengthTot = fTrack->GetLengthTot();
+  //Double_t beta = fTrack->GetP()/TMath::Sqrt((fTrack->GetP()*fTrack->GetP())+(0.13957*0.13957));
+  //Double_t lambda = TMath::ATan(fTrack->GetTgl());
+  Double_t lengthXY2 = lengthXY*lengthXY;
+  Int_t nCluster4 = fTrack->GetNHits()+4;
+
+  Double_t Kres = 0.03/lengthXY2;
+  Kres = Kres * TMath::Sqrt(720/nCluster4);
+
+  //Double_t Kres = (0.03/(lengthXY*lengthXY))*TMath::Sqrt(720/(fTrack->GetNHits()+4));
+
+  //Double_t d = lengthTot*fTrack->GetP()*beta*TMath::Cos(lambda)*TMath::Cos(lambda);
+  //Double_t Kms = (0.016/d)*TMath::Sqrt(lengthTot/24.0);
+  Double_t Kms = 0.0;
+
+  Double_t Pterr = (Kres * Kres) + (Kms * Kms);
+
+  fTrack->SetPterr(Pterr);
+
   return 0 ;
 } 
 

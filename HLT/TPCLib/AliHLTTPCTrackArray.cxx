@@ -260,6 +260,8 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     track->SetTgl(trs->fTgl);
     track->SetPsierr(trs->fPsierr);
     track->SetTglerr(trs->fTglerr);
+    track->SetY0err(trs->fY0err);
+    track->SetZ0err(trs->fZ0err);
     track->SetNHits(trs->fNPoints);
     track->SetCharge(trs->fCharge);
     Float_t first[3];
@@ -382,6 +384,8 @@ UInt_t AliHLTTPCTrackArray::WriteTracks(AliHLTTPCTrackSegmentData* tr)
     tP->fTgl = track->GetTgl();
     tP->fPsierr = track->GetPsierr();
     tP->fTglerr = track->GetTglerr();
+    tP->fY0err = track->GetY0err();
+    tP->fZ0err = track->GetZ0err();
     tP->fCharge = track->GetCharge();
     tP->fNPoints = track->GetNHits();
 #ifdef INCLUDE_TPC_HOUGH
@@ -447,6 +451,8 @@ UInt_t AliHLTTPCTrackArray::WriteConfMapTracks(AliHLTTPCTrackSegmentData* tr)
     tP->fTgl = track->GetTgl();
     tP->fPsierr = track->GetPsierr();
     tP->fTglerr = track->GetTglerr();
+    tP->fY0err = track->GetY0err();
+    tP->fZ0err = track->GetZ0err();
     tP->fCharge = track->GetCharge();
 #ifdef INCLUDE_TPC_HOUGH
 #ifdef ROWHOUGHPARAMS

@@ -27,7 +27,9 @@ struct AliHLTTPCTrackSegmentData
 	Double_t fPt;
 	Double_t fPsi;
         Double_t fTgl;
-	Double_t fPterr;
+	Double_t fY0err;
+        Double_t fZ0err;
+        Double_t fPterr;
 	Double_t fPsierr;
         Double_t fTglerr;
         Int_t fCharge;
