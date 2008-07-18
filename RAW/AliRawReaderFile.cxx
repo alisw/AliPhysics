@@ -229,6 +229,10 @@ Bool_t AliRawReaderFile::ReadHeader()
 	if (!OpenNextFile()) return kFALSE;
       }
     }
+    else {
+      if (fStream->eof())
+	if (!OpenNextFile()) return kFALSE;
+    }
     if (fHeader && fHeader->fSize != 0xFFFFFFFF) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
     } else {
