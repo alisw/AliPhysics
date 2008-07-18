@@ -97,13 +97,13 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
   AliPMDddldata *pmdddldata;
 
-  if (!fRawReader->ReadHeader()) return iddl;
+  if (!fRawReader->ReadHeader()) return -1;
 
   iddl           = fRawReader->GetDDLID();
   Int_t dataSize = fRawReader->GetDataSize();
   Int_t totaldataword = dataSize/4;
 
-  if (dataSize <= 0) return iddl;
+  if (dataSize <= 0) return -1;
 
   UInt_t data;
 
@@ -182,8 +182,6 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
   Int_t dspHeaderWord[10];
   Int_t pbusHeaderWord[4];
 
-  Int_t ilowLimit        = 0;
-  Int_t iuppLimit        = 0;
   Int_t blRawDataLength  = 0;
   Int_t dspRawDataLength = 0;
   Int_t iwordddl         = 2;
@@ -192,71 +190,56 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
   for (Int_t iblock = 0; iblock < 2; iblock++)
     {
-      ilowLimit = iuppLimit;
-      iuppLimit = ilowLimit + kblHLen;
-
-      for (Int_t i = ilowLimit; i < iuppLimit; i++)
+      for (Int_t i = 0; i < kblHLen; i++)
 	{
 	    iwordddl++;
 
-	    blHeaderWord[i-ilowLimit] = (Int_t) GetNextWord();
+	    blHeaderWord[i] = (Int_t) GetNextWord();
 	}
 
       blockHeader.SetHeader(blHeaderWord);
       blRawDataLength = blockHeader.GetRawDataLength();
 
-      if (iwordddl == totaldataword) continue;
+      if (iwordddl == totaldataword) break;
 
       Int_t iwordblk = 0;
 
       for (Int_t idsp = 0; idsp < 5; idsp++)
 	{
-
-
-	  ilowLimit = iuppLimit;
-	  iuppLimit = ilowLimit + kdspHLen;
-
-	  for (Int_t i = ilowLimit; i < iuppLimit; i++)
+	  for (Int_t i = 0; i < kdspHLen; i++)
 	    {
 		iwordddl++;
 		iwordblk++;
-		dspHeaderWord[i-ilowLimit] = (Int_t) GetNextWord();
+		dspHeaderWord[i] = (Int_t) GetNextWord();
 	    }
 	  dspHeader.SetHeader(dspHeaderWord);
 	  dspRawDataLength = dspHeader.GetRawDataLength();
 
-	  if (iwordddl == totaldataword) continue;
+	  if (iwordddl == totaldataword) break;
 
 	  Int_t iworddsp = 0;
 
 	  for (ibus = 0; ibus < 5; ibus++)
 	    {
-	      ilowLimit = iuppLimit;
-	      iuppLimit = ilowLimit + kpbusHLen;
-
-	      for (Int_t i = ilowLimit; i < iuppLimit; i++)
+	      for (Int_t i = 0; i < kpbusHLen; i++)
 		{
 		    iwordddl++;
 		    iwordblk++;
 		    iworddsp++;
-		  pbusHeaderWord[i-ilowLimit] = (Int_t) GetNextWord();
+		    pbusHeaderWord[i] = (Int_t) GetNextWord();
 		}
 
 	      pbusHeader.SetHeader(pbusHeaderWord);
 	      Int_t rawdatalength = pbusHeader.GetRawDataLength();
 	      Int_t pbusid = pbusHeader.GetPatchBusId();
 
-	      if (pbusid < 0 || pbusid > 50) return iddl;
-
-
-	      ilowLimit = iuppLimit;
-	      iuppLimit = ilowLimit + rawdatalength;
+	      if (pbusid < 0 || pbusid > 50) return -1;
 
 	      Int_t imodule = moduleNo[pbusid];
 
-	      if (iwordddl == totaldataword) continue;
+	      if (iwordddl == totaldataword) break;
 
-	      for (Int_t iword = ilowLimit; iword < iuppLimit; iword++)
+	      for (Int_t iword = 0; iword < rawdatalength; iword++)
 		{
 		    iwordddl++;
 		    iwordblk++;
@@ -268,12 +251,20 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 		  Int_t ich  = (data >> 12) & 0x003F;
 		  Int_t imcm = (data >> 18) & 0x07FF;
 		  Int_t ibit = (data >> 31) & 0x0001;
+
+		  if (imcm == 0)
+		    {
+		      AliWarning(Form("FEE address WRONG:: Module %d Patch Bus %d MCM %d",imodule,pbusid,imcm));
+		      return -1;
+		    }
+
 		  parity = ComputeParity(data);
+
 		  if (ibit != parity)
 		    {
 		      AliWarning(Form("Parity Error:: Patch Bus %d Module %d",pbusid,imodule));
 		      fRawReader->AddMajorErrorLog(kParityError);
-		      return iddl;
+		      return -1;
 		    }
 
 		  ConvertDDL2SMN(iddl, imodule, ismn, idet);
@@ -304,24 +295,28 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
 	      if (iwordddl == totaldataword) break;
 
-	      if (iworddsp == dspRawDataLength) break; // raw data
-
+	      if (dspHeader.GetPaddingWord() == 1)
+	      {
+		  if (iworddsp == dspRawDataLength-1) break; // raw data
+	      }
+	      else
+	      {
+		  if (iworddsp == dspRawDataLength) break; // raw data
+	      }
 	    } // patch bus loop
 
 	  if (dspHeader.GetPaddingWord() == 1)
 	  {
-	      iuppLimit++;
 	      iwordddl++;
 	      iwordblk++;
 	      iworddsp++;
 	      data = GetNextWord();
 	  }
+	  if (iwordddl == totaldataword) break;
 
 	  if (iwordblk == blRawDataLength) break; // for raw data
 
 	} // end of DSP
-
-
 
     } // end of BLOCK
   
