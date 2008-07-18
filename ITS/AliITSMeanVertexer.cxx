@@ -132,7 +132,6 @@ void AliITSMeanVertexer::Init(TString &filename){
   }
   else {  // DATE raw reader is assumed
     fRawReader = new AliRawReaderDate(filename);
-    fRawReader->SelectEvents(7);
   }
   fRunLoader = AliRunLoader::Open(fLoaderFileName.Data(),AliConfig::GetDefaultEventFolderName(),"recreate");
   fRunLoader->MakeTree("E");
