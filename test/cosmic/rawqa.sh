@@ -64,7 +64,9 @@ PROGRAM=aliroot #`cat $tempfile`
 for filename in $CHUNKS; do
      filename=${filename//\"/} 
      CHUNK=`basename $filename | cut -d "." -f 1,2`
-     SUBCHUNK=${CHUNK#*.}
+     BEG=`expr index "$CHUNK" .`
+     BEG=`expr $BEG - 4`
+     SUBCHUNK=${CHUNK:$BEG}
      echo "Running QA for chunk $filename. Outputs will be stored in "$RUNNUM"/"$CHUNK".   $SUBCHUNK"
      [ -e $RUNNUM"/"$CHUNK ] && { rm -rf   $RUNNUM"/"$CHUNK ; }
      mkdir -p $RUNNUM"/"$CHUNK
