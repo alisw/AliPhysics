@@ -63,6 +63,8 @@ public:
   Bool_t   IsSeeding() const                { return TestBit(kSeeding); }
   Bool_t   IsTailCancelation() const        { return TestBit(kTC);}
   Bool_t   IsVertexConstrained() const      { return TestBit(kVertexConstrained); }
+  Bool_t   IsTrackletWriteEnabled() const   { return fTrackletWriteEnabled ; };
+
 
 
   void     SetFindableClusters(Double_t r) {fkFindable = r;}
@@ -82,6 +84,8 @@ public:
   inline void SetSysCovMatrix(Double_t *sys);
   void     SetNumberOfPresamples(Int_t n) {fNumberOfPresamples = n;}
   void     SetNumberOfPostsamples(Int_t n) {fNumberOfPostsamples = n;}
+  void     SetTrackletWriteEnabled(Bool_t enablewritetracklet = kFALSE) { fTrackletWriteEnabled = enablewritetracklet; };
+
 
 private:
   enum{
@@ -130,6 +134,9 @@ private:
   Int_t     fADCbaseline;            // ADC baseline to be subtracted
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
+
+  // Tracklet writing Switch
+  Bool_t    fTrackletWriteEnabled;   // Switch for writing tracklets
 
   ClassDef(AliTRDrecoParam, 4)       // Reconstruction parameters for TRD detector
 

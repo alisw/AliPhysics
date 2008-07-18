@@ -27,7 +27,7 @@ class AliTRDfeeParam;
 /* #define TRD_MAX_ADC   21 */
 /* #define TRD_MAX_MCM   4 * 16 */
 
-#define MAX_TRACKLETS_PERHC 246
+#define MAX_TRACKLETS_PERHC 256
 
 class AliTRDrawStreamTB : public AliTRDrawStreamBase
 { // class def begin
@@ -170,8 +170,9 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   { // hc struct
       
     //tacklet words of given HC
-    //[mj tracklet writing] UInt_t              fTrackletWords[MAX_TRACKLETS_PERHC]; // array to keep tracklet words
+    UInt_t              fTrackletWords[MAX_TRACKLETS_PERHC]; // array to keep tracklet words [mj]
     Short_t             fTrackletError;                      // tracklet error 
+    Short_t             fNTracklets;                    // number of tracklet  
 
     // header word 0
     Int_t               fSpecialRawV;       // Raw data version
@@ -208,8 +209,9 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
     AliTRDrawMCM        fMCMs[TRD_MAX_MCM]; // 4 ROBS 16 each 
 
     AliTRDrawHC()
-      //[mj tracklet writing] : fTrackletWords()
-      : fTrackletError(0)
+      : fTrackletWords() //[mj]
+      , fTrackletError(0)
+      , fNTracklets(0)
       , fSpecialRawV(0)
       , fRawVMajor(0)
       , fRawVMajorOpt(0)
@@ -239,8 +241,9 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
     };
 
     AliTRDrawHC(const AliTRDrawHC & p):
-      //[mj tracklet writing]   fTrackletWords()
-        fTrackletError(p.fTrackletError)
+        fTrackletWords() //[mj]
+      , fTrackletError(p.fTrackletError)
+      , fNTracklets(p.fNTracklets)
       , fSpecialRawV(p.fSpecialRawV)
       , fRawVMajor(p.fRawVMajor)
       , fRawVMajorOpt(p.fRawVMajorOpt)
@@ -388,8 +391,8 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   //--------------------------------------------------------
 
   virtual Bool_t       Next();                           // read the next data in the memory
-  virtual Int_t      NextChamber(AliTRDdigitsManager *man); // read next chamber data in the momory
-  //virtual Int_t        NextChamber(AliTRDdigitsManager *man, TObjArray *trackletContainer=NULL); // read next chamber data in the memory
+  //virtual Int_t      NextChamber(AliTRDdigitsManager *man); // read next chamber data in the momory
+  virtual Int_t        NextChamber(AliTRDdigitsManager *man, UInt_t **trackletContainer); // read next chamber data in the memory
   virtual Bool_t       Init();                           // initialize some internal variables
 
   Int_t    NextBuffer(); // go and init next buffer if available - check the implementation file for return values
@@ -420,6 +423,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
 
   // info from Tracklet Data
   Int_t     GetTrackletErrorCode(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fTrackletError;}
+  Int_t     GetNTracklets(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fNTracklets;} // get number of tracklets 
 
   // info from HC Header Word
   Int_t     GetSM(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fSM;}
@@ -431,6 +435,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
 
   // info from HC data
   Int_t     GetHCErrorCode(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fCorrupted;}
+  Int_t     GetHCMCMmax(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fMCMmax;}
 
   // from MCM Header Word
   // rob and mcm ordering
@@ -441,18 +446,24 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Int_t     GetMCMhdErrorCode(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fMCMhdCorrupted;}
   Int_t     GetMCMADCMaskErrorCode(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCmaskCorrupted;}
   Int_t     GetEventNumber(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fEvCounter;}
+  Int_t     GetADCcount(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCcount;}
 
   // info from MCM data words
   Int_t     GetMCMErrorCode(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fCorrupted;} // get MCM data error code
   Int_t     GetADCErrorCode(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fCorrupted;} // get ADC error code
+  Int_t     GetADCnumber(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fADCnumber;} // get ADC error code
+
+  Int_t     GetRow(Int_t stack, Int_t link, Int_t mcm) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fROW;}         // get current row number
+  Int_t     GetCol(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fCOL;}         // get current column number
 
   // info from ADC data words
   Int_t    *GetSignalDirect(Int_t stack, Int_t link, Int_t mcm, Int_t adc) {return fSM.fStacks[stack].fHalfChambers[link].fMCMs[mcm].fADCs[adc].fSignals;}
 
 
   // from here, only works with returning ADC channel pointer using Next() 
-  //[mj tracklet writing] UInt_t   *GetTrackletWords() const { return fHC->fTrackletWords;}                 // return tracklet words pointer per hc
+  UInt_t   *GetTrackletWords() const { return fHC->fTrackletWords;}                 // return tracklet words pointer per hc [mj]
   Int_t     GetTrackletErrorCode() const {return fHC ? fHC->fTrackletError : -1;}   // get tracklet error code
+  Int_t     GetNTracklets() const {return fHC ? fHC->fNTracklets : -1;}             // get number of tracklets 
 
   Int_t     GetSpecialRawVersion() const {return fHC ? fHC->fSpecialRawV : -1;}     // return special raw version
   Int_t     GetMajorRawVersion() const {return fHC ? fHC->fRawVMajor : -1;}         // major raw version getter
@@ -595,8 +606,8 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Int_t   fStackNumber;     // current stack number
   Int_t   fStackLinkNumber; // current link in the stack
 
-  Int_t   fhcMCMcounter;    // mcm counter inside single hc - used in Next()  [mj] do we need?
-  Int_t   fmcmADCcounter;   // adc counrer inside single adc - used in Next() [mj] do we need?
+  Int_t   fhcMCMcounter;    // mcm counter inside single hc - used in Next()  
+  Int_t   fmcmADCcounter;   // adc counrer inside single adc - used in Next() 
 
   Int_t   fLinkTrackletCounter; // count the tracklets in the current HC
   Int_t   fEndOfTrackletCount;  // count link by link (hc by hc) used for debug
@@ -632,7 +643,11 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static UInt_t fgFirstEquipmentID; // first equipmentID for debug streamer
   static UInt_t fgDumpHead; // number of words to dump (from the start of the buffer) on each Init
   static Int_t  fgEmptySignals[30]; // empty signals in case of ADC pointer = NULL
-
+  static Short_t  fgMCMordering[16]; // mcm number odering for mcm header corruption check
+  static Short_t  fgROBordering[16]; // mcm number odering for mcm header corruption check
+  static Int_t fgLastHC; 
+  static Int_t fgLastROB; 
+  static Int_t fgLastIndex; 
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)

@@ -945,6 +945,18 @@ Bool_t AliTRD::Raw2SDigits(AliRawReader *rawReader)
 }
 
 //_____________________________________________________________________________
+AliLoader* AliTRD::MakeLoader(const char* topfoldername)
+{
+ fLoader = new AliLoader(GetName(),topfoldername);
+
+ AliInfo("Adding Tracklets-loader");
+ AliDataLoader *dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
+ fLoader->AddDataLoader(dl);
+
+ return fLoader;
+}
+
+//_____________________________________________________________________________
 AliTRD &AliTRD::operator=(const AliTRD &trd)
 {
   //

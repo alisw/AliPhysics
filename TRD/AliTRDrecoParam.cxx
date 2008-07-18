@@ -56,6 +56,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fADCbaseline(0)
   ,fNumberOfPresamples(0)
   ,fNumberOfPostsamples(0)
+  ,fTrackletWriteEnabled(kTRUE)
 {
   //
   // Default constructor
@@ -99,6 +100,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fADCbaseline(ref.fADCbaseline)
   ,fNumberOfPresamples(ref.fNumberOfPresamples)
   ,fNumberOfPostsamples(ref.fNumberOfPostsamples)
+  ,fTrackletWriteEnabled(ref.fTrackletWriteEnabled)
 {
   //
   // Copy constructor

@@ -131,6 +131,17 @@ Int_t AliTRDrawStreamTB::fgEmptySignals[] =
     -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1
     -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1
   };
+Short_t AliTRDrawStreamTB::fgMCMordering[] =
+  {
+    12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3 
+  };
+Short_t AliTRDrawStreamTB::fgROBordering[] =
+  {
+    0, 1, 2, 3
+  };
+Int_t  AliTRDrawStreamTB::fgLastHC = -1;
+Int_t  AliTRDrawStreamTB::fgLastROB = -1;
+Int_t  AliTRDrawStreamTB::fgLastIndex = -1;
 
 AliTRDrawStreamTB::AliTRDrawStreamTB()
   : AliTRDrawStreamBase()
@@ -502,7 +513,7 @@ AliTRDrawStreamTB::Next()
 	    fStack = &fSM.fStacks[fStackNumber];
 	    while (fStackLinkNumber < 12)
 	      {
-	        if (fStack->fLinksActive[fStackLinkNumber] == kTRUE)
+	        if (fStack->fLinksActive[fStackLinkNumber] == kTRUE && fStack->fLinksMonitor[fStackLinkNumber] == 0)
 		  {
 		    fHC = &fStack->fHalfChambers[fStackLinkNumber];
 		    if (!fHC)
@@ -510,7 +521,7 @@ AliTRDrawStreamTB::Next()
 		        AliError(Form("HC missing at stack %d link %d", fStackNumber, fStackLinkNumber));
 		        return kFALSE;
 		      }
-		    if (fHC->fCorrupted == 0)
+		    if (fHC->fCorrupted == 0 && (fHC->fH0Corrupted == 0 && fHC->fH1Corrupted == 0)) // if HC data corrupted(in any case), we don't read data at all from this HC 
 		      {
 		        while (fhcMCMcounter < fHC->fMCMmax)
 			  {
@@ -578,8 +589,8 @@ AliTRDrawStreamTB::Next()
 
 //------------------------------------------------------------
 Int_t 
-AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
-//[mj tracklet writing] AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, TObjArray *trackletContainer)
+//AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
+AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trackletContainer) //[mj]
 {
   //
   // Fills single chamber digit array 
@@ -611,15 +622,24 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
   Int_t lastdet = -1;
   Int_t det     = -1;
   // Int_t returnDet = -1;
-  //[mj tracklet writing] Int_t lastside = -1;
-  //[mj tracklet writing] Int_t side     = -1;
+  Int_t lastside = -1; //[mj]
+  Int_t side     = -1; //[mj]
   Int_t it = 0;
+  Int_t ntracklets = 0;
+
+  if (trackletContainer){ 
+    for (Int_t i = 0; i < 2; i++) //[mj]
+       for (Int_t j = 0; j < MAX_TRACKLETS_PERHC; j++) //[mj]
+          trackletContainer[i][j] = 0; //[mj]
+  }
+
   while (Next()) 
     {      
       det    = GetDet();
       //[mj tracklet writing] 
-      /* 
       side   = GetSide();
+      //printf("det= %d lastdet= %d side= %d lastside= %d\n",det,lastdet,side,lastside); 
+
       if (trackletContainer)
         {
          if ((det + side*AliTRDgeometry::kNdet) != (lastdet + lastside*AliTRDgeometry::kNdet))
@@ -632,17 +652,18 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
                 }
              }
 
-           UInt_t *trackletwords = GetTrackletWords();
-           AliTRDrawTracklet *tracklets = new AliTRDrawTracklet();
-           tracklets->SetDet(det);
-           tracklets->SetSide(side);    
-
-           tracklets->SetTracklets(trackletwords);
-           trackletContainer->Add(tracklets);
-         
+           //if(GetTrackletWords()) trackletContainer[side] = GetTrackletWords();
+           //printf("test= %u \n",*(trackletContainer[side])); 
+           
+            
+           ntracklets = GetNTracklets();
+           if(ntracklets > 0) memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * ntracklets); //copy tracklet words to trackletContainer array [mj]
+           //memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * MAX_TRACKLETS_PERHC); //copy tracklet words to trackletContainer array [mj]
+           //if(ntracklets > 0) memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * MAX_TRACKLETS_PERHC); //copy tracklet words to trackletContainer array [mj]
            lastside = side; 
           } 
-        } */
+        } 
+
       if (det != lastdet) 
 	{ 
 	  // If new detector found
@@ -942,6 +963,7 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
       
       fStack = &fSM.fStacks[istack];
 
+      fgLastHC  = -1; // to check rob number odering 
       for (Int_t ilink = 0; ilink < 12; ilink++)
 	{
 	  fStackLinkNumber = ilink; 
@@ -990,6 +1012,8 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 	      break;
 	    }
 	  
+          fgLastROB   = -1; // to check mcm number odering 
+          fgLastIndex = -1 ; // to check mcm number odering 
 	  if (DecodeHC() == kFALSE)
 	    {
 	      fSM.fClean = kFALSE;
@@ -1172,8 +1196,8 @@ AliTRDrawStreamTB::DecodeTracklets()
   fLinkTrackletCounter = 0;
   fEndOfTrackletCount = 0;
 
-  //[mj tracklet writing] for (Int_t i = 0; i < MAX_TRACKLETS_PERHC; i++)
-  //[mj tracklet writing] fHC->fTrackletWords[i] = 0;
+  for (Int_t i = 0; i < MAX_TRACKLETS_PERHC; i++) //[mj]
+  fHC->fTrackletWords[i] = 0; //[mj]
 
   if (fgDebugFlag)  AliDebug(10, Form("Decode tracklets at 0x%08x : 0x%08x", fpPos, *fpPos));
 
@@ -1192,7 +1216,8 @@ AliTRDrawStreamTB::DecodeTracklets()
 	  return kFALSE;
 	}
 
-      //[mj tracklet writing] fHC->fTrackletWords[fLinkTrackletCounter-1] = UInt_t(*fpPos); //store tracklet words into array 
+      fHC->fTrackletWords[fLinkTrackletCounter-1] = UInt_t(*fpPos); //store tracklet words into array  //[mj]
+      fHC->fNTracklets = fLinkTrackletCounter;
       fpPos++;
     }
 
@@ -1237,6 +1262,44 @@ AliTRDrawStreamTB::IsMCMheaderOK()
   // check the mcm header
   //
 
+  if (fgLastROB != fMCM->fROB) 
+    {
+      fgLastIndex = 0;
+      if (fgLastROB== -1) fgLastROB = fMCM->fROB;
+    }
+  else
+    {
+      Int_t matchingcounter = 0; 
+      for (Int_t i=fgLastIndex+1; i<16; i++)
+         { 
+           if ( fMCM->fMCM == fgMCMordering[i] )
+             {
+               fgLastIndex = i;
+               matchingcounter++;
+               break;
+             }
+         }
+      if (matchingcounter == 0)   
+        {
+          fMCM->fMCMhdCorrupted += 2;
+          AliDebug(11,Form("MCM number from last MCM is larger: MCM # from last MCM %d,  MCM # from current MCM %d \n",(fMCM-1)->fMCM, fMCM->fMCM));
+        }
+    }
+
+  if ( fgLastHC == fHC->fLayer*2 + fHC->fSide )
+    {
+      if ( fMCM->fROB < (fMCM-1)->fROB )
+        {
+         fMCM->fMCMhdCorrupted += 2;
+         AliDebug(11,Form("ROB number from last MCM is larger: ROB # from last MCM %d,  ROB # from current MCM %d \n",(fMCM-1)->fROB, fMCM->fROB));
+        }
+      else fgLastROB = fMCM->fROB; 
+    }
+ 
+  fgLastHC = fHC->fLayer*2 + fHC->fSide; 
+ 
+  /*
+  // this check will come back later again when we have "patched MCM map"
   int expectedROB = -1;
   if(!fHC->fSide) expectedROB = int(fHC->fMCMmax/16)*2;
   else expectedROB = int(fHC->fMCMmax/16)*2 + 1;
@@ -1247,6 +1310,7 @@ AliTRDrawStreamTB::IsMCMheaderOK()
       fMCM->fMCMhdCorrupted += 2;
       AliDebug(11,Form("ROB expected %d ROB read %d,  MCM expected %d MCM read %d\n",expectedROB, fMCM->fROB, expectedMCM, fMCM->fMCM));
     }
+  */
 
   // below two conditions are redundant  
   /*
@@ -1803,21 +1867,6 @@ const char *AliTRDrawStreamTB::DumpStackInfo(const struct AliTRDrawStack *st)
   // format the string with the stack info
   //
 
-  return "Dupa Blada";
-
-  static char text[1000];
-  sprintf(text,
-	  "[ Stack Info 0x%08x ] : Hsize %d Links Active %d %d %d %d %d %d %d %d %d %d %d %d",
-	  *st->fPos,
-	  st->fHeaderSize,
-	  st->fLinksActive[0], st->fLinksActive[1], st->fLinksActive[2], st->fLinksActive[3],
-	  st->fLinksActive[4], st->fLinksActive[5], st->fLinksActive[6], st->fLinksActive[7],
-	  st->fLinksActive[8], st->fLinksActive[9], st->fLinksActive[10], st->fLinksActive[11]
-	  );
-
-  printf(text);
-  return text;
-  /*
   return Form("[ Stack Info 0x%08x ] : Hsize %d Links Active %d %d %d %d %d %d %d %d %d %d %d %d",
 	      *st->fPos,
 	      st->fHeaderSize,
@@ -1825,7 +1874,6 @@ const char *AliTRDrawStreamTB::DumpStackInfo(const struct AliTRDrawStack *st)
 	      st->fLinksActive[4], st->fLinksActive[5], st->fLinksActive[6], st->fLinksActive[7],
 	      st->fLinksActive[8], st->fLinksActive[9], st->fLinksActive[10], st->fLinksActive[11]);
 
-  */
 }
 
 //--------------------------------------------------------

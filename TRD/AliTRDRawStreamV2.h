@@ -28,7 +28,7 @@ class AliTRDRawStreamV2 : public AliTRDrawStreamBase {
     virtual ~AliTRDRawStreamV2();
 
     virtual Bool_t       Next();                                //  Read the next data
-    virtual Int_t        NextChamber(AliTRDdigitsManager *man); //  Read next chamber data
+    virtual Int_t        NextChamber(AliTRDdigitsManager *man, UInt_t *trackletContainer); //  Read next chamber data
     virtual Bool_t        Init();                                //  Init for the fRawVersion > 1
 
     enum { kDDLOffset = 0x400 };                                //  Offset for DDL numbers

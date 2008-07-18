@@ -625,7 +625,7 @@ Bool_t AliTRDRawStream::Next()
 }
 
 //____________________________________________________________________________
-Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
+Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man, UInt_t *trackletContainer)
 {
   //
   // Updates the next data word pointer

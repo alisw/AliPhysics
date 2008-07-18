@@ -77,6 +77,7 @@ class AliTRD : public AliDetector {
 
   virtual AliDigitizer    *CreateDigitizer(AliRunDigitizer *manager) const; 
   virtual AliTRDTriggerL1 *CreateTriggerDetector() const { return new AliTRDTriggerL1(); };
+  virtual AliLoader* MakeLoader(const char* topfoldername);
 
  protected:
 

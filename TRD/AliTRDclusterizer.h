@@ -54,6 +54,7 @@ class AliTRDclusterizer : public TNamed {
   virtual Bool_t   WriteClusters(Int_t det);
           void     ResetRecPoints();
   TObjArray       *RecPoints();
+          Bool_t   WriteTracklets(Int_t det);
 
   virtual Bool_t   Raw2Clusters(AliRawReader *rawReader);
   virtual Bool_t   Raw2ClustersChamber(AliRawReader *rawReader);
@@ -91,7 +92,11 @@ class AliTRDclusterizer : public TNamed {
   TTree               *fClusterTree;         //! Tree with the cluster
   TObjArray           *fRecPoints;           //! Array of clusters
 
+  TTree               *fTrackletTree;         //! Tree for tracklets
+
   AliTRDdigitsManager *fDigitsManager;       //! TRD digits manager
+
+  UInt_t              **fTrackletContainer;    //! tracklet container
 
   Bool_t               fAddLabels;           //  Should clusters have MC labels?
   Int_t                fRawVersion;          //  Expected raw version of the data - default is 2

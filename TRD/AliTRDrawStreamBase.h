@@ -60,7 +60,8 @@ class AliTRDrawStreamBase : public TObject
   static  void      SetRawStreamVersion(const char *opt);
 
   virtual Bool_t    Next() {TRD_NOIMP(); return 0;}          
-  virtual Int_t     NextChamber(AliTRDdigitsManager */*man*/) {TRD_NOIMP(); return 0;} 
+  //virtual Int_t     NextChamber(AliTRDdigitsManager */*man*/) {TRD_NOIMP(); return 0;} 
+  virtual Int_t     NextChamber(AliTRDdigitsManager */*man*/, UInt_t **/*trackletContainer*/=NULL) {TRD_NOIMP(); return 0;}
   virtual Bool_t    Init() {TRD_NOIMP(); return -1;}     
 
   virtual Bool_t    SetRawVersion(Int_t /*fraw*/) {TRD_NOIMP(); return 0;} 
