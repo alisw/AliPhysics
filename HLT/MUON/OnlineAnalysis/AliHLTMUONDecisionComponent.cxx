@@ -162,6 +162,13 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 	{
 		if (strcmp( argv[i], "-lowptcut" ) == 0)
 		{
+			if (lowPtCutSet)
+			{
+				HLTWarning("Low pT cut parameter was already specified."
+					" Will replace previous value given by -lowptcut."
+				);
+			}
+			
 			if (argc <= i+1)
 			{
 				HLTError("The value for the low pT cut was not specified.");
@@ -184,6 +191,13 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-highptcut" ) == 0)
 		{
+			if (lowPtCutSet)
+			{
+				HLTWarning("High pT cut parameter was already specified."
+					" Will replace previous value given by -highptcut."
+				);
+			}
+			
 			if (argc <= i+1)
 			{
 				HLTError("The value for the high pT cut was not specified.");
@@ -206,6 +220,13 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-lowmasscut" ) == 0)
 		{
+			if (lowPtCutSet)
+			{
+				HLTWarning("Low invariant mass cut parameter was already specified."
+					" Will replace previous value given by -lowmasscut."
+				);
+			}
+			
 			if (argc <= i+1)
 			{
 				HLTError("The value for the low invariant mass cut was not specified.");
@@ -228,6 +249,13 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-highmasscut" ) == 0)
 		{
+			if (lowPtCutSet)
+			{
+				HLTWarning("High invariant mass cut parameter was already specified."
+					" Will replace previous value given by -highmasscut."
+				);
+			}
+			
 			if (argc <= i+1)
 			{
 				HLTError("The value for the high invariant mass cut was not specified.");
@@ -472,6 +500,7 @@ int AliHLTMUONDecisionComponent::ReadConfigFromCDB(
 	)
 {
 	/// Reads the cut parameters from the CDB.
+	/// \param path Indicates the partial (or relative) path to the CDB entry.
 	
 	assert(AliCDBManager::Instance() != NULL);
 	
@@ -479,151 +508,40 @@ int AliHLTMUONDecisionComponent::ReadConfigFromCDB(
 	if (path != NULL)
 		pathToEntry = path;
 	
-	AliCDBEntry* entry = AliCDBManager::Instance()->Get(pathToEntry);
-	if (entry == NULL)
-	{
-		HLTError("Could not get the CDB entry for \"%s\".", pathToEntry);
-		return -EIO;
-	}
-	
-	TObject* obj = entry->GetObject();
-	if (obj == NULL)
-	{
-		HLTError("Configuration object for \"%s\" is missing.", pathToEntry);
-		return -ENOENT;
-	}
-	
-	if (obj->IsA() != TMap::Class())
-	{
-		HLTError("Wrong type for configuration object in \"%s\". Found a %s but we need a TMap.",
-			pathToEntry, obj->ClassName()
-		);
-		return -EPROTO;
-	}
-	TMap* map = dynamic_cast<TMap*>(obj);
+	TMap* map = NULL;
+	int result = FetchTMapFromCDB(pathToEntry, map);
+	if (result != 0) return result;
 	
 	if (setLowPtCut)
 	{
-		TPair* pair = static_cast<TPair*>(map->FindObject("lowptcut"));
-		if (pair == NULL)
-		{
-			HLTError("Configuration object for \"%s\" does not contain the low pT cut value.",
-				pathToEntry
-			);
-			return -ENOENT;
-		}
-		TObject* valueObj = pair->Value();
-		if (valueObj->IsA() != TObjString::Class())
-		{
-			HLTError("The low pT cut parameter found in configuration object \"%s\""
-				" is not a TObjString. Found an object of type %s instead.",
-				pathToEntry, valueObj->ClassName()
-			);
-			return -EPROTO;
-		}
-		TString value = dynamic_cast<TObjString*>(valueObj)->GetString();
-		if (not value.IsFloat())
-		{
-			HLTError("The low pT cut parameter found in configuration object \"%s\""
-				"is not a floating point string; found \"%s\".",
-				pathToEntry, value.Data()
-			);
-			return -EPROTO;
-		}
-		fLowPtCut = (AliHLTFloat32_t) value.Atof();
+		Double_t value = 0;
+		result = GetFloatFromTMap(map, "lowptcut", value, pathToEntry, "low pT cut");
+		if (result != 0) return result;
+		fLowPtCut = (AliHLTFloat32_t) value;
 	}
 	
 	if (setHighPtCut)
 	{
-		TPair* pair = static_cast<TPair*>(map->FindObject("highptcut"));
-		if (pair == NULL)
-		{
-			HLTError("Configuration object for \"%s\" does not contain the high pT cut value.",
-				pathToEntry
-			);
-			return -ENOENT;
-		}
-		TObject* valueObj = pair->Value();
-		if (valueObj->IsA() != TObjString::Class())
-		{
-			HLTError("The high pT cut parameter found in configuration object \"%s\""
-				" is not a TObjString. Found an object of type %s instead.",
-				pathToEntry, valueObj->ClassName()
-			);
-			return -EPROTO;
-		}
-		TString value = dynamic_cast<TObjString*>(valueObj)->GetString();
-		if (not value.IsFloat())
-		{
-			HLTError("The high pT cut parameter found in configuration object \"%s\""
-				"is not a floating point string; found \"%s\".",
-				pathToEntry, value.Data()
-			);
-			return -EPROTO;
-		}
-		fHighPtCut = (AliHLTFloat32_t) value.Atof();
+		Double_t value = 0;
+		result = GetFloatFromTMap(map, "highptcut", value, pathToEntry, "high pT cut");
+		if (result != 0) return result;
+		fHighPtCut = (AliHLTFloat32_t) value;
 	}
 	
 	if (setLowMassCut)
 	{
-		TPair* pair = static_cast<TPair*>(map->FindObject("lowmasscut"));
-		if (pair == NULL)
-		{
-			HLTError("Configuration object for \"%s\" does not contain the low invariant mass cut value.",
-				pathToEntry
-			);
-			return -ENOENT;
-		}
-		TObject* valueObj = pair->Value();
-		if (valueObj->IsA() != TObjString::Class())
-		{
-			HLTError("The low invariant mass cut parameter found in configuration object \"%s\""
-				" is not a TObjString. Found an object of type %s instead.",
-				pathToEntry, valueObj->ClassName()
-			);
-			return -EPROTO;
-		}
-		TString value = dynamic_cast<TObjString*>(valueObj)->GetString();
-		if (not value.IsFloat())
-		{
-			HLTError("The low invariant mass cut parameter found in configuration object \"%s\""
-				"is not a floating point string; found \"%s\".",
-				pathToEntry, value.Data()
-			);
-			return -EPROTO;
-		}
-		fLowMassCut = (AliHLTFloat32_t) value.Atof();
+		Double_t value = 0;
+		result = GetFloatFromTMap(map, "lowmasscut", value, pathToEntry, "low invariant mass cut");
+		if (result != 0) return result;
+		fLowMassCut = (AliHLTFloat32_t) value;
 	}
 	
 	if (setHighMassCut)
 	{
-		TPair* pair = static_cast<TPair*>(map->FindObject("highmasscut"));
-		if (pair == NULL)
-		{
-			HLTError("Configuration object for \"%s\" does not contain the high invariant mass cut value.",
-				pathToEntry
-			);
-			return -ENOENT;
-		}
-		TObject* valueObj = pair->Value();
-		if (valueObj->IsA() != TObjString::Class())
-		{
-			HLTError("The high invariant mass cut parameter found in configuration object \"%s\""
-				" is not a TObjString. Found an object of type %s instead.",
-				pathToEntry, valueObj->ClassName()
-			);
-			return -EPROTO;
-		}
-		TString value = dynamic_cast<TObjString*>(valueObj)->GetString();
-		if (not value.IsFloat())
-		{
-			HLTError("The high invariant mass cut parameter found in configuration object \"%s\""
-				"is not a floating point string; found \"%s\".",
-				pathToEntry, value.Data()
-			);
-			return -EPROTO;
-		}
-		fHighMassCut = (AliHLTFloat32_t) value.Atof();
+		Double_t value = 0;
+		result = GetFloatFromTMap(map, "highmasscut", value, pathToEntry, "high invariant mass cut");
+		if (result != 0) return result;
+		fHighMassCut = (AliHLTFloat32_t) value;
 	}
 	
 	return 0;

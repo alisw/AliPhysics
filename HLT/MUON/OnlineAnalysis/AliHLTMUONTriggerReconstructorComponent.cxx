@@ -287,7 +287,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		{
 			if ( argc <= i+1 )
 			{
-				HLTError("The RUN number was not specified." );
+				HLTError("The run number was not specified." );
 				// Make sure to delete fTrigRec to avoid partial initialisation.
 				delete fTrigRec;
 				fTrigRec = NULL;
@@ -299,7 +299,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			if (cpErr == NULL or *cpErr != '\0')
 			{
 				HLTError("Cannot convert '%s' to a valid run number."
-					" Expected an integer value.", argv[i+1]
+					" Expected a positive integer value.", argv[i+1]
 				);
 				// Make sure to delete fTrigRec to avoid partial initialisation.
 				delete fTrigRec;
@@ -363,23 +363,28 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	}
 	
 	int result = 0;
-	if (useCDB)
+	if (cdbPath != NULL or run != -1)
+	{
+		result = SetCDBPathAndRunNo(cdbPath, run);
+	}
+	
+	if (result == 0 and useCDB)
 	{
 		HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
 			fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
 		);
 		if (fDDL == -1)
 			HLTWarning("DDL number not specified. The lookup table loaded from CDB will be empty!");
-		result = ReadCDB(cdbPath, run);
+		result = ReadLutFromCDB();
 	}
-	else
+	else if (result == 0)
 	{
 		HLTInfo("Loading lookup table information from file %s.", lutFileName);
 		result = ReadLookUpTable(lutFileName);
 	}
 	if (result != 0)
 	{
-		// Error messages already generated in ReadCDB or ReadLookUpTable.
+		// Error messages already generated in ReadLutFromCDB or ReadLookUpTable.
 		
 		// Make sure to delete fTrigRec to avoid partial initialisation.
 		delete fTrigRec;
@@ -591,14 +596,15 @@ int AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpath
 }
 
 
-int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
+int AliHLTMUONTriggerReconstructorComponent::ReadLutFromCDB()
 {
 	/// Loads the lookup table containing channel and geometrical position
 	/// information about trigger strips from CDB.
-	/// \param cdbPath  This specifies the CDB path to use to load from.
-	///                 Can be set to NULL meaning the default storage is used.
-	/// \param run  Specifies the run number to use. If set to -1 then the
-	///             default / current run number set for the CDB is used.
+	///
+	/// \note To override the default CDB path and / or run number the
+	/// SetCDBPathAndRunNo(cdbPath, run) method should be called before this
+	/// method.
+	///
 	/// \return 0 on success and non zero codes for errors.
 
 	if (fDDL == -1)
@@ -607,7 +613,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t 
 		return -EINVAL;
 	}
 
-	int result = FetchMappingStores(cdbPath, run);
+	int result = FetchMappingStores();
 	// Error message already generated in FetchMappingStores.
 	if (result != 0) return result;
 	AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();

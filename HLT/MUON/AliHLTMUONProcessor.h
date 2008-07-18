@@ -17,6 +17,8 @@
 #include "AliHLTMUONDataBlockReader.h"
 #include "AliHLTMUONUtils.h"
 
+class TMap;
+
 /**
  * @class AliHLTMUONProcessor
  * This component class is an abstract base class for dHLT components.
@@ -135,24 +137,128 @@ protected:
 	}
 	
 	/**
-	 * Fetches the DDL and detector element store objects for MUON mapping.
+	 * Sets the CDB path and run number to read from.
 	 * \param cdbPath  The CDB path to use. If set to NULL and the path has
 	 *      not been set in the CDB manager then the default path
 	 *      "local://$ALICE_ROOT" is used if the 'useDefault' flag is also true.
 	 * \param run  The run number to use. If set to -1 and the run number has
 	 *      not been set in the CDB manager then a value of zero is used if
 	 *      the 'useDefault' flag is also true.
-	 * \param useDefault  If set to true then a default CDB path and run number
+	 * \param useDefault  If set to true then a default CDB path and/or run number
 	 *      is used if they have not been set and 'cdbPath' == NULL or
-	 *      'run' == NULL.
-	 * \return Zero if the object could be loaded. Otherwise an error code is
-	 *      returned, which is compatible with the HLT framework.
+	 *      'run' == -1. (false by default).
+	 * \return Zero if the object could be loaded. Otherwise an error code,
+	 *      compatible with the HLT framework, is returned.
+	 */
+	int SetCDBPathAndRunNo(
+			const char* cdbPath, Int_t run, bool useDefault = false
+		) const;
+	
+	/**
+	 * Fetches the DDL and detector element store objects for MUON mapping.
+	 * \return Zero if the objects could be loaded. Otherwise an error code,
+	 *      which is compatible with the HLT framework, is returned.
 	 * \note AliMpDDLStore::Instance() and AliMpDEStore::Instance() must be used
 	 *      to fetch the objects after this method returns a code equal to zero.
 	 */
-	int FetchMappingStores(
-			const char* cdbPath = NULL, Int_t run = -1,
-			bool useDefault = true
+	int FetchMappingStores() const;
+	
+	/**
+	 * Fetches a TMap object from the CDB.
+	 * [in] \param pathToEntry  The relative path to the entry in the CDB to fetch.
+	 * [out] \param map  This will be filled with the TMap object found if
+	 *      a successful status code is returned. Otherwise it will be unchanged.
+	 * \return Zero if the object could be found. Otherwise an error code,
+	 *      which is compatible with the HLT framework, is returned.
+	 */
+	int FetchTMapFromCDB(const char* pathToEntry, TMap*& map) const;
+	
+	/**
+	 * Tries to find the string value associated with a certain parameter in a TMap.
+	 * [in] \param map  The TMap object to search in.
+	 * [in] \param paramName  The name of the parameter to search for.
+	 * [out] \param value  Will be filled with the object found.
+	 * [in] \param prettyName  Should be the name of the parameter which will
+	 *      be used when printing error messages. If this is set to NULL then
+	 *      the paramName will be used instead (default is NULL).
+	 * \return Zero if the object could be found. Otherwise an error code,
+	 *      which is compatible with the HLT framework, is returned.
+	 */
+	int GetValueFromTMap(
+			TMap* map, const char* paramName, TString& value,
+			const char* pathToEntry = NULL, const char* prettyName = NULL
+		) const;
+	
+	/**
+	 * Tries to find a certain parameter in the TMap object and convert it to
+	 * an integer value.
+	 * [in] \param map  The TMap object to search in.
+	 * [in] \param paramName  The name of the parameter to search for.
+	 * [out] \param value  Will be filled with the integer value for the parameter,
+	 *       if it was found and it was an integer value.
+	 * [in] \param prettyName  Should be the name of the parameter which will
+	 *      be used when printing error messages. If this is set to NULL then
+	 *      the paramName will be used instead (default is NULL).
+	 * \return Zero if the object could be found and is valid. Otherwise an
+	 *       error code, which is compatible with the HLT framework, is returned.
+	 */
+	int GetIntFromTMap(
+			TMap* map, const char* paramName, Int_t& value,
+			const char* pathToEntry = NULL, const char* prettyName = NULL
+		) const;
+	
+	/**
+	 * Tries to find a certain parameter in the TMap object and convert it to
+	 * a positive integer value.
+	 * [in] \param map  The TMap object to search in.
+	 * [in] \param paramName  The name of the parameter to search for.
+	 * [out] \param value  Will be filled with the integer value for the parameter,
+	 *       if it was found and it was a positive integer value.
+	 * [in] \param prettyName  Should be the name of the parameter which will
+	 *      be used when printing error messages. If this is set to NULL then
+	 *      the paramName will be used instead (default is NULL).
+	 * \return Zero if the object could be found and is valid. Otherwise an
+	 *       error code, which is compatible with the HLT framework, is returned.
+	 */
+	int GetPositiveIntFromTMap(
+			TMap* map, const char* paramName, Int_t& value,
+			const char* pathToEntry = NULL, const char* prettyName = NULL
+		) const;
+	
+	/**
+	 * Tries to find a certain parameter in the TMap object and convert it to
+	 * an floating point value.
+	 * [in] \param map  The TMap object to search in.
+	 * [in] \param paramName  The name of the parameter to search for.
+	 * [out] \param value  Will be filled with the floating point value for the
+	 *       parameter, if it was found and it was a floating point value.
+	 * [in] \param prettyName  Should be the name of the parameter which will
+	 *      be used when printing error messages. If this is set to NULL then
+	 *      the paramName will be used instead (default is NULL).
+	 * \return Zero if the object could be found and is valid. Otherwise an
+	 *       error code, which is compatible with the HLT framework, is returned.
+	 */
+	int GetFloatFromTMap(
+			TMap* map, const char* paramName, Double_t& value,
+			const char* pathToEntry = NULL, const char* prettyName = NULL
+		) const;
+	
+	/**
+	 * Tries to find a certain parameter in the TMap object and convert it to
+	 * an positive floating point value.
+	 * [in] \param map  The TMap object to search in.
+	 * [in] \param paramName  The name of the parameter to search for.
+	 * [out] \param value  Will be filled with the floating point value for the
+	 *       parameter, if it was found and it was a positive floating point value.
+	 * [in] \param prettyName  Should be the name of the parameter which will
+	 *      be used when printing error messages. If this is set to NULL then
+	 *      the paramName will be used instead (default is NULL).
+	 * \return Zero if the object could be found and is valid. Otherwise an
+	 *       error code, which is compatible with the HLT framework, is returned.
+	 */
+	int GetPositiveFloatFromTMap(
+			TMap* map, const char* paramName, Double_t& value,
+			const char* pathToEntry = NULL, const char* prettyName = NULL
 		) const;
 	
 private:

@@ -72,18 +72,35 @@ void CreateDefaultCDBEntries(const char* cdbPath = "local://$ALICE_ROOT")
 	Int_t firstRun = 0;
 	Int_t lastRun = AliCDBRunRange::Infinity();
 	
-	// Create and store the configuration parameters for the trigger decision cuts.
-	TMap* cuts = new TMap;
-	cuts->SetOwner(kTRUE);
-	cuts->Add(new TObjString("lowptcut"), new TObjString("1"));
-	cuts->Add(new TObjString("highptcut"), new TObjString("2"));
-	cuts->Add(new TObjString("lowmasscut"), new TObjString("2.5"));
-	cuts->Add(new TObjString("highmasscut"), new TObjString("7"));
+	const char* path = NULL;
+	AliCDBMetaData* metaData = NULL;
+	TMap* params = NULL;
+	AliCDBId id;
 	
-	const char* path = AliHLTMUONConstants::DecisionComponentCDBPath();
-	AliCDBId id(path, firstRun, lastRun, verison);
-	AliCDBMetaData* metaData = new AliCDBMetaData();
+	// Create and store the configuration parameters for the hit reconstructor.
+	params = new TMap;
+	params->SetOwner(kTRUE);
+	params->Add(new TObjString("dccut"), new TObjString("50"));
+	
+	path = AliHLTMUONConstants::HitReconstructorCDBPath();
+	id = AliCDBId(path, firstRun, lastRun, verison);
+	metaData = new AliCDBMetaData();
+	metaData->SetResponsible("dimuon HLT");
+	metaData->SetComment("Hit reconstructor DC cut parameter for dimuon HLT.");
+	storage->Put(params, id, metaData);
+	
+	// Create and store the configuration parameters for the trigger decision cuts.
+	params = new TMap;
+	params->SetOwner(kTRUE);
+	params->Add(new TObjString("lowptcut"), new TObjString("1"));
+	params->Add(new TObjString("highptcut"), new TObjString("2"));
+	params->Add(new TObjString("lowmasscut"), new TObjString("2.5"));
+	params->Add(new TObjString("highmasscut"), new TObjString("7"));
+	
+	path = AliHLTMUONConstants::DecisionComponentCDBPath();
+	id = AliCDBId(path, firstRun, lastRun, verison);
+	metaData = new AliCDBMetaData();
 	metaData->SetResponsible("dimuon HLT");
 	metaData->SetComment("Trigger decision cuts for dimuon HLT.");
-	storage->Put(cuts, id, metaData);
+	storage->Put(params, id, metaData);
 }

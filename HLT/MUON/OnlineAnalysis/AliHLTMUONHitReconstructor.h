@@ -54,6 +54,7 @@ public:
 		);
 	
 	void SetDCCut(AliHLTInt32_t dcCut) { fDCCut = dcCut; }
+	AliHLTInt32_t GetDCCut() const { return fDCCut; }
 	
 	bool Run(
 			const AliHLTUInt32_t* rawData,

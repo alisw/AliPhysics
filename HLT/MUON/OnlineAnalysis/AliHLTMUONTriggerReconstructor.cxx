@@ -692,7 +692,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnLocalStructV2(
 	///    a new raw data buffer.
 	/// \param localStruct  This is a pointer to the local L0 trigger structure data.
 
-	assert(iloc >= 0 and iloc < 16);
+	assert(iloc < 16);
 	assert(localStruct != NULL);
 	assert(fOutputTrigRecs != NULL);
 	

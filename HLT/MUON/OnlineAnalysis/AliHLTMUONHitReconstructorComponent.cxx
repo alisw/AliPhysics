@@ -1,22 +1,27 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
  *   Indranil Das <indra.das@saha.ac.in>                                  *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 /* $Id$ */
 
 ///
+///  @file   AliHLTMUONHitReconstructorComponent.cxx
+///  @author Indranil Das <indra.das@saha.ac.in> | <indra.ehep@gmail.com>, Artur Szostak <artursz@iafrica.com>
+///  @date   28 May 2007
+///  @brief  Implementation of the hit Reconstruction processing component.
 ///
 ///  The HitRec Component is designed to deal the rawdata inputfiles to findout the 
 ///  the reconstructed hits. The output is send to the output block for further 
@@ -40,9 +45,10 @@
 #include <cassert>
 #include <fstream>
 
-//STEER 
+#include "TMap.h"
+
+//STEER
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliGeomManager.h"
 
 //MUON
@@ -70,7 +76,8 @@ AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	fLutSize(0),
 	fLut(NULL),
 	fIdToEntry(),
-	fWarnForUnexpecedBlock(false)
+	fWarnForUnexpecedBlock(false),
+	fDelaySetup(false)
 {
 	///
 	/// Default constructor.
@@ -173,12 +180,14 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	fDDL = -1;
 	fIdToEntry.clear();
 	fWarnForUnexpecedBlock = false;
+	fDelaySetup = false;
 	
 	const char* lutFileName = NULL;
 	const char* cdbPath = NULL;
 	Int_t run = -1;
 	bool useCDB = false;
 	bool tryRecover = false;
+	AliHLTInt32_t dccut = -1;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -186,6 +195,13 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-ddl" ) == 0)
 		{
+			if (fDDL != -1)
+			{
+				HLTWarning("DDL number was already specified."
+					" Will replace previous value given by -ddl or -ddlid."
+				);
+			}
+			
 			if (argc <= i+1)
 			{
 				HLTError("The DDL number was not specified. Must be in the range [13..20].");
@@ -215,6 +231,13 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-ddlid" ) == 0)
 		{
+			if (fDDL != -1)
+			{
+				HLTWarning("DDL number was already specified."
+					" Will replace previous value given by -ddl or -ddlid."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
 				HLTError("DDL equipment ID number not specified. It must be in the range [2572..2579]" );
@@ -244,6 +267,13 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-lut" ) == 0)
 		{
+			if (lutFileName != NULL)
+			{
+				HLTWarning("LUT path was already specified."
+					" Will replace previous value given by -lut."
+				);
+			}
+			
 			if (argc <= i+1)
 			{
 				HLTError("The lookup table filename was not specified.");
@@ -263,6 +293,13 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-cdbpath" ) == 0)
 		{
+			if (cdbPath != NULL)
+			{
+				HLTWarning("CDB path was already specified."
+					" Will replace previous value given by -cdbpath."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
 				HLTError("The CDB path was not specified." );
@@ -277,19 +314,26 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	
 		if (strcmp( argv[i], "-run" ) == 0)
 		{
+			if (run != -1)
+			{
+				HLTWarning("Run number was already specified."
+					" Will replace previous value given by -run."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
-				HLTError("The RUN number was not specified." );
+				HLTError("The run number was not specified." );
 				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
 			char* cpErr = NULL;
-			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
-			if (cpErr == NULL or *cpErr != '\0')
+			run = Int_t( strtol(argv[i+1], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0' or run < 0)
 			{
 				HLTError("Cannot convert '%s' to a valid run number."
-					" Expected an integer value.", argv[i+1]
+					" Expected a positive integer value.", argv[i+1]
 				);
 				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
@@ -298,6 +342,43 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			i++;
 			continue;
 		} // -run argument
+	
+		if (strcmp( argv[i], "-dccut" ) == 0)
+		{
+			if (dccut != -1)
+			{
+				HLTWarning("DC cut parameter was already specified."
+					" Will replace previous value given by -dccut."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("No DC cut value was specified. It should be a positive integer value." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			dccut = AliHLTInt32_t( strtol(argv[i+1], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0' or dccut < 0)
+			{
+				HLTError("Cannot convert '%s' to a valid DC cut value."
+					" Expected a positive integer value.", argv[i+1]
+				);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			i++;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-delaysetup" ) == 0)
+		{
+			fDelaySetup = true;
+			continue;
+		}
 		
 		if (strcmp( argv[i], "-warn_on_unexpected_block" ) == 0)
 		{
@@ -319,34 +400,83 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	if (lutFileName == NULL) useCDB = true;
 	
-	if (fDDL == -1)
+	if (fDDL == -1 and not fDelaySetup)
 	{
 		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
 	}
 	
-	int result = 0;
+	if (cdbPath != NULL or run != -1)
+	{
+		int result = SetCDBPathAndRunNo(cdbPath, run);
+		if (result != 0)
+		{
+			// Error messages already generated in SetCDBPathAndRunNo.
+			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+			return result;
+		}
+	}
+	
 	if (useCDB)
 	{
-		HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
-			fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
-		);
-		if (fDDL == -1)
-			HLTWarning("DDL number not specified. The lookup table loaded from CDB will be empty!");
-		result = ReadCDB(cdbPath, run);
+		if (not fDelaySetup)
+		{
+			HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			int result = ReadLutFromCDB();
+			if (result != 0)
+			{
+				// Error messages already generated in ReadLutFromCDB.
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return result;
+			}
+			fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+		}
 	}
 	else
 	{
 		HLTInfo("Loading lookup table information from file %s.", lutFileName);
-		result = ReadLookUpTable(lutFileName);
-	}
-	if (result != 0)
-	{
-		// Error messages already generated in ReadCDB or ReadLookUpTable.
-		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-		return result;
+		int result = ReadLookUpTable(lutFileName);
+		if (result != 0)
+		{
+			// Error messages already generated in ReadLookUpTable.
+			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+			return result;
+		}
+		fHitRec->SetLookUpTable(fLut, &fIdToEntry);
 	}
 	
-	fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+	if (dccut == -1)
+	{
+		if (not fDelaySetup)
+		{
+			HLTInfo("Loading DC cut parameters from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			int result = ReadDCCutFromCDB();
+			if (result != 0)
+			{
+				// Error messages already generated in ReadDCCutFromCDB.
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return result;
+			}
+			HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
+		}
+	}
+	else
+	{
+		if (useCDB)
+		{
+			HLTWarning("The -cdb or -cdbpath parameter was specified, which indicates that"
+				" this component should read from the CDB, but then the -dccut value"
+				" was also used. Will override the value from CDB with the command"
+				" line DC cut parameter given.");
+		}
+		
+		fHitRec->SetDCCut(dccut);
+		HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
+	}
+	
 	fHitRec->TryRecover(tryRecover);
 	
 	return 0;
@@ -365,6 +495,76 @@ int AliHLTMUONHitReconstructorComponent::DoDeinit()
 }
 
 
+int AliHLTMUONHitReconstructorComponent::Reconfigure(
+		const char* cdbEntry, const char* componentId
+	)
+{
+	/// Inherited from AliHLTComponent. This method will reload CDB configuration
+	/// entries for this component from the CDB.
+	/// \param cdbEntry If this is NULL then it is assumed that all CDB entries should
+	///      be reloaded. Otherwise a particular value for 'cdbEntry' will trigger
+	///      reloading of the LUT if the path contains 'MUON/' and reloading of the DC
+	///      cut parameter from the given path in all other cases.
+	/// \param componentId  Must be set to the same value as what GetComponentID()
+	///      returns for this component for this method to have any effect.
+	
+	if (strcmp(componentId, GetComponentID()) == 0)
+	{
+		HLTInfo("Reading new configuration entries from CDB.");
+		
+		int result = 0;
+		bool startsWithMUON = TString(cdbEntry).Index("MUON/", 5, 0, TString::kExact) == 0;
+		if (cdbEntry == NULL or startsWithMUON)
+		{
+			// First clear the current LUT data and then load in the new values.
+			if (fLut != NULL)
+			{
+				delete [] fLut;
+				fLut = NULL;
+				fLutSize = 0;
+			}
+			
+			fIdToEntry.clear();
+		
+			result = ReadLutFromCDB();
+			if (result != 0) return result;
+		}
+		
+		if (cdbEntry == NULL or not startsWithMUON)
+		{
+			result = ReadDCCutFromCDB(cdbEntry);
+			if (result != 0) return result;
+			HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
+		}
+	}
+	
+	return 0;
+}
+
+
+int AliHLTMUONHitReconstructorComponent::ReadPreprocessorValues(const char* modules)
+{
+	/// Inherited from AliHLTComponent. 
+	/// Updates the configuration of this component if either HLT or MUON have
+	/// been specified in the 'modules' list.
+
+	TString mods = modules;
+	if (mods.Contains("ALL") or (mods.Contains("HLT") and mods.Contains("MUON")))
+	{
+		return Reconfigure(NULL, GetComponentID());
+	}
+	if (mods.Contains("HLT"))
+	{
+		return Reconfigure(AliHLTMUONConstants::HitReconstructorCDBPath(), GetComponentID());
+	}
+	if (mods.Contains("MUON"))
+	{
+		return Reconfigure("MUON/*", GetComponentID());
+	}
+	return 0;
+}
+
+
 int AliHLTMUONHitReconstructorComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
@@ -377,6 +577,68 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 	///
 	/// Inherited from AliHLTProcessor. Processes the new event data.
 	///
+	
+	// Initialise the LUT and DC cut parameter from CDB if we were requested
+	// to initialise only when the first event was received.
+	if (fDelaySetup)
+	{
+		// Use the specification given by the first data block if we
+		// have not been given a DDL number on the command line.
+		if (fDDL == -1)
+		{
+			if (evtData.fBlockCnt <= 0)
+			{
+				HLTError("The initialisation from CDB of the component has"
+					" been delayed to the first received event. However,"
+					" no data blocks have been found in the first event."
+				);
+				return -ENOENT;
+			}
+			
+			fDDL = AliHLTMUONUtils::SpecToDDLNumber(blocks[0].fSpecification);
+			
+			if (fDDL == -1)
+			{
+				HLTError("Received a data block with a specification (0x%8.8X)"
+					" indicating multiple DDL data sources, but we must only"
+					" receive data from one tracking station DDL.",
+					blocks[0].fSpecification
+				);
+				return -EPROTO;
+			}
+		}
+		
+		// Check that the LUT was not already loaded in DoInit.
+		if (fLut == NULL)
+		{
+			HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			int result = ReadLutFromCDB();
+			if (result != 0) return result;
+			
+			fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+		}
+		
+		// Check that the DC cut was not already loaded in DoInit.
+		if (fHitRec->GetDCCut() == -1)
+		{
+			HLTInfo("Loading DC cut parameters from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			int result = ReadDCCutFromCDB();
+			if (result != 0) return result;
+			HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
+		}
+		
+		fDelaySetup = false;
+	}
+	
+	if (fLut == NULL)
+	{
+		HLTFatal("Lookup table not loaded! Cannot continue processing data.");
+		return -ENOENT;
+	}
 	
 	// Process an event
 	unsigned long totalSize = 0; // Amount of memory currently consumed in bytes.
@@ -612,9 +874,12 @@ int AliHLTMUONHitReconstructorComponent::ReadLookUpTable(const char* lutFileName
 }
 
 
-int AliHLTMUONHitReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
+int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 {
 	/// Reads LUT from CDB.
+	/// To override the default CDB path and / or run number the
+	/// SetCDBPathAndRunNo(cdbPath, run) method should be called before this
+	/// method.
 
 	assert( fLut == NULL );
 	assert( fLutSize == 0 );
@@ -630,7 +895,7 @@ int AliHLTMUONHitReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
 	AliHLTMUONHitRecoLutRow lut;
 	AliHLTUInt32_t iEntry = 0;
 	
-	int result = FetchMappingStores(cdbPath, run);
+	int result = FetchMappingStores();
 	// Error message already generated in FetchMappingStores.
 	if (result != 0) return result;
 	AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
@@ -654,7 +919,7 @@ int AliHLTMUONHitReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
 		return -ENOENT;
 	}
 	
-	AliMUONCalibrationData calibData(run);
+	AliMUONCalibrationData calibData(AliCDBManager::Instance()->GetRun());
 	
 	Int_t chamberId;
 	
@@ -798,6 +1063,29 @@ int AliHLTMUONHitReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
 }
 
 
+int AliHLTMUONHitReconstructorComponent::ReadDCCutFromCDB(const char* path)
+{
+	/// Reads the DC cut parameter from the CDB.
+
+	const char* pathToEntry = AliHLTMUONConstants::HitReconstructorCDBPath();
+	if (path != NULL)
+		pathToEntry = path;
+	
+	TMap* map = NULL;
+	int result = FetchTMapFromCDB(pathToEntry, map);
+	if (result != 0) return result;
+	
+	Int_t value = 0;
+	result = GetPositiveIntFromTMap(map, "dccut", value, pathToEntry, "DC cut");
+	if (result != 0) return result;
+	
+	assert(fHitRec != NULL);
+	fHitRec->SetDCCut(value);
+	
+	return 0;
+}
+
+
 bool AliHLTMUONHitReconstructorComponent::GenerateLookupTable(
 		AliHLTInt32_t ddl, const char* filename,
 		const char* cdbPath, Int_t run
@@ -821,7 +1109,8 @@ bool AliHLTMUONHitReconstructorComponent::GenerateLookupTable(
 	}
 	
 	comp.fDDL = ddl;
-	if (comp.ReadCDB(cdbPath, run) != 0) return false;
+	if (comp.SetCDBPathAndRunNo(cdbPath, run) != 0) return false;
+	if (comp.ReadLutFromCDB() != 0) return false;
 	
 	char str[1024*4];
 	std::fstream file(filename, std::ios::out);
@@ -841,7 +1130,7 @@ bool AliHLTMUONHitReconstructorComponent::GenerateLookupTable(
 		AliHLTInt32_t idManuChannel = id->first;
 		AliHLTInt32_t row = id->second;
 		
-		assert( row < comp.fLutSize );
+		assert( AliHLTUInt32_t(row) < comp.fLutSize );
 		
 		sprintf(str, "%d\t%d\t%d\t%d\t%.15e\t%.15e\t%.15e\t%.15e\t%d\t%.15e\t%.15e\t%.15e\t%.15e\t%d\t%d",
 			idManuChannel, comp.fLut[row].fDetElemId, comp.fLut[row].fIX,

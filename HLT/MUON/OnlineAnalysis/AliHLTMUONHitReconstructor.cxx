@@ -53,7 +53,7 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fkBlockHeaderSize(8),
 	fkDspHeaderSize(8),
 	fkBuspatchHeaderSize(4),
-	fDCCut(0),
+	fDCCut(-1),
 	fPadData(NULL),
 	fLookUpTableData(NULL),
 	fRecPoints(NULL),
@@ -736,7 +736,7 @@ void AliHLTMUONHitReconstructor::Clear()
 AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::AliHLTMUONRawDecoder() :
 	fBufferStart(NULL),
 	fBusPatchId(0),
-	fDCCut(0),
+	fDCCut(-1),
 	fPadData(NULL),
 	fLookUpTableData(NULL),
 	fNofFiredDetElem(NULL),

@@ -85,7 +85,7 @@ private:
 	AliHLTMUONTriggerReconstructorComponent& operator = (const AliHLTMUONTriggerReconstructorComponent& /*obj*/);
 
 	int ReadLookUpTable(const char* lutpath);
-	int ReadCDB(const char* cdbPath, Int_t run);
+	int ReadLutFromCDB();
 	
 	AliHLTMUONTriggerReconstructor* fTrigRec; ///< The trigger reconstructor class implementing the algorithm.
 	AliHLTInt32_t fDDL;   ///< The DDL number in the range 20..21 from which to expect input. Set to -1 for invalid/unspecified value.
