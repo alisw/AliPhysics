@@ -7,8 +7,12 @@
   gSystem->Load("$ALICE_ROOT/lib/tgt_linux/libSTAT.so");
   .L $ALICE_ROOT/STAT/Macros/kDTreeTest.C+ 
 
-  //TestBuild
-
+  
+  TestBuild();       // test build function of kdTree for memory leaks
+  TestSpeed();       // test the CPU consumption to build kdTree
+  TestkdtreeIF();    // test functionality of the kdTree
+  TestSizeIF();      // test the size of kdtree - search application - Alice TPC tracker situation
+  //
 */
 
 #include <malloc.h>
@@ -20,6 +24,16 @@
 #include "TKDTree.h"
 
 
+
+
+void TestBuild(const Int_t npoints = 1000000, const Int_t bsize = 100);
+void TestSpeed(const Int_t npower2 = 20, const Int_t bsize = 10);
+
+void TestkdtreeIF(Int_t npoints=1000, Int_t bsize=9, Int_t nloop=1000, Int_t mode = 2);
+void TestSizeIF(Int_t nsec=36, Int_t nrows=159, Int_t npoints=1000,  Int_t bsize=10, Int_t mode=1);
+
+
+
 Float_t Mem()
 {
   // get mem info
@@ -28,28 +42,22 @@ Float_t Mem()
   return procInfo.fMemVirtual;
 }
 
-
-void TestBuild(const Int_t npoints = 1000000, const Int_t bsize = 100);
-void TestSpeed(const Int_t npower2 = 20, const Int_t bsize = 10);
-
-void testindexes(Int_t nloop, Int_t npoints);
-void  testkdtreeIF(Int_t npoints=1000, Int_t bsize=9, Int_t nloop=1000, Int_t mode = 2);
-void TestSizeIF(Int_t npoints=1000, Int_t nrows = 150, Int_t nsec=18, Int_t mode = 1, Int_t bsize=9);
-
 //______________________________________________________________________
 void kDTreeTest()
 {
-	printf("\n\tTesting kDTree memory usage ...\n");
-	TestBuild();
-	
-	printf("\n\tTesting kDTree speed ...\n");
-	TestSpeed();
+  //
+  //
+  //
+  printf("\n\tTesting kDTree memory usage ...\n");
+  TestBuild();  
+  printf("\n\tTesting kDTree speed ...\n");
+  TestSpeed();
 }
 
 //______________________________________________________________________
 void TestBuild(const Int_t npoints, const Int_t bsize){  
   //
-  // Test memory consumption
+  // Test kdTree for memory leaks
   //
   Float_t *data0 =  new Float_t[npoints*2];
   Float_t *data[2];
@@ -72,6 +80,9 @@ void TestBuild(const Int_t npoints, const Int_t bsize){
 //______________________________________________________________________
 void TestSpeed(const Int_t npower2, const Int_t bsize)
 {
+  //
+  // Test of building time of kdTree
+  //
   if(npower2 < 10){
     printf("Please specify a power of 2 greater than 10\n");
     return;
@@ -107,53 +118,24 @@ void TestSpeed(const Int_t npower2, const Int_t bsize)
 }
 
 //______________________________________________________________________
-void TestSizeIF(Int_t npoints, Int_t nrows, Int_t nsec, Int_t mode, Int_t bsize)
+void TestSizeIF(Int_t nsec, Int_t nrows, Int_t npoints,  Int_t bsize, Int_t mode)
 {
   //
-  // test size to build kdtree
+  // Test size to build kdtree
   //
   Float_t before =Mem();
   for (Int_t isec=0; isec<nsec;isec++)
     for (Int_t irow=0;irow<nrows;irow++){
-      testkdtreeIF(npoints,0,mode,bsize);
+      TestkdtreeIF(npoints,1,mode,bsize);
     }
   Float_t after = Mem();
   printf("Memory usage %f\n",after-before);
 }
 
 
-void testindexes(Int_t nloop, Int_t npoints){
-  //
-  // test indexing 
-  // 
-  TKDTree<Int_t, Float_t> *kdtree = new TKDTree<Int_t, Float_t>(0,0,0,0);
-  Int_t row =0;
-  Int_t collumn =0; 
-  TStopwatch timer;
-  timer.Start();
-  row = 10;
-  for (Int_t iloop=0;iloop<nloop;iloop++)
-  for (Int_t index=1;index<npoints;index++){
-    //row = TMath::Log2(index);
-    //row=0;
-   //  if (index< (16<<row)) row=0;
-//     for (; index>=(32<<row);row+=5);
-//     for (; index>=(2<<row);row++);
-//     collumn= index-(1<<row);
-      TKDTree<Int_t, Float_t>::GetCoord(index,row,collumn);
-    //
-    //Int_t index2=kdtree->GetIndex(row,collumn);
-    //printf("%d\t%d\t%d\t%d\n",index,index2,row,collumn);
-    if (kdtree->GetIndex(row,collumn)!=index || collumn<0) {
-      printf("Problem\n");
-    }
-  }
-  timer.Stop();
-  timer.Print();
-}
 
 
-void  testkdtreeIF(Int_t npoints, Int_t bsize, Int_t nloop, Int_t mode)
+void  TestkdtreeIF(Int_t npoints, Int_t bsize, Int_t nloop, Int_t mode)
 {
 //
 // Test speed and functionality of 2D kdtree.
@@ -182,21 +164,18 @@ void  testkdtreeIF(Int_t npoints, Int_t bsize, Int_t nloop, Int_t mode)
     data[1][i]          = gRandom->Uniform(-rangez, rangez);
   }
   TStopwatch timer;
-
-	// check time build
-	printf("building kdTree ...\n");
-	timer.Start(kTRUE);
+  
+  // check time build
+  printf("building kdTree ...\n");
+  timer.Start(kTRUE);
   TKDTreeIF *kdtree = new TKDTreeIF(npoints, 2, bsize, data);
   timer.Stop();
   timer.Print();
   if(mode == 0) return;
   
-  
-  
   Float_t countern=0;
   Float_t counteriter  = 0;
   Float_t counterfound = 0;
-  
   
   if (mode ==2){
     if (nloop) timer.Start(kTRUE);
