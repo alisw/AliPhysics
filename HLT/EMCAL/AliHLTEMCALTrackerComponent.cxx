@@ -1,11 +1,10 @@
-// $Id: AliHLTEMCALTrackerComponent.cxx 23618 2008-01-29 13:07:38Z hristov $
-
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          for The ALICE Off-line Project.                               *
+ * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+ *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+ *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -17,295 +16,392 @@
  **************************************************************************/
 
 /** @file   AliHLTEMCALTrackerComponent.cxx
-    @author Timm Steinbeck, Matthias Richter
+    @author Mateusz Ploskon
     @date   
-    @brief  A EMCALTracker processing component for the HLT. */
+    @brief  EMCAL tracker component for HLT. */
 
-#if __GNUC__ >= 3
+#if __GNUC__== 3
 using namespace std;
 #endif
 
-#include "TFolder.h"
-#include "TFile.h"
-
 #include "AliHLTEMCALTrackerComponent.h"
 #include "AliHLTEMCALDefinitions.h"
-#include "AliCDBManager.h"
-#include "AliEMCALTracker.h"
-#include "AliEMCALReconstructor.h"
-#include "AliESDEvent.h"
-#include "AliMagFMaps.h"
-#include "AliESDfriend.h"
+#include "AliHLTEMCALUtils.h"
 
-#include <cstdlib>
-#include <cerrno>
-#include <string>
+#include "TString.h"
+#include "TObjString.h"
+#include "TObjArray.h"
+#include "TTree.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliRawReaderMemory.h"
+#include "AliESDEvent.h"
 
 // this is a global object used for automatic component registration, do not use this
 AliHLTEMCALTrackerComponent gAliHLTEMCALTrackerComponent;
 
-ClassImp(AliHLTEMCALTrackerComponent);
-    
+/** ROOT macro for the implementation of ROOT specific class methods */
+ClassImp(AliHLTEMCALTrackerComponent)
+
 AliHLTEMCALTrackerComponent::AliHLTEMCALTrackerComponent()
   : AliHLTProcessor()
-  , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
-  , fStrorageDBpath("local://$ALICE_ROOT")
+  , fOutputPercentage(100)
+  , fStorageDBpath("local://$ALICE_ROOT")
   , fCDB(NULL)
-  , fField(NULL)
   , fGeometryFileName("")
-  , fGeometryFile(NULL)
-  , fGeoManager(NULL)
-  , fTracker(NULL)
-  , fInputFolder(new TFolder("EMCALtrackerFolder", "EMCALtrackerFolder"))
 {
-  // Default constructor
-  fInputFolder->SetOwner(kTRUE);
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
 
-  fGeometryFileName = getenv("ALICE_ROOT");
-  fGeometryFileName += "/HLT/EMCAL/geometry.root";
+AliHLTEMCALTrackerComponent::AliHLTEMCALTrackerComponent(const AliHLTEMCALTrackerComponent &/*c*/)
+  : AliHLTProcessor()
+  , fOutputPercentage(100)
+  , fStorageDBpath("local://$ALICE_ROOT")
+  , fCDB(NULL)
+  , fGeometryFileName("")
+{
+  // may not use the copy contructor
+  HLTError("May not use.");
+}
+
+AliHLTEMCALTrackerComponent& AliHLTEMCALTrackerComponent::operator=(const AliHLTEMCALTrackerComponent&)
+{
+  // may not use the copy contructor
+  HLTError("May not use.");
+  return *this;
 }
 
 AliHLTEMCALTrackerComponent::~AliHLTEMCALTrackerComponent()
 {
-  // Destructor
-  delete fInputFolder;
-  fInputFolder = NULL;
+  // see header file for class documentation
+}
+
+AliHLTComponentDataType AliHLTEMCALTrackerComponent::GetOutputDataType()
+{
+  //return AliHLTEMCALDefinitions::fgkClusterDataType | AliHLTEMCALDefinitions::fgkDigitDataType;
+  return AliHLTEMCALDefinitions::fgkClusterDataType;
 }
 
 const char* AliHLTEMCALTrackerComponent::GetComponentID()
-{
-  // Return the component ID const char *
-  return "EMCALTracker"; // The ID of this component
+{ 
+  return "EMCALTracker";
 }
 
-void AliHLTEMCALTrackerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTEMCALTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) 
 {
-  // Get the list of input data  
-  list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( AliHLTEMCALDefinitions::fgkClusterDataType );
+  list.push_back(kAliHLTAnyDataType);
 }
 
-AliHLTComponent_DataType AliHLTEMCALTrackerComponent::GetOutputDataType()
+void AliHLTEMCALTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) 
 {
-  // Get the output data type
-  return AliHLTEMCALDefinitions::fgkEMCALESDDataType;
-}
-
-void AliHLTEMCALTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-{
-  // Get the output data size
   constBase = 0;
   inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
 
-// Spawn function, return new instance of this class
-AliHLTComponent* AliHLTEMCALTrackerComponent::Spawn()
-{
-  // Spawn function, return new instance of this class
-  return new AliHLTEMCALTrackerComponent;
-};
-
 int AliHLTEMCALTrackerComponent::DoInit( int argc, const char** argv )
 {
-  // perform initialization. We check whether our relative output size is specified in the arguments.
-  fOutputPercentage = 100;
-  int i = 0;
-  char* cpErr;
-  while ( i < argc )
+  // see header file for class documentation
+  int iResult=0;
+  HLTInfo("parsing %d arguments", argc);
+
+  TString argument="";
+  TString configuration=""; 
+  int bMissingParam=0;
+  bool bHaveMandatory1=false;
+  bool bHaveMandatory2=false;
+
+  char *cpErr = 0;
+
+  for (int i=0; i<argc && iResult>=0; i++) 
     {
-      Logging( kHLTLogDebug, "HLT::EMCALTracker::DoInit", "Arguments", "argv[%d] == %s", i, argv[i] );
-      if ( !strcmp( argv[i], "output_percentage" ) )
-	{
-	  if ( i+1>=argc )
-	    {
-	      Logging(kHLTLogError, "HLT::EMCALTracker::DoInit", "Missing Argument", "Missing output_percentage parameter");
-	      return ENOTSUP;
-	    }
-	  Logging( kHLTLogDebug, "HLT::EMCALTracker::DoInit", "Arguments", "argv[%d+1] == %s", i, argv[i+1] );
-	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
-	  if ( *cpErr )
-	    {
-	      Logging(kHLTLogError, "HLT::EMCALTracker::DoInit", "Wrong Argument", "Cannot convert output_percentage parameter '%s'", argv[i+1] );
-	      return EINVAL;
-	    }
-	  Logging( kHLTLogInfo, "HLT::EMCALTracker::DoInit", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
-	  i += 2;
-	  continue;
-	}
+      argument=argv[i];
+      if (argument.IsNull()) continue;
 
-      if ( strcmp( argv[i], "-cdb" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      Logging(kHLTLogError, "HLT::EMCALTracker::DoInit", "Missing Argument", "Missing -cdb argument");
-	      return ENOTSUP;	      
-	    }
-	  fStrorageDBpath = argv[i+1];
-	  Logging( kHLTLogInfo, "HLT::EMCALTracker::DoInit", "DB storage set", "DB storage is %s", fStrorageDBpath.c_str() );	  
-	  i += 2;
-	  continue;
-	}      
-
-      if ( strcmp( argv[i], "-geometry" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      Logging(kHLTLogError, "HLT::EMCALTracker::DoInit", "Missing Argument", "Missing -geometry argument");
-	      return ENOTSUP;	      
-	    }
-	  fGeometryFileName = argv[i+1];
-	  Logging( kHLTLogInfo, "HLT::EMCALTracker::DoInit", "GeomFile storage set", "GeomFile storage is %s", 
-		   fGeometryFileName.c_str() );	  
-	  i += 2;
-	  continue;
-	}      
-
-      Logging(kHLTLogError, "HLT::EMCALTracker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-      return EINVAL;
+    // -mandatory1
+    if (argument.CompareTo("-cdb")==0) 
+      {
+	bHaveMandatory1|=1;
+	if ((bMissingParam=(++i>=argc))) break;
+	HLTInfo("got \'-cdb\' argument: %s", argv[i]);
+	fStorageDBpath = argv[i];
+	HLTInfo("CDB path is: %s", fStorageDBpath.c_str());
+	// -mandatory2
+      } 
+    else if (argument.CompareTo("-geometry")==0) 
+      {
+	bHaveMandatory2|=1;
+	if ((bMissingParam=(++i>=argc))) break;
+	HLTInfo("got \'-geometry\' argument");
+	fGeometryFileName = argv[i];
+	HLTInfo("Geometry file is: %s", fGeometryFileName.c_str());
+	// -optional1
+      } 
+    else if (argument.CompareTo("-output_percentage")==0) 
+      {
+	if ((bMissingParam=(++i>=argc))) break;
+	HLTInfo("got \'-output_percentage\' argument: %s", argv[i]);
+	fOutputPercentage = strtoul(argv[i], &cpErr, 0);
+	if ( *cpErr )
+	  {
+	    HLTError("Unable to convert ouput_percentage to a number %s", argv[i]);
+	    return -EINVAL;
+	  }
+      } 
+    else 
+      {
+	// the remaining arguments are treated as configuration
+	if (!configuration.IsNull()) configuration+=" ";
+	configuration+=argument;
+      }
     }
 
-  //init alifield map - temporarly fixed - should come from a DB
-  fField = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  if (fField)
-    AliTracker::SetFieldMap(fField,1);
-  else
-    Logging(kHLTLogError, "HLT::EMCALTracker::DoInit", "Field", "Unable to init the field");
-
-  fCDB = AliCDBManager::Instance();
-  if (!fCDB)
+  if (bMissingParam) 
     {
-      Logging(kHLTLogError, "HLT::EMCALCalibration::DoInit", "Could not get CDB instance", "fCDB 0x%x", fCDB);
-    }
-  else
-    {
-      fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
-      fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
-      Logging(kHLTLogDebug, "HLT::EMCALCalibration::DoInit", "CDB instance", "fCDB 0x%x", fCDB);
-    }
-    
-  fGeometryFile = TFile::Open(fGeometryFileName.c_str());
-  if (fGeometryFile)
-    {
-      fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
-      fTracker = new AliEMCALTracker;
-    }
-  else
-    {
-      Logging(kHLTLogError, "HLT::EMCALTracker::DoInit", "fGeometryFile", "Unable to open file. FATAL!");
-      return -1;
+      HLTError("missing parameter for argument %s", argument.Data());
+      iResult=-EINVAL;
     }
 
-  return 0;
+  if (iResult>=0 && !bHaveMandatory1) 
+    {
+      HLTError("mandatory argument \'-cdb\' missing");
+      iResult=-EPROTO;
+    }
+
+  if (iResult>=0 && !bHaveMandatory2) 
+    {
+      HLTError("mandatory argument \'-geometry\' missing");
+      iResult=-EPROTO;
+    }
+  
+  if (iResult>=0 && !configuration.IsNull()) 
+    {
+      iResult=Configure(configuration.Data());
+    } 
+  else 
+    {
+      iResult=Reconfigure(NULL, NULL);
+    }
+  
+  // Initialize here
+  // raw reader
+
+  // geometry
+  if (AliHLTEMCALUtils::GetGeometry() == NULL)
+    {
+      HLTError("unable to init geometry");
+      iResult=-EPROTO;      
+    }
+
+  // OCDB
+
+  // tracker and raw utils
+  if (AliHLTEMCALUtils::GetRawUtils() == NULL)
+    {
+      HLTError("unable to init rawutils");
+      iResult=-EPROTO;      
+    }
+
+  if (AliHLTEMCALUtils::GetRawUtils() == NULL)
+    {
+      HLTError("unable to init rawutils");
+      iResult=-EPROTO;      
+    }
+
+  if (AliHLTEMCALUtils::GetRecParam() == NULL)
+    {
+      HLTError("unable to init reco params");
+      iResult=-EPROTO;      
+    }      
+
+  return iResult;
 }
 
 int AliHLTEMCALTrackerComponent::DoDeinit()
 {
-  // Deinitialization of the component
-
-  delete fField;
-  fField = 0;
-
-  delete fTracker;
-  fTracker = 0;
-  
-  if (fGeometryFile)
-    {
-      fGeometryFile->Close();
-      delete fGeometryFile;
-      fGeometryFile = 0;
-    }
-
-  fInputFolder->Clear();
-
+  // see header file for class documentation
+  AliHLTEMCALUtils::Cleanup();
+  HLTInfo("processing cleanup");
   return 0;
 }
 
 int AliHLTEMCALTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData,
 					AliHLTComponentTriggerData & trigData )
 {
-  // Process an event
-  
-  Logging( kHLTLogInfo, "HLT::EMCALTracker::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
-  Logging( kHLTLogInfo, "HLT::EMCALTracker::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
+  //
+  // see header file for class documentation
+  //
 
-  AliHLTUInt32_t dBlockSpecification = 0;
+  // check if the input data are there at all - empty events possible
+  
+  HLTDebug("HLT::TRDTracker::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
 
   //implement a usage of the following
-//   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
-//   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
-//   void *triggerData = trigData.fData;
-  Logging( kHLTLogDebug, "HLT::EMCALTracker::DoEvent", "Trigger data received", 
-	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
+  //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
+  //   void *triggerData = trigData.fData;
+  HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
 
-  AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTEMCALDefinitions::fgkClusterDataType );
-  if (dblock != 0)
-    {
-      dBlockSpecification = dblock->fSpecification;
-    }
-  else
-    {
-      Logging( kHLTLogWarning, "HLT::EMCALTracker::DoEvent", "DATAIN", "First Input Block not found! 0x%x", dblock);
-      return -1;
-    }
+  //   another way to check the blocks
+  //   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTEMCALDefinitions::fgkClusterDataType );
+  //   if (dblock == 0)
+  //     {
+  //       HLTError(Form("First Input Block not found! 0x%x", dblock));
+  //       return -1;
+  //     }
 
-  fInputFolder->Clear();
+  // all those should be received by the component
   AliESDEvent *esd = 0; // we assume we receive this one from a global merger component
-  TTree *clusterTree = 0;
-  
-  int ibForce = 0;
-  TObject *tobjin = 0;
+  TTree *clustersTree = 0;
+  TTree *digitsTree = 0;
 
-  // here getfirstinput finds the first object with spec type..
-  // get the clusters tree
+  Int_t ibForce = 0;
+  TObject  *tobjin = 0;
   tobjin = (TObject *)GetFirstInputObject( AliHLTEMCALDefinitions::fgkClusterDataType, "TTree", ibForce);
-  while (tobjin != 0)
+  if (tobjin)
     {
-      tobjin = (TObject *)GetNextInputObject( ibForce );
-      Logging( kHLTLogInfo, "HLT::EMCALTracker::DoEvent", "nextBLOCK", "Pointer = 0x%x", tobjin);
-      clusterTree = (TTree*)tobjin;
-      if (clusterTree != 0)
-	{
-	  Int_t iNentries = clusterTree->GetEntries();
-	  Logging( kHLTLogInfo, "HLT::EMCALTracker::DoEvent", "COUNT", "N of tree entries = %d", iNentries);
-	  fTracker->LoadClusters(clusterTree);
-	  fInputFolder->Add(clusterTree);      
-	}
+      clustersTree = (TTree*)tobjin;
     }
 
-  // now get the ESD(s) - should in principle be only one...
-  tobjin = (TObject *)GetFirstInputObject( AliHLTEMCALDefinitions::fgkESDDataType, "AliESDevent", ibForce);
-  while (tobjin != 0)
+  tobjin = (TObject *)GetFirstInputObject( AliHLTEMCALDefinitions::fgkDigitDataType, "TTree", ibForce);
+  if (tobjin)
     {
-      esd = (AliESDEvent *)tobjin;
-      if (esd != 0)
-	{
-	  HLTInfo("Got ESDevent");
-	  fInputFolder->Add(esd);	  
-	}
-      tobjin = (TObject *)GetNextInputObject( ibForce );
-      Logging( kHLTLogInfo, "HLT::EMCALTracker::DoEvent", "nextBLOCK", "Pointer = 0x%x", tobjin);
-      clusterTree = (TTree*)tobjin;
+      digitsTree = (TTree*)tobjin;
     }
 
-  esd = (AliESDEvent*)fInputFolder->FindObject("AliESDevent");
-  if (esd != 0)
+  // the data type used here is a prototype
+  // esd eventually should come from TPC alone or TPC+TRD matched tracks
+  // check the AliHLTEMCALDefinitions for extra comments
+  tobjin = (TObject *)GetFirstInputObject( AliHLTEMCALDefinitions::fgkESDDataType, "TTree", ibForce);
+  if (tobjin)
     {
-      fTracker->PropagateBack(esd);
+      esd = (AliESDEvent*)tobjin;
+    }
+
+  if (digitsTree != 0 && clustersTree != 0 && esd != 0)
+    {
+      Bool_t retValue = AliHLTEMCALUtils::FillESD(digitsTree, clustersTree, esd);
       
-      //here transport the esd tracks further
-      Int_t nTracks = esd->GetNumberOfTracks();
-      HLTInfo("Number of tracks %d", nTracks);  
-      //esd->Print();
-      PushBack(esd, AliHLTEMCALDefinitions::fgkEMCALESDDataType);      
+      if (retValue == kTRUE)
+	{
+	  PushBack(esd, AliHLTEMCALDefinitions::fgkEMCALESDDataType);
+	}
+      else
+	{
+	  HLTWarning("Fill ESD failed.");
+	}
     }
-  else
-    {
-      HLTError("No ESD events received!");
-    }
+  
+  if (clustersTree)
+    delete clustersTree;
 
-  fTracker->UnloadClusters();  
-  fInputFolder->Clear();
+  if (digitsTree)
+    delete digitsTree;
+  
+  if (esd)
+    delete esd;
 
-  HLTDebug("Event done.");
   return 0;
+}
+
+int AliHLTEMCALTrackerComponent::Configure(const char* arguments)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!arguments) return iResult;
+  HLTInfo("parsing configuration string \'%s\'", arguments);
+
+  TString allArgs = arguments;
+  TString argument;
+  int bMissingParam=0;
+
+  TObjArray* pTokens = allArgs.Tokenize(" ");
+  if (pTokens) 
+    {
+      for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) 
+	{
+	  argument=((TObjString*)pTokens->At(i))->GetString();
+	  if (argument.IsNull()) continue;
+	  HLTInfo("processing argument %\n", argument.Data());
+	  // -config1
+	  if (argument.CompareTo("-cdb")==0) 
+	    {
+	      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	      HLTInfo("got \'-cdb\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());	      
+	      // -config2
+	    } 
+	  else if (argument.CompareTo("-geometry")==0) 
+	    {
+	      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	      HLTInfo("got \'-geometry\'");
+	    } 
+	  else if (argument.CompareTo("-output_percentage")==0) 
+	    {
+	      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	      HLTInfo("got \'-output_percentage\'");
+	    } 
+	  else 
+	    {
+	      HLTError("unknown argument %s", argument.Data());
+	      iResult=-EINVAL;
+	      break;
+	    }
+	}
+      delete pTokens;
+    }
+
+  if (bMissingParam) 
+    {
+      HLTError("missing parameter for argument %s", argument.Data());
+      iResult=-EINVAL;
+    }
+
+  return iResult;
+}
+
+int AliHLTEMCALTrackerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+{
+  // see header file for class documentation
+  int iResult=0;
+  const char* path="HLT/ConfigEMCAL/EMCALTrackerComponent";
+  const char* defaultNotify="";
+  if (cdbEntry) 
+    {
+      path=cdbEntry;
+      defaultNotify=" (default)";
+    }
+  if (path) 
+    {
+      HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+      if (pEntry) 
+	{
+	  TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+	  if (pString) 
+	    {
+	      HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	      iResult=Configure(pString->GetString().Data());
+	    } else 
+	    {
+	      HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+	    }
+	} 
+      else 
+	{
+	  HLTError("can not fetch object \"%s\" from CDB", path);
+	}
+    }
+  return iResult;
+}
+
+int AliHLTEMCALTrackerComponent::ReadPreprocessorValues(const char* modules)
+{
+  // see header file for class documentation
+  int iResult=0;
+  TString detectors(modules!=NULL?modules:"");
+  HLTInfo("read preprocessor values for detector(s): %s", detectors.IsNull()?"none":detectors.Data());
+  return iResult;
 }

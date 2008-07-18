@@ -33,12 +33,10 @@ public:
   AliHLTEMCALClusterizerComponent& operator=(const AliHLTEMCALClusterizerComponent&);
 
   // AliHLTComponent interface functions
-  const char* GetComponentID() { return "EMCALClusterizer";}
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
-    list.push_back(kAliHLTAnyDataType);
-  }
+  const char* GetComponentID();
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
   AliHLTComponentDataType GetOutputDataType();
-  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {constBase = 0;inputMultiplier = 100;};
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
   // Spawn function, return new class instance
   AliHLTComponent* Spawn() {return new AliHLTEMCALClusterizerComponent;};
@@ -69,13 +67,8 @@ private:
   unsigned             fOutputPercentage;    // Output volume in percentage of the input  
   string               fStorageDBpath;      // Default path for OCDB
   
-  AliEMCALClusterizer *fClusterizer;         //! Offline clusterizer
   AliCDBManager       *fCDB;                 //! Pointer to OCDB
-  AliRawReaderMemory  *fMemReader;           //! Input raw data reader
-  
-  string               fGeometryFileName;    // Path to geometry file 
-  TFile               *fGeometryFile;        //! Pointer to the geom root file
-  TGeoManager         *fGeoManager;          //! Pointer to geometry manager 
+  string               fGeometryFileName;    // Path to geometry file - geom handled by the utils
   
   ClassDef(AliHLTEMCALClusterizerComponent, 1)
 };

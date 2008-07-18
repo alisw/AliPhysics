@@ -1,85 +1,74 @@
+//-*- Mode: C++ -*-
 #ifndef ALIHLTEMCALTRACKERCOMPONENT_H
 #define ALIHLTEMCALTRACKERCOMPONENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTEMCALTrackerComponent.h
-    @author Mateusz Ploskon
+    @author Matthias Richter, Timm Steinbeck
     @date   
-    @brief  Declaration of a EMCALTracker component. */
-
+    @brief  A sample processing component for the HLT.
+*/
 
 #include "AliHLTProcessor.h"
-class TFolder;
-class TFile;
-class TGeoManager;
-
-class AliCDBManager;
-class AliMagFMaps;
-class AliEMCALTracker;
 
 /**
  * @class AliHLTEMCALTrackerComponent
- * @brief A EMCALTracker HLT processing component. 
- *
- * An implementiation of a EMCALTracker component that just copies its input data
- * as a test, demonstration, and example of the HLT component scheme.
- * @ingroup alihlt_tutorial
  */
-class AliHLTEMCALTrackerComponent : public AliHLTProcessor
-    {
-    public:
-	AliHLTEMCALTrackerComponent();
-	virtual ~AliHLTEMCALTrackerComponent();
 
-	// Public functions to implement AliHLTComponent's interface.
-	// These functions are required for the registration process
+class TFile;
+class TGeoManager;
+class AliEMCALTracker;
+class AliCDBManager;
+class AliRawReaderMemory;  
 
-	const char* GetComponentID();
-	void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
-	AliHLTComponent_DataType GetOutputDataType();
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
-	AliHLTComponent* Spawn();
-	
-    protected:
-	
-	// Protected functions to implement AliHLTComponent's interface.
-	// These functions provide initialization as well as the actual processing
-	// capabilities of the component. 
+class AliHLTEMCALTrackerComponent : public AliHLTProcessor {
+public:
+  AliHLTEMCALTrackerComponent();
+  AliHLTEMCALTrackerComponent(const AliHLTEMCALTrackerComponent& c);
+  virtual ~AliHLTEMCALTrackerComponent();
 
-	int DoInit( int argc, const char** argv );
-	int DoDeinit();
-/* 	int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks,  */
-/* 		     AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr,  */
-/* 		     AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks ); */
-	int DoEvent( const AliHLTComponentEventData & evtData,
-		     AliHLTComponentTriggerData & trigData );
+  AliHLTEMCALTrackerComponent& operator=(const AliHLTEMCALTrackerComponent&);
 
-	using AliHLTProcessor::DoEvent;
-	
-    private:
-	/** copy constructor prohibited */
-	AliHLTEMCALTrackerComponent(const AliHLTEMCALTrackerComponent&);
-	/** assignment operator prohibited */
-	AliHLTEMCALTrackerComponent& operator=(const AliHLTEMCALTrackerComponent&);
+  // AliHLTComponent interface functions
+  const char* GetComponentID();
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  AliHLTComponentDataType GetOutputDataType();
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
-	// The size of the output data produced, as a percentage of the input data's size.
-	// Can be greater than 100 (%)
-	unsigned fOutputPercentage; // Output volume in percentage of the input
+  // Spawn function, return new class instance
+  AliHLTComponent* Spawn() {return new AliHLTEMCALTrackerComponent;};
 
-	string fStrorageDBpath; // Default path for OCDB
-	AliCDBManager *fCDB; //! Pointer to OCDB
+ protected:
+  // AliHLTComponent interface functions
+  int DoInit( int argc, const char** argv );
+  int DoDeinit();
+  int DoEvent( const AliHLTComponentEventData & evtData,
+	       AliHLTComponentTriggerData & trigData );
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+  int ReadPreprocessorValues(const char* modules);
 
-	AliMagFMaps* fField; //! magn. field settings
+  using AliHLTProcessor::DoEvent;
 
-	string fGeometryFileName; // Path to geometry file 
-	TFile *fGeometryFile; //! // Pointer to the geom root file
-	TGeoManager *fGeoManager; //! Pointer to geometry manager 
+private:
+  /**
+   * Configure the component.
+   * Parse a string for the configuration arguments and set the component
+   * properties.
+   *
+   * This function illustrates the scanning of an argument string. The string
+   * was presumably fetched from the CDB.
+   */
+  int Configure(const char* arguments);
 
-	AliEMCALTracker *fTracker;//! Offline emcal tracker
-
-	TFolder         *fInputFolder;//! input objects - convenient handling
-
-	ClassDef(AliHLTEMCALTrackerComponent, 0)
-    };
+  unsigned             fOutputPercentage;    // Output volume in percentage of the input  
+  string               fStorageDBpath;      // Default path for OCDB
+  
+  AliCDBManager       *fCDB;                 //! Pointer to OCDB
+  string               fGeometryFileName;    // Path to geometry file - geom handled by the utils
+  
+  ClassDef(AliHLTEMCALTrackerComponent, 1)
+};
 #endif

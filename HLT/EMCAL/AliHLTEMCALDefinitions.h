@@ -26,6 +26,7 @@ public:
   virtual ~AliHLTEMCALDefinitions();
   
   static const AliHLTComponentDataType fgkDDLRawDataType; // Raw Data
+  static const AliHLTComponentDataType fgkDigitDataType; // EMCAL Digits
   static const AliHLTComponentDataType fgkClusterDataType; // EMCAL Clusters
   static const AliHLTComponentDataType fgkESDDataType; // global ESD data type - may change!!!
   static const AliHLTComponentDataType fgkEMCALESDDataType; // ESD data type after emcal processing
