@@ -428,7 +428,10 @@ void AliHALLv3::CreateGeometry()
   // Opening for beam pipe
   TGeoBBox* shShPx24Pl2 = new TGeoBBox(15., 20., 60.);
   shShPx24Pl2->SetName("ShPx24Pl2");
-  TGeoCompositeShape*  shPx24Pl = new TGeoCompositeShape("Px24Pl", "ShPx24Pl1-ShPx24Pl2");
+  TGeoTranslation* trPl2 = new TGeoTranslation("trPl2", -55., 0., 0.);
+  trPl2->RegisterYourself();
+
+  TGeoCompositeShape*  shPx24Pl = new TGeoCompositeShape("Px24Pl", "ShPx24Pl1-ShPx24Pl2:trPl2");
   TGeoVolume* voPx24Pl = new TGeoVolume("Px24Pl", shPx24Pl, kMedST);
   asShPx24->AddNode(voPx24Pl, 1, new TGeoTranslation(55., 0., -1205./2. + 40.));
   asHall->AddNode(asFMS, 1, new TGeoTranslation(0.,  0., 0.));
