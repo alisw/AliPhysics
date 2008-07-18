@@ -908,7 +908,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoVolume *v0APMT25 = new TGeoVolume("V0APMT25", sV0APMT25, medV0APMAlum);
     TGeoVolume *v0APMT5 = new TGeoVolumeAssembly("V0APMT5");
     TGeoTube *sV0APMTT5 = new TGeoTube("sV0APMTT5", 0., fV0APMTR4, fV0APMTB/2.);
-    TGeoVolume *v0APMTT5 = new TGeoVolume("V0APMT15", sV0APMTT5, medV0APMAlum);
+    TGeoVolume *v0APMTT5 = new TGeoVolume("V0APMTT5", sV0APMTT5, medV0APMAlum);
     v0APMT5->SetLineColor(kV0AColorPMG);
     v0APMT25->SetLineColor(kV0AColorPMA);
     v0APMTT5->SetLineColor(kV0AColorPMA);
@@ -1560,7 +1560,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoVolume *v0APMT28 = new TGeoVolume("V0APMT28", sV0APMT28, medV0APMAlum);
     TGeoVolume *v0APMT8 = new TGeoVolumeAssembly("V0APMT8");
     TGeoTube *sV0APMTT8 = new TGeoTube("sV0APMTT8", 0., fV0APMTR4, fV0APMTB/2.);
-    TGeoVolume *v0APMTT8 = new TGeoVolume("V0APMT18", sV0APMTT8, medV0APMAlum);
+    TGeoVolume *v0APMTT8 = new TGeoVolume("V0APMTT8", sV0APMTT8, medV0APMAlum);
     v0APMT8->SetLineColor(kV0AColorPMG);
     v0APMT28->SetLineColor(kV0AColorPMA);
     v0APMTT8->SetLineColor(kV0AColorPMA);
