@@ -46,8 +46,10 @@ void runSimulation(int seed, int nevents, const char* config)
   MuonSim.SetMakeSDigits("MUON");
   MuonSim.SetMakeDigitsFromHits("");
 
-  MuonSim.SetRunQA("MUON:ALL");
+  MuonSim.SetRunHLT(""); // disable HLT for the time being
 
+  MuonSim.SetRunQA("MUON:ALL");
+  
   MuonSim.Run(nevents);
   //gObjectTable->Print();
 
