@@ -96,7 +96,7 @@ void rawqa(const char * filename)
 	    break ; 
 	}
        	if ( !detectors.IsNull() ) {
-	  qas->SetMaxEvents(1) ; 
+	  //qas->SetMaxEvents(1) ; 
 	  detectorsW = qas.Run(detectors, rawReader) ;
 	  qas.Reset() ;
        	} else {
@@ -118,7 +118,7 @@ void rawqa(const char * filename)
 	  if ( qa) {
 	    for (Int_t index = 0 ; index < AliQA::kNDET ; index++)
 	      if (detectorsW.Contains(AliQA::GetDetName(index))) 
-		qa->Show((AliQA::DETECTORINDEX_t)index) ;
+		qa->Show((AliQA::GetDetIndex(AliQA::GetDetName(index)))) ;
 	  } else {
 	    printf("ERROR: %s not found in %s !", AliQA::GetQAName(), AliQA::GetQAResultFileName()) ; 
 	  }

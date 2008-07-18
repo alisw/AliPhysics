@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 #############################################################################
 # rawqa.sh. Front-end script to run reconstruction from the grid chunks
 # Usage:
@@ -9,7 +9,6 @@
 # version 1.0  July 2008 adapated from rec.C by M. Meoni
 # author Yves Schutz CERN
 #
-
 
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
@@ -23,6 +22,7 @@ export RUNNUM=$1
 [ ! -e "$HOME/.globus/usercert.pem" ] && { echo "FAILED: There is no certificate in $HOME/.globus"; exit 1; }
 
 [ -e "/tmp/gclient_env_$UID" ] && { source /tmp/gclient_env_$UID; }
+echo 12==========================  $LD_LIBRARY_PATH
 alien-token-init 
 
 [ ! "$?" -eq "0" ] && { echo "FAILED: Token creation failed"; exit 1; }
@@ -59,15 +59,17 @@ echo
 #dialog --clear --no-cancel \
 #        --ok-label OK --radiolist "Program to run:" 15 20 5 "aliroot -b" \| on alieve \| off 2> $tempfile
 PROGRAM=aliroot #`cat $tempfile`
+
 # 
-rm -rf $RUNNUM"/"*QA.$RUNNUM*.root
 for filename in $CHUNKS; do
      filename=${filename//\"/} 
      CHUNK=`basename $filename | cut -d "." -f 1,2`
      SUBCHUNK=${CHUNK#*.}
      echo "Running QA for chunk $filename. Outputs will be stored in "$RUNNUM"/"$CHUNK".   $SUBCHUNK"
-     rm -rf   $RUNNUM"/"$CHUNK
+     [ -e $RUNNUM"/"$CHUNK ] && { rm -rf   $RUNNUM"/"$CHUNK ; }
      mkdir -p $RUNNUM"/"$CHUNK
+     rm $RUNNUM"/"*.QA.$RUNNUM.$SUBCHUNK.root 
+     rm $RUNNUM"/"QA.$SUBCHUNK.root 
      cd       $RUNNUM"/"$CHUNK
      $PROGRAM -q $ALICE_ROOT/test/cosmic/rawqa.C\(\"$filename\"\) 2>&1 | tee rawqa.log
      ls *.QA.$RUNNUM.0.root > $tempfile
@@ -88,5 +90,5 @@ $PROGRAM -b <<EOF
 EOF
 rm -f tempo.txt
 
-$PROGRAM -b $ALICE_ROOT/test/cosmic/qasummary.C
+$PROGRAM -b -q $ALICE_ROOT/test/cosmic/qasummary.C 2>&1 | tee rawqasummary.log
 cd ..
