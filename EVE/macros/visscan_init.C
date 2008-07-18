@@ -151,7 +151,7 @@ void on_new_event()
     TTimeStamp ts(esd->GetTimeStamp());
     TString win_title("Eve Main Window -- Timestamp: ");
     win_title += ts.AsString("s");
-    win_title += "; Event: ";
+    win_title += "; Event # in ESD file: ";
     win_title += esd->GetEventNumberInFile();
     gEve->GetBrowser()->SetWindowName(win_title);
   }
