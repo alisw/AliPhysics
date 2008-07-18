@@ -4,13 +4,6 @@
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 // Class that contains the algorithm for the analysis of particle - hadron correlations
 // Particle (for example direct gamma) must be found in a previous analysis 
@@ -20,9 +13,9 @@
 class TH2F;
 
 // --- Analysis system ---
-#include "AliAnaBaseClass.h"
+#include "AliAnaPartCorrBaseClass.h"
 
-class AliAnaParticleHadronCorrelation : public AliAnaBaseClass {
+class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
 
 public: 
   

@@ -13,8 +13,8 @@
 #pragma link C++ class AliFidutialCut+;
 #pragma link C++ class AliCaloPID+;
 #pragma link C++ class AliIsolationCut+;
-#pragma link C++ class AliAnaMaker+;
-#pragma link C++ class AliAnaBaseClass+;
+#pragma link C++ class AliAnaPartCorrMaker+;
+#pragma link C++ class AliAnaPartCorrBaseClass+;
 #pragma link C++ class AliAnaExample+;
 #pragma link C++ class AliAnaGammaDirect+;
 #pragma link C++ class AliAnaParticlePartonCorrelation+;

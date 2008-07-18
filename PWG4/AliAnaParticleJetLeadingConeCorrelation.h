@@ -26,9 +26,9 @@ class AliCaloTrackReader;
 class AliNeutralMesonSelection;
 class AliLog;
 
-#include "AliAnaBaseClass.h"
+#include "AliAnaPartCorrBaseClass.h"
 
-class AliAnaParticleJetLeadingConeCorrelation : public AliAnaBaseClass {
+class AliAnaParticleJetLeadingConeCorrelation : public AliAnaPartCorrBaseClass {
 
 public: 
   

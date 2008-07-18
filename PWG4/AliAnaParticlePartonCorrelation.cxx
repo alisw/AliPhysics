@@ -14,12 +14,6 @@
  **************************************************************************/
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
 //_________________________________________________________________________
 // Class for the analysis of particle-parton correlations
 // Particle (for example direct gamma) must be found in a previous analysis 
@@ -41,7 +35,7 @@
 
 //____________________________________________________________________________
   AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation() : 
-    AliAnaBaseClass(),   
+    AliAnaPartCorrBaseClass(),   
     fhDeltaEtaNearParton(0), fhDeltaPhiNearParton(0), 
     fhDeltaPtNearParton(0), fhPtRatNearParton(0),
     fhDeltaEtaAwayParton(0), fhDeltaPhiAwayParton(0), 
@@ -55,7 +49,7 @@
 
 //____________________________________________________________________________
 AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) :   
-  AliAnaBaseClass(g),   
+  AliAnaPartCorrBaseClass(g),   
   fhDeltaEtaNearParton(g.fhDeltaEtaNearParton), fhDeltaPhiNearParton(g.fhDeltaPhiNearParton), 
   fhDeltaPtNearParton(g.fhDeltaPtNearParton), fhPtRatNearParton(g.fhPtRatNearParton),
   fhDeltaEtaAwayParton(g.fhDeltaEtaAwayParton), fhDeltaPhiAwayParton(g.fhDeltaPhiAwayParton), 
@@ -71,7 +65,7 @@ AliAnaParticlePartonCorrelation & AliAnaParticlePartonCorrelation::operator = (c
   // assignment operator
 
   if(this == &source)return *this;
-  ((AliAnaBaseClass *)this)->operator=(source);
+  ((AliAnaPartCorrBaseClass *)this)->operator=(source);
 
   fhDeltaEtaAwayParton = source.fhDeltaEtaAwayParton;
   fhDeltaPhiAwayParton = source.fhDeltaPhiAwayParton;

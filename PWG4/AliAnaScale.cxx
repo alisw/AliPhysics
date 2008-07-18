@@ -29,15 +29,15 @@
 
 #include "AliAnaScale.h" 
 #include "AliAnalysisManager.h"
-#include "AliLog.h"
-#include "Riostream.h"
 
 //______________________________________________________________________________
 AliAnaScale::AliAnaScale() : 
   fDebug(0),
   fScale(1.0),
   fInputList(0x0), 
-  fOutputList(0x0) 
+  fOutputList(0x0),
+  fSumw2(0),
+  fhCount() 
 {
   //Default constructor
 }
@@ -47,7 +47,9 @@ AliAnaScale::AliAnaScale(const char *name) :
   fDebug(0),
   fScale(1.0), 
   fInputList(0x0), 
-  fOutputList(0x0) 
+  fOutputList(0x0), 
+  fSumw2(0),
+  fhCount(0) 
 {
   // Constructor.
   // Called only after the event loop
@@ -71,14 +73,19 @@ void AliAnaScale::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
-  AliInfo(Form("*** Initialization of %s", GetName())) ; 
+  if(fDebug > 1) printf("*** Initialization of %s \n", GetName()) ; 
   fInputList     = dynamic_cast<TList*>(GetInputData(0)) ;  
 }
 //________________________________________________________________________
 void AliAnaScale::CreateOutputObjects()
 {  
   // Create the outputs containers
-  // Is created in Exec(), because the input must be available
+
+  fOutputList = new TList() ; 
+  fOutputList->SetName(GetName()) ; 
+
+  fhCount =new TH1F("hCount","count files",1,0,1);  
+  fOutputList->Add(fhCount);
 
 }
 
@@ -86,9 +93,9 @@ void AliAnaScale::CreateOutputObjects()
 void AliAnaScale::Exec(Option_t *) 
 {
   // Do the Scaling
-    
-  fOutputList = new TList() ; 
-  fOutputList->SetName(GetName()) ; 
+
+  if(fDebug > 0 ) printf(">>>>> Scaling factor %e, do Sumw2 %d <<<<< \n",fScale,fSumw2) ;
+
   TIter next(fInputList) ; 	
   TObject * h ; 
   while ( (h = next()) ) { 
@@ -97,13 +104,19 @@ void AliAnaScale::Exec(Option_t *)
       char name[128] ; 
       sprintf(name, "%sScaled", h->GetName()) ; 
       TH1 * hout = dynamic_cast<TH1*> (h->Clone(name)) ; 
+     
+      if(fSumw2) hout->Sumw2();
       hout->Scale(fScale) ;  
       fOutputList->Add(hout) ; 
       } 
       else  fOutputList->Add(h) ; 
     }
   }
-  
+  // number of files
+
+  //File scaled, needed for file merging on grid
+  fhCount->Fill(0);
+ 
   PostData(0, fOutputList);
 }
 
@@ -112,8 +125,8 @@ void AliAnaScale::Exec(Option_t *)
 void AliAnaScale::Init()
 {
   // Intialisation of parameters
-  AliInfo("Doing initialisation") ;
-  // nothing to be done
+  if(fDebug > 0 )printf("No initialization in scale class \n") ;
+
 }
 
 //______________________________________________________________________________

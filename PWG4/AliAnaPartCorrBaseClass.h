@@ -1,15 +1,8 @@
-#ifndef AliAnaBaseClass_H
-#define AliAnaBaseClass_H
+#ifndef AliAnaPartCorrBaseClass_H
+#define AliAnaPartCorrBaseClass_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id: $ */
-
-/* History of cvs commits:
- *
- * $Log$
- 
- *
- */
 
 //_________________________________________________________________________
 // Base class for analysis algorithms
@@ -36,14 +29,14 @@ class AliNeutralMesonSelection ;
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 
-class AliAnaBaseClass : public TObject {
+class AliAnaPartCorrBaseClass : public TObject {
        
   public: 
        
-       AliAnaBaseClass() ; // default ctor
-       AliAnaBaseClass(const AliAnaBaseClass & g) ; // cpy ctor
-       AliAnaBaseClass & operator = (const AliAnaBaseClass & g) ;//cpy assignment
-       virtual ~AliAnaBaseClass() ; //virtual dtor
+       AliAnaPartCorrBaseClass() ; // default ctor
+       AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass & g) ; // cpy ctor
+       AliAnaPartCorrBaseClass & operator = (const AliAnaPartCorrBaseClass & g) ;//cpy assignment
+       virtual ~AliAnaPartCorrBaseClass() ; //virtual dtor
               
        virtual void AddAODCaloCluster(AliAODCaloCluster calo) ;
        virtual void AddAODParticleCorrelation(AliAODParticleCorrelation pc) ;
@@ -140,11 +133,11 @@ class AliAnaBaseClass : public TObject {
        AliIsolationCut * fIC; // Isolation cut 
        AliNeutralMesonSelection * fNMS; // Neutral Meson Selection
 
-       ClassDef(AliAnaBaseClass,1)
+       ClassDef(AliAnaPartCorrBaseClass,1)
  } ;
 
 
-#endif //AliAnaBaseClass_H
+#endif //AliAnaPartCorrBaseClass_H
 
 
 

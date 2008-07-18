@@ -14,13 +14,6 @@
  **************************************************************************/
 /* $Id: $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 // Class for the analysis of particle - hadron correlations
 // Particle (for example direct gamma) must be found in a previous analysis 
@@ -43,7 +36,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
 
 //____________________________________________________________________________
   AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation() : 
-    AliAnaBaseClass(),
+    AliAnaPartCorrBaseClass(),
     fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), 
     fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
     fhDeltaPhiCharged(0), fhDeltaPhiNeutral(0), 
@@ -59,7 +52,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
 
 //____________________________________________________________________________
 AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & g) :   
-  AliAnaBaseClass(g),
+  AliAnaPartCorrBaseClass(g),
   fDeltaPhiMaxCut(g.fDeltaPhiMaxCut), fDeltaPhiMinCut(g.fDeltaPhiMinCut), 
   fhPhiCharged(g.fhPhiCharged), fhPhiNeutral(g.fhPhiNeutral), 
   fhEtaCharged(g.fhEtaCharged), fhEtaNeutral(g.fhEtaNeutral), 
@@ -82,7 +75,7 @@ AliAnaParticleHadronCorrelation & AliAnaParticleHadronCorrelation::operator = (c
   // assignment operator
 
   if(this == &source)return *this;
-  ((AliAnaBaseClass *)this)->operator=(source);
+  ((AliAnaPartCorrBaseClass *)this)->operator=(source);
   
   fDeltaPhiMaxCut = source.fDeltaPhiMaxCut ; 
   fDeltaPhiMinCut = source.fDeltaPhiMinCut ; 

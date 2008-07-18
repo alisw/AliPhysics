@@ -15,13 +15,6 @@
  **************************************************************************/
 /* $Id:  $ */
 
-/* History of cvs commits:
- *
- * $Log$
- *
- *
- */
-
 //_________________________________________________________________________
 // Class for reading data (ESDs) in order to do prompt gamma 
 // or other particle identification and correlations

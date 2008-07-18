@@ -27,7 +27,7 @@
 #include "AliESDInputHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-#include "AliAnaMaker.h"
+#include "AliAnaPartCorrMaker.h"
 #include "AliCaloTrackReader.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -107,7 +107,7 @@ void AliAnalysisTaskParticleCorrelation::Init()
  
   AliInfo(Form("### Configuration file is %s.C ###", fConfigName.Data()));
   gROOT->LoadMacro(fConfigName+".C");
-  fAna = (AliAnaMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
+  fAna = (AliAnaPartCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
   
   if(!fAna)
     AliFatal("Analysis pointer not initialized, abort analysis!");

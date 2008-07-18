@@ -14,24 +14,6 @@
  **************************************************************************/
 /* $Id$ */
 
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.9  2007/11/17 16:39:49  gustavo
- * removed deleting of not owned data and deleting of histograms which are exported to the output file (MG)
- *
- * Revision 1.8  2007/10/29 13:48:42  gustavo
- * Corrected coding violations
- *
- * Revision 1.6  2007/08/17 12:40:04  schutz
- * New analysis classes by Gustavo Conesa
- *
- * Revision 1.4.4.4  2007/07/26 10:32:09  schutz
- * new analysis classes in the the new analysis framework
- *
- *
- */
-
 //_________________________________________________________________________
 // Class for the prompt gamma analysis, isolation cut
 //
@@ -59,7 +41,7 @@ ClassImp(AliAnaGammaDirect)
   
 //____________________________________________________________________________
   AliAnaGammaDirect::AliAnaGammaDirect() : 
-    AliAnaBaseClass(), fDetector(""), fMakeIC(0),  fReMakeIC(0), 
+    AliAnaPartCorrBaseClass(), fDetector(""), fMakeIC(0),  fReMakeIC(0), 
     fMakeSeveralIC(0), fMakeInvMass(0),
     fhPtGamma(0),fhPhiGamma(0),fhEtaGamma(0), fhConeSumPt(0),
     //Several IC
@@ -126,7 +108,7 @@ ClassImp(AliAnaGammaDirect)
 
 //____________________________________________________________________________
 AliAnaGammaDirect::AliAnaGammaDirect(const AliAnaGammaDirect & g) : 
-  AliAnaBaseClass(g), fDetector(g.fDetector),
+  AliAnaPartCorrBaseClass(g), fDetector(g.fDetector),
   fMakeIC(g.fMakeIC),   fReMakeIC(g.fReMakeIC), 
   fMakeSeveralIC(g.fMakeSeveralIC),  fMakeInvMass(g.fMakeInvMass),
   fhPtGamma(g.fhPtGamma),fhPhiGamma(g.fhPhiGamma),

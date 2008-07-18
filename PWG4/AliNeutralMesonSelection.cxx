@@ -14,21 +14,6 @@
  **************************************************************************/
 /* $Id$ */
 
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.3  2007/10/29 13:48:42  gustavo
- * Corrected coding violations
- *
- * Revision 1.2  2007/08/17 12:40:04  schutz
- * New analysis classes by Gustavo Conesa
- *
- * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
- * new analysis classes in the the new analysis framework
- *
- *
- */
-
 //_________________________________________________________________________
 // Class that contains methods to select candidate pairs to neutral meson 
 // 2 main selections, invariant mass around pi0 (also any other mass),

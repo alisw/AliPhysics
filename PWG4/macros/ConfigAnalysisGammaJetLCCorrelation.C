@@ -8,7 +8,7 @@
 // Author : Gustavo Conesa Balbastre (INFN-LNF)
 //------------------------------------
 
-AliAnaMaker*  ConfigAnalysis()
+AliAnaPartCorrMaker*  ConfigAnalysis()
 {
   //
   // Configuration goes here
@@ -120,7 +120,7 @@ AliAnaMaker*  ConfigAnalysis()
   //---------------------------------------------------------------------
   // Set  analysis algorithm and reader
   //---------------------------------------------------------------------
-  maker = new AliAnaMaker();
+  maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
   maker->AddAnalysis(ana,0);
   maker->AddAnalysis(ana2,1);
