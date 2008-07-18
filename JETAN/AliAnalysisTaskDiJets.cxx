@@ -86,16 +86,20 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
     Int_t nj = jets->GetEntriesFast();
     printf("There are %5d jets in the event \n", nj);
     if (nj > 1) {
-	AliAODJet* jet1 = (AliAODJet*) (jets->At(0));
-	TLorentzVector v1 = *(jet1->MomentumVector());
-	AliAODJet* jet2 = (AliAODJet*) (jets->At(1));	
-	TLorentzVector v2 = *(jet2->MomentumVector());
-	TLorentzVector v = v1 + v2;
-	Int_t ndi = fDiJets->GetEntriesFast();
-	TClonesArray &lref = *fDiJets;
-	new(lref[ndi]) AliAODDiJet(v);;
-	AliAODDiJet* dijet = (AliAODDiJet*) (fDiJets->At(ndi));
-	dijet->SetJetRefs(jet1, jet2);
+		for (Int_t iJet1=0; iJet1<nj; iJet1++){
+			AliAODJet* jet1 = (AliAODJet*) (jets->At(iJet1));
+			TLorentzVector v1 = *(jet1->MomentumVector());
+			for (Int_t iJet2=iJet1+1; iJet2<nj; iJet2++){
+				AliAODJet* jet2 = (AliAODJet*) (jets->At(iJet2));
+				TLorentzVector v2 = *(jet2->MomentumVector());
+				TLorentzVector v = v1 + v2;
+				Int_t ndi = fDiJets->GetEntriesFast();
+				TClonesArray &lref = *fDiJets;
+				new(lref[ndi]) AliAODDiJet(v);;
+				AliAODDiJet* dijet = (AliAODDiJet*) (fDiJets->At(ndi));
+				dijet->SetJetRefs(jet1, jet2);
+			}
+		}
     }
     
 }
