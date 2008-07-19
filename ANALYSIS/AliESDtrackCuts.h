@@ -80,6 +80,7 @@ public:
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
   Float_t GetMinNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
+  Float_t GetDCAToVertex()           const   { return fCutDCAToVertex;}
   Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
   
   // track kinmatic cut setters
