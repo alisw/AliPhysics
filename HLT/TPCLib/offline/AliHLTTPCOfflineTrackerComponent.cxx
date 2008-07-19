@@ -223,7 +223,7 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
 
   if (fTracker && fESD) {
       // loop over input data blocks: TClonesArrays of clusters
-      for (TObject *pObj = (TObject *)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/,"TObjArray",0);
+      for (TObject *pObj = (TObject *)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/,"TClonesArray",0);
 	 pObj !=0 && iResult>=0;
 	 pObj = (TObject *)GetNextInputObject(0)) {
       clusterArray = dynamic_cast<TClonesArray*>(pObj);

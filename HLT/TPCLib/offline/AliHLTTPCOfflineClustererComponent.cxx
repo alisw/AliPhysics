@@ -289,8 +289,8 @@ int AliHLTTPCOfflineClustererComponent::RunClusterer(AliHLTUInt32_t outspec)
       // insert TClonesArray of clusters into output stream
       PushBack(outClrow, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/, outspec);
 
-      // clear array
-      outClrow->Clear();
+      // clear array 
+      outClrow->Delete();
       }
       HLTInfo("processing done: Number of clusters %d (specification 0x%08x)", nbClusters, outspec);
 

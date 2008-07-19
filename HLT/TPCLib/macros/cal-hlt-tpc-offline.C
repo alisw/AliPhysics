@@ -61,7 +61,7 @@ void cal_hlt_tpc_offline(const char* input="./")
   }
  
   int iMinSlice=0;
-  int iMaxSlice=17;
+  int iMaxSlice=35;
   int iMinPart=0;
   int iMaxPart=5;
 
@@ -138,7 +138,7 @@ void cal_hlt_tpc_offline(const char* input="./")
   rec.SetFillESD("");
   rec.SetRunQA(kFALSE);
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field,kTRUE);
+  AliTracker::SetFieldMap(field,kFALSE);
   rec.SetFillTriggerESD(kFALSE);
   rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
   rec.Run();
