@@ -23,6 +23,7 @@
 
 #include "AliHLTTPCOfflineTrackerComponent.h"
 #include "TString.h"
+#include "TClonesArray.h"
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "AliVParticle.h"
@@ -30,10 +31,13 @@
 #include "AliCDBEntry.h"
 #include "AliGeomManager.h"
 #include "AliMagFMaps.h"
+#include "AliTPCReconstructor.h"
 #include "AliTPCParam.h"
+#include "AliTPCRecoParam.h"
 #include "AliTPCParamSR.h"
 #include "AliTPCtrackerMI.h"
 #include "AliTPCClustersRow.h"
+#include "AliTPCseed.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliHLTTPCDefinitions.h"
@@ -144,6 +148,13 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
     HLTError("Cannot load geometry from file %s",fGeometryFileName.c_str());
     iResult=-EINVAL;
   }
+
+  // TPC reconstruction parameters
+  //AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();
+  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetHLTParam();
+  if(tpcRecoParam) {
+    AliTPCReconstructor::SetRecoParam(tpcRecoParam);
+  }
  
   // TPC geometry parameters
   fTPCGeomParam = new AliTPCParamSR;
@@ -196,7 +207,7 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
   HLTInfo("DoEvent processing data");
 
   int iResult=0;
-  TObjArray *clusterArray=0;
+  TClonesArray *clusterArray=0;
   TObjArray *seedArray=0;
   int slice, patch;
 
@@ -211,14 +222,14 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
   int maxPatch=AliHLTTPCDefinitions::GetMaxPatchNr(pBlock->fSpecification);  
 
   if (fTracker && fESD) {
-      // loop over input data blocks: TObjArrays of clusters
+      // loop over input data blocks: TClonesArrays of clusters
       for (TObject *pObj = (TObject *)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/,"TObjArray",0);
 	 pObj !=0 && iResult>=0;
 	 pObj = (TObject *)GetNextInputObject(0)) {
-      clusterArray = dynamic_cast<TObjArray*>(pObj);
+      clusterArray = dynamic_cast<TClonesArray*>(pObj);
       if (!clusterArray) continue;
 
-      HLTInfo("load %d cluster rows from block %s 0x%08x", clusterArray->GetEntries(), DataType2Text(GetDataType(pObj)).c_str(), GetSpecification(pObj));
+      HLTInfo("load %d clusters from block %s 0x%08x", clusterArray->GetEntries(), DataType2Text(GetDataType(pObj)).c_str(), GetSpecification(pObj));
       slice=AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(pObj));
       patch=AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(pObj));
 
@@ -229,12 +240,21 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
 #ifndef HAVE_NOT_TPCOFFLINE_REC
       fTracker->LoadClusters(clusterArray);
 #endif //HAVE_NOT_TPCOFFLINE_REC
+ 
+    clusterArray->Delete();
     }// end loop over input objects
+
+#ifndef HAVE_NOT_TPCOFFLINE_REC
+    // Load outer sectors
+      fTracker->LoadOuterSectors();
+    // Load inner sectors
+      fTracker->LoadInnerSectors();
+#endif
 
     // set magnetic field for the ESD, assumes correct initialization of
     // the field map
     fESD->SetMagneticField(AliTracker::GetBz());
-
+  
     // run tracker
     fTracker->Clusters2Tracks(fESD);
 
@@ -248,16 +268,21 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
           AliTPCseed *seed = (AliTPCseed*)seedArray->UncheckedAt(i);
           if(!seed) continue; 
 
+          //HLTInfo("TPC seed:  sec %d, row %d",seed->GetSector(), seed->GetRow());
+
           AliESDtrack *esdtrack=fESD->GetTrack(i);
           if(esdtrack) esdtrack->AddCalibObject((TObject*)seed);
 	  else 
-	     HLTInfo("Cannot add TPC seed to AliESDtrack");
+	     HLTInfo("Cannot add TPC seed to AliESDtrack %d", i);
        }
     }
+    seedArray->Clear();
 
-    // add ESDfriend to AliESDEvent
+    // reset ESDs friends (no Reset function!)
     fESDfriend->~AliESDfriend();
     new (fESDfriend) AliESDfriend(); // Reset ...
+
+    // add ESDfriend to AliESDEvent
     fESD->GetESDfriend(fESDfriend);
 
     // unload clusters
@@ -273,11 +298,7 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
     // send data
     PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, iSpecification);
 
-    // reset ESDs friends (no Reset function!)
-    fESDfriend->~AliESDfriend();
-    new (fESDfriend) AliESDfriend(); // Reset ...
-
-    // reset ESDs
+    // reset ESDs and ESDs friends
     fESD->Reset();
 
   } else {

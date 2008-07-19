@@ -16,7 +16,7 @@
 //**************************************************************************
 
 /** @file   AliHLTTPCOfflineClustererComponent.cxx
-    @author Matthias Richter
+    @author Matthias Richter & Jacek Otwinowski 
     @date   
     @brief  Wrapper component to the TPC offline cluster finder
 */
@@ -36,6 +36,7 @@
 #include "AliDAQ.h"
 #include "TString.h"
 #include "TObjArray.h"
+#include "TClonesArray.h"
 #include "TObjString.h"
 #include "TTree.h"
 
@@ -76,7 +77,7 @@ void AliHLTTPCOfflineClustererComponent::GetInputDataTypes( vector<AliHLTCompone
 AliHLTComponentDataType AliHLTTPCOfflineClustererComponent::GetOutputDataType()
 {
   // Return output data type
-  // Tree or TObjArray of clusters
+  // TObjArray/TClonesArray of clusters
   return  kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/;
 
 }
@@ -84,7 +85,7 @@ AliHLTComponentDataType AliHLTTPCOfflineClustererComponent::GetOutputDataType()
 void AliHLTTPCOfflineClustererComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   // Get output data size
-  constBase = 0;
+  constBase = 20000;
   inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
 
@@ -144,7 +145,6 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
   //
   // initialisation
   //
-
    
   // Load geometry
   HLTInfo("Geometry file %s",fGeometryFileName.c_str());
@@ -158,7 +158,8 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
   fRawReader = new AliRawReaderMemory;
 
   // TPC reconstruction parameters
-  fTPCRecoParam = AliTPCRecoParam::GetLowFluxParam();
+  //fTPCRecoParam = AliTPCRecoParam::GetLowFluxParam();
+  fTPCRecoParam = AliTPCRecoParam::GetHLTParam();
   if (fTPCRecoParam) {
     fTPCRecoParam->SetClusterSharing(kTRUE);
   }
@@ -171,6 +172,9 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
 
   // Init clusterer
   fClusterer = new AliTPCclustererMI(fTPCGeomParam,fTPCRecoParam);
+#ifndef HAVE_NOT_TPCOFFLINE_REC
+  fClusterer->StoreInClonesArray(kTRUE); // output clusters stored in one TClonesArray
+#endif
 
   if (!fRawReader || !fClusterer || !fTPCRecoParam || !fTPCGeomParam) {
     HLTError("failed creating internal objects");
@@ -272,25 +276,17 @@ int AliHLTTPCOfflineClustererComponent::RunClusterer(AliHLTUInt32_t outspec)
       // run the cluster finder
       fClusterer->Digits2Clusters(fRawReader);
 
-      AliTPCClustersRow *clrow = 0x0;
       Int_t nbClusters = 0;
-      TObjArray* outClrow=NULL;
+      TClonesArray* outClrow=NULL;
 #ifndef HAVE_NOT_TPCOFFLINE_REC
-      outClrow=fClusterer->GetOutputArray();
+      outClrow=fClusterer->GetOutputClonesArray();
+
 #endif //HAVE_NOT_TPCOFFLINE_REC
+     
       if (outClrow) {
-      Int_t lower   = outClrow->LowerBound();
-      Int_t entries = outClrow->GetEntriesFast();
+      nbClusters = outClrow->GetEntriesFast() ;
 
-      for (Int_t i=lower; i<entries; i++) {
-	clrow = (AliTPCClustersRow*) outClrow->At(i);
-	if(!clrow) continue;
-	if(!clrow->GetArray()) continue;
-
-	nbClusters += clrow->GetArray()->GetEntries() ;
-      }
-
-      // insert TObjArray of clusters into output stream
+      // insert TClonesArray of clusters into output stream
       PushBack(outClrow, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/, outspec);
 
       // clear array

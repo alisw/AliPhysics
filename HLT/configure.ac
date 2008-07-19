@@ -533,7 +533,7 @@ if test "x$enable_tpc" = "xyes" ; then
   				       TObjArray* array=NULL;
   				       tracker.LoadClusters(array);
   				       AliTPCclustererMI cl(NULL, NULL);
-  				       cl.GetOutputArray();])],
+  				       cl.GetOutputClonesArray();])],
                                     [have_tpc_hltoffline_rec=yes], 
   				      [AC_DEFINE(HAVE_NOT_TPCOFFLINE_REC)])
   AC_MSG_RESULT([$have_tpc_hltoffline_rec])
