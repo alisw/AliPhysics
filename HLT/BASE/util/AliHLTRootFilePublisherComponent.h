@@ -1,11 +1,11 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTROOTFILEPUBLISHERCOMPONENT_H
 #define ALIHLTROOTFILEPUBLISHERCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTRootFilePublisherComponent.h
     @author Matthias Richter
@@ -20,11 +20,11 @@
 /**
  * @class AliHLTRootFilePublisherComponent
  * \Note: This component is not what it pretends to be. So far it was just
- * used for debugging purpose. If you need a component like this make a
- * feature request at                                                  <br>
+ * used for debugging purpose. If you need a component publishing objects
+ * from a root file make a feature request at                          <br>
  * https://savannah.cern.ch/projects/alicehlt/
  * and assign it to richterm.                                          <br>
- * Any contributions are of course welcome.
+ * Or even better, start the development, any contributions are welcome.
  *
  * Component ID: \b RootFilePublisherComponent <br>
  * Library: \b libAliHLTUtil.
@@ -34,7 +34,8 @@
  * Optional arguments:<br>
  *
  * @see AliHLTFilePublisher for default arguments
- * @ingroup alihlt_component
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTRootFilePublisherComponent : public AliHLTFilePublisher  {
  public:

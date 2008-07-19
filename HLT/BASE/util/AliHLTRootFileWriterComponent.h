@@ -1,5 +1,5 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTROOTFILEWRITERCOMPONENT_H
 #define ALIHLTROOTFILEWRITERCOMPONENT_H
@@ -20,8 +20,15 @@ class TFile;
 /**
  * @class AliHLTRootFileWriterComponent
  * The RootFileWriter provides a stand alone component to write incoming
- * TObject like structures into a Root file. Furthermore it functions as
+ * TObject like structures into a Root file. Furthermore it provides a
  * base class for customized writers.
+ * By default, the \em -concatenate-blocks option of the AliHLTFileWriter
+ * is set. If you want to accumulate all events in the same file set the
+ * -concatenate-events option as well. In that case the \em -overwrite
+ * option might be a good choice in order to avoid multiple keys for the
+ * same object in the root file.
+ *
+ * All non-root object data blocks are just ignored.
  *
  * <h2>General properties:</h2>
  *
@@ -36,6 +43,10 @@ class TFile;
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * See AliHLTFileWriter for full list of arguments.
+ * \li -overwrite <br>
+ *      write objects with the TObject::kOverwrite flag and avoid multiple
+ *      keys in the file
+ *
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -136,12 +147,16 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
 
   /** the name of the current file */
   TFile* fCurrentFile; //! transient value
+
+  /** options for the TObject::Write function */
+  Int_t fOptions; //!transient
+
 private:
   /** copy constructor prohibited */
   AliHLTRootFileWriterComponent(const AliHLTRootFileWriterComponent&);
   /** assignment operator prohibited */
   AliHLTRootFileWriterComponent& operator=(const AliHLTRootFileWriterComponent&);
 
-  ClassDef(AliHLTRootFileWriterComponent, 0)
+  ClassDef(AliHLTRootFileWriterComponent, 1) // ROOT file writer component
 };
 #endif

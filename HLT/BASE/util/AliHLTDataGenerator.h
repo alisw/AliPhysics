@@ -1,11 +1,11 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTDATAGENERATOR_H
 #define ALIHLTDATAGENERATOR_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTDataGenerator.h
     @author Matthias Richter
@@ -46,7 +46,8 @@
  * The component produces data blocks of random content and random size in the
  * range of [\em minsize , \em maxsize ]. The size arguments can contain 'k' or
  * 'M' to indicate kByte or MByte.
- * @ingroup alihlt_component
+ *
+ * @ingroup alihlt_util_components
  */
 class AliHLTDataGenerator : public AliHLTDataSource  {
  public:

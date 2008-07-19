@@ -35,7 +35,8 @@ AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent()
   :
   AliHLTFileWriter(),
   fEventID(kAliHLTVoidEventID),
-  fCurrentFile(NULL)
+  fCurrentFile(NULL),
+  fOptions(0)
 {
   // see header file for class documentation
   // or
@@ -92,11 +93,28 @@ int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& ev
   return iResult;
 }
 
-int AliHLTRootFileWriterComponent::ScanArgument(int /*argc*/, const char** /*argv*/)
+int AliHLTRootFileWriterComponent::ScanArgument(int argc, const char** argv)
 {
   // see header file for class documentation
-  // no other arguments known
-  int iResult=-EINVAL;
+  int iResult=0;
+  if (argc<=0) return 0;
+  TString argument=argv[0];
+  int bMissingParam=0;
+
+  // -overwrite
+  if (argument.CompareTo("-overwrite")==0) {
+    fOptions|=TObject::kOverwrite;
+    iResult=1;
+    
+  } else {
+    iResult=-EINVAL;
+  }
+
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+
   return iResult;
 }
 
@@ -117,7 +135,7 @@ int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, co
     }
     if (fCurrentFile) {
       fCurrentFile->cd();
-      pOb->Write();
+      pOb->Write("", fOptions);
     } else {
       iResult=-EBADF;
     }
