@@ -51,6 +51,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     esdTrackCutsL->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
     esdTrackCutsL->SetRequireTPCRefit(kTRUE);
     esdTrackCutsL->SetMinNsigmaToVertex(3);
+    esdTrackCutsL->SetDCAToVertex(3.);
     esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
     esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
 
