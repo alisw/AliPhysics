@@ -117,7 +117,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
   while (fCurrent<fBlockDescList.size() && iResult==-ENOENT) {
     if (fBlockDescList[fCurrent]==fSearchDataType &&
 	(fSearchSpecification==kAliHLTVoidDataSpec || fBlockDescList[fCurrent]==fSearchSpecification) &&
-	(fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput || FindHandlerDesc(fBlockDescList[fCurrent].GetIndex())==fSearchHandlerType) &&
+	(fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput || FindHandlerDesc(fCurrent)==fSearchHandlerType) &&
 	(!CheckStatusFlag(kBlockSelection) || fBlockDescList[fCurrent].IsSelected()) &&
 	(!CheckStatusFlag(kSkipProcessed) || !fBlockDescList[fCurrent].IsProcessed())) {
       iResult=fBlockDescList[fCurrent].GetIndex();
@@ -159,13 +159,13 @@ int AliHLTOUT::GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32
 const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::GetDataBlockHandlerDesc()
 {
   // see header file for class documentation
-  return FindHandlerDesc(GetDataBlockIndex());
+  return FindHandlerDesc(fCurrent);
 }
 
 AliHLTModuleAgent::AliHLTOUTHandlerType AliHLTOUT::GetDataBlockHandlerType()
 {
   // see header file for class documentation
-  AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=FindHandlerDesc(GetDataBlockIndex());
+  AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=FindHandlerDesc(fCurrent);
   AliHLTModuleAgent::AliHLTOUTHandlerType type=desc;
   return type;
 }
@@ -207,7 +207,7 @@ AliHLTModuleAgent* AliHLTOUT::GetAgent()
 {
   // see header file for class documentation
   AliHLTModuleAgent* pAgent=NULL;
-  pAgent=FindHandlerDesc(GetDataBlockIndex());
+  pAgent=FindHandlerDesc(fCurrent);
   return pAgent;
 }
 
@@ -215,7 +215,7 @@ AliHLTOUTHandler* AliHLTOUT::GetHandler()
 {
   // see header file for class documentation
   AliHLTOUTHandler* pHandler=NULL;
-  pHandler=FindHandlerDesc(GetDataBlockIndex());
+  pHandler=FindHandlerDesc(fCurrent);
   return pHandler;
 }
 
