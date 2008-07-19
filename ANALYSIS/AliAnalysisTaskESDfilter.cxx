@@ -325,7 +325,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
-	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
+	    UInt_t selectInfo = 0;
+	    if (fTrackFilter) {
+		selectInfo = fTrackFilter->IsSelected(esdTrack);
+	    }
 	    
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -365,7 +368,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
-	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);	    
+	    UInt_t selectInfo = 0;
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);	    
 
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -413,7 +417,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	    esdTrack->GetESDpid(pid);
-	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
+	    UInt_t selectInfo = 0;
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    
 	    vcascade->AddDaughter(aodTrack =
 				  new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -498,7 +503,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	  esdTrack->GetImpactParameters(dcaPosToPrimVertexXYZ[0],dcaPosToPrimVertexXYZ[1]);
 	  if (!usedTrack[posFromV0]) {
 	    usedTrack[posFromV0] = kTRUE;
-	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
+	    UInt_t selectInfo = 0;
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 							  esdTrack->GetLabel(), 
 							  p_pos, 
@@ -540,7 +546,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
 	  if (!usedTrack[negFromV0]) {
 	    usedTrack[negFromV0] = kTRUE;
-	    UInt_t selectInfo = fTrackFilter->IsSelected(esdTrack);
+	    UInt_t selectInfo = 0;
+	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 							  esdTrack->GetLabel(),
 							  p_neg,
@@ -639,8 +646,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		    
 		    AliAODTrack * mother = NULL;
 		    
-		    UInt_t selectInfo = fTrackFilter->IsSelected(esd->GetTrack(imother));
-		    if (!selectInfo) continue;
+		    UInt_t selectInfo = 0;
+		    if (fTrackFilter) {
+			selectInfo = fTrackFilter->IsSelected(esd->GetTrack(imother));
+			if (!selectInfo) continue;
+		    }
 		    
 		    if (!usedTrack[imother]) {
 			
@@ -703,7 +713,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackD->GetXYZ(pos);
 			esdTrackD->GetCovarianceXYZPxPyPz(covTr);
 			esdTrackD->GetESDpid(pid);
-			UInt_t selectInfo = fTrackFilter->IsSelected(esdTrackD);
+			UInt_t selectInfo = 0;
+			if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrackD);
 			daughter = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackD->GetID(),
 							       esdTrackD->GetLabel(),
@@ -762,61 +773,28 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	esdTrack->GetESDpid(pid);
 	
-	Float_t impactXY, impactZ;
-	
-	esdTrack->GetImpactParameters(impactXY,impactZ);
-	
-	if (impactXY<3) {
-	    // track inside the beam pipe
 	    
-	    primary->AddDaughter(aodTrack =
-				 new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-								    esdTrack->GetLabel(),
-								    p,
-								    kTRUE,
-								    pos,
-								    kFALSE,
-								    covTr, 
-								    (Short_t)esdTrack->GetSign(),
-								    esdTrack->GetITSClusterMap(), 
-								    pid,
-								    primary,
-								    kTRUE, // check if this is right
-								    kTRUE, // check if this is right
-								    AliAODTrack::kPrimary, 
-								    selectInfo)
-		);
-       if (esdTrack->GetSign() > 0) nPosTracks++;
-	    aodTrack->SetFlags(esdTrack->GetStatus());
-	    aodTrack->ConvertAliPIDtoAODPID();
-            SetAODPID(esdTrack,aodTrack,detpid,timezero);
-	}
-	else {
-	  // outside the beam pipe: orphan track
-	  // Don't write them anymore!
-	  continue;
-	  /*
-	  aodTrack =
-	    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-					       esdTrack->GetLabel(),
-					       p,
-					       kTRUE,
-					       pos,
-					       kFALSE,
-					       covTr, 
-					       (Short_t)esdTrack->GetSign(),
-					       esdTrack->GetITSClusterMap(), 
-					       pid,
-					       NULL,
-					       kFALSE, // check if this is right
-					       kFALSE, // check if this is right
-					       AliAODTrack::kOrphan,
-					       selectInfo);
-     if (esdTrack->GetSign() > 0) nPosTracks++;
-	  aodTrack->SetFlags(esdTrack->GetStatus());
-	  aodTrack->ConvertAliPIDtoAODPID();
-	  */
-	}	
+	primary->AddDaughter(aodTrack =
+			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
+								esdTrack->GetLabel(),
+								p,
+								kTRUE,
+								pos,
+								kFALSE,
+								covTr, 
+								(Short_t)esdTrack->GetSign(),
+								esdTrack->GetITSClusterMap(), 
+								pid,
+								primary,
+								kTRUE, // check if this is right
+								kTRUE, // check if this is right
+								AliAODTrack::kPrimary, 
+								selectInfo)
+	    );
+	if (esdTrack->GetSign() > 0) nPosTracks++;
+	aodTrack->SetFlags(esdTrack->GetStatus());
+	aodTrack->ConvertAliPIDtoAODPID();
+	SetAODPID(esdTrack,aodTrack,detpid,timezero);
     } // end of loop on tracks
     
     // Update number of AOD tracks in header at the end of track loop (M.G.)
