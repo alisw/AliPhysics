@@ -28,9 +28,10 @@ class TH1F;
  * <h2>General properties:</h2> 
  *
  * Component ID: \b TPCTrackHisto <br>
- * Library: \b libAliHLTTPC.
- * Input Data Types: @ref fgkClustersDataType <br>
- *                   @ref fgkTrackSegmentsDataType or fgkTracksDataType <br>
+ * Library: \b libAliHLTTPC.so <br>
+ * Input Data Types: AliHLTTPCDefinitions::fgkClustersDataType,
+ *                   AliHLTTPCDefinitions::fgkTrackSegmentsDataType or
+ *                   AliHLTTPCDefinitions::fgkTracksDataType <br>
  * Output Data Types: @ref kAliHLTDataTypeHistogram <br> 
  *
  * <h2> Mandatory arguments: </h2>
@@ -81,7 +82,7 @@ class TH1F;
  *
  * 
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCTrackHistoComponent : public AliHLTProcessor
 {
