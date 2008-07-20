@@ -1760,7 +1760,7 @@ Bool_t AliSimulation::RunQA()
 {
 	// run the QA on summable hits, digits or digits
 
-	AliQADataMakerSteer qas ; 
+	AliQADataMakerSteer qas("sim") ; 
     qas.SetRunLoader(gAlice->GetRunLoader()) ;
 
 	TString detectorsw("") ;  

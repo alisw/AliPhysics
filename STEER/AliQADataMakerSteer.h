@@ -30,7 +30,7 @@ class AliESDEvent ;
 
 class AliQADataMakerSteer: public TNamed {
 public:
-	AliQADataMakerSteer(const char* gAliceFilename = "galice.root", 
+	AliQADataMakerSteer(char * mode, const char* gAliceFilename = "galice.root", 
 						const char * name = "AliQADataMakerSteer", 
 						const char * title = "QA makers") ; 
 	AliQADataMakerSteer(const AliQADataMakerSteer & qas) ; 
@@ -38,6 +38,7 @@ public:
 	virtual ~AliQADataMakerSteer() ; 
 	UInt_t      GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray * GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, const char * year) const ; 
+	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
 	Bool_t      Merge(const Int_t runNumber = -1) const ;  
 	void        Reset(const Bool_t sameCycle = kFALSE) ;  
 	TString     Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex, Bool_t const sameCycle = kFALSE, const char * fileName = NULL) ; 
@@ -52,14 +53,13 @@ public:
 	void        SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 
 private: 
-	Bool_t			     DoIt(const AliQA::TASKINDEX_t taskIndex, const char * mode) ;
+	Bool_t			     DoIt(const AliQA::TASKINDEX_t taskIndex) ;
 	AliLoader      * GetLoader(Int_t iDet) ; 
 	const Int_t      GetQACycles(const Int_t iDet) { return fQACycles[iDet] ; }
-	AliQADataMaker * GetQADataMaker(const Int_t iDet, const char * mode) ; 
-	Bool_t			     Init(const AliQA::TASKINDEX_t taskIndex, const char * mode, const  char * fileName = NULL) ;
+	Bool_t			     Init(const AliQA::TASKINDEX_t taskIndex, const  char * fileName = NULL) ;
 	Bool_t           InitRunLoader() ; 
 	Bool_t           IsSelected(const char * detName)  ;
-	Bool_t           Finish(const AliQA::TASKINDEX_t taskIndex, const char * mode) ;
+	Bool_t           Finish(const AliQA::TASKINDEX_t taskIndex) ;
 	Bool_t           SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const char * year) const ;  
 
  
@@ -69,10 +69,10 @@ private:
 	TString            fDetectorsW ;                   //! list of active detectors with QA implemented 
 	AliESDEvent *      fESD ;                          //! current ESD
 	TTree *            fESDTree ;                      //! current ESD Tree
-	Bool_t             fFirst ;                        //! to search the detector QA data maker only once
 	TString            fGAliceFileName ;               //! name of the galice file
 	UInt_t             fFirstEvent ;                   //! first event to process
 	Int_t              fMaxEvents ;                    //! number of events to process
+	char *             fMode ;                         //! sim or rec
 	Long64_t           fNumberOfEvents ;               //! number of events in the run 
 	UInt_t             fRunNumber ;                    //! current run number
 	AliRawReader     * fRawReader ;                    //! current raw reader object 
@@ -81,7 +81,6 @@ private:
 	static const UInt_t fgkNDetectors = AliQA::kNDET ; //! number of detectors    
 	AliLoader      *   fLoader[fgkNDetectors];         //! array of detectors loader
 	AliQADataMaker *   fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
-	TObjArray          fQADataMakers;                  //! array of active QA data maker objects
 	Int_t              fQACycles[fgkNDetectors];       //! array of QA cycle length
 	
   ClassDef(AliQADataMakerSteer, 0)      // class for running the QA makers

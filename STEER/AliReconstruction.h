@@ -35,7 +35,7 @@ class AliVertexerTracks;
 class TFile;
 class TTree;
 class TList;
-class AliQADataMakerRec;
+class AliQADataMakerSteer; 
 class TMap;
 
 class AliReconstruction: public TNamed {
@@ -174,7 +174,6 @@ private:
 
   //Quality Assurance
   Int_t                GetDetIndex(const char * detector);
-  AliQADataMakerRec*   GetQADataMaker(Int_t iDet);
   const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
 
@@ -250,14 +249,14 @@ private:
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
-  AliQADataMakerRec *fQADataMaker[fgkNDetectors+1];  //! array of QA data makers
-  Int_t fQACycles[   fgkNDetectors];// # events over which QA data are accumulated
-  TString            fQADetectors ;  // list of detectors to be QA'ed 	
-  TString            fQATasks ;      // list of QA tasks to be performed	
-  Bool_t             fRunQA ;        // Run QA flag
-  Bool_t             fRunGlobalQA;   // Run global QA flag
-  Bool_t             fInLoopQA;      // In-loop QA flag
-  Bool_t             fSameQACycle;   //! open a new QA data file or not
+  Int_t fQACycles[      fgkNDetectors]; // # events over which QA data are accumulated
+  TString               fQADetectors ;  // list of detectors to be QA'ed 	
+	AliQADataMakerSteer * fQASteer    ;   // steering class to run QA
+  TString               fQATasks ;      // list of QA tasks to be performed	
+  Bool_t                fRunQA ;        // Run QA flag
+  Bool_t                fRunGlobalQA;   // Run global QA flag
+  Bool_t                fInLoopQA;      // In-loop QA flag
+  Bool_t                fSameQACycle;   //! open a new QA data file or not
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 
