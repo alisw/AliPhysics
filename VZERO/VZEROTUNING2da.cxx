@@ -3,23 +3,24 @@
 - Link:       http
 - Raw data test file : 
 - Reference run number : 	      
-- Run Type:   STANDALONE
+- Run Type:   INTEGRATION_GATE_TUNING (not defined yet)
 - DA Type:    LDC
 - Number of events needed: 500
 - Input Files:  argument list
-- Output Files: local file  V0_Tuning2.dat
-                FXS file    V0_Tuning2.dat
+- Output Files: local file  V0_IntegrationGateTuning.dat
+                FXS file    V0_IntegrationGateTuning.dat
 - Trigger types used: PHYSICS_EVENT
 **********************************************************************************/
 
 
 /**********************************************************************************
 *                                                                                 *
-* VZERO Detector Algorithm used for tuning FEE parameters                         *
+* VZERO Detector Algorithm used for tuning Integration Gates                      *
 *                                                                                 *
 * This program reads data on the LDC                                              *
-* It cumulates mean ADC responses ,  populates local  "./V0_Tuning2.dat"  file    * 
-* and exports it to the FES.                             *                        *                    *
+* It cumulates mean ADC responses ,  populates local                              *
+*                                   "./V0_IntegrationGateTuning.dat"  file        * 
+* and exports it to the FES.                                                      *
 * We have 128 channels instead of 64 as expected for V0 due to the two sets of    *
 * charge integrators which are used by the FEE ...                                *
 * The program reports about its processing progress.                              *
@@ -59,15 +60,54 @@ int main(int argc, char **argv) {
                     "TStreamerInfo",
                     "RIO",
                     "TStreamerInfo()");
-  int status;
 
+  int status;
+  status = daqDA_DB_getFile("V00da_results","./V0_Ped_Width_Gain.dat");
+  if (status) {
+      printf("Failed to get Pedestal file (V0_Ped_Width_Gain.dat) from DAQ DB, status=%d\n", status);
+      return -1;   
+  }
+  
+  Float_t MeanPed[128], SigPed[128], fdump;
+  
+  /* open the pedestal file and retrieve pedestal mean and sigma */
+  FILE *fpPed = fopen("V0_Ped_Width_Gain.dat","r");
+  for(int i=0;i<128;i++){
+      fscanf(fpPed,"%f %f %f %f \n",&MeanPed[i],&SigPed[i],&fdump,&fdump);
+//      printf("%.3f %.3f \n",MeanPed[i],SigPed[i]);
+  }
+  fclose(fpPed);
+
+//______________________________________________________________________________
+// Get running parameters from V00_ChannelDelayTuning_DA.config file
+
+  Int_t    kNbEventSkipped;   // = 100;   number of events skipped - to be tuned
+  Float_t  kSigmaCut;         // = 3.0;   number of sigmas for threshold cut - to be tuned
+  
+  status = daqDA_DB_getFile("V00_ChannelDelayTuning_DA.config","./V00_ChannelDelayTuning_DA.config");
+  if (status) {
+      printf("Failed to get config file (V00_ChannelDelayTuning_DA.config) from DAQ DB, status=%d\n", status);
+      return -1;   
+  }
+  /* open the config file and retrieve running parameters */
+  FILE *fpConfig = fopen("V00_ChannelDelayTuning_DA.config","r");
+  fscanf(fpConfig,"%f %d",&kSigmaCut,&kNbEventSkipped);
+  fclose(fpConfig);
+  
+  printf("Number of events skipped = %d ; Number of sigmas for threshold cut = %f\n",kNbEventSkipped,kSigmaCut);
+//______________________________________________________________________________
+
+  Float_t ChargeEoI  = 0.0;
+  Bool_t  Integrator = 0;
+  Int_t   NHit[128];
   Float_t ADC_Mean[128];
   for(Int_t i=0; i<128; i++) {
       ADC_Mean[i] = 0.0;
+      NHit[i]     = 0;
   } 
-      
+       
   /* log start of process */
-  printf("VZERO DA program started - Tuning FEE parameters\n");  
+  printf("VZERO Integration_Gate_Tuning DA program started - Tuning Integration Gates\n");  
 
   /* check that we got some arguments = list of files */
   if (argc<2)   {
@@ -76,7 +116,7 @@ int main(int argc, char **argv) {
                
   /* open result file to be exported to FES */
   FILE *fp=NULL;
-  fp=fopen("./V0_Tuning2.dat","a");
+  fp=fopen("./V0_IntegrationGateTuning.dat","a");
   if (fp==NULL) {
       printf("Failed to open result file\n");
       return -1;}
@@ -144,14 +184,14 @@ int main(int argc, char **argv) {
 	     AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
 	     rawStream->Next();	
 	     for(Int_t i=0; i<64; i++) {
-	        if(!rawStream->GetIntegratorFlag(i,10))
-		{
-		    ADC_Mean[i]=ADC_Mean[i]+rawStream->GetADC(i);       // even integrator 
-		}
-		else 
-		{ 		   
-		    ADC_Mean[i+64]=ADC_Mean[i+64]+rawStream->GetADC(i); // odd integrator
-		}
+	         Integrator = rawStream->GetIntegratorFlag(i,10);
+	         ChargeEoI  = (float)rawStream->GetADC(i) - MeanPed[i + 64*Integrator];
+		 Float_t Threshold = kSigmaCut * SigPed[i + 64*Integrator];
+
+	         if(ChargeEoI  > Threshold) {	        		   
+		    ADC_Mean[i+64*Integrator] = ADC_Mean[i+64*Integrator]+ChargeEoI; 
+		    NHit[i+64*Integrator]+=1;
+		 }
              }    
              delete rawStream;
              rawStream = 0x0;      
@@ -170,9 +210,12 @@ int main(int argc, char **argv) {
 //  Computes mean values, dumps them into the output text file
 	
   for(Int_t i=0; i<128; i++) {
-      ADC_Mean[i]=ADC_Mean[i]/nevents_physics;
+      if(NHit[i]>0) 
+         ADC_Mean[i]=ADC_Mean[i]/(float)NHit[i];
+      else	 
+         ADC_Mean[i]=0.0;	 
       fprintf(fp," %d %d %f\n",iteration,i,ADC_Mean[i]);
-      fprintf(flog,"%d %d %f\n",iteration,i,ADC_Mean[i]);
+      fprintf(flog,"it %d ch %d NHit %d ADCMean %f\n",iteration,i,NHit[i],ADC_Mean[i]);
   } 
   
 //________________________________________________________________________
@@ -189,7 +232,7 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
   /* export result file to FES */
-  status=daqDA_FES_storeFile("./V0_Tuning2.dat","V00da_results");
+  status=daqDA_FES_storeFile("./V0_IntegrationGateTuning.dat","V00da_IntegrationGateTuning.dat");
   if (status)    {
       printf("Failed to export file : %d\n",status);
       return -1; }
