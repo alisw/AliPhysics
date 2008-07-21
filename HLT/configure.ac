@@ -453,6 +453,17 @@ fi
 AC_MSG_RESULT([$enable_strict])
 
 dnl ------------------------------------------------------------------
+AC_MSG_CHECKING([whether to enable component statistics])
+AC_ARG_ENABLE(component-stat,
+  [AC_HELP_STRING([--enable-component-stat],
+      [enable component statistics ])],
+  [],[enable_component_stat=no])
+if test "x$enable_component_stat" = "xyes" ; then
+   AC_DEFINE(HLT_COMPONENT_STATISTICS)
+fi
+AC_MSG_RESULT([$enable_component_stat])
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile sample library])
 AH_TEMPLATE([HLT_SAMPLE],[hlt sample library])
 AC_ARG_ENABLE(sample,
