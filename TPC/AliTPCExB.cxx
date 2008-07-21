@@ -22,7 +22,7 @@
   // See example macro $ALICE_ROOT/TPC/macros/AliTPCExBdraw.C 
   //
   .L $ALICE_ROOT/TPC/macros/AliTPCExBdraw.C 
-  Draw0(0)
+  Draw(0)
 
 
 
