@@ -60,7 +60,11 @@ private:
   TH1F* fHistESDratio;     //! Ratio of clusters to findables
   TH1F* fHistESDpt;        //! Pt spectrum
   
-  TH1F* fHistRawsOccupancy;//! Pad occupancy (1 entry per pad)
+  TH1F* fHistRawsOccupancy;      //! Pad occupancy (1 entry per pad)
+  TH1F* fHistRawsOccupancyVsSector; //! Pad occupancy vs sector
+  TH1F* fHistRawsNClustersPerEventVsSector; //! Nclusters vs sector
+  TH1F* fHistRawsQVsSector;      //! <Q> vs sector
+  TH1F* fHistRawsQmaxVsSector;   //! <Qmax> vs sector
 
   TH1F* fHistRecPointsQmaxShort; //! Qmax (short pads)
   TH1F* fHistRecPointsQmaxMedium;//! Qmax (medium pads)

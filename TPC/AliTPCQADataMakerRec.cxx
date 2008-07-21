@@ -60,6 +60,7 @@
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCclusterMI.h"
 
@@ -71,7 +72,9 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec() :
 		    "TPC Rec Quality Assurance Data Maker"),
   fTPCdataQA(0),
   fHistESDclusters(0),fHistESDratio(0), fHistESDpt(0),
-  fHistRawsOccupancy(0),
+  fHistRawsOccupancy(0), fHistRawsOccupancyVsSector(0),
+  fHistRawsNClustersPerEventVsSector(0), fHistRawsQVsSector(0),
+  fHistRawsQmaxVsSector(0),
   fHistRecPointsQmaxShort(0), fHistRecPointsQmaxMedium(0), 
   fHistRecPointsQmaxLong(0), fHistRecPointsQShort(0), 
   fHistRecPointsQMedium(0), fHistRecPointsQLong(0),
@@ -86,19 +89,14 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec() :
 AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
   AliQADataMakerRec(),
   fTPCdataQA(0),
-  fHistESDclusters(0),  //! Clusters per ESD track
-  fHistESDratio(0),     //! Ratio of clusters to findables
-  fHistESDpt(0),        //! Pt spectrum
-  
-  fHistRawsOccupancy(0),//! Pad occupancy (1 entry per pad)
-  
-  fHistRecPointsQmaxShort(0), //! Qmax (short pads)
-  fHistRecPointsQmaxMedium(0),//! Qmax (medium pads)
-  fHistRecPointsQmaxLong(0),  //! Qmax (long pads)
-  fHistRecPointsQShort(0),    //! Q (short pads)
-  fHistRecPointsQMedium(0),   //! Q (medium pads)
-  fHistRecPointsQLong(0),     //! Q (long pads)
-  fHistRecPointsRow(0)       //! Row distribution
+  fHistESDclusters(0),fHistESDratio(0), fHistESDpt(0),
+  fHistRawsOccupancy(0), fHistRawsOccupancyVsSector(0),
+  fHistRawsNClustersPerEventVsSector(0), fHistRawsQVsSector(0),
+  fHistRawsQmaxVsSector(0),
+  fHistRecPointsQmaxShort(0), fHistRecPointsQmaxMedium(0), 
+  fHistRecPointsQmaxLong(0), fHistRecPointsQShort(0), 
+  fHistRecPointsQMedium(0), fHistRecPointsQLong(0),
+  fHistRecPointsRow(0)
 {
   //copy ctor 
   // Does not copy the calibration object, instead InitRaws have to be
@@ -118,7 +116,13 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
   fHistESDpt         = (TH1F*)fESDsQAList->FindObject("hESDpt");
 
   fHistRawsOccupancy = (TH1F*)fRawsQAList->FindObject("hRawsOccupancy");
-
+  fHistRawsOccupancyVsSector = 
+    (TH1F*)fRawsQAList->FindObject("hRawsOccupancyVsSector");
+  fHistRawsNClustersPerEventVsSector = 
+    (TH1F*)fRawsQAList->FindObject("hRawsNClustersPerEventVsSector");
+  fHistRawsQVsSector = (TH1F*)fRawsQAList->FindObject("hRawsQVsSector");
+  fHistRawsQmaxVsSector = (TH1F*)fRawsQAList->FindObject("hRawsQmaxVsSector");
+  
   fHistRecPointsQmaxShort  = 
     (TH1F*)fRecPointsQAList->FindObject("hRecPointsQmaxShort");
   fHistRecPointsQmaxMedium = 
@@ -168,9 +172,72 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
     // get the histograms and add them to the output
     // 31/8-08 Histogram is only added if the Calibration class 
     //         receives TPC data 
-    if(fTPCdataQA->GetNoThreshold()) { 
-      fHistRawsOccupancy = fTPCdataQA->GetNoThreshold()->MakeHisto1D(0, 1, -1);
-      //Add2RawsList(fHistRawsOccupancy, 1);
+    const Int_t eventCounter = fTPCdataQA->GetEventCounter();
+    if(eventCounter>0) { // some TPC data has been processed
+
+      // Reset histograms and refill them 
+      fHistRawsOccupancy->Reset();
+      fHistRawsOccupancyVsSector->Reset();
+      fHistRawsNClustersPerEventVsSector->Reset();
+      fHistRawsQVsSector->Reset();
+      fHistRawsQmaxVsSector->Reset();
+      
+      TH1F* hNorm72 = new TH1F("hNorm72", "histogram to normalize 72 sectors",
+			       72, 0, 72);
+      hNorm72->Sumw2();
+      TH1F* hNorm108 = new TH1F("hNorm108", "histogram to normalize 108 sectors (medium and long pads are split up)",
+			       108, 0, 108);
+      hNorm108->Sumw2();
+
+      for (Int_t iSec = 0; iSec < 72; iSec++) {
+	
+	AliTPCCalROC* occupancyROC = 
+	  fTPCdataQA->GetNoThreshold()->GetCalROC(iSec); 
+	AliTPCCalROC* nclusterROC = 
+	  fTPCdataQA->GetNLocalMaxima()->GetCalROC(iSec); 
+	AliTPCCalROC* qROC = 
+	  fTPCdataQA->GetMeanCharge()->GetCalROC(iSec); 
+	AliTPCCalROC* qmaxROC = 
+	  fTPCdataQA->GetMaxCharge()->GetCalROC(iSec); 
+
+	const Int_t nRows = occupancyROC->GetNrows(); 
+	for (Int_t iRow = 0; iRow < nRows; iRow++) {
+
+	  Int_t helpSector = iSec;
+	  if(iRow>=64)
+	    helpSector += 36; // OROC (long pads)
+
+	  const Int_t nPads = occupancyROC->GetNPads(iRow); 
+	  for (Int_t iPad = 0; iPad < nPads; iPad++) {
+	
+	    fHistRawsOccupancy->Fill(occupancyROC->GetValue(iRow, iPad));
+	    hNorm72->Fill(iSec);
+	    fHistRawsOccupancyVsSector
+	      ->Fill(iSec, occupancyROC->GetValue(iRow, iPad));
+
+	    const Int_t nClusters = nclusterROC->GetValue(iRow, iPad);
+	    
+	    if(nClusters>0) {
+	      
+	      fHistRawsNClustersPerEventVsSector->Fill(iSec, nClusters);
+	      hNorm108->Fill(helpSector, nClusters);
+	      fHistRawsQVsSector->Fill(helpSector, 
+				       nClusters*qROC->GetValue(iRow, iPad));
+	      fHistRawsQmaxVsSector->Fill(helpSector, 
+					  nClusters*qmaxROC->GetValue(iRow, iPad));
+	    }
+	  }
+	}
+      } // end loop over sectors
+      
+      // Normalize histograms
+      fHistRawsOccupancyVsSector->Divide(hNorm72);
+      fHistRawsNClustersPerEventVsSector->Scale(1.0/Float_t(eventCounter));
+      fHistRawsQVsSector->Divide(hNorm108);
+      fHistRawsQmaxVsSector->Divide(hNorm108);
+      delete hNorm72;
+      delete hNorm108;
+
     }
   }
 
@@ -215,8 +282,37 @@ void AliTPCQADataMakerRec::InitRaws()
   LoadMaps(); // Load Altro maps
   fTPCdataQA->SetAltroMapping(fMapping); // set Altro mapping
   fTPCdataQA->SetRangeTime(100, 920); // set time bin interval 
+  Add2RawsList(fTPCdataQA, 0); // This is used by the AMORE monitoring
 
-  Add2RawsList(fTPCdataQA, 0);
+  fHistRawsOccupancy = 
+    new TH1F("hRawsOccupancy", "Occupancy (all pads); Occupancy; Counts",
+	     100, 0, 1);
+  fHistRawsOccupancy->Sumw2();
+  Add2RawsList(fHistRawsOccupancy, 1);
+
+  fHistRawsOccupancyVsSector = 
+    new TH1F("hRawsOccupancyVsSector", "Occupancy vs sector; Sector; Occupancy",
+	     72, 0, 72);
+  fHistRawsOccupancyVsSector->Sumw2();
+  Add2RawsList(fHistRawsOccupancyVsSector, 2);
+
+  fHistRawsNClustersPerEventVsSector = 
+    new TH1F("hRawsNClustersPerEventVsSector", "Nclusters per event vs sector; Sector; Nclusters per event",
+	     72, 0, 72);
+  fHistRawsNClustersPerEventVsSector->Sumw2();
+  Add2RawsList(fHistRawsNClustersPerEventVsSector, 3);
+  
+  fHistRawsQVsSector = 
+    new TH1F("hRawsQVsSector", "<Q> vs sector (OROC med: 36-71, long: 72-107); Sector; <Q>",
+	     108, 0, 108);
+  fHistRawsQVsSector->Sumw2();
+  Add2RawsList(fHistRawsQVsSector, 4);
+
+  fHistRawsQmaxVsSector = 
+    new TH1F("hRawsQmaxVsSector", "<Qmax> vs sector (OROC med: 36-71, long: 72-107); Sector; <Qmax>",
+	     108, 0, 108);
+  fHistRawsQmaxVsSector->Sumw2();
+  Add2RawsList(fHistRawsQmaxVsSector, 5);
 }
 
 //____________________________________________________________________________ 
@@ -224,37 +320,37 @@ void AliTPCQADataMakerRec::InitRecPoints()
 {
   fHistRecPointsQmaxShort = 
     new TH1F("hRecPointsQmaxShort", "Qmax distrbution (short pads); Qmax; Counts",
-	     200, 0, 1000);
+	     100, 0, 300);
   fHistRecPointsQmaxShort->Sumw2();
   Add2RecPointsList(fHistRecPointsQmaxShort, 0);
 
   fHistRecPointsQmaxMedium = 
     new TH1F("hRecPointsQmaxMedium", "Qmax distrbution (medium pads); Qmax; Counts",
-	     200, 0, 1000);
+	     100, 0, 300);
   fHistRecPointsQmaxMedium->Sumw2();
   Add2RecPointsList(fHistRecPointsQmaxMedium, 1);
 
   fHistRecPointsQmaxLong = 
     new TH1F("hRecPointsQmaxLong", "Qmax distrbution (long pads); Qmax; Counts",
-	     200, 0, 1000);
+	     100, 0, 300);
   fHistRecPointsQmaxLong->Sumw2();
   Add2RecPointsList(fHistRecPointsQmaxLong, 2);
 
   fHistRecPointsQShort = 
     new TH1F("hRecPointsQShort", "Q distrbution (short pads); Q; Counts",
-	     200, 0, 5000);
+	     100, 0, 2000);
   fHistRecPointsQShort->Sumw2();
   Add2RecPointsList(fHistRecPointsQShort, 3);
 
   fHistRecPointsQMedium = 
     new TH1F("hRecPointsQMedium", "Q distrbution (medium pads); Q; Counts",
-	     200, 0, 5000);
+	     100, 0, 2000);
   fHistRecPointsQMedium->Sumw2();
   Add2RecPointsList(fHistRecPointsQMedium, 4);
 
   fHistRecPointsQLong = 
     new TH1F("hRecPointsQLong", "Q distrbution (long pads); Q; Counts",
-	     200, 0, 5000);
+	     100, 0, 2000);
   fHistRecPointsQLong->Sumw2();
   Add2RecPointsList(fHistRecPointsQLong, 5);
 
