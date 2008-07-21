@@ -147,7 +147,6 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
   //
    
   // Load geometry
-  HLTInfo("Geometry file %s",fGeometryFileName.c_str());
   AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
   if((AliGeomManager::GetGeometry()) == 0) {
     HLTError("Cannot load geometry from file %s",fGeometryFileName.c_str());

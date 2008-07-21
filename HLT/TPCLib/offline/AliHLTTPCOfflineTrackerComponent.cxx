@@ -275,8 +275,8 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
 	  else 
 	     HLTInfo("Cannot add TPC seed to AliESDtrack %d", i);
        }
-    }
     seedArray->Clear();
+    }
 
     // reset ESDs friends (no Reset function!)
     fESDfriend->~AliESDfriend();
