@@ -353,7 +353,7 @@ void AliAnalysisVertexingHF::FindCandidatesESDtoAOD(AliESDEvent *esd,
 	      rd->SetProngIDs(3,id);
 	      v->SetParent(rd);
 	    } else {
-	      new(aodD0toKpiRef[i3Prong++]) AliAODRecoDecayHF3Prong(*io3Prong);
+	      new(aodCharm3ProngRef[i3Prong++]) AliAODRecoDecayHF3Prong(*io3Prong);
 	    }
 	  }
 	  if(io3Prong) { /*delete io3Prong;*/ io3Prong=NULL; } 
@@ -394,7 +394,7 @@ void AliAnalysisVertexingHF::FindCandidatesESDtoAOD(AliESDEvent *esd,
 		rd->SetProngIDs(4,id);
 		v->SetParent(rd);
 	      } else {
-		new(aodD0toKpiRef[i4Prong++]) AliAODRecoDecayHF4Prong(*io4Prong);
+		new(aodCharm4ProngRef[i4Prong++]) AliAODRecoDecayHF4Prong(*io4Prong);
 	      }
 	    }
 	    if(io4Prong) { /*delete io4Prong;*/ io4Prong=NULL; } 
@@ -448,7 +448,7 @@ void AliAnalysisVertexingHF::FindCandidatesESDtoAOD(AliESDEvent *esd,
 	      rd->SetProngIDs(3,id);
 	      v->SetParent(rd);
 	    } else {
-	      new(aodD0toKpiRef[i3Prong++]) AliAODRecoDecayHF3Prong(*io3Prong);
+	      new(aodCharm3ProngRef[i3Prong++]) AliAODRecoDecayHF3Prong(*io3Prong);
 	    }
 	  }
 	  if(io3Prong) { /*delete io3Prong;*/ io3Prong=NULL; } 
