@@ -114,12 +114,16 @@ public:
 
     void  SetIsZeroSuppressed(Bool_t zs=kTRUE) { fIsZeroSuppressed=zs; }
 
+    void  SetSecRejectRatio(Float_t ratio) { fSecRejectRatio=ratio; }
+
     Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
     Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
 
     Int_t GetNeventsProcessed() const { return fNevents; }
 
     Bool_t GetIsZeroSuppressed() const { return fIsZeroSuppressed; }
+
+    Float_t  GetSecRejectRatio() const { return fSecRejectRatio; }
 
 
     void Merge(AliTPCCalibCE *ce);
@@ -151,6 +155,8 @@ private:
 
     Int_t     fLastSector;            //! Last sector processed
 
+    Float_t   fSecRejectRatio;        //! Needed percentage of signals in one chamber. Below it will be rejected
+                                      //  This is neede if we do not process a laser event
 
     AliTPCROC   *fROC;                //! ROC information
     AliTPCAltroMapping **fMapping;    //! Altro Mapping object

@@ -315,6 +315,7 @@ AliTPCCalibCE::AliTPCCalibCE() :
     fNoiseThresholdSum(8.),
     fIsZeroSuppressed(kFALSE),
     fLastSector(-1),
+    fSecRejectRatio(.4),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
     fParam(new AliTPCParam),
@@ -391,6 +392,7 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fNoiseThresholdSum(sig.fNoiseThresholdSum),
     fIsZeroSuppressed(sig.fIsZeroSuppressed),
     fLastSector(-1),
+    fSecRejectRatio(.4),
     fROC(AliTPCROC::Instance()),
     fMapping(NULL),
     fParam(new AliTPCParam),
@@ -635,7 +637,7 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 	}
 
 	if ( fPedestalROC&&fPadNoiseROC ){
-	    fPadPedestal = fPedestalROC->GetValue(fCurrentChannel)*fIsZeroSuppressed;
+	    fPadPedestal = fPedestalROC->GetValue(fCurrentChannel)*(Float_t)(!fIsZeroSuppressed);
 	    fPadNoise    = fPadNoiseROC->GetValue(fCurrentChannel);
             noPedestal   = kFALSE;
 	}
@@ -856,7 +858,7 @@ void AliTPCCalibCE::EndEvent()
     //check if last pad has allready been processed, if not do so
     if ( fMaxTimeBin>-1 ) ProcessPad();
 
-//    AliDebug(5,
+    AliDebug(3, Form("EndEvent() - Start; Event: %05d", fNevents));
 
     TVectorD param(3);
     TMatrixD dummy(3,3);
@@ -882,11 +884,12 @@ void AliTPCCalibCE::EndEvent()
     Int_t nSecMeanT=0;
     //loop over all ROCs, fill CE Time histogram corrected for the mean Time0 of each ROC
     for ( Int_t iSec = 0; iSec<72; ++iSec ){
+	AliDebug(4,Form("Processing sector '%02d'\n",iSec));
       //find median and then calculate the mean around it
 	TH1S *hMeanT    = GetHistoTmean(iSec); //histogram with local maxima position information
 	if ( !hMeanT ) continue;
         //continue if not enough data is filled in the meanT histogram. This is the case if we do not have a laser event.
-	if ( hMeanT->GetEntries() < fROC->GetNChannels(iSec)*2/3 ){
+	if ( hMeanT->GetEntries() < fROC->GetNChannels(iSec)*fSecRejectRatio ){
 	    hMeanT->Reset();
 	    AliDebug(3,Form("Skipping sec. '%02d': Not enough statistics\n",iSec));
           continue;
@@ -1075,6 +1078,7 @@ void AliTPCCalibCE::EndEvent()
 
     delete calIroc;
     delete calOroc;
+    AliDebug(3, Form("EndEvent() - End; Event: %05d", fNevents));
 }
 //_____________________________________________________________________
 Bool_t AliTPCCalibCE::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
