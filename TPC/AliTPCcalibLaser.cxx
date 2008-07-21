@@ -914,3 +914,17 @@ treeT->Draw("fit:LTr.fP[1]",Form("abs(bz+0.4)<0.05&fRod==%d",i)+cutA,"same");
 }
 } 
  */
+ 
+
+
+/*
+  TTree * tree = (TTree*)f.Get("FitModels");
+
+  TEventList listLFit0("listLFit0","listLFit0");
+  TEventList listLFit1("listLFit1","listLFit1");
+  
+  tree->Draw(">>listLFit0","seed.fdEdx<200&&seed.fdEdx>40");
+  tree->SetEventList(&listLFit0);
+  
+
+*/
