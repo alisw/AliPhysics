@@ -61,16 +61,26 @@
 //
 //  Example how to retrieve the paramterization:
 /*    
-      AliCDBManager::Instance()->SetRun(1) 
       AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetRun(0) 
       AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
 
       //
       //
       AliTPCClusterParam::SetInstance(param);
       TF1 f1("f1","AliTPCClusterParam::SGetError0Par(1,0,x,0)",0,250);
-
 */      
+
+// EXAMPLE hot to create parameterization
+/*
+// Note resol is the resolution tree created by AliTPCcalibTracks
+//
+AliTPCClusterParam  *param = new AliTPCClusterParam;
+param->FitData(Resol);
+AliTPCClusterParam::SetInstance(param);
+ 
+*/
+
 //
 //                                                                     //
 ///////////////////////////////////////////////////////////////////////////////
@@ -691,7 +701,7 @@ void AliTPCClusterParam::FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_
     Float_t err = fRatio*px[ipoint];
     Double_t x[4];
     x[0] = px[ipoint];
-    fitter.AddPoint(x,val,err);
+    if (err>0) fitter.AddPoint(x,val,err);
   }
   fitter.Eval();
   param0[0]= fitter.GetParameter(0);
@@ -1271,3 +1281,33 @@ void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, TVectorD * norm){
   if (fQNorm==0) fQNorm = new TObjArray(6);
   fQNorm->AddAt(new TVectorD(*norm), itype*3+ipad);
 }
+
+
+
+
+/*
+
+ gSystem->Load("libSTAT.so")
+ TStatToolkit toolkit;
+ Double_t chi2;
+ TVectorD fitParam;
+ TMatrixD covMatrix;
+ Int_t npoints;
+
+ TString fstring="";
+ //
+ fstring+="(Zm/250.)++"
+ fstring+="(Zm/250.)^2++"
+ fstring+="(Zm/250.)^3++"
+ fstring+="AngleM++"
+ fstring+="(AngleM)^2++"
+ fstring+="(AngleM)^3++"
+ fstring+="(Zm/250.)*AngleM++"
+ fstring+="(Zm/250.)^2*AngleM++"
+ fstring+="(Zm/250.)*AngleM^2++"
+
+ TString *strRMSY0 = toolkit.FitPlane(treeRes,"RMSm^2",fstring->Data(), "Dim==0&&Pad==0&&QMean<0", chi2,npoints,fitParam,covMatrix);
+
+ treeRes->SetAlias("RMSY0",strRMSY0->Data());
+
+*/

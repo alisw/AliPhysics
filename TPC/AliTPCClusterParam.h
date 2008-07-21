@@ -97,7 +97,7 @@ class AliTPCClusterParam : public TObject {
   static Float_t SQnorm(Int_t ipad, Int_t itype,Float_t dr, Float_t ty, Float_t tz) {return fgInstance->Qnorm(ipad, itype, dr,ty,tz);}
 
 
- protected: 
+ public: 
   //
   //
   //
