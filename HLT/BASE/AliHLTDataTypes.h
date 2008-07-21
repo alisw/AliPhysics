@@ -37,6 +37,7 @@
  *   7       kAliHLTDataTypeComponentStatistics, kAliHLTDataTypeComponentTable,
  *           and AliHLTComponentStatistics have been added for optional
  *           component block statistics
+ *           added GetComponentDescription callback to environment
  */
 #define ALIHLT_DATA_TYPES_VERSION 7
 
@@ -876,6 +877,13 @@ extern "C" {
 #endif
     int (*fGetEventDoneDataFunc)( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd );
     AliHLTfctLogging fLoggingFunc;
+
+    /** callback to retrieve the component description.
+	The string can contain tokens separated by blanks, a token consists
+	of a key and an optional value separated by '='. Possible keys:
+	\li -chainid=id        string id within the chain of the instance
+     */
+    const char* (*fGetComponentDescription)(void* param);
   };
 }
 

@@ -76,6 +76,11 @@ class AliHLTComponentHandler : public AliHLTLogging {
   void SetEnvironment(AliHLTComponentEnvironment* pEnv);
 
   /**
+   * Get the current environment.
+   */
+  const AliHLTComponentEnvironment* GetEnvironment() const {return &fEnvironment;}
+
+  /**
    * Set library mode.
    * The mode effects all loaded libraries until another mode is set.
    * @param mode             persistent library or not
@@ -191,12 +196,17 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @param argc         number of arguments in argv
    * @param argv         argument array like in main()
    * @param component    reference to receive the create component instance
-   * @param cdbPath      optional CDB path
    * @return component pointer in component, neg. error code if failed
    */
   int CreateComponent( const char* componentID, void* pEnvParam, 
-		       int argc, const char** argv, AliHLTComponent*& component,
-		       const char* cdbPath=NULL);
+		       int argc, const char** argv, AliHLTComponent*& component);
+
+  /**
+   * Create component without initializing it.
+   * @param componentID  ID of the component to create
+   * @param component    reference to receive the create component instance
+   */
+  int CreateComponent(const char* componentID, AliHLTComponent*& component );
 
   /**
    * Create a component of the given name (ID).

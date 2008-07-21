@@ -27,7 +27,9 @@
 #include "AliHLT_C_Component_WrapperInterface.h"
 
 
+const char* gDummy="dummy";
 AliHLTUInt32_t gRunNo=kAliHLTVoidRunNo;
+const char* gChainId="<void>";
 
 class TestProcessor : public AliHLTProcessor
 {
@@ -51,6 +53,7 @@ private:
     if (argc>0 && argv) {
     }
     gRunNo=GetRunNo();
+    gChainId=GetChainId();
     return 0;
   }
   int DoDeinit() {
@@ -87,12 +90,33 @@ public:
 
 TestAgent gAgent;
 
+int Logging( void* param, 
+	     AliHLTComponentLogSeverity severity,
+	     const char* origin,
+	     const char* keyword,
+	     const char* message)
+{
+  cout << "Logging: "<< severity << " " << origin << " " << keyword << " " << message << endl;
+  return 0;
+}
+
+const char* GetComponentDescription(void* param)
+{
+  if (param!=&gDummy) {
+    cerr << "GetComponentDescription callback with wrong parameter " << endl;
+    abort();
+  }
+  return "-chainid=test";
+}
+
 int main(int /*argc*/, const char** /*argv*/)
 {
   int iResult=0;
   AliHLTComponentEnvironment environment;
   memset(&environment, 0, sizeof(environment));
   environment.fStructSize=sizeof(environment);
+  environment.fLoggingFunc=Logging;
+  environment.fGetComponentDescription=GetComponentDescription;
   if ((iResult=AliHLT_C_Component_InitSystem( &environment ))<0) {
     cerr << "AliHLT_C_Component_InitSystem failed with " << iResult << endl;
     return iResult;
@@ -113,13 +137,18 @@ int main(int /*argc*/, const char** /*argv*/)
   }
 
   AliHLTComponentHandle handle;
-  if ((iResult=AliHLT_C_CreateComponent("TestProcessor", NULL, 0, NULL, &handle ))<0) {
+  if ((iResult=AliHLT_C_CreateComponent("TestProcessor", &gDummy, 0, NULL, &handle ))<0) {
     cerr << "AliHLT_C_Component_CreateComponent failed with " << iResult << endl;
     return iResult;
   }
 
   if (gRunNo!=0xbeef) {
     cerr << "propagation of run number failed " << hex << gRunNo << " vs. 0xbeef" << endl;
+    return -1;
+  }
+
+  if (strcmp(gChainId, "test")) {
+    cerr << "propagation of chain id failed: '" << gChainId << "' vs. test" << endl;
     return -1;
   }
 

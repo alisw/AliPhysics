@@ -135,7 +135,7 @@ int AliHLTComponent::UnsetGlobalComponentHandler()
   return SetGlobalComponentHandler(NULL,1);
 }
 
-int AliHLTComponent::Init( AliHLTComponentEnvironment* comenv, void* environParam, int argc, const char** argv )
+int AliHLTComponent::Init(const AliHLTComponentEnvironment* comenv, void* environParam, int argc, const char** argv )
 {
   // see header file for function documentation
   HLTLogKeyword(GetComponentID());
@@ -300,6 +300,36 @@ int AliHLTComponent::SetRunDescription(const AliHLTRunDesc* desc, const char* /*
   SetCDBRunNo(fpRunDesc->fRunNo);
   // TODO: we have to decide about the runType
   return 0;
+}
+
+int AliHLTComponent::SetComponentDescription(const char* desc)
+{
+  // default implementation, childs can overload
+  int iResult=0;
+  if (!desc) return 0;
+
+  TString descriptor=desc;
+  TObjArray* pTokens=descriptor.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      TString argument=((TObjString*)pTokens->At(i++))->GetString();
+      if (!argument || argument.IsNull()) continue;
+
+      // -chainid
+      if (argument.BeginsWith("-chainid")) {
+	argument.ReplaceAll("-chainid", "");
+	if (argument.BeginsWith("=")) {
+	  fChainId=argument.Replace(0,1,"");
+	} else {
+	  fChainId="";
+	}
+      } else {
+	HLTWarning("unknown argument %s", argument.Data());
+      }
+    }
+  }
+  
+  return iResult;
 }
 
 int AliHLTComponent::DoInit( int /*argc*/, const char** /*argv*/)

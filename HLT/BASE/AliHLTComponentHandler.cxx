@@ -209,7 +209,22 @@ Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
   return iResult;
 }
 
-int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvParam, int argc, const char** argv, AliHLTComponent*& component, const char* cdbPath )
+int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvParam, int argc, const char** argv, AliHLTComponent*& component)
+{
+  // see header file for class documentation
+  int iResult=CreateComponent(componentID, component);
+  if (iResult>=0 && component) {
+	HLTDebug("component \"%s\" created (%p)", componentID, component);
+	if ((iResult=component->Init(&fEnvironment, pEnvParam, argc, argv))!=0) {
+	  HLTError("Initialization of component \"%s\" failed with error %d", componentID, iResult);
+	  delete component;
+	  component=NULL;
+	}
+  }
+  return iResult;
+}
+
+int AliHLTComponentHandler::CreateComponent(const char* componentID, AliHLTComponent*& component )
 {
   // see header file for class documentation
   int iResult=0;
@@ -219,15 +234,6 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvP
       component=pSample->Spawn();
       if (component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
-	if (cdbPath && cdbPath[0]!=0) {
-	  component->InitCDB(cdbPath, this);
-	  component->SetRunDescription(&fRunDesc, fRunType);
-	}
-	if ((iResult=component->Init(&fEnvironment, pEnvParam, argc, argv))!=0) {
-	  HLTError("Initialization of component \"%s\" failed with error %d", componentID, iResult);
-	  delete component;
-	  component=NULL;
-	}
       } else {
 	HLTError("can not spawn component \"%s\"", componentID);
 	iResult=-ENOENT;

@@ -33,6 +33,8 @@ using namespace std;
 #include <errno.h>
 
 static AliHLTComponentHandler *gComponentHandler_C = NULL;
+static AliHLTRunDesc gRunDesc=kAliHLTVoidRunDesc;
+static char* gRunType=NULL;
 
 int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
 {
@@ -40,7 +42,15 @@ int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
     {
       return EINPROGRESS;
     }
-  gComponentHandler_C = new AliHLTComponentHandler(comenv);
+  
+  AliHLTComponentEnvironment internalEnv;
+  memset(&internalEnv, 0, sizeof(internalEnv));
+  if (comenv) {
+    memcpy(&internalEnv, comenv, sizeof(internalEnv)<comenv->fStructSize?sizeof(internalEnv):comenv->fStructSize);
+  }
+  internalEnv.fStructSize=sizeof(internalEnv);
+
+  gComponentHandler_C = new AliHLTComponentHandler(&internalEnv);
   if ( !gComponentHandler_C )
     return EFAULT;
   gComponentHandler_C->InitAliLogTrap(gComponentHandler_C);
@@ -90,7 +100,16 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int
   AliHLTComponent* comp=NULL;
   const char* cdbPath = getenv("ALIHLT_HCDBDIR");
   if (!cdbPath) cdbPath = getenv("ALICE_ROOT");
-  int ret = gComponentHandler_C->CreateComponent( componentType, environParam, argc, argv, comp, cdbPath);
+  int ret = gComponentHandler_C->CreateComponent( componentType, environParam, argc, argv, comp);
+  if (ret>=0 && comp) {
+    comp->InitCDB(cdbPath, gComponentHandler_C);
+    comp->SetRunDescription(&gRunDesc, gRunType);
+    const AliHLTComponentEnvironment* comenv=gComponentHandler_C->GetEnvironment();
+    if (comenv && comenv->fGetComponentDescription) {
+      comp->SetComponentDescription(comenv->fGetComponentDescription(environParam));
+    }
+    ret=comp->Init(comenv, environParam, argc, argv);
+  }
   *handle = reinterpret_cast<AliHLTComponentHandle>( comp );
 
   return ret;
@@ -112,9 +131,15 @@ int AliHLT_C_SetRunDescription(const AliHLTRunDesc* desc, const char* runType)
   if (desc->fStructSize<sizeof(AliHLTUInt32_t)) return -EINVAL;
   if (!gComponentHandler_C) return ENXIO;
 
-  AliHLTRunDesc internalDesc=kAliHLTVoidRunDesc;
-  memcpy(&internalDesc, desc, desc->fStructSize<sizeof(internalDesc)?desc->fStructSize:sizeof(internalDesc));
-  return gComponentHandler_C->SetRunDescription(&internalDesc, runType);
+  memcpy(&gRunDesc, desc, desc->fStructSize<sizeof(gRunDesc)?desc->fStructSize:sizeof(gRunDesc));
+  gRunDesc.fStructSize=sizeof(gRunDesc);
+  if (gRunType) delete [] gRunType;
+  gRunType=NULL;
+  if (runType) {
+    gRunType=new char[strlen(runType)+1];
+    if (gRunType) strcpy(gRunType, runType);
+  }
+  return 0;
 }
 
 int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponentEventData* evtData, const AliHLTComponentBlockData* blocks, 

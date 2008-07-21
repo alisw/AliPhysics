@@ -305,7 +305,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param argc           size of the argument array
    * @param argv           agument array for component initialization
    */
-  virtual int Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv );
+  virtual int Init( const AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv );
 
   /**
    * Clean-up function to terminate data processing.
@@ -401,6 +401,17 @@ class AliHLTComponent : public AliHLTLogging {
    *                of the run descriptor. But it was defined as string later
    */
   int SetRunDescription(const AliHLTRunDesc* desc, const char* runType);
+
+  /**
+   * Set the component description.
+   * The description string can contain tokens separated by blanks, a token
+   * consists of a key and an optional value separated by '='.
+   * Possible keys:
+   * \li -chainid=id        string id within the chain of the instance
+   *
+   * @param desc    component description
+   */
+  int SetComponentDescription(const char* desc);
 
   // Information member functions for registration.
 
@@ -1106,6 +1117,11 @@ class AliHLTComponent : public AliHLTLogging {
    * Get the current run type.
    */
   AliHLTUInt32_t GetRunType() const;
+
+  /**
+   * Get the chain id of the component.
+   */
+  const char* GetChainId() const {return fChainId.c_str();}
 
   /**
    * Set a bit to 1 in a readout list ( = AliHLTEventDDL )
