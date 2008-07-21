@@ -73,7 +73,9 @@ AliHLTComponent::AliHLTComponent()
   fpRunDesc(NULL),
   fpDDLList(NULL),
   fCDBSetRunNoFunc(false),
-  fChainId()
+  fChainId(),
+  fpBenchmark(NULL),
+  fRequireSteeringBlocks(false)
 {
   // see header file for class documentation
   // or
@@ -89,6 +91,9 @@ AliHLTComponent::AliHLTComponent()
 AliHLTComponent::~AliHLTComponent()
 {
   // see header file for function documentation
+  if (fpBenchmark) delete fpBenchmark;
+  fpBenchmark=NULL;
+
   CleanupInputObjects();
   if (fpStopwatches!=NULL) delete fpStopwatches;
   fpStopwatches=NULL;
@@ -182,8 +187,33 @@ int AliHLTComponent::Init( AliHLTComponentEnvironment* comenv, void* environPara
   if (iResult>=0) {
     iResult=DoInit(iNofChildArgs, pArguments);
   }
-  if (iResult>=0) fEventCount=0;
+  if (iResult>=0) {
+    fEventCount=0;
+
+    // find out if the component wants to get the steering events
+    // explicitly
+    AliHLTComponentDataTypeList inputDt;
+    GetInputDataTypes(inputDt);
+    for (AliHLTComponentDataTypeList::iterator dt=inputDt.begin();
+	 dt!=inputDt.end() && !fRequireSteeringBlocks;
+	 dt++) {
+      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeSOR);
+      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeRunType);
+      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeEOR);
+      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeDDL);
+      fRequireSteeringBlocks|=MatchExactly(*dt,kAliHLTDataTypeComponentStatistics);
+    }
+  }
   if (pArguments) delete [] pArguments;
+
+#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
+  // benchmarking stopwatch for the component statistics
+  fpBenchmark=new TStopwatch;
+  if (fpBenchmark) {
+    fpBenchmark->Start();
+  }
+#endif
+
   return iResult;
 }
 
@@ -1183,6 +1213,16 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   fOutputBlocks.clear();
   outputBlockCnt=0;
   outputBlocks=NULL;
+  AliHLTComponentStatisticsList compStats;
+#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
+  AliHLTComponentStatistics outputStat;
+  memset(&outputStat, 0, sizeof(AliHLTComponentStatistics));
+  compStats.push_back(outputStat);
+  if (fpBenchmark) {
+    fpBenchmark->Reset();
+    fpBenchmark->Start();
+  }
+#endif
 
   // data processing is skipped if there are only steering events
   // in the block list. It is not skipped if there is no block list
@@ -1229,11 +1269,28 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	eventType=fpInputBlocks[i].fSpecification;
 	if (fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration) bSkipDataProcessing|=skipModeForce;
 	if (fpInputBlocks[i].fSpecification==gkAliEventTypeReadPreprocessor) bSkipDataProcessing|=skipModeForce;
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComponentStatistics) {
+	if (compStats.size()>0) {
+	  AliHLTUInt8_t* pData=reinterpret_cast<AliHLTUInt8_t*>(fpInputBlocks[i].fPtr);
+	  for (AliHLTUInt32_t offset=0;
+	       offset+sizeof(AliHLTComponentStatistics)<=fpInputBlocks[i].fSize;
+	       offset+=sizeof(AliHLTComponentStatistics)) {
+	    AliHLTComponentStatistics* pStat=reinterpret_cast<AliHLTComponentStatistics*>(pData+offset);
+	    if (pStat && compStats[0].fLevel<=pStat->fLevel) {
+	      compStats[0].fLevel=pStat->fLevel+1;
+	    }
+	    compStats.push_back(*pStat);
+	  }
+	}
       } else {
 	// the processing function is called if there is at least one
 	// non-steering data block. Steering blocks are not filtered out
 	// for sake of performance 
 	bSkipDataProcessing&=~skipModeDefault;
+	if (compStats.size()>0) {
+	  compStats[0].fInputBlockCount++;
+	  compStats[0].fTotalInputSize+=fpInputBlocks[i].fSize;
+	}
       }
     }
 
@@ -1303,7 +1360,11 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     // blocks in order to make data source components working.
     bSkipDataProcessing&=~skipModeDefault;
   }
-  
+
+  // data processing is not skipped if the component explicitly asks
+  // for the private blocks
+  if (fRequireSteeringBlocks) bSkipDataProcessing=0;
+
   AliHLTComponentBlockDataList blockData;
   if (iResult>=0 && !bSkipDataProcessing)
   { // dont delete, sets the scope for the stopwatch guard
@@ -1336,12 +1397,20 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	  HLTError("low level and high interface must not be mixed; use PushBack methods to insert data blocks");
 	  iResult=-EFAULT;
 	} else {
+	  if (compStats.size()>0) {
+	    int offset=AddComponentStatistics(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, compStats);
+	    if (offset>0) fOutputBufferFilled+=offset;
+	  }
 	  iResult=MakeOutputDataBlockList(fOutputBlocks, &outputBlockCnt, &outputBlocks);
 	  size=fOutputBufferFilled;
 	}
       }
     } else {
       // Low Level interface
+      if (compStats.size()>0) {
+	int offset=AddComponentStatistics(blockData, fpOutputBuffer, fOutputBufferSize, size, compStats);
+	if (offset>0) size+=offset;
+      }
       iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
     }
     if (iResult<0) {
@@ -1359,6 +1428,54 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   if (outputBlockCnt==0) {
     // no output blocks, set size to 0
     size=0;
+  }
+  return iResult;
+}
+
+int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& blocks, 
+					     AliHLTUInt8_t* buffer,
+					     AliHLTUInt32_t bufferSize,
+					     AliHLTUInt32_t offset,
+					     AliHLTComponentStatisticsList& stats) const
+{
+  // see header file for function documentation
+  int iResult=0;
+  if (stats.size()==0) return -ENOENT;
+  stats[0].fTotalOutputSize=offset;
+  stats[0].fOutputBlockCount=blocks.size();
+  if (fpBenchmark) {
+    stats[0].fTime=(AliHLTUInt32_t)(fpBenchmark->RealTime()*1000000);
+    stats[0].fCTime=(AliHLTUInt32_t)(fpBenchmark->CpuTime()*1000000);
+  }
+  if (offset+stats.size()*sizeof(AliHLTComponentStatistics)<=bufferSize) {
+    AliHLTComponentBlockData bd;
+    FillBlockData( bd );
+    bd.fOffset        = offset;
+    bd.fSize          = stats.size()*sizeof(AliHLTComponentStatistics);
+    bd.fDataType      = kAliHLTDataTypeComponentStatistics;
+    bd.fSpecification = kAliHLTVoidDataSpec;
+    unsigned int master=0;
+    for (unsigned int i=1; i<blocks.size(); i++) {
+      if (blocks[i].fSize>blocks[master].fSize && 
+	  !MatchExactly(blocks[i].fDataType, kAliHLTVoidDataType|kAliHLTDataOriginPrivate))
+	master=i;
+    }
+    if (blocks.size()>0 && !MatchExactly(blocks[master].fDataType, kAliHLTVoidDataType|kAliHLTDataOriginPrivate)) {
+      // take the data origin of the biggest block as specification
+      // this is similar to the treatment in the HOMER interface. For traditional
+      // reasons, the bytes are swapped there on a little endian architecture, so
+      // we do it as well.
+      memcpy(&bd.fSpecification, &blocks[master].fDataType.fOrigin, sizeof(bd.fSpecification));
+#ifdef R__BYTESWAP // set on little endian architectures
+      bd.fSpecification=((bd.fSpecification & 0xFFULL) << 24) | 
+	((bd.fSpecification & 0xFF00ULL) << 8) | 
+	((bd.fSpecification & 0xFF0000ULL) >> 8) | 
+	((bd.fSpecification & 0xFF000000ULL) >> 24);
+#endif
+    }
+    memcpy(buffer+offset, &(stats[0]), bd.fSize);
+    blocks.push_back(bd);
+    iResult=bd.fSize;
   }
   return iResult;
 }

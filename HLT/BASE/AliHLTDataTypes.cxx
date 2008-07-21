@@ -161,6 +161,20 @@ const AliHLTComponentDataType kAliHLTDataTypeRunSummary = (AliHLTComponentDataTy
   kAliHLTDataOriginAny
 }|kAliHLTDataOriginOut;
 
+/** Component statistics */
+const AliHLTComponentDataType kAliHLTDataTypeComponentStatistics = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTComponentStatisticsDataTypeID,
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
+
+/** Component table */
+const AliHLTComponentDataType kAliHLTDataTypeComponentTable = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTComponentTableDataTypeID,
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
+
 /** general ROOT TObject */
 const AliHLTComponentDataType kAliHLTDataTypeTObject = (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),

@@ -540,7 +540,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       size=iOutputDataSize;
       AliHLTUInt32_t outputBlockCnt=0;
       AliHLTComponentBlockData* outputBlocks=NULL;
-      AliHLTComponentEventDoneData* edd;
+      AliHLTComponentEventDoneData* edd=NULL;
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
 	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
 	HLTDebug("task %s: component %s ProcessEvent finnished (%d): size=%d blocks=%d", GetName(), pComponent->GetComponentID(), iResult, size, outputBlockCnt);

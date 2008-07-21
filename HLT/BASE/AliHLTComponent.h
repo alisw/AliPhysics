@@ -88,6 +88,8 @@ class AliHLTMemoryFile;
 typedef vector<AliHLTComponentDataType>   AliHLTComponentDataTypeList;
 /** list of component block data structures */
 typedef vector<AliHLTComponentBlockData>  AliHLTComponentBlockDataList;
+/** list of component statistics struct */
+typedef vector<AliHLTComponentStatistics> AliHLTComponentStatisticsList;
 /** list of component pointers */
 typedef vector<AliHLTComponent*>          AliHLTComponentPList;
 /** list of memory file pointers */
@@ -1257,6 +1259,15 @@ class AliHLTComponent : public AliHLTLogging {
 			AliHLTUInt32_t spec,
 			void* pHeader=NULL, int iHeaderSize=0);
 
+  /**
+   * Add a component statistics block to the output.
+   */
+  int AddComponentStatistics(AliHLTComponentBlockDataList& blocks, 
+			     AliHLTUInt8_t* buffer,
+			     AliHLTUInt32_t bufferSize,
+			     AliHLTUInt32_t offset,
+			     AliHLTComponentStatisticsList& stats) const;
+
   /** The global component handler instance */
   static AliHLTComponentHandler* fgpComponentHandler;              //! transient
 
@@ -1320,6 +1331,12 @@ class AliHLTComponent : public AliHLTLogging {
   /** id of the component in the analysis chain */
   string fChainId;                                                 //! transient
 
-  ClassDef(AliHLTComponent, 6)
+  /** optional benchmarking for the component statistics */
+  TStopwatch* fpBenchmark;                                         //! transient
+
+  /** component requires steering data blocks */
+  bool fRequireSteeringBlocks;                                     //! transient
+
+  ClassDef(AliHLTComponent, 7)
 };
 #endif
