@@ -59,7 +59,7 @@ void rawqa(const char * filename)
 						  "PMD", "MUON", "MUON", "FMD", "T0", "VZERO", "ZDC", "ACORDE", "TRG", 
 						  "EMCAL", "DAQ_TEST", "HLT"} ; 
 	
-	AliQADataMakerSteer qas ; 
+	AliQADataMakerSteer qas("rec") ; 
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
 	UShort_t eventsProcessed = 0 ; 
