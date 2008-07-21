@@ -13,6 +13,8 @@
 
 #include "AliHLTModuleAgent.h"
 
+class AliHLTOUTHandler;
+
 /**
  * @class AliHLTAgentUtil
  * This is the agent for the AliHLTUtil library.
@@ -66,10 +68,27 @@ class AliHLTAgentUtil : public AliHLTModuleAgent {
    * @param pHandler  [in] instance of the component handler          
    */
   int RegisterComponents(AliHLTComponentHandler* pHandler) const;
+
+  int GetHandlerDescription(AliHLTComponentDataType dt,
+			    AliHLTUInt32_t spec,
+			    AliHLTOUTHandlerDesc& desc) const;
+
+  AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType dt, AliHLTUInt32_t spec);
+
+  int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
+
  protected:
 
  private:
-  ClassDef(AliHLTAgentUtil, 0);
+  /** copy constructor prohibited */
+  AliHLTAgentUtil(const AliHLTAgentUtil&);
+  /** assignment operator prohibited */
+  AliHLTAgentUtil& operator=(const AliHLTAgentUtil&);
+
+  /** the one and only handler for compstat blocks */
+  AliHLTOUTHandler* fCompStatDataHandler; //!transient
+  
+  ClassDef(AliHLTAgentUtil, 1);
 };
 
 #endif

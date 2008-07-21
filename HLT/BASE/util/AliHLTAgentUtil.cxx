@@ -25,6 +25,7 @@
 #include <cassert>
 #include "AliHLTAgentUtil.h"
 #include "AliHLTConfiguration.h"
+#include "AliHLTOUTHandlerChain.h"
 
 // header files of library components
 #include "AliHLTDataGenerator.h"
@@ -38,6 +39,7 @@
 #include "AliHLTBlockFilterComponent.h"
 #include "AliHLTEsdCollectorComponent.h"
 #include "AliHLTOUTPublisherComponent.h"
+#include "AliHLTCompStatCollector.h"
 
 /** global instance for agent registration */
 AliHLTAgentUtil gAliHLTAgentUtil;
@@ -47,7 +49,8 @@ ClassImp(AliHLTAgentUtil)
 
 AliHLTAgentUtil::AliHLTAgentUtil()
   :
-  AliHLTModuleAgent("Util")
+  AliHLTModuleAgent("Util"),
+  fCompStatDataHandler(NULL)
 {
   // see header file for class documentation
   // or
@@ -61,11 +64,27 @@ AliHLTAgentUtil::~AliHLTAgentUtil()
   // see header file for class documentation
 }
 
-int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,
+int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* handler,
 					  AliRawReader* /*rawReader*/,
 					  AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
+  if (!handler) return 0;
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  //
+  // a kChain HLTOUT configuration for processing of {'COMPSTAT':'PRIV'} data blocks
+  // produces a TTree object of the component statistics and writes it to disc
+
+  // publisher component
+  handler->CreateConfiguration("UTIL-hltout-compstat-publisher", "AliHLTOUTPublisher"   , NULL, "");
+
+  // collector configuration
+  handler->CreateConfiguration("UTIL-compstat-converter", "StatisticsCollector", "UTIL-hltout-compstat-publisher", "");
+
+  // writer configuration
+  handler->CreateConfiguration("UTIL-compstat-writer", "ROOTFileWriter", "UTIL-compstat-converter", "-datafile HLT.statistics.root -concatenate-events -overwrite");
+
   return 0;
 }
 
@@ -98,5 +117,48 @@ int AliHLTAgentUtil::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTBlockFilterComponent);
   pHandler->AddComponent(new AliHLTEsdCollectorComponent);
   pHandler->AddComponent(new AliHLTOUTPublisherComponent);
+  pHandler->AddComponent(new AliHLTCompStatCollector);
+  return 0;
+}
+
+int AliHLTAgentUtil::GetHandlerDescription(AliHLTComponentDataType dt,
+					   AliHLTUInt32_t /*spec*/,
+					  AliHLTOUTHandlerDesc& desc) const
+{
+  // see header file for class documentation
+
+  // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
+  if (dt==kAliHLTDataTypeComponentStatistics) {
+      desc=AliHLTOUTHandlerDesc(kChain, dt, GetModuleId());
+      return 1;
+  }
+
+  return 0;
+}
+
+AliHLTOUTHandler* AliHLTAgentUtil::GetOutputHandler(AliHLTComponentDataType dt,
+						   AliHLTUInt32_t /*spec*/)
+{
+  // see header file for class documentation
+
+  // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
+  if (dt==kAliHLTDataTypeComponentStatistics) {
+    if (fCompStatDataHandler==NULL)
+      fCompStatDataHandler=new AliHLTOUTHandlerChain("chains=UTIL-compstat-writer");
+    return fCompStatDataHandler;
+  }
+
+  return NULL;
+}
+
+int AliHLTAgentUtil::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
+{
+  // see header file for class documentation
+  if (pInstance==NULL) return -EINVAL;
+
+  if (pInstance==fCompStatDataHandler) {
+    delete fCompStatDataHandler;
+    fCompStatDataHandler=NULL;
+  }
   return 0;
 }

@@ -12,6 +12,7 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTEsdCollectorComponent.h \
 		AliHLTDataGenerator.h \
 		AliHLTBlockFilterComponent.h \
+		AliHLTCompStatCollector.h \
 		AliHLTAgentUtil.h
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
