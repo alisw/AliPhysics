@@ -187,27 +187,27 @@ void Config()
     rl->CdGAFile();
     gAlice->SetField(field);
  
-  Int_t   iABSO    = 1; 
+  Int_t   iABSO    = 0; 
   Int_t   iACORDE  = 0; 
-  Int_t   iDIPO    = 1; 
-  Int_t   iFMD     = 1; 
-  Int_t   iFRAME   = 1; 
-  Int_t   iHALL    = 1; 
-  Int_t   iITS     = 1; 
-  Int_t   iMAG     = 1; 
-  Int_t   iMUON    = 1; 
-  Int_t   iPHOS    = 1; 
-  Int_t   iPIPE    = 1; 
-  Int_t   iPMD     = 1; 
-  Int_t   iHMPID   = 1; 
-  Int_t   iSHIL    = 1; 
-  Int_t   iT0      = 1; 
-  Int_t   iTOF     = 1; 
-  Int_t   iTPC     = 1;
-  Int_t   iTRD     = 1; 
-  Int_t   iZDC     = 1; 
+  Int_t   iDIPO    = 0; 
+  Int_t   iFMD     = 0; 
+  Int_t   iFRAME   = 0; 
+  Int_t   iHALL    = 0; 
+  Int_t   iITS     = 0; 
+  Int_t   iMAG     = 0; 
+  Int_t   iMUON    = 0; 
+  Int_t   iPHOS    = 0; 
+  Int_t   iPIPE    = 0; 
+  Int_t   iPMD     = 0; 
+  Int_t   iHMPID   = 0; 
+  Int_t   iSHIL    = 0; 
+  Int_t   iT0      = 0; 
+  Int_t   iTOF     = 0; 
+  Int_t   iTPC     = 0;
+  Int_t   iTRD     = 0; 
+  Int_t   iZDC     = 0; 
   Int_t   iEMCAL   = 0; 
-  Int_t   iVZERO   = 1;
+  Int_t   iVZERO   = 0;
  
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
@@ -227,21 +227,21 @@ void Config()
     if (iABSO)
     {
         //=================== ABSO parameters ============================
-        AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+        AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
     }
 
     if (iDIPO)
     {
         //=================== DIPO parameters ============================
 
-        AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+        AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 2");
     }
 
     if (iHALL)
     {
         //=================== HALL parameters ============================
 
-        AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+        AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
     }
 
 
@@ -264,64 +264,16 @@ void Config()
     {
         //=================== PIPE parameters ============================
 
-        AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+        AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
     }
  
-    if(iITS) {
+    if (iITS)
+    {
+        //=================== ITS parameters ============================
 
-    //=================== ITS parameters ============================
-    //
-    // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
-    // almost all other detectors. This involves the fact that the ITS geometry
-    // still has several options to be followed in parallel in order to determine
-    // the best set-up which minimizes the induced background. All the geometries
-    // available to date are described in the following. Read carefully the comments
-    // and use the default version (the only one uncommented) unless you are making
-    // comparisons and you know what you are doing. In this case just uncomment the
-    // ITS geometry you want to use and run Aliroot.
-    //
-    // Detailed geometries:         
-    //
-    //
-    //AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
-    //
-    //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
-    //
-	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
-	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
-	ITS->SetReadDet(kFALSE);	  // don't touch this parameter if you're not an ITS developer
-    //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-	ITS->SetThicknessChip1(150.);  // chip thickness on layer 1 must be in the range [150,300]
-	ITS->SetThicknessChip2(150.);  // chip thickness on layer 2 must be in the range [150,300]
-	ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
-	ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
-
-    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
-    // for reconstruction !):
-    //                                                     
-    //
-    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
-    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
-    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    //
-    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
-    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
-    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    //                      
-    //
-    //
-    // Geant3 <-> EUCLID conversion
-    // ============================
-    //
-    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
-    // media to two ASCII files (called by default ITSgeometry.euc and
-    // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
-    // The default (=0) means that you dont want to use this facility.
-    //
-	ITS->SetEUCLID(0);  
+	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     }
+
 
     if (iTPC)
     {
@@ -332,21 +284,14 @@ void Config()
 
     if (iTOF) {
         //=================== TOF parameters ============================
-	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
-	// Partial geometry: modules at 2,3,4,6,7,11,12,14,15,16
-	// starting at 6h in positive direction
-	//	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0};
-	// Partial geometry: modules at 1,2,6,7,9,10,11,12,15,16,17
-	// (ALICE numbering convention)
-       	Int_t TOFSectors[18]={-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0,-1,-1,0,0,0};
-	TOF->SetTOFSectors(TOFSectors);
+	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
     }
 
 
     if (iHMPID)
     {
         //=================== HMPID parameters ===========================
-        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
+        AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
 
     }
 
@@ -395,6 +340,23 @@ void Config()
     if (iPHOS)
     {
         AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        //Set simulation parameters different from the default ones.
+        AliPHOSSimParam* simEmc = AliPHOSSimParam::GetInstance() ;
+  
+        // APD noise of warm (+20C) PHOS:
+        // a2 = a1*(Y1/Y2)*(M1/M2), where a1 = 0.012 is APD noise at -25C,
+        // Y1 = 4.3 photo-electrons/MeV, Y2 = 1.7 p.e/MeV - light yields at -25C and +20C,
+        // M1 = 50, M2 = 50 - APD gain factors chosen for t1 = -25C and t2 = +20C,
+        // Y = MeanLightYield*APDEfficiency.
+
+        Float_t apdNoise = 0.012*2.5; 
+        simEmc->SetAPDNoise(apdNoise);
+
+        //Raw Light Yield at +20C
+        simEmc->SetMeanLightYield(18800);
+
+        //ADC channel width at +18C.
+        simEmc->SetADCchannelW(0.0125);
     }
 
 
@@ -412,7 +374,6 @@ void Config()
 
     if (iEMCAL)
     {
-        //=================== EMCAL parameters ============================
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
     }
 
