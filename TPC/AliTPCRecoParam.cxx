@@ -69,9 +69,11 @@ AliTPCRecoParam::AliTPCRecoParam():
   fBDoUnfold(kTRUE),
   fDumpAmplitudeMin(100),
   fMaxNoise(2.),
-  fMinMaxCutAbs(5.),
-  fMinLeftRightCutAbs(9.),
-  fMinUpDownCutAbs(10.),
+  //
+  fMinMaxCutAbs(4.),
+  fMinLeftRightCutAbs(6.),
+  fMinUpDownCutAbs(6.),
+  //
   fMinMaxCutSigma(4.),
   fMinLeftRightCutSigma(7.),
   fMinUpDownCutSigma(8.),
