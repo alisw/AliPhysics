@@ -19,6 +19,9 @@ class TObjArray;
 // --- AliRoot header files ---
 #include "AliQADataMakerRec.h"
 
+class AliCDBManager;
+class AliCDBStorage;
+class AliVZEROCalibData;
 
 class AliVZEROQADataMakerRec: public AliQADataMakerRec {
 
@@ -27,7 +30,11 @@ public:
   AliVZEROQADataMakerRec(const AliVZEROQADataMakerRec& qadm) ;   
   AliVZEROQADataMakerRec& operator = (const AliVZEROQADataMakerRec& qadm) ;
   virtual ~AliVZEROQADataMakerRec() {;} // destructor
+  AliVZEROCalibData *GetCalibData() const;
   
+protected: 
+   AliVZEROCalibData *fCalibData;  //! calibration data
+   
 private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
   virtual void   InitESDs() ; 
@@ -35,6 +42,11 @@ private:
   virtual void   MakeESDs(AliESDEvent * esd) ;
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   StartOfDetectorCycle() ; 
+
+  Int_t   fEvent;
+  Int_t   fEven[64];
+  Int_t   fOdd[64];
+  Float_t fADC_Mean[128];
 
   ClassDef(AliVZEROQADataMakerRec,1)  // description 
 
