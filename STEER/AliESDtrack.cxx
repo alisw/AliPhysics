@@ -1173,7 +1173,10 @@ Char_t AliESDtrack::GetITSclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   if (idx!=0) {
      Int_t *index=fFriendTrack->GetITSindices();
-     for (Int_t i=0; i<AliESDfriendTrack::kMaxITScluster; i++) idx[i]=index[i];
+     for (Int_t i=0; i<AliESDfriendTrack::kMaxITScluster; i++) {
+         if ( (i>=fITSncls) && (i<6) ) idx[i]=-1;
+         else idx[i]=index[i];
+     }
   }
   return fITSncls;
 }
