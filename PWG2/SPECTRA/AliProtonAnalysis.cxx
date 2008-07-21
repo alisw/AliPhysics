@@ -499,7 +499,11 @@ Float_t AliProtonAnalysis::GetSigmaToVertex(AliESDtrack* esdTrack) {
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
-  esdTrack->GetImpactParameters(b,bCov);
+  if(fUseTPCOnly) 
+    esdTrack->GetImpactParametersTPC(b,bCov);
+  else
+    esdTrack->GetImpactParameters(b,bCov);
+  
   if (bCov[0]<=0 || bCov[2]<=0) {
     //AliDebug(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
