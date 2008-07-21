@@ -31,6 +31,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TArrayI.h"
+
 //
 //
 #include "AliTPCCalROC.h"
@@ -191,17 +192,20 @@ Double_t AliTPCCalROC::GetMean(AliTPCCalROC* outlierROC) {
    //
    //  returns the mean value of the ROC
    //  pads with value != 0 in outlierROC are not used for the calculation
+   //  return 0 if no data is accepted by the outlier cuts 
    //
    if (!outlierROC) return TMath::Mean(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
    Int_t NPoints = 0;
    for (UInt_t i=0;i<fNChannels;i++) {
       if (!(outlierROC->GetValue(i))) {
-         ddata[NPoints]= fData[NPoints];
+         ddata[NPoints]= fData[i];
          NPoints++;
       }
    }
-   Double_t mean = TMath::Mean(NPoints, ddata);
+   Double_t mean = 0;
+   if(NPoints>0)
+     mean = TMath::Mean(NPoints, ddata);
    delete [] ddata;
    return mean;
 }
@@ -210,59 +214,70 @@ Double_t AliTPCCalROC::GetMedian(AliTPCCalROC* outlierROC) {
    //
    //  returns the median value of the ROC
    //  pads with value != 0 in outlierROC are not used for the calculation
+   //  return 0 if no data is accepted by the outlier cuts 
    //
    if (!outlierROC) return TMath::Median(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
    Int_t NPoints = 0;
    for (UInt_t i=0;i<fNChannels;i++) {
       if (!(outlierROC->GetValue(i))) {
-         ddata[NPoints]= fData[NPoints];
+         ddata[NPoints]= fData[i];
          NPoints++;
       }
    }
-   Double_t mean = TMath::Median(NPoints, ddata);
+   Double_t median = 0;
+   if(NPoints>0)
+     median = TMath::Median(NPoints, ddata);
    delete [] ddata;
-   return mean;
+   return median;
 }
 
 Double_t AliTPCCalROC::GetRMS(AliTPCCalROC* outlierROC) {
    //
    //  returns the RMS value of the ROC
    //  pads with value != 0 in outlierROC are not used for the calculation
+   //  return 0 if no data is accepted by the outlier cuts 
    //
    if (!outlierROC) return TMath::RMS(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
    Int_t NPoints = 0;
    for (UInt_t i=0;i<fNChannels;i++) {
       if (!(outlierROC->GetValue(i))) {
-         ddata[NPoints]= fData[NPoints];
+         ddata[NPoints]= fData[i];
          NPoints++;
       }
    }
-   Double_t mean = TMath::RMS(NPoints, ddata);
+   Double_t rms = 0;
+   if(NPoints>0)
+     rms = TMath::RMS(NPoints, ddata);
    delete [] ddata;
-   return mean;
+   return rms;
 }
 
 Double_t AliTPCCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalROC* outlierROC){
   //
   //  returns the LTM and sigma
   //  pads with value != 0 in outlierROC are not used for the calculation
+   //  return 0 if no data is accepted by the outlier cuts 
   //
   Double_t *ddata = new Double_t[fNChannels];
-  Double_t mean=0, lsigma=0;
   UInt_t NPoints = 0;
   for (UInt_t i=0;i<fNChannels;i++) {
      if (!outlierROC || !(outlierROC->GetValue(i))) {
-        ddata[NPoints]= fData[NPoints];
+        ddata[NPoints]= fData[i];
         NPoints++;
      }
   }
-  Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
-  AliMathBase::EvaluateUni(NPoints,ddata, mean, lsigma, hh);
-  if (sigma) *sigma=lsigma;
+
+  Double_t ltm =0, lsigma=0;
+  if(NPoints>0) {
+    Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
+    AliMathBase::EvaluateUni(NPoints,ddata, ltm, lsigma, hh);
+    if (sigma) *sigma=lsigma;
+  }
+  
   delete [] ddata;
-  return mean;
+  return ltm;
 }
 
 TH1F * AliTPCCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type){
@@ -754,17 +769,28 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
       fitterG->AddPoint(xx, GetValue(irow, ipad), err);
     }
   }
-  fitterG->Eval();
-  fitterG->GetParameters(fitParam);
-  fitterG->GetCovarianceMatrix(covMatrix);
-  if (fitType == 1)
-    chi2 = fitterG->GetChisquare()/(npoints-6.);
-  else chi2 = fitterG->GetChisquare()/(npoints-3.);
-  if (robust && chi2 > chi2Threshold) {
-    //    std::cout << "robust fitter called... " << std::endl;
-    fitterG->EvalRobust(robustFraction);
+  if(npoints>10) { // make sure there is something to fit
+    fitterG->Eval();
     fitterG->GetParameters(fitParam);
+    fitterG->GetCovarianceMatrix(covMatrix);
+    if (fitType == 1)
+      chi2 = fitterG->GetChisquare()/(npoints-6.);
+    else chi2 = fitterG->GetChisquare()/(npoints-3.);
+    if (robust && chi2 > chi2Threshold) {
+      //    std::cout << "robust fitter called... " << std::endl;
+      fitterG->EvalRobust(robustFraction);
+      fitterG->GetParameters(fitParam);
+    }
+  } else {
+    // set parameteres to 0
+    Int_t nParameters = 3;
+    if (fitType  == 1)
+      nParameters = 6;
+
+    for(Int_t i = 0; i < nParameters; i++)
+      fitParam[i] = 0;
   }
+  
   delete fitterG;
 }
 
@@ -809,5 +835,4 @@ AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sect
   }
   return ROCfitted;
 }
-
 
