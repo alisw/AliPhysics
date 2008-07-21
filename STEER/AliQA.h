@@ -78,7 +78,7 @@ public:
 	static void            SetQARefStorage(const char * name) ; 
 	static void            SetQARefDataDirName(RUNTYPE_t rt) { fkgRefDataDirName = GetRunTypeName(rt) ; }
 	static void            SetQARefDataDirName(const char * name) ;
-	void                   Show() const { ShowStatus(fDet) ; }
+	void                   Show() const { ShowStatus(fDet, fTask) ; }
 	void                   Show(DETECTORINDEX_t det) const { ShowStatus(det) ; }
 	void                   ShowAll() const ;
 	void                   UnSet(QABIT_t bit) ;
@@ -92,7 +92,7 @@ private:
 	const ULong_t        GetStatus(DETECTORINDEX_t det) const  { return fQA[det] ;}
 	void                 Finish() const ;  
 	const ULong_t        Offset(ALITASK_t tsk) const ;
-	void                 ShowStatus(DETECTORINDEX_t det) const ;
+	void                 ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk=kNULLTASK) const ;
 	void                 ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
 	void                 ResetStatus(DETECTORINDEX_t det) { fQA[det] = 0 ; }
 	void                 Set(DETECTORINDEX_t det) { fDet = det ;}

@@ -593,12 +593,15 @@ void AliQA::ShowAll() const
 {
   // dispplay the QA status word
   Int_t index ;
-  for (index = 0 ; index < kNDET ; index++)
-    ShowStatus(DETECTORINDEX_t(index)) ;
+  for (index = 0 ; index < kNDET ; index++) {
+		for (Int_t tsk = kRAW ; tsk < kNTASK ; tsk++) {
+			ShowStatus(DETECTORINDEX_t(index), ALITASK_t(tsk)) ;
+		}
+	}
 }
 
 //_______________________________________________________________
-void AliQA::ShowStatus(DETECTORINDEX_t det) const
+void AliQA::ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk) const
 {
 	// Prints the full QA status of a given detector
 	CheckRange(det) ;
@@ -612,8 +615,12 @@ void AliQA::ShowStatus(DETECTORINDEX_t det) const
 
 	AliInfo(Form("====> QA Status for %8s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x", GetDetName(det).Data(), 
 				 tskStatus[kRAW], tskStatus[kSIM], tskStatus[kREC], tskStatus[kESD], tskStatus[kANA] )) ;
-	for (Int_t tsk = kRAW ; tsk < kNTASK ; tsk++) {
-		ShowASCIIStatus(det, ALITASK_t(tsk), tskStatus[tsk]) ; 
+	if (tsk == kNULLTASK) {
+		for (Int_t itsk = kRAW ; itsk < kNTASK ; itsk++) {
+			ShowASCIIStatus(det, ALITASK_t(itsk), tskStatus[itsk]) ; 
+		} 
+	} else {
+			ShowASCIIStatus(det, tsk, tskStatus[tsk]) ; 
 	}
 }
 
