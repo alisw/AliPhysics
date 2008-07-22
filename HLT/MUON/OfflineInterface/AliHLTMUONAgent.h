@@ -15,6 +15,7 @@
 
 #include "AliHLTModuleAgent.h"
 class AliRunLoader;
+class AliHLTOUTHandlerChain;
 
 /**
  * This module agent handles dimuon HLT module registration and configurations
@@ -63,9 +64,41 @@ public:
 	 */
 	virtual int RegisterComponents(AliHLTComponentHandler* pHandler) const;
 	
+	/**
+	 * Get handler decription for dHLT data in the HLTOUT data stream.
+	 * @param dt        [in] data type of the block
+	 * @param spec      [in] specification of the block
+	 * @param desc      [out] handler description
+	 * @return 1 if the agent can provide a handler, 0 if not.
+	 */
+	virtual int GetHandlerDescription(
+			AliHLTComponentDataType dt,
+			AliHLTUInt32_t spec,
+			AliHLTOUTHandlerDesc& desc
+		) const;
+	
+	/**
+	 * Get specific handler for dHLT data in the HLTOUT data stream.
+	 * @param dt        [in] data type of the block
+	 * @param spec      [in] specification of the block
+	 * @return pointer to handler
+	 */
+	virtual AliHLTOUTHandler* GetOutputHandler(
+			AliHLTComponentDataType dt, AliHLTUInt32_t spec
+		);
+	
+	/**
+	 * Delete an HLTOUT handler.
+	 * @param pInstance      pointer to handler
+	 */
+	virtual int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
+	
 private:
 	// The following instance is used for automatic agent and component registration.
-	static AliHLTMUONAgent fgkInstance;  // The single global instance of the dimuon HLT agent.
+	static AliHLTMUONAgent fgkInstance;  ///< The single global instance of the dimuon HLT agent.
+	
+	static AliHLTOUTHandlerChain  fgkESDMakerChain;  ///< Chain handler for converting dHLT raw data to ESD format.
+	static AliHLTOUTHandlerChain  fgkRootifyDumpChain;  ///< Chain handler for converting dHLT raw data to ROOT objects and dumping to file.
 
 	ClassDef(AliHLTMUONAgent, 0); // Dimuon HLT module agent which handles processing configurations.
 };

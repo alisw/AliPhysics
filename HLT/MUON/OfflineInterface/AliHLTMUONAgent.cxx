@@ -35,6 +35,7 @@
 #include "AliHLTMUONESDMaker.h"
 #include "AliHLTMUONEmptyEventFilterComponent.h"
 #include "AliHLTMUONDataCheckerComponent.h"
+#include "AliHLTOUTHandlerChain.h"
 #include "AliRawReader.h"
 #include "AliRunLoader.h"
 #include "TSystem.h"
@@ -42,6 +43,10 @@
 
 // The single global instance of the dimuon HLT agent.
 AliHLTMUONAgent AliHLTMUONAgent::fgkInstance;
+
+AliHLTOUTHandlerChain AliHLTMUONAgent::fgkESDMakerChain("libAliHLTMUON.so chains=dHLT-make-esd");
+AliHLTOUTHandlerChain AliHLTMUONAgent::fgkRootifyDumpChain("libAliHLTMUON.so chains=dHLT-rootify-and-dump");
+
 
 ClassImp(AliHLTMUONAgent);
 
@@ -321,6 +326,40 @@ int AliHLTMUONAgent::CreateConfigurations(
 		handler->CreateConfiguration("dHLT-sim-fromMC", "BlockFilter", outputSrcs.Data(), "");
 	}
 	
+	// Create a chain for generating AliESDEvent objects from dHLT raw reconstructed data.
+	handler->CreateConfiguration("HLTOUTPubTrigRecs", "AliHLTOUTPublisher", NULL, "-datatype 'TRIGRECS' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubMansoTracks", "AliHLTOUTPublisher", NULL, "-datatype 'MANTRACK' 'MUON'");
+	handler->CreateConfiguration(
+			"dHLT-make-esd",
+			AliHLTMUONConstants::ESDMakerId(),
+			"HLTOUTPubTrigRecs HLTOUTPubMansoTracks",
+			"-make_minimal_esd"
+		);
+	
+	// Create a chain for rootifying the raw dHLT data and dumping to file.
+	// This is used during AliRoot reconstruction.
+	handler->CreateConfiguration("HLTOUTPubTrigDbg", "AliHLTOUTPublisher", NULL, "-datatype 'TRIGRDBG' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubHits", "AliHLTOUTPublisher", NULL, "-datatype 'RECHITS ' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubClusters", "AliHLTOUTPublisher", NULL, "-datatype 'CLUSTERS' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubChannels", "AliHLTOUTPublisher", NULL, "-datatype 'CHANNELS' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubCandidates", "AliHLTOUTPublisher", NULL, "-datatype 'MNCANDID' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubSingles", "AliHLTOUTPublisher", NULL, "-datatype 'DECIDSIN' 'MUON'");
+	handler->CreateConfiguration("HLTOUTPubPairs", "AliHLTOUTPublisher", NULL, "-datatype 'DECIDPAR' 'MUON'");
+	handler->CreateConfiguration(
+			"HLTOUTConverter",
+			AliHLTMUONConstants::RootifierComponentId(),
+			"HLTOUTPubTrigRecs HLTOUTPubTrigDbg HLTOUTPubHits HLTOUTPubClusters"
+			 " HLTOUTPubChannels HLTOUTPubMansoTracks HLTOUTPubCandidates"
+			 " HLTOUTPubSingles HLTOUTPubPairs",
+			""
+		);
+	handler->CreateConfiguration(
+			"dHLT-rootify-and-dump",
+			"ROOTFileWriter",
+			"HLTOUTConverter",
+			"-concatenate-events -datafile dHLTRawData.root -specfmt"
+		);
+	
 	return 0;
 }
 
@@ -347,3 +386,108 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 	return 0;
 }
 
+
+int AliHLTMUONAgent::GetHandlerDescription(
+		AliHLTComponentDataType dt,
+#ifdef __DEBUG
+		AliHLTUInt32_t spec,
+#else
+		AliHLTUInt32_t /*spec*/,
+#endif
+		AliHLTOUTHandlerDesc& desc
+	) const
+{
+	/// Get handler decription for MUON data in the HLTOUT data stream.
+	
+	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType()
+	   )
+	{
+		HLTDebug("Indicating we can handle data type = %s and specification"
+			" = 0x%8.8X with dHLT-make-esd chain",
+			AliHLTComponent::DataType2Text(dt).c_str(),
+			spec
+		);
+		desc = AliHLTOUTHandlerDesc(kChain, dt, "dHLT-make-esd");
+		return 1;
+	}
+	
+	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	    dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
+	    dt == AliHLTMUONConstants::RecHitsBlockDataType() or
+	    dt == AliHLTMUONConstants::ClusterBlockDataType() or
+	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
+	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
+	   )
+	{
+		HLTDebug("Indicating we can handle data type = %s and specification"
+			" = 0x%8.8X with dHLT-rootify-and-dump chain",
+			AliHLTComponent::DataType2Text(dt).c_str(),
+			spec
+		);
+		desc = AliHLTOUTHandlerDesc(kChain, dt, "dHLT-rootify-and-dump");
+		return 1;
+	}
+	
+	return 0;
+}
+
+
+AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
+		AliHLTComponentDataType dt,
+#ifdef __DEBUG
+		AliHLTUInt32_t spec
+#else
+		AliHLTUInt32_t /*spec*/
+#endif
+	)
+{
+	/// Get specific handler for MUON data in the HLTOUT data stream.
+	
+	HLTDebug("Trying to create HLTOUT handler for data type = %s and"
+		" specification = 0x%8.8X",
+		AliHLTComponent::DataType2Text(dt).c_str(),
+		spec
+	);
+	
+	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType()
+	   )
+	{
+		return &fgkESDMakerChain;
+	}
+	
+	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	    dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
+	    dt == AliHLTMUONConstants::RecHitsBlockDataType() or
+	    dt == AliHLTMUONConstants::ClusterBlockDataType() or
+	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
+	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
+	   )
+	{
+		return &fgkRootifyDumpChain;
+	}
+	
+	return NULL;
+}
+
+
+int AliHLTMUONAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
+{
+	/// Deletes the HLTOUT handlers. In this case since the handlers are
+	/// allocated statically, we just check that the right pointer was
+	/// given and exit.
+	
+	HLTDebug("Trying to delete HLTOUT handler: %p", pInstance);
+	
+	if (pInstance != &fgkESDMakerChain or pInstance != &fgkRootifyDumpChain)
+		return -EINVAL;
+	
+	return 0;
+}

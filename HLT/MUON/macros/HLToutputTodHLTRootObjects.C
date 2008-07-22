@@ -16,6 +16,15 @@
 
 // $Id: $
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliHLTReconstructorBase.h"
+#include "AliHLTConfiguration.h"
+#include "AliReconstruction.h"
+#include <iostream>
+using std::cerr;
+using std::endl;
+#endif
+
 /**
  * @file HLToutputTodHLTRootObjects.C
  * @brief Macro for converting dHLT output in HLTOUT into ROOT objects or dumping to file.

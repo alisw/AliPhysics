@@ -140,7 +140,7 @@ void AliHLTMUONESDMaker::GetOutputDataSize(
 	/// Inherited from AliHLTComponent.
 	/// Returns an estimate of the expected output data size.
 	
-	constBase = sizeof(AliESDEvent);
+	constBase = sizeof(AliESDEvent) + 1024*1024;  // The extra 1 MByte is for auxilary objects created in AliESDEvent.
 	inputMultiplier = 10;
 }
 
