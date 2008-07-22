@@ -65,18 +65,22 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
     Log("AliITSDDLModuleMapSDD object not in file.");
     return 2;
   }
+  ddlmap->PrintDDLMap();
 
   //preprocessing
   TString runType = GetRunType();
   Int_t retcode=0;
 
   if (runType == "PULSER"){
+    Log("Process FXS files from PULSER RUN");
     retcode=ProcessPulser(ddlmap);
   }else if(runType== "INJECTOR"){
+    Log("Process FXS files from INJECTOR RUN");
     retcode=ProcessInjector(ddlmap);
   }
   if(retcode!=0) return retcode;
 
+  Log("Process DCS data");
   Bool_t retcodedcs =ProcessDCSDataPoints(dcsAliasMap);
   if(retcodedcs) return 0; 
   else return 1;           
@@ -159,6 +163,7 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
 	}
 	fclose(basFil);
       }
+      Log(Form("Put calib obj for module %d (DDL %d  Carlos %d)",modID,iddl,imod));
       calSDD.AddAt(cal,modID);
     }
   }
@@ -247,6 +252,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	    modSet[2*modID+isid]=1;
 	  }
 	}
+	Log(Form("Put calib obj for hybrid %d (DDL %d  Carlos %d)",2*modID+isid,iddl,imod));
 	if(modSet[2*modID+isid]) vdrift.AddAt(arr,2*modID+isid);
       }
     }
