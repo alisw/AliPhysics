@@ -53,6 +53,8 @@ AliTrackFitterRieman::AliTrackFitterRieman():
   fConv(kFALSE),
   fMaxDelta(3),
   fRieman(new AliRieman(10000)),  // allocate rieman
+  fMinPointRadius(2.),
+  fMaxPointRadius(500.),
   fDebugStream(new TTreeSRedirector("RiemanAlignDebug.root"))
 {
   //
@@ -69,6 +71,8 @@ AliTrackFitterRieman::AliTrackFitterRieman(AliTrackPointArray *array, Bool_t own
   fConv(kFALSE),
   fMaxDelta(3),
   fRieman(new AliRieman(10000)),  //allocate rieman
+  fMinPointRadius(2.),
+  fMaxPointRadius(500.),
   fDebugStream(0)
 {
   //
@@ -85,6 +89,8 @@ AliTrackFitterRieman::AliTrackFitterRieman(const AliTrackFitterRieman &rieman):
   fConv(rieman.fConv),
   fMaxDelta(rieman.fMaxDelta),
   fRieman(new AliRieman(*(rieman.fRieman))),
+  fMinPointRadius(rieman.fMinPointRadius),
+  fMaxPointRadius(rieman.fMaxPointRadius),
   fDebugStream(0)
 {
   //
@@ -108,6 +114,8 @@ AliTrackFitterRieman &AliTrackFitterRieman::operator =(const AliTrackFitterRiema
   fConv   = rieman.fConv;
   fMaxDelta = rieman.fMaxDelta;
   fRieman = new AliRieman(*(rieman.fRieman));
+  fMinPointRadius = rieman.fMinPointRadius;
+  fMaxPointRadius = rieman.fMaxPointRadius;
   fDebugStream = 0;
   if (AliLog::GetDebugLevel("","AliTrackFitterRieman")) fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
   return *this;
@@ -223,7 +231,7 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
 	isAlphaCalc = kTRUE;
       }
       plocal = p.Rotate(fAlpha);
-      if (TMath::Abs(plocal.GetX())>500 || TMath::Abs(plocal.GetX())<2 || plocal.GetCov()[3]<=0 ||plocal.GetCov()[5]<=0 ){
+      if (TMath::Abs(plocal.GetX())>fMaxPointRadius || TMath::Abs(plocal.GetX())<fMinPointRadius || plocal.GetCov()[3]<=0 ||plocal.GetCov()[5]<=0 ){
 	printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<</n");
 	p.Dump();
 	plocal.Dump();
@@ -555,4 +563,10 @@ Double_t AliTrackFitterRieman::GetErrZ2at(Double_t x) const {
     correction*=  correction;
   }
   return TMath::Sqrt(error+correction);
+}
+
+void AliTrackFitterRieman::SetParam(Int_t i, Double_t par) {
+  if (i<0 || i>5) return;
+  fParams[i]=par;
+  fRieman->GetParam()[i]=par;
 }

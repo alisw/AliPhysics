@@ -49,6 +49,17 @@ class AliTrackFitterRieman : public AliTrackFitter{
 
   Bool_t   GetXYZat(Double_t r, Float_t *xyz) const {return fRieman->GetXYZat(r, fAlpha,xyz);}
   AliRieman *GetRieman() const {return fRieman;}
+
+  // Methods needed in order to use the class
+  // inside the millipede alignment algorithm
+  Double_t   GetAlpha() const { return fAlpha; }
+  void SetParam(Int_t i, Double_t par);
+
+  void SetMinPointRadius(Double_t radius) { fMinPointRadius = radius; }
+  void SetMaxPointRadius(Double_t radius) { fMaxPointRadius = radius; }
+  Double_t GetMinPointRadius() const { return fMinPointRadius; }
+  Double_t GetMaxPointRadius() const { return fMaxPointRadius; }
+
  protected:
   Bool_t        fBCorrection; //add  correction for non-helicity
   Double_t      fAlpha;     //angle to transform to the fitting coordinate system
@@ -58,11 +69,13 @@ class AliTrackFitterRieman : public AliTrackFitter{
   AliRieman    *fRieman;    // rieman fitter
   Double_t      fCorrY[4];  // correction polynom coef
   Double_t      fCorrZ[4];  // correction polynom coef
+  Double_t      fMinPointRadius; // minimal allowed radius for the point to be included in the fit
+  Double_t      fMaxPointRadius; // maximal allowed radius for the point to be included in the fit
  private:
   Bool_t Begin(Int_t, Int_t) {Reset(); return kTRUE;}
   Bool_t AddPoint(const AliTrackPoint *) {return kTRUE;}
   TTreeSRedirector *fDebugStream;   //!debug streamer
-  ClassDef(AliTrackFitterRieman,2)  // Fast fit of helices on ITS RecPoints
+  ClassDef(AliTrackFitterRieman,3)  // Fast fit of helices on ITS RecPoints
 
 };
 
