@@ -90,7 +90,6 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   }
   Short_t nfcL1 = multReco.GetNFiredChips(0);
   Short_t nfcL2 = multReco.GetNFiredChips(1);
-  multReco.Dump();
   fMult = new AliMultiplicity(notracks,tht,phi,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2);
 
   delete [] tht;
