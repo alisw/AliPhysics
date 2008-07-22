@@ -22,7 +22,6 @@ class AliRunLoader;
 class AliTRD;
 class AliTRDdigitsManager;
 class AliTRDgeometry;
-class AliTRDfeeParam;
 class AliTRDdataArrayF;
 class AliTRDsegmentArray;
 
@@ -98,7 +97,6 @@ class AliTRDdigitizer : public AliDigitizer {
   TList               *fSDigitsManagerList; //! List of managers of input s-digits
   AliTRD              *fTRD;                //! TRD detector class
   AliTRDgeometry      *fGeo;                //! TRD geometry
-  AliTRDfeeParam      *fFee;                //  Fee Parameters
 
           Int_t        fEvent;              //! Event number
           Int_t       *fMasks;              //! Masks for the merging
@@ -118,7 +116,7 @@ class AliTRDdigitizer : public AliDigitizer {
           Float_t      fVDlo;               //  Lower drift velocity, for interpolation
           Float_t      fVDhi;               //  Higher drift velocity, for interpolation
 
-  ClassDef(AliTRDdigitizer,16)              //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,17)              //  Produces TRD-Digits
 
 };
 #endif

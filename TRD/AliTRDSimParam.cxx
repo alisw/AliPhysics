@@ -313,14 +313,18 @@ void AliTRDSimParam::ReInit()
     fTRFlo  = -0.4;
     // End the maximum drift time after the signal 
     fTRFhi  =  3.58;
+    // Standard gas gain
+    fGasGain = 4000.0;
   }
   else if (fGasMixture == kArgon) {
     // The range and the binwidth for the sampled TRF 
-    fTRFbin =  50;
+    fTRFbin  =  50;
     // Start 0.2 mus before the signal
-    fTRFlo  =  0.02;
+    fTRFlo   =  0.02;
     // End the maximum drift time after the signal 
-    fTRFhi  =  1.98;
+    fTRFhi   =  1.98;
+    // Higher gas gain
+    fGasGain = 8000.0;
   }
   else {
     AliFatal("Not a valid gas mixture!");
@@ -427,12 +431,23 @@ void AliTRDSimParam::SampleTRF()
   }
   fCTsmp  = new Float_t[fTRFbin];
 
+  if      (fGasMixture == kXenon) {
+    if (fTRFbin != kNpasa) {
+      AliError("Array mismatch (xenon)\n\n");
+    }
+  }
+  else if (fGasMixture == kArgon) {
+    if (fTRFbin != kNpasaAr) {
+      AliError("Array mismatch (argon)\n\n");
+    }
+  }
+
   for (Int_t iBin = 0; iBin < fTRFbin; iBin++) {
-    if (fGasMixture == kXenon) {
+    if      (fGasMixture == kXenon) {
       fTRFsmp[iBin] = signal[iBin];
       fCTsmp[iBin]  = xtalk[iBin];
     }
-    else {
+    else if (fGasMixture == kArgon) {
       fTRFsmp[iBin] = signalAr[iBin];
       fCTsmp[iBin]  = xtalkAr[iBin];
     }

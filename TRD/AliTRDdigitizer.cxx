@@ -85,7 +85,6 @@ AliTRDdigitizer::AliTRDdigitizer()
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
-  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -119,7 +118,6 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
-  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -154,7 +152,6 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
-  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -188,7 +185,6 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
-  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -226,7 +222,6 @@ Bool_t AliTRDdigitizer::Init()
   fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
-  fFee                = AliTRDfeeParam::Instance();
 
   fEvent              = 0;
   fMasks              = 0;
@@ -258,7 +253,6 @@ AliTRDdigitizer::AliTRDdigitizer(const AliTRDdigitizer &d)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
-  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(d.fCompress)
@@ -365,7 +359,6 @@ void AliTRDdigitizer::Copy(TObject &d) const
   ((AliTRDdigitizer &) d).fSDigitsManagerList = 0;
   ((AliTRDdigitizer &) d).fTRD                = 0;
   ((AliTRDdigitizer &) d).fGeo                = 0;
-  ((AliTRDdigitizer &) d).fFee                = fFee;
   ((AliTRDdigitizer &) d).fEvent              = 0;
   ((AliTRDdigitizer &) d).fMasks              = 0;
   ((AliTRDdigitizer &) d).fCompress           = fCompress;
@@ -1049,7 +1042,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
     if (colE < 0) {
       continue;	  
     }
-    Double_t colOffset    = padPlane->GetPadColOffset(colE,loc[0]+offsetTilt);
+    Double_t colOffset    = 0.0;
 
     // Normalized drift length
     Float_t  driftvelocity  = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
@@ -2632,9 +2625,6 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
   //
   // Recalculates the diffusion parameters
   //
-  // The B=0 case is not really included here.
-  // Should be revisited!
-  //
 
   if (vdrift == fDiffLastVdrift) {
     return;
@@ -2657,56 +2647,78 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
     AliFatal("Could not get calibration object");
     return;
   }
-  
-  // The magnetic field strength
-  Double_t x[3] = { 0.0, 0.0, 0.0 };
-  Double_t b[3]; 	 
-  gAlice->Field(x,b);         // b[] is in kilo Gauss 	 
-  Float_t field = b[2] * 0.1; // Tesla
 
   fDiffLastVdrift = vdrift;
+
+  if      (simParam->IsXenon()) {
   
-  // DiffusionL
-  const Int_t kNbL = 5;
-  Float_t p0L[kNbL] = {  0.007440,  0.007493,  0.007513,  0.007672,  0.007831 };
-  Float_t p1L[kNbL] = {  0.019252,  0.018912,  0.018636,  0.018012,  0.017343 };
-  Float_t p2L[kNbL] = { -0.005042, -0.004926, -0.004867, -0.004650, -0.004424 };
-  Float_t p3L[kNbL] = {  0.000195,  0.000189,  0.000195,  0.000182,  0.000169 };
+    //
+    // Vd and B-field dependent diffusion and Lorentz angle
+    //
 
-  Int_t ibL = ((Int_t) (10 * (field - 0.15)));
-  ibL       = TMath::Max(   0,ibL);
-  ibL       = TMath::Min(kNbL,ibL);
-
-  fDiffusionL = p0L[ibL] 
-              + p1L[ibL] * vdrift
-              + p2L[ibL] * vdrift*vdrift
-              + p3L[ibL] * vdrift*vdrift*vdrift;
+    // The magnetic field strength
+    Double_t x[3] = { 0.0, 0.0, 0.0 };
+    Double_t b[3]; 	 
+    gAlice->Field(x,b);         // b[] is in kilo Gauss 	 
+    Float_t field = b[2] * 0.1; // Tesla
   
-  // DiffusionT
-  const Int_t kNbT = 5;
-  Float_t p0T[kNbT] = {  0.009550,  0.009599,  0.009674,  0.009757,  0.009850 };
-  Float_t p1T[kNbT] = {  0.006667,  0.006539,  0.006359,  0.006153,  0.005925 };
-  Float_t p2T[kNbT] = { -0.000853, -0.000798, -0.000721, -0.000635, -0.000541 };
-  Float_t p3T[kNbT] = {  0.000131,  0.000122,  0.000111,  0.000098,  0.000085 };
+    // DiffusionL
+    const Int_t kNbL = 5;
+    Float_t p0L[kNbL] = {  0.007440,  0.007493,  0.007513,  0.007672,  0.007831 };
+    Float_t p1L[kNbL] = {  0.019252,  0.018912,  0.018636,  0.018012,  0.017343 };
+    Float_t p2L[kNbL] = { -0.005042, -0.004926, -0.004867, -0.004650, -0.004424 };
+    Float_t p3L[kNbL] = {  0.000195,  0.000189,  0.000195,  0.000182,  0.000169 };
 
-  Int_t ibT= ((Int_t) (10 * (field - 0.15)));
-  ibT      = TMath::Max(   0,ibT);
-  ibT      = TMath::Min(kNbT,ibT);
+    Int_t ibL = ((Int_t) (10 * (field - 0.15)));
+    ibL       = TMath::Max(   0,ibL);
+    ibL       = TMath::Min(kNbL,ibL);
 
-  fDiffusionT = p0T[ibT] 
-              + p1T[ibT] * vdrift
-              + p2T[ibT] * vdrift*vdrift
-              + p3T[ibT] * vdrift*vdrift*vdrift;
+    fDiffusionL = p0L[ibL] 
+                + p1L[ibL] * vdrift
+                + p2L[ibL] * vdrift*vdrift
+                + p3L[ibL] * vdrift*vdrift*vdrift;
+  
+    // DiffusionT
+    const Int_t kNbT = 5;
+    Float_t p0T[kNbT] = {  0.009550,  0.009599,  0.009674,  0.009757,  0.009850 };
+    Float_t p1T[kNbT] = {  0.006667,  0.006539,  0.006359,  0.006153,  0.005925 };
+    Float_t p2T[kNbT] = { -0.000853, -0.000798, -0.000721, -0.000635, -0.000541 };
+    Float_t p3T[kNbT] = {  0.000131,  0.000122,  0.000111,  0.000098,  0.000085 };
 
-  // OmegaTau
-  fOmegaTau = calibration->GetOmegaTau(vdrift,field);
+    Int_t ibT= ((Int_t) (10 * (field - 0.15)));
+    ibT      = TMath::Max(   0,ibT);
+    ibT      = TMath::Min(kNbT,ibT);
 
-  // Lorentzfactor
-  if (commonParam->ExBOn()) {
-    fLorentzFactor = 1.0 / (1.0 + fOmegaTau*fOmegaTau);
+    fDiffusionT = p0T[ibT] 
+                + p1T[ibT] * vdrift
+                + p2T[ibT] * vdrift*vdrift
+                + p3T[ibT] * vdrift*vdrift*vdrift;
+
+    // OmegaTau
+    fOmegaTau = calibration->GetOmegaTau(vdrift,field);
+
+    // Lorentzfactor
+    if (commonParam->ExBOn()) {
+      fLorentzFactor = 1.0 / (1.0 + fOmegaTau*fOmegaTau);
+    }
+    else {
+      fLorentzFactor = 1.0;
+    }
+
   }
-  else {
-    fLorentzFactor = 1.0;
+  else if (simParam->IsArgon()) {
+
+    // Diffusion constants and Lorentz angle only for B = 0.5T
+    fDiffusionL = 0.0182;
+    fDiffusionT = 0.0159;
+    fOmegaTau   = 0.0219769;
+    if (commonParam->ExBOn()) {
+      fLorentzFactor = 1.0 / (1.0 + fOmegaTau*fOmegaTau);
+    }
+    else {
+      fLorentzFactor = 1.0;
+    }
+
   }
 
 }
