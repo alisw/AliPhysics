@@ -352,7 +352,6 @@ else if(runType=="STANDALONE_LASER"){
 	   if(j==0){
              for(Int_t k=0; k<2; k++){
                fscanf(file,"%f",&ivalRef[k]);
-    	       printf(" %1.0f  ",ivalRef[k]);
 	       lCalib->SetReferenceValue(k,ivalRef[k]);	    
 	     }
            }
@@ -388,7 +387,7 @@ else if(runType=="STANDALONE_LASER"){
 // *****************************************************
 // [c] EMD EVENTS -> Energy calibration and equalization
 // *****************************************************
-else if(runType=="STANDALONE_EMD"){
+else if(runType=="STANDALONE_EMD" && strcmp(beamType,"Pb-Pb")==0){
   TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
   if(!daqSources){
     AliError(Form("No sources for STANDALONE_EMD run %d !", fRun));
@@ -401,52 +400,52 @@ else if(runType=="STANDALONE_EMD"){
   TObjString* source = 0;
   Int_t i=0;
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
-       Log(Form("\n\t Getting file #%d\n",++i));
-       TString stringEMDFileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
-       if(stringEMDFileName.Length() <= 0){
-         Log(Form("No EMDCALIB file from source %s!", source->GetName()));
-	 return 1;
-       }
-       // --- Initializing pedestal calibration object
-       AliZDCCalib *eCalib = new AliZDCCalib("ZDC");
-       // --- Reading file with pedestal calibration data
-       const char* emdFileName = stringEMDFileName.Data();
-       if(emdFileName){
-    	 FILE *file;
-    	 if((file = fopen(emdFileName,"r")) == NULL){
-    	   printf("Cannot open file %s \n",emdFileName);
-	   return 1;
-    	 }
-    	 Log(Form("File %s connected to process data from EM dissociation events", emdFileName));
-    	 //
-	 Float_t fitValEMD[6]; Float_t equalCoeff[5][4];
-	 Float_t calibVal[4];
-    	 for(Int_t j=0; j<10; j++){	    
-    	   if(j<6){
-	     fscanf(file,"%f",&fitValEMD[j]);
-             if(j<4){
-	       calibVal[j] = 2.76/fitValEMD[j];
-	       eCalib->SetEnCalib(j,calibVal[j]);
-	     }
-	     else eCalib->SetEnCalib(j,fitValEMD[j]);
-	   }
-	   else{
-	     for(Int_t k=0; k<5; k++){
-	        fscanf(file,"%f",&equalCoeff[j][k]);
-	        if(j==6)      eCalib->SetZN1EqualCoeff(k, equalCoeff[j][k]);
-	 	else if(j==7) eCalib->SetZP1EqualCoeff(k, equalCoeff[j][k]);
-	 	else if(j==8) eCalib->SetZN2EqualCoeff(k, equalCoeff[j][k]);
-	 	else if(j==9) eCalib->SetZP2EqualCoeff(k, equalCoeff[j][k]);  
-             }
-	   }
-         }
-	 fclose(file);
-       }
-       else{
-         Log(Form("File %s not found", emdFileName));
-         return 1;
-       }
-       eCalib->Print("");
+      Log(Form("\n\t Getting file #%d\n",++i));
+      TString stringEMDFileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
+      if(stringEMDFileName.Length() <= 0){
+        Log(Form("No EMDCALIB file from source %s!", source->GetName()));
+        return 1;
+      }
+      // --- Initializing pedestal calibration object
+      AliZDCCalib *eCalib = new AliZDCCalib("ZDC");
+      // --- Reading file with pedestal calibration data
+      const char* emdFileName = stringEMDFileName.Data();
+      if(emdFileName){
+        FILE *file;
+        if((file = fopen(emdFileName,"r")) == NULL){
+          printf("Cannot open file %s \n",emdFileName);
+          return 1;
+        }
+        Log(Form("File %s connected to process data from EM dissociation events", emdFileName));
+        //
+        Float_t fitValEMD[6]; Float_t equalCoeff[5][4];
+        Float_t calibVal[4];
+        for(Int_t j=0; j<10; j++){	   
+          if(j<6){
+            fscanf(file,"%f",&fitValEMD[j]);
+            if(j<4){
+              calibVal[j] = 2.76/fitValEMD[j];
+              eCalib->SetEnCalib(j,calibVal[j]);
+            }
+            else eCalib->SetEnCalib(j,fitValEMD[j]);
+          }
+          else{
+            for(Int_t k=0; k<5; k++){
+               fscanf(file,"%f",&equalCoeff[j][k]);
+               if(j==6)      eCalib->SetZN1EqualCoeff(k, equalCoeff[j][k]);
+               else if(j==7) eCalib->SetZP1EqualCoeff(k, equalCoeff[j][k]);
+               else if(j==8) eCalib->SetZN2EqualCoeff(k, equalCoeff[j][k]);
+               else if(j==9) eCalib->SetZP2EqualCoeff(k, equalCoeff[j][k]);  
+            }
+          }
+        }
+        fclose(file);
+      }
+      else{
+        Log(Form("File %s not found", emdFileName));
+        return 1;
+      }
+      //eCalib->Print("");
       // 
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);

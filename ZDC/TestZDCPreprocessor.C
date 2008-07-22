@@ -25,7 +25,6 @@ void TestZDCPreprocessor(Int_t obj=0)
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
 
-
   // TODO(1)
   //
   // The shuttle can read DCS data, if the preprocessor should be tested to process DCS data,
