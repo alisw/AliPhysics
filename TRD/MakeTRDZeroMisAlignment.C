@@ -26,12 +26,13 @@ void MakeTRDZeroMisAlignment(){
     for (Int_t iSect = 0; iSect < 18; iSect++){
       for (Int_t iCh = 0; iCh < 5; iCh++) {
 	chId++;
+	if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
 	volid = AliGeomManager::LayerToVolUID(iLayer,chId);
-      symname = AliGeomManager::SymName(volid);
+	symname = AliGeomManager::SymName(volid);
 	if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
-      new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kTRUE);
+	new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kTRUE);
+      }
     }
-  }
   }
 
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
