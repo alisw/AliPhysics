@@ -36,6 +36,8 @@
 #include "TStyle.h"
 #include "TGraph.h"
 
+#include "AliLog.h"
+
 #include "AliTRDgeometry.h"
 #include "AliTRDrawStreamTB.h"
 #include "AliTRDqaBlackEvents.h"
@@ -96,6 +98,7 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents(const AliTRDqaBlackEvents &qa)
   ,fOccupancy(0)
   ,fDetRob(0)
   ,fTBEvent(0)
+  ,fRefHistPed(0)
   ,fRefHistNoise(0)
   ,fErrorHC(0)
   ,fErrorMCM(0)
@@ -423,10 +426,10 @@ Int_t AliTRDqaBlackEvents::AddEvent(AliTRDrawStreamTB *data)
       //if (data->GetADCErrorCode() > 0) continue;
 
       //if (col == 0 || col == 143)
-      //printf("TB: %d %d %d\n", row, col, sig[k]);
+      //AliInfo(Form("TB: %d %d %d\n", row, col, sig[k]));
 
       //if (sig[k] < 1) 
-      //printf("det = %d rob = %d mcm = %d adc = %d k = %d S = %d\n", det, rob, mcm, adc, k, sig[k]);
+      //AliInfo(Form("det = %d rob = %d mcm = %d adc = %d k = %d S = %d\n", det, rob, mcm, adc, k, sig[k]));
       
       fSignal[det]->Fill(sig[k]);
       fData[det]->Fill(row, col, sig[k]);
@@ -478,7 +481,7 @@ Int_t AliTRDqaBlackEvents::AddEvent(AliTRDrawStreamTB *data)
   }
   
   fGraphMCM->SetPoint(fnEvents, fnEvents, mcmTrackCandidate);
-  printf("Number of MCM track candidates = %d\n", mcmTrackCandidate);
+  AliInfo(Form("Number of MCM track candidates = %d\n", mcmTrackCandidate));
   
 
   // update fraction of error graphs
@@ -513,7 +516,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   char fn[256];
   strcpy(fn, filename);
   
-  //printf("FILENAME = %s (%s)\n", filename, fn);
+  //AliInfo(Form("FILENAME = %s (%s)\n", filename, fn));
 
   Int_t map[kDET];
   
@@ -523,7 +526,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
     
   for(Int_t det=0; det<kDET; det++) {
 
-    //printf("processing chamber %d\n", det);   
+    //AliInfo(Form("processing chamber %d\n", det));   
 
     map[det] = 0;
     if (fData[det]->GetSum() < 10) continue;
@@ -561,7 +564,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
 	    noise = hist->GetRMS();
 	    fSmNoiseRms[det/30]->Fill(noise);
 	    //if (pad == 0)
-	    //  printf("data %f %f %f\n", hist->GetSum(), ped, noise);
+	    //  AliInfo(Form("data %f %f %f\n", hist->GetSum(), ped, noise));
 	  }
 
 	  fChPed[det]->SetBinContent(bin, ped);
@@ -601,7 +604,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   }
 
 
-  //printf("Number of events = %d\n", fnEvents);
+  //AliInfo(Form("Number of events = %d\n", fnEvents));
 
   // normalize number of entries histos
   Int_t max = 0;
@@ -629,7 +632,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
       for(Int_t k=0; k<fNPoint[i]->GetYaxis()->GetNbins(); k++) {
 	Int_t dataBin = fNPoint[i]->FindBin(j, k);
 	Double_t v = fNPoint[i]->GetBinContent(dataBin);
-	//if (v > fnEvents) printf("N = %d V = %lf\n", fnEvents, v);
+	//if (v > fnEvents) AliInfo(Form("N = %d V = %lf\n", fnEvents, v));
 	fNPointDist[i]->Fill(v); 
       }
     }
@@ -644,7 +647,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
 
   // save histograms
 
-  //printf("FILENAME 2 = %s (%d)\n", fn, fn);
+  //AliInfo(Form("FILENAME 2 = %s (%d)\n", fn, fn));
   TFile *file = new TFile(fn, "recreate");
   for(Int_t det = 0; det < kDET; det++) {
     if (!map[det]) continue; 
@@ -687,10 +690,10 @@ void AliTRDqaBlackEvents::Process(const char *filename)
     }
   }
 
-  printf("Number of saved MCMs = %d\n", nMcm);
+  AliInfo(Form("Number of saved MCMs = %d\n", nMcm));
   
   fMcmTracks->Write();
-  printf("Number of tracks = %d\n", fMcmTracks->GetEntries());
+  AliInfo(Form("Number of tracks = %d\n", fMcmTracks->GetEntries()));
   
   // permanently problematic MCMs
   for(Int_t det=0; det<kDET; det++) {
@@ -703,7 +706,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
       fFracMCM->Fill(frac);
       
       if (frac > 0.7) {
-	printf("{%d, %d, %d}, \n", det, mRob, mMcm, frac);
+	AliInfo(Form("{%d, %d, %d, %f}, \n", det, mRob, mMcm, frac));
       }      
     }
   }
@@ -886,7 +889,7 @@ void AliTRDqaBlackEvents::DrawSm(const char *filename, Int_t sm, Int_t w, Int_t 
     Int_t stack = i/6;
     Int_t layer = i%6;
     Int_t index = (5-layer)*5 + stack + 1;
-    //printf("%d %d %d %d\n", i, stack, layer, index);
+    //AliInfo(Form("%d %d %d %d\n", i, stack, layer, index));
     c->cd(index);
     gPad->SetBottomMargin(0.02);
     gPad->SetTopMargin(0.02);
