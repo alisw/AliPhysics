@@ -434,6 +434,8 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
    if (!fData) return 0;
    if (!list || list->IsEmpty()) return 1;
 
+   SetDeleteData();
+
    TMethodCall callEnv;
    if (fData->IsA())
       callEnv.InitWithPrototype(fData->IsA(), "Merge", "TCollection*");
@@ -449,6 +451,7 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
    Int_t count = 0; // object counter
    // printf("Wrapper %s 0x%lx (data=%s) merged with:\n", GetName(), (ULong_t)this, fData->ClassName());
    while ((cont=(AliAnalysisDataWrapper*)next1())) {
+      cont->SetDeleteData();
       TObject *data = cont->Data();
       if (!data) continue;
       // printf("   - %s 0x%lx (data=%s)\n", cont->GetName(), (ULong_t)cont, data->ClassName());
