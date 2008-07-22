@@ -141,6 +141,8 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap)
 
   // processing DCS
 
+  fData->SetFDRFlag(fFDRFlag);
+  
   if (!dcsAliasMap){
     Log("No DCS map found: TOF exiting from Shuttle");
     if (fData){
@@ -150,6 +152,7 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap)
     return 1;// return error Code for DCS input data not found 
   }
   else {
+
   // The processing of the DCS input data is forwarded to AliTOFDataDCS
     resultDCSMap=fData->ProcessData(*dcsAliasMap);
     if(!resultDCSMap){
@@ -256,8 +259,6 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
   }
   if (compDelays == "kTRUE") fFDRFlag = kFALSE;
   else fFDRFlag = kTRUE;
-
-  fData->SetFDRFlag(fFDRFlag);
 
   delete cdbEntry;
   cdbEntry = 0x0;
@@ -1002,13 +1003,13 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   }
   
   if (runType == "PHYSICS") {
-    Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-    if (iresultDCS != 0) {
-      return iresultDCS;
-    }
-    else { 
-      Int_t iresultDAQ = ProcessOnlineDelays();
+    Int_t iresultDAQ = ProcessOnlineDelays();
+    if (iresultDAQ != 0) {
       return iresultDAQ;
+    }
+    else {
+      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+      return iresultDCS;
     }
   }
 
