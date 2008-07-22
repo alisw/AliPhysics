@@ -1,38 +1,58 @@
+PACKAGE = invalid-only-for-proof
 
-include Makefile.arch
+include $(ROOTSYS)/test/Makefile.arch
+include lib$(PACKAGE).pkg
 
-default-target: libPWG4PartCorr.so
+ifndef PACKCXXFLAGS
+   PACKCXXFLAGS = $(CXXFLAGS)
+endif
 
-ALICEINC      = -I.
+ALICEINC = -I.
 
 ### define include dir for local case and par case
+ifneq ($(STEERBase_INCLUDE),)
+  ALICEINC += -I../$(STEERBase_INCLUDE)
+endif
+
+ifneq ($(ESD_INCLUDE),)
+  ALICEINC += -I../$(ESD_INCLUDE)
+endif
+
+ifneq ($(AOD_INCLUDE),)
+  ALICEINC += -I../$(AOD_INCLUDE)
+endif
+
 ifneq ($(ANALYSIS_INCLUDE),)
-  ALICEINC += -I../$(ESD_INCLUDE) -I../$(AOD_INCLUDE) -I../$(ANALYSIS_INCLUDE) -I../$(STEERBase_INCLUDE) -I../$(ANALYSISalice_INCLUDE)
-else
+  ALICEINC += -I../$(ANALYSIS_INCLUDE)
+endif
+
+ifneq ($(ANALYSISalice_INCLUDE),)
+  ALICEINC += -I../$(ANALYSISalice_INCLUDE)
+endif
+
+ifneq ($(PWG4PartCorr_INCLUDE),)
+  ALICEINC += -I../$(PWG4PartCorr_INCLUDE)
+endif
+
+
+ifneq ($(PWG4JetTasks_INCLUDE),)
+  ALICEINC += -I../$(PWG4JetTasks_INCLUDE)
+endif
+
+
+# only if no par file was loaded before
+ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
   endif
 endif
 
-# for building of PWG4PartCorr.par
-ifneq ($(GAMMA_INCLUDE),)
-  ALICEINC += -I../$(GAMMA_INCLUDE)
-endif
+CXXFLAGS += $(ALICEINC) -g
 
-CXXFLAGS     += $(ALICEINC) -g
+SRCS         += G__$(PACKAGE).cxx
+OBJS          = $(SRCS:.cxx=.o)
 
-PACKAGE = PWG4PartCorr
-include lib$(PACKAGE).pkg
-
-DHDR_PWG4PartCorr := $(DHDR)
-HDRS_PWG4PartCorr := $(HDRS)
-SRCS_PWG4PartCorr := $(SRCS) G__$(PACKAGE).cxx
-OBJS_PWG4PartCorr := $(SRCS_PWG4PartCorr:.cxx=.o)
-
-PARFILE       = $(PACKAGE).par
-
-
-lib$(PACKAGE).so: $(OBJS_PWG4PartCorr)
+lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(ARCH),macosx)
@@ -44,46 +64,12 @@ endif
 	@echo "done"
 
 %.o:    %.cxx %.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(PACKCXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS_PWG4PartCorr) *.so G__$(PACKAGE).* $(PARFILE)
+	@rm -f $(OBJS) *.so G__$(PACKAGE).*
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
-	@echo "Generating dictionary ..."
-	rootcint -f $@ -c $(ALICEINC) $^
+	@echo "Generating dictionaries ..." $(ALICEINC)
+	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
 
-### CREATE PAR FILE
-
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_PWG4PartCorr) $(SRCS_PWG4PartCorr) $(DHDR_PWG4PartCorr) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
-	@echo "Creating archive" $@ ...
-	@tar cfzh $@ $(PACKAGE)
-	@rm -rf $(PACKAGE)
-	@echo "done"
-
-$(PACKAGE)/Makefile: Makefile #.$(PACKAGE)
-	@echo Copying $< to $@ with transformations
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/' < $^ > $@
-
-$(PACKAGE)/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
-	@echo Copying $< to $@
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a $^ $@
-
-$(PACKAGE)/PROOF-INF: PROOF-INF.$(PACKAGE)
-	@echo Copying $< to $@
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a -r $^ $@
-
-$(PACKAGE)/%: %
-	@echo Copying $< to $@
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a $< $@
-
-test-%.par: %.par
-	@echo "INFO: The file $< is now tested, in case of an error check in par-tmp."
-	@mkdir -p par-tmp
-	@cd par-tmp; tar xfz ../$<;	cd $(subst .par,,$<); PROOF-INF/BUILD.sh
-	@rm -rf par-tmp
-	@echo "INFO: Testing succeeded (already cleaned up)"
