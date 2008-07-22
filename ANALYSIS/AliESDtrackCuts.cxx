@@ -51,7 +51,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "p_{z}",
  "y",
  "eta",
- "trk-to-vtx dca absolute"
+ "trk-to-vtx dca absolute",
+ "trk-to-vtx dca xy absolute"
 };
 
 //____________________________________________________________________
@@ -71,6 +72,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutDCAToVertex(0),
+  fCutDCAToVertexXY(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -109,6 +111,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetMinNsigmaToVertex();
   SetRequireSigmaToVertex();
   SetDCAToVertex();
+  SetDCAToVertexXY();
   SetPRange();
   SetPtRange();
   SetPxRange();
@@ -137,6 +140,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutDCAToVertex(0),
+  fCutDCAToVertexXY(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -247,6 +251,7 @@ void AliESDtrackCuts::Init()
   fCutNsigmaToVertex = 0;
   fCutSigmaToVertexRequired = 0;
   fCutDCAToVertex = 0;
+  fCutDCAToVertexXY = 0;
 
   fPMin = 0;
   fPMax = 0;
@@ -339,6 +344,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutNsigmaToVertex = fCutNsigmaToVertex;
   target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
   target.fCutDCAToVertex = fCutDCAToVertex;
+  target.fCutDCAToVertexXY = fCutDCAToVertexXY;
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
@@ -568,8 +574,10 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     AliDebug(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
   }
-  Float_t dcaToVertex = TMath::Sqrt(b[0]*b[0] + b[1]*b[1]);
+  Float_t dcaToVertex   = TMath::Sqrt(b[0]*b[0] + b[1]*b[1]);
  
+  Float_t dcaToVertexXY = b[0];
+  
   // getting the kinematic variables of the track
   // (assuming the mass is known)
   Double_t p[3];
@@ -642,6 +650,8 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[20] = kTRUE;
   if (dcaToVertex > fCutDCAToVertex)
     cuts[21] = kTRUE;
+  if (dcaToVertexXY > fCutDCAToVertexXY)
+    cuts[22] = kTRUE;
 
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 

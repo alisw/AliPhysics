@@ -67,6 +67,7 @@ public:
   void SetMinNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma;}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
   void SetDCAToVertex(Float_t dist=1e10)              {fCutDCAToVertex = dist;}
+  void SetDCAToVertexXY(Float_t dist=1e10)            {fCutDCAToVertexXY = dist;}
 
   // getters
 
@@ -81,6 +82,7 @@ public:
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
   Float_t GetMinNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
   Float_t GetDCAToVertex()           const   { return fCutDCAToVertex;}
+  Float_t GetDCAToVertexXY()         const   { return fCutDCAToVertexXY;}
   Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
   
   // track kinmatic cut setters
@@ -111,7 +113,7 @@ public:
 protected:
   void Init(); // sets everything to 0
 
-  enum { kNCuts = 22 };
+  enum { kNCuts = 23 };
 
   //######################################################
   // esd track quality cuts
@@ -137,6 +139,7 @@ protected:
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
   Bool_t  fCutSigmaToVertexRequired;  // cut track if sigma from track-to-vertex could not be calculated
   Float_t fCutDCAToVertex;            // track-to-vertex cut in absolute distance
+  Float_t fCutDCAToVertexXY;          // track-to-vertex cut in absolute distance in xy-plane
 
   // esd kinematics cuts
   Float_t fPMin,   fPMax;             // definition of the range of the P
