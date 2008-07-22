@@ -1,14 +1,14 @@
-void runProof(const char * dataset = "/PWG0/COMMON/run30000X_10TeV_0.5T", Long64_t nentries=1234567890, Long64_t firstentry=0)
+void runProofTRDComparison(const char *dataset="/PWG0/COMMON/run30000X_10TeV_0.5T",Long64_t nentries=1000, Long64_t firstentry=0)
 {
   // Connect to Proof
   TProof::Open("lxb6046");
 
   // Upload and enable packages: please use the correct version!
-  gProof->UploadPackage("AF-v4-12");
-  gProof->EnablePackage("AF-v4-12");
+  gProof->UploadPackage("AF-v4-14");
+  gProof->EnablePackage("AF-v4-14");
 
   // Create the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("AliTPCComparison");
+  AliAnalysisManager *mgr = new AliAnalysisManager("AliTRDComparison");
 
   AliVEventHandler* esdH = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdH);
@@ -19,15 +19,18 @@ void runProof(const char * dataset = "/PWG0/COMMON/run30000X_10TeV_0.5T", Long64
 
   // Create task
   gProof->Load("AliMCComparisonTrack.cxx++g");
-  gProof->Load("AliTPCComparisonTask.cxx++g");
-  AliAnalysisTask *task = new AliTPCComparisonTask("AliTPCComparisonTask");
+  gProof->Load("AliTRDComparisonTask.cxx++g");
+  AliAnalysisTask *task = new AliTRDComparisonTask("AliTRDComparisonTask");
 
   // Add task
   mgr->AddTask(task);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput = mgr->CreateContainer("cchain", TChain::Class(), AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput", TList::Class(), AliAnalysisManager::kOutputContainer, "Hist.root");
+  AliAnalysisDataContainer* cinput = 
+    mgr->CreateContainer("cchain", TChain::Class(), AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer* coutput = 
+    mgr->CreateContainer("coutput", TList::Class(), 
+    AliAnalysisManager::kOutputContainer, "AliTRDComparisonHist.root");
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
@@ -44,3 +47,4 @@ void runProof(const char * dataset = "/PWG0/COMMON/run30000X_10TeV_0.5T", Long64
 
   mgr->StartAnalysis("proof",dataset,nentries,firstentry);
 }
+
