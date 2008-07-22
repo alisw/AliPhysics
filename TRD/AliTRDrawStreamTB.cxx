@@ -142,6 +142,13 @@ Short_t AliTRDrawStreamTB::fgROBordering[] =
 Int_t  AliTRDrawStreamTB::fgLastHC = -1;
 Int_t  AliTRDrawStreamTB::fgLastROB = -1;
 Int_t  AliTRDrawStreamTB::fgLastIndex = -1;
+Bool_t  AliTRDrawStreamTB::fDumpingEnable = kFALSE;
+Int_t  AliTRDrawStreamTB::fDumpingSM = -1;
+Int_t  AliTRDrawStreamTB::fDumpingStack = -1;
+Int_t  AliTRDrawStreamTB::fDumpingLayer = -1;
+Int_t  AliTRDrawStreamTB::fDumpingROB = -1;
+Int_t  AliTRDrawStreamTB::fDumpingMCM = -1;
+
 
 AliTRDrawStreamTB::AliTRDrawStreamTB()
   : AliTRDrawStreamBase()
@@ -822,6 +829,8 @@ AliTRDrawStreamTB::InitBuffer(void *buffer, UInt_t length)
   //
 
   if (fgDebugFlag)  AliDebug(5, Form("Equipment ID: %d",fRawReader->GetEquipmentId()));
+  if (fRawReader->GetEquipmentId()<1024 || fRawReader->GetEquipmentId()>1041) //tmp protection
+    return kFALSE; 
 
   if(fgStreamEventCounter == 0) fgFirstEquipmentID = fRawReader->GetEquipmentId();
   fEquipmentID = fRawReader->GetEquipmentId(); 
@@ -1195,6 +1204,7 @@ AliTRDrawStreamTB::DecodeTracklets()
 
   fLinkTrackletCounter = 0;
   fEndOfTrackletCount = 0;
+  fHC->fNTracklets = 0;
 
   for (Int_t i = 0; i < MAX_TRACKLETS_PERHC; i++) //[mj]
   fHC->fTrackletWords[i] = 0; //[mj]
@@ -1358,6 +1368,25 @@ AliTRDrawStreamTB::DecodeMCMheader()
   //
 
   DecodeMCMheader(fpPos, fMCM); 
+
+  if (fDumpingEnable) 
+    {
+      if (fMCM->fMCM == fDumpingMCM) 
+        {
+          if (fMCM->fROB == fDumpingROB && fHC->fLayer == fDumpingLayer)
+            {
+              if (fHC->fSM == fDumpingSM && fHC->fStack == fDumpingStack)
+                { 
+                  if (fgDebugFlag) {
+                    AliDebug(4,DumpHCinfoH0(fHC));
+                    AliDebug(4,DumpMCMinfo(fMCM));
+                  }
+                  DumpWords(fpPos, 212);
+                }  
+            }
+        }
+    }
+
   if (fHC->fCorrupted >= 16)
     {
       fpPos--; 
@@ -1749,13 +1778,13 @@ AliTRDrawStreamTB::DecodeADC()
 	  if (fgDebugFlag) AliDebug(11,Form("Wrong column! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
 					   fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
 	}
-      else
-	{
+      //else
+	//{
 	  // we are out of the det when the pad is shared
-	  if (fgDebugFlag) AliDebug(11, Form("Column out of the detector! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
-					     fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
-	  fADC->fCorrupted += 32;
-	}
+	  //if (fgDebugFlag) AliDebug(11, Form("Column out of the detector! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
+	  //				     fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
+	  //fADC->fCorrupted += 32;
+	//}
     }
 
   if (fADC->fCorrupted > 0)

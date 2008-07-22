@@ -1207,7 +1207,7 @@ Bool_t AliTRDRawStreamV2::Next()
 }
 
 //____________________________________________________________________________
-Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t *trackletContainer)
+Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackletContainer*/)
 {
   //
   // Fills single chamber digit array 

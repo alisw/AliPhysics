@@ -412,6 +412,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Bool_t    IsTrackletEnableBitSet() const {return fSM.fTrackletEnable;} // get status of tracklet enable bit
   Bool_t    IsStackActive(Int_t is) const {return fSM.fStackActive[is];} // get status of stack enable bit
   Int_t     GetNofActiveStacks() const {return fSM.fActiveStacks;}       // get number of active stacks from stack mask
+  UInt_t   *GetGTUheaderWords() const {return fSM.fPos;}       // get number of active stacks from stack mask
 
   // info from Stack Index Word
   Int_t     GetNexpectedHalfChambers() const {return fSM.fNexpectedHalfChambers;}                    // get number of expected HC in a sm
@@ -432,6 +433,8 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Int_t     GetSide(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fSide;}
   Int_t     GetH0ErrorCode(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fH0Corrupted;}
   Int_t     GetH1ErrorCode(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fH1Corrupted;}
+  Int_t     GetNumberOfTimeBins(Int_t is, Int_t il) const { return fSM.fStacks[is].fHalfChambers[il].fTimeBins;}
+  UInt_t   *GetTrackletWords(Int_t is, Int_t il) { return fSM.fStacks[is].fHalfChambers[il].fTrackletWords;}
 
   // info from HC data
   Int_t     GetHCErrorCode(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fCorrupted;}
@@ -528,6 +531,8 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static void    DisableStackNumberChecker() {fgStackNumberChecker = kFALSE;}  // set false to cleanroom data 
   static void    DisableStackLinkNumberChecker() {fgStackLinkNumberChecker = kFALSE;}  
   static void    DisableSkipData() {fgSkipData = kFALSE;} // keep reading next words even previous words were corrupted - debugging purpose  
+  static void    SetDumpingEnable() {fDumpingEnable = kTRUE;} 
+  static void    SetDumpingMCM(Int_t sm, Int_t stack, Int_t layer, Int_t rob, Int_t mcm) {fDumpingSM = sm; fDumpingStack = stack; fDumpingLayer = layer; fDumpingROB = rob; fDumpingMCM = mcm;}
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
@@ -622,7 +627,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Bool_t  fSharedPadsOn; // do we want to output shared pads - default is off
   Int_t   fMaxADCgeom;   // maximum ADC channels per mcm
 
-  Bool_t fBufferRead;
+  Bool_t  fBufferRead;
 
   AliTRDgeometry *fGeometry;  //! TRD geometry
   AliRawReader   *fRawReader; //! raw reader    
@@ -645,9 +650,17 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static Int_t  fgEmptySignals[30]; // empty signals in case of ADC pointer = NULL
   static Short_t  fgMCMordering[16]; // mcm number odering for mcm header corruption check
   static Short_t  fgROBordering[16]; // mcm number odering for mcm header corruption check
-  static Int_t fgLastHC; 
-  static Int_t fgLastROB; 
-  static Int_t fgLastIndex; 
+  static Int_t  fgLastHC; 
+  static Int_t  fgLastROB; 
+  static Int_t  fgLastIndex; 
+
+  static Bool_t fDumpingEnable; 
+
+  static Int_t  fDumpingSM;
+  static Int_t  fDumpingStack;
+  static Int_t  fDumpingLayer;
+  static Int_t  fDumpingROB;
+  static Int_t  fDumpingMCM;
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
