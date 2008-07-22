@@ -14,6 +14,7 @@
 class TFile ; 
 class TH1F ; 
 class TH1I ; 
+class TObjArray ; 
 
 // --- Standard library ---
 
@@ -25,10 +26,13 @@ class AliVZEROLoader ;
 class AliVZEROQAChecker: public AliQACheckerBase {
 
 public:
-  AliVZEROQAChecker() : AliQACheckerBase("VZERO","VZERO Quality Assurance Data Maker") {;}          // ctor
+  AliVZEROQAChecker() : AliQACheckerBase("VZERO","VZERO Quality Assurance Data Checker") {;}          // ctor
   AliVZEROQAChecker(const AliVZEROQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliVZEROQAChecker() {;} // dtor
-
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
+  Double_t CheckEntries(TObjArray * list) const ;
+  virtual void SetQA(AliQA::ALITASK_t index, const Double_t value) const ;
+  
 private:
   
   ClassDef(AliVZEROQAChecker,1)  // description 
