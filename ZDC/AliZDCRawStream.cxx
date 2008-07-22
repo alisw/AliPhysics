@@ -104,7 +104,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fScNWords(stream.GetScNWords()),	  
   fScGeo(stream.GetScGeo()),	  
   fScTS(stream.GetScTS()),	  
-  fScTriggerNumber(stream.GetScTriggerNumber()),
+  fScTriggerNumber(stream.fScTriggerNumber),
   fIsScEventGood(stream.fIsScEventGood),
   fNConnCh(stream.fNConnCh),
   fCabledSignal(stream.GetCabledSignal())
@@ -539,7 +539,8 @@ void AliZDCRawStream::DecodeScaler()
     AliWarning("	AliZDCRawStream -> Scaler header corrupted\n");
     fIsScEventGood = kFALSE; 
   }
-  if(fPosition==fScNWords && fBuffer != 0x0){
+  Int_t scNwords = (Int_t) fScNWords;
+  if(fPosition==scNwords && fBuffer != 0x0){
     AliWarning("	AliZDCRawStream -> Scaler trailer corrupted\n");
     fIsScEventGood = kFALSE; 
   }
