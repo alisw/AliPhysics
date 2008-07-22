@@ -15,7 +15,7 @@
 
 
 /*
-  Checks the quality assurance. 
+  Checks the quality assurance. Under construction. 
   By comparing with reference data
 
 */
@@ -53,18 +53,9 @@ const Double_t AliVZEROQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list
 //     AliInfo("QA reference data NOT retrieved for QA check...");
 //     return 1.;
 //   }
-
-// checking for empty histograms
-
-//   Double_t check = 0.0;
-//   if(CheckEntries(list) == 0)  {
-//      AliWarning(Form("Histograms are empty !"));
-//      check = 0.4;          
-//      return check;
      
   if ( index == AliQA::kRAW ) 
   {
-       printf(" index = %d, Check = %f\n\n", index,CheckEntries(list));
        return CheckEntries(list);
   }
   
@@ -81,9 +72,7 @@ Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
 
   Double_t test = 0.0  ;
   Int_t   count = 0 ; 
-  printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"); 
-  printf(" Number of entries = %d \n", list->GetEntries() );
-   
+
   if (list->GetEntries() == 0){  
       test = 1.0; 
       AliInfo(Form("There are no entries to be checked..."));
@@ -95,11 +84,10 @@ Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
       while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
         if (hdata) { 
 	  Double_t rv = 0.0;
-          Printf("Histogram %s     has entries: %f ",hdata->GetName(),hdata->GetEntries());
+//          Printf("Histogram %s     has entries: %f ",hdata->GetName(),hdata->GetEntries());
 	  if(hdata->GetEntries()>0)rv=1.0; 
 	  count++ ; 
 	  test += rv ; 
-	  printf(" count = %d, rv = %f \n", count,rv);
         }
         else{
 	  AliError(Form("Data type cannot be processed"));
@@ -107,8 +95,7 @@ Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
       }
       if (count != 0) { 
         if (test==0.0) {
-	    AliInfo(Form("Histograms are booked for THIS specific Task, but they are all empty: setting flag to kWARNING"));
-//	    test = 0.0;  //upper limit value to set kWARNING flag for a task
+	    AliInfo(Form("Histograms are booked for THIS specific Task, but they are all empty"));
         }
         else test = 1.0;
       }
@@ -119,7 +106,7 @@ Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
 //______________________________________________________________________________
 void AliVZEROQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t value) const
 {
-// sets the QA word according the return value of the Check
+// sets the QA word according to return value of the Check
 
   AliQA * qa = AliQA::Instance(index);
   
@@ -128,20 +115,9 @@ void AliVZEROQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t value) cons
   qa->UnSet(AliQA::kERROR);
   qa->UnSet(AliQA::kINFO);
   
-  if ( value == 1.0 ) 
-  {
-    qa->Set(AliQA::kINFO);
-  }
-  else if ( value == 0.0 )
-  {
-    qa->Set(AliQA::kFATAL);
-  }
-  else if ( value > 0.5 ) 
-  {
-    qa->Set(AliQA::kWARNING);
-  }
-  else
-  {
-    qa->Set(AliQA::kERROR);
-  }
+  if (value == 1.0)      {qa->Set(AliQA::kINFO);}
+  else if (value == 0.0) {qa->Set(AliQA::kFATAL);}
+  else if (value > 0.5)  {qa->Set(AliQA::kWARNING);}
+  else                   {qa->Set(AliQA::kERROR);}
+  
 }
