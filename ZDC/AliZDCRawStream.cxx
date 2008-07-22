@@ -59,6 +59,11 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fADCChannel(-1),	 
   fADCValue(-1),	 
   fADCGain(-1),
+  fScNWords(0),	  
+  fScGeo(-1),	  
+  fScTS(0),	  
+  fScTriggerNumber(0),
+  fIsScEventGood(kFALSE),
   fNConnCh(-1),
   fCabledSignal(-1)
 {
@@ -96,6 +101,11 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fADCChannel(stream.GetADCChannel()),	 
   fADCValue(stream.GetADCValue()),	 
   fADCGain(stream.GetADCGain()),
+  fScNWords(stream.GetScNWords()),	  
+  fScGeo(stream.GetScGeo()),	  
+  fScTS(stream.GetScTS()),	  
+  fScTriggerNumber(stream.GetScTriggerNumber()),
+  fIsScEventGood(stream.fIsScEventGood),
   fNConnCh(stream.fNConnCh),
   fCabledSignal(stream.GetCabledSignal())
 {
@@ -216,7 +226,6 @@ void AliZDCRawStream::ReadCDHHeader()
   //
   fIsDARCHeader = kTRUE;
 }
-
 
 //_____________________________________________________________________________
 Bool_t AliZDCRawStream::Next()
@@ -519,4 +528,30 @@ Bool_t AliZDCRawStream::Next()
   fPosition++;
 
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliZDCRawStream::DecodeScaler()
+{
+  // Decoding scaler event
+  
+  if(!fBuffer & 0x04000000){
+    AliWarning("	AliZDCRawStream -> Scaler header corrupted\n");
+    fIsScEventGood = kFALSE; 
+  }
+  if(fPosition==fScNWords && fBuffer != 0x0){
+    AliWarning("	AliZDCRawStream -> Scaler trailer corrupted\n");
+    fIsScEventGood = kFALSE; 
+  }
+  fIsScEventGood = kTRUE;
+  
+  if(fPosition==0){
+    fScNWords = (fBuffer & 0x00fc0000)>>18;	   
+    fScGeo = (fBuffer & 0xf8000000)>>27;	   
+    fScTS = (fBuffer & 0x00030000)>>16;	   
+    fScTriggerNumber = (fBuffer & 0x0000ffff);
+  }
+   
+  fPosition++;
+  
 }

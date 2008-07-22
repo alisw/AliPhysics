@@ -27,7 +27,7 @@ class AliZDCRawStream: public TObject {
     virtual void ReadChMap();
 
     virtual void ReadCDHHeader();
-    virtual void DecodeScaler() {;}
+    virtual void DecodeScaler();
 
     UInt_t GetRawBuffer()	const {return fBuffer;}
     
@@ -55,6 +55,11 @@ class AliZDCRawStream: public TObject {
     Bool_t IsADCDataWord() const {return fIsADCDataWord;}
     Bool_t IsADCHeader()   const {return fIsADCHeader;}
     Bool_t IsADCEOB()	   const {return fIsADCEOB;}
+    
+    UInt_t GetScNWords() const {return fScNWords;}	    
+    UInt_t GetScGeo() const {return fScGeo;}	    
+    UInt_t GetScTS() const {return fScTS;}	    
+    UInt_t GetTriggerNumber() const {return fScTriggerNumber;}
 
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
     void SetMapADCMod(Int_t iraw, Int_t imod) {fMapADC[iraw][0]=imod;}
@@ -117,12 +122,19 @@ class AliZDCRawStream: public TObject {
     Int_t  fADCValue;	  // ADC channel
     Int_t  fADCGain;	  // ADC gain (0=high range; 1=low range)
     
+    // Scaler
+    UInt_t fScNWords;        // no. of words in scaler event
+    UInt_t fScGeo;           // scaler GEO address
+    UInt_t fScTS;	     // ?!?
+    UInt_t fScTriggerNumber; // no. of triggers
+    Bool_t fIsScEventGood;   // true if scaler event is good
+    
     // Channel mapping 
     Int_t  fNConnCh;       // current mapped ch.
     Int_t  fCabledSignal;  // physics signal (from enum)
     Int_t  fMapADC[48][5]; // ADC map for the current run
         
-    ClassDef(AliZDCRawStream, 5)    // class for reading ZDC raw digits
+    ClassDef(AliZDCRawStream, 6)    // class for reading ZDC raw digits
 };
 
 #endif
