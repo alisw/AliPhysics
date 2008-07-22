@@ -202,7 +202,6 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
 {
   // default ctor (to be used mainly by Streamer)
   
-  InitParameters() ; 
   fDefaultInit = kTRUE ; 
 }
 
@@ -218,7 +217,6 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(AliPHOSGeometry *geom) :
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
-  InitParameters() ;
   Init() ;
   fDefaultInit = kFALSE ; 
 }
@@ -383,25 +381,22 @@ void AliPHOSClusterizerv1::InitParameters()
   fNumberOfCpvClusters     = 0 ; 
   fNumberOfEmcClusters     = 0 ; 
 
-  const AliPHOSRecoParam* parEmc = AliPHOSReconstructor::GetRecoParamEmc();
-  if(!parEmc) AliFatal("Reconstruction parameters for EMC not set!");
+  const AliPHOSRecoParam* recoParam = AliPHOSReconstructor::GetRecoParam();
+  if(!recoParam) AliFatal("Reconstruction parameters are not set!");
 
-  const AliPHOSRecoParam* parCpv = AliPHOSReconstructor::GetRecoParamCpv(); 
-  if(!parCpv) AliFatal("Reconstruction parameters for CPV not set!");
-
-  fCpvClusteringThreshold  = parCpv->GetClusteringThreshold();
-  fEmcClusteringThreshold  = parEmc->GetClusteringThreshold();
+  fCpvClusteringThreshold  = recoParam->GetEMCClusteringThreshold();
+  fEmcClusteringThreshold  = recoParam->GetCPVClusteringThreshold();
   
-  fEmcLocMaxCut            = parEmc->GetLocalMaxCut();
-  fCpvLocMaxCut            = parCpv->GetLocalMaxCut();
+  fEmcLocMaxCut            = recoParam->GetEMCLocalMaxCut();
+  fCpvLocMaxCut            = recoParam->GetCPVLocalMaxCut();
 
-  fW0                      = parEmc->GetLogWeight();
-  fW0CPV                   = parCpv->GetLogWeight();
+  fW0                      = recoParam->GetEMCLogWeight();
+  fW0CPV                   = recoParam->GetCPVLogWeight();
 
   fEmcTimeGate             = 1.e-6 ; 
-  fEcoreRadius             = parEmc->GetEcoreRadius();
+  fEcoreRadius             = recoParam->GetEMCEcoreRadius();
   
-  fToUnfold                = parEmc->ToUnfold() ;
+  fToUnfold                = recoParam->EMCToUnfold() ;
     
   fWrite                   = kTRUE ;
 }
@@ -489,7 +484,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   Int_t index ;
   //Evaluate position, dispersion and other RecPoint properties..
   Int_t nEmc = fEMCRecPoints->GetEntriesFast();
-  Float_t emcMinE= AliPHOSReconstructor::GetRecoParamEmc()->GetMinE(); //Minimal digit energy
+  Float_t emcMinE= AliPHOSReconstructor::GetRecoParam()->GetEMCMinE(); //Minimal digit energy
   TVector3 fakeVtx(0.,0.,0.) ;
   for(index = 0; index < nEmc; index++){
     AliPHOSEmcRecPoint * rp =

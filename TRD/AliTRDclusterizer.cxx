@@ -85,15 +85,6 @@ AliTRDclusterizer::AliTRDclusterizer()
 
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
 
-  // retrive reco params
-  AliTRDrecoParam *rec = 0x0;
-  if (!(rec = AliTRDReconstructor::RecoParam())){
-    if(!(rec = trd->GetRecoParam(0))){
-      AliInfo("Using default RecoParams =  LowFluxParam.");
-      rec = AliTRDrecoParam::GetLowFluxParam();    
-    }
-    AliTRDReconstructor::SetRecoParam(rec);
-  }
 
 }
 
@@ -121,16 +112,6 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title)
   AliTRDcalibDB *trd = 0x0;
   if (!(trd = AliTRDcalibDB::Instance())) {
     AliFatal("Could not get calibration object");
-  }
-
-  // retrive reco params
-  AliTRDrecoParam *rec = 0x0;
-  if (!(rec = AliTRDReconstructor::RecoParam())){
-    if(!(rec = trd->GetRecoParam(0))){
-      AliInfo("Using default RecoParams =  LowFluxParam.");
-      rec = AliTRDrecoParam::GetLowFluxParam();    
-    }
-    AliTRDReconstructor::SetRecoParam(rec);
   }
 
   fDigitsManager->CreateArrays();
@@ -314,7 +295,7 @@ Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
 
 
   // tracklet writing
-  if (AliTRDReconstructor::RecoParam()->IsTrackletWriteEnabled()){
+  if (AliTRDReconstructor::GetRecoParam()->IsTrackletWriteEnabled()){
     TString evfoldname = AliConfig::GetDefaultEventFolderName();
     fRunLoader         = AliRunLoader::GetRunLoader(evfoldname);
 
@@ -666,7 +647,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   fDigitsManager->SetUseDictionaries(fAddLabels);
 
   // tracklet container for raw tracklet writing
-  if (!fTrackletContainer && AliTRDReconstructor::RecoParam()->IsTrackletWriteEnabled()) 
+  if (!fTrackletContainer && AliTRDReconstructor::GetRecoParam()->IsTrackletWriteEnabled()) 
     {
      fTrackletContainer = new UInt_t *[2];
      for (Int_t i=0; i<2 ;i++){
@@ -696,11 +677,11 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
       fDigitsManager->RemoveDictionaries(det);
       fDigitsManager->ClearIndexes(det);
      
-      if (!AliTRDReconstructor::RecoParam()->   IsTrackletWriteEnabled()) continue;
+      if (!AliTRDReconstructor::GetRecoParam()->   IsTrackletWriteEnabled()) continue;
       if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det); // if there is tracklet words in this det
     }
   
-  if (AliTRDReconstructor::RecoParam()->IsTrackletWriteEnabled()){
+  if (AliTRDReconstructor::GetRecoParam()->IsTrackletWriteEnabled()){
     delete [] fTrackletContainer;
     fTrackletContainer = NULL;
   }
@@ -771,21 +752,21 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
   Float_t adcThreshold   = 0; 
 
-  if (!AliTRDReconstructor::RecoParam())
+  if (!AliTRDReconstructor::GetRecoParam())
     {
       AliError("RecoParam does not exist\n");
       return kFALSE;
     }
 
   // Threshold value for the maximum
-  Float_t maxThresh      = AliTRDReconstructor::RecoParam()->GetClusMaxThresh();
+  Float_t maxThresh      = AliTRDReconstructor::GetRecoParam()->GetClusMaxThresh();
   // Threshold value for the digit signal
-  Float_t sigThresh      = AliTRDReconstructor::RecoParam()->GetClusSigThresh();
+  Float_t sigThresh      = AliTRDReconstructor::GetRecoParam()->GetClusSigThresh();
 
   // Threshold value for the maximum ( cut noise)
-  Float_t minMaxCutSigma = AliTRDReconstructor::RecoParam()->GetMinMaxCutSigma();
+  Float_t minMaxCutSigma = AliTRDReconstructor::GetRecoParam()->GetMinMaxCutSigma();
   // Threshold value for the sum pad ( cut noise)
-  Float_t minLeftRightCutSigma = AliTRDReconstructor::RecoParam()->GetMinLeftRightCutSigma();
+  Float_t minLeftRightCutSigma = AliTRDReconstructor::GetRecoParam()->GetMinLeftRightCutSigma();
 
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
@@ -1001,7 +982,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
         // The position of the cluster in COL direction relative to the center pad (pad units)
         Double_t clusterPosCol = 0.0;
-        if (AliTRDReconstructor::RecoParam()->IsLUT()) {
+        if (AliTRDReconstructor::GetRecoParam()->IsLUT()) {
           // Calculate the position of the cluster by using the
           // lookup table method
           clusterPosCol = LUTposition(ilayer,clusterSignal[2]
@@ -1318,9 +1299,9 @@ void AliTRDclusterizer::TailCancelation(AliTRDdataArrayDigits *digitsIn
 	{
 	  // Apply the tail cancelation via the digital filter
 	  // (only for non-coorupted pads)
-	  if (AliTRDReconstructor::RecoParam()->IsTailCancelation()) 
+	  if (AliTRDReconstructor::GetRecoParam()->IsTailCancelation()) 
 	    {
-	      DeConvExp(inADC,outADC,nTimeTotal,AliTRDReconstructor::RecoParam()->GetTCnexp());
+	      DeConvExp(inADC,outADC,nTimeTotal,AliTRDReconstructor::GetRecoParam()->GetTCnexp());
 	    }
 	}
 

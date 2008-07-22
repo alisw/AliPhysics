@@ -248,7 +248,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
       return -1;
     }
 
-  AliTRDReconstructor::SetRecoParam(fRecoParam);
+  AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
 
   // init the raw data type to be used...
   // the switch here will become obsolete as soon as the data structures is fixed 

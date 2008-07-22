@@ -14,11 +14,11 @@
  **************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////////
-//                          Class AliEventInfo                              //
-//   Container class for all the information related to                     //
-//   event type, trigger mask and trigger clusters.                         //
-//   It is used together with AliRunInfo in order to provide the detector's //
-//   AliRecoParam object with                                               //
+//                          Class AliRunInfo                                //
+//   Container class for all the information related to LHCstate, run type, //
+//   active detectors, beam energy etc.                                     //
+//   It is used together with the AliEventInfo in order to provide          //
+//   the AliRecoParam object with                                           //
 //   the necessary information so that it can decide which instance of      //
 //   AliDetectorRecoParam objects to use in reconstruction one particular   //
 //   event.                                                                 //
@@ -26,78 +26,66 @@
 //   cvetan.cheshkov@cern.ch 12/06/2008                                     //
 //////////////////////////////////////////////////////////////////////////////
 
-#include "AliEventInfo.h"
+#include "AliRunInfo.h"
 
-ClassImp(AliEventInfo)
+ClassImp(AliRunInfo)
 
 //______________________________________________________________________________
-AliEventInfo::AliEventInfo():
+AliRunInfo::AliRunInfo():
   TObject(),
-  fEventType(0),
-  fTriggerClasses(""),
-  fTriggerMask(0),
-  fTriggerCluster(""),
-  fHLTDecision("")
+  fLHCState("UNKNOWN"),
+  fBeamType("UNKNOWN"),
+  fBeamEnergy(0),
+  fRunType("UNKNOWN"),
+  fActiveDetectors(0)
 {
   // default constructor
   // ...
 }
 
 //______________________________________________________________________________
-AliEventInfo::AliEventInfo(UInt_t evType,
-			   const char *classes,
-			   ULong64_t mask,
-			   const char *cluster,
-			   const char *decision):
+AliRunInfo::AliRunInfo(const char *lhcState,
+		       const char *beamType,
+		       Float_t beamEnergy,
+		       const char *runType,
+		       UInt_t activeDetectors):
   TObject(),
-  fEventType(evType),
-  fTriggerClasses(classes),
-  fTriggerMask(mask),
-  fTriggerCluster(cluster),
-  fHLTDecision(decision)
+  fLHCState(lhcState),
+  fBeamType(beamType),
+  fBeamEnergy(beamEnergy),
+  fRunType(runType),
+  fActiveDetectors(activeDetectors)
 {
   // constructor
   // ...
 }
 
 //______________________________________________________________________________
-AliEventInfo::AliEventInfo(const AliEventInfo &evInfo):
+AliRunInfo::AliRunInfo(const AliRunInfo &evInfo):
   TObject(evInfo),
-  fEventType(evInfo.fEventType),
-  fTriggerClasses(evInfo.fTriggerClasses),
-  fTriggerMask(evInfo.fTriggerMask),
-  fTriggerCluster(evInfo.fTriggerCluster),
-  fHLTDecision(evInfo.fHLTDecision)
+  fLHCState(evInfo.fLHCState),
+  fBeamType(evInfo.fBeamType),
+  fBeamEnergy(evInfo.fBeamEnergy),
+  fRunType(evInfo.fRunType),
+  fActiveDetectors(evInfo.fActiveDetectors)
 {
   // Copy constructor
   // ...
 }
 
 //_____________________________________________________________________________
-AliEventInfo &AliEventInfo::operator =(const AliEventInfo& evInfo)
+AliRunInfo &AliRunInfo::operator =(const AliRunInfo& evInfo)
 {
   // assignment operator
   // ...
   if(this==&evInfo) return *this;
   ((TObject *)this)->operator=(evInfo);
 
-  fEventType = evInfo.fEventType;
-  fTriggerClasses = evInfo.fTriggerClasses;
-  fTriggerMask = evInfo.fTriggerMask; 
-  fTriggerCluster = evInfo.fTriggerCluster;
-  fHLTDecision = evInfo.fHLTDecision;
+  fLHCState = evInfo.fLHCState;
+  fBeamType = evInfo.fBeamType;
+  fBeamEnergy = evInfo.fBeamEnergy;
+  fRunType = evInfo.fRunType;
+  fActiveDetectors = evInfo.fActiveDetectors;
 
   return *this;
-}
-
-//______________________________________________________________________________
-void AliEventInfo::Reset()
-{
-  // Reset the contents
-  // ...
-  fEventType = 0;
-  fTriggerClasses = "";
-  fTriggerMask = 0;
-  fTriggerCluster = "";
-  fHLTDecision = "";
 }

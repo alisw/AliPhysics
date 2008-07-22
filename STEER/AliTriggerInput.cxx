@@ -69,30 +69,6 @@ const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
   "HLT"
 };
 
-const char* AliTriggerInput::fgkOfflineModuleName[AliDAQ::kNDetectors] = {
-  "ITS",
-  "ITS",
-  "ITS",
-  "TPC",
-  "TRD",
-  "TOF",
-  "HMPID",
-  "PHOS",
-  "CPV",
-  "PMD",
-  "MUON",
-  "MUON",
-  "FMD",
-  "T0",
-  "VZERO",
-  "ZDC",
-  "ACORDE",
-  "CTP",
-  "EMCAL",
-  "",
-  "HLT"
-};
-
 //_____________________________________________________________________________
   AliTriggerInput::AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature, Char_t number ):
     TNamed( name.Data(), det.Data() ),
@@ -153,7 +129,7 @@ TString AliTriggerInput::GetModule() const
   // Get the detector module name (in AliRoot simulation sense)
   TString name = "";
   if (fDetectorId >= 0 && fDetectorId < AliDAQ::kNDetectors)
-    name = fgkOfflineModuleName[(Int_t)fDetectorId];
+    name = AliDAQ::OfflineModuleName((Int_t)fDetectorId);
   else
     AliError(Form("Invalid detector Id (%d)",(Int_t)fDetectorId));
 

@@ -45,14 +45,19 @@ public:
   //  Getters
                TString    GetDetectors();
              ULong64_t    GetClassMask() const { return fClassMask; }
-	       UChar_t    GetClusterMask() const { return fClusterMask; }
+	        UInt_t    GetClusterMask() const { return fClusterMask; }
  AliTriggerConfiguration* GetConfiguration() { return fConfiguration; }
              TObjArray*   GetFiredClasses() const;
                   void    Print( const Option_t* opt ="" ) const;
-	       TString    GetTriggeredDetectors() const;
+	        Bool_t    CheckTriggeredDetectors() const;
+
+	       // Setters to be used in case raw data when the trigger information
+	       // is read from the event header
+	       void       SetClassMask(ULong64_t mask) { fClassMask = mask; }
+	       void       SetClusterMask(UInt_t mask)  { fClusterMask = mask; }
 protected:
              ULong64_t    fClassMask;          // UID ( bitwise OR of conditions mask )
-               UChar_t    fClusterMask;        // UID ( bitwise OR of clusters mask )
+                UInt_t    fClusterMask;        // UID ( bitwise OR of clusters mask - detector pattern)
  AliTriggerConfiguration* fConfiguration;      // Trigger Configuration used
 
 private:
@@ -62,7 +67,7 @@ private:
 		AliCentralTrigger( const AliCentralTrigger& ctp ); // Implemented
 		AliCentralTrigger& operator=( const AliCentralTrigger& ctp ); // Not implemented
 
-   ClassDef( AliCentralTrigger, 3 )  // class for running the Central Trigger Processor
+   ClassDef( AliCentralTrigger, 5 )  // class for running the Central Trigger Processor
 };
 
 

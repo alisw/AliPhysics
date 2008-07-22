@@ -1313,7 +1313,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
     if (!runLoader->LoadTrigger()) {
       AliCentralTrigger *aCTP = runLoader->GetTrigger();
       if (aCTP->GetClassMask() == 0) continue;
-      detClust = aCTP->GetTriggeredDetectors();
+      detClust = AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask());
       AliInfo(Form("List of detectors to be read out: %s",detClust.Data()));
     }
 

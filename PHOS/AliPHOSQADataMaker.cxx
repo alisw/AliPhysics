@@ -315,7 +315,7 @@ void AliPHOSQADataMaker::MakeRaws(AliRawReader* rawReader)
   const Int_t modMax = 5 ; 
   rawReader->Reset() ; 
   AliPHOSRawDecoder decoder(rawReader);
-  decoder.SubtractPedestals(AliPHOSReconstructor::GetRecoParamEmc()->SubtractPedestals());
+  decoder.SubtractPedestals(AliPHOSReconstructor::GetRecoParam()->EMCSubtractPedestals());
   Int_t count = 0 ; 
   while (decoder.NextDigit()) {
    Int_t module  = decoder.GetModule() ;

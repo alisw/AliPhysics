@@ -21,7 +21,7 @@ class AliPHOSRawDigiProducer: public TObject {
 public:
 
   AliPHOSRawDigiProducer() ;
-  AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, const AliPHOSRecoParam* parCpv) ;
+  AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam) ;
   AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp);
   AliPHOSRawDigiProducer& operator= (const AliPHOSRawDigiProducer &dp);
  
@@ -45,10 +45,10 @@ private:
   Float_t fCpvMinE ;                 // minimum energy of digit to be included into cluster
   Float_t fSampleQualityCut;         // Cut on sample shapes: 0: no samples; 1: default parameterization; 999: accept even obviously bad
 
-  Int_t fEmcCrystals ;               //  number of EMC crystalls
+  Int_t fEmcCrystals ;               //  number of EMC crystals
   AliPHOSGeometry * fGeom ;          //! PHOS geometry
-  static AliPHOSCalibData * fgCalibData ;   //! Calibration database if aval.
-  AliPHOSPulseGenerator * fPulseGenerator ; //! Class with pulse parameters
+  static AliPHOSCalibData * fgCalibData ;   //! Calibration database if avalable
+  AliPHOSPulseGenerator * fPulseGenerator ; //! Class with pulse shape parameters
 
   ClassDef(AliPHOSRawDigiProducer,2)
 };

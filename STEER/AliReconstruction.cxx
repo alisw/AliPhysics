@@ -190,6 +190,12 @@
 
 #include "AliMagWrapCheb.h"
 
+#include "AliDetectorRecoParam.h"
+#include "AliRunInfo.h"
+#include "AliEventInfo.h"
+
+#include "AliDAQ.h"
+
 ClassImp(AliReconstruction)
 
 
@@ -237,10 +243,14 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fLoadAlignData("ALL"),
   fESDPar(""),
   fUseHLTData(),
+  fRunInfo(NULL),
+  fEventInfo(),
 
   fRunLoader(NULL),
   fRawReader(NULL),
   fParentRawReader(NULL),
+
+  fRecoParam(),
 
   fVertexer(NULL),
   fDiamondProfile(NULL),
@@ -329,10 +339,14 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fLoadAlignData(rec.fLoadAlignData),
   fESDPar(rec.fESDPar),
   fUseHLTData(rec.fUseHLTData),
+  fRunInfo(NULL),
+  fEventInfo(),
 
   fRunLoader(NULL),
   fRawReader(NULL),
   fParentRawReader(NULL),
+
+  fRecoParam(),
 
   fVertexer(NULL),
   fDiamondProfile(NULL),
@@ -648,6 +662,21 @@ void AliReconstruction::SetOption(const char* detector, const char* option)
 }
 
 //_____________________________________________________________________________
+void AliReconstruction::SetRecoParam(const char* detector, AliDetectorRecoParam *par)
+{
+  // Set custom reconstruction parameters for a given detector
+  // Single set of parameters for all the events
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if(!strcmp(detector, fgkDetectorName[iDet])) {
+      par->SetAsDefault();
+      fRecoParam.AddDetRecoParam(iDet,par);
+      break;
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliReconstruction::SetFieldMap(Float_t l3Current, Float_t diCurrent, Float_t factor, const char *path) {
   //------------------------------------------------
   // The magnetic field map, defined externally...
@@ -726,6 +755,55 @@ Bool_t AliReconstruction::InitGRP() {
      return kFALSE;
   }
 
+  TObjString *lhcState=
+    dynamic_cast<TObjString*>(fGRPData->GetValue("fLHCState"));
+  if (!lhcState) {
+    AliError("GRP/GRP/Data entry:  missing value for the LHC state ! Using UNKNOWN");
+  }
+
+  TObjString *beamType=
+    dynamic_cast<TObjString*>(fGRPData->GetValue("fAliceBeamType"));
+  if (!beamType) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
+  }
+
+  TObjString *beamEnergyStr=
+    dynamic_cast<TObjString*>(fGRPData->GetValue("fAliceBeamEnergy"));
+  if (!beamEnergyStr) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+  }
+
+  TObjString *runType=
+    dynamic_cast<TObjString*>(fGRPData->GetValue("fRunType"));
+  if (!runType) {
+    AliError("GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
+  }
+
+  TObjString *activeDetectors=
+    dynamic_cast<TObjString*>(fGRPData->GetValue("fDetectorMask"));
+  if (!activeDetectors) {
+    AliError("GRP/GRP/Data entry:  missing value for the detector mask ! Using 1074790399");
+  }
+
+  fRunInfo = new AliRunInfo(lhcState ? lhcState->GetString().Data() : "UNKNOWN",
+			    beamType ? beamType->GetString().Data() : "UNKNOWN",
+			    beamEnergyStr ? beamEnergyStr->GetString().Atof() : 0,
+			    runType  ? runType->GetString().Data()  : "UNKNOWN",
+			    activeDetectors ? activeDetectors->GetString().Atoi() : 1074790399);
+
+  // Process the list of active detectors
+  if (activeDetectors && activeDetectors->GetString().IsDigit()) {
+    UInt_t detMask = activeDetectors->GetString().Atoi();
+    fRunLocalReconstruction = MatchDetectorList(fRunLocalReconstruction,detMask);
+    fRunTracking = MatchDetectorList(fRunTracking,detMask);
+    fFillESD = MatchDetectorList(fFillESD,detMask);
+  }
+
+  AliInfo("===================================================================================");
+  AliInfo(Form("Running local reconstruction for detectors: %s",fRunLocalReconstruction.Data()));
+  AliInfo(Form("Running tracking for detectors: %s",fRunTracking.Data()));
+  AliInfo(Form("Filling ESD for detectors: %s",fFillESD.Data()));
+  AliInfo("===================================================================================");
 
   //*** Dealing with the magnetic field map
   if (AliTracker::GetFieldMap()) {
@@ -888,6 +966,14 @@ Bool_t AliReconstruction::InitRun(const char* input)
 
   if (!InitGRP()) return kFALSE;
 
+  // Read the reconstruction parameters from OCDB
+  if (!InitRecoParams()) {
+    if (fStopOnError) {
+      CleanUp(); 
+      return kFALSE;
+    }
+  }
+   AliSysInfo::AddStamp("ReadRecoParam");
 
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
   if(fDiamondProfile && fMeanVertexConstraint) ftVertexer->SetVtxStart(fDiamondProfile);
@@ -1056,6 +1142,10 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
   }
 
   AliInfo(Form("processing event %d", iEvent));
+
+  // Fill Event-info object
+  GetEventInfo();
+  fRecoParam.SetEventSpecie(fRunInfo,fEventInfo);
 
     //Start of cycle for the in-loop QA
     if (fInLoopQA) {
@@ -1372,6 +1462,12 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 			   qadm->Finish();
 		   }
         }
+     }
+
+     fEventInfo.Reset();
+     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+       if (fReconstructor[iDet])
+	 fReconstructor[iDet]->SetRecoParam(NULL);
      }
 
      return kTRUE;
@@ -2043,66 +2139,27 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
   
   AliInfo("Filling trigger information into the ESD");
 
-  AliCentralTrigger *aCTP = NULL;
-
   if (fRawReader) {
     AliCTPRawStream input(fRawReader);
     if (!input.Next()) {
-      AliWarning("No valid CTP (trigger) DDL raw data is found ! The trigger mask will be taken from the event header, trigger cluster mask will be empty !");
-      ULong64_t mask = (((ULong64_t)fRawReader->GetTriggerPattern()[1]) << 32) +
-	fRawReader->GetTriggerPattern()[0];
-      esd->SetTriggerMask(mask);
-      esd->SetTriggerCluster(0);
+      AliWarning("No valid CTP (trigger) DDL raw data is found ! The trigger info is taken from the event header!");
     }
     else {
-      esd->SetTriggerMask(input.GetClassMask());
-      esd->SetTriggerCluster(input.GetClusterMask());
+      if (esd->GetTriggerMask() != input.GetClassMask())
+	AliError(Form("Invalid trigger pattern found in CTP raw-data: %llx %llx",
+		      input.GetClassMask(),esd->GetTriggerMask()));
+      if (esd->GetOrbitNumber() != input.GetOrbitID())
+	AliError(Form("Invalid orbit id found in CTP raw-data: %x %x",
+		      input.GetOrbitID(),esd->GetOrbitNumber()));
+      if (esd->GetBunchCrossNumber() != input.GetBCID())
+	AliError(Form("Invalid bunch-crossing id found in CTP raw-data: %x %x",
+		      input.GetBCID(),esd->GetBunchCrossNumber()));
     }
 
-    aCTP = new AliCentralTrigger();
-    TString configstr("");
-    if (!aCTP->LoadConfiguration(configstr)) { // Load CTP config from OCDB
-      AliError("No trigger configuration found in OCDB! The trigger classes information will no be stored in ESD!");
-      delete aCTP;
-      return kFALSE;
-    }
+  // Here one has to add the filling of trigger inputs and
+  // interaction records
+  // ...
   }
-  else {
-    AliRunLoader *runloader = AliRunLoader::GetRunLoader();
-    if (runloader) {
-      if (!runloader->LoadTrigger()) {
-	aCTP = runloader->GetTrigger();
-	esd->SetTriggerMask(aCTP->GetClassMask());
-	esd->SetTriggerCluster(aCTP->GetClusterMask());
-      }
-      else {
-	AliWarning("No trigger can be loaded! The trigger information is not stored in the ESD !");
-	return kFALSE;
-      }
-    }
-    else {
-      AliError("No run loader is available! The trigger information is not stored in the ESD !");
-      return kFALSE;
-    }
-  }
-
-  // Now fill the trigger class names into AliESDRun object
-  AliTriggerConfiguration *config = aCTP->GetConfiguration();
-  if (!config) {
-    AliError("No trigger configuration has been found! The trigger classes information will not be stored in ESD!");
-    if (fRawReader) delete aCTP;
-    return kFALSE;
-  }
-
-  const TObjArray& classesArray = config->GetClasses();
-  Int_t nclasses = classesArray.GetEntriesFast();
-  for( Int_t j=0; j<nclasses; j++ ) {
-    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
-    Int_t trindex = (Int_t)TMath::Log2(trclass->GetMask());
-    esd->SetTriggerClass(trclass->GetName(),trindex);
-  }
-
-  if (fRawReader) delete aCTP;
   return kTRUE;
 }
 
@@ -2229,7 +2286,13 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
 {
 // get the reconstructor object and the loader for a detector
 
-  if (fReconstructor[iDet]) return fReconstructor[iDet];
+  if (fReconstructor[iDet]) {
+    if (fRecoParam.GetDetRecoParamArray(iDet) && !AliReconstructor::GetRecoParam(iDet)) {
+      const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
+      fReconstructor[iDet]->SetRecoParam(par);
+    }
+    return fReconstructor[iDet];
+  }
 
   // load the reconstructor object
   TPluginManager* pluginManager = gROOT->GetPluginManager();
@@ -2305,6 +2368,10 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
     }
   }
       
+  if (fRecoParam.GetDetRecoParamArray(iDet) && !AliReconstructor::GetRecoParam(iDet)) {
+    const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
+    reconstructor->SetRecoParam(par);
+  }
   return reconstructor;
 }
 
@@ -2370,6 +2437,9 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
     delete fTracker[iDet];
     fTracker[iDet] = NULL;
   }
+  if (fRunInfo) delete fRunInfo;
+  fRunInfo = NULL;
+
   delete fVertexer;
   fVertexer = NULL;
 
@@ -2802,4 +2872,176 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 	return kTRUE; 
 } 
 
-	
+//_____________________________________________________________________________
+Bool_t AliReconstruction::InitRecoParams() 
+{
+  // The method accesses OCDB and retrieves all
+  // the available reco-param objects from there.
+
+  Bool_t isOK = kTRUE;
+
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+
+    if (fRecoParam.GetDetRecoParamArray(iDet)) {
+      AliInfo(Form("Using custom reconstruction parameters for detector %s",fgkDetectorName[iDet]));
+      continue;
+    }
+
+    AliDebug(1, Form("Loading RecoParam objects for detector: %s",fgkDetectorName[iDet]));
+  
+    AliCDBPath path(fgkDetectorName[iDet],"Calib","RecoParam");
+    AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+    if(!entry){ 
+      AliWarning(Form("Couldn't find RecoParam entry in OCDB for detector %s",fgkDetectorName[iDet]));
+      isOK = kFALSE;
+    }
+    else {
+      TObject *recoParamObj = entry->GetObject();
+      if (dynamic_cast<TObjArray*>(recoParamObj)) {
+	// The detector has a normal TobjArray of AliDetectorRecoParam objects
+	// Registering them in AliRecoParam
+	fRecoParam.AddDetRecoParamArray(iDet,dynamic_cast<TObjArray*>(recoParamObj));
+      }
+      else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+	// The detector has only onse set of reco parameters
+	// Registering it in AliRecoParam
+	AliInfo(Form("Single set of reco parameters found for detector %s",fgkDetectorName[iDet]));
+	dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
+	fRecoParam.AddDetRecoParam(iDet,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
+      }
+      else {
+	AliError(Form("No valid RecoParam object found in the OCDB for detector %s",fgkDetectorName[iDet]));
+	isOK = kFALSE;
+      }
+      entry->SetOwner(0);
+    }
+  }
+
+  return isOK;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::GetEventInfo() 
+{
+  // Fill the event info object
+  // ...
+  AliCodeTimerAuto("")
+
+  AliCentralTrigger *aCTP = NULL;
+  if (fRawReader) {
+    fEventInfo.SetEventType(fRawReader->GetType());
+
+    ULong64_t mask = fRawReader->GetClassMask();
+    fEventInfo.SetTriggerMask(mask);
+    UInt_t clmask = fRawReader->GetDetectorPattern()[0];
+    fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(clmask));
+
+    aCTP = new AliCentralTrigger();
+    TString configstr("");
+    if (!aCTP->LoadConfiguration(configstr)) { // Load CTP config from OCDB
+      AliError("No trigger configuration found in OCDB! The trigger configuration information will not be used!");
+      delete aCTP;
+      return kFALSE;
+    }
+    aCTP->SetClassMask(mask);
+    aCTP->SetClusterMask(clmask);
+  }
+  else {
+    fEventInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
+
+    if (fRunLoader && (!fRunLoader->LoadTrigger())) {
+      aCTP = fRunLoader->GetTrigger();
+      fEventInfo.SetTriggerMask(aCTP->GetClassMask());
+      fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask()));
+    }
+    else {
+      AliWarning("No trigger can be loaded! The trigger information will not be used!");
+      return kFALSE;
+    }
+  }
+
+  AliTriggerConfiguration *config = aCTP->GetConfiguration();
+  if (!config) {
+    AliError("No trigger configuration has been found! The trigger configuration information will not be used!");
+    if (fRawReader) delete aCTP;
+    return kFALSE;
+  }
+
+  TString trclasses;
+  ULong64_t trmask = fEventInfo.GetTriggerMask();
+  const TObjArray& classesArray = config->GetClasses();
+  Int_t nclasses = classesArray.GetEntriesFast();
+  for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
+    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
+    if (trclass) {
+      Int_t trindex = (Int_t)TMath::Log2(trclass->GetMask());
+      fesd->SetTriggerClass(trclass->GetName(),trindex);
+      if (trmask & (1 << trindex)) {
+	trclasses += " ";
+	trclasses += trclass->GetName();
+	trclasses += " ";
+      }
+    }
+  }
+  fEventInfo.SetTriggerClasses(trclasses);
+
+  if (!aCTP->CheckTriggeredDetectors()) {
+    if (fRawReader) delete aCTP;
+    return kFALSE;
+  }    
+
+  if (fRawReader) delete aCTP;
+
+  // We have to fill also the HLT decision here!!
+  // ...
+
+  return kTRUE;
+}
+
+const char *AliReconstruction::MatchDetectorList(const char *detectorList, UInt_t detectorMask)
+{
+  // Match the detector list found in the rec.C or the default 'ALL'
+  // to the list found in the GRP (stored there by the shuttle PP which
+  // gets the information from ECS)
+  static TString resultList;
+  TString detList = detectorList;
+
+  resultList = "";
+
+  for(Int_t iDet = 0; iDet < (AliDAQ::kNDetectors-1); iDet++) {
+    if ((detectorMask >> iDet) & 0x1) {
+      TString det = AliDAQ::OfflineModuleName(iDet);
+      if ((detList.CompareTo("ALL") == 0) ||
+	  detList.BeginsWith("ALL ") ||
+	  detList.EndsWith(" ALL") ||
+	  detList.Contains(" ALL ") ||
+	  (detList.CompareTo(det) == 0) ||
+	  detList.BeginsWith(det) ||
+	  detList.EndsWith(det) ||
+	  detList.Contains( " "+det+" " )) {
+	if (!resultList.EndsWith(det + " ")) {
+	  resultList += det;
+	  resultList += " ";
+	}
+      }	       
+    }
+  }
+
+  // HLT
+  if ((detectorMask >> AliDAQ::kHLTId) & 0x1) {
+    TString hltDet = AliDAQ::OfflineModuleName(AliDAQ::kNDetectors-1);
+    if ((detList.CompareTo("ALL") == 0) ||
+	detList.BeginsWith("ALL ") ||
+	detList.EndsWith(" ALL") ||
+	detList.Contains(" ALL ") ||
+	(detList.CompareTo(hltDet) == 0) ||
+	detList.BeginsWith(hltDet) ||
+	detList.EndsWith(hltDet) ||
+	detList.Contains( " "+hltDet+" " )) {
+      resultList += hltDet;
+    }
+  }
+
+  return resultList.Data();
+
+}

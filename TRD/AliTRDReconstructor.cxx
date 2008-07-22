@@ -41,11 +41,8 @@
 
 ClassImp(AliTRDReconstructor)
 
-AliTRDrecoParam* AliTRDReconstructor::fgRecoParam = 0x0; 
-
 //_____________________________________________________________________________
 AliTRDReconstructor::~AliTRDReconstructor()                  { 
-	if(fgRecoParam) delete fgRecoParam;
 }
 
 

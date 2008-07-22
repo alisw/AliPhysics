@@ -20,7 +20,8 @@
 // Base Class for detector Reconstruction Parameters                         //
 //                                                                           //  
 // 
-// AliDetectorRecoParam are identified according name   
+// AliDetectorRecoParam are identified according fEventSpecie - event specie(s)
+// for which the object is valid.  
 // The owner of the AliDetectorRecoParam is the AliRecoParam
 // More than one RecoParam per recon can be registered.
 //          
@@ -35,7 +36,8 @@ ClassImp(AliDetectorRecoParam)
 
 
 AliDetectorRecoParam::AliDetectorRecoParam():
-    TNamed()
+  TNamed(),
+  fEventSpecie(0)
 {
   //
   // default constructor
@@ -44,7 +46,7 @@ AliDetectorRecoParam::AliDetectorRecoParam():
 
 AliDetectorRecoParam::~AliDetectorRecoParam(){
   //
-  // default destructor
+  // destructor
   //
 }
 

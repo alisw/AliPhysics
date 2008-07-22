@@ -31,32 +31,32 @@
 #include "AliLog.h"
 #include "AliRecoParam.h"
 
-
 ClassImp(AliRecoParam)
 
 AliRecoParam::AliRecoParam(): 
-  TNamed("",""),
-  fRecoParamArray(0)
+  TObject(),
+  fEventSpecie(kDefault)
 {
   // Default constructor
   // ...
-}
-
-AliRecoParam::AliRecoParam(const char *detector): 
-  TNamed(detector,detector),
-  fRecoParamArray(0)
-{
-  // Default constructor
-  // ...
+  for(Int_t iDet = 0; iDet < kNDetectors; iDet++)
+    fDetRecoParams[iDet] = NULL;
+  for(Int_t iSpecie = 0; iSpecie < kNSpecies; iSpecie++) {
+    for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      fDetRecoParamsIndex[iSpecie][iDet] = -1;
+    }
+  }
 }
 
 AliRecoParam::~AliRecoParam(){
   // Destructor
   // ...
   // Delete the array with the reco-param objects
-  if (fRecoParamArray){
-    fRecoParamArray->Delete();
-    delete fRecoParamArray;
+  for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if (fDetRecoParams[iDet]){
+      fDetRecoParams[iDet]->Delete();
+      delete fDetRecoParams[iDet];
+    }
   }
 }
 
@@ -64,30 +64,81 @@ void  AliRecoParam::Print(Option_t *option) const {
   //
   // Print reconstruction setup
   //
-  printf("AliRecoParam object for %s\n",GetName()); 
-  if (!fRecoParamArray) return;
-  Int_t nparam = fRecoParamArray->GetEntriesFast();
-  for (Int_t iparam=0; iparam<nparam; iparam++){
-    AliDetectorRecoParam * param = (AliDetectorRecoParam *)fRecoParamArray->At(iparam);
-    if (!param) continue;
-    param->Print(option);
+  for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if (fDetRecoParams[iDet]){
+      printf("AliDetectorRecoParam objects for detector %d\n",iDet); 
+      Int_t nparam = fDetRecoParams[iDet]->GetEntriesFast();
+      for (Int_t iparam=0; iparam<nparam; iparam++){
+	AliDetectorRecoParam * param = (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(iparam);
+	if (!param) continue;
+	param->Print(option);
+      }
+    }
+    else {
+      printf("No AliDetectorRecoParam objects specified for detector %d\n",iDet); 
+    }
   }
 }
 
-AliDetectorRecoParam *AliRecoParam::GetRecoParam(const AliEventInfo &/*evInfo*/) const {
-  // To be implemented by the detectors
-  // Here we return the last AliDetectorRecoParam!!
-  if (!fRecoParamArray) return NULL;
-  if (fRecoParamArray->GetEntriesFast() != 1)
-    AliWarning(Form("Method not implemented by the detector %s, using the last AliDetectorRecoParam !",GetName()));
-
-  return (AliDetectorRecoParam *)fRecoParamArray->Last();
+void AliRecoParam::SetEventSpecie(const AliRunInfo */*runInfo*/, const AliEventInfo &/*evInfo*/)
+{
+  // To be implemented
+  // Here we return always kDefault!!
+  fEventSpecie = kDefault;
 }
 
-void  AliRecoParam::AddRecoParam(AliDetectorRecoParam* param){
+const AliDetectorRecoParam *AliRecoParam::GetDetRecoParam(Int_t iDet) const
+{
+  // Return AliDetectorRecoParam object for a given detector
+  // according to the event specie provided as an argument
+  if (!fDetRecoParams[iDet]) return NULL;
+  if (fDetRecoParams[iDet]->GetEntries() == 0) return NULL;
+
+  for(Int_t iBit = 0; iBit < kNSpecies; iBit++) {
+    if (fEventSpecie & (1 << iBit)) {
+      if (fDetRecoParamsIndex[iBit][iDet] >= 0)
+	return (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(fDetRecoParamsIndex[iBit][iDet]);
+      else
+	return (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(fDetRecoParamsIndex[0][iDet]);
+    }
+  }
+
+  // Default one
+  AliError(Form("Invalid event specie: %d!",fEventSpecie));
+  return (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(fDetRecoParamsIndex[0][iDet]);
+}
+
+void  AliRecoParam::AddDetRecoParam(Int_t iDet, AliDetectorRecoParam* param)
+{
   // Add an instance of reco params object into
-  // the fRecoParamArray
-  //
-  if (!fRecoParamArray) fRecoParamArray = new TObjArray;
-  fRecoParamArray->AddLast(param);
+  // the fDetRecoParams for detector iDet
+  // Updates the fDetRecoParams index
+  if (!fDetRecoParams[iDet]) fDetRecoParams[iDet] = new TObjArray;
+  fDetRecoParams[iDet]->AddLast(param);
+  Int_t index = fDetRecoParams[iDet]->GetLast();
+
+  // Index
+  Int_t specie = param->GetEventSpecie();
+  for(Int_t iBit = 0; iBit < kNSpecies; iBit++) {
+    if (specie & (1 << iBit)) {
+      fDetRecoParamsIndex[iBit][iDet] = index;
+    }
+  }
+}
+
+Bool_t AliRecoParam::AddDetRecoParamArray(Int_t iDet, TObjArray* parArray)
+{
+  // Add an array of reconstruction parameter objects
+  // for a given detector
+  // Basic check on the consistency of the array
+  Bool_t defaultFound = kFALSE;
+  for(Int_t i = 0; i < parArray->GetEntriesFast(); i++) {
+    AliDetectorRecoParam *par = (AliDetectorRecoParam*)parArray->At(i);
+    if (!par) continue;
+    if (par->IsDefault()) defaultFound = kTRUE;
+  }
+   
+  fDetRecoParams[iDet] = parArray;
+
+  return defaultFound;
 }

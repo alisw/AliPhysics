@@ -311,7 +311,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   // no debug stream -> no debug files! on HLT
   fRecoParam->SetStreamLevel(0);
   
-  AliTRDReconstructor::SetRecoParam(fRecoParam);
+  AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
     
   // geometry:
   // for some unknown at this point reason (30th of April 2008)

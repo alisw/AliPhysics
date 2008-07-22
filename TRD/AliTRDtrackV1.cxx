@@ -605,7 +605,7 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
   
   // insert systematic uncertainties calibration and misalignment
   Double_t sys[15];
-  AliTRDReconstructor::RecoParam()->GetSysCovMatrix(sys);
+  AliTRDReconstructor::GetRecoParam()->GetSysCovMatrix(sys);
   cov[0] += (sys[0]*sys[0]);
   cov[2] += (sys[1]*sys[1]);
 

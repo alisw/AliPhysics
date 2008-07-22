@@ -20,23 +20,32 @@
 // Author: Boris Polichtchouk.
 
 // --- AliRoot header files ---
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliPHOSRecoParam.h"
 
 ClassImp(AliPHOSRecoParam)
 
+TObjArray* AliPHOSRecoParam::fgkMaps =0; //ALTRO mappings
+
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam() :
   AliDetectorRecoParam(),
-  fClusteringThreshold(9999),
-  fLocMaxCut(9999),
-  fMinE(9999),
-  fW0(9999),
-  fSampleQualityCut(1.),
-  fEcoreRadius(3.),
-  fEcore2ESD(kFALSE),
-  fSubtractPedestals(kTRUE),
-  fUnfold(kTRUE),
-  fDecoderVersion("")
+  fEMCClusteringThreshold(0.2),
+  fEMCLocMaxCut(0.03),
+  fEMCMinE(0.01),
+  fEMCW0(4.5),
+  fEMCSampleQualityCut(1.),
+  fEMCEcoreRadius(3.),
+  fEMCEcore2ESD(kFALSE),
+  fEMCSubtractPedestals(kTRUE),
+  fEMCUnfold(kTRUE),
+  fEMCDecoderVersion(""),
+  fCPVClusteringThreshold(0.0),
+  fCPVLocMaxCut(0.03),
+  fCPVMinE(0.0),
+  fCPVW0(4.0),
+  fCPVUnfold(kTRUE)
 {
   //Default constructor.
 }
@@ -44,16 +53,21 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   AliDetectorRecoParam(),
-  fClusteringThreshold(9999),
-  fLocMaxCut(9999),
-  fMinE(9999),
-  fW0(9999),
-  fSampleQualityCut(1.),
-  fEcoreRadius(3.),
-  fEcore2ESD(kFALSE),
-  fSubtractPedestals(kTRUE),
-  fUnfold(kTRUE),
-  fDecoderVersion("")
+  fEMCClusteringThreshold(0.2),
+  fEMCLocMaxCut(0.03),
+  fEMCMinE(0.01),
+  fEMCW0(4.5),
+  fEMCSampleQualityCut(1.),
+  fEMCEcoreRadius(3.),
+  fEMCEcore2ESD(kFALSE),
+  fEMCSubtractPedestals(kTRUE),
+  fEMCUnfold(kTRUE),
+  fEMCDecoderVersion(""),
+  fCPVClusteringThreshold(0.0),
+  fCPVLocMaxCut(0.03),
+  fCPVMinE(0.0),
+  fCPVW0(4.0),
+  fCPVUnfold(kTRUE)
 {
   //Copy constructor.
 }
@@ -64,16 +78,53 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
   //Assignment operator.
 
   if(this != &recoParam) {
-    fClusteringThreshold = recoParam.fClusteringThreshold;
-    fLocMaxCut           = recoParam.fLocMaxCut;
-    fMinE                = recoParam.fMinE;
-    fW0                  = recoParam.fW0;
-    fSampleQualityCut    = recoParam.fSampleQualityCut ;
-    fEcoreRadius         = recoParam.fEcoreRadius ;
-    fSubtractPedestals   = recoParam.fSubtractPedestals;
-    fUnfold              = recoParam.fUnfold;
-    fDecoderVersion      = recoParam.fDecoderVersion ;
+    fEMCClusteringThreshold = recoParam.fEMCClusteringThreshold;
+    fEMCLocMaxCut           = recoParam.fEMCLocMaxCut;
+    fEMCMinE                = recoParam.fEMCMinE;
+    fEMCW0                  = recoParam.fEMCW0;
+    fEMCSampleQualityCut    = recoParam.fEMCSampleQualityCut;
+    fEMCEcoreRadius         = recoParam.fEMCEcoreRadius;
+    fEMCEcore2ESD           = recoParam.fEMCEcore2ESD;
+    fEMCSubtractPedestals   = recoParam.fEMCSubtractPedestals;
+    fEMCUnfold              = recoParam.fEMCUnfold;
+    fEMCDecoderVersion      = recoParam.fEMCDecoderVersion;
+    fCPVClusteringThreshold = recoParam.fCPVClusteringThreshold;
+    fCPVLocMaxCut           = recoParam.fCPVLocMaxCut;
+    fCPVMinE                = recoParam.fCPVMinE;
+    fCPVW0                  = recoParam.fCPVW0;
+    fCPVUnfold              = recoParam.fCPVUnfold;
   }
 
   return *this;
+}
+
+//-----------------------------------------------------------------------------
+AliPHOSRecoParam* AliPHOSRecoParam::GetDefaultParameters()
+{
+  //Default parameters for the reconstruction
+
+  AliPHOSRecoParam* params = new AliPHOSRecoParam();
+  return params;
+}
+
+//-----------------------------------------------------------------------------
+const TObjArray* AliPHOSRecoParam::GetMappings()
+{
+  //Returns array of AliAltroMappings for RCU0..RCU3.
+  //If not found, read it from OCDB.
+
+  //Quick check as follows:
+  //  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  //  root [1] AliCDBManager::Instance()->SetRun(1);
+  //  root [2] TObjArray* maps = AliPHOSRecoParam::GetMappings();
+  //  root [3] maps->Print();
+  
+  if(fgkMaps) return fgkMaps;
+  
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("PHOS/Calib/Mapping");
+  if(entry)
+    fgkMaps = (TObjArray*)entry->GetObject();
+  
+  return fgkMaps;
+  
 }

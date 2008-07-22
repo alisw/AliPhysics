@@ -37,6 +37,11 @@ class TTree;
 class TList;
 class AliQADataMakerSteer; 
 class TMap;
+class AliRecoParam;
+class AliDetectorRecoParam;
+class AliRunInfo;
+#include "AliEventInfo.h"
+#include "AliRecoParam.h"
 
 class AliReconstruction: public TNamed {
 public:
@@ -54,6 +59,7 @@ public:
   void           SetNumberOfEventsPerFile(UInt_t nEvents)
     {fNumberOfEventsPerFile = nEvents;};
   void           SetOption(const char* detector, const char* option);
+  void           SetRecoParam(const char* detector, AliDetectorRecoParam *par);
 
   void           SetRunLocalReconstruction(const char* detectors) {
     fRunLocalReconstruction = detectors;};
@@ -139,6 +145,11 @@ public:
   // Plane Efficiency Evaluation
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
 
+  enum {
+    fgkNDetectors = 15   // number of detectors
+  };
+  static Int_t   GetDetIndex(const char * detector);
+
 private:
   AliReconstruction(const AliReconstruction& rec);
   AliReconstruction& operator = (const AliReconstruction& rec);
@@ -173,7 +184,6 @@ private:
   void           FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd);
 
   //Quality Assurance
-  Int_t                GetDetIndex(const char * detector);
   const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
 
@@ -183,6 +193,11 @@ private:
 
   Bool_t               InitAliEVE();
   void                 RunAliEVE();
+
+  Bool_t         InitRecoParams(); // init the array with the reconstruciton parameters
+  Bool_t         GetEventInfo();   // fill the event info inside the event loop
+
+  const char    *MatchDetectorList(const char *detectorList, UInt_t detectorMask);
 
   //*** Magnetic field map settings *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -224,14 +239,16 @@ private:
   TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
   TString        fESDPar;             // String where the esd.par is stored, will be attached to the tree         
   TString        fUseHLTData;        // Detectors for which the HLT data is used as input
+  AliRunInfo*    fRunInfo;            // an object which contains essential global conditions information
+  AliEventInfo   fEventInfo;          // an object which contains essential event information
 
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliRawReader*  fRawReader;          //! current raw data reader
   AliRawReader*  fParentRawReader;    //! parent raw data reader in case of AliRawReaderHLT
 
-  static const Int_t fgkNDetectors = 15;   //! number of detectors
   static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
   AliReconstructor*  fReconstructor[fgkNDetectors];  //! array of reconstructor objects
+  AliRecoParam   fRecoParam;                      //! container for the reco-param objects for detectors
   AliLoader*     fLoader[fgkNDetectors];   //! detector loaders
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
@@ -275,7 +292,7 @@ private:
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
   Bool_t               fRunAliEVE;  // Run AliEVE or not
 
-  ClassDef(AliReconstruction, 24)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 25)      // class for running the reconstruction
 };
 
 #endif

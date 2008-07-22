@@ -37,11 +37,10 @@
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSTracker.h"
 #include "AliRawReader.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "AliPHOSTrigger.h"
 #include "AliPHOSGeometry.h"
-#include "AliPHOSRecoParam.h"
-#include "AliPHOSRecoParamEmc.h"
-#include "AliPHOSRecoParamCpv.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSEmcRecPoint.h"
@@ -55,8 +54,6 @@
 ClassImp(AliPHOSReconstructor)
 
 Bool_t AliPHOSReconstructor::fgDebug = kFALSE ; 
-AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamEmc =0;  // EMC rec. parameters
-AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamCpv =0;  // CPV rec. parameters
 TClonesArray*     AliPHOSReconstructor::fgDigitsArray = 0;   // Array of PHOS digits
 TObjArray*        AliPHOSReconstructor::fgEMCRecPoints = 0;   // Array of EMC rec.points
 
@@ -65,17 +62,6 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   fGeom(NULL),fClusterizer(NULL),fTSM(NULL),fPID(NULL)
 {
   // ctor
-
-  if (!fgkRecoParamEmc) {
-    AliWarning("The Reconstruction parameters for EMC nonitialized - Used default one");
-    fgkRecoParamEmc = AliPHOSRecoParamEmc::GetEmcDefaultParameters();
-  }
-
-  if (!fgkRecoParamCpv) {
-    AliWarning("The Reconstruction parameters for CPV nonitialized - Used default one");
-    fgkRecoParamCpv = AliPHOSRecoParamCpv::GetCpvDefaultParameters();
-  }
-
   fGeom        = AliPHOSGeometry::GetInstance("IHEP","");
   fClusterizer = new AliPHOSClusterizerv1      (fGeom);
   fTSM         = new AliPHOSTrackSegmentMakerv1(fGeom);
@@ -104,6 +90,7 @@ void AliPHOSReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) c
   // segment maker needs access to the AliESDEvent object to retrieve the tracks reconstructed by 
   // the global tracking.
 
+  fClusterizer->InitParameters();
   fClusterizer->SetInput(digitsTree);
   fClusterizer->SetOutput(clustersTree);
   if ( Debug() ) 
@@ -289,7 +276,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Int_t *primList =  emcRP->GetPrimaries(primMult);
 
     Float_t energy;
-    if (fgkRecoParamEmc->Ecore2ESD())
+    if (GetRecoParam()->EMCEcore2ESD())
       energy = emcRP->GetCoreEnergy();
     else
       energy = rp->Energy();
@@ -354,7 +341,7 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   AliPHOSRawDecoder * dc ;
 
-  const TObjArray* maps = AliPHOSRecoParamEmc::GetMappings();
+  const TObjArray* maps = AliPHOSRecoParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
 
   AliAltroMapping *mapping[4];
@@ -362,22 +349,21 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     mapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
-  if(strcmp(fgkRecoParamEmc->DecoderVersion(),"v1")==0) 
+  if      (strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0) 
     dc=new AliPHOSRawDecoderv1(rawReader,mapping);
-  else 
-    if(strcmp(fgkRecoParamEmc->DecoderVersion(),"v2")==0) 
-      dc=new AliPHOSRawDecoderv2(rawReader,mapping);
-    else
-      dc=new AliPHOSRawDecoder(rawReader,mapping);
+  else if (strcmp(GetRecoParam()->EMCDecoderVersion(),"v2")==0) 
+    dc=new AliPHOSRawDecoderv2(rawReader,mapping);
+  else
+    dc=new AliPHOSRawDecoder(rawReader,mapping);
 
-  dc->SubtractPedestals(fgkRecoParamEmc->SubtractPedestals());
+  dc->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
   
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
   digits->SetName("DIGITS");
   Int_t bufsize = 32000;
   digitsTree->Branch("PHOS", &digits, bufsize);
 
-  AliPHOSRawDigiProducer pr(fgkRecoParamEmc,fgkRecoParamCpv);
+  AliPHOSRawDigiProducer pr(GetRecoParam());
   pr.MakeDigits(digits,dc);
 
   delete dc ;

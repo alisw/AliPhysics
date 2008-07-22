@@ -191,7 +191,7 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
      	AliTRDrecoParam *fPars = AliTRDrecoParam::GetLowFluxParam();
 			fPars->SetSeeding(kTRUE);
 			fPars->SetStreamLevel(0);
-			AliTRDReconstructor::SetRecoParam(fPars);
+			AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fPars);
       fTracker = new AliTRDtracker(fGeometryFile);
       //fTracker = new AliTRDtracker(fGeometryFile);
     }

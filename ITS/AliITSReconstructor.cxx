@@ -44,7 +44,6 @@
 
 
 ClassImp(AliITSReconstructor)
-AliITSRecoParam *AliITSReconstructor::fgRecoParam =0;  // reconstruction parameters
 
 //___________________________________________________________________________
 AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),
@@ -57,7 +56,6 @@ fDetTypeRec(0)
 AliITSReconstructor::~AliITSReconstructor(){
 // destructor
   delete fItsPID;
-  //  if(!fgRecoParam) delete fgRecoParam;
   if(fDetTypeRec) delete fDetTypeRec;
 } 
 //______________________________________________________________________
@@ -96,12 +94,6 @@ void AliITSReconstructor::Init() {
     fDetTypeRec->SetITSgeom(geom);
     fDetTypeRec->SetDefaults();
 
-    if(fgRecoParam) {
-      fgRecoParam->PrintParameters();
-    } else {
-      AliWarning("AliITSRecoParam has not been set");
-    } 
-    
     return;
 }
 

@@ -32,6 +32,9 @@ class AliMUONVTriggerStore;
 class AliMUONVTriggerStore;
 class TClonesArray;
 
+#include "AliDetectorRecoParam.h"
+#include "AliMUONRecoParam.h"
+
 class AliMUONReconstructor : public AliReconstructor
 {
 public:
@@ -48,8 +51,7 @@ public:
   
   virtual AliTracker* CreateTracker() const;
   
-  static void                    SetRecoParam(AliMUONRecoParam* recoParam) {fgRecoParam = recoParam;}
-  static const AliMUONRecoParam* GetRecoParam();
+  static const AliMUONRecoParam* GetRecoParam() { return dynamic_cast<const AliMUONRecoParam*>(AliReconstructor::GetRecoParam(7)); }
   
   static AliMUONVClusterFinder* CreateClusterFinder(const char* clusterFinderType);
 
@@ -86,9 +88,7 @@ private:
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONVClusterStore* fClusterStore; //!< cluster store (when not in combined tracking mode)
   
-  static AliMUONRecoParam* fgRecoParam; //!< parameters used to tune the MUON reconstruction
-    
-  ClassDef(AliMUONReconstructor,7) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,8) // Implementation of AliReconstructor
 };
 
 #endif

@@ -134,7 +134,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 		return -1;
 	}
 	
-  AliTRDrecoParam *rec = AliTRDReconstructor::RecoParam();
+  const AliTRDrecoParam *rec = AliTRDReconstructor::GetRecoParam();
   if (!rec) {
     AliErrorGeneral("AliTRDpidESD::MakePID()", "No TRD reco param.");
     return 0x0;

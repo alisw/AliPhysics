@@ -53,9 +53,9 @@ TMap *GetGRPList(const char* system) {
     map->Add(new TObjString("fAliceBeamEnergy"),new TObjString("14000"));
   else map->Add(new TObjString("fAliceBeamEnergy"),new TObjString("5500"));
   map->Add(new TObjString("fAliceBeamType"),new TObjString(system));
-  map->Add(new TObjString("fNumberOfDetectors"),new TObjString("15"));
-  map->Add(new TObjString("fDetectorMask"),new TObjString("1048575"));
-  map->Add(new TObjString("fLHCPeriod"),new TObjString("LHC07a"));
+  map->Add(new TObjString("fNumberOfDetectors"),new TObjString("21"));
+  map->Add(new TObjString("fDetectorMask"),new TObjString("1074790399"));
+  map->Add(new TObjString("fLHCPeriod"),new TObjString("LHC08c"));
 
   //DCS
   map->Add(new TObjString("fLHCState"),new TObjString("test"));

@@ -45,7 +45,7 @@
 
 class TClonesArray;
 class AliPHOSDigit;
-class AliPHOSRecoParamEmc;
+class AliPHOSRecoParam;
 
 /** 
  * @class AliHLTPHOSClusterizer
@@ -102,7 +102,7 @@ public:
 
 
   /** Set reco parameters */
-  void SetRecoParameters(AliPHOSRecoParamEmc* recoPars);
+  void SetRecoParameters(AliPHOSRecoParam* recoPars);
 
   /** Set emc clustering threshold */
   void SetEmcClusteringThreshold(Float_t threshold) { fEmcClusteringThreshold = threshold; }

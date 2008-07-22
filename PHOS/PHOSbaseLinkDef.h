@@ -42,13 +42,10 @@
 #pragma link C++ class AliPHOSTrackSegment+;
 
 #pragma link C++ class AliPHOSRecoParam+;
-#pragma link C++ class AliPHOSRecoParamEmc+;
-#pragma link C++ class AliPHOSRecoParamCpv+;
 #pragma link C++ class AliPHOSSimParam+;
 #pragma link C++ class AliPHOSConTableDB+;
 
 #pragma link C++ class AliPHOSImpact+;
 #pragma link C++ class AliPHOSTrigger+;
-#pragma link C++ class AliPHOSCpvRawWrite+;
 
 #endif

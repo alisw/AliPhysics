@@ -36,7 +36,7 @@
 #include "TClonesArray.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOSRecoParamEmc.h"
+#include "AliPHOSRecoParam.h"
 
 ClassImp(AliHLTPHOSClusterizer);
 
@@ -80,12 +80,12 @@ AliHLTPHOSClusterizer::SetRecPointContainer(AliHLTPHOSRecPointContainerStruct* r
   }
 
 void
-AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
+AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
 {
   //see header file for documentation
-  fEmcClusteringThreshold = params->GetClusteringThreshold();
-  fEmcMinEnergyThreshold = params->GetMinE();
-  fLogWeight = params->GetLogWeight();
+  fEmcClusteringThreshold = params->GetEMCClusteringThreshold();
+  fEmcMinEnergyThreshold = params->GetEMCMinE();
+  fLogWeight = params->GetEMCLogWeight();
 }
 
 void

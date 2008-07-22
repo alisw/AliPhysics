@@ -47,8 +47,9 @@
 
 #include <Riostream.h>
 #include "AliReconstructor.h" 
-#include "AliPHOSRecoParamEmc.h"
-#include "AliPHOSRecoParamCpv.h"
+#include "AliPHOSRecoParam.h"
+// #include "AliPHOSRecoParamEmc.h"
+// #include "AliPHOSRecoParamCpv.h"
 class AliPHOSDigitizer ;
 class AliPHOSClusterizer ;
 class AliPHOSClusterizerv1 ;
@@ -101,29 +102,12 @@ public:
     return *this ; 
   }
   
-  static void SetRecoParamEmc(AliPHOSRecoParam * param){ fgkRecoParamEmc = param;}
-  static void SetRecoParamCpv(AliPHOSRecoParam * param){ fgkRecoParamCpv = param;}
-
-  static const AliPHOSRecoParam* GetRecoParamEmc(){ 
-    if (!fgkRecoParamEmc) {
-      cerr<<"The Reconstruction parameters for EMC nonitialized - Used default one"<<endl;
-      fgkRecoParamEmc = AliPHOSRecoParamEmc::GetEmcDefaultParameters();
-    }
-    return fgkRecoParamEmc;
-  }
-  static const AliPHOSRecoParam* GetRecoParamCpv(){
-    if (!fgkRecoParamCpv) {
-      cerr<<"The Reconstruction parameters for CPV nonitialized - Used default one"<<endl;
-      fgkRecoParamCpv = AliPHOSRecoParamCpv::GetCpvDefaultParameters();
-    }
-    return fgkRecoParamCpv;
-  }
+  static const AliPHOSRecoParam* GetRecoParam() {
+    return dynamic_cast<const AliPHOSRecoParam*>(AliReconstructor::GetRecoParam(4)); }
 
 private:
   
   static Bool_t fgDebug ; //! verbosity controller
-  static AliPHOSRecoParam  *fgkRecoParamEmc; // reconstruction parameters for EMC
-  static AliPHOSRecoParam  *fgkRecoParamCpv; // reconstruction parameters for EMC
   AliPHOSGeometry          *fGeom;           // pointer to the PHOS geometry
   AliPHOSClusterizerv1     *fClusterizer;    //! PHOS clusterizer
   AliPHOSTrackSegmentMaker *fTSM;            //! PHOS TrackSegmentMaker
@@ -131,7 +115,7 @@ private:
   static TClonesArray      *fgDigitsArray;   //! Array of PHOS digits
   static TObjArray         *fgEMCRecPoints;  //! Array of EMC rec.points
 
-  ClassDef(AliPHOSReconstructor,7)  // PHOS Reconstruction class
+  ClassDef(AliPHOSReconstructor,8)  // PHOS Reconstruction class
 
 }; 
 

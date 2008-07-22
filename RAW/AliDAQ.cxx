@@ -115,6 +115,54 @@ Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
   5
 };
 
+const char* AliDAQ::fgkOfflineModuleName[AliDAQ::kNDetectors] = {
+  "ITS",
+  "ITS",
+  "ITS",
+  "TPC",
+  "TRD",
+  "TOF",
+  "HMPID",
+  "PHOS",
+  "CPV",
+  "PMD",
+  "MUON",
+  "MUON",
+  "FMD",
+  "T0",
+  "VZERO",
+  "ZDC",
+  "ACORDE",
+  "CTP",
+  "EMCAL",
+  "",
+  "HLT"
+};
+
+const char* AliDAQ::fgkOnlineName[AliDAQ::kNDetectors] = {
+  "SPD",
+  "SDD",
+  "SSD",
+  "TPC",
+  "TRD",
+  "TOF",
+  "HMP",
+  "PHS",
+  "CPV",
+  "PMD",
+  "MCH",
+  "MTR",
+  "FMD",
+  "T00",
+  "V00",
+  "ZDC",
+  "ACO",
+  "TRI",
+  "EMC",
+  "TST",
+  "HLT"
+};
+
 AliDAQ::AliDAQ(const AliDAQ& source) :
   TObject(source)
 {
@@ -342,20 +390,21 @@ void AliDAQ::PrintConfig()
 {
   // Print the DAQ configuration
   // for all the detectors
-  printf("====================================================================\n"
-	 "|                ALICE Data Acquisition Configuration              |\n"
-	 "====================================================================\n"
-	 "| Detector ID | Detector Name | DDL Offset | # of DDLs | # of LDCs |\n"
-	 "====================================================================\n");
+  printf("===================================================================================================\n"
+	 "|                              ALICE Data Acquisition Configuration                               |\n"
+	 "===================================================================================================\n"
+	 "| Detector ID | Detector Name | DDL Offset | # of DDLs | # of LDCs | Online Name | AliRoot Module |\n"
+	 "===================================================================================================\n");
   for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-    printf("|%11d  |%13s  |%10d  |%9d  |%9.1f  |\n",
-	   iDet,DetectorName(iDet),DdlIDOffset(iDet),NumberOfDdls(iDet),NumberOfLdcs(iDet));
+    printf("|%11d  |%13s  |%10d  |%9d  |%9.1f  |%11s  |%14s  |\n",
+	   iDet,DetectorName(iDet),DdlIDOffset(iDet),NumberOfDdls(iDet),NumberOfLdcs(iDet),
+	   OnlineName(iDet),OfflineModuleName(iDet));
   }
-  printf("====================================================================\n");
+  printf("===================================================================================================\n");
 
 }
 
-const char *AliDAQ::ListOfTriggeredDetectors(Int_t detectorPattern)
+const char *AliDAQ::ListOfTriggeredDetectors(UInt_t detectorPattern)
 {
   // Returns a string with the list of
   // active detectors. The input is the
@@ -375,5 +424,76 @@ const char *AliDAQ::ListOfTriggeredDetectors(Int_t detectorPattern)
   if ((detectorPattern >> kHLTId) & 0x1) detList += fgkDetectorName[kNDetectors-1];
 
   return detList.Data();
+}
+
+UInt_t  AliDAQ::DetectorPattern(const char *detectorList)
+{
+  // Returns a 32-bit word containing the
+  // the detector pattern corresponding to a given
+  // list of detectors
+  UInt_t pattern = 0;
+  TString detList = detectorList;
+  for(Int_t iDet = 0; iDet < (kNDetectors-1); iDet++) {
+    TString det = fgkDetectorName[iDet];
+    if((detList.CompareTo(det) == 0) || 
+       detList.BeginsWith(det) ||
+       detList.EndsWith(det) ||
+       detList.Contains( " "+det+" " )) pattern |= (1 << iDet) ;
+  }
+
+  // HLT
+  TString hltDet = fgkDetectorName[kNDetectors-1];
+  if((detList.CompareTo(hltDet) == 0) || 
+       detList.BeginsWith(hltDet) ||
+       detList.EndsWith(hltDet) ||
+       detList.Contains( " "+hltDet+" " )) pattern |= (1 << kHLTId) ;
+  
+  return pattern;
+}
+
+const char *AliDAQ::OfflineModuleName(const char *detectorName)
+{
+  // Returns the name of the offline module
+  // for a given detector (online naming convention)
+  Int_t detectorID = DetectorID(detectorName);
+  if (detectorID < 0)
+    return "";
+
+  return OfflineModuleName(detectorID);
+}
+
+const char *AliDAQ::OfflineModuleName(Int_t detectorID)
+{
+  // Returns the name of the offline module
+  // for a given detector (online naming convention)
+  if (detectorID < 0 || detectorID >= kNDetectors) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+    return "";
+  }
+
+  return fgkOfflineModuleName[detectorID];
+}
+
+const char *AliDAQ::OnlineName(const char *detectorName)
+{
+  // Returns the name of the online detector name (3 characters)
+  // for a given detector
+  Int_t detectorID = DetectorID(detectorName);
+  if (detectorID < 0)
+    return "";
+
+  return OnlineName(detectorID);
+}
+
+const char *AliDAQ::OnlineName(Int_t detectorID)
+{
+  // Returns the name of the online detector name (3 characters)
+  // for a given detector
+  if (detectorID < 0 || detectorID >= kNDetectors) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+    return "";
+  }
+
+  return fgkOnlineName[detectorID];
 }
 

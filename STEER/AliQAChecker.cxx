@@ -24,7 +24,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
-#include "AliEventInfo.h"
+#include "AliRunInfo.h"
 #include "AliLog.h"
 #include "AliModule.h" 
 #include "AliQA.h"
@@ -48,8 +48,8 @@ ClassImp(AliQAChecker)
 AliQAChecker::AliQAChecker(const char* name, const char* title) :
   TNamed(name, title),
   fDataFile(0x0), 
-  fEventInfo(0x0), 
-  fEventInfoOwner(kFALSE), 
+  fRunInfo(0x0), 
+  fRunInfoOwner(kFALSE), 
   fRefFile(0x0), 
   fFoundDetectors(".")
 {
@@ -62,8 +62,8 @@ AliQAChecker::AliQAChecker(const char* name, const char* title) :
 AliQAChecker::AliQAChecker(const AliQAChecker& qac) :
   TNamed(qac),
   fDataFile(qac.fDataFile), 
-  fEventInfo(qac.fEventInfo), 
-  fEventInfoOwner(kFALSE),   
+  fRunInfo(qac.fRunInfo), 
+  fRunInfoOwner(kFALSE),   
   fRefFile(qac.fRefFile), 
   fFoundDetectors(qac.fFoundDetectors)
 {
@@ -87,8 +87,8 @@ AliQAChecker& AliQAChecker::operator = (const AliQAChecker& qac)
 AliQAChecker::~AliQAChecker()
 {
 // clean up
-  if (fEventInfo)
-    delete fEventInfo ; 
+  if (fRunInfo)
+    delete fRunInfo ; 
   delete [] fCheckers ; 
   AliQA::Close() ; 
 }
@@ -162,10 +162,10 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
   } else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
     AliCDBManager* man = AliCDBManager::Instance() ;
     if ( strcmp(AliQA::GetRefDataDirName(), "") == 0 ) { // the name of the last level of the directory is not set (RUNTYPE)
-      // Get it from EventInfo
-      if (!fEventInfo)  // not yet set, get the info from GRP
-				LoadEventInfoFromGRP() ; 
-      AliQA::SetQARefDataDirName(fEventInfo->GetRunType()) ;
+      // Get it from RunInfo
+      if (!fRunInfo)  // not yet set, get the info from GRP
+				LoadRunInfoFromGRP() ; 
+      AliQA::SetQARefDataDirName(fRunInfo->GetRunType()) ;
     }
     if ( ! man->GetLock() ) { 
       man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
@@ -192,7 +192,7 @@ AliQAChecker * AliQAChecker::Instance()
 }
 
 //_____________________________________________________________________________
-void AliQAChecker::LoadEventInfoFromGRP() 
+void AliQAChecker::LoadRunInfoFromGRP() 
 {
   AliCDBManager* man = AliCDBManager::Instance() ;
   AliCDBEntry* entry = man->Get(AliQA::GetGRPPath().Data());
@@ -212,6 +212,11 @@ void AliQAChecker::LoadEventInfoFromGRP()
   if (!beamType) {
     AliWarning(Form("%s entry:  missing value for the LHC state ! Using UNKNOWN", AliQA::GetGRPPath().Data()));
   }
+  TObjString *beamEnergyStr=
+    dynamic_cast<TObjString*>(data->GetValue("fAliceBeamEnergy"));
+  if (!beamEnergyStr) {
+    AliWarning(Form("%s entry:  missing value for the beam energy ! Using 0", AliQA::GetGRPPath().Data()));
+  }
   TObjString *runType=
     dynamic_cast<TObjString*>(data->GetValue("fRunType"));
   if (!runType) {
@@ -219,13 +224,14 @@ void AliQAChecker::LoadEventInfoFromGRP()
   TObjString *activeDetectors=
     dynamic_cast<TObjString*>(data->GetValue("fDetectorMask"));
   if (!activeDetectors) {
-    AliWarning(Form("%s entry:  missing value for the detector mask ! Using ALL", AliQA::GetGRPPath().Data()));  
+    AliWarning(Form("%s entry:  missing value for the detector mask ! Using 1074790399", AliQA::GetGRPPath().Data()));  
   }
-  fEventInfo = new AliEventInfo(lhcState ? lhcState->GetString().Data() : "UNKNOWN",
-				beamType ? beamType->GetString().Data() : "UNKNOWN",
-				runType  ? runType->GetString().Data()  : "UNKNOWN",
-				activeDetectors ? activeDetectors->GetString().Data() : "ALL");
-  fEventInfoOwner = kTRUE ; 
+  fRunInfo = new AliRunInfo(lhcState ? lhcState->GetString().Data() : "UNKNOWN",
+			    beamType ? beamType->GetString().Data() : "UNKNOWN",
+			    beamEnergyStr ? beamEnergyStr->GetString().Atof() : 0,
+			    runType  ? runType->GetString().Data()  : "UNKNOWN",
+			    activeDetectors ? activeDetectors->GetString().Atoi() : 1074790399);
+  fRunInfoOwner = kTRUE ; 
 }
 
 //_____________________________________________________________________________

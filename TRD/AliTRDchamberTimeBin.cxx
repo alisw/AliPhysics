@@ -337,7 +337,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
 		fX += cl->GetX(); 
 		
 		// Debug Streaming
-		if(AliTRDtrackerV1::DebugStreamer() && AliTRDReconstructor::RecoParam()->GetStreamLevel() >= 3){
+		if(AliTRDtrackerV1::DebugStreamer() && AliTRDReconstructor::GetRecoParam()->GetStreamLevel() >= 3){
 			TTreeSRedirector &cstream = *AliTRDtrackerV1::DebugStreamer();
 			cstream << "BuildIndices"
 			<< "Plane="    << fPlane
@@ -556,7 +556,7 @@ void AliTRDchamberTimeBin::BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t 
 //End_Html
 //
 
-	if(!AliTRDReconstructor::RecoParam()){
+	if(!AliTRDReconstructor::GetRecoParam()){
 		AliError("Reconstruction parameters not initialized.");
 		return;
 	}
@@ -564,13 +564,13 @@ void AliTRDchamberTimeBin::BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t 
 	if(Layer == 0){
 		cond[0] = cl->GetY();			// center: y-Direction
 		cond[1] = cl->GetZ();			// center: z-Direction
-		cond[2] = AliTRDReconstructor::RecoParam()->GetMaxPhi()   * (cl->GetX() - GetX()) + 1.0;			// deviation: y-Direction
-		cond[3] = AliTRDReconstructor::RecoParam()->GetMaxTheta() * (cl->GetX() - GetX()) + 1.0;			// deviation: z-Direction
+		cond[2] = AliTRDReconstructor::GetRecoParam()->GetMaxPhi()   * (cl->GetX() - GetX()) + 1.0;			// deviation: y-Direction
+		cond[3] = AliTRDReconstructor::GetRecoParam()->GetMaxTheta() * (cl->GetX() - GetX()) + 1.0;			// deviation: z-Direction
 	} else {
 		cond[0] = cl->GetY() + phi   * (GetX() - cl->GetX()); 
 		cond[1] = cl->GetZ() + theta * (GetX() - cl->GetX());
-		cond[2] = AliTRDReconstructor::RecoParam()->GetRoad0y() + phi;
-		cond[3] = AliTRDReconstructor::RecoParam()->GetRoad0z();
+		cond[2] = AliTRDReconstructor::GetRecoParam()->GetRoad0y() + phi;
+		cond[3] = AliTRDReconstructor::GetRecoParam()->GetRoad0z();
 	}
 }
 
@@ -647,8 +647,8 @@ AliTRDcluster *AliTRDchamberTimeBin::GetNearestCluster(Double_t *cond)
 // successfull) by the help of the method FindNearestCluster
 	
 	
-	Double_t maxroad  = AliTRDReconstructor::RecoParam()->GetRoad2y();
-	Double_t maxroadz = AliTRDReconstructor::RecoParam()->GetRoad2z();
+	Double_t maxroad  = AliTRDReconstructor::GetRecoParam()->GetRoad2y();
+	Double_t maxroadz = AliTRDReconstructor::GetRecoParam()->GetRoad2z();
 	
 	Int_t index = SearchNearestCluster(cond[0],cond[1],maxroad,maxroadz);
 	AliTRDcluster *returnCluster = 0x0;

@@ -127,7 +127,7 @@ void AliCentralTrigger::MakeBranch( TString name, TTree * tree )
       TBranch* branch = tree->GetBranch( name );
       if( branch == 0x0 ) {
          AliDebug( 1, "Creating new branch" );
-         branch = tree->Branch( name, &(this->fClassMask), "fClassMask/l" );
+         branch = tree->Branch( name, &(this->fClassMask), "fClassMask/l:fClusterMask/i" );
          branch->SetAutoDelete( kFALSE );
       }
       else {
@@ -160,7 +160,7 @@ Bool_t AliCentralTrigger::LoadConfiguration( TString & config )
    }
    else {
      // Load one and only one trigger descriptor from CDB
-     AliInfo( "GETTING TRIGGER DESCRIPTORS FROM CDB!!!" );
+     AliInfo( "Getting trigger configuration from OCDB!" );
  
      AliCDBPath path( "GRP", "CTP", "Config" );
 	
@@ -299,6 +299,8 @@ ULong64_t AliCentralTrigger::TriggerClasses()
 {
   // Check trigger conditions and create the trigger class
   // and trigger cluster masks
+  fClassMask = 0;
+  fClusterMask = 0;
   if (fConfiguration) {
     const TObjArray& classesArray = fConfiguration->GetClasses();
     Int_t nclasses = classesArray.GetEntriesFast();
@@ -306,8 +308,10 @@ ULong64_t AliCentralTrigger::TriggerClasses()
       AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
       trclass->Trigger( fConfiguration->GetInputs(), fConfiguration->GetFunctions() );
       fClassMask |= trclass->GetValue();
-      if (trclass->GetStatus())
-	fClusterMask |= (trclass->GetCluster())->GetClusterMask();
+      if (trclass->GetStatus()) {
+	AliTriggerCluster *trclust = trclass->GetCluster();
+	fClusterMask |= AliDAQ::DetectorPattern(trclust->GetDetectorsInCluster());
+      }
     }
   }
   return fClassMask;
@@ -379,58 +383,44 @@ Bool_t AliCentralTrigger::IsSelected( TString detName, TString& detectors ) cons
 }
 
 //_____________________________________________________________________________
-TString AliCentralTrigger::GetTriggeredDetectors() const
+Bool_t AliCentralTrigger::CheckTriggeredDetectors() const
 {
   // Check the trigger mask, finds which trigger classes
   // have been fired, load the corresponding trigger clusters and
   // finally makes a list of the detectors that have been readout
-  // for each particular event
+  // for each particular event. This list is then compared to the
+  // one stored in fClusterMask. Return value:
+  // true = two lists are equal
+  // false = two lists are not equal meaning wrong trigger config
+  // is loaded.
 
   if (!fConfiguration) {
-    AliError("The trigger confiration has not yet been loaded!");
-    return "";
+    AliError("The trigger confiration has not yet been loaded! Cross-check is not possible!");
+    return kFALSE;
   }
+  else {
 
-  // Now loop over the trigger classes
-  const TObjArray& classesArray = fConfiguration->GetClasses();
-  Int_t nclasses = classesArray.GetEntriesFast();
-  UChar_t clustMask = 0;
-  for( Int_t j=0; j<nclasses; j++ ) {
-    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
-    if (trclass->GetMask() & fClassMask) { // class was fired
-      AliTriggerCluster *clust = trclass->GetCluster();
-      clustMask |= clust->GetClusterMask();
-    }
-  }
-
-  // Compare the stored cluster mask with the one
-  // that we get from trigger classes
-  // To be enables after we store the cluster mask in the trigger tree
-  //  if (clustMask != fClusterMask)
-  //    AliError(Form("Wrong cluster mask from trigger classes (%x), expecting (%x)!",(UInt_t)clustMask,(UInt_t)fClusterMask));
-
-  // Now loop over clusters and produce the string
-  // with the triggered detectors
-  TString trigDets;
-  const TObjArray& clustArray = fConfiguration->GetClusters();
-  Int_t nclust = clustArray.GetEntriesFast();
-  for( Int_t i=0; i<nclust; i++ ) {
-    AliTriggerCluster* clust = (AliTriggerCluster*)clustArray.At( i );
-    if (clustMask & clust->GetClusterMask()) { // the cluster was fired
-      TString detStr = clust->GetDetectorsInCluster();
-      TObjArray* det = detStr.Tokenize(" ");
-      Int_t ndet = det->GetEntriesFast();
-      for( Int_t j=0; j<ndet; j++ ) {
-	TString &detj = ((TObjString*)det->At(j))->String();
-         if((trigDets.CompareTo(detj) == 0) || 
-	    trigDets.BeginsWith(detj) ||
-	    trigDets.EndsWith(detj) ||
-	    trigDets.Contains( " "+detj+" " )) continue;
-         trigDets.Append( " " );
-         trigDets.Append( detj );
+    // Make a cross-check so that to exclude wrong trigger configuration used
+    // Loop over the trigger classes
+    UInt_t clusterMask = 0;
+    const TObjArray& classesArray = fConfiguration->GetClasses();
+    Int_t nclasses = classesArray.GetEntriesFast();
+    for( Int_t j=0; j<nclasses; j++ ) {
+      AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
+      if (trclass->GetMask() & fClassMask) { // class was fired
+	AliTriggerCluster *trclust = trclass->GetCluster();
+	clusterMask |= AliDAQ::DetectorPattern(trclust->GetDetectorsInCluster());
       }
     }
+    // Compare the stored cluster mask with the one
+    // that we get from trigger classes
+    // To be enables after we store the cluster mask in the trigger tree
+    if (clusterMask != fClusterMask) {
+      AliError(Form("Wrong cluster mask from trigger classes (%x), expecting (%x)! Loaded trigger configuration is possibly wrong!",
+		    (UInt_t)clusterMask,(UInt_t)fClusterMask));
+      return kFALSE;
+    }
   }
 
-  return trigDets;
+  return kTRUE;
 }

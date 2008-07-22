@@ -27,19 +27,17 @@ public:
 			       AliESDEvent* esd) const
   {FillESD((TTree*)NULL,(TTree*)NULL,esd);}
 
-  static void SetRecoParam(AliTPCRecoParam * param) { fgkRecoParam = param;}
-  static const AliTPCRecoParam* GetRecoParam();
+  static const AliTPCRecoParam* GetRecoParam() { return dynamic_cast<const AliTPCRecoParam*>(AliReconstructor::GetRecoParam(1)); }
   //
-  static Double_t GetCtgRange()     { return fgkRecoParam->GetCtgRange();}
-  static Double_t GetMaxSnpTracker(){ return fgkRecoParam->GetMaxSnpTracker();}
-  static Double_t GetMaxSnpTrack()  { return fgkRecoParam->GetMaxSnpTrack();}
+  static Double_t GetCtgRange()     { return GetRecoParam()->GetCtgRange();}
+  static Double_t GetMaxSnpTracker(){ return GetRecoParam()->GetMaxSnpTracker();}
+  static Double_t GetMaxSnpTrack()  { return GetRecoParam()->GetMaxSnpTrack();}
 
   static Int_t StreamLevel()               { return fgStreamLevel;}
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 
 private:
   AliTPCParam*         GetTPCParam() const;
-  static AliTPCRecoParam *   fgkRecoParam; // reconstruction parameters
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
   AliTPCclustererMI*         fClusterer;   // TPC clusterer
 

@@ -44,7 +44,7 @@ public:
   Double_t GetRoad2z() const                { return fkRoad2z;   }
   Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
   Int_t    GetStreamLevel() const           { return fkStreamLevel;           }
-  inline void GetSysCovMatrix(Double_t *sys);  
+  inline void GetSysCovMatrix(Double_t *sys) const;  
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
   Double_t GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;  };
   Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
@@ -141,7 +141,7 @@ private:
 };
 
 //___________________________________________________
-inline void AliTRDrecoParam::GetSysCovMatrix(Double_t *sys)
+inline void AliTRDrecoParam::GetSysCovMatrix(Double_t *sys) const
 {
   if(!sys) return;
   memcpy(sys, fSysCovMatrix, 5*sizeof(Double_t));

@@ -19,7 +19,9 @@ class AliRawReader;
 class AliVertexer;
 class AliTracker;
 class AliESDEvent;
+class AliDetectorRecoParam;
 
+#include "AliReconstruction.h"
 
 class AliReconstructor: public TObject {
 public:
@@ -49,8 +51,12 @@ public:
   void                 SetOption(Option_t* option) {fOption = option;};
   virtual Option_t*    GetOption() const {return fOption.Data();};
 
+  void                               SetRecoParam(const AliDetectorRecoParam *par);
+  static const AliDetectorRecoParam* GetRecoParam(Int_t iDet);
+
 private:
-  TString              fOption;   //! option for reconstruction
+  TString                            fOption;                                       //! option for reconstruction
+  static const AliDetectorRecoParam* fgRecoParam[AliReconstruction::fgkNDetectors]; //! event reconstruction parameters for all detectors
 
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };

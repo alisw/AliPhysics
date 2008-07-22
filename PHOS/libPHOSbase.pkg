@@ -29,12 +29,9 @@ SRCS          =  \
                  AliPHOSEmcRecPoint.cxx \
                  AliPHOSCpvRecPoint.cxx   AliPHOSTrackSegment.cxx \
 		 AliPHOSRecoParam.cxx \
-		 AliPHOSRecoParamEmc.cxx \
-		 AliPHOSRecoParamCpv.cxx \
                  AliPHOSImpact.cxx \
                  AliPHOSTrigger.cxx \
-                 AliPHOSSimParam.cxx \
-                 AliPHOSCpvRawWrite.cxx
+                 AliPHOSSimParam.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

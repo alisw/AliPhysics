@@ -39,16 +39,14 @@ public:
 			       AliESDEvent* esd) const
   {FillESD((TTree*)NULL, clustersTree, esd);}
 
-  static void SetRecoParam(AliITSRecoParam * param){ fgRecoParam = param;}
-  static const AliITSRecoParam* GetRecoParam(){ return fgRecoParam;}
+  static const AliITSRecoParam* GetRecoParam() { return dynamic_cast<const AliITSRecoParam*>(AliReconstructor::GetRecoParam(0)); }
 
 private:
   //data
-  static AliITSRecoParam *fgRecoParam; // reconstruction parameters
   AliITSpidESD           *fItsPID;      // Pid for ITS
   AliITSDetTypeRec       *fDetTypeRec;  // reconstructor
 
-  ClassDef(AliITSReconstructor, 5)   // class for the ITS reconstruction
+  ClassDef(AliITSReconstructor, 6)   // class for the ITS reconstruction
 };
 
 #endif

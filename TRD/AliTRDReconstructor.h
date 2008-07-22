@@ -14,7 +14,10 @@
 #include "AliReconstructor.h"
 
 class AliRawReader;
-class AliTRDrecoParam;
+
+#include "AliDetectorRecoParam.h"
+#include "AliTRDrecoParam.h"
+
 class AliTRDReconstructor: public AliReconstructor 
 {
 
@@ -31,7 +34,6 @@ class AliTRDReconstructor: public AliReconstructor
 
   virtual void             Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void             Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
-  static  AliTRDrecoParam *RecoParam()                           { return fgRecoParam;      }
   virtual AliTracker      *CreateTracker() const;
 
   virtual void             FillESD(AliRawReader */*rawReader*/, TTree *clusterTree, AliESDEvent *esd) const
@@ -40,12 +42,7 @@ class AliTRDReconstructor: public AliReconstructor
                                                                  , esd);                    }
   virtual void             FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
 
-  static  void             SetRecoParam(AliTRDrecoParam *reco)   { fgRecoParam   = reco;    }
-
-
- private:
-
-  static  AliTRDrecoParam *fgRecoParam;   //  Reconstruction parameters
+  static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
 
   ClassDef(AliTRDReconstructor,0)         //  Class for the TRD reconstruction
 

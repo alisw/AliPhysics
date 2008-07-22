@@ -58,7 +58,14 @@ class AliDAQ: public TObject {
 
   static void        PrintConfig();
 
-  static const char *ListOfTriggeredDetectors(Int_t detectorPattern);
+  static const char *ListOfTriggeredDetectors(UInt_t detectorPattern);
+  static UInt_t      DetectorPattern(const char *detectorList);
+
+  static const char *OfflineModuleName(const char *detectorName);
+  static const char *OfflineModuleName(Int_t detectorID);
+
+  static const char *OnlineName(const char *detectorName);
+  static const char *OnlineName(Int_t detectorID);
 
   enum {
     kNDetectors = 21,    // Number of detectors
@@ -70,8 +77,10 @@ class AliDAQ: public TObject {
   static const char *fgkDetectorName[kNDetectors]; // Detector names
   static Int_t       fgkNumberOfDdls[kNDetectors]; // Number of DDLs per detector
   static Float_t     fgkNumberOfLdcs[kNDetectors]; // Number of LDCs per detector (not fixed - used only for the raw data simulation)
+  static const char* fgkOfflineModuleName[kNDetectors]; // Names of the offline modules corresponding to the detectors
+  static const char* fgkOnlineName[kNDetectors]; // Online (DAQ/ECS) detector names
 
-  ClassDef(AliDAQ, 2)   // ALICE DAQ Configuration class
+  ClassDef(AliDAQ, 3)   // ALICE DAQ Configuration class
 };
 
 #endif

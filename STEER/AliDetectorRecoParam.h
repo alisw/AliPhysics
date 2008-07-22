@@ -12,6 +12,8 @@
 
 #include "TNamed.h"
 
+#include "AliRecoParam.h"
+
 class AliDetectorRecoParam : public TNamed
 {
   
@@ -20,10 +22,16 @@ class AliDetectorRecoParam : public TNamed
   virtual ~AliDetectorRecoParam();
   void  Print(Option_t */*option*/) const {Dump();}
 
-protected:
+  Int_t          GetEventSpecie() const { return fEventSpecie; }
+  void           SetEventSpecie(Int_t specie) { fEventSpecie = specie; }
+  void           SetAsDefault() { fEventSpecie |= AliRecoParam::kDefault; }
+  Bool_t         IsDefault() const { return (fEventSpecie & AliRecoParam::kDefault); }
 
+private:
+
+  Int_t  fEventSpecie; // Event specie for which the reco-param object is valid
   
-  ClassDef(AliDetectorRecoParam, 2)
+  ClassDef(AliDetectorRecoParam, 3)
 };
 
 

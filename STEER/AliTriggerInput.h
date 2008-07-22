@@ -76,7 +76,6 @@ public:
 
 	   static Bool_t  fgkIsTriggerDetector[AliDAQ::kNDetectors]; // List of trigger detectors
    static  const char*    fgkCTPDetectorName[AliDAQ::kNDetectors];
-   static  const char*    fgkOfflineModuleName[AliDAQ::kNDetectors];
 protected:
              ULong64_t    fMask;                //  Trigger ID mask (1 bit)
              ULong64_t    fValue;               //  Trigger Signal (0 = false, > 1 = true = fMask )
@@ -86,7 +85,7 @@ protected:
 	        Bool_t    fIsActive;            //  Is trigger input active (during simulation)
 //                  void    fDectParameterTable;  //-> link to detector parameter table????
 
-   ClassDef( AliTriggerInput, 3 )  // Define a Trigger Input
+   ClassDef( AliTriggerInput, 4 )  // Define a Trigger Input
 };
 
 

@@ -165,7 +165,6 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPedestals(0),
   fTemperature(0),
   fMapping(0),
-  fRecoParamArray(0),
   fParam(0),
   fClusterParam(0)
 {
@@ -187,7 +186,6 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fPedestals(0),
   fTemperature(0),
   fMapping(0),
-  fRecoParamArray(0),
   fParam(0),
   fClusterParam(0)
 
@@ -299,14 +297,6 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fTemperature = (AliTPCSensorTempArray*)entry->GetObject();
   }
-
-
-  entry          = GetCDBEntry("TPC/Calib/RecoParam");
-  if (entry){
-    entry->SetOwner(kTRUE);
-    fRecoParamArray = (TObjArray*)(entry->GetObject());
-  }
-
 
   entry          = GetCDBEntry("TPC/Calib/Parameters");
   if (entry){
@@ -654,18 +644,4 @@ void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const cha
       delete[] mapOROCArray;
       delete[] mapNames;
    }
-}
-
-
-AliTPCRecoParam *  AliTPCcalibDB::GetRecoParam(Int_t */*eventtype*/){
-  //
-  // 
-  //
-  if (!fRecoParamArray){
-    return 0;  // back compatible sollution
-  };
-  
-  AliTPCRecoParam * param = (AliTPCRecoParam*)fRecoParamArray->At(0);
-  return param;
-
 }

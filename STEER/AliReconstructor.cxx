@@ -36,11 +36,13 @@
 
 #include "AliLog.h"
 #include "AliReconstructor.h"
+#include <TClass.h>
 #include <TString.h>
 
 
 ClassImp(AliReconstructor)
 
+const AliDetectorRecoParam* AliReconstructor::fgRecoParam[AliReconstruction::fgkNDetectors] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 
 //_____________________________________________________________________________
 void AliReconstructor::ConvertDigits(AliRawReader* /*rawReader*/, 
@@ -99,4 +101,35 @@ const char* AliReconstructor::GetDetectorName() const
   detName.Remove(0, 3);
   detName.Remove(detName.Index("Reconstructor"));
   return detName.Data();
+}
+
+//_____________________________________________________________________________
+void AliReconstructor::SetRecoParam(const AliDetectorRecoParam *par)
+{
+  // To be implemented by the detectors.
+  // As soon as we manage to remove the static members
+  // and method in the detector reconstructors, we will
+  // implemented this method in the base class and remove
+  // the detectors implementations.
+  Int_t iDet = AliReconstruction::GetDetIndex(GetDetectorName());
+
+  if (iDet >= 0)
+    fgRecoParam[iDet] = par;
+  else
+    AliError(Form("Invalid detector index for (%s)",GetDetectorName()));
+
+  return;
+}
+
+//_____________________________________________________________________________
+const AliDetectorRecoParam* AliReconstructor::GetRecoParam(Int_t iDet)
+{
+  // Get the current reconstruciton parameters
+  // for a given detector 
+  if (iDet >= 0 && iDet < AliReconstruction::fgkNDetectors)
+    return fgRecoParam[iDet];
+  else {
+    AliErrorClass(Form("Invalid detector index (%d)",iDet));
+    return NULL;
+  }
 }

@@ -47,22 +47,35 @@ ClassImp(AliPHOSRawDigiProducer)
 AliPHOSCalibData * AliPHOSRawDigiProducer::fgCalibData  = 0 ; 
 
 //--------------------------------------------------------------------------------------
-AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),
-  fEmcCrystals(0),fGeom(0),fPulseGenerator(0){
-
+AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
+  TObject(),
+  fEmcMinE(0.),
+  fCpvMinE(0.),
+  fSampleQualityCut(1.),
+  fEmcCrystals(0),
+  fGeom(0),
+  fPulseGenerator(0)
+{
+  // Default constructor
 }
 //--------------------------------------------------------------------------------------
-AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, const AliPHOSRecoParam* parCpv):TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0),fPulseGenerator(0){
+AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam):
+  TObject(),
+  fEmcMinE(0.),
+  fCpvMinE(0.),
+  fSampleQualityCut(1.),
+  fEmcCrystals(0),
+  fGeom(0),
+  fPulseGenerator(0)
+{
+  // Constructor takes paramerters from recoParam
 
-  if(!parEmc) AliFatal("Reconstruction parameters for EMC not set!");
-  if(!parCpv) AliFatal("Reconstruction parameters for CPV not set!");
+  if(!recoParam) AliFatal("Reconstruction parameters are not set!");
 
-  fEmcMinE = parEmc->GetMinE();
-  fCpvMinE = parCpv->GetMinE();
+  fEmcMinE = recoParam->GetEMCMinE();
+  fCpvMinE = recoParam->GetCPVMinE();
 
-  fSampleQualityCut = parEmc->GetSampleQualityCut() ;
+  fSampleQualityCut = recoParam->GetEMCSampleQualityCut() ;
 
   fGeom=AliPHOSGeometry::GetInstance() ;
   if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
@@ -74,8 +87,16 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, c
   GetCalibrationParameters() ; 
 }
 //--------------------------------------------------------------------------------------                       
-AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp):TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0),fPulseGenerator(0){                                                          
+AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp):
+  TObject(),
+  fEmcMinE(0.),
+  fCpvMinE(0.),
+  fSampleQualityCut(1.),
+  fEmcCrystals(0),
+  fGeom(0),
+  fPulseGenerator(0)
+{                                                          
+  // Copy constructor
 
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
@@ -84,7 +105,10 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp)
   fGeom = dp.fGeom ;
 }
 //--------------------------------------------------------------------------------------
-AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiProducer &dp){
+AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiProducer &dp)
+{
+  // Assign operator
+
   if(&dp == this) return *this;
 
   fEmcMinE = dp.fEmcMinE ;
@@ -97,9 +121,11 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
   return  *this;
 } 
 //--------------------------------------------------------------------------------------                                                   
-AliPHOSRawDigiProducer::~AliPHOSRawDigiProducer(){
- if(fPulseGenerator) delete fPulseGenerator ;
- fPulseGenerator=0 ;
+AliPHOSRawDigiProducer::~AliPHOSRawDigiProducer()
+{
+  // Desctructor
+  if(fPulseGenerator) delete fPulseGenerator ;
+  fPulseGenerator=0 ;
 }
 //--------------------------------------------------------------------------------------
 void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder) 
@@ -125,7 +151,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
     if(energy<=baseLine) //in ADC channels
       continue ;
 
-    //remove digits with bas shape. Decoder should calculate quality so that 
+    //remove digits with bad shape. Decoder should calculate quality so that 
     //in default case quality [0,1], while larger values of quality mean somehow 
     //corrupted samples, 999 means obviously corrupted sample.
     //It is difficult to fit samples with overflow (even setting cut on overflow values)

@@ -96,9 +96,8 @@ class TFile;
 #include "AliPHOSRawDecoder.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSQAChecker.h"
-#include "AliPHOSRecoParamEmc.h"
+#include "AliPHOSRecoParam.h"
 #include "AliPHOSSimParam.h"
-#include "AliPHOSCpvRawWrite.h"
 
 ClassImp(AliPHOS)
 
@@ -442,7 +441,7 @@ void AliPHOS::Digits2Raw()
   }
 
   // get mapping from OCDB
-  const TObjArray* maps = AliPHOSRecoParamEmc::GetMappings();
+  const TObjArray* maps = AliPHOSRecoParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
 
   // some digitization constants
@@ -473,15 +472,6 @@ void AliPHOS::Digits2Raw()
   Float_t eMax=-333;
   //!!!for debug!!!
 
-  TObjArray *cpvDigitsAll = new TObjArray();
-  TClonesArray *cpvDigitsModule;
-  Int_t *nCPVdigits = new Int_t[geom->GetNModules()];
-  Int_t module;
-  for (module=0; module<geom->GetNModules(); module++) {
-    cpvDigitsAll->Add(new TClonesArray("AliPHOSDigit",100));
-    nCPVdigits[module] = 0;
-  }
-
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
     AliPHOSDigit* digit = dynamic_cast<AliPHOSDigit *>(digits->At(iDigit)) ;
@@ -489,19 +479,13 @@ void AliPHOS::Digits2Raw()
     // Skip small energy below treshold
     if (digit->GetEnergy() < kThreshold) 
       continue;
+    // Skip CPV digits
+    if (digit->GetId() > geom->GetNModules() * geom->GetNCristalsInModule()) 
+      continue;
 
     Int_t relId[4];
     geom->AbsToRelNumbering(digit->GetId(), relId);
-    module = relId[0];
-
-    // Fill TObjArray  of TClonesArray's with CPV digits per module
-    if (digit->GetId() > geom->GetNModules() * geom->GetNCristalsInModule()) {
-      cpvDigitsModule = (TClonesArray*)cpvDigitsAll->At(module-1);
-      new((*cpvDigitsModule)[nCPVdigits[module-1]++]) 
-	AliPHOSDigit(-1,digit->GetId(),digit->GetAmp(),digit->GetTime());
-      continue;
-    }
-
+    Int_t module = relId[0];
  
     // Begin FIXME 
     if (relId[1] != 0) 
@@ -595,16 +579,6 @@ void AliPHOS::Digits2Raw()
 	 modMax,colMax,rowMax,eMax));
 
   delete pulse;
-
-  for (module=0; module<geom->GetNModules(); module++) {
-    AliDebug(2,Form("Number of CPV digits in module %d: %d/%d",
-		    module,
-		    ((TClonesArray*)cpvDigitsAll->At(module))->GetEntriesFast(),
-		    nCPVdigits[module]));
-  }
-  AliPHOSCpvRawWrite *cpvRaw = new AliPHOSCpvRawWrite();
-  cpvRaw->WriteRaw(cpvDigitsAll);
-  delete cpvRaw;
   loader->UnloadDigits();
 }
 

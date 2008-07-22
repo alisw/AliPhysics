@@ -100,7 +100,6 @@
 #include "AliMUONPreClusterFinder.h"
 #include "AliMUONPreClusterFinderV2.h"
 #include "AliMUONPreClusterFinderV3.h"
-#include "AliMUONRecoParam.h"
 #include "AliMUONSimpleClusterServer.h"
 #include "AliMUONTracker.h"
 #include "AliMUONTriggerCircuit.h"
@@ -113,7 +112,6 @@
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
 
-#include "AliRecoParam.h"
 #include "AliRawReader.h"
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
@@ -128,8 +126,6 @@
 /// \cond CLASSIMP
 ClassImp(AliMUONReconstructor)
 /// \endcond 
-
-AliMUONRecoParam* AliMUONReconstructor::fgRecoParam = 0x0; // reconstruction parameters
 
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor() : 
@@ -171,20 +167,6 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTriggerStore;
   delete fTrackStore;
   delete fClusterStore;
-}
-
-//_____________________________________________________________________________
-const AliMUONRecoParam* AliMUONReconstructor::GetRecoParam()
-{
-  /// get reconstruction parameters
-  
-  // initialize reconstruction parameters if not already done
-  if (!fgRecoParam) {
-    cout<<"W-AliMUONReconstructor::GetRecoParam: Reconstruction parameters not initialized - Use default one"<<endl;
-    fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  }
-  
-  return fgRecoParam;
 }
 
 //_____________________________________________________________________________

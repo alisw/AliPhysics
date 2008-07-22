@@ -5,40 +5,55 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Base Class for Detector reconstruction parameters                         //
+// Steering Class for reconstruction parameters                              //
 // Revision: cvetan.cheshkov@cern.ch 12/06/2008                              //
-// Its structure has been revised and it is interfaced to AliEventInfo.      //
+// Its structure has been revised and it is interfaced to AliRunInfo and     //
+// AliEventInfo.                                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "TNamed.h"
+#include "TObject.h"
+
 class AliDetectorRecoParam;
+class AliRunInfo;
 class AliEventInfo;
 
-class AliRecoParam : public TNamed
+class AliRecoParam : public TObject
 {
 
  public: 
   AliRecoParam();
-  AliRecoParam(const char *detector);
   virtual ~AliRecoParam();  
   //
+  enum {
+    kNSpecies = 5,   // number of event species
+    kNDetectors = 15 // number of detectors
+  };
+  enum EventSpecie_t {kDefault = 1,
+		      kLowMult = 2,
+		      kHighMult = 4,
+		      kCosmic = 8,
+		      kCalib = 16};
+
   virtual void                  Print(Option_t *option="") const;
-  TObjArray                    *GetAllRecoParams() const { return fRecoParamArray; }
-  virtual AliDetectorRecoParam *GetRecoParam(const AliEventInfo &/*evInfo*/) const;
-  void                          AddRecoParam(AliDetectorRecoParam* param);
-
-protected:
-
-  TObjArray *fRecoParamArray;   //array with reconstruction-parameter objects
+  const TObjArray              *GetDetRecoParamArray(Int_t iDet) const { return fDetRecoParams[iDet]; }
+  void                          SetEventSpecie(const AliRunInfo*/*runInfo*/, const AliEventInfo &/*evInfo*/);
+  EventSpecie_t                 GetEventSpecie() const { return fEventSpecie; }
+  const AliDetectorRecoParam   *GetDetRecoParam(Int_t iDet) const;
+  void                          AddDetRecoParam(Int_t iDet, AliDetectorRecoParam* param);
+  Bool_t                        AddDetRecoParamArray(Int_t iDet, TObjArray* parArray);
 
 private:
 
   AliRecoParam(const AliRecoParam&); // Not implemented
   AliRecoParam& operator=(const AliRecoParam&); // Not implemented
 
-  ClassDef(AliRecoParam, 2)
+  Int_t      fDetRecoParamsIndex[kNSpecies][kNDetectors]; //!index to fDetRecoParams arrays
+  TObjArray *fDetRecoParams[kNDetectors];   //!array with reconstruction-parameter objects for all detectors
+  EventSpecie_t fEventSpecie;               //!current event specie
+
+  ClassDef(AliRecoParam, 3)
 };
 
 

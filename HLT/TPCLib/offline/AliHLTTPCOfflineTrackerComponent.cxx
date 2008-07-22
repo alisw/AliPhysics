@@ -153,7 +153,8 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
   //AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();
   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetHLTParam();
   if(tpcRecoParam) {
-    AliTPCReconstructor::SetRecoParam(tpcRecoParam);
+    AliTPCReconstructor tpcReconstructor;
+    tpcReconstructor.SetRecoParam(tpcRecoParam);
   }
  
   // TPC geometry parameters

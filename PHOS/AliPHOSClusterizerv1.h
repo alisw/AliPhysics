@@ -75,6 +75,8 @@ public:
   AliPHOSClusterizerv1() ;
   AliPHOSClusterizerv1(AliPHOSGeometry *geom);
   virtual ~AliPHOSClusterizerv1()  ;
+
+  void    InitParameters() ;
   
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
@@ -130,7 +132,6 @@ private:
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit ** MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void    Init() ;
-  void    InitParameters() ;
 
   virtual void   MakeUnfolding() ;
   void           UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,Int_t Nmax, 

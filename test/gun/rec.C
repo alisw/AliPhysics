@@ -4,6 +4,11 @@ void rec() {
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
   AliTPCReconstructor::SetStreamLevel(1);
+  //  reco.SetRecoParam("ITS",AliITSRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
+  reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
+  reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
   //  AliTPCReconstructor::SetRecoParam(AliTPCRecoParam::GetLowFluxParam());
   //  reco.SetInput("raw.root");
   //  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC");
