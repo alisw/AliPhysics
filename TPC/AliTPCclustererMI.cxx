@@ -753,8 +753,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   }
 
   // creaate one TClonesArray for all clusters
-  if(fBClonesArray) fOutputClonesArray = new TClonesArray("AliTPCclusterMI",1000);
-
+  if(fBClonesArray && !fOutputClonesArray) fOutputClonesArray = new TClonesArray("AliTPCclusterMI",1000);
   // reset counter
   fNclusters  = 0;
   

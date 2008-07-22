@@ -4420,39 +4420,42 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
       //
       Int_t lab0=track0->GetLabel();
       Int_t lab1=track1->GetLabel();
-      cstream<<"Splitted"<<
-	"iter="<<iter<<
-	"lab0="<<lab0<<
-	"lab1="<<lab1<<   
-	"Tr0.="<<track0<<       // seed0
-	"Tr1.="<<track1<<       // seed1
-	"h0.="<<&helixes[i0]<<
-	"h1.="<<&helixes[i1]<<
-	//
-	"sum="<<sum<<           //the sum of rows with cl in both
-	"sum0="<<sum0<<           //the sum of rows with cl in 0 track
-	"sum1="<<sum1<<           //the sum of rows with cl in 1 track
-	"sums="<<sums<<         //the sum of shared clusters
-	"xm0="<<xm[i0]<<        // the center of track
-	"xm1="<<xm[i1]<<        // the x center of track
-	// General cut variables                   
-	"dfi="<<dfi<<           // distance in fi angle
-	"dtheta="<<dtheta<<     // distance int theta angle
-	//
-	//
-	"dist0="<<dist[4][0]<<     //distance x
-	"dist1="<<dist[4][1]<<     //distance y
-	"dist2="<<dist[4][2]<<     //distance z
-	"mdist0="<<mdist[0]<<   //distance x
-	"mdist1="<<mdist[1]<<   //distance y
-	"mdist2="<<mdist[2]<<   //distance z
-
-	"\n";
+      if( AliTPCReconstructor::StreamLevel()>5){
+	cstream<<"Splitted"<<
+	  "iter="<<iter<<
+	  "lab0="<<lab0<<
+	  "lab1="<<lab1<<   
+	  "Tr0.="<<track0<<       // seed0
+	  "Tr1.="<<track1<<       // seed1
+	  "h0.="<<&helixes[i0]<<
+	  "h1.="<<&helixes[i1]<<
+	  //
+	  "sum="<<sum<<           //the sum of rows with cl in both
+	  "sum0="<<sum0<<           //the sum of rows with cl in 0 track
+	  "sum1="<<sum1<<           //the sum of rows with cl in 1 track
+	  "sums="<<sums<<         //the sum of shared clusters
+	  "xm0="<<xm[i0]<<        // the center of track
+	  "xm1="<<xm[i1]<<        // the x center of track
+	  // General cut variables                   
+	  "dfi="<<dfi<<           // distance in fi angle
+	  "dtheta="<<dtheta<<     // distance int theta angle
+	  //
+	  //
+	  "dist0="<<dist[4][0]<<     //distance x
+	  "dist1="<<dist[4][1]<<     //distance y
+	  "dist2="<<dist[4][2]<<     //distance z
+	  "mdist0="<<mdist[0]<<   //distance x
+	  "mdist1="<<mdist[1]<<   //distance y
+	  "mdist2="<<mdist[2]<<   //distance z	  
+	  "\n";
+      }
       delete array->RemoveAt(i1);
     }
   }    
   delete [] helixes;
   delete [] xm;
+  delete [] quality;
+  delete [] indexes;
   AliInfo("Time for splitted tracks removal");
   timer.Print();
 }
