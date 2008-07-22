@@ -170,7 +170,7 @@ int AliHLTConfiguration::GlobalDeinit(AliHLTConfigurationHandler* pHandler)
 {
   // see header file for function documentation
   int iResult=0;
-  if (pHandler!=NULL && fgConfigurationHandler!=pHandler) {
+  if (fgConfigurationHandler!=NULL && fgConfigurationHandler!=pHandler) {
     fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalDeinit", HLT_DEFAULT_LOG_KEYWORD, "handler %p is not set, skip ...", pHandler);
     return -EBADF;
   }
