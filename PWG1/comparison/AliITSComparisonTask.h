@@ -1,5 +1,5 @@
-#ifndef AliTPCComparisonTask_cxx
-#define AliTPCComparisonTask_cxx
+#ifndef AliITSComparisonTask_cxx
+#define AliITSComparisonTask_cxx
 
 class TList;
 class TH1F;
@@ -12,12 +12,12 @@ class TClonesArray;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliTPCComparisonTask: public AliAnalysisTaskSE
+class AliITSComparisonTask: public AliAnalysisTaskSE
 {
   public:
-    AliTPCComparisonTask();
-    AliTPCComparisonTask(const char* name);
-    virtual ~AliTPCComparisonTask() {}
+    AliITSComparisonTask();
+    AliITSComparisonTask(const char* name);
+    virtual ~AliITSComparisonTask() {}
     
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -32,16 +32,17 @@ class AliTPCComparisonTask: public AliAnalysisTaskSE
     TH1F* hp;
     TH1F* hl;
     TH1F* hpt;
-    TH1F* hmpt;
+    TH1F* htip;
     TH1F* he;
     TH2F* hep;
     TH1F* hgoodPhi;
     TH1F* hfoundPhi;
+    TH1F* hlip;
     
-    AliTPCComparisonTask(const AliTPCComparisonTask&); // not implemented
-    AliTPCComparisonTask& operator=(const AliTPCComparisonTask&); // not implemented
+    AliITSComparisonTask(const AliITSComparisonTask&); // not implemented
+    AliITSComparisonTask& operator=(const AliITSComparisonTask&); // not implemented
 
-    ClassDef(AliTPCComparisonTask, 1); // example of analysis 
+    ClassDef(AliITSComparisonTask, 1); // example of analysis 
 };
 
 #endif

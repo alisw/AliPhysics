@@ -14,29 +14,53 @@ class AliMCComparisonTrack: public TObject
       {MCLabel = Label;}
     void SetPDG(Int_t PDG) 
       {MCPdg = PDG;}
-    void SetTPCMomentum(Float_t Px, Float_t Py, Float_t Pz)
-      {TPCPx = Px; TPCPy = Py; TPCPz = Pz;}
+    void SetPz(Float_t PZ)
+      {Pz = PZ;}
+    void SetPt(Float_t Ptrans)
+      {Pt = Ptrans;}
+    void SetPhi(Float_t PhiAngle)
+      {Phi = PhiAngle;}
+    void SetLocalX(Float_t localX)
+      {LocalX =localX;}
+    void SetLocalY(Float_t localY)
+      {LocalY =localY;}  
+    void SetZ(Float_t Zcoor)
+      {Z = Zcoor;}
       
     Int_t GetLabel()
       {return MCLabel;}  
     Int_t GetPDG()
       {return MCPdg;}
-    Float_t GetTPCPx()
-      {return TPCPx;}
-    Float_t GetTPCPy()
-      {return TPCPy;}  
-    Float_t GetTPCPz()
-      {return TPCPz;}  
+    Float_t GetPz()
+      {return Pz;}  
+    Float_t GetPt()
+      {return Pt;}
+    Float_t GetPhi()
+      {return Phi;}
+    Float_t GetLocalX()
+      {return LocalX;}
+    Float_t GetLocalY()
+      {return LocalY;}      
+    Float_t GetZ()
+      {return Z;}
   
   private:
       // track label
     Int_t MCLabel;
-      // particle PDG
+      // PDG particle code
     Int_t MCPdg;
-      // momentum at the entrance of the TPC
-    Float_t TPCPx;
-    Float_t TPCPy;
-    Float_t TPCPz;
+      // z-component of momentum
+    Float_t Pz;
+      // component of momentum in the transverse plane
+    Float_t Pt; 
+      // phi angle of the particle direction
+    Float_t Phi;
+      // local x-coordinate
+    Float_t LocalX;
+      // local y-coordinate
+    Float_t LocalY;
+      // z-coordinate
+    Float_t Z;
     
     ClassDef(AliMCComparisonTrack, 1); 
 };
