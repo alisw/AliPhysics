@@ -75,6 +75,7 @@ void anaExampleTask(Int_t mode=mLocal)
     // MC handler
     if(kMC){
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
+      mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
       mgr->SetMCtruthEventHandler(mcHandler);
     }
 

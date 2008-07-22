@@ -130,7 +130,7 @@ void AliAnalysisTaskPHOSExample::UserCreateOutputObjects()
    //AODs
   fAODPhotons = new TClonesArray("AliAODPhoton", 0);
   fAODPhotons->SetName("Photons");
-  AddAODBranch("TClonesArray", fAODPhotons);
+  AddAODBranch("TClonesArray", &fAODPhotons);
 
   OpenFile(1) ; 
 
@@ -156,6 +156,8 @@ void AliAnalysisTaskPHOSExample::UserCreateOutputObjects()
   fOutputList->AddAt(fhPHOSPhotons,         5) ; 
   fOutputList->AddAt(fhPHOSInvariantMass,   6) ; 
   fOutputList->AddAt(fhPHOSDigitsEvent,     7) ; 
+
+
 }
 
 //______________________________________________________________________________
