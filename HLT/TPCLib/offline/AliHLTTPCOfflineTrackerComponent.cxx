@@ -348,7 +348,7 @@ int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
 	const AliMagF* currentMap=AliTracker::GetFieldMap();
 	if (!currentMap) {
 	  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., map);
-	  AliTracker::SetFieldMap(field,kTRUE);
+	  AliTracker::SetFieldMap(field,kFALSE);
 	  HLTInfo("Solenoid Field set to: %f map %d", SolenoidBz, map);
 	} else if (currentMap->Map()!=map) {
 	  HLTWarning("omitting request to override field map %s with %s", currentMap->Map(), map);
