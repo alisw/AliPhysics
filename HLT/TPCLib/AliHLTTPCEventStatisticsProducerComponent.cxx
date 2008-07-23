@@ -335,7 +335,7 @@ void AliHLTTPCEventStatisticsProducerComponent::AddTracks( void* ptr, Int_t slic
     bTransform = 1;
   }
   
-  fTracks->FillTracks( nTracks, segmentData, slice, bTransform );
+  fTracks->FillTracksChecked( segmentData, nTracks, 0, slice, bTransform );
 
 }
 

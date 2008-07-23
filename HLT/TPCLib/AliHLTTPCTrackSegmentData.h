@@ -58,4 +58,36 @@ struct AliHLTTPCTrackSegmentData
 
 typedef struct AliHLTTPCTrackSegmentData AliHLTTPCTrackSegmentData;
 
+/**
+ * @struct AliHLTTPCTrackSegmentDataV1
+ * Former structure track segments, valid until July 2008
+ * revision 27415
+ *
+ * @ingroup alihlt_tpc_datastructs
+ */
+struct AliHLTTPCTrackSegmentDataV1
+    {
+	Float_t fX;
+	Float_t fY;
+	Float_t fZ;
+        Float_t fLastX;
+        Float_t fLastY;
+        Float_t fLastZ;
+	Double_t fPt;
+	Double_t fPsi;
+        Double_t fTgl;
+	Double_t fPterr;
+	Double_t fPsierr;
+        Double_t fTglerr;
+        Int_t fCharge;
+	UInt_t  fNPoints;
+#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
+	UInt_t  fPointIDs[1];
+#else
+	UInt_t  fPointIDs[0];
+#endif
+    };
+
+typedef struct AliHLTTPCTrackSegmentDataV0 AliHLTTPCTrackSegmentDataV0;
+
 #endif /* _ALIHLTTPCTRACKSEGMENTDATA_H_ */

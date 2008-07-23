@@ -19,6 +19,7 @@
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCTrack;
 class AliHLTTPCTrackSegmentData;
+class AliHLTTPCTrackSegmentDataV1;
 
 /**
  * @class AliHLTTPCTrackArray
@@ -102,15 +103,41 @@ class AliHLTTPCTrackArray {
 
   /**
    * Fill track array from track segment array.
-   * Reads the track from an array of AliHLTTrackSegmentData. The coordinates
-   * are transformed to global coordinates if the slice parameter is specified.
-   * In that case to internal slice variable is set to zero.
+   * Old method excluding buffer protection kept for backward compatibility.
+   * Forwarded to FillTracksChecked().
    * @param ntracks      size of the input array
    * @param tr           array of AliHLTTrackSegmentData
    * @param slice        slice no to transform the tracks to
    * @param bTransform   transform to global coordinates if 1
    */
-  void FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr,Int_t slice=-1, Int_t bTransform=1);
+  int FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr, Int_t slice=-1, Int_t bTransform=1);
+
+  /**
+   * Fill track array from track segment array.
+   * Reads the track from an array of AliHLTTrackSegmentData. The coordinates
+   * are transformed to global coordinates if the slice parameter is specified.
+   * In that case to internal slice variable is set to zero.
+   * 
+   * The sizeInByte parameter allows an additional buffer protection if
+   * non-zero. The size of the AliHLTTPCTrackSegmentData is not fixed due to
+   * variable array at the end of the structure. The pointer to the next
+   * entry must be set according to the variable array.
+   * @param ntracks      size of the input array
+   * @param tr           array of AliHLTTrackSegmentData
+   * @param sizeInByte   additional size protection
+   * @param slice        slice no to transform the tracks to
+   * @param bTransform   transform to global coordinates if 1
+   */
+  int FillTracksChecked(AliHLTTPCTrackSegmentData* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice=-1, Int_t bTransform=1);
+
+  /**
+   * Fill array from version1 structure.
+   * The version 1 of ALiHLTTPCTrackSegmentData was valid until July 2008
+   * revision 27415.
+   *
+   * Similar behavior like FillTracksChecked.
+   */
+  int FillTracksVersion1(AliHLTTPCTrackSegmentDataV1* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice=-1, Int_t bTransform=1);
 
   UInt_t WriteTracks(AliHLTTPCTrackSegmentData* tr); //Write tracks
   UInt_t WriteTracks(UInt_t & ntracks,AliHLTTPCTrackSegmentData* tr); //Write tracks

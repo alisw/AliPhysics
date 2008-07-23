@@ -205,8 +205,9 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	    AliHLTTPCTrackArray tracks;
 	    inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
 	    HLTDebug("reading block %d (slice %d): %d tracklets", ndx, minslice, inPtr->fTrackletCnt);
-	    tracks.FillTracks(inPtr->fTrackletCnt, inPtr->fTracklets, minslice, 0/*don't rotate*/);
-	    if ((iResult=Tracks2ESD(&tracks, pESD))>=0) {
+	    if ((iResult=tracks.FillTracksChecked(inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, minslice, 0/*don't rotate*/))>=0) {
+	      if ((iResult=Tracks2ESD(&tracks, pESD))>=0) {
+	      }
 	    }
 	  } else {
 	    HLTError("invalid sector number");

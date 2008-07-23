@@ -242,11 +242,24 @@ void AliHLTTPCTrackArray::Remove(Int_t track)
   }
 }
 
-void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr,Int_t slice, Int_t bTransform)
+int AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr, Int_t slice, Int_t bTransform)
 {
   //Read tracks from shared memory (or memory)
+  return FillTracksChecked(tr, ntracks, 0, slice, bTransform);
+}
+
+int AliHLTTPCTrackArray::FillTracksChecked(AliHLTTPCTrackSegmentData* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice, Int_t bTransform)
+{
+  //Read tracks from shared memory (or memory)
+  int iResult=0;
   AliHLTTPCTrackSegmentData *trs = tr;
   for(Int_t i=0; i<ntracks; i++){
+    if (sizeInByte>0 && 
+	(((AliHLTUInt8_t*)trs)+sizeof(AliHLTTPCTrackSegmentData)>((AliHLTUInt8_t*)tr)+sizeInByte ||
+	 ((AliHLTUInt8_t*)trs)+sizeof(AliHLTTPCTrackSegmentData)+trs->fNPoints*sizeof(UInt_t)>((AliHLTUInt8_t*)tr)+sizeInByte)) {
+      iResult=-EDOM;
+      break;
+    }
     AliHLTTPCTrack *track = NextTrack(); 
     track->SetPt(trs->fPt);
     track->SetPterr(trs->fPterr);
@@ -339,6 +352,76 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     tmpP += sizeof(AliHLTTPCTrackSegmentData)+trs->fNPoints*sizeof(UInt_t);
     trs = (AliHLTTPCTrackSegmentData*)tmpP;
   }
+
+  if (iResult==-EDOM) {
+    // try to recover the version 1 struct
+    Reset();
+    if ((iResult=FillTracksVersion1((AliHLTTPCTrackSegmentDataV1*)tr, ntracks, sizeInByte, slice, bTransform))>=0) {
+      LOG(AliHLTTPCLog::kWarning,"AliHLTTPCTrackArray::FillTracks","") << "version 1 track array recoverd (deprecated since r27415)" << ENDLOG;
+    }
+  }
+  if (iResult==-EDOM) {
+    Reset();
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrackArray::FillTracks","") << "corrupted input data array" << ENDLOG;
+  }
+
+  return iResult;
+}
+
+int AliHLTTPCTrackArray::FillTracksVersion1(AliHLTTPCTrackSegmentDataV1* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice, Int_t bTransform)
+{
+  //Read tracks from shared memory (or memory)
+  int iResult=0;
+  AliHLTTPCTrackSegmentDataV1 *trs = tr;
+  for(Int_t i=0; i<ntracks; i++){
+    if (sizeInByte>0 && 
+	(((AliHLTUInt8_t*)trs)+sizeof(AliHLTTPCTrackSegmentDataV1)>((AliHLTUInt8_t*)tr)+sizeInByte ||
+	 ((AliHLTUInt8_t*)trs)+sizeof(AliHLTTPCTrackSegmentDataV1)+trs->fNPoints*sizeof(UInt_t)>((AliHLTUInt8_t*)tr)+sizeInByte)) {
+      iResult=-EDOM;
+      break;
+    }
+    AliHLTTPCTrack *track = NextTrack(); 
+    track->SetPt(trs->fPt);
+    track->SetPterr(trs->fPterr);
+    Float_t psi[1];
+    psi[0]=trs->fPsi;
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2GlobalAngle(psi,slice);
+    }
+    track->SetPsi(psi[0]);
+    track->SetTgl(trs->fTgl);
+    track->SetPsierr(trs->fPsierr);
+    track->SetTglerr(trs->fTglerr);
+    track->SetNHits(trs->fNPoints);
+    track->SetCharge(trs->fCharge);
+    Float_t first[3];
+    first[0]=trs->fX;first[1]=trs->fY;first[2]=trs->fZ;
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2Global(first,slice);
+    }
+    track->SetFirstPoint(first[0],first[1],first[2]);
+    Float_t last[3];
+    last[0]=trs->fLastX;last[1]=trs->fLastY;last[2]=trs->fLastZ;
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2Global(last,slice);
+    }
+    track->SetLastPoint(last[0],last[1],last[2]);
+    track->SetHits( trs->fNPoints, trs->fPointIDs );
+
+    track->SetSector(slice);
+    if ( trs->fPt == -9876.0 ||  trs->fPt == -1.0) {
+      track->SetPhi0(atan2(first[1],first[0]));
+      track->SetKappa(1.0);
+      track->SetRadius(999999.0);
+    } else {
+      track->CalculateHelix();
+    }
+
+    UChar_t *tmpP = (UChar_t*)trs;
+    tmpP += sizeof(AliHLTTPCTrackSegmentDataV1)+trs->fNPoints*sizeof(UInt_t);
+    trs = (AliHLTTPCTrackSegmentDataV1*)tmpP;
+  }
+  return iResult;
 }
 
 UInt_t AliHLTTPCTrackArray::GetOutSize()

@@ -146,9 +146,9 @@ void AliHLTTPCMerger::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr)
   //Read tracks from shared memory (or memory)
   AliHLTTPCTrackArray *destination = GetInTracks(fCurrentTracks);
   if(Is2Global())
-    destination->FillTracks(ntracks, tr, fSlice);
+    destination->FillTracksChecked(tr, ntracks, 0, fSlice);
   else
-    destination->FillTracks(ntracks, tr);
+    destination->FillTracksChecked(tr, ntracks, 0);
 }
 
 void AliHLTTPCMerger::AddAllTracks()
