@@ -2018,7 +2018,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	//transform position to local digit coordinates
 	//relative to nearest pad row 
 	if ((rowNumber<0)||rowNumber>fTPCParam->GetNRow(isec)+1) continue;
-	Float_t x1,y1;
+	/*	Float_t x1,y1;
 	if (isec <fTPCParam->GetNInnerSector()) {
 	  x1 = xyz[1]*fTPCParam->GetInnerPadPitchWidth();
 	  y1 = fTPCParam->GetYInner(rowNumber);
@@ -2030,7 +2030,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	// gain inefficiency at the wires edges - linear
 	x1=TMath::Abs(x1);
 	y1-=1.;
-	if(x1>y1) xyz[3]*=TMath::Max(1.e-6,(y1-x1+1.));	
+	if(x1>y1) xyz[3]*=TMath::Max(1.e-6,(y1-x1+1.));	*/
 	
 	nofElectrons[rowNumber]++;	  
 	//----------------------------------
