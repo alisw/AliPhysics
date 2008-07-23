@@ -1289,15 +1289,15 @@ void CompareTrack2Particle2D()
 
   Track2Particle2DCreatePlots("correction_maponly-positive.root");
 
-  TH2* posYX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx")->Clone("pos_yx"));
-  TH2* posZX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx")->Clone("pos_zx"));
-  TH2* posZY = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy")->Clone("pos_zy"));
+  TH2* posYX = dynamic_cast<TH2*> (gROOT->FindObject("generated_yx_div_measured_yx")->Clone("pos_yx"));
+  TH2* posZX = dynamic_cast<TH2*> (gROOT->FindObject("generated_zx_div_measured_zx")->Clone("pos_zx"));
+  TH2* posZY = dynamic_cast<TH2*> (gROOT->FindObject("generated_zy_div_measured_zy")->Clone("pos_zy"));
 
   Track2Particle2DCreatePlots("correction_maponly-negative.root");
 
-  TH2* negYX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx")->Clone("neg_yx"));
-  TH2* negZX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx")->Clone("neg_zx"));
-  TH2* negZY = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy")->Clone("neg_zy"));
+  TH2* negYX = dynamic_cast<TH2*> (gROOT->FindObject("generated_yx_div_measured_yx")->Clone("neg_yx"));
+  TH2* negZX = dynamic_cast<TH2*> (gROOT->FindObject("generated_zx_div_measured_zx")->Clone("neg_zx"));
+  TH2* negZY = dynamic_cast<TH2*> (gROOT->FindObject("generated_zy_div_measured_zy")->Clone("neg_zy"));
 
   posYX->Divide(negYX);
   posZX->Divide(negZX);
@@ -1729,8 +1729,10 @@ void DrawTrackletOrigin()
   }
 }
 
-void DetermineAcceptance(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction", Double_t ptmin=0.2)
+TH2* GetCorrection(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction", Double_t ptmin=0.2)
 {
+  // returns the correction factor with pt integrated out
+
   loadlibs();
 
   TFile::Open(fileName);
@@ -1767,6 +1769,13 @@ void DetermineAcceptance(const char* fileName = "correction_map.root", const cha
 
 //   proj = hist->Project3D("yx");
   proj->Draw("COLZ");
+
+  return proj;
+}
+
+void DetermineAcceptance(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction", Double_t ptmin=0.2)
+{
+  TH2* proj = GetCorrection(fileName, dirName, ptmin);
 
   const Float_t limit = 5;
 
@@ -1821,3 +1830,171 @@ void AverageMultiplicity(const char* fileName = "correction_map.root", const cha
   Printf("%f %f --> %f", nEvents, nTracks, nTracks / nEvents);
 }
 
+void GetAverageCorrectionFactor(Float_t etaRange = 1.5, Float_t vertexRange = 9.9, const char* rawFile = "analysis_esd_raw.root", const char* mcFile = "analysis_mc.root")
+{
+  loadlibs();
+
+  TFile::Open(rawFile);
+  dNdEtaAnalysis* raw = new dNdEtaAnalysis("dndeta", "dndeta");
+  raw->LoadHistograms("fdNdEtaAnalysisESD");
+  raw->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->GetXaxis()->SetRangeUser(-vertexRange, vertexRange);
+  tracks = raw->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Project3D("y");
+  events = raw->GetData()->GetEventCorrection()->GetMeasuredHistogram()->ProjectionX("events", 0, raw->GetData()->GetEventCorrection()->GetMeasuredHistogram()->GetNbinsY() + 1);
+  Float_t nEvents = events->Integral(events->FindBin(-vertexRange), events->FindBin(vertexRange));
+  tracks->Scale(1.0 / nEvents / tracks->GetBinWidth(1));
+
+  TFile::Open(mcFile);
+  dNdEtaAnalysis* mc = new dNdEtaAnalysis("dndeta", "dndeta");
+  mc->LoadHistograms("dndetaTrVtx");
+  mcH = mc->GetdNdEtaPtCutOffCorrectedHistogram(0);
+
+  new TCanvas;
+  mcH->SetLineColor(2);
+  mcH->DrawCopy();
+  tracks->DrawCopy("SAME");
+
+  new TCanvas;
+  mcH->GetYaxis()->SetRangeUser(0, 5);
+  mcH->Divide(tracks);
+  mcH->DrawCopy();
+  mcH->Fit("pol0", "", "", -etaRange, etaRange);
+}
+
+void TrackCuts_Comparison(char* histName, Bool_t after = kFALSE, const char* fileName = "correction_map.root")
+{
+  // for the nsigmaplot it is needed to run with all cuts except the nsigmatovertex
+  //    --> manually disable it in the run.C
+
+  file = TFile::Open(fileName);
+
+  Int_t count = 0;
+  Int_t colors[] = { 1, 2, 3, 4, 5, 6 };
+
+  TLegend* legend = new TLegend(0.4, 0.6, 1, 1);
+  TLegend* legend2 = new TLegend(0.4, 0.6, 1, 1);
+  TLegend* legend3 = new TLegend(0.7, 0.5, 1, 0.7);
+
+  TCanvas* c1 = new TCanvas("c1", "c1", 800, 600);
+  //TCanvas* c2 = new TCanvas("c2", "c2", 800, 600);
+  TCanvas* c3 = new TCanvas("c3", "c3", 800, 600);
+
+  const char* folders2[] = { "before_cuts", "after_cuts" };
+  for (Int_t j = 0; j < ((after) ? 2 : 1); j++)
+  {
+    const char* folders1[] = { "esd_track_cuts", "esd_track_cuts_primaries", "esd_track_cuts_secondaries" };
+    TH1* base = 0;
+    TH1* prim = 0;
+    TH1* sec = 0;
+    for (Int_t i = 0; i < 3; i++)
+    {
+      TString folder;
+      folder.Form("%s/%s/%s", folders1[i], folders2[j], histName);
+      TH1* hist = (TH1*) file->Get(folder);
+      legend->AddEntry(hist, folder);
+
+      c1->cd();
+      hist->SetLineColor(colors[count]);
+      hist->DrawCopy((count == 0) ? "" : "SAME");
+
+      switch (i)
+      {
+        case 0: base = hist; break;
+        case 1: prim = hist; break;
+        case 2: sec = hist; break;
+      }
+
+      count++;
+    }
+
+    TH1* eff    = (TH1*) prim->Clone("eff"); eff->Reset();
+    TH1* purity = (TH1*) prim->Clone("purity"); purity->Reset();
+
+    for (Int_t bin = 1; bin <= prim->GetNbinsX(); bin++)
+    {
+      eff->SetBinContent(bin, prim->Integral(1, bin) / prim->Integral(1, prim->GetNbinsX() + 1));
+      purity->SetBinContent(bin, sec->Integral(1, bin) / (prim->Integral(1, bin) + sec->Integral(1, bin)));
+    }
+
+    eff->GetYaxis()->SetRangeUser(0, 1);
+    eff->SetLineColor(colors[0+j*2]);
+    eff->SetStats(kFALSE);
+    purity->SetLineColor(colors[1+j*2]);
+
+    legend3->AddEntry(eff, Form("%s: efficiency", folders2[j]));
+    legend3->AddEntry(purity, Form("%s: contamination", folders2[j]));
+
+    c3->cd();
+    eff->DrawCopy((j == 0) ? "" : "SAME");
+    purity->DrawCopy("SAME");
+  }
+
+  c1->cd();
+  c1->SetLogy();
+  c1->SetGridx();
+  c1->SetGridy();
+  legend->Draw();
+
+  //c2->cd();
+ // c2->SetGridx();
+ // c2->SetGridy();
+  //legend2->Draw();
+
+  c3->cd();
+  c3->SetGridx();
+  c3->SetGridy();
+  legend3->Draw();
+}
+
+void TrackCuts_DCA()
+{
+  file = TFile::Open("correction_map.root");
+  hist = (TH2*) file->Get("esd_track_cuts/before_cuts/dXYvsDZ");
+
+  TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
+  c1->SetLogz();
+  c1->SetRightMargin(0.12);
+  c1->SetBottomMargin(0.12);
+
+  hist->SetStats(kFALSE);
+  hist->Draw("COLZ");
+
+  ellipse = new TEllipse(0, 0, 4);
+  ellipse->SetLineWidth(2);
+  ellipse->SetLineStyle(2);
+  ellipse->SetFillStyle(0);
+  ellipse->Draw();
+
+  c1->SaveAs("trackcuts_dca_2d.eps");
+}
+
+void FindNSigma(TH2* hist, Int_t nSigma = 1)
+{
+  TH1* proj = hist->ProjectionY();
+  proj->Reset();
+
+  for (Int_t bin=1; bin<=proj->GetNbinsX(); bin++)
+  {
+    if (hist->Integral(1, hist->GetNbinsX(), bin, bin) == 0)
+      continue;
+
+    Int_t limit = -1;
+    for (limit = 1; limit<=hist->GetNbinsX(); limit++)
+  }
+}
+
+void ShowOnlyAccepted(TH2* input, const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction", Double_t ptmin=0.2)
+{
+  TH2* proj = GetCorrection(fileName, dirName, ptmin);
+
+  for (Int_t y=1; y<=proj->GetNbinsY(); ++y)
+    for (Int_t x=1; x<=proj->GetNbinsX(); ++x)
+      if (proj->GetBinContent(x, y) > 5 || proj->GetBinContent(x, y) == 0)
+      {
+        proj->SetBinContent(x, y, 0);
+      }
+      else
+        proj->SetBinContent(x, y, 1);
+
+
+  input->Multiply(proj);
+}
