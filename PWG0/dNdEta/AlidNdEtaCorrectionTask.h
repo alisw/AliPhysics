@@ -10,6 +10,7 @@
 class AliESDtrackCuts;
 class dNdEtaAnalysis;
 class AlidNdEtaCorrection;
+class TH1;
 class TH1F;
 class AliESDEvent;
 class TParticlePDG;
@@ -18,7 +19,8 @@ class TProfile;
 
 class AlidNdEtaCorrectionTask : public AliAnalysisTask {
   public:
-    AlidNdEtaCorrectionTask(const char* opt = "");
+    AlidNdEtaCorrectionTask();
+    AlidNdEtaCorrectionTask(const char* opt);
     virtual ~AlidNdEtaCorrectionTask();
 
     virtual void   ConnectInputData(Option_t *);
@@ -55,19 +57,25 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     // control histograms
     TH1F* fPIDParticles;                         //! pid of primary particles
     TH1F* fPIDTracks;                            //! pid of reconstructed tracks
- 
+
     TH2F* fVertexCorrelation;                    //! ESD z-vtx vs MC z-vtx
     TProfile* fVertexProfile;                    //! Profile of MC z-vtx - ESD z-vtx vs. MC z-vtx
+    TH1F* fVertexShift;                          //! (MC z-vtx - ESD z-vtx) in +- 10 cm
     TH1F* fVertexShiftNorm;                      //! (MC z-vtx - ESD z-vtx) / (sigma_ESD-z-vtx) histogrammed
 
     TH2F* fEtaCorrelation;                       //! ESD eta vs MC eta
     TProfile* fEtaProfile;                       //! Profile of MC eta - ESD eta vs. MC eta
+    TH1F* fEtaResolution;                        //! MC eta - ESD eta in |eta| < 1
+
+    TH1F* fpTResolution;                         //! MC pT - ESD pT in |eta| < 1
+
+    AliESDtrackCuts*  fEsdTrackCutsPrim;         //! control histograms for primaries
+    AliESDtrackCuts*  fEsdTrackCutsSec;          //! control histograms for secondaries
 
     // histograms for systematic studies (must be enabled with option)
 
-    TH1F* fSigmaVertexTracks;                    //! (accepted tracks) vs (n of sigma to vertex cut)
-    TH1F* fSigmaVertexPrim;                      //! (accepted primaries) vs (n of sigma to vertex cut)
-                                                 // enable with option: sigma-vertex
+    TH1* fTemp1;                                 //! temp histogram for quick study of variables
+    TH1* fTemp2;                                 //! temp histogram for quick study of variables
 
     TH1F* fMultAll; //! primary particles  in |eta| < 1 and pT > 0.2 in all events
     TH1F* fMultTr; //! primary particles  in |eta| < 1 and pT > 0.2 in triggered events

@@ -53,6 +53,7 @@ public:
   virtual void ReduceInformation();
 
   virtual void Reset(Option_t* option = "");
+  void PrintStats(Float_t zRange, Float_t etaRange, Float_t ptCut);
   void PrintInfo(Float_t ptCut);
 
 protected:

@@ -15,17 +15,17 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   Double_t cov3 = 0.5;
   Double_t cov4 = 0.5;
   Double_t cov5 = 2;
-  Double_t nSigma = 3;
+  Double_t nSigma = 4;
+
+  Bool_t tpcRefit = kTRUE;
 
   TString tag("Global tracking");
 
   // TPC-only cuts
-  if (analysisMode == AliPWG0Helper::kTPC) 
+  if (analysisMode == AliPWG0Helper::kTPC)
   {
-    // beta cuts (still under investigation)
-    cov1 = 4;
-    cov2 = 4;
-    nSigma = 4;
+    // eventually replace by kTPCin?
+    tpcRefit = kFALSE;
     
     tag = "TPC-only tracking";
   }
@@ -41,8 +41,8 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
 
   esdTrackCuts->SetMinNsigmaToVertex(nSigma);
   esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
-
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  
+  esdTrackCuts->SetRequireTPCRefit(tpcRefit);
   esdTrackCuts->SetAcceptKingDaughters(kFALSE);
 
   esdTrackCuts->SetMinNClustersTPC(50);

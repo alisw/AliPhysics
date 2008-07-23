@@ -391,14 +391,18 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Int_t vertexBinEnd   = vertexHist->GetXaxis()->FindBin(vertexRangeEnd[vertexPos]);
 
       const Int_t *binBegin = 0;
-      // adjust acceptance range for SPD
+
+      // adjust acceptance range
       if (fAnalysisMode == AliPWG0Helper::kSPD)
       {
-        //const Int_t binBegin[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 };
+        //const Int_t binBeginSPD[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 }; // by eye
         const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
-        //const Int_t binBegin[30] = { -1, -1, -1, 17, 15, 14, 12, 10, 8, 7, 6, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, -1, -1, -1};  // limit in correction map is 10
-        binBegin = binBeginSPD;
 
+        //const Int_t binBegin[30] = { -1, -1, -1, 17, 15, 14, 12, 10, 8, 7, 6, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, -1, -1, -1};  // limit in correction map is 10
+
+        //const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 15, 13, 11, 9, 8, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, -1, -1, -1, -1}; // limit 2
+
+        binBegin = binBeginSPD;
       }
       else if (fAnalysisMode == AliPWG0Helper::kTPC)
       {
@@ -418,14 +422,15 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       if (vtxBegin == -1)
         continue;
       
-      //Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
       //Printf("%d %d | %d %d", vtxBegin, vertexHist->GetXaxis()->FindBin(GetVtxMin(eta)), vtxEnd, vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta)));
       //vtxBegin = vertexHist->GetXaxis()->FindBin(GetVtxMin(eta));
       //vtxEnd = vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta));
-      //printf("Eta bin: %d (%f) Vertex range: %d; before: %d %d ", iEta, eta, vertexPos, vertexBinBegin, vertexBinEnd);
+
+      Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
+      printf("Eta bin: %d (%f) Vertex range: %d; before: %d %d (range) %d %d (acceptance)", iEta, eta, vertexPos, vertexBinBegin, vertexBinEnd, vtxBegin, vtxEnd);
       vertexBinBegin = TMath::Max(vertexBinBegin, vtxBegin);
       vertexBinEnd =   TMath::Min(vertexBinEnd, vtxEnd);
-      //Printf("after:  %d %d", vertexBinBegin, vertexBinEnd);
+      Printf(" after:  %d %d", vertexBinBegin, vertexBinEnd);
 
       // no data for this bin
       if (vertexBinBegin > vertexBinEnd)
@@ -434,26 +439,37 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         continue;
       }
 
-      Float_t totalEvents = vertexHist->Integral(vertexBinBegin, vertexBinEnd);
+      Float_t totalEvents = 0;
+      Float_t sum = 0;
+      Float_t sumError2 = 0;
+      Float_t unusedTracks = 0;
+      Float_t unusedEvents = 0;
+      for (Int_t iVtx = 1; iVtx <= vtxVsEta->GetNbinsX(); iVtx++)
+      {
+        if (iVtx >= vertexBinBegin && iVtx <= vertexBinEnd)
+        {
+          if (vtxVsEta->GetBinContent(iVtx, iEta) != 0)
+          {
+            sum += vtxVsEta->GetBinContent(iVtx, iEta);
+
+            if (sumError2 > 10e30)
+              Printf("WARNING: sum of error2 is dangerously large - be prepared for crash... ");
+
+            sumError2 = sumError2 + TMath::Power(vtxVsEta->GetBinError(iVtx, iEta),2);
+          }
+          totalEvents += vertexHist->GetBinContent(iVtx);
+        }
+        else
+        {
+          unusedTracks += vtxVsEta->GetBinContent(iVtx, iEta);
+          unusedEvents +=vertexHist->GetBinContent(iVtx);
+        }
+      }
+
       if (totalEvents == 0)
       {
         printf("WARNING: No events for hist %d %d %d\n", vertexPos, vertexBinBegin, vertexBinEnd);
         continue;
-      }
-
-      Float_t sum = 0;
-      Float_t sumError2 = 0;
-      for (Int_t iVtx = vertexBinBegin; iVtx <= vertexBinEnd; iVtx++)
-      {
-        if (vtxVsEta->GetBinContent(iVtx, iEta) != 0)
-        {
-          sum = sum + vtxVsEta->GetBinContent(iVtx, iEta);
-
-          if (sumError2 > 10e30)
-            Printf("WARNING: sum of error2 is dangerously large - be prepared for crash... ");
-
-          sumError2 = sumError2 + TMath::Power(vtxVsEta->GetBinError(iVtx, iEta),2);
-        }
       }
 
       Float_t ptCutOffCorrection = 1;
@@ -486,7 +502,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinContent(bin, dndeta);
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinError(bin, error);
 
-        //Printf("Bin %d has dN/deta = %f +- %f; %f +- %f", bin, dndeta, error, fdNdEta[vertexPos]->GetBinContent(bin), fdNdEta[vertexPos]->GetBinError(bin));
+        Printf("Bin %d has dN/deta = %f +- %f; %.2f tracks %.2f events (outside acceptance: %.2f tracks, %.2f events)", bin, dndeta, error, sum, totalEvents, unusedTracks, unusedEvents);
       }
     }
   }
@@ -592,11 +608,11 @@ void dNdEtaAnalysis::LoadHistograms(const Char_t* dir)
 
   fPtDist = dynamic_cast<TH1F*> (gDirectory->Get(fPtDist->GetName()));
 
-  if (dynamic_cast<TNamed*> (gFile->Get("fTag")))
-    fTag = (dynamic_cast<TNamed*> (gFile->Get("fTag")))->GetTitle();
+  if (dynamic_cast<TNamed*> (gDirectory->Get("fTag")))
+    fTag = (dynamic_cast<TNamed*> (gDirectory->Get("fTag")))->GetTitle();
 
-  if (dynamic_cast<TParameter<Int_t>*> (gFile->Get("fAnalysisMode")))
-    fAnalysisMode = (AliPWG0Helper::AnalysisMode) (dynamic_cast<TParameter<Int_t>*> (gFile->Get("fAnalysisMode")))->GetVal();
+  if (dynamic_cast<TParameter<Int_t>*> (gDirectory->Get("fAnalysisMode")))
+    fAnalysisMode = (AliPWG0Helper::AnalysisMode) (dynamic_cast<TParameter<Int_t>*> (gDirectory->Get("fAnalysisMode")))->GetVal();
 
   gDirectory->cd("../");
 }

@@ -8,8 +8,10 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TProfile.h>
 #include <TParticle.h>
+#include <TParticlePDG.h>
 
 #include <AliLog.h>
 #include <AliESDVertex.h>
@@ -33,6 +35,49 @@
 
 ClassImp(AlidNdEtaCorrectionTask)
 
+AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask() :
+  AliAnalysisTask(),
+  fESD(0),
+  fOutput(0),
+  fOption(),
+  fAnalysisMode(AliPWG0Helper::kTPC),
+  fTrigger(AliPWG0Helper::kMB1),
+  fSignMode(0),
+  fOnlyPrimaries(kFALSE),
+  fEsdTrackCuts(0),
+  fdNdEtaCorrection(0),
+  fdNdEtaAnalysisMC(0),
+  fdNdEtaAnalysisESD(0),
+  fPIDParticles(0),
+  fPIDTracks(0),
+  fVertexCorrelation(0),
+  fVertexProfile(0),
+  fVertexShift(0),
+  fVertexShiftNorm(0),
+  fEtaCorrelation(0),
+  fEtaProfile(0),
+  fEtaResolution(0),
+  fpTResolution(0),
+  fEsdTrackCutsPrim(0),
+  fEsdTrackCutsSec(0),
+  fTemp1(0),
+  fTemp2(0),
+  fMultAll(0),
+  fMultTr(0),
+  fMultVtx(0),
+  fEventStats(0)
+{
+  //
+  // Constructor. Initialization of pointers
+  //
+
+  for (Int_t i=0; i<2; i++)
+    fdNdEtaCorrectionProcessType[i] = 0;
+  
+  for (Int_t i=0; i<8; i++)
+    fDeltaPhi[i] = 0;
+}
+
 AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   AliAnalysisTask("AlidNdEtaCorrectionTask", ""),
   fESD(0),
@@ -50,11 +95,16 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fPIDTracks(0),
   fVertexCorrelation(0),
   fVertexProfile(0),
+  fVertexShift(0),
   fVertexShiftNorm(0),
   fEtaCorrelation(0),
   fEtaProfile(0),
-  fSigmaVertexTracks(0),
-  fSigmaVertexPrim(0),
+  fEtaResolution(0),
+  fpTResolution(0),
+  fEsdTrackCutsPrim(0),
+  fEsdTrackCutsSec(0),
+  fTemp1(0),
+  fTemp2(0),
   fMultAll(0),
   fMultTr(0),
   fMultVtx(0),
@@ -149,10 +199,10 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fdNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction", fAnalysisMode);
   fOutput->Add(fdNdEtaCorrection);
 
-  fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
+  fPIDParticles = new TH1F("fPIDParticles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
   fOutput->Add(fPIDParticles);
 
-  fPIDTracks = new TH1F("pid_tracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
+  fPIDTracks = new TH1F("fPIDTracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
   fOutput->Add(fPIDTracks);
 
   fdNdEtaAnalysisMC = new dNdEtaAnalysis("dndetaMC", "dndetaMC", fAnalysisMode);
@@ -160,6 +210,14 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
 
   fdNdEtaAnalysisESD = new dNdEtaAnalysis("dndetaESD", "dndetaESD", fAnalysisMode);
   fOutput->Add(fdNdEtaAnalysisESD);
+
+  if (fEsdTrackCuts)
+  {
+    fEsdTrackCutsPrim = dynamic_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsPrim"));
+    fEsdTrackCutsSec  = dynamic_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsSec"));
+    fOutput->Add(fEsdTrackCutsPrim);
+    fOutput->Add(fEsdTrackCutsSec);
+  }
 
   if (fOption.Contains("process-types")) {
     fdNdEtaCorrectionProcessType[0] = new AlidNdEtaCorrection("dndeta_correction_ND", "dndeta_correction_ND", fAnalysisMode);
@@ -171,19 +229,19 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
     fOutput->Add(fdNdEtaCorrectionProcessType[2]);
   }
 
-  if (fOption.Contains("sigma-vertex"))
-  {
-    fSigmaVertexTracks = new TH1F("fSigmaVertexTracks", "fSigmaVertexTracks;Nsigma2vertex;NacceptedTracks", 60, 0.05, 6.05);
-    fSigmaVertexPrim = new TH1F("fSigmaVertexPrim", "fSigmaVertexPrim;Nsigma2vertex;NacceptedPrimaries", 60, 0.05, 6.05);
-    fOutput->Add(fSigmaVertexTracks);
-    fOutput->Add(fSigmaVertexPrim);
-    Printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms");
-  }
+  /*
+  fTemp1 = new TH3F("fTemp1", "fTemp1 prim;b0;b1;1/pT", 200, 0, 10, 200, 0, 10, 200, 0, 10);
+  fOutput->Add(fTemp1);
+  fTemp2 = new TH3F("fTemp2", "fTemp2 sec;b0;b1;1/pT", 200, 0, 10, 200, 0, 10, 200, 0, 10);
+  fOutput->Add(fTemp2);
+  */
 
   fVertexCorrelation = new TH2F("fVertexCorrelation", "fVertexCorrelation;MC z-vtx;ESD z-vtx", 120, -30, 30, 120, -30, 30);
   fOutput->Add(fVertexCorrelation);
   fVertexProfile = new TProfile("fVertexProfile", "fVertexProfile;MC z-vtx;MC z-vtx - ESD z-vtx", 40, -20, 20);
   fOutput->Add(fVertexProfile);
+  fVertexShift = new TH1F("fVertexShift", "fVertexShift;(MC z-vtx - ESD z-vtx);Entries", 201, -2, 2);
+  fOutput->Add(fVertexShift);
   fVertexShiftNorm = new TH1F("fVertexShiftNorm", "fVertexShiftNorm;(MC z-vtx - ESD z-vtx) / #sigma_{ESD z-vtx};Entries", 200, -100, 100);
   fOutput->Add(fVertexShiftNorm);
 
@@ -191,6 +249,11 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fOutput->Add(fEtaCorrelation);
   fEtaProfile = new TProfile("fEtaProfile", "fEtaProfile;MC #eta;MC #eta - ESD #eta", 120, -3, 3);
   fOutput->Add(fEtaProfile);
+  fEtaResolution = new TH1F("fEtaResolution", "fEtaResolution;MC #eta - ESD #eta", 201, -0.2, 0.2);
+  fOutput->Add(fEtaResolution);
+
+  fpTResolution = new TH1F("fpTResolution", "fpTResolution;MC p_{T} - ESD p_{T}", 201, -0.2, 0.2);
+  fOutput->Add(fpTResolution);
 
   fMultAll = new TH1F("fMultAll", "fMultAll", 500, -0.5, 499.5);
   fOutput->Add(fMultAll);
@@ -216,6 +279,12 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fEventStats->GetYaxis()->SetBinLabel(2, "trg");
   fEventStats->GetYaxis()->SetBinLabel(3, "vtx");
   fEventStats->GetYaxis()->SetBinLabel(4, "trgvtx");
+
+  if (fEsdTrackCuts)
+  {
+    fEsdTrackCuts->SetName("fEsdTrackCuts");
+    fOutput->Add(fEsdTrackCuts);
+  }
 }
 
 void AlidNdEtaCorrectionTask::Exec(Option_t*)
@@ -291,7 +360,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     eventVertex = kTRUE;
     
     Double_t diff = vtxMC[2] - vtx[2];
-    if (vtxESD->GetZRes() > 0) 
+    fVertexShift->Fill(diff);
+    if (vtxESD->GetZRes() > 0)
       fVertexShiftNorm->Fill(diff / vtxESD->GetZRes());
   }
   else
@@ -328,7 +398,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     ptArr = new Float_t[mult->GetNumberOfTracklets()];
     deltaPhiArr = new Float_t[mult->GetNumberOfTracklets()];
 
-    // get multiplicity from ITS tracklets
+    // get multiplicity from SPD tracklets
     for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
     {
       //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
@@ -364,7 +434,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     }
 
     // get multiplicity from ESD tracks
-    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
     Int_t nGoodTracks = list->GetEntries();
 
     Printf("Accepted %d tracks", nGoodTracks);
@@ -394,6 +464,78 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     }
 
     delete list;
+
+    if (eventTriggered && vtxESD)
+    {
+      // collect values for primaries and secondaries
+      for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++)
+      {
+        AliESDtrack* track = 0;
+
+        if (fAnalysisMode == AliPWG0Helper::kTPC)
+          track = AliESDtrackCuts::GetTPCOnlyTrack(fESD, iTrack);
+        else if (fAnalysisMode == AliPWG0Helper::kTPCITS)
+          track = fESD->GetTrack(iTrack);
+
+        if (!track)
+          continue;
+
+        Int_t label = TMath::Abs(track->GetLabel());
+        if (!stack->Particle(label) || !stack->Particle(label)->GetPDG())
+        {
+          Printf("WARNING: No particle for %d", label);
+          if (stack->Particle(label))
+            stack->Particle(label)->Print();
+          continue;
+        }
+
+        if (stack->Particle(label)->GetPDG()->Charge() == 0)
+          continue;
+
+        if (stack->IsPhysicalPrimary(label))
+        {
+          // primary
+          if (fEsdTrackCutsPrim->AcceptTrack(track)) {
+            if (track->Pt() > 0) {
+              Float_t b0, b1;
+              track->GetImpactParameters(b0, b1);
+              if (fTemp1)
+                ((TH3*) fTemp1)->Fill(b0, b1, 1.0 / track->Pt());
+              //fTemp1->Fill(TMath::Sqrt(b0*b0 + b1*b1), 1.0 / track->Pt());
+            }
+
+            if (AliESDtrackCuts::GetSigmaToVertex(track) > 900)
+            {
+              Printf("Track %d has nsigma of %f. Printing track and vertex...", iTrack, AliESDtrackCuts::GetSigmaToVertex(track));
+              Float_t b[2];
+              Float_t r[3];
+              track->GetImpactParameters(b, r);
+              Printf("Impact parameter %f %f and resolution: %f %f %f", b[0], b[1], r[0], r[1], r[2]);
+              track->Print("");
+              if (vtxESD)
+                vtxESD->Print();
+            }
+          }
+        }
+        else
+        {
+          // secondary
+          if (fEsdTrackCutsSec->AcceptTrack(track))  {
+            if (track->Pt() > 0) {
+              Float_t b0, b1;
+              track->GetImpactParameters(b0, b1);
+              if (fTemp2)
+                ((TH3*) fTemp2)->Fill(b0, b1, 1.0 / track->Pt());
+              //fTemp2->Fill(TMath::Sqrt(b0*b0 + b1*b1), 1.0 / track->Pt());
+            }
+          }
+        }
+
+        // TODO mem leak in the continue statements above
+        if (fAnalysisMode == AliPWG0Helper::kTPC)
+          delete track;
+      }
+    }
   }
   else
     return;
@@ -418,10 +560,17 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       continue;
 
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
+    {
+      //if (TMath::Abs(particle->GetPdgCode()) > 3000 && TMath::Abs(particle->Eta()) < 1.0)
+      //  fPIDParticles->Fill(particle->GetPdgCode());
       continue;
+    }
 
     if (SignOK(particle->GetPDG()) == kFALSE)
       continue;
+
+    if (fPIDParticles && TMath::Abs(particle->Eta()) < 1.0)
+      fPIDParticles->Fill(particle->GetPdgCode());
 
     Float_t eta = particle->Eta();
     Float_t pt = particle->Pt();
@@ -481,6 +630,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (track loop).", label));
       continue;
     }
+
+    fPIDTracks->Fill(particle->GetPdgCode());
     
     // find particle that is filled in the correction map
     // this should be the particle that has been reconstructed
@@ -512,6 +663,10 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
 
       processed++;
 
+      // resolutions
+      fEtaResolution->Fill(particle->Eta() - etaArr[i]);
+      fpTResolution->Fill(particle->Pt() - ptArr[i]);
+
       Bool_t firstIsPrim = stack->IsPhysicalPrimary(label);
       // in case of primary the MC values are filled, otherwise (background) the reconstructed values
       if (label == label2 && firstIsPrim)
@@ -540,7 +695,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
           fdNdEtaCorrectionProcessType[0]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
 
         // single diffractive
-        if (processType == AliPWG0Helper::kSD )
+        if (processType == AliPWG0Helper::kSD)
           fdNdEtaCorrectionProcessType[1]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
 
         // double diffractive
@@ -637,54 +792,6 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   delete[] labelArr2;
   delete[] ptArr;
   delete[] deltaPhiArr;
-
-  // fills the fSigmaVertex histogram (systematic study)
-  if (fSigmaVertexTracks)
-  {
-    // save the old value
-    Float_t oldSigmaVertex = fEsdTrackCuts->GetMinNsigmaToVertex();
-
-    // set to maximum
-    fEsdTrackCuts->SetMinNsigmaToVertex(6);
-
-    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
-    Int_t nGoodTracks = list->GetEntries();
-
-    // loop over esd tracks
-    for (Int_t i=0; i<nGoodTracks; i++)
-    {
-      AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
-      if (!esdTrack)
-      {
-        AliError(Form("ERROR: Could not retrieve track %d.", i));
-        continue;
-      }
-
-      Float_t sigma2Vertex = fEsdTrackCuts->GetSigmaToVertex(esdTrack);
-
-      for (Double_t nSigma = 0.1; nSigma < 6.05; nSigma += 0.1)
-      {
-        if (sigma2Vertex < nSigma)
-        {
-          fSigmaVertexTracks->Fill(nSigma);
-
-          Int_t label = TMath::Abs(esdTrack->GetLabel());
-          TParticle* particle = stack->Particle(label);
-          if (!particle || label >= nPrim)
-            continue;
-
-          if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim))
-            fSigmaVertexPrim->Fill(nSigma);
-        }
-      }
-    }
-
-    delete list;
-    list = 0;
-
-    // set back the old value
-    fEsdTrackCuts->SetMinNsigmaToVertex(oldSigmaVertex);
-  }
 }
 
 void AlidNdEtaCorrectionTask::Terminate(Option_t *)
@@ -714,8 +821,18 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   fileName.Form("correction_map%s.root", fOption.Data());
   TFile* fout = new TFile(fileName, "RECREATE");
 
+  fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCuts"));
   if (fEsdTrackCuts)
     fEsdTrackCuts->SaveHistograms("esd_track_cuts");
+
+  fEsdTrackCutsPrim = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsPrim"));
+  if (fEsdTrackCutsPrim)
+    fEsdTrackCutsPrim->SaveHistograms("esd_track_cuts_primaries");
+
+  fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsSec"));
+  if (fEsdTrackCutsSec)
+    fEsdTrackCutsSec->SaveHistograms("esd_track_cuts_secondaries");
+
   fdNdEtaCorrection->SaveHistograms();
   fdNdEtaAnalysisMC->SaveHistograms();
   fdNdEtaAnalysisESD->SaveHistograms();
@@ -727,12 +844,12 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
     if (fdNdEtaCorrectionProcessType[i])
       fdNdEtaCorrectionProcessType[i]->SaveHistograms();
 
-  fSigmaVertexTracks = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertexTracks"));
-  if (fSigmaVertexTracks)
-    fSigmaVertexTracks->Write();
-  fSigmaVertexPrim = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertexPrim"));
-  if (fSigmaVertexPrim)
-    fSigmaVertexPrim->Write();
+  fTemp1 = dynamic_cast<TH1*> (fOutput->FindObject("fTemp1"));
+  if (fTemp1)
+    fTemp1->Write();
+  fTemp2 = dynamic_cast<TH1*> (fOutput->FindObject("fTemp2"));
+  if (fTemp2)
+    fTemp2->Write();
 
   fVertexCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fVertexCorrelation"));
   if (fVertexCorrelation)
@@ -740,6 +857,9 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   fVertexProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fVertexProfile"));
   if (fVertexProfile)
     fVertexProfile->Write();
+  fVertexShift = dynamic_cast<TH1F*> (fOutput->FindObject("fVertexShift"));
+  if (fVertexShift)
+    fVertexShift->Write();
   fVertexShiftNorm = dynamic_cast<TH1F*> (fOutput->FindObject("fVertexShiftNorm"));
   if (fVertexShiftNorm)
     fVertexShiftNorm->Write();
@@ -750,6 +870,12 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   fEtaProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fEtaProfile"));
   if (fEtaProfile)
     fEtaProfile->Write();
+  fEtaResolution = dynamic_cast<TH1F*> (fOutput->FindObject("fEtaResolution"));
+  if (fEtaResolution)
+    fEtaResolution->Write();
+  fpTResolution = dynamic_cast<TH1F*> (fOutput->FindObject("fpTResolution"));
+  if (fpTResolution)
+    fpTResolution->Write();
 
   fMultAll = dynamic_cast<TH1F*> (fOutput->FindObject("fMultAll"));
   if (fMultAll)
@@ -774,30 +900,35 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   if (fEventStats)
     fEventStats->Write();
 
-  fout->Write();
-  fout->Close();
+  fPIDParticles = dynamic_cast<TH1F*> (fOutput->FindObject("fPIDParticles"));
+  if (fPIDParticles)
+    fPIDParticles->Write();
 
-  //fdNdEtaCorrection->DrawHistograms();
+  fPIDTracks = dynamic_cast<TH1F*> (fOutput->FindObject("fPIDTracks"));
+  if (fPIDTracks)
+    fPIDTracks->Write();
+
+ //fdNdEtaCorrection->DrawHistograms();
 
   Printf("Writting result to %s", fileName.Data());
 
   if (fPIDParticles && fPIDTracks)
   {
-    new TCanvas("pidcanvas", "pidcanvas", 500, 500);
-
-    fPIDParticles->Draw();
-    fPIDTracks->SetLineColor(2);
-    fPIDTracks->Draw("SAME");
-
     TDatabasePDG* pdgDB = new TDatabasePDG;
 
     for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
       if (fPIDParticles->GetBinContent(i) > 0)
-        printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
+      {
+        TObject* pdgParticle = pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i));
+        printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), (pdgParticle) ? pdgParticle->GetName() : "not found", (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
+      }
 
     delete pdgDB;
     pdgDB = 0;
   }
+
+  fout->Write();
+  fout->Close();
 }
 
 Bool_t AlidNdEtaCorrectionTask::SignOK(TParticlePDG* particle)

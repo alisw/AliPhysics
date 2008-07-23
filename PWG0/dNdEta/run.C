@@ -53,8 +53,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     }
     else
     {
-      gProof->UploadPackage("$ALICE_ROOT/AF-v4-12");
-      gProof->EnablePackage("$ALICE_ROOT/AF-v4-12");
+      gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-14-Release/AF-v4-14");
+      gProof->EnablePackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-14-Release/AF-v4-14");
     }
 
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
@@ -66,6 +66,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     gSystem->Load("libTree");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
+    gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libPWG0base");
@@ -101,6 +102,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
       printf("ERROR: esdTrackCuts could not be created\n");
       return;
     }
+    esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
   if (runWhat == 0)
@@ -170,6 +172,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     // Create chain of input files
     gROOT->LoadMacro("../CreateESDChain.C");
     chain = CreateESDChain(data, nRuns, offset);
+    //chain = CreateChain("TE", data, nRuns, offset);
 
     mgr->StartAnalysis((aProof > 0) ? "proof" : "local", chain);
   }
@@ -236,7 +239,15 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "ESD raw");
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, "ESD raw with pt cut");
+  //fdNdEtaAnalysis->DrawHistograms(kTRUE);
+  file2->cd();
+  fdNdEtaAnalysis->SaveHistograms();
+
+  file->cd();
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracksAll", "dndetaTracksAll");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
+  fdNdEtaAnalysis->Finish(0, -1, AlidNdEtaCorrection::kNone, "ESD raw");
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();

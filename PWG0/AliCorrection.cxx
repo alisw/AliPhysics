@@ -369,6 +369,46 @@ void AliCorrection::Scale(Double_t factor)
 }
 
 //____________________________________________________________________
+void AliCorrection::PrintStats(Float_t zRange, Float_t etaRange, Float_t ptCut)
+{
+  // prints statistics and effective correction factors
+
+  Printf("AliCorrection::PrintInfo: Values in |eta| < %.2f, |vtx-z| < %.2f and pt > %.2f:", etaRange, zRange, ptCut);
+
+  // prevent to be on bin border
+  zRange -= 0.1;
+  etaRange -= 0.1;
+
+  TH3* measured = GetTrackCorrection()->GetMeasuredHistogram();
+  TH3* generated = GetTrackCorrection()->GetGeneratedHistogram();
+
+  TH2* measuredEvents = GetEventCorrection()->GetMeasuredHistogram();
+  TH2* generatedEvents = GetEventCorrection()->GetGeneratedHistogram();
+
+  Float_t tracksM = measured->Integral(measured->GetXaxis()->FindBin(-zRange), measured->GetXaxis()->FindBin(zRange), measured->GetYaxis()->FindBin(-etaRange), measured->GetYaxis()->FindBin(etaRange), measured->GetZaxis()->FindBin(ptCut), measured->GetZaxis()->GetNbins());
+  Float_t tracksG = generated->Integral(generated->GetXaxis()->FindBin(-zRange), generated->GetXaxis()->FindBin(zRange), generated->GetYaxis()->FindBin(-etaRange), generated->GetYaxis()->FindBin(etaRange), generated->GetZaxis()->FindBin(ptCut), generated->GetZaxis()->GetNbins());
+
+  Float_t eventsM = measuredEvents->Integral(measuredEvents->GetXaxis()->FindBin(-zRange), measuredEvents->GetXaxis()->FindBin(zRange), 1, measuredEvents->GetNbinsY());
+  Float_t eventsG = generatedEvents->Integral(generatedEvents->GetXaxis()->FindBin(-zRange), generatedEvents->GetXaxis()->FindBin(zRange), 1, generatedEvents->GetNbinsY());
+
+  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", tracksM, tracksG, eventsM, eventsG);
+
+  if (tracksM > 0)
+    Printf("Effective average correction factor for TRACKS: %.3f", tracksG / tracksM);
+  if (eventsM > 0)
+    Printf("Effective average correction factor for EVENTS: %.3f", eventsG / eventsM);
+
+  if (eventsM > 0 && eventsG > 0)
+  {
+    // normalize to number of events;
+    tracksM /= eventsM;
+    tracksG /= eventsG;
+
+    Printf("%.2f tracks/event measured, %.2f tracks/event after correction --> effective average correction factor is %.3f (pt cut %.2f GeV/c)", tracksM, tracksG, tracksG / tracksM, ptCut);
+  }
+}
+
+//____________________________________________________________________
 void AliCorrection::PrintInfo(Float_t ptCut)
 {
   // prints some stats
@@ -383,27 +423,6 @@ void AliCorrection::PrintInfo(Float_t ptCut)
 
   Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", measured->Integral(), generated->Integral(), measuredEvents->Integral(), generatedEvents->Integral());
 
-  Printf("AliCorrection::PrintInfo: Values in |eta| < 0.8, |vtx-z| < 10 and pt > %.2f:", ptCut);
-
-  Float_t tracksM = measured->Integral(measured->GetXaxis()->FindBin(-9.9), measured->GetXaxis()->FindBin(9.9), measured->GetYaxis()->FindBin(-0.79), measured->GetYaxis()->FindBin(0.79), measured->GetZaxis()->FindBin(ptCut), measured->GetZaxis()->GetNbins());
-  Float_t tracksG = generated->Integral(generated->GetXaxis()->FindBin(-9.9), generated->GetXaxis()->FindBin(9.9), generated->GetYaxis()->FindBin(-0.79), generated->GetYaxis()->FindBin(0.79), generated->GetZaxis()->FindBin(ptCut), generated->GetZaxis()->GetNbins());
-
-  Float_t eventsM = measuredEvents->Integral(measuredEvents->GetXaxis()->FindBin(-9.9), measuredEvents->GetXaxis()->FindBin(9.9), 1, measuredEvents->GetNbinsY());
-  Float_t eventsG = generatedEvents->Integral(generatedEvents->GetXaxis()->FindBin(-9.9), generatedEvents->GetXaxis()->FindBin(9.9), 1, generatedEvents->GetNbinsY());
-
-  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", tracksM, tracksG, eventsM, eventsG);
-
-  if (tracksM > 0)
-    Printf("Effective average correction factor for TRACKS: %.3f", tracksG / tracksM);
-  if (eventsM > 0)
-  Printf("Effective average correction factor for EVENTS: %.3f", eventsG / eventsM);
-
-  if (eventsM > 0 && eventsG > 0)
-  {
-    // normalize to number of events;
-    tracksM /= eventsM;
-    tracksG /= eventsG;
-
-    Printf("%.2f tracks/event measured, %.2f tracks/event after correction --> effective average correction factor is %.3f (pt cut %.2f GeV/c)", tracksM, tracksG, tracksG / tracksM, ptCut);
-  }
+  PrintStats(10, 1.0, ptCut);
+  PrintStats(10, 1.5, ptCut);
 }

@@ -173,11 +173,11 @@ void AlidNdEtaTask::CreateOutputObjects()
   fPhi = new TH1F("fPhi", "fPhi;#phi in rad.;count", 720, 0, 2 * TMath::Pi());
   fOutput->Add(fPhi);
 
-  fEtaPhi = new TH2F("fEtaPhi", "fEtaPhi;#eta;#phi in rad.;count", 80, -4, 4, 80, 0, 2 * TMath::Pi());
+  fEtaPhi = new TH2F("fEtaPhi", "fEtaPhi;#eta;#phi in rad.;count", 80, -4, 4, 18*5, 0, 2 * TMath::Pi());
   fOutput->Add(fEtaPhi);
 
   if (fAnalysisMode == AliPWG0Helper::kSPD)
-    fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 1000, -3.14, 3.14);
+    fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 18*50, -3.14, 3.14);
 
   if (fReadMC)
   {
@@ -203,227 +203,269 @@ void AlidNdEtaTask::CreateOutputObjects()
     fPartPt->Sumw2();
     fOutput->Add(fPartPt);
   }
+
+  if (fEsdTrackCuts)
+  {
+    fEsdTrackCuts->SetName("fEsdTrackCuts");
+    fOutput->Add(fEsdTrackCuts);
+  }
 }
 
 void AlidNdEtaTask::Exec(Option_t*)
 {
   // process the event
 
-  // Check prerequisites
-  if (!fESD)
+  // these variables are also used in the MC section below; however, if ESD is off they stay with their default values
+  Bool_t eventTriggered = kFALSE;
+  const AliESDVertex* vtxESD = 0;
+
+  // ESD analysis
+  if (fESD)
   {
-    AliDebug(AliLog::kError, "ESD branch not available");
-    return;
-  }
+    // trigger definition
+    eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), fTrigger);
 
-  // trigger definition
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), fTrigger);
+    // get the ESD vertex
+    vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
 
-  // get the ESD vertex
-  const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
-  
-  Double_t vtx[3];
-  if (vtxESD) {
-    vtxESD->GetXYZ(vtx);
-  }
-  else
-    Printf("No vertex");
-  
-  // fill z vertex resolution
-  if (vtxESD)
-    fVertexResolution->Fill(vtxESD->GetZRes());
-
-  // post the data already here
-  PostData(0, fOutput);
-
-  // needed for syst. studies
-  AliStack* stack = 0;
-  
-  if (fUseMCVertex || fUseMCKine) {
-    if (!fReadMC) {
-      Printf("ERROR: fUseMCVertex or fUseMCKine set without fReadMC set!");
-      return;
+    Double_t vtx[3];
+    if (vtxESD) {
+      vtxESD->GetXYZ(vtx);
     }
+    else
+      Printf("No vertex");
 
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
+    // fill z vertex resolution
+    if (vtxESD)
+      fVertexResolution->Fill(vtxESD->GetZRes());
 
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
+    // post the data already here
+    PostData(0, fOutput);
 
-    AliHeader* header = mcEvent->Header();
-    if (!header)
-    {
-      AliDebug(AliLog::kError, "Header not available");
-      return;
-    }
+    // needed for syst. studies
+    AliStack* stack = 0;
+    TArrayF vtxMC(3);
 
-    if (fUseMCVertex)
-    {
-      Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
-      // get the MC vertex
-      AliGenEventHeader* genHeader = header->GenEventHeader();
-      TArrayF vtxMC(3);
-      genHeader->PrimaryVertex(vtxMC);
-
-      vtx[2] = vtxMC[2];
-    }
-
-    if (fUseMCKine)
-    {
-      stack = mcEvent->Stack();
-      if (!stack)
-      {
-        AliDebug(AliLog::kError, "Stack not available");
+    if (fUseMCVertex || fUseMCKine || fReadMC) {
+      if (!fReadMC) {
+        Printf("ERROR: fUseMCVertex or fUseMCKine set without fReadMC set!");
         return;
       }
-    }
-  }
 
-  // create list of (label, eta, pt) tuples
-  Int_t inputCount = 0;
-  Int_t* labelArr = 0;
-  Float_t* etaArr = 0;
-  Float_t* ptArr = 0;
-  if (fAnalysisMode == AliPWG0Helper::kSPD)
-  {
-    // get tracklets
-    const AliMultiplicity* mult = fESD->GetMultiplicity();
-    if (!mult)
-    {
-      AliDebug(AliLog::kError, "AliMultiplicity not available");
-      return;
-    }
-
-    labelArr = new Int_t[mult->GetNumberOfTracklets()];
-    etaArr = new Float_t[mult->GetNumberOfTracklets()];
-    ptArr = new Float_t[mult->GetNumberOfTracklets()];
-
-    if (fUseMCKine && stack)
-      Printf("Processing only primaries (MC information used). This is for systematical checks only.");
-
-    // get multiplicity from ITS tracklets
-    for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
-    {
-      //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
-
-      if (fUseMCKine && stack)
-        if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
-          continue;
-      
-      Float_t deltaPhi = mult->GetDeltaPhi(i);
-      // prevent values to be shifted by 2 Pi()
-      if (deltaPhi < -TMath::Pi())
-        deltaPhi += TMath::Pi() * 2;
-      if (deltaPhi > TMath::Pi())
-        deltaPhi -= TMath::Pi() * 2;
-
-      if (TMath::Abs(deltaPhi) > 1)
-        printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
-
-      Float_t phi = mult->GetPhi(i);
-      if (phi < 0)
-        phi += TMath::Pi() * 2;
-      fPhi->Fill(phi);
-      fEtaPhi->Fill(mult->GetEta(i), phi);
-
-      fDeltaPhi->Fill(deltaPhi);
-
-      etaArr[inputCount] = mult->GetEta(i);
-      labelArr[inputCount] = mult->GetLabel(i, 0);
-      ptArr[inputCount] = 0; // no pt for tracklets
-      ++inputCount;
-    }
-
-    //Printf("Accepted %d tracklets", inputCount);
-  }
-  else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
-  {
-    if (!fEsdTrackCuts)
-    {
-      AliDebug(AliLog::kError, "fESDTrackCuts not available");
-      return;
-    }
-
-    // get multiplicity from ESD tracks
-    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
-    Int_t nGoodTracks = list->GetEntries();
-
-    labelArr = new Int_t[nGoodTracks];
-    etaArr = new Float_t[nGoodTracks];
-    ptArr = new Float_t[nGoodTracks];
-
-    // loop over esd tracks
-    for (Int_t i=0; i<nGoodTracks; i++)
-    {
-      AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
-      if (!esdTrack)
-      {
-        AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
-        continue;
+      AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if (!eventHandler) {
+        Printf("ERROR: Could not retrieve MC event handler");
+        return;
       }
 
-      Float_t phi = esdTrack->Phi();
-      if (phi < 0)
-        phi += TMath::Pi() * 2;
-      fPhi->Fill(phi);
-      fEtaPhi->Fill(esdTrack->Eta(), phi);
+      AliMCEvent* mcEvent = eventHandler->MCEvent();
+      if (!mcEvent) {
+        Printf("ERROR: Could not retrieve MC event");
+        return;
+      }
 
-      etaArr[inputCount] = esdTrack->Eta();
-      labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
-      ptArr[inputCount] = esdTrack->Pt();
-      ++inputCount;
-    }
-
-    Printf("Accepted %d tracks", nGoodTracks);
-
-    delete list;
-  }
-  else
-    return;
-
-  // Processing of ESD information (always)
-  if (eventTriggered)
-  {
-    // control hist
-    fMult->Fill(inputCount);
-    fdNdEtaAnalysisESD->FillTriggeredEvent(inputCount);
-
-    if (vtxESD)
-    {
-      // control hist
-      fMultVtx->Fill(inputCount);
-
-      for (Int_t i=0; i<inputCount; ++i)
+      AliHeader* header = mcEvent->Header();
+      if (!header)
       {
-        Float_t eta = etaArr[i];
-        Float_t pt  = ptArr[i];
+        AliDebug(AliLog::kError, "Header not available");
+        return;
+      }
 
-        fdNdEtaAnalysisESD->FillTrack(vtx[2], eta, pt);
+      // get the MC vertex
+      AliGenEventHeader* genHeader = header->GenEventHeader();
+      if (!genHeader)
+      {
+        AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+        return;
+      }
+      genHeader->PrimaryVertex(vtxMC);
 
-        if (TMath::Abs(vtx[2]) < 20)
+      if (fUseMCVertex)
+      {
+        Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
+        vtx[2] = vtxMC[2];
+      }
+
+      if (fUseMCKine)
+      {
+        stack = mcEvent->Stack();
+        if (!stack)
         {
-          fPartEta[0]->Fill(eta);
-
-          if (vtx[2] < 0)
-            fPartEta[1]->Fill(eta);
-          else
-            fPartEta[2]->Fill(eta);
+          AliDebug(AliLog::kError, "Stack not available");
+          return;
         }
       }
-
-      // for event count per vertex
-      fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
-
-      // control hist
-      fEvents->Fill(vtx[2]);
     }
+
+    // create list of (label, eta, pt) tuples
+    Int_t inputCount = 0;
+    Int_t* labelArr = 0;
+    Float_t* etaArr = 0;
+    Float_t* ptArr = 0;
+    if (fAnalysisMode == AliPWG0Helper::kSPD)
+    {
+      // get tracklets
+      const AliMultiplicity* mult = fESD->GetMultiplicity();
+      if (!mult)
+      {
+        AliDebug(AliLog::kError, "AliMultiplicity not available");
+        return;
+      }
+
+      labelArr = new Int_t[mult->GetNumberOfTracklets()];
+      etaArr = new Float_t[mult->GetNumberOfTracklets()];
+      ptArr = new Float_t[mult->GetNumberOfTracklets()];
+
+      if (fUseMCKine && stack)
+        Printf("Processing only primaries (MC information used). This is for systematical checks only.");
+
+      // get multiplicity from ITS tracklets
+      for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
+      {
+        //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
+
+        if (fUseMCKine && stack)
+          if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
+            continue;
+
+        Float_t deltaPhi = mult->GetDeltaPhi(i);
+        // prevent values to be shifted by 2 Pi()
+        if (deltaPhi < -TMath::Pi())
+          deltaPhi += TMath::Pi() * 2;
+        if (deltaPhi > TMath::Pi())
+          deltaPhi -= TMath::Pi() * 2;
+
+        if (TMath::Abs(deltaPhi) > 1)
+          printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
+
+        Float_t phi = mult->GetPhi(i);
+        if (phi < 0)
+          phi += TMath::Pi() * 2;
+        fPhi->Fill(phi);
+        fEtaPhi->Fill(mult->GetEta(i), phi);
+
+        fDeltaPhi->Fill(deltaPhi);
+
+        etaArr[inputCount] = mult->GetEta(i);
+        labelArr[inputCount] = mult->GetLabel(i, 0);
+        ptArr[inputCount] = 0; // no pt for tracklets
+        ++inputCount;
+      }
+
+      //Printf("Accepted %d tracklets", inputCount);
+    }
+    else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
+    {
+      if (!fEsdTrackCuts)
+      {
+        AliDebug(AliLog::kError, "fESDTrackCuts not available");
+        return;
+      }
+
+      // get multiplicity from ESD tracks
+      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+      Int_t nGoodTracks = list->GetEntries();
+
+      labelArr = new Int_t[nGoodTracks];
+      etaArr = new Float_t[nGoodTracks];
+      ptArr = new Float_t[nGoodTracks];
+
+      // loop over esd tracks
+      for (Int_t i=0; i<nGoodTracks; i++)
+      {
+        AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
+        if (!esdTrack)
+        {
+          AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
+          continue;
+        }
+
+        Float_t phi = esdTrack->Phi();
+        if (phi < 0)
+          phi += TMath::Pi() * 2;
+        fPhi->Fill(phi);
+        fEtaPhi->Fill(esdTrack->Eta(), phi);
+
+        etaArr[inputCount] = esdTrack->Eta();
+        labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
+        ptArr[inputCount] = esdTrack->Pt();
+        ++inputCount;
+      }
+
+      Printf("Accepted %d tracks", nGoodTracks);
+
+      delete list;
+    }
+    else
+      return;
+
+    // Processing of ESD information (always)
+    if (eventTriggered)
+    {
+      // control hist
+      fMult->Fill(inputCount);
+      fdNdEtaAnalysisESD->FillTriggeredEvent(inputCount);
+
+      if (vtxESD)
+      {
+        // control hist
+        fMultVtx->Fill(inputCount);
+
+        for (Int_t i=0; i<inputCount; ++i)
+        {
+          Float_t eta = etaArr[i];
+          Float_t pt  = ptArr[i];
+
+          fdNdEtaAnalysisESD->FillTrack(vtx[2], eta, pt);
+
+          if (TMath::Abs(vtx[2]) < 20)
+          {
+            fPartEta[0]->Fill(eta);
+
+            if (vtx[2] < 0)
+              fPartEta[1]->Fill(eta);
+            else
+              fPartEta[2]->Fill(eta);
+          }
+        }
+
+        // for event count per vertex
+        fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
+
+        // control hist
+        fEvents->Fill(vtx[2]);
+
+        if (fReadMC)
+        {
+          // from tracks is only done for triggered and vertex reconstructed events
+          for (Int_t i=0; i<inputCount; ++i)
+          {
+            Int_t label = labelArr[i];
+
+            if (label < 0)
+              continue;
+
+            //Printf("Getting particle of track %d", label);
+            TParticle* particle = stack->Particle(label);
+
+            if (!particle)
+            {
+              AliDebug(AliLog::kError, Form("ERROR: Could not retrieve particle %d.", label));
+              continue;
+            }
+
+            fdNdEtaAnalysisTracks->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
+          } // end of track loop
+
+          // for event count per vertex
+          fdNdEtaAnalysisTracks->FillEvent(vtxMC[2], inputCount);
+        }
+      }
+    }
+
+    delete[] etaArr;
+    delete[] labelArr;
+    delete[] ptArr;
   }
 
   if (fReadMC)   // Processing of MC information (optional)
@@ -440,7 +482,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       return;
     }
 
-    stack = mcEvent->Stack();
+    AliStack* stack = mcEvent->Stack();
     if (!stack)
     {
       AliDebug(AliLog::kError, "Stack not available");
@@ -479,16 +521,19 @@ void AlidNdEtaTask::Exec(Option_t*)
 
     for (Int_t iMc = 0; iMc < nPrim; ++iMc)
     {
+      if (!stack->IsPhysicalPrimary(iMc))
+        continue;
+
       //Printf("Getting particle %d", iMc);
       TParticle* particle = stack->Particle(iMc);
 
       if (!particle)
         continue;
 
-      if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
+      if (particle->GetPDG()->Charge() == 0)
         continue;
 
-      AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", iMc, particle->GetUniqueID()));
+      //AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", iMc, particle->GetUniqueID()));
       Float_t eta = particle->Eta();
       Float_t pt = particle->Pt();
 
@@ -523,38 +568,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       if (vtxESD)
         fdNdEtaAnalysisTrVtx->FillEvent(vtxMC[2], nAcceptedParticles);
     }
-
-    if (eventTriggered && vtxESD)
-    {
-      // from tracks is only done for triggered and vertex reconstructed events
-
-      for (Int_t i=0; i<inputCount; ++i)
-      {
-        Int_t label = labelArr[i];
-
-        if (label < 0)
-          continue;
-
-        //Printf("Getting particle of track %d", label);
-        TParticle* particle = stack->Particle(label);
-
-        if (!particle)
-        {
-          AliDebug(AliLog::kError, Form("ERROR: Could not retrieve particle %d.", label));
-          continue;
-        }
-
-        fdNdEtaAnalysisTracks->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
-      } // end of track loop
-
-      // for event count per vertex
-      fdNdEtaAnalysisTracks->FillEvent(vtxMC[2], inputCount);
-    }
   }
-
-  delete[] etaArr;
-  delete[] labelArr;
-  delete[] ptArr;
 }
 
 void AlidNdEtaTask::Terminate(Option_t *)
@@ -564,22 +578,25 @@ void AlidNdEtaTask::Terminate(Option_t *)
   // the results graphically or save the results to file.
 
   fOutput = dynamic_cast<TList*> (GetOutputData(0));
-  if (!fOutput) {
+  if (!fOutput)
     Printf("ERROR: fOutput not available");
-    return;
+
+  if (fOutput)
+  {
+    fdNdEtaAnalysisESD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("fdNdEtaAnalysisESD"));
+    fMult = dynamic_cast<TH1F*> (fOutput->FindObject("fMult"));
+    fMultVtx = dynamic_cast<TH1F*> (fOutput->FindObject("fMultVtx"));
+    for (Int_t i=0; i<3; ++i)
+      fPartEta[i] = dynamic_cast<TH1F*> (fOutput->FindObject(Form("dndeta_check_%d", i)));
+    fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
+    fVertexResolution = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
+
+    fPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fPhi"));
+    fEtaPhi = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaPhi"));
+    fDeltaPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaPhi"));
+
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCuts"));
   }
-
-  fdNdEtaAnalysisESD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("fdNdEtaAnalysisESD"));
-  fMult = dynamic_cast<TH1F*> (fOutput->FindObject("fMult"));
-  fMultVtx = dynamic_cast<TH1F*> (fOutput->FindObject("fMultVtx"));
-  for (Int_t i=0; i<3; ++i)
-    fPartEta[i] = dynamic_cast<TH1F*> (fOutput->FindObject(Form("dndeta_check_%d", i)));
-  fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
-  fVertexResolution = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
-
-  fPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fPhi"));
-  fEtaPhi = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaPhi"));
-  fDeltaPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaPhi"));
 
   if (!fdNdEtaAnalysisESD)
   {
@@ -666,13 +683,16 @@ void AlidNdEtaTask::Terminate(Option_t *)
 
   if (fReadMC)
   {
-    fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
-    fdNdEtaAnalysisNSD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaNSD"));
-    fdNdEtaAnalysisTr = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTr"));
-    fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
-    fdNdEtaAnalysisTracks = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTracks"));
-    fPartPt = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_pt"));
-    fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
+    if (fOutput)
+    {
+      fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+      fdNdEtaAnalysisNSD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaNSD"));
+      fdNdEtaAnalysisTr = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTr"));
+      fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
+      fdNdEtaAnalysisTracks = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTracks"));
+      fPartPt = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_pt"));
+      fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
+    }
 
     if (!fdNdEtaAnalysis || !fdNdEtaAnalysisTr || !fdNdEtaAnalysisTrVtx || !fPartPt)
     {

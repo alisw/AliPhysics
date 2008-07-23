@@ -47,7 +47,6 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
   //
   // this function needs the branch fTriggerMask
   
-
   // definitions from p-p.cfg
   ULong64_t spdFO = (1 << 14);
   ULong64_t v0left = (1 << 11);
@@ -67,47 +66,15 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
         return kTRUE;
       break;
     }
+    case kSPDFASTOR:
+    {
+      if (triggerMask & spdFO)
+        return kTRUE;
+      break;
+    }
   }
 
   return kFALSE;
-}
-
-//____________________________________________________________________
-Bool_t AliPWG0Helper::IsVertexReconstructed(const AliESD* aEsd)
-{
-  // see function with AliESDVertex argument
-
-  const AliESDVertex* vtxESD = aEsd->GetVertex();
-  return IsVertexReconstructed(vtxESD);
-}
-
-//____________________________________________________________________
-Bool_t AliPWG0Helper::IsVertexReconstructed(const AliESDVertex* vtxESD)
-{
-  // checks if the vertex is reasonable
-  //
-  // this function needs the branches fSPDVertex*
-
-  if (!vtxESD)
-    return kFALSE;
-
-  // the vertex should be reconstructed
-  if (strcmp(vtxESD->GetName(), "default")==0)
-    return kFALSE;
-
-  // check Ncontributors
-  if (vtxESD->GetNContributors() <= 0)
-    return kFALSE;
-
-  Double_t vtx_res[3];
-  vtx_res[0] = vtxESD->GetXRes();
-  vtx_res[1] = vtxESD->GetYRes();
-  vtx_res[2] = vtxESD->GetZRes();
-
-  if (vtx_res[2]==0 || vtx_res[2]>0.1)
-    return kFALSE;
-
-  return kTRUE;
 }
 
 //____________________________________________________________________
@@ -197,8 +164,7 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
 
   if (strcmp(aParticle->GetName(),"XXX") == 0)
   {
-    if (adebug)
-      printf("WARNING: There is a particle named XXX.\n");
+    Printf("WARNING: There is a particle named XXX (pdg code %d).", pdgCode);
     return kFALSE;
   }
 
@@ -206,8 +172,7 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
 
   if (strcmp(pdgPart->ParticleClass(),"Unknown") == 0)
   {
-    if (adebug)
-      printf("WARNING: There is a particle with an unknown particle class (pdg code %d).\n", pdgCode);
+    Printf("WARNING: There is a particle with an unknown particle class (pdg code %d).", pdgCode);
     return kFALSE;
   }
 
@@ -332,7 +297,7 @@ const char* AliPWG0Helper::GetAxisTitle(TH3* hist, const char axis)
 }
 
 
-Int_t AliPWG0Helper::GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
+AliPWG0Helper::MCProcessType AliPWG0Helper::GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
 
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader);
 
@@ -366,7 +331,7 @@ Int_t AliPWG0Helper::GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_
 }
 
 
-Int_t AliPWG0Helper::GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
+AliPWG0Helper::MCProcessType AliPWG0Helper::GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
   //
   // get the process type of the event.
   //
@@ -402,7 +367,7 @@ Int_t AliPWG0Helper::GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_
 }
 
 
-Int_t AliPWG0Helper::GetEventProcessType(AliHeader* aHeader, Bool_t adebug) {
+AliPWG0Helper::MCProcessType AliPWG0Helper::GetEventProcessType(AliHeader* aHeader, Bool_t adebug) {
   //
   // get the process type of the event.
   //
@@ -502,45 +467,6 @@ Int_t AliPWG0Helper::FindPrimaryMotherLabel(AliStack* stack, Int_t label)
   return label;
 }
 
-void AliPWG0Helper::SetBranchStatusRecursive(TTree* tree, char *bname, Bool_t status, Bool_t debug)
-{
-  // Function  to switch on/off all data members of a top level branch
-  // this is needed for branches without a trailing dot ".", for those
-  // the root functionality with regular expressions does not work.
-  // Usage e.g.
-  // chain->SetBranchStatus("*", 0); 
-  // SetBranchStatusRecursive(chain,"SPDVertex",1);
-  // You need to give the full name of the top level branch zou want to access
-  //==========================================================================
-  // Author Christian.Klein-Boesing@cern.ch
-
-  if (!tree)
-    return;
-
-  TBranch *br = tree->GetBranch(bname);
-  if(!br) {
-    Printf("AliPWG0Helper::SetBranchStatusRecursive: Branch %s not found", bname);
-  }
-
-  TObjArray *leaves = tree->GetListOfLeaves();
-  Int_t nleaves = leaves->GetEntries();
-  TLeaf *leaf = 0;
-  TBranch *branch = 0;
-  TBranch *mother = 0;
-  for (Int_t i=0;i<nleaves;i++)  {
-    // the matched entry e.g. SPDVertex is its own Mother
-    leaf = (TLeaf*)leaves->UncheckedAt(i);
-    branch = (TBranch*)leaf->GetBranch();
-    mother = branch->GetMother();
-    if (mother==br){
-      if (debug)
-        Printf(">>>> AliPWG0Helper::SetBranchStatusRecursive: Setting status %s %s to %d", mother->GetName(), leaf->GetName(), status);
-      if (status) branch->ResetBit(kDoNotProcess);
-      else        branch->SetBit(kDoNotProcess);
-    }
-  }
-}
-
 //____________________________________________________________________
 void AliPWG0Helper::NormalizeToBinWidth(TH1* hist)
 {
@@ -594,6 +520,7 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
   {
     case kMB1 : str += "MB1"; break;
     case kMB2 : str += "MB2"; break;
+    case kSPDFASTOR : str += "SPD FASTOR"; break;
   }
 
   str += " <<<<";
