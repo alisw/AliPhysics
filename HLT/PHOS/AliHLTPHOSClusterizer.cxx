@@ -36,7 +36,11 @@
 #include "TClonesArray.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
+#ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
 #include "AliPHOSRecoParam.h"
+#else
+#include "AliPHOSRecoParamEmc.h"
+#endif
 
 ClassImp(AliHLTPHOSClusterizer);
 
@@ -83,9 +87,16 @@ void
 AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
 {
   //see header file for documentation
+#ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
+  // the new AliPHOSRecoParam functions, available from revision
   fEmcClusteringThreshold = params->GetEMCClusteringThreshold();
   fEmcMinEnergyThreshold = params->GetEMCMinE();
   fLogWeight = params->GetEMCLogWeight();
+#else
+  fEmcClusteringThreshold = params->GetClusteringThreshold();
+  fEmcMinEnergyThreshold = params->GetMinE();
+  fLogWeight = params->GetLogWeight();
+#endif
 }
 
 void

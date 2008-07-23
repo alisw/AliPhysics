@@ -653,6 +653,13 @@ else
                                        [AC_DEFINE(HAVE_ALICALORAWSTREAM)
 				        have_alicalorawstream=yes], 
   				       [])
+    AC_MSG_RESULT([$have_aliphosrecoparam])
+    AC_MSG_CHECKING([for required EMC functionality in AliPHOSRecoParam.h ])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliPHOSRecoParam.h>], 
+                                       [AliPHOSRecoParam param;
+				        param.GetEMCClusteringThreshold()])],
+                                       [have_aliphosrecoparam=yes], 
+  				       [AC_DEFINE(HAVE_NOT_PHOSRECOPARAMEMC)])
     AC_MSG_RESULT([$have_alicalorawstream])
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
@@ -918,7 +925,6 @@ dnl
 AC_ARG_VAR(DOXYGEN, The Documentation Generator)
 AC_PATH_PROG(PERL, perl)
 AC_PATH_PROG(DOXYGEN, doxygen)
-AM_CONDITIONAL(HAVE_DOXYGEN, test ! "x$DOXYGEN" = "x")
 AC_ARG_ENABLE(dot,
   [AC_HELP_STRING([--enable-dot],
       [enable dot documentation generator])],
@@ -930,6 +936,28 @@ if test "x$DOT" != "x" && test "x$enable_dot" = "xyes" ; then
    HAVE_DOT=YES
    DOT_PATH=`dirname $DOT`
 fi
+
+AC_MSG_CHECKING([for documentation mode])
+AC_ARG_ENABLE(doc,
+  [AC_HELP_STRING([--disable-doc],
+      [disable documentation build; monolithic build --enable-doc=mono ])],
+  [],[enable_doc=modules])
+if test "x$DOXYGEN" = "x" ; then
+   enable_doc=no.doxygen
+elif test ! "x$enable_doc" = "xmono" && \
+     test ! "x$enable_doc" = "xmodules"  && \
+     test ! "x$enable_doc" = "xno"; then
+   enable_doc=no
+   AC_MSG_WARN([unknown option])
+fi
+if test "x$enable_doc" = "xno" ; then
+   enable_doc=off
+   DOXYGEN=
+fi
+
+AC_MSG_RESULT([$enable_doc])
+AM_CONDITIONAL(MONOLITHIC_DOC, test "x$enable_doc" = "xmono")
+AM_CONDITIONAL(HAVE_DOXYGEN, test ! "x$DOXYGEN" = "x")
 AC_SUBST([HAVE_DOT])
 AC_SUBST([DOT_PATH])
 
