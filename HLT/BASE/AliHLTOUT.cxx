@@ -738,7 +738,11 @@ int AliHLTOUT::AddSubCollection(AliHLTOUT* pCollection)
     iResult++;
   }
   if (iResult>0) {
-    pCollection->SetStatusFlag(kIsSubCollection);
+    if (CheckStatusFlag(kIsSubCollection)) {
+      fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "AddSubCollection" , __FILE__ , __LINE__ , "HLTOUT object %p has already been added as sub-collection", pCollection);
+    } else {
+      pCollection->SetStatusFlag(kIsSubCollection);
+    }
   }
   ClearStatusFlag(kCollecting);  
 
@@ -759,6 +763,7 @@ int AliHLTOUT::ReleaseSubCollection(AliHLTOUT* pCollection)
     }
     block++;
   }
+  pCollection->ClearStatusFlag(kIsSubCollection);
 
   return iResult;
 }
@@ -781,8 +786,10 @@ int AliHLTOUT::Reset()
   }
 
   for (AliHLTOUTPVector::iterator collection=subCollections.begin(); 
-       collection!=subCollections.end(); collection++)
+       collection!=subCollections.end(); collection++) {
     (*collection)->Reset();
+    (*collection)->ClearStatusFlag(kIsSubCollection);
+  }
 
   ResetInput();
 
