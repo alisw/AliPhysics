@@ -6,10 +6,11 @@
 
 #include "AliTPCcalibBase.h"
 #include "AliTPCCalPad.h"
+#include "TH2F.h"
 class TH1F;
-class TH2F;
 class TList;
 class AliESDEvent;
+class AliESDtrack;
 
 #include "TTreeStream.h"
 
@@ -20,26 +21,48 @@ public:
   AliTPCcalibCosmic(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibCosmic();
   
-  virtual void     Process(AliESDEvent *event);
-  virtual Long64_t Merge(TCollection *li);
-  void             FindPairs(AliESDEvent *event);
-  Bool_t           IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
-  void             SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
-public:
-  static void BinLogX(TH1 * h);   // method for correct histogram binning
-  AliTPCCalPad *fGainMap;         //! gain map from Krypton calibration
-  TH1F  *fHistNTracks;
-  TH1F  *fClusters;
-  TH2F  *fModules;
-  TH1F  *fHistPt;
-  TH1F  *fPtResolution;
-  TH2F  *fDeDx;
+  virtual void      Process(AliESDEvent *event);
+  virtual Long64_t  Merge(TCollection *li);
+  virtual void      Analyze();
+  //
+  void              FindPairs(AliESDEvent *event);
+  Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
+  void              SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
+  static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
+  static Double_t   CalculateMIPvalue(TH1F * hist);
+  //
+  TH1F   *          GetHistNTracks(){return fHistNTracks;};
+  TH1F   *          GetHistClusters(){return fClusters;};
+  TH2F   *          GetHistAcorde(){return fModules;};
+  TH1F   *          GetHistPt(){return fHistPt;};
+  TH2F   *          GetHistDeDx(){return fDeDx;};
+  TH1F   *          GetHistMIP(){return fDeDxMIP;};
+  //
+  Double_t          GetMIPvalue(){return fMIPvalue;};
+  //
+  static void       BinLogX(TH1 * h);   // method for correct histogram binning
+
+
+private:
+
+  void              FillAcordeHist(AliESDtrack *upperTrack);
+
+  AliTPCCalPad *fGainMap;         //  gain map from Krypton calibration
+  TH1F  *fHistNTracks;            //  histogram showing number of ESD tracks per event
+  TH1F  *fClusters;               //  histogram showing the number of clusters per track
+  TH2F  *fModules;                //  2d histogram of tracks which are propagated to the ACORDE scintillator array
+  TH1F  *fHistPt;                 //  Pt histogram of reconstructed tracks
+  TH2F  *fDeDx;                   //  dEdx spectrum showing the different particle types
+  TH1F  *fDeDxMIP;                //  TPC signal close to the MIP region of muons 0.4 < p < 0.45 GeV
+
+  Double_t fMIPvalue;             //  MIP value calculated via a fit to fDeDxMIP
+
   // cuts
   //
   Float_t fCutMaxD;     // maximal distance in rfi ditection
   Float_t fCutTheta;    // maximal distance in theta ditection
   Float_t fCutMinDir;   // direction vector products
-private:
+
   AliTPCcalibCosmic(const AliTPCcalibCosmic&); 
   AliTPCcalibCosmic& operator=(const AliTPCcalibCosmic&); 
 

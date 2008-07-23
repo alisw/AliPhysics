@@ -13,6 +13,31 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/*
+    Comments to be written here:
+    1. What do we calibrate.
+    2. How to interpret results
+    3. Simple example
+    4. Analysis using debug streamers.
+
+
+
+    3.Simple example
+    // To make cosmic scan the user interaction neccessary
+    //
+    .x ~/UliStyle.C
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libTPCcalib");
+    TFile fcalib("CalibObjects.root");
+    TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+    AliTPCcalibCosmic * cosmic = ( AliTPCcalibCosmic *)array->FindObject("cosmicTPC");
+    
+
+
+*/
+
+
+
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -22,15 +47,19 @@
 #include "TMath.h"
 #include "TCanvas.h"
 #include "TFile.h"
+#include "TF1.h"
 
+#include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESDInputHandler.h"
+#include "AliAnalysisManager.h"
 
 #include "AliTracker.h"
 #include "AliMagFMaps.h"
+#include "AliTPCCalROC.h"
 
 #include "AliLog.h"
 
@@ -49,19 +78,14 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
    fClusters(0),
    fModules(0),
    fHistPt(0),
-   fPtResolution(0),
    fDeDx(0),
+   fDeDxMIP(0),
+   fMIPvalue(1), 
    fCutMaxD(5),        // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99)   // direction vector products
 {  
-  AliInfo("Defualt Constructor");  
-  TFile f("/u/miranov/calibKr.root");
-  AliTPCCalPad *gainMap =  (AliTPCCalPad *)f.Get("spectrMean");
-  if (gainMap) {
-    gainMap->Multiply(1/gainMap->GetMedian());
-    fGainMap =gainMap; 
-  }
+  AliInfo("Default Constructor");    
 }
 
 
@@ -72,8 +96,9 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
    fClusters(0),
    fModules(0),
    fHistPt(0),
-   fPtResolution(0),
    fDeDx(0),
+   fDeDxMIP(0),
+   fMIPvalue(1),
    fCutMaxD(5),        // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99)   // direction vector products
@@ -82,19 +107,17 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
   SetTitle(title);
   AliMagFMaps * field = new AliMagFMaps("dummy1", "dummy2",0,5,0);
   AliTracker::SetFieldMap(field, kTRUE);  
-  fHistNTracks = new TH1F("ntracks","Number of Tracks per Event",501,-0.5,500.5);
-  fClusters = new TH1F("signal","Number of Clusters per track",160,0,160);
-  fModules = new TH2F("sector","Acorde hits; z (cm); x(cm)",1200,-1200,1200,600,-1000,1000);
-  fHistPt = new TH1F("Pt","Pt distribution",2000,0,50);  
-  fPtResolution = new TH1F("PtResolution","Pt resolution",100,-50,50);
-  fDeDx = new TH2F("DeDx","dEdx",500,0.01,20.,500,0.,500);
+
+  fHistNTracks = new TH1F("ntracks","Number of Tracks per Event; number of tracks per event; number of tracks",501,-0.5,500.5);
+  fClusters = new TH1F("signal","Number of Clusters per track; number of clusters per track n_{cl}; counts",160,0,160);
+  fModules = new TH2F("sector","Acorde hits; z (cm); x(cm)",1200,-650,650,600,-700,700);
+  fHistPt = new TH1F("Pt","Pt distribution; p_{T} (GeV); counts",2000,0,50);
+  fDeDx = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",500,0.01,100.,500,2.,1000);
   BinLogX(fDeDx);
+  fDeDxMIP =  new TH1F("DeDxMIP","MIP region; TPC signal (a.u.);counts ",500,2.,1000);
+
   AliInfo("Non Default Constructor");  
   //
-  TFile f("/u/miranov/calibKr.root");
-  AliTPCCalPad *gainMap = (AliTPCCalPad *)f.Get("spectrMean");
-  gainMap->Multiply(1/gainMap->GetMedian());
-  fGainMap =gainMap; 
 }
 
 AliTPCcalibCosmic::~AliTPCcalibCosmic(){
@@ -120,113 +143,27 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
    Printf("ERROR: ESDfriend not available");
    return;
   }
-  FindPairs(event);
 
-  if (GetDebugLevel()>1) printf("Hallo world: Im here\n");
+  FindPairs(event); // nearly everything takes place in find pairs...
+
+  if (GetDebugLevel()>1) printf("Hallo world: Im here and processing an event\n");
   Int_t ntracks=event->GetNumberOfTracks(); 
   fHistNTracks->Fill(ntracks);
-  TObjArray  tpcSeeds(ntracks);
   if (ntracks==0) return;
-  //
-  //track loop
-  //
-  for (Int_t i=0;i<ntracks;++i) { 
-   AliESDtrack *track = event->GetTrack(i); 
-   fClusters->Fill(track->GetTPCNcls());   
-   AliExternalTrackParam * trackIn = new AliExternalTrackParam(*track->GetInnerParam());
-   
-   AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
-   TObject *calibObject;
-   AliTPCseed *seed = 0;
-   for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-     if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-   }
-   if (seed) tpcSeeds.AddAt(seed,i);
-   if (seed && track->GetTPCNcls() > 80) fDeDx->Fill(trackIn->GetP(), seed->CookdEdxNorm(0.05,0.45,0,0,159,fGainMap)); 
-  }
-  if (ntracks<2) return;
+
+}
 
 
-  // dE/dx,pt and ACORDE study --> studies which need the pair selection    
-  for (Int_t i=0;i<ntracks;++i) {
-    AliESDtrack *track1 = event->GetTrack(i);
-     
-    Double_t d1[3];
-    track1->GetDirection(d1);
-    
-    for (Int_t j=i+1;j<ntracks;++j) {
-     AliESDtrack *track2 = event->GetTrack(j);   
-     Double_t d2[3];
-     track2->GetDirection(d2);
-       
-     if (d1[0]*d2[0] + d1[1]*d2[1] + d1[2]*d2[2] < -0.999) {
-     
-      /*___________________________________ Pt resolution ________________________________________*/
-      if (track1->Pt() != 0 && track1->GetTPCNcls() > 80 && track2->GetTPCNcls() > 80) {
-       Double_t res = (track1->Pt() - track2->Pt());
-       res = res/(2*(track1->Pt() + track2->Pt()));
-       fPtResolution->Fill(100*res);
-      }
-      
-      /*_______________________________ Propagation to ACORDE ___________________________________*/
-      const Double_t AcordePlane = 850.; //distance of the central Acorde detectors to the beam line at y =0
-      const Double_t roof = 210.5; // distance from x =0 to end of magnet roof
-     
-      if (d1[1] > 0 && d2[1] < 0 && track1->GetTPCNcls() > 50) {        
-       Double_t r[3];
-       track1->GetXYZ(r);
-       Double_t x,z;
-       z = r[2] + (d1[2]/d1[1])*(AcordePlane - r[1]);
-       x = r[0] + (d1[0]/d1[1])*(AcordePlane - r[1]);
-       
-       if (x > roof) {
-        x = x - (x-roof)/(1 + TMath::Abs(TMath::Tan(track1->Phi())));
-        z = z - TMath::Abs(TMath::Tan(track1->Phi()))/TMath::Abs(TMath::Tan(track1->Theta()))*(x-roof)/(1 + TMath::Abs(TMath::Tan(track1->Phi())));
-       }
-       if (x < -roof) {
-        x = x - (x+roof)/(1 + TMath::Abs(TMath::Tan(track1->Phi())));
-        z = z -  TMath::Abs(TMath::Tan(track1->Phi()))/TMath::Abs(TMath::Tan(track1->Theta()))*(x+roof)/(1 + TMath::Abs(TMath::Tan(track1->Phi())));
-       }
-       
-       fModules->Fill(z, x);
-      }
-      
-      if (d2[1] > 0 && d1[1] < 0 && track2->GetTPCNcls() > 50) {
-       Double_t r[3];
-       track2->GetXYZ(r);
-       Double_t x,z;
-       z = r[2] + (d2[2]/d2[1])*(AcordePlane - r[1]);
-       x = r[0] + (d2[0]/d2[1])*(AcordePlane - r[1]);
-       
-       if (x > roof) {
-        x = x - (x-roof)/(1 + TMath::Abs(TMath::Tan(track2->Phi())));
-        z = z - TMath::Abs(TMath::Tan(track2->Phi()))/TMath::Abs(TMath::Tan(track2->Theta()))*(x-roof)/(1 + TMath::Abs(TMath::Tan(track2->Phi())));  
-       }
-       if (x < -roof) {
-        x = x - (x+roof)/(1 + TMath::Abs(TMath::Tan(track2->Phi())));
-	z = z -  TMath::Abs(TMath::Tan(track2->Phi()))/TMath::Abs(TMath::Tan(track2->Theta()))*(x+roof)/(1 + TMath::Abs(TMath::Tan(track2->Phi())));
-       }       
-       
-       fModules->Fill(z, x);
-      }
-      
-  //     AliExternalTrackParam * trackOut = new AliExternalTrackParam(*track2->GetOuterParam());
-//       AliTracker::PropagateTrackTo(trackOut,850.,105.658,30);
-//       delete trackOut;
-      
+
+void AliTPCcalibCosmic::Analyze() {
+
+  fMIPvalue = CalculateMIPvalue(fDeDxMIP);
+
+  return;
+
+}
 
 
-      
-
-      break;            
-     }     
-    }
-  }
-  
-  
-  
-  
-}    
 
 void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   //
@@ -246,11 +183,14 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   //
   //track loop
   //
-  for (Int_t i=0;i<ntracks;++i) { 
-   AliESDtrack *track = event->GetTrack(i); 
-   fClusters->Fill(track->GetTPCNcls());   
-   if (!track->GetInnerParam()) continue;
-   AliExternalTrackParam * trackIn = new AliExternalTrackParam(*track->GetInnerParam());
+  for (Int_t i=0;i<ntracks;++i) {
+   AliESDtrack *track = event->GetTrack(i);
+   fClusters->Fill(track->GetTPCNcls()); 
+  
+   const AliExternalTrackParam * trackIn = track->GetInnerParam();
+   const AliExternalTrackParam * trackOut = track->GetOuterParam();
+   if (!trackIn) continue;
+   if (!trackOut) continue;
    
    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
    TObject *calibObject;
@@ -259,8 +199,23 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
    }
    if (seed) tpcSeeds.AddAt(seed,i);
-   if (seed && track->GetTPCNcls() > 80) fDeDx->Fill(trackIn->GetP(), seed->CookdEdxNorm(0.05,0.45,0,0,159,fGainMap)); 
+
+   Double_t meanP = 0.5*(trackIn->GetP() + trackOut->GetP());
+   if (seed && track->GetTPCNcls() > 80 + 60/(1+TMath::Exp(-meanP+5))) {
+     fDeDx->Fill(meanP, seed->CookdEdxNorm(0.0,0.45,0,0,159,fGainMap));
+     //
+     if (meanP > 0.4 && meanP < 0.45) fDeDxMIP->Fill(seed->CookdEdxNorm(0.0,0.45,0,0,159,fGainMap));
+     //
+     if (GetDebugLevel()>0&&meanP>0.2&&seed->CookdEdxNorm(0.0,0.45,0,0,159,fGainMap)>300) {
+       TFile *curfile = AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile();
+       if (curfile) printf(">>> p+ in file: %s \t event: %i \t Number of ESD tracks: %i \n", curfile->GetName(), (int)event->GetEventNumberInFile(), (int)ntracks);
+       if (track->GetOuterParam()->GetAlpha()<0) cout << " Polartiy: " << track->GetSign() << endl;
+     }
+
+   }
+
   }
+
   if (ntracks<2) return;
   //
   // Find pairs
@@ -283,7 +238,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       //
       Double_t d2[3];
       track1->GetDirection(d2);
-      printf("My stream level=%d\n",fStreamLevel);
+      
       AliTPCseed * seed0 = (AliTPCseed*) tpcSeeds.At(i);
       AliTPCseed * seed1 = (AliTPCseed*) tpcSeeds.At(j);
       if (! seed0) continue;
@@ -338,13 +293,15 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       param1.GetXYZ(xyz1);
       Bool_t isPair = IsPair(&param0,&param1);
       //
+      if (isPair) FillAcordeHist(track0);
+      //
       if (fStreamLevel>0){
 	TTreeSRedirector * cstream =  GetDebugStreamer();
 	printf("My stream=%p\n",(void*)cstream);
 	if (cstream) {
 	  (*cstream) << "Track0" <<
 	    "dir="<<dir<<               //  direction
-	    "OK="<<isPair<<             // will be accepted
+	    "OK="<<isPair<<             //  will be accepted
 	    "b0="<<b0<<                 //  propagate status
 	    "b1="<<b1<<                 //  propagate status
 	    "Orig0.=" << track0 <<      //  original track  0
@@ -366,17 +323,17 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	    "x11="<<xyz1[1]<<
 	    "x12="<<xyz1[2]<<
 	    //
-	    "Seed0.=" << track0 <<      //  original seed 0
-	    "Seed1.=" << track1 <<      //  original seed 1
+	    "Seed0.=" << seed0 <<       //  original seed 0
+	    "Seed1.=" << seed1 <<       //  original seed 1
 	    //
 	    "dedx0="<<dedx0<<           //  dedx0 - all
 	    "dedx1="<<dedx1<<           //  dedx1 - all
 	    //
-	    "dedx0I="<<dedx0I<<           //  dedx0 - inner
-	    "dedx1I="<<dedx1I<<           //  dedx1 - inner
+	    "dedx0I="<<dedx0I<<         //  dedx0 - inner ROC
+	    "dedx1I="<<dedx1I<<         //  dedx1 - inner ROC
 	    //
-	    "dedx0O="<<dedx0O<<           //  dedx0 - outer
-	    "dedx1O="<<dedx1O<<           //  dedx1 -outer
+	    "dedx0O="<<dedx0O<<         //  dedx0 - outer ROC
+	    "dedx1O="<<dedx1O<<         //  dedx1 - outer ROC
 	    "\n";
 	}
       }      
@@ -384,6 +341,37 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   }  
 }    
 
+
+
+
+void  AliTPCcalibCosmic::FillAcordeHist(AliESDtrack *upperTrack) {
+
+  // Pt cut to select straight tracks which can be easily propagated to ACORDE which is outside the magnetic field
+  if (upperTrack->Pt() < 10 || upperTrack->GetTPCNcls() < 80) return;
+    
+  const Double_t AcordePlane = 850.; // distance of the central Acorde detectors to the beam line at y =0
+  const Double_t roof = 210.5;       // distance from x =0 to end of magnet roof
+
+  Double_t r[3];
+  upperTrack->GetXYZ(r);
+  Double_t d[3];
+  upperTrack->GetDirection(d);
+  Double_t x,z;
+  z = r[2] + (d[2]/d[1])*(AcordePlane - r[1]);
+  x = r[0] + (d[0]/d[1])*(AcordePlane - r[1]);
+  
+  if (x > roof) {
+    x = r[0] + (d[0]/(d[0]+d[1]))*(AcordePlane+roof-r[0]-r[1]);
+    z = r[2] + (d[2]/(d[0]+d[1]))*(AcordePlane+roof-r[0]-r[1]);
+  }
+  if (x < -roof) {
+    x = r[0] + (d[0]/(d[1]-d[0]))*(AcordePlane+roof+r[0]-r[1]);	      
+    z = r[2] + (d[2]/(d[1]-d[0]))*(AcordePlane+roof+r[0]-r[1]);
+  } 
+
+  fModules->Fill(z, x);
+ 
+}
 
 
 
@@ -398,18 +386,19 @@ Long64_t AliTPCcalibCosmic::Merge(TCollection *li) {
       return -1;
     }
     
-    fHistNTracks->Add(cal->fHistNTracks);
-    fClusters->Add(cal->fClusters);
-    fModules->Add(cal->fModules);
-    fHistPt->Add(cal->fHistPt);
-    fPtResolution->Add(cal->fPtResolution);
-    fDeDx->Add(cal->fDeDx);
+    fHistNTracks->Add(cal->GetHistNTracks());
+    fClusters->Add(cal-> GetHistClusters());
+    fModules->Add(cal->GetHistAcorde());
+    fHistPt->Add(cal->GetHistPt());
+    fDeDx->Add(cal->GetHistDeDx());
+    fDeDxMIP->Add(cal->GetHistMIP());
   
   }
   
   return 0;
   
 }
+
 
 Bool_t  AliTPCcalibCosmic::IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1){
   //
@@ -439,7 +428,31 @@ Bool_t  AliTPCcalibCosmic::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPa
   //
   return kTRUE;  
 }
+ 
 
+
+Double_t AliTPCcalibCosmic::CalculateMIPvalue(TH1F * hist) {
+
+  TF1 * funcDoubleGaus = new TF1("funcDoubleGaus", "gaus(0)+gaus(3)",0,1000);
+  funcDoubleGaus->SetParameters(hist->GetEntries()*0.75,hist->GetMean()/1.3,hist->GetMean()*0.10,
+				hist->GetEntries()*0.25,hist->GetMean()*1.3,hist->GetMean()*0.10);
+  hist->Fit(funcDoubleGaus);
+  Double_t MIPvalue = TMath::Min(funcDoubleGaus->GetParameter(1),funcDoubleGaus->GetParameter(4));
+
+  delete funcDoubleGaus;
+
+  return MIPvalue;
+
+}
+
+
+
+
+void AliTPCcalibCosmic::CalculateBetheParams(TH2F *hist, Double_t * initialParam) {
+
+  return;
+
+}
 
 
 void AliTPCcalibCosmic::BinLogX(TH1 *h) {
@@ -466,10 +479,8 @@ void AliTPCcalibCosmic::BinLogX(TH1 *h) {
 
 
 
+
 /*
-
-
-
 
 void AliTPCcalibCosmic::dEdxCorrection(){
   TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");
