@@ -2127,7 +2127,7 @@ void AliPIPEv3::CreateGeometry()
       shRB26s3SFlange->DefineSection(5, z0, kRB26s3SFlangeRi3, kRB26s3SFlangeRo);
       TGeoVolume* voRB26s3SFlange = new TGeoVolume("RB26s3SFlange", shRB26s3SFlange, kMedSteel);
 
-      TGeoVolume* voRB26s3SFlangeM = new TGeoVolume("RB26s3SFlange", MakeMotherFromTemplate(shRB26s3SFlange, 0, 3), kMedVac);
+      TGeoVolume* voRB26s3SFlangeM = new TGeoVolume("RB26s3SFlangeM", MakeMotherFromTemplate(shRB26s3SFlange, 0, 3), kMedVac);
       voRB26s3SFlangeM->AddNode(voRB26s3SFlange, 1, gGeoIdentity);
         
 ///////////////////////////////////
@@ -2156,7 +2156,7 @@ void AliPIPEv3::CreateGeometry()
       shRB26s3FFlange->DefineSection(5, z0, kRB26s3FFlangeRi3, kRB26s3FFlangeRo);
       TGeoVolume* voRB26s3FFlange = new TGeoVolume("RB26s3FFlange", shRB26s3FFlange, kMedSteel);
       
-      TGeoVolume* voRB26s3FFlangeM = new TGeoVolume("RB26s3FFlange", MakeMotherFromTemplate(shRB26s3FFlange, 2, 5), kMedVac);
+      TGeoVolume* voRB26s3FFlangeM = new TGeoVolume("RB26s3FFlangeM", MakeMotherFromTemplate(shRB26s3FFlange, 2, 5), kMedVac);
       voRB26s3FFlangeM->AddNode(voRB26s3FFlange, 1, gGeoIdentity);
             
 
