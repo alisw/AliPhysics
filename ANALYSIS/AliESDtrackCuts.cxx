@@ -470,7 +470,7 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
   esdTrack->GetImpactParameters(b,bCov);
   
   if (bCov[0]<=0 || bCov[2]<=0) {
-    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    AliDebugClass(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
   }
   bRes[0] = TMath::Sqrt(bCov[0]);

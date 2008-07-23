@@ -101,7 +101,7 @@ public:
   void SaveHistograms(const Char_t* dir = 0);
   void DrawHistograms();
 
-  Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
+  static Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
   
   static void EnableNeededBranches(TTree* tree);
 
