@@ -26,6 +26,7 @@
 #include <AliMUONConstants.h>
 #include <AliMUONESDInterface.h>
 #include <AliMUONVCluster.h>
+#include <AliMUONRecoParam.h>
 
 #include <TClonesArray.h>
 #include <TStyle.h>
@@ -675,9 +676,15 @@ void AliEveMUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
 
   fTrack = new AliMUONTrack();
 
+  AliMUONRecoParam* recoParam = AliMUONRecoParam::GetCosmicParam();
+  
+  cout << "FIXME: should get recoParam from OCDB here !" << endl;
+  
   // create a simple track from the ESD track
-  AliMUONESDInterface::ESDToMUON(*mtrack,*fTrack);
+  AliMUONESDInterface::ESDToMUON(recoParam,*mtrack,*fTrack);
 
+  delete recoParam;
+  
   // reset track parameters at vertex to the ones at DCA
   AliMUONTrackParam paramAtDCA;
   AliMUONESDInterface::GetParamAtDCA(*mtrack, paramAtDCA);
