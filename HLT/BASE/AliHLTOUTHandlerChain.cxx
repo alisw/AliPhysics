@@ -102,6 +102,22 @@ int AliHLTOUTHandlerChain::ProcessData(AliHLTOUT* pData)
       // parent HLTOUT collection
       AliHLTOUT* pSubCollection=dynamic_cast<AliHLTOUT*>(fpTask);
       pSubCollection->Init();
+
+      // filter out some data blocks which should not be processed
+      // in the next stage:
+      // 1. we are not interested in the component statistics
+      //    produced in the HLTOUT handler chain
+      for (iResult=pSubCollection->SelectFirstDataBlock();
+	   iResult>=0;
+	   iResult=pSubCollection->SelectNextDataBlock()) {
+	AliHLTComponentDataType dt=kAliHLTVoidDataType;
+	AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+	pSubCollection->GetDataBlockDescription(dt, spec);
+	if (dt==kAliHLTDataTypeComponentStatistics) {
+	  pSubCollection->MarkDataBlockProcessed();
+	}
+      }
+      
       pData->AddSubCollection(pSubCollection);
     } else {
       fpTask->Reset();

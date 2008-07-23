@@ -846,25 +846,25 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
       break;
     case AliHLTModuleAgent::kRawStream:
       HLTWarning("HLTOUT handler type 'kRawStream' not yet implemented: agent %s, data type %s, specification %#x",
-		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"<invalid>",
 		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
       break;
     case AliHLTModuleAgent::kChain:
       HLTWarning("HLTOUT handler type 'kChain' has already been processed: agent %s, data type %s, specification %#x\n"
 		 "New block of this type added by the chain? Skipping data block ...",
-		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"<invalid>",
 		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
       break;
     case AliHLTModuleAgent::kProprietary:
       HLTDebug("processing proprietary data: agent %s, data type %s, specification %#x",
-		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"<invalid>",
 		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
       if (pHandler) {
 	AliHLTOUT::AliHLTOUTLockGuard g(pHLTOUT);
 	int res=pHandler->ProcessData(pHLTOUT);
 	if (res<0) {
 	  HLTWarning("processing proprietary data failed (%d): agent %s, data type %s, specification %#x",
-		     res, pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		     res, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"<invalid>",
 		     AliHLTComponent::DataType2Text(dt).c_str(), spec);
 	}
       }
@@ -874,7 +874,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
       // fall trough intended
     default:
       HLTWarning("%s handler type: agent %s, data type %s, specification %#x, ... skipping data block",
-		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"<invalid>",
 		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
     }
   }
