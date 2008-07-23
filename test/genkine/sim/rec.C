@@ -1,6 +1,10 @@
 void rec() {
   AliReconstruction reco;
 
+  reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
+  reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
+  reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
   //  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID FMD PMD VZERO START MUON ZDC");
 
 // **** The field map settings must be the same as in Config.C !

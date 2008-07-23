@@ -3,8 +3,10 @@ void rec() {
   AliReconstruction reco;
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
-  AliTPCReconstructor::SetStreamLevel(1);
-  AliTPCReconstructor::SetRecoParam(AliTPCRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
+  reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
+  reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
   //  reco.SetInput("raw.root");
 
 // **** The field map settings must be the same as in Config.C !

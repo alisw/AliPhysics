@@ -3,8 +3,10 @@ void rec() {
 
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
-  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetHighFluxParam();
-  AliTPCReconstructor::SetRecoParam(tpcRecoParam);
+  reco.SetRecoParam("TPC",AliTPCRecoParam::GetHighFluxParam());
+  reco.SetRecoParam("TRD",AliTRDrecoParam::GetHighFluxParam());
+  reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
+  reco.SetRecoParam("MUON",AliMUONRecoParam::GetHighFluxParam());
   //  AliTPCReconstructor::SetStreamLevel(1);
   reco.SetRunVertexFinderTracks(kFALSE);
 

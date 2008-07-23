@@ -10,9 +10,10 @@ void rec() {
   reco.SetUniformFieldTracking(kFALSE);
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
-  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetHighFluxParam();
-  AliTPCReconstructor::SetRecoParam(tpcRecoParam);
-  //  AliTPCReconstructor::SetStreamLevel(1);
+  reco.SetRecoParam("TPC",AliTPCRecoParam::GetHighFluxParam());
+  reco.SetRecoParam("TRD",AliTRDrecoParam::GetHighFluxParam());
+  reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
+  reco.SetRecoParam("MUON",AliMUONRecoParam::GetHighFluxParam());
 
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON FMD PMD ZDC T0 VZERO");
   reco.SetInput("raw.root");
