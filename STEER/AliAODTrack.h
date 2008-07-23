@@ -61,7 +61,8 @@ class AliAODTrack : public AliVParticle {
 	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
 	      AODTrk_t ttype=kUndef,
-	      UInt_t selectInfo=0);
+	      UInt_t selectInfo=0,
+	      Float_t chi2perNDF = -999.);
 
   AliAODTrack(Short_t id,
 	      Int_t label,
@@ -77,7 +78,8 @@ class AliAODTrack : public AliVParticle {
 	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
 	      AODTrk_t ttype=kUndef,
-	      UInt_t selectInfo=0);
+	      UInt_t selectInfo=0,
+	      Float_t chi2perNDF = -999.);
 
   virtual ~AliAODTrack();
   AliAODTrack(const AliAODTrack& trk); 
@@ -135,6 +137,7 @@ class AliAODTrack : public AliVParticle {
   Short_t GetID() const { return fID; }
   Int_t   GetLabel() const { return fLabel; } 
   Char_t  GetType() const { return fType;}
+  Bool_t  IsPrimaryCandidate() const;
   Bool_t  GetUsedForVtxFit() const { return TestBit(kUsedForVtxFit); }
   Bool_t  GetUsedForPrimVtxFit() const { return TestBit(kUsedForPrimVtxFit); }
 
@@ -253,7 +256,7 @@ class AliAODTrack : public AliVParticle {
   Double32_t    fMomentumAtDCA[3];  // momentum (px,py,pz) at DCA
   Double32_t    fPositionAtDCA[2];  // trasverse position (x,y) at DCA
   
-  Double32_t    fChi2perNDF;        // chi2/NDF of mometum fit
+  Double32_t    fChi2perNDF;        // chi2/NDF of momentum fit
   Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
   Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
 
@@ -275,5 +278,16 @@ class AliAODTrack : public AliVParticle {
 
   ClassDef(AliAODTrack,8);
 };
+
+inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
+{
+    // True of track passes primary particle selection (independent of type) 
+    // 
+    if (fFilterMap) {
+	return kTRUE;
+    } else {
+	return kFALSE;
+    }
+}
 
 #endif

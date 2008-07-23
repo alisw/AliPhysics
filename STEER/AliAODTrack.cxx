@@ -66,9 +66,10 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype,
-			 UInt_t selectInfo) :
+			 UInt_t selectInfo,
+			 Float_t chi2perNDF) :
   AliVParticle(),
-  fChi2perNDF(-999.),
+  fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fFlags(0),
   fLabel(label),
@@ -109,9 +110,10 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype,
-			 UInt_t selectInfo) :
+			 UInt_t selectInfo,
+			 Float_t chi2perNDF) :
   AliVParticle(),
-  fChi2perNDF(-999.),
+  fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fFlags(0),
   fLabel(label),
@@ -647,3 +649,4 @@ Bool_t AliAODTrack::PropagateTo(Double_t xk, Double_t b) {
 
   return kTRUE;
 }
+
