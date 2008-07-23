@@ -18,6 +18,99 @@
 //   This is the class to deal with during the phisics analysis of data
 //      Origin: Iouri Belikov, CERN
 //      e-mail: Jouri.Belikov@cern.ch
+//
+//
+//
+//  What do you need to know before starting analysis
+//  (by Marian Ivanov: marian.ivanov@cern.ch)
+//
+//
+//   AliESDtrack:
+//   1.  What is the AliESDtrack
+//   2.  What informations do we store
+//   3.  How to use the information for analysis
+//   
+//
+//   1.AliESDtrack is the container of the information about the track/particle
+//     reconstructed during Barrel Tracking.
+//     The track information is propagated from one tracking detector to 
+//     other using the functionality of AliESDtrack - Current parameters.  
+//
+//     No global fit model is used.
+//     Barrel tracking use Kalman filtering technique, it gives optimal local 
+//     track parameters at given point under certian assumptions.
+//             
+//     Kalman filter take into account additional effect which are 
+//     difficult to handle using global fit.
+//     Effects:
+//        a.) Multiple scattering
+//        b.) Energy loss
+//        c.) Non homogenous magnetic field
+//
+//     In general case, following barrel detectors are contributing to 
+//     the Kalman track information:
+//         a. TPC
+//         b. ITS
+//         c. TRD
+//
+//      In general 3 reconstruction itteration are performed:
+//         1. Find tracks   - sequence TPC->ITS
+//         2. PropagateBack - sequence ITS->TPC->TRD -> Outer PID detectors
+//         3. Refit invward - sequence TRD->TPC->ITS
+//      The current tracks are updated after each detector (see bellow).
+//      In specical cases a track  sanpshots are stored.   
+// 
+//
+//      For some type of analysis (+visualization) track local parameters at 
+//      different position are neccesary. A snapshots during the track 
+//      propagation are created.
+//      (See AliExternalTrackParam class for desctiption of variables and 
+//      functionality)
+//      Snapshots:
+//      a. Current parameters - class itself (AliExternalTrackParam)
+//         Contributors: general case TRD->TPC->ITS
+//         Preferable usage:  Decission  - primary or secondary track
+//         NOTICE - By default the track parameters are stored at the DCA point
+//                  to the primary vertex. optimal for primary tracks, 
+//                  far from optimal for secondary tracks.
+//      b. Constrained parameters - Kalman information updated with 
+//         the Primary vertex information 
+//         Contributors: general case TRD->TPC->ITS
+//         Preferable usage: Use only for tracks selected as primary
+//         NOTICE - not real constrain - taken as additional measurement 
+//         with corresponding error
+//         Function:  
+//       const AliExternalTrackParam *GetConstrainedParam() const {return fCp;}
+//      c. Inner parameters -  Track parameters at inner wall of the TPC 
+//         Contributors: general case TRD->TPC
+//         function:
+//           const AliExternalTrackParam *GetInnerParam() const { return fIp;}
+//
+//      d. TPCinnerparam  - contributors - TPC only
+//         Contributors:  TPC
+//         Preferable usage: Requested for HBT study 
+//                         (smaller correlations as using also ITS information)
+//         NOTICE - the track parameters are propagated to the DCA to  
+//         to primary vertex
+//         Optimal for primary, far from optimal for secondary tracks
+//         Function:
+//    const AliExternalTrackParam *GetTPCInnerParam() const {return fTPCInner;}
+//     
+//      e. Outer parameters - 
+//           Contributors-  general case - ITS-> TPC -> TRD
+//           The last point - Outer parameters radius is determined
+//           e.a) Local inclination angle bigger than threshold - 
+//                Low momenta tracks 
+//           e.a) Catastrofic energy losss in material
+//           e.b) Not further improvement (no space points)
+//           Usage:             
+//              a.) Tracking: Starting parameter for Refit inward 
+//              b.) Visualization
+//              c.) QA
+//         NOTICE: Should be not used for the physic analysis
+//         Function:
+//            const AliExternalTrackParam *GetOuterParam() const { return fOp;}
+//
 //-----------------------------------------------------------------
 
 #include <TMath.h>
