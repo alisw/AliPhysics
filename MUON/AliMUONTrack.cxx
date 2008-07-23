@@ -67,7 +67,7 @@ AliMUONTrack::AliMUONTrack()
 }
 
   //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
+AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment, Double_t bendingVertexDispersion)
   : TObject(),
     fTrackParamAtCluster(new TClonesArray("AliMUONTrackParam",10)),
     fFitWithVertex(kFALSE),
@@ -142,10 +142,9 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
   paramCov(3,2) = paramCov(2,3);
   paramCov(3,3) = ( firstCluster->GetErrY2() + lastCluster->GetErrY2() ) / dZ / dZ;
   // Inverse bending momentum (vertex resolution + bending slope resolution + 10% error on dipole parameters+field)
-  paramCov(4,4) = ((AliMUONReconstructor::GetRecoParam()->GetBendingVertexDispersion() *
-		    AliMUONReconstructor::GetRecoParam()->GetBendingVertexDispersion() +
+  paramCov(4,4) = ( ( bendingVertexDispersion*bendingVertexDispersion +
 		    (z1 * z1 * lastCluster->GetErrY2() + z2 * z2 * firstCluster->GetErrY2()) / dZ / dZ) /
-		   bendingImpact / bendingImpact + 0.1 * 0.1) * inverseBendingMomentum * inverseBendingMomentum;
+		   bendingImpact / bendingImpact + 0.1 * 0.1) * inverseBendingMomentum * inverseBendingMomentum ;
   paramCov(2,4) = - z2 * firstCluster->GetErrY2() * inverseBendingMomentum / bendingImpact / dZ;
   paramCov(4,2) = paramCov(2,4);
   paramCov(3,4) = - (z1 * lastCluster->GetErrY2() + z2 * firstCluster->GetErrY2()) * inverseBendingMomentum / bendingImpact / dZ / dZ;
@@ -451,37 +450,36 @@ void AliMUONTrack::UpdateCovTrackParamAtCluster()
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONTrack::IsValid()
+Bool_t AliMUONTrack::IsValid(UInt_t requestedStationMask)
 {
   /// check the validity of the current track (at least one cluster per requested station)
   
   Int_t nClusters = GetNClusters();
   AliMUONTrackParam *trackParam;
-  Int_t currentStation = 0, expectedStation = 0;
+  Int_t currentStation(0);
   
-  for (Int_t i = 0; i < nClusters; i++) {
+  UInt_t m(0);
+  
+  for (Int_t i = 0; i < nClusters; i++) 
+  {
     trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
     
     // skip unrequested stations
-    while (expectedStation < AliMUONConstants::NTrackingSt() &&
-	   !AliMUONReconstructor::GetRecoParam()->RequestStation(expectedStation)) expectedStation++;
-    
+//    while (expectedStation < AliMUONConstants::NTrackingSt() &&
+//	   !AliMUONReconstructor::GetRecoParam()->RequestStation(expectedStation)) expectedStation++;
+//    
+
     currentStation = trackParam->GetClusterPtr()->GetChamberId()/2;
     
-    // missing station
-    if (currentStation > expectedStation) return kFALSE;
-    
-    // found station --> look for next one
-    if (currentStation == expectedStation) expectedStation++;
+    m |= ( 1 << currentStation );
     
   }
   
-  return expectedStation == AliMUONConstants::NTrackingSt();
-  
+  return ( (requestedStationMask & m) == requestedStationMask ) ;
 }
 
   //__________________________________________________________________________
-void AliMUONTrack::TagRemovableClusters() {
+void AliMUONTrack::TagRemovableClusters(UInt_t requestedStationMask) {
   /// Identify clusters that can be removed from the track,
   /// with the only requirement to have at least 1 cluster per requested station
   
@@ -492,7 +490,9 @@ void AliMUONTrack::TagRemovableClusters() {
   // reset flags to kFALSE for all clusters in required station
   for (Int_t i = 0; i < nClusters; i++) {
     trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
-    if (AliMUONReconstructor::GetRecoParam()->RequestStation(trackParam->GetClusterPtr()->GetChamberId()/2))
+    Int_t stationId = ( 1 << (trackParam->GetClusterPtr()->GetChamberId()/2) );
+    UInt_t m = ( 1 << stationId );
+    if ( m & requestedStationMask )
       trackParam->SetRemovable(kFALSE);
     else trackParam->SetRemovable(kTRUE);
   }

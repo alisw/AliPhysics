@@ -54,17 +54,6 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   MuonRec->SetLoadAlignData("MUON");
   MuonRec->SetNumberOfEventsPerFile(1000);
   MuonRec->SetOption("MUON",recoptions);
-  //  MuonRec->SetEventRange(319,319);
-  MuonRec->SetWriteAOD();
-  
-  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  //muonRecoParam->CombineClusterTrackReco(kTRUE);
-  //muonRecoParam->SaveFullClusterInESD(kTRUE,100.);
-  //muonRecoParam->SetClusteringMode("PEAKFIT");
-  //muonRecoParam->SetClusteringMode("PEAKCOG");
-  muonRecoParam->Print("FULL");
-  AliMUONReconstructor::SetRecoParam(muonRecoParam);
-  
   MuonRec->SetRunQA("MUON:ALL");
   
   MuonRec->Run();

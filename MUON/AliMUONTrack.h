@@ -24,7 +24,7 @@ class AliMUONTrack : public TObject
 {
  public:
   AliMUONTrack(); // Default constructor
-  AliMUONTrack(AliMUONObjectPair *segment); // Constructor from a segment
+  AliMUONTrack(AliMUONObjectPair *segment, Double_t bendingVertexDispersion); // Constructor from a segment
   virtual ~AliMUONTrack(); // Destructor
   AliMUONTrack (const AliMUONTrack& track); // copy constructor
   AliMUONTrack& operator=(const AliMUONTrack& track); // assignment operator
@@ -37,9 +37,9 @@ class AliMUONTrack : public TObject
   void          UpdateTrackParamAtCluster();
   void          UpdateCovTrackParamAtCluster();
   
-  Bool_t IsValid();
+  Bool_t IsValid(UInt_t requestedStationMask);
   
-  void TagRemovableClusters();
+  void TagRemovableClusters(UInt_t requestedStationMask);
   
   /// return the number of clusters attached to the track
   Int_t GetNClusters() const {return fTrackParamAtCluster ? fTrackParamAtCluster->GetEntriesFast() : 0;}

@@ -289,9 +289,10 @@ AliMUONReconstructor::CreateTracker() const
 
   AliMUONTracker* tracker(0x0);
   
-  if ( ! AliMUONReconstructor::GetRecoParam()->CombineClusterTrackReco() )
+  if ( ! GetRecoParam()->CombineClusterTrackReco() )
   {
-    tracker = new AliMUONTracker(0x0,
+    tracker = new AliMUONTracker(GetRecoParam(),
+				 0x0,
                                  *DigitStore(),
                                  fDigitMaker,
                                  fTransformer,
@@ -299,7 +300,8 @@ AliMUONReconstructor::CreateTracker() const
   }
   else
   {
-    tracker = new AliMUONTracker(fClusterServer,
+    tracker = new AliMUONTracker(GetRecoParam(),
+				 fClusterServer,
                                  *DigitStore(),
                                  fDigitMaker,
                                  fTransformer,
@@ -487,7 +489,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
   Bool_t ok(kFALSE);
   Bool_t alone(kTRUE); // is trigger the only info in TreeR ?
   
-  if ( ! AliMUONReconstructor::GetRecoParam()->CombineClusterTrackReco() )
+  if ( ! GetRecoParam()->CombineClusterTrackReco() )
   {
     alone = kFALSE; // we'll get both tracker and trigger information in TreeR
   }
@@ -519,10 +521,10 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
     
     for ( Int_t i = 0; i < AliMpConstants::NofTrackingChambers(); ++i ) 
     {
-      if (AliMUONReconstructor::GetRecoParam()->UseChamber(i))
+      if (GetRecoParam()->UseChamber(i))
       {
-        if ( ( i == 6 || i == 7 )  && AliMUONReconstructor::GetRecoParam()->BypassSt4() ) continue;
-        if ( ( i == 8 || i == 9 )  && AliMUONReconstructor::GetRecoParam()->BypassSt5() ) continue;
+        if ( ( i == 6 || i == 7 )  && GetRecoParam()->BypassSt4() ) continue;
+        if ( ( i == 8 || i == 9 )  && GetRecoParam()->BypassSt5() ) continue;
         
         fClusterServer->Clusterize(i,*fClusterStore,area);
       }

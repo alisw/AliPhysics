@@ -59,7 +59,7 @@ ClassImp(AliMUONRefitter)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONRefitter::AliMUONRefitter()
+AliMUONRefitter::AliMUONRefitter(const AliMUONRecoParam* recoParam)
 : TObject(),
   fGeometryTransformer(0x0),
   fClusterServer(0x0),
@@ -69,7 +69,7 @@ AliMUONRefitter::AliMUONRefitter()
   /// Default constructor
   CreateGeometryTransformer();
   CreateClusterServer(*fGeometryTransformer);
-  if (fClusterServer) fTracker = AliMUONTracker::CreateTrackReconstructor(AliMUONReconstructor::GetRecoParam()->GetTrackingMode(),fClusterServer);
+  if (fClusterServer) fTracker = AliMUONTracker::CreateTrackReconstructor(recoParam,fClusterServer);
   if (!fClusterServer || !fTracker) {
     AliFatal("refitter initialization failed");
     exit(-1);
@@ -261,7 +261,7 @@ void AliMUONRefitter::CreateGeometryTransformer()
 void AliMUONRefitter::CreateClusterServer(AliMUONGeometryTransformer& transformer)
 {
   /// Create cluster server
-  AliMUONVClusterFinder* clusterFinder = AliMUONReconstructor::CreateClusterFinder(AliMUONReconstructor::GetRecoParam()->GetClusteringMode());
+  AliMUONVClusterFinder* clusterFinder = AliMUONReconstructor::CreateClusterFinder(GetRecoParam()->GetClusteringMode());
   fClusterServer = clusterFinder ? new AliMUONSimpleClusterServer(clusterFinder,transformer) : 0x0;
 }
 

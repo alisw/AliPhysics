@@ -17,6 +17,7 @@ class AliCluster;
 class AliESDEvent;
 class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
+class AliMUONRecoParam;
 class AliMUONTrackHitPattern;
 class AliMUONTriggerCircuit;
 class AliMUONVClusterServer;
@@ -31,7 +32,8 @@ class AliMUONTracker : public AliTracker
 {
  public:
 
-  AliMUONTracker(AliMUONVClusterServer* clusterServer,
+  AliMUONTracker(const AliMUONRecoParam* recoParam,
+                 AliMUONVClusterServer* clusterServer,
                  const AliMUONVDigitStore& digitStore,
                  const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
@@ -44,6 +46,8 @@ class AliMUONTracker : public AliTracker
 
   virtual void  UnloadClusters();
 
+  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
+  
   /// Dummy implementation
   virtual Int_t PropagateBack(AliESDEvent* /*event*/) {return 0;}
   /// Dummy implementation
@@ -51,7 +55,7 @@ class AliMUONTracker : public AliTracker
   /// Dummy implementation
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return 0;}
 
-  static AliMUONVTrackReconstructor* CreateTrackReconstructor(const char* trackingMode, AliMUONVClusterServer* clusterServer);
+  static AliMUONVTrackReconstructor* CreateTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer);
   
 private:
   /// Not implemented
@@ -80,6 +84,7 @@ private:
   const AliMUONVDigitStore& fDigitStore; //!< digit info to fill in ESD
   mutable AliMUONVClusterStore* fInputClusterStore; //!< cluster container
   mutable AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< trigger track store
+  const AliMUONRecoParam* fRecoParam; //!< pointer to reco param
   
   ClassDef(AliMUONTracker,0)  //tracker base class for MUON
 };

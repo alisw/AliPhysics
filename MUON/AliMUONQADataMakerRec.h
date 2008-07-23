@@ -19,11 +19,12 @@ class AliMUONVClusterStore;
 #include "AliQADataMakerRec.h"
 
 class AliMUONVTrackerDataMaker;
+class AliMUONRecoParam;
 
 class AliMUONQADataMakerRec: public AliQADataMakerRec {
 
 public:
-  AliMUONQADataMakerRec();         
+  AliMUONQADataMakerRec(const AliMUONRecoParam* recoParam);         
   AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm);   
   AliMUONQADataMakerRec& operator=(const AliMUONQADataMakerRec& qadm);
   virtual ~AliMUONQADataMakerRec();
@@ -92,6 +93,8 @@ private:
   void MakeRecPointsTracker(TTree* treeR);
   void MakeRecPointsTrigger(TTree* treeR);
 	
+  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
+  
   Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
   Bool_t  fIsInitRecPointsTracker;  //!<  info if InitRecPoints() went ok
   Bool_t  fIsInitRecPointsTrigger;  //!<  info if InitRecPoints() went ok
@@ -104,6 +107,8 @@ private:
 	
 	AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
 	
+  const AliMUONRecoParam* fRecoParam; //!< pointer to reco params
+  
   ClassDef(AliMUONQADataMakerRec,3)  // MUON Quality assurance data maker
 
 };

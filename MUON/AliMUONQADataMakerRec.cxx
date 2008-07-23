@@ -28,6 +28,7 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrigger.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONTrackerCalibratedDataMaker.h"
 #include "AliMUONTriggerDisplay.h"
@@ -80,7 +81,7 @@ ClassImp(AliMUONQADataMakerRec)
 /// \endcond
            
 //____________________________________________________________________________ 
-AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
+AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONRecoParam* recoParam) : 
 AliQADataMakerRec(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
 fIsInitRaws(kFALSE),
 fIsInitRecPointsTracker(kFALSE),
@@ -90,7 +91,8 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
-fTrackerDataMaker(0x0)
+fTrackerDataMaker(0x0),
+fRecoParam(recoParam)
 {
     /// ctor
 	
@@ -409,7 +411,8 @@ void AliMUONQADataMakerRec::MakeRawsTracker(AliRawReader* rawReader)
     
 //    fTrackerDataMaker = new AliMUONTrackerRawDataMaker(rawReader,histogram,fastDecoder,takeRawReaderOwnership);
 
-		fTrackerDataMaker = new AliMUONTrackerCalibratedDataMaker(AliCDBManager::Instance()->GetRun(),
+		fTrackerDataMaker = new AliMUONTrackerCalibratedDataMaker(GetRecoParam(),
+                                                              AliCDBManager::Instance()->GetRun(),
                                                               rawReader,
 																															AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
 																															"NOGAIN",

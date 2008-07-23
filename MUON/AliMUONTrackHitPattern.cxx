@@ -47,6 +47,7 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONLocalTriggerBoard.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackParam.h"
@@ -85,14 +86,16 @@ ClassImp(AliMUONTrackHitPattern) // Class implementation in ROOT context
 
 
 //______________________________________________________________________________
-AliMUONTrackHitPattern::AliMUONTrackHitPattern(const AliMUONGeometryTransformer& transformer,
+AliMUONTrackHitPattern::AliMUONTrackHitPattern(const AliMUONRecoParam* recoParam,
+                                               const AliMUONGeometryTransformer& transformer,
                                                const AliMUONDigitMaker& digitMaker)
-    : TObject(),
-      fTransformer(transformer),
-      fDigitMaker(digitMaker),
-      fDeltaZ(0.0),
-      fTrigCovariance(0x0),
-      fkMaxDistance(99999.)
+: TObject(),
+fRecoParam(recoParam),
+fTransformer(transformer),
+fDigitMaker(digitMaker),
+fDeltaZ(0.0),
+fTrigCovariance(0x0),
+fkMaxDistance(99999.)
 {
     /// Default constructor
     InitMembers();
@@ -259,10 +262,10 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
     }
 
     chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)
-    if (chi2 < AliMUONReconstructor::GetRecoParam()->GetMaxNormChi2MatchTrigger()) 
+    if (chi2 < GetRecoParam()->GetMaxNormChi2MatchTrigger()) 
     {
       Bool_t isDoubleTrack = (TMath::Abs(chi2 - minChi2MatchTrigger)<1.);
-      if (chi2 < minChi2MatchTrigger && chi2 < AliMUONReconstructor::GetRecoParam()->GetMaxNormChi2MatchTrigger()) 
+      if (chi2 < minChi2MatchTrigger && chi2 < GetRecoParam()->GetMaxNormChi2MatchTrigger()) 
       {
 	if(isDoubleTrack)
 	{
@@ -504,7 +507,7 @@ AliMUONTrackHitPattern::MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t z
     Float_t xTrackAtPad = trackParamAtPadZ.GetNonBendingCoor();
     Float_t yTrackAtPad = trackParamAtPadZ.GetBendingCoor();
 
-    const Float_t kNSigma = AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTrigger();
+    const Float_t kNSigma = GetRecoParam()->GetSigmaCutForTrigger();
 
     const TMatrixD& kCovParam = trackParamAtPadZ.GetCovariances();
     
@@ -629,9 +632,9 @@ Float_t AliMUONTrackHitPattern::PadMatchTrack(Float_t xPad, Float_t yPad,
     /// Decides if the digit belongs to the trigger track.
     //
 
-  Float_t maxDist = AliMUONReconstructor::GetRecoParam()->GetStripCutForTrigger() * 2. * TMath::Min(dpx,dpy); // cm
+  Float_t maxDist = GetRecoParam()->GetStripCutForTrigger() * 2. * TMath::Min(dpx,dpy); // cm
   if(maxDist<2.) maxDist = 2.;
-  Float_t maxDistCheckArea = AliMUONReconstructor::GetRecoParam()->GetMaxStripAreaForTrigger() * 2. *  TMath::Min(dpx,dpy); // cm
+  Float_t maxDistCheckArea = GetRecoParam()->GetMaxStripAreaForTrigger() * 2. *  TMath::Min(dpx,dpy); // cm
 
     Float_t matchDist = fkMaxDistance;
 

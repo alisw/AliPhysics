@@ -39,7 +39,7 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONConstants.h"
 #include "AliMUONESDInterface.h"
-
+#include "AliMUONRecoParam.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -59,8 +59,9 @@ ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONRecoCheck::AliMUONRecoCheck(Char_t *esdFileName, Char_t *pathSim)
+AliMUONRecoCheck::AliMUONRecoCheck(AliMUONRecoParam* recoParam, Char_t *esdFileName, Char_t *pathSim)
 : TObject(),
+fRecoParam(recoParam),
 fMCEventHandler(new AliMCEventHandler()),
 fESDEvent(new AliESDEvent()),
 fESDTree (0x0),
@@ -190,7 +191,7 @@ void AliMUONRecoCheck::MakeReconstructedTracks()
   Int_t nTracks = (Int_t) fESDEvent->GetNumberOfMuonTracks();
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     AliESDMuonTrack* esdTrack = fESDEvent->GetMuonTrack(iTrack);
-    if (esdTrack->ContainTrackerData()) AliMUONESDInterface::Add(*esdTrack, *fRecoTrackStore);
+    if (esdTrack->ContainTrackerData()) AliMUONESDInterface::Add(GetRecoParam(),*esdTrack, *fRecoTrackStore);
   }
   
 }

@@ -66,7 +66,8 @@ fUseHPDecoder(kTRUE)
 }
 
 //_____________________________________________________________________________
-AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(Int_t runNumber,
+AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(const AliMUONRecoParam* recoParam,
+                                                                     Int_t runNumber,
                                                                      AliRawReader* reader, 
                                                                      const char* cdbpath,
                                                                      const char* calibMode,
@@ -90,11 +91,12 @@ fUseHPDecoder(useHPdecoder)
   /// Ctor in which this object will NOT be owner of the reader,
   /// and can NOT apply rewind to it, nor use Next on it
   
-  Ctor(runNumber,calibMode,histogram,xmin,xmax);
+  Ctor(recoParam,runNumber,calibMode,histogram,xmin,xmax);
 }
 
 //_____________________________________________________________________________
-AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReader* reader,
+AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(const AliMUONRecoParam* recoParam,
+                                                                     AliRawReader* reader,
                                                                      const char* cdbpath,
                                                                      const char* calibMode,
                                                                      Bool_t histogram,
@@ -126,12 +128,13 @@ fUseHPDecoder(useHPDecoder)
     fRawReader->RewindEvents();
   }
   
-  Ctor(runNumber,calibMode,histogram,xmin,xmax);
+  Ctor(recoParam,runNumber,calibMode,histogram,xmin,xmax);
 }
 
 //_____________________________________________________________________________
 void
-AliMUONTrackerCalibratedDataMaker::Ctor(Int_t runNumber, const char* calibMode,
+AliMUONTrackerCalibratedDataMaker::Ctor(const AliMUONRecoParam* recoParam, 
+                                        Int_t runNumber, const char* calibMode,
                                         Bool_t histogram, Double_t xmin, Double_t xmax)
 {
   /// "designated" constructor.
@@ -203,8 +206,7 @@ AliMUONTrackerCalibratedDataMaker::Ctor(Int_t runNumber, const char* calibMode,
       AliCDBManager::Instance()->SetDefaultStorage(storage);
     }
     
-		const AliMUONRecoParam* recoParams = AliMUONReconstructor::GetRecoParam();
-    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParams,calibMode);
+    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParam,calibMode);
 		//FIXME: get the reco param from GUI and/or from OCDB if not used from the QA code ?
   }
 }

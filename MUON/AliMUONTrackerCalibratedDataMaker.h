@@ -26,6 +26,7 @@ class AliMUONDigitMaker;
 class AliMUONVTrackerData;
 class AliMUONVStore;
 class AliMUONVDigitStore;
+class AliMUONRecoParam;
 
 class AliMUONTrackerCalibratedDataMaker : public AliMUONVTrackerDataMaker
 {
@@ -33,7 +34,8 @@ public:
 
   AliMUONTrackerCalibratedDataMaker(TRootIOCtor* ioCtor);
   
-  AliMUONTrackerCalibratedDataMaker(Int_t runNumber,
+  AliMUONTrackerCalibratedDataMaker(const AliMUONRecoParam* recoParam,
+                                    Int_t runNumber,
                                     AliRawReader* reader, 
                                     const char* cdbpath=0x0,
                                     const char* calibMode=0x0,
@@ -42,7 +44,8 @@ public:
                                     Double_t xmax=4096.0,
                                     Bool_t useHPdecoder=kTRUE);
   
-  AliMUONTrackerCalibratedDataMaker(AliRawReader* reader = 0x0, 
+  AliMUONTrackerCalibratedDataMaker(const AliMUONRecoParam* recoParam,
+                                    AliRawReader* reader = 0x0, 
                                     const char* cdbpath=0x0,
                                     const char* calibMode=0x0,
                                     Bool_t histogram=kFALSE,
@@ -94,7 +97,8 @@ private:
   /// Not implemented
   AliMUONTrackerCalibratedDataMaker& operator=(const AliMUONTrackerCalibratedDataMaker& rhs);
   
-  void Ctor(Int_t runNumber, const char* calibMode,
+  void Ctor(const AliMUONRecoParam* recoParam,
+            Int_t runNumber, const char* calibMode,
             Bool_t histogram, Double_t xmin, Double_t xmax);
   
 private:

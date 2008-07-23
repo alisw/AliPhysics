@@ -32,12 +32,13 @@ class AliESDMuonTrack;
 class AliESDMuonCluster;
 class AliESDMuonPad;
 class TIterator;
+class AliMUONRecoParam;
 
 class AliMUONESDInterface : public TObject
 {
 public: // methods to play with internal objects
   
-  AliMUONESDInterface();
+  AliMUONESDInterface(AliMUONRecoParam* recoParam);
   virtual ~AliMUONESDInterface();
   
   virtual void Clear(Option_t* = "");
@@ -78,6 +79,7 @@ public: // methods to play with internal objects
   TIterator* CreateDigitIteratorInCluster(UInt_t clusterId) const;
   TIterator* CreateLocalTriggerIterator() const;
   
+  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
   
 public: // static methods
   
@@ -109,7 +111,7 @@ public: // static methods
   static void SetParamCov(const AliMUONTrackParam& trackParam, AliESDMuonTrack& esdTrack);
   
   // ESDMuon objects --> MUON objects conversion
-  static void ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track);
+  static void ESDToMUON(const AliMUONRecoParam* recoParam, const AliESDMuonTrack& esdTrack, AliMUONTrack& track);
   static void ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLocalTrigger& locTrg);
   static void ESDToMUON(const AliESDMuonCluster& esdCluster, AliMUONVCluster& cluster);
   static void ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& digit);
@@ -123,7 +125,7 @@ public: // static methods
   
   // Add ESD object into the corresponding MUON store
   // return a pointer to the corresponding MUON object into the store
-  static AliMUONTrack*    Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore);
+  static AliMUONTrack*    Add(const AliMUONRecoParam* recoParam, const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore);
   static void             Add(const AliESDMuonTrack& esdTrack, AliMUONVTriggerStore& triggerStore);
   static AliMUONVCluster* Add(const AliESDMuonCluster& esdCluster, AliMUONVClusterStore& clusterStore);
   static AliMUONVDigit*   Add(const AliESDMuonPad& esdPad, AliMUONVDigitStore& digitStore);
@@ -159,7 +161,8 @@ private:
   AliMpExMap* fClusterMap; ///< map of clusters
   AliMpExMap* fDigitMap;   ///< map of digits
   
-    
+  const AliMUONRecoParam* fRecoParam; ///< get reco param
+  
   ClassDef(AliMUONESDInterface,0)
 };
 

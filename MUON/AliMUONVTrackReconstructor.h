@@ -30,12 +30,14 @@ class AliMUONGeometryTransformer;
 class AliMUONDigitMaker;
 class AliMUONTriggerCircuit;
 class TClonesArray;
+class AliMUONRecoParam;
 
 class AliMUONVTrackReconstructor : public TObject {
 
  public:
-  AliMUONVTrackReconstructor(AliMUONVClusterServer* clusterServer); // default Constructor
+  AliMUONVTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer); // default Constructor
   virtual ~AliMUONVTrackReconstructor(); // Destructor
+
 
   void EventReconstruct(AliMUONVClusterStore& clusterStore,
                         AliMUONVTrackStore& trackStore);
@@ -48,10 +50,35 @@ class AliMUONVTrackReconstructor : public TObject {
                                  const AliMUONVTriggerTrackStore& triggerTrackStore,
                                  const AliMUONVTriggerStore& triggerStore,
                                  const AliMUONTrackHitPattern& trackHitPattern);
+
+  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
   
   /// re-fit the given track
   virtual Bool_t RefitTrack(AliMUONTrack &track, Bool_t enableImprovement = kTRUE) = 0;
   
+  
+  // methods previously got from the static muonrecoparam:
+  //
+  // MakeMoreTrackCandidates()
+  //    
+  // ComplementTracks()
+  //    
+  // ImproveTracks()
+  //
+  // GetMaxNonBendingSlope()
+  // GetMaxBendingSlope()
+  //
+  // GetMinBendingMomentum()
+  // GetMaxBendingMomentum()
+  //
+  // UseChamber(Int_t chamberId)
+  //
+  // GetMaxNonBendingDistanceToTrack()
+  // GetSigmaCutForTracking()
+  // GetMaxBendingDistanceToTrack()
+  // GetSigmaCutForTracking()
+  // TrackAllTracks()
+  // RequestStation(Int_t stationId)
   
  protected:
 
@@ -60,6 +87,8 @@ class AliMUONVTrackReconstructor : public TObject {
 
   AliMUONVClusterServer* fClusterServer; ///< reference to our cluster server
 
+  const AliMUONRecoParam* fRecoParam; ///< reference to reco parameters
+  
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor
   AliMUONVTrackReconstructor& operator=(const AliMUONVTrackReconstructor& rhs); ///< assignment operator

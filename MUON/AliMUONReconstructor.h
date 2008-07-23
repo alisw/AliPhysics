@@ -20,7 +20,6 @@ class AliMUONCalibrationData;
 class AliMUONDigitCalibrator;
 class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
-class AliMUONRecoParam;
 class AliMUONTracker;
 class AliMUONTriggerCircuit;
 class AliMUONVClusterFinder;
@@ -32,7 +31,6 @@ class AliMUONVTriggerStore;
 class AliMUONVTriggerStore;
 class TClonesArray;
 
-#include "AliDetectorRecoParam.h"
 #include "AliMUONRecoParam.h"
 
 class AliMUONReconstructor : public AliReconstructor

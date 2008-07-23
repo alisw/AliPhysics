@@ -67,28 +67,30 @@ ClassImp(AliMUONTracker)
 
 
 //_____________________________________________________________________________
-AliMUONTracker::AliMUONTracker(AliMUONVClusterServer* clusterServer,
+AliMUONTracker::AliMUONTracker(const AliMUONRecoParam* recoParam,
+                               AliMUONVClusterServer* clusterServer,
                                const AliMUONVDigitStore& digitStore,
                                const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
                                const AliMUONTriggerCircuit* triggerCircuit)
 : AliTracker(),
-  fDigitMaker(digitMaker), // not owner
-  fTransformer(transformer), // not owner
-  fTriggerCircuit(triggerCircuit), // not owner
-  fTrackHitPatternMaker(0x0),
-  fTrackReco(0x0),
-  fClusterStore(0x0),
-  fTriggerStore(0x0),
-  fClusterServer(clusterServer), 
-  fIsOwnerOfClusterServer(kFALSE),
-  fDigitStore(digitStore), // not owner
-  fInputClusterStore(0x0),
-  fTriggerTrackStore(0x0)
+fDigitMaker(digitMaker), // not owner
+fTransformer(transformer), // not owner
+fTriggerCircuit(triggerCircuit), // not owner
+fTrackHitPatternMaker(0x0),
+fTrackReco(0x0),
+fClusterStore(0x0),
+fTriggerStore(0x0),
+fClusterServer(clusterServer), 
+fIsOwnerOfClusterServer(kFALSE),
+fDigitStore(digitStore), // not owner
+fInputClusterStore(0x0),
+fTriggerTrackStore(0x0),
+fRecoParam(recoParam)
 {
   /// constructor
   if (fTransformer && fDigitMaker)
-    fTrackHitPatternMaker = new AliMUONTrackHitPattern(*fTransformer,*fDigitMaker);
+    fTrackHitPatternMaker = new AliMUONTrackHitPattern(recoParam,*fTransformer,*fDigitMaker);
   
   if (!fClusterServer)
   {
@@ -174,8 +176,8 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
     }
     delete fClusterServer;
     fClusterServer = new AliMUONLegacyClusterServer(*fTransformer,fInputClusterStore,
-																										AliMUONReconstructor::GetRecoParam()->BypassSt4(),
-																										AliMUONReconstructor::GetRecoParam()->BypassSt5());
+																										GetRecoParam()->BypassSt4(),
+																										GetRecoParam()->BypassSt5());
     SetupClusterServer(*fClusterServer);
   }
   
@@ -195,7 +197,7 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   
   if (!fTrackReco) 
   {
-    fTrackReco = CreateTrackReconstructor(AliMUONReconstructor::GetRecoParam()->GetTrackingMode(),fClusterServer);
+    fTrackReco = CreateTrackReconstructor(GetRecoParam(),fClusterServer);
   }
   
   // if the required tracking mode does not exist
@@ -219,8 +221,8 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
     fTrackReco->EventReconstructTrigger(*fTriggerCircuit,*fTriggerStore,*(TriggerTrackStore()));
   }
   
-  if ( ( AliMUONReconstructor::GetRecoParam()->BypassSt4() || 
-				 AliMUONReconstructor::GetRecoParam()->BypassSt5() ) && 
+  if ( ( GetRecoParam()->BypassSt4() || 
+				 GetRecoParam()->BypassSt5() ) && 
 			TriggerTrackStore()->GetSize() > 5 ) 
   {
     // Hard cut to reject shower events
@@ -272,8 +274,8 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
   AliMUONLocalTrigger* locTrg;
   AliESDMuonTrack esdTrack;
   TIter next(trackStore.CreateIterator());
-  if (AliMUONReconstructor::GetRecoParam()->SaveFullClusterInESD() && 
-      gRandom->Uniform(100.) <= AliMUONReconstructor::GetRecoParam()->GetPercentOfFullClusterInESD()) {
+  if (GetRecoParam()->SaveFullClusterInESD() && 
+      gRandom->Uniform(100.) <= GetRecoParam()->GetPercentOfFullClusterInESD()) {
     
     while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
       
@@ -325,22 +327,22 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackReconstructor* AliMUONTracker::CreateTrackReconstructor(const char* trackingMode, AliMUONVClusterServer* clusterServer)
+AliMUONVTrackReconstructor* AliMUONTracker::CreateTrackReconstructor(const AliMUONRecoParam* recoParam, AliMUONVClusterServer* clusterServer)
 {
   /// Create track reconstructor, depending on tracking mode set in RecoParam
   
   AliMUONVTrackReconstructor* trackReco(0x0);
   
-  TString opt(trackingMode);
+  TString opt(recoParam->GetTrackingMode());
   opt.ToUpper();
   
   if (strstr(opt,"ORIGINAL"))
   {
-    trackReco = new AliMUONTrackReconstructor(clusterServer);
+    trackReco = new AliMUONTrackReconstructor(recoParam,clusterServer);
   }
   else if (strstr(opt,"KALMAN"))
   {
-    trackReco = new AliMUONTrackReconstructorK(clusterServer);
+    trackReco = new AliMUONTrackReconstructorK(recoParam,clusterServer);
   }
   else
   {
@@ -369,25 +371,25 @@ AliMUONTracker::SetupClusterServer(AliMUONVClusterServer& clusterServer)
 {
   /// Setup the cluster server
   
-  if ( AliMUONReconstructor::GetRecoParam()->BypassSt4() ||
-			 AliMUONReconstructor::GetRecoParam()->BypassSt5() )
+  if ( GetRecoParam()->BypassSt4() ||
+			 GetRecoParam()->BypassSt5() )
   {
     Bool_t ok = clusterServer.UseTriggerTrackStore(TriggerTrackStore());
   
 		TString msg1;
 		TString msg2;
 		
-		if ( AliMUONReconstructor::GetRecoParam()->BypassSt45() )
+		if ( GetRecoParam()->BypassSt45() )
 		{
 			msg1 = "STATIONS 4 AND 5";
 			msg2 = "THOSE TWO STATIONS";
 		}
-		else if ( AliMUONReconstructor::GetRecoParam()->BypassSt4() )
+		else if ( GetRecoParam()->BypassSt4() )
 		{
 			msg1 = "STATION 4";
 			msg2 = "THAT STATION";
 		}
-		else if ( AliMUONReconstructor::GetRecoParam()->BypassSt5() )
+		else if ( GetRecoParam()->BypassSt5() )
 		{
 			msg1 = "STATION 5";
 			msg2 = "THAT STATION";

@@ -23,6 +23,7 @@
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONPainterRegistry.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONTrackerACFDataMaker.h"
 #include "AliMUONTrackerCalibratedDataMaker.h"
 #include "AliMUONTrackerOCDBDataMaker.h"
@@ -553,7 +554,13 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
 
   if ( ocdbPath.Length() > 0 ) 
   {
-    reader = new AliMUONTrackerCalibratedDataMaker(rawReader,ocdbPath.Data(),
+    AliMUONRecoParam* recoParam = AliMUONRecoParam::GetCosmicParam();
+    
+    // FIXME: where to get the reco params from in reality ?
+    
+    reader = new AliMUONTrackerCalibratedDataMaker(recoParam,
+                                                   rawReader,
+                                                   ocdbPath.Data(),
                                                    calibMode.Data(),
                                                    histogram,
                                                    sxmin.Atof(),

@@ -25,12 +25,14 @@ class AliMUONGeometryTransformer;
 class AliMUONVDigitStore;
 class AliMUONTriggerTrack;
 class AliMUONTrack;
+class AliMUONRecoParam;
 
 class AliMUONTrackHitPattern : public TObject 
 {
 public:
 
-  AliMUONTrackHitPattern(const AliMUONGeometryTransformer& transformer,
+  AliMUONTrackHitPattern(const AliMUONRecoParam* recoParam,
+                         const AliMUONGeometryTransformer& transformer,
                          const AliMUONDigitMaker& digitMaker);
   virtual ~AliMUONTrackHitPattern(); // Destructor
 
@@ -86,6 +88,8 @@ protected:
   void LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId,
 			 Int_t cathode, Int_t localBoard[4]) const;
 
+  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
+  
 private:
   /// Not implemented
   AliMUONTrackHitPattern(const AliMUONTrackHitPattern& rhs);
@@ -114,6 +118,8 @@ private:
     kBoardEff
   };
 
+  const AliMUONRecoParam* fRecoParam; //!< pointer to reco parameters
+  
   ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };
 

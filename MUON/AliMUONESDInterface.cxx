@@ -76,13 +76,14 @@ TString AliMUONESDInterface::fgDigitStoreName = "AliMUONDigitStoreV2R";
 TString AliMUONESDInterface::fgTriggerStoreName = "AliMUONTriggerStoreV1";
 
 //_____________________________________________________________________________
-AliMUONESDInterface::AliMUONESDInterface()
+AliMUONESDInterface::AliMUONESDInterface(AliMUONRecoParam* recoParam)
 : TObject(),
-  fTracks(0x0),
-  fDigits(0x0),
-  fTriggers(0x0),
-  fClusterMap(0x0),
-  fDigitMap(0x0)
+fRecoParam(recoParam),
+fTracks(0x0),
+fDigits(0x0),
+fTriggers(0x0),
+fClusterMap(0x0),
+fDigitMap(0x0)
 {
   /// Default constructor
 }
@@ -158,7 +159,7 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
     if (!esdTrack->ContainTrackerData()) continue;
     
     // add it to track store
-    AliMUONTrack* track = Add(*esdTrack, *fTracks);
+    AliMUONTrack* track = Add(GetRecoParam(),*esdTrack, *fTracks);
     
     // prepare cluster map
     AliMpExMap* cMap = new AliMpExMap;
@@ -608,7 +609,7 @@ void AliMUONESDInterface::SetParamCov(const AliMUONTrackParam& trackParam, AliES
 }
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track)
+void AliMUONESDInterface::ESDToMUON(const AliMUONRecoParam* recoParam, const AliESDMuonTrack& esdTrack, AliMUONTrack& track)
 {
   /// Transfert data from ESDMuon track to MUON track
   
@@ -678,7 +679,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
     AliMUONTrackExtrap::ExtrapToZCov(firstTrackParam,firstTrackParam->GetClusterPtr()->GetZ());
     
     // refit the track to get better parameters and covariances at each cluster (temporary disable track improvement)
-    if (!fgTracker) fgTracker = AliMUONTracker::CreateTrackReconstructor(AliMUONReconstructor::GetRecoParam()->GetTrackingMode(),0x0);
+    if (!fgTracker) fgTracker = AliMUONTracker::CreateTrackReconstructor(recoParam,0x0);
     if (!fgTracker->RefitTrack(track, kFALSE)) track.UpdateCovTrackParamAtCluster();
     
   } else {
@@ -923,13 +924,14 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVDigit& digit, AliESDMuonPad& e
 }
 
 //___________________________________________________________________________
-AliMUONTrack* AliMUONESDInterface::Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore)
+AliMUONTrack* 
+AliMUONESDInterface::Add(const AliMUONRecoParam* recoParam, const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore)
 {
   /// Create MUON track from ESDMuon track and add it to the store
   /// return a pointer to the track into the store (0x0 if the track already exist)
   if(trackStore.FindObject(esdTrack.GetUniqueID())) return 0x0;
   AliMUONTrack* track = trackStore.Add(AliMUONTrack());
-  ESDToMUON(esdTrack, *track);
+  ESDToMUON(recoParam,esdTrack, *track);
   return track;
 }
 

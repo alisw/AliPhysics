@@ -22,12 +22,13 @@ class AliMUONESDInterface;
 class AliMUONVClusterStore;
 class AliMUONVTrackStore;
 class AliMUONTrack;
+class AliMUONRecoParam;
 
 class AliMUONRefitter : public TObject
 {
 public:
   
-  AliMUONRefitter();
+  AliMUONRefitter(const AliMUONRecoParam* recoParam);
   virtual ~AliMUONRefitter();
   
   /// connect to the ESD interface containing MUON data to refit
@@ -61,6 +62,7 @@ private:
   
   void AddClusterToTracks(const AliMUONVClusterStore &localClusterStore, AliMUONVTrackStore &trackStore);
   
+  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
   
 private:
     
@@ -69,6 +71,7 @@ private:
   AliMUONVTrackReconstructor* fTracker;             ///< tracker (owner)
   AliMUONESDInterface*        fESDInterface;        ///< container of MUON tracks/clusters/digits (not owner)
   
+  const AliMUONRecoParam* fRecoParam; ///< pointer to reco param
   
   ClassDef(AliMUONRefitter,0)
 };
