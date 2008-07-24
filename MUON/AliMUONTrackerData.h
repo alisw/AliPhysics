@@ -225,6 +225,7 @@ private:
   Bool_t fIsChannelLevelEnabled; ///< whether we allow storing of channel (fChannelValues) values
   Bool_t fIsManuLevelEnabled; ///< whether we allow storing of manu (fManuValues) values
   Int_t fNofDDLs; ///< nof of DDLs we're dealing with
+  /// the number of events treated (per DDL)
   Int_t* fNofEventsPerDDL; //[fNofDDLs] the number of events treated (per DDL)
 
   ClassDef(AliMUONTrackerData,7) // Implementation of AliMUONVTrackerData

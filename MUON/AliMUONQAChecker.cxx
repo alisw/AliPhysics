@@ -88,6 +88,8 @@ AliMUONQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 const Double_t 
 AliMUONQAChecker::CheckRaws(TObjArray * list)
 {
+  /// Check raws
+
 	TIter next(list);
 	TObject* object;
 	AliMUONVTrackerData* data(0x0);
@@ -148,7 +150,7 @@ AliMUONQAChecker::CheckRaws(TObjArray * list)
 void 
 AliMUONQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t value) const
 {
-	// sets the QA according the return value of the Check
+  /// sets the QA according the return value of the Check
 
   AliQA * qa = AliQA::Instance(index);
   

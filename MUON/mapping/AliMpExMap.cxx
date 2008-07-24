@@ -98,7 +98,7 @@ Long_t  AliMpExMap::GetIndex(const TString& s)
 //______________________________________________________________________________
 AliMpIntPair  AliMpExMap::GetPair(Long_t index)
 {
-// Convert the integer index to the pair of integers.
+/// Convert the integer index to the pair of integers.
 
 //  return AliMpIntPair((index-1)/fgkSeparator1,(index-1)%fgkSeparator1);
   return AliMpIntPair( 

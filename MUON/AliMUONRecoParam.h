@@ -309,7 +309,7 @@ private:
 	
 	UInt_t fPadGoodnessMask; ///< goodness mask (see AliMUONPadStatusMaker)
 	
-  Double_t fChargeSigmaCut; //< number of sigma to cut on adc-ped 
+  Double_t fChargeSigmaCut; ///< number of sigma to cut on adc-ped 
   
   // functions
   void SetLowFluxParam();

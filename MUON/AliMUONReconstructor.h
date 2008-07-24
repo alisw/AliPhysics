@@ -49,6 +49,7 @@ public:
   
   virtual AliTracker* CreateTracker() const;
   
+  /// Get param object
   static const AliMUONRecoParam* GetRecoParam() { return dynamic_cast<const AliMUONRecoParam*>(AliReconstructor::GetRecoParam(7)); }
   
   static AliMUONVClusterFinder* CreateClusterFinder(const char* clusterFinderType);
