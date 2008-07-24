@@ -253,8 +253,22 @@ void TDPMjet::Initialize()
 //
     FILE* out = fopen("dpmjet.inp","w");
 //  Projectile and Target definition 
-    fprintf(out, "PROJPAR   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", (Float_t) fIp, (Float_t) fIpz,  0., 0., 0., 0.);
-    fprintf(out, "TARPAR    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", (Float_t) fIt, (Float_t) fItz,  0., 0., 0., 0.);
+    if (fIp == 1 && fIpz ==1) {
+	fprintf(out, "PROJPAR                                                               PROTON\n");
+    } else if (fIp == 1 && fIpz == -1) {
+	fprintf(out, "PROJPAR                                                               APROTON\n");
+    } else {
+	fprintf(out, "PROJPAR   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", (Float_t) fIp, (Float_t) fIpz,  0., 0., 0., 0.);
+    }
+    
+    if (fIt == 1 && fItz ==1) {
+	fprintf(out, "TARPAR                                                                PROTON\n");
+    } else if (fIt == 1 && fItz == -1) {
+	fprintf(out, "TARPAR                                                                APROTON\n");
+    } else {
+	fprintf(out, "TARPAR    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", (Float_t) fIt, (Float_t) fItz,  0., 0., 0., 0.);
+    }
+
 //  Beam energy and crossing-angle
     fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.);
 //  Centrality

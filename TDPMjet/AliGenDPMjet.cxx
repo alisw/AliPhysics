@@ -141,7 +141,7 @@ void AliGenDPMjet::Init()
     // fICentr<-99 -> fraction of x-sec. = XSFRAC		  
     // fICentr=-1. -> evaporation/fzc suppressed		  
     // fICentr<-1. -> evaporation/fzc suppressed		  
-    if (fAProjectile == 1 && fZProjectile == 1) fDPMjet->SetfIdp(1);
+    if (fAProjectile == 1 && TMath::Abs(fZProjectile == 1)) fDPMjet->SetfIdp(1);
     
     fDPMjet->SetfFCentr(fICentr);  
     fDPMjet->SetbRange(fMinImpactParam, fMaxImpactParam); 
@@ -215,7 +215,7 @@ void AliGenDPMjet::Generate()
 	  Bool_t  hasSelectedDaughters =  kFALSE;
 	  
 	  kf = iparticle->GetPdgCode();
-	  if (kf == 92) continue;
+	  if (kf == 92 || kf == 99999) continue;
 	  ks = iparticle->GetStatusCode();
 // No initial state partons
           if (ks==21) continue;
@@ -292,11 +292,10 @@ void AliGenDPMjet::Generate()
 	      if (hasMother) {
 		  imo = iparticle->GetFirstMother();
 		  mother = (TParticle *) fParticles.At(imo);
-		  imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
+		  imo = (mother->GetPdgCode() != 92 && mother->GetPdgCode() != 99999) ? newPos[imo] : -1;
 	      } // if has mother   
 
 	      Bool_t tFlag = (fTrackIt && (ks == 1));
-	      
 	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
 	      KeepTrack(nt);
 	      newPos[i] = nt;
