@@ -46,6 +46,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fTrigger(AliPWG0Helper::kMB1),
   fReadMC(kFALSE),
   fUseMCVertex(kFALSE),
+  fOnlyPrimaries(kFALSE),
   fUseMCKine(kFALSE),
   fEsdTrackCuts(0),
   fdNdEtaAnalysisESD(0),
@@ -113,25 +114,14 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
   } else {
     fESD = esdH->GetEvent();
 
-    TTree* tree = esdH->GetTree();
-    if (!tree) {
-      Printf("ERROR: Could not read tree");
-    } else {
-      // Disable all branches and enable only the needed ones
-      tree->SetBranchStatus("*", 0);
+    // Enable only the needed branches
+    esdH->SetActiveBranches("AliESDHeader Vertex");
 
-      tree->SetBranchStatus("AliESDHeader*", 1);
-      tree->SetBranchStatus("*Vertex*", 1);
+    if (fAnalysisMode == AliPWG0Helper::kSPD)
+      esdH->SetActiveBranches("AliESDHeader Vertex AliMultiplicity");
 
-      if (fAnalysisMode == AliPWG0Helper::kSPD) {
-        tree->SetBranchStatus("AliMultiplicity*", 1);
-      }
-
-      if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
-        //AliESDtrackCuts::EnableNeededBranches(tree);
-        tree->SetBranchStatus("Tracks*", 1);
-      }
-
+    if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
+      esdH->SetActiveBranches("AliESDHeader Vertex Tracks");
     }
   }
 
@@ -246,9 +236,9 @@ void AlidNdEtaTask::Exec(Option_t*)
     AliStack* stack = 0;
     TArrayF vtxMC(3);
 
-    if (fUseMCVertex || fUseMCKine || fReadMC) {
+    if (fUseMCVertex || fUseMCKine || fOnlyPrimaries || fReadMC) {
       if (!fReadMC) {
-        Printf("ERROR: fUseMCVertex or fUseMCKine set without fReadMC set!");
+        Printf("ERROR: fUseMCVertex or fUseMCKine or fOnlyPrimaries set without fReadMC set!");
         return;
       }
 
@@ -313,7 +303,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       etaArr = new Float_t[mult->GetNumberOfTracklets()];
       ptArr = new Float_t[mult->GetNumberOfTracklets()];
 
-      if (fUseMCKine)
+      if (fOnlyPrimaries)
         Printf("Processing only primaries (MC information used). This is for systematical checks only.");
 
       // get multiplicity from ITS tracklets
@@ -321,7 +311,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       {
         //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
 
-        if (fUseMCKine)
+        if (fOnlyPrimaries)
           if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
             continue;
 
@@ -343,13 +333,15 @@ void AlidNdEtaTask::Exec(Option_t*)
 
         fDeltaPhi->Fill(deltaPhi);
 
+        // TODO implement fUseMCKine here
+
         etaArr[inputCount] = mult->GetEta(i);
         labelArr[inputCount] = mult->GetLabel(i, 0);
         ptArr[inputCount] = 0; // no pt for tracklets
         ++inputCount;
       }
 
-      //Printf("Accepted %d tracklets", inputCount);
+      Printf("Accepted %d tracklets", inputCount);
     }
     else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
     {
@@ -360,12 +352,18 @@ void AlidNdEtaTask::Exec(Option_t*)
       }
 
       // get multiplicity from ESD tracks
-      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
       Int_t nGoodTracks = list->GetEntries();
 
       labelArr = new Int_t[nGoodTracks];
       etaArr = new Float_t[nGoodTracks];
       ptArr = new Float_t[nGoodTracks];
+
+      if (fOnlyPrimaries)
+        Printf("WARNING: Processing only primaries (MC information used). This is for systematical checks only.");
+
+      if (fUseMCKine)
+        Printf("WARNING: Using MC kine information. This is for systematical checks only.");
 
       // loop over esd tracks
       for (Int_t i=0; i<nGoodTracks; i++)
@@ -383,9 +381,28 @@ void AlidNdEtaTask::Exec(Option_t*)
         fPhi->Fill(phi);
         fEtaPhi->Fill(esdTrack->Eta(), phi);
 
-        etaArr[inputCount] = esdTrack->Eta();
+        Float_t eta = esdTrack->Eta();
+        Int_t label = TMath::Abs(esdTrack->GetLabel());
+        Float_t pT  = esdTrack->Pt();
+
+        if (fOnlyPrimaries && label == 0)
+          continue;
+
+        if (fUseMCKine)
+        {
+          if (label > 0)
+          {
+            TParticle* particle = stack->Particle(label);
+            eta = particle->Eta();
+            pT = particle->Pt();
+          }
+          else
+            Printf("WARNING: fUseMCKine set without fOnlyPrimaries and no label found");
+        }
+
+        etaArr[inputCount] = eta;
         labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
-        ptArr[inputCount] = esdTrack->Pt();
+        ptArr[inputCount] = pT;
         ++inputCount;
       }
 

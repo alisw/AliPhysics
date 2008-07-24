@@ -29,6 +29,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
     void SetUseMCVertex(Bool_t flag = kTRUE) { fUseMCVertex = flag; }
+    void SetOnlyPrimaries(Bool_t flag = kTRUE) { fOnlyPrimaries = flag; }
     void SetUseMCKine(Bool_t flag = kTRUE) { fUseMCKine = flag; }
     void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
 
@@ -44,7 +45,8 @@ class AlidNdEtaTask : public AliAnalysisTask {
 
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
     Bool_t  fUseMCVertex;  // the MC vtx is used instead of the ESD vertex (for syst. check)
-    Bool_t  fUseMCKine;    // Process only primaries by using the MC informatin (for syst. check)
+    Bool_t  fOnlyPrimaries;// Process only primaries by using the MC information (for syst. check)
+    Bool_t  fUseMCKine;    // use the MC values for each found track/tracklet (for syst. check)
 
     AliESDtrackCuts* fEsdTrackCuts;         // Object containing the parameters of the esd track cuts
 

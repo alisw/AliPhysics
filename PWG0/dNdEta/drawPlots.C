@@ -31,7 +31,7 @@ void SetRanges(TAxis* axis)
   if (strcmp(axis->GetTitle(), "#eta") == 0)
     axis->SetRangeUser(-1.7999, 1.7999);
   if (strcmp(axis->GetTitle(), "p_{T} [GeV/c]") == 0)
-    axis->SetRangeUser(0, 9.9999);
+    axis->SetRangeUser(0, 4.9999);
   if (strcmp(axis->GetTitle(), "vtx z [cm]") == 0)
     axis->SetRangeUser(-15, 14.9999);
   if (strcmp(axis->GetTitle(), "Ntracks") == 0)
@@ -95,6 +95,7 @@ void InitPadCOLZ()
   gPad->Range(0, 0, 1, 1);
   gPad->SetRightMargin(0.15);
   gPad->SetLeftMargin(0.12);
+  gPad->SetTopMargin(0.05);
 
   gPad->SetGridx();
   gPad->SetGridy();
@@ -1240,7 +1241,7 @@ void Track2Particle2DCreatePlots(const char* fileName = "correction_map.root")
   meas->GetXaxis()->SetRange(0, 0);
 }
 
-void Track2Particle2D(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction")
+TCanvas* Track2Particle2D(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction")
 {
   gSystem->Load("libPWG0base");
 
@@ -1249,11 +1250,6 @@ void Track2Particle2D(const char* fileName = "correction_map.root", const char* 
   TH2* corrYX = dynamic_cast<TH2*> (gROOT->FindObject("generated_yx_div_measured_yx"));
   TH2* corrZX = dynamic_cast<TH2*> (gROOT->FindObject("generated_zx_div_measured_zx"));
   TH2* corrZY = dynamic_cast<TH2*> (gROOT->FindObject("generated_zy_div_measured_zy"));
-
-  /* this reads them from the file
-  TH2* corrYX = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx"));
-  TH2* corrZX = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx"));
-  TH2* corrZY = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy"));*/
 
   Prepare2DPlot(corrYX);
   Prepare2DPlot(corrZX);
@@ -1279,8 +1275,10 @@ void Track2Particle2D(const char* fileName = "correction_map.root", const char* 
   InitPadCOLZ();
   corrZY->Draw("COLZ");
 
-  canvas->SaveAs(Form("Track2Particle2D_%d.gif", gMax));
-  canvas->SaveAs(Form("Track2Particle2D_%d.eps", gMax));
+  canvas->SaveAs(Form("spd_corr_track2particle_%d.gif", gMax));
+  canvas->SaveAs(Form("spd_corr_track2particle_%d.eps", gMax));
+
+  return canvas;
 }
 
 void CompareTrack2Particle2D()
