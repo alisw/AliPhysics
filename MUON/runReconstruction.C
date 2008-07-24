@@ -54,7 +54,10 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   MuonRec->SetLoadAlignData("MUON");
   MuonRec->SetNumberOfEventsPerFile(1000);
   MuonRec->SetOption("MUON",recoptions);
-  MuonRec->SetRunQA("MUON:ALL");
+  MuonRec->SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
+  //MuonRec->SetRunQA("MUON:ALL");
+
+  //AliMUONReconstructor::GetRecoParam()->Print("FULL");
   
   MuonRec->Run();
   
