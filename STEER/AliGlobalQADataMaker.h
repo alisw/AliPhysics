@@ -23,18 +23,22 @@ public:
   };
   AliGlobalQADataMaker(const Char_t *name="Global", 
                        const Char_t *title="Global QA data maker"):
-    AliQADataMakerRec(name,title) {;}
+	AliQADataMakerRec(name,title) {;}
   AliGlobalQADataMaker(const AliQADataMakerRec& qadm):
-    AliQADataMakerRec(qadm) {;}
+	AliQADataMakerRec(qadm) {;}
 
-  void InitRecPoints();
+private:
+	void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
+
+	void InitRaws(); 
+	void InitRecPoints();
   void InitESDs();
 
+	void MakeRaws(AliRawReader* rawReader) ; 
   void MakeESDs(AliESDEvent *event);
 
   void StartOfDetectorCycle() {;}
 
-private:   
   AliGlobalQADataMaker &operator=(const AliGlobalQADataMaker &qadm);
 
   ClassDef(AliGlobalQADataMaker,1)  // Global QA 

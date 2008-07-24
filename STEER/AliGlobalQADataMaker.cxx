@@ -8,13 +8,30 @@
 #include <TPDGCode.h>
 #include <TH1F.h>
 
+#include "AliQAChecker.h"
 #include "AliGlobalQADataMaker.h"
 #include "AliGeomManager.h"
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
+#include "AliRawReader.h"
 
 ClassImp(AliGlobalQADataMaker)
  
+//____________________________________________________________________________ 
+void AliGlobalQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+{
+  //Detector specific actions at end of cycle
+  // do the QA checking
+  AliQAChecker::Instance()->Run(AliQA::kGLOBAL, task, list) ;  
+}
+
+//____________________________________________________________________________ 
+void AliGlobalQADataMaker::InitRaws()
+{
+  // create Raws histograms in Raws subdir
+}
+
+//____________________________________________________________________________ 
 void AliGlobalQADataMaker::InitRecPoints() {
   //------------------------------------------------------
   // This function books the histograms of *track*residuals*
@@ -87,6 +104,7 @@ void AliGlobalQADataMaker::InitRecPoints() {
   
 }
 
+//____________________________________________________________________________ 
 void AliGlobalQADataMaker::InitESDs() {
   //------------------------------------------------------
   // This function books the ESD QA histograms
@@ -145,6 +163,15 @@ void AliGlobalQADataMaker::InitESDs() {
 
 }
 
+//____________________________________________________________________________
+void AliGlobalQADataMaker::MakeRaws(AliRawReader* rawReader)
+{
+  //Fill prepared histograms with Raw digit properties
+  rawReader->Reset() ;
+
+}
+
+//____________________________________________________________________________ 
 void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
   //-----------------------------------------------------------
   // This function fills the ESD QA histograms
