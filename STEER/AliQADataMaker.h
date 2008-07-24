@@ -25,6 +25,7 @@ class TObject;
 class TTree; 
 class AliESDEvent;
 class AliRawReader;
+class AliDetectorRecoParam;
 
 // --- Standard library ---
 
@@ -63,6 +64,8 @@ public:
     void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
 	virtual void        StartOfCycle(AliQA::TASKINDEX_t, const Bool_t sameCycle = kFALSE) = 0 ;
 
+	virtual void                SetRecoParam(const AliDetectorRecoParam */*param*/) { return; }
+	  
 protected: 
 
 	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list) ;

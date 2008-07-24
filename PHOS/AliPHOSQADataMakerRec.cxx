@@ -45,7 +45,6 @@
 #include "AliPHOSRawDecoderv1.h"
 #include "AliPHOSRawDecoderv2.h"
 #include "AliPHOSReconstructor.h"
-#include "AliPHOSRecoParam.h"
 
 ClassImp(AliPHOSQADataMakerRec)
            
@@ -227,14 +226,14 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //Fill prepared histograms with Raw digit properties
   rawReader->Reset() ;
   AliPHOSRawDecoder * decoder ;
-  if(strcmp(AliPHOSReconstructor::GetRecoParam()->EMCDecoderVersion(),"v1")==0)
+  if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0)
     decoder=new AliPHOSRawDecoderv1(rawReader);
   else
-    if(strcmp(AliPHOSReconstructor::GetRecoParam()->EMCDecoderVersion(),"v2")==0)
+    if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v2")==0)
       decoder=new AliPHOSRawDecoderv2(rawReader);
     else
       decoder=new AliPHOSRawDecoder(rawReader);
-  decoder->SubtractPedestals(AliPHOSReconstructor::GetRecoParam()->EMCSubtractPedestals());
+  decoder->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
   Double_t lgEtot=0. ;
   Double_t hgEtot=0. ;
   Int_t lgNtot=0 ;

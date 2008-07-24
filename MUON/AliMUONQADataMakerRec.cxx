@@ -28,7 +28,6 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrigger.h"
-#include "AliMUONRecoParam.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONTrackerCalibratedDataMaker.h"
 #include "AliMUONTriggerDisplay.h"
@@ -81,7 +80,7 @@ ClassImp(AliMUONQADataMakerRec)
 /// \endcond
            
 //____________________________________________________________________________ 
-AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONRecoParam* recoParam) : 
+AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
 AliQADataMakerRec(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
 fIsInitRaws(kFALSE),
 fIsInitRecPointsTracker(kFALSE),
@@ -91,8 +90,7 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
-fTrackerDataMaker(0x0),
-fRecoParam(recoParam)
+fTrackerDataMaker(0x0)
 {
     /// ctor
 	

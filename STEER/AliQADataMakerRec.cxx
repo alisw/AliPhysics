@@ -42,7 +42,8 @@ AliQADataMakerRec::AliQADataMakerRec(const char * name, const char * title) :
   AliQADataMaker(name, title), 
   fESDsQAList(0x0), 
   fRawsQAList(0x0), 
-  fRecPointsQAList(0x0)
+  fRecPointsQAList(0x0),
+  fRecoParam(0x0)
 {
   // ctor
 	fDetectorDirName = GetName() ; 
@@ -50,10 +51,11 @@ AliQADataMakerRec::AliQADataMakerRec(const char * name, const char * title) :
 
 //____________________________________________________________________________ 
 AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
-    AliQADataMaker(qadm.GetName(), qadm.GetTitle()), 
-    fESDsQAList(qadm.fESDsQAList),
-	fRawsQAList(qadm.fRawsQAList),
-	fRecPointsQAList(qadm.fRecPointsQAList)
+  AliQADataMaker(qadm.GetName(), qadm.GetTitle()), 
+  fESDsQAList(qadm.fESDsQAList),
+  fRawsQAList(qadm.fRawsQAList),
+  fRecPointsQAList(qadm.fRecPointsQAList),
+  fRecoParam(qadm.fRecoParam)
   
 {
   //copy ctor

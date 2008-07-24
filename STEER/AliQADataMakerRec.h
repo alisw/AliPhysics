@@ -48,6 +48,8 @@ public:
 	virtual void        Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t run, Int_t cycles = -1) ;
 	virtual void        StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameCycle = kFALSE) ;
 
+	virtual void                SetRecoParam(const AliDetectorRecoParam *param) { fRecoParam = param; }
+
 protected: 
 
 	virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * ) {AliInfo("To be implemented by detectors");} 
@@ -74,8 +76,10 @@ protected:
 	TObjArray *    fESDsQAList ;      //! list of the ESDs QA data objects
 	TObjArray *    fRawsQAList ;      //! list of the raws QA data objects
 	TObjArray *    fRecPointsQAList ; //! list of the RecPoints QA data objects
+
+	const AliDetectorRecoParam *fRecoParam; //! const pointer to the reco parameters to be used in the reco QA
   
- ClassDef(AliQADataMakerRec,1)  // description 
+ ClassDef(AliQADataMakerRec,2)  // description 
 
 };
 

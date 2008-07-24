@@ -40,7 +40,6 @@
 #include "AliPMDddldata.h"
 #include "AliPMDUtility.h"
 #include "AliESDPmdTrack.h"
-//#include "AliPMDRecoParam.h"
 
 ClassImp(AliPMDQADataMakerRec)
            

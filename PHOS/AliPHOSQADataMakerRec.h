@@ -22,6 +22,7 @@ class TObjArray ;
 
 // --- AliRoot header files ---
 #include "AliQADataMakerRec.h"
+#include "AliPHOSRecoParam.h"
 
 class AliPHOSQADataMakerRec: public AliQADataMakerRec {
 
@@ -46,6 +47,8 @@ public:
   virtual ~AliPHOSQADataMakerRec() {;} // dtor
   
 private:
+  const AliPHOSRecoParam* GetRecoParam() const { return dynamic_cast<const AliPHOSRecoParam *>(fRecoParam); }
+
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
   virtual void   InitESDs() ; 
   virtual void   InitRecPoints() ; 

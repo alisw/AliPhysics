@@ -17,6 +17,7 @@ class AliMUONVTriggerStore;
 class AliMUONVClusterStore;
 
 #include "AliQADataMakerRec.h"
+#include "AliMUONRecoParam.h"
 
 class AliMUONVTrackerDataMaker;
 class AliMUONRecoParam;
@@ -24,7 +25,7 @@ class AliMUONRecoParam;
 class AliMUONQADataMakerRec: public AliQADataMakerRec {
 
 public:
-  AliMUONQADataMakerRec(const AliMUONRecoParam* recoParam);         
+  AliMUONQADataMakerRec();         
   AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm);   
   AliMUONQADataMakerRec& operator=(const AliMUONQADataMakerRec& qadm);
   virtual ~AliMUONQADataMakerRec();
@@ -93,7 +94,7 @@ private:
   void MakeRecPointsTracker(TTree* treeR);
   void MakeRecPointsTrigger(TTree* treeR);
 	
-  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
+  const AliMUONRecoParam* GetRecoParam() const { return dynamic_cast<const AliMUONRecoParam *>(fRecoParam); }
   
   Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
   Bool_t  fIsInitRecPointsTracker;  //!<  info if InitRecPoints() went ok
@@ -105,11 +106,9 @@ private:
   AliMUONDigitMaker*    fDigitMaker;  //!< pointer to digit maker
   AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
 	
-	AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
+  AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
 	
-  const AliMUONRecoParam* fRecoParam; //!< pointer to reco params
-  
-  ClassDef(AliMUONQADataMakerRec,3)  // MUON Quality assurance data maker
+  ClassDef(AliMUONQADataMakerRec,4)  // MUON Quality assurance data maker
 
 };
 #endif
