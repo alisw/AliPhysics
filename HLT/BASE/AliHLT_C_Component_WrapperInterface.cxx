@@ -50,7 +50,11 @@ int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
   }
   internalEnv.fStructSize=sizeof(internalEnv);
 
-  gComponentHandler_C = new AliHLTComponentHandler(&internalEnv);
+  // Due to a bug in the SimpleComponentWrapper and AliRootWrapperSubscriber
+  // the fStructSize member was never initialized and we can not use this
+  // method of synchronizing different versions
+  //gComponentHandler_C = new AliHLTComponentHandler(&internalEnv);
+  gComponentHandler_C = new AliHLTComponentHandler(comenv);
   if ( !gComponentHandler_C )
     return EFAULT;
   gComponentHandler_C->InitAliLogTrap(gComponentHandler_C);
@@ -105,9 +109,6 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int
     comp->InitCDB(cdbPath, gComponentHandler_C);
     comp->SetRunDescription(&gRunDesc, gRunType);
     const AliHLTComponentEnvironment* comenv=gComponentHandler_C->GetEnvironment();
-    if (comenv && comenv->fGetComponentDescription) {
-      comp->SetComponentDescription(comenv->fGetComponentDescription(environParam));
-    }
     ret=comp->Init(comenv, environParam, argc, argv);
   }
   *handle = reinterpret_cast<AliHLTComponentHandle>( comp );
