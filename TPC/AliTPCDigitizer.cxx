@@ -279,6 +279,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
         //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
         Float_t noise  = pTPC->GetNoise();
         q+=noise*noisePad;
+	if (noisePad<0.001) q=0;   // dead channels identified - 0 noise
         q=TMath::Nint(q);
         if (q > zerosup)
          { 
@@ -461,6 +462,8 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
 
        Float_t noise  = pTPC->GetNoise();
        q+=noise*noisePad;
+       if (noisePad<0.00001) q=0;   // dead channels identified - 0 noise  
+
         q=TMath::Nint(q);
         if (q > zerosup){ 
          
