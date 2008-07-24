@@ -137,7 +137,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
-  //esdH->SetInactiveBranches("*");
+  esdH->SetInactiveBranches("*");
   mgr->SetInputEventHandler(esdH);
 
   // Attach input

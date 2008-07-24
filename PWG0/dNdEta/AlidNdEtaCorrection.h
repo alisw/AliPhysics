@@ -65,7 +65,7 @@ public:
   void    DrawHistograms();
   void    DrawOverview(const char* canvasName = 0);
 
-  Float_t GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta = -100, Bool_t debug = kFALSE);
+  Float_t GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta = -100, Int_t vertexBegin = -1, Int_t vertexEnd = -1, Bool_t debug = kFALSE);
   TH1*    GetMeasuredEventFraction(CorrectionType correctionType, Int_t multCut);
 
   void    ReduceInformation();

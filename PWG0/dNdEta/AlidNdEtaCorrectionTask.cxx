@@ -148,30 +148,22 @@ void AlidNdEtaCorrectionTask::ConnectInputData(Option_t *)
 
   Printf("AlidNdEtaCorrectionTask::ConnectInputData called");
 
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read tree from input slot 0");
-  } else {
-    // Disable all branches and enable only the needed ones
-    tree->SetBranchStatus("*", 0);
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
-    tree->SetBranchStatus("AliESDHeader.*", 1);
-    tree->SetBranchStatus("*Vertex*", 1);
+  if (!esdH) {
+    Printf("ERROR: Could not get ESDInputHandler");
+  } else {
+    fESD = esdH->GetEvent();
+
+    // Enable only the needed branches
+    esdH->SetActiveBranches("AliESDHeader Vertex");
 
     if (fAnalysisMode == AliPWG0Helper::kSPD)
-      tree->SetBranchStatus("AliMultiplicity*", 1);
+      esdH->SetActiveBranches("AliESDHeader Vertex AliMultiplicity");
 
     if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
-      //AliESDtrackCuts::EnableNeededBranches(tree);
-      tree->SetBranchStatus("Tracks*", 1);
+      esdH->SetActiveBranches("AliESDHeader Vertex Tracks");
     }
-
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else
-      fESD = esdH->GetEvent();
   }
 
   // disable info messages of AliMCEvent (per event)
@@ -353,16 +345,22 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
 
   Bool_t eventVertex = kFALSE;
-  Double_t vtx[3];
-  if (vtxESD) 
+  if (vtxESD)
   {
+    Double_t vtx[3];
     vtxESD->GetXYZ(vtx);
     eventVertex = kTRUE;
-    
+
     Double_t diff = vtxMC[2] - vtx[2];
     fVertexShift->Fill(diff);
     if (vtxESD->GetZRes() > 0)
       fVertexShiftNorm->Fill(diff / vtxESD->GetZRes());
+
+    if (eventTriggered)
+    {
+      fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
+      fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
+    }
   }
   else
     Printf("No vertex found");
@@ -539,13 +537,6 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   }
   else
     return;
-
-  if (eventTriggered && eventVertex)
-  {
-    fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
-    fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
-  }
-
 
   // loop over mc particles
   Int_t nPrim  = stack->GetNprimary();

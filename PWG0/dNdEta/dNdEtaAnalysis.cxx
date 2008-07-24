@@ -406,8 +406,8 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       }
       else if (fAnalysisMode == AliPWG0Helper::kTPC)
       {
-//        const Int_t binBegin[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
-        const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, 9, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, -1, -1, -1, -1, -1, -1, -1, -1};
+        const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5, pt cut off 0.2 mev/c
+
         binBegin = binBeginTPC;
       }
       else if (fAnalysisMode == AliPWG0Helper::kTPCITS)
@@ -474,7 +474,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
       Float_t ptCutOffCorrection = 1;
       if (correction && ptCut > 0)
-        ptCutOffCorrection = correction->GetMeasuredFraction(correctionType, ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta));
+        ptCutOffCorrection = correction->GetMeasuredFraction(correctionType, ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta), vertexBinBegin, vertexBinEnd);
 
       if (ptCutOffCorrection <= 0)
       {

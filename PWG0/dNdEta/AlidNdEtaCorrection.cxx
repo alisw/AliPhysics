@@ -330,7 +330,7 @@ void AlidNdEtaCorrection::FillEvent(Float_t vtx, Float_t n, Bool_t trigger, Bool
 }
 
 //____________________________________________________________________
-Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta, Bool_t debug)
+Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta, Int_t vertexBegin, Int_t vertexEnd, Bool_t debug)
 {
   // calculates the fraction of particles measured (some are missed due to the pt cut off)
   //
@@ -355,9 +355,11 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
     etaEnd = etaBegin;
   }
 
-  //Printf("AlidNdEtaCorrection::GetMeasuredFraction: Using vtx range of +- 10 cm");
-  Int_t vertexBegin = generated->GetXaxis()->FindBin(-9.99);
-  Int_t vertexEnd = generated->GetXaxis()->FindBin(9.99);
+  if (vertexBegin == -1)
+    vertexBegin = generated->GetXaxis()->FindBin(-9.99);
+
+  if (vertexEnd == -1)
+    vertexEnd = generated->GetXaxis()->FindBin(9.99);
 
   TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", generated->GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
   //printf("GetMeasuredFraction: bin range %d %d %d %d\n", vertexBegin, vertexEnd, etaBegin, etaEnd);
