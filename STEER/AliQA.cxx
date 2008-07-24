@@ -20,10 +20,11 @@
 // Quality Assurance Object//_________________________________________________________________________
 // Quality Assurance object. The QA status is held in one word per detector,
 // each bit corresponds to a different status.
-// bit 0-3  : QA raised during simulation      (SIM)
-// bit 4-7  : QA raised during reconstruction  (REC)
-// bit 8-11 : QA raised during ESD checking    (ESD)
-// bit 12-15: QA raised during analysis        (ANA)
+// bit 0-3   : QA raised during simulation      (RAW)
+// bit 4-7   : QA raised during simulation      (SIM)
+// bit 8-11  : QA raised during reconstruction  (REC)
+// bit 12-15 : QA raised during ESD checking    (ESD)
+// bit 16-19 : QA raised during analysis        (ANA)
 // Each of the 4 bits corresponds to a severity level of increasing importance
 // from lower to higher bit (INFO, WARNING, ERROR, FATAL)
 //
