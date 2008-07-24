@@ -112,7 +112,7 @@ ClassImp(AliTRDmcmSim)
 //_____________________________________________________________________________
 AliTRDmcmSim::AliTRDmcmSim() :TObject()
   ,fInitialized(kFALSE)
-  //,fNextEvent(-1)    
+  ,fNextEvent(-1)    
   ,fMaxTracklets(-1) 
   ,fChaId(-1)
   ,fSector(-1)
@@ -147,7 +147,7 @@ AliTRDmcmSim::AliTRDmcmSim() :TObject()
 AliTRDmcmSim::AliTRDmcmSim(const AliTRDmcmSim &m) 
   :TObject(m)
   ,fInitialized(kFALSE) 
-  //,fNextEvent(-1)    
+  ,fNextEvent(-1)    
   ,fMaxTracklets(-1) 
   ,fChaId(-1)
   ,fSector(-1)
@@ -229,7 +229,7 @@ void AliTRDmcmSim::Copy(TObject &m) const
   //
   // Copy function
   //
-  //((AliTRDmcmSim &) m).fNextEvent     = 0; //new
+  ((AliTRDmcmSim &) m).fNextEvent     = 0; //new
   ((AliTRDmcmSim &) m).fMaxTracklets  = 0; //new
   ((AliTRDmcmSim &) m).fInitialized   = 0;
   ((AliTRDmcmSim &) m).fChaId         = 0;
@@ -257,15 +257,15 @@ void AliTRDmcmSim::Copy(TObject &m) const
 
 //_____________________________________________________________________________
 
-void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos ) 
-//void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos, Bool_t newEvent ) // only for readout tree (new event)
+//void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos ) 
+void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos, Bool_t newEvent = kFALSE ) // only for readout tree (new event)
 {
   //
   // Initialize the class with new geometry information
   // fADC array will be reused with filled by zero
   //
-
-  //fNextEvent     = 0; 
+   
+  fNextEvent     = 0; 
   fFeeParam      = AliTRDfeeParam::Instance();
   fSimParam      = AliTRDSimParam::Instance();
   fCal           = AliTRDcalibDB::Instance();
@@ -285,9 +285,9 @@ void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos )
  
 
   
-  //if (newEvent == kTRUE) {
-      //fNextEvent = 1;
-  //}
+  if (newEvent == kTRUE) {
+      fNextEvent = 1;
+  }
 
 
 
@@ -1252,20 +1252,20 @@ void AliTRDmcmSim::FilterSimDeConvExpEl(Int_t *source, Int_t *target, Int_t n, I
 
 
 
-
 //__________________________________________________________________________________
 
 
 // in order to use the Tracklets, please first 
 // -- set AliTRDfeeParam::fgkTracklet to kTRUE, in order to switch on Tracklet-calculation
 // -- set AliTRDfeeParam::fgkTFtype   to 3, in order to use the new tail cancellation filter
-// currently tracklets from filtered digits are only given when setting fgkTFtype (AliTRDfeeParam) to 3
+//    currently tracklets from filtered digits are only given when setting fgkTFtype (AliTRDfeeParam) to 3
+// -- set AliTRDfeeParam::fgkMCTrackletOutput to kTRUE, if you want to use the Tracklet output container with 		information about the Tracklet position (MCM, channel number)
 
-// code is designed such that the less possible calculations with AliTRDtrapAlu class-objects are performed; whenever possible calculations are done with doubles or integers and the results are transformed into the right format
+// The code is designed such that the less possible calculations with AliTRDtrapAlu class-objects are performed; whenever possible calculations are done with doubles or integers and the results are transformed into the right format
 
 void AliTRDmcmSim::Tracklet(){
     // tracklet calculation
-    // if you use this code outside a simulation, please make sure the same filter-settings as in the simulation are set in AliTRDfeeParam
+    // if you use this code after a simulation, please make sure the same filter-settings as in the simulation are set in AliTRDfeeParam
 
   if(!CheckInitialized()){ return; }
   
@@ -1280,13 +1280,13 @@ void AliTRDmcmSim::Tracklet(){
     for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
       for( Int_t iT = 0 ; iT < fNTimeBin ; iT++ ) {
 	data.AssignInt(fADCR[iadc][iT]);
-	fADCT[iadc][iT] = data.GetValue(); // all incoming values are positive 10+2 bit values; if el.filter was called this is done correctly
+	fADCT[iadc][iT] = data.GetValue(); // all incoming values are positive 10+2 bit values; if el.filter was called, this is done correctly
       }
     }
    
   }
   
-  // the online ordering of mcm's is reverse to the TRAP-ordering(?)! reverse fADCT (to be consistent to TRAP), then do all calculations
+  // the online ordering of mcm's is reverse to the TRAP-manual-ordering! reverse fADCT (to be consistent to TRAP), then do all calculations
   // reverse fADCT:
   Int_t** rev0 = new Int_t *[fNADC];
   Int_t** rev1 = new Int_t *[fNADC];
@@ -1346,7 +1346,7 @@ void AliTRDmcmSim::Tracklet(){
     delete[] isource;
   }
   
-  //the following values should be in AliTRDfeeParam and have to be read in properly
+  //the following values should go to AliTRDfeeParam once they are defined; then they have to be read in properly
   //naming follows conventions in TRAP-manual
   
   
@@ -1420,10 +1420,13 @@ void AliTRDmcmSim::Tracklet(){
   QT0Alu.Init(15,0);
   AliTRDtrapAlu QT1Alu;
   QT1Alu.Init(16,0);
+
+  AliTRDtrapAlu oneAlu;
+  oneAlu.Init(1,8);
  
   
   AliTRDtrapAlu inverseNAlu;
-  inverseNAlu.Init(1,8);        // replaces the LUT for 1/N
+  inverseNAlu.Init(1,8);        // simulates the LUT for 1/N
   AliTRDtrapAlu MeanChargeAlu;  // mean charge in ADC counts
   MeanChargeAlu.Init(8,0);
   AliTRDtrapAlu TotalChargeAlu;
@@ -1462,7 +1465,7 @@ void AliTRDmcmSim::Tracklet(){
   
   for(Int_t iT = 0; iT < fNTimeBin; iT++){
     
-    if(iT<tFS || iT>=tFE) continue;         // linear fit yes/no? // !!**enable**!!
+    if(iT<tFS || iT>=tFE) continue;         // linear fit yes/no? 
 
     // reset
     Int_t portChannel[4]   = {-1,-1,-1,-1};   
@@ -1473,7 +1476,7 @@ void AliTRDmcmSim::Tracklet(){
     
     Int_t mark = 0;
     
-    filPed.AssignFormatted(ieffped[iT]);   // no size-checking with AssignFormatted; ieffped>=0
+    filPed.AssignFormatted(ieffped[iT]);   // no size-checking when using AssignFormatted; ieffped>=0
     filPed = filPed;                       // this checks the size
     
     ieffped[iT] = filPed.GetValue();
@@ -1725,7 +1728,7 @@ void AliTRDmcmSim::Tracklet(){
   
   // put into AliTRDfeeParam and take care that values are in proper range
   const Int_t cTCL = 1;      // left adc: number of hits; 8<=TCL<=31 (?? 1<=cTCL<+8 ??) 
-  const Int_t cTCT = 8;      // joint number of hits;     8<=TCT<=31
+  const Int_t cTCT = 8;      // joint number of hits;     8<=TCT<=31; note that according to TRAP manual this number cannot be lower than 8; however it should be adjustable to the number of hits in the fit time range (40%)
   
   Int_t mPair   = 0;         // marker for possible tracklet pairs
   Int_t* hitSum = new Int_t[fNADC-3];
@@ -1816,11 +1819,11 @@ void AliTRDmcmSim::Tracklet(){
 	rpairChannel[i] = -1;
 	break;
       }
-      if(rpairChannel[i] == lpairChannel[j]) {
+      /* if(rpairChannel[i] == lpairChannel[j]) {
 	lpairChannel[i] = -1;
 	rpairChannel[i] = -1;
 	break;
-      }
+	}*/
     }
   }
   
@@ -1841,7 +1844,8 @@ void AliTRDmcmSim::Tracklet(){
   Int_t mMeanCharge[4]; 
   Int_t inverseN = 0;
   Double_t invN = 0;
- 
+  Int_t one = 0;
+
   for (Int_t i = 0; i<4; i++){
     mADC[i] = -1;                        // set to invalid number
     mN[i]   =  0;
@@ -1857,16 +1861,20 @@ void AliTRDmcmSim::Tracklet(){
     mMeanCharge[i] = 0;
   }
   
-
-  YAlu.AssignInt(1);
-  Int_t wpad  = YAlu.GetValue();       // 1 with 8 past-comma bits
+  oneAlu.AssignInt(1);
+  one = oneAlu.GetValue();              // one with 8 past comma bits
  
   for (Int_t i = 0; i<4; i++){
-    
+          
+
     mADC[i] = lpairChannel[i];          // mapping of merged sums to left channel nr. (0,1->0; 1,2->1; ... 17,18->17)
-                                         // the adc and pad-mapping should now be one to one: adc i is linked to pad i; TRAP-numbering
+                                        // the adc and pad-mapping should now be one to one: adc i is linked to pad i; TRAP-numbering
     Int_t madc = mADC[i];
     if (madc == -1) continue;
+    
+    YAlu.AssignInt(N[rpairChannel[i]]);
+    Int_t wpad  = YAlu.GetValue();       // enlarge hit counter of right channel by 8 past-comma bits; YAlu can have 5 pre-comma bits (values up to 63); hit counter<=nr of time bins (24)
+
     mN[i]    = hitSum[madc];
   
     // don't merge fit sums in case of a stand-alone tracklet (consisting of only 1 channel); in that case only left channel makes up the fit sums
@@ -1903,6 +1911,7 @@ void AliTRDmcmSim::Tracklet(){
     MeanChargeAlu = TotalChargeAlu;
     mMeanCharge[i] = MeanChargeAlu.GetValue();
     
+    // this check is not necessary; it is just for efficiency reasons
     if (N[madc+1] == 0) {
 	mX[i]     =   X[madc];
 	mXX[i]    =  XX[madc];
@@ -1914,12 +1923,12 @@ void AliTRDmcmSim::Tracklet(){
 	
 	mX[i]     =   X[madc] +  X[madc+1];
 	XAlu.AssignFormatted(mX[i]);
-	XAlu    = XAlu;
+	XAlu      = XAlu;
 	mX[i]     = XAlu.GetValue();
 	
 	mXX[i]    =  XX[madc] + XX[madc+1];
 	XXAlu.AssignFormatted(mXX[i]);
-	XXAlu   = XXAlu;
+	XXAlu     = XXAlu;
 	mXX[i]    = XXAlu.GetValue();
  
     
@@ -1935,7 +1944,7 @@ void AliTRDmcmSim::Tracklet(){
 	YAlu    = YAlu;
 	mY[i]     = YAlu.GetSignedValue();
 	
-	mXY[i]    = XY[madc] + XY[madc+1] + X[madc+1]*wpad;
+	mXY[i]    = XY[madc] + XY[madc+1] + X[madc+1]*one;    // multiplication by one to maintain the data format
 	
 	if (mXY[i] < 0) {
 	    XYAlu.AssignFormatted(-mXY[i]);
@@ -1948,7 +1957,7 @@ void AliTRDmcmSim::Tracklet(){
 	XYAlu   = XYAlu;
 	mXY[i]    = XYAlu.GetSignedValue();
     
-	mYY[i]    = YY[madc] + YY[madc+1] + 2*Y[madc+1]*wpad + wpad*wpad;
+	mYY[i]    = YY[madc] + YY[madc+1] + 2*Y[madc+1]*one+ wpad*one;
 	if (mYY[i] < 0) {
 	    YYAlu.AssignFormatted(-mYY[i]);
 	    YYAlu.SetSign(-1);
@@ -2034,7 +2043,7 @@ void AliTRDmcmSim::Tracklet(){
     numAlu.AssignDouble((Double_t)mADC[i] + 1.5);      // numAlu has enough pre-comma place for that; correct trafo, best values
     mOffset[i]  = mOffset[i] + numAlu.GetValue();      // transform offset to a coord.system relative to chip; +1 to avoid neg. values 
     
-    // up to here: adc-mapping according to TRAP and in line with pad-col mapping
+    // up to here: adc-mapping according to TRAP manual and in line with pad-col mapping
     // reverse adc-counting to be again in line with the online mapping
     mADC[i]     = fNADC - 4 - mADC[i];                 // fNADC-4-mADC[i]: 0..17; remapping necessary;
     mADC[i]     = mADC[i] + 2; 
@@ -2052,8 +2061,8 @@ void AliTRDmcmSim::Tracklet(){
   
   // difference between width of inner and outer pads of a row is not accounted for;
   
-  Double_t magField = 0.4;                            // z-component of magnetic field in Tesla; adjust to current simulation!!; magnetic field can hardly be evaluated for the position of each mcm 
-  Double_t eCharge  = 0.3;                            // unit charge in (GeV/c)/m*T
+  Double_t magField = 0.4;                           // z-component of magnetic field in Tesla; adjust to current simulation!!; magnetic field can hardly be evaluated for the position of each mcm 
+  Double_t eCharge  = 0.3;                           // unit charge in (GeV/c)/m*T
   Double_t ptMin   = 2.3;                            // minimum transverse momentum (GeV/c); to be adjusted(?)
   
   Double_t granularityOffset = 0.160;                // granularity for offset in mm
@@ -2082,6 +2091,9 @@ void AliTRDmcmSim::Tracklet(){
   Double_t freqSample = fFeeParam->GetSamplingFrequency();  // retrieve the sampling frequency (10.019750 MHz)
   Double_t vdrift     = fCal->GetVdriftAverage(fChaId);     // averaged drift velocity for this detector (1.500000 cm/us)
   Int_t    nrOfDriftTimeBins = Int_t(dx/10.0*freqSample/vdrift); // the number of time bins in the drift region (20)
+  Int_t    nrOfAmplTimeBins  = 2;                           // the number of time bins between anode wire and cathode wires in ampl.region (3.5mm)(guess)(suppose v_drift+3.5cm/us there=>all clusters arrive at anode wire within one time bin (100ns))
+  Int_t    nrOfOffsetCorrTimeBins = tFS - nrOfAmplTimeBins - 1; // -1 is  to be conservative; offset correction will not remove the shift but is supposed to improve it; if tFS = 5, 2 drift time bins before tFS are assumed
+  if(nrOfOffsetCorrTimeBins < 0) nrOfOffsetCorrTimeBins = 0;// don't apply offset correction if no drift time bins before tFS can be assumed 
   Double_t lorTan     = fCal->GetOmegaTau(vdrift,magField); // tan of the Lorentz-angle for this detector; could be evaluated and set as a parameter for each mcm
   //Double_t lorAngle   =  7.0;                             // Lorentz-angle in degrees
   Double_t tiltAngle  = padPlane->GetTiltingAngle();        // sign-respecting tilting angle of pads in actual layer
@@ -2095,9 +2107,9 @@ void AliTRDmcmSim::Tracklet(){
   Int_t   mslopeMax[4];
 
 
-  //x coord. of upper side of drift chambers in local SM-system (in mm)
-  //obtained by evaluating the x-range of the hits; should be crosschecked; only drift, not amplification region taken into account (30mm);
-  //the y-deflection is given as difference of y between lower and upper side of drift-chamber, not pad-plane;
+  // x coord. of upper side of drift chambers in local SM-system (in mm)
+  // obtained by evaluating the x-range of the hits; should be crosschecked; only drift, not amplification region taken into account (30mm);
+  // the y-deflection is given as difference of y between lower and upper side of drift-chamber, not pad-plane;
   switch(fLayer) 
     {
     case 0: 
@@ -2133,7 +2145,26 @@ void AliTRDmcmSim::Tracklet(){
     numAlu.AssignInt(nCorrectOffset);
     numAlu.SetSign(1);
   }
-  nCorrectOffset = numAlu.GetSignedValue();         
+  nCorrectOffset = numAlu.GetSignedValue();   
+
+  // the Lorentz correction to the offset
+  Double_t lorCorrectOffset = lorTan *(Double_t)nrOfOffsetCorrTimeBins*vdrift*10.0/freqSample; // Lorentz offset correction in mm
+  
+
+  lorCorrectOffset = lorCorrectOffset/padWidthI; // Lorentz correction in pad width units
+  
+  if(lorCorrectOffset < 0) {
+      numAlu.AssignDouble(-lorCorrectOffset);
+      numAlu.SetSign(-1);
+  }
+  else{
+      numAlu.AssignDouble(lorCorrectOffset);
+      numAlu.SetSign(1);
+  }
+  
+  Int_t mlorCorrectOffset = numAlu.GetSignedValue();
+  
+  
   Double_t mCorrectOffset = padWidthI/granularityOffset; // >= 0.0
  
   // calculation of slope-correction
@@ -2183,8 +2214,8 @@ void AliTRDmcmSim::Tracklet(){
     
     correctAlu.AssignDouble(mCorrectOffset);     // done because max. accuracy is 8 bit
     mCorrectOffset = correctAlu.GetValueWhole(); // cut offset correction to 8 past-comma bit accuracy
-    mOffset[i]  = (Int_t)((mCorrectOffset)*(Double_t)(mOffset[i] + nCorrectOffset)); 
-    mOffset[i]  = mOffset[i]*(-1);                   // adjust to direction of y-axes in online simulation
+    mOffset[i]  = (Int_t)((mCorrectOffset)*(Double_t)(mOffset[i] + nCorrectOffset - mlorCorrectOffset)); 
+    //mOffset[i]  = mOffset[i]*(-1);                   // adjust to direction of y-axes in online simulation
     
     if (mOffset[i] < 0) {
       numAlu.AssignFormatted(-mOffset[i]);
@@ -2256,8 +2287,8 @@ void AliTRDmcmSim::Tracklet(){
   Int_t wordnr = 0;   // number of tracklet-words
   
   for(Int_t j = 0; j < fMaxTracklets; j++) {
-      if( mADC[j] == -1) continue; 
-      //if( (mADC[j] == -1) || (mSlope[j] < mslopeMin[j]) || (mSlope[j] > mslopeMax[j])) continue; // this applies a pt-cut
+      //if( mADC[j] == -1) continue; 
+      if( (mADC[j] == -1) || (mSlope[j] < mslopeMin[j]) || (mSlope[j] > mslopeMax[j])) continue; // this applies a pt-cut
       wordnr++;
       if( wordnr-1 == 0) {
 	  order[0] = j;
@@ -2400,11 +2431,10 @@ void AliTRDmcmSim::Tracklet(){
 
   delete padPlane;
 
-
-
+//if you want to activate the MC tracklet output, set fgkMCTrackletOutput=kTRUE in AliTRDfeeParam
+	
+  if (!fFeeParam->GetMCTrackletOutput()) return;
  
-
-  // output-part; creates an independent output .root folder if uncommented;
   
   // structure: in the current directory a root-file called "TRD_readout_tree.root" is stored with subdirectories SMxx/sx (supermodule, stack);
   // in each of these subdirectories 6 trees according to layers are saved, called lx; 
@@ -2412,7 +2442,7 @@ void AliTRDmcmSim::Tracklet(){
   // branch-name: mcmxxxwd; 
   // another branch contains the channel-number (mcmxxxch)
   
-  /*
+  
   AliLog::SetClassDebugLevel("AliTRDmcmSim", 10);
   AliLog::SetFileOutput("../log/tracklet.log");
   
@@ -2697,7 +2727,7 @@ void AliTRDmcmSim::Tracklet(){
   f->Close();
   gSystem->ChangeDirectory(dirName);
   delete [] dirName;
-  */
+  
 
 
   // to be done:

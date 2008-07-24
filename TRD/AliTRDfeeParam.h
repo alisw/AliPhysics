@@ -80,8 +80,6 @@ class AliTRDfeeParam : public TObject
   static  Int_t    GetLinearFitStart()    {  return fgkPREPLinearFitStart; }
   static  Int_t    GetLinearFitEnd()      {  return fgkPREPLinearFitEnd;  }
 
-
-
   //        Float_t  GetClusThr()           { return fClusThr; };
   //        Float_t  GetPadThr() const { return fPadThr; };
   //        Int_t    GetTailCancelation() const { return fTCOn; };
@@ -100,6 +98,7 @@ class AliTRDfeeParam : public TObject
  // for tracklets
 	  Bool_t   GetTracklet()         const { return fgkTracklet; } 
           Int_t    GetMaxNrOfTracklets() const { return fgkMaxNrOfTracklets; } 
+	  Bool_t    GetMCTrackletOutput() const { return fgkMCTrackletOutput; }
 
   static  Float_t  GetTFattPar()          { return ((Float_t) fgkTFattPar1) / ((Float_t) fgkTFattPar2); }
           Float_t  GetTFf0()        const { return 1.0 + fgkTFon*(-1.0+GetTFattPar()); }   // 1 if TC off
@@ -168,13 +167,16 @@ class AliTRDfeeParam : public TObject
 
   // OLD TF setup (calculated from above)  (valid only for fgkTFsimType = 0 or 1)
   //static const Int_t    fgkTFnExp          = 1;           // Number of exponential for simType 0 and 1
-               Int_t    fTFnExp;                      // Number of exponential for simType 0 and 1
+               Int_t    fTFnExp;                            // Number of exponential for simType 0 and 1
 
  // Tracklet  processing on/off 
   static const Bool_t   fgkTracklet         = kFALSE; // default should be kFALSE
 
   // max. nr of tracklet words for one mcm
   static const Int_t    fgkMaxNrOfTracklets = 4; 
+
+  // additional tracklet folder structure output, containing all necessary Monte Carlo information; maybe this should go somewhere else;
+  static const Bool_t   fgkMCTrackletOutput = kTRUE; // default should be kTRUE
 
   // following need Instance because initialized in constructor
                Float_t  fTFr1;                            // Time constant [us] long (old name fR1)

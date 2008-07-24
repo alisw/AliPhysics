@@ -210,8 +210,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 	  }
 	  if ( rv == 3 ) { 
    
-	      //hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords,newEvent);
-	      hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
+	      hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords,newEvent);
+	      //hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
 	    if(newEvent == kTRUE) newEvent = kFALSE;
 	  }
 
@@ -224,8 +224,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 	  }
 	  if ( rv >= 3 ) {
 	   
-	      //hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords,newEvent);
-	      hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords);
+	      hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords,newEvent);
+	      //hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords);
 	  }
 
           of->WriteBuffer((char *) hcBuffer, hcwords*4);
@@ -437,8 +437,8 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
 
 //_____________________________________________________________________________
 
-Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize)
-//Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent)
+//Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize)
+Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE)
 {
   //
   // This function simulates: Raw Version == 3 (Zero Suppression Prototype)
@@ -494,9 +494,9 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_
 	Int_t entry = iRobRow*(fGeo->MCMmax()) + iMcm;
 	
 	mcm[entry] = new AliTRDmcmSim();
-	//mcm[entry]->Init( det, iRob, iMcm , newEvent);
-	mcm[entry]->Init( det, iRob, iMcm);
-	//if (newEvent == kTRUE) newEvent = kFALSE; // only one mcm is concerned with new event
+	mcm[entry]->Init( det, iRob, iMcm , newEvent);
+	//mcm[entry]->Init( det, iRob, iMcm);
+	if (newEvent == kTRUE) newEvent = kFALSE; // only one mcm is concerned with new event
 	Int_t padrow = mcm[entry]->GetRow();
 
 	// Copy ADC data to MCM simulator
@@ -808,7 +808,3 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
   return digitsManager;
 
 }
-
-
-
-
