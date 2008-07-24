@@ -286,14 +286,11 @@ void AlidNdEtaTask::Exec(Option_t*)
         vtx[2] = vtxMC[2];
       }
 
-      if (fUseMCKine)
+      stack = mcEvent->Stack();
+      if (!stack)
       {
-        stack = mcEvent->Stack();
-        if (!stack)
-        {
-          AliDebug(AliLog::kError, "Stack not available");
-          return;
-        }
+        AliDebug(AliLog::kError, "Stack not available");
+        return;
       }
     }
 
@@ -316,7 +313,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       etaArr = new Float_t[mult->GetNumberOfTracklets()];
       ptArr = new Float_t[mult->GetNumberOfTracklets()];
 
-      if (fUseMCKine && stack)
+      if (fUseMCKine)
         Printf("Processing only primaries (MC information used). This is for systematical checks only.");
 
       // get multiplicity from ITS tracklets
@@ -324,7 +321,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       {
         //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
 
-        if (fUseMCKine && stack)
+        if (fUseMCKine)
           if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
             continue;
 
