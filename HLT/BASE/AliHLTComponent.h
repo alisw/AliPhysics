@@ -686,7 +686,9 @@ class AliHLTComponent : public AliHLTLogging {
    * from AliRoot or from the wrapper interface during initialization.
    *
    * @param cdbEntry     path of the cdbEntry
-   * @param chainId      the id of the component in the analysis chain
+   * @param chainId      the id/name of the component in the current analysis
+   *                     chain. This is not necessarily the same as what is
+   *                     returned by the GetComponentID() method.
    * @note both parameters can be NULL, check before usage
    */
   virtual int Reconfigure(const char* cdbEntry, const char* chainId);
