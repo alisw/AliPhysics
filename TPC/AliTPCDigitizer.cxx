@@ -15,6 +15,23 @@
 
 /* $Id$ */
 
+/*
+  Class for creating of the sumable digits and digits from MC data
+  //
+  The input :  ideal signals (Hits->Diffusion->Attachment -Ideal signal)
+  The output:  raw digits
+
+  Effect implemented:
+  1. Pad by pad gain map
+  2. Noise map
+  3. The dead channels identified  - zerro noise for corresponding pads
+     In this case the outpu equal zerro
+ 
+*/
+
+
+
+
 #include <stdlib.h>
 #include <TTree.h> 
 #include <TObjArray.h>
