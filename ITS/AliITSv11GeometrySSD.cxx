@@ -29,6 +29,7 @@
 #include "TList.h"
 #include "TGeoMatrix.h"
 #include "TGeoCompositeShape.h"
+#include "TGeoBoolNode.h"
 #include "TGeoTube.h"
 #include "TGeoBBox.h"
 #include "TGeoXtru.h"
@@ -3300,7 +3301,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
   Int_t edgesnumber[2] = {50,6};
   Double_t section[2] = {-0.5*(ymothervertex[3]-ymothervertex[2]),
 						 +0.5*(ymothervertex[3]-ymothervertex[2])};
-  TGeoXtru* clipscrewshape = GetScrewShape(radius,edgesnumber,section);
+  TGeoShape* clipscrewshape = GetScrewShape(radius,edgesnumber,section);
   TGeoVolume* clipscrew = new TGeoVolume("ClipScrewShape",clipscrewshape,fSSDSupportRingAl);
   clipscrew->SetLineColor(12);
   TGeoRotation* screwrot = new TGeoRotation();
@@ -3704,7 +3705,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeigth,
 							  +fgkSSDChipCablesWidth[2]);
   Double_t dy = fgkSSDChipCablesLength[1];
   Double_t dz = SSDChipCablesHeigth;
-  TGeoBBox* ssdchipcablesmotherbox = new TGeoBBox(0.5*dx,0.5*dy,0.5*dz,boxorigin);
+  new TGeoBBox(0.5*dx,0.5*dy,0.5*dz,boxorigin);
   TGeoVolumeAssembly* ssdchipcablesmother = new TGeoVolumeAssembly("SSDChipCablesMother");
 //  TGeoVolume* ssdchipcablesmother = new TGeoVolume("SSDChipCablesMother",
 //			  ssdchipcablesmotherbox,fSSDAir);
@@ -5162,12 +5163,12 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   const Int_t kendcapcoverplatesmallholenumber[2] = {4,9}; 
   Double_t holesection[2] = {-0.5*fgkEndCapCoverPlateThickness,
 							  0.5*fgkEndCapCoverPlateThickness};
-  TGeoXtru* endcapcoverplatesmallholeshape = GetHoleShape(fgkEndCapCoverPlateSmallHoleRadius,
+  TGeoShape* endcapcoverplatesmallholeshape = GetHoleShape(fgkEndCapCoverPlateSmallHoleRadius,
 													      nendcapcoverplateholedges,holesection);
   TGeoVolume* endcapcoverplatesmallhole = new TGeoVolume("EndCapCoverPlateSmallHole",
 										  endcapcoverplatesmallholeshape,fSSDAlCoolBlockMedium);
   endcapcoverplatesmallhole->SetLineColor(6);
-  TGeoXtru* endcapcoverplatebigholeshape = GetHoleShape(fgkEndCapCoverPlateBigHoleRadius,
+  TGeoShape* endcapcoverplatebigholeshape = GetHoleShape(fgkEndCapCoverPlateBigHoleRadius,
 													      nendcapcoverplateholedges,holesection);
   TGeoVolume* endcapcoverplatebighole = new TGeoVolume("EndCapCoverPlateBigHole",
 										  endcapcoverplatebigholeshape,fSSDAlCoolBlockMedium);
@@ -5251,7 +5252,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 									   fSSDAlCoolBlockMedium);
   endcapfillingbox->SetLineColor(6);
   ////////////////////////////
-  // Contour Xtru Definition 
+  // Contour shape Definition 
   ////////////////////////////
   const Int_t kcontourvertexnumber = 10;
   Double_t xcontourvertex[kcontourvertexnumber];
@@ -5281,17 +5282,112 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 					+ fgkEndCapCoverPlateSmallHoleRadius;
   ycontourvertex[8] = ycontourvertex[7];
   ycontourvertex[9] = ycontourvertex[0];
-  TGeoXtru* contourshape = new TGeoXtru(2);
-  contourshape->DefinePolygon(kcontourvertexnumber,xcontourvertex,ycontourvertex);  
-  contourshape->DefineSection(0,-0.5*fgkEndCapCoverPlateThickness);
-  contourshape->DefineSection(1,+0.5*fgkEndCapCoverPlateThickness);
+
+  Double_t xboxin, dxboxin, yboxin, dyboxin;
+  Double_t xboxout, dxboxout, yboxout, dyboxout;
+  Double_t coordmin, coordmax;
+  coordmin = -fgkEndCapCoverPlateLength[0];
+  coordmax = fgkEndCapCoverPlateLength[1]-xcontourvertex[0];
+  xboxout = 0.5*(coordmin+coordmax);
+  dxboxout = 0.5*(coordmax-coordmin);
+  coordmin = -0.5*(fgkEndCapCoverPlateWidth[0]-fgkEndCapCoverPlateWidth[2]
+					- (kendcapcoverplatesmallholenumber[1]-1)
+					* fgkEndCapCoverPlateSmallHoleSeparation[2]);
+  coordmax = (kendcapcoverplatesmallholenumber[1]-1)
+					* fgkEndCapCoverPlateSmallHoleSeparation[2]-ycontourvertex[0];
+  yboxout = 0.5*(coordmin+coordmax);
+  dyboxout = 0.5*(coordmax-coordmin);
+  coordmin = -fgkEndCapCoverPlateSmallHoleRadius;
+  coordmax = fgkEndCapCoverPlateLength[1]+fgkEndCapCoverPlateSmallHoleRadius;
+  xboxin = 0.5*(coordmin+coordmax);
+  dxboxin = 0.5*(coordmax-coordmin);
+  coordmin = -fgkEndCapCoverPlateSmallHoleRadius;
+  coordmax = (kendcapcoverplatesmallholenumber[1]-1)
+					* fgkEndCapCoverPlateSmallHoleSeparation[2]
+					+ fgkEndCapCoverPlateSmallHoleRadius;
+  yboxin = 0.5*(coordmin+coordmax);
+  dyboxin = 0.5*(coordmax-coordmin);
+  new TGeoBBox("EndCapCoverPlateContourBoxOut", dxboxout, dyboxout, 0.5*fgkEndCapCoverPlateThickness);
+  TGeoTranslation *trendCapCoverPlateContourboxout = new TGeoTranslation("SSD_trEndCapCoverPlateContourBoxOut",
+                                                         xboxout, yboxout, 0.);
+  trendCapCoverPlateContourboxout->RegisterYourself();
+  new TGeoBBox("EndCapCoverPlateContourBoxIn",  dxboxin, dyboxin, 0.5*fgkEndCapCoverPlateThickness+0.01);
+  TGeoTranslation *trendCapCoverPlateContourboxin = new TGeoTranslation("SSD_trEndCapCoverPlateContourBoxIn",
+                                                         xboxin, yboxin, 0.);
+  trendCapCoverPlateContourboxin->RegisterYourself();
+  TGeoCompositeShape *contourshape = new TGeoCompositeShape("contourShape", 
+        "EndCapCoverPlateContourBoxOut:SSD_trEndCapCoverPlateContourBoxOut-EndCapCoverPlateContourBoxIn:SSD_trEndCapCoverPlateContourBoxIn");
+
   TGeoVolume* contour = new TGeoVolume("EndCapCoverPlateContour",contourshape,
 									   fSSDAlCoolBlockMedium);
   contour->SetLineColor(6);
   /////////////////////////////
-  // Hole Contour Xtru Definition 
+  // Hole Contour Shape Definition 
   ////////////////////////////
-  const Int_t kholecontourvertexnumber = 10;
+  coordmin = xcontourvertex[0];
+  coordmax = coordmin+fgkEndCapCoverPlateLength[2];
+  xboxout = 0.5*(coordmin+coordmax);
+  dxboxout = 0.5*(coordmax-coordmin);
+  coordmin = ycontourvertex[1];
+  coordmax = ycontourvertex[1]+fgkEndCapCoverPlateWidth[2];
+  yboxout = 0.5*(coordmin+coordmax);
+  dyboxout = 0.5*(coordmax-coordmin);
+  coordmin = xcontourvertex[0]+ 0.5*(fgkEndCapCoverPlateLength[2]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);
+  coordmax = coordmin + 2.*fgkEndCapCoverPlateBigHoleRadius;
+  xboxin = 0.5*(coordmin+coordmax);
+  dxboxin = 0.5*(coordmax-coordmin);
+  coordmin = ycontourvertex[1]+0.5*(fgkEndCapCoverPlateWidth[2]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);;
+  coordmax = coordmin +2.*fgkEndCapCoverPlateBigHoleRadius;
+  yboxin = 0.5*(coordmin+coordmax);
+  dyboxin = 0.5*(coordmax-coordmin);
+  new TGeoBBox("EndCapCoverPlateContourBoxOut1", dxboxout, dyboxout, 0.5*fgkEndCapCoverPlateThickness);
+  TGeoTranslation *trendCapCoverPlateContourboxout1 = new TGeoTranslation("SSD_trEndCapCoverPlateContourBoxOut1",
+                                                         xboxout, yboxout, 0.);
+  trendCapCoverPlateContourboxout1->RegisterYourself();
+  new TGeoBBox("EndCapCoverPlateContourBoxIn1",  dxboxin, dyboxin, 0.5*fgkEndCapCoverPlateThickness+0.01);
+  TGeoTranslation *trendCapCoverPlateContourboxin1 = new TGeoTranslation("SSD_trEndCapCoverPlateContourBoxIn1",
+                                                         xboxin, yboxin, 0.);
+  trendCapCoverPlateContourboxin1->RegisterYourself();
+  TGeoCompositeShape *contourshape1 = new TGeoCompositeShape("contourShape1", 
+        "EndCapCoverPlateContourBoxOut1:SSD_trEndCapCoverPlateContourBoxOut1-EndCapCoverPlateContourBoxIn1:SSD_trEndCapCoverPlateContourBoxIn1");
+
+
+  coordmin = xcontourvertex[0]+fgkEndCapCoverPlateLength[5];
+  coordmax = coordmin+fgkEndCapCoverPlateLength[2];
+  xboxout = 0.5*(coordmin+coordmax);
+  dxboxout = 0.5*(coordmax-coordmin);
+  coordmin = ycontourvertex[0]-(fgkEndCapCoverPlateWidth[1]
+						   - fgkEndCapCoverPlateWidth[0]);
+  coordmax = ycontourvertex[0];
+  yboxout = 0.5*(coordmin+coordmax);
+  dyboxout = 0.5*(coordmax-coordmin);
+  coordmin = xcontourvertex[0]+fgkEndCapCoverPlateLength[5]+ 0.5*(fgkEndCapCoverPlateLength[2]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);
+  coordmax = coordmin + 2.*fgkEndCapCoverPlateBigHoleRadius;
+  xboxin = 0.5*(coordmin+coordmax);
+  dxboxin = 0.5*(coordmax-coordmin);
+  coordmin = ycontourvertex[0]-(fgkEndCapCoverPlateWidth[1]
+						   - fgkEndCapCoverPlateWidth[0])+0.5*(fgkEndCapCoverPlateWidth[1]
+						   - fgkEndCapCoverPlateWidth[0]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);
+  coordmax = coordmin+2.*fgkEndCapCoverPlateBigHoleRadius;
+  yboxin = 0.5*(coordmin+coordmax);
+  dyboxin = 0.5*(coordmax-coordmin);
+  new TGeoBBox("EndCapCoverPlateContourBoxOut2", dxboxout, dyboxout, 0.5*fgkEndCapCoverPlateThickness);
+  TGeoTranslation *trendCapCoverPlateContourboxout2 = new TGeoTranslation("SSD_trEndCapCoverPlateContourBoxOut2",
+                                                         xboxout, yboxout, 0.);
+  trendCapCoverPlateContourboxout2->RegisterYourself();
+  new TGeoBBox("EndCapCoverPlateContourBoxIn2",  dxboxin, dyboxin, 0.5*fgkEndCapCoverPlateThickness+0.01);
+  TGeoTranslation *trendCapCoverPlateContourboxin2 = new TGeoTranslation("SSD_trEndCapCoverPlateContourBoxIn2",
+                                                         xboxin, yboxin, 0.);
+  trendCapCoverPlateContourboxin2->RegisterYourself();
+  TGeoCompositeShape *contourshape2 = new TGeoCompositeShape("contourShape2", 
+        "EndCapCoverPlateContourBoxOut2:SSD_trEndCapCoverPlateContourBoxOut2-EndCapCoverPlateContourBoxIn2:SSD_trEndCapCoverPlateContourBoxIn2");
+  
+//  const Int_t kholecontourvertexnumber = 10;
+
   Double_t xholecontourvertex[2][kcontourvertexnumber];
   Double_t yholecontourvertex[2][kcontourvertexnumber];
   xholecontourvertex[0][0] = xcontourvertex[0];
@@ -5348,24 +5444,11 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   yholecontourvertex[1][8] = yholecontourvertex[1][7];
   yholecontourvertex[1][9] = yholecontourvertex[1][0];
 
-  TGeoXtru* holecontourshape[2];
-  holecontourshape[0] = new TGeoXtru(2);
-  holecontourshape[0]->DefinePolygon(kholecontourvertexnumber,xholecontourvertex[0],
-								  yholecontourvertex[0]);  
-  holecontourshape[0]->DefineSection(0,-0.5*fgkEndCapCoverPlateThickness);
-  holecontourshape[0]->DefineSection(1,+0.5*fgkEndCapCoverPlateThickness);
-
-  holecontourshape[1] = new TGeoXtru(2);
-  holecontourshape[1]->DefinePolygon(kholecontourvertexnumber,xholecontourvertex[1],
-								  yholecontourvertex[1]);  
-  holecontourshape[1]->DefineSection(0,-0.5*fgkEndCapCoverPlateThickness);
-  holecontourshape[1]->DefineSection(1,+0.5*fgkEndCapCoverPlateThickness);
-
   TGeoVolume* holecontour[2];
-  holecontour[0] = new TGeoVolume("EndCapCoverPlateContour1",holecontourshape[0],
+  holecontour[0] = new TGeoVolume("EndCapCoverPlateContour1",contourshape1,
 								  fSSDAlCoolBlockMedium);
   holecontour[0]->SetLineColor(6);
-  holecontour[1] = new TGeoVolume("EndCapCoverPlateContour2",holecontourshape[1],
+  holecontour[1] = new TGeoVolume("EndCapCoverPlateContour2",contourshape2,
 								  fSSDAlCoolBlockMedium);
   holecontour[1]->SetLineColor(6);
   TGeoTranslation* holecontourtrans = new TGeoTranslation(fgkEndCapCoverPlateLength[3]
@@ -5845,10 +5928,19 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   yvertex[12] = yvertex[9]+2.*fgkEndCapSideCoverWidth[5]+fgkEndCapSideCoverLength[4]; 
   yvertex[13] = yvertex[12];
   yvertex[14] = yvertex[6];
-  TGeoXtru* endcapsidecovershape = new TGeoXtru(2);
-  endcapsidecovershape->DefinePolygon(kvertexnumber,xvertex,yvertex); 
-  endcapsidecovershape->DefineSection(0,-0.5*fgkEndCapSideCoverThickness);
-  endcapsidecovershape->DefineSection(1,0.5*fgkEndCapSideCoverThickness);
+  TGeoXtru* endcapsidecovershapeout = new TGeoXtru(2);
+  endcapsidecovershapeout->SetName("endcapsidecovershapeout");
+  endcapsidecovershapeout->DefinePolygon(7,xvertex,yvertex); 
+  endcapsidecovershapeout->DefineSection(0,-0.5*fgkEndCapSideCoverThickness);
+  endcapsidecovershapeout->DefineSection(1,0.5*fgkEndCapSideCoverThickness);
+  TGeoXtru* endcapsidecovershapein = new TGeoXtru(2);
+  endcapsidecovershapein->SetName("endcapsidecovershapein");
+  endcapsidecovershapein->DefinePolygon(6,&xvertex[8],&yvertex[8]); 
+  endcapsidecovershapein->DefineSection(0,-0.5*fgkEndCapSideCoverThickness-0.01);
+  endcapsidecovershapein->DefineSection(1,0.5*fgkEndCapSideCoverThickness+0.01);
+
+
+  TGeoCompositeShape* endcapsidecovershape = new TGeoCompositeShape("endcapsidecovershape", "endcapsidecovershapeout-endcapsidecovershapein");
   TGeoVolume* endcapsidecover = new TGeoVolume("EndCapSideCover",
 								endcapsidecovershape,fSSDCoolingTubePhynox);
   endcapsidecover->SetLineColor(fColorPhynox);
@@ -6653,7 +6745,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   Double_t screwcoverplatesection[2] = {0.5*fgkEndCapCoverPlateThickness,
 										fgkEndCapCoverPlateThickness
 									 +  fgkEndCapCoolingTubeRadiusMax};
-  TGeoXtru* screwcoverplateshape = GetScrewShape(screwcoverplateradius,
+  TGeoShape* screwcoverplateshape = GetScrewShape(screwcoverplateradius,
 												 screwcoverplatedgesnumber,
 												 screwcoverplatesection);
   TGeoVolume* screwcoverplate = new TGeoVolume("EndCapScrewCoverPlate",
@@ -8222,7 +8314,7 @@ TGeoXtru* AliITSv11GeometrySSD::GetArcShape(Double_t phi, Double_t rmin,
 	return arcshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TGeoXtru* AliITSv11GeometrySSD::GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const {
+TGeoShape* AliITSv11GeometrySSD::GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const {
   ///////////////////////////////////////////////////////////////////////
   // Method Generating the Screw Shape  
   // radius[0]: outer radius
@@ -8236,52 +8328,59 @@ TGeoXtru* AliITSv11GeometrySSD::GetScrewShape(Double_t* radius,Int_t* edgesnumbe
   Double_t inradius = radius[1];
   Int_t outvertexnumber = edgesnumber[0];
   Int_t invertexnumber = edgesnumber[1];
-  Double_t* xscrewvertex = new Double_t[outvertexnumber+invertexnumber+2];
-  Double_t* yscrewvertex = new Double_t[outvertexnumber+invertexnumber+2];
-  for(Int_t i=0; i<outvertexnumber+1; i++){
+  Double_t* xscrewvertex = new Double_t[outvertexnumber+invertexnumber];
+  Double_t* yscrewvertex = new Double_t[outvertexnumber+invertexnumber];
+  for(Int_t i=0; i<outvertexnumber; i++){
 	xscrewvertex[i] = outradius*CosD(90.+i*360./outvertexnumber);
 	yscrewvertex[i]	= outradius*SinD(90.+i*360./outvertexnumber);
   }
-  for(Int_t i=0; i<invertexnumber+1; i++){
-	xscrewvertex[outvertexnumber+i+1] = inradius*CosD(90.-i*360./invertexnumber);
-	yscrewvertex[outvertexnumber+i+1] = inradius*SinD(90.-i*360./invertexnumber);
+  for(Int_t i=0; i<invertexnumber; i++){
+	xscrewvertex[outvertexnumber+i] = inradius*CosD(90.+i*360./invertexnumber);
+	yscrewvertex[outvertexnumber+i] = inradius*SinD(90.+i*360./invertexnumber);
   }
-  TGeoXtru* screwshape = new TGeoXtru(2);
-  screwshape->DefinePolygon(outvertexnumber+invertexnumber+2,xscrewvertex,yscrewvertex);
-  screwshape->DefineSection(0,section[0]);
-  screwshape->DefineSection(1,section[1]);
+  TGeoXtru* screwshapeout = new TGeoXtru(2);
+  screwshapeout->DefinePolygon(outvertexnumber,xscrewvertex,yscrewvertex);
+  screwshapeout->DefineSection(0,section[0]);
+  screwshapeout->DefineSection(1,section[1]);
+  TGeoXtru* screwshapein = new TGeoXtru(2);
+  screwshapein->DefinePolygon(invertexnumber,&xscrewvertex[outvertexnumber],&yscrewvertex[outvertexnumber]);
+  screwshapein->DefineSection(0,section[0]-0.01); // make inner part bigger in Z
+  screwshapein->DefineSection(1,section[1]+0.01); // safer when we subtract it
+  TGeoSubtraction *snode = new TGeoSubtraction(screwshapeout, screwshapein);
+  TGeoCompositeShape *screwshape = new TGeoCompositeShape("", snode);
+  
   delete [] xscrewvertex;
   delete [] yscrewvertex;
   return screwshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TGeoXtru* AliITSv11GeometrySSD::GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const {
+TGeoShape* AliITSv11GeometrySSD::GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const {
   ///////////////////////////////////////////////////////////////////////
   // Method Generating the Hole Shape  
   // radius of the Hole
   // nedges: number of edges to approximate the circle
   ///////////////////////////////////////////////////////////////////////
-  Int_t vertexnumber = nedges+6;
-  Double_t* xholevertex = new Double_t[vertexnumber];
-  Double_t* yholevertex = new Double_t[vertexnumber];
-  xholevertex[0] = radius;
-  xholevertex[1] = xholevertex[0];
-  xholevertex[2] = -xholevertex[1];
-  xholevertex[3] = xholevertex[2];
-  xholevertex[4] = xholevertex[0];
-  yholevertex[0] = 0.;
-  yholevertex[1] = -radius;
-  yholevertex[2] = yholevertex[1];
-  yholevertex[3] = -yholevertex[1];
-  yholevertex[4] = yholevertex[3];
-  for(Int_t i=0; i<nedges+1; i++){
-	xholevertex[i+5] = radius*CosD(i*360./nedges);
-	yholevertex[i+5] = radius*SinD(i*360./nedges);
+  Double_t* xholevertex = new Double_t[nedges];
+  Double_t* yholevertex = new Double_t[nedges];
+  Double_t z  = 0.5*(section[0]+section[1]);
+  Double_t dz = 0.5*(section[1]-section[0]);
+  TGeoTranslation *tr = 0;
+  if (TMath::Abs(z) > TGeoShape::Tolerance()) {
+     tr = new TGeoTranslation(0.,0.,z);
+     tr->RegisterYourself();
+  }   
+  TGeoBBox *box = new TGeoBBox("",radius,radius,dz);
+  for(Int_t i=0; i<nedges; i++){
+	xholevertex[i] = radius*CosD(i*360./nedges);
+	yholevertex[i] = radius*SinD(i*360./nedges);
   }
-  TGeoXtru* holeshape = new TGeoXtru(2);
-  holeshape->DefinePolygon(vertexnumber,xholevertex,yholevertex);
-  holeshape->DefineSection(0,section[0]);
-  holeshape->DefineSection(1,section[1]);
+  TGeoXtru* holeshapeout = new TGeoXtru(2);
+  holeshapeout->DefinePolygon(nedges,xholevertex,yholevertex);
+  holeshapeout->DefineSection(0,section[0]-0.01); // make subtracted part larger in Z
+  holeshapeout->DefineSection(1,section[1]+0.01);
+  TGeoSubtraction *snode = new TGeoSubtraction(box,holeshapeout,tr);
+  TGeoCompositeShape *holeshape = new TGeoCompositeShape("", snode);
+  
   delete [] xholevertex;
   delete [] yholevertex;
   return holeshape;

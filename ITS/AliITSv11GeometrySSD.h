@@ -8,6 +8,7 @@
  * See cxx source for full Copyright notice                               */
 /* $Id$ */
 class TGeoVolume;
+class TGeoShape;
 class TGeoCombiTrans;
 class TGeoMedium;
 class TGeoCompositeShape;
@@ -454,8 +455,8 @@ private:
   TGeoArb8* GetArbShape(TVector3* vertexpos[],Double_t* width, 
                         Double_t height,char* shapename,Int_t isign = 1) const;
 									   // Method generating an Arb shape 
-  TGeoXtru* GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const;// Method Generating the Screw Shape  
-  TGeoXtru* GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const;// Method Generating the Hole Shape  
+  TGeoShape* GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const;// Method Generating the Screw Shape  
+  TGeoShape* GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const;// Method Generating the Hole Shape  
   TVector3* GetReflection(TVector3* vector,Double_t* param) const; 
 										// Given an axis specified by param,
 										// it gives the reflection of the point respect to the axis
