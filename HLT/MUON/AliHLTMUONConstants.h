@@ -221,6 +221,11 @@ public:
 		return fgkDataCheckerComponentId;
 	}
 	
+	static const char* TriggerReconstructorCDBPath()
+	{
+		return fgkTriggerReconstructorCDBPath;
+	}
+	
 	static const char* HitReconstructorCDBPath()
 	{
 		return fgkHitReconstructorCDBPath;
@@ -284,6 +289,7 @@ private:
 	static const char* fgkDataCheckerComponentId; // Name of data checking component for debugging.
 	
 	// CDB path entries to configuration information.
+	static const char* fgkTriggerReconstructorCDBPath; // Path to CDB entry for the trigger reconstruction component.
 	static const char* fgkHitReconstructorCDBPath; // Path to CDB entry for the hit reconstruction component.
 	static const char* fgkMansoTrackerFSMCDBPath; // Path to CDB entry for the Manso FSM tracker component.
 	static const char* fgkDecisionComponentCDBPath; // Path to CDB entry for trigger decision component.

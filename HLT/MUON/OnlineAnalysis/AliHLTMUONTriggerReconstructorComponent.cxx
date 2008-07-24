@@ -28,6 +28,7 @@
 #include "AliHLTMUONTriggerReconstructor.h"
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMUONCalculations.h"
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONDataBlockWriter.h"
 #include "AliRawDataHeader.h"
@@ -60,7 +61,11 @@ AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent
 	fDDL(-1),
 	fWarnForUnexpecedBlock(false),
 	fStopOnOverflow(false),
-	fUseCrateId(true)
+	fUseCrateId(true),
+	fDelaySetup(false),
+	fZmiddleSpecified(false),
+	fBLSpecified(false),
+	fLutInitialised(false)
 {
 	///
 	/// Default constructor.
@@ -164,6 +169,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	fWarnForUnexpecedBlock = false;
 	fStopOnOverflow = false;
 	fUseCrateId = true;
+	fDelaySetup = false;
+	fZmiddleSpecified = false;
+	fBLSpecified = false;
+	fLutInitialised = false;
 	
 	const char* lutFileName = NULL;
 	const char* cdbPath = NULL;
@@ -171,14 +180,24 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	bool useCDB = false;
 	bool suppressPartialTrigs = true;
 	bool tryRecover = false;
+	bool useLocalId = true;
+	double zmiddle = 0;
+	double bfieldintegral = 0;
 	
 	for (int i = 0; i < argc; i++)
 	{
 		if (strcmp( argv[i], "-lut" ) == 0)
 		{
+			if (lutFileName != NULL)
+			{
+				HLTWarning("LUT path was already specified."
+					" Will replace previous value given by -lut."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
-				HLTError("LookupTable filename not specified." );
+				HLTError("The lookup table filename was not specified." );
 				// Make sure to delete fTrigRec to avoid partial initialisation.
 				delete fTrigRec;
 				fTrigRec = NULL;
@@ -193,6 +212,13 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-ddl" ) == 0)
 		{
+			if (fDDL != -1)
+			{
+				HLTWarning("DDL number was already specified."
+					" Will replace previous value given by -ddl or -ddlid."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
 				HLTError("DDL number not specified. It must be in the range [21..22]" );
@@ -228,6 +254,13 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-ddlid" ) == 0)
 		{
+			if (fDDL != -1)
+			{
+				HLTWarning("DDL number was already specified."
+					" Will replace previous value given by -ddl or -ddlid."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
 				HLTError("DDL equipment ID number not specified. It must be in the range [2816..2817]" );
@@ -269,6 +302,13 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-cdbpath" ) == 0)
 		{
+			if (cdbPath != NULL)
+			{
+				HLTWarning("CDB path was already specified."
+					" Will replace previous value given by -cdbpath."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
 				HLTError("The CDB path was not specified." );
@@ -285,6 +325,13 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	
 		if (strcmp( argv[i], "-run" ) == 0)
 		{
+			if (run != -1)
+			{
+				HLTWarning("Run number was already specified."
+					" Will replace previous value given by -run."
+				);
+			}
+			
 			if ( argc <= i+1 )
 			{
 				HLTError("The run number was not specified." );
@@ -308,6 +355,84 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			}
 			
 			i++;
+			continue;
+		}
+	
+		if (strcmp( argv[i], "-zmiddle" ) == 0)
+		{
+			if (fZmiddleSpecified)
+			{
+				HLTWarning("The Z coordinate for the middle of the dipole was already specified."
+					" Will replace previous value given by -zmiddle."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The Z coordinate for the middle of the dipole was not specified." );
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			zmiddle = strtod(argv[i+1], &cpErr);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid floating point number.",
+					argv[i+1]
+				);
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+			
+			fZmiddleSpecified = true;
+			i++;
+			continue;
+		}
+	
+		if (strcmp( argv[i], "-bfieldintegral" ) == 0)
+		{
+			if (fBLSpecified)
+			{
+				HLTWarning("The magnetic field integral was already specified."
+					" Will replace previous value given by -bfieldintegral."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The magnetic field integral was not specified." );
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			bfieldintegral = strtod(argv[i+1], &cpErr);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid floating point number.",
+					argv[i+1]
+				);
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+			
+			fBLSpecified = true;
+			i++;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-delaysetup" ) == 0)
+		{
+			fDelaySetup = true;
 			continue;
 		}
 		
@@ -347,6 +472,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
+		if (strcmp( argv[i], "-dont_use_localid" ) == 0)
+		{
+			useLocalId = false;
+			continue;
+		}
+		
 		HLTError("Unknown option '%s'.", argv[i] );
 		// Make sure to delete fTrigRec to avoid partial initialisation.
 		delete fTrigRec;
@@ -355,46 +486,116 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		
 	} // for loop
 	
+	if (fZmiddleSpecified and useCDB)
+	{
+		HLTWarning("The -cdb or -cdbpath parameter was specified, which indicates that"
+			" this component should read from the CDB, but then the -zmiddle argument"
+			" was also used. Will override the value from CDB with the command"
+			" line parameter given."
+		);
+	}
+	if (fBLSpecified and useCDB)
+	{
+		HLTWarning("The -cdb or -cdbpath parameter was specified, which indicates that"
+			" this component should read from the CDB, but then the -bfieldintegral"
+			" argument was also used. Will override the value from CDB with the"
+			" command line parameter given."
+		);
+	}
+	
+	if (lutFileName != NULL and useCDB == true)
+	{
+		HLTWarning("The -cdb or -cdbpath parameter was specified, which indicates that"
+			" this component should read from the CDB, but then the -lut argument"
+			" was also used. Will ignore the -lut option and load from CDB anyway."
+		);
+	}
+	
 	if (lutFileName == NULL) useCDB = true;
 	
-	if (fDDL == -1)
+	if (fDDL == -1 and not fDelaySetup)
 	{
 		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
 	}
 	
-	int result = 0;
 	if (cdbPath != NULL or run != -1)
 	{
-		result = SetCDBPathAndRunNo(cdbPath, run);
+		int result = SetCDBPathAndRunNo(cdbPath, run);
+		if (result != 0)
+		{
+			// Error messages already generated in SetCDBPathAndRunNo.
+			delete fTrigRec; // Make sure to delete fTrigRec to avoid partial initialisation.
+			fTrigRec = NULL;
+			return result;
+		}
 	}
 	
-	if (result == 0 and useCDB)
+	if (useCDB)
 	{
-		HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
-			fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
-		);
-		if (fDDL == -1)
-			HLTWarning("DDL number not specified. The lookup table loaded from CDB will be empty!");
-		result = ReadLutFromCDB();
+		if (not fDelaySetup)
+		{
+			HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			int result = ReadLutFromCDB();
+			if (result != 0)
+			{
+				// Error messages already generated in ReadLutFromCDB.
+				delete fTrigRec; // Make sure to delete fTrigRec to avoid partial initialisation.
+				fTrigRec = NULL;
+				return result;
+			}
+			fLutInitialised = true;
+		}
 	}
-	else if (result == 0)
+	else
 	{
 		HLTInfo("Loading lookup table information from file %s.", lutFileName);
-		result = ReadLookUpTable(lutFileName);
+		int result = ReadLookUpTable(lutFileName);
+		if (result != 0)
+		{
+			// Error messages already generated in ReadLookUpTable.
+			delete fTrigRec; // Make sure to delete fTrigRec to avoid partial initialisation.
+			fTrigRec = NULL;
+			return result;
+		}
+		fLutInitialised = true;
 	}
-	if (result != 0)
+	
+	if (fZmiddleSpecified) AliHLTMUONCalculations::Zf(zmiddle);
+	if (fBLSpecified) AliHLTMUONCalculations::QBL(bfieldintegral);
+	
+	if (not fDelaySetup)
 	{
-		// Error messages already generated in ReadLutFromCDB or ReadLookUpTable.
-		
-		// Make sure to delete fTrigRec to avoid partial initialisation.
-		delete fTrigRec;
-		fTrigRec = NULL;
-		return result;
+		if (not fZmiddleSpecified or not fBLSpecified)
+		{
+			HLTInfo("Loading configuration parameters from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			
+			int result = ReadConfigFromCDB(not fZmiddleSpecified, not fBLSpecified);
+			if (result != 0)
+			{
+				// Error messages already generated in ReadConfigFromCDB.
+				delete fTrigRec; // Make sure to delete fTrigRec to avoid partial initialisation.
+				fTrigRec = NULL;
+				return result;
+			}
+		}
+		else
+		{
+			// Print the debug messages here since ReadConfigFromCDB does not get called,
+			// in-which the debug messages would have been printed.
+			HLTDebug("Using the following configuration parameters:");
+			HLTDebug("  Middle of dipole Z coordinate = %f cm", AliHLTMUONCalculations::Zf());
+			HLTDebug("        Magnetic field integral = %f T.m", AliHLTMUONCalculations::QBL());
+		}
 	}
 	
 	fTrigRec->SuppressPartialTriggers(suppressPartialTrigs);
 	fTrigRec->TryRecover(tryRecover);
 	fTrigRec->UseCrateId(fUseCrateId);
+	fTrigRec->UseLocalId(useLocalId);
 	
 	return 0;
 }
@@ -429,6 +630,61 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 	///
 	/// Inherited from AliHLTProcessor. Processes the new event data.
 	///
+	
+	// Initialise the LUT and configuration parameters from CDB if we were
+	// requested to initialise only when the first event was received.
+	if (fDelaySetup)
+	{
+		// Use the specification given by the first data block if we
+		// have not been given a DDL number on the command line.
+		if (fDDL == -1)
+		{
+			if (evtData.fBlockCnt <= 0)
+			{
+				HLTError("The initialisation from CDB of the component has"
+					" been delayed to the first received event. However,"
+					" no data blocks have been found in the first event."
+				);
+				return -ENOENT;
+			}
+			
+			fDDL = AliHLTMUONUtils::SpecToDDLNumber(blocks[0].fSpecification);
+			
+			if (fDDL == -1)
+			{
+				HLTError("Received a data block with a specification (0x%8.8X)"
+					" indicating multiple DDL data sources, but we must only"
+					" receive data from one trigger station DDL.",
+					blocks[0].fSpecification
+				);
+				return -EPROTO;
+			}
+		}
+		
+		// Check that the LUT was not already loaded in DoInit.
+		if (not fLutInitialised)
+		{
+			HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			int result = ReadLutFromCDB();
+			if (result != 0) return result;
+			fLutInitialised = true;
+		}
+		
+		// Load the configuration paramters from CDB if they have not been given
+		// on the command line.
+		if (not fZmiddleSpecified or not fBLSpecified)
+		{
+			HLTInfo("Loading configuration parameters from CDB for DDL %d (ID = %d).",
+				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
+			);
+			int result = ReadConfigFromCDB(not fZmiddleSpecified, not fBLSpecified);
+			if (result != 0) return result;
+		}
+		
+		fDelaySetup = false;
+	}
 	
 	// Process an event
 	unsigned long totalSize = 0; // Amount of memory currently consumed in bytes.
@@ -561,6 +817,66 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 }
 
 
+int AliHLTMUONTriggerReconstructorComponent::Reconfigure(
+		const char* cdbEntry, const char* componentId
+	)
+{
+	/// Inherited from AliHLTComponent. This method will reload CDB configuration
+	/// entries for this component from the CDB.
+	/// \param cdbEntry If this is NULL then it is assumed that all CDB entries should
+	///      be reloaded. Otherwise a particular value for 'cdbEntry' will trigger
+	///      reloading of the LUT if the path contains 'MUON/', but the other
+	///      configuration parameters will be loaded if 'cdbEntry' contains
+	///      "HLT/ConfigMUON/TriggerReconstructor".
+	/// \param componentId  The name of the component in the current chain.
+	
+	bool startsWithMUON = TString(cdbEntry).Index("MUON/", 5, 0, TString::kExact) == 0;
+	bool givenConfigPath = strcmp(cdbEntry, AliHLTMUONConstants::TriggerReconstructorCDBPath()) == 0;
+	
+	if (cdbEntry == NULL or startsWithMUON or givenConfigPath)
+	{
+		HLTInfo("Reading new configuration entries from CDB for component '%s'.", componentId);
+	}
+	
+	if (cdbEntry == NULL or startsWithMUON)
+	{
+		int result = ReadLutFromCDB();
+		if (result != 0) return result;
+	}
+	
+	if (cdbEntry == NULL or givenConfigPath)
+	{
+		int result = ReadConfigFromCDB();
+		if (result != 0) return result;
+	}
+	
+	return 0;
+}
+
+
+int AliHLTMUONTriggerReconstructorComponent::ReadPreprocessorValues(const char* modules)
+{
+	/// Inherited from AliHLTComponent. 
+	/// Updates the configuration of this component if either HLT or MUON have
+	/// been specified in the 'modules' list.
+
+	TString mods = modules;
+	if (mods.Contains("ALL") or (mods.Contains("HLT") and mods.Contains("MUON")))
+	{
+		return Reconfigure(NULL, GetComponentID());
+	}
+	if (mods.Contains("HLT"))
+	{
+		return Reconfigure(AliHLTMUONConstants::TriggerReconstructorCDBPath(), GetComponentID());
+	}
+	if (mods.Contains("MUON"))
+	{
+		return Reconfigure("MUON/*", GetComponentID());
+	}
+	return 0;
+}
+
+
 int AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpath)
 {
 	///
@@ -592,6 +908,49 @@ int AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpath
 	}
 	
 	file.close();
+	return 0;
+}
+
+
+int AliHLTMUONTriggerReconstructorComponent::ReadConfigFromCDB(
+		bool setZmiddle, bool setBL
+	)
+{
+	/// Reads this component's configuration parameters from the CDB.
+	/// These include the middle of the dipole Z coordinate (zmiddle) and the
+	/// integrated magnetic field of the dipole.
+	/// \param setZmiddle Indicates if the zmiddle parameter should be set
+	///       (default true).
+	/// \param setBL Indicates if the integrated magnetic field parameter should
+	///       be set (default true).
+	/// \return 0 if no errors occured and negative error code compatible with
+	///       the HLT framework on errors.
+
+	const char* pathToEntry = AliHLTMUONConstants::TriggerReconstructorCDBPath();
+	
+	TMap* map = NULL;
+	int result = FetchTMapFromCDB(pathToEntry, map);
+	if (result != 0) return result;
+	
+	Double_t value = 0;
+	if (setZmiddle)
+	{
+		result = GetFloatFromTMap(map, "zmiddle", value, pathToEntry, "dipole middle Z coordinate");
+		if (result != 0) return result;
+		AliHLTMUONCalculations::Zf(value);
+	}
+	
+	if (setBL)
+	{
+		result = GetFloatFromTMap(map, "bfieldintegral", value, pathToEntry, "integrated magnetic field");
+		if (result != 0) return result;
+		AliHLTMUONCalculations::QBL(value);
+	}
+	
+	HLTDebug("Using the following configuration parameters:");
+	HLTDebug("  Middle of dipole Z coordinate = %f cm", AliHLTMUONCalculations::Zf());
+	HLTDebug("        Magnetic field integral = %f T.m", AliHLTMUONCalculations::QBL());
+	
 	return 0;
 }
 
@@ -749,8 +1108,7 @@ int AliHLTMUONTriggerReconstructorComponent::ReadLutFromCDB()
 
 bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 		AliHLTInt32_t ddl, const char* filename,
-		const char* cdbPath, Int_t run
-		//TODO add option fCrateId
+		const char* cdbPath, Int_t run, bool useCrateId
 	)
 {
 	/// Generates a binary file containing the lookup table (LUT) from the
@@ -760,6 +1118,8 @@ bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 	/// @param filename  The name of the LUT file to generate.
 	/// @param cdbPath  The CDB path to use.
 	/// @param run  The run number to use for the CDB.
+	/// @param useCrateId  Indicates that the crate ID should be used rather
+	///             than a sequencial number.
 	/// @return  True if the generation of the LUT file succeeded.
 	
 	AliHLTMUONTriggerReconstructorComponent comp;
@@ -774,8 +1134,14 @@ bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 	char runNum[32];
 	sprintf(ddlNum, "%d", ddl+1);
 	sprintf(runNum, "%d", run);
-	const char* argv[7] = {"-ddl", ddlNum, "-cdbpath", cdbPath, "-run", runNum, NULL};
-	int result = comp.DoInit(6, argv);
+	int argc = 7;
+	const char* argv[8] = {"-ddl", ddlNum, "-cdbpath", cdbPath, "-run", runNum, "-dont_use_crateid", NULL};
+	if (useCrateId)
+	{
+		argv[6] = NULL;
+		argc--;
+	}
+	int result = comp.DoInit(argc, argv);
 	if (result != 0)
 	{
 		// Error message already generated in DoInit.

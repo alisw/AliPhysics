@@ -245,7 +245,7 @@ int AliHLTMUONProcessor::GetIntFromTMap(
 	if (prettyName == NULL) prettyName = paramName;
 	
 	TString valueStr;
-	int result = GetValueFromTMap(map, paramName, valueStr, prettyName);
+	int result = GetValueFromTMap(map, paramName, valueStr, pathToEntry, prettyName);
 	if (result != 0) return result;
 	
 	if (not valueStr.IsDigit())
@@ -286,7 +286,7 @@ int AliHLTMUONProcessor::GetPositiveIntFromTMap(
 	if (prettyName == NULL) prettyName = paramName;
 	
 	TString valueStr;
-	int result = GetValueFromTMap(map, paramName, valueStr, prettyName);
+	int result = GetValueFromTMap(map, paramName, valueStr, pathToEntry, prettyName);
 	if (result != 0) return result;
 	
 	if (not valueStr.IsDigit())
@@ -336,7 +336,7 @@ int AliHLTMUONProcessor::GetFloatFromTMap(
 	if (prettyName == NULL) prettyName = paramName;
 	
 	TString valueStr;
-	int result = GetValueFromTMap(map, paramName, valueStr, prettyName);
+	int result = GetValueFromTMap(map, paramName, valueStr, pathToEntry, prettyName);
 	if (result != 0) return result;
 	
 	if (not valueStr.IsFloat())
@@ -377,7 +377,7 @@ int AliHLTMUONProcessor::GetPositiveFloatFromTMap(
 	if (prettyName == NULL) prettyName = paramName;
 	
 	TString valueStr;
-	int result = GetValueFromTMap(map, paramName, valueStr, prettyName);
+	int result = GetValueFromTMap(map, paramName, valueStr, pathToEntry, prettyName);
 	if (result != 0) return result;
 	
 	if (not valueStr.IsFloat())

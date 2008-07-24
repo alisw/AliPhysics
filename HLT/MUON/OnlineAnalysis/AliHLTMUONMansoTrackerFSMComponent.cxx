@@ -27,6 +27,7 @@
 
 #include "AliHLTMUONMansoTrackerFSMComponent.h"
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMUONCalculations.h"
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONMansoTrackerFSM.h"
 #include "AliHLTMUONDataBlockReader.h"
@@ -46,17 +47,22 @@ AliHLTMUONMansoTrackerFSMComponent::AliHLTMUONMansoTrackerFSMComponent() :
 	fTrackCount(0),
 	fBlock(NULL),
 	fRecHitBlockArraySize(0),
-	fWarnForUnexpecedBlock(false)
+	fWarnForUnexpecedBlock(false),
+	fDelaySetup(false),
+	fCanLoadZmiddle(true),
+	fCanLoadBL(true)
 {
 	///
 	/// Default constructor.
 	///
 	
-	for (Int_t i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		fRecHitBlockCount[i] = 0;
 		fRecHitBlock[i] = NULL;
 	}
+	
+	ResetCanLoadFlags();
 }
 
 
@@ -158,9 +164,280 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	fTracker->SetCallback(this);
 	
 	fWarnForUnexpecedBlock = false;
+	fDelaySetup = false;
+	ResetCanLoadFlags();
+	
+	const char* cdbPath = NULL;
+	Int_t run = -1;
+	double zmiddle = 0;
+	double bfieldintegral = 0;
+	double roiA[4] = {0, 0, 0, 0};
+	double roiB[4] = {0, 0, 0, 0};
+	double chamberZ[6] = {0, 0, 0, 0, 0, 0};
 	
 	for (int i = 0; i < argc; i++)
 	{
+		if (strcmp( argv[i], "-cdbpath" ) == 0)
+		{
+			if (cdbPath != NULL)
+			{
+				HLTWarning("CDB path was already specified."
+					" Will replace previous value given by -cdbpath."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The CDB path was not specified." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			cdbPath = argv[i+1];
+			i++;
+			continue;
+		}
+	
+		if (strcmp( argv[i], "-run" ) == 0)
+		{
+			if (run != -1)
+			{
+				HLTWarning("Run number was already specified."
+					" Will replace previous value given by -run."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The run number was not specified." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid run number."
+					" Expected a positive integer value.", argv[i+1]
+				);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			i++;
+			continue;
+		}
+	
+		if (strcmp( argv[i], "-zmiddle" ) == 0)
+		{
+			if (not fCanLoadZmiddle)
+			{
+				HLTWarning("The Z coordinate for the middle of the dipole was already specified."
+					" Will replace previous value given by -zmiddle."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The Z coordinate for the middle of the dipole was not specified." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			zmiddle = strtod(argv[i+1], &cpErr);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid floating point number.",
+					argv[i+1]
+				);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			fCanLoadZmiddle = false;  // Prevent loading from CDB.
+			i++;
+			continue;
+		}
+	
+		if (strcmp( argv[i], "-bfieldintegral" ) == 0)
+		{
+			if (not fCanLoadBL)
+			{
+				HLTWarning("The magnetic field integral was already specified."
+					" Will replace previous value given by -bfieldintegral."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The magnetic field integral was not specified." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			bfieldintegral = strtod(argv[i+1], &cpErr);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid floating point number.",
+					argv[i+1]
+				);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			fCanLoadBL = false;  // Prevent loading from CDB.
+			i++;
+			continue;
+		}
+	
+		if (strcmp(argv[i], "-a7") == 0 or strcmp(argv[i], "-a8") == 0 or
+		    strcmp(argv[i], "-a9") == 0 or strcmp(argv[i], "-a10") == 0
+		   )
+		{
+			int chamber = 7; int chamberIndex = 0;
+			switch (argv[i][2])
+			{
+			case '7': chamber = 7; chamberIndex = 0; break;
+			case '8': chamber = 8; chamberIndex = 1; break;
+			case '9': chamber = 9; chamberIndex = 2; break;
+			case '1': chamber = 10; chamberIndex = 3; break;
+			}
+			
+			if (not fCanLoadA[chamberIndex])
+			{
+				HLTWarning("The region of interest parameter 'A' for chamber %d was"
+					" already specified. Will replace previous value given by -a%d.",
+					chamber, chamber
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The region of interest parameter was not specified." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			roiA[chamberIndex] = strtod(argv[i+1], &cpErr);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid floating point number.",
+					argv[i+1]
+				);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			fCanLoadA[chamberIndex] = false;  // Prevent loading from CDB.
+			i++;
+			continue;
+		}
+	
+		if (strcmp(argv[i], "-b7") == 0 or strcmp(argv[i], "-b8") == 0 or
+		    strcmp(argv[i], "-b9") == 0 or strcmp(argv[i], "-b10") == 0
+		   )
+		{
+			int chamber = 7; int chamberIndex = 0;
+			switch (argv[i][2])
+			{
+			case '7': chamber = 7; chamberIndex = 0; break;
+			case '8': chamber = 8; chamberIndex = 1; break;
+			case '9': chamber = 9; chamberIndex = 2; break;
+			case '1': chamber = 10; chamberIndex = 3; break;
+			}
+			
+			if (not fCanLoadB[chamberIndex])
+			{
+				HLTWarning("The region of interest parameter 'B' for chamber %d was"
+					" already specified. Will replace previous value given by -b%d.",
+					chamber, chamber
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The region of interest parameter was not specified." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			roiB[chamberIndex] = strtod(argv[i+1], &cpErr);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid floating point number.",
+					argv[i+1]
+				);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			fCanLoadB[chamberIndex] = false;  // Prevent loading from CDB.
+			i++;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-z7") == 0 or strcmp(argv[i], "-z8") == 0 or
+		    strcmp(argv[i], "-z9") == 0 or strcmp(argv[i], "-z10") == 0 or
+		    strcmp(argv[i], "-z11") == 0 or strcmp(argv[i], "-z13") == 0
+		   )
+		{
+			int chamber = 7; int chamberIndex = 0;
+			switch (argv[i][2])
+			{
+			case '7': chamber = 7; chamberIndex = 0; break;
+			case '8': chamber = 8; chamberIndex = 1; break;
+			case '9': chamber = 9; chamberIndex = 2; break;
+			case '1':
+				switch (argv[i][3])
+				{
+				case '0': chamber = 10; chamberIndex = 3; break;
+				case '1': chamber = 11; chamberIndex = 4; break;
+				case '3': chamber = 13; chamberIndex = 5; break;
+				}
+				break;
+			}
+			
+			if (not fCanLoadZ[chamberIndex])
+			{
+				HLTWarning("The nominal Z coordinate of chamber %d was already"
+					" specified. Will replace previous value given by -z%d.",
+					chamber, chamber
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The region of interest parameter was not specified." );
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			chamberZ[chamberIndex] = strtod(argv[i+1], &cpErr);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid floating point number.",
+					argv[i+1]
+				);
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
+			}
+			
+			fCanLoadZ[chamberIndex] = false;  // Prevent loading from CDB.
+			i++;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-delaysetup" ) == 0)
+		{
+			fDelaySetup = true;
+			continue;
+		}
+		
 		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
 		{
 			fWarnForUnexpecedBlock = true;
@@ -170,6 +447,75 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 		HLTError("Unknown option '%s'.", argv[i]);
 		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 		return -EINVAL;
+	}
+	
+	if (cdbPath != NULL or run != -1)
+	{
+		int result = SetCDBPathAndRunNo(cdbPath, run);
+		if (result != 0)
+		{
+			// Error messages already generated in SetCDBPathAndRunNo.
+			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+			return result;
+		}
+	}
+	
+	// Set all the parameters that were found on the command line.
+	if (not fCanLoadZmiddle) AliHLTMUONCalculations::Zf(zmiddle);
+	if (not fCanLoadBL) AliHLTMUONCalculations::QBL(bfieldintegral);
+	if (not fCanLoadA[0]) fTracker->SetA7(roiA[0]);
+	if (not fCanLoadA[1]) fTracker->SetA8(roiA[1]);
+	if (not fCanLoadA[2]) fTracker->SetA9(roiA[2]);
+	if (not fCanLoadA[3]) fTracker->SetA10(roiA[3]);
+	if (not fCanLoadB[0]) fTracker->SetB7(roiB[0]);
+	if (not fCanLoadB[1]) fTracker->SetB8(roiB[1]);
+	if (not fCanLoadB[2]) fTracker->SetB9(roiB[2]);
+	if (not fCanLoadB[3]) fTracker->SetB10(roiB[3]);
+	if (not fCanLoadZ[0]) fTracker->SetZ7(chamberZ[0]);
+	if (not fCanLoadZ[1]) fTracker->SetZ8(chamberZ[1]);
+	if (not fCanLoadZ[2]) fTracker->SetZ9(chamberZ[2]);
+	if (not fCanLoadZ[3]) fTracker->SetZ10(chamberZ[3]);
+	if (not fCanLoadZ[4]) fTracker->SetZ11(chamberZ[4]);
+	if (not fCanLoadZ[5]) fTracker->SetZ13(chamberZ[5]);
+	
+	if (not fDelaySetup)
+	{
+		if (AtLeastOneCanLoadFlagsIsSet())
+		{
+			HLTInfo("Loading configuration parameters from CDB.");
+			
+			int result = ReadConfigFromCDB();
+			if (result != 0)
+			{
+				// Error messages already generated in ReadConfigFromCDB.
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return result;
+			}
+		}
+		else
+		{
+			// Print the debug messages here since ReadConfigFromCDB does not get called,
+			// in-which the debug messages would have been printed.
+			HLTDebug("Using the following configuration parameters:");
+			HLTDebug("                    Middle of dipole Z coordinate = %f cm", AliHLTMUONCalculations::Zf());
+			HLTDebug("                          Magnetic field integral = %f T.m", AliHLTMUONCalculations::QBL());
+			HLTDebug("   Region of interest parameter 'A' for chamber 7 = %f",    fTracker->GetA7());
+			HLTDebug("   Region of interest parameter 'B' for chamber 7 = %f cm", fTracker->GetB7());
+			HLTDebug("   Region of interest parameter 'A' for chamber 8 = %f",    fTracker->GetA8());
+			HLTDebug("   Region of interest parameter 'B' for chamber 8 = %f cm", fTracker->GetB8());
+			HLTDebug("   Region of interest parameter 'A' for chamber 9 = %f",    fTracker->GetA9());
+			HLTDebug("   Region of interest parameter 'B' for chamber 9 = %f cm", fTracker->GetB9());
+			HLTDebug("  Region of interest parameter 'A' for chamber 10 = %f",    fTracker->GetA10());
+			HLTDebug("  Region of interest parameter 'B' for chamber 10 = %f cm", fTracker->GetB10());
+			HLTDebug("               Nominal Z coordinate for chamber 7 = %f cm", fTracker->GetZ7());
+			HLTDebug("               Nominal Z coordinate for chamber 8 = %f cm", fTracker->GetZ8());
+			HLTDebug("               Nominal Z coordinate for chamber 9 = %f cm", fTracker->GetZ9());
+			HLTDebug("              Nominal Z coordinate for chamber 10 = %f cm", fTracker->GetZ10());
+			HLTDebug("              Nominal Z coordinate for chamber 11 = %f cm", fTracker->GetZ11());
+			HLTDebug("              Nominal Z coordinate for chamber 13 = %f cm", fTracker->GetZ13());
+		}
+		
+		ResetCanLoadFlags();  // From this point read all parameters from CDB.
 	}
 	
 	const int initArraySize = 10;
@@ -201,6 +547,192 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 }
 
 
+int AliHLTMUONMansoTrackerFSMComponent::Reconfigure(
+		const char* cdbEntry, const char* componentId
+	)
+{
+	/// Inherited from AliHLTComponent. This method will reload CDB configuration
+	/// entries for this component from the CDB.
+	/// \param cdbEntry If this is NULL or equals "HLT/ConfigMUON/MansoTrackerFSM"
+	///     then new configuration parameters are loaded, otherwise nothing is done.
+	/// \param componentId  The name of the component in the current chain.
+	
+	bool givenConfigPath = strcmp(cdbEntry, AliHLTMUONConstants::MansoTrackerFSMCDBPath()) == 0;
+	
+	if (cdbEntry == NULL or givenConfigPath)
+	{
+		HLTInfo("Reading new configuration entries from CDB for component '%s'.", componentId);
+		ResetCanLoadFlags();  // Make sure to allow reading all values from CDB.
+		int result = ReadConfigFromCDB();
+		if (result != 0) return result;
+	}
+	
+	return 0;
+}
+
+
+int AliHLTMUONMansoTrackerFSMComponent::ReadPreprocessorValues(const char* modules)
+{
+	/// Inherited from AliHLTComponent. 
+	/// Updates the configuration of this component if HLT or ALL has been
+	/// specified in the 'modules' list.
+
+	TString mods = modules;
+	if (mods.Contains("ALL"))
+	{
+		return Reconfigure(NULL, GetComponentID());
+	}
+	if (mods.Contains("HLT"))
+	{
+		return Reconfigure(AliHLTMUONConstants::MansoTrackerFSMCDBPath(), GetComponentID());
+	}
+	return 0;
+}
+
+
+int AliHLTMUONMansoTrackerFSMComponent::ReadConfigFromCDB()
+{
+	/// Reads this component's configuration parameters from the CDB.
+	/// These include the middle of the dipole Z coordinate (zmiddle), the
+	/// integrated magnetic field of the dipole, Z coordinates of the chambers
+	/// and the region of interest parameters used during the tracking.
+	/// \param setZmiddle Indicates if the zmiddle parameter should be set
+	///       (default true).
+	/// \param setBL Indicates if the integrated magnetic field parameter should
+	///       be set (default true).
+	/// \return 0 if no errors occured and negative error code compatible with
+	///       the HLT framework on errors.
+
+	const char* pathToEntry = AliHLTMUONConstants::MansoTrackerFSMCDBPath();
+	
+	TMap* map = NULL;
+	int result = FetchTMapFromCDB(pathToEntry, map);
+	if (result != 0) return result;
+	
+	Double_t value = 0;
+	if (fCanLoadZmiddle)
+	{
+		result = GetFloatFromTMap(map, "zmiddle", value, pathToEntry, "dipole middle Z coordinate");
+		if (result != 0) return result;
+		AliHLTMUONCalculations::Zf(value);
+	}
+	
+	if (fCanLoadBL)
+	{
+		result = GetFloatFromTMap(map, "bfieldintegral", value, pathToEntry, "integrated magnetic field");
+		if (result != 0) return result;
+		AliHLTMUONCalculations::QBL(value);
+	}
+	
+	if (fCanLoadA[0])
+	{
+		result = GetFloatFromTMap(map, "roi_paramA_chamber7", value, pathToEntry, "chamber 7 region of interest 'A'");
+		if (result != 0) return result;
+		fTracker->SetA7(value);
+	}
+	if (fCanLoadA[1])
+	{
+		result = GetFloatFromTMap(map, "roi_paramA_chamber8", value, pathToEntry, "chamber 8 region of interest 'A'");
+		if (result != 0) return result;
+		fTracker->SetA8(value);
+	}
+	if (fCanLoadA[2])
+	{
+		result = GetFloatFromTMap(map, "roi_paramA_chamber9", value, pathToEntry, "chamber 9 region of interest 'A'");
+		if (result != 0) return result;
+		fTracker->SetA9(value);
+	}
+	if (fCanLoadA[3])
+	{
+		result = GetFloatFromTMap(map, "roi_paramA_chamber10", value, pathToEntry, "chamber 10 region of interest 'A'");
+		if (result != 0) return result;
+		fTracker->SetA10(value);
+	}
+	
+	if (fCanLoadB[0])
+	{
+		result = GetFloatFromTMap(map, "roi_paramB_chamber7", value, pathToEntry, "chamber 7 region of interest 'B'");
+		if (result != 0) return result;
+		fTracker->SetB7(value);
+	}
+	if (fCanLoadB[1])
+	{
+		result = GetFloatFromTMap(map, "roi_paramB_chamber8", value, pathToEntry, "chamber 8 region of interest 'B'");
+		if (result != 0) return result;
+		fTracker->SetB8(value);
+	}
+	if (fCanLoadB[2])
+	{
+		result = GetFloatFromTMap(map, "roi_paramB_chamber9", value, pathToEntry, "chamber 9 region of interest 'B'");
+		if (result != 0) return result;
+		fTracker->SetB9(value);
+	}
+	if (fCanLoadB[3])
+	{
+		result = GetFloatFromTMap(map, "roi_paramB_chamber10", value, pathToEntry, "chamber 10 region of interest 'B'");
+		if (result != 0) return result;
+		fTracker->SetB10(value);
+	}
+	
+	if (fCanLoadZ[0])
+	{
+		result = GetFloatFromTMap(map, "chamber7postion", value, pathToEntry, "nominal chamber 7 Z coordinate");
+		if (result != 0) return result;
+		fTracker->SetZ7(value);
+	}
+	if (fCanLoadZ[1])
+	{
+		result = GetFloatFromTMap(map, "chamber8postion", value, pathToEntry, "nominal chamber 8 Z coordinate");
+		if (result != 0) return result;
+		fTracker->SetZ8(value);
+	}
+	if (fCanLoadZ[2])
+	{
+		result = GetFloatFromTMap(map, "chamber9postion", value, pathToEntry, "nominal chamber 9 Z coordinate");
+		if (result != 0) return result;
+		fTracker->SetZ9(value);
+	}
+	if (fCanLoadZ[3])
+	{
+		result = GetFloatFromTMap(map, "chamber10postion", value, pathToEntry, "nominal chamber 10 Z coordinate");
+		if (result != 0) return result;
+		fTracker->SetZ10(value);
+	}
+	if (fCanLoadZ[4])
+	{
+		result = GetFloatFromTMap(map, "chamber11postion", value, pathToEntry, "nominal chamber 11 Z coordinate");
+		if (result != 0) return result;
+		fTracker->SetZ11(value);
+	}
+	if (fCanLoadZ[5])
+	{
+		result = GetFloatFromTMap(map, "chamber13postion", value, pathToEntry, "nominal chamber 13 Z coordinate");
+		if (result != 0) return result;
+		fTracker->SetZ13(value);
+	}
+	
+	HLTDebug("Using the following configuration parameters:");
+	HLTDebug("                    Middle of dipole Z coordinate = %f cm", AliHLTMUONCalculations::Zf());
+	HLTDebug("                          Magnetic field integral = %f T.m", AliHLTMUONCalculations::QBL());
+	HLTDebug("   Region of interest parameter 'A' for chamber 7 = %f",    fTracker->GetA7());
+	HLTDebug("   Region of interest parameter 'B' for chamber 7 = %f cm", fTracker->GetB7());
+	HLTDebug("   Region of interest parameter 'A' for chamber 8 = %f",    fTracker->GetA8());
+	HLTDebug("   Region of interest parameter 'B' for chamber 8 = %f cm", fTracker->GetB8());
+	HLTDebug("   Region of interest parameter 'A' for chamber 9 = %f",    fTracker->GetA9());
+	HLTDebug("   Region of interest parameter 'B' for chamber 9 = %f cm", fTracker->GetB9());
+	HLTDebug("  Region of interest parameter 'A' for chamber 10 = %f",    fTracker->GetA10());
+	HLTDebug("  Region of interest parameter 'B' for chamber 10 = %f cm", fTracker->GetB10());
+	HLTDebug("               Nominal Z coordinate for chamber 7 = %f cm", fTracker->GetZ7());
+	HLTDebug("               Nominal Z coordinate for chamber 8 = %f cm", fTracker->GetZ8());
+	HLTDebug("               Nominal Z coordinate for chamber 9 = %f cm", fTracker->GetZ9());
+	HLTDebug("              Nominal Z coordinate for chamber 10 = %f cm", fTracker->GetZ10());
+	HLTDebug("              Nominal Z coordinate for chamber 11 = %f cm", fTracker->GetZ11());
+	HLTDebug("              Nominal Z coordinate for chamber 13 = %f cm", fTracker->GetZ13());
+	
+	return 0;
+}
+
+
 int AliHLTMUONMansoTrackerFSMComponent::DoDeinit()
 {
 	///
@@ -225,6 +757,23 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 	///
 	/// Inherited from AliHLTProcessor. Processes the new event data.
 	///
+	
+	// Initialise the configuration parameters from CDB if we were
+	// requested to initialise only when the first event was received.
+	if (fDelaySetup)
+	{
+		// Load the configuration paramters from CDB if they have not
+		// been given on the command line.
+		if (AtLeastOneCanLoadFlagsIsSet())
+		{
+			HLTInfo("Loading configuration parameters from CDB.");
+			int result = ReadConfigFromCDB();
+			if (result != 0) return result;
+		}
+		
+		fDelaySetup = false;
+		ResetCanLoadFlags();  // From this point read all parameters from CDB.
+	}
 	
 	Reset();
 	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
@@ -497,6 +1046,43 @@ void AliHLTMUONMansoTrackerFSMComponent::AddRecHits(
 	AliRecHitBlockInfo info(count, recHits);
 	fRecHitBlock[chamber-7][fRecHitBlockCount[chamber-7]] = info;
 	fRecHitBlockCount[chamber-7]++;
+}
+
+
+void AliHLTMUONMansoTrackerFSMComponent::ResetCanLoadFlags()
+{
+	/// Resets all the fCanLoad* flags to true. This enables loading of all
+	/// those CDB entries in the method ReadConfigFromCDB.
+	
+	fCanLoadZmiddle = true;
+	fCanLoadBL = true;
+	for (int i = 0; i < 4; i++)
+	{
+		fCanLoadA[i] = true;
+		fCanLoadB[i] = true;
+	}
+	for (int i = 0; i < 6; i++)
+	{
+		fCanLoadZ[i] = true;
+	}
+}
+
+
+bool AliHLTMUONMansoTrackerFSMComponent::AtLeastOneCanLoadFlagsIsSet() const
+{
+	/// Returns true if at least one fCanLoad* flag was true and false otherwise.
+
+	if (fCanLoadZmiddle or fCanLoadBL) return true;
+	for (int i = 0; i < 4; i++)
+	{
+		if (fCanLoadA[i]) return true;
+		if (fCanLoadB[i]) return true;
+	}
+	for (int i = 0; i < 6; i++)
+	{
+		if (fCanLoadZ[i]) return true;
+	}
+	return false;
 }
 
 

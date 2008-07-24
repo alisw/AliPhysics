@@ -398,6 +398,23 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	} // for loop
 	
+	if (dccut != -1 and useCDB)
+	{
+		HLTWarning("The -cdb or -cdbpath parameter was specified, which indicates that"
+			" this component should read from the CDB, but then the -dccut argument"
+			" was also used. Will override the value from CDB with the command"
+			" line DC cut parameter given."
+		);
+	}
+	
+	if (lutFileName != NULL and useCDB == true)
+	{
+		HLTWarning("The -cdb or -cdbpath parameter was specified, which indicates that"
+			" this component should read from the CDB, but then the -lut argument"
+			" was also used. Will ignore the -lut option and load from CDB anyway."
+		);
+	}
+	
 	if (lutFileName == NULL) useCDB = true;
 	
 	if (fDDL == -1 and not fDelaySetup)
@@ -460,19 +477,16 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return result;
 			}
+		}
+		else
+		{
+			// Print the debug messages here since ReadDCCutFromCDB does not get called,
+			// in-which the debug messages would have been printed.
 			HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
 		}
 	}
 	else
 	{
-		if (useCDB)
-		{
-			HLTWarning("The -cdb or -cdbpath parameter was specified, which indicates that"
-				" this component should read from the CDB, but then the -dccut value"
-				" was also used. Will override the value from CDB with the command"
-				" line DC cut parameter given.");
-		}
-		
 		fHitRec->SetDCCut(dccut);
 		HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
 	}
@@ -504,38 +518,38 @@ int AliHLTMUONHitReconstructorComponent::Reconfigure(
 	/// \param cdbEntry If this is NULL then it is assumed that all CDB entries should
 	///      be reloaded. Otherwise a particular value for 'cdbEntry' will trigger
 	///      reloading of the LUT if the path contains 'MUON/' and reloading of the DC
-	///      cut parameter from the given path in all other cases.
-	/// \param componentId  Must be set to the same value as what GetComponentID()
-	///      returns for this component for this method to have any effect.
+	///      cut parameter if 'cdbEntry' equals "HLT/ConfigMUON/HitReconstructor".
+	/// \param componentId  The name of the component in the current chain.
 	
-	if (strcmp(componentId, GetComponentID()) == 0)
+	bool startsWithMUON = TString(cdbEntry).Index("MUON/", 5, 0, TString::kExact) == 0;
+	bool givenConfigPath = strcmp(cdbEntry, AliHLTMUONConstants::HitReconstructorCDBPath()) == 0;
+	
+	if (cdbEntry == NULL or startsWithMUON or givenConfigPath)
 	{
-		HLTInfo("Reading new configuration entries from CDB.");
+		HLTInfo("Reading new configuration entries from CDB for component '%s'.", componentId);
+	}
 		
-		int result = 0;
-		bool startsWithMUON = TString(cdbEntry).Index("MUON/", 5, 0, TString::kExact) == 0;
-		if (cdbEntry == NULL or startsWithMUON)
+	if (cdbEntry == NULL or startsWithMUON)
+	{
+		// First clear the current LUT data and then load in the new values.
+		if (fLut != NULL)
 		{
-			// First clear the current LUT data and then load in the new values.
-			if (fLut != NULL)
-			{
-				delete [] fLut;
-				fLut = NULL;
-				fLutSize = 0;
-			}
-			
-			fIdToEntry.clear();
-		
-			result = ReadLutFromCDB();
-			if (result != 0) return result;
+			delete [] fLut;
+			fLut = NULL;
+			fLutSize = 0;
 		}
 		
-		if (cdbEntry == NULL or not startsWithMUON)
-		{
-			result = ReadDCCutFromCDB(cdbEntry);
-			if (result != 0) return result;
-			HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
-		}
+		fIdToEntry.clear();
+	
+		int result = ReadLutFromCDB();
+		if (result != 0) return result;
+		fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+	}
+	
+	if (cdbEntry == NULL or not startsWithMUON)
+	{
+		int result = ReadDCCutFromCDB();
+		if (result != 0) return result;
 	}
 	
 	return 0;
@@ -628,7 +642,6 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			);
 			int result = ReadDCCutFromCDB();
 			if (result != 0) return result;
-			HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
 		}
 		
 		fDelaySetup = false;
@@ -1063,13 +1076,11 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 }
 
 
-int AliHLTMUONHitReconstructorComponent::ReadDCCutFromCDB(const char* path)
+int AliHLTMUONHitReconstructorComponent::ReadDCCutFromCDB()
 {
 	/// Reads the DC cut parameter from the CDB.
 
 	const char* pathToEntry = AliHLTMUONConstants::HitReconstructorCDBPath();
-	if (path != NULL)
-		pathToEntry = path;
 	
 	TMap* map = NULL;
 	int result = FetchTMapFromCDB(pathToEntry, map);
@@ -1081,6 +1092,8 @@ int AliHLTMUONHitReconstructorComponent::ReadDCCutFromCDB(const char* path)
 	
 	assert(fHitRec != NULL);
 	fHitRec->SetDCCut(value);
+	
+	HLTDebug("Using DC cut parameter of %d ADC channels.", fHitRec->GetDCCut());
 	
 	return 0;
 }

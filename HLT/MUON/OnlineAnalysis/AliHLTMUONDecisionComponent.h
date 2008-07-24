@@ -68,6 +68,7 @@ protected:
 	virtual int DoInit(int argc, const char** argv);
 	virtual int DoDeinit();
 	virtual int Reconfigure(const char* cdbEntry, const char* componentId);
+	virtual int ReadPreprocessorValues(const char* modules);
 	virtual int DoEvent(
 			const AliHLTComponentEventData& evtData,
 			const AliHLTComponentBlockData* blocks,
@@ -87,8 +88,6 @@ private:
 	
 	/**
 	 * Reads the cut parameters from the CDB.
-	 * \param path  The relative CDB path to use for the CDB entry.
-	 *              If NULL the default value is used.
 	 * \param setLowPtCut  Indicates if the low pT cut should be set (default true).
 	 * \param setHighPtCut  Indicates if the high pT cut should be set (default true).
 	 * \param setLowMassCut  Indicates if the low invariant mass cut should be set (default true).
@@ -96,7 +95,6 @@ private:
 	 * \return 0 is returned on success and a non-zero value to indicate failure.
 	 */
 	int ReadConfigFromCDB(
-			const char* path = NULL,
 			bool setLowPtCut = true, bool setHighPtCut = true,
 			bool setLowMassCut = true, bool setHighMassCut = true
 		);
@@ -118,6 +116,11 @@ private:
 	AliHLTFloat32_t fLowMassCut;  /// The low invariant mass cut value to apply to tracks. [GeV/c^2]
 	AliHLTFloat32_t fHighMassCut;  /// The high invariant mass cut value to apply to tracks. [GeV/c^2]
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
+	bool fLowPtCutSet; ///< Indicates if the low pT cut parameter was set on the command line.
+	bool fHighPtCutSet; ///< Indicates if the high pT cut parameter was set on the command line.
+	bool fLowMassCutSet; ///< Indicates if the low invariant mass cut parameter was set on the command line.
+	bool fHighMassCutSet; ///< Indicates if the high invariant mass cut parameter was set on the command line.
 	
 	ClassDef(AliHLTMUONDecisionComponent, 0);  // Trigger decision component for the dimuon HLT.
 };

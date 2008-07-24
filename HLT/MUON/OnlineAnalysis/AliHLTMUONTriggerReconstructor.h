@@ -102,6 +102,20 @@ public:
 	 */
 	void UseCrateId(bool value) { fDecoder.GetHandler().UseCrateId(value); }
 	
+	/**
+	 * Returns true if the local board ID as found in the local structure
+	 * will be used for lookups in the LUT, rather than the sequencial
+	 * index number of the structure.
+	 */
+	bool UseLocalId() const { return fDecoder.GetHandler().UseLocalId(); }
+	
+	/**
+	 * Sets the flag indicating if the local board ID as found in the local
+	 * structure should be used for lookups in the LUT, rather than the
+	 * sequencial index number of the structure.
+	 */
+	void UseLocalId(bool value) { fDecoder.GetHandler().UseLocalId(value); }
+	
 private:
 
 	class AliDecoderHandler : public AliMUONTriggerDDLDecoderEventHandler, public AliHLTLogging
@@ -194,6 +208,20 @@ private:
 		 * sequencial index number of the header.
 		 */
 		void UseCrateId(bool value) { fUseCrateId = value; }
+		
+		/**
+		 * Returns true if the local board ID as found in the local structure
+		 * will be used for lookups in the LUT, rather than the sequencial
+		 * index number of the structure.
+		 */
+		bool UseLocalId() const { return fUseLocalId; }
+		
+		/**
+		 * Sets the flag indicating if the local board ID as found in the local
+		 * structure should be used for lookups in the LUT, rather than the
+		 * sequencial index number of the structure.
+		 */
+		void UseLocalId(bool value) { fUseLocalId = value; }
 		
 		/**
 		 * Sets the DDL bit according to the DDL value given.
@@ -296,6 +324,7 @@ private:
 		bool fSuppressPartialTriggers;  ///< Flag to indicate if we should suppres partial triggers.
 		bool fOverflowed;  ///< Flag to indicate if we overflowed the output buffer.
 		bool fWarnOnly;  ///< Flag indicating if the OnError method should generate warnings rather than error messages.
+		bool fUseLocalId;  ///< Flag to indicate if the local structure ID as found in the local structures should be used or not.
 		bool fUseCrateId;  ///< Flag to indicate if the crate ID as found in the regional header structures should be used or not.
 		AliHLTInt8_t fCurrentCrateId;  ///< The current trigger crate ID number from the regional header.
 		UInt_t fCurrentRegional;  ///< Index number of current regional structure being decoded.

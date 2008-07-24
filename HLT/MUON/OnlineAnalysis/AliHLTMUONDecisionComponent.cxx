@@ -57,7 +57,12 @@ AliHLTMUONDecisionComponent::AliHLTMUONDecisionComponent() :
 	fHighPtCut(2.),  // 2 GeV/c cut
 	fLowMassCut(2.5),  // 2.7 GeV/c^2 cut
 	fHighMassCut(7.),  // 8 GeV/c^2 cut
-	fWarnForUnexpecedBlock(false)
+	fWarnForUnexpecedBlock(false),
+	fDelaySetup(false),
+	fLowPtCutSet(false),
+	fHighPtCutSet(false),
+	fLowMassCutSet(false),
+	fHighMassCutSet(false)
 {
 	///
 	/// Default constructor.
@@ -152,17 +157,75 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 	
 	HLTInfo("Initialising dHLT trigger decision component.");
 	
-	bool lowPtCutSet = false;
-	bool highPtCutSet = false;
-	bool lowMassCutSet = false;
-	bool highMassCutSet = false;
 	fWarnForUnexpecedBlock = false;
+	fDelaySetup = false;
+	fLowPtCutSet = false;
+	fHighPtCutSet = false;
+	fLowMassCutSet = false;
+	fHighMassCutSet = false;
+	
+	const char* cdbPath = NULL;
+	Int_t run = -1;
 	
 	for (int i = 0; i < argc; i++)
 	{
+		if (strcmp( argv[i], "-cdbpath" ) == 0)
+		{
+			if (cdbPath != NULL)
+			{
+				HLTWarning("CDB path was already specified."
+					" Will replace previous value given by -cdbpath."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The CDB path was not specified." );
+				return -EINVAL;
+			}
+			cdbPath = argv[i+1];
+			i++;
+			continue;
+		}
+	
+		if (strcmp( argv[i], "-run" ) == 0)
+		{
+			if (run != -1)
+			{
+				HLTWarning("Run number was already specified."
+					" Will replace previous value given by -run."
+				);
+			}
+			
+			if ( argc <= i+1 )
+			{
+				HLTError("The run number was not specified." );
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid run number."
+					" Expected a positive integer value.", argv[i+1]
+				);
+				return -EINVAL;
+			}
+			
+			i++;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-delaysetup" ) == 0)
+		{
+			fDelaySetup = true;
+			continue;
+		}
+		
 		if (strcmp( argv[i], "-lowptcut" ) == 0)
 		{
-			if (lowPtCutSet)
+			if (fLowPtCutSet)
 			{
 				HLTWarning("Low pT cut parameter was already specified."
 					" Will replace previous value given by -lowptcut."
@@ -183,7 +246,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 				return -EINVAL;
 			}
 			fLowPtCut = (AliHLTFloat32_t)num;
-			lowPtCutSet = true;
+			fLowPtCutSet = true;
 			
 			i++;
 			continue;
@@ -191,7 +254,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-highptcut" ) == 0)
 		{
-			if (lowPtCutSet)
+			if (fHighPtCutSet)
 			{
 				HLTWarning("High pT cut parameter was already specified."
 					" Will replace previous value given by -highptcut."
@@ -212,7 +275,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 				return -EINVAL;
 			}
 			fHighPtCut = (AliHLTFloat32_t)num;
-			highPtCutSet = true;
+			fHighPtCutSet = true;
 			
 			i++;
 			continue;
@@ -220,7 +283,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-lowmasscut" ) == 0)
 		{
-			if (lowPtCutSet)
+			if (fLowMassCutSet)
 			{
 				HLTWarning("Low invariant mass cut parameter was already specified."
 					" Will replace previous value given by -lowmasscut."
@@ -241,7 +304,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 				return -EINVAL;
 			}
 			fLowMassCut = (AliHLTFloat32_t)num;
-			lowMassCutSet = true;
+			fLowMassCutSet = true;
 			
 			i++;
 			continue;
@@ -249,7 +312,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		
 		if (strcmp( argv[i], "-highmasscut" ) == 0)
 		{
-			if (lowPtCutSet)
+			if (fHighMassCutSet)
 			{
 				HLTWarning("High invariant mass cut parameter was already specified."
 					" Will replace previous value given by -highmasscut."
@@ -270,7 +333,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 				return -EINVAL;
 			}
 			fHighMassCut = (AliHLTFloat32_t)num;
-			highMassCutSet = true;
+			fHighMassCutSet = true;
 			
 			i++;
 			continue;
@@ -286,22 +349,35 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		return -EINVAL;
 	}
 	
-	// Read cut parameters from CDB if they were not specified on the command line.
-	if (not lowPtCutSet or not highPtCutSet or not lowMassCutSet or not highMassCutSet)
+	if (cdbPath != NULL or run != -1)
 	{
-		int result = ReadConfigFromCDB(
-				NULL,
-				not lowPtCutSet, not highPtCutSet,
-				not lowMassCutSet, not highMassCutSet
-			);
+		int result = SetCDBPathAndRunNo(cdbPath, run);
 		if (result != 0) return result;
 	}
 	
-	HLTDebug("Using the following cut parameters:");
-	HLTDebug("              Low pT cut = %f GeV/c", fLowPtCut);
-	HLTDebug("             High pT cut = %f GeV/c", fHighPtCut);
-	HLTDebug("  Low invariant mass cut = %f GeV/c^2", fLowMassCut);
-	HLTDebug(" High invariant mass cut = %f GeV/c^2", fHighMassCut);
+	if (not fDelaySetup)
+	{
+		// Read cut parameters from CDB if they were not specified on the command line.
+		if (not fLowPtCutSet or not fHighPtCutSet or not fLowMassCutSet or not fHighMassCutSet)
+		{
+			HLTInfo("Loading cut parameters from CDB.");
+			int result = ReadConfigFromCDB(
+					not fLowPtCutSet, not fHighPtCutSet,
+					not fLowMassCutSet, not fHighMassCutSet
+				);
+			if (result != 0) return result;
+		}
+		else
+		{
+			// Print the debug messages here since ReadConfigFromCDB does not get called,
+			// in-which the debug messages would have been printed.
+			HLTDebug("Using the following cut parameters:");
+			HLTDebug("              Low pT cut = %f GeV/c", fLowPtCut);
+			HLTDebug("             High pT cut = %f GeV/c", fHighPtCut);
+			HLTDebug("  Low invariant mass cut = %f GeV/c^2", fLowMassCut);
+			HLTDebug(" High invariant mass cut = %f GeV/c^2", fHighMassCut);
+		}
+	}
 	
 	return 0;
 }
@@ -322,19 +398,41 @@ int AliHLTMUONDecisionComponent::Reconfigure(const char* cdbEntry, const char* c
 {
 	/// Inherited from AliHLTComponent. Reconfigures the component from CDB.
 	
-	if (strcmp(componentId, GetComponentID()) == 0)
+	/// Inherited from AliHLTComponent. This method will reload CDB configuration
+	/// entries for this component from the CDB.
+	/// \param cdbEntry If this is NULL or equals "HLT/ConfigMUON/DecisionComponent"
+	///     then new configuration parameters are loaded, otherwise nothing is done.
+	/// \param componentId  The name of the component in the current chain.
+	
+	bool givenConfigPath = strcmp(cdbEntry, AliHLTMUONConstants::DecisionComponentCDBPath()) == 0;
+	
+	if (cdbEntry == NULL or givenConfigPath)
 	{
-		HLTInfo("Reading new entries for cut parameters from CDB.");
-		int result = ReadConfigFromCDB(cdbEntry);
-		HLTDebug("Using the following new cut parameters:");
-		HLTDebug("              Low pT cut = %f GeV/c", fLowPtCut);
-		HLTDebug("             High pT cut = %f GeV/c", fHighPtCut);
-		HLTDebug("  Low invariant mass cut = %f GeV/c^2", fLowMassCut);
-		HLTDebug(" High invariant mass cut = %f GeV/c^2", fHighMassCut);
-		return result;
+		HLTInfo("Reading new configuration entries from CDB for component '%s'.", componentId);
+		int result = ReadConfigFromCDB();
+		if (result != 0) return result;
 	}
-	else
-		return 0;
+	
+	return 0;
+}
+
+
+int AliHLTMUONDecisionComponent::ReadPreprocessorValues(const char* modules)
+{
+	/// Inherited from AliHLTComponent. 
+	/// Updates the configuration of this component if HLT or ALL has been
+	/// specified in the 'modules' list.
+
+	TString mods = modules;
+	if (mods.Contains("ALL"))
+	{
+		return Reconfigure(NULL, GetComponentID());
+	}
+	if (mods.Contains("HLT"))
+	{
+		return Reconfigure(AliHLTMUONConstants::DecisionComponentCDBPath(), GetComponentID());
+	}
+	return 0;
 }
 
 
@@ -350,6 +448,25 @@ int AliHLTMUONDecisionComponent::DoEvent(
 	///
 	/// Inherited from AliHLTProcessor. Processes the new event data.
 	///
+	
+	// Initialise the cut parameters from CDB if we were requested to
+	// initialise only when the first event was received.
+	if (fDelaySetup)
+	{
+		// Load the cut paramters from CDB if they have not been given
+		// on the command line.
+		if (not fLowPtCutSet or not fHighPtCutSet or not fLowMassCutSet or not fHighMassCutSet)
+		{
+			HLTInfo("Loading cut parameters from CDB.");
+			int result = ReadConfigFromCDB(
+					not fLowPtCutSet, not fHighPtCutSet,
+					not fLowMassCutSet, not fHighMassCutSet
+				);
+			if (result != 0) return result;
+		}
+		
+		fDelaySetup = false;
+	}
 	
 	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
 	
@@ -494,19 +611,20 @@ int AliHLTMUONDecisionComponent::DoEvent(
 
 
 int AliHLTMUONDecisionComponent::ReadConfigFromCDB(
-		const char* path,
 		bool setLowPtCut, bool setHighPtCut,
 		bool setLowMassCut, bool setHighMassCut
 	)
 {
 	/// Reads the cut parameters from the CDB.
-	/// \param path Indicates the partial (or relative) path to the CDB entry.
+	/// \param setLowPtCut  Indicates if the low pT cut should be set (default true).
+	/// \param setHighPtCut  Indicates if the high pT cut should be set (default true).
+	/// \param setLowMassCut  Indicates if the low invariant mass cut should be set (default true).
+	/// \param setHighMassCut  Indicates if the high invariant mass cut should be set (default true).
+	/// \return 0 is returned on success and a non-zero value to indicate failure.
 	
 	assert(AliCDBManager::Instance() != NULL);
 	
 	const char* pathToEntry = AliHLTMUONConstants::DecisionComponentCDBPath();
-	if (path != NULL)
-		pathToEntry = path;
 	
 	TMap* map = NULL;
 	int result = FetchTMapFromCDB(pathToEntry, map);
@@ -543,6 +661,12 @@ int AliHLTMUONDecisionComponent::ReadConfigFromCDB(
 		if (result != 0) return result;
 		fHighMassCut = (AliHLTFloat32_t) value;
 	}
+	
+	HLTDebug("Using the following cut parameters:");
+	HLTDebug("              Low pT cut = %f GeV/c", fLowPtCut);
+	HLTDebug("             High pT cut = %f GeV/c", fHighPtCut);
+	HLTDebug("  Low invariant mass cut = %f GeV/c^2", fLowMassCut);
+	HLTDebug(" High invariant mass cut = %f GeV/c^2", fHighMassCut);
 	
 	return 0;
 }

@@ -77,6 +77,19 @@ void CreateDefaultCDBEntries(const char* cdbPath = "local://$ALICE_ROOT")
 	TMap* params = NULL;
 	AliCDBId id;
 	
+	// Create and store the configuration parameters for the trigger reconstructor.
+	params = new TMap;
+	params->SetOwner(kTRUE);
+	params->Add(new TObjString("zmiddle"), new TObjString("-975"));
+	params->Add(new TObjString("bfieldintegral"), new TObjString("3"));
+	
+	path = AliHLTMUONConstants::TriggerReconstructorCDBPath();
+	id = AliCDBId(path, firstRun, lastRun, verison);
+	metaData = new AliCDBMetaData();
+	metaData->SetResponsible("dimuon HLT");
+	metaData->SetComment("Trigger reconstructor configuration parameters for dimuon HLT.");
+	storage->Put(params, id, metaData);
+	
 	// Create and store the configuration parameters for the hit reconstructor.
 	params = new TMap;
 	params->SetOwner(kTRUE);
@@ -87,6 +100,33 @@ void CreateDefaultCDBEntries(const char* cdbPath = "local://$ALICE_ROOT")
 	metaData = new AliCDBMetaData();
 	metaData->SetResponsible("dimuon HLT");
 	metaData->SetComment("Hit reconstructor DC cut parameter for dimuon HLT.");
+	storage->Put(params, id, metaData);
+	
+	// Create and store the configuration parameters for the Manso tracker.
+	params = new TMap;
+	params->SetOwner(kTRUE);
+	params->Add(new TObjString("zmiddle"), new TObjString("-975"));
+	params->Add(new TObjString("bfieldintegral"), new TObjString("3"));
+	params->Add(new TObjString("roi_paramA_chamber7"), new TObjString("0.016"));
+	params->Add(new TObjString("roi_paramB_chamber7"), new TObjString("2.0"));
+	params->Add(new TObjString("roi_paramA_chamber8"), new TObjString("0.016"));
+	params->Add(new TObjString("roi_paramB_chamber8"), new TObjString("2.0"));
+	params->Add(new TObjString("roi_paramA_chamber9"), new TObjString("0.02"));
+	params->Add(new TObjString("roi_paramB_chamber9"), new TObjString("3.0"));
+	params->Add(new TObjString("roi_paramA_chamber10"), new TObjString("0.02"));
+	params->Add(new TObjString("roi_paramB_chamber10"), new TObjString("3.0"));
+	params->Add(new TObjString("chamber7postion"), new TObjString("-1274.5"));
+	params->Add(new TObjString("chamber8postion"), new TObjString("-1305.5"));
+	params->Add(new TObjString("chamber9postion"), new TObjString("-1408.6"));
+	params->Add(new TObjString("chamber10postion"), new TObjString("-1439.6"));
+	params->Add(new TObjString("chamber11postion"), new TObjString("-1603.5"));
+	params->Add(new TObjString("chamber13postion"), new TObjString("-1703.5"));
+	
+	path = AliHLTMUONConstants::MansoTrackerFSMCDBPath();
+	id = AliCDBId(path, firstRun, lastRun, verison);
+	metaData = new AliCDBMetaData();
+	metaData->SetResponsible("dimuon HLT");
+	metaData->SetComment("Manso tracker FSM component configuration parameters for dimuon HLT.");
 	storage->Put(params, id, metaData);
 	
 	// Create and store the configuration parameters for the trigger decision cuts.

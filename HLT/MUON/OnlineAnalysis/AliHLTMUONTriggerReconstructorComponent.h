@@ -49,11 +49,13 @@ public:
 	 * @param filename  The name of the LUT file to generate.
 	 * @param cdbPath  The CDB path to use.
 	 * @param run  The run number to use for the CDB.
+	 * @param useCrateId  Indicates that the crate ID should be used rather
+	 *             than a sequencial number (default is true).
 	 * @return  True if the generation of the LUT file succeeded.
 	 */
 	static bool GenerateLookupTable(
 			AliHLTInt32_t ddl, const char* filename,
-			const char* cdbPath, Int_t run
+			const char* cdbPath, Int_t run, bool useCrateId = true
 		);
 
 protected:
@@ -63,6 +65,8 @@ protected:
 	// capabilities of the component.
 	
 	virtual int DoInit(int argc, const char** argv);
+	virtual int Reconfigure(const char* cdbEntry, const char* componentId);
+	virtual int ReadPreprocessorValues(const char* modules);
 	virtual int DoDeinit();
 
 	virtual int DoEvent(
@@ -87,11 +91,28 @@ private:
 	int ReadLookUpTable(const char* lutpath);
 	int ReadLutFromCDB();
 	
+	/**
+	 * Reads this component's configuration parameters from the CDB.
+	 * These include the middle of the dipole Z coordinate (zmiddle) and the
+	 * integrated magnetic field of the dipole.
+	 * \param setZmiddle Indicates if the zmiddle parameter should be set
+	 *       (default true).
+	 * \param setBL Indicates if the integrated magnetic field parameter should
+	 *       be set (default true).
+	 * \return 0 if no errors occured and negative error code compatible with
+	 *       the HLT framework on errors.
+	 */
+	int ReadConfigFromCDB(bool setZmiddle = true, bool setBL = true);
+	
 	AliHLTMUONTriggerReconstructor* fTrigRec; ///< The trigger reconstructor class implementing the algorithm.
 	AliHLTInt32_t fDDL;   ///< The DDL number in the range 20..21 from which to expect input. Set to -1 for invalid/unspecified value.
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fStopOnOverflow;  ///< Flag indicating if we should fail in the DoEvent method if the output buffer was overflowed.
 	bool fUseCrateId;  ///< Flag to indicate if the crate ID as found in the regional header structures should be used or not.
+	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
+	bool fZmiddleSpecified;  ///< Indicates if the zmiddle parameter was specified on the command line.
+	bool fBLSpecified;  ///< Indicates if the bfieldintegral parameter was specified on the command line.
+	bool fLutInitialised;  ///< Flag to indicate if the LUT was loaded yet or not.
 
 	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0) // Trigger reconstructor component for dHLT trigger DDL raw data.
 

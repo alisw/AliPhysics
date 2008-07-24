@@ -53,8 +53,14 @@
  * \param CDBPath  This is the CDB path to use as the DB storage.
  *                 (Default = local://$ALICE_ROOT)
  * \param run  This is the run number to use for the CDB (Default = 0).
+ * \param useCrateId  Indicates if the crate ID should be used for the lookup table
+ *            indexing rather than just a sequencial number (Default = true).
  */
-void CreateTriggerRecoLookupTables(const char* CDBPath = "local://$ALICE_ROOT", Int_t run = 0)
+void CreateTriggerRecoLookupTables(
+		const char* CDBPath = "local://$ALICE_ROOT",
+		Int_t run = 0,
+		bool useCrateId = true
+	)
 {
 	gSystem->Load("libAliHLTMUON.so");
 
@@ -65,7 +71,7 @@ void CreateTriggerRecoLookupTables(const char* CDBPath = "local://$ALICE_ROOT", 
 		cout << "Generating LUT for DDL " << ddl+1
 			<< " and writing output to file " << filename << endl;
 		bool ok = AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
-				ddl, filename, CDBPath, run
+				ddl, filename, CDBPath, run, useCrateId
 			);
 		if (! ok) return;
 	}

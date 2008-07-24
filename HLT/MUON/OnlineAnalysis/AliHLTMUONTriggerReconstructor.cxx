@@ -138,6 +138,7 @@ AliHLTMUONTriggerReconstructor::AliDecoderHandler::AliDecoderHandler() :
 	fSuppressPartialTriggers(false),
 	fOverflowed(false),
 	fWarnOnly(false),
+	fUseLocalId(true),
 	fUseCrateId(true),
 	fCurrentCrateId(0),
 	fCurrentRegional(0)

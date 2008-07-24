@@ -176,7 +176,7 @@ private:
 	void FreeMemory();
 	int ReadLookUpTable(const char* lutpath);
 	int ReadLutFromCDB();
-	int ReadDCCutFromCDB(const char* path = NULL);
+	int ReadDCCutFromCDB();
 	
 	AliHLTMUONHitReconstructor* fHitRec;  ///< Internal class instance implementing the hit reconstruction algorithm.
 	AliHLTInt32_t fDDL;  ///< DDL number in the range [12..19]. Set to -1 for invalid/unspecified value.

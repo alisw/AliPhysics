@@ -81,6 +81,8 @@ protected:
 	// These functions provide initialization as well as the actual processing
 	// capabilities of the component. 
 	virtual int DoInit(int argc, const char** argv);
+	virtual int Reconfigure(const char* cdbEntry, const char* componentId);
+	virtual int ReadPreprocessorValues(const char* modules);
 	virtual int DoDeinit();
 	virtual int DoEvent(
 			const AliHLTComponentEventData& evtData,
@@ -107,6 +109,22 @@ private:
 			const AliHLTMUONRecHitStruct* recHits,
 			AliHLTUInt32_t count
 		);
+	
+	void ResetCanLoadFlags();
+	bool AtLeastOneCanLoadFlagsIsSet() const;
+	
+	/**
+	 * Reads this component's configuration parameters from the CDB.
+	 * These include the middle of the dipole Z coordinate (zmiddle), the
+	 * integrated magnetic field of the dipole, Z coordinates of the chambers
+	 * and the region of interest parameters used during the tracking.
+	 * \note Only those parameters are loaded from CDB for which the fCanLoadxyz
+	 *       flags are true.
+	 * \return 0 if no errors occured and negative error code compatible with
+	 *       the HLT framework on errors.
+	 */
+	int ReadConfigFromCDB();
+	
 
 	AliHLTMUONMansoTrackerFSM* fTracker;  //! Tracker to do the actual work.
 	
@@ -142,8 +160,8 @@ private:
 	};
 	
 	//std::vector<AliRecHitBlockInfo> fRecHitBlock[4];  //! Arrays of rec hit block data.
-	AliHLTUInt32_t fRecHitBlockArraySize;  // The array size of each array in fRecHitBlock.
-	AliHLTUInt32_t fRecHitBlockCount[4];   // The number of records actually stored in fRecHitBlock[i].
+	AliHLTUInt32_t fRecHitBlockArraySize;  ///< The array size of each array in fRecHitBlock.
+	AliHLTUInt32_t fRecHitBlockCount[4];   ///< The number of records actually stored in fRecHitBlock[i].
 	// The following are 4 dynamic arrays of AliRecHitBlockInfo structures.
 	// These arrays will all have the same size = fRecHitBlockArraySize.
 	// The array itself is actually allocated only once and the pointer stored in fRecHitBlock[0],
@@ -151,7 +169,14 @@ private:
 	// The allocated memory is: 4 * fRecHitBlockArraySize * sizeof(AliRecHitBlockInfo).
 	AliRecHitBlockInfo* fRecHitBlock[4];  //! Arrays of rec hit block data.
 
-	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
+	
+	bool fCanLoadZmiddle;  ///< Indicates if the zmiddle parameter can be loaded from CDB.
+	bool fCanLoadBL;  ///< Indicates if the bfieldintegral parameter can be loaded from CDB.
+	bool fCanLoadA[4];  ///< Indicates if the roi_paramA_chamber[7..10] parameter can be loaded from CDB.
+	bool fCanLoadB[4];  ///< Indicates if the roi_paramB_chamber[7..10] parameter can be loaded from CDB.
+	bool fCanLoadZ[6];  ///< Indicates if the chamber[7..11,13]postion parameter can be loaded from CDB.
 	
 	ClassDef(AliHLTMUONMansoTrackerFSMComponent, 0);  // Manso tracker component implemented as a finite state machine (FSM).
 };
