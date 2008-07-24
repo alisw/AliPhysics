@@ -207,6 +207,14 @@ int AliHLTModuleAgent::Register(AliHLTModuleAgent* pAgent)
   // see header file for function documentation
   AliHLTLogging log;
   if (!pAgent) return -EINVAL;
+  // The following check is for extra protection. In some strange cases the agent might
+  // try to register itself more than once. So we need to check for that and prevent it.
+  // Otherwise we create a cycle in our linked list and go into an infinite loop.
+  AliHLTModuleAgent* current=fgAnchor;
+  while (current!=NULL) {
+    if (current == pAgent) return 0;
+    current = current->fpNext;
+  }
   if (fgAnchor==NULL) {
     fgAnchor=pAgent;
   } else {
