@@ -33,13 +33,15 @@ class AliMUONCalibrationData;
 class AliMUONTriggerGUIboard;
 class AliMUONTriggerGUIdimap;
 class AliMUONTriggerElectronics;
+class AliMUONTriggerCrateStore;
+class AliMUONMCDataInterface;
 
 class AliMUONTriggerGUI : public TObject
 {
 
 public:
 
-  AliMUONTriggerGUI();
+  AliMUONTriggerGUI(Int_t runNumber = 0);
   virtual ~AliMUONTriggerGUI() { 
     /// main gui destructor 
   };
@@ -124,6 +126,8 @@ private:
 
   AliCDBManager    *fCDBManager;    ///< Calibration DB manager
   AliMUONCalibrationData *fCalibrationData;   ///< Calibration data for MUON
+  AliMUONTriggerCrateStore *fCrateManager;    ///< trigger boards manager
+  AliMUONMCDataInterface *fMCDataInterface;   ///< MC data interface
 
   Bool_t            fBoardsInit;    ///< Control the InitBoards only once
 

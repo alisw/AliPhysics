@@ -41,6 +41,7 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMUONGeometryTransformer.h"
+#include "AliMUONMCDataInterface.h"
 
 #include "AliMUONTriggerGUIboard.h"
 #include "AliMUONTriggerGUIdimap.h"
@@ -52,16 +53,16 @@ ClassImp(AliMUONTriggerGUIdimap)
 /// \endcond
 
 //__________________________________________________________________________
-AliMUONTriggerGUIdimap::AliMUONTriggerGUIdimap(AliLoader *loader, TObjArray *boards, const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h)
+AliMUONTriggerGUIdimap::AliMUONTriggerGUIdimap(TObjArray *boards, const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h)
   : TGFrame(0),
     fMain(0),
     fLoader(0),
+    fMCDataInterface(0),
     fBoards(0),
     fIsOn(0)
 {
   /// frame constructor
 
-  fLoader = loader;
   fIsOn   = kTRUE;
   fBoards = boards;
 
@@ -196,11 +197,6 @@ AliMUONTriggerGUIdimap::AliMUONTriggerGUIdimap(AliLoader *loader, TObjArray *boa
   
   fMain->MapWindow();
 
-  DrawMaps(11);
-  DrawMaps(12);
-  DrawMaps(13);
-  DrawMaps(14);
-
 }
 
 //__________________________________________________________________________
@@ -219,6 +215,25 @@ AliMUONTriggerGUIdimap::~AliMUONTriggerGUIdimap()
 }
 
 //__________________________________________________________________________
+void AliMUONTriggerGUIdimap::DrawAllMaps()
+{
+  /// draw maps 
+
+  if (fLoader == 0x0) {
+    return;
+  }
+  if (fMCDataInterface == 0x0) {
+    return;
+  }
+
+  DrawMaps(11);
+  DrawMaps(12);
+  DrawMaps(13);
+  DrawMaps(14);
+
+}
+
+//__________________________________________________________________________
 void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
 {
   /// draw the digits map for chamber-
@@ -230,21 +245,17 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
   canvas->cd();
   canvas->Clear();
 
-  AliMpPad      mpad;
-  
   AliRunLoader *runLoader = fLoader->GetRunLoader();
   gAlice = runLoader->GetAliRun();
   AliMUON *pMUON = (AliMUON*)gAlice->GetModule("MUON");
   const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
   
-  fLoader->LoadDigits("READ");
-  TTree* treeD = fLoader->TreeD();
-  AliMUONVDigitStore* digitStore = AliMUONVDigitStore::Create(*treeD);
-  
+  AliMUONVDigitStore *digitStore = fMCDataInterface->DigitStore(runLoader->GetEventNumber());
+
   TPaveText *label;
   TBox *boxd;
 
-  Char_t fntxt[6], name[8], cln[2];
+  Char_t fntxt[256], name[8], cln[2];
   Int_t detElemId, cathode, ix, iy, charge, color;
   Int_t side, col, line, nbx;
   Int_t holdS, holdL, holdC;
@@ -453,10 +464,12 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
     charge = (Int_t)mdig->Charge();
     color  = 261+5*(charge-1);
     if (color > 282) color = 282;
-    
+
+    if (detElemId/100 != chamber) continue;
+
     const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode-1));
     
-    mpad = seg2->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+    AliMpPad mpad = seg2->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
     
     // get the pad position and dimensions
     Float_t xlocal1 = mpad.Position().X();
@@ -488,7 +501,6 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
     
   }  // end digits loop
 
-  delete digitStore;
   canvas->Modified();
   canvas->Update();
 

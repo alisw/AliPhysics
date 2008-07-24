@@ -26,6 +26,8 @@ class TGLabel;
 class AliMUONTriggerGUIboard;
 class AliMUONTriggerGUI;
 class AliMUONTriggerCircuit;
+class AliMUONTriggerCrateStore;
+class AliMUONMCDataInterface;
 class AliLoader;
 
 class AliMUONTriggerGUIbdmap : public TGFrame
@@ -46,6 +48,10 @@ public:
     fBoard  = (AliMUONTriggerGUIboard*)boards->UncheckedAt(id); }
   /// set the current muon loader
   void SetLoader(AliLoader *loader)        { fLoader = loader; };
+  /// set the MC data interface
+  void SetMCDataInterface(AliMUONMCDataInterface *mc) { fMCDataInterface = mc; };
+  /// set the trigger boards manager
+  void SetCrateManager(AliMUONTriggerCrateStore *crates) { fCrateManager = crates; };
 
   void Show();
 
@@ -76,8 +82,9 @@ private:
   TCanvas              *fCanvas[kNMT];     ///< MT canvases
   TGTextEdit           *fLocTrigE;         ///< Window local trigger info
 
-  AliMUONTriggerGUIboard  *fBoard;         ///< Current board object
-  AliLoader               *fLoader;        ///< The MUON loader
+  AliMUONTriggerGUIboard  *fBoard;           ///< Current board object
+  AliLoader               *fLoader;          ///< The MUON loader
+  AliMUONMCDataInterface  *fMCDataInterface; ///< MC data interface
 
   TGCheckButton        *fXStrips;          ///< Draw x-strips and digits
   TGCheckButton        *fYStrips;          ///< Draw y-strips and digits
@@ -108,6 +115,9 @@ private:
   Int_t                 fNStripY;          ///< Number of y-strips on board
 
   TObjArray            *fBoards;           ///< Array with all boards
+
+  AliMUONCalibrationData *fCalibrationData;  ///< Pointer to calibration data
+  AliMUONTriggerCrateStore *fCrateManager;   ///< trigger boards manager
 
   ClassDef(AliMUONTriggerGUIbdmap,1)       // board gui class
 

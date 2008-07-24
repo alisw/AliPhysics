@@ -45,14 +45,13 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerCrateStore.h"
+#include "AliMUONMCDataInterface.h"
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMpDEManager.h"
 
 #include "AliMUONTriggerGUIboard.h"
 #include "AliMUONTriggerGUIbdmap.h"
-
-#include "AliMUONVTriggerStore.h"
-#include "AliMUONVDigitStore.h"
-
-#include "AliMpDEManager.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUIbdmap)
@@ -65,6 +64,7 @@ AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow
     fLocTrigE(0),
     fBoard(0),
     fLoader(0),
+    fMCDataInterface(0),
     fXStrips(0),
     fYStrips(0),
     fEditStrips(0),
@@ -76,7 +76,8 @@ AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow
     fCanvasSize(0),
     fNStripX(0),
     fNStripY(0),
-    fBoards(0)
+    fBoards(0),
+    fCrateManager(0)
 {
   /// frame constructor
 
@@ -274,9 +275,6 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
 {
   /// print the local trigger
   
-  AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();
-  crateManager->ReadFromFile(0x0);
-
   TGText txt;
   Char_t buffer[20];
 
@@ -286,12 +284,8 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
   AliRunLoader *runLoader = fLoader->GetRunLoader();
   gAlice = runLoader->GetAliRun();
 
-  fLoader->LoadDigits("READ");
-  
-  TTree* treeD = fLoader->TreeD();
-  
-  AliMUONVTriggerStore* triggerStore = AliMUONVTriggerStore::Create(*treeD);
-  
+  AliMUONVTriggerStore *triggerStore = fMCDataInterface->TriggerStore(runLoader->GetEventNumber());
+
   Int_t circuitNumber = fBoard->GetIdCircuit();
 
   UShort_t x2m, x2u, x2d;
@@ -307,7 +301,7 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
 
     if (loCircuit == circuitNumber) {
 
-      AliMUONLocalTriggerBoard* ltb = crateManager->LocalBoard(loCircuit);
+      AliMUONLocalTriggerBoard* ltb = fCrateManager->LocalBoard(loCircuit);
       x2d = ltb->GetSwitch(0);
       x2m = ltb->GetSwitch(1);
       x2u = ltb->GetSwitch(2);
@@ -371,7 +365,6 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
 
   }
   
-  delete triggerStore;
 }
 
 //__________________________________________________________________________
@@ -890,9 +883,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
   pos    = fBoard->GetPosition();
   over   = fBoard->GetYOver();
 
-  fLoader->LoadDigits("READ");
-  TTree* treeD = fLoader->TreeD();
-  AliMUONVDigitStore* digitStore = AliMUONVDigitStore::Create(*treeD);
+  AliMUONVDigitStore *digitStore = fMCDataInterface->DigitStore(runLoader->GetEventNumber());
   
   for (Int_t i = 0; i < kNMT; i++) {
 
@@ -1174,7 +1165,6 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
       
   }  // end canvas loop
 
-  delete digitStore;
   fMain->MapWindow();
 
 }

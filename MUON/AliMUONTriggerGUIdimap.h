@@ -12,6 +12,7 @@
 #include <TGFrame.h>
 
 class AliLoader;
+class AliMUONMCDataInterface;
 class TGTransientFrame;
 class TObjArray;
 class TRootEmbeddedCanvas;
@@ -25,17 +26,18 @@ class AliMUONTriggerGUIdimap : public TGFrame
     
 public:
 
- AliMUONTriggerGUIdimap(AliLoader *loader,
-			TObjArray *boards, 
+ AliMUONTriggerGUIdimap(TObjArray *boards, 
 			const TGWindow *p, const TGWindow *main, 
 			UInt_t w, UInt_t h);
  virtual ~AliMUONTriggerGUIdimap();
  
  /// set the current muon loader
  void SetLoader(AliLoader *loader) { fLoader = loader; };
- /// true if the gui is active
- Bool_t IsOn() const { return fIsOn; };
+ /// set the MC data interface
+ void SetMCDataInterface(AliMUONMCDataInterface *mc) { fMCDataInterface = mc; };
 
+ /// return info if the map is open
+ Bool_t IsOn() const { return fIsOn; };
  void DoClose();
  void DoUpdate();
  void DoTab(Int_t id) const;
@@ -43,6 +45,7 @@ public:
  void CloseWindow();
  void DrawMaps(Int_t chamber);
  void SelectBoard(Int_t ib);
+ void DrawAllMaps();
 
 private:
  /// Not implemented  
@@ -59,6 +62,7 @@ private:
   TGTransientFrame    *fMain;     ///< Main frame
 
   AliLoader   *fLoader;           ///< The MUON loader
+  AliMUONMCDataInterface *fMCDataInterface;  ///< MC data interface
 
   TRootEmbeddedCanvas *fEc[kNMT]; ///< Canvases for drawing the digits
 

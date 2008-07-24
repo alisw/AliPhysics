@@ -32,6 +32,7 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
 #include "AliMpIntPair.h"
+#include "AliMpCDB.h"
 #include "AliMUON.h"
 #include "AliMpDEIterator.h"
 #include "AliMUONGeometryTransformer.h"
@@ -39,6 +40,7 @@
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONCalibrationData.h"
+#include "AliMUONMCDataInterface.h"
 
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -62,7 +64,7 @@ ClassImp(AliMUONTriggerGUI)
 /// \endcond
 
 //__________________________________________________________________________
-AliMUONTriggerGUI::AliMUONTriggerGUI()
+AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
   : TObject(),
     fMain(0),
     fImageMap(0),
@@ -84,6 +86,8 @@ AliMUONTriggerGUI::AliMUONTriggerGUI()
     fRunLoader(0),
     fCDBManager(0),
     fCalibrationData(0),
+    fCrateManager(0),
+    fMCDataInterface(0),
     fBoardsInit(0),
     fDiMap(0),
     fTriggerProcessor(0),
@@ -106,7 +110,9 @@ AliMUONTriggerGUI::AliMUONTriggerGUI()
 
   fCDBManager = AliCDBManager::Instance();
   fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
-  fCalibrationData = new AliMUONCalibrationData(0);  // runnumber zero
+  fCDBManager->SetRun(runNumber);
+  AliMpCDB::LoadDDLStore();
+  fCalibrationData = new AliMUONCalibrationData(runNumber);
   
   // Main frame
 
@@ -470,9 +476,15 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
   case kMMAPDIGITS:
     
     if (fDiMap == 0) {
-      fDiMap = new AliMUONTriggerGUIdimap(fLoader,fBoards,gClient->GetRoot(), fMain, 400, 200);
+      fDiMap = new AliMUONTriggerGUIdimap(fBoards,gClient->GetRoot(), fMain, 400, 200);
+      fDiMap->SetLoader(fLoader);
+      fDiMap->SetMCDataInterface(fMCDataInterface);
+      fDiMap->DrawAllMaps();
     } else if (!fDiMap->IsOn()) {
-      fDiMap = new AliMUONTriggerGUIdimap(fLoader,fBoards,gClient->GetRoot(), fMain, 400, 200);
+      fDiMap = new AliMUONTriggerGUIdimap(fBoards,gClient->GetRoot(), fMain, 400, 200);
+      fDiMap->SetLoader(fLoader);
+      fDiMap->SetMCDataInterface(fMCDataInterface);
+      fDiMap->DrawAllMaps();
     }
 
     break;
@@ -643,6 +655,7 @@ void AliMUONTriggerGUI::CloseWindow()
   /// close the main frame and exit aplication
 
   delete fRunLoader;
+  delete fMCDataInterface;
   printf("\n"); 
   gApplication->Terminate(); 
 
@@ -692,7 +705,10 @@ void AliMUONTriggerGUI::DoRunApply()
       delete ftest;
     }
 
-    if (fRunLoader) delete fRunLoader;
+    if (fRunLoader) {
+      delete fRunLoader;
+      delete fMCDataInterface;
+    }
 
     fRunLoader = AliRunLoader::Open(fFileName->Data(),"MUONFolder","READ");
 
@@ -707,9 +723,10 @@ void AliMUONTriggerGUI::DoRunApply()
       fEventsPerRun = gAlice->GetEventsPerRun();
       
       fLoader = fRunLoader->GetLoader("MUONLoader");
-      fLoader->LoadDigits("READ");
       fRunLoader->GetEvent(fEvent);
            
+      fMCDataInterface = new AliMUONMCDataInterface(fFileName->Data());
+
       fRunInput->SendCloseMessage();
       
       if (!fBoardsInit) {
@@ -719,6 +736,7 @@ void AliMUONTriggerGUI::DoRunApply()
       if (fDiMap) {
 	if (fDiMap->IsOn()) {
 	  fDiMap->SetLoader(fLoader);
+	  fDiMap->SetMCDataInterface(fMCDataInterface);
 	}
       }
       
@@ -990,6 +1008,8 @@ void AliMUONTriggerGUI::OpenBoard(Int_t id)
   bf->SetName(text);
   bf->SetBoard(Boards(),id);
   bf->SetLoader(fLoader);
+  bf->SetCrateManager(fCrateManager);
+  bf->SetMCDataInterface(fMCDataInterface);
   bf->Init();
 
   bf->Show();
@@ -1027,8 +1047,10 @@ void AliMUONTriggerGUI::InitBoards()
   
   fBoardsInit = kTRUE;
 
-  AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();
-  crateManager->ReadFromFile(0x0);
+  if (fCrateManager == 0x0) {
+    fCrateManager = new AliMUONTriggerCrateStore();
+    fCrateManager->ReadFromFile(fCalibrationData);
+  }
 
   Int_t nPixelX = 700;
   Int_t nPixelY = 676;
@@ -1177,7 +1199,7 @@ void AliMUONTriggerGUI::InitBoards()
     AliMpIntPair location = pad.GetLocation(0);
 
     Int_t nboard = location.GetFirst();
-    AliMUONLocalTriggerBoard* b = crateManager->LocalBoard(nboard);
+    AliMUONLocalTriggerBoard* b = fCrateManager->LocalBoard(nboard);
     icirc = b->GetNumber();
     board->SetBoardName((Char_t*)b->GetName());
     board->SetIdCircuit(icirc);
