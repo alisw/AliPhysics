@@ -406,7 +406,7 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const  char
 {
 	// Initialize the event source and QA data makers
 	
-	fTasks = AliQA::GetTaskName(taskIndex) ; 
+	//fTasks = AliQA::GetTaskName(taskIndex) ; 
 
 	if (taskIndex == AliQA::kRAWS) { 
 		if (!fRawReader) {
@@ -750,16 +750,20 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 		}
 	}
 	
-	if ( !Init(taskIndex, fileName) ) 
-		return kFALSE ; 
 
 	if ( taskIndex == AliQA::kNULLTASKINDEX) { 
-		DoIt(taskIndex) ; 
-	} else {
-		for (UInt_t task = 0; task < AliQA::kNTASKINDEX; task++) 
-			if ( fTasks.Contains(Form("%d", task)) ) 
+		for (UInt_t task = 0; task < AliQA::kNTASKINDEX; task++) {
+			if ( fTasks.Contains(Form("%d", task)) ) {
+				if ( !Init(AliQA::GetTaskIndex(AliQA::GetTaskName(task)), fileName) ) 
+					return kFALSE ; 
 				DoIt(AliQA::GetTaskIndex(AliQA::GetTaskName(task))) ;
-	}
+			}
+		}
+	} else {
+		if ( !Init(taskIndex, fileName) ) 
+			return kFALSE ; 
+		DoIt(taskIndex) ; 
+	} 		
 	
 	return fDetectorsW ;
 
@@ -930,7 +934,7 @@ void AliQADataMakerSteer::SetRecoParam(const char* detector, AliDetectorRecoPara
 {
   // Set custom reconstruction parameters for a given detector
   // Single set of parameters for all the events
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if(!strcmp(detector, AliQA::GetDetName(iDet))) {
       par->SetAsDefault();
       fRecoParam.AddDetRecoParam(iDet,par);
