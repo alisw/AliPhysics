@@ -84,6 +84,14 @@ public:
   Float_t GetDCAToVertex()           const   { return fCutDCAToVertex;}
   Float_t GetDCAToVertexXY()         const   { return fCutDCAToVertexXY;}
   Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
+
+  void GetPRange(Float_t& r1, Float_t& r2)   {r1=fPMin;   r2=fPMax;}
+  void GetPtRange(Float_t& r1, Float_t& r2)  {r1=fPtMin;  r2=fPtMax;}
+  void GetPxRange(Float_t& r1, Float_t& r2)  {r1=fPxMin;  r2=fPxMax;}
+  void GetPyRange(Float_t& r1, Float_t& r2)  {r1=fPyMin;  r2=fPyMax;}
+  void GetPzRange(Float_t& r1, Float_t& r2)  {r1=fPzMin;  r2=fPzMax;}
+  void GetEtaRange(Float_t& r1, Float_t& r2) {r1=fEtaMin; r2=fEtaMax;}
+  void GetRapRange(Float_t& r1, Float_t& r2) {r1=fRapMin; r2=fRapMax;}
   
   // track kinmatic cut setters
   void SetPRange(Float_t r1=0, Float_t r2=1e10)       {fPMin=r1;   fPMax=r2;}
