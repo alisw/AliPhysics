@@ -65,6 +65,9 @@ int testAliHLTAltroGenerator()
 {
   int iResult=0;
 #ifdef __CINT__
+  string ld_library_path="../.libs:";
+  ld_library_path+=gSystem->GetDynamicPath();
+  gSystem->SetDynamicPath(ld_library_path.c_str());
   gSystem->Load("libAliHLTRCU.so");
 #endif
   AliHLTSystem gHLT;

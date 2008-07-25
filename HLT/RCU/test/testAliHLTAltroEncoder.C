@@ -277,6 +277,9 @@ void CompareDumpFiles()
 int testAliHLTAltroEncoder()
 {
 #ifdef __CINT__
+  string ld_library_path="../.libs:";
+  ld_library_path+=gSystem->GetDynamicPath();
+  gSystem->SetDynamicPath(ld_library_path.c_str());
   gSystem->Load("libAliHLTRCU.so");
 #endif
   AliHLTSystem gHLT;
@@ -287,10 +290,6 @@ int testAliHLTAltroEncoder()
   TArrayC encData(maxEncodedDataSize);
   const int maxAltroDataSize=encData.GetSize()-sizeofAliRawDataHeader;
   int dataPos=0;
-
-#ifdef __CINT__
-  gSystem->Load("libAliHLTRCU.so");
-#endif
 
   AliHLTAltroEncoder encoder;
   encoder.SetBuffer((AliHLTUInt8_t*)encData.GetArray(), encData.GetSize());

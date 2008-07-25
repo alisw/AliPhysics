@@ -19,7 +19,7 @@
 /** @file   testAliHLT_C_Component_WrapperInterface.C
     @author Matthias Richter
     @date   
-    @brief  Test program for the external wrapper interface
+    @brief  Test program for the old wrapper interface, frozen since Jul 08
  */
 
 #include "AliHLTProcessor.h"
@@ -145,7 +145,7 @@ int main(int /*argc*/, const char** /*argv*/)
     return iResult;
   }
 
-  if ((iResult=AliHLT_C_Component_LoadLibrary("libAliHLTUtil.so"))<0) {
+  if ((iResult=AliHLT_C_Component_LoadLibrary("../util/.libs/libAliHLTUtil.so"))<0) {
     cerr << "error: AliHLT_C_Component_LoadLibrary failed with " << iResult << endl;
     return iResult;
   }
