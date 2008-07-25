@@ -2793,7 +2793,7 @@ Bool_t AliReconstruction::InitRecoParams()
       continue;
     }
 
-    AliDebug(1, Form("Loading RecoParam objects for detector: %s",fgkDetectorName[iDet]));
+    AliInfo(Form("Loading reconstruction parameter objects for detector %s",fgkDetectorName[iDet]));
   
     AliCDBPath path(fgkDetectorName[iDet],"Calib","RecoParam");
     AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
@@ -2811,7 +2811,7 @@ Bool_t AliReconstruction::InitRecoParams()
       else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
 	// The detector has only onse set of reco parameters
 	// Registering it in AliRecoParam
-	AliInfo(Form("Single set of reco parameters found for detector %s",fgkDetectorName[iDet]));
+	AliInfo(Form("Single set of reconstruction parameters found for detector %s",fgkDetectorName[iDet]));
 	dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
 	fRecoParam.AddDetRecoParam(iDet,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
       }
@@ -2822,6 +2822,8 @@ Bool_t AliReconstruction::InitRecoParams()
       entry->SetOwner(0);
     }
   }
+
+  fRecoParam.Print();
 
   return isOK;
 }

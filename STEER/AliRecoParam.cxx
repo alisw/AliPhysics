@@ -66,7 +66,7 @@ void  AliRecoParam::Print(Option_t *option) const {
   //
   for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (fDetRecoParams[iDet]){
-      printf("AliDetectorRecoParam objects for detector %d\n",iDet); 
+      printf("AliDetectorRecoParam objects for detector %d:\n",iDet); 
       Int_t nparam = fDetRecoParams[iDet]->GetEntriesFast();
       for (Int_t iparam=0; iparam<nparam; iparam++){
 	AliDetectorRecoParam * param = (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(iparam);
