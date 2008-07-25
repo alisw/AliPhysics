@@ -16,7 +16,7 @@
 #define AliFlowAnalysisWithScalarProduct_cxx
  
 #include "Riostream.h"  //needed as include
-#include "TFile.h"      //needed as include
+//#include "TFile.h"      //needed as include
 #include "TList.h"
 #include "TMath.h"
 #include "TProfile.h"
@@ -79,7 +79,18 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistList->Add(fHistProUQ);
 
   fCommonHists = new AliFlowCommonHist("SP");
-  fHistList->Add(fCommonHists->GetHistList()); 
+  //fHistList->Add(fCommonHists->GetHistList());
+  fHistList->Add(fCommonHists->GetHistMultOrig());
+  fHistList->Add(fCommonHists->GetHistMultInt());
+  fHistList->Add(fCommonHists->GetHistMultDiff());
+  fHistList->Add(fCommonHists->GetHistPtInt());
+  fHistList->Add(fCommonHists->GetHistPtDiff());
+  fHistList->Add(fCommonHists->GetHistPhiInt());
+  fHistList->Add(fCommonHists->GetHistPhiDiff());
+  fHistList->Add(fCommonHists->GetHistEtaInt());
+  fHistList->Add(fCommonHists->GetHistEtaDiff());
+  fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
+  fHistList->Add(fCommonHists->GetHistQ());
   //fCommonHistsRes = new AliFlowCommonHistResults("SP");
   
   fEventNumber = 0;  //set number of events to zero    

@@ -17,6 +17,7 @@
 #include "TChain.h"
 #include "TTree.h"
 #include "TFile.h"
+#include "TList.h"
 
 
 class AliAnalysisTask;
@@ -30,6 +31,8 @@ class AliAnalysisTask;
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+
+#include "../../CORRFW/AliCFManager.h"
 
 #include "AliAnalysisTaskLeeYangZeros.h"
 #include "AliFlowEventSimpleMaker.h"
@@ -47,9 +50,12 @@ AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_
   fESD(0),
   fAOD(0),
   fAnalysisType("ESD"), 
+  fCFManager1(NULL),
+  fCFManager2(NULL),
   fLyz(0),
   fEventMaker(0),
   fFirstRunFile(0),
+  fListHistos(NULL),
   fFirstRunLYZ(firstrun), //set boolean for firstrun to initial value
   fUseSumLYZ(kTRUE)       //set boolean for use sum to initial value
 {
@@ -63,6 +69,39 @@ AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
 }
+
+
+/*
+//________________________________________________________________________
+AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros() :  
+  fESD(0),
+  fAOD(0),
+  fAnalysisType("ESD"), 
+  fCFManager1(NULL),
+  fCFManager2(NULL),
+  fLyz(0),
+  fEventMaker(0),
+  fFirstRunFile(0),
+  fListHistos(NULL),
+  fFirstRunLYZ(kTRUE), //set boolean for firstrun to initial value
+  fUseSumLYZ(kTRUE)    //set boolean for use sum to initial value
+{
+  // Constructor
+  cout<<"AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name)"<<endl;
+
+}
+
+*/
+
+//________________________________________________________________________
+AliAnalysisTaskLeeYangZeros::~AliAnalysisTaskLeeYangZeros()
+{
+
+  //destructor
+
+}
+
+
 
 //________________________________________________________________________
 void AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *) 
@@ -136,27 +175,24 @@ void AliAnalysisTaskLeeYangZeros::CreateOutputObjects()
   fLyz -> SetFirstRun(GetFirstRunLYZ());   //set first run true or false
   fLyz -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
 
-  //output file
-  TString outputName = "outputFromLeeYangZerosAnalysis" ;
-  outputName += fAnalysisType.Data() ;
-  if (fFirstRunLYZ) {
-    outputName += "_firstrun.root" ;
-  } else {
-    outputName += "_secondrun.root" ;
-  }
-  fLyz->SetHistFileName( outputName.Data() );
-  
   // Get data from input slot 1
   if (GetNinputs() == 2) {                   //if there are two input slots
     fFirstRunFile = (TFile*)GetInputData(1);
     cerr<<"fFirstRunFile ("<<fFirstRunFile<<")"<<endl;
-    if (fFirstRunFile) cerr<<"fFirstRunFile -> IsOpen() = "<<fFirstRunFile -> IsOpen()<<endl;
-    
+    if (fFirstRunFile) { cerr<<"fFirstRunFile -> IsOpen() = "<<fFirstRunFile -> IsOpen()<<endl;}
+    else { cerr<<"fFirstRunFile has a NULL pointer!!"<<endl; exit(0);}
     fLyz -> SetFirstRunFile(fFirstRunFile);
   }
   
   fLyz-> Init();
 
+  if (fLyz->GetHistList()) {
+	fLyz->GetHistList()->Print();
+	fListHistos = fLyz->GetHistList();
+	fListHistos->Print();
+  }
+  else {Printf("ERROR: Could not retrieve histogram list"); }
+  
 }
 
 //________________________________________________________________________
@@ -180,10 +216,14 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
       return;
     }
 
+    fCFManager1->SetEventInfo(mcEvent);
+    fCFManager2->SetEventInfo(mcEvent);
+
     Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 
     //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     fLyz->Make(fEvent);
     delete fEvent;
   }
@@ -195,11 +235,12 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
     fLyz->Make(fEvent);
     delete fEvent;
   }
-  else if (fAnalysisType == "ESDMC0") {
+  else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1") {
     if (!fESD) {
       Printf("ERROR: fESD not available");
       return;
@@ -218,37 +259,22 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
       return;
     }
 
+    fCFManager1->SetEventInfo(mcEvent);
+    fCFManager2->SetEventInfo(mcEvent);
+
     //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
+    AliFlowEventSimple* fEvent=NULL;
+    if (fAnalysisType == "ESDMC0") { 
+      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
+    } else if (fAnalysisType == "ESDMC1") {
+      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
+    }
     fLyz->Make(fEvent);
     delete fEvent;
     //delete mcEvent;
   }
-  else if (fAnalysisType == "ESDMC1") {
-    if (!fESD) {
-      Printf("ERROR: fESD not available");
-      return;
-    }
-    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-    
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
-
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-
-    //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,1); //0 = kine from ESD, 1 = kine from MC
-    fLyz->Make(fEvent);
-    delete fEvent;
-    //delete mcEvent;
-  }
+  
   else if (fAnalysisType == "AOD") {
     if (!fAOD) {
       Printf("ERROR: fAOD not available");
@@ -257,11 +283,13 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
 
     //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD); //no CF yet!
     fLyz->Make(fEvent);
     delete fEvent;
   }
   
+  //PostData(0,fListHistos); //here for CAF
+
 }      
 
 //________________________________________________________________________
@@ -271,14 +299,22 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
   if (GetNinputs() == 2) { 
     cerr<<"fFirstRunFile -> IsOpen() = "<<fFirstRunFile -> IsOpen()<<endl;
   }
-  cerr<<"fLyz->GetHistFile() -> IsOpen() = "<<fLyz->GetHistFile() -> IsOpen()<<endl;
+  
+  fLyz->Finish();           //remove for CAF
+  PostData(0,fListHistos);  //remove for CAF
+  
 
-  fLyz->Finish();
+  //print histogram list:
+  TList* fOutListHistos = (TList*)GetOutputData(0);
+  cout << "histogram list in Terminate" << endl;
+  if (fOutListHistos) {
+    //fOutListHistos->Print();  //gives error for secondrun??
+  }	
+  else {
+    cout << "histgram list pointer is empty" << endl;}
 
-  PostData(0,fLyz->GetHistFile());
-
-  delete fLyz;
-  delete fEventMaker;
+  //delete fLyz;
+  //delete fEventMaker;
 
   cout<<".....finished"<<endl;
 }

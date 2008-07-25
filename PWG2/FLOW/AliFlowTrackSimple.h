@@ -22,8 +22,9 @@ class AliFlowTrackSimple: public TObject {
   Double_t Eta() const; 
   Double_t Pt()  const; 
   Double_t Phi() const; 
-  Bool_t UseForIntegratedFlow() const;
-  Bool_t UseForDifferentialFlow() const;
+  TBits    GetFlowBits() const;
+  Bool_t   UseForIntegratedFlow() const;
+  Bool_t   UseForDifferentialFlow() const;
   
   void SetEta(Double_t eta);
   void SetPt(Double_t pt); 
@@ -43,16 +44,18 @@ class AliFlowTrackSimple: public TObject {
 };
 
 inline Double_t AliFlowTrackSimple::Eta() const { 
-  return fEta; }
+  return this->fEta; }
 inline Double_t AliFlowTrackSimple::Pt() const {  
   //  cout << "Returned pt:" << fPt << endl; 
-  return fPt;}
+  return this->fPt;}
 inline Double_t AliFlowTrackSimple::Phi() const { 
-  return fPhi; }
+  return this->fPhi; }
+inline TBits AliFlowTrackSimple::GetFlowBits() const { 
+  return this->fFlowBits; }
 inline Bool_t AliFlowTrackSimple::UseForIntegratedFlow() const { 
-  return fFlowBits.TestBitNumber(0); }
+  return this->fFlowBits.TestBitNumber(0); }
 inline Bool_t AliFlowTrackSimple::UseForDifferentialFlow() const { 
-  return fFlowBits.TestBitNumber(1); }
+  return this->fFlowBits.TestBitNumber(1); }
 
 inline void AliFlowTrackSimple::SetEta(Double_t val) {
   fEta = val; }

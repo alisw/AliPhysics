@@ -29,6 +29,7 @@ class AliFlowVector;
 
 #include "TMath.h" //needed as include
 #include "TFile.h" //needed as include
+#include "TList.h"
 
 class TComplex;
 class TProfile;
@@ -59,9 +60,7 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
     fUseSum(kTRUE),
     fDoubleLoop(kFALSE),
     fDebug(kFALSE),
-    fHistFileName(0),
-    fHistFile(0),
-    fSummaryFile(0),
+    fHistList(NULL),
     firstRunFileName(0),
     firstRunFile(NULL),
     fHistProVtheta(NULL),
@@ -79,8 +78,7 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
   //default constructor
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::AliFlowAnalysisWithLeeYangZeros default constructor****"<<endl;
 
-  // output file (histograms)
-  fHistFileName = "outputFromLYZAnalysis.root" ;
+  fHistList = new TList();
 
   for(Int_t i = 0;i<5;i++)
     {
@@ -100,7 +98,7 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
    //default destructor
    if (fDebug) cout<<"****~AliFlowAnalysisWithLeeYangZeros****"<<endl;
    delete fQsum;
-   delete fHistFile;
+   delete fHistList;
  }
  
  //-----------------------------------------------------------------------
@@ -110,10 +108,6 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   //init method 
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::Init()****"<<endl;
 
-  // Open output files (->plots)
-  fHistFile = new TFile(fHistFileName.Data(), "RECREATE");
-  
-    
   // Book histograms
   Int_t iNtheta = AliFlowLYZConstants::kTheta;
   Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
@@ -127,21 +121,43 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   
   //for control histograms
   fCommonHists = new AliFlowCommonHist("LYZ");
+  //fHistList->Add(fCommonHists->GetHistList());
+  fHistList->Add(fCommonHists->GetHistMultOrig());
+  fHistList->Add(fCommonHists->GetHistMultInt());
+  fHistList->Add(fCommonHists->GetHistMultDiff());
+  fHistList->Add(fCommonHists->GetHistPtInt());
+  fHistList->Add(fCommonHists->GetHistPtDiff());
+  fHistList->Add(fCommonHists->GetHistPhiInt());
+  fHistList->Add(fCommonHists->GetHistPhiDiff());
+  fHistList->Add(fCommonHists->GetHistEtaInt());
+  fHistList->Add(fCommonHists->GetHistEtaDiff());
+  fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
+  fHistList->Add(fCommonHists->GetHistQ());
   fCommonHistsRes = new AliFlowCommonHistResults("LYZ");
+  //fHistList->Add(fCommonHistsRes->GetHistList()); 
+  fHistList->Add(fCommonHistsRes->GetHistDiffFlow()); 
+  fHistList->Add(fCommonHistsRes->GetHistChi()); 
+  fHistList->Add(fCommonHistsRes->GetHistIntFlow()); 
 
   //for first loop over events 
   if (fFirstRun){
     fHistProR0theta  = new TProfile("First_FlowPro_r0theta_LYZ","First_FlowPro_r0theta_LYZ",iNtheta,-0.5,iNtheta-0.5);
     fHistProR0theta->SetXTitle("#theta");
     fHistProR0theta->SetYTitle("r_{0}^{#theta}");
+    fHistList->Add(fHistProR0theta);
 
     fHistProVtheta  = new TProfile("First_FlowPro_Vtheta_LYZ","First_FlowPro_Vtheta_LYZ",iNtheta,-0.5,iNtheta-0.5);
     fHistProVtheta->SetXTitle("#theta");
     fHistProVtheta->SetYTitle("V_{n}^{#theta}");        
+    fHistList->Add(fHistProVtheta);
 
     //class AliFlowLYZHist1 defines the histograms: fHistProGtheta, fHistProReGtheta, fHistProImGtheta, fHistProR0theta
     for (Int_t theta=0;theta<iNtheta;theta++) {  
       fHist1[theta]=new AliFlowLYZHist1(theta);
+      //fHistList->Add(fHist1[theta]->GetHistList() );
+      fHistList->Add(fHist1[theta]->GetHistGtheta() );
+      fHistList->Add(fHist1[theta]->GetHistProReGtheta() );
+      fHistList->Add(fHist1[theta]->GetHistProImGtheta() );
     }
      
   }
@@ -150,30 +166,43 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
     fHistProReDenom = new TProfile("Second_FlowPro_ReDenom_LYZ","Second_FlowPro_ReDenom_LYZ" , iNtheta, -0.5, iNtheta-0.5);
     fHistProReDenom->SetXTitle("#theta");
     fHistProReDenom->SetYTitle("Re(Q^{#theta}e^{ir_{0}^{#theta}Q^{#theta}})");
+    fHistList->Add(fHistProReDenom);
 
     fHistProImDenom = new TProfile("Second_FlowPro_ImDenom_LYZ","Second_FlowPro_ImDenom_LYZ" , iNtheta, -0.5, iNtheta-0.5);
     fHistProImDenom->SetXTitle("#theta");
     fHistProImDenom->SetYTitle("Im(Q^{#theta}e^{ir_{0}^{#theta}Q^{#theta}})");
+    fHistList->Add(fHistProImDenom);
 
     fHistProVeta = new TProfile("Second_FlowPro_Veta_LYZ","Second_FlowPro_Veta_LYZ",iNbinsEta,dEtaMin,dEtaMax);
     fHistProVeta->SetXTitle("rapidity");
     fHistProVeta->SetYTitle("v (%)");
+    fHistList->Add(fHistProVeta);
 
     fHistProVPt = new TProfile("Second_FlowPro_VPt_LYZ","Second_FlowPro_VPt_LYZ",iNbinsPt,dPtMin,dPtMax);
     fHistProVPt->SetXTitle("Pt");
     fHistProVPt->SetYTitle("v (%)");
+    fHistList->Add(fHistProVPt);
 
     fHistProReDtheta = new TProfile("Second_FlowPro_ReDtheta_LYZ","Second_FlowPro_ReDtheta_LYZ",iNtheta, -0.5, iNtheta-0.5);
     fHistProReDtheta->SetXTitle("#theta");
     fHistProReDtheta->SetYTitle("Re(D^{#theta})");
+    fHistList->Add(fHistProReDtheta);
 
     fHistProImDtheta = new TProfile("Second_FlowPro_ImDtheta_LYZ","Second_FlowPro_ImDtheta_LYZ",iNtheta, -0.5, iNtheta-0.5);
     fHistProImDtheta->SetXTitle("#theta");
     fHistProImDtheta->SetYTitle("Im(D^{#theta})");
+    fHistList->Add(fHistProImDtheta);
 
     //class AliFlowLYZHist2 defines the histograms: 
     for (Int_t theta=0;theta<iNtheta;theta++)  {  
       fHist2[theta]=new AliFlowLYZHist2(theta);
+      //fHistList->Add(fHist2[theta]->GetHistList() );
+      fHistList->Add(fHist2[theta]->GetHistProReNumer() );
+      fHistList->Add(fHist2[theta]->GetHistProImNumer() );
+      fHistList->Add(fHist2[theta]->GetHistProReNumerPt() );
+      fHistList->Add(fHist2[theta]->GetHistProImNumerPt() );
+      //fHistList->Add(fHist2[theta]->GetHistProReNumer2D() ); //gives error in compilation 
+      //fHistList->Add(fHist2[theta]->GetHistProImNumer2D() ); //gives error in compilation
     }
       
     //read hists from first run file
@@ -183,7 +212,11 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
       exit(-1);
     } else if (firstRunFile->IsOpen()){
       cout<<"----firstRunFile is open----"<<endl<<endl;
-      fHistProR0theta  = (TProfile*)firstRunFile->Get("First_FlowPro_r0theta_LYZ");
+      TList* list = (TList*)firstRunFile->Get("cobj1");
+      if (!list) {cout<<"list is NULL pointer!"<<endl;}
+      fHistProR0theta  = (TProfile*)list->FindObject("First_FlowPro_r0theta_LYZ");
+      if (!fHistProR0theta) {cout<<"fHistProR0theta has a NULL pointer!"<<endl;}
+      fHistList->Add(fHistProR0theta);
     }    
   }
    
@@ -309,10 +342,6 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 
     if (fDebug) cout<<"****histograms filled****"<<endl;  
     
-    //save histograms in file //temp for testing selector
-    fHistFile->cd();
-    fHistFile->Write();
-
     return kTRUE;
     fEventNumber =0; //set to zero for second round over events
   }  //firstrun
@@ -470,16 +499,9 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       fCommonHistsRes->FillDifferentialFlow(b, dv2pro, dErrdifcomb); 
     } //loop over bins b
  
-    
-    //save histograms in file
-    fHistFile->cd();
-    fHistFile->Write();
-    fHistFile->Close();
-    //Note that when the file is closed, all histograms and Trees in memory associated with this file are deleted
-    if (fDebug) cout<<"****Histograms saved and fHistFile closed, all histograms deleted****"<<endl;
-     
+         
     //close the first run file 
-    firstRunFile->Close();
+    //firstRunFile->Close(); //gives error when writing to TList
 
      
   } //secondrun
@@ -611,7 +633,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 	dR0 = fHistProR0theta->GetBinContent(theta+1);
       }
       else {
-	cout <<"pointer fHistProR0Theta does not exist" << endl;
+	cout <<"pointer fHistProR0theta does not exist" << endl;
       }
       //cerr<<"dR0 = "<<dR0 <<endl;
 

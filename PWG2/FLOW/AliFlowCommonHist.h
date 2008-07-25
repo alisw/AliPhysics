@@ -34,18 +34,18 @@ class AliFlowCommonHist: public TObject {
   Double_t GetEntriesInPtBin(Int_t iBin);   //gets entries from fHistPtDiff
   Double_t GetMeanPt(Int_t iBin);           //gets the mean pt for this bin from fHistProMeanPtperBin   
 
-  TH1F*     GetfHistMultOrig()               {return fHistMultOrig;  } ;  
-  TH1F*     GetfHistMultInt()                {return fHistMultInt; } ;  
-  TH1F*     GetfHistMultDiff()               {return fHistMultDiff; } ;  
-  TH1F*     GetfHistPtInt()                  {return fHistPtInt; } ;  
-  TH1F*     GetfHistPtDiff()                 {return fHistPtDiff; } ;   
-  TH1F*     GetfHistPhiInt()                 {return fHistPhiInt; } ;  
-  TH1F*     GetfHistPhiDiff()                {return fHistPhiDiff; } ;  
-  TH1F*     GetfHistEtaInt()                 {return fHistEtaInt; } ;  
-  TH1F*     GetfHistEtaDiff()                {return fHistEtaDiff;  } ;   
-  TProfile* GetfHistProMeanPtperBin()        {return fHistProMeanPtperBin; } ;
-  TH1F*     GetfHistQ()                      {return fHistQ; } ;            
-  TList*    GetHistList()                    {return fHistList;} ;  
+  TH1F*     GetHistMultOrig()               {return fHistMultOrig;  } ;  
+  TH1F*     GetHistMultInt()                {return fHistMultInt; } ;  
+  TH1F*     GetHistMultDiff()               {return fHistMultDiff; } ;  
+  TH1F*     GetHistPtInt()                  {return fHistPtInt; } ;  
+  TH1F*     GetHistPtDiff()                 {return fHistPtDiff; } ;   
+  TH1F*     GetHistPhiInt()                 {return fHistPhiInt; } ;  
+  TH1F*     GetHistPhiDiff()                {return fHistPhiDiff; } ;  
+  TH1F*     GetHistEtaInt()                 {return fHistEtaInt; } ;  
+  TH1F*     GetHistEtaDiff()                {return fHistEtaDiff;  } ;   
+  TProfile* GetHistProMeanPtperBin()        {return fHistProMeanPtperBin; } ;
+  TH1F*     GetHistQ()                      {return fHistQ; } ;            
+  TList*    GetHistList()                   {return fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
  

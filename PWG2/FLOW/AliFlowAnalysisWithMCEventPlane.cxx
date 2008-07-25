@@ -152,7 +152,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
      
   Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
     
-  TH1F* fHistPtDiff = fCommonHists->GetfHistPtDiff();
+  TH1F* fHistPtDiff = fCommonHists->GetHistPtDiff();
   Double_t dV = 0.;
   Double_t dErrV = 0.;
   Double_t dSum = 0.;

@@ -345,7 +345,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   fSecondVPt->SetLineColor(3);
   fSecondVPt->SetLineWidth(2);
   fSecondVPt->Draw();
-  fHistFlow = fCommonHistsRes->GetfHistDiffFlow();
+  fHistFlow = fCommonHistsRes->GetHistDiffFlow();
   fHistFlow->Draw("SAME");
   // draw the legend
   TLegend *legend2 = new TLegend(0.6,0.65,0.88,0.85);
