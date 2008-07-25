@@ -41,7 +41,7 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliCodeTimer.h"
-#include "AliDetectorRecoParam.h" ; 
+#include "AliDetectorRecoParam.h"
 #include "AliESDEvent.h"
 #include "AliGeomManager.h"
 #include "AliGlobalQADataMaker.h"
