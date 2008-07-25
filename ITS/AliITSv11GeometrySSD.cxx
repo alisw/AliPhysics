@@ -176,7 +176,7 @@ const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportWidth          =
 																	 2.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportHeight[2]      =
 												     { 4.620*fgkmm-fgkSSDModuleVerticalDisalignment2, 
-													   5.180*fgkmm-fgkSSDModuleVerticalDisalignment2};
+												       5.220*fgkmm-fgkSSDModuleVerticalDisalignment2};
 //const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportHeight[2]      =
 //												     { 4.520*fgkmm, 5.130*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportThickness[2]   = 
@@ -259,6 +259,7 @@ const Double_t AliITSv11GeometrySSD::fgkCarbonFiberSupportYAxisLength
 /////////////////////////////////////////////////////////////////////////////////
 // Carbon Fiber Lower Support Parameters (lengths are in mm)
 /////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkLowerSupportToSensorZ           = 11.575*fgkmm;  
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberLowerSupportWidth             
 																	  =  0.950*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberLowerSupportLowerLenght       
@@ -1572,22 +1573,18 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
   TGeoTranslation* localssdsensortrans[2];
   for(Int_t i=0; i<2; i++) localssdsensortrans[i] = new TGeoTranslation();
   localssdsensortrans[0]->SetTranslation(0.5*fgkCarbonFiberTriangleLength,
-					  -		(2.*fgkSSDSensorLength-fgkSSDSensorOverlap)+
-                              fgkSSDModuleStiffenerPosition[1]+fgkSSDStiffenerWidth
-                      +		0.5*fgkSSDFlexHoleLength+2.*fgkCarbonFiberJunctionWidth
-                      -		0.5*(fgkCarbonFiberLowerSupportWidth+fgkSSDSensorCenterSupportLength
-                      -       fgkSSDSensorCenterSupportThickness[0])+0.5*fgkSSDSensorLength,
+					 fgkCarbonFiberJunctionWidth 
+					 - fgkCarbonFiberLowerSupportWidth 
+					 - fgkLowerSupportToSensorZ,
 							0.5*fgkSSDSensorHeight-0.5*fgkCoolingTubeSupportHeight
 					  -		fgkSSDModuleCoolingBlockToSensor-0.5*fgkSSDModuleVerticalDisalignment
 					  +    (fgkSSDSensorSideSupportHeight[1]
 					  -		fgkSSDSensorSideSupportHeight[0])
 					  +     0.5*fgkSSDModuleVerticalDisalignment2);
   localssdsensortrans[1]->SetTranslation(0.5*fgkCarbonFiberTriangleLength,
-					  -	   (2.*fgkSSDSensorLength-fgkSSDSensorOverlap)+
-                              fgkSSDModuleStiffenerPosition[1]+fgkSSDStiffenerWidth
-                      +		0.5*fgkSSDFlexHoleLength+2.*fgkCarbonFiberJunctionWidth
-                      -		0.5*(fgkCarbonFiberLowerSupportWidth+fgkSSDSensorCenterSupportLength
-                      -       fgkSSDSensorCenterSupportThickness[0])+0.5*fgkSSDSensorLength,
+					 fgkCarbonFiberJunctionWidth 
+					 - fgkCarbonFiberLowerSupportWidth 
+					 - fgkLowerSupportToSensorZ,
 						    0.5*fgkSSDSensorHeight-0.5*fgkCoolingTubeSupportHeight
 							-fgkSSDModuleCoolingBlockToSensor-0.5*fgkSSDModuleVerticalDisalignment
 						+	0.5*fgkSSDModuleVerticalDisalignment2);

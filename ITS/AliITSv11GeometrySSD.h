@@ -212,6 +212,7 @@ private:
   /////////////////////////////////////////////////////////////////////////
   //Parameters for Carbon Fiber Lower Support (lengths are in mm)
   /////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkLowerSupportToSensorZ;                   // Distance from lower support to sensor center
   static const Double_t fgkCarbonFiberLowerSupportWidth;            // Lower Support of Carbon Fiber Width
   static const Double_t fgkCarbonFiberLowerSupportLowerLenght;      // Lower Support of Carbon Fiber Length
   static const Double_t fgkCarbonFiberLowerSupportHeight;           // Lower Support of Carbon Fiber Height
