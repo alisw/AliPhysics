@@ -16,7 +16,7 @@
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TTree.h"
-#include "TFile.h" //needed as include
+//#include "TFile.h" //needed as include
 #include "TList.h"
 
 
@@ -31,6 +31,8 @@ class AliAnalysisTask;
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+
+#include "../../CORRFW/AliCFManager.h"
 
 #include "AliAnalysisTaskScalarProduct.h"
 #include "AliFlowEventSimpleMaker.h"
@@ -52,6 +54,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) :
   fSP(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
+  fCFManager1(NULL),
+  fCFManager2(NULL),
   fListHistos(NULL)
 {
   // Constructor
@@ -72,6 +76,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fSP(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
+  fCFManager1(NULL),
+  fCFManager2(NULL),
   fListHistos(NULL)
 {
   // Constructor
@@ -119,7 +125,7 @@ void AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *)
 	fESD = esdH->GetEvent();
       }
     }
-    else if (fAnalysisType == "ESD") {
+    else if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1") {
       cout<<"!!!!!reading the ESD only"<<endl;
       tree->SetBranchStatus("*", kFALSE);
       tree->SetBranchStatus("Tracks.*", kTRUE);
@@ -143,7 +149,7 @@ void AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *)
       }
     }
     else {
-      Printf("!!!!!Wrong analysis type: Only ESD, AOD and MC types are allowed!");
+      Printf("!!!!!Wrong analysis type: Only ESD, ESDMC0, ESDMC1, AOD and MC types are allowed!");
       exit(1);
       
     }
@@ -155,6 +161,12 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
 {
   // Called at every worker node to initialize
   cout<<"AliAnalysisTaskScalarProduct::CreateOutputObjects()"<<endl;
+
+  if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMC0"  || fAnalysisType == "ESDMC1" || fAnalysisType == "MC")) {
+    cout<<"WRONG ANALYSIS TYPE! only ESD, ESDMC0, ESDMC1, AOD and MC are allowed."<<endl;
+    exit(1);
+  }
+
   //event maker
   fEventMaker = new AliFlowEventSimpleMaker();
   //Analyser
@@ -163,9 +175,9 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
   
 
   if (fSP->GetHistList()) {
-    //	fSP->GetHistList()->Print();
-    fListHistos = fSP->GetHistList();
-    //	fListHistos->Print();
+	fSP->GetHistList()->Print();
+	fListHistos = fSP->GetHistList();
+	fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
 }
@@ -176,9 +188,7 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
   // Main loop
   // Called for each event
 
-  
-
-      
+        
   if (fAnalysisType == "MC") {
 
     // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
@@ -196,9 +206,12 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
       return;
     }
 
+    fCFManager1->SetEventInfo(mcEvent);
+    fCFManager2->SetEventInfo(mcEvent);
+
     // analysis 
     Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     fSP->Make(fEvent);
 
     delete fEvent;
@@ -211,10 +224,44 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     // analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
     fSP->Make(fEvent);
     delete fEvent;
   }
+else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
+    if (!fESD) {
+      Printf("ERROR: fESD not available");
+      return;
+    }
+    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+    
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+
+    fCFManager1->SetEventInfo(mcEvent);
+    fCFManager2->SetEventInfo(mcEvent);
+
+    //lee yang zeros analysis 
+    AliFlowEventSimple* fEvent=NULL;
+    if (fAnalysisType == "ESDMC0") { 
+      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
+    } else if (fAnalysisType == "ESDMC1") {
+      fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1); //0 = kine from ESD, 1 = kine from MC
+    }
+    fSP->Make(fEvent);
+    delete fEvent;
+    //delete mcEvent;
+  }
+  
   else if (fAnalysisType == "AOD") {
     if (!fAOD) {
       Printf("ERROR: fAOD not available");
@@ -223,12 +270,13 @@ void AliAnalysisTaskScalarProduct::Exec(Option_t *)
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
 
     // analysis 
+    //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD,fCFManager1,fCFManager2);
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);
     fSP->Make(fEvent);
     delete fEvent;
   }
 
-  //  fListHistos->Print();	
+  //fListHistos->Print();	
   PostData(0,fListHistos);
 } 
 
@@ -238,6 +286,7 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
   // Called once at the end of the query
   //  fSP->Finish();
   //  PostData(0,fListHistos);
+
   fListHistos = (TList*)GetOutputData(0);
   cout << "histgram list in Terminate" << endl;
   if (fListHistos) 
@@ -248,6 +297,6 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
     {
       cout << "histgram list pointer is empty" << endl;
     }
-  //  delete fSP;
-  //  delete fEventMaker;
+//  delete fSP;
+//  delete fEventMaker;
 }

@@ -38,8 +38,14 @@ class AliFlowLYZHist2: public TObject  {
     {Double_t dPt = fHistProReNumerPt->GetXaxis()->GetBinCenter(i); return dPt;}
   TComplex GetNumerEta(Int_t i);                   //get numerator for diff. flow (eta)
   TComplex GetNumerPt(Int_t i);                    //get numerator for diff. flow (pt)
-  TList*   GetHistList()   
-    {return fHistList;}   
+
+  TProfile*   GetHistProReNumer()   {return this->fHistProReNumer;}         
+  TProfile*   GetHistProImNumer()   {return this->fHistProImNumer;}        
+  TProfile*   GetHistProReNumerPt() {return this->fHistProReNumerPt;} 
+  TProfile*   GetHistProImNumerPt() {return this->fHistProImNumerPt;} 
+  TProfile2D* GetHistProReNumer2D() {return this->fHistProReNumer2D;}       
+  TProfile2D* GetHistProImNumer2D() {return this->fHistProImNumer2D;}
+  TList*      GetHistList()         {return this->fHistList;}   
   
   virtual Double_t Merge(TCollection *aList);  //merge function
  

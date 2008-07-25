@@ -11,8 +11,10 @@
 
 class AliESDEvent;
 class AliAODEvent;
+class AliCFManager;
 class AliFlowAnalysisWithScalarProduct;
 class AliFlowEventSimpleMaker;
+class TList;
 
 #include "TString.h"
 #include "AliAnalysisTask.h"
@@ -30,7 +32,12 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
 
   void SetAnalysisType(TString type) { this->fAnalysisType = type; }
   TString GetAnalysisType() const    { return this->fAnalysisType; }
-  
+
+  void SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
+  AliCFManager* GetCFManager1()           {return this->fCFManager1; }
+  void SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
+  AliCFManager* GetCFManager2()           {return this->fCFManager2; }
+
  private:
 
   AliAnalysisTaskScalarProduct(const AliAnalysisTaskScalarProduct& aAnalysisTask);
@@ -41,7 +48,9 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
   AliFlowAnalysisWithScalarProduct* fSP;  // analysis object
   AliFlowEventSimpleMaker* fEventMaker;   // FlowEventSimple maker object
   TString fAnalysisType;                  // can be MC, ESD or AOD
-  TList  *fListHistos;                    //collection of output
+  AliCFManager* fCFManager1;              // correction framework manager
+  AliCFManager* fCFManager2;              // correction framework manager
+  TList  *fListHistos;                    // collection of output
 
   ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
 };

@@ -24,6 +24,7 @@ class TObjArray;
 class TFile;
 class TComplex;
 class TString;
+class TList;
 class Riostream;
 
 
@@ -56,10 +57,8 @@ class AliFlowAnalysisWithLeeYangZeros {
 
 
    // Output 
-   void	    SetHistFileName(TString name) 	{ this->fHistFileName = name ; } // Sets output file name
-   TString  GetHistFileName() const		{ return this->fHistFileName ; } // Gets output file name
-   TFile*   GetHistFile() const                 { return this->fHistFile ; }     // Gets output file
-  
+   TList*   GetHistList() const                  { return this->fHistList ; }     // Gets output histogram list
+
    // input for second run
    void	    SetFirstRunFileName(TString name) 	{ this->firstRunFileName = name ; } // Sets input file name
    TString  GetFirstRunFileName() const		{ return this->firstRunFileName ; } // Gets output file name
@@ -94,9 +93,7 @@ class AliFlowAnalysisWithLeeYangZeros {
    Bool_t       fDoubleLoop ;       // flag for studying non flow effects
    Bool_t       fDebug ;            // flag for lyz analysis: more print statements
 
-   TString      fHistFileName;      //
-   TFile*       fHistFile;          //
-   TFile*       fSummaryFile;       //
+   TList*       fHistList;          //list to hold all output histograms  
    TString      firstRunFileName;   //
    TFile*       firstRunFile;       //
      

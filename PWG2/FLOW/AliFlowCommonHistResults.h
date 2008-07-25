@@ -27,10 +27,10 @@ class AliFlowCommonHistResults : public TObject {
   Bool_t FillChi(Double_t aChi);                                           //fill fHistChi
 
   //make get methods here
-  TH1D*    GetfHistDiffFlow()               {return fHistDiffFlow; } ; 
-  TH1D*    GetfHistChi()                    {return fHistChi; } ;
-  TH1D*    GetfHistIntFlow()                {return fHistIntFlow; } ;
-  TList*   GetHistList()                    {return fHistList;} ;  
+  TH1D*    GetHistDiffFlow()               {return fHistDiffFlow; } ; 
+  TH1D*    GetHistChi()                    {return fHistChi; } ;
+  TH1D*    GetHistIntFlow()                {return fHistIntFlow; } ;
+  TList*   GetHistList()                   {return fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
 

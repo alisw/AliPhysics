@@ -33,7 +33,11 @@ class AliFlowLYZHist1: public TObject  {
   Double_t GetR0();                           //get R0
   Double_t GetBinCenter(Int_t i);             //Get a bincentre of fHistGtheta
   Int_t GetNBins();                           //Gets Nbins
-  TList*    GetHistList()  {return fHistList;} ;  
+
+  TH1D*     GetHistGtheta()  {return this->fHistGtheta;} ;
+  TProfile* GetHistProReGtheta() {return this->fHistProReGtheta;} ;
+  TProfile* GetHistProImGtheta() {return this->fHistProImGtheta;} ;
+  TList*    GetHistList()    {return this->fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
    
