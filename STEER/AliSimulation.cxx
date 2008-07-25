@@ -200,6 +200,7 @@ AliSimulation::AliSimulation(const char* configFileName,
 		 fQACycles[iDet] = 999999;
 	fQASteer = new AliQADataMakerSteer("sim") ; 
 	fQASteer->SetActiveDetectors(fQADetectors) ; 
+	fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
 	fQASteer->SetTasks(fQATasks) ; 	
 }
 
@@ -1803,7 +1804,7 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
 	fQADetectors = detAndAction(0, colon) ; 
 	if (fQADetectors.Contains("ALL") )
 		fQADetectors = Form("%s %s", fMakeDigits.Data(), fMakeDigitsFromHits.Data()) ; 
-	fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
+		fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
 	if (fQATasks.Contains("ALL") ) {
 		fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
 	} else {
