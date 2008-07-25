@@ -220,7 +220,7 @@ void AliMUONRecoCheck::MakeTrackRefs()
     
     // get the particle charge for further calculation
     TParticlePDG* ppdg = particle->GetPDG();
-    Int_t charge = (Int_t)(ppdg->Charge()/3.0);
+    Int_t charge = ppdg != NULL ? (Int_t)(ppdg->Charge()/3.0) : 0;
     
     AliMUONTrack track;
     

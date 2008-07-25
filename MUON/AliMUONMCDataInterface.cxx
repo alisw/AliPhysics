@@ -113,6 +113,12 @@ AliMUONMCDataInterface::HitStore(Int_t event, Int_t track)
   /// Return the hitStore for a given track of one event
   /// Return 0x0 if event and/or track not found
   /// Returned pointer should not be deleted
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if (not IsValid()) return 0x0;
 
@@ -162,6 +168,12 @@ AliMUONMCDataInterface::SDigitStore(Int_t event)
   /// Return the SDigit store for a given event.
   /// Return 0 if event not found
   /// Returned pointer should not be deleted
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if (not IsValid()) return 0x0;
   
@@ -204,6 +216,12 @@ AliMUONMCDataInterface::DigitStore(Int_t event)
 {
   /// Return a pointer to the digitStore for a given event (or 0 if not found)
   /// Returned pointer should not be deleted
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if (not IsValid()) return 0x0;
   
@@ -246,6 +264,12 @@ AliMUONMCDataInterface::Stack(Int_t event)
 {
   /// Get the Stack (list of generated particles) for one event
   /// Returned pointer should not be deleted
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if ( not IsValid() ) return 0x0;
 
@@ -266,6 +290,12 @@ AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track)
 {
   /// Get the track references for a given (generated) track of one event
   /// Returned pointer should not be deleted
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if ( not IsValid() ) return 0x0;
   
@@ -313,6 +343,12 @@ AliMUONMCDataInterface::TriggerStore(Int_t event)
   /// Return the triggerStore for a given event.
   /// Return 0x0 if event not found.
   /// Returned pointer should not be deleted.
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if (not IsValid()) return 0x0;
   

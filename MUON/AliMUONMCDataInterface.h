@@ -48,7 +48,11 @@ public:
   Bool_t IsValid() const { return fIsValid; };
 
   Int_t NumberOfEvents() const;
-  /// Returns the index number of the current event as used int GetEvent(Int_t).
+
+  /// Returns the index number of the current event loaded.
+  /// This is the event number as was used in the last calls to any of the methods
+  /// in this interface that have 'Int_t event' in the parameter list.
+  /// GetEvent(Int_t event) for example.
   Int_t   CurrentEvent() const { return fCurrentEvent; }
 
   Int_t NumberOfTracks(Int_t event);

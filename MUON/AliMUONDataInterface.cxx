@@ -81,6 +81,7 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fClusterStore(0x0),
 fCurrentEvent(-1),
+fTreeLetter(""),
 fIsValid(kFALSE),
 fCurrentIteratorType(kNoIterator),
 fCurrentIndex(-1),
@@ -125,12 +126,25 @@ AliMUONDataInterface::DigitStore(Int_t event)
   /// Return digitStore for a given event.
   /// Return 0x0 if event not found.
   /// Returned pointer should not be deleted
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fDigitStore != 0x0) return fDigitStore;
   
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
+  if (event == fCurrentEvent)
+  {
+    if (fDigitStore != 0x0)
+      return fDigitStore;
+  }
+  else
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
   
   fLoader->LoadDigits();
   
@@ -161,12 +175,25 @@ AliMUONDataInterface::ClusterStore(Int_t event)
   /// Return clusterStore for a given event.
   /// Return 0x0 if event not found.
   /// Returned pointer should not be deleted
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fClusterStore != 0x0) return fClusterStore;
   
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
+  if (event == fCurrentEvent)
+  {
+    if (fClusterStore != 0x0)
+      return fClusterStore;
+  }
+  else
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
   
   fLoader->LoadRecPoints();
   
@@ -198,12 +225,39 @@ AliMUONDataInterface::TriggerStore(Int_t event, const char* treeLetter)
   /// Return 0x0 if event not found.
   /// Returned pointer should not be deleted
   /// treeLetter can be R or D to tell from which tree to read the information
+  ///
+  /// \note If a previous store has been retrieved by one of the methods of
+  /// this class, but for a different event number, then those stores will
+  /// be deleted and no longer valid.
+  /// If you require access to the data for the earlier retrieved store,
+  /// but for different events, then you should deep copy / clone the object.
   
   if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fTriggerStore != 0x0) return fTriggerStore;
   
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
+  if (event == fCurrentEvent)
+  {
+    if (fTreeLetter == treeLetter)
+    {
+      if (fTriggerStore != 0x0)
+        return fTriggerStore;
+    }
+    else
+    {
+      // Reset only the fTriggerStore since the others might still be valid
+      // for the same event.
+      if (fTriggerStore != 0x0)
+      {
+        delete fTriggerStore;
+        fTriggerStore = 0x0;
+      }
+    }
+  }
+  else
+  {
+    // Event has changed so reset all the stores.
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
   
   TTree* tree(0x0);
   
@@ -243,6 +297,7 @@ AliMUONDataInterface::TriggerStore(Int_t event, const char* treeLetter)
   {
     fLoader->UnloadRecPoints();
   }
+  fTreeLetter = stree;
   
   return fTriggerStore;
 }

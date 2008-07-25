@@ -17,6 +17,7 @@
 //
 
 #include <TObject.h>
+#include <TString.h>
 
 class TIterator;
 class AliLoader;
@@ -45,7 +46,9 @@ public:
 
   Int_t NumberOfEvents() const;
   
-  /// Returns the index number of the current event as used int GetEvent(Int_t).
+  /// Returns the index number of the current event loaded.
+  /// This is the event number as was used in the last calls to DigitStore(Int_t),
+  /// ClusterStore(Int_t), TriggerStore(Int_t) or GetEvent(Int_t).
   Int_t   CurrentEvent() const { return fCurrentEvent; }
 
   AliMUONVDigitStore* DigitStore(Int_t event);  
@@ -115,6 +118,7 @@ private:
   AliMUONVTriggerStore* fTriggerStore; //!< current trigger store (owner)
   AliMUONVClusterStore* fClusterStore; //!< current cluster store (owner)
   Int_t fCurrentEvent; //!< Current event we've read in
+  TString fTreeLetter; //!< The tree letter used in the last call to TriggerStore().
   Bool_t fIsValid; //!< whether we were initialized properly or not
   
   IteratorType fCurrentIteratorType;  //!< The type of iterator that is currently set.
