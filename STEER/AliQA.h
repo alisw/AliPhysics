@@ -33,7 +33,7 @@ public:
 			kSTANDALONE_SEMICENTRAL, kSTANDALONE_PULSER, kNTYPE};
 	
 	enum TASKINDEX_t {
-    kRAWS, kHITS, kSDIGITS, kDIGITS, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
+    kNULLTASKINDEX=-1, kRAWS, kHITS, kSDIGITS, kDIGITS, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
   
 	// Creators - destructors
 	AliQA(); // beware singleton, not to be used
@@ -71,7 +71,8 @@ public:
 	static const char  *   GetRefOCDBDirName() { return fkgRefOCDBDirName.Data() ; }
 	static const char  *   GetRefDataDirName() { return fkgRefDataDirName.Data() ; }
 	static const TString   GetRunTypeName(RUNTYPE_t rt = kNULLTYPE) ;
-	static const TString   GetTaskName(TASKINDEX_t tsk) { return fgTaskNames[tsk] ; }
+	static const TASKINDEX_t GetTaskIndex(const char * name) ; 
+	static const TString   GetTaskName(UInt_t tsk) { return fgTaskNames[tsk] ; }
 	const Bool_t           IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
 	void                   Set(QABIT_t bit) ;
 	static void			       SetQAResultDirName(const char * name) ; 

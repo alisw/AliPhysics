@@ -49,7 +49,7 @@ public:
 	virtual void        Exec(AliQA::TASKINDEX_t, TObject * data)                 = 0 ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t)                           = 0 ;
 	void                Finish() const ; 
-    virtual TH1 *       GetDigitsData(const Int_t index)                       = 0 ; 
+	virtual TH1 *       GetDigitsData(const Int_t index)                       = 0 ; 
 	virtual TH1 *       GetESDsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetHitsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetRecPointsData(const Int_t index)                    = 0 ; 
@@ -61,7 +61,7 @@ public:
 	virtual void        Init(AliQA::TASKINDEX_t, TObjArray * list, Int_t run, Int_t cycles = -1) = 0 ;
 	const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
 	void                Reset(const Bool_t sameCycle = kTRUE) ; 	
-    void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
+	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
 	virtual void        StartOfCycle(AliQA::TASKINDEX_t, const Bool_t sameCycle = kFALSE) = 0 ;
 
 	virtual void                SetRecoParam(const AliDetectorRecoParam */*param*/) { return; }

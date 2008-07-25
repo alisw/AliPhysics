@@ -79,7 +79,7 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list)
         TString className(hist->ClassName()) ;
         if( ! className.BeginsWith("T") ) {
 	        AliError(Form("QA data Object must be a generic ROOT object and not %s", className.Data())) ; 
-	        return -1 ;
+//	        return -1 ;
 	}
 	if ( index > 10000 ) {
 		AliError("Max number of authorized QA objects is 10000") ; 

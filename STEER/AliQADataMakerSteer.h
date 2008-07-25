@@ -22,11 +22,14 @@
 #include <TNamed.h>
 #include "AliQA.h"
 #include "AliLoader.h" 
+#include "AliRecoParam.h"
  
+class AliESDEvent ; 
+class AliDetectorRecoParam ; 
+class AliESDEvent ; 
 class AliQADataMaker ;
 class AliRawReader ;  
 class AliRunLoader ; 
-class AliESDEvent ; 
 
 class AliQADataMakerSteer: public TNamed {
 public:
@@ -36,21 +39,29 @@ public:
 	AliQADataMakerSteer(const AliQADataMakerSteer & qas) ; 
 	AliQADataMakerSteer & operator = (const AliQADataMakerSteer & qas) ; 
 	virtual ~AliQADataMakerSteer() ; 
+	void        EndOfCycle(TObjArray * detArray=0x0) ; 
 	UInt_t      GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray * GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, const char * year) const ; 
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
+	void        InitQADataMaker(UInt_t run, const AliRecoParam & par, Bool_t sameCycle, Bool_t startOption=kTRUE, TObjArray * detArray=0x0) ; 
 	Bool_t      Merge(const Int_t runNumber = -1) const ;  
 	void        Reset(const Bool_t sameCycle = kFALSE) ;  
-	TString     Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex, Bool_t const sameCycle = kFALSE, const char * fileName = NULL) ; 
+	TString     Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex=AliQA::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const char * fileName = NULL) ; 
 	TString     Run(const char * detectors, AliRawReader * rawReader, Bool_t const sameCycle = kFALSE) ; 
 	TString     Run(const char * detectors, const char * filename, Bool_t const sameCycle = kFALSE) ;
+	void        RunOneEvent(AliRawReader * rawReader) ; 
+	void				RunOneEventInOneDetector(Int_t det, TTree * tree) ; 
+	void				RunOneEvent(AliESDEvent *& esd)  ;
 	Bool_t      Save2OCDB(const Int_t runNumber, const char * year = "08", const Int_t cycleNumber=0, const char * detectors = "ALL") const ; 
+	void        SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
 	void        SetCycleLength(const AliQA::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
 	void        SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }      
 	void        SetFirsEvent(UInt_t first) { fFirstEvent = first ; }      
 	void        SetMaxEvents(UInt_t max) { fMaxEvents = max ; }      
 	void        SetNewCycle() { fCycleSame = kTRUE ; }
+	void        SetRecoParam(const char* detector, AliDetectorRecoParam *par) ;
 	void        SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
+	void        SetTasks(TString tasks) { fTasks = tasks ; }
 
 private: 
 	Bool_t			     DoIt(const AliQA::TASKINDEX_t taskIndex) ;
@@ -74,10 +85,12 @@ private:
 	Int_t              fMaxEvents ;                    //! number of events to process
 	char *             fMode ;                         //! sim or rec
 	Long64_t           fNumberOfEvents ;               //! number of events in the run 
+  AliRecoParam       fRecoParam;                     //! container for the reco-param objects for detectors
 	UInt_t             fRunNumber ;                    //! current run number
 	AliRawReader     * fRawReader ;                    //! current raw reader object 
 	Bool_t             fRawReaderDelete ;              //! tells if the rawReader has been created by this
 	AliRunLoader *     fRunLoader ;                    //! current run loader object
+	TString            fTasks ;                        //! list of QA tasks to be performed
 	static const UInt_t fgkNDetectors = AliQA::kNDET ; //! number of detectors    
 	AliLoader      *   fLoader[fgkNDetectors];         //! array of detectors loader
 	AliQADataMaker *   fQADataMaker[fgkNDetectors];    //! array of QA data maker objects

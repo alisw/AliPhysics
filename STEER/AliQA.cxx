@@ -387,6 +387,21 @@ const TString AliQA::GetRunTypeName(RUNTYPE_t rt)
 }
 
 //_______________________________________________________________
+const AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name) 
+{
+	// returns the detector index corresponding to a given name
+	TString sname(name) ; 
+	TASKINDEX_t rv ; 
+	for (Int_t tsk = 0; tsk < kNTASK ; tsk++) {
+		if ( GetTaskName(tsk) == sname ) {
+			rv = TASKINDEX_t(tsk) ; 
+			break ; 
+		}
+	}
+	return rv ; 		
+}
+
+//_______________________________________________________________
 const Bool_t AliQA::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const
 {
   // Checks is the requested bit is set

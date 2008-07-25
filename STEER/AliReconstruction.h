@@ -136,7 +136,6 @@ public:
   void        ImportRunLoader(AliRunLoader* rl) { fRunLoader = rl; }
 
   // Quality Assurance 
-  virtual Bool_t RunQA(AliESDEvent *& esd);
   void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
   Bool_t  SetRunQA(TString detAndAction="ALL:ALL") ; 
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}

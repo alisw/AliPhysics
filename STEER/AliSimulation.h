@@ -164,6 +164,7 @@ private:
   Int_t                fQACycles[fgkNDetectors] ;       // cycle length (# events) over which QA data are accumulated
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	
+	AliQADataMakerSteer * fQASteer ;                      // steering object to run QA
   Bool_t               fRunQA ;                         // Runs the QA at the end of simulation
 
   //HLT

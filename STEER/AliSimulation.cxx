@@ -186,6 +186,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fEmbeddingFlag(kFALSE),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
+  fQASteer(NULL), 
   fRunQA(kTRUE), 
   fRunHLT("default"),
   fWriteGRPEntry(kTRUE)
@@ -196,7 +197,10 @@ AliSimulation::AliSimulation(const char* configFileName,
   
 // for QA
    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) 
-	fQACycles[iDet] = 999999;
+		 fQACycles[iDet] = 999999;
+	fQASteer = new AliQADataMakerSteer("sim") ; 
+	fQASteer->SetActiveDetectors(fQADetectors) ; 
+	fQASteer->SetTasks(fQATasks) ; 	
 }
 
 //_____________________________________________________________________________
@@ -234,7 +238,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fSetRunNumberFromDataCalled(sim.fSetRunNumberFromDataCalled),
   fEmbeddingFlag(sim.fEmbeddingFlag),
   fQADetectors(sim.fQADetectors),                  
-  fQATasks(sim.fQATasks),	
+	fQATasks(sim.fQATasks),	
+	fQASteer(sim.fQASteer),	
   fRunQA(sim.fRunQA), 
   fRunHLT(sim.fRunHLT),
   fWriteGRPEntry(sim.fWriteGRPEntry)
@@ -289,6 +294,8 @@ AliSimulation::~AliSimulation()
   fSpecCDBUri.Delete();
   if (fgInstance==this) fgInstance = 0;
 
+	delete fQASteer ; 
+	
   AliCodeTimer::Instance()->Print();
 }
 
@@ -1769,21 +1776,12 @@ Bool_t AliSimulation::RunHLT()
 Bool_t AliSimulation::RunQA()
 {
 	// run the QA on summable hits, digits or digits
-
-	AliQADataMakerSteer qas("sim") ; 
-    qas.SetRunLoader(gAlice->GetRunLoader()) ;
+	
+	fQASteer->SetRunLoader(gAlice->GetRunLoader()) ;
 
 	TString detectorsw("") ;  
 	Bool_t rv = kTRUE ; 
-	if (fQATasks.Contains(Form("%d", AliQA::kHITS))) 
-		detectorsw =  qas.Run(fQADetectors.Data(), AliQA::kHITS) ; 
-//	qas.Reset() ; 
-	if (fQATasks.Contains(Form("%d", AliQA::kSDIGITS))) 
-		detectorsw += qas.Run(fQADetectors.Data(), AliQA::kSDIGITS) ;   
-//	qas.Reset() ; 
-	if (fQATasks.Contains(Form("%d", AliQA::kDIGITS))) 
-		detectorsw += qas.Run(fQADetectors.Data(), AliQA::kDIGITS) ; 	
-
+	detectorsw = fQASteer->Run(fQADetectors.Data()) ; 
 	if ( detectorsw.IsNull() ) 
 		rv = kFALSE ; 
 	return rv ; 
@@ -1830,6 +1828,8 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
     tempo.ReplaceAll(Form("%d", AliQA::kDIGITS), AliQA::GetTaskName(AliQA::kDIGITS)) ; 	
 	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  
 	fRunQA = kTRUE ;
+	fQASteer->SetActiveDetectors(fQADetectors) ; 
+	fQASteer->SetTasks(fQATasks) ; 
 	return kTRUE; 
 } 
 
