@@ -93,10 +93,10 @@ void AliITSOnlineSDDTP::ReadBaselines(){
   sprintf(basfilnam,"SDDbase_step2_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* basf=fopen(basfilnam,"r");
   if(basf==0){
-    AliWarning(Form("Baseline file not present (ddl %d  carlos %d side %d, Set all baselines to 50\n",fDDL,fCarlos,fSide));
+    AliWarning(Form("Baseline file not present (ddl %d  carlos %d side %d, Set all baselines to 20",fDDL,fCarlos,fSide));
     for(Int_t ian=0;ian<fgkNAnodes;ian++){ 
-      fBaseline[ian]=50.;
-      fEqBaseline[ian]=50;
+      fBaseline[ian]=20.;
+      fEqBaseline[ian]=20;
       fOffsetBaseline[ian]=0;
       fGoodAnode[ian]=1;
     }
