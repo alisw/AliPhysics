@@ -38,6 +38,7 @@
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
 #include "AliLog.h"
+#include "AliRawReader.h"
 #include "AliTRDcluster.h"
 #include "AliTRDQADataMakerRec.h"
 #include "AliTRDgeometry.h"
@@ -659,6 +660,7 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   const Int_t kMCM = 16;
   //  const Int_t kADC = 22;
 
+	rawReader->Reset() ; 
   //AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrawStreamBase *raw = AliTRDrawStreamBase::GetRawStream(rawReader);
   AliDebug(2,Form("Stream version: %s", raw->IsA()->GetName()));

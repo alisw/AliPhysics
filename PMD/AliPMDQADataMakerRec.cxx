@@ -40,6 +40,9 @@
 #include "AliPMDddldata.h"
 #include "AliPMDUtility.h"
 #include "AliESDPmdTrack.h"
+#include "AliRawReader.h"
+
+//#include "AliPMDRecoParam.h"
 
 ClassImp(AliPMDQADataMakerRec)
            
@@ -372,7 +375,8 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     //Fill prepared histograms with Raw digit properties
 
-    TObjArray *pmdddlcont = 0x0;
+	  rawReader->Reset() ;
+	  TObjArray *pmdddlcont = 0x0;
     pmdddlcont = new TObjArray();
     AliPMDRawStream stream(rawReader);
     

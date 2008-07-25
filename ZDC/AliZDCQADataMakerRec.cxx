@@ -33,6 +33,7 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQAChecker.h"
+#include "AliRawReader.h"
 #include "AliZDCQADataMakerRec.h"
 #include "AliZDCRawStream.h"
 #include "AliESDZDC.h"
@@ -201,6 +202,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 {
   // Filling Raws QA histos
   //
+	rawReader->Reset() ; 
   Float_t sum_ZNC=0., sum_ZNA=0., sum_ZPC=0., sum_ZPA=0.;
   Float_t sumQ_ZNC=0., sumQ_ZNA=0., sumQ_ZPC=0., sumQ_ZPA=0.;
   //Float_t sum_ZNC_lg=0., sum_ZNA_lg=0., sum_ZPC_lg=0., sum_ZPA_lg=0.;

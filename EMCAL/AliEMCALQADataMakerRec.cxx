@@ -40,6 +40,7 @@ Authors:  J.Klay (Cal Poly) May 2008
 #include "AliEMCALRawUtils.h"
 #include "AliEMCALReconstructor.h"
 #include "AliEMCALRecParam.h"
+#include "AliRawReader.h"
 
 ClassImp(AliEMCALQADataMakerRec)
            
@@ -186,7 +187,7 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 }
 
 //____________________________________________________________________________
-void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* /* rawReader */)
+void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //Fill prepared histograms with Raw digit properties
 
@@ -198,6 +199,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* /* rawReader */)
   //emcal raw data method, but this doesn't seem to be allowed in
   //AliQADataMakerRec.h
 
+	rawReader->Reset() ;
 }
 
 //____________________________________________________________________________

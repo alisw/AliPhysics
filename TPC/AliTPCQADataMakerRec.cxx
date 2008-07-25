@@ -393,6 +393,7 @@ void AliTPCQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // To make QA for the RAW data we use the TPC Calibration framework 
   // to handle the data and then in the end extract the data
   //
+	rawReader->Reset() ; 
   fTPCdataQA->ProcessEvent(rawReader);  
 }
 

@@ -171,7 +171,8 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 //
 // Filling Raws QA histos
 //
-    AliHMPIDRawStream stream(rawReader);
+	  rawReader->Reset() ; 
+		AliHMPIDRawStream stream(rawReader);
 
     fEvtRaw++;
 

@@ -211,18 +211,14 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   TClonesArray* digitsAddress = &fDigitsArray;
   
   rawReader->Reset();
-  
-  while(rawReader->NextEvent()) {
-    
-    digitsAddress->Clear();
-    fmdReader.ReadAdcs(digitsAddress);
-    for(Int_t i=0;i<digitsAddress->GetEntriesFast();i++) {
-      //Raw ADC counts
-      AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
-      GetRawsData(0)->Fill(digit->Counts());
-    }
-  }
-  
+		
+	digitsAddress->Clear();
+	fmdReader.ReadAdcs(digitsAddress);
+	for(Int_t i=0;i<digitsAddress->GetEntriesFast();i++) {
+		//Raw ADC counts
+		AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
+		GetRawsData(0)->Fill(digit->Counts());
+	}
 }
 
 //_____________________________________________________________________

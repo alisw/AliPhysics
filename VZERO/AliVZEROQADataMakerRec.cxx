@@ -237,7 +237,8 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
  {
   //Fill histograms with Raws, computes average ADC values dynamically (pedestal subtracted)
                   
-  AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
+	rawReader->Reset() ; 
+	AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
   rawStream->Next();
   
   Float_t ChargeEoI, Threshold;  // for pedestal subtraction 

@@ -237,6 +237,7 @@ void AliT0QADataMakerRec::InitESDs()
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
+	rawReader->Reset() ; 
   //fills QA histos for RAW
   Int_t shift=0;
   AliT0RawReader *start = new AliT0RawReader(rawReader);
