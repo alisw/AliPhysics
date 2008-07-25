@@ -1,24 +1,27 @@
 /**************************************************************************
-- Contact: Oleksandr_Borysov aborysov@ts.infnf.it
-- Link: /afs/infn.it/ts/user/efragiac/public/testCosm3125.001
-- Run Type: 
+- Contact: Oleksandr_Borysov oborysov@cern.ch
+- Link: /afs/cern.ch/user/o/oborysov/public/da/pedestal36186.000.raw, ssddaconfig.txt, ssdddlmap.txt, badchannels.root
+- Run Type: PEDESTAL
 - DA Type: LDC
-- Number of events needed: ~500
-- Input Files: raw_data_file_on_LDC, ssddaconfig txt, ssdddlmap.txt, badchannels.root
+- Number of events needed: ~200
+- Input Files: raw_data_file_on_LDC, in the daqDetDB: ssddaconfig.txt, ssdddlmap.txt, badchannels.root
 - Output Files: ./<EqId_Slot> ./ssddaldc_<LDCID>.root, FXS_name=ITSSSDda_<LDCID>.root 
                 local files are persistent over runs: data source
 - Trigger types used:
  **************************************************************************/
 
-
+ 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <ctype.h>
 #include "TString.h"
 #include "TFile.h"
 #include "daqDA.h"
 #include "AliITSHandleDaSSD.h" 
+
 #include "TROOT.h"
 #include "TPluginManager.h"
 
@@ -29,7 +32,8 @@ struct ConfigStruct {
   Int_t    fNModuleProcess;
   string   fSsdDdlMap;
   string   fBadChannels;
-  ConfigStruct() : fNModuleProcess(108), fSsdDdlMap(""), fBadChannels("") {}
+  Bool_t   fCheckChipsOff;
+  ConfigStruct() : fNModuleProcess(108), fSsdDdlMap(""), fBadChannels(""), fCheckChipsOff(kFALSE) {}
 };
 
 
@@ -126,6 +130,7 @@ int main( int argc, char** argv )
   status = daqDA_DB_storeFile(feefname.Data(), fcdbsave.Data());
   if (status) fprintf(stderr, "Failed to export file %s to the detector db: %d, %s \n", feefname.Data(), status, fcdbsave.Data());
   cout << SaveEquipmentCalibrationData(ssddaldc) << " files were uploaded to DetDB!\n";
+  if(cfg.fCheckChipsOff) ssddaldc->CheckOffChips();
   delete ssddaldc;
   daqDA_progressReport(100);
   return 0;
@@ -158,14 +163,20 @@ Int_t SaveEquipmentCalibrationData(const AliITSHandleDaSSD  *ssddaldc, const Cha
 Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *const ssddaldc, ConfigStruct& cfg) 
 {
 // Dowload configuration parameters from configuration file or database
-  const int nkwords = 8;
+  const int nkwords = 12;
   char *keywords[nkwords] = {"ZsDefault", "OffsetDefault", "ZsFactor", "PedestalThresholdFactor", "CmThresholdFactor",
-                             "NModulesToProcess", "DDLMapFile", "BadChannelsFile"};
-  Int_t tmpint;
+                             "NModulesToProcess", "DDLMapFile", "BadChannelsFile", "ZSMinValue", "MergeBCFlag", 
+                             "CheckChipsOff", "OffLadder"};
+  Int_t tmpint, laddern;
   Float_t tmpflt;
   fstream dfile;
+  vector<short> allist(0), cllist(0);
   if (!configfname) {
-    cerr << "No DA configuration file name is specified, defaul value are used!\n";
+    cerr << "No DA configuration file name is specified, Return!\n";
+    return kFALSE;
+  }
+  if (!ssddaldc) {
+    cerr << "ssddaldc == 0, DA configuration file will not be read! Return!\n";
     return kFALSE;
   }
   dfile.open(configfname, ios::in);
@@ -243,9 +254,71 @@ Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *con
 	            cfg.fBadChannels = tmpstr;
                 cout << keystr << ": " << cfg.fBadChannels.c_str() << endl;
               } break;
+	  case 8: 
+	          strline >> tmpint;
+              if (strline.fail()) cerr << "Failed to read " << keystr << " value from DA configuration file!\n";
+              else {
+	            ssddaldc->SetZsMinimum(tmpint);
+                cout << keystr << ": " << ssddaldc->GetZsMinimum() << endl;
+              } break;
+	  case 9: 
+	          strline >> tmpint;
+              if (strline.fail()) cerr << "Failed to read " << keystr << " value from DA configuration file!\n";
+              else {
+	            ssddaldc->SetMergeBCFlag(static_cast<Byte_t>(tmpint));
+                cout << keystr << ": " << ssddaldc->GetMergeBCFlag() << endl;
+              } break;
+	  case 10: 
+	          strline >> tmpint;
+              if (strline.fail()) cerr << "Failed to read " << keystr << " value from DA configuration file!\n";
+              else {
+	            cfg.fCheckChipsOff = static_cast<Bool_t>(tmpint);
+                cout << keystr << ": " << cfg.fCheckChipsOff << endl;
+              } break;
+	  case 11: 
+	          char dside;
+              while (!strline.eof()) {
+                strline >> tmpstr;
+                if (strline.fail()) cerr << "Failed to read " << keystr << " value from DA configuration file!\n";
+                if (tmpstr.size() == 0) break;
+                if ((tmpstr.at(0) == '#') ) break;
+                if ( sscanf(tmpstr.c_str(), "%c%u", &dside, &laddern) < 2 ) {
+                  cerr << "Error reading side and ladder number form the config file: " << tmpstr << "! Continue!\n";
+                  continue;
+                }
+                if ( toupper(dside) == 'A') allist.push_back(laddern);
+                else if ( toupper(dside) == 'C') cllist.push_back(laddern);
+                else cerr << "Error! " << dside << " SSD ladder side can be either A or C! Continue!\n";
+              }
+               break;
 	  default: 
 	          cerr << keystr << " is not a key word, no assignment were made!\n"; 
     }
-  }  
+  }
+  if (allist.size() == 0 && cllist.size() == 0) return kTRUE;
+  short *tmparr = 0, si;
+  vector<short>::iterator it;
+  if (allist.size() > 0) {
+	tmparr = new short [allist.size()];
+	cout << "Following A side " << (allist.size()>1?"ladders are":"ladder is") << " supposed to be off and will be suppressed :";
+    for ( it = allist.begin(), si = 0; it < allist.end(); it++, si++ ) {
+      tmparr[si] = *it;
+      cout << " " << tmparr[si];
+    }
+    cout << ";" << endl;
+    ssddaldc->SetALaddersOff(allist.size(), tmparr);
+  }
+  if (tmparr) delete [] tmparr;
+  if (cllist.size() > 0) {
+	tmparr = new short [cllist.size()];
+	cout << "Following C side " << (cllist.size() > 1 ? "ladders are" : "ladder is") << " supposed to be off and will be suppressed :";
+    for ( it = cllist.begin(), si = 0; it < cllist.end(); it++, si++ ) {
+      tmparr[si] = *it;
+      cout << " " << tmparr[si];
+    }
+    cout << ";" << endl;
+    ssddaldc->SetCLaddersOff(cllist.size(), tmparr);
+  }
+  if (tmparr) delete [] tmparr;
   return kTRUE;
 }

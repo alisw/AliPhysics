@@ -10,7 +10,7 @@
 ///
 /// This class provides storage container ITS SSD module calibration data
 /// used by DA. 
-///
+/// Date: 18/07/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
@@ -49,9 +49,7 @@ class AliITSModuleDaSSD : public TObject {
     Int_t        GetNumberOfChips() const  { return fNumberOfChips; }
     AliITSChannelDaSSD*  GetStrip(const Int_t stripnumber)  const 
                                 { return (fStrips) ? fStrips[stripnumber] : NULL; }
-    AliITSNoiseSSD*       GetCalibrationNoise() const;
-    AliITSPedestalSSD*    GetCalibrationPedestal() const;
-    AliITSBadChannelsSSD* GetCalibrationBadChannels() const;
+    UChar_t CheckIfBad(const Int_t stripn) const;
     Bool_t  SetEventsNumber(const Long_t eventsnumber);
     Bool_t  SetNumberOfStrips(const Int_t numberofstrips);
     Bool_t  SetNumberOfChips(const Int_t nchips);
@@ -102,7 +100,7 @@ class AliITSModuleDaSSD : public TObject {
   private:
     Bool_t ForbiddenAdcNumber (const UChar_t adcn) const { return ((adcn == 6) || (adcn == 7)); }
  
-    ClassDef(AliITSModuleDaSSD, 3) 
+    ClassDef(AliITSModuleDaSSD, 4) 
  
 };
 

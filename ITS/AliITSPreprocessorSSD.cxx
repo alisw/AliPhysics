@@ -103,21 +103,21 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	    }
 	    
 	    AliITSNoiseSSD *cal; 
-	    f->GetObject("Noise;1", cal); 
+	    f->GetObject("AliITSNoiseSSD;1", cal); 
 	    if(!cal) {
 	    	Log("File does not contain expected data for the noise!");
 		delete list;
 		return 3;
 	    }	    
 	    AliITSPedestalSSD *ped;
-	    f->GetObject("Pedestal;1", ped); 
+	    f->GetObject("AliITSPedestalSSD;1", ped); 
 	    if(!ped) {
 	    	Log("File does not contain expected data for the pedestals!");
 		delete list;
 		return 5;
 	    }	    
 	    AliITSBadChannelsSSD *bad;
-	    f->GetObject("BadChannels;1", bad); 
+	    f->GetObject("AliITSBadChannelsSSD;1", bad); 
 	    if(!bad) {
 	    	Log("File does not contain expected data for bad channels  !");
 		delete list;
@@ -161,23 +161,23 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	  return 7;
       } // if list
     
-      //Now we have to store the final CDB file
-      AliCDBMetaData metaData;
-      metaData.SetBeamPeriod(0);
-      metaData.SetResponsible("Enrico Fragiacomo");
-      metaData.SetComment("Fills noise, pedestal and bad channels TObjArray");
-  
-      if(!Store("Calib", "NoiseSSD", (TObject*) &calib, &metaData, 0, 1)) {
+    //Now we have to store the final CDB file
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Enrico Fragiacomo");
+    metaData.SetComment("Fills noise, pedestal and bad channels TObjArray");
+    
+      if(!Store("Calib", "NoiseSSD", (TObject *)calib, &metaData, 0, 1)) {
 	Log("no store");
         return 1;
       }  
       
-      if(!Store("Calib", "BadChannelsSSD", (TObject*) &badch, &metaData, 0, 1)) {
+      if(!Store("Calib", "BadChannelsSSD", (TObject*)badch, &metaData, 0, 1)) {
 	Log("no store");
         return 1;
       }  
       
-      if(!StoreReferenceData("Calib","PedestalSSD",  (TObject*) &pedel, &metaData)) {
+      if(!StoreReferenceData("Calib","PedestalSSD",  (TObject*)pedel, &metaData)) {
 	Log("no store");
 	return 1;
       }

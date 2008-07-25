@@ -29,8 +29,8 @@ class AliITSChannelDaSSD : public TObject {
     UShort_t  GetStripId() const { return fStripId; }
     Long_t    GetEventsNumber() const { return fEventsNumber; }
     Short_t*  GetSignal()  const { return fSignal; }
-    Short_t*  GetSignal(const Long_t eventnumber)  const 
-                                { return (eventnumber < fEventsNumber && fSignal) ? (fSignal+eventnumber) : NULL; }
+    Short_t   GetSignal(const Long_t eventnumber)  const 
+                           { return (eventnumber < fEventsNumber && fSignal) ? *(fSignal+eventnumber) : fgkDefaultSignal; }
     
     Float_t  GetPedestal() const { return fPedestal; }
     Float_t  GetNoise()    const { return fNoise;    }
@@ -77,7 +77,7 @@ class AliITSChannelDaSSD : public TObject {
     Float_t           fNoiseCM;             //  noise with CM correction
     Long_t            fNOverflowEv;         //  Number of events which exceed the pedestal calculation threshold
 		      
-    ClassDef(AliITSChannelDaSSD, 2)
+    ClassDef(AliITSChannelDaSSD, 3)
 };
 
 #endif

@@ -35,10 +35,10 @@ using namespace std;
 const Short_t AliITSChannelDaSSD::fgkMinStripId = 0;               // minimum strip id
 const Short_t AliITSChannelDaSSD::fgkMaxStripId = 1535;            // maximum strip id
 
-const Short_t  AliITSChannelDaSSD::fgkSignalOverflow  = 2047;      // ADC overflow value
-const Short_t  AliITSChannelDaSSD::fgkSignalUnderflow = 2048;      // ADC underflow value
-const UShort_t AliITSChannelDaSSD::fgkDefaultSignal   = 0x7F;      // initialization value for fNoise, fPedestal, fSignal[i]
-const Float_t  AliITSChannelDaSSD::fgkUndefinedValue  = 32639.0f;  // = 0x7F7F
+const Short_t  AliITSChannelDaSSD::fgkSignalOverflow  =  2047;      // ADC overflow value
+const Short_t  AliITSChannelDaSSD::fgkSignalUnderflow = -2048;      // ADC underflow value
+const UShort_t AliITSChannelDaSSD::fgkDefaultSignal   =  0x7F;      // initialization value for fNoise, fPedestal, fSignal[i]
+const Float_t  AliITSChannelDaSSD::fgkUndefinedValue  =  32639.0f;  // = 0x7F7F
 
 
 //______________________________________________________________________________
@@ -125,7 +125,8 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const AliITSChannelDaSSD& strip) :
 AliITSChannelDaSSD& AliITSChannelDaSSD::operator = (const AliITSChannelDaSSD& strip)
 {
 // assignment operator
-  if (this == &strip)  return *this;  
+  if (this == &strip)  return *this;
+  TObject::operator=(strip);  
   if (fSignal) { delete [] fSignal; fSignal = NULL; }
   fStripId = strip.fStripId;
   fEventsNumber = strip.fEventsNumber;

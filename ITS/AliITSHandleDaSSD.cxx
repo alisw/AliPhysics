@@ -20,11 +20,12 @@
 /// This class provides ITS SSD data handling
 /// used by DA. 
 //  Author: Oleksandr Borysov
-//  Date: 19/05/2008
+//  Date: 18/07/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <string>
 #include <fstream>
+#include <new>
 #include <Riostream.h> 
 #include "AliITSHandleDaSSD.h"
 #include <math.h>
@@ -32,7 +33,6 @@
 #include "event.h"
 #include "TFile.h"
 #include "TString.h"
-#include "TObjArray.h"
 #include "AliLog.h"
 #include "AliITSNoiseSSD.h"
 #include "AliITSPedestalSSD.h"
@@ -51,6 +51,7 @@ using namespace std;
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModules = 1698;       // Number of SSD modules in ITS
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerDdl = 108;  // Number of SSD modules in DDL
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerSlot = 12;  // Number of SSD modules in Slot
+const Short_t  AliITSHandleDaSSD::fgkMinSSDModuleId = 500;            // Initial SSD modules number
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDSlotsPerDDL = 9;      // Number of SSD slots per DDL
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDDDLs = 16;            // Number of SSD modules in Slot
 const Float_t  AliITSHandleDaSSD::fgkPedestalThresholdFactor = 3.0;   // Defalt value for fPedestalThresholdFactor 
@@ -69,15 +70,20 @@ AliITSHandleDaSSD::AliITSHandleDaSSD() :
   fModIndProcessed(0),
   fModIndRead(0),
   fModIndex(NULL),
+  fEqIndex(0),
   fNumberOfEvents(0),
-  fStaticBadChannelsMap(NULL),
+  fBadChannelsList(NULL),
   fDDLModuleMap(NULL),
+  fALaddersOff(0),
+  fCLaddersOff(0),
   fLdcId(0),
   fRunId(0),
   fPedestalThresholdFactor(fgkPedestalThresholdFactor),
   fCmThresholdFactor(fgkCmThresholdFactor),
   fZsDefault(-1),
   fOffsetDefault(INT_MAX),
+  fZsMinimum(2),
+  fMergeBCLists(1),
   fZsFactor(3.0)
 {
 // Default constructor
@@ -92,15 +98,20 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(Char_t *rdfname) :
   fModIndProcessed(0),
   fModIndRead(0),
   fModIndex(NULL),
+  fEqIndex(0),
   fNumberOfEvents(0),
-  fStaticBadChannelsMap(NULL),
+  fBadChannelsList(NULL),
   fDDLModuleMap(NULL),
+  fALaddersOff(0),
+  fCLaddersOff(0),
   fLdcId(0),
   fRunId(0),
   fPedestalThresholdFactor(fgkPedestalThresholdFactor) ,
   fCmThresholdFactor(fgkCmThresholdFactor),
   fZsDefault(-1),
   fOffsetDefault(INT_MAX),
+  fZsMinimum(2),
+  fMergeBCLists(1),
   fZsFactor(3.0)
 {
   if (!Init(rdfname)) AliError("AliITSHandleDaSSD::AliITSHandleDaSSD() initialization error!");
@@ -116,15 +127,20 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   fModIndProcessed(ssdadldc.fModIndProcessed),
   fModIndRead(ssdadldc.fModIndRead),
   fModIndex(NULL),
+  fEqIndex(0),
   fNumberOfEvents(ssdadldc.fNumberOfEvents),
-  fStaticBadChannelsMap(ssdadldc.fStaticBadChannelsMap),
-  fDDLModuleMap(ssdadldc.fDDLModuleMap),
+  fBadChannelsList(NULL),
+  fDDLModuleMap(NULL),
+  fALaddersOff(ssdadldc.fALaddersOff),
+  fCLaddersOff(ssdadldc.fCLaddersOff),
   fLdcId(ssdadldc.fLdcId),
   fRunId(ssdadldc.fRunId),
   fPedestalThresholdFactor(ssdadldc.fPedestalThresholdFactor),
   fCmThresholdFactor(ssdadldc.fCmThresholdFactor),
   fZsDefault(ssdadldc.fZsDefault),
   fOffsetDefault(ssdadldc.fOffsetDefault),
+  fZsMinimum(ssdadldc.fZsMinimum),
+  fMergeBCLists(ssdadldc.fMergeBCLists),
   fZsFactor(ssdadldc.fZsFactor)
 {
   // copy constructor
@@ -149,6 +165,8 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
       fModules = NULL;
     }
   }
+  if (ssdadldc.fBadChannelsList) AliWarning("fBadChannelsList is not copied by copy constructor, use other methods to init it!");
+  if (ssdadldc.fDDLModuleMap) AliWarning("fDDLModuleMap is not copied by copy constructor, use other methods to init it!");
 }
 
 
@@ -157,6 +175,7 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
 {
 // assignment operator
   if (this == &ssdadldc)  return *this;
+  TObject::operator=(ssdadldc);
   if (fModules) {
     for (Int_t i = 0; i < fNumberOfModules; i++) if (fModules[i]) delete fModules[i];
     delete [] fModules; 
@@ -168,15 +187,15 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
     if (fModules) {
       for (Int_t modind = 0; modind < ssdadldc.fNumberOfModules; modind++) {
         if (ssdadldc.fModules[modind]) {
-	  fModules[modind] = new AliITSModuleDaSSD(*(ssdadldc.fModules[modind]));
-	  if (!fModules[modind]) { 
-	    AliError("AliITSHandleDaSSD: Error assignment operator");
+	      fModules[modind] = new AliITSModuleDaSSD(*(ssdadldc.fModules[modind]));
+          if (!fModules[modind]) { 
+	        AliError("AliITSHandleDaSSD: Error assignment operator");
             for (Int_t i = (modind - 1); i >= 0; i--) delete fModules[modind];
-	    delete [] fModules;
-	    fModules = NULL;
-	    break;
-	  }
-	} else fModules[modind] = NULL; 
+            delete [] fModules;
+            fModules = NULL;
+            break;
+          }
+        } else fModules[modind] = NULL; 
       }	  
     } else {
       AliError(Form("AliITSHandleDaSSD: Error allocating memory for %i AliITSModulesDaSSD* objects!", ssdadldc.fNumberOfModules));
@@ -184,6 +203,28 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
       fModules = NULL;
     }
   }
+  fRawDataFileName = NULL;
+  fModIndProcessed = 0;
+  fModIndRead = 0;
+  fModIndex = NULL;
+  fEqIndex = ssdadldc.fEqIndex;
+  fNumberOfEvents = ssdadldc.fNumberOfEvents;
+  fLdcId = ssdadldc.fLdcId;
+  fRunId = ssdadldc.fRunId;
+  fPedestalThresholdFactor = ssdadldc.fPedestalThresholdFactor;
+  fCmThresholdFactor = ssdadldc.fCmThresholdFactor;
+  fZsDefault = ssdadldc.fZsDefault;
+  fOffsetDefault = ssdadldc.fOffsetDefault;
+  fZsMinimum = ssdadldc.fZsMinimum;
+  fMergeBCLists = ssdadldc.fMergeBCLists;
+  fZsFactor = ssdadldc.fZsFactor;
+  fALaddersOff = ssdadldc.fALaddersOff;
+  fCLaddersOff = ssdadldc.fCLaddersOff;
+  fBadChannelsList = NULL;
+  fDDLModuleMap = NULL;
+  fModIndex = NULL;
+  if (ssdadldc.fBadChannelsList) AliWarning("fBadChannelsList is not copied by assignment operator, use other methods to init it!");
+  if (ssdadldc.fDDLModuleMap) AliWarning("fDDLModuleMap is not copied by assignment operator, use other methods to init it!");
   return *this;
 }
 
@@ -201,7 +242,7 @@ AliITSHandleDaSSD::~AliITSHandleDaSSD()
     delete [] fModules;
   }
   if (fModIndex) delete [] fModIndex;
-  if (fStaticBadChannelsMap) { fStaticBadChannelsMap->Delete(); delete fStaticBadChannelsMap; }
+  if (fBadChannelsList)  delete fBadChannelsList;
   if (fDDLModuleMap) delete [] fDDLModuleMap;
 }
 
@@ -218,13 +259,14 @@ void AliITSHandleDaSSD::Reset()
   }
   if (fModIndex) { delete [] fModIndex; fModIndex = NULL; }
 /*
-  if (fStaticBadChannelsMap) {
-    fStaticBadChannelsMap->Delete();
-    delete fStaticBadChannelsMap;
-    fStaticBadChannelsMap = NULL; 
+  if (fBadChannelsList) {
+    delete fBadChannelsList;
+    fBadChannelsList = NULL; 
   }    
   if (fDDLModuleMap) { delete [] fDDLModuleMap; fDDLModuleMap = NULL; }
 */
+  fALaddersOff.Set(0);
+  fCLaddersOff.Set(0);
   fRawDataFileName = NULL;
   fModIndProcessed = fModIndRead = 0;
   fNumberOfEvents = 0;
@@ -256,6 +298,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
     rawreaderdate->RewindEvents();
   } else { MakeZombie(); return kFALSE; }
   if (fModules) Reset();
+  //rawreaderdate->SelectEvents(-1);
   rawreaderdate->Select("ITSSSD");  
   nofstrips = 0;
   while (rawreaderdate->NextEvent()) {
@@ -290,6 +333,8 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
   {
     fNumberOfEvents = physeventind;
     fRawDataFileName = rdfname;
+    fEqIndex.Set(eqn);
+    fEqIndex.Reset(-1);
     fModIndex = new (nothrow) Int_t [fgkNumberOfSSDModulesPerDdl * eqn];
     if (fModIndex) 
       for (Int_t i = 0; i < fgkNumberOfSSDModulesPerDdl * eqn; i++) fModIndex[i] = -1; 
@@ -416,9 +461,9 @@ Bool_t AliITSHandleDaSSD::ReadStaticBadChannelsMap(const Char_t *filename)
     AliWarning(Form("Error reading file %s with Static Bad Channels Map!", filename));
     return kFALSE;
   }
-  bcfile->GetObject("BadChannels;1", fStaticBadChannelsMap);
-  if (!fStaticBadChannelsMap) {
-    AliWarning("Error fStaticBadChannelsMap == NULL!");
+  bcfile->GetObject("AliITSBadChannelsSSD;1", fBadChannelsList);
+  if (!fBadChannelsList) {
+    AliWarning("Error fBadChannelsList == NULL!");
     bcfile->Close();
     delete bcfile;
     return kFALSE;
@@ -497,8 +542,9 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
   AliITSModuleDaSSD   *module;
   AliITSChannelDaSSD  *strip;
   Long_t            eventind = 0;
-  Int_t             nofeqipmentev, equipid, prequipid;
-  UShort_t          modind;
+  Int_t             nofeqipment, eqind;
+  Short_t           equipid, prequipid;
+  Short_t           modind;
   if (!(rawreaderdate = new AliRawReaderDate(fRawDataFileName, 0))) return 0;
   if (!fModules) {
     AliError("AliITSHandleDaSSD: Error ReadModuleRawData: no structure was allocated for data");
@@ -507,15 +553,20 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
   if (!fDDLModuleMap) if (!ReadDDLModuleMap()) AliWarning("DDL map is not defined, ModuleID will be set to 0!");
   stream = new AliITSRawStreamSSD(rawreaderdate);
   stream->Setv11HybridDDLMapping();
+  //rawreaderdate->SelectEvents(-1);
+  rawreaderdate->Select("ITSSSD");  
   modind = 0;
+  nofeqipment = 0;
   while (rawreaderdate->NextEvent()) {
     if ((rawreaderdate->GetType() != PHYSICS_EVENT) && (rawreaderdate->GetType() != CALIBRATION_EVENT)) continue;
-    nofeqipmentev = 0;
     prequipid = -1;
+    eqind = -1;
     while (stream->Next()) {
-      equipid    = rawreaderdate->GetEquipmentId(); 
-      if ((equipid != prequipid) && (prequipid >= 0)) nofeqipmentev += 1;
-      prequipid = equipid;
+      equipid = rawreaderdate->GetEquipmentId(); 
+      if ((equipid != prequipid)) {
+        if ((eqind = GetEqIndex(equipid)) < 0) { fEqIndex.AddAt(equipid, nofeqipment); eqind = nofeqipment++; }
+        prequipid = equipid;
+      }
       Int_t     equiptype  = rawreaderdate->GetEquipmentType();
       UChar_t   ddlID      = (UChar_t)rawreaderdate->GetDDLID();
       UChar_t   ad      = stream->GetAD();
@@ -523,7 +574,7 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
       UShort_t  stripID = stream->GetSideFlag() ? AliITSChannelDaSSD::GetMaxStripIdConst() - stream->GetStrip() : stream->GetStrip();
       Short_t   signal  = stream->GetSignal();
 
-      Int_t indpos = (nofeqipmentev * fgkNumberOfSSDModulesPerDdl)
+      Int_t indpos = (eqind * fgkNumberOfSSDModulesPerDdl)
                    + ((ad - 1) * fgkNumberOfSSDModulesPerSlot) + (adc < 6 ? adc : (adc - 2));
       Int_t modpos = fModIndex[indpos];
       if (((modpos > 0) && (modpos < fModIndRead)) || ((modpos < 0) && (modind == modulesnumber))) continue;
@@ -532,13 +583,13 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
         Int_t mddli;
         if (fDDLModuleMap) mddli = RetrieveModuleId(ddlID, ad, adc);
         else  mddli = 0;
-	if (!module->SetModuleIdData (ddlID, ad, adc, mddli)) return 0;
-    module->SetModuleRorcId (equipid, equiptype);
-	module->SetCMFeromEventsNumber(fNumberOfEvents);
-	modpos = fModIndRead + modind;
-	modind += 1;
-	fModules[modpos] = module;
-	fModIndex[indpos] = modpos;
+        if (!module->SetModuleIdData (ddlID, ad, adc, mddli)) return 0;
+        module->SetModuleRorcId (equipid, equiptype);
+        module->SetCMFeromEventsNumber(fNumberOfEvents);
+        modpos = fModIndRead + modind;
+        modind += 1;
+        fModules[modpos] = module;
+        fModIndex[indpos] = modpos;
       } 
       if (stripID < AliITSModuleDaSSD::GetStripsPerModuleConst()) {
         if (!(strip = fModules[modpos]->GetStrip(stripID))) {
@@ -609,7 +660,7 @@ Bool_t AliITSHandleDaSSD::AddFeromCm(AliITSModuleDaSSD *const module)
         else {
           Short_t signal1 = signal[ev] + cmferom[ev];
           strip->SetSignal(ev, signal1);
-	}  
+	    }  
       }	
     } 
   }  
@@ -759,8 +810,7 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
 	                module->GetModuleId(), strind));
           return kFALSE;
         }
-        if ((signal[ev] >= AliITSChannelDaSSD::GetOverflowConst()) || 
-	    (strip->GetPedestal() == AliITSChannelDaSSD::GetUndefinedValue())) ovstr += 1;
+        if ((SignalOutOfRange(signal[ev])) || (strip->GetPedestal() == AliITSChannelDaSSD::GetUndefinedValue())) ovstr += 1;
         else cm0 += (signal[ev] - strip->GetPedestal());
       }
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cm0 /= (Float_t)(n);
@@ -775,8 +825,7 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
 	                 module->GetModuleId(), strind));
           return kFALSE;
         }
-        if ((signal[ev] >= AliITSChannelDaSSD::GetOverflowConst()) || 
-	    (strip->GetPedestal() == AliITSChannelDaSSD::GetUndefinedValue())) ovstr += 1;
+        if ((SignalOutOfRange(signal[ev])) || (strip->GetPedestal() == AliITSChannelDaSSD::GetUndefinedValue())) ovstr += 1;
         else cmsigma += pow((cm0 - (signal[ev] - strip->GetPedestal())), 2);
       }
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsigma = sqrt(cmsigma / (Float_t)(n));
@@ -787,9 +836,8 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
       for (Int_t strind = stripind; strind < (stripind + AliITSModuleDaSSD::GetStripsPerChip()); strind++) {
         if (!(strip = module->GetStrip(strind))) continue;
         signal = strip->GetSignal();
-        if (   (signal[ev] >= AliITSChannelDaSSD::GetOverflowConst())
-	    || (strip->GetPedestal() == AliITSChannelDaSSD::GetUndefinedValue()) 
-	    || (TMath::Abs(cm0 - (signal[ev] - strip->GetPedestal())) > (fCmThresholdFactor * cmsigma)) ) ovstr += 1;
+        if ( (SignalOutOfRange(signal[ev])) || (strip->GetPedestal() == AliITSChannelDaSSD::GetUndefinedValue()) 
+	       || (TMath::Abs(cm0 - (signal[ev] - strip->GetPedestal())) > (fCmThresholdFactor * cmsigma)) ) ovstr += 1;
         else cmsum += (signal[ev] - strip->GetPedestal());
       }
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsum /= (Float_t)(n);
@@ -835,7 +883,10 @@ Bool_t AliITSHandleDaSSD::ProcessRawData(const Int_t nmread)
 Short_t AliITSHandleDaSSD::RetrieveModuleId(const UChar_t ddlID, const UChar_t ad, const UChar_t adc) const
 {
 // Retrieve ModuleId from the DDL map which is defined in AliITSRawStreamSSD class
-  if (!fDDLModuleMap) return 0;
+  if (!fDDLModuleMap) {
+    AliError("Error DDLMap is not initialized, return 0!");
+	return 0;
+  }
   Int_t mddli = ((ad - 1) * fgkNumberOfSSDModulesPerSlot) + (adc < 6 ? adc : (adc - 2));
   if ((ddlID < fgkNumberOfSSDDDLs) && (mddli < fgkNumberOfSSDModulesPerDdl)) {
     mddli = fDDLModuleMap[ddlID * fgkNumberOfSSDModulesPerDdl + mddli];
@@ -851,56 +902,102 @@ Short_t AliITSHandleDaSSD::RetrieveModuleId(const UChar_t ddlID, const UChar_t a
 
 
 //______________________________________________________________________________
-TObjArray* AliITSHandleDaSSD::GetCalibrationSSDLDC() const
+AliITSNoiseSSD* AliITSHandleDaSSD::GetCalibrationOCDBNoise() const
 {
 // Fill in the array for OCDB 
-  TObjArray *ldcc;
-  TObject   *modcalibobj;
+  AliITSNoiseSSD         *ldcn = NULL;
+  AliITSModuleDaSSD      *module = NULL;
+  AliITSChannelDaSSD     *strip = NULL; 
   if (!fModules) return NULL;
-  ldcc = new TObjArray(fNumberOfModules, 0);
-  for (Int_t i = 0; i < fNumberOfModules; i++) {
-    if (!fModules[i]) {
-      delete ldcc;
-      return NULL;
-    }
-    modcalibobj = dynamic_cast<TObject*>(fModules[i]->GetCalibrationNoise());
-    ldcc->AddAt(modcalibobj, i);
+  ldcn = new AliITSNoiseSSD;
+  if (!ldcn) {
+    AliError("Error allocation mamory for AliITSBadChannelsSSD object, return NULL!");
+    return NULL;
   }
-  ldcc->Compress();
-  return ldcc;
+  for (Int_t i = 0; i < fNumberOfModules; i++) {
+    if (!(module = fModules[i])) continue;
+    if (module->GetModuleId() < fgkMinSSDModuleId) continue;
+    for (Int_t strind = 0; strind < module->GetNumberOfStrips(); strind++) {
+      if (!(strip = module->GetStrip(strind))) continue;
+      Short_t modid = module->GetModuleId() - fgkMinSSDModuleId;
+      if (strip->GetStripId() < AliITSModuleDaSSD::GetPNStripsPerModule() ) 
+        ldcn->AddNoiseP(modid, strip->GetStripId(), strip->GetNoiseCM());
+      else
+        ldcn->AddNoiseN(modid, (AliITSChannelDaSSD::GetMaxStripIdConst() - strip->GetStripId()), strip->GetNoiseCM());
+    }
+  }
+  return ldcn;
 }
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname) const
+AliITSBadChannelsSSD* AliITSHandleDaSSD::GetCalibrationBadChannels() const
+{
+// Fill in the TObjArray with the list of bad channels 
+  AliITSBadChannelsSSD   *ldcbc = NULL;
+  AliITSModuleDaSSD      *module = NULL;
+  AliITSChannelDaSSD     *strip = NULL; 
+  if (!fModules) return NULL;
+  ldcbc = new AliITSBadChannelsSSD;
+  if (!ldcbc) {
+    AliError("Error allocation mamory for AliITSBadChannelsSSD object, return NULL!");
+    return NULL;
+  }
+  for (Int_t i = 0; i < fNumberOfModules; i++) {
+    if (!(module = fModules[i])) continue;
+    if (module->GetModuleId() < fgkMinSSDModuleId) continue;
+    for (Int_t strind = 0; strind < module->GetNumberOfStrips(); strind++) {
+      if (!(strip = module->GetStrip(strind))) continue;
+      Short_t modid = module->GetModuleId() - fgkMinSSDModuleId;
+      if (strip->GetStripId() < AliITSModuleDaSSD::GetPNStripsPerModule() )
+        ldcbc->AddBadChannelP(modid, strip->GetStripId(), module->CheckIfBad(strip->GetStripId()));
+      else 
+        ldcbc->AddBadChannelN(modid, (AliITSChannelDaSSD::GetMaxStripIdConst() - strip->GetStripId()), 
+                                     module->CheckIfBad(strip->GetStripId()));
+    }
+  }
+  return ldcbc;
+}
+
+
+
+//______________________________________________________________________________
+Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname)
 {
 // Save Calibration data locally
-  TObjArray      *ldcn, *ldcp, *ldcbc;
-  TObject        *modobjn, *modobjp, *modobjbc;
+  AliITSBadChannelsSSD   *ldcbc = NULL;
+  AliITSPedestalSSD      *ldcp = NULL;
+  AliITSNoiseSSD         *ldcn = NULL;
+  AliITSModuleDaSSD      *module = NULL;
+  AliITSChannelDaSSD     *strip = NULL; 
   Char_t         *tmpfname;
   TString         dadatafilename("");
   if (!fModules) return kFALSE;
-  ldcn = new TObjArray(fNumberOfModules, 0);
-  ldcn->SetName("Noise");
-  ldcp = new TObjArray(fNumberOfModules, 0);
-  ldcp->SetName("Pedestal");
-  ldcbc = new TObjArray(fNumberOfModules, 0);
-  ldcbc->SetName("BadChannels");
-  for (Int_t i = 0; i < fNumberOfModules; i++) {
-    if (!fModules[i]) {
-      delete ldcn;
-      return kFALSE;
-    }
-    modobjn = dynamic_cast<TObject*>(fModules[i]->GetCalibrationNoise());
-    modobjp = dynamic_cast<TObject*>(fModules[i]->GetCalibrationPedestal());
-    modobjbc = dynamic_cast<TObject*>(fModules[i]->GetCalibrationBadChannels());
-    ldcn->AddAt(modobjn, i);
-    ldcp->AddAt(modobjp, i);
-    ldcbc->AddAt(modobjbc, i);
+  ldcn = new AliITSNoiseSSD;
+  ldcp = new AliITSPedestalSSD;
+  ldcbc = new AliITSBadChannelsSSD;
+  if ((!ldcn) || (!ldcp) || (!ldcp)) {
+    AliError("Error allocation mamory for calibration objects, return kFALSE!");
+    return kFALSE;
   }
-  ldcn->Compress();
-  ldcp->Compress();
-  ldcbc->Compress();
+  for (Int_t i = 0; i < fNumberOfModules; i++) {
+    if (!(module = fModules[i])) continue;
+    if (module->GetModuleId() < fgkMinSSDModuleId) continue;
+    for (Int_t strind = 0; strind < module->GetNumberOfStrips(); strind++) {
+      if (!(strip = module->GetStrip(strind))) continue;
+      Short_t modid = module->GetModuleId() - fgkMinSSDModuleId;
+      if (strip->GetStripId() < AliITSModuleDaSSD::GetPNStripsPerModule() ) {
+        ldcn->AddNoiseP(modid, strip->GetStripId(), strip->GetNoiseCM());
+        ldcp->AddPedestalP(modid, strip->GetStripId(), strip->GetPedestal());
+        ldcbc->AddBadChannelP(modid, strip->GetStripId(), module->CheckIfBad(strip->GetStripId()));
+      } else {
+        ldcn->AddNoiseN(modid, (AliITSChannelDaSSD::GetMaxStripIdConst() - strip->GetStripId()), strip->GetNoiseCM());
+        ldcp->AddPedestalN(modid, (AliITSChannelDaSSD::GetMaxStripIdConst() - strip->GetStripId()), strip->GetPedestal()); 
+        ldcbc->AddBadChannelN(modid, (AliITSChannelDaSSD::GetMaxStripIdConst() - strip->GetStripId()), 
+                                     module->CheckIfBad(strip->GetStripId()));
+      }
+    }
+  }
   if (dafname) dadatafilename.Form("%s/", dafname);
   dadatafilename += TString::Format("ITSSSDda_%i.root", fLdcId);
   tmpfname = new Char_t[dadatafilename.Length()+1];
@@ -917,15 +1014,57 @@ Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname) const
   }
   fileRun->WriteTObject(ldcn);
   fileRun->WriteTObject(ldcp);
-  if (fStaticBadChannelsMap) fileRun->WriteTObject(fStaticBadChannelsMap);
+  if (fBadChannelsList) 
+    if (fMergeBCLists) {
+      MergeBadChannels(ldcbc);
+      fileRun->WriteTObject(ldcbc);
+    } else fileRun->WriteTObject(fBadChannelsList);
   else fileRun->WriteTObject(ldcbc);
   fileRun->Close();
-  ldcn->Delete();
   delete fileRun;
   delete ldcn;
   delete ldcp;
   delete ldcbc;
   return kTRUE;
+}
+
+
+//______________________________________________________________________________
+Int_t AliITSHandleDaSSD::MergeBadChannels(AliITSBadChannelsSSD*&  bcl) const
+{
+// Merges the statick bad channels list with bad channels got upon calibration
+  AliITSModuleDaSSD     *module = 0;
+  Int_t                  nmpch = 0, nmnch = 0, ngpch = 0, ngnch = 0;
+  if (!fBadChannelsList || !bcl) {
+    AliWarning("Either fBadChannelsList == NULL or bad_channels_list == NULL, there is nothing to merge!");
+	return -1;
+  }
+  for (Int_t modind = 0; modind < GetNumberOfModules(); modind++) {
+    if (!(module = fModules[modind])) continue;
+    if (module->GetModuleId() < fgkMinSSDModuleId) continue;
+    Short_t modid = module->GetModuleId() - fgkMinSSDModuleId;
+    for (Int_t strind = 0; strind < AliITSModuleDaSSD::GetPNStripsPerModule(); strind++) {
+      if ( (!(fBadChannelsList->GetBadChannelP(modid, strind) & fgkBadChannelMask)) 
+          && (bcl->GetBadChannelP(modid, strind) & fgkBadChannelMask) ) 
+        ngpch++;
+      if ( (!(fBadChannelsList->GetBadChannelN(modid, strind) & fgkBadChannelMask)) 
+          && (bcl->GetBadChannelN(modid, strind) & fgkBadChannelMask) ) 
+        ngnch++;
+      if ( (!(bcl->GetBadChannelP(modid, strind) & fgkBadChannelMask)) 
+          && (fBadChannelsList->GetBadChannelP(modid, strind) & fgkBadChannelMask) ) {
+        bcl->AddBadChannelP(modid, strind, fBadChannelsList->GetBadChannelP(modid, strind));
+        nmpch++;  
+      }    
+      if ( (!(bcl->GetBadChannelN(modid, strind) & fgkBadChannelMask)) 
+          && (fBadChannelsList->GetBadChannelN(modid, strind) & fgkBadChannelMask) ) {
+        bcl->AddBadChannelN(modid, strind, fBadChannelsList->GetBadChannelN(modid, strind));
+        nmnch++;  
+      }
+    }	  
+  }
+  AliInfo(Form("Static bad, dynamic good: P%d,  N%d", nmpch, nmnch));
+  AliInfo(Form("Static good, dynamic bad: P%d,  N%d", ngpch, ngnch));
+  return (nmnch + nmpch);
 }
 
 
@@ -1033,7 +1172,7 @@ Bool_t AliITSHandleDaSSD::AllocateSimulatedModules(const Int_t copymodind)
         Long_t      eventsnumber = cstrip->GetEventsNumber();
         AliITSChannelDaSSD *strip = new AliITSChannelDaSSD(strind, eventsnumber);
         for (Long_t evind = 0; evind < eventsnumber; evind++) {
-          Short_t sign = *cstrip->GetSignal(evind);
+          Short_t sign = cstrip->GetSignal(evind);
           if (!strip->SetSignal(evind, sign)) AliError(Form("AliITSHandleDaSSD: Copy events error! mod = %i, str = %i", modind, strind));
         }
 	module->SetStrip(strip, strind);
@@ -1105,46 +1244,71 @@ Bool_t AliITSHandleDaSSD::SaveEqSlotCalibrationData(const Int_t ddl, const Int_t
 Int_t AliITSHandleDaSSD::ChannelIsBad(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const
 {
 // Check if the channel is bad
-//  AliITSBadChannelsSSD  *badch = NULL;
-  //  TArrayI                bcharray;
-  //  Int_t                  strsiden;
-  Int_t modn = -1;
-  if (fStaticBadChannelsMap && fDDLModuleMap) {
+  AliITSModuleDaSSD     *module = NULL;
+  Int_t                  modn = -1;
+  if (fBadChannelsList && fDDLModuleMap) {
     modn = RetrieveModuleId(ddl, ad, adc);
-
-    /*
     if (modn < 0) return -1;
-    Int_t modind = 0;
-    while ((modind < fStaticBadChannelsMap->GetEntriesFast() && (!badch))) {
-      AliITSBadChannelsSSD  *bc = static_cast<AliITSBadChannelsSSD*>(fStaticBadChannelsMap->At(modind++));
-      if ((bc->GetMod()) == modn) badch = bc; 
+    if (modn < fgkMinSSDModuleId) {
+      AliWarning(Form("Module ddl/ad/adc: %i/%i/%i has number %i which is wrong for SSD module", ddl, ad, adc, strn, modn));
+	  return -1;
     }
-    if (badch) {
-      if (strn < AliITSModuleDaSSD::GetPNStripsPerModule()) { 
-        bcharray = badch->GetBadPChannelsList();
-        strsiden = strn;
-      } else {
-        bcharray = badch->GetBadNChannelsList();
-        strsiden = AliITSChannelDaSSD::GetMaxStripIdConst() - strn;
-      }
-      if (bcharray.GetSize() <  AliITSModuleDaSSD::GetPNStripsPerModule()) {
-	    AliWarning(Form("No entry found in bad channels list TArrayI for ddl/ad/adc/str: %i/%i/%i/%i", ddl, ad, adc, strn));
-	    return 0;
-      } 
-      return (bcharray[strsiden] & fgkBadChannelMask);
-    } else {
-      AliWarning(Form("No entry found in bad channels list for ddl = %i,  ad = %i,  adc = %i", ddl, ad, adc));
-      return 0;
-    }  
+    Short_t modid = modn - fgkMinSSDModuleId;
+    if (strn < AliITSModuleDaSSD::GetPNStripsPerModule()) 
+      return (fBadChannelsList->GetBadChannelP(modid, strn)  & fgkBadChannelMask);
+    else return (fBadChannelsList->GetBadChannelN(modid, (AliITSChannelDaSSD::GetMaxStripIdConst() - strn)) & fgkBadChannelMask);
   } else {
-    AliError("Error ether bad channels list or DDLMap is not initialized or both, return 0!");
-
-    */
+    AliError("Error ether bad channels list or DDLMap is not initialized or both, AliITSModuleDaSSD::CheckIfBad(str) is used!");
+    if (module = GetModule(ddl, ad, adc)) {
+      return (module->CheckIfBad(strn) & fgkBadChannelMask);
+    } else {
+      AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i, 0 is used!", ddl, ad, adc));
+      return 0ul;
+    }  
 	return 0;
   }
-  return 0;
 }
-        
+
+
+
+//______________________________________________________________________________
+Int_t AliITSHandleDaSSD::LadderIsOff(const UChar_t ddl, const UChar_t ad, const UChar_t adc) const
+{
+//Checks if the module with given ddl, ad, adc is on the ladder which is in the list of ladders which are off
+  const Int_t nm5 =  500;
+  const Int_t nm6 =  1248;
+  const Int_t nml5a = 12;
+  const Int_t nml5c = 10;
+  const Int_t nml6a = 12;
+  const Int_t nml6c = 13;
+  Int_t               modn, ladder, layer, side;
+  AliITSModuleDaSSD  *module;
+  if (!(module = GetModule(ddl, ad, adc))) return 0;
+  if ((modn = module->GetModuleId()) <= 0)  modn = RetrieveModuleId(ddl, ad, adc);
+  if (modn <= 0) return 0;
+  layer = modn >= nm6 ? 1 : 0;     // 6 : 5
+  ladder = (modn - (layer ? nm6 : nm5)) / (layer ? (nml6a + nml6c) : (nml5a + nml5c));
+  if ( ((modn - (layer ? nm6 : nm5)) % (layer ? (nml6a + nml6c) : (nml5a + nml5c))) < (layer ? nml6a : nml5a))
+    side = 0;      // A
+  else side = 1;   // C
+  ladder += (layer ? 600 : 500);
+  layer += 5;
+  if (side)
+    if (fCLaddersOff.GetSize()) {
+      for(Int_t i = 0; i < fCLaddersOff.GetSize(); i++) 
+        if (fCLaddersOff.At(i) == ladder) return fCLaddersOff.At(i);
+      return 0;
+    } else return 0;
+  else
+    if (fALaddersOff.GetSize()) {
+      for(Int_t i = 0; i < fALaddersOff.GetSize(); i++) 
+        if (fALaddersOff.At(i) == ladder) return fALaddersOff.At(i);
+      return 0;
+    } else return 0;
+  return 0;  
+}
+
+
         
 //______________________________________________________________________________
 ULong_t AliITSHandleDaSSD::OffsetValue(const AliITSChannelDaSSD *strip, 
@@ -1155,15 +1319,16 @@ ULong_t AliITSHandleDaSSD::OffsetValue(const AliITSChannelDaSSD *strip,
   if (fOffsetDefault < INT_MAX) pedint = fOffsetDefault;
   else pedint = TMath::Nint(strip->GetPedestal());
   if (pedint > static_cast<Int_t>((fgkOffSetBitMask >> 1))) {
-    if (!ChannelIsBad(ddl, ad, adc, strn)) 
-      AliError(Form("Offset %i, channel(ddl/ad/adc/strip) %i/%i/%i/%i  can not be represented with mask %i, Offset = %i",
-                   pedint, ddl, ad, adc, strn, ConvBase(fgkOffSetBitMask, 16).c_str(), fgkOffSetBitMask));
-    return fgkOffSetBitMask;
+    if (!ChannelIsBad(ddl, ad, adc, strn) && !((fMergeBCLists) && (GetModule(ddl, ad, adc)->CheckIfBad(strn)))) 
+      AliError(Form("Offset %i, channel(ddl/ad/adc/strip) %i/%i/%i/%i  can not be represented with mask 0x%s, Offset = %i",
+                   pedint, ddl, ad, adc, strn, ConvBase(fgkOffSetBitMask, 16).c_str(), (fgkOffSetBitMask >> 1)));
+    return (fgkOffSetBitMask >> 1);
   }  
   if ((-pedint) > static_cast<Int_t>(((fgkOffSetBitMask + 1) >> 1))) {
-    if (!ChannelIsBad(ddl, ad, adc, strn)) 
-      AliError(Form("Offset %i, channel(ddl/ad/adc/strip) %i/%i/%i/%i  can not be represented with mask %i, Offset = %i", 
-                   pedint, ddl, ad, adc, strn, ConvBase(fgkOffSetBitMask, 16).c_str(), (fgkOffSetBitMask & (~fgkOffSetBitMask >> 1))));
+    if (!ChannelIsBad(ddl, ad, adc, strn) && !((fMergeBCLists) && (GetModule(ddl, ad, adc)->CheckIfBad(strn)))) 
+      AliError(Form("Offset %i, channel(ddl/ad/adc/strip) %i/%i/%i/%i  can not be represented with mask 0x%s, Offset = %i", 
+               pedint, ddl, ad, adc, strn, ConvBase(fgkOffSetBitMask, 16).c_str(), 
+               ((fgkOffSetBitMask & (~fgkOffSetBitMask >> 1)) - fgkOffSetBitMask - 1)));
     return fgkOffSetBitMask & (~fgkOffSetBitMask >> 1);
   }
   return fgkOffSetBitMask & (pedint >= 0 ? pedint : pedint + fgkOffSetBitMask + 1);
@@ -1177,8 +1342,8 @@ ULong_t AliITSHandleDaSSD::OffsetValue(const UChar_t ddl, const UChar_t ad, cons
 // Calculate the offset value to be upload to FEROM	
   AliITSChannelDaSSD    *strip = NULL;
   AliITSModuleDaSSD     *module = NULL;
-  if ((module = GetModule(ddl, ad, adc))) {
-    if ((strip = module->GetStrip(strn))) return OffsetValue(strip, ddl, ad, adc, strn);
+  if (module = GetModule(ddl, ad, adc)) {
+    if (strip = module->GetStrip(strn)) return OffsetValue(strip, ddl, ad, adc, strn);
     else {
       AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
       return 0ul;
@@ -1196,7 +1361,10 @@ ULong_t AliITSHandleDaSSD::ZsThreshold(AliITSChannelDaSSD *strip) const
 { 
 // Calculate the value of zero suppression threshold to be upload to FEROM
   ULong_t zs;
-  if (fZsDefault < 0) zs = TMath::Nint(fZsFactor * strip->GetNoiseCM());
+  if (fZsDefault < 0) {
+    zs = TMath::Nint(fZsFactor * strip->GetNoiseCM());
+    if (zs < static_cast<ULong_t>(fZsMinimum)) zs = static_cast<ULong_t>(fZsMinimum);
+  }
   else zs = fZsDefault;
   return (zs < fgkZsBitMask) ? (zs & fgkZsBitMask) : fgkZsBitMask;
 }
@@ -1208,9 +1376,11 @@ ULong_t AliITSHandleDaSSD::ZsThreshold(const UChar_t ddl, const UChar_t ad, cons
 // Calculate the value of zero suppression threshold to be upload to FEROM, account bad channels list
   AliITSChannelDaSSD    *strip = NULL;
   AliITSModuleDaSSD     *module = NULL;
-  if ((ChannelIsBad(ddl, ad, adc, strn))) return fgkZsBitMask;
-  if ((module = GetModule(ddl, ad, adc))) {
-    if ((strip = module->GetStrip(strn)))  return ZsThreshold(strip);
+  if (ChannelIsBad(ddl, ad, adc, strn)) return fgkZsBitMask;
+  if (LadderIsOff(ddl, ad, adc)) return fgkZsBitMask;
+  if (module = GetModule(ddl, ad, adc)) {
+	if (fMergeBCLists) if (module->CheckIfBad(strn)) return fgkZsBitMask;
+    if (strip = module->GetStrip(strn))  return ZsThreshold(strip);
     else {
       AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
       return 0ul;
@@ -1242,4 +1412,56 @@ string AliITSHandleDaSSD::ConvBase(const unsigned long value, const long base) c
     while((v) || (i<8));
   }
   return result;
+}
+
+
+
+//______________________________________________________________________________
+Int_t AliITSHandleDaSSD::CheckOffChips() const
+{
+// Check if the chip, module are off
+  AliITSChannelDaSSD *strip;
+  Int_t       offthreshold;
+  Int_t       strnd, chipnd, modnd, stroff, chipoff, modoff;
+  offthreshold = TMath::Nint(fZsMinimum/fZsFactor);
+  modnd = modoff = 0;
+  for (Int_t mi = 0; mi < fNumberOfModules; mi++) {
+    if (!fModules[mi]) { modnd++; continue; }
+    if (fModules[mi]->GetModuleId() < 0) continue;
+    if (LadderIsOff(fModules[mi]->GetDdlId(), fModules[mi]->GetAD(), fModules[mi]->GetADC()) ) continue;
+    chipoff = chipnd = 0;
+    for (Int_t chipind = 0; chipind < AliITSModuleDaSSD::GetChipsPerModuleConst(); chipind++) {
+      strnd = stroff = 0;
+      Int_t stripind = chipind * AliITSModuleDaSSD::GetStripsPerChip();
+      for (Int_t strind = stripind; strind < (stripind + AliITSModuleDaSSD::GetStripsPerChip()); strind++) {
+        if (!(strip = fModules[mi]->GetStrip(strind))) { strnd++;  continue; }
+        if (strip->GetNoiseCM() < offthreshold ) stroff++;
+      }
+      if (strnd == AliITSModuleDaSSD::GetStripsPerChip()) chipnd++;
+      else if (stroff == AliITSModuleDaSSD::GetStripsPerChip()) chipoff++;
+      else if ((stroff + strnd) == AliITSModuleDaSSD::GetStripsPerChip()) chipoff++;
+    }
+    if ((!chipoff) && (!chipnd)) continue;
+    if (chipnd == AliITSModuleDaSSD::GetChipsPerModuleConst()) {
+      AliInfo(Form("Module: (ddl/ad/adc) %i/%i/%i seems to be off and it is not on the ladders which are off!", 
+               fModules[mi]->GetDdlId(), fModules[mi]->GetAD(), fModules[mi]->GetADC()));
+      modnd++;
+    }
+    if (chipoff == AliITSModuleDaSSD::GetChipsPerModuleConst()) {
+      AliInfo(Form("Module (ddl/ad/adc): %i/%i/%i seems to be off and it is not on the ladders which are off!", 
+               fModules[mi]->GetDdlId(), fModules[mi]->GetAD(), fModules[mi]->GetADC()));
+      modoff++;
+    }
+    else if ((chipoff + chipnd) == AliITSModuleDaSSD::GetChipsPerModuleConst()) {
+      AliInfo(Form("Module: (ddl/ad/adc): %i/%i/%i seems to be off and it is not on the ladders which are off!", 
+               fModules[mi]->GetDdlId(), fModules[mi]->GetAD(), fModules[mi]->GetADC()));
+      modoff++;
+    }
+    else if (chipoff) {
+      AliInfo(Form("Module: (ddl/ad/adc): %i/%i/%i has %i chips which are off!", 
+               fModules[mi]->GetDdlId(), fModules[mi]->GetAD(), fModules[mi]->GetADC(), chipoff));
+      modoff++;
+    }
+  }
+  return (modoff + modnd);
 }

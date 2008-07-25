@@ -19,7 +19,8 @@
 ///
 /// This class provides storage container ITS SSD module callibration data
 /// used by DA. 
-///
+/// 
+/// Date: 18/07/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSNoiseSSD.h"
@@ -220,7 +221,7 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const AliITSModuleDaSSD& module) :
        AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i TArrayS objects!", fgkChipsPerModule));
        fCmFerom = NULL;
     }  
-  }  
+  }
 }
 
 
@@ -230,9 +231,11 @@ AliITSModuleDaSSD& AliITSModuleDaSSD::operator = (const AliITSModuleDaSSD& modul
 {
 // assignment operator
   if (this == &module)  return *this;  
+  TObject::operator=(module);
   if (fStrips) {
     for (Long_t i = 0; i < fNumberOfStrips; i++) if (fStrips[i]) delete fStrips[i];
     delete [] fStrips;
+    fStrips = NULL;
   } 
   fEquipId = module.fEquipId;
   fEquipType = module.fEquipType;
@@ -240,7 +243,6 @@ AliITSModuleDaSSD& AliITSModuleDaSSD::operator = (const AliITSModuleDaSSD& modul
   fAd = module.fAd;
   fAdc = module.fAdc;
   fModuleId = module.fModuleId;
-  fNumberOfStrips = module.fNumberOfStrips;
   fStrips = NULL;
   fNumberOfChips = module.fNumberOfChips;
   fCm = NULL;
@@ -248,18 +250,21 @@ AliITSModuleDaSSD& AliITSModuleDaSSD::operator = (const AliITSModuleDaSSD& modul
   if ((module.fNumberOfStrips > 0) && (module.fStrips)) {
     fStrips = new (nothrow) AliITSChannelDaSSD* [module.fNumberOfStrips];
     if (fStrips) {
+      memset(fStrips, 0, (sizeof(AliITSChannelDaSSD*) * module.fNumberOfStrips));
       for (Int_t strind = 0; strind < module.fNumberOfStrips; strind++) {
         if (module.fStrips[strind]) {
-	  fStrips[strind] = new AliITSChannelDaSSD(*(module.fStrips[strind]));
-	  if (!fStrips[strind]) { 
-	    AliError("AliITSModuleDaSSD: Error copy constructor");
+          fStrips[strind] = new AliITSChannelDaSSD(*(module.fStrips[strind]));
+          if (!fStrips[strind]) { 
+            AliError("AliITSModuleDaSSD: Error copy constructor");
             for (Int_t i = (strind - 1); i >= 0; i--) delete fStrips[strind];
-	    delete [] fStrips;
-	    fStrips = NULL;
-	    break;
-	  }
-	} else fStrips[strind] = NULL; 
-      }	  
+            delete [] fStrips;
+            fStrips = NULL;
+            fNumberOfStrips = 0;
+            break;
+          }
+        } else fStrips[strind] = NULL; 
+      }
+      fNumberOfStrips = module.fNumberOfStrips;
     } else {
        AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i AliITSChannelDaSSD* objects!", module.fNumberOfStrips));
        fNumberOfStrips = 0;
@@ -491,85 +496,19 @@ Short_t  AliITSModuleDaSSD::GetCMFerom(const Int_t chipn, const Long_t evn)   co
 
 
 
-//______________________________________________________________________________
-AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationNoise() const
+UChar_t AliITSModuleDaSSD::CheckIfBad(const Int_t stripn) const
 {
-// Creates the AliITSNoiseSSD objects with callibration data
-  AliITSNoiseSSD  *mc;
-  //  Float_t          noise;
-  if (!fStrips) return NULL;
-  mc = new AliITSNoiseSSD();
-
-  /*
-  mc->SetMod(fModuleId);
-  mc->SetNNoiseP(fgkPNStripsPerModule);
-  mc->SetNNoiseN(fgkPNStripsPerModule);
-  for (Int_t i = 0; i < fNumberOfStrips; i++) {
-    if (!fStrips[i]) noise = AliITSChannelDaSSD::GetUndefinedValue();
-    else  noise = fStrips[i]->GetNoiseCM();
-    if (i < fgkPNStripsPerModule)
-          mc->AddNoiseP(i, noise);
-    else  mc->AddNoiseN((AliITSChannelDaSSD::GetMaxStripIdConst() - i), noise);                     
+//Applies the bad channel creteria and set the appropriate flags for returned valie 
+  UInt_t          bcflags = 0;
+  const UInt_t    WOffsetMask = 0x000003FF;
+  if (!fStrips[stripn]) bcflags |= 3;
+  else {
+    if (fStrips[stripn]->GetNoiseCM() == AliITSChannelDaSSD::GetUndefinedValue()) bcflags |= 8;
+    if (fStrips[stripn]->GetNoiseCM() > 20) bcflags |= 8;
+    if (fStrips[stripn]->GetNoiseCM() < 1) bcflags |= 16;
+    if (fStrips[stripn]->GetPedestal() > ((WOffsetMask >> 1) - 1))  bcflags |= 4;
+    else if ((-(fStrips[stripn]->GetPedestal())) > (WOffsetMask >> 1))  bcflags |= 4;
+    if (bcflags) bcflags |= 3;
   }
-  */
-
-  return mc;
-}
-
-
-
-//______________________________________________________________________________
-AliITSPedestalSSD* AliITSModuleDaSSD::GetCalibrationPedestal() const
-{
-// Creates the AliITSPedestalSSD objects with callibration data
-  AliITSPedestalSSD  *mc;
-  //  Float_t             ped;
-  if (!fStrips) return NULL;
-  mc = new AliITSPedestalSSD();
-
-  /*
-  mc->SetMod(fModuleId);
-  mc->SetNPedestalP(fgkPNStripsPerModule);
-  mc->SetNPedestalN(fgkPNStripsPerModule);
-  for (Int_t i = 0; i < fNumberOfStrips; i++) {
-    if (!fStrips[i]) ped = AliITSChannelDaSSD::GetUndefinedValue();
-    else  ped = fStrips[i]->GetPedestal();
-    if (i < fgkPNStripsPerModule)
-          mc->AddPedestalP(i, ped);
-    else  mc->AddPedestalN((AliITSChannelDaSSD::GetMaxStripIdConst() - i), ped);                     
-  }
-  */
-
-  return mc;
-}
-
-
-
-//______________________________________________________________________________
-AliITSBadChannelsSSD* AliITSModuleDaSSD::GetCalibrationBadChannels() const
-{
-// Creates the AliITSBadChannelsSSD objects with callibration data
-  AliITSBadChannelsSSD  *mc;
-  Int_t                 *chlist, nch = 0, nchn = 0, nchp = 0;
-  if (!fStrips) return NULL;
-  chlist = new Int_t [GetStripsPerModuleConst()];
-  for (Int_t i = 0; i < fNumberOfStrips; i++) {
-    if (!fStrips[i]) { chlist[nch++] = i; if (i < fgkPNStripsPerModule) nchp++; else nchn++; continue;}
-    if (fStrips[i]->GetNoiseCM() == AliITSChannelDaSSD::GetUndefinedValue())
-       { chlist[nch++] = i; if (i < fgkPNStripsPerModule) nchp++; else nchn++; }
-  }
-  mc = new AliITSBadChannelsSSD();
-
-  /*
-  mc->SetMod(fModuleId);
-  if (!nch) return mc;
-  mc->SetNBadPChannelsList(nchp);
-  mc->SetNBadNChannelsList(nchn);
-  for (Int_t i = 0; i < nch; i++) {
-    if (chlist[i] < fgkPNStripsPerModule) mc->AddBadPChannel(chlist[i], i);
-    else mc->AddBadNChannel((AliITSChannelDaSSD::GetMaxStripIdConst() - chlist[i]), (i-nchp));
-  }
-  */
-
-  return mc;
+  return bcflags;
 }
