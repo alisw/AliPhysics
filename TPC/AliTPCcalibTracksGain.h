@@ -94,7 +94,7 @@ public:
   AliTPCCalROC*   CreateCombinedCalROC(const AliTPCCalROC* roc1, const AliTPCCalROC* roc2);
   //
   void            Evaluate(Bool_t robust = kFALSE, Double_t frac = -1.);
-  void            GetParameters(UInt_t segment, UInt_t padType, UInt_t fitType, TVectorD &fitParam);
+  Bool_t            GetParameters(UInt_t segment, UInt_t padType, UInt_t fitType, TVectorD &fitParam);
   void            GetErrors(UInt_t segment, UInt_t padType, UInt_t fitType, TVectorD &fitError);
   Double_t        GetRedChi2(UInt_t segment, UInt_t padType, UInt_t fitType);
   void            GetCovarianceMatrix(UInt_t segment, UInt_t padType, UInt_t fitType, TMatrixD& covMatrix);
@@ -132,12 +132,23 @@ public:
   AliTPCFitPad*     fSimpleFitter;         // simple fitter for short pads
   AliTPCFitPad*     fSqrtFitter;           // sqrt fitter for medium pads
   AliTPCFitPad*     fLogFitter;            // log fitter for long pads
+  //
   TLinearFitter*    fFitter0M;          // fitting of the atenuation, angular correction, and mean chamber gain
   TLinearFitter*    fFitter1M;          // fitting of the atenuation, angular correction, and mean chamber gain
   TLinearFitter*    fFitter2M;          // fitting of the atenuation, angular correction, and mean chamber gain
   TLinearFitter*    fFitter0T;          // fitting of the atenuation, angular correction, and mean chamber gain
   TLinearFitter*    fFitter1T;          // fitting of the atenuation, angular correction, and mean chamber gain
   TLinearFitter*    fFitter2T;          // fitting of the atenuation, angular correction, and mean chamber gain
+  //
+  // angular adn diffusion effect fitter
+  // 
+  TLinearFitter*    fDFitter0M;          // fitting of the atenuation, angular correction
+  TLinearFitter*    fDFitter1M;          // fitting of the atenuation, angular correction
+  TLinearFitter*    fDFitter2M;          // fitting of the atenuation, angular correction
+  TLinearFitter*    fDFitter0T;          // fitting of the atenuation, angular correction 
+  TLinearFitter*    fDFitter1T;          // fitting of the atenuation, angular correction
+  TLinearFitter*    fDFitter2T;          // fitting of the atenuation, angular correction
+  //
   AliTPCFitPad*     fSingleSectorFitter;   // just for debugging
   //
   // Conters

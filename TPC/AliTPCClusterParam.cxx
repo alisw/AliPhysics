@@ -1254,7 +1254,8 @@ Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t t
   TVectorD * norm = (TVectorD*)fQNorm->At(3*itype+ipad);
   if (!norm) return 0;
   TVectorD &no  = *norm;
-  Float_t   res = no[0]+
+  Float_t   res = 
+    no[0]+
     no[1]*dr+
     no[2]*ty+
     no[3]*tz+

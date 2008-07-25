@@ -117,7 +117,7 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
     } 
     else {
       fESD = esdH->GetEvent();
-      Printf("*** CONNECTED NEW EVENT ****");
+      //Printf("*** CONNECTED NEW EVENT ****");
     }
   }
 }

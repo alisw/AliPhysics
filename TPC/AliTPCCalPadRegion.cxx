@@ -84,9 +84,12 @@ AliTPCCalPadRegion& AliTPCCalPadRegion::operator=(const AliTPCCalPadRegion& rhs)
 
 
 void       AliTPCCalPadRegion::SetObject(TObject* obj, UInt_t segment, UInt_t padType)
-{ 
+{
+  //
+  // Set the object for given segment
+  //
   if (BoundsOk("SetObject", segment, padType)){ 
-    if (segment+fgkNSegments*padType>fObjects->GetEntriesFast()) fObjects->Expand(2*(segment+fgkNSegments*padType));
+    if (segment+fgkNSegments*padType>fObjects->GetEntriesFast()) fObjects->Expand(fgkNSegments * fgkNPadTypes);
     fObjects->AddAt(obj, segment+fgkNSegments*padType); 
   }
 }
