@@ -31,7 +31,7 @@ class AliAnalysisTaskKineFilter : public AliAnalysisTaskSE
     
     // Implementation of interface methods
     virtual                void   UserCreateOutputObjects();
-    virtual                void   Exec( Option_t *option );
+    virtual                void   UserExec( Option_t *option );
     
     // Setters
     virtual                void   SetTrackFilter(AliAnalysisFilter* trackF) { fTrackFilter = trackF; }

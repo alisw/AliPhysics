@@ -92,7 +92,7 @@ void AliAnalysisTaskKineFilter::UserCreateOutputObjects()
 
 
 //____________________________________________________________________
-void AliAnalysisTaskKineFilter::Exec(Option_t */*option*/)
+void AliAnalysisTaskKineFilter::UserExec(Option_t */*option*/)
 {
 // Execute analysis for current event
 //
