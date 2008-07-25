@@ -377,10 +377,10 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
     }
     // Add dead from the copied FXS files
     handOld->SetFileLocation(".");
-    handOld->ReadDeadFromFiles();
+    handOld->ReadSilentFromFiles();
     for (Int_t module=0; module<240; module++) {
-      ((AliITSCalibrationSPD*) spdEntryDead->At(module)) -> SetNrBad( handOld->GetNrDead(module) );
-      ((AliITSCalibrationSPD*) spdEntryDead->At(module)) -> SetBadList( handOld->GetDeadArray(module) );
+      ((AliITSCalibrationSPD*) spdEntryDead->At(module)) -> SetNrBad( handOld->GetNrSilent(module) );
+      ((AliITSCalibrationSPD*) spdEntryDead->At(module)) -> SetBadList( handOld->GetSilentArray(module) );
     }
     delete handOld;
     // Store the new calibration objects in OCDB

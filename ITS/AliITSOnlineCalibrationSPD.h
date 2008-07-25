@@ -3,7 +3,7 @@
 
 ///////////////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                            //
-// This class is used as a container to keep the dead and noisy      //
+// This class is used as a container to keep the dead,noisy,active   //
 // pixels online. Each object corresponds to one DDL (eq).           //
 // Note: This class should not be used directly.                     //
 // Use it via AliITSOnlineCalibrationSPDhandler instead.             //
@@ -20,7 +20,7 @@ class AliITSOnlineCalibrationSPD : public TObject {
     AliITSOnlineCalibrationSPD();
     virtual ~AliITSOnlineCalibrationSPD() {}
 
-    void   SetEqNr(UInt_t mod) {fEqNr=mod;}
+    void   SetEqNr(UInt_t eq) {fEqNr=eq;}
     UInt_t GetEqNr() const {return fEqNr;}
     void   SetBadList(TArrayI badlist) {fBadChannels=badlist;}
     void   SetNrBad(UInt_t nr) {fNrBad=nr;}
@@ -30,12 +30,24 @@ class AliITSOnlineCalibrationSPD : public TObject {
 
     void   ClearBad() {fBadChannels.Reset(); fNrBad=0;}
 
- private:
-    UInt_t   fEqNr;         // eq nr
-    UInt_t   fNrBad;        // nr of bad pixels
-    TArrayI  fBadChannels;  // array of keys for the bad
+    Bool_t IsActiveEq() const;
+    Bool_t IsActiveHS(UInt_t hs) const;
+    Bool_t IsActiveChip(UInt_t hs, UInt_t chip) const;
 
-    ClassDef(AliITSOnlineCalibrationSPD,1)
+    void   ActivateALL();
+    void   ActivateEq(Bool_t setval = kTRUE);
+    void   ActivateHS(UInt_t hs, Bool_t setval = kTRUE);
+    void   ActivateChip(UInt_t hs, UInt_t chip, Bool_t setval = kTRUE);
+
+ private:
+    UInt_t   fEqNr;            // eq nr
+    UInt_t   fNrBad;           // nr of bad pixels
+    TArrayI  fBadChannels;     // array of keys for the bad
+    Bool_t   fActiveEq;        // active bit for each equipment
+    Bool_t   fActiveHS[6];     // active bit for each half-stave
+    Bool_t   fActiveChip[60];  // active bit for each chip
+
+    ClassDef(AliITSOnlineCalibrationSPD,2)
 };
 
 #endif

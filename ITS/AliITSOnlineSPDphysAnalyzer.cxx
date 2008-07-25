@@ -303,7 +303,7 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
     return 0;
   }
 
-  AliITSOnlineCalibrationSPDhandler *deadChipHandler = new AliITSOnlineCalibrationSPDhandler();
+  AliITSIntMap* possiblyDead  = new AliITSIntMap();
   AliITSIntMap* possiblyIneff = new AliITSIntMap();
 
   fNrEnoughStatChips = 0;
@@ -312,140 +312,139 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
   UInt_t nrPossiblyDeadChips = 0;
   fNrEqHits = 0;
 
+
+  AliITSOnlineCalibrationSPDhandler *deadPixelHandler = new AliITSOnlineCalibrationSPDhandler();
+
   for (UInt_t hs=0; hs<6; hs++) {
-    for (UInt_t chip=0; chip<10; chip++) {
-      Bool_t good=kFALSE;
-
-      AliITSOnlineCalibrationSPDhandler *deadPixelHandler = new AliITSOnlineCalibrationSPDhandler();
-
-      UInt_t nrPossiblyDeadPixels = 0;
-      UInt_t nrPixels = 0;
-      UInt_t nrChipHits = 0;
-      for (UInt_t col=0; col<32; col++) {
-	for (UInt_t row=0; row<256; row++) {
-	  UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
-	  nrChipHits += nrHits;
-	  if (!fHandler->IsPixelNoisy(GetEqNr(),hs,chip,col,row)) {
-	    // don't include noisy pixels
-	    nrPixels++;
-	    if (nrHits==0) {
-	      nrPossiblyDeadPixels++;
-	      deadPixelHandler->SetDeadPixel(GetEqNr(),hs,chip,col,row);
-	    }
-	  }
-	  else {
-	    nrChipHits -= nrHits; // this is needed when running offline (online nrHits should be 0 already)
-	  }
-	}
-      }
-      fNrEqHits+=nrChipHits;
-
-      // check all pixels that were declared dead from before...
-      UInt_t nrDeadBefore = fHandler->GetNrDeadC(GetEqNr(),hs,chip);
-      UInt_t nrNoisyNow   = fHandler->GetNrNoisyC(GetEqNr(),hs,chip);
-      if (nrDeadBefore+nrNoisyNow==8192) {
-	if (nrChipHits>0) {
-	  fHandler->UnSetDeadChip(GetEqNr(),hs,chip);
-	}
-      }
-      else {
-	AliITSOnlineCalibrationSPDhandler *tmpHand = new AliITSOnlineCalibrationSPDhandler();
-	for (UInt_t index=0; index<nrDeadBefore; index++) {
-	  UInt_t col = fHandler->GetDeadColAtC(GetEqNr(),hs,chip,index);
-	  UInt_t row = fHandler->GetDeadRowAtC(GetEqNr(),hs,chip,index);
-	  if (fPhysObj->GetHits(hs,chip,col,row)>0) {
-	    //	    fHandler->UnSetDeadPixel(GetEqNr(),hs,chip,col,row);
-	    tmpHand->SetDeadPixel(GetEqNr(),hs,chip,col,row);
-	  }
-	}
-	UInt_t nrToRemove = tmpHand->GetNrDead();
-	for (UInt_t index=0; index<nrToRemove; index++) {
-	  fHandler->UnSetDeadPixel(GetEqNr(),hs,chip,tmpHand->GetDeadColAtC(GetEqNr(),hs,chip,index),tmpHand->GetDeadRowAtC(GetEqNr(),hs,chip,index));
-	}
-	delete tmpHand;
-      }
-
-
-
-
-      if (nrPossiblyDeadPixels==0) {
-	// no need to see if we have enough statistics...
-	fNrEnoughStatChips++;
-	good=kTRUE;
-	delete deadPixelHandler;
-	good=kTRUE;
-	printf("%3d",good);
-	if (chip==9) printf("\n");
-	continue;
-      }
-
-      if (nrChipHits==0) {
-	nrPossiblyDeadChips++;
-	deadChipHandler->SetDeadChip(GetEqNr(),hs,chip);
-	delete deadPixelHandler;
-	good=kFALSE;
-	printf("%3d",good);
-	if (chip==9) printf("\n");
-	continue;
-      }
-
-      // Binomial with n events and probability p for pixel hit
-      UInt_t n = GetNrEvents();
-      if (nrPixels>0 && n>0) {
-
-	Double_t p = (Double_t)nrChipHits/nrPixels/n;
-
-	// probability of falsely assigning a dead pixel
-	Double_t falselyDeadProb = 1;
-	Int_t falselyDeadProbExp = 0;
-	for (UInt_t i=0; i<n; i++) {
-	  falselyDeadProb*=(1-p);
-	  Exponent(falselyDeadProb,falselyDeadProbExp);
-	}
-
-	// can we find dead pixels...?
-	if (falselyDeadProbExp<fThreshDeadExp || (falselyDeadProbExp==fThreshDeadExp && falselyDeadProb<fThreshDead)) {
-	  fNrEnoughStatChips++;
-	  good=kTRUE;
-	  // add dead pixels to handler
-	  fHandler->AddDeadFrom(deadPixelHandler);
+    if (!(fHandler->IsActiveHS(GetEqNr(),hs))) {
+      fNrDeadChips+=10;
+    }
+    else {
+      for (UInt_t chip=0; chip<10; chip++) {
+	if (!(fHandler->IsActiveChip(GetEqNr(),hs,chip))) {
+	  fNrDeadChips++;
 	}
 	else {
-	  // this might be an inefficient chip
-	  possiblyIneff->Insert(hs*10+chip,nrChipHits);
+	  // perform search for individual dead pixels...
+	  deadPixelHandler->ResetDead();
+	  Bool_t good=kFALSE;
+
+	  UInt_t nrPossiblyDeadPixels = 0;
+	  UInt_t nrPixels = 0;
+	  UInt_t nrChipHits = 0;
+	  for (UInt_t col=0; col<32; col++) {
+	    for (UInt_t row=0; row<256; row++) {
+	      UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
+	      nrChipHits += nrHits;
+	      if (!fHandler->IsPixelNoisy(GetEqNr(),hs,chip,col,row)) {
+		// don't include noisy pixels
+		nrPixels++;
+		if (nrHits==0) {
+		  nrPossiblyDeadPixels++;
+		  deadPixelHandler->SetDeadPixel(GetEqNr(),hs,chip,col,row);
+		}
+	      }
+	      else {
+		nrChipHits -= nrHits; // this is needed when running offline (online nrHits should be 0 already)
+	      }
+	    }
+	  }
+	  fNrEqHits+=nrChipHits;
+
+	  // check all pixels that were declared dead from before...
+	  UInt_t nrDeadBefore = fHandler->GetNrDeadC(GetEqNr(),hs,chip);
+	  AliITSOnlineCalibrationSPDhandler *tmpHand = new AliITSOnlineCalibrationSPDhandler();
+	  for (UInt_t index=0; index<nrDeadBefore; index++) {
+	    UInt_t col = fHandler->GetDeadColAtC(GetEqNr(),hs,chip,index);
+	    UInt_t row = fHandler->GetDeadRowAtC(GetEqNr(),hs,chip,index);
+	    if (fPhysObj->GetHits(hs,chip,col,row)>0) {
+	      //	    fHandler->UnSetDeadPixel(GetEqNr(),hs,chip,col,row); // This was a bug - cannot delete while moving through indices, use tmpHand instead
+	      tmpHand->SetDeadPixel(GetEqNr(),hs,chip,col,row);
+	    }
+	  }
+	  UInt_t nrToRemove = tmpHand->GetNrDead();
+	  for (UInt_t index=0; index<nrToRemove; index++) {
+	    fHandler->UnSetDeadPixel(GetEqNr(),hs,chip,tmpHand->GetDeadColAtC(GetEqNr(),hs,chip,index),tmpHand->GetDeadRowAtC(GetEqNr(),hs,chip,index));
+	  }
+	  delete tmpHand;
+
+
+
+	  if (nrPossiblyDeadPixels==0) {
+	    // no need to see if we have enough statistics...
+	    fNrEnoughStatChips++;
+	    good=kTRUE;
+	    //	printf("%3d",good);
+	    //	if (chip==9) printf("\n");
+	    continue;
+	  }
+
+	  if (nrChipHits==0) {
+	    nrPossiblyDeadChips++;
+	    //!!!	    deadChipHandler->SetDeadChip(GetEqNr(),hs,chip);
+	    possiblyDead->Insert(hs,chip);
+	    good=kFALSE;
+	    //	printf("%3d",good);
+	    //	if (chip==9) printf("\n");
+	    continue;
+	  }
+
+	  // Binomial with n events and probability p for pixel hit
+	  UInt_t n = GetNrEvents();
+	  if (nrPixels>0 && n>0) {
+
+	    Double_t p = (Double_t)nrChipHits/nrPixels/n;
+
+	    // probability of falsely assigning a dead pixel
+	    Double_t falselyDeadProb = 1;
+	    Int_t falselyDeadProbExp = 0;
+	    for (UInt_t i=0; i<n; i++) {
+	      falselyDeadProb*=(1-p);
+	      Exponent(falselyDeadProb,falselyDeadProbExp);
+	      // can we find dead pixels...?
+	      if (falselyDeadProbExp<fThreshDeadExp || (falselyDeadProbExp==fThreshDeadExp && falselyDeadProb<fThreshDead)) {
+		fNrEnoughStatChips++;
+		good=kTRUE;
+		// add dead pixels to handler
+		fHandler->AddDeadFrom(deadPixelHandler);
+		break;
+	      }
+	    }
+	    if (!good) {
+	      // this might be an inefficient chip
+	      possiblyIneff->Insert(hs*10+chip,nrChipHits);
+	    }
+
+	  }
+	  else {
+	    if (n>0) {
+	      // this is a completely noisy chip... put in category enough stat
+	      fNrEnoughStatChips++;
+	      good=kTRUE;
+	    }
+	  }
+
+	  //      printf("%3d",good);
+	  //      if (chip==9) printf("\n");
+
 	}
-
-      }
-      else {
-	if (n>0) {
-	  // this is a completely noisy chip... put in category enough stat
-	  fNrEnoughStatChips++;
-	  good=kTRUE;
-	}
-      }
-
-      delete deadPixelHandler;
-
-      printf("%3d",good);
-      if (chip==9) printf("\n");
-
-    } // for chip
+      } // for chip
+    }
   } // for hs
+ 
+  delete deadPixelHandler;
 
-
+  Int_t key,val;
   // dead chips?
   if (fNrEqHits>fMinNrEqHitsForDeadChips) {
-    fHandler->AddDeadFrom(deadChipHandler);
-    fNrDeadChips=nrPossiblyDeadChips;
+    while (possiblyDead->Pop(key,val)) {
+      fHandler->ActivateChip(GetEqNr(),key,val,kFALSE);
+    }
+    fNrDeadChips+=nrPossiblyDeadChips;
   }
-  else {
-    fNrDeadChips=0;
-  }
-  delete deadChipHandler;
-
+  delete possiblyDead;
 
   // inefficient chips?
-  Int_t key,val;
   while (possiblyIneff->Pop(key,val)) {
     if (val<fNrEqHits/60*fRatioToMeanForInefficientChip) {
       fNrInefficientChips++;

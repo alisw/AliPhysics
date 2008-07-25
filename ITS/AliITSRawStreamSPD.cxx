@@ -68,6 +68,9 @@ AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
   for (UInt_t iword=0; iword<kCalHeadLenMax; iword++) {
     fCalHeadWord[iword]=0xffffffff;
   }
+  for (UInt_t eq=0; eq<20; eq++) {
+    fActiveEq[eq]=kFALSE;
+  }
   NewEvent();
 }
 //__________________________________________________________________________
@@ -151,6 +154,7 @@ void AliITSRawStreamSPD::NewEvent() {
 }
 //__________________________________________________________________________
 Int_t AliITSRawStreamSPD::ReadCalibHeader() {
+  // needs to be called in the beginning of each equipment data
   // read the extra calibration header
   // returns the length of the header if it is present, -1 otherwise
 
@@ -166,10 +170,18 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
   fHeaderOrTrailerReadLast = kFALSE;
   fFillOutOfSynch = kFALSE;
 
-  // check what number of chip headers/trailers to expect
+  // set eq active and the participating half-staves (for access from outside this class), 
+  // set what number of chip headers/trailers to expect
+  fActiveEq[ddlID]=kTRUE;
   fExpectedHeaderTrailerCount = 0;
   for (UInt_t hs=0; hs<6; hs++) {
-    if (!fRawReader->TestBlockAttribute(hs)) fExpectedHeaderTrailerCount+=10;
+    if (!fRawReader->TestBlockAttribute(hs)) {
+      fActiveHS[ddlID][hs]=kTRUE;
+      fExpectedHeaderTrailerCount+=10;
+    }
+    else {
+      fActiveHS[ddlID][hs]=kFALSE;
+    }
   }
 
   if (ddlID>=0 && ddlID<20) fCalHeadRead[ddlID]=kTRUE;
@@ -219,9 +231,10 @@ Bool_t AliITSRawStreamSPD::Next() {
       if (!fCalHeadRead[fDDLID]) {
 	if (fLastDDLID!=-1) {  // if not the first equipment for this event
 	  fEqPLBytesRead -= 2;
-	  CheckHeaderAndTrailerCount(fLastDDLID);
+	  // The next line is commented, since we do not have the information how many chips to expect
+	  // CheckHeaderAndTrailerCount(fLastDDLID);
 	}
-	if (ReadCalibHeader()>=0) continue;
+	if (ReadCalibHeader()>=0) continue; // skip to next word if we found a calib header, otherwise parse this word as regular data (go on with this while loop)
       }
     }
     else {
@@ -341,7 +354,8 @@ Bool_t AliITSRawStreamSPD::Next() {
 
   }
   if (fDDLID>=0 && fDDLID<20) {
-    CheckHeaderAndTrailerCount(fDDLID);
+    // The next line is commented, since we do not have the information how many chips to expect
+    // CheckHeaderAndTrailerCount(fDDLID);
   }
   return kFALSE;
 }
@@ -360,7 +374,7 @@ void AliITSRawStreamSPD::CheckHeaderAndTrailerCount(Int_t ddlID) {
 			   fEqPLChipTrailersRead,fExpectedHeaderTrailerCount,ddlID);
     AliError(errMess.Data());
     fRawReader->AddMajorErrorLog(kHeaderCountErr,errMess.Data());
-    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderCountErr,ddlID,-1,-1,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTrailerCountErr,ddlID,-1,-1,errMess.Data());
   }
 }
 //__________________________________________________________________________
@@ -393,11 +407,15 @@ const Char_t* AliITSRawStreamSPD::GetErrorName(UInt_t errorCode) {
   else if (errorCode==kHSNumberErr)             return "HS Number Error";
   else if (errorCode==kChipAddrErr)             return "Chip Address Error";
   else if (errorCode==kCalHeaderLengthErr)      return "Calib Header Length Error";
+  else if (errorCode==kAdvEventCounterErr)      return "Event Counter Error (Adv)";
+  else if (errorCode==kAdvEventCounterOrderErr) return "Event Counter Jump Error (Adv)";
   else return "";
 }
 //__________________________________________________________________________
 Bool_t AliITSRawStreamSPD::GetHalfStavePresent(UInt_t hs) {
   // Reads the half stave present status from the block attributes
+  // This is not really needed anymore (kept for now in case it is still used somewhere).
+  // The same information can be reached through the "IsActiveHS" method instead.
   Int_t ddlID = fRawReader->GetDDLID();
   if (ddlID==-1) {
     AliWarning("DDL ID = -1. Cannot read block attributes. Return kFALSE.");

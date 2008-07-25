@@ -126,6 +126,19 @@ int main(int argc, char **argv) {
 
 
 
+  // create calibration handler (needed already at step 1 in order to fill which eq,hs,chips are active
+  AliITSOnlineCalibrationSPDhandler* handler = new AliITSOnlineCalibrationSPDhandler();
+  // Read silent=dead+inactive info from previous calibrations
+  handler->SetFileLocation(saveDirDead);
+  handler->ReadSilentFromFiles();
+//!!!  // start by deactivating all eq - should then be activated when found in raw data
+//!!!  for (UInt_t eq=0; eq<20; eq++) {
+//!!!    handler->ActivateEq(eq,kFALSE);
+//!!!  }
+
+
+
+
   // ********* STEP 1: Produce phys container files (Reference Data). ***********************************
 
 #ifndef SPD_DA_OFF
@@ -210,45 +223,80 @@ int main(int argc, char **argv) {
       eventT=event->eventType;
       if (eventT == PHYSICS_EVENT){
 
-	eventNr++;
 	//	printf("eventNr %d\n",eventNr);
 
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
 	AliITSRawStreamSPD *str = new AliITSRawStreamSPD(reader);
 
-	//	for (UInt_t eqId=0; eqId<20; eqId++) {
-	//	  reader->Reset();
-	//	  reader->Select("ITSSPD",eqId,eqId);
-
 	while (str->Next()) {
 
 	  Int_t eqId = reader->GetDDLID();
+	  // check that this hs is active in handler object
+	  if (!(handler->IsActiveEq(eqId))) {
+	    printf("Warning: Found Eq (%d) , previously inactive in this run!\n",eqId);
+	    handler->ActivateEq(eqId);
+	  }
 	  if (eqId>=0 && eqId<20) {
-	    if (!bPhysInit[eqId]) {
+	    if (!bPhysInit[eqId]) { // this code is duplicated for the moment... (see also below)
 	      TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
 	      physObj[eqId] = new AliITSOnlineSPDphys(fileName.Data());
 	      physObj[eqId]->AddRunNr(runNr);
 	      physObj[eqId]->SetEqNr(eqId);
 	      bPhysInit[eqId]=kTRUE;
 	    }
-	    
+
 	    UInt_t hs = str->GetHalfStaveNr();
+	    // check that this hs is active in handler object
+	    if (!(handler->IsActiveHS(eqId,hs))) {
+	      printf("Warning: Found HS (%d,%d) , previously inactive in this run!\n",eqId,hs);
+	      handler->ActivateHS(eqId,hs);
+	    }
 	    UInt_t chip = str->GetChipAddr();
+	    // check that this chip is active in handler object
+	    if (!(handler->IsActiveChip(eqId,hs,chip))) {
+	      printf("Info: Found Chip (%d,%d,%d) , inactive in previous run.\n",eqId,hs,chip);
+	      handler->ActivateChip(eqId,hs,chip);
+	    }
 	    physObj[eqId]->IncrementHits(hs,chip,str->GetChipCol(),str->GetChipRow());
 	    
 	  }
 	}
-	
-	for (UInt_t eqId=0; eqId<20; eqId++) {
-	  if (bPhysInit[eqId]) {
-	    physObj[eqId]->IncrementNrEvents();
+
+
+	// check which eq and hs are active for first event only
+	if (eventNr==0) {
+	  for (UInt_t eqId=0; eqId<20; eqId++) {
+	    // activate Eq and HSs in handler object
+	    if (str->IsActiveEq(eqId)) {
+	      handler->ActivateEq(eqId);
+	      for (UInt_t hs=0; hs<6; hs++) {
+		handler->ActivateHS(eqId,hs,str->IsActiveHS(eqId,hs));
+	      }
+	      if (!bPhysInit[eqId]) { // this code is duplicated for the moment... (see also above)
+		TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
+		physObj[eqId] = new AliITSOnlineSPDphys(fileName.Data());
+		physObj[eqId]->AddRunNr(runNr);
+		physObj[eqId]->SetEqNr(eqId);
+		bPhysInit[eqId]=kTRUE;
+	      }
+	    }
+	    else {
+	      handler->ActivateEq(eqId,kFALSE);
+	    }
 	  }
 	}
 
-	//	}
+
+	for (UInt_t eq=0; eq<20; eq++) {
+	  if (bPhysInit[eq]) {
+	    physObj[eq]->IncrementNrEvents();
+	  }
+	}
 
 	delete str;
 	delete reader;
+
+	eventNr++;
 
       }
 
@@ -264,8 +312,8 @@ int main(int argc, char **argv) {
 #endif
   
   // clean up phys objects (also saves them)
-  for (UInt_t eqId=0; eqId<20; eqId++) {
-    if (physObj[eqId]!=NULL) delete physObj[eqId];
+  for (UInt_t eq=0; eq<20; eq++) {
+    if (physObj[eq]!=NULL) delete physObj[eq];
   }
 
 
@@ -283,12 +331,6 @@ int main(int argc, char **argv) {
   system(command.Data());
 
 
-  // create calibration handler and read dead from previous calibrations
-  AliITSOnlineCalibrationSPDhandler* handler = new AliITSOnlineCalibrationSPDhandler();
-  handler->SetFileLocation(saveDirDead);
-  handler->ReadDeadFromFiles();
-
-
   UInt_t firstRunNrDead = runNr;
 
 
@@ -297,38 +339,38 @@ int main(int argc, char **argv) {
   Bool_t eqActiveNoisy[20];
 
   // *** *** *** start loop over equipments (eq_id)
-  for (UInt_t eqId=0; eqId<20; eqId++) {
-    eqActiveNoisy[eqId] = kFALSE;
+  for (UInt_t eq=0; eq<20; eq++) {
+    eqActiveNoisy[eq] = kFALSE;
 
     // create analyzer for this eq
-    TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
+    TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eq);
     AliITSOnlineSPDphysAnalyzer *noisyAnalyzer = new AliITSOnlineSPDphysAnalyzer(fileName.Data(),handler);
 
     // check data in container
-    if (noisyAnalyzer->GetEqNr() != eqId) {
+    if (noisyAnalyzer->GetEqNr() != eq) {
       if (noisyAnalyzer->GetEqNr() != 999) {
 	printf("Error: Mismatching EqId in Container data and filename (%d!=%d). Skipping.\n",
-	       noisyAnalyzer->GetEqNr(),eqId);
+	       noisyAnalyzer->GetEqNr(),eq);
       }
       delete noisyAnalyzer;
       continue;
     }
 
     nrEqActiveNoisy++;
-    eqActiveNoisy[eqId] = kTRUE;
+    eqActiveNoisy[eq] = kTRUE;
 
     // configure analyzer with tuning parameters etc:
     for (UInt_t i=0; i<nrTuningParams; i++) {
       noisyAnalyzer->SetParam(((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
     }
 
-    printf("SPD phys STEP 2: Noisy search for eq %d\n",eqId);  
+    printf("SPD phys STEP 2: Noisy search for eq %d\n",eq);  
 
     // search for noisy pixels:
     nrEnoughStatNoisy += noisyAnalyzer->ProcessNoisyPixels();
 
     // copy this phys obj to temporary dead reference dir to process after noisy search
-    TString fileNameDead = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
+    TString fileNameDead = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eq);
     AliITSOnlineSPDphys* physObj = new AliITSOnlineSPDphys(fileNameDead.Data());
     physObj->AddPhys(noisyAnalyzer->GetOnlinePhys());
     if (physObj->GetNrRuns()>0) {
@@ -340,9 +382,9 @@ int main(int argc, char **argv) {
     // remove noisy pixels from dead hitmap
     for (UInt_t hs=0; hs<6; hs++) {
       for (UInt_t chip=0; chip<10; chip++) {
-	for (UInt_t ind=0; ind<handler->GetNrNoisyC(eqId,hs,chip); ind++) {
-	  UInt_t col  = handler->GetNoisyColAtC(eqId,hs,chip,ind);
-	  UInt_t row  = handler->GetNoisyRowAtC(eqId,hs,chip,ind);
+	for (UInt_t ind=0; ind<handler->GetNrNoisyC(eq,hs,chip); ind++) {
+	  UInt_t col  = handler->GetNoisyColAtC(eq,hs,chip,ind);
+	  UInt_t row  = handler->GetNoisyRowAtC(eq,hs,chip,ind);
 	  physObj->AddHits(hs,chip,col,row,-noisyAnalyzer->GetOnlinePhys()->GetHits(hs,chip,col,row));
 	}
       }
@@ -352,9 +394,9 @@ int main(int argc, char **argv) {
     delete noisyAnalyzer;
 
 #ifndef SPD_DA_OFF
-    daqDA_progressReport((unsigned int)((eqId+1)*2.5));
+    daqDA_progressReport((unsigned int)((eq+1)*2.5));
 #else
-    printf("progress: %d\n",(unsigned int)(50+(eqId+1)*1.25));
+    printf("progress: %d\n",(unsigned int)(50+(eq+1)*1.25));
 #endif
   }
   // *** *** *** end loop over equipments (eq_id)
@@ -378,32 +420,33 @@ int main(int argc, char **argv) {
   Bool_t eqActiveDead[20];
 
   // *** *** *** start loop over equipments (eq_id)
-  for (UInt_t eqId=0; eqId<20; eqId++) {
-    eqActiveDead[eqId] = kFALSE;
+  for (UInt_t eq=0; eq<20; eq++) {
+    eqActiveDead[eq] = kFALSE;
 
     // setup analyzer for dead search
-    TString fileNameDead = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
+    TString fileNameDead = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eq);
     AliITSOnlineSPDphys* physObj = new AliITSOnlineSPDphys(fileNameDead.Data());
     AliITSOnlineSPDphysAnalyzer* deadAnalyzer = new AliITSOnlineSPDphysAnalyzer(physObj,handler);
     // check data in container
-    if (deadAnalyzer->GetEqNr() != eqId) {
+    if (deadAnalyzer->GetEqNr() != eq) {
       if (deadAnalyzer->GetEqNr() != 999) {
 	printf("Error: Mismatching EqId in Dead Container data and filename (%d!=%d). Skipping.\n",
-	       deadAnalyzer->GetEqNr(),eqId);
+	       deadAnalyzer->GetEqNr(),eq);
       }
       delete deadAnalyzer;
+      //!!!      nrDeadChips+=60; // since this eq is inactive...
       continue;
     }
 
     nrEqActiveDead++;
-    eqActiveDead[eqId] = kTRUE;
+    eqActiveDead[eq] = kTRUE;
 
     // configure analyzer with tuning parameters etc:
     for (UInt_t i=0; i<nrTuningParams; i++) {
       deadAnalyzer->SetParam(((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
     }
 
-    printf("SPD phys STEP 2: Dead search for eq %d\n",eqId);  
+    printf("SPD phys STEP 2: Dead search for eq %d\n",eq);  
 
     // search for dead pixels:
     nrEnoughStatChips += deadAnalyzer->ProcessDeadPixels();
@@ -413,9 +456,9 @@ int main(int argc, char **argv) {
     delete deadAnalyzer;
 
 #ifndef SPD_DA_OFF
-    daqDA_progressReport((unsigned int)(50+(eqId+1)*2.5));
+    daqDA_progressReport((unsigned int)(50+(eq+1)*2.5));
 #else
-    printf("progress: %d\n",(unsigned int)(75+(eqId+1)*1.25));
+    printf("progress: %d\n",(unsigned int)(75+(eq+1)*1.25));
 #endif
   }
   // *** *** *** end loop over equipments (eq_id)
@@ -423,20 +466,10 @@ int main(int argc, char **argv) {
   
   printf("Dead search finished. %d dead pixels in total.\n%d chips (%d) had enough statistics. %d chips were dead. %d chips were inefficient.\n",handler->GetNrDead(),nrEnoughStatChips,nrEqActiveDead*60,nrDeadChips,nrInefficientChips);
   handler->SetFileLocation(saveDirDead);
-  handler->WriteDeadToFilesAlways();
-
+  handler->WriteSilentToFilesAlways();
   handler->SetFileLocation(saveDirDeadToFXS);
-  handler->WriteDeadToFilesAlways();
-// *** old code (used if not all dead data should be uploaded)
-//  UInt_t nrDeadFilesToTar = 0;
-//  handler->SetFileLocation(saveDirDeadToFXS);
-//  for (UInt_t eqId=0; eqId<20; eqId++) {
-//    if (eqActiveDead[eqId]) {
-//      handler->WriteDeadToFile(eqId);
-//      nrDeadFilesToTar++;
-//    }
-//  }
-//***  
+  handler->WriteSilentToFilesAlways();
+
 
   printf("Opening id list file\n");
   TString idsFXSFileName = Form("%s/FXSids_run_%d.txt",saveDirIdsToFXS,runNr);
@@ -444,26 +477,22 @@ int main(int argc, char **argv) {
   idsFXSfile.open(idsFXSFileName.Data());
 
 
-  // if there is no chip in category "needsMoreStat"
+  // send (dead) reference data for this run to FXS - only if there is no chip in category "needsMoreStat"
   if (nrEnoughStatChips+nrDeadChips+nrInefficientChips == nrEqActiveDead*60) {
-    // calibration is complete
-    printf("Dead calibration is complete.\n");
-
-
-
+    printf("Dead calibration is complete.\n");    // calibration is complete
     printf("Preparing dead reference data\n");
     // send reference data for dead pixels to FXS
     TString tarFiles = "";
-    for (UInt_t eqId=0; eqId<20; eqId++) {
-      if (eqActiveDead[eqId]) {
-	printf("Preparing dead pixels for eq %d\n",eqId);
+    for (UInt_t eq=0; eq<20; eq++) {
+      if (eqActiveDead[eq]) {
+	printf("Preparing dead pixels for eq %d\n",eq);
 	// move file to ref dir
-	TString fileName = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
-	TString newFileName = Form("%s/SPDphys_dead_run_%d_%d_eq_%d.root",saveDirDeadRef,firstRunNrDead,runNr,eqId);
+	TString fileName = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eq);
+	TString newFileName = Form("%s/SPDphys_dead_run_%d_%d_eq_%d.root",saveDirDeadRef,firstRunNrDead,runNr,eq);
 	TString command = Form("mv -f %s %s",fileName.Data(),newFileName.Data());
 	system(command.Data());
 
-	tarFiles.Append(Form("SPDphys_dead_run_%d_%d_eq_%d.root ",firstRunNrDead,runNr,eqId));
+	tarFiles.Append(Form("SPDphys_dead_run_%d_%d_eq_%d.root ",firstRunNrDead,runNr,eq));
       }
     }
     TString send_command = Form("cd %s; tar -cf ref_phys_dead.tar %s",saveDirDeadRef,tarFiles.Data());
@@ -478,38 +507,15 @@ int main(int argc, char **argv) {
     }
 #endif
     idsFXSfile << Form("%s\n",id.Data());
-//    for (UInt_t eqId=0; eqId<20; eqId++) { // OLD CODE NOT TARED
-//      if (eqActiveDead[eqId]) {
-//	TString fileName = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
-//	// move file to ref dir
-//	TString newFileName = Form("%s/SPDphys_dead_run_%d_%d_eq_%d.root",saveDirDeadRef,firstRunNrDead,runNr,eqId);
-//	TString command = Form("mv -f %s %s",fileName.Data(),newFileName.Data());
-//	system(command.Data());
-//	// send ref data to FXS
-//	TString id = Form("SPD_ref_phys_dead_%d",eqId);
-//#ifndef SPD_DA_OFF
-//	Int_t status = daqDA_FES_storeFile(newFileName.Data(),id.Data());
-//	if (status!=0) {
-//	  printf("Failed to export file %s , status %d\n",newFileName.Data(),status);
-//	  return -1;
-//	}
-//#endif
-//	idsFXSfile << Form("%s\n",id.Data());
-//      }
-//      else {
-//	TString command = Form("rm -f %s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
-//	system(command.Data());
-//      }
-//    }
   }
 
 
+  // send (noisy) reference data for this run to FXS
   printf("Preparing noisy reference data\n");
-  // send reference data for this run to FXS
   TString tarFiles = "";
-  for (UInt_t eqId=0; eqId<20; eqId++) {
-    if (eqActiveNoisy[eqId]) {
-      tarFiles.Append(Form("SPDphys_run_%d_eq_%d.root ",runNr,eqId));
+  for (UInt_t eq=0; eq<20; eq++) {
+    if (eqActiveNoisy[eq]) {
+      tarFiles.Append(Form("SPDphys_run_%d_eq_%d.root ",runNr,eq));
     }
   }
   TString send_command = Form("cd %s; tar -cf ref_phys.tar %s",saveDirNoisyRef,tarFiles.Data());
@@ -526,28 +532,8 @@ int main(int argc, char **argv) {
   idsFXSfile << Form("%s\n",id.Data());
 
 
-//  // send reference data for this run to FXS - OLD CODE NOT TARED
-//  for (UInt_t eqId=0; eqId<20; eqId++) {
-//    if (eqActiveNoisy[eqId]) {
-//      TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
-//      TString id = Form("SPD_ref_phys_%d",eqId);
-//#ifndef SPD_DA_OFF
-//      Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
-//      if (status!=0) {
-//	printf("Failed to export file %s , status %d\n",fileName.Data(),status);
-//	return -1;
-//      }
-//      idsFXSfile << Form("%s\n",id.Data());
-//    }
-//  }
-//#endif
-
-
-
-
-  printf("Preparing dead files\n");
   // send dead pixels to FXS
-  //  if (nrDeadFilesToTar>0) { //*** old code (used if not all dead data should be uploaded)
+  printf("Preparing dead files\n");
   // send a tared file of all the dead files
   send_command = Form("cd %s; tar -cf dead_phys.tar *",saveDirDeadToFXS);
   //  printf("\n\n%s\n\n",command.Data());
@@ -562,7 +548,6 @@ int main(int argc, char **argv) {
   }
 #endif
   idsFXSfile << Form("%s\n",id.Data());
-  //  } //*** old code (used if not all dead data should be uploaded)
 
 
   // send noisy pixels to FXS

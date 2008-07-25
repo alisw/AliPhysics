@@ -21,7 +21,7 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     AliITSRawStreamSPD& operator=(const AliITSRawStreamSPD& rstream);
     virtual ~AliITSRawStreamSPD() {};
 
-    virtual Bool_t   Next();
+    virtual Bool_t  Next();
     virtual Int_t   ReadCalibHeader();
 
     // the 2 methods below are equivalent to AliITSRawStream::GetCoord1 and GetCoord2
@@ -54,6 +54,10 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     static UInt_t GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col);
     static UInt_t GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t row);
 
+    Int_t  GetEventCounter() {return fEventCounter;}
+
+    Bool_t IsActiveEq(UInt_t eq) const {return fActiveEq[eq];}
+    Bool_t IsActiveHS(UInt_t eq, UInt_t hs) const {return fActiveHS[eq][hs];}
 
     Bool_t GetHalfStavePresent(UInt_t hs);
 
@@ -98,7 +102,9 @@ class AliITSRawStreamSPD: public AliITSRawStream {
       kDDLNumberErr,
       kHSNumberErr,
       kChipAddrErr,
-      kCalHeaderLengthErr
+      kCalHeaderLengthErr,
+      kAdvEventCounterErr,     // used by SPDmood
+      kAdvEventCounterOrderErr // used by SPDmood
     };
 
   private :
@@ -135,6 +141,9 @@ class AliITSRawStreamSPD: public AliITSRawStream {
 
     Bool_t      fAdvancedErrorLog;           // is the advanced error logging activated?
     AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
+
+    Bool_t      fActiveEq[20];               // which equipments are active (found in data)
+    Bool_t      fActiveHS[20][6];            // which half-staves are active (blockattribute bits)
 
     ClassDef(AliITSRawStreamSPD, 0) // class for reading ITS SPD raw digits
 };
