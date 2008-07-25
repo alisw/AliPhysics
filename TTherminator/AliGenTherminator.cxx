@@ -402,7 +402,7 @@ void AliGenTherminator::SetLhyquidSet(const char *set)
   const char *aroot = gSystem->Getenv("ALICE_ROOT");
   if (strstr(set, "LHC500C0005")) {
     AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
-    AliWarning(Form("  Pb-Pb collisions, centrality 0-5%"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 0-5 percent"));
     AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
     AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
     AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C0005/FO.txt"));
@@ -411,7 +411,7 @@ void AliGenTherminator::SetLhyquidSet(const char *set)
   }
   else if (strstr(set, "LHC500C2030")) {
     AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
-    AliWarning(Form("  Pb-Pb collisions, centrality 20-30%"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 20-30 percent"));
     AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
     AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
     AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C2030/FO.txt"));
