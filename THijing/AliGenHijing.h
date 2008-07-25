@@ -58,12 +58,7 @@ class AliGenHijing : public AliGenMC
     
 	    
 // Getters
-    virtual Float_t GetEnergyCMS()       const {return fEnergyCMS;}
     virtual TString GetReferenceFrame()  const {return fFrame;}
-    virtual void    GetProjectile(TString& tar, Int_t& a, Int_t& z)       const
-	{tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
-    virtual void    GetTarget(TString& tar, Int_t& a, Int_t& z)           const
-	{tar = fTarget; a = fATarget; z = fZTarget;}    
     virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax) const
 	{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
     virtual Int_t   GetJetQuenching()                    const {return fQuench;}
@@ -101,7 +96,6 @@ class AliGenHijing : public AliGenMC
     Int_t       fEvaluate;       // Evaluate total and partial cross-sections
     Int_t       fSelectAll;      // Flag to write the full event
     Int_t       fFlavor;         // Selected particle flavor 4: charm+beauty 5: beauty
-    Float_t     fEnergyCMS;      // Centre of mass energy
     Float_t     fKineBias;       // Bias from kinematic selection
     Int_t       fTrials;         // Number of trials
     Float_t     fXsection;       // Cross-section
@@ -139,7 +133,7 @@ class AliGenHijing : public AliGenMC
     // check if stable
     Bool_t Stable(TParticle*  particle) const;
     
-    ClassDef(AliGenHijing, 6) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing, 7) // AliGenerator interface to Hijing
 };
 #endif
 

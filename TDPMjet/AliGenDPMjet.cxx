@@ -44,7 +44,6 @@ ClassImp(AliGenDPMjet)
 AliGenDPMjet::AliGenDPMjet()
     :AliGenMC(), 
      fBeamEn(2750.),
-     fEnergyCMS(5500.),
      fMinImpactParam(0.),
      fMaxImpactParam(5.),
      fICentr(0),
@@ -62,6 +61,7 @@ AliGenDPMjet::AliGenDPMjet()
      fProcess(kDpmMb)
 {
 // Constructor
+    SetEnergyCMS(5500.);
     AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
@@ -70,7 +70,6 @@ AliGenDPMjet::AliGenDPMjet()
 AliGenDPMjet::AliGenDPMjet(Int_t npart)
     :AliGenMC(npart),
      fBeamEn(2750.),
-     fEnergyCMS(5500.),
      fMinImpactParam(0.),
      fMaxImpactParam(5.),
      fICentr(0),
@@ -89,6 +88,7 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
+    SetEnergyCMS(5500.);
     fName = "DPMJET";
     fTitle= "Particle Generator using DPMJET";
     SetTarget();
@@ -100,7 +100,6 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
 AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
     :AliGenMC(),
      fBeamEn(2750.),
-     fEnergyCMS(5500.),
      fMinImpactParam(0.),
      fMaxImpactParam(5.),
      fICentr(0),
@@ -118,6 +117,7 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fProcess(kDpmMb)
 {
     // Dummy copy constructor
+    SetEnergyCMS(5500.);
 }
 
 //______________________________________________________________________________

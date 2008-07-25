@@ -109,7 +109,10 @@ public:
   void        SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
   Bool_t      RunQA() ;
   Bool_t      SetRunQA(TString detAndAction="ALL:ALL") ; 
-  
+
+  void SetWriteGRPEntry(Bool_t flag = kTRUE) { fWriteGRPEntry = flag; }
+  void WriteGRPEntry();
+
 private:
   void 		 InitCDB();
   void 		 InitRunNumber();
@@ -165,6 +168,8 @@ private:
 
   //HLT
   TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'
+
+  Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
   ClassDef(AliSimulation, 8)  // class for running generation, simulation and digitization
 };

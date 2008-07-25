@@ -110,6 +110,7 @@
 #include <TObjString.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include <TROOT.h>
 
 #include "AliCodeTimer.h"
 #include "AliCDBStorage.h"
@@ -140,6 +141,8 @@
 #include "AliHLTSimulation.h"
 #include "AliQADataMakerSteer.h"
 #include "AliSysInfo.h"
+#include "AliGenMC.h"
+#include "AliMagF.h"
 
 ClassImp(AliSimulation)
 
@@ -184,7 +187,8 @@ AliSimulation::AliSimulation(const char* configFileName,
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
   fRunQA(kTRUE), 
-  fRunHLT("default")
+  fRunHLT("default"),
+  fWriteGRPEntry(kTRUE)
 {
 // create simulation object with default parameters
   fgInstance = this;
@@ -232,7 +236,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fQADetectors(sim.fQADetectors),                  
   fQATasks(sim.fQATasks),	
   fRunQA(sim.fRunQA), 
-  fRunHLT(sim.fRunHLT)
+  fRunHLT(sim.fRunHLT),
+  fWriteGRPEntry(sim.fWriteGRPEntry)
 {
 // copy constructor
 
@@ -884,6 +889,11 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
                   "Check your config file: %s", fConfigFileName.Data()));
     return kFALSE;
   }
+
+  // Write GRP entry corresponding to the setting found in Cofig.C
+  if (fWriteGRPEntry)
+    WriteGRPEntry();
+
   if (nEvents <= 0) nEvents = fNEvents;
 
   // get vertex from background file in case of merging
@@ -1862,4 +1872,93 @@ void AliSimulation::ProcessEnvironmentVars()
     AliInfo(Form("Run number = %d", fRun)); 
 }
 
+//_____________________________________________________________________________
+void AliSimulation::WriteGRPEntry()
+{
+  // Get the necessary information from galice (generator, trigger etc) and
+  // write a GRP entry corresponding to the settings in the Config.C used
+  AliInfo("Writing global run parameters entry into the OCDB");
 
+  TMap *grpMap = new TMap();
+  grpMap->SetName("MONTECARLO");
+
+  grpMap->Add(new TObjString("fRunType"),new TObjString("PHYSICS"));
+  grpMap->Add(new TObjString("fAliceStartTime"),new TObjString("0"));
+  grpMap->Add(new TObjString("fAliceStopTime"),new TObjString("9999"));
+
+  AliGenMC *gen = dynamic_cast<AliGenMC*>(gAlice->Generator());
+  if (gen) {
+    grpMap->Add(new TObjString("fAliceBeamEnergy"),new TObjString(Form("%f",gen->GetEnergyCMS())));
+    TString projectile;
+    Int_t a,z;
+    gen->GetProjectile(projectile,a,z);
+    TString target;
+    gen->GetTarget(target,a,z);
+    TString beamType = projectile + "-" + target;
+    grpMap->Add(new TObjString("fAliceBeamType"),new TObjString(beamType.Data()));
+  }
+  else {
+    AliWarning("Unknown beam type and energy!");
+    grpMap->Add(new TObjString("fAliceBeamEnergy"),new TObjString("UNKNOWN"));
+    grpMap->Add(new TObjString("fAliceBeamType"),new TObjString("UNKNOWN"));
+  }
+
+  UInt_t detectorPattern  = 0;
+  Int_t nDets = 0;
+  TObjArray *detArray = gAlice->Detectors();
+  for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors-1; iDet++) {
+    if (detArray->FindObject(AliDAQ::OfflineModuleName(iDet))) {
+      detectorPattern |= (1 << iDet);
+      nDets++;
+    }
+  }
+  // HLT
+  if (!fRunHLT.IsNull())
+    detectorPattern |= (1 << AliDAQ::kHLTId);
+
+  grpMap->Add(new TObjString("fNumberOfDetectors"),new TObjString(Form("%d",nDets)));
+  grpMap->Add(new TObjString("fDetectorMask"),new TObjString(Form("%u",detectorPattern)));
+ 
+  grpMap->Add(new TObjString("fLHCPeriod"),new TObjString("LHC08c"));
+
+  grpMap->Add(new TObjString("fLHCState"),new TObjString("STABLE BEAMS"));
+  grpMap->Add(new TObjString("fLHCCondition"),new TObjString("0"));
+  grpMap->Add(new TObjString("fLHCLuminosity"),new TObjString("0"));
+  grpMap->Add(new TObjString("fBeamIntensity"),new TObjString("0"));
+
+  AliMagF *field = gAlice->Field();
+  Float_t solenoidField = TMath::Abs(field->SolenoidField());
+  Float_t factor = field->Factor();
+  Float_t l3current = TMath::Abs(factor)*solenoidField*30000./5.;
+  grpMap->Add(new TObjString("fL3Current"),new TObjString(Form("%f",l3current)));
+  
+  if (factor > 0) {
+    grpMap->Add(new TObjString("fL3Polarity"),new TObjString("0"));
+    grpMap->Add(new TObjString("fDipolePolarity"),new TObjString("0"));
+  }
+  else {
+    grpMap->Add(new TObjString("fL3Polarity"),new TObjString("1"));
+    grpMap->Add(new TObjString("fDipolePolarity"),new TObjString("1"));
+  }
+
+  if (TMath::Abs(factor) != 0)
+    grpMap->Add(new TObjString("fDipoleCurrent"),new TObjString("6000"));
+  else 
+    grpMap->Add(new TObjString("fDipoleCurrent"),new TObjString("0"));
+
+  grpMap->Add(new TObjString("fCavernTemperature"),new TObjString("0"));
+  grpMap->Add(new TObjString("fCavernPressure"),new TObjString("0"));
+
+  // Now store the entry in OCDB
+  AliCDBManager* man = AliCDBManager::Instance();
+
+  AliCDBId id("GRP/GRP/Data", man->GetRun(), man->GetRun());
+  AliCDBMetaData *metadata= new AliCDBMetaData();
+
+  // Get root version
+  const char* rootv = gROOT->GetVersion();
+  metadata->SetResponsible("alice-off@cern.ch");
+  metadata->SetComment("Automatically produced GRP entry for Monte Carlo");
+ 
+  man->Put(grpMap,id,metadata);
+}

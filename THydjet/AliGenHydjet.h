@@ -50,7 +50,6 @@ class AliGenHydjet : public AliGenMC
     virtual void    AddHeader(AliGenEventHeader* header);
 
 // Getters
-   // virtual Float_t GetEnergyCMS()       const {return fEnergyCMS;}
    // virtual TString GetReferenceFrame()  const {return fFrame;}
 
 //
@@ -60,7 +59,6 @@ class AliGenHydjet : public AliGenMC
     void   MakeHeader();
  protected:
     //initial parameters
-    Float_t     fEnergyCMS;      //Energy cms
     TString     fFrame;          // Reference frame
     Float_t     fAtomicWeigth;   // Projectile-Target atomic weight
     Int_t       fIfbtype;        // centrality type

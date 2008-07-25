@@ -49,7 +49,6 @@ AliGenHijing::AliGenHijing()
      fEvaluate(0),
      fSelectAll(0),
      fFlavor(0),
-     fEnergyCMS(5500.),
      fKineBias(0.),
      fTrials(0),
      fXsection(0.),
@@ -75,8 +74,9 @@ AliGenHijing::AliGenHijing()
      fRandomPz(kFALSE),
      fNoHeavyQuarks(kFALSE)
 {
-// Constructor
-    AliHijingRndm::SetHijingRandom(GetRandom());
+  // Constructor
+  SetEnergyCMS(5500.);
+  AliHijingRndm::SetHijingRandom(GetRandom());
 }
 
 AliGenHijing::AliGenHijing(Int_t npart)
@@ -92,7 +92,6 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fEvaluate(0),
      fSelectAll(0),
      fFlavor(0),
-     fEnergyCMS(5500.),
      fKineBias(0.),
      fTrials(0),
      fXsection(0.),
@@ -120,6 +119,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
+    SetEnergyCMS(5500.);
     fName = "Hijing";
     fTitle= "Particle Generator using HIJING";
 //

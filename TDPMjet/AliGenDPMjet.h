@@ -44,11 +44,6 @@ class AliGenDPMjet : public AliGenMC
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
     virtual void    SetPi0Decay(Int_t iPi0)  {fPi0Decay = iPi0;}
-    virtual Float_t GetEnergyCMS() {return fEnergyCMS;}
-    virtual void    GetProjectile(Int_t& a, Int_t& z)
-			{a = fAProjectile; z = fZProjectile;}    
-    virtual void    GetTarget(Int_t& a, Int_t& z)
-			{a = fATarget; z = fZTarget;}    
     virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax)
 			{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
     virtual Int_t   GetSpectators()        {return fSpectators;}
@@ -66,7 +61,6 @@ class AliGenDPMjet : public AliGenMC
 
  protected:
     Float_t       fBeamEn; 	   // beam energy
-    Float_t       fEnergyCMS;      // Centre of mass energy
     Float_t       fMinImpactParam; // minimum impact parameter
     Float_t       fMaxImpactParam; // maximum impact parameter	
     Int_t	  fICentr;	   // Flag to force central production
@@ -91,7 +85,7 @@ class AliGenDPMjet : public AliGenMC
     // check if stable
     Bool_t Stable(TParticle*  particle);
     
-    ClassDef(AliGenDPMjet,1) // AliGenerator interface to DPMJET
+    ClassDef(AliGenDPMjet,2) // AliGenerator interface to DPMJET
 };
 #endif
 

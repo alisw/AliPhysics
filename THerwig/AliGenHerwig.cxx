@@ -46,7 +46,6 @@ ClassImp(AliGenHerwig)
     fTrigger(0),
     fSelectAll(0),
     fFlavor(0),
-    fEnergyCMS(14000),
     fMomentum1(7000),
     fMomentum2(7000),
     fKineBias(1),
@@ -64,6 +63,7 @@ ClassImp(AliGenHerwig)
     fFileName(0)
 {
 // Constructor
+  fEnergyCMS = 14000;
 }
 
 AliGenHerwig::AliGenHerwig(Int_t npart)
@@ -76,7 +76,6 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fTrigger(0),
     fSelectAll(0),
     fFlavor(0),
-    fEnergyCMS(14000),
     fMomentum1(7000),
     fMomentum2(7000),
     fKineBias(1),
@@ -93,6 +92,7 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fEv2Pr(0),
     fFileName(0)
 {
+    fEnergyCMS = 14000;
     SetTarget();
     SetProjectile();
     // Set random number generator

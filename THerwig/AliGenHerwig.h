@@ -68,7 +68,6 @@ class AliGenHerwig : public AliGenMC
     Int_t       fTrigger;        // Trigger type
     Int_t       fSelectAll;      // Flag to write the full event
     Int_t       fFlavor;         // Selected particle flavor 4: charm+beauty 5: beauty
-    Float_t     fEnergyCMS;      // Centre of mass energy
     Float_t     fMomentum1;      // Momentum of projectile
     Float_t     fMomentum2;      // Momentum of target
     Float_t     fKineBias;       // Bias from kinematic selection
@@ -102,7 +101,7 @@ class AliGenHerwig : public AliGenMC
 
     void InitPDF();
 
-    ClassDef(AliGenHerwig,1) // AliGenerator interface to Herwig
+    ClassDef(AliGenHerwig,2) // AliGenerator interface to Herwig
 };
 #endif
 

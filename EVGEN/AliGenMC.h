@@ -60,6 +60,12 @@ class AliGenMC : public AliGenerator
     virtual void   SetCrossingAngle(Float_t phiX, Float_t phiY) {fXingAngleX = phiX; fXingAngleY = phiY;}
     virtual void Boost();
     virtual void AddHeader(AliGenEventHeader* header);
+    virtual void   GetProjectile(TString& tar, Int_t& a, Int_t& z)       const
+	{tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
+    virtual void   GetTarget(TString& tar, Int_t& a, Int_t& z)           const
+	{tar = fTarget; a = fATarget; z = fZTarget;}    
+    virtual Float_t GetEnergyCMS() const {return fEnergyCMS;}
+
  protected:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip) const;
@@ -99,12 +105,12 @@ class AliGenMC : public AliGenerator
     Int_t        fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t        fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
     Int_t        fNprimaries;                 // Number of produced and stored particles
-    
+    Float_t      fEnergyCMS;     //Centre of mass energy
  private:
     AliGenMC(const AliGenMC &MC);
     AliGenMC & operator=(const AliGenMC & rhs);
     
-    ClassDef(AliGenMC,5)       // AliGenerator implementation for generators using MC methods
+    ClassDef(AliGenMC,6)       // AliGenerator implementation for generators using MC methods
 };
 #endif
 
