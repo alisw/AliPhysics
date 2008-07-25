@@ -9,23 +9,19 @@ void rec() {
 
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
-  
-  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();
-  AliTPCReconstructor::SetRecoParam(tpcRecoParam);
-  AliTPCReconstructor::SetStreamLevel(1);
+
+	reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
+  reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
+  reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
+	
+	AliTPCReconstructor::SetStreamLevel(1);
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
-  //AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
-  //	recEmc->SetSubtractPedestals(kFALSE);
-  //	AliPHOSReconstructor::SetRecoParamEmc(recEmc);  
-	if (! reco.SetRunQA("ALL:ALL") ) {
-		printf("SetRunQA ERROR\n") ; 
-		exit ; 
-	}
+  reco.SetRunQA("ALL:ALL") ;
 	reco.SetInLoopQA() ; 
 	  
 	// AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
-//  AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
   
 // **** The field map settings must be the same as in Config.C !
   AliMagFMaps *field=new AliMagFMaps("Maps","Maps",2,1.,10.,AliMagFMaps::k5kG);
