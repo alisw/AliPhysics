@@ -209,6 +209,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Int_t nolines = 0;
   // Loop on modules of layer 1
   for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
+    if(!fUseModule[modul1]) continue;
     UShort_t ladder=int(modul1/4)+1; // ladders are numbered starting from 1
     branch->GetEvent(modul1);
     Int_t nrecp1 = itsRec->GetEntries();
@@ -234,6 +235,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	  Int_t ladmod=fLadders[ladder-1]+ladl2;
  	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
 	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
+	  if(!fUseModule[modul2]) continue;
 	  branch->GetEvent(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){

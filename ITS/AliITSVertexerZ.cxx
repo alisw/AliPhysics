@@ -247,6 +247,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   static TClonesArray points("AliITSZPoint",maxdim);
   Int_t nopoints =0;
   for(Int_t modul1= fFirstL1; modul1<=fLastL1;modul1++){   // Loop on modules of layer 1
+    if(!fUseModule[modul1]) continue;
     UShort_t ladder=int(modul1/4)+1;  // ladders are numbered starting from 1
     branch->GetEvent(modul1);
     Int_t nrecp1 = itsRec->GetEntries();
@@ -278,6 +279,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
  	  Int_t ladmod=fLadders[ladder-1]+ladl2;
 	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
 	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
+	  if(!fUseModule[modul2]) continue;
 	  branch->GetEvent(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
@@ -332,7 +334,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   TH1F *hc = fZCombc;
 
   
-  if(hc->GetBinContent(hc->GetMaximumBin())<3)hc->Rebin(3);
+  if(hc->GetBinContent(hc->GetMaximumBin())<3)hc->Rebin(4);
   Int_t binmin,binmax;
   Int_t nPeaks=GetPeakRegion(hc,binmin,binmax);   
   if(nPeaks==2)AliWarning("2 peaks found");

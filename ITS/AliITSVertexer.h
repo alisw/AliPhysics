@@ -9,6 +9,8 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+/* $Id$ */
+
 class TString;
 
 class AliITSVertexer : public AliVertexer {
@@ -25,6 +27,14 @@ class AliITSVertexer : public AliVertexer {
     void SetLastEvent(Int_t ev){fLastEvent = ev;}
     const Float_t GetPipeRadius()const {return fgkPipeRadius;}
     void SetLaddersOnLayer2(Int_t ladwid=4);
+    virtual void SetUseModule(Int_t imod, Bool_t optUse){
+      if(imod>=0 && imod<kNSPDMod) fUseModule[imod]=optUse;
+    }
+    virtual Bool_t IsModuleUsed(Int_t imod) const {
+      if(imod>=0 && imod<kNSPDMod) return fUseModule[imod];
+      else return 0;
+    }
+    enum{kNSPDMod=240};
 
     // Methods containing run-loaders, should be moved to some other class
     void Init(TString filename);
@@ -36,6 +46,7 @@ class AliITSVertexer : public AliVertexer {
     UShort_t *fLadders; // array with layer1-layer2 ladders correspondances  
     Int_t fLadOnLay2;   // (2*fLadOnLay2+1)=number of layer2 ladders 
                       // associated to a layer1 ladder
+    Bool_t  fUseModule[kNSPDMod]; // flag for enabling/disabling SPD modules
  
  private:
     // copy constructor (NO copy allowed: the constructor is protected
@@ -47,7 +58,7 @@ class AliITSVertexer : public AliVertexer {
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices 
 
-  ClassDef(AliITSVertexer,5);
+  ClassDef(AliITSVertexer,6);
 };
 
 #endif

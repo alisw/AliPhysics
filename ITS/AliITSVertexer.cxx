@@ -16,6 +16,8 @@ ClassImp(AliITSVertexer)
 //                  AliITSVertexerCosmics                           //
 //////////////////////////////////////////////////////////////////////
 
+/* $Id$ */
+
 //______________________________________________________________________
 AliITSVertexer::AliITSVertexer():AliVertexer(),
 fLadders(), 
@@ -25,6 +27,7 @@ fLastEvent(-1)
 {
   // Default Constructor
   SetLaddersOnLayer2();
+  for(Int_t i=0; i<kNSPDMod;i++) fUseModule[i]=kTRUE;
 }
 
 //______________________________________________________________________
