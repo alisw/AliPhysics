@@ -1886,7 +1886,7 @@ void AliSimulation::WriteGRPEntry()
   grpMap->Add(new TObjString("fAliceStartTime"),new TObjString("0"));
   grpMap->Add(new TObjString("fAliceStopTime"),new TObjString("9999"));
 
-  AliGenMC *gen = dynamic_cast<AliGenMC*>(gAlice->Generator());
+  const AliGenMC *gen = static_cast<const AliGenMC*>(gAlice->Generator());
   if (gen) {
     grpMap->Add(new TObjString("fAliceBeamEnergy"),new TObjString(Form("%f",gen->GetEnergyCMS())));
     TString projectile;

@@ -60,11 +60,11 @@ class AliGenMC : public AliGenerator
     virtual void   SetCrossingAngle(Float_t phiX, Float_t phiY) {fXingAngleX = phiX; fXingAngleY = phiY;}
     virtual void Boost();
     virtual void AddHeader(AliGenEventHeader* header);
-    virtual void   GetProjectile(TString& tar, Int_t& a, Int_t& z)       const
-	{tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
-    virtual void   GetTarget(TString& tar, Int_t& a, Int_t& z)           const
-	{tar = fTarget; a = fATarget; z = fZTarget;}    
-    virtual Float_t GetEnergyCMS() const {return fEnergyCMS;}
+    virtual void   GetProjectile(TString& tar, Int_t& a, Int_t& z) const
+    {tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
+    virtual void   GetTarget(TString& tar, Int_t& a, Int_t& z) const
+    {tar = fTarget; a = fATarget; z = fZTarget;}    
+    virtual Float_t GetEnergyCMS() const { return fEnergyCMS; }
 
  protected:
     // check if particle is selected as parent particle

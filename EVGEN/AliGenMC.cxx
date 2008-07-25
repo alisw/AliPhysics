@@ -62,7 +62,8 @@ AliGenMC::AliGenMC()
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
      fNumberOfAcceptedParticles(0),
-     fNprimaries(0)
+     fNprimaries(0),
+     fEnergyCMS(0)
 {
 // Default Constructor
 }
@@ -97,7 +98,8 @@ AliGenMC::AliGenMC(Int_t npart)
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
      fNumberOfAcceptedParticles(0),
-     fNprimaries(0)
+     fNprimaries(0),
+     fEnergyCMS(0)
 {
 //  Constructor
 // 
