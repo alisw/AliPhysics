@@ -75,6 +75,16 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
 
+//____________________________________________________________________________
+void AliITStrackV2::ResetClusters() {
+  //------------------------------------------------------------------
+  // Reset the array of attached clusters.
+  //------------------------------------------------------------------
+  for (Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) fIndex[i]=-1;
+  SetChi2(0.); 
+  SetNumberOfClusters(0);
+} 
+
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
   fESDtrack->UpdateTrackParams(this,flags);
   // copy the module indices

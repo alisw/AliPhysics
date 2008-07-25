@@ -52,7 +52,7 @@ public:
   Float_t GetSampledEdx(Int_t i) const {return fdEdxSample[i];}
   void CookdEdx(Double_t low=0., Double_t up=0.51);
   void SetDetectorIndex(Int_t i) {SetLabel(i);}
-  void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
+  void ResetClusters();
   void UpdateESDtrack(ULong_t flags) const;
   
   AliESDtrack *GetESDtrack() const {return fESDtrack;}
