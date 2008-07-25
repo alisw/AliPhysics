@@ -117,7 +117,7 @@ const Int_t    AliITSv11GeometrySDD::fgkLay3Ndet           =  6;
 const Int_t    AliITSv11GeometrySDD::fgkLay3Nladd          = 14;
 const Double_t AliITSv11GeometrySDD::fgkLay3CoolPipeSuppH  =  7.5*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLay4Rmin           = 235.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLay4Rmin           = 234.8*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4Rmax           = 286.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4Length         = (671.+0.)*fgkmm;    // ladder+supporting rings (length of the virtual tube)
 const Double_t AliITSv11GeometrySDD::fgkLay4LadderLength   = 671.*fgkmm;
