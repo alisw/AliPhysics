@@ -297,6 +297,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   }
   fQASteer = new AliQADataMakerSteer("rec") ; 
 	fQASteer->SetActiveDetectors(fQADetectors) ; 
+	fQATasks = Form("%d %d %d", AliQA::kRAWS, AliQA::kRECPOINTS, AliQA::kESDS) ; 
 	fQASteer->SetTasks(fQATasks) ; 
   AliPID pid;
 }
