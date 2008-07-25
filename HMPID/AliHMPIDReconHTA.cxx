@@ -537,7 +537,7 @@ void AliHMPIDReconHTA::InitDatabase()
       //
       //mip position
       //
-      Double_t sizeCh = fParam->RadThick()+fParam->WinThick()+fParam->GapThick();
+      Double_t sizeCh = 0.5*fParam->RadThick()+fParam->WinThick()+fParam->GapThick();
       Double_t xmip = xrad + sizeCh*TMath::Tan(thTrk)*TMath::Cos(phTrk);
       Double_t ymip = yrad + sizeCh*TMath::Tan(thTrk)*TMath::Sin(phTrk);
 
