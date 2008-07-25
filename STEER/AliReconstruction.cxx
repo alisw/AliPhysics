@@ -1467,6 +1467,7 @@ Bool_t AliReconstruction::FinishRun()
  	 
    TIter iter2(cdbList);	 
  	 
+	AliCDBId* id=0;
 	while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){	 
          cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
    }	 
