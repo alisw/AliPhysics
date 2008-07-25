@@ -35,7 +35,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
-#include "AliTRDSimParam.h"
+#include "AliTRDCommonParam.h"
 
 ClassImp(AliTRDgeometry)
 
@@ -272,12 +272,29 @@ void AliTRDgeometry::Init()
     fRotB21[isector] = TMath::Sin(phi);
     fRotB22[isector] = TMath::Cos(phi);
   }
-
-  // Initialize the SM status
-  for (isector = 0; isector < fgkNsector; isector++) {
-    SetSMstatus(isector,1);
-  }
  
+}
+
+//_____________________________________________________________________________
+void AliTRDgeometry::SetSMstatus(Int_t sm, Char_t status)
+{
+  //
+  // Switch on/off supermodules in the geometry
+  //
+
+  AliTRDCommonParam::Instance()->SetSMstatus(sm,status);
+
+}
+
+//_____________________________________________________________________________
+Char_t AliTRDgeometry::GetSMstatus(Int_t sm) const
+{
+  //
+  // Get the supermodule status
+  //
+
+  return AliTRDCommonParam::Instance()->GetSMstatus(sm);
+
 }
 
 //_____________________________________________________________________________
@@ -577,8 +594,6 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 
   Char_t  cTagV[6];
   Char_t  cTagM[5];
-
-  AliTRDSimParam *simParam = AliTRDSimParam::Instance();
 
   // There are three TRD volumes for the supermodules in order to accomodate
   // the different arrangements in front of PHOS
@@ -910,7 +925,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   ypos = 0.0;
   zpos = 0.0;
   for (Int_t isector = 0; isector < kNsector; isector++) {
-    if (fSMstatus[isector]) {
+    if (GetSMstatus(isector)) {
       sprintf(cTagV,"BTRD%d",isector);
       switch (isector) {
       case 13:
@@ -937,7 +952,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   ypos = 0.5*fgkSlength + 0.5*fgkFlength;
   zpos = 0.0;
   for (Int_t isector = 0; isector < kNsector; isector++) {
-    if (fSMstatus[isector]) {
+    if (GetSMstatus(isector)) {
       sprintf(cTagV,"BTRD%d",isector);
       gMC->Gspos("UTF1",1,cTagV,xpos, ypos,zpos,0,"ONLY");
       gMC->Gspos("UTF2",1,cTagV,xpos,-ypos,zpos,0,"ONLY");
@@ -2765,6 +2780,9 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       // Taking holes into account
       if (((isector == 13) || (isector == 14) || (isector == 15)) && 
           (istack == 2)) continue; 
+
+      // Taking disabled supermodules into account
+      if (!GetSMstatus(isector)) continue;
 
       UShort_t     volid   = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char  *symname = AliGeomManager::SymName(volid);

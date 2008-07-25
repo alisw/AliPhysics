@@ -54,7 +54,7 @@ class AliTRDgeometry : public AliGeometry {
   TGeoHMatrix     *GetClusterMatrix(Int_t det)                           { return (TGeoHMatrix *) 
                                                                              fClusterMatrixArray->At(det); }
 
-          void     SetSMstatus(Int_t sm, Char_t status)                  { fSMstatus[sm] = status; }
+          void     SetSMstatus(Int_t sm, Char_t status);
 
   static  Int_t    GetDetectorSec(Int_t layer, Int_t stack);
   static  Int_t    GetDetector(Int_t layer, Int_t stack, Int_t sector);
@@ -75,7 +75,7 @@ class AliTRDgeometry : public AliGeometry {
 
   static  Float_t  GetTime0(Int_t layer)                                 { return fgkTime0[layer];        }
 
-          Char_t   GetSMstatus(Int_t sm) const                           { return fSMstatus[sm];          }
+          Char_t   GetSMstatus(Int_t sm) const;
           Float_t  GetChamberWidth(Int_t layer) const                    { return fCwidth[layer]      ;   }
           Float_t  GetChamberLength(Int_t layer, Int_t stack) const      { return fClength[layer][stack]; }
 
@@ -195,8 +195,6 @@ class AliTRDgeometry : public AliGeometry {
   static const Int_t    fgkRowmaxC0;                         //  Maximum number of Rows per C0 chamber
   static const Int_t    fgkRowmaxC1;                         //  Maximum number of Rows per C1 chamber
 
-  Char_t                fSMstatus[kNsector];                 //  Super module status byte
-
   Float_t               fCwidth[kNlayer];                    //  Outer widths of the chambers
   Float_t               fClength[kNlayer][kNstack];          //  Outer lengths of the chambers
 
@@ -221,7 +219,7 @@ class AliTRDgeometry : public AliGeometry {
   TObjArray            *fClusterMatrixArray;                 //! Transformation matrices loc. cluster to tracking cs
   TObjArray            *fPadPlaneArray;                      //! Array of pad plane objects
 
-  ClassDef(AliTRDgeometry,17)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,18)                                //  TRD geometry class
 
 };
 
