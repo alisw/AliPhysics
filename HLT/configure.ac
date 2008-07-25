@@ -645,7 +645,7 @@ else
     save_CPPFLAGS="$CPPFLAGS"
     # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
     #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/PHOS"
     AC_MSG_CHECKING([for AliCaloRawStream.h usability])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
   				        #include <AliCaloRawStream.h>], 
