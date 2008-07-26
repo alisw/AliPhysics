@@ -176,6 +176,7 @@
 #include "AliCentralTrigger.h"
 #include "AliTriggerConfiguration.h"
 #include "AliTriggerClass.h"
+#include "AliTriggerCluster.h"
 #include "AliCTPRawStream.h"
 
 #include "AliQADataMakerRec.h" 
@@ -2875,6 +2876,7 @@ Bool_t AliReconstruction::GetEventInfo()
     return kFALSE;
   }
 
+  UChar_t clustmask = 0;
   TString trclasses;
   ULong64_t trmask = fEventInfo.GetTriggerMask();
   const TObjArray& classesArray = config->GetClasses();
@@ -2888,10 +2890,15 @@ Bool_t AliReconstruction::GetEventInfo()
 	trclasses += " ";
 	trclasses += trclass->GetName();
 	trclasses += " ";
+	clustmask |= trclass->GetCluster()->GetClusterMask();
       }
     }
   }
   fEventInfo.SetTriggerClasses(trclasses);
+
+  // Set the information in ESD
+  fesd->SetTriggerMask(trmask);
+  fesd->SetTriggerCluster(clustmask);
 
   if (!aCTP->CheckTriggeredDetectors()) {
     if (fRawReader) delete aCTP;
