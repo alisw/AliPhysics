@@ -210,15 +210,16 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
    TStopwatch stopwatch;
    stopwatch.Start();
 
+   AliInfo( Form(" Triggering Detectors: %s \n", GetDetectors().Data() ) );
+   AliInfo( Form(" Detectors with digits: %s \n", detectors ) );
+
    // Process each event
    for( Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++ ) {
-      AliInfo( Form("  ***** Processing event %d *****\n", iEvent) );
+      AliInfo( Form("Processing event %d", iEvent) );
       runLoader->GetEvent( iEvent );
       // Get detectors involve
       TString detStr = GetDetectors();
-      AliInfo( Form(" Triggering Detectors: %s \n", detStr.Data() ) );
       TString detWithDigits = detectors;
-      AliInfo( Form(" Detectors with digits: %s \n", detWithDigits.Data() ) );
       TObjArray* detArray = runLoader->GetAliRun()->Detectors();
       // Reset Mask
       fClassMask = 0;
@@ -232,13 +233,13 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
          if( IsSelected(det->GetName(), detStr) &&
 	     IsSelected(det->GetName(), detWithDigits) ) {
 
-            AliInfo( Form("Triggering from digits for %s", det->GetName() ) );
+	    AliDebug(1,Form("Triggering from digits for %s", det->GetName() ) );
             AliTriggerDetector* trgdet = det->CreateTriggerDetector();
             trgdet->CreateInputs(fConfiguration->GetInputs());
             TStopwatch stopwatchDet;
             stopwatchDet.Start();
             trgdet->Trigger();
-            AliInfo( Form("Execution time for %s: R:%.2fs C:%.2fs",
+            AliDebug(1, Form("Execution time for %s: R:%.2fs C:%.2fs",
                      det->GetName(), stopwatchDet.RealTime(), stopwatchDet.CpuTime() ) );
 
             trgdetArray.AddLast( trgdet );
@@ -281,7 +282,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
       // Save trigger mask
       tree->Fill();
-      AliInfo( Form("**************** Central Trigger Class Mask:0x%X", fClassMask ) );
+      AliInfo( Form("Trigger Class Mask:0x%X", fClassMask ) );
    } // end event loop
 
    Reset();

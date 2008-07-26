@@ -105,7 +105,7 @@ void AliTriggerDetector::CreateInputs(const TObjArray &inputs)
        delete availInputs->Remove(tempObj);
        fInputs.AddAt( inp, tempIndex );
        inp->Enable();
-       AliInfo(Form("Trigger input (%s) is found in the CTP configuration. Therefore it is enabled for trigger detector (%s)",
+       AliDebug(1,Form("Trigger input (%s) is found in the CTP configuration. Therefore it is enabled for trigger detector (%s)",
 		    inp->GetInputName().Data(),name.Data()));
      }
      else {
@@ -119,7 +119,7 @@ void AliTriggerDetector::CreateInputs(const TObjArray &inputs)
      if (inp->GetSignature() == -1 &&
 	 inp->GetMask() == 0) {
        inp->Enable();
-       AliInfo(Form("Trigger input (%s) was not found in the CTP configuration. Therefore it will be run in a stand-alone mode",
+       AliDebug(1,Form("Trigger input (%s) was not found in the CTP configuration. Therefore it will be run in a stand-alone mode",
 		    inp->GetInputName().Data()));
      }
    }
