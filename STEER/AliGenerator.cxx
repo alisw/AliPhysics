@@ -81,7 +81,14 @@ AliGenerator::AliGenerator():
   fVertex(3),
   fStack(0),
   fContainer(0),
-  fCollisionGeometry(0)
+  fCollisionGeometry(0),
+  fEnergyCMS(0),
+  fAProjectile(0),
+  fZProjectile(0),
+  fATarget(0),
+  fZTarget(0),
+  fProjectile(""),
+  fTarget("")    
 {
   //
   // Default constructor
@@ -142,7 +149,14 @@ AliGenerator::AliGenerator(Int_t npart):
   fVertex(3),
   fStack(0),
   fContainer(0),
-  fCollisionGeometry(0)
+  fCollisionGeometry(0),
+  fEnergyCMS(0),
+  fAProjectile(0),
+  fZProjectile(0),
+  fATarget(0),
+  fZTarget(0),
+  fProjectile(""),
+  fTarget("")    
 {
   //
   // Standard constructor

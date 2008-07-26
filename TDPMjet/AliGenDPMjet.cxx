@@ -61,7 +61,7 @@ AliGenDPMjet::AliGenDPMjet()
      fProcess(kDpmMb)
 {
 // Constructor
-    SetEnergyCMS(5500.);
+    fEnergyCMS = 5500.;
     AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
@@ -88,7 +88,7 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
-    SetEnergyCMS(5500.);
+    fEnergyCMS = 5500.;
     fName = "DPMJET";
     fTitle= "Particle Generator using DPMJET";
     SetTarget();
@@ -117,7 +117,7 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fProcess(kDpmMb)
 {
     // Dummy copy constructor
-    SetEnergyCMS(5500.);
+    fEnergyCMS = 5500.;
 }
 
 //______________________________________________________________________________

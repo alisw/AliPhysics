@@ -36,7 +36,6 @@ ClassImp(AliGenHydjet)
 AliGenHydjet::AliGenHydjet(Int_t npart) :
   AliGenMC(npart),
     //initial parameters
-  fEnergyCMS(5500.),      //Energy cms
   fFrame("CMS"),      // Reference frame
   fAtomicWeigth(207),        // Projectile-Target atomic weight
   fIfbtype(0),          // centrality type
@@ -63,6 +62,7 @@ AliGenHydjet::AliGenHydjet(Int_t npart) :
 {
 // Default PbPb collisions at 5. 5 TeV
 //
+  fEnergyCMS = 5500.;      //Energy cms
   fName = "Hydjet";
   fTitle = "Particle Generator using Hydjet";
   // Set random number generator 

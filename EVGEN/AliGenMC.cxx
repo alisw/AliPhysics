@@ -52,20 +52,19 @@ AliGenMC::AliGenMC()
      fXingAngleY(0.),
      fForceDecay(kAll),
      fMaxLifeTime(1.e-15),
-     fAProjectile(1),
-     fZProjectile(1),
-     fATarget(1),
-     fZTarget(1),
-     fProjectile("P"),
-     fTarget("P"),    
      fDyBoost(0.),
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
      fNumberOfAcceptedParticles(0),
-     fNprimaries(0),
-     fEnergyCMS(0)
+     fNprimaries(0)
 {
 // Default Constructor
+  fAProjectile = 1;
+  fZProjectile = 1;
+  fATarget = 1;
+  fZTarget = 1;
+  fProjectile = "P";
+  fTarget = "P";
 }
 
 AliGenMC::AliGenMC(Int_t npart)
@@ -88,22 +87,21 @@ AliGenMC::AliGenMC(Int_t npart)
      fXingAngleY(0.),
      fForceDecay(kAll),
      fMaxLifeTime(1.e-15),
-     fAProjectile(1),
-     fZProjectile(1),
-     fATarget(1),
-     fZTarget(1),
-     fProjectile("P"),
-     fTarget("P"),    
      fDyBoost(0.),
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
      fNumberOfAcceptedParticles(0),
-     fNprimaries(0),
-     fEnergyCMS(0)
+     fNprimaries(0)
 {
 //  Constructor
 // 
-    for (Int_t i=0; i<8; i++) fParentSelect[i]=fChildSelect[i]=0;
+  fAProjectile = 1;
+  fZProjectile = 1;
+  fATarget = 1;
+  fZTarget = 1;
+  fProjectile = "P";
+  fTarget = "P";
+  for (Int_t i=0; i<8; i++) fParentSelect[i]=fChildSelect[i]=0;
 }
 
 AliGenMC::~AliGenMC()

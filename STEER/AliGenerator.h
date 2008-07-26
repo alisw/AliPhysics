@@ -34,6 +34,7 @@ class AliGenerator : public TNamed, public AliRndm
 {
 
  public:
+
     AliGenerator();
     AliGenerator(Int_t npart);
     virtual ~AliGenerator();
@@ -87,6 +88,18 @@ class AliGenerator : public TNamed, public AliRndm
     virtual Bool_t NeedsCollisionGeometry()    const {return kFALSE;}    
     virtual AliCollisionGeometry* CollisionGeometry() const {return fCollisionGeometry;}
     virtual void SetCollisionGeometry(AliCollisionGeometry* geom) {fCollisionGeometry = geom;}
+
+    virtual Float_t GetEnergyCMS() const { return fEnergyCMS; }
+    virtual void    SetEnergyCMS(Float_t energy = 0) { fEnergyCMS = energy; }
+    virtual void    GetProjectile(TString& tar, Int_t& a, Int_t& z) const
+    {tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
+    virtual void    GetTarget(TString& tar, Int_t& a, Int_t& z) const
+    {tar = fTarget; a = fATarget; z = fZTarget;}    
+    virtual void    SetProjectile(TString proj="", Int_t a = 0, Int_t z = 0)
+	{fProjectile = proj; fAProjectile = a; fZProjectile = z;}
+    virtual void    SetTarget(TString tar="", Int_t a = 0, Int_t z = 0)
+	{fTarget = tar; fATarget = a; fZTarget = z;}
+    
  protected:
     virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t *pmom, Float_t *vpos, Float_t *polar,
@@ -99,7 +112,7 @@ class AliGenerator : public TNamed, public AliRndm
                       TMCProcess mech, Int_t &ntr, Float_t weight = 1, Int_t is = 0);
     virtual void   KeepTrack(Int_t itrack); 
     virtual void   SetHighWaterMark(Int_t nt);
-    
+
  protected:
     TGenerator* fMCEvGen;      //!Pointer to the generator
     Float_t     fThetaMin;     //Minimum theta of generation in radians
@@ -142,11 +155,19 @@ class AliGenerator : public TNamed, public AliRndm
 	  kMomentumRange = BIT(19)     
     };
 
+    Float_t     fEnergyCMS;    // Centre of mass energy
+    Int_t        fAProjectile;   // Projectile A
+    Int_t        fZProjectile;   // Projectile Z
+    Int_t        fATarget;       // Target A
+    Int_t        fZTarget;       // Target Z
+    TString      fProjectile;    // Projectile
+    TString      fTarget;        // Target
+
  private:
     AliGenerator(const AliGenerator &gen);
     AliGenerator & operator=(const AliGenerator &gen);
 
-    ClassDef(AliGenerator,3) // Base class for event generators
+    ClassDef(AliGenerator,4) // Base class for event generators
 };
 
 #endif

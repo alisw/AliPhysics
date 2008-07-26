@@ -75,7 +75,7 @@ AliGenHijing::AliGenHijing()
      fNoHeavyQuarks(kFALSE)
 {
   // Constructor
-  SetEnergyCMS(5500.);
+  fEnergyCMS = 5500.;
   AliHijingRndm::SetHijingRandom(GetRandom());
 }
 
@@ -119,7 +119,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
-    SetEnergyCMS(5500.);
+    fEnergyCMS = 5500.;
     fName = "Hijing";
     fTitle= "Particle Generator using HIJING";
 //

@@ -60,11 +60,6 @@ class AliGenMC : public AliGenerator
     virtual void   SetCrossingAngle(Float_t phiX, Float_t phiY) {fXingAngleX = phiX; fXingAngleY = phiY;}
     virtual void Boost();
     virtual void AddHeader(AliGenEventHeader* header);
-    virtual void   GetProjectile(TString& tar, Int_t& a, Int_t& z) const
-    {tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
-    virtual void   GetTarget(TString& tar, Int_t& a, Int_t& z) const
-    {tar = fTarget; a = fATarget; z = fZTarget;}    
-    virtual Float_t GetEnergyCMS() const { return fEnergyCMS; }
 
  protected:
     // check if particle is selected as parent particle
@@ -94,23 +89,17 @@ class AliGenMC : public AliGenerator
     Float_t      fXingAngleY;    // Crossing angle Y    
     Decay_t      fForceDecay;    // Decay channel forced
     Float_t      fMaxLifeTime;   // Maximum lifetime for unstable particles
-    Int_t        fAProjectile;   // Projectile A
-    Int_t        fZProjectile;   // Projectile Z
-    Int_t        fATarget;       // Target A
-    Int_t        fZTarget;       // Target Z
-    TString      fProjectile;    // Projectile
-    TString      fTarget;        // Target
     Double_t     fDyBoost;       // dy for boost into lab frame
     AliGeometry* fGeometryAcceptance; // Geometry to which particles must be simulated
     Int_t        fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t        fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
     Int_t        fNprimaries;                 // Number of produced and stored particles
-    Float_t      fEnergyCMS;     //Centre of mass energy
+
  private:
     AliGenMC(const AliGenMC &MC);
     AliGenMC & operator=(const AliGenMC & rhs);
     
-    ClassDef(AliGenMC,6)       // AliGenerator implementation for generators using MC methods
+    ClassDef(AliGenMC,7)       // AliGenerator implementation for generators using MC methods
 };
 #endif
 

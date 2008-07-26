@@ -141,7 +141,6 @@
 #include "AliHLTSimulation.h"
 #include "AliQADataMakerSteer.h"
 #include "AliSysInfo.h"
-#include "AliGenMC.h"
 #include "AliMagF.h"
 
 ClassImp(AliSimulation)
@@ -1887,7 +1886,7 @@ void AliSimulation::WriteGRPEntry()
   grpMap->Add(new TObjString("fAliceStartTime"),new TObjString("0"));
   grpMap->Add(new TObjString("fAliceStopTime"),new TObjString("9999"));
 
-  const AliGenMC *gen = static_cast<const AliGenMC*>(gAlice->Generator());
+  const AliGenerator *gen = gAlice->Generator();
   if (gen) {
     grpMap->Add(new TObjString("fAliceBeamEnergy"),new TObjString(Form("%f",gen->GetEnergyCMS())));
     TString projectile;
@@ -1896,12 +1895,17 @@ void AliSimulation::WriteGRPEntry()
     TString target;
     gen->GetTarget(target,a,z);
     TString beamType = projectile + "-" + target;
-    grpMap->Add(new TObjString("fAliceBeamType"),new TObjString(beamType.Data()));
+    if (!beamType.CompareTo("-")) {
+      grpMap->Add(new TObjString("fAliceBeamType"),new TObjString("UNKNOWN"));
+    }
+    else {
+      grpMap->Add(new TObjString("fAliceBeamType"),new TObjString(beamType.Data()));
+    }
   }
   else {
     AliWarning("Unknown beam type and energy!");
     grpMap->Add(new TObjString("fAliceBeamEnergy"),new TObjString("UNKNOWN"));
-    grpMap->Add(new TObjString("fAliceBeamType"),new TObjString("UNKNOWN"));
+    grpMap->Add(new TObjString("fAliceBeamType"),new TObjString("0"));
   }
 
   UInt_t detectorPattern  = 0;
@@ -1956,8 +1960,6 @@ void AliSimulation::WriteGRPEntry()
   AliCDBId id("GRP/GRP/Data", man->GetRun(), man->GetRun());
   AliCDBMetaData *metadata= new AliCDBMetaData();
 
-  // Get root version
-  const char* rootv = gROOT->GetVersion();
   metadata->SetResponsible("alice-off@cern.ch");
   metadata->SetComment("Automatically produced GRP entry for Monte Carlo");
  
