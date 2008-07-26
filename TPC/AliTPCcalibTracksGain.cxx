@@ -161,6 +161,41 @@
   chain2->SetAlias("k2","1/1.152");
   
 
+  Position correction fit:
+  //
+  gSystem->Load("libSTAT.so")
+  TStatToolkit toolkit;
+  Double_t chi2;
+  TVectorD fitParam;
+  TMatrixD covMatrix;
+  Int_t npoints;
+  //
+  TCut cutA("dedge>3&&fraction2<0.5");
+  chain0->SetAlias("dp","(Cl.fPad-int(Cl.fPad)-0.5)");
+  chain0->SetAlias("dt","(Cl.fTimeBin-int(Cl.fTimeBin)-0.5)");
+  chain0->SetAlias("di","(sqrt(1.-abs(Cl.fZ)/250.))");
+
+  TString fstring="";  
+  fstring+="dp++";                               //1
+  fstring+="dt++";                               //2
+  fstring+="dp^2++";                             //3
+  fstring+="dt^2++";                             //4
+  fstring+="dt^3++";                             //4
+  fstring+="dp*dt++";                            //5
+  fstring+="dp*dt^2++";                          //6
+  //
+  fstring+="dp^2*(di)++";                        //7
+  fstring+="dt^2*(di)++";                        //8
+  fstring+="dp^2*(abs(parY.fElements[1]))++";                        //9
+  fstring+="dt^2*(abs(parY.fElements[1]))++";                        //10
+  fstring+="dp^2*(abs(parZ.fElements[1]))++";                        //11
+  fstring+="dt^2*(abs(parZ.fElements[1]))++";                        //12
+
+
+ TString *strq0 = toolkit.FitPlane(chain0,"Cl.fMax/gain/dedxM.fElements[0]",fstring->Data(), "IPad==0"+cutA, chi2,npoints,fitParam,covMatrix,-1,0,100000);
+
+ chain0->SetAlias("qcorM0",strq0->Data());
+ chain0->Draw("(Cl.fMax/gain/dedxM.fElements[0]):qcorM0","IPad==0"+cutA,"prof",100000)
 
 
 */
