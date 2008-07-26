@@ -76,12 +76,12 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   // Exec function
   // Loop over tracks and call  Process function
   if (!fESD) {
-    Printf("ERROR: fESD not available");
+    //Printf("ERROR: fESD not available");
     return;
   }
   fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
   if (!fESDfriend) {
-    Printf("ERROR: fESDfriend not available");
+    //Printf("ERROR: fESDfriend not available");
     return;
   }
   Int_t n=fESD->GetNumberOfTracks();
@@ -108,12 +108,12 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
   //
   TTree* tree=dynamic_cast<TTree*>(GetInputData(0));
   if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
+    //Printf("ERROR: Could not read chain from input slot 0");
   } 
   else {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
+      //Printf("ERROR: Could not get ESDInputHandler");
     } 
     else {
       fESD = esdH->GetEvent();

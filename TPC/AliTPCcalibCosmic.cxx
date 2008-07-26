@@ -143,10 +143,10 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
    Printf("ERROR: ESDfriend not available");
    return;
   }
-
+   
   FindPairs(event); // nearly everything takes place in find pairs...
 
-  if (GetDebugLevel()>1) printf("Hallo world: Im here and processing an event\n");
+  if (GetDebugLevel()>20) printf("Hallo world: Im here and processing an event\n");
   Int_t ntracks=event->GetNumberOfTracks(); 
   fHistNTracks->Fill(ntracks);
   if (ntracks==0) return;
@@ -172,7 +172,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
   // Track0 is choosen in upper TPC part
   // Track1 is choosen in lower TPC part
   //
-  if (GetDebugLevel()>1) printf("Hallo world: Im here\n");
+  if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
   AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   Int_t ntracks=event->GetNumberOfTracks(); 
   TObjArray  tpcSeeds(ntracks);
@@ -483,10 +483,10 @@ void AliTPCcalibCosmic::BinLogX(TH1 *h) {
 /*
 
 void AliTPCcalibCosmic::dEdxCorrection(){
-  TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");
-  TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5");
+  TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");  // OK
+  TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5");     // OK
   TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.2&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
-  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>110");
+  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>70");
   TCut cutA=cutT+cutD+cutPt+cutN;
 
 

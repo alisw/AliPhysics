@@ -62,9 +62,13 @@ public:
   virtual void            Process(AliTPCseed* seed);
   virtual void            Terminate();
   virtual void            Analyze();
+  void                    SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
   //
-  // Tracks manipulation
+  // Tracks and cluster manipulation
   //
+  Float_t         GetMaxNorm(AliTPCclusterMI * cl);
+  Float_t         GetQNorm(AliTPCclusterMI * cl);
+  Float_t         GetGain(AliTPCclusterMI* cl);
   void            AddTrack(AliTPCseed* seed);
   void            DumpTrack(AliTPCseed* track);
   Bool_t          GetDedx(AliTPCseed* track, Int_t padType,  Int_t*rows,
@@ -117,6 +121,8 @@ public:
   //
   //
   AliTPCcalibTracksCuts* fCuts;            // cuts that are used for sieving the tracks used for calibration
+  AliTPCCalPad *fGainMap;                //  gain map to be applied
+  //
   //
   // Simple Profiles and histograms - per chambers + 1 total
   //
@@ -162,7 +168,6 @@ public:
   UInt_t          fNLongClusters[36];    // number of clusters registered on long pads
   //
   //
-  AliTPCcalibTracksGain* fPrevIter;        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)    
   //
   // Setup
   //

@@ -118,12 +118,19 @@
   AliTPCcalibTracksGain * gain = ( AliTPCcalibTracksGain *)array->FindObject("calibTracksGain");
 
   //
+  // Angular and drift correction
+  //
+  AliTPCClusterParam *param = new AliTPCClusterParam;param->SetInstance(param);
+  gain->UpdateClusterParam(param);
+  TF2 fdrty("fdrty","AliTPCClusterParam::SQnorm(0,0,x,y,0)",0,1,0,1)
+
+  //
   // Make visual Tree - compare with Kr calibration
   // 
   AliTPCCalPad * gain010 = gain->CreateFitCalPad(0,kTRUE,0); gain010->SetName("CGain010");
   AliTPCCalPad * gain110 = gain->CreateFitCalPad(1,kTRUE,0); gain110->SetName("CGain110");
   AliTPCCalPad * gain210 = gain->CreateFitCalPad(2,kTRUE,0); gain210->SetName("CGain210");
-  TFile fkr("/u/akalweit/macros/GainCalibration/GainMap.root");
+  TFile fkr("/u/miranov/GainMap.root");
   AliTPCCalPad *gainKr = fkr.Get("GainMap"); fkr->SetName("KrGain");
   //
   AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;
@@ -234,6 +241,7 @@ AliTPCParamSR* AliTPCcalibTracksGain::fgTPCparam = new AliTPCParamSR();
 AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
   AliTPCcalibBase(),
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
+  fGainMap(0),                //  gain map to be applied
   //
   // Simple Array of histograms
   // 
@@ -271,8 +279,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
   fTotalTracks(0),         // just for debugging
   fAcceptedTracks(0),      // just for debugging
   fDebugCalPadRaw(0),      // just for debugging
-  fDebugCalPadCorr(0),     // just for debugging
-  fPrevIter(0)        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)    
+  fDebugCalPadCorr(0)     // just for debugging
 
 {
    //
@@ -283,6 +290,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
   AliTPCcalibBase(obj),
   fCuts(obj.fCuts),            // cuts that are used for sieving the tracks used for calibration
+  fGainMap(new AliTPCCalPad(*(obj.fGainMap))),                //  gain map to be applied
   fArrayQM(0),                // Qmax normalized
   fArrayQT(0),                // Qtot normalized 
   //
@@ -318,8 +326,7 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
   fTotalTracks(obj.fTotalTracks),         // just for debugging
   fAcceptedTracks(obj.fAcceptedTracks),      // just for debugging
   fDebugCalPadRaw(obj.fDebugCalPadRaw),      // just for debugging
-  fDebugCalPadCorr(obj.fDebugCalPadCorr),     // just for debugging
-  fPrevIter(obj.fPrevIter)        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)    
+  fDebugCalPadCorr(obj.fDebugCalPadCorr)     // just for debugging
 
 {
    //
@@ -340,8 +347,8 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
       fSqrtFitter = new AliTPCFitPad(*(rhs.fSqrtFitter));
       fLogFitter = new AliTPCFitPad(*(rhs.fLogFitter));
       fSingleSectorFitter = new AliTPCFitPad(*(rhs.fSingleSectorFitter));
-      fPrevIter = new AliTPCcalibTracksGain(*(rhs.fPrevIter));
       fCuts = new AliTPCcalibTracksCuts(*(rhs.fCuts));
+      fGainMap = new AliTPCCalPad(*(rhs.fGainMap));
    }
    return *this;
 }
@@ -349,6 +356,7 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* /*debugStreamPrefix*/, AliTPCcalibTracksGain* prevIter) :
   AliTPCcalibBase(),
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
+  fGainMap(0),                //  gain map to be applied
   fArrayQM(0),                // Qmax normalized
   fArrayQT(0),                // Qtot normalized 
   //
@@ -384,17 +392,14 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
   fTotalTracks(0),         // just for debugging
   fAcceptedTracks(0),      // just for debugging
   fDebugCalPadRaw(0),      // just for debugging
-  fDebugCalPadCorr(0),     // just for debugging
-  fPrevIter(0)        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)      
+  fDebugCalPadCorr(0)     // just for debugging
   
 {
    //
    // Constructor.
    //   
-   G__SetCatchException(0);
    this->SetNameTitle(name, title);
    fCuts = cuts;
-   fPrevIter = prevIter;
    //
    // Fitter initialization
    //
@@ -579,6 +584,42 @@ Long64_t AliTPCcalibTracksGain::Merge(TCollection *list) {
    return 0;
 }
 
+Float_t  AliTPCcalibTracksGain::GetGain(AliTPCclusterMI* cl){
+  //
+  // Return local gain at cluster position
+  //
+  Float_t factor = 1;
+  AliTPCCalROC * roc = fGainMap->GetCalROC(cl->GetDetector());
+  Int_t irow = cl->GetRow();
+  if (roc){
+    if (irow < 63) { // IROC
+      factor = roc->GetValue(irow, TMath::Nint(cl->GetPad()));
+    } else {         // OROC
+      factor = roc->GetValue(irow - 63, TMath::Nint(cl->GetPad()));
+    }
+  }
+  if (factor<0.1) factor=0.1;
+  return factor;
+}
+
+
+Float_t   AliTPCcalibTracksGain::GetMaxNorm(AliTPCclusterMI * cl){
+  //
+  // Get normalized amplituded if the gain map provided
+  //
+  return cl->GetMax()/GetGain(cl);
+}
+
+
+Float_t   AliTPCcalibTracksGain::GetQNorm(AliTPCclusterMI * cl){
+  //
+  // Get normalized amplituded if the gain map provided
+  //
+  return cl->GetQ()/GetGain(cl);
+}
+
+
+
 void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
    //
    // Adds another AliTPCcalibTracksGain object to this object.
@@ -673,46 +714,46 @@ void AliTPCcalibTracksGain::AddTrack(AliTPCseed* seed) {
 void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster){
   //
   // Adding cluster information to the simple histograms
-  // No correction, fittings are applied 
-  // 
+  // No correction, fittings are applied   
+
+
   Float_t kThreshold=5;
   if (cluster->GetX()<=0) return;
   if (cluster->GetQ()<=kThreshold) return;
   //
-  
 
   Int_t sector = cluster->GetDetector();
   TH1F  * his;
   his = GetQT(sector);
-  if (his) his->Fill(cluster->GetQ());
+  if (his) his->Fill(GetQNorm(cluster));
   his = GetQT(-1);
-  if (his) his->Fill(cluster->GetQ());
+  if (his) his->Fill(GetQNorm(cluster));
   his = GetQM(sector);
-  if (his) his->Fill(cluster->GetMax());
+  if (his) his->Fill(GetMaxNorm(cluster));
   his = GetQM(-1);
-  if (his) his->Fill(cluster->GetMax());
+  if (his) his->Fill(GetMaxNorm(cluster));
   //
   sector = sector%36;
   TProfile *prof;
   prof = GetProfileQT(sector);
-  if (prof) prof->Fill(cluster->GetX(),cluster->GetQ());
+  if (prof) prof->Fill(cluster->GetX(),GetQNorm(cluster));
   prof = GetProfileQT(-1);
-  if (prof) prof->Fill(cluster->GetX(),cluster->GetQ());
+  if (prof) prof->Fill(cluster->GetX(),GetQNorm(cluster));
   prof = GetProfileQM(sector);
-  if (prof) prof->Fill(cluster->GetX(),cluster->GetMax());
+  if (prof) prof->Fill(cluster->GetX(),GetMaxNorm(cluster));
   prof = GetProfileQM(-1);
-  if (prof) prof->Fill(cluster->GetX(),cluster->GetMax());
+  if (prof) prof->Fill(cluster->GetX(),GetMaxNorm(cluster));
   //  
   Float_t phi = cluster->GetY()/cluster->GetX();
   TProfile2D *prof2;
   prof2 = GetProfileQT2D(sector);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetQ());
+  if (prof2) prof2->Fill(cluster->GetX(),phi,GetQNorm(cluster));
   prof2 = GetProfileQT2D(-1);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetQ());
+  if (prof2) prof2->Fill(cluster->GetX(),phi,GetQNorm(cluster));
   prof2 = GetProfileQM2D(sector);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetMax());
+  if (prof2) prof2->Fill(cluster->GetX(),phi,GetMaxNorm(cluster));
   prof2 = GetProfileQM2D(-1);
-  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetMax());
+  if (prof2) prof2->Fill(cluster->GetX(),phi,GetMaxNorm(cluster));
 
   //
 }
@@ -733,14 +774,38 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t /*momen
    // gets the square root of the charge, and the log fitter gets fgkM*(1+q/fgkM), where q is the original charge
    // and fgkM==25.
    //
+  Float_t kedge     = 3;
+  Float_t kfraction = 0.7;
+  Int_t   kinorm    = 2;
+
+
+  // Where to put selection on threshold? 
+  // Defined by the Q/dEdxT variable - see debug streamer:
+  //
+  // Debug stream variables:  (Where tu cut ?)
+  // chain0->Draw("Cl.fQ/dedxQ.fElements[1]>>his(100,0,3)","fraction2<0.6&&dedge>3","",1000000);
+  //         mean 1  sigma 0.25
+  // chain0->Draw("Cl.fMax/dedxM.fElements[1]>>his(100,0,3)","fraction2<0.6&&dedge>3","",1000000)
+  //         mean 1  sigma 0.25
+  // chain0->Draw("Cl.fQ/dedxQ.fElements[2]>>his(100,0,3)","fraction2<0.7&&dedge>3","",1000000)
+  //         mean 1 sigma 0.29
+  // chain0->Draw("Cl.fMax/dedxM.fElements[2]>>his(100,0,3)","fraction2<0.7&&dedge>3","",1000000)
+  //         mean 1 sigma 0.27
+  // chain0->Draw("Cl.fQ/dedxQ.fElements[3]>>his(100,0,3)","fraction2<0.8&&dedge>3","",1000000)
+  //         mean 1 sigma 0.32
+  // 
+  // chain0->Draw("Cl.fQ/dedxQ.fElements[4]>>his(100,0,3)","fraction2<0.9&&dedge>3","",1000000)
+  //         mean 1 sigma 0.4
+
+  // Fraction choosen 0.7
 
    if (!cluster) {
       Error("AddCluster", "Cluster not valid.");
       return;
    }
 
-   if (dedge < 3.) return;
-   if (fraction2 > 0.9) return;
+   if (dedge < kedge) return;
+   if (fraction2 > kfraction) return;
 
    //Int_t padType = GetPadType(cluster->GetX());
    Double_t xx[7];
@@ -763,7 +828,7 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t /*momen
    // Update fitters
    //
    Int_t segment = cluster->GetDetector() % 36;
-   Double_t q = fgkUseTotalCharge ? ((Double_t)(cluster->GetQ())) : ((Double_t)(cluster->GetMax()));  // note: no normalization to pad size!
+   Double_t q = fgkUseTotalCharge ? ((Double_t)(GetQNorm(cluster))) : ((Double_t)(GetMaxNorm(cluster)));  // note: no normalization to pad size!
 
    // just for debugging
    Int_t row = 0;
@@ -772,7 +837,7 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t /*momen
    fDebugCalPadRaw->GetCalROC(cluster->GetDetector())->SetValue(row, pad, q + fDebugCalPadRaw->GetCalROC(cluster->GetDetector())->GetValue(row, pad));
    
    // correct charge by normalising to mean charge per track
-   q /= dedxQ[2];
+   q /= dedxQ[kinorm];
 
    // just for debugging
    fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->SetValue(row, pad, q + fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->GetValue(row, pad));
@@ -1247,8 +1312,8 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
          Int_t detector = cluster->GetDetector() ;
          if (lastSector == -1) lastSector = detector;
          if (lastSector != detector) continue;
-         amplitudeQ[nclusters] = cluster->GetQ();
-         amplitudeM[nclusters] = cluster->GetMax();
+         amplitudeQ[nclusters] = GetQNorm(cluster);
+         amplitudeM[nclusters] = GetMaxNorm(cluster);
          rowIn[nclusters] = iCluster;
          nclusters++;
          Double_t dx = cluster->GetX() - xcenter;
@@ -1343,22 +1408,23 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
       Float_t fraction2 = Float_t(inonEdge) / Float_t(nclustersNE);
 
       AddCluster(cluster, momenta, mdedx, padType, xcenter, dedxQ, dedxM, fraction, fraction2, dedge, parY, parZ, meanPos);
-
+      Float_t gain = GetGain(cluster);
       if (cstream) (*cstream) << "dEdx" <<
-         "Cl.=" << cluster <<           // cluster of interest
-         "P=" << momenta <<             // track momenta
-         "dedx=" << mdedx <<            // mean dedx - corrected for angle
-         "IPad=" << padType <<          // pad type 0..2
-         "xc=" << xcenter <<            // x center of chamber
-         "dedxQ.=" << &dedxQ <<         // dedxQ  - total charge
-         "dedxM.=" << &dedxM <<         // dedxM  - maximal charge
-         "fraction=" << fraction <<     // fraction - order in statistic (0,1)
-         "fraction2=" << fraction2 <<   // fraction - order in statistic (0,1)
-         "dedge=" << dedge <<           // distance to the edge
-         "parY.=" << &parY <<           // line fit
-         "parZ.=" << &parZ <<           // line fit
-         "meanPos.=" << &meanPos <<     // mean position (dx, dx^2, y,y^2, z, z^2)
-         "\n";
+		     "Cl.=" << cluster <<           // cluster of interest
+		     "gain="<<gain<<                // gain at cluster position
+		     "P=" << momenta <<             // track momenta
+		     "dedx=" << mdedx <<            // mean dedx - corrected for angle
+		     "IPad=" << padType <<          // pad type 0..2
+		     "xc=" << xcenter <<            // x center of chamber
+		     "dedxQ.=" << &dedxQ <<         // dedxQ  - total charge
+		     "dedxM.=" << &dedxM <<         // dedxM  - maximal charge
+		     "fraction=" << fraction <<     // fraction - order in statistic (0,1)
+		     "fraction2=" << fraction2 <<   // fraction - order in statistic (0,1)
+		     "dedge=" << dedge <<           // distance to the edge
+		     "parY.=" << &parY <<           // line fit
+		     "parZ.=" << &parZ <<           // line fit
+		     "meanPos.=" << &meanPos <<     // mean position (dx, dx^2, y,y^2, z, z^2)
+		     "\n";
    }
    
    if (cstream) (*cstream) << "dEdxT" <<

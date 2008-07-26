@@ -956,7 +956,7 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       
       if (useForResol && nclFound > 2 * kMinRatio * kDelta 
 	  && irow % kDeltaWriteDebugStream == 0 && GetDebugLevel() > 4){
-	if (GetDebugLevel() > 5) Info("FillResolutionHistoLocal","Filling 'TPCSelectorDebug.root', irow = %i", irow);
+	if (GetDebugLevel() > 20) Info("FillResolutionHistoLocal","Filling 'TPCSelectorDebug.root', irow = %i", irow);
          FillResolutionHistoLocalDebugPart(track, cluster0, irow, angley, anglez, nclFound, kDelta);
       }  // if (useForResol && nclFound > 2 * kMinRatio * kDelta)
    
