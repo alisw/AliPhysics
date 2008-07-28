@@ -84,6 +84,7 @@ struct payloadDescriptorStruct {
 } *payloadsHead, *payloadsTail;
 int lineNo;
 eventGdcIdType currGdcId;
+unsigned long32 currDetPattern; 
 eventLdcIdType currLdcId;
 equipmentIdType currEquipmentId;
 int currRunNb;
@@ -777,6 +778,27 @@ void parseGdc( char * const line ) {
       DBG_VERBOSE printf( "%d)     GDC - ID:%d\n",
 			  lineNo,
 			  currGdcId );
+    } else if ( strcasecmp( "DetectorPattern", keyword ) == 0 ) {
+      char *detPattern;
+
+      if ( (detPattern = strtok_r( p, " \t", &p )) == NULL ) {
+	fprintf( stderr,
+		 "%s: line:%d GDC declaration, DetectorPattern needed",
+		 myName,
+		 lineNo );
+	exit( 1 );
+      }
+      if ( sscanf( detPattern, "%u", &currDetPattern ) != 1 ) {
+	fprintf( stderr,
+		 "%s: line:%d GDC declaration, numeric DetectorPattern needed (%s)",
+		 myName,
+		 lineNo,
+		 detPattern );
+	exit( 1 );
+      }
+      DBG_VERBOSE printf( "%d)     GDC - DetectorPattern:%u\n",
+			  lineNo,
+			  currDetPattern );
     } else {
       fprintf( stderr,
 	       "%s: line:%d GDC declaration, unknown keyword \"%s\"\n",
@@ -831,6 +853,7 @@ void parseRules() {
 
   currLdcId = HOST_ID_MIN;
   currGdcId = HOST_ID_MIN;
+  currDetPattern = 0;
 
   for ( lineNo = 1; !feof( stdin ); lineNo++ ) {
     getLine( line, sizeof(line) );
@@ -1604,6 +1627,7 @@ void initEvents() {
       gdc->header.eventType = PHYSICS_EVENT;
       SET_SYSTEM_ATTRIBUTE( gdc->header.eventTypeAttribute, ATTR_SUPER_EVENT );
       gdc->header.eventGdcId = currGdcId;
+      COPY_DETECTOR_PATTERN(&currDetPattern, gdc->header.eventDetectorPattern);
       for ( ldc = gdc->head; ldc != NULL; ldc = ldc->next ) {
 	struct equipmentEventDescriptorStruct *eq;
 
@@ -1611,6 +1635,7 @@ void initEvents() {
 	ldc->header.eventSize = ldc->header.eventHeadSize;
 	ldc->header.eventType = PHYSICS_EVENT;
 	ldc->header.eventGdcId = currGdcId;
+	COPY_DETECTOR_PATTERN(&currDetPattern, ldc->header.eventDetectorPattern);
 	ldc->header.eventLdcId = ldc->id;
 	for ( eq = ldc->head; eq != NULL; eq = eq->next ) {
 	  initEquipment( &eq->header );

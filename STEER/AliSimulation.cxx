@@ -1263,22 +1263,28 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
 
   Int_t selEvents = 0;
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    fprintf(pipe, "GDC\n");
-    Float_t ldc = 0;
-    Int_t prevLDC = -1;
 
-    if (selrawdata) {
+    UInt_t detectorPattern = 0;
+    runLoader->GetEvent(iEvent);
+    if (!runLoader->LoadTrigger()) {
+      AliCentralTrigger *aCTP = runLoader->GetTrigger();
+      detectorPattern = aCTP->GetClusterMask();
       // Check if the event was triggered by CTP
-      runLoader->GetEvent(iEvent);
-      if (!runLoader->LoadTrigger()) {
-	AliCentralTrigger *aCTP = runLoader->GetTrigger();
+      if (selrawdata) {
 	if (aCTP->GetClassMask()) selEvents++;
       }
-      else {
+    }
+    else {
+      AliWarning("No trigger can be loaded! Some fields in the event header will be empty !");
+      if (selrawdata) {
 	AliWarning("No trigger can be loaded! Writing of selected raw data is abandoned !");
 	selrawdata = kFALSE;
       }
     }
+
+    fprintf(pipe, "GDC DetectorPattern %u\n", detectorPattern);
+    Float_t ldc = 0;
+    Int_t prevLDC = -1;
 
     // loop over detectors and DDLs
     for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
@@ -1325,16 +1331,18 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
 
     // Get the trigger decision and cluster
+    UInt_t detectorPattern = 0;
     TString detClust;
     runLoader->GetEvent(iEvent);
     if (!runLoader->LoadTrigger()) {
       AliCentralTrigger *aCTP = runLoader->GetTrigger();
       if (aCTP->GetClassMask() == 0) continue;
-      detClust = AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask());
+      detectorPattern = aCTP->GetClusterMask();
+      detClust = AliDAQ::ListOfTriggeredDetectors(detectorPattern);
       AliInfo(Form("List of detectors to be read out: %s",detClust.Data()));
     }
 
-    fprintf(pipe2, "GDC\n");
+    fprintf(pipe2, "GDC DetectorPattern %u\n", detectorPattern);
     Float_t ldc = 0;
     Int_t prevLDC = -1;
 
