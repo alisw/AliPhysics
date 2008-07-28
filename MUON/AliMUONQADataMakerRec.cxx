@@ -164,7 +164,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
 	// Display trigger histos in a more user friendly way
 	DisplayTriggerInfo(task);
 	
-	if ( task == AliQA::kRAWS ) 
+	if ( task == AliQA::kRAWS && fTrackerDataMaker ) 
 	{
 		TIter next(list);
 		TObject* o;
