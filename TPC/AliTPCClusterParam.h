@@ -34,6 +34,9 @@ class AliTPCClusterParam : public TObject {
   void FitResol(TTree * tree);
   void FitRMS(TTree * tree);
   void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
+  //
+  // Charge parameterization
+  //
   Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);   
   //
   // Error parameterization
@@ -135,6 +138,10 @@ class AliTPCClusterParam : public TObject {
   Float_t fRMSSigmaFit[2][3][2];   // mean value of the varation of RMS to RMS
   //
   TObjArray *fQNorm;              // q norm paramters
+  //
+  TVectorD  *fPosQTnorm[3];        // q position normalization
+  TVectorD  *fPosQMnorm[3];        // q position normalization
+  TVectorD  *fQpadNorm;            // q pad normalization
  protected:
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
   ClassDef(AliTPCClusterParam,2)    //  TPC Cluster parameter class
