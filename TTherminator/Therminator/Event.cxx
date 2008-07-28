@@ -226,11 +226,19 @@ Event::ReadMultiplicities()
   double tMult;
   
   char *tHash;
-  char  tMultName[100];
+  int   multsize;
+  char *tMultName = 0;
   ifstream *fin = NULL;
   
   tHash = mInteg->ParameterHash();
-  
+  multsize = strlen(mFOHSlocation.Data()) + 25 + strlen(tHash);
+  tMultName = (char *) malloc(sizeof(char) * multsize);
+
+  if (!tMultName) {
+    printf("Cannot allocate memory!\n");
+    exit(0);
+  }
+
   if (mFOHSlocation != "") {
     strcpy(tMultName, mFOHSlocation.Data());
     strcat(tMultName, "/");
@@ -250,7 +258,7 @@ Event::ReadMultiplicities()
 //   strcat(tMultName, tHash);
 //   strcat(tMultName, ".txt");
 
-  fin = new ifstream(tMultName);
+//  fin = new ifstream(tMultName);
   if ((fin) && (fin->is_open())) {
     PRINT_MESSAGE("Reading Multiplicities from " << tMultName);
 
@@ -262,6 +270,8 @@ Event::ReadMultiplicities()
     }
     fin->close();
   }
+
+  delete tMultName;
 }
 
 void           
