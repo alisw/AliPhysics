@@ -392,7 +392,7 @@ const AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name)
 	// returns the detector index corresponding to a given name
 	TString sname(name) ; 
 	TASKINDEX_t rv ; 
-	for (Int_t tsk = 0; tsk < kNTASK ; tsk++) {
+	for (Int_t tsk = 0; tsk < kNTASKINDEX ; tsk++) {
 		if ( GetTaskName(tsk) == sname ) {
 			rv = TASKINDEX_t(tsk) ; 
 			break ; 
