@@ -438,7 +438,7 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	Int_t currentTime=0;
 	Int_t bunchSize=0;
 	if(zeroSuppressedPad->GetNAddedSignals()>0){
-	  while(zeroSuppressedPad->GetNextGoodSignal(currentTime, bunchSize,0)){
+	  while(zeroSuppressedPad->GetNextGoodSignal(currentTime, bunchSize)){
 	    for(Int_t i=0;i<bunchSize;i++){
 	      altroEncoder.AddSignal(zeroSuppressedPad->GetDataSignal(currentTime+i), currentTime+i);
 	    }

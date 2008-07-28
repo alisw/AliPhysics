@@ -300,20 +300,12 @@ public:
   void ZeroSuppress(Double_t nRMS,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime,Int_t timebinsLeft, Int_t timebinsRight, Int_t valueBelowAverage);
   
   /**
-   * Returns the next signal which survived the ZeroSuppression 
-   * @param time            Refernence to timebin number
-   * @param signal          Refernence to signal
-   * @return                True if there are more signals
-  */
-  Bool_t GetNextGoodSignal(Int_t &time,Int_t &signal);
-
-  /**
    * Bool method which returns the timein number of the first signal and number of consecutive signals, used together with GetPointer(bin) to access data 
    * @param time            Refernence to timebin number
    * @param bunchSize       Refernence to number of consecutive signals
    * @return                True if there are more signals
   */
-  Bool_t GetNextGoodSignal(Int_t &time,Int_t &bunchSize,Int_t dummy);
+  Bool_t GetNextGoodSignal(Int_t &time,Int_t &bunchSize);
 
   /**
    * Returns number of signals added

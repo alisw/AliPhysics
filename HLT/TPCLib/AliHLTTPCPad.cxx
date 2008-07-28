@@ -507,19 +507,8 @@ void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal)
   fSizeOfSignalPositionArray++;
 }
 
-Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time, Int_t &signal){
-  if(fNGoodSignalsSent<fSizeOfSignalPositionArray&&fSizeOfSignalPositionArray>0){
-    time = fSignalPositionArray[fNGoodSignalsSent];
-    signal = GetDataSignal(time);
+Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time,Int_t &bunchSize){
 
-    fNGoodSignalsSent++;
-    return kTRUE;
-  }
-  return kFALSE;
-}
-
-Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time,Int_t &bunchSize,Int_t dummy){
-  dummy=0;//to get rid of warning until things are cleaned up better
   if(fNGoodSignalsSent<fSizeOfSignalPositionArray&&fSizeOfSignalPositionArray>0){
     time = fSignalPositionArray[fNGoodSignalsSent];
     bunchSize=1;
