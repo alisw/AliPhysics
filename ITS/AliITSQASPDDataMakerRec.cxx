@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:$  */
+/* $Id$  */
 //  *************************************************************
 //  Checks the quality assurance 
 //  by comparing with reference data
@@ -165,6 +165,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
   fSPDhTask++;
  
   AliDebug(1,Form("%d SPD Raws histograms booked\n",fSPDhTask));
+	fSPDhTask = 0 ;
 }
 
 
@@ -366,6 +367,8 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
   fSPDhTask++;
 
   AliDebug(1,Form("%d SPD Recs histograms booked\n",fSPDhTask));
+
+	fSPDhTask = 0 ;
 
 }
 
