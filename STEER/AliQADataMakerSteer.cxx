@@ -336,6 +336,8 @@ AliQADataMaker * AliQADataMakerSteer::GetQADataMaker(const Int_t iDet)
 	
 	if (iDet == AliQA::kGLOBAL) { //Global QA
 		qadm = new AliGlobalQADataMaker();
+		qadm->SetName(AliQA::GetDetName(iDet));
+		qadm->SetUniqueID(iDet);
 		fQADataMaker[iDet] = qadm;
 		return qadm;
 	}
@@ -368,9 +370,9 @@ AliQADataMaker * AliQADataMakerSteer::GetQADataMaker(const Int_t iDet)
 		qadm = (AliQADataMaker *) pluginHandler->ExecPlugin(0) ;
 	}
 	if (qadm) {
-		fQADataMaker[iDet] = qadm ;
 		qadm->SetName(AliQA::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
+		fQADataMaker[iDet] = qadm ;
 	}
 	
 		return qadm ;
