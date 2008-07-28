@@ -315,7 +315,8 @@ Bool_t  AliMpManuStore::WriteData(const TString& outDir)
     string top = AliMpFiles::GetTop().Data();
     if ( dataPath.find(top) != string::npos ) dataPath.erase(0, top.size()+1);
     dataPath.erase(0,dataPath.find('/')+1);
-    TString filePath = outDir + "/" + dataPath; 
+    TString dataPath1 = dataPath;
+    TString filePath = outDir + "/" + dataPath1; 
 
     // Open file
     //
