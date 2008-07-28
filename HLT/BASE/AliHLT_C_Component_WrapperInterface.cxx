@@ -104,7 +104,7 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int
   AliHLTComponent* comp=NULL;
   const char* cdbPath = getenv("ALIHLT_HCDBDIR");
   if (!cdbPath) cdbPath = getenv("ALICE_ROOT");
-  int ret = gComponentHandler_C->CreateComponent( componentType, environParam, argc, argv, comp);
+  int ret = gComponentHandler_C->CreateComponent( componentType, comp);
   if (ret>=0 && comp) {
     comp->InitCDB(cdbPath, gComponentHandler_C);
     comp->SetRunDescription(&gRunDesc, gRunType);
