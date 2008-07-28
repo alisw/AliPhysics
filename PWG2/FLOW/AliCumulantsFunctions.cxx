@@ -59,7 +59,7 @@ AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *IntGen, TProfile3D *Dif
   fAvMult(CvM)
  {
    //custom constructor 
- };
+ }
   
 //___________________________________________________________________________
 void AliCumulantsFunctions::Calculate(){
