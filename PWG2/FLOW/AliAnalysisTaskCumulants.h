@@ -9,11 +9,12 @@
 // AliAnalysisTaskCumulants:
 // analysis task for 
 // Cumulant method
-// with many authors
+// with many authors (N.K. R.S. A.B.)
 // who do something
 
 class AliESDEvent;
 class AliAODEvent;
+class AliCFManager;
 class AliFlowAnalysisWithCumulants;
 class AliFlowEventSimpleMaker;
 class TFile;
@@ -22,7 +23,9 @@ class TFile;
 
 class AliAnalysisTaskCumulants : public AliAnalysisTask {
  public:
-  AliAnalysisTaskCumulants(const char *name = "AliAnalysisTaskCumulants");
+  //AliAnalysisTaskCumulants(const char *name = "AliAnalysisTaskCumulants");
+  AliAnalysisTaskCumulants();
+  AliAnalysisTaskCumulants(const char *name);
   virtual ~AliAnalysisTaskCumulants() {}
   
   virtual void   ConnectInputData(Option_t *);
@@ -31,7 +34,12 @@ class AliAnalysisTaskCumulants : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
 
   void           SetAnalysisType(TString type) {this->fAnalysisType = type;}
- 
+  TString GetAnalysisType() const    { return this->fAnalysisType; }
+
+  void SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
+  AliCFManager* GetCFManager1()           {return this->fCFManager1; }
+  void SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
+  AliCFManager* GetCFManager2()           {return this->fCFManager2; } 
  
  private:
  
@@ -40,11 +48,25 @@ class AliAnalysisTaskCumulants : public AliAnalysisTask {
 
   AliESDEvent *fESD;                      //ESD object
   AliAODEvent* fAOD;                      //AOD object
-  TString fAnalysisType;                  //string to select which kind of input to analyse: ESD, AOD or MC
   AliFlowAnalysisWithCumulants* fMyCumuAnalysis;  //Cumulant analysis object
   AliFlowEventSimpleMaker* fEventMaker;   //FlowEventSimple maker object
-
+  TString fAnalysisType;                  //string to select which kind of input to analyse: ESD, AOD or MC
+  AliCFManager* fCFManager1;              // correction framework manager
+  AliCFManager* fCFManager2;              // correction framework manager
+  TList  *fListHistos;                    //collection of output //NEW
+   
   ClassDef(AliAnalysisTaskCumulants, 1); // example of analysis
 };
 
 #endif
+
+
+
+
+
+
+
+
+
+
+

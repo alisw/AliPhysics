@@ -11,7 +11,16 @@
 #include "AliFlowCumuConstants.h"
 
 class TH1;
+class TH3D;
+
 class TObjArray;
+
+
+class TProfile;
+class TProfile2D;
+class TProfile3D;
+
+
 class TList;
 class TFile;
 
@@ -31,10 +40,9 @@ class AliFlowAnalysisWithCumulants {
   virtual void Finish();
 
   // Output 
-  void	SetHistFileName(TString name)  {this->fHistFileName = name ;} // Sets output file name
-  TString GetHistFileName() const { return this->fHistFileName ; } // Gets output file name
-  TFile* GetHistFile() const { return this->fHistFile ; }     // Gets output file
-
+  
+  // Output
+  TList*   GetHistList() const             { return this->fHistList ; }     // Gets output histogram list //NEW
 
  private:
   AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants& aAnalysis);
@@ -47,8 +55,11 @@ class AliFlowAnalysisWithCumulants {
   static const Int_t fgkMltpl=AliFlowCumuConstants::kMltpl;//the multiple in p=m*n (diff. flow) 
   static const Int_t fgknBins=100;//number of pt bins
  
-  TString  fHistFileName;      //! The output file name     
-  TFile* fHistFile; // histogram file for Cumulants
+  //TString  fHistFileName;      //! The output file name  // NEW: In the old version this was not commented out     
+  //TFile* fHistFile; // histogram file for Cumulants // NEW: In the old version this was not commented out
+  
+  TList* fHistList; //list to hold all output histograms //NEW
+  
   Double_t fAvM;//avarage SELECTED multiplicity
 
   Double_t fR0;//needed for numerics
@@ -63,8 +74,23 @@ class AliFlowAnalysisWithCumulants {
    
   Int_t fNumberOfEvents;//number of events 
    
+  
+  TProfile*          fHistProAvM;       //avarage multiplicity
+  
+  TH1D*              fIntFlowResults;   //integrated flow final results
+  
+  TH1D*              fDiffFlowResults2; //differential flow final results //to be improved
+  TH1D*              fDiffFlowResults4; //differential flow final results //to be improved
+  TH1D*              fDiffFlowResults6; //differential flow final results //to be improved
+  TH1D*              fDiffFlowResults8; //differential flow final results //to be improved
+  
+  TProfile2D*        fIntFlowGenFun;    // avarage of the generating function for integrated flow 
+  TProfile3D*        fDiffFlowGenFunRe; // avarage of the generating function for differential flow (real part)
+  TProfile3D*        fDiffFlowGenFunIm; // avarage of the generating function for differential flow (imaginary part)
+ 
+  
   AliFlowCommonHist* fCommonHists;//control histograms
-  AliFlowCommonHistResults *fCommonHistsRes2, *fCommonHistsRes4, *fCommonHistsRes6, *fCommonHistsRes8;//histograms with various order final results 
+  //AliFlowCommonHistResults *fCommonHistsRes2, *fCommonHistsRes4, *fCommonHistsRes6, *fCommonHistsRes8;//final results//to be improved 
   
   Double_t fAvG[fgkPmax][fgkQmax];//avarage of the generating function used for integrated flow
   Int_t fBinEventEntries[fgknBins];//counts how many events have at least 1 particle in particular bin
@@ -76,5 +102,8 @@ class AliFlowAnalysisWithCumulants {
   ClassDef(AliFlowAnalysisWithCumulants, 0);
 };
 #endif
+
+
+
 
 
