@@ -29,16 +29,16 @@ class AliRawReaderFile: public AliRawReader {
 
     virtual void     RequireHeader(Bool_t required);
 
-    virtual UInt_t   GetType() const {return 0;};
-    virtual UInt_t   GetRunNumber() const {return 0;};
-    virtual const UInt_t* GetEventId() const {return 0;};
-    virtual const UInt_t* GetTriggerPattern() const {return 0;};
-    virtual const UInt_t* GetDetectorPattern() const {return 0;};
+    virtual UInt_t   GetType() const {return fType;};
+    virtual UInt_t   GetRunNumber() const {return fRunNb;};
+    virtual const UInt_t* GetEventId() const {return fId;};
+    virtual const UInt_t* GetTriggerPattern() const {return fTriggerPattern;};
+    virtual const UInt_t* GetDetectorPattern() const {return &fDetectorPattern;};
     virtual const UInt_t* GetAttributes() const {return 0;};
     virtual const UInt_t* GetSubEventAttributes() const {return 0;};
     virtual UInt_t   GetLDCId() const {return 0;};
     virtual UInt_t   GetGDCId() const {return 0;};
-    virtual UInt_t   GetTimestamp() const {return 0;};
+    virtual UInt_t   GetTimestamp() const {return fTimestamp;};
 
     virtual Int_t    GetEquipmentSize() const {return fEquipmentSize;};
     virtual Int_t    GetEquipmentType() const {return 0;};
@@ -56,6 +56,10 @@ class AliRawReaderFile: public AliRawReader {
     virtual Bool_t   NextEvent();
     virtual Bool_t   RewindEvents();
 
+    void             SetEventType(UInt_t type) { fType = type; }
+    void             SetRunNb(UInt_t run) { fRunNb = run; }
+    void             SetDetectorPattern(UInt_t pattern) { fDetectorPattern = pattern; }
+ 
   protected :
     TString          GetDirName() const;
     void*            OpenDirectory();
@@ -72,6 +76,13 @@ class AliRawReaderFile: public AliRawReader {
     Int_t            fEquipmentSize; // equipment size from raw-data payload
     TArrayC*         fDDLIndex;    //! the index of DDL files
     Int_t            fDDLCurrent;  //! the index of DDL files
+
+    UInt_t           fType;        // event type (no idea from where to get it - put physics_event)
+    UInt_t           fRunNb;       // run number (no idea from where to get it - put 0)
+    UInt_t           fId[2];       // id field (read from the first CDH found, period is not filled)
+    UInt_t           fTriggerPattern[2]; // the trigger class pattern (read from the first CDH found)
+    UInt_t           fDetectorPattern;   // the detector pattern (no idea from where to read it)
+    UInt_t           fTimestamp;   // event timestamp (read from the DDL file creation time)
 
   private :
     AliRawReaderFile(const AliRawReaderFile& rawReader);

@@ -50,7 +50,11 @@ AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
   fBufferSize(0),
   fEquipmentSize(0),
   fDDLIndex(NULL),
-  fDDLCurrent(-1)
+  fDDLCurrent(-1),
+  fType(7),
+  fRunNb(0),
+  fDetectorPattern(0),
+  fTimestamp(0)
 {
 // create an object to read digits from the given event
 // in the current directory
@@ -58,6 +62,9 @@ AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
   fDirectory = OpenDirectory();
   OpenNextFile();
   fHeader = new AliRawDataHeader;
+
+  fId[0] = fId[1] = 0;
+  fTriggerPattern[0] = fTriggerPattern[1] = 0;
 }
 
 AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
@@ -70,13 +77,20 @@ AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
   fBufferSize(0),
   fEquipmentSize(0),
   fDDLIndex(NULL),
-  fDDLCurrent(-1)
+  fDDLCurrent(-1),
+  fType(7),
+  fRunNb(0),
+  fDetectorPattern(0),
+  fTimestamp(0)
 {
 // create an object to read digits from the given directory
 
   fDirectory = OpenDirectory();
   OpenNextFile();
   fHeader = new AliRawDataHeader;
+
+  fId[0] = fId[1] = 0;
+  fTriggerPattern[0] = fTriggerPattern[1] = 0;
 }
 
 AliRawReaderFile::~AliRawReaderFile()
@@ -197,6 +211,11 @@ Bool_t AliRawReaderFile::OpenNextFile()
     entry.Form("%s_%d.ddl", AliDAQ::DetectorNameFromDdlID(fDDLCurrent, dummy), fDDLCurrent);
     char* fileName = gSystem->ConcatFileName(GetDirName(), entry);
     if (!fileName) continue;
+    // read the timestamp
+    FileStat_t buf;
+    if (gSystem->GetPathInfo(fileName,buf) == 0) {
+      fTimestamp = buf.fMtime;
+    }
 #ifndef __DECCXX 
     fStream = new fstream(fileName, ios::binary|ios::in);
 #else
@@ -340,6 +359,19 @@ Bool_t AliRawReaderFile::NextEvent()
     fEventIndex++;
     Reset();
   } while (!IsEventSelected());
+
+  // Read the header of the first payload
+  // in order to fill the 'fake' event header
+  if (ReadHeader() && fHeader) {
+    fId[0] = ((fHeader->GetEventID2() >> 20) & 0xf);
+    fId[1] = (fHeader->GetEventID1() & 0xfff) | ((fHeader->GetEventID2() & 0xfffff) << 12);
+    fTriggerPattern[0] = (fHeader->GetTriggerClasses() & 0xffffffff);
+    fTriggerPattern[1] = ((fHeader->GetTriggerClasses() >> 32) & 0x3ffff);
+  }
+  else {
+    Warning("AliRawReaderFile","Can not read CDH header! The event header fields will be empty!");
+  }
+  Reset();
 
   fEventNumber++;
 
