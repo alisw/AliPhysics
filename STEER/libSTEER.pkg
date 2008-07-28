@@ -56,6 +56,7 @@ AliQADataMakerSim.cxx \
 AliQADataMakerRec.cxx \
 AliQADataMakerSteer.cxx \
 AliQAChecker.cxx \
+AliGlobalQAChecker.cxx \
 AliQACheckerBase.cxx \
 AliMillepede.cxx \
 AliRecoParam.cxx \

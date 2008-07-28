@@ -30,6 +30,7 @@
 #include "AliQA.h"
 #include "AliQAChecker.h"
 #include "AliQACheckerBase.h"
+#include "AliGlobalQAChecker.h"
 
 #include <TKey.h>
 #include <TObjArray.h>
@@ -101,35 +102,40 @@ AliQAChecker::~AliQAChecker()
 	if (fCheckers[det]) 
     return fCheckers[det];
 
+	AliQACheckerBase * qac = NULL ;
+
 	TString detName(AliQA::GetDetName(det)) ; 
+	
+	if (det == AliQA::kGLOBAL) {
+		qac = new AliGlobalQAChecker() ; 
+	} else {
+		AliDebug(1, Form("Retrieving QA checker for %s", detName.Data())) ; 
+		TPluginManager* pluginManager = gROOT->GetPluginManager() ;
+		TString qacName = "Ali" + detName + "QAChecker" ;
 
-  AliDebug(1, Form("Retrieving QA checker for %s", detName.Data())) ; 
-  TPluginManager* pluginManager = gROOT->GetPluginManager() ;
-  TString qacName = "Ali" + detName + "QAChecker" ;
-
-  AliQACheckerBase * qac = NULL ;
-  // first check if a plugin is defined for the quality assurance checker
-  TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQAChecker", detName.Data());
-  // if not, add a plugin for it
-  if (!pluginHandler) {
-    //AliInfo(Form("defining plugin for %s", qacName.Data()));
-    TString libs = gSystem->GetLibraries();
+		// first check if a plugin is defined for the quality assurance checker
+		TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQAChecker", detName.Data());
+		// if not, add a plugin for it
+		if (!pluginHandler) {
+			//AliInfo(Form("defining plugin for %s", qacName.Data()));
+			TString libs = gSystem->GetLibraries();
 		
-		if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
-      pluginManager->AddHandler("AliQAChecker", detName, qacName, detName + "qac", qacName + "()");
-		else 
-      pluginManager->AddHandler("AliQAChecker", detName, qacName, detName, qacName + "()");
+			if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
+				pluginManager->AddHandler("AliQAChecker", detName, qacName, detName + "qac", qacName + "()");
+			else 
+				pluginManager->AddHandler("AliQAChecker", detName, qacName, detName, qacName + "()");
 
-		pluginHandler = pluginManager->FindHandler("AliQAChecker", detName);
+			pluginHandler = pluginManager->FindHandler("AliQAChecker", detName);	
 
-		if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) 
-			qac = (AliQACheckerBase *) pluginHandler->ExecPlugin(0);
+			if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) 
+				qac = (AliQACheckerBase *) pluginHandler->ExecPlugin(0);
   
-		if (qac) 
-			fCheckers[det] = qac ;
+		}
 	}
-
- return qac ; 
+	if (qac) 
+		fCheckers[det] = qac ;
+	
+	return qac ; 
 }
  
 //_____________________________________________________________________________
