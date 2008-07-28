@@ -16,7 +16,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// blaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa //
+// ANALYSIS task to perrorm TPC calibration                                  //
+
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 #include "AliTPCAnalysisTaskcalib.h"
