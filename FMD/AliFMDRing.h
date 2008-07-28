@@ -67,13 +67,13 @@ public:
   /** @param x Value of How far the ring extends beyond the z value given. */
   void SetRingDepth(Double_t x) { fRingDepth = x; }
   /** @param x Value of Radius of support legs */
-  void SetLegRadius(Double_t x=.5) { fLegRadius = x; }
+  void SetLegRadius(Double_t x=.2) { fLegRadius = x; }
   /** @param x Value of Radius of support legs */
   void SetLegLength(Double_t x=1) { fLegLength = x; }
   /** @param x Value of Radius of support legs */
   void SetLegOffset(Double_t x=2) { fLegOffset = x; }
   /** @param x Value of Staggering offset */
-  void SetModuleSpacing(Double_t x=1) { fModuleSpacing = x; }
+  void SetModuleSpacing(Double_t x=.6) { fModuleSpacing = x; }
   /** @param x Value of Thickness of print board */
   void SetPrintboardThickness(Double_t x=.1) { fPrintboardThickness = x; }
   /** @param x Value of Thickness of copper on print board */
@@ -83,7 +83,7 @@ public:
   /** @param x Value of spacing between si and PCB */
   void SetSpacing(Double_t x=.05) { fSpacing = x; }
   /** @param x Thickness of honeycomb plate */
-  void SetHoneycombThickness(Double_t x=1) { fHoneycombThickness = x; }
+  void SetHoneycombThickness(Double_t x=0.65) { fHoneycombThickness = x; }
   /** @param x Thickness of aluminium of honeycomb */
   void SetAlThickness(Double_t x=.1) { fAlThickness = x; }
 

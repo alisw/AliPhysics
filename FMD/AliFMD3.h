@@ -15,6 +15,7 @@
 #ifndef ALIFMDDETECTOR_H
 # include "AliFMDDetector.h"
 #endif
+#include <TObjArray.h>
 
 /** @class AliFMD3 AliFMD3.h <FMD/AliFMD3.h> 
     @brief Geometry parameters of the FMD3 detector. 
@@ -35,65 +36,49 @@ public:
 
   /** Initialize the geometry */
   virtual void Init();
-
-  /** @param z Z position of front of nose */
-  void SetNoseZ(Double_t z=-46) { fNoseZ = z; }
-  /** @param r Nose inner radius */
-  void SetNoseLowR(Double_t r=5.5) { fNoseLowR = r; }
-  /** @param r Nose outer radius */
-  void SetNoseHighR(Double_t r=6.7) { fNoseHighR = r; }
-  /** @param l Length of nose in Z */
-  void SetNoseLength(Double_t l=2.8) { fNoseLength = l; }
-  /** @param r Inner radius of base of cone */
-  void SetBackLowR(Double_t r=61./2) { fBackLowR = r; }
-  /** @param r Outer radius of base of cone */
-  void SetBackHighR(Double_t r=66.8/2) { fBackHighR = r; }
-  /** @param l Length of base of cone in Z */
-  void SetBackLength(Double_t l=1.4) { fBackLength = l; }
-  /** @param t Thickness of support beams */
-  void SetBeamThickness(Double_t t=.5) { fBeamThickness = t; }
-  /** @param w Width of support beams */
-  void SetBeamWidth(Double_t w=5) { fBeamWidth = w; }
-  /** @param l Length of the cone in Z */
-  void SetConeLength(Double_t l=30.9) { fConeLength = l; }
-  /** @param r Outer radius of flanges */
-  void SetFlangeR(Double_t r=49.25) { fFlangeR = r; }
-  /** @param n Number of support beams */
-  void SetNBeam(Int_t n=8) { fNBeam = n; }
-  /** @param n Number of support flanges */
-  void SetNFlange(Int_t n=4) { fNFlange = n; }
+  /** Get the Z offset (to inner ring) */
+  Double_t GetNoseZ() const { return fNoseZ; }
 
   /** @return Z position of front of nose */
-  Double_t GetNoseZ() const { return fNoseZ; }
+  Double_t GetFlangeDepth() const { return fFlangeDepth; }
   /** @return Nose inner radius */
-  Double_t GetNoseLowR() const { return fNoseLowR; }
+  Double_t GetFlangeLength() const { return fFlangeLength; }
   /** @return Nose outer radius */
-  Double_t GetNoseHighR() const { return fNoseHighR; }
-  /** @return Length of nose in Z */
-  Double_t GetNoseLength() const { return fNoseLength; }
-  /** @return Inner radius of base of cone */
-  Double_t GetBackLowR() const { return fBackLowR; }
-  /** @return Outer radius of base of cone */
-  Double_t GetBackHighR() const { return fBackHighR; }
-  /** @return Length of base of cone in Z */
-  Double_t GetBackLength() const { return fBackLength; }
-  /** @return Thickness of support beams */
-  Double_t GetBeamThickness() const { return fBeamThickness; }
-  /** @return Width of support beams */
-  Double_t GetBeamWidth() const { return fBeamWidth; }
-  /** @return Length of the cone in Z */
-  Double_t GetConeLength() const { return fConeLength; }
-  /** @return Outer radius of flanges */
-  Double_t GetFlangeR() const { return fFlangeR; }
-  /** @return Midpoint of mother volume */
-  Double_t GetZ() const { return fZ; }
-  /** @return Slope of cone */
-  Double_t GetAlpha() const { return fAlpha; }
-  /** @return Number of support beams */
-  Int_t GetNBeam() const { return fNBeam; }
-  /** @return Number of support flanges */
-  Int_t GetNFlange() const { return fNFlange; }
+  Double_t GetFlangeWidth() const { return fFlangeWidth; }
 
+  /** @return Length of nose in Z */
+  Double_t GetFiducialRadius() const { return fFiducialRadius; }
+
+  /** @return The angle of the cone on out-side */
+  Double_t GetConeOuterAngle() const { return fConeOuterAngle; }
+  /** @return The angle of the cone on out-side */
+  Double_t GetConeInnerAngle() const { return fConeInnerAngle; }
+
+  /** @return Hole off-set from nose */
+  Double_t GetHoleOffset() const { return fHoleOffset; }
+  /** @return Depth of holes  */
+  Double_t GetHoleDepth() const { return fHoleDepth; }
+  /** @return Length of holes  */
+  Double_t GetHoleLength() const { return fHoleLength; }
+  /** @return Lowest with of holes */
+  Double_t GetHoleLowWidth() const { return fHoleLowWidth; }
+  /** @return Highest width of holes */
+  Double_t GetHoleHighWidth() const { return fHoleHighWidth; }
+
+  /** @return Length of a bolt  */
+  Double_t GetBoltLength() const { return fBoltLength; }
+  /** @return Bolt radius  */
+  Double_t GetBoltRadius() const { return fBoltRadius; }
+
+  
+  /** @return array of 3-vectors (z, r_low, r_high) of the cone
+      radii. */
+  const TObjArray& ConeRadii() const { return fConeRadii; }
+  /** @return array of 2-vectors (x,y) of the fiducial holes in the
+              flanges.  coordinates are in the global coordinate
+              system. */
+  const TObjArray& FiducialHoles() const { return fFiducialHoles; }
+    
   /** Get the cone radii at @a z. 
       @param z Point to evaulate at 
       @param opt If @c "O" get the outer radii, if @c "I" get the
@@ -103,21 +88,30 @@ public:
 
 protected: 
   Double_t	fNoseZ;			// Z position of front of nose
-  Double_t	fNoseLowR;		// Nose inner radius
-  Double_t	fNoseHighR;		// Nose outer radius
-  Double_t	fNoseLength;		// Length of nose in Z
-  Double_t	fBackLowR;		// Inner radius of base of cone
-  Double_t	fBackHighR;		// Outer radius of base of cone
-  Double_t	fBackLength;		// Length of base of cone in Z
-  Double_t	fBeamThickness;		// Thickness of support beams
-  Double_t	fBeamWidth;		// Width of support beams
-  Double_t	fConeLength;		// Length of the cone in Z
-  Double_t	fFlangeR;		// Outer radius of flanges
-  Double_t	fZ;			// Midpoint of mother volume
-  Double_t	fAlpha;			// Slope of cone
-  Int_t		fNBeam;			// Number of support beams
-  Int_t		fNFlange;		// Number of support flangesy
-  ClassDef(AliFMD3, 1);
+  Double_t      fFlangeDepth;           // Depth of flanges 
+  Double_t      fFlangeHighR;           // Outer radius of flanges. 
+  Double_t      fFlangeLength;          // Length of flanges 
+  Double_t      fFlangeWidth;           // Width of flanges 
+
+  Double_t      fFiducialRadius;        // Radius of fiducial holes.
+
+  Double_t      fConeInnerAngle;        // Angle of cone on inside  
+  Double_t      fConeOuterAngle;        // Angle of cone on outside  
+
+  Double_t      fHoleOffset;            // Offset (from nose-tip) of
+					// holes 
+  Double_t      fHoleDepth;             // Depth of holes 
+  Double_t      fHoleLength;            // Length of holes 
+  Double_t      fHoleLowWidth;          // Lowest with of holes
+  Double_t      fHoleHighWidth;         // Highest width of holes
+  
+  Double_t      fBoltLength;            // Length of a bolt 
+  Double_t      fBoltRadius;            // Bolt radius 
+
+  TObjArray     fConeRadii;             // Array of cone radii.
+  TObjArray     fFiducialHoles;         // Array of fiducial hole (x,y)
+  
+  ClassDef(AliFMD3, 2);
 };
 
 #endif

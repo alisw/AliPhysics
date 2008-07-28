@@ -31,7 +31,12 @@ Reconstruct()
   // To reconstruct raw data from FDR-I, please enable below lines: 
   // AliFMDParameters::Instance()->UseRcuTrailer(false);
   // AliFMDParameters::Instance()->UseCompleteHeader(false);
-  
+ 
+  TFile* magF = TFile::Open("mag.root", "READ");
+  AliMagF* mag = static_cast<AliMagF*>(magF->Get("mag"));
+  if (!mag) return;
+  AliTracker::SetFieldMap(mag, true);
+
   AliReconstruction rec;   
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);

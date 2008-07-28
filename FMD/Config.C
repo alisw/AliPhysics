@@ -447,18 +447,21 @@ Config()
   field->SetL3ConstField(0); //Using const. field in the barrel
   rl->CdGAFile();
   gAlice->SetField(field);    
+  TFile* magF = TFile::Open("mag.root", "RECREATE");
+  field->Write("mag");
+  magF->Close();
 
   //__________________________________________________________________
   // 
   // Used detectors 
   // 
-  Bool_t useABSO  = kFALSE; 
+  Bool_t useABSO  = kTRUE; 
   Bool_t useACORDE= kFALSE; 
   Bool_t useDIPO  = kFALSE; 
   Bool_t useFMD   = kTRUE; 
   Bool_t useFRAME = kFALSE; 
   Bool_t useHALL  = kFALSE; 
-  Bool_t useITS   = kFALSE;
+  Bool_t useITS   = kTRUE;
   Bool_t useMAG   = kFALSE; 
   Bool_t useMUON  = kFALSE; 
   Bool_t usePHOS  = kFALSE; 
@@ -466,13 +469,13 @@ Config()
   Bool_t usePMD   = kFALSE; 
   Bool_t useHMPID = kFALSE; 
   Bool_t useSHIL  = kFALSE; 
-  Bool_t useT0    = kFALSE; 
+  Bool_t useT0    = kTRUE; 
   Bool_t useTOF   = kFALSE; 
   Bool_t useTPC   = kFALSE;
   Bool_t useTRD   = kFALSE; 
   Bool_t useZDC   = kFALSE; 
   Bool_t useEMCAL = kFALSE; 
-  Bool_t useVZERO = kFALSE;
+  Bool_t useVZERO = kTRUE;
 
   cout << "\t* Creating the detectors ..." << endl;
   // ================= Alice BODY parameters =========================

@@ -24,6 +24,7 @@
 #endif
 class TGeoVolume;
 class TGeoMedium;
+class TGeoShape;
 class AliFMD;
 class AliFMDRing;
 class AliFMDDetector;
@@ -90,6 +91,19 @@ protected:
       @param r Ring geometry 
       @return  Ring volume */
   virtual TGeoVolume* RingGeometry(AliFMDRing* r);
+
+  /** Make a honey comb shape from passed parameters.
+      @param id       Detector identifier (1,2, or 3)
+      @param ring     Ring identifier ('I' or 'O')
+      @param r1       Inner radius
+      @param r2       Outer radius
+      @param w        width 
+      @param t        Thickness of material 
+      @param c        Clearing from horizontal. 
+      @return Pointer to newly allocated composite shape. */ 
+  virtual TGeoShape* HoneycombShape(Int_t id, Char_t ring,
+				    double r1, double r2, 
+				    double w, double t, double c=0.3);
   /** Make a detector volume 
       @param d Detector geometry 
       @param motherTop Mother volume (detector volume)

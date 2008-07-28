@@ -1,9 +1,10 @@
 void
-CheckOverlaps(Bool_t align=kTRUE, Bool_t sample=kTRUE)
+CheckOverlaps(const char* file="geometry.root", 
+	      Bool_t align=kFALSE, Bool_t sample=kTRUE)
 {
   TObjArray* checked = new TObjArray();
   
-  AliGeomManager::LoadGeometry("geometry.root");
+  AliGeomManager::LoadGeometry(file);
   if (align)
     AliGeomManager::ApplyAlignObjsToGeom("FMDfullMisalignment.root", 
 					 "FMDAlignment");

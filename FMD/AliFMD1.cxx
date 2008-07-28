@@ -42,8 +42,8 @@ ClassImp(AliFMD1)
 AliFMD1::AliFMD1(AliFMDRing* inner) 
   : AliFMDDetector(1, inner, 0)
 {
-// Subtracting 0.5 cm puts the middle plane of the detector at 320 cm
-  SetInnerZ(320. - 0.5);
+  // Subtracting 0.25 cm puts the middle plane of the detector at 320 cm
+  SetInnerZ(320. - 0.25);
 }
 
 

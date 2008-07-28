@@ -29,6 +29,7 @@
 // Support will be simple compared to FMD3.
 //
 #include "AliFMD2.h"		// ALIFMD2_H 
+#include "AliLog.h"
 // #include "AliFMDRing.h"		// ALIFMDRING_H 
 
 //====================================================================
@@ -42,8 +43,11 @@ AliFMD2::AliFMD2(AliFMDRing* inner, AliFMDRing* outer)
   : AliFMDDetector(2, inner, outer)
 {
   // Constructor 
-  SetInnerZ(83.4);
-  SetOuterZ(75.2);
+  // SetInnerZ(83.4);
+  // SetOuterZ(75.2);
+  AliWarning("Z position of FMD2 rings may be wrong by 2.35cm!");
+  SetInnerZ(83.4+2.35);
+  SetOuterZ(75.2+2.35);
 }
 
 

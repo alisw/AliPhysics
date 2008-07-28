@@ -35,6 +35,7 @@
 #include "AliFMD3.h"		// ALIFMD3_H 
 #include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
 #include "AliFMDRing.h"		// ALIFMDRING_H 
+#include <TVector3.h>
 
 //====================================================================
 ClassImp(AliFMD3)
@@ -45,38 +46,49 @@ ClassImp(AliFMD3)
 //____________________________________________________________________
 AliFMD3::AliFMD3(AliFMDRing* inner, AliFMDRing* outer) 
   : AliFMDDetector(3, inner, outer),
-    fNoseZ(0),
-    fNoseLowR(0),
-    fNoseHighR(0),
-    fNoseLength(0),
-    fBackLowR(0),
-    fBackHighR(0),
-    fBackLength(0),
-    fBeamThickness(0),
-    fBeamWidth(0),
-    fConeLength(0),
-    fFlangeR(0),
-    fZ(0),
-    fAlpha(0), 
-    fNBeam(0), 
-    fNFlange(0)
+    fNoseZ(16.54667),    // From drawing
+    fFlangeDepth(0),
+    fFlangeHighR(49.25), // From drawing 
+    fFlangeLength(0),
+    fFlangeWidth(6),     // From drawing 
+    fFiducialRadius(.25),
+    fConeInnerAngle(0),
+    fConeOuterAngle(0),
+    fHoleOffset(7),      // From drawing
+    fHoleDepth(2),       // What's needed
+    fHoleLength(0),      
+    fHoleLowWidth(4),    // What's needed
+    fHoleHighWidth(18),  // What's needed
+    fBoltLength(1),      // Guessed
+    fBoltRadius(0.15),   // Estimate
+    fConeRadii(6),    
+    fFiducialHoles(4)
 {
   // Constructor. 
-  SetInnerZ(-62.8);
-  SetOuterZ(-75.2);
-  SetNoseZ();
-  SetNoseLowR();
-  SetNoseHighR();
-  SetNoseLength();
-  SetBackLowR();
-  SetBackHighR();
-  SetBackLength();
-  SetBeamThickness();
-  SetBeamWidth();
-  SetConeLength();
-  SetFlangeR();
-  SetNBeam();
-  SetNFlange();
+  // SetInnerZ(-62.8);             // By design
+  // SetOuterZ(-75.2);             // By design
+  AliWarning("Z position of FMD3 rings may be off by 0.25cm!");
+  SetInnerZ(-63.05);             // Slightly off (2.5mm) from design
+  SetOuterZ(-75.45);             // Slightly off (2.5mm) from design
+
+  SetInnerHoneyLowR(4.18207);   // From drawing
+  SetInnerHoneyHighR(19.74922); // From drawing
+  SetOuterHoneyLowR(13.4776);   // From drawing
+  SetOuterHoneyHighR(31.01964); // From drawing
+  
+  // These are from the drawings
+  fConeRadii.Add(new TVector3( 0,       5.55,  6.25));
+  fConeRadii.Add(new TVector3( 2.35,    5.55,  6.25));
+  fConeRadii.Add(new TVector3( 2.9935,  5.55,  6.88479));
+  fConeRadii.Add(new TVector3(28.9435, 31.50, 32.75850));
+  fConeRadii.Add(new TVector3(29.5,    31.50, 33.4));
+  fConeRadii.Add(new TVector3(30.9,    31.50, 33.4));
+
+  // These are from the drawings
+  fFiducialHoles.Add(new TVector2(29.666, 32.495));
+  fFiducialHoles.Add(new TVector2(31.082, 33.910));
+  fFiducialHoles.Add(new TVector2(32.674, 35.503));
+  fFiducialHoles.Add(new TVector2(33.403, 34.818));
 }
 
 //____________________________________________________________________
@@ -85,17 +97,22 @@ AliFMD3::Init()
 {
   // Initialize 
   AliFMDDetector::Init();
-  SetInnerHoneyHighR(GetOuterHoneyHighR());
-  Double_t zdist   = fConeLength;
-  Double_t tdist   = fBackHighR - fNoseHighR;
-  Double_t innerZh = (fInnerZ - fInner->GetRingDepth());
-  Double_t outerZh = (fOuterZ - fOuter->GetRingDepth() - 
-		      fOuter->GetHoneycombThickness());
-  Double_t minZ    = TMath::Min(fNoseZ - fConeLength, outerZh);
-  fAlpha           = tdist / zdist;
-  fZ               = fNoseZ + (minZ - fNoseZ) / 2;
-  fInnerHoneyHighR = ConeR(innerZh,"I");
-  fOuterHoneyHighR = GetBackLowR();
+  // TVector3& v0 = *(static_cast<TVector3*>(fConeRadii.At(0)));
+  TVector3& v1 = *(static_cast<TVector3*>(fConeRadii.At(1)));
+  TVector3& v2 = *(static_cast<TVector3*>(fConeRadii.At(2)));
+  TVector3& v3 = *(static_cast<TVector3*>(fConeRadii.At(3)));
+  TVector3& v4 = *(static_cast<TVector3*>(fConeRadii.At(4)));
+  TVector3& v5 = *(static_cast<TVector3*>(fConeRadii.At(5)));
+  
+  fFlangeDepth     = v5.X() - v4.X();
+  fFlangeLength    = fFlangeHighR - v5.Y();
+  
+  fConeInnerAngle  = TMath::ATan2(v4.Z()-v1.Z(), v4.X()-v1.X());
+  fConeOuterAngle  = TMath::ATan2(v3.Y()-v2.Y(), v3.X()-v2.X());
+  
+  Double_t    hz1  = -fHoleOffset+fInnerZ+fNoseZ;
+  fHoleLength      = TMath::Sqrt(TMath::Power(v4.Z()-ConeR(hz1),2) + 
+				 TMath::Power(v4.X()-fHoleOffset,2));  
 }
 
 //____________________________________________________________________
@@ -103,26 +120,33 @@ Double_t
 AliFMD3::ConeR(Double_t z, Option_t* opt) const
 {
   // Calculate the cone radius at Z
-  if (fAlpha < 0) {
-    AliWarning(Form("alpha not set: %lf", fAlpha));
+  // TVector3& v0 = *(static_cast<TVector3*>(fConeRadii.At(0)));
+  TVector3& v1 = *(static_cast<TVector3*>(fConeRadii.At(1)));
+  TVector3& v2 = *(static_cast<TVector3*>(fConeRadii.At(2)));
+  TVector3& v3 = *(static_cast<TVector3*>(fConeRadii.At(3)));
+  TVector3& v4 = *(static_cast<TVector3*>(fConeRadii.At(4)));
+  TVector3& v5 = *(static_cast<TVector3*>(fConeRadii.At(5)));
+
+  if (z > fInnerZ + fNoseZ) {
+    AliWarning(Form("z=%lf is before start of cone %lf", z, fInnerZ + fNoseZ));
     return -1;
   }
-  if (z > fNoseZ) {
-    AliWarning(Form("z=%lf is before start of cone %lf", z, fNoseZ));
-    return -1;
-  }
-  if (z < fOuterZ - fOuter->GetFullDepth()) {
+  if (z < fInnerZ + fNoseZ - v5.Z()) {
     AliWarning(Form("z=%lf is after end of cone %lf", z, 
-		    fOuterZ - fOuter->GetFullDepth()));
+		    fInnerZ + fNoseZ - v5.Z()));
     return -1;
   }
+  Double_t rz    = -(z-fInnerZ-fNoseZ);
   Bool_t   inner = opt[0] == 'I' || opt[1] == 'i';
-  Double_t off1  = (inner ? fNoseLowR : fNoseHighR);
-  Double_t off2  = (inner ? fBackLowR : fBackHighR);
-  Double_t off3  = (inner ? 0         : fBeamThickness/fAlpha);
-  if (z > fNoseZ - fNoseLength)               return off1;
-  if (z < fNoseZ - fConeLength + fBackLength) return off2;
-  return (off1 + off3 + fAlpha * TMath::Abs(z - fNoseZ + fNoseLength));
+  if (inner  && rz <= v2.X()) return v2.Y();
+  if (!inner && rz <= v1.X()) return v1.Z();
+  if (inner  && rz >  v3.X()) return v3.Y();
+  if (!inner && rz >  v4.X()) return v4.Z();
+  
+  rz             -= (inner ? v2.X() : v1.X());
+  Double_t sr    =  (inner ? v2.Y() : v1.Z());
+  Double_t ang   =  (inner ? fConeInnerAngle : fConeOuterAngle);
+  return sr + rz * TMath::Tan(ang);
 }
 
 

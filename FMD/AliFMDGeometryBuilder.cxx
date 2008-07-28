@@ -40,9 +40,11 @@
 #include <TGeoCone.h>		// ROOT_TGeoTrd1
 #include <TGeoVolume.h>		// ROOT_TGeoVolume
 #include <TGeoXtru.h>		// ROOT_TGeoXtru
+#include <TGeoPcon.h>		// ROOT_TGeoPcon
 #include <TGeoCompositeShape.h>
 #include <TMath.h>
 #include <TVector2.h>		// ROOT_TVector2
+#include <TVector3.h>		// ROOT_TVector3
 //#include <TGeoMaterial.h>	// ROOT_TGeoMaterial
 //#include <TGeoMedium.h>		// ROOT_TGeoMedium
 //#include <TGeoPcon.h>		// ROOT_TGeoPcon
@@ -57,6 +59,7 @@
 #include "AliFMD3.h"		// ALIFMD3_H
 // #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDDebug.h"		// ALILOG_H
+#include <iostream>
 
 //====================================================================
 ClassImp(AliFMDGeometryBuilder)
@@ -461,6 +464,66 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
 }
 
 //____________________________________________________________________
+TGeoShape*
+AliFMDGeometryBuilder::HoneycombShape(Int_t id, Char_t ring,
+				      double r1, double r2, 
+				      double w, double t, double c)
+{
+  // Make a honey comb shape from passed parameters.
+  // Parameters: 
+  //   id	Detector identifier (1,2, or 3)
+  //   ring	Ring identifier ('I' or 'O')
+  //   r1       Inner radius
+  //   r2       Outer radius
+  //   w        width 
+  //   t        Thickness of material 
+  //   c        Clearing from horizontal. 
+  // Return 
+  //   Pointer to newly allocated composite shape. 
+  TString      form  = Form("FMD%d%c_%%c_%%c", id, ring);
+  double       a1    = TMath::ATan2(c, r1) * 180  / TMath::Pi();
+
+  TString      fn    = Form(form.Data(),'F','1');
+  TString      bn    = Form(form.Data(),'B','1');
+  TString      cn    = Form(form.Data(),'C','O');
+  TString      in    = Form(form.Data(),'R','I');
+  TString      on    = Form(form.Data(),'R','O');
+  TString      en    = Form(form.Data(),'E','X');
+  double       y     = c;
+  double       x     = r1 * TMath::Cos(TMath::Pi()*a1/180);
+  new TGeoTubeSeg(fn.Data(),r1,r2,t/2,0,180);
+  new TGeoTubeSeg(bn.Data(),r1,r2,t/2,0,180);
+  new TGeoBBox(cn.Data(),(r2-r1)/2,t/2,w/2);
+  new TGeoTubeSeg(in.Data(),r1,r1+t,w/2,0,180);
+  new TGeoTubeSeg(on.Data(),r2-t,r2,w/2,0,180);
+  new TGeoBBox(en.Data(),r2+.005,c/2+.005,w/2+.005);
+    
+  TString          ftn = Form(form.Data(),'F','T');
+  TString          btn = Form(form.Data(),'F','B');
+  TString          ltn = Form(form.Data(),'C','L');
+  TString          rtn = Form(form.Data(),'C','R');
+  TString          etn = Form(form.Data(),'E','X');
+  (new TGeoTranslation(ftn.Data(),0,0,+w/2-t/2))->RegisterYourself();
+  (new TGeoTranslation(btn.Data(),0,0,-w/2+t/2))->RegisterYourself();
+  (new TGeoTranslation(ltn.Data(),-(x+(r2-r1)/2), y+t/2,0))->RegisterYourself();
+  (new TGeoTranslation(rtn.Data(),(x+(r2-r1)/2), y+t/2,0))->RegisterYourself();
+  (new TGeoTranslation(etn.Data(),0, c/2,0))->RegisterYourself();
+  
+  TString comp(Form("(%s:%s+%s:%s+%s+%s+%s:%s+%s:%s)-%s:%s", 
+		    fn.Data(),ftn.Data(),
+		    bn.Data(),btn.Data(),
+		    in.Data(),on.Data(),
+		    cn.Data(),ltn.Data(),
+		    cn.Data(),rtn.Data(),
+		    en.Data(),etn.Data()));
+  TGeoCompositeShape* shape = new TGeoCompositeShape(comp.Data());
+  shape->SetName(Form(fgkHCName,id,ring));
+  shape->SetTitle(Form("FMD%d%c Honeycomb shape", id, ring));
+  return shape;
+}
+
+
+//____________________________________________________________________
 TGeoVolume*
 AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d, 
 					TGeoVolume* topMother, 
@@ -527,22 +590,10 @@ AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d,
     topMother->AddNode(tvol, Int_t(c), new TGeoTranslation(0,0,z));
     botMother->AddNode(bvol, Int_t(c), new TGeoTranslation(0,0,z));
 
-    // Top of Honeycomb
-    TGeoTubeSeg* hcSha = new TGeoTubeSeg(lowr, highr, hcThick/2, 0, 180);
-    hcSha->SetName(Form(fgkHCName,id,c));
-    hcSha->SetTitle(Form("FMD%d%c honeycomb shell", id, c));
+    // Honeycomp 
+    TGeoShape*   hcSha = HoneycombShape(id, c, lowr, highr, hcThick, alThick);
     TGeoVolume*  hcVol = new TGeoVolume(Form(fgkHCName,id,c),hcSha,fAl);
     hcVol->SetTitle(Form("FMD%d%c honeycomb shell", id, c));
-    // Air in top of honeycomb
-    TGeoTubeSeg* ihcSha = new TGeoTubeSeg(lowr+alThick, highr - alThick, 
-					     (hcThick-alThick)/2, 0, 180);
-    ihcSha->SetName(Form(fgkIHCName,id,c));
-    ihcSha->SetTitle(Form("FMD%d%c honeycomb internal", id, c));
-    TGeoVolume*  ihcVol = new TGeoVolume(Form(fgkIHCName,id,c),ihcSha,fAir);
-    ihcVol->SetTitle(Form("FMD%d%c honeycomb internal", id, c));
-    hcVol->AddNode(ihcVol, 0);
-    hcVol->VisibleDaughters(kFALSE);    
-    hcVol->SetVisibility(kTRUE);
     
     z += (r->GetSiThickness() + 
 	  r->GetSpacing() + 
@@ -724,8 +775,8 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   Double_t    z             = fmd2->GetOuterZ();  
   Double_t    framelr       = fmd2->GetOuterHoneyHighR()+0.5;
   Double_t    framehr       = fmd2->GetOuterHoneyHighR()+1.8;
-  Double_t    framelz       = -1;
-  Double_t    framehz       = (fmd2->GetInnerZ()-z) + r->GetFullDepth() + 1;
+  Double_t    framelz       = -.5;
+  Double_t    framehz       = (fmd2->GetInnerZ()-z) + r->GetFullDepth() + .5;
   Double_t    framel        = framehz - framelz;
   Double_t    coverlr       = fmd2->GetInner()->GetLowR()+1;
   Double_t    backth        = 0.05;
@@ -776,7 +827,7 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
 
   Double_t    f1l           = 10;
   Double_t    f1w           = 6;
-  Double_t    f1d           = 1.2;
+  Double_t    f1d           = 1;
   
   TGeoBBox*   flange1Shape  = new TGeoBBox(f1l/2, f1w/2, f1d/2);
   TGeoVolume* flange1Volume = new TGeoVolume(Form(fgkFlangeName, fmd2->GetId()),
@@ -832,6 +883,227 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   return 0;
 }
   
+#if 1
+//____________________________________________________________________
+TGeoVolume*
+AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3, 
+				    TGeoVolume* innerTop, 
+				    TGeoVolume* innerBot, 
+				    TGeoVolume* outerTop,
+				    TGeoVolume* outerBot) 
+{
+  // Setup the FMD3 geometry.  The FMD2 has a rather elaborate support
+  // structure, as the support will also support the vacuum
+  // beam-pipe. 
+  // 
+  // See also AliFMDGeometryBuilder::DetectorGeometry 
+  // 
+  if (!fmd3 || !innerTop || !innerBot || !outerTop || !outerBot) return 0;
+
+  //__________________________________________________________________
+  // Basic detector set-up.
+  TGeoVolume* fmd3TopVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
+							  fmd3->GetId(), 'T'));
+  TGeoVolume* fmd3BotVolume = new TGeoVolumeAssembly(Form(fgkFMDName, 
+							  fmd3->GetId(), 'B'));
+  fmd3TopVolume->SetTitle("FMD3 top half");
+  fmd3BotVolume->SetTitle("FMD3 bottom half");
+  DetectorGeometry(fmd3, fmd3TopVolume, fmd3BotVolume, fmd3->GetInnerZ(), 
+		   innerTop, innerBot, outerTop, outerBot);
+
+  //__________________________________________________________________
+  // Mother for all support material
+  TGeoVolumeAssembly* support = new TGeoVolumeAssembly("F3SU");
+  support->SetTitle("FMD3 support");
+
+  //__________________________________________________________________
+  // Base of cone
+  const TObjArray& radii    = fmd3->ConeRadii();
+  Int_t            nRadii   = radii.GetEntriesFast();
+  TGeoPcon*        coneBase = new TGeoPcon("FMD3_cone_base", 0., 180., nRadii);
+  TVector3*        r5       = 0;
+  TVector3*        r4       = 0;
+  for (Int_t i = 0; i < nRadii; i++) { 
+    TVector3* v = static_cast<TVector3*>(radii.At(i));
+    coneBase->DefineSection(i, v->X(), v->Y(), v->Z());
+    if      (i == 5) r5 = v;
+    else if (i == 4) r4 = v;
+  }
+  TString          coneComb("(FMD3_cone_base");
+
+  //__________________________________________________________________
+  // Flanges 
+  double    flangeDepth    = fmd3->GetFlangeDepth() / 2;
+  double    flangeLength   = fmd3->GetFlangeLength() / 2;
+  double    flangeWidth    = fmd3->GetFlangeWidth() / 2;
+  new TGeoBBox("FMD3_flange_base", flangeLength, flangeWidth, flangeDepth);
+
+  // Fiducial holes 
+  const TObjArray& fiducialHoles  = fmd3->FiducialHoles();
+  double           fiducialRadius = fmd3->GetFiducialRadius();
+  TGeoTube*        fiducialShape  = new TGeoTube("FMD3_fiducial_hole", 0, 
+						 fiducialRadius, 
+						 flangeDepth+.1);
+  Int_t            nFiducialHoles = fiducialHoles.GetEntriesFast();
+  double           flangeAngle    = TMath::Pi() / 4;
+  double           flangeX        = r5->Y()+flangeLength;
+  TVector2         flangeC(flangeX * TMath::Cos(flangeAngle), 
+			   flangeX * TMath::Sin(flangeAngle));
+  TString          flangeComb("FMD3_flange_base-(");
+#if 0// For debugging geometry 
+  TGeoVolume* fiducialVolume = new TGeoVolume("FMD3_fiducial", fiducialShape);
+  fiducialVolume->SetLineColor(kGreen);
+#else
+  (void*)fiducialShape;
+#endif
+  for (Int_t i = 0; i < nFiducialHoles; i++) { 
+    TVector2&        v  =  *(static_cast<TVector2*>(fiducialHoles.At(i)));
+    v                   -= flangeC;
+    TVector2         r  =  v.Rotate(-flangeAngle);
+    TGeoTranslation* t1 =  new TGeoTranslation(r.X(),  r.Y(), 0);
+    TGeoTranslation* t2 =  new TGeoTranslation(r.X(), -r.Y(), 0);
+    t1->SetName(Form("FMD3_fiducial_hole_rot%d", 2*i+0));
+    t2->SetName(Form("FMD3_fiducial_hole_rot%d", 2*i+1));
+    t1->RegisterYourself();
+    t2->RegisterYourself();
+    flangeComb.Append(Form("FMD3_fiducial_hole:FMD3_fiducial_hole_rot%d+"
+			   "FMD3_fiducial_hole:FMD3_fiducial_hole_rot%d%c",
+			   2*i+0, 2*i+1, (i == nFiducialHoles-1 ? ')' : '+')));
+#if 1 // For debugging geometry 
+    // support->AddNode(fiducialVolume, 2*i+0, t1);
+    // support->AddNode(fiducialVolume, 2*i+1, t2);
+#endif
+  }
+  
+  // Final flange shape, and at to full shape 
+  TGeoCompositeShape* flangeShape = new TGeoCompositeShape(flangeComb.Data());
+  flangeShape->SetName("FMD3_flange");
+  for (Int_t i = 0; i < 2; i++) { 
+    TGeoRotation* rot = new TGeoRotation();
+    rot->RotateZ((i+.5)*90);
+    TVector2 v(flangeX, 0);
+    TVector2 w = v.Rotate((i+.5) * 2 * flangeAngle);
+    TGeoCombiTrans* trans = new TGeoCombiTrans(w.X(),w.Y(),
+					       r4->X()+flangeDepth, rot);
+    trans->SetName(Form("FMD3_flange_matrix%d", i));
+    trans->RegisterYourself();
+    coneComb.Append(Form("+FMD3_flange:FMD3_flange_matrix%d", i));
+  }
+  coneComb.Append(")-(");
+  
+  //__________________________________________________________________
+  // Holes 
+  Double_t holeL  = (fmd3->GetHoleLength()-1)/2;
+  Double_t holeD  = fmd3->GetHoleDepth()/2;
+  Double_t holeLW = fmd3->GetHoleLowWidth()/2;
+  Double_t holeHW = fmd3->GetHoleHighWidth()/2;
+  Double_t holeA  = fmd3->GetConeOuterAngle() - 1 * TMath::Pi() / 180;
+  Double_t holeZ  = (fmd3->GetHoleOffset() 
+		     + holeL * TMath::Cos(holeA)
+		     - holeD * TMath::Sin(holeA));
+  Double_t holeX  = (fmd3->ConeR(-holeZ + fmd3->GetInnerZ() + fmd3->GetNoseZ()) 
+		     - holeD * TMath::Cos(holeA));
+  Double_t plateZ  = (fmd3->GetHoleOffset() 
+		     + holeL * TMath::Cos(holeA)
+		     - 0.033 * TMath::Sin(holeA));
+  Double_t plateX = (fmd3->ConeR(-plateZ + fmd3->GetInnerZ()+fmd3->GetNoseZ()) 
+		     - 0.033 * TMath::Cos(holeA));
+  TGeoTrd1* holeShape = new TGeoTrd1("FMD3_cone_hole", 
+				     holeLW, holeHW, holeD, holeL);
+  TGeoTrd1* plateShape = new TGeoTrd1("FMD3_cooling_plate", 
+				      holeLW, holeHW, .033, holeL);
+  TGeoRotation* holeRot = new TGeoRotation();
+  holeRot->SetName("FMD3_cone_hole_rotation");
+  holeRot->RotateZ(90);
+  holeRot->RotateY(holeA*180/TMath::Pi());
+  TGeoCombiTrans* holeBaseTrans = new TGeoCombiTrans(holeX, 0, holeZ, holeRot);
+  holeBaseTrans->SetName("FMD3_cone_hole_base_matrix");
+  TGeoCombiTrans* plateBaseTrans = new TGeoCombiTrans(plateX, 0,plateZ,holeRot);
+  (void*)holeShape;
+  TGeoVolume* plateVolume = new TGeoVolume("F3CO", plateShape, fAl);
+  plateShape->SetTitle("FMD3 cooling plate");
+  plateVolume->SetTitle("FMD3 cooling plate");
+  for (Int_t i = 0; i < 4; i++) { 
+    Double_t        ang   = 360. / 8 * (i + .5);
+    TGeoCombiTrans* trans = new TGeoCombiTrans(*holeBaseTrans);
+    trans->RotateZ(ang);
+    trans->SetName(Form("FMD3_cone_hole_matrix%d", i));
+    trans->RegisterYourself();
+    trans = new TGeoCombiTrans(*plateBaseTrans);
+    trans->RotateZ(ang);
+    trans->SetName(Form("FMD3_cooling_plate_matrix%d", i));
+    coneComb.Append(Form("FMD3_cone_hole:FMD3_cone_hole_matrix%d+", i));
+    support->AddNode(plateVolume, i, trans);
+  }
+  
+  //__________________________________________________________________
+  // Bolts
+  Double_t boltRadius = fmd3->GetBoltRadius();
+  Double_t boltLength = fmd3->GetBoltLength() / 2;
+  Double_t boltZ1     = fmd3->GetInnerZ()+fmd3->GetNoseZ()-10;
+  Double_t boltZ2     = fmd3->GetInnerZ()+fmd3->GetNoseZ()-20;
+  Double_t boltXE     = 2*boltLength*TMath::Cos(fmd3->GetConeOuterAngle());
+  Double_t boltX1     = (fmd3->ConeR(boltZ1) - boltXE);
+  Double_t boltX2     = (fmd3->ConeR(boltZ2) - boltXE);
+  
+  new TGeoTube("FMD3_bolt_hole", 0, boltRadius, boltLength+.2);
+  TGeoTube* boltShape = new TGeoTube("FMD3_bolt", 0, boltRadius, boltLength);
+  TGeoRotation* boltRot = new TGeoRotation();
+  boltRot->RotateY(-fmd3->GetConeOuterAngle()*180/TMath::Pi());
+  TGeoCombiTrans* boltTrans1 = new TGeoCombiTrans(boltX1, 0, 10, boltRot);
+  TGeoCombiTrans* boltTrans2 = new TGeoCombiTrans(boltX2, 0, 20, boltRot);
+  TGeoCombiTrans* boltTrans3 = new TGeoCombiTrans(*boltTrans1);
+  TGeoCombiTrans* boltTrans4 = new TGeoCombiTrans(*boltTrans2);
+  boltTrans3->RotateZ(180);
+  boltTrans4->RotateZ(180);
+  boltTrans1->SetName("FMD3_bolt_matrix1");
+  boltTrans2->SetName("FMD3_bolt_matrix2");
+  boltTrans3->SetName("FMD3_bolt_matrix3");
+  boltTrans4->SetName("FMD3_bolt_matrix4");
+  boltTrans1->RegisterYourself();
+  boltTrans2->RegisterYourself();
+  boltTrans3->RegisterYourself();
+  boltTrans4->RegisterYourself();
+  coneComb.Append("FMD3_bolt_hole:FMD3_bolt_matrix1"
+		  "+FMD3_bolt_hole:FMD3_bolt_matrix2"
+		  "+FMD3_bolt_hole:FMD3_bolt_matrix3"
+		  "+FMD3_bolt_hole:FMD3_bolt_matrix4)");
+  TGeoVolume*     boltVolume = new TGeoVolume("F3SB", boltShape, fSteel);
+  support->AddNode(boltVolume, 1, boltTrans1);
+  support->AddNode(boltVolume, 2, boltTrans2);
+  boltShape->SetTitle("FMD3 steering bolt");
+  boltVolume->SetTitle("FMD3 steering bolt");
+  
+  //__________________________________________________________________
+  TGeoCompositeShape* coneShape = new TGeoCompositeShape(coneComb.Data());
+  coneShape->SetName("FMD3_cone");
+  coneShape->SetTitle("FMD3 cone");
+  TGeoVolume*  coneVolume = new TGeoVolume("F3SC", coneShape, fC);
+  coneVolume->SetLineColor(kRed);
+  support->AddNode(coneVolume, 0, new TGeoTranslation(0, 0, 0));
+
+  //__________________________________________________________________
+  // Place support volumes in half-detector volumes 
+  Double_t         z  = fmd3->GetInnerZ();
+  TGeoTranslation* t1 = new TGeoTranslation(0, 0, -fmd3->GetNoseZ());
+  fmd3TopVolume->AddNode(support, 1, t1);
+  TGeoCombiTrans*  t2 = new TGeoCombiTrans(*t1);
+  t2->RotateZ(180);
+  fmd3BotVolume->AddNode(support, 2, t2);
+
+  TGeoRotation*   rot        = new TGeoRotation("FMD3 rotatation");
+  rot->RotateY(180);
+  TGeoVolume*     top        = gGeoManager->GetVolume("ALIC");
+  TGeoMatrix* mmatrix        = new TGeoCombiTrans("FMD3 trans", 0, 0, z, rot);
+  AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
+		   fmd3TopVolume->GetName(), fmd3BotVolume->GetName(), z));
+  top->AddNode(fmd3TopVolume, fmd3->GetId(), mmatrix);
+  top->AddNode(fmd3BotVolume, fmd3->GetId(), mmatrix);
+
+  return 0;
+}
+
+#else
 //____________________________________________________________________
 TGeoVolume*
 AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3, 
@@ -878,6 +1150,26 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   TGeoVolumeAssembly* support = new TGeoVolumeAssembly("F3SU");
   support->SetTitle("FMD3 support");
   
+  // Cone shape 
+  TGeoPcon*        coneBase = new TGeoPcon("FMD3 cone base", 0, 180, 6);
+  const TObjArray& radii    = fmd3.ConeRadii();
+  TVector3*        v1       = 0;
+  TVector3*        v4       = 0;
+  for (Int_t i = 0; i < radii.GetEntriesFast(); i++) { 
+    TVector3* v = static_cast<TVector3*>(radii.At(i));
+    coneBase->DefineSection(i,  v->X(), v->Y(), v->Z());
+    if (i == 1) v1 = v;
+    if (i == 4) v4 = v;
+    
+  }
+  Double_t  holeL = TMath::Sqrt(TMath::Power(v4->Z()-v1->Z(),2) + 
+				TMath::Power(v4->X()-v1->X(),2));
+  
+  TGeoTrd1*       coneHole  = new TGeoTrd1("F3SC_hole",2,8,conet*3,
+					   (conel-2-2)/2);
+  
+
+
   // Nose volume 
   TGeoTubeSeg* noseShape  = new TGeoTubeSeg(noser1, noser2, nlen / 2, 0, 180);
   TGeoVolume*  noseVolume = new TGeoVolume(fgkNoseName, noseShape, fC);
@@ -1001,6 +1293,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
 
   return 0;
 }
+#endif
 
 //____________________________________________________________________
 void
