@@ -5,7 +5,7 @@ SRCS = AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain
 
 HDRS:= $(SRCS:.cxx=.h) 
 
-EINCLUDE:=RAW TPC STEER ANALYSIS
+EINCLUDE:=RAW TPC STEER ANALYSIS STAT
 
 DHDR= TPCcalibLinkDef.h
 
@@ -13,7 +13,8 @@ DHDR= TPCcalibLinkDef.h
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
-                         -lCDB -lESD -lTPCbase -lTPCrec -lSTEER -lANALYSIS\
+                         -lCDB -lESD -lTPCbase -lTPCrec -lSTEER -lANALYSIS  \
+                         -lSTAT \
                          -L$(shell root-config --libdir) -lMinuit -lProof -lEG
 endif
 
