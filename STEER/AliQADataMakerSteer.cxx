@@ -466,7 +466,7 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const  char
 	if ( !  AliGeomManager::GetGeometry() ) 
 		AliGeomManager::LoadGeometry() ; 
 	
-	InitQADataMaker(fRunNumber, fRecoParam, fCycleSame, detArray) ; 
+	InitQADataMaker(fRunNumber, fRecoParam, fCycleSame, kTRUE, detArray) ; 
 	return kTRUE ; 
 }
 
