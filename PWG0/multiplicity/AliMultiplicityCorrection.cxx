@@ -1590,7 +1590,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
       fftImag[i] = 0;
     }
 
-    FFT(-1, TMath::Nint(log(kFFT) / log(2)), fftReal, fftImag);
+    FFT(-1, TMath::Nint(TMath::Log(kFFT) / TMath::Log(2)), fftReal, fftImag);
 
     TH1* fftResult = (TH1*) ratio->Clone("fftResult");
     fftResult->SetTitle("FFT;true multiplicity;coeff. (10...137)");
@@ -1650,7 +1650,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
       }
     }
 
-    FFT(1, TMath::Nint(log(kFFT) / log(2)), fftReal, fftImag);
+    FFT(1, TMath::Nint(TMath::Log(kFFT) / TMath::Log(2)), fftReal, fftImag);
 
     TH1* fftResult4 = (TH1*) fftResult3->Clone("fftResult4");
     fftResult4->Reset();
