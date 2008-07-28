@@ -21,6 +21,11 @@ using std::max;
 #include "gcc2vs.h"
 #endif
 
+#ifdef __SUNPRO_CC
+#include <ieeefp.h>
+#define __FUNCTION__ "__FILE__:__LINE__"
+#endif
+
 class AliFmHelix {
 public:
     /// curvature, dip angle, phase, origin, h
