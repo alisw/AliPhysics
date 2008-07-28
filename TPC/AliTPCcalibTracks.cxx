@@ -610,7 +610,7 @@ Int_t AliTPCcalibTracks::AcceptTrack(AliTPCseed * track){
   //if (TMath::Abs(track->GetZ())<10.) return kFALSE;
   //if (TMath::Abs(track->GetTgl())>0.03) return kFALSE;
   
-  if (GetDebugLevel() > 5) Info("AcceptTrack","Track has been accepted.");  
+  if (GetDebugLevel() > 20) Info("AcceptTrack","Track has been accepted.");  
   return 0;
 }
 
