@@ -79,6 +79,7 @@ AliTPCcalibBase &AliTPCcalibBase::operator=(const AliTPCcalibBase&calib){
   fDebugStreamer=0;
   fStreamLevel=calib.fStreamLevel;
   fDebugLevel=calib.fDebugLevel;
+  return *this;
 }
 
 
