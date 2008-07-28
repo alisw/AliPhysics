@@ -80,6 +80,14 @@ public:
 
   void            AddCluster(AliTPCclusterMI* cluster);
   void            Add(AliTPCcalibTracksGain* cal);
+
+  //
+  // Debug stream analyze part
+  //
+  static TVectorD * MakeQPosNorm(TTree * chain, Int_t ipad, Bool_t isMax, Int_t maxPoints=1000000, Int_t verbose=0);
+  
+  static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000, Int_t verbose=0);
+
   //
   // Histogram part
   //

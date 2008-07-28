@@ -112,7 +112,9 @@
 /*
   .x ~/UliStyle.C
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libSTAT");
   gSystem->Load("libTPCcalib");
+
   TFile fcalib("CalibObjects.root");
   TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
   AliTPCcalibTracksGain * gain = ( AliTPCcalibTracksGain *)array->FindObject("calibTracksGain");
@@ -160,44 +162,6 @@
   chain2->SetAlias("k0","1/0.9928");
   chain2->SetAlias("k2","1/1.152");
   
-
-  Position correction fit:
-  //
-  gSystem->Load("libSTAT.so")
-  TStatToolkit toolkit;
-  Double_t chi2;
-  TVectorD fitParam;
-  TMatrixD covMatrix;
-  Int_t npoints;
-  //
-  TCut cutA("dedge>3&&fraction2<0.5");
-  chain0->SetAlias("dp","(Cl.fPad-int(Cl.fPad)-0.5)");
-  chain0->SetAlias("dt","(Cl.fTimeBin-int(Cl.fTimeBin)-0.5)");
-  chain0->SetAlias("di","(sqrt(1.-abs(Cl.fZ)/250.))");
-
-  TString fstring="";  
-  fstring+="dp++";                               //1
-  fstring+="dt++";                               //2
-  fstring+="dp^2++";                             //3
-  fstring+="dt^2++";                             //4
-  fstring+="dt^3++";                             //4
-  fstring+="dp*dt++";                            //5
-  fstring+="dp*dt^2++";                          //6
-  //
-  fstring+="dp^2*(di)++";                        //7
-  fstring+="dt^2*(di)++";                        //8
-  fstring+="dp^2*(abs(parY.fElements[1]))++";                        //9
-  fstring+="dt^2*(abs(parY.fElements[1]))++";                        //10
-  fstring+="dp^2*(abs(parZ.fElements[1]))++";                        //11
-  fstring+="dt^2*(abs(parZ.fElements[1]))++";                        //12
-
-
- TString *strq0 = toolkit.FitPlane(chain0,"Cl.fMax/gain/dedxM.fElements[0]",fstring->Data(), "IPad==0"+cutA, chi2,npoints,fitParam,covMatrix,-1,0,100000);
-
- chain0->SetAlias("qcorM0",strq0->Data());
- chain0->Draw("(Cl.fMax/gain/dedxM.fElements[0]):qcorM0","IPad==0"+cutA,"prof",100000)
-
-
 */
 
 
@@ -247,8 +211,11 @@
 #include "AliTPCclusterMI.h"
 #include "AliTPCcalibTracksCuts.h"
 #include "AliTPCFitPad.h"
+#include "TStatToolkit.h"
+#include "TString.h"
+#include "TCut.h"
 
-// REMOVE ALL OF THIS
+//
 #include <TTree.h>
 #include "AliESDEvent.h"
 
@@ -1608,4 +1575,189 @@ void   AliTPCcalibTracksGain::Analyze(){
 
 }
 
+
+
+TVectorD *  AliTPCcalibTracksGain::MakeQPosNorm(TTree * chain0, Int_t ipad, Bool_t isMax, Int_t maxPoints, Int_t verbose){
+  //
+  // Input parameters
+  // chain0 - the tree with information  -Debug stream
+  // ipad   - 0 IROC
+  //        - 1 OROC medium
+  //        - 2 OROC LONG
+  // isMax  - kFALSE - total charge param
+  //          kTRUE  - Max charge param
+  //
+  // maxPoints - number of points for fit
+  //
+  // verbose -
+  //
+  /* e.g 
+    ipad=0
+    isMax=kTRUE;
+    maxPoints=1000000;
+  */
+  // Make Q normalization as function of following parameters
+  // 1 - dp   - relative pad position 
+  // 2 - dt   - relative time position
+  // 3 - di   - drift length (norm to 1);
+  // 4 - dq0  - Tot/Max charge
+  // 5 - dq1  - Max/Tot charge
+  // 6 - sy   - sigma y - shape
+  // 7 - sz   - sigma z - shape
+  //
+  // Coeficient of Taylor expansion fitted
+  // Fit parameters returned as TVectorD
+  // Fit parameters to be used in corresponding correction function
+  // in AliTPCclusterParam 
+  //
+  //
+  TStatToolkit toolkit;
+  Double_t chi2;
+  TVectorD fitParam;
+  TMatrixD covMatrix;
+  Int_t npoints;
+  TCut cutA("dedge>3&&fraction2<0.7");
+  chain0->SetAlias("dp","((Cl.fPad-int(Cl.fPad)-0.5)/0.5)");
+  chain0->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin)-0.5)/0.5)");
+  chain0->SetAlias("di","(sqrt(1.-abs(Cl.fZ)/250.))");
+  chain0->SetAlias("dq0","(0.2*(Cl.fQ+2)/(Cl.fMax+2))");
+  chain0->SetAlias("dq1","(5*(Cl.fMax+2)/(Cl.fQ+2))");
+  chain0->SetAlias("sy","(0.32/sqrt(0.01^2+Cl.fSigmaY2))");
+  chain0->SetAlias("sz","(0.32/sqrt(0.01^2+Cl.fSigmaZ2))");
+  //
+  TString fstring="";    
+  fstring+="dp++";                               //1
+  fstring+="dt++";                               //2
+  fstring+="dp*dp++";                             //3
+  fstring+="dt*dt++";                             //4
+  fstring+="dt*dt*dt++";                             //5
+  fstring+="dp*dt++";                            //6
+  fstring+="dp*dt*dt++";                          //7
+  fstring+="(dq0)++";                            //8
+  fstring+="(dq1)++";                            //9
+  //
+  //
+  fstring+="dp*dp*(di)++";                        //10
+  fstring+="dt*dt*(di)++";                        //11
+  fstring+="dp*dp*sy++";                          //12
+  fstring+="dt*sz++";                          //13
+  fstring+="dt*dt*sz++";                          //14
+  fstring+="dt*dt*dt*sz++";                          //15
+  //
+  fstring+="dp*dp*1*sy*sz++";                     //16
+  fstring+="dt*sy*sz++";                       //17
+  fstring+="dt*dt*sy*sz++";                       //18
+  fstring+="dt*dt*dt*sy*sz++";                       //19
+  //
+  fstring+="dp*dp*(dq0)++";                       //20
+  fstring+="dt*1*(dq0)++";                       //21
+  fstring+="dt*dt*(dq0)++";                       //22
+  fstring+="dt*dt*dt*(dq0)++";                       //23
+  //
+  fstring+="dp*dp*(dq1)++";                       //24
+  fstring+="dt*(dq1)++";                       //25
+  fstring+="dt*dt*(dq1)++";                       //26
+  fstring+="dt*dt*dt*(dq1)++";                       //27
+  
+  TString var;
+  if (isMax)  var = "Cl.fMax/gain/dedxM.fElements[2]";
+  if (!isMax) var = "Cl.fQ/gain/dedxQ.fElements[2]";
+  TString cutP="IPad==";
+  cutP+=ipad;
+  //
+  TString *strq0 = toolkit.FitPlane(chain0,var.Data(),fstring.Data(), cutP.Data()+cutA, chi2,npoints,fitParam,covMatrix,-1,0,maxPoints);
+  //
+  //
+  if (verbose){
+    printf("Chi2/npoints = %f",TMath::Sqrt(chi2/npoints));
+    printf("\nFit function\n:%s\n",strq0->Data());
+  }
+  TVectorD *vec = new TVectorD(fitParam);
+  return vec;
+}
+
+void  AliTPCcalibTracksGain::MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints, Int_t verbose){
+  //
+  // Fill the content of the of the AliTPCclusterParam
+  // with fitted values of corrections 
+  //
+  
+}
+
+
+
+/*
+  
+ Position correction fit:
+ //
+TStatToolkit toolkit;
+Double_t chi2;
+TVectorD fitParam;
+TMatrixD covMatrix;
+Int_t npoints;
+//
+TCut cutA("dedge>3&&fraction2<0.7");
+chain0->SetAlias("dp","((Cl.fPad-int(Cl.fPad)-0.5)/0.5)");
+chain0->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin)-0.5)/0.5)");
+chain0->SetAlias("di","(sqrt(1.-abs(Cl.fZ)/250.))");
+chain0->SetAlias("dq0","(0.2*(Cl.fQ+2)/(Cl.fMax+2))");
+chain0->SetAlias("dq1","(5*(Cl.fMax+2)/(Cl.fQ+2))");
+chain0->SetAlias("sy","(0.2/sqrt(0.01^2+Cl.fSigmaY2))");
+chain0->SetAlias("sz","(0.2/sqrt(0.01^2+Cl.fSigmaZ2))");
+
+TString fstring="";  
+
+fstring+="dp++";                               //1
+fstring+="dt++";                               //2
+fstring+="dp*dp++";                             //3
+fstring+="dt*dt++";                             //4
+fstring+="dt*dt*dt++";                             //5
+fstring+="dp*dt++";                            //6
+fstring+="dp*dt*dt++";                          //7
+fstring+="(dq0)++";                            //8
+fstring+="(dq1)++";                            //9
+//
+//
+fstring+="dp*dp*(di)++";                        //10
+fstring+="dt*dt*(di)++";                        //11
+fstring+="dp*dp*sy++";                          //12
+fstring+="dt*sz++";                          //13
+fstring+="dt*dt*sz++";                          //14
+fstring+="dt*dt*dt*sz++";                          //15
+//
+fstring+="dp*dp*1*sy*sz++";                     //16
+fstring+="dt*sy*sz++";                       //17
+fstring+="dt*dt*sy*sz++";                       //18
+fstring+="dt*dt*dt*sy*sz++";                       //19
+//
+fstring+="dp*dp*(dq0)++";                       //20
+fstring+="dt*1*(dq0)++";                       //21
+fstring+="dt*dt*(dq0)++";                       //22
+fstring+="dt*dt*dt*(dq0)++";                       //23
+
+fstring+="dp*dp*(dq1)++";                       //24
+fstring+="dt*(dq1)++";                       //25
+fstring+="dt*dt*(dq1)++";                       //26
+fstring+="dt*dt*dt*(dq1)++";                       //27
+
+
+ TString *strq0 = toolkit.FitPlane(chain0,"Cl.fMax/gain/dedxM.fElements[2]",fstring->Data(), "IPad==0"+cutA, chi2,npoints,fitParam,covMatrix,-1,0,200000);
+ TString *strqt0 = toolkit.FitPlane(chain0,"Cl.fQ/gain/dedxQ.fElements[2]",fstring->Data(), "IPad==0"+cutA, chi2,npoints,fitParam,covMatrix,-1,0,200000);
+
+ chain0->SetAlias("qcorM0",strq0->Data());
+ chain0->SetAlias("qcorT0",strqt0->Data());
+//chain0->SetAlias("mmqcorM0","min(max(qcorM0,0.75),1.15)");
+ chain0->Draw("(Cl.fMax/gain/dedxM.fElements[2]):min(max(qcorM0,0.75),1.15)","IPad==0"+cutA,"prof",100000)
+
+ fraction05 - 
+     sigma                  0.2419
+     sigma fit              0.2302
+     sigma fit with shape   0.2257
+ fraction 07    
+     qtot sigma                  0.322
+     qmax sigma                  0.292
+     qmax sigma fit              0.2702
+     qmax sigma fit+ratio        0.2638
+
+*/
 
