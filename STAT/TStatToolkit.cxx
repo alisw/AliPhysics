@@ -741,10 +741,19 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    // returns chi2, fitParam and covMatrix
    // returns TString with fitted formula
    //
-    
+
    TString formulaStr(formula); 
    TString drawStr(drawCommand);
    TString cutStr(cuts);
+   TString ferr("1");
+
+   TString strVal(drawCommand);
+   if (strVal.Contains(":")){
+     TObjArray* valTokens = strVal.Tokenize(":");
+     drawStr = valTokens->At(0)->GetName();
+     ferr       = valTokens->At(1)->GetName();     
+   }
+
       
    formulaStr.ReplaceAll("++", "~");
    TObjArray* formulaTokens = formulaStr.Tokenize("~"); 
@@ -760,6 +769,11 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) return new TString("An ERROR has occured during fitting!");
    Double_t **values = new Double_t*[dim+1] ; 
+   //
+   entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
+   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   Double_t *errors = new Double_t[entries];
+   memcpy(errors,  tree->GetV1(), entries*sizeof(Double_t));
    
    for (Int_t i = 0; i < dim + 1; i++){
       Int_t centries = 0;
@@ -775,7 +789,7 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    for (Int_t i = 0; i < entries; i++){
       Double_t x[1000];
       for (Int_t j=0; j<dim;j++) x[j]=values[j][i];
-      fitter->AddPoint(x, values[dim][i], 1);
+      fitter->AddPoint(x, values[dim][i], errors[i]);
    }
 
    fitter->Eval();
