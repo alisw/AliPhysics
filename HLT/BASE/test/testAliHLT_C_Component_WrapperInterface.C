@@ -51,18 +51,35 @@ public:
   AliHLTComponent* Spawn() {return new TestProcessor;}
 private:
   int DoInit( int argc, const char** argv ) {
+    if (fState!=kCreated) {
+      HLTError("wrong state (%d): component already initialized", fState);
+      return -EBUSY;
+    }
+
     if (argc>0 && argv) {
     }
     gRunNo=GetRunNo();
     gChainId=GetChainId();
+
+    fState=kInitialized;
     return 0;
   }
   int DoDeinit() {
+    if (fState!=kInitialized) {
+      HLTError("wrong state (%d): required %d kInitialized", fState, kInitialized);
+      return -ENODEV;
+    }
+
     return 0;
   }
 
   int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/) {
     int iResult=0;
+    if (fState!=kInitialized) {
+      HLTError("wrong state (%d): component not initialized", fState);
+      return -ENODEV;
+    }
+
     HLTInfo("processing event");
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
 	 pBlock!=NULL; 
@@ -73,12 +90,24 @@ private:
       iResult=PushBack(pBlock->fPtr, pBlock->fSize/2, dt, ~pBlock->fSpecification);
       Forward();
     }
+
     return iResult;
   }
+
+  enum {
+    kCreated =0,
+    kInitialized,
+    kProcessing,
+  };
+
+  int fState; //!transient
 };
 
 TestProcessor::TestProcessor()
-  : AliHLTProcessor() 
+  : 
+  AliHLTProcessor(),
+  fState(kCreated)
+ 
 {
 }
 
