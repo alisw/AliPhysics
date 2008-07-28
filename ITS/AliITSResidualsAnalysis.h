@@ -32,12 +32,7 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   AliITSResidualsAnalysis();  
   AliITSResidualsAnalysis(const TString aliTrackPoints,const TString geom);
   AliITSResidualsAnalysis(const TArrayI *volIDs);
-  AliITSResidualsAnalysis(TArrayI *volIDs,AliTrackPointArray **tracksClustArray,AliTrackPointArray **tracksFitPointsArray);
   ~AliITSResidualsAnalysis();
-
-
-  //virtual ~AliITSResidualsAnalysis(){}
-  // void AddArray(AliTrackPointArray *trackClust,AliTrackPoinArray *trackFitPoints);
 
 
 
@@ -45,24 +40,24 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   void ListVolUsed(){if(!fIsIndexBuilt)return;ListVolUsed(fPointsTree,fArrayIndex,fLastIndex);};
 
   void  InitHistograms(const TArrayI *volIDs);
-  void FillResHists(AliTrackPointArray *trackClust,AliTrackPointArray *trackFitPoints) const;
+  void FillResidualsH(AliTrackPointArray *trackClust,AliTrackPointArray *trackFitPoints) const;
   void  DrawHists() const;
-  Bool_t AnalyzeHists(Int_t minNpoints) const;
+  Bool_t SaveHists(Int_t minNpoints=10,TString outname="ResidualsAnalysisTree.root") const;
+
   void FillVolumeCorrelationHists(Int_t ivol,Int_t volIDalignable,Int_t volIDpoint,Bool_t used) const;
   Bool_t SetBinning(const TArrayI *volids,Float_t *phiBin,Float_t *zBin);
   Float_t** CheckSingleLayer(const TArrayI *volids);
-  TArrayI* GetSingleLayerVolids(Int_t layer) const;
+  TArrayI* GetITSLayersVolids(Int_t layers[6]) const;
+  TArrayI* GetSPDSectorsVolids(Int_t sectors[10]) const;
+  Int_t WhichSector(Int_t module) const;
   Int_t GetBinPhiZ(const Int_t volID,Int_t *binz) const;
   void GetTrackDirClusterCov(AliTrackPoint *point,Double_t &phi,Double_t &lambda,Double_t &lambda2,Double_t &alpha,Double_t &xovery,Double_t &zovery) const;
-  void CalculateResiduals(const TArrayI *volids,const TArrayI *volidsfit,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMax,Int_t iterations=1,Bool_t draw=kTRUE);
-  void ProcessPoints(TString minimizer="fast",Int_t fit=0,AliGeomManager::ELayerID iLayerToAlign=(AliGeomManager::ELayerID)1,AliGeomManager::ELayerID iLayerToExclude=(AliGeomManager::ELayerID)1,TString misalignmentFile="");
-  void ExtractResiduals(Int_t layer=1,Int_t minEnt=10,TString filename="ResidualsAnalysisTree.root") const;
-  Int_t PlotResiduals(Int_t layer=1,TString filename="resPlot_MA_layer") const;
+  void CalculateResiduals(const TArrayI *volids,const TArrayI *volidsfit,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMax,TString outname="ResidualsAnalysisTree.root");
+  void ProcessVolumes(Int_t fit=0,TArrayI *volIDs=0,TArrayI *volIDsFit=0,TString misalignmentFile="",TString outname="ResidualsAnalysisTree.root",Int_t minPoints=2);
   TString GetFileNameTrackPoints() const { return fAliTrackPoints; };
   TString GetFileNameGeometry() const { return fGeom; };
   void SetFileNameTrackPoints(TString name) { fAliTrackPoints=name; };
   void SetFileNameGeometry(TString name) { fGeom=name; };
-
 
   enum ModulePhiZ{
     kPhiSPD1=20,
@@ -79,11 +74,7 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
     kZSSD2=25
   };
 
-
  protected:
-
-  AliITSResidualsAnalysis(const AliITSResidualsAnalysis& /* obj */);
-  AliITSResidualsAnalysis& operator = (const AliITSResidualsAnalysis& obj);
     
   Int_t fnHist;    // number of histogram = number of alignable volumes considered
   Int_t fnPhi;     // coordinate of the volume (Phi)
@@ -93,6 +84,12 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   Double_t ***fCoordToBinTable; // array with coordinate and bin
   TH1F **fVolResHistRPHI;       //  Histogram of Residuals along Global rphi 
   TH1F **fResHistZ;             //  Histogram of Residuals along Global Z 
+  TH1F **fResHistX;             //  Histogram of Residuals along Global X 
+  TH1F **fResHistXLocsddL;      //  Histogram of Residuals along Local X
+                                //  SDD left side of module
+  TH1F **fResHistXLocsddR;      //  Histogram of Residuals along Local X 
+                                //  SDD right side of module 
+  TH1F **fHistCoordGlobY;       //  Histogram of the Y coordinate in Global Reference
   TH1F **fPullHistRPHI;         //  Misc Histogram ...
   TH1F **fPullHistZ;            //  Misc Histogram ...
   TH1F **fTrackDirPhi;          //  Misc Histogram ...
@@ -124,7 +121,7 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   TString fAliTrackPoints;      // Filename with the AliTrackPoints
   TString fGeom;                // Filename with the Geometry
 
-  ClassDef(AliITSResidualsAnalysis,1) // Residuals analysis for the ITS
+  ClassDef(AliITSResidualsAnalysis,2) // Residuals analysis for the ITS
     
     };
     

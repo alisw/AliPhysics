@@ -23,7 +23,6 @@
 //-----------------------------------------------------------------
 
 #include <Riostream.h> 
-//#include <TChain.h>
 #include <TFile.h>
 #include <TMath.h>
 #include <TArrayI.h>
@@ -38,7 +37,9 @@
 #include "TGeoMatrix.h"
 #include "TGeoManager.h"
 #include "TGeoPhysicalNode.h"
+#include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
+#include "TMatrixD.h"
 #include "TString.h"
 
 #include "AliAlignmentTracks.h"
@@ -52,18 +53,9 @@
 #include "AliTrackResidualsChi2.h"
 #include "AliTrackResidualsFast.h"
 #include "AliLog.h"
+#include "AliITSgeomTGeo.h"
 
 #include "AliITSResidualsAnalysis.h"
-
-
-// Structure of the RealignmentAnalysisLayer.C
-  typedef struct {
-    Int_t nentries;
-    Float_t rms;
-    Float_t meanFit;
-    Float_t errmeanFit;
-    Float_t sigmaFit;
-  }  histProperties_t;
 
 ClassImp(AliITSResidualsAnalysis)
   
@@ -78,6 +70,10 @@ ClassImp(AliITSResidualsAnalysis)
     fCoordToBinTable(0),
     fVolResHistRPHI(0),
     fResHistZ(0),
+    fResHistX(0),
+    fResHistXLocsddL(0),
+    fResHistXLocsddR(0),
+    fHistCoordGlobY(0),
     fPullHistRPHI(0), 
     fPullHistZ(0), 
     fTrackDirPhi(0),
@@ -108,7 +104,6 @@ ClassImp(AliITSResidualsAnalysis)
     fClonesArray(0),
     fAliTrackPoints("AliTrackPoints.root"),
     fGeom("geometry.root")
-
 {
 
   //
@@ -119,7 +114,7 @@ ClassImp(AliITSResidualsAnalysis)
 }
 
 //____________________________________________________________________________
-AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TString aliTrackPoints,  
+AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TString aliTrackPoints,  		 
 						 const TString geom):
   AliAlignmentTracks(),
   fnHist(0),
@@ -130,6 +125,10 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TString aliTrackPoints,
   fCoordToBinTable(0),
   fVolResHistRPHI(0),
   fResHistZ(0),
+  fResHistX(0),
+  fResHistXLocsddL(0),
+  fResHistXLocsddR(0),
+  fHistCoordGlobY(0),
   fPullHistRPHI(0), 
   fPullHistZ(0), 
   fTrackDirPhi(0),
@@ -162,7 +161,7 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TString aliTrackPoints,
   fGeom(geom)
 { 
   //
-  // Constructor (alitrackpoints)
+  // Standard Constructor (alitrackpoints)
   //
 
 
@@ -179,6 +178,10 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TArrayI *volIDs):
   fCoordToBinTable(0),
   fVolResHistRPHI(0),
   fResHistZ(0),
+  fResHistX(0),
+  fResHistXLocsddL(0),
+  fResHistXLocsddR(0),
+  fHistCoordGlobY(0),
   fPullHistRPHI(0), 
   fPullHistZ(0), 
   fTrackDirPhi(0),
@@ -214,221 +217,9 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TArrayI *volIDs):
   //
   // Original Constructor
   //
-
+  if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry());
   InitHistograms(volIDs);
 
-}
-
-//____________________________________________________________________________
-AliITSResidualsAnalysis::AliITSResidualsAnalysis(TArrayI *volIDs,AliTrackPointArray **tracksClustArray,AliTrackPointArray **tracksFitPointsArray):
-  AliAlignmentTracks(),
-  fnHist(0),
-  fnPhi(0),
-  fnZ(0),
-  fvolidsToBin(0),
-  fLastVolVolid(0), 
-  fCoordToBinTable(0),
-  fVolResHistRPHI(0),
-  fResHistZ(0),
-  fPullHistRPHI(0), 
-  fPullHistZ(0),
-  fTrackDirPhi(0),
-  fTrackDirLambda(0),
-  fTrackDirLambda2(0),
-  fTrackDirAlpha(0),
-  fTrackDirPhiAll(0),
-  fTrackDirLambdaAll(0),
-  fTrackDirLambda2All(0),
-  fTrackDirAlphaAll(0),
-  fTrackDir(0), 
-  fTrackDirAll(0), 
-  fTrackDir2All(0), 
-  fTrackDirXZAll(0), 
-  fResHistGlob(0),  
-  fhistCorrVol(0),
-  fVolNTracks(0),
-  fhEmpty(0),
-  fhistVolNptsUsed(0),
-  fhistVolUsed(0),
-  fSigmaVolZ(0),
-  fsingleLayer(0),
-  fWriteHist(0),
-  fpTrackVolIDs(0),
-  fVolVolids(0),
-  fVolUsed(0),
-  fRealignObjFileIsOpen(kFALSE),
-  fClonesArray(0),
-  fAliTrackPoints("AliTrackPoints.root"),
-  fGeom("geometry.root")
-  
-{ 
-  //
-  // Detailed Constructor (deprecated)
-  //
-
-
-  TString histnameRPHI="HistRPHI_volID_",aux;
-  TString histnameZ="HistZ_volID_";
-  TString histnameGlob="HistGlob_volID_";
-  TString histnameCorrVol="HistCorrVol_volID";
-  TString histnamePullRPHI="HistPullRPHI_volID_";
-  TString histnamePullZ="HistPullZ_volID_";
-  fnHist=volIDs->GetSize();
-  fVolResHistRPHI=new TH1F*[fnHist];
-  fResHistGlob=new TH1F*[fnHist];
-  fResHistZ=new TH1F*[fnHist];
-  fPullHistRPHI=new TH1F*[fnHist];
-  fPullHistZ=new TH1F*[fnHist];
-  fhistCorrVol=new TH2F*[fnHist];
-  Float_t **binningZPhi=CheckSingleLayer(volIDs);
-  fvolidsToBin=new Int_t*[fnPhi*fnZ];
-  Float_t *binningphi=binningZPhi[0];
-  Float_t *binningz=binningZPhi[1];
-  Bool_t binning=SetBinning(volIDs,binningphi,binningz);
-  if(binning){
-    fVolNTracks=new TH2F("fVolNTracks","Hist with N tracks passing through a given module==(r,phi) zone",fnPhi,binningphi,fnZ,binningz);
-    fhistVolNptsUsed=new TH2F("fhistVolNptsUsed","Hist with N points used for given module==(r,phi) ",fnPhi,binningphi,fnZ,binningz);
-    fhistVolUsed=new TH2F("fhistVolUsed","Hist with N modules used for a given module==(r,phi) zone",fnPhi,binningphi,fnZ,binningz);
-    fSigmaVolZ=new TH2F("fSigmaVolZ","Hist with Sigma of Residual distribution for each module",fnPhi,binningphi,fnZ,binningz);
-    fhEmpty=new TH2F("fhEmpty","Hist for getting binning",fnPhi,binningphi,fnZ,binningz);
-    fVolNTracks->SetXTitle("Volume #phi");
-    fVolNTracks->SetYTitle("Volume z ");
-    fhistVolNptsUsed->SetXTitle("Volume #phi");
-    fhistVolNptsUsed->SetYTitle("Volume z ");
-    fhistVolUsed->SetXTitle("Volume #phi");
-    fhistVolUsed->SetYTitle("Volume z ");
-    fSigmaVolZ->SetXTitle("Volume #phi");
-    fSigmaVolZ->SetYTitle("Volume z ");
-  }
-  else{
-    fVolNTracks=new TH2F("fVolNTracks","Hist with N tracks passing through a given module==(r,phi) zone",50,-3.2,3.2,100,-80,80);
-    fhistVolNptsUsed=new TH2F("fhistVolNptsUsed","Hist with N points used for given module==(r,phi) ",50,-3.2,3.2,100,-80,80);
-    fhistVolUsed=new TH2F("fhistVolUsed","Hist with N modules used for a given module==(r,phi) zone",50,-3.2,3.2,100,-80,80);
-    fSigmaVolZ=new TH2F("fSigmaVolZ","Hist with Sigma of Residual distribution for each module",50,-3.2,3.2,100,-80,80);
-    fhEmpty=new TH2F("fhEmpty","Hist for getting binning",50,-3.2,3.2,100,-80,80);
-    fVolNTracks->SetXTitle("Volume #phi");
-    fVolNTracks->SetYTitle("Volume z ");
-    fhistVolNptsUsed->SetXTitle("Volume #phi");
-    fhistVolNptsUsed->SetYTitle("Volume z ");
-    fhistVolUsed->SetXTitle("Volume #phi");
-    fhistVolUsed->SetYTitle("Volume z ");
-    fSigmaVolZ->SetXTitle("Volume #phi");
-    fSigmaVolZ->SetYTitle("Volume z ");
-  }
-  
-  fpTrackVolIDs=new TArrayI(fnHist);
-  fVolUsed=new TArrayI*[fnHist];
-  fVolVolids=new TArrayI*[fnHist]; 
-  fLastVolVolid=new Int_t[fnHist];
- 
-  for (Int_t nhist=0;nhist<fnHist;nhist++){
-    fpTrackVolIDs->AddAt(volIDs->At(nhist),nhist);   
-    aux=histnameRPHI;
-    aux+=volIDs->At(nhist);
-    fVolResHistRPHI[nhist]=new TH1F("namehist","histname",200,-0.02,0.02);   
-    fVolResHistRPHI[nhist]->SetName(aux.Data());
-    fVolResHistRPHI[nhist]->SetTitle(aux.Data());
- 
-    aux=histnameZ;
-    aux+=volIDs->At(nhist);
-    fResHistZ[nhist]=new TH1F("histname","histname",400,-0.08,0.08);   
-    fResHistZ[nhist]->SetName(aux.Data()); 
-    fResHistZ[nhist]->SetTitle(aux.Data()); 
-
-    aux=histnamePullRPHI;
-    aux+=volIDs->At(nhist);
-    fPullHistRPHI[nhist]=new TH1F("histname","histname",100,-7.,7.);   
-    fPullHistRPHI[nhist]->SetName(aux.Data()); 
-    fPullHistRPHI[nhist]->SetTitle(aux.Data()); 
-    
-    aux=histnamePullZ;
-    aux+=volIDs->At(nhist);
-    fPullHistZ[nhist]=new TH1F("histname","histname",100,-7.,7.);   
-    fPullHistZ[nhist]->SetName(aux.Data()); 
-    fPullHistZ[nhist]->SetTitle(aux.Data()); 
-    
-    aux=histnameGlob;
-    aux+=volIDs->At(nhist);
-    fResHistGlob[nhist]=new TH1F("histname","histname",400,-0.08,0.08);   
-    fResHistGlob[nhist]->SetName(aux.Data()); 
-    fResHistGlob[nhist]->SetTitle(aux.Data());    
-    
-    aux=histnameCorrVol;
-    aux+=volIDs->At(nhist);
-    fhistCorrVol[nhist]=new TH2F("histname","histname",50,-3.2,3.2,100,-80,80);   
-    fhistCorrVol[nhist]->SetName(aux.Data()); 
-    fhistCorrVol[nhist]->SetTitle(aux.Data()); 
-    fhistCorrVol[nhist]->SetXTitle("Volume #varphi");
-    fhistCorrVol[nhist]->SetYTitle("Volume z ");
-
-    fVolVolids[nhist]=new TArrayI(1000);
-    fVolUsed[nhist]=new TArrayI(1000);  
-    fLastVolVolid[nhist]=0;   
-    FillResHists(tracksClustArray[nhist],tracksFitPointsArray[nhist]);
-  } 
-  fWriteHist=kFALSE;
-  DrawHists();
-
-  SetFileNameTrackPoints("");  // Filename with the AliTrackPoints
-  SetFileNameGeometry(""); // Filename with the Geometry
-
-
-}
-
-//____________________________________________________________________________
-AliITSResidualsAnalysis::AliITSResidualsAnalysis(const AliITSResidualsAnalysis& /* obj */):
-    AliAlignmentTracks(),
-    fnHist(0),
-    fnPhi(0),
-    fnZ(0),
-    fvolidsToBin(0),
-    fLastVolVolid(0), 
-    fCoordToBinTable(0),
-    fVolResHistRPHI(0),
-    fResHistZ(0),
-    fPullHistRPHI(0), 
-    fPullHistZ(0), 
-    fTrackDirPhi(0),
-    fTrackDirLambda(0),
-    fTrackDirLambda2(0),
-    fTrackDirAlpha(0),
-    fTrackDirPhiAll(0),
-    fTrackDirLambdaAll(0),
-    fTrackDirLambda2All(0),
-    fTrackDirAlphaAll(0),
-    fTrackDir(0), 
-    fTrackDirAll(0), 
-    fTrackDir2All(0),
-    fTrackDirXZAll(0), 
-    fResHistGlob(0),  
-    fhistCorrVol(0),
-    fVolNTracks(0),
-    fhEmpty(0),
-    fhistVolNptsUsed(0),
-    fhistVolUsed(0),
-    fSigmaVolZ(0),
-    fsingleLayer(0),
-    fWriteHist(0),
-    fpTrackVolIDs(0),
-    fVolVolids(0),
-    fVolUsed(0),         
-    fRealignObjFileIsOpen(kFALSE),
-    fClonesArray(0),
-    fAliTrackPoints("AliTrackPoints.root"),
-    fGeom("geometry.root")
-
-{
-  // copy constructor. This is not allowed.
-
-  AliFatal("Copy constructor not allowed\n");
- 
-}
-
-//____________________________________________________________________________
-AliITSResidualsAnalysis& AliITSResidualsAnalysis::operator = (const AliITSResidualsAnalysis& /* obj */) {
-  // assignment operator. This is not allowed
-  AliFatal("Assignment operator not allowed\n");
-  return *this;
 }
 
 //____________________________________________________________________________
@@ -441,8 +232,21 @@ AliITSResidualsAnalysis::~AliITSResidualsAnalysis()
   if(fvolidsToBin)        delete[] fvolidsToBin;         
   if(fLastVolVolid)       delete[] fLastVolVolid;        
   if(fCoordToBinTable)    delete[] fCoordToBinTable;
+  if(fHistCoordGlobY)     delete[] fHistCoordGlobY;
   if(fVolResHistRPHI)     delete fVolResHistRPHI; 
-  if(fResHistZ)           delete fResHistZ;         
+  if(fResHistZ)           delete fResHistZ;
+  if(fResHistX){         
+    for(Int_t i=0; i<fnHist; i++) delete fResHistX[i];
+    delete [] fResHistX;
+  }
+  if(fResHistXLocsddL){         
+    for(Int_t i=0; i<fnHist; i++) delete fResHistXLocsddL[i];
+    delete [] fResHistXLocsddL;
+  }
+  if(fResHistXLocsddR){         
+    for(Int_t i=0; i<fnHist; i++) delete fResHistXLocsddR[i];
+    delete [] fResHistXLocsddR;
+  }
   if(fPullHistRPHI)       delete fPullHistRPHI;      
   if(fPullHistZ)          delete fPullHistZ;        
   if(fTrackDirPhi)        delete fTrackDirPhi;         
@@ -482,8 +286,12 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
   // with the correct binning (it dos not fill them)
   //
 
+
+  if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry());
+ 
   TString histnameRPHI="HistRPHI_volID_",aux;
   TString histnameZ="HistZ_volID_";
+  TString histnameX="HistX_volID_";
   TString histnameGlob="HistGlob_volID_";
   TString histnameCorrVol="HistCorrVol_volID";
   TString histnamePullRPHI="HistPullRPHI_volID_";
@@ -495,21 +303,22 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
   TString histnameDirAlpha="HistTrackDirAlpha_volID_";
   TString histnameDir="HistTrackDir_volID_";
 
-
   fnHist=volIDs->GetSize();
   fVolResHistRPHI=new TH1F*[fnHist];
   fResHistGlob=new TH1F*[fnHist];
   fResHistZ=new TH1F*[fnHist];
+  fResHistX=new TH1F*[fnHist];
+  fResHistXLocsddL=new TH1F*[fnHist];
+  fResHistXLocsddR=new TH1F*[fnHist];
+  fHistCoordGlobY=new TH1F*[fnHist];
   fPullHistRPHI=new TH1F*[fnHist];
   fPullHistZ=new TH1F*[fnHist];
   fhistCorrVol=new TH2F*[fnHist];
- 
 
   fTrackDirPhi=new TH1F*[fnHist];
   fTrackDirLambda=new TH1F*[fnHist];
   fTrackDirLambda2=new TH1F*[fnHist];
   fTrackDirAlpha=new TH1F*[fnHist];
-
 	
   fTrackDirPhiAll=new TH1F("fTrackDirPhiAll","fTrackDirPhiAll",100,-180,180);
   fTrackDirLambdaAll=new TH1F("fTrackDirLambdaAll","fTrackDirLambdaAll",100,-180,180);
@@ -518,18 +327,22 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
 
   fTrackDirAll=new TH2F("fTrackDirAll","Hist with trakcs directions",100,-180,180,100,-180,180);
   fTrackDir2All=new TH2F("fTrackDir2All","Hist with trakcs directions",100,-180,180,100,-180,180);
- fTrackDirXZAll=new TH2F("fTrackDirXZAll","Hist with trakcs directions from XZ ",100,-3.,3.,100,-3.,3.);
+  fTrackDirXZAll=new TH2F("fTrackDirXZAll","Hist with trakcs directions from XZ ",100,-3.,3.,100,-3.,3.);
 
   fTrackDir=new TH2F*[fnHist];
 
-  Float_t **binningZPhi=CheckSingleLayer(volIDs);
+  Bool_t binning;
+  Float_t **binningZPhi;
+  Float_t *binningz;
+  Float_t *binningphi;
+
+  binningZPhi=CheckSingleLayer(volIDs); 
   fvolidsToBin=new Int_t*[fnPhi*fnZ];
-
-  Float_t *binningphi=binningZPhi[0];
-  Float_t *binningz=binningZPhi[1];
-  Bool_t binning=SetBinning(volIDs,binningphi,binningz);
-
-  if(binning){
+  binningphi=binningZPhi[0];
+  binningz=binningZPhi[1];
+  binning=SetBinning(volIDs,binningphi,binningz);
+    
+  if(binning){ //ONLY FOR A SINGLE LAYER!
     fVolNTracks=new TH2F("fVolNTracks","Hist with N tracks passing through a given module==(r,phi) zone",fnPhi,binningphi,fnZ,binningz);
     fhistVolNptsUsed=new TH2F("fhistVolNptsUsed","Hist with N points used for given module==(r,phi) ",fnPhi,binningphi,fnZ,binningz);
     fhistVolUsed=new TH2F("fhistVolUsed","Hist with N modules used for a given module==(r,phi) zone",fnPhi,binningphi,fnZ,binningz);
@@ -543,8 +356,7 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
     fhistVolUsed->SetYTitle("Volume z ");
     fSigmaVolZ->SetXTitle("Volume #phi");
     fSigmaVolZ->SetYTitle("Volume z ");
-  }
-  else{
+  } else{
     fVolNTracks=new TH2F("fVolNTracks","Hist with N tracks passing through a given module==(r,phi) zone",50,-3.2,3.2,100,-80,80);
     fhistVolNptsUsed=new TH2F("fhistVolNptsUsed","Hist with N points used for given module==(r,phi) ",50,-3.2,3.2,100,-80,80);
     fhistVolUsed=new TH2F("fhistVolUsed","Hist with N modules used for a given module==(r,phi) zone",50,-3.2,3.2,100,-80,80);
@@ -559,6 +371,7 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
     fSigmaVolZ->SetXTitle("Volume #phi");
     fSigmaVolZ->SetYTitle("Volume z ");
   }
+  
   fpTrackVolIDs=new TArrayI(fnHist);
   fVolUsed=new TArrayI*[fnHist];
   fVolVolids=new TArrayI*[fnHist]; 
@@ -568,15 +381,40 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
     fpTrackVolIDs->AddAt(volIDs->At(nhist),nhist);   
     aux=histnameRPHI;
     aux+=volIDs->At(nhist);
-    fVolResHistRPHI[nhist]=new TH1F("histname","histname",200,-0.02,0.02);   
+    fVolResHistRPHI[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
     fVolResHistRPHI[nhist]->SetName(aux.Data()); 
     fVolResHistRPHI[nhist]->SetTitle(aux.Data()); 
     
     aux=histnameZ;
     aux+=volIDs->At(nhist);
-    fResHistZ[nhist]=new TH1F("histname","histname",400,-0.08,0.08);   
+    fResHistZ[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
     fResHistZ[nhist]->SetName(aux.Data()); 
     fResHistZ[nhist]->SetTitle(aux.Data()); 
+
+    aux=histnameX;
+    aux+=volIDs->At(nhist);
+    fResHistX[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fResHistX[nhist]->SetName(aux.Data()); 
+    fResHistX[nhist]->SetTitle(aux.Data()); 
+
+    aux=histnameX;
+    aux+=volIDs->At(nhist);
+    aux.Append("LocalSDDLeft");
+    fResHistXLocsddL[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fResHistXLocsddL[nhist]->SetName(aux.Data()); 
+    fResHistXLocsddL[nhist]->SetTitle(aux.Data()); 
+    aux=histnameX;
+
+    aux+=volIDs->At(nhist);
+    aux.Append("LocalSDDRight");
+    fResHistXLocsddR[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fResHistXLocsddR[nhist]->SetName(aux.Data()); 
+    fResHistXLocsddR[nhist]->SetTitle(aux.Data()); 
+
+    aux="fHistCoordGlobY";
+    fHistCoordGlobY[nhist]=new TH1F("histname","histname",24000,-30.,30.);   
+    fHistCoordGlobY[nhist]->SetName(aux.Data()); 
+    fHistCoordGlobY[nhist]->SetTitle(aux.Data()); 
 
     aux=histnamePullRPHI;
     aux+=volIDs->At(nhist);
@@ -651,7 +489,7 @@ void AliITSResidualsAnalysis::ListVolUsed(TTree *pointsTree,TArrayI ***arrayInde
   //
   // This is copied from AliAlignmentClass::LoadPoints() method
   //
-
+  if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry());
   Int_t volIDalignable,volIDpoint,iModule; 
   AliTrackPoint p;
   AliTrackPointArray* array = 0;
@@ -664,7 +502,6 @@ void AliITSResidualsAnalysis::ListVolUsed(TTree *pointsTree,TArrayI ***arrayInde
     AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer((UShort_t)volIDalignable,iModule);
     
     Int_t nArraysId = lastIndex[iLayer-AliGeomManager::kFirstLayer][iModule];
-    printf("volume %d (Layer %d, Modulo %d) , numero di elementi per volume %d \n",volIDalignable,iLayer,iModule,nArraysId);
     TArrayI *index = arrayIndex[iLayer-AliGeomManager::kFirstLayer][iModule];
     for (Int_t iArrayId = 0;iArrayId < nArraysId; iArrayId++) {
 
@@ -681,6 +518,8 @@ void AliITSResidualsAnalysis::ListVolUsed(TTree *pointsTree,TArrayI ***arrayInde
       Int_t modnum,nPoints = array->GetNPoints();
   
       for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
+
+
 	array->GetPoint(p,iPoint);
 	
 	AliGeomManager::ELayerID layer = AliGeomManager::VolUIDToLayer(p.GetVolumeID(),modnum);
@@ -691,6 +530,8 @@ void AliITSResidualsAnalysis::ListVolUsed(TTree *pointsTree,TArrayI ***arrayInde
 			layer,AliGeomManager::kFirstLayer,AliGeomManager::kLastLayer-1));
 	  continue;
 	}
+
+
 	if ((modnum >= AliGeomManager::LayerSize(layer)) ||
 	    (modnum < 0)) {
 	  AliError(Form("Module number inside layer %d is invalid: %d (0 -> %d)",
@@ -699,13 +540,16 @@ void AliITSResidualsAnalysis::ListVolUsed(TTree *pointsTree,TArrayI ***arrayInde
 	}
 	if (layer > AliGeomManager::kSSD2) continue; // ITS only
 	
+
 	volIDpoint=(Int_t)p.GetVolumeID();
-	if (volIDpoint==volIDalignable)continue;
+	if (volIDpoint==volIDalignable) continue;
 	Int_t size = fVolVolids[ivol]->GetSize();
 	// If needed allocate new size
 	if (fLastVolVolid[ivol]>=size){// Warning: fLAST[NHIST] is useless
 	  fVolVolids[ivol]->Set(size + 1000);
 	}
+
+
      	fVolVolids[ivol]->AddAt(volIDpoint,fLastVolVolid[ivol]);
 	fLastVolVolid[ivol]++;
 	Bool_t usedVol=kFALSE;
@@ -715,6 +559,8 @@ void AliITSResidualsAnalysis::ListVolUsed(TTree *pointsTree,TArrayI ***arrayInde
 	    break;
 	  }
 	}
+
+
 	if (!usedVol){
 	  size = fVolUsed[ivol]->GetSize();
 	  // If needed allocate new size
@@ -725,8 +571,9 @@ void AliITSResidualsAnalysis::ListVolUsed(TTree *pointsTree,TArrayI ***arrayInde
 	  lastused++;
 	}
 	
-	FillVolumeCorrelationHists(ivol,volIDalignable,volIDpoint,usedVol);	
-      }
+	FillVolumeCorrelationHists(ivol,volIDalignable,volIDpoint,usedVol);
+	
+      }// end loop
     }
   }
   fWriteHist=kTRUE;
@@ -740,43 +587,51 @@ void AliITSResidualsAnalysis::FillVolumeCorrelationHists(Int_t ivol,Int_t volIDa
   // Fill the histograms with the correlations between volumes
   //
   
-  if(!gGeoManager)AliGeomManager::LoadGeometry(GetFileNameGeometry());
-  Double_t *transGlobal,radius,phi;
-  const char *symname,*volpath;
-  TGeoPNEntry *pne;
-  TGeoPhysicalNode *pn;
-  TGeoHMatrix *globMatrix;  
-  
-  symname = AliGeomManager::SymName(volIDalignable);
-  pne = gGeoManager->GetAlignableEntry(symname);
-  volpath=pne->GetTitle();
-  pn=gGeoManager->MakePhysicalNode(volpath);
-  globMatrix=pn->GetMatrix();
-  
-  transGlobal=globMatrix->GetTranslation();
-  radius=TMath::Sqrt(transGlobal[0]*transGlobal[0]+transGlobal[1]*transGlobal[1]);
-  phi=TMath::ATan2(transGlobal[1],transGlobal[0]);
-  fhistVolNptsUsed->Fill(phi,transGlobal[2]);
-  if(!usedVol)fhistVolUsed->Fill(phi,transGlobal[2]);
 
-  symname = AliGeomManager::SymName(volIDpoint);
-  pne = gGeoManager->GetAlignableEntry(symname);
-  volpath=pne->GetTitle();
-  pn=gGeoManager->MakePhysicalNode(volpath);
-  globMatrix=pn->GetMatrix();
+  if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry());
+  Double_t translGlobal[3];
+  //  Double_t radius;
+  Double_t phi;
+  //  const char *symname,*volpath;
+  /*  TGeoPNEntry *pne;
+      TGeoPhysicalNode *pn;
+      TGeoHMatrix *globMatrix;  
   
-  transGlobal=globMatrix->GetTranslation();
-  radius=TMath::Sqrt(transGlobal[0]*transGlobal[0]+transGlobal[1]*transGlobal[1]);
-  phi=TMath::ATan2(transGlobal[1],transGlobal[0]);
   
-  fhistCorrVol[ivol]->Fill(phi,transGlobal[2]);
+      symname = AliGeomManager::SymName(volIDalignable);
+      pne = gGeoManager->GetAlignableEntry(symname);
+      volpath=pne->GetTitle();
+      pn=gGeoManager->MakePhysicalNode(volpath);
+      globMatrix=pn->GetMatrix();
+  */
+  
+  AliGeomManager::GetOrigTranslation(volIDalignable,translGlobal);
+  //  radius=TMath::Sqrt(transGlobal[0]*transGlobal[0]+transGlobal[1]*transGlobal[1]);
+  phi=TMath::ATan2(translGlobal[1],translGlobal[0]);
+  fhistVolNptsUsed->Fill(phi,translGlobal[2]);
+  if(!usedVol){
+    fhistVolUsed->Fill(phi,translGlobal[2]);
+  }
+
+  /*  symname = AliGeomManager::SymName(volIDpoint);
+      pne = gGeoManager->GetAlignableEntry(symname);
+      volpath=pne->GetTitle();
+      pn=gGeoManager->MakePhysicalNode(volpath);
+      globMatrix=pn->GetMatrix();
+      transGlobal=globMatrix->GetTranslation();
+  */
+  AliGeomManager::GetOrigTranslation(volIDpoint,translGlobal);
+  //  radius=TMath::Sqrt(transGlobal[0]*transGlobal[0]+transGlobal[1]*transGlobal[1]);
+  phi=TMath::ATan2(translGlobal[1],translGlobal[0]);
+
+  fhistCorrVol[ivol]->Fill(phi,translGlobal[2]);
 
   return;
 }
   
-   
 //____________________________________________________________________________
-void AliITSResidualsAnalysis::FillResHists(AliTrackPointArray *points,AliTrackPointArray *pTrack) const
+void AliITSResidualsAnalysis::FillResidualsH(AliTrackPointArray *points,
+					     AliTrackPointArray *pTrack) const
 {
   //
   // Method that fills the histograms with the residuals
@@ -784,68 +639,86 @@ void AliITSResidualsAnalysis::FillResHists(AliTrackPointArray *points,AliTrackPo
   
   Int_t volIDpoint;  
   Float_t xyz[3],xyz2[3];
-  const Float_t *cov,*cov2;
-  Float_t resRPHI,resGlob,resZ;
-  Double_t pullz,pullrphi,sign;
-  Double_t phi,lambda,lambda2,alpha,xovery,zovery;
+  Double_t xyzD[3],xyz2D[3];
+  Double_t loc[3],loc2[3];
+
+  Float_t resRPHI,resGlob,resZ,resX;
+
+  Double_t pullrphi,sign,phi;
   AliTrackPoint p,pTr;
+
   for(Int_t ipoint=0;ipoint<points->GetNPoints();ipoint++){
+
+    //pTrack->GetPoint(pTr,ipoint);
     points->GetPoint(p,ipoint);
     volIDpoint=(Int_t)p.GetVolumeID();
     p.GetXYZ(xyz);
-    cov=p.GetCov();
+
     pTrack->GetPoint(pTr,ipoint);
-    GetTrackDirClusterCov(&pTr,phi,lambda,lambda2,alpha,xovery,zovery);
     pTr.GetXYZ(xyz2);
-    cov2=pTr.GetCov();
+
+    for(Int_t i=0;i<3;i++){
+      xyzD[i]=xyz[i];
+      xyz2D[i]=xyz2[i];
+    }
+
+    phi = TMath::ATan2(xyz[1],xyz[0]);//<-watch out: phi of the pPoints!
+ 
+    resZ=xyz2[2]-xyz[2];
+    resX=xyz2[0]-xyz[0];
+
     resRPHI=TMath::Sqrt((xyz2[0]-xyz[0])*(xyz2[0]-xyz[0])+(xyz2[1]-xyz[1])*(xyz2[1]-xyz[1]));
-    //resRPHI is always positive value
+
     sign=TMath::ATan2(xyz2[1],xyz2[0])-TMath::ATan2(xyz[1],xyz[0]);
     if(sign!=0.){
       sign=sign/TMath::Abs(sign);
       resRPHI=resRPHI*sign;
-      pullrphi=sign*resRPHI*resRPHI/TMath::Sqrt((xyz2[0]-xyz[0])*(xyz2[0]-xyz[0])*(cov2[0]/100000000.+cov[0])+(xyz2[1]-xyz[1])*(xyz2[1]-xyz[1])*(cov2[3]/100000000.+cov[3]));
+
     }
     else{
       pullrphi=0.;
       resRPHI=0.;
     }
     
-    resZ=xyz2[2]-xyz[2];
-    pullz=resZ/(TMath::Sqrt(cov2[5])/10000.);
     resGlob=TMath::Sqrt((xyz2[0]-xyz[0])*(xyz2[0]-xyz[0])+(xyz2[1]-xyz[1])*(xyz2[1]-xyz[1])+(xyz2[2]-xyz[2])*(xyz2[2]-xyz[2]));
+
     for(Int_t ivolIDs=0;ivolIDs<fpTrackVolIDs->GetSize();ivolIDs++){
       if(volIDpoint==fpTrackVolIDs->At(ivolIDs)){
+
 	fVolResHistRPHI[ivolIDs]->Fill(resRPHI);
 	fResHistZ[ivolIDs]->Fill(resZ);
+	fResHistX[ivolIDs]->Fill(resX);
+	fHistCoordGlobY[ivolIDs]->Fill(xyz[1]); 
+
+	Int_t modIndex = -1; // SDD Section
+	if(AliGeomManager::VolUIDToLayer(volIDpoint)==3) modIndex=volIDpoint-6144+240;
+	if(AliGeomManager::VolUIDToLayer(volIDpoint)==4) modIndex=volIDpoint-8192+240+84;
+	if(modIndex>0){
+	  AliITSgeomTGeo::GlobalToLocal(modIndex,xyzD,loc); // error here!?
+	  AliITSgeomTGeo::GlobalToLocal(modIndex,xyz2D,loc2);
+	  Float_t rexloc=loc2[0]-loc[0];
+	  //cout<<"Residual: "<<volIDpoint<<" "<<loc[0]<<" -> "<<rexloc<<endl;
+	  if(loc[0]<0){
+	    fResHistXLocsddR[ivolIDs]->Fill(rexloc);
+	  }else{
+	    fResHistXLocsddL[ivolIDs]->Fill(rexloc);
+	  }
+	}
 	fResHistGlob[ivolIDs]->Fill(resGlob);
 
-
-	fTrackDirPhi[ivolIDs]->Fill(phi);
-	fTrackDirLambda[ivolIDs]->Fill(lambda);
-	fTrackDirLambda2[ivolIDs]->Fill(lambda2);
-	fTrackDirAlpha[ivolIDs]->Fill(alpha);
-	
 	fTrackDirPhiAll->Fill(phi);
-	fTrackDirLambdaAll->Fill(lambda);
-	fTrackDirLambda2All->Fill(lambda2);
-	fTrackDirAlphaAll->Fill(alpha);
+	fTrackDirPhi[ivolIDs]->Fill(phi);
 
-	fTrackDirAll->Fill(lambda,alpha);
-	fTrackDir2All->Fill(lambda2,phi);
-	fTrackDirXZAll->Fill(xovery,zovery);
-	fTrackDir[ivolIDs]->Fill(lambda,alpha);
-
-	fPullHistRPHI[ivolIDs]->Fill(pullrphi);
-	fPullHistZ[ivolIDs]->Fill(pullz);
-	
 	if(fsingleLayer){
 	  Int_t binz,binphi;
 	  Float_t globalPhi,globalZ;
 	  if(kTRUE||(fvolidsToBin[ivolIDs][0]!=volIDpoint)){
 	    binphi=GetBinPhiZ((Int_t)volIDpoint,&binz);
 	  }
-	  else{//this in the case of alignment of one entire layer (fnHIst=layersize) may reduce iterations: remind of that fsingleLayer->fnHista<layerSize
+	  else{
+	    // This in the case of alignment of one entire layer 
+	    // (fnHIst=layersize) may reduce iterations: 
+	    // remind of that fsingleLayer->fnHista<layerSize
 	    binphi=fvolidsToBin[ivolIDs][1];
 	    binz=fvolidsToBin[ivolIDs][2];
 	  }
@@ -860,154 +733,163 @@ void AliITSResidualsAnalysis::FillResHists(AliTrackPointArray *points,AliTrackPo
   }
 }
 
-
 //____________________________________________________________________________
-Bool_t AliITSResidualsAnalysis::AnalyzeHists(Int_t minNpoints) const
+Bool_t AliITSResidualsAnalysis::SaveHists(Int_t minNpoints, TString outname) const
 {
   //  
   // Saves the histograms into a tree and saves the tree into a file
   //
 
-  TString outname = "ResidualsAnalysisTree.root";
-  TFile *hFile=new TFile(outname.Data(),"RECREATE","The Files containing the TREE with Align. Vol. hists nd Prop.");
-  TTree *analysisTree=new TTree("analysisTree","Tree whith residuals analysis data for alignable volumes");
-  static histProperties_t histRPHIprop,histZprop,histGlobprop;
-  Int_t volID;
 
+  // Output file
+  TFile *hFile=new TFile(outname.Data(),"RECREATE","File containing the Residuals Tree");
+
+  // TTree with the residuals
+  TTree *analysisTree=new TTree("analysisTree","Tree with the residuals");
+
+  // Declares Variables to be stored into the TTree
   TF1 *gauss;
-  TH1F *histRPHI,*histZ,*histGlob,*histPullRPHI,*histPullZ,*hTrackDirPhi,*hTrackDirLambda,*hTrackDirLambda2,*hTrackDirAlpha;
+  Int_t volID,entries,nHistAnalyzed=0;
+  Double_t meanResRPHI,meanResZ,meanResX,rmsResRPHI,rmsResZ,rmsResX,coordVol[3],x,y,z;
+  TH1F *histRPHI = new TH1F();
+  TH1F *histZ = new TH1F();
+  TH1F *histX = new TH1F();
+  TH1F *histXLocsddL = new TH1F();
+  TH1F *histXLocsddR = new TH1F();
+  TH1F *histCoordGlobY = new TH1F();
+  // Note: 0 = RPHI, 1 = Z
 
-  TH2F *histCorrVol,*hTrackDir;
 
-  histRPHI=new TH1F();
-  histZ=new TH1F();
-  histPullRPHI=new TH1F();
-  histPullZ=new TH1F();
-  hTrackDirPhi=new TH1F();
-  hTrackDirLambda=new TH1F();
-  hTrackDirLambda2=new TH1F();
-  hTrackDirAlpha=new TH1F();
-  hTrackDir=new TH2F();
-  histGlob=new TH1F();
-  histCorrVol=new TH2F();
-  Float_t globalPhi,globalZ;
-  Double_t rms;
-  Int_t nHistAnalyzed=0,entries;
+  // Branching the TTree
   analysisTree->Branch("volID",&volID,"volID/I");
-  if(fsingleLayer){
-    analysisTree->Branch("globalPhi",&globalPhi,"globalPhi/F");
-    analysisTree->Branch("globalZ",&globalZ,"globalZ/F");
-  }
+  analysisTree->Branch("x",&x,"x/D");
+  analysisTree->Branch("y",&y,"y/D");
+  analysisTree->Branch("z",&z,"z/D");
+  analysisTree->Branch("meanResRPHI",&meanResRPHI,"meanResRPHI/D");
+  analysisTree->Branch("meanResZ",&meanResZ,"meanResZ/D");
+  analysisTree->Branch("meanResX",&meanResX,"meanResX/D");
+  analysisTree->Branch("rmsResRPHI",&rmsResRPHI,"rmsResRPHI/D");
+  analysisTree->Branch("rmsResZ",&rmsResZ,"rmsResZ/D");
+
   analysisTree->Branch("histRPHI","TH1F",&histRPHI,128000,0);
-  analysisTree->Branch("histPullRPHI","TH1F",&histPullRPHI,128000,0);
-  
-  analysisTree->Branch("histRPHIprop",&histRPHIprop,"nentries/I:rms/F:meanFit:errmeanFit:sigmaFit");
   analysisTree->Branch("histZ","TH1F",&histZ,128000,0);
-  analysisTree->Branch("histPullZ","TH1F",&histPullZ,128000,0);
-  analysisTree->Branch("hTrackDirPhi","TH1F",&hTrackDirPhi,128000,0);
-  analysisTree->Branch("hTrackDirLambda","TH1F",&hTrackDirLambda,128000,0);
-  analysisTree->Branch("hTrackDirLambda2","TH1F",&hTrackDirLambda2,128000,0);
-  analysisTree->Branch("hTrackDirAlpha","TH1F",&hTrackDirAlpha,128000,0);
-  analysisTree->Branch("hTrackDir","TH2F",&hTrackDir,128000,0);
+  analysisTree->Branch("histX","TH1F",&histX,128000,0);
+  analysisTree->Branch("histXLocsddL","TH1F",&histXLocsddL,128000,0);
+  analysisTree->Branch("histXLocsddR","TH1F",&histXLocsddR,128000,0);
+  analysisTree->Branch("histCoordGlobY","TH1F",&histCoordGlobY,128000,0);
 
-  analysisTree->Branch("histZprop",&histZprop,"nentries/I:rms/F:meanFit:errmeanFit:sigmaFit");
-  analysisTree->Branch("histGlob","TH1F",&histGlob,128000,0);
-  analysisTree->Branch("histGlobprop",&histGlobprop,"nentries/I:rms/F:meanFit:errmeanFit:sigmaFit");
-  if(fWriteHist){
-    analysisTree->Branch("histCorrVol","TH2F",&histCorrVol,128000,0);
-  }
-  
+  Int_t blimps=0;
+
   for(Int_t j=0;j<fnHist;j++){
-    volID=fpTrackVolIDs->At(j);
-    if((entries=(fResHistGlob[j]->GetEntries())>=minNpoints)||fsingleLayer){
-      nHistAnalyzed++;
-      //histRPHI
-      histRPHI=fVolResHistRPHI[j];
-      histPullRPHI=fPullHistRPHI[j];
-      histRPHIprop.nentries=(Int_t)fVolResHistRPHI[j]->GetEntries();
-      rms=fVolResHistRPHI[j]->GetRMS();
-      histRPHIprop.rms=rms;
-      gauss=new TF1("gauss","gaus",-3*rms,3*rms);
-      fVolResHistRPHI[j]->Fit("gauss","RN");
-      histRPHIprop.meanFit=gauss->GetParameter(1);
-      histRPHIprop.errmeanFit=gauss->GetParError(1);
-      histRPHIprop.sigmaFit=gauss->GetParameter(2);     
-      //histZ
-      histZ=fResHistZ[j];
-      histPullZ=fPullHistZ[j];
-      histZprop.nentries=(Int_t)fResHistZ[j]->GetEntries();
-      rms=fResHistZ[j]->GetRMS();
-      histZprop.rms=rms;
-      gauss=new TF1("gauss","gaus",-3*rms,3*rms);
-      fResHistZ[j]->Fit("gauss","RN");
-      histZprop.meanFit=gauss->GetParameter(1);
-      histZprop.errmeanFit=gauss->GetParError(1);
-      histZprop.sigmaFit=gauss->GetParameter(2);
-      //histGlob
-      histGlob=fResHistGlob[j];
-      histGlobprop.nentries=(Int_t)fResHistGlob[j]->GetEntries();
-      rms=fResHistGlob[j]->GetRMS();
-      histGlobprop.rms=rms;
-      gauss=new TF1("gauss","gaus",-3*rms,3*rms);
-      fResHistGlob[j]->Fit("gauss","RN");
-      histGlobprop.meanFit=gauss->GetParameter(1);
-      histGlobprop.errmeanFit=gauss->GetParError(1);
-      histGlobprop.sigmaFit=gauss->GetParameter(2);
 
-      //histTrackDir
-      hTrackDirPhi=fTrackDirPhi[j];
-      hTrackDirLambda=fTrackDirLambda[j];
-      hTrackDirLambda2=fTrackDirLambda2[j];
-      hTrackDirAlpha=fTrackDirAlpha[j];
-      hTrackDir=fTrackDir[j];
-      
-      if(fsingleLayer){
-	Int_t binz,binphi;
-	if (fvolidsToBin[j][0]!=volID)binphi=GetBinPhiZ((Int_t)volID,&binz);
-	else{
-	  binphi=fvolidsToBin[j][1];
-	  binz=fvolidsToBin[j][2];
-	}
-	globalPhi=fCoordToBinTable[binphi][binz][0];
-	globalZ=fCoordToBinTable[binphi][binz][1];
-	
-	
-	histCorrVol=fhistCorrVol[j];
-	fSigmaVolZ->SetBinContent(binphi+1,binz+1,histRPHIprop.sigmaFit);//+1 is for underflow
-      }
-      analysisTree->Fill();
-    }
-    else continue;
+    volID=fpTrackVolIDs->At(j);
+    AliGeomManager::GetTranslation(volID,coordVol);
+    x=coordVol[0];
+    y=coordVol[1];
+    z=coordVol[2];
     
+    entries=(Int_t)(fResHistGlob[j]->GetEntries());
+    blimps+=entries;
+
+    if(entries>=minNpoints){
+      nHistAnalyzed++;
+
+      // Entries
+      //entries=(Int_t)fVolResHistRPHI[j]->GetEntries();
+
+      // Filling the RPHI
+      histRPHI=fVolResHistRPHI[j];
+      rmsResRPHI=fVolResHistRPHI[j]->GetRMS();
+        // Fit (for average)
+      gauss=new TF1("gauss","gaus",-3*rmsResRPHI,3*rmsResRPHI);
+      fVolResHistRPHI[j]->Fit("gauss","QRN");
+      meanResRPHI=gauss->GetParameter(1);
+
+      // Filling the Z
+      histZ=fResHistZ[j];
+      rmsResZ=fResHistZ[j]->GetRMS();
+        // Fit (for average)
+      gauss=new TF1("gauss","gaus",-3*rmsResZ,3*rmsResZ);
+      fResHistZ[j]->Fit("gauss","QRN");
+      meanResZ=gauss->GetParameter(1);
+
+      // Filling the X
+      histX=fResHistX[j];
+      rmsResX=fResHistX[j]->GetRMS();
+        // Fit (for average)
+      gauss=new TF1("gauss","gaus",-3*rmsResX,3*rmsResX);
+      fResHistX[j]->Fit("gauss","QRN");
+      meanResX=gauss->GetParameter(1);
+ 
+      histXLocsddL=fResHistXLocsddL[j];
+      histXLocsddR=fResHistXLocsddR[j];
+      histCoordGlobY=fHistCoordGlobY[j];
+
+      analysisTree->Fill();
+    }else{
+
+      // Entries
+      //entries=(Int_t)fVolResHistRPHI[j]->GetEntries();
+
+      // Filling the RPHI
+      histRPHI=fVolResHistRPHI[j];
+      rmsResRPHI=-1.0;
+      meanResRPHI=0.0;
+
+      // Filling the Z
+      histZ=fResHistZ[j];
+      rmsResZ=-1.0;
+      meanResZ=0.0;
+
+      // Filling the X
+      histX=fResHistX[j];
+      rmsResX=-1.0;
+      meanResX=0.0;
+      histXLocsddL=fResHistXLocsddL[j];
+      histXLocsddR=fResHistXLocsddR[j];
+      histCoordGlobY=fHistCoordGlobY[j];
+ 
+      analysisTree->Fill();
+
+    }
+
   }
-  if(nHistAnalyzed>0){ 
-    analysisTree->Print();
+
+  cout<<"-> Modules Analyzed: "<<nHistAnalyzed<<endl;
+  cout<<"   With "<<blimps<<" events"<<endl;
+
+  if(blimps>0){ 
+    hFile->cd();
+    analysisTree->Write();
     fVolNTracks->Write();
-    hFile->Write();
     fhEmpty->Write();
     if(fWriteHist){
-      fhistVolUsed->Draw();
-      fSigmaVolZ->Draw();
+      //TCanvas *color = new TCanvas("color","fhistVolUsed",800,600);
+      //fhistVolUsed->DrawCopy("COLZ");
       fSigmaVolZ->Write();
       fhistVolUsed->Write();
-      fTrackDirPhiAll->Write();
-      fTrackDirLambdaAll->Write();
-      fTrackDirLambda2All->Write();
-      fTrackDirAlphaAll->Write();
-      fTrackDirAll->Write();
-      fTrackDir2All->Write();
-      fTrackDirXZAll->Write();
+      /*      fTrackDirPhiAll->Write();
+	      fTrackDirLambdaAll->Write();
+	      fTrackDirLambda2All->Write();
+	      fTrackDirAlphaAll->Write();
+	      fTrackDirAll->Write();
+	      fTrackDir2All->Write();
+	      fTrackDirXZAll->Write();
+	      hFile->Close();*/
       fhistVolNptsUsed->Write();
-      hFile->Close();
+      hFile->mkdir("CorrVol");
+      hFile->cd("CorrVol");
+      for(Int_t corr=0;corr<fnHist;corr++)fhistCorrVol[corr]->Write();
     }
+    hFile->cd();
+    //    fhistVolNptsUsed->Write();
+    hFile->Close();
     return kTRUE;
-  }
-  else {
+  }else {
     delete analysisTree;
     delete hFile;
     return kFALSE;}
 }
-
 
 //____________________________________________________________________________
 void AliITSResidualsAnalysis::DrawHists() const
@@ -1053,7 +935,7 @@ Float_t** AliITSResidualsAnalysis::CheckSingleLayer(const TArrayI *volids)
     if(iLayer != AliGeomManager::VolUIDToLayer((UShort_t)volids->At(nvol),iModule)){
       printf("Wrong Layer! \n %d , %d , %d ,%d \n",(Int_t)AliGeomManager::VolUIDToLayer((UShort_t)volids->At(nvol),iModule),nvol,volids->GetSize(),iModule);
       fsingleLayer=kFALSE;
-      return 0;
+      return binningzphi;
     }
   }
   
@@ -1135,17 +1017,18 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
   //
   
   if(!fsingleLayer)return kFALSE;
-  const char *volpath,*symname;
+  //  const char *volpath,*symname;
   Int_t iModule;
   Int_t *orderArrayPhi,*orderArrayZ;
   UShort_t volID;
-  Double_t *phiArray,*zArray,*transGlobal,*phiArrayOrdered,*zArrayOrdered; 
+  Double_t *phiArray,*zArray,*phiArrayOrdered,*zArrayOrdered; 
+  Double_t translGlobal[3];
   Double_t lastPhimin=-10;
   Double_t lastZmin=-99;
   Int_t ***orderPhiZ;
-  TGeoPNEntry *pne;
-  TGeoPhysicalNode *pn;
-  TGeoHMatrix *globMatrix;
+  /*  TGeoPNEntry *pne;
+      TGeoPhysicalNode *pn;
+      TGeoHMatrix *globMatrix;*/
   
   Bool_t used=kFALSE;
   
@@ -1174,23 +1057,26 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
     fvolidsToBin[iModule]=new Int_t[3];
     volID=AliGeomManager::LayerToVolUID(iLayer,iModule);
     fvolidsToBin[iModule][0]=volID;
-    symname = AliGeomManager::SymName(volID);
-    pne = gGeoManager->GetAlignableEntry(symname);
-    volpath=pne->GetTitle();
-    pn=gGeoManager->MakePhysicalNode(volpath);
-    globMatrix=pn->GetMatrix();
-    transGlobal=globMatrix->GetTranslation();
+    /*    symname = AliGeomManager::SymName(volID);
+	  pne = gGeoManager->GetAlignableEntry(symname);
+	  volpath=pne->GetTitle();
+	  pn=gGeoManager->MakePhysicalNode(volpath);
+	  globMatrix=pn->GetMatrix();
+	  translGlobal=globMatrix->GetTranslation();
+	  
+    */
+    AliGeomManager::GetOrigTranslation(volID,translGlobal);
     
     for(Int_t j=0;j<lastPhi;j++){
       used=kFALSE;
-      if(TMath::Abs(phiArray[j]-TMath::ATan2(transGlobal[1],transGlobal[0]))<2*TMath::Pi()/(10*fnPhi)){//10 is a safety factor but....
+      if(TMath::Abs(phiArray[j]-TMath::ATan2(translGlobal[1],translGlobal[0]))<2*TMath::Pi()/(10*fnPhi)){//10 is a safety factor but....
 	fvolidsToBin[iModule][1]=j;
 	used=kTRUE;
 	break;
       }
     }
     if(!used){
-      phiArray[lastPhi]=TMath::ATan2(transGlobal[1],transGlobal[0]);
+      phiArray[lastPhi]=TMath::ATan2(translGlobal[1],translGlobal[0]);
       fvolidsToBin[iModule][1]=lastPhi;
       if(phiArray[lastPhi]<lastPhimin)lastPhimin=phiArray[lastPhi];
       lastPhi++;
@@ -1201,7 +1087,7 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
     
     for(Int_t j=0;j<lastZ;j++){
       used=kFALSE;
-      if(TMath::Abs(zArray[j]-transGlobal[2])<0.1){
+      if(TMath::Abs(zArray[j]-translGlobal[2])<0.1){
 	fvolidsToBin[iModule][2]=j;
 	used=kTRUE;
 	break;
@@ -1209,7 +1095,7 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
     }
     if(!used){
       fvolidsToBin[iModule][2]=lastZ;
-      zArray[lastZ]=transGlobal[2];
+      zArray[lastZ]=translGlobal[2];
       if(zArray[lastZ]<lastZmin)lastZmin=zArray[lastZ];
       lastZ++;
       if(lastZ>fnZ){
@@ -1268,7 +1154,7 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
       fCoordToBinTable[j][i]=new Double_t[2];
       fCoordToBinTable[j][i][0]=phiArrayOrdered[j];
       fCoordToBinTable[j][i][1]=zArrayOrdered[i];
-      printf("ecco (binphi,binz)= %d, %d e (phi,z)=%f,%f \n",j,i,fCoordToBinTable[j][i][0],fCoordToBinTable[j][i][1]);
+      printf("Now (binphi,binz)= %d, %d e (phi,z)=%f,%f \n",j,i,fCoordToBinTable[j][i][0],fCoordToBinTable[j][i][1]);
     }
   }
   Int_t istar,jstar;
@@ -1334,30 +1220,604 @@ Int_t AliITSResidualsAnalysis::GetBinPhiZ(const Int_t volID,Int_t *binz) const
 
 }
 
-//____________________________________________________________________________
-TArrayI* AliITSResidualsAnalysis::GetSingleLayerVolids(Int_t layer) const
+//___________________________________________________________________________
+Int_t AliITSResidualsAnalysis::WhichSector(Int_t module) const
 {
   //
-  // Translates the layer number into a Volumes Array
+  // This method returns the number of the SPD Sector
+  // to which belongs the module (Sectors 0-9)
+   
+  //--->cSect = 0 <---
+  if(module==2048
+     || module==2049
+     || module==2050
+     || module==2051
+     || module==2052
+     || module==2053
+     || module==2054
+     || module==2055
+     || module==4096
+     || module==4097
+     || module==4098
+     || module==4099
+     || module==4100
+     || module==4101
+     || module==4102
+     || module==4103
+     || module==4104
+     || module==4105
+     || module==4106
+     || module==4107
+     || module==4108
+     || module==4109
+     || module==4110
+     || module==4111) return 0;
+     
+  //--->cSect = 1 <---    
+  if(module==2056
+     || module==2057
+     || module==2058
+     || module==2059
+     || module==2060
+     || module==2061
+     || module==2062
+     || module==2063
+     || module==4112
+     || module==4113
+     || module==4114
+     || module==4115
+     || module==4116
+     || module==4117
+     || module==4118
+     || module==4119
+     || module==4120
+     || module==4121
+     || module==4122
+     || module==4123
+     || module==4124
+     || module==4125
+     || module==4126
+     || module==4127) return 1;
+
+  //--->cSect = 2 <---
+  if(module==2064
+     || module==2065
+     || module==2066
+     || module==2067
+     || module==2068
+     || module==2069
+     || module==2070
+     || module==2071
+     || module==4128
+     || module==4129
+     || module==4130
+     || module==4131
+     || module==4132
+     || module==4133
+     || module==4134
+     || module==4135
+     || module==4136
+     || module==4137
+     || module==4138
+     || module==4139
+     || module==4140
+     || module==4141
+     || module==4142
+     || module==4143) return 2;
+
+  //--->cSect = 3 <---
+  if(module==2072
+     || module==2073
+     || module==2074
+     || module==2075
+     || module==2076
+     || module==2077
+     || module==2078
+     || module==2079
+     || module==4144
+     || module==4145
+     || module==4146
+     || module==4147
+     || module==4148
+     || module==4149
+     || module==4150
+     || module==4151
+     || module==4152
+     || module==4153
+     || module==4154
+     || module==4155
+     || module==4156
+     || module==4157
+     || module==4158
+     || module==4159) return 3;
+
+  //--->cSect = 4 <---
+  if(module==2080
+     || module==2081
+     || module==2082
+     || module==2083
+     || module==2084
+     || module==2085
+     || module==2086
+     || module==2087
+     || module==4160
+     || module==4161
+     || module==4162
+     || module==4163
+     || module==4164
+     || module==4165
+     || module==4166
+     || module==4167
+     || module==4168
+     || module==4169
+     || module==4170
+     || module==4171
+     || module==4172
+     || module==4173
+     || module==4174
+     || module==4175) return 4;
+  
+  //--->cSect = 5 <---
+  if(module==2088
+     || module==2089
+     || module==2090
+     || module==2091
+     || module==2092
+     || module==2093
+     || module==2094
+     || module==2095
+     || module==4176
+     || module==4177
+     || module==4178
+     || module==4179
+     || module==4180
+     || module==4181
+     || module==4182
+     || module==4183
+     || module==4184
+     || module==4185
+     || module==4186
+     || module==4187
+     || module==4188
+     || module==4189
+     || module==4190
+     || module==4191) return 5;
+
+  //--->cSect = 6 <---
+  if(module==2096
+     || module==2097
+     || module==2098
+     || module==2099
+     || module==2100
+     || module==2101
+     || module==2102
+     || module==2103
+     || module==4192
+     || module==4193
+     || module==4194
+     || module==4195
+     || module==4196
+     || module==4197
+     || module==4198
+     || module==4199
+     || module==4200
+     || module==4201
+     || module==4202
+     || module==4203
+     || module==4204
+     || module==4205
+     || module==4206
+     || module==4207) return 6;
+
+  //--->cSect = 7 <---
+  if(module==2104
+     || module==2105
+     || module==2106
+     || module==2107
+     || module==2108
+     || module==2109
+     || module==2110
+     || module==2111
+     || module==4208
+     || module==4209
+     || module==4210
+     || module==4211
+     || module==4212
+     || module==4213
+     || module==4214
+     || module==4215
+     || module==4216
+     || module==4217
+     || module==4218
+     || module==4219
+     || module==4220
+     || module==4221
+     || module==4222
+     || module==4223) return 7;
+
+  //--->cSect = 8 <---
+  if(module==2112
+     || module==2113
+     || module==2114
+     || module==2115
+     || module==2116
+     || module==2117
+     || module==2118
+     || module==2119
+     || module==4224
+     || module==4225
+     || module==4226
+     || module==4227
+     || module==4228
+     || module==4229
+     || module==4230
+     || module==4231
+     || module==4232
+     || module==4233
+     || module==4234
+     || module==4235
+     || module==4236
+     || module==4237
+     || module==4238
+     || module==4239) return 8;
+
+  //--->cSect = 9 <---
+  if(module==2120
+     || module==2121
+     || module==2122
+     || module==2123
+     || module==2124
+     || module==2125
+     || module==2126
+     || module==2127
+     || module==4240
+     || module==4241
+     || module==4242
+     || module==4243
+     || module==4244
+     || module==4245
+     || module==4246
+     || module==4247
+     || module==4248
+     || module==4249
+     || module==4250
+     || module==4251
+     || module==4252
+     || module==4253
+     || module==4254
+     || module==4255) return 9;
+
+  //printf("Module not belonging to SPD, sorry!");
+  return -1;
+
+}
+
+//____________________________________________________________________________
+TArrayI* AliITSResidualsAnalysis::GetSPDSectorsVolids(Int_t sectors[10]) const
+{
+  //
+  // This method gets the volID Array for the chosen sectors.
+  // You have to pass an array with a 1 for each selected sector.
+  // i.e. sectors[10] = {1,1,0,0,0,0,0,0,1,0} -> Sector 0, 1, 9 selected.
+  //
+
+  Int_t nSect=0;
+  Int_t iModule=0;
+
+  if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry());
+
+  for(Int_t co=0;co<10;co++){ //counts the number of sectors chosen
+    if(sectors[co]==1) nSect++;
+  }
+  
+  if(nSect<1){ //if no sector chosen -> exit
+    Printf("Error! No Sector/s Selected!");
+    return 0x0;
+  }
+
+  TArrayI *volIDs = new TArrayI(nSect*24);
+  
+    if(sectors[0]==1){ //--->cSect = 0 <---
+      volIDs->AddAt(2048,iModule); iModule++;
+      volIDs->AddAt(2049,iModule); iModule++;
+      volIDs->AddAt(2050,iModule); iModule++;
+      volIDs->AddAt(2051,iModule); iModule++;
+      volIDs->AddAt(2052,iModule); iModule++;
+      volIDs->AddAt(2053,iModule); iModule++;
+      volIDs->AddAt(2054,iModule); iModule++;
+      volIDs->AddAt(2055,iModule); iModule++;
+      volIDs->AddAt(4096,iModule); iModule++;
+      volIDs->AddAt(4097,iModule); iModule++;
+      volIDs->AddAt(4098,iModule); iModule++;
+      volIDs->AddAt(4099,iModule); iModule++;
+      volIDs->AddAt(4100,iModule); iModule++;
+      volIDs->AddAt(4101,iModule); iModule++;
+      volIDs->AddAt(4102,iModule); iModule++;
+      volIDs->AddAt(4103,iModule); iModule++;
+      volIDs->AddAt(4104,iModule); iModule++;
+      volIDs->AddAt(4105,iModule); iModule++;
+      volIDs->AddAt(4106,iModule); iModule++;
+      volIDs->AddAt(4107,iModule); iModule++;
+      volIDs->AddAt(4108,iModule); iModule++;
+      volIDs->AddAt(4109,iModule); iModule++;
+      volIDs->AddAt(4110,iModule); iModule++;
+      volIDs->AddAt(4111,iModule); iModule++;
+    }
+    if(sectors[1]==1){ //--->cSect = 1 <//---
+      volIDs->AddAt(2056,iModule); iModule++;
+      volIDs->AddAt(2057,iModule); iModule++;
+      volIDs->AddAt(2058,iModule); iModule++;
+      volIDs->AddAt(2059,iModule); iModule++;
+      volIDs->AddAt(2060,iModule); iModule++;
+      volIDs->AddAt(2061,iModule); iModule++;
+      volIDs->AddAt(2062,iModule); iModule++;
+      volIDs->AddAt(2063,iModule); iModule++;
+      volIDs->AddAt(4112,iModule); iModule++;
+      volIDs->AddAt(4113,iModule); iModule++;
+      volIDs->AddAt(4114,iModule); iModule++;
+      volIDs->AddAt(4115,iModule); iModule++;
+      volIDs->AddAt(4116,iModule); iModule++;
+      volIDs->AddAt(4117,iModule); iModule++;
+      volIDs->AddAt(4118,iModule); iModule++;
+      volIDs->AddAt(4119,iModule); iModule++;
+      volIDs->AddAt(4120,iModule); iModule++;
+      volIDs->AddAt(4121,iModule); iModule++;
+      volIDs->AddAt(4122,iModule); iModule++;
+      volIDs->AddAt(4123,iModule); iModule++;
+      volIDs->AddAt(4124,iModule); iModule++;
+      volIDs->AddAt(4125,iModule); iModule++;
+      volIDs->AddAt(4126,iModule); iModule++;
+      volIDs->AddAt(4127,iModule); iModule++;
+    }
+    if(sectors[2]==1){//--->cSect = 2 <//---
+      volIDs->AddAt(2064,iModule); iModule++;
+      volIDs->AddAt(2065,iModule); iModule++;
+      volIDs->AddAt(2066,iModule); iModule++;
+      volIDs->AddAt(2067,iModule); iModule++;
+      volIDs->AddAt(2068,iModule); iModule++;
+      volIDs->AddAt(2069,iModule); iModule++;
+      volIDs->AddAt(2070,iModule); iModule++;
+      volIDs->AddAt(2071,iModule); iModule++;
+      volIDs->AddAt(4128,iModule); iModule++;
+      volIDs->AddAt(4129,iModule); iModule++;
+      volIDs->AddAt(4130,iModule); iModule++;
+      volIDs->AddAt(4131,iModule); iModule++;
+      volIDs->AddAt(4132,iModule); iModule++;
+      volIDs->AddAt(4133,iModule); iModule++;
+      volIDs->AddAt(4134,iModule); iModule++;
+      volIDs->AddAt(4135,iModule); iModule++;
+      volIDs->AddAt(4136,iModule); iModule++;
+      volIDs->AddAt(4137,iModule); iModule++;
+      volIDs->AddAt(4138,iModule); iModule++;
+      volIDs->AddAt(4139,iModule); iModule++;
+      volIDs->AddAt(4140,iModule); iModule++;
+      volIDs->AddAt(4141,iModule); iModule++;
+      volIDs->AddAt(4142,iModule); iModule++;
+      volIDs->AddAt(4143,iModule); iModule++;
+    }
+    if(sectors[3]==1){//--->cSect = 3 <//---
+      volIDs->AddAt(2072,iModule); iModule++;
+      volIDs->AddAt(2073,iModule); iModule++;
+      volIDs->AddAt(2074,iModule); iModule++;
+      volIDs->AddAt(2075,iModule); iModule++;
+      volIDs->AddAt(2076,iModule); iModule++;
+      volIDs->AddAt(2077,iModule); iModule++;
+      volIDs->AddAt(2078,iModule); iModule++;
+      volIDs->AddAt(2079,iModule); iModule++;
+      volIDs->AddAt(4144,iModule); iModule++;
+      volIDs->AddAt(4145,iModule); iModule++;
+      volIDs->AddAt(4146,iModule); iModule++;
+      volIDs->AddAt(4147,iModule); iModule++;
+      volIDs->AddAt(4148,iModule); iModule++;
+      volIDs->AddAt(4149,iModule); iModule++;
+      volIDs->AddAt(4150,iModule); iModule++;
+      volIDs->AddAt(4151,iModule); iModule++;
+      volIDs->AddAt(4152,iModule); iModule++;
+      volIDs->AddAt(4153,iModule); iModule++;
+      volIDs->AddAt(4154,iModule); iModule++;
+      volIDs->AddAt(4155,iModule); iModule++;
+      volIDs->AddAt(4156,iModule); iModule++;
+      volIDs->AddAt(4157,iModule); iModule++;
+      volIDs->AddAt(4158,iModule); iModule++;
+      volIDs->AddAt(4159,iModule); iModule++;
+    }
+    if(sectors[4]==1){//--->cSect = 4 <//---
+      volIDs->AddAt(2080,iModule); iModule++;
+      volIDs->AddAt(2081,iModule); iModule++;
+      volIDs->AddAt(2082,iModule); iModule++;
+      volIDs->AddAt(2083,iModule); iModule++;
+      volIDs->AddAt(2084,iModule); iModule++;
+      volIDs->AddAt(2085,iModule); iModule++;
+      volIDs->AddAt(2086,iModule); iModule++;
+      volIDs->AddAt(2087,iModule); iModule++;
+      volIDs->AddAt(4160,iModule); iModule++;
+      volIDs->AddAt(4161,iModule); iModule++;
+      volIDs->AddAt(4162,iModule); iModule++;
+      volIDs->AddAt(4163,iModule); iModule++;
+      volIDs->AddAt(4164,iModule); iModule++;
+      volIDs->AddAt(4165,iModule); iModule++;
+      volIDs->AddAt(4166,iModule); iModule++;
+      volIDs->AddAt(4167,iModule); iModule++;
+      volIDs->AddAt(4168,iModule); iModule++;
+      volIDs->AddAt(4169,iModule); iModule++;
+      volIDs->AddAt(4170,iModule); iModule++;
+      volIDs->AddAt(4171,iModule); iModule++;
+      volIDs->AddAt(4172,iModule); iModule++;
+      volIDs->AddAt(4173,iModule); iModule++;
+      volIDs->AddAt(4174,iModule); iModule++;
+      volIDs->AddAt(4175,iModule); iModule++;
+    }
+    if(sectors[5]==1){//--->cSect = 5 <//---
+      volIDs->AddAt(2088,iModule); iModule++;
+      volIDs->AddAt(2089,iModule); iModule++;
+      volIDs->AddAt(2090,iModule); iModule++;
+      volIDs->AddAt(2091,iModule); iModule++;
+      volIDs->AddAt(2092,iModule); iModule++;
+      volIDs->AddAt(2093,iModule); iModule++;
+      volIDs->AddAt(2094,iModule); iModule++;
+      volIDs->AddAt(2095,iModule); iModule++;
+      volIDs->AddAt(4176,iModule); iModule++;
+      volIDs->AddAt(4177,iModule); iModule++;
+      volIDs->AddAt(4178,iModule); iModule++;
+      volIDs->AddAt(4179,iModule); iModule++;
+      volIDs->AddAt(4180,iModule); iModule++;
+      volIDs->AddAt(4181,iModule); iModule++;
+      volIDs->AddAt(4182,iModule); iModule++;
+      volIDs->AddAt(4183,iModule); iModule++;
+      volIDs->AddAt(4184,iModule); iModule++;
+      volIDs->AddAt(4185,iModule); iModule++;
+      volIDs->AddAt(4186,iModule); iModule++;
+      volIDs->AddAt(4187,iModule); iModule++;
+      volIDs->AddAt(4188,iModule); iModule++;
+      volIDs->AddAt(4189,iModule); iModule++;
+      volIDs->AddAt(4190,iModule); iModule++;
+      volIDs->AddAt(4191,iModule); iModule++;
+    }
+    if(sectors[6]==1){//--->cSect = 6 <//---
+      volIDs->AddAt(2096,iModule); iModule++;
+      volIDs->AddAt(2097,iModule); iModule++;
+      volIDs->AddAt(2098,iModule); iModule++;
+      volIDs->AddAt(2099,iModule); iModule++;
+      volIDs->AddAt(2100,iModule); iModule++;
+      volIDs->AddAt(2101,iModule); iModule++;
+      volIDs->AddAt(2102,iModule); iModule++;
+      volIDs->AddAt(2103,iModule); iModule++;
+      volIDs->AddAt(4192,iModule); iModule++;
+      volIDs->AddAt(4193,iModule); iModule++;
+      volIDs->AddAt(4194,iModule); iModule++;
+      volIDs->AddAt(4195,iModule); iModule++;
+      volIDs->AddAt(4196,iModule); iModule++;
+      volIDs->AddAt(4197,iModule); iModule++;
+      volIDs->AddAt(4198,iModule); iModule++;
+      volIDs->AddAt(4199,iModule); iModule++;
+      volIDs->AddAt(4200,iModule); iModule++;
+      volIDs->AddAt(4201,iModule); iModule++;
+      volIDs->AddAt(4202,iModule); iModule++;
+      volIDs->AddAt(4203,iModule); iModule++;
+      volIDs->AddAt(4204,iModule); iModule++;
+      volIDs->AddAt(4205,iModule); iModule++;
+      volIDs->AddAt(4206,iModule); iModule++;
+      volIDs->AddAt(4207,iModule); iModule++;
+    }
+     if(sectors[7]==1){ //--->cSect = 7 <//---
+       volIDs->AddAt(2104,iModule); iModule++;
+       volIDs->AddAt(2105,iModule); iModule++;
+       volIDs->AddAt(2106,iModule); iModule++;
+       volIDs->AddAt(2107,iModule); iModule++;
+       volIDs->AddAt(2108,iModule); iModule++;
+       volIDs->AddAt(2109,iModule); iModule++;
+       volIDs->AddAt(2110,iModule); iModule++;
+       volIDs->AddAt(2111,iModule); iModule++;
+       volIDs->AddAt(4208,iModule); iModule++;
+       volIDs->AddAt(4209,iModule); iModule++;
+       volIDs->AddAt(4210,iModule); iModule++;
+       volIDs->AddAt(4211,iModule); iModule++;
+       volIDs->AddAt(4212,iModule); iModule++;
+       volIDs->AddAt(4213,iModule); iModule++;
+       volIDs->AddAt(4214,iModule); iModule++;
+       volIDs->AddAt(4215,iModule); iModule++;
+       volIDs->AddAt(4216,iModule); iModule++;
+       volIDs->AddAt(4217,iModule); iModule++;
+       volIDs->AddAt(4218,iModule); iModule++;
+       volIDs->AddAt(4219,iModule); iModule++;
+       volIDs->AddAt(4220,iModule); iModule++;
+       volIDs->AddAt(4221,iModule); iModule++;
+       volIDs->AddAt(4222,iModule); iModule++;
+       volIDs->AddAt(4223,iModule); iModule++;
+     }
+     if(sectors[8]==1){//--->cSect = 8 <//---
+       volIDs->AddAt(2112,iModule); iModule++;
+       volIDs->AddAt(2113,iModule); iModule++;
+       volIDs->AddAt(2114,iModule); iModule++;
+       volIDs->AddAt(2115,iModule); iModule++;
+       volIDs->AddAt(2116,iModule); iModule++;
+       volIDs->AddAt(2117,iModule); iModule++;
+       volIDs->AddAt(2118,iModule); iModule++;
+       volIDs->AddAt(2119,iModule); iModule++;
+       volIDs->AddAt(4224,iModule); iModule++;
+       volIDs->AddAt(4225,iModule); iModule++;
+       volIDs->AddAt(4226,iModule); iModule++;
+       volIDs->AddAt(4227,iModule); iModule++;
+       volIDs->AddAt(4228,iModule); iModule++;
+       volIDs->AddAt(4229,iModule); iModule++;
+       volIDs->AddAt(4230,iModule); iModule++;
+       volIDs->AddAt(4231,iModule); iModule++;
+       volIDs->AddAt(4232,iModule); iModule++;
+       volIDs->AddAt(4233,iModule); iModule++;
+       volIDs->AddAt(4234,iModule); iModule++;
+       volIDs->AddAt(4235,iModule); iModule++;
+       volIDs->AddAt(4236,iModule); iModule++;
+       volIDs->AddAt(4237,iModule); iModule++;
+       volIDs->AddAt(4238,iModule); iModule++;
+       volIDs->AddAt(4239,iModule); iModule++;
+     }
+     if(sectors[9]==1){//--->cSect = 9 <//---
+       volIDs->AddAt(2120,iModule); iModule++;
+       volIDs->AddAt(2121,iModule); iModule++;
+       volIDs->AddAt(2122,iModule); iModule++;
+       volIDs->AddAt(2123,iModule); iModule++;
+       volIDs->AddAt(2124,iModule); iModule++;
+       volIDs->AddAt(2125,iModule); iModule++;
+       volIDs->AddAt(2126,iModule); iModule++;
+       volIDs->AddAt(2127,iModule); iModule++;
+       volIDs->AddAt(4240,iModule); iModule++;
+       volIDs->AddAt(4241,iModule); iModule++;
+       volIDs->AddAt(4242,iModule); iModule++;
+       volIDs->AddAt(4243,iModule); iModule++;
+       volIDs->AddAt(4244,iModule); iModule++;
+       volIDs->AddAt(4245,iModule); iModule++;
+       volIDs->AddAt(4246,iModule); iModule++;
+       volIDs->AddAt(4247,iModule); iModule++;
+       volIDs->AddAt(4248,iModule); iModule++;
+       volIDs->AddAt(4249,iModule); iModule++;
+       volIDs->AddAt(4250,iModule); iModule++;
+       volIDs->AddAt(4251,iModule); iModule++;
+       volIDs->AddAt(4252,iModule); iModule++;
+       volIDs->AddAt(4253,iModule); iModule++;
+       volIDs->AddAt(4254,iModule); iModule++;
+       volIDs->AddAt(4255,iModule); iModule++;
+     }
+
+  return volIDs;
+
+}
+
+//____________________________________________________________________________
+TArrayI* AliITSResidualsAnalysis::GetITSLayersVolids(Int_t layers[6]) const
+{
+  //
+  // This method gets the volID Array for the chosen layers.
+  // You have to pass an array with a 1 for each selected layer.
+  // i.e. layers[6] = {1,1,0,0,1,1} -> SPD + SSD
   //
 
   if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry());
 
-  if(layer<1 || layer>6){
-    printf("WRONG LAYER SET! \n");
-    return 0;
-  }
-  Int_t iModule,size;
-  UShort_t volid;
-  size = AliGeomManager::LayerSize(layer);
-  TArrayI *volIDs = new TArrayI(size);
-  for(iModule=0;iModule<size;iModule++){
-    volid = AliGeomManager::LayerToVolUID(layer,iModule);
-    volIDs->AddAt(volid,iModule);
+  Int_t size=0,last=0;
+
+  // evaluates the size of the array
+  for(Int_t i=0;i<6;i++) if(layers[i]==1) size+=AliGeomManager::LayerSize(i+1);
+
+  if(size==0){
+    printf("Error: no layer selected");
+    return 0x0;
   }
 
-  return volIDs;
+  TArrayI *volids = new TArrayI(size);
+
+  // fills the volId array only for the chosen layers
+  for(Int_t ilayer=1;ilayer<7;ilayer++){
+    
+    if(layers[ilayer-1]!=1) continue;
+    
+    for(Int_t imod=0;imod<AliGeomManager::LayerSize(ilayer);imod++){
+      volids->AddAt(AliGeomManager::LayerToVolUID(ilayer,imod),last);
+      last++;
+    }
+  }
   
+  return volids;
+
 }
 
 //____________________________________________________________________________
@@ -1412,11 +1872,10 @@ void AliITSResidualsAnalysis::GetTrackDirClusterCov(AliTrackPoint *point,Double_
 
 //____________________________________________________________________________
 void AliITSResidualsAnalysis::CalculateResiduals(const TArrayI *volids, 
-      const TArrayI *volidsfit,
-      AliGeomManager::ELayerID layerRangeMin,
-      AliGeomManager::ELayerID layerRangeMax,
-      Int_t iterations,
-      Bool_t draw)
+						 const TArrayI *volidsfit,
+						 AliGeomManager::ELayerID layerRangeMin,
+						 AliGeomManager::ELayerID layerRangeMax,
+						 TString outname)
 {
   // CalculateResiduals for a set of detector volumes.
   // Tracks are fitted only within
@@ -1425,533 +1884,113 @@ void AliITSResidualsAnalysis::CalculateResiduals(const TArrayI *volids,
   // or within the set of volidsfit
   // Repeat the procedure 'iterations' times
 
-
   Int_t nVolIds = volids->GetSize();
-  if (nVolIds == 0) {
-    AliError("Volume IDs array is empty!");
-    return;
-  }
+  if (nVolIds == 0) { AliError("Volume IDs array is empty!"); return; }
 
   // Load only the tracks with at least one
   // space point in the set of volume (volids)
 
+
   //AliAlignmentTracks::SetPointsFilename(GetFileNameTrackPoints()); 
   AliAlignmentTracks::BuildIndex();
 
-  cout<<" Index Built!"<<endl;
-
-  if(draw) ListVolUsed(fPointsTree,fArrayIndex,fLastIndex);
+  ListVolUsed(fPointsTree,fArrayIndex,fLastIndex);  
+  AliTrackPointArray **points;  
   
-  AliTrackPointArray **points;
+  LoadPoints(volids, points);
 
-  // Start the iterations
-  while (iterations > 0) {
-    Int_t nArrays = LoadPoints(volids, points);
-    if (nArrays == 0) return;
-    
-    AliTrackResiduals *minimizer = CreateMinimizer();
-    minimizer->SetNTracks(nArrays);
-    minimizer->InitAlignObj();
-    AliTrackFitter *fitter = CreateFitter();
-    
-    for (Int_t iArray = 0; iArray < nArrays; iArray++) {
-      if (!points[iArray]) continue;
+  Int_t nArrays = fPointsTree->GetEntries();
 
-     
-      fitter->SetTrackPointArray(points[iArray],kFALSE);
-      if (fitter->Fit(volids,volidsfit,layerRangeMin,layerRangeMax) == kFALSE) continue;
-      AliTrackPointArray *pVolId,*pTrack;
+  if (nArrays == 0){ AliError("Points array is empty!"); return; }
+  AliTrackFitter *fitter = CreateFitter();
 
-
-      fitter->GetTrackResiduals(pVolId,pTrack);
-      if(draw) FillResHists(pVolId,pTrack); // WARNING!
-
-      minimizer->AddTrackPointArrays(pVolId,pTrack);
-      
-    }
-
-    if(minimizer->GetNFilledTracks()<=1){
-      printf("No good tracks found: could not find parameter for volume %d (and following in volids)\n",volids->At(0));
-      UnloadPoints(nArrays, points);
-      return;
-    }
-
-    minimizer->Minimize();
-   
-    // Update the alignment object(s)
-    Int_t last=0;
+  Int_t ecount=0;
+  Int_t totcount=0;
  
-    if(fRealignObjFileIsOpen)last=fClonesArray->GetLast(); 
+  // nArrays=806; // WAAAAAAAAAARNING!
+
+  Int_t last=0;
+
+  for (Int_t iArray = 0; iArray < nArrays; iArray++){
+ 
+    //cout<<"Investigating "<<iArray<<"/"<<nArrays<<endl;
     
-    
-    if (fDoUpdate) for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
-      UShort_t volid = (*volids)[iVolId];
-      Int_t iModule;
-      AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
-      AliAlignObj *alignObj = fAlignObjs[iLayer-AliGeomManager::kFirstLayer][iModule];      
-      *alignObj *= *minimizer->GetAlignObj();
-      
-      if(iterations==1)alignObj->Print("");
-      if(iterations==1&&fRealignObjFileIsOpen){
-	TClonesArray &alo=*fClonesArray;
-	new(alo[last+1+(Int_t)iVolId])AliAlignObjParams(*alignObj);
-      }
-      
-      
+    if (!points[iArray]){
+      cout<<" Skipping: "<<iArray<<endl;
+      continue;
     }
-
-
-    UnloadPoints(nArrays, points);
     
-    iterations--;
+    last++;
+     
+    fitter->SetTrackPointArray(points[iArray],kTRUE); // Watch out, problems
+                                                      // when few sectors
+                                           
+    totcount++;
 
+    // *** FITTING ***
+    if(fitter->Fit(volids,volidsfit,layerRangeMin,layerRangeMax) == kFALSE){ 
+      ecount++;
+      cout<<"->BAD: "<<iArray<<endl;
+      continue;
+    } //else cout<<"->GOOD: "<<iArray<<endl;
 
-    if(draw && iterations==0) AnalyzeHists(30);
+    AliTrackPointArray *pVolId,*pTrack;
+
+    fitter->GetTrackResiduals(pVolId,pTrack);
+    FillResidualsH(pVolId,pTrack);
 
   }
+  
+  cout<<"   -> nVolIds: "<<nVolIds<<endl;
+  cout<<"   -> Non-Fitted tracks: "<<ecount<<"/"<<totcount<<endl; 
+  
+  UnloadPoints(last, points);
 
+  SaveHists(3,outname);
+  
   return;
-
+  
 }
 
 
 //______________________________________________________________________________
-void AliITSResidualsAnalysis::ProcessPoints(TString minimizer,
-      Int_t fit,
-      AliGeomManager::ELayerID iLayerToAlign,
-      AliGeomManager::ELayerID iLayerToExclude,
-      TString misalignmentFile)
+void AliITSResidualsAnalysis::ProcessVolumes(Int_t fit,
+					     TArrayI *volIDs,
+					     TArrayI *volIDsFit,
+					     TString misalignmentFile,
+					     TString outname,
+					     Int_t minPoints)
 {
   //
-  // This function process the AliTrackPoints (into residuals)
+  // This function process the AliTrackPoints and volID (into residuals) 
   //
- 
-  SetPointsFilename(GetFileNameTrackPoints());
-  AliTrackFitter *fitter;
 
+  // setting up geometry and the trackpoints file
+  if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry()); 
+
+  SetPointsFilename(GetFileNameTrackPoints());
+
+  // creating some tools
+  AliTrackFitter *fitter;
   if(fit==1){
     fitter = new AliTrackFitterKalman();
   }else fitter = new AliTrackFitterRieman();
 
-  fitter->SetMinNPoints(4);
+  fitter->SetMinNPoints(minPoints);
+
   SetTrackFitter(fitter);
-
-
-  AliTrackResiduals *res;
-  
-  if(minimizer=="minuit"){
-    res = new AliTrackResidualsChi2();
-  }else if(minimizer=="minuitnorot"){
-    res = new AliTrackResidualsChi2();
-    res->FixParameter(3);
-    res->FixParameter(4);
-    res->FixParameter(5);
-  }else if(minimizer=="fast"){
-    res = new AliTrackResidualsFast();
-  }else {
-    printf("Trying to set a non existing minimizer! \n");
-    return;
-  }
-
-  res->SetMinNPoints(1);
-  SetMinimizer(res);
-  Bool_t draw = kTRUE;
 
   if(misalignmentFile=="")printf("NO FAKE MISALIGNMENT\n");
   else {
     Bool_t misal=Misalign(misalignmentFile,"ITSAlignObjs");
-    if(!misal)return;
-  }
-  
-  if(!gGeoManager) AliGeomManager::LoadGeometry(GetFileNameGeometry());
-  
-  TArrayI volIDsFit(2200);
-  Int_t iLayer,j=0;
-  for (iLayer=(Int_t)AliGeomManager::kSPD1;iLayer<(Int_t)AliGeomManager::kTPC1;iLayer++){
-    for (Int_t iModule=0;iModule<AliGeomManager::LayerSize(iLayer);iModule++){
-      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
-
-      if((iLayer!=iLayerToAlign)&&(iLayer!=iLayerToExclude))volIDsFit.AddAt(volid,j);
-      
-      j++;
+    if(!misal){ 
+      printf("PROBLEM WITH FAKE MISALIGNMENT!");
+      return;
     }
   }
-  
-  Int_t size=AliGeomManager::LayerSize(iLayerToAlign);
-  TArrayI volIDs(size);
-  
-  j=0;
-  for (Int_t iModule=0;iModule<AliGeomManager::LayerSize(iLayerToAlign);iModule++){
 
-    UShort_t volid = AliGeomManager::LayerToVolUID(iLayerToAlign,iModule);
-    volIDs.AddAt(volid,j);
-    j++;
-  }
-  
-    if(j==0){printf("j=0 \n");return;}
+  CalculateResiduals(volIDs,volIDsFit,AliGeomManager::kSPD1,AliGeomManager::kSSD2,outname);
 
-    CalculateResiduals(&volIDs,&volIDsFit,AliGeomManager::kSPD1,AliGeomManager::kSSD2,1,draw);
-
-  
     return;
 
-
 }
- 
-//______________________________________________________________________________
-void AliITSResidualsAnalysis::ExtractResiduals(Int_t layer,
-					       Int_t minEnt,
-					       TString filename) const
-					   
-{
-
-  //
-  // Function that saves the residuals into a Entuple
-  //
-
-  TString title,strminEnt=" (Npts > ";
-  histProperties_t histRPHIprop,histZprop;
-
-  // Labels for the plots
-  strminEnt+=minEnt;
-  strminEnt.Append(")");
-  
-  // name of the output file
-  title="resPlot_MA_layer";
-  title+=layer;
-  title.Append(".root");
-  
-  // Load INfiles, OUTfiles and TTrees and labels them
-  TFile *f1=TFile::Open(filename.Data());
-  TFile &f2=*f1;
-  TFile *outfile2=new TFile(title.Data(),"RECREATE");
-  TFile &outfile=*outfile2;
-  TTree *tRealign2=(TTree*)f2.Get("analysisTree"); // TTree with the DATA
-  TTree &tRealign=*tRealign2;
-
-
-  // Setting variables
-  Int_t nEntries;
-  Int_t *volid;
-  Float_t z,phi;
-  TH2F *hVolCorrBranch;
-  TH1F *hResRPhi;
-  TH1F *hResZ;
-  
-  TString layer2="";
-  layer2+=layer;
-
-
-  TH2F *hEmpty=(TH2F*)f2.Get("fhEmpty"); 
-  hEmpty->SetName("hEmpty");
-
-
-  // Creates histos using the "hEmpty" template (binning!)
-  TH2F *hSigmaMeanRPHI=new TH2F();
-  TH2F *hSigmaRPHI=new TH2F();
-  TH2F *hSigmaMeanZ=new TH2F();
-  hEmpty->Copy(*hSigmaMeanRPHI);
-  hSigmaMeanRPHI->SetName("hSigmaMeanRPHI");
-  hSigmaMeanRPHI->GetZaxis()->SetRangeUser(0.,200);
-  hEmpty->Copy(*hSigmaRPHI);
-  hSigmaRPHI->SetName("hSigmaRPHI");
-  hSigmaRPHI->GetZaxis()->SetRangeUser(0.,200);
-  hEmpty->Copy(*hSigmaMeanZ);
-  hSigmaMeanZ->SetName("hSigmaMeanZ");
-  hSigmaMeanZ->GetZaxis()->SetRangeUser(0.,400);
-
-
-  // Branching of the DATA TTree
-  tRealign.SetBranchAddress("globalPhi",&phi);
-  tRealign.SetBranchAddress("globalZ",&z);
-  tRealign.SetBranchAddress("histZ",&hResZ);
-  tRealign.SetBranchAddress("histRPHI",&hResRPhi);
-  tRealign.SetBranchAddress("volID",&volid);
-  tRealign.SetBranchAddress("histCorrVol",&hVolCorrBranch);
-  tRealign.SetBranchAddress("histRPHIprop",&histRPHIprop);  
-  tRealign.SetBranchAddress("histZprop",&histZprop);  
-
-  TNtuple *ntMonA = new TNtuple("ntMonA","Residuals","layer:volID:phi:z:nentries:meanFitRPHI:meanFitZ:RMS_RPHI");
-  nEntries=tRealign.GetEntries();
-  printf("entries: %d\n",nEntries);
-  Float_t volidfill = 0;
-
-  for(Int_t j=0;j<nEntries;j++){ // LOOP OVER THE ENTRIES
-
-    printf(" Loading Event %d \n",j);
-
-    tRealign.GetEvent(j);
-
-    // Saving data in an entuple -> To be turned into a Tree
-    ntMonA->Fill((Float_t)layer,
-		volidfill, // WRONG! To be corrected!
-		(Float_t)phi,
-		(Float_t)z,
-		10000*(Float_t)histRPHIprop.nentries,
-		10000*(Float_t)histRPHIprop.meanFit,
-		10000*(Float_t)histZprop.meanFit,
-		10000*(Float_t)histRPHIprop.rms);
-
-  } // END LOOP OVER ENTRIES
-  
-
-  //write histograms
-  outfile.cd();//return to top directory
-  ntMonA->Write();
-  hEmpty->Write();
-
-  delete  tRealign2;
-  f2.Close();
-
-  return;
-
-}
-
-//______________________________________________________________________________
-Int_t AliITSResidualsAnalysis::PlotResiduals(Int_t layer,TString filename) const
-{
-  //
-  // Function that plots the residual distributions
-  //
-  filename+=layer;
-  filename.Append(".root");
-  TFile *f1 = TFile::Open(filename.Data());
-  if(!f1) return 1;
-
-  TH2F *hEmpty=(TH2F*)f1->Get("hEmpty"); 
-  TNtuple *ntData=(TNtuple*)f1->Get("ntMonA"); 
-  if(!ntData) return 2;
-
-
-  TH2F *hMeanZ = new TH2F("hMeanZ","Hist for getting banged",40,-20,20,30,-15,15);
-
-
-  Int_t nn=4;
-  Float_t x[4],y[4],ex[4],ey[4],yZ[4],eyZ[4];
-  x[0]=10.5;
-  x[1]=3.5;
-  x[2]=-3.5;
-  x[3]=-10.5;
-
-  // Declaring Histos
-  TH2F *hStatGlob = new TH2F();
-  TH2F *hMeanGlob = new TH2F();
-
-  TH1F **hMeanPHI;
-  TH1F **hMeanPHIz;
-  TH1F *hGlobPhi = new TH1F("hGlobPhi","hGlobPhi",41,-(TMath::Pi())-(TMath::Pi()/40),(TMath::Pi())+(TMath::Pi()/40));
-  //TH1F *hGlobPhi = new TH1F("hGlobPhi","hGlobPhi",40,-(TMath::Pi()),(TMath::Pi()));
-
-  hMeanPHI = new TH1F*[40]; //watch out!
-  hMeanPHIz = new TH1F*[40];
-
-  TString title;
-
-  for(Int_t bPhi = 0; bPhi<40; bPhi++){
-    title="hMeanPHI";
-    title+=bPhi;
-    hMeanPHI[bPhi]=new TH1F(title.Data(),title.Data(),300,-150,150);
-    title="hMeanPHIz";
-    title+=bPhi;
-    hMeanPHIz[bPhi]=new TH1F(title.Data(),title.Data(),300,-150,150);
-  }
-
-  // Setting the binning of the histos
-  hEmpty->Copy(*hStatGlob);
-  hStatGlob->SetName("hStatGlob");
-  hEmpty->Copy(*hMeanGlob);
-  hMeanGlob->SetName("hMeanGlob");
-
-  Int_t entries;
-  Float_t volID,phi,z,nentries,meanFitRPHI,meanFitZ,rms;
-  entries = (Int_t)ntData->GetEntries();
-
-  // Branching ...
-  //ntData->SetBranchAddress("layer",&layernt);
-  ntData->SetBranchAddress("volID",&volID);
-  ntData->SetBranchAddress("phi",&phi);
-  ntData->SetBranchAddress("z",&z);
-  ntData->SetBranchAddress("nentries",&nentries);
-  ntData->SetBranchAddress("meanFitRPHI",&meanFitRPHI);
-  ntData->SetBranchAddress("meanFitZ",&meanFitZ);
-  ntData->SetBranchAddress("RMS_RPHI",&rms);
-
-  Int_t nbytes = 0;
-  Int_t bin,bin2,ban;
-  Double_t c1,c2,c3,c4;
-  Double_t m1,m2,m3,m4;
-  Double_t n1,n2,n3,n4;
-  c1=1e-10;
-  c2=1e-10;
-  c3=1e-10;
-  c4=1e-10;
-
-  TH1F *hMeanFit1 = new TH1F("hMeanFit1","lol",1000,-500,500);
-  TH1F *hMeanFit2 = new TH1F("hMeanFit2","lol",1000,-500,500);
-  TH1F *hMeanFit3 = new TH1F("hMeanFit3","lol",1000,-500,500);
-  TH1F *hMeanFit4 = new TH1F("hMeanFit4","lol",1000,-500,500);
-
-  TH1F *hMeanFitZ1 = new TH1F("hMeanFitZ1","lol",1000,-500,500);
-  TH1F *hMeanFitZ2 = new TH1F("hMeanFitZ2","lol",1000,-500,500);
-  TH1F *hMeanFitZ3 = new TH1F("hMeanFitZ3","lol",1000,-500,500);
-  TH1F *hMeanFitZ4 = new TH1F("hMeanFitZ4","lol",1000,-500,500);
-
-  for(Int_t j=0;j<entries;j++){
-
-    nbytes += ntData->GetEvent(j);
-
-    // Set binning
-    bin=hStatGlob->FindBin(phi,z);
-    bin2=hMeanZ->FindBin(meanFitRPHI,z);
-
-    // Global Histograms
-    hStatGlob->AddBinContent(bin,nentries);
-    hMeanGlob->AddBinContent(bin,meanFitRPHI);
-    hMeanZ->AddBinContent(bin2,1);
-
-    bin=hGlobPhi->FindBin(phi);
-    bin2=hMeanPHI[bin-2]->FindBin(meanFitRPHI);
-    hMeanPHI[bin-2]->AddBinContent(bin2,1);
-    bin2=hMeanPHIz[bin-2]->FindBin(meanFitZ);
-    hMeanPHIz[bin-2]->AddBinContent(bin2,1);
-
-
-    if(z<12 && z>9) {
-      c1+=nentries;
-      m1+=(meanFitRPHI*nentries);
-      n1+=rms*nentries;
-      ban=hMeanFit1->FindBin(meanFitRPHI);
-      //hMeanFit1->AddBinContent(ban,1);
-      hMeanFit1->AddBinContent(ban,1);
-      ban=hMeanFitZ1->FindBin(meanFitZ);
-      hMeanFitZ1->AddBinContent(ban,1);
-    } else if(z<5 && z>2){
-      c2+=nentries;
-      m2+=(meanFitRPHI*nentries);
-      n2+=rms*nentries;
-      ban=hMeanFit2->FindBin(meanFitRPHI);
-      //hMeanFit2->AddBinContent(ban,1);
-      hMeanFit2->AddBinContent(ban,1);
-      ban=hMeanFitZ2->FindBin(meanFitZ);
-      hMeanFitZ2->AddBinContent(ban,1);
-    } else if(z<-2 && z>-5){
-      c3+=nentries;
-      m3+=(meanFitRPHI*nentries);
-      n3+=rms*nentries;
-      ban=hMeanFit3->FindBin(meanFitRPHI);
-      //hMeanFit3->AddBinContent(ban,1);
-      hMeanFit3->AddBinContent(ban,1);
-      ban=hMeanFitZ3->FindBin(meanFitZ);
-      hMeanFitZ3->AddBinContent(ban,1);
-    } else if(z<-9 && z>-12){
-      c4+=nentries;
-      m4+=(meanFitRPHI*nentries);
-      n4+=rms*nentries;
-      ban=hMeanFit4->FindBin(meanFitRPHI);
-      //hMeanFit4->AddBinContent(ban,1);
-      hMeanFit4->AddBinContent(ban,1);
-      ban=hMeanFitZ4->FindBin(meanFitZ);
-      hMeanFitZ4->AddBinContent(ban,1);
-    }
-
-  }
-
-  ex[0]=3;
-  ex[1]=3;
-  ex[2]=3;
-  ex[3]=3;
-
-  y[0]=hMeanFit1->GetMean();
-  y[1]=hMeanFit2->GetMean();
-  y[2]=hMeanFit3->GetMean();
-  y[3]=hMeanFit4->GetMean();
-  
-  ey[0]=hMeanFit1->GetRMS();
-  ey[1]=hMeanFit2->GetRMS();
-  ey[2]=hMeanFit3->GetRMS();
-  ey[3]=hMeanFit4->GetRMS();
-  
-  yZ[0]=hMeanFitZ1->GetMean();
-  yZ[1]=hMeanFitZ2->GetMean();
-  yZ[2]=hMeanFitZ3->GetMean();
-  yZ[3]=hMeanFitZ4->GetMean();
-  
-  eyZ[0]=hMeanFitZ1->GetRMS();
-  eyZ[1]=hMeanFitZ2->GetRMS();
-  eyZ[2]=hMeanFitZ3->GetRMS();
-  eyZ[3]=hMeanFitZ4->GetRMS();
-
-  TGraphErrors *gZres = new TGraphErrors(nn,x,y,ex,ey);
-  TGraphErrors *gZresZ = new TGraphErrors(nn,x,yZ,ex,eyZ);
-
-  TCanvas *cc1 = new TCanvas("cc1","Title1",1);
-  cc1->cd();
-  hStatGlob->DrawCopy("LEGO2");
-  
-  Double_t xx[40],yy[40],exx[40],eyy[40];
-
-  for(Int_t bp = 0; bp<40;bp++){
-    xx[bp]=(bp*(TMath::Pi()/20))-TMath::Pi();
-    if(TMath::Abs(hMeanPHI[bp]->GetMean())<1e-6) continue;
-    yy[bp]=hMeanPHI[bp]->GetMean();
-    eyy[bp]=hMeanPHI[bp]->GetRMS();
-    exx[bp]=(TMath::Pi())/41;
-  }
-  TGraphErrors *gPHIres = new TGraphErrors(40,xx,yy,exx,eyy);
-  //gPHIres->Fit("pol1","","same",-3,3);
-
-  Double_t xxz[40],yyz[40],exxz[40],eyyz[40];
-
-  for(Int_t bp = 0; bp<40;bp++){
-    xxz[bp]=(bp*(TMath::Pi()/20))-TMath::Pi();
-    if(TMath::Abs(hMeanPHIz[bp]->GetMean())<1e-6) continue;
-    yyz[bp]=hMeanPHIz[bp]->GetMean();
-    eyyz[bp]=hMeanPHIz[bp]->GetRMS();
-    exxz[bp]=(TMath::Pi())/41;
-  }
-  TGraphErrors *gPHIresZ = new TGraphErrors(40,xxz,yyz,exxz,eyyz);
-
-  TCanvas *cc4 = new TCanvas("cc4","meanRes VS Z",1);
-  cc4->Divide(1,2);
-  cc4->cd(1);
-  gZres->Draw("AP");
-  cc4->cd(2);
-  gZresZ->Draw("AP");
-  
-  TCanvas *cc3 = new TCanvas("cc3","Title3",1);
-  cc3->Divide(2,2);
-  cc3->cd(1);
-  hMeanFitZ1->DrawCopy();
-  cc3->cd(2);
-  hMeanFitZ2->DrawCopy();
-  cc3->cd(3);
-  hMeanFitZ3->DrawCopy();
-  cc3->cd(4);
-  hMeanFitZ4->DrawCopy();
-  
-  TCanvas *cc6 = new TCanvas("cc6","meanRes(RPHI) VS PHI",1);
-  cc6->Divide(1,2);
-  cc6->cd(1);
-  gPHIres->Draw("AP");
-
-  cc6->cd(2);
-  gPHIresZ->Draw("AP");
-  
-  TCanvas *cc7 = new TCanvas("cc7","Title7",1);
-  cc7->Divide(2,2);
-  cc7->cd(1);
-  hMeanPHI[1]->DrawCopy();
-  cc7->cd(2);
-  hMeanPHI[2]->DrawCopy();
-  cc7->cd(3);
-  hMeanPHI[29]->DrawCopy();
-  cc7->cd(4);
-  hMeanPHI[30]->DrawCopy();
-
-
-
-  f1->Close();
-
-  return 0;
-}
-
