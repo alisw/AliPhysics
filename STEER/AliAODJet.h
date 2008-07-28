@@ -51,7 +51,8 @@ class AliAODJet : public AliVParticle {
 	{fBackgEnergy[0] = bgEnCh; fBackgEnergy[1] = bgEnNe;}
     virtual void     SetEffArea(Double_t effACh, Double_t effANe)
 	{fEffectiveArea[0] = effACh; fEffectiveArea[1] = effANe;}
-    
+    virtual void     SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e);
+
     virtual TRefArray* GetRefTracks()           const { return  fRefTracks;}
     virtual Double_t   ChargedBgEnergy()        const { return  fBackgEnergy[0];}
     virtual Double_t   NeutralBgEnergy()        const { return  fBackgEnergy[1];}

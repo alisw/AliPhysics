@@ -126,3 +126,17 @@ void AliAODJet::Print(Option_t* /*option*/) const
   printf("Charged:  %13.3f\n", EffectiveAreaCharged());
   printf("Neutral:  %13.3f\n", EffectiveAreaNeutral());
 }
+
+void  AliAODJet::SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e){
+  // 
+  // Set the four Momentum from outside
+  // MomentumVector()->SetPxPyPzE() cannot be used since pointer can be 0x0
+  //
+
+  if(!fMomentum){
+    fMomentum = new TLorentzVector(px,py,pz,e);
+  }
+  else{
+    fMomentum->SetPxPyPzE(px,py,pz,e);
+  }
+}
