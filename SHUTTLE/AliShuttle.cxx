@@ -1938,8 +1938,12 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	TString totEventsStr = entry->GetRunParameter("totalEvents");  
 	Int_t totEvents = totEventsStr.Atoi();
 	
+	UInt_t now = time(0);
+	// TODO make this a configuration parameter
+	Int_t dcsDelay = 120;
+	
 	// runs are accepted if they have ecsSuccess set or more than 1 event
-	if (startTime != 0 && endTime != 0 && endTime > startTime && (totEvents > 1 || ecsSuccess))
+	if (startTime != 0 && endTime != 0 && endTime > startTime && (totEvents > 1 || ecsSuccess) && (endTime < now - dcsDelay))
 	{
 		if (ecsSuccess == kFALSE)
 			Log("SHUTTLE", Form("Processing run %d although in status ECS failure, Reason: %s", run, entry->GetRunParameter("eor_reason")));
@@ -1952,7 +1956,11 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	{
 		Log("SHUTTLE", Form("QueryRunParameters - Run %d has 1 event or less - Skipping!", run));
 		skip = kTRUE;
-	} 
+	}
+	else if (endTime != 0 && endTime >= now - dcsDelay)
+	{
+		Log("SHUTTLE", Form("Skipping run %d for now, because DCS buffer time is not yet expired", run));
+	}
 	else
 	{
 		Log("SHUTTLE", Form("QueryRunParameters - Invalid parameters for Run %d: "
@@ -3122,7 +3130,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 	TString body;
 
 	if (target == kDCSEMail){
-		subject = Form("%s Retrieval of data points for %s FAILED in run %d !",
+		subject = Form("%s CRITICAL Retrieval of data points for %s FAILED in run %d !",
 				tmpStr.Data(), fCurrentDetector.Data(), GetCurrentRun());
 		AliDebug(2, Form("subject: %s", subject.Data()));
 		
@@ -3131,7 +3139,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 			     "in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
 	}
 	else if (target == kFXSEMail){
-		subject = Form("%s FXS communication for %s FAILED in run %d !",
+		subject = Form("%s CRITICAL FXS communication for %s FAILED in run %d !",
 				tmpStr.Data(), fCurrentDetector.Data(), GetCurrentRun());
 		AliDebug(2, Form("subject: %s", subject.Data()));
 		TString sys;
