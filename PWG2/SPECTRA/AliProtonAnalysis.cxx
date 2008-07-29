@@ -34,8 +34,10 @@
 #include <AliESDEvent.h>
 #include <AliLog.h>
 #include <AliPID.h>
-
 #include <AliStack.h>
+#include <AliCFContainer.h>
+#include <AliCFEffGrid.h>
+#include <AliCFEffGrid.h>
 
 ClassImp(AliProtonAnalysis)
 
@@ -56,9 +58,13 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
+  fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
+  fCorrectionList2D(0), fEfficiencyList1D(0), fCorrectionList1D(0) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
+  fCorrectionList2D = new TList(); 
+  fEfficiencyList1D = new TList(); 
+  fCorrectionList1D = new TList();
 }
 
 //____________________________________________________________________//
@@ -78,7 +84,8 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0) {
+  fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
+  fCorrectionList2D(0), fEfficiencyList1D(0), fCorrectionList1D(0) {
   //Default constructor
 
   fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
@@ -99,7 +106,12 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
 //____________________________________________________________________//
 AliProtonAnalysis::~AliProtonAnalysis() {
   //Default destructor
-  
+  if(fHistEvents) delete fHistEvents;
+  if(fHistYPtProtons) delete fHistYPtProtons;
+  if(fHistYPtAntiProtons) delete fHistYPtAntiProtons;
+  if(fCorrectionList2D) delete fCorrectionList2D;
+  if(fEfficiencyList1D) delete fEfficiencyList1D;
+  if(fCorrectionList1D) delete fCorrectionList1D;
 }
 
 //____________________________________________________________________//
@@ -605,6 +617,82 @@ Bool_t AliProtonAnalysis::PrintYields(TH1 *hist, Double_t edge) {
 
   return 0;
 }
+
+//____________________________________________________________________//
+Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
+  // Reads the outout of the correction framework task
+  // Creates the correction maps
+  // Puts the results in the different TList objects
+  Bool_t status = kTRUE;
+
+  TFile *file = TFile::Open(filename);
+  if(!file) {
+    cout<<"Could not find the input CORRFW file "<<filename<<endl;
+    status = kFALSE;
+  }
+
+  AliCFContainer *corrfwContainer = (AliCFContainer*) (file->Get("container"));
+  if(!corrfwContainer) {
+    cout<<"CORRFW container not found!"<<endl;
+    status = kFALSE;
+  }
+  
+  Int_t nSteps = corrfwContainer->GetNStep();
+  TH2D *gYPt[4];
+  //currently the GRID is formed by the y-pT parameters
+  //Add Vz as a next step
+  Int_t iRap = 0, iPt = 1;
+  for(Int_t iStep = 0; iStep < nSteps; iStep++) {
+    gYPt[iStep] = corrfwContainer->ShowProjection(iRap,iPt,iStep);
+    //fCorrectionList2D->Add(gYPt[iStep]);
+  }
+
+  //construct the efficiency grid from the data container                                           
+  TString gTitle = 0;
+  AliCFEffGrid *efficiency[3]; //The efficiency array has nStep-1 entries!!!
+  TH1D *gEfficiency[2][3]; //efficiency as a function of pT and of y (raws - [2]) 
+  TH1D *gCorrection[2][3]; //efficiency as a function of pT and of y (raws - [2]) 
+
+  //Get the 2D efficiency maps
+  for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
+    gTitle = "Efficiency_Step0_Step"; gTitle += iStep; 
+    efficiency[iStep] = new AliCFEffGrid(gTitle.Data(),
+					 gTitle.Data(),*corrfwContainer);
+    efficiency[iStep]->CalculateEfficiency(iStep,0); //eff= step[i]/step0
+    fCorrectionList2D->Add(efficiency[iStep]);  
+  }
+  //Get the projection of the efficiency maps
+  for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
+    for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
+      gEfficiency[iParameter][iStep-1] = efficiency[iStep]->Project(iParameter);
+      fEfficiencyList1D->Add(gEfficiency[iParameter][iStep-1]);  
+      gTitle = "Correction_Parameter"; gTitle += iParameter+1;
+      gTitle += "_Step0_Step"; gTitle += iStep; 
+      gCorrection[iParameter][iStep-1] = new TH1D(gTitle.Data(),
+						   gTitle.Data(),
+						   gEfficiency[iParameter][iStep-1]->GetNbinsX(),
+						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmin(),
+						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmax());
+      //initialisation of the correction
+      for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][iStep-1]->GetNbinsX(); iBin++)
+	gCorrection[iParameter][iStep-1]->SetBinContent(iBin,1.0);
+    }//step loop
+  }//parameter loop
+  //Calculate the 1D correction parameters as a function of y and pT
+  for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
+    for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
+      gCorrection[iParameter][iStep-1]->Divide(gEfficiency[iParameter][iStep-1]);
+      fCorrectionList1D->Add(gCorrection[iParameter][iStep-1]);  
+    }
+  }
+}
+
+
+
+
+
+
+
 
 
 
