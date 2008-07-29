@@ -39,7 +39,7 @@ AliRawReaderChain::AliRawReaderChain() :
   // default constructor
 }
 
-AliRawReaderChain::AliRawReaderChain(TString listFileName) :
+AliRawReaderChain::AliRawReaderChain(const char* listFileName) :
   AliRawReaderRoot(),
   fChain(NULL)
 {
@@ -48,9 +48,9 @@ AliRawReaderChain::AliRawReaderChain(TString listFileName) :
 
   TFileCollection collection("RAW",
 			     "Collection with raw-data files",
-			     listFileName.Data());
+			     listFileName);
 
-  TChain* fChain = new TChain("RAW");
+  fChain = new TChain("RAW");
   if (!fChain->AddFileInfoList((TCollection*)(collection.GetList()))) {
     Error("AliRawReaderChain","Bad file list in collection, the chain is empty");
     return;
@@ -70,7 +70,7 @@ AliRawReaderChain::AliRawReaderChain(TFileCollection *collection) :
 // create raw-reader objects which takes as an input a root chain
 // from a root file collection
 
-  TChain* fChain = new TChain("RAW");
+  fChain = new TChain("RAW");
   if (!fChain->AddFileInfoList((TCollection*)(collection->GetList()))) {
     Error("AliRawReaderChain","Bad file list in collection, the chain is empty");
     return;

@@ -19,7 +19,7 @@ class TFileCollection;
 class AliRawReaderChain: public AliRawReaderRoot {
   public :
     AliRawReaderChain();
-    AliRawReaderChain(TString listFileName);
+    AliRawReaderChain(const char* listFileName);
     AliRawReaderChain(TFileCollection *collection);
     AliRawReaderChain(const AliRawReaderChain& rawReader);
     AliRawReaderChain& operator = (const AliRawReaderChain& rawReader);
