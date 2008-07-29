@@ -6,8 +6,8 @@ void MakeT0FullMisAlignment(){
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
-  Double_t sigmatr = 0.05; // sigma for shifts in cm
-  Double_t sigmarot = 0.3; // sigma for tilts in degrees
+  Double_t sigmatr = 0.006; // sigma for shifts in cm
+  Double_t sigmarot = 0.001; // sigma for tilts in degrees
 
   TString symName, sn;
 

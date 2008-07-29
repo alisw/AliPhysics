@@ -6,8 +6,8 @@ void MakeT0ResMisAlignment(){
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
-  Double_t sigmatr = 0.05; // max shift in cm
-  Double_t sigmarot = 0.3; // max rot in degrees
+  Double_t sigmatr = 0.006; // max shift in cm
+  Double_t sigmarot = 0.001; // max rot in degrees
 
   TString symName;
 
