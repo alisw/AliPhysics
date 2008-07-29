@@ -122,7 +122,11 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
     fRecoParam = AliTPCReconstructor::GetRecoParam();
     if (!fRecoParam)  fRecoParam = AliTPCRecoParam::GetLowFluxParam();
   }
-  fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
+ 
+  if(AliTPCReconstructor::StreamLevel()>0) {
+    fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
+  }
+
   //  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
   fRowCl= new AliTPCClustersRow();
   fRowCl->SetClass("AliTPCclusterMI");
@@ -966,6 +970,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	      Double_t gx[3]={x[0],x[1],x[2]};
 	      trafo.RotatedGlobal2Global(fSector,gx);
 	      
+              if (AliTPCReconstructor::StreamLevel()>0) {
 	      (*fDebugStreamer)<<"Digits"<<
 		"sec="<<fSector<<
 		"row="<<iRow<<
@@ -979,6 +984,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 		"gy="<<gx[1]<<
 		"gz="<<gx[2]<<
 		"\n";
+	      }
 	    }
 	  }
 	}
@@ -1196,7 +1202,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   // Dump mean signal info
   //
-  (*fDebugStreamer)<<"Signal"<<
+    if (AliTPCReconstructor::StreamLevel()>0) {
+    (*fDebugStreamer)<<"Signal"<<
     "TimeStamp="<<fTimeStamp<<
     "EventType="<<fEventType<<
     "Sector="<<uid[0]<<
@@ -1215,6 +1222,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     "RMSCalib="<<rmsCalib<<
     "PedCalib="<<pedestalCalib<<
     "\n";
+    }
   //
   // fill pedestal histogram
   //
@@ -1233,6 +1241,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   // Big signals dumping
   //    
+  if (AliTPCReconstructor::StreamLevel()>0) {
   if (max-median>kMin &&maxPos>AliTPCReconstructor::GetRecoParam()->GetFirstBin()) 
     (*fDebugStreamer)<<"SignalB"<<     // pads with signal
       "TimeStamp="<<fTimeStamp<<
@@ -1253,6 +1262,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       "RMS09="<<rms09<<
       "\n";
   delete graph;  
+  }
 
   delete [] dsignal;
   delete [] dtime;
