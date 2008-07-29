@@ -119,6 +119,7 @@ Bool_t AliTRDrawStreamTB::fgSkipCDH = kFALSE;
 Bool_t AliTRDrawStreamTB::fgWarnError = kTRUE;
 Bool_t AliTRDrawStreamTB::fgCleanDataOnly = kFALSE;
 Bool_t AliTRDrawStreamTB::fgDebugFlag = kTRUE;
+Bool_t AliTRDrawStreamTB::fgEnableMemoryReset = kTRUE;
 Bool_t AliTRDrawStreamTB::fgStackNumberChecker = kTRUE;
 Bool_t AliTRDrawStreamTB::fgStackLinkNumberChecker = kTRUE;
 Bool_t AliTRDrawStreamTB::fgSkipData = kTRUE;
@@ -168,6 +169,7 @@ AliTRDrawStreamTB::AliTRDrawStreamTB()
   , fmcmADCcounter(0)
   , fLinkTrackletCounter(-1)
   , fEndOfTrackletCount(-1)
+  , fNWordsCounter(0)
   , fMaskADCword(0)
   , fTbinADC(0)
   , fDecodedADCs(-1)
@@ -209,6 +211,7 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(AliRawReader *rawReader)
   , fmcmADCcounter(0)
   , fLinkTrackletCounter(-1)
   , fEndOfTrackletCount(-1)
+  , fNWordsCounter(0)
   , fMaskADCword(0)
   , fTbinADC(0)
   , fDecodedADCs(-1)
@@ -257,6 +260,7 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(const AliTRDrawStreamTB& /*st*/)
   , fmcmADCcounter(0)
   , fLinkTrackletCounter(-1)
   , fEndOfTrackletCount(-1)
+  , fNWordsCounter(0)
   , fMaskADCword(0)
   , fTbinADC(0)
   , fDecodedADCs(-1)
@@ -441,6 +445,7 @@ AliTRDrawStreamTB::NextBuffer()
 	  if (length > 0)
 	    {
 	      if (fgDebugFlag)  AliDebug(9, Form("Buffer length : %d", length));
+              if (fgEnableMemoryReset) ResetMemory(); //[mj]
 	      if (DecodeSM((void*)buffer, length) == kTRUE)
 		return 1;
 	      else
@@ -492,6 +497,45 @@ AliTRDrawStreamTB::ResetIterators()
 }
 
 //------------------------------------------------------------
+void
+AliTRDrawStreamTB::ResetPerSM()
+{
+  //
+  // reset every SM
+  //
+
+  fSM.fHeaderSize = 0;
+  fSM.fTrackletEnable = kFALSE;
+  fSM.fCorrupted = 0;
+  fSM.fNexpectedHalfChambers = 0;
+  fSM.fNexpectedHalfChambers = 0;
+  fSM.fClean = kTRUE;
+  fSM.fPos = NULL;
+  for (Int_t i=0; i<5; i++){
+     fSM.fStackActive[i] = kFALSE;
+  }
+}     
+
+//------------------------------------------------------------
+void
+AliTRDrawStreamTB::ResetPerStack()
+{
+  //
+  // reset every Stack
+  //
+
+  fStack->fHeaderSize = 0;
+  fStack->fActiveLinks = 0;
+  fStack->fPos = NULL;
+  for (Int_t i=0; i<12; i++){
+     fStack->fLinksActive[i] = kFALSE;
+     fStack->fLinksDataType[i] = 0;
+     fStack->fLinksMonitor[i] = 1;
+     fStack->fLinkMonitorError[i] = 0;
+  }
+}
+
+//------------------------------------------------------------
 void 
 AliTRDrawStreamTB::ResetPerHC()
 {
@@ -499,7 +543,104 @@ AliTRDrawStreamTB::ResetPerHC()
   // reset every HC
   //
   fEventCounter = 0;
+  fHC->fTrackletError = 0;
+  fHC->fNTracklets = 0;
+  fHC->fSpecialRawV = 0;
+  fHC->fRawVMajor = 0;
+  fHC->fRawVMajorOpt = 0;
+  fHC->fRawVMinor = 0;
+  fHC->fNExtraWords = 0;
+  fHC->fDCSboard = 0;
+  fHC->fSM = 0;
+  fHC->fStack = 0;
+  fHC->fLayer = 0;
+  fHC->fSide = 0;
+  fHC->fTimeBins = 0;
+  fHC->fBunchCrossCounter = 0;
+  fHC->fPreTriggerCounter = 0;
+  fHC->fPreTriggerPhase = 0;
+  fHC->fDET = 0;
+  fHC->fROC = 0;
+  fHC->fRowMax = 0;
+  fHC->fColMax = 0;
+  fHC->fMCMmax = 0;
+
+  fHC->fH0Corrupted = 0;
+  fHC->fH1Corrupted = 0;
+  fHC->fCorrupted = 0;
 }
+
+//------------------------------------------------------------
+void
+AliTRDrawStreamTB::ResetPerMCM()
+{
+  //
+  // reset every MCM 
+  //
+
+  fMCM->fROB = 0;
+  fMCM->fMCM = 0;
+  fMCM->fROW = 0;
+  fMCM->fEvCounter = 0;
+  fMCM->fADCMask = 0;
+  fMCM->fADCMaskWord = 0;
+  fMCM->fADCmax = 0;
+  fMCM->fADCcount = 0;
+  fMCM->fMCMADCWords = 0;
+  fMCM->fSingleADCwords = 0;
+  fMCM->fMCMhdCorrupted = 0;
+  fMCM->fADCmaskCorrupted = 0;
+  fMCM->fCorrupted = 0;
+  fMCM->fPos = NULL;
+  fMCM->fAdcDataPos = NULL;
+  fMCM->fADCcounter = 0;
+
+  for (Int_t i=0; i<21; i++){
+     fMCM->fADCchannel[i] = 0;
+  }
+}
+
+//------------------------------------------------------------
+void
+AliTRDrawStreamTB::ResetPerADC()
+{
+  //
+  // reset every ADC 
+  //
+  fADC->fPos = NULL;
+  fADC->fADCnumber = 0;
+  fADC->fCOL = 0;
+  fADC->fIsShared = kTRUE;
+  fADC->fCorrupted = 0;
+
+  for (Int_t i=0; i<30; i++){
+     fADC->fSignals[i] = 0;
+  }
+}
+
+//------------------------------------------------------------
+void
+AliTRDrawStreamTB::ResetMemory()
+{                 
+                
+  ResetPerSM();
+  for (Int_t istack=0; istack<5; istack++){
+     fStack = &fSM.fStacks[istack];
+     ResetPerStack();
+     for (Int_t ilink=0; ilink<12; ilink++){
+        fHC = &fStack->fHalfChambers[ilink];
+        ResetPerHC();
+        for (Int_t imcm=0; imcm<12; imcm++){
+           fMCM = &fHC->fMCMs[imcm];
+           ResetPerMCM();
+           for (Int_t iadc=0; iadc<12; iadc++){
+              fADC = &fMCM->fADCs[iadc];
+              ResetPerADC();
+           }
+        }
+     }      
+  }
+}         
 
 //------------------------------------------------------------
 
@@ -984,12 +1125,14 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
             {
               fStack->fLinkMonitorError[ilink] = 1;
               SeekEndOfData(); // skip this HC data if GTU link monitor report error
+              fStack->fLinkMonitorError[ilink] += fNWordsCounter; // counts words to debug hc having link monitor error
               continue; 
             }
 
 	  if (fpPos >= fpEnd)
 	    {
 	      if (fRawReader) fRawReader->AddMajorErrorLog(kLinkDataMissing, "Link data missing");	      
+              if (fgWarnError) AliError("Link data missing.");      
 	      fSM.fClean = kFALSE;
 	      break;
 	    }
@@ -1007,7 +1150,7 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 
 		  if (fgWarnError) 
 		    {
-		      AliError(Form("Failed stack %d link %d", fStackNumber, fStackLinkNumber));
+		      AliError(Form("Tracklet decoding failed stack %d link %d", fStackNumber, fStackLinkNumber));
 		      AliError(Form("Debug Event Counter : %d", fgStreamEventCounter)); 
 		    }
 		  continue;
@@ -1017,6 +1160,7 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 	  if (fpPos >= fpEnd)
 	    {
 	      if (fRawReader) fRawReader->AddMajorErrorLog(kHCdataMissing, "HC data missing");	      
+              if (fgWarnError) AliError("HC data missing.");      
 	      fSM.fClean = kFALSE;
 	      break;
 	    }
@@ -1118,10 +1262,12 @@ AliTRDrawStreamTB::SeekEndOfData()
   // go to end of data marker
   //
   Int_t fEndOfDataCount = 0;
+  fNWordsCounter = 0;
 
   while ( *fpPos != ENDOFRAWDATAMARKER && fpPos < fpEnd )
     {
       fpPos++;
+      fNWordsCounter++;
     }
   
   while (*fpPos == ENDOFRAWDATAMARKER && fpPos < fpEnd )
@@ -1701,6 +1847,7 @@ AliTRDrawStreamTB::DecodeHC()
       return kFALSE;
     }
 
+  //DumpWords(fpPos-1000, 2000);
   return kTRUE;
 }
 //------------------------------------------------------------

@@ -420,7 +420,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Bool_t    IsLinkActiveInStack(Int_t is, Int_t il) const {return fSM.fStacks[is].fLinksActive[il];} // check whether the link is active
 
   // info from Stack Header Word
-  Bool_t    GetLinkMonitorError(Int_t is, Int_t il) const {return fSM.fStacks[is].fLinkMonitorError[il];} // get link monitor error
+  Short_t    GetLinkMonitorError(Int_t is, Int_t il) const {return fSM.fStacks[is].fLinkMonitorError[il];} // get link monitor error
 
   // info from Tracklet Data
   Int_t     GetTrackletErrorCode(Int_t is, Int_t il) const {return fSM.fStacks[is].fHalfChambers[il].fTrackletError;}
@@ -521,6 +521,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   //----------------------------------------------------------
  
   static void    SetNoDebug() {fgDebugFlag = kFALSE;} // allow debug info
+  static void    EnableMemoryReset() {fgEnableMemoryReset = kTRUE;} // allow memory reset
   static void    SetNoErrorWarning() {fgWarnError = kFALSE;} // disable warning and error info
   static void    SetForceCleanDataOnly() {fgCleanDataOnly = kTRUE;} // clean data only
   static void    AllowCorruptedData() {fgCleanDataOnly = kFALSE;} // accept corrupted data
@@ -589,7 +590,13 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
     
   void   ResetCounters();    // reset some counters
   void   ResetIterators();   // needed for Next()
+  void   ResetPerSM();       // reset every SM 
+  void   ResetPerStack();    // reset every Stack 
   void   ResetPerHC();       // reset every HC 
+  void   ResetPerMCM();      // reset every MCM  
+  void   ResetPerADC();      // reset every ADC  
+  void   ResetMemory();      // reset all data members
+
   AliTRDrawStreamTB(const AliTRDrawStreamTB& st);
   AliTRDrawStreamTB &operator=(const AliTRDrawStreamTB &);
 
@@ -616,6 +623,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
 
   Int_t   fLinkTrackletCounter; // count the tracklets in the current HC
   Int_t   fEndOfTrackletCount;  // count link by link (hc by hc) used for debug
+  Int_t   fNWordsCounter;  // count words recorded for link monitor errored half chamber
 
   UInt_t  fMaskADCword; // temp mask when decoding adcs
   UInt_t  fTbinADC;     // temp adc 
@@ -641,6 +649,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static Bool_t fgWarnError; // no errors no warnings
   static Bool_t fgCleanDataOnly; // release only clean events = no errors
   static Bool_t fgDebugFlag; // allow debugging info
+  static Bool_t fgEnableMemoryReset; // allow memory reset
   static Bool_t fgStackNumberChecker; // decide if we check stack number insanity - set false to cleanroom data
   static Bool_t fgStackLinkNumberChecker; // decide if we check stack link number insanity - debuging purpose
   static Bool_t fgSkipData; // decide if we skip corrupted data of given HC
