@@ -45,6 +45,7 @@
 #include "AliRawReaderFile.h"
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
+#include "AliRawReaderChain.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
 
@@ -188,17 +189,7 @@ AliRawReader* AliRawReader::Create(const char *uri)
   TString &fileURI = ((TObjString*)fields->At(0))->String();
 
   AliRawReader *rawReader = NULL;
-  if (!fileURI.BeginsWith("mem://")) {
-    AliInfoClass(Form("Creating raw-reader in order to read raw-data file: %s",fileURI.Data()));
-    if (fileURI.EndsWith("/")) {
-      rawReader = new AliRawReaderFile(fileURI);
-    } else if (fileURI.EndsWith(".root")) {
-      rawReader = new AliRawReaderRoot(fileURI);
-    } else {
-      rawReader = new AliRawReaderDate(fileURI);
-    }
-  }
-  else {
+  if (fileURI.BeginsWith("mem://")) {
     fileURI.ReplaceAll("mem://","");
     AliInfoClass(Form("Creating raw-reader in order to read events in shared memory (option=%s)",fileURI.Data()));
 
@@ -215,7 +206,23 @@ AliRawReader* AliRawReader::Create(const char *uri)
       rawReader = (AliRawReader*)pluginHandler->ExecPlugin(1,fileURI.Data());
     }
     else {
+      delete fields;
       return NULL;
+    }
+  }
+  else if (fileURI.BeginsWith("collection://")) {
+    fileURI.ReplaceAll("collection://","");
+    AliInfoClass(Form("Creating raw-reader in order to read raw-data files collection defined in %s",fileURI.Data()));
+    rawReader = new AliRawReaderChain(fileURI);
+  }
+  else {
+    AliInfoClass(Form("Creating raw-reader in order to read raw-data file: %s",fileURI.Data()));
+    if (fileURI.EndsWith("/")) {
+      rawReader = new AliRawReaderFile(fileURI);
+    } else if (fileURI.EndsWith(".root")) {
+      rawReader = new AliRawReaderRoot(fileURI);
+    } else {
+      rawReader = new AliRawReaderDate(fileURI);
     }
   }
 
