@@ -103,6 +103,12 @@ class AliProtonAnalysis : public TObject {
   } 
   Double_t GetParticleFraction(Int_t i, Double_t p);
 
+  //interface to the correction framework
+  Bool_t ReadCorrectionContainer(const char* filename);
+  TList *GetCorrectionList2D() {return fCorrectionList2D;} 
+  TList *GetEfficiencyList1D() {return fEfficiencyList1D;} 
+  TList *GetCorrectionList1D() {return fCorrectionList1D;} 
+
  private:
   AliProtonAnalysis(const AliProtonAnalysis&); // Not implemented
   AliProtonAnalysis& operator=(const AliProtonAnalysis&); // Not implemented
@@ -142,6 +148,11 @@ class AliProtonAnalysis : public TObject {
   TH1I *fHistEvents; //event counter
   TH2F *fHistYPtProtons; //Y-Pt of Protons
   TH2F *fHistYPtAntiProtons; // Y-Pt of Antiprotons
+
+  //Corrections
+  TList *fCorrectionList2D; //list for the 2d corrections 
+  TList *fEfficiencyList1D; //list for the 1d efficiencies
+  TList *fCorrectionList1D; //list for the 1d corrections 
   
   ClassDef(AliProtonAnalysis,0);
 };
