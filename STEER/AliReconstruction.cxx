@@ -281,9 +281,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   ffile(NULL),
   ftree(NULL),
   fhlttree(NULL),
-  ffileOld(NULL),
-  ftreeOld(NULL),
-  fhlttreeOld(NULL),
   ftVertexer(NULL),
   fIsNewRunLoader(kFALSE),
   fRunAliEVE(kFALSE)
@@ -379,9 +376,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   ffile(NULL),
   ftree(NULL),
   fhlttree(NULL),
-  ffileOld(NULL),
-  ftreeOld(NULL),
-  fhlttreeOld(NULL),
   ftVertexer(NULL),
   fIsNewRunLoader(rec.fIsNewRunLoader),
   fRunAliEVE(kFALSE)
@@ -1003,25 +997,12 @@ Bool_t AliReconstruction::InitRun(const char* input)
   }
    AliSysInfo::AddStamp("LoadTrackers");
 
-  // get the possibly already existing ESD file and tree
-  fesd = new AliESDEvent(); fhltesd = new AliESDEvent();
-  if (!gSystem->AccessPathName("AliESDs.root")){
-    gSystem->CopyFile("AliESDs.root", "AliESDs.old.root", kTRUE);
-    ffileOld = TFile::Open("AliESDs.old.root");
-    if (ffileOld && ffileOld->IsOpen()) {
-      ftreeOld = (TTree*) ffileOld->Get("esdTree");
-      if (ftreeOld)fesd->ReadFromTree(ftreeOld);
-      fhlttreeOld = (TTree*) ffileOld->Get("HLTesdTree");
-      if (fhlttreeOld)	fhltesd->ReadFromTree(fhlttreeOld);
-    }
-  }
-
   // create the ESD output file and tree
   ffile = TFile::Open("AliESDs.root", "RECREATE");
   ffile->SetCompressionLevel(2);
   if (!ffile->IsOpen()) {
     AliError("opening AliESDs.root failed");
-    if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}    
+    if (fStopOnError) {CleanUp(ffile); return kFALSE;}    
   }
 
   ftree = new TTree("esdTree", "Tree with ESD objects");
@@ -1086,7 +1067,7 @@ Bool_t AliReconstruction::InitRun(const char* input)
 
   //Initialize the Plane Efficiency framework
   if (fRunPlaneEff && !InitPlaneEff()) {
-    if(fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+    if(fStopOnError) {CleanUp(ffile); return kFALSE;}
   }
 
   if (strcmp(gProgName,"alieve") == 0)
@@ -1112,17 +1093,6 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
   }
 
   if ((iEvent < fFirstEvent) || ((fLastEvent >= 0) && (iEvent > fLastEvent))) {
-    // copy old ESD to the new one
-    if (ftreeOld) {
-      fesd->ReadFromTree(ftreeOld);
-      ftreeOld->GetEntry(iEvent);
-      ftree->Fill();
-    }
-    if (fhlttreeOld) {
-      fhltesd->ReadFromTree(fhlttreeOld);
-      fhlttreeOld->GetEntry(iEvent);
-      fhlttree->Fill();
-    }
     return kTRUE;
   }
 
@@ -1168,12 +1138,12 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       // ;-( IsSelected changes the string
       if (IsSelected("HLT", detectors) &&
 	  !RunLocalEventReconstruction("HLT")) {
-	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
       }
       detectors=fRunLocalReconstruction;
       detectors.ReplaceAll("HLT", "");
       if (!RunLocalEventReconstruction(detectors)) {
-	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
       }
     }
 
@@ -1195,7 +1165,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     if (fRunVertexFinder) {
       if (!ReadESD(fesd, "vertex")) {
 	if (!RunVertexFinder(fesd)) {
-	  if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
 	}
 	if (fCheckPointLevel > 0) WriteESD(fesd, "vertex");
       }
@@ -1205,7 +1175,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     if (!fRunTracking.IsNull()) {
       if (fRunMuonTracking) {
 	if (!RunMuonTracking(fesd)) {
-	  if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
 	}
       }
     }
@@ -1214,7 +1184,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     if (!fRunTracking.IsNull()) {
       if (!ReadESD(fesd, "tracking")) {
 	if (!RunTracking(fesd)) {
-	  if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
 	}
 	if (fCheckPointLevel > 0) WriteESD(fesd, "tracking");
       }
@@ -1227,7 +1197,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       // ;-( IsSelected changes the string
       if (IsSelected("HLT", detectors) &&
 	  !FillESD(fhltesd, "HLT")) {
-	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
       }
       detectors=fFillESD;
       // Temporary fix to avoid problems with HLT that overwrites the offline ESDs
@@ -1240,7 +1210,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       }
       detectors.ReplaceAll("HLT", "");
       if (!FillESD(fesd, detectors)) {
-	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
       }
     }
   
@@ -1253,10 +1223,10 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
     if (fFillTriggerESD) {
       if (!ReadESD(fesd, "trigger")) {
-				if (!FillTriggerESD(fesd)) {
-					if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
-				}
-				if (fCheckPointLevel > 1) WriteESD(fesd, "trigger");
+	if (!FillTriggerESD(fesd)) {
+	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
+	}
+	if (fCheckPointLevel > 1) WriteESD(fesd, "trigger");
       }
     }
 
@@ -1499,7 +1469,7 @@ Bool_t AliReconstruction::FinishRun()
   }
 
   gROOT->cd();
-  CleanUp(ffile, ffileOld);
+  CleanUp(ffile);
     
   if (fWriteAOD) {
     AliWarning("AOD creation not supported anymore during reconstruction. See ANALYSIS/AliAnalysisTaskESDfilter.cxx instead.");
@@ -2364,7 +2334,7 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
+void AliReconstruction::CleanUp(TFile* file)
 {
 // delete trackers and the run loader and close and delete the file
 
@@ -2404,12 +2374,6 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
   if (file) {
     file->Close();
     delete file;
-  }
-
-  if (fileOld) {
-    fileOld->Close();
-    delete fileOld;
-    gSystem->Unlink("AliESDs.old.root");
   }
 
 }

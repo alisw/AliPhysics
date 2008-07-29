@@ -172,7 +172,7 @@ private:
   Bool_t         InitRunLoader();
   AliReconstructor* GetReconstructor(Int_t iDet);
   Bool_t         CreateVertexer();
-  void           CleanUp(TFile* file = NULL, TFile* fileOld = NULL);
+  void           CleanUp(TFile* file = NULL);
 
   Bool_t         ReadESD(AliESDEvent*& esd, const char* recStep) const;
   void           WriteESD(AliESDEvent* esd, const char* recStep) const;
@@ -284,9 +284,6 @@ private:
   TFile*               ffile;       //! Pointer to the ESD file
   TTree*               ftree;       //! Pointer to the ESD tree
   TTree*               fhlttree;    //! Pointer to the HLT ESD tree
-  TFile*               ffileOld;    //! Pointer to the previous ESD file
-  TTree*               ftreeOld;    //! Pointer to the previous ESD tree
-  TTree*               fhlttreeOld; //! Pointer to the previous HLT ESD tree
   AliVertexerTracks*   ftVertexer;  //! Pointer to the vertexer based on ESD tracks
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
   Bool_t               fRunAliEVE;  // Run AliEVE or not
