@@ -144,24 +144,43 @@ AliTPCClusterParam* AliTPCClusterParam::Instance()
 AliTPCClusterParam::AliTPCClusterParam():
   TObject(),
   fRatio(0),
-  fQNorm(0) 
+  fQNorm(0),
+  fQpadTnorm(0),           // q pad normalization - Total charge
+  fQpadMnorm(0)            // q pad normalization - Max charge
+  //
 {
   //
   // Default constructor
   //
+  fPosQTnorm[0] = 0;   fPosQTnorm[1] = 0;   fPosQTnorm[2] = 0; 
+  fPosQMnorm[0] = 0;   fPosQMnorm[1] = 0;   fPosQMnorm[2] = 0; 
 }
 
 AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
   TObject(param),
   fRatio(0),
-  fQNorm(0)
+  fQNorm(0),
+  fQpadTnorm(new TVectorD(*(param.fQpadTnorm))),           // q pad normalization - Total charge
+  fQpadMnorm(new TVectorD(*(param.fQpadMnorm)))            // q pad normalization - Max charge
+
 {
   //
   // copy constructor
   //
   memcpy(this, &param,sizeof(AliTPCClusterParam));
   if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
+  //
+  if (param.fPosQTnorm[0]){
+    fPosQTnorm[0] = new TVectorD(*(param.fPosQTnorm[0]));
+    fPosQTnorm[1] = new TVectorD(*(param.fPosQTnorm[1]));
+    fPosQTnorm[2] = new TVectorD(*(param.fPosQTnorm[2]));
+    //
+    fPosQMnorm[0] = new TVectorD(*(param.fPosQMnorm[0]));
+    fPosQMnorm[1] = new TVectorD(*(param.fPosQMnorm[1]));
+    fPosQMnorm[2] = new TVectorD(*(param.fPosQMnorm[2]));
+  }
 }
+
 
 AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& param){
   //
@@ -170,6 +189,15 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
   if (this != &param) {
     memcpy(this, &param,sizeof(AliTPCClusterParam));
     if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
+    if (param.fPosQTnorm[0]){
+      fPosQTnorm[0] = new TVectorD(*(param.fPosQTnorm[0]));
+      fPosQTnorm[1] = new TVectorD(*(param.fPosQTnorm[1]));
+      fPosQTnorm[2] = new TVectorD(*(param.fPosQTnorm[2]));
+      //
+      fPosQMnorm[0] = new TVectorD(*(param.fPosQMnorm[0]));
+      fPosQMnorm[1] = new TVectorD(*(param.fPosQMnorm[1]));
+      fPosQMnorm[2] = new TVectorD(*(param.fPosQMnorm[2]));
+    }
   }
   return *this;
 }
@@ -181,6 +209,15 @@ AliTPCClusterParam::~AliTPCClusterParam(){
   //
   if (fQNorm) fQNorm->Delete();
   delete fQNorm;
+  if (fPosQTnorm[0]){
+    delete fPosQTnorm[0];
+    delete fPosQTnorm[1];
+    delete fPosQTnorm[2];
+    //
+    delete fPosQMnorm[0];
+    delete fPosQMnorm[1];
+    delete fPosQMnorm[2];
+  }
 }
 
 
@@ -1283,32 +1320,89 @@ void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, TVectorD * norm){
   fQNorm->AddAt(new TVectorD(*norm), itype*3+ipad);
 }
 
+Float_t AliTPCClusterParam::QnormPos(Int_t ipad,Bool_t isMax, Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt){
+  //
+  // Make Q normalization as function of following parameters
+  // Fit parameters to be used in corresponding correction function extracted in the AliTPCclaibTracksGain - Taylor expansion
+  // 1 - dp   - relative pad position 
+  // 2 - dt   - relative time position
+  // 3 - di   - drift length (norm to 1);
+  // 4 - dq0  - Tot/Max charge
+  // 5 - dq1  - Max/Tot charge
+  // 6 - sy   - sigma y - shape
+  // 7 - sz   - sigma z - shape
+  //  
+  
+  //The results can be visualized using the debug streamer information of the AliTPCcalibTracksGain - 
+  // Following variable used - correspondance to the our variable conventions  
+  //chain0->SetAlias("dp","((Cl.fPad-int(Cl.fPad)-0.5)/0.5)");
+  Double_t dp = ((pad-int(pad)-0.5)*2.);
+  //chain0->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin)-0.5)/0.5)");
+  Double_t dt = ((time-int(time)-0.5)*2.);
+  //chain0->SetAlias("di","(sqrt(1.-abs(Cl.fZ)/250.))");
+  Double_t di = TMath::Sqrt(1-TMath::Abs(z)/250.);
+  //chain0->SetAlias("dq0","(0.2*(Cl.fQ+2)/(Cl.fMax+2))");
+  Double_t dq0 = 0.2*(qt+2.)/(qm+2.);
+  //chain0->SetAlias("dq1","(5*(Cl.fMax+2)/(Cl.fQ+2))");
+  Double_t dq1 = 5.*(qm+2.)/(qt+2.);
+  //chain0->SetAlias("sy","(0.32/sqrt(0.01^2+Cl.fSigmaY2))");
+  Double_t sy  = 0.32/TMath::Sqrt(0.01*0.01+sy2);
+  //chain0->SetAlias("sz","(0.32/sqrt(0.01^2+Cl.fSigmaZ2))");
+  Double_t sz  = 0.32/TMath::Sqrt(0.01*0.01+sz2);
+  //
+  //
+  //
+  TVectorD * pvec = 0;
+  if (isMax){
+    pvec = fPosQMnorm[ipad];
+  }else{
+    pvec = fPosQTnorm[ipad];    
+  }
+  TVectorD &param = *pvec;
+  //
+  // Eval part  - in correspondance with fit part from debug streamer
+  // 
+  Double_t result=param[0];
+  Int_t index =1;
+  //
+  result+=dp*param[index++];                               //1
+  result+=dt*param[index++];                               //2
+  result+=dp*dp*param[index++];                             //3
+  result+=dt*dt*param[index++];                             //4
+  result+=dt*dt*dt*param[index++];                             //5
+  result+=dp*dt*param[index++];                            //6
+  result+=dp*dt*dt*param[index++];                          //7
+  result+=(dq0)*param[index++];                            //8
+  result+=(dq1)*param[index++];                            //9
+  //
+  //
+  result+=dp*dp*(di)*param[index++];                        //10
+  result+=dt*dt*(di)*param[index++];                        //11
+  result+=dp*dp*sy*param[index++];                          //12
+  result+=dt*sz*param[index++];                          //13
+  result+=dt*dt*sz*param[index++];                          //14
+  result+=dt*dt*dt*sz*param[index++];                          //15
+  //
+  result+=dp*dp*1*sy*sz*param[index++];                     //16
+  result+=dt*sy*sz*param[index++];                       //17
+  result+=dt*dt*sy*sz*param[index++];                       //18
+  result+=dt*dt*dt*sy*sz*param[index++];                       //19
+  //
+  result+=dp*dp*(dq0)*param[index++];                       //20
+  result+=dt*1*(dq0)*param[index++];                       //21
+  result+=dt*dt*(dq0)*param[index++];                       //22
+  result+=dt*dt*dt*(dq0)*param[index++];                       //23
+  //
+  result+=dp*dp*(dq1)*param[index++];                       //24
+  result+=dt*(dq1)*param[index++];                       //25
+  result+=dt*dt*(dq1)*param[index++];                       //26
+  result+=dt*dt*dt*(dq1)*param[index++];                       //27
+
+  return result;
+  
+}
 
 
 
-/*
 
- gSystem->Load("libSTAT.so")
- TStatToolkit toolkit;
- Double_t chi2;
- TVectorD fitParam;
- TMatrixD covMatrix;
- Int_t npoints;
 
- TString fstring="";
- //
- fstring+="(Zm/250.)++"
- fstring+="(Zm/250.)^2++"
- fstring+="(Zm/250.)^3++"
- fstring+="AngleM++"
- fstring+="(AngleM)^2++"
- fstring+="(AngleM)^3++"
- fstring+="(Zm/250.)*AngleM++"
- fstring+="(Zm/250.)^2*AngleM++"
- fstring+="(Zm/250.)*AngleM^2++"
-
- TString *strRMSY0 = toolkit.FitPlane(treeRes,"RMSm^2",fstring->Data(), "Dim==0&&Pad==0&&QMean<0", chi2,npoints,fitParam,covMatrix);
-
- treeRes->SetAlias("RMSY0",strRMSY0->Data());
-
-*/

@@ -38,6 +38,9 @@ class AliTPCClusterParam : public TObject {
   // Charge parameterization
   //
   Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);   
+
+  Float_t QnormPos(Int_t ipad, Bool_t isMax,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt);
+
   //
   // Error parameterization
   //
@@ -137,11 +140,14 @@ class AliTPCClusterParam : public TObject {
   Float_t fRMSSigmaRatio[2][2];   // mean value of the varation of RMS to RMS
   Float_t fRMSSigmaFit[2][3][2];   // mean value of the varation of RMS to RMS
   //
-  TObjArray *fQNorm;              // q norm paramters
+  // charge normalization parametrization
   //
+  TObjArray *fQNorm;              // q norm paramters
   TVectorD  *fPosQTnorm[3];        // q position normalization
   TVectorD  *fPosQMnorm[3];        // q position normalization
-  TVectorD  *fQpadNorm;            // q pad normalization
+  TVectorD  *fQpadTnorm;           // q pad normalization - Total charge
+  TVectorD  *fQpadMnorm;           // q pad normalization - Max charge
+  //
  protected:
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
   ClassDef(AliTPCClusterParam,2)    //  TPC Cluster parameter class
