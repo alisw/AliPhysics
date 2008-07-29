@@ -1075,12 +1075,69 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   boltVolume->SetTitle("FMD3 steering bolt");
   
   //__________________________________________________________________
+  // Final cone
   TGeoCompositeShape* coneShape = new TGeoCompositeShape(coneComb.Data());
   coneShape->SetName("FMD3_cone");
   coneShape->SetTitle("FMD3 cone");
   TGeoVolume*  coneVolume = new TGeoVolume("F3SC", coneShape, fC);
   coneVolume->SetLineColor(kRed);
   support->AddNode(coneVolume, 0, new TGeoTranslation(0, 0, 0));
+
+  //__________________________________________________________________
+  // Tension boxes. 
+  new TGeoBBox("FMD3_tension_outer", .5, 3, 5);
+  new TGeoBBox("FMD3_tension_inner", .51, 2.7, 4.3);
+  TString tensionExpr("FMD3_tension_outer-FMD3_tension_inner");
+  TGeoCompositeShape* tensionShape = new TGeoCompositeShape(tensionExpr.Data());
+  tensionShape->SetName("FMD3_tension_box");
+  tensionShape->SetTitle("FMD3 tension box");
+  TGeoVolume*      tensionFrame = new TGeoVolume("FMD3_tension_frame",
+						  tensionShape, fAl);
+  TGeoTube*        springShape  = new TGeoTube("FMD3_tension_spring", 
+					       0, .3, 4.3/2);
+  TGeoVolume*      springVolume = new TGeoVolume("FMD3_tension_spring", 
+						 springShape, fSteel);
+  TGeoVolume*      tensionBox   = new TGeoVolume("FMD3_tension_box", 
+						 tensionShape, fAir);
+  tensionBox->AddNode(tensionFrame, 0);
+  tensionBox->AddNode(springVolume, 0, new TGeoTranslation(0,0,4.3/2));
+  
+  Double_t         tensionD     = 5*TMath::Cos(fmd3->GetConeOuterAngle());
+  Double_t         tensionZ     = r4->Z()-2*tensionD;
+  Double_t         tensionX     = (fmd3->ConeR(fmd3->GetInnerZ()
+					       +fmd3->GetNoseZ() 
+					       -tensionZ) + 
+				   .5 * TMath::Sin(fmd3->GetConeOuterAngle())); 
+  TGeoRotation*    tensionRot   = new TGeoRotation();
+  tensionRot->RotateY(180/TMath::Pi()*fmd3->GetConeOuterAngle());
+  TGeoCombiTrans*  tensionBase  = new TGeoCombiTrans(tensionX, 0, tensionZ, 
+						     tensionRot);
+  
+  Double_t         wireR1       = fmd3->ConeR(fmd3->GetInnerZ()
+					      +fmd3->GetNoseZ());
+  Double_t         wireR2       = fmd3->ConeR(fmd3->GetInnerZ()
+					      +fmd3->GetNoseZ()-
+					      tensionZ+tensionD);
+  Double_t         wireL        = TMath::Sqrt(TMath::Power(wireR1-wireR2,2)+ 
+					      TMath::Power(tensionZ-
+							   tensionD,2));
+  Double_t         wireAngle    = TMath::ATan2(wireR2-wireR1,tensionZ-tensionD);
+  TGeoTube*        wireShape    = new TGeoTube("FMD3_wire", 0, .1, wireL/2);
+  TGeoVolume*      wireVolume   = new TGeoVolume("FMD3_wire", wireShape,fSteel);
+  TGeoRotation*    wireRot      = new TGeoRotation();
+  wireRot->RotateY(180/TMath::Pi()*wireAngle);
+  TGeoCombiTrans*  wireBase     = new TGeoCombiTrans((wireR2-wireR1)/2+wireR1,
+						     0, (tensionZ-tensionD)/2,
+						     wireRot);
+  for (Int_t i = 0; i < 2; i++) { 
+    Double_t        thisAngle = (i+.5) * 90;
+    TGeoCombiTrans* thisTrans = new TGeoCombiTrans(*tensionBase);
+    thisTrans->RotateZ(thisAngle);
+    support->AddNode(tensionBox, i, thisTrans);
+    thisTrans = new TGeoCombiTrans(*wireBase);
+    thisTrans->RotateZ(thisAngle);
+    support->AddNode(wireVolume, i, thisTrans);
+  }
 
   //__________________________________________________________________
   // Place support volumes in half-detector volumes 
