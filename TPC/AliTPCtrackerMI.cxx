@@ -317,6 +317,8 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
     param.GetXYZ(gcl.GetMatrixArray());
     cluster->GetGlobalXYZ(gclf);
     gcl[0]=gclf[0];    gcl[1]=gclf[1];    gcl[2]=gclf[2];
+    
+    if (AliTPCReconstructor::StreamLevel()>0) {
     (*fDebugStreamer)<<"ErrParam"<<
       "Cl.="<<cluster<<
       "T.="<<&param<<
@@ -331,6 +333,7 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
       "rmsy2p30R="<<rmsy2p30R<<
       "rmsz2p30R="<<rmsz2p30R<<	
       "\n";
+    }
   }
   
   if (rdistance2>16) return 3;
@@ -404,7 +407,9 @@ AliTracker(),
     fYMax[i+nrowlow]      = fXRow[i+nrowlow]*TMath::Tan(0.5*par->GetOuterAngle());
   }
 
-  fDebugStreamer = new TTreeSRedirector("TPCdebug.root");
+  if (AliTPCReconstructor::StreamLevel()>0) {
+    fDebugStreamer = new TTreeSRedirector("TPCdebug.root");
+  }
 }
 //________________________________________________________________________
 AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):
@@ -4156,7 +4161,6 @@ void  AliTPCtrackerMI::FindMultiMC(TObjArray * array, AliESDEvent */*esd*/, Int_
     }
     if (ncl>0) xm[i]/=Float_t(ncl);
   }  
-  TTreeSRedirector &cstream = *fDebugStreamer;
   //
   for (Int_t i0=0;i0<nentries;i0++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i0);
@@ -4217,6 +4221,8 @@ void  AliTPCtrackerMI::FindMultiMC(TObjArray * array, AliESDEvent */*esd*/, Int_
 	}
       }
       //
+      if (AliTPCReconstructor::StreamLevel()>0) {
+      TTreeSRedirector &cstream = *fDebugStreamer;
       cstream<<"Multi"<<
 	"iter="<<iter<<
 	"lab0="<<lab0<<
@@ -4252,6 +4258,7 @@ void  AliTPCtrackerMI::FindMultiMC(TObjArray * array, AliESDEvent */*esd*/, Int_
 	"r1="<<r1<<
 	"rc1="<<rc1<<
 	"\n";
+	}
     }
   }    
   delete [] helixes;
@@ -4338,7 +4345,6 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
     }
     if (ncl>0) xm[i]/=Float_t(ncl);
   }  
-  TTreeSRedirector &cstream = *fDebugStreamer;
   //
   for (Int_t is0=0;is0<nentries;is0++){
     Int_t i0 = indexes[is0];
@@ -4421,6 +4427,7 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
       Int_t lab0=track0->GetLabel();
       Int_t lab1=track1->GetLabel();
       if( AliTPCReconstructor::StreamLevel()>5){
+      TTreeSRedirector &cstream = *fDebugStreamer;
 	cstream<<"Splitted"<<
 	  "iter="<<iter<<
 	  "lab0="<<lab0<<
@@ -4527,7 +4534,6 @@ void  AliTPCtrackerMI::FindCurling(TObjArray * array, AliESDEvent */*esd*/, Int_
   //
   // Find tracks
   //
-  TTreeSRedirector &cstream = *fDebugStreamer;
   //
   for (Int_t i0=0;i0<nentries;i0++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i0);
@@ -4625,6 +4631,7 @@ void  AliTPCtrackerMI::FindCurling(TObjArray * array, AliESDEvent */*esd*/, Int_
 	  //debug stream to tune "fine" cuts	  
 	  Int_t lab0=track0->GetLabel();
 	  Int_t lab1=track1->GetLabel();
+          TTreeSRedirector &cstream = *fDebugStreamer;
 	  cstream<<"Curling2"<<
 	    "iter="<<iter<<
 	    "lab0="<<lab0<<
@@ -4739,7 +4746,6 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 
   //
   // Find circling track
-  TTreeSRedirector &cstream = *fDebugStreamer;
   //
   for (Int_t i0=0;i0<nentries;i0++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i0);
@@ -4826,6 +4832,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 	  //debug stream	  
 	  Int_t lab0=track0->GetLabel();
 	  Int_t lab1=track1->GetLabel();
+          TTreeSRedirector &cstream = *fDebugStreamer;
 	  cstream<<"Curling"<<
 	    "lab0="<<lab0<<
 	    "lab1="<<lab1<<   
@@ -5430,7 +5437,6 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
   // 
   //
   // //  
-  TTreeSRedirector &cstream = *fDebugStreamer; 
   Float_t fprimvertex[3]={GetX(),GetY(),GetZ()};
   AliV0 vertex; 
   Double_t cradius0 = 10*10;
@@ -5445,6 +5451,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
     if (!track0) continue;
     if (AliTPCReconstructor::StreamLevel()>1){
+      TTreeSRedirector &cstream = *fDebugStreamer;
       cstream<<"Tracks"<<
 	"Tr0.="<<track0<<
 	"dca="<<dca[i]<<
@@ -5558,6 +5565,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
 	  Int_t lab1=track1->GetLabel();
 	  Char_t c0=track0->GetCircular();
 	  Char_t c1=track1->GetCircular();
+          TTreeSRedirector &cstream = *fDebugStreamer;
 	  cstream<<"V0"<<
 	  "Event="<<eventNr<<
 	  "vertex.="<<&vertex<<
@@ -5668,6 +5676,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
       if (AliTPCReconstructor::StreamLevel()>1) {
 	Int_t lab0=track0->GetLabel();
 	Int_t lab1=track1->GetLabel();
+        TTreeSRedirector &cstream = *fDebugStreamer;
 	cstream<<"V02"<<
 	"Event="<<eventNr<<
 	"vertex.="<<v0<<	
