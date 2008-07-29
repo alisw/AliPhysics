@@ -750,6 +750,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
 //
 // Created:         ???       Bjorn S. Nilsen
 // Updated:      18 Feb 2008  Mario Sitta
+// Updated:      25 Jul 2008  Mario Sitta   SDDCarbonFiberCone simpler
 //
 // Technical data are taken from:  "Supporto Generale Settore SDD"
 // (technical drawings ALR-0816/1-B), "Supporto Globale Settore SDD"
@@ -776,7 +777,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kConeROutMax        = (560.0/2)*fgkmm;
   const Double_t kConeRCurv          =      10.0*fgkmm; // Radius of curvature
   const Double_t kConeRinMin         = (210.0/2)*fgkmm;
-  const Double_t kConeRinMax         = (216.0/2)*fgkmm;
+//  const Double_t kConeRinMax         = (216.0/2)*fgkmm;
   const Double_t kConeRinCylinder    = (231.0/2)*fgkmm;
   const Double_t kConeZCylinder      =     192.0*fgkmm;
   const Double_t kConeZOuterMilled   =      23.0*fgkmm;
@@ -900,7 +901,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
 
   dza = kConeThickness/kSinConeTheta-(kConeROutMax-kConeROutMin)/kTanConeTheta;
 
-  TGeoPcon *coneshape = new TGeoPcon(0.0, 360.0, 12);
+  TGeoPcon *coneshape = new TGeoPcon(0.0, 360.0, 10);
 
   coneshape->Z(0)     = 0.0;
   coneshape->Rmin(0)  = kConeROutMin;
@@ -929,45 +930,10 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
 
   coneshape->Rmax(3)  = RmaxFrom2Points(coneshape,4,2,coneshape->GetZ(3));
 
-  coneshape->Rmin(7)  = kConeRinMin;
+  coneshape->Z(6)     = kConeZCylinder - kConeDZin;
 
-  coneshape->Rmin(8)  = kConeRinMin;
-
-  RadiusOfCurvature(kConeRCurv,90.0,0.0,kConeRinMax,90.0-kConeTheta,z,rmax);
-  coneshape->Rmax(8)  = rmax;
-  coneshape->Z(8)     = ZFromRmaxpCone(coneshape,4,kConeTheta,
-				       coneshape->GetRmax(8));
-
-  coneshape->Z(9)     = kConeZCylinder;
-  coneshape->Rmin(9)  = kConeRinMin;
-
-  coneshape->Z(10)    = coneshape->GetZ(9);
-  coneshape->Rmin(10) = kConeRinCylinder;
-
-  coneshape->Rmin(11) = kConeRinCylinder;
-  coneshape->Rmax(11) = coneshape->GetRmin(11);
-
-  rmin                = coneshape->GetRmin(8);
-  RadiusOfCurvature(kConeRCurv,90.0-kConeTheta,
-		    coneshape->GetZ(8),coneshape->GetRmax(8),90.0,z,rmax);
-  rmax                = kConeRinMax;
-  coneshape->Z(11)    = z + (coneshape->GetZ(8)-z)*
-                   (coneshape->GetRmax(11)-rmax)/(coneshape->GetRmax(8)-rmax);
-
-  coneshape->Rmax(9)  = RmaxFrom2Points(coneshape,11,8,coneshape->GetZ(9));
-
-  coneshape->Rmax(10) = coneshape->GetRmax(9);
-
-  coneshape->Z(6)     = z - kConeDZin;
-  coneshape->Z(7)     = coneshape->GetZ(6);
-
-  coneshape->Rmax(6)  = RmaxFromZpCone(coneshape,4,kConeTheta,
-				       coneshape->GetZ(6));
-
-  coneshape->Rmax(7)  = coneshape->GetRmax(6);
-
-  RadiusOfCurvature(kConeRCurv,90.,
-		    coneshape->GetZ(6),0.0,90.0-kConeTheta,z,rmin);
+  RadiusOfCurvature(kConeRCurv,90.0,coneshape->GetZ(6),0.0,
+		    90.0-kConeTheta,z,rmin);
   coneshape->Z(5)     = z;
   coneshape->Rmin(5)  = RminFromZpCone(coneshape,3,kConeTheta,z);
   coneshape->Rmax(5)  = RmaxFromZpCone(coneshape,4,kConeTheta,z);
@@ -975,6 +941,24 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   RadiusOfCurvature(kConeRCurv,90.-kConeTheta,
 		    0.0,coneshape->Rmin(5),90.0,z,rmin);
   coneshape->Rmin(6)  = rmin;
+  coneshape->Rmax(6)  = RmaxFromZpCone(coneshape,4,kConeTheta,
+				       coneshape->GetZ(6));
+
+  coneshape->Z(7)     = coneshape->GetZ(6);
+  coneshape->Rmin(7)  = kConeRinMin;
+  coneshape->Rmax(7)  = coneshape->GetRmax(6);
+
+  coneshape->Rmin(8)  = kConeRinMin;
+
+  RadiusOfCurvature(kConeRCurv,90.0,kConeZCylinder,kConeRinCylinder,
+		    90.0-kConeTheta,z,rmax);
+  coneshape->Z(8)     = z;
+  coneshape->Rmax(8)  = rmax;
+
+  coneshape->Z(9)     = kConeZCylinder;
+  coneshape->Rmin(9)  = kConeRinMin;
+  coneshape->Rmax(9)  = kConeRinCylinder;
+
 
   // SDD Cone Insert: another Pcon
   Double_t x0, y0, x1, y1, x2, y2;
