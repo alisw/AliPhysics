@@ -2,6 +2,7 @@
 
 SRCS:=  AliFilter.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
+	AliRawReaderChain.cxx \
 	AliRawReaderDate.cxx AliRawReaderDateV3.cxx \
 	AliRawReaderMemory.cxx \
 	AliRawHLTManager.cxx \

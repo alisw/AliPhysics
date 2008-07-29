@@ -22,6 +22,7 @@ class TBranch;
 
 class AliRawReaderRoot: public AliRawReader {
   public :
+    AliRawReaderRoot();
     AliRawReaderRoot(const char* fileName, Int_t eventNumber = -1);
     AliRawReaderRoot(AliRawEvent* event);
     AliRawReaderRoot(const AliRawReaderRoot& rawReader);

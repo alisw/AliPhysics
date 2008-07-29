@@ -40,6 +40,22 @@
 
 ClassImp(AliRawReaderRoot)
 
+AliRawReaderRoot::AliRawReaderRoot() :
+  fFile(NULL),
+  fBranch(NULL),
+  fEventIndex(-1),
+  fEvent(NULL),
+  fSubEventIndex(0),
+  fSubEvent(NULL),
+  fEquipmentIndex(0),
+  fEquipment(NULL),
+  fRawData(NULL),
+  fPosition(NULL),
+  fEnd(NULL)
+{
+// default constructor
+
+}
 
 AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
   fFile(NULL),
