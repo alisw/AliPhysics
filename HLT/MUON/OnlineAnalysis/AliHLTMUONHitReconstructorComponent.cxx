@@ -600,25 +600,32 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		// have not been given a DDL number on the command line.
 		if (fDDL == -1)
 		{
-			if (evtData.fBlockCnt <= 0)
+			bool blockFound = false;
+			for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt and not blockFound; n++)
+			{
+				if (blocks[n].fDataType != AliHLTMUONConstants::DDLRawDataType()) continue;
+				blockFound = true;
+
+				fDDL = AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification);
+				
+				if (fDDL == -1)
+				{
+					HLTError("Received a data block with a specification (0x%8.8X)"
+						" indicating multiple DDL data sources, but we must only"
+						" receive raw DDL data from one tracking station DDL.",
+						blocks[n].fSpecification
+					);
+					return -EPROTO;
+				}
+			}
+
+			if (not blockFound)
 			{
 				HLTError("The initialisation from CDB of the component has"
 					" been delayed to the first received event. However,"
-					" no data blocks have been found in the first event."
+					" no raw DDL data blocks have been found in the first event."
 				);
 				return -ENOENT;
-			}
-			
-			fDDL = AliHLTMUONUtils::SpecToDDLNumber(blocks[0].fSpecification);
-			
-			if (fDDL == -1)
-			{
-				HLTError("Received a data block with a specification (0x%8.8X)"
-					" indicating multiple DDL data sources, but we must only"
-					" receive data from one tracking station DDL.",
-					blocks[0].fSpecification
-				);
-				return -EPROTO;
 			}
 		}
 		
