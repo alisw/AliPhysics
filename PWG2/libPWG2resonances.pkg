@@ -21,7 +21,6 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnSimpleFcnResolution.cxx \
       RESONANCES/AliRsnSimpleAnalysis.cxx \
       RESONANCES/AliRsnSimpleAnalyzer.cxx \
-      RESONANCES/AliRsnSimpleAnalysisTask.cxx \
       RESONANCES/AliRsnSimpleAnalysisTaskSE.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
