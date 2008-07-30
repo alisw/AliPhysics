@@ -1,0 +1,38 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+CLASS_HDRS:=  	AliHLTPredictionProcessorInterface.h \
+		AliHLTPendolino.h \
+		AliHLTPendolinoLoggerOStream.h \
+		AliHLTPredictionProcessorDummy.h \
+		AliHLTPendolinoLoggerDump.h \
+		HLT/AliHLTPredicProcTempMonitor.h \
+		HLT/AliHLTPredictionProcessorHLT.h \
+		MUON/AliHLTPredictionProcessorMCH.h \
+		MUON/AliHLTPredictionProcessorMTR.h \
+		TPC/AliHLTDCSArray.h \
+		TPC/AliHLTPredictionProcessorTPC.h
+
+MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 		
+
+EINCLUDE := HLT/pendolino HLT/BASE STEER
+
+LIBRARY_DEP := -lHLTbase
+
+include $(MODDIR)/hlt.conf
+
+SRCS:=$(patsubst %,pendolino/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,pendolino/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,pendolino/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,pendolino/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS} -DLIBHLTREC_VERSION=$(LIBHLTPENDOLINO_VERSION)
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

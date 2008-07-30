@@ -11,7 +11,7 @@ EXTRA_DIST			=
 lib_LTLIBRARIES			=  libHLTpendolino.la
 
 # version info for the library
-LIBRARY_VERSION			= "$(LIBHLTPENDOLINO_VERSION):0:0"
+LIBRARY_VERSION			= "4:0:0"
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libHLTpendolino.pkg
