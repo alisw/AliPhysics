@@ -30,6 +30,7 @@
 #pragma link C++ class AliAODRedCov<6>+;
 #pragma link C++ class AliAODRecoDecay+;
 #pragma link C++ class AliAODv0+;
+#pragma link C++ class AliAODcascade+;
 #pragma link C++ class AliAODHandler+;
 #pragma link C++ class AliAODInputHandler+;
 #pragma link C++ class AliMultiAODInputHandler+;
