@@ -136,7 +136,14 @@ Bool_t AliRecoParam::AddDetRecoParamArray(Int_t iDet, TObjArray* parArray)
     AliDetectorRecoParam *par = (AliDetectorRecoParam*)parArray->At(i);
     if (!par) continue;
     if (par->IsDefault()) defaultFound = kTRUE;
-  }
+
+    Int_t specie = par->GetEventSpecie();
+    for(Int_t iBit = 0; iBit < kNSpecies; iBit++) {
+      if (specie & (1 << iBit)) {
+	fDetRecoParamsIndex[iBit][iDet] = i;
+      }
+    }
+ }
    
   fDetRecoParams[iDet] = parArray;
 
