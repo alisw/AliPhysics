@@ -4,24 +4,25 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnPairParticle.cxx \
       RESONANCES/AliRsnCut.cxx \
-      RESONANCES/AliRsnExpression.cxx \
       RESONANCES/AliRsnCutSet.cxx \
       RESONANCES/AliRsnCutMgr.cxx \
+      RESONANCES/AliRsnExpression.cxx \
       RESONANCES/AliRsnPID.cxx \
-      RESONANCES/AliRsnPIDWeightsMgr.cxx \
       RESONANCES/AliRsnPIDIndex.cxx \
+      RESONANCES/AliRsnPIDWeightsMgr.cxx \
       RESONANCES/AliRsnEvent.cxx \
+      RESONANCES/AliRsnEventBuffer.cxx \
       RESONANCES/AliRsnReader.cxx \
       RESONANCES/AliRsnReaderTaskSE.cxx \
       RESONANCES/AliRsnPairDef.cxx \
-      RESONANCES/AliRsnPairSimple.cxx \
-      RESONANCES/AliRsnEventBuffer.cxx \
-      RESONANCES/AliRsnAnalysisSimple.cxx \
-      RESONANCES/AliRsnAnalyzerSimple.cxx \
-      RESONANCES/AliRsnAnalysisSimpleTask.cxx \
-#     RESONANCES/AliRsnPair.cxx \
-#     RESONANCES/AliRsnBaseAT.cxx \
-#     RESONANCES/AliRsnAnalysisAT.cxx \
+      RESONANCES/AliRsnHistoDef.cxx \
+      RESONANCES/AliRsnSimpleFunction.cxx \
+      RESONANCES/AliRsnSimpleFcnInvMass.cxx \
+      RESONANCES/AliRsnSimpleFcnResolution.cxx \
+      RESONANCES/AliRsnSimpleAnalysis.cxx \
+      RESONANCES/AliRsnSimpleAnalyzer.cxx \
+      RESONANCES/AliRsnSimpleAnalysisTask.cxx \
+      RESONANCES/AliRsnSimpleAnalysisTaskSE.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
