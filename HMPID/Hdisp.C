@@ -34,7 +34,7 @@
 AliHMPIDParam *fParam;
 TDatabasePDG *fPdg;
 
-TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=-1; Int_t fNevt=0;                      
+TCanvas *fCanvas=0; Int_t fType=1; Int_t fEvt=-1; Int_t fNevt=0;                      
 TCanvasImp *fCanvasImp;
 TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]; TPolyMarker *fRenCko[7]; TPolyMarker *fRenFee[7];
                                   TClonesArray *fSdiLst; 
@@ -60,7 +60,12 @@ Int_t fChamN[9]={6,5,-1,4,3,2,-1,1,0};
 
 Int_t fTotPads[7],fTotClus[7];
 
+Int_t qSigmaCut=0;
+
+Int_t trigType=0;
+
 AliRunLoader *gAL=0; 
+AliLoader *gDL=0; // detector loader (needed to get Digits and Clusters) 
 
 Int_t nDigs[7];
 
@@ -160,7 +165,9 @@ void PrintEsd()
   for(Int_t iTrk=0;iTrk<fEsd->GetNumberOfTracks();iTrk++){
     AliESDtrack *pTrk = fEsd->GetTrack(iTrk);
     Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
-    Printf("Track %02i with p %7.2f with ThetaCer %5.3f with %i photons",iTrk,pTrk->GetP(),pTrk->GetHMPIDsignal(),nacc);
+    Printf("Track %02i with phi %7.2f theta %7.2f p %7.2f with ThetaCer %5.3f with %i photons",iTrk,pTrk->Phi()*TMath::RadToDeg(),
+                                                                                                    pTrk->Theta()*TMath::RadToDeg(),
+												    pTrk->GetP(),pTrk->GetHMPIDsignal(),nacc);
   }  
 }//PrintEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -202,20 +209,24 @@ void DrawLegend()
   pLeg2->AddEntry(fRenMip[0],Form("Mip hits %i"   ,nMip),"p");
   pLeg2->Draw();*/
 
- TBox *pBox = new TBox(0.012,0.03,0.97,0.28);
+ TBox *pBox = new TBox(0.012,0.01,0.97,0.28);
  pBox->Draw("l");
 
  TText *pText = new TText(0.35,0.21, "ddl = (0....13)");
- pText->SetTextSize(0.07);
+ pText->SetTextSize(0.06);
  pText->Draw();
 
- TText *pText2 = new TText(0.09,0.13,"RICH n ---> ddl 2n (left) & 2n+1 (right)");
- pText2->SetTextSize(0.07);
+ TText *pText2 = new TText(0.09,0.15,"RICH n ---> ddl 2n (left) & 2n+1 (right)");
+ pText2->SetTextSize(0.06);
  pText2->Draw();
 
- TText *pText3 = new TText(0.1,0.05, "phcat (0,2,4) left,   phcat (1,3,5) right");
- pText3->SetTextSize(0.07);
+ TText *pText3 = new TText(0.1,0.09, "phcat (0,2,4) left,   phcat (1,3,5) right");
+ pText3->SetTextSize(0.06);
  pText3->Draw();
+
+ TText *pText4 = new TText(0.35,0.03, Form("sigma cut = %i",qSigmaCut));
+ pText4->SetTextSize(0.06);
+ pText4->Draw();
 
 }//DrawLegend()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -268,7 +279,7 @@ void Draw()
 }//Draw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderHit(TClonesArray *pHitLst)
-{//used by ReadEvent() and SimulateEvent() to render hits to polymarker structures, one per chamber
+{//used by ReadEvent() to render hits to polymarker structures, one per chamber
   for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){       //hits loop
     AliHMPIDHit *pHit = (AliHMPIDHit*)pHitLst->At(iHit); Int_t ch=pHit->Ch(); Float_t x=pHit->LorsX(); Float_t y=pHit->LorsY();    //get current hit        
     switch(pHit->Pid()){
@@ -281,29 +292,35 @@ void RenderHit(TClonesArray *pHitLst)
 }//RenderHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderDig(TObjArray *pDigLst)
-{//used by ReadEvent() and SimulateEvent() to render digs to Tbox structures, one per chamber
+{//used by ReadEvent() to render digs to Tbox structures, one per chamber
+
+  Printf("RENDERDIG : event n. %i",fEvt);
+  
   for(Int_t iCh=0;iCh<=6;iCh++){                                    //chambers loop   
     TClonesArray *pDigCham=(TClonesArray*)pDigLst->At(iCh);         //get digs list for this chamber
     nDigs[iCh] = 0;
     fTotPads[iCh] = pDigCham->GetEntries();
+    Int_t iDigEff=0;
     for(Int_t iDig=0;iDig<pDigCham->GetEntries();iDig++){            //digs loop
       AliHMPIDDigit *pDig = (AliHMPIDDigit*)pDigCham->At(iDig); Float_t x=pDig->LorsX(); Float_t y=pDig->LorsY();    //get current hit        
-      fRenDig[iCh][iDig]->SetX1(x-0.5*AliHMPIDParam::SizePadX());
-      fRenDig[iCh][iDig]->SetX2(x+0.5*AliHMPIDParam::SizePadX());
-      fRenDig[iCh][iDig]->SetY1(y-0.5*AliHMPIDParam::SizePadY());
-      fRenDig[iCh][iDig]->SetY2(y+0.5*AliHMPIDParam::SizePadY());
-      fRenDig[iCh][iDig]->SetUniqueID((Int_t)pDig->Q());
-      fBox[iCh][iDig]->SetX1(x-0.5*AliHMPIDParam::SizePadX());
-      fBox[iCh][iDig]->SetX2(x+0.5*AliHMPIDParam::SizePadX());
-      fBox[iCh][iDig]->SetY1(y-0.5*AliHMPIDParam::SizePadY());
-      fBox[iCh][iDig]->SetY2(y+0.5*AliHMPIDParam::SizePadY());
+      if((Int_t)pDig->Q()<=qSigmaCut) continue;
+      fRenDig[iCh][iDigEff]->SetX1(x-0.5*AliHMPIDParam::SizePadX());
+      fRenDig[iCh][iDigEff]->SetX2(x+0.5*AliHMPIDParam::SizePadX());
+      fRenDig[iCh][iDigEff]->SetY1(y-0.5*AliHMPIDParam::SizePadY());
+      fRenDig[iCh][iDigEff]->SetY2(y+0.5*AliHMPIDParam::SizePadY());
+      fRenDig[iCh][iDigEff]->SetUniqueID((Int_t)pDig->Q());
+      fBox[iCh][iDigEff]->SetX1(x-0.5*AliHMPIDParam::SizePadX());
+      fBox[iCh][iDigEff]->SetX2(x+0.5*AliHMPIDParam::SizePadX());
+      fBox[iCh][iDigEff]->SetY1(y-0.5*AliHMPIDParam::SizePadY());
+      fBox[iCh][iDigEff]->SetY2(y+0.5*AliHMPIDParam::SizePadY());
+      iDigEff++;
       nDigs[iCh]++;
     }//Digit loop
   }//hits loop for this entry
 }//RenderHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderClu(TObjArray *pClus)
-{//used by ReadEvent() and SimulateEvent() to render clusters to polymarker structures, one per chamber
+{//used by ReadEvent() to render clusters to polymarker structures, one per chamber
   for(Int_t iCh=0;iCh<=6;iCh++){                                     //chambers loop   
     TClonesArray *pClusCham=(TClonesArray*)pClus->At(iCh);           //get clusters list for this chamber
     fTotClus[iCh] = pClusCham->GetEntries();
@@ -316,16 +333,15 @@ void RenderClu(TObjArray *pClus)
 }//RenderClus()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderEsd(AliESDEvent *pEsd)
-{//used by ReadEvent() or SimulateEvent() to render ESD to polymarker structures for rings and intersections one per chamber
+{//used by ReadEvent() to render ESD to polymarker structures for rings and intersections one per chamber
   AliHMPIDRecon rec;
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop to collect cerenkov rings and intersection points
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);    Int_t ch=pTrk->GetHMPIDcluIdx(); //get track and chamber intersected by it
     ch/=1000000;
-    if(ch<AliHMPIDParam::AliHMPIDParam::kMinCh||ch>AliHMPIDParam::kMaxCh) continue;//this track does not intersect any chamber
     Float_t xPc,yPc,xRa,yRa,thRa,phRa; 
-    Int_t chamb = AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc,xRa,yRa,thRa,phRa);   //find again intersection of track with PC--> it is not stored in ESD!
-    if(ch!=chamb){Printf(" CHAMBER MISMATCH: in ESDTrack chamber %i - in IntTrkCha chamber %i",ch,chamb);End();}
-    Int_t npTrk = fRenTxC[ch]->SetNextPoint(xPc,yPc);                           //add this intersection point
+    pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);;
+    if(ch<AliHMPIDParam::AliHMPIDParam::kMinCh||ch>AliHMPIDParam::kMaxCh) continue;//this track does not intersect any chamber
+    Int_t npTrk = fRenTxC[ch]->SetNextPoint(xRa,yRa);                           //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
     if(ckov>0){
       rec.SetTrack(xRa,yRa,thRa,phRa);
@@ -337,54 +353,6 @@ void RenderEsd(AliESDEvent *pEsd)
     }//if ckov is valid
   }//tracks loop  
 }//RenEsd()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimulateEsd(AliESDEvent *pEsd)
-{
-  TParticle part; TLorentzVector mom;
-  for(Int_t iTrk=0;iTrk<100;iTrk++){//stack loop
-    Printf("SimulateEsd: kProton %i",kProton);
-    part.SetPdgCode(kProton);
-    part.SetProductionVertex(0,0,0,0);
-    Double_t eta= -0.2+gRandom->Rndm()*0.4; //rapidity is random [-0.2,+0.2]
-    Double_t phi= gRandom->Rndm()*60.*TMath::DegToRad();   //phi is random      [ 0  , 60 ] degrees    
-    mom.SetPtEtaPhiM(5,eta,phi,part.GetMass());
-    part.SetMomentum(mom);
-    AliESDtrack trk(&part);
-    pEsd->AddTrack(&trk);
-  }//stack loop  
-}//EsdFromStack()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimulateHits(AliESDEvent *pEsd, TClonesArray *pHits)
-{//used by SimulateEvent to simulate hits out from provided ESD
-  const Int_t kCerenkov=50000050;
-  const Int_t kFeedback=50000051;
-  
-  AliHMPIDRecon rec;
-  Float_t eMip=200e-9,ePho=7.5e-9; 
-  Int_t hc=0; 
-  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop
-    AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
-    Float_t xRa,yRa;
-    Int_t ch=AliHMPIDTracker::IntTrkCha(pTrk,xRa,yRa);
-    if(ch<0) continue; //this track does not hit HMPID
-    Float_t beta = pTrk->GetP()/(TMath::Sqrt(pTrk->GetP()*pTrk->GetP()+0.938*0.938));
-    Float_t ckov=TMath::ACos(1./(beta*1.292));
-
-    Float_t theta,phi,xPc,yPc,; pTrk->GetHMPIDtrk(xPc,yPc,theta,phi); rec.SetTrack(xRa,yRa,theta,phi); 
-    
-    if(!AliHMPIDParam::IsInDead(xPc,yPc)) new((*pHits)[hc++]) AliHMPIDHit(ch,eMip,kProton  ,iTrk,xPc,yPc);                 //mip hit
-    Int_t nPhots = (Int_t)(20.*TMath::Power(TMath::Sin(ckov),2)/TMath::Power(TMath::Sin(TMath::ACos(1./1.292)),2));
-    for(int i=0;i<nPhots;i++){
-      TVector2 pos;
-      pos=rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi());
-      if(!AliHMPIDParam::IsInDead(pos.X(),pos.Y())) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kCerenkov,iTrk,pos.X(),pos.Y());
-    }                      //photon hits  
-    for(int i=0;i<3;i++){//feedback photons
-      Float_t x=gRandom->Rndm()*160; Float_t y=gRandom->Rndm()*150;
-      if(!AliHMPIDParam::IsInDead(x,y)) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kFeedback,iTrk,x,y);                 //feedback hits  
-    }//photon hits loop                      
-  }//tracks loop    
-}//SimulateHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TString Stack(Int_t evt,Int_t tid)
 {
@@ -460,7 +428,8 @@ void DisplayInfo(Int_t evt,Int_t px, Int_t py)
   TVector3 xyz=fParam->Lors2Mars(ch,x,y);
   
   if(padX>=0&&padY>=0) {
-    text0.Append(Form("Pad(%i,%i)-LORS(%6.2f,%6.2f)-MARS(%7.2f,%7.2f,%7.2f)",padX,padY,x,y,xyz.X(),xyz.Y(),xyz.Z()));
+    text0.Append(Form("Pad(%i,%i)-LORS(%6.2f,%6.2f)-MARS(%7.2f,%7.2f,%7.2f) A(%6.2f,%6.2f)",padX,padY,x,y,xyz.X(),xyz.Y(),xyz.Z(),
+                                                                                                 xyz.Theta()*TMath::RadToDeg(),xyz.Phi()*TMath::RadToDeg()));
     text1.Append(Form("Module %i Sector %i",ch,pc));
     text2="";
     text3.Append(Form("Pads = %i - Clusters = %i - Occupancy %5.2f%%",fTotPads[ch],fTotClus[ch],100.*fTotPads[ch]/(144.*160.)));
@@ -622,58 +591,6 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
   pPad->Update();                                              
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void ReadEvent()
-{//used by NextEvent()  to read curent event and construct all render elements
-  if(fNevt && fEvt>=fNevt) fEvt=0; //loop over max event
-  if(fNevt && fEvt<0) fEvt=fNevt-1; //loop over max event
-  
-  if(fHitFile){ 
-    if(fHitTree) delete fHitTree;   fHitTree=(TTree*)fHitFile->Get(Form("Event%i/TreeH",fEvt));
-    
-                          fHitTree->SetBranchAddress("HMPID",&fHitLst);
-    for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){    
-                          fHitTree->GetEntry(iEnt);
-      RenderHit(fHitLst);   
-    }//prim loop
-  }//if hits file
-
-  if(fDigFile){ 
-    if(fDigTree) delete fDigTree;   fDigTree=(TTree*)fDigFile->Get(Form("Event%i/TreeD",fEvt));
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fDigTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fDigLst)[iCh]);      
-    fDigTree->GetEntry(0);                              
-    RenderDig(fDigLst);   
-  }//if digs file
-    
-  if(fCluFile){ 
-    if(fCluTree) delete fCluTree; fCluTree=(TTree*)fCluFile->Get(Form("Event%i/TreeR",fEvt));
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fCluTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fCluLst)[iCh]);      
-    fCluTree->GetEntry(0);
-    RenderClu(fCluLst);   
-  }//if clus file
-  
-  if(fEsdFile){//if ESD file open
-    fEsdTree->GetEntry(fEvt);  
-    RenderEsd(fEsd);
-  }//if ESD file 
-}//ReadEvent()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimulateEvent()
-{// used by NextEvent() to simulate all info
-  AliCDBManager* pCDB = AliCDBManager::Instance();  pCDB->SetDefaultStorage("local://$HOME"); pCDB->SetRun(0);
-  AliCDBEntry *pNmeanEnt=pCDB->Get("HMPID/Calib/Nmean");
-
-  SimulateEsd(fEsd);
-  SimulateHits(fEsd,fHitLst);
-                 AliHMPIDv2::Hit2Sdi(fHitLst,fSdiLst);                               
-          AliHMPIDDigitizer::Sdi2Dig(fSdiLst,fDigLst);     
-      AliHMPIDReconstructor::Dig2Clu(fDigLst,fCluLst);
-            AliHMPIDTracker::Recon(fEsd,fCluLst,(TObjArray*)pNmeanEnt->GetObject());
-            
-  RenderHit(fHitLst);
-  RenderClu(fCluLst);
-  RenderEsd(fEsd);            
-}//SimulateEvent()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CheckStatus()
 {
   if(fHitFile){
@@ -689,13 +606,18 @@ void CheckStatus()
 void GetEvent()
 {
   ClearRenders();
+  
+  Printf("get Event...... event n. %i",fEvt);
+  ReadEvent();
+  
+  while(!Trigger()) {
+  Printf(" trigger %i for event %i",Trigger(),fEvt);
+    fEvt+=fTimeArrow;
+    ClearRenders();
+    ReadEvent();
+  }
+  
   CheckStatus();
-  switch(fType){
-    case 1: ReadEvent();break;
-//    case 2: ReadCosmic(); break;
-    case 3: SimulateEvent();     break;
-    default:                 return;
-  }  
   Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -728,6 +650,9 @@ void Hdisp()
   CreateRenders();
   
   TString title="Session with";
+
+  LoadRunLoader();
+  
   if(gSystem->IsFileInIncludePath("HMPID.Hits.root")){// tries to open hits
     fHitFile=TFile::Open("HMPID.Hits.root");       fNevt=fHitFile->GetNkeys(); fType=1; title+=Form(" HITS-%i ",fNevt);
   }
@@ -739,7 +664,12 @@ void Hdisp()
   if(gSystem->IsFileInIncludePath("HMPID.RecPoints.root")){// tries to open clusters
     fCluFile=TFile::Open("HMPID.RecPoints.root");  fNevt=fCluFile->GetNkeys(); fType=1;  title+=Form(" CLUSTERS-%i ",fNevt);
    }
-  
+
+  if(gSystem->IsFileInIncludePath("cosmic.root")){                          //clm: Check if cosmic file is in the folder
+    fCosFile=TFile::Open("cosmic.root");  fCosTree=(TTree*)fCosFile->Get("cosmic");  fNevt=fCosTree->GetEntries();  fType=2;
+    fCosTree->SetBranchAddress("Digs",&fDigLst);   fCosTree->SetBranchAddress("Clus",&fCluLst); 
+  }            
+
   if(gSystem->IsFileInIncludePath("AliESDs.root")){     
     fEsdFile=TFile::Open("AliESDs.root");
     if(fEsdFile) { 
@@ -749,23 +679,8 @@ void Hdisp()
         fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt); 
       } else {delete fEsdFile;fEsdFile=0x0;}
     } else {delete fEsdFile; delete fEsdTree;}
-    //clm: we need to set the magnetic field  
-    if(gSystem->IsFileInIncludePath("galice.root")){
-    if(gAlice) gAlice=0x0;                       
-    gAL=AliRunLoader::Open();                       
-    gAL->LoadgAlice();           
-    if(gAL)AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);                         
-   }else{
-          Printf("=============== NO galice file! Magnetic field for ESD tracking is: %f ===============",AliTracker::GetBz());
-     }  
-      
   }
-
-  if(gSystem->IsFileInIncludePath("cosmic.root")){                          //clm: Check if cosmic file is in the folder
-    fCosFile=TFile::Open("cosmic.root");  fCosTree=(TTree*)fCosFile->Get("cosmic");  fNevt=fCosTree->GetEntries();  fType=2;
-    fCosTree->SetBranchAddress("Digs",&fDigLst);   fCosTree->SetBranchAddress("Clus",&fCluLst); 
-  }            
-
+  
   fCanvas=new TCanvas("all","",-1024,768);fCanvas->SetWindowSize(1024,768);
   fCanvasImp = fCanvas->GetCanvasImp();
   fCanvasImp->ShowStatusBar();
@@ -937,3 +852,116 @@ void OnlyEsd()
   GetEvent();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void LoadRunLoader(){
+  if(!gSystem->IsFileInIncludePath("galice.root")) {
+  Printf("\n\n galice.root not in path: please check! \n\n");
+  return;
+  }
+  if(gAlice) gAlice=0x0;                       
+  gAL=AliRunLoader::Open(); 
+  gAL->LoadHeader();
+  gAL->LoadHits("HMPID");
+  gAL->LoadDigits("HMPID");
+  gAL->LoadRecPoints("HMPID");
+  gDL = gAL->GetDetectorLoader("HMPID"); 
+  if(!gDL){
+   Printf("\n\n no AliLoader present: please check! \n\n");
+  return;
+  }
+  fNevt= gAL->GetNumberOfEvents(); 
+}
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void ReadEvent(){
+//used by NextEvent()  to read curent event and construct all render elements
+  if(fNevt && fEvt>=fNevt) fEvt=0; //loop over max event
+  if(fNevt && fEvt<0) fEvt=fNevt-1; //loop over max event
+  
+  Printf("getting event %i out of %i",fEvt,fNevt);
+  
+  if(gDL) {
+  
+    gAL->GetEvent(fEvt);
+    
+//-------- HITS
+
+    fHitTree=gDL->TreeH();
+
+    if(fHitTree) {    
+    
+      fHitTree->SetBranchAddress("HMPID",&fHitLst);
+      
+      for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){    
+        fHitTree->GetEntry(iEnt);
+        RenderHit(fHitLst);   
+      }//prim loop
+    }//if hits tree
+
+//-------- DIGITS
+
+    fDigTree=gDL->TreeD();
+    
+    if(fDigTree){ 
+      for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fDigTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fDigLst)[iCh]); 
+//      fDigTree->GetEvent(fEvt);
+      fDigTree->GetEntry(0);                       
+      RenderDig(fDigLst);
+      //cout << "pointer to the dig list " << fDigLst << endl;
+     }
+
+//-------- CLUSTERS
+
+     fCluTree= gDL->TreeR();
+     
+     if(fCluTree) {
+     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fCluTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fCluLst)[iCh]); 
+     fCluTree->GetEntry(0);
+     RenderClu(fCluLst);   
+    }
+  }
+  
+//-------- ESD
+  
+  if(fEsdFile){//if ESD file open
+    fEsdTree->GetEntry(fEvt);  
+    RenderEsd(fEsd);
+  }//if ESD file 
+
+}
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SetEvent(Int_t ev)
+{
+  fEvt=ev;
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SetSigmaCut(Int_t sig=0)
+{
+  qSigmaCut = sig;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SetField()
+{
+  gROOT->LoadMacro("Field.C");
+ 
+  AliMagF * b = Field();
+
+AliHMPIDTracker::SetFieldMap(b,kTRUE);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SetTrigger(Int_t type=0)
+{
+  trigType = type;
+  if(type==1) Printf(" Trigger 1 selected: at least ONE track in HMPID.");
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t Trigger()
+{
+  if(trigType==0) return kTRUE;
+  if(trigType==1) {
+    if(fEsd->GetNumberOfTracks()>0) {
+    PrintEsd();
+    return kTRUE;
+    } else return kFALSE;
+  }
+  return kTRUE;
+}
