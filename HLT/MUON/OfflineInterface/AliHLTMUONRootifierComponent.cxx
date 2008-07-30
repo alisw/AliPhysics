@@ -182,9 +182,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		if (block->fDataType == AliHLTMUONConstants::RecHitsBlockDataType())
 		{
 			specification |= block->fSpecification;
-			AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-			ptr += block->fOffset;
-			AliHLTMUONRecHitsBlockReader inblock(ptr, block->fSize);
+			AliHLTMUONRecHitsBlockReader inblock(block->fPtr, block->fSize);
 			if (not BlockStructureOk(inblock)) continue;
 			
 			// Decode the source DDL from the specification bits.
@@ -224,9 +222,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		else if (block->fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
 		{
 			specification |= block->fSpecification;
-			AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-			ptr += block->fOffset;
-			AliHLTMUONTriggerRecordsBlockReader inblock(ptr, block->fSize);
+			AliHLTMUONTriggerRecordsBlockReader inblock(block->fPtr, block->fSize);
 			if (not BlockStructureOk(inblock)) continue;
 			
 			// Decode the source DDL from the specification bits.
@@ -304,9 +300,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	    )
 	{
 		specification |= block->fSpecification;
-		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-		ptr += block->fOffset;
-		AliHLTMUONMansoTracksBlockReader inblock(ptr, block->fSize);
+		AliHLTMUONMansoTracksBlockReader inblock(block->fPtr, block->fSize);
 		if (not BlockStructureOk(inblock)) continue;
 		
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
@@ -416,9 +410,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	{
 		decisionBlockFound = true;
 		specification |= block->fSpecification;
-		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-		ptr += block->fOffset;
-		AliHLTMUONSinglesDecisionBlockReader inblock(ptr, block->fSize);
+		AliHLTMUONSinglesDecisionBlockReader inblock(block->fPtr, block->fSize);
 		if (not BlockStructureOk(inblock)) continue;
 		
 		numLowPt += inblock.BlockHeader().fNlowPt;
@@ -479,9 +471,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	{
 		decisionBlockFound = true;
 		specification |= block->fSpecification;
-		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-		ptr += block->fOffset;
-		AliHLTMUONPairsDecisionBlockReader inblock(ptr, block->fSize);
+		AliHLTMUONPairsDecisionBlockReader inblock(block->fPtr, block->fSize);
 		if (not BlockStructureOk(inblock)) continue;
 		
 		numUnlikeAnyPt += inblock.BlockHeader().fNunlikeAnyPt;

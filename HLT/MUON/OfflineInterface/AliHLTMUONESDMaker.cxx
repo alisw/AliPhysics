@@ -196,9 +196,7 @@ int AliHLTMUONESDMaker::DoEvent(
 		if (block->fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
 		{
 			specification |= block->fSpecification;
-			AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-			ptr += block->fOffset;
-			AliHLTMUONTriggerRecordsBlockReader inblock(ptr, block->fSize);
+			AliHLTMUONTriggerRecordsBlockReader inblock(block->fPtr, block->fSize);
 			if (not BlockStructureOk(inblock)) continue;
 			
 			for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
@@ -232,9 +230,7 @@ int AliHLTMUONESDMaker::DoEvent(
 	    )
 	{
 		specification |= block->fSpecification;
-		AliHLTUInt8_t* ptr = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-		ptr += block->fOffset;
-		AliHLTMUONMansoTracksBlockReader inblock(ptr, block->fSize);
+		AliHLTMUONMansoTracksBlockReader inblock(block->fPtr, block->fSize);
 		if (not BlockStructureOk(inblock)) continue;
 		
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)

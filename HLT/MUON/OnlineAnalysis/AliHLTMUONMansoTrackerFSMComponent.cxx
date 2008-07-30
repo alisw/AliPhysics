@@ -848,10 +848,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 		{
 			specification |= blocks[n].fSpecification;
 			
-			AliHLTMUONRecHitsBlockReader inblock(
-					reinterpret_cast<char*>(blocks[n].fPtr) + blocks[n].fOffset,
-					blocks[n].fSize
-				);
+			AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
 			if (not BlockStructureOk(inblock)) continue;
 			
 			if (inblock.Nentries() != 0)
@@ -887,10 +884,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 		if (blocks[n].fDataType != AliHLTMUONConstants::TriggerRecordsBlockDataType())
 			continue;
 		
-		AliHLTMUONTriggerRecordsBlockReader inblock(
-				reinterpret_cast<char*>(blocks[n].fPtr) + blocks[n].fOffset,
-				blocks[n].fSize
-			);
+		AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
 		if (not BlockStructureOk(inblock)) continue;
 		
 		DebugTrace("Processing a trigger block with "

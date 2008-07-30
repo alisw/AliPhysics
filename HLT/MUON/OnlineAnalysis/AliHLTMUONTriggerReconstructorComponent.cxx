@@ -761,9 +761,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			);
 			continue;
 		}
-		AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(
-				reinterpret_cast<char*>(blocks[n].fPtr) + blocks[n].fOffset
-			);
+		AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(blocks[n].fPtr);
 		AliHLTUInt32_t payloadSize = totalDDLSize - sizeof(AliRawDataHeader);
 		AliHLTUInt8_t* buffer = reinterpret_cast<AliHLTUInt8_t*>(header + 1);
 		AliHLTUInt32_t nofTrigRec = block.MaxNumberOfEntries();
