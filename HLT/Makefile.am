@@ -5,7 +5,8 @@
 if HAVE_ALIROOT
 ALIROOT_DEP=sim \
 	    rec \
-	    shuttle
+	    shuttle \
+	    pendolino
 endif
 
 if EN_HLT_SAMPLE

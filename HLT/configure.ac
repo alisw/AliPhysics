@@ -993,6 +993,7 @@ if test "x$have_aliroot" != "xno"; then
 		   rec/Makefile	 
 		   rec/test/Makefile	 
 		   shuttle/Makefile
+		   pendolino/Makefile
 		   ])
 fi
 if test "x$prefix" != "xNONE" && test $ALICE_ROOT = $prefix ; then
