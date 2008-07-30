@@ -171,6 +171,8 @@ Bool_t AliRawReaderFile::CreateFileIndex()
     entry.Remove(0, entry.Last('_')+1);
     entry.Remove(entry.Length()-4);
     Int_t equipmentId = atoi(entry.Data());
+    Int_t ddlIndex = -1;
+    fDetectorPattern |= (1 << AliDAQ::DetectorIDFromDdlID(equipmentId,ddlIndex));
     if (fDDLIndex->GetSize()<=equipmentId) {
       fDDLIndex->Set(equipmentId+1);
     }
@@ -347,6 +349,7 @@ Bool_t AliRawReaderFile::NextEvent()
 
   if (fDDLIndex) delete fDDLIndex;
   fDDLIndex=NULL;
+  fDetectorPattern = 0;
   if (fEventIndex < -1) return kFALSE;
 
   do {
