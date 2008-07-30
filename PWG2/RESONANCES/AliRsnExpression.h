@@ -14,15 +14,19 @@ class AliRsnCutSet;
 
 // These are the valid operators types.
 
-enum { kOpAND=1,   // AND '&'
-       kOpOR,      // OR '|'
-       kOpNOT
-     };   // Unary negation '!'
-
 class AliRsnExpression : public TObject
 {
 
   public:
+  
+  // operators for complex cut expressions
+    enum ECutOp
+    {
+        kOpAND=1,   // AND '&'
+        kOpOR,      // OR '|'
+        kOpNOT      // Unary negation '!'
+    };
+  
     AliRsnExpression() : fVname ( 0 ), fArg1 ( 0 ), fArg2 ( 0 ), fOperator ( 0 )  {}
     AliRsnExpression ( TString exp );
     virtual    ~AliRsnExpression();

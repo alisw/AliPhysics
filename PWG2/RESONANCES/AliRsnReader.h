@@ -1,30 +1,26 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
 //
-// ==== Class AliRsnReader ========
+// Class AliRsnReader
 //
-// This object reads a 'standard' event and converts it into the internal
-// format used for resonance analysis (AliRsnEvent).
-// 'Standard' event means ESD, standard AOD and MC event.
+// This is the universal converter from any kind of source event
+// (i.e. ESD, standard AOD, MC) into the internal non-standard 
+// AOD format used by RSN package.
+// ---
+// This class reads all tracks in an input event and converts them
+// into AliRsnDaughters, and computes preliminarily the PID probabilities
+// by doing the Bayesian combination of a set of assigned prior probabilities
+// with the PID weights defined in each track.
+// ---
+// When filling the output event (AliRsnEvent), some arrays of indexes
+// are created in order to organize tracks according to their PID and charge,
+// which will then be used in further analysis steps.
 //
-// The input-2-AliRsnEvent conversion is done through a class which reads
-// from AliAnalysisTaskSE, which is the standard analysis object. 
-// This class creates the AliRsnEvent's before the input event is read, 
-// so this class has not to 'create' a new outpu event, but instead it has 
-// to 'fill' one which has already been created elsewhere.
-// Then, the methods provided here accept an AliRsnEvent as argument passed
-// by reference, and they 'fill' this object using the data from the inputs
-// passed to them.
-// 
-// author: A. Pulvirenti
-// email : alberto.pulvirenti@ct.infn.it
+// author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
 #ifndef ALIRSNREADER_H
 #define ALIRSNREADER_H
+
+#include <TNamed.h>
 
 class AliVEvent;
 class AliESDEvent;
@@ -33,7 +29,7 @@ class AliMCEvent;
 class AliRsnEvent;
 class AliRsnPIDWeightsMgr;
 
-class AliRsnReader : public TObject
+class AliRsnReader : public TNamed
 {
 public:
 
@@ -46,17 +42,24 @@ public:
     };
 
     AliRsnReader(ESource source = kESD, AliRsnPIDWeightsMgr *mgr = 0x0);
-    AliRsnReader(const AliRsnReader& copy);
-    AliRsnReader& operator=(const AliRsnReader& copy);
     virtual ~AliRsnReader() {}
     
+    void    SetSource(ESource source) {fSource = source;}
     void    SetWeightsMgr(AliRsnPIDWeightsMgr *mgr) {fWeightsMgr = mgr;}
     void    SetCheckSplit(Bool_t doit = kTRUE) {fCheckSplit = doit;}
     void    SetRejectFakes(Bool_t doit = kTRUE) {fRejectFakes = doit;}
     
+    ESource GetSource() {return fSource;}
+    Bool_t  CheckSplit() {return fCheckSplit;}
+    Bool_t  RejectFakes() {return fRejectFakes;}
     Bool_t  Fill(AliRsnEvent *rsn, AliVEvent *event, AliMCEvent *refMC = 0);
     
 protected:
+
+    // dummy copy methods
+    AliRsnReader(const AliRsnReader &copy) : TNamed(copy),
+      fSource(kESD),fCheckSplit(0),fRejectFakes(0),fWeightsMgr(0x0) { /*nothing*/ }
+    AliRsnReader& operator=(const AliRsnReader&) {return (*this);}
 
     Bool_t  FillFromESD(AliRsnEvent *rsn, AliESDEvent *event, AliMCEvent *refMC = 0, Bool_t useTPCOnly = kFALSE);
     Bool_t  FillFromAOD(AliRsnEvent *rsn, AliAODEvent *event, AliMCEvent *refMC = 0);

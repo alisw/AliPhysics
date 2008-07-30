@@ -20,7 +20,8 @@
 class AliRsnPIDWeightsMgr : public TObject
 {
 public:
-    
+
+    // detectors for customizing PID weights
     enum EDetector {
         kITS,
         kTPC,

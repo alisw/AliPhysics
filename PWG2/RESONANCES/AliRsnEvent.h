@@ -21,13 +21,13 @@
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
 
-class AliRsnDaughter;
-
 #include <TNamed.h>
 #include <TArrayI.h>
 #include <TClonesArray.h>
+
 #include "AliRsnPID.h"
 #include "AliRsnPIDIndex.h"
+#include "AliRsnDaughter.h"
 
 class AliRsnEvent : public TNamed
 {
@@ -43,10 +43,13 @@ class AliRsnEvent : public TNamed
     void            Clear (Option_t *option = "");
     AliRsnDaughter* AddTrack (AliRsnDaughter track);
     AliRsnDaughter* GetTrack (Int_t index);
+    AliRsnDaughter* GetLeadingParticle(Double_t ptMin = 0.0, AliRsnPID::EType type = AliRsnPID::kUnknown, Bool_t realistic = kTRUE);
+    Int_t           GetLastFastTrack(Double_t ptMin, AliRsnPID::EType type = AliRsnPID::kUnknown, Bool_t realistic = kTRUE);
     TClonesArray*   GetTracks() {return fTracks;}
     TArrayI*        GetCharged (Char_t sign);
-    TArrayI*        GetTracksArray (AliRsnPID::EMethod pidtype, Char_t sign, AliRsnPID::EType type);
+    TArrayI*        GetTracksArray (AliRsnDaughter::EPIDMethod method, Char_t sign, AliRsnPID::EType type);
     void            FillPIDArrays();
+    void            SortTracks() {fTracks->Sort();}
     void            Print (Option_t *option = "") const;
 
     // Primary vertex

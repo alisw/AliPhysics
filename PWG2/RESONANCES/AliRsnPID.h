@@ -15,18 +15,14 @@
 #ifndef ALIRSNPID_H
 #define ALIRSNPID_H
 
-class AliRsnPIDProb;
+#include <TNamed.h>
+
 class AliRsnDaughter;
 class AliRsnEvent;
 
-class AliRsnPID : public TObject
+class AliRsnPID : public TNamed
 {
 public:
-
-    AliRsnPID();
-    AliRsnPID(const AliRsnPID& copy);
-    AliRsnPID& operator=(const AliRsnPID& copy);
-    virtual ~AliRsnPID() {}
 
     // types enum
     enum EType {
@@ -39,54 +35,46 @@ public:
         kSpecies = 5
     };
 
-    // identification method enum
-    enum EMethod {
-        kNone = 0,
-        kRealistic,
-        kPerfect,
-        kMethods
-    };
+    AliRsnPID();
+    virtual ~AliRsnPID() {}
 
     // conversions from PDG code to local type
-    static EType         InternalType(Int_t pdgCode);
-
+    static EType        InternalType(Int_t pdgCode);
+    
     // retrieve particle informations from internal type
-    static Int_t         PDGCode(EType pid);
-    static const char *  ParticleName(EType pid, Bool_t shortName = kTRUE);
-    static const char *  ParticleNameLatex(EType pid);
-    static Double_t      ParticleMass(EType pid);
+    static Int_t        PDGCode(EType pid);
+    static const char*  ParticleName(EType pid, Bool_t shortName = kTRUE);
+    static const char*  ParticleNameLatex(EType pid);
+    static Double_t     ParticleMass(EType pid);
 
     // identification routines
-    Bool_t        Identify(AliRsnDaughter *d);
-    Bool_t        Identify(AliRsnEvent *e);
-    Bool_t        IdentifiedAs(AliRsnDaughter *d, EType type, Short_t charge = 0);
+    Bool_t Process(AliRsnEvent *e);
+    Bool_t ComputeProbs(AliRsnDaughter *d);
+    Bool_t IdentifiedAs(AliRsnDaughter *d, EType type, Short_t charge = 0);
+    EType  TrackType(AliRsnDaughter *d);
 
-    // setters
-    void SetMethod(EMethod method) {fMethod = method;}
-	void SetPriorProbability(EType type, Double_t p);
-	void SetMinProb(Double_t p) {fMinProb = p;}
-	void SetMaxPt(Double_t p) {fMaxPt = p;}
+    // data members
+    void     SetPriorProbability(EType type, Double_t p);
+    void     SetMinProb(Double_t p) {fMinProb = p;}
+    void     SetMaxPt(Double_t p) {fMaxPt = p;}
+    Double_t GetPriorProbability(EType type) {return fPrior[(Int_t)type];}
+    Double_t GetMinProb() {return fMinProb;}
+    Double_t GetMaxPt() {return fMaxPt;}
 
-	// getters
-	EMethod  GetMethod() {return fMethod;}
+    // other
+    void DumpPriors();
 
 private:
 
-    // identification routines
-    Bool_t  IdentifyPerfect(AliRsnDaughter *d);
-    Bool_t  IdentifyRealistic(AliRsnDaughter *d);
-    Bool_t  Unidentify(AliRsnDaughter *d, Double_t value = 1.0);
+    Double_t  fPrior[kSpecies]; // prior probabilities
+    Double_t  fMaxPt;           // pt threshold for realistic PID
+    Double_t  fMinProb;         // threshold on acceptable largest probability
 
-    EMethod    fMethod;          // PID method
-
-    Double_t   fPrior[kSpecies]; // prior probabilities
-    Double_t   fMaxPt;           // realistic PID is done for Pt < this parameter
-    Double_t   fMinProb;         // threshold on acceptable largest probability
-
-    static const char* fgkParticleNameShort[kSpecies+1];
-    static const char* fgkParticleNameLong[kSpecies+1];
-    static const char* fgkParticleNameLatex[kSpecies+1];
-    static const Int_t fgkParticlePDG[kSpecies+1];
+    static const Double_t  fgkParticleMass[kSpecies + 1];      // PDG particle mass
+    static const char*     fgkParticleNameShort[kSpecies + 1]; // short particle name
+    static const char*     fgkParticleNameLong[kSpecies + 1];  // long particle name
+    static const char*     fgkParticleNameLatex[kSpecies + 1]; // latex particle name
+    static const Int_t     fgkParticlePDG[kSpecies + 1];       // PDG code of particle
 
     ClassDef(AliRsnPID,1);
 };

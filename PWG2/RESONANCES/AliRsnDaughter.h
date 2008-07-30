@@ -1,17 +1,12 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
-//=============================================================================
+//
 // Class AliRsnDaughter
 //
-// Light-weight 'track' AOD object which contains all required track details
+// Light-weight AOD object which contains all required track details
 // which are used for resonance analysis.
 // Provides converters from all kinds of input track type: ESD, AOD and MC.
 //
 // author: A. Pulvirenti --- email: alberto.pulvirenti@ct.infn.it
-//=============================================================================
+//
 
 #ifndef ALIRSNDAUGHTER_H
 #define ALIRSNDAUGHTER_H
@@ -32,6 +27,14 @@ class AliRsnMCInfo;
 class AliRsnDaughter : public AliVParticle
 {
   public:
+  
+    enum EPIDMethod {
+        kNoPID = 0,
+        kRealistic,
+        kWeighted,
+        kPerfect,
+        kMethods
+    };
 
     AliRsnDaughter();
     AliRsnDaughter (const AliRsnDaughter &copy);
@@ -43,13 +46,14 @@ class AliRsnDaughter : public AliVParticle
 
     // 4-momentum
     virtual Double_t E()  const {return TMath::Sqrt (fMass*fMass + P2());}
+    virtual Double_t E(Double_t mass) {SetM(mass); return E();}
     virtual Double_t M()  const {return fMass;}
-    virtual Double_t P2() const {return Px() *Px() + Py() *Py() + Pz() *Pz();}
+    virtual Double_t P2() const {return Px()*Px() + Py()*Py() + Pz()*Pz();}
     virtual Double_t P()  const {return TMath::Sqrt (P2());}
     virtual Double_t Px() const {return fP[0];}
     virtual Double_t Py() const {return fP[1];}
     virtual Double_t Pz() const {return fP[2];}
-    virtual Double_t Pt() const {return TMath::Sqrt (Px() *Px() + Py() *Py());}
+    virtual Double_t Pt() const {return TMath::Sqrt (Px()*Px() + Py()*Py());}
     virtual Double_t OneOverPt() const {return 1.0 / Pt();}
     virtual Bool_t   PxPyPz (Double_t p[3]) const {p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE;}
     void             SetPx (Double_t value) {fP[0] = value;}
@@ -62,7 +66,7 @@ class AliRsnDaughter : public AliVParticle
     virtual Double_t Xv() const {return fV[0];}
     virtual Double_t Yv() const {return fV[1];}
     virtual Double_t Zv() const {return fV[2];}
-    virtual Double_t Vt() const {return TMath::Sqrt (Xv() *Xv() + Yv() *Yv());}
+    virtual Double_t Dr() const {return TMath::Sqrt (Xv()*Xv() + Yv()*Yv());}
     virtual Bool_t   XvYvZv (Double_t x[3]) const {x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE;}
     void             SetVx (Double_t value) {fV[0] = value;}
     void             SetVy (Double_t value) {fV[1] = value;}
@@ -81,12 +85,12 @@ class AliRsnDaughter : public AliVParticle
 
     // PID
     virtual const Double_t* PID() const {return fPIDWeight;}
-    AliRsnPID::EType        PIDType() const {return fPIDType;}
     const Double_t*         PIDProb() const {return fPIDProb;}
-    void                    SetPIDType (AliRsnPID::EType type) {fPIDType = type;}
     void                    SetPIDProb (Int_t i, Double_t value);
     void                    SetPIDWeight (Int_t i, Double_t value);
-    void                    SetPIDWeights (const Double_t *pid);
+    static void             SetPIDMethod(EPIDMethod method) {fgPIDMethod = method;}
+    void                    AssignRealisticPID();
+    AliRsnPID::EType        PIDType(Double_t &prob);
 
     // check that contains a given ESD flag
     Bool_t  CheckFlag (ULong_t flag) {return (fFlags & flag);}
@@ -99,6 +103,7 @@ class AliRsnDaughter : public AliVParticle
     // position in stack/array
     Int_t   Index() const {return fIndex;}
     Int_t   Label() const {return fLabel;}
+    Int_t   GetLabel() const {return -1;}
     void    SetIndex (Int_t value) {fIndex = value;}
     void    SetLabel (Int_t value) {fLabel = value;}
 
@@ -108,9 +113,12 @@ class AliRsnDaughter : public AliVParticle
     Bool_t  InitMCInfo (TParticle *particle);
     Bool_t  InitMCInfo (AliMCParticle *mcParticle);
 
-    // Dummy
-    Int_t GetLabel() const {return -1;}
+    // MC info
     AliRsnMCInfo* GetMCInfo() const { return fMCInfo; }
+    
+    // sorting (with respect to Pt)
+    virtual Bool_t IsSortable() const {return kTRUE;}
+    virtual Int_t  Compare(const TObject* obj) const;
 
   private:
 
@@ -122,15 +130,16 @@ class AliRsnDaughter : public AliVParticle
 
     Double_t           fP[3];     // vector momentum (x, y, z)
     Double_t           fV[3];     // DCA vertex (x, y, z)
+    Double_t           fMass;     // mass (assigned externally)
 
-    AliRsnPID::EType   fPIDType;  // assigned PID
-    Double_t           fPIDProb[AliRsnPID::kSpecies];   // probability related to assigned PID
+    AliRsnPID::EType   fRealisticPID;                   // PID from Bayesian probs (largest one)
+    Double_t           fPIDProb[AliRsnPID::kSpecies];   // PID probabilities (Bayesian comp.)
     Double_t           fPIDWeight[AliRsnPID::kSpecies]; // PID weights
-    Double_t           fMass;     // mass (defined by PID)
 
-    AliRsnMCInfo      *fMCInfo;   // reference to particle object (if any)
+    AliRsnMCInfo      *fMCInfo;     // reference to particle object (if any)
+    static EPIDMethod  fgPIDMethod; // flag to define how the PID is computed for this object
 
-    ClassDef (AliRsnDaughter, 3);
+    ClassDef (AliRsnDaughter, 4);
 };
 
 #endif

@@ -1,39 +1,24 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
 //
-// ==== Class AliRsnReader ========
+// Class AliRsnReader
 //
-// This object reads a 'standard' event and converts it into the internal
-// format used for resonance analysis (AliRsnEvent).
-// 'Standard' event means ESD, standard AOD and MC event.
+// This is the universal converter from any kind of source event
+// (i.e. ESD, standard AOD, MC) into the internal non-standard 
+// AOD format used by RSN package.
+// ---
+// This class reads all tracks in an input event and converts them
+// into AliRsnDaughters, and computes preliminarily the PID probabilities
+// by doing the Bayesian combination of a set of assigned prior probabilities
+// with the PID weights defined in each track.
+// ---
+// When filling the output event (AliRsnEvent), some arrays of indexes
+// are created in order to organize tracks according to their PID and charge,
+// which will then be used in further analysis steps.
 //
-// The input-2-AliRsnEvent conversion is done through a class which reads
-// from AliAnalysisTaskSE, which is the standard analysis object. 
-// This class creates the AliRsnEvent's before the input event is read, 
-// so this class has not to 'create' a new outpu event, but instead it has 
-// to 'fill' one which has already been created elsewhere.
-// Then, the methods provided here accept an AliRsnEvent as argument passed
-// by reference, and they 'fill' this object using the data from the inputs
-// passed to them.
-// 
-// author: A. Pulvirenti
-// email : alberto.pulvirenti@ct.infn.it
+// author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
 #include <TString.h>
+#include <TDirectory.h>
 
 #include "AliLog.h"
 
@@ -62,7 +47,7 @@ ClassImp(AliRsnReader)
 
 //_____________________________________________________________________________
 AliRsnReader::AliRsnReader(ESource source, AliRsnPIDWeightsMgr *mgr) :
-  TObject(),
+  TNamed("RsnReader", ""),
   fSource(source),
   fCheckSplit(kFALSE),
   fRejectFakes(kFALSE),
@@ -70,36 +55,9 @@ AliRsnReader::AliRsnReader(ESource source, AliRsnPIDWeightsMgr *mgr) :
 {
 //
 // Constructor.
-// Initializes the base-type data members:
-//   - management of fake tracks
+// Adds also this object to global directory.
 //
-}
-
-//_____________________________________________________________________________
-AliRsnReader::AliRsnReader(const AliRsnReader &copy) : 
-  TObject(copy),
-  fSource(copy.fSource),
-  fCheckSplit(copy.fCheckSplit),
-  fRejectFakes(copy.fRejectFakes),
-  fWeightsMgr(copy.fWeightsMgr)
-{
-//
-// Copy constructor.
-//
-}
-
-//_____________________________________________________________________________
-AliRsnReader& AliRsnReader::operator=(const AliRsnReader &copy)
-{
-//
-// Assignment operator.
-//
-
-    fSource = copy.fSource;
-    fCheckSplit = copy.fCheckSplit;
-    fRejectFakes = copy.fRejectFakes;
-    fWeightsMgr = copy.fWeightsMgr;
-    return (*this);
+    gDirectory->Append(this, kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -111,36 +69,46 @@ Bool_t AliRsnReader::Fill(AliRsnEvent *rsn, AliVEvent *event, AliMCEvent *mc)
 // passed by reference as first argument.
 //
 
+    Bool_t success = kFALSE;
     TString str(event->ClassName());
-
+    
     switch (fSource) {
         case kESD:
             if (!str.Contains("AliESDEvent")) {
-                AliError("A reader set to 'kESD' or 'kESDTPC' can read only ESD events");
+                AliError(Form("Source class mismatch [expected: 'AliESDEvent' -- passed: '%s'", str.Data()));
                 return kFALSE;
             }
-            return FillFromESD(rsn, (AliESDEvent*)event, mc);
+            success = FillFromESD(rsn, (AliESDEvent*)event, mc);
+            break;
         case kESDTPC:
             if (!str.Contains("AliESDEvent")) {
-                AliError("A reader set to 'kESD' or 'kESDTPC' can read only ESD events");
+                AliError(Form("Source class mismatch [expected: 'AliESDEvent' -- passed: '%s'", str.Data()));
                 return kFALSE;
             }
-            return FillFromESD(rsn, (AliESDEvent*)event, mc, kTRUE);
+            success = FillFromESD(rsn, (AliESDEvent*)event, mc, kTRUE);
+            break;
         case kAOD:
             if (!str.Contains("AliAODEvent")) {
-                AliError("A reader set to 'kAOD' can read only AOD events");
+                AliError(Form("Source class mismatch [expected: 'AliAODEvent' -- passed: '%s'", str.Data()));
                 return kFALSE;
             }
-            return FillFromAOD(rsn, (AliAODEvent*)event, mc);
+            success = FillFromAOD(rsn, (AliAODEvent*)event, mc);
+            break;
         case kMC:
             if (!str.Contains("AliMCEvent")) {
-                AliError("A reader set to 'kMC' can read only MC events");
+                AliError(Form("Source class mismatch [expected: 'AliMCEvent' -- passed: '%s'", str.Data()));
                 return kFALSE;
             }
-            return FillFromMC(rsn, (AliMCEvent*)event);
+            success = FillFromMC(rsn, (AliMCEvent*)event);
+            break;
         default:
             return kFALSE;
     }
+    
+    // sort tracks w.r. to Pt (from largest to smallest)
+    rsn->SortTracks();
+    
+    return success;
 }
 
 //_____________________________________________________________________________
@@ -157,20 +125,14 @@ Bool_t AliRsnReader::FillFromESD
 // When this is used, the 'source' flag of the output
 // AliRsnEvent object will be set to 'kESD'.
 //
-    
+
     // retrieve stack (if possible)
     AliStack *stack = 0x0;
     if (mc) stack = mc->Stack();
-    
+
     // get number of tracks
     Int_t ntracks = esd->GetNumberOfTracks();
-    /*
-    if (!ntracks) {
-       AliWarning("No tracks in this event");
-       return kFALSE;
-    }
-    */
-    
+
     // if required with the flag, scans the event
     // and searches all split tracks (= 2 tracks with the same label);
     // for each pair of split tracks, only the better (best chi2) is kept
@@ -199,7 +161,7 @@ Bool_t AliRsnReader::FillFromESD
             }
         }
     }
-    
+
     // get primary vertex
     Double_t vertex[3];
     if (!useTPCOnly) {
@@ -213,7 +175,7 @@ Bool_t AliRsnReader::FillFromESD
         vertex[2] = esd->GetPrimaryVertexTPC()->GetZv();
     }
     rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
-    
+
     // store tracks from ESD
     Int_t  i, index, label, labmum;
     Bool_t check;
@@ -251,7 +213,7 @@ Bool_t AliRsnReader::FillFromESD
         else {
             //AliInfo("Using standard ESD weights");
         }
-        
+
         // if stack is present, copy MC info
         if (stack) {
             TParticle *part = stack->Particle(TMath::Abs(label));
@@ -271,13 +233,13 @@ Bool_t AliRsnReader::FillFromESD
         // if problems occurred while storing, that pointer is NULL
         if (!ptr) AliWarning(Form("Failed storing track#%d", index));
     }
-    
+
     // compute total multiplicity
     if (rsn->GetMultiplicity() <= 0) {
         AliWarning("Zero Multiplicity in this event");
         return kFALSE;
     }
-    
+
     return kTRUE;
 }
 
@@ -294,25 +256,25 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
 // When this is used, the 'source' flag of the output
 // AliRsnEvent object will be set to 'kAOD'.
 //
-    
+
     // retrieve stack (if possible)
     AliStack *stack = 0x0;
     if (mc) stack = mc->Stack();
-    
+
     // get number of tracks
     Int_t ntracks = aod->GetNTracks();
     if (!ntracks) {
        AliWarning("No tracks in this event");
        return kFALSE;
     }
-    
+
     // get primary vertex
     Double_t vertex[3];
     vertex[0] = aod->GetPrimaryVertex()->GetX();
     vertex[1] = aod->GetPrimaryVertex()->GetY();
     vertex[2] = aod->GetPrimaryVertex()->GetZ();
     rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
-    
+
     // store tracks from ESD
     Int_t  index, label, labmum;
     Bool_t check;
@@ -347,13 +309,13 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
         // if problems occurred while storin, that pointer is NULL
         if (!ptr) AliWarning(Form("Failed storing track#%d"));
     }
-    
+
     // compute total multiplicity
     if (rsn->GetMultiplicity() <= 0) {
         AliWarning("Zero multiplicity in this event");
         return kFALSE;
     }
-    
+
     return kTRUE;
 }
 
@@ -369,16 +331,16 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
 // When this is used, the 'source' flag of the output
 // AliRsnEvent object will be set to 'kMC'.
 //
-    
+
     // get number of tracks
     Int_t ntracks = mc->GetNumberOfTracks();
     if (!ntracks) {
        AliWarning("No tracks in this event");
        return kFALSE;
     }
-    
+
     AliStack *stack = mc->Stack();
-    
+
     // get primary vertex
     TArrayF fvertex(3);
     Double_t vertex[3];
@@ -387,7 +349,7 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
     vertex[1] = (Double_t)fvertex[1];
     vertex[2] = (Double_t)fvertex[2];
     rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
-    
+
     // store tracks from MC
     Int_t  index, labmum;
     Bool_t check;
@@ -412,12 +374,12 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
         // if problems occurred while storin, that pointer is NULL
         if (!ptr) AliWarning(Form("Failed storing track#%d", index));
     }
-    
+
     // compute total multiplicity
     if (rsn->GetMultiplicity() <= 0) {
         AliWarning("Zero multiplicity in this event");
         return kFALSE;
     }
-    
+
     return kTRUE;
 }
