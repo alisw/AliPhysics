@@ -17,6 +17,12 @@ int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlD
  AliRawEvent *ldcRootEvent=NULL;
  
  aliHeader=gdcRootEvent->GetHeader();
+
+ char runNbFileName[256];
+ sprintf(runNbFileName,"%s/run%u",ddlDir,aliHeader->Get("RunNb"));
+ ofstream runNbFile(runNbFileName);
+ runNbFile.close();
+
  memcpy(p, aliHeader->HeaderBaseBegin(), chunkSize=aliHeader->HeaderBaseSize());
  p+=chunkSize;
  memcpy(p, aliHeader->HeaderBegin(), chunkSize=aliHeader->HeaderSize()); // Write DATE GDC header
