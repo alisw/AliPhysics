@@ -11,25 +11,20 @@
 
 #include "AliAODRecoDecay.h"
 
-//class AliESDEvent;
-//class AliESDv0;
-
 class AliAODv0 : public AliAODRecoDecay {
 
 public:
 
   AliAODv0();
-  //  AliAODv0(AliESDv0 *rV0Vertex, AliESDEvent *rEvent);
   AliAODv0(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
-	   Double_t *rMomPos, Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex);
+	   const Double_t *rMomPos, const Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex);
   virtual ~AliAODv0();
 
   AliAODv0(const AliAODv0& rAliAODv0);
   AliAODv0& operator=(const AliAODv0& rAliAODv0);
 
-  //  void     Fill(AliESDv0 *rV0Vertex, AliESDEvent *rEvent);
   void     Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
-		Double_t *rMomPos, Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex);
+		const Double_t *rMomPos, const Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex);
   void     ResetV0();
   void     Print(Option_t* option = "") const;
 
@@ -40,10 +35,10 @@ public:
   Double_t DecayVertexV0Y() const;
   Double_t DecayVertexV0Z() const;
 
-  Double_t DecayLengthV0(double*) const;
+  Double_t DecayLengthV0(const Double_t *) const;
                      
-  Double_t DcaV0Daughters() const;
-  Double_t DcaV0ToPrimVertex() const;
+  Double_t DcaV0Daughters()     const;
+  Double_t DcaV0ToPrimVertex()  const;
   Double_t DcaPosToPrimVertex() const; 
   Double_t DcaNegToPrimVertex() const; 
   Double_t RadiusV0()           const;
@@ -55,9 +50,6 @@ public:
   Double_t MomNegX() const;
   Double_t MomNegY() const;
   Double_t MomNegZ() const;
-
-  //  Int_t    KeyPos()  const;
-  //  Int_t    KeyNeg()  const;
 
   Double_t Chi2V0()  const;
 
@@ -88,6 +80,8 @@ public:
   Double_t PseudoRapPos()   const;
   Double_t PseudoRapNeg()   const;
   
+  Short_t  GetPosID()       const;
+  Short_t  GetNegID()       const;
   Int_t    GetLabel() const {return -1;} // Dummy
 
 protected:
@@ -101,7 +95,7 @@ inline Double_t AliAODv0::DecayVertexV0X() const {return this->GetSecVtxX();}
 inline Double_t AliAODv0::DecayVertexV0Y() const {return this->GetSecVtxY();}
 inline Double_t AliAODv0::DecayVertexV0Z() const {return this->GetSecVtxZ();}
 
-inline Double_t AliAODv0::DecayLengthV0(double *tParentVertexPosition) const {
+inline Double_t AliAODv0::DecayLengthV0(const Double_t *tParentVertexPosition) const {
   return ::sqrt(::pow(DecayVertexV0X() - tParentVertexPosition[0],2) +
 		::pow(DecayVertexV0Y() - tParentVertexPosition[1],2) +
 		::pow(DecayVertexV0Z() - tParentVertexPosition[2],2));
@@ -128,9 +122,6 @@ inline Double_t AliAODv0::MomPosZ() const {return fPz[0];}
 inline Double_t AliAODv0::MomNegX() const {return fPx[1];}
 inline Double_t AliAODv0::MomNegY() const {return fPy[1];}
 inline Double_t AliAODv0::MomNegZ() const {return fPz[1];}
-
-// inline Int_t AliAODv0::KeyPos() const {return fKeyPos;}
-// inline Int_t AliAODv0::KeyNeg() const {return fKeyNeg;}
 
 inline Double_t AliAODv0::Chi2V0() const {return GetSecondaryVtx()->GetChi2perNDF();}
 

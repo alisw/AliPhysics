@@ -19,12 +19,8 @@
 //              G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
 //-------------------------------------------------------------------------
 
-//#include "AliESDEvent.h"
-//#include "AliESDv0.h"
-
 #include "AliAODv0.h"
-
-//#include "AliAODTrack.h"
+#include "AliAODTrack.h"
 
 ClassImp(AliAODv0)
 
@@ -60,31 +56,8 @@ ClassImp(AliAODv0)
   fd0[1] = 999;
 }
 
-//AliAODv0::AliAODv0(AliESDv0* rV0Vertex ,AliESDEvent* rEvent) :
-//  AliAODRecoDecay(),
-//  fDcaV0ToPrimVertex(999)
-//{
-  //--------------------------------------------------------------------
-  // Constructor via fill to be removed eventually
-  //--------------------------------------------------------------------
-//  fCharge  = 0;
-//  fNProngs = 2;
-//  fNDCA    = 1;
-//  fNPID    = 2;
-
-//  fDCA = new Double_t[fNDCA];
-
-//   fPx = new Double_t[GetNProngs()];
-//   fPy = new Double_t[GetNProngs()];
-//   fPz = new Double_t[GetNProngs()];
-
-//   fd0 = new Double_t[GetNProngs()];
-
-//   this->Fill(rV0Vertex,rEvent);
-// }
-
 AliAODv0::AliAODv0(AliAODVertex* rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
-	   Double_t *rMomPos, Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex) :
+	   const Double_t *rMomPos, const Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex) :
   AliAODRecoDecay(rAODVertex,2,0,rDcaDaughterToPrimVertex),
   fDcaV0ToPrimVertex(rDcaV0ToPrimVertex),
   fOnFlyStatus(kFALSE)
@@ -129,8 +102,11 @@ AliAODv0& AliAODv0::operator=(const AliAODv0& rAliAODv0){
   //--------------------------------------------------------------------
   // Assignment overload
   //--------------------------------------------------------------------
-  this->fDcaV0ToPrimVertex  = rAliAODv0.fDcaV0ToPrimVertex ;
-  this->fOnFlyStatus        = rAliAODv0.fOnFlyStatus;
+  if(this!=&rAliAODv0) {
+    AliAODRecoDecay::operator=(rAliAODv0);
+    this->fDcaV0ToPrimVertex  = rAliAODv0.fDcaV0ToPrimVertex ;
+    this->fOnFlyStatus        = rAliAODv0.fOnFlyStatus;
+  }
   return *this;
 }
 
@@ -140,56 +116,8 @@ AliAODv0::~AliAODv0(){
   //--------------------------------------------------------------------
 }
 
-
-// void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESDEvent* rEvent){
-
-//   Double_t tDecayVertexV0[3]; rV0Vertex->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
-//   GetSecondaryVtx()->SetX(tDecayVertexV0[0]);
-//   GetSecondaryVtx()->SetY(tDecayVertexV0[1]);
-//   GetSecondaryVtx()->SetZ(tDecayVertexV0[2]);
-
-//   Double_t lCovVtx[6];
-//   rV0Vertex->GetPosCov(lCovVtx);
-//   GetSecondaryVtx()->SetCovMatrix(lCovVtx);
-
-//   GetSecondaryVtx()->SetChi2perNDF(rV0Vertex->GetChi2V0());
-//   GetSecondaryVtx()->SetType(AliAODVertex::kV0);
-
-//   UInt_t lKeyPos = (UInt_t)TMath::Abs(rV0Vertex->GetPindex());// need to ask why Abs
-//   UInt_t lKeyNeg = (UInt_t)TMath::Abs(rV0Vertex->GetNindex());
-//   GetSecondaryVtx()->AddDaughter(rEvent->GetTrack(lKeyPos));
-//   GetSecondaryVtx()->AddDaughter(rEvent->GetTrack(lKeyNeg));
-
-//   fDCA[0] = rV0Vertex->GetDcaV0Daughters();
-//   fDcaV0ToPrimVertex = rV0Vertex->GetD();
-
-//   Double_t tMomPos[3]; rV0Vertex->GetPPxPyPz(tMomPos[0],tMomPos[1],tMomPos[2]); 
-//   fPx[0] = tMomPos[0];
-//   fPy[0] = tMomPos[1];
-//   fPz[0] = tMomPos[2];
-
-//   Double_t tMomNeg[3]; rV0Vertex->GetNPxPyPz(tMomNeg[0],tMomNeg[1],tMomNeg[2]); 
-//   fPx[1] = tMomNeg[0];
-//   fPy[1] = tMomNeg[1];
-//   fPz[1] = tMomNeg[2];
-
-//   AliESDtrack *pTrack=rEvent->GetTrack(lKeyPos);
-//   AliESDtrack *nTrack=rEvent->GetTrack(lKeyNeg);
-
-//   Float_t tDcaPosToPrimVertex[2];
-//   if(pTrack) pTrack->GetImpactParameters(tDcaPosToPrimVertex[0],tDcaPosToPrimVertex[1]);
-//   else { tDcaPosToPrimVertex[0]=999.;  tDcaPosToPrimVertex[1]=999.;}
-//   fd0[0] = TMath::Sqrt(tDcaPosToPrimVertex[0]*tDcaPosToPrimVertex[0]+tDcaPosToPrimVertex[1]*tDcaPosToPrimVertex[1]);
-
-//   Float_t tDcaNegToPrimVertex[2];
-//   if(nTrack) nTrack->GetImpactParameters(tDcaNegToPrimVertex[0],tDcaNegToPrimVertex[1]);
-//   else { tDcaNegToPrimVertex[0]=999.;  tDcaNegToPrimVertex[1]=999.;}
-
-//   fd0[1] = TMath::Sqrt(tDcaNegToPrimVertex[0]*tDcaNegToPrimVertex[0]+tDcaNegToPrimVertex[1]*tDcaNegToPrimVertex[1]);
-// }
-
 void AliAODv0::Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
-		    Double_t *rMomPos, Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex){
+		    const Double_t *rMomPos, const Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex){
 
   this->SetSecondaryVtx(rAODVertex);
 
@@ -210,15 +138,13 @@ void AliAODv0::Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t
 
 void AliAODv0::ResetV0(){
 
-  GetSecondaryVtx()->SetX(999);
-  GetSecondaryVtx()->SetY(999);
-  GetSecondaryVtx()->SetZ(999);
   GetSecondaryVtx()->SetChi2perNDF(999);
+  GetSecondaryVtx()->RemoveCovMatrix();
+  GetSecondaryVtx()->RemoveDaughters();
+  GetSecondaryVtx()->SetParent((TObject*) 0x0);
+  GetSecondaryVtx()->SetID(-1);
+  GetSecondaryVtx()->SetPosition(999,999,999);
   GetSecondaryVtx()->SetType(AliAODVertex::kUndef);
-
-  Int_t lNumDaughters = GetSecondaryVtx()->GetNDaughters();
-  for(Int_t iDaughterIndex = 0; iDaughterIndex<lNumDaughters;iDaughterIndex++)
-    GetSecondaryVtx()->RemoveDaughter(GetSecondaryVtx()->GetDaughter(iDaughterIndex));
 
   fDCA[0] = 999;
   fDcaV0ToPrimVertex  = 999;
@@ -233,6 +159,18 @@ void AliAODv0::ResetV0(){
 
   fd0[0] = 999;
   fd0[1] = 999;
+}
+
+Short_t AliAODv0::GetPosID() const {
+  	AliAODTrack *posTrack = (AliAODTrack *) (this->GetSecondaryVtx()->GetDaughter(0));
+	Short_t posID = posTrack->GetID();
+	return posID;
+}
+
+Short_t AliAODv0::GetNegID() const {
+  	AliAODTrack *negTrack = (AliAODTrack *) (this->GetSecondaryVtx()->GetDaughter(1));
+	Short_t negID = negTrack->GetID();
+	return negID;
 }
 
 void AliAODv0::Print(Option_t* /*option*/) const {
