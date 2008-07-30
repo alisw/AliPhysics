@@ -166,8 +166,8 @@ void AliFRAMEv2::CreateGeometry()
   shB77A->DefineSection( 1,  376., 280., 415.7);
   TGeoBBox* shB77B = new TGeoBBox(3.42, 2., 375.5);
   shB77B->SetName("shB77B");
-  TGeoTranslation* trB77A = new TGeoTranslation("trB77A", +283.42, 0., 0.);
-  TGeoTranslation* trB77B = new TGeoTranslation("trB77B", -283.42, 0., 0.);
+  TGeoTranslation* trB77A = new TGeoTranslation("trB77A", +283.32, 0., 0.);
+  TGeoTranslation* trB77B = new TGeoTranslation("trB77B", -283.32, 0., 0.);
   trB77A->RegisterYourself();
   trB77B->RegisterYourself();
   TGeoCompositeShape* shB77 = new TGeoCompositeShape("shB77", "shB77A+shB77B:trB77A+shB77B:trB77B");
@@ -274,8 +274,8 @@ void AliFRAMEv2::CreateGeometry()
    gMC->Gsvolu("BREF2", "BOX", kAir, pbox, 3);
    gMC->Gspos("BREF2", 1, "B080",  3.37 - 0.05, 0., 0., 0, "ONLY");
 
-  gMC->Gspos("B080", 1, "B077",  283.4, 0., 0., 0, "ONLY");
-  gMC->Gspos("B080", 2, "B077", -283.4, 0., 0., idrotm[2087], "ONLY");
+  gMC->Gspos("B080", 1, "B077",  283.3, 0., 0., 0, "ONLY");
+  gMC->Gspos("B080", 2, "B077", -283.3, 0., 0., idrotm[2087], "ONLY");
 
    
 //
@@ -949,7 +949,7 @@ void AliFRAMEv2::CreateGeometry()
 
   //
   // Outer RING
-  tpar[0] =  kBFMRou - kBFRdr;
+  tpar[0] =  kBFMRou - kBFRdr + 0.1;
   tpar[1] =  kBFMRou;
   tpar[2] =  kBFRdz / 2.;
   
