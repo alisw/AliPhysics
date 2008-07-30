@@ -54,6 +54,8 @@ AliITSPreprocessorSDD::AliITSPreprocessorSDD( AliShuttleInterface* shuttle):
 //______________________________________________________________________
 UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 
+  gSystem->Sleep(30000);
+
   // Get DDL map from OCDB
   AliCDBEntry* entry = GetFromOCDB("Calib", "DDLMapSDD");
   if(!entry){
@@ -94,8 +96,7 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
   //         2 in case of error with input files
   TObjArray calSDD(kNumberOfSDD);
   calSDD.SetOwner(kFALSE);
-  Char_t command[100];
-  Char_t inpFileName[100];
+
   Float_t baseline,rawnoise,cmn,corn,gain;
   Int_t isgoodan,i,im,is,isgoodmod,basmin,basoff;
   Int_t th,tl;
@@ -115,7 +116,8 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
       Log(Form("Baseline tar file from source %d not found.",ind));
       return 2;
     }
-    sprintf(command,"tar -xf %s",tarName.Data());
+    TString command;
+    command.Form("tar -xf %s",tarName.Data());
     gSystem->Exec(command);
     ind++;
   }
@@ -131,10 +133,12 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
       numOfBadChannels[modID]=0;
       Int_t badch[kNumberOfChannels];
       for(Int_t isid=0;isid<=1;isid++){
-	sprintf(inpFileName,"./SDDbase_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
+	TString inpFileName;
+	inpFileName.Form("./SDDbase_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
+
 	FILE* basFil = fopen(inpFileName,"read");
 	if (basFil == 0) {
-	  Log(Form("File %s not found.",inpFileName));
+	  Log(Form("File %s not found.",inpFileName.Data()));
 	  cal->SetBad();
 	  continue;
 	}
@@ -183,8 +187,6 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   //         2 in case of error with input files
   TObjArray vdrift(2*kNumberOfSDD);
   vdrift.SetOwner(kFALSE);
-  Char_t command[100];
-  Char_t inpFileName[100];
   Int_t evNumb,polDeg; 
   UInt_t timeStamp;
   Bool_t modSet[2*kNumberOfSDD]; // flag modules with good inj.
@@ -212,7 +214,8 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
       Log(Form("Injector tar file from source %d not found.",ind));
       return 2;
     }
-    sprintf(command,"tar -xf %s",tarName.Data());
+    TString command;
+    command.Form("tar -xf %s",tarName.Data());
     gSystem->Exec(command);
     ind++;
   }
@@ -226,10 +229,11 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
       modID-=240; // to have SDD modules numbering from 0 to 260
       for(Int_t isid=0;isid<=1;isid++){
 	AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
-	sprintf(inpFileName,"./SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
+	TString inpFileName;
+	inpFileName.Form("./SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	FILE* injFil = fopen(inpFileName,"read");
 	if (injFil == 0) {
-	  Log(Form("File %s not found.",inpFileName));
+	  Log(Form("File %s not found.",inpFileName.Data()));
 	  AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD();
 	  arr->AddDriftSpeed(dsp);
 	  vdrift.AddAt(arr,2*modID+isid);
