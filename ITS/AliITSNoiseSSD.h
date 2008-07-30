@@ -45,6 +45,6 @@ class AliITSNoiseSSD : public TObject {
 
  private:
     
-    ClassDef(AliITSNoiseSSD,1) // Noise  class for SSD
+    ClassDef(AliITSNoiseSSD,2) // Noise  class for SSD
       };
 #endif

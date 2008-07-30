@@ -46,6 +46,6 @@ class AliITSGainSSD : public TObject {
 
  private:
     
-    ClassDef(AliITSGainSSD,1) // Gain  class for SSD
+    ClassDef(AliITSGainSSD,2) // Gain  class for SSD
       };
 #endif

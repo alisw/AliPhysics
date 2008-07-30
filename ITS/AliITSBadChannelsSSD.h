@@ -43,7 +43,7 @@ class AliITSBadChannelsSSD : public TObject {
 
  private:
    
-   ClassDef(AliITSBadChannelsSSD,1) // BadChannels  class for SSD
+   ClassDef(AliITSBadChannelsSSD,2) // BadChannels  class for SSD
      };
 
 #endif

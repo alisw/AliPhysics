@@ -44,6 +44,6 @@ Float_t fPedestal[2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD];
 
  private:
     
-    ClassDef(AliITSPedestalSSD,1) // Pedestal  class for SSD
+    ClassDef(AliITSPedestalSSD,2) // Pedestal  class for SSD
       };
 #endif
