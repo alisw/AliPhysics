@@ -1202,6 +1202,9 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
       if (fStopOnError) return kFALSE; else continue;
     }
 
+    ofstream runNbFile(Form("run%u",runLoader->GetHeader()->GetRun()));
+    runNbFile.close();
+
     TString detStr = detectors;
     TObjArray* detArray = runLoader->GetAliRun()->Detectors();
     for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {

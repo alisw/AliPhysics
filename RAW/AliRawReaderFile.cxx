@@ -166,6 +166,11 @@ Bool_t AliRawReaderFile::CreateFileIndex()
   while (entry = gSystem->GetDirEntry(fDirectory)) {
     const char* filename=entry.Data();
     if (!filename || entry.IsNull()) break;
+    if (entry.BeginsWith("run")) {
+      entry.ReplaceAll("run","");
+      fRunNb = entry.Atoi();
+      continue;
+    }
     if (!entry.EndsWith(".ddl")) continue;
     result=kTRUE;
     entry.Remove(0, entry.Last('_')+1);
