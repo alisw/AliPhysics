@@ -1,9 +1,4 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
-//=========================================================================
+//
 // Class AliRsnCut
 //
 // General implementation of a single cut strategy, which can be:
@@ -18,7 +13,7 @@
 //
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//=========================================================================
+//
 
 #ifndef ALIRSNCUT_H
 #define ALIRSNCUT_H
@@ -28,11 +23,15 @@
 class AliRsnDaughter;
 class AliRsnPairParticle;
 class AliRsnPairDef;
+class AliRsnEvent;
 
 class AliRsnCut : public TNamed
 {
 public:
-    enum ERsnCutType
+
+    // available cut types
+    // some ones work both for pairs and single tracks
+    enum EType
     {
         kMomentum = 0,
         kTransMomentum,
@@ -41,59 +40,62 @@ public:
         kMomentumMC,
         kTransMomentumMC,
         kEtaMC,
-        kRestMomentum,
         kNSigma,
         kNSigmaCalculate,
         kStatus,
-        kIsPdgEqual,
         kIsLabelEqual,
         kIsTruePair,
         kChargePos,
         kChargeNeg,
         kPIDType,
+        kPIDProb,
+        kMultiplicity,
         kLastCutType
     };
 
-    enum ERsnCutVarType
+    // types of cut variables
+    enum EVarType
     {
         kDouble_t = 0,
         kInt_t,
         kUInt_t
     };
 
-    enum ECutSetType
+    // possible targets for a cut
+    enum ETarget
     {
         kParticle = 0,
         kPair,
+        kEvent,
         kMixEventFinderCut,
-        kLastCutSetIndex
+        kLastCutTarget
     };
 
     AliRsnCut();
-    AliRsnCut (const char *name, const char *title, ERsnCutType type);
-    AliRsnCut (const char *name, const char *title, ERsnCutType type, Double_t min, Double_t max = 1e-100);
-    AliRsnCut (const char *name, const char *title, ERsnCutType type, Int_t min, Int_t max = 32767);
-    AliRsnCut (const char *name, const char *title, ERsnCutType type, UInt_t min, UInt_t max = 65534);
+    AliRsnCut (const char *name, const char *title, EType type);
+    AliRsnCut (const char *name, const char *title, EType type, Double_t min, Double_t max = 1e-100);
+    AliRsnCut (const char *name, const char *title, EType type, Int_t min, Int_t max = 32767);
+    AliRsnCut (const char *name, const char *title, EType type, UInt_t min, UInt_t max = 65534);
 
     ~AliRsnCut();
 
-    void      SetCutValues (ERsnCutType type, const Double_t& theValue, const Double_t& theValue2);
-    void      SetCutValues (ERsnCutType type, const Int_t& theValue, const Int_t& theValue2);
-    void      SetCutValues (ERsnCutType type, const UInt_t& theValue, const UInt_t& theValue2);
+    void      SetCutValues (EType type, const Double_t& theValue, const Double_t& theValue2);
+    void      SetCutValues (EType type, const Int_t& theValue, const Int_t& theValue2);
+    void      SetCutValues (EType type, const UInt_t& theValue, const UInt_t& theValue2);
 
-    Bool_t    IsSelected (ECutSetType type,  AliRsnDaughter *daughter);
-    Bool_t    IsSelected (ECutSetType type,  AliRsnPairParticle *pair);
+    Bool_t    IsSelected (ETarget tgt,  AliRsnDaughter *daughter);
+    Bool_t    IsSelected (ETarget tgt,  AliRsnPairParticle *pair);
+    Bool_t    IsSelected (ETarget tgt,  AliRsnEvent *event);
 
     void      PrintAllValues();
 
     Bool_t    IsBetween (const Double_t &theValue);
+    Bool_t    IsBetween (const Int_t &theValue);
     Bool_t    MatchesValue (const Int_t &theValue);
     Bool_t    MatchesValue (const UInt_t &theValue);
     Bool_t    MatchesValue (const Double_t &theValue);
 
 private:
-
-    Bool_t CheckRestMomentum(AliRsnPairParticle *pair);
 
     Double_t        fDMin;          // min. double value
     Double_t        fDMax;          // max. double value
@@ -102,8 +104,8 @@ private:
     UInt_t          fUIMin;         // min. uint value
     UInt_t          fUIMax;         // max. uint value
 
-    ERsnCutType     fRsnCutType;    // cut type
-    ERsnCutVarType  fRsnCutVarType; // variable type
+    EType           fType;          // cut type
+    EVarType        fVarType;       // variable type
 
     static const Double_t fgkDSmallNumber;  // small double value
     static const Double_t fgkDBigNumber;    // big double value

@@ -25,9 +25,7 @@
 //-------------------------------------------------------------------------
 
 #include <TMath.h>
-#include <TString.h>
-#include <TClonesArray.h>
-#include <TDatabasePDG.h>
+#include <TDirectory.h>
 
 #include "AliLog.h"
 #include "AliRsnMCInfo.h"
@@ -37,6 +35,16 @@
 #include "AliRsnPID.h"
 
 ClassImp(AliRsnPID)
+
+const Double_t AliRsnPID::fgkParticleMass[AliRsnPID::kSpecies + 1] =
+{
+  0.00051099892,   // electron
+  0.105658369,     // muon
+  0.13957018,      // pion
+  0.493677,        // kaon
+  0.93827203,      // proton
+  0.0              // nothing
+};
 
 const char* AliRsnPID::fgkParticleNameLong[AliRsnPID::kSpecies + 1] =
 {
@@ -80,59 +88,19 @@ const Int_t AliRsnPID::fgkParticlePDG[AliRsnPID::kSpecies + 1] =
 
 //_____________________________________________________________________________
 AliRsnPID::AliRsnPID() :
-  fMethod(kRealistic),
-  fMaxPt(10.0),
+  TNamed("RsnPID", ""),
+  fMaxPt(100.0),
   fMinProb(0.0)
 {
 //
-// Default constructor
-// Sets a default setup:
-//  - realistic PID
-//  - no lower limit for probability
-//  - upper limit of 10 GeV for Pt
-//  - suitable values for prior probabilities
+// Constructor.
+// Adds also the object in the default directory of the session.
 //
 
-    fPrior[kElectron] = 0.20;
-	fPrior[kMuon    ] = 0.20;
-	fPrior[kPion    ] = 0.83;
-	fPrior[kKaon    ] = 0.07;
-	fPrior[kProton  ] = 0.06;
-}
-
-//_____________________________________________________________________________
-AliRsnPID::AliRsnPID(const AliRsnPID &event) :
-  TObject((TObject)event),
-  fMethod(event.fMethod),
-  fMaxPt(event.fMaxPt),
-  fMinProb(event.fMinProb)
-{
-//
-// Copy constructor.
-// Implemented to manage the array safely.
-//
-
-    Int_t i;
-    for (i = 0; i < kSpecies; i++) fPrior[i] = event.fPrior[i];
-}
-
-//_____________________________________________________________________________
-AliRsnPID& AliRsnPID::operator=(const AliRsnPID &event)
-{
-//
-// Assignment operator.
-// Implemented to manage the array safely.
-//
-
-    fMethod = event.fMethod;
-    fMaxPt = event.fMaxPt;
-    fMinProb = event.fMinProb;
-
-    Int_t i;
-    for (i = 0; i < kSpecies; i++) fPrior[i] = event.fPrior[i];
-
-    // return the newly created object
-    return (*this);
+    Int_t i; 
+    for (i = 0; i < kSpecies; i++) fPrior[i] = 0.0;
+    
+    gDirectory->Append(this, kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -224,13 +192,17 @@ Double_t AliRsnPID::ParticleMass(EType type)
 // Returns the mass corresponding to the particle type
 // specified as argument (w.r. to the internal enum)
 //
+    /*
     TDatabasePDG *db = TDatabasePDG::Instance();
     Int_t pdg = PDGCode(type);
     return db->GetParticle(pdg)->Mass();
+    */
+    if (type >= kElectron && type < kSpecies) return fgkParticleMass[type];
+    return 0.0;
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPID::IdentifyRealistic(AliRsnDaughter *daughter)
+Bool_t AliRsnPID::ComputeProbs(AliRsnDaughter *daughter)
 {
 //
 // Uses the Bayesian combination of prior probabilities
@@ -249,159 +221,73 @@ Bool_t AliRsnPID::IdentifyRealistic(AliRsnDaughter *daughter)
 //
 
     // reset all PID probabilities to 0.0
-    Unidentify(daughter, 0.0);
+    Int_t i;
+    for (i = 0; i < kSpecies; i++) daughter->SetPIDProb(i, 1.0 / (Double_t)kSpecies);
 
-    // check the transverse momentum:
-    // if it is larger than the cut, the particle is unidentified
-    // setting all its probabilities to 1.0
-    if (daughter->Pt() > fMaxPt) {
-        Unidentify(daughter, 1.0);
-        return kTRUE;
-    }
-
-    // 0 - retrieve PID weights from argument
-    Int_t     i;
-    Double_t  sum    = 0.0;
-    Double_t *prob   = new Double_t[kSpecies];
-    Double_t *weight = new Double_t[kSpecies];
-    for (i = 0; i < kSpecies; i++) weight[i] = (daughter->PID())[i];
-
-    // step 1 - compute the normalization factor
+    // multiply weights and priors
+    Double_t sum = 0.0, prob[kSpecies];
     for (i = 0; i < kSpecies; i++) {
-        prob[i] = fPrior[i] * weight[i];
+        prob[i] = fPrior[i] * daughter->PID()[i];
         sum += prob[i];
     }
     if (sum <= (Double_t)0.) {
-        AliError(Form("Sum of weights = %f < 0", sum));
+        AliError(Form("Sum of weights = %f <= 0", sum));
         return kFALSE;
     }
 
-	// step 2 - normalize PID weights and update daughter data-member
+    // normalize
     for (i = 0; i < kSpecies; i++) {
         prob[i] /= sum;
         daughter->SetPIDProb(i, prob[i]);
     }
-
-	// step 3 - find the maximum probability and update daughter data members
-    Int_t    imax = 0;
-    Double_t pmax = prob[0];
-    for (i = 1; i < kSpecies; i++) {
-        if (prob[i] > pmax) {
-            imax = i;
-            pmax = prob[i];
-        }
-    }
-    EType type = (EType)imax;
-    if (pmax >= fMinProb) {
-        daughter->SetPIDType(type);
-        daughter->SetM(ParticleMass(type));
-    }
-    else {
-        daughter->SetPIDType(kUnknown);
-    }
-
+    
     return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnPID::IdentifyPerfect(AliRsnDaughter *daughter)
-{
-//
-// Uses the true PDG code to make a perfect identification.
-// If the true PDG code does not correspond to any
-// of the expected PID types, gives a warning, sets the
-// PID to 'unknown' and returns kFALSE.
-// Otherwise, returns kTRUE.
-//
-
-    // reset all PID probabilities to 0.0
-    Unidentify(daughter, 0.0);
-
-    // if the MCInfo is not present, the particle cannot be identified perfectly
-    // in this case, to notice the error, the probs are maintained all to 0.0
-    AliRsnMCInfo *particle = daughter->GetMCInfo();
-    if (!particle) {
-        AliWarning("Particle object not initialized: impossible to do perfect PID");
-        return kFALSE;
-    }
-
-    // convert the PDG into the internal enum
-    Int_t pdgCode = particle->PDG();
-    EType type = InternalType(pdgCode);
-
-    // if the type is one of the available ones in the PID enum
-    // (e, mu, pi, K, p)
-    // the corresponding probability is set to 1, and the other remain 0
-    if (type >= 0 && type < kSpecies) {
-        daughter->SetPIDType(type);
-        daughter->SetPIDProb(type, 1.0);
-        daughter->SetM(ParticleMass(type));
-        return kTRUE;
-    }
-
-    return kFALSE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnPID::Unidentify(AliRsnDaughter *daughter, Double_t value)
-{
-//
-// Sets the PID to 'unknown' to every track.
-//
-
-    Int_t i;
-    for (i = 0; i < kSpecies; i++) daughter->SetPIDProb(i, value);
-    daughter->SetPIDType(kUnknown);
-    return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnPID::Identify(AliRsnDaughter *daughter)
-{
-//
-// Recalls one of the above methods, according to the one
-// defined in the related data member.
-// If the method is not recognized, returns kFALSE and
-// gives an alert. Otherwise, returns kTRUE.
-//
-
-    switch (fMethod) {
-        case kNone:
-            Unidentify(daughter);
-            return kTRUE;
-        case kRealistic:
-            IdentifyRealistic(daughter);
-            return kTRUE;
-        case kPerfect:
-            IdentifyPerfect(daughter);
-            return kTRUE;
-        default:
-            AliError(Form("PID method '%d' unrecognized. Nothing done.", fMethod));
-            return kFALSE;
-    }
 }
 
 //_____________________________________________________________________________
 Bool_t AliRsnPID::IdentifiedAs(AliRsnDaughter *d, EType type, Short_t charge)
 {
 //
-// Tells if a particle has been identified to be of a given tipe and charge.
+// Tells if a particle has can be identified to be of a given tipe and charge.
 // If the charge is zero, the check is done only on the PID type, otherwise
-// both charge and PID type are required to match
+// both charge and PID type are required to match.
+// If the track momentum is larger than the pt threshold passed to this object,
+// or the maximum probability is smaller than the prob thrashold, the return value
+// is kFALSE even when the type and charge are matched.
 //
+
+    EType dType = TrackType(d);
+    if (dType != type) return kFALSE;
     if (charge == 0) {
-        return (d->PIDType() == type);
+        return kTRUE;
     }
     else if (charge > 0) {
-        return (d->PIDType() == type && d->Charge() > 0);
+        return (d->Charge() > 0);
     }
     else {
-        return (d->PIDType() == type && d->Charge() < 0);
+        return (d->Charge() < 0);
     }
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPID::Identify(AliRsnEvent *event)
+AliRsnPID::EType AliRsnPID::TrackType(AliRsnDaughter *d)
+{
+//
+// Returns the track type according to the object settings
+// and to the static settings in the AliRsnDaughter object.
+//
+
+    Double_t prob;
+    EType type = d->PIDType(prob);
+    
+    if (d->Pt() > fMaxPt) return kUnknown;
+    if (prob < fMinProb) return kUnknown;
+    
+    return type;
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnPID::Process(AliRsnEvent *event)
 {
 //
 // Performs identification for all tracks in a given event.
@@ -416,7 +302,7 @@ Bool_t AliRsnPID::Identify(AliRsnEvent *event)
     AliRsnDaughter *daughter = 0;
     TObjArrayIter iter(event->GetTracks());
     while ( (daughter = (AliRsnDaughter*)iter.Next()) ) {
-        check = check && Identify(daughter);
+        check = check && ComputeProbs(daughter);
     }
     event->FillPIDArrays();
 
@@ -434,5 +320,21 @@ void AliRsnPID::SetPriorProbability(EType type, Double_t p)
 
     if (type >= kElectron && type < kSpecies) {
         fPrior[type] = p;
+    }
+}
+
+//_____________________________________________________________________________
+void AliRsnPID::DumpPriors()
+{
+//
+// Print all prior probabilities
+//
+
+    Int_t i;
+    Char_t msg[200];
+    
+    for (i = 0; i < kSpecies; i++) {
+        sprintf(msg, "Prior probability for '%s' = %3.5f", fgkParticleNameLong[i], fPrior[i]);
+        AliInfo(msg);
     }
 }

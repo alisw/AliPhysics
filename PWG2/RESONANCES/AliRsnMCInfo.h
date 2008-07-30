@@ -3,6 +3,7 @@
 
 #include <AliVParticle.h>
 #include <TParticle.h>
+#include <TMath.h>
 
 class AliRsnMCInfo : public TObject
 {
@@ -15,6 +16,7 @@ public:
 
     // 4-momentum
     virtual Double_t E()  const {return fEnergy;}
+    virtual Double_t E(Double_t mass) {return TMath::Sqrt(mass*mass + P2());}
     virtual Double_t M()  const {return TMath::Sqrt (fEnergy*fEnergy - P2());}
     virtual Double_t P2() const {return Px()*Px() + Py()*Py() + Pz()*Pz();}
     virtual Double_t P()  const {return TMath::Sqrt ( P2() );}

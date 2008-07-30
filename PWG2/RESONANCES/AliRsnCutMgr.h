@@ -1,47 +1,45 @@
-#ifndef ALIRSNMVCUTMGR_H
-#define ALIRSNMVCUTMGR_H
+//
+// Class AliRsnCutMgr
+//
+// The cut manager: contains a complete set of cut definitions
+// to be applied to all possible targets (one for each target),
+// in order to ease the set-up procedure of cuts and allow to
+// pass them at once to each object which must use them
+//
+// author: Martin Vala (martin.vala@cern.ch)
+//
+
+#ifndef ALIRSNCUTMGR_H
+#define ALIRSNCUTMGR_H
 
 #include "TNamed.h"
 #include "TObjArray.h"
 
 #include "AliRsnCut.h"
-// #include "AliRsnCutSet.h"
-// class AliRsnCut;
+
 class AliRsnCutSet;
 
-/**
-  @author Martin Vala <Martin.Vala@cern.ch>
-*/
 class AliRsnCutMgr : public TNamed
 {
   public:
 
-//     enum ECutSetType {
-//       kParticle= 0,
-//       kPair,
-//       kMixEventFinderCut,
-//       kLastCutSetIndex
-//     };
-
-
     AliRsnCutMgr();
     AliRsnCutMgr(const char *name, const char* title);
-
     ~AliRsnCutMgr();
 
-    void SetCutSet(AliRsnCut::ECutSetType type,AliRsnCutSet* cutset);
-    AliRsnCutSet* GetCutSet(AliRsnCut::ECutSetType type) { return fCutSets[type];}
-
-    Bool_t IsSelected(AliRsnCut::ECutSetType type,TObject *obj);
+    void          SetCutSet(AliRsnCut::ETarget type, AliRsnCutSet* cutset);
+    AliRsnCutSet* GetCutSet(AliRsnCut::ETarget type) {return fCutSets[type];}
+    Bool_t        IsSelected(AliRsnCut::ETarget type, TObject *obj);
 
   private:
 
-    AliRsnCutMgr(const AliRsnCutMgr &cut):TNamed(cut) {}
+    // dummy constructors
+    AliRsnCutMgr(const AliRsnCutMgr &cut) : TNamed(cut) {}
     AliRsnCutMgr& operator=(const AliRsnCutMgr& /*cut*/) {return *this;}
 
-    AliRsnCutSet *fCutSets[AliRsnCut::kLastCutSetIndex];
+    AliRsnCutSet *fCutSets[AliRsnCut::kLastCutTarget];  // cut definitions for all targets
 
-    ClassDef ( AliRsnCutMgr,1 );
+    ClassDef (AliRsnCutMgr, 1); // dictionary
 };
 
 #endif

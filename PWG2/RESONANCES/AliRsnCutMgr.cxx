@@ -1,70 +1,104 @@
+//
+// Class AliRsnCutMgr
+//
+// The cut manager: contains a complete set of cut definitions
+// to be applied to all possible targets (one for each target),
+// in order to ease the set-up procedure of cuts and allow to
+// pass them at once to each object which must use them
+//
+// author: Martin Vala (martin.vala@cern.ch)
+//
+
 #include "AliLog.h"
 
 #include "AliRsnDaughter.h"
+#include "AliRsnEvent.h"
 #include "AliRsnCutSet.h"
 #include "AliRsnCutMgr.h"
 
-ClassImp ( AliRsnCutMgr )
+ClassImp (AliRsnCutMgr)
 
-AliRsnCutMgr::AliRsnCutMgr()
-    : TNamed("defaultName","default Tilte")
+//_____________________________________________________________________________
+AliRsnCutMgr::AliRsnCutMgr() :
+  TNamed("defaultName", "defaultTitle")
 {
-  for ( Int_t i=0 ;i<AliRsnCut::kLastCutSetIndex ;i++ )
-  {
-    fCutSets[i] = 0;
-  }
+//
+// Constructor without arguments.
+//
 
+    Int_t i;
+    for (i = 0; i < AliRsnCut::kLastCutTarget; i++) {
+        fCutSets[i] = 0;
+    }
 }
 
-AliRsnCutMgr::AliRsnCutMgr ( const char * name, const char * title )
-    : TNamed ( name,title )
+//_____________________________________________________________________________
+AliRsnCutMgr::AliRsnCutMgr (const char *name, const char *title) :
+  TNamed (name, title)
 {
+//
+// Constructor with name and title.
+//
 
-  for ( Int_t i=0 ;i<AliRsnCut::kLastCutSetIndex ;i++ )
-  {
-    fCutSets[i] = 0 ;
-  }
-
+    Int_t i;
+    for (i = 0; i < AliRsnCut::kLastCutTarget; i++) {
+        fCutSets[i] = 0;
+    }
 }
 
+//_____________________________________________________________________________
 AliRsnCutMgr::~AliRsnCutMgr()
 {
-  for ( Int_t i=0 ;i<AliRsnCut::kLastCutSetIndex ;i++ )
-  {
-    delete fCutSets[i];
-  }
+//
+// Destructor.
+// Deletes all cut definitions.
+//
 
+    Int_t i;
+    for (i = 0; i < AliRsnCut::kLastCutTarget; i++) {
+        delete fCutSets[i];
+    }
 }
 
-void AliRsnCutMgr::SetCutSet ( AliRsnCut::ECutSetType type, AliRsnCutSet* cutset )
+//_____________________________________________________________________________
+void AliRsnCutMgr::SetCutSet (AliRsnCut::ETarget type, AliRsnCutSet* cutset)
 {
-  if ( !fCutSets[type] )
-    fCutSets[type] = ( AliRsnCutSet* ) cutset->Clone() ;
-  AliDebug (AliLog::kDebug ,Form ( "DatasetName %s",fCutSets[type]->GetName() ) );
+//
+// Assign a cut set to a given target
+//
+
+    if (!fCutSets[type]) fCutSets[type] = (AliRsnCutSet*) cutset->Clone();
+    AliDebug (AliLog::kDebug, Form ("DatasetName %s", fCutSets[type]->GetName()));
 }
 
-
-Bool_t AliRsnCutMgr::IsSelected ( AliRsnCut::ECutSetType type,TObject *obj )
+//_____________________________________________________________________________
+Bool_t AliRsnCutMgr::IsSelected ( AliRsnCut::ETarget type,TObject *obj )
 {
-  AliDebug ( AliLog::kDebug,"<-" );
+//
+// Check if a given object passes the cuts defined for it.
+// The target of the check is here a TObject, in order to allo generality
+// but then the kind of cut to be used is defined as first argument, and 
+// in the single cut it will be checked if it is appropriate for passed target
+//
 
-  if (!fCutSets[type]) return kTRUE;
-
-  switch ( type )
-  {
-    case AliRsnCut::kParticle:
-//       AliDebug ( AliLog::kDebug,"kParticle" );
-      return fCutSets[type]->IsSelected (type, ( AliRsnDaughter * ) obj );
-      break;
-    case AliRsnCut::kPair:
-//       AliInfo ( Form("%p" ,fCutSets[type]));
-      return fCutSets[type]->IsSelected (type, ( AliRsnPairParticle * ) obj );
-      break;
-    default:
-      AliWarning ( "Wrong ECutSetType selected." );
-      return kTRUE;
-      break;
-
-  }
-  return kTRUE;
+    AliDebug (AliLog::kDebug, "<-");
+    if (!fCutSets[type]) return kTRUE;
+    
+    switch (type) {
+        case AliRsnCut::kParticle:
+            return fCutSets[type]->IsSelected (type, (AliRsnDaughter*)obj);
+            break;
+        case AliRsnCut::kPair:
+            return fCutSets[type]->IsSelected (type, (AliRsnPairParticle*)obj);
+            break;
+        case AliRsnCut::kEvent:
+            return fCutSets[type]->IsSelected (type, (AliRsnEvent*)obj);
+            break;
+        default:
+            AliWarning ("Wrong target selected.");
+            return kTRUE;
+            break;
+    }
+    
+    return kTRUE;
 }

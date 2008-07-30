@@ -1,19 +1,4 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-//=========================================================================
+//
 // Class AliRsnDaughter
 //
 //
@@ -24,7 +9,7 @@
 // Contains also a facility to compute invariant mass of a pair.
 //
 // author: A. Pulvirenti --- email: alberto.pulvirenti@ct.infn.it
-//=========================================================================
+//
 
 #include <Riostream.h>
 
@@ -36,11 +21,12 @@
 #include "AliAODTrack.h"
 #include "AliMCParticle.h"
 
-#include "AliRsnPID.h"
 #include "AliRsnMCInfo.h"
 #include "AliRsnDaughter.h"
 
 ClassImp(AliRsnDaughter)
+
+AliRsnDaughter::EPIDMethod AliRsnDaughter::fgPIDMethod = AliRsnDaughter::kNoPID;
 
 //_____________________________________________________________________________
 AliRsnDaughter::AliRsnDaughter() :
@@ -49,8 +35,8 @@ AliRsnDaughter::AliRsnDaughter() :
   fLabel(-1),
   fCharge(0),
   fFlags(0),
-  fPIDType(AliRsnPID::kUnknown),
   fMass(0.0),
+  fRealisticPID(AliRsnPID::kUnknown),
   fMCInfo(0x0)
 {
 //
@@ -76,8 +62,8 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
   fLabel(copy.fLabel),
   fCharge(copy.fCharge),
   fFlags(copy.fFlags),
-  fPIDType(copy.fPIDType),
   fMass(copy.fMass),
+  fRealisticPID(copy.fRealisticPID),
   fMCInfo(0x0)
 {
 //
@@ -106,8 +92,8 @@ AliRsnDaughter::AliRsnDaughter(AliESDtrack *track, Bool_t useTPC) :
   fLabel(-1),
   fCharge(0),
   fFlags(0),
-  fPIDType(AliRsnPID::kUnknown),
   fMass(0.0),
+  fRealisticPID(AliRsnPID::kUnknown),
   fMCInfo(0x0)
 {
 //
@@ -126,8 +112,8 @@ AliRsnDaughter::AliRsnDaughter(AliAODTrack *track) :
   fLabel(-1),
   fCharge(0),
   fFlags(0),
-  fPIDType(AliRsnPID::kUnknown),
   fMass(0.0),
+  fRealisticPID(AliRsnPID::kUnknown),
   fMCInfo(0x0)
 {
 //
@@ -146,8 +132,8 @@ AliRsnDaughter::AliRsnDaughter(AliMCParticle *track) :
   fLabel(-1),
   fCharge(0),
   fFlags(0),
-  fPIDType(AliRsnPID::kUnknown),
   fMass(0.0),
+  fRealisticPID(AliRsnPID::kUnknown),
   fMCInfo(0x0)
 {
 //
@@ -183,8 +169,8 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
         fPIDProb[i] = copy.fPIDProb[i];
     }
 
-    fPIDType = copy.fPIDType;
-    fMass    = copy.fMass;
+    fMass = copy.fMass;
+    fRealisticPID = copy.fRealisticPID;
 
     // initialize particle object
     // only if it is present in the template object;
@@ -226,6 +212,55 @@ void AliRsnDaughter::SetPIDWeight(Int_t i, Double_t value)
 }
 
 //_____________________________________________________________________________
+void  AliRsnDaughter::AssignRealisticPID()
+{
+//
+// Assign realistic PID from largest probability
+//
+
+    Int_t i, imax = 0;
+    Double_t pmax = fPIDProb[0];
+    
+    // search for maximum
+    for (i = 1; i < AliRsnPID::kSpecies; i++) {
+        if (fPIDProb[i] > pmax) {
+            imax = i;
+            pmax = fPIDProb[i];
+        }
+    }
+    
+    fRealisticPID = (AliRsnPID::EType)imax;
+}
+
+//_____________________________________________________________________________
+AliRsnPID::EType AliRsnDaughter::PIDType(Double_t &prob)
+{
+//
+// Return the PID type according to the selected method
+// in the argument passed by reference, the probability is stored.
+// It will be realistic for realistic PID and 1 for perfect PID.
+//
+
+    switch (fgPIDMethod) {
+        case kNoPID:
+            AliWarning("Requested a PIDtype call in NoPID mode");
+            return AliRsnPID::kUnknown;
+        case kPerfect:
+            if (fMCInfo) return AliRsnPID::InternalType(fMCInfo->PDG());
+            else return AliRsnPID::kUnknown;
+        default:
+            if (fRealisticPID > 0 && fRealisticPID < AliRsnPID::kSpecies) {
+                prob = fPIDProb[fRealisticPID];
+                return fRealisticPID;
+            }
+            else {
+                prob = 1.0;
+                return AliRsnPID::kUnknown;
+            }
+    }
+}
+
+//_____________________________________________________________________________
 void AliRsnDaughter::SetPIDProb(Int_t i, Double_t value)
 {
 //
@@ -238,20 +273,6 @@ void AliRsnDaughter::SetPIDProb(Int_t i, Double_t value)
         AliError(Form("Cannot set a weight related to slot %d", i));
     }
 }
-
-//_____________________________________________________________________________
-void AliRsnDaughter::SetPIDWeights(const Double_t *pid)
-{
-//
-// Sets ALL PID weights at once.
-// The passed array is supposed to have at least as many
-// slots as the number of allowed particle species.
-//
-
-   Int_t i;
-   for (i = 0; i < AliRsnPID::kSpecies; i++) fPIDWeight[i] = pid[i];
-}
-
 
 //_____________________________________________________________________________
 Bool_t AliRsnDaughter::Adopt(AliESDtrack* esdTrack, Bool_t useTPCInnerParam)
@@ -330,6 +351,9 @@ Bool_t AliRsnDaughter::Adopt(AliAODTrack* aodTrack)
     // copy PID weights
     Int_t i;
     for (i = 0; i < 5; i++) fPIDWeight[i] = aodTrack->PID()[i];
+    
+    // copy flags
+    fFlags = aodTrack->GetStatus();
 
     // copy sign
     fCharge = aodTrack->Charge();
@@ -386,14 +410,10 @@ Bool_t AliRsnDaughter::Adopt(AliMCParticle *mcParticle)
         return kFALSE;
     }
 
-    // identify track perfectly using PDG code
-    fPIDType = AliRsnPID::InternalType(pdg);
-    fMass = AliRsnPID::ParticleMass(fPIDType);
-
     // flags and PID weights make no sense with MC tracks
     fFlags = 0;
     for (pdg = 0; pdg < AliRsnPID::kSpecies; pdg++) fPIDWeight[pdg] = 0.0;
-    fPIDWeight[fPIDType] = 1.0;
+    fPIDWeight[AliRsnPID::InternalType(absPDG)] = 1.0;
 
     // copy other MC info (mother PDG code cannot be retrieved here)
     InitMCInfo(particle);
@@ -413,6 +433,7 @@ void AliRsnDaughter::Print(Option_t *option) const
 // - I --> identification (PID, probability and mass)
 // - W --> PID weights
 // - M --> Montecarlo (from AliRsnMCInfo)
+// - L --> index & label
 // - ALL --> All oprions switched on
 //
 // Index and label are printed by default.
@@ -421,9 +442,10 @@ void AliRsnDaughter::Print(Option_t *option) const
     TString opt(option);
     opt.ToUpper();
 
-    cout << ".......Index            : " << fIndex << endl;
-    cout << ".......Label            : " << fLabel << endl;
-
+    if (opt.Contains("L") || opt.Contains("ALL")) {
+        cout << ".......Index            : " << fIndex << endl;
+        cout << ".......Label            : " << fLabel << endl;
+    }
     if (opt.Contains("P") || opt.Contains("ALL")) {
         cout << ".......Px, Py, Pz, Pt   : " << Px() << ' ' << Py() << ' ' << Pz() << ' ' << Pt() << endl;
     }
@@ -435,13 +457,6 @@ void AliRsnDaughter::Print(Option_t *option) const
     }
     if (opt.Contains("F") || opt.Contains("ALL")) {
         cout << ".......Flags            : " << fFlags << endl;
-    }
-    if (opt.Contains("I") || opt.Contains("ALL")) {
-        cout << ".......PID              : " << AliRsnPID::ParticleName(fPIDType) << endl;
-        if (fPIDType > 0 && fPIDType < AliRsnPID::kSpecies) {
-            cout << ".......PID probability  : " << fPIDProb[fPIDType] << endl;
-        }
-        cout << ".......Mass             : " << fMass << endl;
     }
     if (opt.Contains("W") || opt.Contains("ALL")) {
         cout << ".......Weights          : ";
@@ -514,4 +529,20 @@ Bool_t AliRsnDaughter::InitMCInfo(AliMCParticle *mcParticle)
     // retrieve the TParticle object pointed by this MC track
     TParticle *particle = mcParticle->Particle();
     return InitMCInfo(particle);
+}
+
+//_____________________________________________________________________________
+Int_t AliRsnDaughter::Compare(const TObject* obj) const
+{
+//
+// Compare two tracks with respect to their transverse momentum.
+// Citation from ROOT reference: 
+// "Must return -1 if this is smaller than obj, 0 if objects are equal 
+//  and 1 if this is larger than obj".
+//
+
+    AliRsnDaughter *that = (AliRsnDaughter*)obj;
+    if (Pt() < that->Pt()) return 1;
+    else if (Pt() > that->Pt()) return -1;
+    else return 0;
 }

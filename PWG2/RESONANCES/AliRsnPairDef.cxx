@@ -1,33 +1,13 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
 //
-// ALIRSNPAIRDEF
+// Class AliRsnPairDef
 //
-// Definition of working parameters for a specific resonance analysis.
-// This object allows to define the particles to be used for computation
-// with respect to charge and PID type (included 'kUnknown'), and
-// the binning of the output histogram.
-// These definitions can then be used by many AliRsnPair objects
-// which can operate on the same track samples under different conditions.
+// Defines a decay channel for a resonance,
+// resulting in a specified PDG code for the mother,
+// and the particle type for the daughters, defined
+// according to the internal PID format of the package
 //
-// author: A. Pulvirenti
-// email : alberto.pulvirenti@ct.infn.it
+// author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-
-#include <Riostream.h>
 
 #include "AliLog.h"
 #include "AliRsnDaughter.h"
@@ -37,11 +17,7 @@ ClassImp(AliRsnPairDef)
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef() :
-  TObject(),
-  fMotherPDG(0),
-  fNBins(0),
-  fMin(0.0),
-  fMax(0.0)
+  fMotherPDG(0)
 {
 //
 // Empty constructor.
@@ -62,13 +38,8 @@ AliRsnPairDef::AliRsnPairDef() :
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(Char_t sign1, AliRsnPID::EType type1, Char_t sign2, AliRsnPID::EType type2,
- Int_t nbins, Double_t min, Double_t max) :
-  TObject(),
-  fMotherPDG(0),
-  fNBins(0),
-  fMin(0.0),
-  fMax(0.0)
+(Char_t sign1, AliRsnPID::EType type1, Char_t sign2, AliRsnPID::EType type2, Int_t motherPDG) :
+  fMotherPDG(motherPDG)
 {
 //
 // Constructor with arguments.
@@ -76,23 +47,18 @@ AliRsnPairDef::AliRsnPairDef
 //
 
     SetPair(sign1, type1, sign2, type2);
-    SetBins(nbins, min, max);
 }
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef(const AliRsnPairDef &copy) :
   TObject(copy),
-  fMotherPDG(copy.fMotherPDG),
-  fNBins(0),
-  fMin(0.0),
-  fMax(0.0)
+  fMotherPDG(copy.fMotherPDG)
 {
 //
 // Copy constructor with standard behavior
 //
 
     SetPair(copy.fCharge[0], copy.fType[0], copy.fCharge[1], copy.fType[1]);
-    SetBins(copy.fNBins, copy.fMin, copy.fMax);
 }
 
 //_____________________________________________________________________________
@@ -104,7 +70,6 @@ const AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
 
     fMotherPDG = copy.fMotherPDG;
     SetPair(copy.fCharge[0], copy.fType[0], copy.fCharge[1], copy.fType[1]);
-    SetBins(copy.fNBins, copy.fMin, copy.fMax);
 
     return (*this);
 }
@@ -146,21 +111,6 @@ Bool_t AliRsnPairDef::SetPair
     Bool_t part1 = SetPairElement(0, charge1, type1);
     Bool_t part2 = SetPairElement(1, charge2, type2);
     return (part1 && part2);
-}
-
-//_____________________________________________________________________________
-void AliRsnPairDef::CheckEdges()
-{
-//
-// Checks that histogram edges are appropriate,
-// otherwise swaps them.
-//
-    if (fMin > fMax) {
-        AliWarning(Form("min = %f -- max = %f --> swapping", fMin, fMax));
-        Double_t temp = fMin;
-        fMin = fMax;
-        fMax = temp;
-    }
 }
 
 //_____________________________________________________________________________

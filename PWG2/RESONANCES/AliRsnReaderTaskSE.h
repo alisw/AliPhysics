@@ -1,29 +1,22 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
-//----------------------------------------------------------------------------------
-//  Class AliRsnReaderTaskSE
-// ------------------------
-// Reader for conversion of ESD output into the internal format
-// used for resonance study.
+//
+// Class AliRsnReaderTaskSE
+//
+// An AnalysisTask object to convert any kind of source event type (ESD/AOD/MC)
+// into the RSN internal format (AliRsnEvent).
+// The output of this task is a TTree with converted events, which is saved in a file
+// and can then be processed as many times as desired, to build invariant mass spectra.
 // ---
-// original author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
-// ---
-// adapted for Analysis Framework
-// by    : R. Vernet                          (email: renaud.vernet@cern.ch)
-//----------------------------------------------------------------------------------
+// original author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+// adapted for Analysis Framework by: R. Vernet (renaud.vernet@cern.ch)
+//
 
 #ifndef AliRsnReaderTaskSE_H
 #define AliRsnReaderTaskSE_H
 
 #include "AliAnalysisTaskSE.h"
-//#include "AliRsnReader.h"
-//#include "AliRsnPID.h"
 
-class AliESDEvent;
 class AliRsnPID;
+class AliESDEvent;
 class AliRsnReader;
 
 class AliRsnReaderTaskSE : public AliAnalysisTaskSE
@@ -31,8 +24,8 @@ class AliRsnReaderTaskSE : public AliAnalysisTaskSE
 public:
 
     AliRsnReaderTaskSE();
-	AliRsnReaderTaskSE(const char *name);
-	virtual ~AliRsnReaderTaskSE() {Clear();}
+    AliRsnReaderTaskSE(const char *name);
+    virtual ~AliRsnReaderTaskSE() {Clear();}
 
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -41,24 +34,24 @@ public:
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
 
-	// setters
-	void SetReader(AliRsnReader *reader) {fReader = reader;}
-	void SetPID(AliRsnPID *pid) {fPID = pid;}
-
-	// getters
-	AliRsnReader* GetReader() {return fReader;}
-	AliRsnPID*    GetPID() {return fPID;}
+    void          SetReader(AliRsnReader *reader) {fReader = reader;}
+    void          SetPID(AliRsnPID *pid) {fPID = pid;}
+    AliRsnReader* GetReader() {return fReader;}
+    AliRsnPID*    GetPID() {return fPID;}
+    AliRsnEvent*  GetCurrentEvent() {return fRsnEvent;}
 
 private:
 
-    AliRsnReaderTaskSE(const AliRsnReaderTaskSE&);
-	AliRsnReaderTaskSE& operator=(const AliRsnReaderTaskSE&);
+    AliRsnReaderTaskSE(const AliRsnReaderTaskSE &copy) :
+      AliAnalysisTaskSE(copy),fReader(0x0),fPID(0x0),fRsnEvent(0x0) { /*nothing*/ }
+    AliRsnReaderTaskSE& operator=(const AliRsnReaderTaskSE&)
+      { /*nothing*/ return (*this); }
 
-	AliRsnReader *fReader;     // read manager
-	AliRsnPID    *fPID;        // particle identification manager
-	AliRsnEvent  *fRsnEvent;   // output events in the AliRsnEvent format
+    AliRsnReader *fReader;     // read manager
+    AliRsnPID    *fPID;        // PID manager
+    AliRsnEvent  *fRsnEvent;   // output events in the AliRsnEvent format
 
-	ClassDef(AliRsnReaderTaskSE, 0); // implementation of RsnReader as AnalysisTaskSE
+    ClassDef(AliRsnReaderTaskSE, 1); // implementation of RsnReader as AnalysisTaskSE
 };
 
 #endif

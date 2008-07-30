@@ -190,6 +190,68 @@ AliRsnDaughter* AliRsnEvent::GetTrack(Int_t index)
 }
 
 //_____________________________________________________________________________
+AliRsnDaughter* AliRsnEvent::GetLeadingParticle
+(Double_t ptMin, AliRsnPID::EType type, Bool_t realistic)
+{
+//
+// Returns the particle in this event with largest transverse momentum,
+// provided that this momentum is larger than the first argument
+// and that the PID type correspond to the second argument.
+// If one specifies "AliRsnPID::kUnknown" as second arguments, the PID check is not done.
+//
+
+    Double_t prob;
+    AliRsnPID::EType trackType;
+    AliRsnDaughter *track, *leading = 0x0;
+    TObjArrayIter iter(fTracks);
+    while ( (track = (AliRsnDaughter*)iter.Next()) ) {
+        if (track->Pt() < ptMin) continue;
+        if (realistic) {
+            AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
+        }
+        else {
+            AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kPerfect);
+        }
+        trackType = track->PIDType(prob);
+        if (type != AliRsnPID::kUnknown && trackType != type) continue;
+        ptMin = track->Pt();
+        leading = track;
+    }
+    
+    return leading;
+}
+
+//_____________________________________________________________________________
+Int_t AliRsnEvent::GetLastFastTrack
+(Double_t ptMin, AliRsnPID::EType type, Bool_t realistic)
+{
+//
+// Loops on the list of tracks (eventually skipping the ones which do not match
+// the given PID type with the specified PID method) and returns the index of the last
+// one whose transverse momentum is still larger than a specified value.
+// When no tracks are found this way, the value "-1" is returned.
+//
+
+    if (realistic) {
+        AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
+    }
+    else {
+        AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kPerfect);
+    }
+
+    Double_t prob;
+    Int_t i, nTracks = fTracks->GetEntries(), lastIndex = -1;
+    for (i = 0; i < nTracks; i++) {
+        AliRsnDaughter *d = (AliRsnDaughter*)fTracks->At(i);
+        AliRsnPID::EType trackType = d->PIDType(prob);
+        if (type != AliRsnPID::kUnknown && trackType != type) continue;
+        if (d->Pt() >= ptMin) lastIndex = i;
+    }
+    
+    return lastIndex;
+}
+
+//_____________________________________________________________________________
 TArrayI* AliRsnEvent::GetCharged (Char_t sign)
 {
 //
@@ -203,7 +265,7 @@ TArrayI* AliRsnEvent::GetCharged (Char_t sign)
 
 //_____________________________________________________________________________
 TArrayI * AliRsnEvent::GetTracksArray
-(AliRsnPID::EMethod pidtype, Char_t sign, AliRsnPID::EType type)
+(AliRsnDaughter::EPIDMethod pidtype, Char_t sign, AliRsnPID::EType type)
 {
 //
 // Returns an array of indexes of all tracks in this event
@@ -214,12 +276,12 @@ TArrayI * AliRsnEvent::GetTracksArray
 //
 
     switch (pidtype) {
-        case AliRsnPID::kRealistic:
+        case AliRsnDaughter::kRealistic:
             if (fRealisticPID) {
                 return fRealisticPID->GetTracksArray (sign, type);
             }
             break;
-        case AliRsnPID::kPerfect:
+        case AliRsnDaughter::kPerfect:
             if (fPerfectPID) {
                 return fPerfectPID->GetTracksArray (sign, type);
             }
@@ -247,8 +309,12 @@ void AliRsnEvent::FillPIDArrays()
     fNoPID = new AliRsnPIDIndex;
     fPerfectPID = new AliRsnPIDIndex;
     fRealisticPID = new AliRsnPIDIndex;
+    
+    // set the default type to Realistic
+    AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
 
     // loop on tracks and create references
+    Double_t prob;
     Int_t i, icharge, type;
     Short_t charge;
     AliRsnMCInfo *mcinfo = 0;
@@ -256,7 +322,7 @@ void AliRsnEvent::FillPIDArrays()
     TObjArrayIter iter(fTracks);
     while ( (track = (AliRsnDaughter*) iter.Next()) ) {
         charge = track->Charge();
-        type = (Int_t)track->PIDType();
+        type = (Int_t)track->PIDType(prob);
         i = fTracks->IndexOf(track);
         mcinfo = track->GetMCInfo();
         if (charge > 0) icharge = 0;

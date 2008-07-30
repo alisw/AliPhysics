@@ -31,39 +31,35 @@ public:
     AliRsnPairParticle& operator=(const AliRsnPairParticle &obj);
     virtual ~AliRsnPairParticle();
 
-    Double_t   GetInvMass (Double_t m1 = -1.0, Double_t m2 = -1.0);
-    Double_t   GetInvMassMC (Double_t m1 = -1.0, Double_t m2 = -1.0);
-    Double_t   GetDaughterEnergy(const Int_t &index, const Double_t &mass);
-    Double_t   GetDaughterEnergyMC(const Int_t &index, const Double_t &mass);
+    Double_t          GetInvMass (Double_t m1, Double_t m2);
+    Double_t          GetInvMassMC (Double_t m1 = -1.0, Double_t m2 = -1.0);
+    
+    Double_t          GetP2() const {return (fPTot[0]*fPTot[0] + fPTot[1]*fPTot[1] + fPTot[2]*fPTot[2]);}
+    Double_t          GetPt2() const {return (fPTot[0]*fPTot[0] + fPTot[1]*fPTot[1]);}
+    Double_t          GetP() const {return TMath::Sqrt(GetP2());}
+    Double_t          GetPx() const {return fPTot[0];}
+    Double_t          GetPy() const {return fPTot[1];}
+    Double_t          GetPz() const {return fPTot[2];}
+    Double_t          GetPt() const {return TMath::Sqrt(GetPt2());}
 
-    Double_t   GetP2() const {return (fPTot[0]*fPTot[0] + fPTot[1]*fPTot[1] + fPTot[2]*fPTot[2]);}
-    Double_t   GetPt2() const {return (fPTot[0]*fPTot[0] + fPTot[1]*fPTot[1]);}
-    Double_t   GetP() const {return TMath::Sqrt(GetP2());}
-    Double_t   GetP(Int_t index) const {return fPTot[index];}
-    Double_t   GetPt() const {return TMath::Sqrt(GetPt2());}
+    Double_t          GetP2MC() const {return (fPTotMC[0]*fPTotMC[0] + fPTotMC[1]*fPTotMC[1] + fPTotMC[2]*fPTotMC[2]);}
+    Double_t          GetPt2MC() const {return (fPTotMC[0]*fPTotMC[0] + fPTotMC[1]*fPTotMC[1]);}
+    Double_t          GetPMC() const {return TMath::Sqrt(GetP2MC());}
+    Double_t          GetPxMC() const {return fPTotMC[0];}
+    Double_t          GetPyMC() const {return fPTotMC[1];}
+    Double_t          GetPzMC() const {return fPTotMC[2];}
+    Double_t          GetPtMC() const {return TMath::Sqrt(GetPt2MC());}
+    
+    Double_t          GetAngle() const;
 
-    Double_t   GetP2MC() const {return (fPTotMC[0]*fPTotMC[0] + fPTotMC[1]*fPTotMC[1] + fPTotMC[2]*fPTotMC[2]);}
-    Double_t   GetPt2MC() const {return (fPTotMC[0]*fPTotMC[0] + fPTotMC[1]*fPTotMC[1]);}
-    Double_t   GetPMC() const {return TMath::Sqrt(GetP2MC());}
-    Double_t   GetPMC(Int_t index) const {return fPTotMC[index];}
-    Double_t   GetPtMC() const {return TMath::Sqrt(GetPt2MC());}
+    AliRsnDaughter*   GetDaughter(const Int_t &index) const {return fDaughter[index];}
 
-    Int_t      GetPDG(const Int_t &index);
-    Int_t      GetType(const Int_t &index) const {return (Int_t) fDaughter[index]->PIDType();}
-    Int_t      GetLabel(const Int_t &index) const {return (Int_t) fDaughter[index]->Label();}
-    Int_t      GetIndex(const Int_t &index) const {return (Int_t) fDaughter[index]->Index();}
-    Double_t   GetMass() const {return fMass;}
-    AliRsnDaughter* GetDaughter(const Int_t &index) const {return fDaughter[index];}
+    Bool_t            IsLabelEqual() {return abs(fDaughter[0]->Label()) == abs(fDaughter[1]->Label());}
+    Bool_t            IsIndexEqual() {return (fDaughter[0]->Index() == fDaughter[1]->Index());}
+    Bool_t            IsTruePair(Int_t refPDG = 0);
 
-    Bool_t     IsPDGEqual() {return abs(GetPDG(0)) == abs(GetPDG(1));}
-    Bool_t     IsTypeEqual() {return GetType(0) == GetType(1);}
-    Bool_t     IsLabelEqual() {return abs(GetLabel(0)) == abs(GetLabel(1));}
-    Bool_t     IsIndexEqual() {return GetIndex(0) == GetIndex(1);}
-    Bool_t     IsTruePair(Int_t refPDG = 0);
-
-    void       SetMass(Double_t mass) {fMass = mass;}
-    void       SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2);
-    void       PrintInfo (const Option_t *option = "");
+    void              SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2);
+    void              PrintInfo (const Option_t *option = "");
 
 private:
 
@@ -71,8 +67,6 @@ private:
     Double_t         fPTotMC[3];        // total momentum computed with MC values
     Double_t         fPTrack[2][3];     // rec. momentum of single tracks
     Double_t         fPTrackMC[2][3];   // MC momentum of single tracks
-
-    Double_t         fMass;             // mass hypothesis for resonance
 
     Int_t            fMotherLabel[2];   // GEANT label of tracks
     Int_t            fMotherPDG[2];     // PDG code of mother of tracks

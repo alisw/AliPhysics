@@ -31,14 +31,15 @@
 ClassImp (AliRsnPairParticle)
 
 //_____________________________________________________________________________
-AliRsnPairParticle::AliRsnPairParticle() :
-  fMass(0.0)
+AliRsnPairParticle::AliRsnPairParticle()
 {
 //
 // Constructor.
 // Initializes all variables to meaningless values.
 //
+
     Int_t i, j;
+
     for (i = 0; i < 3; i++) {
         fPTot[i] = 0.0;
         fPTotMC[i] = 0.0;
@@ -56,14 +57,14 @@ AliRsnPairParticle::AliRsnPairParticle() :
 
 //_____________________________________________________________________________
 AliRsnPairParticle::AliRsnPairParticle(const AliRsnPairParticle &obj) :
-  TObject(obj),
-  fMass(obj.fMass)
+  TObject(obj)
 {
 //
 // Copy constructor.
 // Initializes all variables to copy values.
 // Does not duplicate pointers.
 //
+
     Int_t i, j;
     for (i = 0; i < 3; i++) {
         fPTot[i] = obj.fPTot[i];
@@ -88,8 +89,6 @@ AliRsnPairParticle& AliRsnPairParticle::operator=(const AliRsnPairParticle &obj)
 // Initializes all variables to copy values.
 // Does not duplicate pointers.
 //
-
-    fMass = obj.fMass;
 
     Int_t i, j;
     for (i = 0; i < 3; i++) {
@@ -119,122 +118,88 @@ AliRsnPairParticle::~AliRsnPairParticle()
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnPairParticle::GetInvMass(Double_t m1, Double_t m2)
+Double_t AliRsnPairParticle::GetInvMass(Double_t mass0, Double_t mass1)
 {
 //
-// Compute invariant mass using REC values.
-// The masses in argument have default value = -1.0;
-// when this is used, the mass for computation is taken from daughter object.
-// Otherwise, the passed values are used.
+// Compute invariant mass using reconstructed values.
+// Mass in argument #1 is assigned to first track in the pair (fDaughter[0]),
+// mass in argument #2 is assigned to second track in the pair (fDaughter[1])
+// Then, the invariant mass of the pair is computed by using their total momentum
+// and the sum of their energies as they result from assigned masses.
 //
+
+    if (!fDaughter[0] || !fDaughter[1]) {
+        AliError("One of the two tracks is NULL in this pair!");
+        return -1000.0;
+    }
+
+    // compute track energies using the shortcut method defined in AliRsnDaughter
     Double_t etot = 0.0;
+    etot += fDaughter[0]->E(mass0);
+    etot += fDaughter[1]->E(mass1);
 
-    // energy of particle 1
-    if (m1 > 0.0) etot = GetDaughterEnergy(0, m1);
-    else etot = fDaughter[0]->E();
-
-    // energy of particle 2
-    if (m2 > 0.0) etot += GetDaughterEnergy(1, m2);
-    else etot += fDaughter[1]->E();
-
-    // total momentum square module
-    Double_t p2Tot = fPTot[0]*fPTot[0] + fPTot[1]*fPTot[1] + fPTot[2]*fPTot[2];
-
-    // invariant mass returned
-    return  TMath::Sqrt (etot * etot - p2Tot);
+    // compute & return invariant mass
+    return  TMath::Sqrt (etot * etot - GetP2());
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnPairParticle::GetInvMassMC(Double_t m1, Double_t m2)
+Double_t AliRsnPairParticle::GetInvMassMC(Double_t mass0, Double_t mass1)
 {
 //
 // Compute invariant mass using MC values.
-// The masses in argument have default value = -1.0;
-// when a negative mass value is passed as one of the arguments,
-// the energy of tracks for computation is taken from daughter object.
-// Otherwise, the passed mass values are used to re-compute the track energy.
+// Mass in argument #1 is assigned to first track in the pair (fDaughter[0]),
+// mass in argument #2 is assigned to second track in the pair (fDaughter[1])
+// Then, the invariant mass of the pair is computed by using their total momentum
+// and the sum of their energies as they result from assigned masses.
 //
+
+    if (!fDaughter[0] || !fDaughter[1]) {
+        AliError("One of the two tracks is NULL in this pair!");
+        return -1000.0;
+    }
+    if (!fDaughter[0]->GetMCInfo() || !fDaughter[1]->GetMCInfo()) {
+        AliError("One of the two tracks has a NULL MCInfo in this pair!");
+        return -1000.0;
+    }
+
+    // compute track energies using the shortcut method defined in AliRsnDaughter
     Double_t etot = 0.0;
+    etot += fDaughter[0]->GetMCInfo()->E(mass0);
+    etot += fDaughter[1]->GetMCInfo()->E(mass1);
 
-    // energy of particle 1
-    if (m1 > 0.0) etot = GetDaughterEnergyMC(0, m1);
-    else etot = fDaughter[0]->GetMCInfo()->E();
-
-    // energy of particle 2
-    if (m2 > 0.0) etot += GetDaughterEnergyMC(1, m2);
-    else etot += fDaughter[1]->GetMCInfo()->E();
-
-    // total momentum square module
-    Double_t p2Tot = fPTotMC[0]*fPTotMC[0] + fPTotMC[1]*fPTotMC[1] +fPTotMC[2]*fPTotMC[2];
-
-    // invariant mass returned
-    return  TMath::Sqrt (etot * etot - p2Tot);
+    // compute & return invariant mass
+    return  TMath::Sqrt (etot * etot - GetP2());
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnPairParticle::GetDaughterEnergy(const Int_t &index, const Double_t &mass)
+Double_t AliRsnPairParticle::GetAngle() const
 {
 //
-// Compute track energy from REC momentum using a passed mass value.
-// The index argument refers to the used track among the two of the pair.
+// Returns the relative angle between the vector momenta of the tracks
+// Return value is in DEGREES.
 //
 
-    if (mass > 0 && index >= 0 && index < 2) {
-        AliRsnDaughter temp(*fDaughter[index]);
-        temp.SetM(mass);
-        return temp.E();
-    }
-
-    AliWarning("Negative mass or wrong index passed. Returning 0");
-    return 0.0;
-}
-
-//_____________________________________________________________________________
-Double_t AliRsnPairParticle::GetDaughterEnergyMC(const Int_t &index, const Double_t &mass)
-{
-//
-// Compute track energy from MC momentum using a passed mass value.
-// The index argument refers to the used track among the two of the pair.
-//
-    Int_t i;
-    Double_t p2Tot = 0.0;
-    if (mass > 0 && index >= 0 && index < 2) {
-        for (i = 0; i < 3; i++) p2Tot += fPTrackMC[index][i] * fPTrackMC[index][i];
-        return TMath::Sqrt(mass*mass + p2Tot);
-    }
-
-    AliWarning("Negative mass or wrong index passed. Returning 0");
-    return 0.0;
-}
-
-//_____________________________________________________________________________
-Int_t AliRsnPairParticle::GetPDG(const Int_t &index)
-{
-//
-// Return PDG code of one track in the pair
-//
-
-    if (index < 0 || index > 1) {
-        AliError("Index out of range");
-        return 0;
-    }
-    if (!fDaughter[index]->GetMCInfo()) {
-        AliError(Form("MCInfo not initialized for track %d", index));
-        return 0;
-    }
-    return fDaughter[index]->GetMCInfo()->PDG();
+    Double_t dotProd = 0.0;
+    dotProd += fDaughter[0]->Px() * fDaughter[1]->Px();
+    dotProd += fDaughter[0]->Py() * fDaughter[1]->Pz();
+    dotProd += fDaughter[0]->Pz() * fDaughter[1]->Pz();
+    
+    Double_t cosAngle = dotProd / (fDaughter[0]->P() * fDaughter[1]->P());
+    
+    return TMath::ACos(cosAngle) * TMath::RadToDeg();
 }
 
 //_____________________________________________________________________________
 Bool_t AliRsnPairParticle::IsTruePair(Int_t refPDG)
 {
 //
-// Checks if the tweo tracks in the pair come from the same resonance.
+// Checks if the two tracks in the pair come from the same resonance.
 // This can be known if MC info is present, looking at the GEANT label of mother
 // (which should be the same).
 // If the argument is 0, the answer is kTRUE whenever the labels of mothers of the
 // two tracks is the same. When the argument is not zero, the answer is kTRUE only
 // if the mother is the same and its PDG code is equal to the argument.
+//
 
     // if MC info is not available, the pairs is not true by default
     if (!fDaughter[0]->GetMCInfo() || !fDaughter[1]->GetMCInfo()) {
@@ -257,7 +222,6 @@ Bool_t AliRsnPairParticle::IsTruePair(Int_t refPDG)
 void AliRsnPairParticle::SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2)
 {
 //
-// Main object filling method.
 // Accepts two AliRsnDaughter's which are the two tracks in the pair,
 // fills all data-members which contain their momenta & info,
 // and computes the total momentum for REC data and MC if available
@@ -292,20 +256,14 @@ void AliRsnPairParticle::SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daug
 void AliRsnPairParticle::PrintInfo (const Option_t *option)
 {
 //
-// Print some info of the pair
+// Print some info of the pair. 
+// The options are passed to the AliRsnDaughter::Print() method
 //
 
-    TString s(option);
-
-    AliInfo ( "======== BEGIN PAIR INFO ===========" );
-    if (s.Contains("p")) {
-        AliInfo (Form("Px1 = %.6f --- Py1 = %.6f --- Pz1 = %.6f", fPTrack[0][0], fPTrack[0][1], fPTrack[0][2]));
-        AliInfo (Form("Px2 = %.6f --- Py2 = %.6f --- Pz2 = %.6f", fPTrack[1][0], fPTrack[1][1], fPTrack[1][2]));
-    }
-    if (s.Contains("t")) {
-        AliInfo (Form("PDG1 = %d --- PDG2 = %d", GetPDG(0), GetPDG(1)));
-        AliInfo (Form("type1 = %d --- type2 = %d", GetType(0), GetType(1)));
-        AliInfo (Form("label1 = %d --- label2 = %d", GetLabel(0), GetLabel(1)));
-    }
-    AliInfo ( "====== END PAIR INFO =========" );
+    AliInfo("======== BEGIN PAIR INFO ===========");
+    AliInfo("Track #1");
+    fDaughter[0]->Print(option);
+    AliInfo("Track #2");
+    fDaughter[1]->Print(option);
+    AliInfo ("========= END PAIR INFO ===========");
 }
